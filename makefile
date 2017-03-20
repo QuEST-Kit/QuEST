@@ -5,27 +5,38 @@
 #======================================================================#
 
 #
+# --- common config
+#
+
+EXE = demo
+# MODE options: OMP, OMPMPI, GPU
+MODE = OMPMPI
+# COMPILER options: GCC, INTEL, MPICC
+COMPILER = MPICC
+MYFILENAME = timingDemo
+QUESTDIR = QUEST
+
+#
 # --- compiler
 #
-# default is GCC
-ifndef COMPILER
-  COMPILER = GCC
-endif
 
-# GCC compilers
 ifeq ($(COMPILER), GCC)
-  CC         = gcc
-  CFLAGS     = -O2 -std=c99 -mavx -Wall
-  CFLAGS_OMP = -fopenmp
-else
-  # Intel compilers
-  ifeq ($(COMPILER), INTEL)
-    CC         = icc
-    CFLAGS     = -O2 -std=c99 -Wall -xAVX -axCORE-AVX2 -restrict
-    CFLAGS_OMP = -qopenmp
-  else
-    $(error " *** error: invalid compiler")
-  endif
+	# GCC compilers
+  	CC         = gcc
+  	CFLAGS     = -O2 -std=c99 -mavx -Wall
+  	CFLAGS_OMP = -fopenmp
+else ifeq ($(COMPILER), INTEL)
+  	# Intel compilers
+  	CC         = icc
+  	CFLAGS     = -O2 -std=c99 -Wall -xAVX -axCORE-AVX2 -restrict
+  	CFLAGS_OMP = -qopenmp
+else ifeq ($(COMPILER), MPICC)
+  	# Mvapich2
+  	CC         = mpicc
+  	CFLAGS     = -O2 -std=c99
+  	CFLAGS_OMP = -qopenmp
+else 
+    	$(error " *** error: invalid compiler")
 endif
 
 #
@@ -37,30 +48,25 @@ LIBS = -lm
 #
 # --- targets
 #
-EXE = demo
-OBJ = timingDemo.o qubits.o 
-QUESTDIR = QUEST
+OBJ = $(MYFILENAME).o qubits.o
+ifeq ($(MODE), OMPMPI)
+	OBJ += qubits_mpi.o
+endif
 
 #
 # --- rules
 #
 %.o: %.c
-		$(CC) $(CFLAGS) $(CFLAGS_OMP) -c $<
+	$(CC) $(CFLAGS) $(CFLAGS_OMP) -c $<
+
 %.o: $(QUESTDIR)/%.c
-		$(CC) $(CFLAGS) $(CFLAGS_OMP) -c $<
+	$(CC) $(CFLAGS) $(CFLAGS_OMP) -c $<
 
 
 #
 # --- build
 #
 default:	demo
-
-help:
-		@echo
-		@echo " usage:    make"
-		@echo "           make COMPILER=INTEL"
-		@echo " defaults: COMPILER=GCC"
-		@echo
 
 demo:		$(OBJ)
 		$(CC) $(CFLAGS) $(CFLAGS_OMP) -o $(EXE) $(OBJ) $(LIBS)

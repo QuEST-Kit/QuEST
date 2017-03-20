@@ -53,7 +53,479 @@ void initStateVec (const int numQubits,
   printf("COMPLETED INIT\n");
 }
 
+// ==================================================================== //
+//                                                                      //
+//     rotateQubitLocal -- routine to rotate a single qubit in the state//
+//                    vector of probability akmplitudes, given the      //
+//                    angle rotation arguments.                         //
+//                                                                      //
+//     input:                                                           //
+//                    numTasks      -- number of amps in this chunk     //
+//                    numQubits     -- number of qubits                 //
+//                    rotQubit      -- qubit to rotate                  //
+//                    alphaReal,    -- real/imag part of                //
+//                    alphaImag        rotation angle alpha             //
+//                    betaReal,     -- real/imag part of                //
+//                    betaImag         rotation angle beta              //
+//                    stateVecReal, -- real/imag parts of               //
+//                    stateVecImag     the state vector                 //
+//                                                                      //
+//     output:                                                          //
+//                    stateVecReal, -- real/imag parts of               //
+//                    stateVecImag     the state vector (overwritten)   //
+//                                                                      //
+//     note:                                                            //
+//                    qubits are zero-based and the                     //
+//                    the first qubit is the rightmost                  //
+//                                                                      //
+//                    alphaRe = cos(angle1) * cos(angle2);              //
+//                    alphaIm = cos(angle1) * sin(angle2);              //
+//                    betaRe  = sin(angle1) * cos(angle3);              //
+//                    betaIm  = sin(angle1) * sin(angle3);              //
+//                                                                      //
+// ==================================================================== //
 
+void rotateQubitLocal (const long int numTasks, const int numQubits, const int rotQubit,
+                double alphaReal, double alphaImag,
+                double betaReal,  double betaImag,
+                double *restrict stateVecReal, double *restrict stateVecImag)
+{
+        // ----- sizes
+        long int sizeBlock,                                           // size of blocks
+        sizeHalfBlock;                                       // size of blocks halved
+        // ----- indices
+        long int thisBlock,                                           // current block
+             indexUp,indexLo;                                     // current index and corresponding index in lower half block
+
+        // ----- temp variables
+        double   stateRealUp,stateRealLo,                             // storage for previous state values
+                 stateImagUp,stateImagLo;                             // (used in updates)
+        // ----- temp variables
+        long int thisTask;                                   // task based approach for expose loop with small granularity
+        // (good for shared memory parallelism)
+
+
+        // ---------------------------------------------------------------- //
+        //            tests                                                 //
+        // ---------------------------------------------------------------- //
+        assert (rotQubit >= 0 || rotQubit < numQubits);
+
+
+        // ---------------------------------------------------------------- //
+        //            dimensions                                            //
+        // ---------------------------------------------------------------- //
+        sizeHalfBlock = 1L << rotQubit;                               // size of blocks halved
+        sizeBlock     = 2L * sizeHalfBlock;                           // size of blocks
+
+
+        // ---------------------------------------------------------------- //
+        //            rotate                                                //
+        // ---------------------------------------------------------------- //
+
+        //
+        // --- task-based shared-memory parallel implementation
+        //
+# ifdef _OPENMP
+# pragma omp parallel \
+        default  (none) \
+        shared   (sizeBlock,sizeHalfBlock, stateVecReal,stateVecImag, alphaReal,alphaImag, betaReal,betaImag) \
+        private  (thisTask,thisBlock ,indexUp,indexLo, stateRealUp,stateImagUp,stateRealLo,stateImagLo) 
+# endif
+{
+# ifdef _OPENMP
+# pragma omp for \
+        schedule (static)
+# endif
+        for (thisTask=0; thisTask<numTasks; thisTask++) {
+
+                thisBlock   = thisTask / sizeHalfBlock;
+                indexUp     = thisBlock*sizeBlock + thisTask%sizeHalfBlock;
+                indexLo     = indexUp + sizeHalfBlock;
+
+                // store current state vector values in temp variables
+                stateRealUp = stateVecReal[indexUp];
+                stateImagUp = stateVecImag[indexUp];
+
+                stateRealLo = stateVecReal[indexLo];
+                stateImagLo = stateVecImag[indexLo];
+
+                // state[indexUp] = alpha * state[indexUp] - conj(beta)  * state[indexLo]
+                stateVecReal[indexUp] = alphaReal*stateRealUp - alphaImag*stateImagUp - betaReal*stateRealLo - betaImag*stateImagLo;
+                stateVecImag[indexUp] = alphaReal*stateImagUp + alphaImag*stateRealUp - betaReal*stateImagLo + betaImag*stateRealLo;
+
+                // state[indexLo] = beta  * state[indexUp] + conj(alpha) * state[indexLo]
+                stateVecReal[indexLo] = betaReal*stateRealUp - betaImag*stateImagUp + alphaReal*stateRealLo + alphaImag*stateImagLo;
+                stateVecImag[indexLo] = betaReal*stateImagUp + betaImag*stateRealUp + alphaReal*stateImagLo - alphaImag*stateRealLo;
+        } // end for loop
+}
+
+} // end of function definition
+
+// ==================================================================== 
+// chunkIsUpper: returns whether a given chunk in position chunkId is in the upper or lower half of
+// a block
+//
+// inputs: 
+//      chunkId -- id of chunk in state vector
+//      chunkSize -- number of amps in chunk
+//      rotQubit -- qubit being rotated 
+// ==================================================================== 
+
+int chunkIsUpper(int chunkId, int chunkSize, int rotQubit)
+{
+        long int sizeHalfBlock = 1L << (rotQubit);
+        long int sizeBlock = sizeHalfBlock*2;
+        long int posInBlock = (chunkId*chunkSize) % sizeBlock;
+        return posInBlock<sizeHalfBlock;
+}
+
+// ==================================================================== 
+// getAlphaBeta: get rotation values for a given chunk
+//
+// inputs:
+//      chunkIsUpper -- 1: chunk is in upper half of block, 0: chunk is in lower half
+//
+//      rot1Real, rot1Imag, rot2Real, rot2Imag -- rotation values to use, allocated for upper/lower such that
+//      :: stateUpper = rot1 * stateUpper + conj(rot2)  * stateLower ::
+//      or
+//      :: stateLower = rot1 * stateUpper + conj(rot2)  * stateLower ::
+//
+//      aReal, aImag, bReal, bImag -- initial rotation values 
+//      
+// ==================================================================== 
+void getAlphaBeta(int chunkIsUpper, double *rot1Real, double *rot1Imag, double *rot2Real, double *rot2Imag,
+                        double aReal, double aImag, double bReal, double bImag)
+{
+        if (chunkIsUpper){
+                *rot1Real = aReal;
+                *rot1Imag = aImag;
+                *rot2Real = -bReal;
+                *rot2Imag = -bImag;
+        } else {
+                *rot1Real = bReal;
+                *rot1Imag = bImag;
+                *rot2Real = aReal;
+                *rot2Imag = aImag;
+        }
+}
+// ==================================================================== 
+// getChunkPairId: get position of corresponding chunk, holding values required to
+// update values in chunk at chunkId
+//
+// inputs:
+//      chunkIsUpper -- 1: chunk is in upper half of block, 0: chunk is in lower half
+//      chunkId -- id of chunk in state vector
+//      chunkSize -- number of amps in chunk
+//      rotQubit -- qubit being rotated 
+// ==================================================================== 
+
+int getChunkPairId(int chunkIsUpper, int chunkId, int chunkSize, int rotQubit)
+{
+        long int sizeHalfBlock = 1L << (rotQubit);
+        int chunksPerHalfBlock = sizeHalfBlock/chunkSize;
+        if (chunkIsUpper){
+                return chunkId + chunksPerHalfBlock;
+        } else {
+                return chunkId - chunksPerHalfBlock;
+        }
+}
+
+// ==================================================================== 
+// halfMatrixBlockFitsInChunk: return whether the current qubit rotation will use
+// blocks that fit within a single chunk
+// inputs:
+//      chunkSize -- number of amps in chunk
+//      rotQubit -- qubit being rotated 
+// ==================================================================== 
+
+int halfMatrixBlockFitsInChunk(int chunkSize, int rotQubit)
+{
+        long int sizeHalfBlock = 1L << (rotQubit);
+        if (chunkSize > sizeHalfBlock) return 1;
+        else return 0;
+}
+
+// ====================================================================         //
+//                                                                              //
+//     rotateQubitDistributed -- routine to rotate a single qubit in the state  //
+//                    vector of probability akmplitudes, given the              //
+//                    angle rotation arguments, for a distributed version where //
+//                    upper and lower values are stored seperately              //
+//                                                                              //
+//     input:                                                                   //
+//                    numTasks      -- num amps handled by one processor        //
+//                    numQubits     -- number of qubits                         //
+//                    rotQubit      -- qubit to rotate                          //
+//                    alphaReal,    -- real/imag part of                        //
+//                    alphaImag        rotation angle alpha                     //
+//                    betaReal,     -- real/imag part of                        //
+//                    betaImag         rotation angle beta                      //
+//                    stateVecRealUp, -- real/imag parts of                     //
+//                    stateVecImagUp     the state vector in the upper half     //
+//                                       of a block                             //
+//                    stateVecRealLo, -- real/imag parts of                     //
+//                    stateVecImagLo     the state vector in the lower half     //
+//                                       of a block                             //
+//                    stateVecRealLo, -- real/imag parts of                     //
+//                    stateVecImagLo     the output state vector                //
+//                                                                      //
+//     output:                                                          //
+//                    stateVecReal, -- real/imag parts of               //
+//                    stateVecImag     the state vector (overwritten)   //
+//                                                                      //
+//     note:                                                            //
+//                    qubits are zero-based and the                     //
+//                    the first qubit is the rightmost                  //
+//                                                                      //
+//                    alphaRe = cos(angle1) * cos(angle2);              //
+//                    alphaIm = cos(angle1) * sin(angle2);              //
+//                    betaRe  = sin(angle1) * cos(angle3);              //
+//                    betaIm  = sin(angle1) * sin(angle3);              //
+//                                                                      //
+// ==================================================================== //
+
+void rotateQubitDistributed (const long int numTasks, const int numQubits, const int rotQubit,
+                double rot1Real, double rot1Imag,
+                double rot2Real,  double rot2Imag,
+                double *stateVecRealUp, double *stateVecImagUp,
+                double *stateVecRealLo, double *stateVecImagLo,
+                double *stateVecRealOut, double *stateVecImagOut)
+{
+        // ----- temp variables
+        double   stateRealUp,stateRealLo,                             // storage for previous state values
+                 stateImagUp,stateImagLo;                             // (used in updates)
+        // ----- temp variables
+        long int thisTask;                                   // task based approach for expose loop with small granularity
+        // (good for shared memory parallelism)
+
+        // ---------------------------------------------------------------- //
+        //            tests                                                 //
+        // ---------------------------------------------------------------- //
+        assert (rotQubit >= 0 || rotQubit < numQubits);
+
+        // ---------------------------------------------------------------- //
+        //            rotate                                                //
+        // ---------------------------------------------------------------- //
+
+        //
+        // --- task-based shared-memory parallel implementation
+        //
+# pragma omp parallel \
+        default  (none) \
+        shared   (stateVecRealUp,stateVecImagUp,stateVecRealLo,stateVecImagLo,stateVecRealOut,stateVecImagOut, \
+                        rot1Real,rot1Imag, rot2Real,rot2Imag) \
+        private  (thisTask,stateRealUp,stateImagUp,stateRealLo,stateImagLo)
+{
+# pragma omp for \
+        schedule (static)
+        for (thisTask=0; thisTask<numTasks; thisTask++) {
+                // store current state vector values in temp variables
+                stateRealUp = stateVecRealUp[thisTask];
+                stateImagUp = stateVecImagUp[thisTask];
+
+                stateRealLo = stateVecRealLo[thisTask];
+                stateImagLo = stateVecImagLo[thisTask];
+
+                // state[indexUp] = alpha * state[indexUp] - conj(beta)  * state[indexLo]
+                stateVecRealOut[thisTask] = rot1Real*stateRealUp - rot1Imag*stateImagUp + rot2Real*stateRealLo + rot2Imag*stateImagLo;
+                stateVecImagOut[thisTask] = rot1Real*stateImagUp + rot1Imag*stateRealUp + rot2Real*stateImagLo - rot2Imag*stateRealLo;
+        } // end for loop
+}
+} // end of function definition
+
+// ==================================================================== 
+// isChunkToSkipInFindPZero: When calculating probability of a bit q being zero,
+// sum up 2^q values, then skip 2^q values, etc. This function finds if an entire chunk
+// is in the range of values to be skipped
+//
+// inputs:
+//
+//      chunkId -- id of chunk in state vector
+//      chunkSize -- number of amps in chunk
+//      measureQubit -- qubit being measured
+//
+// outputs:
+//      int -- 1: skip, 0: don't skip
+// ==================================================================== 
+
+int isChunkToSkipInFindPZero(int chunkId, int chunkSize, int measureQubit){
+        long int sizeHalfBlock = 1L << (measureQubit);
+        int numChunksToSkip = sizeHalfBlock/chunkSize;
+        // calculate probability by summing over numChunksToSkip, then skipping numChunksToSkip, etc
+        int bitToCheck = chunkId & numChunksToSkip;
+        return bitToCheck;
+}
+
+
+// ==================================================================== //
+//                                                                      //
+//     findProbabilityOfZeroLocal -- routine to measure the probabilityi//
+//                              of a specified qubit in zero state.     // 
+//                              Size of regions to skip is less than    //
+//                              the size of one chunk                   //
+//                                                                      //
+//     input:                                                           //
+//                    numTasks      -- number of amps in this chunk     //
+//                    numQubits     -- number of qubits                 //
+//                    measureQubit  -- qubit to measure                 //
+//                    stateVecReal, -- real/imag parts of               //
+//                    stateVecImag     the state vector                 //
+//                                                                      //
+//     output:                                                          //
+//                    stateVecReal, -- real/imag parts of               //
+//                    stateVecImag     the state vector (overwritten)   //
+//                                                                      //
+//     note:                                                            //
+//                                                                      //
+// ==================================================================== //
+
+double findProbabilityOfZeroLocal (const long int numTasks, const int numQubits,
+                const int measureQubit,
+                double *restrict stateVecReal,
+                double *restrict stateVecImag)
+{
+        // ----- sizes
+        long int sizeBlock,                                           // size of blocks
+        sizeHalfBlock;                                       // size of blocks halved
+        // ----- indices
+        long int thisBlock,                                           // current block
+             index;                                               // current index for first half block
+        // ----- measured probability
+        double   totalProbability;                                    // probability (returned) value
+        // ----- temp variables
+        long int thisTask;                                   // task based approach for expose loop with small granularity
+        // (good for shared memory parallelism)
+
+        // ---------------------------------------------------------------- //
+        //            tests                                                 //
+        // ---------------------------------------------------------------- //
+        assert (measureQubit >= 0 || measureQubit < numQubits);
+
+
+        // ---------------------------------------------------------------- //
+        //            dimensions                                            //
+        // ---------------------------------------------------------------- //
+        sizeHalfBlock = 1L << (measureQubit-1);                       // number of state vector elements to sum,
+        // and then the number to skip
+        sizeBlock     = 2L * sizeHalfBlock;                           // size of blocks (pairs of measure and skip entries)
+
+        // ---------------------------------------------------------------- //
+        //            find probability                                      //
+        // ---------------------------------------------------------------- //
+
+        // initialise returned value
+        totalProbability = 0.0;
+
+        // initialise correction for kahan summation
+
+        //
+        // --- task-based shared-memory parallel implementation
+        //
+# ifdef _OPENMP
+# pragma omp parallel for \
+        shared    (numTasks,sizeBlock,sizeHalfBlock, stateVecReal,stateVecImag) \
+        private   (thisTask,thisBlock,index) \
+        schedule  (static) \
+        reduction ( +:totalProbability )
+# endif
+        for (thisTask=0; thisTask<numTasks; thisTask++) {
+                thisBlock = thisTask / sizeHalfBlock;
+                index     = thisBlock*sizeBlock + thisTask%sizeHalfBlock;
+
+                // summation -- simple implementation
+                totalProbability += stateVecReal[index]*stateVecReal[index]
+                        + stateVecImag[index]*stateVecImag[index];
+
+                /*
+                // summation -- kahan correction
+                y = stateVecReal[index]*stateVecReal[index]
+                + stateVecImag[index]*stateVecImag[index] - c;
+                t = totalProbability + y;
+                c = (t - totalProbability) - y;
+                totalProbability = t;
+                */
+
+        }
+
+        return totalProbability;
+}
+
+// ==================================================================== //
+//                                                                      //
+//     findProbabilityOfZeroDistributed                                 // 
+//                              -- routine to measure the probability   //
+//                              of a specified qubit in zero state.     // 
+//                              Size of regions to skip is a multiple   //
+//                              of chunkSize                            //
+//                                                                      //
+//     input:                                                           //
+//                    numTasks      -- number of amps in this chunk     //
+//                    numQubits     -- number of qubits                 //
+//                    measureQubit  -- qubit to measure                 //
+//                    stateVecReal, -- real/imag parts of               //
+//                    stateVecImag     the state vector                 //
+//                                                                      //
+//     output:                                                          //
+//                    stateVecReal, -- real/imag parts of               //
+//                    stateVecImag     the state vector (overwritten)   //
+//                                                                      //
+//     note:                                                            //
+//                                                                      //
+// ==================================================================== //
+
+double findProbabilityOfZeroDistributed (const long int numTasks, const int numQubits,
+                const int measureQubit,
+                double *restrict stateVecReal,
+                double *restrict stateVecImag)
+{
+        // ----- measured probability
+        double   totalProbability;                                    // probability (returned) value
+        // ----- temp variables
+        long int thisTask;                                   // task based approach for expose loop with small granularity
+        // (good for shared memory parallelism)
+
+        // ---------------------------------------------------------------- //
+        //            tests                                                 //
+        // ---------------------------------------------------------------- //
+        assert (measureQubit >= 0 || measureQubit < numQubits);
+
+        // ---------------------------------------------------------------- //
+        //            find probability                                      //
+        // ---------------------------------------------------------------- //
+
+        // initialise returned value
+        totalProbability = 0.0;
+
+        // initialise correction for kahan summation
+
+        //
+        // --- task-based shared-memory parallel implementation
+        //
+# ifdef _OPENMP
+# pragma omp parallel for \
+        shared    (numTasks,stateVecReal,stateVecImag) \
+        private   (thisTask) \
+        schedule  (static) \
+        reduction ( +:totalProbability )
+# endif
+        for (thisTask=0; thisTask<numTasks; thisTask++) {
+                // summation -- simple implementation
+                totalProbability += stateVecReal[thisTask]*stateVecReal[thisTask]
+                        + stateVecImag[thisTask]*stateVecImag[thisTask];
+
+                /*
+                // summation -- kahan correction
+                y = stateVecReal[thisTask]*stateVecReal[thisTask]
+                + stateVecImag[thisTask]*stateVecImag[thisTask] - c;
+                t = totalProbability + y;
+                c = (t - totalProbability) - y;
+                totalProbability = t;
+                */
+
+        }
+
+        return totalProbability;
+}
 // ==================================================================== //
 //                                                                      //
 //     rotateQubit -- routine to rotate a single qubit in the state     //
