@@ -39,13 +39,14 @@ LIBS = -lm
 #
 EXE = demo
 OBJ = timingDemo.o qubits.o 
+QUESTDIR = QUEST
 
 #
 # --- rules
 #
-.SUFFIXES:
-.SUFFIXES: .c .h .o
-.c.o:
+%.o: %.c
+		$(CC) $(CFLAGS) $(CFLAGS_OMP) -c $<
+%.o: $(QUESTDIR)/%.c
 		$(CC) $(CFLAGS) $(CFLAGS_OMP) -c $<
 
 
