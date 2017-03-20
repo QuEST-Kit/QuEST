@@ -1,6 +1,7 @@
-
-# include "utils.h"
 # include "math.h"  //SCB new line
+# include <stdio.h>
+# include <stdlib.h>
+# include <assert.h>
 
 // Maihi: Where I have made changes I have marked SCB so please note those points - Simon
 
