@@ -85,37 +85,37 @@ void initStateVec (const int numQubits,
 //                                                                      //
 // ==================================================================== //
 
-void rotateQubitLocal (const long int numTasks, const int numQubits, const int rotQubit,
+void rotateQubitLocal (const long long int numTasks, const int numQubits, const int rotQubit,
                 double alphaReal, double alphaImag,
                 double betaReal,  double betaImag,
                 double *restrict stateVecReal, double *restrict stateVecImag)
 {
         // ----- sizes
-        long int sizeBlock,                                           // size of blocks
+        long long int sizeBlock,                                           // size of blocks
         sizeHalfBlock;                                       // size of blocks halved
         // ----- indices
-        long int thisBlock,                                           // current block
+        long long int thisBlock,                                           // current block
              indexUp,indexLo;                                     // current index and corresponding index in lower half block
 
         // ----- temp variables
         double   stateRealUp,stateRealLo,                             // storage for previous state values
                  stateImagUp,stateImagLo;                             // (used in updates)
         // ----- temp variables
-        long int thisTask;                                   // task based approach for expose loop with small granularity
+        long long int thisTask;                                   // task based approach for expose loop with small granularity
         // (good for shared memory parallelism)
 
 
         // ---------------------------------------------------------------- //
         //            tests                                                 //
         // ---------------------------------------------------------------- //
-        assert (rotQubit >= 0 || rotQubit < numQubits);
+        assert (rotQubit >= 0 && rotQubit < numQubits);
 
 
         // ---------------------------------------------------------------- //
         //            dimensions                                            //
         // ---------------------------------------------------------------- //
-        sizeHalfBlock = 1L << rotQubit;                               // size of blocks halved
-        sizeBlock     = 2L * sizeHalfBlock;                           // size of blocks
+        sizeHalfBlock = 1LL << rotQubit;                               // size of blocks halved
+        sizeBlock     = 2LL * sizeHalfBlock;                           // size of blocks
 
 
         // ---------------------------------------------------------------- //
@@ -173,9 +173,9 @@ void rotateQubitLocal (const long int numTasks, const int numQubits, const int r
 
 int chunkIsUpper(int chunkId, int chunkSize, int rotQubit)
 {
-        long int sizeHalfBlock = 1L << (rotQubit);
-        long int sizeBlock = sizeHalfBlock*2;
-        long int posInBlock = (chunkId*chunkSize) % sizeBlock;
+        long long int sizeHalfBlock = 1LL << (rotQubit);
+        long long int sizeBlock = sizeHalfBlock*2;
+        long long int posInBlock = (chunkId*chunkSize) % sizeBlock;
         return posInBlock<sizeHalfBlock;
 }
 
@@ -221,7 +221,7 @@ void getAlphaBeta(int chunkIsUpper, double *rot1Real, double *rot1Imag, double *
 
 int getChunkPairId(int chunkIsUpper, int chunkId, int chunkSize, int rotQubit)
 {
-        long int sizeHalfBlock = 1L << (rotQubit);
+        long long int sizeHalfBlock = 1LL << (rotQubit);
         int chunksPerHalfBlock = sizeHalfBlock/chunkSize;
         if (chunkIsUpper){
                 return chunkId + chunksPerHalfBlock;
@@ -240,7 +240,7 @@ int getChunkPairId(int chunkIsUpper, int chunkId, int chunkSize, int rotQubit)
 
 int halfMatrixBlockFitsInChunk(int chunkSize, int rotQubit)
 {
-        long int sizeHalfBlock = 1L << (rotQubit);
+        long long int sizeHalfBlock = 1LL << (rotQubit);
         if (chunkSize > sizeHalfBlock) return 1;
         else return 0;
 }
@@ -284,7 +284,7 @@ int halfMatrixBlockFitsInChunk(int chunkSize, int rotQubit)
 //                                                                      //
 // ==================================================================== //
 
-void rotateQubitDistributed (const long int numTasks, const int numQubits, const int rotQubit,
+void rotateQubitDistributed (const long long int numTasks, const int numQubits, const int rotQubit,
                 double rot1Real, double rot1Imag,
                 double rot2Real,  double rot2Imag,
                 double *stateVecRealUp, double *stateVecImagUp,
@@ -295,13 +295,13 @@ void rotateQubitDistributed (const long int numTasks, const int numQubits, const
         double   stateRealUp,stateRealLo,                             // storage for previous state values
                  stateImagUp,stateImagLo;                             // (used in updates)
         // ----- temp variables
-        long int thisTask;                                   // task based approach for expose loop with small granularity
+        long long int thisTask;                                   // task based approach for expose loop with small granularity
         // (good for shared memory parallelism)
 
         // ---------------------------------------------------------------- //
         //            tests                                                 //
         // ---------------------------------------------------------------- //
-        assert (rotQubit >= 0 || rotQubit < numQubits);
+        assert (rotQubit >= 0 && rotQubit < numQubits);
 
         // ---------------------------------------------------------------- //
         //            rotate                                                //
@@ -349,7 +349,7 @@ void rotateQubitDistributed (const long int numTasks, const int numQubits, const
 // ==================================================================== 
 
 int isChunkToSkipInFindPZero(int chunkId, int chunkSize, int measureQubit){
-        long int sizeHalfBlock = 1L << (measureQubit);
+        long long int sizeHalfBlock = 1LL << (measureQubit);
         int numChunksToSkip = sizeHalfBlock/chunkSize;
         // calculate probability by summing over numChunksToSkip, then skipping numChunksToSkip, etc
         int bitToCheck = chunkId & numChunksToSkip;
@@ -379,35 +379,35 @@ int isChunkToSkipInFindPZero(int chunkId, int chunkSize, int measureQubit){
 //                                                                      //
 // ==================================================================== //
 
-double findProbabilityOfZeroLocal (const long int numTasks, const int numQubits,
+double findProbabilityOfZeroLocal (const long long int numTasks, const int numQubits,
                 const int measureQubit,
                 double *restrict stateVecReal,
                 double *restrict stateVecImag)
 {
         // ----- sizes
-        long int sizeBlock,                                           // size of blocks
+        long long int sizeBlock,                                           // size of blocks
         sizeHalfBlock;                                       // size of blocks halved
         // ----- indices
-        long int thisBlock,                                           // current block
+        long long int thisBlock,                                           // current block
              index;                                               // current index for first half block
         // ----- measured probability
         double   totalProbability;                                    // probability (returned) value
         // ----- temp variables
-        long int thisTask;                                   // task based approach for expose loop with small granularity
+        long long int thisTask;                                   // task based approach for expose loop with small granularity
         // (good for shared memory parallelism)
 
         // ---------------------------------------------------------------- //
         //            tests                                                 //
         // ---------------------------------------------------------------- //
-        assert (measureQubit >= 0 || measureQubit < numQubits);
+        assert (measureQubit >= 0 && measureQubit < numQubits);
 
 
         // ---------------------------------------------------------------- //
         //            dimensions                                            //
         // ---------------------------------------------------------------- //
-        sizeHalfBlock = 1L << (measureQubit-1);                       // number of state vector elements to sum,
+        sizeHalfBlock = 1LL << (measureQubit);                       // number of state vector elements to sum,
         // and then the number to skip
-        sizeBlock     = 2L * sizeHalfBlock;                           // size of blocks (pairs of measure and skip entries)
+        sizeBlock     = 2LL * sizeHalfBlock;                           // size of blocks (pairs of measure and skip entries)
 
         // ---------------------------------------------------------------- //
         //            find probability                                      //
@@ -473,7 +473,7 @@ double findProbabilityOfZeroLocal (const long int numTasks, const int numQubits,
 //                                                                      //
 // ==================================================================== //
 
-double findProbabilityOfZeroDistributed (const long int numTasks, const int numQubits,
+double findProbabilityOfZeroDistributed (const long long int numTasks, const int numQubits,
                 const int measureQubit,
                 double *restrict stateVecReal,
                 double *restrict stateVecImag)
@@ -481,13 +481,13 @@ double findProbabilityOfZeroDistributed (const long int numTasks, const int numQ
         // ----- measured probability
         double   totalProbability;                                    // probability (returned) value
         // ----- temp variables
-        long int thisTask;                                   // task based approach for expose loop with small granularity
+        long long int thisTask;                                   // task based approach for expose loop with small granularity
         // (good for shared memory parallelism)
 
         // ---------------------------------------------------------------- //
         //            tests                                                 //
         // ---------------------------------------------------------------- //
-        assert (measureQubit >= 0 || measureQubit < numQubits);
+        assert (measureQubit >= 0 && measureQubit < numQubits);
 
         // ---------------------------------------------------------------- //
         //            find probability                                      //
@@ -526,243 +526,6 @@ double findProbabilityOfZeroDistributed (const long int numTasks, const int numQ
 
         return totalProbability;
 }
-// ==================================================================== //
-//                                                                      //
-//     rotateQubit -- routine to rotate a single qubit in the state     //
-//                    vector of probability akmplitudes, given the      //
-//                    angle rotation arguments.                         //
-//                                                                      //
-//     input:                                                           //
-//                    numQubits     -- number of qubits                 //
-//                    rotQubit      -- qubit to rotate                  //
-//                    alphaReal,    -- real/imag part of                //
-//                    alphaImag        rotation angle alpha             //
-//                    betaReal,     -- real/imag part of                //
-//                    betaImag         rotation angle beta              //
-//                    stateVecReal, -- real/imag parts of               //
-//                    stateVecImag     the state vector                 //
-//                                                                      //
-//     output:                                                          //
-//                    stateVecReal, -- real/imag parts of               //
-//                    stateVecImag     the state vector (overwritten)   //
-//                                                                      //
-//     note:                                                            //
-//                    qubits are zero-based and the                     //
-//                    the first qubit is the rightmost                  //
-//                                                                      //
-//                    alphaRe = cos(angle1) * cos(angle2);              //
-//                    alphaIm = cos(angle1) * sin(angle2);              //
-//                    betaRe  = sin(angle1) * cos(angle3);              //
-//                    betaIm  = sin(angle1) * sin(angle3);              //
-//                                                                      //
-// ==================================================================== //
-
-void rotateQubit (const int numQubits, const int rotQubit,
-                  double alphaReal, double alphaImag,
-                  double betaReal,  double betaImag,
-                  double *restrict stateVecReal, double *restrict stateVecImag)
-{
-  // ----- sizes
-  long long int numBlocks,                                           // number of blocks
-           sizeBlock,                                           // size of blocks
-           sizeHalfBlock;                                       // size of blocks halved
-  // ----- indices
-  long long int thisBlock,                                           // current block
-           indexUp,indexLo;                                     // current index and corresponding index in lower half block
-
-  // ----- temp variables
-  double   stateRealUp,stateRealLo,                             // storage for previous state values
-           stateImagUp,stateImagLo;                             // (used in updates)
-  // ----- temp variables
-  long long int thisTask,numTasks;                                   // task based approach for expose loop with small granularity
-                                                                // (good for shared memory parallelism)
-
-
-  // ---------------------------------------------------------------- //
-  //            tests                                                 //
-  // ---------------------------------------------------------------- //
-  //SCB please see my comment on assert() in the function controlPhaseGate below; in short I thin this should be && not ||
-  assert (rotQubit >= 0 || rotQubit < numQubits);
-
-
-  // ---------------------------------------------------------------- //
-  //            dimensions                                            //
-  // ---------------------------------------------------------------- //
-  numBlocks     = 1LL << (numQubits - rotQubit - 1);             // number of blocks in this rotation
-  sizeHalfBlock = 1LL << rotQubit;                               // size of blocks halved
-  sizeBlock     = 2LL* sizeHalfBlock;                           // size of blocks
-
-
-  // ---------------------------------------------------------------- //
-  //            rotate                                                //
-  // ---------------------------------------------------------------- //
-  numTasks = 1LL << (numQubits-1);   //SCB there was an error here, "1 << (..." rather than 1LL, so it failed for numQubits>31
-
-  //
-  // --- task-based shared-memory parallel implementation
-  //
-  # ifdef _OPENMP
-    # pragma omp parallel for \
-      default  (none) \
-      shared   (numTasks,sizeBlock,sizeHalfBlock, stateVecReal,stateVecImag, alphaReal,alphaImag, betaReal,betaImag) \
-      private  (thisTask,thisBlock ,indexUp,indexLo, stateRealUp,stateImagUp,stateRealLo,stateImagLo) \
-      schedule (static)
-  # endif
-  for (thisTask=0; thisTask<numTasks; thisTask++) {
-    thisBlock   = thisTask / sizeHalfBlock;
-    indexUp     = thisBlock*sizeBlock + thisTask%sizeHalfBlock;
-    indexLo     = indexUp + sizeHalfBlock;
-
-    // store current state vector values in temp variables
-    stateRealUp = stateVecReal[indexUp];
-    stateImagUp = stateVecImag[indexUp];
-
-    stateRealLo = stateVecReal[indexLo];
-    stateImagLo = stateVecImag[indexLo];
-
-    // state[indexUp] = alpha * state[indexUp] - conj(beta)  * state[indexLo]
-    stateVecReal[indexUp] = alphaReal*stateRealUp - alphaImag*stateImagUp - betaReal*stateRealLo - betaImag*stateImagLo;
-    stateVecImag[indexUp] = alphaReal*stateImagUp + alphaImag*stateRealUp - betaReal*stateImagLo + betaImag*stateRealLo;
-
-    // state[indexLo] = beta  * state[indexUp] + conj(alpha) * state[indexLo]
-    stateVecReal[indexLo] = betaReal*stateRealUp - betaImag*stateImagUp + alphaReal*stateRealLo + alphaImag*stateImagLo;
-    stateVecImag[indexLo] = betaReal*stateImagUp + betaImag*stateRealUp + alphaReal*stateImagLo - alphaImag*stateRealLo;
-  } // end for loop
-
-
-  /* === begin comment block === */
-  /* --- the following lines are the original block-based iteration */
-  /* --- it was replaced by the task-based iteration above, which is appropriate for */
-  /*     the shared-memory parallelism as it exposes a large number of independent */
-  /*     tasks to a smaller number of threads (the number of blocks is too small a */
-  /*     value to parallelise this way) */
-  /* --- however, block-based itaretions can be important in the distributed MPI */
-  /*     parallel implementation */
-  /* long int iHalfBlockStart,iHalfBlockEnd;                    // indices to delimit the current half block*/
-  /* for (thisBlock=0; thisBlock<numBlocks; thisBlock++) {                   // for all blocks */
-  /*   iHalfBlockStart = thisBlock*sizeBlock;                         // index for start of the first half of the block */
-  /*   iHalfBlockEnd   = iHalfBlockStart + sizeHalfBlock - 1;      // index for end of the first half of the block */
-
-  /*   for (indexUp=iHalfBlockStart; indexUp<=iHalfBlockEnd; indexUp++) { */
-  /*     indexLo = indexUp + sizeHalfBlock; */
-
-  /* stateRealUp = stateReal[indexUp]; */
-  /* stateImagUp = stateImag[indexUp]; */
-
-  /* stateRealLo = stateReal[indexLo]; */
-  /* stateImagLo = stateImag[indexLo]; */
-
-  /* // state[indexUp] = alpha * s[indexUp] - conj(beta) * s[indexLo] */
-  /* stateReal[indexUp] = alphaReal*stateRealUp - alphaImag*stateImagUp - betaReal*stateRealLo - betaImag*stateImagLo; */
-  /* stateImag[indexUp] = alphaReal*stateImagUp + alphaImag*stateRealUp - betaReal*stateImagLo + betaImag*stateRealLo; */
-
-  /* // state[indexLo] = beta * s[indexUp] + conj(alpha) * s[indexLo] */
-  /* stateReal[indexLo] = betaReal*stateRealUp - betaImag*stateImagUp + alphaReal*stateRealLo + alphaImag*stateImagLo; */
-  /* stateImag[indexLo] = betaReal*stateImagUp + betaImag*stateRealUp + alphaReal*stateImagLo - alphaImag*stateRealLo; */
-  /* } */
-  /* }                                                             // end for loop */
-  /* === end comment block === */
-
-  
-}                                                               // end of function definition
-
-
-// ==================================================================== //
-//                                                                      //
-//     findProbabilityOfZero -- routine to measure the probability      //
-//                              of a specified qubit in zero state.     //
-//                                                                      //
-//     input:                                                           //
-//                    numQubits     -- number of qubits                 //
-//                    measureQubit  -- qubit to measure                 //
-//                    stateVecReal, -- real/imag parts of               //
-//                    stateVecImag     the state vector                 //
-//                                                                      //
-//     output:                                                          //
-//                    stateVecReal, -- real/imag parts of               //
-//                    stateVecImag     the state vector (overwritten)   //
-//                                                                      //
-//     note:                                                            //
-//                                                                      //
-// ==================================================================== //
-
-double findProbabilityOfZero (const int numQubits,
-                              const int measureQubit,
-                              double *restrict stateVecReal,
-                              double *restrict stateVecImag)
-{
-  // ----- sizes
-  long long int numBlocks,                                           // number of blocks
-           sizeBlock,                                           // size of blocks
-           sizeHalfBlock;                                       // size of blocks halved
-  // ----- indices
-  long long int thisBlock,                                           // current block
-           index;                                               // current index for first half block
-  // ----- measured probability
-  double   totalProbability;                                    // probability (returned) value
-  // ----- temp variables
-  long long int thisTask,numTasks;                                   // task based approach for expose loop with small granularity
-                                                                // (good for shared memory parallelism)
-
-  // ---------------------------------------------------------------- //
-  //            tests                                                 //
-  // ---------------------------------------------------------------- //
-  //SCB please see my comment on assert() in the function controlPhaseGate below; in short I thin this should be && rather than ||
-  assert (measureQubit >= 0 || measureQubit < numQubits);
-
-
-  // ---------------------------------------------------------------- //
-  //            dimensions                                            //
-  // ---------------------------------------------------------------- //
-    // -- ***** SCB fix applied here! (measureQubit) replaces earlier (measureQubit-1) ----------- //
-  sizeHalfBlock = 1LL << (measureQubit);                       // number of state vector elements to sum,
-                                                                // and then the number to skip
-  sizeBlock     = 2LL* sizeHalfBlock;                           // size of blocks (pairs of measure and skip entries)
-
-  // ---------------------------------------------------------------- //
-  //            find probability                                      //
-  // ---------------------------------------------------------------- //
-  numTasks = 1LL << (numQubits-1);
-
-  // initialise returned value
-  totalProbability = 0.0;
-
-  // initialise correction for kahan summation
-  printf("sizeHalfBlock=%Ld sizeBlock=%Ld numTasks=%Ld\n",sizeHalfBlock,sizeBlock,numTasks);
-  //
-  // --- task-based shared-memory parallel implementation
-  //
-  # ifdef _OPENMP
-    # pragma omp parallel for \
-      shared    (numTasks,sizeBlock,sizeHalfBlock, stateVecReal,stateVecImag) \
-      private   (thisTask,thisBlock,index) \
-      schedule  (static) \
-      reduction ( +:totalProbability )
-  # endif
-  for (thisTask=0; thisTask<numTasks; thisTask++) {
-    thisBlock = thisTask / sizeHalfBlock;
-    index     = thisBlock*sizeBlock + thisTask%sizeHalfBlock;
-    
-    if (index<0){ printf("ABORTING as index=%Ld with thisBlock = %Ld  thisTask=%Ld \n", index,thisBlock,thisTask); exit(1);}
-
-    // summation -- simple implementation
-    totalProbability += stateVecReal[index]*stateVecReal[index]
-                      + stateVecImag[index]*stateVecImag[index];
-
-    /*
-    // summation -- kahan correction
-    y = stateVecReal[index]*stateVecReal[index]
-      + stateVecImag[index]*stateVecImag[index] - c;
-    t = totalProbability + y;
-    c = (t - totalProbability) - y;
-    totalProbability = t;
-    */
-
-  }
-
-  return totalProbability;
-}
-
 
 // ==================================================================== //
 //                                                                      //

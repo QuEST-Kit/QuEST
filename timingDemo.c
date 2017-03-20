@@ -12,6 +12,7 @@
 # include <string.h>
 
 # include "QUEST/qubits.h"
+# include "QUEST/qubits_mpi.h"
 
 
 # define MaxAngles      10

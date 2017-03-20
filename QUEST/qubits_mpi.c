@@ -22,7 +22,7 @@
 // ==================================================================== //
 
 
-double calcTotalProbability(int rank, long int numAmpsPerRank, int numRanks, double *stateVecReal, double *stateVecImag){
+double calcTotalProbability(int rank, long long int numAmpsPerRank, int numRanks, double *stateVecReal, double *stateVecImag){
         double pTotal=0; 
         double *allRankTotals=0;
 	int index;
@@ -64,7 +64,7 @@ double calcTotalProbability(int rank, long int numAmpsPerRank, int numRanks, dou
 //      stateVecImag     the state vector updated on this rank                 
 // ==================================================================== 
 
-void rotateQubit(const long int numAmpsPerRank, const int numQubits, const int rotQubit,
+void rotateQubit(const long long int numAmpsPerRank, const int numQubits, const int rotQubit,
 		double aRe, double aIm, double bRe,  double bIm,
                 double *restrict stateVecReal, double *restrict stateVecImag,
                 double *restrict stateVecRealPair, double *restrict stateVecImagPair, int rank)
@@ -125,7 +125,7 @@ void rotateQubit(const long int numAmpsPerRank, const int numQubits, const int r
 // ==================================================================== 
 
 
-double findProbabilityOfZero(int rank, const long int numAmpsPerRank, const int numQubits,
+double findProbabilityOfZero(int rank, const long long int numAmpsPerRank, const int numQubits,
                 const int measureQubit,
                 double *restrict stateVecReal,
                 double *restrict stateVecImag)
