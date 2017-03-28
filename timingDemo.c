@@ -301,7 +301,7 @@ MPI_Barrier(MPI_COMM_WORLD);
 	if (REPORT_TIMING && env.rank==0) fclose(timing);
 	if (REPORT_TIMING && env.rank==0) fclose(distribution);
 
-	destroyMultiQubit(multiQubit);
+	destroyMultiQubit(multiQubit, env);
 
 	if (REPORT_TIMING && env.rank==0) free(timingVec);
 

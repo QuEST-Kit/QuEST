@@ -27,7 +27,7 @@ typedef struct QUESTEnv
 
 void createMultiQubit(MultiQubit *multiQubit, int numQubits, QUESTEnv env);
 
-void destroyMultiQubit(MultiQubit multiQubit);
+void destroyMultiQubit(MultiQubit multiQubit, QUESTEnv env);
 
 void reportState(MultiQubit multiQubit);
 

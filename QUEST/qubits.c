@@ -13,8 +13,10 @@ void createMultiQubit(MultiQubit *multiQubit, int numQubits, QUESTEnv env)
 
         multiQubit->stateVec.real = malloc(numAmpsPerRank * sizeof(multiQubit->stateVec.real));
         multiQubit->stateVec.imag = malloc(numAmpsPerRank * sizeof(multiQubit->stateVec.imag));
-        multiQubit->pairStateVec.real = malloc(numAmpsPerRank * sizeof(multiQubit->pairStateVec.real));
-        multiQubit->pairStateVec.imag = malloc(numAmpsPerRank * sizeof(multiQubit->pairStateVec.imag));
+	if (env.numRanks>1){
+		multiQubit->pairStateVec.real = malloc(numAmpsPerRank * sizeof(multiQubit->pairStateVec.real));
+		multiQubit->pairStateVec.imag = malloc(numAmpsPerRank * sizeof(multiQubit->pairStateVec.imag));
+	}
 
         if ( (!(multiQubit->stateVec.real) || !(multiQubit->stateVec.imag)
 		 || !(multiQubit->pairStateVec.real) || !(multiQubit->pairStateVec.imag))
@@ -31,11 +33,13 @@ void createMultiQubit(MultiQubit *multiQubit, int numQubits, QUESTEnv env)
 	printf("Number of amps per rank is %ld.\n", numAmpsPerRank);
 }
 
-void destroyMultiQubit(MultiQubit multiQubit){
+void destroyMultiQubit(MultiQubit multiQubit, QUESTEnv env){
 	free(multiQubit.stateVec.real);
 	free(multiQubit.stateVec.imag);
-	free(multiQubit.pairStateVec.real);
-	free(multiQubit.pairStateVec.imag);
+	if (env.numRanks>1){
+		free(multiQubit.pairStateVec.real);
+		free(multiQubit.pairStateVec.imag);
+	}
 }
 
 void reportState(MultiQubit multiQubit){
