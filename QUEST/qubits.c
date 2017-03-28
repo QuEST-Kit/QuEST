@@ -66,6 +66,10 @@ void reportState(Circuit circuit){
 //                                                                      //
 // ==================================================================== //
 
+/**
+ * Initialise the state vector of probability amplitudes to zero state: |000...00>
+ * @param circuit set of qubits to be initialised
+ */
 void initStateVec (Circuit *circuit)
 {
 	long long int stateVecSize;

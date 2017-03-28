@@ -1,3 +1,8 @@
+/** @file timingDemo.c
+ * Measure execution time for rotations of qubits.
+ * An example using the QUEST library
+ */
+
 // ==================================================================== //
 //                                                                      //
 //  demo.c -- qubit operarion demonstrator for QuEST                    //
@@ -16,13 +21,22 @@
 # include "QUEST/qubits.h"
 # include "QUEST/qubits_mpi.h"
 
+//! Max number of angles used to define qubit rotation
 # define MaxAngles      10
+//! Max number of qubits in the system
 # define maxNumQubits   40
+//! Number of times rotations are repeated for timing purposes
 # define N_TRIALS 20
+//! 1: print timing data to file, 0: no timing
 # define REPORT_TIMING 1
+//! 1: print end qubit state to file, 0: don't print
 # define REPORT_STATE 1
+//! 1: perform one rotation outside the timing loop to get around long communication
+//! time for first MPI send/recv
 # define INIT_COMMUNICATION 0
+//! 1: MPI is enabled
 # define USE_MPI 1
+//! 1: Print additional debug information
 # define DEBUG 1
 
 const long double Pi = 3.14159265358979323846264338327950288419716939937510;
@@ -75,7 +89,7 @@ int main (int narg, char** varg) {
 	int numQubits;
 	long int index;
 
-	Circuit circuit;
+	Circuit circuit; 
 
 	double ang1,ang2,ang3;
 	Complex alpha, beta;
@@ -175,7 +189,7 @@ int main (int narg, char** varg) {
 	//for (rotQubit=3*numQubits/4; rotQubit<numQubits; rotQubit++) {
 	//for (rotQubit=2; rotQubit<2; rotQubit++) {
 		for (trial=0; trial<N_TRIALS; trial++){
-			//! for timing -- have all ranks start at same place
+			// for timing -- have all ranks start at same place
 			if (REPORT_TIMING) MPI_Barrier(MPI_COMM_WORLD);
 			if (REPORT_TIMING && rank==0) wtime_start = system_timer ();
 
