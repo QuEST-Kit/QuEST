@@ -6,46 +6,48 @@
 
 // Maihi: Where I have made changes I have marked SCB so please note those points - Simon
 
-void allocCircuit(Circuit *circuit, int numQubits, int rank, int numRanks)
+void createMultiQubit(MultiQubit *multiQubit, int numQubits, QUESTEnv env)
 {
 	long long int numAmps = 1L << numQubits;
-	long long int numAmpsPerRank = numAmps/numRanks;
+	long long int numAmpsPerRank = numAmps/env.numRanks;
 
-        circuit->stateVec.real = malloc(numAmpsPerRank * sizeof(circuit->stateVec.real));
-        circuit->stateVec.imag = malloc(numAmpsPerRank * sizeof(circuit->stateVec.imag));
-        circuit->pairStateVec.real = malloc(numAmpsPerRank * sizeof(circuit->pairStateVec.real));
-        circuit->pairStateVec.imag = malloc(numAmpsPerRank * sizeof(circuit->pairStateVec.imag));
+        multiQubit->stateVec.real = malloc(numAmpsPerRank * sizeof(multiQubit->stateVec.real));
+        multiQubit->stateVec.imag = malloc(numAmpsPerRank * sizeof(multiQubit->stateVec.imag));
+        multiQubit->pairStateVec.real = malloc(numAmpsPerRank * sizeof(multiQubit->pairStateVec.real));
+        multiQubit->pairStateVec.imag = malloc(numAmpsPerRank * sizeof(multiQubit->pairStateVec.imag));
 
-        if ( (!(circuit->stateVec.real) || !(circuit->stateVec.imag)
-		 || !(circuit->pairStateVec.real) || !(circuit->pairStateVec.imag))
+        if ( (!(multiQubit->stateVec.real) || !(multiQubit->stateVec.imag)
+		 || !(multiQubit->pairStateVec.real) || !(multiQubit->pairStateVec.imag))
 		 && numAmpsPerRank ) {
                 printf("Could not allocate memory!");
                 exit (EXIT_FAILURE);
         }
 
-	circuit->numQubits = numQubits;
-	circuit->numAmps = numAmpsPerRank;
-	circuit->chunkId = rank;
+	multiQubit->numQubits = numQubits;
+	multiQubit->numAmps = numAmpsPerRank;
+	multiQubit->chunkId = env.rank;
+
+	initStateVec(multiQubit);
 	printf("Number of amps per rank is %ld.\n", numAmpsPerRank);
 }
 
-void freeCircuit(Circuit *circuit){
-	free(circuit->stateVec.real);
-	free(circuit->stateVec.imag);
-	free(circuit->pairStateVec.real);
-	free(circuit->pairStateVec.imag);
+void destroyMultiQubit(MultiQubit multiQubit){
+	free(multiQubit.stateVec.real);
+	free(multiQubit.stateVec.imag);
+	free(multiQubit.pairStateVec.real);
+	free(multiQubit.pairStateVec.imag);
 }
 
-void reportState(Circuit circuit){
+void reportState(MultiQubit multiQubit){
 	FILE *state;
 	char filename[100];
 	long long int index;
-	sprintf(filename, "state_rank_%d.csv", circuit.chunkId);
+	sprintf(filename, "state_rank_%d.csv", multiQubit.chunkId);
 	state = fopen(filename, "w");
-	if (circuit.chunkId==0) fprintf(state, "real, imag\n");
+	if (multiQubit.chunkId==0) fprintf(state, "real, imag\n");
 
-	for(index=0; index<circuit.numAmps; index++){
-		fprintf(state, "%.12f, %.12f\n", circuit.stateVec.real[index], circuit.stateVec.imag[index]);
+	for(index=0; index<multiQubit.numAmps; index++){
+		fprintf(state, "%.12f, %.12f\n", multiQubit.stateVec.real[index], multiQubit.stateVec.imag[index]);
 	}
 	fclose(state);
 }
@@ -68,21 +70,21 @@ void reportState(Circuit circuit){
 
 /**
  * Initialise the state vector of probability amplitudes to zero state: |000...00>
- * @param circuit set of qubits to be initialised
+ * @param multiQubit set of qubits to be initialised
  */
-void initStateVec (Circuit *circuit)
+void initStateVec (MultiQubit *multiQubit)
 {
 	long long int stateVecSize;
 	long long int index;
 
 	// dimension of the state vector
-	stateVecSize = circuit->numAmps;
+	stateVecSize = multiQubit->numAmps;
 
 	printf("stateVecSize=%Ld   now performing init with only one thread:\n",stateVecSize);
 
-	// Can't use circuit->stateVec as a private OMP var
-	double *stateVecReal = circuit->stateVec.real;
-	double *stateVecImag = circuit->stateVec.imag;
+	// Can't use multiQubit->stateVec as a private OMP var
+	double *stateVecReal = multiQubit->stateVec.real;
+	double *stateVecImag = multiQubit->stateVec.imag;
 
 	// initialise the state to |0000..0000>
 # ifdef _OPENMP
@@ -97,7 +99,7 @@ void initStateVec (Circuit *circuit)
 		stateVecImag[index] = 0.0;
 	}
 
-	if (circuit->chunkId==0){
+	if (multiQubit->chunkId==0){
 		// zero state |0000..0000> has probability 1
 		stateVecReal[0] = 1.0;
 		stateVecImag[0] = 0.0;
@@ -138,7 +140,7 @@ void initStateVec (Circuit *circuit)
 //                                                                      //
 // ==================================================================== //
 
-void rotateQubitLocal (Circuit *circuit, const int rotQubit, Complex alpha, Complex beta)
+void rotateQubitLocal (MultiQubit multiQubit, const int rotQubit, Complex alpha, Complex beta)
 {
 	// ----- sizes
 	long long int sizeBlock,                                           // size of blocks
@@ -152,14 +154,14 @@ void rotateQubitLocal (Circuit *circuit, const int rotQubit, Complex alpha, Comp
 		 stateImagUp,stateImagLo;                             // (used in updates)
 	// ----- temp variables
 	long long int thisTask;                                   // task based approach for expose loop with small granularity
-	const long long int numTasks=circuit->numAmps>>1;
+	const long long int numTasks=multiQubit.numAmps>>1;
 	// (good for shared memory parallelism)
 
 
 	// ---------------------------------------------------------------- //
 	//            tests                                                 //
 	// ---------------------------------------------------------------- //
-	assert (rotQubit >= 0 && rotQubit < circuit->numQubits);
+	assert (rotQubit >= 0 && rotQubit < multiQubit.numQubits);
 
 
 	// ---------------------------------------------------------------- //
@@ -177,9 +179,9 @@ void rotateQubitLocal (Circuit *circuit, const int rotQubit, Complex alpha, Comp
 	// --- task-based shared-memory parallel implementation
 	//
 	
-	// Can't use circuit->stateVec as a private OMP var
-	double *stateVecReal = circuit->stateVec.real;
-	double *stateVecImag = circuit->stateVec.imag;
+	// Can't use multiQubit.stateVec as a private OMP var
+	double *stateVecReal = multiQubit.stateVec.real;
+	double *stateVecImag = multiQubit.stateVec.imag;
 	double alphaImag=alpha.imag, alphaReal=alpha.real;
 	double betaImag=beta.imag, betaReal=beta.real;
 
@@ -338,7 +340,7 @@ int halfMatrixBlockFitsInChunk(int chunkSize, int rotQubit)
 //                                                                      //
 // ==================================================================== //
 
-void rotateQubitDistributed (Circuit *circuit, const int rotQubit,
+void rotateQubitDistributed (MultiQubit multiQubit, const int rotQubit,
 		Complex rot1, Complex rot2,
 		double *stateVecRealUp, double *stateVecImagUp,
 		double *stateVecRealLo, double *stateVecImagLo,
@@ -349,14 +351,14 @@ void rotateQubitDistributed (Circuit *circuit, const int rotQubit,
 	stateImagUp,stateImagLo;                             // (used in updates)
 	// ----- temp variables
 	long long int thisTask;                                   // task based approach for expose loop with small granularity
-	const long long int numTasks=circuit->numAmps;
+	const long long int numTasks=multiQubit.numAmps;
 
 	// (good for shared memory parallelism)
 
 	// ---------------------------------------------------------------- //
 	//            tests                                                 //
 	// ---------------------------------------------------------------- //
-	assert (rotQubit >= 0 && rotQubit < circuit->numQubits);
+	assert (rotQubit >= 0 && rotQubit < multiQubit.numQubits);
 
 	// ---------------------------------------------------------------- //
 	//            rotate                                                //
@@ -436,7 +438,7 @@ int isChunkToSkipInFindPZero(int chunkId, int chunkSize, int measureQubit){
 //                                                                      //
 // ==================================================================== //
 
-double findProbabilityOfZeroLocal (Circuit *circuit,
+double findProbabilityOfZeroLocal (MultiQubit multiQubit,
 		const int measureQubit)
 {
 	// ----- sizes
@@ -449,13 +451,13 @@ double findProbabilityOfZeroLocal (Circuit *circuit,
 	double   totalProbability;                                    // probability (returned) value
 	// ----- temp variables
 	long long int thisTask;                                   // task based approach for expose loop with small granularity
-	long long int numTasks=circuit->numAmps>>1;
+	long long int numTasks=multiQubit.numAmps>>1;
 	// (good for shared memory parallelism)
 
 	// ---------------------------------------------------------------- //
 	//            tests                                                 //
 	// ---------------------------------------------------------------- //
-	assert (measureQubit >= 0 && measureQubit < circuit->numQubits);
+	assert (measureQubit >= 0 && measureQubit < multiQubit.numQubits);
 
 
 	// ---------------------------------------------------------------- //
@@ -479,8 +481,8 @@ double findProbabilityOfZeroLocal (Circuit *circuit,
 	// --- task-based shared-memory parallel implementation
 	//
 	
-	double *stateVecReal = circuit->stateVec.real;
-	double *stateVecImag = circuit->stateVec.imag;
+	double *stateVecReal = multiQubit.stateVec.real;
+	double *stateVecImag = multiQubit.stateVec.imag;
 
 # ifdef _OPENMP
 # pragma omp parallel for \
@@ -536,20 +538,20 @@ double findProbabilityOfZeroLocal (Circuit *circuit,
 //                                                                      //
 // ==================================================================== //
 
-double findProbabilityOfZeroDistributed (Circuit *circuit,
+double findProbabilityOfZeroDistributed (MultiQubit multiQubit,
 		const int measureQubit)
 {
 	// ----- measured probability
 	double   totalProbability;                                    // probability (returned) value
 	// ----- temp variables
 	long long int thisTask;                                   // task based approach for expose loop with small granularity
-	long long int numTasks=circuit->numAmps;
+	long long int numTasks=multiQubit.numAmps;
 	// (good for shared memory parallelism)
 
 	// ---------------------------------------------------------------- //
 	//            tests                                                 //
 	// ---------------------------------------------------------------- //
-	assert (measureQubit >= 0 && measureQubit < circuit->numQubits);
+	assert (measureQubit >= 0 && measureQubit < multiQubit.numQubits);
 
 	// ---------------------------------------------------------------- //
 	//            find probability                                      //
@@ -564,8 +566,8 @@ double findProbabilityOfZeroDistributed (Circuit *circuit,
 	// --- task-based shared-memory parallel implementation
 	//
 	
-	double *stateVecReal = circuit->stateVec.real;
-	double *stateVecImag = circuit->stateVec.imag;
+	double *stateVecReal = multiQubit.stateVec.real;
+	double *stateVecImag = multiQubit.stateVec.imag;
 
 # ifdef _OPENMP
 # pragma omp parallel for \

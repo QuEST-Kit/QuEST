@@ -4,6 +4,32 @@
 # include "qubits.h"
 # include "qubits_mpi.h"
 
+void initQUESTEnv(QUESTEnv *env){
+        // init MPI environment
+        int rank, numRanks;
+        #if USE_MPI==1
+                int provided;
+                MPI_Init_thread(&narg, &varg, MPI_THREAD_FUNNELED, &provided);
+                MPI_Comm_size(MPI_COMM_WORLD, &numRanks);
+                MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+
+                if (DEBUG) {
+                        char hostName[256];
+                        int hostNameLen;
+                        MPI_Get_processor_name(hostName, &hostNameLen);
+                        printf("rank %d on host %s\n", rank, hostName);
+                }
+        #else
+                rank=0; numRanks=1;
+        #endif
+	env->rank=rank;
+	env->numRanks=numRanks;
+}
+
+void closeQUESTEnv(QUESTEnv env){
+	MPI_Finalize();
+}
+
 // ==================================================================== //
 //                                                                      //
 //     calcTotalProbability -- calculate total probability over all 	//
@@ -23,16 +49,16 @@
 // ==================================================================== //
 
 
-double calcTotalProbability(Circuit circuit){
+double calcTotalProbability(MultiQubit multiQubit){
         double pTotal=0; 
         double allRankTotals=0;
 	long long int index;
-	long long int numAmpsPerRank = circuit.numAmps;
+	long long int numAmpsPerRank = multiQubit.numAmps;
         for (index=0; index<numAmpsPerRank; index++){ 
-                pTotal+=circuit.stateVec.real[index]*circuit.stateVec.real[index];      
-                pTotal+=circuit.stateVec.imag[index]*circuit.stateVec.imag[index];      
+                pTotal+=multiQubit.stateVec.real[index]*multiQubit.stateVec.real[index];      
+                pTotal+=multiQubit.stateVec.imag[index]*multiQubit.stateVec.imag[index];      
         } 
-	if (circuit.numChunks>1) MPI_Reduce(&pTotal, &allRankTotals, 1, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
+	if (multiQubit.numChunks>1) MPI_Reduce(&pTotal, &allRankTotals, 1, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
 
 	return allRankTotals;
 }
@@ -58,12 +84,11 @@ double calcTotalProbability(Circuit circuit){
 //      stateVecImag     the state vector updated on this rank                 
 // ==================================================================== 
 
-void rotateQubit(const int rotQubit, Complex alpha, Complex beta,
-		Circuit *circuit)
+void rotateQubit(MultiQubit multiQubit, const int rotQubit, Complex alpha, Complex beta)
 
 {
 	// flag to require memory exchange. 1: an entire block fits on one rank, 0: at most half a block fits on one rank
-	int useLocalDataOnly = halfMatrixBlockFitsInChunk(circuit->numAmps, rotQubit);
+	int useLocalDataOnly = halfMatrixBlockFitsInChunk(multiQubit.numAmps, rotQubit);
 	Complex rot1, rot2;
 
 	// rank's chunk is in upper half of block 
@@ -79,33 +104,33 @@ void rotateQubit(const int rotQubit, Complex alpha, Complex beta,
 
 	if (useLocalDataOnly){
 		// all values required to update state vector lie in this rank
-		rotateQubitLocal(circuit, rotQubit, alpha, beta);
+		rotateQubitLocal(multiQubit, rotQubit, alpha, beta);
 	} else {
 		// need to get corresponding chunk of state vector from other rank
-		rankIsUpper = chunkIsUpper(circuit->chunkId, circuit->numAmps, rotQubit);
+		rankIsUpper = chunkIsUpper(multiQubit.chunkId, multiQubit.numAmps, rotQubit);
 		getRotAngle(rankIsUpper, &rot1, &rot2, alpha, beta);
-		pairRank = getChunkPairId(rankIsUpper, circuit->chunkId, circuit->numAmps, rotQubit);
-		//printf("%d rank has pair rank: %d\n", circuit->rank, pairRank);
+		pairRank = getChunkPairId(rankIsUpper, multiQubit.chunkId, multiQubit.numAmps, rotQubit);
+		//printf("%d rank has pair rank: %d\n", multiQubit.rank, pairRank);
 		// get corresponding values from my pair
-		MPI_Sendrecv(circuit->stateVec.real, circuit->numAmps, MPI_DOUBLE, pairRank, TAG,
-				 circuit->pairStateVec.real, circuit->numAmps, MPI_DOUBLE, pairRank, TAG,
+		MPI_Sendrecv(multiQubit.stateVec.real, multiQubit.numAmps, MPI_DOUBLE, pairRank, TAG,
+				 multiQubit.pairStateVec.real, multiQubit.numAmps, MPI_DOUBLE, pairRank, TAG,
 				 MPI_COMM_WORLD, &status);
-		//printf("rank: %d err: %d\n", circuit->rank, err);
-		MPI_Sendrecv(circuit->stateVec.imag, circuit->numAmps, MPI_DOUBLE, pairRank, TAG,
-				circuit->pairStateVec.imag, circuit->numAmps, MPI_DOUBLE, pairRank, TAG,
+		//printf("rank: %d err: %d\n", multiQubit.rank, err);
+		MPI_Sendrecv(multiQubit.stateVec.imag, multiQubit.numAmps, MPI_DOUBLE, pairRank, TAG,
+				multiQubit.pairStateVec.imag, multiQubit.numAmps, MPI_DOUBLE, pairRank, TAG,
 				MPI_COMM_WORLD, &status);
 		// this rank's values are either in the upper of lower half of the block. send values to rotateQubitDistributed
 		// in the correct order
 		if (rankIsUpper){
-			rotateQubitDistributed(circuit,rotQubit,rot1,rot2,
-				circuit->stateVec.real,circuit->stateVec.imag,
-				circuit->pairStateVec.real,circuit->pairStateVec.imag,
-				circuit->stateVec.real,circuit->stateVec.imag);
+			rotateQubitDistributed(multiQubit,rotQubit,rot1,rot2,
+				multiQubit.stateVec.real,multiQubit.stateVec.imag,
+				multiQubit.pairStateVec.real,multiQubit.pairStateVec.imag,
+				multiQubit.stateVec.real,multiQubit.stateVec.imag);
 		} else {
-			rotateQubitDistributed(circuit,rotQubit,rot1,rot2,
-				circuit->pairStateVec.real,circuit->pairStateVec.imag,
-				circuit->stateVec.real,circuit->stateVec.imag,
-				circuit->stateVec.real,circuit->stateVec.imag);
+			rotateQubitDistributed(multiQubit,rotQubit,rot1,rot2,
+				multiQubit.pairStateVec.real,multiQubit.pairStateVec.imag,
+				multiQubit.stateVec.real,multiQubit.stateVec.imag,
+				multiQubit.stateVec.real,multiQubit.stateVec.imag);
 		}
 	}
 }
@@ -122,16 +147,16 @@ void rotateQubit(const int rotQubit, Complex alpha, Complex beta,
 // ==================================================================== 
 
 
-double findProbabilityOfZero(Circuit *circuit,
+double findProbabilityOfZero(MultiQubit multiQubit,
                 const int measureQubit)
 {
 	double stateProb=0, totalStateProb=0;
-	int skipValuesWithinRank = halfMatrixBlockFitsInChunk(circuit->numAmps, measureQubit);
+	int skipValuesWithinRank = halfMatrixBlockFitsInChunk(multiQubit.numAmps, measureQubit);
 	if (skipValuesWithinRank) {
-		stateProb = findProbabilityOfZeroLocal(circuit, measureQubit);
+		stateProb = findProbabilityOfZeroLocal(multiQubit, measureQubit);
 	} else {
-		if (!isChunkToSkipInFindPZero(circuit->chunkId, circuit->numAmps, measureQubit)){
-			stateProb = findProbabilityOfZeroDistributed(circuit, measureQubit);
+		if (!isChunkToSkipInFindPZero(multiQubit.chunkId, multiQubit.numAmps, measureQubit)){
+			stateProb = findProbabilityOfZeroDistributed(multiQubit, measureQubit);
 		} else stateProb = 0;
 	}
 	MPI_Reduce(&stateProb, &totalStateProb, 1, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);

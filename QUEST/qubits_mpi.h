@@ -1,6 +1,7 @@
-double calcTotalProbability(Circuit circuit);
+void initQUESTEnv(QUESTEnv *env);
 
-void rotateQubit(const int rotQubit, Complex alpha, Complex beta,
-                Circuit *circuit);
+double calcTotalProbability(MultiQubit multiQubit);
 
-double findProbabilityOfZero(Circuit *circuit, const int measureQubit);
+void rotateQubit(MultiQubit multiQubit, const int rotQubit, Complex alpha, Complex beta);
+
+double findProbabilityOfZero(MultiQubit multiQubit, const int measureQubit);

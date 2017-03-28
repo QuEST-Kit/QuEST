@@ -10,24 +10,30 @@ typedef struct Complex
 	double imag;
 } Complex;
 
-typedef struct Circuit
+typedef struct MultiQubit
 {
 	ComplexArray stateVec, pairStateVec;
 	int numQubits;
 	long long int numAmps;
 	int chunkId, numChunks;
-} Circuit;
+} MultiQubit;
+
+typedef struct QUESTEnv
+{
+	int rank;
+	int numRanks;
+} QUESTEnv;
 
 
-void allocCircuit(Circuit *circuit, int numQubits, int rank, int numRanks);
+void createMultiQubit(MultiQubit *multiQubit, int numQubits, QUESTEnv env);
 
-void freeCircuit(Circuit *circuit);
+void destroyMultiQubit(MultiQubit multiQubit);
 
-void reportState(Circuit circuit);
+void reportState(MultiQubit multiQubit);
 
-void initStateVec (Circuit *circuit);
+void initStateVec(MultiQubit *multiQubit);
 
-void rotateQubitLocal (Circuit *circuit, const int rotQubit, Complex alpha, Complex beta);
+void rotateQubitLocal (MultiQubit multiQubit, const int rotQubit, Complex alpha, Complex beta);
 
 int chunkIsUpper(int chunkId, int chunkSize, int rotQubit);
 
@@ -37,7 +43,7 @@ int getChunkPairId(int chunkIsUpper, int chunkId, int chunkSize, int rotQubit);
 
 int halfMatrixBlockFitsInChunk(int chunkSize, int rotQubit);
 
-void rotateQubitDistributed (Circuit *circuit, const int rotQubit,
+void rotateQubitDistributed (MultiQubit multiQubit, const int rotQubit,
 		Complex rot1, Complex rot2,
                 double *stateVecRealUp, double *stateVecImagUp,
                 double *stateVecRealLo, double *stateVecImagLo,
@@ -45,10 +51,10 @@ void rotateQubitDistributed (Circuit *circuit, const int rotQubit,
 
 int isChunkToSkipInFindPZero(int chunkId, int chunkSize, int measureQubit);
 
-double findProbabilityOfZeroLocal (Circuit *circuit,
+double findProbabilityOfZeroLocal (MultiQubit multiQubit,
                 const int measureQubit);
 
-double findProbabilityOfZeroDistributed (Circuit *circuit,
+double findProbabilityOfZeroDistributed (MultiQubit multiQubit,
                 const int measureQubit);
 
 int extractBit (const int locationOfBitFromRight, const long long int theEncodedNumber);

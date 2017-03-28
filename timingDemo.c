@@ -67,29 +67,14 @@ double system_timer (void) {
 //--------------------------------------------------------------
 int main (int narg, char** varg) {
 
-	// init MPI environment
-	int rank, numRanks;
-	#if USE_MPI==1
-		int provided;
-		MPI_Init_thread(&narg, &varg, MPI_THREAD_FUNNELED, &provided);
-		MPI_Comm_size(MPI_COMM_WORLD, &numRanks);
-		MPI_Comm_rank(MPI_COMM_WORLD, &rank);
-
-		if (DEBUG) {
-			char hostName[256];
-			int hostNameLen;
-			MPI_Get_processor_name(hostName, &hostNameLen); 
-			printf("rank %d on host %s\n", rank, hostName);
-		}
-	#else
-		rank=0; numRanks=1;
-	#endif
+	QUESTEnv env;
+	initQUESTEnv(&env);
 
 	// model vars
 	int numQubits;
 	long int index;
 
-	Circuit circuit; 
+	MultiQubit multiQubit; 
 
 	double ang1,ang2,ang3;
 	Complex alpha, beta;
@@ -124,7 +109,7 @@ int main (int narg, char** varg) {
 
 	numAmps = 1L << numQubits;
 
-	if (rank==0){
+	if (env.rank==0){
 		printf("Demo of single qubit rotations.\n");
 		printf("Number of qubits is %d.\n", numQubits);
 		printf("Number of amps is %ld.\n", numAmps);
@@ -137,13 +122,13 @@ int main (int narg, char** varg) {
 	int trial;
 
 
-	if (REPORT_TIMING && rank==0) timingVec = malloc(N_TRIALS*numQubits*sizeof(timingVec));
+	if (REPORT_TIMING && env.rank==0) timingVec = malloc(N_TRIALS*numQubits*sizeof(timingVec));
 	
-	allocCircuit(&circuit, numQubits, rank, numRanks);
+	createMultiQubit(&multiQubit, numQubits, env);
 	printf("alloced mem\n");
 
 	// initialise the state to |0000..0>
-	initStateVec (&circuit);
+	initStateVec (&multiQubit);
 
 	printf("initialized state\n");
 
@@ -168,7 +153,7 @@ int main (int narg, char** varg) {
 	FILE *timing, *distribution;
 	char filename[100];
 
-	if (REPORT_TIMING && rank==0){	
+	if (REPORT_TIMING && env.rank==0){	
 		sprintf(filename, "timing.csv");
 		timing = fopen(filename, "w");
 		fprintf(timing, "qubit, time(s), standardDevUp, standardDevLo, max, min\n");
@@ -181,7 +166,7 @@ int main (int narg, char** varg) {
 	// do a big MPI communication to get around first send/recv in the program occasionally taking many times longer
 	//(due to MPI setup?)
 	if (REPORT_TIMING && INIT_COMMUNICATION){
-		rotateQubit(numQubits-1,alpha,beta,&circuit);
+		rotateQubit(multiQubit,numQubits-1,alpha,beta);
 		MPI_Barrier(MPI_COMM_WORLD);
 	}
 
@@ -191,13 +176,13 @@ int main (int narg, char** varg) {
 		for (trial=0; trial<N_TRIALS; trial++){
 			// for timing -- have all ranks start at same place
 			if (REPORT_TIMING) MPI_Barrier(MPI_COMM_WORLD);
-			if (REPORT_TIMING && rank==0) wtime_start = system_timer ();
+			if (REPORT_TIMING && env.rank==0) wtime_start = system_timer ();
 
 			// do rotation of each qubit N_TRIALS times for timing
-			rotateQubit(rotQubit,alpha,beta,&circuit);
+			rotateQubit(multiQubit,rotQubit,alpha,beta);
 
 			if (REPORT_TIMING) MPI_Barrier(MPI_COMM_WORLD);
-                        if (REPORT_TIMING && rank==0) {
+                        if (REPORT_TIMING && env.rank==0) {
 				wtime_stop = system_timer ();
 				timingVec[trial*numQubits + rotQubit]=wtime_stop-wtime_start;
 			}
@@ -207,12 +192,12 @@ int main (int narg, char** varg) {
 printf("rotated\n");	
 	// check vector size is unchanged
         double totalProbability;
-	totalProbability = calcTotalProbability(circuit);
-        if (rank==0) printf("total probability: %.14f\n", totalProbability);
+	totalProbability = calcTotalProbability(multiQubit);
+        if (env.rank==0) printf("total probability: %.14f\n", totalProbability);
 printf("calc prob\n");
 
 	// report timing to file
-        if (REPORT_TIMING && rank==0){
+        if (REPORT_TIMING && env.rank==0){
                 double totTime, avg, standardDev, temp, max, min;
                 for(index=0; index<numQubits; index++){
                         max=0; min=10e5;
@@ -237,7 +222,7 @@ printf("calc prob\n");
 
         // report state vector to file
 	if (REPORT_STATE){
-		reportState(circuit);
+		reportState(multiQubit);
         }
 
 
@@ -253,11 +238,11 @@ printf("calc prob\n");
 	//for (measureQubit=0; measureQubit<1; measureQubit++) {
 		MPI_Barrier(MPI_COMM_WORLD);
 		wtime_start = system_timer ();
-		stateProb = findProbabilityOfZero (rank, numAmpsPerRank, numQubits, measureQubit, stateVecReal,stateVecImag);
+		stateProb = findProbabilityOfZero (env.rank, numAmpsPerRank, numQubits, measureQubit, stateVecReal,stateVecImag);
 		MPI_Barrier(MPI_COMM_WORLD);
 		wtime_stop = system_timer ();
-		if (rank==0) printf("   probability of 0 for qubit %d = %.14f\n", measureQubit, stateProb);
-		if (rank==0) printf(" measurement qubit %d: elapsed time = %f [s]\n", measureQubit, wtime_stop - wtime_start);
+		if (env.rank==0) printf("   probability of 0 for qubit %d = %.14f\n", measureQubit, stateProb);
+		if (env.rank==0) printf(" measurement qubit %d: elapsed time = %f [s]\n", measureQubit, wtime_stop - wtime_start);
 	}
 */
 	/* // keep time */
@@ -276,28 +261,28 @@ printf("calc prob\n");
 	// two qubit phase gate
 	if (numQubits >= 7) {
 		wtime_start = system_timer (); 
-		controlPhaseGate (rank, numAmpsPerRank, numQubits, 0, 2, stateVecReal, stateVecImag); 
+		controlPhaseGate (env.rank, numAmpsPerRank, numQubits, 0, 2, stateVecReal, stateVecImag); 
 		wtime_stop = system_timer (); 
 		printf(" two qubit phase gate: elapsed time = %f [s]\n", wtime_stop - wtime_start);
-		wtime_start = system_timer (); controlPhaseGate (rank, numAmpsPerRank, numQubits, 1, 3, stateVecReal, stateVecImag); wtime_stop = system_timer (); printf(" two qubit phase gate: elapsed time = %f [s]\n", wtime_stop - wtime_start);
-		wtime_start = system_timer (); controlPhaseGate (rank, numAmpsPerRank, numQubits, 2, 4, stateVecReal, stateVecImag); wtime_stop = system_timer (); printf(" two qubit phase gate: elapsed time = %f [s]\n", wtime_stop - wtime_start);
-		wtime_start = system_timer (); controlPhaseGate (rank, numAmpsPerRank, numQubits, 3, 5, stateVecReal, stateVecImag); wtime_stop = system_timer (); printf(" two qubit phase gate: elapsed time = %f [s]\n", wtime_stop - wtime_start);
-		wtime_start = system_timer (); controlPhaseGate (rank, numAmpsPerRank, numQubits, 4, 6, stateVecReal, stateVecImag); wtime_stop = system_timer (); printf(" two qubit phase gate: elapsed time = %f [s]\n", wtime_stop - wtime_start);
+		wtime_start = system_timer (); controlPhaseGate (env.rank, numAmpsPerRank, numQubits, 1, 3, stateVecReal, stateVecImag); wtime_stop = system_timer (); printf(" two qubit phase gate: elapsed time = %f [s]\n", wtime_stop - wtime_start);
+		wtime_start = system_timer (); controlPhaseGate (env.rank, numAmpsPerRank, numQubits, 2, 4, stateVecReal, stateVecImag); wtime_stop = system_timer (); printf(" two qubit phase gate: elapsed time = %f [s]\n", wtime_stop - wtime_start);
+		wtime_start = system_timer (); controlPhaseGate (env.rank, numAmpsPerRank, numQubits, 3, 5, stateVecReal, stateVecImag); wtime_stop = system_timer (); printf(" two qubit phase gate: elapsed time = %f [s]\n", wtime_stop - wtime_start);
+		wtime_start = system_timer (); controlPhaseGate (env.rank, numAmpsPerRank, numQubits, 4, 6, stateVecReal, stateVecImag); wtime_stop = system_timer (); printf(" two qubit phase gate: elapsed time = %f [s]\n", wtime_stop - wtime_start);
 	}
 */
-	totalProbability = calcTotalProbability(circuit);
-        if (rank==0) printf("total probability: %.14f\n", totalProbability);
+	totalProbability = calcTotalProbability(multiQubit);
+        if (env.rank==0) printf("total probability: %.14f\n", totalProbability);
 /*
-if (rank==0){
-	printf("\n\nIn rank %d, the following is the final state after rotations.\n\n",rank);
+if (env.rank==0){
+	printf("\n\nIn rank %d, the following is the final state after rotations.\n\n",env.rank);
 	printf("codeOutput=[\n");
 	for(index=0; index<=numAmpsPerRank-1; index++) printf("%.8f %.8f\n",stateVecReal[index],stateVecImag[index]);
 	printf("];\n\n");
 }
 MPI_Barrier(MPI_COMM_WORLD);
 
-if (rank==1){
-	printf("\n\nIn rank %d, the following is the final state after rotations.\n\n",rank);
+if (env.rank==1){
+	printf("\n\nIn rank %d, the following is the final state after rotations.\n\n",env.rank);
 	printf("codeOutput=[\n");
 	for(index=0; index<=numAmpsPerRank-1; index++) printf("%.8f %.8f\n",stateVecReal[index],stateVecImag[index]);
 	printf("];\n\n");
@@ -313,14 +298,14 @@ MPI_Barrier(MPI_COMM_WORLD);
 
 	// free memory
 	//fclose(state);
-	if (REPORT_TIMING && rank==0) fclose(timing);
-	if (REPORT_TIMING && rank==0) fclose(distribution);
+	if (REPORT_TIMING && env.rank==0) fclose(timing);
+	if (REPORT_TIMING && env.rank==0) fclose(distribution);
 
-	freeCircuit(&circuit);
+	destroyMultiQubit(multiQubit);
 
-	if (REPORT_TIMING && rank==0) free(timingVec);
+	if (REPORT_TIMING && env.rank==0) free(timingVec);
 
-	MPI_Finalize();
+	closeQUESTEnv(env);
 
 	return EXIT_SUCCESS;
 }
