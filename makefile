@@ -53,9 +53,9 @@ LIBS = -lm
 #
 OBJ = $(MY_FILE_NAME).o qubits.o
 ifneq ($(USE_MPI), 0)
-	OBJ += qubits_mpi.o
+	OBJ += qubits_env_mpi.o
 else
-	OBJ += qubits_local.o
+	OBJ += qubits_env_local.o
 endif
 
 #
