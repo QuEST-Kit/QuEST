@@ -1,12 +1,18 @@
-typedef struct Complex
+typedef struct ComplexArray
 {
 	double *real;
 	double *imag;
+} ComplexArray;
+
+typedef struct Complex
+{
+	double real;
+	double imag;
 } Complex;
 
 typedef struct Circuit
 {
-	Complex stateVec, pairStateVec;
+	ComplexArray stateVec, pairStateVec;
 	int numQubits;
 	long long int numAmps;
 	int chunkId, numChunks;
@@ -21,22 +27,18 @@ void reportState(Circuit circuit);
 
 void initStateVec (Circuit *circuit);
 
-void rotateQubitLocal (Circuit *circuit, const int rotQubit,
-                double alphaReal, double alphaImag,
-                double betaReal,  double betaImag);
+void rotateQubitLocal (Circuit *circuit, const int rotQubit, Complex alpha, Complex beta);
 
 int chunkIsUpper(int chunkId, int chunkSize, int rotQubit);
 
-void getAlphaBeta(int chunkIsUpper, double *rot1Real, double *rot1Imag, double *rot2Real, double *rot2Imag,
-                        double aReal, double aImag, double bReal, double bImag);
+void getRotAngle(int chunkIsUpper, Complex *rot1, Complex *rot2, Complex alpha, Complex beta);
 
 int getChunkPairId(int chunkIsUpper, int chunkId, int chunkSize, int rotQubit);
 
 int halfMatrixBlockFitsInChunk(int chunkSize, int rotQubit);
 
 void rotateQubitDistributed (Circuit *circuit, const int rotQubit,
-                double rot1Real, double rot1Imag,
-                double rot2Real,  double rot2Imag,
+		Complex rot1, Complex rot2,
                 double *stateVecRealUp, double *stateVecImagUp,
                 double *stateVecRealLo, double *stateVecImagLo,
                 double *stateVecRealOut, double *stateVecImagOut);

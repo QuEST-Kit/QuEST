@@ -32,7 +32,7 @@ double calcTotalProbability(Circuit circuit){
                 pTotal+=circuit.stateVec.real[index]*circuit.stateVec.real[index];      
                 pTotal+=circuit.stateVec.imag[index]*circuit.stateVec.imag[index];      
         } 
-	MPI_Reduce(&pTotal, &allRankTotals, 1, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
+	if (circuit.numChunks>1) MPI_Reduce(&pTotal, &allRankTotals, 1, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
 
 	return allRankTotals;
 }
@@ -58,15 +58,13 @@ double calcTotalProbability(Circuit circuit){
 //      stateVecImag     the state vector updated on this rank                 
 // ==================================================================== 
 
-void rotateQubit(const int rotQubit,
-		double aRe, double aIm, double bRe,  double bIm,
+void rotateQubit(const int rotQubit, Complex alpha, Complex beta,
 		Circuit *circuit)
 
 {
 	// flag to require memory exchange. 1: an entire block fits on one rank, 0: at most half a block fits on one rank
 	int useLocalDataOnly = halfMatrixBlockFitsInChunk(circuit->numAmps, rotQubit);
-	double rot1Re,rot1Im;
-	double rot2Re,rot2Im;
+	Complex rot1, rot2;
 
 	// rank's chunk is in upper half of block 
 	int rankIsUpper;
@@ -81,11 +79,11 @@ void rotateQubit(const int rotQubit,
 
 	if (useLocalDataOnly){
 		// all values required to update state vector lie in this rank
-		rotateQubitLocal(circuit, rotQubit, aRe, aIm, bRe, bIm);
+		rotateQubitLocal(circuit, rotQubit, alpha, beta);
 	} else {
 		// need to get corresponding chunk of state vector from other rank
 		rankIsUpper = chunkIsUpper(circuit->chunkId, circuit->numAmps, rotQubit);
-		getAlphaBeta(rankIsUpper, &rot1Re, &rot1Im, &rot2Re, &rot2Im, aRe, aIm, bRe, bIm);
+		getRotAngle(rankIsUpper, &rot1, &rot2, alpha, beta);
 		pairRank = getChunkPairId(rankIsUpper, circuit->chunkId, circuit->numAmps, rotQubit);
 		//printf("%d rank has pair rank: %d\n", circuit->rank, pairRank);
 		// get corresponding values from my pair
@@ -99,12 +97,12 @@ void rotateQubit(const int rotQubit,
 		// this rank's values are either in the upper of lower half of the block. send values to rotateQubitDistributed
 		// in the correct order
 		if (rankIsUpper){
-			rotateQubitDistributed(circuit,rotQubit,rot1Re,rot1Im,rot2Re,rot2Im,
+			rotateQubitDistributed(circuit,rotQubit,rot1,rot2,
 				circuit->stateVec.real,circuit->stateVec.imag,
 				circuit->pairStateVec.real,circuit->pairStateVec.imag,
 				circuit->stateVec.real,circuit->stateVec.imag);
 		} else {
-			rotateQubitDistributed(circuit,rotQubit,rot1Re,rot1Im,rot2Re,rot2Im,
+			rotateQubitDistributed(circuit,rotQubit,rot1,rot2,
 				circuit->pairStateVec.real,circuit->pairStateVec.imag,
 				circuit->stateVec.real,circuit->stateVec.imag,
 				circuit->stateVec.real,circuit->stateVec.imag);

@@ -1,7 +1,6 @@
 double calcTotalProbability(Circuit circuit);
 
-void rotateQubit(const int rotQubit,
-                double aRe, double aIm, double bRe,  double bIm,
+void rotateQubit(const int rotQubit, Complex alpha, Complex beta,
                 Circuit *circuit);
 
 double findProbabilityOfZero(Circuit *circuit, const int measureQubit);

@@ -26,6 +26,7 @@ void allocCircuit(Circuit *circuit, int numQubits, int rank, int numRanks)
 	circuit->numQubits = numQubits;
 	circuit->numAmps = numAmpsPerRank;
 	circuit->chunkId = rank;
+	printf("Number of amps per rank is %ld.\n", numAmpsPerRank);
 }
 
 void freeCircuit(Circuit *circuit){
@@ -133,9 +134,7 @@ void initStateVec (Circuit *circuit)
 //                                                                      //
 // ==================================================================== //
 
-void rotateQubitLocal (Circuit *circuit, const int rotQubit,
-		double alphaReal, double alphaImag,
-		double betaReal,  double betaImag)
+void rotateQubitLocal (Circuit *circuit, const int rotQubit, Complex alpha, Complex beta)
 {
 	// ----- sizes
 	long long int sizeBlock,                                           // size of blocks
@@ -177,6 +176,8 @@ void rotateQubitLocal (Circuit *circuit, const int rotQubit,
 	// Can't use circuit->stateVec as a private OMP var
 	double *stateVecReal = circuit->stateVec.real;
 	double *stateVecImag = circuit->stateVec.imag;
+	double alphaImag=alpha.imag, alphaReal=alpha.real;
+	double betaImag=beta.imag, betaReal=beta.real;
 
 # ifdef _OPENMP
 # pragma omp parallel \
@@ -246,19 +247,15 @@ int chunkIsUpper(int chunkId, int chunkSize, int rotQubit)
 //      aReal, aImag, bReal, bImag -- initial rotation values 
 //      
 // ==================================================================== 
-void getAlphaBeta(int chunkIsUpper, double *rot1Real, double *rot1Imag, double *rot2Real, double *rot2Imag,
-		double aReal, double aImag, double bReal, double bImag)
+void getRotAngle(int chunkIsUpper, Complex *rot1, Complex *rot2, Complex alpha, Complex beta)
 {
 	if (chunkIsUpper){
-		*rot1Real = aReal;
-		*rot1Imag = aImag;
-		*rot2Real = -bReal;
-		*rot2Imag = -bImag;
+		*rot1=alpha;
+		rot2->real=-beta.real;
+		rot2->imag=-beta.imag;
 	} else {
-		*rot1Real = bReal;
-		*rot1Imag = bImag;
-		*rot2Real = aReal;
-		*rot2Imag = aImag;
+		*rot1=beta;
+		*rot2=alpha;
 	}
 }
 // ==================================================================== 
@@ -338,8 +335,7 @@ int halfMatrixBlockFitsInChunk(int chunkSize, int rotQubit)
 // ==================================================================== //
 
 void rotateQubitDistributed (Circuit *circuit, const int rotQubit,
-		double rot1Real, double rot1Imag,
-		double rot2Real,  double rot2Imag,
+		Complex rot1, Complex rot2,
 		double *stateVecRealUp, double *stateVecImagUp,
 		double *stateVecRealLo, double *stateVecImagLo,
 		double *stateVecRealOut, double *stateVecImagOut)
@@ -365,6 +361,8 @@ void rotateQubitDistributed (Circuit *circuit, const int rotQubit,
 	//
 	// --- task-based shared-memory parallel implementation
 	//
+	double rot1Real=rot1.real, rot1Imag=rot1.imag;
+	double rot2Real=rot2.real, rot2Imag=rot2.imag;
 # pragma omp parallel \
 	default  (none) \
 	shared   (stateVecRealUp,stateVecImagUp,stateVecRealLo,stateVecImagLo,stateVecRealOut,stateVecImagOut, \

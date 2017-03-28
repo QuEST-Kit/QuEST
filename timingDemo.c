@@ -22,6 +22,8 @@
 # define REPORT_TIMING 1
 # define REPORT_STATE 1
 # define INIT_COMMUNICATION 0
+# define USE_MPI 1
+# define DEBUG 1
 
 const long double Pi = 3.14159265358979323846264338327950288419716939937510;
 
@@ -51,36 +53,36 @@ double system_timer (void) {
 //--------------------------------------------------------------
 int main (int narg, char** varg) {
 
+	// init MPI environment
+	int rank, numRanks;
+	#if USE_MPI==1
+		int provided;
+		MPI_Init_thread(&narg, &varg, MPI_THREAD_FUNNELED, &provided);
+		MPI_Comm_size(MPI_COMM_WORLD, &numRanks);
+		MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+
+		if (DEBUG) {
+			char hostName[256];
+			int hostNameLen;
+			MPI_Get_processor_name(hostName, &hostNameLen); 
+			printf("rank %d on host %s\n", rank, hostName);
+		}
+	#else
+		rank=0; numRanks=1;
+	#endif
+
+	// model vars
 	int numQubits;
 	long int index;
 
 	Circuit circuit;
 
 	double ang1,ang2,ang3;
-	double aRe, aIm;
-	double bRe, bIm;
+	Complex alpha, beta;
 
 	double stateProb,randProb;
 
-	// init MPI environment
-	int rank, numRanks;
-	int provided;
-	char hostName[256];
-	int hostNameLen;
-	MPI_Init_thread(&narg, &varg, MPI_THREAD_FUNNELED, &provided);
-	MPI_Comm_size(MPI_COMM_WORLD, &numRanks);
-	MPI_Comm_rank(MPI_COMM_WORLD, &rank);
-
-	MPI_Get_processor_name(hostName, &hostNameLen); 
-	printf("hostname on rank %d: %s\n", rank, hostName);
-
-	// timing variables
-	double wtime_start,
-	       wtime_stop;
-	double *timingVec;
-	int trial;
-
-
+	
 	// define rotation angles
 	double angles[MaxAngles][3] = {
 		{ 1.2320,  0.4230, -0.6523},
@@ -93,8 +95,7 @@ int main (int narg, char** varg) {
 
 	int rotQubit,measureQubit;
 	long int numAmps, numAmpsPerRank;
-	//int numRanks=1, rank=0; //! fix -- debug only
-
+	
 	// number of qubits is command line argument
 	if (narg >= 2) {
 		numQubits = atoi(varg[1]);
@@ -107,18 +108,21 @@ int main (int narg, char** varg) {
 		exit (EXIT_FAILURE);
 	}
 
-	// divide up amps evenly between ranks
 	numAmps = 1L << numQubits;
-	numAmpsPerRank = numAmps/numRanks;
 
 	if (rank==0){
-	printf("Demo of single qubit rotations.\n");
-	printf("Number of qubits is %d.\n", numQubits);
-	printf("Number of amps is %ld.\n", numAmps);
-	printf("Number of amps per rank is %ld.\n", numAmpsPerRank);
+		printf("Demo of single qubit rotations.\n");
+		printf("Number of qubits is %d.\n", numQubits);
+		printf("Number of amps is %ld.\n", numAmps);
 	}
 
-	// allocate memory 
+	// timing variables
+	double wtime_start,
+	       wtime_stop;
+	double *timingVec;
+	int trial;
+
+
 	if (REPORT_TIMING && rank==0) timingVec = malloc(N_TRIALS*numQubits*sizeof(timingVec));
 	
 	allocCircuit(&circuit, numQubits, rank, numRanks);
@@ -141,10 +145,10 @@ int main (int narg, char** varg) {
 	ang2 = angles[0][1];
 	ang3 = angles[0][2];
 
-	aRe = cos(ang1) * cos(ang2);
-	aIm = cos(ang1) * sin(ang2);
-	bRe  = sin(ang1) * cos(ang3);
-	bIm  = sin(ang1) * sin(ang3);
+	alpha.real = cos(ang1) * cos(ang2);
+	alpha.imag = cos(ang1) * sin(ang2);
+	beta.real  = sin(ang1) * cos(ang3);
+	beta.imag  = sin(ang1) * sin(ang3);
 
 	// prepare files for writing output state vector and timing data
 	FILE *timing, *distribution;
@@ -163,7 +167,7 @@ int main (int narg, char** varg) {
 	// do a big MPI communication to get around first send/recv in the program occasionally taking many times longer
 	//(due to MPI setup?)
 	if (REPORT_TIMING && INIT_COMMUNICATION){
-		rotateQubit(numQubits-1,aRe,aIm,bRe,bIm,&circuit);
+		rotateQubit(numQubits-1,alpha,beta,&circuit);
 		MPI_Barrier(MPI_COMM_WORLD);
 	}
 
@@ -176,7 +180,7 @@ int main (int narg, char** varg) {
 			if (REPORT_TIMING && rank==0) wtime_start = system_timer ();
 
 			// do rotation of each qubit N_TRIALS times for timing
-			rotateQubit(rotQubit,aRe,aIm,bRe,bIm, &circuit);
+			rotateQubit(rotQubit,alpha,beta,&circuit);
 
 			if (REPORT_TIMING) MPI_Barrier(MPI_COMM_WORLD);
                         if (REPORT_TIMING && rank==0) {

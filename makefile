@@ -9,34 +9,37 @@
 #
 
 EXE = demo
-# MODE options: OMP, OMPMPI, GPU
-MODE = OMPMPI
-# COMPILER options: GCC, INTEL, MPICC
-COMPILER = MPICC
-MYFILENAME = timingDemo
-QUESTDIR = QUEST
+export USE_MPI=1
+# COMPILER options: GCC, INTEL
+COMPILER = INTEL
+MY_FILE_NAME = timingDemo
+QUEST_DIR = QUEST
 
 #
 # --- compiler
 #
 
-ifeq ($(COMPILER), GCC)
-	# GCC compilers
-  	CC         = gcc
-  	CFLAGS     = -O2 -std=c99 -mavx -Wall
-  	CFLAGS_OMP = -fopenmp
-else ifeq ($(COMPILER), INTEL)
-  	# Intel compilers
-  	CC         = icc
-  	CFLAGS     = -O2 -std=c99 -Wall -xAVX -axCORE-AVX2 -restrict
-  	CFLAGS_OMP = -qopenmp
-else ifeq ($(COMPILER), MPICC)
-  	# Mvapich2
-  	CC         = mpicc
-  	CFLAGS     = -O2 -std=c99 -g
-  	CFLAGS_OMP = -qopenmp
+ifneq ($(USE_MPI), 1)
+	ifeq ($(COMPILER), GCC)
+		# GCC compilers
+		CC         = gcc
+		CFLAGS     = -O2 -std=c99 -mavx -Wall
+		CFLAGS_OMP = -fopenmp
+	else ifeq ($(COMPILER), INTEL)
+		# Intel compilers
+		CC         = icc
+		CFLAGS     = -O2 -std=c99 -Wall -xAVX -axCORE-AVX2 -restrict
+		CFLAGS_OMP = -qopenmp
+	endif
 else 
-    	$(error " *** error: invalid compiler")
+	ifeq ($(COMPILER), INTEL)
+		# Mvapich2
+		CC         = mpicc
+		CFLAGS     = -O2 -std=c99
+		CFLAGS_OMP = -qopenmp
+	else 
+		$(error " *** error: invalid compiler")
+	endif
 endif
 
 #
@@ -48,8 +51,8 @@ LIBS = -lm
 #
 # --- targets
 #
-OBJ = $(MYFILENAME).o qubits.o
-ifeq ($(MODE), OMPMPI)
+OBJ = $(MY_FILE_NAME).o qubits.o
+ifneq ($(USE_MPI), 0)
 	OBJ += qubits_mpi.o
 endif
 
@@ -59,7 +62,7 @@ endif
 %.o: %.c
 	$(CC) $(CFLAGS) $(CFLAGS_OMP) -c $<
 
-%.o: $(QUESTDIR)/%.c
+%.o: $(QUEST_DIR)/%.c
 	$(CC) $(CFLAGS) $(CFLAGS_OMP) -c $<
 
 
