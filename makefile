@@ -9,7 +9,7 @@
 #
 
 EXE = demo
-export USE_MPI=1
+USE_MPI=0
 # COMPILER options: GCC, INTEL
 COMPILER = INTEL
 MY_FILE_NAME = timingDemo
@@ -54,6 +54,8 @@ LIBS = -lm
 OBJ = $(MY_FILE_NAME).o qubits.o
 ifneq ($(USE_MPI), 0)
 	OBJ += qubits_mpi.o
+else
+	OBJ += qubits_local.o
 endif
 
 #

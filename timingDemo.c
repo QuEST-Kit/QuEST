@@ -9,7 +9,6 @@
 //                                                                      //
 // ==================================================================== //
 
-# include <mpi.h>
 # include <stdio.h>
 # include <stdlib.h>
 # include <time.h>
@@ -19,7 +18,7 @@
 # include <omp.h>
 
 # include "QUEST/qubits.h"
-# include "QUEST/qubits_mpi.h"
+# include "QUEST/qubits_env_wrapper.h"
 
 //! Max number of angles used to define qubit rotation
 # define MaxAngles      10
@@ -167,7 +166,7 @@ int main (int narg, char** varg) {
 	//(due to MPI setup?)
 	if (REPORT_TIMING && INIT_COMMUNICATION){
 		rotateQubit(multiQubit,numQubits-1,alpha,beta);
-		MPI_Barrier(MPI_COMM_WORLD);
+		syncQUESTEnv(env);
 	}
 
 	for (rotQubit=0; rotQubit<numQubits; rotQubit++) {
@@ -175,13 +174,13 @@ int main (int narg, char** varg) {
 	//for (rotQubit=2; rotQubit<2; rotQubit++) {
 		for (trial=0; trial<N_TRIALS; trial++){
 			// for timing -- have all ranks start at same place
-			if (REPORT_TIMING) MPI_Barrier(MPI_COMM_WORLD);
+			if (REPORT_TIMING) syncQUESTEnv(env);
 			if (REPORT_TIMING && env.rank==0) wtime_start = system_timer ();
 
 			// do rotation of each qubit N_TRIALS times for timing
 			rotateQubit(multiQubit,rotQubit,alpha,beta);
 
-			if (REPORT_TIMING) MPI_Barrier(MPI_COMM_WORLD);
+			if (REPORT_TIMING) syncQUESTEnv(env);
                         if (REPORT_TIMING && env.rank==0) {
 				wtime_stop = system_timer ();
 				timingVec[trial*numQubits + rotQubit]=wtime_stop-wtime_start;
@@ -236,10 +235,10 @@ printf("calc prob\n");
 /*	
 	for (measureQubit=0; measureQubit<numQubits; measureQubit++) {
 	//for (measureQubit=0; measureQubit<1; measureQubit++) {
-		MPI_Barrier(MPI_COMM_WORLD);
+		syncQUESTEnv(env);
 		wtime_start = system_timer ();
 		stateProb = findProbabilityOfZero (env.rank, numAmpsPerRank, numQubits, measureQubit, stateVecReal,stateVecImag);
-		MPI_Barrier(MPI_COMM_WORLD);
+		syncQUESTEnv(env);
 		wtime_stop = system_timer ();
 		if (env.rank==0) printf("   probability of 0 for qubit %d = %.14f\n", measureQubit, stateProb);
 		if (env.rank==0) printf(" measurement qubit %d: elapsed time = %f [s]\n", measureQubit, wtime_stop - wtime_start);
@@ -279,7 +278,7 @@ if (env.rank==0){
 	for(index=0; index<=numAmpsPerRank-1; index++) printf("%.8f %.8f\n",stateVecReal[index],stateVecImag[index]);
 	printf("];\n\n");
 }
-MPI_Barrier(MPI_COMM_WORLD);
+syncQUESTEnv(env);
 
 if (env.rank==1){
 	printf("\n\nIn rank %d, the following is the final state after rotations.\n\n",env.rank);
@@ -287,7 +286,7 @@ if (env.rank==1){
 	for(index=0; index<=numAmpsPerRank-1; index++) printf("%.8f %.8f\n",stateVecReal[index],stateVecImag[index]);
 	printf("];\n\n");
 }
-MPI_Barrier(MPI_COMM_WORLD);
+syncQUESTEnv(env);
 */
 	/* // keep time */
 	/* wtime_stop = system_timer (); */

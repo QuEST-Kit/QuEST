@@ -2,7 +2,7 @@
 # include <mpi.h>
 # include <stdlib.h>
 # include "qubits.h"
-# include "qubits_mpi.h"
+# include "qubits_env_wrapper.h"
 
 void initQUESTEnv(QUESTEnv *env){
         // init MPI environment
@@ -24,6 +24,10 @@ void initQUESTEnv(QUESTEnv *env){
         #endif
 	env->rank=rank;
 	env->numRanks=numRanks;
+}
+
+void syncQUESTEnv(QUESTEnv env){
+	MPI_Barrier(MPI_COMM_WORLD);
 }
 
 void closeQUESTEnv(QUESTEnv env){

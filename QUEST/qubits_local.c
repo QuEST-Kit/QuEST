@@ -1,8 +1,7 @@
 
-# include <mpi.h>
 # include <stdlib.h>
 # include "qubits.h"
-# include "qubits_mpi.h"
+# include "qubits_env_wrapper.h"
 
 void initQUESTEnv(QUESTEnv *env){
         // init MPI environment
@@ -10,6 +9,10 @@ void initQUESTEnv(QUESTEnv *env){
 	env->rank=0;
 	env->numRanks=1;
 }
+
+void syncQUESTEnv(QUESTEnv env){
+	// MPI Barrier goes here in MPI version. 
+} 
 
 void closeQUESTEnv(QUESTEnv env){
 	// MPI finalize goes here in MPI version. Call this function anyway for consistency
@@ -90,7 +93,7 @@ double findProbabilityOfZero(MultiQubit multiQubit,
 {
 	double stateProb=0;
 	stateProb = findProbabilityOfZeroLocal(multiQubit, measureQubit);
-	return totalStateProb;
+	return stateProb;
 }
 
 
