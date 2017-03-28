@@ -1,11 +1,29 @@
-void initStateVec (const int numQubits,
-                   double *restrict stateVecReal,
-                   double *restrict stateVecImag);
+typedef struct Complex
+{
+	double *real;
+	double *imag;
+} Complex;
 
-void rotateQubitLocal (const long long int numTasks, const int numQubits, const int rotQubit,
+typedef struct Circuit
+{
+	Complex stateVec, pairStateVec;
+	int numQubits;
+	long long int numAmps;
+	int chunkId, numChunks;
+} Circuit;
+
+
+void allocCircuit(Circuit *circuit, int numQubits, int rank, int numRanks);
+
+void freeCircuit(Circuit *circuit);
+
+void reportState(Circuit circuit);
+
+void initStateVec (Circuit *circuit);
+
+void rotateQubitLocal (Circuit *circuit, const int rotQubit,
                 double alphaReal, double alphaImag,
-                double betaReal,  double betaImag,
-                double *restrict stateVecReal, double *restrict stateVecImag);
+                double betaReal,  double betaImag);
 
 int chunkIsUpper(int chunkId, int chunkSize, int rotQubit);
 
@@ -16,7 +34,7 @@ int getChunkPairId(int chunkIsUpper, int chunkId, int chunkSize, int rotQubit);
 
 int halfMatrixBlockFitsInChunk(int chunkSize, int rotQubit);
 
-void rotateQubitDistributed (const long long int numTasks, const int numQubits, const int rotQubit,
+void rotateQubitDistributed (Circuit *circuit, const int rotQubit,
                 double rot1Real, double rot1Imag,
                 double rot2Real,  double rot2Imag,
                 double *stateVecRealUp, double *stateVecImagUp,
@@ -25,15 +43,11 @@ void rotateQubitDistributed (const long long int numTasks, const int numQubits, 
 
 int isChunkToSkipInFindPZero(int chunkId, int chunkSize, int measureQubit);
 
-double findProbabilityOfZeroLocal (const long long int numTasks, const int numQubits,
-                const int measureQubit,
-                double *restrict stateVecReal,
-                double *restrict stateVecImag);
+double findProbabilityOfZeroLocal (Circuit *circuit,
+                const int measureQubit);
 
-double findProbabilityOfZeroDistributed (const long long int numTasks, const int numQubits,
-                const int measureQubit,
-                double *restrict stateVecReal,
-                double *restrict stateVecImag);
+double findProbabilityOfZeroDistributed (Circuit *circuit,
+                const int measureQubit);
 
 int extractBit (const int locationOfBitFromRight, const long long int theEncodedNumber);
 

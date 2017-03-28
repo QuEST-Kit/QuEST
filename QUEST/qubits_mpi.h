@@ -1,11 +1,7 @@
-double calcTotalProbability(int rank, long long int numAmpsPerRank, int numRanks, double *stateVecReal, double *stateVecImag);
+double calcTotalProbability(Circuit circuit);
 
-void rotateQubit(const long long int numAmpsPerRank, const int numQubits, const int rotQubit,
-                double aRe, double aIm, double bRe,  double beIm,
-                double *restrict stateVecReal, double *restrict stateVecImag,
-                double *restrict stateVecRealPair, double *restrict stateVecImagPair, int rank);
+void rotateQubit(const int rotQubit,
+                double aRe, double aIm, double bRe,  double bIm,
+                Circuit *circuit);
 
-double findProbabilityOfZero(int rank, const long long int numAmpsPerRank, const int numQubits,
-                const int measureQubit,
-                double *restrict stateVecReal,
-                double *restrict stateVecImag);
+double findProbabilityOfZero(Circuit *circuit, const int measureQubit);

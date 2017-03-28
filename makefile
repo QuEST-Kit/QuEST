@@ -33,7 +33,7 @@ else ifeq ($(COMPILER), INTEL)
 else ifeq ($(COMPILER), MPICC)
   	# Mvapich2
   	CC         = mpicc
-  	CFLAGS     = -O2 -std=c99
+  	CFLAGS     = -O2 -std=c99 -g
   	CFLAGS_OMP = -qopenmp
 else 
     	$(error " *** error: invalid compiler")
