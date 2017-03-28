@@ -1,3 +1,7 @@
+/** @file qubits.c
+ * The QUEST Library.
+ */
+
 # include "math.h"  //SCB new line
 # include <stdio.h>
 # include <stdlib.h>
@@ -5,6 +9,7 @@
 # include "qubits.h"
 
 // Maihi: Where I have made changes I have marked SCB so please note those points - Simon
+
 
 void createMultiQubit(MultiQubit *multiQubit, int numQubits, QUESTEnv env)
 {
@@ -56,25 +61,9 @@ void reportState(MultiQubit multiQubit){
 	fclose(state);
 }
 
-// ==================================================================== //
-//                                                                      //
-//     initStateVec -- routine to initialise the state vector of        //
-//                  probability amplitudes to the zero |0000..0000>     //
-//                                                                      //
-//     input:                                                           //
-//                    numQubits     -- number of qubits                 //
-//                    stateVecReal, -- real/imag parts of               //
-//                    stateVecImag     the state vector                 //
-//                                                                      //
-//     output:                                                          //
-//                    stateVecReal, -- real/imag parts of               //
-//                    stateVecImag     the state vector (overwritten)   //
-//                                                                      //
-// ==================================================================== //
-
 /**
- * Initialise the state vector of probability amplitudes to zero state: |000...00>
- * @param multiQubit set of qubits to be initialised
+ * Initialise the state vector of probability amplitudes for a set of qubits to the zero state: |000...00>
+ * @param[in,out] multiQubit object representing the set of qubits to be initialised
  */
 void initStateVec (MultiQubit *multiQubit)
 {
@@ -112,28 +101,7 @@ void initStateVec (MultiQubit *multiQubit)
 	printf("COMPLETED INIT\n");
 }
 
-// ==================================================================== //
-//                                                                      //
-//     rotateQubitLocal -- routine to rotate a single qubit in the state//
-//                    vector of probability akmplitudes, given the      //
-//                    angle rotation arguments.                         //
-//                                                                      //
-//     input:                                                           //
-//                    numTasks      -- number of amps in this chunk     //
-//                    numQubits     -- number of qubits                 //
-//                    rotQubit      -- qubit to rotate                  //
-//                    alphaReal,    -- real/imag part of                //
-//                    alphaImag        rotation angle alpha             //
-//                    betaReal,     -- real/imag part of                //
-//                    betaImag         rotation angle beta              //
-//                    stateVecReal, -- real/imag parts of               //
-//                    stateVecImag     the state vector                 //
-//                                                                      //
-//     output:                                                          //
-//                    stateVecReal, -- real/imag parts of               //
-//                    stateVecImag     the state vector (overwritten)   //
-//                                                                      //
-//     note:                                                            //
+/** Rotate a single qubit in the state vector of probability amplitudes, given the angle rotation arguments
 //                    qubits are zero-based and the                     //
 //                    the first qubit is the rightmost                  //
 //                                                                      //
@@ -141,9 +109,11 @@ void initStateVec (MultiQubit *multiQubit)
 //                    alphaIm = cos(angle1) * sin(angle2);              //
 //                    betaRe  = sin(angle1) * cos(angle3);              //
 //                    betaIm  = sin(angle1) * sin(angle3);              //
-//                                                                      //
-// ==================================================================== //
-
+ * @param[in,out] multiQubit object representing the set of qubits to be initialised
+ * @param[in] rotQubit qubit to rotate
+ * @param[in] alpha rotation angle
+ * @param[in] beta rotation angle
+ */
 void rotateQubitLocal (MultiQubit multiQubit, const int rotQubit, Complex alpha, Complex beta)
 {
 	// ----- sizes
