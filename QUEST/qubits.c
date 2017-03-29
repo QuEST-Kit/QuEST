@@ -319,9 +319,9 @@ void rotateQubitDistributed (MultiQubit multiQubit, const int rotQubit,
 	//
 	double rot1Real=rot1.real, rot1Imag=rot1.imag;
 	double rot2Real=rot2.real, rot2Imag=rot2.imag;
-	double *stateVecRealUp=stateVecUp.real; *stateVecImagUp=stateVecUp.imag;
-	double *stateVecRealLo=stateVecLo.real; *stateVecImagLo=stateVecLo.imag;
-	double *stateVecRealOut=stateVecOut.real; *stateVecImagOut=stateVecOut.imag;
+	double *stateVecRealUp=stateVecUp.real, *stateVecImagUp=stateVecUp.imag;
+	double *stateVecRealLo=stateVecLo.real, *stateVecImagLo=stateVecLo.imag;
+	double *stateVecRealOut=stateVecOut.real, *stateVecImagOut=stateVecOut.imag;
 # pragma omp parallel \
 	default  (none) \
 	shared   (stateVecRealUp,stateVecImagUp,stateVecRealLo,stateVecImagLo,stateVecRealOut,stateVecImagOut, \
