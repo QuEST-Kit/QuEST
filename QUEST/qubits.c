@@ -1,5 +1,5 @@
 /** @file qubits.c
- * The QUEST Library.
+ * The core of the QUEST Library.
  */
 
 # include "math.h"  //SCB new line
@@ -101,18 +101,19 @@ void initStateVec (MultiQubit *multiQubit)
 	printf("COMPLETED INIT\n");
 }
 
-/** Rotate a single qubit in the state vector of probability amplitudes, given the angle rotation arguments
-//                    qubits are zero-based and the                     //
-//                    the first qubit is the rightmost                  //
-//                                                                      //
-//                    alphaRe = cos(angle1) * cos(angle2);              //
-//                    alphaIm = cos(angle1) * sin(angle2);              //
-//                    betaRe  = sin(angle1) * cos(angle3);              //
-//                    betaIm  = sin(angle1) * sin(angle3);              //
- * @param[in,out] multiQubit object representing the set of qubits to be initialised
- * @param[in] rotQubit qubit to rotate
- * @param[in] alpha rotation angle
- * @param[in] beta rotation angle
+/** Rotate a single qubit in the state vector of probability amplitudes, given the angle rotation arguments.
+alphaRe = cos(angle1) * cos(angle2) \n
+alphaIm = cos(angle1) * sin(angle2) \n            
+betaRe  = sin(angle1) * cos(angle3) \n            
+betaIm  = sin(angle1) * sin(angle3) \n           
+
+@remarks Qubits are zero-based and the                     
+the first qubit is the rightmost                  
+                                                                      
+@param[in,out] multiQubit object representing the set of qubits to be initialised
+@param[in] rotQubit qubit to rotate
+@param[in] alpha rotation angle
+@param[in] beta rotation angle
  */
 void rotateQubitLocal (MultiQubit multiQubit, const int rotQubit, Complex alpha, Complex beta)
 {
@@ -195,15 +196,14 @@ void rotateQubitLocal (MultiQubit multiQubit, const int rotQubit, Complex alpha,
 
 } // end of function definition
 
-// ==================================================================== 
-// chunkIsUpper: returns whether a given chunk in position chunkId is in the upper or lower half of
-// a block
-//
-// inputs: 
-//      chunkId -- id of chunk in state vector
-//      chunkSize -- number of amps in chunk
-//      rotQubit -- qubit being rotated 
-// ==================================================================== 
+/** Returns whether a given chunk in position chunkId is in the upper or lower half of
+a block.
+
+@param[in] chunkId id of chunk in state vector
+@param[in] chunkSize number of amps in chunk
+@param[in] rotQubit qubit being rotated 
+@return 1: chunk is in upper half of block, 0: chunk is in lower half of block 
+*/
 
 int chunkIsUpper(int chunkId, int chunkSize, int rotQubit)
 {
@@ -213,20 +213,19 @@ int chunkIsUpper(int chunkId, int chunkSize, int rotQubit)
 	return posInBlock<sizeHalfBlock;
 }
 
-// ==================================================================== 
-// getAlphaBeta: get rotation values for a given chunk
-//
-// inputs:
-//      chunkIsUpper -- 1: chunk is in upper half of block, 0: chunk is in lower half
-//
-//      rot1Real, rot1Imag, rot2Real, rot2Imag -- rotation values to use, allocated for upper/lower such that
-//      :: stateUpper = rot1 * stateUpper + conj(rot2)  * stateLower ::
-//      or
-//      :: stateLower = rot1 * stateUpper + conj(rot2)  * stateLower ::
-//
-//      aReal, aImag, bReal, bImag -- initial rotation values 
-//      
-// ==================================================================== 
+/** Get rotation values for a given chunk
+@param[in] chunkIsUpper 1: chunk is in upper half of block, 0: chunk is in lower half
+
+@param[out] rot1, rot2 rotation values to use, allocated for upper/lower such that
+@verbatim
+stateUpper = rot1 * stateUpper + conj(rot2)  * stateLower
+@endverbatim
+or
+@verbatim
+stateLower = rot1 * stateUpper + conj(rot2)  * stateLower
+@endverbatim
+@param[in] alpha, beta initial rotation values 
+*/
 void getRotAngle(int chunkIsUpper, Complex *rot1, Complex *rot2, Complex alpha, Complex beta)
 {
 	if (chunkIsUpper){
@@ -238,16 +237,15 @@ void getRotAngle(int chunkIsUpper, Complex *rot1, Complex *rot2, Complex alpha, 
 		*rot2=alpha;
 	}
 }
-// ==================================================================== 
-// getChunkPairId: get position of corresponding chunk, holding values required to
-// update values in chunk at chunkId
-//
-// inputs:
-//      chunkIsUpper -- 1: chunk is in upper half of block, 0: chunk is in lower half
-//      chunkId -- id of chunk in state vector
-//      chunkSize -- number of amps in chunk
-//      rotQubit -- qubit being rotated 
-// ==================================================================== 
+/** get position of corresponding chunk, holding values required to
+update values in my chunk (with chunkId) when rotating rotQubit.
+
+@param[in] chunkIsUpper 1: chunk is in upper half of block, 0: chunk is in lower half
+@param[in] chunkId id of chunk in state vector
+@param[in] chunkSize number of amps in chunk
+@param[in] rotQubit qubit being rotated 
+@return chunkId of chunk required to rotate rotQubit 
+*/
 
 int getChunkPairId(int chunkIsUpper, int chunkId, int chunkSize, int rotQubit)
 {
@@ -260,13 +258,13 @@ int getChunkPairId(int chunkIsUpper, int chunkId, int chunkSize, int rotQubit)
 	}
 }
 
-// ==================================================================== 
-// halfMatrixBlockFitsInChunk: return whether the current qubit rotation will use
-// blocks that fit within a single chunk
-// inputs:
-//      chunkSize -- number of amps in chunk
-//      rotQubit -- qubit being rotated 
-// ==================================================================== 
+/** return whether the current qubit rotation will use
+blocks that fit within a single chunk.
+
+@param[in] chunkSize number of amps in chunk
+@param[in] rotQubit qubit being rotated 
+@return 1: one chunk fits in one block 0: chunk is larger than block
+*/
 
 int halfMatrixBlockFitsInChunk(int chunkSize, int rotQubit)
 {
@@ -275,50 +273,28 @@ int halfMatrixBlockFitsInChunk(int chunkSize, int rotQubit)
 	else return 0;
 }
 
-// ====================================================================         //
-//                                                                              //
-//     rotateQubitDistributed -- routine to rotate a single qubit in the state  //
-//                    vector of probability akmplitudes, given the              //
-//                    angle rotation arguments, for a distributed version where //
-//                    upper and lower values are stored seperately              //
-//                                                                              //
-//     input:                                                                   //
-//                    numTasks      -- num amps handled by one processor        //
-//                    numQubits     -- number of qubits                         //
-//                    rotQubit      -- qubit to rotate                          //
-//                    alphaReal,    -- real/imag part of                        //
-//                    alphaImag        rotation angle alpha                     //
-//                    betaReal,     -- real/imag part of                        //
-//                    betaImag         rotation angle beta                      //
-//                    stateVecRealUp, -- real/imag parts of                     //
-//                    stateVecImagUp     the state vector in the upper half     //
-//                                       of a block                             //
-//                    stateVecRealLo, -- real/imag parts of                     //
-//                    stateVecImagLo     the state vector in the lower half     //
-//                                       of a block                             //
-//                    stateVecRealLo, -- real/imag parts of                     //
-//                    stateVecImagLo     the output state vector                //
-//                                                                      //
-//     output:                                                          //
-//                    stateVecReal, -- real/imag parts of               //
-//                    stateVecImag     the state vector (overwritten)   //
-//                                                                      //
-//     note:                                                            //
-//                    qubits are zero-based and the                     //
-//                    the first qubit is the rightmost                  //
-//                                                                      //
-//                    alphaRe = cos(angle1) * cos(angle2);              //
-//                    alphaIm = cos(angle1) * sin(angle2);              //
-//                    betaRe  = sin(angle1) * cos(angle3);              //
-//                    betaIm  = sin(angle1) * sin(angle3);              //
-//                                                                      //
-// ==================================================================== //
+/** Rotate a single qubit in the state
+vector of probability amplitudes, given the              
+angle rotation arguments, and a subset of the state vector with upper and lower block values 
+stored seperately.
+
+@remarks Qubits are zero-based and the                     
+the first qubit is the rightmost                  
+                                                                      
+@param[in,out] multiQubit object representing the set of qubits to be initialised
+@param[in] rotQubit qubit to rotate
+@param[in] rot1 rotation angle
+@param[in] rot2 rotation angle
+@param[in] stateVecUp probability amplitudes in upper half of a block
+@param[in] stateVecLo probability amplitudes in lower half of a block
+@param[out] stateVecOut array section to update (will correspond to either the lower or upper half of a block)
+*/
 
 void rotateQubitDistributed (MultiQubit multiQubit, const int rotQubit,
 		Complex rot1, Complex rot2,
-		double *stateVecRealUp, double *stateVecImagUp,
-		double *stateVecRealLo, double *stateVecImagLo,
-		double *stateVecRealOut, double *stateVecImagOut)
+		ComplexArray stateVecUp,
+		ComplexArray stateVecLo,
+		ComplexArray stateVecOut)
 {
 	// ----- temp variables
 	double   stateRealUp,stateRealLo,                             // storage for previous state values
@@ -343,6 +319,9 @@ void rotateQubitDistributed (MultiQubit multiQubit, const int rotQubit,
 	//
 	double rot1Real=rot1.real, rot1Imag=rot1.imag;
 	double rot2Real=rot2.real, rot2Imag=rot2.imag;
+	double *stateVecRealUp=stateVecUp.real; *stateVecImagUp=stateVecUp.imag;
+	double *stateVecRealLo=stateVecLo.real; *stateVecImagLo=stateVecLo.imag;
+	double *stateVecRealOut=stateVecOut.real; *stateVecImagOut=stateVecOut.imag;
 # pragma omp parallel \
 	default  (none) \
 	shared   (stateVecRealUp,stateVecImagUp,stateVecRealLo,stateVecImagLo,stateVecRealOut,stateVecImagOut, \
@@ -366,20 +345,16 @@ void rotateQubitDistributed (MultiQubit multiQubit, const int rotQubit,
 	}
 } // end of function definition
 
-// ==================================================================== 
-// isChunkToSkipInFindPZero: When calculating probability of a bit q being zero,
-// sum up 2^q values, then skip 2^q values, etc. This function finds if an entire chunk
-// is in the range of values to be skipped
-//
-// inputs:
-//
-//      chunkId -- id of chunk in state vector
-//      chunkSize -- number of amps in chunk
-//      measureQubit -- qubit being measured
-//
-// outputs:
-//      int -- 1: skip, 0: don't skip
-// ==================================================================== 
+/** Find chunks to skip when calculating probability of qubit being zero.
+When calculating probability of a bit q being zero,
+sum up 2^q values, then skip 2^q values, etc. This function finds if an entire chunk
+is in the range of values to be skipped
+
+@param[in] chunkId id of chunk in state vector
+@param[in] chunkSize number of amps in chunk
+@param[in] measureQubi qubit being measured
+@return int -- 1: skip, 0: don't skip
+*/
 
 int isChunkToSkipInFindPZero(int chunkId, int chunkSize, int measureQubit){
 	long long int sizeHalfBlock = 1LL << (measureQubit);
@@ -390,27 +365,15 @@ int isChunkToSkipInFindPZero(int chunkId, int chunkSize, int measureQubit){
 }
 
 
-// ==================================================================== //
-//                                                                      //
-//     findProbabilityOfZeroLocal -- routine to measure the probabilityi//
-//                              of a specified qubit in zero state.     // 
-//                              Size of regions to skip is less than    //
-//                              the size of one chunk                   //
-//                                                                      //
-//     input:                                                           //
-//                    numTasks      -- number of amps in this chunk     //
-//                    numQubits     -- number of qubits                 //
-//                    measureQubit  -- qubit to measure                 //
-//                    stateVecReal, -- real/imag parts of               //
-//                    stateVecImag     the state vector                 //
-//                                                                      //
-//     output:                                                          //
-//                    stateVecReal, -- real/imag parts of               //
-//                    stateVecImag     the state vector (overwritten)   //
-//                                                                      //
-//     note:                                                            //
-//                                                                      //
-// ==================================================================== //
+/** Measure the probability
+of a specified qubit being in the zero state.     
+Size of regions to skip is less than    
+the size of one chunk.                   
+
+@param[in] multiQubit object representing the set of qubits to be initialised
+@param[in] measureQubit qubit to measure
+@return probability of qubit measureQubit being zero
+*/
 
 double findProbabilityOfZeroLocal (MultiQubit multiQubit,
 		const int measureQubit)
@@ -489,28 +452,14 @@ double findProbabilityOfZeroLocal (MultiQubit multiQubit,
 	return totalProbability;
 }
 
-// ==================================================================== //
-//                                                                      //
-//     findProbabilityOfZeroDistributed                                 // 
-//                              -- routine to measure the probability   //
-//                              of a specified qubit in zero state.     // 
-//                              Size of regions to skip is a multiple   //
-//                              of chunkSize                            //
-//                                                                      //
-//     input:                                                           //
-//                    numTasks      -- number of amps in this chunk     //
-//                    numQubits     -- number of qubits                 //
-//                    measureQubit  -- qubit to measure                 //
-//                    stateVecReal, -- real/imag parts of               //
-//                    stateVecImag     the state vector                 //
-//                                                                      //
-//     output:                                                          //
-//                    stateVecReal, -- real/imag parts of               //
-//                    stateVecImag     the state vector (overwritten)   //
-//                                                                      //
-//     note:                                                            //
-//                                                                      //
-// ==================================================================== //
+/** Measure the probability
+of a specified qubit being in the zero state.     
+Size of regions to skip is a multiple of chunkSize.
+
+@param[in] multiQubit object representing the set of qubits to be initialised
+@param[in] measureQubit qubit to measure
+@return probability of qubit measureQubit being zero
+*/
 
 double findProbabilityOfZeroDistributed (MultiQubit multiQubit,
 		const int measureQubit)
@@ -569,11 +518,15 @@ double findProbabilityOfZeroDistributed (MultiQubit multiQubit,
 	return totalProbability;
 }
 
-// ==================================================================== //
-//                                                                      //
-//     controlPhaseGate -- routine to implement the control phase       //
-//                         (the two qubit phase gate)                   //
-//                                                                      //
+// *** SCB edit: new definition of extractBit is much faster ***
+int extractBit (const int locationOfBitFromRight, const long long int theEncodedNumber)
+{
+	return (theEncodedNumber & ( 1LL << locationOfBitFromRight )) >> locationOfBitFromRight;
+}
+
+/** Implement the control phase       
+(the two qubit phase gate).
+**** REWRITE TO USE MULTIQUBIT
 //     input:                                                           //
 //                    numQubits     -- number of qubits                 //
 //                    idQubit1,     -- specified qubits                 //
@@ -585,15 +538,7 @@ double findProbabilityOfZeroDistributed (MultiQubit multiQubit,
 //                    stateVecReal, -- real/imag parts of               //
 //                    stateVecImag     the state vector (overwritten)   //
 //                                                                      //
-//     note:                                                            //
-//                                                                      //
-// ==================================================================== //
-
-// *** SCB edit: new definition of extractBit is much faster ***
-int extractBit (const int locationOfBitFromRight, const long long int theEncodedNumber)
-{
-	return (theEncodedNumber & ( 1LL << locationOfBitFromRight )) >> locationOfBitFromRight;
-}
+*/
 
 void controlPhaseGate (const int numQubits, const int idQubit1, const int idQubit2,
 		double *restrict stateVecReal, double *restrict stateVecImag)

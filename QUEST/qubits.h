@@ -1,3 +1,7 @@
+/** @file
+Structs and specifications for functions that can be used from any environment (local, MPI)
+*/
+
 typedef struct ComplexArray
 {
 	double *real;
@@ -45,9 +49,9 @@ int halfMatrixBlockFitsInChunk(int chunkSize, int rotQubit);
 
 void rotateQubitDistributed (MultiQubit multiQubit, const int rotQubit,
 		Complex rot1, Complex rot2,
-                double *stateVecRealUp, double *stateVecImagUp,
-                double *stateVecRealLo, double *stateVecImagLo,
-                double *stateVecRealOut, double *stateVecImagOut);
+                ComplexArray stateVecUp,
+                ComplexArray stateVecLo,
+                ComplexArray stateVecOut);
 
 int isChunkToSkipInFindPZero(int chunkId, int chunkSize, int measureQubit);
 

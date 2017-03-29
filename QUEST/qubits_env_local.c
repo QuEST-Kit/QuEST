@@ -1,3 +1,6 @@
+/** @file
+An implementation of the API in qubits_env_wrapper.h for a local (non-MPI) environment.
+*/
 
 # include <stdlib.h>
 # include "qubits.h"

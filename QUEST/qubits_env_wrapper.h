@@ -1,3 +1,7 @@
+/** @file
+Specifications for QUEST library functions whose implementation depends on environment (local, MPI)
+*/
+
 void initQUESTEnv(QUESTEnv *env);
 
 void closeQUESTEnv(QUESTEnv env);

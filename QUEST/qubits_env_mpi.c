@@ -1,4 +1,6 @@
-
+/** @file
+An implementation of the API in qubits_env_wrapper.h for an MPI environment.
+*/
 # include <mpi.h>
 # include <stdlib.h>
 # include "qubits.h"
@@ -127,14 +129,14 @@ void rotateQubit(MultiQubit multiQubit, const int rotQubit, Complex alpha, Compl
 		// in the correct order
 		if (rankIsUpper){
 			rotateQubitDistributed(multiQubit,rotQubit,rot1,rot2,
-				multiQubit.stateVec.real,multiQubit.stateVec.imag,
-				multiQubit.pairStateVec.real,multiQubit.pairStateVec.imag,
-				multiQubit.stateVec.real,multiQubit.stateVec.imag);
+				multiQubit.stateVec, //upper
+				multiQubit.pairStateVec, //lower
+				multiQubit.stateVec); //output
 		} else {
 			rotateQubitDistributed(multiQubit,rotQubit,rot1,rot2,
-				multiQubit.pairStateVec.real,multiQubit.pairStateVec.imag,
-				multiQubit.stateVec.real,multiQubit.stateVec.imag,
-				multiQubit.stateVec.real,multiQubit.stateVec.imag);
+				multiQubit.pairStateVec, //upper
+				multiQubit.stateVec, //lower
+				multiQubit.stateVec); //output
 		}
 	}
 }
