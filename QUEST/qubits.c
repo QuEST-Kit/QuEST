@@ -196,83 +196,6 @@ void rotateQubitLocal (MultiQubit multiQubit, const int rotQubit, Complex alpha,
 
 } // end of function definition
 
-/** Returns whether a given chunk in position chunkId is in the upper or lower half of
-a block.
-
-@param[in] chunkId id of chunk in state vector
-@param[in] chunkSize number of amps in chunk
-@param[in] rotQubit qubit being rotated 
-@return 1: chunk is in upper half of block, 0: chunk is in lower half of block 
-*/
-
-int chunkIsUpper(int chunkId, int chunkSize, int rotQubit)
-{
-	long long int sizeHalfBlock = 1LL << (rotQubit);
-	long long int sizeBlock = sizeHalfBlock*2;
-	long long int posInBlock = (chunkId*chunkSize) % sizeBlock;
-	return posInBlock<sizeHalfBlock;
-}
-
-/** Get rotation values for a given chunk
-@param[in] chunkIsUpper 1: chunk is in upper half of block, 0: chunk is in lower half
-
-@param[out] rot1, rot2 rotation values to use, allocated for upper/lower such that
-@verbatim
-stateUpper = rot1 * stateUpper + conj(rot2)  * stateLower
-@endverbatim
-or
-@verbatim
-stateLower = rot1 * stateUpper + conj(rot2)  * stateLower
-@endverbatim
-@param[in] alpha, beta initial rotation values 
-*/
-void getRotAngle(int chunkIsUpper, Complex *rot1, Complex *rot2, Complex alpha, Complex beta)
-{
-	if (chunkIsUpper){
-		*rot1=alpha;
-		rot2->real=-beta.real;
-		rot2->imag=-beta.imag;
-	} else {
-		*rot1=beta;
-		*rot2=alpha;
-	}
-}
-/** get position of corresponding chunk, holding values required to
-update values in my chunk (with chunkId) when rotating rotQubit.
-
-@param[in] chunkIsUpper 1: chunk is in upper half of block, 0: chunk is in lower half
-@param[in] chunkId id of chunk in state vector
-@param[in] chunkSize number of amps in chunk
-@param[in] rotQubit qubit being rotated 
-@return chunkId of chunk required to rotate rotQubit 
-*/
-
-int getChunkPairId(int chunkIsUpper, int chunkId, int chunkSize, int rotQubit)
-{
-	long long int sizeHalfBlock = 1LL << (rotQubit);
-	int chunksPerHalfBlock = sizeHalfBlock/chunkSize;
-	if (chunkIsUpper){
-		return chunkId + chunksPerHalfBlock;
-	} else {
-		return chunkId - chunksPerHalfBlock;
-	}
-}
-
-/** return whether the current qubit rotation will use
-blocks that fit within a single chunk.
-
-@param[in] chunkSize number of amps in chunk
-@param[in] rotQubit qubit being rotated 
-@return 1: one chunk fits in one block 0: chunk is larger than block
-*/
-
-int halfMatrixBlockFitsInChunk(int chunkSize, int rotQubit)
-{
-	long long int sizeHalfBlock = 1LL << (rotQubit);
-	if (chunkSize > sizeHalfBlock) return 1;
-	else return 0;
-}
-
 /** Rotate a single qubit in the state
 vector of probability amplitudes, given the              
 angle rotation arguments, and a subset of the state vector with upper and lower block values 
@@ -344,26 +267,6 @@ void rotateQubitDistributed (MultiQubit multiQubit, const int rotQubit,
 		} // end for loop
 	}
 } // end of function definition
-
-/** Find chunks to skip when calculating probability of qubit being zero.
-When calculating probability of a bit q being zero,
-sum up 2^q values, then skip 2^q values, etc. This function finds if an entire chunk
-is in the range of values to be skipped
-
-@param[in] chunkId id of chunk in state vector
-@param[in] chunkSize number of amps in chunk
-@param[in] measureQubi qubit being measured
-@return int -- 1: skip, 0: don't skip
-*/
-
-int isChunkToSkipInFindPZero(int chunkId, int chunkSize, int measureQubit){
-	long long int sizeHalfBlock = 1LL << (measureQubit);
-	int numChunksToSkip = sizeHalfBlock/chunkSize;
-	// calculate probability by summing over numChunksToSkip, then skipping numChunksToSkip, etc
-	int bitToCheck = chunkId & numChunksToSkip;
-	return bitToCheck;
-}
-
 
 /** Measure the probability
 of a specified qubit being in the zero state.     
