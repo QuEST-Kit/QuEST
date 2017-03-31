@@ -33,8 +33,6 @@
 //! 1: perform one rotation outside the timing loop to get around long communication
 //! time for first MPI send/recv
 # define INIT_COMMUNICATION 0
-//! 1: MPI is enabled
-# define USE_MPI 1
 //! 1: Print additional debug information
 # define DEBUG 1
 
@@ -129,7 +127,7 @@ int main (int narg, char** varg) {
 	// initialise the state to |0000..0>
 	initStateVec (&multiQubit);
 
-	printf("initialized state\n");
+	printf("initialized state rank: %d size:%d\n", env.rank, env.numRanks);
 
 
 	//

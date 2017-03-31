@@ -3,29 +3,30 @@ An implementation of the API in qubits_env_wrapper.h for an MPI environment.
 */
 # include <mpi.h>
 # include <stdlib.h>
+# include <stdio.h>
 # include "qubits.h"
 # include "qubits_env_wrapper.h"
 
+# define DEBUG 1
+
 void initQUESTEnv(QUESTEnv *env){
         // init MPI environment
-        int rank, numRanks;
-        #if USE_MPI==1
-                int provided;
-                MPI_Init_thread(&narg, &varg, MPI_THREAD_FUNNELED, &provided);
-                MPI_Comm_size(MPI_COMM_WORLD, &numRanks);
-                MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+        int rank, numRanks, initialized;
+	MPI_Initialized(&initialized);
+	if (!initialized){
+		MPI_Init(NULL, NULL);
+		MPI_Comm_size(MPI_COMM_WORLD, &numRanks);
+		MPI_Comm_rank(MPI_COMM_WORLD, &rank);
 
-                if (DEBUG) {
-                        char hostName[256];
-                        int hostNameLen;
-                        MPI_Get_processor_name(hostName, &hostNameLen);
-                        printf("rank %d on host %s\n", rank, hostName);
-                }
-        #else
-                rank=0; numRanks=1;
-        #endif
-	env->rank=rank;
-	env->numRanks=numRanks;
+		if (DEBUG) {
+			char hostName[256];
+			int hostNameLen;
+			MPI_Get_processor_name(hostName, &hostNameLen);
+			printf("rank %d on host %s\n", rank, hostName);
+		}
+		env->rank=rank;
+		env->numRanks=numRanks;
+	} else printf("ERROR: Trying to initialize QUESTEnv multiple times. Ignoring\n");
 }
 
 void syncQUESTEnv(QUESTEnv env){
@@ -33,7 +34,10 @@ void syncQUESTEnv(QUESTEnv env){
 }
 
 void closeQUESTEnv(QUESTEnv env){
-	MPI_Finalize();
+	int finalized;
+	MPI_Finalized(&finalized);
+	if (!finalized) MPI_Finalize();
+	else printf("ERROR: Trying to close QUESTEnv multiple times. Ignoring\n");
 }
 
 /** Find chunks to skip when calculating probability of qubit being zero.
