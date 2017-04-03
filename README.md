@@ -19,7 +19,7 @@ Without git: download the directory manually
 
 In the root directory, run a simple 8 qubit example on one node with
 
-> make
+> make  \n
 > ./demo 8
 
 This will report some information about the size of the system, perform rotations and verify that
@@ -37,9 +37,9 @@ any extension, eg MY_FILE_NAME=timingDemo
 Change the name of the executable as desired eg EXE=myProg.
 
 Run with:
-> make clean
-> make
-> ./myProg [NUMBER OF QUBITS]
+> make clean \n
+> make \n
+> ./myProg [NUMBER OF QUBITS] 
 To run on arcus-b on one node, use the job submission script examples/ompJob.sh
 
 ## Creating a new file from the template
@@ -47,10 +47,10 @@ To run on arcus-b on one node, use the job submission script examples/ompJob.sh
 The initial example file available in the root folder is the template file basicTemplate.c. If you have removed
 this file, it is also available in examples/basicTemplate.c. The structure of this file is:
 
-> Initialisation
-> Rotations
-> Measurement
-> 2 Qubit phase gate
+> Initialisation \n
+> Rotations \n
+> Measurement \n
+> 2 Qubit phase gate \n
 > Cleanup 
 
 In general, leave the initialization and cleanup sections and edit the rotations, measurement and phase gate
@@ -63,8 +63,8 @@ To run over several nodes with MPI, edit the COMMON CONFIG section at the beginn
 Change USE_MPI=0 to USE_MPI=1.
 
 Run with:
-> make clean
-> make
+> make clean \n
+> make \n
 > mpirun -np [NUMBER OF PROCESSES] ./demo [NUMBER OF QUBITS]
 To run on arcus-b, use the job submission script examples/mpiJob.sh
 
