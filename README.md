@@ -20,6 +20,7 @@ Without git: download the directory manually
 In the root directory, run a simple 8 qubit example on one node with
 
 > make  \n
+
 > ./demo 8
 
 This will report some information about the size of the system, perform rotations and verify that
