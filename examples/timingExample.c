@@ -213,7 +213,7 @@ int main (int narg, char** varg) {
                                 standardDev += temp*temp;
                         }
                         standardDev = sqrt(standardDev/(double)N_TRIALS);
-                        fprintf(timing, "%d, %.8f, %.8f, %.8f, %.8f, %.8f\n", index, avg, avg+3*standardDev, avg-3*standardDev, max, min);
+                        fprintf(timing, "%d, %.8f, %.8f, %.8f, %.8f, %.8f\n", index, avg, avg+3*standardDev, avg-3*standardDev, max-avg, avg-min);
                 }
         }
 
