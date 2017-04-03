@@ -18,10 +18,9 @@ Without git: download the directory manually
 'Clone or download' > 'Download zip'
 
 In the root directory, run a simple 8 qubit example on one node with
-```
-make
-./demo 8
-```
+
+> make
+> ./demo 8
 
 This will report some information about the size of the system, perform rotations and verify that
 the state vector of probability amplitudes is still normalized. 
