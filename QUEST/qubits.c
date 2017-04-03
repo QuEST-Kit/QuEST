@@ -12,7 +12,13 @@
 
 // Maihi: Where I have made changes I have marked SCB so please note those points - Simon
 
-
+/** Create a MultiQubit object representing a set of qubits.
+ * Allocate space for state vector of probability amplitudes, including space for temporary values to be copied from
+ * one other chunk if running the distributed version. Define properties related to the size of the set of qubits.
+ * @param[in,out] multiQubit object representing the set of qubits
+ * @param[in] numQubits number of qubits in the system
+ * @param[in] env object representing the execution environment (local, multinode etc)
+ */
 void createMultiQubit(MultiQubit *multiQubit, int numQubits, QUESTEnv env)
 {
 	long long int numAmps = 1L << numQubits;
@@ -45,7 +51,12 @@ void createMultiQubit(MultiQubit *multiQubit, int numQubits, QUESTEnv env)
 	initStateVec(multiQubit);
 	if (env.rank==0) printf("Number of amps per rank is %ld.\n", numAmpsPerRank);
 }
-
+/** Deallocate a MultiQubit object representing a set of qubits
+ * Free memory allocated to state vector of probability amplitudes, including temporary vector for
+ * values copied from another chunk if running the distributed version.
+ * @param[in,out] multiQubit object to be deallocated
+ * @param[in] env object representing the execution environment (local, multinode etc)
+ */
 void destroyMultiQubit(MultiQubit multiQubit, QUESTEnv env){
 	free(multiQubit.stateVec.real);
 	free(multiQubit.stateVec.imag);
@@ -55,6 +66,26 @@ void destroyMultiQubit(MultiQubit multiQubit, QUESTEnv env){
 	}
 }
 
+/** Print the current state vector of probability amplitudes for a set of qubits to file.
+ * File format:
+ * @verbatim
+real, imag
+realComponent1, imagComponent1
+realComponent2, imagComponent2
+...
+realComponentN, imagComponentN
+@endverbatim
+ *
+ * File naming convention:
+ *
+ * For each node that the program runs on, a file 'state_rank_[node_rank].csv' is generated. If there is
+ * more than one node, ranks after the first do not include the header
+ * @verbatim
+real, imag
+@endverbatim
+ * so that files are easier to combine.
+ * @param[in,out] multiQubit object representing the set of qubits
+ */
 void reportState(MultiQubit multiQubit){
 	FILE *state;
 	char filename[100];
