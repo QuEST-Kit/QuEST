@@ -9,10 +9,10 @@
 #
 
 EXE = demo
-USE_MPI=1
+USE_MPI=0
 # COMPILER options: GCC, INTEL
 COMPILER = INTEL
-MY_FILE_NAME = timingExample
+MY_FILE_NAME = basicTemplate
 QUEST_DIR = QUEST
 
 #
