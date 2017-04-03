@@ -462,12 +462,7 @@ void controlPhaseGate (const int numQubits, const int idQubit1, const int idQubi
 	//            tests                                                 //
 	// ---------------------------------------------------------------- //
 
-	// SCB -- I have made no change, but I have a question: 
-	// doesn't assert terminate the program if its argument is false? And in that case, why
-	// are we using OR operations between conditions that are ALL essential? This assert will
-	// be passed unless ALL of these errors are present! 
-	// Don't we need (condit 1) && (condit 2) && ... (condit n) ??
-	assert (idQubit1 >= 0 || idQubit2 >= 0 || idQubit1 < numQubits || idQubit2 < numQubits);
+	assert (idQubit1 >= 0 && idQubit2 >= 0 && idQubit1 < numQubits && idQubit2 < numQubits);
 
 
 	// ---------------------------------------------------------------- //
@@ -507,11 +502,7 @@ void quadCPhaseGate (const int numQubits, const int idQubit1, const int idQubit2
 	// ---------------------------------------------------------------- //
 	//            tests                                                 //
 	// ---------------------------------------------------------------- //
-	//SCB please see my comment on assert() in the function controlPhaseGate above. 
-	//I think the line below, for the current function, should be eight conditions with && between
-	//line idQubit1 >= 0 && idQubit1 < numQubits && idQubit2 >= 0 ... idQubit4 < numQubits
-	//but I have not made any change
-	assert (idQubit1 >= 0 || idQubit2 >= 0 || idQubit1 < numQubits || idQubit2 < numQubits);
+	assert (idQubit1 >= 0 && idQubit2 >= 0 && idQubit1 < numQubits && idQubit2 < numQubits);
 
 	stateVecSize = 1LL << numQubits;
 
@@ -561,8 +552,7 @@ double measureInZero (const int numQubits,
 	// ---------------------------------------------------------------- //
 	//            tests                                                 //
 	// ---------------------------------------------------------------- //
-	//SCB please see my comment on assert() in the function controlPhaseGate above.
-	assert (measureQubit >= 0 || measureQubit < numQubits);
+	assert (measureQubit >= 0 && measureQubit < numQubits);
 
 
 	// ---------------------------------------------------------------- //
@@ -641,11 +631,7 @@ double filterOut111 (const int numQubits, const int idQubit1, const int idQubit2
 	// ---------------------------------------------------------------- //
 	//            tests                                                 //
 	// ---------------------------------------------------------------- //
-	//SCB please see my comment on assert() in the function controlPhaseGate above. 
-	//I think the line below, for the current function, should be eight conditions with && between
-	//line idQubit1 >= 0 && idQubit1 < numQubits && idQubit2 >= 0 ... idQubit4 < numQubits
-	//but I have not made any change
-	assert (idQubit1 >= 0 || idQubit2 >= 0 || idQubit1 < numQubits || idQubit2 < numQubits);
+	assert (idQubit1 >= 0 && idQubit2 >= 0 && idQubit1 < numQubits && idQubit2 < numQubits);
 
 	stateVecSize = 1LL << numQubits;
 	double probOfFilter=0;
@@ -705,11 +691,7 @@ double probOfFilterOut111 (const int numQubits, const int idQubit1, const int id
 	// ---------------------------------------------------------------- //
 	//            tests                                                 //
 	// ---------------------------------------------------------------- //
-	//SCB please see my comment on assert() in the function controlPhaseGate above. 
-	//I think the line below, for the current function, should be eight conditions with && between
-	//line idQubit1 >= 0 && idQubit1 < numQubits && idQubit2 >= 0 ... idQubit4 < numQubits
-	//but I have not made any change
-	assert (idQubit1 >= 0 || idQubit2 >= 0 || idQubit1 < numQubits || idQubit2 < numQubits);
+	assert (idQubit1 >= 0 && idQubit2 >= 0 && idQubit1 < numQubits && idQubit2 < numQubits);
 
 	stateVecSize = 1LL << numQubits;
 	double probOfFilter=0;
