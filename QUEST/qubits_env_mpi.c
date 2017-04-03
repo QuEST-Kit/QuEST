@@ -59,25 +59,6 @@ int isChunkToSkipInFindPZero(int chunkId, int chunkSize, int measureQubit){
         return bitToCheck;
 }
 
-// ==================================================================== //
-//                                                                      //
-//     calcTotalProbability -- calculate total probability over all 	//
-//     			ranks by taking the norm of the state vector.	//
-//     			Should be equal to one.				// 
-//                                                                      //
-//     input:                                                           //
-//                    rank -- mpi proc id				// 
-//                    numAmpsPerRank  -- number of amps on one rank	//
-//                    numRanks -- num mpi processes			//
-//                    stateVecReal, -- real/imag parts of               //
-//                    stateVecImag     the state vector                 //
-//                                                                      //
-//     output:                                                          //
-//     		      double -- total probability			//
-//                                                                      //
-// ==================================================================== //
-
-
 double calcTotalProbability(MultiQubit multiQubit){
         double pTotal=0; 
         double allRankTotals=0;
@@ -170,26 +151,6 @@ int halfMatrixBlockFitsInChunk(int chunkSize, int rotQubit)
         if (chunkSize > sizeHalfBlock) return 1;
         else return 0;
 }
-// ==================================================================== 
-// rotateQubit: 
-// inputs:
-// 	numAmpsPerRank -- number of amps in mpi proc
-//      numQubits -- number of qubits                     
-// 	rotQubit -- qubit being rotated 
-//      aRe,    -- real/imag part of                
-//      aIm        rotation angle alpha             
-//      bRe,     -- real/imag part of                
-//      bIm         rotation angle beta              
-//
-// temp:
-//      stateVecRealPair, -- real/imag parts of the state vector offset by half a block
-//      stateVecImagPair     from the state vector updated on this rank, used to update
-//      		     this rank's state vector
-//
-// outputs:
-//      stateVecReal, -- real/imag parts of               
-//      stateVecImag     the state vector updated on this rank                 
-// ==================================================================== 
 
 void rotateQubit(MultiQubit multiQubit, const int rotQubit, Complex alpha, Complex beta)
 
@@ -241,18 +202,6 @@ void rotateQubit(MultiQubit multiQubit, const int rotQubit, Complex alpha, Compl
 		}
 	}
 }
-
-// ==================================================================== 
-// findProbabilityOfZero: 
-// inputs:
-//      rank -- mpi proc id				 
-// 	numAmpsPerRank -- number of amps in mpi proc
-//      numQubits -- number of qubits                     
-// 	measureQubit -- qubit being measured
-//      stateVecReal, -- real/imag parts of               
-//      stateVecImag     the state vector updated on this rank                 
-// ==================================================================== 
-
 
 double findProbabilityOfZero(MultiQubit multiQubit,
                 const int measureQubit)

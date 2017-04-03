@@ -9,17 +9,17 @@ Specifications for Q\+U\+E\+ST library functions whose implementation depends on
 \begin{DoxyCompactItemize}
 \item 
 void \hyperlink{qubits__env__wrapper_8h_a652d8c53f8f1cfb096133791de2b219d}{init\+Q\+U\+E\+S\+T\+Env} (\hyperlink{structQUESTEnv}{Q\+U\+E\+S\+T\+Env} $\ast$env)
-\item 
+\begin{DoxyCompactList}\small\item\em Initialize Q\+U\+E\+ST environment. \end{DoxyCompactList}\item 
 void \hyperlink{qubits__env__wrapper_8h_ad7494473d827399d7fd9c327ea3a23e6}{close\+Q\+U\+E\+S\+T\+Env} (\hyperlink{structQUESTEnv}{Q\+U\+E\+S\+T\+Env} env)
-\item 
+\begin{DoxyCompactList}\small\item\em Close Q\+U\+E\+ST environment. \end{DoxyCompactList}\item 
 void \hyperlink{qubits__env__wrapper_8h_a83dffc500bf5b4e41dd63ba1ea9422ae}{sync\+Q\+U\+E\+S\+T\+Env} (\hyperlink{structQUESTEnv}{Q\+U\+E\+S\+T\+Env} env)
-\item 
+\begin{DoxyCompactList}\small\item\em Guarantees that all code up to the given point has been executed on all nodes. \end{DoxyCompactList}\item 
 double \hyperlink{qubits__env__wrapper_8h_a2205c8fde15213df52040dc3df233090}{calc\+Total\+Probability} (\hyperlink{structMultiQubit}{Multi\+Qubit} multi\+Qubit)
-\item 
+\begin{DoxyCompactList}\small\item\em Calculate the probability of being in any state by taking the norm of the entire state vector. \end{DoxyCompactList}\item 
 void \hyperlink{qubits__env__wrapper_8h_a4ba468aa69f812efd1f964e10a45ca2f}{rotate\+Qubit} (\hyperlink{structMultiQubit}{Multi\+Qubit} multi\+Qubit, const int rot\+Qubit, \hyperlink{structComplex}{Complex} alpha, \hyperlink{structComplex}{Complex} beta)
-\item 
+\begin{DoxyCompactList}\small\item\em Rotate a single qubit in the state vector of probability amplitudes, given the angle rotation arguments. \end{DoxyCompactList}\item 
 double \hyperlink{qubits__env__wrapper_8h_af31016680d01044cee9321d4cae32703}{find\+Probability\+Of\+Zero} (\hyperlink{structMultiQubit}{Multi\+Qubit} multi\+Qubit, const int measure\+Qubit)
-\end{DoxyCompactItemize}
+\begin{DoxyCompactList}\small\item\em Measure the probability of a specified qubit being in the zero state. \end{DoxyCompactList}\end{DoxyCompactItemize}
 
 
 \subsubsection{Detailed Description}
@@ -37,7 +37,19 @@ Specifications for Q\+U\+E\+ST library functions whose implementation depends on
 )}\hypertarget{qubits__env__wrapper_8h_a2205c8fde15213df52040dc3df233090}{}\label{qubits__env__wrapper_8h_a2205c8fde15213df52040dc3df233090}
 
 
-Definition at line 43 of file qubits\+\_\+env\+\_\+local.\+c.
+Calculate the probability of being in any state by taking the norm of the entire state vector. 
+
+Should be equal to 1. 
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\tt in}  & {\em multi\+Qubit} & object representing a set of qubits \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+total probability 
+\end{DoxyReturn}
+
+
+Definition at line 24 of file qubits\+\_\+env\+\_\+local.\+c.
 
 
 
@@ -49,18 +61,18 @@ Referenced by main().
 
 
 \begin{DoxyCode}
-43                                                   \{
-44         \textcolor{keywordtype}{double} pTotal=0; 
-45         \textcolor{keywordtype}{long} \textcolor{keywordtype}{long} \textcolor{keywordtype}{int} index;
-46         \textcolor{keywordtype}{long} \textcolor{keywordtype}{long} \textcolor{keywordtype}{int} numAmpsPerRank = multiQubit.\hyperlink{structMultiQubit_ae16f47d8b725c914fb7f66b6498d79db}{numAmps};
-47         \textcolor{keywordflow}{for} (index=0; index<numAmpsPerRank; index++)\{ 
-48                 pTotal+=multiQubit.\hyperlink{structMultiQubit_a45483190d6b01ef6b2f98f2bec9ab94f}{stateVec}.\hyperlink{structComplexArray_a1cf9fd31d6dce5ef618d2bcf3e4f8b69}{real}[index]*multiQubit.
+24                                                   \{
+25         \textcolor{keywordtype}{double} pTotal=0; 
+26         \textcolor{keywordtype}{long} \textcolor{keywordtype}{long} \textcolor{keywordtype}{int} index;
+27         \textcolor{keywordtype}{long} \textcolor{keywordtype}{long} \textcolor{keywordtype}{int} numAmpsPerRank = multiQubit.\hyperlink{structMultiQubit_ae16f47d8b725c914fb7f66b6498d79db}{numAmps};
+28         \textcolor{keywordflow}{for} (index=0; index<numAmpsPerRank; index++)\{ 
+29                 pTotal+=multiQubit.\hyperlink{structMultiQubit_a45483190d6b01ef6b2f98f2bec9ab94f}{stateVec}.\hyperlink{structComplexArray_a1cf9fd31d6dce5ef618d2bcf3e4f8b69}{real}[index]*multiQubit.
       \hyperlink{structMultiQubit_a45483190d6b01ef6b2f98f2bec9ab94f}{stateVec}.\hyperlink{structComplexArray_a1cf9fd31d6dce5ef618d2bcf3e4f8b69}{real}[index];      
-49                 pTotal+=multiQubit.\hyperlink{structMultiQubit_a45483190d6b01ef6b2f98f2bec9ab94f}{stateVec}.\hyperlink{structComplexArray_aa409fd14e1ff3e1fdcc53cc4eb77a7a8}{imag}[index]*multiQubit.
+30                 pTotal+=multiQubit.\hyperlink{structMultiQubit_a45483190d6b01ef6b2f98f2bec9ab94f}{stateVec}.\hyperlink{structComplexArray_aa409fd14e1ff3e1fdcc53cc4eb77a7a8}{imag}[index]*multiQubit.
       \hyperlink{structMultiQubit_a45483190d6b01ef6b2f98f2bec9ab94f}{stateVec}.\hyperlink{structComplexArray_aa409fd14e1ff3e1fdcc53cc4eb77a7a8}{imag}[index];      
-50         \} 
-51         \textcolor{keywordflow}{return} pTotal;
-52 \}
+31         \} 
+32         \textcolor{keywordflow}{return} pTotal;
+33 \}
 \end{DoxyCode}
 \index{qubits\+\_\+env\+\_\+wrapper.\+h@{qubits\+\_\+env\+\_\+wrapper.\+h}!close\+Q\+U\+E\+S\+T\+Env@{close\+Q\+U\+E\+S\+T\+Env}}
 \index{close\+Q\+U\+E\+S\+T\+Env@{close\+Q\+U\+E\+S\+T\+Env}!qubits\+\_\+env\+\_\+wrapper.\+h@{qubits\+\_\+env\+\_\+wrapper.\+h}}
@@ -69,6 +81,15 @@ Referenced by main().
 \item[{{\bf Q\+U\+E\+S\+T\+Env}}]{env}
 \end{DoxyParamCaption}
 )}\hypertarget{qubits__env__wrapper_8h_ad7494473d827399d7fd9c327ea3a23e6}{}\label{qubits__env__wrapper_8h_ad7494473d827399d7fd9c327ea3a23e6}
+
+
+Close Q\+U\+E\+ST environment. 
+
+If something needs to be done to clean up the execution environment, such as finalizing M\+PI when running in distributed mode, it is handled here 
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\tt in}  & {\em env} & object representing the execution environment. A single instance is used for each program \\
+\hline
+\end{DoxyParams}
 
 
 Definition at line 20 of file qubits\+\_\+env\+\_\+local.\+c.
@@ -93,7 +114,21 @@ Referenced by main().
 )}\hypertarget{qubits__env__wrapper_8h_af31016680d01044cee9321d4cae32703}{}\label{qubits__env__wrapper_8h_af31016680d01044cee9321d4cae32703}
 
 
-Definition at line 94 of file qubits\+\_\+env\+\_\+local.\+c.
+Measure the probability of a specified qubit being in the zero state. 
+
+
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\tt in}  & {\em multi\+Qubit} & object representing the set of qubits to be initialised \\
+\hline
+\mbox{\tt in}  & {\em measure\+Qubit} & qubit to measure \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+probability of qubit measure\+Qubit being zero 
+\end{DoxyReturn}
+
+
+Definition at line 42 of file qubits\+\_\+env\+\_\+local.\+c.
 
 
 
@@ -101,11 +136,11 @@ References Multi\+Qubit\+::chunk\+Id, find\+Probability\+Of\+Zero\+Distributed()
 
 
 \begin{DoxyCode}
-96 \{
-97         \textcolor{keywordtype}{double} stateProb=0;
-98         stateProb = \hyperlink{qubits_8c_a1c0a25823add0bd9f925a9164dc21870}{findProbabilityOfZeroLocal}(multiQubit, measureQubit);
-99         \textcolor{keywordflow}{return} stateProb;
-100 \}
+44 \{
+45         \textcolor{keywordtype}{double} stateProb=0;
+46         stateProb = \hyperlink{qubits_8c_a1c0a25823add0bd9f925a9164dc21870}{findProbabilityOfZeroLocal}(multiQubit, measureQubit);
+47         \textcolor{keywordflow}{return} stateProb;
+48 \}
 \end{DoxyCode}
 \index{qubits\+\_\+env\+\_\+wrapper.\+h@{qubits\+\_\+env\+\_\+wrapper.\+h}!init\+Q\+U\+E\+S\+T\+Env@{init\+Q\+U\+E\+S\+T\+Env}}
 \index{init\+Q\+U\+E\+S\+T\+Env@{init\+Q\+U\+E\+S\+T\+Env}!qubits\+\_\+env\+\_\+wrapper.\+h@{qubits\+\_\+env\+\_\+wrapper.\+h}}
@@ -114,6 +149,15 @@ References Multi\+Qubit\+::chunk\+Id, find\+Probability\+Of\+Zero\+Distributed()
 \item[{{\bf Q\+U\+E\+S\+T\+Env} $\ast$}]{env}
 \end{DoxyParamCaption}
 )}\hypertarget{qubits__env__wrapper_8h_a652d8c53f8f1cfb096133791de2b219d}{}\label{qubits__env__wrapper_8h_a652d8c53f8f1cfb096133791de2b219d}
+
+
+Initialize Q\+U\+E\+ST environment. 
+
+If something needs to be done to set up the execution environment, such as initializing M\+PI when running in distributed mode, it is handled here 
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\tt in,out}  & {\em env} & object representing the execution environment. A single instance is used for each program \\
+\hline
+\end{DoxyParams}
 
 
 Definition at line 9 of file qubits\+\_\+env\+\_\+local.\+c.
@@ -147,7 +191,31 @@ Referenced by main().
 )}\hypertarget{qubits__env__wrapper_8h_a4ba468aa69f812efd1f964e10a45ca2f}{}\label{qubits__env__wrapper_8h_a4ba468aa69f812efd1f964e10a45ca2f}
 
 
-Definition at line 75 of file qubits\+\_\+env\+\_\+local.\+c.
+Rotate a single qubit in the state vector of probability amplitudes, given the angle rotation arguments. 
+
+alpha\+Re = cos(angle1) $\ast$ cos(angle2) ~\newline
+alpha\+Im = cos(angle1) $\ast$ sin(angle2) ~\newline
+ beta\+Re = sin(angle1) $\ast$ cos(angle3) ~\newline
+ beta\+Im = sin(angle1) $\ast$ sin(angle3) ~\newline
+
+
+\begin{DoxyRemark}{Remarks}
+Qubits are zero-\/based and the the first qubit is the rightmost
+\end{DoxyRemark}
+
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\tt in,out}  & {\em multi\+Qubit} & object representing the set of qubits to be initialised \\
+\hline
+\mbox{\tt in}  & {\em rot\+Qubit} & qubit to rotate \\
+\hline
+\mbox{\tt in}  & {\em alpha} & rotation angle \\
+\hline
+\mbox{\tt in}  & {\em beta} & rotation angle \\
+\hline
+\end{DoxyParams}
+
+
+Definition at line 35 of file qubits\+\_\+env\+\_\+local.\+c.
 
 
 
@@ -159,10 +227,10 @@ Referenced by main().
 
 
 \begin{DoxyCode}
-77 \{
-78         \textcolor{comment}{// all values required to update state vector lie in this rank}
-79         \hyperlink{qubits_8c_acb059cbcb8c7910a5fc43d21da4f5dea}{rotateQubitLocal}(multiQubit, rotQubit, alpha, beta);
-80 \}
+37 \{
+38         \textcolor{comment}{// all values required to update state vector lie in this rank}
+39         \hyperlink{qubits_8c_acb059cbcb8c7910a5fc43d21da4f5dea}{rotateQubitLocal}(multiQubit, rotQubit, alpha, beta);
+40 \}
 \end{DoxyCode}
 \index{qubits\+\_\+env\+\_\+wrapper.\+h@{qubits\+\_\+env\+\_\+wrapper.\+h}!sync\+Q\+U\+E\+S\+T\+Env@{sync\+Q\+U\+E\+S\+T\+Env}}
 \index{sync\+Q\+U\+E\+S\+T\+Env@{sync\+Q\+U\+E\+S\+T\+Env}!qubits\+\_\+env\+\_\+wrapper.\+h@{qubits\+\_\+env\+\_\+wrapper.\+h}}
@@ -171,6 +239,10 @@ Referenced by main().
 \item[{{\bf Q\+U\+E\+S\+T\+Env}}]{env}
 \end{DoxyParamCaption}
 )}\hypertarget{qubits__env__wrapper_8h_a83dffc500bf5b4e41dd63ba1ea9422ae}{}\label{qubits__env__wrapper_8h_a83dffc500bf5b4e41dd63ba1ea9422ae}
+
+
+Guarantees that all code up to the given point has been executed on all nodes. 
+
 
 
 Definition at line 16 of file qubits\+\_\+env\+\_\+local.\+c.
