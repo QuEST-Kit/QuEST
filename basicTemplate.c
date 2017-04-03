@@ -78,7 +78,9 @@ int main (int narg, char** varg) {
 	//
 	// ===== ROTATIONS
 	//
-	
+
+	// INITIALISE QUBIT ROTATION
+	// Edit these lines to change rotation angle
 	double ang1,ang2,ang3;
 	Complex alpha, beta;
 
@@ -101,12 +103,16 @@ int main (int narg, char** varg) {
 	alpha.imag = cos(ang1) * sin(ang2);
 	beta.real  = sin(ang1) * cos(ang3);
 	beta.imag  = sin(ang1) * sin(ang3);
-	
+
 	int rotQubit;
+
+	// DO QUBIT ROTATION
+	// Edit these lines to perform rotations as required
 	for (rotQubit=0; rotQubit<numQubits; rotQubit++) {
 		// do rotation of each qubit
 		rotateQubit(multiQubit,rotQubit,alpha,beta);
 	}
+	// END QUBIT ROTATION
 
 	// Verification: check vector size is unchanged
         double totalProbability;

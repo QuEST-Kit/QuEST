@@ -43,8 +43,23 @@ make clean
 make
 ./myProg [NUMBER OF QUBITS]
 ```
-
 To run on arcus-b on one node, use the job submission script examples/ompJob.sh
+
+## Creating a new file from the template
+
+The initial example file available in the root folder is the template file basicTemplate.c. If you have removed
+this file, it is also available in examples/basicTemplate.c. The structure of this file is:
+
+```
+Initialisation
+Rotations
+Measurement
+2 Qubit phase gate
+Cleanup 
+```
+
+In general, leave the initialization and cleanup sections and edit the rotations, measurement and phase gate
+sections. Further explanations are in the template file. 
 
 ## Multi node code
 
@@ -59,8 +74,10 @@ make
 
 mpirun -np [NUMBER OF PROCESSES] ./demo [NUMBER OF QUBITS]
 ```
-
 To run on arcus-b, use the job submission script examples/mpiJob.sh
+
+Note that the API to the QUEST library is unchanged when running on multiple nodes. The template file basicTemplate.c
+is valid for both single and multi node environments. 
 
 ## API Documentation
 
