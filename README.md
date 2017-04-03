@@ -18,6 +18,7 @@ Without git: download the directory manually
 'Clone or download' > 'Download zip'
 
 In the root directory, run a simple 8 qubit example on one node with
+
 ```
 make
 ./demo 8
@@ -41,7 +42,7 @@ Run with:
 ```
 make clean
 make
-./myProg [NUMBER OF QUBITS]
+./myProg [NUMBER OF QUBITS] 
 ```
 To run on arcus-b on one node, use the job submission script examples/ompJob.sh
 
@@ -71,7 +72,6 @@ Run with:
 ```
 make clean
 make
-
 mpirun -np [NUMBER OF PROCESSES] ./demo [NUMBER OF QUBITS]
 ```
 To run on arcus-b, use the job submission script examples/mpiJob.sh
