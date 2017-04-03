@@ -1,0 +1,110 @@
+\contentsline {section}{\numberline {1}Data Structure Index}{1}{section.1}
+\contentsline {subsection}{\numberline {1.1}Data Structures}{1}{subsection.1.1}
+\contentsline {section}{\numberline {2}File Index}{1}{section.2}
+\contentsline {subsection}{\numberline {2.1}File List}{1}{subsection.2.1}
+\contentsline {section}{\numberline {3}Data Structure Documentation}{2}{section.3}
+\contentsline {subsection}{\numberline {3.1}Complex Struct Reference}{2}{subsection.3.1}
+\contentsline {subsubsection}{\numberline {3.1.1}Detailed Description}{2}{subsubsection.3.1.1}
+\contentsline {subsubsection}{\numberline {3.1.2}Field Documentation}{2}{subsubsection.3.1.2}
+\contentsline {paragraph}{\numberline {3.1.2.1}imag}{2}{paragraph.3.1.2.1}
+\contentsline {paragraph}{\numberline {3.1.2.2}real}{2}{paragraph.3.1.2.2}
+\contentsline {subsection}{\numberline {3.2}ComplexArray Struct Reference}{2}{subsection.3.2}
+\contentsline {subsubsection}{\numberline {3.2.1}Detailed Description}{3}{subsubsection.3.2.1}
+\contentsline {subsubsection}{\numberline {3.2.2}Field Documentation}{3}{subsubsection.3.2.2}
+\contentsline {paragraph}{\numberline {3.2.2.1}imag}{3}{paragraph.3.2.2.1}
+\contentsline {paragraph}{\numberline {3.2.2.2}real}{3}{paragraph.3.2.2.2}
+\contentsline {subsection}{\numberline {3.3}MultiQubit Struct Reference}{3}{subsection.3.3}
+\contentsline {subsubsection}{\numberline {3.3.1}Detailed Description}{4}{subsubsection.3.3.1}
+\contentsline {subsubsection}{\numberline {3.3.2}Field Documentation}{4}{subsubsection.3.3.2}
+\contentsline {paragraph}{\numberline {3.3.2.1}chunkId}{4}{paragraph.3.3.2.1}
+\contentsline {paragraph}{\numberline {3.3.2.2}numAmps}{4}{paragraph.3.3.2.2}
+\contentsline {paragraph}{\numberline {3.3.2.3}numChunks}{4}{paragraph.3.3.2.3}
+\contentsline {paragraph}{\numberline {3.3.2.4}numQubits}{4}{paragraph.3.3.2.4}
+\contentsline {paragraph}{\numberline {3.3.2.5}pairStateVec}{5}{paragraph.3.3.2.5}
+\contentsline {paragraph}{\numberline {3.3.2.6}stateVec}{5}{paragraph.3.3.2.6}
+\contentsline {subsection}{\numberline {3.4}QUESTEnv Struct Reference}{5}{subsection.3.4}
+\contentsline {subsubsection}{\numberline {3.4.1}Detailed Description}{5}{subsubsection.3.4.1}
+\contentsline {subsubsection}{\numberline {3.4.2}Field Documentation}{5}{subsubsection.3.4.2}
+\contentsline {paragraph}{\numberline {3.4.2.1}numRanks}{5}{paragraph.3.4.2.1}
+\contentsline {paragraph}{\numberline {3.4.2.2}rank}{6}{paragraph.3.4.2.2}
+\contentsline {section}{\numberline {4}File Documentation}{6}{section.4}
+\contentsline {subsection}{\numberline {4.1}basicTemplate.c File Reference}{6}{subsection.4.1}
+\contentsline {subsubsection}{\numberline {4.1.1}Detailed Description}{7}{subsubsection.4.1.1}
+\contentsline {subsubsection}{\numberline {4.1.2}Define Documentation}{7}{subsubsection.4.1.2}
+\contentsline {paragraph}{\numberline {4.1.2.1}MaxAngles}{7}{paragraph.4.1.2.1}
+\contentsline {paragraph}{\numberline {4.1.2.2}maxNumQubits}{7}{paragraph.4.1.2.2}
+\contentsline {paragraph}{\numberline {4.1.2.3}REPORT\_\discretionary {-}{}{}STATE}{7}{paragraph.4.1.2.3}
+\contentsline {subsubsection}{\numberline {4.1.3}Function Documentation}{7}{subsubsection.4.1.3}
+\contentsline {paragraph}{\numberline {4.1.3.1}main}{7}{paragraph.4.1.3.1}
+\contentsline {subsubsection}{\numberline {4.1.4}Variable Documentation}{11}{subsubsection.4.1.4}
+\contentsline {paragraph}{\numberline {4.1.4.1}Pi}{11}{paragraph.4.1.4.1}
+\contentsline {subsection}{\numberline {4.2}qubits.c File Reference}{11}{subsection.4.2}
+\contentsline {subsubsection}{\numberline {4.2.1}Detailed Description}{12}{subsubsection.4.2.1}
+\contentsline {subsubsection}{\numberline {4.2.2}Define Documentation}{12}{subsubsection.4.2.2}
+\contentsline {paragraph}{\numberline {4.2.2.1}DEBUG}{12}{paragraph.4.2.2.1}
+\contentsline {subsubsection}{\numberline {4.2.3}Function Documentation}{12}{subsubsection.4.2.3}
+\contentsline {paragraph}{\numberline {4.2.3.1}controlPhaseGate}{12}{paragraph.4.2.3.1}
+\contentsline {paragraph}{\numberline {4.2.3.2}createMultiQubit}{13}{paragraph.4.2.3.2}
+\contentsline {paragraph}{\numberline {4.2.3.3}destroyMultiQubit}{14}{paragraph.4.2.3.3}
+\contentsline {paragraph}{\numberline {4.2.3.4}extractBit}{14}{paragraph.4.2.3.4}
+\contentsline {paragraph}{\numberline {4.2.3.5}filterOut111}{14}{paragraph.4.2.3.5}
+\contentsline {paragraph}{\numberline {4.2.3.6}findProbabilityOfZeroDistributed}{15}{paragraph.4.2.3.6}
+\contentsline {paragraph}{\numberline {4.2.3.7}findProbabilityOfZeroLocal}{17}{paragraph.4.2.3.7}
+\contentsline {paragraph}{\numberline {4.2.3.8}initStateVec}{18}{paragraph.4.2.3.8}
+\contentsline {paragraph}{\numberline {4.2.3.9}measureInZero}{19}{paragraph.4.2.3.9}
+\contentsline {paragraph}{\numberline {4.2.3.10}probOfFilterOut111}{21}{paragraph.4.2.3.10}
+\contentsline {paragraph}{\numberline {4.2.3.11}quadCPhaseGate}{21}{paragraph.4.2.3.11}
+\contentsline {paragraph}{\numberline {4.2.3.12}reportState}{22}{paragraph.4.2.3.12}
+\contentsline {paragraph}{\numberline {4.2.3.13}rotateQubitDistributed}{23}{paragraph.4.2.3.13}
+\contentsline {paragraph}{\numberline {4.2.3.14}rotateQubitLocal}{24}{paragraph.4.2.3.14}
+\contentsline {subsection}{\numberline {4.3}qubits.h File Reference}{26}{subsection.4.3}
+\contentsline {subsubsection}{\numberline {4.3.1}Detailed Description}{27}{subsubsection.4.3.1}
+\contentsline {subsubsection}{\numberline {4.3.2}Function Documentation}{27}{subsubsection.4.3.2}
+\contentsline {paragraph}{\numberline {4.3.2.1}controlPhaseGate}{27}{paragraph.4.3.2.1}
+\contentsline {paragraph}{\numberline {4.3.2.2}createMultiQubit}{28}{paragraph.4.3.2.2}
+\contentsline {paragraph}{\numberline {4.3.2.3}destroyMultiQubit}{29}{paragraph.4.3.2.3}
+\contentsline {paragraph}{\numberline {4.3.2.4}extractBit}{29}{paragraph.4.3.2.4}
+\contentsline {paragraph}{\numberline {4.3.2.5}filterOut111}{29}{paragraph.4.3.2.5}
+\contentsline {paragraph}{\numberline {4.3.2.6}findProbabilityOfZeroDistributed}{30}{paragraph.4.3.2.6}
+\contentsline {paragraph}{\numberline {4.3.2.7}findProbabilityOfZeroLocal}{32}{paragraph.4.3.2.7}
+\contentsline {paragraph}{\numberline {4.3.2.8}initStateVec}{33}{paragraph.4.3.2.8}
+\contentsline {paragraph}{\numberline {4.3.2.9}measureInZero}{34}{paragraph.4.3.2.9}
+\contentsline {paragraph}{\numberline {4.3.2.10}probOfFilterOut111}{36}{paragraph.4.3.2.10}
+\contentsline {paragraph}{\numberline {4.3.2.11}quadCPhaseGate}{37}{paragraph.4.3.2.11}
+\contentsline {paragraph}{\numberline {4.3.2.12}reportState}{37}{paragraph.4.3.2.12}
+\contentsline {paragraph}{\numberline {4.3.2.13}rotateQubitDistributed}{38}{paragraph.4.3.2.13}
+\contentsline {paragraph}{\numberline {4.3.2.14}rotateQubitLocal}{39}{paragraph.4.3.2.14}
+\contentsline {subsection}{\numberline {4.4}qubits\_\discretionary {-}{}{}env\_\discretionary {-}{}{}local.c File Reference}{41}{subsection.4.4}
+\contentsline {subsubsection}{\numberline {4.4.1}Detailed Description}{41}{subsubsection.4.4.1}
+\contentsline {subsubsection}{\numberline {4.4.2}Function Documentation}{42}{subsubsection.4.4.2}
+\contentsline {paragraph}{\numberline {4.4.2.1}calcTotalProbability}{42}{paragraph.4.4.2.1}
+\contentsline {paragraph}{\numberline {4.4.2.2}closeQUESTEnv}{42}{paragraph.4.4.2.2}
+\contentsline {paragraph}{\numberline {4.4.2.3}findProbabilityOfZero}{42}{paragraph.4.4.2.3}
+\contentsline {paragraph}{\numberline {4.4.2.4}initQUESTEnv}{42}{paragraph.4.4.2.4}
+\contentsline {paragraph}{\numberline {4.4.2.5}rotateQubit}{43}{paragraph.4.4.2.5}
+\contentsline {paragraph}{\numberline {4.4.2.6}syncQUESTEnv}{43}{paragraph.4.4.2.6}
+\contentsline {subsection}{\numberline {4.5}qubits\_\discretionary {-}{}{}env\_\discretionary {-}{}{}mpi.c File Reference}{43}{subsection.4.5}
+\contentsline {subsubsection}{\numberline {4.5.1}Detailed Description}{44}{subsubsection.4.5.1}
+\contentsline {subsubsection}{\numberline {4.5.2}Define Documentation}{44}{subsubsection.4.5.2}
+\contentsline {paragraph}{\numberline {4.5.2.1}DEBUG}{44}{paragraph.4.5.2.1}
+\contentsline {subsubsection}{\numberline {4.5.3}Function Documentation}{44}{subsubsection.4.5.3}
+\contentsline {paragraph}{\numberline {4.5.3.1}calcTotalProbability}{44}{paragraph.4.5.3.1}
+\contentsline {paragraph}{\numberline {4.5.3.2}chunkIsUpper}{45}{paragraph.4.5.3.2}
+\contentsline {paragraph}{\numberline {4.5.3.3}closeQUESTEnv}{45}{paragraph.4.5.3.3}
+\contentsline {paragraph}{\numberline {4.5.3.4}findProbabilityOfZero}{45}{paragraph.4.5.3.4}
+\contentsline {paragraph}{\numberline {4.5.3.5}getChunkPairId}{46}{paragraph.4.5.3.5}
+\contentsline {paragraph}{\numberline {4.5.3.6}getRotAngle}{46}{paragraph.4.5.3.6}
+\contentsline {paragraph}{\numberline {4.5.3.7}halfMatrixBlockFitsInChunk}{47}{paragraph.4.5.3.7}
+\contentsline {paragraph}{\numberline {4.5.3.8}initQUESTEnv}{47}{paragraph.4.5.3.8}
+\contentsline {paragraph}{\numberline {4.5.3.9}isChunkToSkipInFindPZero}{48}{paragraph.4.5.3.9}
+\contentsline {paragraph}{\numberline {4.5.3.10}rotateQubit}{48}{paragraph.4.5.3.10}
+\contentsline {paragraph}{\numberline {4.5.3.11}syncQUESTEnv}{50}{paragraph.4.5.3.11}
+\contentsline {subsection}{\numberline {4.6}qubits\_\discretionary {-}{}{}env\_\discretionary {-}{}{}wrapper.h File Reference}{50}{subsection.4.6}
+\contentsline {subsubsection}{\numberline {4.6.1}Detailed Description}{50}{subsubsection.4.6.1}
+\contentsline {subsubsection}{\numberline {4.6.2}Function Documentation}{50}{subsubsection.4.6.2}
+\contentsline {paragraph}{\numberline {4.6.2.1}calcTotalProbability}{50}{paragraph.4.6.2.1}
+\contentsline {paragraph}{\numberline {4.6.2.2}closeQUESTEnv}{51}{paragraph.4.6.2.2}
+\contentsline {paragraph}{\numberline {4.6.2.3}findProbabilityOfZero}{51}{paragraph.4.6.2.3}
+\contentsline {paragraph}{\numberline {4.6.2.4}initQUESTEnv}{51}{paragraph.4.6.2.4}
+\contentsline {paragraph}{\numberline {4.6.2.5}rotateQubit}{51}{paragraph.4.6.2.5}
+\contentsline {paragraph}{\numberline {4.6.2.6}syncQUESTEnv}{52}{paragraph.4.6.2.6}

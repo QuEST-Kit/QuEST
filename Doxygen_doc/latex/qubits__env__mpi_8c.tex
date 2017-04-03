@@ -1,0 +1,420 @@
+\hypertarget{qubits__env__mpi_8c}{
+\subsection{qubits\_\-env\_\-mpi.c File Reference}
+\label{qubits__env__mpi_8c}\index{qubits\_\-env\_\-mpi.c@{qubits\_\-env\_\-mpi.c}}
+}
+
+
+An implementation of the API in \hyperlink{qubits__env__wrapper_8h}{qubits\_\-env\_\-wrapper.h} for an MPI environment.  
+{\ttfamily \#include $<$mpi.h$>$}\par
+{\ttfamily \#include $<$stdlib.h$>$}\par
+{\ttfamily \#include $<$stdio.h$>$}\par
+{\ttfamily \#include \char`\"{}qubits.h\char`\"{}}\par
+{\ttfamily \#include \char`\"{}qubits\_\-env\_\-wrapper.h\char`\"{}}\par
+\subsubsection*{Defines}
+\begin{DoxyCompactItemize}
+\item 
+\#define \hyperlink{qubits__env__mpi_8c_ad72dbcf6d0153db1b8d8a58001feed83}{DEBUG}~0
+\end{DoxyCompactItemize}
+\subsubsection*{Functions}
+\begin{DoxyCompactItemize}
+\item 
+void \hyperlink{qubits__env__mpi_8c_a652d8c53f8f1cfb096133791de2b219d}{initQUESTEnv} (\hyperlink{structQUESTEnv}{QUESTEnv} $\ast$env)
+\item 
+void \hyperlink{qubits__env__mpi_8c_a83dffc500bf5b4e41dd63ba1ea9422ae}{syncQUESTEnv} (\hyperlink{structQUESTEnv}{QUESTEnv} env)
+\item 
+void \hyperlink{qubits__env__mpi_8c_ad7494473d827399d7fd9c327ea3a23e6}{closeQUESTEnv} (\hyperlink{structQUESTEnv}{QUESTEnv} env)
+\item 
+int \hyperlink{qubits__env__mpi_8c_a8c3837c897be9e7dd00fe48974353520}{isChunkToSkipInFindPZero} (int chunkId, int chunkSize, int measureQubit)
+\begin{DoxyCompactList}\small\item\em Find chunks to skip when calculating probability of qubit being zero. \item\end{DoxyCompactList}\item 
+double \hyperlink{qubits__env__mpi_8c_a2205c8fde15213df52040dc3df233090}{calcTotalProbability} (\hyperlink{structMultiQubit}{MultiQubit} multiQubit)
+\item 
+int \hyperlink{qubits__env__mpi_8c_ab865b89447379ac83ea343deea10bf61}{chunkIsUpper} (int chunkId, int chunkSize, int rotQubit)
+\begin{DoxyCompactList}\small\item\em Returns whether a given chunk in position chunkId is in the upper or lower half of a block. \item\end{DoxyCompactList}\item 
+void \hyperlink{qubits__env__mpi_8c_ac695187bfeb76c2b50a14b93769f53be}{getRotAngle} (int chunkIsUpper, \hyperlink{structComplex}{Complex} $\ast$rot1, \hyperlink{structComplex}{Complex} $\ast$rot2, \hyperlink{structComplex}{Complex} alpha, \hyperlink{structComplex}{Complex} beta)
+\begin{DoxyCompactList}\small\item\em Get rotation values for a given chunk. \item\end{DoxyCompactList}\item 
+int \hyperlink{qubits__env__mpi_8c_ac5eff4067b59d0dcf3e95ed66cdd5b69}{getChunkPairId} (int chunkIsUpper, int chunkId, int chunkSize, int rotQubit)
+\begin{DoxyCompactList}\small\item\em get position of corresponding chunk, holding values required to update values in my chunk (with chunkId) when rotating rotQubit. \item\end{DoxyCompactList}\item 
+int \hyperlink{qubits__env__mpi_8c_aa3c42998db0f2216afbeebf21d089b9d}{halfMatrixBlockFitsInChunk} (int chunkSize, int rotQubit)
+\begin{DoxyCompactList}\small\item\em return whether the current qubit rotation will use blocks that fit within a single chunk. \item\end{DoxyCompactList}\item 
+void \hyperlink{qubits__env__mpi_8c_a4ba468aa69f812efd1f964e10a45ca2f}{rotateQubit} (\hyperlink{structMultiQubit}{MultiQubit} multiQubit, const int rotQubit, \hyperlink{structComplex}{Complex} alpha, \hyperlink{structComplex}{Complex} beta)
+\item 
+double \hyperlink{qubits__env__mpi_8c_af31016680d01044cee9321d4cae32703}{findProbabilityOfZero} (\hyperlink{structMultiQubit}{MultiQubit} multiQubit, const int measureQubit)
+\end{DoxyCompactItemize}
+
+
+\subsubsection{Detailed Description}
+An implementation of the API in \hyperlink{qubits__env__wrapper_8h}{qubits\_\-env\_\-wrapper.h} for an MPI environment. 
+
+Definition in file \hyperlink{qubits__env__mpi_8c_source}{qubits\_\-env\_\-mpi.c}.
+
+\subsubsection{Define Documentation}
+\hypertarget{qubits__env__mpi_8c_ad72dbcf6d0153db1b8d8a58001feed83}{
+\index{qubits\_\-env\_\-mpi.c@{qubits\_\-env\_\-mpi.c}!DEBUG@{DEBUG}}
+\index{DEBUG@{DEBUG}!qubits_env_mpi.c@{qubits\_\-env\_\-mpi.c}}
+\paragraph[{DEBUG}]{\setlength{\rightskip}{0pt plus 5cm}\#define DEBUG~0}\hfill}
+\label{qubits__env__mpi_8c_ad72dbcf6d0153db1b8d8a58001feed83}
+
+
+Definition at line 10 of file qubits\_\-env\_\-mpi.c.
+
+\subsubsection{Function Documentation}
+\hypertarget{qubits__env__mpi_8c_a2205c8fde15213df52040dc3df233090}{
+\index{qubits\_\-env\_\-mpi.c@{qubits\_\-env\_\-mpi.c}!calcTotalProbability@{calcTotalProbability}}
+\index{calcTotalProbability@{calcTotalProbability}!qubits_env_mpi.c@{qubits\_\-env\_\-mpi.c}}
+\paragraph[{calcTotalProbability}]{\setlength{\rightskip}{0pt plus 5cm}double calcTotalProbability ({\bf MultiQubit} {\em multiQubit})}\hfill}
+\label{qubits__env__mpi_8c_a2205c8fde15213df52040dc3df233090}
+
+
+Definition at line 81 of file qubits\_\-env\_\-mpi.c.
+
+References DEBUG, ComplexArray::imag, MultiQubit::numAmps, MultiQubit::numChunks, ComplexArray::real, and MultiQubit::stateVec.
+
+
+\begin{DoxyCode}
+81                                                   {
+82         double pTotal=0; 
+83         double allRankTotals=0;
+84         long long int index;
+85         long long int numAmpsPerRank = multiQubit.numAmps;
+86         for (index=0; index<numAmpsPerRank; index++){ 
+87                 pTotal+=multiQubit.stateVec.real[index]*multiQubit.stateVec.real[
+      index];      
+88                 pTotal+=multiQubit.stateVec.imag[index]*multiQubit.stateVec.imag[
+      index];      
+89         } 
+90         if (DEBUG) printf("before calc prob. %d\n", multiQubit.numChunks);
+91         if (multiQubit.numChunks>1) MPI_Reduce(&pTotal, &allRankTotals, 1, MPI_DO
+      UBLE, MPI_SUM, 0, MPI_COMM_WORLD);
+92         else allRankTotals=pTotal;
+93 
+94         return allRankTotals;
+95 }
+\end{DoxyCode}
+\hypertarget{qubits__env__mpi_8c_ab865b89447379ac83ea343deea10bf61}{
+\index{qubits\_\-env\_\-mpi.c@{qubits\_\-env\_\-mpi.c}!chunkIsUpper@{chunkIsUpper}}
+\index{chunkIsUpper@{chunkIsUpper}!qubits_env_mpi.c@{qubits\_\-env\_\-mpi.c}}
+\paragraph[{chunkIsUpper}]{\setlength{\rightskip}{0pt plus 5cm}int chunkIsUpper (int {\em chunkId}, \/  int {\em chunkSize}, \/  int {\em rotQubit})}\hfill}
+\label{qubits__env__mpi_8c_ab865b89447379ac83ea343deea10bf61}
+
+
+Returns whether a given chunk in position chunkId is in the upper or lower half of a block. 
+\begin{DoxyParams}{Parameters}
+\item[\mbox{$\leftarrow$} {\em chunkId}]id of chunk in state vector \item[\mbox{$\leftarrow$} {\em chunkSize}]number of amps in chunk \item[\mbox{$\leftarrow$} {\em rotQubit}]qubit being rotated \end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+1: chunk is in upper half of block, 0: chunk is in lower half of block 
+\end{DoxyReturn}
+
+
+Definition at line 106 of file qubits\_\-env\_\-mpi.c.
+
+Referenced by rotateQubit().
+
+
+\begin{DoxyCode}
+107 {       
+108         long long int sizeHalfBlock = 1LL << (rotQubit);
+109         long long int sizeBlock = sizeHalfBlock*2;
+110         long long int posInBlock = (chunkId*chunkSize) % sizeBlock;
+111         return posInBlock<sizeHalfBlock;
+112 }
+\end{DoxyCode}
+\hypertarget{qubits__env__mpi_8c_ad7494473d827399d7fd9c327ea3a23e6}{
+\index{qubits\_\-env\_\-mpi.c@{qubits\_\-env\_\-mpi.c}!closeQUESTEnv@{closeQUESTEnv}}
+\index{closeQUESTEnv@{closeQUESTEnv}!qubits_env_mpi.c@{qubits\_\-env\_\-mpi.c}}
+\paragraph[{closeQUESTEnv}]{\setlength{\rightskip}{0pt plus 5cm}void closeQUESTEnv ({\bf QUESTEnv} {\em env})}\hfill}
+\label{qubits__env__mpi_8c_ad7494473d827399d7fd9c327ea3a23e6}
+
+
+Definition at line 36 of file qubits\_\-env\_\-mpi.c.
+
+
+\begin{DoxyCode}
+36                                 {
+37         int finalized;
+38         MPI_Finalized(&finalized);
+39         if (!finalized) MPI_Finalize();
+40         else printf("ERROR: Trying to close QUESTEnv multiple times. Ignoring\n")
+      ;
+41 }
+\end{DoxyCode}
+\hypertarget{qubits__env__mpi_8c_af31016680d01044cee9321d4cae32703}{
+\index{qubits\_\-env\_\-mpi.c@{qubits\_\-env\_\-mpi.c}!findProbabilityOfZero@{findProbabilityOfZero}}
+\index{findProbabilityOfZero@{findProbabilityOfZero}!qubits_env_mpi.c@{qubits\_\-env\_\-mpi.c}}
+\paragraph[{findProbabilityOfZero}]{\setlength{\rightskip}{0pt plus 5cm}double findProbabilityOfZero ({\bf MultiQubit} {\em multiQubit}, \/  const int {\em measureQubit})}\hfill}
+\label{qubits__env__mpi_8c_af31016680d01044cee9321d4cae32703}
+
+
+Definition at line 257 of file qubits\_\-env\_\-mpi.c.
+
+References MultiQubit::chunkId, findProbabilityOfZeroDistributed(), findProbabilityOfZeroLocal(), halfMatrixBlockFitsInChunk(), isChunkToSkipInFindPZero(), and MultiQubit::numAmps.
+
+
+\begin{DoxyCode}
+259 {
+260         double stateProb=0, totalStateProb=0;
+261         int skipValuesWithinRank = halfMatrixBlockFitsInChunk(multiQubit.numAmps,
+       measureQubit);
+262         if (skipValuesWithinRank) {
+263                 stateProb = findProbabilityOfZeroLocal(multiQubit, measureQubit);
+      
+264         } else {
+265                 if (!isChunkToSkipInFindPZero(multiQubit.chunkId, multiQubit.
+      numAmps, measureQubit)){
+266                         stateProb = findProbabilityOfZeroDistributed(multiQubit, 
+      measureQubit);
+267                 } else stateProb = 0;
+268         }
+269         MPI_Reduce(&stateProb, &totalStateProb, 1, MPI_DOUBLE, MPI_SUM, 0, MPI_CO
+      MM_WORLD);
+270         return totalStateProb;
+271 }
+\end{DoxyCode}
+\hypertarget{qubits__env__mpi_8c_ac5eff4067b59d0dcf3e95ed66cdd5b69}{
+\index{qubits\_\-env\_\-mpi.c@{qubits\_\-env\_\-mpi.c}!getChunkPairId@{getChunkPairId}}
+\index{getChunkPairId@{getChunkPairId}!qubits_env_mpi.c@{qubits\_\-env\_\-mpi.c}}
+\paragraph[{getChunkPairId}]{\setlength{\rightskip}{0pt plus 5cm}int getChunkPairId (int {\em chunkIsUpper}, \/  int {\em chunkId}, \/  int {\em chunkSize}, \/  int {\em rotQubit})}\hfill}
+\label{qubits__env__mpi_8c_ac5eff4067b59d0dcf3e95ed66cdd5b69}
+
+
+get position of corresponding chunk, holding values required to update values in my chunk (with chunkId) when rotating rotQubit. 
+\begin{DoxyParams}{Parameters}
+\item[\mbox{$\leftarrow$} {\em chunkIsUpper}]1: chunk is in upper half of block, 0: chunk is in lower half \item[\mbox{$\leftarrow$} {\em chunkId}]id of chunk in state vector \item[\mbox{$\leftarrow$} {\em chunkSize}]number of amps in chunk \item[\mbox{$\leftarrow$} {\em rotQubit}]qubit being rotated \end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+chunkId of chunk required to rotate rotQubit 
+\end{DoxyReturn}
+
+
+Definition at line 148 of file qubits\_\-env\_\-mpi.c.
+
+Referenced by rotateQubit().
+
+
+\begin{DoxyCode}
+149 {
+150         long long int sizeHalfBlock = 1LL << (rotQubit);
+151         int chunksPerHalfBlock = sizeHalfBlock/chunkSize;
+152         if (chunkIsUpper){
+153                 return chunkId + chunksPerHalfBlock;
+154         } else {
+155                 return chunkId - chunksPerHalfBlock;
+156         }
+157 }
+\end{DoxyCode}
+\hypertarget{qubits__env__mpi_8c_ac695187bfeb76c2b50a14b93769f53be}{
+\index{qubits\_\-env\_\-mpi.c@{qubits\_\-env\_\-mpi.c}!getRotAngle@{getRotAngle}}
+\index{getRotAngle@{getRotAngle}!qubits_env_mpi.c@{qubits\_\-env\_\-mpi.c}}
+\paragraph[{getRotAngle}]{\setlength{\rightskip}{0pt plus 5cm}void getRotAngle (int {\em chunkIsUpper}, \/  {\bf Complex} $\ast$ {\em rot1}, \/  {\bf Complex} $\ast$ {\em rot2}, \/  {\bf Complex} {\em alpha}, \/  {\bf Complex} {\em beta})}\hfill}
+\label{qubits__env__mpi_8c_ac695187bfeb76c2b50a14b93769f53be}
+
+
+Get rotation values for a given chunk. 
+\begin{DoxyParams}{Parameters}
+\item[\mbox{$\leftarrow$} {\em chunkIsUpper}]1: chunk is in upper half of block, 0: chunk is in lower half\item[\mbox{$\rightarrow$} {\em rot1,rot2}]rotation values to use, allocated for upper/lower such that \begin{DoxyVerb}
+stateUpper = rot1 * stateUpper + conj(rot2)  * stateLower
+\end{DoxyVerb}
+ or \begin{DoxyVerb}
+stateLower = rot1 * stateUpper + conj(rot2)  * stateLower
+\end{DoxyVerb}
+ \item[\mbox{$\leftarrow$} {\em alpha,beta}]initial rotation values \end{DoxyParams}
+
+
+Definition at line 127 of file qubits\_\-env\_\-mpi.c.
+
+References Complex::imag, and Complex::real.
+
+Referenced by rotateQubit().
+
+
+\begin{DoxyCode}
+128 {
+129         if (chunkIsUpper){
+130                 *rot1=alpha;
+131                 rot2->real=-beta.real;
+132                 rot2->imag=-beta.imag;
+133         } else {
+134                 *rot1=beta;
+135                 *rot2=alpha;
+136         }
+137 }
+\end{DoxyCode}
+\hypertarget{qubits__env__mpi_8c_aa3c42998db0f2216afbeebf21d089b9d}{
+\index{qubits\_\-env\_\-mpi.c@{qubits\_\-env\_\-mpi.c}!halfMatrixBlockFitsInChunk@{halfMatrixBlockFitsInChunk}}
+\index{halfMatrixBlockFitsInChunk@{halfMatrixBlockFitsInChunk}!qubits_env_mpi.c@{qubits\_\-env\_\-mpi.c}}
+\paragraph[{halfMatrixBlockFitsInChunk}]{\setlength{\rightskip}{0pt plus 5cm}int halfMatrixBlockFitsInChunk (int {\em chunkSize}, \/  int {\em rotQubit})}\hfill}
+\label{qubits__env__mpi_8c_aa3c42998db0f2216afbeebf21d089b9d}
+
+
+return whether the current qubit rotation will use blocks that fit within a single chunk. 
+\begin{DoxyParams}{Parameters}
+\item[\mbox{$\leftarrow$} {\em chunkSize}]number of amps in chunk \item[\mbox{$\leftarrow$} {\em rotQubit}]qubit being rotated \end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+1: one chunk fits in one block 0: chunk is larger than block 
+\end{DoxyReturn}
+
+
+Definition at line 167 of file qubits\_\-env\_\-mpi.c.
+
+Referenced by findProbabilityOfZero(), and rotateQubit().
+
+
+\begin{DoxyCode}
+168 {
+169         long long int sizeHalfBlock = 1LL << (rotQubit);
+170         if (chunkSize > sizeHalfBlock) return 1;
+171         else return 0;
+172 }
+\end{DoxyCode}
+\hypertarget{qubits__env__mpi_8c_a652d8c53f8f1cfb096133791de2b219d}{
+\index{qubits\_\-env\_\-mpi.c@{qubits\_\-env\_\-mpi.c}!initQUESTEnv@{initQUESTEnv}}
+\index{initQUESTEnv@{initQUESTEnv}!qubits_env_mpi.c@{qubits\_\-env\_\-mpi.c}}
+\paragraph[{initQUESTEnv}]{\setlength{\rightskip}{0pt plus 5cm}void initQUESTEnv ({\bf QUESTEnv} $\ast$ {\em env})}\hfill}
+\label{qubits__env__mpi_8c_a652d8c53f8f1cfb096133791de2b219d}
+
+
+Definition at line 12 of file qubits\_\-env\_\-mpi.c.
+
+References DEBUG, QUESTEnv::numRanks, and QUESTEnv::rank.
+
+
+\begin{DoxyCode}
+12                                 {
+13         // init MPI environment
+14         int rank, numRanks, initialized;
+15         MPI_Initialized(&initialized);
+16         if (!initialized){
+17                 MPI_Init(NULL, NULL);
+18                 MPI_Comm_size(MPI_COMM_WORLD, &numRanks);
+19                 MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+20 
+21                 if (DEBUG) {
+22                         char hostName[256];
+23                         int hostNameLen;
+24                         MPI_Get_processor_name(hostName, &hostNameLen);
+25                         printf("rank %d on host %s\n", rank, hostName);
+26                 }
+27                 env->rank=rank;
+28                 env->numRanks=numRanks;
+29         } else printf("ERROR: Trying to initialize QUESTEnv multiple times. Ignor
+      ing\n");
+30 }
+\end{DoxyCode}
+\hypertarget{qubits__env__mpi_8c_a8c3837c897be9e7dd00fe48974353520}{
+\index{qubits\_\-env\_\-mpi.c@{qubits\_\-env\_\-mpi.c}!isChunkToSkipInFindPZero@{isChunkToSkipInFindPZero}}
+\index{isChunkToSkipInFindPZero@{isChunkToSkipInFindPZero}!qubits_env_mpi.c@{qubits\_\-env\_\-mpi.c}}
+\paragraph[{isChunkToSkipInFindPZero}]{\setlength{\rightskip}{0pt plus 5cm}int isChunkToSkipInFindPZero (int {\em chunkId}, \/  int {\em chunkSize}, \/  int {\em measureQubit})}\hfill}
+\label{qubits__env__mpi_8c_a8c3837c897be9e7dd00fe48974353520}
+
+
+Find chunks to skip when calculating probability of qubit being zero. When calculating probability of a bit q being zero, sum up 2$^\wedge$q values, then skip 2$^\wedge$q values, etc. This function finds if an entire chunk is in the range of values to be skipped
+
+
+\begin{DoxyParams}{Parameters}
+\item[\mbox{$\leftarrow$} {\em chunkId}]id of chunk in state vector \item[\mbox{$\leftarrow$} {\em chunkSize}]number of amps in chunk \item[\mbox{$\leftarrow$} {\em measureQubi}]qubit being measured \end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+int -\/-\/ 1: skip, 0: don't skip 
+\end{DoxyReturn}
+
+
+Definition at line 54 of file qubits\_\-env\_\-mpi.c.
+
+Referenced by findProbabilityOfZero().
+
+
+\begin{DoxyCode}
+54                                                                           {
+55         long long int sizeHalfBlock = 1LL << (measureQubit);
+56         int numChunksToSkip = sizeHalfBlock/chunkSize;
+57         // calculate probability by summing over numChunksToSkip, then skipping n
+      umChunksToSkip, etc
+58         int bitToCheck = chunkId & numChunksToSkip;
+59         return bitToCheck;
+60 }
+\end{DoxyCode}
+\hypertarget{qubits__env__mpi_8c_a4ba468aa69f812efd1f964e10a45ca2f}{
+\index{qubits\_\-env\_\-mpi.c@{qubits\_\-env\_\-mpi.c}!rotateQubit@{rotateQubit}}
+\index{rotateQubit@{rotateQubit}!qubits_env_mpi.c@{qubits\_\-env\_\-mpi.c}}
+\paragraph[{rotateQubit}]{\setlength{\rightskip}{0pt plus 5cm}void rotateQubit ({\bf MultiQubit} {\em multiQubit}, \/  const int {\em rotQubit}, \/  {\bf Complex} {\em alpha}, \/  {\bf Complex} {\em beta})}\hfill}
+\label{qubits__env__mpi_8c_a4ba468aa69f812efd1f964e10a45ca2f}
+
+
+Definition at line 194 of file qubits\_\-env\_\-mpi.c.
+
+References MultiQubit::chunkId, chunkIsUpper(), getChunkPairId(), getRotAngle(), halfMatrixBlockFitsInChunk(), ComplexArray::imag, MultiQubit::numAmps, MultiQubit::pairStateVec, ComplexArray::real, rotateQubitDistributed(), rotateQubitLocal(), and MultiQubit::stateVec.
+
+
+\begin{DoxyCode}
+196 {
+197         // flag to require memory exchange. 1: an entire block fits on one rank, 
+      0: at most half a block fits on one rank
+198         int useLocalDataOnly = halfMatrixBlockFitsInChunk(multiQubit.numAmps, rot
+      Qubit);
+199         Complex rot1, rot2;
+200 
+201         // rank's chunk is in upper half of block 
+202         int rankIsUpper;
+203         int pairRank; // rank of corresponding chunk
+204 
+205         // MPI send/receive vars
+206         int TAG=100;
+207         MPI_Status status;
+208 
+209         double *stateVecReal, stateVecImag, stateVecRealPair, stateVecImagPair;
+210         
+211 
+212         if (useLocalDataOnly){
+213                 // all values required to update state vector lie in this rank
+214                 rotateQubitLocal(multiQubit, rotQubit, alpha, beta);
+215         } else {
+216                 // need to get corresponding chunk of state vector from other ran
+      k
+217                 rankIsUpper = chunkIsUpper(multiQubit.chunkId, multiQubit.
+      numAmps, rotQubit);
+218                 getRotAngle(rankIsUpper, &rot1, &rot2, alpha, beta);
+219                 pairRank = getChunkPairId(rankIsUpper, multiQubit.chunkId, multiQ
+      ubit.numAmps, rotQubit);
+220                 //printf("%d rank has pair rank: %d\n", multiQubit.rank, pairRank
+      );
+221                 // get corresponding values from my pair
+222                 MPI_Sendrecv(multiQubit.stateVec.real, multiQubit.numAmps, MPI_DO
+      UBLE, pairRank, TAG,
+223                                  multiQubit.pairStateVec.real, multiQubit.
+      numAmps, MPI_DOUBLE, pairRank, TAG,
+224                                  MPI_COMM_WORLD, &status);
+225                 //printf("rank: %d err: %d\n", multiQubit.rank, err);
+226                 MPI_Sendrecv(multiQubit.stateVec.imag, multiQubit.numAmps, MPI_DO
+      UBLE, pairRank, TAG,
+227                                 multiQubit.pairStateVec.imag, multiQubit.numAmps,
+       MPI_DOUBLE, pairRank, TAG,
+228                                 MPI_COMM_WORLD, &status);
+229                 // this rank's values are either in the upper of lower half of th
+      e block. send values to rotateQubitDistributed
+230                 // in the correct order
+231                 if (rankIsUpper){
+232                         rotateQubitDistributed(multiQubit,rotQubit,rot1,rot2,
+233                                 multiQubit.stateVec, //upper
+234                                 multiQubit.pairStateVec, //lower
+235                                 multiQubit.stateVec); //output
+236                 } else {
+237                         rotateQubitDistributed(multiQubit,rotQubit,rot1,rot2,
+238                                 multiQubit.pairStateVec, //upper
+239                                 multiQubit.stateVec, //lower
+240                                 multiQubit.stateVec); //output
+241                 }
+242         }
+243 }
+\end{DoxyCode}
+\hypertarget{qubits__env__mpi_8c_a83dffc500bf5b4e41dd63ba1ea9422ae}{
+\index{qubits\_\-env\_\-mpi.c@{qubits\_\-env\_\-mpi.c}!syncQUESTEnv@{syncQUESTEnv}}
+\index{syncQUESTEnv@{syncQUESTEnv}!qubits_env_mpi.c@{qubits\_\-env\_\-mpi.c}}
+\paragraph[{syncQUESTEnv}]{\setlength{\rightskip}{0pt plus 5cm}void syncQUESTEnv ({\bf QUESTEnv} {\em env})}\hfill}
+\label{qubits__env__mpi_8c_a83dffc500bf5b4e41dd63ba1ea9422ae}
+
+
+Definition at line 32 of file qubits\_\-env\_\-mpi.c.
+
+
+\begin{DoxyCode}
+32                                {
+33         MPI_Barrier(MPI_COMM_WORLD);
+34 }
+\end{DoxyCode}

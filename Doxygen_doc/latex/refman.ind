@@ -1,0 +1,234 @@
+\begin{theindex}
+
+  \item {basicTemplate.c}, \hyperpage{6}
+    \subitem {main}, \hyperpage{7}
+    \subitem {MaxAngles}, \hyperpage{7}
+    \subitem {maxNumQubits}, \hyperpage{7}
+    \subitem {Pi}, \hyperpage{11}
+    \subitem {REPORT\_\discretionary {-}{}{}STATE}, \hyperpage{7}
+
+  \indexspace
+
+  \item {calcTotalProbability}
+    \subitem {qubits\_\discretionary {-}{}{}env\_\discretionary {-}{}{}local.c}, \hyperpage{42}
+    \subitem {qubits\_\discretionary {-}{}{}env\_\discretionary {-}{}{}mpi.c}, \hyperpage{44}
+    \subitem {qubits\_\discretionary {-}{}{}env\_\discretionary {-}{}{}wrapper.h}, \hyperpage{50}
+  \item {chunkId}
+    \subitem {MultiQubit}, \hyperpage{4}
+  \item {chunkIsUpper}
+    \subitem {qubits\_\discretionary {-}{}{}env\_\discretionary {-}{}{}mpi.c}, \hyperpage{45}
+  \item {closeQUESTEnv}
+    \subitem {qubits\_\discretionary {-}{}{}env\_\discretionary {-}{}{}local.c}, \hyperpage{42}
+    \subitem {qubits\_\discretionary {-}{}{}env\_\discretionary {-}{}{}mpi.c}, \hyperpage{45}
+    \subitem {qubits\_\discretionary {-}{}{}env\_\discretionary {-}{}{}wrapper.h}, \hyperpage{50}
+  \item {Complex}, \hyperpage{1}
+    \subitem {imag}, \hyperpage{2}
+    \subitem {real}, \hyperpage{2}
+  \item {ComplexArray}, \hyperpage{2}
+    \subitem {imag}, \hyperpage{3}
+    \subitem {real}, \hyperpage{3}
+  \item {controlPhaseGate}
+    \subitem {qubits.c}, \hyperpage{12}
+    \subitem {qubits.h}, \hyperpage{27}
+  \item {createMultiQubit}
+    \subitem {qubits.c}, \hyperpage{13}
+    \subitem {qubits.h}, \hyperpage{28}
+
+  \indexspace
+
+  \item {DEBUG}
+    \subitem {qubits.c}, \hyperpage{12}
+    \subitem {qubits\_\discretionary {-}{}{}env\_\discretionary {-}{}{}mpi.c}, \hyperpage{44}
+  \item {destroyMultiQubit}
+    \subitem {qubits.c}, \hyperpage{14}
+    \subitem {qubits.h}, \hyperpage{29}
+
+  \indexspace
+
+  \item {extractBit}
+    \subitem {qubits.c}, \hyperpage{14}
+    \subitem {qubits.h}, \hyperpage{29}
+
+  \indexspace
+
+  \item {filterOut111}
+    \subitem {qubits.c}, \hyperpage{14}
+    \subitem {qubits.h}, \hyperpage{29}
+  \item {findProbabilityOfZero}
+    \subitem {qubits\_\discretionary {-}{}{}env\_\discretionary {-}{}{}local.c}, \hyperpage{42}
+    \subitem {qubits\_\discretionary {-}{}{}env\_\discretionary {-}{}{}mpi.c}, \hyperpage{45}
+    \subitem {qubits\_\discretionary {-}{}{}env\_\discretionary {-}{}{}wrapper.h}, \hyperpage{51}
+  \item {findProbabilityOfZeroDistributed}
+    \subitem {qubits.c}, \hyperpage{15}
+    \subitem {qubits.h}, \hyperpage{30}
+  \item {findProbabilityOfZeroLocal}
+    \subitem {qubits.c}, \hyperpage{16}
+    \subitem {qubits.h}, \hyperpage{32}
+
+  \indexspace
+
+  \item {getChunkPairId}
+    \subitem {qubits\_\discretionary {-}{}{}env\_\discretionary {-}{}{}mpi.c}, \hyperpage{46}
+  \item {getRotAngle}
+    \subitem {qubits\_\discretionary {-}{}{}env\_\discretionary {-}{}{}mpi.c}, \hyperpage{46}
+
+  \indexspace
+
+  \item {halfMatrixBlockFitsInChunk}
+    \subitem {qubits\_\discretionary {-}{}{}env\_\discretionary {-}{}{}mpi.c}, \hyperpage{47}
+
+  \indexspace
+
+  \item {imag}
+    \subitem {Complex}, \hyperpage{2}
+    \subitem {ComplexArray}, \hyperpage{3}
+  \item {initQUESTEnv}
+    \subitem {qubits\_\discretionary {-}{}{}env\_\discretionary {-}{}{}local.c}, \hyperpage{42}
+    \subitem {qubits\_\discretionary {-}{}{}env\_\discretionary {-}{}{}mpi.c}, \hyperpage{47}
+    \subitem {qubits\_\discretionary {-}{}{}env\_\discretionary {-}{}{}wrapper.h}, \hyperpage{51}
+  \item {initStateVec}
+    \subitem {qubits.c}, \hyperpage{18}
+    \subitem {qubits.h}, \hyperpage{33}
+  \item {isChunkToSkipInFindPZero}
+    \subitem {qubits\_\discretionary {-}{}{}env\_\discretionary {-}{}{}mpi.c}, \hyperpage{48}
+
+  \indexspace
+
+  \item {main}
+    \subitem {basicTemplate.c}, \hyperpage{7}
+  \item {MaxAngles}
+    \subitem {basicTemplate.c}, \hyperpage{7}
+  \item {maxNumQubits}
+    \subitem {basicTemplate.c}, \hyperpage{7}
+  \item {measureInZero}
+    \subitem {qubits.c}, \hyperpage{19}
+    \subitem {qubits.h}, \hyperpage{34}
+  \item {MultiQubit}, \hyperpage{3}
+    \subitem {chunkId}, \hyperpage{4}
+    \subitem {numAmps}, \hyperpage{4}
+    \subitem {numChunks}, \hyperpage{4}
+    \subitem {numQubits}, \hyperpage{4}
+    \subitem {pairStateVec}, \hyperpage{4}
+    \subitem {stateVec}, \hyperpage{5}
+
+  \indexspace
+
+  \item {numAmps}
+    \subitem {MultiQubit}, \hyperpage{4}
+  \item {numChunks}
+    \subitem {MultiQubit}, \hyperpage{4}
+  \item {numQubits}
+    \subitem {MultiQubit}, \hyperpage{4}
+  \item {numRanks}
+    \subitem {QUESTEnv}, \hyperpage{5}
+
+  \indexspace
+
+  \item {pairStateVec}
+    \subitem {MultiQubit}, \hyperpage{4}
+  \item {Pi}
+    \subitem {basicTemplate.c}, \hyperpage{11}
+  \item {probOfFilterOut111}
+    \subitem {qubits.c}, \hyperpage{21}
+    \subitem {qubits.h}, \hyperpage{36}
+
+  \indexspace
+
+  \item {quadCPhaseGate}
+    \subitem {qubits.c}, \hyperpage{21}
+    \subitem {qubits.h}, \hyperpage{36}
+  \item {qubits.c}, \hyperpage{11}
+    \subitem {controlPhaseGate}, \hyperpage{12}
+    \subitem {createMultiQubit}, \hyperpage{13}
+    \subitem {DEBUG}, \hyperpage{12}
+    \subitem {destroyMultiQubit}, \hyperpage{14}
+    \subitem {extractBit}, \hyperpage{14}
+    \subitem {filterOut111}, \hyperpage{14}
+    \subitem {findProbabilityOfZeroDistributed}, \hyperpage{15}
+    \subitem {findProbabilityOfZeroLocal}, \hyperpage{16}
+    \subitem {initStateVec}, \hyperpage{18}
+    \subitem {measureInZero}, \hyperpage{19}
+    \subitem {probOfFilterOut111}, \hyperpage{21}
+    \subitem {quadCPhaseGate}, \hyperpage{21}
+    \subitem {reportState}, \hyperpage{22}
+    \subitem {rotateQubitDistributed}, \hyperpage{22}
+    \subitem {rotateQubitLocal}, \hyperpage{24}
+  \item {qubits.h}, \hyperpage{26}
+    \subitem {controlPhaseGate}, \hyperpage{27}
+    \subitem {createMultiQubit}, \hyperpage{28}
+    \subitem {destroyMultiQubit}, \hyperpage{29}
+    \subitem {extractBit}, \hyperpage{29}
+    \subitem {filterOut111}, \hyperpage{29}
+    \subitem {findProbabilityOfZeroDistributed}, \hyperpage{30}
+    \subitem {findProbabilityOfZeroLocal}, \hyperpage{32}
+    \subitem {initStateVec}, \hyperpage{33}
+    \subitem {measureInZero}, \hyperpage{34}
+    \subitem {probOfFilterOut111}, \hyperpage{36}
+    \subitem {quadCPhaseGate}, \hyperpage{36}
+    \subitem {reportState}, \hyperpage{37}
+    \subitem {rotateQubitDistributed}, \hyperpage{37}
+    \subitem {rotateQubitLocal}, \hyperpage{39}
+  \item {qubits\_\discretionary {-}{}{}env\_\discretionary {-}{}{}local.c}, \hyperpage{41}
+    \subitem {calcTotalProbability}, \hyperpage{42}
+    \subitem {closeQUESTEnv}, \hyperpage{42}
+    \subitem {findProbabilityOfZero}, \hyperpage{42}
+    \subitem {initQUESTEnv}, \hyperpage{42}
+    \subitem {rotateQubit}, \hyperpage{43}
+    \subitem {syncQUESTEnv}, \hyperpage{43}
+  \item {qubits\_\discretionary {-}{}{}env\_\discretionary {-}{}{}mpi.c}, \hyperpage{43}
+    \subitem {calcTotalProbability}, \hyperpage{44}
+    \subitem {chunkIsUpper}, \hyperpage{45}
+    \subitem {closeQUESTEnv}, \hyperpage{45}
+    \subitem {DEBUG}, \hyperpage{44}
+    \subitem {findProbabilityOfZero}, \hyperpage{45}
+    \subitem {getChunkPairId}, \hyperpage{46}
+    \subitem {getRotAngle}, \hyperpage{46}
+    \subitem {halfMatrixBlockFitsInChunk}, \hyperpage{47}
+    \subitem {initQUESTEnv}, \hyperpage{47}
+    \subitem {isChunkToSkipInFindPZero}, \hyperpage{48}
+    \subitem {rotateQubit}, \hyperpage{48}
+    \subitem {syncQUESTEnv}, \hyperpage{49}
+  \item {qubits\_\discretionary {-}{}{}env\_\discretionary {-}{}{}wrapper.h}, \hyperpage{50}
+    \subitem {calcTotalProbability}, \hyperpage{50}
+    \subitem {closeQUESTEnv}, \hyperpage{50}
+    \subitem {findProbabilityOfZero}, \hyperpage{51}
+    \subitem {initQUESTEnv}, \hyperpage{51}
+    \subitem {rotateQubit}, \hyperpage{51}
+    \subitem {syncQUESTEnv}, \hyperpage{52}
+  \item {QUESTEnv}, \hyperpage{5}
+    \subitem {numRanks}, \hyperpage{5}
+    \subitem {rank}, \hyperpage{5}
+
+  \indexspace
+
+  \item {rank}
+    \subitem {QUESTEnv}, \hyperpage{5}
+  \item {real}
+    \subitem {Complex}, \hyperpage{2}
+    \subitem {ComplexArray}, \hyperpage{3}
+  \item {REPORT\_\discretionary {-}{}{}STATE}
+    \subitem {basicTemplate.c}, \hyperpage{7}
+  \item {reportState}
+    \subitem {qubits.c}, \hyperpage{22}
+    \subitem {qubits.h}, \hyperpage{37}
+  \item {rotateQubit}
+    \subitem {qubits\_\discretionary {-}{}{}env\_\discretionary {-}{}{}local.c}, \hyperpage{43}
+    \subitem {qubits\_\discretionary {-}{}{}env\_\discretionary {-}{}{}mpi.c}, \hyperpage{48}
+    \subitem {qubits\_\discretionary {-}{}{}env\_\discretionary {-}{}{}wrapper.h}, \hyperpage{51}
+  \item {rotateQubitDistributed}
+    \subitem {qubits.c}, \hyperpage{22}
+    \subitem {qubits.h}, \hyperpage{37}
+  \item {rotateQubitLocal}
+    \subitem {qubits.c}, \hyperpage{24}
+    \subitem {qubits.h}, \hyperpage{39}
+
+  \indexspace
+
+  \item {stateVec}
+    \subitem {MultiQubit}, \hyperpage{5}
+  \item {syncQUESTEnv}
+    \subitem {qubits\_\discretionary {-}{}{}env\_\discretionary {-}{}{}local.c}, \hyperpage{43}
+    \subitem {qubits\_\discretionary {-}{}{}env\_\discretionary {-}{}{}mpi.c}, \hyperpage{49}
+    \subitem {qubits\_\discretionary {-}{}{}env\_\discretionary {-}{}{}wrapper.h}, \hyperpage{52}
+
+\end{theindex}

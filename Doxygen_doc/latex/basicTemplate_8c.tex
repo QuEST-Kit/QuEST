@@ -1,0 +1,321 @@
+\hypertarget{basicTemplate_8c}{
+\subsection{basicTemplate.c File Reference}
+\label{basicTemplate_8c}\index{basicTemplate.c@{basicTemplate.c}}
+}
+
+
+Basic template for using the QUEST library.  
+{\ttfamily \#include $<$stdio.h$>$}\par
+{\ttfamily \#include $<$stdlib.h$>$}\par
+{\ttfamily \#include $<$time.h$>$}\par
+{\ttfamily \#include $<$math.h$>$}\par
+{\ttfamily \#include $<$unistd.h$>$}\par
+{\ttfamily \#include $<$string.h$>$}\par
+{\ttfamily \#include $<$omp.h$>$}\par
+{\ttfamily \#include \char`\"{}QUEST/qubits.h\char`\"{}}\par
+{\ttfamily \#include \char`\"{}QUEST/qubits\_\-env\_\-wrapper.h\char`\"{}}\par
+\subsubsection*{Defines}
+\begin{DoxyCompactItemize}
+\item 
+\#define \hyperlink{basicTemplate_8c_a353abace49aefb52015b80290cf26d77}{MaxAngles}~10
+\begin{DoxyCompactList}\small\item\em Max number of angles used to define qubit rotation. \item\end{DoxyCompactList}\item 
+\#define \hyperlink{basicTemplate_8c_a8e2ba5722f048e5a9cd58d09085f6cb1}{maxNumQubits}~40
+\begin{DoxyCompactList}\small\item\em Max number of qubits in the system. \item\end{DoxyCompactList}\item 
+\#define \hyperlink{basicTemplate_8c_a64394210bc1694536cbb8411d2bab5ed}{REPORT\_\-STATE}~1
+\begin{DoxyCompactList}\small\item\em 1: print end qubit state to file, 0: don't print \item\end{DoxyCompactList}\end{DoxyCompactItemize}
+\subsubsection*{Functions}
+\begin{DoxyCompactItemize}
+\item 
+int \hyperlink{basicTemplate_8c_a0b1907e3d123f469a739aa425bd05574}{main} (int narg, char $\ast$$\ast$varg)
+\end{DoxyCompactItemize}
+\subsubsection*{Variables}
+\begin{DoxyCompactItemize}
+\item 
+const long double \hyperlink{basicTemplate_8c_a00c9db5f4f80636d4da765f0893743f6}{Pi} = 3.14159265358979323846264338327950288419716939937510
+\end{DoxyCompactItemize}
+
+
+\subsubsection{Detailed Description}
+Basic template for using the QUEST library. In general, leave the initialisation and cleanup sections as they are and edit the rotations, measurement and phase gate sections. 
+
+Definition in file \hyperlink{basicTemplate_8c_source}{basicTemplate.c}.
+
+\subsubsection{Define Documentation}
+\hypertarget{basicTemplate_8c_a353abace49aefb52015b80290cf26d77}{
+\index{basicTemplate.c@{basicTemplate.c}!MaxAngles@{MaxAngles}}
+\index{MaxAngles@{MaxAngles}!basicTemplate.c@{basicTemplate.c}}
+\paragraph[{MaxAngles}]{\setlength{\rightskip}{0pt plus 5cm}\#define MaxAngles~10}\hfill}
+\label{basicTemplate_8c_a353abace49aefb52015b80290cf26d77}
+
+
+Max number of angles used to define qubit rotation. 
+
+Definition at line 19 of file basicTemplate.c.
+
+Referenced by main().\hypertarget{basicTemplate_8c_a8e2ba5722f048e5a9cd58d09085f6cb1}{
+\index{basicTemplate.c@{basicTemplate.c}!maxNumQubits@{maxNumQubits}}
+\index{maxNumQubits@{maxNumQubits}!basicTemplate.c@{basicTemplate.c}}
+\paragraph[{maxNumQubits}]{\setlength{\rightskip}{0pt plus 5cm}\#define maxNumQubits~40}\hfill}
+\label{basicTemplate_8c_a8e2ba5722f048e5a9cd58d09085f6cb1}
+
+
+Max number of qubits in the system. 
+
+Definition at line 21 of file basicTemplate.c.
+
+Referenced by main().\hypertarget{basicTemplate_8c_a64394210bc1694536cbb8411d2bab5ed}{
+\index{basicTemplate.c@{basicTemplate.c}!REPORT\_\-STATE@{REPORT\_\-STATE}}
+\index{REPORT\_\-STATE@{REPORT\_\-STATE}!basicTemplate.c@{basicTemplate.c}}
+\paragraph[{REPORT\_\-STATE}]{\setlength{\rightskip}{0pt plus 5cm}\#define REPORT\_\-STATE~1}\hfill}
+\label{basicTemplate_8c_a64394210bc1694536cbb8411d2bab5ed}
+
+
+1: print end qubit state to file, 0: don't print 
+
+Definition at line 23 of file basicTemplate.c.
+
+Referenced by main().
+
+\subsubsection{Function Documentation}
+\hypertarget{basicTemplate_8c_a0b1907e3d123f469a739aa425bd05574}{
+\index{basicTemplate.c@{basicTemplate.c}!main@{main}}
+\index{main@{main}!basicTemplate.c@{basicTemplate.c}}
+\paragraph[{main}]{\setlength{\rightskip}{0pt plus 5cm}int main (int {\em narg}, \/  char $\ast$$\ast$ {\em varg})}\hfill}
+\label{basicTemplate_8c_a0b1907e3d123f469a739aa425bd05574}
+
+
+Definition at line 31 of file basicTemplate.c.
+
+References calcTotalProbability(), closeQUESTEnv(), createMultiQubit(), destroyMultiQubit(), Complex::imag, initQUESTEnv(), initStateVec(), MaxAngles, maxNumQubits, QUESTEnv::rank, Complex::real, REPORT\_\-STATE, reportState(), and rotateQubit().
+
+
+\begin{DoxyCode}
+31                                  {
+32 
+33         //
+34         // ===== INITIALISATION
+35         //
+36         
+37         // INIT ENVIRONMENT: ALWAYS REQUIRED ONCE AT BEGINNING OF PROGRAM
+38         // These two lines will automatically set up the environment (multinode,
+39         // openMP only etc)  
+40         QUESTEnv env;
+41         initQUESTEnv(&env);
+42 
+43         // model vars
+44         int numQubits;
+45         long int index;
+46         long int numAmps;
+47         
+48         // get number of qubits from command line argument
+49         if (narg >= 2) {
+50                 numQubits = atoi(varg[1]);
+51                 if (numQubits < 1 || numQubits > maxNumQubits) {
+52                         printf(" *** error: argument %d out of range (1 -- %d)\n"
+      , numQubits,maxNumQubits);
+53                         exit (EXIT_FAILURE);
+54                 }
+55         } else {
+56                 printf(" *** error: too few arguments, number of qubits expected\
+      n");
+57                 exit (EXIT_FAILURE);
+58         }
+59 
+60         // Reporting
+61         numAmps = 1L << numQubits;
+62         if (env.rank==0){
+63                 printf("Demo of single qubit rotations.\n");
+64                 printf("Number of qubits is %d.\n", numQubits);
+65                 printf("Number of amps is %ld.\n", numAmps);
+66         }
+67 
+68         // CREATE QUBIT OBJECT: REQUIRED ONCE PER MULTIQUBIT OBJECT     
+69         // Before doing any operations on a set of qubits, create the MultiQubit 
+      object that will be used to 
+70         // represent the qubits
+71         MultiQubit multiQubit; 
+72         createMultiQubit(&multiQubit, numQubits, env);
+73 
+74         // initialise the state to |0000..0>
+75         initStateVec (&multiQubit);
+76 
+77 
+78         //
+79         // ===== ROTATIONS
+80         //
+81 
+82         // INITIALISE QUBIT ROTATION
+83         // Edit these lines to change rotation angle
+84         double ang1,ang2,ang3;
+85         Complex alpha, beta;
+86 
+87         // define rotation angles
+88         double angles[MaxAngles][3] = {
+89                 { 1.2320,  0.4230, -0.6523},
+90                 { 2.1213,  0.0000,  3.6520},
+91                 {-3.1213,  5.0230,  0.1230},
+92                 { 5.2341, -3.1001, -1.2340},
+93                 {-0.1234, -0.9876,  4.1234}
+94         };
+95         int numAngles=5,iAngle;
+96 
+97         // rotate
+98         ang1 = angles[0][0];
+99         ang2 = angles[0][1];
+100         ang3 = angles[0][2];
+101 
+102         alpha.real = cos(ang1) * cos(ang2);
+103         alpha.imag = cos(ang1) * sin(ang2);
+104         beta.real  = sin(ang1) * cos(ang3);
+105         beta.imag  = sin(ang1) * sin(ang3);
+106 
+107         int rotQubit;
+108 
+109         // DO QUBIT ROTATION
+110         // Edit these lines to perform rotations as required
+111         for (rotQubit=0; rotQubit<numQubits; rotQubit++) {
+112                 // do rotation of each qubit
+113                 rotateQubit(multiQubit,rotQubit,alpha,beta);
+114         }
+115         // END QUBIT ROTATION
+116 
+117         // Verification: check vector size is unchanged
+118         double totalProbability;
+119         totalProbability = calcTotalProbability(multiQubit);
+120         if (env.rank==0) printf("VERIFICATION: total probability=%.14f\n", totalP
+      robability);
+121 
+122         // report state vector to file
+123         if (REPORT_STATE){
+124                 reportState(multiQubit);
+125         }
+126 
+127 
+128         //
+129         // ===== perform a measurement
+130         //
+131         int measureQubit;
+132         double stateProb,randProb;
+133         /* // keep time */
+134         /* wtime_start = system_timer (); */
+135 
+136         // measure
+137 /*      
+138         for (measureQubit=0; measureQubit<numQubits; measureQubit++) {
+139         //for (measureQubit=0; measureQubit<1; measureQubit++) {
+140                 syncQUESTEnv(env);
+141                 wtime_start = system_timer ();
+142                 stateProb = findProbabilityOfZero (env.rank, numAmpsPerRank, numQ
+      ubits, measureQubit, stateVecReal,stateVecImag);
+143                 syncQUESTEnv(env);
+144                 wtime_stop = system_timer ();
+145                 if (env.rank==0) printf("   probability of 0 for qubit %d = %.14f
+      \n", measureQubit, stateProb);
+146                 if (env.rank==0) printf(" measurement qubit %d: elapsed time = %f
+       [s]\n", measureQubit, wtime_stop - wtime_start);
+147         }
+148 */
+149         /* // keep time */
+150         /* wtime_stop = system_timer (); */
+151 
+152         /* // ----- timing report */
+153         /* printf(" measurement: elapsed time = %f [s]\n", wtime_stop - wtime_sta
+      rt); */
+154 
+155 
+156         //
+157         // ===== two qubit phase gate
+158         //
+159         /* // keep time */
+160         /* wtime_start = system_timer (); */
+161 /*
+162         // two qubit phase gate
+163         if (numQubits >= 7) {
+164                 wtime_start = system_timer (); 
+165                 controlPhaseGate (env.rank, numAmpsPerRank, numQubits, 0, 2, stat
+      eVecReal, stateVecImag); 
+166                 wtime_stop = system_timer (); 
+167                 printf(" two qubit phase gate: elapsed time = %f [s]\n", wtime_st
+      op - wtime_start);
+168                 wtime_start = system_timer (); controlPhaseGate (env.rank, numAmp
+      sPerRank, numQubits, 1, 3, stateVecReal, stateVecImag); wtime_stop = system_timer
+       (); printf(" two qubit phase gate: elapsed time = %f [s]\n", wtime_stop - wtime_
+      start);
+169                 wtime_start = system_timer (); controlPhaseGate (env.rank, numAmp
+      sPerRank, numQubits, 2, 4, stateVecReal, stateVecImag); wtime_stop = system_timer
+       (); printf(" two qubit phase gate: elapsed time = %f [s]\n", wtime_stop - wtime_
+      start);
+170                 wtime_start = system_timer (); controlPhaseGate (env.rank, numAmp
+      sPerRank, numQubits, 3, 5, stateVecReal, stateVecImag); wtime_stop = system_timer
+       (); printf(" two qubit phase gate: elapsed time = %f [s]\n", wtime_stop - wtime_
+      start);
+171                 wtime_start = system_timer (); controlPhaseGate (env.rank, numAmp
+      sPerRank, numQubits, 4, 6, stateVecReal, stateVecImag); wtime_stop = system_timer
+       (); printf(" two qubit phase gate: elapsed time = %f [s]\n", wtime_stop - wtime_
+      start);
+172         }
+173 */
+174         totalProbability = calcTotalProbability(multiQubit);
+175         if (env.rank==0) printf("VERIFICATION: total probability=%.14f\n", totalP
+      robability);
+176 /*
+177 if (env.rank==0){
+178         printf("\n\nIn rank %d, the following is the final state after rotations.
+      \n\n",env.rank);
+179         printf("codeOutput=[\n");
+180         for(index=0; index<=numAmpsPerRank-1; index++) printf("%.8f %.8f\n",state
+      VecReal[index],stateVecImag[index]);
+181         printf("];\n\n");
+182 }
+183 syncQUESTEnv(env);
+184 
+185 if (env.rank==1){
+186         printf("\n\nIn rank %d, the following is the final state after rotations.
+      \n\n",env.rank);
+187         printf("codeOutput=[\n");
+188         for(index=0; index<=numAmpsPerRank-1; index++) printf("%.8f %.8f\n",state
+      VecReal[index],stateVecImag[index]);
+189         printf("];\n\n");
+190 }
+191 syncQUESTEnv(env);
+192 */
+193         /* // keep time */
+194         /* wtime_stop = system_timer (); */
+195 
+196         /* // ----- timing report */
+197         /* printf(" two qubit phase gate: elapsed time = %f [s]\n", wtime_stop - 
+      wtime_start); */
+198 
+199 
+200         //
+201         // ======== CLEANUP
+202         //
+203         
+204         // free memory
+205 
+206         // REQUIRED ONCE PER MULTIQUBIT OBJECT  
+207         // When all operations on a set of qubits are completed, destroy the obje
+      ct
+208         destroyMultiQubit(multiQubit, env);
+209 
+210 
+211         // ALWAYS REQUIRED ONCE AT END OF PROGRAM: 
+212         // These two lines will perform any necessary cleanup of the environment 
+      (multinode,
+213         // openMP only etc)  
+214         closeQUESTEnv(env);
+215 
+216         return EXIT_SUCCESS;
+217 }
+\end{DoxyCode}
+
+
+\subsubsection{Variable Documentation}
+\hypertarget{basicTemplate_8c_a00c9db5f4f80636d4da765f0893743f6}{
+\index{basicTemplate.c@{basicTemplate.c}!Pi@{Pi}}
+\index{Pi@{Pi}!basicTemplate.c@{basicTemplate.c}}
+\paragraph[{Pi}]{\setlength{\rightskip}{0pt plus 5cm}const long double {\bf Pi} = 3.14159265358979323846264338327950288419716939937510}\hfill}
+\label{basicTemplate_8c_a00c9db5f4f80636d4da765f0893743f6}
+
+
+Definition at line 25 of file basicTemplate.c.

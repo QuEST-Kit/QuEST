@@ -1,0 +1,147 @@
+\hypertarget{qubits__env__local_8c}{
+\subsection{qubits\_\-env\_\-local.c File Reference}
+\label{qubits__env__local_8c}\index{qubits\_\-env\_\-local.c@{qubits\_\-env\_\-local.c}}
+}
+
+
+An implementation of the API in \hyperlink{qubits__env__wrapper_8h}{qubits\_\-env\_\-wrapper.h} for a local (non-\/MPI) environment.  
+{\ttfamily \#include $<$stdlib.h$>$}\par
+{\ttfamily \#include \char`\"{}qubits.h\char`\"{}}\par
+{\ttfamily \#include \char`\"{}qubits\_\-env\_\-wrapper.h\char`\"{}}\par
+\subsubsection*{Functions}
+\begin{DoxyCompactItemize}
+\item 
+void \hyperlink{qubits__env__local_8c_a652d8c53f8f1cfb096133791de2b219d}{initQUESTEnv} (\hyperlink{structQUESTEnv}{QUESTEnv} $\ast$env)
+\item 
+void \hyperlink{qubits__env__local_8c_a83dffc500bf5b4e41dd63ba1ea9422ae}{syncQUESTEnv} (\hyperlink{structQUESTEnv}{QUESTEnv} env)
+\item 
+void \hyperlink{qubits__env__local_8c_ad7494473d827399d7fd9c327ea3a23e6}{closeQUESTEnv} (\hyperlink{structQUESTEnv}{QUESTEnv} env)
+\item 
+double \hyperlink{qubits__env__local_8c_a2205c8fde15213df52040dc3df233090}{calcTotalProbability} (\hyperlink{structMultiQubit}{MultiQubit} multiQubit)
+\item 
+void \hyperlink{qubits__env__local_8c_a4ba468aa69f812efd1f964e10a45ca2f}{rotateQubit} (\hyperlink{structMultiQubit}{MultiQubit} multiQubit, const int rotQubit, \hyperlink{structComplex}{Complex} alpha, \hyperlink{structComplex}{Complex} beta)
+\item 
+double \hyperlink{qubits__env__local_8c_af31016680d01044cee9321d4cae32703}{findProbabilityOfZero} (\hyperlink{structMultiQubit}{MultiQubit} multiQubit, const int measureQubit)
+\end{DoxyCompactItemize}
+
+
+\subsubsection{Detailed Description}
+An implementation of the API in \hyperlink{qubits__env__wrapper_8h}{qubits\_\-env\_\-wrapper.h} for a local (non-\/MPI) environment. 
+
+Definition in file \hyperlink{qubits__env__local_8c_source}{qubits\_\-env\_\-local.c}.
+
+\subsubsection{Function Documentation}
+\hypertarget{qubits__env__local_8c_a2205c8fde15213df52040dc3df233090}{
+\index{qubits\_\-env\_\-local.c@{qubits\_\-env\_\-local.c}!calcTotalProbability@{calcTotalProbability}}
+\index{calcTotalProbability@{calcTotalProbability}!qubits_env_local.c@{qubits\_\-env\_\-local.c}}
+\paragraph[{calcTotalProbability}]{\setlength{\rightskip}{0pt plus 5cm}double calcTotalProbability ({\bf MultiQubit} {\em multiQubit})}\hfill}
+\label{qubits__env__local_8c_a2205c8fde15213df52040dc3df233090}
+
+
+Definition at line 43 of file qubits\_\-env\_\-local.c.
+
+Referenced by main().
+
+
+\begin{DoxyCode}
+43                                                   {
+44         double pTotal=0; 
+45         long long int index;
+46         long long int numAmpsPerRank = multiQubit.numAmps;
+47         for (index=0; index<numAmpsPerRank; index++){ 
+48                 pTotal+=multiQubit.stateVec.real[index]*multiQubit.stateVec.real[
+      index];      
+49                 pTotal+=multiQubit.stateVec.imag[index]*multiQubit.stateVec.imag[
+      index];      
+50         } 
+51         return pTotal;
+52 }
+\end{DoxyCode}
+\hypertarget{qubits__env__local_8c_ad7494473d827399d7fd9c327ea3a23e6}{
+\index{qubits\_\-env\_\-local.c@{qubits\_\-env\_\-local.c}!closeQUESTEnv@{closeQUESTEnv}}
+\index{closeQUESTEnv@{closeQUESTEnv}!qubits_env_local.c@{qubits\_\-env\_\-local.c}}
+\paragraph[{closeQUESTEnv}]{\setlength{\rightskip}{0pt plus 5cm}void closeQUESTEnv ({\bf QUESTEnv} {\em env})}\hfill}
+\label{qubits__env__local_8c_ad7494473d827399d7fd9c327ea3a23e6}
+
+
+Definition at line 20 of file qubits\_\-env\_\-local.c.
+
+Referenced by main().
+
+
+\begin{DoxyCode}
+20                                 {
+21         // MPI finalize goes here in MPI version. Call this function anyway for c
+      onsistency
+22 }
+\end{DoxyCode}
+\hypertarget{qubits__env__local_8c_af31016680d01044cee9321d4cae32703}{
+\index{qubits\_\-env\_\-local.c@{qubits\_\-env\_\-local.c}!findProbabilityOfZero@{findProbabilityOfZero}}
+\index{findProbabilityOfZero@{findProbabilityOfZero}!qubits_env_local.c@{qubits\_\-env\_\-local.c}}
+\paragraph[{findProbabilityOfZero}]{\setlength{\rightskip}{0pt plus 5cm}double findProbabilityOfZero ({\bf MultiQubit} {\em multiQubit}, \/  const int {\em measureQubit})}\hfill}
+\label{qubits__env__local_8c_af31016680d01044cee9321d4cae32703}
+
+
+Definition at line 94 of file qubits\_\-env\_\-local.c.
+
+
+\begin{DoxyCode}
+96 {
+97         double stateProb=0;
+98         stateProb = findProbabilityOfZeroLocal(multiQubit, measureQubit);
+99         return stateProb;
+100 }
+\end{DoxyCode}
+\hypertarget{qubits__env__local_8c_a652d8c53f8f1cfb096133791de2b219d}{
+\index{qubits\_\-env\_\-local.c@{qubits\_\-env\_\-local.c}!initQUESTEnv@{initQUESTEnv}}
+\index{initQUESTEnv@{initQUESTEnv}!qubits_env_local.c@{qubits\_\-env\_\-local.c}}
+\paragraph[{initQUESTEnv}]{\setlength{\rightskip}{0pt plus 5cm}void initQUESTEnv ({\bf QUESTEnv} $\ast$ {\em env})}\hfill}
+\label{qubits__env__local_8c_a652d8c53f8f1cfb096133791de2b219d}
+
+
+Definition at line 9 of file qubits\_\-env\_\-local.c.
+
+Referenced by main().
+
+
+\begin{DoxyCode}
+9                                 {
+10         // init MPI environment
+11         int rank, numRanks;
+12         env->rank=0;
+13         env->numRanks=1;
+14 }
+\end{DoxyCode}
+\hypertarget{qubits__env__local_8c_a4ba468aa69f812efd1f964e10a45ca2f}{
+\index{qubits\_\-env\_\-local.c@{qubits\_\-env\_\-local.c}!rotateQubit@{rotateQubit}}
+\index{rotateQubit@{rotateQubit}!qubits_env_local.c@{qubits\_\-env\_\-local.c}}
+\paragraph[{rotateQubit}]{\setlength{\rightskip}{0pt plus 5cm}void rotateQubit ({\bf MultiQubit} {\em multiQubit}, \/  const int {\em rotQubit}, \/  {\bf Complex} {\em alpha}, \/  {\bf Complex} {\em beta})}\hfill}
+\label{qubits__env__local_8c_a4ba468aa69f812efd1f964e10a45ca2f}
+
+
+Definition at line 75 of file qubits\_\-env\_\-local.c.
+
+Referenced by main().
+
+
+\begin{DoxyCode}
+77 {
+78         // all values required to update state vector lie in this rank
+79         rotateQubitLocal(multiQubit, rotQubit, alpha, beta);
+80 }
+\end{DoxyCode}
+\hypertarget{qubits__env__local_8c_a83dffc500bf5b4e41dd63ba1ea9422ae}{
+\index{qubits\_\-env\_\-local.c@{qubits\_\-env\_\-local.c}!syncQUESTEnv@{syncQUESTEnv}}
+\index{syncQUESTEnv@{syncQUESTEnv}!qubits_env_local.c@{qubits\_\-env\_\-local.c}}
+\paragraph[{syncQUESTEnv}]{\setlength{\rightskip}{0pt plus 5cm}void syncQUESTEnv ({\bf QUESTEnv} {\em env})}\hfill}
+\label{qubits__env__local_8c_a83dffc500bf5b4e41dd63ba1ea9422ae}
+
+
+Definition at line 16 of file qubits\_\-env\_\-local.c.
+
+
+\begin{DoxyCode}
+16                                {
+17         // MPI Barrier goes here in MPI version. 
+18 } 
+\end{DoxyCode}
