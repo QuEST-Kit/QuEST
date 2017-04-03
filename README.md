@@ -20,7 +20,7 @@ Without git: download the directory manually
 In the root directory, run a simple 8 qubit example on one node with
 
 ```
-make  \n
+make
 ./demo 8
 ```
 
@@ -40,8 +40,8 @@ Change the name of the executable as desired eg EXE=myProg.
 
 Run with:
 ```
-make clean \n
-make \n
+make clean
+make
 ./myProg [NUMBER OF QUBITS] 
 ```
 To run on arcus-b on one node, use the job submission script examples/ompJob.sh
@@ -52,10 +52,10 @@ The initial example file available in the root folder is the template file basic
 this file, it is also available in examples/basicTemplate.c. The structure of this file is:
 
 ```
-Initialisation \n
-Rotations \n
-Measurement \n
-2 Qubit phase gate \n
+Initialisation
+Rotations
+Measurement
+2 Qubit phase gate
 Cleanup 
 ```
 
@@ -70,8 +70,8 @@ Change USE_MPI=0 to USE_MPI=1.
 
 Run with:
 ```
-make clean \n
-make \n
+make clean
+make
 mpirun -np [NUMBER OF PROCESSES] ./demo [NUMBER OF QUBITS]
 ```
 To run on arcus-b, use the job submission script examples/mpiJob.sh
