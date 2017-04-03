@@ -7,7 +7,7 @@ An implementation of the API in qubits_env_wrapper.h for an MPI environment.
 # include "qubits.h"
 # include "qubits_env_wrapper.h"
 
-# define DEBUG 1
+# define DEBUG 0
 
 void initQUESTEnv(QUESTEnv *env){
         // init MPI environment
@@ -87,7 +87,9 @@ double calcTotalProbability(MultiQubit multiQubit){
                 pTotal+=multiQubit.stateVec.real[index]*multiQubit.stateVec.real[index];      
                 pTotal+=multiQubit.stateVec.imag[index]*multiQubit.stateVec.imag[index];      
         } 
+	if (DEBUG) printf("before calc prob. %d\n", multiQubit.numChunks);
 	if (multiQubit.numChunks>1) MPI_Reduce(&pTotal, &allRankTotals, 1, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
+	else allRankTotals=pTotal;
 
 	return allRankTotals;
 }

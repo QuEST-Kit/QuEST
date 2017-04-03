@@ -34,7 +34,7 @@
 //! time for first MPI send/recv
 # define INIT_COMMUNICATION 0
 //! 1: Print additional debug information
-# define DEBUG 1
+# define DEBUG 0
 
 const long double Pi = 3.14159265358979323846264338327950288419716939937510;
 
@@ -122,12 +122,12 @@ int main (int narg, char** varg) {
 	if (REPORT_TIMING && env.rank==0) timingVec = malloc(N_TRIALS*numQubits*sizeof(timingVec));
 	
 	createMultiQubit(&multiQubit, numQubits, env);
-	printf("alloced mem\n");
+	if (DEBUG) printf("alloced mem\n");
 
 	// initialise the state to |0000..0>
 	initStateVec (&multiQubit);
 
-	printf("initialized state rank: %d size:%d\n", env.rank, env.numRanks);
+	if (DEBUG) printf("initialized state rank: %d size:%d\n", env.rank, env.numRanks);
 
 
 	//
@@ -186,12 +186,12 @@ int main (int narg, char** varg) {
 		}
 	}
 
-printf("rotated\n");	
+	if (DEBUG) printf("rotated\n");	
 	// check vector size is unchanged
         double totalProbability;
 	totalProbability = calcTotalProbability(multiQubit);
-        if (env.rank==0) printf("total probability: %.14f\n", totalProbability);
-printf("calc prob\n");
+        if (env.rank==0) printf("VERIFICATION: total probability=%.14f\n", totalProbability);
+	if (DEBUG) printf("calc prob\n");
 
 	// report timing to file
         if (REPORT_TIMING && env.rank==0){
@@ -268,7 +268,7 @@ printf("calc prob\n");
 	}
 */
 	totalProbability = calcTotalProbability(multiQubit);
-        if (env.rank==0) printf("total probability: %.14f\n", totalProbability);
+        if (env.rank==0) printf("VERIFICATION: total probability=%.14f\n", totalProbability);
 /*
 if (env.rank==0){
 	printf("\n\nIn rank %d, the following is the final state after rotations.\n\n",env.rank);

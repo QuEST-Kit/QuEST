@@ -8,6 +8,8 @@
 # include <assert.h>
 # include "qubits.h"
 
+# define DEBUG 0
+
 // Maihi: Where I have made changes I have marked SCB so please note those points - Simon
 
 
@@ -38,9 +40,10 @@ void createMultiQubit(MultiQubit *multiQubit, int numQubits, QUESTEnv env)
 	multiQubit->numQubits = numQubits;
 	multiQubit->numAmps = numAmpsPerRank;
 	multiQubit->chunkId = env.rank;
+	multiQubit->numChunks = env.numRanks;
 
 	initStateVec(multiQubit);
-	printf("Number of amps per rank is %ld.\n", numAmpsPerRank);
+	if (env.rank==0) printf("Number of amps per rank is %ld.\n", numAmpsPerRank);
 }
 
 void destroyMultiQubit(MultiQubit multiQubit, QUESTEnv env){
@@ -78,7 +81,7 @@ void initStateVec (MultiQubit *multiQubit)
 	// dimension of the state vector
 	stateVecSize = multiQubit->numAmps;
 
-	printf("stateVecSize=%Ld   now performing init with only one thread:\n",stateVecSize);
+	if (DEBUG) printf("stateVecSize=%Ld   now performing init with only one thread:\n",stateVecSize);
 
 	// Can't use multiQubit->stateVec as a private OMP var
 	double *stateVecReal = multiQubit->stateVec.real;
@@ -103,7 +106,7 @@ void initStateVec (MultiQubit *multiQubit)
 		stateVecImag[0] = 0.0;
 	}
 
-	printf("COMPLETED INIT\n");
+	if (DEBUG) printf("COMPLETED INIT\n");
 }
 
 /** Rotate a single qubit in the state vector of probability amplitudes, given the angle rotation arguments.
