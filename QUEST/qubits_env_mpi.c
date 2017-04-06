@@ -8,6 +8,11 @@ An implementation of the API in qubits.h for an MPI environment.
 # include "qubits_internal.h"
 
 # define DEBUG 0
+static int isChunkToSkipInFindPZero(int chunkId, int chunkSize, int measureQubit);
+static int chunkIsUpper(int chunkId, int chunkSize, int rotQubit);
+static void getRotAngle(int chunkIsUpper, Complex *rot1, Complex *rot2, Complex alpha, Complex beta);
+static int getChunkPairId(int chunkIsUpper, int chunkId, int chunkSize, int rotQubit);
+static int halfMatrixBlockFitsInChunk(int chunkSize, int rotQubit);
 
 void initQUESTEnv(QUESTEnv *env){
         // init MPI environment
@@ -51,7 +56,7 @@ is in the range of values to be skipped
 @return int -- 1: skip, 0: don't skip
 */
 
-int isChunkToSkipInFindPZero(int chunkId, int chunkSize, int measureQubit){
+static int isChunkToSkipInFindPZero(int chunkId, int chunkSize, int measureQubit){
         long long int sizeHalfBlock = 1LL << (measureQubit);
         int numChunksToSkip = sizeHalfBlock/chunkSize;
         // calculate probability by summing over numChunksToSkip, then skipping numChunksToSkip, etc
@@ -84,7 +89,7 @@ a block.
 @return 1: chunk is in upper half of block, 0: chunk is in lower half of block 
 */
 
-int chunkIsUpper(int chunkId, int chunkSize, int rotQubit)
+static int chunkIsUpper(int chunkId, int chunkSize, int rotQubit)
 {       
         long long int sizeHalfBlock = 1LL << (rotQubit);
         long long int sizeBlock = sizeHalfBlock*2;
@@ -105,7 +110,7 @@ stateLower = rot1 * stateUpper + conj(rot2)  * stateLower
 @endverbatim
 @param[in] alpha, beta initial rotation values 
 */
-void getRotAngle(int chunkIsUpper, Complex *rot1, Complex *rot2, Complex alpha, Complex beta)
+static void getRotAngle(int chunkIsUpper, Complex *rot1, Complex *rot2, Complex alpha, Complex beta)
 {
         if (chunkIsUpper){
                 *rot1=alpha;
@@ -126,7 +131,7 @@ update values in my chunk (with chunkId) when rotating rotQubit.
 @return chunkId of chunk required to rotate rotQubit 
 */
 
-int getChunkPairId(int chunkIsUpper, int chunkId, int chunkSize, int rotQubit)
+static int getChunkPairId(int chunkIsUpper, int chunkId, int chunkSize, int rotQubit)
 {
         long long int sizeHalfBlock = 1LL << (rotQubit);
         int chunksPerHalfBlock = sizeHalfBlock/chunkSize;
@@ -145,7 +150,7 @@ blocks that fit within a single chunk.
 @return 1: one chunk fits in one block 0: chunk is larger than block
 */
 
-int halfMatrixBlockFitsInChunk(int chunkSize, int rotQubit)
+static int halfMatrixBlockFitsInChunk(int chunkSize, int rotQubit)
 {
         long long int sizeHalfBlock = 1LL << (rotQubit);
         if (chunkSize > sizeHalfBlock) return 1;

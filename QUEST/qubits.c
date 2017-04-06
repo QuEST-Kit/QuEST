@@ -10,6 +10,8 @@
 
 # define DEBUG 0
 
+static int extractBit (const int locationOfBitFromRight, const long long int theEncodedNumber);
+
 // Maihi: Where I have made changes I have marked SCB so please note those points - Simon
 
 /** Create a MultiQubit object representing a set of qubits.
@@ -48,7 +50,6 @@ void createMultiQubit(MultiQubit *multiQubit, int numQubits, QUESTEnv env)
 	multiQubit->chunkId = env.rank;
 	multiQubit->numChunks = env.numRanks;
 
-	initStateVec(multiQubit);
 	if (env.rank==0) printf("Number of amps per rank is %ld.\n", numAmpsPerRank);
 }
 /** Deallocate a MultiQubit object representing a set of qubits
@@ -461,7 +462,12 @@ double findProbabilityOfZeroDistributed (MultiQubit multiQubit,
 }
 
 // *** SCB edit: new definition of extractBit is much faster ***
-int extractBit (const int locationOfBitFromRight, const long long int theEncodedNumber)
+/** Get the value of the bit at a particular index in a number
+ * @param[in] locationOfBitFromRight location of bit in theEncodedNumber
+ * @param[in] theEncodedNumber number to search
+ * @return the value of the bit in theEncodedNumber
+ */
+static int extractBit (const int locationOfBitFromRight, const long long int theEncodedNumber)
 {
 	return (theEncodedNumber & ( 1LL << locationOfBitFromRight )) >> locationOfBitFromRight;
 }
@@ -469,17 +475,17 @@ int extractBit (const int locationOfBitFromRight, const long long int theEncoded
 /** Implement the control phase       
 (the two qubit phase gate).
 **** REWRITE TO USE MULTIQUBIT
-//     input:                                                           //
-//                    numQubits     -- number of qubits                 //
-//                    idQubit1,     -- specified qubits                 //
-//                    idQubit2                                          //
-//                    stateVecReal, -- real/imag parts of               //
-//                    stateVecImag     the state vector                 //
-//                                                                      //
-//     output:                                                          //
-//                    stateVecReal, -- real/imag parts of               //
-//                    stateVecImag     the state vector (overwritten)   //
-//                                                                      //
+     input:                                                           //
+                    numQubits     -- number of qubits                 //
+                    idQubit1,     -- specified qubits                 //
+                    idQubit2                                          //
+                    stateVecReal, -- real/imag parts of               //
+                    stateVecImag     the state vector                 //
+                                                                      //
+     output:                                                          //
+                    stateVecReal, -- real/imag parts of               //
+                    stateVecImag     the state vector (overwritten)   //
+                                                                      //
 */
 
 void controlPhaseGate (const int numQubits, const int idQubit1, const int idQubit2,
