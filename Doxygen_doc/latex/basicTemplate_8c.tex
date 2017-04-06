@@ -1,27 +1,27 @@
-\hypertarget{basicTemplate_8c}{}\subsection{basic\+Template.\+c File Reference}
-\label{basicTemplate_8c}\index{basic\+Template.\+c@{basic\+Template.\+c}}
+\hypertarget{basicTemplate_8c}{
+\subsection{basicTemplate.c File Reference}
+\label{basicTemplate_8c}\index{basicTemplate.c@{basicTemplate.c}}
+}
 
 
-Basic template for using the Q\+U\+E\+ST library.  
-
-
-{\ttfamily \#include $<$stdio.\+h$>$}\\*
-{\ttfamily \#include $<$stdlib.\+h$>$}\\*
-{\ttfamily \#include $<$time.\+h$>$}\\*
-{\ttfamily \#include $<$math.\+h$>$}\\*
-{\ttfamily \#include $<$unistd.\+h$>$}\\*
-{\ttfamily \#include $<$string.\+h$>$}\\*
-{\ttfamily \#include $<$omp.\+h$>$}\\*
-{\ttfamily \#include \char`\"{}Q\+U\+E\+S\+T/qubits.\+h\char`\"{}}\\*
-\subsubsection*{Macros}
+Basic template for using the QUEST library.  
+{\ttfamily \#include $<$stdio.h$>$}\par
+{\ttfamily \#include $<$stdlib.h$>$}\par
+{\ttfamily \#include $<$time.h$>$}\par
+{\ttfamily \#include $<$math.h$>$}\par
+{\ttfamily \#include $<$unistd.h$>$}\par
+{\ttfamily \#include $<$string.h$>$}\par
+{\ttfamily \#include $<$omp.h$>$}\par
+{\ttfamily \#include \char`\"{}QUEST/qubits.h\char`\"{}}\par
+\subsubsection*{Defines}
 \begin{DoxyCompactItemize}
 \item 
-\#define \hyperlink{basicTemplate_8c_a353abace49aefb52015b80290cf26d77}{Max\+Angles}~10
-\begin{DoxyCompactList}\small\item\em Max number of angles used to define qubit rotation. \end{DoxyCompactList}\item 
-\#define \hyperlink{basicTemplate_8c_a8e2ba5722f048e5a9cd58d09085f6cb1}{max\+Num\+Qubits}~40
-\begin{DoxyCompactList}\small\item\em Max number of qubits in the system. \end{DoxyCompactList}\item 
-\#define \hyperlink{basicTemplate_8c_a64394210bc1694536cbb8411d2bab5ed}{R\+E\+P\+O\+R\+T\+\_\+\+S\+T\+A\+TE}~1
-\begin{DoxyCompactList}\small\item\em 1\+: print end qubit state to file, 0\+: don\textquotesingle{}t print \end{DoxyCompactList}\end{DoxyCompactItemize}
+\#define \hyperlink{basicTemplate_8c_a353abace49aefb52015b80290cf26d77}{MaxAngles}~10
+\begin{DoxyCompactList}\small\item\em Max number of angles used to define qubit rotation. \item\end{DoxyCompactList}\item 
+\#define \hyperlink{basicTemplate_8c_a8e2ba5722f048e5a9cd58d09085f6cb1}{maxNumQubits}~40
+\begin{DoxyCompactList}\small\item\em Max number of qubits in the system. \item\end{DoxyCompactList}\item 
+\#define \hyperlink{basicTemplate_8c_a64394210bc1694536cbb8411d2bab5ed}{REPORT\_\-STATE}~1
+\begin{DoxyCompactList}\small\item\em 1: print end qubit state to file, 0: don't print \item\end{DoxyCompactList}\end{DoxyCompactItemize}
 \subsubsection*{Functions}
 \begin{DoxyCompactItemize}
 \item 
@@ -30,216 +30,203 @@ int \hyperlink{basicTemplate_8c_a0b1907e3d123f469a739aa425bd05574}{main} (int na
 \subsubsection*{Variables}
 \begin{DoxyCompactItemize}
 \item 
-const long double \hyperlink{basicTemplate_8c_a00c9db5f4f80636d4da765f0893743f6}{Pi} = 3.\+14159265358979323846264338327950288419716939937510
+const long double \hyperlink{basicTemplate_8c_a00c9db5f4f80636d4da765f0893743f6}{Pi} = 3.14159265358979323846264338327950288419716939937510
 \end{DoxyCompactItemize}
 
 
 \subsubsection{Detailed Description}
-Basic template for using the Q\+U\+E\+ST library. 
+Basic template for using the QUEST library. In general, leave the initialisation and cleanup sections as they are and edit the rotations, measurement and phase gate sections. 
 
-In general, leave the initialisation and cleanup sections as they are and edit the rotations, measurement and phase gate sections. 
+Definition in file \hyperlink{basicTemplate_8c_source}{basicTemplate.c}.
 
-\subsubsection{Macro Definition Documentation}
-\index{basic\+Template.\+c@{basic\+Template.\+c}!Max\+Angles@{Max\+Angles}}
-\index{Max\+Angles@{Max\+Angles}!basic\+Template.\+c@{basic\+Template.\+c}}
-\paragraph[{\texorpdfstring{Max\+Angles}{MaxAngles}}]{\setlength{\rightskip}{0pt plus 5cm}\#define Max\+Angles~10}\hypertarget{basicTemplate_8c_a353abace49aefb52015b80290cf26d77}{}\label{basicTemplate_8c_a353abace49aefb52015b80290cf26d77}
+\subsubsection{Define Documentation}
+\hypertarget{basicTemplate_8c_a353abace49aefb52015b80290cf26d77}{
+\index{basicTemplate.c@{basicTemplate.c}!MaxAngles@{MaxAngles}}
+\index{MaxAngles@{MaxAngles}!basicTemplate.c@{basicTemplate.c}}
+\paragraph[{MaxAngles}]{\setlength{\rightskip}{0pt plus 5cm}\#define MaxAngles~10}\hfill}
+\label{basicTemplate_8c_a353abace49aefb52015b80290cf26d77}
 
 
 Max number of angles used to define qubit rotation. 
 
+Definition at line 18 of file basicTemplate.c.
 
-
-Definition at line 18 of file basic\+Template.\+c.
-
-
-
-Referenced by main().
-
-\index{basic\+Template.\+c@{basic\+Template.\+c}!max\+Num\+Qubits@{max\+Num\+Qubits}}
-\index{max\+Num\+Qubits@{max\+Num\+Qubits}!basic\+Template.\+c@{basic\+Template.\+c}}
-\paragraph[{\texorpdfstring{max\+Num\+Qubits}{maxNumQubits}}]{\setlength{\rightskip}{0pt plus 5cm}\#define max\+Num\+Qubits~40}\hypertarget{basicTemplate_8c_a8e2ba5722f048e5a9cd58d09085f6cb1}{}\label{basicTemplate_8c_a8e2ba5722f048e5a9cd58d09085f6cb1}
+Referenced by main().\hypertarget{basicTemplate_8c_a8e2ba5722f048e5a9cd58d09085f6cb1}{
+\index{basicTemplate.c@{basicTemplate.c}!maxNumQubits@{maxNumQubits}}
+\index{maxNumQubits@{maxNumQubits}!basicTemplate.c@{basicTemplate.c}}
+\paragraph[{maxNumQubits}]{\setlength{\rightskip}{0pt plus 5cm}\#define maxNumQubits~40}\hfill}
+\label{basicTemplate_8c_a8e2ba5722f048e5a9cd58d09085f6cb1}
 
 
 Max number of qubits in the system. 
 
+Definition at line 20 of file basicTemplate.c.
+
+Referenced by main().\hypertarget{basicTemplate_8c_a64394210bc1694536cbb8411d2bab5ed}{
+\index{basicTemplate.c@{basicTemplate.c}!REPORT\_\-STATE@{REPORT\_\-STATE}}
+\index{REPORT\_\-STATE@{REPORT\_\-STATE}!basicTemplate.c@{basicTemplate.c}}
+\paragraph[{REPORT\_\-STATE}]{\setlength{\rightskip}{0pt plus 5cm}\#define REPORT\_\-STATE~1}\hfill}
+\label{basicTemplate_8c_a64394210bc1694536cbb8411d2bab5ed}
 
 
-Definition at line 20 of file basic\+Template.\+c.
+1: print end qubit state to file, 0: don't print 
 
-
-
-Referenced by main().
-
-\index{basic\+Template.\+c@{basic\+Template.\+c}!R\+E\+P\+O\+R\+T\+\_\+\+S\+T\+A\+TE@{R\+E\+P\+O\+R\+T\+\_\+\+S\+T\+A\+TE}}
-\index{R\+E\+P\+O\+R\+T\+\_\+\+S\+T\+A\+TE@{R\+E\+P\+O\+R\+T\+\_\+\+S\+T\+A\+TE}!basic\+Template.\+c@{basic\+Template.\+c}}
-\paragraph[{\texorpdfstring{R\+E\+P\+O\+R\+T\+\_\+\+S\+T\+A\+TE}{REPORT_STATE}}]{\setlength{\rightskip}{0pt plus 5cm}\#define R\+E\+P\+O\+R\+T\+\_\+\+S\+T\+A\+TE~1}\hypertarget{basicTemplate_8c_a64394210bc1694536cbb8411d2bab5ed}{}\label{basicTemplate_8c_a64394210bc1694536cbb8411d2bab5ed}
-
-
-1\+: print end qubit state to file, 0\+: don\textquotesingle{}t print 
-
-
-
-Definition at line 22 of file basic\+Template.\+c.
-
-
+Definition at line 22 of file basicTemplate.c.
 
 Referenced by main().
-
-
 
 \subsubsection{Function Documentation}
-\index{basic\+Template.\+c@{basic\+Template.\+c}!main@{main}}
-\index{main@{main}!basic\+Template.\+c@{basic\+Template.\+c}}
-\paragraph[{\texorpdfstring{main(int narg, char $\ast$$\ast$varg)}{main(int narg, char **varg)}}]{\setlength{\rightskip}{0pt plus 5cm}int main (
-\begin{DoxyParamCaption}
-\item[{int}]{narg, }
-\item[{char $\ast$$\ast$}]{varg}
-\end{DoxyParamCaption}
-)}\hypertarget{basicTemplate_8c_a0b1907e3d123f469a739aa425bd05574}{}\label{basicTemplate_8c_a0b1907e3d123f469a739aa425bd05574}
+\hypertarget{basicTemplate_8c_a0b1907e3d123f469a739aa425bd05574}{
+\index{basicTemplate.c@{basicTemplate.c}!main@{main}}
+\index{main@{main}!basicTemplate.c@{basicTemplate.c}}
+\paragraph[{main}]{\setlength{\rightskip}{0pt plus 5cm}int main (int {\em narg}, \/  char $\ast$$\ast$ {\em varg})}\hfill}
+\label{basicTemplate_8c_a0b1907e3d123f469a739aa425bd05574}
 
 
-Definition at line 30 of file basic\+Template.\+c.
+Definition at line 30 of file basicTemplate.c.
 
-
-
-References calc\+Total\+Probability(), close\+Q\+U\+E\+S\+T\+Env(), create\+Multi\+Qubit(), destroy\+Multi\+Qubit(), Complex\+::imag, init\+Q\+U\+E\+S\+T\+Env(), init\+State\+Vec(), Max\+Angles, max\+Num\+Qubits, Q\+U\+E\+S\+T\+Env\+::rank, Complex\+::real, R\+E\+P\+O\+R\+T\+\_\+\+S\+T\+A\+TE, report\+Multi\+Qubit\+Params(), report\+Q\+U\+E\+S\+T\+Env(), report\+State(), and rotate\+Qubit().
+References calcTotalProbability(), closeQUESTEnv(), createMultiQubit(), destroyMultiQubit(), Complex::imag, initQUESTEnv(), initStateVec(), MaxAngles, maxNumQubits, QUESTEnv::rank, Complex::real, REPORT\_\-STATE, reportMultiQubitParams(), reportQUESTEnv(), reportState(), and rotateQubit().
 
 
 \begin{DoxyCode}
-30                                  \{
+30                                  {
 31 
-32         \textcolor{comment}{//}
-33         \textcolor{comment}{// ===== INITIALISATION}
-34         \textcolor{comment}{//}
+32         //
+33         // ===== INITIALISATION
+34         //
 35         
-36         \textcolor{comment}{// INIT ENVIRONMENT: ALWAYS REQUIRED ONCE AT BEGINNING OF PROGRAM}
-37         \textcolor{comment}{// These two lines will automatically set up the environment (multinode,}
-38         \textcolor{comment}{// openMP only etc)  }
-39         \hyperlink{structQUESTEnv}{QUESTEnv} env;
-40         \hyperlink{qubits_8h_a652d8c53f8f1cfb096133791de2b219d}{initQUESTEnv}(&env);
+36         // INIT ENVIRONMENT: ALWAYS REQUIRED ONCE AT BEGINNING OF PROGRAM
+37         // These two lines will automatically set up the environment (multinode,
+38         // openMP only etc)  
+39         QUESTEnv env;
+40         initQUESTEnv(&env);
 41 
-42         \textcolor{comment}{// model vars}
-43         \textcolor{keywordtype}{int} numQubits;
-44         \textcolor{keywordtype}{long} \textcolor{keywordtype}{int} index;
-45         
-46         \textcolor{comment}{// get number of qubits from command line argument}
-47         \textcolor{keywordflow}{if} (narg >= 2) \{
-48                 numQubits = atoi(varg[1]);
-49                 \textcolor{keywordflow}{if} (numQubits < 1 || numQubits > \hyperlink{basicTemplate_8c_a8e2ba5722f048e5a9cd58d09085f6cb1}{maxNumQubits}) \{
-50                         printf(\textcolor{stringliteral}{" *** error: argument %d out of range (1 -- %d)\(\backslash\)n"}, numQubits,maxNumQubits);
-51                         exit (EXIT\_FAILURE);
-52                 \}
-53         \} \textcolor{keywordflow}{else} \{
-54                 printf(\textcolor{stringliteral}{" *** error: too few arguments, number of qubits expected\(\backslash\)n"});
-55                 exit (EXIT\_FAILURE);
-56         \}
-57 
-58         \textcolor{comment}{// CREATE QUBIT OBJECT: REQUIRED ONCE PER MULTIQUBIT OBJECT     }
-59         \textcolor{comment}{// Before doing any operations on a set of qubits, create the MultiQubit object that will be used
-       to }
-60         \textcolor{comment}{// represent the qubits}
-61         \hyperlink{structMultiQubit}{MultiQubit} multiQubit; 
-62         \hyperlink{qubits_8c_ae729f311efd2a426ce5161df3e017a16}{createMultiQubit}(&multiQubit, numQubits, env);
-63         
-64         \textcolor{comment}{// Reporting}
-65         \textcolor{keywordflow}{if} (env.\hyperlink{structQUESTEnv_a1bdb6d425a2ce6a468f93929c0b26d73}{rank}==0) \{
-66                 printf(\textcolor{stringliteral}{"Demo of single qubit rotations.\(\backslash\)n"});
-67         \}
-68         \hyperlink{qubits_8c_aa5e77e0e64f3a4a3d3f5cc7382bffcd9}{reportMultiQubitParams}(multiQubit);
-69         \hyperlink{qubits_8h_aa5d0566a6ef6519ff7b5241915fbf170}{reportQUESTEnv}(env);
-70 
-71         \textcolor{comment}{// initialise the state to |0000..0>}
-72         \hyperlink{qubits_8c_a492d10377278f685c7a1fabc3ee60623}{initStateVec} (&multiQubit);
+42         // model vars
+43         int numQubits;
+44         
+45         // get number of qubits from command line argument
+46         if (narg >= 2) {
+47                 numQubits = atoi(varg[1]);
+48                 if (numQubits < 1 || numQubits > maxNumQubits) {
+49                         printf(" *** error: argument %d out of range (1 -- %d)\n"
+      , numQubits,maxNumQubits);
+50                         exit (EXIT_FAILURE);
+51                 }
+52         } else {
+53                 printf(" *** error: too few arguments, number of qubits expected\
+      n");
+54                 exit (EXIT_FAILURE);
+55         }
+56 
+57         // CREATE QUBIT OBJECT: REQUIRED ONCE PER MULTIQUBIT OBJECT     
+58         // Before doing any operations on a set of qubits, create the MultiQubit 
+      object that will be used to 
+59         // represent the qubits
+60         MultiQubit multiQubit; 
+61         createMultiQubit(&multiQubit, numQubits, env);
+62         
+63         // Reporting
+64         if (env.rank==0) {
+65                 printf("Demo of single qubit rotations.\n");
+66         }
+67         reportMultiQubitParams(multiQubit);
+68         reportQUESTEnv(env);
+69 
+70         // initialise the state to |0000..0>
+71         initStateVec (&multiQubit);
+72 
 73 
-74 
-75         \textcolor{comment}{//}
-76         \textcolor{comment}{// ===== ROTATIONS}
-77         \textcolor{comment}{//}
-78 
-79         \textcolor{comment}{// INITIALISE QUBIT ROTATION}
-80         \textcolor{comment}{// Edit these lines to change rotation angle}
-81         \textcolor{keywordtype}{double} ang1,ang2,ang3;
-82         \hyperlink{structComplex}{Complex} alpha, beta;
-83 
-84         \textcolor{comment}{// define rotation angles}
-85         \textcolor{keywordtype}{double} angles[\hyperlink{basicTemplate_8c_a353abace49aefb52015b80290cf26d77}{MaxAngles}][3] = \{
-86                 \{ 1.2320,  0.4230, -0.6523\},
-87                 \{ 2.1213,  0.0000,  3.6520\},
-88                 \{-3.1213,  5.0230,  0.1230\},
-89                 \{ 5.2341, -3.1001, -1.2340\},
-90                 \{-0.1234, -0.9876,  4.1234\}
-91         \};
-92         \textcolor{keywordtype}{int} numAngles=5,iAngle;
-93 
-94         \textcolor{comment}{// rotate}
-95         ang1 = angles[0][0];
-96         ang2 = angles[0][1];
-97         ang3 = angles[0][2];
-98 
-99         alpha.\hyperlink{structComplex_a0138f5fe2b2c6180b8fcda77a7aa51c5}{real} = cos(ang1) * cos(ang2);
-100         alpha.\hyperlink{structComplex_a2bb90cc563599c3c8bdec9acf9ea40a6}{imag} = cos(ang1) * sin(ang2);
-101         beta.\hyperlink{structComplex_a0138f5fe2b2c6180b8fcda77a7aa51c5}{real}  = sin(ang1) * cos(ang3);
-102         beta.\hyperlink{structComplex_a2bb90cc563599c3c8bdec9acf9ea40a6}{imag}  = sin(ang1) * sin(ang3);
+74         //
+75         // ===== ROTATIONS
+76         //
+77 
+78         // INITIALISE QUBIT ROTATION
+79         // Edit these lines to change rotation angle
+80         double ang1,ang2,ang3;
+81         Complex alpha, beta;
+82 
+83         // define rotation angles
+84         double angles[MaxAngles][3] = {
+85                 { 1.2320,  0.4230, -0.6523},
+86                 { 2.1213,  0.0000,  3.6520},
+87                 {-3.1213,  5.0230,  0.1230},
+88                 { 5.2341, -3.1001, -1.2340},
+89                 {-0.1234, -0.9876,  4.1234}
+90         };
+91 
+92         // rotate
+93         ang1 = angles[0][0];
+94         ang2 = angles[0][1];
+95         ang3 = angles[0][2];
+96 
+97         alpha.real = cos(ang1) * cos(ang2);
+98         alpha.imag = cos(ang1) * sin(ang2);
+99         beta.real  = sin(ang1) * cos(ang3);
+100         beta.imag  = sin(ang1) * sin(ang3);
+101 
+102         int rotQubit;
 103 
-104         \textcolor{keywordtype}{int} rotQubit;
-105 
-106         \textcolor{comment}{// DO QUBIT ROTATION}
-107         \textcolor{keywordflow}{if} (env.\hyperlink{structQUESTEnv_a1bdb6d425a2ce6a468f93929c0b26d73}{rank}==0) printf(\textcolor{stringliteral}{"Performing qubit rotation\(\backslash\)n"});
-108         \textcolor{comment}{// Edit these lines to perform rotations as required}
-109         \textcolor{keywordflow}{for} (rotQubit=0; rotQubit<numQubits; rotQubit++) \{
-110                 \textcolor{comment}{// do rotation of each qubit}
-111                 \hyperlink{qubits_8h_a4ba468aa69f812efd1f964e10a45ca2f}{rotateQubit}(multiQubit,rotQubit,alpha,beta);
-112         \}
-113         \textcolor{comment}{// END QUBIT ROTATION}
-114 
-115         \textcolor{comment}{// Verification: check vector size is unchanged}
-116         \textcolor{keywordtype}{double} totalProbability;
-117         totalProbability = \hyperlink{qubits_8h_a2205c8fde15213df52040dc3df233090}{calcTotalProbability}(multiQubit);
-118         \textcolor{keywordflow}{if} (env.\hyperlink{structQUESTEnv_a1bdb6d425a2ce6a468f93929c0b26d73}{rank}==0) printf(\textcolor{stringliteral}{"VERIFICATION: total probability=%.14f\(\backslash\)n"}, totalProbability);
-119 
-120         \textcolor{comment}{// report state vector to file}
-121         \textcolor{keywordflow}{if} (\hyperlink{basicTemplate_8c_a64394210bc1694536cbb8411d2bab5ed}{REPORT\_STATE})\{
-122                 \hyperlink{qubits_8c_a96f4de9ce7fefc7680a44d601fc3d894}{reportState}(multiQubit);
-123         \}
-124 
-125         \textcolor{comment}{//}
-126         \textcolor{comment}{// ===== perform a measurement}
-127         \textcolor{comment}{//}
+104         // DO QUBIT ROTATION
+105         if (env.rank==0) printf("Performing qubit rotation\n");
+106         // Edit these lines to perform rotations as required
+107         for (rotQubit=0; rotQubit<numQubits; rotQubit++) {
+108                 // do rotation of each qubit
+109                 rotateQubit(multiQubit,rotQubit,alpha,beta);
+110         }
+111         // END QUBIT ROTATION
+112 
+113         // Verification: check vector size is unchanged
+114         double totalProbability;
+115         totalProbability = calcTotalProbability(multiQubit);
+116         if (env.rank==0) printf("VERIFICATION: total probability=%.14f\n", totalP
+      robability);
+117 
+118         // report state vector to file
+119         if (REPORT_STATE){
+120                 reportState(multiQubit);
+121         }
+122 
+123         //
+124         // ===== perform a measurement
+125         //
+126         
+127         // TO BE IMPLEMENTED
 128         
-129         \textcolor{comment}{// TO BE IMPLEMENTED}
-130         
-131         \textcolor{comment}{//}
-132         \textcolor{comment}{// ===== two qubit phase gate}
-133         \textcolor{comment}{//}
-134         
-135         \textcolor{comment}{// TO BE IMPLEMENTED}
-136 
-137         \textcolor{comment}{//}
-138         \textcolor{comment}{// ======== CLEANUP}
-139         \textcolor{comment}{//}
-140         
-141         \textcolor{comment}{// free memory}
-142 
-143         \textcolor{comment}{// REQUIRED ONCE PER MULTIQUBIT OBJECT  }
-144         \textcolor{comment}{// When all operations on a set of qubits are completed, destroy the object}
-145         \hyperlink{qubits_8c_ab796aea79288b974f63474db650be878}{destroyMultiQubit}(multiQubit, env);
-146 
-147 
-148         \textcolor{comment}{// ALWAYS REQUIRED ONCE AT END OF PROGRAM: }
-149         \textcolor{comment}{// These two lines will perform any necessary cleanup of the environment (multinode,}
-150         \textcolor{comment}{// openMP only etc)  }
-151         \hyperlink{qubits_8h_ad7494473d827399d7fd9c327ea3a23e6}{closeQUESTEnv}(env);
-152 
-153         \textcolor{keywordflow}{return} EXIT\_SUCCESS;
-154 \}
+129         //
+130         // ===== two qubit phase gate
+131         //
+132         
+133         // TO BE IMPLEMENTED
+134 
+135         //
+136         // ======== CLEANUP
+137         //
+138         
+139         // free memory
+140 
+141         // REQUIRED ONCE PER MULTIQUBIT OBJECT  
+142         // When all operations on a set of qubits are completed, destroy the obje
+      ct
+143         destroyMultiQubit(multiQubit, env);
+144 
+145 
+146         // ALWAYS REQUIRED ONCE AT END OF PROGRAM: 
+147         // These two lines will perform any necessary cleanup of the environment 
+      (multinode,
+148         // openMP only etc)  
+149         closeQUESTEnv(env);
+150 
+151         return EXIT_SUCCESS;
+152 }
 \end{DoxyCode}
 
 
 \subsubsection{Variable Documentation}
-\index{basic\+Template.\+c@{basic\+Template.\+c}!Pi@{Pi}}
-\index{Pi@{Pi}!basic\+Template.\+c@{basic\+Template.\+c}}
-\paragraph[{\texorpdfstring{Pi}{Pi}}]{\setlength{\rightskip}{0pt plus 5cm}const long double Pi = 3.\+14159265358979323846264338327950288419716939937510}\hypertarget{basicTemplate_8c_a00c9db5f4f80636d4da765f0893743f6}{}\label{basicTemplate_8c_a00c9db5f4f80636d4da765f0893743f6}
+\hypertarget{basicTemplate_8c_a00c9db5f4f80636d4da765f0893743f6}{
+\index{basicTemplate.c@{basicTemplate.c}!Pi@{Pi}}
+\index{Pi@{Pi}!basicTemplate.c@{basicTemplate.c}}
+\paragraph[{Pi}]{\setlength{\rightskip}{0pt plus 5cm}const long double {\bf Pi} = 3.14159265358979323846264338327950288419716939937510}\hfill}
+\label{basicTemplate_8c_a00c9db5f4f80636d4da765f0893743f6}
 
 
-Definition at line 24 of file basic\+Template.\+c.
-
+Definition at line 24 of file basicTemplate.c.

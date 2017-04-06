@@ -65,7 +65,7 @@ Cleanup
 ```
 
 In general, leave the initialization and cleanup sections and edit the rotations, measurement and phase gate
-sections. Further explanations are in the template file. 
+sections. Further explanations are in the template file. The full list of QUEST library functions that can be used here is listed in qubits.h. 
 
 ## Multi node code
 

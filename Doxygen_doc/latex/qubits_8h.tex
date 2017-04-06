@@ -1,522 +1,378 @@
-\hypertarget{qubits_8h}{}\subsection{qubits.\+h File Reference}
-\label{qubits_8h}\index{qubits.\+h@{qubits.\+h}}
+\hypertarget{qubits_8h}{
+\subsection{qubits.h File Reference}
+\label{qubits_8h}\index{qubits.h@{qubits.h}}
+}
 
 
-The Q\+U\+E\+ST library A\+PI and objects.  
-
-
+The QUEST library API and objects.  
 \subsubsection*{Data Structures}
 \begin{DoxyCompactItemize}
 \item 
-struct \hyperlink{structComplexArray}{Complex\+Array}
-\begin{DoxyCompactList}\small\item\em Represents an array of complex numbers grouped into an array of real components and an array of coressponding complex components. \end{DoxyCompactList}\item 
+struct \hyperlink{structComplexArray}{ComplexArray}
+\begin{DoxyCompactList}\small\item\em Represents an array of complex numbers grouped into an array of real components and an array of coressponding complex components. \item\end{DoxyCompactList}\item 
 struct \hyperlink{structComplex}{Complex}
-\begin{DoxyCompactList}\small\item\em Represents one complex number. \end{DoxyCompactList}\item 
-struct \hyperlink{structMultiQubit}{Multi\+Qubit}
-\begin{DoxyCompactList}\small\item\em Represents a system of qubits. \end{DoxyCompactList}\item 
-struct \hyperlink{structQUESTEnv}{Q\+U\+E\+S\+T\+Env}
-\begin{DoxyCompactList}\small\item\em Information about the environment the program is running in. \end{DoxyCompactList}\end{DoxyCompactItemize}
-\subsubsection*{Typedefs}
-\begin{DoxyCompactItemize}
-\item 
-typedef struct \hyperlink{structComplexArray}{Complex\+Array} \hyperlink{qubits_8h_a19e00739fde70a851d068f322cf915c8}{Complex\+Array}
-\begin{DoxyCompactList}\small\item\em Represents an array of complex numbers grouped into an array of real components and an array of coressponding complex components. \end{DoxyCompactList}\item 
-typedef struct \hyperlink{structComplex}{Complex} \hyperlink{qubits_8h_ad59c9e471673c07782e6c403277ffd8d}{Complex}
-\begin{DoxyCompactList}\small\item\em Represents one complex number. \end{DoxyCompactList}\item 
-typedef struct \hyperlink{structMultiQubit}{Multi\+Qubit} \hyperlink{qubits_8h_af4123a681074068eeeee1562758eef61}{Multi\+Qubit}
-\begin{DoxyCompactList}\small\item\em Represents a system of qubits. \end{DoxyCompactList}\item 
-typedef struct \hyperlink{structQUESTEnv}{Q\+U\+E\+S\+T\+Env} \hyperlink{qubits_8h_adac9ca7891d3939c6f722f2f4e347f69}{Q\+U\+E\+S\+T\+Env}
-\begin{DoxyCompactList}\small\item\em Information about the environment the program is running in. \end{DoxyCompactList}\end{DoxyCompactItemize}
+\begin{DoxyCompactList}\small\item\em Represents one complex number. \item\end{DoxyCompactList}\item 
+struct \hyperlink{structMultiQubit}{MultiQubit}
+\begin{DoxyCompactList}\small\item\em Represents a system of qubits. \item\end{DoxyCompactList}\item 
+struct \hyperlink{structQUESTEnv}{QUESTEnv}
+\begin{DoxyCompactList}\small\item\em Information about the environment the program is running in. \item\end{DoxyCompactList}\end{DoxyCompactItemize}
 \subsubsection*{Functions}
 \begin{DoxyCompactItemize}
 \item 
-void \hyperlink{qubits_8h_ae729f311efd2a426ce5161df3e017a16}{create\+Multi\+Qubit} (\hyperlink{structMultiQubit}{Multi\+Qubit} $\ast$multi\+Qubit, int num\+Qubits, \hyperlink{structQUESTEnv}{Q\+U\+E\+S\+T\+Env} env)
-\begin{DoxyCompactList}\small\item\em Create a \hyperlink{structMultiQubit}{Multi\+Qubit} object representing a set of qubits. \end{DoxyCompactList}\item 
-void \hyperlink{qubits_8h_ab796aea79288b974f63474db650be878}{destroy\+Multi\+Qubit} (\hyperlink{structMultiQubit}{Multi\+Qubit} multi\+Qubit, \hyperlink{structQUESTEnv}{Q\+U\+E\+S\+T\+Env} env)
-\begin{DoxyCompactList}\small\item\em Deallocate a \hyperlink{structMultiQubit}{Multi\+Qubit} object representing a set of qubits Free memory allocated to state vector of probability amplitudes, including temporary vector for values copied from another chunk if running the distributed version. \end{DoxyCompactList}\item 
-void \hyperlink{qubits_8h_a96f4de9ce7fefc7680a44d601fc3d894}{report\+State} (\hyperlink{structMultiQubit}{Multi\+Qubit} multi\+Qubit)
-\begin{DoxyCompactList}\small\item\em Print the current state vector of probability amplitudes for a set of qubits to file. \end{DoxyCompactList}\item 
-void \hyperlink{qubits_8h_aa5e77e0e64f3a4a3d3f5cc7382bffcd9}{report\+Multi\+Qubit\+Params} (\hyperlink{structMultiQubit}{Multi\+Qubit} multi\+Qubit)
-\begin{DoxyCompactList}\small\item\em Report metainformation about a set of qubits\+: number of qubits, number of probability amplitudes. \end{DoxyCompactList}\item 
-void \hyperlink{qubits_8h_a492d10377278f685c7a1fabc3ee60623}{init\+State\+Vec} (\hyperlink{structMultiQubit}{Multi\+Qubit} $\ast$multi\+Qubit)
-\begin{DoxyCompactList}\small\item\em Initialise the state vector of probability amplitudes for a set of qubits to the zero state\+: $\vert$000...00$>$ \end{DoxyCompactList}\item 
-void \hyperlink{qubits_8h_a652d8c53f8f1cfb096133791de2b219d}{init\+Q\+U\+E\+S\+T\+Env} (\hyperlink{structQUESTEnv}{Q\+U\+E\+S\+T\+Env} $\ast$env)
-\begin{DoxyCompactList}\small\item\em Initialize Q\+U\+E\+ST environment. \end{DoxyCompactList}\item 
-void \hyperlink{qubits_8h_ad7494473d827399d7fd9c327ea3a23e6}{close\+Q\+U\+E\+S\+T\+Env} (\hyperlink{structQUESTEnv}{Q\+U\+E\+S\+T\+Env} env)
-\begin{DoxyCompactList}\small\item\em Close Q\+U\+E\+ST environment. \end{DoxyCompactList}\item 
-void \hyperlink{qubits_8h_a83dffc500bf5b4e41dd63ba1ea9422ae}{sync\+Q\+U\+E\+S\+T\+Env} (\hyperlink{structQUESTEnv}{Q\+U\+E\+S\+T\+Env} env)
-\begin{DoxyCompactList}\small\item\em Guarantees that all code up to the given point has been executed on all nodes. \end{DoxyCompactList}\item 
-void \hyperlink{qubits_8h_aa5d0566a6ef6519ff7b5241915fbf170}{report\+Q\+U\+E\+S\+T\+Env} (\hyperlink{structQUESTEnv}{Q\+U\+E\+S\+T\+Env} env)
-\begin{DoxyCompactList}\small\item\em Report information about the Q\+U\+E\+ST environment. \end{DoxyCompactList}\item 
-double \hyperlink{qubits_8h_a2205c8fde15213df52040dc3df233090}{calc\+Total\+Probability} (\hyperlink{structMultiQubit}{Multi\+Qubit} multi\+Qubit)
-\begin{DoxyCompactList}\small\item\em Calculate the probability of being in any state by taking the norm of the entire state vector. \end{DoxyCompactList}\item 
-void \hyperlink{qubits_8h_a4ba468aa69f812efd1f964e10a45ca2f}{rotate\+Qubit} (\hyperlink{structMultiQubit}{Multi\+Qubit} multi\+Qubit, const int rot\+Qubit, \hyperlink{structComplex}{Complex} alpha, \hyperlink{structComplex}{Complex} beta)
-\begin{DoxyCompactList}\small\item\em Rotate a single qubit in the state vector of probability amplitudes, given the angle rotation arguments. \end{DoxyCompactList}\item 
-double \hyperlink{qubits_8h_af31016680d01044cee9321d4cae32703}{find\+Probability\+Of\+Zero} (\hyperlink{structMultiQubit}{Multi\+Qubit} multi\+Qubit, const int measure\+Qubit)
-\begin{DoxyCompactList}\small\item\em Measure the probability of a specified qubit being in the zero state. \end{DoxyCompactList}\end{DoxyCompactItemize}
+void \hyperlink{qubits_8h_ae729f311efd2a426ce5161df3e017a16}{createMultiQubit} (\hyperlink{structMultiQubit}{MultiQubit} $\ast$multiQubit, int numQubits, \hyperlink{structQUESTEnv}{QUESTEnv} env)
+\begin{DoxyCompactList}\small\item\em Create a \hyperlink{structMultiQubit}{MultiQubit} object representing a set of qubits. \item\end{DoxyCompactList}\item 
+void \hyperlink{qubits_8h_ab796aea79288b974f63474db650be878}{destroyMultiQubit} (\hyperlink{structMultiQubit}{MultiQubit} multiQubit, \hyperlink{structQUESTEnv}{QUESTEnv} env)
+\begin{DoxyCompactList}\small\item\em Deallocate a \hyperlink{structMultiQubit}{MultiQubit} object representing a set of qubits Free memory allocated to state vector of probability amplitudes, including temporary vector for values copied from another chunk if running the distributed version. \item\end{DoxyCompactList}\item 
+void \hyperlink{qubits_8h_a96f4de9ce7fefc7680a44d601fc3d894}{reportState} (\hyperlink{structMultiQubit}{MultiQubit} multiQubit)
+\begin{DoxyCompactList}\small\item\em Print the current state vector of probability amplitudes for a set of qubits to file. \item\end{DoxyCompactList}\item 
+void \hyperlink{qubits_8h_aa5e77e0e64f3a4a3d3f5cc7382bffcd9}{reportMultiQubitParams} (\hyperlink{structMultiQubit}{MultiQubit} multiQubit)
+\begin{DoxyCompactList}\small\item\em Report metainformation about a set of qubits: number of qubits, number of probability amplitudes. \item\end{DoxyCompactList}\item 
+void \hyperlink{qubits_8h_a492d10377278f685c7a1fabc3ee60623}{initStateVec} (\hyperlink{structMultiQubit}{MultiQubit} $\ast$multiQubit)
+\begin{DoxyCompactList}\small\item\em Initialise the state vector of probability amplitudes for a set of qubits to the zero state: $|$000...00$>$. \item\end{DoxyCompactList}\item 
+void \hyperlink{qubits_8h_a652d8c53f8f1cfb096133791de2b219d}{initQUESTEnv} (\hyperlink{structQUESTEnv}{QUESTEnv} $\ast$env)
+\begin{DoxyCompactList}\small\item\em Initialize QUEST environment. \item\end{DoxyCompactList}\item 
+void \hyperlink{qubits_8h_ad7494473d827399d7fd9c327ea3a23e6}{closeQUESTEnv} (\hyperlink{structQUESTEnv}{QUESTEnv} env)
+\begin{DoxyCompactList}\small\item\em Close QUEST environment. \item\end{DoxyCompactList}\item 
+void \hyperlink{qubits_8h_a83dffc500bf5b4e41dd63ba1ea9422ae}{syncQUESTEnv} (\hyperlink{structQUESTEnv}{QUESTEnv} env)
+\begin{DoxyCompactList}\small\item\em Guarantees that all code up to the given point has been executed on all nodes. \item\end{DoxyCompactList}\item 
+void \hyperlink{qubits_8h_aa5d0566a6ef6519ff7b5241915fbf170}{reportQUESTEnv} (\hyperlink{structQUESTEnv}{QUESTEnv} env)
+\begin{DoxyCompactList}\small\item\em Report information about the QUEST environment. \item\end{DoxyCompactList}\item 
+double \hyperlink{qubits_8h_a2205c8fde15213df52040dc3df233090}{calcTotalProbability} (\hyperlink{structMultiQubit}{MultiQubit} multiQubit)
+\begin{DoxyCompactList}\small\item\em Calculate the probability of being in any state by taking the norm of the entire state vector. \item\end{DoxyCompactList}\item 
+void \hyperlink{qubits_8h_a4ba468aa69f812efd1f964e10a45ca2f}{rotateQubit} (\hyperlink{structMultiQubit}{MultiQubit} multiQubit, const int rotQubit, \hyperlink{structComplex}{Complex} alpha, \hyperlink{structComplex}{Complex} beta)
+\begin{DoxyCompactList}\small\item\em Rotate a single qubit in the state vector of probability amplitudes, given the angle rotation arguments. \item\end{DoxyCompactList}\item 
+double \hyperlink{qubits_8h_af31016680d01044cee9321d4cae32703}{findProbabilityOfZero} (\hyperlink{structMultiQubit}{MultiQubit} multiQubit, const int measureQubit)
+\begin{DoxyCompactList}\small\item\em Measure the probability of a specified qubit being in the zero state. \item\end{DoxyCompactList}\end{DoxyCompactItemize}
 
 
 \subsubsection{Detailed Description}
-The Q\+U\+E\+ST library A\+PI and objects. 
+The QUEST library API and objects. 
 
-
-
-\subsubsection{Typedef Documentation}
-\index{qubits.\+h@{qubits.\+h}!Complex@{Complex}}
-\index{Complex@{Complex}!qubits.\+h@{qubits.\+h}}
-\paragraph[{\texorpdfstring{Complex}{Complex}}]{\setlength{\rightskip}{0pt plus 5cm}typedef struct {\bf Complex}  {\bf Complex}}\hypertarget{qubits_8h_ad59c9e471673c07782e6c403277ffd8d}{}\label{qubits_8h_ad59c9e471673c07782e6c403277ffd8d}
-
-
-Represents one complex number. 
-
-\index{qubits.\+h@{qubits.\+h}!Complex\+Array@{Complex\+Array}}
-\index{Complex\+Array@{Complex\+Array}!qubits.\+h@{qubits.\+h}}
-\paragraph[{\texorpdfstring{Complex\+Array}{ComplexArray}}]{\setlength{\rightskip}{0pt plus 5cm}typedef struct {\bf Complex\+Array}  {\bf Complex\+Array}}\hypertarget{qubits_8h_a19e00739fde70a851d068f322cf915c8}{}\label{qubits_8h_a19e00739fde70a851d068f322cf915c8}
-
-
-Represents an array of complex numbers grouped into an array of real components and an array of coressponding complex components. 
-
-\index{qubits.\+h@{qubits.\+h}!Multi\+Qubit@{Multi\+Qubit}}
-\index{Multi\+Qubit@{Multi\+Qubit}!qubits.\+h@{qubits.\+h}}
-\paragraph[{\texorpdfstring{Multi\+Qubit}{MultiQubit}}]{\setlength{\rightskip}{0pt plus 5cm}typedef struct {\bf Multi\+Qubit}  {\bf Multi\+Qubit}}\hypertarget{qubits_8h_af4123a681074068eeeee1562758eef61}{}\label{qubits_8h_af4123a681074068eeeee1562758eef61}
-
-
-Represents a system of qubits. 
-
-Qubits are zero-\/based and the the first qubit is the rightmost \index{qubits.\+h@{qubits.\+h}!Q\+U\+E\+S\+T\+Env@{Q\+U\+E\+S\+T\+Env}}
-\index{Q\+U\+E\+S\+T\+Env@{Q\+U\+E\+S\+T\+Env}!qubits.\+h@{qubits.\+h}}
-\paragraph[{\texorpdfstring{Q\+U\+E\+S\+T\+Env}{QUESTEnv}}]{\setlength{\rightskip}{0pt plus 5cm}typedef struct {\bf Q\+U\+E\+S\+T\+Env}  {\bf Q\+U\+E\+S\+T\+Env}}\hypertarget{qubits_8h_adac9ca7891d3939c6f722f2f4e347f69}{}\label{qubits_8h_adac9ca7891d3939c6f722f2f4e347f69}
-
-
-Information about the environment the program is running in. 
-
-In practice, this holds info about M\+PI ranks and helps to hide M\+PI initialization code 
+Definition in file \hyperlink{qubits_8h_source}{qubits.h}.
 
 \subsubsection{Function Documentation}
-\index{qubits.\+h@{qubits.\+h}!calc\+Total\+Probability@{calc\+Total\+Probability}}
-\index{calc\+Total\+Probability@{calc\+Total\+Probability}!qubits.\+h@{qubits.\+h}}
-\paragraph[{\texorpdfstring{calc\+Total\+Probability(\+Multi\+Qubit multi\+Qubit)}{calcTotalProbability(MultiQubit multiQubit)}}]{\setlength{\rightskip}{0pt plus 5cm}double calc\+Total\+Probability (
-\begin{DoxyParamCaption}
-\item[{{\bf Multi\+Qubit}}]{multi\+Qubit}
-\end{DoxyParamCaption}
-)}\hypertarget{qubits_8h_a2205c8fde15213df52040dc3df233090}{}\label{qubits_8h_a2205c8fde15213df52040dc3df233090}
+\hypertarget{qubits_8h_a2205c8fde15213df52040dc3df233090}{
+\index{qubits.h@{qubits.h}!calcTotalProbability@{calcTotalProbability}}
+\index{calcTotalProbability@{calcTotalProbability}!qubits.h@{qubits.h}}
+\paragraph[{calcTotalProbability}]{\setlength{\rightskip}{0pt plus 5cm}double calcTotalProbability ({\bf MultiQubit} {\em multiQubit})}\hfill}
+\label{qubits_8h_a2205c8fde15213df52040dc3df233090}
 
 
-Calculate the probability of being in any state by taking the norm of the entire state vector. 
-
-Should be equal to 1. 
-\begin{DoxyParams}[1]{Parameters}
-\mbox{\tt in}  & {\em multi\+Qubit} & object representing a set of qubits \\
-\hline
-\end{DoxyParams}
+Calculate the probability of being in any state by taking the norm of the entire state vector. Should be equal to 1. 
+\begin{DoxyParams}{Parameters}
+\item[\mbox{$\leftarrow$} {\em multiQubit}]object representing a set of qubits \end{DoxyParams}
 \begin{DoxyReturn}{Returns}
 total probability 
 \end{DoxyReturn}
 
 
-Definition at line 36 of file qubits\+\_\+env\+\_\+local.\+c.
+Definition at line 37 of file qubits\_\-env\_\-local.c.
 
-
-
-References D\+E\+B\+UG, Complex\+Array\+::imag, Multi\+Qubit\+::num\+Amps, Multi\+Qubit\+::num\+Chunks, Complex\+Array\+::real, and Multi\+Qubit\+::state\+Vec.
-
-
+References DEBUG, ComplexArray::imag, MultiQubit::numAmps, MultiQubit::numChunks, ComplexArray::real, and MultiQubit::stateVec.
 
 Referenced by main().
 
 
 \begin{DoxyCode}
-36                                                   \{
-37         \textcolor{keywordtype}{double} pTotal=0; 
-38         \textcolor{keywordtype}{long} \textcolor{keywordtype}{long} \textcolor{keywordtype}{int} index;
-39         \textcolor{keywordtype}{long} \textcolor{keywordtype}{long} \textcolor{keywordtype}{int} numAmpsPerRank = multiQubit.\hyperlink{structMultiQubit_ae16f47d8b725c914fb7f66b6498d79db}{numAmps};
-40         \textcolor{keywordflow}{for} (index=0; index<numAmpsPerRank; index++)\{ 
-41                 pTotal+=multiQubit.\hyperlink{structMultiQubit_a45483190d6b01ef6b2f98f2bec9ab94f}{stateVec}.\hyperlink{structComplexArray_a1cf9fd31d6dce5ef618d2bcf3e4f8b69}{real}[index]*multiQubit.
-      \hyperlink{structMultiQubit_a45483190d6b01ef6b2f98f2bec9ab94f}{stateVec}.\hyperlink{structComplexArray_a1cf9fd31d6dce5ef618d2bcf3e4f8b69}{real}[index];      
-42                 pTotal+=multiQubit.\hyperlink{structMultiQubit_a45483190d6b01ef6b2f98f2bec9ab94f}{stateVec}.\hyperlink{structComplexArray_aa409fd14e1ff3e1fdcc53cc4eb77a7a8}{imag}[index]*multiQubit.
-      \hyperlink{structMultiQubit_a45483190d6b01ef6b2f98f2bec9ab94f}{stateVec}.\hyperlink{structComplexArray_aa409fd14e1ff3e1fdcc53cc4eb77a7a8}{imag}[index];      
-43         \} 
-44         \textcolor{keywordflow}{return} pTotal;
-45 \}
+37                                                   {
+38         double pTotal=0; 
+39         long long int index;
+40         long long int numAmpsPerRank = multiQubit.numAmps;
+41         for (index=0; index<numAmpsPerRank; index++){ 
+42                 pTotal+=multiQubit.stateVec.real[index]*multiQubit.stateVec.real[
+      index];      
+43                 pTotal+=multiQubit.stateVec.imag[index]*multiQubit.stateVec.imag[
+      index];      
+44         } 
+45         return pTotal;
+46 }
 \end{DoxyCode}
-\index{qubits.\+h@{qubits.\+h}!close\+Q\+U\+E\+S\+T\+Env@{close\+Q\+U\+E\+S\+T\+Env}}
-\index{close\+Q\+U\+E\+S\+T\+Env@{close\+Q\+U\+E\+S\+T\+Env}!qubits.\+h@{qubits.\+h}}
-\paragraph[{\texorpdfstring{close\+Q\+U\+E\+S\+T\+Env(\+Q\+U\+E\+S\+T\+Env env)}{closeQUESTEnv(QUESTEnv env)}}]{\setlength{\rightskip}{0pt plus 5cm}void close\+Q\+U\+E\+S\+T\+Env (
-\begin{DoxyParamCaption}
-\item[{{\bf Q\+U\+E\+S\+T\+Env}}]{env}
-\end{DoxyParamCaption}
-)}\hypertarget{qubits_8h_ad7494473d827399d7fd9c327ea3a23e6}{}\label{qubits_8h_ad7494473d827399d7fd9c327ea3a23e6}
+\hypertarget{qubits_8h_ad7494473d827399d7fd9c327ea3a23e6}{
+\index{qubits.h@{qubits.h}!closeQUESTEnv@{closeQUESTEnv}}
+\index{closeQUESTEnv@{closeQUESTEnv}!qubits.h@{qubits.h}}
+\paragraph[{closeQUESTEnv}]{\setlength{\rightskip}{0pt plus 5cm}void closeQUESTEnv ({\bf QUESTEnv} {\em env})}\hfill}
+\label{qubits_8h_ad7494473d827399d7fd9c327ea3a23e6}
 
 
-Close Q\+U\+E\+ST environment. 
-
-If something needs to be done to clean up the execution environment, such as finalizing M\+PI when running in distributed mode, it is handled here 
-\begin{DoxyParams}[1]{Parameters}
-\mbox{\tt in}  & {\em env} & object representing the execution environment. A single instance is used for each program \\
-\hline
-\end{DoxyParams}
+Close QUEST environment. If something needs to be done to clean up the execution environment, such as finalizing MPI when running in distributed mode, it is handled here 
+\begin{DoxyParams}{Parameters}
+\item[\mbox{$\leftarrow$} {\em env}]object representing the execution environment. A single instance is used for each program \end{DoxyParams}
 
 
-Definition at line 20 of file qubits\+\_\+env\+\_\+local.\+c.
-
-
+Definition at line 21 of file qubits\_\-env\_\-local.c.
 
 Referenced by main().
 
 
 \begin{DoxyCode}
-20                                 \{
-21         \textcolor{comment}{// MPI finalize goes here in MPI version. Call this function anyway for consistency}
-22 \}
+21                                 {
+22         // MPI finalize goes here in MPI version. Call this function anyway for c
+      onsistency
+23 }
 \end{DoxyCode}
-\index{qubits.\+h@{qubits.\+h}!create\+Multi\+Qubit@{create\+Multi\+Qubit}}
-\index{create\+Multi\+Qubit@{create\+Multi\+Qubit}!qubits.\+h@{qubits.\+h}}
-\paragraph[{\texorpdfstring{create\+Multi\+Qubit(\+Multi\+Qubit $\ast$multi\+Qubit, int num\+Qubits, Q\+U\+E\+S\+T\+Env env)}{createMultiQubit(MultiQubit *multiQubit, int numQubits, QUESTEnv env)}}]{\setlength{\rightskip}{0pt plus 5cm}void create\+Multi\+Qubit (
-\begin{DoxyParamCaption}
-\item[{{\bf Multi\+Qubit} $\ast$}]{multi\+Qubit, }
-\item[{int}]{num\+Qubits, }
-\item[{{\bf Q\+U\+E\+S\+T\+Env}}]{env}
-\end{DoxyParamCaption}
-)}\hypertarget{qubits_8h_ae729f311efd2a426ce5161df3e017a16}{}\label{qubits_8h_ae729f311efd2a426ce5161df3e017a16}
+\hypertarget{qubits_8h_ae729f311efd2a426ce5161df3e017a16}{
+\index{qubits.h@{qubits.h}!createMultiQubit@{createMultiQubit}}
+\index{createMultiQubit@{createMultiQubit}!qubits.h@{qubits.h}}
+\paragraph[{createMultiQubit}]{\setlength{\rightskip}{0pt plus 5cm}void createMultiQubit ({\bf MultiQubit} $\ast$ {\em multiQubit}, \/  int {\em numQubits}, \/  {\bf QUESTEnv} {\em env})}\hfill}
+\label{qubits_8h_ae729f311efd2a426ce5161df3e017a16}
 
 
-Create a \hyperlink{structMultiQubit}{Multi\+Qubit} object representing a set of qubits. 
-
-Allocate space for state vector of probability amplitudes, including space for temporary values to be copied from one other chunk if running the distributed version. Define properties related to the size of the set of qubits. 
-\begin{DoxyParams}[1]{Parameters}
-\mbox{\tt in,out}  & {\em multi\+Qubit} & object representing the set of qubits \\
-\hline
-\mbox{\tt in}  & {\em num\+Qubits} & number of qubits in the system \\
-\hline
-\mbox{\tt in}  & {\em env} & object representing the execution environment (local, multinode etc) \\
-\hline
-\end{DoxyParams}
+Create a \hyperlink{structMultiQubit}{MultiQubit} object representing a set of qubits. Allocate space for state vector of probability amplitudes, including space for temporary values to be copied from one other chunk if running the distributed version. Define properties related to the size of the set of qubits. 
+\begin{DoxyParams}{Parameters}
+\item[\mbox{$\leftrightarrow$} {\em multiQubit}]object representing the set of qubits \item[\mbox{$\leftarrow$} {\em numQubits}]number of qubits in the system \item[\mbox{$\leftarrow$} {\em env}]object representing the execution environment (local, multinode etc) \end{DoxyParams}
 
 
-Definition at line 24 of file qubits.\+c.
+Definition at line 24 of file qubits.c.
 
-
-
-References Multi\+Qubit\+::chunk\+Id, Complex\+Array\+::imag, Multi\+Qubit\+::num\+Amps, Multi\+Qubit\+::num\+Chunks, Multi\+Qubit\+::num\+Qubits, Q\+U\+E\+S\+T\+Env\+::num\+Ranks, Multi\+Qubit\+::pair\+State\+Vec, Q\+U\+E\+S\+T\+Env\+::rank, Complex\+Array\+::real, and Multi\+Qubit\+::state\+Vec.
-
-
+References MultiQubit::chunkId, ComplexArray::imag, MultiQubit::numAmps, MultiQubit::numChunks, MultiQubit::numQubits, QUESTEnv::numRanks, MultiQubit::pairStateVec, QUESTEnv::rank, ComplexArray::real, and MultiQubit::stateVec.
 
 Referenced by main().
 
 
 \begin{DoxyCode}
-25 \{
-26         \textcolor{keywordtype}{long} \textcolor{keywordtype}{long} \textcolor{keywordtype}{int} numAmps = 1L << numQubits;
-27         \textcolor{keywordtype}{long} \textcolor{keywordtype}{long} \textcolor{keywordtype}{int} numAmpsPerRank = numAmps/env.\hyperlink{structQUESTEnv_ab9d9ce82e2d5f1b39aa9efc3accb3742}{numRanks};
+25 {
+26         long long int numAmps = 1L << numQubits;
+27         long long int numAmpsPerRank = numAmps/env.numRanks;
 28 
-29         multiQubit->\hyperlink{structMultiQubit_a45483190d6b01ef6b2f98f2bec9ab94f}{stateVec}.\hyperlink{structComplexArray_a1cf9fd31d6dce5ef618d2bcf3e4f8b69}{real} = malloc(numAmpsPerRank * \textcolor{keyword}{sizeof}(multiQubit->
-      \hyperlink{structMultiQubit_a45483190d6b01ef6b2f98f2bec9ab94f}{stateVec}.\hyperlink{structComplexArray_a1cf9fd31d6dce5ef618d2bcf3e4f8b69}{real}));
-30         multiQubit->\hyperlink{structMultiQubit_a45483190d6b01ef6b2f98f2bec9ab94f}{stateVec}.\hyperlink{structComplexArray_aa409fd14e1ff3e1fdcc53cc4eb77a7a8}{imag} = malloc(numAmpsPerRank * \textcolor{keyword}{sizeof}(multiQubit->
-      \hyperlink{structMultiQubit_a45483190d6b01ef6b2f98f2bec9ab94f}{stateVec}.\hyperlink{structComplexArray_aa409fd14e1ff3e1fdcc53cc4eb77a7a8}{imag}));
-31         \textcolor{keywordflow}{if} (env.\hyperlink{structQUESTEnv_ab9d9ce82e2d5f1b39aa9efc3accb3742}{numRanks}>1)\{
-32                 multiQubit->\hyperlink{structMultiQubit_a76f7db4eab52d2b30f58f973ada809c5}{pairStateVec}.\hyperlink{structComplexArray_a1cf9fd31d6dce5ef618d2bcf3e4f8b69}{real} = malloc(numAmpsPerRank * \textcolor{keyword}{sizeof}(multiQubit->
-      \hyperlink{structMultiQubit_a76f7db4eab52d2b30f58f973ada809c5}{pairStateVec}.\hyperlink{structComplexArray_a1cf9fd31d6dce5ef618d2bcf3e4f8b69}{real}));
-33                 multiQubit->\hyperlink{structMultiQubit_a76f7db4eab52d2b30f58f973ada809c5}{pairStateVec}.\hyperlink{structComplexArray_aa409fd14e1ff3e1fdcc53cc4eb77a7a8}{imag} = malloc(numAmpsPerRank * \textcolor{keyword}{sizeof}(multiQubit->
-      \hyperlink{structMultiQubit_a76f7db4eab52d2b30f58f973ada809c5}{pairStateVec}.\hyperlink{structComplexArray_aa409fd14e1ff3e1fdcc53cc4eb77a7a8}{imag}));
-34         \}
+29         multiQubit->stateVec.real = malloc(numAmpsPerRank * sizeof(multiQubit->
+      stateVec.real));
+30         multiQubit->stateVec.imag = malloc(numAmpsPerRank * sizeof(multiQubit->
+      stateVec.imag));
+31         if (env.numRanks>1){
+32                 multiQubit->pairStateVec.real = malloc(numAmpsPerRank * sizeof(mu
+      ltiQubit->pairStateVec.real));
+33                 multiQubit->pairStateVec.imag = malloc(numAmpsPerRank * sizeof(mu
+      ltiQubit->pairStateVec.imag));
+34         }
 35 
-36         \textcolor{keywordflow}{if} ( (!(multiQubit->\hyperlink{structMultiQubit_a45483190d6b01ef6b2f98f2bec9ab94f}{stateVec}.\hyperlink{structComplexArray_a1cf9fd31d6dce5ef618d2bcf3e4f8b69}{real}) || !(multiQubit->\hyperlink{structMultiQubit_a45483190d6b01ef6b2f98f2bec9ab94f}{stateVec}.
-      \hyperlink{structComplexArray_aa409fd14e1ff3e1fdcc53cc4eb77a7a8}{imag}))
-37                  && numAmpsPerRank ) \{
-38                 printf(\textcolor{stringliteral}{"Could not allocate memory!"});
-39                 exit (EXIT\_FAILURE);
-40         \}
+36         if ( (!(multiQubit->stateVec.real) || !(multiQubit->stateVec.imag))
+37                  && numAmpsPerRank ) {
+38                 printf("Could not allocate memory!");
+39                 exit (EXIT_FAILURE);
+40         }
 41 
-42         \textcolor{keywordflow}{if} ( env.\hyperlink{structQUESTEnv_ab9d9ce82e2d5f1b39aa9efc3accb3742}{numRanks}>1 && (!(multiQubit->\hyperlink{structMultiQubit_a76f7db4eab52d2b30f58f973ada809c5}{pairStateVec}.
-      \hyperlink{structComplexArray_a1cf9fd31d6dce5ef618d2bcf3e4f8b69}{real}) || !(multiQubit->\hyperlink{structMultiQubit_a76f7db4eab52d2b30f58f973ada809c5}{pairStateVec}.\hyperlink{structComplexArray_aa409fd14e1ff3e1fdcc53cc4eb77a7a8}{imag}))
-43                  && numAmpsPerRank ) \{
-44                 printf(\textcolor{stringliteral}{"Could not allocate memory!"});
-45                 exit (EXIT\_FAILURE);
-46         \}
+42         if ( env.numRanks>1 && (!(multiQubit->pairStateVec.real) || !(multiQubit-
+      >pairStateVec.imag))
+43                  && numAmpsPerRank ) {
+44                 printf("Could not allocate memory!");
+45                 exit (EXIT_FAILURE);
+46         }
 47 
-48         multiQubit->\hyperlink{structMultiQubit_ab5b9795bdc6fb5855e1974dcbbaeb36f}{numQubits} = numQubits;
-49         multiQubit->\hyperlink{structMultiQubit_ae16f47d8b725c914fb7f66b6498d79db}{numAmps} = numAmpsPerRank;
-50         multiQubit->\hyperlink{structMultiQubit_ab10c88249fa3825d6227ceec01d37e37}{chunkId} = env.\hyperlink{structQUESTEnv_a1bdb6d425a2ce6a468f93929c0b26d73}{rank};
-51         multiQubit->\hyperlink{structMultiQubit_acd43f2f57991709c9e94f73662c972b2}{numChunks} = env.\hyperlink{structQUESTEnv_ab9d9ce82e2d5f1b39aa9efc3accb3742}{numRanks};
+48         multiQubit->numQubits = numQubits;
+49         multiQubit->numAmps = numAmpsPerRank;
+50         multiQubit->chunkId = env.rank;
+51         multiQubit->numChunks = env.numRanks;
 52 
-53 \}
+53 }
 \end{DoxyCode}
-\index{qubits.\+h@{qubits.\+h}!destroy\+Multi\+Qubit@{destroy\+Multi\+Qubit}}
-\index{destroy\+Multi\+Qubit@{destroy\+Multi\+Qubit}!qubits.\+h@{qubits.\+h}}
-\paragraph[{\texorpdfstring{destroy\+Multi\+Qubit(\+Multi\+Qubit multi\+Qubit, Q\+U\+E\+S\+T\+Env env)}{destroyMultiQubit(MultiQubit multiQubit, QUESTEnv env)}}]{\setlength{\rightskip}{0pt plus 5cm}void destroy\+Multi\+Qubit (
-\begin{DoxyParamCaption}
-\item[{{\bf Multi\+Qubit}}]{multi\+Qubit, }
-\item[{{\bf Q\+U\+E\+S\+T\+Env}}]{env}
-\end{DoxyParamCaption}
-)}\hypertarget{qubits_8h_ab796aea79288b974f63474db650be878}{}\label{qubits_8h_ab796aea79288b974f63474db650be878}
+\hypertarget{qubits_8h_ab796aea79288b974f63474db650be878}{
+\index{qubits.h@{qubits.h}!destroyMultiQubit@{destroyMultiQubit}}
+\index{destroyMultiQubit@{destroyMultiQubit}!qubits.h@{qubits.h}}
+\paragraph[{destroyMultiQubit}]{\setlength{\rightskip}{0pt plus 5cm}void destroyMultiQubit ({\bf MultiQubit} {\em multiQubit}, \/  {\bf QUESTEnv} {\em env})}\hfill}
+\label{qubits_8h_ab796aea79288b974f63474db650be878}
 
 
-Deallocate a \hyperlink{structMultiQubit}{Multi\+Qubit} object representing a set of qubits Free memory allocated to state vector of probability amplitudes, including temporary vector for values copied from another chunk if running the distributed version. 
+Deallocate a \hyperlink{structMultiQubit}{MultiQubit} object representing a set of qubits Free memory allocated to state vector of probability amplitudes, including temporary vector for values copied from another chunk if running the distributed version. 
+\begin{DoxyParams}{Parameters}
+\item[\mbox{$\leftrightarrow$} {\em multiQubit}]object to be deallocated \item[\mbox{$\leftarrow$} {\em env}]object representing the execution environment (local, multinode etc) \end{DoxyParams}
 
 
-\begin{DoxyParams}[1]{Parameters}
-\mbox{\tt in,out}  & {\em multi\+Qubit} & object to be deallocated \\
-\hline
-\mbox{\tt in}  & {\em env} & object representing the execution environment (local, multinode etc) \\
-\hline
-\end{DoxyParams}
+Definition at line 60 of file qubits.c.
 
-
-Definition at line 60 of file qubits.\+c.
-
-
-
-References Complex\+Array\+::imag, Q\+U\+E\+S\+T\+Env\+::num\+Ranks, Multi\+Qubit\+::pair\+State\+Vec, Complex\+Array\+::real, and Multi\+Qubit\+::state\+Vec.
-
-
+References ComplexArray::imag, QUESTEnv::numRanks, MultiQubit::pairStateVec, ComplexArray::real, and MultiQubit::stateVec.
 
 Referenced by main().
 
 
 \begin{DoxyCode}
-60                                                            \{
-61         free(multiQubit.\hyperlink{structMultiQubit_a45483190d6b01ef6b2f98f2bec9ab94f}{stateVec}.\hyperlink{structComplexArray_a1cf9fd31d6dce5ef618d2bcf3e4f8b69}{real});
-62         free(multiQubit.\hyperlink{structMultiQubit_a45483190d6b01ef6b2f98f2bec9ab94f}{stateVec}.\hyperlink{structComplexArray_aa409fd14e1ff3e1fdcc53cc4eb77a7a8}{imag});
-63         \textcolor{keywordflow}{if} (env.\hyperlink{structQUESTEnv_ab9d9ce82e2d5f1b39aa9efc3accb3742}{numRanks}>1)\{
-64                 free(multiQubit.\hyperlink{structMultiQubit_a76f7db4eab52d2b30f58f973ada809c5}{pairStateVec}.\hyperlink{structComplexArray_a1cf9fd31d6dce5ef618d2bcf3e4f8b69}{real});
-65                 free(multiQubit.\hyperlink{structMultiQubit_a76f7db4eab52d2b30f58f973ada809c5}{pairStateVec}.\hyperlink{structComplexArray_aa409fd14e1ff3e1fdcc53cc4eb77a7a8}{imag});
-66         \}
-67 \}
+60                                                            {
+61         free(multiQubit.stateVec.real);
+62         free(multiQubit.stateVec.imag);
+63         if (env.numRanks>1){
+64                 free(multiQubit.pairStateVec.real);
+65                 free(multiQubit.pairStateVec.imag);
+66         }
+67 }
 \end{DoxyCode}
-\index{qubits.\+h@{qubits.\+h}!find\+Probability\+Of\+Zero@{find\+Probability\+Of\+Zero}}
-\index{find\+Probability\+Of\+Zero@{find\+Probability\+Of\+Zero}!qubits.\+h@{qubits.\+h}}
-\paragraph[{\texorpdfstring{find\+Probability\+Of\+Zero(\+Multi\+Qubit multi\+Qubit, const int measure\+Qubit)}{findProbabilityOfZero(MultiQubit multiQubit, const int measureQubit)}}]{\setlength{\rightskip}{0pt plus 5cm}double find\+Probability\+Of\+Zero (
-\begin{DoxyParamCaption}
-\item[{{\bf Multi\+Qubit}}]{multi\+Qubit, }
-\item[{const int}]{measure\+Qubit}
-\end{DoxyParamCaption}
-)}\hypertarget{qubits_8h_af31016680d01044cee9321d4cae32703}{}\label{qubits_8h_af31016680d01044cee9321d4cae32703}
+\hypertarget{qubits_8h_af31016680d01044cee9321d4cae32703}{
+\index{qubits.h@{qubits.h}!findProbabilityOfZero@{findProbabilityOfZero}}
+\index{findProbabilityOfZero@{findProbabilityOfZero}!qubits.h@{qubits.h}}
+\paragraph[{findProbabilityOfZero}]{\setlength{\rightskip}{0pt plus 5cm}double findProbabilityOfZero ({\bf MultiQubit} {\em multiQubit}, \/  const int {\em measureQubit})}\hfill}
+\label{qubits_8h_af31016680d01044cee9321d4cae32703}
 
 
 Measure the probability of a specified qubit being in the zero state. 
-
-
-\begin{DoxyParams}[1]{Parameters}
-\mbox{\tt in}  & {\em multi\+Qubit} & object representing the set of qubits to be initialised \\
-\hline
-\mbox{\tt in}  & {\em measure\+Qubit} & qubit to measure \\
-\hline
-\end{DoxyParams}
+\begin{DoxyParams}{Parameters}
+\item[\mbox{$\leftarrow$} {\em multiQubit}]object representing the set of qubits to be initialised \item[\mbox{$\leftarrow$} {\em measureQubit}]qubit to measure \end{DoxyParams}
 \begin{DoxyReturn}{Returns}
-probability of qubit measure\+Qubit being zero 
+probability of qubit measureQubit being zero 
 \end{DoxyReturn}
 
 
-Definition at line 54 of file qubits\+\_\+env\+\_\+local.\+c.
+Definition at line 55 of file qubits\_\-env\_\-local.c.
 
-
-
-References Multi\+Qubit\+::chunk\+Id, find\+Probability\+Of\+Zero\+Distributed(), find\+Probability\+Of\+Zero\+Local(), half\+Matrix\+Block\+Fits\+In\+Chunk(), is\+Chunk\+To\+Skip\+In\+Find\+P\+Zero(), and Multi\+Qubit\+::num\+Amps.
+References MultiQubit::chunkId, findProbabilityOfZeroDistributed(), findProbabilityOfZeroLocal(), halfMatrixBlockFitsInChunk(), isChunkToSkipInFindPZero(), and MultiQubit::numAmps.
 
 
 \begin{DoxyCode}
-56 \{
-57         \textcolor{keywordtype}{double} stateProb=0;
-58         stateProb = \hyperlink{qubits_8c_a1c0a25823add0bd9f925a9164dc21870}{findProbabilityOfZeroLocal}(multiQubit, measureQubit);
-59         \textcolor{keywordflow}{return} stateProb;
-60 \}
+57 {
+58         double stateProb=0;
+59         stateProb = findProbabilityOfZeroLocal(multiQubit, measureQubit);
+60         return stateProb;
+61 }
 \end{DoxyCode}
-\index{qubits.\+h@{qubits.\+h}!init\+Q\+U\+E\+S\+T\+Env@{init\+Q\+U\+E\+S\+T\+Env}}
-\index{init\+Q\+U\+E\+S\+T\+Env@{init\+Q\+U\+E\+S\+T\+Env}!qubits.\+h@{qubits.\+h}}
-\paragraph[{\texorpdfstring{init\+Q\+U\+E\+S\+T\+Env(\+Q\+U\+E\+S\+T\+Env $\ast$env)}{initQUESTEnv(QUESTEnv *env)}}]{\setlength{\rightskip}{0pt plus 5cm}void init\+Q\+U\+E\+S\+T\+Env (
-\begin{DoxyParamCaption}
-\item[{{\bf Q\+U\+E\+S\+T\+Env} $\ast$}]{env}
-\end{DoxyParamCaption}
-)}\hypertarget{qubits_8h_a652d8c53f8f1cfb096133791de2b219d}{}\label{qubits_8h_a652d8c53f8f1cfb096133791de2b219d}
+\hypertarget{qubits_8h_a652d8c53f8f1cfb096133791de2b219d}{
+\index{qubits.h@{qubits.h}!initQUESTEnv@{initQUESTEnv}}
+\index{initQUESTEnv@{initQUESTEnv}!qubits.h@{qubits.h}}
+\paragraph[{initQUESTEnv}]{\setlength{\rightskip}{0pt plus 5cm}void initQUESTEnv ({\bf QUESTEnv} $\ast$ {\em env})}\hfill}
+\label{qubits_8h_a652d8c53f8f1cfb096133791de2b219d}
 
 
-Initialize Q\+U\+E\+ST environment. 
-
-If something needs to be done to set up the execution environment, such as initializing M\+PI when running in distributed mode, it is handled here 
-\begin{DoxyParams}[1]{Parameters}
-\mbox{\tt in,out}  & {\em env} & object representing the execution environment. A single instance is used for each program \\
-\hline
-\end{DoxyParams}
+Initialize QUEST environment. If something needs to be done to set up the execution environment, such as initializing MPI when running in distributed mode, it is handled here 
+\begin{DoxyParams}{Parameters}
+\item[\mbox{$\leftrightarrow$} {\em env}]object representing the execution environment. A single instance is used for each program \end{DoxyParams}
 
 
-Definition at line 9 of file qubits\+\_\+env\+\_\+local.\+c.
+Definition at line 11 of file qubits\_\-env\_\-local.c.
 
-
-
-References D\+E\+B\+UG, Q\+U\+E\+S\+T\+Env\+::num\+Ranks, and Q\+U\+E\+S\+T\+Env\+::rank.
-
-
+References DEBUG, QUESTEnv::numRanks, and QUESTEnv::rank.
 
 Referenced by main().
 
 
 \begin{DoxyCode}
-9                                 \{
-10         \textcolor{comment}{// init MPI environment}
-11         \textcolor{keywordtype}{int} rank, numRanks;
-12         env->\hyperlink{structQUESTEnv_a1bdb6d425a2ce6a468f93929c0b26d73}{rank}=0;
-13         env->\hyperlink{structQUESTEnv_ab9d9ce82e2d5f1b39aa9efc3accb3742}{numRanks}=1;
-14 \}
+11                                 {
+12         // init MPI environment
+13         env->rank=0;
+14         env->numRanks=1;
+15 }
 \end{DoxyCode}
-\index{qubits.\+h@{qubits.\+h}!init\+State\+Vec@{init\+State\+Vec}}
-\index{init\+State\+Vec@{init\+State\+Vec}!qubits.\+h@{qubits.\+h}}
-\paragraph[{\texorpdfstring{init\+State\+Vec(\+Multi\+Qubit $\ast$multi\+Qubit)}{initStateVec(MultiQubit *multiQubit)}}]{\setlength{\rightskip}{0pt plus 5cm}void init\+State\+Vec (
-\begin{DoxyParamCaption}
-\item[{{\bf Multi\+Qubit} $\ast$}]{multi\+Qubit}
-\end{DoxyParamCaption}
-)}\hypertarget{qubits_8h_a492d10377278f685c7a1fabc3ee60623}{}\label{qubits_8h_a492d10377278f685c7a1fabc3ee60623}
+\hypertarget{qubits_8h_a492d10377278f685c7a1fabc3ee60623}{
+\index{qubits.h@{qubits.h}!initStateVec@{initStateVec}}
+\index{initStateVec@{initStateVec}!qubits.h@{qubits.h}}
+\paragraph[{initStateVec}]{\setlength{\rightskip}{0pt plus 5cm}void initStateVec ({\bf MultiQubit} $\ast$ {\em multiQubit})}\hfill}
+\label{qubits_8h_a492d10377278f685c7a1fabc3ee60623}
 
 
-Initialise the state vector of probability amplitudes for a set of qubits to the zero state\+: $\vert$000...00$>$ 
+Initialise the state vector of probability amplitudes for a set of qubits to the zero state: $|$000...00$>$. 
+\begin{DoxyParams}{Parameters}
+\item[\mbox{$\leftrightarrow$} {\em multiQubit}]object representing the set of qubits to be initialised \end{DoxyParams}
 
 
-\begin{DoxyParams}[1]{Parameters}
-\mbox{\tt in,out}  & {\em multi\+Qubit} & object representing the set of qubits to be initialised \\
-\hline
-\end{DoxyParams}
+Definition at line 122 of file qubits.c.
 
-
-Definition at line 122 of file qubits.\+c.
-
-
-
-References Multi\+Qubit\+::chunk\+Id, D\+E\+B\+UG, Complex\+Array\+::imag, Multi\+Qubit\+::num\+Amps, Complex\+Array\+::real, and Multi\+Qubit\+::state\+Vec.
-
-
+References MultiQubit::chunkId, DEBUG, ComplexArray::imag, MultiQubit::numAmps, ComplexArray::real, and MultiQubit::stateVec.
 
 Referenced by main().
 
 
 \begin{DoxyCode}
-123 \{
-124         \textcolor{keywordtype}{long} \textcolor{keywordtype}{long} \textcolor{keywordtype}{int} stateVecSize;
-125         \textcolor{keywordtype}{long} \textcolor{keywordtype}{long} \textcolor{keywordtype}{int} index;
+123 {
+124         long long int stateVecSize;
+125         long long int index;
 126 
-127         \textcolor{comment}{// dimension of the state vector}
-128         stateVecSize = multiQubit->\hyperlink{structMultiQubit_ae16f47d8b725c914fb7f66b6498d79db}{numAmps};
+127         // dimension of the state vector
+128         stateVecSize = multiQubit->numAmps;
 129 
-130         \textcolor{comment}{// Can't use multiQubit->stateVec as a private OMP var}
-131         \textcolor{keywordtype}{double} *stateVecReal = multiQubit->\hyperlink{structMultiQubit_a45483190d6b01ef6b2f98f2bec9ab94f}{stateVec}.\hyperlink{structComplexArray_a1cf9fd31d6dce5ef618d2bcf3e4f8b69}{real};
-132         \textcolor{keywordtype}{double} *stateVecImag = multiQubit->\hyperlink{structMultiQubit_a45483190d6b01ef6b2f98f2bec9ab94f}{stateVec}.\hyperlink{structComplexArray_aa409fd14e1ff3e1fdcc53cc4eb77a7a8}{imag};
+130         // Can't use multiQubit->stateVec as a private OMP var
+131         double *stateVecReal = multiQubit->stateVec.real;
+132         double *stateVecImag = multiQubit->stateVec.imag;
 133 
-134         \textcolor{comment}{// initialise the state to |0000..0000>}
-135 \textcolor{preprocessor}{# ifdef \_OPENMP}
-136 \textcolor{preprocessor}{# pragma omp parallel \(\backslash\)}
-137 \textcolor{preprocessor}{        default  (none) \(\backslash\)}
-138 \textcolor{preprocessor}{        shared   (stateVecSize, stateVecReal, stateVecImag) \(\backslash\)}
-139 \textcolor{preprocessor}{        private  (index) }
-140 \textcolor{preprocessor}{# endif}
-141         \{
-142 \textcolor{preprocessor}{# ifdef \_OPENMP}
-143 \textcolor{preprocessor}{                # pragma omp for schedule (static)}
-144 \textcolor{preprocessor}{# endif}
-145                 \textcolor{keywordflow}{for} (index=0; index<stateVecSize; index++) \{
+134         // initialise the state to |0000..0000>
+135 # ifdef _OPENMP
+136 # pragma omp parallel \
+137         default  (none) \
+138         shared   (stateVecSize, stateVecReal, stateVecImag) \
+139         private  (index) 
+140 # endif
+141         {
+142 # ifdef _OPENMP
+143                 # pragma omp for schedule (static)
+144 # endif
+145                 for (index=0; index<stateVecSize; index++) {
 146                         stateVecReal[index] = 0.0;
 147                         stateVecImag[index] = 0.0;
-148                 \}
-149         \}
+148                 }
+149         }
 150 
-151         \textcolor{keywordflow}{if} (multiQubit->\hyperlink{structMultiQubit_ab10c88249fa3825d6227ceec01d37e37}{chunkId}==0)\{
-152                 \textcolor{comment}{// zero state |0000..0000> has probability 1}
+151         if (multiQubit->chunkId==0){
+152                 // zero state |0000..0000> has probability 1
 153                 stateVecReal[0] = 1.0;
 154                 stateVecImag[0] = 0.0;
-155         \}
+155         }
 156 
-157         \textcolor{keywordflow}{if} (\hyperlink{qubits_8c_ad72dbcf6d0153db1b8d8a58001feed83}{DEBUG}) printf(\textcolor{stringliteral}{"COMPLETED INIT\(\backslash\)n"});
-158 \}
+157         if (DEBUG) printf("COMPLETED INIT\n");
+158 }
 \end{DoxyCode}
-\index{qubits.\+h@{qubits.\+h}!report\+Multi\+Qubit\+Params@{report\+Multi\+Qubit\+Params}}
-\index{report\+Multi\+Qubit\+Params@{report\+Multi\+Qubit\+Params}!qubits.\+h@{qubits.\+h}}
-\paragraph[{\texorpdfstring{report\+Multi\+Qubit\+Params(\+Multi\+Qubit multi\+Qubit)}{reportMultiQubitParams(MultiQubit multiQubit)}}]{\setlength{\rightskip}{0pt plus 5cm}void report\+Multi\+Qubit\+Params (
-\begin{DoxyParamCaption}
-\item[{{\bf Multi\+Qubit}}]{multi\+Qubit}
-\end{DoxyParamCaption}
-)}\hypertarget{qubits_8h_aa5e77e0e64f3a4a3d3f5cc7382bffcd9}{}\label{qubits_8h_aa5e77e0e64f3a4a3d3f5cc7382bffcd9}
+\hypertarget{qubits_8h_aa5e77e0e64f3a4a3d3f5cc7382bffcd9}{
+\index{qubits.h@{qubits.h}!reportMultiQubitParams@{reportMultiQubitParams}}
+\index{reportMultiQubitParams@{reportMultiQubitParams}!qubits.h@{qubits.h}}
+\paragraph[{reportMultiQubitParams}]{\setlength{\rightskip}{0pt plus 5cm}void reportMultiQubitParams ({\bf MultiQubit} {\em multiQubit})}\hfill}
+\label{qubits_8h_aa5e77e0e64f3a4a3d3f5cc7382bffcd9}
 
 
-Report metainformation about a set of qubits\+: number of qubits, number of probability amplitudes. 
+Report metainformation about a set of qubits: number of qubits, number of probability amplitudes. 
+\begin{DoxyParams}{Parameters}
+\item[\mbox{$\leftrightarrow$} {\em multiQubit}]object representing the set of qubits \item[\mbox{$\leftarrow$} {\em env}]object representing the execution environment (local, multinode etc) \end{DoxyParams}
 
 
-\begin{DoxyParams}[1]{Parameters}
-\mbox{\tt in,out}  & {\em multi\+Qubit} & object representing the set of qubits \\
-\hline
-\mbox{\tt in}  & {\em env} & object representing the execution environment (local, multinode etc) \\
-\hline
-\end{DoxyParams}
+Definition at line 107 of file qubits.c.
 
-
-Definition at line 107 of file qubits.\+c.
-
-
-
-References Multi\+Qubit\+::chunk\+Id, Multi\+Qubit\+::num\+Chunks, and Multi\+Qubit\+::num\+Qubits.
-
-
+References MultiQubit::chunkId, MultiQubit::numChunks, and MultiQubit::numQubits.
 
 Referenced by main().
 
 
 \begin{DoxyCode}
-107                                                   \{
-108         \textcolor{keywordtype}{long} \textcolor{keywordtype}{long} \textcolor{keywordtype}{int} numAmps = 1L << multiQubit.\hyperlink{structMultiQubit_ab5b9795bdc6fb5855e1974dcbbaeb36f}{numQubits};
-109         \textcolor{keywordtype}{long} \textcolor{keywordtype}{long} \textcolor{keywordtype}{int} numAmpsPerRank = numAmps/multiQubit.\hyperlink{structMultiQubit_acd43f2f57991709c9e94f73662c972b2}{numChunks};
-110         \textcolor{keywordflow}{if} (multiQubit.\hyperlink{structMultiQubit_ab10c88249fa3825d6227ceec01d37e37}{chunkId}==0)\{
-111                 printf(\textcolor{stringliteral}{"QUBITS:\(\backslash\)n"});
-112                 printf(\textcolor{stringliteral}{"Number of qubits is %d.\(\backslash\)n"}, multiQubit.\hyperlink{structMultiQubit_ab5b9795bdc6fb5855e1974dcbbaeb36f}{numQubits});
-113                 printf(\textcolor{stringliteral}{"Number of amps is %ld.\(\backslash\)n"}, numAmps);
-114                 printf(\textcolor{stringliteral}{"Number of amps per rank is %ld.\(\backslash\)n"}, numAmpsPerRank);
-115         \}
-116 \}
+107                                                   {
+108         long long int numAmps = 1L << multiQubit.numQubits;
+109         long long int numAmpsPerRank = numAmps/multiQubit.numChunks;
+110         if (multiQubit.chunkId==0){
+111                 printf("QUBITS:\n");
+112                 printf("Number of qubits is %d.\n", multiQubit.numQubits);
+113                 printf("Number of amps is %lld.\n", numAmps);
+114                 printf("Number of amps per rank is %lld.\n", numAmpsPerRank);
+115         }
+116 }
 \end{DoxyCode}
-\index{qubits.\+h@{qubits.\+h}!report\+Q\+U\+E\+S\+T\+Env@{report\+Q\+U\+E\+S\+T\+Env}}
-\index{report\+Q\+U\+E\+S\+T\+Env@{report\+Q\+U\+E\+S\+T\+Env}!qubits.\+h@{qubits.\+h}}
-\paragraph[{\texorpdfstring{report\+Q\+U\+E\+S\+T\+Env(\+Q\+U\+E\+S\+T\+Env env)}{reportQUESTEnv(QUESTEnv env)}}]{\setlength{\rightskip}{0pt plus 5cm}void report\+Q\+U\+E\+S\+T\+Env (
-\begin{DoxyParamCaption}
-\item[{{\bf Q\+U\+E\+S\+T\+Env}}]{env}
-\end{DoxyParamCaption}
-)}\hypertarget{qubits_8h_aa5d0566a6ef6519ff7b5241915fbf170}{}\label{qubits_8h_aa5d0566a6ef6519ff7b5241915fbf170}
+\hypertarget{qubits_8h_aa5d0566a6ef6519ff7b5241915fbf170}{
+\index{qubits.h@{qubits.h}!reportQUESTEnv@{reportQUESTEnv}}
+\index{reportQUESTEnv@{reportQUESTEnv}!qubits.h@{qubits.h}}
+\paragraph[{reportQUESTEnv}]{\setlength{\rightskip}{0pt plus 5cm}void reportQUESTEnv ({\bf QUESTEnv} {\em env})}\hfill}
+\label{qubits_8h_aa5d0566a6ef6519ff7b5241915fbf170}
 
 
-Report information about the Q\+U\+E\+ST environment. 
+Report information about the QUEST environment. 
 
+Definition at line 25 of file qubits\_\-env\_\-local.c.
 
-
-Definition at line 24 of file qubits\+\_\+env\+\_\+local.\+c.
-
-
-
-References Q\+U\+E\+S\+T\+Env\+::num\+Ranks, and Q\+U\+E\+S\+T\+Env\+::rank.
-
-
+References QUESTEnv::numRanks, and QUESTEnv::rank.
 
 Referenced by main().
 
 
 \begin{DoxyCode}
-24                                  \{
-25         printf(\textcolor{stringliteral}{"EXECUTION ENVIRONMENT:\(\backslash\)n"});
-26         printf(\textcolor{stringliteral}{"Running locally on one node\(\backslash\)n"});
-27         printf(\textcolor{stringliteral}{"Number of ranks is %d\(\backslash\)n"}, env.\hyperlink{structQUESTEnv_ab9d9ce82e2d5f1b39aa9efc3accb3742}{numRanks});
-28 \textcolor{preprocessor}{# ifdef \_OPENMP}
-29         printf(\textcolor{stringliteral}{"OpenMP enabled\(\backslash\)n"});
-30         printf(\textcolor{stringliteral}{"Number of threads available is %d\(\backslash\)n"}, omp\_get\_max\_threads());
-31 \textcolor{preprocessor}{# else}
-32         printf(\textcolor{stringliteral}{"OpenMP disabled\(\backslash\)n"});
-33 \textcolor{preprocessor}{# endif}
-34 \}
+25                                  {
+26         printf("EXECUTION ENVIRONMENT:\n");
+27         printf("Running locally on one node\n");
+28         printf("Number of ranks is %d\n", env.numRanks);
+29 # ifdef _OPENMP
+30         printf("OpenMP enabled\n");
+31         printf("Number of threads available is %d\n", omp_get_max_threads());
+32 # else
+33         printf("OpenMP disabled\n");
+34 # endif
+35 }
 \end{DoxyCode}
-\index{qubits.\+h@{qubits.\+h}!report\+State@{report\+State}}
-\index{report\+State@{report\+State}!qubits.\+h@{qubits.\+h}}
-\paragraph[{\texorpdfstring{report\+State(\+Multi\+Qubit multi\+Qubit)}{reportState(MultiQubit multiQubit)}}]{\setlength{\rightskip}{0pt plus 5cm}void report\+State (
-\begin{DoxyParamCaption}
-\item[{{\bf Multi\+Qubit}}]{multi\+Qubit}
-\end{DoxyParamCaption}
-)}\hypertarget{qubits_8h_a96f4de9ce7fefc7680a44d601fc3d894}{}\label{qubits_8h_a96f4de9ce7fefc7680a44d601fc3d894}
+\hypertarget{qubits_8h_a96f4de9ce7fefc7680a44d601fc3d894}{
+\index{qubits.h@{qubits.h}!reportState@{reportState}}
+\index{reportState@{reportState}!qubits.h@{qubits.h}}
+\paragraph[{reportState}]{\setlength{\rightskip}{0pt plus 5cm}void reportState ({\bf MultiQubit} {\em multiQubit})}\hfill}
+\label{qubits_8h_a96f4de9ce7fefc7680a44d601fc3d894}
 
 
-Print the current state vector of probability amplitudes for a set of qubits to file. 
-
-File format\+: \begin{DoxyVerb}real, imag
+Print the current state vector of probability amplitudes for a set of qubits to file. File format: \begin{DoxyVerb}
+real, imag
 realComponent1, imagComponent1
 realComponent2, imagComponent2
 ...
@@ -524,115 +380,87 @@ realComponentN, imagComponentN
 \end{DoxyVerb}
 
 
-File naming convention\+:
+File naming convention:
 
-For each node that the program runs on, a file \textquotesingle{}state\+\_\+rank\+\_\+\mbox{[}node\+\_\+rank\mbox{]}.csv\textquotesingle{} is generated. If there is more than one node, ranks after the first do not include the header \begin{DoxyVerb}real, imag
+For each node that the program runs on, a file 'state\_\-rank\_\-\mbox{[}node\_\-rank\mbox{]}.csv' is generated. If there is more than one node, ranks after the first do not include the header \begin{DoxyVerb}
+real, imag
 \end{DoxyVerb}
  so that files are easier to combine. 
-\begin{DoxyParams}[1]{Parameters}
-\mbox{\tt in,out}  & {\em multi\+Qubit} & object representing the set of qubits \\
-\hline
-\end{DoxyParams}
+\begin{DoxyParams}{Parameters}
+\item[\mbox{$\leftrightarrow$} {\em multiQubit}]object representing the set of qubits \end{DoxyParams}
 
 
-Definition at line 89 of file qubits.\+c.
+Definition at line 89 of file qubits.c.
 
-
-
-References Multi\+Qubit\+::chunk\+Id, Complex\+Array\+::imag, Multi\+Qubit\+::num\+Amps, Complex\+Array\+::real, and Multi\+Qubit\+::state\+Vec.
-
-
+References MultiQubit::chunkId, ComplexArray::imag, MultiQubit::numAmps, ComplexArray::real, and MultiQubit::stateVec.
 
 Referenced by main().
 
 
 \begin{DoxyCode}
-89                                        \{
+89                                        {
 90         FILE *state;
-91         \textcolor{keywordtype}{char} filename[100];
-92         \textcolor{keywordtype}{long} \textcolor{keywordtype}{long} \textcolor{keywordtype}{int} index;
-93         sprintf(filename, \textcolor{stringliteral}{"state\_rank\_%d.csv"}, multiQubit.\hyperlink{structMultiQubit_ab10c88249fa3825d6227ceec01d37e37}{chunkId});
-94         state = fopen(filename, \textcolor{stringliteral}{"w"});
-95         \textcolor{keywordflow}{if} (multiQubit.\hyperlink{structMultiQubit_ab10c88249fa3825d6227ceec01d37e37}{chunkId}==0) fprintf(state, \textcolor{stringliteral}{"real, imag\(\backslash\)n"});
+91         char filename[100];
+92         long long int index;
+93         sprintf(filename, "state_rank_%d.csv", multiQubit.chunkId);
+94         state = fopen(filename, "w");
+95         if (multiQubit.chunkId==0) fprintf(state, "real, imag\n");
 96 
-97         \textcolor{keywordflow}{for}(index=0; index<multiQubit.\hyperlink{structMultiQubit_ae16f47d8b725c914fb7f66b6498d79db}{numAmps}; index++)\{
-98                 fprintf(state, \textcolor{stringliteral}{"%.12f, %.12f\(\backslash\)n"}, multiQubit.\hyperlink{structMultiQubit_a45483190d6b01ef6b2f98f2bec9ab94f}{stateVec}.
-      \hyperlink{structComplexArray_a1cf9fd31d6dce5ef618d2bcf3e4f8b69}{real}[index], multiQubit.\hyperlink{structMultiQubit_a45483190d6b01ef6b2f98f2bec9ab94f}{stateVec}.\hyperlink{structComplexArray_aa409fd14e1ff3e1fdcc53cc4eb77a7a8}{imag}[index]);
-99         \}
+97         for(index=0; index<multiQubit.numAmps; index++){
+98                 fprintf(state, "%.12f, %.12f\n", multiQubit.stateVec.real[index],
+       multiQubit.stateVec.imag[index]);
+99         }
 100         fclose(state);
-101 \}
+101 }
 \end{DoxyCode}
-\index{qubits.\+h@{qubits.\+h}!rotate\+Qubit@{rotate\+Qubit}}
-\index{rotate\+Qubit@{rotate\+Qubit}!qubits.\+h@{qubits.\+h}}
-\paragraph[{\texorpdfstring{rotate\+Qubit(\+Multi\+Qubit multi\+Qubit, const int rot\+Qubit, Complex alpha, Complex beta)}{rotateQubit(MultiQubit multiQubit, const int rotQubit, Complex alpha, Complex beta)}}]{\setlength{\rightskip}{0pt plus 5cm}void rotate\+Qubit (
-\begin{DoxyParamCaption}
-\item[{{\bf Multi\+Qubit}}]{multi\+Qubit, }
-\item[{const int}]{rot\+Qubit, }
-\item[{{\bf Complex}}]{alpha, }
-\item[{{\bf Complex}}]{beta}
-\end{DoxyParamCaption}
-)}\hypertarget{qubits_8h_a4ba468aa69f812efd1f964e10a45ca2f}{}\label{qubits_8h_a4ba468aa69f812efd1f964e10a45ca2f}
+\hypertarget{qubits_8h_a4ba468aa69f812efd1f964e10a45ca2f}{
+\index{qubits.h@{qubits.h}!rotateQubit@{rotateQubit}}
+\index{rotateQubit@{rotateQubit}!qubits.h@{qubits.h}}
+\paragraph[{rotateQubit}]{\setlength{\rightskip}{0pt plus 5cm}void rotateQubit ({\bf MultiQubit} {\em multiQubit}, \/  const int {\em rotQubit}, \/  {\bf Complex} {\em alpha}, \/  {\bf Complex} {\em beta})}\hfill}
+\label{qubits_8h_a4ba468aa69f812efd1f964e10a45ca2f}
 
 
-Rotate a single qubit in the state vector of probability amplitudes, given the angle rotation arguments. 
-
-alpha\+Re = cos(angle1) $\ast$ cos(angle2) ~\newline
-alpha\+Im = cos(angle1) $\ast$ sin(angle2) ~\newline
- beta\+Re = sin(angle1) $\ast$ cos(angle3) ~\newline
- beta\+Im = sin(angle1) $\ast$ sin(angle3) ~\newline
+Rotate a single qubit in the state vector of probability amplitudes, given the angle rotation arguments. alphaRe = cos(angle1) $\ast$ cos(angle2) \par
+ alphaIm = cos(angle1) $\ast$ sin(angle2) \par
+ betaRe = sin(angle1) $\ast$ cos(angle3) \par
+ betaIm = sin(angle1) $\ast$ sin(angle3) \par
 
 
 \begin{DoxyRemark}{Remarks}
 Qubits are zero-\/based and the the first qubit is the rightmost
 \end{DoxyRemark}
 
-\begin{DoxyParams}[1]{Parameters}
-\mbox{\tt in,out}  & {\em multi\+Qubit} & object representing the set of qubits to be initialised \\
-\hline
-\mbox{\tt in}  & {\em rot\+Qubit} & qubit to rotate \\
-\hline
-\mbox{\tt in}  & {\em alpha} & rotation angle \\
-\hline
-\mbox{\tt in}  & {\em beta} & rotation angle \\
-\hline
-\end{DoxyParams}
+\begin{DoxyParams}{Parameters}
+\item[\mbox{$\leftrightarrow$} {\em multiQubit}]object representing the set of qubits to be initialised \item[\mbox{$\leftarrow$} {\em rotQubit}]qubit to rotate \item[\mbox{$\leftarrow$} {\em alpha}]rotation angle \item[\mbox{$\leftarrow$} {\em beta}]rotation angle \end{DoxyParams}
 
 
-Definition at line 47 of file qubits\+\_\+env\+\_\+local.\+c.
+Definition at line 48 of file qubits\_\-env\_\-local.c.
 
-
-
-References Multi\+Qubit\+::chunk\+Id, chunk\+Is\+Upper(), get\+Chunk\+Pair\+Id(), get\+Rot\+Angle(), half\+Matrix\+Block\+Fits\+In\+Chunk(), Complex\+Array\+::imag, Multi\+Qubit\+::num\+Amps, Multi\+Qubit\+::pair\+State\+Vec, Complex\+Array\+::real, rotate\+Qubit\+Distributed(), rotate\+Qubit\+Local(), and Multi\+Qubit\+::state\+Vec.
-
-
+References MultiQubit::chunkId, chunkIsUpper(), getChunkPairId(), getRotAngle(), halfMatrixBlockFitsInChunk(), ComplexArray::imag, MultiQubit::numAmps, MultiQubit::pairStateVec, ComplexArray::real, rotateQubitDistributed(), rotateQubitLocal(), and MultiQubit::stateVec.
 
 Referenced by main().
 
 
 \begin{DoxyCode}
-49 \{
-50         \textcolor{comment}{// all values required to update state vector lie in this rank}
-51         \hyperlink{qubits_8c_acb059cbcb8c7910a5fc43d21da4f5dea}{rotateQubitLocal}(multiQubit, rotQubit, alpha, beta);
-52 \}
+50 {
+51         // all values required to update state vector lie in this rank
+52         rotateQubitLocal(multiQubit, rotQubit, alpha, beta);
+53 }
 \end{DoxyCode}
-\index{qubits.\+h@{qubits.\+h}!sync\+Q\+U\+E\+S\+T\+Env@{sync\+Q\+U\+E\+S\+T\+Env}}
-\index{sync\+Q\+U\+E\+S\+T\+Env@{sync\+Q\+U\+E\+S\+T\+Env}!qubits.\+h@{qubits.\+h}}
-\paragraph[{\texorpdfstring{sync\+Q\+U\+E\+S\+T\+Env(\+Q\+U\+E\+S\+T\+Env env)}{syncQUESTEnv(QUESTEnv env)}}]{\setlength{\rightskip}{0pt plus 5cm}void sync\+Q\+U\+E\+S\+T\+Env (
-\begin{DoxyParamCaption}
-\item[{{\bf Q\+U\+E\+S\+T\+Env}}]{env}
-\end{DoxyParamCaption}
-)}\hypertarget{qubits_8h_a83dffc500bf5b4e41dd63ba1ea9422ae}{}\label{qubits_8h_a83dffc500bf5b4e41dd63ba1ea9422ae}
+\hypertarget{qubits_8h_a83dffc500bf5b4e41dd63ba1ea9422ae}{
+\index{qubits.h@{qubits.h}!syncQUESTEnv@{syncQUESTEnv}}
+\index{syncQUESTEnv@{syncQUESTEnv}!qubits.h@{qubits.h}}
+\paragraph[{syncQUESTEnv}]{\setlength{\rightskip}{0pt plus 5cm}void syncQUESTEnv ({\bf QUESTEnv} {\em env})}\hfill}
+\label{qubits_8h_a83dffc500bf5b4e41dd63ba1ea9422ae}
 
 
 Guarantees that all code up to the given point has been executed on all nodes. 
 
-
-
-Definition at line 16 of file qubits\+\_\+env\+\_\+local.\+c.
+Definition at line 17 of file qubits\_\-env\_\-local.c.
 
 
 \begin{DoxyCode}
-16                                \{
-17         \textcolor{comment}{// MPI Barrier goes here in MPI version. }
-18 \} 
+17                                {
+18         // MPI Barrier goes here in MPI version. 
+19 } 
 \end{DoxyCode}
