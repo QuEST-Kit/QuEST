@@ -19,7 +19,7 @@ Without git: download the directory manually
 
 In the root directory, run a simple 8 qubit example on one node:
 
-The default compiler is the gnu compiler. To change to the intell compiler, edit the COMMON CONFIG section at the beginning of makefile in the root directory. Change COMPILER=GCC to COMPILER=ICC. Then run:
+The default compiler is the gnu compiler. To change to the intell compiler, edit the COMMON CONFIG section at the beginning of makefile in the root directory. Change COMPILER=GNU to COMPILER=INTEL. Then run:
 
 ```
 make clean

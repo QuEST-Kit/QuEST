@@ -8,8 +8,8 @@
 # --- COMMON CONFIG
 #
 
-# COMPILER options: GCC, INTEL
-COMPILER = GCC
+# COMPILER options: GNU, INTEL
+COMPILER = INTEL
 EXE = demo
 MY_FILE_NAME = basicTemplate
 USE_MPI=0
@@ -20,7 +20,7 @@ QUEST_DIR = QUEST
 #
 
 ifneq ($(USE_MPI), 1)
-	ifeq ($(COMPILER), GCC)
+	ifeq ($(COMPILER), GNU)
 		# GCC compilers
 		CC         = gcc
 		CFLAGS     = -O2 -std=c99 -mavx -Wall
@@ -29,12 +29,12 @@ ifneq ($(USE_MPI), 1)
 		# Intel compilers
 		CC         = icc
 		CFLAGS     = -O2 -std=c99 -Wall -xAVX -axCORE-AVX2 -restrict
-		CFLAGS_OMP = -qopenmp
+		CFLAGS_OMP = -openmp
 	else 
 		$(error " *** error: invalid compiler")
 	endif
 else 
-	ifeq ($(COMPILER), GCC)
+	ifeq ($(COMPILER), GNU)
 		# GCC compilers
 		CC         = mpicc
 		CFLAGS     = -O2 -std=c99 -mavx -Wall
@@ -43,7 +43,7 @@ else
 		# Mvapich2
 		CC         = mpicc
 		CFLAGS     = -O2 -std=c99
-		CFLAGS_OMP = -qopenmp
+		CFLAGS_OMP = -openmp
 	else 
 		$(error " *** error: invalid compiler")
 	endif
