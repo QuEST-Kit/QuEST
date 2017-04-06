@@ -1,3 +1,6 @@
+# ifndef QUBITS_INTERNAL
+# define QUBITS_INTERNAL
+
 /** @file
  * Internal functions used to implement the public facing API in qubits.h. Do not call these functions
  * directly. In general, qubits_env_local.c and qubits_env_mpi.c will implement the public API by choosing
@@ -39,3 +42,5 @@ double filterOut111 (const int numQubits, const int idQubit1, const int idQubit2
 double probOfFilterOut111 (const int numQubits, const int idQubit1, const int idQubit2, const int idQubit3,
                               double *restrict stateVecReal,
                               double *restrict stateVecImag);
+
+# endif

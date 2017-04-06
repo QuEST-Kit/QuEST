@@ -1,3 +1,5 @@
+# ifndef QUBITS
+# define QUBITS
 /** @file
  * The QUEST library API and objects. 
 */
@@ -107,3 +109,5 @@ of a specified qubit being in the zero state.
 @return probability of qubit measureQubit being zero
 */
 double findProbabilityOfZero(MultiQubit multiQubit, const int measureQubit);
+
+# endif
