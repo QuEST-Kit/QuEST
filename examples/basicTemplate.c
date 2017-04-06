@@ -110,9 +110,6 @@ int main (int narg, char** varg) {
 	for (rotQubit=0; rotQubit<numQubits; rotQubit++) {
 		// do rotation of each qubit
 		rotateQubit(multiQubit,rotQubit,alpha,beta);
-		// make sure rotations have finished on the entire state vector, across all nodes
-		// if running on only one node, this is a noop
-		syncQUESTEnv(env);
 	}
 	// END QUBIT ROTATION
 
@@ -126,78 +123,17 @@ int main (int narg, char** varg) {
 		reportState(multiQubit);
         }
 
-
 	//
 	// ===== perform a measurement
 	//
-	int measureQubit;
-	double stateProb,randProb;
-	/* // keep time */
-	/* wtime_start = system_timer (); */
-
-	// measure
-/*	
-	for (measureQubit=0; measureQubit<numQubits; measureQubit++) {
-	//for (measureQubit=0; measureQubit<1; measureQubit++) {
-		syncQUESTEnv(env);
-		wtime_start = system_timer ();
-		stateProb = findProbabilityOfZero (env.rank, numAmpsPerRank, numQubits, measureQubit, stateVecReal,stateVecImag);
-		syncQUESTEnv(env);
-		wtime_stop = system_timer ();
-		if (env.rank==0) printf("   probability of 0 for qubit %d = %.14f\n", measureQubit, stateProb);
-		if (env.rank==0) printf(" measurement qubit %d: elapsed time = %f [s]\n", measureQubit, wtime_stop - wtime_start);
-	}
-*/
-	/* // keep time */
-	/* wtime_stop = system_timer (); */
-
-	/* // ----- timing report */
-	/* printf(" measurement: elapsed time = %f [s]\n", wtime_stop - wtime_start); */
-
-
+	
+	// TO BE IMPLEMENTED
+	
 	//
 	// ===== two qubit phase gate
 	//
-	/* // keep time */
-	/* wtime_start = system_timer (); */
-/*
-	// two qubit phase gate
-	if (numQubits >= 7) {
-		wtime_start = system_timer (); 
-		controlPhaseGate (env.rank, numAmpsPerRank, numQubits, 0, 2, stateVecReal, stateVecImag); 
-		wtime_stop = system_timer (); 
-		printf(" two qubit phase gate: elapsed time = %f [s]\n", wtime_stop - wtime_start);
-		wtime_start = system_timer (); controlPhaseGate (env.rank, numAmpsPerRank, numQubits, 1, 3, stateVecReal, stateVecImag); wtime_stop = system_timer (); printf(" two qubit phase gate: elapsed time = %f [s]\n", wtime_stop - wtime_start);
-		wtime_start = system_timer (); controlPhaseGate (env.rank, numAmpsPerRank, numQubits, 2, 4, stateVecReal, stateVecImag); wtime_stop = system_timer (); printf(" two qubit phase gate: elapsed time = %f [s]\n", wtime_stop - wtime_start);
-		wtime_start = system_timer (); controlPhaseGate (env.rank, numAmpsPerRank, numQubits, 3, 5, stateVecReal, stateVecImag); wtime_stop = system_timer (); printf(" two qubit phase gate: elapsed time = %f [s]\n", wtime_stop - wtime_start);
-		wtime_start = system_timer (); controlPhaseGate (env.rank, numAmpsPerRank, numQubits, 4, 6, stateVecReal, stateVecImag); wtime_stop = system_timer (); printf(" two qubit phase gate: elapsed time = %f [s]\n", wtime_stop - wtime_start);
-	}
-*/
-	totalProbability = calcTotalProbability(multiQubit);
-        if (env.rank==0) printf("VERIFICATION: total probability=%.14f\n", totalProbability);
-/*
-if (env.rank==0){
-	printf("\n\nIn rank %d, the following is the final state after rotations.\n\n",env.rank);
-	printf("codeOutput=[\n");
-	for(index=0; index<=numAmpsPerRank-1; index++) printf("%.8f %.8f\n",stateVecReal[index],stateVecImag[index]);
-	printf("];\n\n");
-}
-syncQUESTEnv(env);
-
-if (env.rank==1){
-	printf("\n\nIn rank %d, the following is the final state after rotations.\n\n",env.rank);
-	printf("codeOutput=[\n");
-	for(index=0; index<=numAmpsPerRank-1; index++) printf("%.8f %.8f\n",stateVecReal[index],stateVecImag[index]);
-	printf("];\n\n");
-}
-syncQUESTEnv(env);
-*/
-	/* // keep time */
-	/* wtime_stop = system_timer (); */
-
-	/* // ----- timing report */
-	/* printf(" two qubit phase gate: elapsed time = %f [s]\n", wtime_stop - wtime_start); */
-
+	
+	// TO BE IMPLEMENTED
 
 	//
 	// ======== CLEANUP
