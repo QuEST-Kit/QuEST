@@ -113,23 +113,25 @@ void initStateVec (MultiQubit *multiQubit)
 	// dimension of the state vector
 	stateVecSize = multiQubit->numAmps;
 
-	if (DEBUG) printf("stateVecSize=%Ld   now performing init with only one thread:\n",stateVecSize);
-
 	// Can't use multiQubit->stateVec as a private OMP var
 	double *stateVecReal = multiQubit->stateVec.real;
 	double *stateVecImag = multiQubit->stateVec.imag;
 
 	// initialise the state to |0000..0000>
 # ifdef _OPENMP
-# pragma omp parallel for \
+# pragma omp parallel \
 	default  (none) \
 	shared   (stateVecSize, stateVecReal, stateVecImag) \
-	private  (index) \
-	schedule (static)
+	private  (index) 
 # endif
-	for (index=0; index<stateVecSize; index++) {
-		stateVecReal[index] = 0.0;
-		stateVecImag[index] = 0.0;
+	{
+# ifdef _OPENMP
+		# pragma omp for schedule (static)
+# endif
+		for (index=0; index<stateVecSize; index++) {
+			stateVecReal[index] = 0.0;
+			stateVecImag[index] = 0.0;
+		}
 	}
 
 	if (multiQubit->chunkId==0){
@@ -208,8 +210,7 @@ void rotateQubitLocal (MultiQubit multiQubit, const int rotQubit, Complex alpha,
 # endif
 	{
 # ifdef _OPENMP
-# pragma omp for \
-		schedule (static)
+		# pragma omp for schedule (static)
 # endif
 		for (thisTask=0; thisTask<numTasks; thisTask++) {
 
@@ -285,14 +286,18 @@ void rotateQubitDistributed (MultiQubit multiQubit, const int rotQubit,
 	double *stateVecRealUp=stateVecUp.real, *stateVecImagUp=stateVecUp.imag;
 	double *stateVecRealLo=stateVecLo.real, *stateVecImagLo=stateVecLo.imag;
 	double *stateVecRealOut=stateVecOut.real, *stateVecImagOut=stateVecOut.imag;
+
+# ifdef _OPENMP
 # pragma omp parallel \
 	default  (none) \
 	shared   (stateVecRealUp,stateVecImagUp,stateVecRealLo,stateVecImagLo,stateVecRealOut,stateVecImagOut, \
 			rot1Real,rot1Imag, rot2Real,rot2Imag) \
 	private  (thisTask,stateRealUp,stateImagUp,stateRealLo,stateImagLo)
+# endif
 	{
-# pragma omp for \
-		schedule (static)
+# ifdef _OPENMP
+		# pragma omp for schedule (static)
+# endif
 		for (thisTask=0; thisTask<numTasks; thisTask++) {
 			// store current state vector values in temp variables
 			stateRealUp = stateVecRealUp[thisTask];
@@ -365,33 +370,36 @@ double findProbabilityOfZeroLocal (MultiQubit multiQubit,
 	double *stateVecImag = multiQubit.stateVec.imag;
 
 # ifdef _OPENMP
-# pragma omp parallel for \
+# pragma omp parallel \
 	shared    (numTasks,sizeBlock,sizeHalfBlock, stateVecReal,stateVecImag) \
 	private   (thisTask,thisBlock,index) \
-	schedule  (static) \
 	reduction ( +:totalProbability )
+# endif	
+	{
+# ifdef _OPENMP
+		# pragma omp for schedule  (static)
 # endif
-	for (thisTask=0; thisTask<numTasks; thisTask++) {
-		thisBlock = thisTask / sizeHalfBlock;
-		index     = thisBlock*sizeBlock + thisTask%sizeHalfBlock;
+		for (thisTask=0; thisTask<numTasks; thisTask++) {
+			thisBlock = thisTask / sizeHalfBlock;
+			index     = thisBlock*sizeBlock + thisTask%sizeHalfBlock;
 
-		if (index<0){ printf("ABORTING as index=%Ld with thisBlock = %Ld  thisTask=%Ld \n", index,thisBlock,thisTask); exit(1);}
+			if (index<0){ printf("ABORTING as index=%Ld with thisBlock = %Ld  thisTask=%Ld \n", index,thisBlock,thisTask); exit(1);}
 
-		// summation -- simple implementation
-		totalProbability += stateVecReal[index]*stateVecReal[index]
-			+ stateVecImag[index]*stateVecImag[index];
+			// summation -- simple implementation
+			totalProbability += stateVecReal[index]*stateVecReal[index]
+				+ stateVecImag[index]*stateVecImag[index];
 
-		/*
-		// summation -- kahan correction
-		y = stateVecReal[index]*stateVecReal[index]
-		+ stateVecImag[index]*stateVecImag[index] - c;
-		t = totalProbability + y;
-		c = (t - totalProbability) - y;
-		totalProbability = t;
-		*/
+			/*
+			// summation -- kahan correction
+			y = stateVecReal[index]*stateVecReal[index]
+			+ stateVecImag[index]*stateVecImag[index] - c;
+			t = totalProbability + y;
+			c = (t - totalProbability) - y;
+			totalProbability = t;
+			*/
 
+		}
 	}
-
 	return totalProbability;
 }
 
@@ -436,26 +444,30 @@ double findProbabilityOfZeroDistributed (MultiQubit multiQubit,
 	double *stateVecImag = multiQubit.stateVec.imag;
 
 # ifdef _OPENMP
-# pragma omp parallel for \
+# pragma omp parallel \
 	shared    (numTasks,stateVecReal,stateVecImag) \
 	private   (thisTask) \
-	schedule  (static) \
 	reduction ( +:totalProbability )
 # endif
-	for (thisTask=0; thisTask<numTasks; thisTask++) {
-		// summation -- simple implementation
-		totalProbability += stateVecReal[thisTask]*stateVecReal[thisTask]
-			+ stateVecImag[thisTask]*stateVecImag[thisTask];
+	{
+# ifdef _OPENMP
+		# pragma omp for schedule  (static)
+# endif
+		for (thisTask=0; thisTask<numTasks; thisTask++) {
+			// summation -- simple implementation
+			totalProbability += stateVecReal[thisTask]*stateVecReal[thisTask]
+				+ stateVecImag[thisTask]*stateVecImag[thisTask];
 
-		/*
-		// summation -- kahan correction
-		y = stateVecReal[thisTask]*stateVecReal[thisTask]
-		+ stateVecImag[thisTask]*stateVecImag[thisTask] - c;
-		t = totalProbability + y;
-		c = (t - totalProbability) - y;
-		totalProbability = t;
-		*/
+			/*
+			// summation -- kahan correction
+			y = stateVecReal[thisTask]*stateVecReal[thisTask]
+			+ stateVecImag[thisTask]*stateVecImag[thisTask] - c;
+			t = totalProbability + y;
+			c = (t - totalProbability) - y;
+			totalProbability = t;
+			*/
 
+		}
 	}
 
 	return totalProbability;
@@ -544,20 +556,24 @@ void quadCPhaseGate (const int numQubits, const int idQubit1, const int idQubit2
 	stateVecSize = 1LL << numQubits;
 
 # ifdef _OPENMP
-# pragma omp parallel for \
+# pragma omp parallel \
 	default  (none)			     \
 	shared   (stateVecSize, stateVecReal,stateVecImag ) \
-	private  (index,bit1,bit2,bit3,bit4)		       \
-	schedule (static)
+	private  (index,bit1,bit2,bit3,bit4)
 # endif
-	for (index=0; index<stateVecSize; index++) {
-		bit1 = extractBit (idQubit1, index);
-		bit2 = extractBit (idQubit2, index);
-		bit3 = extractBit (idQubit3, index);
-		bit4 = extractBit (idQubit4, index);
-		if (bit1 && bit2 && bit3 && bit4) {
-			stateVecReal [index] = - stateVecReal [index];
-			stateVecImag [index] = - stateVecImag [index];
+	{
+# ifdef _OPENMP
+		# pragma omp for schedule (static)
+# endif
+		for (index=0; index<stateVecSize; index++) {
+			bit1 = extractBit (idQubit1, index);
+			bit2 = extractBit (idQubit2, index);
+			bit3 = extractBit (idQubit3, index);
+			bit4 = extractBit (idQubit4, index);
+			if (bit1 && bit2 && bit3 && bit4) {
+				stateVecReal [index] = - stateVecReal [index];
+				stateVecImag [index] = - stateVecImag [index];
+			}
 		}
 	}
 }
@@ -611,37 +627,47 @@ double measureInZero (const int numQubits,
 	// --- task-based shared-memory parallel implementation
 	//
 # ifdef _OPENMP
-# pragma omp parallel for \
+# pragma omp parallel \
+	default (none) \
 	shared    (numTasks,sizeBlock,sizeHalfBlock, stateVecReal,stateVecImag) \
 	private   (thisTask,thisBlock,index) \
-	schedule  (static) \
 	reduction ( +:totalProbability )
 # endif
-	for (thisTask=0; thisTask<numTasks; thisTask++) {
-		thisBlock = thisTask / sizeHalfBlock;
-		index     = thisBlock*sizeBlock + thisTask%sizeHalfBlock;
+	{
+# ifdef _OPENMP
+		# pragma omp for schedule  (static)
+# endif
+		for (thisTask=0; thisTask<numTasks; thisTask++) {
+			thisBlock = thisTask / sizeHalfBlock;
+			index     = thisBlock*sizeBlock + thisTask%sizeHalfBlock;
 
-		totalProbability += stateVecReal[index]*stateVecReal[index]
-			+ stateVecImag[index]*stateVecImag[index];
+			totalProbability += stateVecReal[index]*stateVecReal[index]
+				+ stateVecImag[index]*stateVecImag[index];
+		}
 	}
+
 	renorm=1/sqrt(totalProbability);
 
 
 # ifdef _OPENMP
-# pragma omp parallel for \
-	shared    (numTasks,sizeBlock,sizeHalfBlock, stateVecReal,stateVecImag) \
-	private   (thisTask,thisBlock,index) \
-	schedule  (static) \
-	reduction ( +:totalProbability )
+# pragma omp parallel \
+	default (none) \
+	shared    (numTasks,sizeBlock,sizeHalfBlock, stateVecReal,stateVecImag,renorm) \
+	private   (thisTask,thisBlock,index)
 # endif
-	for (thisTask=0; thisTask<numTasks; thisTask++) {
-		thisBlock = thisTask / sizeHalfBlock;
-		index     = thisBlock*sizeBlock + thisTask%sizeHalfBlock;
-		stateVecReal[index]=stateVecReal[index]*renorm;
-		stateVecImag[index]=stateVecImag[index]*renorm;
+	{
+# ifdef _OPENMP
+		# pragma omp for schedule  (static)
+# endif
+		for (thisTask=0; thisTask<numTasks; thisTask++) {
+			thisBlock = thisTask / sizeHalfBlock;
+			index     = thisBlock*sizeBlock + thisTask%sizeHalfBlock;
+			stateVecReal[index]=stateVecReal[index]*renorm;
+			stateVecImag[index]=stateVecImag[index]*renorm;
 
-		stateVecReal[index+sizeHalfBlock]=0;
-		stateVecImag[index+sizeHalfBlock]=0;
+			stateVecReal[index+sizeHalfBlock]=0;
+			stateVecImag[index+sizeHalfBlock]=0;
+		}
 	}
 
 	//SCB this is a debugging style check. It is probably useful to leave in, but it could be parallelised I guess
@@ -674,41 +700,49 @@ double filterOut111 (const int numQubits, const int idQubit1, const int idQubit2
 	double probOfFilter=0;
 
 # ifdef _OPENMP
-# pragma omp parallel for \
+# pragma omp parallel \
 	default  (none)			     \
-	shared   (stateVecSize, stateVecReal,stateVecImag ) \
+	shared   (stateVecSize, stateVecReal,stateVecImag) \
 	private  (index,bit1,bit2,bit3)		       \
-	schedule (static)\
 	reduction ( +:probOfFilter )
 # endif
-	for (index=0; index<stateVecSize; index++) {
-		bit1 = extractBit (idQubit1, index);
-		bit2 = extractBit (idQubit2, index);
-		bit3 = extractBit (idQubit3, index);
-		if (!(bit1 && bit2 && bit3)) {
-			probOfFilter+= stateVecReal[index]*stateVecReal[index] + stateVecImag[index]* stateVecImag [index];
+	{
+# ifdef _OPENMP
+		# pragma omp for schedule (static)
+# endif
+		for (index=0; index<stateVecSize; index++) {
+			bit1 = extractBit (idQubit1, index);
+			bit2 = extractBit (idQubit2, index);
+			bit3 = extractBit (idQubit3, index);
+			if (!(bit1 && bit2 && bit3)) {
+				probOfFilter+= stateVecReal[index]*stateVecReal[index] + stateVecImag[index]* stateVecImag [index];
+			}
 		}
 	}
 	if ( probOfFilter<1e-16 ){ printf("Extremely small or negative profOfFilter=%.8e; aborting! \n",probOfFilter); exit(1);}
 	double myNorm=1/sqrt(probOfFilter);
 
 # ifdef _OPENMP
-# pragma omp parallel for \
+# pragma omp parallel \
 	default  (none)			     \
-	shared   (stateVecSize, stateVecReal,stateVecImag, myNorm ) \
-	private  (index,bit1,bit2,bit3)		       \
-	schedule (static)
+	shared   (stateVecSize, stateVecReal,stateVecImag, myNorm) \
+	private  (index,bit1,bit2,bit3)		       
+# endif 
+	{
+# ifdef _OPENMP
+		# pragma omp for schedule (static)
 # endif
-	for (index=0; index<stateVecSize; index++) {
-		bit1 = extractBit (idQubit1, index);
-		bit2 = extractBit (idQubit2, index);
-		bit3 = extractBit (idQubit3, index);
-		if ((bit1 && bit2 && bit3)) {
-			stateVecReal[index]=0;
-			stateVecImag [index]=0;
-		}else{
-			stateVecReal[index] *= myNorm;
-			stateVecImag[index] *= myNorm;
+		for (index=0; index<stateVecSize; index++) {
+			bit1 = extractBit (idQubit1, index);
+			bit2 = extractBit (idQubit2, index);
+			bit3 = extractBit (idQubit3, index);
+			if ((bit1 && bit2 && bit3)) {
+				stateVecReal[index]=0;
+				stateVecImag [index]=0;
+			}else{
+				stateVecReal[index] *= myNorm;
+				stateVecImag[index] *= myNorm;
+			}
 		}
 	}
 	return probOfFilter;
@@ -734,19 +768,23 @@ double probOfFilterOut111 (const int numQubits, const int idQubit1, const int id
 	double probOfFilter=0;
 
 # ifdef _OPENMP
-# pragma omp parallel for \
+# pragma omp parallel \
 	default  (none)			     \
-	shared   (stateVecSize, stateVecReal,stateVecImag ) \
+	shared   (stateVecSize, stateVecReal,stateVecImag) \
 	private  (index,bit1,bit2,bit3)		       \
-	schedule (static)\
 	reduction ( +:probOfFilter )
 # endif
-	for (index=0; index<stateVecSize; index++) {
-		bit1 = extractBit (idQubit1, index);
-		bit2 = extractBit (idQubit2, index);
-		bit3 = extractBit (idQubit3, index);
-		if (!(bit1 && bit2 && bit3)) {
-			probOfFilter+= stateVecReal[index]*stateVecReal[index] + stateVecImag[index]* stateVecImag [index];
+	{
+# ifdef _OPENMP
+		# pragma omp for schedule (static)
+# endif
+		for (index=0; index<stateVecSize; index++) {
+			bit1 = extractBit (idQubit1, index);
+			bit2 = extractBit (idQubit2, index);
+			bit3 = extractBit (idQubit3, index);
+			if (!(bit1 && bit2 && bit3)) {
+				probOfFilter+= stateVecReal[index]*stateVecReal[index] + stateVecImag[index]* stateVecImag [index];
+			}
 		}
 	}
 	return probOfFilter;
