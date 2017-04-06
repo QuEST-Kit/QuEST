@@ -30,6 +30,8 @@ make
 This will report some information about the size of the system, perform rotations and verify that
 the state vector of probability amplitudes is still normalized. 
 
+OpenMP is enabled by default. To change the number of threads used by the program, set the value of OMP_NUM_THREADS before running the program, eg export OMP_NUM_THREADS=16. See examples/ompJob.sh for an example of how to do this in a job submission script.
+
 ## Building other examples
 
 There are other examples of codes using the QUEST library in the examples folder. To use one of these,

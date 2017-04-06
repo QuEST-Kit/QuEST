@@ -53,6 +53,7 @@
 <p>In the root directory, run a simple 8 qubit example on one node:</p>
 <p>The default compiler is the gnu compiler. To change to the intell compiler, edit the COMMON CONFIG section at the beginning of makefile in the root directory. Change COMPILER=GCC to COMPILER=ICC. Then run:</p>
 <div class="fragment"><div class="line"><a name="l00001"></a><span class="lineno">    1</span>&#160;make clean</div><div class="line"><a name="l00002"></a><span class="lineno">    2</span>&#160;make</div><div class="line"><a name="l00003"></a><span class="lineno">    3</span>&#160;./demo 8</div></div><!-- fragment --><p>This will report some information about the size of the system, perform rotations and verify that the state vector of probability amplitudes is still normalized.</p>
+<p>OpenMP is enabled by default. To change the number of threads used by the program, set the value of OMP_NUM_THREADS before running the program, eg export OMP_NUM_THREADS=16. See examples/ompJob.sh for an example of how to do this in a job submission script.</p>
 <h2>Building other examples</h2>
 <p>There are other examples of codes using the QUEST library in the examples folder. To use one of these, copy from the examples folder into the root folder, eg: cp examples/timingDemo.c timingDemo.c</p>
 <p>Edit the COMMON CONFIG section at the beginning of makefile. Change MY_FILE_NAME to the name of the file without any extension, eg MY_FILE_NAME=timingDemo</p>
@@ -71,7 +72,7 @@
 </div></div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Thu Apr 6 2017 10:49:43 for Distributed QUEST by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Thu Apr 6 2017 10:56:18 for Distributed QUEST by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.11
 </small></address>
