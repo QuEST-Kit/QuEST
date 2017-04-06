@@ -3,12 +3,13 @@ An implementation of the API in qubits.h for a local (non-MPI) environment.
 */
 
 # include <stdlib.h>
+# include <stdio.h>
+# include <omp.h>
 # include "qubits.h"
 # include "qubits_internal.h"
 
 void initQUESTEnv(QUESTEnv *env){
         // init MPI environment
-        int rank, numRanks;
 	env->rank=0;
 	env->numRanks=1;
 }

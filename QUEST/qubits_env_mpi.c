@@ -4,6 +4,7 @@ An implementation of the API in qubits.h for an MPI environment.
 # include <mpi.h>
 # include <stdlib.h>
 # include <stdio.h>
+# include <omp.h>
 # include "qubits.h"
 # include "qubits_internal.h"
 
@@ -186,9 +187,6 @@ void rotateQubit(MultiQubit multiQubit, const int rotQubit, Complex alpha, Compl
         // MPI send/receive vars
 	int TAG=100;
         MPI_Status status;
-
-	double *stateVecReal, stateVecImag, stateVecRealPair, stateVecImagPair;
-	
 
 	if (useLocalDataOnly){
 		// all values required to update state vector lie in this rank

@@ -12,7 +12,7 @@
 COMPILER = GCC
 EXE = demo
 MY_FILE_NAME = basicTemplate
-USE_MPI=0
+USE_MPI=1
 QUEST_DIR = QUEST
 
 #

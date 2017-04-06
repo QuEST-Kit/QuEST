@@ -41,7 +41,6 @@ int main (int narg, char** varg) {
 
 	// model vars
 	int numQubits;
-	long int index;
 	
 	// get number of qubits from command line argument
 	if (narg >= 2) {
@@ -89,7 +88,6 @@ int main (int narg, char** varg) {
 		{ 5.2341, -3.1001, -1.2340},
 		{-0.1234, -0.9876,  4.1234}
 	};
-	int numAngles=5,iAngle;
 
 	// rotate
 	ang1 = angles[0][0];

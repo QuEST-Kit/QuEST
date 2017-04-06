@@ -110,8 +110,8 @@ void reportMultiQubitParams(MultiQubit multiQubit){
 	if (multiQubit.chunkId==0){
                 printf("QUBITS:\n");
                 printf("Number of qubits is %d.\n", multiQubit.numQubits);
-                printf("Number of amps is %ld.\n", numAmps);
-		printf("Number of amps per rank is %ld.\n", numAmpsPerRank);
+                printf("Number of amps is %lld.\n", numAmps);
+		printf("Number of amps per rank is %lld.\n", numAmpsPerRank);
         }
 }
 
@@ -604,8 +604,7 @@ double measureInZero (const int numQubits,
 		double *restrict stateVecImag)
 {
 	// ----- sizes
-	long long int numBlocks,                                           // number of blocks
-	sizeBlock,                                           // size of blocks
+	long long int sizeBlock,                                           // size of blocks
 	sizeHalfBlock;                                       // size of blocks halved
 	// ----- indices
 	long long int thisBlock,                                           // current block
