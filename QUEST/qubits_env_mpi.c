@@ -1,11 +1,11 @@
 /** @file
-An implementation of the API in qubits_env_wrapper.h for an MPI environment.
+An implementation of the API in qubits.h for an MPI environment.
 */
 # include <mpi.h>
 # include <stdlib.h>
 # include <stdio.h>
 # include "qubits.h"
-# include "qubits_env_wrapper.h"
+# include "qubits_internal.h"
 
 # define DEBUG 0
 

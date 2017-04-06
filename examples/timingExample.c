@@ -18,7 +18,6 @@
 # include <omp.h>
 
 # include "QUEST/qubits.h"
-# include "QUEST/qubits_env_wrapper.h"
 
 //! Max number of angles used to define qubit rotation
 # define MaxAngles      10

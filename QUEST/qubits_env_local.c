@@ -1,10 +1,10 @@
 /** @file
-An implementation of the API in qubits_env_wrapper.h for a local (non-MPI) environment.
+An implementation of the API in qubits.h for a local (non-MPI) environment.
 */
 
 # include <stdlib.h>
 # include "qubits.h"
-# include "qubits_env_wrapper.h"
+# include "qubits_internal.h"
 
 void initQUESTEnv(QUESTEnv *env){
         // init MPI environment

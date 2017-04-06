@@ -13,7 +13,6 @@
 # include <omp.h>
 
 # include "QUEST/qubits.h"
-# include "QUEST/qubits_env_wrapper.h"
 
 //! Max number of angles used to define qubit rotation
 # define MaxAngles      10
@@ -111,6 +110,9 @@ int main (int narg, char** varg) {
 	for (rotQubit=0; rotQubit<numQubits; rotQubit++) {
 		// do rotation of each qubit
 		rotateQubit(multiQubit,rotQubit,alpha,beta);
+		// make sure rotations have finished on the entire state vector, across all nodes
+		// if running on only one node, this is a noop
+		syncQUESTEnv(env);
 	}
 	// END QUBIT ROTATION
 

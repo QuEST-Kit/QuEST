@@ -1,5 +1,5 @@
 /** @file
-Structs and specifications for functions that can be used from any environment (local, MPI)
+ * The QUEST library API and objects. 
 */
 
 /** Represents an array of complex numbers grouped into an array of real components and an array of coressponding complex components.
@@ -48,6 +48,8 @@ typedef struct QUESTEnv
 } QUESTEnv;
 
 
+// QUEST library functions whose implementation is independent of environment (local, MPI)
+
 void createMultiQubit(MultiQubit *multiQubit, int numQubits, QUESTEnv env);
 
 void destroyMultiQubit(MultiQubit multiQubit, QUESTEnv env);
@@ -56,38 +58,52 @@ void reportState(MultiQubit multiQubit);
 
 void initStateVec(MultiQubit *multiQubit);
 
-void rotateQubitLocal (MultiQubit multiQubit, const int rotQubit, Complex alpha, Complex beta);
+// QUEST library functions whose implementation depends on environment (local, MPI)
 
-void rotateQubitDistributed (MultiQubit multiQubit, const int rotQubit,
-		Complex rot1, Complex rot2,
-                ComplexArray stateVecUp,
-                ComplexArray stateVecLo,
-                ComplexArray stateVecOut);
+/** Initialize QUEST environment. If something needs to be done to set up the execution environment, such as 
+ * initializing MPI when running in distributed mode, it is handled here
+ * @param[in,out] env object representing the execution environment. A single instance is used for each program
+ */
+void initQUESTEnv(QUESTEnv *env);
 
-double findProbabilityOfZeroLocal (MultiQubit multiQubit,
-                const int measureQubit);
+/** Close QUEST environment. If something needs to be done to clean up the execution environment, such as 
+ * finalizing MPI when running in distributed mode, it is handled here
+ * @param[in] env object representing the execution environment. A single instance is used for each program
+ */
+void closeQUESTEnv(QUESTEnv env);
 
-double findProbabilityOfZeroDistributed (MultiQubit multiQubit,
-                const int measureQubit);
+/** Guarantees that all code up to the given point has been executed on all nodes. 
+ */
+void syncQUESTEnv(QUESTEnv env);
 
-int extractBit (const int locationOfBitFromRight, const long long int theEncodedNumber);
+/** Calculate the probability of being in any state by taking the norm of the entire state vector. 
+ * Should be equal to 1.
+ * @param[in] multiQubit object representing a set of qubits
+ * @return total probability
+ */
+double calcTotalProbability(MultiQubit multiQubit);
 
-void controlPhaseGate (const int numQubits, const int idQubit1, const int idQubit2,
-                       double *restrict stateVecReal, double *restrict stateVecImag);
+/** Rotate a single qubit in the state vector of probability amplitudes, given the angle rotation arguments.
+alphaRe = cos(angle1) * cos(angle2) \n
+alphaIm = cos(angle1) * sin(angle2) \n            
+betaRe  = sin(angle1) * cos(angle3) \n            
+betaIm  = sin(angle1) * sin(angle3) \n           
 
-void quadCPhaseGate (const int numQubits, const int idQubit1, const int idQubit2, 
-		const int idQubit3, const int idQubit4, double *restrict stateVecReal, 
-		double *restrict stateVecImag);
+@remarks Qubits are zero-based and the                     
+the first qubit is the rightmost                  
+                                                                      
+@param[in,out] multiQubit object representing the set of qubits to be initialised
+@param[in] rotQubit qubit to rotate
+@param[in] alpha rotation angle
+@param[in] beta rotation angle
+ */
+void rotateQubit(MultiQubit multiQubit, const int rotQubit, Complex alpha, Complex beta);
 
-double measureInZero (const int numQubits,
-                              const int measureQubit,
-                              double *restrict stateVecReal,
-                              double *restrict stateVecImag);
+/** Measure the probability
+of a specified qubit being in the zero state.     
 
-double filterOut111 (const int numQubits, const int idQubit1, const int idQubit2, const int idQubit3,
-                              double *restrict stateVecReal,
-                              double *restrict stateVecImag);
-
-double probOfFilterOut111 (const int numQubits, const int idQubit1, const int idQubit2, const int idQubit3,
-                              double *restrict stateVecReal,
-                              double *restrict stateVecImag);
+@param[in] multiQubit object representing the set of qubits to be initialised
+@param[in] measureQubit qubit to measure
+@return probability of qubit measureQubit being zero
+*/
+double findProbabilityOfZero(MultiQubit multiQubit, const int measureQubit);

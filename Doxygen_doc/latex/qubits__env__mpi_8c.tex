@@ -2,14 +2,14 @@
 \label{qubits__env__mpi_8c}\index{qubits\+\_\+env\+\_\+mpi.\+c@{qubits\+\_\+env\+\_\+mpi.\+c}}
 
 
-An implementation of the A\+PI in \hyperlink{qubits__env__wrapper_8h}{qubits\+\_\+env\+\_\+wrapper.\+h} for an M\+PI environment.  
+An implementation of the A\+PI in \hyperlink{qubits_8h}{qubits.\+h} for an M\+PI environment.  
 
 
 {\ttfamily \#include $<$mpi.\+h$>$}\\*
 {\ttfamily \#include $<$stdlib.\+h$>$}\\*
 {\ttfamily \#include $<$stdio.\+h$>$}\\*
 {\ttfamily \#include \char`\"{}qubits.\+h\char`\"{}}\\*
-{\ttfamily \#include \char`\"{}qubits\+\_\+env\+\_\+wrapper.\+h\char`\"{}}\\*
+{\ttfamily \#include \char`\"{}qubits\+\_\+internal.\+h\char`\"{}}\\*
 \subsubsection*{Macros}
 \begin{DoxyCompactItemize}
 \item 
@@ -43,7 +43,7 @@ double \hyperlink{qubits__env__mpi_8c_af31016680d01044cee9321d4cae32703}{find\+P
 
 
 \subsubsection{Detailed Description}
-An implementation of the A\+PI in \hyperlink{qubits__env__wrapper_8h}{qubits\+\_\+env\+\_\+wrapper.\+h} for an M\+PI environment. 
+An implementation of the A\+PI in \hyperlink{qubits_8h}{qubits.\+h} for an M\+PI environment. 
 
 
 
@@ -88,6 +88,10 @@ Definition at line 62 of file qubits\+\_\+env\+\_\+mpi.\+c.
 
 
 References D\+E\+B\+UG, Complex\+Array\+::imag, Multi\+Qubit\+::num\+Amps, Multi\+Qubit\+::num\+Chunks, Complex\+Array\+::real, and Multi\+Qubit\+::state\+Vec.
+
+
+
+Referenced by main().
 
 
 \begin{DoxyCode}
@@ -171,6 +175,10 @@ If something needs to be done to clean up the execution environment, such as fin
 
 
 Definition at line 36 of file qubits\+\_\+env\+\_\+mpi.\+c.
+
+
+
+Referenced by main().
 
 
 \begin{DoxyCode}
@@ -394,6 +402,10 @@ Definition at line 12 of file qubits\+\_\+env\+\_\+mpi.\+c.
 References D\+E\+B\+UG, Q\+U\+E\+S\+T\+Env\+::num\+Ranks, and Q\+U\+E\+S\+T\+Env\+::rank.
 
 
+
+Referenced by main().
+
+
 \begin{DoxyCode}
 12                                 \{
 13         \textcolor{comment}{// init MPI environment}
@@ -503,6 +515,10 @@ Definition at line 155 of file qubits\+\_\+env\+\_\+mpi.\+c.
 References Multi\+Qubit\+::chunk\+Id, chunk\+Is\+Upper(), get\+Chunk\+Pair\+Id(), get\+Rot\+Angle(), half\+Matrix\+Block\+Fits\+In\+Chunk(), Complex\+Array\+::imag, Multi\+Qubit\+::num\+Amps, Multi\+Qubit\+::pair\+State\+Vec, Complex\+Array\+::real, rotate\+Qubit\+Distributed(), rotate\+Qubit\+Local(), and Multi\+Qubit\+::state\+Vec.
 
 
+
+Referenced by main().
+
+
 \begin{DoxyCode}
 157 \{
 158         \textcolor{comment}{// flag to require memory exchange. 1: an entire block fits on one rank, 0: at most half a block
@@ -576,6 +592,10 @@ Guarantees that all code up to the given point has been executed on all nodes.
 
 
 Definition at line 32 of file qubits\+\_\+env\+\_\+mpi.\+c.
+
+
+
+Referenced by main().
 
 
 \begin{DoxyCode}

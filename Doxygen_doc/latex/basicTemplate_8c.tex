@@ -13,7 +13,6 @@ Basic template for using the Q\+U\+E\+ST library.
 {\ttfamily \#include $<$string.\+h$>$}\\*
 {\ttfamily \#include $<$omp.\+h$>$}\\*
 {\ttfamily \#include \char`\"{}Q\+U\+E\+S\+T/qubits.\+h\char`\"{}}\\*
-{\ttfamily \#include \char`\"{}Q\+U\+E\+S\+T/qubits\+\_\+env\+\_\+wrapper.\+h\char`\"{}}\\*
 \subsubsection*{Macros}
 \begin{DoxyCompactItemize}
 \item 
@@ -50,7 +49,7 @@ Max number of angles used to define qubit rotation.
 
 
 
-Definition at line 19 of file basic\+Template.\+c.
+Definition at line 18 of file basic\+Template.\+c.
 
 
 
@@ -65,7 +64,7 @@ Max number of qubits in the system.
 
 
 
-Definition at line 21 of file basic\+Template.\+c.
+Definition at line 20 of file basic\+Template.\+c.
 
 
 
@@ -80,7 +79,7 @@ Referenced by main().
 
 
 
-Definition at line 23 of file basic\+Template.\+c.
+Definition at line 22 of file basic\+Template.\+c.
 
 
 
@@ -99,215 +98,218 @@ Referenced by main().
 )}\hypertarget{basicTemplate_8c_a0b1907e3d123f469a739aa425bd05574}{}\label{basicTemplate_8c_a0b1907e3d123f469a739aa425bd05574}
 
 
-Definition at line 31 of file basic\+Template.\+c.
+Definition at line 30 of file basic\+Template.\+c.
 
 
 
-References calc\+Total\+Probability(), close\+Q\+U\+E\+S\+T\+Env(), create\+Multi\+Qubit(), destroy\+Multi\+Qubit(), Complex\+::imag, init\+Q\+U\+E\+S\+T\+Env(), init\+State\+Vec(), Max\+Angles, max\+Num\+Qubits, Q\+U\+E\+S\+T\+Env\+::rank, Complex\+::real, R\+E\+P\+O\+R\+T\+\_\+\+S\+T\+A\+TE, report\+State(), and rotate\+Qubit().
+References calc\+Total\+Probability(), close\+Q\+U\+E\+S\+T\+Env(), create\+Multi\+Qubit(), destroy\+Multi\+Qubit(), Complex\+::imag, init\+Q\+U\+E\+S\+T\+Env(), init\+State\+Vec(), Max\+Angles, max\+Num\+Qubits, Q\+U\+E\+S\+T\+Env\+::rank, Complex\+::real, R\+E\+P\+O\+R\+T\+\_\+\+S\+T\+A\+TE, report\+State(), rotate\+Qubit(), and sync\+Q\+U\+E\+S\+T\+Env().
 
 
 \begin{DoxyCode}
-31                                  \{
-32 
-33         \textcolor{comment}{//}
-34         \textcolor{comment}{// ===== INITIALISATION}
-35         \textcolor{comment}{//}
-36         
-37         \textcolor{comment}{// INIT ENVIRONMENT: ALWAYS REQUIRED ONCE AT BEGINNING OF PROGRAM}
-38         \textcolor{comment}{// These two lines will automatically set up the environment (multinode,}
-39         \textcolor{comment}{// openMP only etc)  }
-40         \hyperlink{structQUESTEnv}{QUESTEnv} env;
-41         \hyperlink{qubits__env__local_8c_a652d8c53f8f1cfb096133791de2b219d}{initQUESTEnv}(&env);
-42 
-43         \textcolor{comment}{// model vars}
-44         \textcolor{keywordtype}{int} numQubits;
-45         \textcolor{keywordtype}{long} \textcolor{keywordtype}{int} index;
-46         \textcolor{keywordtype}{long} \textcolor{keywordtype}{int} numAmps;
-47         
-48         \textcolor{comment}{// get number of qubits from command line argument}
-49         \textcolor{keywordflow}{if} (narg >= 2) \{
-50                 numQubits = atoi(varg[1]);
-51                 \textcolor{keywordflow}{if} (numQubits < 1 || numQubits > \hyperlink{basicTemplate_8c_a8e2ba5722f048e5a9cd58d09085f6cb1}{maxNumQubits}) \{
-52                         printf(\textcolor{stringliteral}{" *** error: argument %d out of range (1 -- %d)\(\backslash\)n"}, numQubits,maxNumQubits);
-53                         exit (EXIT\_FAILURE);
-54                 \}
-55         \} \textcolor{keywordflow}{else} \{
-56                 printf(\textcolor{stringliteral}{" *** error: too few arguments, number of qubits expected\(\backslash\)n"});
-57                 exit (EXIT\_FAILURE);
-58         \}
-59 
-60         \textcolor{comment}{// Reporting}
-61         numAmps = 1L << numQubits;
-62         \textcolor{keywordflow}{if} (env.\hyperlink{structQUESTEnv_a1bdb6d425a2ce6a468f93929c0b26d73}{rank}==0)\{
-63                 printf(\textcolor{stringliteral}{"Demo of single qubit rotations.\(\backslash\)n"});
-64                 printf(\textcolor{stringliteral}{"Number of qubits is %d.\(\backslash\)n"}, numQubits);
-65                 printf(\textcolor{stringliteral}{"Number of amps is %ld.\(\backslash\)n"}, numAmps);
-66         \}
-67 
-68         \textcolor{comment}{// CREATE QUBIT OBJECT: REQUIRED ONCE PER MULTIQUBIT OBJECT     }
-69         \textcolor{comment}{// Before doing any operations on a set of qubits, create the MultiQubit object that will be used
+30                                  \{
+31 
+32         \textcolor{comment}{//}
+33         \textcolor{comment}{// ===== INITIALISATION}
+34         \textcolor{comment}{//}
+35         
+36         \textcolor{comment}{// INIT ENVIRONMENT: ALWAYS REQUIRED ONCE AT BEGINNING OF PROGRAM}
+37         \textcolor{comment}{// These two lines will automatically set up the environment (multinode,}
+38         \textcolor{comment}{// openMP only etc)  }
+39         \hyperlink{structQUESTEnv}{QUESTEnv} env;
+40         \hyperlink{qubits_8h_a652d8c53f8f1cfb096133791de2b219d}{initQUESTEnv}(&env);
+41 
+42         \textcolor{comment}{// model vars}
+43         \textcolor{keywordtype}{int} numQubits;
+44         \textcolor{keywordtype}{long} \textcolor{keywordtype}{int} index;
+45         \textcolor{keywordtype}{long} \textcolor{keywordtype}{int} numAmps;
+46         
+47         \textcolor{comment}{// get number of qubits from command line argument}
+48         \textcolor{keywordflow}{if} (narg >= 2) \{
+49                 numQubits = atoi(varg[1]);
+50                 \textcolor{keywordflow}{if} (numQubits < 1 || numQubits > \hyperlink{basicTemplate_8c_a8e2ba5722f048e5a9cd58d09085f6cb1}{maxNumQubits}) \{
+51                         printf(\textcolor{stringliteral}{" *** error: argument %d out of range (1 -- %d)\(\backslash\)n"}, numQubits,maxNumQubits);
+52                         exit (EXIT\_FAILURE);
+53                 \}
+54         \} \textcolor{keywordflow}{else} \{
+55                 printf(\textcolor{stringliteral}{" *** error: too few arguments, number of qubits expected\(\backslash\)n"});
+56                 exit (EXIT\_FAILURE);
+57         \}
+58 
+59         \textcolor{comment}{// Reporting}
+60         numAmps = 1L << numQubits;
+61         \textcolor{keywordflow}{if} (env.\hyperlink{structQUESTEnv_a1bdb6d425a2ce6a468f93929c0b26d73}{rank}==0)\{
+62                 printf(\textcolor{stringliteral}{"Demo of single qubit rotations.\(\backslash\)n"});
+63                 printf(\textcolor{stringliteral}{"Number of qubits is %d.\(\backslash\)n"}, numQubits);
+64                 printf(\textcolor{stringliteral}{"Number of amps is %ld.\(\backslash\)n"}, numAmps);
+65         \}
+66 
+67         \textcolor{comment}{// CREATE QUBIT OBJECT: REQUIRED ONCE PER MULTIQUBIT OBJECT     }
+68         \textcolor{comment}{// Before doing any operations on a set of qubits, create the MultiQubit object that will be used
        to }
-70         \textcolor{comment}{// represent the qubits}
-71         \hyperlink{structMultiQubit}{MultiQubit} multiQubit; 
-72         \hyperlink{qubits_8c_ae729f311efd2a426ce5161df3e017a16}{createMultiQubit}(&multiQubit, numQubits, env);
-73 
-74         \textcolor{comment}{// initialise the state to |0000..0>}
-75         \hyperlink{qubits_8c_a492d10377278f685c7a1fabc3ee60623}{initStateVec} (&multiQubit);
+69         \textcolor{comment}{// represent the qubits}
+70         \hyperlink{structMultiQubit}{MultiQubit} multiQubit; 
+71         \hyperlink{qubits_8c_ae729f311efd2a426ce5161df3e017a16}{createMultiQubit}(&multiQubit, numQubits, env);
+72 
+73         \textcolor{comment}{// initialise the state to |0000..0>}
+74         \hyperlink{qubits_8c_a492d10377278f685c7a1fabc3ee60623}{initStateVec} (&multiQubit);
+75 
 76 
-77 
-78         \textcolor{comment}{//}
-79         \textcolor{comment}{// ===== ROTATIONS}
-80         \textcolor{comment}{//}
-81 
-82         \textcolor{comment}{// INITIALISE QUBIT ROTATION}
-83         \textcolor{comment}{// Edit these lines to change rotation angle}
-84         \textcolor{keywordtype}{double} ang1,ang2,ang3;
-85         \hyperlink{structComplex}{Complex} alpha, beta;
-86 
-87         \textcolor{comment}{// define rotation angles}
-88         \textcolor{keywordtype}{double} angles[\hyperlink{basicTemplate_8c_a353abace49aefb52015b80290cf26d77}{MaxAngles}][3] = \{
-89                 \{ 1.2320,  0.4230, -0.6523\},
-90                 \{ 2.1213,  0.0000,  3.6520\},
-91                 \{-3.1213,  5.0230,  0.1230\},
-92                 \{ 5.2341, -3.1001, -1.2340\},
-93                 \{-0.1234, -0.9876,  4.1234\}
-94         \};
-95         \textcolor{keywordtype}{int} numAngles=5,iAngle;
-96 
-97         \textcolor{comment}{// rotate}
-98         ang1 = angles[0][0];
-99         ang2 = angles[0][1];
-100         ang3 = angles[0][2];
-101 
-102         alpha.\hyperlink{structComplex_a0138f5fe2b2c6180b8fcda77a7aa51c5}{real} = cos(ang1) * cos(ang2);
-103         alpha.\hyperlink{structComplex_a2bb90cc563599c3c8bdec9acf9ea40a6}{imag} = cos(ang1) * sin(ang2);
-104         beta.\hyperlink{structComplex_a0138f5fe2b2c6180b8fcda77a7aa51c5}{real}  = sin(ang1) * cos(ang3);
-105         beta.\hyperlink{structComplex_a2bb90cc563599c3c8bdec9acf9ea40a6}{imag}  = sin(ang1) * sin(ang3);
-106 
-107         \textcolor{keywordtype}{int} rotQubit;
-108 
-109         \textcolor{comment}{// DO QUBIT ROTATION}
-110         \textcolor{comment}{// Edit these lines to perform rotations as required}
-111         \textcolor{keywordflow}{for} (rotQubit=0; rotQubit<numQubits; rotQubit++) \{
-112                 \textcolor{comment}{// do rotation of each qubit}
-113                 \hyperlink{qubits__env__local_8c_a4ba468aa69f812efd1f964e10a45ca2f}{rotateQubit}(multiQubit,rotQubit,alpha,beta);
-114         \}
-115         \textcolor{comment}{// END QUBIT ROTATION}
-116 
-117         \textcolor{comment}{// Verification: check vector size is unchanged}
-118         \textcolor{keywordtype}{double} totalProbability;
-119         totalProbability = \hyperlink{qubits__env__local_8c_a2205c8fde15213df52040dc3df233090}{calcTotalProbability}(multiQubit);
-120         \textcolor{keywordflow}{if} (env.\hyperlink{structQUESTEnv_a1bdb6d425a2ce6a468f93929c0b26d73}{rank}==0) printf(\textcolor{stringliteral}{"VERIFICATION: total probability=%.14f\(\backslash\)n"}, totalProbability);
-121 
-122         \textcolor{comment}{// report state vector to file}
-123         \textcolor{keywordflow}{if} (\hyperlink{basicTemplate_8c_a64394210bc1694536cbb8411d2bab5ed}{REPORT\_STATE})\{
-124                 \hyperlink{qubits_8c_a96f4de9ce7fefc7680a44d601fc3d894}{reportState}(multiQubit);
-125         \}
-126 
-127 
-128         \textcolor{comment}{//}
-129         \textcolor{comment}{// ===== perform a measurement}
+77         \textcolor{comment}{//}
+78         \textcolor{comment}{// ===== ROTATIONS}
+79         \textcolor{comment}{//}
+80 
+81         \textcolor{comment}{// INITIALISE QUBIT ROTATION}
+82         \textcolor{comment}{// Edit these lines to change rotation angle}
+83         \textcolor{keywordtype}{double} ang1,ang2,ang3;
+84         \hyperlink{structComplex}{Complex} alpha, beta;
+85 
+86         \textcolor{comment}{// define rotation angles}
+87         \textcolor{keywordtype}{double} angles[\hyperlink{basicTemplate_8c_a353abace49aefb52015b80290cf26d77}{MaxAngles}][3] = \{
+88                 \{ 1.2320,  0.4230, -0.6523\},
+89                 \{ 2.1213,  0.0000,  3.6520\},
+90                 \{-3.1213,  5.0230,  0.1230\},
+91                 \{ 5.2341, -3.1001, -1.2340\},
+92                 \{-0.1234, -0.9876,  4.1234\}
+93         \};
+94         \textcolor{keywordtype}{int} numAngles=5,iAngle;
+95 
+96         \textcolor{comment}{// rotate}
+97         ang1 = angles[0][0];
+98         ang2 = angles[0][1];
+99         ang3 = angles[0][2];
+100 
+101         alpha.\hyperlink{structComplex_a0138f5fe2b2c6180b8fcda77a7aa51c5}{real} = cos(ang1) * cos(ang2);
+102         alpha.\hyperlink{structComplex_a2bb90cc563599c3c8bdec9acf9ea40a6}{imag} = cos(ang1) * sin(ang2);
+103         beta.\hyperlink{structComplex_a0138f5fe2b2c6180b8fcda77a7aa51c5}{real}  = sin(ang1) * cos(ang3);
+104         beta.\hyperlink{structComplex_a2bb90cc563599c3c8bdec9acf9ea40a6}{imag}  = sin(ang1) * sin(ang3);
+105 
+106         \textcolor{keywordtype}{int} rotQubit;
+107 
+108         \textcolor{comment}{// DO QUBIT ROTATION}
+109         \textcolor{comment}{// Edit these lines to perform rotations as required}
+110         \textcolor{keywordflow}{for} (rotQubit=0; rotQubit<numQubits; rotQubit++) \{
+111                 \textcolor{comment}{// do rotation of each qubit}
+112                 \hyperlink{qubits_8h_a4ba468aa69f812efd1f964e10a45ca2f}{rotateQubit}(multiQubit,rotQubit,alpha,beta);
+113                 \textcolor{comment}{// make sure rotations have finished on the entire state vector, across all nodes}
+114                 \textcolor{comment}{// if running on only one node, this is a noop}
+115                 \hyperlink{qubits_8h_a83dffc500bf5b4e41dd63ba1ea9422ae}{syncQUESTEnv}(env);
+116         \}
+117         \textcolor{comment}{// END QUBIT ROTATION}
+118 
+119         \textcolor{comment}{// Verification: check vector size is unchanged}
+120         \textcolor{keywordtype}{double} totalProbability;
+121         totalProbability = \hyperlink{qubits_8h_a2205c8fde15213df52040dc3df233090}{calcTotalProbability}(multiQubit);
+122         \textcolor{keywordflow}{if} (env.\hyperlink{structQUESTEnv_a1bdb6d425a2ce6a468f93929c0b26d73}{rank}==0) printf(\textcolor{stringliteral}{"VERIFICATION: total probability=%.14f\(\backslash\)n"}, totalProbability);
+123 
+124         \textcolor{comment}{// report state vector to file}
+125         \textcolor{keywordflow}{if} (\hyperlink{basicTemplate_8c_a64394210bc1694536cbb8411d2bab5ed}{REPORT\_STATE})\{
+126                 \hyperlink{qubits_8c_a96f4de9ce7fefc7680a44d601fc3d894}{reportState}(multiQubit);
+127         \}
+128 
+129 
 130         \textcolor{comment}{//}
-131         \textcolor{keywordtype}{int} measureQubit;
-132         \textcolor{keywordtype}{double} stateProb,randProb;
-133         \textcolor{comment}{/* // keep time */}
-134         \textcolor{comment}{/* wtime\_start = system\_timer (); */}
-135 
-136         \textcolor{comment}{// measure}
-137 \textcolor{comment}{/*      }
-138 \textcolor{comment}{        for (measureQubit=0; measureQubit<numQubits; measureQubit++) \{}
-139 \textcolor{comment}{        //for (measureQubit=0; measureQubit<1; measureQubit++) \{}
-140 \textcolor{comment}{                syncQUESTEnv(env);}
-141 \textcolor{comment}{                wtime\_start = system\_timer ();}
-142 \textcolor{comment}{                stateProb = findProbabilityOfZero (env.rank, numAmpsPerRank, numQubits, measureQubit,
+131         \textcolor{comment}{// ===== perform a measurement}
+132         \textcolor{comment}{//}
+133         \textcolor{keywordtype}{int} measureQubit;
+134         \textcolor{keywordtype}{double} stateProb,randProb;
+135         \textcolor{comment}{/* // keep time */}
+136         \textcolor{comment}{/* wtime\_start = system\_timer (); */}
+137 
+138         \textcolor{comment}{// measure}
+139 \textcolor{comment}{/*      }
+140 \textcolor{comment}{        for (measureQubit=0; measureQubit<numQubits; measureQubit++) \{}
+141 \textcolor{comment}{        //for (measureQubit=0; measureQubit<1; measureQubit++) \{}
+142 \textcolor{comment}{                syncQUESTEnv(env);}
+143 \textcolor{comment}{                wtime\_start = system\_timer ();}
+144 \textcolor{comment}{                stateProb = findProbabilityOfZero (env.rank, numAmpsPerRank, numQubits, measureQubit,
        stateVecReal,stateVecImag);}
-143 \textcolor{comment}{                syncQUESTEnv(env);}
-144 \textcolor{comment}{                wtime\_stop = system\_timer ();}
-145 \textcolor{comment}{                if (env.rank==0) printf("   probability of 0 for qubit %d = %.14f\(\backslash\)n", measureQubit,
+145 \textcolor{comment}{                syncQUESTEnv(env);}
+146 \textcolor{comment}{                wtime\_stop = system\_timer ();}
+147 \textcolor{comment}{                if (env.rank==0) printf("   probability of 0 for qubit %d = %.14f\(\backslash\)n", measureQubit,
        stateProb);}
-146 \textcolor{comment}{                if (env.rank==0) printf(" measurement qubit %d: elapsed time = %f [s]\(\backslash\)n", measureQubit,
+148 \textcolor{comment}{                if (env.rank==0) printf(" measurement qubit %d: elapsed time = %f [s]\(\backslash\)n", measureQubit,
        wtime\_stop - wtime\_start);}
-147 \textcolor{comment}{        \}}
-148 \textcolor{comment}{*/}
-149         \textcolor{comment}{/* // keep time */}
-150         \textcolor{comment}{/* wtime\_stop = system\_timer (); */}
-151 
-152         \textcolor{comment}{/* // ----- timing report */}
-153         \textcolor{comment}{/* printf(" measurement: elapsed time = %f [s]\(\backslash\)n", wtime\_stop - wtime\_start); */}
-154 
-155 
-156         \textcolor{comment}{//}
-157         \textcolor{comment}{// ===== two qubit phase gate}
+149 \textcolor{comment}{        \}}
+150 \textcolor{comment}{*/}
+151         \textcolor{comment}{/* // keep time */}
+152         \textcolor{comment}{/* wtime\_stop = system\_timer (); */}
+153 
+154         \textcolor{comment}{/* // ----- timing report */}
+155         \textcolor{comment}{/* printf(" measurement: elapsed time = %f [s]\(\backslash\)n", wtime\_stop - wtime\_start); */}
+156 
+157 
 158         \textcolor{comment}{//}
-159         \textcolor{comment}{/* // keep time */}
-160         \textcolor{comment}{/* wtime\_start = system\_timer (); */}
-161 \textcolor{comment}{/*}
-162 \textcolor{comment}{        // two qubit phase gate}
-163 \textcolor{comment}{        if (numQubits >= 7) \{}
-164 \textcolor{comment}{                wtime\_start = system\_timer (); }
-165 \textcolor{comment}{                controlPhaseGate (env.rank, numAmpsPerRank, numQubits, 0, 2, stateVecReal, stateVecImag); }
-166 \textcolor{comment}{                wtime\_stop = system\_timer (); }
-167 \textcolor{comment}{                printf(" two qubit phase gate: elapsed time = %f [s]\(\backslash\)n", wtime\_stop - wtime\_start);}
-168 \textcolor{comment}{                wtime\_start = system\_timer (); controlPhaseGate (env.rank, numAmpsPerRank, numQubits, 1, 3,
+159         \textcolor{comment}{// ===== two qubit phase gate}
+160         \textcolor{comment}{//}
+161         \textcolor{comment}{/* // keep time */}
+162         \textcolor{comment}{/* wtime\_start = system\_timer (); */}
+163 \textcolor{comment}{/*}
+164 \textcolor{comment}{        // two qubit phase gate}
+165 \textcolor{comment}{        if (numQubits >= 7) \{}
+166 \textcolor{comment}{                wtime\_start = system\_timer (); }
+167 \textcolor{comment}{                controlPhaseGate (env.rank, numAmpsPerRank, numQubits, 0, 2, stateVecReal, stateVecImag); }
+168 \textcolor{comment}{                wtime\_stop = system\_timer (); }
+169 \textcolor{comment}{                printf(" two qubit phase gate: elapsed time = %f [s]\(\backslash\)n", wtime\_stop - wtime\_start);}
+170 \textcolor{comment}{                wtime\_start = system\_timer (); controlPhaseGate (env.rank, numAmpsPerRank, numQubits, 1, 3,
        stateVecReal, stateVecImag); wtime\_stop = system\_timer (); printf(" two qubit phase gate: elapsed time = %f
        [s]\(\backslash\)n", wtime\_stop - wtime\_start);}
-169 \textcolor{comment}{                wtime\_start = system\_timer (); controlPhaseGate (env.rank, numAmpsPerRank, numQubits, 2, 4,
+171 \textcolor{comment}{                wtime\_start = system\_timer (); controlPhaseGate (env.rank, numAmpsPerRank, numQubits, 2, 4,
        stateVecReal, stateVecImag); wtime\_stop = system\_timer (); printf(" two qubit phase gate: elapsed time = %f
        [s]\(\backslash\)n", wtime\_stop - wtime\_start);}
-170 \textcolor{comment}{                wtime\_start = system\_timer (); controlPhaseGate (env.rank, numAmpsPerRank, numQubits, 3, 5,
+172 \textcolor{comment}{                wtime\_start = system\_timer (); controlPhaseGate (env.rank, numAmpsPerRank, numQubits, 3, 5,
        stateVecReal, stateVecImag); wtime\_stop = system\_timer (); printf(" two qubit phase gate: elapsed time = %f
        [s]\(\backslash\)n", wtime\_stop - wtime\_start);}
-171 \textcolor{comment}{                wtime\_start = system\_timer (); controlPhaseGate (env.rank, numAmpsPerRank, numQubits, 4, 6,
+173 \textcolor{comment}{                wtime\_start = system\_timer (); controlPhaseGate (env.rank, numAmpsPerRank, numQubits, 4, 6,
        stateVecReal, stateVecImag); wtime\_stop = system\_timer (); printf(" two qubit phase gate: elapsed time = %f
        [s]\(\backslash\)n", wtime\_stop - wtime\_start);}
-172 \textcolor{comment}{        \}}
-173 \textcolor{comment}{*/}
-174         totalProbability = \hyperlink{qubits__env__local_8c_a2205c8fde15213df52040dc3df233090}{calcTotalProbability}(multiQubit);
-175         \textcolor{keywordflow}{if} (env.\hyperlink{structQUESTEnv_a1bdb6d425a2ce6a468f93929c0b26d73}{rank}==0) printf(\textcolor{stringliteral}{"VERIFICATION: total probability=%.14f\(\backslash\)n"}, totalProbability);
-176 \textcolor{comment}{/*}
-177 \textcolor{comment}{if (env.rank==0)\{}
-178 \textcolor{comment}{        printf("\(\backslash\)n\(\backslash\)nIn rank %d, the following is the final state after rotations.\(\backslash\)n\(\backslash\)n",env.rank);}
-179 \textcolor{comment}{        printf("codeOutput=[\(\backslash\)n");}
-180 \textcolor{comment}{        for(index=0; index<=numAmpsPerRank-1; index++) printf("%.8f
+174 \textcolor{comment}{        \}}
+175 \textcolor{comment}{*/}
+176         totalProbability = \hyperlink{qubits_8h_a2205c8fde15213df52040dc3df233090}{calcTotalProbability}(multiQubit);
+177         \textcolor{keywordflow}{if} (env.\hyperlink{structQUESTEnv_a1bdb6d425a2ce6a468f93929c0b26d73}{rank}==0) printf(\textcolor{stringliteral}{"VERIFICATION: total probability=%.14f\(\backslash\)n"}, totalProbability);
+178 \textcolor{comment}{/*}
+179 \textcolor{comment}{if (env.rank==0)\{}
+180 \textcolor{comment}{        printf("\(\backslash\)n\(\backslash\)nIn rank %d, the following is the final state after rotations.\(\backslash\)n\(\backslash\)n",env.rank);}
+181 \textcolor{comment}{        printf("codeOutput=[\(\backslash\)n");}
+182 \textcolor{comment}{        for(index=0; index<=numAmpsPerRank-1; index++) printf("%.8f
        %.8f\(\backslash\)n",stateVecReal[index],stateVecImag[index]);}
-181 \textcolor{comment}{        printf("];\(\backslash\)n\(\backslash\)n");}
-182 \textcolor{comment}{\}}
-183 \textcolor{comment}{syncQUESTEnv(env);}
-184 \textcolor{comment}{}
-185 \textcolor{comment}{if (env.rank==1)\{}
-186 \textcolor{comment}{        printf("\(\backslash\)n\(\backslash\)nIn rank %d, the following is the final state after rotations.\(\backslash\)n\(\backslash\)n",env.rank);}
-187 \textcolor{comment}{        printf("codeOutput=[\(\backslash\)n");}
-188 \textcolor{comment}{        for(index=0; index<=numAmpsPerRank-1; index++) printf("%.8f
+183 \textcolor{comment}{        printf("];\(\backslash\)n\(\backslash\)n");}
+184 \textcolor{comment}{\}}
+185 \textcolor{comment}{syncQUESTEnv(env);}
+186 \textcolor{comment}{}
+187 \textcolor{comment}{if (env.rank==1)\{}
+188 \textcolor{comment}{        printf("\(\backslash\)n\(\backslash\)nIn rank %d, the following is the final state after rotations.\(\backslash\)n\(\backslash\)n",env.rank);}
+189 \textcolor{comment}{        printf("codeOutput=[\(\backslash\)n");}
+190 \textcolor{comment}{        for(index=0; index<=numAmpsPerRank-1; index++) printf("%.8f
        %.8f\(\backslash\)n",stateVecReal[index],stateVecImag[index]);}
-189 \textcolor{comment}{        printf("];\(\backslash\)n\(\backslash\)n");}
-190 \textcolor{comment}{\}}
-191 \textcolor{comment}{syncQUESTEnv(env);}
-192 \textcolor{comment}{*/}
-193         \textcolor{comment}{/* // keep time */}
-194         \textcolor{comment}{/* wtime\_stop = system\_timer (); */}
-195 
-196         \textcolor{comment}{/* // ----- timing report */}
-197         \textcolor{comment}{/* printf(" two qubit phase gate: elapsed time = %f [s]\(\backslash\)n", wtime\_stop - wtime\_start); */}
-198 
-199 
-200         \textcolor{comment}{//}
-201         \textcolor{comment}{// ======== CLEANUP}
+191 \textcolor{comment}{        printf("];\(\backslash\)n\(\backslash\)n");}
+192 \textcolor{comment}{\}}
+193 \textcolor{comment}{syncQUESTEnv(env);}
+194 \textcolor{comment}{*/}
+195         \textcolor{comment}{/* // keep time */}
+196         \textcolor{comment}{/* wtime\_stop = system\_timer (); */}
+197 
+198         \textcolor{comment}{/* // ----- timing report */}
+199         \textcolor{comment}{/* printf(" two qubit phase gate: elapsed time = %f [s]\(\backslash\)n", wtime\_stop - wtime\_start); */}
+200 
+201 
 202         \textcolor{comment}{//}
-203         
-204         \textcolor{comment}{// free memory}
-205 
-206         \textcolor{comment}{// REQUIRED ONCE PER MULTIQUBIT OBJECT  }
-207         \textcolor{comment}{// When all operations on a set of qubits are completed, destroy the object}
-208         \hyperlink{qubits_8c_ab796aea79288b974f63474db650be878}{destroyMultiQubit}(multiQubit, env);
-209 
-210 
-211         \textcolor{comment}{// ALWAYS REQUIRED ONCE AT END OF PROGRAM: }
-212         \textcolor{comment}{// These two lines will perform any necessary cleanup of the environment (multinode,}
-213         \textcolor{comment}{// openMP only etc)  }
-214         \hyperlink{qubits__env__local_8c_ad7494473d827399d7fd9c327ea3a23e6}{closeQUESTEnv}(env);
-215 
-216         \textcolor{keywordflow}{return} EXIT\_SUCCESS;
-217 \}
+203         \textcolor{comment}{// ======== CLEANUP}
+204         \textcolor{comment}{//}
+205         
+206         \textcolor{comment}{// free memory}
+207 
+208         \textcolor{comment}{// REQUIRED ONCE PER MULTIQUBIT OBJECT  }
+209         \textcolor{comment}{// When all operations on a set of qubits are completed, destroy the object}
+210         \hyperlink{qubits_8c_ab796aea79288b974f63474db650be878}{destroyMultiQubit}(multiQubit, env);
+211 
+212 
+213         \textcolor{comment}{// ALWAYS REQUIRED ONCE AT END OF PROGRAM: }
+214         \textcolor{comment}{// These two lines will perform any necessary cleanup of the environment (multinode,}
+215         \textcolor{comment}{// openMP only etc)  }
+216         \hyperlink{qubits_8h_ad7494473d827399d7fd9c327ea3a23e6}{closeQUESTEnv}(env);
+217 
+218         \textcolor{keywordflow}{return} EXIT\_SUCCESS;
+219 \}
 \end{DoxyCode}
 
 
@@ -317,5 +319,5 @@ References calc\+Total\+Probability(), close\+Q\+U\+E\+S\+T\+Env(), create\+Mult
 \paragraph[{\texorpdfstring{Pi}{Pi}}]{\setlength{\rightskip}{0pt plus 5cm}const long double Pi = 3.\+14159265358979323846264338327950288419716939937510}\hypertarget{basicTemplate_8c_a00c9db5f4f80636d4da765f0893743f6}{}\label{basicTemplate_8c_a00c9db5f4f80636d4da765f0893743f6}
 
 
-Definition at line 25 of file basic\+Template.\+c.
+Definition at line 24 of file basic\+Template.\+c.
 

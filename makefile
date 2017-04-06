@@ -11,7 +11,7 @@
 EXE = demo
 USE_MPI=0
 # COMPILER options: GCC, INTEL
-COMPILER = INTEL
+COMPILER = GCC
 MY_FILE_NAME = basicTemplate
 QUEST_DIR = QUEST
 
@@ -30,9 +30,16 @@ ifneq ($(USE_MPI), 1)
 		CC         = icc
 		CFLAGS     = -O2 -std=c99 -Wall -xAVX -axCORE-AVX2 -restrict
 		CFLAGS_OMP = -qopenmp
+	else 
+		$(error " *** error: invalid compiler")
 	endif
 else 
-	ifeq ($(COMPILER), INTEL)
+	ifeq ($(COMPILER), GCC)
+		# GCC compilers
+		CC         = mpicc
+		CFLAGS     = -O2 -std=c99 -mavx -Wall
+		CFLAGS_OMP = -fopenmp
+	else ifeq ($(COMPILER), INTEL)
 		# Mvapich2
 		CC         = mpicc
 		CFLAGS     = -O2 -std=c99

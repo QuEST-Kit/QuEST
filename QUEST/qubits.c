@@ -2,7 +2,7 @@
  * The core of the QUEST Library.
  */
 
-# include "math.h"  //SCB new line
+# include <math.h>  //SCB new line
 # include <stdio.h>
 # include <stdlib.h>
 # include <assert.h>
