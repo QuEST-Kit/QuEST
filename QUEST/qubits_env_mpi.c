@@ -74,7 +74,7 @@ double calcTotalProbability(MultiQubit multiQubit){
                 pTotal+=multiQubit.stateVec.imag[index]*multiQubit.stateVec.imag[index];      
         } 
 	if (DEBUG) printf("before calc prob. %d\n", multiQubit.numChunks);
-	if (multiQubit.numChunks>1) MPI_Reduce(&pTotal, &allRankTotals, 1, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
+	if (multiQubit.numChunks>1) MPI_Allreduce(&pTotal, &allRankTotals, 1, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
 	else allRankTotals=pTotal;
 
 	return allRankTotals;
@@ -220,7 +220,7 @@ double findProbabilityOfZero(MultiQubit multiQubit,
 			stateProb = findProbabilityOfZeroDistributed(multiQubit, measureQubit);
 		} else stateProb = 0;
 	}
-	MPI_Reduce(&stateProb, &totalStateProb, 1, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
+	MPI_Allreduce(&stateProb, &totalStateProb, 1, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
 	return totalStateProb;
 }
 
