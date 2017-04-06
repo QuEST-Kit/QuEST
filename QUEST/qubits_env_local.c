@@ -21,6 +21,18 @@ void closeQUESTEnv(QUESTEnv env){
 	// MPI finalize goes here in MPI version. Call this function anyway for consistency
 }
 
+void reportQUESTEnv(QUESTEnv env){
+	printf("EXECUTION ENVIRONMENT:\n");
+	printf("Running locally on one node\n");
+	printf("Number of ranks is %d\n", env.numRanks);
+# ifdef _OPENMP
+	printf("OpenMP enabled\n");
+	printf("Number of threads available is %d\n", omp_get_max_threads());
+# else
+	printf("OpenMP disabled\n");
+# endif
+}
+
 double calcTotalProbability(MultiQubit multiQubit){
         double pTotal=0; 
 	long long int index;

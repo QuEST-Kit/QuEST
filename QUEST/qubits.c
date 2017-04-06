@@ -50,7 +50,6 @@ void createMultiQubit(MultiQubit *multiQubit, int numQubits, QUESTEnv env)
 	multiQubit->chunkId = env.rank;
 	multiQubit->numChunks = env.numRanks;
 
-	if (env.rank==0) printf("Number of amps per rank is %ld.\n", numAmpsPerRank);
 }
 /** Deallocate a MultiQubit object representing a set of qubits
  * Free memory allocated to state vector of probability amplitudes, including temporary vector for
@@ -99,6 +98,21 @@ void reportState(MultiQubit multiQubit){
 		fprintf(state, "%.12f, %.12f\n", multiQubit.stateVec.real[index], multiQubit.stateVec.imag[index]);
 	}
 	fclose(state);
+}
+
+/** Report metainformation about a set of qubits: number of qubits, number of probability amplitudes.
+ * @param[in,out] multiQubit object representing the set of qubits
+ * @param[in] env object representing the execution environment (local, multinode etc)
+ */
+void reportMultiQubitParams(MultiQubit multiQubit){
+	long long int numAmps = 1L << multiQubit.numQubits;
+	long long int numAmpsPerRank = numAmps/multiQubit.numChunks;
+	if (multiQubit.chunkId==0){
+                printf("QUBITS:\n");
+                printf("Number of qubits is %d.\n", multiQubit.numQubits);
+                printf("Number of amps is %ld.\n", numAmps);
+		printf("Number of amps per rank is %ld.\n", numAmpsPerRank);
+        }
 }
 
 /**

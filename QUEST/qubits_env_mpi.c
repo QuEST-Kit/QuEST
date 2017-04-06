@@ -45,6 +45,21 @@ void closeQUESTEnv(QUESTEnv env){
 	else printf("ERROR: Trying to close QUESTEnv multiple times. Ignoring\n");
 }
 
+void reportQUESTEnv(QUESTEnv env){
+	if (env.rank==0){
+		printf("EXECUTION ENVIRONMENT:\n"); 
+		printf("Running distributed (MPI) version\n");
+		printf("Number of ranks is %d\n", env.numRanks);
+# ifdef _OPENMP
+		printf("OpenMP enabled\n");
+		printf("Number of threads available is %d\n", omp_get_max_threads());
+# else
+		printf("OpenMP disabled\n");
+# endif 
+	}
+}
+
+
 /** Find chunks to skip when calculating probability of qubit being zero.
 When calculating probability of a bit q being zero,
 sum up 2^q values, then skip 2^q values, etc. This function finds if an entire chunk

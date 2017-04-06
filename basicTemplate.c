@@ -42,7 +42,6 @@ int main (int narg, char** varg) {
 	// model vars
 	int numQubits;
 	long int index;
-	long int numAmps;
 	
 	// get number of qubits from command line argument
 	if (narg >= 2) {
@@ -56,19 +55,18 @@ int main (int narg, char** varg) {
 		exit (EXIT_FAILURE);
 	}
 
-	// Reporting
-	numAmps = 1L << numQubits;
-	if (env.rank==0){
-		printf("Demo of single qubit rotations.\n");
-		printf("Number of qubits is %d.\n", numQubits);
-		printf("Number of amps is %ld.\n", numAmps);
-	}
-
 	// CREATE QUBIT OBJECT: REQUIRED ONCE PER MULTIQUBIT OBJECT	
 	// Before doing any operations on a set of qubits, create the MultiQubit object that will be used to 
 	// represent the qubits
 	MultiQubit multiQubit; 
 	createMultiQubit(&multiQubit, numQubits, env);
+	
+	// Reporting
+	if (env.rank==0) {
+		printf("Demo of single qubit rotations.\n");
+	}
+	reportMultiQubitParams(multiQubit);
+	reportQUESTEnv(env);
 
 	// initialise the state to |0000..0>
 	initStateVec (&multiQubit);
@@ -106,6 +104,7 @@ int main (int narg, char** varg) {
 	int rotQubit;
 
 	// DO QUBIT ROTATION
+	if (env.rank==0) printf("Performing qubit rotation\n");
 	// Edit these lines to perform rotations as required
 	for (rotQubit=0; rotQubit<numQubits; rotQubit++) {
 		// do rotation of each qubit

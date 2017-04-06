@@ -58,6 +58,8 @@ void destroyMultiQubit(MultiQubit multiQubit, QUESTEnv env);
 
 void reportState(MultiQubit multiQubit);
 
+void reportMultiQubitParams(MultiQubit multiQubit);
+
 void initStateVec(MultiQubit *multiQubit);
 
 // QUEST library functions whose implementation depends on environment (local, MPI)
@@ -77,6 +79,10 @@ void closeQUESTEnv(QUESTEnv env);
 /** Guarantees that all code up to the given point has been executed on all nodes. 
  */
 void syncQUESTEnv(QUESTEnv env);
+
+/** Report information about the QUEST environment
+ */
+void reportQUESTEnv(QUESTEnv env);
 
 /** Calculate the probability of being in any state by taking the norm of the entire state vector. 
  * Should be equal to 1.

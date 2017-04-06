@@ -78,7 +78,7 @@ Data Fields</h2></td></tr>
 <div class="textblock"><p>Represents a system of qubits. </p>
 <p>Qubits are zero-based and the the first qubit is the rightmost </p>
 
-<p>Definition at line <a class="el" href="qubits_8h_source.html#l00024">24</a> of file <a class="el" href="qubits_8h_source.html">qubits.h</a>.</p>
+<p>Definition at line <a class="el" href="qubits_8h_source.html#l00026">26</a> of file <a class="el" href="qubits_8h_source.html">qubits.h</a>.</p>
 </div><h2 class="groupheader">Field Documentation</h2>
 <a class="anchor" id="ab10c88249fa3825d6227ceec01d37e37"></a>
 <div class="memitem">
@@ -92,9 +92,9 @@ Data Fields</h2></td></tr>
 
 <p>The position of the chunk of the state vector held by this process in the full state vector. </p>
 
-<p>Definition at line <a class="el" href="qubits_8h_source.html#l00036">36</a> of file <a class="el" href="qubits_8h_source.html">qubits.h</a>.</p>
+<p>Definition at line <a class="el" href="qubits_8h_source.html#l00038">38</a> of file <a class="el" href="qubits_8h_source.html">qubits.h</a>.</p>
 
-<p>Referenced by <a class="el" href="qubits_8c_source.html#l00024">createMultiQubit()</a>, <a class="el" href="qubits__env__mpi_8c_source.html#l00211">findProbabilityOfZero()</a>, <a class="el" href="qubits_8c_source.html#l00108">initStateVec()</a>, <a class="el" href="qubits_8c_source.html#l00090">reportState()</a>, and <a class="el" href="qubits__env__mpi_8c_source.html#l00160">rotateQubit()</a>.</p>
+<p>Referenced by <a class="el" href="qubits_8c_source.html#l00024">createMultiQubit()</a>, <a class="el" href="qubits__env__mpi_8c_source.html#l00226">findProbabilityOfZero()</a>, <a class="el" href="qubits_8c_source.html#l00122">initStateVec()</a>, <a class="el" href="qubits_8c_source.html#l00107">reportMultiQubitParams()</a>, <a class="el" href="qubits_8c_source.html#l00089">reportState()</a>, and <a class="el" href="qubits__env__mpi_8c_source.html#l00175">rotateQubit()</a>.</p>
 
 </div>
 </div>
@@ -110,9 +110,9 @@ Data Fields</h2></td></tr>
 
 <p>Number of probability amplitudes held in stateVec by this process In the non-MPI version, this is the total number of amplitudes. </p>
 
-<p>Definition at line <a class="el" href="qubits_8h_source.html#l00034">34</a> of file <a class="el" href="qubits_8h_source.html">qubits.h</a>.</p>
+<p>Definition at line <a class="el" href="qubits_8h_source.html#l00036">36</a> of file <a class="el" href="qubits_8h_source.html">qubits.h</a>.</p>
 
-<p>Referenced by <a class="el" href="qubits__env__local_8c_source.html#l00024">calcTotalProbability()</a>, <a class="el" href="qubits_8c_source.html#l00024">createMultiQubit()</a>, <a class="el" href="qubits__env__mpi_8c_source.html#l00211">findProbabilityOfZero()</a>, <a class="el" href="qubits_8c_source.html#l00407">findProbabilityOfZeroDistributed()</a>, <a class="el" href="qubits_8c_source.html#l00321">findProbabilityOfZeroLocal()</a>, <a class="el" href="qubits_8c_source.html#l00108">initStateVec()</a>, <a class="el" href="qubits_8c_source.html#l00090">reportState()</a>, <a class="el" href="qubits__env__mpi_8c_source.html#l00160">rotateQubit()</a>, <a class="el" href="qubits_8c_source.html#l00256">rotateQubitDistributed()</a>, and <a class="el" href="qubits_8c_source.html#l00158">rotateQubitLocal()</a>.</p>
+<p>Referenced by <a class="el" href="qubits__env__local_8c_source.html#l00036">calcTotalProbability()</a>, <a class="el" href="qubits_8c_source.html#l00024">createMultiQubit()</a>, <a class="el" href="qubits__env__mpi_8c_source.html#l00226">findProbabilityOfZero()</a>, <a class="el" href="qubits_8c_source.html#l00429">findProbabilityOfZeroDistributed()</a>, <a class="el" href="qubits_8c_source.html#l00340">findProbabilityOfZeroLocal()</a>, <a class="el" href="qubits_8c_source.html#l00122">initStateVec()</a>, <a class="el" href="qubits_8c_source.html#l00089">reportState()</a>, <a class="el" href="qubits__env__mpi_8c_source.html#l00175">rotateQubit()</a>, <a class="el" href="qubits_8c_source.html#l00271">rotateQubitDistributed()</a>, and <a class="el" href="qubits_8c_source.html#l00174">rotateQubitLocal()</a>.</p>
 
 </div>
 </div>
@@ -128,9 +128,9 @@ Data Fields</h2></td></tr>
 
 <p>Number of chunks the state vector is broken up into &ndash; the number of MPI processes used. </p>
 
-<p>Definition at line <a class="el" href="qubits_8h_source.html#l00038">38</a> of file <a class="el" href="qubits_8h_source.html">qubits.h</a>.</p>
+<p>Definition at line <a class="el" href="qubits_8h_source.html#l00040">40</a> of file <a class="el" href="qubits_8h_source.html">qubits.h</a>.</p>
 
-<p>Referenced by <a class="el" href="qubits__env__mpi_8c_source.html#l00067">calcTotalProbability()</a>, and <a class="el" href="qubits_8c_source.html#l00024">createMultiQubit()</a>.</p>
+<p>Referenced by <a class="el" href="qubits__env__mpi_8c_source.html#l00082">calcTotalProbability()</a>, <a class="el" href="qubits_8c_source.html#l00024">createMultiQubit()</a>, and <a class="el" href="qubits_8c_source.html#l00107">reportMultiQubitParams()</a>.</p>
 
 </div>
 </div>
@@ -146,9 +146,9 @@ Data Fields</h2></td></tr>
 
 <p>Number of qubits in the state. </p>
 
-<p>Definition at line <a class="el" href="qubits_8h_source.html#l00031">31</a> of file <a class="el" href="qubits_8h_source.html">qubits.h</a>.</p>
+<p>Definition at line <a class="el" href="qubits_8h_source.html#l00033">33</a> of file <a class="el" href="qubits_8h_source.html">qubits.h</a>.</p>
 
-<p>Referenced by <a class="el" href="qubits_8c_source.html#l00024">createMultiQubit()</a>, <a class="el" href="qubits_8c_source.html#l00407">findProbabilityOfZeroDistributed()</a>, <a class="el" href="qubits_8c_source.html#l00321">findProbabilityOfZeroLocal()</a>, <a class="el" href="qubits_8c_source.html#l00256">rotateQubitDistributed()</a>, and <a class="el" href="qubits_8c_source.html#l00158">rotateQubitLocal()</a>.</p>
+<p>Referenced by <a class="el" href="qubits_8c_source.html#l00024">createMultiQubit()</a>, <a class="el" href="qubits_8c_source.html#l00429">findProbabilityOfZeroDistributed()</a>, <a class="el" href="qubits_8c_source.html#l00340">findProbabilityOfZeroLocal()</a>, <a class="el" href="qubits_8c_source.html#l00107">reportMultiQubitParams()</a>, <a class="el" href="qubits_8c_source.html#l00271">rotateQubitDistributed()</a>, and <a class="el" href="qubits_8c_source.html#l00174">rotateQubitLocal()</a>.</p>
 
 </div>
 </div>
@@ -164,9 +164,9 @@ Data Fields</h2></td></tr>
 
 <p>Temporary storage for a chunk of the state vector received from another process in the MPI version. </p>
 
-<p>Definition at line <a class="el" href="qubits_8h_source.html#l00029">29</a> of file <a class="el" href="qubits_8h_source.html">qubits.h</a>.</p>
+<p>Definition at line <a class="el" href="qubits_8h_source.html#l00031">31</a> of file <a class="el" href="qubits_8h_source.html">qubits.h</a>.</p>
 
-<p>Referenced by <a class="el" href="qubits_8c_source.html#l00024">createMultiQubit()</a>, <a class="el" href="qubits_8c_source.html#l00061">destroyMultiQubit()</a>, and <a class="el" href="qubits__env__mpi_8c_source.html#l00160">rotateQubit()</a>.</p>
+<p>Referenced by <a class="el" href="qubits_8c_source.html#l00024">createMultiQubit()</a>, <a class="el" href="qubits_8c_source.html#l00060">destroyMultiQubit()</a>, and <a class="el" href="qubits__env__mpi_8c_source.html#l00175">rotateQubit()</a>.</p>
 
 </div>
 </div>
@@ -182,9 +182,9 @@ Data Fields</h2></td></tr>
 
 <p>Probablilty amplitudes for the multi qubit state. </p>
 
-<p>Definition at line <a class="el" href="qubits_8h_source.html#l00027">27</a> of file <a class="el" href="qubits_8h_source.html">qubits.h</a>.</p>
+<p>Definition at line <a class="el" href="qubits_8h_source.html#l00029">29</a> of file <a class="el" href="qubits_8h_source.html">qubits.h</a>.</p>
 
-<p>Referenced by <a class="el" href="qubits__env__local_8c_source.html#l00024">calcTotalProbability()</a>, <a class="el" href="qubits_8c_source.html#l00024">createMultiQubit()</a>, <a class="el" href="qubits_8c_source.html#l00061">destroyMultiQubit()</a>, <a class="el" href="qubits_8c_source.html#l00407">findProbabilityOfZeroDistributed()</a>, <a class="el" href="qubits_8c_source.html#l00321">findProbabilityOfZeroLocal()</a>, <a class="el" href="qubits_8c_source.html#l00108">initStateVec()</a>, <a class="el" href="qubits_8c_source.html#l00090">reportState()</a>, <a class="el" href="qubits__env__mpi_8c_source.html#l00160">rotateQubit()</a>, and <a class="el" href="qubits_8c_source.html#l00158">rotateQubitLocal()</a>.</p>
+<p>Referenced by <a class="el" href="qubits__env__local_8c_source.html#l00036">calcTotalProbability()</a>, <a class="el" href="qubits_8c_source.html#l00024">createMultiQubit()</a>, <a class="el" href="qubits_8c_source.html#l00060">destroyMultiQubit()</a>, <a class="el" href="qubits_8c_source.html#l00429">findProbabilityOfZeroDistributed()</a>, <a class="el" href="qubits_8c_source.html#l00340">findProbabilityOfZeroLocal()</a>, <a class="el" href="qubits_8c_source.html#l00122">initStateVec()</a>, <a class="el" href="qubits_8c_source.html#l00089">reportState()</a>, <a class="el" href="qubits__env__mpi_8c_source.html#l00175">rotateQubit()</a>, and <a class="el" href="qubits_8c_source.html#l00174">rotateQubitLocal()</a>.</p>
 
 </div>
 </div>
@@ -194,7 +194,7 @@ Data Fields</h2></td></tr>
 </div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Thu Apr 6 2017 10:56:18 for Distributed QUEST by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Thu Apr 6 2017 12:24:20 for Distributed QUEST by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.11
 </small></address>
