@@ -181,8 +181,8 @@ Functions</h2></td></tr>
 
 <p>Definition at line <a class="el" href="qubits__env__local_8c_source.html#l00042">42</a> of file <a class="el" href="qubits__env__local_8c_source.html">qubits_env_local.c</a>.</p>
 
-<p>References <a class="el" href="qubits_8c_source.html#l00320">findProbabilityOfZeroLocal()</a>.</p>
-<div class="fragment"><div class="line"><a name="l00044"></a><span class="lineno">   44</span>&#160;{</div><div class="line"><a name="l00045"></a><span class="lineno">   45</span>&#160;        <span class="keywordtype">double</span> stateProb=0;</div><div class="line"><a name="l00046"></a><span class="lineno">   46</span>&#160;        stateProb = <a class="code" href="qubits_8c.html#a1c0a25823add0bd9f925a9164dc21870">findProbabilityOfZeroLocal</a>(multiQubit, measureQubit);</div><div class="line"><a name="l00047"></a><span class="lineno">   47</span>&#160;        <span class="keywordflow">return</span> stateProb;</div><div class="line"><a name="l00048"></a><span class="lineno">   48</span>&#160;}</div><div class="ttc" id="qubits_8c_html_a1c0a25823add0bd9f925a9164dc21870"><div class="ttname"><a href="qubits_8c.html#a1c0a25823add0bd9f925a9164dc21870">findProbabilityOfZeroLocal</a></div><div class="ttdeci">double findProbabilityOfZeroLocal(MultiQubit multiQubit, const int measureQubit)</div><div class="ttdoc">Measure the probability of a specified qubit being in the zero state. </div><div class="ttdef"><b>Definition:</b> <a href="qubits_8c_source.html#l00320">qubits.c:320</a></div></div>
+<p>References <a class="el" href="qubits_8c_source.html#l00321">findProbabilityOfZeroLocal()</a>.</p>
+<div class="fragment"><div class="line"><a name="l00044"></a><span class="lineno">   44</span>&#160;{</div><div class="line"><a name="l00045"></a><span class="lineno">   45</span>&#160;        <span class="keywordtype">double</span> stateProb=0;</div><div class="line"><a name="l00046"></a><span class="lineno">   46</span>&#160;        stateProb = <a class="code" href="qubits_8c.html#a1c0a25823add0bd9f925a9164dc21870">findProbabilityOfZeroLocal</a>(multiQubit, measureQubit);</div><div class="line"><a name="l00047"></a><span class="lineno">   47</span>&#160;        <span class="keywordflow">return</span> stateProb;</div><div class="line"><a name="l00048"></a><span class="lineno">   48</span>&#160;}</div><div class="ttc" id="qubits_8c_html_a1c0a25823add0bd9f925a9164dc21870"><div class="ttname"><a href="qubits_8c.html#a1c0a25823add0bd9f925a9164dc21870">findProbabilityOfZeroLocal</a></div><div class="ttdeci">double findProbabilityOfZeroLocal(MultiQubit multiQubit, const int measureQubit)</div><div class="ttdoc">Measure the probability of a specified qubit being in the zero state. </div><div class="ttdef"><b>Definition:</b> <a href="qubits_8c_source.html#l00321">qubits.c:321</a></div></div>
 </div><!-- fragment -->
 </div>
 </div>
@@ -271,8 +271,8 @@ alphaIm = cos(angle1) * sin(angle2) <br />
 
 <p>Definition at line <a class="el" href="qubits__env__local_8c_source.html#l00035">35</a> of file <a class="el" href="qubits__env__local_8c_source.html">qubits_env_local.c</a>.</p>
 
-<p>References <a class="el" href="qubits_8c_source.html#l00157">rotateQubitLocal()</a>.</p>
-<div class="fragment"><div class="line"><a name="l00037"></a><span class="lineno">   37</span>&#160;{</div><div class="line"><a name="l00038"></a><span class="lineno">   38</span>&#160;        <span class="comment">// all values required to update state vector lie in this rank</span></div><div class="line"><a name="l00039"></a><span class="lineno">   39</span>&#160;        <a class="code" href="qubits_8c.html#acb059cbcb8c7910a5fc43d21da4f5dea">rotateQubitLocal</a>(multiQubit, rotQubit, alpha, beta);</div><div class="line"><a name="l00040"></a><span class="lineno">   40</span>&#160;}</div><div class="ttc" id="qubits_8c_html_acb059cbcb8c7910a5fc43d21da4f5dea"><div class="ttname"><a href="qubits_8c.html#acb059cbcb8c7910a5fc43d21da4f5dea">rotateQubitLocal</a></div><div class="ttdeci">void rotateQubitLocal(MultiQubit multiQubit, const int rotQubit, Complex alpha, Complex beta)</div><div class="ttdoc">Rotate a single qubit in the state vector of probability amplitudes, given the angle rotation argumen...</div><div class="ttdef"><b>Definition:</b> <a href="qubits_8c_source.html#l00157">qubits.c:157</a></div></div>
+<p>References <a class="el" href="qubits_8c_source.html#l00158">rotateQubitLocal()</a>.</p>
+<div class="fragment"><div class="line"><a name="l00037"></a><span class="lineno">   37</span>&#160;{</div><div class="line"><a name="l00038"></a><span class="lineno">   38</span>&#160;        <span class="comment">// all values required to update state vector lie in this rank</span></div><div class="line"><a name="l00039"></a><span class="lineno">   39</span>&#160;        <a class="code" href="qubits_8c.html#acb059cbcb8c7910a5fc43d21da4f5dea">rotateQubitLocal</a>(multiQubit, rotQubit, alpha, beta);</div><div class="line"><a name="l00040"></a><span class="lineno">   40</span>&#160;}</div><div class="ttc" id="qubits_8c_html_acb059cbcb8c7910a5fc43d21da4f5dea"><div class="ttname"><a href="qubits_8c.html#acb059cbcb8c7910a5fc43d21da4f5dea">rotateQubitLocal</a></div><div class="ttdeci">void rotateQubitLocal(MultiQubit multiQubit, const int rotQubit, Complex alpha, Complex beta)</div><div class="ttdoc">Rotate a single qubit in the state vector of probability amplitudes, given the angle rotation argumen...</div><div class="ttdef"><b>Definition:</b> <a href="qubits_8c_source.html#l00158">qubits.c:158</a></div></div>
 </div><!-- fragment -->
 </div>
 </div>
@@ -299,7 +299,7 @@ alphaIm = cos(angle1) * sin(angle2) <br />
 </div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Thu Apr 6 2017 10:05:35 for Distributed QUEST by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Thu Apr 6 2017 10:49:43 for Distributed QUEST by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.11
 </small></address>

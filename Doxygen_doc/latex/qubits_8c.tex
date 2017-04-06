@@ -18,6 +18,8 @@ The core of the Q\+U\+E\+ST Library.
 \subsubsection*{Functions}
 \begin{DoxyCompactItemize}
 \item 
+static int \hyperlink{qubits_8c_a100463f6ec212c76a5fad99579000505}{extract\+Bit} (const int location\+Of\+Bit\+From\+Right, const long long int the\+Encoded\+Number)
+\begin{DoxyCompactList}\small\item\em Get the value of the bit at a particular index in a number. \end{DoxyCompactList}\item 
 void \hyperlink{qubits_8c_ae729f311efd2a426ce5161df3e017a16}{create\+Multi\+Qubit} (\hyperlink{structMultiQubit}{Multi\+Qubit} $\ast$multi\+Qubit, int num\+Qubits, \hyperlink{structQUESTEnv}{Q\+U\+E\+S\+T\+Env} env)
 \begin{DoxyCompactList}\small\item\em Create a \hyperlink{structMultiQubit}{Multi\+Qubit} object representing a set of qubits. \end{DoxyCompactList}\item 
 void \hyperlink{qubits_8c_ab796aea79288b974f63474db650be878}{destroy\+Multi\+Qubit} (\hyperlink{structMultiQubit}{Multi\+Qubit} multi\+Qubit, \hyperlink{structQUESTEnv}{Q\+U\+E\+S\+T\+Env} env)
@@ -34,8 +36,6 @@ double \hyperlink{qubits_8c_a1c0a25823add0bd9f925a9164dc21870}{find\+Probability
 \begin{DoxyCompactList}\small\item\em Measure the probability of a specified qubit being in the zero state. \end{DoxyCompactList}\item 
 double \hyperlink{qubits_8c_a2d302738d123129a388edf81b845fd89}{find\+Probability\+Of\+Zero\+Distributed} (\hyperlink{structMultiQubit}{Multi\+Qubit} multi\+Qubit, const int measure\+Qubit)
 \begin{DoxyCompactList}\small\item\em Measure the probability of a specified qubit being in the zero state. \end{DoxyCompactList}\item 
-int \hyperlink{qubits_8c_a420b30092dc60ff17188e23361d547a5}{extract\+Bit} (const int location\+Of\+Bit\+From\+Right, const long long int the\+Encoded\+Number)
-\item 
 void \hyperlink{qubits_8c_a2cc0021ae64e2264e2aab4bdb204599e}{control\+Phase\+Gate} (const int num\+Qubits, const int id\+Qubit1, const int id\+Qubit2, double $\ast$restrict state\+Vec\+Real, double $\ast$restrict state\+Vec\+Imag)
 \begin{DoxyCompactList}\small\item\em Implement the control phase (the two qubit phase gate). \end{DoxyCompactList}\item 
 void \hyperlink{qubits_8c_ae86c95cfe7c7953d6c821c53f2ea8d05}{quad\+C\+Phase\+Gate} (const int num\+Qubits, const int id\+Qubit1, const int id\+Qubit2, const int id\+Qubit3, const int id\+Qubit4, double $\ast$restrict state\+Vec\+Real, double $\ast$restrict state\+Vec\+Imag)
@@ -83,9 +83,11 @@ Referenced by init\+State\+Vec().
 
 Implement the control phase (the two qubit phase gate). 
 
-R\+E\+W\+R\+I\+TE TO U\+SE M\+U\+L\+T\+I\+Q\+U\+B\+IT input\+: // num\+Qubits -- number of qubits // id\+Qubit1, -- specified qubits // id\+Qubit2 // state\+Vec\+Real, -- real/imag parts of // state\+Vec\+Imag the state vector // // output\+: // state\+Vec\+Real, -- real/imag parts of // state\+Vec\+Imag the state vector (overwritten) // // 
+R\+E\+W\+R\+I\+TE TO U\+SE M\+U\+L\+T\+I\+Q\+U\+B\+IT input\+: // num\+Qubits -- number of qubits // id\+Qubit1, -- specified qubits // id\+Qubit2 // state\+Vec\+Real, -- real/imag parts of // state\+Vec\+Imag the state vector //
 
-Definition at line 485 of file qubits.\+c.
+output\+: // state\+Vec\+Real, -- real/imag parts of // state\+Vec\+Imag the state vector (overwritten) // 
+
+Definition at line 491 of file qubits.\+c.
 
 
 
@@ -93,41 +95,41 @@ References extract\+Bit().
 
 
 \begin{DoxyCode}
-487 \{
-488         \textcolor{keywordtype}{long} \textcolor{keywordtype}{long} \textcolor{keywordtype}{int} index;
-489         \textcolor{keywordtype}{long} \textcolor{keywordtype}{long} \textcolor{keywordtype}{int} stateVecSize;
-490         \textcolor{keywordtype}{int} bit1, bit2;
-491 
-492         \textcolor{comment}{// ---------------------------------------------------------------- //}
-493         \textcolor{comment}{//            tests                                                 //}
-494         \textcolor{comment}{// ---------------------------------------------------------------- //}
-495 
-496         assert (idQubit1 >= 0 && idQubit2 >= 0 && idQubit1 < numQubits && idQubit2 < numQubits);
+493 \{
+494         \textcolor{keywordtype}{long} \textcolor{keywordtype}{long} \textcolor{keywordtype}{int} index;
+495         \textcolor{keywordtype}{long} \textcolor{keywordtype}{long} \textcolor{keywordtype}{int} stateVecSize;
+496         \textcolor{keywordtype}{int} bit1, bit2;
 497 
-498 
-499         \textcolor{comment}{// ---------------------------------------------------------------- //}
-500         \textcolor{comment}{//            initialise the state to |0000..0>                     //}
-501         \textcolor{comment}{// ---------------------------------------------------------------- //}
-502 
-503         \textcolor{comment}{// dimension of the state vector}
-504         stateVecSize = 1LL << numQubits;
-505 
-506 \textcolor{preprocessor}{# ifdef \_OPENMP}
-507 \textcolor{preprocessor}{# pragma omp parallel for \(\backslash\)}
-508 \textcolor{preprocessor}{        default  (none)                      \(\backslash\)}
-509 \textcolor{preprocessor}{        shared   (stateVecSize, stateVecReal,stateVecImag ) \(\backslash\)}
-510 \textcolor{preprocessor}{        private  (index,bit1,bit2)                     \(\backslash\)}
-511 \textcolor{preprocessor}{        schedule (static)}
-512 \textcolor{preprocessor}{# endif}
-513         \textcolor{keywordflow}{for} (index=0; index<stateVecSize; index++) \{
-514                 bit1 = \hyperlink{qubits_8c_a420b30092dc60ff17188e23361d547a5}{extractBit} (idQubit1, index);
-515                 bit2 = \hyperlink{qubits_8c_a420b30092dc60ff17188e23361d547a5}{extractBit} (idQubit2, index);
-516                 \textcolor{keywordflow}{if} (bit1 && bit2) \{
-517                         stateVecReal [index] = - stateVecReal [index];
-518                         stateVecImag [index] = - stateVecImag [index];
-519                 \}
-520         \}
-521 \}
+498         \textcolor{comment}{// ---------------------------------------------------------------- //}
+499         \textcolor{comment}{//            tests                                                 //}
+500         \textcolor{comment}{// ---------------------------------------------------------------- //}
+501 
+502         assert (idQubit1 >= 0 && idQubit2 >= 0 && idQubit1 < numQubits && idQubit2 < numQubits);
+503 
+504 
+505         \textcolor{comment}{// ---------------------------------------------------------------- //}
+506         \textcolor{comment}{//            initialise the state to |0000..0>                     //}
+507         \textcolor{comment}{// ---------------------------------------------------------------- //}
+508 
+509         \textcolor{comment}{// dimension of the state vector}
+510         stateVecSize = 1LL << numQubits;
+511 
+512 \textcolor{preprocessor}{# ifdef \_OPENMP}
+513 \textcolor{preprocessor}{# pragma omp parallel for \(\backslash\)}
+514 \textcolor{preprocessor}{        default  (none)                      \(\backslash\)}
+515 \textcolor{preprocessor}{        shared   (stateVecSize, stateVecReal,stateVecImag ) \(\backslash\)}
+516 \textcolor{preprocessor}{        private  (index,bit1,bit2)                     \(\backslash\)}
+517 \textcolor{preprocessor}{        schedule (static)}
+518 \textcolor{preprocessor}{# endif}
+519         \textcolor{keywordflow}{for} (index=0; index<stateVecSize; index++) \{
+520                 bit1 = \hyperlink{qubits_8c_a100463f6ec212c76a5fad99579000505}{extractBit} (idQubit1, index);
+521                 bit2 = \hyperlink{qubits_8c_a100463f6ec212c76a5fad99579000505}{extractBit} (idQubit2, index);
+522                 \textcolor{keywordflow}{if} (bit1 && bit2) \{
+523                         stateVecReal [index] = - stateVecReal [index];
+524                         stateVecImag [index] = - stateVecImag [index];
+525                 \}
+526         \}
+527 \}
 \end{DoxyCode}
 \index{qubits.\+c@{qubits.\+c}!create\+Multi\+Qubit@{create\+Multi\+Qubit}}
 \index{create\+Multi\+Qubit@{create\+Multi\+Qubit}!qubits.\+c@{qubits.\+c}}
@@ -153,11 +155,11 @@ Allocate space for state vector of probability amplitudes, including space for t
 \end{DoxyParams}
 
 
-Definition at line 22 of file qubits.\+c.
+Definition at line 24 of file qubits.\+c.
 
 
 
-References Multi\+Qubit\+::chunk\+Id, Complex\+Array\+::imag, init\+State\+Vec(), Multi\+Qubit\+::num\+Amps, Multi\+Qubit\+::num\+Chunks, Multi\+Qubit\+::num\+Qubits, Q\+U\+E\+S\+T\+Env\+::num\+Ranks, Multi\+Qubit\+::pair\+State\+Vec, Q\+U\+E\+S\+T\+Env\+::rank, Complex\+Array\+::real, and Multi\+Qubit\+::state\+Vec.
+References Multi\+Qubit\+::chunk\+Id, Complex\+Array\+::imag, Multi\+Qubit\+::num\+Amps, Multi\+Qubit\+::num\+Chunks, Multi\+Qubit\+::num\+Qubits, Q\+U\+E\+S\+T\+Env\+::num\+Ranks, Multi\+Qubit\+::pair\+State\+Vec, Q\+U\+E\+S\+T\+Env\+::rank, Complex\+Array\+::real, and Multi\+Qubit\+::state\+Vec.
 
 
 
@@ -165,43 +167,42 @@ Referenced by main().
 
 
 \begin{DoxyCode}
-23 \{
-24         \textcolor{keywordtype}{long} \textcolor{keywordtype}{long} \textcolor{keywordtype}{int} numAmps = 1L << numQubits;
-25         \textcolor{keywordtype}{long} \textcolor{keywordtype}{long} \textcolor{keywordtype}{int} numAmpsPerRank = numAmps/env.\hyperlink{structQUESTEnv_ab9d9ce82e2d5f1b39aa9efc3accb3742}{numRanks};
-26 
-27         multiQubit->\hyperlink{structMultiQubit_a45483190d6b01ef6b2f98f2bec9ab94f}{stateVec}.\hyperlink{structComplexArray_a1cf9fd31d6dce5ef618d2bcf3e4f8b69}{real} = malloc(numAmpsPerRank * \textcolor{keyword}{sizeof}(multiQubit->
+25 \{
+26         \textcolor{keywordtype}{long} \textcolor{keywordtype}{long} \textcolor{keywordtype}{int} numAmps = 1L << numQubits;
+27         \textcolor{keywordtype}{long} \textcolor{keywordtype}{long} \textcolor{keywordtype}{int} numAmpsPerRank = numAmps/env.\hyperlink{structQUESTEnv_ab9d9ce82e2d5f1b39aa9efc3accb3742}{numRanks};
+28 
+29         multiQubit->\hyperlink{structMultiQubit_a45483190d6b01ef6b2f98f2bec9ab94f}{stateVec}.\hyperlink{structComplexArray_a1cf9fd31d6dce5ef618d2bcf3e4f8b69}{real} = malloc(numAmpsPerRank * \textcolor{keyword}{sizeof}(multiQubit->
       \hyperlink{structMultiQubit_a45483190d6b01ef6b2f98f2bec9ab94f}{stateVec}.\hyperlink{structComplexArray_a1cf9fd31d6dce5ef618d2bcf3e4f8b69}{real}));
-28         multiQubit->\hyperlink{structMultiQubit_a45483190d6b01ef6b2f98f2bec9ab94f}{stateVec}.\hyperlink{structComplexArray_aa409fd14e1ff3e1fdcc53cc4eb77a7a8}{imag} = malloc(numAmpsPerRank * \textcolor{keyword}{sizeof}(multiQubit->
+30         multiQubit->\hyperlink{structMultiQubit_a45483190d6b01ef6b2f98f2bec9ab94f}{stateVec}.\hyperlink{structComplexArray_aa409fd14e1ff3e1fdcc53cc4eb77a7a8}{imag} = malloc(numAmpsPerRank * \textcolor{keyword}{sizeof}(multiQubit->
       \hyperlink{structMultiQubit_a45483190d6b01ef6b2f98f2bec9ab94f}{stateVec}.\hyperlink{structComplexArray_aa409fd14e1ff3e1fdcc53cc4eb77a7a8}{imag}));
-29         \textcolor{keywordflow}{if} (env.\hyperlink{structQUESTEnv_ab9d9ce82e2d5f1b39aa9efc3accb3742}{numRanks}>1)\{
-30                 multiQubit->\hyperlink{structMultiQubit_a76f7db4eab52d2b30f58f973ada809c5}{pairStateVec}.\hyperlink{structComplexArray_a1cf9fd31d6dce5ef618d2bcf3e4f8b69}{real} = malloc(numAmpsPerRank * \textcolor{keyword}{sizeof}(multiQubit->
+31         \textcolor{keywordflow}{if} (env.\hyperlink{structQUESTEnv_ab9d9ce82e2d5f1b39aa9efc3accb3742}{numRanks}>1)\{
+32                 multiQubit->\hyperlink{structMultiQubit_a76f7db4eab52d2b30f58f973ada809c5}{pairStateVec}.\hyperlink{structComplexArray_a1cf9fd31d6dce5ef618d2bcf3e4f8b69}{real} = malloc(numAmpsPerRank * \textcolor{keyword}{sizeof}(multiQubit->
       \hyperlink{structMultiQubit_a76f7db4eab52d2b30f58f973ada809c5}{pairStateVec}.\hyperlink{structComplexArray_a1cf9fd31d6dce5ef618d2bcf3e4f8b69}{real}));
-31                 multiQubit->\hyperlink{structMultiQubit_a76f7db4eab52d2b30f58f973ada809c5}{pairStateVec}.\hyperlink{structComplexArray_aa409fd14e1ff3e1fdcc53cc4eb77a7a8}{imag} = malloc(numAmpsPerRank * \textcolor{keyword}{sizeof}(multiQubit->
+33                 multiQubit->\hyperlink{structMultiQubit_a76f7db4eab52d2b30f58f973ada809c5}{pairStateVec}.\hyperlink{structComplexArray_aa409fd14e1ff3e1fdcc53cc4eb77a7a8}{imag} = malloc(numAmpsPerRank * \textcolor{keyword}{sizeof}(multiQubit->
       \hyperlink{structMultiQubit_a76f7db4eab52d2b30f58f973ada809c5}{pairStateVec}.\hyperlink{structComplexArray_aa409fd14e1ff3e1fdcc53cc4eb77a7a8}{imag}));
-32         \}
-33 
-34         \textcolor{keywordflow}{if} ( (!(multiQubit->\hyperlink{structMultiQubit_a45483190d6b01ef6b2f98f2bec9ab94f}{stateVec}.\hyperlink{structComplexArray_a1cf9fd31d6dce5ef618d2bcf3e4f8b69}{real}) || !(multiQubit->\hyperlink{structMultiQubit_a45483190d6b01ef6b2f98f2bec9ab94f}{stateVec}.
+34         \}
+35 
+36         \textcolor{keywordflow}{if} ( (!(multiQubit->\hyperlink{structMultiQubit_a45483190d6b01ef6b2f98f2bec9ab94f}{stateVec}.\hyperlink{structComplexArray_a1cf9fd31d6dce5ef618d2bcf3e4f8b69}{real}) || !(multiQubit->\hyperlink{structMultiQubit_a45483190d6b01ef6b2f98f2bec9ab94f}{stateVec}.
       \hyperlink{structComplexArray_aa409fd14e1ff3e1fdcc53cc4eb77a7a8}{imag}))
-35                  && numAmpsPerRank ) \{
-36                 printf(\textcolor{stringliteral}{"Could not allocate memory!"});
-37                 exit (EXIT\_FAILURE);
-38         \}
-39 
-40         \textcolor{keywordflow}{if} ( env.\hyperlink{structQUESTEnv_ab9d9ce82e2d5f1b39aa9efc3accb3742}{numRanks}>1 && (!(multiQubit->\hyperlink{structMultiQubit_a76f7db4eab52d2b30f58f973ada809c5}{pairStateVec}.
+37                  && numAmpsPerRank ) \{
+38                 printf(\textcolor{stringliteral}{"Could not allocate memory!"});
+39                 exit (EXIT\_FAILURE);
+40         \}
+41 
+42         \textcolor{keywordflow}{if} ( env.\hyperlink{structQUESTEnv_ab9d9ce82e2d5f1b39aa9efc3accb3742}{numRanks}>1 && (!(multiQubit->\hyperlink{structMultiQubit_a76f7db4eab52d2b30f58f973ada809c5}{pairStateVec}.
       \hyperlink{structComplexArray_a1cf9fd31d6dce5ef618d2bcf3e4f8b69}{real}) || !(multiQubit->\hyperlink{structMultiQubit_a76f7db4eab52d2b30f58f973ada809c5}{pairStateVec}.\hyperlink{structComplexArray_aa409fd14e1ff3e1fdcc53cc4eb77a7a8}{imag}))
-41                  && numAmpsPerRank ) \{
-42                 printf(\textcolor{stringliteral}{"Could not allocate memory!"});
-43                 exit (EXIT\_FAILURE);
-44         \}
-45 
-46         multiQubit->\hyperlink{structMultiQubit_ab5b9795bdc6fb5855e1974dcbbaeb36f}{numQubits} = numQubits;
-47         multiQubit->\hyperlink{structMultiQubit_ae16f47d8b725c914fb7f66b6498d79db}{numAmps} = numAmpsPerRank;
-48         multiQubit->\hyperlink{structMultiQubit_ab10c88249fa3825d6227ceec01d37e37}{chunkId} = env.\hyperlink{structQUESTEnv_a1bdb6d425a2ce6a468f93929c0b26d73}{rank};
-49         multiQubit->\hyperlink{structMultiQubit_acd43f2f57991709c9e94f73662c972b2}{numChunks} = env.\hyperlink{structQUESTEnv_ab9d9ce82e2d5f1b39aa9efc3accb3742}{numRanks};
-50 
-51         \hyperlink{qubits_8c_a492d10377278f685c7a1fabc3ee60623}{initStateVec}(multiQubit);
-52         \textcolor{keywordflow}{if} (env.\hyperlink{structQUESTEnv_a1bdb6d425a2ce6a468f93929c0b26d73}{rank}==0) printf(\textcolor{stringliteral}{"Number of amps per rank is %ld.\(\backslash\)n"}, numAmpsPerRank);
-53 \}
+43                  && numAmpsPerRank ) \{
+44                 printf(\textcolor{stringliteral}{"Could not allocate memory!"});
+45                 exit (EXIT\_FAILURE);
+46         \}
+47 
+48         multiQubit->\hyperlink{structMultiQubit_ab5b9795bdc6fb5855e1974dcbbaeb36f}{numQubits} = numQubits;
+49         multiQubit->\hyperlink{structMultiQubit_ae16f47d8b725c914fb7f66b6498d79db}{numAmps} = numAmpsPerRank;
+50         multiQubit->\hyperlink{structMultiQubit_ab10c88249fa3825d6227ceec01d37e37}{chunkId} = env.\hyperlink{structQUESTEnv_a1bdb6d425a2ce6a468f93929c0b26d73}{rank};
+51         multiQubit->\hyperlink{structMultiQubit_acd43f2f57991709c9e94f73662c972b2}{numChunks} = env.\hyperlink{structQUESTEnv_ab9d9ce82e2d5f1b39aa9efc3accb3742}{numRanks};
+52 
+53         \textcolor{keywordflow}{if} (env.\hyperlink{structQUESTEnv_a1bdb6d425a2ce6a468f93929c0b26d73}{rank}==0) printf(\textcolor{stringliteral}{"Number of amps per rank is %ld.\(\backslash\)n"}, numAmpsPerRank);
+54 \}
 \end{DoxyCode}
 \index{qubits.\+c@{qubits.\+c}!destroy\+Multi\+Qubit@{destroy\+Multi\+Qubit}}
 \index{destroy\+Multi\+Qubit@{destroy\+Multi\+Qubit}!qubits.\+c@{qubits.\+c}}
@@ -224,7 +225,7 @@ Deallocate a \hyperlink{structMultiQubit}{Multi\+Qubit} object representing a se
 \end{DoxyParams}
 
 
-Definition at line 60 of file qubits.\+c.
+Definition at line 61 of file qubits.\+c.
 
 
 
@@ -236,26 +237,40 @@ Referenced by main().
 
 
 \begin{DoxyCode}
-60                                                            \{
-61         free(multiQubit.\hyperlink{structMultiQubit_a45483190d6b01ef6b2f98f2bec9ab94f}{stateVec}.\hyperlink{structComplexArray_a1cf9fd31d6dce5ef618d2bcf3e4f8b69}{real});
-62         free(multiQubit.\hyperlink{structMultiQubit_a45483190d6b01ef6b2f98f2bec9ab94f}{stateVec}.\hyperlink{structComplexArray_aa409fd14e1ff3e1fdcc53cc4eb77a7a8}{imag});
-63         \textcolor{keywordflow}{if} (env.\hyperlink{structQUESTEnv_ab9d9ce82e2d5f1b39aa9efc3accb3742}{numRanks}>1)\{
-64                 free(multiQubit.\hyperlink{structMultiQubit_a76f7db4eab52d2b30f58f973ada809c5}{pairStateVec}.\hyperlink{structComplexArray_a1cf9fd31d6dce5ef618d2bcf3e4f8b69}{real});
-65                 free(multiQubit.\hyperlink{structMultiQubit_a76f7db4eab52d2b30f58f973ada809c5}{pairStateVec}.\hyperlink{structComplexArray_aa409fd14e1ff3e1fdcc53cc4eb77a7a8}{imag});
-66         \}
-67 \}
+61                                                            \{
+62         free(multiQubit.\hyperlink{structMultiQubit_a45483190d6b01ef6b2f98f2bec9ab94f}{stateVec}.\hyperlink{structComplexArray_a1cf9fd31d6dce5ef618d2bcf3e4f8b69}{real});
+63         free(multiQubit.\hyperlink{structMultiQubit_a45483190d6b01ef6b2f98f2bec9ab94f}{stateVec}.\hyperlink{structComplexArray_aa409fd14e1ff3e1fdcc53cc4eb77a7a8}{imag});
+64         \textcolor{keywordflow}{if} (env.\hyperlink{structQUESTEnv_ab9d9ce82e2d5f1b39aa9efc3accb3742}{numRanks}>1)\{
+65                 free(multiQubit.\hyperlink{structMultiQubit_a76f7db4eab52d2b30f58f973ada809c5}{pairStateVec}.\hyperlink{structComplexArray_a1cf9fd31d6dce5ef618d2bcf3e4f8b69}{real});
+66                 free(multiQubit.\hyperlink{structMultiQubit_a76f7db4eab52d2b30f58f973ada809c5}{pairStateVec}.\hyperlink{structComplexArray_aa409fd14e1ff3e1fdcc53cc4eb77a7a8}{imag});
+67         \}
+68 \}
 \end{DoxyCode}
 \index{qubits.\+c@{qubits.\+c}!extract\+Bit@{extract\+Bit}}
 \index{extract\+Bit@{extract\+Bit}!qubits.\+c@{qubits.\+c}}
-\paragraph[{\texorpdfstring{extract\+Bit(const int location\+Of\+Bit\+From\+Right, const long long int the\+Encoded\+Number)}{extractBit(const int locationOfBitFromRight, const long long int theEncodedNumber)}}]{\setlength{\rightskip}{0pt plus 5cm}int extract\+Bit (
+\paragraph[{\texorpdfstring{extract\+Bit(const int location\+Of\+Bit\+From\+Right, const long long int the\+Encoded\+Number)}{extractBit(const int locationOfBitFromRight, const long long int theEncodedNumber)}}]{\setlength{\rightskip}{0pt plus 5cm}static int extract\+Bit (
 \begin{DoxyParamCaption}
 \item[{const int}]{location\+Of\+Bit\+From\+Right, }
 \item[{const long long int}]{the\+Encoded\+Number}
 \end{DoxyParamCaption}
-)}\hypertarget{qubits_8c_a420b30092dc60ff17188e23361d547a5}{}\label{qubits_8c_a420b30092dc60ff17188e23361d547a5}
+)\hspace{0.3cm}{\ttfamily [static]}}\hypertarget{qubits_8c_a100463f6ec212c76a5fad99579000505}{}\label{qubits_8c_a100463f6ec212c76a5fad99579000505}
 
 
-Definition at line 464 of file qubits.\+c.
+Get the value of the bit at a particular index in a number. 
+
+
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\tt in}  & {\em location\+Of\+Bit\+From\+Right} & location of bit in the\+Encoded\+Number \\
+\hline
+\mbox{\tt in}  & {\em the\+Encoded\+Number} & number to search \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+the value of the bit in the\+Encoded\+Number 
+\end{DoxyReturn}
+
+
+Definition at line 470 of file qubits.\+c.
 
 
 
@@ -263,9 +278,9 @@ Referenced by control\+Phase\+Gate(), filter\+Out111(), prob\+Of\+Filter\+Out111
 
 
 \begin{DoxyCode}
-465 \{
-466         \textcolor{keywordflow}{return} (theEncodedNumber & ( 1LL << locationOfBitFromRight )) >> locationOfBitFromRight;
-467 \}
+471 \{
+472         \textcolor{keywordflow}{return} (theEncodedNumber & ( 1LL << locationOfBitFromRight )) >> locationOfBitFromRight;
+473 \}
 \end{DoxyCode}
 \index{qubits.\+c@{qubits.\+c}!filter\+Out111@{filter\+Out111}}
 \index{filter\+Out111@{filter\+Out111}!qubits.\+c@{qubits.\+c}}
@@ -281,7 +296,7 @@ Referenced by control\+Phase\+Gate(), filter\+Out111(), prob\+Of\+Filter\+Out111
 )}\hypertarget{qubits_8c_ac0a6831f57a515c899796c9fed84012d}{}\label{qubits_8c_ac0a6831f57a515c899796c9fed84012d}
 
 
-Definition at line 654 of file qubits.\+c.
+Definition at line 660 of file qubits.\+c.
 
 
 
@@ -289,61 +304,61 @@ References extract\+Bit().
 
 
 \begin{DoxyCode}
-657 \{
-658         \textcolor{keywordtype}{long} \textcolor{keywordtype}{long} \textcolor{keywordtype}{int} index;
-659         \textcolor{keywordtype}{long} \textcolor{keywordtype}{long} \textcolor{keywordtype}{int} stateVecSize;
-660         \textcolor{keywordtype}{int} bit1, bit2, bit3;
-661 
-662         \textcolor{comment}{// ---------------------------------------------------------------- //}
-663         \textcolor{comment}{//            tests                                                 //}
-664         \textcolor{comment}{// ---------------------------------------------------------------- //}
-665         assert (idQubit1 >= 0 && idQubit2 >= 0 && idQubit1 < numQubits && idQubit2 < numQubits);
-666 
-667         stateVecSize = 1LL << numQubits;
-668         \textcolor{keywordtype}{double} probOfFilter=0;
-669 
-670 \textcolor{preprocessor}{# ifdef \_OPENMP}
-671 \textcolor{preprocessor}{# pragma omp parallel for \(\backslash\)}
-672 \textcolor{preprocessor}{        default  (none)                      \(\backslash\)}
-673 \textcolor{preprocessor}{        shared   (stateVecSize, stateVecReal,stateVecImag ) \(\backslash\)}
-674 \textcolor{preprocessor}{        private  (index,bit1,bit2,bit3)                \(\backslash\)}
-675 \textcolor{preprocessor}{        schedule (static)\(\backslash\)}
-676 \textcolor{preprocessor}{        reduction ( +:probOfFilter )}
-677 \textcolor{preprocessor}{# endif}
-678         \textcolor{keywordflow}{for} (index=0; index<stateVecSize; index++) \{
-679                 bit1 = \hyperlink{qubits_8c_a420b30092dc60ff17188e23361d547a5}{extractBit} (idQubit1, index);
-680                 bit2 = \hyperlink{qubits_8c_a420b30092dc60ff17188e23361d547a5}{extractBit} (idQubit2, index);
-681                 bit3 = \hyperlink{qubits_8c_a420b30092dc60ff17188e23361d547a5}{extractBit} (idQubit3, index);
-682                 \textcolor{keywordflow}{if} (!(bit1 && bit2 && bit3)) \{
-683                         probOfFilter+= stateVecReal[index]*stateVecReal[index] + stateVecImag[index]* 
+663 \{
+664         \textcolor{keywordtype}{long} \textcolor{keywordtype}{long} \textcolor{keywordtype}{int} index;
+665         \textcolor{keywordtype}{long} \textcolor{keywordtype}{long} \textcolor{keywordtype}{int} stateVecSize;
+666         \textcolor{keywordtype}{int} bit1, bit2, bit3;
+667 
+668         \textcolor{comment}{// ---------------------------------------------------------------- //}
+669         \textcolor{comment}{//            tests                                                 //}
+670         \textcolor{comment}{// ---------------------------------------------------------------- //}
+671         assert (idQubit1 >= 0 && idQubit2 >= 0 && idQubit1 < numQubits && idQubit2 < numQubits);
+672 
+673         stateVecSize = 1LL << numQubits;
+674         \textcolor{keywordtype}{double} probOfFilter=0;
+675 
+676 \textcolor{preprocessor}{# ifdef \_OPENMP}
+677 \textcolor{preprocessor}{# pragma omp parallel for \(\backslash\)}
+678 \textcolor{preprocessor}{        default  (none)                      \(\backslash\)}
+679 \textcolor{preprocessor}{        shared   (stateVecSize, stateVecReal,stateVecImag ) \(\backslash\)}
+680 \textcolor{preprocessor}{        private  (index,bit1,bit2,bit3)                \(\backslash\)}
+681 \textcolor{preprocessor}{        schedule (static)\(\backslash\)}
+682 \textcolor{preprocessor}{        reduction ( +:probOfFilter )}
+683 \textcolor{preprocessor}{# endif}
+684         \textcolor{keywordflow}{for} (index=0; index<stateVecSize; index++) \{
+685                 bit1 = \hyperlink{qubits_8c_a100463f6ec212c76a5fad99579000505}{extractBit} (idQubit1, index);
+686                 bit2 = \hyperlink{qubits_8c_a100463f6ec212c76a5fad99579000505}{extractBit} (idQubit2, index);
+687                 bit3 = \hyperlink{qubits_8c_a100463f6ec212c76a5fad99579000505}{extractBit} (idQubit3, index);
+688                 \textcolor{keywordflow}{if} (!(bit1 && bit2 && bit3)) \{
+689                         probOfFilter+= stateVecReal[index]*stateVecReal[index] + stateVecImag[index]* 
       stateVecImag [index];
-684                 \}
-685         \}
-686         \textcolor{keywordflow}{if} ( probOfFilter<1e-16 )\{ printf(\textcolor{stringliteral}{"Extremely small or negative profOfFilter=%.8e; aborting! \(\backslash\)n"},
+690                 \}
+691         \}
+692         \textcolor{keywordflow}{if} ( probOfFilter<1e-16 )\{ printf(\textcolor{stringliteral}{"Extremely small or negative profOfFilter=%.8e; aborting! \(\backslash\)n"},
       probOfFilter); exit(1);\}
-687         \textcolor{keywordtype}{double} myNorm=1/sqrt(probOfFilter);
-688 
-689 \textcolor{preprocessor}{# ifdef \_OPENMP}
-690 \textcolor{preprocessor}{# pragma omp parallel for \(\backslash\)}
-691 \textcolor{preprocessor}{        default  (none)                      \(\backslash\)}
-692 \textcolor{preprocessor}{        shared   (stateVecSize, stateVecReal,stateVecImag, myNorm ) \(\backslash\)}
-693 \textcolor{preprocessor}{        private  (index,bit1,bit2,bit3)                \(\backslash\)}
-694 \textcolor{preprocessor}{        schedule (static)}
-695 \textcolor{preprocessor}{# endif}
-696         \textcolor{keywordflow}{for} (index=0; index<stateVecSize; index++) \{
-697                 bit1 = \hyperlink{qubits_8c_a420b30092dc60ff17188e23361d547a5}{extractBit} (idQubit1, index);
-698                 bit2 = \hyperlink{qubits_8c_a420b30092dc60ff17188e23361d547a5}{extractBit} (idQubit2, index);
-699                 bit3 = \hyperlink{qubits_8c_a420b30092dc60ff17188e23361d547a5}{extractBit} (idQubit3, index);
-700                 \textcolor{keywordflow}{if} ((bit1 && bit2 && bit3)) \{
-701                         stateVecReal[index]=0;
-702                         stateVecImag [index]=0;
-703                 \}\textcolor{keywordflow}{else}\{
-704                         stateVecReal[index] *= myNorm;
-705                         stateVecImag[index] *= myNorm;
-706                 \}
-707         \}
-708         \textcolor{keywordflow}{return} probOfFilter;
-709 \}
+693         \textcolor{keywordtype}{double} myNorm=1/sqrt(probOfFilter);
+694 
+695 \textcolor{preprocessor}{# ifdef \_OPENMP}
+696 \textcolor{preprocessor}{# pragma omp parallel for \(\backslash\)}
+697 \textcolor{preprocessor}{        default  (none)                      \(\backslash\)}
+698 \textcolor{preprocessor}{        shared   (stateVecSize, stateVecReal,stateVecImag, myNorm ) \(\backslash\)}
+699 \textcolor{preprocessor}{        private  (index,bit1,bit2,bit3)                \(\backslash\)}
+700 \textcolor{preprocessor}{        schedule (static)}
+701 \textcolor{preprocessor}{# endif}
+702         \textcolor{keywordflow}{for} (index=0; index<stateVecSize; index++) \{
+703                 bit1 = \hyperlink{qubits_8c_a100463f6ec212c76a5fad99579000505}{extractBit} (idQubit1, index);
+704                 bit2 = \hyperlink{qubits_8c_a100463f6ec212c76a5fad99579000505}{extractBit} (idQubit2, index);
+705                 bit3 = \hyperlink{qubits_8c_a100463f6ec212c76a5fad99579000505}{extractBit} (idQubit3, index);
+706                 \textcolor{keywordflow}{if} ((bit1 && bit2 && bit3)) \{
+707                         stateVecReal[index]=0;
+708                         stateVecImag [index]=0;
+709                 \}\textcolor{keywordflow}{else}\{
+710                         stateVecReal[index] *= myNorm;
+711                         stateVecImag[index] *= myNorm;
+712                 \}
+713         \}
+714         \textcolor{keywordflow}{return} probOfFilter;
+715 \}
 \end{DoxyCode}
 \index{qubits.\+c@{qubits.\+c}!find\+Probability\+Of\+Zero\+Distributed@{find\+Probability\+Of\+Zero\+Distributed}}
 \index{find\+Probability\+Of\+Zero\+Distributed@{find\+Probability\+Of\+Zero\+Distributed}!qubits.\+c@{qubits.\+c}}
@@ -371,7 +386,7 @@ probability of qubit measure\+Qubit being zero
 \end{DoxyReturn}
 
 
-Definition at line 406 of file qubits.\+c.
+Definition at line 407 of file qubits.\+c.
 
 
 
@@ -383,61 +398,61 @@ Referenced by find\+Probability\+Of\+Zero().
 
 
 \begin{DoxyCode}
-408 \{
-409         \textcolor{comment}{// ----- measured probability}
-410         \textcolor{keywordtype}{double}   totalProbability;                                    \textcolor{comment}{// probability (returned) value}
-411         \textcolor{comment}{// ----- temp variables}
-412         \textcolor{keywordtype}{long} \textcolor{keywordtype}{long} \textcolor{keywordtype}{int} thisTask;                                   \textcolor{comment}{// task based approach for expose loop
+409 \{
+410         \textcolor{comment}{// ----- measured probability}
+411         \textcolor{keywordtype}{double}   totalProbability;                                    \textcolor{comment}{// probability (returned) value}
+412         \textcolor{comment}{// ----- temp variables}
+413         \textcolor{keywordtype}{long} \textcolor{keywordtype}{long} \textcolor{keywordtype}{int} thisTask;                                   \textcolor{comment}{// task based approach for expose loop
        with small granularity}
-413         \textcolor{keywordtype}{long} \textcolor{keywordtype}{long} \textcolor{keywordtype}{int} numTasks=multiQubit.\hyperlink{structMultiQubit_ae16f47d8b725c914fb7f66b6498d79db}{numAmps};
-414         \textcolor{comment}{// (good for shared memory parallelism)}
-415 
-416         \textcolor{comment}{// ---------------------------------------------------------------- //}
-417         \textcolor{comment}{//            tests                                                 //}
-418         \textcolor{comment}{// ---------------------------------------------------------------- //}
-419         assert (measureQubit >= 0 && measureQubit < multiQubit.\hyperlink{structMultiQubit_ab5b9795bdc6fb5855e1974dcbbaeb36f}{numQubits});
-420 
-421         \textcolor{comment}{// ---------------------------------------------------------------- //}
-422         \textcolor{comment}{//            find probability                                      //}
-423         \textcolor{comment}{// ---------------------------------------------------------------- //}
-424 
-425         \textcolor{comment}{// initialise returned value}
-426         totalProbability = 0.0;
-427 
-428         \textcolor{comment}{// initialise correction for kahan summation}
-429 
-430         \textcolor{comment}{//}
-431         \textcolor{comment}{// --- task-based shared-memory parallel implementation}
-432         \textcolor{comment}{//}
-433         
-434         \textcolor{keywordtype}{double} *stateVecReal = multiQubit.\hyperlink{structMultiQubit_a45483190d6b01ef6b2f98f2bec9ab94f}{stateVec}.\hyperlink{structComplexArray_a1cf9fd31d6dce5ef618d2bcf3e4f8b69}{real};
-435         \textcolor{keywordtype}{double} *stateVecImag = multiQubit.\hyperlink{structMultiQubit_a45483190d6b01ef6b2f98f2bec9ab94f}{stateVec}.\hyperlink{structComplexArray_aa409fd14e1ff3e1fdcc53cc4eb77a7a8}{imag};
-436 
-437 \textcolor{preprocessor}{# ifdef \_OPENMP}
-438 \textcolor{preprocessor}{# pragma omp parallel for \(\backslash\)}
-439 \textcolor{preprocessor}{        shared    (numTasks,stateVecReal,stateVecImag) \(\backslash\)}
-440 \textcolor{preprocessor}{        private   (thisTask) \(\backslash\)}
-441 \textcolor{preprocessor}{        schedule  (static) \(\backslash\)}
-442 \textcolor{preprocessor}{        reduction ( +:totalProbability )}
-443 \textcolor{preprocessor}{# endif}
-444         \textcolor{keywordflow}{for} (thisTask=0; thisTask<numTasks; thisTask++) \{
-445                 \textcolor{comment}{// summation -- simple implementation}
-446                 totalProbability += stateVecReal[thisTask]*stateVecReal[thisTask]
-447                         + stateVecImag[thisTask]*stateVecImag[thisTask];
-448 
-449                 \textcolor{comment}{/*}
-450 \textcolor{comment}{                // summation -- kahan correction}
-451 \textcolor{comment}{                y = stateVecReal[thisTask]*stateVecReal[thisTask]}
-452 \textcolor{comment}{                + stateVecImag[thisTask]*stateVecImag[thisTask] - c;}
-453 \textcolor{comment}{                t = totalProbability + y;}
-454 \textcolor{comment}{                c = (t - totalProbability) - y;}
-455 \textcolor{comment}{                totalProbability = t;}
-456 \textcolor{comment}{                */}
-457 
-458         \}
-459 
-460         \textcolor{keywordflow}{return} totalProbability;
-461 \}
+414         \textcolor{keywordtype}{long} \textcolor{keywordtype}{long} \textcolor{keywordtype}{int} numTasks=multiQubit.\hyperlink{structMultiQubit_ae16f47d8b725c914fb7f66b6498d79db}{numAmps};
+415         \textcolor{comment}{// (good for shared memory parallelism)}
+416 
+417         \textcolor{comment}{// ---------------------------------------------------------------- //}
+418         \textcolor{comment}{//            tests                                                 //}
+419         \textcolor{comment}{// ---------------------------------------------------------------- //}
+420         assert (measureQubit >= 0 && measureQubit < multiQubit.\hyperlink{structMultiQubit_ab5b9795bdc6fb5855e1974dcbbaeb36f}{numQubits});
+421 
+422         \textcolor{comment}{// ---------------------------------------------------------------- //}
+423         \textcolor{comment}{//            find probability                                      //}
+424         \textcolor{comment}{// ---------------------------------------------------------------- //}
+425 
+426         \textcolor{comment}{// initialise returned value}
+427         totalProbability = 0.0;
+428 
+429         \textcolor{comment}{// initialise correction for kahan summation}
+430 
+431         \textcolor{comment}{//}
+432         \textcolor{comment}{// --- task-based shared-memory parallel implementation}
+433         \textcolor{comment}{//}
+434         
+435         \textcolor{keywordtype}{double} *stateVecReal = multiQubit.\hyperlink{structMultiQubit_a45483190d6b01ef6b2f98f2bec9ab94f}{stateVec}.\hyperlink{structComplexArray_a1cf9fd31d6dce5ef618d2bcf3e4f8b69}{real};
+436         \textcolor{keywordtype}{double} *stateVecImag = multiQubit.\hyperlink{structMultiQubit_a45483190d6b01ef6b2f98f2bec9ab94f}{stateVec}.\hyperlink{structComplexArray_aa409fd14e1ff3e1fdcc53cc4eb77a7a8}{imag};
+437 
+438 \textcolor{preprocessor}{# ifdef \_OPENMP}
+439 \textcolor{preprocessor}{# pragma omp parallel for \(\backslash\)}
+440 \textcolor{preprocessor}{        shared    (numTasks,stateVecReal,stateVecImag) \(\backslash\)}
+441 \textcolor{preprocessor}{        private   (thisTask) \(\backslash\)}
+442 \textcolor{preprocessor}{        schedule  (static) \(\backslash\)}
+443 \textcolor{preprocessor}{        reduction ( +:totalProbability )}
+444 \textcolor{preprocessor}{# endif}
+445         \textcolor{keywordflow}{for} (thisTask=0; thisTask<numTasks; thisTask++) \{
+446                 \textcolor{comment}{// summation -- simple implementation}
+447                 totalProbability += stateVecReal[thisTask]*stateVecReal[thisTask]
+448                         + stateVecImag[thisTask]*stateVecImag[thisTask];
+449 
+450                 \textcolor{comment}{/*}
+451 \textcolor{comment}{                // summation -- kahan correction}
+452 \textcolor{comment}{                y = stateVecReal[thisTask]*stateVecReal[thisTask]}
+453 \textcolor{comment}{                + stateVecImag[thisTask]*stateVecImag[thisTask] - c;}
+454 \textcolor{comment}{                t = totalProbability + y;}
+455 \textcolor{comment}{                c = (t - totalProbability) - y;}
+456 \textcolor{comment}{                totalProbability = t;}
+457 \textcolor{comment}{                */}
+458 
+459         \}
+460 
+461         \textcolor{keywordflow}{return} totalProbability;
+462 \}
 \end{DoxyCode}
 \index{qubits.\+c@{qubits.\+c}!find\+Probability\+Of\+Zero\+Local@{find\+Probability\+Of\+Zero\+Local}}
 \index{find\+Probability\+Of\+Zero\+Local@{find\+Probability\+Of\+Zero\+Local}!qubits.\+c@{qubits.\+c}}
@@ -465,7 +480,7 @@ probability of qubit measure\+Qubit being zero
 \end{DoxyReturn}
 
 
-Definition at line 320 of file qubits.\+c.
+Definition at line 321 of file qubits.\+c.
 
 
 
@@ -477,84 +492,84 @@ Referenced by find\+Probability\+Of\+Zero().
 
 
 \begin{DoxyCode}
-322 \{
-323         \textcolor{comment}{// ----- sizes}
-324         \textcolor{keywordtype}{long} \textcolor{keywordtype}{long} \textcolor{keywordtype}{int} sizeBlock,                                           \textcolor{comment}{// size of blocks}
-325         sizeHalfBlock;                                       \textcolor{comment}{// size of blocks halved}
-326         \textcolor{comment}{// ----- indices}
-327         \textcolor{keywordtype}{long} \textcolor{keywordtype}{long} \textcolor{keywordtype}{int} thisBlock,                                           \textcolor{comment}{// current block}
-328              index;                                               \textcolor{comment}{// current index for first half block}
-329         \textcolor{comment}{// ----- measured probability}
-330         \textcolor{keywordtype}{double}   totalProbability;                                    \textcolor{comment}{// probability (returned) value}
-331         \textcolor{comment}{// ----- temp variables}
-332         \textcolor{keywordtype}{long} \textcolor{keywordtype}{long} \textcolor{keywordtype}{int} thisTask;                                   \textcolor{comment}{// task based approach for expose loop
+323 \{
+324         \textcolor{comment}{// ----- sizes}
+325         \textcolor{keywordtype}{long} \textcolor{keywordtype}{long} \textcolor{keywordtype}{int} sizeBlock,                                           \textcolor{comment}{// size of blocks}
+326         sizeHalfBlock;                                       \textcolor{comment}{// size of blocks halved}
+327         \textcolor{comment}{// ----- indices}
+328         \textcolor{keywordtype}{long} \textcolor{keywordtype}{long} \textcolor{keywordtype}{int} thisBlock,                                           \textcolor{comment}{// current block}
+329              index;                                               \textcolor{comment}{// current index for first half block}
+330         \textcolor{comment}{// ----- measured probability}
+331         \textcolor{keywordtype}{double}   totalProbability;                                    \textcolor{comment}{// probability (returned) value}
+332         \textcolor{comment}{// ----- temp variables}
+333         \textcolor{keywordtype}{long} \textcolor{keywordtype}{long} \textcolor{keywordtype}{int} thisTask;                                   \textcolor{comment}{// task based approach for expose loop
        with small granularity}
-333         \textcolor{keywordtype}{long} \textcolor{keywordtype}{long} \textcolor{keywordtype}{int} numTasks=multiQubit.\hyperlink{structMultiQubit_ae16f47d8b725c914fb7f66b6498d79db}{numAmps}>>1;
-334         \textcolor{comment}{// (good for shared memory parallelism)}
-335 
-336         \textcolor{comment}{// ---------------------------------------------------------------- //}
-337         \textcolor{comment}{//            tests                                                 //}
-338         \textcolor{comment}{// ---------------------------------------------------------------- //}
-339         assert (measureQubit >= 0 && measureQubit < multiQubit.\hyperlink{structMultiQubit_ab5b9795bdc6fb5855e1974dcbbaeb36f}{numQubits});
-340 
+334         \textcolor{keywordtype}{long} \textcolor{keywordtype}{long} \textcolor{keywordtype}{int} numTasks=multiQubit.\hyperlink{structMultiQubit_ae16f47d8b725c914fb7f66b6498d79db}{numAmps}>>1;
+335         \textcolor{comment}{// (good for shared memory parallelism)}
+336 
+337         \textcolor{comment}{// ---------------------------------------------------------------- //}
+338         \textcolor{comment}{//            tests                                                 //}
+339         \textcolor{comment}{// ---------------------------------------------------------------- //}
+340         assert (measureQubit >= 0 && measureQubit < multiQubit.\hyperlink{structMultiQubit_ab5b9795bdc6fb5855e1974dcbbaeb36f}{numQubits});
 341 
-342         \textcolor{comment}{// ---------------------------------------------------------------- //}
-343         \textcolor{comment}{//            dimensions                                            //}
-344         \textcolor{comment}{// ---------------------------------------------------------------- //}
-345         sizeHalfBlock = 1LL << (measureQubit);                       \textcolor{comment}{// number of state vector elements to
+342 
+343         \textcolor{comment}{// ---------------------------------------------------------------- //}
+344         \textcolor{comment}{//            dimensions                                            //}
+345         \textcolor{comment}{// ---------------------------------------------------------------- //}
+346         sizeHalfBlock = 1LL << (measureQubit);                       \textcolor{comment}{// number of state vector elements to
        sum,}
-346         \textcolor{comment}{// and then the number to skip}
-347         sizeBlock     = 2LL * sizeHalfBlock;                           \textcolor{comment}{// size of blocks (pairs of measure
+347         \textcolor{comment}{// and then the number to skip}
+348         sizeBlock     = 2LL * sizeHalfBlock;                           \textcolor{comment}{// size of blocks (pairs of measure
        and skip entries)}
-348 
-349         \textcolor{comment}{// ---------------------------------------------------------------- //}
-350         \textcolor{comment}{//            find probability                                      //}
-351         \textcolor{comment}{// ---------------------------------------------------------------- //}
-352 
-353         \textcolor{comment}{// initialise returned value}
-354         totalProbability = 0.0;
-355 
-356         \textcolor{comment}{// initialise correction for kahan summation}
-357         printf(\textcolor{stringliteral}{"sizeHalfBlock=%Ld sizeBlock=%Ld numTasks=%Ld\(\backslash\)n"},sizeHalfBlock,sizeBlock,numTasks);
-358 
-359         \textcolor{comment}{//}
-360         \textcolor{comment}{// --- task-based shared-memory parallel implementation}
-361         \textcolor{comment}{//}
-362         
-363         \textcolor{keywordtype}{double} *stateVecReal = multiQubit.\hyperlink{structMultiQubit_a45483190d6b01ef6b2f98f2bec9ab94f}{stateVec}.\hyperlink{structComplexArray_a1cf9fd31d6dce5ef618d2bcf3e4f8b69}{real};
-364         \textcolor{keywordtype}{double} *stateVecImag = multiQubit.\hyperlink{structMultiQubit_a45483190d6b01ef6b2f98f2bec9ab94f}{stateVec}.\hyperlink{structComplexArray_aa409fd14e1ff3e1fdcc53cc4eb77a7a8}{imag};
-365 
-366 \textcolor{preprocessor}{# ifdef \_OPENMP}
-367 \textcolor{preprocessor}{# pragma omp parallel for \(\backslash\)}
-368 \textcolor{preprocessor}{        shared    (numTasks,sizeBlock,sizeHalfBlock, stateVecReal,stateVecImag) \(\backslash\)}
-369 \textcolor{preprocessor}{        private   (thisTask,thisBlock,index) \(\backslash\)}
-370 \textcolor{preprocessor}{        schedule  (static) \(\backslash\)}
-371 \textcolor{preprocessor}{        reduction ( +:totalProbability )}
-372 \textcolor{preprocessor}{# endif}
-373         \textcolor{keywordflow}{for} (thisTask=0; thisTask<numTasks; thisTask++) \{
-374                 thisBlock = thisTask / sizeHalfBlock;
-375                 index     = thisBlock*sizeBlock + thisTask%sizeHalfBlock;
-376 
-377                 \textcolor{keywordflow}{if} (index<0)\{ printf(\textcolor{stringliteral}{"ABORTING as index=%Ld with thisBlock = %Ld  thisTask=%Ld \(\backslash\)n"}, index,
+349 
+350         \textcolor{comment}{// ---------------------------------------------------------------- //}
+351         \textcolor{comment}{//            find probability                                      //}
+352         \textcolor{comment}{// ---------------------------------------------------------------- //}
+353 
+354         \textcolor{comment}{// initialise returned value}
+355         totalProbability = 0.0;
+356 
+357         \textcolor{comment}{// initialise correction for kahan summation}
+358         printf(\textcolor{stringliteral}{"sizeHalfBlock=%Ld sizeBlock=%Ld numTasks=%Ld\(\backslash\)n"},sizeHalfBlock,sizeBlock,numTasks);
+359 
+360         \textcolor{comment}{//}
+361         \textcolor{comment}{// --- task-based shared-memory parallel implementation}
+362         \textcolor{comment}{//}
+363         
+364         \textcolor{keywordtype}{double} *stateVecReal = multiQubit.\hyperlink{structMultiQubit_a45483190d6b01ef6b2f98f2bec9ab94f}{stateVec}.\hyperlink{structComplexArray_a1cf9fd31d6dce5ef618d2bcf3e4f8b69}{real};
+365         \textcolor{keywordtype}{double} *stateVecImag = multiQubit.\hyperlink{structMultiQubit_a45483190d6b01ef6b2f98f2bec9ab94f}{stateVec}.\hyperlink{structComplexArray_aa409fd14e1ff3e1fdcc53cc4eb77a7a8}{imag};
+366 
+367 \textcolor{preprocessor}{# ifdef \_OPENMP}
+368 \textcolor{preprocessor}{# pragma omp parallel for \(\backslash\)}
+369 \textcolor{preprocessor}{        shared    (numTasks,sizeBlock,sizeHalfBlock, stateVecReal,stateVecImag) \(\backslash\)}
+370 \textcolor{preprocessor}{        private   (thisTask,thisBlock,index) \(\backslash\)}
+371 \textcolor{preprocessor}{        schedule  (static) \(\backslash\)}
+372 \textcolor{preprocessor}{        reduction ( +:totalProbability )}
+373 \textcolor{preprocessor}{# endif}
+374         \textcolor{keywordflow}{for} (thisTask=0; thisTask<numTasks; thisTask++) \{
+375                 thisBlock = thisTask / sizeHalfBlock;
+376                 index     = thisBlock*sizeBlock + thisTask%sizeHalfBlock;
+377 
+378                 \textcolor{keywordflow}{if} (index<0)\{ printf(\textcolor{stringliteral}{"ABORTING as index=%Ld with thisBlock = %Ld  thisTask=%Ld \(\backslash\)n"}, index,
       thisBlock,thisTask); exit(1);\}
-378 
-379                 \textcolor{comment}{// summation -- simple implementation}
-380                 totalProbability += stateVecReal[index]*stateVecReal[index]
-381                         + stateVecImag[index]*stateVecImag[index];
-382 
-383                 \textcolor{comment}{/*}
-384 \textcolor{comment}{                // summation -- kahan correction}
-385 \textcolor{comment}{                y = stateVecReal[index]*stateVecReal[index]}
-386 \textcolor{comment}{                + stateVecImag[index]*stateVecImag[index] - c;}
-387 \textcolor{comment}{                t = totalProbability + y;}
-388 \textcolor{comment}{                c = (t - totalProbability) - y;}
-389 \textcolor{comment}{                totalProbability = t;}
-390 \textcolor{comment}{                */}
-391 
-392         \}
-393 
-394         \textcolor{keywordflow}{return} totalProbability;
-395 \}
+379 
+380                 \textcolor{comment}{// summation -- simple implementation}
+381                 totalProbability += stateVecReal[index]*stateVecReal[index]
+382                         + stateVecImag[index]*stateVecImag[index];
+383 
+384                 \textcolor{comment}{/*}
+385 \textcolor{comment}{                // summation -- kahan correction}
+386 \textcolor{comment}{                y = stateVecReal[index]*stateVecReal[index]}
+387 \textcolor{comment}{                + stateVecImag[index]*stateVecImag[index] - c;}
+388 \textcolor{comment}{                t = totalProbability + y;}
+389 \textcolor{comment}{                c = (t - totalProbability) - y;}
+390 \textcolor{comment}{                totalProbability = t;}
+391 \textcolor{comment}{                */}
+392 
+393         \}
+394 
+395         \textcolor{keywordflow}{return} totalProbability;
+396 \}
 \end{DoxyCode}
 \index{qubits.\+c@{qubits.\+c}!init\+State\+Vec@{init\+State\+Vec}}
 \index{init\+State\+Vec@{init\+State\+Vec}!qubits.\+c@{qubits.\+c}}
@@ -574,7 +589,7 @@ Initialise the state vector of probability amplitudes for a set of qubits to the
 \end{DoxyParams}
 
 
-Definition at line 107 of file qubits.\+c.
+Definition at line 108 of file qubits.\+c.
 
 
 
@@ -582,45 +597,45 @@ References Multi\+Qubit\+::chunk\+Id, D\+E\+B\+UG, Complex\+Array\+::imag, Multi
 
 
 
-Referenced by create\+Multi\+Qubit(), and main().
+Referenced by main().
 
 
 \begin{DoxyCode}
-108 \{
-109         \textcolor{keywordtype}{long} \textcolor{keywordtype}{long} \textcolor{keywordtype}{int} stateVecSize;
-110         \textcolor{keywordtype}{long} \textcolor{keywordtype}{long} \textcolor{keywordtype}{int} index;
-111 
-112         \textcolor{comment}{// dimension of the state vector}
-113         stateVecSize = multiQubit->\hyperlink{structMultiQubit_ae16f47d8b725c914fb7f66b6498d79db}{numAmps};
-114 
-115         \textcolor{keywordflow}{if} (\hyperlink{qubits_8c_ad72dbcf6d0153db1b8d8a58001feed83}{DEBUG}) printf(\textcolor{stringliteral}{"stateVecSize=%Ld   now performing init with only one thread:\(\backslash\)n"},
+109 \{
+110         \textcolor{keywordtype}{long} \textcolor{keywordtype}{long} \textcolor{keywordtype}{int} stateVecSize;
+111         \textcolor{keywordtype}{long} \textcolor{keywordtype}{long} \textcolor{keywordtype}{int} index;
+112 
+113         \textcolor{comment}{// dimension of the state vector}
+114         stateVecSize = multiQubit->\hyperlink{structMultiQubit_ae16f47d8b725c914fb7f66b6498d79db}{numAmps};
+115 
+116         \textcolor{keywordflow}{if} (\hyperlink{qubits_8c_ad72dbcf6d0153db1b8d8a58001feed83}{DEBUG}) printf(\textcolor{stringliteral}{"stateVecSize=%Ld   now performing init with only one thread:\(\backslash\)n"},
       stateVecSize);
-116 
-117         \textcolor{comment}{// Can't use multiQubit->stateVec as a private OMP var}
-118         \textcolor{keywordtype}{double} *stateVecReal = multiQubit->\hyperlink{structMultiQubit_a45483190d6b01ef6b2f98f2bec9ab94f}{stateVec}.\hyperlink{structComplexArray_a1cf9fd31d6dce5ef618d2bcf3e4f8b69}{real};
-119         \textcolor{keywordtype}{double} *stateVecImag = multiQubit->\hyperlink{structMultiQubit_a45483190d6b01ef6b2f98f2bec9ab94f}{stateVec}.\hyperlink{structComplexArray_aa409fd14e1ff3e1fdcc53cc4eb77a7a8}{imag};
-120 
-121         \textcolor{comment}{// initialise the state to |0000..0000>}
-122 \textcolor{preprocessor}{# ifdef \_OPENMP}
-123 \textcolor{preprocessor}{# pragma omp parallel for \(\backslash\)}
-124 \textcolor{preprocessor}{        default  (none) \(\backslash\)}
-125 \textcolor{preprocessor}{        shared   (stateVecSize, stateVecReal, stateVecImag) \(\backslash\)}
-126 \textcolor{preprocessor}{        private  (index) \(\backslash\)}
-127 \textcolor{preprocessor}{        schedule (static)}
-128 \textcolor{preprocessor}{# endif}
-129         \textcolor{keywordflow}{for} (index=0; index<stateVecSize; index++) \{
-130                 stateVecReal[index] = 0.0;
-131                 stateVecImag[index] = 0.0;
-132         \}
-133 
-134         \textcolor{keywordflow}{if} (multiQubit->\hyperlink{structMultiQubit_ab10c88249fa3825d6227ceec01d37e37}{chunkId}==0)\{
-135                 \textcolor{comment}{// zero state |0000..0000> has probability 1}
-136                 stateVecReal[0] = 1.0;
-137                 stateVecImag[0] = 0.0;
-138         \}
-139 
-140         \textcolor{keywordflow}{if} (\hyperlink{qubits_8c_ad72dbcf6d0153db1b8d8a58001feed83}{DEBUG}) printf(\textcolor{stringliteral}{"COMPLETED INIT\(\backslash\)n"});
-141 \}
+117 
+118         \textcolor{comment}{// Can't use multiQubit->stateVec as a private OMP var}
+119         \textcolor{keywordtype}{double} *stateVecReal = multiQubit->\hyperlink{structMultiQubit_a45483190d6b01ef6b2f98f2bec9ab94f}{stateVec}.\hyperlink{structComplexArray_a1cf9fd31d6dce5ef618d2bcf3e4f8b69}{real};
+120         \textcolor{keywordtype}{double} *stateVecImag = multiQubit->\hyperlink{structMultiQubit_a45483190d6b01ef6b2f98f2bec9ab94f}{stateVec}.\hyperlink{structComplexArray_aa409fd14e1ff3e1fdcc53cc4eb77a7a8}{imag};
+121 
+122         \textcolor{comment}{// initialise the state to |0000..0000>}
+123 \textcolor{preprocessor}{# ifdef \_OPENMP}
+124 \textcolor{preprocessor}{# pragma omp parallel for \(\backslash\)}
+125 \textcolor{preprocessor}{        default  (none) \(\backslash\)}
+126 \textcolor{preprocessor}{        shared   (stateVecSize, stateVecReal, stateVecImag) \(\backslash\)}
+127 \textcolor{preprocessor}{        private  (index) \(\backslash\)}
+128 \textcolor{preprocessor}{        schedule (static)}
+129 \textcolor{preprocessor}{# endif}
+130         \textcolor{keywordflow}{for} (index=0; index<stateVecSize; index++) \{
+131                 stateVecReal[index] = 0.0;
+132                 stateVecImag[index] = 0.0;
+133         \}
+134 
+135         \textcolor{keywordflow}{if} (multiQubit->\hyperlink{structMultiQubit_ab10c88249fa3825d6227ceec01d37e37}{chunkId}==0)\{
+136                 \textcolor{comment}{// zero state |0000..0000> has probability 1}
+137                 stateVecReal[0] = 1.0;
+138                 stateVecImag[0] = 0.0;
+139         \}
+140 
+141         \textcolor{keywordflow}{if} (\hyperlink{qubits_8c_ad72dbcf6d0153db1b8d8a58001feed83}{DEBUG}) printf(\textcolor{stringliteral}{"COMPLETED INIT\(\backslash\)n"});
+142 \}
 \end{DoxyCode}
 \index{qubits.\+c@{qubits.\+c}!measure\+In\+Zero@{measure\+In\+Zero}}
 \index{measure\+In\+Zero@{measure\+In\+Zero}!qubits.\+c@{qubits.\+c}}
@@ -634,98 +649,98 @@ Referenced by create\+Multi\+Qubit(), and main().
 )}\hypertarget{qubits_8c_a1048595256ae43d4fae6ced562f450f0}{}\label{qubits_8c_a1048595256ae43d4fae6ced562f450f0}
 
 
-Definition at line 565 of file qubits.\+c.
+Definition at line 571 of file qubits.\+c.
 
 
 \begin{DoxyCode}
-569 \{
-570         \textcolor{comment}{// ----- sizes}
-571         \textcolor{keywordtype}{long} \textcolor{keywordtype}{long} \textcolor{keywordtype}{int} numBlocks,                                           \textcolor{comment}{// number of blocks}
-572         sizeBlock,                                           \textcolor{comment}{// size of blocks}
-573         sizeHalfBlock;                                       \textcolor{comment}{// size of blocks halved}
-574         \textcolor{comment}{// ----- indices}
-575         \textcolor{keywordtype}{long} \textcolor{keywordtype}{long} \textcolor{keywordtype}{int} thisBlock,                                           \textcolor{comment}{// current block}
-576              index;                                               \textcolor{comment}{// current index for first half block}
-577         \textcolor{comment}{// ----- measured probability}
-578         \textcolor{keywordtype}{double}   totalProbability, renorm;                                    \textcolor{comment}{// probability (returned)
+575 \{
+576         \textcolor{comment}{// ----- sizes}
+577         \textcolor{keywordtype}{long} \textcolor{keywordtype}{long} \textcolor{keywordtype}{int} numBlocks,                                           \textcolor{comment}{// number of blocks}
+578         sizeBlock,                                           \textcolor{comment}{// size of blocks}
+579         sizeHalfBlock;                                       \textcolor{comment}{// size of blocks halved}
+580         \textcolor{comment}{// ----- indices}
+581         \textcolor{keywordtype}{long} \textcolor{keywordtype}{long} \textcolor{keywordtype}{int} thisBlock,                                           \textcolor{comment}{// current block}
+582              index;                                               \textcolor{comment}{// current index for first half block}
+583         \textcolor{comment}{// ----- measured probability}
+584         \textcolor{keywordtype}{double}   totalProbability, renorm;                                    \textcolor{comment}{// probability (returned)
        value}
-579         \textcolor{comment}{// ----- temp variables}
-580         \textcolor{keywordtype}{long} \textcolor{keywordtype}{long} \textcolor{keywordtype}{int} thisTask,numTasks;                                   \textcolor{comment}{// task based approach for
+585         \textcolor{comment}{// ----- temp variables}
+586         \textcolor{keywordtype}{long} \textcolor{keywordtype}{long} \textcolor{keywordtype}{int} thisTask,numTasks;                                   \textcolor{comment}{// task based approach for
        expose loop with small granularity}
-581         \textcolor{comment}{// (good for shared memory parallelism)}
-582 
-583         \textcolor{comment}{// ---------------------------------------------------------------- //}
-584         \textcolor{comment}{//            tests                                                 //}
-585         \textcolor{comment}{// ---------------------------------------------------------------- //}
-586         assert (measureQubit >= 0 && measureQubit < numQubits);
-587 
+587         \textcolor{comment}{// (good for shared memory parallelism)}
 588 
 589         \textcolor{comment}{// ---------------------------------------------------------------- //}
-590         \textcolor{comment}{//            dimensions                                            //}
+590         \textcolor{comment}{//            tests                                                 //}
 591         \textcolor{comment}{// ---------------------------------------------------------------- //}
-592         sizeHalfBlock = 1LL << (measureQubit);                       \textcolor{comment}{// number of state vector elements to
+592         assert (measureQubit >= 0 && measureQubit < numQubits);
+593 
+594 
+595         \textcolor{comment}{// ---------------------------------------------------------------- //}
+596         \textcolor{comment}{//            dimensions                                            //}
+597         \textcolor{comment}{// ---------------------------------------------------------------- //}
+598         sizeHalfBlock = 1LL << (measureQubit);                       \textcolor{comment}{// number of state vector elements to
        sum,}
-593         \textcolor{comment}{// and then the number to skip}
-594         sizeBlock     = 2LL * sizeHalfBlock;                           \textcolor{comment}{// size of blocks (pairs of measure
+599         \textcolor{comment}{// and then the number to skip}
+600         sizeBlock     = 2LL * sizeHalfBlock;                           \textcolor{comment}{// size of blocks (pairs of measure
        and skip entries)}
-595 
-596         \textcolor{comment}{// ---------------------------------------------------------------- //}
-597         \textcolor{comment}{//            find probability                                      //}
-598         \textcolor{comment}{// ---------------------------------------------------------------- //}
-599         numTasks = 1LL << (numQubits-1);
-600 
-601         \textcolor{comment}{// initialise returned value}
-602         totalProbability = 0.0;
-603 
-604         \textcolor{comment}{//}
-605         \textcolor{comment}{// --- task-based shared-memory parallel implementation}
-606         \textcolor{comment}{//}
-607 \textcolor{preprocessor}{# ifdef \_OPENMP}
-608 \textcolor{preprocessor}{# pragma omp parallel for \(\backslash\)}
-609 \textcolor{preprocessor}{        shared    (numTasks,sizeBlock,sizeHalfBlock, stateVecReal,stateVecImag) \(\backslash\)}
-610 \textcolor{preprocessor}{        private   (thisTask,thisBlock,index) \(\backslash\)}
-611 \textcolor{preprocessor}{        schedule  (static) \(\backslash\)}
-612 \textcolor{preprocessor}{        reduction ( +:totalProbability )}
-613 \textcolor{preprocessor}{# endif}
-614         \textcolor{keywordflow}{for} (thisTask=0; thisTask<numTasks; thisTask++) \{
-615                 thisBlock = thisTask / sizeHalfBlock;
-616                 index     = thisBlock*sizeBlock + thisTask%sizeHalfBlock;
-617 
-618                 totalProbability += stateVecReal[index]*stateVecReal[index]
-619                         + stateVecImag[index]*stateVecImag[index];
-620         \}
-621         renorm=1/sqrt(totalProbability);
-622 
+601 
+602         \textcolor{comment}{// ---------------------------------------------------------------- //}
+603         \textcolor{comment}{//            find probability                                      //}
+604         \textcolor{comment}{// ---------------------------------------------------------------- //}
+605         numTasks = 1LL << (numQubits-1);
+606 
+607         \textcolor{comment}{// initialise returned value}
+608         totalProbability = 0.0;
+609 
+610         \textcolor{comment}{//}
+611         \textcolor{comment}{// --- task-based shared-memory parallel implementation}
+612         \textcolor{comment}{//}
+613 \textcolor{preprocessor}{# ifdef \_OPENMP}
+614 \textcolor{preprocessor}{# pragma omp parallel for \(\backslash\)}
+615 \textcolor{preprocessor}{        shared    (numTasks,sizeBlock,sizeHalfBlock, stateVecReal,stateVecImag) \(\backslash\)}
+616 \textcolor{preprocessor}{        private   (thisTask,thisBlock,index) \(\backslash\)}
+617 \textcolor{preprocessor}{        schedule  (static) \(\backslash\)}
+618 \textcolor{preprocessor}{        reduction ( +:totalProbability )}
+619 \textcolor{preprocessor}{# endif}
+620         \textcolor{keywordflow}{for} (thisTask=0; thisTask<numTasks; thisTask++) \{
+621                 thisBlock = thisTask / sizeHalfBlock;
+622                 index     = thisBlock*sizeBlock + thisTask%sizeHalfBlock;
 623 
-624 \textcolor{preprocessor}{# ifdef \_OPENMP}
-625 \textcolor{preprocessor}{# pragma omp parallel for \(\backslash\)}
-626 \textcolor{preprocessor}{        shared    (numTasks,sizeBlock,sizeHalfBlock, stateVecReal,stateVecImag) \(\backslash\)}
-627 \textcolor{preprocessor}{        private   (thisTask,thisBlock,index) \(\backslash\)}
-628 \textcolor{preprocessor}{        schedule  (static) \(\backslash\)}
-629 \textcolor{preprocessor}{        reduction ( +:totalProbability )}
-630 \textcolor{preprocessor}{# endif}
-631         \textcolor{keywordflow}{for} (thisTask=0; thisTask<numTasks; thisTask++) \{
-632                 thisBlock = thisTask / sizeHalfBlock;
-633                 index     = thisBlock*sizeBlock + thisTask%sizeHalfBlock;
-634                 stateVecReal[index]=stateVecReal[index]*renorm;
-635                 stateVecImag[index]=stateVecImag[index]*renorm;
-636 
-637                 stateVecReal[index+sizeHalfBlock]=0;
-638                 stateVecImag[index+sizeHalfBlock]=0;
-639         \}
-640 
-641         \textcolor{comment}{//SCB this is a debugging style check. It is probably useful to leave in, but it could be
+624                 totalProbability += stateVecReal[index]*stateVecReal[index]
+625                         + stateVecImag[index]*stateVecImag[index];
+626         \}
+627         renorm=1/sqrt(totalProbability);
+628 
+629 
+630 \textcolor{preprocessor}{# ifdef \_OPENMP}
+631 \textcolor{preprocessor}{# pragma omp parallel for \(\backslash\)}
+632 \textcolor{preprocessor}{        shared    (numTasks,sizeBlock,sizeHalfBlock, stateVecReal,stateVecImag) \(\backslash\)}
+633 \textcolor{preprocessor}{        private   (thisTask,thisBlock,index) \(\backslash\)}
+634 \textcolor{preprocessor}{        schedule  (static) \(\backslash\)}
+635 \textcolor{preprocessor}{        reduction ( +:totalProbability )}
+636 \textcolor{preprocessor}{# endif}
+637         \textcolor{keywordflow}{for} (thisTask=0; thisTask<numTasks; thisTask++) \{
+638                 thisBlock = thisTask / sizeHalfBlock;
+639                 index     = thisBlock*sizeBlock + thisTask%sizeHalfBlock;
+640                 stateVecReal[index]=stateVecReal[index]*renorm;
+641                 stateVecImag[index]=stateVecImag[index]*renorm;
+642 
+643                 stateVecReal[index+sizeHalfBlock]=0;
+644                 stateVecImag[index+sizeHalfBlock]=0;
+645         \}
+646 
+647         \textcolor{comment}{//SCB this is a debugging style check. It is probably useful to leave in, but it could be
        parallelised I guess}
-642         \textcolor{comment}{//  double checkTotal=1.;}
-643         \textcolor{comment}{//  for (index=0; index<2*numTasks; index++) \{}
-644         \textcolor{comment}{//      checkTotal=checkTotal-(stateVecReal[index]*stateVecReal[index] +
+648         \textcolor{comment}{//  double checkTotal=1.;}
+649         \textcolor{comment}{//  for (index=0; index<2*numTasks; index++) \{}
+650         \textcolor{comment}{//      checkTotal=checkTotal-(stateVecReal[index]*stateVecReal[index] +
        stateVecImag[index]*stateVecImag[index]);}
-645         \textcolor{comment}{//  \}}
-646         \textcolor{comment}{//  if (checkTotal>0.00001)\{printf("Deviation of sum squared amps from unity is
+651         \textcolor{comment}{//  \}}
+652         \textcolor{comment}{//  if (checkTotal>0.00001)\{printf("Deviation of sum squared amps from unity is
        %.16f\(\backslash\)n",checkTotal); exit(1);\}}
-647 
-648         \textcolor{keywordflow}{return} totalProbability;
-649 \}
+653 
+654         \textcolor{keywordflow}{return} totalProbability;
+655 \}
 \end{DoxyCode}
 \index{qubits.\+c@{qubits.\+c}!prob\+Of\+Filter\+Out111@{prob\+Of\+Filter\+Out111}}
 \index{prob\+Of\+Filter\+Out111@{prob\+Of\+Filter\+Out111}!qubits.\+c@{qubits.\+c}}
@@ -741,7 +756,7 @@ Definition at line 565 of file qubits.\+c.
 )}\hypertarget{qubits_8c_ad1c169b3b62793c032a1dd50a9d5d95f}{}\label{qubits_8c_ad1c169b3b62793c032a1dd50a9d5d95f}
 
 
-Definition at line 714 of file qubits.\+c.
+Definition at line 720 of file qubits.\+c.
 
 
 
@@ -749,38 +764,38 @@ References extract\+Bit().
 
 
 \begin{DoxyCode}
-717 \{
-718         \textcolor{keywordtype}{long} \textcolor{keywordtype}{long} \textcolor{keywordtype}{int} index;
-719         \textcolor{keywordtype}{long} \textcolor{keywordtype}{long} \textcolor{keywordtype}{int} stateVecSize;
-720         \textcolor{keywordtype}{int} bit1, bit2, bit3;
-721 
-722         \textcolor{comment}{// ---------------------------------------------------------------- //}
-723         \textcolor{comment}{//            tests                                                 //}
-724         \textcolor{comment}{// ---------------------------------------------------------------- //}
-725         assert (idQubit1 >= 0 && idQubit2 >= 0 && idQubit1 < numQubits && idQubit2 < numQubits);
-726 
-727         stateVecSize = 1LL << numQubits;
-728         \textcolor{keywordtype}{double} probOfFilter=0;
-729 
-730 \textcolor{preprocessor}{# ifdef \_OPENMP}
-731 \textcolor{preprocessor}{# pragma omp parallel for \(\backslash\)}
-732 \textcolor{preprocessor}{        default  (none)                      \(\backslash\)}
-733 \textcolor{preprocessor}{        shared   (stateVecSize, stateVecReal,stateVecImag ) \(\backslash\)}
-734 \textcolor{preprocessor}{        private  (index,bit1,bit2,bit3)                \(\backslash\)}
-735 \textcolor{preprocessor}{        schedule (static)\(\backslash\)}
-736 \textcolor{preprocessor}{        reduction ( +:probOfFilter )}
-737 \textcolor{preprocessor}{# endif}
-738         \textcolor{keywordflow}{for} (index=0; index<stateVecSize; index++) \{
-739                 bit1 = \hyperlink{qubits_8c_a420b30092dc60ff17188e23361d547a5}{extractBit} (idQubit1, index);
-740                 bit2 = \hyperlink{qubits_8c_a420b30092dc60ff17188e23361d547a5}{extractBit} (idQubit2, index);
-741                 bit3 = \hyperlink{qubits_8c_a420b30092dc60ff17188e23361d547a5}{extractBit} (idQubit3, index);
-742                 \textcolor{keywordflow}{if} (!(bit1 && bit2 && bit3)) \{
-743                         probOfFilter+= stateVecReal[index]*stateVecReal[index] + stateVecImag[index]* 
+723 \{
+724         \textcolor{keywordtype}{long} \textcolor{keywordtype}{long} \textcolor{keywordtype}{int} index;
+725         \textcolor{keywordtype}{long} \textcolor{keywordtype}{long} \textcolor{keywordtype}{int} stateVecSize;
+726         \textcolor{keywordtype}{int} bit1, bit2, bit3;
+727 
+728         \textcolor{comment}{// ---------------------------------------------------------------- //}
+729         \textcolor{comment}{//            tests                                                 //}
+730         \textcolor{comment}{// ---------------------------------------------------------------- //}
+731         assert (idQubit1 >= 0 && idQubit2 >= 0 && idQubit1 < numQubits && idQubit2 < numQubits);
+732 
+733         stateVecSize = 1LL << numQubits;
+734         \textcolor{keywordtype}{double} probOfFilter=0;
+735 
+736 \textcolor{preprocessor}{# ifdef \_OPENMP}
+737 \textcolor{preprocessor}{# pragma omp parallel for \(\backslash\)}
+738 \textcolor{preprocessor}{        default  (none)                      \(\backslash\)}
+739 \textcolor{preprocessor}{        shared   (stateVecSize, stateVecReal,stateVecImag ) \(\backslash\)}
+740 \textcolor{preprocessor}{        private  (index,bit1,bit2,bit3)                \(\backslash\)}
+741 \textcolor{preprocessor}{        schedule (static)\(\backslash\)}
+742 \textcolor{preprocessor}{        reduction ( +:probOfFilter )}
+743 \textcolor{preprocessor}{# endif}
+744         \textcolor{keywordflow}{for} (index=0; index<stateVecSize; index++) \{
+745                 bit1 = \hyperlink{qubits_8c_a100463f6ec212c76a5fad99579000505}{extractBit} (idQubit1, index);
+746                 bit2 = \hyperlink{qubits_8c_a100463f6ec212c76a5fad99579000505}{extractBit} (idQubit2, index);
+747                 bit3 = \hyperlink{qubits_8c_a100463f6ec212c76a5fad99579000505}{extractBit} (idQubit3, index);
+748                 \textcolor{keywordflow}{if} (!(bit1 && bit2 && bit3)) \{
+749                         probOfFilter+= stateVecReal[index]*stateVecReal[index] + stateVecImag[index]* 
       stateVecImag [index];
-744                 \}
-745         \}
-746         \textcolor{keywordflow}{return} probOfFilter;
-747 \}
+750                 \}
+751         \}
+752         \textcolor{keywordflow}{return} probOfFilter;
+753 \}
 \end{DoxyCode}
 \index{qubits.\+c@{qubits.\+c}!quad\+C\+Phase\+Gate@{quad\+C\+Phase\+Gate}}
 \index{quad\+C\+Phase\+Gate@{quad\+C\+Phase\+Gate}!qubits.\+c@{qubits.\+c}}
@@ -797,7 +812,7 @@ References extract\+Bit().
 )}\hypertarget{qubits_8c_ae86c95cfe7c7953d6c821c53f2ea8d05}{}\label{qubits_8c_ae86c95cfe7c7953d6c821c53f2ea8d05}
 
 
-Definition at line 527 of file qubits.\+c.
+Definition at line 533 of file qubits.\+c.
 
 
 
@@ -805,36 +820,36 @@ References extract\+Bit().
 
 
 \begin{DoxyCode}
-528 \{
-529         \textcolor{keywordtype}{long} \textcolor{keywordtype}{long} \textcolor{keywordtype}{int} index;
-530         \textcolor{keywordtype}{long} \textcolor{keywordtype}{long} \textcolor{keywordtype}{int} stateVecSize;
-531         \textcolor{keywordtype}{int} bit1, bit2, bit3, bit4;
-532 
-533         \textcolor{comment}{// ---------------------------------------------------------------- //}
-534         \textcolor{comment}{//            tests                                                 //}
-535         \textcolor{comment}{// ---------------------------------------------------------------- //}
-536         assert (idQubit1 >= 0 && idQubit2 >= 0 && idQubit1 < numQubits && idQubit2 < numQubits);
-537 
-538         stateVecSize = 1LL << numQubits;
-539 
-540 \textcolor{preprocessor}{# ifdef \_OPENMP}
-541 \textcolor{preprocessor}{# pragma omp parallel for \(\backslash\)}
-542 \textcolor{preprocessor}{        default  (none)                      \(\backslash\)}
-543 \textcolor{preprocessor}{        shared   (stateVecSize, stateVecReal,stateVecImag ) \(\backslash\)}
-544 \textcolor{preprocessor}{        private  (index,bit1,bit2,bit3,bit4)                   \(\backslash\)}
-545 \textcolor{preprocessor}{        schedule (static)}
-546 \textcolor{preprocessor}{# endif}
-547         \textcolor{keywordflow}{for} (index=0; index<stateVecSize; index++) \{
-548                 bit1 = \hyperlink{qubits_8c_a420b30092dc60ff17188e23361d547a5}{extractBit} (idQubit1, index);
-549                 bit2 = \hyperlink{qubits_8c_a420b30092dc60ff17188e23361d547a5}{extractBit} (idQubit2, index);
-550                 bit3 = \hyperlink{qubits_8c_a420b30092dc60ff17188e23361d547a5}{extractBit} (idQubit3, index);
-551                 bit4 = \hyperlink{qubits_8c_a420b30092dc60ff17188e23361d547a5}{extractBit} (idQubit4, index);
-552                 \textcolor{keywordflow}{if} (bit1 && bit2 && bit3 && bit4) \{
-553                         stateVecReal [index] = - stateVecReal [index];
-554                         stateVecImag [index] = - stateVecImag [index];
-555                 \}
-556         \}
-557 \}
+534 \{
+535         \textcolor{keywordtype}{long} \textcolor{keywordtype}{long} \textcolor{keywordtype}{int} index;
+536         \textcolor{keywordtype}{long} \textcolor{keywordtype}{long} \textcolor{keywordtype}{int} stateVecSize;
+537         \textcolor{keywordtype}{int} bit1, bit2, bit3, bit4;
+538 
+539         \textcolor{comment}{// ---------------------------------------------------------------- //}
+540         \textcolor{comment}{//            tests                                                 //}
+541         \textcolor{comment}{// ---------------------------------------------------------------- //}
+542         assert (idQubit1 >= 0 && idQubit2 >= 0 && idQubit1 < numQubits && idQubit2 < numQubits);
+543 
+544         stateVecSize = 1LL << numQubits;
+545 
+546 \textcolor{preprocessor}{# ifdef \_OPENMP}
+547 \textcolor{preprocessor}{# pragma omp parallel for \(\backslash\)}
+548 \textcolor{preprocessor}{        default  (none)                      \(\backslash\)}
+549 \textcolor{preprocessor}{        shared   (stateVecSize, stateVecReal,stateVecImag ) \(\backslash\)}
+550 \textcolor{preprocessor}{        private  (index,bit1,bit2,bit3,bit4)                   \(\backslash\)}
+551 \textcolor{preprocessor}{        schedule (static)}
+552 \textcolor{preprocessor}{# endif}
+553         \textcolor{keywordflow}{for} (index=0; index<stateVecSize; index++) \{
+554                 bit1 = \hyperlink{qubits_8c_a100463f6ec212c76a5fad99579000505}{extractBit} (idQubit1, index);
+555                 bit2 = \hyperlink{qubits_8c_a100463f6ec212c76a5fad99579000505}{extractBit} (idQubit2, index);
+556                 bit3 = \hyperlink{qubits_8c_a100463f6ec212c76a5fad99579000505}{extractBit} (idQubit3, index);
+557                 bit4 = \hyperlink{qubits_8c_a100463f6ec212c76a5fad99579000505}{extractBit} (idQubit4, index);
+558                 \textcolor{keywordflow}{if} (bit1 && bit2 && bit3 && bit4) \{
+559                         stateVecReal [index] = - stateVecReal [index];
+560                         stateVecImag [index] = - stateVecImag [index];
+561                 \}
+562         \}
+563 \}
 \end{DoxyCode}
 \index{qubits.\+c@{qubits.\+c}!report\+State@{report\+State}}
 \index{report\+State@{report\+State}!qubits.\+c@{qubits.\+c}}
@@ -866,7 +881,7 @@ For each node that the program runs on, a file \textquotesingle{}state\+\_\+rank
 \end{DoxyParams}
 
 
-Definition at line 89 of file qubits.\+c.
+Definition at line 90 of file qubits.\+c.
 
 
 
@@ -878,20 +893,20 @@ Referenced by main().
 
 
 \begin{DoxyCode}
-89                                        \{
-90         FILE *state;
-91         \textcolor{keywordtype}{char} filename[100];
-92         \textcolor{keywordtype}{long} \textcolor{keywordtype}{long} \textcolor{keywordtype}{int} index;
-93         sprintf(filename, \textcolor{stringliteral}{"state\_rank\_%d.csv"}, multiQubit.\hyperlink{structMultiQubit_ab10c88249fa3825d6227ceec01d37e37}{chunkId});
-94         state = fopen(filename, \textcolor{stringliteral}{"w"});
-95         \textcolor{keywordflow}{if} (multiQubit.\hyperlink{structMultiQubit_ab10c88249fa3825d6227ceec01d37e37}{chunkId}==0) fprintf(state, \textcolor{stringliteral}{"real, imag\(\backslash\)n"});
-96 
-97         \textcolor{keywordflow}{for}(index=0; index<multiQubit.\hyperlink{structMultiQubit_ae16f47d8b725c914fb7f66b6498d79db}{numAmps}; index++)\{
-98                 fprintf(state, \textcolor{stringliteral}{"%.12f, %.12f\(\backslash\)n"}, multiQubit.\hyperlink{structMultiQubit_a45483190d6b01ef6b2f98f2bec9ab94f}{stateVec}.
+90                                        \{
+91         FILE *state;
+92         \textcolor{keywordtype}{char} filename[100];
+93         \textcolor{keywordtype}{long} \textcolor{keywordtype}{long} \textcolor{keywordtype}{int} index;
+94         sprintf(filename, \textcolor{stringliteral}{"state\_rank\_%d.csv"}, multiQubit.\hyperlink{structMultiQubit_ab10c88249fa3825d6227ceec01d37e37}{chunkId});
+95         state = fopen(filename, \textcolor{stringliteral}{"w"});
+96         \textcolor{keywordflow}{if} (multiQubit.\hyperlink{structMultiQubit_ab10c88249fa3825d6227ceec01d37e37}{chunkId}==0) fprintf(state, \textcolor{stringliteral}{"real, imag\(\backslash\)n"});
+97 
+98         \textcolor{keywordflow}{for}(index=0; index<multiQubit.\hyperlink{structMultiQubit_ae16f47d8b725c914fb7f66b6498d79db}{numAmps}; index++)\{
+99                 fprintf(state, \textcolor{stringliteral}{"%.12f, %.12f\(\backslash\)n"}, multiQubit.\hyperlink{structMultiQubit_a45483190d6b01ef6b2f98f2bec9ab94f}{stateVec}.
       \hyperlink{structComplexArray_a1cf9fd31d6dce5ef618d2bcf3e4f8b69}{real}[index], multiQubit.\hyperlink{structMultiQubit_a45483190d6b01ef6b2f98f2bec9ab94f}{stateVec}.\hyperlink{structComplexArray_aa409fd14e1ff3e1fdcc53cc4eb77a7a8}{imag}[index]);
-99         \}
-100         fclose(state);
-101 \}
+100         \}
+101         fclose(state);
+102 \}
 \end{DoxyCode}
 \index{qubits.\+c@{qubits.\+c}!rotate\+Qubit\+Distributed@{rotate\+Qubit\+Distributed}}
 \index{rotate\+Qubit\+Distributed@{rotate\+Qubit\+Distributed}!qubits.\+c@{qubits.\+c}}
@@ -932,7 +947,7 @@ Qubits are zero-\/based and the the first qubit is the rightmost
 \end{DoxyParams}
 
 
-Definition at line 255 of file qubits.\+c.
+Definition at line 256 of file qubits.\+c.
 
 
 
@@ -944,62 +959,62 @@ Referenced by rotate\+Qubit().
 
 
 \begin{DoxyCode}
-260 \{
-261         \textcolor{comment}{// ----- temp variables}
-262         \textcolor{keywordtype}{double}   stateRealUp,stateRealLo,                             \textcolor{comment}{// storage for previous state values}
-263         stateImagUp,stateImagLo;                             \textcolor{comment}{// (used in updates)}
-264         \textcolor{comment}{// ----- temp variables}
-265         \textcolor{keywordtype}{long} \textcolor{keywordtype}{long} \textcolor{keywordtype}{int} thisTask;                                   \textcolor{comment}{// task based approach for expose loop
+261 \{
+262         \textcolor{comment}{// ----- temp variables}
+263         \textcolor{keywordtype}{double}   stateRealUp,stateRealLo,                             \textcolor{comment}{// storage for previous state values}
+264         stateImagUp,stateImagLo;                             \textcolor{comment}{// (used in updates)}
+265         \textcolor{comment}{// ----- temp variables}
+266         \textcolor{keywordtype}{long} \textcolor{keywordtype}{long} \textcolor{keywordtype}{int} thisTask;                                   \textcolor{comment}{// task based approach for expose loop
        with small granularity}
-266         \textcolor{keyword}{const} \textcolor{keywordtype}{long} \textcolor{keywordtype}{long} \textcolor{keywordtype}{int} numTasks=multiQubit.\hyperlink{structMultiQubit_ae16f47d8b725c914fb7f66b6498d79db}{numAmps};
-267 
-268         \textcolor{comment}{// (good for shared memory parallelism)}
-269 
-270         \textcolor{comment}{// ---------------------------------------------------------------- //}
-271         \textcolor{comment}{//            tests                                                 //}
-272         \textcolor{comment}{// ---------------------------------------------------------------- //}
-273         assert (rotQubit >= 0 && rotQubit < multiQubit.\hyperlink{structMultiQubit_ab5b9795bdc6fb5855e1974dcbbaeb36f}{numQubits});
-274 
-275         \textcolor{comment}{// ---------------------------------------------------------------- //}
-276         \textcolor{comment}{//            rotate                                                //}
-277         \textcolor{comment}{// ---------------------------------------------------------------- //}
-278 
-279         \textcolor{comment}{//}
-280         \textcolor{comment}{// --- task-based shared-memory parallel implementation}
-281         \textcolor{comment}{//}
-282         \textcolor{keywordtype}{double} rot1Real=rot1.\hyperlink{structComplex_a0138f5fe2b2c6180b8fcda77a7aa51c5}{real}, rot1Imag=rot1.\hyperlink{structComplex_a2bb90cc563599c3c8bdec9acf9ea40a6}{imag};
-283         \textcolor{keywordtype}{double} rot2Real=rot2.\hyperlink{structComplex_a0138f5fe2b2c6180b8fcda77a7aa51c5}{real}, rot2Imag=rot2.\hyperlink{structComplex_a2bb90cc563599c3c8bdec9acf9ea40a6}{imag};
-284         \textcolor{keywordtype}{double} *stateVecRealUp=stateVecUp.\hyperlink{structComplexArray_a1cf9fd31d6dce5ef618d2bcf3e4f8b69}{real}, *stateVecImagUp=stateVecUp.
+267         \textcolor{keyword}{const} \textcolor{keywordtype}{long} \textcolor{keywordtype}{long} \textcolor{keywordtype}{int} numTasks=multiQubit.\hyperlink{structMultiQubit_ae16f47d8b725c914fb7f66b6498d79db}{numAmps};
+268 
+269         \textcolor{comment}{// (good for shared memory parallelism)}
+270 
+271         \textcolor{comment}{// ---------------------------------------------------------------- //}
+272         \textcolor{comment}{//            tests                                                 //}
+273         \textcolor{comment}{// ---------------------------------------------------------------- //}
+274         assert (rotQubit >= 0 && rotQubit < multiQubit.\hyperlink{structMultiQubit_ab5b9795bdc6fb5855e1974dcbbaeb36f}{numQubits});
+275 
+276         \textcolor{comment}{// ---------------------------------------------------------------- //}
+277         \textcolor{comment}{//            rotate                                                //}
+278         \textcolor{comment}{// ---------------------------------------------------------------- //}
+279 
+280         \textcolor{comment}{//}
+281         \textcolor{comment}{// --- task-based shared-memory parallel implementation}
+282         \textcolor{comment}{//}
+283         \textcolor{keywordtype}{double} rot1Real=rot1.\hyperlink{structComplex_a0138f5fe2b2c6180b8fcda77a7aa51c5}{real}, rot1Imag=rot1.\hyperlink{structComplex_a2bb90cc563599c3c8bdec9acf9ea40a6}{imag};
+284         \textcolor{keywordtype}{double} rot2Real=rot2.\hyperlink{structComplex_a0138f5fe2b2c6180b8fcda77a7aa51c5}{real}, rot2Imag=rot2.\hyperlink{structComplex_a2bb90cc563599c3c8bdec9acf9ea40a6}{imag};
+285         \textcolor{keywordtype}{double} *stateVecRealUp=stateVecUp.\hyperlink{structComplexArray_a1cf9fd31d6dce5ef618d2bcf3e4f8b69}{real}, *stateVecImagUp=stateVecUp.
       \hyperlink{structComplexArray_aa409fd14e1ff3e1fdcc53cc4eb77a7a8}{imag};
-285         \textcolor{keywordtype}{double} *stateVecRealLo=stateVecLo.\hyperlink{structComplexArray_a1cf9fd31d6dce5ef618d2bcf3e4f8b69}{real}, *stateVecImagLo=stateVecLo.
+286         \textcolor{keywordtype}{double} *stateVecRealLo=stateVecLo.\hyperlink{structComplexArray_a1cf9fd31d6dce5ef618d2bcf3e4f8b69}{real}, *stateVecImagLo=stateVecLo.
       \hyperlink{structComplexArray_aa409fd14e1ff3e1fdcc53cc4eb77a7a8}{imag};
-286         \textcolor{keywordtype}{double} *stateVecRealOut=stateVecOut.\hyperlink{structComplexArray_a1cf9fd31d6dce5ef618d2bcf3e4f8b69}{real}, *stateVecImagOut=stateVecOut.
+287         \textcolor{keywordtype}{double} *stateVecRealOut=stateVecOut.\hyperlink{structComplexArray_a1cf9fd31d6dce5ef618d2bcf3e4f8b69}{real}, *stateVecImagOut=stateVecOut.
       \hyperlink{structComplexArray_aa409fd14e1ff3e1fdcc53cc4eb77a7a8}{imag};
-287 \textcolor{preprocessor}{# pragma omp parallel \(\backslash\)}
-288 \textcolor{preprocessor}{        default  (none) \(\backslash\)}
-289 \textcolor{preprocessor}{        shared  
+288 \textcolor{preprocessor}{# pragma omp parallel \(\backslash\)}
+289 \textcolor{preprocessor}{        default  (none) \(\backslash\)}
+290 \textcolor{preprocessor}{        shared  
        (stateVecRealUp,stateVecImagUp,stateVecRealLo,stateVecImagLo,stateVecRealOut,stateVecImagOut, \(\backslash\)}
-290 \textcolor{preprocessor}{                        rot1Real,rot1Imag, rot2Real,rot2Imag) \(\backslash\)}
-291 \textcolor{preprocessor}{        private  (thisTask,stateRealUp,stateImagUp,stateRealLo,stateImagLo)}
-292         \{
-293 \textcolor{preprocessor}{# pragma omp for \(\backslash\)}
-294 \textcolor{preprocessor}{                schedule (static)}
-295                 \textcolor{keywordflow}{for} (thisTask=0; thisTask<numTasks; thisTask++) \{
-296                         \textcolor{comment}{// store current state vector values in temp variables}
-297                         stateRealUp = stateVecRealUp[thisTask];
-298                         stateImagUp = stateVecImagUp[thisTask];
-299 
-300                         stateRealLo = stateVecRealLo[thisTask];
-301                         stateImagLo = stateVecImagLo[thisTask];
-302 
-303                         \textcolor{comment}{// state[indexUp] = alpha * state[indexUp] - conj(beta)  * state[indexLo]}
-304                         stateVecRealOut[thisTask] = rot1Real*stateRealUp - rot1Imag*stateImagUp + rot2Real*
+291 \textcolor{preprocessor}{                        rot1Real,rot1Imag, rot2Real,rot2Imag) \(\backslash\)}
+292 \textcolor{preprocessor}{        private  (thisTask,stateRealUp,stateImagUp,stateRealLo,stateImagLo)}
+293         \{
+294 \textcolor{preprocessor}{# pragma omp for \(\backslash\)}
+295 \textcolor{preprocessor}{                schedule (static)}
+296                 \textcolor{keywordflow}{for} (thisTask=0; thisTask<numTasks; thisTask++) \{
+297                         \textcolor{comment}{// store current state vector values in temp variables}
+298                         stateRealUp = stateVecRealUp[thisTask];
+299                         stateImagUp = stateVecImagUp[thisTask];
+300 
+301                         stateRealLo = stateVecRealLo[thisTask];
+302                         stateImagLo = stateVecImagLo[thisTask];
+303 
+304                         \textcolor{comment}{// state[indexUp] = alpha * state[indexUp] - conj(beta)  * state[indexLo]}
+305                         stateVecRealOut[thisTask] = rot1Real*stateRealUp - rot1Imag*stateImagUp + rot2Real*
       stateRealLo + rot2Imag*stateImagLo;
-305                         stateVecImagOut[thisTask] = rot1Real*stateImagUp + rot1Imag*stateRealUp + rot2Real*
+306                         stateVecImagOut[thisTask] = rot1Real*stateImagUp + rot1Imag*stateRealUp + rot2Real*
       stateImagLo - rot2Imag*stateRealLo;
-306                 \} \textcolor{comment}{// end for loop}
-307         \}
-308 \} \textcolor{comment}{// end of function definition}
+307                 \} \textcolor{comment}{// end for loop}
+308         \}
+309 \} \textcolor{comment}{// end of function definition}
 \end{DoxyCode}
 \index{qubits.\+c@{qubits.\+c}!rotate\+Qubit\+Local@{rotate\+Qubit\+Local}}
 \index{rotate\+Qubit\+Local@{rotate\+Qubit\+Local}!qubits.\+c@{qubits.\+c}}
@@ -1037,7 +1052,7 @@ Qubits are zero-\/based and the the first qubit is the rightmost
 \end{DoxyParams}
 
 
-Definition at line 157 of file qubits.\+c.
+Definition at line 158 of file qubits.\+c.
 
 
 
@@ -1049,90 +1064,90 @@ Referenced by rotate\+Qubit().
 
 
 \begin{DoxyCode}
-158 \{
-159         \textcolor{comment}{// ----- sizes}
-160         \textcolor{keywordtype}{long} \textcolor{keywordtype}{long} \textcolor{keywordtype}{int} sizeBlock,                                           \textcolor{comment}{// size of blocks}
-161         sizeHalfBlock;                                       \textcolor{comment}{// size of blocks halved}
-162         \textcolor{comment}{// ----- indices}
-163         \textcolor{keywordtype}{long} \textcolor{keywordtype}{long} \textcolor{keywordtype}{int} thisBlock,                                           \textcolor{comment}{// current block}
-164              indexUp,indexLo;                                     \textcolor{comment}{// current index and corresponding index
+159 \{
+160         \textcolor{comment}{// ----- sizes}
+161         \textcolor{keywordtype}{long} \textcolor{keywordtype}{long} \textcolor{keywordtype}{int} sizeBlock,                                           \textcolor{comment}{// size of blocks}
+162         sizeHalfBlock;                                       \textcolor{comment}{// size of blocks halved}
+163         \textcolor{comment}{// ----- indices}
+164         \textcolor{keywordtype}{long} \textcolor{keywordtype}{long} \textcolor{keywordtype}{int} thisBlock,                                           \textcolor{comment}{// current block}
+165              indexUp,indexLo;                                     \textcolor{comment}{// current index and corresponding index
        in lower half block}
-165 
-166         \textcolor{comment}{// ----- temp variables}
-167         \textcolor{keywordtype}{double}   stateRealUp,stateRealLo,                             \textcolor{comment}{// storage for previous state values}
-168                  stateImagUp,stateImagLo;                             \textcolor{comment}{// (used in updates)}
-169         \textcolor{comment}{// ----- temp variables}
-170         \textcolor{keywordtype}{long} \textcolor{keywordtype}{long} \textcolor{keywordtype}{int} thisTask;                                   \textcolor{comment}{// task based approach for expose loop
+166 
+167         \textcolor{comment}{// ----- temp variables}
+168         \textcolor{keywordtype}{double}   stateRealUp,stateRealLo,                             \textcolor{comment}{// storage for previous state values}
+169                  stateImagUp,stateImagLo;                             \textcolor{comment}{// (used in updates)}
+170         \textcolor{comment}{// ----- temp variables}
+171         \textcolor{keywordtype}{long} \textcolor{keywordtype}{long} \textcolor{keywordtype}{int} thisTask;                                   \textcolor{comment}{// task based approach for expose loop
        with small granularity}
-171         \textcolor{keyword}{const} \textcolor{keywordtype}{long} \textcolor{keywordtype}{long} \textcolor{keywordtype}{int} numTasks=multiQubit.\hyperlink{structMultiQubit_ae16f47d8b725c914fb7f66b6498d79db}{numAmps}>>1;
-172         \textcolor{comment}{// (good for shared memory parallelism)}
-173 
+172         \textcolor{keyword}{const} \textcolor{keywordtype}{long} \textcolor{keywordtype}{long} \textcolor{keywordtype}{int} numTasks=multiQubit.\hyperlink{structMultiQubit_ae16f47d8b725c914fb7f66b6498d79db}{numAmps}>>1;
+173         \textcolor{comment}{// (good for shared memory parallelism)}
 174 
-175         \textcolor{comment}{// ---------------------------------------------------------------- //}
-176         \textcolor{comment}{//            tests                                                 //}
-177         \textcolor{comment}{// ---------------------------------------------------------------- //}
-178         assert (rotQubit >= 0 && rotQubit < multiQubit.\hyperlink{structMultiQubit_ab5b9795bdc6fb5855e1974dcbbaeb36f}{numQubits});
-179 
+175 
+176         \textcolor{comment}{// ---------------------------------------------------------------- //}
+177         \textcolor{comment}{//            tests                                                 //}
+178         \textcolor{comment}{// ---------------------------------------------------------------- //}
+179         assert (rotQubit >= 0 && rotQubit < multiQubit.\hyperlink{structMultiQubit_ab5b9795bdc6fb5855e1974dcbbaeb36f}{numQubits});
 180 
-181         \textcolor{comment}{// ---------------------------------------------------------------- //}
-182         \textcolor{comment}{//            dimensions                                            //}
-183         \textcolor{comment}{// ---------------------------------------------------------------- //}
-184         sizeHalfBlock = 1LL << rotQubit;                               \textcolor{comment}{// size of blocks halved}
-185         sizeBlock     = 2LL * sizeHalfBlock;                           \textcolor{comment}{// size of blocks}
-186 
+181 
+182         \textcolor{comment}{// ---------------------------------------------------------------- //}
+183         \textcolor{comment}{//            dimensions                                            //}
+184         \textcolor{comment}{// ---------------------------------------------------------------- //}
+185         sizeHalfBlock = 1LL << rotQubit;                               \textcolor{comment}{// size of blocks halved}
+186         sizeBlock     = 2LL * sizeHalfBlock;                           \textcolor{comment}{// size of blocks}
 187 
-188         \textcolor{comment}{// ---------------------------------------------------------------- //}
-189         \textcolor{comment}{//            rotate                                                //}
-190         \textcolor{comment}{// ---------------------------------------------------------------- //}
-191 
-192         \textcolor{comment}{//}
-193         \textcolor{comment}{// --- task-based shared-memory parallel implementation}
-194         \textcolor{comment}{//}
-195         
-196         \textcolor{comment}{// Can't use multiQubit.stateVec as a private OMP var}
-197         \textcolor{keywordtype}{double} *stateVecReal = multiQubit.\hyperlink{structMultiQubit_a45483190d6b01ef6b2f98f2bec9ab94f}{stateVec}.\hyperlink{structComplexArray_a1cf9fd31d6dce5ef618d2bcf3e4f8b69}{real};
-198         \textcolor{keywordtype}{double} *stateVecImag = multiQubit.\hyperlink{structMultiQubit_a45483190d6b01ef6b2f98f2bec9ab94f}{stateVec}.\hyperlink{structComplexArray_aa409fd14e1ff3e1fdcc53cc4eb77a7a8}{imag};
-199         \textcolor{keywordtype}{double} alphaImag=alpha.\hyperlink{structComplex_a2bb90cc563599c3c8bdec9acf9ea40a6}{imag}, alphaReal=alpha.\hyperlink{structComplex_a0138f5fe2b2c6180b8fcda77a7aa51c5}{real};
-200         \textcolor{keywordtype}{double} betaImag=beta.\hyperlink{structComplex_a2bb90cc563599c3c8bdec9acf9ea40a6}{imag}, betaReal=beta.\hyperlink{structComplex_a0138f5fe2b2c6180b8fcda77a7aa51c5}{real};
-201 
-202 \textcolor{preprocessor}{# ifdef \_OPENMP}
-203 \textcolor{preprocessor}{# pragma omp parallel \(\backslash\)}
-204 \textcolor{preprocessor}{        default  (none) \(\backslash\)}
-205 \textcolor{preprocessor}{        shared   (sizeBlock,sizeHalfBlock, stateVecReal,stateVecImag, alphaReal,alphaImag,
+188 
+189         \textcolor{comment}{// ---------------------------------------------------------------- //}
+190         \textcolor{comment}{//            rotate                                                //}
+191         \textcolor{comment}{// ---------------------------------------------------------------- //}
+192 
+193         \textcolor{comment}{//}
+194         \textcolor{comment}{// --- task-based shared-memory parallel implementation}
+195         \textcolor{comment}{//}
+196         
+197         \textcolor{comment}{// Can't use multiQubit.stateVec as a private OMP var}
+198         \textcolor{keywordtype}{double} *stateVecReal = multiQubit.\hyperlink{structMultiQubit_a45483190d6b01ef6b2f98f2bec9ab94f}{stateVec}.\hyperlink{structComplexArray_a1cf9fd31d6dce5ef618d2bcf3e4f8b69}{real};
+199         \textcolor{keywordtype}{double} *stateVecImag = multiQubit.\hyperlink{structMultiQubit_a45483190d6b01ef6b2f98f2bec9ab94f}{stateVec}.\hyperlink{structComplexArray_aa409fd14e1ff3e1fdcc53cc4eb77a7a8}{imag};
+200         \textcolor{keywordtype}{double} alphaImag=alpha.\hyperlink{structComplex_a2bb90cc563599c3c8bdec9acf9ea40a6}{imag}, alphaReal=alpha.\hyperlink{structComplex_a0138f5fe2b2c6180b8fcda77a7aa51c5}{real};
+201         \textcolor{keywordtype}{double} betaImag=beta.\hyperlink{structComplex_a2bb90cc563599c3c8bdec9acf9ea40a6}{imag}, betaReal=beta.\hyperlink{structComplex_a0138f5fe2b2c6180b8fcda77a7aa51c5}{real};
+202 
+203 \textcolor{preprocessor}{# ifdef \_OPENMP}
+204 \textcolor{preprocessor}{# pragma omp parallel \(\backslash\)}
+205 \textcolor{preprocessor}{        default  (none) \(\backslash\)}
+206 \textcolor{preprocessor}{        shared   (sizeBlock,sizeHalfBlock, stateVecReal,stateVecImag, alphaReal,alphaImag,
        betaReal,betaImag) \(\backslash\)}
-206 \textcolor{preprocessor}{        private  (thisTask,thisBlock ,indexUp,indexLo, stateRealUp,stateImagUp,stateRealLo,stateImagLo) }
-207 \textcolor{preprocessor}{# endif}
-208         \{
-209 \textcolor{preprocessor}{# ifdef \_OPENMP}
-210 \textcolor{preprocessor}{# pragma omp for \(\backslash\)}
-211 \textcolor{preprocessor}{                schedule (static)}
-212 \textcolor{preprocessor}{# endif}
-213                 \textcolor{keywordflow}{for} (thisTask=0; thisTask<numTasks; thisTask++) \{
-214 
-215                         thisBlock   = thisTask / sizeHalfBlock;
-216                         indexUp     = thisBlock*sizeBlock + thisTask%sizeHalfBlock;
-217                         indexLo     = indexUp + sizeHalfBlock;
-218 
-219                         \textcolor{comment}{// store current state vector values in temp variables}
-220                         stateRealUp = stateVecReal[indexUp];
-221                         stateImagUp = stateVecImag[indexUp];
-222 
-223                         stateRealLo = stateVecReal[indexLo];
-224                         stateImagLo = stateVecImag[indexLo];
-225 
-226                         \textcolor{comment}{// state[indexUp] = alpha * state[indexUp] - conj(beta)  * state[indexLo]}
-227                         stateVecReal[indexUp] = alphaReal*stateRealUp - alphaImag*stateImagUp - betaReal*
+207 \textcolor{preprocessor}{        private  (thisTask,thisBlock ,indexUp,indexLo, stateRealUp,stateImagUp,stateRealLo,stateImagLo) }
+208 \textcolor{preprocessor}{# endif}
+209         \{
+210 \textcolor{preprocessor}{# ifdef \_OPENMP}
+211 \textcolor{preprocessor}{# pragma omp for \(\backslash\)}
+212 \textcolor{preprocessor}{                schedule (static)}
+213 \textcolor{preprocessor}{# endif}
+214                 \textcolor{keywordflow}{for} (thisTask=0; thisTask<numTasks; thisTask++) \{
+215 
+216                         thisBlock   = thisTask / sizeHalfBlock;
+217                         indexUp     = thisBlock*sizeBlock + thisTask%sizeHalfBlock;
+218                         indexLo     = indexUp + sizeHalfBlock;
+219 
+220                         \textcolor{comment}{// store current state vector values in temp variables}
+221                         stateRealUp = stateVecReal[indexUp];
+222                         stateImagUp = stateVecImag[indexUp];
+223 
+224                         stateRealLo = stateVecReal[indexLo];
+225                         stateImagLo = stateVecImag[indexLo];
+226 
+227                         \textcolor{comment}{// state[indexUp] = alpha * state[indexUp] - conj(beta)  * state[indexLo]}
+228                         stateVecReal[indexUp] = alphaReal*stateRealUp - alphaImag*stateImagUp - betaReal*
       stateRealLo - betaImag*stateImagLo;
-228                         stateVecImag[indexUp] = alphaReal*stateImagUp + alphaImag*stateRealUp - betaReal*
+229                         stateVecImag[indexUp] = alphaReal*stateImagUp + alphaImag*stateRealUp - betaReal*
       stateImagLo + betaImag*stateRealLo;
-229 
-230                         \textcolor{comment}{// state[indexLo] = beta  * state[indexUp] + conj(alpha) * state[indexLo]}
-231                         stateVecReal[indexLo] = betaReal*stateRealUp - betaImag*stateImagUp + alphaReal*
+230 
+231                         \textcolor{comment}{// state[indexLo] = beta  * state[indexUp] + conj(alpha) * state[indexLo]}
+232                         stateVecReal[indexLo] = betaReal*stateRealUp - betaImag*stateImagUp + alphaReal*
       stateRealLo + alphaImag*stateImagLo;
-232                         stateVecImag[indexLo] = betaReal*stateImagUp + betaImag*stateRealUp + alphaReal*
+233                         stateVecImag[indexLo] = betaReal*stateImagUp + betaImag*stateRealUp + alphaReal*
       stateImagLo - alphaImag*stateRealLo;
-233                 \} \textcolor{comment}{// end for loop}
-234         \}
-235 
-236 \} \textcolor{comment}{// end of function definition}
+234                 \} \textcolor{comment}{// end for loop}
+235         \}
+236 
+237 \} \textcolor{comment}{// end of function definition}
 \end{DoxyCode}

@@ -17,9 +17,12 @@ Without git: download the directory manually
 
 'Clone or download' > 'Download zip'
 
-In the root directory, run a simple 8 qubit example on one node with
+In the root directory, run a simple 8 qubit example on one node:
+
+The default compiler is the gnu compiler. To change to the intell compiler, edit the COMMON CONFIG section at the beginning of makefile in the root directory. Change COMPILER=GCC to COMPILER=ICC. Then run:
 
 ```
+make clean
 make
 ./demo 8
 ```

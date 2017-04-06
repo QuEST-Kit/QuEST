@@ -189,11 +189,11 @@ Allocate space for state vector of probability amplitudes, including space for t
 \end{DoxyParams}
 
 
-Definition at line 22 of file qubits.\+c.
+Definition at line 24 of file qubits.\+c.
 
 
 
-References Multi\+Qubit\+::chunk\+Id, Complex\+Array\+::imag, init\+State\+Vec(), Multi\+Qubit\+::num\+Amps, Multi\+Qubit\+::num\+Chunks, Multi\+Qubit\+::num\+Qubits, Q\+U\+E\+S\+T\+Env\+::num\+Ranks, Multi\+Qubit\+::pair\+State\+Vec, Q\+U\+E\+S\+T\+Env\+::rank, Complex\+Array\+::real, and Multi\+Qubit\+::state\+Vec.
+References Multi\+Qubit\+::chunk\+Id, Complex\+Array\+::imag, Multi\+Qubit\+::num\+Amps, Multi\+Qubit\+::num\+Chunks, Multi\+Qubit\+::num\+Qubits, Q\+U\+E\+S\+T\+Env\+::num\+Ranks, Multi\+Qubit\+::pair\+State\+Vec, Q\+U\+E\+S\+T\+Env\+::rank, Complex\+Array\+::real, and Multi\+Qubit\+::state\+Vec.
 
 
 
@@ -201,43 +201,42 @@ Referenced by main().
 
 
 \begin{DoxyCode}
-23 \{
-24         \textcolor{keywordtype}{long} \textcolor{keywordtype}{long} \textcolor{keywordtype}{int} numAmps = 1L << numQubits;
-25         \textcolor{keywordtype}{long} \textcolor{keywordtype}{long} \textcolor{keywordtype}{int} numAmpsPerRank = numAmps/env.\hyperlink{structQUESTEnv_ab9d9ce82e2d5f1b39aa9efc3accb3742}{numRanks};
-26 
-27         multiQubit->\hyperlink{structMultiQubit_a45483190d6b01ef6b2f98f2bec9ab94f}{stateVec}.\hyperlink{structComplexArray_a1cf9fd31d6dce5ef618d2bcf3e4f8b69}{real} = malloc(numAmpsPerRank * \textcolor{keyword}{sizeof}(multiQubit->
+25 \{
+26         \textcolor{keywordtype}{long} \textcolor{keywordtype}{long} \textcolor{keywordtype}{int} numAmps = 1L << numQubits;
+27         \textcolor{keywordtype}{long} \textcolor{keywordtype}{long} \textcolor{keywordtype}{int} numAmpsPerRank = numAmps/env.\hyperlink{structQUESTEnv_ab9d9ce82e2d5f1b39aa9efc3accb3742}{numRanks};
+28 
+29         multiQubit->\hyperlink{structMultiQubit_a45483190d6b01ef6b2f98f2bec9ab94f}{stateVec}.\hyperlink{structComplexArray_a1cf9fd31d6dce5ef618d2bcf3e4f8b69}{real} = malloc(numAmpsPerRank * \textcolor{keyword}{sizeof}(multiQubit->
       \hyperlink{structMultiQubit_a45483190d6b01ef6b2f98f2bec9ab94f}{stateVec}.\hyperlink{structComplexArray_a1cf9fd31d6dce5ef618d2bcf3e4f8b69}{real}));
-28         multiQubit->\hyperlink{structMultiQubit_a45483190d6b01ef6b2f98f2bec9ab94f}{stateVec}.\hyperlink{structComplexArray_aa409fd14e1ff3e1fdcc53cc4eb77a7a8}{imag} = malloc(numAmpsPerRank * \textcolor{keyword}{sizeof}(multiQubit->
+30         multiQubit->\hyperlink{structMultiQubit_a45483190d6b01ef6b2f98f2bec9ab94f}{stateVec}.\hyperlink{structComplexArray_aa409fd14e1ff3e1fdcc53cc4eb77a7a8}{imag} = malloc(numAmpsPerRank * \textcolor{keyword}{sizeof}(multiQubit->
       \hyperlink{structMultiQubit_a45483190d6b01ef6b2f98f2bec9ab94f}{stateVec}.\hyperlink{structComplexArray_aa409fd14e1ff3e1fdcc53cc4eb77a7a8}{imag}));
-29         \textcolor{keywordflow}{if} (env.\hyperlink{structQUESTEnv_ab9d9ce82e2d5f1b39aa9efc3accb3742}{numRanks}>1)\{
-30                 multiQubit->\hyperlink{structMultiQubit_a76f7db4eab52d2b30f58f973ada809c5}{pairStateVec}.\hyperlink{structComplexArray_a1cf9fd31d6dce5ef618d2bcf3e4f8b69}{real} = malloc(numAmpsPerRank * \textcolor{keyword}{sizeof}(multiQubit->
+31         \textcolor{keywordflow}{if} (env.\hyperlink{structQUESTEnv_ab9d9ce82e2d5f1b39aa9efc3accb3742}{numRanks}>1)\{
+32                 multiQubit->\hyperlink{structMultiQubit_a76f7db4eab52d2b30f58f973ada809c5}{pairStateVec}.\hyperlink{structComplexArray_a1cf9fd31d6dce5ef618d2bcf3e4f8b69}{real} = malloc(numAmpsPerRank * \textcolor{keyword}{sizeof}(multiQubit->
       \hyperlink{structMultiQubit_a76f7db4eab52d2b30f58f973ada809c5}{pairStateVec}.\hyperlink{structComplexArray_a1cf9fd31d6dce5ef618d2bcf3e4f8b69}{real}));
-31                 multiQubit->\hyperlink{structMultiQubit_a76f7db4eab52d2b30f58f973ada809c5}{pairStateVec}.\hyperlink{structComplexArray_aa409fd14e1ff3e1fdcc53cc4eb77a7a8}{imag} = malloc(numAmpsPerRank * \textcolor{keyword}{sizeof}(multiQubit->
+33                 multiQubit->\hyperlink{structMultiQubit_a76f7db4eab52d2b30f58f973ada809c5}{pairStateVec}.\hyperlink{structComplexArray_aa409fd14e1ff3e1fdcc53cc4eb77a7a8}{imag} = malloc(numAmpsPerRank * \textcolor{keyword}{sizeof}(multiQubit->
       \hyperlink{structMultiQubit_a76f7db4eab52d2b30f58f973ada809c5}{pairStateVec}.\hyperlink{structComplexArray_aa409fd14e1ff3e1fdcc53cc4eb77a7a8}{imag}));
-32         \}
-33 
-34         \textcolor{keywordflow}{if} ( (!(multiQubit->\hyperlink{structMultiQubit_a45483190d6b01ef6b2f98f2bec9ab94f}{stateVec}.\hyperlink{structComplexArray_a1cf9fd31d6dce5ef618d2bcf3e4f8b69}{real}) || !(multiQubit->\hyperlink{structMultiQubit_a45483190d6b01ef6b2f98f2bec9ab94f}{stateVec}.
+34         \}
+35 
+36         \textcolor{keywordflow}{if} ( (!(multiQubit->\hyperlink{structMultiQubit_a45483190d6b01ef6b2f98f2bec9ab94f}{stateVec}.\hyperlink{structComplexArray_a1cf9fd31d6dce5ef618d2bcf3e4f8b69}{real}) || !(multiQubit->\hyperlink{structMultiQubit_a45483190d6b01ef6b2f98f2bec9ab94f}{stateVec}.
       \hyperlink{structComplexArray_aa409fd14e1ff3e1fdcc53cc4eb77a7a8}{imag}))
-35                  && numAmpsPerRank ) \{
-36                 printf(\textcolor{stringliteral}{"Could not allocate memory!"});
-37                 exit (EXIT\_FAILURE);
-38         \}
-39 
-40         \textcolor{keywordflow}{if} ( env.\hyperlink{structQUESTEnv_ab9d9ce82e2d5f1b39aa9efc3accb3742}{numRanks}>1 && (!(multiQubit->\hyperlink{structMultiQubit_a76f7db4eab52d2b30f58f973ada809c5}{pairStateVec}.
+37                  && numAmpsPerRank ) \{
+38                 printf(\textcolor{stringliteral}{"Could not allocate memory!"});
+39                 exit (EXIT\_FAILURE);
+40         \}
+41 
+42         \textcolor{keywordflow}{if} ( env.\hyperlink{structQUESTEnv_ab9d9ce82e2d5f1b39aa9efc3accb3742}{numRanks}>1 && (!(multiQubit->\hyperlink{structMultiQubit_a76f7db4eab52d2b30f58f973ada809c5}{pairStateVec}.
       \hyperlink{structComplexArray_a1cf9fd31d6dce5ef618d2bcf3e4f8b69}{real}) || !(multiQubit->\hyperlink{structMultiQubit_a76f7db4eab52d2b30f58f973ada809c5}{pairStateVec}.\hyperlink{structComplexArray_aa409fd14e1ff3e1fdcc53cc4eb77a7a8}{imag}))
-41                  && numAmpsPerRank ) \{
-42                 printf(\textcolor{stringliteral}{"Could not allocate memory!"});
-43                 exit (EXIT\_FAILURE);
-44         \}
-45 
-46         multiQubit->\hyperlink{structMultiQubit_ab5b9795bdc6fb5855e1974dcbbaeb36f}{numQubits} = numQubits;
-47         multiQubit->\hyperlink{structMultiQubit_ae16f47d8b725c914fb7f66b6498d79db}{numAmps} = numAmpsPerRank;
-48         multiQubit->\hyperlink{structMultiQubit_ab10c88249fa3825d6227ceec01d37e37}{chunkId} = env.\hyperlink{structQUESTEnv_a1bdb6d425a2ce6a468f93929c0b26d73}{rank};
-49         multiQubit->\hyperlink{structMultiQubit_acd43f2f57991709c9e94f73662c972b2}{numChunks} = env.\hyperlink{structQUESTEnv_ab9d9ce82e2d5f1b39aa9efc3accb3742}{numRanks};
-50 
-51         \hyperlink{qubits_8c_a492d10377278f685c7a1fabc3ee60623}{initStateVec}(multiQubit);
-52         \textcolor{keywordflow}{if} (env.\hyperlink{structQUESTEnv_a1bdb6d425a2ce6a468f93929c0b26d73}{rank}==0) printf(\textcolor{stringliteral}{"Number of amps per rank is %ld.\(\backslash\)n"}, numAmpsPerRank);
-53 \}
+43                  && numAmpsPerRank ) \{
+44                 printf(\textcolor{stringliteral}{"Could not allocate memory!"});
+45                 exit (EXIT\_FAILURE);
+46         \}
+47 
+48         multiQubit->\hyperlink{structMultiQubit_ab5b9795bdc6fb5855e1974dcbbaeb36f}{numQubits} = numQubits;
+49         multiQubit->\hyperlink{structMultiQubit_ae16f47d8b725c914fb7f66b6498d79db}{numAmps} = numAmpsPerRank;
+50         multiQubit->\hyperlink{structMultiQubit_ab10c88249fa3825d6227ceec01d37e37}{chunkId} = env.\hyperlink{structQUESTEnv_a1bdb6d425a2ce6a468f93929c0b26d73}{rank};
+51         multiQubit->\hyperlink{structMultiQubit_acd43f2f57991709c9e94f73662c972b2}{numChunks} = env.\hyperlink{structQUESTEnv_ab9d9ce82e2d5f1b39aa9efc3accb3742}{numRanks};
+52 
+53         \textcolor{keywordflow}{if} (env.\hyperlink{structQUESTEnv_a1bdb6d425a2ce6a468f93929c0b26d73}{rank}==0) printf(\textcolor{stringliteral}{"Number of amps per rank is %ld.\(\backslash\)n"}, numAmpsPerRank);
+54 \}
 \end{DoxyCode}
 \index{qubits.\+h@{qubits.\+h}!destroy\+Multi\+Qubit@{destroy\+Multi\+Qubit}}
 \index{destroy\+Multi\+Qubit@{destroy\+Multi\+Qubit}!qubits.\+h@{qubits.\+h}}
@@ -260,7 +259,7 @@ Deallocate a \hyperlink{structMultiQubit}{Multi\+Qubit} object representing a se
 \end{DoxyParams}
 
 
-Definition at line 60 of file qubits.\+c.
+Definition at line 61 of file qubits.\+c.
 
 
 
@@ -272,14 +271,14 @@ Referenced by main().
 
 
 \begin{DoxyCode}
-60                                                            \{
-61         free(multiQubit.\hyperlink{structMultiQubit_a45483190d6b01ef6b2f98f2bec9ab94f}{stateVec}.\hyperlink{structComplexArray_a1cf9fd31d6dce5ef618d2bcf3e4f8b69}{real});
-62         free(multiQubit.\hyperlink{structMultiQubit_a45483190d6b01ef6b2f98f2bec9ab94f}{stateVec}.\hyperlink{structComplexArray_aa409fd14e1ff3e1fdcc53cc4eb77a7a8}{imag});
-63         \textcolor{keywordflow}{if} (env.\hyperlink{structQUESTEnv_ab9d9ce82e2d5f1b39aa9efc3accb3742}{numRanks}>1)\{
-64                 free(multiQubit.\hyperlink{structMultiQubit_a76f7db4eab52d2b30f58f973ada809c5}{pairStateVec}.\hyperlink{structComplexArray_a1cf9fd31d6dce5ef618d2bcf3e4f8b69}{real});
-65                 free(multiQubit.\hyperlink{structMultiQubit_a76f7db4eab52d2b30f58f973ada809c5}{pairStateVec}.\hyperlink{structComplexArray_aa409fd14e1ff3e1fdcc53cc4eb77a7a8}{imag});
-66         \}
-67 \}
+61                                                            \{
+62         free(multiQubit.\hyperlink{structMultiQubit_a45483190d6b01ef6b2f98f2bec9ab94f}{stateVec}.\hyperlink{structComplexArray_a1cf9fd31d6dce5ef618d2bcf3e4f8b69}{real});
+63         free(multiQubit.\hyperlink{structMultiQubit_a45483190d6b01ef6b2f98f2bec9ab94f}{stateVec}.\hyperlink{structComplexArray_aa409fd14e1ff3e1fdcc53cc4eb77a7a8}{imag});
+64         \textcolor{keywordflow}{if} (env.\hyperlink{structQUESTEnv_ab9d9ce82e2d5f1b39aa9efc3accb3742}{numRanks}>1)\{
+65                 free(multiQubit.\hyperlink{structMultiQubit_a76f7db4eab52d2b30f58f973ada809c5}{pairStateVec}.\hyperlink{structComplexArray_a1cf9fd31d6dce5ef618d2bcf3e4f8b69}{real});
+66                 free(multiQubit.\hyperlink{structMultiQubit_a76f7db4eab52d2b30f58f973ada809c5}{pairStateVec}.\hyperlink{structComplexArray_aa409fd14e1ff3e1fdcc53cc4eb77a7a8}{imag});
+67         \}
+68 \}
 \end{DoxyCode}
 \index{qubits.\+h@{qubits.\+h}!find\+Probability\+Of\+Zero@{find\+Probability\+Of\+Zero}}
 \index{find\+Probability\+Of\+Zero@{find\+Probability\+Of\+Zero}!qubits.\+h@{qubits.\+h}}
@@ -374,7 +373,7 @@ Initialise the state vector of probability amplitudes for a set of qubits to the
 \end{DoxyParams}
 
 
-Definition at line 107 of file qubits.\+c.
+Definition at line 108 of file qubits.\+c.
 
 
 
@@ -382,45 +381,45 @@ References Multi\+Qubit\+::chunk\+Id, D\+E\+B\+UG, Complex\+Array\+::imag, Multi
 
 
 
-Referenced by create\+Multi\+Qubit(), and main().
+Referenced by main().
 
 
 \begin{DoxyCode}
-108 \{
-109         \textcolor{keywordtype}{long} \textcolor{keywordtype}{long} \textcolor{keywordtype}{int} stateVecSize;
-110         \textcolor{keywordtype}{long} \textcolor{keywordtype}{long} \textcolor{keywordtype}{int} index;
-111 
-112         \textcolor{comment}{// dimension of the state vector}
-113         stateVecSize = multiQubit->\hyperlink{structMultiQubit_ae16f47d8b725c914fb7f66b6498d79db}{numAmps};
-114 
-115         \textcolor{keywordflow}{if} (\hyperlink{qubits_8c_ad72dbcf6d0153db1b8d8a58001feed83}{DEBUG}) printf(\textcolor{stringliteral}{"stateVecSize=%Ld   now performing init with only one thread:\(\backslash\)n"},
+109 \{
+110         \textcolor{keywordtype}{long} \textcolor{keywordtype}{long} \textcolor{keywordtype}{int} stateVecSize;
+111         \textcolor{keywordtype}{long} \textcolor{keywordtype}{long} \textcolor{keywordtype}{int} index;
+112 
+113         \textcolor{comment}{// dimension of the state vector}
+114         stateVecSize = multiQubit->\hyperlink{structMultiQubit_ae16f47d8b725c914fb7f66b6498d79db}{numAmps};
+115 
+116         \textcolor{keywordflow}{if} (\hyperlink{qubits_8c_ad72dbcf6d0153db1b8d8a58001feed83}{DEBUG}) printf(\textcolor{stringliteral}{"stateVecSize=%Ld   now performing init with only one thread:\(\backslash\)n"},
       stateVecSize);
-116 
-117         \textcolor{comment}{// Can't use multiQubit->stateVec as a private OMP var}
-118         \textcolor{keywordtype}{double} *stateVecReal = multiQubit->\hyperlink{structMultiQubit_a45483190d6b01ef6b2f98f2bec9ab94f}{stateVec}.\hyperlink{structComplexArray_a1cf9fd31d6dce5ef618d2bcf3e4f8b69}{real};
-119         \textcolor{keywordtype}{double} *stateVecImag = multiQubit->\hyperlink{structMultiQubit_a45483190d6b01ef6b2f98f2bec9ab94f}{stateVec}.\hyperlink{structComplexArray_aa409fd14e1ff3e1fdcc53cc4eb77a7a8}{imag};
-120 
-121         \textcolor{comment}{// initialise the state to |0000..0000>}
-122 \textcolor{preprocessor}{# ifdef \_OPENMP}
-123 \textcolor{preprocessor}{# pragma omp parallel for \(\backslash\)}
-124 \textcolor{preprocessor}{        default  (none) \(\backslash\)}
-125 \textcolor{preprocessor}{        shared   (stateVecSize, stateVecReal, stateVecImag) \(\backslash\)}
-126 \textcolor{preprocessor}{        private  (index) \(\backslash\)}
-127 \textcolor{preprocessor}{        schedule (static)}
-128 \textcolor{preprocessor}{# endif}
-129         \textcolor{keywordflow}{for} (index=0; index<stateVecSize; index++) \{
-130                 stateVecReal[index] = 0.0;
-131                 stateVecImag[index] = 0.0;
-132         \}
-133 
-134         \textcolor{keywordflow}{if} (multiQubit->\hyperlink{structMultiQubit_ab10c88249fa3825d6227ceec01d37e37}{chunkId}==0)\{
-135                 \textcolor{comment}{// zero state |0000..0000> has probability 1}
-136                 stateVecReal[0] = 1.0;
-137                 stateVecImag[0] = 0.0;
-138         \}
-139 
-140         \textcolor{keywordflow}{if} (\hyperlink{qubits_8c_ad72dbcf6d0153db1b8d8a58001feed83}{DEBUG}) printf(\textcolor{stringliteral}{"COMPLETED INIT\(\backslash\)n"});
-141 \}
+117 
+118         \textcolor{comment}{// Can't use multiQubit->stateVec as a private OMP var}
+119         \textcolor{keywordtype}{double} *stateVecReal = multiQubit->\hyperlink{structMultiQubit_a45483190d6b01ef6b2f98f2bec9ab94f}{stateVec}.\hyperlink{structComplexArray_a1cf9fd31d6dce5ef618d2bcf3e4f8b69}{real};
+120         \textcolor{keywordtype}{double} *stateVecImag = multiQubit->\hyperlink{structMultiQubit_a45483190d6b01ef6b2f98f2bec9ab94f}{stateVec}.\hyperlink{structComplexArray_aa409fd14e1ff3e1fdcc53cc4eb77a7a8}{imag};
+121 
+122         \textcolor{comment}{// initialise the state to |0000..0000>}
+123 \textcolor{preprocessor}{# ifdef \_OPENMP}
+124 \textcolor{preprocessor}{# pragma omp parallel for \(\backslash\)}
+125 \textcolor{preprocessor}{        default  (none) \(\backslash\)}
+126 \textcolor{preprocessor}{        shared   (stateVecSize, stateVecReal, stateVecImag) \(\backslash\)}
+127 \textcolor{preprocessor}{        private  (index) \(\backslash\)}
+128 \textcolor{preprocessor}{        schedule (static)}
+129 \textcolor{preprocessor}{# endif}
+130         \textcolor{keywordflow}{for} (index=0; index<stateVecSize; index++) \{
+131                 stateVecReal[index] = 0.0;
+132                 stateVecImag[index] = 0.0;
+133         \}
+134 
+135         \textcolor{keywordflow}{if} (multiQubit->\hyperlink{structMultiQubit_ab10c88249fa3825d6227ceec01d37e37}{chunkId}==0)\{
+136                 \textcolor{comment}{// zero state |0000..0000> has probability 1}
+137                 stateVecReal[0] = 1.0;
+138                 stateVecImag[0] = 0.0;
+139         \}
+140 
+141         \textcolor{keywordflow}{if} (\hyperlink{qubits_8c_ad72dbcf6d0153db1b8d8a58001feed83}{DEBUG}) printf(\textcolor{stringliteral}{"COMPLETED INIT\(\backslash\)n"});
+142 \}
 \end{DoxyCode}
 \index{qubits.\+h@{qubits.\+h}!report\+State@{report\+State}}
 \index{report\+State@{report\+State}!qubits.\+h@{qubits.\+h}}
@@ -452,7 +451,7 @@ For each node that the program runs on, a file \textquotesingle{}state\+\_\+rank
 \end{DoxyParams}
 
 
-Definition at line 89 of file qubits.\+c.
+Definition at line 90 of file qubits.\+c.
 
 
 
@@ -464,20 +463,20 @@ Referenced by main().
 
 
 \begin{DoxyCode}
-89                                        \{
-90         FILE *state;
-91         \textcolor{keywordtype}{char} filename[100];
-92         \textcolor{keywordtype}{long} \textcolor{keywordtype}{long} \textcolor{keywordtype}{int} index;
-93         sprintf(filename, \textcolor{stringliteral}{"state\_rank\_%d.csv"}, multiQubit.\hyperlink{structMultiQubit_ab10c88249fa3825d6227ceec01d37e37}{chunkId});
-94         state = fopen(filename, \textcolor{stringliteral}{"w"});
-95         \textcolor{keywordflow}{if} (multiQubit.\hyperlink{structMultiQubit_ab10c88249fa3825d6227ceec01d37e37}{chunkId}==0) fprintf(state, \textcolor{stringliteral}{"real, imag\(\backslash\)n"});
-96 
-97         \textcolor{keywordflow}{for}(index=0; index<multiQubit.\hyperlink{structMultiQubit_ae16f47d8b725c914fb7f66b6498d79db}{numAmps}; index++)\{
-98                 fprintf(state, \textcolor{stringliteral}{"%.12f, %.12f\(\backslash\)n"}, multiQubit.\hyperlink{structMultiQubit_a45483190d6b01ef6b2f98f2bec9ab94f}{stateVec}.
+90                                        \{
+91         FILE *state;
+92         \textcolor{keywordtype}{char} filename[100];
+93         \textcolor{keywordtype}{long} \textcolor{keywordtype}{long} \textcolor{keywordtype}{int} index;
+94         sprintf(filename, \textcolor{stringliteral}{"state\_rank\_%d.csv"}, multiQubit.\hyperlink{structMultiQubit_ab10c88249fa3825d6227ceec01d37e37}{chunkId});
+95         state = fopen(filename, \textcolor{stringliteral}{"w"});
+96         \textcolor{keywordflow}{if} (multiQubit.\hyperlink{structMultiQubit_ab10c88249fa3825d6227ceec01d37e37}{chunkId}==0) fprintf(state, \textcolor{stringliteral}{"real, imag\(\backslash\)n"});
+97 
+98         \textcolor{keywordflow}{for}(index=0; index<multiQubit.\hyperlink{structMultiQubit_ae16f47d8b725c914fb7f66b6498d79db}{numAmps}; index++)\{
+99                 fprintf(state, \textcolor{stringliteral}{"%.12f, %.12f\(\backslash\)n"}, multiQubit.\hyperlink{structMultiQubit_a45483190d6b01ef6b2f98f2bec9ab94f}{stateVec}.
       \hyperlink{structComplexArray_a1cf9fd31d6dce5ef618d2bcf3e4f8b69}{real}[index], multiQubit.\hyperlink{structMultiQubit_a45483190d6b01ef6b2f98f2bec9ab94f}{stateVec}.\hyperlink{structComplexArray_aa409fd14e1ff3e1fdcc53cc4eb77a7a8}{imag}[index]);
-99         \}
-100         fclose(state);
-101 \}
+100         \}
+101         fclose(state);
+102 \}
 \end{DoxyCode}
 \index{qubits.\+h@{qubits.\+h}!rotate\+Qubit@{rotate\+Qubit}}
 \index{rotate\+Qubit@{rotate\+Qubit}!qubits.\+h@{qubits.\+h}}
