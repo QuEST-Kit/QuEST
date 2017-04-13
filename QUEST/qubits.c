@@ -717,8 +717,6 @@ double measureInZeroDistributedRenorm (MultiQubit multiQubit, const int measureQ
 
 void measureInZeroDistributedSetZero(MultiQubit multiQubit, const int measureQubit)
 {
-	// ----- measured probability
-	double   totalProbability;                                    // probability (returned) value
 	// ----- temp variables
 	long long int thisTask;                                   // task based approach for expose loop with small granularity
 	long long int numTasks=multiQubit.numAmps;
@@ -745,8 +743,7 @@ void measureInZeroDistributedSetZero(MultiQubit multiQubit, const int measureQub
 # ifdef _OPENMP
 # pragma omp parallel \
 	shared    (numTasks,stateVecReal,stateVecImag) \
-	private   (thisTask) \
-	reduction ( +:totalProbability )
+	private   (thisTask)
 # endif
 	{
 # ifdef _OPENMP
@@ -763,9 +760,8 @@ void measureInZeroDistributedSetZero(MultiQubit multiQubit, const int measureQub
 // filterOut111 updates the state according to this scenario: we ask "are these 3 qubits in 111" and the answer is "no"
 //              the function returns the probability of this outcome (if zero, it will exit with error) 
 
-double filterOut111 (const int numQubits, const int idQubit1, const int idQubit2, const int idQubit3,
-		double *restrict stateVecReal,
-		double *restrict stateVecImag)
+void filterOut111Local(MultiQubit multiQubit, const int idQubit1, const int idQubit2, const int idQubit3,
+		const double probOfFilter)
 {
 	long long int index;
 	long long int stateVecSize;
@@ -774,33 +770,14 @@ double filterOut111 (const int numQubits, const int idQubit1, const int idQubit2
 	// ---------------------------------------------------------------- //
 	//            tests                                                 //
 	// ---------------------------------------------------------------- //
-	assert (idQubit1 >= 0 && idQubit2 >= 0 && idQubit1 < numQubits && idQubit2 < numQubits);
+	assert (idQubit1 >= 0 && idQubit2 >= 0 && idQubit1 < multiQubit.numQubits && idQubit2 < multiQubit.numQubits);
 
-	stateVecSize = 1LL << numQubits;
-	double probOfFilter=0;
+	stateVecSize = multiQubit.numAmps;
 
-# ifdef _OPENMP
-# pragma omp parallel \
-	default  (none)			     \
-	shared   (stateVecSize, stateVecReal,stateVecImag) \
-	private  (index,bit1,bit2,bit3)		       \
-	reduction ( +:probOfFilter )
-# endif
-	{
-# ifdef _OPENMP
-		# pragma omp for schedule (static)
-# endif
-		for (index=0; index<stateVecSize; index++) {
-			bit1 = extractBit (idQubit1, index);
-			bit2 = extractBit (idQubit2, index);
-			bit3 = extractBit (idQubit3, index);
-			if (!(bit1 && bit2 && bit3)) {
-				probOfFilter+= stateVecReal[index]*stateVecReal[index] + stateVecImag[index]* stateVecImag [index];
-			}
-		}
-	}
 	if ( probOfFilter<1e-16 ){ printf("Extremely small or negative profOfFilter=%.8e; aborting! \n",probOfFilter); exit(1);}
 	double myNorm=1/sqrt(probOfFilter);
+	double *stateVecReal = multiQubit.stateVec.real;
+	double *stateVecImag = multiQubit.stateVec.imag;
 
 # ifdef _OPENMP
 # pragma omp parallel \
@@ -825,15 +802,12 @@ double filterOut111 (const int numQubits, const int idQubit1, const int idQubit2
 			}
 		}
 	}
-	return probOfFilter;
 }
 
 // probFilterOut111 evaluates the state according to this scenario: we ask "are these 3 qubits in 111" and the answer is "no"
 //              the function returns the probability of this outcome (if zero, it will exit with error) 
 
-double probOfFilterOut111 (const int numQubits, const int idQubit1, const int idQubit2, const int idQubit3,
-		double *restrict stateVecReal,
-		double *restrict stateVecImag)
+double probOfFilterOut111Local(MultiQubit multiQubit, const int idQubit1, const int idQubit2, const int idQubit3)
 {
 	long long int index;
 	long long int stateVecSize;
@@ -842,10 +816,13 @@ double probOfFilterOut111 (const int numQubits, const int idQubit1, const int id
 	// ---------------------------------------------------------------- //
 	//            tests                                                 //
 	// ---------------------------------------------------------------- //
-	assert (idQubit1 >= 0 && idQubit2 >= 0 && idQubit1 < numQubits && idQubit2 < numQubits);
+	assert (idQubit1 >= 0 && idQubit2 >= 0 && idQubit1 < multiQubit.numQubits && idQubit2 < multiQubit.numQubits);
 
-	stateVecSize = 1LL << numQubits;
+	stateVecSize = multiQubit.numAmps;
 	double probOfFilter=0;
+	
+	double *stateVecReal = multiQubit.stateVec.real;
+	double *stateVecImag = multiQubit.stateVec.imag;
 
 # ifdef _OPENMP
 # pragma omp parallel \

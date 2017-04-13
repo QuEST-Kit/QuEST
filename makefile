@@ -9,7 +9,7 @@
 #
 
 # COMPILER options: GNU, INTEL
-COMPILER = GCC
+COMPILER = GNU
 EXE = demo
 MY_FILE_NAME = basicTemplate
 USE_MPI=0

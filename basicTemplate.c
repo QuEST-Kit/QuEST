@@ -158,8 +158,6 @@ int main (int narg, char** varg) {
 	totalProbability = calcTotalProbability(multiQubit);
         if (env.rank==0) printf("VERIFICATION: total probability=%.14f\n", totalProbability);
 	
-	// TO BE IMPLEMENTED
-
 	//
 	// ======== CLEANUP
 	//

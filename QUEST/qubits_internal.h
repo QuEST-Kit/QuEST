@@ -29,12 +29,11 @@ double measureInZeroDistributedRenorm (MultiQubit multiQubit, const int measureQ
 
 void measureInZeroDistributedSetZero(MultiQubit multiQubit, const int measureQubit);
 
-double filterOut111 (const int numQubits, const int idQubit1, const int idQubit2, const int idQubit3,
-                              double *restrict stateVecReal,
-                              double *restrict stateVecImag);
+void filterOut111Local(MultiQubit multiQubit, const int idQubit1, const int idQubit2, const int idQubit3,
+	const double probOfFilter);
 
-double probOfFilterOut111 (const int numQubits, const int idQubit1, const int idQubit2, const int idQubit3,
-                              double *restrict stateVecReal,
-                              double *restrict stateVecImag);
+double probOfFilterOut111Local(MultiQubit multiQubit, const int idQubit1, const int idQubit2, const int idQubit3);
+
+
 
 # endif

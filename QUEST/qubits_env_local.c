@@ -68,4 +68,20 @@ double measureInZero(MultiQubit multiQubit, const int measureQubit)
         return stateProb;
 }
 
+double filterOut111(MultiQubit multiQubit, const int idQubit1, const int idQubit2, const int idQubit3)
+{
+        double stateProb=0;
+        stateProb = probOfFilterOut111(multiQubit, idQubit1, idQubit2, idQubit3);
+        filterOut111Local(multiQubit, idQubit1, idQubit2, idQubit3, stateProb);
+        return stateProb;
+}
+
+double probOfFilterOut111(MultiQubit multiQubit, const int idQubit1, const int idQubit2, const int idQubit3)
+{
+        double stateProb=0, totalStateProb=0;
+        stateProb = probOfFilterOut111Local(multiQubit, idQubit1, idQubit2, idQubit3);
+        return totalStateProb;
+}
+
+
 

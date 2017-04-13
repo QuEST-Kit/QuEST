@@ -123,6 +123,12 @@ void quadCPhaseGate (MultiQubit multiQubit, const int idQubit1, const int idQubi
 
 void controlPhaseGate (MultiQubit multiQubit, const int idQubit1, const int idQubit2);
 
+double filterOut111(MultiQubit multiQubit, const int idQubit1, const int idQubit2, const int idQubit3);
+
+double probOfFilterOut111(MultiQubit multiQubit, const int idQubit1, const int idQubit2, const int idQubit3);
+
+
+
 
 
 # endif
