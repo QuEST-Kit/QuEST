@@ -374,7 +374,7 @@ double findProbabilityOfZeroLocal (MultiQubit multiQubit,
 	totalProbability = 0.0;
 
 	// initialise correction for kahan summation
-	printf("sizeHalfBlock=%Ld sizeBlock=%Ld numTasks=%Ld\n",sizeHalfBlock,sizeBlock,numTasks);
+	if (DEBUG) printf("sizeHalfBlock=%Ld sizeBlock=%Ld numTasks=%Ld\n",sizeHalfBlock,sizeBlock,numTasks);
 
 	//
 	// --- task-based shared-memory parallel implementation
@@ -598,10 +598,7 @@ void quadCPhaseGate (const int numQubits, const int idQubit1, const int idQubit2
 // this label starts from 0, of course). It achieves this by setting all inconsistent amplitudes to 0 and 
 // then renormalising. It also returns the probability that this event would happen.
 
-double measureInZero (const int numQubits, 
-		const int measureQubit,
-		double *restrict stateVecReal,
-		double *restrict stateVecImag)
+void measureInZeroLocal(MultiQubit multiQubit, int measureQubit, double totalProbability)
 {
 	// ----- sizes
 	long long int sizeBlock,                                           // size of blocks
@@ -610,16 +607,16 @@ double measureInZero (const int numQubits,
 	long long int thisBlock,                                           // current block
 	     index;                                               // current index for first half block
 	// ----- measured probability
-	double   totalProbability, renorm;                                    // probability (returned) value
+	double   renorm;                                    // probability (returned) value
 	// ----- temp variables
-	long long int thisTask,numTasks;                                   // task based approach for expose loop with small granularity
+	long long int thisTask;                                   // task based approach for expose loop with small granularity
 	// (good for shared memory parallelism)
+	long long int numTasks=multiQubit.numAmps>>1;
 
 	// ---------------------------------------------------------------- //
 	//            tests                                                 //
 	// ---------------------------------------------------------------- //
-	assert (measureQubit >= 0 && measureQubit < numQubits);
-
+	assert (measureQubit >= 0 && measureQubit < multiQubit.numQubits);
 
 	// ---------------------------------------------------------------- //
 	//            dimensions                                            //
@@ -631,35 +628,13 @@ double measureInZero (const int numQubits,
 	// ---------------------------------------------------------------- //
 	//            find probability                                      //
 	// ---------------------------------------------------------------- //
-	numTasks = 1LL << (numQubits-1);
-
-	// initialise returned value
-	totalProbability = 0.0;
 
 	//
 	// --- task-based shared-memory parallel implementation
 	//
-# ifdef _OPENMP
-# pragma omp parallel \
-	default (none) \
-	shared    (numTasks,sizeBlock,sizeHalfBlock, stateVecReal,stateVecImag) \
-	private   (thisTask,thisBlock,index) \
-	reduction ( +:totalProbability )
-# endif
-	{
-# ifdef _OPENMP
-		# pragma omp for schedule  (static)
-# endif
-		for (thisTask=0; thisTask<numTasks; thisTask++) {
-			thisBlock = thisTask / sizeHalfBlock;
-			index     = thisBlock*sizeBlock + thisTask%sizeHalfBlock;
-
-			totalProbability += stateVecReal[index]*stateVecReal[index]
-				+ stateVecImag[index]*stateVecImag[index];
-		}
-	}
-
 	renorm=1/sqrt(totalProbability);
+	double *stateVecReal = multiQubit.stateVec.real;
+	double *stateVecImag = multiQubit.stateVec.imag;
 
 
 # ifdef _OPENMP
@@ -689,8 +664,96 @@ double measureInZero (const int numQubits,
 	//  	checkTotal=checkTotal-(stateVecReal[index]*stateVecReal[index] + stateVecImag[index]*stateVecImag[index]);
 	//  }
 	//  if (checkTotal>0.00001){printf("Deviation of sum squared amps from unity is %.16f\n",checkTotal); exit(1);}
+}
 
+double measureInZeroDistributedRenorm (MultiQubit multiQubit, const int measureQubit, const double totalProbability)
+{
+	// ----- temp variables
+	long long int thisTask;                                   // task based approach for expose loop with small granularity
+	long long int numTasks=multiQubit.numAmps;
+	// (good for shared memory parallelism)
+
+	// ---------------------------------------------------------------- //
+	//            tests                                                 //
+	// ---------------------------------------------------------------- //
+	assert (measureQubit >= 0 && measureQubit < multiQubit.numQubits);
+
+	// ---------------------------------------------------------------- //
+	//            find probability                                      //
+	// ---------------------------------------------------------------- //
+
+	// initialise correction for kahan summation
+
+	//
+	// --- task-based shared-memory parallel implementation
+	//
+	
+	double renorm=1/sqrt(totalProbability);
+	
+	double *stateVecReal = multiQubit.stateVec.real;
+	double *stateVecImag = multiQubit.stateVec.imag;
+
+# ifdef _OPENMP
+# pragma omp parallel \
+	shared    (numTasks,stateVecReal,stateVecImag) \
+	private   (thisTask)
+# endif
+	{
+# ifdef _OPENMP
+		# pragma omp for schedule  (static)
+# endif
+		for (thisTask=0; thisTask<numTasks; thisTask++) {
+			// summation -- simple implementation
+			stateVecReal[thisTask] = stateVecReal[thisTask]*renorm;
+			stateVecImag[thisTask] = stateVecImag[thisTask]*renorm;
+		}
+	}
 	return totalProbability;
+}
+
+void measureInZeroDistributedSetZero(MultiQubit multiQubit, const int measureQubit)
+{
+	// ----- measured probability
+	double   totalProbability;                                    // probability (returned) value
+	// ----- temp variables
+	long long int thisTask;                                   // task based approach for expose loop with small granularity
+	long long int numTasks=multiQubit.numAmps;
+	// (good for shared memory parallelism)
+
+	// ---------------------------------------------------------------- //
+	//            tests                                                 //
+	// ---------------------------------------------------------------- //
+	assert (measureQubit >= 0 && measureQubit < multiQubit.numQubits);
+
+	// ---------------------------------------------------------------- //
+	//            find probability                                      //
+	// ---------------------------------------------------------------- //
+
+	// initialise correction for kahan summation
+
+	//
+	// --- task-based shared-memory parallel implementation
+	//
+	
+	double *stateVecReal = multiQubit.stateVec.real;
+	double *stateVecImag = multiQubit.stateVec.imag;
+
+# ifdef _OPENMP
+# pragma omp parallel \
+	shared    (numTasks,stateVecReal,stateVecImag) \
+	private   (thisTask) \
+	reduction ( +:totalProbability )
+# endif
+	{
+# ifdef _OPENMP
+		# pragma omp for schedule  (static)
+# endif
+		for (thisTask=0; thisTask<numTasks; thisTask++) {
+			// summation -- simple implementation
+			stateVecReal[thisTask] = 0;
+			stateVecImag[thisTask] = 0;
+		}
+	}
 }
 
 // filterOut111 updates the state according to this scenario: we ask "are these 3 qubits in 111" and the answer is "no"

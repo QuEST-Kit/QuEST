@@ -60,4 +60,12 @@ double findProbabilityOfZero(MultiQubit multiQubit,
 	return stateProb;
 }
 
+double measureInZero(MultiQubit multiQubit, const int measureQubit)
+{
+        double stateProb;
+	stateProb = findProbabilityOfZero(multiQubit, measureQubit);
+        measureInZeroLocal(multiQubit, measureQubit, stateProb);
+        return stateProb;
+}
+
 

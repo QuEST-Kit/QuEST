@@ -116,4 +116,7 @@ of a specified qubit being in the zero state.
 */
 double findProbabilityOfZero(MultiQubit multiQubit, const int measureQubit);
 
+double measureInZero(MultiQubit multiQubit, const int measureQubit);
+
+
 # endif

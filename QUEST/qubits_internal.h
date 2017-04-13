@@ -30,10 +30,11 @@ void quadCPhaseGate (const int numQubits, const int idQubit1, const int idQubit2
                 const int idQubit3, const int idQubit4, double *restrict stateVecReal,
                 double *restrict stateVecImag);
 
-double measureInZero (const int numQubits,
-                              const int measureQubit,
-                              double *restrict stateVecReal,
-                              double *restrict stateVecImag);
+void measureInZeroLocal(MultiQubit multiQubit, int measureQubit, double totalProbability);
+
+double measureInZeroDistributedRenorm (MultiQubit multiQubit, const int measureQubit, const double totalProbability);
+
+void measureInZeroDistributedSetZero(MultiQubit multiQubit, const int measureQubit);
 
 double filterOut111 (const int numQubits, const int idQubit1, const int idQubit2, const int idQubit3,
                               double *restrict stateVecReal,

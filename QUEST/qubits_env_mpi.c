@@ -61,24 +61,6 @@ void reportQUESTEnv(QUESTEnv env){
 }
 
 
-/** Find chunks to skip when calculating probability of qubit being zero.
-When calculating probability of a bit q being zero,
-sum up 2^q values, then skip 2^q values, etc. This function finds if an entire chunk
-is in the range of values to be skipped
-
-@param[in] chunkId id of chunk in state vector
-@param[in] chunkSize number of amps in chunk
-@param[in] measureQubi qubit being measured
-@return int -- 1: skip, 0: don't skip
-*/
-
-static int isChunkToSkipInFindPZero(int chunkId, int chunkSize, int measureQubit){
-        long long int sizeHalfBlock = 1LL << (measureQubit);
-        int numChunksToSkip = sizeHalfBlock/chunkSize;
-        // calculate probability by summing over numChunksToSkip, then skipping numChunksToSkip, etc
-        int bitToCheck = chunkId & numChunksToSkip;
-        return bitToCheck;
-}
 
 double calcTotalProbability(MultiQubit multiQubit){
         double pTotal=0; 
@@ -221,8 +203,27 @@ void rotateQubit(MultiQubit multiQubit, const int rotQubit, Complex alpha, Compl
 	}
 }
 
-double findProbabilityOfZero(MultiQubit multiQubit,
-                const int measureQubit)
+/** Find chunks to skip when calculating probability of qubit being zero.
+When calculating probability of a bit q being zero,
+sum up 2^q values, then skip 2^q values, etc. This function finds if an entire chunk
+is in the range of values to be skipped
+
+@param[in] chunkId id of chunk in state vector
+@param[in] chunkSize number of amps in chunk
+@param[in] measureQubi qubit being measured
+@return int -- 1: skip, 0: don't skip
+*/
+
+static int isChunkToSkipInFindPZero(int chunkId, int chunkSize, int measureQubit)
+{
+        long long int sizeHalfBlock = 1LL << (measureQubit);
+        int numChunksToSkip = sizeHalfBlock/chunkSize;
+        // calculate probability by summing over numChunksToSkip, then skipping numChunksToSkip, etc
+        int bitToCheck = chunkId & numChunksToSkip;
+        return bitToCheck;
+}
+
+double findProbabilityOfZero(MultiQubit multiQubit, const int measureQubit)
 {
 	double stateProb=0, totalStateProb=0;
 	int skipValuesWithinRank = halfMatrixBlockFitsInChunk(multiQubit.numAmps, measureQubit);
@@ -234,6 +235,23 @@ double findProbabilityOfZero(MultiQubit multiQubit,
 		} else stateProb = 0;
 	}
 	MPI_Allreduce(&stateProb, &totalStateProb, 1, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
+	return totalStateProb;
+}
+
+
+double measureInZero(MultiQubit multiQubit, const int measureQubit)
+{
+	double totalStateProb=findProbabilityOfZero(multiQubit, measureQubit);
+	int skipValuesWithinRank = halfMatrixBlockFitsInChunk(multiQubit.numAmps, measureQubit);
+	if (skipValuesWithinRank) {
+		measureInZeroLocal(multiQubit, measureQubit, totalStateProb);
+	} else {
+		if (!isChunkToSkipInFindPZero(multiQubit.chunkId, multiQubit.numAmps, measureQubit)){
+			measureInZeroDistributedRenorm(multiQubit, measureQubit, totalStateProb);
+		} else {
+			measureInZeroDistributedSetZero(multiQubit, measureQubit);
+		}
+	}
 	return totalStateProb;
 }
 
