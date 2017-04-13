@@ -145,13 +145,18 @@ int main (int narg, char** varg) {
 	totalProbability = calcTotalProbability(multiQubit);
         if (env.rank==0) printf("VERIFICATION: total probability=%.14f\n", totalProbability);
 
-
-	
-	// TO BE IMPLEMENTED
-	
 	//
 	// ===== two qubit phase gate
 	//
+
+	if (env.rank==0) printf("\nPerforming 2 qubit phase gate\n");	
+	controlPhaseGate(multiQubit, 0, 2);
+	totalProbability = calcTotalProbability(multiQubit);
+        if (env.rank==0) printf("VERIFICATION: total probability=%.14f\n", totalProbability);
+	if (env.rank==0) printf("Performing 4 qubit phase gate\n");	
+	quadCPhaseGate(multiQubit, 0, 2, 3, 4);
+	totalProbability = calcTotalProbability(multiQubit);
+        if (env.rank==0) printf("VERIFICATION: total probability=%.14f\n", totalProbability);
 	
 	// TO BE IMPLEMENTED
 

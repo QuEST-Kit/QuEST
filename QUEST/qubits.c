@@ -514,8 +514,7 @@ static int extractBit (const int locationOfBitFromRight, const long long int the
                                                                       //
 */
 
-void controlPhaseGate (const int numQubits, const int idQubit1, const int idQubit2,
-		double *restrict stateVecReal, double *restrict stateVecImag)
+void controlPhaseGate (MultiQubit multiQubit, const int idQubit1, const int idQubit2)
 {
 	long long int index;
 	long long int stateVecSize;
@@ -525,7 +524,7 @@ void controlPhaseGate (const int numQubits, const int idQubit1, const int idQubi
 	//            tests                                                 //
 	// ---------------------------------------------------------------- //
 
-	assert (idQubit1 >= 0 && idQubit2 >= 0 && idQubit1 < numQubits && idQubit2 < numQubits);
+	assert (idQubit1 >= 0 && idQubit2 >= 0 && idQubit1 < multiQubit.numQubits && idQubit2 < multiQubit.numQubits);
 
 
 	// ---------------------------------------------------------------- //
@@ -533,7 +532,9 @@ void controlPhaseGate (const int numQubits, const int idQubit1, const int idQubi
 	// ---------------------------------------------------------------- //
 
 	// dimension of the state vector
-	stateVecSize = 1LL << numQubits;
+	stateVecSize = multiQubit.numAmps;
+	double *stateVecReal = multiQubit.stateVec.real;
+	double *stateVecImag = multiQubit.stateVec.imag;
 
 # ifdef _OPENMP
 # pragma omp parallel for \
@@ -556,7 +557,8 @@ void controlPhaseGate (const int numQubits, const int idQubit1, const int idQubi
 
 // SCB tripleCPhaseGate is just like controlPhaseGate except it applies the conditional phase depending on 4 qubits, not two
 
-void quadCPhaseGate (const int numQubits, const int idQubit1, const int idQubit2, const int idQubit3, const int idQubit4, double *restrict stateVecReal, double *restrict stateVecImag)
+void quadCPhaseGate (MultiQubit multiQubit, const int idQubit1, const int idQubit2, 
+		const int idQubit3, const int idQubit4)
 {
 	long long int index;
 	long long int stateVecSize;
@@ -565,9 +567,11 @@ void quadCPhaseGate (const int numQubits, const int idQubit1, const int idQubit2
 	// ---------------------------------------------------------------- //
 	//            tests                                                 //
 	// ---------------------------------------------------------------- //
-	assert (idQubit1 >= 0 && idQubit2 >= 0 && idQubit1 < numQubits && idQubit2 < numQubits);
+	assert (idQubit1 >= 0 && idQubit2 >= 0 && idQubit1 < multiQubit.numQubits && idQubit2 < multiQubit.numQubits);
 
-	stateVecSize = 1LL << numQubits;
+	stateVecSize = multiQubit.numAmps;
+	double *stateVecReal = multiQubit.stateVec.real;
+	double *stateVecImag = multiQubit.stateVec.imag;
 
 # ifdef _OPENMP
 # pragma omp parallel \

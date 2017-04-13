@@ -23,13 +23,6 @@ double findProbabilityOfZeroDistributed (MultiQubit multiQubit,
 
 int extractBit (const int locationOfBitFromRight, const long long int theEncodedNumber);
 
-void controlPhaseGate (const int numQubits, const int idQubit1, const int idQubit2,
-                       double *restrict stateVecReal, double *restrict stateVecImag);
-
-void quadCPhaseGate (const int numQubits, const int idQubit1, const int idQubit2,
-                const int idQubit3, const int idQubit4, double *restrict stateVecReal,
-                double *restrict stateVecImag);
-
 void measureInZeroLocal(MultiQubit multiQubit, int measureQubit, double totalProbability);
 
 double measureInZeroDistributedRenorm (MultiQubit multiQubit, const int measureQubit, const double totalProbability);

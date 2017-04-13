@@ -118,5 +118,11 @@ double findProbabilityOfZero(MultiQubit multiQubit, const int measureQubit);
 
 double measureInZero(MultiQubit multiQubit, const int measureQubit);
 
+void quadCPhaseGate (MultiQubit multiQubit, const int idQubit1, const int idQubit2, 
+	const int idQubit3, const int idQubit4);
+
+void controlPhaseGate (MultiQubit multiQubit, const int idQubit1, const int idQubit2);
+
+
 
 # endif
