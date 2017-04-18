@@ -596,12 +596,19 @@ void quadCPhaseGate (MultiQubit multiQubit, const int idQubit1, const int idQubi
 	}
 }
 
+/** Update the state vector to be consistent with measuring measureQubit=0.
+Measure in Zero performs an irreversible change to the state vector: it updates the vector according
+to the event that a zero have been measured on the qubit indicated by measureQubit (where 
+this label starts from 0, of course). It achieves this by setting all inconsistent amplitudes to 0 and 
+then renormalising based on the total probability of measuring measureQubit=0.
+In the local version, one or more blocks (with measureQubit=0 in the first half of the block and
+measureQubit=1 in the second half of the block) fit entirely into one chunk. 
 
-// measure in Zero performs an irreversible change to the state vector: it updates the vector according
-// to the event that a zero have been measured on the qubit indicated by measureQubit (where 
-// this label starts from 0, of course). It achieves this by setting all inconsistent amplitudes to 0 and 
-// then renormalising. It also returns the probability that this event would happen.
 
+@param[inOut] multiQubit object representing the set of qubits to be initialised
+@param[in] measureQubit qubit to measure
+@param[in] totalProbability probability of qubit measureQubit being zero
+*/
 void measureInZeroLocal(MultiQubit multiQubit, int measureQubit, double totalProbability)
 {
 	// ----- sizes

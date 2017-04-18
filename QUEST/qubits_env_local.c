@@ -45,8 +45,7 @@ double calcTotalProbability(MultiQubit multiQubit){
 	return pTotal;
 }
 
-void rotateQubit(MultiQubit multiQubit, const int rotQubit, Complex alpha, Complex beta)
-
+void rotateQubit(MultiQubit multiQubit, const int rotQubit, Complex alpha, Complex beta) 
 {
 	// all values required to update state vector lie in this rank
 	rotateQubitLocal(multiQubit, rotQubit, alpha, beta);
