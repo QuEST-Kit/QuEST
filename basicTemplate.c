@@ -149,6 +149,7 @@ int main (int narg, char** varg) {
 	// ===== filter out qubits
 	//
 	
+	if (env.rank==0) printf("\nFiltering out qubits\n");
 	qProbability = probOfFilterOut111(multiQubit, 0, 1, 2);	
         if (env.rank==0) printf("Probability of (0,1,2)!=1 = %.14f\n", qProbability);
 	totalProbability = calcTotalProbability(multiQubit);
@@ -159,7 +160,15 @@ int main (int narg, char** varg) {
 	totalProbability = calcTotalProbability(multiQubit);
         if (env.rank==0) printf("VERIFICATION: total probability=%.14f\n", totalProbability);
 
+	qProbability = filterOut111(multiQubit, 3, 1, 2);	
+        if (env.rank==0) printf("Probability of (3,1,2)!=1 = %.14f. Then filter out (3,1,2)=1\n", qProbability);
+	totalProbability = calcTotalProbability(multiQubit);
+        if (env.rank==0) printf("VERIFICATION: total probability=%.14f\n", totalProbability);
 
+	qProbability = probOfFilterOut111(multiQubit, 3, 1, 2);	
+        if (env.rank==0) printf("Probability of (3,1,2)!=1 = %.14f\n", qProbability);
+	totalProbability = calcTotalProbability(multiQubit);
+        if (env.rank==0) printf("VERIFICATION: total probability=%.14f\n", totalProbability);
 	//
 	// ===== two qubit phase gate
 	//

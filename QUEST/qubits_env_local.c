@@ -77,9 +77,9 @@ double filterOut111(MultiQubit multiQubit, const int idQubit1, const int idQubit
 
 double probOfFilterOut111(MultiQubit multiQubit, const int idQubit1, const int idQubit2, const int idQubit3)
 {
-        double stateProb=0, totalStateProb=0;
+        double stateProb=0;
         stateProb = probOfFilterOut111Local(multiQubit, idQubit1, idQubit2, idQubit3);
-        return totalStateProb;
+        return stateProb;
 }
 
 
