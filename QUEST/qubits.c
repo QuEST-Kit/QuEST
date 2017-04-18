@@ -166,7 +166,7 @@ betaIm  = sin(angle1) * sin(angle3) \n
 @remarks Qubits are zero-based and the                     
 the first qubit is the rightmost                  
                                                                       
-@param[in,out] multiQubit object representing the set of qubits to be initialised
+@param[in,out] multiQubit object representing the set of qubits
 @param[in] rotQubit qubit to rotate
 @param[in] alpha rotation angle
 @param[in] beta rotation angle
@@ -259,7 +259,7 @@ stored seperately.
 @remarks Qubits are zero-based and the                     
 the first qubit is the rightmost                  
                                                                       
-@param[in,out] multiQubit object representing the set of qubits to be initialised
+@param[in,out] multiQubit object representing the set of qubits
 @param[in] rotQubit qubit to rotate
 @param[in] rot1 rotation angle
 @param[in] rot2 rotation angle
@@ -327,12 +327,11 @@ void rotateQubitDistributed (MultiQubit multiQubit, const int rotQubit,
 	}
 } // end of function definition
 
-/** Measure the probability
-of a specified qubit being in the zero state.     
+/** Measure the total probability of a specified qubit being in the zero state across all amplitudes in this chunk.
 Size of regions to skip is less than    
 the size of one chunk.                   
 
-@param[in] multiQubit object representing the set of qubits to be initialised
+@param[in] multiQubit object representing the set of qubits
 @param[in] measureQubit qubit to measure
 @return probability of qubit measureQubit being zero
 */
@@ -417,11 +416,10 @@ double findProbabilityOfZeroLocal (MultiQubit multiQubit,
 	return totalProbability;
 }
 
-/** Measure the probability
-of a specified qubit being in the zero state.     
+/** Measure the probability of a specified qubit being in the zero state across all amplitudes held in this chunk.
 Size of regions to skip is a multiple of chunkSize.
 
-@param[in] multiQubit object representing the set of qubits to be initialised
+@param[in] multiQubit object representing the set of qubits
 @param[in] measureQubit qubit to measure
 @return probability of qubit measureQubit being zero
 */
@@ -487,8 +485,8 @@ double findProbabilityOfZeroDistributed (MultiQubit multiQubit,
 	return totalProbability;
 }
 
-// *** SCB edit: new definition of extractBit is much faster ***
-/** Get the value of the bit at a particular index in a number
+/** Get the value of the bit at a particular index in a number.
+SCB edit: new definition of extractBit is much faster ***
  * @param[in] locationOfBitFromRight location of bit in theEncodedNumber
  * @param[in] theEncodedNumber number to search
  * @return the value of the bit in theEncodedNumber
@@ -498,20 +496,10 @@ static int extractBit (const int locationOfBitFromRight, const long long int the
 	return (theEncodedNumber & ( 1LL << locationOfBitFromRight )) >> locationOfBitFromRight;
 }
 
-/** Implement the control phase       
-(the two qubit phase gate).
-**** REWRITE TO USE MULTIQUBIT
-     input:                                                           //
-                    numQubits     -- number of qubits                 //
-                    idQubit1,     -- specified qubits                 //
-                    idQubit2                                          //
-                    stateVecReal, -- real/imag parts of               //
-                    stateVecImag     the state vector                 //
-                                                                      //
-     output:                                                          //
-                    stateVecReal, -- real/imag parts of               //
-                    stateVecImag     the state vector (overwritten)   //
-                                                                      //
+/** The control phase (the two qubit phase gate).
+For each state, if both input qubits are equal to zero, multiply the amplitude of that state by -1.
+@param[in,out] multiQubit object representing the set of qubits
+@param[in] idQubit1, idQubit2 specified qubits                 
 */
 
 void controlPhaseGate (MultiQubit multiQubit, const int idQubit1, const int idQubit2)
@@ -553,10 +541,11 @@ void controlPhaseGate (MultiQubit multiQubit, const int idQubit1, const int idQu
 	}
 }
 
-// SCB the functions below, quadCPhaseGate and (more importantly) measureInZero are new
-
-// SCB tripleCPhaseGate is just like controlPhaseGate except it applies the conditional phase depending on 4 qubits, not two
-
+/** The control phase (the four qubit phase gate).
+For each state, if all four input qubits are equal to zero, multiply the amplitude of that state by -1.
+@param[in,out] multiQubit object representing the set of qubits
+@param[in] idQubit1, idQubit2, idQubit3, idQubit4 specified qubits                 
+*/
 void quadCPhaseGate (MultiQubit multiQubit, const int idQubit1, const int idQubit2, 
 		const int idQubit3, const int idQubit4)
 {
@@ -604,8 +593,7 @@ then renormalising based on the total probability of measuring measureQubit=0.
 In the local version, one or more blocks (with measureQubit=0 in the first half of the block and
 measureQubit=1 in the second half of the block) fit entirely into one chunk. 
 
-
-@param[inOut] multiQubit object representing the set of qubits to be initialised
+@param[in,out] multiQubit object representing the set of qubits
 @param[in] measureQubit qubit to measure
 @param[in] totalProbability probability of qubit measureQubit being zero
 */
@@ -677,6 +665,21 @@ void measureInZeroLocal(MultiQubit multiQubit, int measureQubit, double totalPro
 	//  if (checkTotal>0.00001){printf("Deviation of sum squared amps from unity is %.16f\n",checkTotal); exit(1);}
 }
 
+/** Renormalise parts of the state vector where measureQubit=0, based on the total probability of that qubit being
+in state 0.
+Measure in Zero performs an irreversible change to the state vector: it updates the vector according
+to the event that a zero have been measured on the qubit indicated by measureQubit (where 
+this label starts from 0, of course). It achieves this by setting all inconsistent amplitudes to 0 and 
+then renormalising based on the total probability of measuring measureQubit=0.
+In the distributed version, one block (with measureQubit=0 in the first half of the block and
+measureQubit=1 in the second half of the block) is spread over multiple chunks, meaning that each chunks performs
+only renormalisation or only setting amplitudes to 0. This function handles the renormalisation.
+
+@param[in,out] multiQubit object representing the set of qubits
+@param[in] measureQubit qubit to measure
+@param[in] totalProbability probability of qubit measureQubit being zero
+*/
+
 double measureInZeroDistributedRenorm (MultiQubit multiQubit, const int measureQubit, const double totalProbability)
 {
 	// ----- temp variables
@@ -722,6 +725,19 @@ double measureInZeroDistributedRenorm (MultiQubit multiQubit, const int measureQ
 	return totalProbability;
 }
 
+/** Set parts of the state vector where measureQubit=1 to have amplitude 0. 
+Measure in Zero performs an irreversible change to the state vector: it updates the vector according
+to the event that a zero have been measured on the qubit indicated by measureQubit (where 
+this label starts from 0, of course). It achieves this by setting all inconsistent amplitudes to 0 and 
+then renormalising based on the total probability of measuring measureQubit=0.
+In the distributed version, one block (with measureQubit=0 in the first half of the block and
+measureQubit=1 in the second half of the block) is spread over multiple chunks, meaning that each chunks performs
+only renormalisation or only setting amplitudes to 0. This function handles setting amplitudes to 0.
+
+@param[in,out] multiQubit object representing the set of qubits
+@param[in] measureQubit qubit to measure
+*/
+
 void measureInZeroDistributedSetZero(MultiQubit multiQubit, const int measureQubit)
 {
 	// ----- temp variables
@@ -764,9 +780,11 @@ void measureInZeroDistributedSetZero(MultiQubit multiQubit, const int measureQub
 	}
 }
 
-// filterOut111 updates the state according to this scenario: we ask "are these 3 qubits in 111" and the answer is "no"
-//              the function returns the probability of this outcome (if zero, it will exit with error) 
-
+/** Updates the state according to this scenario: we ask "are these 3 qubits in 111" and the answer is "no".
+@param[in,out] multiQubit object representing the set of qubits
+@param[in] idQubit1, idQubit2, idQubit3 specified qubits                 
+@param[in] probOfFilter Total probability that the 3 qubits are not all in the 1 state. 
+*/
 void filterOut111Local(MultiQubit multiQubit, const int idQubit1, const int idQubit2, const int idQubit3,
 		const double probOfFilter)
 {
@@ -811,9 +829,12 @@ void filterOut111Local(MultiQubit multiQubit, const int idQubit1, const int idQu
 	}
 }
 
-// probFilterOut111 evaluates the state according to this scenario: we ask "are these 3 qubits in 111" and the answer is "no"
-//              the function returns the probability of this outcome (if zero, it will exit with error) 
-
+/** Evaluates the state according to this scenario: we ask "are these 3 qubits in 111" and the answer is "no".
+The function returns the probability of this outcome across all amplitudes in this chunk (if zero, it will exit with error) 
+@param[in,out] multiQubit object representing the set of qubits
+@param[in] idQubit1, idQubit2, idQubit3 specified qubits                 
+@return Total probability that the 3 qubits are not all in the 1 state. 
+*/
 double probOfFilterOut111Local(MultiQubit multiQubit, const int idQubit1, const int idQubit2, const int idQubit3)
 {
 	long long int index;

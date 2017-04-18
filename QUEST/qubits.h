@@ -62,6 +62,13 @@ void reportMultiQubitParams(MultiQubit multiQubit);
 
 void initStateVec(MultiQubit *multiQubit);
 
+void quadCPhaseGate (MultiQubit multiQubit, const int idQubit1, const int idQubit2, 
+	const int idQubit3, const int idQubit4);
+
+void controlPhaseGate (MultiQubit multiQubit, const int idQubit1, const int idQubit2);
+
+
+
 // QUEST library functions whose implementation depends on environment (local, MPI)
 
 /** Initialize QUEST environment. If something needs to be done to set up the execution environment, such as 
@@ -77,10 +84,12 @@ void initQUESTEnv(QUESTEnv *env);
 void closeQUESTEnv(QUESTEnv env);
 
 /** Guarantees that all code up to the given point has been executed on all nodes. 
+ * @param[in] env object representing the execution environment. A single instance is used for each program
  */
 void syncQUESTEnv(QUESTEnv env);
 
 /** Report information about the QUEST environment
+ * @param[in] env object representing the execution environment. A single instance is used for each program
  */
 void reportQUESTEnv(QUESTEnv env);
 
@@ -100,7 +109,7 @@ betaIm  = sin(angle1) * sin(angle3) \n
 @remarks Qubits are zero-based and the                     
 the first qubit is the rightmost                  
                                                                       
-@param[in,out] multiQubit object representing the set of qubits to be initialised
+@param[in,out] multiQubit object representing the set of qubits
 @param[in] rotQubit qubit to rotate
 @param[in] alpha rotation angle
 @param[in] beta rotation angle
@@ -110,7 +119,7 @@ void rotateQubit(MultiQubit multiQubit, const int rotQubit, Complex alpha, Compl
 /** Measure the probability
 of a specified qubit being in the zero state.     
 
-@param[in] multiQubit object representing the set of qubits to be initialised
+@param[in] multiQubit object representing the set of qubits
 @param[in] measureQubit qubit to measure
 @return probability of qubit measureQubit being zero
 */
@@ -123,19 +132,26 @@ his label starts from 0, of course). It achieves this by setting all inconsisten
 then renormalising based on the total probability of measuring measureQubit=0. It then returns the 
 probability of making this measurement. 
 
-param[inOut] multiQubit object representing the set of qubits to be initialised
+@param[in,out] multiQubit object representing the set of qubits
 @param[in] measureQubit qubit to measure
 @return probability of qubit measureQubit being zero
 */
 double measureInZero(MultiQubit multiQubit, const int measureQubit);
 
-void quadCPhaseGate (MultiQubit multiQubit, const int idQubit1, const int idQubit2, 
-	const int idQubit3, const int idQubit4);
-
-void controlPhaseGate (MultiQubit multiQubit, const int idQubit1, const int idQubit2);
-
+/** Updates the state according to this scenario: we ask "are these 3 qubits in 111" and the answer is "no".
+The function returns the probability of this outcome (if zero, it will exit with error) 
+@param[in,out] multiQubit object representing the set of qubits
+@param[in] idQubit1, idQubit2, idQubit3 specified qubits                 
+@return Total probability that the 3 qubits are not all in the 1 state. 
+*/
 double filterOut111(MultiQubit multiQubit, const int idQubit1, const int idQubit2, const int idQubit3);
 
+/** Evaluates the state according to this scenario: we ask "are these 3 qubits in 111" and the answer is "no".
+The function returns the probability of this outcome (if zero, it will exit with error) 
+@param[in,out] multiQubit object representing the set of qubits
+@param[in] idQubit1, idQubit2, idQubit3 specified qubits                 
+@return Total probability that the 3 qubits are not all in the 1 state. 
+*/
 double probOfFilterOut111(MultiQubit multiQubit, const int idQubit1, const int idQubit2, const int idQubit3);
 
 
