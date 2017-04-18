@@ -144,6 +144,21 @@ int main (int narg, char** varg) {
         }
 	totalProbability = calcTotalProbability(multiQubit);
         if (env.rank==0) printf("VERIFICATION: total probability=%.14f\n", totalProbability);
+	
+	//
+	// ===== filter out qubits
+	//
+	
+	qProbability = probOfFilterOut111(multiQubit, 0, 1, 2);	
+        if (env.rank==0) printf("Probability of (0,1,2)!=1 = %.14f\n", qProbability);
+	totalProbability = calcTotalProbability(multiQubit);
+        if (env.rank==0) printf("VERIFICATION: total probability=%.14f\n", totalProbability);
+	
+	qProbability = probOfFilterOut111(multiQubit, 3, 1, 2);	
+        if (env.rank==0) printf("Probability of (3,1,2)!=1 = %.14f\n", qProbability);
+	totalProbability = calcTotalProbability(multiQubit);
+        if (env.rank==0) printf("VERIFICATION: total probability=%.14f\n", totalProbability);
+
 
 	//
 	// ===== two qubit phase gate
@@ -157,7 +172,7 @@ int main (int narg, char** varg) {
 	quadCPhaseGate(multiQubit, 0, 2, 3, 4);
 	totalProbability = calcTotalProbability(multiQubit);
         if (env.rank==0) printf("VERIFICATION: total probability=%.14f\n", totalProbability);
-	
+
 	//
 	// ======== CLEANUP
 	//
