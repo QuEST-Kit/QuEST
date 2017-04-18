@@ -21,8 +21,6 @@ double findProbabilityOfZeroLocal (MultiQubit multiQubit,
 double findProbabilityOfZeroDistributed (MultiQubit multiQubit,
                 const int measureQubit);
 
-int extractBit (const int locationOfBitFromRight, const long long int theEncodedNumber);
-
 void measureInZeroLocal(MultiQubit multiQubit, int measureQubit, double totalProbability);
 
 double measureInZeroDistributedRenorm (MultiQubit multiQubit, const int measureQubit, const double totalProbability);
