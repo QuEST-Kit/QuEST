@@ -9,10 +9,10 @@
 #
 
 # COMPILER options: GNU, INTEL
-COMPILER = GNU
+COMPILER = INTEL
 EXE = demo
-MY_FILE_NAME = basicTemplate
-USE_MPI=0
+MY_FILE_NAME = timingExample
+USE_MPI=1
 QUEST_DIR = QUEST
 
 #

@@ -9,7 +9,7 @@ An implementation of the API in qubits.h for an MPI environment.
 # include "qubits_internal.h"
 
 # define DEBUG 0
-static int isChunkToSkipInFindPZero(int chunkId, int chunkSize, int measureQubit);
+static int isChunkToSkipInFindPZero(int chunkId, long long int chunkSize, int measureQubit);
 static int chunkIsUpper(int chunkId, long long int chunkSize, int rotQubit);
 static void getRotAngle(int chunkIsUpper, Complex *rot1, Complex *rot2, Complex alpha, Complex beta);
 static int getChunkPairId(int chunkIsUpper, int chunkId, long long int chunkSize, int rotQubit);
@@ -214,7 +214,7 @@ is in the range of values to be skipped
 @return int -- 1: skip, 0: don't skip
 */
 
-static int isChunkToSkipInFindPZero(int chunkId, int chunkSize, int measureQubit)
+static int isChunkToSkipInFindPZero(int chunkId, long long int chunkSize, int measureQubit)
 {
         long long int sizeHalfBlock = 1LL << (measureQubit);
         int numChunksToSkip = sizeHalfBlock/chunkSize;
