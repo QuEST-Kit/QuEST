@@ -28,7 +28,7 @@
 //! 1: print timing data to file, 0: no timing
 # define REPORT_TIMING 1
 //! 1: print end qubit state to file, 0: don't print
-# define REPORT_STATE 1
+# define REPORT_STATE 0
 //! 1: perform one rotation outside the timing loop to get around long communication
 //! time for first MPI send/recv
 # define INIT_COMMUNICATION 0

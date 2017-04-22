@@ -10,10 +10,10 @@ An implementation of the API in qubits.h for an MPI environment.
 
 # define DEBUG 0
 static int isChunkToSkipInFindPZero(int chunkId, int chunkSize, int measureQubit);
-static int chunkIsUpper(int chunkId, int chunkSize, int rotQubit);
+static int chunkIsUpper(int chunkId, long long int chunkSize, int rotQubit);
 static void getRotAngle(int chunkIsUpper, Complex *rot1, Complex *rot2, Complex alpha, Complex beta);
-static int getChunkPairId(int chunkIsUpper, int chunkId, int chunkSize, int rotQubit);
-static int halfMatrixBlockFitsInChunk(int chunkSize, int rotQubit);
+static int getChunkPairId(int chunkIsUpper, int chunkId, long long int chunkSize, int rotQubit);
+static int halfMatrixBlockFitsInChunk(long long int chunkSize, int rotQubit);
 
 void initQUESTEnv(QUESTEnv *env){
         // init MPI environment
@@ -87,7 +87,7 @@ a block.
 @return 1: chunk is in upper half of block, 0: chunk is in lower half of block 
 */
 
-static int chunkIsUpper(int chunkId, int chunkSize, int rotQubit)
+static int chunkIsUpper(int chunkId, long long int chunkSize, int rotQubit)
 {       
         long long int sizeHalfBlock = 1LL << (rotQubit);
         long long int sizeBlock = sizeHalfBlock*2;
@@ -129,7 +129,7 @@ update values in my chunk (with chunkId) when rotating rotQubit.
 @return chunkId of chunk required to rotate rotQubit 
 */
 
-static int getChunkPairId(int chunkIsUpper, int chunkId, int chunkSize, int rotQubit)
+static int getChunkPairId(int chunkIsUpper, int chunkId, long long int chunkSize, int rotQubit)
 {
         long long int sizeHalfBlock = 1LL << (rotQubit);
         int chunksPerHalfBlock = sizeHalfBlock/chunkSize;
@@ -148,7 +148,7 @@ blocks that fit within a single chunk.
 @return 1: one chunk fits in one block 0: chunk is larger than block
 */
 
-static int halfMatrixBlockFitsInChunk(int chunkSize, int rotQubit)
+static int halfMatrixBlockFitsInChunk(long long int chunkSize, int rotQubit)
 {
         long long int sizeHalfBlock = 1LL << (rotQubit);
         if (chunkSize > sizeHalfBlock) return 1;
