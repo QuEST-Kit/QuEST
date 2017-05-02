@@ -156,51 +156,61 @@ static int halfMatrixBlockFitsInChunk(long long int chunkSize, int rotQubit)
 }
 
 void rotateQubit(MultiQubit multiQubit, const int rotQubit, Complex alpha, Complex beta)
-
 {
-	// flag to require memory exchange. 1: an entire block fits on one rank, 0: at most half a block fits on one rank
-	int useLocalDataOnly = halfMatrixBlockFitsInChunk(multiQubit.numAmps, rotQubit);
-	Complex rot1, rot2;
+        // flag to require memory exchange. 1: an entire block fits on one rank, 0: at most half a block fits on one rank
+        int useLocalDataOnly = halfMatrixBlockFitsInChunk(multiQubit.numAmps, rotQubit);
+        Complex rot1, rot2;
 
-	// rank's chunk is in upper half of block 
-	int rankIsUpper;
-	int pairRank; // rank of corresponding chunk
+        // rank's chunk is in upper half of block 
+        int rankIsUpper;
+        int pairRank; // rank of corresponding chunk
 
         // MPI send/receive vars
-	int TAG=100;
+        int TAG=100;
         MPI_Status status;
 
-	if (useLocalDataOnly){
-		// all values required to update state vector lie in this rank
-		rotateQubitLocal(multiQubit, rotQubit, alpha, beta);
-	} else {
-		// need to get corresponding chunk of state vector from other rank
-		rankIsUpper = chunkIsUpper(multiQubit.chunkId, multiQubit.numAmps, rotQubit);
-		getRotAngle(rankIsUpper, &rot1, &rot2, alpha, beta);
-		pairRank = getChunkPairId(rankIsUpper, multiQubit.chunkId, multiQubit.numAmps, rotQubit);
-		//printf("%d rank has pair rank: %d\n", multiQubit.rank, pairRank);
-		// get corresponding values from my pair
-		MPI_Sendrecv(multiQubit.stateVec.real, multiQubit.numAmps, MPI_DOUBLE, pairRank, TAG,
-				 multiQubit.pairStateVec.real, multiQubit.numAmps, MPI_DOUBLE, pairRank, TAG,
-				 MPI_COMM_WORLD, &status);
-		//printf("rank: %d err: %d\n", multiQubit.rank, err);
-		MPI_Sendrecv(multiQubit.stateVec.imag, multiQubit.numAmps, MPI_DOUBLE, pairRank, TAG,
-				multiQubit.pairStateVec.imag, multiQubit.numAmps, MPI_DOUBLE, pairRank, TAG,
-				MPI_COMM_WORLD, &status);
-		// this rank's values are either in the upper of lower half of the block. send values to rotateQubitDistributed
-		// in the correct order
-		if (rankIsUpper){
-			rotateQubitDistributed(multiQubit,rotQubit,rot1,rot2,
-				multiQubit.stateVec, //upper
-				multiQubit.pairStateVec, //lower
-				multiQubit.stateVec); //output
-		} else {
-			rotateQubitDistributed(multiQubit,rotQubit,rot1,rot2,
-				multiQubit.pairStateVec, //upper
-				multiQubit.stateVec, //lower
-				multiQubit.stateVec); //output
-		}
-	}
+        if (useLocalDataOnly){
+                // all values required to update state vector lie in this rank
+                rotateQubitLocal(multiQubit, rotQubit, alpha, beta);
+        } else {
+                // need to get corresponding chunk of state vector from other rank
+                rankIsUpper = chunkIsUpper(multiQubit.chunkId, multiQubit.numAmps, rotQubit);
+                getRotAngle(rankIsUpper, &rot1, &rot2, alpha, beta);
+                pairRank = getChunkPairId(rankIsUpper, multiQubit.chunkId, multiQubit.numAmps, rotQubit);
+                //printf("%d rank has pair rank: %d\n", multiQubit.rank, pairRank);
+                // get corresponding values from my pair
+
+                // Required by MPI using int rather than long long int for count
+                long long int maxMessageCount = (1LL<<30);
+                if (multiQubit.numAmps<maxMessageCount) maxMessageCount = multiQubit.numAmps;
+                int numMessages = multiQubit.numAmps/maxMessageCount;
+                int i;
+                long long int offset;
+                if (DEBUG) printf("numMessages %d maxMessageCount %lld\n", numMessages, maxMessageCount);
+                for (i=0; i<numMessages; i++){
+                        offset = i*maxMessageCount;
+                        MPI_Sendrecv(&multiQubit.stateVec.real[offset], maxMessageCount, MPI_DOUBLE, pairRank, TAG,
+                                         &multiQubit.pairStateVec.real[offset], maxMessageCount, MPI_DOUBLE,
+                                         pairRank, TAG, MPI_COMM_WORLD, &status);
+                        //printf("rank: %d err: %d\n", multiQubit.rank, err);
+                        MPI_Sendrecv(&multiQubit.stateVec.imag[offset], maxMessageCount, MPI_DOUBLE, pairRank, TAG,
+                                        &multiQubit.pairStateVec.imag[offset], maxMessageCount, MPI_DOUBLE,
+                                        pairRank, TAG, MPI_COMM_WORLD, &status);
+                }
+                // this rank's values are either in the upper of lower half of the block. send values to rotateQubitDistributed
+                // in the correct order
+                if (rankIsUpper){
+                        rotateQubitDistributed(multiQubit,rotQubit,rot1,rot2,
+                                multiQubit.stateVec, //upper
+                                multiQubit.pairStateVec, //lower
+                                multiQubit.stateVec); //output
+                } else {
+                        rotateQubitDistributed(multiQubit,rotQubit,rot1,rot2,
+                                multiQubit.pairStateVec, //upper
+                                multiQubit.stateVec, //lower
+                                multiQubit.stateVec); //output
+                }
+        }
 }
 
 /** Find chunks to skip when calculating probability of qubit being zero.
