@@ -6,6 +6,7 @@
 # include <stdio.h>
 # include <stdlib.h>
 # include <assert.h>
+# include "precision.h"
 # include "qubits.h"
 
 # define DEBUG 0
@@ -26,11 +27,11 @@ void createMultiQubit(MultiQubit *multiQubit, int numQubits, QUESTEnv env)
 	long long int numAmps = 1L << numQubits;
 	long long int numAmpsPerRank = numAmps/env.numRanks;
 
-        multiQubit->stateVec.real = malloc(numAmpsPerRank * sizeof(multiQubit->stateVec.real));
-        multiQubit->stateVec.imag = malloc(numAmpsPerRank * sizeof(multiQubit->stateVec.imag));
+        multiQubit->stateVec.real = malloc(numAmpsPerRank * sizeof(*(multiQubit->stateVec.real)));
+        multiQubit->stateVec.imag = malloc(numAmpsPerRank * sizeof(*(multiQubit->stateVec.imag)));
 	if (env.numRanks>1){
-		multiQubit->pairStateVec.real = malloc(numAmpsPerRank * sizeof(multiQubit->pairStateVec.real));
-		multiQubit->pairStateVec.imag = malloc(numAmpsPerRank * sizeof(multiQubit->pairStateVec.imag));
+		multiQubit->pairStateVec.real = malloc(numAmpsPerRank * sizeof(*(multiQubit->pairStateVec.real)));
+		multiQubit->pairStateVec.imag = malloc(numAmpsPerRank * sizeof(*(multiQubit->pairStateVec.imag)));
 	}
 
         if ( (!(multiQubit->stateVec.real) || !(multiQubit->stateVec.imag))
@@ -95,7 +96,7 @@ void reportState(MultiQubit multiQubit){
 	if (multiQubit.chunkId==0) fprintf(state, "real, imag\n");
 
 	for(index=0; index<multiQubit.numAmps; index++){
-		fprintf(state, "%.12f, %.12f\n", multiQubit.stateVec.real[index], multiQubit.stateVec.imag[index]);
+		fprintf(state, REAL_STRING_FORMAT "," REAL_STRING_FORMAT "\n", multiQubit.stateVec.real[index], multiQubit.stateVec.imag[index]);
 	}
 	fclose(state);
 }
@@ -128,8 +129,8 @@ void initStateVec (MultiQubit *multiQubit)
 	stateVecSize = multiQubit->numAmps;
 
 	// Can't use multiQubit->stateVec as a private OMP var
-	double *stateVecReal = multiQubit->stateVec.real;
-	double *stateVecImag = multiQubit->stateVec.imag;
+	REAL *stateVecReal = multiQubit->stateVec.real;
+	REAL *stateVecImag = multiQubit->stateVec.imag;
 
 	// initialise the state to |0000..0000>
 # ifdef _OPENMP
@@ -181,7 +182,7 @@ void rotateQubitLocal (MultiQubit multiQubit, const int rotQubit, Complex alpha,
 	     indexUp,indexLo;                                     // current index and corresponding index in lower half block
 
 	// ----- temp variables
-	double   stateRealUp,stateRealLo,                             // storage for previous state values
+	REAL   stateRealUp,stateRealLo,                             // storage for previous state values
 		 stateImagUp,stateImagLo;                             // (used in updates)
 	// ----- temp variables
 	long long int thisTask;                                   // task based approach for expose loop with small granularity
@@ -211,10 +212,10 @@ void rotateQubitLocal (MultiQubit multiQubit, const int rotQubit, Complex alpha,
 	//
 	
 	// Can't use multiQubit.stateVec as a private OMP var
-	double *stateVecReal = multiQubit.stateVec.real;
-	double *stateVecImag = multiQubit.stateVec.imag;
-	double alphaImag=alpha.imag, alphaReal=alpha.real;
-	double betaImag=beta.imag, betaReal=beta.real;
+	REAL *stateVecReal = multiQubit.stateVec.real;
+	REAL *stateVecImag = multiQubit.stateVec.imag;
+	REAL alphaImag=alpha.imag, alphaReal=alpha.real;
+	REAL betaImag=beta.imag, betaReal=beta.real;
 
 # ifdef _OPENMP
 # pragma omp parallel \
@@ -275,7 +276,7 @@ void rotateQubitDistributed (MultiQubit multiQubit, const int rotQubit,
 		ComplexArray stateVecOut)
 {
 	// ----- temp variables
-	double   stateRealUp,stateRealLo,                             // storage for previous state values
+	REAL   stateRealUp,stateRealLo,                             // storage for previous state values
 	stateImagUp,stateImagLo;                             // (used in updates)
 	// ----- temp variables
 	long long int thisTask;                                   // task based approach for expose loop with small granularity
@@ -295,11 +296,11 @@ void rotateQubitDistributed (MultiQubit multiQubit, const int rotQubit,
 	//
 	// --- task-based shared-memory parallel implementation
 	//
-	double rot1Real=rot1.real, rot1Imag=rot1.imag;
-	double rot2Real=rot2.real, rot2Imag=rot2.imag;
-	double *stateVecRealUp=stateVecUp.real, *stateVecImagUp=stateVecUp.imag;
-	double *stateVecRealLo=stateVecLo.real, *stateVecImagLo=stateVecLo.imag;
-	double *stateVecRealOut=stateVecOut.real, *stateVecImagOut=stateVecOut.imag;
+	REAL rot1Real=rot1.real, rot1Imag=rot1.imag;
+	REAL rot2Real=rot2.real, rot2Imag=rot2.imag;
+	REAL *stateVecRealUp=stateVecUp.real, *stateVecImagUp=stateVecUp.imag;
+	REAL *stateVecRealLo=stateVecLo.real, *stateVecImagLo=stateVecLo.imag;
+	REAL *stateVecRealOut=stateVecOut.real, *stateVecImagOut=stateVecOut.imag;
 
 # ifdef _OPENMP
 # pragma omp parallel \
@@ -336,7 +337,7 @@ the size of one chunk.
 @return probability of qubit measureQubit being zero
 */
 
-double findProbabilityOfZeroLocal (MultiQubit multiQubit,
+REAL findProbabilityOfZeroLocal (MultiQubit multiQubit,
 		const int measureQubit)
 {
 	// ----- sizes
@@ -346,7 +347,7 @@ double findProbabilityOfZeroLocal (MultiQubit multiQubit,
 	long long int thisBlock,                                           // current block
 	     index;                                               // current index for first half block
 	// ----- measured probability
-	double   totalProbability;                                    // probability (returned) value
+	REAL   totalProbability;                                    // probability (returned) value
 	// ----- temp variables
 	long long int thisTask;                                   // task based approach for expose loop with small granularity
 	long long int numTasks=multiQubit.numAmps>>1;
@@ -379,8 +380,8 @@ double findProbabilityOfZeroLocal (MultiQubit multiQubit,
 	// --- task-based shared-memory parallel implementation
 	//
 	
-	double *stateVecReal = multiQubit.stateVec.real;
-	double *stateVecImag = multiQubit.stateVec.imag;
+	REAL *stateVecReal = multiQubit.stateVec.real;
+	REAL *stateVecImag = multiQubit.stateVec.imag;
 
 # ifdef _OPENMP
 # pragma omp parallel \
@@ -424,11 +425,11 @@ Size of regions to skip is a multiple of chunkSize.
 @return probability of qubit measureQubit being zero
 */
 
-double findProbabilityOfZeroDistributed (MultiQubit multiQubit,
+REAL findProbabilityOfZeroDistributed (MultiQubit multiQubit,
 		const int measureQubit)
 {
 	// ----- measured probability
-	double   totalProbability;                                    // probability (returned) value
+	REAL   totalProbability;                                    // probability (returned) value
 	// ----- temp variables
 	long long int thisTask;                                   // task based approach for expose loop with small granularity
 	long long int numTasks=multiQubit.numAmps;
@@ -452,8 +453,8 @@ double findProbabilityOfZeroDistributed (MultiQubit multiQubit,
 	// --- task-based shared-memory parallel implementation
 	//
 	
-	double *stateVecReal = multiQubit.stateVec.real;
-	double *stateVecImag = multiQubit.stateVec.imag;
+	REAL *stateVecReal = multiQubit.stateVec.real;
+	REAL *stateVecImag = multiQubit.stateVec.imag;
 
 # ifdef _OPENMP
 # pragma omp parallel \
@@ -521,8 +522,8 @@ void controlPhaseGate (MultiQubit multiQubit, const int idQubit1, const int idQu
 
 	// dimension of the state vector
 	stateVecSize = multiQubit.numAmps;
-	double *stateVecReal = multiQubit.stateVec.real;
-	double *stateVecImag = multiQubit.stateVec.imag;
+	REAL *stateVecReal = multiQubit.stateVec.real;
+	REAL *stateVecImag = multiQubit.stateVec.imag;
 
 # ifdef _OPENMP
 # pragma omp parallel for \
@@ -559,8 +560,8 @@ void quadCPhaseGate (MultiQubit multiQubit, const int idQubit1, const int idQubi
 	assert (idQubit1 >= 0 && idQubit2 >= 0 && idQubit1 < multiQubit.numQubits && idQubit2 < multiQubit.numQubits);
 
 	stateVecSize = multiQubit.numAmps;
-	double *stateVecReal = multiQubit.stateVec.real;
-	double *stateVecImag = multiQubit.stateVec.imag;
+	REAL *stateVecReal = multiQubit.stateVec.real;
+	REAL *stateVecImag = multiQubit.stateVec.imag;
 
 # ifdef _OPENMP
 # pragma omp parallel \
@@ -597,7 +598,7 @@ measureQubit=1 in the second half of the block) fit entirely into one chunk.
 @param[in] measureQubit qubit to measure
 @param[in] totalProbability probability of qubit measureQubit being zero
 */
-void measureInZeroLocal(MultiQubit multiQubit, int measureQubit, double totalProbability)
+void measureInZeroLocal(MultiQubit multiQubit, int measureQubit, REAL totalProbability)
 {
 	// ----- sizes
 	long long int sizeBlock,                                           // size of blocks
@@ -606,7 +607,7 @@ void measureInZeroLocal(MultiQubit multiQubit, int measureQubit, double totalPro
 	long long int thisBlock,                                           // current block
 	     index;                                               // current index for first half block
 	// ----- measured probability
-	double   renorm;                                    // probability (returned) value
+	REAL   renorm;                                    // probability (returned) value
 	// ----- temp variables
 	long long int thisTask;                                   // task based approach for expose loop with small granularity
 	// (good for shared memory parallelism)
@@ -632,8 +633,8 @@ void measureInZeroLocal(MultiQubit multiQubit, int measureQubit, double totalPro
 	// --- task-based shared-memory parallel implementation
 	//
 	renorm=1/sqrt(totalProbability);
-	double *stateVecReal = multiQubit.stateVec.real;
-	double *stateVecImag = multiQubit.stateVec.imag;
+	REAL *stateVecReal = multiQubit.stateVec.real;
+	REAL *stateVecImag = multiQubit.stateVec.imag;
 
 
 # ifdef _OPENMP
@@ -658,7 +659,7 @@ void measureInZeroLocal(MultiQubit multiQubit, int measureQubit, double totalPro
 	}
 
 	//SCB this is a debugging style check. It is probably useful to leave in, but it could be parallelised I guess
-	//  double checkTotal=1.;
+	//  REAL checkTotal=1.;
 	//  for (index=0; index<2*numTasks; index++) {
 	//  	checkTotal=checkTotal-(stateVecReal[index]*stateVecReal[index] + stateVecImag[index]*stateVecImag[index]);
 	//  }
@@ -680,7 +681,7 @@ only renormalisation or only setting amplitudes to 0. This function handles the 
 @param[in] totalProbability probability of qubit measureQubit being zero
 */
 
-double measureInZeroDistributedRenorm (MultiQubit multiQubit, const int measureQubit, const double totalProbability)
+REAL measureInZeroDistributedRenorm (MultiQubit multiQubit, const int measureQubit, const REAL totalProbability)
 {
 	// ----- temp variables
 	long long int thisTask;                                   // task based approach for expose loop with small granularity
@@ -702,10 +703,10 @@ double measureInZeroDistributedRenorm (MultiQubit multiQubit, const int measureQ
 	// --- task-based shared-memory parallel implementation
 	//
 	
-	double renorm=1/sqrt(totalProbability);
+	REAL renorm=1/sqrt(totalProbability);
 	
-	double *stateVecReal = multiQubit.stateVec.real;
-	double *stateVecImag = multiQubit.stateVec.imag;
+	REAL *stateVecReal = multiQubit.stateVec.real;
+	REAL *stateVecImag = multiQubit.stateVec.imag;
 
 # ifdef _OPENMP
 # pragma omp parallel \
@@ -760,8 +761,8 @@ void measureInZeroDistributedSetZero(MultiQubit multiQubit, const int measureQub
 	// --- task-based shared-memory parallel implementation
 	//
 	
-	double *stateVecReal = multiQubit.stateVec.real;
-	double *stateVecImag = multiQubit.stateVec.imag;
+	REAL *stateVecReal = multiQubit.stateVec.real;
+	REAL *stateVecImag = multiQubit.stateVec.imag;
 
 # ifdef _OPENMP
 # pragma omp parallel \
@@ -786,7 +787,7 @@ void measureInZeroDistributedSetZero(MultiQubit multiQubit, const int measureQub
 @param[in] probOfFilter Total probability that the 3 qubits are not all in the 1 state. 
 */
 void filterOut111Local(MultiQubit multiQubit, const int idQubit1, const int idQubit2, const int idQubit3,
-		const double probOfFilter)
+		const REAL probOfFilter)
 {
 	long long int index;
 	long long int stateVecSize;
@@ -799,10 +800,10 @@ void filterOut111Local(MultiQubit multiQubit, const int idQubit1, const int idQu
 
 	stateVecSize = multiQubit.numAmps;
 
-	if ( probOfFilter<1e-16 ){ printf("Extremely small or negative profOfFilter=%.8e; aborting! \n",probOfFilter); exit(1);}
-	double myNorm=1/sqrt(probOfFilter);
-	double *stateVecReal = multiQubit.stateVec.real;
-	double *stateVecImag = multiQubit.stateVec.imag;
+	if ( probOfFilter<1e-16 ){ printf("Extremely small or negative profOfFilter="REAL_STRING_FORMAT"; aborting! \n",probOfFilter); exit(1);}
+	REAL myNorm=1/sqrt(probOfFilter);
+	REAL *stateVecReal = multiQubit.stateVec.real;
+	REAL *stateVecImag = multiQubit.stateVec.imag;
 
 # ifdef _OPENMP
 # pragma omp parallel \
@@ -835,7 +836,7 @@ The function returns the probability of this outcome across all amplitudes in th
 @param[in] idQubit1, idQubit2, idQubit3 specified qubits                 
 @return Total probability that the 3 qubits are not all in the 1 state. 
 */
-double probOfFilterOut111Local(MultiQubit multiQubit, const int idQubit1, const int idQubit2, const int idQubit3)
+REAL probOfFilterOut111Local(MultiQubit multiQubit, const int idQubit1, const int idQubit2, const int idQubit3)
 {
 	long long int index;
 	long long int stateVecSize;
@@ -847,10 +848,10 @@ double probOfFilterOut111Local(MultiQubit multiQubit, const int idQubit1, const 
 	assert (idQubit1 >= 0 && idQubit2 >= 0 && idQubit1 < multiQubit.numQubits && idQubit2 < multiQubit.numQubits);
 
 	stateVecSize = multiQubit.numAmps;
-	double probOfFilter=0;
+	REAL probOfFilter=0;
 	
-	double *stateVecReal = multiQubit.stateVec.real;
-	double *stateVecImag = multiQubit.stateVec.imag;
+	REAL *stateVecReal = multiQubit.stateVec.real;
+	REAL *stateVecImag = multiQubit.stateVec.imag;
 
 # ifdef _OPENMP
 # pragma omp parallel \

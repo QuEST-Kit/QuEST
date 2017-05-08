@@ -1,5 +1,6 @@
 # ifndef QUBITS
 # define QUBITS
+
 /** @file
  * The QUEST library API and objects. 
 */
@@ -8,16 +9,16 @@
 */
 typedef struct ComplexArray
 {
-	double *real; 
-	double *imag;
+	REAL *real; 
+	REAL *imag;
 } ComplexArray;
 
 /** Represents one complex number.
 */
 typedef struct Complex
 {
-	double real;
-	double imag;
+	REAL real;
+	REAL imag;
 } Complex;
 
 /** Represents a system of qubits.
@@ -98,7 +99,7 @@ void reportQUESTEnv(QUESTEnv env);
  * @param[in] multiQubit object representing a set of qubits
  * @return total probability
  */
-double calcTotalProbability(MultiQubit multiQubit);
+REAL calcTotalProbability(MultiQubit multiQubit);
 
 /** Rotate a single qubit in the state vector of probability amplitudes, given the angle rotation arguments.
 alphaRe = cos(angle1) * cos(angle2) \n
@@ -123,7 +124,7 @@ of a specified qubit being in the zero state.
 @param[in] measureQubit qubit to measure
 @return probability of qubit measureQubit being zero
 */
-double findProbabilityOfZero(MultiQubit multiQubit, const int measureQubit);
+REAL findProbabilityOfZero(MultiQubit multiQubit, const int measureQubit);
 
 /** Update the state vector to be consistent with measuring measureQubit=0.
 Measure in Zero performs an irreversible change to the state vector: it updates the vector according
@@ -136,7 +137,7 @@ probability of making this measurement.
 @param[in] measureQubit qubit to measure
 @return probability of qubit measureQubit being zero
 */
-double measureInZero(MultiQubit multiQubit, const int measureQubit);
+REAL measureInZero(MultiQubit multiQubit, const int measureQubit);
 
 /** Updates the state according to this scenario: we ask "are these 3 qubits in 111" and the answer is "no".
 The function returns the probability of this outcome (if zero, it will exit with error) 
@@ -144,7 +145,7 @@ The function returns the probability of this outcome (if zero, it will exit with
 @param[in] idQubit1, idQubit2, idQubit3 specified qubits                 
 @return Total probability that the 3 qubits are not all in the 1 state. 
 */
-double filterOut111(MultiQubit multiQubit, const int idQubit1, const int idQubit2, const int idQubit3);
+REAL filterOut111(MultiQubit multiQubit, const int idQubit1, const int idQubit2, const int idQubit3);
 
 /** Evaluates the state according to this scenario: we ask "are these 3 qubits in 111" and the answer is "no".
 The function returns the probability of this outcome (if zero, it will exit with error) 
@@ -152,7 +153,7 @@ The function returns the probability of this outcome (if zero, it will exit with
 @param[in] idQubit1, idQubit2, idQubit3 specified qubits                 
 @return Total probability that the 3 qubits are not all in the 1 state. 
 */
-double probOfFilterOut111(MultiQubit multiQubit, const int idQubit1, const int idQubit2, const int idQubit3);
+REAL probOfFilterOut111(MultiQubit multiQubit, const int idQubit1, const int idQubit2, const int idQubit3);
 
 
 

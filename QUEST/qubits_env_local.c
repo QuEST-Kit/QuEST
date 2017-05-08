@@ -5,6 +5,7 @@ An implementation of the API in qubits.h for a local (non-MPI) environment.
 # include <stdlib.h>
 # include <stdio.h>
 # include <omp.h>
+# include "precision.h"
 # include "qubits.h"
 # include "qubits_internal.h"
 
@@ -32,10 +33,11 @@ void reportQUESTEnv(QUESTEnv env){
 # else
 	printf("OpenMP disabled\n");
 # endif
+	printf("Precision: size of REAL is %d bytes\n", sizeof(REAL));
 }
 
-double calcTotalProbability(MultiQubit multiQubit){
-        double pTotal=0; 
+REAL calcTotalProbability(MultiQubit multiQubit){
+        REAL pTotal=0; 
 	long long int index;
 	long long int numAmpsPerRank = multiQubit.numAmps;
         for (index=0; index<numAmpsPerRank; index++){ 
@@ -51,33 +53,33 @@ void rotateQubit(MultiQubit multiQubit, const int rotQubit, Complex alpha, Compl
 	rotateQubitLocal(multiQubit, rotQubit, alpha, beta);
 }
 
-double findProbabilityOfZero(MultiQubit multiQubit,
+REAL findProbabilityOfZero(MultiQubit multiQubit,
                 const int measureQubit)
 {
-	double stateProb=0;
+	REAL stateProb=0;
 	stateProb = findProbabilityOfZeroLocal(multiQubit, measureQubit);
 	return stateProb;
 }
 
-double measureInZero(MultiQubit multiQubit, const int measureQubit)
+REAL measureInZero(MultiQubit multiQubit, const int measureQubit)
 {
-        double stateProb;
+        REAL stateProb;
 	stateProb = findProbabilityOfZero(multiQubit, measureQubit);
         measureInZeroLocal(multiQubit, measureQubit, stateProb);
         return stateProb;
 }
 
-double filterOut111(MultiQubit multiQubit, const int idQubit1, const int idQubit2, const int idQubit3)
+REAL filterOut111(MultiQubit multiQubit, const int idQubit1, const int idQubit2, const int idQubit3)
 {
-        double stateProb=0;
+        REAL stateProb=0;
         stateProb = probOfFilterOut111(multiQubit, idQubit1, idQubit2, idQubit3);
         filterOut111Local(multiQubit, idQubit1, idQubit2, idQubit3, stateProb);
         return stateProb;
 }
 
-double probOfFilterOut111(MultiQubit multiQubit, const int idQubit1, const int idQubit2, const int idQubit3)
+REAL probOfFilterOut111(MultiQubit multiQubit, const int idQubit1, const int idQubit2, const int idQubit3)
 {
-        double stateProb=0;
+        REAL stateProb=0;
         stateProb = probOfFilterOut111Local(multiQubit, idQubit1, idQubit2, idQubit3);
         return stateProb;
 }

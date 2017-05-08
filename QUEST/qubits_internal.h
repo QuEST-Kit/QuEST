@@ -15,22 +15,22 @@ void rotateQubitDistributed (MultiQubit multiQubit, const int rotQubit,
                 ComplexArray stateVecLo,
                 ComplexArray stateVecOut);
 
-double findProbabilityOfZeroLocal (MultiQubit multiQubit,
+REAL findProbabilityOfZeroLocal (MultiQubit multiQubit,
                 const int measureQubit);
 
-double findProbabilityOfZeroDistributed (MultiQubit multiQubit,
+REAL findProbabilityOfZeroDistributed (MultiQubit multiQubit,
                 const int measureQubit);
 
-void measureInZeroLocal(MultiQubit multiQubit, int measureQubit, double totalProbability);
+void measureInZeroLocal(MultiQubit multiQubit, int measureQubit, REAL totalProbability);
 
-double measureInZeroDistributedRenorm (MultiQubit multiQubit, const int measureQubit, const double totalProbability);
+REAL measureInZeroDistributedRenorm (MultiQubit multiQubit, const int measureQubit, const REAL totalProbability);
 
 void measureInZeroDistributedSetZero(MultiQubit multiQubit, const int measureQubit);
 
 void filterOut111Local(MultiQubit multiQubit, const int idQubit1, const int idQubit2, const int idQubit3,
-	const double probOfFilter);
+	const REAL probOfFilter);
 
-double probOfFilterOut111Local(MultiQubit multiQubit, const int idQubit1, const int idQubit2, const int idQubit3);
+REAL probOfFilterOut111Local(MultiQubit multiQubit, const int idQubit1, const int idQubit2, const int idQubit3);
 
 
 
