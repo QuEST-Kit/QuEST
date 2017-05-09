@@ -16,11 +16,12 @@
 
 # set queue
 #SBATCH --partition=mem6T
+#SBATCH --exclusive
 
 NUM_QUBITS=33
 EXE=demo
 export OMP_PROC_BIND=true
-export OMP_NUM_THREADS=1
+export OMP_NUM_THREADS=16
 
 module purge
 module load mvapich2

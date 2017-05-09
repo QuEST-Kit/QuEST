@@ -26,7 +26,7 @@ EXE=demo
 export OMP_NUM_THREADS=16
 
 module purge
-module load intel-compilers/2016
+module load intel-compilers
 
 make clean
 make

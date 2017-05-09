@@ -12,14 +12,15 @@
 
 # set queue
 #SBATCH --partition=mem6T
+#SBATCH --exclusive
 
 NUM_QUBITS=33
 EXE=demo
 export OMP_PROC_BIND=true
-export OMP_NUM_THREADS=32
+export OMP_NUM_THREADS=128
 
 module purge
-module load intel-compilers/2016
+module load intel-compilers
 
 make clean
 make
