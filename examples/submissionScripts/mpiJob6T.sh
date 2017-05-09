@@ -4,10 +4,6 @@
 #SBATCH --nodes=1
 #SBATCH --ntasks-per-node=8
 
-##SBATCH --mem=50Gb
-# uncomment if NUM_QUBITS - log2(NUM_NODES) > 30
-####SBATCH --mem=100Gb
-
 # set max wallclock time
 #SBATCH --time=01:30:00
 
