@@ -2,7 +2,7 @@
 
 # set the number of nodes and processes per node. We are running one process on a single node
 #SBATCH --nodes=1
-#SBATCH --ntasks-per-node=1
+#SBATCH --ntasks-per-node=8
 
 ##SBATCH --mem=50Gb
 # uncomment if NUM_QUBITS - log2(NUM_NODES) > 30
@@ -20,7 +20,6 @@
 
 NUM_QUBITS=33
 EXE=demo
-export OMP_PROC_BIND=true
 export OMP_NUM_THREADS=16
 
 module purge
