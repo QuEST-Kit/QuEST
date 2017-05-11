@@ -1,6 +1,7 @@
 # ifndef QUBITS
 # define QUBITS
 
+# include "precision.h"
 /** @file
  * The QUEST library API and objects. 
 */

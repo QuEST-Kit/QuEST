@@ -13,6 +13,7 @@
 # include <omp.h>
 
 # include "QUEST/qubits.h"
+# include "QUEST/precision.h"
 
 //! Max number of angles used to define qubit rotation
 # define MaxAngles      10
