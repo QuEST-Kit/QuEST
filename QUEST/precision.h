@@ -3,7 +3,7 @@
 
 // *** EDIT PRECISION HERE
 // OPTIONS: 1, 2, 4
-# define P 4
+# define P 2
 
 # if P==1
 	// SINGLE PRECISION
