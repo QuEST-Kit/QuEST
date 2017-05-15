@@ -24,6 +24,8 @@ export OMP_NUM_THREADS=8
 module purge
 module load mvapich2
 
+. enable_arcus-b_mpi.sh
+
 make clean
 make
 
