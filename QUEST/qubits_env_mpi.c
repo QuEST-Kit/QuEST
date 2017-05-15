@@ -58,8 +58,8 @@ void reportQUESTEnv(QUESTEnv env){
 # else
 		printf("OpenMP disabled\n");
 # endif 
+		printf("Precision: size of REAL is %d bytes\n", sizeof(REAL));
 	}
-	printf("Precision: size of REAL is %d bytes\n", sizeof(REAL));
 }
 
 
@@ -74,7 +74,7 @@ REAL calcTotalProbability(MultiQubit multiQubit){
                 pTotal+=multiQubit.stateVec.imag[index]*multiQubit.stateVec.imag[index];      
         } 
 	if (DEBUG) printf("before calc prob. %d\n", multiQubit.numChunks);
-	if (multiQubit.numChunks>1) MPI_Allreduce(&pTotal, &allRankTotals, 1, MPI_REAL, MPI_SUM, MPI_COMM_WORLD);
+	if (multiQubit.numChunks>1) MPI_Allreduce(&pTotal, &allRankTotals, 1, MPI_QUEST_REAL, MPI_SUM, MPI_COMM_WORLD);
 	else allRankTotals=pTotal;
 
 	return allRankTotals;
@@ -191,12 +191,12 @@ void rotateQubit(MultiQubit multiQubit, const int rotQubit, Complex alpha, Compl
                 if (DEBUG) printf("numMessages %d maxMessageCount %lld\n", numMessages, maxMessageCount);
                 for (i=0; i<numMessages; i++){
                         offset = i*maxMessageCount;
-                        MPI_Sendrecv(&multiQubit.stateVec.real[offset], maxMessageCount, MPI_REAL, pairRank, TAG,
-                                         &multiQubit.pairStateVec.real[offset], maxMessageCount, MPI_REAL,
+                        MPI_Sendrecv(&multiQubit.stateVec.real[offset], maxMessageCount, MPI_QUEST_REAL, pairRank, TAG,
+                                         &multiQubit.pairStateVec.real[offset], maxMessageCount, MPI_QUEST_REAL,
                                          pairRank, TAG, MPI_COMM_WORLD, &status);
                         //printf("rank: %d err: %d\n", multiQubit.rank, err);
-                        MPI_Sendrecv(&multiQubit.stateVec.imag[offset], maxMessageCount, MPI_REAL, pairRank, TAG,
-                                        &multiQubit.pairStateVec.imag[offset], maxMessageCount, MPI_REAL,
+                        MPI_Sendrecv(&multiQubit.stateVec.imag[offset], maxMessageCount, MPI_QUEST_REAL, pairRank, TAG,
+                                        &multiQubit.pairStateVec.imag[offset], maxMessageCount, MPI_QUEST_REAL,
                                         pairRank, TAG, MPI_COMM_WORLD, &status);
                 }
                 // this rank's values are either in the upper of lower half of the block. send values to rotateQubitDistributed
@@ -246,7 +246,7 @@ REAL findProbabilityOfZero(MultiQubit multiQubit, const int measureQubit)
 			stateProb = findProbabilityOfZeroDistributed(multiQubit, measureQubit);
 		} else stateProb = 0;
 	}
-	MPI_Allreduce(&stateProb, &totalStateProb, 1, MPI_REAL, MPI_SUM, MPI_COMM_WORLD);
+	MPI_Allreduce(&stateProb, &totalStateProb, 1, MPI_QUEST_REAL, MPI_SUM, MPI_COMM_WORLD);
 	return totalStateProb;
 }
 
@@ -279,7 +279,7 @@ REAL probOfFilterOut111(MultiQubit multiQubit, const int idQubit1, const int idQ
 {
 	REAL stateProb=0, totalStateProb=0;
 	stateProb = probOfFilterOut111Local(multiQubit, idQubit1, idQubit2, idQubit3);
-	MPI_Allreduce(&stateProb, &totalStateProb, 1, MPI_REAL, MPI_SUM, MPI_COMM_WORLD);
+	MPI_Allreduce(&stateProb, &totalStateProb, 1, MPI_QUEST_REAL, MPI_SUM, MPI_COMM_WORLD);
 	return totalStateProb;
 }
 

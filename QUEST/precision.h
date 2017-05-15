@@ -3,25 +3,24 @@
 
 // *** EDIT PRECISION HERE
 // OPTIONS: 1, 2, 4
-# define P 2
+# define P 4
 
 # if P==1
 	// SINGLE PRECISION
 	# define REAL float
-	# define MPI_REAL MPI_FLOAT
+	# define MPI_QUEST_REAL MPI_FLOAT
 	# define REAL_STRING_FORMAT "%.8f"
 # elif P==4
 	// QUAD PRECISION
 	// 80-bit precision for most implementations
 	# define REAL long double
-	# define MPI_REAL MPI_LONG_DOUBLE
-	# define REAL_STRING_FORMAT "%.20Lf"
+	# define MPI_QUEST_REAL MPI_LONG_DOUBLE
+	# define REAL_STRING_FORMAT "%.17Lf"
 # else
 	// DOUBLE PRECISION
 	# define REAL double
-	# define MPI_REAL MPI_DOUBLE
-	//# define REAL_STRING_FORMAT "%.14f"
-	# define REAL_STRING_FORMAT "%.20f"
+	# define MPI_QUEST_REAL MPI_DOUBLE
+	# define REAL_STRING_FORMAT "%.14f"
 # endif
 
 
