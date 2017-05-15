@@ -25,6 +25,4 @@ module load intel-compilers
 make clean
 make
 
-lscpu
-
 ./$EXE $NUM_QUBITS

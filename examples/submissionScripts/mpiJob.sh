@@ -9,7 +9,7 @@
 ####SBATCH --mem=100Gb
 
 # set max wallclock time
-#SBATCH --time=00:10:00
+#SBATCH --time=00:40:00
 
 # set name of job
 #SBATCH --job-name QUEST
@@ -17,7 +17,7 @@
 # set queue
 #SBATCH --partition=compute
 
-NUM_QUBITS=20
+NUM_QUBITS=30
 EXE=demo
 export OMP_NUM_THREADS=8
 
