@@ -95,6 +95,12 @@ void syncQUESTEnv(QUESTEnv env);
  */
 void reportQUESTEnv(QUESTEnv env);
 
+REAL getRealAmpEl(MultiQubit multiQubit, long long int index);
+
+REAL getImagAmpEl(MultiQubit multiQubit, long long int index);
+
+REAL getProbEl(MultiQubit multiQubit, long long int index);
+
 /** Calculate the probability of being in any state by taking the norm of the entire state vector. 
  * Should be equal to 1.
  * @param[in] multiQubit object representing a set of qubits

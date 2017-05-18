@@ -62,6 +62,20 @@ void reportQUESTEnv(QUESTEnv env){
 	}
 }
 
+REAL getRealAmpEl(MultiQubit multiQubit, long long int index){
+	printf("MPI get el not implemented\n");
+        return -10; 
+} 
+
+REAL getImagAmpEl(MultiQubit multiQubit, long long int index){
+	printf("MPI get el not implemented\n");
+        return -10; 
+}
+
+REAL getProbEl(MultiQubit multiQubit, long long int index){
+	printf("MPI get el not implemented\n");
+        return -10; 
+}
 
 
 REAL calcTotalProbability(MultiQubit multiQubit){

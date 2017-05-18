@@ -47,6 +47,22 @@ REAL calcTotalProbability(MultiQubit multiQubit){
 	return pTotal;
 }
 
+REAL getRealAmpEl(MultiQubit multiQubit, long long int index){
+	return multiQubit.stateVec.real[index];
+}
+
+REAL getImagAmpEl(MultiQubit multiQubit, long long int index){
+	return multiQubit.stateVec.imag[index];
+}
+
+REAL getProbEl(MultiQubit multiQubit, long long int index){
+	REAL real;
+	REAL imag;
+	real = multiQubit.stateVec.real[index];
+	imag = multiQubit.stateVec.imag[index];
+	return real*real + imag*imag;
+}
+
 void rotateQubit(MultiQubit multiQubit, const int rotQubit, Complex alpha, Complex beta) 
 {
 	// all values required to update state vector lie in this rank
