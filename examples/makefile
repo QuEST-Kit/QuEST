@@ -28,7 +28,7 @@ ifneq ($(USE_MPI), 1)
 	else ifeq ($(COMPILER), INTEL)
 		# Intel compilers
 		CC         = icc
-		CFLAGS     = -O2 -g -std=c99 -Wall -xAVX -axCORE-AVX2 -restrict
+		CFLAGS     = -O2 -std=c99 -Wall -xAVX -axCORE-AVX2 -restrict
 		CFLAGS_OMP = -openmp
 	else 
 		$(error " *** error: invalid compiler")
