@@ -79,19 +79,32 @@ REAL getProbEl(MultiQubit multiQubit, long long int index){
 
 
 REAL calcTotalProbability(MultiQubit multiQubit){
-        REAL pTotal=0; 
-        REAL allRankTotals=0;
-	long long int index;
-	long long int numAmpsPerRank = multiQubit.numAmps;
-        for (index=0; index<numAmpsPerRank; index++){ 
-                pTotal+=multiQubit.stateVec.real[index]*multiQubit.stateVec.real[index];      
-                pTotal+=multiQubit.stateVec.imag[index]*multiQubit.stateVec.imag[index];      
-        } 
-	if (DEBUG) printf("before calc prob. %d\n", multiQubit.numChunks);
-	if (multiQubit.numChunks>1) MPI_Allreduce(&pTotal, &allRankTotals, 1, MPI_QUEST_REAL, MPI_SUM, MPI_COMM_WORLD);
-	else allRankTotals=pTotal;
-
-	return allRankTotals;
+  /* IJB - implemented using Kahan summation for greater accuracy at a slight floating
+     point operation overhead. For more details see https://en.wikipedia.org/wiki/Kahan_summation_algorithm */
+  /* Don't change the bracketing in this routine! */
+  REAL pTotal=0; 
+  REAL y, t, c;
+  REAL allRankTotals=0;
+  long long int index;
+  long long int numAmpsPerRank = multiQubit.numAmps;
+  c = 0.0;
+  for (index=0; index<numAmpsPerRank; index++){ 
+    /* Perform pTotal+=multiQubit.stateVec.real[index]*multiQubit.stateVec.real[index]; by Kahan */
+    y = multiQubit.stateVec.real[index]*multiQubit.stateVec.real[index] - c;
+    t = pTotal + y;
+    c = ( t - pTotal ) - y;
+    pTotal = t;
+    /* Perform pTotal+=multiQubit.stateVec.imag[index]*multiQubit.stateVec.imag[index]; by Kahan */
+    y = multiQubit.stateVec.imag[index]*multiQubit.stateVec.imag[index] - c;
+    t = pTotal + y;
+    c = ( t - pTotal ) - y;
+    pTotal = t;
+  } 
+  if (DEBUG) printf("before calc prob. %d\n", multiQubit.numChunks);
+  if (multiQubit.numChunks>1) MPI_Allreduce(&pTotal, &allRankTotals, 1, MPI_QUEST_REAL, MPI_SUM, MPI_COMM_WORLD);
+  else allRankTotals=pTotal;
+  
+  return allRankTotals;
 }
 
 /** Returns whether a given chunk in position chunkId is in the upper or lower half of

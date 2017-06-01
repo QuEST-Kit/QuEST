@@ -37,14 +37,27 @@ void reportQUESTEnv(QUESTEnv env){
 }
 
 REAL calcTotalProbability(MultiQubit multiQubit){
-        REAL pTotal=0; 
-	long long int index;
-	long long int numAmpsPerRank = multiQubit.numAmps;
-        for (index=0; index<numAmpsPerRank; index++){ 
-                pTotal+=multiQubit.stateVec.real[index]*multiQubit.stateVec.real[index];      
-                pTotal+=multiQubit.stateVec.imag[index]*multiQubit.stateVec.imag[index];      
-        } 
-	return pTotal;
+  /* IJB - implemented using Kahan summation for greater accuracy at a slight floating
+     point operation overhead. For more details see https://en.wikipedia.org/wiki/Kahan_summation_algorithm */
+  /* Don't change the bracketing in this routine! */
+  REAL pTotal=0; 
+  REAL y, t, c;
+  long long int index;
+  long long int numAmpsPerRank = multiQubit.numAmps;
+  c = 0.0;
+  for (index=0; index<numAmpsPerRank; index++){ 
+    /* Perform pTotal+=multiQubit.stateVec.real[index]*multiQubit.stateVec.real[index]; by Kahan */
+    y = multiQubit.stateVec.real[index]*multiQubit.stateVec.real[index] - c;
+    t = pTotal + y;
+    c = ( t - pTotal ) - y;
+    pTotal = t;
+    /* Perform pTotal+=multiQubit.stateVec.imag[index]*multiQubit.stateVec.imag[index]; by Kahan */
+    y = multiQubit.stateVec.imag[index]*multiQubit.stateVec.imag[index] - c;
+    t = pTotal + y;
+    c = ( t - pTotal ) - y;
+    pTotal = t;
+  } 
+  return pTotal;
 }
 
 REAL getRealAmpEl(MultiQubit multiQubit, long long int index){
