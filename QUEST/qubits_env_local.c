@@ -47,15 +47,23 @@ REAL calcTotalProbability(MultiQubit multiQubit){
   c = 0.0;
   for (index=0; index<numAmpsPerRank; index++){ 
     /* Perform pTotal+=multiQubit.stateVec.real[index]*multiQubit.stateVec.real[index]; by Kahan */
+   // pTotal+=multiQubit.stateVec.real[index]*multiQubit.stateVec.real[index];
+    
     y = multiQubit.stateVec.real[index]*multiQubit.stateVec.real[index] - c;
     t = pTotal + y;
     c = ( t - pTotal ) - y;
     pTotal = t;
+    
     /* Perform pTotal+=multiQubit.stateVec.imag[index]*multiQubit.stateVec.imag[index]; by Kahan */
+    //pTotal+=multiQubit.stateVec.imag[index]*multiQubit.stateVec.imag[index];
+    
+    
     y = multiQubit.stateVec.imag[index]*multiQubit.stateVec.imag[index] - c;
     t = pTotal + y;
     c = ( t - pTotal ) - y;
     pTotal = t;
+    
+    
   } 
   return pTotal;
 }
