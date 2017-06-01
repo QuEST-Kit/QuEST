@@ -124,6 +124,7 @@ int main (int narg, char** varg) {
 
 	reportMultiQubitParams(multiQubit);
 	reportQUESTEnv(env);
+	reportNodeList(env);
 	if (DEBUG) printf("alloced mem\n");
 
 	// initialise the state to |0000..0>
