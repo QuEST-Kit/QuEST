@@ -9,7 +9,7 @@
 #
 
 # COMPILER options: GNU, INTEL
-COMPILER = GNU
+COMPILER = INTEL
 EXE = demo
 MY_FILE_NAME = basicTemplate
 USE_MPI=0
@@ -28,7 +28,7 @@ ifneq ($(USE_MPI), 1)
 	else ifeq ($(COMPILER), INTEL)
 		# Intel compilers
 		CC         = icc
-		CFLAGS     = -O2 -std=c99 -Wall -xAVX -axCORE-AVX2 -restrict
+		CFLAGS     = -O2 -fp-model precise -std=c99 -Wall -xAVX -axCORE-AVX2 -restrict
 		CFLAGS_OMP = -openmp
 	else 
 		$(error " *** error: invalid compiler")
@@ -42,7 +42,7 @@ else
 	else ifeq ($(COMPILER), INTEL)
 		# Mvapich2
 		CC         = mpicc
-		CFLAGS     = -O2 -std=c99
+		CFLAGS     = -O2 -fp-model precise -std=c99
 		CFLAGS_OMP = -qopenmp
 	else 
 		$(error " *** error: invalid compiler")
