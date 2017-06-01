@@ -36,6 +36,10 @@ void reportQUESTEnv(QUESTEnv env){
 	printf("Precision: size of REAL is %ld bytes\n", sizeof(REAL));
 }
 
+void reportNodeList(QUESTEnv env){
+        printf("Hostname unknown: running locally\n");
+}
+
 REAL calcTotalProbability(MultiQubit multiQubit){
   /* IJB - implemented using Kahan summation for greater accuracy at a slight floating
      point operation overhead. For more details see https://en.wikipedia.org/wiki/Kahan_summation_algorithm */

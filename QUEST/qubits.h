@@ -95,6 +95,8 @@ void syncQUESTEnv(QUESTEnv env);
  */
 void reportQUESTEnv(QUESTEnv env);
 
+void reportNodeList(QUESTEnv env);
+
 REAL getRealAmpEl(MultiQubit multiQubit, long long int index);
 
 REAL getImagAmpEl(MultiQubit multiQubit, long long int index);

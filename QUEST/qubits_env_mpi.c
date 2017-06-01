@@ -1,6 +1,10 @@
 /** @file
 An implementation of the API in qubits.h for an MPI environment.
 */
+// defining prototype for gethostname
+#define _BSD_SOURCE
+#include <unistd.h>
+
 # include <mpi.h>
 # include <stdlib.h>
 # include <stdio.h>
@@ -8,6 +12,7 @@ An implementation of the API in qubits.h for an MPI environment.
 # include "precision.h"
 # include "qubits.h"
 # include "qubits_internal.h"
+
 
 # define DEBUG 0
 static int isChunkToSkipInFindPZero(int chunkId, long long int chunkSize, int measureQubit);
@@ -60,6 +65,12 @@ void reportQUESTEnv(QUESTEnv env){
 # endif 
 		printf("Precision: size of REAL is %d bytes\n", sizeof(REAL));
 	}
+}
+
+void reportNodeList(QUESTEnv env){
+	char hostName[256];
+        gethostname(hostName, 255);
+        printf("hostname on rank %d: %s\n", env.rank, hostName);
 }
 
 REAL getRealAmpEl(MultiQubit multiQubit, long long int index){
