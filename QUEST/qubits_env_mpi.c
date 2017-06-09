@@ -20,6 +20,7 @@ static int chunkIsUpper(int chunkId, long long int chunkSize, int rotQubit);
 static void getRotAngle(int chunkIsUpper, Complex *rot1, Complex *rot2, Complex alpha, Complex beta);
 static int getChunkPairId(int chunkIsUpper, int chunkId, long long int chunkSize, int rotQubit);
 static int halfMatrixBlockFitsInChunk(long long int chunkSize, int rotQubit);
+static int getChunkIdFromIndex(MultiQubit multiQubit, long long int index);
 
 void initQUESTEnv(QUESTEnv *env){
         // init MPI environment
@@ -73,21 +74,29 @@ void reportNodeList(QUESTEnv env){
         printf("hostname on rank %d: %s\n", env.rank, hostName);
 }
 
+int getChunkIdFromIndex(MultiQubit multiQubit, long long int index){
+	return index/multiQubit.numAmps; // this is numAmpsPerChunk
+}
+
 REAL getRealAmpEl(MultiQubit multiQubit, long long int index){
-	printf("MPI get el not implemented\n");
-        return -10; 
+	int chunkId = getChunkIdFromIndex(multiQubit, index);
+	REAL el; 
+	if (multiQubit.chunkId==chunkId){
+		el = multiQubit.stateVec.real[index];
+	}
+	MPI_Bcast(&el, 1, MPI_QUEST_REAL, chunkId, MPI_COMM_WORLD);
+        return el; 
 } 
 
 REAL getImagAmpEl(MultiQubit multiQubit, long long int index){
-	printf("MPI get el not implemented\n");
-        return -10; 
+	int chunkId = getChunkIdFromIndex(multiQubit, index);
+	REAL el; 
+	if (multiQubit.chunkId==chunkId){
+		el = multiQubit.stateVec.imag[index];
+	}
+	MPI_Bcast(&el, 1, MPI_QUEST_REAL, chunkId, MPI_COMM_WORLD);
+        return el; 
 }
-
-REAL getProbEl(MultiQubit multiQubit, long long int index){
-	printf("MPI get el not implemented\n");
-        return -10; 
-}
-
 
 REAL calcTotalProbability(MultiQubit multiQubit){
   /* IJB - implemented using Kahan summation for greater accuracy at a slight floating
@@ -126,7 +135,7 @@ a block.
 @param[in] rotQubit qubit being rotated 
 @return 1: chunk is in upper half of block, 0: chunk is in lower half of block 
 */
-
+//! fix -- is this the same as isChunkToSkip?
 static int chunkIsUpper(int chunkId, long long int chunkSize, int rotQubit)
 {       
         long long int sizeHalfBlock = 1LL << (rotQubit);
@@ -253,6 +262,125 @@ void rotateQubit(MultiQubit multiQubit, const int rotQubit, Complex alpha, Compl
         }
 }
 
+void sigmaX(MultiQubit multiQubit, const int rotQubit)
+{
+        // flag to require memory exchange. 1: an entire block fits on one rank, 0: at most half a block fits on one rank
+        int useLocalDataOnly = halfMatrixBlockFitsInChunk(multiQubit.numAmps, rotQubit);
+
+        // rank's chunk is in upper half of block 
+        int rankIsUpper;
+        int pairRank; // rank of corresponding chunk
+
+        // MPI send/receive vars
+        int TAG=100;
+        MPI_Status status;
+
+        if (useLocalDataOnly){
+                // all values required to update state vector lie in this rank
+                sigmaXLocal(multiQubit, rotQubit);
+        } else {
+                // need to get corresponding chunk of state vector from other rank
+                rankIsUpper = chunkIsUpper(multiQubit.chunkId, multiQubit.numAmps, rotQubit);
+                pairRank = getChunkPairId(rankIsUpper, multiQubit.chunkId, multiQubit.numAmps, rotQubit);
+                //printf("%d rank has pair rank: %d\n", multiQubit.rank, pairRank);
+                // get corresponding values from my pair
+
+                // Required by MPI using int rather than long long int for count
+                long long int maxMessageCount = (1LL<<30);
+                if (multiQubit.numAmps<maxMessageCount) maxMessageCount = multiQubit.numAmps;
+                int numMessages = multiQubit.numAmps/maxMessageCount;
+                int i;
+                long long int offset;
+                if (DEBUG) printf("numMessages %d maxMessageCount %lld\n", numMessages, maxMessageCount);
+                for (i=0; i<numMessages; i++){
+                        offset = i*maxMessageCount;
+                        MPI_Sendrecv(&multiQubit.stateVec.real[offset], maxMessageCount, MPI_QUEST_REAL, pairRank, TAG,
+                                         &multiQubit.pairStateVec.real[offset], maxMessageCount, MPI_QUEST_REAL,
+                                         pairRank, TAG, MPI_COMM_WORLD, &status);
+                        //printf("rank: %d err: %d\n", multiQubit.rank, err);
+                        MPI_Sendrecv(&multiQubit.stateVec.imag[offset], maxMessageCount, MPI_QUEST_REAL, pairRank, TAG,
+                                        &multiQubit.pairStateVec.imag[offset], maxMessageCount, MPI_QUEST_REAL,
+                                        pairRank, TAG, MPI_COMM_WORLD, &status);
+                }
+                // this rank's values are either in the upper of lower half of the block. sigmaX just replaces
+		// this rank's values with pair values
+		sigmaXDistributed(multiQubit, rotQubit,
+			multiQubit.pairStateVec, // in
+			multiQubit.stateVec); // out
+        }
+}
+
+void sigmaY(MultiQubit multiQubit, const int rotQubit)
+{
+        // flag to require memory exchange. 1: an entire block fits on one rank, 0: at most half a block fits on one rank
+        int useLocalDataOnly = halfMatrixBlockFitsInChunk(multiQubit.numAmps, rotQubit);
+
+        // rank's chunk is in upper half of block 
+        int rankIsUpper;
+        int pairRank; // rank of corresponding chunk
+
+        // MPI send/receive vars
+        int TAG=100;
+        MPI_Status status;
+
+        if (useLocalDataOnly){
+                // all values required to update state vector lie in this rank
+                sigmaYLocal(multiQubit, rotQubit);
+        } else {
+		//! fix -- put duplicate code (sigmaX, sigmaY) in seperate function
+                // need to get corresponding chunk of state vector from other rank
+                rankIsUpper = chunkIsUpper(multiQubit.chunkId, multiQubit.numAmps, rotQubit);
+                pairRank = getChunkPairId(rankIsUpper, multiQubit.chunkId, multiQubit.numAmps, rotQubit);
+                //printf("%d rank has pair rank: %d\n", multiQubit.rank, pairRank);
+                // get corresponding values from my pair
+
+                // Required by MPI using int rather than long long int for count
+                long long int maxMessageCount = (1LL<<30);
+                if (multiQubit.numAmps<maxMessageCount) maxMessageCount = multiQubit.numAmps;
+                int numMessages = multiQubit.numAmps/maxMessageCount;
+                int i;
+                long long int offset;
+                if (DEBUG) printf("numMessages %d maxMessageCount %lld\n", numMessages, maxMessageCount);
+                for (i=0; i<numMessages; i++){
+                        offset = i*maxMessageCount;
+                        MPI_Sendrecv(&multiQubit.stateVec.real[offset], maxMessageCount, MPI_QUEST_REAL, pairRank, TAG,
+                                         &multiQubit.pairStateVec.real[offset], maxMessageCount, MPI_QUEST_REAL,
+                                         pairRank, TAG, MPI_COMM_WORLD, &status);
+                        //printf("rank: %d err: %d\n", multiQubit.rank, err);
+                        MPI_Sendrecv(&multiQubit.stateVec.imag[offset], maxMessageCount, MPI_QUEST_REAL, pairRank, TAG,
+                                        &multiQubit.pairStateVec.imag[offset], maxMessageCount, MPI_QUEST_REAL,
+                                        pairRank, TAG, MPI_COMM_WORLD, &status);
+                }
+                // this rank's values are either in the upper of lower half of the block. sigmaX just replaces
+		// this rank's values with pair values
+		sigmaYDistributed(multiQubit,rotQubit,
+			multiQubit.pairStateVec, // in
+			multiQubit.stateVec, // out
+			rankIsUpper);
+        }
+}
+
+void phaseGate(MultiQubit multiQubit, const int rotQubit, enum phaseGateType type)
+{
+        // flag to require memory exchange. 1: an entire block fits on one rank, 0: at most half a block fits on one rank
+        int useLocalDataOnly = halfMatrixBlockFitsInChunk(multiQubit.numAmps, rotQubit);
+
+        // rank's chunk is in upper half of block 
+        int rankIsUpper;
+        int pairRank; // rank of corresponding chunk
+
+        // MPI send/receive vars
+        int TAG=100;
+        MPI_Status status;
+
+        if (useLocalDataOnly){
+                phaseGateLocal(multiQubit, rotQubit, type);
+        } else {
+                rankIsUpper = chunkIsUpper(multiQubit.chunkId, multiQubit.numAmps, rotQubit);
+		if (!rankIsUpper) phaseGateDistributed(multiQubit, rotQubit, type);
+        }
+}
+
 /** Find chunks to skip when calculating probability of qubit being zero.
 When calculating probability of a bit q being zero,
 sum up 2^q values, then skip 2^q values, etc. This function finds if an entire chunk
@@ -273,7 +401,7 @@ static int isChunkToSkipInFindPZero(int chunkId, long long int chunkSize, int me
         return bitToCheck;
 }
 
-REAL findProbabilityOfZero(MultiQubit multiQubit, const int measureQubit)
+REAL findProbabilityOfOutcome(MultiQubit multiQubit, const int measureQubit, int outcome)
 {
 	REAL stateProb=0, totalStateProb=0;
 	int skipValuesWithinRank = halfMatrixBlockFitsInChunk(multiQubit.numAmps, measureQubit);
@@ -285,21 +413,26 @@ REAL findProbabilityOfZero(MultiQubit multiQubit, const int measureQubit)
 		} else stateProb = 0;
 	}
 	MPI_Allreduce(&stateProb, &totalStateProb, 1, MPI_QUEST_REAL, MPI_SUM, MPI_COMM_WORLD);
+	if (outcome==1) totalStateProb = 1.0 - totalStateProb;
 	return totalStateProb;
 }
 
 
-REAL measureInZero(MultiQubit multiQubit, const int measureQubit)
+REAL measureInZero(MultiQubit multiQubit, const int measureQubit, int outcome)
 {
-	REAL totalStateProb=findProbabilityOfZero(multiQubit, measureQubit);
+	REAL totalStateProb=findProbabilityOfOutcome(multiQubit, measureQubit, outcome);
 	int skipValuesWithinRank = halfMatrixBlockFitsInChunk(multiQubit.numAmps, measureQubit);
 	if (skipValuesWithinRank) {
-		measureInZeroLocal(multiQubit, measureQubit, totalStateProb);
+		measureInStateLocal(multiQubit, measureQubit, totalStateProb, outcome);
 	} else {
 		if (!isChunkToSkipInFindPZero(multiQubit.chunkId, multiQubit.numAmps, measureQubit)){
-			measureInZeroDistributedRenorm(multiQubit, measureQubit, totalStateProb);
+			// chunk has amps for q=0
+			if (outcome==0) measureInStateDistributedRenorm(multiQubit, measureQubit, totalStateProb);
+			else measureInStateDistributedSetZero(multiQubit, measureQubit);
 		} else {
-			measureInZeroDistributedSetZero(multiQubit, measureQubit);
+			// chunk has amps for q=1
+			if (outcome==1) measureInStateDistributedRenorm(multiQubit, measureQubit, totalStateProb);
+			else measureInStateDistributedSetZero(multiQubit, measureQubit);
 		}
 	}
 	return totalStateProb;

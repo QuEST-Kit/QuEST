@@ -51,6 +51,8 @@ typedef struct QUESTEnv
 	int numRanks;
 } QUESTEnv;
 
+// Codes for sigmaZ phase gate variations
+enum phaseGateType {SIGMA_Z=0, S_GATE=1, T_GATE=2};
 
 // QUEST library functions whose implementation is independent of environment (local, MPI)
 
@@ -62,13 +64,20 @@ void reportState(MultiQubit multiQubit);
 
 void reportMultiQubitParams(MultiQubit multiQubit);
 
-void initStateVec(MultiQubit *multiQubit);
+void initStateZero(MultiQubit *multiQubit);
+
+void initStatePlus(MultiQubit *multiQubit);
 
 void quadCPhaseGate (MultiQubit multiQubit, const int idQubit1, const int idQubit2, 
 	const int idQubit3, const int idQubit4);
 
 void controlPhaseGate (MultiQubit multiQubit, const int idQubit1, const int idQubit2);
 
+void sigmaZ(MultiQubit multiQubit, const int rotQubit);
+
+void sGate(MultiQubit multiQubit, const int rotQubit);
+
+void tGate(MultiQubit multiQubit, const int rotQubit);
 
 
 // QUEST library functions whose implementation depends on environment (local, MPI)
@@ -126,6 +135,12 @@ the first qubit is the rightmost
  */
 void rotateQubit(MultiQubit multiQubit, const int rotQubit, Complex alpha, Complex beta);
 
+void sigmaX(MultiQubit multiQubit, const int rotQubit);
+
+void sigmaY(MultiQubit multiQubit, const int rotQubit);
+
+void sigmaZ(MultiQubit multiQubit, const int rotQubit);
+
 /** Measure the probability
 of a specified qubit being in the zero state.     
 
@@ -163,6 +178,8 @@ The function returns the probability of this outcome (if zero, it will exit with
 @return Total probability that the 3 qubits are not all in the 1 state. 
 */
 REAL probOfFilterOut111(MultiQubit multiQubit, const int idQubit1, const int idQubit2, const int idQubit3);
+
+void phaseGate(MultiQubit multiQubit, const int rotQubit, enum phaseGateType type);
 
 
 

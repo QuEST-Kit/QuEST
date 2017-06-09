@@ -17,17 +17,34 @@ void rotateQubitDistributed (MultiQubit multiQubit, const int rotQubit,
                 ComplexArray stateVecLo,
                 ComplexArray stateVecOut);
 
+void sigmaXLocal(MultiQubit multiQubit, const int rotQubit);
+
+void sigmaXDistributed (MultiQubit multiQubit, const int rotQubit,
+                ComplexArray stateVecIn,
+                ComplexArray stateVecOut);
+
+void sigmaYLocal(MultiQubit multiQubit, const int rotQubit);
+
+void sigmaYDistributed(MultiQubit multiQubit, const int rotQubit,
+                ComplexArray stateVecIn,
+                ComplexArray stateVecOut,
+                int updateUpper);
+
+void phaseGateLocal(MultiQubit multiQubit, const int rotQubit, enum phaseGateType type);
+
+void phaseGateDistributed(MultiQubit multiQubit, const int rotQubit, enum phaseGateType type);
+
 REAL findProbabilityOfZeroLocal (MultiQubit multiQubit,
                 const int measureQubit);
 
 REAL findProbabilityOfZeroDistributed (MultiQubit multiQubit,
                 const int measureQubit);
 
-void measureInZeroLocal(MultiQubit multiQubit, int measureQubit, REAL totalProbability);
+void measureInStateLocal(MultiQubit multiQubit, int measureQubit, REAL totalProbability, int outcome);
 
-REAL measureInZeroDistributedRenorm (MultiQubit multiQubit, const int measureQubit, const REAL totalProbability);
+REAL measureInStateDistributedRenorm (MultiQubit multiQubit, const int measureQubit, const REAL totalProbability);
 
-void measureInZeroDistributedSetZero(MultiQubit multiQubit, const int measureQubit);
+void measureInStateDistributedSetZero(MultiQubit multiQubit, const int measureQubit);
 
 void filterOut111Local(MultiQubit multiQubit, const int idQubit1, const int idQubit2, const int idQubit3,
 	const REAL probOfFilter);

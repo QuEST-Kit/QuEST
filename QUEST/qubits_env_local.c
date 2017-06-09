@@ -80,33 +80,40 @@ REAL getImagAmpEl(MultiQubit multiQubit, long long int index){
 	return multiQubit.stateVec.imag[index];
 }
 
-REAL getProbEl(MultiQubit multiQubit, long long int index){
-	REAL real;
-	REAL imag;
-	real = multiQubit.stateVec.real[index];
-	imag = multiQubit.stateVec.imag[index];
-	return real*real + imag*imag;
-}
-
 void rotateQubit(MultiQubit multiQubit, const int rotQubit, Complex alpha, Complex beta) 
 {
 	// all values required to update state vector lie in this rank
 	rotateQubitLocal(multiQubit, rotQubit, alpha, beta);
 }
 
-REAL findProbabilityOfZero(MultiQubit multiQubit,
-                const int measureQubit)
+void sigmaX(MultiQubit multiQubit, const int rotQubit) 
+{
+	sigmaXLocal(multiQubit, rotQubit);
+}
+
+void sigmaY(MultiQubit multiQubit, const int rotQubit) 
+{
+	sigmaYLocal(multiQubit, rotQubit);
+}
+
+void phaseGate(MultiQubit multiQubit, const int rotQubit, enum phaseGateType type)
+{
+	phaseGateLocal(multiQubit, rotQubit, type);
+}
+
+REAL findProbabilityOfOutcome(MultiQubit multiQubit, const int measureQubit, int outcome)
 {
 	REAL stateProb=0;
 	stateProb = findProbabilityOfZeroLocal(multiQubit, measureQubit);
+	if (outcome==1) stateProb = 1.0 - stateProb;
 	return stateProb;
 }
 
-REAL measureInZero(MultiQubit multiQubit, const int measureQubit)
+REAL measureInState(MultiQubit multiQubit, const int measureQubit, int outcome)
 {
         REAL stateProb;
-	stateProb = findProbabilityOfZero(multiQubit, measureQubit);
-        measureInZeroLocal(multiQubit, measureQubit, stateProb);
+	stateProb = findProbabilityOfOutcome(multiQubit, measureQubit, outcome);
+        measureInStateLocal(multiQubit, measureQubit, stateProb, outcome);
         return stateProb;
 }
 
