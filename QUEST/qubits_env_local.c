@@ -101,6 +101,11 @@ void phaseGate(MultiQubit multiQubit, const int rotQubit, enum phaseGateType typ
 	phaseGateLocal(multiQubit, rotQubit, type);
 }
 
+void hadamard(MultiQubit multiQubit, const int rotQubit) 
+{
+	hadamardLocal(multiQubit, rotQubit);
+}
+
 REAL findProbabilityOfOutcome(MultiQubit multiQubit, const int measureQubit, int outcome)
 {
 	REAL stateProb=0;

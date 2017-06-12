@@ -30,6 +30,14 @@ void sigmaYDistributed(MultiQubit multiQubit, const int rotQubit,
                 ComplexArray stateVecOut,
                 int updateUpper);
 
+void hadamardLocal (MultiQubit multiQubit, const int rotQubit);
+
+void hadamardDistributed (MultiQubit multiQubit, const int rotQubit,
+                ComplexArray stateVecUp,
+                ComplexArray stateVecLo,
+                ComplexArray stateVecOut);
+
+
 void phaseGateLocal(MultiQubit multiQubit, const int rotQubit, enum phaseGateType type);
 
 void phaseGateDistributed(MultiQubit multiQubit, const int rotQubit, enum phaseGateType type);

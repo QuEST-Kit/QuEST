@@ -809,6 +809,127 @@ void sigmaYDistributed(MultiQubit multiQubit, const int rotQubit,
 	}
 } 
 
+/** Rotate a single qubit by {{0,-i},{i,0}.
+@remarks Qubits are zero-based and the                     
+the first qubit is the rightmost                  
+                                                                      
+@param[in,out] multiQubit object representing the set of qubits
+@param[in] rotQubit qubit to rotate
+ */
+void hadamardLocal(MultiQubit multiQubit, const int rotQubit)
+{
+	long long int sizeBlock, sizeHalfBlock;
+	long long int thisBlock, // current block
+	     indexUp,indexLo;    // current index and corresponding index in lower half block
+
+	REAL stateRealUp,stateRealLo,stateImagUp,stateImagLo;
+	long long int thisTask;         
+	const long long int numTasks=multiQubit.numAmps>>1;
+
+	// test qubit valid
+	assert (rotQubit >= 0 && rotQubit < multiQubit.numQubits);
+
+	// set dimensions
+	sizeHalfBlock = 1LL << rotQubit;  
+	sizeBlock     = 2LL * sizeHalfBlock; 
+
+	// Can't use multiQubit.stateVec as a private OMP var
+	REAL *stateVecReal = multiQubit.stateVec.real;
+	REAL *stateVecImag = multiQubit.stateVec.imag;
+
+*********** multiply by 1/sqrt2
+
+# ifdef _OPENMP
+# pragma omp parallel \
+	default  (none) \
+	shared   (sizeBlock,sizeHalfBlock, stateVecReal,stateVecImag) \
+	private  (thisTask,thisBlock ,indexUp,indexLo, stateRealUp,stateImagUp,stateRealLo,stateImagLo) 
+# endif
+	{
+# ifdef _OPENMP
+		# pragma omp for schedule (static)
+# endif
+		for (thisTask=0; thisTask<numTasks; thisTask++) {
+			thisBlock   = thisTask / sizeHalfBlock;
+			indexUp     = thisBlock*sizeBlock + thisTask%sizeHalfBlock;
+			indexLo     = indexUp + sizeHalfBlock;
+
+			stateRealUp = stateVecReal[indexUp];
+			stateImagUp = stateVecImag[indexUp];
+
+			stateRealLo = stateVecReal[indexLo];
+			stateImagLo = stateVecImag[indexLo];
+
+			stateVecReal[indexUp] = stateRealUp + stateRealLo;
+			stateVecImag[indexUp] = stateImagUp + stateImagLo;
+
+			stateVecReal[indexLo] = stateRealUp - stateRealLo;
+			stateVecImag[indexLo] = stateImagUp - stateImagLo;
+		} 
+	}
+}
+
+/** Rotate a single qubit by {{0,-i},{i,0}.
+Operate on a subset of the state vector with upper and lower block values 
+stored seperately. This rotation is just swapping upper and lower values, and
+stateVecIn must already be the correct section for this chunk
+
+@remarks Qubits are zero-based and the                     
+the first qubit is the rightmost                  
+                                                                      
+@param[in,out] multiQubit object representing the set of qubits
+@param[in] rotQubit qubit to rotate
+@param[in] stateVecIn probability amplitudes in lower or upper half of a block depending on chunkId
+@param[in] updateUpper flag, 1: updating upper values, 0: updating lower values in block
+@param[out] stateVecOut array section to update (will correspond to either the lower or upper half of a block)
+*/
+
+void hadamarDistributed(MultiQubit multiQubit, const int rotQubit,
+		ComplexArray stateVecUp,
+		ComplexArray stateVecLo,
+		ComplexArray stateVecOut,
+		int updateUpper)
+{
+
+	REAL   stateRealUp,stateRealLo,stateImagUp,stateImagLo;
+	long long int thisTask;  
+	const long long int numTasks=multiQubit.numAmps;
+
+	// test qubit valid
+	assert (rotQubit >= 0 && rotQubit < multiQubit.numQubits);
+
+	int sign;
+	if (updateUpper) sign=1;
+	else sign=-1;
+
+	REAL *stateVecRealUp=stateVecUp.real, *stateVecImagUp=stateVecUp.imag;
+	REAL *stateVecRealLo=stateVecLo.real, *stateVecImagLo=stateVecLo.imag;
+	REAL *stateVecRealOut=stateVecOut.real, *stateVecImagOut=stateVecOut.imag;
+
+# ifdef _OPENMP
+# pragma omp parallel \
+	default  (none) \
+	shared   (stateVecRealUp,stateVecImagUp,stateVecRealLo,stateVecImagLo,stateVecRealOut,stateVecImagOut) \
+	private  (thisTask,stateRealUp,stateImagUp,stateRealLo,stateImagLo,sign)
+# endif
+	{
+# ifdef _OPENMP
+		# pragma omp for schedule (static)
+# endif
+		for (thisTask=0; thisTask<numTasks; thisTask++) {
+			// store current state vector values in temp variables
+			stateRealUp = stateVecRealUp[thisTask];
+			stateImagUp = stateVecImagUp[thisTask];
+
+			stateRealLo = stateVecRealLo[thisTask];
+			stateImagLo = stateVecImagLo[thisTask];
+
+			stateVecRealOut[thisTask] = stateRealUp + sign*stateRealLo;
+			stateVecImagOut[thisTask] = stateImagUp + sign*stateImagLo;
+		}
+	}
+}
+
 /** Rotate a single qubit by {{1,0},{0,-1}.
 Applies a phase of -1 to amplitudes in the lower half of a block
 @remarks Qubits are zero-based and the                     

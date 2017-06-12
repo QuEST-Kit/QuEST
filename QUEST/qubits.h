@@ -104,12 +104,33 @@ void syncQUESTEnv(QUESTEnv env);
  */
 void reportQUESTEnv(QUESTEnv env);
 
+/** Report a list of CPU hostnames and the rank that is running on each if running with MPI enabled and an 
+error message otherwise. For debugging purposes. 
+@param[in] env object representing the execution environment. A single instance is used for each program
+*/
 void reportNodeList(QUESTEnv env);
 
+/** Get the real component of the probability amplitude at an index in the state vector.
+For debugging purposes.
+@param[in] multiQubit object representing a set of qubits
+@param[in] index index in state vector of probability amplitudes
+@return real component at that index
+*/
 REAL getRealAmpEl(MultiQubit multiQubit, long long int index);
 
+/** Get the imaginary component of the probability amplitude at an index in the state vector.
+For debugging purposes.
+@param[in] multiQubit object representing a set of qubits
+@param[in] index index in state vector of probability amplitudes
+@return imaginary component at that index
+*/
 REAL getImagAmpEl(MultiQubit multiQubit, long long int index);
 
+/** Get the probability of the state at an index in the state vector.
+@param[in] multiQubit object representing a set of qubits
+@param[in] index index in state vector of probability amplitudes
+@return realEl*realEl + imagEl*imagEl
+*/
 REAL getProbEl(MultiQubit multiQubit, long long int index);
 
 /** Calculate the probability of being in any state by taking the norm of the entire state vector. 
@@ -135,11 +156,31 @@ the first qubit is the rightmost
  */
 void rotateQubit(MultiQubit multiQubit, const int rotQubit, Complex alpha, Complex beta);
 
+/** Rotate a single qubit by {{0,1},{1,0}} -- swap |0> and |1>.
+@param[in,out] multiQubit object representing the set of qubits
+@param[in] rotQubit qubit to rotate
+*/
 void sigmaX(MultiQubit multiQubit, const int rotQubit);
 
+/** Rotate a single qubit by {{0,-i},{i,0}} -- swap |0> and |1> and apply
+a phase of -i or i.
+@param[in,out] multiQubit object representing the set of qubits
+@param[in] rotQubit qubit to rotate
+*/
 void sigmaY(MultiQubit multiQubit, const int rotQubit);
 
+/** Rotate a single qubit by {{1,0},{{0,-1}} -- apply a phase of -1 to |1>.
+@param[in,out] multiQubit object representing the set of qubits
+@param[in] rotQubit qubit to rotate
+*/
 void sigmaZ(MultiQubit multiQubit, const int rotQubit);
+
+/** Rotate a single qubit by {{1,1},{1,-1}}/sqrt2 -- turn a |0> into a |+>
+and a |1> into a |->.
+@param[in,out] multiQubit object representing the set of qubits
+@param[in] rotQubit qubit to rotate
+*/
+void hadamard(MultiQubit multiQubit, const int rotQubit);
 
 /** Measure the probability
 of a specified qubit being in the zero state.     
