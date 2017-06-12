@@ -113,7 +113,7 @@ void reportStateToScreen(MultiQubit multiQubit, QUESTEnv env){
 				printf("\trank, index, real, imag\n");
 
 				for(index=0; index<multiQubit.numAmps; index++){
-					printf("\t%d, %lld, " REAL_STRING_FORMAT ", " REAL_STRING_FORMAT "\n", multiQubit.chunkId, index, multiQubit.stateVec.real[index], multiQubit.stateVec.imag[index]);
+					printf("\t%d, %lld, " REAL_STRING_FORMAT ", " REAL_STRING_FORMAT "\n", multiQubit.chunkId, index+rank*multiQubit.numAmps, multiQubit.stateVec.real[index], multiQubit.stateVec.imag[index]);
 				}
 				printf("]\n");
 			}
@@ -234,11 +234,13 @@ void initStateDebug (MultiQubit *multiQubit)
 	REAL *stateVecReal = multiQubit->stateVec.real;
 	REAL *stateVecImag = multiQubit->stateVec.imag;
 
+	REAL chunkOffset = (2.0*chunkSize*multiQubit->chunkId)/10.0;
+
 	// initialise the state to |0000..0000>
 # ifdef _OPENMP
 # pragma omp parallel \
 	default  (none) \
-	shared   (chunkSize, stateVecReal, stateVecImag) \
+	shared   (chunkSize, stateVecReal, stateVecImag, chunkOffset) \
 	private  (index) 
 # endif
 	{
@@ -246,8 +248,8 @@ void initStateDebug (MultiQubit *multiQubit)
 		# pragma omp for schedule (static)
 # endif
 		for (index=0; index<chunkSize; index++) {
-			stateVecReal[index] = (index*2.0)/10.0;
-			stateVecImag[index] = (index*2.0+1.0)/10.0;
+			stateVecReal[index] = chunkOffset + (index*2.0)/10.0;
+			stateVecImag[index] = chunkOffset + (index*2.0+1.0)/10.0;
 		}
 	}
 	if (DEBUG) printf("COMPLETED INIT\n");
@@ -1016,7 +1018,6 @@ void phaseGateLocal(MultiQubit multiQubit, const int rotQubit, enum phaseGateTyp
 	REAL stateRealLo,stateImagLo;
 	long long int thisTask;         
 	const long long int numTasks=multiQubit.numAmps>>1;
-	printf("num tasks: %lld\n", numTasks);
 
 	// test qubit valid
 	assert (rotQubit >= 0 && rotQubit < multiQubit.numQubits);
