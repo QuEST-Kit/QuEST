@@ -17,6 +17,15 @@ void rotateQubitDistributed (MultiQubit multiQubit, const int rotQubit,
                 ComplexArray stateVecLo,
                 ComplexArray stateVecOut);
 
+void controlRotateQubitLocal (MultiQubit multiQubit, const int rotQubit, const int controlQubit,
+		Complex alpha, Complex beta);
+
+void controlRotateQubitDistributed (MultiQubit multiQubit, const int rotQubit, const int controlQubit,
+                Complex rot1, Complex rot2,
+                ComplexArray stateVecUp,
+                ComplexArray stateVecLo,
+                ComplexArray stateVecOut);
+
 void sigmaXLocal(MultiQubit multiQubit, const int rotQubit);
 
 void sigmaXDistributed (MultiQubit multiQubit, const int rotQubit,
@@ -41,6 +50,12 @@ void hadamardDistributed (MultiQubit multiQubit, const int rotQubit,
 void phaseGateLocal(MultiQubit multiQubit, const int rotQubit, enum phaseGateType type);
 
 void phaseGateDistributed(MultiQubit multiQubit, const int rotQubit, enum phaseGateType type);
+
+void controlNotLocal(MultiQubit multiQubit, const int targetQubit, const int controlQubit);
+
+void controlNotDistributed (MultiQubit multiQubit, const int targetQubit, const int controlQubit,
+		        ComplexArray stateVecIn,
+			ComplexArray stateVecOut);
 
 REAL findProbabilityOfZeroLocal (MultiQubit multiQubit,
                 const int measureQubit);

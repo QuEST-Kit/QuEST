@@ -9,6 +9,8 @@
 # include "precision.h"
 # include "qubits.h"
 
+# include <omp.h>
+
 # define DEBUG 0
 
 static int extractBit (const int locationOfBitFromRight, const long long int theEncodedNumber);
@@ -101,6 +103,25 @@ void reportState(MultiQubit multiQubit){
 	fclose(state);
 }
 
+void reportStateToScreen(MultiQubit multiQubit, QUESTEnv env){
+	long long int index;
+	int rank;
+	if (multiQubit.numQubits<=5){
+		for (rank=0; rank<multiQubit.numChunks; rank++){
+			if (multiQubit.chunkId==rank){
+				printf("Reporting state from rank %d [\n", multiQubit.chunkId);
+				printf("\trank, index, real, imag\n");
+
+				for(index=0; index<multiQubit.numAmps; index++){
+					printf("\t%d, %lld, " REAL_STRING_FORMAT ", " REAL_STRING_FORMAT "\n", multiQubit.chunkId, index, multiQubit.stateVec.real[index], multiQubit.stateVec.imag[index]);
+				}
+				printf("]\n");
+			}
+			syncQUESTEnv(env);
+		}
+	}
+}
+
 /** Report metainformation about a set of qubits: number of qubits, number of probability amplitudes.
  * @param[in,out] multiQubit object representing the set of qubits
  * @param[in] env object representing the execution environment (local, multinode etc)
@@ -190,6 +211,43 @@ void initStatePlus (MultiQubit *multiQubit)
 		for (index=0; index<chunkSize; index++) {
 			stateVecReal[index] = normFactor;
 			stateVecImag[index] = 0.0;
+		}
+	}
+	if (DEBUG) printf("COMPLETED INIT\n");
+}
+
+/**
+ * Initialise the state vector of probability amplitudes to an (unphysical) state with
+ * each component of each probability amplitude a unique floating point value.
+ * @param[in,out] multiQubit object representing the set of qubits to be initialised
+ */
+void initStateDebug (MultiQubit *multiQubit)
+{
+	long long int chunkSize, stateVecSize;
+	long long int index;
+
+	// dimension of the state vector
+	chunkSize = multiQubit->numAmps;
+	stateVecSize = chunkSize*multiQubit->numChunks;
+
+	// Can't use multiQubit->stateVec as a private OMP var
+	REAL *stateVecReal = multiQubit->stateVec.real;
+	REAL *stateVecImag = multiQubit->stateVec.imag;
+
+	// initialise the state to |0000..0000>
+# ifdef _OPENMP
+# pragma omp parallel \
+	default  (none) \
+	shared   (chunkSize, stateVecReal, stateVecImag) \
+	private  (index) 
+# endif
+	{
+# ifdef _OPENMP
+		# pragma omp for schedule (static)
+# endif
+		for (index=0; index<chunkSize; index++) {
+			stateVecReal[index] = (index*2.0)/10.0;
+			stateVecImag[index] = (index*2.0+1.0)/10.0;
 		}
 	}
 	if (DEBUG) printf("COMPLETED INIT\n");
@@ -361,6 +419,11 @@ void controlRotateQubitLocal (MultiQubit multiQubit, const int rotQubit, const i
 
 	int controlBit;
 
+	// if targetQubit==controlQubit, it is guaranteed that controlQubit==1 when
+	// targetQubit==1. As rotations are symmetric, we can instead apply the rotation
+	// on all amplitudes where targetQubit==0 as we do here.
+	int rotateAll=(rotQubit==controlQubit);
+
 	// test qubit valid
 	assert (rotQubit >= 0 && rotQubit < multiQubit.numQubits);
 
@@ -377,7 +440,8 @@ void controlRotateQubitLocal (MultiQubit multiQubit, const int rotQubit, const i
 # ifdef _OPENMP
 # pragma omp parallel \
 	default  (none) \
-	shared   (sizeBlock,sizeHalfBlock, stateVecReal,stateVecImag, alphaReal,alphaImag, betaReal,betaImag) \
+	shared   (sizeBlock,sizeHalfBlock, stateVecReal,stateVecImag, alphaReal,alphaImag, betaReal,betaImag,\
+			rotateAll) \
 	private  (thisTask,thisBlock ,indexUp,indexLo, stateRealUp,stateImagUp,stateRealLo,stateImagLo,controlBit) 
 # endif
 	{
@@ -391,7 +455,7 @@ void controlRotateQubitLocal (MultiQubit multiQubit, const int rotQubit, const i
 			indexLo     = indexUp + sizeHalfBlock;
 
 			controlBit = extractBit (controlQubit, indexUp);
-			if (controlBit){
+			if (rotateAll || controlBit){
 				// store current state vector values in temp variables
 				stateRealUp = stateVecReal[indexUp];
 				stateImagUp = stateVecImag[indexUp];
@@ -497,7 +561,7 @@ void sigmaXLocal(MultiQubit multiQubit, const int rotQubit)
 	long long int thisBlock, // current block
 	     indexUp,indexLo;    // current index and corresponding index in lower half block
 
-	REAL stateRealUp,stateRealLo,stateImagUp,stateImagLo;
+	REAL stateRealUp,stateImagUp;
 	long long int thisTask;         
 	const long long int numTasks=multiQubit.numAmps>>1;
 
@@ -516,7 +580,7 @@ void sigmaXLocal(MultiQubit multiQubit, const int rotQubit)
 # pragma omp parallel \
 	default  (none) \
 	shared   (sizeBlock,sizeHalfBlock, stateVecReal,stateVecImag) \
-	private  (thisTask,thisBlock ,indexUp,indexLo, stateRealUp,stateImagUp,stateRealLo,stateImagLo) 
+	private  (thisTask,thisBlock ,indexUp,indexLo, stateRealUp,stateImagUp) 
 # endif
 	{
 # ifdef _OPENMP
@@ -559,7 +623,6 @@ void sigmaXDistributed (MultiQubit multiQubit, const int rotQubit,
 		ComplexArray stateVecOut)
 {
 
-	REAL   stateRealUp,stateRealLo,stateImagUp,stateImagLo;
 	long long int thisTask;  
 	const long long int numTasks=multiQubit.numAmps;
 
@@ -600,11 +663,16 @@ void controlNotLocal(MultiQubit multiQubit, const int targetQubit, const int con
 	long long int thisBlock, // current block
 	     indexUp,indexLo;    // current index and corresponding index in lower half block
 
-	REAL stateRealUp,stateRealLo,stateImagUp,stateImagLo;
+	REAL stateRealUp,stateImagUp;
 	long long int thisTask;         
 	const long long int numTasks=multiQubit.numAmps>>1;
 
 	int controlBit;
+
+	// if targetQubit==controlQubit, it is guaranteed that controlQubit==1 when
+	// targetQubit==1. As rotations are symmetric, we can instead apply the rotation
+	// on all amplitudes where targetQubit==0 as we do here.
+	int rotateAll=(targetQubit==controlQubit);
 
 	// test qubit valid
 	assert (targetQubit >= 0 && targetQubit < multiQubit.numQubits);
@@ -621,8 +689,8 @@ void controlNotLocal(MultiQubit multiQubit, const int targetQubit, const int con
 # ifdef _OPENMP
 # pragma omp parallel \
 	default  (none) \
-	shared   (sizeBlock,sizeHalfBlock, stateVecReal,stateVecImag) \
-	private  (thisTask,thisBlock ,indexUp,indexLo, stateRealUp,stateImagUp,stateRealLo,stateImagLo,controlBit) 
+	shared   (sizeBlock,sizeHalfBlock, stateVecReal,stateVecImag,rotateAll) \
+	private  (thisTask,thisBlock ,indexUp,indexLo, stateRealUp,stateImagUp,controlBit) 
 # endif
 	{
 # ifdef _OPENMP
@@ -633,8 +701,8 @@ void controlNotLocal(MultiQubit multiQubit, const int targetQubit, const int con
 			indexUp     = thisBlock*sizeBlock + thisTask%sizeHalfBlock;
 			indexLo     = indexUp + sizeHalfBlock;
 
-			controlBit = extractBit (controlQubit, indexUp);
-			if (controlBit){
+			controlBit = extractBit(controlQubit, indexUp);
+			if (rotateAll || controlBit){
 				stateRealUp = stateVecReal[indexUp];
 				stateImagUp = stateVecImag[indexUp];
 
@@ -668,7 +736,6 @@ void controlNotDistributed (MultiQubit multiQubit, const int targetQubit, const 
 		ComplexArray stateVecOut)
 {
 
-	REAL   stateRealUp,stateRealLo,stateImagUp,stateImagLo;
 	long long int thisTask;  
 	const long long int numTasks=multiQubit.numAmps;
 
@@ -715,7 +782,7 @@ void sigmaYLocal(MultiQubit multiQubit, const int rotQubit)
 	long long int thisBlock, // current block
 	     indexUp,indexLo;    // current index and corresponding index in lower half block
 
-	REAL stateRealUp,stateRealLo,stateImagUp,stateImagLo;
+	REAL stateRealUp,stateImagUp;
 	long long int thisTask;         
 	const long long int numTasks=multiQubit.numAmps>>1;
 
@@ -734,7 +801,7 @@ void sigmaYLocal(MultiQubit multiQubit, const int rotQubit)
 # pragma omp parallel \
 	default  (none) \
 	shared   (sizeBlock,sizeHalfBlock, stateVecReal,stateVecImag) \
-	private  (thisTask,thisBlock ,indexUp,indexLo, stateRealUp,stateImagUp,stateRealLo,stateImagLo) 
+	private  (thisTask,thisBlock ,indexUp,indexLo, stateRealUp,stateImagUp) 
 # endif
 	{
 # ifdef _OPENMP
@@ -778,7 +845,6 @@ void sigmaYDistributed(MultiQubit multiQubit, const int rotQubit,
 		int updateUpper)
 {
 
-	REAL   stateRealUp,stateRealLo,stateImagUp,stateImagLo;
 	long long int thisTask;  
 	const long long int numTasks=multiQubit.numAmps;
 
@@ -837,12 +903,12 @@ void hadamardLocal(MultiQubit multiQubit, const int rotQubit)
 	REAL *stateVecReal = multiQubit.stateVec.real;
 	REAL *stateVecImag = multiQubit.stateVec.imag;
 
-*********** multiply by 1/sqrt2
+	REAL recRoot2 = 1.0/sqrt(2);
 
 # ifdef _OPENMP
 # pragma omp parallel \
 	default  (none) \
-	shared   (sizeBlock,sizeHalfBlock, stateVecReal,stateVecImag) \
+	shared   (sizeBlock,sizeHalfBlock, stateVecReal,stateVecImag, recRoot2) \
 	private  (thisTask,thisBlock ,indexUp,indexLo, stateRealUp,stateImagUp,stateRealLo,stateImagLo) 
 # endif
 	{
@@ -860,11 +926,11 @@ void hadamardLocal(MultiQubit multiQubit, const int rotQubit)
 			stateRealLo = stateVecReal[indexLo];
 			stateImagLo = stateVecImag[indexLo];
 
-			stateVecReal[indexUp] = stateRealUp + stateRealLo;
-			stateVecImag[indexUp] = stateImagUp + stateImagLo;
+			stateVecReal[indexUp] = recRoot2*(stateRealUp + stateRealLo);
+			stateVecImag[indexUp] = recRoot2*(stateImagUp + stateImagLo);
 
-			stateVecReal[indexLo] = stateRealUp - stateRealLo;
-			stateVecImag[indexLo] = stateImagUp - stateImagLo;
+			stateVecReal[indexLo] = recRoot2*(stateRealUp - stateRealLo);
+			stateVecImag[indexLo] = recRoot2*(stateImagUp - stateImagLo);
 		} 
 	}
 }
@@ -884,7 +950,7 @@ the first qubit is the rightmost
 @param[out] stateVecOut array section to update (will correspond to either the lower or upper half of a block)
 */
 
-void hadamarDistributed(MultiQubit multiQubit, const int rotQubit,
+void hadamardDistributed(MultiQubit multiQubit, const int rotQubit,
 		ComplexArray stateVecUp,
 		ComplexArray stateVecLo,
 		ComplexArray stateVecOut,
@@ -902,6 +968,8 @@ void hadamarDistributed(MultiQubit multiQubit, const int rotQubit,
 	if (updateUpper) sign=1;
 	else sign=-1;
 
+	REAL recRoot2 = 1.0/sqrt(2);
+
 	REAL *stateVecRealUp=stateVecUp.real, *stateVecImagUp=stateVecUp.imag;
 	REAL *stateVecRealLo=stateVecLo.real, *stateVecImagLo=stateVecLo.imag;
 	REAL *stateVecRealOut=stateVecOut.real, *stateVecImagOut=stateVecOut.imag;
@@ -909,8 +977,9 @@ void hadamarDistributed(MultiQubit multiQubit, const int rotQubit,
 # ifdef _OPENMP
 # pragma omp parallel \
 	default  (none) \
-	shared   (stateVecRealUp,stateVecImagUp,stateVecRealLo,stateVecImagLo,stateVecRealOut,stateVecImagOut) \
-	private  (thisTask,stateRealUp,stateImagUp,stateRealLo,stateImagLo,sign)
+	shared   (stateVecRealUp,stateVecImagUp,stateVecRealLo,stateVecImagLo,stateVecRealOut,stateVecImagOut, \
+			recRoot2, sign) \
+	private  (thisTask,stateRealUp,stateImagUp,stateRealLo,stateImagLo)
 # endif
 	{
 # ifdef _OPENMP
@@ -924,8 +993,8 @@ void hadamarDistributed(MultiQubit multiQubit, const int rotQubit,
 			stateRealLo = stateVecRealLo[thisTask];
 			stateImagLo = stateVecImagLo[thisTask];
 
-			stateVecRealOut[thisTask] = stateRealUp + sign*stateRealLo;
-			stateVecImagOut[thisTask] = stateImagUp + sign*stateImagLo;
+			stateVecRealOut[thisTask] = recRoot2*(stateRealUp + sign*stateRealLo);
+			stateVecImagOut[thisTask] = recRoot2*(stateImagUp + sign*stateImagLo);
 		}
 	}
 }
@@ -944,9 +1013,10 @@ void phaseGateLocal(MultiQubit multiQubit, const int rotQubit, enum phaseGateTyp
 	long long int thisBlock, // current block
 	     indexUp,indexLo;    // current index and corresponding index in lower half block
 
-	REAL stateRealUp,stateRealLo,stateImagUp,stateImagLo;
+	REAL stateRealLo,stateImagLo;
 	long long int thisTask;         
 	const long long int numTasks=multiQubit.numAmps>>1;
+	printf("num tasks: %lld\n", numTasks);
 
 	// test qubit valid
 	assert (rotQubit >= 0 && rotQubit < multiQubit.numQubits);
@@ -964,12 +1034,12 @@ void phaseGateLocal(MultiQubit multiQubit, const int rotQubit, enum phaseGateTyp
 # ifdef _OPENMP
 # pragma omp parallel \
 	default  (none) \
-	shared   (sizeBlock,sizeHalfBlock, stateVecReal,stateVecImag, recRoot2, type) \
-	private  (thisTask,thisBlock ,indexUp,indexLo, stateRealUp,stateImagUp,stateRealLo,stateImagLo) 
+	shared   (sizeBlock,sizeHalfBlock,stateVecReal,stateVecImag,recRoot2,type) \
+	private  (thisTask,thisBlock,indexUp,indexLo,stateRealLo,stateImagLo) 
 # endif
 	{
 		if (type==SIGMA_Z){
-# ifdef _openmp
+# ifdef _OPENMP
 			# pragma omp for schedule (static)
 # endif
 			for (thisTask=0; thisTask<numTasks; thisTask++) {
@@ -981,8 +1051,10 @@ void phaseGateLocal(MultiQubit multiQubit, const int rotQubit, enum phaseGateTyp
 				stateVecReal[indexLo] = -stateVecReal[indexLo];
 				stateVecImag[indexLo] = -stateVecImag[indexLo];
 			} 
-		} else if (type==S_GATE){
-# ifdef _openmp
+		} 
+		
+		else if (type==S_GATE){
+# ifdef _OPENMP
 			# pragma omp for schedule (static)
 # endif
 			for (thisTask=0; thisTask<numTasks; thisTask++) {
@@ -990,9 +1062,11 @@ void phaseGateLocal(MultiQubit multiQubit, const int rotQubit, enum phaseGateTyp
 				thisBlock   = thisTask / sizeHalfBlock;
 				indexUp     = thisBlock*sizeBlock + thisTask%sizeHalfBlock;
 				indexLo     = indexUp + sizeHalfBlock;
+				stateRealLo = stateVecReal[indexLo];
+				stateImagLo = stateVecImag[indexLo];
 
-				stateVecReal[indexLo] = -stateVecImag[indexLo];
-				stateVecImag[indexLo] = stateVecReal[indexLo];
+				stateVecReal[indexLo] = -stateImagLo;
+				stateVecImag[indexLo] = stateRealLo;
 			} 
 		} else if (type==T_GATE){
 # ifdef _OPENMP
@@ -1024,20 +1098,12 @@ the first qubit is the rightmost
  */
 void phaseGateDistributed(MultiQubit multiQubit, const int rotQubit, enum phaseGateType type)
 {
-	long long int sizeBlock, sizeHalfBlock;
-	long long int thisBlock, // current block
-	     indexUp,indexLo;    // current index and corresponding index in lower half block
-
-	REAL stateRealUp,stateRealLo,stateImagUp,stateImagLo;
+	REAL stateRealLo,stateImagLo;
 	long long int thisTask;         
 	const long long int numTasks=multiQubit.numAmps;
 
 	// test qubit valid
 	assert (rotQubit >= 0 && rotQubit < multiQubit.numQubits);
-
-	// set dimensions
-	sizeHalfBlock = 1LL << rotQubit;  
-	sizeBlock     = 2LL * sizeHalfBlock; 
 
 	// Can't use multiQubit.stateVec as a private OMP var
 	REAL *stateVecReal = multiQubit.stateVec.real;
@@ -1048,8 +1114,8 @@ void phaseGateDistributed(MultiQubit multiQubit, const int rotQubit, enum phaseG
 # ifdef _OPENMP
 # pragma omp parallel \
 	default  (none) \
-	shared   (sizeBlock,sizeHalfBlock, stateVecReal,stateVecImag, recRoot2, type) \
-	private  (thisTask,thisBlock ,indexUp,indexLo, stateRealUp,stateImagUp,stateRealLo,stateImagLo) 
+	shared   (stateVecReal,stateVecImag, recRoot2, type) \
+	private  (thisTask,stateRealLo,stateImagLo) 
 # endif
 	{
 		if (type==SIGMA_Z){
@@ -1065,8 +1131,11 @@ void phaseGateDistributed(MultiQubit multiQubit, const int rotQubit, enum phaseG
 			# pragma omp for schedule (static)
 # endif
 			for (thisTask=0; thisTask<numTasks; thisTask++) {
-				stateVecReal[thisTask] = -stateVecImag[thisTask];
-				stateVecImag[thisTask] = stateVecReal[thisTask];
+				stateRealLo = stateVecReal[thisTask];
+				stateImagLo = stateVecImag[thisTask];
+
+				stateVecReal[thisTask] = -stateImagLo;
+				stateVecImag[thisTask] = stateRealLo;
 			} 
 		} else if (type==T_GATE){
 # ifdef _OPENMP
@@ -1460,8 +1529,8 @@ void measureInStateLocal(MultiQubit multiQubit, int measureQubit, REAL totalProb
 				stateVecReal[index]=0;
 				stateVecImag[index]=0;
 
-				stateVecReal[index+sizeHalfBlock]=stateVecReal[index]*renorm;
-				stateVecImag[index+sizeHalfBlock]=stateVecImag[index]*renorm;
+				stateVecReal[index+sizeHalfBlock]=stateVecReal[index+sizeHalfBlock]*renorm;
+				stateVecImag[index+sizeHalfBlock]=stateVecImag[index+sizeHalfBlock]*renorm;
 			}
 		}
 	}

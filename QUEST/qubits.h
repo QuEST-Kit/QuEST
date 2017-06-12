@@ -62,11 +62,15 @@ void destroyMultiQubit(MultiQubit multiQubit, QUESTEnv env);
 
 void reportState(MultiQubit multiQubit);
 
+void reportStateToScreen(MultiQubit multiQubit, QUESTEnv env);
+
 void reportMultiQubitParams(MultiQubit multiQubit);
 
 void initStateZero(MultiQubit *multiQubit);
 
 void initStatePlus(MultiQubit *multiQubit);
+
+void initStateDebug(MultiQubit *multiQubit);
 
 void quadCPhaseGate (MultiQubit multiQubit, const int idQubit1, const int idQubit2, 
 	const int idQubit3, const int idQubit4);
@@ -156,6 +160,8 @@ the first qubit is the rightmost
  */
 void rotateQubit(MultiQubit multiQubit, const int rotQubit, Complex alpha, Complex beta);
 
+void controlRotateQubit(MultiQubit multiQubit, const int rotQubit, const int controlQubit, Complex alpha, Complex beta);
+
 /** Rotate a single qubit by {{0,1},{1,0}} -- swap |0> and |1>.
 @param[in,out] multiQubit object representing the set of qubits
 @param[in] rotQubit qubit to rotate
@@ -182,6 +188,8 @@ and a |1> into a |->.
 */
 void hadamard(MultiQubit multiQubit, const int rotQubit);
 
+void controlNot(MultiQubit multiQubit, const int targetQubit, const int controlQubit);
+
 /** Measure the probability
 of a specified qubit being in the zero state.     
 
@@ -189,7 +197,7 @@ of a specified qubit being in the zero state.
 @param[in] measureQubit qubit to measure
 @return probability of qubit measureQubit being zero
 */
-REAL findProbabilityOfZero(MultiQubit multiQubit, const int measureQubit);
+REAL findProbabilityOfOutcome(MultiQubit multiQubit, const int measureQubit, int outcome);
 
 /** Update the state vector to be consistent with measuring measureQubit=0.
 Measure in Zero performs an irreversible change to the state vector: it updates the vector according
@@ -202,7 +210,7 @@ probability of making this measurement.
 @param[in] measureQubit qubit to measure
 @return probability of qubit measureQubit being zero
 */
-REAL measureInZero(MultiQubit multiQubit, const int measureQubit);
+REAL measureInState(MultiQubit multiQubit, const int measureQubit, int outcome);
 
 /** Updates the state according to this scenario: we ask "are these 3 qubits in 111" and the answer is "no".
 The function returns the probability of this outcome (if zero, it will exit with error) 

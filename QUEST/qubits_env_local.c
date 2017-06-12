@@ -86,6 +86,11 @@ void rotateQubit(MultiQubit multiQubit, const int rotQubit, Complex alpha, Compl
 	rotateQubitLocal(multiQubit, rotQubit, alpha, beta);
 }
 
+void controlRotateQubit(MultiQubit multiQubit, const int rotQubit, const int controlQubit, Complex alpha, Complex beta) 
+{
+	controlRotateQubitLocal(multiQubit, rotQubit, controlQubit, alpha, beta);
+}
+
 void sigmaX(MultiQubit multiQubit, const int rotQubit) 
 {
 	sigmaXLocal(multiQubit, rotQubit);
@@ -104,6 +109,11 @@ void phaseGate(MultiQubit multiQubit, const int rotQubit, enum phaseGateType typ
 void hadamard(MultiQubit multiQubit, const int rotQubit) 
 {
 	hadamardLocal(multiQubit, rotQubit);
+}
+
+void controlNot(MultiQubit multiQubit, const int targetQubit, const int controlQubit) 
+{
+	controlNotLocal(multiQubit, targetQubit, controlQubit);
 }
 
 REAL findProbabilityOfOutcome(MultiQubit multiQubit, const int measureQubit, int outcome)
