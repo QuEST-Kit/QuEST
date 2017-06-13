@@ -31,7 +31,7 @@ Represents a system of qubits.
 
 Qubits are zero-\/based and the the first qubit is the rightmost 
 
-Definition at line 26 of file qubits.\+h.
+Definition at line 28 of file qubits.\+h.
 
 
 
@@ -48,11 +48,11 @@ The position of the chunk of the state vector held by this process in the full s
 
 
 
-Definition at line 38 of file qubits.\+h.
+Definition at line 40 of file qubits.\+h.
 
 
 
-Referenced by create\+Multi\+Qubit(), find\+Probability\+Of\+Zero(), init\+State\+Vec(), measure\+In\+Zero(), report\+Multi\+Qubit\+Params(), report\+State(), and rotate\+Qubit().
+Referenced by control\+Not(), control\+Rotate\+Qubit(), create\+Multi\+Qubit(), find\+Probability\+Of\+Outcome(), get\+Imag\+Amp\+El(), get\+Real\+Amp\+El(), hadamard(), init\+State\+Debug(), init\+State\+Zero(), measure\+In\+State(), phase\+Gate(), report\+Multi\+Qubit\+Params(), report\+State(), report\+State\+To\+Screen(), rotate\+Qubit(), sigma\+X(), and sigma\+Y().
 
 \mbox{\Hypertarget{structMultiQubit_ae16f47d8b725c914fb7f66b6498d79db}\label{structMultiQubit_ae16f47d8b725c914fb7f66b6498d79db}} 
 \index{Multi\+Qubit@{Multi\+Qubit}!num\+Amps@{num\+Amps}}
@@ -66,11 +66,11 @@ Number of probability amplitudes held in state\+Vec by this process In the non-\
 
 
 
-Definition at line 36 of file qubits.\+h.
+Definition at line 38 of file qubits.\+h.
 
 
 
-Referenced by calc\+Total\+Probability(), control\+Phase\+Gate(), create\+Multi\+Qubit(), filter\+Out111\+Local(), find\+Probability\+Of\+Zero(), find\+Probability\+Of\+Zero\+Distributed(), find\+Probability\+Of\+Zero\+Local(), init\+State\+Vec(), measure\+In\+Zero(), measure\+In\+Zero\+Distributed\+Renorm(), measure\+In\+Zero\+Distributed\+Set\+Zero(), measure\+In\+Zero\+Local(), prob\+Of\+Filter\+Out111\+Local(), quad\+C\+Phase\+Gate(), report\+State(), rotate\+Qubit(), rotate\+Qubit\+Distributed(), and rotate\+Qubit\+Local().
+Referenced by calc\+Total\+Probability(), control\+Not(), control\+Not\+Distributed(), control\+Not\+Local(), control\+Phase\+Gate(), control\+Rotate\+Qubit(), control\+Rotate\+Qubit\+Distributed(), control\+Rotate\+Qubit\+Local(), create\+Multi\+Qubit(), filter\+Out111\+Local(), find\+Probability\+Of\+Outcome(), find\+Probability\+Of\+Zero\+Distributed(), find\+Probability\+Of\+Zero\+Local(), get\+Chunk\+Id\+From\+Index(), get\+Imag\+Amp\+El(), get\+Real\+Amp\+El(), hadamard(), hadamard\+Distributed(), hadamard\+Local(), init\+State\+Debug(), init\+State\+Plus(), init\+State\+Zero(), measure\+In\+State(), measure\+In\+State\+Distributed\+Renorm(), measure\+In\+State\+Distributed\+Set\+Zero(), measure\+In\+State\+Local(), phase\+Gate(), phase\+Gate\+Distributed(), phase\+Gate\+Local(), prob\+Of\+Filter\+Out111\+Local(), quad\+C\+Phase\+Gate(), report\+State(), report\+State\+To\+Screen(), rotate\+Qubit(), rotate\+Qubit\+Distributed(), rotate\+Qubit\+Local(), sigma\+X(), sigma\+X\+Distributed(), sigma\+X\+Local(), sigma\+Y(), sigma\+Y\+Distributed(), and sigma\+Y\+Local().
 
 \mbox{\Hypertarget{structMultiQubit_acd43f2f57991709c9e94f73662c972b2}\label{structMultiQubit_acd43f2f57991709c9e94f73662c972b2}} 
 \index{Multi\+Qubit@{Multi\+Qubit}!num\+Chunks@{num\+Chunks}}
@@ -84,11 +84,11 @@ Number of chunks the state vector is broken up into -- the number of M\+PI proce
 
 
 
-Definition at line 40 of file qubits.\+h.
+Definition at line 42 of file qubits.\+h.
 
 
 
-Referenced by calc\+Total\+Probability(), create\+Multi\+Qubit(), and report\+Multi\+Qubit\+Params().
+Referenced by calc\+Total\+Probability(), create\+Multi\+Qubit(), init\+State\+Debug(), init\+State\+Plus(), report\+Multi\+Qubit\+Params(), and report\+State\+To\+Screen().
 
 \mbox{\Hypertarget{structMultiQubit_ab5b9795bdc6fb5855e1974dcbbaeb36f}\label{structMultiQubit_ab5b9795bdc6fb5855e1974dcbbaeb36f}} 
 \index{Multi\+Qubit@{Multi\+Qubit}!num\+Qubits@{num\+Qubits}}
@@ -102,11 +102,11 @@ Number of qubits in the state.
 
 
 
-Definition at line 33 of file qubits.\+h.
+Definition at line 35 of file qubits.\+h.
 
 
 
-Referenced by control\+Phase\+Gate(), create\+Multi\+Qubit(), filter\+Out111\+Local(), find\+Probability\+Of\+Zero\+Distributed(), find\+Probability\+Of\+Zero\+Local(), measure\+In\+Zero\+Distributed\+Renorm(), measure\+In\+Zero\+Distributed\+Set\+Zero(), measure\+In\+Zero\+Local(), prob\+Of\+Filter\+Out111\+Local(), quad\+C\+Phase\+Gate(), report\+Multi\+Qubit\+Params(), rotate\+Qubit\+Distributed(), and rotate\+Qubit\+Local().
+Referenced by control\+Not\+Distributed(), control\+Not\+Local(), control\+Phase\+Gate(), control\+Rotate\+Qubit\+Distributed(), control\+Rotate\+Qubit\+Local(), create\+Multi\+Qubit(), filter\+Out111\+Local(), find\+Probability\+Of\+Zero\+Distributed(), find\+Probability\+Of\+Zero\+Local(), hadamard\+Distributed(), hadamard\+Local(), measure\+In\+State\+Distributed\+Renorm(), measure\+In\+State\+Distributed\+Set\+Zero(), measure\+In\+State\+Local(), phase\+Gate\+Distributed(), phase\+Gate\+Local(), prob\+Of\+Filter\+Out111\+Local(), quad\+C\+Phase\+Gate(), report\+Multi\+Qubit\+Params(), report\+State\+To\+Screen(), rotate\+Qubit\+Distributed(), rotate\+Qubit\+Local(), sigma\+X\+Distributed(), sigma\+X\+Local(), sigma\+Y\+Distributed(), and sigma\+Y\+Local().
 
 \mbox{\Hypertarget{structMultiQubit_a76f7db4eab52d2b30f58f973ada809c5}\label{structMultiQubit_a76f7db4eab52d2b30f58f973ada809c5}} 
 \index{Multi\+Qubit@{Multi\+Qubit}!pair\+State\+Vec@{pair\+State\+Vec}}
@@ -120,11 +120,11 @@ Temporary storage for a chunk of the state vector received from another process 
 
 
 
-Definition at line 31 of file qubits.\+h.
+Definition at line 33 of file qubits.\+h.
 
 
 
-Referenced by create\+Multi\+Qubit(), destroy\+Multi\+Qubit(), and rotate\+Qubit().
+Referenced by control\+Not(), control\+Rotate\+Qubit(), create\+Multi\+Qubit(), destroy\+Multi\+Qubit(), hadamard(), rotate\+Qubit(), sigma\+X(), and sigma\+Y().
 
 \mbox{\Hypertarget{structMultiQubit_a45483190d6b01ef6b2f98f2bec9ab94f}\label{structMultiQubit_a45483190d6b01ef6b2f98f2bec9ab94f}} 
 \index{Multi\+Qubit@{Multi\+Qubit}!state\+Vec@{state\+Vec}}
@@ -138,11 +138,11 @@ Probablilty amplitudes for the multi qubit state.
 
 
 
-Definition at line 29 of file qubits.\+h.
+Definition at line 31 of file qubits.\+h.
 
 
 
-Referenced by calc\+Total\+Probability(), control\+Phase\+Gate(), create\+Multi\+Qubit(), destroy\+Multi\+Qubit(), filter\+Out111\+Local(), find\+Probability\+Of\+Zero\+Distributed(), find\+Probability\+Of\+Zero\+Local(), init\+State\+Vec(), measure\+In\+Zero\+Distributed\+Renorm(), measure\+In\+Zero\+Distributed\+Set\+Zero(), measure\+In\+Zero\+Local(), prob\+Of\+Filter\+Out111\+Local(), quad\+C\+Phase\+Gate(), report\+State(), rotate\+Qubit(), and rotate\+Qubit\+Local().
+Referenced by calc\+Total\+Probability(), control\+Not(), control\+Not\+Local(), control\+Phase\+Gate(), control\+Rotate\+Qubit(), control\+Rotate\+Qubit\+Local(), create\+Multi\+Qubit(), destroy\+Multi\+Qubit(), filter\+Out111\+Local(), find\+Probability\+Of\+Zero\+Distributed(), find\+Probability\+Of\+Zero\+Local(), get\+Imag\+Amp\+El(), get\+Real\+Amp\+El(), hadamard(), hadamard\+Local(), init\+State\+Debug(), init\+State\+Plus(), init\+State\+Zero(), measure\+In\+State\+Distributed\+Renorm(), measure\+In\+State\+Distributed\+Set\+Zero(), measure\+In\+State\+Local(), phase\+Gate\+Distributed(), phase\+Gate\+Local(), prob\+Of\+Filter\+Out111\+Local(), quad\+C\+Phase\+Gate(), report\+State(), report\+State\+To\+Screen(), rotate\+Qubit(), rotate\+Qubit\+Local(), sigma\+X(), sigma\+X\+Local(), sigma\+Y(), and sigma\+Y\+Local().
 
 
 

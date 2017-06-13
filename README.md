@@ -19,7 +19,13 @@ Without git: download the directory manually
 
 In the root directory, run a simple 8 qubit example on one node:
 
-The default compiler is the gnu compiler. To change to the intell compiler, edit the COMMON CONFIG section at the beginning of makefile in the root directory. Change COMPILER=GNU to COMPILER=INTEL. Then run:
+Copy the make file and circuit code to your root directory:
+```
+cp examples/basicTemplate.c .
+cp examples/makefile .
+```
+
+The default compiler is the gnu compiler. To change to the intel compiler, edit the COMMON CONFIG section at the beginning of makefile in the root directory. Change COMPILER=GNU to COMPILER=INTEL. Then run:
 
 ```
 make clean
@@ -53,8 +59,7 @@ To run on arcus-b on one node, use the job submission script examples/ompJob.sh
 
 ## Creating a new file from the template
 
-The initial example file available in the root folder is the template file basicTemplate.c. If you have removed
-this file, it is also available in examples/basicTemplate.c. The structure of this file is:
+A basic example file is available in examples/basicTemplate.c. The structure of this file is:
 
 ```
 Initialisation

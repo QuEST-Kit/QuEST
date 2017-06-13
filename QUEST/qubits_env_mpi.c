@@ -64,7 +64,7 @@ void reportQUESTEnv(QUESTEnv env){
 # else
 		printf("OpenMP disabled\n");
 # endif 
-		printf("Precision: size of REAL is %d bytes\n", sizeof(REAL));
+		printf("Precision: size of REAL is %ld bytes\n", sizeof(REAL));
 	}
 }
 
