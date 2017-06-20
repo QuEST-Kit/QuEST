@@ -1,4 +1,4 @@
-# QUEST
+# QuEST
 
 A library for simulating operations on sets of qubits. 
 
@@ -11,7 +11,7 @@ Operations implemented:
 
 With git: clone the root directory to your device
 
-git clone https://github.com/aniabrown/QUEST.git [QUESTHOME]
+git clone https://github.com/aniabrown/QuEST.git [QuESTHOME]
 
 Without git: download the directory manually
 
@@ -40,7 +40,7 @@ OpenMP is enabled by default. To change the number of threads used by the progra
 
 ## Building other examples
 
-There are other examples of codes using the QUEST library in the examples folder. To use one of these,
+There are other examples of codes using the QuEST library in the examples folder. To use one of these,
 copy from the examples folder into the root folder, eg:
 cp examples/timingDemo.c timingDemo.c
 
@@ -70,7 +70,7 @@ Cleanup
 ```
 
 In general, leave the initialization and cleanup sections and edit the rotations, measurement and phase gate
-sections. Further explanations are in the template file. The full list of QUEST library functions that can be used here is listed in qubits.h. 
+sections. Further explanations are in the template file. The full list of QuEST library functions that can be used here is listed in qubits.h. 
 
 ## Multi node code
 
@@ -86,7 +86,7 @@ mpirun -np [NUMBER OF PROCESSES] ./demo [NUMBER OF QUBITS]
 ```
 To run on arcus-b, use the job submission script examples/mpiJob.sh
 
-Note that the API to the QUEST library is unchanged when running on multiple nodes. The template file basicTemplate.c
+Note that the API to the QuEST library is unchanged when running on multiple nodes. The template file basicTemplate.c
 is valid for both single and multi node environments. 
 
 ## API Documentation
