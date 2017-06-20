@@ -13,7 +13,7 @@ COMPILER = GNU
 EXE = demo
 MY_FILE_NAME = basicTemplate
 USE_MPI=0
-QUEST_DIR = QUEST
+QUEST_DIR = QuEST
 
 #
 # --- compiler
