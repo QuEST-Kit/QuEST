@@ -1,5 +1,5 @@
 /** @file qubits.c
- * The core of the QUEST Library.
+ * The core of the QuEST Library.
  */
 
 # include <math.h>  //SCB new line
@@ -24,7 +24,7 @@ static int extractBit (const int locationOfBitFromRight, const long long int the
  * @param[in] numQubits number of qubits in the system
  * @param[in] env object representing the execution environment (local, multinode etc)
  */
-void createMultiQubit(MultiQubit *multiQubit, int numQubits, QUESTEnv env)
+void createMultiQubit(MultiQubit *multiQubit, int numQubits, QuESTEnv env)
 {
 	long long int numAmps = 1L << numQubits;
 	long long int numAmpsPerRank = numAmps/env.numRanks;
@@ -60,7 +60,7 @@ void createMultiQubit(MultiQubit *multiQubit, int numQubits, QUESTEnv env)
  * @param[in,out] multiQubit object to be deallocated
  * @param[in] env object representing the execution environment (local, multinode etc)
  */
-void destroyMultiQubit(MultiQubit multiQubit, QUESTEnv env){
+void destroyMultiQubit(MultiQubit multiQubit, QuESTEnv env){
 	free(multiQubit.stateVec.real);
 	free(multiQubit.stateVec.imag);
 	if (env.numRanks>1){
@@ -106,7 +106,7 @@ void reportState(MultiQubit multiQubit){
 /** Print the current state vector of probability amplitudes for a set of qubits to standard out. 
 For debugging purposes. Each rank should print output serially. Only print output for systems <= 5 qubits
 */
-void reportStateToScreen(MultiQubit multiQubit, QUESTEnv env){
+void reportStateToScreen(MultiQubit multiQubit, QuESTEnv env){
 	long long int index;
 	int rank;
 	if (multiQubit.numQubits<=5){
@@ -120,7 +120,7 @@ void reportStateToScreen(MultiQubit multiQubit, QUESTEnv env){
 				}
 				printf("]\n");
 			}
-			syncQUESTEnv(env);
+			syncQuESTEnv(env);
 		}
 	}
 }

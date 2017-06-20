@@ -9,21 +9,21 @@ An implementation of the API in qubits.h for a local (non-MPI) environment.
 # include "qubits.h"
 # include "qubits_internal.h"
 
-void initQUESTEnv(QUESTEnv *env){
+void initQuESTEnv(QuESTEnv *env){
         // init MPI environment
 	env->rank=0;
 	env->numRanks=1;
 }
 
-void syncQUESTEnv(QUESTEnv env){
+void syncQuESTEnv(QuESTEnv env){
 	// MPI Barrier goes here in MPI version. 
 } 
 
-void closeQUESTEnv(QUESTEnv env){
+void closeQuESTEnv(QuESTEnv env){
 	// MPI finalize goes here in MPI version. Call this function anyway for consistency
 }
 
-void reportQUESTEnv(QUESTEnv env){
+void reportQuESTEnv(QuESTEnv env){
 	printf("EXECUTION ENVIRONMENT:\n");
 	printf("Running locally on one node\n");
 	printf("Number of ranks is %d\n", env.numRanks);
@@ -36,7 +36,7 @@ void reportQUESTEnv(QUESTEnv env){
 	printf("Precision: size of REAL is %ld bytes\n", sizeof(REAL));
 }
 
-void reportNodeList(QUESTEnv env){
+void reportNodeList(QuESTEnv env){
         printf("Hostname unknown: running locally\n");
 }
 

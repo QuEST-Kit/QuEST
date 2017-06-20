@@ -16,7 +16,7 @@
 #SBATCH --time=00:40:00
 
 # set name of job
-#SBATCH --job-name QUEST
+#SBATCH --job-name QuEST
 
 # set queue
 #SBATCH --partition=compute

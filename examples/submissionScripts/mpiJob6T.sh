@@ -8,7 +8,7 @@
 #SBATCH --time=01:30:00
 
 # set name of job
-#SBATCH --job-name QUEST_AB
+#SBATCH --job-name QuEST_AB
 
 # set queue
 #SBATCH --partition=mem6T

@@ -3,7 +3,7 @@
 
 # include "precision.h"
 /** @file
- * The QUEST library API and objects. 
+ * The QuEST library API and objects. 
 */
 
 /** Represents an array of complex numbers grouped into an array of real components and an array of coressponding complex components.
@@ -45,24 +45,24 @@ typedef struct MultiQubit
 /** Information about the environment the program is running in.
 In practice, this holds info about MPI ranks and helps to hide MPI initialization code
 */
-typedef struct QUESTEnv
+typedef struct QuESTEnv
 {
 	int rank;
 	int numRanks;
-} QUESTEnv;
+} QuESTEnv;
 
 // Codes for sigmaZ phase gate variations
 enum phaseGateType {SIGMA_Z=0, S_GATE=1, T_GATE=2};
 
-// QUEST library functions whose implementation is independent of environment (local, MPI)
+// QuEST library functions whose implementation is independent of environment (local, MPI)
 
-void createMultiQubit(MultiQubit *multiQubit, int numQubits, QUESTEnv env);
+void createMultiQubit(MultiQubit *multiQubit, int numQubits, QuESTEnv env);
 
-void destroyMultiQubit(MultiQubit multiQubit, QUESTEnv env);
+void destroyMultiQubit(MultiQubit multiQubit, QuESTEnv env);
 
 void reportState(MultiQubit multiQubit);
 
-void reportStateToScreen(MultiQubit multiQubit, QUESTEnv env);
+void reportStateToScreen(MultiQubit multiQubit, QuESTEnv env);
 
 void reportMultiQubitParams(MultiQubit multiQubit);
 
@@ -84,35 +84,35 @@ void sGate(MultiQubit multiQubit, const int rotQubit);
 void tGate(MultiQubit multiQubit, const int rotQubit);
 
 
-// QUEST library functions whose implementation depends on environment (local, MPI)
+// QuEST library functions whose implementation depends on environment (local, MPI)
 
-/** Initialize QUEST environment. If something needs to be done to set up the execution environment, such as 
+/** Initialize QuEST environment. If something needs to be done to set up the execution environment, such as 
  * initializing MPI when running in distributed mode, it is handled here
  * @param[in,out] env object representing the execution environment. A single instance is used for each program
  */
-void initQUESTEnv(QUESTEnv *env);
+void initQuESTEnv(QuESTEnv *env);
 
-/** Close QUEST environment. If something needs to be done to clean up the execution environment, such as 
+/** Close QuEST environment. If something needs to be done to clean up the execution environment, such as 
  * finalizing MPI when running in distributed mode, it is handled here
  * @param[in] env object representing the execution environment. A single instance is used for each program
  */
-void closeQUESTEnv(QUESTEnv env);
+void closeQuESTEnv(QuESTEnv env);
 
 /** Guarantees that all code up to the given point has been executed on all nodes. 
  * @param[in] env object representing the execution environment. A single instance is used for each program
  */
-void syncQUESTEnv(QUESTEnv env);
+void syncQuESTEnv(QuESTEnv env);
 
-/** Report information about the QUEST environment
+/** Report information about the QuEST environment
  * @param[in] env object representing the execution environment. A single instance is used for each program
  */
-void reportQUESTEnv(QUESTEnv env);
+void reportQuESTEnv(QuESTEnv env);
 
 /** Report a list of CPU hostnames and the rank that is running on each if running with MPI enabled and an 
 error message otherwise. For debugging purposes. 
 @param[in] env object representing the execution environment. A single instance is used for each program
 */
-void reportNodeList(QUESTEnv env);
+void reportNodeList(QuESTEnv env);
 
 /** Get the real component of the probability amplitude at an index in the state vector.
 For debugging purposes.

@@ -22,7 +22,7 @@ static int getChunkPairId(int chunkIsUpper, int chunkId, long long int chunkSize
 static int halfMatrixBlockFitsInChunk(long long int chunkSize, int rotQubit);
 static int getChunkIdFromIndex(MultiQubit multiQubit, long long int index);
 
-void initQUESTEnv(QUESTEnv *env){
+void initQuESTEnv(QuESTEnv *env){
         // init MPI environment
         int rank, numRanks, initialized;
 	MPI_Initialized(&initialized);
@@ -39,21 +39,21 @@ void initQUESTEnv(QUESTEnv *env){
 		}
 		env->rank=rank;
 		env->numRanks=numRanks;
-	} else printf("ERROR: Trying to initialize QUESTEnv multiple times. Ignoring\n");
+	} else printf("ERROR: Trying to initialize QuESTEnv multiple times. Ignoring\n");
 }
 
-void syncQUESTEnv(QUESTEnv env){
+void syncQuESTEnv(QuESTEnv env){
 	MPI_Barrier(MPI_COMM_WORLD);
 }
 
-void closeQUESTEnv(QUESTEnv env){
+void closeQuESTEnv(QuESTEnv env){
 	int finalized;
 	MPI_Finalized(&finalized);
 	if (!finalized) MPI_Finalize();
-	else printf("ERROR: Trying to close QUESTEnv multiple times. Ignoring\n");
+	else printf("ERROR: Trying to close QuESTEnv multiple times. Ignoring\n");
 }
 
-void reportQUESTEnv(QUESTEnv env){
+void reportQuESTEnv(QuESTEnv env){
 	if (env.rank==0){
 		printf("EXECUTION ENVIRONMENT:\n"); 
 		printf("Running distributed (MPI) version\n");
@@ -68,7 +68,7 @@ void reportQUESTEnv(QUESTEnv env){
 	}
 }
 
-void reportNodeList(QUESTEnv env){
+void reportNodeList(QuESTEnv env){
 	char hostName[256];
         gethostname(hostName, 255);
         printf("hostname on rank %d: %s\n", env.rank, hostName);
@@ -84,7 +84,7 @@ REAL getRealAmpEl(MultiQubit multiQubit, long long int index){
 	if (multiQubit.chunkId==chunkId){
 		el = multiQubit.stateVec.real[index-chunkId*multiQubit.numAmps];
 	}
-	MPI_Bcast(&el, 1, MPI_QUEST_REAL, chunkId, MPI_COMM_WORLD);
+	MPI_Bcast(&el, 1, MPI_QuEST_REAL, chunkId, MPI_COMM_WORLD);
         return el; 
 } 
 
@@ -94,7 +94,7 @@ REAL getImagAmpEl(MultiQubit multiQubit, long long int index){
 	if (multiQubit.chunkId==chunkId){
 		el = multiQubit.stateVec.imag[index-chunkId*multiQubit.numAmps];
 	}
-	MPI_Bcast(&el, 1, MPI_QUEST_REAL, chunkId, MPI_COMM_WORLD);
+	MPI_Bcast(&el, 1, MPI_QuEST_REAL, chunkId, MPI_COMM_WORLD);
         return el; 
 }
 
@@ -121,7 +121,7 @@ REAL calcTotalProbability(MultiQubit multiQubit){
     pTotal = t;
   } 
   if (DEBUG) printf("before calc prob. %d\n", multiQubit.numChunks);
-  if (multiQubit.numChunks>1) MPI_Allreduce(&pTotal, &allRankTotals, 1, MPI_QUEST_REAL, MPI_SUM, MPI_COMM_WORLD);
+  if (multiQubit.numChunks>1) MPI_Allreduce(&pTotal, &allRankTotals, 1, MPI_QuEST_REAL, MPI_SUM, MPI_COMM_WORLD);
   else allRankTotals=pTotal;
   
   return allRankTotals;
@@ -226,12 +226,12 @@ void exchangeStateVectors(MultiQubit multiQubit, int pairRank){
 	// receive pairRank's state vector into multiQubit.pairStateVec
 	for (i=0; i<numMessages; i++){
 		offset = i*maxMessageCount;
-		MPI_Sendrecv(&multiQubit.stateVec.real[offset], maxMessageCount, MPI_QUEST_REAL, pairRank, TAG,
-				 &multiQubit.pairStateVec.real[offset], maxMessageCount, MPI_QUEST_REAL,
+		MPI_Sendrecv(&multiQubit.stateVec.real[offset], maxMessageCount, MPI_QuEST_REAL, pairRank, TAG,
+				 &multiQubit.pairStateVec.real[offset], maxMessageCount, MPI_QuEST_REAL,
 				 pairRank, TAG, MPI_COMM_WORLD, &status);
 		//printf("rank: %d err: %d\n", multiQubit.rank, err);
-		MPI_Sendrecv(&multiQubit.stateVec.imag[offset], maxMessageCount, MPI_QUEST_REAL, pairRank, TAG,
-				&multiQubit.pairStateVec.imag[offset], maxMessageCount, MPI_QUEST_REAL,
+		MPI_Sendrecv(&multiQubit.stateVec.imag[offset], maxMessageCount, MPI_QuEST_REAL, pairRank, TAG,
+				&multiQubit.pairStateVec.imag[offset], maxMessageCount, MPI_QuEST_REAL,
 				pairRank, TAG, MPI_COMM_WORLD, &status);
 	}
 }
@@ -484,7 +484,7 @@ REAL findProbabilityOfOutcome(MultiQubit multiQubit, const int measureQubit, int
 			stateProb = findProbabilityOfZeroDistributed(multiQubit, measureQubit);
 		} else stateProb = 0;
 	}
-	MPI_Allreduce(&stateProb, &totalStateProb, 1, MPI_QUEST_REAL, MPI_SUM, MPI_COMM_WORLD);
+	MPI_Allreduce(&stateProb, &totalStateProb, 1, MPI_QuEST_REAL, MPI_SUM, MPI_COMM_WORLD);
 	if (outcome==1) totalStateProb = 1.0 - totalStateProb;
 	return totalStateProb;
 }
@@ -522,7 +522,7 @@ REAL probOfFilterOut111(MultiQubit multiQubit, const int idQubit1, const int idQ
 {
 	REAL stateProb=0, totalStateProb=0;
 	stateProb = probOfFilterOut111Local(multiQubit, idQubit1, idQubit2, idQubit3);
-	MPI_Allreduce(&stateProb, &totalStateProb, 1, MPI_QUEST_REAL, MPI_SUM, MPI_COMM_WORLD);
+	MPI_Allreduce(&stateProb, &totalStateProb, 1, MPI_QuEST_REAL, MPI_SUM, MPI_COMM_WORLD);
 	return totalStateProb;
 }
 

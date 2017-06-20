@@ -1,5 +1,5 @@
 /** @file 
- * Basic template for using the QUEST library. In general, leave the initialisation
+ * Basic template for using the QuEST library. In general, leave the initialisation
  * and cleanup sections as they are and edit the rotations, measurement and phase gate
  * sections.
  */
@@ -12,8 +12,8 @@
 # include <string.h>
 # include <omp.h>
 
-# include "QUEST/qubits.h"
-# include "QUEST/precision.h"
+# include "QuEST/qubits.h"
+# include "QuEST/precision.h"
 
 //! Max number of angles used to define qubit rotation
 # define MaxAngles      10
@@ -37,8 +37,8 @@ int main (int narg, char** varg) {
 	// INIT ENVIRONMENT: ALWAYS REQUIRED ONCE AT BEGINNING OF PROGRAM
 	// These two lines will automatically set up the environment (multinode,
 	// openMP only etc)  
-	QUESTEnv env;
-	initQUESTEnv(&env);
+	QuESTEnv env;
+	initQuESTEnv(&env);
 
 	// model vars
 	int numQubits;
@@ -71,7 +71,7 @@ int main (int narg, char** varg) {
 		printf("Demo of single qubit rotations.\n");
 	}
 	reportMultiQubitParams(multiQubit);
-	reportQUESTEnv(env);
+	reportQuESTEnv(env);
 
 	// initialise the state to |0000..0>
 	if (env.rank==0) printf("|00000>\n");
@@ -328,7 +328,7 @@ int main (int narg, char** varg) {
 	// ALWAYS REQUIRED ONCE AT END OF PROGRAM: 
 	// These two lines will perform any necessary cleanup of the environment (multinode,
 	// openMP only etc)  
-	closeQUESTEnv(env);
+	closeQuESTEnv(env);
 
 	return EXIT_SUCCESS;
 }
