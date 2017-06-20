@@ -69,7 +69,7 @@ int main (int narg, char** varg) {
 	reportQuESTEnv(env);
 
 	// initialise the state to |0000..0>
-	initStateVec (&multiQubit);
+	initStateZero (&multiQubit);
 
 
 	//
@@ -130,17 +130,17 @@ int main (int narg, char** varg) {
 	// Do measurement on rotated qubits
 	if (env.rank==0) printf("\nPerforming single qubit measurement\n");
         for (measureQubit=0; measureQubit<numQubits; measureQubit++) {
-                qProbability = findProbabilityOfZero(multiQubit, measureQubit);
+                qProbability = findProbabilityOfOutcome(multiQubit, measureQubit, 0);
                 if (env.rank==0) printf("Probability of 0 for qubit %d = %.14f\n", measureQubit, qProbability);
         }
 	if (env.rank==0) printf("Measuring probability of qubit 0 to be in state 0 and then setting that qubit to 0\n");
-	qProbability = measureInZero(multiQubit, 0);
+	qProbability = measureInState(multiQubit, 0, 0);
         if (env.rank==0) printf("Probability of 0 for qubit %d = %.14f\n", 0, qProbability);
 
 	if (env.rank==0) printf("Performing single qubit measurement\n");
 	// Do measurement on state with q0=0
         for (measureQubit=0; measureQubit<numQubits; measureQubit++) {
-                qProbability = findProbabilityOfZero(multiQubit, measureQubit);
+                qProbability = findProbabilityOfOutcome(multiQubit, measureQubit, 0);
                 if (env.rank==0) printf("Probability of 0 for qubit %d = %.14f\n", measureQubit, qProbability);
         }
 	totalProbability = calcTotalProbability(multiQubit);
