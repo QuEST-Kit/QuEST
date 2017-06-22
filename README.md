@@ -2,10 +2,10 @@
 
 A library for simulating operations on sets of qubits. 
 
-Operations implemented:
+Example operations implemented:
 * Rotations of a single qubit
-* TODO: Measure if a single qubit is in the zero state
-* TODO: Two qubit phase gate
+* Measure if a single qubit is in the zero or one state
+* Two qubit phase gate
 
 ## Getting started
 
