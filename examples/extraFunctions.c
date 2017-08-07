@@ -22,6 +22,8 @@
 //! 1: print end qubit state to file, 0: don't print
 # define REPORT_STATE 1
 
+# define REPORT_RANK 0
+# define MAX_ROT 5
 const long double Pi = 3.14159265358979323846264338327950288419716939937510;
 
 
@@ -76,17 +78,17 @@ int main (int narg, char** varg) {
 	// initialise the state to |0000..0>
 	if (env.rank==0) printf("|00000>\n");
 	initStateZero(&multiQubit);
-	reportStateToScreen(multiQubit, env);
+	reportStateToScreen(multiQubit, env, REPORT_RANK);
 
 	// initialise the state to |0000..0>
 	if (env.rank==0) printf("|+++++>\n");
 	initStatePlus(&multiQubit);
-	reportStateToScreen(multiQubit, env);
+	reportStateToScreen(multiQubit, env, REPORT_RANK);
 
 	// initialise the state to debug mode (not physical)
 	if (env.rank==0) printf("Init debug\n");	
 	initStateDebug(&multiQubit);
-	reportStateToScreen(multiQubit, env);
+	reportStateToScreen(multiQubit, env, REPORT_RANK);
 
 	REAL el=0.0;
 	el = getRealAmpEl(multiQubit, 0);
@@ -104,38 +106,34 @@ int main (int narg, char** varg) {
 	//
 	if (env.rank==0) printf("\nPerforming sigmaX\n");
 	initStateDebug(&multiQubit);
-	//for (rotQubit=0; rotQubit<numQubits; rotQubit++) {
-	for (rotQubit=0; rotQubit<1; rotQubit++) {
+	for (rotQubit=0; rotQubit<MAX_ROT; rotQubit++) {
 		// do rotation of each qubit
 		sigmaX(multiQubit,rotQubit);
 	}
-	reportStateToScreen(multiQubit, env);
+	reportStateToScreen(multiQubit, env, REPORT_RANK);
 	totalProbability = calcTotalProbability(multiQubit);
         if (env.rank==0) printf("VERIFICATION: total probability=%.14f\n", totalProbability);
 
 	if (env.rank==0) printf("\nPerforming sigmaY\n");
 	initStateDebug(&multiQubit);
-	//for (rotQubit=0; rotQubit<numQubits; rotQubit++) {
-	for (rotQubit=0; rotQubit<1; rotQubit++) {
+	for (rotQubit=0; rotQubit<MAX_ROT; rotQubit++) {
 		// do rotation of each qubit
 		sigmaY(multiQubit,rotQubit);
 	}
-	reportStateToScreen(multiQubit, env);
+	reportStateToScreen(multiQubit, env, REPORT_RANK);
 	totalProbability = calcTotalProbability(multiQubit);
         if (env.rank==0) printf("VERIFICATION: total probability=%.14f\n", totalProbability);
-
 
 	if (env.rank==0) printf("\nPerforming sigmaZ\n");
 	initStateDebug(&multiQubit);
-	//for (rotQubit=0; rotQubit<numQubits; rotQubit++) {
-	for (rotQubit=0; rotQubit<1; rotQubit++) {
+	for (rotQubit=0; rotQubit<MAX_ROT; rotQubit++) {
 		// do rotation of each qubit
 		sigmaZ(multiQubit,rotQubit);
 	}
-	reportStateToScreen(multiQubit, env);
+	reportStateToScreen(multiQubit, env, REPORT_RANK);
 	totalProbability = calcTotalProbability(multiQubit);
         if (env.rank==0) printf("VERIFICATION: total probability=%.14f\n", totalProbability);
-
+	
 	//
 	// ==== hadamard
 	//
@@ -143,11 +141,11 @@ int main (int narg, char** varg) {
 	if (env.rank==0) printf("\nPerforming hadamard\n");
 	initStateDebug(&multiQubit);
 	//for (rotQubit=0; rotQubit<numQubits; rotQubit++) {
-	for (rotQubit=0; rotQubit<1; rotQubit++) {
+	for (rotQubit=0; rotQubit<MAX_ROT; rotQubit++) {
 		// do rotation of each qubit
 		hadamard(multiQubit,rotQubit);
 	}
-	reportStateToScreen(multiQubit, env);
+	reportStateToScreen(multiQubit, env, REPORT_RANK);
 	totalProbability = calcTotalProbability(multiQubit);
         if (env.rank==0) printf("VERIFICATION: total probability=%.14f\n", totalProbability);
 
@@ -159,11 +157,11 @@ int main (int narg, char** varg) {
 	if (env.rank==0) printf("\nPerforming s gate\n");
 	initStateDebug(&multiQubit);
 	//for (rotQubit=0; rotQubit<numQubits; rotQubit++) {
-	for (rotQubit=0; rotQubit<1; rotQubit++) {
+	for (rotQubit=0; rotQubit<MAX_ROT; rotQubit++) {
 		// do rotation of each qubit
 		sGate(multiQubit,rotQubit);
 	}
-	reportStateToScreen(multiQubit, env);
+	reportStateToScreen(multiQubit, env, REPORT_RANK);
 	totalProbability = calcTotalProbability(multiQubit);
         if (env.rank==0) printf("VERIFICATION: total probability=%.14f\n", totalProbability);
 
@@ -175,11 +173,11 @@ int main (int narg, char** varg) {
 	if (env.rank==0) printf("\nPerforming t gate\n");
 	initStateDebug(&multiQubit);
 	//for (rotQubit=0; rotQubit<numQubits; rotQubit++) {
-	for (rotQubit=0; rotQubit<1; rotQubit++) {
+	for (rotQubit=0; rotQubit<MAX_ROT; rotQubit++) {
 		// do rotation of each qubit
 		tGate(multiQubit,rotQubit);
 	}
-	reportStateToScreen(multiQubit, env);
+	reportStateToScreen(multiQubit, env, REPORT_RANK);
 	totalProbability = calcTotalProbability(multiQubit);
         if (env.rank==0) printf("VERIFICATION: total probability=%.14f\n", totalProbability);
 
@@ -193,12 +191,12 @@ int main (int narg, char** varg) {
 	if (env.rank==0) printf("target=0, control=0\n");
 	rotQubit=0;
 	controlNot(multiQubit,rotQubit,0);
-	reportStateToScreen(multiQubit, env);
+	reportStateToScreen(multiQubit, env, REPORT_RANK);
 	initStateDebug(&multiQubit);
 	if (env.rank==0) printf("target=2, control=0\n");
 	rotQubit=2;
 	controlNot(multiQubit,rotQubit,0);
-	reportStateToScreen(multiQubit, env);
+	reportStateToScreen(multiQubit, env, REPORT_RANK);
 	totalProbability = calcTotalProbability(multiQubit);
         if (env.rank==0) printf("VERIFICATION: total probability=%.14f\n", totalProbability);
 
@@ -229,18 +227,18 @@ int main (int narg, char** varg) {
 	initStateDebug(&multiQubit);
 	rotQubit=3;
 	rotateQubit(multiQubit,rotQubit,alpha,beta);
-	reportStateToScreen(multiQubit, env);
+	reportStateToScreen(multiQubit, env, REPORT_RANK);
 
 	if (env.rank==0) printf("\nPerforming control rotate\n");
 	initStateDebug(&multiQubit);
 	if (env.rank==0) printf("target=3, control=3\n");
 	rotQubit=3;
 	controlRotateQubit(multiQubit,rotQubit,3,alpha,beta);
-	reportStateToScreen(multiQubit, env);
+	reportStateToScreen(multiQubit, env, REPORT_RANK);
 	initStateDebug(&multiQubit);
 	if (env.rank==0) printf("target=3, control=0\n");
 	controlRotateQubit(multiQubit,rotQubit,0,alpha,beta);
-	reportStateToScreen(multiQubit, env);
+	reportStateToScreen(multiQubit, env, REPORT_RANK);
 	totalProbability = calcTotalProbability(multiQubit);
         if (env.rank==0) printf("VERIFICATION: total probability=%.14f\n", totalProbability);
 
@@ -250,7 +248,7 @@ int main (int narg, char** varg) {
 	//
 	if (env.rank==0) printf("Performing measurement on state |00000>\n");
 	initStateZero(&multiQubit);
-	reportStateToScreen(multiQubit, env);
+	reportStateToScreen(multiQubit, env, REPORT_RANK);
 	int measureQubit;	
 	REAL qProbability;
         for (measureQubit=0; measureQubit<numQubits; measureQubit++) {
@@ -264,7 +262,7 @@ int main (int narg, char** varg) {
 	
 	if (env.rank==0) printf("Performing measurement on state |+++++>\n");
 	initStatePlus(&multiQubit);
-	reportStateToScreen(multiQubit, env);
+	reportStateToScreen(multiQubit, env, REPORT_RANK);
         for (measureQubit=0; measureQubit<numQubits; measureQubit++) {
                 qProbability = findProbabilityOfOutcome(multiQubit, measureQubit, 0);
                 if (env.rank==0) printf("Probability of 0 for qubit %d = %.14f\n", measureQubit, qProbability);
@@ -278,7 +276,7 @@ int main (int narg, char** varg) {
 	measureQubit=0;
         qProbability = measureInState(multiQubit, measureQubit, 0);
         if (env.rank==0) printf("Probability of 0 for qubit %d = %.14f\n", measureQubit, qProbability);
-	reportStateToScreen(multiQubit, env);
+	reportStateToScreen(multiQubit, env, REPORT_RANK);
 
         if (env.rank==0) printf("Performing single qubit measurement\n");
         // Do measurement on state with q0=0
@@ -292,12 +290,12 @@ int main (int narg, char** varg) {
 
 	if (env.rank==0) printf("|+++++>\n");
 	initStatePlus(&multiQubit);
-	reportStateToScreen(multiQubit, env);
+	reportStateToScreen(multiQubit, env, REPORT_RANK);
         if (env.rank==0) printf("Measuring probability of qubit 0 to be in state 1 and then setting that qubit to 1\n");
 	measureQubit=0;
         qProbability = measureInState(multiQubit, measureQubit, 1);
         if (env.rank==0) printf("Probability of 1 for qubit %d = %.14f\n", measureQubit, qProbability);
-	reportStateToScreen(multiQubit, env);
+	reportStateToScreen(multiQubit, env, REPORT_RANK);
 
         if (env.rank==0) printf("Performing single qubit measurement\n");
         // Do measurement on state with q0=1

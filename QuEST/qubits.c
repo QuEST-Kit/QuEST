@@ -106,19 +106,24 @@ void reportState(MultiQubit multiQubit){
 /** Print the current state vector of probability amplitudes for a set of qubits to standard out. 
 For debugging purposes. Each rank should print output serially. Only print output for systems <= 5 qubits
 */
-void reportStateToScreen(MultiQubit multiQubit, QuESTEnv env){
+void reportStateToScreen(MultiQubit multiQubit, QuESTEnv env, int reportRank){
 	long long int index;
 	int rank;
 	if (multiQubit.numQubits<=5){
 		for (rank=0; rank<multiQubit.numChunks; rank++){
 			if (multiQubit.chunkId==rank){
-				printf("Reporting state from rank %d [\n", multiQubit.chunkId);
-				printf("\trank, index, real, imag\n");
+				if (reportRank) {
+					printf("Reporting state from rank %d [\n", multiQubit.chunkId);
+					printf("\trank, index, real, imag\n");
+				} else if (rank==0) {
+					printf("Reporting state [\n");
+					printf("\tindex, real, imag\n");
+				}
 
 				for(index=0; index<multiQubit.numAmps; index++){
-					printf("\t%d, %lld, " REAL_STRING_FORMAT ", " REAL_STRING_FORMAT "\n", multiQubit.chunkId, index+rank*multiQubit.numAmps, multiQubit.stateVec.real[index], multiQubit.stateVec.imag[index]);
+					printf("\t%lld, " REAL_STRING_FORMAT ", " REAL_STRING_FORMAT "\n", index+rank*multiQubit.numAmps, multiQubit.stateVec.real[index], multiQubit.stateVec.imag[index]);
 				}
-				printf("]\n");
+				if (reportRank || rank==multiQubit.numChunks-1) printf("]\n");
 			}
 			syncQuESTEnv(env);
 		}
@@ -1123,7 +1128,7 @@ void phaseGateDistributed(MultiQubit multiQubit, const int rotQubit, enum phaseG
 # endif
 	{
 		if (type==SIGMA_Z){
-# ifdef _openmp
+# ifdef _OPENMP
 			# pragma omp for schedule (static)
 # endif
 			for (thisTask=0; thisTask<numTasks; thisTask++) {
@@ -1131,7 +1136,7 @@ void phaseGateDistributed(MultiQubit multiQubit, const int rotQubit, enum phaseG
 				stateVecImag[thisTask] = -stateVecImag[thisTask];
 			} 
 		} else if (type==S_GATE){
-# ifdef _openmp
+# ifdef _OPENMP
 			# pragma omp for schedule (static)
 # endif
 			for (thisTask=0; thisTask<numTasks; thisTask++) {

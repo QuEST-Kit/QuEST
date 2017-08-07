@@ -62,7 +62,7 @@ void destroyMultiQubit(MultiQubit multiQubit, QuESTEnv env);
 
 void reportState(MultiQubit multiQubit);
 
-void reportStateToScreen(MultiQubit multiQubit, QuESTEnv env);
+void reportStateToScreen(MultiQubit multiQubit, QuESTEnv env, int reportRank);
 
 void reportMultiQubitParams(MultiQubit multiQubit);
 
