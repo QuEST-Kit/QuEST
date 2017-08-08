@@ -411,7 +411,7 @@ betaIm  = sin(angle1) * sin(angle3) \n
 
 @remarks Qubits are zero-based and the                     
 the first qubit is the rightmost                  
-                                                                      
+                                                                     
 @param[in,out] multiQubit object representing the set of qubits
 @param[in] rotQubit qubit to rotate
 @param[in] alpha rotation angle
@@ -430,9 +430,12 @@ void controlRotateQubitLocal (MultiQubit multiQubit, const int rotQubit, const i
 
 	int controlBit;
 
-	// if targetQubit==controlQubit, it is guaranteed that controlQubit==1 when
-	// targetQubit==1. As rotations are symmetric, we can instead apply the rotation
-	// on all amplitudes where targetQubit==0 as we do here.
+	// As rotations are symmetric, we can apply rotations for all elements where
+	// targetQubit==0 and controlQubit==1.  
+	// However, this means we will skip the case where targetQubit==controlQubit. 
+	// We check for that here. 
+	// We could also choose to rotate on targetQubit==1, but are doing it this way 
+	// to match the regular rotate implementation. 
 	int rotateAll=(rotQubit==controlQubit);
 
 	// test qubit valid
@@ -521,6 +524,14 @@ void controlRotateQubitDistributed (MultiQubit multiQubit, const int rotQubit, c
 
 	int controlBit;
 
+	// As rotations are symmetric, we can apply rotations for all elements where
+	// targetQubit==0 and controlQubit==1.  
+	// However, this means we will skip the case where targetQubit==controlQubit. 
+	// We check for that here. 
+	// We could also choose to rotate on targetQubit==1, but are doing it this way 
+	// to match the regular rotate implementation. 
+	int rotateAll=(rotQubit==controlQubit);
+
 	// test qubit valid
 	assert (rotQubit >= 0 && rotQubit < multiQubit.numQubits);
 
@@ -534,7 +545,7 @@ void controlRotateQubitDistributed (MultiQubit multiQubit, const int rotQubit, c
 # pragma omp parallel \
 	default  (none) \
 	shared   (stateVecRealUp,stateVecImagUp,stateVecRealLo,stateVecImagLo,stateVecRealOut,stateVecImagOut, \
-			rot1Real,rot1Imag, rot2Real,rot2Imag) \
+			rot1Real,rot1Imag, rot2Real,rot2Imag,rotateAll) \
 	private  (thisTask,stateRealUp,stateImagUp,stateRealLo,stateImagLo,controlBit)
 # endif
 	{
@@ -543,7 +554,7 @@ void controlRotateQubitDistributed (MultiQubit multiQubit, const int rotQubit, c
 # endif
 		for (thisTask=0; thisTask<numTasks; thisTask++) {
 			controlBit = extractBit (controlQubit, thisTask);
-			if (controlBit){
+			if (rotateAll || controlBit){
 				// store current state vector values in temp variables
 				stateRealUp = stateVecRealUp[thisTask];
 				stateImagUp = stateVecImagUp[thisTask];

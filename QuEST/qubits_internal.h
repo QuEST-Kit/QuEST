@@ -44,7 +44,7 @@ void hadamardLocal (MultiQubit multiQubit, const int rotQubit);
 void hadamardDistributed (MultiQubit multiQubit, const int rotQubit,
                 ComplexArray stateVecUp,
                 ComplexArray stateVecLo,
-                ComplexArray stateVecOut);
+                ComplexArray stateVecOut, int updateUpper);
 
 
 void phaseGateLocal(MultiQubit multiQubit, const int rotQubit, enum phaseGateType type);

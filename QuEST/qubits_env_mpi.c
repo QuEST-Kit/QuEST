@@ -442,12 +442,12 @@ void hadamard(MultiQubit multiQubit, const int rotQubit)
                         hadamardDistributed(multiQubit,rotQubit,
                                 multiQubit.stateVec, //upper
                                 multiQubit.pairStateVec, //lower
-                                multiQubit.stateVec); //output
+                                multiQubit.stateVec, rankIsUpper); //output
                 } else {
                         hadamardDistributed(multiQubit,rotQubit,
                                 multiQubit.pairStateVec, //upper
                                 multiQubit.stateVec, //lower
-                                multiQubit.stateVec); //output
+                                multiQubit.stateVec, rankIsUpper); //output
                 }
         }
 }
