@@ -413,7 +413,6 @@ void phaseGate(MultiQubit multiQubit, const int rotQubit, enum phaseGateType typ
 
         // rank's chunk is in upper half of block 
         int rankIsUpper;
-        int pairRank; // rank of corresponding chunk
 
         if (useLocalDataOnly){
                 phaseGateLocal(multiQubit, rotQubit, type);

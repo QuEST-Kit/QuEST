@@ -280,12 +280,11 @@ void initStateOfSingleQubit(MultiQubit *multiQubit, int qubitId, int outcome)
  */
 void initStateDebug (MultiQubit *multiQubit)
 {
-	long long int chunkSize, stateVecSize;
+	long long int chunkSize;
 	long long int index;
 
 	// dimension of the state vector
 	chunkSize = multiQubit->numAmps;
-	stateVecSize = chunkSize*multiQubit->numChunks;
 
 	// Can't use multiQubit->stateVec as a private OMP var
 	REAL *stateVecReal = multiQubit->stateVec.real;
