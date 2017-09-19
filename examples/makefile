@@ -78,13 +78,13 @@ endif
 #
 # --- build
 #
-default:	demo
+default:	$(EXE)
 
-demo:		$(OBJ)
+$(EXE):		$(OBJ)
 		$(CC) $(CFLAGS) $(CFLAGS_OMP) -o $(EXE) $(OBJ) $(LIBS)
 
 .PHONY:		clean veryclean
 clean:
-		/bin/rm -f *.o demo
+		/bin/rm -f *.o $(EXE)
 veryclean:	clean
 		/bin/rm -f *.h~ *.c~ makefile~
