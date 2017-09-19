@@ -114,14 +114,15 @@ void reportStateToScreen(MultiQubit multiQubit, QuESTEnv env, int reportRank){
 			if (multiQubit.chunkId==rank){
 				if (reportRank) {
 					printf("Reporting state from rank %d [\n", multiQubit.chunkId);
-					printf("\trank, index, real, imag\n");
+					//printf("\trank, index, real, imag\n");
+					printf("real, imag\n");
 				} else if (rank==0) {
 					printf("Reporting state [\n");
-					printf("\tindex, real, imag\n");
+					printf("real, imag\n");
 				}
 
 				for(index=0; index<multiQubit.numAmps; index++){
-					printf("\t%lld, " REAL_STRING_FORMAT ", " REAL_STRING_FORMAT "\n", index+rank*multiQubit.numAmps, multiQubit.stateVec.real[index], multiQubit.stateVec.imag[index]);
+					printf(REAL_STRING_FORMAT ", " REAL_STRING_FORMAT "\n", multiQubit.stateVec.real[index], multiQubit.stateVec.imag[index]);
 				}
 				if (reportRank || rank==multiQubit.numChunks-1) printf("]\n");
 			}
@@ -225,6 +226,54 @@ void initStatePlus (MultiQubit *multiQubit)
 }
 
 /**
+ * Initialise the state vector of probability amplitudes such that one qubit is set to 'outcome' and all other qubits are in an equal superposition of zero and one.
+ * @param[in,out] multiQubit object representing the set of qubits to be initialised
+ * @param[in] qubitId id of qubit to set to state 'outcome'
+ * @param[in] value of qubit 'qubitId'
+ */
+void initStateOfSingleQubit(MultiQubit *multiQubit, int qubitId, int outcome)
+{
+	long long int chunkSize, stateVecSize;
+	long long int index;
+	int bit;
+	const long long int chunkId=multiQubit->chunkId;
+
+	// dimension of the state vector
+	chunkSize = multiQubit->numAmps;
+	stateVecSize = chunkSize*multiQubit->numChunks;
+	REAL normFactor = 1.0/sqrt(stateVecSize/2);
+
+	// Can't use multiQubit->stateVec as a private OMP var
+	REAL *stateVecReal = multiQubit->stateVec.real;
+	REAL *stateVecImag = multiQubit->stateVec.imag;
+
+	// initialise the state to |0000..0000>
+# ifdef _OPENMP
+# pragma omp parallel \
+	default  (none) \
+	shared   (chunkSize, stateVecReal, stateVecImag, normFactor, qubitId, outcome) \
+	private  (index, bit) 
+# endif
+	{
+# ifdef _OPENMP
+		# pragma omp for schedule (static)
+# endif
+		for (index=0; index<chunkSize; index++) {
+			bit = extractBit(qubitId, index+chunkId*chunkSize);
+			if (bit==outcome) {
+				stateVecReal[index] = normFactor;
+				stateVecImag[index] = 0.0;
+			} else {
+				stateVecReal[index] = 0.0;
+				stateVecImag[index] = 0.0;
+			}
+		}
+	}
+	if (DEBUG) printf("COMPLETED INIT\n");
+}
+
+
+/**
  * Initialise the state vector of probability amplitudes to an (unphysical) state with
  * each component of each probability amplitude a unique floating point value. For debugging processes
  * @param[in,out] multiQubit object representing the set of qubits to be initialised
@@ -260,7 +309,55 @@ void initStateDebug (MultiQubit *multiQubit)
 			stateVecImag[index] = chunkOffset + (index*2.0+1.0)/10.0;
 		}
 	}
-	if (DEBUG) printf("COMPLETED INIT\n");
+}
+
+void initializeStateFromSingleFile(MultiQubit *multiQubit, char filename[200], QuESTEnv env){
+	long long int chunkSize, stateVecSize;
+	long long int indexInChunk, totalIndex;
+
+	chunkSize = multiQubit->numAmps;
+	stateVecSize = chunkSize*multiQubit->numChunks;
+
+	REAL *stateVecReal = multiQubit->stateVec.real;
+	REAL *stateVecImag = multiQubit->stateVec.imag;
+	
+	FILE *fp;
+	char line[200];
+
+	for (int rank=0; rank<(multiQubit->numChunks); rank++){
+		if (rank==multiQubit->chunkId){
+			fp = fopen(filename, "r");
+			indexInChunk = 0; totalIndex = 0;
+			while (fgets(line, sizeof(char)*200, fp) != NULL && totalIndex<stateVecSize){
+				if (line[0]!='#'){
+					int chunkId = totalIndex/chunkSize;
+					if (chunkId==multiQubit->chunkId){
+						//! fix -- format needs to work for single precision values
+						sscanf(line, "%lf, %lf", &(stateVecReal[indexInChunk]), 
+								&(stateVecImag[indexInChunk]));
+						indexInChunk += 1;
+					}
+					totalIndex += 1;
+				}
+			}	
+			fclose(fp);
+		}
+		syncQuESTEnv(env);
+	}
+}
+
+int compareStates(MultiQubit mq1, MultiQubit mq2, REAL precision){
+	REAL diff;
+	int chunkSize = mq1.numAmps;
+	for (int i=0; i<chunkSize; i++){
+		diff = mq1.stateVec.real[i] - mq2.stateVec.real[i];
+		if (diff<0) diff *= -1;
+		if (diff>precision) return 0;
+		diff = mq1.stateVec.imag[i] - mq2.stateVec.imag[i];
+		if (diff<0) diff *= -1;
+		if (diff>precision) return 0;
+	}
+	return 1;
 }
 
 /** Rotate a single qubit in the state vector of probability amplitudes, given the angle rotation arguments.
@@ -427,6 +524,8 @@ void controlRotateQubitLocal (MultiQubit multiQubit, const int rotQubit, const i
 	REAL stateRealUp,stateRealLo,stateImagUp,stateImagLo;
 	long long int thisTask;         
 	const long long int numTasks=multiQubit.numAmps>>1;
+	const long long int chunkSize=multiQubit.numAmps;
+	const long long int chunkId=multiQubit.chunkId;
 
 	int controlBit;
 
@@ -468,7 +567,7 @@ void controlRotateQubitLocal (MultiQubit multiQubit, const int rotQubit, const i
 			indexUp     = thisBlock*sizeBlock + thisTask%sizeHalfBlock;
 			indexLo     = indexUp + sizeHalfBlock;
 
-			controlBit = extractBit (controlQubit, indexUp);
+			controlBit = extractBit (controlQubit, indexUp+chunkId*chunkSize);
 			if (rotateAll || controlBit){
 				// store current state vector values in temp variables
 				stateRealUp = stateVecReal[indexUp];
@@ -521,6 +620,8 @@ void controlRotateQubitDistributed (MultiQubit multiQubit, const int rotQubit, c
 	REAL   stateRealUp,stateRealLo,stateImagUp,stateImagLo;
 	long long int thisTask;  
 	const long long int numTasks=multiQubit.numAmps;
+	const long long int chunkSize=multiQubit.numAmps;
+	const long long int chunkId=multiQubit.chunkId;
 
 	int controlBit;
 
@@ -553,7 +654,7 @@ void controlRotateQubitDistributed (MultiQubit multiQubit, const int rotQubit, c
 		# pragma omp for schedule (static)
 # endif
 		for (thisTask=0; thisTask<numTasks; thisTask++) {
-			controlBit = extractBit (controlQubit, thisTask);
+			controlBit = extractBit (controlQubit, thisTask+chunkId*chunkSize);
 			if (rotateAll || controlBit){
 				// store current state vector values in temp variables
 				stateRealUp = stateVecRealUp[thisTask];
@@ -689,6 +790,8 @@ void controlNotLocal(MultiQubit multiQubit, const int targetQubit, const int con
 	REAL stateRealUp,stateImagUp;
 	long long int thisTask;         
 	const long long int numTasks=multiQubit.numAmps>>1;
+	const long long int chunkSize=multiQubit.numAmps;
+	const long long int chunkId=multiQubit.chunkId;
 
 	int controlBit;
 
@@ -724,7 +827,7 @@ void controlNotLocal(MultiQubit multiQubit, const int targetQubit, const int con
 			indexUp     = thisBlock*sizeBlock + thisTask%sizeHalfBlock;
 			indexLo     = indexUp + sizeHalfBlock;
 
-			controlBit = extractBit(controlQubit, indexUp);
+			controlBit = extractBit(controlQubit, indexUp+chunkId*chunkSize);
 			if (rotateAll || controlBit){
 				stateRealUp = stateVecReal[indexUp];
 				stateImagUp = stateVecImag[indexUp];
@@ -762,6 +865,13 @@ void controlNotDistributed (MultiQubit multiQubit, const int targetQubit, const 
 
 	long long int thisTask;  
 	const long long int numTasks=multiQubit.numAmps;
+	const long long int chunkSize=multiQubit.numAmps;
+	const long long int chunkId=multiQubit.chunkId;
+	
+	// if targetQubit==controlQubit, it is guaranteed that controlQubit==1 when
+	// targetQubit==1. As rotations are symmetric, we can instead apply the rotation
+	// on all amplitudes where targetQubit==0 as we do here.
+	int rotateAll=(targetQubit==controlQubit);
 
 	int controlBit;
 
@@ -774,7 +884,7 @@ void controlNotDistributed (MultiQubit multiQubit, const int targetQubit, const 
 # ifdef _OPENMP
 # pragma omp parallel \
 	default  (none) \
-	shared   (stateVecRealIn,stateVecImagIn,stateVecRealOut,stateVecImagOut) \
+	shared   (stateVecRealIn,stateVecImagIn,stateVecRealOut,stateVecImagOut,rotateAll) \
 	private  (thisTask,controlBit)
 # endif
 	{
@@ -782,8 +892,8 @@ void controlNotDistributed (MultiQubit multiQubit, const int targetQubit, const 
 		# pragma omp for schedule (static)
 # endif
 		for (thisTask=0; thisTask<numTasks; thisTask++) {
-			controlBit = extractBit (controlQubit, thisTask);
-			if (controlBit){
+			controlBit = extractBit (controlQubit, thisTask+chunkId*chunkSize);
+			if (rotateAll || controlBit){
 				stateVecRealOut[thisTask] = stateVecRealIn[thisTask];
 				stateVecImagOut[thisTask] = stateVecImagIn[thisTask];
 			}
@@ -1342,7 +1452,7 @@ static int extractBit (const int locationOfBitFromRight, const long long int the
 }
 
 /** The control phase (the two qubit phase gate).
-For each state, if both input qubits are equal to zero, multiply the amplitude of that state by -1.
+For each state, if both input qubits are equal to one, multiply the amplitude of that state by -1.
 @param[in,out] multiQubit object representing the set of qubits
 @param[in] idQubit1, idQubit2 specified qubits                 
 */
@@ -1359,6 +1469,8 @@ void controlPhaseGate (MultiQubit multiQubit, const int idQubit1, const int idQu
 
 	assert (idQubit1 >= 0 && idQubit2 >= 0 && idQubit1 < multiQubit.numQubits && idQubit2 < multiQubit.numQubits);
 
+	const long long int chunkSize=multiQubit.numAmps;
+	const long long int chunkId=multiQubit.chunkId;
 
 	// ---------------------------------------------------------------- //
 	//            initialise the state to |0000..0>                     //
@@ -1377,8 +1489,8 @@ void controlPhaseGate (MultiQubit multiQubit, const int idQubit1, const int idQu
 	schedule (static)
 # endif
 	for (index=0; index<stateVecSize; index++) {
-		bit1 = extractBit (idQubit1, index);
-		bit2 = extractBit (idQubit2, index);
+		bit1 = extractBit (idQubit1, index+chunkId*chunkSize);
+		bit2 = extractBit (idQubit2, index+chunkId*chunkSize);
 		if (bit1 && bit2) {
 			stateVecReal [index] = - stateVecReal [index];
 			stateVecImag [index] = - stateVecImag [index];
@@ -1430,7 +1542,7 @@ void controlNotGate (MultiQubit multiQubit, const int control, const int target)
 */
 
 /** The control phase (the four qubit phase gate).
-For each state, if all four input qubits are equal to zero, multiply the amplitude of that state by -1.
+For each state, if all four input qubits are equal to one, multiply the amplitude of that state by -1.
 @param[in,out] multiQubit object representing the set of qubits
 @param[in] idQubit1, idQubit2, idQubit3, idQubit4 specified qubits                 
 */
@@ -1440,6 +1552,9 @@ void quadCPhaseGate (MultiQubit multiQubit, const int idQubit1, const int idQubi
 	long long int index;
 	long long int stateVecSize;
 	int bit1, bit2, bit3, bit4;
+	
+	const long long int chunkSize=multiQubit.numAmps;
+	const long long int chunkId=multiQubit.chunkId;
 
 	// ---------------------------------------------------------------- //
 	//            tests                                                 //
@@ -1461,10 +1576,10 @@ void quadCPhaseGate (MultiQubit multiQubit, const int idQubit1, const int idQubi
 		# pragma omp for schedule (static)
 # endif
 		for (index=0; index<stateVecSize; index++) {
-			bit1 = extractBit (idQubit1, index);
-			bit2 = extractBit (idQubit2, index);
-			bit3 = extractBit (idQubit3, index);
-			bit4 = extractBit (idQubit4, index);
+			bit1 = extractBit (idQubit1, index+chunkId*chunkSize);
+			bit2 = extractBit (idQubit2, index+chunkId*chunkSize);
+			bit3 = extractBit (idQubit3, index+chunkId*chunkSize);
+			bit4 = extractBit (idQubit4, index+chunkId*chunkSize);
 			if (bit1 && bit2 && bit3 && bit4) {
 				stateVecReal [index] = - stateVecReal [index];
 				stateVecImag [index] = - stateVecImag [index];
@@ -1507,6 +1622,7 @@ void measureInStateLocal(MultiQubit multiQubit, int measureQubit, REAL totalProb
 	//            tests                                                 //
 	// ---------------------------------------------------------------- //
 	assert (measureQubit >= 0 && measureQubit < multiQubit.numQubits);
+	assert (totalProbability != 0);
 
 	// ---------------------------------------------------------------- //
 	//            dimensions                                            //
@@ -1587,6 +1703,7 @@ REAL measureInStateDistributedRenorm (MultiQubit multiQubit, const int measureQu
 	//            tests                                                 //
 	// ---------------------------------------------------------------- //
 	assert (measureQubit >= 0 && measureQubit < multiQubit.numQubits);
+	assert (totalProbability != 0);
 
 	REAL renorm=1/sqrt(totalProbability);
 	
@@ -1671,12 +1788,15 @@ void filterOut111Local(MultiQubit multiQubit, const int idQubit1, const int idQu
 	long long int index;
 	long long int stateVecSize;
 	int bit1, bit2, bit3;
+	const long long int chunkSize=multiQubit.numAmps;
+	const long long int chunkId=multiQubit.chunkId;
 
 	// ---------------------------------------------------------------- //
 	//            tests                                                 //
 	// ---------------------------------------------------------------- //
 	assert (idQubit1 >= 0 && idQubit2 >= 0 && idQubit1 < multiQubit.numQubits && idQubit2 < multiQubit.numQubits);
 
+	assert (probOfFilter != 0);
 	stateVecSize = multiQubit.numAmps;
 
 	if ( probOfFilter<1e-16 ){ printf("Extremely small or negative profOfFilter="REAL_STRING_FORMAT"; aborting! \n",probOfFilter); exit(1);}
@@ -1695,9 +1815,9 @@ void filterOut111Local(MultiQubit multiQubit, const int idQubit1, const int idQu
 		# pragma omp for schedule (static)
 # endif
 		for (index=0; index<stateVecSize; index++) {
-			bit1 = extractBit (idQubit1, index);
-			bit2 = extractBit (idQubit2, index);
-			bit3 = extractBit (idQubit3, index);
+			bit1 = extractBit (idQubit1, index+chunkId*chunkSize);
+			bit2 = extractBit (idQubit2, index+chunkId*chunkSize);
+			bit3 = extractBit (idQubit3, index+chunkId*chunkSize);
 			if ((bit1 && bit2 && bit3)) {
 				stateVecReal[index]=0;
 				stateVecImag [index]=0;
@@ -1720,6 +1840,8 @@ REAL probOfFilterOut111Local(MultiQubit multiQubit, const int idQubit1, const in
 	long long int index;
 	long long int stateVecSize;
 	int bit1, bit2, bit3;
+	const long long int chunkSize=multiQubit.numAmps;
+	const long long int chunkId=multiQubit.chunkId;
 
 	// ---------------------------------------------------------------- //
 	//            tests                                                 //
@@ -1744,9 +1866,9 @@ REAL probOfFilterOut111Local(MultiQubit multiQubit, const int idQubit1, const in
 		# pragma omp for schedule (static)
 # endif
 		for (index=0; index<stateVecSize; index++) {
-			bit1 = extractBit (idQubit1, index);
-			bit2 = extractBit (idQubit2, index);
-			bit3 = extractBit (idQubit3, index);
+			bit1 = extractBit (idQubit1, index+chunkId*chunkSize);
+			bit2 = extractBit (idQubit2, index+chunkId*chunkSize);
+			bit3 = extractBit (idQubit3, index+chunkId*chunkSize);
 			if (!(bit1 && bit2 && bit3)) {
 				probOfFilter+= stateVecReal[index]*stateVecReal[index] + stateVecImag[index]* stateVecImag [index];
 			}

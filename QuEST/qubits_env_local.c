@@ -128,7 +128,7 @@ REAL measureInState(MultiQubit multiQubit, const int measureQubit, int outcome)
 {
         REAL stateProb;
 	stateProb = findProbabilityOfOutcome(multiQubit, measureQubit, outcome);
-        measureInStateLocal(multiQubit, measureQubit, stateProb, outcome);
+        if (stateProb!=0) measureInStateLocal(multiQubit, measureQubit, stateProb, outcome);
         return stateProb;
 }
 
@@ -136,7 +136,7 @@ REAL filterOut111(MultiQubit multiQubit, const int idQubit1, const int idQubit2,
 {
         REAL stateProb=0;
         stateProb = probOfFilterOut111(multiQubit, idQubit1, idQubit2, idQubit3);
-        filterOut111Local(multiQubit, idQubit1, idQubit2, idQubit3, stateProb);
+        if (stateProb!=0) filterOut111Local(multiQubit, idQubit1, idQubit2, idQubit3, stateProb);
         return stateProb;
 }
 

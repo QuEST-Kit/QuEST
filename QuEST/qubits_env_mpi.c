@@ -494,17 +494,21 @@ REAL measureInState(MultiQubit multiQubit, const int measureQubit, int outcome)
 {
 	REAL totalStateProb=findProbabilityOfOutcome(multiQubit, measureQubit, outcome);
 	int skipValuesWithinRank = halfMatrixBlockFitsInChunk(multiQubit.numAmps, measureQubit);
-	if (skipValuesWithinRank) {
-		measureInStateLocal(multiQubit, measureQubit, totalStateProb, outcome);
-	} else {
-		if (!isChunkToSkipInFindPZero(multiQubit.chunkId, multiQubit.numAmps, measureQubit)){
-			// chunk has amps for q=0
-			if (outcome==0) measureInStateDistributedRenorm(multiQubit, measureQubit, totalStateProb);
-			else measureInStateDistributedSetZero(multiQubit, measureQubit);
+	if (totalStateProb != 0){
+		if (skipValuesWithinRank) {
+			measureInStateLocal(multiQubit, measureQubit, totalStateProb, outcome);
 		} else {
-			// chunk has amps for q=1
-			if (outcome==1) measureInStateDistributedRenorm(multiQubit, measureQubit, totalStateProb);
-			else measureInStateDistributedSetZero(multiQubit, measureQubit);
+			if (!isChunkToSkipInFindPZero(multiQubit.chunkId, multiQubit.numAmps, measureQubit)){
+				// chunk has amps for q=0
+				if (outcome==0) measureInStateDistributedRenorm(multiQubit, measureQubit, 
+						totalStateProb);
+				else measureInStateDistributedSetZero(multiQubit, measureQubit);
+			} else {
+				// chunk has amps for q=1
+				if (outcome==1) measureInStateDistributedRenorm(multiQubit, measureQubit, 
+						totalStateProb);
+				else measureInStateDistributedSetZero(multiQubit, measureQubit);
+			}
 		}
 	}
 	return totalStateProb;
@@ -514,7 +518,7 @@ REAL filterOut111(MultiQubit multiQubit, const int idQubit1, const int idQubit2,
 {
 	REAL stateProb=0;
 	stateProb = probOfFilterOut111(multiQubit, idQubit1, idQubit2, idQubit3);
-	filterOut111Local(multiQubit, idQubit1, idQubit2, idQubit3, stateProb);
+	if (stateProb != 0) filterOut111Local(multiQubit, idQubit1, idQubit2, idQubit3, stateProb);
 	return stateProb;
 }
 

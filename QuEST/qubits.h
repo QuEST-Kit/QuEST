@@ -70,7 +70,13 @@ void initStateZero(MultiQubit *multiQubit);
 
 void initStatePlus(MultiQubit *multiQubit);
 
+void initStateOfSingleQubit(MultiQubit *multiQubit, int qubitId, int outcome);
+
 void initStateDebug(MultiQubit *multiQubit);
+
+void initializeStateFromSingleFile(MultiQubit *multiQubit, char filename[200], QuESTEnv env);
+
+int compareStates(MultiQubit mq1, MultiQubit mq2, REAL precision);
 
 void quadCPhaseGate (MultiQubit multiQubit, const int idQubit1, const int idQubit2, 
 	const int idQubit3, const int idQubit4);

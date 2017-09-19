@@ -5,14 +5,14 @@
 An implementation of the A\+PI in \hyperlink{qubits_8h}{qubits.\+h} for an M\+PI environment.  
 
 
-{\ttfamily \#include $<$unistd.\+h$>$}\newline
-{\ttfamily \#include $<$mpi.\+h$>$}\newline
-{\ttfamily \#include $<$stdlib.\+h$>$}\newline
-{\ttfamily \#include $<$stdio.\+h$>$}\newline
-{\ttfamily \#include $<$omp.\+h$>$}\newline
-{\ttfamily \#include \char`\"{}precision.\+h\char`\"{}}\newline
-{\ttfamily \#include \char`\"{}qubits.\+h\char`\"{}}\newline
-{\ttfamily \#include \char`\"{}qubits\+\_\+internal.\+h\char`\"{}}\newline
+{\ttfamily \#include $<$unistd.\+h$>$}\\*
+{\ttfamily \#include $<$mpi.\+h$>$}\\*
+{\ttfamily \#include $<$stdlib.\+h$>$}\\*
+{\ttfamily \#include $<$stdio.\+h$>$}\\*
+{\ttfamily \#include $<$omp.\+h$>$}\\*
+{\ttfamily \#include \char`\"{}precision.\+h\char`\"{}}\\*
+{\ttfamily \#include \char`\"{}qubits.\+h\char`\"{}}\\*
+{\ttfamily \#include \char`\"{}qubits\+\_\+internal.\+h\char`\"{}}\\*
 \subsubsection*{Macros}
 \begin{DoxyCompactItemize}
 \item 
@@ -35,15 +35,15 @@ static int \hyperlink{qubits__env__mpi_8c_a6d968d42f466bd03cea5edba456e10f7}{hal
 \begin{DoxyCompactList}\small\item\em return whether the current qubit rotation will use blocks that fit within a single chunk. \end{DoxyCompactList}\item 
 static int \hyperlink{qubits__env__mpi_8c_a8605e6a6295174cb4661156eaa709ec4}{get\+Chunk\+Id\+From\+Index} (\hyperlink{structMultiQubit}{Multi\+Qubit} multi\+Qubit, long long int index)
 \item 
-void \hyperlink{qubits__env__mpi_8c_a652d8c53f8f1cfb096133791de2b219d}{init\+Q\+U\+E\+S\+T\+Env} (\hyperlink{structQUESTEnv}{Q\+U\+E\+S\+T\+Env} $\ast$env)
-\begin{DoxyCompactList}\small\item\em Initialize Q\+U\+E\+ST environment. \end{DoxyCompactList}\item 
-void \hyperlink{qubits__env__mpi_8c_a83dffc500bf5b4e41dd63ba1ea9422ae}{sync\+Q\+U\+E\+S\+T\+Env} (\hyperlink{structQUESTEnv}{Q\+U\+E\+S\+T\+Env} env)
+void \hyperlink{qubits__env__mpi_8c_ad84a3ce68d1ca02b4e3f741ea45b6054}{init\+Qu\+E\+S\+T\+Env} (\hyperlink{structQuESTEnv}{Qu\+E\+S\+T\+Env} $\ast$\hyperlink{runTests_8c_a5fd8ba97fcae3408ae6221dfc3cc1f93}{env})
+\begin{DoxyCompactList}\small\item\em Initialize Qu\+E\+ST environment. \end{DoxyCompactList}\item 
+void \hyperlink{qubits__env__mpi_8c_a8d31fe2d1ad4d01e2a1f5f6b8bc15b77}{sync\+Qu\+E\+S\+T\+Env} (\hyperlink{structQuESTEnv}{Qu\+E\+S\+T\+Env} \hyperlink{runTests_8c_a5fd8ba97fcae3408ae6221dfc3cc1f93}{env})
 \begin{DoxyCompactList}\small\item\em Guarantees that all code up to the given point has been executed on all nodes. \end{DoxyCompactList}\item 
-void \hyperlink{qubits__env__mpi_8c_ad7494473d827399d7fd9c327ea3a23e6}{close\+Q\+U\+E\+S\+T\+Env} (\hyperlink{structQUESTEnv}{Q\+U\+E\+S\+T\+Env} env)
-\begin{DoxyCompactList}\small\item\em Close Q\+U\+E\+ST environment. \end{DoxyCompactList}\item 
-void \hyperlink{qubits__env__mpi_8c_aa5d0566a6ef6519ff7b5241915fbf170}{report\+Q\+U\+E\+S\+T\+Env} (\hyperlink{structQUESTEnv}{Q\+U\+E\+S\+T\+Env} env)
-\begin{DoxyCompactList}\small\item\em Report information about the Q\+U\+E\+ST environment. \end{DoxyCompactList}\item 
-void \hyperlink{qubits__env__mpi_8c_ab879c994cf26eacfe1efb92ec93f95af}{report\+Node\+List} (\hyperlink{structQUESTEnv}{Q\+U\+E\+S\+T\+Env} env)
+void \hyperlink{qubits__env__mpi_8c_abd4bc926cd3f9b65610bb228d0c59fe0}{close\+Qu\+E\+S\+T\+Env} (\hyperlink{structQuESTEnv}{Qu\+E\+S\+T\+Env} \hyperlink{runTests_8c_a5fd8ba97fcae3408ae6221dfc3cc1f93}{env})
+\begin{DoxyCompactList}\small\item\em Close Qu\+E\+ST environment. \end{DoxyCompactList}\item 
+void \hyperlink{qubits__env__mpi_8c_af8a14ae79c3fb2c0b5f6255cc37bebf9}{report\+Qu\+E\+S\+T\+Env} (\hyperlink{structQuESTEnv}{Qu\+E\+S\+T\+Env} \hyperlink{runTests_8c_a5fd8ba97fcae3408ae6221dfc3cc1f93}{env})
+\begin{DoxyCompactList}\small\item\em Report information about the Qu\+E\+ST environment. \end{DoxyCompactList}\item 
+void \hyperlink{qubits__env__mpi_8c_a62da5b58d8ce84e6f4d24be1b872294e}{report\+Node\+List} (\hyperlink{structQuESTEnv}{Qu\+E\+S\+T\+Env} \hyperlink{runTests_8c_a5fd8ba97fcae3408ae6221dfc3cc1f93}{env})
 \begin{DoxyCompactList}\small\item\em Report a list of C\+PU hostnames and the rank that is running on each if running with M\+PI enabled and an error message otherwise. \end{DoxyCompactList}\item 
 \hyperlink{precision_8h_a4b654506f18b8bfd61ad2a29a7e38c25}{R\+E\+AL} \hyperlink{qubits__env__mpi_8c_a317b786f577fa6bc136ea7f0ee7330a7}{get\+Real\+Amp\+El} (\hyperlink{structMultiQubit}{Multi\+Qubit} multi\+Qubit, long long int index)
 \begin{DoxyCompactList}\small\item\em Get the real component of the probability amplitude at an index in the state vector. \end{DoxyCompactList}\item 
@@ -51,6 +51,8 @@ void \hyperlink{qubits__env__mpi_8c_ab879c994cf26eacfe1efb92ec93f95af}{report\+N
 \begin{DoxyCompactList}\small\item\em Get the imaginary component of the probability amplitude at an index in the state vector. \end{DoxyCompactList}\item 
 \hyperlink{precision_8h_a4b654506f18b8bfd61ad2a29a7e38c25}{R\+E\+AL} \hyperlink{qubits__env__mpi_8c_a818a4c7cd7252d2b10b896b12fa431d3}{calc\+Total\+Probability} (\hyperlink{structMultiQubit}{Multi\+Qubit} multi\+Qubit)
 \begin{DoxyCompactList}\small\item\em Calculate the probability of being in any state by taking the norm of the entire state vector. \end{DoxyCompactList}\item 
+void \hyperlink{qubits__env__mpi_8c_a7682c9a3fd592d34ec15ba8fa172f104}{exchange\+State\+Vectors} (\hyperlink{structMultiQubit}{Multi\+Qubit} multi\+Qubit, int pair\+Rank)
+\item 
 void \hyperlink{qubits__env__mpi_8c_a4ba468aa69f812efd1f964e10a45ca2f}{rotate\+Qubit} (\hyperlink{structMultiQubit}{Multi\+Qubit} multi\+Qubit, const int rot\+Qubit, \hyperlink{structComplex}{Complex} alpha, \hyperlink{structComplex}{Complex} beta)
 \begin{DoxyCompactList}\small\item\em Rotate a single qubit in the state vector of probability amplitudes, given the angle rotation arguments. \end{DoxyCompactList}\item 
 void \hyperlink{qubits__env__mpi_8c_abac5189a14bc12e79580ba0d75de796e}{control\+Rotate\+Qubit} (\hyperlink{structMultiQubit}{Multi\+Qubit} multi\+Qubit, const int rot\+Qubit, const int control\+Qubit, \hyperlink{structComplex}{Complex} alpha, \hyperlink{structComplex}{Complex} beta)
@@ -81,39 +83,34 @@ An implementation of the A\+PI in \hyperlink{qubits_8h}{qubits.\+h} for an M\+PI
 
 
 \subsubsection{Macro Definition Documentation}
-\mbox{\Hypertarget{qubits__env__mpi_8c_ad3d8a3bd0c0b677acef144f2c2ef6d73}\label{qubits__env__mpi_8c_ad3d8a3bd0c0b677acef144f2c2ef6d73}} 
 \index{qubits\+\_\+env\+\_\+mpi.\+c@{qubits\+\_\+env\+\_\+mpi.\+c}!\+\_\+\+B\+S\+D\+\_\+\+S\+O\+U\+R\+CE@{\+\_\+\+B\+S\+D\+\_\+\+S\+O\+U\+R\+CE}}
 \index{\+\_\+\+B\+S\+D\+\_\+\+S\+O\+U\+R\+CE@{\+\_\+\+B\+S\+D\+\_\+\+S\+O\+U\+R\+CE}!qubits\+\_\+env\+\_\+mpi.\+c@{qubits\+\_\+env\+\_\+mpi.\+c}}
-\paragraph{\texorpdfstring{\+\_\+\+B\+S\+D\+\_\+\+S\+O\+U\+R\+CE}{\_BSD\_SOURCE}}
-{\footnotesize\ttfamily \#define \+\_\+\+B\+S\+D\+\_\+\+S\+O\+U\+R\+CE}
-
+\paragraph[{\texorpdfstring{\+\_\+\+B\+S\+D\+\_\+\+S\+O\+U\+R\+CE}{_BSD_SOURCE}}]{\setlength{\rightskip}{0pt plus 5cm}\#define \+\_\+\+B\+S\+D\+\_\+\+S\+O\+U\+R\+CE}\hypertarget{qubits__env__mpi_8c_ad3d8a3bd0c0b677acef144f2c2ef6d73}{}\label{qubits__env__mpi_8c_ad3d8a3bd0c0b677acef144f2c2ef6d73}
 
 
 Definition at line 5 of file qubits\+\_\+env\+\_\+mpi.\+c.
 
-\mbox{\Hypertarget{qubits__env__mpi_8c_ad72dbcf6d0153db1b8d8a58001feed83}\label{qubits__env__mpi_8c_ad72dbcf6d0153db1b8d8a58001feed83}} 
 \index{qubits\+\_\+env\+\_\+mpi.\+c@{qubits\+\_\+env\+\_\+mpi.\+c}!D\+E\+B\+UG@{D\+E\+B\+UG}}
 \index{D\+E\+B\+UG@{D\+E\+B\+UG}!qubits\+\_\+env\+\_\+mpi.\+c@{qubits\+\_\+env\+\_\+mpi.\+c}}
-\paragraph{\texorpdfstring{D\+E\+B\+UG}{DEBUG}}
-{\footnotesize\ttfamily \#define D\+E\+B\+UG~0}
-
+\paragraph[{\texorpdfstring{D\+E\+B\+UG}{DEBUG}}]{\setlength{\rightskip}{0pt plus 5cm}\#define D\+E\+B\+UG~0}\hypertarget{qubits__env__mpi_8c_ad72dbcf6d0153db1b8d8a58001feed83}{}\label{qubits__env__mpi_8c_ad72dbcf6d0153db1b8d8a58001feed83}
 
 
 Definition at line 17 of file qubits\+\_\+env\+\_\+mpi.\+c.
 
 
 
-Referenced by calc\+Total\+Probability(), control\+Not(), control\+Rotate\+Qubit(), hadamard(), init\+Q\+U\+E\+S\+T\+Env(), rotate\+Qubit(), sigma\+X(), and sigma\+Y().
+Referenced by calc\+Total\+Probability(), exchange\+State\+Vectors(), and init\+Qu\+E\+S\+T\+Env().
 
 
 
 \subsubsection{Function Documentation}
-\mbox{\Hypertarget{qubits__env__mpi_8c_a818a4c7cd7252d2b10b896b12fa431d3}\label{qubits__env__mpi_8c_a818a4c7cd7252d2b10b896b12fa431d3}} 
 \index{qubits\+\_\+env\+\_\+mpi.\+c@{qubits\+\_\+env\+\_\+mpi.\+c}!calc\+Total\+Probability@{calc\+Total\+Probability}}
 \index{calc\+Total\+Probability@{calc\+Total\+Probability}!qubits\+\_\+env\+\_\+mpi.\+c@{qubits\+\_\+env\+\_\+mpi.\+c}}
-\paragraph{\texorpdfstring{calc\+Total\+Probability()}{calcTotalProbability()}}
-{\footnotesize\ttfamily \hyperlink{precision_8h_a4b654506f18b8bfd61ad2a29a7e38c25}{R\+E\+AL} calc\+Total\+Probability (\begin{DoxyParamCaption}\item[{\hyperlink{structMultiQubit}{Multi\+Qubit}}]{multi\+Qubit }\end{DoxyParamCaption})}
-
+\paragraph[{\texorpdfstring{calc\+Total\+Probability(\+Multi\+Qubit multi\+Qubit)}{calcTotalProbability(MultiQubit multiQubit)}}]{\setlength{\rightskip}{0pt plus 5cm}{\bf R\+E\+AL} calc\+Total\+Probability (
+\begin{DoxyParamCaption}
+\item[{{\bf Multi\+Qubit}}]{multi\+Qubit}
+\end{DoxyParamCaption}
+)}\hypertarget{qubits__env__mpi_8c_a818a4c7cd7252d2b10b896b12fa431d3}{}\label{qubits__env__mpi_8c_a818a4c7cd7252d2b10b896b12fa431d3}
 
 
 Calculate the probability of being in any state by taking the norm of the entire state vector. 
@@ -132,7 +129,11 @@ Definition at line 101 of file qubits\+\_\+env\+\_\+mpi.\+c.
 
 
 
-References chunk\+Is\+Upper(), D\+E\+B\+UG, Complex\+Array\+::imag, M\+P\+I\+\_\+\+Q\+U\+E\+S\+T\+\_\+\+R\+E\+AL, Multi\+Qubit\+::num\+Amps, Multi\+Qubit\+::num\+Chunks, Complex\+Array\+::real, R\+E\+AL, and Multi\+Qubit\+::state\+Vec.
+References chunk\+Is\+Upper(), D\+E\+B\+UG, Complex\+Array\+::imag, M\+P\+I\+\_\+\+Qu\+E\+S\+T\+\_\+\+R\+E\+AL, Multi\+Qubit\+::num\+Amps, Multi\+Qubit\+::num\+Chunks, Complex\+Array\+::real, R\+E\+AL, and Multi\+Qubit\+::state\+Vec.
+
+
+
+Referenced by main().
 
 
 \begin{DoxyCode}
@@ -163,18 +164,21 @@ References chunk\+Is\+Upper(), D\+E\+B\+UG, Complex\+Array\+::imag, M\+P\+I\+\_\
 122   \} 
 123   \textcolor{keywordflow}{if} (\hyperlink{qubits__env__mpi_8c_ad72dbcf6d0153db1b8d8a58001feed83}{DEBUG}) printf(\textcolor{stringliteral}{"before calc prob. %d\(\backslash\)n"}, multiQubit.\hyperlink{structMultiQubit_acd43f2f57991709c9e94f73662c972b2}{numChunks});
 124   \textcolor{keywordflow}{if} (multiQubit.\hyperlink{structMultiQubit_acd43f2f57991709c9e94f73662c972b2}{numChunks}>1) MPI\_Allreduce(&pTotal, &allRankTotals, 1, 
-      \hyperlink{precision_8h_a691d8c6aa16631610107d8d1b762df9d}{MPI\_QUEST\_REAL}, MPI\_SUM, MPI\_COMM\_WORLD);
+      \hyperlink{precision_8h_a750ad290949ef7dc4afdfbd8231a5057}{MPI\_QuEST\_REAL}, MPI\_SUM, MPI\_COMM\_WORLD);
 125   \textcolor{keywordflow}{else} allRankTotals=pTotal;
 126   
 127   \textcolor{keywordflow}{return} allRankTotals;
 128 \}
 \end{DoxyCode}
-\mbox{\Hypertarget{qubits__env__mpi_8c_a814c41ee59e206c362f2eaf1def88be6}\label{qubits__env__mpi_8c_a814c41ee59e206c362f2eaf1def88be6}} 
 \index{qubits\+\_\+env\+\_\+mpi.\+c@{qubits\+\_\+env\+\_\+mpi.\+c}!chunk\+Is\+Upper@{chunk\+Is\+Upper}}
 \index{chunk\+Is\+Upper@{chunk\+Is\+Upper}!qubits\+\_\+env\+\_\+mpi.\+c@{qubits\+\_\+env\+\_\+mpi.\+c}}
-\paragraph{\texorpdfstring{chunk\+Is\+Upper()}{chunkIsUpper()}}
-{\footnotesize\ttfamily static int chunk\+Is\+Upper (\begin{DoxyParamCaption}\item[{int}]{chunk\+Id,  }\item[{long long int}]{chunk\+Size,  }\item[{int}]{rot\+Qubit }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [static]}}
-
+\paragraph[{\texorpdfstring{chunk\+Is\+Upper(int chunk\+Id, long long int chunk\+Size, int rot\+Qubit)}{chunkIsUpper(int chunkId, long long int chunkSize, int rotQubit)}}]{\setlength{\rightskip}{0pt plus 5cm}static int chunk\+Is\+Upper (
+\begin{DoxyParamCaption}
+\item[{int}]{chunk\+Id, }
+\item[{long long int}]{chunk\+Size, }
+\item[{int}]{rot\+Qubit}
+\end{DoxyParamCaption}
+)\hspace{0.3cm}{\ttfamily [static]}}\hypertarget{qubits__env__mpi_8c_a814c41ee59e206c362f2eaf1def88be6}{}\label{qubits__env__mpi_8c_a814c41ee59e206c362f2eaf1def88be6}
 
 
 Returns whether a given chunk in position chunk\+Id is in the upper or lower half of a block. 
@@ -208,15 +212,16 @@ Referenced by calc\+Total\+Probability(), control\+Not(), control\+Rotate\+Qubit
 144         \textcolor{keywordflow}{return} posInBlock<sizeHalfBlock;
 145 \}
 \end{DoxyCode}
-\mbox{\Hypertarget{qubits__env__mpi_8c_ad7494473d827399d7fd9c327ea3a23e6}\label{qubits__env__mpi_8c_ad7494473d827399d7fd9c327ea3a23e6}} 
-\index{qubits\+\_\+env\+\_\+mpi.\+c@{qubits\+\_\+env\+\_\+mpi.\+c}!close\+Q\+U\+E\+S\+T\+Env@{close\+Q\+U\+E\+S\+T\+Env}}
-\index{close\+Q\+U\+E\+S\+T\+Env@{close\+Q\+U\+E\+S\+T\+Env}!qubits\+\_\+env\+\_\+mpi.\+c@{qubits\+\_\+env\+\_\+mpi.\+c}}
-\paragraph{\texorpdfstring{close\+Q\+U\+E\+S\+T\+Env()}{closeQUESTEnv()}}
-{\footnotesize\ttfamily void close\+Q\+U\+E\+S\+T\+Env (\begin{DoxyParamCaption}\item[{\hyperlink{structQUESTEnv}{Q\+U\+E\+S\+T\+Env}}]{env }\end{DoxyParamCaption})}
+\index{qubits\+\_\+env\+\_\+mpi.\+c@{qubits\+\_\+env\+\_\+mpi.\+c}!close\+Qu\+E\+S\+T\+Env@{close\+Qu\+E\+S\+T\+Env}}
+\index{close\+Qu\+E\+S\+T\+Env@{close\+Qu\+E\+S\+T\+Env}!qubits\+\_\+env\+\_\+mpi.\+c@{qubits\+\_\+env\+\_\+mpi.\+c}}
+\paragraph[{\texorpdfstring{close\+Qu\+E\+S\+T\+Env(\+Qu\+E\+S\+T\+Env env)}{closeQuESTEnv(QuESTEnv env)}}]{\setlength{\rightskip}{0pt plus 5cm}void close\+Qu\+E\+S\+T\+Env (
+\begin{DoxyParamCaption}
+\item[{{\bf Qu\+E\+S\+T\+Env}}]{env}
+\end{DoxyParamCaption}
+)}\hypertarget{qubits__env__mpi_8c_abd4bc926cd3f9b65610bb228d0c59fe0}{}\label{qubits__env__mpi_8c_abd4bc926cd3f9b65610bb228d0c59fe0}
 
 
-
-Close Q\+U\+E\+ST environment. 
+Close Qu\+E\+ST environment. 
 
 If something needs to be done to clean up the execution environment, such as finalizing M\+PI when running in distributed mode, it is handled here 
 \begin{DoxyParams}[1]{Parameters}
@@ -228,20 +233,27 @@ If something needs to be done to clean up the execution environment, such as fin
 Definition at line 49 of file qubits\+\_\+env\+\_\+mpi.\+c.
 
 
+
+Referenced by main().
+
+
 \begin{DoxyCode}
 49                                 \{
 50         \textcolor{keywordtype}{int} finalized;
 51         MPI\_Finalized(&finalized);
 52         \textcolor{keywordflow}{if} (!finalized) MPI\_Finalize();
-53         \textcolor{keywordflow}{else} printf(\textcolor{stringliteral}{"ERROR: Trying to close QUESTEnv multiple times. Ignoring\(\backslash\)n"});
+53         \textcolor{keywordflow}{else} printf(\textcolor{stringliteral}{"ERROR: Trying to close QuESTEnv multiple times. Ignoring\(\backslash\)n"});
 54 \}
 \end{DoxyCode}
-\mbox{\Hypertarget{qubits__env__mpi_8c_a41f33b4f5f2bf697821591eb224cabb9}\label{qubits__env__mpi_8c_a41f33b4f5f2bf697821591eb224cabb9}} 
 \index{qubits\+\_\+env\+\_\+mpi.\+c@{qubits\+\_\+env\+\_\+mpi.\+c}!control\+Not@{control\+Not}}
 \index{control\+Not@{control\+Not}!qubits\+\_\+env\+\_\+mpi.\+c@{qubits\+\_\+env\+\_\+mpi.\+c}}
-\paragraph{\texorpdfstring{control\+Not()}{controlNot()}}
-{\footnotesize\ttfamily void control\+Not (\begin{DoxyParamCaption}\item[{\hyperlink{structMultiQubit}{Multi\+Qubit}}]{multi\+Qubit,  }\item[{const int}]{target\+Qubit,  }\item[{const int}]{control\+Qubit }\end{DoxyParamCaption})}
-
+\paragraph[{\texorpdfstring{control\+Not(\+Multi\+Qubit multi\+Qubit, const int rot\+Qubit, const int control\+Qubit)}{controlNot(MultiQubit multiQubit, const int rotQubit, const int controlQubit)}}]{\setlength{\rightskip}{0pt plus 5cm}void control\+Not (
+\begin{DoxyParamCaption}
+\item[{{\bf Multi\+Qubit}}]{multi\+Qubit, }
+\item[{const int}]{target\+Qubit, }
+\item[{const int}]{control\+Qubit}
+\end{DoxyParamCaption}
+)}\hypertarget{qubits__env__mpi_8c_a41f33b4f5f2bf697821591eb224cabb9}{}\label{qubits__env__mpi_8c_a41f33b4f5f2bf697821591eb224cabb9}
 
 
 Rotate a single qubit by \{\{0,-\/i\},\{i,0\}\} -- swap $\vert$0$>$ and $\vert$1$>$ and apply a phase of -\/i or i, only for elements when control qubit is 1. 
@@ -257,84 +269,66 @@ Rotate a single qubit by \{\{0,-\/i\},\{i,0\}\} -- swap $\vert$0$>$ and $\vert$1
 \end{DoxyParams}
 
 
-Definition at line 371 of file qubits\+\_\+env\+\_\+mpi.\+c.
+Definition at line 341 of file qubits\+\_\+env\+\_\+mpi.\+c.
 
 
 
-References Multi\+Qubit\+::chunk\+Id, chunk\+Is\+Upper(), control\+Not\+Distributed(), control\+Not\+Local(), D\+E\+B\+UG, get\+Chunk\+Pair\+Id(), half\+Matrix\+Block\+Fits\+In\+Chunk(), Complex\+Array\+::imag, M\+P\+I\+\_\+\+Q\+U\+E\+S\+T\+\_\+\+R\+E\+AL, Multi\+Qubit\+::num\+Amps, Multi\+Qubit\+::pair\+State\+Vec, Complex\+Array\+::real, and Multi\+Qubit\+::state\+Vec.
+References Multi\+Qubit\+::chunk\+Id, chunk\+Is\+Upper(), control\+Not\+Distributed(), control\+Not\+Local(), exchange\+State\+Vectors(), get\+Chunk\+Pair\+Id(), half\+Matrix\+Block\+Fits\+In\+Chunk(), Multi\+Qubit\+::num\+Amps, Multi\+Qubit\+::pair\+State\+Vec, and Multi\+Qubit\+::state\+Vec.
+
+
+
+Referenced by main(), and test\+\_\+control\+Not().
 
 
 \begin{DoxyCode}
-372 \{
-373         \textcolor{comment}{// flag to require memory exchange. 1: an entire block fits on one rank, 0: at most half a block
+342 \{
+343         \textcolor{comment}{// flag to require memory exchange. 1: an entire block fits on one rank, 0: at most half a block
        fits on one rank}
-374         \textcolor{keywordtype}{int} useLocalDataOnly = \hyperlink{qubits__env__mpi_8c_a6d968d42f466bd03cea5edba456e10f7}{halfMatrixBlockFitsInChunk}(multiQubit.
+344         \textcolor{keywordtype}{int} useLocalDataOnly = \hyperlink{qubits__env__mpi_8c_a6d968d42f466bd03cea5edba456e10f7}{halfMatrixBlockFitsInChunk}(multiQubit.
       \hyperlink{structMultiQubit_ae16f47d8b725c914fb7f66b6498d79db}{numAmps}, rotQubit);
-375 
-376         \textcolor{comment}{// rank's chunk is in upper half of block }
-377         \textcolor{keywordtype}{int} rankIsUpper;
-378         \textcolor{keywordtype}{int} pairRank; \textcolor{comment}{// rank of corresponding chunk}
-379 
-380         \textcolor{comment}{// MPI send/receive vars}
-381         \textcolor{keywordtype}{int} TAG=100;
-382         MPI\_Status status;
-383 
-384         \textcolor{keywordflow}{if} (useLocalDataOnly)\{
-385                 \textcolor{comment}{// all values required to update state vector lie in this rank}
-386                 \hyperlink{qubits_8c_a2901e2e5531cb77f87ea54b3fc28f51a}{controlNotLocal}(multiQubit, rotQubit, controlQubit);
-387         \} \textcolor{keywordflow}{else} \{
-388                 \textcolor{comment}{// need to get corresponding chunk of state vector from other rank}
-389                 rankIsUpper = \hyperlink{qubits__env__mpi_8c_a814c41ee59e206c362f2eaf1def88be6}{chunkIsUpper}(multiQubit.\hyperlink{structMultiQubit_ab10c88249fa3825d6227ceec01d37e37}{chunkId}, multiQubit.
+345 
+346         \textcolor{comment}{// rank's chunk is in upper half of block }
+347         \textcolor{keywordtype}{int} rankIsUpper;
+348         \textcolor{keywordtype}{int} pairRank; \textcolor{comment}{// rank of corresponding chunk}
+349 
+350         \textcolor{keywordflow}{if} (useLocalDataOnly)\{
+351                 \textcolor{comment}{// all values required to update state vector lie in this rank}
+352                 \hyperlink{qubits_8c_a2901e2e5531cb77f87ea54b3fc28f51a}{controlNotLocal}(multiQubit, rotQubit, controlQubit);
+353         \} \textcolor{keywordflow}{else} \{
+354                 \textcolor{comment}{// need to get corresponding chunk of state vector from other rank}
+355                 rankIsUpper = \hyperlink{qubits__env__mpi_8c_a814c41ee59e206c362f2eaf1def88be6}{chunkIsUpper}(multiQubit.\hyperlink{structMultiQubit_ab10c88249fa3825d6227ceec01d37e37}{chunkId}, multiQubit.
       \hyperlink{structMultiQubit_ae16f47d8b725c914fb7f66b6498d79db}{numAmps}, rotQubit);
-390                 pairRank = \hyperlink{qubits__env__mpi_8c_af5bdeedf4a445b539d329c3000859f5a}{getChunkPairId}(rankIsUpper, multiQubit.
+356                 pairRank = \hyperlink{qubits__env__mpi_8c_af5bdeedf4a445b539d329c3000859f5a}{getChunkPairId}(rankIsUpper, multiQubit.
       \hyperlink{structMultiQubit_ab10c88249fa3825d6227ceec01d37e37}{chunkId}, multiQubit.\hyperlink{structMultiQubit_ae16f47d8b725c914fb7f66b6498d79db}{numAmps}, rotQubit);
-391                 \textcolor{comment}{//printf("%d rank has pair rank: %d\(\backslash\)n", multiQubit.rank, pairRank);}
-392                 \textcolor{comment}{// get corresponding values from my pair}
-393 
-394                 \textcolor{comment}{// Required by MPI using int rather than long long int for count}
-395                 \textcolor{keywordtype}{long} \textcolor{keywordtype}{long} \textcolor{keywordtype}{int} maxMessageCount = (1LL<<30);
-396                 \textcolor{keywordflow}{if} (multiQubit.\hyperlink{structMultiQubit_ae16f47d8b725c914fb7f66b6498d79db}{numAmps}<maxMessageCount) maxMessageCount = multiQubit.
-      \hyperlink{structMultiQubit_ae16f47d8b725c914fb7f66b6498d79db}{numAmps};
-397                 \textcolor{keywordtype}{int} numMessages = multiQubit.\hyperlink{structMultiQubit_ae16f47d8b725c914fb7f66b6498d79db}{numAmps}/maxMessageCount;
-398                 \textcolor{keywordtype}{int} i;
-399                 \textcolor{keywordtype}{long} \textcolor{keywordtype}{long} \textcolor{keywordtype}{int} offset;
-400                 \textcolor{keywordflow}{if} (\hyperlink{qubits__env__mpi_8c_ad72dbcf6d0153db1b8d8a58001feed83}{DEBUG}) printf(\textcolor{stringliteral}{"numMessages %d maxMessageCount %lld\(\backslash\)n"}, numMessages, 
-      maxMessageCount);
-401                 \textcolor{keywordflow}{for} (i=0; i<numMessages; i++)\{
-402                         offset = i*maxMessageCount;
-403                         MPI\_Sendrecv(&multiQubit.\hyperlink{structMultiQubit_a45483190d6b01ef6b2f98f2bec9ab94f}{stateVec}.\hyperlink{structComplexArray_a4195cac6c784ea1b6271f1c7dba1548a}{real}[offset], maxMessageCount, 
-      \hyperlink{precision_8h_a691d8c6aa16631610107d8d1b762df9d}{MPI\_QUEST\_REAL}, pairRank, TAG,
-404                                          &multiQubit.\hyperlink{structMultiQubit_a76f7db4eab52d2b30f58f973ada809c5}{pairStateVec}.
-      \hyperlink{structComplexArray_a4195cac6c784ea1b6271f1c7dba1548a}{real}[offset], maxMessageCount, \hyperlink{precision_8h_a691d8c6aa16631610107d8d1b762df9d}{MPI\_QUEST\_REAL},
-405                                          pairRank, TAG, MPI\_COMM\_WORLD, &status);
-406                         \textcolor{comment}{//printf("rank: %d err: %d\(\backslash\)n", multiQubit.rank, err);}
-407                         MPI\_Sendrecv(&multiQubit.\hyperlink{structMultiQubit_a45483190d6b01ef6b2f98f2bec9ab94f}{stateVec}.\hyperlink{structComplexArray_a79dde47c7ae530c79cebfdf57b225968}{imag}[offset], maxMessageCount, 
-      \hyperlink{precision_8h_a691d8c6aa16631610107d8d1b762df9d}{MPI\_QUEST\_REAL}, pairRank, TAG,
-408                                         &multiQubit.\hyperlink{structMultiQubit_a76f7db4eab52d2b30f58f973ada809c5}{pairStateVec}.
-      \hyperlink{structComplexArray_a79dde47c7ae530c79cebfdf57b225968}{imag}[offset], maxMessageCount, \hyperlink{precision_8h_a691d8c6aa16631610107d8d1b762df9d}{MPI\_QUEST\_REAL},
-409                                         pairRank, TAG, MPI\_COMM\_WORLD, &status);
-410                 \}
-411                 \textcolor{comment}{// this rank's values are either in the upper of lower half of the block. send values to
+357                 \textcolor{comment}{//printf("%d rank has pair rank: %d\(\backslash\)n", multiQubit.rank, pairRank);}
+358                 \textcolor{comment}{// get corresponding values from my pair}
+359                 \hyperlink{qubits__env__mpi_8c_a7682c9a3fd592d34ec15ba8fa172f104}{exchangeStateVectors}(multiQubit, pairRank);
+360                 \textcolor{comment}{// this rank's values are either in the upper of lower half of the block. send values to
        rotateQubitDistributed}
-412                 \textcolor{comment}{// in the correct order}
-413                 \textcolor{keywordflow}{if} (rankIsUpper)\{
-414                         \hyperlink{qubits_8c_a774dd1217fcc3591a74a74d5667afa29}{controlNotDistributed}(multiQubit,rotQubit,controlQubit,
-415                                 multiQubit.\hyperlink{structMultiQubit_a76f7db4eab52d2b30f58f973ada809c5}{pairStateVec}, \textcolor{comment}{//in}
-416                                 multiQubit.\hyperlink{structMultiQubit_a45483190d6b01ef6b2f98f2bec9ab94f}{stateVec}); \textcolor{comment}{//out}
-417                 \} \textcolor{keywordflow}{else} \{
-418                         \hyperlink{qubits_8c_a774dd1217fcc3591a74a74d5667afa29}{controlNotDistributed}(multiQubit,rotQubit,controlQubit,
-419                                 multiQubit.\hyperlink{structMultiQubit_a76f7db4eab52d2b30f58f973ada809c5}{pairStateVec}, \textcolor{comment}{//in}
-420                                 multiQubit.\hyperlink{structMultiQubit_a45483190d6b01ef6b2f98f2bec9ab94f}{stateVec}); \textcolor{comment}{//out}
-421                 \}
-422         \}
-423 \}
+361                 \textcolor{comment}{// in the correct order}
+362                 \textcolor{keywordflow}{if} (rankIsUpper)\{
+363                         \hyperlink{qubits_8c_a774dd1217fcc3591a74a74d5667afa29}{controlNotDistributed}(multiQubit,rotQubit,controlQubit,
+364                                 multiQubit.\hyperlink{structMultiQubit_a76f7db4eab52d2b30f58f973ada809c5}{pairStateVec}, \textcolor{comment}{//in}
+365                                 multiQubit.\hyperlink{structMultiQubit_a45483190d6b01ef6b2f98f2bec9ab94f}{stateVec}); \textcolor{comment}{//out}
+366                 \} \textcolor{keywordflow}{else} \{
+367                         \hyperlink{qubits_8c_a774dd1217fcc3591a74a74d5667afa29}{controlNotDistributed}(multiQubit,rotQubit,controlQubit,
+368                                 multiQubit.\hyperlink{structMultiQubit_a76f7db4eab52d2b30f58f973ada809c5}{pairStateVec}, \textcolor{comment}{//in}
+369                                 multiQubit.\hyperlink{structMultiQubit_a45483190d6b01ef6b2f98f2bec9ab94f}{stateVec}); \textcolor{comment}{//out}
+370                 \}
+371         \}
+372 \}
 \end{DoxyCode}
-\mbox{\Hypertarget{qubits__env__mpi_8c_abac5189a14bc12e79580ba0d75de796e}\label{qubits__env__mpi_8c_abac5189a14bc12e79580ba0d75de796e}} 
 \index{qubits\+\_\+env\+\_\+mpi.\+c@{qubits\+\_\+env\+\_\+mpi.\+c}!control\+Rotate\+Qubit@{control\+Rotate\+Qubit}}
 \index{control\+Rotate\+Qubit@{control\+Rotate\+Qubit}!qubits\+\_\+env\+\_\+mpi.\+c@{qubits\+\_\+env\+\_\+mpi.\+c}}
-\paragraph{\texorpdfstring{control\+Rotate\+Qubit()}{controlRotateQubit()}}
-{\footnotesize\ttfamily void control\+Rotate\+Qubit (\begin{DoxyParamCaption}\item[{\hyperlink{structMultiQubit}{Multi\+Qubit}}]{multi\+Qubit,  }\item[{const int}]{rot\+Qubit,  }\item[{const int}]{control\+Qubit,  }\item[{\hyperlink{structComplex}{Complex}}]{alpha,  }\item[{\hyperlink{structComplex}{Complex}}]{beta }\end{DoxyParamCaption})}
-
+\paragraph[{\texorpdfstring{control\+Rotate\+Qubit(\+Multi\+Qubit multi\+Qubit, const int rot\+Qubit, const int control\+Qubit, Complex alpha, Complex beta)}{controlRotateQubit(MultiQubit multiQubit, const int rotQubit, const int controlQubit, Complex alpha, Complex beta)}}]{\setlength{\rightskip}{0pt plus 5cm}void control\+Rotate\+Qubit (
+\begin{DoxyParamCaption}
+\item[{{\bf Multi\+Qubit}}]{multi\+Qubit, }
+\item[{const int}]{rot\+Qubit, }
+\item[{const int}]{control\+Qubit, }
+\item[{{\bf Complex}}]{alpha, }
+\item[{{\bf Complex}}]{beta}
+\end{DoxyParamCaption}
+)}\hypertarget{qubits__env__mpi_8c_abac5189a14bc12e79580ba0d75de796e}{}\label{qubits__env__mpi_8c_abac5189a14bc12e79580ba0d75de796e}
 
 
 Rotate a single qubit in the state vector of probability amplitudes, given the angle rotation arguments and a control qubit. 
@@ -363,91 +357,132 @@ Qubits are zero-\/based and the the first qubit is the rightmost
 \end{DoxyParams}
 
 
-Definition at line 265 of file qubits\+\_\+env\+\_\+mpi.\+c.
+Definition at line 276 of file qubits\+\_\+env\+\_\+mpi.\+c.
 
 
 
-References Multi\+Qubit\+::chunk\+Id, chunk\+Is\+Upper(), control\+Rotate\+Qubit\+Distributed(), control\+Rotate\+Qubit\+Local(), D\+E\+B\+UG, get\+Chunk\+Pair\+Id(), get\+Rot\+Angle(), half\+Matrix\+Block\+Fits\+In\+Chunk(), Complex\+Array\+::imag, M\+P\+I\+\_\+\+Q\+U\+E\+S\+T\+\_\+\+R\+E\+AL, Multi\+Qubit\+::num\+Amps, Multi\+Qubit\+::pair\+State\+Vec, Complex\+Array\+::real, and Multi\+Qubit\+::state\+Vec.
+References Multi\+Qubit\+::chunk\+Id, chunk\+Is\+Upper(), control\+Rotate\+Qubit\+Distributed(), control\+Rotate\+Qubit\+Local(), exchange\+State\+Vectors(), get\+Chunk\+Pair\+Id(), get\+Rot\+Angle(), half\+Matrix\+Block\+Fits\+In\+Chunk(), Multi\+Qubit\+::num\+Amps, Multi\+Qubit\+::pair\+State\+Vec, and Multi\+Qubit\+::state\+Vec.
+
+
+
+Referenced by main().
 
 
 \begin{DoxyCode}
-266 \{
-267         \textcolor{comment}{// flag to require memory exchange. 1: an entire block fits on one rank, 0: at most half a block
+277 \{
+278         \textcolor{comment}{// flag to require memory exchange. 1: an entire block fits on one rank, 0: at most half a block
        fits on one rank}
-268         \textcolor{keywordtype}{int} useLocalDataOnly = \hyperlink{qubits__env__mpi_8c_a6d968d42f466bd03cea5edba456e10f7}{halfMatrixBlockFitsInChunk}(multiQubit.
+279         \textcolor{keywordtype}{int} useLocalDataOnly = \hyperlink{qubits__env__mpi_8c_a6d968d42f466bd03cea5edba456e10f7}{halfMatrixBlockFitsInChunk}(multiQubit.
       \hyperlink{structMultiQubit_ae16f47d8b725c914fb7f66b6498d79db}{numAmps}, rotQubit);
-269         \hyperlink{structComplex}{Complex} rot1, rot2;
-270 
-271         \textcolor{comment}{// rank's chunk is in upper half of block }
-272         \textcolor{keywordtype}{int} rankIsUpper;
-273         \textcolor{keywordtype}{int} pairRank; \textcolor{comment}{// rank of corresponding chunk}
-274 
-275         \textcolor{comment}{// MPI send/receive vars}
-276         \textcolor{keywordtype}{int} TAG=100;
-277         MPI\_Status status;
-278 
-279         \textcolor{keywordflow}{if} (useLocalDataOnly)\{
-280                 \textcolor{comment}{// all values required to update state vector lie in this rank}
-281                 \hyperlink{qubits_8c_a824d71bae93236d8a3cd43589044eaee}{controlRotateQubitLocal}(multiQubit, rotQubit, controlQubit, alpha, 
+280         \hyperlink{structComplex}{Complex} rot1, rot2;
+281 
+282         \textcolor{comment}{// rank's chunk is in upper half of block }
+283         \textcolor{keywordtype}{int} rankIsUpper;
+284         \textcolor{keywordtype}{int} pairRank; \textcolor{comment}{// rank of corresponding chunk}
+285 
+286         \textcolor{keywordflow}{if} (useLocalDataOnly)\{
+287                 \textcolor{comment}{// all values required to update state vector lie in this rank}
+288                 \hyperlink{qubits_8c_a824d71bae93236d8a3cd43589044eaee}{controlRotateQubitLocal}(multiQubit, rotQubit, controlQubit, alpha, 
       beta);
-282         \} \textcolor{keywordflow}{else} \{
-283                 \textcolor{comment}{// need to get corresponding chunk of state vector from other rank}
-284                 rankIsUpper = \hyperlink{qubits__env__mpi_8c_a814c41ee59e206c362f2eaf1def88be6}{chunkIsUpper}(multiQubit.\hyperlink{structMultiQubit_ab10c88249fa3825d6227ceec01d37e37}{chunkId}, multiQubit.
+289         \} \textcolor{keywordflow}{else} \{
+290                 \textcolor{comment}{// need to get corresponding chunk of state vector from other rank}
+291                 rankIsUpper = \hyperlink{qubits__env__mpi_8c_a814c41ee59e206c362f2eaf1def88be6}{chunkIsUpper}(multiQubit.\hyperlink{structMultiQubit_ab10c88249fa3825d6227ceec01d37e37}{chunkId}, multiQubit.
       \hyperlink{structMultiQubit_ae16f47d8b725c914fb7f66b6498d79db}{numAmps}, rotQubit);
-285                 \hyperlink{qubits__env__mpi_8c_adb4b0373425b282abed27742d0ce0872}{getRotAngle}(rankIsUpper, &rot1, &rot2, alpha, beta);
-286                 pairRank = \hyperlink{qubits__env__mpi_8c_af5bdeedf4a445b539d329c3000859f5a}{getChunkPairId}(rankIsUpper, multiQubit.
+292                 \hyperlink{qubits__env__mpi_8c_adb4b0373425b282abed27742d0ce0872}{getRotAngle}(rankIsUpper, &rot1, &rot2, alpha, beta);
+293                 pairRank = \hyperlink{qubits__env__mpi_8c_af5bdeedf4a445b539d329c3000859f5a}{getChunkPairId}(rankIsUpper, multiQubit.
       \hyperlink{structMultiQubit_ab10c88249fa3825d6227ceec01d37e37}{chunkId}, multiQubit.\hyperlink{structMultiQubit_ae16f47d8b725c914fb7f66b6498d79db}{numAmps}, rotQubit);
-287                 \textcolor{comment}{//printf("%d rank has pair rank: %d\(\backslash\)n", multiQubit.rank, pairRank);}
-288                 \textcolor{comment}{// get corresponding values from my pair}
-289 
-290                 \textcolor{comment}{// Required by MPI using int rather than long long int for count}
-291                 \textcolor{keywordtype}{long} \textcolor{keywordtype}{long} \textcolor{keywordtype}{int} maxMessageCount = (1LL<<30);
-292                 \textcolor{keywordflow}{if} (multiQubit.\hyperlink{structMultiQubit_ae16f47d8b725c914fb7f66b6498d79db}{numAmps}<maxMessageCount) maxMessageCount = multiQubit.
-      \hyperlink{structMultiQubit_ae16f47d8b725c914fb7f66b6498d79db}{numAmps};
-293                 \textcolor{keywordtype}{int} numMessages = multiQubit.\hyperlink{structMultiQubit_ae16f47d8b725c914fb7f66b6498d79db}{numAmps}/maxMessageCount;
-294                 \textcolor{keywordtype}{int} i;
-295                 \textcolor{keywordtype}{long} \textcolor{keywordtype}{long} \textcolor{keywordtype}{int} offset;
-296                 \textcolor{keywordflow}{if} (\hyperlink{qubits__env__mpi_8c_ad72dbcf6d0153db1b8d8a58001feed83}{DEBUG}) printf(\textcolor{stringliteral}{"numMessages %d maxMessageCount %lld\(\backslash\)n"}, numMessages, 
-      maxMessageCount);
-297                 \textcolor{keywordflow}{for} (i=0; i<numMessages; i++)\{
-298                         offset = i*maxMessageCount;
-299                         MPI\_Sendrecv(&multiQubit.\hyperlink{structMultiQubit_a45483190d6b01ef6b2f98f2bec9ab94f}{stateVec}.\hyperlink{structComplexArray_a4195cac6c784ea1b6271f1c7dba1548a}{real}[offset], maxMessageCount, 
-      \hyperlink{precision_8h_a691d8c6aa16631610107d8d1b762df9d}{MPI\_QUEST\_REAL}, pairRank, TAG,
-300                                          &multiQubit.\hyperlink{structMultiQubit_a76f7db4eab52d2b30f58f973ada809c5}{pairStateVec}.
-      \hyperlink{structComplexArray_a4195cac6c784ea1b6271f1c7dba1548a}{real}[offset], maxMessageCount, \hyperlink{precision_8h_a691d8c6aa16631610107d8d1b762df9d}{MPI\_QUEST\_REAL},
-301                                          pairRank, TAG, MPI\_COMM\_WORLD, &status);
-302                         \textcolor{comment}{//printf("rank: %d err: %d\(\backslash\)n", multiQubit.rank, err);}
-303                         MPI\_Sendrecv(&multiQubit.\hyperlink{structMultiQubit_a45483190d6b01ef6b2f98f2bec9ab94f}{stateVec}.\hyperlink{structComplexArray_a79dde47c7ae530c79cebfdf57b225968}{imag}[offset], maxMessageCount, 
-      \hyperlink{precision_8h_a691d8c6aa16631610107d8d1b762df9d}{MPI\_QUEST\_REAL}, pairRank, TAG,
-304                                         &multiQubit.\hyperlink{structMultiQubit_a76f7db4eab52d2b30f58f973ada809c5}{pairStateVec}.
-      \hyperlink{structComplexArray_a79dde47c7ae530c79cebfdf57b225968}{imag}[offset], maxMessageCount, \hyperlink{precision_8h_a691d8c6aa16631610107d8d1b762df9d}{MPI\_QUEST\_REAL},
-305                                         pairRank, TAG, MPI\_COMM\_WORLD, &status);
-306                 \}
-307                 \textcolor{comment}{// this rank's values are either in the upper of lower half of the block. send values to
+294                 \textcolor{comment}{//printf("%d rank has pair rank: %d\(\backslash\)n", multiQubit.rank, pairRank);}
+295                 \textcolor{comment}{// get corresponding values from my pair}
+296                 \hyperlink{qubits__env__mpi_8c_a7682c9a3fd592d34ec15ba8fa172f104}{exchangeStateVectors}(multiQubit, pairRank);
+297                 
+298                 \textcolor{comment}{// this rank's values are either in the upper of lower half of the block. send values to
        rotateQubitDistributed}
-308                 \textcolor{comment}{// in the correct order}
-309                 \textcolor{keywordflow}{if} (rankIsUpper)\{
-310                         \hyperlink{qubits_8c_ab22d031e2507f1d859292103a99e2378}{controlRotateQubitDistributed}(multiQubit,rotQubit,
+299                 \textcolor{comment}{// in the correct order}
+300                 \textcolor{keywordflow}{if} (rankIsUpper)\{
+301                         \hyperlink{qubits_8c_ab22d031e2507f1d859292103a99e2378}{controlRotateQubitDistributed}(multiQubit,rotQubit,
       controlQubit,rot1,rot2,
-311                                 multiQubit.\hyperlink{structMultiQubit_a45483190d6b01ef6b2f98f2bec9ab94f}{stateVec}, \textcolor{comment}{//upper}
-312                                 multiQubit.\hyperlink{structMultiQubit_a76f7db4eab52d2b30f58f973ada809c5}{pairStateVec}, \textcolor{comment}{//lower}
-313                                 multiQubit.\hyperlink{structMultiQubit_a45483190d6b01ef6b2f98f2bec9ab94f}{stateVec}); \textcolor{comment}{//output}
-314                 \} \textcolor{keywordflow}{else} \{
-315                         \hyperlink{qubits_8c_ab22d031e2507f1d859292103a99e2378}{controlRotateQubitDistributed}(multiQubit,rotQubit,
+302                                 multiQubit.\hyperlink{structMultiQubit_a45483190d6b01ef6b2f98f2bec9ab94f}{stateVec}, \textcolor{comment}{//upper}
+303                                 multiQubit.\hyperlink{structMultiQubit_a76f7db4eab52d2b30f58f973ada809c5}{pairStateVec}, \textcolor{comment}{//lower}
+304                                 multiQubit.\hyperlink{structMultiQubit_a45483190d6b01ef6b2f98f2bec9ab94f}{stateVec}); \textcolor{comment}{//output}
+305                 \} \textcolor{keywordflow}{else} \{
+306                         \hyperlink{qubits_8c_ab22d031e2507f1d859292103a99e2378}{controlRotateQubitDistributed}(multiQubit,rotQubit,
       controlQubit,rot1,rot2,
-316                                 multiQubit.\hyperlink{structMultiQubit_a76f7db4eab52d2b30f58f973ada809c5}{pairStateVec}, \textcolor{comment}{//upper}
-317                                 multiQubit.\hyperlink{structMultiQubit_a45483190d6b01ef6b2f98f2bec9ab94f}{stateVec}, \textcolor{comment}{//lower}
-318                                 multiQubit.\hyperlink{structMultiQubit_a45483190d6b01ef6b2f98f2bec9ab94f}{stateVec}); \textcolor{comment}{//output}
-319                 \}
-320         \}
-321 \}
+307                                 multiQubit.\hyperlink{structMultiQubit_a76f7db4eab52d2b30f58f973ada809c5}{pairStateVec}, \textcolor{comment}{//upper}
+308                                 multiQubit.\hyperlink{structMultiQubit_a45483190d6b01ef6b2f98f2bec9ab94f}{stateVec}, \textcolor{comment}{//lower}
+309                                 multiQubit.\hyperlink{structMultiQubit_a45483190d6b01ef6b2f98f2bec9ab94f}{stateVec}); \textcolor{comment}{//output}
+310                 \}
+311         \}
+312 \}
 \end{DoxyCode}
-\mbox{\Hypertarget{qubits__env__mpi_8c_ae8fcabd3f22c6c9a9104e1807fb78f80}\label{qubits__env__mpi_8c_ae8fcabd3f22c6c9a9104e1807fb78f80}} 
+\index{qubits\+\_\+env\+\_\+mpi.\+c@{qubits\+\_\+env\+\_\+mpi.\+c}!exchange\+State\+Vectors@{exchange\+State\+Vectors}}
+\index{exchange\+State\+Vectors@{exchange\+State\+Vectors}!qubits\+\_\+env\+\_\+mpi.\+c@{qubits\+\_\+env\+\_\+mpi.\+c}}
+\paragraph[{\texorpdfstring{exchange\+State\+Vectors(\+Multi\+Qubit multi\+Qubit, int pair\+Rank)}{exchangeStateVectors(MultiQubit multiQubit, int pairRank)}}]{\setlength{\rightskip}{0pt plus 5cm}void exchange\+State\+Vectors (
+\begin{DoxyParamCaption}
+\item[{{\bf Multi\+Qubit}}]{multi\+Qubit, }
+\item[{int}]{pair\+Rank}
+\end{DoxyParamCaption}
+)}\hypertarget{qubits__env__mpi_8c_a7682c9a3fd592d34ec15ba8fa172f104}{}\label{qubits__env__mpi_8c_a7682c9a3fd592d34ec15ba8fa172f104}
+
+
+Definition at line 207 of file qubits\+\_\+env\+\_\+mpi.\+c.
+
+
+
+References D\+E\+B\+UG, Complex\+Array\+::imag, M\+P\+I\+\_\+\+Qu\+E\+S\+T\+\_\+\+R\+E\+AL, Multi\+Qubit\+::num\+Amps, Multi\+Qubit\+::pair\+State\+Vec, Complex\+Array\+::real, R\+E\+AL, and Multi\+Qubit\+::state\+Vec.
+
+
+
+Referenced by control\+Not(), control\+Rotate\+Qubit(), hadamard(), rotate\+Qubit(), sigma\+X(), and sigma\+Y().
+
+
+\begin{DoxyCode}
+207                                                               \{
+208         \textcolor{comment}{// MPI send/receive vars}
+209         \textcolor{keywordtype}{int} TAG=100;
+210         MPI\_Status status;
+211 
+212         \textcolor{comment}{// Multiple messages are required as MPI uses int rather than long long int for count}
+213         \textcolor{comment}{// For openmpi, messages are further restricted to 2GB in size -- do this for all cases}
+214         \textcolor{comment}{// to be safe}
+215         \textcolor{keywordtype}{long} \textcolor{keywordtype}{long} \textcolor{keywordtype}{int} maxMessageCount = 1LL<<29;
+216         \textcolor{keywordflow}{if} (\textcolor{keyword}{sizeof}(\hyperlink{precision_8h_a4b654506f18b8bfd61ad2a29a7e38c25}{REAL})==8) maxMessageCount = (1LL<<28);
+217         \textcolor{keywordflow}{else} \textcolor{keywordflow}{if} (\textcolor{keyword}{sizeof}(\hyperlink{precision_8h_a4b654506f18b8bfd61ad2a29a7e38c25}{REAL})==16) maxMessageCount = (1LL<<27);
+218 
+219         \textcolor{keywordflow}{if} (multiQubit.\hyperlink{structMultiQubit_ae16f47d8b725c914fb7f66b6498d79db}{numAmps}<maxMessageCount) maxMessageCount = multiQubit.
+      \hyperlink{structMultiQubit_ae16f47d8b725c914fb7f66b6498d79db}{numAmps};
+220         \textcolor{keywordtype}{int} numMessages = multiQubit.\hyperlink{structMultiQubit_ae16f47d8b725c914fb7f66b6498d79db}{numAmps}/maxMessageCount;
+221         \textcolor{keywordtype}{int} i;
+222         \textcolor{keywordtype}{long} \textcolor{keywordtype}{long} \textcolor{keywordtype}{int} offset;
+223         \textcolor{keywordflow}{if} (\hyperlink{qubits__env__mpi_8c_ad72dbcf6d0153db1b8d8a58001feed83}{DEBUG}) printf(\textcolor{stringliteral}{"numMessages %d maxMessageCount %lld\(\backslash\)n"}, numMessages, maxMessageCount);
+224 
+225         \textcolor{comment}{// send my state vector to pairRank's multiQubit.pairStateVec}
+226         \textcolor{comment}{// receive pairRank's state vector into multiQubit.pairStateVec}
+227         \textcolor{keywordflow}{for} (i=0; i<numMessages; i++)\{
+228                 offset = i*maxMessageCount;
+229                 MPI\_Sendrecv(&multiQubit.\hyperlink{structMultiQubit_a45483190d6b01ef6b2f98f2bec9ab94f}{stateVec}.\hyperlink{structComplexArray_a4195cac6c784ea1b6271f1c7dba1548a}{real}[offset], maxMessageCount, 
+      \hyperlink{precision_8h_a750ad290949ef7dc4afdfbd8231a5057}{MPI\_QuEST\_REAL}, pairRank, TAG,
+230                                  &multiQubit.\hyperlink{structMultiQubit_a76f7db4eab52d2b30f58f973ada809c5}{pairStateVec}.\hyperlink{structComplexArray_a4195cac6c784ea1b6271f1c7dba1548a}{real}[offset], maxMessageCount, 
+      \hyperlink{precision_8h_a750ad290949ef7dc4afdfbd8231a5057}{MPI\_QuEST\_REAL},
+231                                  pairRank, TAG, MPI\_COMM\_WORLD, &status);
+232                 \textcolor{comment}{//printf("rank: %d err: %d\(\backslash\)n", multiQubit.rank, err);}
+233                 MPI\_Sendrecv(&multiQubit.\hyperlink{structMultiQubit_a45483190d6b01ef6b2f98f2bec9ab94f}{stateVec}.\hyperlink{structComplexArray_a79dde47c7ae530c79cebfdf57b225968}{imag}[offset], maxMessageCount, 
+      \hyperlink{precision_8h_a750ad290949ef7dc4afdfbd8231a5057}{MPI\_QuEST\_REAL}, pairRank, TAG,
+234                                 &multiQubit.\hyperlink{structMultiQubit_a76f7db4eab52d2b30f58f973ada809c5}{pairStateVec}.\hyperlink{structComplexArray_a79dde47c7ae530c79cebfdf57b225968}{imag}[offset], maxMessageCount, 
+      \hyperlink{precision_8h_a750ad290949ef7dc4afdfbd8231a5057}{MPI\_QuEST\_REAL},
+235                                 pairRank, TAG, MPI\_COMM\_WORLD, &status);
+236         \}
+237 \}
+\end{DoxyCode}
 \index{qubits\+\_\+env\+\_\+mpi.\+c@{qubits\+\_\+env\+\_\+mpi.\+c}!filter\+Out111@{filter\+Out111}}
 \index{filter\+Out111@{filter\+Out111}!qubits\+\_\+env\+\_\+mpi.\+c@{qubits\+\_\+env\+\_\+mpi.\+c}}
-\paragraph{\texorpdfstring{filter\+Out111()}{filterOut111()}}
-{\footnotesize\ttfamily \hyperlink{precision_8h_a4b654506f18b8bfd61ad2a29a7e38c25}{R\+E\+AL} filter\+Out111 (\begin{DoxyParamCaption}\item[{\hyperlink{structMultiQubit}{Multi\+Qubit}}]{multi\+Qubit,  }\item[{const int}]{id\+Qubit1,  }\item[{const int}]{id\+Qubit2,  }\item[{const int}]{id\+Qubit3 }\end{DoxyParamCaption})}
-
+\paragraph[{\texorpdfstring{filter\+Out111(\+Multi\+Qubit multi\+Qubit, const int id\+Qubit1, const int id\+Qubit2, const int id\+Qubit3)}{filterOut111(MultiQubit multiQubit, const int idQubit1, const int idQubit2, const int idQubit3)}}]{\setlength{\rightskip}{0pt plus 5cm}{\bf R\+E\+AL} filter\+Out111 (
+\begin{DoxyParamCaption}
+\item[{{\bf Multi\+Qubit}}]{multi\+Qubit, }
+\item[{const int}]{id\+Qubit1, }
+\item[{const int}]{id\+Qubit2, }
+\item[{const int}]{id\+Qubit3}
+\end{DoxyParamCaption}
+)}\hypertarget{qubits__env__mpi_8c_ae8fcabd3f22c6c9a9104e1807fb78f80}{}\label{qubits__env__mpi_8c_ae8fcabd3f22c6c9a9104e1807fb78f80}
 
 
 Updates the state according to this scenario\+: we ask \char`\"{}are these 3 qubits in 111\char`\"{} and the answer is \char`\"{}no\char`\"{}. 
@@ -464,27 +499,34 @@ Total probability that the 3 qubits are not all in the 1 state.
 \end{DoxyReturn}
 
 
-Definition at line 610 of file qubits\+\_\+env\+\_\+mpi.\+c.
+Definition at line 513 of file qubits\+\_\+env\+\_\+mpi.\+c.
 
 
 
 References filter\+Out111\+Local(), prob\+Of\+Filter\+Out111(), and R\+E\+AL.
 
 
+
+Referenced by main().
+
+
 \begin{DoxyCode}
-611 \{
-612         \hyperlink{precision_8h_a4b654506f18b8bfd61ad2a29a7e38c25}{REAL} stateProb=0;
-613         stateProb = \hyperlink{qubits__env__mpi_8c_a909ba48b5a82c9f5c3a94d17a72b1aa3}{probOfFilterOut111}(multiQubit, idQubit1, idQubit2, idQubit3);
-614         \hyperlink{qubits_8c_a2d73fd11c1d154640dbf114da8f34c64}{filterOut111Local}(multiQubit, idQubit1, idQubit2, idQubit3, stateProb);
-615         \textcolor{keywordflow}{return} stateProb;
-616 \}
+514 \{
+515         \hyperlink{precision_8h_a4b654506f18b8bfd61ad2a29a7e38c25}{REAL} stateProb=0;
+516         stateProb = \hyperlink{qubits__env__mpi_8c_a909ba48b5a82c9f5c3a94d17a72b1aa3}{probOfFilterOut111}(multiQubit, idQubit1, idQubit2, idQubit3);
+517         \hyperlink{qubits_8c_a2d73fd11c1d154640dbf114da8f34c64}{filterOut111Local}(multiQubit, idQubit1, idQubit2, idQubit3, stateProb);
+518         \textcolor{keywordflow}{return} stateProb;
+519 \}
 \end{DoxyCode}
-\mbox{\Hypertarget{qubits__env__mpi_8c_ad315c941a51bc053d39ebfa2040fd32e}\label{qubits__env__mpi_8c_ad315c941a51bc053d39ebfa2040fd32e}} 
 \index{qubits\+\_\+env\+\_\+mpi.\+c@{qubits\+\_\+env\+\_\+mpi.\+c}!find\+Probability\+Of\+Outcome@{find\+Probability\+Of\+Outcome}}
 \index{find\+Probability\+Of\+Outcome@{find\+Probability\+Of\+Outcome}!qubits\+\_\+env\+\_\+mpi.\+c@{qubits\+\_\+env\+\_\+mpi.\+c}}
-\paragraph{\texorpdfstring{find\+Probability\+Of\+Outcome()}{findProbabilityOfOutcome()}}
-{\footnotesize\ttfamily \hyperlink{precision_8h_a4b654506f18b8bfd61ad2a29a7e38c25}{R\+E\+AL} find\+Probability\+Of\+Outcome (\begin{DoxyParamCaption}\item[{\hyperlink{structMultiQubit}{Multi\+Qubit}}]{multi\+Qubit,  }\item[{const int}]{measure\+Qubit,  }\item[{int}]{outcome }\end{DoxyParamCaption})}
-
+\paragraph[{\texorpdfstring{find\+Probability\+Of\+Outcome(\+Multi\+Qubit multi\+Qubit, const int measure\+Qubit, int outcome)}{findProbabilityOfOutcome(MultiQubit multiQubit, const int measureQubit, int outcome)}}]{\setlength{\rightskip}{0pt plus 5cm}{\bf R\+E\+AL} find\+Probability\+Of\+Outcome (
+\begin{DoxyParamCaption}
+\item[{{\bf Multi\+Qubit}}]{multi\+Qubit, }
+\item[{const int}]{measure\+Qubit, }
+\item[{int}]{outcome}
+\end{DoxyParamCaption}
+)}\hypertarget{qubits__env__mpi_8c_ad315c941a51bc053d39ebfa2040fd32e}{}\label{qubits__env__mpi_8c_ad315c941a51bc053d39ebfa2040fd32e}
 
 
 Measure the probability of a specified qubit being in the zero or one state. 
@@ -503,43 +545,45 @@ probability of qubit measure\+Qubit being either zero or one
 \end{DoxyReturn}
 
 
-Definition at line 573 of file qubits\+\_\+env\+\_\+mpi.\+c.
+Definition at line 476 of file qubits\+\_\+env\+\_\+mpi.\+c.
 
 
 
-References Multi\+Qubit\+::chunk\+Id, find\+Probability\+Of\+Zero\+Distributed(), find\+Probability\+Of\+Zero\+Local(), half\+Matrix\+Block\+Fits\+In\+Chunk(), is\+Chunk\+To\+Skip\+In\+Find\+P\+Zero(), M\+P\+I\+\_\+\+Q\+U\+E\+S\+T\+\_\+\+R\+E\+AL, Multi\+Qubit\+::num\+Amps, and R\+E\+AL.
+References Multi\+Qubit\+::chunk\+Id, find\+Probability\+Of\+Zero\+Distributed(), find\+Probability\+Of\+Zero\+Local(), half\+Matrix\+Block\+Fits\+In\+Chunk(), is\+Chunk\+To\+Skip\+In\+Find\+P\+Zero(), M\+P\+I\+\_\+\+Qu\+E\+S\+T\+\_\+\+R\+E\+AL, Multi\+Qubit\+::num\+Amps, and R\+E\+AL.
 
 
 
-Referenced by measure\+In\+State().
+Referenced by main(), and measure\+In\+State().
 
 
 \begin{DoxyCode}
-574 \{
-575         \hyperlink{precision_8h_a4b654506f18b8bfd61ad2a29a7e38c25}{REAL} stateProb=0, totalStateProb=0;
-576         \textcolor{keywordtype}{int} skipValuesWithinRank = \hyperlink{qubits__env__mpi_8c_a6d968d42f466bd03cea5edba456e10f7}{halfMatrixBlockFitsInChunk}(multiQubit.
+477 \{
+478         \hyperlink{precision_8h_a4b654506f18b8bfd61ad2a29a7e38c25}{REAL} stateProb=0, totalStateProb=0;
+479         \textcolor{keywordtype}{int} skipValuesWithinRank = \hyperlink{qubits__env__mpi_8c_a6d968d42f466bd03cea5edba456e10f7}{halfMatrixBlockFitsInChunk}(multiQubit.
       \hyperlink{structMultiQubit_ae16f47d8b725c914fb7f66b6498d79db}{numAmps}, measureQubit);
-577         \textcolor{keywordflow}{if} (skipValuesWithinRank) \{
-578                 stateProb = \hyperlink{qubits_8c_a7c02cd0e1b4eac19771a0525f023249e}{findProbabilityOfZeroLocal}(multiQubit, measureQubit);
-579         \} \textcolor{keywordflow}{else} \{
-580                 \textcolor{keywordflow}{if} (!\hyperlink{qubits__env__mpi_8c_af0ea25f00987af4c53f17c9cca62ab41}{isChunkToSkipInFindPZero}(multiQubit.
+480         \textcolor{keywordflow}{if} (skipValuesWithinRank) \{
+481                 stateProb = \hyperlink{qubits_8c_a7c02cd0e1b4eac19771a0525f023249e}{findProbabilityOfZeroLocal}(multiQubit, measureQubit);
+482         \} \textcolor{keywordflow}{else} \{
+483                 \textcolor{keywordflow}{if} (!\hyperlink{qubits__env__mpi_8c_af0ea25f00987af4c53f17c9cca62ab41}{isChunkToSkipInFindPZero}(multiQubit.
       \hyperlink{structMultiQubit_ab10c88249fa3825d6227ceec01d37e37}{chunkId}, multiQubit.\hyperlink{structMultiQubit_ae16f47d8b725c914fb7f66b6498d79db}{numAmps}, measureQubit))\{
-581                         stateProb = \hyperlink{qubits_8c_a9ac9bb717a889f09d307eda9f0b65957}{findProbabilityOfZeroDistributed}(
+484                         stateProb = \hyperlink{qubits_8c_a9ac9bb717a889f09d307eda9f0b65957}{findProbabilityOfZeroDistributed}(
       multiQubit, measureQubit);
-582                 \} \textcolor{keywordflow}{else} stateProb = 0;
-583         \}
-584         MPI\_Allreduce(&stateProb, &totalStateProb, 1, \hyperlink{precision_8h_a691d8c6aa16631610107d8d1b762df9d}{MPI\_QUEST\_REAL}, MPI\_SUM, MPI\_COMM\_WORLD
+485                 \} \textcolor{keywordflow}{else} stateProb = 0;
+486         \}
+487         MPI\_Allreduce(&stateProb, &totalStateProb, 1, \hyperlink{precision_8h_a750ad290949ef7dc4afdfbd8231a5057}{MPI\_QuEST\_REAL}, MPI\_SUM, MPI\_COMM\_WORLD
       );
-585         \textcolor{keywordflow}{if} (outcome==1) totalStateProb = 1.0 - totalStateProb;
-586         \textcolor{keywordflow}{return} totalStateProb;
-587 \}
+488         \textcolor{keywordflow}{if} (outcome==1) totalStateProb = 1.0 - totalStateProb;
+489         \textcolor{keywordflow}{return} totalStateProb;
+490 \}
 \end{DoxyCode}
-\mbox{\Hypertarget{qubits__env__mpi_8c_a8605e6a6295174cb4661156eaa709ec4}\label{qubits__env__mpi_8c_a8605e6a6295174cb4661156eaa709ec4}} 
 \index{qubits\+\_\+env\+\_\+mpi.\+c@{qubits\+\_\+env\+\_\+mpi.\+c}!get\+Chunk\+Id\+From\+Index@{get\+Chunk\+Id\+From\+Index}}
 \index{get\+Chunk\+Id\+From\+Index@{get\+Chunk\+Id\+From\+Index}!qubits\+\_\+env\+\_\+mpi.\+c@{qubits\+\_\+env\+\_\+mpi.\+c}}
-\paragraph{\texorpdfstring{get\+Chunk\+Id\+From\+Index()}{getChunkIdFromIndex()}}
-{\footnotesize\ttfamily int get\+Chunk\+Id\+From\+Index (\begin{DoxyParamCaption}\item[{\hyperlink{structMultiQubit}{Multi\+Qubit}}]{multi\+Qubit,  }\item[{long long int}]{index }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [static]}}
-
+\paragraph[{\texorpdfstring{get\+Chunk\+Id\+From\+Index(\+Multi\+Qubit multi\+Qubit, long long int index)}{getChunkIdFromIndex(MultiQubit multiQubit, long long int index)}}]{\setlength{\rightskip}{0pt plus 5cm}int get\+Chunk\+Id\+From\+Index (
+\begin{DoxyParamCaption}
+\item[{{\bf Multi\+Qubit}}]{multi\+Qubit, }
+\item[{long long int}]{index}
+\end{DoxyParamCaption}
+)\hspace{0.3cm}{\ttfamily [static]}}\hypertarget{qubits__env__mpi_8c_a8605e6a6295174cb4661156eaa709ec4}{}\label{qubits__env__mpi_8c_a8605e6a6295174cb4661156eaa709ec4}
 
 
 Definition at line 77 of file qubits\+\_\+env\+\_\+mpi.\+c.
@@ -558,12 +602,16 @@ Referenced by get\+Imag\+Amp\+El(), and get\+Real\+Amp\+El().
 78         \textcolor{keywordflow}{return} index/multiQubit.\hyperlink{structMultiQubit_ae16f47d8b725c914fb7f66b6498d79db}{numAmps}; \textcolor{comment}{// this is numAmpsPerChunk}
 79 \}
 \end{DoxyCode}
-\mbox{\Hypertarget{qubits__env__mpi_8c_af5bdeedf4a445b539d329c3000859f5a}\label{qubits__env__mpi_8c_af5bdeedf4a445b539d329c3000859f5a}} 
 \index{qubits\+\_\+env\+\_\+mpi.\+c@{qubits\+\_\+env\+\_\+mpi.\+c}!get\+Chunk\+Pair\+Id@{get\+Chunk\+Pair\+Id}}
 \index{get\+Chunk\+Pair\+Id@{get\+Chunk\+Pair\+Id}!qubits\+\_\+env\+\_\+mpi.\+c@{qubits\+\_\+env\+\_\+mpi.\+c}}
-\paragraph{\texorpdfstring{get\+Chunk\+Pair\+Id()}{getChunkPairId()}}
-{\footnotesize\ttfamily static int get\+Chunk\+Pair\+Id (\begin{DoxyParamCaption}\item[{int}]{chunk\+Is\+Upper,  }\item[{int}]{chunk\+Id,  }\item[{long long int}]{chunk\+Size,  }\item[{int}]{rot\+Qubit }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [static]}}
-
+\paragraph[{\texorpdfstring{get\+Chunk\+Pair\+Id(int chunk\+Is\+Upper, int chunk\+Id, long long int chunk\+Size, int rot\+Qubit)}{getChunkPairId(int chunkIsUpper, int chunkId, long long int chunkSize, int rotQubit)}}]{\setlength{\rightskip}{0pt plus 5cm}static int get\+Chunk\+Pair\+Id (
+\begin{DoxyParamCaption}
+\item[{int}]{chunk\+Is\+Upper, }
+\item[{int}]{chunk\+Id, }
+\item[{long long int}]{chunk\+Size, }
+\item[{int}]{rot\+Qubit}
+\end{DoxyParamCaption}
+)\hspace{0.3cm}{\ttfamily [static]}}\hypertarget{qubits__env__mpi_8c_af5bdeedf4a445b539d329c3000859f5a}{}\label{qubits__env__mpi_8c_af5bdeedf4a445b539d329c3000859f5a}
 
 
 get position of corresponding chunk, holding values required to update values in my chunk (with chunk\+Id) when rotating rot\+Qubit. 
@@ -602,12 +650,14 @@ Referenced by control\+Not(), control\+Rotate\+Qubit(), hadamard(), rotate\+Qubi
 189         \}
 190 \}
 \end{DoxyCode}
-\mbox{\Hypertarget{qubits__env__mpi_8c_a3615f76fd5f57008d9b74bbd10533dd0}\label{qubits__env__mpi_8c_a3615f76fd5f57008d9b74bbd10533dd0}} 
 \index{qubits\+\_\+env\+\_\+mpi.\+c@{qubits\+\_\+env\+\_\+mpi.\+c}!get\+Imag\+Amp\+El@{get\+Imag\+Amp\+El}}
 \index{get\+Imag\+Amp\+El@{get\+Imag\+Amp\+El}!qubits\+\_\+env\+\_\+mpi.\+c@{qubits\+\_\+env\+\_\+mpi.\+c}}
-\paragraph{\texorpdfstring{get\+Imag\+Amp\+El()}{getImagAmpEl()}}
-{\footnotesize\ttfamily \hyperlink{precision_8h_a4b654506f18b8bfd61ad2a29a7e38c25}{R\+E\+AL} get\+Imag\+Amp\+El (\begin{DoxyParamCaption}\item[{\hyperlink{structMultiQubit}{Multi\+Qubit}}]{multi\+Qubit,  }\item[{long long int}]{index }\end{DoxyParamCaption})}
-
+\paragraph[{\texorpdfstring{get\+Imag\+Amp\+El(\+Multi\+Qubit multi\+Qubit, long long int index)}{getImagAmpEl(MultiQubit multiQubit, long long int index)}}]{\setlength{\rightskip}{0pt plus 5cm}{\bf R\+E\+AL} get\+Imag\+Amp\+El (
+\begin{DoxyParamCaption}
+\item[{{\bf Multi\+Qubit}}]{multi\+Qubit, }
+\item[{long long int}]{index}
+\end{DoxyParamCaption}
+)}\hypertarget{qubits__env__mpi_8c_a3615f76fd5f57008d9b74bbd10533dd0}{}\label{qubits__env__mpi_8c_a3615f76fd5f57008d9b74bbd10533dd0}
 
 
 Get the imaginary component of the probability amplitude at an index in the state vector. 
@@ -628,7 +678,7 @@ Definition at line 91 of file qubits\+\_\+env\+\_\+mpi.\+c.
 
 
 
-References Multi\+Qubit\+::chunk\+Id, get\+Chunk\+Id\+From\+Index(), Complex\+Array\+::imag, M\+P\+I\+\_\+\+Q\+U\+E\+S\+T\+\_\+\+R\+E\+AL, Multi\+Qubit\+::num\+Amps, R\+E\+AL, and Multi\+Qubit\+::state\+Vec.
+References Multi\+Qubit\+::chunk\+Id, get\+Chunk\+Id\+From\+Index(), Complex\+Array\+::imag, M\+P\+I\+\_\+\+Qu\+E\+S\+T\+\_\+\+R\+E\+AL, Multi\+Qubit\+::num\+Amps, R\+E\+AL, and Multi\+Qubit\+::state\+Vec.
 
 
 
@@ -643,16 +693,18 @@ Referenced by get\+Prob\+El().
 95                 el = multiQubit.\hyperlink{structMultiQubit_a45483190d6b01ef6b2f98f2bec9ab94f}{stateVec}.\hyperlink{structComplexArray_a79dde47c7ae530c79cebfdf57b225968}{imag}[index-chunkId*multiQubit.
       \hyperlink{structMultiQubit_ae16f47d8b725c914fb7f66b6498d79db}{numAmps}];
 96         \}
-97         MPI\_Bcast(&el, 1, \hyperlink{precision_8h_a691d8c6aa16631610107d8d1b762df9d}{MPI\_QUEST\_REAL}, chunkId, MPI\_COMM\_WORLD);
+97         MPI\_Bcast(&el, 1, \hyperlink{precision_8h_a750ad290949ef7dc4afdfbd8231a5057}{MPI\_QuEST\_REAL}, chunkId, MPI\_COMM\_WORLD);
 98         \textcolor{keywordflow}{return} el; 
 99 \}
 \end{DoxyCode}
-\mbox{\Hypertarget{qubits__env__mpi_8c_a317b786f577fa6bc136ea7f0ee7330a7}\label{qubits__env__mpi_8c_a317b786f577fa6bc136ea7f0ee7330a7}} 
 \index{qubits\+\_\+env\+\_\+mpi.\+c@{qubits\+\_\+env\+\_\+mpi.\+c}!get\+Real\+Amp\+El@{get\+Real\+Amp\+El}}
 \index{get\+Real\+Amp\+El@{get\+Real\+Amp\+El}!qubits\+\_\+env\+\_\+mpi.\+c@{qubits\+\_\+env\+\_\+mpi.\+c}}
-\paragraph{\texorpdfstring{get\+Real\+Amp\+El()}{getRealAmpEl()}}
-{\footnotesize\ttfamily \hyperlink{precision_8h_a4b654506f18b8bfd61ad2a29a7e38c25}{R\+E\+AL} get\+Real\+Amp\+El (\begin{DoxyParamCaption}\item[{\hyperlink{structMultiQubit}{Multi\+Qubit}}]{multi\+Qubit,  }\item[{long long int}]{index }\end{DoxyParamCaption})}
-
+\paragraph[{\texorpdfstring{get\+Real\+Amp\+El(\+Multi\+Qubit multi\+Qubit, long long int index)}{getRealAmpEl(MultiQubit multiQubit, long long int index)}}]{\setlength{\rightskip}{0pt plus 5cm}{\bf R\+E\+AL} get\+Real\+Amp\+El (
+\begin{DoxyParamCaption}
+\item[{{\bf Multi\+Qubit}}]{multi\+Qubit, }
+\item[{long long int}]{index}
+\end{DoxyParamCaption}
+)}\hypertarget{qubits__env__mpi_8c_a317b786f577fa6bc136ea7f0ee7330a7}{}\label{qubits__env__mpi_8c_a317b786f577fa6bc136ea7f0ee7330a7}
 
 
 Get the real component of the probability amplitude at an index in the state vector. 
@@ -673,11 +725,11 @@ Definition at line 81 of file qubits\+\_\+env\+\_\+mpi.\+c.
 
 
 
-References Multi\+Qubit\+::chunk\+Id, get\+Chunk\+Id\+From\+Index(), M\+P\+I\+\_\+\+Q\+U\+E\+S\+T\+\_\+\+R\+E\+AL, Multi\+Qubit\+::num\+Amps, Complex\+Array\+::real, R\+E\+AL, and Multi\+Qubit\+::state\+Vec.
+References Multi\+Qubit\+::chunk\+Id, get\+Chunk\+Id\+From\+Index(), M\+P\+I\+\_\+\+Qu\+E\+S\+T\+\_\+\+R\+E\+AL, Multi\+Qubit\+::num\+Amps, Complex\+Array\+::real, R\+E\+AL, and Multi\+Qubit\+::state\+Vec.
 
 
 
-Referenced by get\+Prob\+El().
+Referenced by get\+Prob\+El(), and main().
 
 
 \begin{DoxyCode}
@@ -688,16 +740,21 @@ Referenced by get\+Prob\+El().
 85                 el = multiQubit.\hyperlink{structMultiQubit_a45483190d6b01ef6b2f98f2bec9ab94f}{stateVec}.\hyperlink{structComplexArray_a4195cac6c784ea1b6271f1c7dba1548a}{real}[index-chunkId*multiQubit.
       \hyperlink{structMultiQubit_ae16f47d8b725c914fb7f66b6498d79db}{numAmps}];
 86         \}
-87         MPI\_Bcast(&el, 1, \hyperlink{precision_8h_a691d8c6aa16631610107d8d1b762df9d}{MPI\_QUEST\_REAL}, chunkId, MPI\_COMM\_WORLD);
+87         MPI\_Bcast(&el, 1, \hyperlink{precision_8h_a750ad290949ef7dc4afdfbd8231a5057}{MPI\_QuEST\_REAL}, chunkId, MPI\_COMM\_WORLD);
 88         \textcolor{keywordflow}{return} el; 
 89 \} 
 \end{DoxyCode}
-\mbox{\Hypertarget{qubits__env__mpi_8c_adb4b0373425b282abed27742d0ce0872}\label{qubits__env__mpi_8c_adb4b0373425b282abed27742d0ce0872}} 
 \index{qubits\+\_\+env\+\_\+mpi.\+c@{qubits\+\_\+env\+\_\+mpi.\+c}!get\+Rot\+Angle@{get\+Rot\+Angle}}
 \index{get\+Rot\+Angle@{get\+Rot\+Angle}!qubits\+\_\+env\+\_\+mpi.\+c@{qubits\+\_\+env\+\_\+mpi.\+c}}
-\paragraph{\texorpdfstring{get\+Rot\+Angle()}{getRotAngle()}}
-{\footnotesize\ttfamily static void get\+Rot\+Angle (\begin{DoxyParamCaption}\item[{int}]{chunk\+Is\+Upper,  }\item[{\hyperlink{structComplex}{Complex} $\ast$}]{rot1,  }\item[{\hyperlink{structComplex}{Complex} $\ast$}]{rot2,  }\item[{\hyperlink{structComplex}{Complex}}]{alpha,  }\item[{\hyperlink{structComplex}{Complex}}]{beta }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [static]}}
-
+\paragraph[{\texorpdfstring{get\+Rot\+Angle(int chunk\+Is\+Upper, Complex $\ast$rot1, Complex $\ast$rot2, Complex alpha, Complex beta)}{getRotAngle(int chunkIsUpper, Complex *rot1, Complex *rot2, Complex alpha, Complex beta)}}]{\setlength{\rightskip}{0pt plus 5cm}static void get\+Rot\+Angle (
+\begin{DoxyParamCaption}
+\item[{int}]{chunk\+Is\+Upper, }
+\item[{{\bf Complex} $\ast$}]{rot1, }
+\item[{{\bf Complex} $\ast$}]{rot2, }
+\item[{{\bf Complex}}]{alpha, }
+\item[{{\bf Complex}}]{beta}
+\end{DoxyParamCaption}
+)\hspace{0.3cm}{\ttfamily [static]}}\hypertarget{qubits__env__mpi_8c_adb4b0373425b282abed27742d0ce0872}{}\label{qubits__env__mpi_8c_adb4b0373425b282abed27742d0ce0872}
 
 
 Get rotation values for a given chunk. 
@@ -740,12 +797,14 @@ Referenced by control\+Rotate\+Qubit(), and rotate\+Qubit().
 169         \}
 170 \}
 \end{DoxyCode}
-\mbox{\Hypertarget{qubits__env__mpi_8c_ad247d084dc7150893e9051a438a5807e}\label{qubits__env__mpi_8c_ad247d084dc7150893e9051a438a5807e}} 
 \index{qubits\+\_\+env\+\_\+mpi.\+c@{qubits\+\_\+env\+\_\+mpi.\+c}!hadamard@{hadamard}}
 \index{hadamard@{hadamard}!qubits\+\_\+env\+\_\+mpi.\+c@{qubits\+\_\+env\+\_\+mpi.\+c}}
-\paragraph{\texorpdfstring{hadamard()}{hadamard()}}
-{\footnotesize\ttfamily void hadamard (\begin{DoxyParamCaption}\item[{\hyperlink{structMultiQubit}{Multi\+Qubit}}]{multi\+Qubit,  }\item[{const int}]{rot\+Qubit }\end{DoxyParamCaption})}
-
+\paragraph[{\texorpdfstring{hadamard(\+Multi\+Qubit multi\+Qubit, const int rot\+Qubit)}{hadamard(MultiQubit multiQubit, const int rotQubit)}}]{\setlength{\rightskip}{0pt plus 5cm}void hadamard (
+\begin{DoxyParamCaption}
+\item[{{\bf Multi\+Qubit}}]{multi\+Qubit, }
+\item[{const int}]{rot\+Qubit}
+\end{DoxyParamCaption}
+)}\hypertarget{qubits__env__mpi_8c_ad247d084dc7150893e9051a438a5807e}{}\label{qubits__env__mpi_8c_ad247d084dc7150893e9051a438a5807e}
 
 
 Rotate a single qubit by \{\{1,1\},\{1,-\/1\}\}/sqrt2 -- turn a $\vert$0$>$ into a $\vert$+$>$ and a $\vert$1$>$ into a $\vert$-\/$>$. 
@@ -759,86 +818,65 @@ Rotate a single qubit by \{\{1,1\},\{1,-\/1\}\}/sqrt2 -- turn a $\vert$0$>$ into
 \end{DoxyParams}
 
 
-Definition at line 496 of file qubits\+\_\+env\+\_\+mpi.\+c.
+Definition at line 420 of file qubits\+\_\+env\+\_\+mpi.\+c.
 
 
 
-References Multi\+Qubit\+::chunk\+Id, chunk\+Is\+Upper(), D\+E\+B\+UG, get\+Chunk\+Pair\+Id(), hadamard\+Distributed(), hadamard\+Local(), half\+Matrix\+Block\+Fits\+In\+Chunk(), Complex\+Array\+::imag, M\+P\+I\+\_\+\+Q\+U\+E\+S\+T\+\_\+\+R\+E\+AL, Multi\+Qubit\+::num\+Amps, Multi\+Qubit\+::pair\+State\+Vec, Complex\+Array\+::real, and Multi\+Qubit\+::state\+Vec.
+References Multi\+Qubit\+::chunk\+Id, chunk\+Is\+Upper(), exchange\+State\+Vectors(), get\+Chunk\+Pair\+Id(), hadamard\+Distributed(), hadamard\+Local(), half\+Matrix\+Block\+Fits\+In\+Chunk(), Multi\+Qubit\+::num\+Amps, Multi\+Qubit\+::pair\+State\+Vec, and Multi\+Qubit\+::state\+Vec.
+
+
+
+Referenced by main(), and test\+\_\+hadamard().
 
 
 \begin{DoxyCode}
-497 \{
-498         \textcolor{comment}{// flag to require memory exchange. 1: an entire block fits on one rank, 0: at most half a block
+421 \{
+422         \textcolor{comment}{// flag to require memory exchange. 1: an entire block fits on one rank, 0: at most half a block
        fits on one rank}
-499         \textcolor{keywordtype}{int} useLocalDataOnly = \hyperlink{qubits__env__mpi_8c_a6d968d42f466bd03cea5edba456e10f7}{halfMatrixBlockFitsInChunk}(multiQubit.
+423         \textcolor{keywordtype}{int} useLocalDataOnly = \hyperlink{qubits__env__mpi_8c_a6d968d42f466bd03cea5edba456e10f7}{halfMatrixBlockFitsInChunk}(multiQubit.
       \hyperlink{structMultiQubit_ae16f47d8b725c914fb7f66b6498d79db}{numAmps}, rotQubit);
-500 
-501         \textcolor{comment}{// rank's chunk is in upper half of block }
-502         \textcolor{keywordtype}{int} rankIsUpper;
-503         \textcolor{keywordtype}{int} pairRank; \textcolor{comment}{// rank of corresponding chunk}
-504 
-505         \textcolor{comment}{// MPI send/receive vars}
-506         \textcolor{keywordtype}{int} TAG=100;
-507         MPI\_Status status;
-508 
-509         \textcolor{keywordflow}{if} (useLocalDataOnly)\{
-510                 \textcolor{comment}{// all values required to update state vector lie in this rank}
-511                 \hyperlink{qubits_8c_a0711416fceaf63c67b496e123e845c69}{hadamardLocal}(multiQubit, rotQubit);
-512         \} \textcolor{keywordflow}{else} \{
-513                 \textcolor{comment}{// need to get corresponding chunk of state vector from other rank}
-514                 rankIsUpper = \hyperlink{qubits__env__mpi_8c_a814c41ee59e206c362f2eaf1def88be6}{chunkIsUpper}(multiQubit.\hyperlink{structMultiQubit_ab10c88249fa3825d6227ceec01d37e37}{chunkId}, multiQubit.
+424 
+425         \textcolor{comment}{// rank's chunk is in upper half of block }
+426         \textcolor{keywordtype}{int} rankIsUpper;
+427         \textcolor{keywordtype}{int} pairRank; \textcolor{comment}{// rank of corresponding chunk}
+428 
+429         \textcolor{keywordflow}{if} (useLocalDataOnly)\{
+430                 \textcolor{comment}{// all values required to update state vector lie in this rank}
+431                 \hyperlink{qubits_8c_a0711416fceaf63c67b496e123e845c69}{hadamardLocal}(multiQubit, rotQubit);
+432         \} \textcolor{keywordflow}{else} \{
+433                 \textcolor{comment}{// need to get corresponding chunk of state vector from other rank}
+434                 rankIsUpper = \hyperlink{qubits__env__mpi_8c_a814c41ee59e206c362f2eaf1def88be6}{chunkIsUpper}(multiQubit.\hyperlink{structMultiQubit_ab10c88249fa3825d6227ceec01d37e37}{chunkId}, multiQubit.
       \hyperlink{structMultiQubit_ae16f47d8b725c914fb7f66b6498d79db}{numAmps}, rotQubit);
-515                 pairRank = \hyperlink{qubits__env__mpi_8c_af5bdeedf4a445b539d329c3000859f5a}{getChunkPairId}(rankIsUpper, multiQubit.
+435                 pairRank = \hyperlink{qubits__env__mpi_8c_af5bdeedf4a445b539d329c3000859f5a}{getChunkPairId}(rankIsUpper, multiQubit.
       \hyperlink{structMultiQubit_ab10c88249fa3825d6227ceec01d37e37}{chunkId}, multiQubit.\hyperlink{structMultiQubit_ae16f47d8b725c914fb7f66b6498d79db}{numAmps}, rotQubit);
-516                 \textcolor{comment}{//printf("%d rank has pair rank: %d\(\backslash\)n", multiQubit.rank, pairRank);}
-517                 \textcolor{comment}{// get corresponding values from my pair}
-518 
-519                 \textcolor{comment}{// Required by MPI using int rather than long long int for count}
-520                 \textcolor{keywordtype}{long} \textcolor{keywordtype}{long} \textcolor{keywordtype}{int} maxMessageCount = (1LL<<30);
-521                 \textcolor{keywordflow}{if} (multiQubit.\hyperlink{structMultiQubit_ae16f47d8b725c914fb7f66b6498d79db}{numAmps}<maxMessageCount) maxMessageCount = multiQubit.
-      \hyperlink{structMultiQubit_ae16f47d8b725c914fb7f66b6498d79db}{numAmps};
-522                 \textcolor{keywordtype}{int} numMessages = multiQubit.\hyperlink{structMultiQubit_ae16f47d8b725c914fb7f66b6498d79db}{numAmps}/maxMessageCount;
-523                 \textcolor{keywordtype}{int} i;
-524                 \textcolor{keywordtype}{long} \textcolor{keywordtype}{long} \textcolor{keywordtype}{int} offset;
-525                 \textcolor{keywordflow}{if} (\hyperlink{qubits__env__mpi_8c_ad72dbcf6d0153db1b8d8a58001feed83}{DEBUG}) printf(\textcolor{stringliteral}{"numMessages %d maxMessageCount %lld\(\backslash\)n"}, numMessages, 
-      maxMessageCount);
-526                 \textcolor{keywordflow}{for} (i=0; i<numMessages; i++)\{
-527                         offset = i*maxMessageCount;
-528                         MPI\_Sendrecv(&multiQubit.\hyperlink{structMultiQubit_a45483190d6b01ef6b2f98f2bec9ab94f}{stateVec}.\hyperlink{structComplexArray_a4195cac6c784ea1b6271f1c7dba1548a}{real}[offset], maxMessageCount, 
-      \hyperlink{precision_8h_a691d8c6aa16631610107d8d1b762df9d}{MPI\_QUEST\_REAL}, pairRank, TAG,
-529                                          &multiQubit.\hyperlink{structMultiQubit_a76f7db4eab52d2b30f58f973ada809c5}{pairStateVec}.
-      \hyperlink{structComplexArray_a4195cac6c784ea1b6271f1c7dba1548a}{real}[offset], maxMessageCount, \hyperlink{precision_8h_a691d8c6aa16631610107d8d1b762df9d}{MPI\_QUEST\_REAL},
-530                                          pairRank, TAG, MPI\_COMM\_WORLD, &status);
-531                         \textcolor{comment}{//printf("rank: %d err: %d\(\backslash\)n", multiQubit.rank, err);}
-532                         MPI\_Sendrecv(&multiQubit.\hyperlink{structMultiQubit_a45483190d6b01ef6b2f98f2bec9ab94f}{stateVec}.\hyperlink{structComplexArray_a79dde47c7ae530c79cebfdf57b225968}{imag}[offset], maxMessageCount, 
-      \hyperlink{precision_8h_a691d8c6aa16631610107d8d1b762df9d}{MPI\_QUEST\_REAL}, pairRank, TAG,
-533                                         &multiQubit.\hyperlink{structMultiQubit_a76f7db4eab52d2b30f58f973ada809c5}{pairStateVec}.
-      \hyperlink{structComplexArray_a79dde47c7ae530c79cebfdf57b225968}{imag}[offset], maxMessageCount, \hyperlink{precision_8h_a691d8c6aa16631610107d8d1b762df9d}{MPI\_QUEST\_REAL},
-534                                         pairRank, TAG, MPI\_COMM\_WORLD, &status);
-535                 \}
-536                 \textcolor{comment}{// this rank's values are either in the upper of lower half of the block. send values to
+436                 \textcolor{comment}{//printf("%d rank has pair rank: %d\(\backslash\)n", multiQubit.rank, pairRank);}
+437                 \textcolor{comment}{// get corresponding values from my pair}
+438                 \hyperlink{qubits__env__mpi_8c_a7682c9a3fd592d34ec15ba8fa172f104}{exchangeStateVectors}(multiQubit, pairRank);
+439                 \textcolor{comment}{// this rank's values are either in the upper of lower half of the block. send values to
        rotateQubitDistributed}
-537                 \textcolor{comment}{// in the correct order}
-538                 \textcolor{keywordflow}{if} (rankIsUpper)\{
-539                         \hyperlink{qubits_8c_ac835c194bd547240a35f0b028db1d658}{hadamardDistributed}(multiQubit,rotQubit,
-540                                 multiQubit.\hyperlink{structMultiQubit_a45483190d6b01ef6b2f98f2bec9ab94f}{stateVec}, \textcolor{comment}{//upper}
-541                                 multiQubit.\hyperlink{structMultiQubit_a76f7db4eab52d2b30f58f973ada809c5}{pairStateVec}, \textcolor{comment}{//lower}
-542                                 multiQubit.\hyperlink{structMultiQubit_a45483190d6b01ef6b2f98f2bec9ab94f}{stateVec}); \textcolor{comment}{//output}
-543                 \} \textcolor{keywordflow}{else} \{
-544                         \hyperlink{qubits_8c_ac835c194bd547240a35f0b028db1d658}{hadamardDistributed}(multiQubit,rotQubit,
-545                                 multiQubit.\hyperlink{structMultiQubit_a76f7db4eab52d2b30f58f973ada809c5}{pairStateVec}, \textcolor{comment}{//upper}
-546                                 multiQubit.\hyperlink{structMultiQubit_a45483190d6b01ef6b2f98f2bec9ab94f}{stateVec}, \textcolor{comment}{//lower}
-547                                 multiQubit.\hyperlink{structMultiQubit_a45483190d6b01ef6b2f98f2bec9ab94f}{stateVec}); \textcolor{comment}{//output}
-548                 \}
-549         \}
-550 \}
+440                 \textcolor{comment}{// in the correct order}
+441                 \textcolor{keywordflow}{if} (rankIsUpper)\{
+442                         \hyperlink{qubits_8c_ac835c194bd547240a35f0b028db1d658}{hadamardDistributed}(multiQubit,rotQubit,
+443                                 multiQubit.\hyperlink{structMultiQubit_a45483190d6b01ef6b2f98f2bec9ab94f}{stateVec}, \textcolor{comment}{//upper}
+444                                 multiQubit.\hyperlink{structMultiQubit_a76f7db4eab52d2b30f58f973ada809c5}{pairStateVec}, \textcolor{comment}{//lower}
+445                                 multiQubit.\hyperlink{structMultiQubit_a45483190d6b01ef6b2f98f2bec9ab94f}{stateVec}, rankIsUpper); \textcolor{comment}{//output}
+446                 \} \textcolor{keywordflow}{else} \{
+447                         \hyperlink{qubits_8c_ac835c194bd547240a35f0b028db1d658}{hadamardDistributed}(multiQubit,rotQubit,
+448                                 multiQubit.\hyperlink{structMultiQubit_a76f7db4eab52d2b30f58f973ada809c5}{pairStateVec}, \textcolor{comment}{//upper}
+449                                 multiQubit.\hyperlink{structMultiQubit_a45483190d6b01ef6b2f98f2bec9ab94f}{stateVec}, \textcolor{comment}{//lower}
+450                                 multiQubit.\hyperlink{structMultiQubit_a45483190d6b01ef6b2f98f2bec9ab94f}{stateVec}, rankIsUpper); \textcolor{comment}{//output}
+451                 \}
+452         \}
+453 \}
 \end{DoxyCode}
-\mbox{\Hypertarget{qubits__env__mpi_8c_a6d968d42f466bd03cea5edba456e10f7}\label{qubits__env__mpi_8c_a6d968d42f466bd03cea5edba456e10f7}} 
 \index{qubits\+\_\+env\+\_\+mpi.\+c@{qubits\+\_\+env\+\_\+mpi.\+c}!half\+Matrix\+Block\+Fits\+In\+Chunk@{half\+Matrix\+Block\+Fits\+In\+Chunk}}
 \index{half\+Matrix\+Block\+Fits\+In\+Chunk@{half\+Matrix\+Block\+Fits\+In\+Chunk}!qubits\+\_\+env\+\_\+mpi.\+c@{qubits\+\_\+env\+\_\+mpi.\+c}}
-\paragraph{\texorpdfstring{half\+Matrix\+Block\+Fits\+In\+Chunk()}{halfMatrixBlockFitsInChunk()}}
-{\footnotesize\ttfamily static int half\+Matrix\+Block\+Fits\+In\+Chunk (\begin{DoxyParamCaption}\item[{long long int}]{chunk\+Size,  }\item[{int}]{rot\+Qubit }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [static]}}
-
+\paragraph[{\texorpdfstring{half\+Matrix\+Block\+Fits\+In\+Chunk(long long int chunk\+Size, int rot\+Qubit)}{halfMatrixBlockFitsInChunk(long long int chunkSize, int rotQubit)}}]{\setlength{\rightskip}{0pt plus 5cm}static int half\+Matrix\+Block\+Fits\+In\+Chunk (
+\begin{DoxyParamCaption}
+\item[{long long int}]{chunk\+Size, }
+\item[{int}]{rot\+Qubit}
+\end{DoxyParamCaption}
+)\hspace{0.3cm}{\ttfamily [static]}}\hypertarget{qubits__env__mpi_8c_a6d968d42f466bd03cea5edba456e10f7}{}\label{qubits__env__mpi_8c_a6d968d42f466bd03cea5edba456e10f7}
 
 
 return whether the current qubit rotation will use blocks that fit within a single chunk. 
@@ -869,15 +907,16 @@ Referenced by control\+Not(), control\+Rotate\+Qubit(), find\+Probability\+Of\+O
 204         \textcolor{keywordflow}{else} \textcolor{keywordflow}{return} 0;
 205 \}
 \end{DoxyCode}
-\mbox{\Hypertarget{qubits__env__mpi_8c_a652d8c53f8f1cfb096133791de2b219d}\label{qubits__env__mpi_8c_a652d8c53f8f1cfb096133791de2b219d}} 
-\index{qubits\+\_\+env\+\_\+mpi.\+c@{qubits\+\_\+env\+\_\+mpi.\+c}!init\+Q\+U\+E\+S\+T\+Env@{init\+Q\+U\+E\+S\+T\+Env}}
-\index{init\+Q\+U\+E\+S\+T\+Env@{init\+Q\+U\+E\+S\+T\+Env}!qubits\+\_\+env\+\_\+mpi.\+c@{qubits\+\_\+env\+\_\+mpi.\+c}}
-\paragraph{\texorpdfstring{init\+Q\+U\+E\+S\+T\+Env()}{initQUESTEnv()}}
-{\footnotesize\ttfamily void init\+Q\+U\+E\+S\+T\+Env (\begin{DoxyParamCaption}\item[{\hyperlink{structQUESTEnv}{Q\+U\+E\+S\+T\+Env} $\ast$}]{env }\end{DoxyParamCaption})}
+\index{qubits\+\_\+env\+\_\+mpi.\+c@{qubits\+\_\+env\+\_\+mpi.\+c}!init\+Qu\+E\+S\+T\+Env@{init\+Qu\+E\+S\+T\+Env}}
+\index{init\+Qu\+E\+S\+T\+Env@{init\+Qu\+E\+S\+T\+Env}!qubits\+\_\+env\+\_\+mpi.\+c@{qubits\+\_\+env\+\_\+mpi.\+c}}
+\paragraph[{\texorpdfstring{init\+Qu\+E\+S\+T\+Env(\+Qu\+E\+S\+T\+Env $\ast$env)}{initQuESTEnv(QuESTEnv *env)}}]{\setlength{\rightskip}{0pt plus 5cm}void init\+Qu\+E\+S\+T\+Env (
+\begin{DoxyParamCaption}
+\item[{{\bf Qu\+E\+S\+T\+Env} $\ast$}]{env}
+\end{DoxyParamCaption}
+)}\hypertarget{qubits__env__mpi_8c_ad84a3ce68d1ca02b4e3f741ea45b6054}{}\label{qubits__env__mpi_8c_ad84a3ce68d1ca02b4e3f741ea45b6054}
 
 
-
-Initialize Q\+U\+E\+ST environment. 
+Initialize Qu\+E\+ST environment. 
 
 If something needs to be done to set up the execution environment, such as initializing M\+PI when running in distributed mode, it is handled here 
 \begin{DoxyParams}[1]{Parameters}
@@ -890,7 +929,11 @@ Definition at line 25 of file qubits\+\_\+env\+\_\+mpi.\+c.
 
 
 
-References D\+E\+B\+UG, Q\+U\+E\+S\+T\+Env\+::num\+Ranks, and Q\+U\+E\+S\+T\+Env\+::rank.
+References D\+E\+B\+UG, Qu\+E\+S\+T\+Env\+::num\+Ranks, and Qu\+E\+S\+T\+Env\+::rank.
+
+
+
+Referenced by main().
 
 
 \begin{DoxyCode}
@@ -909,17 +952,20 @@ References D\+E\+B\+UG, Q\+U\+E\+S\+T\+Env\+::num\+Ranks, and Q\+U\+E\+S\+T\+Env
 37                         MPI\_Get\_processor\_name(hostName, &hostNameLen);
 38                         printf(\textcolor{stringliteral}{"rank %d on host %s\(\backslash\)n"}, rank, hostName);
 39                 \}
-40                 env->\hyperlink{structQUESTEnv_a1bdb6d425a2ce6a468f93929c0b26d73}{rank}=rank;
-41                 env->\hyperlink{structQUESTEnv_ab9d9ce82e2d5f1b39aa9efc3accb3742}{numRanks}=numRanks;
-42         \} \textcolor{keywordflow}{else} printf(\textcolor{stringliteral}{"ERROR: Trying to initialize QUESTEnv multiple times. Ignoring\(\backslash\)n"});
+40                 env->\hyperlink{structQuESTEnv_aa648bb336cf8598467cb62db00b9cee8}{rank}=rank;
+41                 env->\hyperlink{structQuESTEnv_af22aacd7c9905accae28484785c193b4}{numRanks}=numRanks;
+42         \} \textcolor{keywordflow}{else} printf(\textcolor{stringliteral}{"ERROR: Trying to initialize QuESTEnv multiple times. Ignoring\(\backslash\)n"});
 43 \}
 \end{DoxyCode}
-\mbox{\Hypertarget{qubits__env__mpi_8c_af0ea25f00987af4c53f17c9cca62ab41}\label{qubits__env__mpi_8c_af0ea25f00987af4c53f17c9cca62ab41}} 
 \index{qubits\+\_\+env\+\_\+mpi.\+c@{qubits\+\_\+env\+\_\+mpi.\+c}!is\+Chunk\+To\+Skip\+In\+Find\+P\+Zero@{is\+Chunk\+To\+Skip\+In\+Find\+P\+Zero}}
 \index{is\+Chunk\+To\+Skip\+In\+Find\+P\+Zero@{is\+Chunk\+To\+Skip\+In\+Find\+P\+Zero}!qubits\+\_\+env\+\_\+mpi.\+c@{qubits\+\_\+env\+\_\+mpi.\+c}}
-\paragraph{\texorpdfstring{is\+Chunk\+To\+Skip\+In\+Find\+P\+Zero()}{isChunkToSkipInFindPZero()}}
-{\footnotesize\ttfamily static int is\+Chunk\+To\+Skip\+In\+Find\+P\+Zero (\begin{DoxyParamCaption}\item[{int}]{chunk\+Id,  }\item[{long long int}]{chunk\+Size,  }\item[{int}]{measure\+Qubit }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [static]}}
-
+\paragraph[{\texorpdfstring{is\+Chunk\+To\+Skip\+In\+Find\+P\+Zero(int chunk\+Id, long long int chunk\+Size, int measure\+Qubit)}{isChunkToSkipInFindPZero(int chunkId, long long int chunkSize, int measureQubit)}}]{\setlength{\rightskip}{0pt plus 5cm}static int is\+Chunk\+To\+Skip\+In\+Find\+P\+Zero (
+\begin{DoxyParamCaption}
+\item[{int}]{chunk\+Id, }
+\item[{long long int}]{chunk\+Size, }
+\item[{int}]{measure\+Qubit}
+\end{DoxyParamCaption}
+)\hspace{0.3cm}{\ttfamily [static]}}\hypertarget{qubits__env__mpi_8c_af0ea25f00987af4c53f17c9cca62ab41}{}\label{qubits__env__mpi_8c_af0ea25f00987af4c53f17c9cca62ab41}
 
 
 Find chunks to skip when calculating probability of qubit being zero. 
@@ -940,7 +986,7 @@ int -- 1\+: skip, 0\+: don\textquotesingle{}t skip
 \end{DoxyReturn}
 
 
-Definition at line 564 of file qubits\+\_\+env\+\_\+mpi.\+c.
+Definition at line 467 of file qubits\+\_\+env\+\_\+mpi.\+c.
 
 
 
@@ -948,20 +994,23 @@ Referenced by find\+Probability\+Of\+Outcome(), and measure\+In\+State().
 
 
 \begin{DoxyCode}
-565 \{
-566         \textcolor{keywordtype}{long} \textcolor{keywordtype}{long} \textcolor{keywordtype}{int} sizeHalfBlock = 1LL << (measureQubit);
-567         \textcolor{keywordtype}{int} numChunksToSkip = sizeHalfBlock/chunkSize;
-568         \textcolor{comment}{// calculate probability by summing over numChunksToSkip, then skipping numChunksToSkip, etc}
-569         \textcolor{keywordtype}{int} bitToCheck = chunkId & numChunksToSkip;
-570         \textcolor{keywordflow}{return} bitToCheck;
-571 \}
+468 \{
+469         \textcolor{keywordtype}{long} \textcolor{keywordtype}{long} \textcolor{keywordtype}{int} sizeHalfBlock = 1LL << (measureQubit);
+470         \textcolor{keywordtype}{int} numChunksToSkip = sizeHalfBlock/chunkSize;
+471         \textcolor{comment}{// calculate probability by summing over numChunksToSkip, then skipping numChunksToSkip, etc}
+472         \textcolor{keywordtype}{int} bitToCheck = chunkId & numChunksToSkip;
+473         \textcolor{keywordflow}{return} bitToCheck;
+474 \}
 \end{DoxyCode}
-\mbox{\Hypertarget{qubits__env__mpi_8c_a88605f373c2401760aab0e08719e08dd}\label{qubits__env__mpi_8c_a88605f373c2401760aab0e08719e08dd}} 
 \index{qubits\+\_\+env\+\_\+mpi.\+c@{qubits\+\_\+env\+\_\+mpi.\+c}!measure\+In\+State@{measure\+In\+State}}
 \index{measure\+In\+State@{measure\+In\+State}!qubits\+\_\+env\+\_\+mpi.\+c@{qubits\+\_\+env\+\_\+mpi.\+c}}
-\paragraph{\texorpdfstring{measure\+In\+State()}{measureInState()}}
-{\footnotesize\ttfamily \hyperlink{precision_8h_a4b654506f18b8bfd61ad2a29a7e38c25}{R\+E\+AL} measure\+In\+State (\begin{DoxyParamCaption}\item[{\hyperlink{structMultiQubit}{Multi\+Qubit}}]{multi\+Qubit,  }\item[{const int}]{measure\+Qubit,  }\item[{int}]{outcome }\end{DoxyParamCaption})}
-
+\paragraph[{\texorpdfstring{measure\+In\+State(\+Multi\+Qubit multi\+Qubit, const int measure\+Qubit, int outcome)}{measureInState(MultiQubit multiQubit, const int measureQubit, int outcome)}}]{\setlength{\rightskip}{0pt plus 5cm}{\bf R\+E\+AL} measure\+In\+State (
+\begin{DoxyParamCaption}
+\item[{{\bf Multi\+Qubit}}]{multi\+Qubit, }
+\item[{const int}]{measure\+Qubit, }
+\item[{int}]{outcome}
+\end{DoxyParamCaption}
+)}\hypertarget{qubits__env__mpi_8c_a88605f373c2401760aab0e08719e08dd}{}\label{qubits__env__mpi_8c_a88605f373c2401760aab0e08719e08dd}
 
 
 Update the state vector to be consistent with measuring measure\+Qubit=0 or measure\+Qubit=1 according to the value of outcome. 
@@ -982,46 +1031,53 @@ probability of qubit measure\+Qubit being either zero or one
 \end{DoxyReturn}
 
 
-Definition at line 590 of file qubits\+\_\+env\+\_\+mpi.\+c.
+Definition at line 493 of file qubits\+\_\+env\+\_\+mpi.\+c.
 
 
 
 References Multi\+Qubit\+::chunk\+Id, find\+Probability\+Of\+Outcome(), half\+Matrix\+Block\+Fits\+In\+Chunk(), is\+Chunk\+To\+Skip\+In\+Find\+P\+Zero(), measure\+In\+State\+Distributed\+Renorm(), measure\+In\+State\+Distributed\+Set\+Zero(), measure\+In\+State\+Local(), Multi\+Qubit\+::num\+Amps, and R\+E\+AL.
 
 
+
+Referenced by main().
+
+
 \begin{DoxyCode}
-591 \{
-592         \hyperlink{precision_8h_a4b654506f18b8bfd61ad2a29a7e38c25}{REAL} totalStateProb=\hyperlink{qubits__env__mpi_8c_ad315c941a51bc053d39ebfa2040fd32e}{findProbabilityOfOutcome}(multiQubit, measureQubit, 
+494 \{
+495         \hyperlink{precision_8h_a4b654506f18b8bfd61ad2a29a7e38c25}{REAL} totalStateProb=\hyperlink{qubits__env__mpi_8c_ad315c941a51bc053d39ebfa2040fd32e}{findProbabilityOfOutcome}(multiQubit, measureQubit, 
       outcome);
-593         \textcolor{keywordtype}{int} skipValuesWithinRank = \hyperlink{qubits__env__mpi_8c_a6d968d42f466bd03cea5edba456e10f7}{halfMatrixBlockFitsInChunk}(multiQubit.
+496         \textcolor{keywordtype}{int} skipValuesWithinRank = \hyperlink{qubits__env__mpi_8c_a6d968d42f466bd03cea5edba456e10f7}{halfMatrixBlockFitsInChunk}(multiQubit.
       \hyperlink{structMultiQubit_ae16f47d8b725c914fb7f66b6498d79db}{numAmps}, measureQubit);
-594         \textcolor{keywordflow}{if} (skipValuesWithinRank) \{
-595                 \hyperlink{qubits_8c_a53614ce19e0a4f2c41b400cf05dc5bd1}{measureInStateLocal}(multiQubit, measureQubit, totalStateProb, outcome);
-596         \} \textcolor{keywordflow}{else} \{
-597                 \textcolor{keywordflow}{if} (!\hyperlink{qubits__env__mpi_8c_af0ea25f00987af4c53f17c9cca62ab41}{isChunkToSkipInFindPZero}(multiQubit.
+497         \textcolor{keywordflow}{if} (skipValuesWithinRank) \{
+498                 \hyperlink{qubits_8c_a53614ce19e0a4f2c41b400cf05dc5bd1}{measureInStateLocal}(multiQubit, measureQubit, totalStateProb, outcome);
+499         \} \textcolor{keywordflow}{else} \{
+500                 \textcolor{keywordflow}{if} (!\hyperlink{qubits__env__mpi_8c_af0ea25f00987af4c53f17c9cca62ab41}{isChunkToSkipInFindPZero}(multiQubit.
       \hyperlink{structMultiQubit_ab10c88249fa3825d6227ceec01d37e37}{chunkId}, multiQubit.\hyperlink{structMultiQubit_ae16f47d8b725c914fb7f66b6498d79db}{numAmps}, measureQubit))\{
-598                         \textcolor{comment}{// chunk has amps for q=0}
-599                         \textcolor{keywordflow}{if} (outcome==0) \hyperlink{qubits_8c_a35e5ac30c8427c482a97b33a4e295535}{measureInStateDistributedRenorm}(
+501                         \textcolor{comment}{// chunk has amps for q=0}
+502                         \textcolor{keywordflow}{if} (outcome==0) \hyperlink{qubits_8c_a35e5ac30c8427c482a97b33a4e295535}{measureInStateDistributedRenorm}(
       multiQubit, measureQubit, totalStateProb);
-600                         \textcolor{keywordflow}{else} \hyperlink{qubits_8c_ac39efc9ed939382276ebd0c15dd6a0fa}{measureInStateDistributedSetZero}(multiQubit, 
+503                         \textcolor{keywordflow}{else} \hyperlink{qubits_8c_ac39efc9ed939382276ebd0c15dd6a0fa}{measureInStateDistributedSetZero}(multiQubit, 
       measureQubit);
-601                 \} \textcolor{keywordflow}{else} \{
-602                         \textcolor{comment}{// chunk has amps for q=1}
-603                         \textcolor{keywordflow}{if} (outcome==1) \hyperlink{qubits_8c_a35e5ac30c8427c482a97b33a4e295535}{measureInStateDistributedRenorm}(
+504                 \} \textcolor{keywordflow}{else} \{
+505                         \textcolor{comment}{// chunk has amps for q=1}
+506                         \textcolor{keywordflow}{if} (outcome==1) \hyperlink{qubits_8c_a35e5ac30c8427c482a97b33a4e295535}{measureInStateDistributedRenorm}(
       multiQubit, measureQubit, totalStateProb);
-604                         \textcolor{keywordflow}{else} \hyperlink{qubits_8c_ac39efc9ed939382276ebd0c15dd6a0fa}{measureInStateDistributedSetZero}(multiQubit, 
+507                         \textcolor{keywordflow}{else} \hyperlink{qubits_8c_ac39efc9ed939382276ebd0c15dd6a0fa}{measureInStateDistributedSetZero}(multiQubit, 
       measureQubit);
-605                 \}
-606         \}
-607         \textcolor{keywordflow}{return} totalStateProb;
-608 \}
+508                 \}
+509         \}
+510         \textcolor{keywordflow}{return} totalStateProb;
+511 \}
 \end{DoxyCode}
-\mbox{\Hypertarget{qubits__env__mpi_8c_ae275b94c1a483dda43bf4ec947635605}\label{qubits__env__mpi_8c_ae275b94c1a483dda43bf4ec947635605}} 
 \index{qubits\+\_\+env\+\_\+mpi.\+c@{qubits\+\_\+env\+\_\+mpi.\+c}!phase\+Gate@{phase\+Gate}}
 \index{phase\+Gate@{phase\+Gate}!qubits\+\_\+env\+\_\+mpi.\+c@{qubits\+\_\+env\+\_\+mpi.\+c}}
-\paragraph{\texorpdfstring{phase\+Gate()}{phaseGate()}}
-{\footnotesize\ttfamily void phase\+Gate (\begin{DoxyParamCaption}\item[{\hyperlink{structMultiQubit}{Multi\+Qubit}}]{multi\+Qubit,  }\item[{const int}]{rot\+Qubit,  }\item[{enum \hyperlink{qubits_8h_a5739021c733cecc49647956b2f7338ea}{phase\+Gate\+Type}}]{type }\end{DoxyParamCaption})}
-
+\paragraph[{\texorpdfstring{phase\+Gate(\+Multi\+Qubit multi\+Qubit, const int rot\+Qubit, enum phase\+Gate\+Type type)}{phaseGate(MultiQubit multiQubit, const int rotQubit, enum phaseGateType type)}}]{\setlength{\rightskip}{0pt plus 5cm}void phase\+Gate (
+\begin{DoxyParamCaption}
+\item[{{\bf Multi\+Qubit}}]{multi\+Qubit, }
+\item[{const int}]{rot\+Qubit, }
+\item[{enum {\bf phase\+Gate\+Type}}]{type}
+\end{DoxyParamCaption}
+)}\hypertarget{qubits__env__mpi_8c_ae275b94c1a483dda43bf4ec947635605}{}\label{qubits__env__mpi_8c_ae275b94c1a483dda43bf4ec947635605}
 
 
 Rotate a single qubit by \{\{1,0\},\{0,p\}\} where p is a phase term determined by the type argument. 
@@ -1037,7 +1093,7 @@ Rotate a single qubit by \{\{1,0\},\{0,p\}\} where p is a phase term determined 
 \end{DoxyParams}
 
 
-Definition at line 475 of file qubits\+\_\+env\+\_\+mpi.\+c.
+Definition at line 403 of file qubits\+\_\+env\+\_\+mpi.\+c.
 
 
 
@@ -1049,35 +1105,35 @@ Referenced by s\+Gate(), sigma\+Z(), and t\+Gate().
 
 
 \begin{DoxyCode}
-476 \{
-477         \textcolor{comment}{// flag to require memory exchange. 1: an entire block fits on one rank, 0: at most half a block
+404 \{
+405         \textcolor{comment}{// flag to require memory exchange. 1: an entire block fits on one rank, 0: at most half a block
        fits on one rank}
-478         \textcolor{keywordtype}{int} useLocalDataOnly = \hyperlink{qubits__env__mpi_8c_a6d968d42f466bd03cea5edba456e10f7}{halfMatrixBlockFitsInChunk}(multiQubit.
+406         \textcolor{keywordtype}{int} useLocalDataOnly = \hyperlink{qubits__env__mpi_8c_a6d968d42f466bd03cea5edba456e10f7}{halfMatrixBlockFitsInChunk}(multiQubit.
       \hyperlink{structMultiQubit_ae16f47d8b725c914fb7f66b6498d79db}{numAmps}, rotQubit);
-479 
-480         \textcolor{comment}{// rank's chunk is in upper half of block }
-481         \textcolor{keywordtype}{int} rankIsUpper;
-482         \textcolor{keywordtype}{int} pairRank; \textcolor{comment}{// rank of corresponding chunk}
-483 
-484         \textcolor{comment}{// MPI send/receive vars}
-485         \textcolor{keywordtype}{int} TAG=100;
-486         MPI\_Status status;
-487 
-488         \textcolor{keywordflow}{if} (useLocalDataOnly)\{
-489                 \hyperlink{qubits_8c_a6a736aeb3532898019fe7c27010edc6a}{phaseGateLocal}(multiQubit, rotQubit, type);
-490         \} \textcolor{keywordflow}{else} \{
-491                 rankIsUpper = \hyperlink{qubits__env__mpi_8c_a814c41ee59e206c362f2eaf1def88be6}{chunkIsUpper}(multiQubit.\hyperlink{structMultiQubit_ab10c88249fa3825d6227ceec01d37e37}{chunkId}, multiQubit.
+407 
+408         \textcolor{comment}{// rank's chunk is in upper half of block }
+409         \textcolor{keywordtype}{int} rankIsUpper;
+410         \textcolor{keywordtype}{int} pairRank; \textcolor{comment}{// rank of corresponding chunk}
+411 
+412         \textcolor{keywordflow}{if} (useLocalDataOnly)\{
+413                 \hyperlink{qubits_8c_a6a736aeb3532898019fe7c27010edc6a}{phaseGateLocal}(multiQubit, rotQubit, type);
+414         \} \textcolor{keywordflow}{else} \{
+415                 rankIsUpper = \hyperlink{qubits__env__mpi_8c_a814c41ee59e206c362f2eaf1def88be6}{chunkIsUpper}(multiQubit.\hyperlink{structMultiQubit_ab10c88249fa3825d6227ceec01d37e37}{chunkId}, multiQubit.
       \hyperlink{structMultiQubit_ae16f47d8b725c914fb7f66b6498d79db}{numAmps}, rotQubit);
-492                 \textcolor{keywordflow}{if} (!rankIsUpper) \hyperlink{qubits_8c_a38a05c7e749e806b182ef3b89878bfc4}{phaseGateDistributed}(multiQubit, rotQubit, type);
-493         \}
-494 \}
+416                 \textcolor{keywordflow}{if} (!rankIsUpper) \hyperlink{qubits_8c_a38a05c7e749e806b182ef3b89878bfc4}{phaseGateDistributed}(multiQubit, rotQubit, type);
+417         \}
+418 \}
 \end{DoxyCode}
-\mbox{\Hypertarget{qubits__env__mpi_8c_a909ba48b5a82c9f5c3a94d17a72b1aa3}\label{qubits__env__mpi_8c_a909ba48b5a82c9f5c3a94d17a72b1aa3}} 
 \index{qubits\+\_\+env\+\_\+mpi.\+c@{qubits\+\_\+env\+\_\+mpi.\+c}!prob\+Of\+Filter\+Out111@{prob\+Of\+Filter\+Out111}}
 \index{prob\+Of\+Filter\+Out111@{prob\+Of\+Filter\+Out111}!qubits\+\_\+env\+\_\+mpi.\+c@{qubits\+\_\+env\+\_\+mpi.\+c}}
-\paragraph{\texorpdfstring{prob\+Of\+Filter\+Out111()}{probOfFilterOut111()}}
-{\footnotesize\ttfamily \hyperlink{precision_8h_a4b654506f18b8bfd61ad2a29a7e38c25}{R\+E\+AL} prob\+Of\+Filter\+Out111 (\begin{DoxyParamCaption}\item[{\hyperlink{structMultiQubit}{Multi\+Qubit}}]{multi\+Qubit,  }\item[{const int}]{id\+Qubit1,  }\item[{const int}]{id\+Qubit2,  }\item[{const int}]{id\+Qubit3 }\end{DoxyParamCaption})}
-
+\paragraph[{\texorpdfstring{prob\+Of\+Filter\+Out111(\+Multi\+Qubit multi\+Qubit, const int id\+Qubit1, const int id\+Qubit2, const int id\+Qubit3)}{probOfFilterOut111(MultiQubit multiQubit, const int idQubit1, const int idQubit2, const int idQubit3)}}]{\setlength{\rightskip}{0pt plus 5cm}{\bf R\+E\+AL} prob\+Of\+Filter\+Out111 (
+\begin{DoxyParamCaption}
+\item[{{\bf Multi\+Qubit}}]{multi\+Qubit, }
+\item[{const int}]{id\+Qubit1, }
+\item[{const int}]{id\+Qubit2, }
+\item[{const int}]{id\+Qubit3}
+\end{DoxyParamCaption}
+)}\hypertarget{qubits__env__mpi_8c_a909ba48b5a82c9f5c3a94d17a72b1aa3}{}\label{qubits__env__mpi_8c_a909ba48b5a82c9f5c3a94d17a72b1aa3}
 
 
 Evaluates the state according to this scenario\+: we ask \char`\"{}are these 3 qubits in 111\char`\"{} and the answer is \char`\"{}no\char`\"{}. 
@@ -1094,33 +1150,34 @@ Total probability that the 3 qubits are not all in the 1 state.
 \end{DoxyReturn}
 
 
-Definition at line 618 of file qubits\+\_\+env\+\_\+mpi.\+c.
+Definition at line 521 of file qubits\+\_\+env\+\_\+mpi.\+c.
 
 
 
-References M\+P\+I\+\_\+\+Q\+U\+E\+S\+T\+\_\+\+R\+E\+AL, prob\+Of\+Filter\+Out111\+Local(), and R\+E\+AL.
+References M\+P\+I\+\_\+\+Qu\+E\+S\+T\+\_\+\+R\+E\+AL, prob\+Of\+Filter\+Out111\+Local(), and R\+E\+AL.
 
 
 
-Referenced by filter\+Out111().
+Referenced by filter\+Out111(), and main().
 
 
 \begin{DoxyCode}
-619 \{
-620         \hyperlink{precision_8h_a4b654506f18b8bfd61ad2a29a7e38c25}{REAL} stateProb=0, totalStateProb=0;
-621         stateProb = \hyperlink{qubits_8c_a096cddbac961f0651a084d2ceb905d1b}{probOfFilterOut111Local}(multiQubit, idQubit1, idQubit2, idQubit3
+522 \{
+523         \hyperlink{precision_8h_a4b654506f18b8bfd61ad2a29a7e38c25}{REAL} stateProb=0, totalStateProb=0;
+524         stateProb = \hyperlink{qubits_8c_a096cddbac961f0651a084d2ceb905d1b}{probOfFilterOut111Local}(multiQubit, idQubit1, idQubit2, idQubit3
       );
-622         MPI\_Allreduce(&stateProb, &totalStateProb, 1, \hyperlink{precision_8h_a691d8c6aa16631610107d8d1b762df9d}{MPI\_QUEST\_REAL}, MPI\_SUM, MPI\_COMM\_WORLD
+525         MPI\_Allreduce(&stateProb, &totalStateProb, 1, \hyperlink{precision_8h_a750ad290949ef7dc4afdfbd8231a5057}{MPI\_QuEST\_REAL}, MPI\_SUM, MPI\_COMM\_WORLD
       );
-623         \textcolor{keywordflow}{return} totalStateProb;
-624 \}
+526         \textcolor{keywordflow}{return} totalStateProb;
+527 \}
 \end{DoxyCode}
-\mbox{\Hypertarget{qubits__env__mpi_8c_ab879c994cf26eacfe1efb92ec93f95af}\label{qubits__env__mpi_8c_ab879c994cf26eacfe1efb92ec93f95af}} 
 \index{qubits\+\_\+env\+\_\+mpi.\+c@{qubits\+\_\+env\+\_\+mpi.\+c}!report\+Node\+List@{report\+Node\+List}}
 \index{report\+Node\+List@{report\+Node\+List}!qubits\+\_\+env\+\_\+mpi.\+c@{qubits\+\_\+env\+\_\+mpi.\+c}}
-\paragraph{\texorpdfstring{report\+Node\+List()}{reportNodeList()}}
-{\footnotesize\ttfamily void report\+Node\+List (\begin{DoxyParamCaption}\item[{\hyperlink{structQUESTEnv}{Q\+U\+E\+S\+T\+Env}}]{env }\end{DoxyParamCaption})}
-
+\paragraph[{\texorpdfstring{report\+Node\+List(\+Qu\+E\+S\+T\+Env env)}{reportNodeList(QuESTEnv env)}}]{\setlength{\rightskip}{0pt plus 5cm}void report\+Node\+List (
+\begin{DoxyParamCaption}
+\item[{{\bf Qu\+E\+S\+T\+Env}}]{env}
+\end{DoxyParamCaption}
+)}\hypertarget{qubits__env__mpi_8c_a62da5b58d8ce84e6f4d24be1b872294e}{}\label{qubits__env__mpi_8c_a62da5b58d8ce84e6f4d24be1b872294e}
 
 
 Report a list of C\+PU hostnames and the rank that is running on each if running with M\+PI enabled and an error message otherwise. 
@@ -1136,25 +1193,26 @@ Definition at line 71 of file qubits\+\_\+env\+\_\+mpi.\+c.
 
 
 
-References Q\+U\+E\+S\+T\+Env\+::rank.
+References Qu\+E\+S\+T\+Env\+::rank.
 
 
 \begin{DoxyCode}
 71                                  \{
 72         \textcolor{keywordtype}{char} hostName[256];
 73         gethostname(hostName, 255);
-74         printf(\textcolor{stringliteral}{"hostname on rank %d: %s\(\backslash\)n"}, env.\hyperlink{structQUESTEnv_a1bdb6d425a2ce6a468f93929c0b26d73}{rank}, hostName);
+74         printf(\textcolor{stringliteral}{"hostname on rank %d: %s\(\backslash\)n"}, env.\hyperlink{structQuESTEnv_aa648bb336cf8598467cb62db00b9cee8}{rank}, hostName);
 75 \}
 \end{DoxyCode}
-\mbox{\Hypertarget{qubits__env__mpi_8c_aa5d0566a6ef6519ff7b5241915fbf170}\label{qubits__env__mpi_8c_aa5d0566a6ef6519ff7b5241915fbf170}} 
-\index{qubits\+\_\+env\+\_\+mpi.\+c@{qubits\+\_\+env\+\_\+mpi.\+c}!report\+Q\+U\+E\+S\+T\+Env@{report\+Q\+U\+E\+S\+T\+Env}}
-\index{report\+Q\+U\+E\+S\+T\+Env@{report\+Q\+U\+E\+S\+T\+Env}!qubits\+\_\+env\+\_\+mpi.\+c@{qubits\+\_\+env\+\_\+mpi.\+c}}
-\paragraph{\texorpdfstring{report\+Q\+U\+E\+S\+T\+Env()}{reportQUESTEnv()}}
-{\footnotesize\ttfamily void report\+Q\+U\+E\+S\+T\+Env (\begin{DoxyParamCaption}\item[{\hyperlink{structQUESTEnv}{Q\+U\+E\+S\+T\+Env}}]{env }\end{DoxyParamCaption})}
+\index{qubits\+\_\+env\+\_\+mpi.\+c@{qubits\+\_\+env\+\_\+mpi.\+c}!report\+Qu\+E\+S\+T\+Env@{report\+Qu\+E\+S\+T\+Env}}
+\index{report\+Qu\+E\+S\+T\+Env@{report\+Qu\+E\+S\+T\+Env}!qubits\+\_\+env\+\_\+mpi.\+c@{qubits\+\_\+env\+\_\+mpi.\+c}}
+\paragraph[{\texorpdfstring{report\+Qu\+E\+S\+T\+Env(\+Qu\+E\+S\+T\+Env env)}{reportQuESTEnv(QuESTEnv env)}}]{\setlength{\rightskip}{0pt plus 5cm}void report\+Qu\+E\+S\+T\+Env (
+\begin{DoxyParamCaption}
+\item[{{\bf Qu\+E\+S\+T\+Env}}]{env}
+\end{DoxyParamCaption}
+)}\hypertarget{qubits__env__mpi_8c_af8a14ae79c3fb2c0b5f6255cc37bebf9}{}\label{qubits__env__mpi_8c_af8a14ae79c3fb2c0b5f6255cc37bebf9}
 
 
-
-Report information about the Q\+U\+E\+ST environment. 
+Report information about the Qu\+E\+ST environment. 
 
 
 \begin{DoxyParams}[1]{Parameters}
@@ -1167,31 +1225,39 @@ Definition at line 56 of file qubits\+\_\+env\+\_\+mpi.\+c.
 
 
 
-References Q\+U\+E\+S\+T\+Env\+::num\+Ranks, Q\+U\+E\+S\+T\+Env\+::rank, and R\+E\+AL.
+References Qu\+E\+S\+T\+Env\+::num\+Ranks, Qu\+E\+S\+T\+Env\+::rank, and R\+E\+AL.
+
+
+
+Referenced by main().
 
 
 \begin{DoxyCode}
 56                                  \{
-57         \textcolor{keywordflow}{if} (env.\hyperlink{structQUESTEnv_a1bdb6d425a2ce6a468f93929c0b26d73}{rank}==0)\{
+57         \textcolor{keywordflow}{if} (env.\hyperlink{structQuESTEnv_aa648bb336cf8598467cb62db00b9cee8}{rank}==0)\{
 58                 printf(\textcolor{stringliteral}{"EXECUTION ENVIRONMENT:\(\backslash\)n"}); 
 59                 printf(\textcolor{stringliteral}{"Running distributed (MPI) version\(\backslash\)n"});
-60                 printf(\textcolor{stringliteral}{"Number of ranks is %d\(\backslash\)n"}, env.\hyperlink{structQUESTEnv_ab9d9ce82e2d5f1b39aa9efc3accb3742}{numRanks});
+60                 printf(\textcolor{stringliteral}{"Number of ranks is %d\(\backslash\)n"}, env.\hyperlink{structQuESTEnv_af22aacd7c9905accae28484785c193b4}{numRanks});
 61 \textcolor{preprocessor}{# ifdef \_OPENMP}
 62                 printf(\textcolor{stringliteral}{"OpenMP enabled\(\backslash\)n"});
 63                 printf(\textcolor{stringliteral}{"Number of threads available is %d\(\backslash\)n"}, omp\_get\_max\_threads());
 64 \textcolor{preprocessor}{# else}
 65                 printf(\textcolor{stringliteral}{"OpenMP disabled\(\backslash\)n"});
 66 \textcolor{preprocessor}{# endif }
-67                 printf(\textcolor{stringliteral}{"Precision: size of REAL is %d bytes\(\backslash\)n"}, \textcolor{keyword}{sizeof}(\hyperlink{precision_8h_a4b654506f18b8bfd61ad2a29a7e38c25}{REAL}));
+67                 printf(\textcolor{stringliteral}{"Precision: size of REAL is %ld bytes\(\backslash\)n"}, \textcolor{keyword}{sizeof}(\hyperlink{precision_8h_a4b654506f18b8bfd61ad2a29a7e38c25}{REAL}));
 68         \}
 69 \}
 \end{DoxyCode}
-\mbox{\Hypertarget{qubits__env__mpi_8c_a4ba468aa69f812efd1f964e10a45ca2f}\label{qubits__env__mpi_8c_a4ba468aa69f812efd1f964e10a45ca2f}} 
 \index{qubits\+\_\+env\+\_\+mpi.\+c@{qubits\+\_\+env\+\_\+mpi.\+c}!rotate\+Qubit@{rotate\+Qubit}}
 \index{rotate\+Qubit@{rotate\+Qubit}!qubits\+\_\+env\+\_\+mpi.\+c@{qubits\+\_\+env\+\_\+mpi.\+c}}
-\paragraph{\texorpdfstring{rotate\+Qubit()}{rotateQubit()}}
-{\footnotesize\ttfamily void rotate\+Qubit (\begin{DoxyParamCaption}\item[{\hyperlink{structMultiQubit}{Multi\+Qubit}}]{multi\+Qubit,  }\item[{const int}]{rot\+Qubit,  }\item[{\hyperlink{structComplex}{Complex}}]{alpha,  }\item[{\hyperlink{structComplex}{Complex}}]{beta }\end{DoxyParamCaption})}
-
+\paragraph[{\texorpdfstring{rotate\+Qubit(\+Multi\+Qubit multi\+Qubit, const int rot\+Qubit, Complex alpha, Complex beta)}{rotateQubit(MultiQubit multiQubit, const int rotQubit, Complex alpha, Complex beta)}}]{\setlength{\rightskip}{0pt plus 5cm}void rotate\+Qubit (
+\begin{DoxyParamCaption}
+\item[{{\bf Multi\+Qubit}}]{multi\+Qubit, }
+\item[{const int}]{rot\+Qubit, }
+\item[{{\bf Complex}}]{alpha, }
+\item[{{\bf Complex}}]{beta}
+\end{DoxyParamCaption}
+)}\hypertarget{qubits__env__mpi_8c_a4ba468aa69f812efd1f964e10a45ca2f}{}\label{qubits__env__mpi_8c_a4ba468aa69f812efd1f964e10a45ca2f}
 
 
 Rotate a single qubit in the state vector of probability amplitudes, given the angle rotation arguments. 
@@ -1218,88 +1284,66 @@ Qubits are zero-\/based and the the first qubit is the rightmost
 \end{DoxyParams}
 
 
-Definition at line 207 of file qubits\+\_\+env\+\_\+mpi.\+c.
+Definition at line 239 of file qubits\+\_\+env\+\_\+mpi.\+c.
 
 
 
-References Multi\+Qubit\+::chunk\+Id, chunk\+Is\+Upper(), D\+E\+B\+UG, get\+Chunk\+Pair\+Id(), get\+Rot\+Angle(), half\+Matrix\+Block\+Fits\+In\+Chunk(), Complex\+Array\+::imag, M\+P\+I\+\_\+\+Q\+U\+E\+S\+T\+\_\+\+R\+E\+AL, Multi\+Qubit\+::num\+Amps, Multi\+Qubit\+::pair\+State\+Vec, Complex\+Array\+::real, rotate\+Qubit\+Distributed(), rotate\+Qubit\+Local(), and Multi\+Qubit\+::state\+Vec.
+References Multi\+Qubit\+::chunk\+Id, chunk\+Is\+Upper(), exchange\+State\+Vectors(), get\+Chunk\+Pair\+Id(), get\+Rot\+Angle(), half\+Matrix\+Block\+Fits\+In\+Chunk(), Multi\+Qubit\+::num\+Amps, Multi\+Qubit\+::pair\+State\+Vec, rotate\+Qubit\+Distributed(), rotate\+Qubit\+Local(), and Multi\+Qubit\+::state\+Vec.
+
+
+
+Referenced by main(), test\+\_\+control\+Not(), test\+\_\+control\+Phase\+Gate(), test\+\_\+hadamard(), test\+\_\+s\+Gate(), test\+\_\+sigma\+X(), test\+\_\+sigma\+Y(), test\+\_\+sigma\+Z(), and test\+\_\+t\+Gate().
 
 
 \begin{DoxyCode}
-208 \{
-209         \textcolor{comment}{// flag to require memory exchange. 1: an entire block fits on one rank, 0: at most half a block
+240 \{
+241         \textcolor{comment}{// flag to require memory exchange. 1: an entire block fits on one rank, 0: at most half a block
        fits on one rank}
-210         \textcolor{keywordtype}{int} useLocalDataOnly = \hyperlink{qubits__env__mpi_8c_a6d968d42f466bd03cea5edba456e10f7}{halfMatrixBlockFitsInChunk}(multiQubit.
+242         \textcolor{keywordtype}{int} useLocalDataOnly = \hyperlink{qubits__env__mpi_8c_a6d968d42f466bd03cea5edba456e10f7}{halfMatrixBlockFitsInChunk}(multiQubit.
       \hyperlink{structMultiQubit_ae16f47d8b725c914fb7f66b6498d79db}{numAmps}, rotQubit);
-211         \hyperlink{structComplex}{Complex} rot1, rot2;
-212 
-213         \textcolor{comment}{// rank's chunk is in upper half of block }
-214         \textcolor{keywordtype}{int} rankIsUpper;
-215         \textcolor{keywordtype}{int} pairRank; \textcolor{comment}{// rank of corresponding chunk}
-216 
-217         \textcolor{comment}{// MPI send/receive vars}
-218         \textcolor{keywordtype}{int} TAG=100;
-219         MPI\_Status status;
-220 
-221         \textcolor{keywordflow}{if} (useLocalDataOnly)\{
-222                 \textcolor{comment}{// all values required to update state vector lie in this rank}
-223                 \hyperlink{qubits_8c_acb059cbcb8c7910a5fc43d21da4f5dea}{rotateQubitLocal}(multiQubit, rotQubit, alpha, beta);
-224         \} \textcolor{keywordflow}{else} \{
-225                 \textcolor{comment}{// need to get corresponding chunk of state vector from other rank}
-226                 rankIsUpper = \hyperlink{qubits__env__mpi_8c_a814c41ee59e206c362f2eaf1def88be6}{chunkIsUpper}(multiQubit.\hyperlink{structMultiQubit_ab10c88249fa3825d6227ceec01d37e37}{chunkId}, multiQubit.
+243         \hyperlink{structComplex}{Complex} rot1, rot2;
+244 
+245         \textcolor{comment}{// rank's chunk is in upper half of block }
+246         \textcolor{keywordtype}{int} rankIsUpper;
+247         \textcolor{keywordtype}{int} pairRank; \textcolor{comment}{// rank of corresponding chunk}
+248 
+249         \textcolor{keywordflow}{if} (useLocalDataOnly)\{
+250                 \textcolor{comment}{// all values required to update state vector lie in this rank}
+251                 \hyperlink{qubits_8c_acb059cbcb8c7910a5fc43d21da4f5dea}{rotateQubitLocal}(multiQubit, rotQubit, alpha, beta);
+252         \} \textcolor{keywordflow}{else} \{
+253                 \textcolor{comment}{// need to get corresponding chunk of state vector from other rank}
+254                 rankIsUpper = \hyperlink{qubits__env__mpi_8c_a814c41ee59e206c362f2eaf1def88be6}{chunkIsUpper}(multiQubit.\hyperlink{structMultiQubit_ab10c88249fa3825d6227ceec01d37e37}{chunkId}, multiQubit.
       \hyperlink{structMultiQubit_ae16f47d8b725c914fb7f66b6498d79db}{numAmps}, rotQubit);
-227                 \hyperlink{qubits__env__mpi_8c_adb4b0373425b282abed27742d0ce0872}{getRotAngle}(rankIsUpper, &rot1, &rot2, alpha, beta);
-228                 pairRank = \hyperlink{qubits__env__mpi_8c_af5bdeedf4a445b539d329c3000859f5a}{getChunkPairId}(rankIsUpper, multiQubit.
+255                 \hyperlink{qubits__env__mpi_8c_adb4b0373425b282abed27742d0ce0872}{getRotAngle}(rankIsUpper, &rot1, &rot2, alpha, beta);
+256                 pairRank = \hyperlink{qubits__env__mpi_8c_af5bdeedf4a445b539d329c3000859f5a}{getChunkPairId}(rankIsUpper, multiQubit.
       \hyperlink{structMultiQubit_ab10c88249fa3825d6227ceec01d37e37}{chunkId}, multiQubit.\hyperlink{structMultiQubit_ae16f47d8b725c914fb7f66b6498d79db}{numAmps}, rotQubit);
-229                 \textcolor{comment}{//printf("%d rank has pair rank: %d\(\backslash\)n", multiQubit.rank, pairRank);}
-230                 \textcolor{comment}{// get corresponding values from my pair}
-231 
-232                 \textcolor{comment}{// Required by MPI using int rather than long long int for count}
-233                 \textcolor{keywordtype}{long} \textcolor{keywordtype}{long} \textcolor{keywordtype}{int} maxMessageCount = (1LL<<30);
-234                 \textcolor{keywordflow}{if} (multiQubit.\hyperlink{structMultiQubit_ae16f47d8b725c914fb7f66b6498d79db}{numAmps}<maxMessageCount) maxMessageCount = multiQubit.
-      \hyperlink{structMultiQubit_ae16f47d8b725c914fb7f66b6498d79db}{numAmps};
-235                 \textcolor{keywordtype}{int} numMessages = multiQubit.\hyperlink{structMultiQubit_ae16f47d8b725c914fb7f66b6498d79db}{numAmps}/maxMessageCount;
-236                 \textcolor{keywordtype}{int} i;
-237                 \textcolor{keywordtype}{long} \textcolor{keywordtype}{long} \textcolor{keywordtype}{int} offset;
-238                 \textcolor{keywordflow}{if} (\hyperlink{qubits__env__mpi_8c_ad72dbcf6d0153db1b8d8a58001feed83}{DEBUG}) printf(\textcolor{stringliteral}{"numMessages %d maxMessageCount %lld\(\backslash\)n"}, numMessages, 
-      maxMessageCount);
-239                 \textcolor{keywordflow}{for} (i=0; i<numMessages; i++)\{
-240                         offset = i*maxMessageCount;
-241                         MPI\_Sendrecv(&multiQubit.\hyperlink{structMultiQubit_a45483190d6b01ef6b2f98f2bec9ab94f}{stateVec}.\hyperlink{structComplexArray_a4195cac6c784ea1b6271f1c7dba1548a}{real}[offset], maxMessageCount, 
-      \hyperlink{precision_8h_a691d8c6aa16631610107d8d1b762df9d}{MPI\_QUEST\_REAL}, pairRank, TAG,
-242                                          &multiQubit.\hyperlink{structMultiQubit_a76f7db4eab52d2b30f58f973ada809c5}{pairStateVec}.
-      \hyperlink{structComplexArray_a4195cac6c784ea1b6271f1c7dba1548a}{real}[offset], maxMessageCount, \hyperlink{precision_8h_a691d8c6aa16631610107d8d1b762df9d}{MPI\_QUEST\_REAL},
-243                                          pairRank, TAG, MPI\_COMM\_WORLD, &status);
-244                         \textcolor{comment}{//printf("rank: %d err: %d\(\backslash\)n", multiQubit.rank, err);}
-245                         MPI\_Sendrecv(&multiQubit.\hyperlink{structMultiQubit_a45483190d6b01ef6b2f98f2bec9ab94f}{stateVec}.\hyperlink{structComplexArray_a79dde47c7ae530c79cebfdf57b225968}{imag}[offset], maxMessageCount, 
-      \hyperlink{precision_8h_a691d8c6aa16631610107d8d1b762df9d}{MPI\_QUEST\_REAL}, pairRank, TAG,
-246                                         &multiQubit.\hyperlink{structMultiQubit_a76f7db4eab52d2b30f58f973ada809c5}{pairStateVec}.
-      \hyperlink{structComplexArray_a79dde47c7ae530c79cebfdf57b225968}{imag}[offset], maxMessageCount, \hyperlink{precision_8h_a691d8c6aa16631610107d8d1b762df9d}{MPI\_QUEST\_REAL},
-247                                         pairRank, TAG, MPI\_COMM\_WORLD, &status);
-248                 \}
-249                 \textcolor{comment}{// this rank's values are either in the upper of lower half of the block. send values to
-       rotateQubitDistributed}
-250                 \textcolor{comment}{// in the correct order}
-251                 \textcolor{keywordflow}{if} (rankIsUpper)\{
-252                         \hyperlink{qubits_8c_a6ff67d25363f39fd57a4e76621a4bfd5}{rotateQubitDistributed}(multiQubit,rotQubit,rot1,rot2,
-253                                 multiQubit.\hyperlink{structMultiQubit_a45483190d6b01ef6b2f98f2bec9ab94f}{stateVec}, \textcolor{comment}{//upper}
-254                                 multiQubit.\hyperlink{structMultiQubit_a76f7db4eab52d2b30f58f973ada809c5}{pairStateVec}, \textcolor{comment}{//lower}
-255                                 multiQubit.\hyperlink{structMultiQubit_a45483190d6b01ef6b2f98f2bec9ab94f}{stateVec}); \textcolor{comment}{//output}
-256                 \} \textcolor{keywordflow}{else} \{
-257                         \hyperlink{qubits_8c_a6ff67d25363f39fd57a4e76621a4bfd5}{rotateQubitDistributed}(multiQubit,rotQubit,rot1,rot2,
-258                                 multiQubit.\hyperlink{structMultiQubit_a76f7db4eab52d2b30f58f973ada809c5}{pairStateVec}, \textcolor{comment}{//upper}
-259                                 multiQubit.\hyperlink{structMultiQubit_a45483190d6b01ef6b2f98f2bec9ab94f}{stateVec}, \textcolor{comment}{//lower}
-260                                 multiQubit.\hyperlink{structMultiQubit_a45483190d6b01ef6b2f98f2bec9ab94f}{stateVec}); \textcolor{comment}{//output}
-261                 \}
-262         \}
-263 \}
+257                 \textcolor{comment}{// get corresponding values from my pair}
+258                 \hyperlink{qubits__env__mpi_8c_a7682c9a3fd592d34ec15ba8fa172f104}{exchangeStateVectors}(multiQubit, pairRank);
+259 
+260                 \textcolor{comment}{// this rank's values are either in the upper of lower half of the block. }
+261                 \textcolor{comment}{// send values to rotateQubitDistributed in the correct order}
+262                 \textcolor{keywordflow}{if} (rankIsUpper)\{
+263                         \hyperlink{qubits_8c_a6ff67d25363f39fd57a4e76621a4bfd5}{rotateQubitDistributed}(multiQubit,rotQubit,rot1,rot2,
+264                                 multiQubit.\hyperlink{structMultiQubit_a45483190d6b01ef6b2f98f2bec9ab94f}{stateVec}, \textcolor{comment}{//upper}
+265                                 multiQubit.\hyperlink{structMultiQubit_a76f7db4eab52d2b30f58f973ada809c5}{pairStateVec}, \textcolor{comment}{//lower}
+266                                 multiQubit.\hyperlink{structMultiQubit_a45483190d6b01ef6b2f98f2bec9ab94f}{stateVec}); \textcolor{comment}{//output}
+267                 \} \textcolor{keywordflow}{else} \{
+268                         \hyperlink{qubits_8c_a6ff67d25363f39fd57a4e76621a4bfd5}{rotateQubitDistributed}(multiQubit,rotQubit,rot1,rot2,
+269                                 multiQubit.\hyperlink{structMultiQubit_a76f7db4eab52d2b30f58f973ada809c5}{pairStateVec}, \textcolor{comment}{//upper}
+270                                 multiQubit.\hyperlink{structMultiQubit_a45483190d6b01ef6b2f98f2bec9ab94f}{stateVec}, \textcolor{comment}{//lower}
+271                                 multiQubit.\hyperlink{structMultiQubit_a45483190d6b01ef6b2f98f2bec9ab94f}{stateVec}); \textcolor{comment}{//output}
+272                 \}
+273         \}
+274 \}
 \end{DoxyCode}
-\mbox{\Hypertarget{qubits__env__mpi_8c_acda82bebb0a62f419eec9c1e0575daad}\label{qubits__env__mpi_8c_acda82bebb0a62f419eec9c1e0575daad}} 
 \index{qubits\+\_\+env\+\_\+mpi.\+c@{qubits\+\_\+env\+\_\+mpi.\+c}!sigmaX@{sigmaX}}
 \index{sigmaX@{sigmaX}!qubits\+\_\+env\+\_\+mpi.\+c@{qubits\+\_\+env\+\_\+mpi.\+c}}
-\paragraph{\texorpdfstring{sigma\+X()}{sigmaX()}}
-{\footnotesize\ttfamily void sigmaX (\begin{DoxyParamCaption}\item[{\hyperlink{structMultiQubit}{Multi\+Qubit}}]{multi\+Qubit,  }\item[{const int}]{rot\+Qubit }\end{DoxyParamCaption})}
-
+\paragraph[{\texorpdfstring{sigma\+X(\+Multi\+Qubit multi\+Qubit, const int rot\+Qubit)}{sigmaX(MultiQubit multiQubit, const int rotQubit)}}]{\setlength{\rightskip}{0pt plus 5cm}void sigmaX (
+\begin{DoxyParamCaption}
+\item[{{\bf Multi\+Qubit}}]{multi\+Qubit, }
+\item[{const int}]{rot\+Qubit}
+\end{DoxyParamCaption}
+)}\hypertarget{qubits__env__mpi_8c_acda82bebb0a62f419eec9c1e0575daad}{}\label{qubits__env__mpi_8c_acda82bebb0a62f419eec9c1e0575daad}
 
 
 Rotate a single qubit by \{\{0,1\},\{1,0\}\} -- swap $\vert$0$>$ and $\vert$1$>$. 
@@ -1313,78 +1357,57 @@ Rotate a single qubit by \{\{0,1\},\{1,0\}\} -- swap $\vert$0$>$ and $\vert$1$>$
 \end{DoxyParams}
 
 
-Definition at line 323 of file qubits\+\_\+env\+\_\+mpi.\+c.
+Definition at line 314 of file qubits\+\_\+env\+\_\+mpi.\+c.
 
 
 
-References Multi\+Qubit\+::chunk\+Id, chunk\+Is\+Upper(), D\+E\+B\+UG, get\+Chunk\+Pair\+Id(), half\+Matrix\+Block\+Fits\+In\+Chunk(), Complex\+Array\+::imag, M\+P\+I\+\_\+\+Q\+U\+E\+S\+T\+\_\+\+R\+E\+AL, Multi\+Qubit\+::num\+Amps, Multi\+Qubit\+::pair\+State\+Vec, Complex\+Array\+::real, sigma\+X\+Distributed(), sigma\+X\+Local(), and Multi\+Qubit\+::state\+Vec.
+References Multi\+Qubit\+::chunk\+Id, chunk\+Is\+Upper(), exchange\+State\+Vectors(), get\+Chunk\+Pair\+Id(), half\+Matrix\+Block\+Fits\+In\+Chunk(), Multi\+Qubit\+::num\+Amps, Multi\+Qubit\+::pair\+State\+Vec, sigma\+X\+Distributed(), sigma\+X\+Local(), and Multi\+Qubit\+::state\+Vec.
+
+
+
+Referenced by main(), and test\+\_\+sigma\+X().
 
 
 \begin{DoxyCode}
-324 \{
-325         \textcolor{comment}{// flag to require memory exchange. 1: an entire block fits on one rank, 0: at most half a block
+315 \{
+316         \textcolor{comment}{// flag to require memory exchange. 1: an entire block fits on one rank, 0: at most half a block
        fits on one rank}
-326         \textcolor{keywordtype}{int} useLocalDataOnly = \hyperlink{qubits__env__mpi_8c_a6d968d42f466bd03cea5edba456e10f7}{halfMatrixBlockFitsInChunk}(multiQubit.
+317         \textcolor{keywordtype}{int} useLocalDataOnly = \hyperlink{qubits__env__mpi_8c_a6d968d42f466bd03cea5edba456e10f7}{halfMatrixBlockFitsInChunk}(multiQubit.
       \hyperlink{structMultiQubit_ae16f47d8b725c914fb7f66b6498d79db}{numAmps}, rotQubit);
-327 
-328         \textcolor{comment}{// rank's chunk is in upper half of block }
-329         \textcolor{keywordtype}{int} rankIsUpper;
-330         \textcolor{keywordtype}{int} pairRank; \textcolor{comment}{// rank of corresponding chunk}
-331 
-332         \textcolor{comment}{// MPI send/receive vars}
-333         \textcolor{keywordtype}{int} TAG=100;
-334         MPI\_Status status;
-335 
-336         \textcolor{keywordflow}{if} (useLocalDataOnly)\{
-337                 \textcolor{comment}{// all values required to update state vector lie in this rank}
-338                 \hyperlink{qubits_8c_aa9e640bb2d0458c937c6a87dfeca0f23}{sigmaXLocal}(multiQubit, rotQubit);
-339         \} \textcolor{keywordflow}{else} \{
-340                 \textcolor{comment}{// need to get corresponding chunk of state vector from other rank}
-341                 rankIsUpper = \hyperlink{qubits__env__mpi_8c_a814c41ee59e206c362f2eaf1def88be6}{chunkIsUpper}(multiQubit.\hyperlink{structMultiQubit_ab10c88249fa3825d6227ceec01d37e37}{chunkId}, multiQubit.
+318 
+319         \textcolor{comment}{// rank's chunk is in upper half of block }
+320         \textcolor{keywordtype}{int} rankIsUpper;
+321         \textcolor{keywordtype}{int} pairRank; \textcolor{comment}{// rank of corresponding chunk}
+322 
+323         \textcolor{keywordflow}{if} (useLocalDataOnly)\{
+324                 \textcolor{comment}{// all values required to update state vector lie in this rank}
+325                 \hyperlink{qubits_8c_aa9e640bb2d0458c937c6a87dfeca0f23}{sigmaXLocal}(multiQubit, rotQubit);
+326         \} \textcolor{keywordflow}{else} \{
+327                 \textcolor{comment}{// need to get corresponding chunk of state vector from other rank}
+328                 rankIsUpper = \hyperlink{qubits__env__mpi_8c_a814c41ee59e206c362f2eaf1def88be6}{chunkIsUpper}(multiQubit.\hyperlink{structMultiQubit_ab10c88249fa3825d6227ceec01d37e37}{chunkId}, multiQubit.
       \hyperlink{structMultiQubit_ae16f47d8b725c914fb7f66b6498d79db}{numAmps}, rotQubit);
-342                 pairRank = \hyperlink{qubits__env__mpi_8c_af5bdeedf4a445b539d329c3000859f5a}{getChunkPairId}(rankIsUpper, multiQubit.
+329                 pairRank = \hyperlink{qubits__env__mpi_8c_af5bdeedf4a445b539d329c3000859f5a}{getChunkPairId}(rankIsUpper, multiQubit.
       \hyperlink{structMultiQubit_ab10c88249fa3825d6227ceec01d37e37}{chunkId}, multiQubit.\hyperlink{structMultiQubit_ae16f47d8b725c914fb7f66b6498d79db}{numAmps}, rotQubit);
-343                 \textcolor{comment}{//printf("%d rank has pair rank: %d\(\backslash\)n", multiQubit.rank, pairRank);}
-344                 \textcolor{comment}{// get corresponding values from my pair}
-345 
-346                 \textcolor{comment}{// Required by MPI using int rather than long long int for count}
-347                 \textcolor{keywordtype}{long} \textcolor{keywordtype}{long} \textcolor{keywordtype}{int} maxMessageCount = (1LL<<30);
-348                 \textcolor{keywordflow}{if} (multiQubit.\hyperlink{structMultiQubit_ae16f47d8b725c914fb7f66b6498d79db}{numAmps}<maxMessageCount) maxMessageCount = multiQubit.
-      \hyperlink{structMultiQubit_ae16f47d8b725c914fb7f66b6498d79db}{numAmps};
-349                 \textcolor{keywordtype}{int} numMessages = multiQubit.\hyperlink{structMultiQubit_ae16f47d8b725c914fb7f66b6498d79db}{numAmps}/maxMessageCount;
-350                 \textcolor{keywordtype}{int} i;
-351                 \textcolor{keywordtype}{long} \textcolor{keywordtype}{long} \textcolor{keywordtype}{int} offset;
-352                 \textcolor{keywordflow}{if} (\hyperlink{qubits__env__mpi_8c_ad72dbcf6d0153db1b8d8a58001feed83}{DEBUG}) printf(\textcolor{stringliteral}{"numMessages %d maxMessageCount %lld\(\backslash\)n"}, numMessages, 
-      maxMessageCount);
-353                 \textcolor{keywordflow}{for} (i=0; i<numMessages; i++)\{
-354                         offset = i*maxMessageCount;
-355                         MPI\_Sendrecv(&multiQubit.\hyperlink{structMultiQubit_a45483190d6b01ef6b2f98f2bec9ab94f}{stateVec}.\hyperlink{structComplexArray_a4195cac6c784ea1b6271f1c7dba1548a}{real}[offset], maxMessageCount, 
-      \hyperlink{precision_8h_a691d8c6aa16631610107d8d1b762df9d}{MPI\_QUEST\_REAL}, pairRank, TAG,
-356                                          &multiQubit.\hyperlink{structMultiQubit_a76f7db4eab52d2b30f58f973ada809c5}{pairStateVec}.
-      \hyperlink{structComplexArray_a4195cac6c784ea1b6271f1c7dba1548a}{real}[offset], maxMessageCount, \hyperlink{precision_8h_a691d8c6aa16631610107d8d1b762df9d}{MPI\_QUEST\_REAL},
-357                                          pairRank, TAG, MPI\_COMM\_WORLD, &status);
-358                         \textcolor{comment}{//printf("rank: %d err: %d\(\backslash\)n", multiQubit.rank, err);}
-359                         MPI\_Sendrecv(&multiQubit.\hyperlink{structMultiQubit_a45483190d6b01ef6b2f98f2bec9ab94f}{stateVec}.\hyperlink{structComplexArray_a79dde47c7ae530c79cebfdf57b225968}{imag}[offset], maxMessageCount, 
-      \hyperlink{precision_8h_a691d8c6aa16631610107d8d1b762df9d}{MPI\_QUEST\_REAL}, pairRank, TAG,
-360                                         &multiQubit.\hyperlink{structMultiQubit_a76f7db4eab52d2b30f58f973ada809c5}{pairStateVec}.
-      \hyperlink{structComplexArray_a79dde47c7ae530c79cebfdf57b225968}{imag}[offset], maxMessageCount, \hyperlink{precision_8h_a691d8c6aa16631610107d8d1b762df9d}{MPI\_QUEST\_REAL},
-361                                         pairRank, TAG, MPI\_COMM\_WORLD, &status);
-362                 \}
-363                 \textcolor{comment}{// this rank's values are either in the upper of lower half of the block. sigmaX just
+330                 \textcolor{comment}{//printf("%d rank has pair rank: %d\(\backslash\)n", multiQubit.rank, pairRank);}
+331                 \textcolor{comment}{// get corresponding values from my pair}
+332                 \hyperlink{qubits__env__mpi_8c_a7682c9a3fd592d34ec15ba8fa172f104}{exchangeStateVectors}(multiQubit, pairRank);
+333                 \textcolor{comment}{// this rank's values are either in the upper of lower half of the block. sigmaX just
        replaces}
-364                 \textcolor{comment}{// this rank's values with pair values}
-365                 \hyperlink{qubits_8c_a5958808b2f2f05937921ba7dabe5a171}{sigmaXDistributed}(multiQubit, rotQubit,
-366                         multiQubit.\hyperlink{structMultiQubit_a76f7db4eab52d2b30f58f973ada809c5}{pairStateVec}, \textcolor{comment}{// in}
-367                         multiQubit.\hyperlink{structMultiQubit_a45483190d6b01ef6b2f98f2bec9ab94f}{stateVec}); \textcolor{comment}{// out}
-368         \}
-369 \}
+334                 \textcolor{comment}{// this rank's values with pair values}
+335                 \hyperlink{qubits_8c_a5958808b2f2f05937921ba7dabe5a171}{sigmaXDistributed}(multiQubit, rotQubit,
+336                         multiQubit.\hyperlink{structMultiQubit_a76f7db4eab52d2b30f58f973ada809c5}{pairStateVec}, \textcolor{comment}{// in}
+337                         multiQubit.\hyperlink{structMultiQubit_a45483190d6b01ef6b2f98f2bec9ab94f}{stateVec}); \textcolor{comment}{// out}
+338         \}
+339 \}
 \end{DoxyCode}
-\mbox{\Hypertarget{qubits__env__mpi_8c_a7b022c75cef77be046bd5d61e38a581e}\label{qubits__env__mpi_8c_a7b022c75cef77be046bd5d61e38a581e}} 
 \index{qubits\+\_\+env\+\_\+mpi.\+c@{qubits\+\_\+env\+\_\+mpi.\+c}!sigmaY@{sigmaY}}
 \index{sigmaY@{sigmaY}!qubits\+\_\+env\+\_\+mpi.\+c@{qubits\+\_\+env\+\_\+mpi.\+c}}
-\paragraph{\texorpdfstring{sigma\+Y()}{sigmaY()}}
-{\footnotesize\ttfamily void sigmaY (\begin{DoxyParamCaption}\item[{\hyperlink{structMultiQubit}{Multi\+Qubit}}]{multi\+Qubit,  }\item[{const int}]{rot\+Qubit }\end{DoxyParamCaption})}
-
+\paragraph[{\texorpdfstring{sigma\+Y(\+Multi\+Qubit multi\+Qubit, const int rot\+Qubit)}{sigmaY(MultiQubit multiQubit, const int rotQubit)}}]{\setlength{\rightskip}{0pt plus 5cm}void sigmaY (
+\begin{DoxyParamCaption}
+\item[{{\bf Multi\+Qubit}}]{multi\+Qubit, }
+\item[{const int}]{rot\+Qubit}
+\end{DoxyParamCaption}
+)}\hypertarget{qubits__env__mpi_8c_a7b022c75cef77be046bd5d61e38a581e}{}\label{qubits__env__mpi_8c_a7b022c75cef77be046bd5d61e38a581e}
 
 
 Rotate a single qubit by \{\{0,-\/i\},\{i,0\}\} -- swap $\vert$0$>$ and $\vert$1$>$ and apply a phase of -\/i or i. 
@@ -1398,79 +1421,57 @@ Rotate a single qubit by \{\{0,-\/i\},\{i,0\}\} -- swap $\vert$0$>$ and $\vert$1
 \end{DoxyParams}
 fix -- put duplicate code (sigmaX, sigmaY) in seperate function 
 
-Definition at line 425 of file qubits\+\_\+env\+\_\+mpi.\+c.
+Definition at line 374 of file qubits\+\_\+env\+\_\+mpi.\+c.
 
 
 
-References Multi\+Qubit\+::chunk\+Id, chunk\+Is\+Upper(), D\+E\+B\+UG, get\+Chunk\+Pair\+Id(), half\+Matrix\+Block\+Fits\+In\+Chunk(), Complex\+Array\+::imag, M\+P\+I\+\_\+\+Q\+U\+E\+S\+T\+\_\+\+R\+E\+AL, Multi\+Qubit\+::num\+Amps, Multi\+Qubit\+::pair\+State\+Vec, Complex\+Array\+::real, sigma\+Y\+Distributed(), sigma\+Y\+Local(), and Multi\+Qubit\+::state\+Vec.
+References Multi\+Qubit\+::chunk\+Id, chunk\+Is\+Upper(), exchange\+State\+Vectors(), get\+Chunk\+Pair\+Id(), half\+Matrix\+Block\+Fits\+In\+Chunk(), Multi\+Qubit\+::num\+Amps, Multi\+Qubit\+::pair\+State\+Vec, sigma\+Y\+Distributed(), sigma\+Y\+Local(), and Multi\+Qubit\+::state\+Vec.
+
+
+
+Referenced by main(), and test\+\_\+sigma\+Y().
 
 
 \begin{DoxyCode}
-426 \{
-427         \textcolor{comment}{// flag to require memory exchange. 1: an entire block fits on one rank, 0: at most half a block
+375 \{
+376         \textcolor{comment}{// flag to require memory exchange. 1: an entire block fits on one rank, 0: at most half a block
        fits on one rank}
-428         \textcolor{keywordtype}{int} useLocalDataOnly = \hyperlink{qubits__env__mpi_8c_a6d968d42f466bd03cea5edba456e10f7}{halfMatrixBlockFitsInChunk}(multiQubit.
+377         \textcolor{keywordtype}{int} useLocalDataOnly = \hyperlink{qubits__env__mpi_8c_a6d968d42f466bd03cea5edba456e10f7}{halfMatrixBlockFitsInChunk}(multiQubit.
       \hyperlink{structMultiQubit_ae16f47d8b725c914fb7f66b6498d79db}{numAmps}, rotQubit);
-429 
-430         \textcolor{comment}{// rank's chunk is in upper half of block }
-431         \textcolor{keywordtype}{int} rankIsUpper;
-432         \textcolor{keywordtype}{int} pairRank; \textcolor{comment}{// rank of corresponding chunk}
-433 
-434         \textcolor{comment}{// MPI send/receive vars}
-435         \textcolor{keywordtype}{int} TAG=100;
-436         MPI\_Status status;
-437 
-438         \textcolor{keywordflow}{if} (useLocalDataOnly)\{
-439                 \textcolor{comment}{// all values required to update state vector lie in this rank}
-440                 \hyperlink{qubits_8c_afcbb1dcbe070ad0ed1a72a23251b6a83}{sigmaYLocal}(multiQubit, rotQubit);
-441         \} \textcolor{keywordflow}{else} \{
-443                 \textcolor{comment}{// need to get corresponding chunk of state vector from other rank}
-444                 rankIsUpper = \hyperlink{qubits__env__mpi_8c_a814c41ee59e206c362f2eaf1def88be6}{chunkIsUpper}(multiQubit.\hyperlink{structMultiQubit_ab10c88249fa3825d6227ceec01d37e37}{chunkId}, multiQubit.
+378 
+379         \textcolor{comment}{// rank's chunk is in upper half of block }
+380         \textcolor{keywordtype}{int} rankIsUpper;
+381         \textcolor{keywordtype}{int} pairRank; \textcolor{comment}{// rank of corresponding chunk}
+382 
+383         \textcolor{keywordflow}{if} (useLocalDataOnly)\{
+384                 \textcolor{comment}{// all values required to update state vector lie in this rank}
+385                 \hyperlink{qubits_8c_afcbb1dcbe070ad0ed1a72a23251b6a83}{sigmaYLocal}(multiQubit, rotQubit);
+386         \} \textcolor{keywordflow}{else} \{
+388                 \textcolor{comment}{// need to get corresponding chunk of state vector from other rank}
+389                 rankIsUpper = \hyperlink{qubits__env__mpi_8c_a814c41ee59e206c362f2eaf1def88be6}{chunkIsUpper}(multiQubit.\hyperlink{structMultiQubit_ab10c88249fa3825d6227ceec01d37e37}{chunkId}, multiQubit.
       \hyperlink{structMultiQubit_ae16f47d8b725c914fb7f66b6498d79db}{numAmps}, rotQubit);
-445                 pairRank = \hyperlink{qubits__env__mpi_8c_af5bdeedf4a445b539d329c3000859f5a}{getChunkPairId}(rankIsUpper, multiQubit.
+390                 pairRank = \hyperlink{qubits__env__mpi_8c_af5bdeedf4a445b539d329c3000859f5a}{getChunkPairId}(rankIsUpper, multiQubit.
       \hyperlink{structMultiQubit_ab10c88249fa3825d6227ceec01d37e37}{chunkId}, multiQubit.\hyperlink{structMultiQubit_ae16f47d8b725c914fb7f66b6498d79db}{numAmps}, rotQubit);
-446                 \textcolor{comment}{//printf("%d rank has pair rank: %d\(\backslash\)n", multiQubit.rank, pairRank);}
-447                 \textcolor{comment}{// get corresponding values from my pair}
-448 
-449                 \textcolor{comment}{// Required by MPI using int rather than long long int for count}
-450                 \textcolor{keywordtype}{long} \textcolor{keywordtype}{long} \textcolor{keywordtype}{int} maxMessageCount = (1LL<<30);
-451                 \textcolor{keywordflow}{if} (multiQubit.\hyperlink{structMultiQubit_ae16f47d8b725c914fb7f66b6498d79db}{numAmps}<maxMessageCount) maxMessageCount = multiQubit.
-      \hyperlink{structMultiQubit_ae16f47d8b725c914fb7f66b6498d79db}{numAmps};
-452                 \textcolor{keywordtype}{int} numMessages = multiQubit.\hyperlink{structMultiQubit_ae16f47d8b725c914fb7f66b6498d79db}{numAmps}/maxMessageCount;
-453                 \textcolor{keywordtype}{int} i;
-454                 \textcolor{keywordtype}{long} \textcolor{keywordtype}{long} \textcolor{keywordtype}{int} offset;
-455                 \textcolor{keywordflow}{if} (\hyperlink{qubits__env__mpi_8c_ad72dbcf6d0153db1b8d8a58001feed83}{DEBUG}) printf(\textcolor{stringliteral}{"numMessages %d maxMessageCount %lld\(\backslash\)n"}, numMessages, 
-      maxMessageCount);
-456                 \textcolor{keywordflow}{for} (i=0; i<numMessages; i++)\{
-457                         offset = i*maxMessageCount;
-458                         MPI\_Sendrecv(&multiQubit.\hyperlink{structMultiQubit_a45483190d6b01ef6b2f98f2bec9ab94f}{stateVec}.\hyperlink{structComplexArray_a4195cac6c784ea1b6271f1c7dba1548a}{real}[offset], maxMessageCount, 
-      \hyperlink{precision_8h_a691d8c6aa16631610107d8d1b762df9d}{MPI\_QUEST\_REAL}, pairRank, TAG,
-459                                          &multiQubit.\hyperlink{structMultiQubit_a76f7db4eab52d2b30f58f973ada809c5}{pairStateVec}.
-      \hyperlink{structComplexArray_a4195cac6c784ea1b6271f1c7dba1548a}{real}[offset], maxMessageCount, \hyperlink{precision_8h_a691d8c6aa16631610107d8d1b762df9d}{MPI\_QUEST\_REAL},
-460                                          pairRank, TAG, MPI\_COMM\_WORLD, &status);
-461                         \textcolor{comment}{//printf("rank: %d err: %d\(\backslash\)n", multiQubit.rank, err);}
-462                         MPI\_Sendrecv(&multiQubit.\hyperlink{structMultiQubit_a45483190d6b01ef6b2f98f2bec9ab94f}{stateVec}.\hyperlink{structComplexArray_a79dde47c7ae530c79cebfdf57b225968}{imag}[offset], maxMessageCount, 
-      \hyperlink{precision_8h_a691d8c6aa16631610107d8d1b762df9d}{MPI\_QUEST\_REAL}, pairRank, TAG,
-463                                         &multiQubit.\hyperlink{structMultiQubit_a76f7db4eab52d2b30f58f973ada809c5}{pairStateVec}.
-      \hyperlink{structComplexArray_a79dde47c7ae530c79cebfdf57b225968}{imag}[offset], maxMessageCount, \hyperlink{precision_8h_a691d8c6aa16631610107d8d1b762df9d}{MPI\_QUEST\_REAL},
-464                                         pairRank, TAG, MPI\_COMM\_WORLD, &status);
-465                 \}
-466                 \textcolor{comment}{// this rank's values are either in the upper of lower half of the block. sigmaX just
+391                 \textcolor{comment}{//printf("%d rank has pair rank: %d\(\backslash\)n", multiQubit.rank, pairRank);}
+392                 \textcolor{comment}{// get corresponding values from my pair}
+393                 \hyperlink{qubits__env__mpi_8c_a7682c9a3fd592d34ec15ba8fa172f104}{exchangeStateVectors}(multiQubit, pairRank);
+394                 \textcolor{comment}{// this rank's values are either in the upper of lower half of the block. sigmaX just
        replaces}
-467                 \textcolor{comment}{// this rank's values with pair values}
-468                 \hyperlink{qubits_8c_a0471f6b547ce8270ef85170b7f4f0214}{sigmaYDistributed}(multiQubit,rotQubit,
-469                         multiQubit.\hyperlink{structMultiQubit_a76f7db4eab52d2b30f58f973ada809c5}{pairStateVec}, \textcolor{comment}{// in}
-470                         multiQubit.\hyperlink{structMultiQubit_a45483190d6b01ef6b2f98f2bec9ab94f}{stateVec}, \textcolor{comment}{// out}
-471                         rankIsUpper);
-472         \}
-473 \}
+395                 \textcolor{comment}{// this rank's values with pair values}
+396                 \hyperlink{qubits_8c_a0471f6b547ce8270ef85170b7f4f0214}{sigmaYDistributed}(multiQubit,rotQubit,
+397                         multiQubit.\hyperlink{structMultiQubit_a76f7db4eab52d2b30f58f973ada809c5}{pairStateVec}, \textcolor{comment}{// in}
+398                         multiQubit.\hyperlink{structMultiQubit_a45483190d6b01ef6b2f98f2bec9ab94f}{stateVec}, \textcolor{comment}{// out}
+399                         rankIsUpper);
+400         \}
+401 \}
 \end{DoxyCode}
-\mbox{\Hypertarget{qubits__env__mpi_8c_a83dffc500bf5b4e41dd63ba1ea9422ae}\label{qubits__env__mpi_8c_a83dffc500bf5b4e41dd63ba1ea9422ae}} 
-\index{qubits\+\_\+env\+\_\+mpi.\+c@{qubits\+\_\+env\+\_\+mpi.\+c}!sync\+Q\+U\+E\+S\+T\+Env@{sync\+Q\+U\+E\+S\+T\+Env}}
-\index{sync\+Q\+U\+E\+S\+T\+Env@{sync\+Q\+U\+E\+S\+T\+Env}!qubits\+\_\+env\+\_\+mpi.\+c@{qubits\+\_\+env\+\_\+mpi.\+c}}
-\paragraph{\texorpdfstring{sync\+Q\+U\+E\+S\+T\+Env()}{syncQUESTEnv()}}
-{\footnotesize\ttfamily void sync\+Q\+U\+E\+S\+T\+Env (\begin{DoxyParamCaption}\item[{\hyperlink{structQUESTEnv}{Q\+U\+E\+S\+T\+Env}}]{env }\end{DoxyParamCaption})}
-
+\index{qubits\+\_\+env\+\_\+mpi.\+c@{qubits\+\_\+env\+\_\+mpi.\+c}!sync\+Qu\+E\+S\+T\+Env@{sync\+Qu\+E\+S\+T\+Env}}
+\index{sync\+Qu\+E\+S\+T\+Env@{sync\+Qu\+E\+S\+T\+Env}!qubits\+\_\+env\+\_\+mpi.\+c@{qubits\+\_\+env\+\_\+mpi.\+c}}
+\paragraph[{\texorpdfstring{sync\+Qu\+E\+S\+T\+Env(\+Qu\+E\+S\+T\+Env env)}{syncQuESTEnv(QuESTEnv env)}}]{\setlength{\rightskip}{0pt plus 5cm}void sync\+Qu\+E\+S\+T\+Env (
+\begin{DoxyParamCaption}
+\item[{{\bf Qu\+E\+S\+T\+Env}}]{env}
+\end{DoxyParamCaption}
+)}\hypertarget{qubits__env__mpi_8c_a8d31fe2d1ad4d01e2a1f5f6b8bc15b77}{}\label{qubits__env__mpi_8c_a8d31fe2d1ad4d01e2a1f5f6b8bc15b77}
 
 
 Guarantees that all code up to the given point has been executed on all nodes. 
