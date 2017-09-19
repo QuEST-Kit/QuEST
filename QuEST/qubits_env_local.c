@@ -19,6 +19,10 @@ void syncQuESTEnv(QuESTEnv env){
 	// MPI Barrier goes here in MPI version. 
 } 
 
+int syncQuESTSuccess(QuESTEnv env, int successCode){
+	return successCode;
+}
+
 void closeQuESTEnv(QuESTEnv env){
 	// MPI finalize goes here in MPI version. Call this function anyway for consistency
 }

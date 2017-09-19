@@ -46,6 +46,12 @@ void syncQuESTEnv(QuESTEnv env){
 	MPI_Barrier(MPI_COMM_WORLD);
 }
 
+int syncQuESTSuccess(QuESTEnv env, int successCode){
+	int totalSuccess;
+	MPI_Allreduce(&successCode, &totalSuccess, 1, MPI_INT, MPI_LAND, MPI_COMM_WORLD);
+	return totalSuccess;
+}
+
 void closeQuESTEnv(QuESTEnv env){
 	int finalized;
 	MPI_Finalized(&finalized);

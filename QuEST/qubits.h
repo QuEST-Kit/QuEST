@@ -109,6 +109,14 @@ void closeQuESTEnv(QuESTEnv env);
  */
 void syncQuESTEnv(QuESTEnv env);
 
+/** Performs a logical AND on all successCodes held by all processes. If any one process has a zero successCode
+ * all processes will return a zero success code.
+ * @param[in] env object representing the execution environment. A single instance is used for each program
+ * @param[in] successCode 1 if process task succeeded, 0 if process task failed
+ * @returns 1 if all processes succeeded, 0 if any one process failed
+ */ 
+int syncQuESTSuccess(QuESTEnv env, int successCode);
+
 /** Report information about the QuEST environment
  * @param[in] env object representing the execution environment. A single instance is used for each program
  */
