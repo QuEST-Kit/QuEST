@@ -5,7 +5,6 @@
 # include <unistd.h>
 # include <string.h>
 # include <omp.h>
-# include <mpi.h>
 
 # include "QuEST/qubits.h"
 # include "QuEST/precision.h"
@@ -664,13 +663,12 @@ int main (int narg, char** varg) {
 		"filterOut111"
 	};
 	int passed=0;
-	int totalPassed=0;
 
 	if (env.rank==0) printf("\nRunning unit tests\n");
 	for (int i=0; i<NUM_TESTS; i++){
 		passed=(*tests[i])(testNames[i]);	
-		MPI_Allreduce(&passed, &totalPassed, 1, MPI_INT, MPI_LAND, MPI_COMM_WORLD);
-		if (!totalPassed){
+		passed=syncQuESTSuccess(env, passed);
+		if (!passed){
 			if (env.rank==0) printf("!!! FAILED in test %d -- %s\n", i, testNames[i]);
 			closeQuESTEnv(env);
 			return 1;
