@@ -13,23 +13,33 @@ COMPILER = GNU
 EXE = demo
 MY_FILE_NAME = basicTemplate
 USE_MPI=0
+USE_OPENMP=0
 QUEST_DIR = QuEST
 
 #
 # --- compiler
 #
 
+ifeq ($(COMPILER), GNU)
+	CFLAGS_OMP=-fopenmp
+else 
+	CFLAGS_OMP=-openmp
+endif
+
+ifneq ($(USE_OPENMP), 1)
+	# disable OPENMP
+	CFLAGS_OMP=
+endif
+
 ifneq ($(USE_MPI), 1)
 	ifeq ($(COMPILER), GNU)
 		# GCC compilers
 		CC         = gcc
 		CFLAGS     = -O2 -std=c99 -mavx -Wall
-		CFLAGS_OMP = -fopenmp
 	else ifeq ($(COMPILER), INTEL)
 		# Intel compilers
 		CC         = icc
 		CFLAGS     = -O2 -fprotect-parens -std=c99 -Wall -xAVX -axCORE-AVX2 -restrict
-		CFLAGS_OMP = -openmp
 	else 
 		$(error " *** error: invalid compiler")
 	endif
@@ -38,12 +48,10 @@ else
 		# GCC compilers
 		CC         = mpicc
 		CFLAGS     = -O2 -std=c99 -mavx -Wall
-		CFLAGS_OMP = -fopenmp
 	else ifeq ($(COMPILER), INTEL)
 		# Mvapich2
 		CC         = mpicc
 		CFLAGS     = -O2 -fprotect-parens -std=c99
-		CFLAGS_OMP = -qopenmp
 	else 
 		$(error " *** error: invalid compiler")
 	endif
