@@ -93,4 +93,6 @@ is valid for both single and multi node environments.
 
 Full documentation is available at https://aniabrown.github.io/QuEST/
 
+The public API is [here](https://aniabrown.github.io/QuEST/qubits_8h.html)
+
 
