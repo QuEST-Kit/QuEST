@@ -91,7 +91,6 @@ is valid for both single and multi node environments.
 
 ## API Documentation
 
-Copy Doxygen_doc/html to a device with an internet browser. Open Doxygen_doc/html/index.html. Otherwise, a pdf copy
-is available at Doxygen_doc/latex/refman.pdf
+Full documentation is available at https://aniabrown.github.io/QuEST/
 
 
