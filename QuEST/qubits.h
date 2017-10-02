@@ -128,6 +128,9 @@ error message otherwise. For debugging purposes.
 */
 void reportNodeList(QuESTEnv env);
 
+void getEnvironmentString(QuESTEnv env, MultiQubit multiQubit, char str[200]);
+
+
 /** Get the real component of the probability amplitude at an index in the state vector.
 For debugging purposes.
 @param[in] multiQubit object representing a set of qubits

@@ -146,6 +146,14 @@ void reportMultiQubitParams(MultiQubit multiQubit){
         }
 }
 
+void getEnvironmentString(QuESTEnv env, MultiQubit multiQubit, char str[200]){
+        int numThreads=1;
+# ifdef _OPENMP
+        numThreads=omp_get_max_threads(); 
+# endif
+        sprintf(str, "%dqubits_CPU_%dranksx%dthreads", multiQubit.numQubits, env.numRanks, numThreads);
+}
+
 /**
  * Initialise the state vector of probability amplitudes for a set of qubits to the zero state: |000...00>
  * @param[in,out] multiQubit object representing the set of qubits to be initialised
