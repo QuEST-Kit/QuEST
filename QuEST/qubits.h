@@ -70,14 +70,6 @@ void initStateZero(MultiQubit *multiQubit);
 
 void initStatePlus(MultiQubit *multiQubit);
 
-void initStateOfSingleQubit(MultiQubit *multiQubit, int qubitId, int outcome);
-
-void initStateDebug(MultiQubit *multiQubit);
-
-void initializeStateFromSingleFile(MultiQubit *multiQubit, char filename[200], QuESTEnv env);
-
-int compareStates(MultiQubit mq1, MultiQubit mq2, REAL precision);
-
 void quadCPhaseGate (MultiQubit multiQubit, const int idQubit1, const int idQubit2, 
 	const int idQubit3, const int idQubit4);
 
@@ -121,12 +113,6 @@ int syncQuESTSuccess(QuESTEnv env, int successCode);
  * @param[in] env object representing the execution environment. A single instance is used for each program
  */
 void reportQuESTEnv(QuESTEnv env);
-
-/** Report a list of CPU hostnames and the rank that is running on each if running with MPI enabled and an 
-error message otherwise. For debugging purposes. 
-@param[in] env object representing the execution environment. A single instance is used for each program
-*/
-void reportNodeList(QuESTEnv env);
 
 void getEnvironmentString(QuESTEnv env, MultiQubit multiQubit, char str[200]);
 
