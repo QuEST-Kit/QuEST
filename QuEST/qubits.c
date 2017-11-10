@@ -368,6 +368,22 @@ int compareStates(MultiQubit mq1, MultiQubit mq2, REAL precision){
 	return 1;
 }
 
+/** Rotate a single qubit a certain angle about an axis
+@param[in,out] multiQubit object representing the set of qubits
+@param[in] rotQubit qubit to rotate
+@param[in] angle angle by which to rotate in radians
+@param[in] unitAxis unit vector pointing along the axis about which to rotate
+*/
+void rotateQubitByAngle(MultiQubit multiQubit, const int rotQubit, REAL angle, Vector unitAxis){
+	Complex alpha, beta;
+	alpha.real = cos(angle/2.0);
+	alpha.imag = -sin(angle/2.0)*unitAxis.z;	
+	beta.real = 0;
+	beta.imag = -sin(angle/2.0)*(unitAxis.x + unitAxis.y);
+	rotateQubit(multiQubit, rotQubit, alpha, beta);
+}
+
+
 /** Rotate a single qubit in the state vector of probability amplitudes, given the angle rotation arguments.
 alphaRe = cos(angle1) * cos(angle2) \n
 alphaIm = cos(angle1) * sin(angle2) \n            

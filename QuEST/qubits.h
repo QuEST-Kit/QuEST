@@ -163,6 +163,8 @@ the first qubit is the rightmost
  */
 void rotateQubit(MultiQubit multiQubit, const int rotQubit, Complex alpha, Complex beta);
 
+void rotateQubitByAngle(MultiQubit multiQubit, const int rotQubit, REAL angle, Vector unitAxis);
+
 /** Rotate a single qubit in the state vector of probability amplitudes, given the angle rotation arguments and a control qubit. Only perform 
 the rotation for elements where the control qubit is 1. 
 alphaRe = cos(angle1) * cos(angle2) \n
