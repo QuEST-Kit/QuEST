@@ -8,6 +8,7 @@
 # include <assert.h>
 # include "precision.h"
 # include "qubits.h"
+# include "qubits_internal.h"
 
 # include <omp.h>
 

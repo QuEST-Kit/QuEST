@@ -270,15 +270,6 @@ The function returns the probability of this outcome (if zero, it will exit with
 */
 REAL probOfFilterOut111(MultiQubit multiQubit, const int idQubit1, const int idQubit2, const int idQubit3);
 
-/**
-Rotate a single qubit by {{1,0},{0,p}} where p is a phase term determined by the type argument
-@param[in,out] multiQubit object representing the set of qubits
-@param[in] rotQubit qubit to rotate
-@param[in] type the type of phase gate to apply -- one of {SIGMA_Z, S_GATE, T_GATE}
-*/
-void phaseGate(MultiQubit multiQubit, const int rotQubit, enum phaseGateType type);
-
-
 
 
 
