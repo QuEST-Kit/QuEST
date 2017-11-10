@@ -147,15 +147,16 @@ REAL getProbEl(MultiQubit multiQubit, long long int index);
  */
 REAL calcTotalProbability(MultiQubit multiQubit);
 
-/** Rotate a single qubit in the state vector of probability amplitudes, given the angle rotation arguments.
-alphaRe = cos(angle1) * cos(angle2) \n
-alphaIm = cos(angle1) * sin(angle2) \n            
-betaRe  = sin(angle1) * cos(angle3) \n            
-betaIm  = sin(angle1) * sin(angle3) \n           
+/** Rotate a single qubit in the state vector of probability amplitudes. Given two complex
+numbers alpha and beta, applies the operation \n
+[alpha, -beta* \n
+ beta, alpha*] \n
 
 @remarks Qubits are zero-based and the                     
 the first qubit is the rightmost                  
-                                                                      
+
+alpha, beta must obey |alpha|^2 + |beta|^2 = 1
+                                                                     
 @param[in,out] multiQubit object representing the set of qubits
 @param[in] rotQubit qubit to rotate
 @param[in] alpha rotation angle
@@ -165,16 +166,17 @@ void rotateQubit(MultiQubit multiQubit, const int rotQubit, Complex alpha, Compl
 
 void rotateQubitByAngle(MultiQubit multiQubit, const int rotQubit, REAL angle, Vector unitAxis);
 
-/** Rotate a single qubit in the state vector of probability amplitudes, given the angle rotation arguments and a control qubit. Only perform 
-the rotation for elements where the control qubit is 1. 
-alphaRe = cos(angle1) * cos(angle2) \n
-alphaIm = cos(angle1) * sin(angle2) \n            
-betaRe  = sin(angle1) * cos(angle3) \n            
-betaIm  = sin(angle1) * sin(angle3) \n           
-
+/** Rotate a single qubit in the state vector of probability amplitudes.
+Given two complex numbers alpha and beta and a control qubit, applies the operation: \n
+[alpha, -beta* \n
+ beta, alpha*] \n
+Only when the control qubit is one.
+                                                                    
 @remarks Qubits are zero-based and the                     
 the first qubit is the rightmost                  
-                                                                      
+
+alpha, beta must obey |alpha|^2 + |beta|^2 = 1
+
 @param[in,out] multiQubit object representing the set of qubits
 @param[in] rotQubit qubit to rotate
 @param[in] controlQubit perform rotation if this qubit is 1
