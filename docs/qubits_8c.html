@@ -43,17 +43,17 @@
 <tr><td colspan="2"><h2>Functions</h2></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">static int&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="qubits_8c.html#a100463f6ec212c76a5fad99579000505">extractBit</a> (const int locationOfBitFromRight, const long long int theEncodedNumber)</td></tr>
 <tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Get the value of the bit at a particular index in a number.  <a href="#a100463f6ec212c76a5fad99579000505"></a><br/></td></tr>
-<tr><td class="memItemLeft" align="right" valign="top">void&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="qubits_8c.html#a9c02591bc64c2918503afa231d90d83f">createMultiQubit</a> (<a class="el" href="structMultiQubit.html">MultiQubit</a> *multiQubit, int numQubits, <a class="el" href="structQuESTEnv.html">QuESTEnv</a> <a class="el" href="runTests_8c.html#a5fd8ba97fcae3408ae6221dfc3cc1f93">env</a>)</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">void&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="qubits_8c.html#a9c02591bc64c2918503afa231d90d83f">createMultiQubit</a> (<a class="el" href="structMultiQubit.html">MultiQubit</a> *multiQubit, int numQubits, <a class="el" href="structQuESTEnv.html">QuESTEnv</a> env)</td></tr>
 <tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Create a <a class="el" href="structMultiQubit.html" title="Represents a system of qubits.">MultiQubit</a> object representing a set of qubits.  <a href="#a9c02591bc64c2918503afa231d90d83f"></a><br/></td></tr>
-<tr><td class="memItemLeft" align="right" valign="top">void&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="qubits_8c.html#ae5d6acc322314d7a3d8a2eccf00d3b19">destroyMultiQubit</a> (<a class="el" href="structMultiQubit.html">MultiQubit</a> multiQubit, <a class="el" href="structQuESTEnv.html">QuESTEnv</a> <a class="el" href="runTests_8c.html#a5fd8ba97fcae3408ae6221dfc3cc1f93">env</a>)</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">void&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="qubits_8c.html#ae5d6acc322314d7a3d8a2eccf00d3b19">destroyMultiQubit</a> (<a class="el" href="structMultiQubit.html">MultiQubit</a> multiQubit, <a class="el" href="structQuESTEnv.html">QuESTEnv</a> env)</td></tr>
 <tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Deallocate a <a class="el" href="structMultiQubit.html" title="Represents a system of qubits.">MultiQubit</a> object representing a set of qubits Free memory allocated to state vector of probability amplitudes, including temporary vector for values copied from another chunk if running the distributed version.  <a href="#ae5d6acc322314d7a3d8a2eccf00d3b19"></a><br/></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">void&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="qubits_8c.html#a96f4de9ce7fefc7680a44d601fc3d894">reportState</a> (<a class="el" href="structMultiQubit.html">MultiQubit</a> multiQubit)</td></tr>
 <tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Print the current state vector of probability amplitudes for a set of qubits to file.  <a href="#a96f4de9ce7fefc7680a44d601fc3d894"></a><br/></td></tr>
-<tr><td class="memItemLeft" align="right" valign="top">void&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="qubits_8c.html#a842d6884e063a5865a2232cba56b65ac">reportStateToScreen</a> (<a class="el" href="structMultiQubit.html">MultiQubit</a> multiQubit, <a class="el" href="structQuESTEnv.html">QuESTEnv</a> <a class="el" href="runTests_8c.html#a5fd8ba97fcae3408ae6221dfc3cc1f93">env</a>, int reportRank)</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">void&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="qubits_8c.html#a842d6884e063a5865a2232cba56b65ac">reportStateToScreen</a> (<a class="el" href="structMultiQubit.html">MultiQubit</a> multiQubit, <a class="el" href="structQuESTEnv.html">QuESTEnv</a> env, int reportRank)</td></tr>
 <tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Print the current state vector of probability amplitudes for a set of qubits to standard out.  <a href="#a842d6884e063a5865a2232cba56b65ac"></a><br/></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">void&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="qubits_8c.html#aa5e77e0e64f3a4a3d3f5cc7382bffcd9">reportMultiQubitParams</a> (<a class="el" href="structMultiQubit.html">MultiQubit</a> multiQubit)</td></tr>
 <tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Report metainformation about a set of qubits: number of qubits, number of probability amplitudes.  <a href="#aa5e77e0e64f3a4a3d3f5cc7382bffcd9"></a><br/></td></tr>
-<tr><td class="memItemLeft" align="right" valign="top">void&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="qubits_8c.html#a8f10aabf9f607f19093aee54630caa21">getEnvironmentString</a> (<a class="el" href="structQuESTEnv.html">QuESTEnv</a> <a class="el" href="runTests_8c.html#a5fd8ba97fcae3408ae6221dfc3cc1f93">env</a>, <a class="el" href="structMultiQubit.html">MultiQubit</a> multiQubit, char str[200])</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">void&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="qubits_8c.html#a8f10aabf9f607f19093aee54630caa21">getEnvironmentString</a> (<a class="el" href="structQuESTEnv.html">QuESTEnv</a> env, <a class="el" href="structMultiQubit.html">MultiQubit</a> multiQubit, char str[200])</td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">void&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="qubits_8c.html#acb5b2eff794339090004d29f02a70d9a">initStateZero</a> (<a class="el" href="structMultiQubit.html">MultiQubit</a> *multiQubit)</td></tr>
 <tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Initialise the state vector of probability amplitudes for a set of qubits to the zero state: |000...00&gt;.  <a href="#acb5b2eff794339090004d29f02a70d9a"></a><br/></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">void&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="qubits_8c.html#a43bcb279fc9717fbd06a19cdef48b9d8">initStatePlus</a> (<a class="el" href="structMultiQubit.html">MultiQubit</a> *multiQubit)</td></tr>
@@ -62,7 +62,7 @@
 <tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Initialise the state vector of probability amplitudes such that one qubit is set to 'outcome' and all other qubits are in an equal superposition of zero and one.  <a href="#a7169fd0442cbc3418f3fac4d13363ca2"></a><br/></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">void&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="qubits_8c.html#a03b3577a891731d505bc4b879fcca9d3">initStateDebug</a> (<a class="el" href="structMultiQubit.html">MultiQubit</a> *multiQubit)</td></tr>
 <tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Initialise the state vector of probability amplitudes to an (unphysical) state with each component of each probability amplitude a unique floating point value.  <a href="#a03b3577a891731d505bc4b879fcca9d3"></a><br/></td></tr>
-<tr><td class="memItemLeft" align="right" valign="top">void&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="qubits_8c.html#a433876ee9f3bcc54af346300f571fc3c">initializeStateFromSingleFile</a> (<a class="el" href="structMultiQubit.html">MultiQubit</a> *multiQubit, char filename[200], <a class="el" href="structQuESTEnv.html">QuESTEnv</a> <a class="el" href="runTests_8c.html#a5fd8ba97fcae3408ae6221dfc3cc1f93">env</a>)</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">void&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="qubits_8c.html#a433876ee9f3bcc54af346300f571fc3c">initializeStateFromSingleFile</a> (<a class="el" href="structMultiQubit.html">MultiQubit</a> *multiQubit, char filename[200], <a class="el" href="structQuESTEnv.html">QuESTEnv</a> env)</td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">int&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="qubits_8c.html#a793584932ae384c82e7e42db7d35d18d">compareStates</a> (<a class="el" href="structMultiQubit.html">MultiQubit</a> mq1, <a class="el" href="structMultiQubit.html">MultiQubit</a> mq2, REAL precision)</td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">void&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="qubits_8c.html#a70b6649dc52a36ff2d0ed91fb443c3c4">rotateQubitByAngle</a> (<a class="el" href="structMultiQubit.html">MultiQubit</a> multiQubit, const int rotQubit, REAL angle, Vector unitAxis)</td></tr>
 <tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Rotate a single qubit a certain angle about an axis.  <a href="#a70b6649dc52a36ff2d0ed91fb443c3c4"></a><br/></td></tr>
@@ -176,8 +176,6 @@
 <p>Definition at line <a class="el" href="qubits_8c_source.html#l00357">357</a> of file <a class="el" href="qubits_8c_source.html">qubits.c</a>.</p>
 
 <p>References <a class="el" href="qubits_8h_source.html#l00014">ComplexArray::imag</a>, <a class="el" href="qubits_8h_source.html#l00038">MultiQubit::numAmps</a>, <a class="el" href="qubits_8h_source.html#l00013">ComplexArray::real</a>, <a class="el" href="precision_8h_source.html#l00021">REAL</a>, and <a class="el" href="qubits_8h_source.html#l00031">MultiQubit::stateVec</a>.</p>
-
-<p>Referenced by <a class="el" href="runTests_8c_source.html#l00249">test_controlNot()</a>, <a class="el" href="runTests_8c_source.html#l00282">test_controlPhaseGate()</a>, <a class="el" href="runTests_8c_source.html#l00395">test_controlRotateQubit()</a>, <a class="el" href="runTests_8c_source.html#l00580">test_filterOut111()</a>, <a class="el" href="runTests_8c_source.html#l00165">test_hadamard()</a>, <a class="el" href="runTests_8c_source.html#l00055">test_initStatePlus()</a>, <a class="el" href="runTests_8c_source.html#l00032">test_initStateZero()</a>, <a class="el" href="runTests_8c_source.html#l00484">test_measureInState()</a>, <a class="el" href="runTests_8c_source.html#l00313">test_quadCPhaseGate()</a>, <a class="el" href="runTests_8c_source.html#l00339">test_rotateQubit()</a>, <a class="el" href="runTests_8c_source.html#l00193">test_sGate()</a>, <a class="el" href="runTests_8c_source.html#l00078">test_sigmaX()</a>, <a class="el" href="runTests_8c_source.html#l00107">test_sigmaY()</a>, <a class="el" href="runTests_8c_source.html#l00136">test_sigmaZ()</a>, and <a class="el" href="runTests_8c_source.html#l00221">test_tGate()</a>.</p>
 
 <p><div class="fragment"><pre class="fragment"><a name="l00357"></a>00357                                                                  {
 <a name="l00358"></a>00358         <a class="code" href="precision_8h.html#a4b654506f18b8bfd61ad2a29a7e38c25">REAL</a> diff;
@@ -456,8 +454,6 @@
 <p>Definition at line <a class="el" href="qubits_8c_source.html#l01461">1461</a> of file <a class="el" href="qubits_8c_source.html">qubits.c</a>.</p>
 
 <p>References <a class="el" href="qubits_8h_source.html#l00040">MultiQubit::chunkId</a>, <a class="el" href="qubits_8c_source.html#l01450">extractBit()</a>, <a class="el" href="qubits_8h_source.html#l00014">ComplexArray::imag</a>, <a class="el" href="qubits_8h_source.html#l00038">MultiQubit::numAmps</a>, <a class="el" href="qubits_8h_source.html#l00035">MultiQubit::numQubits</a>, <a class="el" href="qubits_8h_source.html#l00013">ComplexArray::real</a>, <a class="el" href="precision_8h_source.html#l00021">REAL</a>, and <a class="el" href="qubits_8h_source.html#l00031">MultiQubit::stateVec</a>.</p>
-
-<p>Referenced by <a class="el" href="runTests_8c_source.html#l00282">test_controlPhaseGate()</a>.</p>
 
 <p><div class="fragment"><pre class="fragment"><a name="l01462"></a>01462 {
 <a name="l01463"></a>01463         <span class="keywordtype">long</span> <span class="keywordtype">long</span> <span class="keywordtype">int</span> index;
@@ -832,8 +828,6 @@
 
 <p>References <a class="el" href="qubits_8h_source.html#l00040">MultiQubit::chunkId</a>, <a class="el" href="qubits_8h_source.html#l00014">ComplexArray::imag</a>, <a class="el" href="qubits_8h_source.html#l00038">MultiQubit::numAmps</a>, <a class="el" href="qubits_8h_source.html#l00042">MultiQubit::numChunks</a>, <a class="el" href="qubits_8h_source.html#l00035">MultiQubit::numQubits</a>, <a class="el" href="qubits_8h_source.html#l00051">QuESTEnv::numRanks</a>, <a class="el" href="qubits_8h_source.html#l00033">MultiQubit::pairStateVec</a>, <a class="el" href="qubits_8h_source.html#l00050">QuESTEnv::rank</a>, <a class="el" href="qubits_8h_source.html#l00013">ComplexArray::real</a>, and <a class="el" href="qubits_8h_source.html#l00031">MultiQubit::stateVec</a>.</p>
 
-<p>Referenced by <a class="el" href="runTests_8c_source.html#l00249">test_controlNot()</a>, <a class="el" href="runTests_8c_source.html#l00282">test_controlPhaseGate()</a>, <a class="el" href="runTests_8c_source.html#l00395">test_controlRotateQubit()</a>, <a class="el" href="runTests_8c_source.html#l00580">test_filterOut111()</a>, <a class="el" href="runTests_8c_source.html#l00439">test_findProbabilityOfOutcome()</a>, <a class="el" href="runTests_8c_source.html#l00165">test_hadamard()</a>, <a class="el" href="runTests_8c_source.html#l00055">test_initStatePlus()</a>, <a class="el" href="runTests_8c_source.html#l00032">test_initStateZero()</a>, <a class="el" href="runTests_8c_source.html#l00484">test_measureInState()</a>, <a class="el" href="runTests_8c_source.html#l00547">test_probOfFilterOut111()</a>, <a class="el" href="runTests_8c_source.html#l00313">test_quadCPhaseGate()</a>, <a class="el" href="runTests_8c_source.html#l00339">test_rotateQubit()</a>, <a class="el" href="runTests_8c_source.html#l00193">test_sGate()</a>, <a class="el" href="runTests_8c_source.html#l00078">test_sigmaX()</a>, <a class="el" href="runTests_8c_source.html#l00107">test_sigmaY()</a>, <a class="el" href="runTests_8c_source.html#l00136">test_sigmaZ()</a>, and <a class="el" href="runTests_8c_source.html#l00221">test_tGate()</a>.</p>
-
 <p><div class="fragment"><pre class="fragment"><a name="l00029"></a>00029 {
 <a name="l00030"></a>00030         <span class="keywordtype">long</span> <span class="keywordtype">long</span> <span class="keywordtype">int</span> numAmps = 1L &lt;&lt; numQubits;
 <a name="l00031"></a>00031         <span class="keywordtype">long</span> <span class="keywordtype">long</span> <span class="keywordtype">int</span> numAmpsPerRank = numAmps/env.<a class="code" href="structQuESTEnv.html#af22aacd7c9905accae28484785c193b4">numRanks</a>;
@@ -904,8 +898,6 @@
 <p>Definition at line <a class="el" href="qubits_8c_source.html#l00064">64</a> of file <a class="el" href="qubits_8c_source.html">qubits.c</a>.</p>
 
 <p>References <a class="el" href="qubits_8h_source.html#l00014">ComplexArray::imag</a>, <a class="el" href="qubits_8h_source.html#l00051">QuESTEnv::numRanks</a>, <a class="el" href="qubits_8h_source.html#l00033">MultiQubit::pairStateVec</a>, <a class="el" href="qubits_8h_source.html#l00013">ComplexArray::real</a>, and <a class="el" href="qubits_8h_source.html#l00031">MultiQubit::stateVec</a>.</p>
-
-<p>Referenced by <a class="el" href="runTests_8c_source.html#l00249">test_controlNot()</a>, <a class="el" href="runTests_8c_source.html#l00282">test_controlPhaseGate()</a>, <a class="el" href="runTests_8c_source.html#l00395">test_controlRotateQubit()</a>, <a class="el" href="runTests_8c_source.html#l00580">test_filterOut111()</a>, <a class="el" href="runTests_8c_source.html#l00439">test_findProbabilityOfOutcome()</a>, <a class="el" href="runTests_8c_source.html#l00165">test_hadamard()</a>, <a class="el" href="runTests_8c_source.html#l00055">test_initStatePlus()</a>, <a class="el" href="runTests_8c_source.html#l00032">test_initStateZero()</a>, <a class="el" href="runTests_8c_source.html#l00484">test_measureInState()</a>, <a class="el" href="runTests_8c_source.html#l00547">test_probOfFilterOut111()</a>, <a class="el" href="runTests_8c_source.html#l00313">test_quadCPhaseGate()</a>, <a class="el" href="runTests_8c_source.html#l00339">test_rotateQubit()</a>, <a class="el" href="runTests_8c_source.html#l00193">test_sGate()</a>, <a class="el" href="runTests_8c_source.html#l00078">test_sigmaX()</a>, <a class="el" href="runTests_8c_source.html#l00107">test_sigmaY()</a>, <a class="el" href="runTests_8c_source.html#l00136">test_sigmaZ()</a>, and <a class="el" href="runTests_8c_source.html#l00221">test_tGate()</a>.</p>
 
 <p><div class="fragment"><pre class="fragment"><a name="l00064"></a>00064                                                            {
 <a name="l00065"></a>00065         free(multiQubit.<a class="code" href="structMultiQubit.html#a45483190d6b01ef6b2f98f2bec9ab94f" title="Probablilty amplitudes for the multi qubit state.">stateVec</a>.<a class="code" href="structComplexArray.html#a4195cac6c784ea1b6271f1c7dba1548a">real</a>);
@@ -1632,8 +1624,6 @@
 
 <p>References <a class="el" href="qubits_8h_source.html#l00040">MultiQubit::chunkId</a>, <a class="el" href="qubits_8h_source.html#l00014">ComplexArray::imag</a>, <a class="el" href="qubits_8h_source.html#l00038">MultiQubit::numAmps</a>, <a class="el" href="qubits_8h_source.html#l00042">MultiQubit::numChunks</a>, <a class="el" href="qubits_8h_source.html#l00013">ComplexArray::real</a>, <a class="el" href="precision_8h_source.html#l00021">REAL</a>, <a class="el" href="qubits_8h_source.html#l00031">MultiQubit::stateVec</a>, and <a class="el" href="qubits__env__local_8c_source.html#l00018">syncQuESTEnv()</a>.</p>
 
-<p>Referenced by <a class="el" href="runTests_8c_source.html#l00249">test_controlNot()</a>, <a class="el" href="runTests_8c_source.html#l00282">test_controlPhaseGate()</a>, <a class="el" href="runTests_8c_source.html#l00395">test_controlRotateQubit()</a>, <a class="el" href="runTests_8c_source.html#l00580">test_filterOut111()</a>, <a class="el" href="runTests_8c_source.html#l00165">test_hadamard()</a>, <a class="el" href="runTests_8c_source.html#l00055">test_initStatePlus()</a>, <a class="el" href="runTests_8c_source.html#l00032">test_initStateZero()</a>, <a class="el" href="runTests_8c_source.html#l00547">test_probOfFilterOut111()</a>, <a class="el" href="runTests_8c_source.html#l00313">test_quadCPhaseGate()</a>, <a class="el" href="runTests_8c_source.html#l00193">test_sGate()</a>, <a class="el" href="runTests_8c_source.html#l00078">test_sigmaX()</a>, <a class="el" href="runTests_8c_source.html#l00107">test_sigmaY()</a>, <a class="el" href="runTests_8c_source.html#l00136">test_sigmaZ()</a>, and <a class="el" href="runTests_8c_source.html#l00221">test_tGate()</a>.</p>
-
 <p><div class="fragment"><pre class="fragment"><a name="l00322"></a>00322                                                                                             {
 <a name="l00323"></a>00323         <span class="keywordtype">long</span> <span class="keywordtype">long</span> <span class="keywordtype">int</span> chunkSize, stateVecSize;
 <a name="l00324"></a>00324         <span class="keywordtype">long</span> <span class="keywordtype">long</span> <span class="keywordtype">int</span> indexInChunk, totalIndex;
@@ -1699,8 +1689,6 @@
 <p>Definition at line <a class="el" href="qubits_8c_source.html#l00290">290</a> of file <a class="el" href="qubits_8c_source.html">qubits.c</a>.</p>
 
 <p>References <a class="el" href="qubits_8h_source.html#l00040">MultiQubit::chunkId</a>, <a class="el" href="qubits_8h_source.html#l00014">ComplexArray::imag</a>, <a class="el" href="qubits_8h_source.html#l00038">MultiQubit::numAmps</a>, <a class="el" href="qubits_8h_source.html#l00013">ComplexArray::real</a>, <a class="el" href="precision_8h_source.html#l00021">REAL</a>, and <a class="el" href="qubits_8h_source.html#l00031">MultiQubit::stateVec</a>.</p>
-
-<p>Referenced by <a class="el" href="runTests_8c_source.html#l00249">test_controlNot()</a>, <a class="el" href="runTests_8c_source.html#l00282">test_controlPhaseGate()</a>, <a class="el" href="runTests_8c_source.html#l00395">test_controlRotateQubit()</a>, <a class="el" href="runTests_8c_source.html#l00165">test_hadamard()</a>, <a class="el" href="runTests_8c_source.html#l00313">test_quadCPhaseGate()</a>, <a class="el" href="runTests_8c_source.html#l00339">test_rotateQubit()</a>, <a class="el" href="runTests_8c_source.html#l00193">test_sGate()</a>, <a class="el" href="runTests_8c_source.html#l00078">test_sigmaX()</a>, <a class="el" href="runTests_8c_source.html#l00107">test_sigmaY()</a>, <a class="el" href="runTests_8c_source.html#l00136">test_sigmaZ()</a>, and <a class="el" href="runTests_8c_source.html#l00221">test_tGate()</a>.</p>
 
 <p><div class="fragment"><pre class="fragment"><a name="l00291"></a>00291 {
 <a name="l00292"></a>00292         <span class="keywordtype">long</span> <span class="keywordtype">long</span> <span class="keywordtype">int</span> chunkSize;
@@ -1781,8 +1769,6 @@
 
 <p>References <a class="el" href="qubits_8h_source.html#l00040">MultiQubit::chunkId</a>, <a class="el" href="qubits_8c_source.html#l00015">DEBUG</a>, <a class="el" href="qubits_8c_source.html#l01450">extractBit()</a>, <a class="el" href="qubits_8h_source.html#l00014">ComplexArray::imag</a>, <a class="el" href="qubits_8h_source.html#l00038">MultiQubit::numAmps</a>, <a class="el" href="qubits_8h_source.html#l00042">MultiQubit::numChunks</a>, <a class="el" href="qubits_8h_source.html#l00013">ComplexArray::real</a>, <a class="el" href="precision_8h_source.html#l00021">REAL</a>, and <a class="el" href="qubits_8h_source.html#l00031">MultiQubit::stateVec</a>.</p>
 
-<p>Referenced by <a class="el" href="runTests_8c_source.html#l00439">test_findProbabilityOfOutcome()</a>, and <a class="el" href="runTests_8c_source.html#l00484">test_measureInState()</a>.</p>
-
 <p><div class="fragment"><pre class="fragment"><a name="l00244"></a>00244 {
 <a name="l00245"></a>00245         <span class="keywordtype">long</span> <span class="keywordtype">long</span> <span class="keywordtype">int</span> chunkSize, stateVecSize;
 <a name="l00246"></a>00246         <span class="keywordtype">long</span> <span class="keywordtype">long</span> <span class="keywordtype">int</span> index;
@@ -1855,8 +1841,6 @@
 
 <p>References <a class="el" href="qubits_8c_source.html#l00015">DEBUG</a>, <a class="el" href="qubits_8h_source.html#l00014">ComplexArray::imag</a>, <a class="el" href="qubits_8h_source.html#l00038">MultiQubit::numAmps</a>, <a class="el" href="qubits_8h_source.html#l00042">MultiQubit::numChunks</a>, <a class="el" href="qubits_8h_source.html#l00013">ComplexArray::real</a>, <a class="el" href="precision_8h_source.html#l00021">REAL</a>, and <a class="el" href="qubits_8h_source.html#l00031">MultiQubit::stateVec</a>.</p>
 
-<p>Referenced by <a class="el" href="runTests_8c_source.html#l00580">test_filterOut111()</a>, <a class="el" href="runTests_8c_source.html#l00439">test_findProbabilityOfOutcome()</a>, <a class="el" href="runTests_8c_source.html#l00055">test_initStatePlus()</a>, <a class="el" href="runTests_8c_source.html#l00484">test_measureInState()</a>, and <a class="el" href="runTests_8c_source.html#l00547">test_probOfFilterOut111()</a>.</p>
-
 <p><div class="fragment"><pre class="fragment"><a name="l00205"></a>00205 {
 <a name="l00206"></a>00206         <span class="keywordtype">long</span> <span class="keywordtype">long</span> <span class="keywordtype">int</span> chunkSize, stateVecSize;
 <a name="l00207"></a>00207         <span class="keywordtype">long</span> <span class="keywordtype">long</span> <span class="keywordtype">int</span> index;
@@ -1919,8 +1903,6 @@
 <p>Definition at line <a class="el" href="qubits_8c_source.html#l00162">162</a> of file <a class="el" href="qubits_8c_source.html">qubits.c</a>.</p>
 
 <p>References <a class="el" href="qubits_8h_source.html#l00040">MultiQubit::chunkId</a>, <a class="el" href="qubits_8c_source.html#l00015">DEBUG</a>, <a class="el" href="qubits_8h_source.html#l00014">ComplexArray::imag</a>, <a class="el" href="qubits_8h_source.html#l00038">MultiQubit::numAmps</a>, <a class="el" href="qubits_8h_source.html#l00013">ComplexArray::real</a>, <a class="el" href="precision_8h_source.html#l00021">REAL</a>, and <a class="el" href="qubits_8h_source.html#l00031">MultiQubit::stateVec</a>.</p>
-
-<p>Referenced by <a class="el" href="runTests_8c_source.html#l00580">test_filterOut111()</a>, <a class="el" href="runTests_8c_source.html#l00439">test_findProbabilityOfOutcome()</a>, <a class="el" href="runTests_8c_source.html#l00032">test_initStateZero()</a>, <a class="el" href="runTests_8c_source.html#l00484">test_measureInState()</a>, and <a class="el" href="runTests_8c_source.html#l00547">test_probOfFilterOut111()</a>.</p>
 
 <p><div class="fragment"><pre class="fragment"><a name="l00163"></a>00163 {
 <a name="l00164"></a>00164         <span class="keywordtype">long</span> <span class="keywordtype">long</span> <span class="keywordtype">int</span> stateVecSize;
@@ -2647,8 +2629,6 @@
 
 <p>References <a class="el" href="qubits_8h_source.html#l00040">MultiQubit::chunkId</a>, <a class="el" href="qubits_8c_source.html#l01450">extractBit()</a>, <a class="el" href="qubits_8h_source.html#l00014">ComplexArray::imag</a>, <a class="el" href="qubits_8h_source.html#l00038">MultiQubit::numAmps</a>, <a class="el" href="qubits_8h_source.html#l00035">MultiQubit::numQubits</a>, <a class="el" href="qubits_8h_source.html#l00013">ComplexArray::real</a>, <a class="el" href="precision_8h_source.html#l00021">REAL</a>, and <a class="el" href="qubits_8h_source.html#l00031">MultiQubit::stateVec</a>.</p>
 
-<p>Referenced by <a class="el" href="runTests_8c_source.html#l00313">test_quadCPhaseGate()</a>.</p>
-
 <p><div class="fragment"><pre class="fragment"><a name="l01552"></a>01552 {
 <a name="l01553"></a>01553         <span class="keywordtype">long</span> <span class="keywordtype">long</span> <span class="keywordtype">int</span> index;
 <a name="l01554"></a>01554         <span class="keywordtype">long</span> <span class="keywordtype">long</span> <span class="keywordtype">int</span> stateVecSize;
@@ -2829,8 +2809,6 @@ real, imag
 <p>Definition at line <a class="el" href="qubits_8c_source.html#l00110">110</a> of file <a class="el" href="qubits_8c_source.html">qubits.c</a>.</p>
 
 <p>References <a class="el" href="qubits_8h_source.html#l00040">MultiQubit::chunkId</a>, <a class="el" href="qubits_8h_source.html#l00014">ComplexArray::imag</a>, <a class="el" href="qubits_8h_source.html#l00038">MultiQubit::numAmps</a>, <a class="el" href="qubits_8h_source.html#l00042">MultiQubit::numChunks</a>, <a class="el" href="qubits_8h_source.html#l00035">MultiQubit::numQubits</a>, <a class="el" href="qubits_8h_source.html#l00013">ComplexArray::real</a>, <a class="el" href="precision_8h_source.html#l00023">REAL_STRING_FORMAT</a>, <a class="el" href="qubits_8h_source.html#l00031">MultiQubit::stateVec</a>, and <a class="el" href="qubits__env__local_8c_source.html#l00018">syncQuESTEnv()</a>.</p>
-
-<p>Referenced by <a class="el" href="runTests_8c_source.html#l00020">reportTest()</a>.</p>
 
 <p><div class="fragment"><pre class="fragment"><a name="l00110"></a>00110                                                                              {
 <a name="l00111"></a>00111         <span class="keywordtype">long</span> <span class="keywordtype">long</span> <span class="keywordtype">int</span> index;
@@ -3190,8 +3168,6 @@ real, imag
 <p>Definition at line <a class="el" href="qubits_8c_source.html#l01291">1291</a> of file <a class="el" href="qubits_8c_source.html">qubits.c</a>.</p>
 
 <p>References <a class="el" href="qubits__env__local_8c_source.html#l00108">phaseGate()</a>, and <a class="el" href="qubits_8h_source.html#l00055">S_GATE</a>.</p>
-
-<p>Referenced by <a class="el" href="runTests_8c_source.html#l00193">test_sGate()</a>.</p>
 
 <p><div class="fragment"><pre class="fragment"><a name="l01292"></a>01292 {
 <a name="l01293"></a>01293                 <a class="code" href="qubits__env__local_8c.html#ae275b94c1a483dda43bf4ec947635605" title="Rotate a single qubit by {{1,0},{0,p}} where p is a phase term determined by the...">phaseGate</a>(multiQubit, rotQubit, <a class="code" href="qubits_8h.html#a5739021c733cecc49647956b2f7338eaa06e60f80fa80cce271793d6d31bcc21f">S_GATE</a>);
@@ -3606,8 +3582,6 @@ real, imag
 
 <p>References <a class="el" href="qubits__env__local_8c_source.html#l00108">phaseGate()</a>, and <a class="el" href="qubits_8h_source.html#l00055">SIGMA_Z</a>.</p>
 
-<p>Referenced by <a class="el" href="runTests_8c_source.html#l00136">test_sigmaZ()</a>.</p>
-
 <p><div class="fragment"><pre class="fragment"><a name="l01287"></a>01287 {
 <a name="l01288"></a>01288                 <a class="code" href="qubits__env__local_8c.html#ae275b94c1a483dda43bf4ec947635605" title="Rotate a single qubit by {{1,0},{0,p}} where p is a phase term determined by the...">phaseGate</a>(multiQubit, rotQubit, <a class="code" href="qubits_8h.html#a5739021c733cecc49647956b2f7338eaa754922d1e1846a1961ff2bf163483dac">SIGMA_Z</a>);
 <a name="l01289"></a>01289 }
@@ -3644,8 +3618,6 @@ real, imag
 
 <p>References <a class="el" href="qubits__env__local_8c_source.html#l00108">phaseGate()</a>, and <a class="el" href="qubits_8h_source.html#l00055">T_GATE</a>.</p>
 
-<p>Referenced by <a class="el" href="runTests_8c_source.html#l00221">test_tGate()</a>.</p>
-
 <p><div class="fragment"><pre class="fragment"><a name="l01297"></a>01297 {
 <a name="l01298"></a>01298                 <a class="code" href="qubits__env__local_8c.html#ae275b94c1a483dda43bf4ec947635605" title="Rotate a single qubit by {{1,0},{0,p}} where p is a phase term determined by the...">phaseGate</a>(multiQubit, rotQubit, <a class="code" href="qubits_8h.html#a5739021c733cecc49647956b2f7338eaa614d07d597a8e320cc556bc0e652e4ab">T_GATE</a>);
 <a name="l01299"></a>01299 }
@@ -3654,7 +3626,7 @@ real, imag
 </div>
 </div>
 </div>
-<hr size="1"/><address style="text-align: right;"><small>Generated on 10 Nov 2017 for Distributed QuEST by&nbsp;
+<hr size="1"/><address style="text-align: right;"><small>Generated on 14 Nov 2017 for Distributed QuEST by&nbsp;
 <a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/></a> 1.6.1 </small></address>
 </body>

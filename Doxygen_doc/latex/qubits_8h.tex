@@ -28,13 +28,13 @@ enum \hyperlink{qubits_8h_a5739021c733cecc49647956b2f7338ea}{phaseGateType} \{ \
 \subsubsection*{Functions}
 \begin{DoxyCompactItemize}
 \item 
-void \hyperlink{qubits_8h_a9c02591bc64c2918503afa231d90d83f}{createMultiQubit} (\hyperlink{structMultiQubit}{MultiQubit} $\ast$multiQubit, int numQubits, \hyperlink{structQuESTEnv}{QuESTEnv} \hyperlink{runTests_8c_a5fd8ba97fcae3408ae6221dfc3cc1f93}{env})
+void \hyperlink{qubits_8h_a9c02591bc64c2918503afa231d90d83f}{createMultiQubit} (\hyperlink{structMultiQubit}{MultiQubit} $\ast$multiQubit, int numQubits, \hyperlink{structQuESTEnv}{QuESTEnv} env)
 \begin{DoxyCompactList}\small\item\em Create a \hyperlink{structMultiQubit}{MultiQubit} object representing a set of qubits. \item\end{DoxyCompactList}\item 
-void \hyperlink{qubits_8h_ae5d6acc322314d7a3d8a2eccf00d3b19}{destroyMultiQubit} (\hyperlink{structMultiQubit}{MultiQubit} multiQubit, \hyperlink{structQuESTEnv}{QuESTEnv} \hyperlink{runTests_8c_a5fd8ba97fcae3408ae6221dfc3cc1f93}{env})
+void \hyperlink{qubits_8h_ae5d6acc322314d7a3d8a2eccf00d3b19}{destroyMultiQubit} (\hyperlink{structMultiQubit}{MultiQubit} multiQubit, \hyperlink{structQuESTEnv}{QuESTEnv} env)
 \begin{DoxyCompactList}\small\item\em Deallocate a \hyperlink{structMultiQubit}{MultiQubit} object representing a set of qubits Free memory allocated to state vector of probability amplitudes, including temporary vector for values copied from another chunk if running the distributed version. \item\end{DoxyCompactList}\item 
 void \hyperlink{qubits_8h_a96f4de9ce7fefc7680a44d601fc3d894}{reportState} (\hyperlink{structMultiQubit}{MultiQubit} multiQubit)
 \begin{DoxyCompactList}\small\item\em Print the current state vector of probability amplitudes for a set of qubits to file. \item\end{DoxyCompactList}\item 
-void \hyperlink{qubits_8h_a842d6884e063a5865a2232cba56b65ac}{reportStateToScreen} (\hyperlink{structMultiQubit}{MultiQubit} multiQubit, \hyperlink{structQuESTEnv}{QuESTEnv} \hyperlink{runTests_8c_a5fd8ba97fcae3408ae6221dfc3cc1f93}{env}, int reportRank)
+void \hyperlink{qubits_8h_a842d6884e063a5865a2232cba56b65ac}{reportStateToScreen} (\hyperlink{structMultiQubit}{MultiQubit} multiQubit, \hyperlink{structQuESTEnv}{QuESTEnv} env, int reportRank)
 \begin{DoxyCompactList}\small\item\em Print the current state vector of probability amplitudes for a set of qubits to standard out. \item\end{DoxyCompactList}\item 
 void \hyperlink{qubits_8h_aa5e77e0e64f3a4a3d3f5cc7382bffcd9}{reportMultiQubitParams} (\hyperlink{structMultiQubit}{MultiQubit} multiQubit)
 \begin{DoxyCompactList}\small\item\em Report metainformation about a set of qubits: number of qubits, number of probability amplitudes. \item\end{DoxyCompactList}\item 
@@ -52,17 +52,17 @@ void \hyperlink{qubits_8h_a1086d84d6a3d5b79137e2f27f18e67e0}{sGate} (\hyperlink{
 \item 
 void \hyperlink{qubits_8h_a5f33ddd690383fd09cc79bf143e383fb}{tGate} (\hyperlink{structMultiQubit}{MultiQubit} multiQubit, const int rotQubit)
 \item 
-void \hyperlink{qubits_8h_ad84a3ce68d1ca02b4e3f741ea45b6054}{initQuESTEnv} (\hyperlink{structQuESTEnv}{QuESTEnv} $\ast$\hyperlink{runTests_8c_a5fd8ba97fcae3408ae6221dfc3cc1f93}{env})
+void \hyperlink{qubits_8h_ad84a3ce68d1ca02b4e3f741ea45b6054}{initQuESTEnv} (\hyperlink{structQuESTEnv}{QuESTEnv} $\ast$env)
 \begin{DoxyCompactList}\small\item\em Initialize QuEST environment. \item\end{DoxyCompactList}\item 
-void \hyperlink{qubits_8h_abd4bc926cd3f9b65610bb228d0c59fe0}{closeQuESTEnv} (\hyperlink{structQuESTEnv}{QuESTEnv} \hyperlink{runTests_8c_a5fd8ba97fcae3408ae6221dfc3cc1f93}{env})
+void \hyperlink{qubits_8h_abd4bc926cd3f9b65610bb228d0c59fe0}{closeQuESTEnv} (\hyperlink{structQuESTEnv}{QuESTEnv} env)
 \begin{DoxyCompactList}\small\item\em Close QuEST environment. \item\end{DoxyCompactList}\item 
-void \hyperlink{qubits_8h_a8d31fe2d1ad4d01e2a1f5f6b8bc15b77}{syncQuESTEnv} (\hyperlink{structQuESTEnv}{QuESTEnv} \hyperlink{runTests_8c_a5fd8ba97fcae3408ae6221dfc3cc1f93}{env})
+void \hyperlink{qubits_8h_a8d31fe2d1ad4d01e2a1f5f6b8bc15b77}{syncQuESTEnv} (\hyperlink{structQuESTEnv}{QuESTEnv} env)
 \begin{DoxyCompactList}\small\item\em Guarantees that all code up to the given point has been executed on all nodes. \item\end{DoxyCompactList}\item 
-int \hyperlink{qubits_8h_a877396e10f0e9aeead078664c51bb0e3}{syncQuESTSuccess} (\hyperlink{structQuESTEnv}{QuESTEnv} \hyperlink{runTests_8c_a5fd8ba97fcae3408ae6221dfc3cc1f93}{env}, int successCode)
+int \hyperlink{qubits_8h_a877396e10f0e9aeead078664c51bb0e3}{syncQuESTSuccess} (\hyperlink{structQuESTEnv}{QuESTEnv} env, int successCode)
 \begin{DoxyCompactList}\small\item\em Performs a logical AND on all successCodes held by all processes. \item\end{DoxyCompactList}\item 
-void \hyperlink{qubits_8h_af8a14ae79c3fb2c0b5f6255cc37bebf9}{reportQuESTEnv} (\hyperlink{structQuESTEnv}{QuESTEnv} \hyperlink{runTests_8c_a5fd8ba97fcae3408ae6221dfc3cc1f93}{env})
+void \hyperlink{qubits_8h_af8a14ae79c3fb2c0b5f6255cc37bebf9}{reportQuESTEnv} (\hyperlink{structQuESTEnv}{QuESTEnv} env)
 \begin{DoxyCompactList}\small\item\em Report information about the QuEST environment. \item\end{DoxyCompactList}\item 
-void \hyperlink{qubits_8h_a8f10aabf9f607f19093aee54630caa21}{getEnvironmentString} (\hyperlink{structQuESTEnv}{QuESTEnv} \hyperlink{runTests_8c_a5fd8ba97fcae3408ae6221dfc3cc1f93}{env}, \hyperlink{structMultiQubit}{MultiQubit} multiQubit, char str\mbox{[}200\mbox{]})
+void \hyperlink{qubits_8h_a8f10aabf9f607f19093aee54630caa21}{getEnvironmentString} (\hyperlink{structQuESTEnv}{QuESTEnv} env, \hyperlink{structMultiQubit}{MultiQubit} multiQubit, char str\mbox{[}200\mbox{]})
 \item 
 REAL \hyperlink{qubits_8h_a317b786f577fa6bc136ea7f0ee7330a7}{getRealAmpEl} (\hyperlink{structMultiQubit}{MultiQubit} multiQubit, long long int index)
 \begin{DoxyCompactList}\small\item\em Get the real component of the probability amplitude at an index in the state vector. \item\end{DoxyCompactList}\item 
@@ -207,8 +207,6 @@ Close QuEST environment. If something needs to be done to clean up the execution
 
 Definition at line 26 of file qubits\_\-env\_\-local.c.
 
-Referenced by main().
-
 
 \begin{DoxyCode}
 26                                 {
@@ -232,8 +230,6 @@ Definition at line 118 of file qubits\_\-env\_\-local.c.
 
 References MultiQubit::chunkId, chunkIsUpper(), controlNotDistributed(), controlNotLocal(), exchangeStateVectors(), getChunkPairId(), halfMatrixBlockFitsInChunk(), MultiQubit::numAmps, MultiQubit::pairStateVec, and MultiQubit::stateVec.
 
-Referenced by test\_\-controlNot().
-
 
 \begin{DoxyCode}
 119 {
@@ -255,8 +251,6 @@ The control phase (the two qubit phase gate). For each state, if both input qubi
 Definition at line 1461 of file qubits.c.
 
 References MultiQubit::chunkId, extractBit(), ComplexArray::imag, MultiQubit::numAmps, MultiQubit::numQubits, ComplexArray::real, REAL, and MultiQubit::stateVec.
-
-Referenced by test\_\-controlPhaseGate().
 
 
 \begin{DoxyCode}
@@ -327,8 +321,6 @@ Definition at line 93 of file qubits\_\-env\_\-local.c.
 
 References MultiQubit::chunkId, chunkIsUpper(), controlRotateQubitDistributed(), controlRotateQubitLocal(), exchangeStateVectors(), getChunkPairId(), getRotAngle(), halfMatrixBlockFitsInChunk(), MultiQubit::numAmps, MultiQubit::pairStateVec, and MultiQubit::stateVec.
 
-Referenced by test\_\-controlRotateQubit().
-
 
 \begin{DoxyCode}
 94 {
@@ -351,8 +343,6 @@ Create a \hyperlink{structMultiQubit}{MultiQubit} object representing a set of q
 Definition at line 28 of file qubits.c.
 
 References MultiQubit::chunkId, ComplexArray::imag, MultiQubit::numAmps, MultiQubit::numChunks, MultiQubit::numQubits, QuESTEnv::numRanks, MultiQubit::pairStateVec, QuESTEnv::rank, ComplexArray::real, and MultiQubit::stateVec.
-
-Referenced by test\_\-controlNot(), test\_\-controlPhaseGate(), test\_\-controlRotateQubit(), test\_\-filterOut111(), test\_\-findProbabilityOfOutcome(), test\_\-hadamard(), test\_\-initStatePlus(), test\_\-initStateZero(), test\_\-measureInState(), test\_\-probOfFilterOut111(), test\_\-quadCPhaseGate(), test\_\-rotateQubit(), test\_\-sGate(), test\_\-sigmaX(), test\_\-sigmaY(), test\_\-sigmaZ(), and test\_\-tGate().
 
 
 \begin{DoxyCode}
@@ -407,8 +397,6 @@ Definition at line 64 of file qubits.c.
 
 References ComplexArray::imag, QuESTEnv::numRanks, MultiQubit::pairStateVec, ComplexArray::real, and MultiQubit::stateVec.
 
-Referenced by test\_\-controlNot(), test\_\-controlPhaseGate(), test\_\-controlRotateQubit(), test\_\-filterOut111(), test\_\-findProbabilityOfOutcome(), test\_\-hadamard(), test\_\-initStatePlus(), test\_\-initStateZero(), test\_\-measureInState(), test\_\-probOfFilterOut111(), test\_\-quadCPhaseGate(), test\_\-rotateQubit(), test\_\-sGate(), test\_\-sigmaX(), test\_\-sigmaY(), test\_\-sigmaZ(), and test\_\-tGate().
-
 
 \begin{DoxyCode}
 64                                                            {
@@ -438,8 +426,6 @@ Total probability that the 3 qubits are not all in the 1 state.
 Definition at line 139 of file qubits\_\-env\_\-local.c.
 
 References filterOut111Local(), probOfFilterOut111(), and REAL.
-
-Referenced by test\_\-filterOut111().
 
 
 \begin{DoxyCode}
@@ -471,7 +457,7 @@ Definition at line 123 of file qubits\_\-env\_\-local.c.
 
 References MultiQubit::chunkId, findProbabilityOfZeroDistributed(), findProbabilityOfZeroLocal(), halfMatrixBlockFitsInChunk(), isChunkToSkipInFindPZero(), MPI\_\-QuEST\_\-REAL, MultiQubit::numAmps, and REAL.
 
-Referenced by measureInState(), and test\_\-findProbabilityOfOutcome().
+Referenced by measureInState().
 
 
 \begin{DoxyCode}
@@ -611,8 +597,6 @@ Definition at line 113 of file qubits\_\-env\_\-local.c.
 
 References MultiQubit::chunkId, chunkIsUpper(), exchangeStateVectors(), getChunkPairId(), hadamardDistributed(), hadamardLocal(), halfMatrixBlockFitsInChunk(), MultiQubit::numAmps, MultiQubit::pairStateVec, and MultiQubit::stateVec.
 
-Referenced by test\_\-hadamard().
-
 
 \begin{DoxyCode}
 114 {
@@ -634,8 +618,6 @@ Initialize QuEST environment. If something needs to be done to set up the execut
 Definition at line 12 of file qubits\_\-env\_\-local.c.
 
 References DEBUG, QuESTEnv::numRanks, and QuESTEnv::rank.
-
-Referenced by main().
 
 
 \begin{DoxyCode}
@@ -660,8 +642,6 @@ Initialise the state vector of probability amplitudes for a set of qubits to an 
 Definition at line 204 of file qubits.c.
 
 References DEBUG, ComplexArray::imag, MultiQubit::numAmps, MultiQubit::numChunks, ComplexArray::real, REAL, and MultiQubit::stateVec.
-
-Referenced by test\_\-filterOut111(), test\_\-findProbabilityOfOutcome(), test\_\-initStatePlus(), test\_\-measureInState(), and test\_\-probOfFilterOut111().
 
 
 \begin{DoxyCode}
@@ -712,8 +692,6 @@ Initialise the state vector of probability amplitudes for a set of qubits to the
 Definition at line 162 of file qubits.c.
 
 References MultiQubit::chunkId, DEBUG, ComplexArray::imag, MultiQubit::numAmps, ComplexArray::real, REAL, and MultiQubit::stateVec.
-
-Referenced by test\_\-filterOut111(), test\_\-findProbabilityOfOutcome(), test\_\-initStateZero(), test\_\-measureInState(), and test\_\-probOfFilterOut111().
 
 
 \begin{DoxyCode}
@@ -775,8 +753,6 @@ Definition at line 131 of file qubits\_\-env\_\-local.c.
 
 References MultiQubit::chunkId, findProbabilityOfOutcome(), halfMatrixBlockFitsInChunk(), isChunkToSkipInFindPZero(), measureInStateDistributedRenorm(), measureInStateDistributedSetZero(), measureInStateLocal(), MultiQubit::numAmps, and REAL.
 
-Referenced by test\_\-measureInState().
-
 
 \begin{DoxyCode}
 132 {
@@ -806,7 +782,7 @@ Definition at line 147 of file qubits\_\-env\_\-local.c.
 
 References MPI\_\-QuEST\_\-REAL, probOfFilterOut111Local(), and REAL.
 
-Referenced by filterOut111(), test\_\-filterOut111(), and test\_\-probOfFilterOut111().
+Referenced by filterOut111().
 
 
 \begin{DoxyCode}
@@ -832,8 +808,6 @@ The control not gate. The control phase (the four qubit phase gate). For each st
 Definition at line 1550 of file qubits.c.
 
 References MultiQubit::chunkId, extractBit(), ComplexArray::imag, MultiQubit::numAmps, MultiQubit::numQubits, ComplexArray::real, REAL, and MultiQubit::stateVec.
-
-Referenced by test\_\-quadCPhaseGate().
 
 
 \begin{DoxyCode}
@@ -923,8 +897,6 @@ Definition at line 30 of file qubits\_\-env\_\-local.c.
 
 References QuESTEnv::numRanks, QuESTEnv::rank, and REAL.
 
-Referenced by main().
-
 
 \begin{DoxyCode}
 30                                  {
@@ -1000,8 +972,6 @@ Definition at line 110 of file qubits.c.
 
 References MultiQubit::chunkId, ComplexArray::imag, MultiQubit::numAmps, MultiQubit::numChunks, MultiQubit::numQubits, ComplexArray::real, REAL\_\-STRING\_\-FORMAT, MultiQubit::stateVec, and syncQuESTEnv().
 
-Referenced by reportTest().
-
 
 \begin{DoxyCode}
 110                                                                              {
@@ -1059,7 +1029,7 @@ Definition at line 87 of file qubits\_\-env\_\-local.c.
 
 References MultiQubit::chunkId, chunkIsUpper(), exchangeStateVectors(), getChunkPairId(), getRotAngle(), halfMatrixBlockFitsInChunk(), MultiQubit::numAmps, MultiQubit::pairStateVec, rotateQubitDistributed(), rotateQubitLocal(), and MultiQubit::stateVec.
 
-Referenced by rotateQubitByAngle(), test\_\-controlNot(), test\_\-controlPhaseGate(), test\_\-hadamard(), test\_\-rotateQubit(), test\_\-sGate(), test\_\-sigmaX(), test\_\-sigmaY(), test\_\-sigmaZ(), and test\_\-tGate().
+Referenced by rotateQubitByAngle().
 
 
 \begin{DoxyCode}
@@ -1110,8 +1080,6 @@ Definition at line 1291 of file qubits.c.
 
 References phaseGate(), and S\_\-GATE.
 
-Referenced by test\_\-sGate().
-
 
 \begin{DoxyCode}
 1292 {
@@ -1133,8 +1101,6 @@ Rotate a single qubit by \{\{0,1\},\{1,0\}\} -\/-\/ swap $|$0$>$ and $|$1$>$.
 Definition at line 98 of file qubits\_\-env\_\-local.c.
 
 References MultiQubit::chunkId, chunkIsUpper(), exchangeStateVectors(), getChunkPairId(), halfMatrixBlockFitsInChunk(), MultiQubit::numAmps, MultiQubit::pairStateVec, sigmaXDistributed(), sigmaXLocal(), and MultiQubit::stateVec.
-
-Referenced by test\_\-sigmaX().
 
 
 \begin{DoxyCode}
@@ -1160,8 +1126,6 @@ Definition at line 103 of file qubits\_\-env\_\-local.c.
 
 References MultiQubit::chunkId, chunkIsUpper(), exchangeStateVectors(), getChunkPairId(), halfMatrixBlockFitsInChunk(), MultiQubit::numAmps, MultiQubit::pairStateVec, sigmaYDistributed(), sigmaYLocal(), and MultiQubit::stateVec.
 
-Referenced by test\_\-sigmaY().
-
 
 \begin{DoxyCode}
 104 {
@@ -1184,8 +1148,6 @@ Definition at line 1286 of file qubits.c.
 
 References phaseGate(), and SIGMA\_\-Z.
 
-Referenced by test\_\-sigmaZ().
-
 
 \begin{DoxyCode}
 1287 {
@@ -1206,7 +1168,7 @@ Guarantees that all code up to the given point has been executed on all nodes.
 
 Definition at line 18 of file qubits\_\-env\_\-local.c.
 
-Referenced by initializeStateFromSingleFile(), reportStateToScreen(), and test\_\-controlNot().
+Referenced by initializeStateFromSingleFile(), and reportStateToScreen().
 
 
 \begin{DoxyCode}
@@ -1231,8 +1193,6 @@ Performs a logical AND on all successCodes held by all processes. If any one pro
 
 Definition at line 22 of file qubits\_\-env\_\-local.c.
 
-Referenced by main().
-
 
 \begin{DoxyCode}
 22                                                    {
@@ -1249,8 +1209,6 @@ Referenced by main().
 Definition at line 1296 of file qubits.c.
 
 References phaseGate(), and T\_\-GATE.
-
-Referenced by test\_\-tGate().
 
 
 \begin{DoxyCode}

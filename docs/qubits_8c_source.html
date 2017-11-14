@@ -39,7 +39,7 @@
 <a name="l00018"></a>00018 
 <a name="l00019"></a>00019 <span class="comment">// Maihi: Where I have made changes I have marked SCB so please note those points - Simon</span>
 <a name="l00020"></a>00020 
-<a name="l00028"></a><a class="code" href="qubits_8h.html#a9c02591bc64c2918503afa231d90d83f">00028</a> <span class="keywordtype">void</span> <a class="code" href="qubits_8c.html#a9c02591bc64c2918503afa231d90d83f" title="Create a MultiQubit object representing a set of qubits.">createMultiQubit</a>(<a class="code" href="structMultiQubit.html" title="Represents a system of qubits.">MultiQubit</a> *multiQubit, <span class="keywordtype">int</span> numQubits, <a class="code" href="structQuESTEnv.html" title="Information about the environment the program is running in.">QuESTEnv</a> <a class="code" href="runTests_8c.html#a5fd8ba97fcae3408ae6221dfc3cc1f93">env</a>)
+<a name="l00028"></a><a class="code" href="qubits_8h.html#a9c02591bc64c2918503afa231d90d83f">00028</a> <span class="keywordtype">void</span> <a class="code" href="qubits_8c.html#a9c02591bc64c2918503afa231d90d83f" title="Create a MultiQubit object representing a set of qubits.">createMultiQubit</a>(<a class="code" href="structMultiQubit.html" title="Represents a system of qubits.">MultiQubit</a> *multiQubit, <span class="keywordtype">int</span> numQubits, <a class="code" href="structQuESTEnv.html" title="Information about the environment the program is running in.">QuESTEnv</a> env)
 <a name="l00029"></a>00029 {
 <a name="l00030"></a>00030         <span class="keywordtype">long</span> <span class="keywordtype">long</span> <span class="keywordtype">int</span> numAmps = 1L &lt;&lt; numQubits;
 <a name="l00031"></a>00031         <span class="keywordtype">long</span> <span class="keywordtype">long</span> <span class="keywordtype">int</span> numAmpsPerRank = numAmps/env.<a class="code" href="structQuESTEnv.html#af22aacd7c9905accae28484785c193b4">numRanks</a>;
@@ -69,7 +69,7 @@
 <a name="l00055"></a>00055         multiQubit-&gt;<a class="code" href="structMultiQubit.html#acd43f2f57991709c9e94f73662c972b2" title="Number of chunks the state vector is broken up into -- the number of MPI processes...">numChunks</a> = env.<a class="code" href="structQuESTEnv.html#af22aacd7c9905accae28484785c193b4">numRanks</a>;
 <a name="l00056"></a>00056 
 <a name="l00057"></a>00057 }
-<a name="l00064"></a><a class="code" href="qubits_8h.html#ae5d6acc322314d7a3d8a2eccf00d3b19">00064</a> <span class="keywordtype">void</span> <a class="code" href="qubits_8c.html#ae5d6acc322314d7a3d8a2eccf00d3b19" title="Deallocate a MultiQubit object representing a set of qubits Free memory allocated...">destroyMultiQubit</a>(<a class="code" href="structMultiQubit.html" title="Represents a system of qubits.">MultiQubit</a> multiQubit, <a class="code" href="structQuESTEnv.html" title="Information about the environment the program is running in.">QuESTEnv</a> <a class="code" href="runTests_8c.html#a5fd8ba97fcae3408ae6221dfc3cc1f93">env</a>){
+<a name="l00064"></a><a class="code" href="qubits_8h.html#ae5d6acc322314d7a3d8a2eccf00d3b19">00064</a> <span class="keywordtype">void</span> <a class="code" href="qubits_8c.html#ae5d6acc322314d7a3d8a2eccf00d3b19" title="Deallocate a MultiQubit object representing a set of qubits Free memory allocated...">destroyMultiQubit</a>(<a class="code" href="structMultiQubit.html" title="Represents a system of qubits.">MultiQubit</a> multiQubit, <a class="code" href="structQuESTEnv.html" title="Information about the environment the program is running in.">QuESTEnv</a> env){
 <a name="l00065"></a>00065         free(multiQubit.<a class="code" href="structMultiQubit.html#a45483190d6b01ef6b2f98f2bec9ab94f" title="Probablilty amplitudes for the multi qubit state.">stateVec</a>.<a class="code" href="structComplexArray.html#a4195cac6c784ea1b6271f1c7dba1548a">real</a>);
 <a name="l00066"></a>00066         free(multiQubit.<a class="code" href="structMultiQubit.html#a45483190d6b01ef6b2f98f2bec9ab94f" title="Probablilty amplitudes for the multi qubit state.">stateVec</a>.<a class="code" href="structComplexArray.html#a79dde47c7ae530c79cebfdf57b225968">imag</a>);
 <a name="l00067"></a>00067         <span class="keywordflow">if</span> (env.<a class="code" href="structQuESTEnv.html#af22aacd7c9905accae28484785c193b4">numRanks</a>&gt;1){
@@ -92,7 +92,7 @@
 <a name="l00104"></a>00104         fclose(state);
 <a name="l00105"></a>00105 }
 <a name="l00106"></a>00106 
-<a name="l00110"></a><a class="code" href="qubits_8h.html#a842d6884e063a5865a2232cba56b65ac">00110</a> <span class="keywordtype">void</span> <a class="code" href="qubits_8c.html#a842d6884e063a5865a2232cba56b65ac" title="Print the current state vector of probability amplitudes for a set of qubits to standard...">reportStateToScreen</a>(<a class="code" href="structMultiQubit.html" title="Represents a system of qubits.">MultiQubit</a> multiQubit, <a class="code" href="structQuESTEnv.html" title="Information about the environment the program is running in.">QuESTEnv</a> <a class="code" href="runTests_8c.html#a5fd8ba97fcae3408ae6221dfc3cc1f93">env</a>, <span class="keywordtype">int</span> reportRank){
+<a name="l00110"></a><a class="code" href="qubits_8h.html#a842d6884e063a5865a2232cba56b65ac">00110</a> <span class="keywordtype">void</span> <a class="code" href="qubits_8c.html#a842d6884e063a5865a2232cba56b65ac" title="Print the current state vector of probability amplitudes for a set of qubits to standard...">reportStateToScreen</a>(<a class="code" href="structMultiQubit.html" title="Represents a system of qubits.">MultiQubit</a> multiQubit, <a class="code" href="structQuESTEnv.html" title="Information about the environment the program is running in.">QuESTEnv</a> env, <span class="keywordtype">int</span> reportRank){
 <a name="l00111"></a>00111         <span class="keywordtype">long</span> <span class="keywordtype">long</span> <span class="keywordtype">int</span> index;
 <a name="l00112"></a>00112         <span class="keywordtype">int</span> rank;
 <a name="l00113"></a>00113         <span class="keywordflow">if</span> (multiQubit.<a class="code" href="structMultiQubit.html#ab5b9795bdc6fb5855e1974dcbbaeb36f" title="Number of qubits in the state.">numQubits</a>&lt;=5){
@@ -128,7 +128,7 @@
 <a name="l00147"></a>00147         }
 <a name="l00148"></a>00148 }
 <a name="l00149"></a>00149 
-<a name="l00150"></a><a class="code" href="qubits_8h.html#a8f10aabf9f607f19093aee54630caa21">00150</a> <span class="keywordtype">void</span> <a class="code" href="qubits_8c.html#a8f10aabf9f607f19093aee54630caa21">getEnvironmentString</a>(<a class="code" href="structQuESTEnv.html" title="Information about the environment the program is running in.">QuESTEnv</a> <a class="code" href="runTests_8c.html#a5fd8ba97fcae3408ae6221dfc3cc1f93">env</a>, <a class="code" href="structMultiQubit.html" title="Represents a system of qubits.">MultiQubit</a> multiQubit, <span class="keywordtype">char</span> str[200]){
+<a name="l00150"></a><a class="code" href="qubits_8h.html#a8f10aabf9f607f19093aee54630caa21">00150</a> <span class="keywordtype">void</span> <a class="code" href="qubits_8c.html#a8f10aabf9f607f19093aee54630caa21">getEnvironmentString</a>(<a class="code" href="structQuESTEnv.html" title="Information about the environment the program is running in.">QuESTEnv</a> env, <a class="code" href="structMultiQubit.html" title="Represents a system of qubits.">MultiQubit</a> multiQubit, <span class="keywordtype">char</span> str[200]){
 <a name="l00151"></a>00151         <span class="keywordtype">int</span> numThreads=1;
 <a name="l00152"></a>00152 <span class="preprocessor"># ifdef _OPENMP</span>
 <a name="l00153"></a>00153 <span class="preprocessor"></span>        numThreads=omp_get_max_threads(); 
@@ -281,7 +281,7 @@
 <a name="l00319"></a>00319         }
 <a name="l00320"></a>00320 }
 <a name="l00321"></a>00321 
-<a name="l00322"></a><a class="code" href="qubits__debug_8h.html#a433876ee9f3bcc54af346300f571fc3c">00322</a> <span class="keywordtype">void</span> <a class="code" href="qubits_8c.html#a433876ee9f3bcc54af346300f571fc3c">initializeStateFromSingleFile</a>(<a class="code" href="structMultiQubit.html" title="Represents a system of qubits.">MultiQubit</a> *multiQubit, <span class="keywordtype">char</span> filename[200], <a class="code" href="structQuESTEnv.html" title="Information about the environment the program is running in.">QuESTEnv</a> <a class="code" href="runTests_8c.html#a5fd8ba97fcae3408ae6221dfc3cc1f93">env</a>){
+<a name="l00322"></a><a class="code" href="qubits__debug_8h.html#a433876ee9f3bcc54af346300f571fc3c">00322</a> <span class="keywordtype">void</span> <a class="code" href="qubits_8c.html#a433876ee9f3bcc54af346300f571fc3c">initializeStateFromSingleFile</a>(<a class="code" href="structMultiQubit.html" title="Represents a system of qubits.">MultiQubit</a> *multiQubit, <span class="keywordtype">char</span> filename[200], <a class="code" href="structQuESTEnv.html" title="Information about the environment the program is running in.">QuESTEnv</a> env){
 <a name="l00323"></a>00323         <span class="keywordtype">long</span> <span class="keywordtype">long</span> <span class="keywordtype">int</span> chunkSize, stateVecSize;
 <a name="l00324"></a>00324         <span class="keywordtype">long</span> <span class="keywordtype">long</span> <span class="keywordtype">int</span> indexInChunk, totalIndex;
 <a name="l00325"></a>00325 
@@ -1605,7 +1605,7 @@
 <a name="l01892"></a>01892         <span class="keywordflow">return</span> real*real + imag*imag;
 <a name="l01893"></a>01893 }
 </pre></div></div>
-<hr size="1"/><address style="text-align: right;"><small>Generated on 10 Nov 2017 for Distributed QuEST by&nbsp;
+<hr size="1"/><address style="text-align: right;"><small>Generated on 14 Nov 2017 for Distributed QuEST by&nbsp;
 <a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/></a> 1.6.1 </small></address>
 </body>
