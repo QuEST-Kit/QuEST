@@ -22,6 +22,11 @@ typedef struct Complex
 	REAL imag;
 } Complex;
 
+typedef struct Vector
+{
+	REAL x, y, z;
+} Vector;
+
 /** Represents a system of qubits.
 Qubits are zero-based and the the first qubit is the rightmost
 */
