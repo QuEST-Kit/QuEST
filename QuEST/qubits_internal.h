@@ -17,6 +17,14 @@ void rotateQubitDistributed (MultiQubit multiQubit, const int rotQubit,
                 ComplexArray stateVecLo,
                 ComplexArray stateVecOut);
 
+void singleQubitUnitaryLocal(MultiQubit multiQubit, const int rotQubit, ComplexMatrix2 u);
+
+void singleQubitUnitaryDistributed (MultiQubit multiQubit, const int rotQubit,
+                Complex rot1, Complex rot2,
+                ComplexArray stateVecUp,
+                ComplexArray stateVecLo,
+                ComplexArray stateVecOut);
+
 void controlRotateQubitLocal (MultiQubit multiQubit, const int rotQubit, const int controlQubit,
 		Complex alpha, Complex beta);
 
@@ -74,6 +82,12 @@ void filterOut111Local(MultiQubit multiQubit, const int idQubit1, const int idQu
 
 REAL probOfFilterOut111Local(MultiQubit multiQubit, const int idQubit1, const int idQubit2, const int idQubit3);
 
+// Validation
 
+int validateMatrixIsUnitary(ComplexMatrix2 u);
+
+int validateAlphaBeta(Complex alpha, Complex beta);
+
+int validateUnitVector(REAL ux, REAL uy, REAL uz);
 
 # endif

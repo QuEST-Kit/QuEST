@@ -86,8 +86,20 @@ REAL getImagAmpEl(MultiQubit multiQubit, long long int index){
 
 void rotateQubit(MultiQubit multiQubit, const int rotQubit, Complex alpha, Complex beta) 
 {
+	if (!validateAlphaBeta(alpha, beta)){
+		printf("Error: parameters specified to function rotateQubit form an invalid unitary matrix\n");
+	}
 	// all values required to update state vector lie in this rank
 	rotateQubitLocal(multiQubit, rotQubit, alpha, beta);
+}
+
+void singleQubitUnitary(MultiQubit multiQubit, const int rotQubit, ComplexMatrix2 u) 
+{
+	if (!validateMatrixIsUnitary(u)){
+		printf("Error: parameters specified to function singleQubitUnitary form an invalid unitary matrix\n");
+	}
+	// all values required to update state vector lie in this rank
+	singleQubitUnitaryLocal(multiQubit, rotQubit, u);
 }
 
 void controlRotateQubit(MultiQubit multiQubit, const int rotQubit, const int controlQubit, Complex alpha, Complex beta) 

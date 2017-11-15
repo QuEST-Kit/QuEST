@@ -443,6 +443,177 @@ void rotateQubitLocal (MultiQubit multiQubit, const int rotQubit, Complex alpha,
 
 } 
 
+int validateMatrixIsUnitary(ComplexMatrix2 u){
+	if ( fabs(u.r0c0.real*u.r0c0.real 
+		+ u.r0c0.imag*u.r0c0.imag
+		+ u.r1c0.real*u.r1c0.real
+		+ u.r1c0.imag*u.r1c0.imag - 1) > REAL_EPS ) return 0;
+
+	if ( fabs(u.r0c1.real*u.r0c1.real 
+		+ u.r0c1.imag*u.r0c1.imag
+		+ u.r1c1.real*u.r1c1.real
+		+ u.r1c1.imag*u.r1c1.imag - 1) > REAL_EPS ) return 0;
+
+	if ( fabs(u.r0c0.real*u.r0c1.real 
+		+ u.r0c0.imag*u.r0c1.imag
+		+ u.r1c0.real*u.r1c1.real
+		+ u.r1c0.imag*u.r1c1.imag) > REAL_EPS ) return 0;
+
+	if ( fabs(u.r0c0.real*u.r0c1.imag
+		+ u.r0c0.imag*u.r0c1.real
+		+ u.r1c0.real*u.r1c1.imag
+		+ u.r1c0.imag*u.r1c1.real) > REAL_EPS ) return 0;
+
+	return 1;
+}
+
+int validateAlphaBeta(Complex alpha, Complex beta){
+	if ( fabs(alpha.real*alpha.real 
+		+ alpha.imag*alpha.imag
+		+ beta.real*beta.real 
+		+ beta.imag*beta.imag - 1) > REAL_EPS ) return 0;
+	else return 1;
+}
+
+int validateUnitVector(REAL ux, REAL uy, REAL uz){
+	if ( fabs(sqrt(ux*ux + uy*uy + uz*uz) - 1) > REAL_EPS ) return 0;
+	else return 1;
+}
+
+
+/* Apply a unitary operation to a single qubit
+@remarks Qubits are zero-based and the                     
+the first qubit is the rightmost                  
+                                                                      
+@param[in,out] multiQubit object representing the set of qubits
+@param[in] rotQubit qubit to rotate
+@param[in] u unitary matrix to apply
+ */
+void singleQubitUnitaryLocal(MultiQubit multiQubit, const int rotQubit, ComplexMatrix2 u)
+{
+	long long int sizeBlock, sizeHalfBlock;
+	long long int thisBlock, // current block
+	     indexUp,indexLo;    // current index and corresponding index in lower half block
+
+	REAL stateRealUp,stateRealLo,stateImagUp,stateImagLo;
+	long long int thisTask;         
+	const long long int numTasks=multiQubit.numAmps>>1;
+
+	// test qubit valid
+	assert (rotQubit >= 0 && rotQubit < multiQubit.numQubits);
+
+	// set dimensions
+	sizeHalfBlock = 1LL << rotQubit;  
+	sizeBlock     = 2LL * sizeHalfBlock; 
+
+	// Can't use multiQubit.stateVec as a private OMP var
+	REAL *stateVecReal = multiQubit.stateVec.real;
+	REAL *stateVecImag = multiQubit.stateVec.imag;
+
+# ifdef _OPENMP
+# pragma omp parallel \
+	default  (none) \
+	shared   (sizeBlock,sizeHalfBlock, stateVecReal,stateVecImag, u) \
+	private  (thisTask,thisBlock ,indexUp,indexLo, stateRealUp,stateImagUp,stateRealLo,stateImagLo) 
+# endif
+	{
+# ifdef _OPENMP
+		# pragma omp for schedule (static)
+# endif
+		for (thisTask=0; thisTask<numTasks; thisTask++) {
+
+			thisBlock   = thisTask / sizeHalfBlock;
+			indexUp     = thisBlock*sizeBlock + thisTask%sizeHalfBlock;
+			indexLo     = indexUp + sizeHalfBlock;
+
+			// store current state vector values in temp variables
+			stateRealUp = stateVecReal[indexUp];
+			stateImagUp = stateVecImag[indexUp];
+
+			stateRealLo = stateVecReal[indexLo];
+			stateImagLo = stateVecImag[indexLo];
+
+
+			// state[indexUp] = u00 * state[indexUp] + u01 * state[indexLo]
+			stateVecReal[indexUp] = u.r0c0.real*stateRealUp - u.r0c0.imag*stateImagUp 
+				+ u.r0c1.real*stateRealLo - u.r0c1.imag*stateImagLo;
+			stateVecImag[indexUp] = u.r0c0.real*stateImagUp + u.r0c0.imag*stateRealUp 
+				+ u.r0c1.real*stateImagLo + u.r0c1.imag*stateRealLo;
+
+			// state[indexLo] = u10  * state[indexUp] + u11 * state[indexLo]
+			stateVecReal[indexLo] = u.r1c0.real*stateRealUp  - u.r1c0.imag*stateImagUp 
+				+ u.r1c1.real*stateRealLo  -  u.r1c1.imag*stateImagLo;
+			stateVecImag[indexLo] = u.r1c0.real*stateImagUp + u.r1c0.imag*stateRealUp 
+				+ u.r1c1.real*stateImagLo + u.r1c1.imag*stateRealLo;
+
+		} 
+	}
+} 
+
+/** Apply a unitary operation to a single qubit
+given a subset of the state vector with upper and lower block values 
+stored seperately.
+
+@remarks Qubits are zero-based and the                     
+the first qubit is the rightmost                  
+                                                                      
+@param[in,out] multiQubit object representing the set of qubits
+@param[in] rotQubit qubit to rotate
+@param[in] u unitary matrix to apply
+@param[in] stateVecUp probability amplitudes in upper half of a block
+@param[in] stateVecLo probability amplitudes in lower half of a block
+@param[out] stateVecOut array section to update (will correspond to either the lower or upper half of a block)
+*/
+
+void singleQubitUnitaryDistributed (MultiQubit multiQubit, const int rotQubit,
+		Complex rot1, Complex rot2,
+		ComplexArray stateVecUp,
+		ComplexArray stateVecLo,
+		ComplexArray stateVecOut)
+{
+
+	REAL   stateRealUp,stateRealLo,stateImagUp,stateImagLo;
+	long long int thisTask;  
+	const long long int numTasks=multiQubit.numAmps;
+
+	// test qubit valid
+	assert (rotQubit >= 0 && rotQubit < multiQubit.numQubits);
+
+	REAL rot1Real=rot1.real, rot1Imag=rot1.imag;
+	REAL rot2Real=rot2.real, rot2Imag=rot2.imag;
+	REAL *stateVecRealUp=stateVecUp.real, *stateVecImagUp=stateVecUp.imag;
+	REAL *stateVecRealLo=stateVecLo.real, *stateVecImagLo=stateVecLo.imag;
+	REAL *stateVecRealOut=stateVecOut.real, *stateVecImagOut=stateVecOut.imag;
+
+# ifdef _OPENMP
+# pragma omp parallel \
+	default  (none) \
+	shared   (stateVecRealUp,stateVecImagUp,stateVecRealLo,stateVecImagLo,stateVecRealOut,stateVecImagOut, \
+			rot1Real, rot1Imag, rot2Real, rot2Imag) \
+	private  (thisTask,stateRealUp,stateImagUp,stateRealLo,stateImagLo)
+# endif
+	{
+# ifdef _OPENMP
+		# pragma omp for schedule (static)
+# endif
+		for (thisTask=0; thisTask<numTasks; thisTask++) {
+			// store current state vector values in temp variables
+			stateRealUp = stateVecRealUp[thisTask];
+			stateImagUp = stateVecImagUp[thisTask];
+
+			stateRealLo = stateVecRealLo[thisTask];
+			stateImagLo = stateVecImagLo[thisTask];
+
+
+			stateVecRealOut[thisTask] = rot1Real*stateRealUp - rot1Imag*stateImagUp 
+				+ rot2Real*stateRealLo - rot2Imag*stateImagLo;
+			stateVecImagOut[thisTask] = rot1Real*stateImagUp + rot1Imag*stateRealUp 
+				+ rot2Real*stateImagLo + rot2Imag*stateRealLo;
+		}
+	}
+}
+
+
 /** Rotate a single qubit in the state
 vector of probability amplitudes, given the              
 angle rotation arguments, and a subset of the state vector with upper and lower block values 

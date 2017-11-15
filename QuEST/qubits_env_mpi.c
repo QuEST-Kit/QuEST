@@ -174,6 +174,31 @@ static void getRotAngle(int chunkIsUpper, Complex *rot1, Complex *rot2, Complex 
                 *rot2=alpha;
         }
 }
+
+/** Get rotation values for a given chunk given a unitary matrix
+@param[in] chunkIsUpper 1: chunk is in upper half of block, 0: chunk is in lower half
+
+@param[out] rot1, rot2 rotation values to use, allocated for upper/lower such that
+@verbatim
+stateUpper = rot1 * stateUpper + conj(rot2)  * stateLower
+@endverbatim
+or
+@verbatim
+stateLower = rot1 * stateUpper + conj(rot2)  * stateLower
+@endverbatim
+@param[in] u unitary matrix operation
+*/
+static void getRotAngleFromUnitaryMatrix(int chunkIsUpper, Complex *rot1, Complex *rot2, ComplexMatrix2 u)
+{
+        if (chunkIsUpper){
+		*rot1=u.r0c0;
+		*rot2=u.r0c1;
+        } else {
+		*rot1=u.r1c0;
+		*rot2=u.r1c1;
+        }
+}
+
 /** get position of corresponding chunk, holding values required to
 update values in my chunk (with chunkId) when rotating rotQubit.
 
@@ -244,6 +269,10 @@ void exchangeStateVectors(MultiQubit multiQubit, int pairRank){
 
 void rotateQubit(MultiQubit multiQubit, const int rotQubit, Complex alpha, Complex beta)
 {
+        if (!validateAlphaBeta(alpha, beta)){
+                printf("Error: parameters specified to function rotateQubit form an invalid unitary matrix\n");
+        }
+
         // flag to require memory exchange. 1: an entire block fits on one rank, 0: at most half a block fits on one rank
         int useLocalDataOnly = halfMatrixBlockFitsInChunk(multiQubit.numAmps, rotQubit);
         Complex rot1, rot2;
@@ -277,6 +306,50 @@ void rotateQubit(MultiQubit multiQubit, const int rotQubit, Complex alpha, Compl
                                 multiQubit.stateVec); //output
                 }
         }
+}
+
+void singleQubitUnitary(MultiQubit multiQubit, const int rotQubit, ComplexMatrix2 u)
+{
+        if (!validateMatrixIsUnitary(u)){
+                printf("Error: parameters specified to function singleQubitUnitary form an invalid unitary matrix\n");
+        }
+
+        // flag to require memory exchange. 1: an entire block fits on one rank, 0: at most half a block fits on one rank
+        int useLocalDataOnly = halfMatrixBlockFitsInChunk(multiQubit.numAmps, rotQubit);
+        Complex rot1, rot2;
+
+        // rank's chunk is in upper half of block 
+        int rankIsUpper;
+        int pairRank; // rank of corresponding chunk
+
+        if (useLocalDataOnly){
+                // all values required to update state vector lie in this rank
+	        singleQubitUnitaryLocal(multiQubit, rotQubit, u);
+        } else {
+                // need to get corresponding chunk of state vector from other rank
+                rankIsUpper = chunkIsUpper(multiQubit.chunkId, multiQubit.numAmps, rotQubit);
+                getRotAngleFromUnitaryMatrix(rankIsUpper, &rot1, &rot2, u);
+                pairRank = getChunkPairId(rankIsUpper, multiQubit.chunkId, multiQubit.numAmps, rotQubit);
+                // get corresponding values from my pair
+		exchangeStateVectors(multiQubit, pairRank);
+
+                // this rank's values are either in the upper of lower half of the block. 
+		// send values to rotateQubitDistributed in the correct order
+                if (rankIsUpper){
+                        rotateQubitDistributed(multiQubit,rotQubit,rot1,rot2,
+                                multiQubit.stateVec, //upper
+                                multiQubit.pairStateVec, //lower
+                                multiQubit.stateVec); //output
+                } else {
+                        rotateQubitDistributed(multiQubit,rotQubit,rot1,rot2,
+                                multiQubit.pairStateVec, //upper
+                                multiQubit.stateVec, //lower
+                                multiQubit.stateVec); //output
+                }
+        }
+
+
+        // all values required to update state vector lie in this rank
 }
 
 void controlRotateQubit(MultiQubit multiQubit, const int rotQubit, const int controlQubit, Complex alpha, Complex beta)

@@ -22,6 +22,13 @@ typedef struct Complex
 	REAL imag;
 } Complex;
 
+typedef struct ComplexMatrix2
+{
+	Complex r0c0, r0c1;
+	Complex r1c0, r1c1;
+} ComplexMatrix2;
+
+
 /** Represents a system of qubits.
 Qubits are zero-based and the the first qubit is the rightmost
 */
@@ -176,6 +183,8 @@ the first qubit is the rightmost
 @param[in] beta rotation angle
  */
 void rotateQubit(MultiQubit multiQubit, const int rotQubit, Complex alpha, Complex beta);
+
+void singleQubitUnitary(MultiQubit multiQubit, const int rotQubit, ComplexMatrix2 u);
 
 /** Rotate a single qubit in the state vector of probability amplitudes, given the angle rotation arguments and a control qubit. Only perform 
 the rotation for elements where the control qubit is 1. 
