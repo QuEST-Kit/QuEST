@@ -1,32 +1,39 @@
 #!/bin/bash
 
-# set the number of nodes and processes per node. We are running one process on a single node
-#SBATCH --nodes=4
-#SBATCH --ntasks-per-node=2
+# Multiple node job using - one process with 16 threads - per node
 
-#SBATCH --mem=50Gb
-# uncomment if NUM_QUBITS - log2(NUM_NODES) > 30
-####SBATCH --mem=100Gb
+# ----------------  EDIT ---------------- 
+# select one node 
+#SBATCH --nodes=4
+#SBATCH --ntasks-per-node=1
 
 # set max wallclock time
-#SBATCH --time=00:40:00
+#SBATCH --time=01:00:00
 
 # set name of job
-#SBATCH --job-name QuEST
+#SBATCH --job-name QuEST_JOB
 
-# set queue
-#SBATCH --partition=compute
-
-NUM_QUBITS=30
+# set the program executable and arguments
+NUM_QUBITS=33
 EXE=demo
-export OMP_NUM_THREADS=8
+# ----------------------------------------
+
+
+# set up OMP environment
+export OMP_NUM_THREADS=16
 
 module purge
+# load compiler  
 module load mvapich2
 
+# set up mpi on the arcus system
 . enable_arcus-b_mpi.sh
 
+# compile program. Comment out these lines if program already built 
 make clean
 make
 
+# run program 
 mpirun $MPI_HOSTS ./$EXE $NUM_QUBITS
+
+

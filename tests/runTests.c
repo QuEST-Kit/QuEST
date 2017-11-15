@@ -8,6 +8,7 @@
 
 # include "QuEST/qubits.h"
 # include "QuEST/precision.h"
+# include "QuEST/qubits_debug.h"
 
 # define NUM_TESTS 17
 # define COMPARE_PRECISION 10e-13

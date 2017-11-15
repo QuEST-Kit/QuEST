@@ -9,6 +9,8 @@
  * the correct function or combination of functions to use from those included here.  
  */
 
+// functions in qubits.c
+
 void rotateQubitLocal (MultiQubit multiQubit, const int rotQubit, Complex alpha, Complex beta);
 
 void rotateQubitDistributed (MultiQubit multiQubit, const int rotQubit,
@@ -89,5 +91,16 @@ int validateMatrixIsUnitary(ComplexMatrix2 u);
 int validateAlphaBeta(Complex alpha, Complex beta);
 
 int validateUnitVector(REAL ux, REAL uy, REAL uz);
+
+// Helper functions in qubits_env_local.c and qubits_env_mpi.c that aren't part of the public API
+
+/**
+ * Rotate a single qubit by {{1,0},{0,p}} where p is a phase term determined by the type argument
+ * @param[in,out] multiQubit object representing the set of qubits
+ * @param[in] rotQubit qubit to rotate
+ * @param[in] type the type of phase gate to apply -- one of {SIGMA_Z, S_GATE, T_GATE}
+ * */
+void phaseGate(MultiQubit multiQubit, const int rotQubit, enum phaseGateType type);
+
 
 # endif

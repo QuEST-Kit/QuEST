@@ -5,66 +5,47 @@
 \RequirePackage{alltt}
 \RequirePackage{array}
 \RequirePackage{calc}
-\RequirePackage{float}
-\RequirePackage{ifthen}
+\RequirePackage{color}
+\RequirePackage{fancyhdr}
 \RequirePackage{verbatim}
-\RequirePackage[table]{xcolor}
-\RequirePackage{longtable}
-\RequirePackage{tabu}
-\RequirePackage{tabularx}
-\RequirePackage{multirow}
+
+% Setup fancy headings
+\pagestyle{fancyplain}
+\newcommand{\clearemptydoublepage}{%
+  \newpage{\pagestyle{empty}\cleardoublepage}%
+}
+\renewcommand{\sectionmark}[1]{%
+  \markright{\thesection\ #1}%
+}
+\lhead[\fancyplain{}{\bfseries\thepage}]{%
+  \fancyplain{}{\bfseries\rightmark}%
+}
+\rhead[\fancyplain{}{\bfseries\leftmark}]{%
+  \fancyplain{}{\bfseries\thepage}%
+}
+\rfoot[\fancyplain{}{\bfseries\scriptsize%
+  Generated on Tue Nov 14 13:24:53 2017 for Distributed QuEST by Doxygen }]{}
+\lfoot[]{\fancyplain{}{\bfseries\scriptsize%
+  Generated on Tue Nov 14 13:24:53 2017 for Distributed QuEST by Doxygen }}
+\cfoot{}
 
 %---------- Internal commands used in this style file ----------------
 
-\newcommand{\ensurespace}[1]{%
-  \begingroup%
-    \setlength{\dimen@}{#1}%
-    \vskip\z@\@plus\dimen@%
-    \penalty -100\vskip\z@\@plus -\dimen@%
-    \vskip\dimen@%
-    \penalty 9999%
-    \vskip -\dimen@%
-    \vskip\z@skip% hide the previous |\vskip| from |\addvspace|
-  \endgroup%
-}
-
-\newcommand{\DoxyLabelFont}{}
-\newcommand{\entrylabel}[1]{%
-  {%
-    \parbox[b]{\labelwidth-4pt}{%
-      \makebox[0pt][l]{\DoxyLabelFont#1}%
-      \vspace{1.5\baselineskip}%
-    }%
-  }%
-}
-
+% Generic environment used by all paragraph-based environments defined
+% below. Note that the command \title{...} needs to be defined inside
+% those environments!
 \newenvironment{DoxyDesc}[1]{%
-  \ensurespace{4\baselineskip}%
-  \begin{list}{}{%
-    \settowidth{\labelwidth}{20pt}%
+  \begin{list}{}%
+  {%
+    \settowidth{\labelwidth}{40pt}%
+    \setlength{\leftmargin}{\labelwidth}%
     \setlength{\parsep}{0pt}%
-    \setlength{\itemsep}{0pt}%
-    \setlength{\leftmargin}{\labelwidth+\labelsep}%
+    \setlength{\itemsep}{-4pt}%
     \renewcommand{\makelabel}{\entrylabel}%
   }%
-  \item[#1]%
+  \item[#1:]%
 }{%
   \end{list}%
-}
-
-\newsavebox{\xrefbox}
-\newlength{\xreflength}
-\newcommand{\xreflabel}[1]{%
-  \sbox{\xrefbox}{#1}%
-  \setlength{\xreflength}{\wd\xrefbox}%
-  \ifthenelse{\xreflength>\labelwidth}{%
-    \begin{minipage}{\textwidth}%
-      \setlength{\parindent}{0pt}%
-      \hangindent=15pt\bfseries #1\vspace{1.2\itemsep}%
-    \end{minipage}%
-  }{%
-   \parbox[b]{\labelwidth}{\makebox[0pt][l]{\textbf{#1}}}%
-  }%
 }
 
 %---------- Commands used by doxygen LaTeX output generator ----------
@@ -80,11 +61,10 @@
 
 % Used by @code ... @endcode
 \newenvironment{DoxyCode}{%
-  \par%
-  \scriptsize%
-  \begin{alltt}%
+  \footnotesize%
+  \verbatim%
 }{%
-  \end{alltt}%
+  \endverbatim%
   \normalsize%
 }
 
@@ -132,22 +112,20 @@
   \enddescription%
 }
 
-% Used by @image, @dotfile, @dot ... @enddot, and @msc ... @endmsc
+% Used by @image, @dotfile, and @dot ... @enddot
 % (only if caption is specified)
 \newenvironment{DoxyImage}{%
   \begin{figure}[H]%
-    \begin{center}%
+  \begin{center}%
 }{%
-    \end{center}%
+  \end{center}%
   \end{figure}%
 }
 
 % Used by @image, @dotfile, @dot ... @enddot, and @msc ... @endmsc
 % (only if no caption is specified)
 \newenvironment{DoxyImageNoCaption}{%
-  \begin{center}%
 }{%
-  \end{center}%
 }
 
 % Used by @attention
@@ -199,13 +177,6 @@
   \end{DoxyDesc}%
 }
 
-% Used by @copyright
-\newenvironment{DoxyCopyright}[1]{%
-  \begin{DoxyDesc}{#1}%
-}{%
-  \end{DoxyDesc}%
-}
-
 % Used by @remark
 \newenvironment{DoxyRemark}[1]{%
   \begin{DoxyDesc}{#1}%
@@ -213,7 +184,7 @@
   \end{DoxyDesc}%
 }
 
-% Used by @return and @returns
+% Used by @return
 \newenvironment{DoxyReturn}[1]{%
   \begin{DoxyDesc}{#1}%
 }{%
@@ -250,13 +221,15 @@
 
 % Used by @internal
 \newenvironment{DoxyInternal}[1]{%
-  \paragraph*{#1}%
+  \begin{DoxyDesc}{#1}%
 }{%
+  \end{DoxyDesc}%
 }
 
 % Used by @par and @paragraph
 \newenvironment{DoxyParagraph}[1]{%
-  \begin{list}{}{%
+  \begin{list}{}%
+  {%
     \settowidth{\labelwidth}{40pt}%
     \setlength{\leftmargin}{\labelwidth}%
     \setlength{\parsep}{0pt}%
@@ -269,198 +242,99 @@
 }
 
 % Used by parameter lists
-\newenvironment{DoxyParams}[2][]{%
-    \tabulinesep=1mm%
-    \par%
-    \ifthenelse{\equal{#1}{}}%
-      {\begin{longtabu} spread 0pt [l]{|X[-1,l]|X[-1,l]|}}% name + description
-    {\ifthenelse{\equal{#1}{1}}%
-      {\begin{longtabu} spread 0pt [l]{|X[-1,l]|X[-1,l]|X[-1,l]|}}% in/out + name + desc
-      {\begin{longtabu} spread 0pt [l]{|X[-1,l]|X[-1,l]|X[-1,l]|X[-1,l]|}}% in/out + type + name + desc
-    }
-    \multicolumn{2}{l}{\hspace{-6pt}\bfseries\fontseries{bc}\selectfont\color{darkgray} #2}\\[1ex]%
-    \hline%
-    \endfirsthead%
-    \multicolumn{2}{l}{\hspace{-6pt}\bfseries\fontseries{bc}\selectfont\color{darkgray} #2}\\[1ex]%
-    \hline%
-    \endhead%
+\newenvironment{DoxyParams}[1]{%
+  \begin{DoxyDesc}{#1}%
+    \begin{description}%
 }{%
-    \end{longtabu}%
-    \vspace{6pt}%
-}
-
-% Used for fields of simple structs
-\newenvironment{DoxyFields}[1]{%
-    \tabulinesep=1mm%
-    \par%
-    \begin{longtabu} spread 0pt [l]{|X[-1,r]|X[-1,l]|X[-1,l]|}%
-    \multicolumn{3}{l}{\hspace{-6pt}\bfseries\fontseries{bc}\selectfont\color{darkgray} #1}\\[1ex]%
-    \hline%
-    \endfirsthead%
-    \multicolumn{3}{l}{\hspace{-6pt}\bfseries\fontseries{bc}\selectfont\color{darkgray} #1}\\[1ex]%
-    \hline%
-    \endhead%
-}{%
-    \end{longtabu}%
-    \vspace{6pt}%
-}
-
-% Used for parameters within a detailed function description
-\newenvironment{DoxyParamCaption}{%
-  \renewcommand{\item}[2][]{##1 {\em ##2}}%
-}{%
+    \end{description}%
+  \end{DoxyDesc}%
 }
 
 % Used by return value lists
 \newenvironment{DoxyRetVals}[1]{%
-    \tabulinesep=1mm%
-    \par%
-    \begin{longtabu} spread 0pt [l]{|X[-1,r]|X[-1,l]|}%
-    \multicolumn{2}{l}{\hspace{-6pt}\bfseries\fontseries{bc}\selectfont\color{darkgray} #1}\\[1ex]%
-    \hline%
-    \endfirsthead%
-    \multicolumn{2}{l}{\hspace{-6pt}\bfseries\fontseries{bc}\selectfont\color{darkgray} #1}\\[1ex]%
-    \hline%
-    \endhead%
+  \begin{DoxyDesc}{#1}%
+    \begin{description}%
 }{%
-    \end{longtabu}%
-    \vspace{6pt}%
+    \end{description}%
+  \end{DoxyDesc}%
 }
 
 % Used by exception lists
 \newenvironment{DoxyExceptions}[1]{%
-    \tabulinesep=1mm%
-    \par%
-    \begin{longtabu} spread 0pt [l]{|X[-1,r]|X[-1,l]|}%
-    \multicolumn{2}{l}{\hspace{-6pt}\bfseries\fontseries{bc}\selectfont\color{darkgray} #1}\\[1ex]%
-    \hline%
-    \endfirsthead%
-    \multicolumn{2}{l}{\hspace{-6pt}\bfseries\fontseries{bc}\selectfont\color{darkgray} #1}\\[1ex]%
-    \hline%
-    \endhead%
+  \begin{DoxyDesc}{#1}%
+    \begin{description}%
 }{%
-    \end{longtabu}%
-    \vspace{6pt}%
+    \end{description}%
+  \end{DoxyDesc}%
 }
 
 % Used by template parameter lists
 \newenvironment{DoxyTemplParams}[1]{%
-    \tabulinesep=1mm%
-    \par%
-    \begin{longtabu} spread 0pt [l]{|X[-1,r]|X[-1,l]|}%
-    \multicolumn{2}{l}{\hspace{-6pt}\bfseries\fontseries{bc}\selectfont\color{darkgray} #1}\\[1ex]%
-    \hline%
-    \endfirsthead%
-    \multicolumn{2}{l}{\hspace{-6pt}\bfseries\fontseries{bc}\selectfont\color{darkgray} #1}\\[1ex]%
-    \hline%
-    \endhead%
+  \begin{DoxyDesc}{#1}%
+    \begin{description}%
 }{%
-    \end{longtabu}%
-    \vspace{6pt}%
+    \end{description}%
+  \end{DoxyDesc}%
 }
 
-% Used for member lists
-\newenvironment{DoxyCompactItemize}{%
-  \begin{itemize}%
-    \setlength{\itemsep}{-3pt}%
-    \setlength{\parsep}{0pt}%
-    \setlength{\topsep}{0pt}%
-    \setlength{\partopsep}{0pt}%
-}{%
-  \end{itemize}%
+\newcommand{\doxyref}[3]{\textbf{#1} (\textnormal{#2}\,\pageref{#3})}
+\newenvironment{DoxyCompactList}
+{\begin{list}{}{
+  \setlength{\leftmargin}{0.5cm}
+  \setlength{\itemsep}{0pt}
+  \setlength{\parsep}{0pt}
+  \setlength{\topsep}{0pt}
+  \renewcommand{\makelabel}{\hfill}}}
+{\end{list}}
+\newenvironment{DoxyCompactItemize}
+{
+  \begin{itemize}
+  \setlength{\itemsep}{-3pt}
+  \setlength{\parsep}{0pt}
+  \setlength{\topsep}{0pt}
+  \setlength{\partopsep}{0pt}
 }
-
-% Used for member descriptions
-\newenvironment{DoxyCompactList}{%
-  \begin{list}{}{%
-    \setlength{\leftmargin}{0.5cm}%
-    \setlength{\itemsep}{0pt}%
-    \setlength{\parsep}{0pt}%
-    \setlength{\topsep}{0pt}%
-    \renewcommand{\makelabel}{\hfill}%
-  }%
-}{%
-  \end{list}%
+{\end{itemize}}
+\newcommand{\PBS}[1]{\let\temp=\\#1\let\\=\temp}
+\newlength{\tmplength}
+\newenvironment{TabularC}[1]
+{
+\setlength{\tmplength}
+     {\linewidth/(#1)-\tabcolsep*2-\arrayrulewidth*(#1+1)/(#1)}
+      \par\begin{tabular*}{\linewidth}
+             {*{#1}{|>{\PBS\raggedright\hspace{0pt}}p{\the\tmplength}}|}
 }
-
-% Used for reference lists (@bug, @deprecated, @todo, etc.)
-\newenvironment{DoxyRefList}{%
-  \begin{list}{}{%
-    \setlength{\labelwidth}{10pt}%
-    \setlength{\leftmargin}{\labelwidth}%
-    \addtolength{\leftmargin}{\labelsep}%
-    \renewcommand{\makelabel}{\xreflabel}%
-  }%
-}{%
-  \end{list}%
-}
-
-% Used by @bug, @deprecated, @todo, etc.
-\newenvironment{DoxyRefDesc}[1]{%
-  \begin{list}{}{%
-    \renewcommand\makelabel[1]{\textbf{##1}}%
-    \settowidth\labelwidth{\makelabel{#1}}%
-    \setlength\leftmargin{\labelwidth+\labelsep}%
-  }%
-}{%
-  \end{list}%
-}
-
-% Used by parameter lists and simple sections
+{\end{tabular*}\par}
+\newcommand{\entrylabel}[1]{
+   {\parbox[b]{\labelwidth-4pt}{\makebox[0pt][l]{\textbf{#1}}\vspace{1.5\baselineskip}}}}
 \newenvironment{Desc}
-{\begin{list}{}{%
-    \settowidth{\labelwidth}{20pt}%
-    \setlength{\parsep}{0pt}%
-    \setlength{\itemsep}{0pt}%
-    \setlength{\leftmargin}{\labelwidth+\labelsep}%
-    \renewcommand{\makelabel}{\entrylabel}%
+{\begin{list}{}
+  {
+    \settowidth{\labelwidth}{40pt}
+    \setlength{\leftmargin}{\labelwidth}
+    \setlength{\parsep}{0pt}
+    \setlength{\itemsep}{-4pt}
+    \renewcommand{\makelabel}{\entrylabel}
   }
-}{%
-  \end{list}%
 }
-
-% Used by tables
-\newcommand{\PBS}[1]{\let\temp=\\#1\let\\=\temp}%
-\newenvironment{TabularC}[1]%
-{\tabulinesep=1mm
-\begin{longtabu} spread 0pt [c]{*#1{|X[-1]}|}}%
-{\end{longtabu}\par}%
-
-\newenvironment{TabularNC}[1]%
-{\begin{tabu} spread 0pt [l]{*#1{|X[-1]}|}}%
-{\end{tabu}\par}%
-
-% Used for member group headers
-\newenvironment{Indent}{%
-  \begin{list}{}{%
-    \setlength{\leftmargin}{0.5cm}%
-  }%
-  \item[]\ignorespaces%
-}{%
-  \unskip%
-  \end{list}%
-}
-
-% Used when hyperlinks are turned off
-\newcommand{\doxyref}[3]{%
-  \textbf{#1} (\textnormal{#2}\,\pageref{#3})%
-}
-
-% Used to link to a table when hyperlinks are turned on
-\newcommand{\doxytablelink}[2]{%
-  \ref{#1}%
-}
-
-% Used to link to a table when hyperlinks are turned off
-\newcommand{\doxytableref}[3]{%
-  \ref{#3}%
-}
-
-% Used by @addindex
-\newcommand{\lcurly}{\{}
-\newcommand{\rcurly}{\}}
-
-% Colors used for syntax highlighting
+{\end{list}}
+\newenvironment{Indent}
+  {\begin{list}{}{\setlength{\leftmargin}{0.5cm}}
+      \item[]\ignorespaces}
+  {\unskip\end{list}}
+\setlength{\parindent}{0cm}
+\setlength{\parskip}{0.2cm}
+\addtocounter{secnumdepth}{1}
+\sloppy
+\usepackage[T1]{fontenc}
+\makeatletter
+\renewcommand{\paragraph}{\@startsection{paragraph}{4}{0ex}%
+   {-3.25ex plus -1ex minus -0.2ex}%
+   {1.5ex plus 0.2ex}%
+   {\normalfont\normalsize\bfseries}}
+\makeatother
+\stepcounter{secnumdepth}
+\stepcounter{tocdepth}
 \definecolor{comment}{rgb}{0.5,0.0,0.0}
 \definecolor{keyword}{rgb}{0.0,0.5,0.0}
 \definecolor{keywordtype}{rgb}{0.38,0.25,0.125}
@@ -472,6 +346,3 @@
 \definecolor{vhdlkeyword}{rgb}{0.43,0.0,0.43}
 \definecolor{vhdllogic}{rgb}{1.0,0.0,0.0}
 \definecolor{vhdlchar}{rgb}{0.0,0.0,0.0}
-
-% Color used for table heading
-\newcommand{\tableheadbgcolor}{lightgray}%

@@ -8,6 +8,7 @@
 # include <assert.h>
 # include "precision.h"
 # include "qubits.h"
+# include "qubits_internal.h"
 
 # include <omp.h>
 
@@ -367,15 +368,27 @@ int compareStates(MultiQubit mq1, MultiQubit mq2, REAL precision){
 	return 1;
 }
 
-/** Rotate a single qubit in the state vector of probability amplitudes, given the angle rotation arguments.
-alphaRe = cos(angle1) * cos(angle2) \n
-alphaIm = cos(angle1) * sin(angle2) \n            
-betaRe  = sin(angle1) * cos(angle3) \n            
-betaIm  = sin(angle1) * sin(angle3) \n           
+/** Rotate a single qubit a certain angle about an axis
 
 @remarks Qubits are zero-based and the                     
 the first qubit is the rightmost                  
-                                                                      
+
+@param[in,out] multiQubit object representing the set of qubits
+@param[in] rotQubit qubit to rotate
+@param[in] angle angle by which to rotate in radians
+@param[in] unitAxis unit vector pointing along the axis about which to rotate
+*/
+void rotateQubitByAngle(MultiQubit multiQubit, const int rotQubit, REAL angle, Vector unitAxis){
+	Complex alpha, beta;
+	alpha.real = cos(angle/2.0);
+	alpha.imag = -sin(angle/2.0)*unitAxis.z;	
+	beta.real = 0;
+	beta.imag = -sin(angle/2.0)*(unitAxis.x + unitAxis.y);
+	rotateQubit(multiQubit, rotQubit, alpha, beta);
+}
+
+
+/** Rotate a single qubit in the state vector of probability amplitudes.                                                                       
 @param[in,out] multiQubit object representing the set of qubits
 @param[in] rotQubit qubit to rotate
 @param[in] alpha rotation angle
@@ -615,12 +628,8 @@ void singleQubitUnitaryDistributed (MultiQubit multiQubit, const int rotQubit,
 
 
 /** Rotate a single qubit in the state
-vector of probability amplitudes, given the              
-angle rotation arguments, and a subset of the state vector with upper and lower block values 
-stored seperately.
-
-@remarks Qubits are zero-based and the                     
-the first qubit is the rightmost                  
+vector of probability amplitudes, given two complex numbers alpha and beta, 
+and a subset of the state vector with upper and lower block values stored seperately.
                                                                       
 @param[in,out] multiQubit object representing the set of qubits
 @param[in] rotQubit qubit to rotate
@@ -677,18 +686,13 @@ void rotateQubitDistributed (MultiQubit multiQubit, const int rotQubit,
 	}
 }
 
-/** Rotate a single qubit in the state vector of probability amplitudes, given the angle rotation arguments and 
-a control qubit. Only perform the rotation for elements where the control qubit is one.
-alphaRe = cos(angle1) * cos(angle2) \n
-alphaIm = cos(angle1) * sin(angle2) \n            
-betaRe  = sin(angle1) * cos(angle3) \n            
-betaIm  = sin(angle1) * sin(angle3) \n           
-
-@remarks Qubits are zero-based and the                     
-the first qubit is the rightmost                  
-                                                                     
+/** Rotate a single qubit in the state vector of probability amplitudes, 
+given two complex numbers alpha and beta and a control qubit. 
+Only perform the rotation for elements where the control qubit is one.
+                                                                    
 @param[in,out] multiQubit object representing the set of qubits
 @param[in] rotQubit qubit to rotate
+@param[in] controlQubit perform rotation if this qubit is 1
 @param[in] alpha rotation angle
 @param[in] beta rotation angle
  */
@@ -771,14 +775,10 @@ void controlRotateQubitLocal (MultiQubit multiQubit, const int rotQubit, const i
 
 } 
 
-/** Rotate a single qubit in the state
-vector of probability amplitudes, given the              
-angle rotation arguments, and a subset of the state vector with upper and lower block values 
+/** Rotate a single qubit in the state vector of probability amplitudes, given two complex 
+numbers alpha and beta and a subset of the state vector with upper and lower block values 
 stored seperately. Only perform the rotation where the control qubit is one.
-
-@remarks Qubits are zero-based and the                     
-the first qubit is the rightmost                  
-                                                                      
+                                               
 @param[in,out] multiQubit object representing the set of qubits
 @param[in] rotQubit qubit to rotate
 @param[in] controlQubit qubit to determine whether or not to perform a rotation 
@@ -1026,10 +1026,7 @@ Operate on a subset of the state vector with upper and lower block values
 stored seperately. This rotation is just swapping upper and lower values, and
 stateVecIn must already be the correct section for this chunk. Only perform the rotation
 for elements where controlQubit is one.
-
-@remarks Qubits are zero-based and the                     
-the first qubit is the rightmost                  
-                                                                      
+                                        
 @param[in,out] multiQubit object representing the set of qubits
 @param[in] rotQubit qubit to rotate
 @param[in] stateVecIn probability amplitudes in lower or upper half of a block depending on chunkId
@@ -1251,10 +1248,7 @@ void hadamardLocal(MultiQubit multiQubit, const int rotQubit)
 Operate on a subset of the state vector with upper and lower block values 
 stored seperately. This rotation is just swapping upper and lower values, and
 stateVecIn must already be the correct section for this chunk
-
-@remarks Qubits are zero-based and the                     
-the first qubit is the rightmost                  
-                                                                      
+                                        
 @param[in,out] multiQubit object representing the set of qubits
 @param[in] rotQubit qubit to rotate
 @param[in] stateVecIn probability amplitudes in lower or upper half of a block depending on chunkId

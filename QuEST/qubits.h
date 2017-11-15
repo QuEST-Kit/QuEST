@@ -77,14 +77,6 @@ void initStateZero(MultiQubit *multiQubit);
 
 void initStatePlus(MultiQubit *multiQubit);
 
-void initStateOfSingleQubit(MultiQubit *multiQubit, int qubitId, int outcome);
-
-void initStateDebug(MultiQubit *multiQubit);
-
-void initializeStateFromSingleFile(MultiQubit *multiQubit, char filename[200], QuESTEnv env);
-
-int compareStates(MultiQubit mq1, MultiQubit mq2, REAL precision);
-
 void quadCPhaseGate (MultiQubit multiQubit, const int idQubit1, const int idQubit2, 
 	const int idQubit3, const int idQubit4);
 
@@ -129,12 +121,6 @@ int syncQuESTSuccess(QuESTEnv env, int successCode);
  */
 void reportQuESTEnv(QuESTEnv env);
 
-/** Report a list of CPU hostnames and the rank that is running on each if running with MPI enabled and an 
-error message otherwise. For debugging purposes. 
-@param[in] env object representing the execution environment. A single instance is used for each program
-*/
-void reportNodeList(QuESTEnv env);
-
 void getEnvironmentString(QuESTEnv env, MultiQubit multiQubit, char str[200]);
 
 
@@ -168,15 +154,16 @@ REAL getProbEl(MultiQubit multiQubit, long long int index);
  */
 REAL calcTotalProbability(MultiQubit multiQubit);
 
-/** Rotate a single qubit in the state vector of probability amplitudes, given the angle rotation arguments.
-alphaRe = cos(angle1) * cos(angle2) \n
-alphaIm = cos(angle1) * sin(angle2) \n            
-betaRe  = sin(angle1) * cos(angle3) \n            
-betaIm  = sin(angle1) * sin(angle3) \n           
+/** Rotate a single qubit in the state vector of probability amplitudes. Given two complex
+numbers alpha and beta, applies the operation \n
+[alpha, -beta* \n
+ beta, alpha*] \n
 
 @remarks Qubits are zero-based and the                     
 the first qubit is the rightmost                  
-                                                                      
+
+alpha, beta must obey |alpha|^2 + |beta|^2 = 1
+                                                                     
 @param[in,out] multiQubit object representing the set of qubits
 @param[in] rotQubit qubit to rotate
 @param[in] alpha rotation angle
@@ -186,16 +173,19 @@ void rotateQubit(MultiQubit multiQubit, const int rotQubit, Complex alpha, Compl
 
 void singleQubitUnitary(MultiQubit multiQubit, const int rotQubit, ComplexMatrix2 u);
 
-/** Rotate a single qubit in the state vector of probability amplitudes, given the angle rotation arguments and a control qubit. Only perform 
-the rotation for elements where the control qubit is 1. 
-alphaRe = cos(angle1) * cos(angle2) \n
-alphaIm = cos(angle1) * sin(angle2) \n            
-betaRe  = sin(angle1) * cos(angle3) \n            
-betaIm  = sin(angle1) * sin(angle3) \n           
+void rotateQubitByAngle(MultiQubit multiQubit, const int rotQubit, REAL angle, Vector unitAxis);
 
+/** Rotate a single qubit in the state vector of probability amplitudes.
+Given two complex numbers alpha and beta and a control qubit, applies the operation: \n
+[alpha, -beta* \n
+ beta, alpha*] \n
+Only when the control qubit is one.
+                                                                    
 @remarks Qubits are zero-based and the                     
 the first qubit is the rightmost                  
-                                                                      
+
+alpha, beta must obey |alpha|^2 + |beta|^2 = 1
+
 @param[in,out] multiQubit object representing the set of qubits
 @param[in] rotQubit qubit to rotate
 @param[in] controlQubit perform rotation if this qubit is 1
@@ -278,15 +268,6 @@ The function returns the probability of this outcome (if zero, it will exit with
 @return Total probability that the 3 qubits are not all in the 1 state. 
 */
 REAL probOfFilterOut111(MultiQubit multiQubit, const int idQubit1, const int idQubit2, const int idQubit3);
-
-/**
-Rotate a single qubit by {{1,0},{0,p}} where p is a phase term determined by the type argument
-@param[in,out] multiQubit object representing the set of qubits
-@param[in] rotQubit qubit to rotate
-@param[in] type the type of phase gate to apply -- one of {SIGMA_Z, S_GATE, T_GATE}
-*/
-void phaseGate(MultiQubit multiQubit, const int rotQubit, enum phaseGateType type);
-
 
 
 
