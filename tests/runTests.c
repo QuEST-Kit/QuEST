@@ -10,7 +10,7 @@
 # include "QuEST/precision.h"
 # include "QuEST/qubits_debug.h"
 
-# define NUM_TESTS 17
+# define NUM_TESTS 20
 # define COMPARE_PRECISION 10e-13
 # define PATH_TO_TESTS "tests/unit/"
 # define VERBOSE 0
@@ -337,57 +337,130 @@ int test_quadCPhaseGate(char testName[200]){
 }
 
 int test_rotateQubit(char testName[200]){
-	printf("skipping rotate!\n");
-	return 1;
 	int passed=1;
 
-	int numQubits=4;
+	int numQubits=10;
 	int rotQubit;
 	MultiQubit mq, mqVerif; 
 
 	REAL angs[3];
 	Complex alpha, beta;
 
-	for (int axis=0; axis<3; axis++){
-		angs[0]=0; angs[1]=0; angs[2]=0;
-		// rotate along one axis at a time
-		angs[axis]=1.6;
-		alpha.real = cos(angs[0]) * cos(angs[1]);
-		alpha.imag = cos(angs[0]) * sin(angs[1]);
-		beta.real  = sin(angs[0]) * cos(angs[2]);
-		beta.imag  = sin(angs[0]) * sin(angs[2]);
+    angs[0]=1.2; angs[1]=-2.4; angs[2]=0.3;
+    alpha.real = cos(angs[0]) * cos(angs[1]);
+    alpha.imag = cos(angs[0]) * sin(angs[1]);
+    beta.real  = sin(angs[0]) * cos(angs[2]);
+    beta.imag  = sin(angs[0]) * sin(angs[2]);
 
-		createMultiQubit(&mq, numQubits, env);
-		createMultiQubit(&mqVerif, numQubits, env);
+    createMultiQubit(&mq, numQubits, env);
+    createMultiQubit(&mqVerif, numQubits, env);
 
-		initStateDebug(&mq);
-		initStateDebug(&mqVerif);
-		for (int i=0; i<numQubits; i++){
-			rotQubit=i;
-			rotateQubit(mq, rotQubit, alpha, beta);
-		}
-		// note -- this is only checking if the state changed at all due to rotation,
-		// not that it changed correctly
-		if (passed) passed = !compareStates(mq, mqVerif, COMPARE_PRECISION);
+    initStateDebug(&mq);
+    initStateDebug(&mqVerif);
+    for (int i=0; i<numQubits; i++){
+        rotQubit=i;
+        rotateQubit(mq, rotQubit, alpha, beta);
+    }
+    // note -- this is only checking if the state changed at all due to rotation,
+    // not that it changed correctly
+    if (passed) passed = !compareStates(mq, mqVerif, COMPARE_PRECISION);
 
-		// Rotate back the other way and check we arrive back at the initial state
-		angs[axis]=-1.6;
 
-		alpha.real = cos(angs[0]) * cos(angs[1]);
-		alpha.imag = cos(angs[0]) * sin(angs[1]);
-		beta.real  = sin(angs[0]) * cos(angs[2]);
-		beta.imag  = sin(angs[0]) * sin(angs[2]);
+    // Rotate back the other way and check we arrive back at the initial state
+    alpha.real = alpha.real;
+    alpha.imag = -alpha.imag;
+    beta.real  = -beta.real;
+    beta.imag  = -beta.imag;
 
-		for (int i=0; i<numQubits; i++){
-			rotQubit=i;
-			rotateQubit(mq, rotQubit, alpha, beta);
-		}
+    for (int i=numQubits-1; i>=0; i--){
+        rotQubit=i;
+        rotateQubit(mq, rotQubit, alpha, beta);
+    }
 
-		if (passed) passed = compareStates(mq, mqVerif, COMPARE_PRECISION);
-	}
+	if (passed) passed = compareStates(mq, mqVerif, COMPARE_PRECISION);
 
 	destroyMultiQubit(mq, env);
 	destroyMultiQubit(mqVerif, env);
+
+
+    // check for normalisation
+    numQubits=25;
+    createMultiQubit(&mq, numQubits, env);
+    initStatePlus(&mq);
+    for (int i=0; i<numQubits; i++){
+        rotQubit=i;
+        rotateQubit(mq, rotQubit, alpha, beta);
+    }
+    REAL outcome = calcTotalProbability(mq);    
+    if (passed) passed = compareReals(1.0, outcome, COMPARE_PRECISION);
+    destroyMultiQubit(mq, env);
+
+
+	return passed;
+}
+
+int test_singleQubitUnitary(char testName[200]){
+	int passed=1;
+
+	int numQubits=10;
+	int rotQubit;
+	MultiQubit mq, mqVerif; 
+
+	REAL angs[3];
+	Complex alpha, beta;
+    ComplexMatrix2 u, uDagger;
+
+    angs[0]=1.2; angs[1]=-2.4; angs[2]=0.3;
+    alpha.real = cos(angs[0]) * cos(angs[1]);
+    alpha.imag = cos(angs[0]) * sin(angs[1]);
+    beta.real  = sin(angs[0]) * cos(angs[2]);
+    beta.imag  = sin(angs[0]) * sin(angs[2]);
+
+    u.r0c0 = (Complex) {.real=alpha.real, .imag=alpha.imag};
+    u.r0c1 = (Complex) {.real=-beta.real, .imag=beta.imag}; 
+    u.r1c0 = (Complex) {.real=beta.real, .imag=beta.imag};
+    u.r1c1 = (Complex) {.real=alpha.real, .imag=-alpha.imag};
+
+    createMultiQubit(&mq, numQubits, env);
+    createMultiQubit(&mqVerif, numQubits, env);
+
+    initStateDebug(&mq);
+    initStateDebug(&mqVerif);
+    for (int i=0; i<numQubits; i++){
+        rotQubit=i;
+        rotateQubit(mqVerif, rotQubit, alpha, beta);
+        singleQubitUnitary(mq, rotQubit, u);
+    }
+    // assigning alpha/beta values to u such that rotateQubit should match singleQubitUnitary
+    if (passed) passed = compareStates(mq, mqVerif, COMPARE_PRECISION);
+
+    // Rotate back the other way and check we arrive back at the initial state
+    uDagger.r0c0.real=u.r0c0.real; uDagger.r0c0.imag=-u.r0c0.imag;
+    uDagger.r0c1.real=u.r1c0.real; uDagger.r0c1.imag=-u.r1c0.imag;
+    uDagger.r1c0.real=u.r0c1.real; uDagger.r1c0.imag=-u.r0c1.imag; 
+    uDagger.r1c1.real=u.r1c1.real; uDagger.r1c1.imag=-u.r1c1.imag;
+    
+    for (int i=numQubits-1; i>=0; i--){
+        rotQubit=i;
+        singleQubitUnitary(mq, rotQubit, uDagger);
+    }
+
+    initStateDebug(&mqVerif);
+	if (passed) passed = compareStates(mq, mqVerif, COMPARE_PRECISION);
+
+	destroyMultiQubit(mq, env);
+	destroyMultiQubit(mqVerif, env);
+
+    // check for normalisation
+    createMultiQubit(&mq, numQubits, env);
+    initStatePlus(&mq);
+    for (int i=0; i<numQubits; i++){
+        rotQubit=i;
+        singleQubitUnitary(mq, rotQubit, uDagger);
+    }
+    REAL outcome = calcTotalProbability(mq);    
+    if (passed) passed = compareReals(1.0, outcome, COMPARE_PRECISION);
+    destroyMultiQubit(mq, env);
 
 	return passed;
 }
@@ -404,15 +477,15 @@ int test_controlRotateQubit(char testName[200]){
 	// assumes rotateQubit function is correct
 	
 	REAL ang1, ang2, ang3;
-        ang1 = 1.2320;
-        ang2 = 0.4230;
-        ang3 = -0.65230;
+    ang1 = 1.2320;
+    ang2 = 0.4230;
+    ang3 = -0.65230;
 
 	Complex alpha, beta;
 	alpha.real = cos(ang1) * cos(ang2);
-        alpha.imag = cos(ang1) * sin(ang2);
-        beta.real  = sin(ang1) * cos(ang3);
-        beta.imag  = sin(ang1) * sin(ang3);
+    alpha.imag = cos(ang1) * sin(ang2);
+    beta.real  = sin(ang1) * cos(ang3);
+    beta.imag  = sin(ang1) * sin(ang3);
 
 	createMultiQubit(&mq, numQubits, env);
 	createMultiQubit(&mqVerif, numQubits, env);
@@ -430,6 +503,145 @@ int test_controlRotateQubit(char testName[200]){
 			if (passed) passed = compareStates(mq, mqVerif, COMPARE_PRECISION);
 		}
 	}
+	destroyMultiQubit(mq, env);
+	destroyMultiQubit(mqVerif, env);
+
+	return passed;
+}
+
+int test_controlSingleQubitUnitary(char testName[200]){
+	char filename[200];
+	int passed=1;
+	int count=1;
+
+	int numQubits=15;
+	int rotQubit, controlQubit;
+    ComplexMatrix2 u;
+	MultiQubit mq, mqVerif; 
+
+	// assumes controlRotateQubit function is correct
+	
+	REAL ang1, ang2, ang3;
+    ang1 = 1.2320;
+    ang2 = 0.4230;
+    ang3 = -0.65230;
+
+	Complex alpha, beta;
+	alpha.real = cos(ang1) * cos(ang2);
+    alpha.imag = cos(ang1) * sin(ang2);
+    beta.real  = sin(ang1) * cos(ang3);
+    beta.imag  = sin(ang1) * sin(ang3);
+
+    u.r0c0 = (Complex) {.real=alpha.real, .imag=alpha.imag};
+    u.r0c1 = (Complex) {.real=-beta.real, .imag=beta.imag}; 
+    u.r1c0 = (Complex) {.real=beta.real, .imag=beta.imag};
+    u.r1c1 = (Complex) {.real=alpha.real, .imag=-alpha.imag};
+
+	createMultiQubit(&mq, numQubits, env);
+	createMultiQubit(&mqVerif, numQubits, env);
+
+	for (int j=0; j<numQubits; j++){
+		controlQubit=j;
+		for (int i=0; i<numQubits; i++){
+            if (j==i) continue;
+			initStateDebug(&mq);
+			initStateDebug(&mqVerif);
+			rotQubit=i;
+			controlRotateQubit(mqVerif, rotQubit, controlQubit, alpha, beta);
+			controlSingleQubitUnitary(mq, rotQubit, controlQubit, u);
+			
+			if (passed) passed = compareStates(mq, mqVerif, COMPARE_PRECISION);
+		}
+	}
+    
+	destroyMultiQubit(mq, env);
+	destroyMultiQubit(mqVerif, env);
+
+	return passed;
+}
+
+int test_multiControlSingleQubitUnitary(char testName[200]){
+	char filename[200];
+	int passed=1;
+	int count=1;
+
+	int numQubits=15;
+	int rotQubit, controlQubit;
+    long long int mask;
+    ComplexMatrix2 u;
+	MultiQubit mq, mqVerif; 
+
+	// assumes controlRotateQubit function is correct
+	
+	REAL ang1, ang2, ang3;
+    ang1 = 1.2320;
+    ang2 = 0.4230;
+    ang3 = -0.65230;
+
+	Complex alpha, beta;
+	alpha.real = cos(ang1) * cos(ang2);
+    alpha.imag = cos(ang1) * sin(ang2);
+    beta.real  = sin(ang1) * cos(ang3);
+    beta.imag  = sin(ang1) * sin(ang3);
+
+    u.r0c0 = (Complex) {.real=alpha.real, .imag=alpha.imag};
+    u.r0c1 = (Complex) {.real=-beta.real, .imag=beta.imag}; 
+    u.r1c0 = (Complex) {.real=beta.real, .imag=beta.imag};
+    u.r1c1 = (Complex) {.real=alpha.real, .imag=-alpha.imag};
+
+	createMultiQubit(&mq, numQubits, env);
+	createMultiQubit(&mqVerif, numQubits, env);
+
+    // test mask contains one control qubit
+	for (int j=0; j<numQubits; j++){
+		controlQubit=j;
+		for (int i=0; i<numQubits; i++){
+            if (j==i) continue;
+			initStateDebug(&mq);
+			initStateDebug(&mqVerif);
+			rotQubit=i;
+			controlRotateQubit(mqVerif, rotQubit, controlQubit, alpha, beta);
+            mask = 1LL << controlQubit;
+			multiControlSingleQubitUnitary(mq, rotQubit, mask, u);
+			
+			if (passed) passed = compareStates(mq, mqVerif, COMPARE_PRECISION);
+		}
+	}
+   
+	destroyMultiQubit(mq, env);
+	destroyMultiQubit(mqVerif, env);
+
+    // randomly test a few different other multi control qubit masks 
+    numQubits=4;
+	createMultiQubit(&mq, numQubits, env);
+	createMultiQubit(&mqVerif, numQubits, env);
+
+    rotQubit=3;
+	controlQubit=0;
+    mask = 1LL << controlQubit;
+	controlQubit=2;
+    mask = mask | (1LL << controlQubit);
+
+	initStateDebug(&mq);
+	multiControlSingleQubitUnitary(mq, rotQubit, mask, u);
+    sprintf(filename, "%s%s%d.out", PATH_TO_TESTS, testName, count++); 	
+    initializeStateFromSingleFile(&mqVerif, filename, env);
+	if (passed) passed = compareStates(mq, mqVerif, COMPARE_PRECISION);
+
+    rotQubit=1;
+	controlQubit=0;
+    mask = 1LL << controlQubit;
+	controlQubit=2;
+    mask = mask | (1LL << controlQubit);
+	controlQubit=3;
+    mask = mask | (1LL << controlQubit);
+
+	initStateDebug(&mq);
+	multiControlSingleQubitUnitary(mq, rotQubit, mask, u);
+    sprintf(filename, "%s%s%d.out", PATH_TO_TESTS, testName, count++); 	
+    initializeStateFromSingleFile(&mqVerif, filename, env);
+	if (passed) passed = compareStates(mq, mqVerif, COMPARE_PRECISION);
+
 	destroyMultiQubit(mq, env);
 	destroyMultiQubit(mqVerif, env);
 
@@ -637,7 +849,10 @@ int main (int narg, char** varg) {
 		test_controlPhaseGate,
 		test_quadCPhaseGate,
 		test_rotateQubit,
+        test_singleQubitUnitary,
 		test_controlRotateQubit,
+        test_controlSingleQubitUnitary,
+        test_multiControlSingleQubitUnitary,
 		test_findProbabilityOfOutcome,
 		test_measureInState,
 		test_probOfFilterOut111,
@@ -657,7 +872,10 @@ int main (int narg, char** varg) {
 		"controlPhaseGate",
 		"quadCPhaseGate",
 		"rotateQubit",
+        "singleQubitUnitary",
 		"controlRotateQubit",
+        "controlSingleQubitUnitary",
+        "multiControlSingleQubitUnitary",
 		"findProbabilityOfOutcome",
 		"measureInState",
 		"probOfFilterOut111",
