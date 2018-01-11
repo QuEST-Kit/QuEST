@@ -36,6 +36,26 @@ void controlRotateQubitDistributed (MultiQubit multiQubit, const int rotQubit, c
                 ComplexArray stateVecLo,
                 ComplexArray stateVecOut);
 
+void controlSingleQubitUnitaryLocal(MultiQubit multiQubit, const int rotQubit, const int controlQubit,
+                ComplexMatrix2 u);
+
+void controlSingleQubitUnitaryDistributed (MultiQubit multiQubit, const int rotQubit, const int controlQubit,
+        Complex rot1, Complex rot2,
+        ComplexArray stateVecUp,
+        ComplexArray stateVecLo,
+        ComplexArray stateVecOut);
+
+void multiControlSingleQubitUnitaryLocal(MultiQubit multiQubit, const int rotQubit,
+                long long int mask, ComplexMatrix2 u);
+
+void multiControlSingleQubitUnitaryDistributed (MultiQubit multiQubit,
+        const int rotQubit,
+        long long int mask,
+        Complex rot1, Complex rot2,
+        ComplexArray stateVecUp,
+        ComplexArray stateVecLo,
+        ComplexArray stateVecOut);
+
 void sigmaXLocal(MultiQubit multiQubit, const int rotQubit);
 
 void sigmaXDistributed (MultiQubit multiQubit, const int rotQubit,

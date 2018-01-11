@@ -28,6 +28,10 @@ typedef struct ComplexMatrix2
 	Complex r1c0, r1c1;
 } ComplexMatrix2;
 
+typedef struct Vector
+{
+	REAL x, y, z;
+} Vector;
 
 /** Represents a system of qubits.
 Qubits are zero-based and the the first qubit is the rightmost
@@ -193,6 +197,10 @@ alpha, beta must obey |alpha|^2 + |beta|^2 = 1
 @param[in] beta rotation angle
  */
 void controlRotateQubit(MultiQubit multiQubit, const int rotQubit, const int controlQubit, Complex alpha, Complex beta);
+
+void controlSingleQubitUnitary(MultiQubit multiQubit, const int rotQubit, const int controlQubit, ComplexMatrix2 u);
+
+void multiControlSingleQubitUnitary(MultiQubit multiQubit, const int rotQubit, long long int mask, ComplexMatrix2 u);
 
 /** Rotate a single qubit by {{0,1},{1,0}} -- swap |0> and |1>.
 @param[in,out] multiQubit object representing the set of qubits

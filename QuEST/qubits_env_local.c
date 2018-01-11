@@ -107,6 +107,23 @@ void controlRotateQubit(MultiQubit multiQubit, const int rotQubit, const int con
 	controlRotateQubitLocal(multiQubit, rotQubit, controlQubit, alpha, beta);
 }
 
+void controlSingleQubitUnitary(MultiQubit multiQubit, const int rotQubit, const int controlQubit, ComplexMatrix2 u) 
+{
+	if (!validateMatrixIsUnitary(u)){
+		printf("Error: parameters specified to function singleQubitUnitary form an invalid unitary matrix\n");
+	}
+    
+	controlSingleQubitUnitaryLocal(multiQubit, rotQubit, controlQubit, u);
+}
+
+void multiControlSingleQubitUnitary(MultiQubit multiQubit, const int rotQubit, long long int mask, ComplexMatrix2 u) 
+{
+	if (!validateMatrixIsUnitary(u)){
+		printf("Error: parameters specified to function singleQubitUnitary form an invalid unitary matrix\n");
+	}
+	multiControlSingleQubitUnitaryLocal(multiQubit, rotQubit, mask, u);
+}
+
 void sigmaX(MultiQubit multiQubit, const int rotQubit) 
 {
 	sigmaXLocal(multiQubit, rotQubit);
