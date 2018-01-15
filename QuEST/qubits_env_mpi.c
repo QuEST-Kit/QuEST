@@ -46,7 +46,7 @@ void syncQuESTEnv(QuESTEnv env){
 	MPI_Barrier(MPI_COMM_WORLD);
 }
 
-int syncQuESTSuccess(QuESTEnv env, int successCode){
+int syncQuESTSuccess(int successCode){
 	int totalSuccess;
 	MPI_Allreduce(&successCode, &totalSuccess, 1, MPI_INT, MPI_LAND, MPI_COMM_WORLD);
 	return totalSuccess;
@@ -269,9 +269,8 @@ void exchangeStateVectors(MultiQubit multiQubit, int pairRank){
 
 void rotateQubit(MultiQubit multiQubit, const int rotQubit, Complex alpha, Complex beta)
 {
-        if (!validateAlphaBeta(alpha, beta)){
-                printf("Error: parameters specified to function rotateQubit form an invalid unitary matrix\n");
-        }
+        QuESTAssert(rotQubit >= 0 && rotQubit < multiQubit.numQubits, 1, __func__);
+        QuESTAssert(validateAlphaBeta(alpha, beta), 6, __func__);
 
         // flag to require memory exchange. 1: an entire block fits on one rank, 0: at most half a block fits on one rank
         int useLocalDataOnly = halfMatrixBlockFitsInChunk(multiQubit.numAmps, rotQubit);
@@ -310,9 +309,8 @@ void rotateQubit(MultiQubit multiQubit, const int rotQubit, Complex alpha, Compl
 
 void singleQubitUnitary(MultiQubit multiQubit, const int rotQubit, ComplexMatrix2 u)
 {
-        if (!validateMatrixIsUnitary(u)){
-                printf("Error: parameters specified to function singleQubitUnitary form an invalid unitary matrix\n");
-        }
+        QuESTAssert(rotQubit >= 0 && rotQubit < multiQubit.numQubits, 1, __func__);
+        QuESTAssert(validateMatrixIsUnitary(u), 5, __func__);
 
         // flag to require memory exchange. 1: an entire block fits on one rank, 0: at most half a block fits on one rank
         int useLocalDataOnly = halfMatrixBlockFitsInChunk(multiQubit.numAmps, rotQubit);
@@ -353,6 +351,11 @@ void singleQubitUnitary(MultiQubit multiQubit, const int rotQubit, ComplexMatrix
 
 void controlRotateQubit(MultiQubit multiQubit, const int rotQubit, const int controlQubit, Complex alpha, Complex beta)
 {
+        QuESTAssert(rotQubit >= 0 && rotQubit < multiQubit.numQubits, 1, __func__);
+        QuESTAssert(controlQubit >= 0 && controlQubit < multiQubit.numQubits, 2, __func__);
+        QuESTAssert(controlQubit != rotQubit, 3, __func__);
+        QuESTAssert(validateAlphaBeta(alpha, beta), 6, __func__);
+
         // flag to require memory exchange. 1: an entire block fits on one rank, 0: at most half a block fits on one rank
         int useLocalDataOnly = halfMatrixBlockFitsInChunk(multiQubit.numAmps, rotQubit);
         Complex rot1, rot2;
@@ -392,9 +395,10 @@ void controlRotateQubit(MultiQubit multiQubit, const int rotQubit, const int con
 void controlSingleQubitUnitary(MultiQubit multiQubit, const int rotQubit, const int controlQubit, 
         ComplexMatrix2 u)
 {
-        if (!validateMatrixIsUnitary(u)){
-                printf("Error: parameters specified to function singleQubitUnitary form an invalid unitary matrix\n");
-        }
+        QuESTAssert(rotQubit >= 0 && rotQubit < multiQubit.numQubits, 1, __func__);
+        QuESTAssert(controlQubit >= 0 && controlQubit < multiQubit.numQubits, 2, __func__);
+        QuESTAssert(controlQubit != rotQubit, 3, __func__);
+        QuESTAssert(validateMatrixIsUnitary(u), 5, __func__);
 
         // flag to require memory exchange. 1: an entire block fits on one rank, 0: at most half a block fits on one rank
         int useLocalDataOnly = halfMatrixBlockFitsInChunk(multiQubit.numAmps, rotQubit);
@@ -435,9 +439,10 @@ void controlSingleQubitUnitary(MultiQubit multiQubit, const int rotQubit, const 
 void multiControlSingleQubitUnitary(MultiQubit multiQubit, const int rotQubit, long long int mask,
         ComplexMatrix2 u)
 {
-        if (!validateMatrixIsUnitary(u)){
-                printf("Error: parameters specified to function singleQubitUnitary form an invalid unitary matrix\n");
-        }
+        QuESTAssert(rotQubit >= 0 && rotQubit < multiQubit.numQubits, 1, __func__);
+        QuESTAssert(mask>=0 && mask <= (1LL<<multiQubit.numQubits)-1, 4, __func__);
+        QuESTAssert((mask & (1LL<<rotQubit)) != (1LL<<rotQubit), 3, __func__);
+        QuESTAssert(validateMatrixIsUnitary(u), 5, __func__);
 
         // flag to require memory exchange. 1: an entire block fits on one rank, 0: at most half a block fits on one rank
         int useLocalDataOnly = halfMatrixBlockFitsInChunk(multiQubit.numAmps, rotQubit);
@@ -476,6 +481,8 @@ void multiControlSingleQubitUnitary(MultiQubit multiQubit, const int rotQubit, l
 }
 void sigmaX(MultiQubit multiQubit, const int rotQubit)
 {
+        QuESTAssert(rotQubit >= 0 && rotQubit < multiQubit.numQubits, 1, __func__);
+
         // flag to require memory exchange. 1: an entire block fits on one rank, 0: at most half a block fits on one rank
         int useLocalDataOnly = halfMatrixBlockFitsInChunk(multiQubit.numAmps, rotQubit);
 
@@ -503,6 +510,9 @@ void sigmaX(MultiQubit multiQubit, const int rotQubit)
 
 void controlNot(MultiQubit multiQubit, const int rotQubit, const int controlQubit)
 {
+        QuESTAssert(rotQubit >= 0 && rotQubit < multiQubit.numQubits, 1, __func__);
+        QuESTAssert(controlQubit >= 0 && controlQubit < multiQubit.numQubits, 2, __func__);
+
         // flag to require memory exchange. 1: an entire block fits on one rank, 0: at most half a block fits on one rank
         int useLocalDataOnly = halfMatrixBlockFitsInChunk(multiQubit.numAmps, rotQubit);
 
@@ -536,6 +546,8 @@ void controlNot(MultiQubit multiQubit, const int rotQubit, const int controlQubi
 
 void sigmaY(MultiQubit multiQubit, const int rotQubit)
 {
+        QuESTAssert(rotQubit >= 0 && rotQubit < multiQubit.numQubits, 1, __func__);
+
         // flag to require memory exchange. 1: an entire block fits on one rank, 0: at most half a block fits on one rank
         int useLocalDataOnly = halfMatrixBlockFitsInChunk(multiQubit.numAmps, rotQubit);
 
@@ -565,6 +577,8 @@ void sigmaY(MultiQubit multiQubit, const int rotQubit)
 
 void phaseGate(MultiQubit multiQubit, const int rotQubit, enum phaseGateType type)
 {
+        QuESTAssert(rotQubit >= 0 && rotQubit < multiQubit.numQubits, 1, __func__);
+
         // flag to require memory exchange. 1: an entire block fits on one rank, 0: at most half a block fits on one rank
         int useLocalDataOnly = halfMatrixBlockFitsInChunk(multiQubit.numAmps, rotQubit);
 
@@ -581,6 +595,8 @@ void phaseGate(MultiQubit multiQubit, const int rotQubit, enum phaseGateType typ
 
 void hadamard(MultiQubit multiQubit, const int rotQubit)
 {
+        QuESTAssert(rotQubit >= 0 && rotQubit < multiQubit.numQubits, 1, __func__);
+
         // flag to require memory exchange. 1: an entire block fits on one rank, 0: at most half a block fits on one rank
         int useLocalDataOnly = halfMatrixBlockFitsInChunk(multiQubit.numAmps, rotQubit);
 
@@ -637,6 +653,8 @@ static int isChunkToSkipInFindPZero(int chunkId, long long int chunkSize, int me
 
 REAL findProbabilityOfOutcome(MultiQubit multiQubit, const int measureQubit, int outcome)
 {
+    QuESTAssert(measureQubit >= 0 && measureQubit < multiQubit.numQubits, 2, __func__);
+
 	REAL stateProb=0, totalStateProb=0;
 	int skipValuesWithinRank = halfMatrixBlockFitsInChunk(multiQubit.numAmps, measureQubit);
 	if (skipValuesWithinRank) {
@@ -654,6 +672,8 @@ REAL findProbabilityOfOutcome(MultiQubit multiQubit, const int measureQubit, int
 
 REAL measureInState(MultiQubit multiQubit, const int measureQubit, int outcome)
 {
+    QuESTAssert(measureQubit >= 0 && measureQubit < multiQubit.numQubits, 2, __func__);
+
 	REAL totalStateProb=findProbabilityOfOutcome(multiQubit, measureQubit, outcome);
 	int skipValuesWithinRank = halfMatrixBlockFitsInChunk(multiQubit.numAmps, measureQubit);
 	if (totalStateProb != 0){
@@ -678,6 +698,10 @@ REAL measureInState(MultiQubit multiQubit, const int measureQubit, int outcome)
 
 REAL filterOut111(MultiQubit multiQubit, const int idQubit1, const int idQubit2, const int idQubit3)
 {
+    QuESTAssert(idQubit1 >= 0 && idQubit1 < multiQubit.numQubits, 2, __func__);
+    QuESTAssert(idQubit2 >= 0 && idQubit2 < multiQubit.numQubits, 2, __func__);
+    QuESTAssert(idQubit3 >= 0 && idQubit3 < multiQubit.numQubits, 2, __func__);
+
 	REAL stateProb=0;
 	stateProb = probOfFilterOut111(multiQubit, idQubit1, idQubit2, idQubit3);
 	if (stateProb != 0) filterOut111Local(multiQubit, idQubit1, idQubit2, idQubit3, stateProb);
@@ -686,9 +710,24 @@ REAL filterOut111(MultiQubit multiQubit, const int idQubit1, const int idQubit2,
 
 REAL probOfFilterOut111(MultiQubit multiQubit, const int idQubit1, const int idQubit2, const int idQubit3)
 {
+    QuESTAssert(idQubit1 >= 0 && idQubit1 < multiQubit.numQubits, 2, __func__);
+    QuESTAssert(idQubit2 >= 0 && idQubit2 < multiQubit.numQubits, 2, __func__);
+    QuESTAssert(idQubit3 >= 0 && idQubit3 < multiQubit.numQubits, 2, __func__);
+
 	REAL stateProb=0, totalStateProb=0;
 	stateProb = probOfFilterOut111Local(multiQubit, idQubit1, idQubit2, idQubit3);
 	MPI_Allreduce(&stateProb, &totalStateProb, 1, MPI_QuEST_REAL, MPI_SUM, MPI_COMM_WORLD);
 	return totalStateProb;
 }
 
+void exitWithError(int errorCode, const char* func){
+    printf("!!!\n");
+    printf("QuEST Error in function %s: %s\n", func, errorCodes[errorCode]);
+    printf("!!!\n");
+    printf("exiting..\n");
+    MPI_Abort(MPI_COMM_WORLD, errorCode);
+}
+
+void QuESTAssert(int isValid, int errorCode, const char* func){
+    if (!isValid) exitWithError(errorCode, func);
+}

@@ -14,6 +14,17 @@
 
 # define DEBUG 0
 
+const char* errorCodes[] = {
+    "Success",                                              // 0
+    "Invalid target qubit. Note qubits are zero indexed.",  // 1
+    "Invalid control qubit. Note qubits are zero indexed.", // 2 
+    "Control qubit cannot equal target qubit.",             // 3
+    "Invalid control qubit mask.",                          // 4
+    "Invalid unitary matrix.",                              // 5
+    "Invalid rotation arguments.",                          // 6
+    "Invalid system size. Cannot print output for systems greater than 5 qubits." // 7
+};
+
 static int extractBit (const int locationOfBitFromRight, const long long int theEncodedNumber);
 
 // Maihi: Where I have made changes I have marked SCB so please note those points - Simon
@@ -443,9 +454,6 @@ void rotateQubitLocal (MultiQubit multiQubit, const int rotQubit, Complex alpha,
 	long long int thisTask;         
 	const long long int numTasks=multiQubit.numAmps>>1;
 
-	// test qubit valid
-	assert (rotQubit >= 0 && rotQubit < multiQubit.numQubits);
-
 	// set dimensions
 	sizeHalfBlock = 1LL << rotQubit;  
 	sizeBlock     = 2LL * sizeHalfBlock; 
@@ -513,9 +521,6 @@ void singleQubitUnitaryLocal(MultiQubit multiQubit, const int rotQubit, ComplexM
 	REAL stateRealUp,stateRealLo,stateImagUp,stateImagLo;
 	long long int thisTask;         
 	const long long int numTasks=multiQubit.numAmps>>1;
-
-	// test qubit valid
-	assert (rotQubit >= 0 && rotQubit < multiQubit.numQubits);
 
 	// set dimensions
 	sizeHalfBlock = 1LL << rotQubit;  
@@ -589,9 +594,6 @@ void rotateQubitDistributed (MultiQubit multiQubit, const int rotQubit,
 	long long int thisTask;  
 	const long long int numTasks=multiQubit.numAmps;
 
-	// test qubit valid
-	assert (rotQubit >= 0 && rotQubit < multiQubit.numQubits);
-
 	REAL rot1Real=rot1.real, rot1Imag=rot1.imag;
 	REAL rot2Real=rot2.real, rot2Imag=rot2.imag;
 	REAL *stateVecRealUp=stateVecUp.real, *stateVecImagUp=stateVecUp.imag;
@@ -649,9 +651,6 @@ void singleQubitUnitaryDistributed (MultiQubit multiQubit, const int rotQubit,
 	REAL   stateRealUp,stateRealLo,stateImagUp,stateImagLo;
 	long long int thisTask;  
 	const long long int numTasks=multiQubit.numAmps;
-
-	// test qubit valid
-	assert (rotQubit >= 0 && rotQubit < multiQubit.numQubits);
 
 	REAL rot1Real=rot1.real, rot1Imag=rot1.imag;
 	REAL rot2Real=rot2.real, rot2Imag=rot2.imag;
@@ -713,18 +712,7 @@ void controlRotateQubitLocal (MultiQubit multiQubit, const int rotQubit, const i
 
 	int controlBit;
 
-	// As rotations are symmetric, we can apply rotations for all elements where
-	// targetQubit==0 and controlQubit==1.  
-	// However, this means we will skip the case where targetQubit==controlQubit. 
-	// We check for that here. 
-	// We could also choose to rotate on targetQubit==1, but are doing it this way 
-	// to match the regular rotate implementation. 
-	int rotateAll=(rotQubit==controlQubit);
-
-	// test qubit valid
-	assert (rotQubit >= 0 && rotQubit < multiQubit.numQubits);
-
-	// set dimensions
+    // set dimensions
 	sizeHalfBlock = 1LL << rotQubit;  
 	sizeBlock     = 2LL * sizeHalfBlock; 
 
@@ -737,8 +725,7 @@ void controlRotateQubitLocal (MultiQubit multiQubit, const int rotQubit, const i
 # ifdef _OPENMP
 # pragma omp parallel \
 	default  (none) \
-	shared   (sizeBlock,sizeHalfBlock, stateVecReal,stateVecImag, alphaReal,alphaImag, betaReal,betaImag,\
-			rotateAll) \
+	shared   (sizeBlock,sizeHalfBlock, stateVecReal,stateVecImag, alphaReal,alphaImag, betaReal,betaImag) \
 	private  (thisTask,thisBlock ,indexUp,indexLo, stateRealUp,stateImagUp,stateRealLo,stateImagLo,controlBit) 
 # endif
 	{
@@ -752,7 +739,7 @@ void controlRotateQubitLocal (MultiQubit multiQubit, const int rotQubit, const i
 			indexLo     = indexUp + sizeHalfBlock;
 
 			controlBit = extractBit (controlQubit, indexUp+chunkId*chunkSize);
-			if (rotateAll || controlBit){
+			if (controlBit){
 				// store current state vector values in temp variables
 				stateRealUp = stateVecReal[indexUp];
 				stateImagUp = stateVecImag[indexUp];
@@ -800,12 +787,6 @@ void multiControlSingleQubitUnitaryLocal(MultiQubit multiQubit, const int rotQub
 	const long long int numTasks=multiQubit.numAmps>>1;
 	const long long int chunkSize=multiQubit.numAmps;
 	const long long int chunkId=multiQubit.chunkId;
-
-    // ADD VERIFY MASK IS VALID
-
-    // ADD VERIFY controlQubit!=rotQubit -- check that this is required
-	// test qubit valid
-	assert (rotQubit >= 0 && rotQubit < multiQubit.numQubits);
 
 	// set dimensions
 	sizeHalfBlock = 1LL << rotQubit;  
@@ -883,18 +864,7 @@ void controlSingleQubitUnitaryLocal(MultiQubit multiQubit, const int rotQubit, c
 
 	int controlBit;
 
-	// As rotations are symmetric, we can apply rotations for all elements where
-	// targetQubit==0 and controlQubit==1.  
-	// However, this means we will skip the case where targetQubit==controlQubit. 
-	// We check for that here. 
-	// We could also choose to rotate on targetQubit==1, but are doing it this way 
-	// to match the regular rotate implementation. 
-	int rotateAll=(rotQubit==controlQubit);
-
-	// test qubit valid
-	assert (rotQubit >= 0 && rotQubit < multiQubit.numQubits);
-
-	// set dimensions
+    // set dimensions
 	sizeHalfBlock = 1LL << rotQubit;  
 	sizeBlock     = 2LL * sizeHalfBlock; 
 
@@ -905,8 +875,7 @@ void controlSingleQubitUnitaryLocal(MultiQubit multiQubit, const int rotQubit, c
 # ifdef _OPENMP
 # pragma omp parallel \
 	default  (none) \
-	shared   (sizeBlock,sizeHalfBlock, stateVecReal,stateVecImag, u,\
-			rotateAll) \
+	shared   (sizeBlock,sizeHalfBlock, stateVecReal,stateVecImag, u) \
 	private  (thisTask,thisBlock ,indexUp,indexLo, stateRealUp,stateImagUp,stateRealLo,stateImagLo,controlBit) 
 # endif
 	{
@@ -920,7 +889,7 @@ void controlSingleQubitUnitaryLocal(MultiQubit multiQubit, const int rotQubit, c
 			indexLo     = indexUp + sizeHalfBlock;
 
 			controlBit = extractBit (controlQubit, indexUp+chunkId*chunkSize);
-			if (rotateAll || controlBit){
+			if (controlBit){
 				// store current state vector values in temp variables
 				stateRealUp = stateVecReal[indexUp];
 				stateImagUp = stateVecImag[indexUp];
@@ -974,18 +943,7 @@ void controlRotateQubitDistributed (MultiQubit multiQubit, const int rotQubit, c
 
 	int controlBit;
 
-	// As rotations are symmetric, we can apply rotations for all elements where
-	// targetQubit==0 and controlQubit==1.  
-	// However, this means we will skip the case where targetQubit==controlQubit. 
-	// We check for that here. 
-	// We could also choose to rotate on targetQubit==1, but are doing it this way 
-	// to match the regular rotate implementation. 
-	int rotateAll=(rotQubit==controlQubit);
-
-	// test qubit valid
-	assert (rotQubit >= 0 && rotQubit < multiQubit.numQubits);
-
-	REAL rot1Real=rot1.real, rot1Imag=rot1.imag;
+    REAL rot1Real=rot1.real, rot1Imag=rot1.imag;
 	REAL rot2Real=rot2.real, rot2Imag=rot2.imag;
 	REAL *stateVecRealUp=stateVecUp.real, *stateVecImagUp=stateVecUp.imag;
 	REAL *stateVecRealLo=stateVecLo.real, *stateVecImagLo=stateVecLo.imag;
@@ -995,7 +953,7 @@ void controlRotateQubitDistributed (MultiQubit multiQubit, const int rotQubit, c
 # pragma omp parallel \
 	default  (none) \
 	shared   (stateVecRealUp,stateVecImagUp,stateVecRealLo,stateVecImagLo,stateVecRealOut,stateVecImagOut, \
-			rot1Real,rot1Imag, rot2Real,rot2Imag,rotateAll) \
+			rot1Real,rot1Imag, rot2Real,rot2Imag) \
 	private  (thisTask,stateRealUp,stateImagUp,stateRealLo,stateImagLo,controlBit)
 # endif
 	{
@@ -1004,7 +962,7 @@ void controlRotateQubitDistributed (MultiQubit multiQubit, const int rotQubit, c
 # endif
 		for (thisTask=0; thisTask<numTasks; thisTask++) {
 			controlBit = extractBit (controlQubit, thisTask+chunkId*chunkSize);
-			if (rotateAll || controlBit){
+			if (controlBit){
 				// store current state vector values in temp variables
 				stateRealUp = stateVecRealUp[thisTask];
 				stateImagUp = stateVecImagUp[thisTask];
@@ -1048,17 +1006,6 @@ void controlSingleQubitUnitaryDistributed (MultiQubit multiQubit, const int rotQ
 
 	int controlBit;
 
-	// As rotations are symmetric, we can apply rotations for all elements where
-	// targetQubit==0 and controlQubit==1.  
-	// However, this means we will skip the case where targetQubit==controlQubit. 
-	// We check for that here. 
-	// We could also choose to rotate on targetQubit==1, but are doing it this way 
-	// to match the regular rotate implementation. 
-	int rotateAll=(rotQubit==controlQubit);
-
-	// test qubit valid
-	assert (rotQubit >= 0 && rotQubit < multiQubit.numQubits);
-
 	REAL rot1Real=rot1.real, rot1Imag=rot1.imag;
 	REAL rot2Real=rot2.real, rot2Imag=rot2.imag;
 	REAL *stateVecRealUp=stateVecUp.real, *stateVecImagUp=stateVecUp.imag;
@@ -1069,7 +1016,7 @@ void controlSingleQubitUnitaryDistributed (MultiQubit multiQubit, const int rotQ
 # pragma omp parallel \
 	default  (none) \
 	shared   (stateVecRealUp,stateVecImagUp,stateVecRealLo,stateVecImagLo,stateVecRealOut,stateVecImagOut, \
-			rot1Real,rot1Imag, rot2Real,rot2Imag,rotateAll) \
+			rot1Real,rot1Imag, rot2Real,rot2Imag) \
 	private  (thisTask,stateRealUp,stateImagUp,stateRealLo,stateImagLo,controlBit)
 # endif
 	{
@@ -1078,7 +1025,7 @@ void controlSingleQubitUnitaryDistributed (MultiQubit multiQubit, const int rotQ
 # endif
 		for (thisTask=0; thisTask<numTasks; thisTask++) {
 			controlBit = extractBit (controlQubit, thisTask+chunkId*chunkSize);
-			if (rotateAll || controlBit){
+			if (controlBit){
 				// store current state vector values in temp variables
 				stateRealUp = stateVecRealUp[thisTask];
 				stateImagUp = stateVecImagUp[thisTask];
@@ -1122,11 +1069,6 @@ void multiControlSingleQubitUnitaryDistributed (MultiQubit multiQubit,
 	const long long int numTasks=multiQubit.numAmps;
 	const long long int chunkSize=multiQubit.numAmps;
 	const long long int chunkId=multiQubit.chunkId;
-
-    // add test mask valid, test rotQubit!=controlQubit
-
-    // test qubit valid
-	assert (rotQubit >= 0 && rotQubit < multiQubit.numQubits);
 
 	REAL rot1Real=rot1.real, rot1Imag=rot1.imag;
 	REAL rot2Real=rot2.real, rot2Imag=rot2.imag;
@@ -1179,9 +1121,6 @@ void sigmaXLocal(MultiQubit multiQubit, const int rotQubit)
 	REAL stateRealUp,stateImagUp;
 	long long int thisTask;         
 	const long long int numTasks=multiQubit.numAmps>>1;
-
-	// test qubit valid
-	assert (rotQubit >= 0 && rotQubit < multiQubit.numQubits);
 
 	// set dimensions
 	sizeHalfBlock = 1LL << rotQubit;  
@@ -1291,9 +1230,6 @@ void controlNotLocal(MultiQubit multiQubit, const int targetQubit, const int con
 	// targetQubit==1. As rotations are symmetric, we can instead apply the rotation
 	// on all amplitudes where targetQubit==0 as we do here.
 	int rotateAll=(targetQubit==controlQubit);
-
-	// test qubit valid
-	assert (targetQubit >= 0 && targetQubit < multiQubit.numQubits);
 
 	// set dimensions
 	sizeHalfBlock = 1LL << targetQubit;  
@@ -1409,9 +1345,6 @@ void sigmaYLocal(MultiQubit multiQubit, const int rotQubit)
 	long long int thisTask;         
 	const long long int numTasks=multiQubit.numAmps>>1;
 
-	// test qubit valid
-	assert (rotQubit >= 0 && rotQubit < multiQubit.numQubits);
-
 	// set dimensions
 	sizeHalfBlock = 1LL << rotQubit;  
 	sizeBlock     = 2LL * sizeHalfBlock; 
@@ -1514,9 +1447,6 @@ void hadamardLocal(MultiQubit multiQubit, const int rotQubit)
 	REAL stateRealUp,stateRealLo,stateImagUp,stateImagLo;
 	long long int thisTask;         
 	const long long int numTasks=multiQubit.numAmps>>1;
-
-	// test qubit valid
-	assert (rotQubit >= 0 && rotQubit < multiQubit.numQubits);
 
 	// set dimensions
 	sizeHalfBlock = 1LL << rotQubit;  
@@ -1635,9 +1565,6 @@ void phaseGateLocal(MultiQubit multiQubit, const int rotQubit, enum phaseGateTyp
 	REAL stateRealLo,stateImagLo;
 	long long int thisTask;         
 	const long long int numTasks=multiQubit.numAmps>>1;
-
-	// test qubit valid
-	assert (rotQubit >= 0 && rotQubit < multiQubit.numQubits);
 
 	// set dimensions
 	sizeHalfBlock = 1LL << rotQubit;  
@@ -1806,12 +1733,6 @@ REAL findProbabilityOfZeroLocal (MultiQubit multiQubit,
 	// ----- temp variables
 	long long int thisTask;                                   // task based approach for expose loop with small granularity
 	long long int numTasks=multiQubit.numAmps>>1;
-
-	// ---------------------------------------------------------------- //
-	//            tests                                                 //
-	// ---------------------------------------------------------------- //
-	assert (measureQubit >= 0 && measureQubit < multiQubit.numQubits);
-
 
 	// ---------------------------------------------------------------- //
 	//            dimensions                                            //
@@ -2107,7 +2028,6 @@ void measureInStateLocal(MultiQubit multiQubit, int measureQubit, REAL totalProb
 	// ---------------------------------------------------------------- //
 	//            tests                                                 //
 	// ---------------------------------------------------------------- //
-	assert (measureQubit >= 0 && measureQubit < multiQubit.numQubits);
 	assert (totalProbability != 0);
 
 	// ---------------------------------------------------------------- //
@@ -2277,11 +2197,6 @@ void filterOut111Local(MultiQubit multiQubit, const int idQubit1, const int idQu
 	const long long int chunkSize=multiQubit.numAmps;
 	const long long int chunkId=multiQubit.chunkId;
 
-	// ---------------------------------------------------------------- //
-	//            tests                                                 //
-	// ---------------------------------------------------------------- //
-	assert (idQubit1 >= 0 && idQubit2 >= 0 && idQubit1 < multiQubit.numQubits && idQubit2 < multiQubit.numQubits);
-
 	assert (probOfFilter != 0);
 	stateVecSize = multiQubit.numAmps;
 
@@ -2329,11 +2244,6 @@ REAL probOfFilterOut111Local(MultiQubit multiQubit, const int idQubit1, const in
 	const long long int chunkSize=multiQubit.numAmps;
 	const long long int chunkId=multiQubit.chunkId;
 
-	// ---------------------------------------------------------------- //
-	//            tests                                                 //
-	// ---------------------------------------------------------------- //
-	assert (idQubit1 >= 0 && idQubit2 >= 0 && idQubit1 < multiQubit.numQubits && idQubit2 < multiQubit.numQubits);
-
 	stateVecSize = multiQubit.numAmps;
 	REAL probOfFilter=0;
 	
@@ -2376,3 +2286,4 @@ REAL getProbEl(MultiQubit multiQubit, long long int index){
         imag = getImagAmpEl(multiQubit, index);
         return real*real + imag*imag;
 }
+

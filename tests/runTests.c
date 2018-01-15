@@ -493,6 +493,7 @@ int test_controlRotateQubit(char testName[200]){
 	for (int j=0; j<3; j++){
 		controlQubit=j;
 		for (int i=0; i<3; i++){
+            if (i==j){count++; continue;}
 			initStateDebug(&mq);
 			rotQubit=i;
 			controlRotateQubit(mq, rotQubit, controlQubit, alpha, beta);
@@ -882,19 +883,18 @@ int main (int narg, char** varg) {
 		"filterOut111"
 	};
 	int passed=0;
-
 	if (env.rank==0) printf("\nRunning unit tests\n");
 	for (int i=0; i<NUM_TESTS; i++){
 		passed=(*tests[i])(testNames[i]);	
-		passed=syncQuESTSuccess(env, passed);
+		passed=syncQuESTSuccess(passed);
 		if (!passed){
 			if (env.rank==0) printf("!!! FAILED in test %d -- %s\n", i, testNames[i]);
 			closeQuESTEnv(env);
 			return 1;
 		} else if (env.rank==0) printf("Passed test %d -- %s\n", i, testNames[i]);
 	}
-
 	closeQuESTEnv(env);
+
 	return 0;
 }
 

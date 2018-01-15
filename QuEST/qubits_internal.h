@@ -11,6 +11,8 @@
 
 // functions in qubits.c
 
+extern const char* errorCodes[];
+
 void rotateQubitLocal (MultiQubit multiQubit, const int rotQubit, Complex alpha, Complex beta);
 
 void rotateQubitDistributed (MultiQubit multiQubit, const int rotQubit,
@@ -122,5 +124,8 @@ int validateUnitVector(REAL ux, REAL uy, REAL uz);
  * */
 void phaseGate(MultiQubit multiQubit, const int rotQubit, enum phaseGateType type);
 
+void exitWithError(int errorCode, const char *func);
+
+void QuESTAssert(int isValid, int errorCode, const char *func);
 
 # endif

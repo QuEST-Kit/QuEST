@@ -118,7 +118,7 @@ void syncQuESTEnv(QuESTEnv env);
  * @param[in] successCode 1 if process task succeeded, 0 if process task failed
  * @returns 1 if all processes succeeded, 0 if any one process failed
  */ 
-int syncQuESTSuccess(QuESTEnv env, int successCode);
+int syncQuESTSuccess(int successCode);
 
 /** Report information about the QuEST environment
  * @param[in] env object representing the execution environment. A single instance is used for each program
@@ -262,7 +262,7 @@ measureQubit=1 if outcome=1. It then returns the probability of making this meas
 REAL measureInState(MultiQubit multiQubit, const int measureQubit, int outcome);
 
 /** Updates the state according to this scenario: we ask "are these 3 qubits in 111" and the answer is "no".
-The function returns the probability of this outcome (if zero, it will exit with error) 
+The function returns the probability of this outcome (if zero, it will exi error) 
 @param[in,out] multiQubit object representing the set of qubits
 @param[in] idQubit1, idQubit2, idQubit3 specified qubits                 
 @return Total probability that the 3 qubits are not all in the 1 state. 

@@ -19,7 +19,7 @@ void syncQuESTEnv(QuESTEnv env){
 	// MPI Barrier goes here in MPI version. 
 } 
 
-int syncQuESTSuccess(QuESTEnv env, int successCode){
+int syncQuESTSuccess(int successCode){
 	return successCode;
 }
 
@@ -86,71 +86,87 @@ REAL getImagAmpEl(MultiQubit multiQubit, long long int index){
 
 void rotateQubit(MultiQubit multiQubit, const int rotQubit, Complex alpha, Complex beta) 
 {
-	if (!validateAlphaBeta(alpha, beta)){
-		printf("Error: parameters specified to function rotateQubit form an invalid unitary matrix\n");
-	}
+    QuESTAssert(rotQubit >= 0 && rotQubit < multiQubit.numQubits, 1, __func__);
+    QuESTAssert(validateAlphaBeta(alpha, beta), 6, __func__);
+
 	// all values required to update state vector lie in this rank
 	rotateQubitLocal(multiQubit, rotQubit, alpha, beta);
 }
 
 void singleQubitUnitary(MultiQubit multiQubit, const int rotQubit, ComplexMatrix2 u) 
 {
-	if (!validateMatrixIsUnitary(u)){
-		printf("Error: parameters specified to function singleQubitUnitary form an invalid unitary matrix\n");
-	}
+    QuESTAssert(rotQubit >= 0 && rotQubit < multiQubit.numQubits, 1, __func__);
+    QuESTAssert(validateMatrixIsUnitary(u), 5, __func__);
+
 	// all values required to update state vector lie in this rank
 	singleQubitUnitaryLocal(multiQubit, rotQubit, u);
 }
 
 void controlRotateQubit(MultiQubit multiQubit, const int rotQubit, const int controlQubit, Complex alpha, Complex beta) 
 {
+    QuESTAssert(rotQubit >= 0 && rotQubit < multiQubit.numQubits, 1, __func__);
+    QuESTAssert(controlQubit >= 0 && controlQubit < multiQubit.numQubits, 2, __func__);
+    QuESTAssert(controlQubit != rotQubit, 3, __func__);
+    QuESTAssert(validateAlphaBeta(alpha, beta), 6, __func__);
+    
+
 	controlRotateQubitLocal(multiQubit, rotQubit, controlQubit, alpha, beta);
 }
 
 void controlSingleQubitUnitary(MultiQubit multiQubit, const int rotQubit, const int controlQubit, ComplexMatrix2 u) 
 {
-	if (!validateMatrixIsUnitary(u)){
-		printf("Error: parameters specified to function singleQubitUnitary form an invalid unitary matrix\n");
-	}
-    
+    QuESTAssert(rotQubit >= 0 && rotQubit < multiQubit.numQubits, 1, __func__);
+    QuESTAssert(controlQubit >= 0 && controlQubit < multiQubit.numQubits, 2, __func__);
+    QuESTAssert(controlQubit != rotQubit, 3, __func__);
+    QuESTAssert(validateMatrixIsUnitary(u), 5, __func__);
+   
 	controlSingleQubitUnitaryLocal(multiQubit, rotQubit, controlQubit, u);
 }
 
 void multiControlSingleQubitUnitary(MultiQubit multiQubit, const int rotQubit, long long int mask, ComplexMatrix2 u) 
 {
-	if (!validateMatrixIsUnitary(u)){
-		printf("Error: parameters specified to function singleQubitUnitary form an invalid unitary matrix\n");
-	}
-	multiControlSingleQubitUnitaryLocal(multiQubit, rotQubit, mask, u);
+    QuESTAssert(rotQubit >= 0 && rotQubit < multiQubit.numQubits, 1, __func__);
+    QuESTAssert(mask >=0 && mask <= (1LL<<multiQubit.numQubits)-1, 4, __func__);
+    QuESTAssert((mask & (1LL<<rotQubit)) != (1LL<<rotQubit), 3, __func__);
+    QuESTAssert(validateMatrixIsUnitary(u), 5, __func__);
+	
+    multiControlSingleQubitUnitaryLocal(multiQubit, rotQubit, mask, u);
 }
 
 void sigmaX(MultiQubit multiQubit, const int rotQubit) 
 {
+    QuESTAssert(rotQubit >= 0 && rotQubit < multiQubit.numQubits, 1, __func__);
 	sigmaXLocal(multiQubit, rotQubit);
 }
 
 void sigmaY(MultiQubit multiQubit, const int rotQubit) 
 {
+    QuESTAssert(rotQubit >= 0 && rotQubit < multiQubit.numQubits, 1, __func__);
 	sigmaYLocal(multiQubit, rotQubit);
 }
 
 void phaseGate(MultiQubit multiQubit, const int rotQubit, enum phaseGateType type)
 {
+    QuESTAssert(rotQubit >= 0 && rotQubit < multiQubit.numQubits, 1, __func__);
 	phaseGateLocal(multiQubit, rotQubit, type);
 }
 
 void hadamard(MultiQubit multiQubit, const int rotQubit) 
 {
+    QuESTAssert(rotQubit >= 0 && rotQubit < multiQubit.numQubits, 1, __func__);
 	hadamardLocal(multiQubit, rotQubit);
 }
 
 void controlNot(MultiQubit multiQubit, const int targetQubit, const int controlQubit) 
 {
+    QuESTAssert(targetQubit >= 0 && targetQubit < multiQubit.numQubits, 1, __func__);
+    QuESTAssert(controlQubit >= 0 && controlQubit < multiQubit.numQubits, 2, __func__);
 	controlNotLocal(multiQubit, targetQubit, controlQubit);
 }
 
 REAL findProbabilityOfOutcome(MultiQubit multiQubit, const int measureQubit, int outcome)
 {
+    QuESTAssert(measureQubit >= 0 && measureQubit < multiQubit.numQubits, 2, __func__);
 	REAL stateProb=0;
 	stateProb = findProbabilityOfZeroLocal(multiQubit, measureQubit);
 	if (outcome==1) stateProb = 1.0 - stateProb;
@@ -159,26 +175,42 @@ REAL findProbabilityOfOutcome(MultiQubit multiQubit, const int measureQubit, int
 
 REAL measureInState(MultiQubit multiQubit, const int measureQubit, int outcome)
 {
-        REAL stateProb;
+    QuESTAssert(measureQubit >= 0 && measureQubit < multiQubit.numQubits, 2, __func__);
+    REAL stateProb;
 	stateProb = findProbabilityOfOutcome(multiQubit, measureQubit, outcome);
-        if (stateProb!=0) measureInStateLocal(multiQubit, measureQubit, stateProb, outcome);
-        return stateProb;
+    if (stateProb!=0) measureInStateLocal(multiQubit, measureQubit, stateProb, outcome);
+    return stateProb;
 }
 
 REAL filterOut111(MultiQubit multiQubit, const int idQubit1, const int idQubit2, const int idQubit3)
 {
-        REAL stateProb=0;
-        stateProb = probOfFilterOut111(multiQubit, idQubit1, idQubit2, idQubit3);
-        if (stateProb!=0) filterOut111Local(multiQubit, idQubit1, idQubit2, idQubit3, stateProb);
-        return stateProb;
+    QuESTAssert(idQubit1 >= 0 && idQubit1 < multiQubit.numQubits, 2, __func__);
+    QuESTAssert(idQubit2 >= 0 && idQubit2 < multiQubit.numQubits, 2, __func__);
+    QuESTAssert(idQubit3 >= 0 && idQubit3 < multiQubit.numQubits, 2, __func__);
+    REAL stateProb=0;
+    stateProb = probOfFilterOut111(multiQubit, idQubit1, idQubit2, idQubit3);
+    if (stateProb!=0) filterOut111Local(multiQubit, idQubit1, idQubit2, idQubit3, stateProb);
+    return stateProb;
 }
 
 REAL probOfFilterOut111(MultiQubit multiQubit, const int idQubit1, const int idQubit2, const int idQubit3)
 {
-        REAL stateProb=0;
-        stateProb = probOfFilterOut111Local(multiQubit, idQubit1, idQubit2, idQubit3);
-        return stateProb;
+    QuESTAssert(idQubit1 >= 0 && idQubit1 < multiQubit.numQubits, 2, __func__);
+    QuESTAssert(idQubit2 >= 0 && idQubit2 < multiQubit.numQubits, 2, __func__);
+    QuESTAssert(idQubit3 >= 0 && idQubit3 < multiQubit.numQubits, 2, __func__);
+    REAL stateProb=0;
+    stateProb = probOfFilterOut111Local(multiQubit, idQubit1, idQubit2, idQubit3);
+    return stateProb;
 }
 
+void exitWithError(int errorCode, const char* func){
+    printf("!!!\n");
+    printf("QuEST Error in function %s: %s\n", func, errorCodes[errorCode]);
+    printf("!!!\n");
+    printf("exiting..\n");
+    exit(errorCode);
+}
 
-
+void QuESTAssert(int isValid, int errorCode, const char* func){
+    if (!isValid) exitWithError(errorCode, func);
+}
