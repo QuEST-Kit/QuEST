@@ -190,12 +190,12 @@ int main (int narg, char** varg) {
 	initStateDebug(&multiQubit);
 	if (env.rank==0) printf("target=0, control=0\n");
 	rotQubit=0;
-	controlNot(multiQubit,rotQubit,0);
+	controlledNot(multiQubit,rotQubit,0);
 	reportStateToScreen(multiQubit, env, REPORT_RANK);
 	initStateDebug(&multiQubit);
 	if (env.rank==0) printf("target=2, control=0\n");
 	rotQubit=2;
-	controlNot(multiQubit,rotQubit,0);
+	controlledNot(multiQubit,rotQubit,0);
 	reportStateToScreen(multiQubit, env, REPORT_RANK);
 	totalProbability = calcTotalProbability(multiQubit);
         if (env.rank==0) printf("VERIFICATION: total probability=%.14f\n", totalProbability);
@@ -226,18 +226,18 @@ int main (int narg, char** varg) {
 	if (env.rank==0) printf("\nPerforming ordinary rotate for comparison to control rotate\n");
 	initStateDebug(&multiQubit);
 	rotQubit=3;
-	rotateQubit(multiQubit,rotQubit,alpha,beta);
+	compactUnitary(multiQubit,rotQubit,alpha,beta);
 	reportStateToScreen(multiQubit, env, REPORT_RANK);
 
 	if (env.rank==0) printf("\nPerforming control rotate\n");
 	initStateDebug(&multiQubit);
 	if (env.rank==0) printf("target=3, control=3\n");
 	rotQubit=3;
-	controlRotateQubit(multiQubit,rotQubit,3,alpha,beta);
+	controlledCompactUnitary(multiQubit,rotQubit,3,alpha,beta);
 	reportStateToScreen(multiQubit, env, REPORT_RANK);
 	initStateDebug(&multiQubit);
 	if (env.rank==0) printf("target=3, control=0\n");
-	controlRotateQubit(multiQubit,rotQubit,0,alpha,beta);
+	controlledCompactUnitary(multiQubit,rotQubit,0,alpha,beta);
 	reportStateToScreen(multiQubit, env, REPORT_RANK);
 	totalProbability = calcTotalProbability(multiQubit);
         if (env.rank==0) printf("VERIFICATION: total probability=%.14f\n", totalProbability);
@@ -274,7 +274,7 @@ int main (int narg, char** varg) {
 
         if (env.rank==0) printf("Measuring probability of qubit 0 to be in state 0 and then setting that qubit to 0\n");
 	measureQubit=0;
-        qProbability = measureInState(multiQubit, measureQubit, 0);
+        qProbability = collapseToOutcome(multiQubit, measureQubit, 0);
         if (env.rank==0) printf("Probability of 0 for qubit %d = %.14f\n", measureQubit, qProbability);
 	reportStateToScreen(multiQubit, env, REPORT_RANK);
 
@@ -293,7 +293,7 @@ int main (int narg, char** varg) {
 	reportStateToScreen(multiQubit, env, REPORT_RANK);
         if (env.rank==0) printf("Measuring probability of qubit 0 to be in state 1 and then setting that qubit to 1\n");
 	measureQubit=0;
-        qProbability = measureInState(multiQubit, measureQubit, 1);
+        qProbability = collapseToOutcome(multiQubit, measureQubit, 1);
         if (env.rank==0) printf("Probability of 1 for qubit %d = %.14f\n", measureQubit, qProbability);
 	reportStateToScreen(multiQubit, env, REPORT_RANK);
 

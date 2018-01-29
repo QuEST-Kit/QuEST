@@ -84,25 +84,25 @@ REAL getImagAmpEl(MultiQubit multiQubit, long long int index){
 	return multiQubit.stateVec.imag[index];
 }
 
-void rotateQubit(MultiQubit multiQubit, const int rotQubit, Complex alpha, Complex beta) 
+void compactUnitary(MultiQubit multiQubit, const int rotQubit, Complex alpha, Complex beta) 
 {
     QuESTAssert(rotQubit >= 0 && rotQubit < multiQubit.numQubits, 1, __func__);
     QuESTAssert(validateAlphaBeta(alpha, beta), 6, __func__);
 
 	// all values required to update state vector lie in this rank
-	rotateQubitLocal(multiQubit, rotQubit, alpha, beta);
+	compactUnitaryLocal(multiQubit, rotQubit, alpha, beta);
 }
 
-void singleQubitUnitary(MultiQubit multiQubit, const int rotQubit, ComplexMatrix2 u) 
+void unitary(MultiQubit multiQubit, const int rotQubit, ComplexMatrix2 u) 
 {
     QuESTAssert(rotQubit >= 0 && rotQubit < multiQubit.numQubits, 1, __func__);
     QuESTAssert(validateMatrixIsUnitary(u), 5, __func__);
 
 	// all values required to update state vector lie in this rank
-	singleQubitUnitaryLocal(multiQubit, rotQubit, u);
+	unitaryLocal(multiQubit, rotQubit, u);
 }
 
-void controlRotateQubit(MultiQubit multiQubit, const int rotQubit, const int controlQubit, Complex alpha, Complex beta) 
+void controlledCompactUnitary(MultiQubit multiQubit, const int rotQubit, const int controlQubit, Complex alpha, Complex beta) 
 {
     QuESTAssert(rotQubit >= 0 && rotQubit < multiQubit.numQubits, 1, __func__);
     QuESTAssert(controlQubit >= 0 && controlQubit < multiQubit.numQubits, 2, __func__);
@@ -110,27 +110,27 @@ void controlRotateQubit(MultiQubit multiQubit, const int rotQubit, const int con
     QuESTAssert(validateAlphaBeta(alpha, beta), 6, __func__);
     
 
-	controlRotateQubitLocal(multiQubit, rotQubit, controlQubit, alpha, beta);
+	controlledCompactUnitaryLocal(multiQubit, rotQubit, controlQubit, alpha, beta);
 }
 
-void controlSingleQubitUnitary(MultiQubit multiQubit, const int rotQubit, const int controlQubit, ComplexMatrix2 u) 
+void controlledUnitary(MultiQubit multiQubit, const int rotQubit, const int controlQubit, ComplexMatrix2 u) 
 {
     QuESTAssert(rotQubit >= 0 && rotQubit < multiQubit.numQubits, 1, __func__);
     QuESTAssert(controlQubit >= 0 && controlQubit < multiQubit.numQubits, 2, __func__);
     QuESTAssert(controlQubit != rotQubit, 3, __func__);
     QuESTAssert(validateMatrixIsUnitary(u), 5, __func__);
    
-	controlSingleQubitUnitaryLocal(multiQubit, rotQubit, controlQubit, u);
+	controlledUnitaryLocal(multiQubit, rotQubit, controlQubit, u);
 }
 
-void multiControlSingleQubitUnitary(MultiQubit multiQubit, const int rotQubit, long long int mask, ComplexMatrix2 u) 
+void multiControlledUnitary(MultiQubit multiQubit, const int rotQubit, long long int mask, ComplexMatrix2 u) 
 {
     QuESTAssert(rotQubit >= 0 && rotQubit < multiQubit.numQubits, 1, __func__);
     QuESTAssert(mask >=0 && mask <= (1LL<<multiQubit.numQubits)-1, 4, __func__);
     QuESTAssert((mask & (1LL<<rotQubit)) != (1LL<<rotQubit), 3, __func__);
     QuESTAssert(validateMatrixIsUnitary(u), 5, __func__);
 	
-    multiControlSingleQubitUnitaryLocal(multiQubit, rotQubit, mask, u);
+    multiControlledUnitaryLocal(multiQubit, rotQubit, mask, u);
 }
 
 void sigmaX(MultiQubit multiQubit, const int rotQubit) 
@@ -157,11 +157,11 @@ void hadamard(MultiQubit multiQubit, const int rotQubit)
 	hadamardLocal(multiQubit, rotQubit);
 }
 
-void controlNot(MultiQubit multiQubit, const int targetQubit, const int controlQubit) 
+void controlledNot(MultiQubit multiQubit, const int targetQubit, const int controlQubit) 
 {
     QuESTAssert(targetQubit >= 0 && targetQubit < multiQubit.numQubits, 1, __func__);
     QuESTAssert(controlQubit >= 0 && controlQubit < multiQubit.numQubits, 2, __func__);
-	controlNotLocal(multiQubit, targetQubit, controlQubit);
+	controlledNotLocal(multiQubit, targetQubit, controlQubit);
 }
 
 REAL findProbabilityOfOutcome(MultiQubit multiQubit, const int measureQubit, int outcome)
@@ -173,12 +173,12 @@ REAL findProbabilityOfOutcome(MultiQubit multiQubit, const int measureQubit, int
 	return stateProb;
 }
 
-REAL measureInState(MultiQubit multiQubit, const int measureQubit, int outcome)
+REAL collapseToOutcome(MultiQubit multiQubit, const int measureQubit, int outcome)
 {
     QuESTAssert(measureQubit >= 0 && measureQubit < multiQubit.numQubits, 2, __func__);
     REAL stateProb;
 	stateProb = findProbabilityOfOutcome(multiQubit, measureQubit, outcome);
-    if (stateProb!=0) measureInStateLocal(multiQubit, measureQubit, stateProb, outcome);
+    if (stateProb!=0) collapseToOutcomeLocal(multiQubit, measureQubit, stateProb, outcome);
     return stateProb;
 }
 

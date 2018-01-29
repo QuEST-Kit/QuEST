@@ -84,7 +84,7 @@ void initStatePlus(MultiQubit *multiQubit);
 void quadCPhaseGate (MultiQubit multiQubit, const int idQubit1, const int idQubit2, 
 	const int idQubit3, const int idQubit4);
 
-void controlPhaseGate (MultiQubit multiQubit, const int idQubit1, const int idQubit2);
+void controlledPhaseGate (MultiQubit multiQubit, const int idQubit1, const int idQubit2);
 
 void sigmaZ(MultiQubit multiQubit, const int rotQubit);
 
@@ -173,11 +173,11 @@ alpha, beta must obey |alpha|^2 + |beta|^2 = 1
 @param[in] alpha rotation angle
 @param[in] beta rotation angle
  */
-void rotateQubit(MultiQubit multiQubit, const int rotQubit, Complex alpha, Complex beta);
+void compactUnitary(MultiQubit multiQubit, const int rotQubit, Complex alpha, Complex beta);
 
-void singleQubitUnitary(MultiQubit multiQubit, const int rotQubit, ComplexMatrix2 u);
+void unitary(MultiQubit multiQubit, const int rotQubit, ComplexMatrix2 u);
 
-void rotateQubitByAngle(MultiQubit multiQubit, const int rotQubit, REAL angle, Vector unitAxis);
+void rotateAroundAxis(MultiQubit multiQubit, const int rotQubit, REAL angle, Vector unitAxis);
 
 /** Rotate a single qubit in the state vector of probability amplitudes.
 Given two complex numbers alpha and beta and a control qubit, applies the operation: \n
@@ -196,11 +196,11 @@ alpha, beta must obey |alpha|^2 + |beta|^2 = 1
 @param[in] alpha rotation angle
 @param[in] beta rotation angle
  */
-void controlRotateQubit(MultiQubit multiQubit, const int rotQubit, const int controlQubit, Complex alpha, Complex beta);
+void controlledCompactUnitary(MultiQubit multiQubit, const int rotQubit, const int controlQubit, Complex alpha, Complex beta);
 
-void controlSingleQubitUnitary(MultiQubit multiQubit, const int rotQubit, const int controlQubit, ComplexMatrix2 u);
+void controlledUnitary(MultiQubit multiQubit, const int rotQubit, const int controlQubit, ComplexMatrix2 u);
 
-void multiControlSingleQubitUnitary(MultiQubit multiQubit, const int rotQubit, long long int mask, ComplexMatrix2 u);
+void multiControlledUnitary(MultiQubit multiQubit, const int rotQubit, long long int mask, ComplexMatrix2 u);
 
 /** Rotate a single qubit by {{0,1},{1,0}} -- swap |0> and |1>.
 @param[in,out] multiQubit object representing the set of qubits
@@ -234,7 +234,7 @@ a phase of -i or i, only for elements when control qubit is 1.
 @param[in] rotQubit qubit to rotate
 @param[in] controlQubit perform sigmaX rotation if this qubit is 1
 */
-void controlNot(MultiQubit multiQubit, const int targetQubit, const int controlQubit);
+void controlledNot(MultiQubit multiQubit, const int targetQubit, const int controlQubit);
 
 /** Measure the probability
 of a specified qubit being in the zero or one state.     
@@ -259,7 +259,7 @@ measureQubit=1 if outcome=1. It then returns the probability of making this meas
 @param[in] outcome to measure the probability of and set the state to -- either zero or one
 @return probability of qubit measureQubit being either zero or one
 */
-REAL measureInState(MultiQubit multiQubit, const int measureQubit, int outcome);
+REAL collapseToOutcome(MultiQubit multiQubit, const int measureQubit, int outcome);
 
 /** Updates the state according to this scenario: we ask "are these 3 qubits in 111" and the answer is "no".
 The function returns the probability of this outcome (if zero, it will exi error) 

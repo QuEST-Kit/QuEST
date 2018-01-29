@@ -13,44 +13,44 @@
 
 extern const char* errorCodes[];
 
-void rotateQubitLocal (MultiQubit multiQubit, const int rotQubit, Complex alpha, Complex beta);
+void compactUnitaryLocal (MultiQubit multiQubit, const int rotQubit, Complex alpha, Complex beta);
 
-void rotateQubitDistributed (MultiQubit multiQubit, const int rotQubit,
+void compactUnitaryDistributed (MultiQubit multiQubit, const int rotQubit,
                 Complex rot1, Complex rot2,
                 ComplexArray stateVecUp,
                 ComplexArray stateVecLo,
                 ComplexArray stateVecOut);
 
-void singleQubitUnitaryLocal(MultiQubit multiQubit, const int rotQubit, ComplexMatrix2 u);
+void unitaryLocal(MultiQubit multiQubit, const int rotQubit, ComplexMatrix2 u);
 
-void singleQubitUnitaryDistributed (MultiQubit multiQubit, const int rotQubit,
+void unitaryDistributed (MultiQubit multiQubit, const int rotQubit,
                 Complex rot1, Complex rot2,
                 ComplexArray stateVecUp,
                 ComplexArray stateVecLo,
                 ComplexArray stateVecOut);
 
-void controlRotateQubitLocal (MultiQubit multiQubit, const int rotQubit, const int controlQubit,
+void controlledCompactUnitaryLocal (MultiQubit multiQubit, const int rotQubit, const int controlQubit,
 		Complex alpha, Complex beta);
 
-void controlRotateQubitDistributed (MultiQubit multiQubit, const int rotQubit, const int controlQubit,
+void controlledCompactUnitaryDistributed (MultiQubit multiQubit, const int rotQubit, const int controlQubit,
                 Complex rot1, Complex rot2,
                 ComplexArray stateVecUp,
                 ComplexArray stateVecLo,
                 ComplexArray stateVecOut);
 
-void controlSingleQubitUnitaryLocal(MultiQubit multiQubit, const int rotQubit, const int controlQubit,
+void controlledUnitaryLocal(MultiQubit multiQubit, const int rotQubit, const int controlQubit,
                 ComplexMatrix2 u);
 
-void controlSingleQubitUnitaryDistributed (MultiQubit multiQubit, const int rotQubit, const int controlQubit,
+void controlledUnitaryDistributed (MultiQubit multiQubit, const int rotQubit, const int controlQubit,
         Complex rot1, Complex rot2,
         ComplexArray stateVecUp,
         ComplexArray stateVecLo,
         ComplexArray stateVecOut);
 
-void multiControlSingleQubitUnitaryLocal(MultiQubit multiQubit, const int rotQubit,
+void multiControlledUnitaryLocal(MultiQubit multiQubit, const int rotQubit,
                 long long int mask, ComplexMatrix2 u);
 
-void multiControlSingleQubitUnitaryDistributed (MultiQubit multiQubit,
+void multiControlledUnitaryDistributed (MultiQubit multiQubit,
         const int rotQubit,
         long long int mask,
         Complex rot1, Complex rot2,
@@ -83,9 +83,9 @@ void phaseGateLocal(MultiQubit multiQubit, const int rotQubit, enum phaseGateTyp
 
 void phaseGateDistributed(MultiQubit multiQubit, const int rotQubit, enum phaseGateType type);
 
-void controlNotLocal(MultiQubit multiQubit, const int targetQubit, const int controlQubit);
+void controlledNotLocal(MultiQubit multiQubit, const int targetQubit, const int controlQubit);
 
-void controlNotDistributed (MultiQubit multiQubit, const int targetQubit, const int controlQubit,
+void controlledNotDistributed (MultiQubit multiQubit, const int targetQubit, const int controlQubit,
 		        ComplexArray stateVecIn,
 			ComplexArray stateVecOut);
 
@@ -95,11 +95,11 @@ REAL findProbabilityOfZeroLocal (MultiQubit multiQubit,
 REAL findProbabilityOfZeroDistributed (MultiQubit multiQubit,
                 const int measureQubit);
 
-void measureInStateLocal(MultiQubit multiQubit, int measureQubit, REAL totalProbability, int outcome);
+void collapseToOutcomeLocal(MultiQubit multiQubit, int measureQubit, REAL totalProbability, int outcome);
 
-REAL measureInStateDistributedRenorm (MultiQubit multiQubit, const int measureQubit, const REAL totalProbability);
+REAL collapseToOutcomeDistributedRenorm (MultiQubit multiQubit, const int measureQubit, const REAL totalProbability);
 
-void measureInStateDistributedSetZero(MultiQubit multiQubit, const int measureQubit);
+void collapseToOutcomeDistributedSetZero(MultiQubit multiQubit, const int measureQubit);
 
 void filterOut111Local(MultiQubit multiQubit, const int idQubit1, const int idQubit2, const int idQubit3,
 	const REAL probOfFilter);

@@ -428,13 +428,13 @@ the first qubit is the rightmost
 @param[in] angle angle by which to rotate in radians
 @param[in] unitAxis unit vector pointing along the axis about which to rotate
 */
-void rotateQubitByAngle(MultiQubit multiQubit, const int rotQubit, REAL angle, Vector unitAxis){
+void rotateAroundAxis(MultiQubit multiQubit, const int rotQubit, REAL angle, Vector unitAxis){
 	Complex alpha, beta;
 	alpha.real = cos(angle/2.0);
 	alpha.imag = -sin(angle/2.0)*unitAxis.z;	
 	beta.real = 0;
 	beta.imag = -sin(angle/2.0)*(unitAxis.x + unitAxis.y);
-	rotateQubit(multiQubit, rotQubit, alpha, beta);
+	compactUnitary(multiQubit, rotQubit, alpha, beta);
 }
 
 
@@ -444,7 +444,7 @@ void rotateQubitByAngle(MultiQubit multiQubit, const int rotQubit, REAL angle, V
 @param[in] alpha rotation angle
 @param[in] beta rotation angle
  */
-void rotateQubitLocal (MultiQubit multiQubit, const int rotQubit, Complex alpha, Complex beta)
+void compactUnitaryLocal (MultiQubit multiQubit, const int rotQubit, Complex alpha, Complex beta)
 {
 	long long int sizeBlock, sizeHalfBlock;
 	long long int thisBlock, // current block
@@ -512,7 +512,7 @@ the first qubit is the rightmost
 @param[in] rotQubit qubit to rotate
 @param[in] u unitary matrix to apply
  */
-void singleQubitUnitaryLocal(MultiQubit multiQubit, const int rotQubit, ComplexMatrix2 u)
+void unitaryLocal(MultiQubit multiQubit, const int rotQubit, ComplexMatrix2 u)
 {
 	long long int sizeBlock, sizeHalfBlock;
 	long long int thisBlock, // current block
@@ -583,7 +583,7 @@ and a subset of the state vector with upper and lower block values stored sepera
 @param[out] stateVecOut array section to update (will correspond to either the lower or upper half of a block)
 */
 
-void rotateQubitDistributed (MultiQubit multiQubit, const int rotQubit,
+void compactUnitaryDistributed (MultiQubit multiQubit, const int rotQubit,
 		Complex rot1, Complex rot2,
 		ComplexArray stateVecUp,
 		ComplexArray stateVecLo,
@@ -641,7 +641,7 @@ the first qubit is the rightmost
 @param[out] stateVecOut array section to update (will correspond to either the lower or upper half of a block)
 */
 
-void singleQubitUnitaryDistributed (MultiQubit multiQubit, const int rotQubit,
+void unitaryDistributed (MultiQubit multiQubit, const int rotQubit,
 		Complex rot1, Complex rot2,
 		ComplexArray stateVecUp,
 		ComplexArray stateVecLo,
@@ -697,7 +697,7 @@ Only perform the rotation for elements where the control qubit is one.
 @param[in] alpha rotation angle
 @param[in] beta rotation angle
  */
-void controlRotateQubitLocal (MultiQubit multiQubit, const int rotQubit, const int controlQubit, 
+void controlledCompactUnitaryLocal (MultiQubit multiQubit, const int rotQubit, const int controlQubit, 
 		Complex alpha, Complex beta)
 {
 	long long int sizeBlock, sizeHalfBlock;
@@ -775,7 +775,7 @@ Only perform the rotation for elements where the control qubit is one.
 @param[in] alpha rotation angle
 @param[in] beta rotation angle
  */
-void multiControlSingleQubitUnitaryLocal(MultiQubit multiQubit, const int rotQubit, 
+void multiControlledUnitaryLocal(MultiQubit multiQubit, const int rotQubit, 
 		long long int mask, ComplexMatrix2 u)
 {
 	long long int sizeBlock, sizeHalfBlock;
@@ -849,7 +849,7 @@ Only perform the rotation for elements where the control qubit is one.
 @param[in] alpha rotation angle
 @param[in] beta rotation angle
  */
-void controlSingleQubitUnitaryLocal(MultiQubit multiQubit, const int rotQubit, const int controlQubit, 
+void controlledUnitaryLocal(MultiQubit multiQubit, const int rotQubit, const int controlQubit, 
 		ComplexMatrix2 u)
 {
 	long long int sizeBlock, sizeHalfBlock;
@@ -928,7 +928,7 @@ stored seperately. Only perform the rotation where the control qubit is one.
 @param[in] stateVecLo probability amplitudes in lower half of a block
 @param[out] stateVecOut array section to update (will correspond to either the lower or upper half of a block)
 */
-void controlRotateQubitDistributed (MultiQubit multiQubit, const int rotQubit, const int controlQubit,
+void controlledCompactUnitaryDistributed (MultiQubit multiQubit, const int rotQubit, const int controlQubit,
 		Complex rot1, Complex rot2,
 		ComplexArray stateVecUp,
 		ComplexArray stateVecLo,
@@ -991,7 +991,7 @@ stored seperately. Only perform the rotation where the control qubit is one.
 @param[in] stateVecLo probability amplitudes in lower half of a block
 @param[out] stateVecOut array section to update (will correspond to either the lower or upper half of a block)
 */
-void controlSingleQubitUnitaryDistributed (MultiQubit multiQubit, const int rotQubit, const int controlQubit,
+void controlledUnitaryDistributed (MultiQubit multiQubit, const int rotQubit, const int controlQubit,
 		Complex rot1, Complex rot2,
 		ComplexArray stateVecUp,
 		ComplexArray stateVecLo,
@@ -1055,7 +1055,7 @@ stored seperately. Only perform the rotation where the control qubit is one.
 @param[in] stateVecLo probability amplitudes in lower half of a block
 @param[out] stateVecOut array section to update (will correspond to either the lower or upper half of a block)
 */
-void multiControlSingleQubitUnitaryDistributed (MultiQubit multiQubit, 
+void multiControlledUnitaryDistributed (MultiQubit multiQubit, 
         const int rotQubit, 
         long long int mask,
 		Complex rot1, Complex rot2,
@@ -1212,7 +1212,7 @@ the first qubit is the rightmost
 @param[in] targetQubit qubit to rotate
 @param[in] controlQubit qubit to determine whether or not to perform a rotation 
  */
-void controlNotLocal(MultiQubit multiQubit, const int targetQubit, const int controlQubit)
+void controlledNotLocal(MultiQubit multiQubit, const int targetQubit, const int controlQubit)
 {
 	long long int sizeBlock, sizeHalfBlock;
 	long long int thisBlock, // current block
@@ -1283,7 +1283,7 @@ for elements where controlQubit is one.
 @param[out] stateVecOut array section to update (will correspond to either the lower or upper half of a block)
 */
 
-void controlNotDistributed (MultiQubit multiQubit, const int targetQubit, const int controlQubit,
+void controlledNotDistributed (MultiQubit multiQubit, const int targetQubit, const int controlQubit,
 		ComplexArray stateVecIn,
 		ComplexArray stateVecOut)
 {
@@ -1864,7 +1864,7 @@ For each state, if both input qubits are equal to one, multiply the amplitude of
 @param[in] idQubit1, idQubit2 specified qubits                 
 */
 
-void controlPhaseGate (MultiQubit multiQubit, const int idQubit1, const int idQubit2)
+void controlledPhaseGate (MultiQubit multiQubit, const int idQubit1, const int idQubit2)
 {
 	long long int index;
 	long long int stateVecSize;
@@ -1908,7 +1908,7 @@ void controlPhaseGate (MultiQubit multiQubit, const int idQubit1, const int idQu
 /** The control not gate
 */
 /*
-void controlNotGate (MultiQubit multiQubit, const int control, const int target)
+void controlledNotGate (MultiQubit multiQubit, const int control, const int target)
 {
 	long long int index;
 	long long int stateVecSize;
@@ -2010,7 +2010,7 @@ measureQubit=1 in the second half of the block) fit entirely into one chunk.
 @param[in] totalProbability probability of qubit measureQubit being either zero or one
 @param[in] outcome to measure the probability of and set the state to -- either zero or one
 */
-void measureInStateLocal(MultiQubit multiQubit, int measureQubit, REAL totalProbability, int outcome)
+void collapseToOutcomeLocal(MultiQubit multiQubit, int measureQubit, REAL totalProbability, int outcome)
 {
 	// ----- sizes
 	long long int sizeBlock,                                           // size of blocks
@@ -2098,7 +2098,7 @@ only renormalisation or only setting amplitudes to 0. This function handles the 
 @param[in] totalProbability probability of qubit measureQubit being zero
 */
 
-REAL measureInStateDistributedRenorm (MultiQubit multiQubit, const int measureQubit, const REAL totalProbability)
+REAL collapseToOutcomeDistributedRenorm (MultiQubit multiQubit, const int measureQubit, const REAL totalProbability)
 {
 	// ----- temp variables
 	long long int thisTask;                                   // task based approach for expose loop with small granularity
@@ -2147,7 +2147,7 @@ only renormalisation or only setting amplitudes to 0. This function handles sett
 @param[in] measureQubit qubit to measure
 */
 
-void measureInStateDistributedSetZero(MultiQubit multiQubit, const int measureQubit)
+void collapseToOutcomeDistributedSetZero(MultiQubit multiQubit, const int measureQubit)
 {
 	// ----- temp variables
 	long long int thisTask;                                   // task based approach for expose loop with small granularity

@@ -246,7 +246,7 @@ int test_tGate(char testName[200]){
 	return passed;
 }
 
-int test_controlNot(char testName[200]){
+int test_controlledNot(char testName[200]){
 	char filename[200];
 	int passed=1;
 	int count=1;
@@ -264,7 +264,7 @@ int test_controlNot(char testName[200]){
 			syncQuESTEnv(env);
 			initStateDebug(&mq);
 			rotateQubit=i;
-			controlNot(mq, rotateQubit, controlQubit);
+			controlledNot(mq, rotateQubit, controlQubit);
 			
 			sprintf(filename, "%s%s%d.out", PATH_TO_TESTS, testName, count++); 	
 			initializeStateFromSingleFile(&mqVerif, filename, env);
@@ -279,7 +279,7 @@ int test_controlNot(char testName[200]){
 	return passed;
 }
 
-int test_controlPhaseGate(char testName[200]){
+int test_controlledPhaseGate(char testName[200]){
 	char filename[200];
 	int passed=1;
 	int count=1;
@@ -296,7 +296,7 @@ int test_controlPhaseGate(char testName[200]){
 		for (int i=0; i<3; i++){
 			initStateDebug(&mq);
 			rotateQubit=i;
-			controlPhaseGate(mq, rotateQubit, controlQubit);
+			controlledPhaseGate(mq, rotateQubit, controlQubit);
 			
 			sprintf(filename, "%s%s%d.out", PATH_TO_TESTS, testName, count++); 	
 			initializeStateFromSingleFile(&mqVerif, filename, env);
@@ -336,7 +336,7 @@ int test_quadCPhaseGate(char testName[200]){
 	return passed;
 }
 
-int test_rotateQubit(char testName[200]){
+int test_compactUnitary(char testName[200]){
 	int passed=1;
 
 	int numQubits=10;
@@ -359,7 +359,7 @@ int test_rotateQubit(char testName[200]){
     initStateDebug(&mqVerif);
     for (int i=0; i<numQubits; i++){
         rotQubit=i;
-        rotateQubit(mq, rotQubit, alpha, beta);
+        compactUnitary(mq, rotQubit, alpha, beta);
     }
     // note -- this is only checking if the state changed at all due to rotation,
     // not that it changed correctly
@@ -374,7 +374,7 @@ int test_rotateQubit(char testName[200]){
 
     for (int i=numQubits-1; i>=0; i--){
         rotQubit=i;
-        rotateQubit(mq, rotQubit, alpha, beta);
+        compactUnitary(mq, rotQubit, alpha, beta);
     }
 
 	if (passed) passed = compareStates(mq, mqVerif, COMPARE_PRECISION);
@@ -388,7 +388,7 @@ int test_rotateQubit(char testName[200]){
     initStatePlus(&mq);
     for (int i=0; i<numQubits; i++){
         rotQubit=i;
-        rotateQubit(mq, rotQubit, alpha, beta);
+        compactUnitary(mq, rotQubit, alpha, beta);
     }
     REAL outcome = calcTotalProbability(mq);    
     if (passed) passed = compareReals(1.0, outcome, COMPARE_PRECISION);
@@ -398,7 +398,7 @@ int test_rotateQubit(char testName[200]){
 	return passed;
 }
 
-int test_singleQubitUnitary(char testName[200]){
+int test_unitary(char testName[200]){
 	int passed=1;
 
 	int numQubits=10;
@@ -427,10 +427,10 @@ int test_singleQubitUnitary(char testName[200]){
     initStateDebug(&mqVerif);
     for (int i=0; i<numQubits; i++){
         rotQubit=i;
-        rotateQubit(mqVerif, rotQubit, alpha, beta);
-        singleQubitUnitary(mq, rotQubit, u);
+        compactUnitary(mqVerif, rotQubit, alpha, beta);
+        unitary(mq, rotQubit, u);
     }
-    // assigning alpha/beta values to u such that rotateQubit should match singleQubitUnitary
+    // assigning alpha/beta values to u such that compactUnitary should match unitary
     if (passed) passed = compareStates(mq, mqVerif, COMPARE_PRECISION);
 
     // Rotate back the other way and check we arrive back at the initial state
@@ -441,7 +441,7 @@ int test_singleQubitUnitary(char testName[200]){
     
     for (int i=numQubits-1; i>=0; i--){
         rotQubit=i;
-        singleQubitUnitary(mq, rotQubit, uDagger);
+        unitary(mq, rotQubit, uDagger);
     }
 
     initStateDebug(&mqVerif);
@@ -456,7 +456,7 @@ int test_singleQubitUnitary(char testName[200]){
     initStatePlus(&mq);
     for (int i=0; i<numQubits; i++){
         rotQubit=i;
-        singleQubitUnitary(mq, rotQubit, uDagger);
+        unitary(mq, rotQubit, uDagger);
     }
     REAL outcome = calcTotalProbability(mq);    
     if (passed) passed = compareReals(1.0, outcome, COMPARE_PRECISION);
@@ -465,7 +465,7 @@ int test_singleQubitUnitary(char testName[200]){
 	return passed;
 }
 
-int test_controlRotateQubit(char testName[200]){
+int test_controlledCompactUnitary(char testName[200]){
 	char filename[200];
 	int passed=1;
 	int count=1;
@@ -474,7 +474,7 @@ int test_controlRotateQubit(char testName[200]){
 	int rotQubit, controlQubit;
 	MultiQubit mq, mqVerif; 
 
-	// assumes rotateQubit function is correct
+	// assumes compactUnitary function is correct
 	
 	REAL ang1, ang2, ang3;
     ang1 = 1.2320;
@@ -496,7 +496,7 @@ int test_controlRotateQubit(char testName[200]){
             if (i==j){count++; continue;}
 			initStateDebug(&mq);
 			rotQubit=i;
-			controlRotateQubit(mq, rotQubit, controlQubit, alpha, beta);
+			controlledCompactUnitary(mq, rotQubit, controlQubit, alpha, beta);
 			
 			sprintf(filename, "%s%s%d.out", PATH_TO_TESTS, testName, count++); 	
 			initializeStateFromSingleFile(&mqVerif, filename, env);
@@ -510,7 +510,7 @@ int test_controlRotateQubit(char testName[200]){
 	return passed;
 }
 
-int test_controlSingleQubitUnitary(char testName[200]){
+int test_controlledUnitary(char testName[200]){
 	char filename[200];
 	int passed=1;
 	int count=1;
@@ -521,7 +521,7 @@ int test_controlSingleQubitUnitary(char testName[200]){
     ComplexMatrix2 u;
 	MultiQubit mq, mqVerif; 
 
-	// assumes controlRotateQubit function is correct
+	// assumes controlledCompactUnitary function is correct
 	
 	REAL ang1, ang2, ang3;
     ang1 = 1.2320;
@@ -549,8 +549,8 @@ int test_controlSingleQubitUnitary(char testName[200]){
 			initStateDebug(&mq);
 			initStateDebug(&mqVerif);
 			rotQubit=i;
-			controlRotateQubit(mqVerif, rotQubit, controlQubit, alpha, beta);
-			controlSingleQubitUnitary(mq, rotQubit, controlQubit, u);
+			controlledCompactUnitary(mqVerif, rotQubit, controlQubit, alpha, beta);
+			controlledUnitary(mq, rotQubit, controlQubit, u);
 			
 			if (passed) passed = compareStates(mq, mqVerif, COMPARE_PRECISION);
 		}
@@ -562,7 +562,7 @@ int test_controlSingleQubitUnitary(char testName[200]){
 	return passed;
 }
 
-int test_multiControlSingleQubitUnitary(char testName[200]){
+int test_multiControlledUnitary(char testName[200]){
 	char filename[200];
 	int passed=1;
 	int count=1;
@@ -573,7 +573,7 @@ int test_multiControlSingleQubitUnitary(char testName[200]){
     ComplexMatrix2 u;
 	MultiQubit mq, mqVerif; 
 
-	// assumes controlRotateQubit function is correct
+	// assumes controlledCompactUnitary function is correct
 	
 	REAL ang1, ang2, ang3;
     ang1 = 1.2320;
@@ -602,9 +602,9 @@ int test_multiControlSingleQubitUnitary(char testName[200]){
 			initStateDebug(&mq);
 			initStateDebug(&mqVerif);
 			rotQubit=i;
-			controlRotateQubit(mqVerif, rotQubit, controlQubit, alpha, beta);
+			controlledCompactUnitary(mqVerif, rotQubit, controlQubit, alpha, beta);
             mask = 1LL << controlQubit;
-			multiControlSingleQubitUnitary(mq, rotQubit, mask, u);
+			multiControlledUnitary(mq, rotQubit, mask, u);
 			
 			if (passed) passed = compareStates(mq, mqVerif, COMPARE_PRECISION);
 		}
@@ -625,7 +625,7 @@ int test_multiControlSingleQubitUnitary(char testName[200]){
     mask = mask | (1LL << controlQubit);
 
 	initStateDebug(&mq);
-	multiControlSingleQubitUnitary(mq, rotQubit, mask, u);
+	multiControlledUnitary(mq, rotQubit, mask, u);
     sprintf(filename, "%s%s%d.out", PATH_TO_TESTS, testName, count++); 	
     initializeStateFromSingleFile(&mqVerif, filename, env);
 	if (passed) passed = compareStates(mq, mqVerif, COMPARE_PRECISION);
@@ -639,7 +639,7 @@ int test_multiControlSingleQubitUnitary(char testName[200]){
     mask = mask | (1LL << controlQubit);
 
 	initStateDebug(&mq);
-	multiControlSingleQubitUnitary(mq, rotQubit, mask, u);
+	multiControlledUnitary(mq, rotQubit, mask, u);
     sprintf(filename, "%s%s%d.out", PATH_TO_TESTS, testName, count++); 	
     initializeStateFromSingleFile(&mqVerif, filename, env);
 	if (passed) passed = compareStates(mq, mqVerif, COMPARE_PRECISION);
@@ -695,7 +695,7 @@ int test_findProbabilityOfOutcome(char testName[200]){
 	return passed;
 }
 
-int test_measureInState(char testName[200]){
+int test_collapseToOutcome(char testName[200]){
 	int passed=1;
 
 	int numQubits=3;
@@ -710,14 +710,14 @@ int test_measureInState(char testName[200]){
 	for (qubit=0; qubit<numQubits; qubit++){
 		initStateZero(&mq);
 		initStateZero(&mqVerif);
-		outcome = measureInState(mq, qubit, 0);
+		outcome = collapseToOutcome(mq, qubit, 0);
 		if (passed) passed = compareReals(1, outcome, COMPARE_PRECISION);
 		if (passed) passed = compareStates(mq, mqVerif, COMPARE_PRECISION);
 
 
 		initStateZero(&mq);
 		initStateZero(&mqVerif);
-		outcome = measureInState(mq, qubit, 1);
+		outcome = collapseToOutcome(mq, qubit, 1);
 		if (passed) passed = compareReals(0, outcome, COMPARE_PRECISION);
 		if (passed) passed = compareStates(mq, mqVerif, COMPARE_PRECISION);
 	}
@@ -726,13 +726,13 @@ int test_measureInState(char testName[200]){
 	for (qubit=0; qubit<numQubits; qubit++){
 		initStateOfSingleQubit(&mq, qubit, 1);
 		initStateOfSingleQubit(&mqVerif, qubit, 1);
-		outcome = measureInState(mq, qubit, 0);
+		outcome = collapseToOutcome(mq, qubit, 0);
 		if (passed) passed = compareReals(0, outcome, COMPARE_PRECISION);
 		if (passed) passed = compareStates(mq, mqVerif, COMPARE_PRECISION);
 
 		initStateOfSingleQubit(&mq, qubit, 1);
 		initStateOfSingleQubit(&mqVerif, qubit, 1);
-		outcome = measureInState(mq, qubit, 1);
+		outcome = collapseToOutcome(mq, qubit, 1);
 		if (passed) passed = compareReals(1, outcome, COMPARE_PRECISION);
 		if (passed) passed = compareStates(mq, mqVerif, COMPARE_PRECISION);
 	}
@@ -741,13 +741,13 @@ int test_measureInState(char testName[200]){
 	for (qubit=0; qubit<numQubits; qubit++){
 		initStatePlus(&mq);
 		initStateOfSingleQubit(&mqVerif, qubit, 0);
-		outcome = measureInState(mq, qubit, 0);
+		outcome = collapseToOutcome(mq, qubit, 0);
 		if (passed) passed = compareReals(0.5, outcome, COMPARE_PRECISION);
 		if (passed) passed = compareStates(mq, mqVerif, COMPARE_PRECISION);
 
 		initStatePlus(&mq);
 		initStateOfSingleQubit(&mqVerif, qubit, 1);
-		outcome = measureInState(mq, qubit, 1);
+		outcome = collapseToOutcome(mq, qubit, 1);
 		if (passed) passed = compareReals(0.5, outcome, COMPARE_PRECISION);
 		if (passed) passed = compareStates(mq, mqVerif, COMPARE_PRECISION);
 	}
@@ -839,7 +839,7 @@ int main (int narg, char** varg) {
 	reportQuESTEnv(env);
 
 	int (*tests[NUM_TESTS])(char[200]) = {
-		test_controlNot,
+		test_controlledNot,
 		test_initStateZero,
 		test_initStatePlus,
 		test_sigmaX,
@@ -848,21 +848,21 @@ int main (int narg, char** varg) {
 		test_hadamard,
 		test_sGate,
 		test_tGate,
-		test_controlPhaseGate,
+		test_controlledPhaseGate,
 		test_quadCPhaseGate,
-		test_rotateQubit,
-        test_singleQubitUnitary,
-		test_controlRotateQubit,
-        test_controlSingleQubitUnitary,
-        test_multiControlSingleQubitUnitary,
+		test_compactUnitary,
+        test_unitary,
+		test_controlledCompactUnitary,
+        test_controlledUnitary,
+        test_multiControlledUnitary,
 		test_findProbabilityOfOutcome,
-		test_measureInState,
+		test_collapseToOutcome,
 		test_probOfFilterOut111,
 		test_filterOut111
 	};
 
 	char testNames[NUM_TESTS][200] = {
-		"controlNot",
+		"controlledNot",
 		"initStateZero",
 		"initStatePlus",
 		"sigmaX",
@@ -871,15 +871,15 @@ int main (int narg, char** varg) {
 		"hadamard",
 		"sGate",
 		"tGate",
-		"controlPhaseGate",
+		"controlledPhaseGate",
 		"quadCPhaseGate",
-		"rotateQubit",
-        "singleQubitUnitary",
-		"controlRotateQubit",
-        "controlSingleQubitUnitary",
-        "multiControlSingleQubitUnitary",
+		"compactUnitary",
+        "unitary",
+		"controlledCompactUnitary",
+        "controlledUnitary",
+        "multiControlledUnitary",
 		"findProbabilityOfOutcome",
-		"measureInState",
+		"collapseToOutcome",
 		"probOfFilterOut111",
 		"filterOut111"
 	};

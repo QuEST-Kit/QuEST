@@ -165,7 +165,7 @@ int main (int narg, char** varg) {
 	// do a big MPI communication to get around first send/recv in the program occasionally taking many times longer
 	//(due to MPI setup?)
 	if (REPORT_TIMING && INIT_COMMUNICATION){
-		rotateQubit(multiQubit,numQubits-1,alpha,beta);
+		compactUnitary(multiQubit,numQubits-1,alpha,beta);
 		syncQuESTEnv(env);
 	}
 
@@ -177,7 +177,7 @@ int main (int narg, char** varg) {
 			if (REPORT_TIMING && env.rank==0) wtime_start = system_timer ();
 
 			// do rotation of each qubit N_TRIALS times for timing
-			rotateQubit(multiQubit,rotQubit,alpha,beta);
+			compactUnitary(multiQubit,rotQubit,alpha,beta);
 
 			if (REPORT_TIMING) syncQuESTEnv(env);
                         if (REPORT_TIMING && env.rank==0) {

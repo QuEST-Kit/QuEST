@@ -267,7 +267,7 @@ void exchangeStateVectors(MultiQubit multiQubit, int pairRank){
 	}
 }
 
-void rotateQubit(MultiQubit multiQubit, const int rotQubit, Complex alpha, Complex beta)
+void compactUnitary(MultiQubit multiQubit, const int rotQubit, Complex alpha, Complex beta)
 {
         QuESTAssert(rotQubit >= 0 && rotQubit < multiQubit.numQubits, 1, __func__);
         QuESTAssert(validateAlphaBeta(alpha, beta), 6, __func__);
@@ -282,7 +282,7 @@ void rotateQubit(MultiQubit multiQubit, const int rotQubit, Complex alpha, Compl
 
         if (useLocalDataOnly){
                 // all values required to update state vector lie in this rank
-                rotateQubitLocal(multiQubit, rotQubit, alpha, beta);
+                compactUnitaryLocal(multiQubit, rotQubit, alpha, beta);
         } else {
                 // need to get corresponding chunk of state vector from other rank
                 rankIsUpper = chunkIsUpper(multiQubit.chunkId, multiQubit.numAmps, rotQubit);
@@ -292,14 +292,14 @@ void rotateQubit(MultiQubit multiQubit, const int rotQubit, Complex alpha, Compl
 		        exchangeStateVectors(multiQubit, pairRank);
 
                 // this rank's values are either in the upper of lower half of the block. 
-		        // send values to rotateQubitDistributed in the correct order
+		        // send values to compactUnitaryDistributed in the correct order
                 if (rankIsUpper){
-                        rotateQubitDistributed(multiQubit,rotQubit,rot1,rot2,
+                        compactUnitaryDistributed(multiQubit,rotQubit,rot1,rot2,
                                 multiQubit.stateVec, //upper
                                 multiQubit.pairStateVec, //lower
                                 multiQubit.stateVec); //output
                 } else {
-                        rotateQubitDistributed(multiQubit,rotQubit,rot1,rot2,
+                        compactUnitaryDistributed(multiQubit,rotQubit,rot1,rot2,
                                 multiQubit.pairStateVec, //upper
                                 multiQubit.stateVec, //lower
                                 multiQubit.stateVec); //output
@@ -307,7 +307,7 @@ void rotateQubit(MultiQubit multiQubit, const int rotQubit, Complex alpha, Compl
         }
 }
 
-void singleQubitUnitary(MultiQubit multiQubit, const int rotQubit, ComplexMatrix2 u)
+void unitary(MultiQubit multiQubit, const int rotQubit, ComplexMatrix2 u)
 {
         QuESTAssert(rotQubit >= 0 && rotQubit < multiQubit.numQubits, 1, __func__);
         QuESTAssert(validateMatrixIsUnitary(u), 5, __func__);
@@ -322,7 +322,7 @@ void singleQubitUnitary(MultiQubit multiQubit, const int rotQubit, ComplexMatrix
 
         if (useLocalDataOnly){
                 // all values required to update state vector lie in this rank
-	        singleQubitUnitaryLocal(multiQubit, rotQubit, u);
+	        unitaryLocal(multiQubit, rotQubit, u);
         } else {
                 // need to get corresponding chunk of state vector from other rank
                 rankIsUpper = chunkIsUpper(multiQubit.chunkId, multiQubit.numAmps, rotQubit);
@@ -332,14 +332,14 @@ void singleQubitUnitary(MultiQubit multiQubit, const int rotQubit, ComplexMatrix
 		        exchangeStateVectors(multiQubit, pairRank);
 
                 // this rank's values are either in the upper of lower half of the block. 
-                // send values to rotateQubitDistributed in the correct order
+                // send values to compactUnitaryDistributed in the correct order
                 if (rankIsUpper){
-                        singleQubitUnitaryDistributed(multiQubit,rotQubit,rot1,rot2,
+                        unitaryDistributed(multiQubit,rotQubit,rot1,rot2,
                                 multiQubit.stateVec, //upper
                                 multiQubit.pairStateVec, //lower
                                 multiQubit.stateVec); //output
                 } else {
-                        singleQubitUnitaryDistributed(multiQubit,rotQubit,rot1,rot2,
+                        unitaryDistributed(multiQubit,rotQubit,rot1,rot2,
                                 multiQubit.pairStateVec, //upper
                                 multiQubit.stateVec, //lower
                                 multiQubit.stateVec); //output
@@ -349,7 +349,7 @@ void singleQubitUnitary(MultiQubit multiQubit, const int rotQubit, ComplexMatrix
 
 }
 
-void controlRotateQubit(MultiQubit multiQubit, const int rotQubit, const int controlQubit, Complex alpha, Complex beta)
+void controlledCompactUnitary(MultiQubit multiQubit, const int rotQubit, const int controlQubit, Complex alpha, Complex beta)
 {
         QuESTAssert(rotQubit >= 0 && rotQubit < multiQubit.numQubits, 1, __func__);
         QuESTAssert(controlQubit >= 0 && controlQubit < multiQubit.numQubits, 2, __func__);
@@ -366,7 +366,7 @@ void controlRotateQubit(MultiQubit multiQubit, const int rotQubit, const int con
 
         if (useLocalDataOnly){
                 // all values required to update state vector lie in this rank
-                controlRotateQubitLocal(multiQubit, rotQubit, controlQubit, alpha, beta);
+                controlledCompactUnitaryLocal(multiQubit, rotQubit, controlQubit, alpha, beta);
         } else {
                 // need to get corresponding chunk of state vector from other rank
                 rankIsUpper = chunkIsUpper(multiQubit.chunkId, multiQubit.numAmps, rotQubit);
@@ -376,15 +376,15 @@ void controlRotateQubit(MultiQubit multiQubit, const int rotQubit, const int con
                 // get corresponding values from my pair
 		exchangeStateVectors(multiQubit, pairRank);
                 
-		// this rank's values are either in the upper of lower half of the block. send values to rotateQubitDistributed
+		// this rank's values are either in the upper of lower half of the block. send values to controlledCompactUnitaryDistributed
                 // in the correct order
                 if (rankIsUpper){
-                        controlRotateQubitDistributed(multiQubit,rotQubit,controlQubit,rot1,rot2,
+                        controlledCompactUnitaryDistributed(multiQubit,rotQubit,controlQubit,rot1,rot2,
                                 multiQubit.stateVec, //upper
                                 multiQubit.pairStateVec, //lower
                                 multiQubit.stateVec); //output
                 } else {
-                        controlRotateQubitDistributed(multiQubit,rotQubit,controlQubit,rot1,rot2,
+                        controlledCompactUnitaryDistributed(multiQubit,rotQubit,controlQubit,rot1,rot2,
                                 multiQubit.pairStateVec, //upper
                                 multiQubit.stateVec, //lower
                                 multiQubit.stateVec); //output
@@ -392,7 +392,7 @@ void controlRotateQubit(MultiQubit multiQubit, const int rotQubit, const int con
         }
 }
 
-void controlSingleQubitUnitary(MultiQubit multiQubit, const int rotQubit, const int controlQubit, 
+void controlledUnitary(MultiQubit multiQubit, const int rotQubit, const int controlQubit, 
         ComplexMatrix2 u)
 {
         QuESTAssert(rotQubit >= 0 && rotQubit < multiQubit.numQubits, 1, __func__);
@@ -410,7 +410,7 @@ void controlSingleQubitUnitary(MultiQubit multiQubit, const int rotQubit, const 
 
         if (useLocalDataOnly){
                 // all values required to update state vector lie in this rank
-                controlSingleQubitUnitaryLocal(multiQubit, rotQubit, controlQubit, u);
+                controlledUnitaryLocal(multiQubit, rotQubit, controlQubit, u);
         } else {
                 // need to get corresponding chunk of state vector from other rank
                 rankIsUpper = chunkIsUpper(multiQubit.chunkId, multiQubit.numAmps, rotQubit);
@@ -420,15 +420,15 @@ void controlSingleQubitUnitary(MultiQubit multiQubit, const int rotQubit, const 
                 // get corresponding values from my pair
 		exchangeStateVectors(multiQubit, pairRank);
                 
-		// this rank's values are either in the upper of lower half of the block. send values to rotateQubitDistributed
+		// this rank's values are either in the upper of lower half of the block. send values to controlledUnitaryDistributed
                 // in the correct order
                 if (rankIsUpper){
-                        controlSingleQubitUnitaryDistributed(multiQubit,rotQubit,controlQubit,rot1,rot2,
+                        controlledUnitaryDistributed(multiQubit,rotQubit,controlQubit,rot1,rot2,
                                 multiQubit.stateVec, //upper
                                 multiQubit.pairStateVec, //lower
                                 multiQubit.stateVec); //output
                 } else {
-                        controlSingleQubitUnitaryDistributed(multiQubit,rotQubit,controlQubit,rot1,rot2,
+                        controlledUnitaryDistributed(multiQubit,rotQubit,controlQubit,rot1,rot2,
                                 multiQubit.pairStateVec, //upper
                                 multiQubit.stateVec, //lower
                                 multiQubit.stateVec); //output
@@ -436,7 +436,7 @@ void controlSingleQubitUnitary(MultiQubit multiQubit, const int rotQubit, const 
         }
 }
 
-void multiControlSingleQubitUnitary(MultiQubit multiQubit, const int rotQubit, long long int mask,
+void multiControlledUnitary(MultiQubit multiQubit, const int rotQubit, long long int mask,
         ComplexMatrix2 u)
 {
         QuESTAssert(rotQubit >= 0 && rotQubit < multiQubit.numQubits, 1, __func__);
@@ -454,7 +454,7 @@ void multiControlSingleQubitUnitary(MultiQubit multiQubit, const int rotQubit, l
 
         if (useLocalDataOnly){
                 // all values required to update state vector lie in this rank
-                multiControlSingleQubitUnitaryLocal(multiQubit, rotQubit, mask, u);
+                multiControlledUnitaryLocal(multiQubit, rotQubit, mask, u);
         } else {
                 // need to get corresponding chunk of state vector from other rank
                 rankIsUpper = chunkIsUpper(multiQubit.chunkId, multiQubit.numAmps, rotQubit);
@@ -464,15 +464,15 @@ void multiControlSingleQubitUnitary(MultiQubit multiQubit, const int rotQubit, l
                 // get corresponding values from my pair
 		exchangeStateVectors(multiQubit, pairRank);
                 
-		// this rank's values are either in the upper of lower half of the block. send values to rotateQubitDistributed
+		// this rank's values are either in the upper of lower half of the block. send values to multiControlledUnitaryDistributed
                 // in the correct order
                 if (rankIsUpper){
-                        multiControlSingleQubitUnitaryDistributed(multiQubit,rotQubit,mask,rot1,rot2,
+                        multiControlledUnitaryDistributed(multiQubit,rotQubit,mask,rot1,rot2,
                                 multiQubit.stateVec, //upper
                                 multiQubit.pairStateVec, //lower
                                 multiQubit.stateVec); //output
                 } else {
-                        multiControlSingleQubitUnitaryDistributed(multiQubit,rotQubit,mask,rot1,rot2,
+                        multiControlledUnitaryDistributed(multiQubit,rotQubit,mask,rot1,rot2,
                                 multiQubit.pairStateVec, //upper
                                 multiQubit.stateVec, //lower
                                 multiQubit.stateVec); //output
@@ -508,7 +508,7 @@ void sigmaX(MultiQubit multiQubit, const int rotQubit)
         }
 }
 
-void controlNot(MultiQubit multiQubit, const int rotQubit, const int controlQubit)
+void controlledNot(MultiQubit multiQubit, const int rotQubit, const int controlQubit)
 {
         QuESTAssert(rotQubit >= 0 && rotQubit < multiQubit.numQubits, 1, __func__);
         QuESTAssert(controlQubit >= 0 && controlQubit < multiQubit.numQubits, 2, __func__);
@@ -522,7 +522,7 @@ void controlNot(MultiQubit multiQubit, const int rotQubit, const int controlQubi
 
         if (useLocalDataOnly){
                 // all values required to update state vector lie in this rank
-                controlNotLocal(multiQubit, rotQubit, controlQubit);
+                controlledNotLocal(multiQubit, rotQubit, controlQubit);
         } else {
                 // need to get corresponding chunk of state vector from other rank
                 rankIsUpper = chunkIsUpper(multiQubit.chunkId, multiQubit.numAmps, rotQubit);
@@ -530,14 +530,14 @@ void controlNot(MultiQubit multiQubit, const int rotQubit, const int controlQubi
                 //printf("%d rank has pair rank: %d\n", multiQubit.rank, pairRank);
                 // get corresponding values from my pair
 		exchangeStateVectors(multiQubit, pairRank);
-                // this rank's values are either in the upper of lower half of the block. send values to rotateQubitDistributed
+                // this rank's values are either in the upper of lower half of the block. send values to controlledNot
                 // in the correct order
                 if (rankIsUpper){
-                        controlNotDistributed(multiQubit,rotQubit,controlQubit,
+                        controlledNotDistributed(multiQubit,rotQubit,controlQubit,
                                 multiQubit.pairStateVec, //in
                                 multiQubit.stateVec); //out
                 } else {
-                        controlNotDistributed(multiQubit,rotQubit,controlQubit,
+                        controlledNotDistributed(multiQubit,rotQubit,controlQubit,
                                 multiQubit.pairStateVec, //in
                                 multiQubit.stateVec); //out
                 }
@@ -614,7 +614,7 @@ void hadamard(MultiQubit multiQubit, const int rotQubit)
                 //printf("%d rank has pair rank: %d\n", multiQubit.rank, pairRank);
                 // get corresponding values from my pair
 		exchangeStateVectors(multiQubit, pairRank);
-                // this rank's values are either in the upper of lower half of the block. send values to rotateQubitDistributed
+                // this rank's values are either in the upper of lower half of the block. send values to hadamardDistributed
                 // in the correct order
                 if (rankIsUpper){
                         hadamardDistributed(multiQubit,rotQubit,
@@ -670,7 +670,7 @@ REAL findProbabilityOfOutcome(MultiQubit multiQubit, const int measureQubit, int
 }
 
 
-REAL measureInState(MultiQubit multiQubit, const int measureQubit, int outcome)
+REAL collapseToOutcome(MultiQubit multiQubit, const int measureQubit, int outcome)
 {
     QuESTAssert(measureQubit >= 0 && measureQubit < multiQubit.numQubits, 2, __func__);
 
@@ -678,18 +678,18 @@ REAL measureInState(MultiQubit multiQubit, const int measureQubit, int outcome)
 	int skipValuesWithinRank = halfMatrixBlockFitsInChunk(multiQubit.numAmps, measureQubit);
 	if (totalStateProb != 0){
 		if (skipValuesWithinRank) {
-			measureInStateLocal(multiQubit, measureQubit, totalStateProb, outcome);
+			collapseToOutcomeLocal(multiQubit, measureQubit, totalStateProb, outcome);
 		} else {
 			if (!isChunkToSkipInFindPZero(multiQubit.chunkId, multiQubit.numAmps, measureQubit)){
 				// chunk has amps for q=0
-				if (outcome==0) measureInStateDistributedRenorm(multiQubit, measureQubit, 
+				if (outcome==0) collapseToOutcomeDistributedRenorm(multiQubit, measureQubit, 
 						totalStateProb);
-				else measureInStateDistributedSetZero(multiQubit, measureQubit);
+				else collapseToOutcomeDistributedSetZero(multiQubit, measureQubit);
 			} else {
 				// chunk has amps for q=1
-				if (outcome==1) measureInStateDistributedRenorm(multiQubit, measureQubit, 
+				if (outcome==1) collapseToOutcomeDistributedRenorm(multiQubit, measureQubit, 
 						totalStateProb);
-				else measureInStateDistributedSetZero(multiQubit, measureQubit);
+				else collapseToOutcomeDistributedSetZero(multiQubit, measureQubit);
 			}
 		}
 	}
