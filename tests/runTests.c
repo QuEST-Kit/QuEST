@@ -382,7 +382,6 @@ int test_rotateQubit(char testName[200]){
 	destroyMultiQubit(mq, env);
 	destroyMultiQubit(mqVerif, env);
 
-
     // check for normalisation
     numQubits=25;
     createMultiQubit(&mq, numQubits, env);
@@ -452,6 +451,7 @@ int test_singleQubitUnitary(char testName[200]){
 	destroyMultiQubit(mqVerif, env);
 
     // check for normalisation
+    numQubits = 25;
     createMultiQubit(&mq, numQubits, env);
     initStatePlus(&mq);
     for (int i=0; i<numQubits; i++){
@@ -515,8 +515,9 @@ int test_controlSingleQubitUnitary(char testName[200]){
 	int passed=1;
 	int count=1;
 
-	int numQubits=15;
+	int numQubits=10;
 	int rotQubit, controlQubit;
+
     ComplexMatrix2 u;
 	MultiQubit mq, mqVerif; 
 
@@ -566,7 +567,7 @@ int test_multiControlSingleQubitUnitary(char testName[200]){
 	int passed=1;
 	int count=1;
 
-	int numQubits=15;
+	int numQubits=10;
 	int rotQubit, controlQubit;
     long long int mask;
     ComplexMatrix2 u;
