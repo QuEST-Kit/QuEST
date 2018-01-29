@@ -264,7 +264,7 @@ int test_controlledNot(char testName[200]){
 			syncQuESTEnv(env);
 			initStateDebug(&mq);
 			rotateQubit=i;
-			controlledNot(mq, rotateQubit, controlQubit);
+			controlledNot(mq, controlQubit, rotateQubit);
 			
 			sprintf(filename, "%s%s%d.out", PATH_TO_TESTS, testName, count++); 	
 			initializeStateFromSingleFile(&mqVerif, filename, env);

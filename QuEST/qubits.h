@@ -179,6 +179,12 @@ void unitary(MultiQubit multiQubit, const int rotQubit, ComplexMatrix2 u);
 
 void rotateAroundAxis(MultiQubit multiQubit, const int rotQubit, REAL angle, Vector unitAxis);
 
+void rotateX(MultiQubit multiQubit, const int rotQubit, REAL angle);
+
+void rotateY(MultiQubit multiQubit, const int rotQubit, REAL angle);
+
+void rotateZ(MultiQubit multiQubit, const int rotQubit, REAL angle);
+
 /** Rotate a single qubit in the state vector of probability amplitudes.
 Given two complex numbers alpha and beta and a control qubit, applies the operation: \n
 [alpha, -beta* \n
@@ -234,7 +240,7 @@ a phase of -i or i, only for elements when control qubit is 1.
 @param[in] rotQubit qubit to rotate
 @param[in] controlQubit perform sigmaX rotation if this qubit is 1
 */
-void controlledNot(MultiQubit multiQubit, const int targetQubit, const int controlQubit);
+void controlledNot(MultiQubit multiQubit, const int controlQubit, const int targetQubit);
 
 /** Measure the probability
 of a specified qubit being in the zero or one state.     

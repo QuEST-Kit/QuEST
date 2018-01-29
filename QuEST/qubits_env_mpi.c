@@ -508,7 +508,7 @@ void sigmaX(MultiQubit multiQubit, const int rotQubit)
         }
 }
 
-void controlledNot(MultiQubit multiQubit, const int rotQubit, const int controlQubit)
+void controlledNot(MultiQubit multiQubit, const int controlQubit, const int rotQubit)
 {
         QuESTAssert(rotQubit >= 0 && rotQubit < multiQubit.numQubits, 1, __func__);
         QuESTAssert(controlQubit >= 0 && controlQubit < multiQubit.numQubits, 2, __func__);
@@ -522,7 +522,7 @@ void controlledNot(MultiQubit multiQubit, const int rotQubit, const int controlQ
 
         if (useLocalDataOnly){
                 // all values required to update state vector lie in this rank
-                controlledNotLocal(multiQubit, rotQubit, controlQubit);
+                controlledNotLocal(multiQubit, controlQubit, rotQubit);
         } else {
                 // need to get corresponding chunk of state vector from other rank
                 rankIsUpper = chunkIsUpper(multiQubit.chunkId, multiQubit.numAmps, rotQubit);
@@ -533,11 +533,11 @@ void controlledNot(MultiQubit multiQubit, const int rotQubit, const int controlQ
                 // this rank's values are either in the upper of lower half of the block. send values to controlledNot
                 // in the correct order
                 if (rankIsUpper){
-                        controlledNotDistributed(multiQubit,rotQubit,controlQubit,
+                        controlledNotDistributed(multiQubit,controlQubit,rotQubit,
                                 multiQubit.pairStateVec, //in
                                 multiQubit.stateVec); //out
                 } else {
-                        controlledNotDistributed(multiQubit,rotQubit,controlQubit,
+                        controlledNotDistributed(multiQubit,controlQubit,rotQubit,
                                 multiQubit.pairStateVec, //in
                                 multiQubit.stateVec); //out
                 }

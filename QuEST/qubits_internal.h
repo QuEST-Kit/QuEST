@@ -83,9 +83,9 @@ void phaseGateLocal(MultiQubit multiQubit, const int rotQubit, enum phaseGateTyp
 
 void phaseGateDistributed(MultiQubit multiQubit, const int rotQubit, enum phaseGateType type);
 
-void controlledNotLocal(MultiQubit multiQubit, const int targetQubit, const int controlQubit);
+void controlledNotLocal(MultiQubit multiQubit, const int controlQubit, const int targetQubit);
 
-void controlledNotDistributed (MultiQubit multiQubit, const int targetQubit, const int controlQubit,
+void controlledNotDistributed (MultiQubit multiQubit, const int controlQubit, const int targetQubit,
 		        ComplexArray stateVecIn,
 			ComplexArray stateVecOut);
 

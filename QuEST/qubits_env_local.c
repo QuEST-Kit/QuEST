@@ -157,11 +157,11 @@ void hadamard(MultiQubit multiQubit, const int rotQubit)
 	hadamardLocal(multiQubit, rotQubit);
 }
 
-void controlledNot(MultiQubit multiQubit, const int targetQubit, const int controlQubit) 
+void controlledNot(MultiQubit multiQubit, const int controlQubit, const int targetQubit) 
 {
     QuESTAssert(targetQubit >= 0 && targetQubit < multiQubit.numQubits, 1, __func__);
     QuESTAssert(controlQubit >= 0 && controlQubit < multiQubit.numQubits, 2, __func__);
-	controlledNotLocal(multiQubit, targetQubit, controlQubit);
+	controlledNotLocal(multiQubit, controlQubit, targetQubit);
 }
 
 REAL findProbabilityOfOutcome(MultiQubit multiQubit, const int measureQubit, int outcome)

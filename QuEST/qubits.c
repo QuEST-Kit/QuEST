@@ -437,6 +437,65 @@ void rotateAroundAxis(MultiQubit multiQubit, const int rotQubit, REAL angle, Vec
 	compactUnitary(multiQubit, rotQubit, alpha, beta);
 }
 
+/** Rotate a single qubit a certain angle about the x-axis
+
+@remarks Qubits are zero-based and the                     
+the first qubit is the rightmost                  
+
+@param[in,out] multiQubit object representing the set of qubits
+@param[in] rotQubit qubit to rotate
+@param[in] angle angle by which to rotate in radians
+*/
+void rotateX(MultiQubit multiQubit, const int rotQubit, REAL angle){
+	Complex alpha, beta;
+    Vector unitAxis = {1, 0, 0};
+	alpha.real = cos(angle/2.0);
+	alpha.imag = -sin(angle/2.0)*unitAxis.z;	
+	beta.real = 0;
+	beta.imag = -sin(angle/2.0)*(unitAxis.x + unitAxis.y);
+	compactUnitary(multiQubit, rotQubit, alpha, beta);
+}
+
+/** Rotate a single qubit a certain angle about the y-axis
+
+@remarks Qubits are zero-based and the                     
+the first qubit is the rightmost                  
+
+@param[in,out] multiQubit object representing the set of qubits
+@param[in] rotQubit qubit to rotate
+@param[in] angle angle by which to rotate in radians
+*/
+void rotateY(MultiQubit multiQubit, const int rotQubit, REAL angle){
+	Complex alpha, beta;
+    Vector unitAxis = {0, 1, 0};
+	alpha.real = cos(angle/2.0);
+	alpha.imag = -sin(angle/2.0)*unitAxis.z;	
+	beta.real = 0;
+	beta.imag = -sin(angle/2.0)*(unitAxis.x + unitAxis.y);
+	compactUnitary(multiQubit, rotQubit, alpha, beta);
+}
+
+/** Rotate a single qubit a certain angle about the z-axis
+
+@remarks Qubits are zero-based and the                     
+the first qubit is the rightmost                  
+
+@param[in,out] multiQubit object representing the set of qubits
+@param[in] rotQubit qubit to rotate
+@param[in] angle angle by which to rotate in radians
+*/
+void rotateZ(MultiQubit multiQubit, const int rotQubit, REAL angle){
+	Complex alpha, beta;
+    Vector unitAxis = {0, 0, 1};
+	alpha.real = cos(angle/2.0);
+	alpha.imag = -sin(angle/2.0)*unitAxis.z;	
+	beta.real = 0;
+	beta.imag = -sin(angle/2.0)*(unitAxis.x + unitAxis.y);
+	compactUnitary(multiQubit, rotQubit, alpha, beta);
+}
+
+
+
 
 /** Rotate a single qubit in the state vector of probability amplitudes.                                                                       
 @param[in,out] multiQubit object representing the set of qubits
@@ -1212,7 +1271,7 @@ the first qubit is the rightmost
 @param[in] targetQubit qubit to rotate
 @param[in] controlQubit qubit to determine whether or not to perform a rotation 
  */
-void controlledNotLocal(MultiQubit multiQubit, const int targetQubit, const int controlQubit)
+void controlledNotLocal(MultiQubit multiQubit, const int controlQubit, const int targetQubit)
 {
 	long long int sizeBlock, sizeHalfBlock;
 	long long int thisBlock, // current block
@@ -1283,7 +1342,7 @@ for elements where controlQubit is one.
 @param[out] stateVecOut array section to update (will correspond to either the lower or upper half of a block)
 */
 
-void controlledNotDistributed (MultiQubit multiQubit, const int targetQubit, const int controlQubit,
+void controlledNotDistributed (MultiQubit multiQubit, const int controlQubit, const int targetQubit,
 		ComplexArray stateVecIn,
 		ComplexArray stateVecOut)
 {

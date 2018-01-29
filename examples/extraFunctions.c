@@ -190,12 +190,12 @@ int main (int narg, char** varg) {
 	initStateDebug(&multiQubit);
 	if (env.rank==0) printf("target=0, control=0\n");
 	rotQubit=0;
-	controlledNot(multiQubit,rotQubit,0);
+	controlledNot(multiQubit,0,rotQubit);
 	reportStateToScreen(multiQubit, env, REPORT_RANK);
 	initStateDebug(&multiQubit);
 	if (env.rank==0) printf("target=2, control=0\n");
 	rotQubit=2;
-	controlledNot(multiQubit,rotQubit,0);
+	controlledNot(multiQubit,0,rotQubit);
 	reportStateToScreen(multiQubit, env, REPORT_RANK);
 	totalProbability = calcTotalProbability(multiQubit);
         if (env.rank==0) printf("VERIFICATION: total probability=%.14f\n", totalProbability);
