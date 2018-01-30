@@ -81,8 +81,7 @@ void initStateZero(MultiQubit *multiQubit);
 
 void initStatePlus(MultiQubit *multiQubit);
 
-void quadCPhaseGate (MultiQubit multiQubit, const int idQubit1, const int idQubit2, 
-	const int idQubit3, const int idQubit4);
+void multiControlledPhaseGate(MultiQubit multiQubit, int *controlQubits, int numControlQubits);
 
 void controlledPhaseGate (MultiQubit multiQubit, const int idQubit1, const int idQubit2);
 
@@ -206,7 +205,7 @@ void controlledCompactUnitary(MultiQubit multiQubit, const int rotQubit, const i
 
 void controlledUnitary(MultiQubit multiQubit, const int rotQubit, const int controlQubit, ComplexMatrix2 u);
 
-void multiControlledUnitary(MultiQubit multiQubit, const int rotQubit, long long int mask, ComplexMatrix2 u);
+void multiControlledUnitary(MultiQubit multiQubit, int* controlQubits, const int numControlQubits, const int rotQubit, ComplexMatrix2 u);
 
 /** Rotate a single qubit by {{0,1},{1,0}} -- swap |0> and |1>.
 @param[in,out] multiQubit object representing the set of qubits

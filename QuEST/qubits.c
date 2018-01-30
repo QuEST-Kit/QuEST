@@ -19,7 +19,7 @@ const char* errorCodes[] = {
     "Invalid target qubit. Note qubits are zero indexed.",  // 1
     "Invalid control qubit. Note qubits are zero indexed.", // 2 
     "Control qubit cannot equal target qubit.",             // 3
-    "Invalid control qubit mask.",                          // 4
+    "Invalid number of control qubits",                     // 4
     "Invalid unitary matrix.",                              // 5
     "Invalid rotation arguments.",                          // 6
     "Invalid system size. Cannot print output for systems greater than 5 qubits." // 7
@@ -2007,25 +2007,22 @@ void controlledNotGate (MultiQubit multiQubit, const int control, const int targ
 }
 */
 
-/** The control phase (the four qubit phase gate).
-For each state, if all four input qubits are equal to one, multiply the amplitude of that state by -1.
+/** The multiple qubit control phase gate.
+For each state, if all input qubits are equal to one, multiply the amplitude of that state by -1.
 @param[in,out] multiQubit object representing the set of qubits
 @param[in] idQubit1, idQubit2, idQubit3, idQubit4 specified qubits                 
 */
-void quadCPhaseGate (MultiQubit multiQubit, const int idQubit1, const int idQubit2, 
-		const int idQubit3, const int idQubit4)
+void multiControlledPhaseGate(MultiQubit multiQubit, int *controlQubits, int numControlQubits)
 {
 	long long int index;
 	long long int stateVecSize;
-	int bit1, bit2, bit3, bit4;
 	
 	const long long int chunkSize=multiQubit.numAmps;
 	const long long int chunkId=multiQubit.chunkId;
 
-	// ---------------------------------------------------------------- //
-	//            tests                                                 //
-	// ---------------------------------------------------------------- //
-	assert (idQubit1 >= 0 && idQubit2 >= 0 && idQubit1 < multiQubit.numQubits && idQubit2 < multiQubit.numQubits);
+    long long int mask=0;
+    for (int i=0; i<numControlQubits; i++) mask = mask | (1LL<<controlQubits[i]);
+    QuESTAssert(mask >=0 && mask <= (1LL<<multiQubit.numQubits)-1, 2, __func__);
 
 	stateVecSize = multiQubit.numAmps;
 	REAL *stateVecReal = multiQubit.stateVec.real;
@@ -2034,19 +2031,15 @@ void quadCPhaseGate (MultiQubit multiQubit, const int idQubit1, const int idQubi
 # ifdef _OPENMP
 # pragma omp parallel \
 	default  (none)			     \
-	shared   (stateVecSize, stateVecReal,stateVecImag ) \
-	private  (index,bit1,bit2,bit3,bit4)
+	shared   (stateVecSize, stateVecReal,stateVecImag, mask ) \
+	private  (index)
 # endif
 	{
 # ifdef _OPENMP
 		# pragma omp for schedule (static)
 # endif
 		for (index=0; index<stateVecSize; index++) {
-			bit1 = extractBit (idQubit1, index+chunkId*chunkSize);
-			bit2 = extractBit (idQubit2, index+chunkId*chunkSize);
-			bit3 = extractBit (idQubit3, index+chunkId*chunkSize);
-			bit4 = extractBit (idQubit4, index+chunkId*chunkSize);
-			if (bit1 && bit2 && bit3 && bit4) {
+			if (mask == (mask & (index+chunkId*chunkSize)) ){
 				stateVecReal [index] = - stateVecReal [index];
 				stateVecImag [index] = - stateVecImag [index];
 			}

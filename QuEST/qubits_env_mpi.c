@@ -436,14 +436,17 @@ void controlledUnitary(MultiQubit multiQubit, const int rotQubit, const int cont
         }
 }
 
-void multiControlledUnitary(MultiQubit multiQubit, const int rotQubit, long long int mask,
-        ComplexMatrix2 u)
+void multiControlledUnitary(MultiQubit multiQubit, int* controlQubits, const int numControlQubits, const int rotQubit, ComplexMatrix2 u)
 {
         QuESTAssert(rotQubit >= 0 && rotQubit < multiQubit.numQubits, 1, __func__);
-        QuESTAssert(mask>=0 && mask <= (1LL<<multiQubit.numQubits)-1, 4, __func__);
-        QuESTAssert((mask & (1LL<<rotQubit)) != (1LL<<rotQubit), 3, __func__);
+        QuESTAssert(numControlQubits >= 0 && numControlQubits < multiQubit.numQubits, 4, __func__);
         QuESTAssert(validateMatrixIsUnitary(u), 5, __func__);
-
+         
+        long long int mask=0;
+        for (int i=0; i<numControlQubits; i++) mask = mask | (1LL<<controlQubits[i]);
+        QuESTAssert(mask >=0 && mask <= (1LL<<multiQubit.numQubits)-1, 2, __func__);
+        QuESTAssert((mask & (1LL<<rotQubit)) != (1LL<<rotQubit), 3, __func__);
+        
         // flag to require memory exchange. 1: an entire block fits on one rank, 0: at most half a block fits on one rank
         int useLocalDataOnly = halfMatrixBlockFitsInChunk(multiQubit.numAmps, rotQubit);
         Complex rot1, rot2;

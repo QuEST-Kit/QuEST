@@ -310,7 +310,7 @@ int test_controlledPhaseGate(char testName[200]){
 	return passed;
 }
 
-int test_quadCPhaseGate(char testName[200]){
+int test_multiControlledPhaseGate(char testName[200]){
 	char filename[200];
 	int passed=1;
 	int count=1;
@@ -321,9 +321,9 @@ int test_quadCPhaseGate(char testName[200]){
 	createMultiQubit(&mq, numQubits, env);
 	createMultiQubit(&mqVerif, numQubits, env);
 
-	int qubit0=0, qubit1=1, qubit2=2, qubit3=3;
+    int qubits[4]={0,1,2,3};
 	initStateDebug(&mq);
-	quadCPhaseGate(mq, qubit0, qubit1, qubit2, qubit3);
+	multiControlledPhaseGate(mq, qubits, 4);
 
 	sprintf(filename, "%s%s%d.out", PATH_TO_TESTS, testName, count++); 	
 	initializeStateFromSingleFile(&mqVerif, filename, env);
@@ -569,7 +569,6 @@ int test_multiControlledUnitary(char testName[200]){
 
 	int numQubits=10;
 	int rotQubit, controlQubit;
-    long long int mask;
     ComplexMatrix2 u;
 	MultiQubit mq, mqVerif; 
 
@@ -603,8 +602,7 @@ int test_multiControlledUnitary(char testName[200]){
 			initStateDebug(&mqVerif);
 			rotQubit=i;
 			controlledCompactUnitary(mqVerif, rotQubit, controlQubit, alpha, beta);
-            mask = 1LL << controlQubit;
-			multiControlledUnitary(mq, rotQubit, mask, u);
+			multiControlledUnitary(mq, &controlQubit, 1, rotQubit, u);
 			
 			if (passed) passed = compareStates(mq, mqVerif, COMPARE_PRECISION);
 		}
@@ -615,31 +613,27 @@ int test_multiControlledUnitary(char testName[200]){
 
     // randomly test a few different other multi control qubit masks 
     numQubits=4;
+    int controlQubits[3];
 	createMultiQubit(&mq, numQubits, env);
 	createMultiQubit(&mqVerif, numQubits, env);
 
     rotQubit=3;
-	controlQubit=0;
-    mask = 1LL << controlQubit;
-	controlQubit=2;
-    mask = mask | (1LL << controlQubit);
+	controlQubits[0]=0;
+	controlQubits[1]=2;
 
 	initStateDebug(&mq);
-	multiControlledUnitary(mq, rotQubit, mask, u);
+	multiControlledUnitary(mq, controlQubits, 2, rotQubit, u);
     sprintf(filename, "%s%s%d.out", PATH_TO_TESTS, testName, count++); 	
     initializeStateFromSingleFile(&mqVerif, filename, env);
 	if (passed) passed = compareStates(mq, mqVerif, COMPARE_PRECISION);
 
     rotQubit=1;
-	controlQubit=0;
-    mask = 1LL << controlQubit;
-	controlQubit=2;
-    mask = mask | (1LL << controlQubit);
-	controlQubit=3;
-    mask = mask | (1LL << controlQubit);
+	controlQubits[0]=0;
+	controlQubits[1]=2;
+	controlQubits[2]=3;
 
 	initStateDebug(&mq);
-	multiControlledUnitary(mq, rotQubit, mask, u);
+	multiControlledUnitary(mq, controlQubits, 3, rotQubit, u);
     sprintf(filename, "%s%s%d.out", PATH_TO_TESTS, testName, count++); 	
     initializeStateFromSingleFile(&mqVerif, filename, env);
 	if (passed) passed = compareStates(mq, mqVerif, COMPARE_PRECISION);
@@ -849,7 +843,7 @@ int main (int narg, char** varg) {
 		test_sGate,
 		test_tGate,
 		test_controlledPhaseGate,
-		test_quadCPhaseGate,
+		test_multiControlledPhaseGate,
 		test_compactUnitary,
         test_unitary,
 		test_controlledCompactUnitary,
@@ -872,7 +866,7 @@ int main (int narg, char** varg) {
 		"sGate",
 		"tGate",
 		"controlledPhaseGate",
-		"quadCPhaseGate",
+		"multiControlledPhaseGate",
 		"compactUnitary",
         "unitary",
 		"controlledCompactUnitary",
