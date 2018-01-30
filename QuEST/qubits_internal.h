@@ -101,11 +101,6 @@ REAL collapseToOutcomeDistributedRenorm (MultiQubit multiQubit, const int measur
 
 void collapseToOutcomeDistributedSetZero(MultiQubit multiQubit, const int measureQubit);
 
-void filterOut111Local(MultiQubit multiQubit, const int idQubit1, const int idQubit2, const int idQubit3,
-	const REAL probOfFilter);
-
-REAL probOfFilterOut111Local(MultiQubit multiQubit, const int idQubit1, const int idQubit2, const int idQubit3);
-
 // Validation
 
 int validateMatrixIsUnitary(ComplexMatrix2 u);

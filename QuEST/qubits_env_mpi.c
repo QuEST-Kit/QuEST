@@ -699,30 +699,6 @@ REAL collapseToOutcome(MultiQubit multiQubit, const int measureQubit, int outcom
 	return totalStateProb;
 }
 
-REAL filterOut111(MultiQubit multiQubit, const int idQubit1, const int idQubit2, const int idQubit3)
-{
-    QuESTAssert(idQubit1 >= 0 && idQubit1 < multiQubit.numQubits, 2, __func__);
-    QuESTAssert(idQubit2 >= 0 && idQubit2 < multiQubit.numQubits, 2, __func__);
-    QuESTAssert(idQubit3 >= 0 && idQubit3 < multiQubit.numQubits, 2, __func__);
-
-	REAL stateProb=0;
-	stateProb = probOfFilterOut111(multiQubit, idQubit1, idQubit2, idQubit3);
-	if (stateProb != 0) filterOut111Local(multiQubit, idQubit1, idQubit2, idQubit3, stateProb);
-	return stateProb;
-}
-
-REAL probOfFilterOut111(MultiQubit multiQubit, const int idQubit1, const int idQubit2, const int idQubit3)
-{
-    QuESTAssert(idQubit1 >= 0 && idQubit1 < multiQubit.numQubits, 2, __func__);
-    QuESTAssert(idQubit2 >= 0 && idQubit2 < multiQubit.numQubits, 2, __func__);
-    QuESTAssert(idQubit3 >= 0 && idQubit3 < multiQubit.numQubits, 2, __func__);
-
-	REAL stateProb=0, totalStateProb=0;
-	stateProb = probOfFilterOut111Local(multiQubit, idQubit1, idQubit2, idQubit3);
-	MPI_Allreduce(&stateProb, &totalStateProb, 1, MPI_QuEST_REAL, MPI_SUM, MPI_COMM_WORLD);
-	return totalStateProb;
-}
-
 void exitWithError(int errorCode, const char* func){
     printf("!!!\n");
     printf("QuEST Error in function %s: %s\n", func, errorCodes[errorCode]);
