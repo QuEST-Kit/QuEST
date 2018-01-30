@@ -261,6 +261,7 @@ int test_controlledNot(char testName[200]){
 	for (int j=0; j<3; j++){
 		controlQubit=j;
 		for (int i=0; i<3; i++){
+            if (i==j) {count++; continue;}
 			syncQuESTEnv(env);
 			initStateDebug(&mq);
 			rotateQubit=i;
@@ -294,6 +295,7 @@ int test_controlledPhaseGate(char testName[200]){
 	for (int j=0; j<3; j++){
 		controlQubit=j;
 		for (int i=0; i<3; i++){
+            if (i==j) {count++; continue;}
 			initStateDebug(&mq);
 			rotateQubit=i;
 			controlledPhaseGate(mq, rotateQubit, controlQubit);

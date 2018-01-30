@@ -1285,11 +1285,6 @@ void controlledNotLocal(MultiQubit multiQubit, const int controlQubit, const int
 
 	int controlBit;
 
-	// if targetQubit==controlQubit, it is guaranteed that controlQubit==1 when
-	// targetQubit==1. As rotations are symmetric, we can instead apply the rotation
-	// on all amplitudes where targetQubit==0 as we do here.
-	int rotateAll=(targetQubit==controlQubit);
-
 	// set dimensions
 	sizeHalfBlock = 1LL << targetQubit;  
 	sizeBlock     = 2LL * sizeHalfBlock; 
@@ -1302,7 +1297,7 @@ void controlledNotLocal(MultiQubit multiQubit, const int controlQubit, const int
 # ifdef _OPENMP
 # pragma omp parallel \
 	default  (none) \
-	shared   (sizeBlock,sizeHalfBlock, stateVecReal,stateVecImag,rotateAll) \
+	shared   (sizeBlock,sizeHalfBlock, stateVecReal,stateVecImag) \
 	private  (thisTask,thisBlock ,indexUp,indexLo, stateRealUp,stateImagUp,controlBit) 
 # endif
 	{
@@ -1315,7 +1310,7 @@ void controlledNotLocal(MultiQubit multiQubit, const int controlQubit, const int
 			indexLo     = indexUp + sizeHalfBlock;
 
 			controlBit = extractBit(controlQubit, indexUp+chunkId*chunkSize);
-			if (rotateAll || controlBit){
+			if (controlBit){
 				stateRealUp = stateVecReal[indexUp];
 				stateImagUp = stateVecImag[indexUp];
 
@@ -1351,11 +1346,6 @@ void controlledNotDistributed (MultiQubit multiQubit, const int controlQubit, co
 	const long long int numTasks=multiQubit.numAmps;
 	const long long int chunkSize=multiQubit.numAmps;
 	const long long int chunkId=multiQubit.chunkId;
-	
-	// if targetQubit==controlQubit, it is guaranteed that controlQubit==1 when
-	// targetQubit==1. As rotations are symmetric, we can instead apply the rotation
-	// on all amplitudes where targetQubit==0 as we do here.
-	int rotateAll=(targetQubit==controlQubit);
 
 	int controlBit;
 
@@ -1368,7 +1358,7 @@ void controlledNotDistributed (MultiQubit multiQubit, const int controlQubit, co
 # ifdef _OPENMP
 # pragma omp parallel \
 	default  (none) \
-	shared   (stateVecRealIn,stateVecImagIn,stateVecRealOut,stateVecImagOut,rotateAll) \
+	shared   (stateVecRealIn,stateVecImagIn,stateVecRealOut,stateVecImagOut) \
 	private  (thisTask,controlBit)
 # endif
 	{
@@ -1377,7 +1367,7 @@ void controlledNotDistributed (MultiQubit multiQubit, const int controlQubit, co
 # endif
 		for (thisTask=0; thisTask<numTasks; thisTask++) {
 			controlBit = extractBit (controlQubit, thisTask+chunkId*chunkSize);
-			if (rotateAll || controlBit){
+			if (controlBit){
 				stateVecRealOut[thisTask] = stateVecRealIn[thisTask];
 				stateVecImagOut[thisTask] = stateVecImagIn[thisTask];
 			}
@@ -1929,18 +1919,12 @@ void controlledPhaseGate (MultiQubit multiQubit, const int idQubit1, const int i
 	long long int stateVecSize;
 	int bit1, bit2;
 
-	// ---------------------------------------------------------------- //
-	//            tests                                                 //
-	// ---------------------------------------------------------------- //
-
-	assert (idQubit1 >= 0 && idQubit2 >= 0 && idQubit1 < multiQubit.numQubits && idQubit2 < multiQubit.numQubits);
-
 	const long long int chunkSize=multiQubit.numAmps;
 	const long long int chunkId=multiQubit.chunkId;
 
-	// ---------------------------------------------------------------- //
-	//            initialise the state to |0000..0>                     //
-	// ---------------------------------------------------------------- //
+    QuESTAssert(idQubit1 >= 0 && idQubit1 < multiQubit.numQubits, 2, __func__);
+    QuESTAssert(idQubit2 >= 0 && idQubit2 < multiQubit.numQubits, 1, __func__);
+    QuESTAssert(idQubit1 != idQubit2, 3, __func__);
 
 	// dimension of the state vector
 	stateVecSize = multiQubit.numAmps;
@@ -1964,49 +1948,6 @@ void controlledPhaseGate (MultiQubit multiQubit, const int idQubit1, const int i
 	}
 }
 
-/** The control not gate
-*/
-/*
-void controlledNotGate (MultiQubit multiQubit, const int control, const int target)
-{
-	long long int index;
-	long long int stateVecSize;
-	int bit1, bit2;
-
-	// ---------------------------------------------------------------- //
-	//            tests                                                 //
-	// ---------------------------------------------------------------- //
-
-	assert (control >= 0 && target >= 0 && control < multiQubit.numQubits && target < multiQubit.numQubits);
-
-
-	// ---------------------------------------------------------------- //
-	//            initialise the state to |0000..0>                     //
-	// ---------------------------------------------------------------- //
-
-	// dimension of the state vector
-	stateVecSize = multiQubit.numAmps;
-	REAL *stateVecReal = multiQubit.stateVec.real;
-	REAL *stateVecImag = multiQubit.stateVec.imag;
-
-# ifdef _OPENMP
-# pragma omp parallel for \
-	default  (none)			     \
-	shared   (stateVecSize, stateVecReal,stateVecImag ) \
-	private  (index,bit1,bit2)		       \
-	schedule (static)
-# endif
-	for (index=0; index<stateVecSize; index++) {
-		bit1 = extractBit (control, index);
-		bit2 = extractBit (target, index);
-		if (bit1 && bit2) {
-			stateVecReal [index] = - stateVecReal [index];
-			stateVecImag [index] = - stateVecImag [index];
-		}
-	}
-}
-*/
-
 /** The multiple qubit control phase gate.
 For each state, if all input qubits are equal to one, multiply the amplitude of that state by -1.
 @param[in,out] multiQubit object representing the set of qubits
@@ -2020,6 +1961,7 @@ void multiControlledPhaseGate(MultiQubit multiQubit, int *controlQubits, int num
 	const long long int chunkSize=multiQubit.numAmps;
 	const long long int chunkId=multiQubit.chunkId;
 
+    QuESTAssert(numControlQubits >= 0 && numControlQubits <= multiQubit.numQubits, 4, __func__);
     long long int mask=0;
     for (int i=0; i<numControlQubits; i++) mask = mask | (1LL<<controlQubits[i]);
     QuESTAssert(mask >=0 && mask <= (1LL<<multiQubit.numQubits)-1, 2, __func__);

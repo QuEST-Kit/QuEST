@@ -165,6 +165,7 @@ void controlledNot(MultiQubit multiQubit, const int controlQubit, const int targ
 {
     QuESTAssert(targetQubit >= 0 && targetQubit < multiQubit.numQubits, 1, __func__);
     QuESTAssert(controlQubit >= 0 && controlQubit < multiQubit.numQubits, 2, __func__);
+    QuESTAssert(controlQubit != targetQubit, 3, __func__);
 	controlledNotLocal(multiQubit, controlQubit, targetQubit);
 }
 

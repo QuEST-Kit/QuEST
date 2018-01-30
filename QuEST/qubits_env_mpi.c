@@ -515,6 +515,7 @@ void controlledNot(MultiQubit multiQubit, const int controlQubit, const int rotQ
 {
         QuESTAssert(rotQubit >= 0 && rotQubit < multiQubit.numQubits, 1, __func__);
         QuESTAssert(controlQubit >= 0 && controlQubit < multiQubit.numQubits, 2, __func__);
+        QuESTAssert(controlQubit != rotQubit, 3, __func__);
 
         // flag to require memory exchange. 1: an entire block fits on one rank, 0: at most half a block fits on one rank
         int useLocalDataOnly = halfMatrixBlockFitsInChunk(multiQubit.numAmps, rotQubit);
