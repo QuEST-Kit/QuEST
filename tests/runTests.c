@@ -710,21 +710,24 @@ int test_collapseToOutcome(char testName[200]){
 		if (passed) passed = compareReals(1, outcome, COMPARE_PRECISION);
 		if (passed) passed = compareStates(mq, mqVerif, COMPARE_PRECISION);
 
-
+        /* uncomment to test error is thrown
 		initStateZero(&mq);
 		initStateZero(&mqVerif);
 		outcome = collapseToOutcome(mq, qubit, 1);
 		if (passed) passed = compareReals(0, outcome, COMPARE_PRECISION);
 		if (passed) passed = compareStates(mq, mqVerif, COMPARE_PRECISION);
+        */
 	}
 
 	// test qubit = |1> 
 	for (qubit=0; qubit<numQubits; qubit++){
+        /* uncomment to test error is thrown
 		initStateOfSingleQubit(&mq, qubit, 1);
 		initStateOfSingleQubit(&mqVerif, qubit, 1);
 		outcome = collapseToOutcome(mq, qubit, 0);
 		if (passed) passed = compareReals(0, outcome, COMPARE_PRECISION);
 		if (passed) passed = compareStates(mq, mqVerif, COMPARE_PRECISION);
+        */
 
 		initStateOfSingleQubit(&mq, qubit, 1);
 		initStateOfSingleQubit(&mqVerif, qubit, 1);
@@ -747,7 +750,6 @@ int test_collapseToOutcome(char testName[200]){
 		if (passed) passed = compareReals(0.5, outcome, COMPARE_PRECISION);
 		if (passed) passed = compareStates(mq, mqVerif, COMPARE_PRECISION);
 	}
-
 	destroyMultiQubit(mq, env);
 	destroyMultiQubit(mqVerif, env);
 

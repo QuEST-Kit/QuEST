@@ -23,7 +23,7 @@
 	# define REAL double
 	# define MPI_QuEST_REAL MPI_DOUBLE
 	# define REAL_STRING_FORMAT "%.14f"
-	# define REAL_EPS 1e-14
+	# define REAL_EPS 1e-13
 # endif
 
 

@@ -8,6 +8,7 @@ An implementation of the API in qubits.h for an MPI environment.
 # include <mpi.h>
 # include <stdlib.h>
 # include <stdio.h>
+# include <math.h>
 # include <omp.h>
 # include "precision.h"
 # include "qubits.h"
@@ -679,7 +680,7 @@ REAL collapseToOutcome(MultiQubit multiQubit, const int measureQubit, int outcom
     QuESTAssert(measureQubit >= 0 && measureQubit < multiQubit.numQubits, 2, __func__);
 
 	REAL totalStateProb=findProbabilityOfOutcome(multiQubit, measureQubit, outcome);
-    QuESTAssert(fabs(stateProb>REAL_EPS), 8, __func__);
+    QuESTAssert(fabs(totalStateProb>REAL_EPS), 8, __func__);
 
 	int skipValuesWithinRank = halfMatrixBlockFitsInChunk(multiQubit.numAmps, measureQubit);
     if (skipValuesWithinRank) {

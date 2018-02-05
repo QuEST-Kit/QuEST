@@ -4,6 +4,7 @@ An implementation of the API in qubits.h for a local (non-MPI) environment.
 
 # include <stdlib.h>
 # include <stdio.h>
+# include <math.h>
 # include <omp.h>
 # include "precision.h"
 # include "qubits.h"

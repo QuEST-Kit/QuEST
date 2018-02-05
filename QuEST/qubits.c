@@ -22,7 +22,7 @@ const char* errorCodes[] = {
     "Invalid number of control qubits",                     // 4
     "Invalid unitary matrix.",                              // 5
     "Invalid rotation arguments.",                          // 6
-    "Invalid system size. Cannot print output for systems greater than 5 qubits." // 7
+    "Invalid system size. Cannot print output for systems greater than 5 qubits.", // 7
     "Can't collapse to state with zero probability." // 8
 };
 
