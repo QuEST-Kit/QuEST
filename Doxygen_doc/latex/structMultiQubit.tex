@@ -1,151 +1,103 @@
-\hypertarget{structMultiQubit}{}\subsection{Multi\+Qubit Struct Reference}
-\label{structMultiQubit}\index{Multi\+Qubit@{Multi\+Qubit}}
+\hypertarget{structMultiQubit}{
+\subsection{MultiQubit Struct Reference}
+\label{structMultiQubit}\index{MultiQubit@{MultiQubit}}
+}
 
 
 Represents a system of qubits.  
 
 
-
-
-{\ttfamily \#include $<$qubits.\+h$>$}
-
-\subsubsection*{Data Fields}
+{\ttfamily \#include $<$qubits.h$>$}\subsubsection*{Data Fields}
 \begin{DoxyCompactItemize}
 \item 
-\hyperlink{structComplexArray}{Complex\+Array} \hyperlink{structMultiQubit_a45483190d6b01ef6b2f98f2bec9ab94f}{state\+Vec}
-\begin{DoxyCompactList}\small\item\em Probablilty amplitudes for the multi qubit state. \end{DoxyCompactList}\item 
-\hyperlink{structComplexArray}{Complex\+Array} \hyperlink{structMultiQubit_a76f7db4eab52d2b30f58f973ada809c5}{pair\+State\+Vec}
-\begin{DoxyCompactList}\small\item\em Temporary storage for a chunk of the state vector received from another process in the M\+PI version. \end{DoxyCompactList}\item 
-int \hyperlink{structMultiQubit_ab5b9795bdc6fb5855e1974dcbbaeb36f}{num\+Qubits}
-\begin{DoxyCompactList}\small\item\em Number of qubits in the state. \end{DoxyCompactList}\item 
-long long int \hyperlink{structMultiQubit_ae16f47d8b725c914fb7f66b6498d79db}{num\+Amps}
-\begin{DoxyCompactList}\small\item\em Number of probability amplitudes held in state\+Vec by this process In the non-\/\+M\+PI version, this is the total number of amplitudes. \end{DoxyCompactList}\item 
-int \hyperlink{structMultiQubit_ab10c88249fa3825d6227ceec01d37e37}{chunk\+Id}
-\begin{DoxyCompactList}\small\item\em The position of the chunk of the state vector held by this process in the full state vector. \end{DoxyCompactList}\item 
-int \hyperlink{structMultiQubit_acd43f2f57991709c9e94f73662c972b2}{num\+Chunks}
-\begin{DoxyCompactList}\small\item\em Number of chunks the state vector is broken up into -- the number of M\+PI processes used. \end{DoxyCompactList}\end{DoxyCompactItemize}
+\hyperlink{structComplexArray}{ComplexArray} \hyperlink{structMultiQubit_a45483190d6b01ef6b2f98f2bec9ab94f}{stateVec}
+\begin{DoxyCompactList}\small\item\em Probablilty amplitudes for the multi qubit state. \item\end{DoxyCompactList}\item 
+\hyperlink{structComplexArray}{ComplexArray} \hyperlink{structMultiQubit_a76f7db4eab52d2b30f58f973ada809c5}{pairStateVec}
+\begin{DoxyCompactList}\small\item\em Temporary storage for a chunk of the state vector received from another process in the MPI version. \item\end{DoxyCompactList}\item 
+int \hyperlink{structMultiQubit_ab5b9795bdc6fb5855e1974dcbbaeb36f}{numQubits}
+\begin{DoxyCompactList}\small\item\em Number of qubits in the state. \item\end{DoxyCompactList}\item 
+long long int \hyperlink{structMultiQubit_ae16f47d8b725c914fb7f66b6498d79db}{numAmps}
+\begin{DoxyCompactList}\small\item\em Number of probability amplitudes held in stateVec by this process In the non-\/MPI version, this is the total number of amplitudes. \item\end{DoxyCompactList}\item 
+int \hyperlink{structMultiQubit_ab10c88249fa3825d6227ceec01d37e37}{chunkId}
+\begin{DoxyCompactList}\small\item\em The position of the chunk of the state vector held by this process in the full state vector. \item\end{DoxyCompactList}\item 
+int \hyperlink{structMultiQubit_acd43f2f57991709c9e94f73662c972b2}{numChunks}
+\begin{DoxyCompactList}\small\item\em Number of chunks the state vector is broken up into -\/-\/ the number of MPI processes used. \item\end{DoxyCompactList}\end{DoxyCompactItemize}
 
 
 \subsubsection{Detailed Description}
-Represents a system of qubits. 
+Represents a system of qubits. Qubits are zero-\/based and the the first qubit is the rightmost 
 
-Qubits are zero-\/based and the the first qubit is the rightmost 
-
-Definition at line 33 of file qubits.\+h.
-
-
+Definition at line 39 of file qubits.h.
 
 \subsubsection{Field Documentation}
-\mbox{\Hypertarget{structMultiQubit_ab10c88249fa3825d6227ceec01d37e37}\label{structMultiQubit_ab10c88249fa3825d6227ceec01d37e37}} 
-\index{Multi\+Qubit@{Multi\+Qubit}!chunk\+Id@{chunk\+Id}}
-\index{chunk\+Id@{chunk\+Id}!Multi\+Qubit@{Multi\+Qubit}}
-\paragraph{\texorpdfstring{chunk\+Id}{chunkId}}
-{\footnotesize\ttfamily int Multi\+Qubit\+::chunk\+Id}
-
+\hypertarget{structMultiQubit_ab10c88249fa3825d6227ceec01d37e37}{
+\index{MultiQubit@{MultiQubit}!chunkId@{chunkId}}
+\index{chunkId@{chunkId}!MultiQubit@{MultiQubit}}
+\paragraph[{chunkId}]{\setlength{\rightskip}{0pt plus 5cm}int {\bf MultiQubit::chunkId}}\hfill}
+\label{structMultiQubit_ab10c88249fa3825d6227ceec01d37e37}
 
 
 The position of the chunk of the state vector held by this process in the full state vector. 
 
+Definition at line 51 of file qubits.h.
+
+Referenced by collapseToOutcome(), compactUnitary(), controlledCompactUnitary(), controlledCompactUnitaryDistributed(), controlledCompactUnitaryLocal(), controlledNot(), controlledNotDistributed(), controlledNotLocal(), controlledPhaseGate(), controlledUnitary(), controlledUnitaryDistributed(), controlledUnitaryLocal(), createMultiQubit(), findProbabilityOfOutcome(), getImagAmpEl(), getRealAmpEl(), hadamard(), initializeStateFromSingleFile(), initStateDebug(), initStateOfSingleQubit(), initStateZero(), multiControlledPhaseGate(), multiControlledUnitary(), multiControlledUnitaryDistributed(), multiControlledUnitaryLocal(), phaseGate(), reportMultiQubitParams(), reportState(), reportStateToScreen(), sigmaX(), sigmaY(), and unitary().\hypertarget{structMultiQubit_ae16f47d8b725c914fb7f66b6498d79db}{
+\index{MultiQubit@{MultiQubit}!numAmps@{numAmps}}
+\index{numAmps@{numAmps}!MultiQubit@{MultiQubit}}
+\paragraph[{numAmps}]{\setlength{\rightskip}{0pt plus 5cm}long long int {\bf MultiQubit::numAmps}}\hfill}
+\label{structMultiQubit_ae16f47d8b725c914fb7f66b6498d79db}
 
 
-Definition at line 45 of file qubits.\+h.
+Number of probability amplitudes held in stateVec by this process In the non-\/MPI version, this is the total number of amplitudes. 
+
+Definition at line 49 of file qubits.h.
+
+Referenced by calcTotalProbability(), collapseToOutcome(), collapseToOutcomeDistributedRenorm(), collapseToOutcomeDistributedSetZero(), collapseToOutcomeLocal(), compactUnitary(), compactUnitaryDistributed(), compactUnitaryLocal(), compareStates(), controlledCompactUnitary(), controlledCompactUnitaryDistributed(), controlledCompactUnitaryLocal(), controlledNot(), controlledNotDistributed(), controlledNotLocal(), controlledPhaseGate(), controlledUnitary(), controlledUnitaryDistributed(), controlledUnitaryLocal(), createMultiQubit(), exchangeStateVectors(), findProbabilityOfOutcome(), findProbabilityOfZeroDistributed(), findProbabilityOfZeroLocal(), getChunkIdFromIndex(), getImagAmpEl(), getRealAmpEl(), hadamard(), hadamardDistributed(), hadamardLocal(), initializeStateFromSingleFile(), initStateDebug(), initStateOfSingleQubit(), initStatePlus(), initStateZero(), multiControlledPhaseGate(), multiControlledUnitary(), multiControlledUnitaryDistributed(), multiControlledUnitaryLocal(), phaseGate(), phaseGateDistributed(), phaseGateLocal(), reportState(), reportStateToScreen(), sigmaX(), sigmaXDistributed(), sigmaXLocal(), sigmaY(), sigmaYDistributed(), sigmaYLocal(), unitary(), unitaryDistributed(), and unitaryLocal().\hypertarget{structMultiQubit_acd43f2f57991709c9e94f73662c972b2}{
+\index{MultiQubit@{MultiQubit}!numChunks@{numChunks}}
+\index{numChunks@{numChunks}!MultiQubit@{MultiQubit}}
+\paragraph[{numChunks}]{\setlength{\rightskip}{0pt plus 5cm}int {\bf MultiQubit::numChunks}}\hfill}
+\label{structMultiQubit_acd43f2f57991709c9e94f73662c972b2}
 
 
+Number of chunks the state vector is broken up into -\/-\/ the number of MPI processes used. 
 
-Referenced by control\+Not(), control\+Not\+Distributed(), control\+Not\+Local(), control\+Phase\+Gate(), control\+Rotate\+Qubit(), control\+Rotate\+Qubit\+Distributed(), control\+Rotate\+Qubit\+Local(), create\+Multi\+Qubit(), filter\+Out111\+Local(), find\+Probability\+Of\+Outcome(), get\+Imag\+Amp\+El(), get\+Real\+Amp\+El(), hadamard(), initialize\+State\+From\+Single\+File(), init\+State\+Debug(), init\+State\+Of\+Single\+Qubit(), init\+State\+Zero(), measure\+In\+State(), phase\+Gate(), prob\+Of\+Filter\+Out111\+Local(), quad\+C\+Phase\+Gate(), report\+Multi\+Qubit\+Params(), report\+State(), report\+State\+To\+Screen(), rotate\+Qubit(), sigma\+X(), and sigma\+Y().
+Definition at line 53 of file qubits.h.
 
-\mbox{\Hypertarget{structMultiQubit_ae16f47d8b725c914fb7f66b6498d79db}\label{structMultiQubit_ae16f47d8b725c914fb7f66b6498d79db}} 
-\index{Multi\+Qubit@{Multi\+Qubit}!num\+Amps@{num\+Amps}}
-\index{num\+Amps@{num\+Amps}!Multi\+Qubit@{Multi\+Qubit}}
-\paragraph{\texorpdfstring{num\+Amps}{numAmps}}
-{\footnotesize\ttfamily long long int Multi\+Qubit\+::num\+Amps}
-
-
-
-Number of probability amplitudes held in state\+Vec by this process In the non-\/\+M\+PI version, this is the total number of amplitudes. 
-
-
-
-Definition at line 43 of file qubits.\+h.
-
-
-
-Referenced by calc\+Total\+Probability(), compare\+States(), control\+Not(), control\+Not\+Distributed(), control\+Not\+Local(), control\+Phase\+Gate(), control\+Rotate\+Qubit(), control\+Rotate\+Qubit\+Distributed(), control\+Rotate\+Qubit\+Local(), create\+Multi\+Qubit(), exchange\+State\+Vectors(), filter\+Out111\+Local(), find\+Probability\+Of\+Outcome(), find\+Probability\+Of\+Zero\+Distributed(), find\+Probability\+Of\+Zero\+Local(), get\+Chunk\+Id\+From\+Index(), get\+Imag\+Amp\+El(), get\+Real\+Amp\+El(), hadamard(), hadamard\+Distributed(), hadamard\+Local(), initialize\+State\+From\+Single\+File(), init\+State\+Debug(), init\+State\+Of\+Single\+Qubit(), init\+State\+Plus(), init\+State\+Zero(), measure\+In\+State(), measure\+In\+State\+Distributed\+Renorm(), measure\+In\+State\+Distributed\+Set\+Zero(), measure\+In\+State\+Local(), phase\+Gate(), phase\+Gate\+Distributed(), phase\+Gate\+Local(), prob\+Of\+Filter\+Out111\+Local(), quad\+C\+Phase\+Gate(), report\+State(), report\+State\+To\+Screen(), rotate\+Qubit(), rotate\+Qubit\+Distributed(), rotate\+Qubit\+Local(), sigma\+X(), sigma\+X\+Distributed(), sigma\+X\+Local(), sigma\+Y(), sigma\+Y\+Distributed(), and sigma\+Y\+Local().
-
-\mbox{\Hypertarget{structMultiQubit_acd43f2f57991709c9e94f73662c972b2}\label{structMultiQubit_acd43f2f57991709c9e94f73662c972b2}} 
-\index{Multi\+Qubit@{Multi\+Qubit}!num\+Chunks@{num\+Chunks}}
-\index{num\+Chunks@{num\+Chunks}!Multi\+Qubit@{Multi\+Qubit}}
-\paragraph{\texorpdfstring{num\+Chunks}{numChunks}}
-{\footnotesize\ttfamily int Multi\+Qubit\+::num\+Chunks}
-
-
-
-Number of chunks the state vector is broken up into -- the number of M\+PI processes used. 
-
-
-
-Definition at line 47 of file qubits.\+h.
-
-
-
-Referenced by calc\+Total\+Probability(), create\+Multi\+Qubit(), initialize\+State\+From\+Single\+File(), init\+State\+Of\+Single\+Qubit(), init\+State\+Plus(), report\+Multi\+Qubit\+Params(), and report\+State\+To\+Screen().
-
-\mbox{\Hypertarget{structMultiQubit_ab5b9795bdc6fb5855e1974dcbbaeb36f}\label{structMultiQubit_ab5b9795bdc6fb5855e1974dcbbaeb36f}} 
-\index{Multi\+Qubit@{Multi\+Qubit}!num\+Qubits@{num\+Qubits}}
-\index{num\+Qubits@{num\+Qubits}!Multi\+Qubit@{Multi\+Qubit}}
-\paragraph{\texorpdfstring{num\+Qubits}{numQubits}}
-{\footnotesize\ttfamily int Multi\+Qubit\+::num\+Qubits}
-
+Referenced by calcTotalProbability(), createMultiQubit(), initializeStateFromSingleFile(), initStateOfSingleQubit(), initStatePlus(), reportMultiQubitParams(), and reportStateToScreen().\hypertarget{structMultiQubit_ab5b9795bdc6fb5855e1974dcbbaeb36f}{
+\index{MultiQubit@{MultiQubit}!numQubits@{numQubits}}
+\index{numQubits@{numQubits}!MultiQubit@{MultiQubit}}
+\paragraph[{numQubits}]{\setlength{\rightskip}{0pt plus 5cm}int {\bf MultiQubit::numQubits}}\hfill}
+\label{structMultiQubit_ab5b9795bdc6fb5855e1974dcbbaeb36f}
 
 
 Number of qubits in the state. 
 
+Definition at line 46 of file qubits.h.
+
+Referenced by collapseToOutcome(), compactUnitary(), controlledCompactUnitary(), controlledNot(), controlledPhaseGate(), controlledUnitary(), createMultiQubit(), findProbabilityOfOutcome(), getEnvironmentString(), hadamard(), multiControlledPhaseGate(), multiControlledUnitary(), phaseGate(), reportMultiQubitParams(), reportStateToScreen(), sigmaX(), sigmaY(), and unitary().\hypertarget{structMultiQubit_a76f7db4eab52d2b30f58f973ada809c5}{
+\index{MultiQubit@{MultiQubit}!pairStateVec@{pairStateVec}}
+\index{pairStateVec@{pairStateVec}!MultiQubit@{MultiQubit}}
+\paragraph[{pairStateVec}]{\setlength{\rightskip}{0pt plus 5cm}{\bf ComplexArray} {\bf MultiQubit::pairStateVec}}\hfill}
+\label{structMultiQubit_a76f7db4eab52d2b30f58f973ada809c5}
 
 
-Definition at line 40 of file qubits.\+h.
+Temporary storage for a chunk of the state vector received from another process in the MPI version. 
 
+Definition at line 44 of file qubits.h.
 
-
-Referenced by control\+Not\+Distributed(), control\+Not\+Local(), control\+Phase\+Gate(), control\+Rotate\+Qubit\+Distributed(), control\+Rotate\+Qubit\+Local(), create\+Multi\+Qubit(), filter\+Out111\+Local(), find\+Probability\+Of\+Zero\+Distributed(), find\+Probability\+Of\+Zero\+Local(), get\+Environment\+String(), hadamard\+Distributed(), hadamard\+Local(), measure\+In\+State\+Distributed\+Renorm(), measure\+In\+State\+Distributed\+Set\+Zero(), measure\+In\+State\+Local(), phase\+Gate\+Distributed(), phase\+Gate\+Local(), prob\+Of\+Filter\+Out111\+Local(), quad\+C\+Phase\+Gate(), report\+Multi\+Qubit\+Params(), report\+State\+To\+Screen(), rotate\+Qubit\+Distributed(), rotate\+Qubit\+Local(), sigma\+X\+Distributed(), sigma\+X\+Local(), sigma\+Y\+Distributed(), and sigma\+Y\+Local().
-
-\mbox{\Hypertarget{structMultiQubit_a76f7db4eab52d2b30f58f973ada809c5}\label{structMultiQubit_a76f7db4eab52d2b30f58f973ada809c5}} 
-\index{Multi\+Qubit@{Multi\+Qubit}!pair\+State\+Vec@{pair\+State\+Vec}}
-\index{pair\+State\+Vec@{pair\+State\+Vec}!Multi\+Qubit@{Multi\+Qubit}}
-\paragraph{\texorpdfstring{pair\+State\+Vec}{pairStateVec}}
-{\footnotesize\ttfamily \hyperlink{structComplexArray}{Complex\+Array} Multi\+Qubit\+::pair\+State\+Vec}
-
-
-
-Temporary storage for a chunk of the state vector received from another process in the M\+PI version. 
-
-
-
-Definition at line 38 of file qubits.\+h.
-
-
-
-Referenced by control\+Not(), control\+Rotate\+Qubit(), create\+Multi\+Qubit(), destroy\+Multi\+Qubit(), exchange\+State\+Vectors(), hadamard(), rotate\+Qubit(), sigma\+X(), and sigma\+Y().
-
-\mbox{\Hypertarget{structMultiQubit_a45483190d6b01ef6b2f98f2bec9ab94f}\label{structMultiQubit_a45483190d6b01ef6b2f98f2bec9ab94f}} 
-\index{Multi\+Qubit@{Multi\+Qubit}!state\+Vec@{state\+Vec}}
-\index{state\+Vec@{state\+Vec}!Multi\+Qubit@{Multi\+Qubit}}
-\paragraph{\texorpdfstring{state\+Vec}{stateVec}}
-{\footnotesize\ttfamily \hyperlink{structComplexArray}{Complex\+Array} Multi\+Qubit\+::state\+Vec}
-
+Referenced by compactUnitary(), controlledCompactUnitary(), controlledNot(), controlledUnitary(), createMultiQubit(), destroyMultiQubit(), exchangeStateVectors(), hadamard(), multiControlledUnitary(), sigmaX(), sigmaY(), and unitary().\hypertarget{structMultiQubit_a45483190d6b01ef6b2f98f2bec9ab94f}{
+\index{MultiQubit@{MultiQubit}!stateVec@{stateVec}}
+\index{stateVec@{stateVec}!MultiQubit@{MultiQubit}}
+\paragraph[{stateVec}]{\setlength{\rightskip}{0pt plus 5cm}{\bf ComplexArray} {\bf MultiQubit::stateVec}}\hfill}
+\label{structMultiQubit_a45483190d6b01ef6b2f98f2bec9ab94f}
 
 
 Probablilty amplitudes for the multi qubit state. 
 
+Definition at line 42 of file qubits.h.
 
+Referenced by calcTotalProbability(), collapseToOutcomeDistributedRenorm(), collapseToOutcomeDistributedSetZero(), collapseToOutcomeLocal(), compactUnitary(), compactUnitaryLocal(), compareStates(), controlledCompactUnitary(), controlledCompactUnitaryLocal(), controlledNot(), controlledNotLocal(), controlledPhaseGate(), controlledUnitary(), controlledUnitaryLocal(), createMultiQubit(), destroyMultiQubit(), exchangeStateVectors(), findProbabilityOfZeroDistributed(), findProbabilityOfZeroLocal(), getImagAmpEl(), getRealAmpEl(), hadamard(), hadamardLocal(), initializeStateFromSingleFile(), initStateDebug(), initStateOfSingleQubit(), initStatePlus(), initStateZero(), multiControlledPhaseGate(), multiControlledUnitary(), multiControlledUnitaryLocal(), phaseGateDistributed(), phaseGateLocal(), reportState(), reportStateToScreen(), sigmaX(), sigmaXLocal(), sigmaY(), sigmaYLocal(), unitary(), and unitaryLocal().
 
-Definition at line 36 of file qubits.\+h.
-
-
-
-Referenced by calc\+Total\+Probability(), compare\+States(), control\+Not(), control\+Not\+Local(), control\+Phase\+Gate(), control\+Rotate\+Qubit(), control\+Rotate\+Qubit\+Local(), create\+Multi\+Qubit(), destroy\+Multi\+Qubit(), exchange\+State\+Vectors(), filter\+Out111\+Local(), find\+Probability\+Of\+Zero\+Distributed(), find\+Probability\+Of\+Zero\+Local(), get\+Imag\+Amp\+El(), get\+Real\+Amp\+El(), hadamard(), hadamard\+Local(), initialize\+State\+From\+Single\+File(), init\+State\+Debug(), init\+State\+Of\+Single\+Qubit(), init\+State\+Plus(), init\+State\+Zero(), measure\+In\+State\+Distributed\+Renorm(), measure\+In\+State\+Distributed\+Set\+Zero(), measure\+In\+State\+Local(), phase\+Gate\+Distributed(), phase\+Gate\+Local(), prob\+Of\+Filter\+Out111\+Local(), quad\+C\+Phase\+Gate(), report\+State(), report\+State\+To\+Screen(), rotate\+Qubit(), rotate\+Qubit\+Local(), sigma\+X(), sigma\+X\+Local(), sigma\+Y(), and sigma\+Y\+Local().
-
-
-
-The documentation for this struct was generated from the following file\+:\begin{DoxyCompactItemize}
+The documentation for this struct was generated from the following file:\begin{DoxyCompactItemize}
 \item 
-\hyperlink{qubits_8h}{qubits.\+h}\end{DoxyCompactItemize}
+\hyperlink{qubits_8h}{qubits.h}\end{DoxyCompactItemize}
