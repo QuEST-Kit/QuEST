@@ -183,7 +183,7 @@ REAL collapseToOutcome(MultiQubit multiQubit, const int measureQubit, int outcom
     QuESTAssert(measureQubit >= 0 && measureQubit < multiQubit.numQubits, 2, __func__);
     REAL stateProb;
 	stateProb = findProbabilityOfOutcome(multiQubit, measureQubit, outcome);
-    QuESTAssert(fabs(stateProb>10e-13), 8, __func__);
+    QuESTAssert(fabs(stateProb>REAL_EPS), 8, __func__);
     collapseToOutcomeLocal(multiQubit, measureQubit, stateProb, outcome);
     return stateProb;
 }
