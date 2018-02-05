@@ -23,6 +23,7 @@ const char* errorCodes[] = {
     "Invalid unitary matrix.",                              // 5
     "Invalid rotation arguments.",                          // 6
     "Invalid system size. Cannot print output for systems greater than 5 qubits." // 7
+    "Can't collapse to state with zero probability." // 8
 };
 
 static int extractBit (const int locationOfBitFromRight, const long long int theEncodedNumber);
@@ -2020,11 +2021,6 @@ void collapseToOutcomeLocal(MultiQubit multiQubit, int measureQubit, REAL totalP
 	long long int numTasks=multiQubit.numAmps>>1;
 
 	// ---------------------------------------------------------------- //
-	//            tests                                                 //
-	// ---------------------------------------------------------------- //
-	assert (totalProbability != 0);
-
-	// ---------------------------------------------------------------- //
 	//            dimensions                                            //
 	// ---------------------------------------------------------------- //
 	sizeHalfBlock = 1LL << (measureQubit);                       // number of state vector elements to sum,
@@ -2099,12 +2095,6 @@ REAL collapseToOutcomeDistributedRenorm (MultiQubit multiQubit, const int measur
 	long long int numTasks=multiQubit.numAmps;
 	// (good for shared memory parallelism)
 
-	// ---------------------------------------------------------------- //
-	//            tests                                                 //
-	// ---------------------------------------------------------------- //
-	assert (measureQubit >= 0 && measureQubit < multiQubit.numQubits);
-	assert (totalProbability != 0);
-
 	REAL renorm=1/sqrt(totalProbability);
 	
 	REAL *stateVecReal = multiQubit.stateVec.real;
@@ -2147,11 +2137,6 @@ void collapseToOutcomeDistributedSetZero(MultiQubit multiQubit, const int measur
 	long long int thisTask;                                   // task based approach for expose loop with small granularity
 	long long int numTasks=multiQubit.numAmps;
 	// (good for shared memory parallelism)
-
-	// ---------------------------------------------------------------- //
-	//            tests                                                 //
-	// ---------------------------------------------------------------- //
-	assert (measureQubit >= 0 && measureQubit < multiQubit.numQubits);
 
 	// ---------------------------------------------------------------- //
 	//            find probability                                      //

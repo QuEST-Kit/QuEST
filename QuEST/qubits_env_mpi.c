@@ -679,24 +679,24 @@ REAL collapseToOutcome(MultiQubit multiQubit, const int measureQubit, int outcom
     QuESTAssert(measureQubit >= 0 && measureQubit < multiQubit.numQubits, 2, __func__);
 
 	REAL totalStateProb=findProbabilityOfOutcome(multiQubit, measureQubit, outcome);
+    QuESTAssert(fabs(stateProb>10e-13), 8, __func__);
+
 	int skipValuesWithinRank = halfMatrixBlockFitsInChunk(multiQubit.numAmps, measureQubit);
-	if (totalStateProb != 0){
-		if (skipValuesWithinRank) {
-			collapseToOutcomeLocal(multiQubit, measureQubit, totalStateProb, outcome);
-		} else {
-			if (!isChunkToSkipInFindPZero(multiQubit.chunkId, multiQubit.numAmps, measureQubit)){
-				// chunk has amps for q=0
-				if (outcome==0) collapseToOutcomeDistributedRenorm(multiQubit, measureQubit, 
-						totalStateProb);
-				else collapseToOutcomeDistributedSetZero(multiQubit, measureQubit);
-			} else {
-				// chunk has amps for q=1
-				if (outcome==1) collapseToOutcomeDistributedRenorm(multiQubit, measureQubit, 
-						totalStateProb);
-				else collapseToOutcomeDistributedSetZero(multiQubit, measureQubit);
-			}
-		}
-	}
+    if (skipValuesWithinRank) {
+        collapseToOutcomeLocal(multiQubit, measureQubit, totalStateProb, outcome);
+    } else {
+        if (!isChunkToSkipInFindPZero(multiQubit.chunkId, multiQubit.numAmps, measureQubit)){
+            // chunk has amps for q=0
+            if (outcome==0) collapseToOutcomeDistributedRenorm(multiQubit, measureQubit, 
+                    totalStateProb);
+            else collapseToOutcomeDistributedSetZero(multiQubit, measureQubit);
+        } else {
+            // chunk has amps for q=1
+            if (outcome==1) collapseToOutcomeDistributedRenorm(multiQubit, measureQubit, 
+                    totalStateProb);
+            else collapseToOutcomeDistributedSetZero(multiQubit, measureQubit);
+        }
+    }
 	return totalStateProb;
 }
 
