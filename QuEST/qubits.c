@@ -1240,9 +1240,6 @@ void sigmaXDistributed (MultiQubit multiQubit, const int rotQubit,
 	long long int thisTask;  
 	const long long int numTasks=multiQubit.numAmps;
 
-	// test qubit valid
-	assert (rotQubit >= 0 && rotQubit < multiQubit.numQubits);
-
 	REAL *stateVecRealIn=stateVecIn.real, *stateVecImagIn=stateVecIn.imag;
 	REAL *stateVecRealOut=stateVecOut.real, *stateVecImagOut=stateVecOut.imag;
 
@@ -1350,9 +1347,6 @@ void controlledNotDistributed (MultiQubit multiQubit, const int controlQubit, co
 
 	int controlBit;
 
-	// test qubit valid
-	assert (targetQubit >= 0 && targetQubit < multiQubit.numQubits);
-
 	REAL *stateVecRealIn=stateVecIn.real, *stateVecImagIn=stateVecIn.imag;
 	REAL *stateVecRealOut=stateVecOut.real, *stateVecImagOut=stateVecOut.imag;
 
@@ -1453,9 +1447,6 @@ void sigmaYDistributed(MultiQubit multiQubit, const int rotQubit,
 
 	long long int thisTask;  
 	const long long int numTasks=multiQubit.numAmps;
-
-	// test qubit valid
-	assert (rotQubit >= 0 && rotQubit < multiQubit.numQubits);
 
 	REAL *stateVecRealIn=stateVecIn.real, *stateVecImagIn=stateVecIn.imag;
 	REAL *stateVecRealOut=stateVecOut.real, *stateVecImagOut=stateVecOut.imag;
@@ -1560,9 +1551,6 @@ void hadamardDistributed(MultiQubit multiQubit, const int rotQubit,
 	REAL   stateRealUp,stateRealLo,stateImagUp,stateImagLo;
 	long long int thisTask;  
 	const long long int numTasks=multiQubit.numAmps;
-
-	// test qubit valid
-	assert (rotQubit >= 0 && rotQubit < multiQubit.numQubits);
 
 	int sign;
 	if (updateUpper) sign=1;
@@ -1694,9 +1682,6 @@ void phaseGateDistributed(MultiQubit multiQubit, const int rotQubit, enum phaseG
 	REAL stateRealLo,stateImagLo;
 	long long int thisTask;         
 	const long long int numTasks=multiQubit.numAmps;
-
-	// test qubit valid
-	assert (rotQubit >= 0 && rotQubit < multiQubit.numQubits);
 
 	// Can't use multiQubit.stateVec as a private OMP var
 	REAL *stateVecReal = multiQubit.stateVec.real;
@@ -1850,12 +1835,6 @@ REAL findProbabilityOfZeroDistributed (MultiQubit multiQubit,
 	// ----- temp variables
 	long long int thisTask;                                   // task based approach for expose loop with small granularity
 	long long int numTasks=multiQubit.numAmps;
-	// (good for shared memory parallelism)
-
-	// ---------------------------------------------------------------- //
-	//            tests                                                 //
-	// ---------------------------------------------------------------- //
-	assert (measureQubit >= 0 && measureQubit < multiQubit.numQubits);
 
 	// ---------------------------------------------------------------- //
 	//            find probability                                      //
