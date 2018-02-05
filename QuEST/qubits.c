@@ -427,7 +427,7 @@ the first qubit is the rightmost
 @param[in,out] multiQubit object representing the set of qubits
 @param[in] rotQubit qubit to rotate
 @param[in] angle angle by which to rotate in radians
-@param[in] unitAxis unit vector pointing along the axis about which to rotate
+@param[in] unitAxis unit vector pointing along the axis about which to rotate. Does not need to be normalised
 */
 void rotateAroundAxis(MultiQubit multiQubit, const int rotQubit, REAL angle, Vector unitAxis){
 	Complex alpha, beta;
@@ -1102,9 +1102,9 @@ void controlledUnitaryDistributed (MultiQubit multiQubit, const int rotQubit, co
 	}
 }
 
-/** Rotate a single qubit in the state vector of probability amplitudes, given two complex 
-numbers alpha and beta and a subset of the state vector with upper and lower block values 
-stored seperately. Only perform the rotation where the control qubit is one.
+/** Apply a unitary operation to a single qubit in the state vector of probability amplitudes, given
+a subset of the state vector with upper and lower block values 
+stored seperately. Only perform the rotation where all the control qubits are 1.
                                                
 @param[in,out] multiQubit object representing the set of qubits
 @param[in] rotQubit qubit to rotate
@@ -1931,7 +1931,8 @@ void controlledPhaseGate (MultiQubit multiQubit, const int idQubit1, const int i
 /** The multiple qubit control phase gate.
 For each state, if all input qubits are equal to one, multiply the amplitude of that state by -1.
 @param[in,out] multiQubit object representing the set of qubits
-@param[in] idQubit1, idQubit2, idQubit3, idQubit4 specified qubits                 
+@param[in] controlQubits array of input qubits
+@param[in] numControlQubits number of input qubits
 */
 void multiControlledPhaseGate(MultiQubit multiQubit, int *controlQubits, int numControlQubits)
 {

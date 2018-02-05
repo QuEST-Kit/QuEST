@@ -126,7 +126,6 @@ void reportQuESTEnv(QuESTEnv env);
 
 void getEnvironmentString(QuESTEnv env, MultiQubit multiQubit, char str[200]);
 
-
 /** Get the real component of the probability amplitude at an index in the state vector.
 For debugging purposes.
 @param[in] multiQubit object representing a set of qubits
@@ -174,9 +173,15 @@ alpha, beta must obey |alpha|^2 + |beta|^2 = 1
  */
 void compactUnitary(MultiQubit multiQubit, const int rotQubit, Complex alpha, Complex beta);
 
+/* Apply a unitary operation to a single qubit
+@remarks Qubits are zero-based and the                     
+the first qubit is the rightmost                  
+                                                                      
+@param[in,out] multiQubit object representing the set of qubits
+@param[in] rotQubit qubit to rotate
+@param[in] u unitary matrix to apply
+ */
 void unitary(MultiQubit multiQubit, const int rotQubit, ComplexMatrix2 u);
-
-void rotateAroundAxis(MultiQubit multiQubit, const int rotQubit, REAL angle, Vector unitAxis);
 
 void rotateX(MultiQubit multiQubit, const int rotQubit, REAL angle);
 
@@ -203,8 +208,29 @@ alpha, beta must obey |alpha|^2 + |beta|^2 = 1
  */
 void controlledCompactUnitary(MultiQubit multiQubit, const int rotQubit, const int controlQubit, Complex alpha, Complex beta);
 
+void rotateAroundAxis(MultiQubit multiQubit, const int rotQubit, REAL angle, Vector unitAxis);
+
+/** Apply a unitary operation to a single qubit given a 
+control qubit
+Only perform the rotation for elements where the control qubit is one.
+                                                                    
+@param[in,out] multiQubit object representing the set of qubits
+@param[in] rotQubit qubit to rotate
+@param[in] controlQubit perform rotation if this qubit is 1
+@param[in] u unitary matrix to apply
+ */
 void controlledUnitary(MultiQubit multiQubit, const int rotQubit, const int controlQubit, ComplexMatrix2 u);
 
+/** Apply a unitary operation to a single qubit given an array
+of control qubits
+Only perform the rotation for elements where all control qubits equal 1.
+                                                                    
+@param[in,out] multiQubit object representing the set of qubits
+@param[in] rotQubit qubit to rotate
+@param[in] controlQubits perform rotation if all qubits in this array equal 1
+@param[in] numControlQubits number of control qubits
+@param[in] u unitary matrix to apply
+ */
 void multiControlledUnitary(MultiQubit multiQubit, int* controlQubits, const int numControlQubits, const int rotQubit, ComplexMatrix2 u);
 
 /** Rotate a single qubit by {{0,1},{1,0}} -- swap |0> and |1>.
@@ -241,7 +267,7 @@ a phase of -i or i, only for elements when control qubit is 1.
 */
 void controlledNot(MultiQubit multiQubit, const int controlQubit, const int targetQubit);
 
-/** Measure the probability
+/** Find the probability
 of a specified qubit being in the zero or one state.     
 
 @param[in] multiQubit object representing the set of qubits
