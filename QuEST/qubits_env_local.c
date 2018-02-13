@@ -140,7 +140,7 @@ void controlledUnitary(MultiQubit multiQubit, const int controlQubit, const int 
 void multiControlledUnitary(MultiQubit multiQubit, int* controlQubits, const int numControlQubits, const int targetQubit, ComplexMatrix2 u) 
 {
     QuESTAssert(targetQubit >= 0 && targetQubit < multiQubit.numQubits, 1, __func__);
-    QuESTAssert(numControlQubits >= 0 && numControlQubits < multiQubit.numQubits, 4, __func__);
+    QuESTAssert(numControlQubits > 0 && numControlQubits <= multiQubit.numQubits, 4, __func__);
     QuESTAssert(validateMatrixIsUnitary(u), 5, __func__);
 
     long long int mask=0; 

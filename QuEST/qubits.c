@@ -24,6 +24,7 @@ const char* errorCodes[] = {
     "Invalid rotation arguments.",                          // 6
     "Invalid system size. Cannot print output for systems greater than 5 qubits.", // 7
     "Can't collapse to state with zero probability." // 8
+    "Invalid number of qubits." // 9
 };
 
 static int extractBit (const int locationOfBitFromRight, const long long int theEncodedNumber);
@@ -39,6 +40,7 @@ static int extractBit (const int locationOfBitFromRight, const long long int the
  */
 void createMultiQubit(MultiQubit *multiQubit, int numQubits, QuESTEnv env)
 {
+    QuESTAssert(numQubits>0, 9, __func__);
 	long long int numAmps = 1L << numQubits;
 	long long int numAmpsPerRank = numAmps/env.numRanks;
 
@@ -1942,7 +1944,7 @@ void multiControlledPhaseGate(MultiQubit multiQubit, int *controlQubits, int num
 	const long long int chunkSize=multiQubit.numAmps;
 	const long long int chunkId=multiQubit.chunkId;
 
-    QuESTAssert(numControlQubits >= 0 && numControlQubits <= multiQubit.numQubits, 4, __func__);
+    QuESTAssert(numControlQubits > 0 && numControlQubits <= multiQubit.numQubits, 4, __func__);
     long long int mask=0;
     for (int i=0; i<numControlQubits; i++) mask = mask | (1LL<<controlQubits[i]);
     QuESTAssert(mask >=0 && mask <= (1LL<<multiQubit.numQubits)-1, 2, __func__);
