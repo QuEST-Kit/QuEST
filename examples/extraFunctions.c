@@ -233,11 +233,11 @@ int main (int narg, char** varg) {
 	initStateDebug(&multiQubit);
 	if (env.rank==0) printf("target=3, control=3\n");
 	rotQubit=3;
-	controlledCompactUnitary(multiQubit,rotQubit,3,alpha,beta);
+	controlledCompactUnitary(multiQubit,3,rotQubit,alpha,beta);
 	reportStateToScreen(multiQubit, env, REPORT_RANK);
 	initStateDebug(&multiQubit);
 	if (env.rank==0) printf("target=3, control=0\n");
-	controlledCompactUnitary(multiQubit,rotQubit,0,alpha,beta);
+	controlledCompactUnitary(multiQubit,0,rotQubit,alpha,beta);
 	reportStateToScreen(multiQubit, env, REPORT_RANK);
 	totalProbability = calcTotalProbability(multiQubit);
         if (env.rank==0) printf("VERIFICATION: total probability=%.14f\n", totalProbability);

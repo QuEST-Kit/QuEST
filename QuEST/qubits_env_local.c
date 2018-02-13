@@ -98,81 +98,81 @@ REAL getImagAmpEl(MultiQubit multiQubit, long long int index){
 	return multiQubit.stateVec.imag[index];
 }
 
-void compactUnitary(MultiQubit multiQubit, const int rotQubit, Complex alpha, Complex beta) 
+void compactUnitary(MultiQubit multiQubit, const int targetQubit, Complex alpha, Complex beta) 
 {
-    QuESTAssert(rotQubit >= 0 && rotQubit < multiQubit.numQubits, 1, __func__);
+    QuESTAssert(targetQubit >= 0 && targetQubit < multiQubit.numQubits, 1, __func__);
     QuESTAssert(validateAlphaBeta(alpha, beta), 6, __func__);
 
 	// all values required to update state vector lie in this rank
-	compactUnitaryLocal(multiQubit, rotQubit, alpha, beta);
+	compactUnitaryLocal(multiQubit, targetQubit, alpha, beta);
 }
 
-void unitary(MultiQubit multiQubit, const int rotQubit, ComplexMatrix2 u) 
+void unitary(MultiQubit multiQubit, const int targetQubit, ComplexMatrix2 u) 
 {
-    QuESTAssert(rotQubit >= 0 && rotQubit < multiQubit.numQubits, 1, __func__);
+    QuESTAssert(targetQubit >= 0 && targetQubit < multiQubit.numQubits, 1, __func__);
     QuESTAssert(validateMatrixIsUnitary(u), 5, __func__);
 
 	// all values required to update state vector lie in this rank
-	unitaryLocal(multiQubit, rotQubit, u);
+	unitaryLocal(multiQubit, targetQubit, u);
 }
 
-void controlledCompactUnitary(MultiQubit multiQubit, const int controlQubit, const int rotQubit, Complex alpha, Complex beta) 
+void controlledCompactUnitary(MultiQubit multiQubit, const int controlQubit, const int targetQubit, Complex alpha, Complex beta) 
 {
-    QuESTAssert(rotQubit >= 0 && rotQubit < multiQubit.numQubits, 1, __func__);
+    QuESTAssert(targetQubit >= 0 && targetQubit < multiQubit.numQubits, 1, __func__);
     QuESTAssert(controlQubit >= 0 && controlQubit < multiQubit.numQubits, 2, __func__);
-    QuESTAssert(controlQubit != rotQubit, 3, __func__);
+    QuESTAssert(controlQubit != targetQubit, 3, __func__);
     QuESTAssert(validateAlphaBeta(alpha, beta), 6, __func__);
     
 
-	controlledCompactUnitaryLocal(multiQubit, controlQubit, rotQubit, alpha, beta);
+	controlledCompactUnitaryLocal(multiQubit, controlQubit, targetQubit, alpha, beta);
 }
 
-void controlledUnitary(MultiQubit multiQubit, const int controlQubit, const int rotQubit, ComplexMatrix2 u) 
+void controlledUnitary(MultiQubit multiQubit, const int controlQubit, const int targetQubit, ComplexMatrix2 u) 
 {
-    QuESTAssert(rotQubit >= 0 && rotQubit < multiQubit.numQubits, 1, __func__);
+    QuESTAssert(targetQubit >= 0 && targetQubit < multiQubit.numQubits, 1, __func__);
     QuESTAssert(controlQubit >= 0 && controlQubit < multiQubit.numQubits, 2, __func__);
-    QuESTAssert(controlQubit != rotQubit, 3, __func__);
+    QuESTAssert(controlQubit != targetQubit, 3, __func__);
     QuESTAssert(validateMatrixIsUnitary(u), 5, __func__);
    
-	controlledUnitaryLocal(multiQubit, controlQubit, rotQubit, u);
+	controlledUnitaryLocal(multiQubit, controlQubit, targetQubit, u);
 }
 
-void multiControlledUnitary(MultiQubit multiQubit, int* controlQubits, const int numControlQubits, const int rotQubit, ComplexMatrix2 u) 
+void multiControlledUnitary(MultiQubit multiQubit, int* controlQubits, const int numControlQubits, const int targetQubit, ComplexMatrix2 u) 
 {
-    QuESTAssert(rotQubit >= 0 && rotQubit < multiQubit.numQubits, 1, __func__);
+    QuESTAssert(targetQubit >= 0 && targetQubit < multiQubit.numQubits, 1, __func__);
     QuESTAssert(numControlQubits >= 0 && numControlQubits < multiQubit.numQubits, 4, __func__);
     QuESTAssert(validateMatrixIsUnitary(u), 5, __func__);
 
     long long int mask=0; 
     for (int i=0; i<numControlQubits; i++) mask = mask | (1LL<<controlQubits[i]);
     QuESTAssert(mask >=0 && mask <= (1LL<<multiQubit.numQubits)-1, 2, __func__);
-    QuESTAssert((mask & (1LL<<rotQubit)) != (1LL<<rotQubit), 3, __func__);
+    QuESTAssert((mask & (1LL<<targetQubit)) != (1LL<<targetQubit), 3, __func__);
 	
-    multiControlledUnitaryLocal(multiQubit, rotQubit, mask, u);
+    multiControlledUnitaryLocal(multiQubit, targetQubit, mask, u);
 }
 
-void sigmaX(MultiQubit multiQubit, const int rotQubit) 
+void sigmaX(MultiQubit multiQubit, const int targetQubit) 
 {
-    QuESTAssert(rotQubit >= 0 && rotQubit < multiQubit.numQubits, 1, __func__);
-	sigmaXLocal(multiQubit, rotQubit);
+    QuESTAssert(targetQubit >= 0 && targetQubit < multiQubit.numQubits, 1, __func__);
+	sigmaXLocal(multiQubit, targetQubit);
 }
 
-void sigmaY(MultiQubit multiQubit, const int rotQubit) 
+void sigmaY(MultiQubit multiQubit, const int targetQubit) 
 {
-    QuESTAssert(rotQubit >= 0 && rotQubit < multiQubit.numQubits, 1, __func__);
-	sigmaYLocal(multiQubit, rotQubit);
+    QuESTAssert(targetQubit >= 0 && targetQubit < multiQubit.numQubits, 1, __func__);
+	sigmaYLocal(multiQubit, targetQubit);
 }
 
-void phaseGate(MultiQubit multiQubit, const int rotQubit, enum phaseGateType type)
+void phaseGate(MultiQubit multiQubit, const int targetQubit, enum phaseGateType type)
 {
-    QuESTAssert(rotQubit >= 0 && rotQubit < multiQubit.numQubits, 1, __func__);
-	phaseGateLocal(multiQubit, rotQubit, type);
+    QuESTAssert(targetQubit >= 0 && targetQubit < multiQubit.numQubits, 1, __func__);
+	phaseGateLocal(multiQubit, targetQubit, type);
 }
 
-void hadamard(MultiQubit multiQubit, const int rotQubit) 
+void hadamard(MultiQubit multiQubit, const int targetQubit) 
 {
-    QuESTAssert(rotQubit >= 0 && rotQubit < multiQubit.numQubits, 1, __func__);
-	hadamardLocal(multiQubit, rotQubit);
+    QuESTAssert(targetQubit >= 0 && targetQubit < multiQubit.numQubits, 1, __func__);
+	hadamardLocal(multiQubit, targetQubit);
 }
 
 void controlledNot(MultiQubit multiQubit, const int controlQubit, const int targetQubit) 

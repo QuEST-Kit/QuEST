@@ -500,11 +500,11 @@ void rotateZ(MultiQubit multiQubit, const int rotQubit, REAL angle){
 
 /** Rotate a single qubit in the state vector of probability amplitudes.                                                                       
 @param[in,out] multiQubit object representing the set of qubits
-@param[in] rotQubit qubit to rotate
+@param[in] targetQubit qubit to rotate
 @param[in] alpha rotation angle
 @param[in] beta rotation angle
  */
-void compactUnitaryLocal (MultiQubit multiQubit, const int rotQubit, Complex alpha, Complex beta)
+void compactUnitaryLocal (MultiQubit multiQubit, const int targetQubit, Complex alpha, Complex beta)
 {
 	long long int sizeBlock, sizeHalfBlock;
 	long long int thisBlock, // current block
@@ -515,7 +515,7 @@ void compactUnitaryLocal (MultiQubit multiQubit, const int rotQubit, Complex alp
 	const long long int numTasks=multiQubit.numAmps>>1;
 
 	// set dimensions
-	sizeHalfBlock = 1LL << rotQubit;  
+	sizeHalfBlock = 1LL << targetQubit;  
 	sizeBlock     = 2LL * sizeHalfBlock; 
 
 	// Can't use multiQubit.stateVec as a private OMP var
@@ -569,10 +569,10 @@ void compactUnitaryLocal (MultiQubit multiQubit, const int rotQubit, Complex alp
 the first qubit is the rightmost                  
                                                                       
 @param[in,out] multiQubit object representing the set of qubits
-@param[in] rotQubit qubit to rotate
+@param[in] targetQubit qubit to rotate
 @param[in] u unitary matrix to apply
  */
-void unitaryLocal(MultiQubit multiQubit, const int rotQubit, ComplexMatrix2 u)
+void unitaryLocal(MultiQubit multiQubit, const int targetQubit, ComplexMatrix2 u)
 {
 	long long int sizeBlock, sizeHalfBlock;
 	long long int thisBlock, // current block
@@ -583,7 +583,7 @@ void unitaryLocal(MultiQubit multiQubit, const int rotQubit, ComplexMatrix2 u)
 	const long long int numTasks=multiQubit.numAmps>>1;
 
 	// set dimensions
-	sizeHalfBlock = 1LL << rotQubit;  
+	sizeHalfBlock = 1LL << targetQubit;  
 	sizeBlock     = 2LL * sizeHalfBlock; 
 
 	// Can't use multiQubit.stateVec as a private OMP var
@@ -635,7 +635,7 @@ vector of probability amplitudes, given two complex numbers alpha and beta,
 and a subset of the state vector with upper and lower block values stored seperately.
                                                                       
 @param[in,out] multiQubit object representing the set of qubits
-@param[in] rotQubit qubit to rotate
+@param[in] targetQubit qubit to rotate
 @param[in] rot1 rotation angle
 @param[in] rot2 rotation angle
 @param[in] stateVecUp probability amplitudes in upper half of a block
@@ -643,7 +643,7 @@ and a subset of the state vector with upper and lower block values stored sepera
 @param[out] stateVecOut array section to update (will correspond to either the lower or upper half of a block)
 */
 
-void compactUnitaryDistributed (MultiQubit multiQubit, const int rotQubit,
+void compactUnitaryDistributed (MultiQubit multiQubit, const int targetQubit,
 		Complex rot1, Complex rot2,
 		ComplexArray stateVecUp,
 		ComplexArray stateVecLo,
@@ -694,14 +694,14 @@ stored seperately.
 the first qubit is the rightmost                  
                                                                       
 @param[in,out] multiQubit object representing the set of qubits
-@param[in] rotQubit qubit to rotate
+@param[in] targetQubit qubit to rotate
 @param[in] u unitary matrix to apply
 @param[in] stateVecUp probability amplitudes in upper half of a block
 @param[in] stateVecLo probability amplitudes in lower half of a block
 @param[out] stateVecOut array section to update (will correspond to either the lower or upper half of a block)
 */
 
-void unitaryDistributed (MultiQubit multiQubit, const int rotQubit,
+void unitaryDistributed (MultiQubit multiQubit, const int targetQubit,
 		Complex rot1, Complex rot2,
 		ComplexArray stateVecUp,
 		ComplexArray stateVecLo,
@@ -752,12 +752,12 @@ given two complex numbers alpha and beta and a control qubit.
 Only perform the rotation for elements where the control qubit is one.
                                                                     
 @param[in,out] multiQubit object representing the set of qubits
-@param[in] rotQubit qubit to rotate
+@param[in] targetQubit qubit to rotate
 @param[in] controlQubit perform rotation if this qubit is 1
 @param[in] alpha rotation angle
 @param[in] beta rotation angle
  */
-void controlledCompactUnitaryLocal (MultiQubit multiQubit, const int controlQubit, const int rotQubit, 
+void controlledCompactUnitaryLocal (MultiQubit multiQubit, const int controlQubit, const int targetQubit, 
 		Complex alpha, Complex beta)
 {
 	long long int sizeBlock, sizeHalfBlock;
@@ -773,7 +773,7 @@ void controlledCompactUnitaryLocal (MultiQubit multiQubit, const int controlQubi
 	int controlBit;
 
     // set dimensions
-	sizeHalfBlock = 1LL << rotQubit;  
+	sizeHalfBlock = 1LL << targetQubit;  
 	sizeBlock     = 2LL * sizeHalfBlock; 
 
 	// Can't use multiQubit.stateVec as a private OMP var
@@ -830,12 +830,12 @@ given two complex numbers alpha and beta and a control qubit.
 Only perform the rotation for elements where the control qubit is one.
                                                                     
 @param[in,out] multiQubit object representing the set of qubits
-@param[in] rotQubit qubit to rotate
+@param[in] targetQubit qubit to rotate
 @param[in] controlQubit perform rotation if this qubit is 1
 @param[in] alpha rotation angle
 @param[in] beta rotation angle
  */
-void multiControlledUnitaryLocal(MultiQubit multiQubit, const int rotQubit, 
+void multiControlledUnitaryLocal(MultiQubit multiQubit, const int targetQubit, 
 		long long int mask, ComplexMatrix2 u)
 {
 	long long int sizeBlock, sizeHalfBlock;
@@ -849,7 +849,7 @@ void multiControlledUnitaryLocal(MultiQubit multiQubit, const int rotQubit,
 	const long long int chunkId=multiQubit.chunkId;
 
 	// set dimensions
-	sizeHalfBlock = 1LL << rotQubit;  
+	sizeHalfBlock = 1LL << targetQubit;  
 	sizeBlock     = 2LL * sizeHalfBlock; 
 
 	// Can't use multiQubit.stateVec as a private OMP var
@@ -904,12 +904,12 @@ given two complex numbers alpha and beta and a control qubit.
 Only perform the rotation for elements where the control qubit is one.
                                                                     
 @param[in,out] multiQubit object representing the set of qubits
-@param[in] rotQubit qubit to rotate
+@param[in] targetQubit qubit to rotate
 @param[in] controlQubit perform rotation if this qubit is 1
 @param[in] alpha rotation angle
 @param[in] beta rotation angle
  */
-void controlledUnitaryLocal(MultiQubit multiQubit, const int controlQubit, const int rotQubit, 
+void controlledUnitaryLocal(MultiQubit multiQubit, const int controlQubit, const int targetQubit, 
 		ComplexMatrix2 u)
 {
 	long long int sizeBlock, sizeHalfBlock;
@@ -925,7 +925,7 @@ void controlledUnitaryLocal(MultiQubit multiQubit, const int controlQubit, const
 	int controlBit;
 
     // set dimensions
-	sizeHalfBlock = 1LL << rotQubit;  
+	sizeHalfBlock = 1LL << targetQubit;  
 	sizeBlock     = 2LL * sizeHalfBlock; 
 
 	// Can't use multiQubit.stateVec as a private OMP var
@@ -980,7 +980,7 @@ numbers alpha and beta and a subset of the state vector with upper and lower blo
 stored seperately. Only perform the rotation where the control qubit is one.
                                                
 @param[in,out] multiQubit object representing the set of qubits
-@param[in] rotQubit qubit to rotate
+@param[in] targetQubit qubit to rotate
 @param[in] controlQubit qubit to determine whether or not to perform a rotation 
 @param[in] rot1 rotation angle
 @param[in] rot2 rotation angle
@@ -988,7 +988,7 @@ stored seperately. Only perform the rotation where the control qubit is one.
 @param[in] stateVecLo probability amplitudes in lower half of a block
 @param[out] stateVecOut array section to update (will correspond to either the lower or upper half of a block)
 */
-void controlledCompactUnitaryDistributed (MultiQubit multiQubit, const int controlQubit, const int rotQubit,
+void controlledCompactUnitaryDistributed (MultiQubit multiQubit, const int controlQubit, const int targetQubit,
 		Complex rot1, Complex rot2,
 		ComplexArray stateVecUp,
 		ComplexArray stateVecLo,
@@ -1043,7 +1043,7 @@ numbers alpha and beta and a subset of the state vector with upper and lower blo
 stored seperately. Only perform the rotation where the control qubit is one.
                                                
 @param[in,out] multiQubit object representing the set of qubits
-@param[in] rotQubit qubit to rotate
+@param[in] targetQubit qubit to rotate
 @param[in] controlQubit qubit to determine whether or not to perform a rotation 
 @param[in] rot1 rotation angle
 @param[in] rot2 rotation angle
@@ -1051,7 +1051,7 @@ stored seperately. Only perform the rotation where the control qubit is one.
 @param[in] stateVecLo probability amplitudes in lower half of a block
 @param[out] stateVecOut array section to update (will correspond to either the lower or upper half of a block)
 */
-void controlledUnitaryDistributed (MultiQubit multiQubit, const int controlQubit, const int rotQubit,
+void controlledUnitaryDistributed (MultiQubit multiQubit, const int controlQubit, const int targetQubit,
 		Complex rot1, Complex rot2,
 		ComplexArray stateVecUp,
 		ComplexArray stateVecLo,
@@ -1107,7 +1107,7 @@ a subset of the state vector with upper and lower block values
 stored seperately. Only perform the rotation where all the control qubits are 1.
                                                
 @param[in,out] multiQubit object representing the set of qubits
-@param[in] rotQubit qubit to rotate
+@param[in] targetQubit qubit to rotate
 @param[in] controlQubit qubit to determine whether or not to perform a rotation 
 @param[in] rot1 rotation angle
 @param[in] rot2 rotation angle
@@ -1116,7 +1116,7 @@ stored seperately. Only perform the rotation where all the control qubits are 1.
 @param[out] stateVecOut array section to update (will correspond to either the lower or upper half of a block)
 */
 void multiControlledUnitaryDistributed (MultiQubit multiQubit, 
-        const int rotQubit, 
+        const int targetQubit, 
         long long int mask,
 		Complex rot1, Complex rot2,
 		ComplexArray stateVecUp,
@@ -1170,9 +1170,9 @@ void multiControlledUnitaryDistributed (MultiQubit multiQubit,
 the first qubit is the rightmost                  
                                                                       
 @param[in,out] multiQubit object representing the set of qubits
-@param[in] rotQubit qubit to rotate
+@param[in] targetQubit qubit to rotate
  */
-void sigmaXLocal(MultiQubit multiQubit, const int rotQubit)
+void sigmaXLocal(MultiQubit multiQubit, const int targetQubit)
 {
 	long long int sizeBlock, sizeHalfBlock;
 	long long int thisBlock, // current block
@@ -1183,7 +1183,7 @@ void sigmaXLocal(MultiQubit multiQubit, const int rotQubit)
 	const long long int numTasks=multiQubit.numAmps>>1;
 
 	// set dimensions
-	sizeHalfBlock = 1LL << rotQubit;  
+	sizeHalfBlock = 1LL << targetQubit;  
 	sizeBlock     = 2LL * sizeHalfBlock; 
 
 	// Can't use multiQubit.stateVec as a private OMP var
@@ -1227,12 +1227,12 @@ stateVecIn must already be the correct section for this chunk
 the first qubit is the rightmost                  
                                                                       
 @param[in,out] multiQubit object representing the set of qubits
-@param[in] rotQubit qubit to rotate
+@param[in] targetQubit qubit to rotate
 @param[in] stateVecIn probability amplitudes in lower or upper half of a block depending on chunkId
 @param[out] stateVecOut array section to update (will correspond to either the lower or upper half of a block)
 */
 
-void sigmaXDistributed (MultiQubit multiQubit, const int rotQubit,
+void sigmaXDistributed (MultiQubit multiQubit, const int targetQubit,
 		ComplexArray stateVecIn,
 		ComplexArray stateVecOut)
 {
@@ -1330,7 +1330,7 @@ stateVecIn must already be the correct section for this chunk. Only perform the 
 for elements where controlQubit is one.
                                         
 @param[in,out] multiQubit object representing the set of qubits
-@param[in] rotQubit qubit to rotate
+@param[in] targetQubit qubit to rotate
 @param[in] stateVecIn probability amplitudes in lower or upper half of a block depending on chunkId
 @param[out] stateVecOut array section to update (will correspond to either the lower or upper half of a block)
 */
@@ -1377,9 +1377,9 @@ void controlledNotDistributed (MultiQubit multiQubit, const int controlQubit, co
 the first qubit is the rightmost                  
                                                                       
 @param[in,out] multiQubit object representing the set of qubits
-@param[in] rotQubit qubit to rotate
+@param[in] targetQubit qubit to rotate
  */
-void sigmaYLocal(MultiQubit multiQubit, const int rotQubit)
+void sigmaYLocal(MultiQubit multiQubit, const int targetQubit)
 {
 	long long int sizeBlock, sizeHalfBlock;
 	long long int thisBlock, // current block
@@ -1390,7 +1390,7 @@ void sigmaYLocal(MultiQubit multiQubit, const int rotQubit)
 	const long long int numTasks=multiQubit.numAmps>>1;
 
 	// set dimensions
-	sizeHalfBlock = 1LL << rotQubit;  
+	sizeHalfBlock = 1LL << targetQubit;  
 	sizeBlock     = 2LL * sizeHalfBlock; 
 
 	// Can't use multiQubit.stateVec as a private OMP var
@@ -1433,13 +1433,13 @@ stateVecIn must already be the correct section for this chunk
 the first qubit is the rightmost                  
                                                                       
 @param[in,out] multiQubit object representing the set of qubits
-@param[in] rotQubit qubit to rotate
+@param[in] targetQubit qubit to rotate
 @param[in] stateVecIn probability amplitudes in lower or upper half of a block depending on chunkId
 @param[in] updateUpper flag, 1: updating upper values, 0: updating lower values in block
 @param[out] stateVecOut array section to update (will correspond to either the lower or upper half of a block)
 */
 
-void sigmaYDistributed(MultiQubit multiQubit, const int rotQubit,
+void sigmaYDistributed(MultiQubit multiQubit, const int targetQubit,
 		ComplexArray stateVecIn,
 		ComplexArray stateVecOut, 
 		int updateUpper)
@@ -1477,9 +1477,9 @@ void sigmaYDistributed(MultiQubit multiQubit, const int rotQubit,
 the first qubit is the rightmost                  
                                                                       
 @param[in,out] multiQubit object representing the set of qubits
-@param[in] rotQubit qubit to rotate
+@param[in] targetQubit qubit to rotate
  */
-void hadamardLocal(MultiQubit multiQubit, const int rotQubit)
+void hadamardLocal(MultiQubit multiQubit, const int targetQubit)
 {
 	long long int sizeBlock, sizeHalfBlock;
 	long long int thisBlock, // current block
@@ -1490,7 +1490,7 @@ void hadamardLocal(MultiQubit multiQubit, const int rotQubit)
 	const long long int numTasks=multiQubit.numAmps>>1;
 
 	// set dimensions
-	sizeHalfBlock = 1LL << rotQubit;  
+	sizeHalfBlock = 1LL << targetQubit;  
 	sizeBlock     = 2LL * sizeHalfBlock; 
 
 	// Can't use multiQubit.stateVec as a private OMP var
@@ -1535,13 +1535,13 @@ stored seperately. This rotation is just swapping upper and lower values, and
 stateVecIn must already be the correct section for this chunk
                                         
 @param[in,out] multiQubit object representing the set of qubits
-@param[in] rotQubit qubit to rotate
+@param[in] targetQubit qubit to rotate
 @param[in] stateVecIn probability amplitudes in lower or upper half of a block depending on chunkId
 @param[in] updateUpper flag, 1: updating upper values, 0: updating lower values in block
 @param[out] stateVecOut array section to update (will correspond to either the lower or upper half of a block)
 */
 
-void hadamardDistributed(MultiQubit multiQubit, const int rotQubit,
+void hadamardDistributed(MultiQubit multiQubit, const int targetQubit,
 		ComplexArray stateVecUp,
 		ComplexArray stateVecLo,
 		ComplexArray stateVecOut,
@@ -1591,10 +1591,10 @@ void hadamardDistributed(MultiQubit multiQubit, const int rotQubit,
 Rotate a single qubit by {{1,0},{0,p}} where p is a phase term determined by the type argument
 
 @param[in,out] multiQubit object representing the set of qubits
-@param[in] rotQubit qubit to rotate
+@param[in] targetQubit qubit to rotate
 @param[in] type the type of phase gate to apply -- one of {SIGMA_Z, S_GATE, T_GATE}
  */
-void phaseGateLocal(MultiQubit multiQubit, const int rotQubit, enum phaseGateType type)
+void phaseGateLocal(MultiQubit multiQubit, const int targetQubit, enum phaseGateType type)
 {
 	long long int sizeBlock, sizeHalfBlock;
 	long long int thisBlock, // current block
@@ -1605,7 +1605,7 @@ void phaseGateLocal(MultiQubit multiQubit, const int rotQubit, enum phaseGateTyp
 	const long long int numTasks=multiQubit.numAmps>>1;
 
 	// set dimensions
-	sizeHalfBlock = 1LL << rotQubit;  
+	sizeHalfBlock = 1LL << targetQubit;  
 	sizeBlock     = 2LL * sizeHalfBlock; 
 
 	// Can't use multiQubit.stateVec as a private OMP var
@@ -1674,10 +1674,10 @@ void phaseGateLocal(MultiQubit multiQubit, const int rotQubit, enum phaseGateTyp
 Rotate a single qubit by {{1,0},{0,p}} where p is a phase term determined by the type argument
 
 @param[in,out] multiQubit object representing the set of qubits
-@param[in] rotQubit qubit to rotate
+@param[in] targetQubit qubit to rotate
 @param[in] type the type of phase gate to apply -- one of {SIGMA_Z, S_GATE, T_GATE}
  */
-void phaseGateDistributed(MultiQubit multiQubit, const int rotQubit, enum phaseGateType type)
+void phaseGateDistributed(MultiQubit multiQubit, const int targetQubit, enum phaseGateType type)
 {
 	REAL stateRealLo,stateImagLo;
 	long long int thisTask;         
@@ -1730,19 +1730,19 @@ void phaseGateDistributed(MultiQubit multiQubit, const int rotQubit, enum phaseG
 	}
 }
  
-void sigmaZ(MultiQubit multiQubit, const int rotQubit)
+void sigmaZ(MultiQubit multiQubit, const int targetQubit)
 {
-	        phaseGate(multiQubit, rotQubit, SIGMA_Z);
+	        phaseGate(multiQubit, targetQubit, SIGMA_Z);
 }
 
-void sGate(MultiQubit multiQubit, const int rotQubit)
+void sGate(MultiQubit multiQubit, const int targetQubit)
 {
-	        phaseGate(multiQubit, rotQubit, S_GATE);
+	        phaseGate(multiQubit, targetQubit, S_GATE);
 } 
 
-void tGate(MultiQubit multiQubit, const int rotQubit)
+void tGate(MultiQubit multiQubit, const int targetQubit)
 {
-	        phaseGate(multiQubit, rotQubit, T_GATE);
+	        phaseGate(multiQubit, targetQubit, T_GATE);
 }
 
 /** Measure the total probability of a specified qubit being in the zero state across all amplitudes in this chunk.

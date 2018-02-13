@@ -85,11 +85,11 @@ void multiControlledPhaseGate(MultiQubit multiQubit, int *controlQubits, int num
 
 void controlledPhaseGate (MultiQubit multiQubit, const int idQubit1, const int idQubit2);
 
-void sigmaZ(MultiQubit multiQubit, const int rotQubit);
+void sigmaZ(MultiQubit multiQubit, const int targetQubit);
 
-void sGate(MultiQubit multiQubit, const int rotQubit);
+void sGate(MultiQubit multiQubit, const int targetQubit);
 
-void tGate(MultiQubit multiQubit, const int rotQubit);
+void tGate(MultiQubit multiQubit, const int targetQubit);
 
 
 // QuEST library functions whose implementation depends on environment (local, MPI)
@@ -167,21 +167,21 @@ the first qubit is the rightmost
 alpha, beta must obey |alpha|^2 + |beta|^2 = 1
                                                                      
 @param[in,out] multiQubit object representing the set of qubits
-@param[in] rotQubit qubit to rotate
+@param[in] targetQubit qubit to rotate
 @param[in] alpha rotation angle
 @param[in] beta rotation angle
  */
-void compactUnitary(MultiQubit multiQubit, const int rotQubit, Complex alpha, Complex beta);
+void compactUnitary(MultiQubit multiQubit, const int targetQubit, Complex alpha, Complex beta);
 
 /* Apply a unitary operation to a single qubit
 @remarks Qubits are zero-based and the                     
 the first qubit is the rightmost                  
                                                                       
 @param[in,out] multiQubit object representing the set of qubits
-@param[in] rotQubit qubit to rotate
+@param[in] targetQubit qubit to rotate
 @param[in] u unitary matrix to apply
  */
-void unitary(MultiQubit multiQubit, const int rotQubit, ComplexMatrix2 u);
+void unitary(MultiQubit multiQubit, const int targetQubit, ComplexMatrix2 u);
 
 void rotateX(MultiQubit multiQubit, const int rotQubit, REAL angle);
 
@@ -201,12 +201,12 @@ the first qubit is the rightmost
 alpha, beta must obey |alpha|^2 + |beta|^2 = 1
 
 @param[in,out] multiQubit object representing the set of qubits
-@param[in] rotQubit qubit to rotate
+@param[in] targetQubit qubit to rotate
 @param[in] controlQubit perform rotation if this qubit is 1
 @param[in] alpha rotation angle
 @param[in] beta rotation angle
  */
-void controlledCompactUnitary(MultiQubit multiQubit, const int controlQubit, const int rotQubit, Complex alpha, Complex beta);
+void controlledCompactUnitary(MultiQubit multiQubit, const int controlQubit, const int targetQubit, Complex alpha, Complex beta);
 
 void rotateAroundAxis(MultiQubit multiQubit, const int rotQubit, REAL angle, Vector unitAxis);
 
@@ -215,54 +215,54 @@ control qubit
 Only perform the rotation for elements where the control qubit is one.
                                                                     
 @param[in,out] multiQubit object representing the set of qubits
-@param[in] rotQubit qubit to rotate
+@param[in] targetQubit qubit to rotate
 @param[in] controlQubit perform rotation if this qubit is 1
 @param[in] u unitary matrix to apply
  */
-void controlledUnitary(MultiQubit multiQubit, const int controlQubit, const int rotQubit, ComplexMatrix2 u);
+void controlledUnitary(MultiQubit multiQubit, const int controlQubit, const int targetQubit, ComplexMatrix2 u);
 
 /** Apply a unitary operation to a single qubit given an array
 of control qubits
 Only perform the rotation for elements where all control qubits equal 1.
                                                                     
 @param[in,out] multiQubit object representing the set of qubits
-@param[in] rotQubit qubit to rotate
+@param[in] targetQubit qubit to rotate
 @param[in] controlQubits perform rotation if all qubits in this array equal 1
 @param[in] numControlQubits number of control qubits
 @param[in] u unitary matrix to apply
  */
-void multiControlledUnitary(MultiQubit multiQubit, int* controlQubits, const int numControlQubits, const int rotQubit, ComplexMatrix2 u);
+void multiControlledUnitary(MultiQubit multiQubit, int* controlQubits, const int numControlQubits, const int targetQubit, ComplexMatrix2 u);
 
 /** Rotate a single qubit by {{0,1},{1,0}} -- swap |0> and |1>.
 @param[in,out] multiQubit object representing the set of qubits
-@param[in] rotQubit qubit to rotate
+@param[in] targetQubit qubit to rotate
 */
-void sigmaX(MultiQubit multiQubit, const int rotQubit);
+void sigmaX(MultiQubit multiQubit, const int targetQubit);
 
 /** Rotate a single qubit by {{0,-i},{i,0}} -- swap |0> and |1> and apply
 a phase of -i or i.
 @param[in,out] multiQubit object representing the set of qubits
-@param[in] rotQubit qubit to rotate
+@param[in] targetQubit qubit to rotate
 */
-void sigmaY(MultiQubit multiQubit, const int rotQubit);
+void sigmaY(MultiQubit multiQubit, const int targetQubit);
 
 /** Rotate a single qubit by {{1,0},{{0,-1}} -- apply a phase of -1 to |1>.
 @param[in,out] multiQubit object representing the set of qubits
-@param[in] rotQubit qubit to rotate
+@param[in] targetQubit qubit to rotate
 */
-void sigmaZ(MultiQubit multiQubit, const int rotQubit);
+void sigmaZ(MultiQubit multiQubit, const int targetQubit);
 
 /** Rotate a single qubit by {{1,1},{1,-1}}/sqrt2 -- turn a |0> into a |+>
 and a |1> into a |->.
 @param[in,out] multiQubit object representing the set of qubits
-@param[in] rotQubit qubit to rotate
+@param[in] targetQubit qubit to rotate
 */
-void hadamard(MultiQubit multiQubit, const int rotQubit);
+void hadamard(MultiQubit multiQubit, const int targetQubit);
 
 /** Rotate a single qubit by {{0,-i},{i,0}} -- swap |0> and |1> and apply
 a phase of -i or i, only for elements when control qubit is 1.
 @param[in,out] multiQubit object representing the set of qubits
-@param[in] rotQubit qubit to rotate
+@param[in] targetQubit qubit to rotate
 @param[in] controlQubit perform sigmaX rotation if this qubit is 1
 */
 void controlledNot(MultiQubit multiQubit, const int controlQubit, const int targetQubit);
