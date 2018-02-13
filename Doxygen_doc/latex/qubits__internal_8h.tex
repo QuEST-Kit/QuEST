@@ -9,41 +9,41 @@ Internal functions used to implement the public facing API in \hyperlink{qubits_
 \subsubsection*{Functions}
 \begin{DoxyCompactItemize}
 \item 
-void \hyperlink{qubits__internal_8h_a33a8d60ae759d25a096c88b337db6c9f}{compactUnitaryLocal} (\hyperlink{structMultiQubit}{MultiQubit} multiQubit, const int rotQubit, \hyperlink{structComplex}{Complex} alpha, \hyperlink{structComplex}{Complex} beta)
+void \hyperlink{qubits__internal_8h_a9cee2d8716667a3318420a3b672f5b92}{compactUnitaryLocal} (\hyperlink{structMultiQubit}{MultiQubit} multiQubit, const int targetQubit, \hyperlink{structComplex}{Complex} alpha, \hyperlink{structComplex}{Complex} beta)
 \begin{DoxyCompactList}\small\item\em Rotate a single qubit in the state vector of probability amplitudes. \item\end{DoxyCompactList}\item 
-void \hyperlink{qubits__internal_8h_a6c49fefa672918a70b031923363cb580}{compactUnitaryDistributed} (\hyperlink{structMultiQubit}{MultiQubit} multiQubit, const int rotQubit, \hyperlink{structComplex}{Complex} rot1, \hyperlink{structComplex}{Complex} rot2, \hyperlink{structComplexArray}{ComplexArray} stateVecUp, \hyperlink{structComplexArray}{ComplexArray} stateVecLo, \hyperlink{structComplexArray}{ComplexArray} stateVecOut)
+void \hyperlink{qubits__internal_8h_a20ee1878a63ae6112e8845f4a8787592}{compactUnitaryDistributed} (\hyperlink{structMultiQubit}{MultiQubit} multiQubit, const int targetQubit, \hyperlink{structComplex}{Complex} rot1, \hyperlink{structComplex}{Complex} rot2, \hyperlink{structComplexArray}{ComplexArray} stateVecUp, \hyperlink{structComplexArray}{ComplexArray} stateVecLo, \hyperlink{structComplexArray}{ComplexArray} stateVecOut)
 \begin{DoxyCompactList}\small\item\em Rotate a single qubit in the state vector of probability amplitudes, given two complex numbers alpha and beta, and a subset of the state vector with upper and lower block values stored seperately. \item\end{DoxyCompactList}\item 
-void \hyperlink{qubits__internal_8h_a5fd78353771c9a34832e7a3b1e90f4db}{unitaryLocal} (\hyperlink{structMultiQubit}{MultiQubit} multiQubit, const int rotQubit, \hyperlink{structComplexMatrix2}{ComplexMatrix2} u)
+void \hyperlink{qubits__internal_8h_ac134fb45b0a7248c5d15e16eb7139a35}{unitaryLocal} (\hyperlink{structMultiQubit}{MultiQubit} multiQubit, const int targetQubit, \hyperlink{structComplexMatrix2}{ComplexMatrix2} u)
 \item 
-void \hyperlink{qubits__internal_8h_af538f02e700f4d022044fc71030a6953}{unitaryDistributed} (\hyperlink{structMultiQubit}{MultiQubit} multiQubit, const int rotQubit, \hyperlink{structComplex}{Complex} rot1, \hyperlink{structComplex}{Complex} rot2, \hyperlink{structComplexArray}{ComplexArray} stateVecUp, \hyperlink{structComplexArray}{ComplexArray} stateVecLo, \hyperlink{structComplexArray}{ComplexArray} stateVecOut)
+void \hyperlink{qubits__internal_8h_a2343b7240118e89aa615e2c9140b770b}{unitaryDistributed} (\hyperlink{structMultiQubit}{MultiQubit} multiQubit, const int targetQubit, \hyperlink{structComplex}{Complex} rot1, \hyperlink{structComplex}{Complex} rot2, \hyperlink{structComplexArray}{ComplexArray} stateVecUp, \hyperlink{structComplexArray}{ComplexArray} stateVecLo, \hyperlink{structComplexArray}{ComplexArray} stateVecOut)
 \begin{DoxyCompactList}\small\item\em Apply a unitary operation to a single qubit given a subset of the state vector with upper and lower block values stored seperately. \item\end{DoxyCompactList}\item 
-void \hyperlink{qubits__internal_8h_a2f5b808392caec4eb775bb3aabfa25d2}{controlledCompactUnitaryLocal} (\hyperlink{structMultiQubit}{MultiQubit} multiQubit, const int rotQubit, const int controlQubit, \hyperlink{structComplex}{Complex} alpha, \hyperlink{structComplex}{Complex} beta)
+void \hyperlink{qubits__internal_8h_afc77657651d52c47403b44b923a098a8}{controlledCompactUnitaryLocal} (\hyperlink{structMultiQubit}{MultiQubit} multiQubit, const int controlQubit, const int targetQubit, \hyperlink{structComplex}{Complex} alpha, \hyperlink{structComplex}{Complex} beta)
 \begin{DoxyCompactList}\small\item\em Rotate a single qubit in the state vector of probability amplitudes, given two complex numbers alpha and beta and a control qubit. \item\end{DoxyCompactList}\item 
-void \hyperlink{qubits__internal_8h_ac874e5c65f9bbb64fa3058a7638bfc15}{controlledCompactUnitaryDistributed} (\hyperlink{structMultiQubit}{MultiQubit} multiQubit, const int rotQubit, const int controlQubit, \hyperlink{structComplex}{Complex} rot1, \hyperlink{structComplex}{Complex} rot2, \hyperlink{structComplexArray}{ComplexArray} stateVecUp, \hyperlink{structComplexArray}{ComplexArray} stateVecLo, \hyperlink{structComplexArray}{ComplexArray} stateVecOut)
+void \hyperlink{qubits__internal_8h_a717855e835e3161e08c18cdc15325d27}{controlledCompactUnitaryDistributed} (\hyperlink{structMultiQubit}{MultiQubit} multiQubit, const int controlQubit, const int targetQubit, \hyperlink{structComplex}{Complex} rot1, \hyperlink{structComplex}{Complex} rot2, \hyperlink{structComplexArray}{ComplexArray} stateVecUp, \hyperlink{structComplexArray}{ComplexArray} stateVecLo, \hyperlink{structComplexArray}{ComplexArray} stateVecOut)
 \begin{DoxyCompactList}\small\item\em Rotate a single qubit in the state vector of probability amplitudes, given two complex numbers alpha and beta and a subset of the state vector with upper and lower block values stored seperately. \item\end{DoxyCompactList}\item 
-void \hyperlink{qubits__internal_8h_a0af39b13cf3a043975fce768f3507657}{controlledUnitaryLocal} (\hyperlink{structMultiQubit}{MultiQubit} multiQubit, const int rotQubit, const int controlQubit, \hyperlink{structComplexMatrix2}{ComplexMatrix2} u)
+void \hyperlink{qubits__internal_8h_a8a4afcff70195a306c082b8ed8d4e09a}{controlledUnitaryLocal} (\hyperlink{structMultiQubit}{MultiQubit} multiQubit, const int controlQubit, const int targetQubit, \hyperlink{structComplexMatrix2}{ComplexMatrix2} u)
 \begin{DoxyCompactList}\small\item\em Rotate a single qubit in the state vector of probability amplitudes, given two complex numbers alpha and beta and a control qubit. \item\end{DoxyCompactList}\item 
-void \hyperlink{qubits__internal_8h_a9903d9da1c523a84728e4e4870f22949}{controlledUnitaryDistributed} (\hyperlink{structMultiQubit}{MultiQubit} multiQubit, const int rotQubit, const int controlQubit, \hyperlink{structComplex}{Complex} rot1, \hyperlink{structComplex}{Complex} rot2, \hyperlink{structComplexArray}{ComplexArray} stateVecUp, \hyperlink{structComplexArray}{ComplexArray} stateVecLo, \hyperlink{structComplexArray}{ComplexArray} stateVecOut)
+void \hyperlink{qubits__internal_8h_a642093063a1f889f61a1311f6d6f2d3f}{controlledUnitaryDistributed} (\hyperlink{structMultiQubit}{MultiQubit} multiQubit, const int controlQubit, const int targetQubit, \hyperlink{structComplex}{Complex} rot1, \hyperlink{structComplex}{Complex} rot2, \hyperlink{structComplexArray}{ComplexArray} stateVecUp, \hyperlink{structComplexArray}{ComplexArray} stateVecLo, \hyperlink{structComplexArray}{ComplexArray} stateVecOut)
 \begin{DoxyCompactList}\small\item\em Rotate a single qubit in the state vector of probability amplitudes, given two complex numbers alpha and beta and a subset of the state vector with upper and lower block values stored seperately. \item\end{DoxyCompactList}\item 
-void \hyperlink{qubits__internal_8h_a32cb91618b5fcd79b54be8d8760b713d}{multiControlledUnitaryLocal} (\hyperlink{structMultiQubit}{MultiQubit} multiQubit, const int rotQubit, long long int mask, \hyperlink{structComplexMatrix2}{ComplexMatrix2} u)
+void \hyperlink{qubits__internal_8h_a1309eabcba3cb97fbc3cd2e606d17766}{multiControlledUnitaryLocal} (\hyperlink{structMultiQubit}{MultiQubit} multiQubit, const int targetQubit, long long int mask, \hyperlink{structComplexMatrix2}{ComplexMatrix2} u)
 \begin{DoxyCompactList}\small\item\em Rotate a single qubit in the state vector of probability amplitudes, given two complex numbers alpha and beta and a control qubit. \item\end{DoxyCompactList}\item 
-void \hyperlink{qubits__internal_8h_a54f4c82568e9433515c4480cdb536e27}{multiControlledUnitaryDistributed} (\hyperlink{structMultiQubit}{MultiQubit} multiQubit, const int rotQubit, long long int mask, \hyperlink{structComplex}{Complex} rot1, \hyperlink{structComplex}{Complex} rot2, \hyperlink{structComplexArray}{ComplexArray} stateVecUp, \hyperlink{structComplexArray}{ComplexArray} stateVecLo, \hyperlink{structComplexArray}{ComplexArray} stateVecOut)
+void \hyperlink{qubits__internal_8h_a9dbf856ebeea0cf0a3ee5aae6782f2d2}{multiControlledUnitaryDistributed} (\hyperlink{structMultiQubit}{MultiQubit} multiQubit, const int targetQubit, long long int mask, \hyperlink{structComplex}{Complex} rot1, \hyperlink{structComplex}{Complex} rot2, \hyperlink{structComplexArray}{ComplexArray} stateVecUp, \hyperlink{structComplexArray}{ComplexArray} stateVecLo, \hyperlink{structComplexArray}{ComplexArray} stateVecOut)
 \begin{DoxyCompactList}\small\item\em Apply a unitary operation to a single qubit in the state vector of probability amplitudes, given a subset of the state vector with upper and lower block values stored seperately. \item\end{DoxyCompactList}\item 
-void \hyperlink{qubits__internal_8h_aa9e640bb2d0458c937c6a87dfeca0f23}{sigmaXLocal} (\hyperlink{structMultiQubit}{MultiQubit} multiQubit, const int rotQubit)
+void \hyperlink{qubits__internal_8h_a74822fd86bb5d81766e6e8dbdcd62df1}{sigmaXLocal} (\hyperlink{structMultiQubit}{MultiQubit} multiQubit, const int targetQubit)
 \begin{DoxyCompactList}\small\item\em Rotate a single qubit by \{\{0,1\},\{1,0\}. \item\end{DoxyCompactList}\item 
-void \hyperlink{qubits__internal_8h_a5958808b2f2f05937921ba7dabe5a171}{sigmaXDistributed} (\hyperlink{structMultiQubit}{MultiQubit} multiQubit, const int rotQubit, \hyperlink{structComplexArray}{ComplexArray} stateVecIn, \hyperlink{structComplexArray}{ComplexArray} stateVecOut)
+void \hyperlink{qubits__internal_8h_a2275fff50824fe47485890ff5a857785}{sigmaXDistributed} (\hyperlink{structMultiQubit}{MultiQubit} multiQubit, const int targetQubit, \hyperlink{structComplexArray}{ComplexArray} stateVecIn, \hyperlink{structComplexArray}{ComplexArray} stateVecOut)
 \begin{DoxyCompactList}\small\item\em Rotate a single qubit by \{\{0,1\},\{1,0\}. \item\end{DoxyCompactList}\item 
-void \hyperlink{qubits__internal_8h_afcbb1dcbe070ad0ed1a72a23251b6a83}{sigmaYLocal} (\hyperlink{structMultiQubit}{MultiQubit} multiQubit, const int rotQubit)
+void \hyperlink{qubits__internal_8h_a81fbfaed65a742a7dfd622e17652245e}{sigmaYLocal} (\hyperlink{structMultiQubit}{MultiQubit} multiQubit, const int targetQubit)
 \begin{DoxyCompactList}\small\item\em Rotate a single qubit by \{\{0,-\/i\},\{i,0\}. \item\end{DoxyCompactList}\item 
-void \hyperlink{qubits__internal_8h_a0471f6b547ce8270ef85170b7f4f0214}{sigmaYDistributed} (\hyperlink{structMultiQubit}{MultiQubit} multiQubit, const int rotQubit, \hyperlink{structComplexArray}{ComplexArray} stateVecIn, \hyperlink{structComplexArray}{ComplexArray} stateVecOut, int updateUpper)
+void \hyperlink{qubits__internal_8h_af5ef5166f00c0572354b4ac53dcf40cf}{sigmaYDistributed} (\hyperlink{structMultiQubit}{MultiQubit} multiQubit, const int targetQubit, \hyperlink{structComplexArray}{ComplexArray} stateVecIn, \hyperlink{structComplexArray}{ComplexArray} stateVecOut, int updateUpper)
 \begin{DoxyCompactList}\small\item\em Rotate a single qubit by \{\{0,-\/i\},\{i,0\}. \item\end{DoxyCompactList}\item 
-void \hyperlink{qubits__internal_8h_a0711416fceaf63c67b496e123e845c69}{hadamardLocal} (\hyperlink{structMultiQubit}{MultiQubit} multiQubit, const int rotQubit)
+void \hyperlink{qubits__internal_8h_aa9f0718b4dd794a3e1b143e3b153bfc5}{hadamardLocal} (\hyperlink{structMultiQubit}{MultiQubit} multiQubit, const int targetQubit)
 \begin{DoxyCompactList}\small\item\em Rotate a single qubit by \{\{1,1\},\{1,-\/1\}\}/sqrt2. \item\end{DoxyCompactList}\item 
-void \hyperlink{qubits__internal_8h_ac835c194bd547240a35f0b028db1d658}{hadamardDistributed} (\hyperlink{structMultiQubit}{MultiQubit} multiQubit, const int rotQubit, \hyperlink{structComplexArray}{ComplexArray} stateVecUp, \hyperlink{structComplexArray}{ComplexArray} stateVecLo, \hyperlink{structComplexArray}{ComplexArray} stateVecOut, int updateUpper)
+void \hyperlink{qubits__internal_8h_ae6a897066979fc52d977007d959ca09d}{hadamardDistributed} (\hyperlink{structMultiQubit}{MultiQubit} multiQubit, const int targetQubit, \hyperlink{structComplexArray}{ComplexArray} stateVecUp, \hyperlink{structComplexArray}{ComplexArray} stateVecLo, \hyperlink{structComplexArray}{ComplexArray} stateVecOut, int updateUpper)
 \begin{DoxyCompactList}\small\item\em Rotate a single qubit by \{\{1,1\},\{1,-\/1\}\}/sqrt2. \item\end{DoxyCompactList}\item 
-void \hyperlink{qubits__internal_8h_a6a736aeb3532898019fe7c27010edc6a}{phaseGateLocal} (\hyperlink{structMultiQubit}{MultiQubit} multiQubit, const int rotQubit, enum \hyperlink{qubits_8h_a5739021c733cecc49647956b2f7338ea}{phaseGateType} type)
+void \hyperlink{qubits__internal_8h_a3a54566b73ac84c312d7da4f56ffbc3b}{phaseGateLocal} (\hyperlink{structMultiQubit}{MultiQubit} multiQubit, const int targetQubit, enum \hyperlink{qubits_8h_a5739021c733cecc49647956b2f7338ea}{phaseGateType} type)
 \begin{DoxyCompactList}\small\item\em Rotate a single qubit by \{\{1,0\},\{0,p\}\} where p is a phase term determined by the type argument. \item\end{DoxyCompactList}\item 
-void \hyperlink{qubits__internal_8h_a38a05c7e749e806b182ef3b89878bfc4}{phaseGateDistributed} (\hyperlink{structMultiQubit}{MultiQubit} multiQubit, const int rotQubit, enum \hyperlink{qubits_8h_a5739021c733cecc49647956b2f7338ea}{phaseGateType} type)
+void \hyperlink{qubits__internal_8h_af832ed00b02a0597b7fe0b714032c54a}{phaseGateDistributed} (\hyperlink{structMultiQubit}{MultiQubit} multiQubit, const int targetQubit, enum \hyperlink{qubits_8h_a5739021c733cecc49647956b2f7338ea}{phaseGateType} type)
 \begin{DoxyCompactList}\small\item\em Rotate a single qubit by \{\{1,0\},\{0,p\}\} where p is a phase term determined by the type argument. \item\end{DoxyCompactList}\item 
 void \hyperlink{qubits__internal_8h_ad357a43e80e3baf013975b1b70942f4c}{controlledNotLocal} (\hyperlink{structMultiQubit}{MultiQubit} multiQubit, const int controlQubit, const int targetQubit)
 \begin{DoxyCompactList}\small\item\em Rotate a single qubit by \{\{0,1\},\{1,0\} for elements where controlQubit is one. \item\end{DoxyCompactList}\item 
@@ -65,7 +65,7 @@ int \hyperlink{qubits__internal_8h_ae2b2c14a07dd7d50ff86032a3ca101d7}{validateAl
 \item 
 int \hyperlink{qubits__internal_8h_a71c14976f63cfcda70026fa20ee531fe}{validateUnitVector} (REAL ux, REAL uy, REAL uz)
 \item 
-void \hyperlink{qubits__internal_8h_ae275b94c1a483dda43bf4ec947635605}{phaseGate} (\hyperlink{structMultiQubit}{MultiQubit} multiQubit, const int rotQubit, enum \hyperlink{qubits_8h_a5739021c733cecc49647956b2f7338ea}{phaseGateType} type)
+void \hyperlink{qubits__internal_8h_aae7a8a7f1ccbddb7f76b6c52b746bb43}{phaseGate} (\hyperlink{structMultiQubit}{MultiQubit} multiQubit, const int targetQubit, enum \hyperlink{qubits_8h_a5739021c733cecc49647956b2f7338ea}{phaseGateType} type)
 \begin{DoxyCompactList}\small\item\em Rotate a single qubit by \{\{1,0\},\{0,p\}\} where p is a phase term determined by the type argument. \item\end{DoxyCompactList}\item 
 void \hyperlink{qubits__internal_8h_ae5f9019826f35e8b51b1716cfe397b45}{exitWithError} (int errorCode, const char $\ast$func)
 \item 
@@ -98,43 +98,43 @@ Renormalise parts of the state vector where measureQubit=0 or 1, based on the to
 \item[\mbox{$\leftrightarrow$} {\em multiQubit}]object representing the set of qubits \item[\mbox{$\leftarrow$} {\em measureQubit}]qubit to measure \item[\mbox{$\leftarrow$} {\em totalProbability}]probability of qubit measureQubit being zero \end{DoxyParams}
 
 
-Definition at line 2071 of file qubits.c.
+Definition at line 2073 of file qubits.c.
 
 References ComplexArray::imag, MultiQubit::numAmps, ComplexArray::real, REAL, and MultiQubit::stateVec.
 
-Referenced by collapseToOutcome().
+Referenced by collapseToOutcome(), and measureWithStats().
 
 
 \begin{DoxyCode}
-2072 {
-2073         // ----- temp variables
-2074         long long int thisTask;                                   // task based a
+2074 {
+2075         // ----- temp variables
+2076         long long int thisTask;                                   // task based a
       pproach for expose loop with small granularity
-2075         long long int numTasks=multiQubit.numAmps;
-2076         // (good for shared memory parallelism)
-2077 
-2078         REAL renorm=1/sqrt(totalProbability);
-2079         
-2080         REAL *stateVecReal = multiQubit.stateVec.real;
-2081         REAL *stateVecImag = multiQubit.stateVec.imag;
-2082 
-2083 # ifdef _OPENMP
-2084 # pragma omp parallel \
-2085         shared    (numTasks,stateVecReal,stateVecImag) \
-2086         private   (thisTask)
-2087 # endif
-2088         {
-2089 # ifdef _OPENMP
-2090                 # pragma omp for schedule  (static)
-2091 # endif
-2092                 for (thisTask=0; thisTask<numTasks; thisTask++) {
-2093                         // summation -- simple implementation
-2094                         stateVecReal[thisTask] = stateVecReal[thisTask]*renorm;
-2095                         stateVecImag[thisTask] = stateVecImag[thisTask]*renorm;
-2096                 }
-2097         }
-2098         return totalProbability;
-2099 }
+2077         long long int numTasks=multiQubit.numAmps;
+2078         // (good for shared memory parallelism)
+2079 
+2080         REAL renorm=1/sqrt(totalProbability);
+2081         
+2082         REAL *stateVecReal = multiQubit.stateVec.real;
+2083         REAL *stateVecImag = multiQubit.stateVec.imag;
+2084 
+2085 # ifdef _OPENMP
+2086 # pragma omp parallel \
+2087         shared    (numTasks,stateVecReal,stateVecImag) \
+2088         private   (thisTask)
+2089 # endif
+2090         {
+2091 # ifdef _OPENMP
+2092                 # pragma omp for schedule  (static)
+2093 # endif
+2094                 for (thisTask=0; thisTask<numTasks; thisTask++) {
+2095                         // summation -- simple implementation
+2096                         stateVecReal[thisTask] = stateVecReal[thisTask]*renorm;
+2097                         stateVecImag[thisTask] = stateVecImag[thisTask]*renorm;
+2098                 }
+2099         }
+2100         return totalProbability;
+2101 }
 \end{DoxyCode}
 \hypertarget{qubits__internal_8h_a78908fe8e75a21fd4f7fa7dff05d6be1}{
 \index{qubits\_\-internal.h@{qubits\_\-internal.h}!collapseToOutcomeDistributedSetZero@{collapseToOutcomeDistributedSetZero}}
@@ -150,44 +150,44 @@ Set all amplitudes in one chunk to 0. Measure in Zero performs an irreversible c
 \item[\mbox{$\leftrightarrow$} {\em multiQubit}]object representing the set of qubits \item[\mbox{$\leftarrow$} {\em measureQubit}]qubit to measure \end{DoxyParams}
 
 
-Definition at line 2114 of file qubits.c.
+Definition at line 2116 of file qubits.c.
 
 References ComplexArray::imag, MultiQubit::numAmps, ComplexArray::real, REAL, and MultiQubit::stateVec.
 
-Referenced by collapseToOutcome().
+Referenced by collapseToOutcome(), and measureWithStats().
 
 
 \begin{DoxyCode}
-2115 {
-2116         // ----- temp variables
-2117         long long int thisTask;                                   // task based a
+2117 {
+2118         // ----- temp variables
+2119         long long int thisTask;                                   // task based a
       pproach for expose loop with small granularity
-2118         long long int numTasks=multiQubit.numAmps;
-2119         // (good for shared memory parallelism)
-2120 
-2121         // ---------------------------------------------------------------- //
-2122         //            find probability                                      //
+2120         long long int numTasks=multiQubit.numAmps;
+2121         // (good for shared memory parallelism)
+2122 
 2123         // ---------------------------------------------------------------- //
-2124 
-2125         REAL *stateVecReal = multiQubit.stateVec.real;
-2126         REAL *stateVecImag = multiQubit.stateVec.imag;
-2127 
-2128 # ifdef _OPENMP
-2129 # pragma omp parallel \
-2130         shared    (numTasks,stateVecReal,stateVecImag) \
-2131         private   (thisTask)
-2132 # endif
-2133         {
-2134 # ifdef _OPENMP
-2135                 # pragma omp for schedule  (static)
-2136 # endif
-2137                 for (thisTask=0; thisTask<numTasks; thisTask++) {
-2138                         // summation -- simple implementation
-2139                         stateVecReal[thisTask] = 0;
-2140                         stateVecImag[thisTask] = 0;
-2141                 }
-2142         }
-2143 }
+2124         //            find probability                                      //
+2125         // ---------------------------------------------------------------- //
+2126 
+2127         REAL *stateVecReal = multiQubit.stateVec.real;
+2128         REAL *stateVecImag = multiQubit.stateVec.imag;
+2129 
+2130 # ifdef _OPENMP
+2131 # pragma omp parallel \
+2132         shared    (numTasks,stateVecReal,stateVecImag) \
+2133         private   (thisTask)
+2134 # endif
+2135         {
+2136 # ifdef _OPENMP
+2137                 # pragma omp for schedule  (static)
+2138 # endif
+2139                 for (thisTask=0; thisTask<numTasks; thisTask++) {
+2140                         // summation -- simple implementation
+2141                         stateVecReal[thisTask] = 0;
+2142                         stateVecImag[thisTask] = 0;
+2143                 }
+2144         }
+2145 }
 \end{DoxyCode}
 \hypertarget{qubits__internal_8h_a01d9a8b7ff0e09ec399e158389783aa9}{
 \index{qubits\_\-internal.h@{qubits\_\-internal.h}!collapseToOutcomeLocal@{collapseToOutcomeLocal}}
@@ -203,106 +203,106 @@ Update the state vector to be consistent with measuring measureQubit=0 if outcom
 \item[\mbox{$\leftrightarrow$} {\em multiQubit}]object representing the set of qubits \item[\mbox{$\leftarrow$} {\em measureQubit}]qubit to measure \item[\mbox{$\leftarrow$} {\em totalProbability}]probability of qubit measureQubit being either zero or one \item[\mbox{$\leftarrow$} {\em outcome}]to measure the probability of and set the state to -\/-\/ either zero or one \end{DoxyParams}
 
 
-Definition at line 1988 of file qubits.c.
+Definition at line 1990 of file qubits.c.
 
 References ComplexArray::imag, MultiQubit::numAmps, ComplexArray::real, REAL, and MultiQubit::stateVec.
 
-Referenced by collapseToOutcome().
+Referenced by collapseToOutcome(), and measureWithStats().
 
 
 \begin{DoxyCode}
-1989 {
-1990         // ----- sizes
-1991         long long int sizeBlock,                                           // siz
+1991 {
+1992         // ----- sizes
+1993         long long int sizeBlock,                                           // siz
       e of blocks
-1992         sizeHalfBlock;                                       // size of blocks ha
+1994         sizeHalfBlock;                                       // size of blocks ha
       lved
-1993         // ----- indices
-1994         long long int thisBlock,                                           // cur
+1995         // ----- indices
+1996         long long int thisBlock,                                           // cur
       rent block
-1995              index;                                               // current inde
+1997              index;                                               // current inde
       x for first half block
-1996         // ----- measured probability
-1997         REAL   renorm;                                    // probability (returne
+1998         // ----- measured probability
+1999         REAL   renorm;                                    // probability (returne
       d) value
-1998         // ----- temp variables
-1999         long long int thisTask;                                   // task based a
+2000         // ----- temp variables
+2001         long long int thisTask;                                   // task based a
       pproach for expose loop with small granularity
-2000         // (good for shared memory parallelism)
-2001         long long int numTasks=multiQubit.numAmps>>1;
-2002 
-2003         // ---------------------------------------------------------------- //
-2004         //            dimensions                                            //
+2002         // (good for shared memory parallelism)
+2003         long long int numTasks=multiQubit.numAmps>>1;
+2004 
 2005         // ---------------------------------------------------------------- //
-2006         sizeHalfBlock = 1LL << (measureQubit);                       // number of
+2006         //            dimensions                                            //
+2007         // ---------------------------------------------------------------- //
+2008         sizeHalfBlock = 1LL << (measureQubit);                       // number of
        state vector elements to sum,
-2007         // and then the number to skip
-2008         sizeBlock     = 2LL * sizeHalfBlock;                           // size of
+2009         // and then the number to skip
+2010         sizeBlock     = 2LL * sizeHalfBlock;                           // size of
        blocks (pairs of measure and skip entries)
-2009         
-2010         renorm=1/sqrt(totalProbability);
-2011         REAL *stateVecReal = multiQubit.stateVec.real;
-2012         REAL *stateVecImag = multiQubit.stateVec.imag;
-2013 
-2014 
-2015 # ifdef _OPENMP
-2016 # pragma omp parallel \
-2017         default (none) \
-2018         shared    (numTasks,sizeBlock,sizeHalfBlock, stateVecReal,stateVecImag,re
+2011         
+2012         renorm=1/sqrt(totalProbability);
+2013         REAL *stateVecReal = multiQubit.stateVec.real;
+2014         REAL *stateVecImag = multiQubit.stateVec.imag;
+2015 
+2016 
+2017 # ifdef _OPENMP
+2018 # pragma omp parallel \
+2019         default (none) \
+2020         shared    (numTasks,sizeBlock,sizeHalfBlock, stateVecReal,stateVecImag,re
       norm,outcome) \
-2019         private   (thisTask,thisBlock,index)
-2020 # endif
-2021         {
-2022                 if (outcome==0){
-2023                         // measure qubit is 0
-2024 # ifdef _OPENMP
-2025                         # pragma omp for schedule  (static)
-2026 # endif
-2027                         for (thisTask=0; thisTask<numTasks; thisTask++) {
-2028                                 thisBlock = thisTask / sizeHalfBlock;
-2029                                 index     = thisBlock*sizeBlock + thisTask%sizeHa
+2021         private   (thisTask,thisBlock,index)
+2022 # endif
+2023         {
+2024                 if (outcome==0){
+2025                         // measure qubit is 0
+2026 # ifdef _OPENMP
+2027                         # pragma omp for schedule  (static)
+2028 # endif
+2029                         for (thisTask=0; thisTask<numTasks; thisTask++) {
+2030                                 thisBlock = thisTask / sizeHalfBlock;
+2031                                 index     = thisBlock*sizeBlock + thisTask%sizeHa
       lfBlock;
-2030                                 stateVecReal[index]=stateVecReal[index]*renorm;
-2031                                 stateVecImag[index]=stateVecImag[index]*renorm;
-2032 
-2033                                 stateVecReal[index+sizeHalfBlock]=0;
-2034                                 stateVecImag[index+sizeHalfBlock]=0;
-2035                         }
-2036                 } else {
-2037                         // measure qubit is 1
-2038 # ifdef _OPENMP
-2039                         # pragma omp for schedule  (static)
-2040 # endif
-2041                         for (thisTask=0; thisTask<numTasks; thisTask++) {
-2042                                 thisBlock = thisTask / sizeHalfBlock;
-2043                                 index     = thisBlock*sizeBlock + thisTask%sizeHa
+2032                                 stateVecReal[index]=stateVecReal[index]*renorm;
+2033                                 stateVecImag[index]=stateVecImag[index]*renorm;
+2034 
+2035                                 stateVecReal[index+sizeHalfBlock]=0;
+2036                                 stateVecImag[index+sizeHalfBlock]=0;
+2037                         }
+2038                 } else {
+2039                         // measure qubit is 1
+2040 # ifdef _OPENMP
+2041                         # pragma omp for schedule  (static)
+2042 # endif
+2043                         for (thisTask=0; thisTask<numTasks; thisTask++) {
+2044                                 thisBlock = thisTask / sizeHalfBlock;
+2045                                 index     = thisBlock*sizeBlock + thisTask%sizeHa
       lfBlock;
-2044                                 stateVecReal[index]=0;
-2045                                 stateVecImag[index]=0;
-2046 
-2047                                 stateVecReal[index+sizeHalfBlock]=stateVecReal[in
+2046                                 stateVecReal[index]=0;
+2047                                 stateVecImag[index]=0;
+2048 
+2049                                 stateVecReal[index+sizeHalfBlock]=stateVecReal[in
       dex+sizeHalfBlock]*renorm;
-2048                                 stateVecImag[index+sizeHalfBlock]=stateVecImag[in
+2050                                 stateVecImag[index+sizeHalfBlock]=stateVecImag[in
       dex+sizeHalfBlock]*renorm;
-2049                         }
-2050                 }
-2051         }
-2052 
-2053 }
+2051                         }
+2052                 }
+2053         }
+2054 
+2055 }
 \end{DoxyCode}
-\hypertarget{qubits__internal_8h_a6c49fefa672918a70b031923363cb580}{
+\hypertarget{qubits__internal_8h_a20ee1878a63ae6112e8845f4a8787592}{
 \index{qubits\_\-internal.h@{qubits\_\-internal.h}!compactUnitaryDistributed@{compactUnitaryDistributed}}
 \index{compactUnitaryDistributed@{compactUnitaryDistributed}!qubits_internal.h@{qubits\_\-internal.h}}
-\paragraph[{compactUnitaryDistributed}]{\setlength{\rightskip}{0pt plus 5cm}void compactUnitaryDistributed ({\bf MultiQubit} {\em multiQubit}, \/  const int {\em rotQubit}, \/  {\bf Complex} {\em rot1}, \/  {\bf Complex} {\em rot2}, \/  {\bf ComplexArray} {\em stateVecUp}, \/  {\bf ComplexArray} {\em stateVecLo}, \/  {\bf ComplexArray} {\em stateVecOut})}\hfill}
-\label{qubits__internal_8h_a6c49fefa672918a70b031923363cb580}
+\paragraph[{compactUnitaryDistributed}]{\setlength{\rightskip}{0pt plus 5cm}void compactUnitaryDistributed ({\bf MultiQubit} {\em multiQubit}, \/  const int {\em targetQubit}, \/  {\bf Complex} {\em rot1}, \/  {\bf Complex} {\em rot2}, \/  {\bf ComplexArray} {\em stateVecUp}, \/  {\bf ComplexArray} {\em stateVecLo}, \/  {\bf ComplexArray} {\em stateVecOut})}\hfill}
+\label{qubits__internal_8h_a20ee1878a63ae6112e8845f4a8787592}
 
 
 Rotate a single qubit in the state vector of probability amplitudes, given two complex numbers alpha and beta, and a subset of the state vector with upper and lower block values stored seperately. 
 \begin{DoxyParams}{Parameters}
-\item[\mbox{$\leftrightarrow$} {\em multiQubit}]object representing the set of qubits \item[\mbox{$\leftarrow$} {\em rotQubit}]qubit to rotate \item[\mbox{$\leftarrow$} {\em rot1}]rotation angle \item[\mbox{$\leftarrow$} {\em rot2}]rotation angle \item[\mbox{$\leftarrow$} {\em stateVecUp}]probability amplitudes in upper half of a block \item[\mbox{$\leftarrow$} {\em stateVecLo}]probability amplitudes in lower half of a block \item[\mbox{$\rightarrow$} {\em stateVecOut}]array section to update (will correspond to either the lower or upper half of a block) \end{DoxyParams}
+\item[\mbox{$\leftrightarrow$} {\em multiQubit}]object representing the set of qubits \item[\mbox{$\leftarrow$} {\em targetQubit}]qubit to rotate \item[\mbox{$\leftarrow$} {\em rot1}]rotation angle \item[\mbox{$\leftarrow$} {\em rot2}]rotation angle \item[\mbox{$\leftarrow$} {\em stateVecUp}]probability amplitudes in upper half of a block \item[\mbox{$\leftarrow$} {\em stateVecLo}]probability amplitudes in lower half of a block \item[\mbox{$\rightarrow$} {\em stateVecOut}]array section to update (will correspond to either the lower or upper half of a block) \end{DoxyParams}
 
 
-Definition at line 646 of file qubits.c.
+Definition at line 648 of file qubits.c.
 
 References ComplexArray::imag, Complex::imag, MultiQubit::numAmps, ComplexArray::real, Complex::real, and REAL.
 
@@ -310,62 +310,62 @@ Referenced by compactUnitary().
 
 
 \begin{DoxyCode}
-651 {
-652 
-653         REAL   stateRealUp,stateRealLo,stateImagUp,stateImagLo;
-654         long long int thisTask;  
-655         const long long int numTasks=multiQubit.numAmps;
-656 
-657         REAL rot1Real=rot1.real, rot1Imag=rot1.imag;
-658         REAL rot2Real=rot2.real, rot2Imag=rot2.imag;
-659         REAL *stateVecRealUp=stateVecUp.real, *stateVecImagUp=stateVecUp.imag;
-660         REAL *stateVecRealLo=stateVecLo.real, *stateVecImagLo=stateVecLo.imag;
-661         REAL *stateVecRealOut=stateVecOut.real, *stateVecImagOut=stateVecOut.
+653 {
+654 
+655         REAL   stateRealUp,stateRealLo,stateImagUp,stateImagLo;
+656         long long int thisTask;  
+657         const long long int numTasks=multiQubit.numAmps;
+658 
+659         REAL rot1Real=rot1.real, rot1Imag=rot1.imag;
+660         REAL rot2Real=rot2.real, rot2Imag=rot2.imag;
+661         REAL *stateVecRealUp=stateVecUp.real, *stateVecImagUp=stateVecUp.imag;
+662         REAL *stateVecRealLo=stateVecLo.real, *stateVecImagLo=stateVecLo.imag;
+663         REAL *stateVecRealOut=stateVecOut.real, *stateVecImagOut=stateVecOut.
       imag;
-662 
-663 # ifdef _OPENMP
-664 # pragma omp parallel \
-665         default  (none) \
-666         shared   (stateVecRealUp,stateVecImagUp,stateVecRealLo,stateVecImagLo,sta
+664 
+665 # ifdef _OPENMP
+666 # pragma omp parallel \
+667         default  (none) \
+668         shared   (stateVecRealUp,stateVecImagUp,stateVecRealLo,stateVecImagLo,sta
       teVecRealOut,stateVecImagOut, \
-667                         rot1Real,rot1Imag, rot2Real,rot2Imag) \
-668         private  (thisTask,stateRealUp,stateImagUp,stateRealLo,stateImagLo)
-669 # endif
-670         {
-671 # ifdef _OPENMP
-672                 # pragma omp for schedule (static)
-673 # endif
-674                 for (thisTask=0; thisTask<numTasks; thisTask++) {
-675                         // store current state vector values in temp variables
-676                         stateRealUp = stateVecRealUp[thisTask];
-677                         stateImagUp = stateVecImagUp[thisTask];
-678 
-679                         stateRealLo = stateVecRealLo[thisTask];
-680                         stateImagLo = stateVecImagLo[thisTask];
-681 
-682                         // state[indexUp] = alpha * state[indexUp] - conj(beta)  
+669                         rot1Real,rot1Imag, rot2Real,rot2Imag) \
+670         private  (thisTask,stateRealUp,stateImagUp,stateRealLo,stateImagLo)
+671 # endif
+672         {
+673 # ifdef _OPENMP
+674                 # pragma omp for schedule (static)
+675 # endif
+676                 for (thisTask=0; thisTask<numTasks; thisTask++) {
+677                         // store current state vector values in temp variables
+678                         stateRealUp = stateVecRealUp[thisTask];
+679                         stateImagUp = stateVecImagUp[thisTask];
+680 
+681                         stateRealLo = stateVecRealLo[thisTask];
+682                         stateImagLo = stateVecImagLo[thisTask];
+683 
+684                         // state[indexUp] = alpha * state[indexUp] - conj(beta)  
       * state[indexLo]
-683                         stateVecRealOut[thisTask] = rot1Real*stateRealUp - rot1Im
+685                         stateVecRealOut[thisTask] = rot1Real*stateRealUp - rot1Im
       ag*stateImagUp + rot2Real*stateRealLo + rot2Imag*stateImagLo;
-684                         stateVecImagOut[thisTask] = rot1Real*stateImagUp + rot1Im
+686                         stateVecImagOut[thisTask] = rot1Real*stateImagUp + rot1Im
       ag*stateRealUp + rot2Real*stateImagLo - rot2Imag*stateRealLo;
-685                 }
-686         }
-687 }
+687                 }
+688         }
+689 }
 \end{DoxyCode}
-\hypertarget{qubits__internal_8h_a33a8d60ae759d25a096c88b337db6c9f}{
+\hypertarget{qubits__internal_8h_a9cee2d8716667a3318420a3b672f5b92}{
 \index{qubits\_\-internal.h@{qubits\_\-internal.h}!compactUnitaryLocal@{compactUnitaryLocal}}
 \index{compactUnitaryLocal@{compactUnitaryLocal}!qubits_internal.h@{qubits\_\-internal.h}}
-\paragraph[{compactUnitaryLocal}]{\setlength{\rightskip}{0pt plus 5cm}void compactUnitaryLocal ({\bf MultiQubit} {\em multiQubit}, \/  const int {\em rotQubit}, \/  {\bf Complex} {\em alpha}, \/  {\bf Complex} {\em beta})}\hfill}
-\label{qubits__internal_8h_a33a8d60ae759d25a096c88b337db6c9f}
+\paragraph[{compactUnitaryLocal}]{\setlength{\rightskip}{0pt plus 5cm}void compactUnitaryLocal ({\bf MultiQubit} {\em multiQubit}, \/  const int {\em targetQubit}, \/  {\bf Complex} {\em alpha}, \/  {\bf Complex} {\em beta})}\hfill}
+\label{qubits__internal_8h_a9cee2d8716667a3318420a3b672f5b92}
 
 
 Rotate a single qubit in the state vector of probability amplitudes. 
 \begin{DoxyParams}{Parameters}
-\item[\mbox{$\leftrightarrow$} {\em multiQubit}]object representing the set of qubits \item[\mbox{$\leftarrow$} {\em rotQubit}]qubit to rotate \item[\mbox{$\leftarrow$} {\em alpha}]rotation angle \item[\mbox{$\leftarrow$} {\em beta}]rotation angle \end{DoxyParams}
+\item[\mbox{$\leftrightarrow$} {\em multiQubit}]object representing the set of qubits \item[\mbox{$\leftarrow$} {\em targetQubit}]qubit to rotate \item[\mbox{$\leftarrow$} {\em alpha}]rotation angle \item[\mbox{$\leftarrow$} {\em beta}]rotation angle \end{DoxyParams}
 
 
-Definition at line 507 of file qubits.c.
+Definition at line 509 of file qubits.c.
 
 References Complex::imag, ComplexArray::imag, MultiQubit::numAmps, Complex::real, ComplexArray::real, REAL, and MultiQubit::stateVec.
 
@@ -373,89 +373,89 @@ Referenced by compactUnitary().
 
 
 \begin{DoxyCode}
-508 {
-509         long long int sizeBlock, sizeHalfBlock;
-510         long long int thisBlock, // current block
-511              indexUp,indexLo;    // current index and corresponding index in lowe
+510 {
+511         long long int sizeBlock, sizeHalfBlock;
+512         long long int thisBlock, // current block
+513              indexUp,indexLo;    // current index and corresponding index in lowe
       r half block
-512 
-513         REAL stateRealUp,stateRealLo,stateImagUp,stateImagLo;
-514         long long int thisTask;         
-515         const long long int numTasks=multiQubit.numAmps>>1;
-516 
-517         // set dimensions
-518         sizeHalfBlock = 1LL << rotQubit;  
-519         sizeBlock     = 2LL * sizeHalfBlock; 
-520 
-521         // Can't use multiQubit.stateVec as a private OMP var
-522         REAL *stateVecReal = multiQubit.stateVec.real;
-523         REAL *stateVecImag = multiQubit.stateVec.imag;
-524         REAL alphaImag=alpha.imag, alphaReal=alpha.real;
-525         REAL betaImag=beta.imag, betaReal=beta.real;
-526 
-527 # ifdef _OPENMP
-528 # pragma omp parallel \
-529         default  (none) \
-530         shared   (sizeBlock,sizeHalfBlock, stateVecReal,stateVecImag, alphaReal,a
+514 
+515         REAL stateRealUp,stateRealLo,stateImagUp,stateImagLo;
+516         long long int thisTask;         
+517         const long long int numTasks=multiQubit.numAmps>>1;
+518 
+519         // set dimensions
+520         sizeHalfBlock = 1LL << targetQubit;  
+521         sizeBlock     = 2LL * sizeHalfBlock; 
+522 
+523         // Can't use multiQubit.stateVec as a private OMP var
+524         REAL *stateVecReal = multiQubit.stateVec.real;
+525         REAL *stateVecImag = multiQubit.stateVec.imag;
+526         REAL alphaImag=alpha.imag, alphaReal=alpha.real;
+527         REAL betaImag=beta.imag, betaReal=beta.real;
+528 
+529 # ifdef _OPENMP
+530 # pragma omp parallel \
+531         default  (none) \
+532         shared   (sizeBlock,sizeHalfBlock, stateVecReal,stateVecImag, alphaReal,a
       lphaImag, betaReal,betaImag) \
-531         private  (thisTask,thisBlock ,indexUp,indexLo, stateRealUp,stateImagUp,st
+533         private  (thisTask,thisBlock ,indexUp,indexLo, stateRealUp,stateImagUp,st
       ateRealLo,stateImagLo) 
-532 # endif
-533         {
-534 # ifdef _OPENMP
-535                 # pragma omp for schedule (static)
-536 # endif
-537                 for (thisTask=0; thisTask<numTasks; thisTask++) {
-538 
-539                         thisBlock   = thisTask / sizeHalfBlock;
-540                         indexUp     = thisBlock*sizeBlock + thisTask%sizeHalfBloc
+534 # endif
+535         {
+536 # ifdef _OPENMP
+537                 # pragma omp for schedule (static)
+538 # endif
+539                 for (thisTask=0; thisTask<numTasks; thisTask++) {
+540 
+541                         thisBlock   = thisTask / sizeHalfBlock;
+542                         indexUp     = thisBlock*sizeBlock + thisTask%sizeHalfBloc
       k;
-541                         indexLo     = indexUp + sizeHalfBlock;
-542 
-543                         // store current state vector values in temp variables
-544                         stateRealUp = stateVecReal[indexUp];
-545                         stateImagUp = stateVecImag[indexUp];
-546 
-547                         stateRealLo = stateVecReal[indexLo];
-548                         stateImagLo = stateVecImag[indexLo];
-549 
-550                         // state[indexUp] = alpha * state[indexUp] - conj(beta)  
+543                         indexLo     = indexUp + sizeHalfBlock;
+544 
+545                         // store current state vector values in temp variables
+546                         stateRealUp = stateVecReal[indexUp];
+547                         stateImagUp = stateVecImag[indexUp];
+548 
+549                         stateRealLo = stateVecReal[indexLo];
+550                         stateImagLo = stateVecImag[indexLo];
+551 
+552                         // state[indexUp] = alpha * state[indexUp] - conj(beta)  
       * state[indexLo]
-551                         stateVecReal[indexUp] = alphaReal*stateRealUp - alphaImag
+553                         stateVecReal[indexUp] = alphaReal*stateRealUp - alphaImag
       *stateImagUp 
-552                                 - betaReal*stateRealLo - betaImag*stateImagLo;
-553                         stateVecImag[indexUp] = alphaReal*stateImagUp + alphaImag
+554                                 - betaReal*stateRealLo - betaImag*stateImagLo;
+555                         stateVecImag[indexUp] = alphaReal*stateImagUp + alphaImag
       *stateRealUp 
-554                                 - betaReal*stateImagLo + betaImag*stateRealLo;
-555 
-556                         // state[indexLo] = beta  * state[indexUp] + conj(alpha) 
+556                                 - betaReal*stateImagLo + betaImag*stateRealLo;
+557 
+558                         // state[indexLo] = beta  * state[indexUp] + conj(alpha) 
       * state[indexLo]
-557                         stateVecReal[indexLo] = betaReal*stateRealUp - betaImag*s
+559                         stateVecReal[indexLo] = betaReal*stateRealUp - betaImag*s
       tateImagUp 
-558                                 + alphaReal*stateRealLo + alphaImag*stateImagLo;
-559                         stateVecImag[indexLo] = betaReal*stateImagUp + betaImag*s
+560                                 + alphaReal*stateRealLo + alphaImag*stateImagLo;
+561                         stateVecImag[indexLo] = betaReal*stateImagUp + betaImag*s
       tateRealUp 
-560                                 + alphaReal*stateImagLo - alphaImag*stateRealLo;
-561                 } 
-562         }
-563 
-564 } 
+562                                 + alphaReal*stateImagLo - alphaImag*stateRealLo;
+563                 } 
+564         }
+565 
+566 } 
 \end{DoxyCode}
-\hypertarget{qubits__internal_8h_ac874e5c65f9bbb64fa3058a7638bfc15}{
+\hypertarget{qubits__internal_8h_a717855e835e3161e08c18cdc15325d27}{
 \index{qubits\_\-internal.h@{qubits\_\-internal.h}!controlledCompactUnitaryDistributed@{controlledCompactUnitaryDistributed}}
 \index{controlledCompactUnitaryDistributed@{controlledCompactUnitaryDistributed}!qubits_internal.h@{qubits\_\-internal.h}}
-\paragraph[{controlledCompactUnitaryDistributed}]{\setlength{\rightskip}{0pt plus 5cm}void controlledCompactUnitaryDistributed ({\bf MultiQubit} {\em multiQubit}, \/  const int {\em rotQubit}, \/  const int {\em controlQubit}, \/  {\bf Complex} {\em rot1}, \/  {\bf Complex} {\em rot2}, \/  {\bf ComplexArray} {\em stateVecUp}, \/  {\bf ComplexArray} {\em stateVecLo}, \/  {\bf ComplexArray} {\em stateVecOut})}\hfill}
-\label{qubits__internal_8h_ac874e5c65f9bbb64fa3058a7638bfc15}
+\paragraph[{controlledCompactUnitaryDistributed}]{\setlength{\rightskip}{0pt plus 5cm}void controlledCompactUnitaryDistributed ({\bf MultiQubit} {\em multiQubit}, \/  const int {\em controlQubit}, \/  const int {\em targetQubit}, \/  {\bf Complex} {\em rot1}, \/  {\bf Complex} {\em rot2}, \/  {\bf ComplexArray} {\em stateVecUp}, \/  {\bf ComplexArray} {\em stateVecLo}, \/  {\bf ComplexArray} {\em stateVecOut})}\hfill}
+\label{qubits__internal_8h_a717855e835e3161e08c18cdc15325d27}
 
 
 Rotate a single qubit in the state vector of probability amplitudes, given two complex numbers alpha and beta and a subset of the state vector with upper and lower block values stored seperately. Only perform the rotation where the control qubit is one.
 
 
 \begin{DoxyParams}{Parameters}
-\item[\mbox{$\leftrightarrow$} {\em multiQubit}]object representing the set of qubits \item[\mbox{$\leftarrow$} {\em rotQubit}]qubit to rotate \item[\mbox{$\leftarrow$} {\em controlQubit}]qubit to determine whether or not to perform a rotation \item[\mbox{$\leftarrow$} {\em rot1}]rotation angle \item[\mbox{$\leftarrow$} {\em rot2}]rotation angle \item[\mbox{$\leftarrow$} {\em stateVecUp}]probability amplitudes in upper half of a block \item[\mbox{$\leftarrow$} {\em stateVecLo}]probability amplitudes in lower half of a block \item[\mbox{$\rightarrow$} {\em stateVecOut}]array section to update (will correspond to either the lower or upper half of a block) \end{DoxyParams}
+\item[\mbox{$\leftrightarrow$} {\em multiQubit}]object representing the set of qubits \item[\mbox{$\leftarrow$} {\em targetQubit}]qubit to rotate \item[\mbox{$\leftarrow$} {\em controlQubit}]qubit to determine whether or not to perform a rotation \item[\mbox{$\leftarrow$} {\em rot1}]rotation angle \item[\mbox{$\leftarrow$} {\em rot2}]rotation angle \item[\mbox{$\leftarrow$} {\em stateVecUp}]probability amplitudes in upper half of a block \item[\mbox{$\leftarrow$} {\em stateVecLo}]probability amplitudes in lower half of a block \item[\mbox{$\rightarrow$} {\em stateVecOut}]array section to update (will correspond to either the lower or upper half of a block) \end{DoxyParams}
 
 
-Definition at line 991 of file qubits.c.
+Definition at line 993 of file qubits.c.
 
 References MultiQubit::chunkId, extractBit(), ComplexArray::imag, Complex::imag, MultiQubit::numAmps, ComplexArray::real, Complex::real, and REAL.
 
@@ -463,74 +463,74 @@ Referenced by controlledCompactUnitary().
 
 
 \begin{DoxyCode}
-996 {
-997 
-998         REAL   stateRealUp,stateRealLo,stateImagUp,stateImagLo;
-999         long long int thisTask;  
-1000         const long long int numTasks=multiQubit.numAmps;
-1001         const long long int chunkSize=multiQubit.numAmps;
-1002         const long long int chunkId=multiQubit.chunkId;
-1003 
-1004         int controlBit;
+998 {
+999 
+1000         REAL   stateRealUp,stateRealLo,stateImagUp,stateImagLo;
+1001         long long int thisTask;  
+1002         const long long int numTasks=multiQubit.numAmps;
+1003         const long long int chunkSize=multiQubit.numAmps;
+1004         const long long int chunkId=multiQubit.chunkId;
 1005 
-1006     REAL rot1Real=rot1.real, rot1Imag=rot1.imag;
-1007         REAL rot2Real=rot2.real, rot2Imag=rot2.imag;
-1008         REAL *stateVecRealUp=stateVecUp.real, *stateVecImagUp=stateVecUp.imag;
-1009         REAL *stateVecRealLo=stateVecLo.real, *stateVecImagLo=stateVecLo.imag;
-1010         REAL *stateVecRealOut=stateVecOut.real, *stateVecImagOut=stateVecOut.
+1006         int controlBit;
+1007 
+1008     REAL rot1Real=rot1.real, rot1Imag=rot1.imag;
+1009         REAL rot2Real=rot2.real, rot2Imag=rot2.imag;
+1010         REAL *stateVecRealUp=stateVecUp.real, *stateVecImagUp=stateVecUp.imag;
+1011         REAL *stateVecRealLo=stateVecLo.real, *stateVecImagLo=stateVecLo.imag;
+1012         REAL *stateVecRealOut=stateVecOut.real, *stateVecImagOut=stateVecOut.
       imag;
-1011 
-1012 # ifdef _OPENMP
-1013 # pragma omp parallel \
-1014         default  (none) \
-1015         shared   (stateVecRealUp,stateVecImagUp,stateVecRealLo,stateVecImagLo,sta
+1013 
+1014 # ifdef _OPENMP
+1015 # pragma omp parallel \
+1016         default  (none) \
+1017         shared   (stateVecRealUp,stateVecImagUp,stateVecRealLo,stateVecImagLo,sta
       teVecRealOut,stateVecImagOut, \
-1016                         rot1Real,rot1Imag, rot2Real,rot2Imag) \
-1017         private  (thisTask,stateRealUp,stateImagUp,stateRealLo,stateImagLo,contro
+1018                         rot1Real,rot1Imag, rot2Real,rot2Imag) \
+1019         private  (thisTask,stateRealUp,stateImagUp,stateRealLo,stateImagLo,contro
       lBit)
-1018 # endif
-1019         {
-1020 # ifdef _OPENMP
-1021                 # pragma omp for schedule (static)
-1022 # endif
-1023                 for (thisTask=0; thisTask<numTasks; thisTask++) {
-1024                         controlBit = extractBit (controlQubit, thisTask+chunkId*c
+1020 # endif
+1021         {
+1022 # ifdef _OPENMP
+1023                 # pragma omp for schedule (static)
+1024 # endif
+1025                 for (thisTask=0; thisTask<numTasks; thisTask++) {
+1026                         controlBit = extractBit (controlQubit, thisTask+chunkId*c
       hunkSize);
-1025                         if (controlBit){
-1026                                 // store current state vector values in temp vari
+1027                         if (controlBit){
+1028                                 // store current state vector values in temp vari
       ables
-1027                                 stateRealUp = stateVecRealUp[thisTask];
-1028                                 stateImagUp = stateVecImagUp[thisTask];
-1029 
-1030                                 stateRealLo = stateVecRealLo[thisTask];
-1031                                 stateImagLo = stateVecImagLo[thisTask];
-1032 
-1033                                 // state[indexUp] = alpha * state[indexUp] - conj
+1029                                 stateRealUp = stateVecRealUp[thisTask];
+1030                                 stateImagUp = stateVecImagUp[thisTask];
+1031 
+1032                                 stateRealLo = stateVecRealLo[thisTask];
+1033                                 stateImagLo = stateVecImagLo[thisTask];
+1034 
+1035                                 // state[indexUp] = alpha * state[indexUp] - conj
       (beta)  * state[indexLo]
-1034                                 stateVecRealOut[thisTask] = rot1Real*stateRealUp 
+1036                                 stateVecRealOut[thisTask] = rot1Real*stateRealUp 
       - rot1Imag*stateImagUp + rot2Real*stateRealLo + rot2Imag*stateImagLo;
-1035                                 stateVecImagOut[thisTask] = rot1Real*stateImagUp 
+1037                                 stateVecImagOut[thisTask] = rot1Real*stateImagUp 
       + rot1Imag*stateRealUp + rot2Real*stateImagLo - rot2Imag*stateRealLo;
-1036                         }
-1037                 }
-1038         }
-1039 }
+1038                         }
+1039                 }
+1040         }
+1041 }
 \end{DoxyCode}
-\hypertarget{qubits__internal_8h_a2f5b808392caec4eb775bb3aabfa25d2}{
+\hypertarget{qubits__internal_8h_afc77657651d52c47403b44b923a098a8}{
 \index{qubits\_\-internal.h@{qubits\_\-internal.h}!controlledCompactUnitaryLocal@{controlledCompactUnitaryLocal}}
 \index{controlledCompactUnitaryLocal@{controlledCompactUnitaryLocal}!qubits_internal.h@{qubits\_\-internal.h}}
-\paragraph[{controlledCompactUnitaryLocal}]{\setlength{\rightskip}{0pt plus 5cm}void controlledCompactUnitaryLocal ({\bf MultiQubit} {\em multiQubit}, \/  const int {\em rotQubit}, \/  const int {\em controlQubit}, \/  {\bf Complex} {\em alpha}, \/  {\bf Complex} {\em beta})}\hfill}
-\label{qubits__internal_8h_a2f5b808392caec4eb775bb3aabfa25d2}
+\paragraph[{controlledCompactUnitaryLocal}]{\setlength{\rightskip}{0pt plus 5cm}void controlledCompactUnitaryLocal ({\bf MultiQubit} {\em multiQubit}, \/  const int {\em controlQubit}, \/  const int {\em targetQubit}, \/  {\bf Complex} {\em alpha}, \/  {\bf Complex} {\em beta})}\hfill}
+\label{qubits__internal_8h_afc77657651d52c47403b44b923a098a8}
 
 
 Rotate a single qubit in the state vector of probability amplitudes, given two complex numbers alpha and beta and a control qubit. Only perform the rotation for elements where the control qubit is one.
 
 
 \begin{DoxyParams}{Parameters}
-\item[\mbox{$\leftrightarrow$} {\em multiQubit}]object representing the set of qubits \item[\mbox{$\leftarrow$} {\em rotQubit}]qubit to rotate \item[\mbox{$\leftarrow$} {\em controlQubit}]perform rotation if this qubit is 1 \item[\mbox{$\leftarrow$} {\em alpha}]rotation angle \item[\mbox{$\leftarrow$} {\em beta}]rotation angle \end{DoxyParams}
+\item[\mbox{$\leftrightarrow$} {\em multiQubit}]object representing the set of qubits \item[\mbox{$\leftarrow$} {\em targetQubit}]qubit to rotate \item[\mbox{$\leftarrow$} {\em controlQubit}]perform rotation if this qubit is 1 \item[\mbox{$\leftarrow$} {\em alpha}]rotation angle \item[\mbox{$\leftarrow$} {\em beta}]rotation angle \end{DoxyParams}
 
 
-Definition at line 760 of file qubits.c.
+Definition at line 762 of file qubits.c.
 
 References MultiQubit::chunkId, extractBit(), Complex::imag, ComplexArray::imag, MultiQubit::numAmps, Complex::real, ComplexArray::real, REAL, and MultiQubit::stateVec.
 
@@ -538,86 +538,86 @@ Referenced by controlledCompactUnitary().
 
 
 \begin{DoxyCode}
-762 {
-763         long long int sizeBlock, sizeHalfBlock;
-764         long long int thisBlock, // current block
-765              indexUp,indexLo;    // current index and corresponding index in lowe
+764 {
+765         long long int sizeBlock, sizeHalfBlock;
+766         long long int thisBlock, // current block
+767              indexUp,indexLo;    // current index and corresponding index in lowe
       r half block
-766 
-767         REAL stateRealUp,stateRealLo,stateImagUp,stateImagLo;
-768         long long int thisTask;         
-769         const long long int numTasks=multiQubit.numAmps>>1;
-770         const long long int chunkSize=multiQubit.numAmps;
-771         const long long int chunkId=multiQubit.chunkId;
-772 
-773         int controlBit;
+768 
+769         REAL stateRealUp,stateRealLo,stateImagUp,stateImagLo;
+770         long long int thisTask;         
+771         const long long int numTasks=multiQubit.numAmps>>1;
+772         const long long int chunkSize=multiQubit.numAmps;
+773         const long long int chunkId=multiQubit.chunkId;
 774 
-775     // set dimensions
-776         sizeHalfBlock = 1LL << rotQubit;  
-777         sizeBlock     = 2LL * sizeHalfBlock; 
-778 
-779         // Can't use multiQubit.stateVec as a private OMP var
-780         REAL *stateVecReal = multiQubit.stateVec.real;
-781         REAL *stateVecImag = multiQubit.stateVec.imag;
-782         REAL alphaImag=alpha.imag, alphaReal=alpha.real;
-783         REAL betaImag=beta.imag, betaReal=beta.real;
-784 
-785 # ifdef _OPENMP
-786 # pragma omp parallel \
-787         default  (none) \
-788         shared   (sizeBlock,sizeHalfBlock, stateVecReal,stateVecImag, alphaReal,a
+775         int controlBit;
+776 
+777     // set dimensions
+778         sizeHalfBlock = 1LL << targetQubit;  
+779         sizeBlock     = 2LL * sizeHalfBlock; 
+780 
+781         // Can't use multiQubit.stateVec as a private OMP var
+782         REAL *stateVecReal = multiQubit.stateVec.real;
+783         REAL *stateVecImag = multiQubit.stateVec.imag;
+784         REAL alphaImag=alpha.imag, alphaReal=alpha.real;
+785         REAL betaImag=beta.imag, betaReal=beta.real;
+786 
+787 # ifdef _OPENMP
+788 # pragma omp parallel \
+789         default  (none) \
+790         shared   (sizeBlock,sizeHalfBlock, stateVecReal,stateVecImag, alphaReal,a
       lphaImag, betaReal,betaImag) \
-789         private  (thisTask,thisBlock ,indexUp,indexLo, stateRealUp,stateImagUp,st
+791         private  (thisTask,thisBlock ,indexUp,indexLo, stateRealUp,stateImagUp,st
       ateRealLo,stateImagLo,controlBit) 
-790 # endif
-791         {
-792 # ifdef _OPENMP
-793                 # pragma omp for schedule (static)
-794 # endif
-795                 for (thisTask=0; thisTask<numTasks; thisTask++) {
-796 
-797                         thisBlock   = thisTask / sizeHalfBlock;
-798                         indexUp     = thisBlock*sizeBlock + thisTask%sizeHalfBloc
+792 # endif
+793         {
+794 # ifdef _OPENMP
+795                 # pragma omp for schedule (static)
+796 # endif
+797                 for (thisTask=0; thisTask<numTasks; thisTask++) {
+798 
+799                         thisBlock   = thisTask / sizeHalfBlock;
+800                         indexUp     = thisBlock*sizeBlock + thisTask%sizeHalfBloc
       k;
-799                         indexLo     = indexUp + sizeHalfBlock;
-800 
-801                         controlBit = extractBit (controlQubit, indexUp+chunkId*ch
+801                         indexLo     = indexUp + sizeHalfBlock;
+802 
+803                         controlBit = extractBit (controlQubit, indexUp+chunkId*ch
       unkSize);
-802                         if (controlBit){
-803                                 // store current state vector values in temp vari
+804                         if (controlBit){
+805                                 // store current state vector values in temp vari
       ables
-804                                 stateRealUp = stateVecReal[indexUp];
-805                                 stateImagUp = stateVecImag[indexUp];
-806 
-807                                 stateRealLo = stateVecReal[indexLo];
-808                                 stateImagLo = stateVecImag[indexLo];
-809 
-810                                 // state[indexUp] = alpha * state[indexUp] - conj
+806                                 stateRealUp = stateVecReal[indexUp];
+807                                 stateImagUp = stateVecImag[indexUp];
+808 
+809                                 stateRealLo = stateVecReal[indexLo];
+810                                 stateImagLo = stateVecImag[indexLo];
+811 
+812                                 // state[indexUp] = alpha * state[indexUp] - conj
       (beta)  * state[indexLo]
-811                                 stateVecReal[indexUp] = alphaReal*stateRealUp - a
+813                                 stateVecReal[indexUp] = alphaReal*stateRealUp - a
       lphaImag*stateImagUp 
-812                                         - betaReal*stateRealLo - betaImag*stateIm
+814                                         - betaReal*stateRealLo - betaImag*stateIm
       agLo;
-813                                 stateVecImag[indexUp] = alphaReal*stateImagUp + a
+815                                 stateVecImag[indexUp] = alphaReal*stateImagUp + a
       lphaImag*stateRealUp 
-814                                         - betaReal*stateImagLo + betaImag*stateRe
+816                                         - betaReal*stateImagLo + betaImag*stateRe
       alLo;
-815 
-816                                 // state[indexLo] = beta  * state[indexUp] + conj
+817 
+818                                 // state[indexLo] = beta  * state[indexUp] + conj
       (alpha) * state[indexLo]
-817                                 stateVecReal[indexLo] = betaReal*stateRealUp - be
+819                                 stateVecReal[indexLo] = betaReal*stateRealUp - be
       taImag*stateImagUp 
-818                                         + alphaReal*stateRealLo + alphaImag*state
+820                                         + alphaReal*stateRealLo + alphaImag*state
       ImagLo;
-819                                 stateVecImag[indexLo] = betaReal*stateImagUp + be
+821                                 stateVecImag[indexLo] = betaReal*stateImagUp + be
       taImag*stateRealUp 
-820                                         + alphaReal*stateImagLo - alphaImag*state
+822                                         + alphaReal*stateImagLo - alphaImag*state
       RealLo;
-821                         }
-822                 } 
-823         }
-824 
-825 } 
+823                         }
+824                 } 
+825         }
+826 
+827 } 
 \end{DoxyCode}
 \hypertarget{qubits__internal_8h_a05875a70b539a3efb28d027823403f34}{
 \index{qubits\_\-internal.h@{qubits\_\-internal.h}!controlledNotDistributed@{controlledNotDistributed}}
@@ -630,10 +630,10 @@ Rotate a single qubit by \{\{0,1\},\{1,0\}. Operate on a subset of the state vec
 
 
 \begin{DoxyParams}{Parameters}
-\item[\mbox{$\leftrightarrow$} {\em multiQubit}]object representing the set of qubits \item[\mbox{$\leftarrow$} {\em rotQubit}]qubit to rotate \item[\mbox{$\leftarrow$} {\em stateVecIn}]probability amplitudes in lower or upper half of a block depending on chunkId \item[\mbox{$\rightarrow$} {\em stateVecOut}]array section to update (will correspond to either the lower or upper half of a block) \end{DoxyParams}
+\item[\mbox{$\leftrightarrow$} {\em multiQubit}]object representing the set of qubits \item[\mbox{$\leftarrow$} {\em targetQubit}]qubit to rotate \item[\mbox{$\leftarrow$} {\em stateVecIn}]probability amplitudes in lower or upper half of a block depending on chunkId \item[\mbox{$\rightarrow$} {\em stateVecOut}]array section to update (will correspond to either the lower or upper half of a block) \end{DoxyParams}
 
 
-Definition at line 1338 of file qubits.c.
+Definition at line 1340 of file qubits.c.
 
 References MultiQubit::chunkId, extractBit(), ComplexArray::imag, MultiQubit::numAmps, ComplexArray::real, and REAL.
 
@@ -641,42 +641,42 @@ Referenced by controlledNot().
 
 
 \begin{DoxyCode}
-1341 {
-1342 
-1343         long long int thisTask;  
-1344         const long long int numTasks=multiQubit.numAmps;
-1345         const long long int chunkSize=multiQubit.numAmps;
-1346         const long long int chunkId=multiQubit.chunkId;
-1347 
-1348         int controlBit;
+1343 {
+1344 
+1345         long long int thisTask;  
+1346         const long long int numTasks=multiQubit.numAmps;
+1347         const long long int chunkSize=multiQubit.numAmps;
+1348         const long long int chunkId=multiQubit.chunkId;
 1349 
-1350         REAL *stateVecRealIn=stateVecIn.real, *stateVecImagIn=stateVecIn.imag;
-1351         REAL *stateVecRealOut=stateVecOut.real, *stateVecImagOut=stateVecOut.
+1350         int controlBit;
+1351 
+1352         REAL *stateVecRealIn=stateVecIn.real, *stateVecImagIn=stateVecIn.imag;
+1353         REAL *stateVecRealOut=stateVecOut.real, *stateVecImagOut=stateVecOut.
       imag;
-1352 
-1353 # ifdef _OPENMP
-1354 # pragma omp parallel \
-1355         default  (none) \
-1356         shared   (stateVecRealIn,stateVecImagIn,stateVecRealOut,stateVecImagOut) 
+1354 
+1355 # ifdef _OPENMP
+1356 # pragma omp parallel \
+1357         default  (none) \
+1358         shared   (stateVecRealIn,stateVecImagIn,stateVecRealOut,stateVecImagOut) 
       \
-1357         private  (thisTask,controlBit)
-1358 # endif
-1359         {
-1360 # ifdef _OPENMP
-1361                 # pragma omp for schedule (static)
-1362 # endif
-1363                 for (thisTask=0; thisTask<numTasks; thisTask++) {
-1364                         controlBit = extractBit (controlQubit, thisTask+chunkId*c
+1359         private  (thisTask,controlBit)
+1360 # endif
+1361         {
+1362 # ifdef _OPENMP
+1363                 # pragma omp for schedule (static)
+1364 # endif
+1365                 for (thisTask=0; thisTask<numTasks; thisTask++) {
+1366                         controlBit = extractBit (controlQubit, thisTask+chunkId*c
       hunkSize);
-1365                         if (controlBit){
-1366                                 stateVecRealOut[thisTask] = stateVecRealIn[thisTa
+1367                         if (controlBit){
+1368                                 stateVecRealOut[thisTask] = stateVecRealIn[thisTa
       sk];
-1367                                 stateVecImagOut[thisTask] = stateVecImagIn[thisTa
+1369                                 stateVecImagOut[thisTask] = stateVecImagIn[thisTa
       sk];
-1368                         }
-1369                 }
-1370         }
-1371 } 
+1370                         }
+1371                 }
+1372         }
+1373 } 
 \end{DoxyCode}
 \hypertarget{qubits__internal_8h_ad357a43e80e3baf013975b1b70942f4c}{
 \index{qubits\_\-internal.h@{qubits\_\-internal.h}!controlledNotLocal@{controlledNotLocal}}
@@ -693,7 +693,7 @@ Qubits are zero-\/based and the the first qubit is the rightmost
 \item[\mbox{$\leftrightarrow$} {\em multiQubit}]object representing the set of qubits \item[\mbox{$\leftarrow$} {\em targetQubit}]qubit to rotate \item[\mbox{$\leftarrow$} {\em controlQubit}]qubit to determine whether or not to perform a rotation \end{DoxyParams}
 
 
-Definition at line 1272 of file qubits.c.
+Definition at line 1274 of file qubits.c.
 
 References MultiQubit::chunkId, extractBit(), ComplexArray::imag, MultiQubit::numAmps, ComplexArray::real, REAL, and MultiQubit::stateVec.
 
@@ -701,78 +701,78 @@ Referenced by controlledNot().
 
 
 \begin{DoxyCode}
-1273 {
-1274         long long int sizeBlock, sizeHalfBlock;
-1275         long long int thisBlock, // current block
-1276              indexUp,indexLo;    // current index and corresponding index in lowe
+1275 {
+1276         long long int sizeBlock, sizeHalfBlock;
+1277         long long int thisBlock, // current block
+1278              indexUp,indexLo;    // current index and corresponding index in lowe
       r half block
-1277 
-1278         REAL stateRealUp,stateImagUp;
-1279         long long int thisTask;         
-1280         const long long int numTasks=multiQubit.numAmps>>1;
-1281         const long long int chunkSize=multiQubit.numAmps;
-1282         const long long int chunkId=multiQubit.chunkId;
-1283 
-1284         int controlBit;
+1279 
+1280         REAL stateRealUp,stateImagUp;
+1281         long long int thisTask;         
+1282         const long long int numTasks=multiQubit.numAmps>>1;
+1283         const long long int chunkSize=multiQubit.numAmps;
+1284         const long long int chunkId=multiQubit.chunkId;
 1285 
-1286         // set dimensions
-1287         sizeHalfBlock = 1LL << targetQubit;  
-1288         sizeBlock     = 2LL * sizeHalfBlock; 
-1289 
-1290 
-1291         // Can't use multiQubit.stateVec as a private OMP var
-1292         REAL *stateVecReal = multiQubit.stateVec.real;
-1293         REAL *stateVecImag = multiQubit.stateVec.imag;
-1294 
-1295 # ifdef _OPENMP
-1296 # pragma omp parallel \
-1297         default  (none) \
-1298         shared   (sizeBlock,sizeHalfBlock, stateVecReal,stateVecImag) \
-1299         private  (thisTask,thisBlock ,indexUp,indexLo, stateRealUp,stateImagUp,co
+1286         int controlBit;
+1287 
+1288         // set dimensions
+1289         sizeHalfBlock = 1LL << targetQubit;  
+1290         sizeBlock     = 2LL * sizeHalfBlock; 
+1291 
+1292 
+1293         // Can't use multiQubit.stateVec as a private OMP var
+1294         REAL *stateVecReal = multiQubit.stateVec.real;
+1295         REAL *stateVecImag = multiQubit.stateVec.imag;
+1296 
+1297 # ifdef _OPENMP
+1298 # pragma omp parallel \
+1299         default  (none) \
+1300         shared   (sizeBlock,sizeHalfBlock, stateVecReal,stateVecImag) \
+1301         private  (thisTask,thisBlock ,indexUp,indexLo, stateRealUp,stateImagUp,co
       ntrolBit) 
-1300 # endif
-1301         {
-1302 # ifdef _OPENMP
-1303                 # pragma omp for schedule (static)
-1304 # endif
-1305                 for (thisTask=0; thisTask<numTasks; thisTask++) {
-1306                         thisBlock   = thisTask / sizeHalfBlock;
-1307                         indexUp     = thisBlock*sizeBlock + thisTask%sizeHalfBloc
+1302 # endif
+1303         {
+1304 # ifdef _OPENMP
+1305                 # pragma omp for schedule (static)
+1306 # endif
+1307                 for (thisTask=0; thisTask<numTasks; thisTask++) {
+1308                         thisBlock   = thisTask / sizeHalfBlock;
+1309                         indexUp     = thisBlock*sizeBlock + thisTask%sizeHalfBloc
       k;
-1308                         indexLo     = indexUp + sizeHalfBlock;
-1309 
-1310                         controlBit = extractBit(controlQubit, indexUp+chunkId*chu
+1310                         indexLo     = indexUp + sizeHalfBlock;
+1311 
+1312                         controlBit = extractBit(controlQubit, indexUp+chunkId*chu
       nkSize);
-1311                         if (controlBit){
-1312                                 stateRealUp = stateVecReal[indexUp];
-1313                                 stateImagUp = stateVecImag[indexUp];
-1314 
-1315                                 stateVecReal[indexUp] = stateVecReal[indexLo];
-1316                                 stateVecImag[indexUp] = stateVecImag[indexLo];
-1317 
-1318                                 stateVecReal[indexLo] = stateRealUp;
-1319                                 stateVecImag[indexLo] = stateImagUp;
-1320                         }
-1321                 } 
-1322         }
-1323 
-1324 }
+1313                         if (controlBit){
+1314                                 stateRealUp = stateVecReal[indexUp];
+1315                                 stateImagUp = stateVecImag[indexUp];
+1316 
+1317                                 stateVecReal[indexUp] = stateVecReal[indexLo];
+1318                                 stateVecImag[indexUp] = stateVecImag[indexLo];
+1319 
+1320                                 stateVecReal[indexLo] = stateRealUp;
+1321                                 stateVecImag[indexLo] = stateImagUp;
+1322                         }
+1323                 } 
+1324         }
+1325 
+1326 }
 \end{DoxyCode}
-\hypertarget{qubits__internal_8h_a9903d9da1c523a84728e4e4870f22949}{
+\hypertarget{qubits__internal_8h_a642093063a1f889f61a1311f6d6f2d3f}{
 \index{qubits\_\-internal.h@{qubits\_\-internal.h}!controlledUnitaryDistributed@{controlledUnitaryDistributed}}
 \index{controlledUnitaryDistributed@{controlledUnitaryDistributed}!qubits_internal.h@{qubits\_\-internal.h}}
-\paragraph[{controlledUnitaryDistributed}]{\setlength{\rightskip}{0pt plus 5cm}void controlledUnitaryDistributed ({\bf MultiQubit} {\em multiQubit}, \/  const int {\em rotQubit}, \/  const int {\em controlQubit}, \/  {\bf Complex} {\em rot1}, \/  {\bf Complex} {\em rot2}, \/  {\bf ComplexArray} {\em stateVecUp}, \/  {\bf ComplexArray} {\em stateVecLo}, \/  {\bf ComplexArray} {\em stateVecOut})}\hfill}
-\label{qubits__internal_8h_a9903d9da1c523a84728e4e4870f22949}
+\paragraph[{controlledUnitaryDistributed}]{\setlength{\rightskip}{0pt plus 5cm}void controlledUnitaryDistributed ({\bf MultiQubit} {\em multiQubit}, \/  const int {\em controlQubit}, \/  const int {\em targetQubit}, \/  {\bf Complex} {\em rot1}, \/  {\bf Complex} {\em rot2}, \/  {\bf ComplexArray} {\em stateVecUp}, \/  {\bf ComplexArray} {\em stateVecLo}, \/  {\bf ComplexArray} {\em stateVecOut})}\hfill}
+\label{qubits__internal_8h_a642093063a1f889f61a1311f6d6f2d3f}
 
 
 Rotate a single qubit in the state vector of probability amplitudes, given two complex numbers alpha and beta and a subset of the state vector with upper and lower block values stored seperately. Only perform the rotation where the control qubit is one.
 
 
 \begin{DoxyParams}{Parameters}
-\item[\mbox{$\leftrightarrow$} {\em multiQubit}]object representing the set of qubits \item[\mbox{$\leftarrow$} {\em rotQubit}]qubit to rotate \item[\mbox{$\leftarrow$} {\em controlQubit}]qubit to determine whether or not to perform a rotation \item[\mbox{$\leftarrow$} {\em rot1}]rotation angle \item[\mbox{$\leftarrow$} {\em rot2}]rotation angle \item[\mbox{$\leftarrow$} {\em stateVecUp}]probability amplitudes in upper half of a block \item[\mbox{$\leftarrow$} {\em stateVecLo}]probability amplitudes in lower half of a block \item[\mbox{$\rightarrow$} {\em stateVecOut}]array section to update (will correspond to either the lower or upper half of a block) \end{DoxyParams}
+\item[\mbox{$\leftrightarrow$} {\em multiQubit}]object representing the set of qubits \item[\mbox{$\leftarrow$} {\em targetQubit}]qubit to rotate \item[\mbox{$\leftarrow$} {\em controlQubit}]qubit to determine whether or not to perform a rotation \item[\mbox{$\leftarrow$} {\em rot1}]rotation angle \item[\mbox{$\leftarrow$} {\em rot2}]rotation angle \item[\mbox{$\leftarrow$} {\em stateVecUp}]probability amplitudes in upper half of a block \item[\mbox{$\leftarrow$} {\em stateVecLo}]probability amplitudes in lower half of a block \item[\mbox{$\rightarrow$} {\em stateVecOut}]array section to update (will correspond to either the lower or upper half of a block) \end{DoxyParams}
 
 
-Definition at line 1054 of file qubits.c.
+Definition at line 1056 of file qubits.c.
 
 References MultiQubit::chunkId, extractBit(), ComplexArray::imag, Complex::imag, MultiQubit::numAmps, ComplexArray::real, Complex::real, and REAL.
 
@@ -780,74 +780,74 @@ Referenced by controlledUnitary().
 
 
 \begin{DoxyCode}
-1059 {
-1060 
-1061         REAL   stateRealUp,stateRealLo,stateImagUp,stateImagLo;
-1062         long long int thisTask;  
-1063         const long long int numTasks=multiQubit.numAmps;
-1064         const long long int chunkSize=multiQubit.numAmps;
-1065         const long long int chunkId=multiQubit.chunkId;
-1066 
-1067         int controlBit;
+1061 {
+1062 
+1063         REAL   stateRealUp,stateRealLo,stateImagUp,stateImagLo;
+1064         long long int thisTask;  
+1065         const long long int numTasks=multiQubit.numAmps;
+1066         const long long int chunkSize=multiQubit.numAmps;
+1067         const long long int chunkId=multiQubit.chunkId;
 1068 
-1069         REAL rot1Real=rot1.real, rot1Imag=rot1.imag;
-1070         REAL rot2Real=rot2.real, rot2Imag=rot2.imag;
-1071         REAL *stateVecRealUp=stateVecUp.real, *stateVecImagUp=stateVecUp.imag;
-1072         REAL *stateVecRealLo=stateVecLo.real, *stateVecImagLo=stateVecLo.imag;
-1073         REAL *stateVecRealOut=stateVecOut.real, *stateVecImagOut=stateVecOut.
+1069         int controlBit;
+1070 
+1071         REAL rot1Real=rot1.real, rot1Imag=rot1.imag;
+1072         REAL rot2Real=rot2.real, rot2Imag=rot2.imag;
+1073         REAL *stateVecRealUp=stateVecUp.real, *stateVecImagUp=stateVecUp.imag;
+1074         REAL *stateVecRealLo=stateVecLo.real, *stateVecImagLo=stateVecLo.imag;
+1075         REAL *stateVecRealOut=stateVecOut.real, *stateVecImagOut=stateVecOut.
       imag;
-1074 
-1075 # ifdef _OPENMP
-1076 # pragma omp parallel \
-1077         default  (none) \
-1078         shared   (stateVecRealUp,stateVecImagUp,stateVecRealLo,stateVecImagLo,sta
+1076 
+1077 # ifdef _OPENMP
+1078 # pragma omp parallel \
+1079         default  (none) \
+1080         shared   (stateVecRealUp,stateVecImagUp,stateVecRealLo,stateVecImagLo,sta
       teVecRealOut,stateVecImagOut, \
-1079                         rot1Real,rot1Imag, rot2Real,rot2Imag) \
-1080         private  (thisTask,stateRealUp,stateImagUp,stateRealLo,stateImagLo,contro
+1081                         rot1Real,rot1Imag, rot2Real,rot2Imag) \
+1082         private  (thisTask,stateRealUp,stateImagUp,stateRealLo,stateImagLo,contro
       lBit)
-1081 # endif
-1082         {
-1083 # ifdef _OPENMP
-1084                 # pragma omp for schedule (static)
-1085 # endif
-1086                 for (thisTask=0; thisTask<numTasks; thisTask++) {
-1087                         controlBit = extractBit (controlQubit, thisTask+chunkId*c
+1083 # endif
+1084         {
+1085 # ifdef _OPENMP
+1086                 # pragma omp for schedule (static)
+1087 # endif
+1088                 for (thisTask=0; thisTask<numTasks; thisTask++) {
+1089                         controlBit = extractBit (controlQubit, thisTask+chunkId*c
       hunkSize);
-1088                         if (controlBit){
-1089                                 // store current state vector values in temp vari
+1090                         if (controlBit){
+1091                                 // store current state vector values in temp vari
       ables
-1090                                 stateRealUp = stateVecRealUp[thisTask];
-1091                                 stateImagUp = stateVecImagUp[thisTask];
-1092 
-1093                                 stateRealLo = stateVecRealLo[thisTask];
-1094                                 stateImagLo = stateVecImagLo[thisTask];
-1095 
-1096                 stateVecRealOut[thisTask] = rot1Real*stateRealUp - rot1Imag*state
+1092                                 stateRealUp = stateVecRealUp[thisTask];
+1093                                 stateImagUp = stateVecImagUp[thisTask];
+1094 
+1095                                 stateRealLo = stateVecRealLo[thisTask];
+1096                                 stateImagLo = stateVecImagLo[thisTask];
+1097 
+1098                 stateVecRealOut[thisTask] = rot1Real*stateRealUp - rot1Imag*state
       ImagUp 
-1097                     + rot2Real*stateRealLo - rot2Imag*stateImagLo;
-1098                 stateVecImagOut[thisTask] = rot1Real*stateImagUp + rot1Imag*state
+1099                     + rot2Real*stateRealLo - rot2Imag*stateImagLo;
+1100                 stateVecImagOut[thisTask] = rot1Real*stateImagUp + rot1Imag*state
       RealUp 
-1099                     + rot2Real*stateImagLo + rot2Imag*stateRealLo;
-1100                         }
-1101                 }
-1102         }
-1103 }
+1101                     + rot2Real*stateImagLo + rot2Imag*stateRealLo;
+1102                         }
+1103                 }
+1104         }
+1105 }
 \end{DoxyCode}
-\hypertarget{qubits__internal_8h_a0af39b13cf3a043975fce768f3507657}{
+\hypertarget{qubits__internal_8h_a8a4afcff70195a306c082b8ed8d4e09a}{
 \index{qubits\_\-internal.h@{qubits\_\-internal.h}!controlledUnitaryLocal@{controlledUnitaryLocal}}
 \index{controlledUnitaryLocal@{controlledUnitaryLocal}!qubits_internal.h@{qubits\_\-internal.h}}
-\paragraph[{controlledUnitaryLocal}]{\setlength{\rightskip}{0pt plus 5cm}void controlledUnitaryLocal ({\bf MultiQubit} {\em multiQubit}, \/  const int {\em rotQubit}, \/  const int {\em controlQubit}, \/  {\bf ComplexMatrix2} {\em u})}\hfill}
-\label{qubits__internal_8h_a0af39b13cf3a043975fce768f3507657}
+\paragraph[{controlledUnitaryLocal}]{\setlength{\rightskip}{0pt plus 5cm}void controlledUnitaryLocal ({\bf MultiQubit} {\em multiQubit}, \/  const int {\em controlQubit}, \/  const int {\em targetQubit}, \/  {\bf ComplexMatrix2} {\em u})}\hfill}
+\label{qubits__internal_8h_a8a4afcff70195a306c082b8ed8d4e09a}
 
 
 Rotate a single qubit in the state vector of probability amplitudes, given two complex numbers alpha and beta and a control qubit. Only perform the rotation for elements where the control qubit is one.
 
 
 \begin{DoxyParams}{Parameters}
-\item[\mbox{$\leftrightarrow$} {\em multiQubit}]object representing the set of qubits \item[\mbox{$\leftarrow$} {\em rotQubit}]qubit to rotate \item[\mbox{$\leftarrow$} {\em controlQubit}]perform rotation if this qubit is 1 \item[\mbox{$\leftarrow$} {\em alpha}]rotation angle \item[\mbox{$\leftarrow$} {\em beta}]rotation angle \end{DoxyParams}
+\item[\mbox{$\leftrightarrow$} {\em multiQubit}]object representing the set of qubits \item[\mbox{$\leftarrow$} {\em targetQubit}]qubit to rotate \item[\mbox{$\leftarrow$} {\em controlQubit}]perform rotation if this qubit is 1 \item[\mbox{$\leftarrow$} {\em alpha}]rotation angle \item[\mbox{$\leftarrow$} {\em beta}]rotation angle \end{DoxyParams}
 
 
-Definition at line 912 of file qubits.c.
+Definition at line 914 of file qubits.c.
 
 References MultiQubit::chunkId, extractBit(), Complex::imag, ComplexArray::imag, MultiQubit::numAmps, ComplexMatrix2::r0c0, ComplexMatrix2::r0c1, ComplexMatrix2::r1c0, ComplexMatrix2::r1c1, Complex::real, ComplexArray::real, REAL, and MultiQubit::stateVec.
 
@@ -855,84 +855,84 @@ Referenced by controlledUnitary().
 
 
 \begin{DoxyCode}
-914 {
-915         long long int sizeBlock, sizeHalfBlock;
-916         long long int thisBlock, // current block
-917              indexUp,indexLo;    // current index and corresponding index in lowe
+916 {
+917         long long int sizeBlock, sizeHalfBlock;
+918         long long int thisBlock, // current block
+919              indexUp,indexLo;    // current index and corresponding index in lowe
       r half block
-918 
-919         REAL stateRealUp,stateRealLo,stateImagUp,stateImagLo;
-920         long long int thisTask;         
-921         const long long int numTasks=multiQubit.numAmps>>1;
-922         const long long int chunkSize=multiQubit.numAmps;
-923         const long long int chunkId=multiQubit.chunkId;
-924 
-925         int controlBit;
+920 
+921         REAL stateRealUp,stateRealLo,stateImagUp,stateImagLo;
+922         long long int thisTask;         
+923         const long long int numTasks=multiQubit.numAmps>>1;
+924         const long long int chunkSize=multiQubit.numAmps;
+925         const long long int chunkId=multiQubit.chunkId;
 926 
-927     // set dimensions
-928         sizeHalfBlock = 1LL << rotQubit;  
-929         sizeBlock     = 2LL * sizeHalfBlock; 
-930 
-931         // Can't use multiQubit.stateVec as a private OMP var
-932         REAL *stateVecReal = multiQubit.stateVec.real;
-933         REAL *stateVecImag = multiQubit.stateVec.imag;
-934 
-935 # ifdef _OPENMP
-936 # pragma omp parallel \
-937         default  (none) \
-938         shared   (sizeBlock,sizeHalfBlock, stateVecReal,stateVecImag, u) \
-939         private  (thisTask,thisBlock ,indexUp,indexLo, stateRealUp,stateImagUp,st
+927         int controlBit;
+928 
+929     // set dimensions
+930         sizeHalfBlock = 1LL << targetQubit;  
+931         sizeBlock     = 2LL * sizeHalfBlock; 
+932 
+933         // Can't use multiQubit.stateVec as a private OMP var
+934         REAL *stateVecReal = multiQubit.stateVec.real;
+935         REAL *stateVecImag = multiQubit.stateVec.imag;
+936 
+937 # ifdef _OPENMP
+938 # pragma omp parallel \
+939         default  (none) \
+940         shared   (sizeBlock,sizeHalfBlock, stateVecReal,stateVecImag, u) \
+941         private  (thisTask,thisBlock ,indexUp,indexLo, stateRealUp,stateImagUp,st
       ateRealLo,stateImagLo,controlBit) 
-940 # endif
-941         {
-942 # ifdef _OPENMP
-943                 # pragma omp for schedule (static)
-944 # endif
-945                 for (thisTask=0; thisTask<numTasks; thisTask++) {
-946 
-947                         thisBlock   = thisTask / sizeHalfBlock;
-948                         indexUp     = thisBlock*sizeBlock + thisTask%sizeHalfBloc
+942 # endif
+943         {
+944 # ifdef _OPENMP
+945                 # pragma omp for schedule (static)
+946 # endif
+947                 for (thisTask=0; thisTask<numTasks; thisTask++) {
+948 
+949                         thisBlock   = thisTask / sizeHalfBlock;
+950                         indexUp     = thisBlock*sizeBlock + thisTask%sizeHalfBloc
       k;
-949                         indexLo     = indexUp + sizeHalfBlock;
-950 
-951                         controlBit = extractBit (controlQubit, indexUp+chunkId*ch
+951                         indexLo     = indexUp + sizeHalfBlock;
+952 
+953                         controlBit = extractBit (controlQubit, indexUp+chunkId*ch
       unkSize);
-952                         if (controlBit){
-953                                 // store current state vector values in temp vari
+954                         if (controlBit){
+955                                 // store current state vector values in temp vari
       ables
-954                                 stateRealUp = stateVecReal[indexUp];
-955                                 stateImagUp = stateVecImag[indexUp];
-956 
-957                                 stateRealLo = stateVecReal[indexLo];
-958                                 stateImagLo = stateVecImag[indexLo];
-959 
-960 
-961                                 // state[indexUp] = u00 * state[indexUp] + u01 * 
+956                                 stateRealUp = stateVecReal[indexUp];
+957                                 stateImagUp = stateVecImag[indexUp];
+958 
+959                                 stateRealLo = stateVecReal[indexLo];
+960                                 stateImagLo = stateVecImag[indexLo];
+961 
+962 
+963                                 // state[indexUp] = u00 * state[indexUp] + u01 * 
       state[indexLo]
-962                                 stateVecReal[indexUp] = u.r0c0.real*stateRealUp -
+964                                 stateVecReal[indexUp] = u.r0c0.real*stateRealUp -
        u.r0c0.imag*stateImagUp 
-963                                         + u.r0c1.real*stateRealLo - u.r0c1.imag*s
+965                                         + u.r0c1.real*stateRealLo - u.r0c1.imag*s
       tateImagLo;
-964                                 stateVecImag[indexUp] = u.r0c0.real*stateImagUp +
+966                                 stateVecImag[indexUp] = u.r0c0.real*stateImagUp +
        u.r0c0.imag*stateRealUp 
-965                                         + u.r0c1.real*stateImagLo + u.r0c1.imag*s
+967                                         + u.r0c1.real*stateImagLo + u.r0c1.imag*s
       tateRealLo;
-966 
-967                                 // state[indexLo] = u10  * state[indexUp] + u11 *
+968 
+969                                 // state[indexLo] = u10  * state[indexUp] + u11 *
        state[indexLo]
-968                                 stateVecReal[indexLo] = u.r1c0.real*stateRealUp  
+970                                 stateVecReal[indexLo] = u.r1c0.real*stateRealUp  
       - u.r1c0.imag*stateImagUp 
-969                                         + u.r1c1.real*stateRealLo  -  u.r1c1.
+971                                         + u.r1c1.real*stateRealLo  -  u.r1c1.
       imag*stateImagLo;
-970                                 stateVecImag[indexLo] = u.r1c0.real*stateImagUp +
+972                                 stateVecImag[indexLo] = u.r1c0.real*stateImagUp +
        u.r1c0.imag*stateRealUp 
-971                                         + u.r1c1.real*stateImagLo + u.r1c1.imag*s
+973                                         + u.r1c1.real*stateImagLo + u.r1c1.imag*s
       tateRealLo;
-972                         }
-973                 } 
-974         }
-975 
-976 }
+974                         }
+975                 } 
+976         }
+977 
+978 }
 \end{DoxyCode}
 \hypertarget{qubits__internal_8h_ae5f9019826f35e8b51b1716cfe397b45}{
 \index{qubits\_\-internal.h@{qubits\_\-internal.h}!exitWithError@{exitWithError}}
@@ -941,7 +941,7 @@ Referenced by controlledUnitary().
 \label{qubits__internal_8h_ae5f9019826f35e8b51b1716cfe397b45}
 
 
-Definition at line 192 of file qubits\_\-env\_\-local.c.
+Definition at line 234 of file qubits\_\-env\_\-local.c.
 
 References errorCodes.
 
@@ -949,13 +949,13 @@ Referenced by QuESTAssert().
 
 
 \begin{DoxyCode}
-192                                                    {
-193     printf("!!!\n");
-194     printf("QuEST Error in function %s: %s\n", func, errorCodes[errorCode]);
-195     printf("!!!\n");
-196     printf("exiting..\n");
-197     exit(errorCode);
-198 }
+234                                                    {
+235     printf("!!!\n");
+236     printf("QuEST Error in function %s: %s\n", func, errorCodes[errorCode]);
+237     printf("!!!\n");
+238     printf("exiting..\n");
+239     exit(errorCode);
+240 }
 \end{DoxyCode}
 \hypertarget{qubits__internal_8h_a9ac9bb717a889f09d307eda9f0b65957}{
 \index{qubits\_\-internal.h@{qubits\_\-internal.h}!findProbabilityOfZeroDistributed@{findProbabilityOfZeroDistributed}}
@@ -974,7 +974,7 @@ probability of qubit measureQubit being zero
 \end{DoxyReturn}
 
 
-Definition at line 1830 of file qubits.c.
+Definition at line 1832 of file qubits.c.
 
 References ComplexArray::imag, MultiQubit::numAmps, ComplexArray::real, REAL, and MultiQubit::stateVec.
 
@@ -982,55 +982,55 @@ Referenced by findProbabilityOfOutcome().
 
 
 \begin{DoxyCode}
-1832 {
-1833         // ----- measured probability
-1834         REAL   totalProbability;                                    // probabilit
+1834 {
+1835         // ----- measured probability
+1836         REAL   totalProbability;                                    // probabilit
       y (returned) value
-1835         // ----- temp variables
-1836         long long int thisTask;                                   // task based a
+1837         // ----- temp variables
+1838         long long int thisTask;                                   // task based a
       pproach for expose loop with small granularity
-1837         long long int numTasks=multiQubit.numAmps;
-1838 
-1839         // ---------------------------------------------------------------- //
-1840         //            find probability                                      //
+1839         long long int numTasks=multiQubit.numAmps;
+1840 
 1841         // ---------------------------------------------------------------- //
-1842 
-1843         // initialise returned value
-1844         totalProbability = 0.0;
-1845 
-1846         REAL *stateVecReal = multiQubit.stateVec.real;
-1847         REAL *stateVecImag = multiQubit.stateVec.imag;
-1848 
-1849 # ifdef _OPENMP
-1850 # pragma omp parallel \
-1851         shared    (numTasks,stateVecReal,stateVecImag) \
-1852         private   (thisTask) \
-1853         reduction ( +:totalProbability )
-1854 # endif
-1855         {
-1856 # ifdef _OPENMP
-1857                 # pragma omp for schedule  (static)
-1858 # endif
-1859                 for (thisTask=0; thisTask<numTasks; thisTask++) {
-1860                         // summation -- simple implementation
-1861                         totalProbability += stateVecReal[thisTask]*stateVecReal[t
+1842         //            find probability                                      //
+1843         // ---------------------------------------------------------------- //
+1844 
+1845         // initialise returned value
+1846         totalProbability = 0.0;
+1847 
+1848         REAL *stateVecReal = multiQubit.stateVec.real;
+1849         REAL *stateVecImag = multiQubit.stateVec.imag;
+1850 
+1851 # ifdef _OPENMP
+1852 # pragma omp parallel \
+1853         shared    (numTasks,stateVecReal,stateVecImag) \
+1854         private   (thisTask) \
+1855         reduction ( +:totalProbability )
+1856 # endif
+1857         {
+1858 # ifdef _OPENMP
+1859                 # pragma omp for schedule  (static)
+1860 # endif
+1861                 for (thisTask=0; thisTask<numTasks; thisTask++) {
+1862                         // summation -- simple implementation
+1863                         totalProbability += stateVecReal[thisTask]*stateVecReal[t
       hisTask]
-1862                                 + stateVecImag[thisTask]*stateVecImag[thisTask];
-1863 
-1864                         /*
-1865                         // summation -- kahan correction
-1866                         y = stateVecReal[thisTask]*stateVecReal[thisTask]
-1867                         + stateVecImag[thisTask]*stateVecImag[thisTask] - c;
-1868                         t = totalProbability + y;
-1869                         c = (t - totalProbability) - y;
-1870                         totalProbability = t;
-1871                         */
-1872 
-1873                 }
-1874         }
-1875 
-1876         return totalProbability;
-1877 }
+1864                                 + stateVecImag[thisTask]*stateVecImag[thisTask];
+1865 
+1866                         /*
+1867                         // summation -- kahan correction
+1868                         y = stateVecReal[thisTask]*stateVecReal[thisTask]
+1869                         + stateVecImag[thisTask]*stateVecImag[thisTask] - c;
+1870                         t = totalProbability + y;
+1871                         c = (t - totalProbability) - y;
+1872                         totalProbability = t;
+1873                         */
+1874 
+1875                 }
+1876         }
+1877 
+1878         return totalProbability;
+1879 }
 \end{DoxyCode}
 \hypertarget{qubits__internal_8h_a7c02cd0e1b4eac19771a0525f023249e}{
 \index{qubits\_\-internal.h@{qubits\_\-internal.h}!findProbabilityOfZeroLocal@{findProbabilityOfZeroLocal}}
@@ -1049,7 +1049,7 @@ probability of qubit measureQubit being zero
 \end{DoxyReturn}
 
 
-Definition at line 1757 of file qubits.c.
+Definition at line 1759 of file qubits.c.
 
 References DEBUG, ComplexArray::imag, MultiQubit::numAmps, ComplexArray::real, REAL, and MultiQubit::stateVec.
 
@@ -1057,97 +1057,97 @@ Referenced by findProbabilityOfOutcome().
 
 
 \begin{DoxyCode}
-1759 {
-1760         // ----- sizes
-1761         long long int sizeBlock,                                           // siz
+1761 {
+1762         // ----- sizes
+1763         long long int sizeBlock,                                           // siz
       e of blocks
-1762         sizeHalfBlock;                                       // size of blocks ha
+1764         sizeHalfBlock;                                       // size of blocks ha
       lved
-1763         // ----- indices
-1764         long long int thisBlock,                                           // cur
+1765         // ----- indices
+1766         long long int thisBlock,                                           // cur
       rent block
-1765              index;                                               // current inde
+1767              index;                                               // current inde
       x for first half block
-1766         // ----- measured probability
-1767         REAL   totalProbability;                                    // probabilit
+1768         // ----- measured probability
+1769         REAL   totalProbability;                                    // probabilit
       y (returned) value
-1768         // ----- temp variables
-1769         long long int thisTask;                                   // task based a
+1770         // ----- temp variables
+1771         long long int thisTask;                                   // task based a
       pproach for expose loop with small granularity
-1770         long long int numTasks=multiQubit.numAmps>>1;
-1771 
-1772         // ---------------------------------------------------------------- //
-1773         //            dimensions                                            //
+1772         long long int numTasks=multiQubit.numAmps>>1;
+1773 
 1774         // ---------------------------------------------------------------- //
-1775         sizeHalfBlock = 1LL << (measureQubit);                       // number of
+1775         //            dimensions                                            //
+1776         // ---------------------------------------------------------------- //
+1777         sizeHalfBlock = 1LL << (measureQubit);                       // number of
        state vector elements to sum,
-1776         // and then the number to skip
-1777         sizeBlock     = 2LL * sizeHalfBlock;                           // size of
+1778         // and then the number to skip
+1779         sizeBlock     = 2LL * sizeHalfBlock;                           // size of
        blocks (pairs of measure and skip entries)
-1778 
-1779         // initialise returned value
-1780         totalProbability = 0.0;
-1781 
-1782         // initialise correction for kahan summation
-1783         if (DEBUG) printf("sizeHalfBlock=%Ld sizeBlock=%Ld numTasks=%Ld\n",sizeHa
+1780 
+1781         // initialise returned value
+1782         totalProbability = 0.0;
+1783 
+1784         // initialise correction for kahan summation
+1785         if (DEBUG) printf("sizeHalfBlock=%Ld sizeBlock=%Ld numTasks=%Ld\n",sizeHa
       lfBlock,sizeBlock,numTasks);
-1784 
-1785         REAL *stateVecReal = multiQubit.stateVec.real;
-1786         REAL *stateVecImag = multiQubit.stateVec.imag;
-1787 
-1788 # ifdef _OPENMP
-1789 # pragma omp parallel \
-1790         shared    (numTasks,sizeBlock,sizeHalfBlock, stateVecReal,stateVecImag) \
+1786 
+1787         REAL *stateVecReal = multiQubit.stateVec.real;
+1788         REAL *stateVecImag = multiQubit.stateVec.imag;
+1789 
+1790 # ifdef _OPENMP
+1791 # pragma omp parallel \
+1792         shared    (numTasks,sizeBlock,sizeHalfBlock, stateVecReal,stateVecImag) \
       
-1791         private   (thisTask,thisBlock,index) \
-1792         reduction ( +:totalProbability )
-1793 # endif 
-1794         {
-1795 # ifdef _OPENMP
-1796                 # pragma omp for schedule  (static)
-1797 # endif
-1798                 for (thisTask=0; thisTask<numTasks; thisTask++) {
-1799                         thisBlock = thisTask / sizeHalfBlock;
-1800                         index     = thisBlock*sizeBlock + thisTask%sizeHalfBlock;
+1793         private   (thisTask,thisBlock,index) \
+1794         reduction ( +:totalProbability )
+1795 # endif 
+1796         {
+1797 # ifdef _OPENMP
+1798                 # pragma omp for schedule  (static)
+1799 # endif
+1800                 for (thisTask=0; thisTask<numTasks; thisTask++) {
+1801                         thisBlock = thisTask / sizeHalfBlock;
+1802                         index     = thisBlock*sizeBlock + thisTask%sizeHalfBlock;
       
-1801 
-1802                         if (index<0){ printf("ABORTING as index=%Ld with thisBloc
-      k = %Ld  thisTask=%Ld \n", index,thisBlock,thisTask); exit(1);}
 1803 
-1804                         // summation -- simple implementation
-1805                         totalProbability += stateVecReal[index]*stateVecReal[inde
+1804                         if (index<0){ printf("ABORTING as index=%Ld with thisBloc
+      k = %Ld  thisTask=%Ld \n", index,thisBlock,thisTask); exit(1);}
+1805 
+1806                         // summation -- simple implementation
+1807                         totalProbability += stateVecReal[index]*stateVecReal[inde
       x]
-1806                                 + stateVecImag[index]*stateVecImag[index];
-1807 
-1808                         /*
-1809                         // summation -- kahan correction
-1810                         y = stateVecReal[index]*stateVecReal[index]
-1811                         + stateVecImag[index]*stateVecImag[index] - c;
-1812                         t = totalProbability + y;
-1813                         c = (t - totalProbability) - y;
-1814                         totalProbability = t;
-1815                         */
-1816 
-1817                 }
-1818         }
-1819         return totalProbability;
-1820 }
+1808                                 + stateVecImag[index]*stateVecImag[index];
+1809 
+1810                         /*
+1811                         // summation -- kahan correction
+1812                         y = stateVecReal[index]*stateVecReal[index]
+1813                         + stateVecImag[index]*stateVecImag[index] - c;
+1814                         t = totalProbability + y;
+1815                         c = (t - totalProbability) - y;
+1816                         totalProbability = t;
+1817                         */
+1818 
+1819                 }
+1820         }
+1821         return totalProbability;
+1822 }
 \end{DoxyCode}
-\hypertarget{qubits__internal_8h_ac835c194bd547240a35f0b028db1d658}{
+\hypertarget{qubits__internal_8h_ae6a897066979fc52d977007d959ca09d}{
 \index{qubits\_\-internal.h@{qubits\_\-internal.h}!hadamardDistributed@{hadamardDistributed}}
 \index{hadamardDistributed@{hadamardDistributed}!qubits_internal.h@{qubits\_\-internal.h}}
-\paragraph[{hadamardDistributed}]{\setlength{\rightskip}{0pt plus 5cm}void hadamardDistributed ({\bf MultiQubit} {\em multiQubit}, \/  const int {\em rotQubit}, \/  {\bf ComplexArray} {\em stateVecUp}, \/  {\bf ComplexArray} {\em stateVecLo}, \/  {\bf ComplexArray} {\em stateVecOut}, \/  int {\em updateUpper})}\hfill}
-\label{qubits__internal_8h_ac835c194bd547240a35f0b028db1d658}
+\paragraph[{hadamardDistributed}]{\setlength{\rightskip}{0pt plus 5cm}void hadamardDistributed ({\bf MultiQubit} {\em multiQubit}, \/  const int {\em targetQubit}, \/  {\bf ComplexArray} {\em stateVecUp}, \/  {\bf ComplexArray} {\em stateVecLo}, \/  {\bf ComplexArray} {\em stateVecOut}, \/  int {\em updateUpper})}\hfill}
+\label{qubits__internal_8h_ae6a897066979fc52d977007d959ca09d}
 
 
 Rotate a single qubit by \{\{1,1\},\{1,-\/1\}\}/sqrt2. Operate on a subset of the state vector with upper and lower block values stored seperately. This rotation is just swapping upper and lower values, and stateVecIn must already be the correct section for this chunk
 
 
 \begin{DoxyParams}{Parameters}
-\item[\mbox{$\leftrightarrow$} {\em multiQubit}]object representing the set of qubits \item[\mbox{$\leftarrow$} {\em rotQubit}]qubit to rotate \item[\mbox{$\leftarrow$} {\em stateVecIn}]probability amplitudes in lower or upper half of a block depending on chunkId \item[\mbox{$\leftarrow$} {\em updateUpper}]flag, 1: updating upper values, 0: updating lower values in block \item[\mbox{$\rightarrow$} {\em stateVecOut}]array section to update (will correspond to either the lower or upper half of a block) \end{DoxyParams}
+\item[\mbox{$\leftrightarrow$} {\em multiQubit}]object representing the set of qubits \item[\mbox{$\leftarrow$} {\em targetQubit}]qubit to rotate \item[\mbox{$\leftarrow$} {\em stateVecIn}]probability amplitudes in lower or upper half of a block depending on chunkId \item[\mbox{$\leftarrow$} {\em updateUpper}]flag, 1: updating upper values, 0: updating lower values in block \item[\mbox{$\rightarrow$} {\em stateVecOut}]array section to update (will correspond to either the lower or upper half of a block) \end{DoxyParams}
 
 
-Definition at line 1544 of file qubits.c.
+Definition at line 1546 of file qubits.c.
 
 References ComplexArray::imag, MultiQubit::numAmps, ComplexArray::real, and REAL.
 
@@ -1155,56 +1155,56 @@ Referenced by hadamard().
 
 
 \begin{DoxyCode}
-1549 {
-1550 
-1551         REAL   stateRealUp,stateRealLo,stateImagUp,stateImagLo;
-1552         long long int thisTask;  
-1553         const long long int numTasks=multiQubit.numAmps;
-1554 
-1555         int sign;
-1556         if (updateUpper) sign=1;
-1557         else sign=-1;
-1558 
-1559         REAL recRoot2 = 1.0/sqrt(2);
+1551 {
+1552 
+1553         REAL   stateRealUp,stateRealLo,stateImagUp,stateImagLo;
+1554         long long int thisTask;  
+1555         const long long int numTasks=multiQubit.numAmps;
+1556 
+1557         int sign;
+1558         if (updateUpper) sign=1;
+1559         else sign=-1;
 1560 
-1561         REAL *stateVecRealUp=stateVecUp.real, *stateVecImagUp=stateVecUp.imag;
-1562         REAL *stateVecRealLo=stateVecLo.real, *stateVecImagLo=stateVecLo.imag;
-1563         REAL *stateVecRealOut=stateVecOut.real, *stateVecImagOut=stateVecOut.
+1561         REAL recRoot2 = 1.0/sqrt(2);
+1562 
+1563         REAL *stateVecRealUp=stateVecUp.real, *stateVecImagUp=stateVecUp.imag;
+1564         REAL *stateVecRealLo=stateVecLo.real, *stateVecImagLo=stateVecLo.imag;
+1565         REAL *stateVecRealOut=stateVecOut.real, *stateVecImagOut=stateVecOut.
       imag;
-1564 
-1565 # ifdef _OPENMP
-1566 # pragma omp parallel \
-1567         default  (none) \
-1568         shared   (stateVecRealUp,stateVecImagUp,stateVecRealLo,stateVecImagLo,sta
+1566 
+1567 # ifdef _OPENMP
+1568 # pragma omp parallel \
+1569         default  (none) \
+1570         shared   (stateVecRealUp,stateVecImagUp,stateVecRealLo,stateVecImagLo,sta
       teVecRealOut,stateVecImagOut, \
-1569                         recRoot2, sign) \
-1570         private  (thisTask,stateRealUp,stateImagUp,stateRealLo,stateImagLo)
-1571 # endif
-1572         {
-1573 # ifdef _OPENMP
-1574                 # pragma omp for schedule (static)
-1575 # endif
-1576                 for (thisTask=0; thisTask<numTasks; thisTask++) {
-1577                         // store current state vector values in temp variables
-1578                         stateRealUp = stateVecRealUp[thisTask];
-1579                         stateImagUp = stateVecImagUp[thisTask];
-1580 
-1581                         stateRealLo = stateVecRealLo[thisTask];
-1582                         stateImagLo = stateVecImagLo[thisTask];
-1583 
-1584                         stateVecRealOut[thisTask] = recRoot2*(stateRealUp + sign*
+1571                         recRoot2, sign) \
+1572         private  (thisTask,stateRealUp,stateImagUp,stateRealLo,stateImagLo)
+1573 # endif
+1574         {
+1575 # ifdef _OPENMP
+1576                 # pragma omp for schedule (static)
+1577 # endif
+1578                 for (thisTask=0; thisTask<numTasks; thisTask++) {
+1579                         // store current state vector values in temp variables
+1580                         stateRealUp = stateVecRealUp[thisTask];
+1581                         stateImagUp = stateVecImagUp[thisTask];
+1582 
+1583                         stateRealLo = stateVecRealLo[thisTask];
+1584                         stateImagLo = stateVecImagLo[thisTask];
+1585 
+1586                         stateVecRealOut[thisTask] = recRoot2*(stateRealUp + sign*
       stateRealLo);
-1585                         stateVecImagOut[thisTask] = recRoot2*(stateImagUp + sign*
+1587                         stateVecImagOut[thisTask] = recRoot2*(stateImagUp + sign*
       stateImagLo);
-1586                 }
-1587         }
-1588 }
+1588                 }
+1589         }
+1590 }
 \end{DoxyCode}
-\hypertarget{qubits__internal_8h_a0711416fceaf63c67b496e123e845c69}{
+\hypertarget{qubits__internal_8h_aa9f0718b4dd794a3e1b143e3b153bfc5}{
 \index{qubits\_\-internal.h@{qubits\_\-internal.h}!hadamardLocal@{hadamardLocal}}
 \index{hadamardLocal@{hadamardLocal}!qubits_internal.h@{qubits\_\-internal.h}}
-\paragraph[{hadamardLocal}]{\setlength{\rightskip}{0pt plus 5cm}void hadamardLocal ({\bf MultiQubit} {\em multiQubit}, \/  const int {\em rotQubit})}\hfill}
-\label{qubits__internal_8h_a0711416fceaf63c67b496e123e845c69}
+\paragraph[{hadamardLocal}]{\setlength{\rightskip}{0pt plus 5cm}void hadamardLocal ({\bf MultiQubit} {\em multiQubit}, \/  const int {\em targetQubit})}\hfill}
+\label{qubits__internal_8h_aa9f0718b4dd794a3e1b143e3b153bfc5}
 
 
 Rotate a single qubit by \{\{1,1\},\{1,-\/1\}\}/sqrt2. \begin{DoxyRemark}{Remarks}
@@ -1212,10 +1212,10 @@ Qubits are zero-\/based and the the first qubit is the rightmost
 \end{DoxyRemark}
 
 \begin{DoxyParams}{Parameters}
-\item[\mbox{$\leftrightarrow$} {\em multiQubit}]object representing the set of qubits \item[\mbox{$\leftarrow$} {\em rotQubit}]qubit to rotate \end{DoxyParams}
+\item[\mbox{$\leftrightarrow$} {\em multiQubit}]object representing the set of qubits \item[\mbox{$\leftarrow$} {\em targetQubit}]qubit to rotate \end{DoxyParams}
 
 
-Definition at line 1482 of file qubits.c.
+Definition at line 1484 of file qubits.c.
 
 References ComplexArray::imag, MultiQubit::numAmps, ComplexArray::real, REAL, and MultiQubit::stateVec.
 
@@ -1223,78 +1223,78 @@ Referenced by hadamard().
 
 
 \begin{DoxyCode}
-1483 {
-1484         long long int sizeBlock, sizeHalfBlock;
-1485         long long int thisBlock, // current block
-1486              indexUp,indexLo;    // current index and corresponding index in lowe
+1485 {
+1486         long long int sizeBlock, sizeHalfBlock;
+1487         long long int thisBlock, // current block
+1488              indexUp,indexLo;    // current index and corresponding index in lowe
       r half block
-1487 
-1488         REAL stateRealUp,stateRealLo,stateImagUp,stateImagLo;
-1489         long long int thisTask;         
-1490         const long long int numTasks=multiQubit.numAmps>>1;
-1491 
-1492         // set dimensions
-1493         sizeHalfBlock = 1LL << rotQubit;  
-1494         sizeBlock     = 2LL * sizeHalfBlock; 
-1495 
-1496         // Can't use multiQubit.stateVec as a private OMP var
-1497         REAL *stateVecReal = multiQubit.stateVec.real;
-1498         REAL *stateVecImag = multiQubit.stateVec.imag;
-1499 
-1500         REAL recRoot2 = 1.0/sqrt(2);
+1489 
+1490         REAL stateRealUp,stateRealLo,stateImagUp,stateImagLo;
+1491         long long int thisTask;         
+1492         const long long int numTasks=multiQubit.numAmps>>1;
+1493 
+1494         // set dimensions
+1495         sizeHalfBlock = 1LL << targetQubit;  
+1496         sizeBlock     = 2LL * sizeHalfBlock; 
+1497 
+1498         // Can't use multiQubit.stateVec as a private OMP var
+1499         REAL *stateVecReal = multiQubit.stateVec.real;
+1500         REAL *stateVecImag = multiQubit.stateVec.imag;
 1501 
-1502 # ifdef _OPENMP
-1503 # pragma omp parallel \
-1504         default  (none) \
-1505         shared   (sizeBlock,sizeHalfBlock, stateVecReal,stateVecImag, recRoot2) \
+1502         REAL recRoot2 = 1.0/sqrt(2);
+1503 
+1504 # ifdef _OPENMP
+1505 # pragma omp parallel \
+1506         default  (none) \
+1507         shared   (sizeBlock,sizeHalfBlock, stateVecReal,stateVecImag, recRoot2) \
       
-1506         private  (thisTask,thisBlock ,indexUp,indexLo, stateRealUp,stateImagUp,st
+1508         private  (thisTask,thisBlock ,indexUp,indexLo, stateRealUp,stateImagUp,st
       ateRealLo,stateImagLo) 
-1507 # endif
-1508         {
-1509 # ifdef _OPENMP
-1510                 # pragma omp for schedule (static)
-1511 # endif
-1512                 for (thisTask=0; thisTask<numTasks; thisTask++) {
-1513                         thisBlock   = thisTask / sizeHalfBlock;
-1514                         indexUp     = thisBlock*sizeBlock + thisTask%sizeHalfBloc
+1509 # endif
+1510         {
+1511 # ifdef _OPENMP
+1512                 # pragma omp for schedule (static)
+1513 # endif
+1514                 for (thisTask=0; thisTask<numTasks; thisTask++) {
+1515                         thisBlock   = thisTask / sizeHalfBlock;
+1516                         indexUp     = thisBlock*sizeBlock + thisTask%sizeHalfBloc
       k;
-1515                         indexLo     = indexUp + sizeHalfBlock;
-1516 
-1517                         stateRealUp = stateVecReal[indexUp];
-1518                         stateImagUp = stateVecImag[indexUp];
-1519 
-1520                         stateRealLo = stateVecReal[indexLo];
-1521                         stateImagLo = stateVecImag[indexLo];
-1522 
-1523                         stateVecReal[indexUp] = recRoot2*(stateRealUp + stateReal
+1517                         indexLo     = indexUp + sizeHalfBlock;
+1518 
+1519                         stateRealUp = stateVecReal[indexUp];
+1520                         stateImagUp = stateVecImag[indexUp];
+1521 
+1522                         stateRealLo = stateVecReal[indexLo];
+1523                         stateImagLo = stateVecImag[indexLo];
+1524 
+1525                         stateVecReal[indexUp] = recRoot2*(stateRealUp + stateReal
       Lo);
-1524                         stateVecImag[indexUp] = recRoot2*(stateImagUp + stateImag
+1526                         stateVecImag[indexUp] = recRoot2*(stateImagUp + stateImag
       Lo);
-1525 
-1526                         stateVecReal[indexLo] = recRoot2*(stateRealUp - stateReal
+1527 
+1528                         stateVecReal[indexLo] = recRoot2*(stateRealUp - stateReal
       Lo);
-1527                         stateVecImag[indexLo] = recRoot2*(stateImagUp - stateImag
+1529                         stateVecImag[indexLo] = recRoot2*(stateImagUp - stateImag
       Lo);
-1528                 } 
-1529         }
-1530 }
+1530                 } 
+1531         }
+1532 }
 \end{DoxyCode}
-\hypertarget{qubits__internal_8h_a54f4c82568e9433515c4480cdb536e27}{
+\hypertarget{qubits__internal_8h_a9dbf856ebeea0cf0a3ee5aae6782f2d2}{
 \index{qubits\_\-internal.h@{qubits\_\-internal.h}!multiControlledUnitaryDistributed@{multiControlledUnitaryDistributed}}
 \index{multiControlledUnitaryDistributed@{multiControlledUnitaryDistributed}!qubits_internal.h@{qubits\_\-internal.h}}
-\paragraph[{multiControlledUnitaryDistributed}]{\setlength{\rightskip}{0pt plus 5cm}void multiControlledUnitaryDistributed ({\bf MultiQubit} {\em multiQubit}, \/  const int {\em rotQubit}, \/  long long int {\em mask}, \/  {\bf Complex} {\em rot1}, \/  {\bf Complex} {\em rot2}, \/  {\bf ComplexArray} {\em stateVecUp}, \/  {\bf ComplexArray} {\em stateVecLo}, \/  {\bf ComplexArray} {\em stateVecOut})}\hfill}
-\label{qubits__internal_8h_a54f4c82568e9433515c4480cdb536e27}
+\paragraph[{multiControlledUnitaryDistributed}]{\setlength{\rightskip}{0pt plus 5cm}void multiControlledUnitaryDistributed ({\bf MultiQubit} {\em multiQubit}, \/  const int {\em targetQubit}, \/  long long int {\em mask}, \/  {\bf Complex} {\em rot1}, \/  {\bf Complex} {\em rot2}, \/  {\bf ComplexArray} {\em stateVecUp}, \/  {\bf ComplexArray} {\em stateVecLo}, \/  {\bf ComplexArray} {\em stateVecOut})}\hfill}
+\label{qubits__internal_8h_a9dbf856ebeea0cf0a3ee5aae6782f2d2}
 
 
 Apply a unitary operation to a single qubit in the state vector of probability amplitudes, given a subset of the state vector with upper and lower block values stored seperately. Only perform the rotation where all the control qubits are 1.
 
 
 \begin{DoxyParams}{Parameters}
-\item[\mbox{$\leftrightarrow$} {\em multiQubit}]object representing the set of qubits \item[\mbox{$\leftarrow$} {\em rotQubit}]qubit to rotate \item[\mbox{$\leftarrow$} {\em controlQubit}]qubit to determine whether or not to perform a rotation \item[\mbox{$\leftarrow$} {\em rot1}]rotation angle \item[\mbox{$\leftarrow$} {\em rot2}]rotation angle \item[\mbox{$\leftarrow$} {\em stateVecUp}]probability amplitudes in upper half of a block \item[\mbox{$\leftarrow$} {\em stateVecLo}]probability amplitudes in lower half of a block \item[\mbox{$\rightarrow$} {\em stateVecOut}]array section to update (will correspond to either the lower or upper half of a block) \end{DoxyParams}
+\item[\mbox{$\leftrightarrow$} {\em multiQubit}]object representing the set of qubits \item[\mbox{$\leftarrow$} {\em targetQubit}]qubit to rotate \item[\mbox{$\leftarrow$} {\em controlQubit}]qubit to determine whether or not to perform a rotation \item[\mbox{$\leftarrow$} {\em rot1}]rotation angle \item[\mbox{$\leftarrow$} {\em rot2}]rotation angle \item[\mbox{$\leftarrow$} {\em stateVecUp}]probability amplitudes in upper half of a block \item[\mbox{$\leftarrow$} {\em stateVecLo}]probability amplitudes in lower half of a block \item[\mbox{$\rightarrow$} {\em stateVecOut}]array section to update (will correspond to either the lower or upper half of a block) \end{DoxyParams}
 
 
-Definition at line 1118 of file qubits.c.
+Definition at line 1120 of file qubits.c.
 
 References MultiQubit::chunkId, ComplexArray::imag, Complex::imag, MultiQubit::numAmps, ComplexArray::real, Complex::real, and REAL.
 
@@ -1302,69 +1302,69 @@ Referenced by multiControlledUnitary().
 
 
 \begin{DoxyCode}
-1125 {
-1126 
-1127         REAL   stateRealUp,stateRealLo,stateImagUp,stateImagLo;
-1128         long long int thisTask;  
-1129         const long long int numTasks=multiQubit.numAmps;
-1130         const long long int chunkSize=multiQubit.numAmps;
-1131         const long long int chunkId=multiQubit.chunkId;
-1132 
-1133         REAL rot1Real=rot1.real, rot1Imag=rot1.imag;
-1134         REAL rot2Real=rot2.real, rot2Imag=rot2.imag;
-1135         REAL *stateVecRealUp=stateVecUp.real, *stateVecImagUp=stateVecUp.imag;
-1136         REAL *stateVecRealLo=stateVecLo.real, *stateVecImagLo=stateVecLo.imag;
-1137         REAL *stateVecRealOut=stateVecOut.real, *stateVecImagOut=stateVecOut.
+1127 {
+1128 
+1129         REAL   stateRealUp,stateRealLo,stateImagUp,stateImagLo;
+1130         long long int thisTask;  
+1131         const long long int numTasks=multiQubit.numAmps;
+1132         const long long int chunkSize=multiQubit.numAmps;
+1133         const long long int chunkId=multiQubit.chunkId;
+1134 
+1135         REAL rot1Real=rot1.real, rot1Imag=rot1.imag;
+1136         REAL rot2Real=rot2.real, rot2Imag=rot2.imag;
+1137         REAL *stateVecRealUp=stateVecUp.real, *stateVecImagUp=stateVecUp.imag;
+1138         REAL *stateVecRealLo=stateVecLo.real, *stateVecImagLo=stateVecLo.imag;
+1139         REAL *stateVecRealOut=stateVecOut.real, *stateVecImagOut=stateVecOut.
       imag;
-1138 
-1139 # ifdef _OPENMP
-1140 # pragma omp parallel \
-1141         default  (none) \
-1142         shared   (stateVecRealUp,stateVecImagUp,stateVecRealLo,stateVecImagLo,sta
+1140 
+1141 # ifdef _OPENMP
+1142 # pragma omp parallel \
+1143         default  (none) \
+1144         shared   (stateVecRealUp,stateVecImagUp,stateVecRealLo,stateVecImagLo,sta
       teVecRealOut,stateVecImagOut, \
-1143                         rot1Real,rot1Imag, rot2Real,rot2Imag, mask) \
-1144         private  (thisTask,stateRealUp,stateImagUp,stateRealLo,stateImagLo)
-1145 # endif
-1146         {
-1147 # ifdef _OPENMP
-1148                 # pragma omp for schedule (static)
-1149 # endif
-1150                 for (thisTask=0; thisTask<numTasks; thisTask++) {
-1151                         if (mask == (mask & (thisTask+chunkId*chunkSize)) ){
-1152                                 // store current state vector values in temp vari
+1145                         rot1Real,rot1Imag, rot2Real,rot2Imag, mask) \
+1146         private  (thisTask,stateRealUp,stateImagUp,stateRealLo,stateImagLo)
+1147 # endif
+1148         {
+1149 # ifdef _OPENMP
+1150                 # pragma omp for schedule (static)
+1151 # endif
+1152                 for (thisTask=0; thisTask<numTasks; thisTask++) {
+1153                         if (mask == (mask & (thisTask+chunkId*chunkSize)) ){
+1154                                 // store current state vector values in temp vari
       ables
-1153                                 stateRealUp = stateVecRealUp[thisTask];
-1154                                 stateImagUp = stateVecImagUp[thisTask];
-1155 
-1156                                 stateRealLo = stateVecRealLo[thisTask];
-1157                                 stateImagLo = stateVecImagLo[thisTask];
-1158 
-1159                 stateVecRealOut[thisTask] = rot1Real*stateRealUp - rot1Imag*state
+1155                                 stateRealUp = stateVecRealUp[thisTask];
+1156                                 stateImagUp = stateVecImagUp[thisTask];
+1157 
+1158                                 stateRealLo = stateVecRealLo[thisTask];
+1159                                 stateImagLo = stateVecImagLo[thisTask];
+1160 
+1161                 stateVecRealOut[thisTask] = rot1Real*stateRealUp - rot1Imag*state
       ImagUp 
-1160                     + rot2Real*stateRealLo - rot2Imag*stateImagLo;
-1161                 stateVecImagOut[thisTask] = rot1Real*stateImagUp + rot1Imag*state
+1162                     + rot2Real*stateRealLo - rot2Imag*stateImagLo;
+1163                 stateVecImagOut[thisTask] = rot1Real*stateImagUp + rot1Imag*state
       RealUp 
-1162                     + rot2Real*stateImagLo + rot2Imag*stateRealLo;
-1163                         }
-1164                 }
-1165         }
-1166 }
+1164                     + rot2Real*stateImagLo + rot2Imag*stateRealLo;
+1165                         }
+1166                 }
+1167         }
+1168 }
 \end{DoxyCode}
-\hypertarget{qubits__internal_8h_a32cb91618b5fcd79b54be8d8760b713d}{
+\hypertarget{qubits__internal_8h_a1309eabcba3cb97fbc3cd2e606d17766}{
 \index{qubits\_\-internal.h@{qubits\_\-internal.h}!multiControlledUnitaryLocal@{multiControlledUnitaryLocal}}
 \index{multiControlledUnitaryLocal@{multiControlledUnitaryLocal}!qubits_internal.h@{qubits\_\-internal.h}}
-\paragraph[{multiControlledUnitaryLocal}]{\setlength{\rightskip}{0pt plus 5cm}void multiControlledUnitaryLocal ({\bf MultiQubit} {\em multiQubit}, \/  const int {\em rotQubit}, \/  long long int {\em mask}, \/  {\bf ComplexMatrix2} {\em u})}\hfill}
-\label{qubits__internal_8h_a32cb91618b5fcd79b54be8d8760b713d}
+\paragraph[{multiControlledUnitaryLocal}]{\setlength{\rightskip}{0pt plus 5cm}void multiControlledUnitaryLocal ({\bf MultiQubit} {\em multiQubit}, \/  const int {\em targetQubit}, \/  long long int {\em mask}, \/  {\bf ComplexMatrix2} {\em u})}\hfill}
+\label{qubits__internal_8h_a1309eabcba3cb97fbc3cd2e606d17766}
 
 
 Rotate a single qubit in the state vector of probability amplitudes, given two complex numbers alpha and beta and a control qubit. Only perform the rotation for elements where the control qubit is one.
 
 
 \begin{DoxyParams}{Parameters}
-\item[\mbox{$\leftrightarrow$} {\em multiQubit}]object representing the set of qubits \item[\mbox{$\leftarrow$} {\em rotQubit}]qubit to rotate \item[\mbox{$\leftarrow$} {\em controlQubit}]perform rotation if this qubit is 1 \item[\mbox{$\leftarrow$} {\em alpha}]rotation angle \item[\mbox{$\leftarrow$} {\em beta}]rotation angle \end{DoxyParams}
+\item[\mbox{$\leftrightarrow$} {\em multiQubit}]object representing the set of qubits \item[\mbox{$\leftarrow$} {\em targetQubit}]qubit to rotate \item[\mbox{$\leftarrow$} {\em controlQubit}]perform rotation if this qubit is 1 \item[\mbox{$\leftarrow$} {\em alpha}]rotation angle \item[\mbox{$\leftarrow$} {\em beta}]rotation angle \end{DoxyParams}
 
 
-Definition at line 838 of file qubits.c.
+Definition at line 840 of file qubits.c.
 
 References MultiQubit::chunkId, Complex::imag, ComplexArray::imag, MultiQubit::numAmps, ComplexMatrix2::r0c0, ComplexMatrix2::r0c1, ComplexMatrix2::r1c0, ComplexMatrix2::r1c1, Complex::real, ComplexArray::real, REAL, and MultiQubit::stateVec.
 
@@ -1372,94 +1372,94 @@ Referenced by multiControlledUnitary().
 
 
 \begin{DoxyCode}
-840 {
-841         long long int sizeBlock, sizeHalfBlock;
-842         long long int thisBlock, // current block
-843              indexUp,indexLo;    // current index and corresponding index in lowe
+842 {
+843         long long int sizeBlock, sizeHalfBlock;
+844         long long int thisBlock, // current block
+845              indexUp,indexLo;    // current index and corresponding index in lowe
       r half block
-844 
-845         REAL stateRealUp,stateRealLo,stateImagUp,stateImagLo;
-846         long long int thisTask;         
-847         const long long int numTasks=multiQubit.numAmps>>1;
-848         const long long int chunkSize=multiQubit.numAmps;
-849         const long long int chunkId=multiQubit.chunkId;
-850 
-851         // set dimensions
-852         sizeHalfBlock = 1LL << rotQubit;  
-853         sizeBlock     = 2LL * sizeHalfBlock; 
-854 
-855         // Can't use multiQubit.stateVec as a private OMP var
-856         REAL *stateVecReal = multiQubit.stateVec.real;
-857         REAL *stateVecImag = multiQubit.stateVec.imag;
-858 
-859 # ifdef _OPENMP
-860 # pragma omp parallel \
-861         default  (none) \
-862         shared   (sizeBlock,sizeHalfBlock, stateVecReal,stateVecImag, u, mask) \
-863         private  (thisTask,thisBlock ,indexUp,indexLo, stateRealUp,stateImagUp,st
+846 
+847         REAL stateRealUp,stateRealLo,stateImagUp,stateImagLo;
+848         long long int thisTask;         
+849         const long long int numTasks=multiQubit.numAmps>>1;
+850         const long long int chunkSize=multiQubit.numAmps;
+851         const long long int chunkId=multiQubit.chunkId;
+852 
+853         // set dimensions
+854         sizeHalfBlock = 1LL << targetQubit;  
+855         sizeBlock     = 2LL * sizeHalfBlock; 
+856 
+857         // Can't use multiQubit.stateVec as a private OMP var
+858         REAL *stateVecReal = multiQubit.stateVec.real;
+859         REAL *stateVecImag = multiQubit.stateVec.imag;
+860 
+861 # ifdef _OPENMP
+862 # pragma omp parallel \
+863         default  (none) \
+864         shared   (sizeBlock,sizeHalfBlock, stateVecReal,stateVecImag, u, mask) \
+865         private  (thisTask,thisBlock ,indexUp,indexLo, stateRealUp,stateImagUp,st
       ateRealLo,stateImagLo) 
-864 # endif
-865         {
-866 # ifdef _OPENMP
-867                 # pragma omp for schedule (static)
-868 # endif
-869                 for (thisTask=0; thisTask<numTasks; thisTask++) {
-870 
-871                         thisBlock   = thisTask / sizeHalfBlock;
-872                         indexUp     = thisBlock*sizeBlock + thisTask%sizeHalfBloc
+866 # endif
+867         {
+868 # ifdef _OPENMP
+869                 # pragma omp for schedule (static)
+870 # endif
+871                 for (thisTask=0; thisTask<numTasks; thisTask++) {
+872 
+873                         thisBlock   = thisTask / sizeHalfBlock;
+874                         indexUp     = thisBlock*sizeBlock + thisTask%sizeHalfBloc
       k;
-873                         indexLo     = indexUp + sizeHalfBlock;
-874 
-875                         if (mask == (mask & (indexUp+chunkId*chunkSize)) ){
-876                                 // store current state vector values in temp vari
+875                         indexLo     = indexUp + sizeHalfBlock;
+876 
+877                         if (mask == (mask & (indexUp+chunkId*chunkSize)) ){
+878                                 // store current state vector values in temp vari
       ables
-877                                 stateRealUp = stateVecReal[indexUp];
-878                                 stateImagUp = stateVecImag[indexUp];
-879 
-880                                 stateRealLo = stateVecReal[indexLo];
-881                                 stateImagLo = stateVecImag[indexLo];
-882 
-883 
-884                                 // state[indexUp] = u00 * state[indexUp] + u01 * 
+879                                 stateRealUp = stateVecReal[indexUp];
+880                                 stateImagUp = stateVecImag[indexUp];
+881 
+882                                 stateRealLo = stateVecReal[indexLo];
+883                                 stateImagLo = stateVecImag[indexLo];
+884 
+885 
+886                                 // state[indexUp] = u00 * state[indexUp] + u01 * 
       state[indexLo]
-885                                 stateVecReal[indexUp] = u.r0c0.real*stateRealUp -
+887                                 stateVecReal[indexUp] = u.r0c0.real*stateRealUp -
        u.r0c0.imag*stateImagUp 
-886                                         + u.r0c1.real*stateRealLo - u.r0c1.imag*s
+888                                         + u.r0c1.real*stateRealLo - u.r0c1.imag*s
       tateImagLo;
-887                                 stateVecImag[indexUp] = u.r0c0.real*stateImagUp +
+889                                 stateVecImag[indexUp] = u.r0c0.real*stateImagUp +
        u.r0c0.imag*stateRealUp 
-888                                         + u.r0c1.real*stateImagLo + u.r0c1.imag*s
+890                                         + u.r0c1.real*stateImagLo + u.r0c1.imag*s
       tateRealLo;
-889 
-890                                 // state[indexLo] = u10  * state[indexUp] + u11 *
+891 
+892                                 // state[indexLo] = u10  * state[indexUp] + u11 *
        state[indexLo]
-891                                 stateVecReal[indexLo] = u.r1c0.real*stateRealUp  
+893                                 stateVecReal[indexLo] = u.r1c0.real*stateRealUp  
       - u.r1c0.imag*stateImagUp 
-892                                         + u.r1c1.real*stateRealLo  -  u.r1c1.
+894                                         + u.r1c1.real*stateRealLo  -  u.r1c1.
       imag*stateImagLo;
-893                                 stateVecImag[indexLo] = u.r1c0.real*stateImagUp +
+895                                 stateVecImag[indexLo] = u.r1c0.real*stateImagUp +
        u.r1c0.imag*stateRealUp 
-894                                         + u.r1c1.real*stateImagLo + u.r1c1.imag*s
+896                                         + u.r1c1.real*stateImagLo + u.r1c1.imag*s
       tateRealLo;
-895                         }
-896                 } 
-897         }
-898 
-899 }
+897                         }
+898                 } 
+899         }
+900 
+901 }
 \end{DoxyCode}
-\hypertarget{qubits__internal_8h_ae275b94c1a483dda43bf4ec947635605}{
+\hypertarget{qubits__internal_8h_aae7a8a7f1ccbddb7f76b6c52b746bb43}{
 \index{qubits\_\-internal.h@{qubits\_\-internal.h}!phaseGate@{phaseGate}}
 \index{phaseGate@{phaseGate}!qubits_internal.h@{qubits\_\-internal.h}}
-\paragraph[{phaseGate}]{\setlength{\rightskip}{0pt plus 5cm}void phaseGate ({\bf MultiQubit} {\em multiQubit}, \/  const int {\em rotQubit}, \/  enum {\bf phaseGateType} {\em type})}\hfill}
-\label{qubits__internal_8h_ae275b94c1a483dda43bf4ec947635605}
+\paragraph[{phaseGate}]{\setlength{\rightskip}{0pt plus 5cm}void phaseGate ({\bf MultiQubit} {\em multiQubit}, \/  const int {\em targetQubit}, \/  enum {\bf phaseGateType} {\em type})}\hfill}
+\label{qubits__internal_8h_aae7a8a7f1ccbddb7f76b6c52b746bb43}
 
 
 Rotate a single qubit by \{\{1,0\},\{0,p\}\} where p is a phase term determined by the type argument. 
 \begin{DoxyParams}{Parameters}
-\item[\mbox{$\leftrightarrow$} {\em multiQubit}]object representing the set of qubits \item[\mbox{$\leftarrow$} {\em rotQubit}]qubit to rotate \item[\mbox{$\leftarrow$} {\em type}]the type of phase gate to apply -\/-\/ one of \{SIGMA\_\-Z, S\_\-GATE, T\_\-GATE\} \end{DoxyParams}
+\item[\mbox{$\leftrightarrow$} {\em multiQubit}]object representing the set of qubits \item[\mbox{$\leftarrow$} {\em targetQubit}]qubit to rotate \item[\mbox{$\leftarrow$} {\em type}]the type of phase gate to apply -\/-\/ one of \{SIGMA\_\-Z, S\_\-GATE, T\_\-GATE\} \end{DoxyParams}
 
 
-Definition at line 153 of file qubits\_\-env\_\-local.c.
+Definition at line 166 of file qubits\_\-env\_\-local.c.
 
 References MultiQubit::chunkId, chunkIsUpper(), halfMatrixBlockFitsInChunk(), MultiQubit::numAmps, MultiQubit::numQubits, phaseGateDistributed(), phaseGateLocal(), and QuESTAssert().
 
@@ -1467,24 +1467,25 @@ Referenced by sGate(), sigmaZ(), and tGate().
 
 
 \begin{DoxyCode}
-154 {
-155     QuESTAssert(rotQubit >= 0 && rotQubit < multiQubit.numQubits, 1, __func__);
-156         phaseGateLocal(multiQubit, rotQubit, type);
-157 }
+167 {
+168     QuESTAssert(targetQubit >= 0 && targetQubit < multiQubit.numQubits, 1, __func
+      __);
+169         phaseGateLocal(multiQubit, targetQubit, type);
+170 }
 \end{DoxyCode}
-\hypertarget{qubits__internal_8h_a38a05c7e749e806b182ef3b89878bfc4}{
+\hypertarget{qubits__internal_8h_af832ed00b02a0597b7fe0b714032c54a}{
 \index{qubits\_\-internal.h@{qubits\_\-internal.h}!phaseGateDistributed@{phaseGateDistributed}}
 \index{phaseGateDistributed@{phaseGateDistributed}!qubits_internal.h@{qubits\_\-internal.h}}
-\paragraph[{phaseGateDistributed}]{\setlength{\rightskip}{0pt plus 5cm}void phaseGateDistributed ({\bf MultiQubit} {\em multiQubit}, \/  const int {\em rotQubit}, \/  enum {\bf phaseGateType} {\em type})}\hfill}
-\label{qubits__internal_8h_a38a05c7e749e806b182ef3b89878bfc4}
+\paragraph[{phaseGateDistributed}]{\setlength{\rightskip}{0pt plus 5cm}void phaseGateDistributed ({\bf MultiQubit} {\em multiQubit}, \/  const int {\em targetQubit}, \/  enum {\bf phaseGateType} {\em type})}\hfill}
+\label{qubits__internal_8h_af832ed00b02a0597b7fe0b714032c54a}
 
 
 Rotate a single qubit by \{\{1,0\},\{0,p\}\} where p is a phase term determined by the type argument. 
 \begin{DoxyParams}{Parameters}
-\item[\mbox{$\leftrightarrow$} {\em multiQubit}]object representing the set of qubits \item[\mbox{$\leftarrow$} {\em rotQubit}]qubit to rotate \item[\mbox{$\leftarrow$} {\em type}]the type of phase gate to apply -\/-\/ one of \{SIGMA\_\-Z, S\_\-GATE, T\_\-GATE\} \end{DoxyParams}
+\item[\mbox{$\leftrightarrow$} {\em multiQubit}]object representing the set of qubits \item[\mbox{$\leftarrow$} {\em targetQubit}]qubit to rotate \item[\mbox{$\leftarrow$} {\em type}]the type of phase gate to apply -\/-\/ one of \{SIGMA\_\-Z, S\_\-GATE, T\_\-GATE\} \end{DoxyParams}
 
 
-Definition at line 1680 of file qubits.c.
+Definition at line 1682 of file qubits.c.
 
 References ComplexArray::imag, MultiQubit::numAmps, ComplexArray::real, REAL, S\_\-GATE, SIGMA\_\-Z, MultiQubit::stateVec, and T\_\-GATE.
 
@@ -1492,72 +1493,72 @@ Referenced by phaseGate().
 
 
 \begin{DoxyCode}
-1681 {
-1682         REAL stateRealLo,stateImagLo;
-1683         long long int thisTask;         
-1684         const long long int numTasks=multiQubit.numAmps;
-1685 
-1686         // Can't use multiQubit.stateVec as a private OMP var
-1687         REAL *stateVecReal = multiQubit.stateVec.real;
-1688         REAL *stateVecImag = multiQubit.stateVec.imag;
-1689 
-1690         REAL recRoot2 = 1.0/sqrt(2);
+1683 {
+1684         REAL stateRealLo,stateImagLo;
+1685         long long int thisTask;         
+1686         const long long int numTasks=multiQubit.numAmps;
+1687 
+1688         // Can't use multiQubit.stateVec as a private OMP var
+1689         REAL *stateVecReal = multiQubit.stateVec.real;
+1690         REAL *stateVecImag = multiQubit.stateVec.imag;
 1691 
-1692 # ifdef _OPENMP
-1693 # pragma omp parallel \
-1694         default  (none) \
-1695         shared   (stateVecReal,stateVecImag, recRoot2, type) \
-1696         private  (thisTask,stateRealLo,stateImagLo) 
-1697 # endif
-1698         {
-1699                 if (type==SIGMA_Z){
-1700 # ifdef _OPENMP
-1701                         # pragma omp for schedule (static)
-1702 # endif
-1703                         for (thisTask=0; thisTask<numTasks; thisTask++) {
-1704                                 stateVecReal[thisTask] = -stateVecReal[thisTask];
+1692         REAL recRoot2 = 1.0/sqrt(2);
+1693 
+1694 # ifdef _OPENMP
+1695 # pragma omp parallel \
+1696         default  (none) \
+1697         shared   (stateVecReal,stateVecImag, recRoot2, type) \
+1698         private  (thisTask,stateRealLo,stateImagLo) 
+1699 # endif
+1700         {
+1701                 if (type==SIGMA_Z){
+1702 # ifdef _OPENMP
+1703                         # pragma omp for schedule (static)
+1704 # endif
+1705                         for (thisTask=0; thisTask<numTasks; thisTask++) {
+1706                                 stateVecReal[thisTask] = -stateVecReal[thisTask];
       
-1705                                 stateVecImag[thisTask] = -stateVecImag[thisTask];
+1707                                 stateVecImag[thisTask] = -stateVecImag[thisTask];
       
-1706                         } 
-1707                 } else if (type==S_GATE){
-1708 # ifdef _OPENMP
-1709                         # pragma omp for schedule (static)
-1710 # endif
-1711                         for (thisTask=0; thisTask<numTasks; thisTask++) {
-1712                                 stateRealLo = stateVecReal[thisTask];
-1713                                 stateImagLo = stateVecImag[thisTask];
-1714 
-1715                                 stateVecReal[thisTask] = -stateImagLo;
-1716                                 stateVecImag[thisTask] = stateRealLo;
-1717                         } 
-1718                 } else if (type==T_GATE){
-1719 # ifdef _OPENMP
-1720                         # pragma omp for schedule (static)
-1721 # endif
-1722                         for (thisTask=0; thisTask<numTasks; thisTask++) {
-1723                                 stateRealLo = stateVecReal[thisTask];
-1724                                 stateImagLo = stateVecImag[thisTask];
-1725 
-1726                                 stateVecReal[thisTask] = recRoot2 * (stateRealLo 
+1708                         } 
+1709                 } else if (type==S_GATE){
+1710 # ifdef _OPENMP
+1711                         # pragma omp for schedule (static)
+1712 # endif
+1713                         for (thisTask=0; thisTask<numTasks; thisTask++) {
+1714                                 stateRealLo = stateVecReal[thisTask];
+1715                                 stateImagLo = stateVecImag[thisTask];
+1716 
+1717                                 stateVecReal[thisTask] = -stateImagLo;
+1718                                 stateVecImag[thisTask] = stateRealLo;
+1719                         } 
+1720                 } else if (type==T_GATE){
+1721 # ifdef _OPENMP
+1722                         # pragma omp for schedule (static)
+1723 # endif
+1724                         for (thisTask=0; thisTask<numTasks; thisTask++) {
+1725                                 stateRealLo = stateVecReal[thisTask];
+1726                                 stateImagLo = stateVecImag[thisTask];
+1727 
+1728                                 stateVecReal[thisTask] = recRoot2 * (stateRealLo 
       - stateImagLo);
-1727                                 stateVecImag[thisTask] = recRoot2 * (stateRealLo 
+1729                                 stateVecImag[thisTask] = recRoot2 * (stateRealLo 
       + stateImagLo);
-1728                         } 
-1729                 } else printf("Type %d is an invalid phase gate\n", type);
-1730         }
-1731 }
+1730                         } 
+1731                 } else printf("Type %d is an invalid phase gate\n", type);
+1732         }
+1733 }
 \end{DoxyCode}
-\hypertarget{qubits__internal_8h_a6a736aeb3532898019fe7c27010edc6a}{
+\hypertarget{qubits__internal_8h_a3a54566b73ac84c312d7da4f56ffbc3b}{
 \index{qubits\_\-internal.h@{qubits\_\-internal.h}!phaseGateLocal@{phaseGateLocal}}
 \index{phaseGateLocal@{phaseGateLocal}!qubits_internal.h@{qubits\_\-internal.h}}
-\paragraph[{phaseGateLocal}]{\setlength{\rightskip}{0pt plus 5cm}void phaseGateLocal ({\bf MultiQubit} {\em multiQubit}, \/  const int {\em rotQubit}, \/  enum {\bf phaseGateType} {\em type})}\hfill}
-\label{qubits__internal_8h_a6a736aeb3532898019fe7c27010edc6a}
+\paragraph[{phaseGateLocal}]{\setlength{\rightskip}{0pt plus 5cm}void phaseGateLocal ({\bf MultiQubit} {\em multiQubit}, \/  const int {\em targetQubit}, \/  enum {\bf phaseGateType} {\em type})}\hfill}
+\label{qubits__internal_8h_a3a54566b73ac84c312d7da4f56ffbc3b}
 
 
 Rotate a single qubit by \{\{1,0\},\{0,p\}\} where p is a phase term determined by the type argument. 
 \begin{DoxyParams}{Parameters}
-\item[\mbox{$\leftrightarrow$} {\em multiQubit}]object representing the set of qubits \item[\mbox{$\leftarrow$} {\em rotQubit}]qubit to rotate \item[\mbox{$\leftarrow$} {\em type}]the type of phase gate to apply -\/-\/ one of \{SIGMA\_\-Z, S\_\-GATE, T\_\-GATE\} \end{DoxyParams}
+\item[\mbox{$\leftrightarrow$} {\em multiQubit}]object representing the set of qubits \item[\mbox{$\leftarrow$} {\em targetQubit}]qubit to rotate \item[\mbox{$\leftarrow$} {\em type}]the type of phase gate to apply -\/-\/ one of \{SIGMA\_\-Z, S\_\-GATE, T\_\-GATE\} \end{DoxyParams}
 
 
 fix -\/-\/ can i rewrite this to not use mod?
@@ -1566,7 +1567,7 @@ fix -\/-\/ can i rewrite this to not use mod?
 
 fix -\/-\/ can i rewrite this to not use mod? 
 
-Definition at line 1597 of file qubits.c.
+Definition at line 1599 of file qubits.c.
 
 References ComplexArray::imag, MultiQubit::numAmps, ComplexArray::real, REAL, S\_\-GATE, SIGMA\_\-Z, MultiQubit::stateVec, and T\_\-GATE.
 
@@ -1574,84 +1575,84 @@ Referenced by phaseGate().
 
 
 \begin{DoxyCode}
-1598 {
-1599         long long int sizeBlock, sizeHalfBlock;
-1600         long long int thisBlock, // current block
-1601              indexUp,indexLo;    // current index and corresponding index in lowe
+1600 {
+1601         long long int sizeBlock, sizeHalfBlock;
+1602         long long int thisBlock, // current block
+1603              indexUp,indexLo;    // current index and corresponding index in lowe
       r half block
-1602 
-1603         REAL stateRealLo,stateImagLo;
-1604         long long int thisTask;         
-1605         const long long int numTasks=multiQubit.numAmps>>1;
-1606 
-1607         // set dimensions
-1608         sizeHalfBlock = 1LL << rotQubit;  
-1609         sizeBlock     = 2LL * sizeHalfBlock; 
-1610 
-1611         // Can't use multiQubit.stateVec as a private OMP var
-1612         REAL *stateVecReal = multiQubit.stateVec.real;
-1613         REAL *stateVecImag = multiQubit.stateVec.imag;
-1614 
-1615         REAL recRoot2 = 1.0/sqrt(2);
+1604 
+1605         REAL stateRealLo,stateImagLo;
+1606         long long int thisTask;         
+1607         const long long int numTasks=multiQubit.numAmps>>1;
+1608 
+1609         // set dimensions
+1610         sizeHalfBlock = 1LL << targetQubit;  
+1611         sizeBlock     = 2LL * sizeHalfBlock; 
+1612 
+1613         // Can't use multiQubit.stateVec as a private OMP var
+1614         REAL *stateVecReal = multiQubit.stateVec.real;
+1615         REAL *stateVecImag = multiQubit.stateVec.imag;
 1616 
-1617 # ifdef _OPENMP
-1618 # pragma omp parallel \
-1619         default  (none) \
-1620         shared   (sizeBlock,sizeHalfBlock,stateVecReal,stateVecImag,recRoot2,type
+1617         REAL recRoot2 = 1.0/sqrt(2);
+1618 
+1619 # ifdef _OPENMP
+1620 # pragma omp parallel \
+1621         default  (none) \
+1622         shared   (sizeBlock,sizeHalfBlock,stateVecReal,stateVecImag,recRoot2,type
       ) \
-1621         private  (thisTask,thisBlock,indexUp,indexLo,stateRealLo,stateImagLo) 
-1622 # endif
-1623         {
-1624                 if (type==SIGMA_Z){
-1625 # ifdef _OPENMP
-1626                         # pragma omp for schedule (static)
-1627 # endif
-1628                         for (thisTask=0; thisTask<numTasks; thisTask++) {
-1630                                 thisBlock   = thisTask / sizeHalfBlock;
-1631                                 indexUp     = thisBlock*sizeBlock + thisTask%size
+1623         private  (thisTask,thisBlock,indexUp,indexLo,stateRealLo,stateImagLo) 
+1624 # endif
+1625         {
+1626                 if (type==SIGMA_Z){
+1627 # ifdef _OPENMP
+1628                         # pragma omp for schedule (static)
+1629 # endif
+1630                         for (thisTask=0; thisTask<numTasks; thisTask++) {
+1632                                 thisBlock   = thisTask / sizeHalfBlock;
+1633                                 indexUp     = thisBlock*sizeBlock + thisTask%size
       HalfBlock;
-1632                                 indexLo     = indexUp + sizeHalfBlock;
-1633 
-1634                                 stateVecReal[indexLo] = -stateVecReal[indexLo];
-1635                                 stateVecImag[indexLo] = -stateVecImag[indexLo];
-1636                         } 
-1637                 } 
-1638                 
-1639                 else if (type==S_GATE){
-1640 # ifdef _OPENMP
-1641                         # pragma omp for schedule (static)
-1642 # endif
-1643                         for (thisTask=0; thisTask<numTasks; thisTask++) {
-1645                                 thisBlock   = thisTask / sizeHalfBlock;
-1646                                 indexUp     = thisBlock*sizeBlock + thisTask%size
+1634                                 indexLo     = indexUp + sizeHalfBlock;
+1635 
+1636                                 stateVecReal[indexLo] = -stateVecReal[indexLo];
+1637                                 stateVecImag[indexLo] = -stateVecImag[indexLo];
+1638                         } 
+1639                 } 
+1640                 
+1641                 else if (type==S_GATE){
+1642 # ifdef _OPENMP
+1643                         # pragma omp for schedule (static)
+1644 # endif
+1645                         for (thisTask=0; thisTask<numTasks; thisTask++) {
+1647                                 thisBlock   = thisTask / sizeHalfBlock;
+1648                                 indexUp     = thisBlock*sizeBlock + thisTask%size
       HalfBlock;
-1647                                 indexLo     = indexUp + sizeHalfBlock;
-1648                                 stateRealLo = stateVecReal[indexLo];
-1649                                 stateImagLo = stateVecImag[indexLo];
-1650 
-1651                                 stateVecReal[indexLo] = -stateImagLo;
-1652                                 stateVecImag[indexLo] = stateRealLo;
-1653                         } 
-1654                 } else if (type==T_GATE){
-1655 # ifdef _OPENMP
-1656                         # pragma omp for schedule (static)
-1657 # endif
-1658                         for (thisTask=0; thisTask<numTasks; thisTask++) {
-1660                                 thisBlock   = thisTask / sizeHalfBlock;
-1661                                 indexUp     = thisBlock*sizeBlock + thisTask%size
+1649                                 indexLo     = indexUp + sizeHalfBlock;
+1650                                 stateRealLo = stateVecReal[indexLo];
+1651                                 stateImagLo = stateVecImag[indexLo];
+1652 
+1653                                 stateVecReal[indexLo] = -stateImagLo;
+1654                                 stateVecImag[indexLo] = stateRealLo;
+1655                         } 
+1656                 } else if (type==T_GATE){
+1657 # ifdef _OPENMP
+1658                         # pragma omp for schedule (static)
+1659 # endif
+1660                         for (thisTask=0; thisTask<numTasks; thisTask++) {
+1662                                 thisBlock   = thisTask / sizeHalfBlock;
+1663                                 indexUp     = thisBlock*sizeBlock + thisTask%size
       HalfBlock;
-1662                                 indexLo     = indexUp + sizeHalfBlock;
-1663                                 stateRealLo = stateVecReal[indexLo];
-1664                                 stateImagLo = stateVecImag[indexLo];
-1665 
-1666                                 stateVecReal[indexLo] = recRoot2 * (stateRealLo -
+1664                                 indexLo     = indexUp + sizeHalfBlock;
+1665                                 stateRealLo = stateVecReal[indexLo];
+1666                                 stateImagLo = stateVecImag[indexLo];
+1667 
+1668                                 stateVecReal[indexLo] = recRoot2 * (stateRealLo -
        stateImagLo);
-1667                                 stateVecImag[indexLo] = recRoot2 * (stateRealLo +
+1669                                 stateVecImag[indexLo] = recRoot2 * (stateRealLo +
        stateImagLo);
-1668                         } 
-1669                 } else printf("Type %d is an invalid phase gate\n", type);
-1670         }
-1671 }
+1670                         } 
+1671                 } else printf("Type %d is an invalid phase gate\n", type);
+1672         }
+1673 }
 \end{DoxyCode}
 \hypertarget{qubits__internal_8h_a3587b9d533e633ccf1abf9ad2ce45d8d}{
 \index{qubits\_\-internal.h@{qubits\_\-internal.h}!QuESTAssert@{QuESTAssert}}
@@ -1660,23 +1661,23 @@ Referenced by phaseGate().
 \label{qubits__internal_8h_a3587b9d533e633ccf1abf9ad2ce45d8d}
 
 
-Definition at line 200 of file qubits\_\-env\_\-local.c.
+Definition at line 242 of file qubits\_\-env\_\-local.c.
 
 References exitWithError().
 
-Referenced by collapseToOutcome(), compactUnitary(), controlledCompactUnitary(), controlledNot(), controlledPhaseGate(), controlledUnitary(), findProbabilityOfOutcome(), hadamard(), multiControlledPhaseGate(), multiControlledUnitary(), phaseGate(), sigmaX(), sigmaY(), and unitary().
+Referenced by collapseToOutcome(), compactUnitary(), controlledCompactUnitary(), controlledNot(), controlledPhaseGate(), controlledUnitary(), createMultiQubit(), findProbabilityOfOutcome(), hadamard(), measure(), measureWithStats(), multiControlledPhaseGate(), multiControlledUnitary(), phaseGate(), sigmaX(), sigmaY(), and unitary().
 
 
 \begin{DoxyCode}
-200                                                               {
-201     if (!isValid) exitWithError(errorCode, func);
-202 }
+242                                                               {
+243     if (!isValid) exitWithError(errorCode, func);
+244 }
 \end{DoxyCode}
-\hypertarget{qubits__internal_8h_a5958808b2f2f05937921ba7dabe5a171}{
+\hypertarget{qubits__internal_8h_a2275fff50824fe47485890ff5a857785}{
 \index{qubits\_\-internal.h@{qubits\_\-internal.h}!sigmaXDistributed@{sigmaXDistributed}}
 \index{sigmaXDistributed@{sigmaXDistributed}!qubits_internal.h@{qubits\_\-internal.h}}
-\paragraph[{sigmaXDistributed}]{\setlength{\rightskip}{0pt plus 5cm}void sigmaXDistributed ({\bf MultiQubit} {\em multiQubit}, \/  const int {\em rotQubit}, \/  {\bf ComplexArray} {\em stateVecIn}, \/  {\bf ComplexArray} {\em stateVecOut})}\hfill}
-\label{qubits__internal_8h_a5958808b2f2f05937921ba7dabe5a171}
+\paragraph[{sigmaXDistributed}]{\setlength{\rightskip}{0pt plus 5cm}void sigmaXDistributed ({\bf MultiQubit} {\em multiQubit}, \/  const int {\em targetQubit}, \/  {\bf ComplexArray} {\em stateVecIn}, \/  {\bf ComplexArray} {\em stateVecOut})}\hfill}
+\label{qubits__internal_8h_a2275fff50824fe47485890ff5a857785}
 
 
 Rotate a single qubit by \{\{0,1\},\{1,0\}. Operate on a subset of the state vector with upper and lower block values stored seperately. This rotation is just swapping upper and lower values, and stateVecIn must already be the correct section for this chunk
@@ -1686,10 +1687,10 @@ Qubits are zero-\/based and the the first qubit is the rightmost
 \end{DoxyRemark}
 
 \begin{DoxyParams}{Parameters}
-\item[\mbox{$\leftrightarrow$} {\em multiQubit}]object representing the set of qubits \item[\mbox{$\leftarrow$} {\em rotQubit}]qubit to rotate \item[\mbox{$\leftarrow$} {\em stateVecIn}]probability amplitudes in lower or upper half of a block depending on chunkId \item[\mbox{$\rightarrow$} {\em stateVecOut}]array section to update (will correspond to either the lower or upper half of a block) \end{DoxyParams}
+\item[\mbox{$\leftrightarrow$} {\em multiQubit}]object representing the set of qubits \item[\mbox{$\leftarrow$} {\em targetQubit}]qubit to rotate \item[\mbox{$\leftarrow$} {\em stateVecIn}]probability amplitudes in lower or upper half of a block depending on chunkId \item[\mbox{$\rightarrow$} {\em stateVecOut}]array section to update (will correspond to either the lower or upper half of a block) \end{DoxyParams}
 
 
-Definition at line 1235 of file qubits.c.
+Definition at line 1237 of file qubits.c.
 
 References ComplexArray::imag, MultiQubit::numAmps, ComplexArray::real, and REAL.
 
@@ -1697,38 +1698,38 @@ Referenced by sigmaX().
 
 
 \begin{DoxyCode}
-1238 {
-1239 
-1240         long long int thisTask;  
-1241         const long long int numTasks=multiQubit.numAmps;
-1242 
-1243         REAL *stateVecRealIn=stateVecIn.real, *stateVecImagIn=stateVecIn.imag;
-1244         REAL *stateVecRealOut=stateVecOut.real, *stateVecImagOut=stateVecOut.
+1240 {
+1241 
+1242         long long int thisTask;  
+1243         const long long int numTasks=multiQubit.numAmps;
+1244 
+1245         REAL *stateVecRealIn=stateVecIn.real, *stateVecImagIn=stateVecIn.imag;
+1246         REAL *stateVecRealOut=stateVecOut.real, *stateVecImagOut=stateVecOut.
       imag;
-1245 
-1246 # ifdef _OPENMP
-1247 # pragma omp parallel \
-1248         default  (none) \
-1249         shared   (stateVecRealIn,stateVecImagIn,stateVecRealOut,stateVecImagOut) 
+1247 
+1248 # ifdef _OPENMP
+1249 # pragma omp parallel \
+1250         default  (none) \
+1251         shared   (stateVecRealIn,stateVecImagIn,stateVecRealOut,stateVecImagOut) 
       \
-1250         private  (thisTask)
-1251 # endif
-1252         {
-1253 # ifdef _OPENMP
-1254                 # pragma omp for schedule (static)
-1255 # endif
-1256                 for (thisTask=0; thisTask<numTasks; thisTask++) {
-1257                         stateVecRealOut[thisTask] = stateVecRealIn[thisTask];
-1258                         stateVecImagOut[thisTask] = stateVecImagIn[thisTask];
-1259                 }
-1260         }
-1261 } 
+1252         private  (thisTask)
+1253 # endif
+1254         {
+1255 # ifdef _OPENMP
+1256                 # pragma omp for schedule (static)
+1257 # endif
+1258                 for (thisTask=0; thisTask<numTasks; thisTask++) {
+1259                         stateVecRealOut[thisTask] = stateVecRealIn[thisTask];
+1260                         stateVecImagOut[thisTask] = stateVecImagIn[thisTask];
+1261                 }
+1262         }
+1263 } 
 \end{DoxyCode}
-\hypertarget{qubits__internal_8h_aa9e640bb2d0458c937c6a87dfeca0f23}{
+\hypertarget{qubits__internal_8h_a74822fd86bb5d81766e6e8dbdcd62df1}{
 \index{qubits\_\-internal.h@{qubits\_\-internal.h}!sigmaXLocal@{sigmaXLocal}}
 \index{sigmaXLocal@{sigmaXLocal}!qubits_internal.h@{qubits\_\-internal.h}}
-\paragraph[{sigmaXLocal}]{\setlength{\rightskip}{0pt plus 5cm}void sigmaXLocal ({\bf MultiQubit} {\em multiQubit}, \/  const int {\em rotQubit})}\hfill}
-\label{qubits__internal_8h_aa9e640bb2d0458c937c6a87dfeca0f23}
+\paragraph[{sigmaXLocal}]{\setlength{\rightskip}{0pt plus 5cm}void sigmaXLocal ({\bf MultiQubit} {\em multiQubit}, \/  const int {\em targetQubit})}\hfill}
+\label{qubits__internal_8h_a74822fd86bb5d81766e6e8dbdcd62df1}
 
 
 Rotate a single qubit by \{\{0,1\},\{1,0\}. \begin{DoxyRemark}{Remarks}
@@ -1736,10 +1737,10 @@ Qubits are zero-\/based and the the first qubit is the rightmost
 \end{DoxyRemark}
 
 \begin{DoxyParams}{Parameters}
-\item[\mbox{$\leftrightarrow$} {\em multiQubit}]object representing the set of qubits \item[\mbox{$\leftarrow$} {\em rotQubit}]qubit to rotate \end{DoxyParams}
+\item[\mbox{$\leftrightarrow$} {\em multiQubit}]object representing the set of qubits \item[\mbox{$\leftarrow$} {\em targetQubit}]qubit to rotate \end{DoxyParams}
 
 
-Definition at line 1175 of file qubits.c.
+Definition at line 1177 of file qubits.c.
 
 References ComplexArray::imag, MultiQubit::numAmps, ComplexArray::real, REAL, and MultiQubit::stateVec.
 
@@ -1747,58 +1748,58 @@ Referenced by sigmaX().
 
 
 \begin{DoxyCode}
-1176 {
-1177         long long int sizeBlock, sizeHalfBlock;
-1178         long long int thisBlock, // current block
-1179              indexUp,indexLo;    // current index and corresponding index in lowe
+1178 {
+1179         long long int sizeBlock, sizeHalfBlock;
+1180         long long int thisBlock, // current block
+1181              indexUp,indexLo;    // current index and corresponding index in lowe
       r half block
-1180 
-1181         REAL stateRealUp,stateImagUp;
-1182         long long int thisTask;         
-1183         const long long int numTasks=multiQubit.numAmps>>1;
-1184 
-1185         // set dimensions
-1186         sizeHalfBlock = 1LL << rotQubit;  
-1187         sizeBlock     = 2LL * sizeHalfBlock; 
-1188 
-1189         // Can't use multiQubit.stateVec as a private OMP var
-1190         REAL *stateVecReal = multiQubit.stateVec.real;
-1191         REAL *stateVecImag = multiQubit.stateVec.imag;
-1192 
-1193 # ifdef _OPENMP
-1194 # pragma omp parallel \
-1195         default  (none) \
-1196         shared   (sizeBlock,sizeHalfBlock, stateVecReal,stateVecImag) \
-1197         private  (thisTask,thisBlock ,indexUp,indexLo, stateRealUp,stateImagUp) 
-1198 # endif
-1199         {
-1200 # ifdef _OPENMP
-1201                 # pragma omp for schedule (static)
-1202 # endif
-1203                 for (thisTask=0; thisTask<numTasks; thisTask++) {
-1204                         thisBlock   = thisTask / sizeHalfBlock;
-1205                         indexUp     = thisBlock*sizeBlock + thisTask%sizeHalfBloc
+1182 
+1183         REAL stateRealUp,stateImagUp;
+1184         long long int thisTask;         
+1185         const long long int numTasks=multiQubit.numAmps>>1;
+1186 
+1187         // set dimensions
+1188         sizeHalfBlock = 1LL << targetQubit;  
+1189         sizeBlock     = 2LL * sizeHalfBlock; 
+1190 
+1191         // Can't use multiQubit.stateVec as a private OMP var
+1192         REAL *stateVecReal = multiQubit.stateVec.real;
+1193         REAL *stateVecImag = multiQubit.stateVec.imag;
+1194 
+1195 # ifdef _OPENMP
+1196 # pragma omp parallel \
+1197         default  (none) \
+1198         shared   (sizeBlock,sizeHalfBlock, stateVecReal,stateVecImag) \
+1199         private  (thisTask,thisBlock ,indexUp,indexLo, stateRealUp,stateImagUp) 
+1200 # endif
+1201         {
+1202 # ifdef _OPENMP
+1203                 # pragma omp for schedule (static)
+1204 # endif
+1205                 for (thisTask=0; thisTask<numTasks; thisTask++) {
+1206                         thisBlock   = thisTask / sizeHalfBlock;
+1207                         indexUp     = thisBlock*sizeBlock + thisTask%sizeHalfBloc
       k;
-1206                         indexLo     = indexUp + sizeHalfBlock;
-1207 
-1208                         stateRealUp = stateVecReal[indexUp];
-1209                         stateImagUp = stateVecImag[indexUp];
-1210 
-1211                         stateVecReal[indexUp] = stateVecReal[indexLo];
-1212                         stateVecImag[indexUp] = stateVecImag[indexLo];
-1213 
-1214                         stateVecReal[indexLo] = stateRealUp;
-1215                         stateVecImag[indexLo] = stateImagUp;
-1216                 } 
-1217         }
-1218 
-1219 }
+1208                         indexLo     = indexUp + sizeHalfBlock;
+1209 
+1210                         stateRealUp = stateVecReal[indexUp];
+1211                         stateImagUp = stateVecImag[indexUp];
+1212 
+1213                         stateVecReal[indexUp] = stateVecReal[indexLo];
+1214                         stateVecImag[indexUp] = stateVecImag[indexLo];
+1215 
+1216                         stateVecReal[indexLo] = stateRealUp;
+1217                         stateVecImag[indexLo] = stateImagUp;
+1218                 } 
+1219         }
+1220 
+1221 }
 \end{DoxyCode}
-\hypertarget{qubits__internal_8h_a0471f6b547ce8270ef85170b7f4f0214}{
+\hypertarget{qubits__internal_8h_af5ef5166f00c0572354b4ac53dcf40cf}{
 \index{qubits\_\-internal.h@{qubits\_\-internal.h}!sigmaYDistributed@{sigmaYDistributed}}
 \index{sigmaYDistributed@{sigmaYDistributed}!qubits_internal.h@{qubits\_\-internal.h}}
-\paragraph[{sigmaYDistributed}]{\setlength{\rightskip}{0pt plus 5cm}void sigmaYDistributed ({\bf MultiQubit} {\em multiQubit}, \/  const int {\em rotQubit}, \/  {\bf ComplexArray} {\em stateVecIn}, \/  {\bf ComplexArray} {\em stateVecOut}, \/  int {\em updateUpper})}\hfill}
-\label{qubits__internal_8h_a0471f6b547ce8270ef85170b7f4f0214}
+\paragraph[{sigmaYDistributed}]{\setlength{\rightskip}{0pt plus 5cm}void sigmaYDistributed ({\bf MultiQubit} {\em multiQubit}, \/  const int {\em targetQubit}, \/  {\bf ComplexArray} {\em stateVecIn}, \/  {\bf ComplexArray} {\em stateVecOut}, \/  int {\em updateUpper})}\hfill}
+\label{qubits__internal_8h_af5ef5166f00c0572354b4ac53dcf40cf}
 
 
 Rotate a single qubit by \{\{0,-\/i\},\{i,0\}. Operate on a subset of the state vector with upper and lower block values stored seperately. This rotation is just swapping upper and lower values, and stateVecIn must already be the correct section for this chunk
@@ -1808,10 +1809,10 @@ Qubits are zero-\/based and the the first qubit is the rightmost
 \end{DoxyRemark}
 
 \begin{DoxyParams}{Parameters}
-\item[\mbox{$\leftrightarrow$} {\em multiQubit}]object representing the set of qubits \item[\mbox{$\leftarrow$} {\em rotQubit}]qubit to rotate \item[\mbox{$\leftarrow$} {\em stateVecIn}]probability amplitudes in lower or upper half of a block depending on chunkId \item[\mbox{$\leftarrow$} {\em updateUpper}]flag, 1: updating upper values, 0: updating lower values in block \item[\mbox{$\rightarrow$} {\em stateVecOut}]array section to update (will correspond to either the lower or upper half of a block) \end{DoxyParams}
+\item[\mbox{$\leftrightarrow$} {\em multiQubit}]object representing the set of qubits \item[\mbox{$\leftarrow$} {\em targetQubit}]qubit to rotate \item[\mbox{$\leftarrow$} {\em stateVecIn}]probability amplitudes in lower or upper half of a block depending on chunkId \item[\mbox{$\leftarrow$} {\em updateUpper}]flag, 1: updating upper values, 0: updating lower values in block \item[\mbox{$\rightarrow$} {\em stateVecOut}]array section to update (will correspond to either the lower or upper half of a block) \end{DoxyParams}
 
 
-Definition at line 1442 of file qubits.c.
+Definition at line 1444 of file qubits.c.
 
 References ComplexArray::imag, MultiQubit::numAmps, ComplexArray::real, and REAL.
 
@@ -1819,44 +1820,44 @@ Referenced by sigmaY().
 
 
 \begin{DoxyCode}
-1446 {
-1447 
-1448         long long int thisTask;  
-1449         const long long int numTasks=multiQubit.numAmps;
-1450 
-1451         REAL *stateVecRealIn=stateVecIn.real, *stateVecImagIn=stateVecIn.imag;
-1452         REAL *stateVecRealOut=stateVecOut.real, *stateVecImagOut=stateVecOut.
+1448 {
+1449 
+1450         long long int thisTask;  
+1451         const long long int numTasks=multiQubit.numAmps;
+1452 
+1453         REAL *stateVecRealIn=stateVecIn.real, *stateVecImagIn=stateVecIn.imag;
+1454         REAL *stateVecRealOut=stateVecOut.real, *stateVecImagOut=stateVecOut.
       imag;
-1453 
-1454         int realSign=1, imagSign=1;
-1455         if (updateUpper) imagSign=-1;
-1456         else realSign = -1;
-1457 
-1458 # ifdef _OPENMP
-1459 # pragma omp parallel \
-1460         default  (none) \
-1461         shared   (stateVecRealIn,stateVecImagIn,stateVecRealOut,stateVecImagOut,r
+1455 
+1456         int realSign=1, imagSign=1;
+1457         if (updateUpper) imagSign=-1;
+1458         else realSign = -1;
+1459 
+1460 # ifdef _OPENMP
+1461 # pragma omp parallel \
+1462         default  (none) \
+1463         shared   (stateVecRealIn,stateVecImagIn,stateVecRealOut,stateVecImagOut,r
       ealSign,imagSign) \
-1462         private  (thisTask)
-1463 # endif
-1464         {
-1465 # ifdef _OPENMP
-1466                 # pragma omp for schedule (static)
-1467 # endif
-1468                 for (thisTask=0; thisTask<numTasks; thisTask++) {
-1469                         stateVecRealOut[thisTask] = realSign*stateVecImagIn[thisT
+1464         private  (thisTask)
+1465 # endif
+1466         {
+1467 # ifdef _OPENMP
+1468                 # pragma omp for schedule (static)
+1469 # endif
+1470                 for (thisTask=0; thisTask<numTasks; thisTask++) {
+1471                         stateVecRealOut[thisTask] = realSign*stateVecImagIn[thisT
       ask];
-1470                         stateVecImagOut[thisTask] = imagSign*stateVecRealIn[thisT
+1472                         stateVecImagOut[thisTask] = imagSign*stateVecRealIn[thisT
       ask];
-1471                 }
-1472         }
-1473 } 
+1473                 }
+1474         }
+1475 } 
 \end{DoxyCode}
-\hypertarget{qubits__internal_8h_afcbb1dcbe070ad0ed1a72a23251b6a83}{
+\hypertarget{qubits__internal_8h_a81fbfaed65a742a7dfd622e17652245e}{
 \index{qubits\_\-internal.h@{qubits\_\-internal.h}!sigmaYLocal@{sigmaYLocal}}
 \index{sigmaYLocal@{sigmaYLocal}!qubits_internal.h@{qubits\_\-internal.h}}
-\paragraph[{sigmaYLocal}]{\setlength{\rightskip}{0pt plus 5cm}void sigmaYLocal ({\bf MultiQubit} {\em multiQubit}, \/  const int {\em rotQubit})}\hfill}
-\label{qubits__internal_8h_afcbb1dcbe070ad0ed1a72a23251b6a83}
+\paragraph[{sigmaYLocal}]{\setlength{\rightskip}{0pt plus 5cm}void sigmaYLocal ({\bf MultiQubit} {\em multiQubit}, \/  const int {\em targetQubit})}\hfill}
+\label{qubits__internal_8h_a81fbfaed65a742a7dfd622e17652245e}
 
 
 Rotate a single qubit by \{\{0,-\/i\},\{i,0\}. \begin{DoxyRemark}{Remarks}
@@ -1864,10 +1865,10 @@ Qubits are zero-\/based and the the first qubit is the rightmost
 \end{DoxyRemark}
 
 \begin{DoxyParams}{Parameters}
-\item[\mbox{$\leftrightarrow$} {\em multiQubit}]object representing the set of qubits \item[\mbox{$\leftarrow$} {\em rotQubit}]qubit to rotate \end{DoxyParams}
+\item[\mbox{$\leftrightarrow$} {\em multiQubit}]object representing the set of qubits \item[\mbox{$\leftarrow$} {\em targetQubit}]qubit to rotate \end{DoxyParams}
 
 
-Definition at line 1382 of file qubits.c.
+Definition at line 1384 of file qubits.c.
 
 References ComplexArray::imag, MultiQubit::numAmps, ComplexArray::real, REAL, and MultiQubit::stateVec.
 
@@ -1875,57 +1876,57 @@ Referenced by sigmaY().
 
 
 \begin{DoxyCode}
-1383 {
-1384         long long int sizeBlock, sizeHalfBlock;
-1385         long long int thisBlock, // current block
-1386              indexUp,indexLo;    // current index and corresponding index in lowe
+1385 {
+1386         long long int sizeBlock, sizeHalfBlock;
+1387         long long int thisBlock, // current block
+1388              indexUp,indexLo;    // current index and corresponding index in lowe
       r half block
-1387 
-1388         REAL stateRealUp,stateImagUp;
-1389         long long int thisTask;         
-1390         const long long int numTasks=multiQubit.numAmps>>1;
-1391 
-1392         // set dimensions
-1393         sizeHalfBlock = 1LL << rotQubit;  
-1394         sizeBlock     = 2LL * sizeHalfBlock; 
-1395 
-1396         // Can't use multiQubit.stateVec as a private OMP var
-1397         REAL *stateVecReal = multiQubit.stateVec.real;
-1398         REAL *stateVecImag = multiQubit.stateVec.imag;
-1399 
-1400 # ifdef _OPENMP
-1401 # pragma omp parallel \
-1402         default  (none) \
-1403         shared   (sizeBlock,sizeHalfBlock, stateVecReal,stateVecImag) \
-1404         private  (thisTask,thisBlock ,indexUp,indexLo, stateRealUp,stateImagUp) 
-1405 # endif
-1406         {
-1407 # ifdef _OPENMP
-1408                 # pragma omp for schedule (static)
-1409 # endif
-1410                 for (thisTask=0; thisTask<numTasks; thisTask++) {
-1411                         thisBlock   = thisTask / sizeHalfBlock;
-1412                         indexUp     = thisBlock*sizeBlock + thisTask%sizeHalfBloc
+1389 
+1390         REAL stateRealUp,stateImagUp;
+1391         long long int thisTask;         
+1392         const long long int numTasks=multiQubit.numAmps>>1;
+1393 
+1394         // set dimensions
+1395         sizeHalfBlock = 1LL << targetQubit;  
+1396         sizeBlock     = 2LL * sizeHalfBlock; 
+1397 
+1398         // Can't use multiQubit.stateVec as a private OMP var
+1399         REAL *stateVecReal = multiQubit.stateVec.real;
+1400         REAL *stateVecImag = multiQubit.stateVec.imag;
+1401 
+1402 # ifdef _OPENMP
+1403 # pragma omp parallel \
+1404         default  (none) \
+1405         shared   (sizeBlock,sizeHalfBlock, stateVecReal,stateVecImag) \
+1406         private  (thisTask,thisBlock ,indexUp,indexLo, stateRealUp,stateImagUp) 
+1407 # endif
+1408         {
+1409 # ifdef _OPENMP
+1410                 # pragma omp for schedule (static)
+1411 # endif
+1412                 for (thisTask=0; thisTask<numTasks; thisTask++) {
+1413                         thisBlock   = thisTask / sizeHalfBlock;
+1414                         indexUp     = thisBlock*sizeBlock + thisTask%sizeHalfBloc
       k;
-1413                         indexLo     = indexUp + sizeHalfBlock;
-1414 
-1415                         stateRealUp = stateVecReal[indexUp];
-1416                         stateImagUp = stateVecImag[indexUp];
-1417 
-1418                         stateVecReal[indexUp] = stateVecImag[indexLo];
-1419                         stateVecImag[indexUp] = -stateVecReal[indexLo];
-1420 
-1421                         stateVecReal[indexLo] = -stateImagUp;
-1422                         stateVecImag[indexLo] = stateRealUp;
-1423                 } 
-1424         }
-1425 }
+1415                         indexLo     = indexUp + sizeHalfBlock;
+1416 
+1417                         stateRealUp = stateVecReal[indexUp];
+1418                         stateImagUp = stateVecImag[indexUp];
+1419 
+1420                         stateVecReal[indexUp] = stateVecImag[indexLo];
+1421                         stateVecImag[indexUp] = -stateVecReal[indexLo];
+1422 
+1423                         stateVecReal[indexLo] = -stateImagUp;
+1424                         stateVecImag[indexLo] = stateRealUp;
+1425                 } 
+1426         }
+1427 }
 \end{DoxyCode}
-\hypertarget{qubits__internal_8h_af538f02e700f4d022044fc71030a6953}{
+\hypertarget{qubits__internal_8h_a2343b7240118e89aa615e2c9140b770b}{
 \index{qubits\_\-internal.h@{qubits\_\-internal.h}!unitaryDistributed@{unitaryDistributed}}
 \index{unitaryDistributed@{unitaryDistributed}!qubits_internal.h@{qubits\_\-internal.h}}
-\paragraph[{unitaryDistributed}]{\setlength{\rightskip}{0pt plus 5cm}void unitaryDistributed ({\bf MultiQubit} {\em multiQubit}, \/  const int {\em rotQubit}, \/  {\bf Complex} {\em rot1}, \/  {\bf Complex} {\em rot2}, \/  {\bf ComplexArray} {\em stateVecUp}, \/  {\bf ComplexArray} {\em stateVecLo}, \/  {\bf ComplexArray} {\em stateVecOut})}\hfill}
-\label{qubits__internal_8h_af538f02e700f4d022044fc71030a6953}
+\paragraph[{unitaryDistributed}]{\setlength{\rightskip}{0pt plus 5cm}void unitaryDistributed ({\bf MultiQubit} {\em multiQubit}, \/  const int {\em targetQubit}, \/  {\bf Complex} {\em rot1}, \/  {\bf Complex} {\em rot2}, \/  {\bf ComplexArray} {\em stateVecUp}, \/  {\bf ComplexArray} {\em stateVecLo}, \/  {\bf ComplexArray} {\em stateVecOut})}\hfill}
+\label{qubits__internal_8h_a2343b7240118e89aa615e2c9140b770b}
 
 
 Apply a unitary operation to a single qubit given a subset of the state vector with upper and lower block values stored seperately. \begin{DoxyRemark}{Remarks}
@@ -1933,10 +1934,10 @@ Qubits are zero-\/based and the the first qubit is the rightmost
 \end{DoxyRemark}
 
 \begin{DoxyParams}{Parameters}
-\item[\mbox{$\leftrightarrow$} {\em multiQubit}]object representing the set of qubits \item[\mbox{$\leftarrow$} {\em rotQubit}]qubit to rotate \item[\mbox{$\leftarrow$} {\em u}]unitary matrix to apply \item[\mbox{$\leftarrow$} {\em stateVecUp}]probability amplitudes in upper half of a block \item[\mbox{$\leftarrow$} {\em stateVecLo}]probability amplitudes in lower half of a block \item[\mbox{$\rightarrow$} {\em stateVecOut}]array section to update (will correspond to either the lower or upper half of a block) \end{DoxyParams}
+\item[\mbox{$\leftrightarrow$} {\em multiQubit}]object representing the set of qubits \item[\mbox{$\leftarrow$} {\em targetQubit}]qubit to rotate \item[\mbox{$\leftarrow$} {\em u}]unitary matrix to apply \item[\mbox{$\leftarrow$} {\em stateVecUp}]probability amplitudes in upper half of a block \item[\mbox{$\leftarrow$} {\em stateVecLo}]probability amplitudes in lower half of a block \item[\mbox{$\rightarrow$} {\em stateVecOut}]array section to update (will correspond to either the lower or upper half of a block) \end{DoxyParams}
 
 
-Definition at line 704 of file qubits.c.
+Definition at line 706 of file qubits.c.
 
 References ComplexArray::imag, Complex::imag, MultiQubit::numAmps, ComplexArray::real, Complex::real, and REAL.
 
@@ -1944,58 +1945,58 @@ Referenced by unitary().
 
 
 \begin{DoxyCode}
-709 {
-710 
-711         REAL   stateRealUp,stateRealLo,stateImagUp,stateImagLo;
-712         long long int thisTask;  
-713         const long long int numTasks=multiQubit.numAmps;
-714 
-715         REAL rot1Real=rot1.real, rot1Imag=rot1.imag;
-716         REAL rot2Real=rot2.real, rot2Imag=rot2.imag;
-717         REAL *stateVecRealUp=stateVecUp.real, *stateVecImagUp=stateVecUp.imag;
-718         REAL *stateVecRealLo=stateVecLo.real, *stateVecImagLo=stateVecLo.imag;
-719         REAL *stateVecRealOut=stateVecOut.real, *stateVecImagOut=stateVecOut.
+711 {
+712 
+713         REAL   stateRealUp,stateRealLo,stateImagUp,stateImagLo;
+714         long long int thisTask;  
+715         const long long int numTasks=multiQubit.numAmps;
+716 
+717         REAL rot1Real=rot1.real, rot1Imag=rot1.imag;
+718         REAL rot2Real=rot2.real, rot2Imag=rot2.imag;
+719         REAL *stateVecRealUp=stateVecUp.real, *stateVecImagUp=stateVecUp.imag;
+720         REAL *stateVecRealLo=stateVecLo.real, *stateVecImagLo=stateVecLo.imag;
+721         REAL *stateVecRealOut=stateVecOut.real, *stateVecImagOut=stateVecOut.
       imag;
-720 
-721 
-722 # ifdef _OPENMP
-723 # pragma omp parallel \
-724         default  (none) \
-725         shared   (stateVecRealUp,stateVecImagUp,stateVecRealLo,stateVecImagLo,sta
+722 
+723 
+724 # ifdef _OPENMP
+725 # pragma omp parallel \
+726         default  (none) \
+727         shared   (stateVecRealUp,stateVecImagUp,stateVecRealLo,stateVecImagLo,sta
       teVecRealOut,stateVecImagOut, \
-726                         rot1Real, rot1Imag, rot2Real, rot2Imag) \
-727         private  (thisTask,stateRealUp,stateImagUp,stateRealLo,stateImagLo)
-728 # endif
-729         {
-730 # ifdef _OPENMP
-731                 # pragma omp for schedule (static)
-732 # endif
-733                 for (thisTask=0; thisTask<numTasks; thisTask++) {
-734                         // store current state vector values in temp variables
-735                         stateRealUp = stateVecRealUp[thisTask];
-736                         stateImagUp = stateVecImagUp[thisTask];
-737 
-738                         stateRealLo = stateVecRealLo[thisTask];
-739                         stateImagLo = stateVecImagLo[thisTask];
-740 
-741                         stateVecRealOut[thisTask] = rot1Real*stateRealUp - rot1Im
+728                         rot1Real, rot1Imag, rot2Real, rot2Imag) \
+729         private  (thisTask,stateRealUp,stateImagUp,stateRealLo,stateImagLo)
+730 # endif
+731         {
+732 # ifdef _OPENMP
+733                 # pragma omp for schedule (static)
+734 # endif
+735                 for (thisTask=0; thisTask<numTasks; thisTask++) {
+736                         // store current state vector values in temp variables
+737                         stateRealUp = stateVecRealUp[thisTask];
+738                         stateImagUp = stateVecImagUp[thisTask];
+739 
+740                         stateRealLo = stateVecRealLo[thisTask];
+741                         stateImagLo = stateVecImagLo[thisTask];
+742 
+743                         stateVecRealOut[thisTask] = rot1Real*stateRealUp - rot1Im
       ag*stateImagUp 
-742                                 + rot2Real*stateRealLo - rot2Imag*stateImagLo;
-743                         stateVecImagOut[thisTask] = rot1Real*stateImagUp + rot1Im
+744                                 + rot2Real*stateRealLo - rot2Imag*stateImagLo;
+745                         stateVecImagOut[thisTask] = rot1Real*stateImagUp + rot1Im
       ag*stateRealUp 
-744                                 + rot2Real*stateImagLo + rot2Imag*stateRealLo;
-745                 }
-746         }
-747 }
+746                                 + rot2Real*stateImagLo + rot2Imag*stateRealLo;
+747                 }
+748         }
+749 }
 \end{DoxyCode}
-\hypertarget{qubits__internal_8h_a5fd78353771c9a34832e7a3b1e90f4db}{
+\hypertarget{qubits__internal_8h_ac134fb45b0a7248c5d15e16eb7139a35}{
 \index{qubits\_\-internal.h@{qubits\_\-internal.h}!unitaryLocal@{unitaryLocal}}
 \index{unitaryLocal@{unitaryLocal}!qubits_internal.h@{qubits\_\-internal.h}}
-\paragraph[{unitaryLocal}]{\setlength{\rightskip}{0pt plus 5cm}void unitaryLocal ({\bf MultiQubit} {\em multiQubit}, \/  const int {\em rotQubit}, \/  {\bf ComplexMatrix2} {\em u})}\hfill}
-\label{qubits__internal_8h_a5fd78353771c9a34832e7a3b1e90f4db}
+\paragraph[{unitaryLocal}]{\setlength{\rightskip}{0pt plus 5cm}void unitaryLocal ({\bf MultiQubit} {\em multiQubit}, \/  const int {\em targetQubit}, \/  {\bf ComplexMatrix2} {\em u})}\hfill}
+\label{qubits__internal_8h_ac134fb45b0a7248c5d15e16eb7139a35}
 
 
-Definition at line 575 of file qubits.c.
+Definition at line 577 of file qubits.c.
 
 References Complex::imag, ComplexArray::imag, MultiQubit::numAmps, ComplexMatrix2::r0c0, ComplexMatrix2::r0c1, ComplexMatrix2::r1c0, ComplexMatrix2::r1c1, Complex::real, ComplexArray::real, REAL, and MultiQubit::stateVec.
 
@@ -2003,75 +2004,75 @@ Referenced by unitary().
 
 
 \begin{DoxyCode}
-576 {
-577         long long int sizeBlock, sizeHalfBlock;
-578         long long int thisBlock, // current block
-579              indexUp,indexLo;    // current index and corresponding index in lowe
+578 {
+579         long long int sizeBlock, sizeHalfBlock;
+580         long long int thisBlock, // current block
+581              indexUp,indexLo;    // current index and corresponding index in lowe
       r half block
-580 
-581         REAL stateRealUp,stateRealLo,stateImagUp,stateImagLo;
-582         long long int thisTask;         
-583         const long long int numTasks=multiQubit.numAmps>>1;
-584 
-585         // set dimensions
-586         sizeHalfBlock = 1LL << rotQubit;  
-587         sizeBlock     = 2LL * sizeHalfBlock; 
-588 
-589         // Can't use multiQubit.stateVec as a private OMP var
-590         REAL *stateVecReal = multiQubit.stateVec.real;
-591         REAL *stateVecImag = multiQubit.stateVec.imag;
-592 
-593 # ifdef _OPENMP
-594 # pragma omp parallel \
-595         default  (none) \
-596         shared   (sizeBlock,sizeHalfBlock, stateVecReal,stateVecImag, u) \
-597         private  (thisTask,thisBlock ,indexUp,indexLo, stateRealUp,stateImagUp,st
+582 
+583         REAL stateRealUp,stateRealLo,stateImagUp,stateImagLo;
+584         long long int thisTask;         
+585         const long long int numTasks=multiQubit.numAmps>>1;
+586 
+587         // set dimensions
+588         sizeHalfBlock = 1LL << targetQubit;  
+589         sizeBlock     = 2LL * sizeHalfBlock; 
+590 
+591         // Can't use multiQubit.stateVec as a private OMP var
+592         REAL *stateVecReal = multiQubit.stateVec.real;
+593         REAL *stateVecImag = multiQubit.stateVec.imag;
+594 
+595 # ifdef _OPENMP
+596 # pragma omp parallel \
+597         default  (none) \
+598         shared   (sizeBlock,sizeHalfBlock, stateVecReal,stateVecImag, u) \
+599         private  (thisTask,thisBlock ,indexUp,indexLo, stateRealUp,stateImagUp,st
       ateRealLo,stateImagLo) 
-598 # endif
-599         {
-600 # ifdef _OPENMP
-601                 # pragma omp for schedule (static)
-602 # endif
-603                 for (thisTask=0; thisTask<numTasks; thisTask++) {
-604 
-605                         thisBlock   = thisTask / sizeHalfBlock;
-606                         indexUp     = thisBlock*sizeBlock + thisTask%sizeHalfBloc
+600 # endif
+601         {
+602 # ifdef _OPENMP
+603                 # pragma omp for schedule (static)
+604 # endif
+605                 for (thisTask=0; thisTask<numTasks; thisTask++) {
+606 
+607                         thisBlock   = thisTask / sizeHalfBlock;
+608                         indexUp     = thisBlock*sizeBlock + thisTask%sizeHalfBloc
       k;
-607                         indexLo     = indexUp + sizeHalfBlock;
-608 
-609                         // store current state vector values in temp variables
-610                         stateRealUp = stateVecReal[indexUp];
-611                         stateImagUp = stateVecImag[indexUp];
-612 
-613                         stateRealLo = stateVecReal[indexLo];
-614                         stateImagLo = stateVecImag[indexLo];
-615 
-616 
-617                         // state[indexUp] = u00 * state[indexUp] + u01 * state[in
+609                         indexLo     = indexUp + sizeHalfBlock;
+610 
+611                         // store current state vector values in temp variables
+612                         stateRealUp = stateVecReal[indexUp];
+613                         stateImagUp = stateVecImag[indexUp];
+614 
+615                         stateRealLo = stateVecReal[indexLo];
+616                         stateImagLo = stateVecImag[indexLo];
+617 
+618 
+619                         // state[indexUp] = u00 * state[indexUp] + u01 * state[in
       dexLo]
-618                         stateVecReal[indexUp] = u.r0c0.real*stateRealUp - u.r0c0.
+620                         stateVecReal[indexUp] = u.r0c0.real*stateRealUp - u.r0c0.
       imag*stateImagUp 
-619                                 + u.r0c1.real*stateRealLo - u.r0c1.imag*stateImag
+621                                 + u.r0c1.real*stateRealLo - u.r0c1.imag*stateImag
       Lo;
-620                         stateVecImag[indexUp] = u.r0c0.real*stateImagUp + u.r0c0.
+622                         stateVecImag[indexUp] = u.r0c0.real*stateImagUp + u.r0c0.
       imag*stateRealUp 
-621                                 + u.r0c1.real*stateImagLo + u.r0c1.imag*stateReal
+623                                 + u.r0c1.real*stateImagLo + u.r0c1.imag*stateReal
       Lo;
-622 
-623                         // state[indexLo] = u10  * state[indexUp] + u11 * state[i
+624 
+625                         // state[indexLo] = u10  * state[indexUp] + u11 * state[i
       ndexLo]
-624                         stateVecReal[indexLo] = u.r1c0.real*stateRealUp  - u.
+626                         stateVecReal[indexLo] = u.r1c0.real*stateRealUp  - u.
       r1c0.imag*stateImagUp 
-625                                 + u.r1c1.real*stateRealLo  -  u.r1c1.imag*stateIm
+627                                 + u.r1c1.real*stateRealLo  -  u.r1c1.imag*stateIm
       agLo;
-626                         stateVecImag[indexLo] = u.r1c0.real*stateImagUp + u.r1c0.
+628                         stateVecImag[indexLo] = u.r1c0.real*stateImagUp + u.r1c0.
       imag*stateRealUp 
-627                                 + u.r1c1.real*stateImagLo + u.r1c1.imag*stateReal
+629                                 + u.r1c1.real*stateImagLo + u.r1c1.imag*stateReal
       Lo;
-628 
-629                 } 
-630         }
-631 } 
+630 
+631                 } 
+632         }
+633 } 
 \end{DoxyCode}
 \hypertarget{qubits__internal_8h_ae2b2c14a07dd7d50ff86032a3ca101d7}{
 \index{qubits\_\-internal.h@{qubits\_\-internal.h}!validateAlphaBeta@{validateAlphaBeta}}
@@ -2080,7 +2081,7 @@ Referenced by unitary().
 \label{qubits__internal_8h_ae2b2c14a07dd7d50ff86032a3ca101d7}
 
 
-Definition at line 408 of file qubits.c.
+Definition at line 410 of file qubits.c.
 
 References Complex::imag, Complex::real, and REAL\_\-EPS.
 
@@ -2088,13 +2089,13 @@ Referenced by compactUnitary(), and controlledCompactUnitary().
 
 
 \begin{DoxyCode}
-408                                                   {
-409         if ( fabs(alpha.real*alpha.real 
-410                 + alpha.imag*alpha.imag
-411                 + beta.real*beta.real 
-412                 + beta.imag*beta.imag - 1) > REAL_EPS ) return 0;
-413         else return 1;
-414 }
+410                                                   {
+411         if ( fabs(alpha.real*alpha.real 
+412                 + alpha.imag*alpha.imag
+413                 + beta.real*beta.real 
+414                 + beta.imag*beta.imag - 1) > REAL_EPS ) return 0;
+415         else return 1;
+416 }
 \end{DoxyCode}
 \hypertarget{qubits__internal_8h_ae4fea133d1a8f09ff8da03038100adb2}{
 \index{qubits\_\-internal.h@{qubits\_\-internal.h}!validateMatrixIsUnitary@{validateMatrixIsUnitary}}
@@ -2103,7 +2104,7 @@ Referenced by compactUnitary(), and controlledCompactUnitary().
 \label{qubits__internal_8h_ae4fea133d1a8f09ff8da03038100adb2}
 
 
-Definition at line 383 of file qubits.c.
+Definition at line 385 of file qubits.c.
 
 References Complex::imag, ComplexMatrix2::r0c0, ComplexMatrix2::r0c1, ComplexMatrix2::r1c0, ComplexMatrix2::r1c1, Complex::real, and REAL\_\-EPS.
 
@@ -2111,30 +2112,30 @@ Referenced by controlledUnitary(), multiControlledUnitary(), and unitary().
 
 
 \begin{DoxyCode}
-383                                              {
-384 
-385         if ( fabs(u.r0c0.real*u.r0c0.real 
-386                 + u.r0c0.imag*u.r0c0.imag
-387                 + u.r1c0.real*u.r1c0.real
-388                 + u.r1c0.imag*u.r1c0.imag - 1) > REAL_EPS ) return 0;
-389     // check
-390         if ( fabs(u.r0c1.real*u.r0c1.real 
-391                 + u.r0c1.imag*u.r0c1.imag
-392                 + u.r1c1.real*u.r1c1.real
-393                 + u.r1c1.imag*u.r1c1.imag - 1) > REAL_EPS ) return 0;
-394 
-395         if ( fabs(u.r0c0.real*u.r0c1.real 
-396                 + u.r0c0.imag*u.r0c1.imag
-397                 + u.r1c0.real*u.r1c1.real
-398                 + u.r1c0.imag*u.r1c1.imag) > REAL_EPS ) return 0;
-399 
-400         if ( fabs(u.r0c1.real*u.r0c0.imag
-401                 - u.r0c0.real*u.r0c1.imag
-402                 + u.r1c1.real*u.r1c0.imag
-403                 - u.r1c0.real*u.r1c1.imag) > REAL_EPS ) return 0;
-404 
-405         return 1;
-406 }
+385                                              {
+386 
+387         if ( fabs(u.r0c0.real*u.r0c0.real 
+388                 + u.r0c0.imag*u.r0c0.imag
+389                 + u.r1c0.real*u.r1c0.real
+390                 + u.r1c0.imag*u.r1c0.imag - 1) > REAL_EPS ) return 0;
+391     // check
+392         if ( fabs(u.r0c1.real*u.r0c1.real 
+393                 + u.r0c1.imag*u.r0c1.imag
+394                 + u.r1c1.real*u.r1c1.real
+395                 + u.r1c1.imag*u.r1c1.imag - 1) > REAL_EPS ) return 0;
+396 
+397         if ( fabs(u.r0c0.real*u.r0c1.real 
+398                 + u.r0c0.imag*u.r0c1.imag
+399                 + u.r1c0.real*u.r1c1.real
+400                 + u.r1c0.imag*u.r1c1.imag) > REAL_EPS ) return 0;
+401 
+402         if ( fabs(u.r0c1.real*u.r0c0.imag
+403                 - u.r0c0.real*u.r0c1.imag
+404                 + u.r1c1.real*u.r1c0.imag
+405                 - u.r1c0.real*u.r1c1.imag) > REAL_EPS ) return 0;
+406 
+407         return 1;
+408 }
 \end{DoxyCode}
 \hypertarget{qubits__internal_8h_a71c14976f63cfcda70026fa20ee531fe}{
 \index{qubits\_\-internal.h@{qubits\_\-internal.h}!validateUnitVector@{validateUnitVector}}
@@ -2143,16 +2144,16 @@ Referenced by controlledUnitary(), multiControlledUnitary(), and unitary().
 \label{qubits__internal_8h_a71c14976f63cfcda70026fa20ee531fe}
 
 
-Definition at line 416 of file qubits.c.
+Definition at line 418 of file qubits.c.
 
 References REAL\_\-EPS.
 
 
 \begin{DoxyCode}
-416                                                  {
-417         if ( fabs(sqrt(ux*ux + uy*uy + uz*uz) - 1) > REAL_EPS ) return 0;
-418         else return 1;
-419 }
+418                                                  {
+419         if ( fabs(sqrt(ux*ux + uy*uy + uz*uz) - 1) > REAL_EPS ) return 0;
+420         else return 1;
+421 }
 \end{DoxyCode}
 
 

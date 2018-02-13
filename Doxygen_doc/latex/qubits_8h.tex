@@ -50,11 +50,11 @@ void \hyperlink{qubits_8h_afc1835c6b43b6e59ce7df7b13f274fc7}{multiControlledPhas
 \begin{DoxyCompactList}\small\item\em The multiple qubit control phase gate. \item\end{DoxyCompactList}\item 
 void \hyperlink{qubits_8h_a11a96159191cbf1b01a1080e7f045aac}{controlledPhaseGate} (\hyperlink{structMultiQubit}{MultiQubit} multiQubit, const int idQubit1, const int idQubit2)
 \begin{DoxyCompactList}\small\item\em The control phase (the two qubit phase gate). \item\end{DoxyCompactList}\item 
-void \hyperlink{qubits_8h_a9c90f8302e4f1d8fda23def8753e50fe}{sigmaZ} (\hyperlink{structMultiQubit}{MultiQubit} multiQubit, const int rotQubit)
+void \hyperlink{qubits_8h_aebaab86326779de55d335cfea3efde8f}{sigmaZ} (\hyperlink{structMultiQubit}{MultiQubit} multiQubit, const int targetQubit)
 \begin{DoxyCompactList}\small\item\em Rotate a single qubit by \{\{1,0\},\{\{0,-\/1\}\} -\/-\/ apply a phase of -\/1 to $|$1$>$. \item\end{DoxyCompactList}\item 
-void \hyperlink{qubits_8h_a1086d84d6a3d5b79137e2f27f18e67e0}{sGate} (\hyperlink{structMultiQubit}{MultiQubit} multiQubit, const int rotQubit)
+void \hyperlink{qubits_8h_adda6c47876a7676488ed0565a19eaa65}{sGate} (\hyperlink{structMultiQubit}{MultiQubit} multiQubit, const int targetQubit)
 \item 
-void \hyperlink{qubits_8h_a5f33ddd690383fd09cc79bf143e383fb}{tGate} (\hyperlink{structMultiQubit}{MultiQubit} multiQubit, const int rotQubit)
+void \hyperlink{qubits_8h_af764ea63a2e870098f4e1ce08562942e}{tGate} (\hyperlink{structMultiQubit}{MultiQubit} multiQubit, const int targetQubit)
 \item 
 void \hyperlink{qubits_8h_ad84a3ce68d1ca02b4e3f741ea45b6054}{initQuESTEnv} (\hyperlink{structQuESTEnv}{QuESTEnv} $\ast$\hyperlink{runTests_8c_a5fd8ba97fcae3408ae6221dfc3cc1f93}{env})
 \begin{DoxyCompactList}\small\item\em Initialize QuEST environment. \item\end{DoxyCompactList}\item 
@@ -76,9 +76,9 @@ REAL \hyperlink{qubits_8h_a799b10447d6dbdaf960a4d3eedd22014}{getProbEl} (\hyperl
 \begin{DoxyCompactList}\small\item\em Get the probability of the state at an index in the state vector. \item\end{DoxyCompactList}\item 
 REAL \hyperlink{qubits_8h_a818a4c7cd7252d2b10b896b12fa431d3}{calcTotalProbability} (\hyperlink{structMultiQubit}{MultiQubit} multiQubit)
 \begin{DoxyCompactList}\small\item\em Calculate the probability of being in any state by taking the norm of the entire state vector. \item\end{DoxyCompactList}\item 
-void \hyperlink{qubits_8h_ad13ae1902276195d0df106116e032aff}{compactUnitary} (\hyperlink{structMultiQubit}{MultiQubit} multiQubit, const int rotQubit, \hyperlink{structComplex}{Complex} alpha, \hyperlink{structComplex}{Complex} beta)
+void \hyperlink{qubits_8h_a03b13dfcabd8c59b50dbdd3af44ba8b2}{compactUnitary} (\hyperlink{structMultiQubit}{MultiQubit} multiQubit, const int targetQubit, \hyperlink{structComplex}{Complex} alpha, \hyperlink{structComplex}{Complex} beta)
 \begin{DoxyCompactList}\small\item\em Rotate a single qubit in the state vector of probability amplitudes. \item\end{DoxyCompactList}\item 
-void \hyperlink{qubits_8h_ae74806cf36513b6d8447439a5bc1d615}{unitary} (\hyperlink{structMultiQubit}{MultiQubit} multiQubit, const int rotQubit, \hyperlink{structComplexMatrix2}{ComplexMatrix2} u)
+void \hyperlink{qubits_8h_a7a0877e33700f6bad48adb51b7b3fb67}{unitary} (\hyperlink{structMultiQubit}{MultiQubit} multiQubit, const int targetQubit, \hyperlink{structComplexMatrix2}{ComplexMatrix2} u)
 \item 
 void \hyperlink{qubits_8h_a6cc7fa705a2f2e6b486b49c5589d5df5}{rotateX} (\hyperlink{structMultiQubit}{MultiQubit} multiQubit, const int rotQubit, REAL angle)
 \begin{DoxyCompactList}\small\item\em Rotate a single qubit a certain angle about the x-\/axis. \item\end{DoxyCompactList}\item 
@@ -86,26 +86,30 @@ void \hyperlink{qubits_8h_ace0d3592d38a990e81a434c4e9681500}{rotateY} (\hyperlin
 \begin{DoxyCompactList}\small\item\em Rotate a single qubit a certain angle about the y-\/axis. \item\end{DoxyCompactList}\item 
 void \hyperlink{qubits_8h_abd621412ad30c1b034f4ce153c4afe10}{rotateZ} (\hyperlink{structMultiQubit}{MultiQubit} multiQubit, const int rotQubit, REAL angle)
 \begin{DoxyCompactList}\small\item\em Rotate a single qubit a certain angle about the z-\/axis. \item\end{DoxyCompactList}\item 
-void \hyperlink{qubits_8h_a96cc5075cff975f73885b50c093ba4a0}{controlledCompactUnitary} (\hyperlink{structMultiQubit}{MultiQubit} multiQubit, const int rotQubit, const int controlQubit, \hyperlink{structComplex}{Complex} alpha, \hyperlink{structComplex}{Complex} beta)
+void \hyperlink{qubits_8h_ab4812953bc457405b3aa05a4c2f64f4a}{controlledCompactUnitary} (\hyperlink{structMultiQubit}{MultiQubit} multiQubit, const int controlQubit, const int targetQubit, \hyperlink{structComplex}{Complex} alpha, \hyperlink{structComplex}{Complex} beta)
 \begin{DoxyCompactList}\small\item\em Rotate a single qubit in the state vector of probability amplitudes. \item\end{DoxyCompactList}\item 
 void \hyperlink{qubits_8h_a7fadb225fc385db789e844c87fcba9e1}{rotateAroundAxis} (\hyperlink{structMultiQubit}{MultiQubit} multiQubit, const int rotQubit, REAL angle, \hyperlink{structVector}{Vector} unitAxis)
 \begin{DoxyCompactList}\small\item\em Rotate a single qubit a certain angle about an axis. \item\end{DoxyCompactList}\item 
-void \hyperlink{qubits_8h_a4e135fd99abe7fa390c678937f0cebc9}{controlledUnitary} (\hyperlink{structMultiQubit}{MultiQubit} multiQubit, const int rotQubit, const int controlQubit, \hyperlink{structComplexMatrix2}{ComplexMatrix2} u)
+void \hyperlink{qubits_8h_a8a701526263392599aa21d0d0f05d9d8}{controlledUnitary} (\hyperlink{structMultiQubit}{MultiQubit} multiQubit, const int controlQubit, const int targetQubit, \hyperlink{structComplexMatrix2}{ComplexMatrix2} u)
 \begin{DoxyCompactList}\small\item\em Apply a unitary operation to a single qubit given a control qubit Only perform the rotation for elements where the control qubit is one. \item\end{DoxyCompactList}\item 
-void \hyperlink{qubits_8h_a1589779fdc2de60c784eabd8dd1c2a8c}{multiControlledUnitary} (\hyperlink{structMultiQubit}{MultiQubit} multiQubit, int $\ast$controlQubits, const int numControlQubits, const int rotQubit, \hyperlink{structComplexMatrix2}{ComplexMatrix2} u)
+void \hyperlink{qubits_8h_ae395a79690283ed81106afadd7a8cd8a}{multiControlledUnitary} (\hyperlink{structMultiQubit}{MultiQubit} multiQubit, int $\ast$controlQubits, const int numControlQubits, const int targetQubit, \hyperlink{structComplexMatrix2}{ComplexMatrix2} u)
 \begin{DoxyCompactList}\small\item\em Apply a unitary operation to a single qubit given an array of control qubits Only perform the rotation for elements where all control qubits equal 1. \item\end{DoxyCompactList}\item 
-void \hyperlink{qubits_8h_acda82bebb0a62f419eec9c1e0575daad}{sigmaX} (\hyperlink{structMultiQubit}{MultiQubit} multiQubit, const int rotQubit)
+void \hyperlink{qubits_8h_a86e396e06b7d527cac20ba0108872423}{sigmaX} (\hyperlink{structMultiQubit}{MultiQubit} multiQubit, const int targetQubit)
 \begin{DoxyCompactList}\small\item\em Rotate a single qubit by \{\{0,1\},\{1,0\}\} -\/-\/ swap $|$0$>$ and $|$1$>$. \item\end{DoxyCompactList}\item 
-void \hyperlink{qubits_8h_a7b022c75cef77be046bd5d61e38a581e}{sigmaY} (\hyperlink{structMultiQubit}{MultiQubit} multiQubit, const int rotQubit)
+void \hyperlink{qubits_8h_a1f54d70a42403f7e1c2e2c2007332f61}{sigmaY} (\hyperlink{structMultiQubit}{MultiQubit} multiQubit, const int targetQubit)
 \begin{DoxyCompactList}\small\item\em Rotate a single qubit by \{\{0,-\/i\},\{i,0\}\} -\/-\/ swap $|$0$>$ and $|$1$>$ and apply a phase of -\/i or i. \item\end{DoxyCompactList}\item 
-void \hyperlink{qubits_8h_ad247d084dc7150893e9051a438a5807e}{hadamard} (\hyperlink{structMultiQubit}{MultiQubit} multiQubit, const int rotQubit)
+void \hyperlink{qubits_8h_aa09b5dd93de6df1384b8f2c0041749ab}{hadamard} (\hyperlink{structMultiQubit}{MultiQubit} multiQubit, const int targetQubit)
 \begin{DoxyCompactList}\small\item\em Rotate a single qubit by \{\{1,1\},\{1,-\/1\}\}/sqrt2 -\/-\/ turn a $|$0$>$ into a $|$+$>$ and a $|$1$>$ into a $|$-\/$>$. \item\end{DoxyCompactList}\item 
 void \hyperlink{qubits_8h_a67576895bbc65463481a8ea24d9b1e22}{controlledNot} (\hyperlink{structMultiQubit}{MultiQubit} multiQubit, const int controlQubit, const int targetQubit)
 \begin{DoxyCompactList}\small\item\em Rotate a single qubit by \{\{0,-\/i\},\{i,0\}\} -\/-\/ swap $|$0$>$ and $|$1$>$ and apply a phase of -\/i or i, only for elements when control qubit is 1. \item\end{DoxyCompactList}\item 
 REAL \hyperlink{qubits_8h_ad315c941a51bc053d39ebfa2040fd32e}{findProbabilityOfOutcome} (\hyperlink{structMultiQubit}{MultiQubit} multiQubit, const int measureQubit, int outcome)
 \begin{DoxyCompactList}\small\item\em Find the probability of a specified qubit being in the zero or one state. \item\end{DoxyCompactList}\item 
 REAL \hyperlink{qubits_8h_a07418ebac70fd9ae5d051d089961631d}{collapseToOutcome} (\hyperlink{structMultiQubit}{MultiQubit} multiQubit, const int measureQubit, int outcome)
-\begin{DoxyCompactList}\small\item\em Update the state vector to be consistent with measuring measureQubit=0 or measureQubit=1 according to the value of outcome. \item\end{DoxyCompactList}\end{DoxyCompactItemize}
+\begin{DoxyCompactList}\small\item\em Update the state vector to be consistent with measuring measureQubit=0 or measureQubit=1 according to the value of outcome. \item\end{DoxyCompactList}\item 
+int \hyperlink{qubits_8h_ad5774247d836267175c664cd0e451bcb}{measure} (\hyperlink{structMultiQubit}{MultiQubit} multiQubit, int measureQubit)
+\item 
+int \hyperlink{qubits_8h_a2ac46e470c750bf93c754e06c64b0a7a}{measureWithStats} (\hyperlink{structMultiQubit}{MultiQubit} multiQubit, int measureQubit, REAL $\ast$stateProb)
+\end{DoxyCompactItemize}
 
 
 \subsubsection{Detailed Description}
@@ -163,7 +167,7 @@ total probability
 \end{DoxyReturn}
 
 
-Definition at line 48 of file qubits\_\-env\_\-local.c.
+Definition at line 61 of file qubits\_\-env\_\-local.c.
 
 References DEBUG, ComplexArray::imag, MPI\_\-QuEST\_\-REAL, MultiQubit::numAmps, MultiQubit::numChunks, ComplexArray::real, REAL, and MultiQubit::stateVec.
 
@@ -171,41 +175,41 @@ Referenced by test\_\-compactUnitary(), and test\_\-unitary().
 
 
 \begin{DoxyCode}
-48                                                 {
-49   /* IJB - implemented using Kahan summation for greater accuracy at a slight flo
+61                                                 {
+62   /* IJB - implemented using Kahan summation for greater accuracy at a slight flo
       ating
-50      point operation overhead. For more details see https://en.wikipedia.org/wiki
+63      point operation overhead. For more details see https://en.wikipedia.org/wiki
       /Kahan_summation_algorithm */
-51   /* Don't change the bracketing in this routine! */
-52   REAL pTotal=0; 
-53   REAL y, t, c;
-54   long long int index;
-55   long long int numAmpsPerRank = multiQubit.numAmps;
-56   c = 0.0;
-57   for (index=0; index<numAmpsPerRank; index++){ 
-58     /* Perform pTotal+=multiQubit.stateVec.real[index]*multiQubit.stateVec.real[i
+64   /* Don't change the bracketing in this routine! */
+65   REAL pTotal=0; 
+66   REAL y, t, c;
+67   long long int index;
+68   long long int numAmpsPerRank = multiQubit.numAmps;
+69   c = 0.0;
+70   for (index=0; index<numAmpsPerRank; index++){ 
+71     /* Perform pTotal+=multiQubit.stateVec.real[index]*multiQubit.stateVec.real[i
       ndex]; by Kahan */
-59    // pTotal+=multiQubit.stateVec.real[index]*multiQubit.stateVec.real[index];
-60     
-61     y = multiQubit.stateVec.real[index]*multiQubit.stateVec.real[index] - c;
-62     t = pTotal + y;
-63     c = ( t - pTotal ) - y;
-64     pTotal = t;
-65     
-66     /* Perform pTotal+=multiQubit.stateVec.imag[index]*multiQubit.stateVec.imag[i
+72    // pTotal+=multiQubit.stateVec.real[index]*multiQubit.stateVec.real[index];
+73     
+74     y = multiQubit.stateVec.real[index]*multiQubit.stateVec.real[index] - c;
+75     t = pTotal + y;
+76     c = ( t - pTotal ) - y;
+77     pTotal = t;
+78     
+79     /* Perform pTotal+=multiQubit.stateVec.imag[index]*multiQubit.stateVec.imag[i
       ndex]; by Kahan */
-67     //pTotal+=multiQubit.stateVec.imag[index]*multiQubit.stateVec.imag[index];
-68     
-69     
-70     y = multiQubit.stateVec.imag[index]*multiQubit.stateVec.imag[index] - c;
-71     t = pTotal + y;
-72     c = ( t - pTotal ) - y;
-73     pTotal = t;
-74     
-75     
-76   } 
-77   return pTotal;
-78 }
+80     //pTotal+=multiQubit.stateVec.imag[index]*multiQubit.stateVec.imag[index];
+81     
+82     
+83     y = multiQubit.stateVec.imag[index]*multiQubit.stateVec.imag[index] - c;
+84     t = pTotal + y;
+85     c = ( t - pTotal ) - y;
+86     pTotal = t;
+87     
+88     
+89   } 
+90   return pTotal;
+91 }
 \end{DoxyCode}
 \hypertarget{qubits_8h_abd4bc926cd3f9b65610bb228d0c59fe0}{
 \index{qubits.h@{qubits.h}!closeQuESTEnv@{closeQuESTEnv}}
@@ -219,16 +223,16 @@ Close QuEST environment. If something needs to be done to clean up the execution
 \item[\mbox{$\leftarrow$} {\em env}]object representing the execution environment. A single instance is used for each program \end{DoxyParams}
 
 
-Definition at line 27 of file qubits\_\-env\_\-local.c.
+Definition at line 40 of file qubits\_\-env\_\-local.c.
 
 Referenced by main().
 
 
 \begin{DoxyCode}
-27                                 {
-28         // MPI finalize goes here in MPI version. Call this function anyway for c
+40                                 {
+41         // MPI finalize goes here in MPI version. Call this function anyway for c
       onsistency
-29 }
+42 }
 \end{DoxyCode}
 \hypertarget{qubits_8h_a07418ebac70fd9ae5d051d089961631d}{
 \index{qubits.h@{qubits.h}!collapseToOutcome@{collapseToOutcome}}
@@ -247,7 +251,7 @@ probability of qubit measureQubit being either zero or one
 \end{DoxyReturn}
 
 
-Definition at line 182 of file qubits\_\-env\_\-local.c.
+Definition at line 195 of file qubits\_\-env\_\-local.c.
 
 References MultiQubit::chunkId, collapseToOutcomeDistributedRenorm(), collapseToOutcomeDistributedSetZero(), collapseToOutcomeLocal(), findProbabilityOfOutcome(), halfMatrixBlockFitsInChunk(), isChunkToSkipInFindPZero(), MultiQubit::numAmps, MultiQubit::numQubits, QuESTAssert(), REAL, and REAL\_\-EPS.
 
@@ -255,21 +259,21 @@ Referenced by test\_\-collapseToOutcome().
 
 
 \begin{DoxyCode}
-183 {
-184     QuESTAssert(measureQubit >= 0 && measureQubit < multiQubit.numQubits, 2, __fu
+196 {
+197     QuESTAssert(measureQubit >= 0 && measureQubit < multiQubit.numQubits, 2, __fu
       nc__);
-185     REAL stateProb;
-186         stateProb = findProbabilityOfOutcome(multiQubit, measureQubit, outcome);
-187     QuESTAssert(fabs(stateProb>REAL_EPS), 8, __func__);
-188     collapseToOutcomeLocal(multiQubit, measureQubit, stateProb, outcome);
-189     return stateProb;
-190 }
+198     REAL stateProb;
+199         stateProb = findProbabilityOfOutcome(multiQubit, measureQubit, outcome);
+200     QuESTAssert(fabs(stateProb>REAL_EPS), 8, __func__);
+201     collapseToOutcomeLocal(multiQubit, measureQubit, stateProb, outcome);
+202     return stateProb;
+203 }
 \end{DoxyCode}
-\hypertarget{qubits_8h_ad13ae1902276195d0df106116e032aff}{
+\hypertarget{qubits_8h_a03b13dfcabd8c59b50dbdd3af44ba8b2}{
 \index{qubits.h@{qubits.h}!compactUnitary@{compactUnitary}}
 \index{compactUnitary@{compactUnitary}!qubits.h@{qubits.h}}
-\paragraph[{compactUnitary}]{\setlength{\rightskip}{0pt plus 5cm}void compactUnitary ({\bf MultiQubit} {\em multiQubit}, \/  const int {\em rotQubit}, \/  {\bf Complex} {\em alpha}, \/  {\bf Complex} {\em beta})}\hfill}
-\label{qubits_8h_ad13ae1902276195d0df106116e032aff}
+\paragraph[{compactUnitary}]{\setlength{\rightskip}{0pt plus 5cm}void compactUnitary ({\bf MultiQubit} {\em multiQubit}, \/  const int {\em targetQubit}, \/  {\bf Complex} {\em alpha}, \/  {\bf Complex} {\em beta})}\hfill}
+\label{qubits_8h_a03b13dfcabd8c59b50dbdd3af44ba8b2}
 
 
 Rotate a single qubit in the state vector of probability amplitudes. Given two complex numbers alpha and beta, applies the operation \par
@@ -284,10 +288,10 @@ alpha, beta must obey $|$alpha$|$$^\wedge$2 + $|$beta$|$$^\wedge$2 = 1
 
 
 \begin{DoxyParams}{Parameters}
-\item[\mbox{$\leftrightarrow$} {\em multiQubit}]object representing the set of qubits \item[\mbox{$\leftarrow$} {\em rotQubit}]qubit to rotate \item[\mbox{$\leftarrow$} {\em alpha}]rotation angle \item[\mbox{$\leftarrow$} {\em beta}]rotation angle \end{DoxyParams}
+\item[\mbox{$\leftrightarrow$} {\em multiQubit}]object representing the set of qubits \item[\mbox{$\leftarrow$} {\em targetQubit}]qubit to rotate \item[\mbox{$\leftarrow$} {\em alpha}]rotation angle \item[\mbox{$\leftarrow$} {\em beta}]rotation angle \end{DoxyParams}
 
 
-Definition at line 88 of file qubits\_\-env\_\-local.c.
+Definition at line 101 of file qubits\_\-env\_\-local.c.
 
 References MultiQubit::chunkId, chunkIsUpper(), compactUnitaryDistributed(), compactUnitaryLocal(), exchangeStateVectors(), getChunkPairId(), getRotAngle(), halfMatrixBlockFitsInChunk(), MultiQubit::numAmps, MultiQubit::numQubits, MultiQubit::pairStateVec, QuESTAssert(), MultiQubit::stateVec, and validateAlphaBeta().
 
@@ -295,19 +299,20 @@ Referenced by rotateAroundAxis(), rotateX(), rotateY(), rotateZ(), test\_\-compa
 
 
 \begin{DoxyCode}
-89 {
-90     QuESTAssert(rotQubit >= 0 && rotQubit < multiQubit.numQubits, 1, __func__);
-91     QuESTAssert(validateAlphaBeta(alpha, beta), 6, __func__);
-92 
-93         // all values required to update state vector lie in this rank
-94         compactUnitaryLocal(multiQubit, rotQubit, alpha, beta);
-95 }
+102 {
+103     QuESTAssert(targetQubit >= 0 && targetQubit < multiQubit.numQubits, 1, __func
+      __);
+104     QuESTAssert(validateAlphaBeta(alpha, beta), 6, __func__);
+105 
+106         // all values required to update state vector lie in this rank
+107         compactUnitaryLocal(multiQubit, targetQubit, alpha, beta);
+108 }
 \end{DoxyCode}
-\hypertarget{qubits_8h_a96cc5075cff975f73885b50c093ba4a0}{
+\hypertarget{qubits_8h_ab4812953bc457405b3aa05a4c2f64f4a}{
 \index{qubits.h@{qubits.h}!controlledCompactUnitary@{controlledCompactUnitary}}
 \index{controlledCompactUnitary@{controlledCompactUnitary}!qubits.h@{qubits.h}}
-\paragraph[{controlledCompactUnitary}]{\setlength{\rightskip}{0pt plus 5cm}void controlledCompactUnitary ({\bf MultiQubit} {\em multiQubit}, \/  const int {\em rotQubit}, \/  const int {\em controlQubit}, \/  {\bf Complex} {\em alpha}, \/  {\bf Complex} {\em beta})}\hfill}
-\label{qubits_8h_a96cc5075cff975f73885b50c093ba4a0}
+\paragraph[{controlledCompactUnitary}]{\setlength{\rightskip}{0pt plus 5cm}void controlledCompactUnitary ({\bf MultiQubit} {\em multiQubit}, \/  const int {\em controlQubit}, \/  const int {\em targetQubit}, \/  {\bf Complex} {\em alpha}, \/  {\bf Complex} {\em beta})}\hfill}
+\label{qubits_8h_ab4812953bc457405b3aa05a4c2f64f4a}
 
 
 Rotate a single qubit in the state vector of probability amplitudes. Given two complex numbers alpha and beta and a control qubit, applies the operation: \par
@@ -322,10 +327,10 @@ alpha, beta must obey $|$alpha$|$$^\wedge$2 + $|$beta$|$$^\wedge$2 = 1
 
 
 \begin{DoxyParams}{Parameters}
-\item[\mbox{$\leftrightarrow$} {\em multiQubit}]object representing the set of qubits \item[\mbox{$\leftarrow$} {\em rotQubit}]qubit to rotate \item[\mbox{$\leftarrow$} {\em controlQubit}]perform rotation if this qubit is 1 \item[\mbox{$\leftarrow$} {\em alpha}]rotation angle \item[\mbox{$\leftarrow$} {\em beta}]rotation angle \end{DoxyParams}
+\item[\mbox{$\leftrightarrow$} {\em multiQubit}]object representing the set of qubits \item[\mbox{$\leftarrow$} {\em targetQubit}]qubit to rotate \item[\mbox{$\leftarrow$} {\em controlQubit}]perform rotation if this qubit is 1 \item[\mbox{$\leftarrow$} {\em alpha}]rotation angle \item[\mbox{$\leftarrow$} {\em beta}]rotation angle \end{DoxyParams}
 
 
-Definition at line 106 of file qubits\_\-env\_\-local.c.
+Definition at line 119 of file qubits\_\-env\_\-local.c.
 
 References MultiQubit::chunkId, chunkIsUpper(), controlledCompactUnitaryDistributed(), controlledCompactUnitaryLocal(), exchangeStateVectors(), getChunkPairId(), getRotAngle(), halfMatrixBlockFitsInChunk(), MultiQubit::numAmps, MultiQubit::numQubits, MultiQubit::pairStateVec, QuESTAssert(), MultiQubit::stateVec, and validateAlphaBeta().
 
@@ -333,17 +338,18 @@ Referenced by test\_\-controlledCompactUnitary(), test\_\-controlledUnitary(), a
 
 
 \begin{DoxyCode}
-107 {
-108     QuESTAssert(rotQubit >= 0 && rotQubit < multiQubit.numQubits, 1, __func__);
-109     QuESTAssert(controlQubit >= 0 && controlQubit < multiQubit.numQubits, 2, __fu
+120 {
+121     QuESTAssert(targetQubit >= 0 && targetQubit < multiQubit.numQubits, 1, __func
+      __);
+122     QuESTAssert(controlQubit >= 0 && controlQubit < multiQubit.numQubits, 2, __fu
       nc__);
-110     QuESTAssert(controlQubit != rotQubit, 3, __func__);
-111     QuESTAssert(validateAlphaBeta(alpha, beta), 6, __func__);
-112     
-113 
-114         controlledCompactUnitaryLocal(multiQubit, rotQubit, controlQubit, alpha, 
-      beta);
-115 }
+123     QuESTAssert(controlQubit != targetQubit, 3, __func__);
+124     QuESTAssert(validateAlphaBeta(alpha, beta), 6, __func__);
+125     
+126 
+127         controlledCompactUnitaryLocal(multiQubit, controlQubit, targetQubit, alph
+      a, beta);
+128 }
 \end{DoxyCode}
 \hypertarget{qubits_8h_a67576895bbc65463481a8ea24d9b1e22}{
 \index{qubits.h@{qubits.h}!controlledNot@{controlledNot}}
@@ -354,10 +360,10 @@ Referenced by test\_\-controlledCompactUnitary(), test\_\-controlledUnitary(), a
 
 Rotate a single qubit by \{\{0,-\/i\},\{i,0\}\} -\/-\/ swap $|$0$>$ and $|$1$>$ and apply a phase of -\/i or i, only for elements when control qubit is 1. 
 \begin{DoxyParams}{Parameters}
-\item[\mbox{$\leftrightarrow$} {\em multiQubit}]object representing the set of qubits \item[\mbox{$\leftarrow$} {\em rotQubit}]qubit to rotate \item[\mbox{$\leftarrow$} {\em controlQubit}]perform sigmaX rotation if this qubit is 1 \end{DoxyParams}
+\item[\mbox{$\leftrightarrow$} {\em multiQubit}]object representing the set of qubits \item[\mbox{$\leftarrow$} {\em targetQubit}]qubit to rotate \item[\mbox{$\leftarrow$} {\em controlQubit}]perform sigmaX rotation if this qubit is 1 \end{DoxyParams}
 
 
-Definition at line 165 of file qubits\_\-env\_\-local.c.
+Definition at line 178 of file qubits\_\-env\_\-local.c.
 
 References MultiQubit::chunkId, chunkIsUpper(), controlledNotDistributed(), controlledNotLocal(), exchangeStateVectors(), getChunkPairId(), halfMatrixBlockFitsInChunk(), MultiQubit::numAmps, MultiQubit::numQubits, MultiQubit::pairStateVec, QuESTAssert(), and MultiQubit::stateVec.
 
@@ -365,14 +371,14 @@ Referenced by test\_\-controlledNot().
 
 
 \begin{DoxyCode}
-166 {
-167     QuESTAssert(targetQubit >= 0 && targetQubit < multiQubit.numQubits, 1, __func
+179 {
+180     QuESTAssert(targetQubit >= 0 && targetQubit < multiQubit.numQubits, 1, __func
       __);
-168     QuESTAssert(controlQubit >= 0 && controlQubit < multiQubit.numQubits, 2, __fu
+181     QuESTAssert(controlQubit >= 0 && controlQubit < multiQubit.numQubits, 2, __fu
       nc__);
-169     QuESTAssert(controlQubit != targetQubit, 3, __func__);
-170         controlledNotLocal(multiQubit, controlQubit, targetQubit);
-171 }
+182     QuESTAssert(controlQubit != targetQubit, 3, __func__);
+183         controlledNotLocal(multiQubit, controlQubit, targetQubit);
+184 }
 \end{DoxyCode}
 \hypertarget{qubits_8h_a11a96159191cbf1b01a1080e7f045aac}{
 \index{qubits.h@{qubits.h}!controlledPhaseGate@{controlledPhaseGate}}
@@ -386,7 +392,7 @@ The control phase (the two qubit phase gate). For each state, if both input qubi
 \item[\mbox{$\leftrightarrow$} {\em multiQubit}]object representing the set of qubits \item[\mbox{$\leftarrow$} {\em idQubit1,idQubit2}]specified qubits \end{DoxyParams}
 
 
-Definition at line 1896 of file qubits.c.
+Definition at line 1898 of file qubits.c.
 
 References MultiQubit::chunkId, extractBit(), ComplexArray::imag, MultiQubit::numAmps, MultiQubit::numQubits, QuESTAssert(), ComplexArray::real, REAL, and MultiQubit::stateVec.
 
@@ -394,53 +400,53 @@ Referenced by test\_\-controlledPhaseGate().
 
 
 \begin{DoxyCode}
-1897 {
-1898         long long int index;
-1899         long long int stateVecSize;
-1900         int bit1, bit2;
-1901 
-1902         const long long int chunkSize=multiQubit.numAmps;
-1903         const long long int chunkId=multiQubit.chunkId;
-1904 
-1905     QuESTAssert(idQubit1 >= 0 && idQubit1 < multiQubit.numQubits, 2, __func__);
-1906     QuESTAssert(idQubit2 >= 0 && idQubit2 < multiQubit.numQubits, 1, __func__);
-1907     QuESTAssert(idQubit1 != idQubit2, 3, __func__);
-1908 
-1909         // dimension of the state vector
-1910         stateVecSize = multiQubit.numAmps;
-1911         REAL *stateVecReal = multiQubit.stateVec.real;
-1912         REAL *stateVecImag = multiQubit.stateVec.imag;
-1913 
-1914 # ifdef _OPENMP
-1915 # pragma omp parallel for \
-1916         default  (none)                      \
-1917         shared   (stateVecSize, stateVecReal,stateVecImag ) \
-1918         private  (index,bit1,bit2)                     \
-1919         schedule (static)
-1920 # endif
-1921         for (index=0; index<stateVecSize; index++) {
-1922                 bit1 = extractBit (idQubit1, index+chunkId*chunkSize);
-1923                 bit2 = extractBit (idQubit2, index+chunkId*chunkSize);
-1924                 if (bit1 && bit2) {
-1925                         stateVecReal [index] = - stateVecReal [index];
-1926                         stateVecImag [index] = - stateVecImag [index];
-1927                 }
-1928         }
-1929 }
+1899 {
+1900         long long int index;
+1901         long long int stateVecSize;
+1902         int bit1, bit2;
+1903 
+1904         const long long int chunkSize=multiQubit.numAmps;
+1905         const long long int chunkId=multiQubit.chunkId;
+1906 
+1907     QuESTAssert(idQubit1 >= 0 && idQubit1 < multiQubit.numQubits, 2, __func__);
+1908     QuESTAssert(idQubit2 >= 0 && idQubit2 < multiQubit.numQubits, 1, __func__);
+1909     QuESTAssert(idQubit1 != idQubit2, 3, __func__);
+1910 
+1911         // dimension of the state vector
+1912         stateVecSize = multiQubit.numAmps;
+1913         REAL *stateVecReal = multiQubit.stateVec.real;
+1914         REAL *stateVecImag = multiQubit.stateVec.imag;
+1915 
+1916 # ifdef _OPENMP
+1917 # pragma omp parallel for \
+1918         default  (none)                      \
+1919         shared   (stateVecSize, stateVecReal,stateVecImag ) \
+1920         private  (index,bit1,bit2)                     \
+1921         schedule (static)
+1922 # endif
+1923         for (index=0; index<stateVecSize; index++) {
+1924                 bit1 = extractBit (idQubit1, index+chunkId*chunkSize);
+1925                 bit2 = extractBit (idQubit2, index+chunkId*chunkSize);
+1926                 if (bit1 && bit2) {
+1927                         stateVecReal [index] = - stateVecReal [index];
+1928                         stateVecImag [index] = - stateVecImag [index];
+1929                 }
+1930         }
+1931 }
 \end{DoxyCode}
-\hypertarget{qubits_8h_a4e135fd99abe7fa390c678937f0cebc9}{
+\hypertarget{qubits_8h_a8a701526263392599aa21d0d0f05d9d8}{
 \index{qubits.h@{qubits.h}!controlledUnitary@{controlledUnitary}}
 \index{controlledUnitary@{controlledUnitary}!qubits.h@{qubits.h}}
-\paragraph[{controlledUnitary}]{\setlength{\rightskip}{0pt plus 5cm}void controlledUnitary ({\bf MultiQubit} {\em multiQubit}, \/  const int {\em rotQubit}, \/  const int {\em controlQubit}, \/  {\bf ComplexMatrix2} {\em u})}\hfill}
-\label{qubits_8h_a4e135fd99abe7fa390c678937f0cebc9}
+\paragraph[{controlledUnitary}]{\setlength{\rightskip}{0pt plus 5cm}void controlledUnitary ({\bf MultiQubit} {\em multiQubit}, \/  const int {\em controlQubit}, \/  const int {\em targetQubit}, \/  {\bf ComplexMatrix2} {\em u})}\hfill}
+\label{qubits_8h_a8a701526263392599aa21d0d0f05d9d8}
 
 
 Apply a unitary operation to a single qubit given a control qubit Only perform the rotation for elements where the control qubit is one. 
 \begin{DoxyParams}{Parameters}
-\item[\mbox{$\leftrightarrow$} {\em multiQubit}]object representing the set of qubits \item[\mbox{$\leftarrow$} {\em rotQubit}]qubit to rotate \item[\mbox{$\leftarrow$} {\em controlQubit}]perform rotation if this qubit is 1 \item[\mbox{$\leftarrow$} {\em u}]unitary matrix to apply \end{DoxyParams}
+\item[\mbox{$\leftrightarrow$} {\em multiQubit}]object representing the set of qubits \item[\mbox{$\leftarrow$} {\em targetQubit}]qubit to rotate \item[\mbox{$\leftarrow$} {\em controlQubit}]perform rotation if this qubit is 1 \item[\mbox{$\leftarrow$} {\em u}]unitary matrix to apply \end{DoxyParams}
 
 
-Definition at line 117 of file qubits\_\-env\_\-local.c.
+Definition at line 130 of file qubits\_\-env\_\-local.c.
 
 References MultiQubit::chunkId, chunkIsUpper(), controlledUnitaryDistributed(), controlledUnitaryLocal(), exchangeStateVectors(), getChunkPairId(), getRotAngleFromUnitaryMatrix(), halfMatrixBlockFitsInChunk(), MultiQubit::numAmps, MultiQubit::numQubits, MultiQubit::pairStateVec, QuESTAssert(), MultiQubit::stateVec, and validateMatrixIsUnitary().
 
@@ -448,15 +454,16 @@ Referenced by test\_\-controlledUnitary().
 
 
 \begin{DoxyCode}
-118 {
-119     QuESTAssert(rotQubit >= 0 && rotQubit < multiQubit.numQubits, 1, __func__);
-120     QuESTAssert(controlQubit >= 0 && controlQubit < multiQubit.numQubits, 2, __fu
+131 {
+132     QuESTAssert(targetQubit >= 0 && targetQubit < multiQubit.numQubits, 1, __func
+      __);
+133     QuESTAssert(controlQubit >= 0 && controlQubit < multiQubit.numQubits, 2, __fu
       nc__);
-121     QuESTAssert(controlQubit != rotQubit, 3, __func__);
-122     QuESTAssert(validateMatrixIsUnitary(u), 5, __func__);
-123    
-124         controlledUnitaryLocal(multiQubit, rotQubit, controlQubit, u);
-125 }
+134     QuESTAssert(controlQubit != targetQubit, 3, __func__);
+135     QuESTAssert(validateMatrixIsUnitary(u), 5, __func__);
+136    
+137         controlledUnitaryLocal(multiQubit, controlQubit, targetQubit, u);
+138 }
 \end{DoxyCode}
 \hypertarget{qubits_8h_a9c02591bc64c2918503afa231d90d83f}{
 \index{qubits.h@{qubits.h}!createMultiQubit@{createMultiQubit}}
@@ -470,48 +477,49 @@ Create a \hyperlink{structMultiQubit}{MultiQubit} object representing a set of q
 \item[\mbox{$\leftrightarrow$} {\em multiQubit}]object representing the set of qubits \item[\mbox{$\leftarrow$} {\em numQubits}]number of qubits in the system \item[\mbox{$\leftarrow$} {\em env}]object representing the execution environment (local, multinode etc) \end{DoxyParams}
 
 
-Definition at line 40 of file qubits.c.
+Definition at line 41 of file qubits.c.
 
-References MultiQubit::chunkId, ComplexArray::imag, MultiQubit::numAmps, MultiQubit::numChunks, MultiQubit::numQubits, QuESTEnv::numRanks, MultiQubit::pairStateVec, QuESTEnv::rank, ComplexArray::real, and MultiQubit::stateVec.
+References MultiQubit::chunkId, ComplexArray::imag, MultiQubit::numAmps, MultiQubit::numChunks, MultiQubit::numQubits, QuESTEnv::numRanks, MultiQubit::pairStateVec, QuESTAssert(), QuESTEnv::rank, ComplexArray::real, and MultiQubit::stateVec.
 
-Referenced by main(), test\_\-collapseToOutcome(), test\_\-compactUnitary(), test\_\-controlledCompactUnitary(), test\_\-controlledNot(), test\_\-controlledPhaseGate(), test\_\-controlledUnitary(), test\_\-findProbabilityOfOutcome(), test\_\-hadamard(), test\_\-initStatePlus(), test\_\-initStateZero(), test\_\-multiControlledPhaseGate(), test\_\-multiControlledUnitary(), test\_\-sGate(), test\_\-sigmaX(), test\_\-sigmaY(), test\_\-sigmaZ(), test\_\-tGate(), and test\_\-unitary().
+Referenced by main(), test\_\-collapseToOutcome(), test\_\-compactUnitary(), test\_\-controlledCompactUnitary(), test\_\-controlledNot(), test\_\-controlledPhaseGate(), test\_\-controlledUnitary(), test\_\-findProbabilityOfOutcome(), test\_\-hadamard(), test\_\-initStatePlus(), test\_\-initStateZero(), test\_\-measure(), test\_\-measureWithStats(), test\_\-multiControlledPhaseGate(), test\_\-multiControlledUnitary(), test\_\-sGate(), test\_\-sigmaX(), test\_\-sigmaY(), test\_\-sigmaZ(), test\_\-tGate(), and test\_\-unitary().
 
 
 \begin{DoxyCode}
-41 {
-42         long long int numAmps = 1L << numQubits;
-43         long long int numAmpsPerRank = numAmps/env.numRanks;
-44 
-45         multiQubit->stateVec.real = malloc(numAmpsPerRank * sizeof(*(multiQubit->
+42 {
+43     QuESTAssert(numQubits>0, 9, __func__);
+44         long long int numAmps = 1L << numQubits;
+45         long long int numAmpsPerRank = numAmps/env.numRanks;
+46 
+47         multiQubit->stateVec.real = malloc(numAmpsPerRank * sizeof(*(multiQubit->
       stateVec.real)));
-46         multiQubit->stateVec.imag = malloc(numAmpsPerRank * sizeof(*(multiQubit->
+48         multiQubit->stateVec.imag = malloc(numAmpsPerRank * sizeof(*(multiQubit->
       stateVec.imag)));
-47         if (env.numRanks>1){
-48                 multiQubit->pairStateVec.real = malloc(numAmpsPerRank * sizeof(*(
+49         if (env.numRanks>1){
+50                 multiQubit->pairStateVec.real = malloc(numAmpsPerRank * sizeof(*(
       multiQubit->pairStateVec.real)));
-49                 multiQubit->pairStateVec.imag = malloc(numAmpsPerRank * sizeof(*(
+51                 multiQubit->pairStateVec.imag = malloc(numAmpsPerRank * sizeof(*(
       multiQubit->pairStateVec.imag)));
-50         }
-51 
-52         if ( (!(multiQubit->stateVec.real) || !(multiQubit->stateVec.imag))
-53                  && numAmpsPerRank ) {
-54                 printf("Could not allocate memory!");
-55                 exit (EXIT_FAILURE);
-56         }
-57 
-58         if ( env.numRanks>1 && (!(multiQubit->pairStateVec.real) || !(multiQubit-
+52         }
+53 
+54         if ( (!(multiQubit->stateVec.real) || !(multiQubit->stateVec.imag))
+55                  && numAmpsPerRank ) {
+56                 printf("Could not allocate memory!");
+57                 exit (EXIT_FAILURE);
+58         }
+59 
+60         if ( env.numRanks>1 && (!(multiQubit->pairStateVec.real) || !(multiQubit-
       >pairStateVec.imag))
-59                  && numAmpsPerRank ) {
-60                 printf("Could not allocate memory!");
-61                 exit (EXIT_FAILURE);
-62         }
-63 
-64         multiQubit->numQubits = numQubits;
-65         multiQubit->numAmps = numAmpsPerRank;
-66         multiQubit->chunkId = env.rank;
-67         multiQubit->numChunks = env.numRanks;
-68 
-69 }
+61                  && numAmpsPerRank ) {
+62                 printf("Could not allocate memory!");
+63                 exit (EXIT_FAILURE);
+64         }
+65 
+66         multiQubit->numQubits = numQubits;
+67         multiQubit->numAmps = numAmpsPerRank;
+68         multiQubit->chunkId = env.rank;
+69         multiQubit->numChunks = env.numRanks;
+70 
+71 }
 \end{DoxyCode}
 \hypertarget{qubits_8h_ae5d6acc322314d7a3d8a2eccf00d3b19}{
 \index{qubits.h@{qubits.h}!destroyMultiQubit@{destroyMultiQubit}}
@@ -525,22 +533,22 @@ Deallocate a \hyperlink{structMultiQubit}{MultiQubit} object representing a set 
 \item[\mbox{$\leftrightarrow$} {\em multiQubit}]object to be deallocated \item[\mbox{$\leftarrow$} {\em env}]object representing the execution environment (local, multinode etc) \end{DoxyParams}
 
 
-Definition at line 76 of file qubits.c.
+Definition at line 78 of file qubits.c.
 
 References ComplexArray::imag, QuESTEnv::numRanks, MultiQubit::pairStateVec, ComplexArray::real, and MultiQubit::stateVec.
 
-Referenced by main(), test\_\-collapseToOutcome(), test\_\-compactUnitary(), test\_\-controlledCompactUnitary(), test\_\-controlledNot(), test\_\-controlledPhaseGate(), test\_\-controlledUnitary(), test\_\-findProbabilityOfOutcome(), test\_\-hadamard(), test\_\-initStatePlus(), test\_\-initStateZero(), test\_\-multiControlledPhaseGate(), test\_\-multiControlledUnitary(), test\_\-sGate(), test\_\-sigmaX(), test\_\-sigmaY(), test\_\-sigmaZ(), test\_\-tGate(), and test\_\-unitary().
+Referenced by main(), test\_\-collapseToOutcome(), test\_\-compactUnitary(), test\_\-controlledCompactUnitary(), test\_\-controlledNot(), test\_\-controlledPhaseGate(), test\_\-controlledUnitary(), test\_\-findProbabilityOfOutcome(), test\_\-hadamard(), test\_\-initStatePlus(), test\_\-initStateZero(), test\_\-measure(), test\_\-measureWithStats(), test\_\-multiControlledPhaseGate(), test\_\-multiControlledUnitary(), test\_\-sGate(), test\_\-sigmaX(), test\_\-sigmaY(), test\_\-sigmaZ(), test\_\-tGate(), and test\_\-unitary().
 
 
 \begin{DoxyCode}
-76                                                            {
-77         free(multiQubit.stateVec.real);
-78         free(multiQubit.stateVec.imag);
-79         if (env.numRanks>1){
-80                 free(multiQubit.pairStateVec.real);
-81                 free(multiQubit.pairStateVec.imag);
-82         }
-83 }
+78                                                            {
+79         free(multiQubit.stateVec.real);
+80         free(multiQubit.stateVec.imag);
+81         if (env.numRanks>1){
+82                 free(multiQubit.pairStateVec.real);
+83                 free(multiQubit.pairStateVec.imag);
+84         }
+85 }
 \end{DoxyCode}
 \hypertarget{qubits_8h_ad315c941a51bc053d39ebfa2040fd32e}{
 \index{qubits.h@{qubits.h}!findProbabilityOfOutcome@{findProbabilityOfOutcome}}
@@ -557,22 +565,22 @@ probability of qubit measureQubit being either zero or one
 \end{DoxyReturn}
 
 
-Definition at line 173 of file qubits\_\-env\_\-local.c.
+Definition at line 186 of file qubits\_\-env\_\-local.c.
 
 References MultiQubit::chunkId, findProbabilityOfZeroDistributed(), findProbabilityOfZeroLocal(), halfMatrixBlockFitsInChunk(), isChunkToSkipInFindPZero(), MPI\_\-QuEST\_\-REAL, MultiQubit::numAmps, MultiQubit::numQubits, QuESTAssert(), and REAL.
 
-Referenced by collapseToOutcome(), main(), and test\_\-findProbabilityOfOutcome().
+Referenced by collapseToOutcome(), main(), measureWithStats(), and test\_\-findProbabilityOfOutcome().
 
 
 \begin{DoxyCode}
-174 {
-175     QuESTAssert(measureQubit >= 0 && measureQubit < multiQubit.numQubits, 2, __fu
+187 {
+188     QuESTAssert(measureQubit >= 0 && measureQubit < multiQubit.numQubits, 2, __fu
       nc__);
-176         REAL stateProb=0;
-177         stateProb = findProbabilityOfZeroLocal(multiQubit, measureQubit);
-178         if (outcome==1) stateProb = 1.0 - stateProb;
-179         return stateProb;
-180 }
+189         REAL stateProb=0;
+190         stateProb = findProbabilityOfZeroLocal(multiQubit, measureQubit);
+191         if (outcome==1) stateProb = 1.0 - stateProb;
+192         return stateProb;
+193 }
 \end{DoxyCode}
 \hypertarget{qubits_8h_a8f10aabf9f607f19093aee54630caa21}{
 \index{qubits.h@{qubits.h}!getEnvironmentString@{getEnvironmentString}}
@@ -581,20 +589,20 @@ Referenced by collapseToOutcome(), main(), and test\_\-findProbabilityOfOutcome(
 \label{qubits_8h_a8f10aabf9f607f19093aee54630caa21}
 
 
-Definition at line 162 of file qubits.c.
+Definition at line 164 of file qubits.c.
 
 References MultiQubit::numQubits, and QuESTEnv::numRanks.
 
 
 \begin{DoxyCode}
-162                                                                              {
-163         int numThreads=1;
-164 # ifdef _OPENMP
-165         numThreads=omp_get_max_threads(); 
-166 # endif
-167         sprintf(str, "%dqubits_CPU_%dranksx%dthreads", multiQubit.numQubits, env.
+164                                                                              {
+165         int numThreads=1;
+166 # ifdef _OPENMP
+167         numThreads=omp_get_max_threads(); 
+168 # endif
+169         sprintf(str, "%dqubits_CPU_%dranksx%dthreads", multiQubit.numQubits, env.
       numRanks, numThreads);
-168 }
+170 }
 \end{DoxyCode}
 \hypertarget{qubits_8h_a3615f76fd5f57008d9b74bbd10533dd0}{
 \index{qubits.h@{qubits.h}!getImagAmpEl@{getImagAmpEl}}
@@ -611,7 +619,7 @@ imaginary component at that index
 \end{DoxyReturn}
 
 
-Definition at line 84 of file qubits\_\-env\_\-local.c.
+Definition at line 97 of file qubits\_\-env\_\-local.c.
 
 References MultiQubit::chunkId, getChunkIdFromIndex(), ComplexArray::imag, MPI\_\-QuEST\_\-REAL, MultiQubit::numAmps, REAL, and MultiQubit::stateVec.
 
@@ -619,9 +627,9 @@ Referenced by getProbEl().
 
 
 \begin{DoxyCode}
-84                                                              {
-85         return multiQubit.stateVec.imag[index];
-86 }
+97                                                              {
+98         return multiQubit.stateVec.imag[index];
+99 }
 \end{DoxyCode}
 \hypertarget{qubits_8h_a799b10447d6dbdaf960a4d3eedd22014}{
 \index{qubits.h@{qubits.h}!getProbEl@{getProbEl}}
@@ -646,19 +654,19 @@ real component $\ast$ real component + imag component $\ast$ imag component
 \end{DoxyReturn}
 
 
-Definition at line 2150 of file qubits.c.
+Definition at line 2152 of file qubits.c.
 
 References getImagAmpEl(), getRealAmpEl(), and REAL.
 
 
 \begin{DoxyCode}
-2150                                                           {
-2151         REAL real;
-2152         REAL imag;
-2153         real = getRealAmpEl(multiQubit, index);
-2154         imag = getImagAmpEl(multiQubit, index);
-2155         return real*real + imag*imag;
-2156 }
+2152                                                           {
+2153         REAL real;
+2154         REAL imag;
+2155         real = getRealAmpEl(multiQubit, index);
+2156         imag = getImagAmpEl(multiQubit, index);
+2157         return real*real + imag*imag;
+2158 }
 \end{DoxyCode}
 \hypertarget{qubits_8h_a317b786f577fa6bc136ea7f0ee7330a7}{
 \index{qubits.h@{qubits.h}!getRealAmpEl@{getRealAmpEl}}
@@ -675,7 +683,7 @@ real component at that index
 \end{DoxyReturn}
 
 
-Definition at line 80 of file qubits\_\-env\_\-local.c.
+Definition at line 93 of file qubits\_\-env\_\-local.c.
 
 References MultiQubit::chunkId, getChunkIdFromIndex(), MPI\_\-QuEST\_\-REAL, MultiQubit::numAmps, REAL, ComplexArray::real, and MultiQubit::stateVec.
 
@@ -683,23 +691,23 @@ Referenced by getProbEl().
 
 
 \begin{DoxyCode}
-80                                                              {
-81         return multiQubit.stateVec.real[index];
-82 }
+93                                                              {
+94         return multiQubit.stateVec.real[index];
+95 }
 \end{DoxyCode}
-\hypertarget{qubits_8h_ad247d084dc7150893e9051a438a5807e}{
+\hypertarget{qubits_8h_aa09b5dd93de6df1384b8f2c0041749ab}{
 \index{qubits.h@{qubits.h}!hadamard@{hadamard}}
 \index{hadamard@{hadamard}!qubits.h@{qubits.h}}
-\paragraph[{hadamard}]{\setlength{\rightskip}{0pt plus 5cm}void hadamard ({\bf MultiQubit} {\em multiQubit}, \/  const int {\em rotQubit})}\hfill}
-\label{qubits_8h_ad247d084dc7150893e9051a438a5807e}
+\paragraph[{hadamard}]{\setlength{\rightskip}{0pt plus 5cm}void hadamard ({\bf MultiQubit} {\em multiQubit}, \/  const int {\em targetQubit})}\hfill}
+\label{qubits_8h_aa09b5dd93de6df1384b8f2c0041749ab}
 
 
 Rotate a single qubit by \{\{1,1\},\{1,-\/1\}\}/sqrt2 -\/-\/ turn a $|$0$>$ into a $|$+$>$ and a $|$1$>$ into a $|$-\/$>$. 
 \begin{DoxyParams}{Parameters}
-\item[\mbox{$\leftrightarrow$} {\em multiQubit}]object representing the set of qubits \item[\mbox{$\leftarrow$} {\em rotQubit}]qubit to rotate \end{DoxyParams}
+\item[\mbox{$\leftrightarrow$} {\em multiQubit}]object representing the set of qubits \item[\mbox{$\leftarrow$} {\em targetQubit}]qubit to rotate \end{DoxyParams}
 
 
-Definition at line 159 of file qubits\_\-env\_\-local.c.
+Definition at line 172 of file qubits\_\-env\_\-local.c.
 
 References MultiQubit::chunkId, chunkIsUpper(), exchangeStateVectors(), getChunkPairId(), hadamardDistributed(), hadamardLocal(), halfMatrixBlockFitsInChunk(), MultiQubit::numAmps, MultiQubit::numQubits, MultiQubit::pairStateVec, QuESTAssert(), and MultiQubit::stateVec.
 
@@ -707,10 +715,11 @@ Referenced by test\_\-hadamard().
 
 
 \begin{DoxyCode}
-160 {
-161     QuESTAssert(rotQubit >= 0 && rotQubit < multiQubit.numQubits, 1, __func__);
-162         hadamardLocal(multiQubit, rotQubit);
-163 }
+173 {
+174     QuESTAssert(targetQubit >= 0 && targetQubit < multiQubit.numQubits, 1, __func
+      __);
+175         hadamardLocal(multiQubit, targetQubit);
+176 }
 \end{DoxyCode}
 \hypertarget{qubits_8h_ad84a3ce68d1ca02b4e3f741ea45b6054}{
 \index{qubits.h@{qubits.h}!initQuESTEnv@{initQuESTEnv}}
@@ -724,19 +733,26 @@ Initialize QuEST environment. If something needs to be done to set up the execut
 \item[\mbox{$\leftrightarrow$} {\em env}]object representing the execution environment. A single instance is used for each program \end{DoxyParams}
 
 
-Definition at line 13 of file qubits\_\-env\_\-local.c.
+Definition at line 19 of file qubits\_\-env\_\-local.c.
 
-References DEBUG, QuESTEnv::numRanks, and QuESTEnv::rank.
+References DEBUG, init\_\-by\_\-array(), QuESTEnv::numRanks, and QuESTEnv::rank.
 
 Referenced by main().
 
 
 \begin{DoxyCode}
-13                                 {
-14         // init MPI environment
-15         env->rank=0;
-16         env->numRanks=1;
-17 }
+19                                 {
+20         // init MPI environment
+21         env->rank=0;
+22         env->numRanks=1;
+23 
+24     // init MT random number generator with two keys -- time and pid
+25     unsigned long int secs = time(NULL);
+26     unsigned long int pid = getpid();
+27     unsigned long int key[2];
+28     key[0] = secs; key[1] = pid;
+29     init_by_array(key, 2);
+30 }
 \end{DoxyCode}
 \hypertarget{qubits_8h_a43bcb279fc9717fbd06a19cdef48b9d8}{
 \index{qubits.h@{qubits.h}!initStatePlus@{initStatePlus}}
@@ -750,45 +766,45 @@ Initialise the state vector of probability amplitudes for a set of qubits to an 
 \item[\mbox{$\leftrightarrow$} {\em multiQubit}]object representing the set of qubits to be initialised \end{DoxyParams}
 
 
-Definition at line 216 of file qubits.c.
+Definition at line 218 of file qubits.c.
 
 References DEBUG, ComplexArray::imag, MultiQubit::numAmps, MultiQubit::numChunks, ComplexArray::real, REAL, and MultiQubit::stateVec.
 
-Referenced by test\_\-collapseToOutcome(), test\_\-compactUnitary(), test\_\-findProbabilityOfOutcome(), test\_\-initStatePlus(), and test\_\-unitary().
+Referenced by test\_\-collapseToOutcome(), test\_\-compactUnitary(), test\_\-findProbabilityOfOutcome(), test\_\-initStatePlus(), test\_\-measure(), test\_\-measureWithStats(), and test\_\-unitary().
 
 
 \begin{DoxyCode}
-217 {
-218         long long int chunkSize, stateVecSize;
-219         long long int index;
-220 
-221         // dimension of the state vector
-222         chunkSize = multiQubit->numAmps;
-223         stateVecSize = chunkSize*multiQubit->numChunks;
-224         REAL normFactor = 1.0/sqrt(stateVecSize);
-225 
-226         // Can't use multiQubit->stateVec as a private OMP var
-227         REAL *stateVecReal = multiQubit->stateVec.real;
-228         REAL *stateVecImag = multiQubit->stateVec.imag;
-229 
-230         // initialise the state to |0000..0000>
-231 # ifdef _OPENMP
-232 # pragma omp parallel \
-233         default  (none) \
-234         shared   (chunkSize, stateVecReal, stateVecImag, normFactor) \
-235         private  (index) 
-236 # endif
-237         {
-238 # ifdef _OPENMP
-239                 # pragma omp for schedule (static)
-240 # endif
-241                 for (index=0; index<chunkSize; index++) {
-242                         stateVecReal[index] = normFactor;
-243                         stateVecImag[index] = 0.0;
-244                 }
-245         }
-246         if (DEBUG) printf("COMPLETED INIT\n");
-247 }
+219 {
+220         long long int chunkSize, stateVecSize;
+221         long long int index;
+222 
+223         // dimension of the state vector
+224         chunkSize = multiQubit->numAmps;
+225         stateVecSize = chunkSize*multiQubit->numChunks;
+226         REAL normFactor = 1.0/sqrt(stateVecSize);
+227 
+228         // Can't use multiQubit->stateVec as a private OMP var
+229         REAL *stateVecReal = multiQubit->stateVec.real;
+230         REAL *stateVecImag = multiQubit->stateVec.imag;
+231 
+232         // initialise the state to |0000..0000>
+233 # ifdef _OPENMP
+234 # pragma omp parallel \
+235         default  (none) \
+236         shared   (chunkSize, stateVecReal, stateVecImag, normFactor) \
+237         private  (index) 
+238 # endif
+239         {
+240 # ifdef _OPENMP
+241                 # pragma omp for schedule (static)
+242 # endif
+243                 for (index=0; index<chunkSize; index++) {
+244                         stateVecReal[index] = normFactor;
+245                         stateVecImag[index] = 0.0;
+246                 }
+247         }
+248         if (DEBUG) printf("COMPLETED INIT\n");
+249 }
 \end{DoxyCode}
 \hypertarget{qubits_8h_acb5b2eff794339090004d29f02a70d9a}{
 \index{qubits.h@{qubits.h}!initStateZero@{initStateZero}}
@@ -802,50 +818,113 @@ Initialise the state vector of probability amplitudes for a set of qubits to the
 \item[\mbox{$\leftrightarrow$} {\em multiQubit}]object representing the set of qubits to be initialised \end{DoxyParams}
 
 
-Definition at line 174 of file qubits.c.
+Definition at line 176 of file qubits.c.
 
 References MultiQubit::chunkId, DEBUG, ComplexArray::imag, MultiQubit::numAmps, ComplexArray::real, REAL, and MultiQubit::stateVec.
 
-Referenced by main(), test\_\-collapseToOutcome(), test\_\-findProbabilityOfOutcome(), and test\_\-initStateZero().
+Referenced by main(), test\_\-collapseToOutcome(), test\_\-findProbabilityOfOutcome(), test\_\-initStateZero(), test\_\-measure(), and test\_\-measureWithStats().
 
 
 \begin{DoxyCode}
-175 {
-176         long long int stateVecSize;
-177         long long int index;
-178 
-179         // dimension of the state vector
-180         stateVecSize = multiQubit->numAmps;
-181 
-182         // Can't use multiQubit->stateVec as a private OMP var
-183         REAL *stateVecReal = multiQubit->stateVec.real;
-184         REAL *stateVecImag = multiQubit->stateVec.imag;
-185 
-186         // initialise the state to |0000..0000>
-187 # ifdef _OPENMP
-188 # pragma omp parallel \
-189         default  (none) \
-190         shared   (stateVecSize, stateVecReal, stateVecImag) \
-191         private  (index) 
-192 # endif
-193         {
-194 # ifdef _OPENMP
-195                 # pragma omp for schedule (static)
-196 # endif
-197                 for (index=0; index<stateVecSize; index++) {
-198                         stateVecReal[index] = 0.0;
-199                         stateVecImag[index] = 0.0;
-200                 }
-201         }
-202 
-203         if (multiQubit->chunkId==0){
-204                 // zero state |0000..0000> has probability 1
-205                 stateVecReal[0] = 1.0;
-206                 stateVecImag[0] = 0.0;
-207         }
-208 
-209         if (DEBUG) printf("COMPLETED INIT\n");
-210 }
+177 {
+178         long long int stateVecSize;
+179         long long int index;
+180 
+181         // dimension of the state vector
+182         stateVecSize = multiQubit->numAmps;
+183 
+184         // Can't use multiQubit->stateVec as a private OMP var
+185         REAL *stateVecReal = multiQubit->stateVec.real;
+186         REAL *stateVecImag = multiQubit->stateVec.imag;
+187 
+188         // initialise the state to |0000..0000>
+189 # ifdef _OPENMP
+190 # pragma omp parallel \
+191         default  (none) \
+192         shared   (stateVecSize, stateVecReal, stateVecImag) \
+193         private  (index) 
+194 # endif
+195         {
+196 # ifdef _OPENMP
+197                 # pragma omp for schedule (static)
+198 # endif
+199                 for (index=0; index<stateVecSize; index++) {
+200                         stateVecReal[index] = 0.0;
+201                         stateVecImag[index] = 0.0;
+202                 }
+203         }
+204 
+205         if (multiQubit->chunkId==0){
+206                 // zero state |0000..0000> has probability 1
+207                 stateVecReal[0] = 1.0;
+208                 stateVecImag[0] = 0.0;
+209         }
+210 
+211         if (DEBUG) printf("COMPLETED INIT\n");
+212 }
+\end{DoxyCode}
+\hypertarget{qubits_8h_ad5774247d836267175c664cd0e451bcb}{
+\index{qubits.h@{qubits.h}!measure@{measure}}
+\index{measure@{measure}!qubits.h@{qubits.h}}
+\paragraph[{measure}]{\setlength{\rightskip}{0pt plus 5cm}int measure ({\bf MultiQubit} {\em multiQubit}, \/  int {\em measureQubit})}\hfill}
+\label{qubits_8h_ad5774247d836267175c664cd0e451bcb}
+
+
+Definition at line 205 of file qubits\_\-env\_\-local.c.
+
+References measureWithStats(), MultiQubit::numQubits, QuESTAssert(), and REAL.
+
+Referenced by test\_\-measure().
+
+
+\begin{DoxyCode}
+205                                                     {
+206     QuESTAssert(measureQubit >= 0 && measureQubit < multiQubit.numQubits, 2, __fu
+      nc__);
+207     REAL stateProb;
+208     return measureWithStats(multiQubit, measureQubit, &stateProb);
+209 }
+\end{DoxyCode}
+\hypertarget{qubits_8h_a2ac46e470c750bf93c754e06c64b0a7a}{
+\index{qubits.h@{qubits.h}!measureWithStats@{measureWithStats}}
+\index{measureWithStats@{measureWithStats}!qubits.h@{qubits.h}}
+\paragraph[{measureWithStats}]{\setlength{\rightskip}{0pt plus 5cm}int measureWithStats ({\bf MultiQubit} {\em multiQubit}, \/  int {\em measureQubit}, \/  REAL $\ast$ {\em stateProb})}\hfill}
+\label{qubits_8h_a2ac46e470c750bf93c754e06c64b0a7a}
+
+
+Definition at line 211 of file qubits\_\-env\_\-local.c.
+
+References MultiQubit::chunkId, collapseToOutcomeDistributedRenorm(), collapseToOutcomeDistributedSetZero(), collapseToOutcomeLocal(), findProbabilityOfOutcome(), genrand\_\-real1(), halfMatrixBlockFitsInChunk(), isChunkToSkipInFindPZero(), MultiQubit::numAmps, MultiQubit::numQubits, QuESTAssert(), REAL, and REAL\_\-EPS.
+
+Referenced by measure(), and test\_\-measureWithStats().
+
+
+\begin{DoxyCode}
+211                                                                               {
+212     QuESTAssert(measureQubit >= 0 && measureQubit < multiQubit.numQubits, 2, __fu
+      nc__);
+213 
+214     int outcome;
+215     // find probability of qubit being in state 1
+216         REAL stateProbInternal = findProbabilityOfOutcome(multiQubit, measureQubi
+      t, 1);
+217 
+218     // we can't collapse to a state that has a probability too close to zero
+219     if (stateProbInternal<REAL_EPS) outcome=0;
+220     else if (1-stateProbInternal<REAL_EPS) outcome=1;
+221     else {
+222         // ok. both P(0) and P(1) are large enough to resolve
+223         // generate random float on [0,1]
+224         float randNum = genrand_real1();
+225         if (randNum<=stateProbInternal) outcome = 1;
+226         else outcome = 0;
+227     } 
+228     if (outcome==0) stateProbInternal = 1-stateProbInternal;
+229     collapseToOutcomeLocal(multiQubit, measureQubit, stateProbInternal, outcome);
+      
+230     *stateProb = stateProbInternal;
+231     return outcome;
+232 }
 \end{DoxyCode}
 \hypertarget{qubits_8h_afc1835c6b43b6e59ce7df7b13f274fc7}{
 \index{qubits.h@{qubits.h}!multiControlledPhaseGate@{multiControlledPhaseGate}}
@@ -859,7 +938,7 @@ The multiple qubit control phase gate. For each state, if all input qubits are e
 \item[\mbox{$\leftrightarrow$} {\em multiQubit}]object representing the set of qubits \item[\mbox{$\leftarrow$} {\em controlQubits}]array of input qubits \item[\mbox{$\leftarrow$} {\em numControlQubits}]number of input qubits \end{DoxyParams}
 
 
-Definition at line 1937 of file qubits.c.
+Definition at line 1939 of file qubits.c.
 
 References MultiQubit::chunkId, ComplexArray::imag, MultiQubit::numAmps, MultiQubit::numQubits, QuESTAssert(), ComplexArray::real, REAL, and MultiQubit::stateVec.
 
@@ -867,56 +946,56 @@ Referenced by test\_\-multiControlledPhaseGate().
 
 
 \begin{DoxyCode}
-1938 {
-1939         long long int index;
-1940         long long int stateVecSize;
-1941         
-1942         const long long int chunkSize=multiQubit.numAmps;
-1943         const long long int chunkId=multiQubit.chunkId;
-1944 
-1945     QuESTAssert(numControlQubits >= 0 && numControlQubits <= multiQubit.
-      numQubits, 4, __func__);
-1946     long long int mask=0;
-1947     for (int i=0; i<numControlQubits; i++) mask = mask | (1LL<<controlQubits[i]);
+1940 {
+1941         long long int index;
+1942         long long int stateVecSize;
+1943         
+1944         const long long int chunkSize=multiQubit.numAmps;
+1945         const long long int chunkId=multiQubit.chunkId;
+1946 
+1947     QuESTAssert(numControlQubits > 0 && numControlQubits <= multiQubit.numQubits,
+       4, __func__);
+1948     long long int mask=0;
+1949     for (int i=0; i<numControlQubits; i++) mask = mask | (1LL<<controlQubits[i]);
       
-1948     QuESTAssert(mask >=0 && mask <= (1LL<<multiQubit.numQubits)-1, 2, __func__);
-1949 
-1950         stateVecSize = multiQubit.numAmps;
-1951         REAL *stateVecReal = multiQubit.stateVec.real;
-1952         REAL *stateVecImag = multiQubit.stateVec.imag;
-1953 
-1954 # ifdef _OPENMP
-1955 # pragma omp parallel \
-1956         default  (none)                      \
-1957         shared   (stateVecSize, stateVecReal,stateVecImag, mask ) \
-1958         private  (index)
-1959 # endif
-1960         {
-1961 # ifdef _OPENMP
-1962                 # pragma omp for schedule (static)
-1963 # endif
-1964                 for (index=0; index<stateVecSize; index++) {
-1965                         if (mask == (mask & (index+chunkId*chunkSize)) ){
-1966                                 stateVecReal [index] = - stateVecReal [index];
-1967                                 stateVecImag [index] = - stateVecImag [index];
-1968                         }
-1969                 }
-1970         }
-1971 }
+1950     QuESTAssert(mask >=0 && mask <= (1LL<<multiQubit.numQubits)-1, 2, __func__);
+1951 
+1952         stateVecSize = multiQubit.numAmps;
+1953         REAL *stateVecReal = multiQubit.stateVec.real;
+1954         REAL *stateVecImag = multiQubit.stateVec.imag;
+1955 
+1956 # ifdef _OPENMP
+1957 # pragma omp parallel \
+1958         default  (none)                      \
+1959         shared   (stateVecSize, stateVecReal,stateVecImag, mask ) \
+1960         private  (index)
+1961 # endif
+1962         {
+1963 # ifdef _OPENMP
+1964                 # pragma omp for schedule (static)
+1965 # endif
+1966                 for (index=0; index<stateVecSize; index++) {
+1967                         if (mask == (mask & (index+chunkId*chunkSize)) ){
+1968                                 stateVecReal [index] = - stateVecReal [index];
+1969                                 stateVecImag [index] = - stateVecImag [index];
+1970                         }
+1971                 }
+1972         }
+1973 }
 \end{DoxyCode}
-\hypertarget{qubits_8h_a1589779fdc2de60c784eabd8dd1c2a8c}{
+\hypertarget{qubits_8h_ae395a79690283ed81106afadd7a8cd8a}{
 \index{qubits.h@{qubits.h}!multiControlledUnitary@{multiControlledUnitary}}
 \index{multiControlledUnitary@{multiControlledUnitary}!qubits.h@{qubits.h}}
-\paragraph[{multiControlledUnitary}]{\setlength{\rightskip}{0pt plus 5cm}void multiControlledUnitary ({\bf MultiQubit} {\em multiQubit}, \/  int $\ast$ {\em controlQubits}, \/  const int {\em numControlQubits}, \/  const int {\em rotQubit}, \/  {\bf ComplexMatrix2} {\em u})}\hfill}
-\label{qubits_8h_a1589779fdc2de60c784eabd8dd1c2a8c}
+\paragraph[{multiControlledUnitary}]{\setlength{\rightskip}{0pt plus 5cm}void multiControlledUnitary ({\bf MultiQubit} {\em multiQubit}, \/  int $\ast$ {\em controlQubits}, \/  const int {\em numControlQubits}, \/  const int {\em targetQubit}, \/  {\bf ComplexMatrix2} {\em u})}\hfill}
+\label{qubits_8h_ae395a79690283ed81106afadd7a8cd8a}
 
 
 Apply a unitary operation to a single qubit given an array of control qubits Only perform the rotation for elements where all control qubits equal 1. 
 \begin{DoxyParams}{Parameters}
-\item[\mbox{$\leftrightarrow$} {\em multiQubit}]object representing the set of qubits \item[\mbox{$\leftarrow$} {\em rotQubit}]qubit to rotate \item[\mbox{$\leftarrow$} {\em controlQubits}]perform rotation if all qubits in this array equal 1 \item[\mbox{$\leftarrow$} {\em numControlQubits}]number of control qubits \item[\mbox{$\leftarrow$} {\em u}]unitary matrix to apply \end{DoxyParams}
+\item[\mbox{$\leftrightarrow$} {\em multiQubit}]object representing the set of qubits \item[\mbox{$\leftarrow$} {\em targetQubit}]qubit to rotate \item[\mbox{$\leftarrow$} {\em controlQubits}]perform rotation if all qubits in this array equal 1 \item[\mbox{$\leftarrow$} {\em numControlQubits}]number of control qubits \item[\mbox{$\leftarrow$} {\em u}]unitary matrix to apply \end{DoxyParams}
 
 
-Definition at line 127 of file qubits\_\-env\_\-local.c.
+Definition at line 140 of file qubits\_\-env\_\-local.c.
 
 References MultiQubit::chunkId, chunkIsUpper(), exchangeStateVectors(), getChunkPairId(), getRotAngleFromUnitaryMatrix(), halfMatrixBlockFitsInChunk(), multiControlledUnitaryDistributed(), multiControlledUnitaryLocal(), MultiQubit::numAmps, MultiQubit::numQubits, MultiQubit::pairStateVec, QuESTAssert(), MultiQubit::stateVec, and validateMatrixIsUnitary().
 
@@ -924,20 +1003,21 @@ Referenced by test\_\-multiControlledUnitary().
 
 
 \begin{DoxyCode}
-128 {
-129     QuESTAssert(rotQubit >= 0 && rotQubit < multiQubit.numQubits, 1, __func__);
-130     QuESTAssert(numControlQubits >= 0 && numControlQubits < multiQubit.numQubits,
+141 {
+142     QuESTAssert(targetQubit >= 0 && targetQubit < multiQubit.numQubits, 1, __func
+      __);
+143     QuESTAssert(numControlQubits > 0 && numControlQubits <= multiQubit.numQubits,
        4, __func__);
-131     QuESTAssert(validateMatrixIsUnitary(u), 5, __func__);
-132 
-133     long long int mask=0; 
-134     for (int i=0; i<numControlQubits; i++) mask = mask | (1LL<<controlQubits[i]);
+144     QuESTAssert(validateMatrixIsUnitary(u), 5, __func__);
+145 
+146     long long int mask=0; 
+147     for (int i=0; i<numControlQubits; i++) mask = mask | (1LL<<controlQubits[i]);
       
-135     QuESTAssert(mask >=0 && mask <= (1LL<<multiQubit.numQubits)-1, 2, __func__);
-136     QuESTAssert((mask & (1LL<<rotQubit)) != (1LL<<rotQubit), 3, __func__);
-137         
-138     multiControlledUnitaryLocal(multiQubit, rotQubit, mask, u);
-139 }
+148     QuESTAssert(mask >=0 && mask <= (1LL<<multiQubit.numQubits)-1, 2, __func__);
+149     QuESTAssert((mask & (1LL<<targetQubit)) != (1LL<<targetQubit), 3, __func__);
+150         
+151     multiControlledUnitaryLocal(multiQubit, targetQubit, mask, u);
+152 }
 \end{DoxyCode}
 \hypertarget{qubits_8h_aa5e77e0e64f3a4a3d3f5cc7382bffcd9}{
 \index{qubits.h@{qubits.h}!reportMultiQubitParams@{reportMultiQubitParams}}
@@ -951,7 +1031,7 @@ Report metainformation about a set of qubits: number of qubits, number of probab
 \item[\mbox{$\leftrightarrow$} {\em multiQubit}]object representing the set of qubits \item[\mbox{$\leftarrow$} {\em env}]object representing the execution environment (local, multinode etc) \end{DoxyParams}
 
 
-Definition at line 151 of file qubits.c.
+Definition at line 153 of file qubits.c.
 
 References MultiQubit::chunkId, MultiQubit::numChunks, and MultiQubit::numQubits.
 
@@ -959,16 +1039,16 @@ Referenced by main().
 
 
 \begin{DoxyCode}
-151                                                   {
-152         long long int numAmps = 1L << multiQubit.numQubits;
-153         long long int numAmpsPerRank = numAmps/multiQubit.numChunks;
-154         if (multiQubit.chunkId==0){
-155                 printf("QUBITS:\n");
-156                 printf("Number of qubits is %d.\n", multiQubit.numQubits);
-157                 printf("Number of amps is %lld.\n", numAmps);
-158                 printf("Number of amps per rank is %lld.\n", numAmpsPerRank);
-159         }
-160 }
+153                                                   {
+154         long long int numAmps = 1L << multiQubit.numQubits;
+155         long long int numAmpsPerRank = numAmps/multiQubit.numChunks;
+156         if (multiQubit.chunkId==0){
+157                 printf("QUBITS:\n");
+158                 printf("Number of qubits is %d.\n", multiQubit.numQubits);
+159                 printf("Number of amps is %lld.\n", numAmps);
+160                 printf("Number of amps per rank is %lld.\n", numAmpsPerRank);
+161         }
+162 }
 \end{DoxyCode}
 \hypertarget{qubits_8h_af8a14ae79c3fb2c0b5f6255cc37bebf9}{
 \index{qubits.h@{qubits.h}!reportQuESTEnv@{reportQuESTEnv}}
@@ -982,7 +1062,7 @@ Report information about the QuEST environment.
 \item[\mbox{$\leftarrow$} {\em env}]object representing the execution environment. A single instance is used for each program \end{DoxyParams}
 
 
-Definition at line 31 of file qubits\_\-env\_\-local.c.
+Definition at line 44 of file qubits\_\-env\_\-local.c.
 
 References QuESTEnv::numRanks, QuESTEnv::rank, and REAL.
 
@@ -990,18 +1070,18 @@ Referenced by main().
 
 
 \begin{DoxyCode}
-31                                  {
-32         printf("EXECUTION ENVIRONMENT:\n");
-33         printf("Running locally on one node\n");
-34         printf("Number of ranks is %d\n", env.numRanks);
-35 # ifdef _OPENMP
-36         printf("OpenMP enabled\n");
-37         printf("Number of threads available is %d\n", omp_get_max_threads());
-38 # else
-39         printf("OpenMP disabled\n");
-40 # endif
-41         printf("Precision: size of REAL is %ld bytes\n", sizeof(REAL));
-42 }
+44                                  {
+45         printf("EXECUTION ENVIRONMENT:\n");
+46         printf("Running locally on one node\n");
+47         printf("Number of ranks is %d\n", env.numRanks);
+48 # ifdef _OPENMP
+49         printf("OpenMP enabled\n");
+50         printf("Number of threads available is %d\n", omp_get_max_threads());
+51 # else
+52         printf("OpenMP disabled\n");
+53 # endif
+54         printf("Precision: size of REAL is %ld bytes\n", sizeof(REAL));
+55 }
 \end{DoxyCode}
 \hypertarget{qubits_8h_a96f4de9ce7fefc7680a44d601fc3d894}{
 \index{qubits.h@{qubits.h}!reportState@{reportState}}
@@ -1029,26 +1109,26 @@ real, imag
 \item[\mbox{$\leftrightarrow$} {\em multiQubit}]object representing the set of qubits \end{DoxyParams}
 
 
-Definition at line 105 of file qubits.c.
+Definition at line 107 of file qubits.c.
 
 References MultiQubit::chunkId, ComplexArray::imag, MultiQubit::numAmps, ComplexArray::real, REAL\_\-STRING\_\-FORMAT, and MultiQubit::stateVec.
 
 
 \begin{DoxyCode}
-105                                        {
-106         FILE *state;
-107         char filename[100];
-108         long long int index;
-109         sprintf(filename, "state_rank_%d.csv", multiQubit.chunkId);
-110         state = fopen(filename, "w");
-111         if (multiQubit.chunkId==0) fprintf(state, "real, imag\n");
-112 
-113         for(index=0; index<multiQubit.numAmps; index++){
-114                 fprintf(state, REAL_STRING_FORMAT "," REAL_STRING_FORMAT "\n", mu
+107                                        {
+108         FILE *state;
+109         char filename[100];
+110         long long int index;
+111         sprintf(filename, "state_rank_%d.csv", multiQubit.chunkId);
+112         state = fopen(filename, "w");
+113         if (multiQubit.chunkId==0) fprintf(state, "real, imag\n");
+114 
+115         for(index=0; index<multiQubit.numAmps; index++){
+116                 fprintf(state, REAL_STRING_FORMAT "," REAL_STRING_FORMAT "\n", mu
       ltiQubit.stateVec.real[index], multiQubit.stateVec.imag[index]);
-115         }
-116         fclose(state);
-117 }
+117         }
+118         fclose(state);
+119 }
 \end{DoxyCode}
 \hypertarget{qubits_8h_a842d6884e063a5865a2232cba56b65ac}{
 \index{qubits.h@{qubits.h}!reportStateToScreen@{reportStateToScreen}}
@@ -1059,7 +1139,7 @@ References MultiQubit::chunkId, ComplexArray::imag, MultiQubit::numAmps, Complex
 
 Print the current state vector of probability amplitudes for a set of qubits to standard out. For debugging purposes. Each rank should print output serially. Only print output for systems $<$= 5 qubits 
 
-Definition at line 122 of file qubits.c.
+Definition at line 124 of file qubits.c.
 
 References MultiQubit::chunkId, ComplexArray::imag, MultiQubit::numAmps, MultiQubit::numChunks, MultiQubit::numQubits, ComplexArray::real, REAL\_\-STRING\_\-FORMAT, MultiQubit::stateVec, and syncQuESTEnv().
 
@@ -1067,35 +1147,35 @@ Referenced by reportTest().
 
 
 \begin{DoxyCode}
-122                                                                              {
-123         long long int index;
-124         int rank;
-125         if (multiQubit.numQubits<=5){
-126                 for (rank=0; rank<multiQubit.numChunks; rank++){
-127                         if (multiQubit.chunkId==rank){
-128                                 if (reportRank) {
-129                                         printf("Reporting state from rank %d [\n"
+124                                                                              {
+125         long long int index;
+126         int rank;
+127         if (multiQubit.numQubits<=5){
+128                 for (rank=0; rank<multiQubit.numChunks; rank++){
+129                         if (multiQubit.chunkId==rank){
+130                                 if (reportRank) {
+131                                         printf("Reporting state from rank %d [\n"
       , multiQubit.chunkId);
-130                                         //printf("\trank, index, real, imag\n");
-131                                         printf("real, imag\n");
-132                                 } else if (rank==0) {
-133                                         printf("Reporting state [\n");
-134                                         printf("real, imag\n");
-135                                 }
-136 
-137                                 for(index=0; index<multiQubit.numAmps; index++){
-138                                         printf(REAL_STRING_FORMAT ", " 
+132                                         //printf("\trank, index, real, imag\n");
+133                                         printf("real, imag\n");
+134                                 } else if (rank==0) {
+135                                         printf("Reporting state [\n");
+136                                         printf("real, imag\n");
+137                                 }
+138 
+139                                 for(index=0; index<multiQubit.numAmps; index++){
+140                                         printf(REAL_STRING_FORMAT ", " 
       REAL_STRING_FORMAT "\n", multiQubit.stateVec.real[index], multiQubit.stateVec.
       imag[index]);
-139                                 }
-140                                 if (reportRank || rank==multiQubit.numChunks-1) p
+141                                 }
+142                                 if (reportRank || rank==multiQubit.numChunks-1) p
       rintf("]\n");
-141                         }
-142                         syncQuESTEnv(env);
-143                 }
-144         } else printf("Error: reportStateToScreen will not print output for syste
+143                         }
+144                         syncQuESTEnv(env);
+145                 }
+146         } else printf("Error: reportStateToScreen will not print output for syste
       ms of more than 5 qubits.\n");
-145 }
+147 }
 \end{DoxyCode}
 \hypertarget{qubits_8h_a7fadb225fc385db789e844c87fcba9e1}{
 \index{qubits.h@{qubits.h}!rotateAroundAxis@{rotateAroundAxis}}
@@ -1112,21 +1192,21 @@ Qubits are zero-\/based and the the first qubit is the rightmost
 \item[\mbox{$\leftrightarrow$} {\em multiQubit}]object representing the set of qubits \item[\mbox{$\leftarrow$} {\em rotQubit}]qubit to rotate \item[\mbox{$\leftarrow$} {\em angle}]angle by which to rotate in radians \item[\mbox{$\leftarrow$} {\em unitAxis}]unit vector pointing along the axis about which to rotate. Does not need to be normalised \end{DoxyParams}
 
 
-Definition at line 432 of file qubits.c.
+Definition at line 434 of file qubits.c.
 
 References compactUnitary(), Complex::imag, Complex::real, Vector::x, Vector::y, and Vector::z.
 
 
 \begin{DoxyCode}
-432                                                                                  
+434                                                                                  
                   {
-433         Complex alpha, beta;
-434         alpha.real = cos(angle/2.0);
-435         alpha.imag = -sin(angle/2.0)*unitAxis.z;        
-436         beta.real = 0;
-437         beta.imag = -sin(angle/2.0)*(unitAxis.x + unitAxis.y);
-438         compactUnitary(multiQubit, rotQubit, alpha, beta);
-439 }
+435         Complex alpha, beta;
+436         alpha.real = cos(angle/2.0);
+437         alpha.imag = -sin(angle/2.0)*unitAxis.z;        
+438         beta.real = 0;
+439         beta.imag = -sin(angle/2.0)*(unitAxis.x + unitAxis.y);
+440         compactUnitary(multiQubit, rotQubit, alpha, beta);
+441 }
 \end{DoxyCode}
 \hypertarget{qubits_8h_a6cc7fa705a2f2e6b486b49c5589d5df5}{
 \index{qubits.h@{qubits.h}!rotateX@{rotateX}}
@@ -1143,21 +1223,21 @@ Qubits are zero-\/based and the the first qubit is the rightmost
 \item[\mbox{$\leftrightarrow$} {\em multiQubit}]object representing the set of qubits \item[\mbox{$\leftarrow$} {\em rotQubit}]qubit to rotate \item[\mbox{$\leftarrow$} {\em angle}]angle by which to rotate in radians \end{DoxyParams}
 
 
-Definition at line 450 of file qubits.c.
+Definition at line 452 of file qubits.c.
 
 References compactUnitary(), Complex::imag, Complex::real, Vector::x, Vector::y, and Vector::z.
 
 
 \begin{DoxyCode}
-450                                                                    {
-451         Complex alpha, beta;
-452     Vector unitAxis = {1, 0, 0};
-453         alpha.real = cos(angle/2.0);
-454         alpha.imag = -sin(angle/2.0)*unitAxis.z;        
-455         beta.real = 0;
-456         beta.imag = -sin(angle/2.0)*(unitAxis.x + unitAxis.y);
-457         compactUnitary(multiQubit, rotQubit, alpha, beta);
-458 }
+452                                                                    {
+453         Complex alpha, beta;
+454     Vector unitAxis = {1, 0, 0};
+455         alpha.real = cos(angle/2.0);
+456         alpha.imag = -sin(angle/2.0)*unitAxis.z;        
+457         beta.real = 0;
+458         beta.imag = -sin(angle/2.0)*(unitAxis.x + unitAxis.y);
+459         compactUnitary(multiQubit, rotQubit, alpha, beta);
+460 }
 \end{DoxyCode}
 \hypertarget{qubits_8h_ace0d3592d38a990e81a434c4e9681500}{
 \index{qubits.h@{qubits.h}!rotateY@{rotateY}}
@@ -1174,21 +1254,21 @@ Qubits are zero-\/based and the the first qubit is the rightmost
 \item[\mbox{$\leftrightarrow$} {\em multiQubit}]object representing the set of qubits \item[\mbox{$\leftarrow$} {\em rotQubit}]qubit to rotate \item[\mbox{$\leftarrow$} {\em angle}]angle by which to rotate in radians \end{DoxyParams}
 
 
-Definition at line 469 of file qubits.c.
+Definition at line 471 of file qubits.c.
 
 References compactUnitary(), Complex::imag, Complex::real, Vector::x, Vector::y, and Vector::z.
 
 
 \begin{DoxyCode}
-469                                                                    {
-470         Complex alpha, beta;
-471     Vector unitAxis = {0, 1, 0};
-472         alpha.real = cos(angle/2.0);
-473         alpha.imag = -sin(angle/2.0)*unitAxis.z;        
-474         beta.real = 0;
-475         beta.imag = -sin(angle/2.0)*(unitAxis.x + unitAxis.y);
-476         compactUnitary(multiQubit, rotQubit, alpha, beta);
-477 }
+471                                                                    {
+472         Complex alpha, beta;
+473     Vector unitAxis = {0, 1, 0};
+474         alpha.real = cos(angle/2.0);
+475         alpha.imag = -sin(angle/2.0)*unitAxis.z;        
+476         beta.real = 0;
+477         beta.imag = -sin(angle/2.0)*(unitAxis.x + unitAxis.y);
+478         compactUnitary(multiQubit, rotQubit, alpha, beta);
+479 }
 \end{DoxyCode}
 \hypertarget{qubits_8h_abd621412ad30c1b034f4ce153c4afe10}{
 \index{qubits.h@{qubits.h}!rotateZ@{rotateZ}}
@@ -1205,30 +1285,30 @@ Qubits are zero-\/based and the the first qubit is the rightmost
 \item[\mbox{$\leftrightarrow$} {\em multiQubit}]object representing the set of qubits \item[\mbox{$\leftarrow$} {\em rotQubit}]qubit to rotate \item[\mbox{$\leftarrow$} {\em angle}]angle by which to rotate in radians \end{DoxyParams}
 
 
-Definition at line 488 of file qubits.c.
+Definition at line 490 of file qubits.c.
 
 References compactUnitary(), Complex::imag, Complex::real, Vector::x, Vector::y, and Vector::z.
 
 
 \begin{DoxyCode}
-488                                                                    {
-489         Complex alpha, beta;
-490     Vector unitAxis = {0, 0, 1};
-491         alpha.real = cos(angle/2.0);
-492         alpha.imag = -sin(angle/2.0)*unitAxis.z;        
-493         beta.real = 0;
-494         beta.imag = -sin(angle/2.0)*(unitAxis.x + unitAxis.y);
-495         compactUnitary(multiQubit, rotQubit, alpha, beta);
-496 }
+490                                                                    {
+491         Complex alpha, beta;
+492     Vector unitAxis = {0, 0, 1};
+493         alpha.real = cos(angle/2.0);
+494         alpha.imag = -sin(angle/2.0)*unitAxis.z;        
+495         beta.real = 0;
+496         beta.imag = -sin(angle/2.0)*(unitAxis.x + unitAxis.y);
+497         compactUnitary(multiQubit, rotQubit, alpha, beta);
+498 }
 \end{DoxyCode}
-\hypertarget{qubits_8h_a1086d84d6a3d5b79137e2f27f18e67e0}{
+\hypertarget{qubits_8h_adda6c47876a7676488ed0565a19eaa65}{
 \index{qubits.h@{qubits.h}!sGate@{sGate}}
 \index{sGate@{sGate}!qubits.h@{qubits.h}}
-\paragraph[{sGate}]{\setlength{\rightskip}{0pt plus 5cm}void sGate ({\bf MultiQubit} {\em multiQubit}, \/  const int {\em rotQubit})}\hfill}
-\label{qubits_8h_a1086d84d6a3d5b79137e2f27f18e67e0}
+\paragraph[{sGate}]{\setlength{\rightskip}{0pt plus 5cm}void sGate ({\bf MultiQubit} {\em multiQubit}, \/  const int {\em targetQubit})}\hfill}
+\label{qubits_8h_adda6c47876a7676488ed0565a19eaa65}
 
 
-Definition at line 1738 of file qubits.c.
+Definition at line 1740 of file qubits.c.
 
 References phaseGate(), and S\_\-GATE.
 
@@ -1236,23 +1316,23 @@ Referenced by test\_\-sGate().
 
 
 \begin{DoxyCode}
-1739 {
-1740                 phaseGate(multiQubit, rotQubit, S_GATE);
-1741 } 
+1741 {
+1742                 phaseGate(multiQubit, targetQubit, S_GATE);
+1743 } 
 \end{DoxyCode}
-\hypertarget{qubits_8h_acda82bebb0a62f419eec9c1e0575daad}{
+\hypertarget{qubits_8h_a86e396e06b7d527cac20ba0108872423}{
 \index{qubits.h@{qubits.h}!sigmaX@{sigmaX}}
 \index{sigmaX@{sigmaX}!qubits.h@{qubits.h}}
-\paragraph[{sigmaX}]{\setlength{\rightskip}{0pt plus 5cm}void sigmaX ({\bf MultiQubit} {\em multiQubit}, \/  const int {\em rotQubit})}\hfill}
-\label{qubits_8h_acda82bebb0a62f419eec9c1e0575daad}
+\paragraph[{sigmaX}]{\setlength{\rightskip}{0pt plus 5cm}void sigmaX ({\bf MultiQubit} {\em multiQubit}, \/  const int {\em targetQubit})}\hfill}
+\label{qubits_8h_a86e396e06b7d527cac20ba0108872423}
 
 
 Rotate a single qubit by \{\{0,1\},\{1,0\}\} -\/-\/ swap $|$0$>$ and $|$1$>$. 
 \begin{DoxyParams}{Parameters}
-\item[\mbox{$\leftrightarrow$} {\em multiQubit}]object representing the set of qubits \item[\mbox{$\leftarrow$} {\em rotQubit}]qubit to rotate \end{DoxyParams}
+\item[\mbox{$\leftrightarrow$} {\em multiQubit}]object representing the set of qubits \item[\mbox{$\leftarrow$} {\em targetQubit}]qubit to rotate \end{DoxyParams}
 
 
-Definition at line 141 of file qubits\_\-env\_\-local.c.
+Definition at line 154 of file qubits\_\-env\_\-local.c.
 
 References MultiQubit::chunkId, chunkIsUpper(), exchangeStateVectors(), getChunkPairId(), halfMatrixBlockFitsInChunk(), MultiQubit::numAmps, MultiQubit::numQubits, MultiQubit::pairStateVec, QuESTAssert(), sigmaXDistributed(), sigmaXLocal(), and MultiQubit::stateVec.
 
@@ -1260,26 +1340,27 @@ Referenced by test\_\-sigmaX().
 
 
 \begin{DoxyCode}
-142 {
-143     QuESTAssert(rotQubit >= 0 && rotQubit < multiQubit.numQubits, 1, __func__);
-144         sigmaXLocal(multiQubit, rotQubit);
-145 }
+155 {
+156     QuESTAssert(targetQubit >= 0 && targetQubit < multiQubit.numQubits, 1, __func
+      __);
+157         sigmaXLocal(multiQubit, targetQubit);
+158 }
 \end{DoxyCode}
-\hypertarget{qubits_8h_a7b022c75cef77be046bd5d61e38a581e}{
+\hypertarget{qubits_8h_a1f54d70a42403f7e1c2e2c2007332f61}{
 \index{qubits.h@{qubits.h}!sigmaY@{sigmaY}}
 \index{sigmaY@{sigmaY}!qubits.h@{qubits.h}}
-\paragraph[{sigmaY}]{\setlength{\rightskip}{0pt plus 5cm}void sigmaY ({\bf MultiQubit} {\em multiQubit}, \/  const int {\em rotQubit})}\hfill}
-\label{qubits_8h_a7b022c75cef77be046bd5d61e38a581e}
+\paragraph[{sigmaY}]{\setlength{\rightskip}{0pt plus 5cm}void sigmaY ({\bf MultiQubit} {\em multiQubit}, \/  const int {\em targetQubit})}\hfill}
+\label{qubits_8h_a1f54d70a42403f7e1c2e2c2007332f61}
 
 
 Rotate a single qubit by \{\{0,-\/i\},\{i,0\}\} -\/-\/ swap $|$0$>$ and $|$1$>$ and apply a phase of -\/i or i. 
 \begin{DoxyParams}{Parameters}
-\item[\mbox{$\leftrightarrow$} {\em multiQubit}]object representing the set of qubits \item[\mbox{$\leftarrow$} {\em rotQubit}]qubit to rotate \end{DoxyParams}
+\item[\mbox{$\leftrightarrow$} {\em multiQubit}]object representing the set of qubits \item[\mbox{$\leftarrow$} {\em targetQubit}]qubit to rotate \end{DoxyParams}
 
 
 fix -\/-\/ put duplicate code (sigmaX, sigmaY) in seperate function 
 
-Definition at line 147 of file qubits\_\-env\_\-local.c.
+Definition at line 160 of file qubits\_\-env\_\-local.c.
 
 References MultiQubit::chunkId, chunkIsUpper(), exchangeStateVectors(), getChunkPairId(), halfMatrixBlockFitsInChunk(), MultiQubit::numAmps, MultiQubit::numQubits, MultiQubit::pairStateVec, QuESTAssert(), sigmaYDistributed(), sigmaYLocal(), and MultiQubit::stateVec.
 
@@ -1287,24 +1368,25 @@ Referenced by test\_\-sigmaY().
 
 
 \begin{DoxyCode}
-148 {
-149     QuESTAssert(rotQubit >= 0 && rotQubit < multiQubit.numQubits, 1, __func__);
-150         sigmaYLocal(multiQubit, rotQubit);
-151 }
+161 {
+162     QuESTAssert(targetQubit >= 0 && targetQubit < multiQubit.numQubits, 1, __func
+      __);
+163         sigmaYLocal(multiQubit, targetQubit);
+164 }
 \end{DoxyCode}
-\hypertarget{qubits_8h_a9c90f8302e4f1d8fda23def8753e50fe}{
+\hypertarget{qubits_8h_aebaab86326779de55d335cfea3efde8f}{
 \index{qubits.h@{qubits.h}!sigmaZ@{sigmaZ}}
 \index{sigmaZ@{sigmaZ}!qubits.h@{qubits.h}}
-\paragraph[{sigmaZ}]{\setlength{\rightskip}{0pt plus 5cm}void sigmaZ ({\bf MultiQubit} {\em multiQubit}, \/  const int {\em rotQubit})}\hfill}
-\label{qubits_8h_a9c90f8302e4f1d8fda23def8753e50fe}
+\paragraph[{sigmaZ}]{\setlength{\rightskip}{0pt plus 5cm}void sigmaZ ({\bf MultiQubit} {\em multiQubit}, \/  const int {\em targetQubit})}\hfill}
+\label{qubits_8h_aebaab86326779de55d335cfea3efde8f}
 
 
 Rotate a single qubit by \{\{1,0\},\{\{0,-\/1\}\} -\/-\/ apply a phase of -\/1 to $|$1$>$. 
 \begin{DoxyParams}{Parameters}
-\item[\mbox{$\leftrightarrow$} {\em multiQubit}]object representing the set of qubits \item[\mbox{$\leftarrow$} {\em rotQubit}]qubit to rotate \end{DoxyParams}
+\item[\mbox{$\leftrightarrow$} {\em multiQubit}]object representing the set of qubits \item[\mbox{$\leftarrow$} {\em targetQubit}]qubit to rotate \end{DoxyParams}
 
 
-Definition at line 1733 of file qubits.c.
+Definition at line 1735 of file qubits.c.
 
 References phaseGate(), and SIGMA\_\-Z.
 
@@ -1312,9 +1394,9 @@ Referenced by test\_\-sigmaZ().
 
 
 \begin{DoxyCode}
-1734 {
-1735                 phaseGate(multiQubit, rotQubit, SIGMA_Z);
-1736 }
+1736 {
+1737                 phaseGate(multiQubit, targetQubit, SIGMA_Z);
+1738 }
 \end{DoxyCode}
 \hypertarget{qubits_8h_a8d31fe2d1ad4d01e2a1f5f6b8bc15b77}{
 \index{qubits.h@{qubits.h}!syncQuESTEnv@{syncQuESTEnv}}
@@ -1328,15 +1410,15 @@ Guarantees that all code up to the given point has been executed on all nodes.
 \item[\mbox{$\leftarrow$} {\em env}]object representing the execution environment. A single instance is used for each program \end{DoxyParams}
 
 
-Definition at line 19 of file qubits\_\-env\_\-local.c.
+Definition at line 32 of file qubits\_\-env\_\-local.c.
 
 Referenced by initializeStateFromSingleFile(), main(), reportStateToScreen(), and test\_\-controlledNot().
 
 
 \begin{DoxyCode}
-19                                {
-20         // MPI Barrier goes here in MPI version. 
-21 } 
+32                                {
+33         // MPI Barrier goes here in MPI version. 
+34 } 
 \end{DoxyCode}
 \hypertarget{qubits_8h_ac7e38d768a1bd79019f88cc1e6295092}{
 \index{qubits.h@{qubits.h}!syncQuESTSuccess@{syncQuESTSuccess}}
@@ -1353,24 +1435,24 @@ Performs a logical AND on all successCodes held by all processes. If any one pro
 \end{DoxyReturn}
 
 
-Definition at line 23 of file qubits\_\-env\_\-local.c.
+Definition at line 36 of file qubits\_\-env\_\-local.c.
 
 Referenced by main().
 
 
 \begin{DoxyCode}
-23                                      {
-24         return successCode;
-25 }
+36                                      {
+37         return successCode;
+38 }
 \end{DoxyCode}
-\hypertarget{qubits_8h_a5f33ddd690383fd09cc79bf143e383fb}{
+\hypertarget{qubits_8h_af764ea63a2e870098f4e1ce08562942e}{
 \index{qubits.h@{qubits.h}!tGate@{tGate}}
 \index{tGate@{tGate}!qubits.h@{qubits.h}}
-\paragraph[{tGate}]{\setlength{\rightskip}{0pt plus 5cm}void tGate ({\bf MultiQubit} {\em multiQubit}, \/  const int {\em rotQubit})}\hfill}
-\label{qubits_8h_a5f33ddd690383fd09cc79bf143e383fb}
+\paragraph[{tGate}]{\setlength{\rightskip}{0pt plus 5cm}void tGate ({\bf MultiQubit} {\em multiQubit}, \/  const int {\em targetQubit})}\hfill}
+\label{qubits_8h_af764ea63a2e870098f4e1ce08562942e}
 
 
-Definition at line 1743 of file qubits.c.
+Definition at line 1745 of file qubits.c.
 
 References phaseGate(), and T\_\-GATE.
 
@@ -1378,18 +1460,18 @@ Referenced by test\_\-tGate().
 
 
 \begin{DoxyCode}
-1744 {
-1745                 phaseGate(multiQubit, rotQubit, T_GATE);
-1746 }
+1746 {
+1747                 phaseGate(multiQubit, targetQubit, T_GATE);
+1748 }
 \end{DoxyCode}
-\hypertarget{qubits_8h_ae74806cf36513b6d8447439a5bc1d615}{
+\hypertarget{qubits_8h_a7a0877e33700f6bad48adb51b7b3fb67}{
 \index{qubits.h@{qubits.h}!unitary@{unitary}}
 \index{unitary@{unitary}!qubits.h@{qubits.h}}
-\paragraph[{unitary}]{\setlength{\rightskip}{0pt plus 5cm}void unitary ({\bf MultiQubit} {\em multiQubit}, \/  const int {\em rotQubit}, \/  {\bf ComplexMatrix2} {\em u})}\hfill}
-\label{qubits_8h_ae74806cf36513b6d8447439a5bc1d615}
+\paragraph[{unitary}]{\setlength{\rightskip}{0pt plus 5cm}void unitary ({\bf MultiQubit} {\em multiQubit}, \/  const int {\em targetQubit}, \/  {\bf ComplexMatrix2} {\em u})}\hfill}
+\label{qubits_8h_a7a0877e33700f6bad48adb51b7b3fb67}
 
 
-Definition at line 97 of file qubits\_\-env\_\-local.c.
+Definition at line 110 of file qubits\_\-env\_\-local.c.
 
 References MultiQubit::chunkId, chunkIsUpper(), exchangeStateVectors(), getChunkPairId(), getRotAngleFromUnitaryMatrix(), halfMatrixBlockFitsInChunk(), MultiQubit::numAmps, MultiQubit::numQubits, MultiQubit::pairStateVec, QuESTAssert(), MultiQubit::stateVec, unitaryDistributed(), unitaryLocal(), and validateMatrixIsUnitary().
 
@@ -1397,11 +1479,12 @@ Referenced by test\_\-unitary().
 
 
 \begin{DoxyCode}
-98 {
-99     QuESTAssert(rotQubit >= 0 && rotQubit < multiQubit.numQubits, 1, __func__);
-100     QuESTAssert(validateMatrixIsUnitary(u), 5, __func__);
-101 
-102         // all values required to update state vector lie in this rank
-103         unitaryLocal(multiQubit, rotQubit, u);
-104 }
+111 {
+112     QuESTAssert(targetQubit >= 0 && targetQubit < multiQubit.numQubits, 1, __func
+      __);
+113     QuESTAssert(validateMatrixIsUnitary(u), 5, __func__);
+114 
+115         // all values required to update state vector lie in this rank
+116         unitaryLocal(multiQubit, targetQubit, u);
+117 }
 \end{DoxyCode}
