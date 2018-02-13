@@ -225,6 +225,7 @@ int measureWithStats(MultiQubit multiQubit, int measureQubit, REAL *stateProb){
         if (randNum<=stateProbInternal) outcome = 1;
         else outcome = 0;
     } 
+    if (outcome==0) stateProbInternal = 1-stateProbInternal;
     collapseToOutcomeLocal(multiQubit, measureQubit, stateProbInternal, outcome);
     *stateProb = stateProbInternal;
     return outcome;

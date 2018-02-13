@@ -10,7 +10,7 @@
 # include "QuEST/precision.h"
 # include "QuEST/qubits_debug.h"
 
-# define NUM_TESTS 18
+# define NUM_TESTS 20
 # define COMPARE_PRECISION 10e-13
 # define PATH_TO_TESTS "tests/unit/"
 # define VERBOSE 0
@@ -697,7 +697,7 @@ int test_collapseToOutcome(char testName[200]){
 	int numQubits=3;
 	MultiQubit mq, mqVerif;
 	int qubit;
-	REAL outcome;
+	REAL prob;
 
 	createMultiQubit(&mq, numQubits, env);
 	createMultiQubit(&mqVerif, numQubits, env);
@@ -706,15 +706,15 @@ int test_collapseToOutcome(char testName[200]){
 	for (qubit=0; qubit<numQubits; qubit++){
 		initStateZero(&mq);
 		initStateZero(&mqVerif);
-		outcome = collapseToOutcome(mq, qubit, 0);
-		if (passed) passed = compareReals(1, outcome, COMPARE_PRECISION);
+		prob = collapseToOutcome(mq, qubit, 0);
+		if (passed) passed = compareReals(1, prob, COMPARE_PRECISION);
 		if (passed) passed = compareStates(mq, mqVerif, COMPARE_PRECISION);
 
         /* uncomment to test error is thrown
 		initStateZero(&mq);
 		initStateZero(&mqVerif);
-		outcome = collapseToOutcome(mq, qubit, 1);
-		if (passed) passed = compareReals(0, outcome, COMPARE_PRECISION);
+		prob = collapseToOutcome(mq, qubit, 1);
+		if (passed) passed = compareReals(0, prob, COMPARE_PRECISION);
 		if (passed) passed = compareStates(mq, mqVerif, COMPARE_PRECISION);
         */
 	}
@@ -724,15 +724,15 @@ int test_collapseToOutcome(char testName[200]){
         /* uncomment to test error is thrown
 		initStateOfSingleQubit(&mq, qubit, 1);
 		initStateOfSingleQubit(&mqVerif, qubit, 1);
-		outcome = collapseToOutcome(mq, qubit, 0);
-		if (passed) passed = compareReals(0, outcome, COMPARE_PRECISION);
+		prob = collapseToOutcome(mq, qubit, 0);
+		if (passed) passed = compareReals(0, prob, COMPARE_PRECISION);
 		if (passed) passed = compareStates(mq, mqVerif, COMPARE_PRECISION);
         */
 
 		initStateOfSingleQubit(&mq, qubit, 1);
 		initStateOfSingleQubit(&mqVerif, qubit, 1);
-		outcome = collapseToOutcome(mq, qubit, 1);
-		if (passed) passed = compareReals(1, outcome, COMPARE_PRECISION);
+		prob = collapseToOutcome(mq, qubit, 1);
+		if (passed) passed = compareReals(1, prob, COMPARE_PRECISION);
 		if (passed) passed = compareStates(mq, mqVerif, COMPARE_PRECISION);
 	}
 
@@ -740,14 +740,14 @@ int test_collapseToOutcome(char testName[200]){
 	for (qubit=0; qubit<numQubits; qubit++){
 		initStatePlus(&mq);
 		initStateOfSingleQubit(&mqVerif, qubit, 0);
-		outcome = collapseToOutcome(mq, qubit, 0);
-		if (passed) passed = compareReals(0.5, outcome, COMPARE_PRECISION);
+		prob = collapseToOutcome(mq, qubit, 0);
+		if (passed) passed = compareReals(0.5, prob, COMPARE_PRECISION);
 		if (passed) passed = compareStates(mq, mqVerif, COMPARE_PRECISION);
 
 		initStatePlus(&mq);
 		initStateOfSingleQubit(&mqVerif, qubit, 1);
-		outcome = collapseToOutcome(mq, qubit, 1);
-		if (passed) passed = compareReals(0.5, outcome, COMPARE_PRECISION);
+		prob = collapseToOutcome(mq, qubit, 1);
+		if (passed) passed = compareReals(0.5, prob, COMPARE_PRECISION);
 		if (passed) passed = compareStates(mq, mqVerif, COMPARE_PRECISION);
 	}
 	destroyMultiQubit(mq, env);
@@ -756,6 +756,99 @@ int test_collapseToOutcome(char testName[200]){
 	return passed;
 }
 
+int test_measure(char testName[200]){
+	int passed=1;
+
+	int numQubits=4;
+	MultiQubit mq, mqVerif;
+	int qubit;
+    int outcome;
+
+	createMultiQubit(&mq, numQubits, env);
+	createMultiQubit(&mqVerif, numQubits, env);
+
+	// test qubit = |0> 
+	for (qubit=0; qubit<numQubits; qubit++){
+		initStateZero(&mq);
+		initStateZero(&mqVerif);
+		outcome = measure(mq, qubit);
+		if (passed) passed = (outcome==0);
+		if (passed) passed = compareStates(mq, mqVerif, COMPARE_PRECISION);
+	}
+
+	// test qubit = |1> 
+	for (qubit=0; qubit<numQubits; qubit++){
+		initStateOfSingleQubit(&mq, qubit, 1);
+		initStateOfSingleQubit(&mqVerif, qubit, 1);
+		outcome = measure(mq, qubit);
+		if (passed) passed = (outcome==1);
+		if (passed) passed = compareStates(mq, mqVerif, COMPARE_PRECISION);
+	}
+
+    // visual check:
+	// test qubit = |+> 
+    int nTrials=10;
+	for (qubit=0; qubit<numQubits; qubit++){
+        if (env.rank==0) printf("\n%d trials: measure qubit %d when in state |+>:\n", nTrials, qubit);
+        if (env.rank==0) printf("value of qubit = [");
+        for (int i=0; i<nTrials; i++){
+            initStatePlus(&mq);
+            outcome = measure(mq, qubit);
+            if (env.rank==0) printf(" %d", outcome);
+        }
+        if (env.rank==0) printf("]\n");
+	}
+	destroyMultiQubit(mq, env);
+	destroyMultiQubit(mqVerif, env);
+
+	return passed;
+}
+
+int test_measureWithStats(char testName[200]){
+	int passed=1;
+
+	int numQubits=4;
+	MultiQubit mq, mqVerif;
+	int qubit;
+    int outcome;
+    REAL prob;
+
+	createMultiQubit(&mq, numQubits, env);
+	createMultiQubit(&mqVerif, numQubits, env);
+
+	// test qubit = |0> 
+	for (qubit=0; qubit<numQubits; qubit++){
+		initStateZero(&mq);
+		initStateZero(&mqVerif);
+        prob=0;
+		outcome = measureWithStats(mq, qubit, &prob);
+		if (passed) passed = (outcome==0);
+		if (passed) passed = compareReals(prob, 1, COMPARE_PRECISION);
+		if (passed) passed = compareStates(mq, mqVerif, COMPARE_PRECISION);
+	}
+
+	// test qubit = |1> 
+	for (qubit=0; qubit<numQubits; qubit++){
+		initStateOfSingleQubit(&mq, qubit, 1);
+		initStateOfSingleQubit(&mqVerif, qubit, 1);
+        prob=0;
+		outcome = measureWithStats(mq, qubit, &prob);
+		if (passed) passed = compareReals(prob, 1, COMPARE_PRECISION);
+		if (passed) passed = compareStates(mq, mqVerif, COMPARE_PRECISION);
+	}
+
+	// test qubit = |+> 
+	for (qubit=0; qubit<numQubits; qubit++){
+        initStatePlus(&mq);
+        prob=0;
+        outcome = measureWithStats(mq, qubit, &prob);
+		if (passed) passed = compareReals(prob, 0.5, COMPARE_PRECISION);
+	}
+	destroyMultiQubit(mq, env);
+	destroyMultiQubit(mqVerif, env);
+
+	return passed;
+}
 
 int main (int narg, char** varg) {
 	initQuESTEnv(&env);
@@ -780,6 +873,8 @@ int main (int narg, char** varg) {
         test_multiControlledUnitary,
 		test_findProbabilityOfOutcome,
 		test_collapseToOutcome,
+        test_measure,
+        test_measureWithStats,
 	};
 
 	char testNames[NUM_TESTS][200] = {
@@ -801,6 +896,8 @@ int main (int narg, char** varg) {
         "multiControlledUnitary",
 		"findProbabilityOfOutcome",
 		"collapseToOutcome",
+        "measure",
+        "measureWithStats"
 	};
 	int passed=0;
 	if (env.rank==0) printf("\nRunning unit tests\n");
