@@ -116,7 +116,7 @@ void unitary(MultiQubit multiQubit, const int rotQubit, ComplexMatrix2 u)
 	unitaryLocal(multiQubit, rotQubit, u);
 }
 
-void controlledCompactUnitary(MultiQubit multiQubit, const int rotQubit, const int controlQubit, Complex alpha, Complex beta) 
+void controlledCompactUnitary(MultiQubit multiQubit, const int controlQubit, const int rotQubit, Complex alpha, Complex beta) 
 {
     QuESTAssert(rotQubit >= 0 && rotQubit < multiQubit.numQubits, 1, __func__);
     QuESTAssert(controlQubit >= 0 && controlQubit < multiQubit.numQubits, 2, __func__);
@@ -124,17 +124,17 @@ void controlledCompactUnitary(MultiQubit multiQubit, const int rotQubit, const i
     QuESTAssert(validateAlphaBeta(alpha, beta), 6, __func__);
     
 
-	controlledCompactUnitaryLocal(multiQubit, rotQubit, controlQubit, alpha, beta);
+	controlledCompactUnitaryLocal(multiQubit, controlQubit, rotQubit, alpha, beta);
 }
 
-void controlledUnitary(MultiQubit multiQubit, const int rotQubit, const int controlQubit, ComplexMatrix2 u) 
+void controlledUnitary(MultiQubit multiQubit, const int controlQubit, const int rotQubit, ComplexMatrix2 u) 
 {
     QuESTAssert(rotQubit >= 0 && rotQubit < multiQubit.numQubits, 1, __func__);
     QuESTAssert(controlQubit >= 0 && controlQubit < multiQubit.numQubits, 2, __func__);
     QuESTAssert(controlQubit != rotQubit, 3, __func__);
     QuESTAssert(validateMatrixIsUnitary(u), 5, __func__);
    
-	controlledUnitaryLocal(multiQubit, rotQubit, controlQubit, u);
+	controlledUnitaryLocal(multiQubit, controlQubit, rotQubit, u);
 }
 
 void multiControlledUnitary(MultiQubit multiQubit, int* controlQubits, const int numControlQubits, const int rotQubit, ComplexMatrix2 u) 

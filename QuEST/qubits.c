@@ -757,7 +757,7 @@ Only perform the rotation for elements where the control qubit is one.
 @param[in] alpha rotation angle
 @param[in] beta rotation angle
  */
-void controlledCompactUnitaryLocal (MultiQubit multiQubit, const int rotQubit, const int controlQubit, 
+void controlledCompactUnitaryLocal (MultiQubit multiQubit, const int controlQubit, const int rotQubit, 
 		Complex alpha, Complex beta)
 {
 	long long int sizeBlock, sizeHalfBlock;
@@ -909,7 +909,7 @@ Only perform the rotation for elements where the control qubit is one.
 @param[in] alpha rotation angle
 @param[in] beta rotation angle
  */
-void controlledUnitaryLocal(MultiQubit multiQubit, const int rotQubit, const int controlQubit, 
+void controlledUnitaryLocal(MultiQubit multiQubit, const int controlQubit, const int rotQubit, 
 		ComplexMatrix2 u)
 {
 	long long int sizeBlock, sizeHalfBlock;
@@ -988,7 +988,7 @@ stored seperately. Only perform the rotation where the control qubit is one.
 @param[in] stateVecLo probability amplitudes in lower half of a block
 @param[out] stateVecOut array section to update (will correspond to either the lower or upper half of a block)
 */
-void controlledCompactUnitaryDistributed (MultiQubit multiQubit, const int rotQubit, const int controlQubit,
+void controlledCompactUnitaryDistributed (MultiQubit multiQubit, const int controlQubit, const int rotQubit,
 		Complex rot1, Complex rot2,
 		ComplexArray stateVecUp,
 		ComplexArray stateVecLo,
@@ -1051,7 +1051,7 @@ stored seperately. Only perform the rotation where the control qubit is one.
 @param[in] stateVecLo probability amplitudes in lower half of a block
 @param[out] stateVecOut array section to update (will correspond to either the lower or upper half of a block)
 */
-void controlledUnitaryDistributed (MultiQubit multiQubit, const int rotQubit, const int controlQubit,
+void controlledUnitaryDistributed (MultiQubit multiQubit, const int controlQubit, const int rotQubit,
 		Complex rot1, Complex rot2,
 		ComplexArray stateVecUp,
 		ComplexArray stateVecLo,

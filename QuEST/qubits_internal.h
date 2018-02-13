@@ -29,19 +29,18 @@ void unitaryDistributed (MultiQubit multiQubit, const int rotQubit,
                 ComplexArray stateVecLo,
                 ComplexArray stateVecOut);
 
-void controlledCompactUnitaryLocal (MultiQubit multiQubit, const int rotQubit, const int controlQubit,
+void controlledCompactUnitaryLocal (MultiQubit multiQubit, const int controlQubit, const int rotQubit,
 		Complex alpha, Complex beta);
 
-void controlledCompactUnitaryDistributed (MultiQubit multiQubit, const int rotQubit, const int controlQubit,
+void controlledCompactUnitaryDistributed (MultiQubit multiQubit, const int controlQubit, const int rotQubit,
                 Complex rot1, Complex rot2,
                 ComplexArray stateVecUp,
                 ComplexArray stateVecLo,
                 ComplexArray stateVecOut);
 
-void controlledUnitaryLocal(MultiQubit multiQubit, const int rotQubit, const int controlQubit,
-                ComplexMatrix2 u);
+void controlledUnitaryLocal(MultiQubit multiQubit, const int controlQubit, const int rotQubit, ComplexMatrix2 u);
 
-void controlledUnitaryDistributed (MultiQubit multiQubit, const int rotQubit, const int controlQubit,
+void controlledUnitaryDistributed (MultiQubit multiQubit, const int controlQubit, const int rotQubit,
         Complex rot1, Complex rot2,
         ComplexArray stateVecUp,
         ComplexArray stateVecLo,

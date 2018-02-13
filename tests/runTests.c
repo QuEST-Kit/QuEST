@@ -498,7 +498,7 @@ int test_controlledCompactUnitary(char testName[200]){
             if (i==j){count++; continue;}
 			initStateDebug(&mq);
 			rotQubit=i;
-			controlledCompactUnitary(mq, rotQubit, controlQubit, alpha, beta);
+			controlledCompactUnitary(mq, controlQubit, rotQubit, alpha, beta);
 			
 			sprintf(filename, "%s%s%d.out", PATH_TO_TESTS, testName, count++); 	
 			initializeStateFromSingleFile(&mqVerif, filename, env);
@@ -551,8 +551,8 @@ int test_controlledUnitary(char testName[200]){
 			initStateDebug(&mq);
 			initStateDebug(&mqVerif);
 			rotQubit=i;
-			controlledCompactUnitary(mqVerif, rotQubit, controlQubit, alpha, beta);
-			controlledUnitary(mq, rotQubit, controlQubit, u);
+			controlledCompactUnitary(mqVerif, controlQubit, rotQubit, alpha, beta);
+			controlledUnitary(mq, controlQubit, rotQubit, u);
 			
 			if (passed) passed = compareStates(mq, mqVerif, COMPARE_PRECISION);
 		}
@@ -603,7 +603,7 @@ int test_multiControlledUnitary(char testName[200]){
 			initStateDebug(&mq);
 			initStateDebug(&mqVerif);
 			rotQubit=i;
-			controlledCompactUnitary(mqVerif, rotQubit, controlQubit, alpha, beta);
+			controlledCompactUnitary(mqVerif, controlQubit, rotQubit, alpha, beta);
 			multiControlledUnitary(mq, &controlQubit, 1, rotQubit, u);
 			
 			if (passed) passed = compareStates(mq, mqVerif, COMPARE_PRECISION);

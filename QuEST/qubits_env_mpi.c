@@ -365,7 +365,7 @@ void unitary(MultiQubit multiQubit, const int rotQubit, ComplexMatrix2 u)
 
 }
 
-void controlledCompactUnitary(MultiQubit multiQubit, const int rotQubit, const int controlQubit, Complex alpha, Complex beta)
+void controlledCompactUnitary(MultiQubit multiQubit, const int controlQubit, const int rotQubit, Complex alpha, Complex beta)
 {
         QuESTAssert(rotQubit >= 0 && rotQubit < multiQubit.numQubits, 1, __func__);
         QuESTAssert(controlQubit >= 0 && controlQubit < multiQubit.numQubits, 2, __func__);
@@ -382,7 +382,7 @@ void controlledCompactUnitary(MultiQubit multiQubit, const int rotQubit, const i
 
         if (useLocalDataOnly){
                 // all values required to update state vector lie in this rank
-                controlledCompactUnitaryLocal(multiQubit, rotQubit, controlQubit, alpha, beta);
+                controlledCompactUnitaryLocal(multiQubit, controlQubit, rotQubit, alpha, beta);
         } else {
                 // need to get corresponding chunk of state vector from other rank
                 rankIsUpper = chunkIsUpper(multiQubit.chunkId, multiQubit.numAmps, rotQubit);
@@ -395,12 +395,12 @@ void controlledCompactUnitary(MultiQubit multiQubit, const int rotQubit, const i
 		// this rank's values are either in the upper of lower half of the block. send values to controlledCompactUnitaryDistributed
                 // in the correct order
                 if (rankIsUpper){
-                        controlledCompactUnitaryDistributed(multiQubit,rotQubit,controlQubit,rot1,rot2,
+                        controlledCompactUnitaryDistributed(multiQubit,controlQubit,rotQubit,rot1,rot2,
                                 multiQubit.stateVec, //upper
                                 multiQubit.pairStateVec, //lower
                                 multiQubit.stateVec); //output
                 } else {
-                        controlledCompactUnitaryDistributed(multiQubit,rotQubit,controlQubit,rot1,rot2,
+                        controlledCompactUnitaryDistributed(multiQubit,controlQubit,rotQubit,rot1,rot2,
                                 multiQubit.pairStateVec, //upper
                                 multiQubit.stateVec, //lower
                                 multiQubit.stateVec); //output
@@ -408,7 +408,7 @@ void controlledCompactUnitary(MultiQubit multiQubit, const int rotQubit, const i
         }
 }
 
-void controlledUnitary(MultiQubit multiQubit, const int rotQubit, const int controlQubit, 
+void controlledUnitary(MultiQubit multiQubit, const int controlQubit, const int rotQubit, 
         ComplexMatrix2 u)
 {
         QuESTAssert(rotQubit >= 0 && rotQubit < multiQubit.numQubits, 1, __func__);
@@ -426,7 +426,7 @@ void controlledUnitary(MultiQubit multiQubit, const int rotQubit, const int cont
 
         if (useLocalDataOnly){
                 // all values required to update state vector lie in this rank
-                controlledUnitaryLocal(multiQubit, rotQubit, controlQubit, u);
+                controlledUnitaryLocal(multiQubit, controlQubit, rotQubit, u);
         } else {
                 // need to get corresponding chunk of state vector from other rank
                 rankIsUpper = chunkIsUpper(multiQubit.chunkId, multiQubit.numAmps, rotQubit);
@@ -439,12 +439,12 @@ void controlledUnitary(MultiQubit multiQubit, const int rotQubit, const int cont
 		// this rank's values are either in the upper of lower half of the block. send values to controlledUnitaryDistributed
                 // in the correct order
                 if (rankIsUpper){
-                        controlledUnitaryDistributed(multiQubit,rotQubit,controlQubit,rot1,rot2,
+                        controlledUnitaryDistributed(multiQubit,controlQubit,rotQubit,rot1,rot2,
                                 multiQubit.stateVec, //upper
                                 multiQubit.pairStateVec, //lower
                                 multiQubit.stateVec); //output
                 } else {
-                        controlledUnitaryDistributed(multiQubit,rotQubit,controlQubit,rot1,rot2,
+                        controlledUnitaryDistributed(multiQubit,controlQubit,rotQubit,rot1,rot2,
                                 multiQubit.pairStateVec, //upper
                                 multiQubit.stateVec, //lower
                                 multiQubit.stateVec); //output

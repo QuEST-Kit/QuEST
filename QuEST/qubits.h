@@ -206,7 +206,7 @@ alpha, beta must obey |alpha|^2 + |beta|^2 = 1
 @param[in] alpha rotation angle
 @param[in] beta rotation angle
  */
-void controlledCompactUnitary(MultiQubit multiQubit, const int rotQubit, const int controlQubit, Complex alpha, Complex beta);
+void controlledCompactUnitary(MultiQubit multiQubit, const int controlQubit, const int rotQubit, Complex alpha, Complex beta);
 
 void rotateAroundAxis(MultiQubit multiQubit, const int rotQubit, REAL angle, Vector unitAxis);
 
@@ -219,7 +219,7 @@ Only perform the rotation for elements where the control qubit is one.
 @param[in] controlQubit perform rotation if this qubit is 1
 @param[in] u unitary matrix to apply
  */
-void controlledUnitary(MultiQubit multiQubit, const int rotQubit, const int controlQubit, ComplexMatrix2 u);
+void controlledUnitary(MultiQubit multiQubit, const int controlQubit, const int rotQubit, ComplexMatrix2 u);
 
 /** Apply a unitary operation to a single qubit given an array
 of control qubits
