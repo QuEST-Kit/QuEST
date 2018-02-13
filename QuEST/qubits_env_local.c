@@ -9,11 +9,24 @@ An implementation of the API in qubits.h for a local (non-MPI) environment.
 # include "precision.h"
 # include "qubits.h"
 # include "qubits_internal.h"
+# include "mt19937ar.h" // MT random number generation
+
+// for seeding random numbers
+# include <time.h>
+# include <sys/types.h>
+# include <unistd.h>
 
 void initQuESTEnv(QuESTEnv *env){
         // init MPI environment
 	env->rank=0;
 	env->numRanks=1;
+
+    // init MT random number generator with two keys -- time and pid
+    unsigned long int secs = time(NULL);
+    unsigned long int pid = getpid();
+    unsigned long int key[2];
+    key[0] = secs; key[1] = pid;
+    init_by_array(key, 2);
 }
 
 void syncQuESTEnv(QuESTEnv env){
@@ -187,6 +200,34 @@ REAL collapseToOutcome(MultiQubit multiQubit, const int measureQubit, int outcom
     QuESTAssert(fabs(stateProb>REAL_EPS), 8, __func__);
     collapseToOutcomeLocal(multiQubit, measureQubit, stateProb, outcome);
     return stateProb;
+}
+
+int measure(MultiQubit multiQubit, int measureQubit){
+    QuESTAssert(measureQubit >= 0 && measureQubit < multiQubit.numQubits, 2, __func__);
+    REAL stateProb;
+    return measureWithStats(multiQubit, measureQubit, &stateProb);
+}
+
+int measureWithStats(MultiQubit multiQubit, int measureQubit, REAL *stateProb){
+    QuESTAssert(measureQubit >= 0 && measureQubit < multiQubit.numQubits, 2, __func__);
+
+    int outcome;
+    // find probability of qubit being in state 1
+	REAL stateProbInternal = findProbabilityOfOutcome(multiQubit, measureQubit, 1);
+
+    // we can't collapse to a state that has a probability too close to zero
+    if (stateProbInternal<REAL_EPS) outcome=0;
+    else if (1-stateProbInternal<REAL_EPS) outcome=1;
+    else {
+        // ok. both P(0) and P(1) are large enough to resolve
+        // generate random float on [0,1]
+        float randNum = genrand_real1();
+        if (randNum<=stateProbInternal) outcome = 1;
+        else outcome = 0;
+    } 
+    collapseToOutcomeLocal(multiQubit, measureQubit, stateProbInternal, outcome);
+    *stateProb = stateProbInternal;
+    return outcome;
 }
 
 void exitWithError(int errorCode, const char* func){

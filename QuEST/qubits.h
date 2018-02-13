@@ -292,5 +292,9 @@ measureQubit=1 if outcome=1. It then returns the probability of making this meas
 */
 REAL collapseToOutcome(MultiQubit multiQubit, const int measureQubit, int outcome);
 
+int measure(MultiQubit multiQubit, int measureQubit);
+
+int measureWithStats(MultiQubit multiQubit, int measureQubit, REAL *stateProb);
+
 #endif
 

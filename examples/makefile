@@ -66,7 +66,7 @@ LIBS = -lm
 #
 # --- targets
 #
-OBJ = $(MY_FILE_NAME).o qubits.o
+OBJ = $(MY_FILE_NAME).o qubits.o mt19937ar.o
 ifneq ($(USE_MPI), 0)
 	OBJ += qubits_env_mpi.o
 else
