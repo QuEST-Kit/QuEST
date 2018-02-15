@@ -6,7 +6,8 @@
 # include <math.h>
 # include <omp.h>
 
-# include "../QuEST/qubits.h"   // TODO: repoint to your direc
+# include "QuEST/qubits.h"   // TODO: repoint to your direc
+
 
 int main (int narg, char** varg) {
 
@@ -26,7 +27,7 @@ int main (int narg, char** varg) {
 	// create register; let zeroth qubit be ancilla
 	MultiQubit multiQubit; 
 	createMultiQubit(&multiQubit, numQubits, env);
-	initStateZero (&multiQubit);
+	initStateZero(&multiQubit);
 
 
 	/* 	
@@ -43,7 +44,7 @@ int main (int narg, char** varg) {
 		bit = bits % 2;
 		bits /= 2;
 		if (bit)
-			controlNot(multiQubit, qb, 0);
+			controlledNot(multiQubit, 0, qb);
 	}
 	
 	

@@ -22,19 +22,23 @@ typedef struct Complex
 	REAL imag;
 } Complex;
 
+/** Represents a 2x2 matrix of complex numbers
+*/
 typedef struct ComplexMatrix2
 {
 	Complex r0c0, r0c1;
 	Complex r1c0, r1c1;
 } ComplexMatrix2;
 
+/** Represents a 3-vector of real numbers
+*/
 typedef struct Vector
 {
 	REAL x, y, z;
 } Vector;
 
 /** Represents a system of qubits.
-Qubits are zero-based and the the first qubit is the rightmost
+Qubits are zero-based
 */
 typedef struct MultiQubit
 {
@@ -67,52 +71,246 @@ enum phaseGateType {SIGMA_Z=0, S_GATE=1, T_GATE=2};
 
 // QuEST library functions whose implementation is independent of environment (local, MPI)
 
+/** Create a MultiQubit object representing a set of qubits.
+ * Allocate space for state vector of probability amplitudes, including space for temporary values to be copied from
+ * one other chunk if running the distributed version. Define properties related to the size of the set of qubits.
+ * initStateZero should be called after this to initialise the qubits to the zero state.
+ *
+ * @param[in,out] multiQubit a pointer to an object representing the set of qubits
+ * @param[in] numQubits number of qubits in the system
+ * @param[in] env object representing the execution environment (local, multinode etc)
+ * @throws exitWithError if \p numQubits <= 0
+ */
 void createMultiQubit(MultiQubit *multiQubit, int numQubits, QuESTEnv env);
 
+/** Deallocate a MultiQubit object representing a set of qubits.
+ * Free memory allocated to state vector of probability amplitudes, including temporary vector for
+ * values copied from another chunk if running the distributed version.
+ *
+ * @param[in,out] multiQubit object to be deallocated
+ * @param[in] env object representing the execution environment (local, multinode etc)
+ */
 void destroyMultiQubit(MultiQubit multiQubit, QuESTEnv env);
 
+/** Print the current state vector of probability amplitudes for a set of qubits to file.
+ * File format:
+ * @verbatim
+real, imag
+realComponent1, imagComponent1
+realComponent2, imagComponent2
+...
+realComponentN, imagComponentN
+@endverbatim
+ *
+ * File naming convention:
+ *
+ * For each node that the program runs on, a file 'state_rank_[node_rank].csv' is generated. If there is
+ * more than one node, ranks after the first do not include the header
+ * @verbatim
+real, imag
+@endverbatim
+ * so that files are easier to combine.
+
+ * @param[in,out] multiQubit object representing the set of qubits
+ */
 void reportState(MultiQubit multiQubit);
 
+/** Print the current state vector of probability amplitudes for a set of qubits to standard out. 
+ * For debugging purposes. Each rank should print output serially. 
+ * Only print output for systems <= 5 qubits
+ */
 void reportStateToScreen(MultiQubit multiQubit, QuESTEnv env, int reportRank);
 
+/** Report metainformation about a set of qubits: number of qubits, number of probability amplitudes.
+
+ * @param[in,out] multiQubit object representing the set of qubits
+ * @param[in] env object representing the execution environment (local, multinode etc)
+ */
 void reportMultiQubitParams(MultiQubit multiQubit);
 
+/**
+ * Initialise a set of \f$ N \f$ qubits to the classical zero state 
+ * \f$ {| 0 \rangle}^{\otimes N} \f$.
+ *
+ * @param[in,out] multiQubit a pointer to the object representing the set of all qubits to initialise
+ */
 void initStateZero(MultiQubit *multiQubit);
 
+/**
+ * Initialise a set of \f$ N \f$ qubits to the plus state
+ * \f$ {| + \rangle}^{\otimes N} = \frac{1}{\sqrt{2^N}} (| 0 \rangle + | 1 \rangle)^{\otimes N} \f$.
+ * This is the product state of \f$N\f$ qubits where every classical state is uniformly 
+ * populated with real coefficient \f$\frac{1}{\sqrt{2^N}}\f$.
+ * This is equivalent to applying a Hadamard to every qubit in the zero state: 
+ * \f$ \hat{H}^{\otimes N} {|0\rangle}^{\otimes N} \f$
+ *
+ * @param[in,out] multiQubit a pointer to the object representing the set of qubits to be initialised
+ */
 void initStatePlus(MultiQubit *multiQubit);
 
+/** Apply the multiple-qubit controlled phase gate, also known as the multiple-qubit controlled sigmaZ gate.
+ * For each state, if all control qubits have value one, multiply the amplitude of that state by -1. This applies the many-qubit unitary:
+ * \f[
+ * \begin{pmatrix}
+ * 1 \\
+ * & 1 \\\
+ * & & \ddots \\
+ * & & & 1 \\
+ * & & & & -1 
+ * \end{pmatrix}
+ * \f]
+ * on the control qubits.
+ *
+ * \f[
+	\setlength{\fboxrule}{0.01pt}
+	\fbox{
+				\begin{tikzpicture}[scale=.5]
+				\node[draw=none] at (-3.5, 2) {controls};
+				
+				\node[draw=none] at (0, 6) {$\vdots$};
+				\draw (0, 5) -- (0, 4);
+				
+				\draw (-2, 4) -- (2, 4);
+				\draw[fill=black] (0, 4) circle (.2);
+				\draw (0, 4) -- (0, 2);	
+				
+				\draw (-2, 2) -- (2, 2);
+				\draw[fill=black] (0, 2) circle (.2);
+				\draw (0, 2) -- (0, 0);
+				
+				\draw (-2,0) -- (2, 0);
+				\draw[fill=black] (0, 0) circle (.2);
+				\end{tikzpicture}
+	}
+   \f]
+ *
+ * @param[in,out] multiQubit object representing the set of all qubits
+ * @param[in] controlQubits array of input qubits
+ * @param[in] numControlQubits number of input qubits
+ * @throws exitWithError 
+ * 		if \p numControlQubits is outside [1, \p multiQubit.numQubits) 
+ */
 void multiControlledPhaseGate(MultiQubit multiQubit, int *controlQubits, int numControlQubits);
 
+/** Apply the (two-qubit) controlled phase gate, also known as the controlled sigmaZ gate.
+ * For each state, if both input qubits have value one, multiply the amplitude of that state by -1. This applies the two-qubit unitary:
+ * \f[
+ * \begin{pmatrix}
+ * 1 \\
+ * & 1 \\\
+ * & & 1 \\
+ * & & & -1 
+ * \end{pmatrix}
+ * \f]
+ *
+	\f[
+	\setlength{\fboxrule}{0.01pt}
+	\fbox{
+				\begin{tikzpicture}[scale=.5]
+				\node[draw=none] at (-3.5, 2) {idQubit1};
+				\node[draw=none] at (-3.5, 0) {idQubit2};
+
+				\draw (-2, 2) -- (2, 2);
+				\draw[fill=black] (0, 2) circle (.2);
+				\draw (0, 2) -- (0, 0);
+				
+				\draw (-2,0) -- (2, 0);
+				\draw[fill=black] (0, 0) circle (.2);
+				\end{tikzpicture}
+	}
+	\f]
+ *
+ * @param[in,out] multiQubit object representing the set of all qubits
+ * @param[in] idQubit1, idQubit2 qubits to operate upon
+ * @throws exitWithError 
+ * 	if \p idQubit1 or \p idQubit2 are outside [0, \p multiQubit.numQubits), or are equal
+ */
 void controlledPhaseGate (MultiQubit multiQubit, const int idQubit1, const int idQubit2);
 
-void sigmaZ(MultiQubit multiQubit, const int targetQubit);
+/** Apply the single-qubit S gate.
+ * This is a rotation of \f$\pi/2\f$ around the Z-axis on the Bloch sphere, or the unitary:
+ * \f[
+ * \begin{pmatrix}
+ * 1 & 0 \\
+ * 0 & i
+ * \end{pmatrix}
+ * \f]
+ *
+	\f[
+	\setlength{\fboxrule}{0.01pt}
+	\fbox{
+				\begin{tikzpicture}[scale=.5]
+				\node[draw=none] at (-3.5, 0) {target};
 
+				\draw (-2,0) -- (-1, 0);
+				\draw (1, 0) -- (2, 0);
+				\draw (-1,-1)--(-1,1)--(1,1)--(1,-1)--cycle;
+				\node[draw=none] at (0, 0) {S};
+				\end{tikzpicture}
+	}
+	\f]
+ *
+ * @param[in,out] multiQubit object representing the set of all qubits
+ * @param[in] targetQubit qubit to operate upon
+ * @throws exitWithError if \p targetQubit is outside [0, \p multiQubit.numQubits)
+ */
 void sGate(MultiQubit multiQubit, const int targetQubit);
 
+/** Apply the single-qubit T gate.
+ * This is a rotation of \f$\pi/4\f$ around the Z-axis on the Bloch sphere, or the unitary:
+ * \f[
+ * \begin{pmatrix}
+ * 1 & 0 \\
+ * 0 & \exp\left(i \frac{\pi}{4}\right)
+ * \end{pmatrix}
+ * \f]
+ *
+	\f[
+	\setlength{\fboxrule}{0.01pt}
+	\fbox{
+				\begin{tikzpicture}[scale=.5]
+				\node[draw=none] at (-3.5, 0) {target};
+
+				\draw (-2,0) -- (-1, 0);
+				\draw (1, 0) -- (2, 0);
+				\draw (-1,-1)--(-1,1)--(1,1)--(1,-1)--cycle;
+				\node[draw=none] at (0, 0) {T};
+				\end{tikzpicture}
+	}
+	\f]
+ *
+ * @param[in,out] multiQubit object representing the set of all qubits
+ * @param[in] targetQubit qubit to operate upon
+ * @throws exitWithError if \p targetQubit is outside [0, \p multiQubit.numQubits)
+ */
 void tGate(MultiQubit multiQubit, const int targetQubit);
 
 
 // QuEST library functions whose implementation depends on environment (local, MPI)
 
-/** Initialize QuEST environment. If something needs to be done to set up the execution environment, such as 
+/** Initialize the QuEST environment. If something needs to be done to set up the execution environment, such as 
  * initializing MPI when running in distributed mode, it is handled here
+ *
  * @param[in,out] env object representing the execution environment. A single instance is used for each program
  */
 void initQuESTEnv(QuESTEnv *env);
 
 /** Close QuEST environment. If something needs to be done to clean up the execution environment, such as 
  * finalizing MPI when running in distributed mode, it is handled here
+ *
  * @param[in] env object representing the execution environment. A single instance is used for each program
  */
 void closeQuESTEnv(QuESTEnv env);
 
-/** Guarantees that all code up to the given point has been executed on all nodes. 
+/** Guarantees that all code up to the given point has been executed on all nodes (if running in distributed mode)
+ *
  * @param[in] env object representing the execution environment. A single instance is used for each program
  */
 void syncQuESTEnv(QuESTEnv env);
 
 /** Performs a logical AND on all successCodes held by all processes. If any one process has a zero successCode
  * all processes will return a zero success code.
+ *
  * @param[in] env object representing the execution environment. A single instance is used for each program
  * @param[in] successCode 1 if process task succeeded, 0 if process task failed
  * @returns 1 if all processes succeeded, 0 if any one process failed
@@ -120,180 +318,577 @@ void syncQuESTEnv(QuESTEnv env);
 int syncQuESTSuccess(int successCode);
 
 /** Report information about the QuEST environment
+ *
  * @param[in] env object representing the execution environment. A single instance is used for each program
  */
 void reportQuESTEnv(QuESTEnv env);
 
 void getEnvironmentString(QuESTEnv env, MultiQubit multiQubit, char str[200]);
 
-/** Get the real component of the probability amplitude at an index in the state vector.
-For debugging purposes.
-@param[in] multiQubit object representing a set of qubits
-@param[in] index index in state vector of probability amplitudes
-@return real component at that index
-*/
+/** Get the real component of the complex probability amplitude at an index in the state vector.
+ * For debugging purposes.
+ *
+ * @param[in] multiQubit object representing a set of qubits
+ * @param[in] index index in state vector of probability amplitudes
+ * @return real component at that index
+ * @throws exitWithError
+ * 		if \p index is outside [0, \f$2^{N}\f$) where \f$N = \f$ \p multiQubit.numQubits
+ */
 REAL getRealAmpEl(MultiQubit multiQubit, long long int index);
 
-/** Get the imaginary component of the probability amplitude at an index in the state vector.
-For debugging purposes.
-@param[in] multiQubit object representing a set of qubits
-@param[in] index index in state vector of probability amplitudes
-@return imaginary component at that index
-*/
+/** Get the imaginary component of the complex probability amplitude at an index in the state vector.
+ * For debugging purposes.
+ *
+ * @param[in] multiQubit object representing a set of qubits
+ * @param[in] index index in state vector of probability amplitudes
+ * @return imaginary component at that index
+ * @throws exitWithError
+ * 		if \p index is outside [0, \f$2^{N}\f$) where \f$N = \f$ \p multiQubit.numQubits
+ */
 REAL getImagAmpEl(MultiQubit multiQubit, long long int index);
 
-/** Get the probability of the state at an index in the state vector.
-@param[in] multiQubit object representing a set of qubits
-@param[in] index index in state vector of probability amplitudes
-@return realEl*realEl + imagEl*imagEl
-*/
+/** Get the probability of the state at an index in the full state vector.
+ *
+ * @param[in] multiQubit object representing a set of qubits
+ * @param[in] index index in state vector of probability amplitudes
+ * @return realEl*realEl + imagEl*imagEl
+ * @throws exitWithError
+ * 		if \p index is outside [0, \f$2^{N}\f$) where \f$N = \f$ \p multiQubit.numQubits
+ */
 REAL getProbEl(MultiQubit multiQubit, long long int index);
 
 /** Calculate the probability of being in any state by taking the norm of the entire state vector. 
  * Should be equal to 1.
+ *
  * @param[in] multiQubit object representing a set of qubits
  * @return total probability
  */
 REAL calcTotalProbability(MultiQubit multiQubit);
 
-/** Rotate a single qubit in the state vector of probability amplitudes. Given two complex
-numbers alpha and beta, applies the operation \n
-[alpha, -beta* \n
- beta, alpha*] \n
+/** Apply a single-qubit unitary parameterised by two given complex scalars.
+ * Given valid complex numbers \f$\alpha\f$ and \f$\beta\f$, applies the unitary
+ * \f[
+ * U =
+ * \begin{pmatrix}
+ * \alpha & -\beta^* \\
+ * \beta & \alpha^*
+ * \end{pmatrix}
+ * \f]
+ * which is general up to a global phase factor.               
+ * Valid \f$\alpha\f$, \f$\beta\f$ satisfy \f$|\alpha|^2 + |\beta|^2 = 1\f$. 
+ *
+	\f[
+	\setlength{\fboxrule}{0.01pt}
+	\fbox{
+				\begin{tikzpicture}[scale=.5]
+				\node[draw=none] at (-3.5, 0) {target};
 
-@remarks Qubits are zero-based and the                     
-the first qubit is the rightmost                  
-
-alpha, beta must obey |alpha|^2 + |beta|^2 = 1
-                                                                     
-@param[in,out] multiQubit object representing the set of qubits
-@param[in] targetQubit qubit to rotate
-@param[in] alpha rotation angle
-@param[in] beta rotation angle
+				\draw (-2,0) -- (-1, 0);
+				\draw (1, 0) -- (2, 0);
+				\draw (-1,-1)--(-1,1)--(1,1)--(1,-1)--cycle;
+				\node[draw=none] at (0, 0) {U};
+				\end{tikzpicture}
+	}
+	\f]
+ *                                                                    
+ * @param[in,out] multiQubit object representing the set of all qubits
+ * @param[in] targetQubit qubit to operate on
+ * @param[in] alpha complex unitary parameter (row 1, column 1)
+ * @param[in] beta complex unitary parameter (row 2, column 1)
+ * @throws exitWithError
+ * 		if \p targetQubit is outside [0, \p multiQubit.numQubits),
+ * 		or if \p alpha, \p beta don't satisfy |\p alpha|^2 + |\p beta|^2 = 1.
  */
 void compactUnitary(MultiQubit multiQubit, const int targetQubit, Complex alpha, Complex beta);
 
-/* Apply a unitary operation to a single qubit
-@remarks Qubits are zero-based and the                     
-the first qubit is the rightmost                  
-                                                                      
-@param[in,out] multiQubit object representing the set of qubits
-@param[in] targetQubit qubit to rotate
-@param[in] u unitary matrix to apply
+/** Apply a general single-qubit unitary (including a global phase factor).
+ * The passed 2x2 ComplexMatrix must be unitary, otherwise an error is thrown.
+ *
+	\f[
+	\setlength{\fboxrule}{0.01pt}
+	\fbox{
+				\begin{tikzpicture}[scale=.5]
+				\node[draw=none] at (-3.5, 0) {target};
+
+				\draw (-2,0) -- (-1, 0);
+				\draw (1, 0) -- (2, 0);
+				\draw (-1,-1)--(-1,1)--(1,1)--(1,-1)--cycle;
+				\node[draw=none] at (0, 0) {U};
+				\end{tikzpicture}
+	}
+	\f]
+ *                                                                    
+ * @param[in,out] multiQubit object representing the set of all qubits
+ * @param[in] targetQubit qubit to operate on
+ * @param[in] u unitary matrix to apply
+ * @throws exitWithError
+ * 		if \p targetQubit is outside [0, \p multiQubit.numQubits),
+ * 		or matrix \p u is not unitary.
  */
 void unitary(MultiQubit multiQubit, const int targetQubit, ComplexMatrix2 u);
 
+/** Rotate a single qubit by a given angle around the X-axis of the Bloch-sphere. For angle \f$\theta\f$, applies
+ * \f[
+ * \begin{pmatrix}
+ * \cos\theta/2 & -i \sin \theta/2\\
+ * -i \sin \theta/2 & \cos \theta/2
+ * \end{pmatrix}
+ * \f]
+ *
+	\f[
+	\setlength{\fboxrule}{0.01pt}
+	\fbox{
+				\begin{tikzpicture}[scale=.5]
+				\node[draw=none] at (-3.5, 0) {rot};
+
+				\draw (-2,0) -- (-1, 0);
+				\draw (1, 0) -- (2, 0);
+				\draw (-1,-1)--(-1,1)--(1,1)--(1,-1)--cycle;
+				\node[draw=none] at (0, 0) {$R_x(\theta)$};
+				\end{tikzpicture}
+	}
+	\f]
+ *
+ *
+ * @param[in,out] multiQubit object representing the set of all qubits
+ * @param[in] rotQubit qubit to rotate
+ * @param[in] angle angle by which to rotate in radians
+ * @throws exitWithError
+ * 		if \p rotQubit is outside [0, \p multiQubit.numQubits).
+ */
 void rotateX(MultiQubit multiQubit, const int rotQubit, REAL angle);
 
+/** Rotate a single qubit by a given angle around the Y-axis of the Bloch-sphere. 
+ * For angle \f$\theta\f$, applies
+ * \f[
+ * \begin{pmatrix}
+ * \cos\theta/2 & \sin \theta/2\\
+ * \sin \theta/2 & \cos \theta/2
+ * \end{pmatrix}
+ * \f]            
+ * 
+	\f[
+	\setlength{\fboxrule}{0.01pt}
+	\fbox{
+				\begin{tikzpicture}[scale=.5]
+				\node[draw=none] at (-3.5, 0) {rot};
+
+				\draw (-2,0) -- (-1, 0);
+				\draw (1, 0) -- (2, 0);
+				\draw (-1,-1)--(-1,1)--(1,1)--(1,-1)--cycle;
+				\node[draw=none] at (0, 0) {$R_y(\theta)$};
+				\end{tikzpicture}
+	}
+	\f]
+ *
+ * @param[in,out] multiQubit object representing the set of all qubits
+ * @param[in] rotQubit qubit to rotate
+ * @param[in] angle angle by which to rotate in radians
+ * @throws exitWithError
+ * 		if \p rotQubit is outside [0, \p multiQubit.numQubits).
+ */
 void rotateY(MultiQubit multiQubit, const int rotQubit, REAL angle);
 
+/** Rotate a single qubit by a given angle around the Z-axis of the Bloch-sphere (also known as a phase shift gate).   
+ * For angle \f$\theta\f$, applies
+ * \f[
+ * \begin{pmatrix}
+ * \exp(-i \theta/2) & 0 \\
+ * 0 & \exp(i \theta/2)
+ * \end{pmatrix}
+ * \f] 
+ *     
+	\f[
+	\setlength{\fboxrule}{0.01pt}
+	\fbox{
+				\begin{tikzpicture}[scale=.5]
+				\node[draw=none] at (-3.5, 0) {rot};
+
+				\draw (-2,0) -- (-1, 0);
+				\draw (1, 0) -- (2, 0);
+				\draw (-1,-1)--(-1,1)--(1,1)--(1,-1)--cycle;
+				\node[draw=none] at (0, 0) {$R_z(\theta)$};
+				\end{tikzpicture}
+	}
+	\f]
+ * 
+ * @param[in,out] multiQubit object representing the set of all qubits
+ * @param[in] rotQubit qubit to rotate
+ * @param[in] angle angle by which to rotate in radians
+ * @throws exitWithError
+ * 		if \p rotQubit is outside [0, \p multiQubit.numQubits).
+ */
 void rotateZ(MultiQubit multiQubit, const int rotQubit, REAL angle);
 
-/** Rotate a single qubit in the state vector of probability amplitudes.
-Given two complex numbers alpha and beta and a control qubit, applies the operation: \n
-[alpha, -beta* \n
- beta, alpha*] \n
-Only when the control qubit is one.
-                                                                    
-@remarks Qubits are zero-based and the                     
-the first qubit is the rightmost                  
+/** Apply a controlled unitary (single control, single target) parameterised by two given complex scalars.
+ * Given valid complex numbers \f$\alpha\f$ and \f$\beta\f$, applies the two-qubit unitary
+ * \f[
+ * \begin{pmatrix}
+ * 1 \\
+ * & 1 \\
+ * & & \alpha & -\beta^* \\
+ * & & \beta & \alpha^*
+ * \end{pmatrix}
+ * \f]
+ * to the control and target qubits.
+ * Valid \f$\alpha\f$, \f$\beta\f$ satisfy \f$|\alpha|^2 + |\beta|^2 = 1\f$. 
+ * The target unitary is general up to a global phase factor.         
+ *
+	\f[
+	\setlength{\fboxrule}{0.01pt}
+	\fbox{
+				\begin{tikzpicture}[scale=.5]
+				\node[draw=none] at (-3.5, 2) {control};
+				\node[draw=none] at (-3.5, 0) {target};
 
-alpha, beta must obey |alpha|^2 + |beta|^2 = 1
-
-@param[in,out] multiQubit object representing the set of qubits
-@param[in] targetQubit qubit to rotate
-@param[in] controlQubit perform rotation if this qubit is 1
-@param[in] alpha rotation angle
-@param[in] beta rotation angle
+				\draw (-2, 2) -- (2, 2);
+				\draw[fill=black] (0, 2) circle (.2);
+				\draw (0, 2) -- (0, 1);
+				
+				\draw (-2,0) -- (-1, 0);
+				\draw (1, 0) -- (2, 0);
+				\draw (-1,-1)--(-1,1)--(1,1)--(1,-1)--cycle;
+				\node[draw=none] at (0, 0) {$U_{\alpha, \beta}$};
+				\end{tikzpicture}
+	}
+	\f]
+ *                                                                    
+ * @param[in,out] multiQubit object representing the set of all qubits
+ * @param[in] controlQubit apply the target unitary if this qubit has value 1
+ * @param[in] targetQubit qubit on which to apply the target unitary
+ * @param[in] alpha complex unitary parameter (row 1, column 1)
+ * @param[in] beta complex unitary parameter (row 2, column 1)
+ * @throws exitWithError
+ * 		if either \p controlQubit or \p targetQubit are outside [0, \p multiQubit.numQubits) or are equal,
+ * 		or if \p alpha, \p beta don't satisfy |\p alpha|^2 + |\p beta|^2 = 1.
  */
 void controlledCompactUnitary(MultiQubit multiQubit, const int controlQubit, const int targetQubit, Complex alpha, Complex beta);
 
+/** Rotate a single qubit by a given angle around a given vector on the Bloch-sphere.      * The vector must not be zero (else an error is thrown), but needn't be unit magnitude.
+ *
+ * @param[in,out] multiQubit object representing the set of all qubits
+ * @param[in] rotQubit qubit to rotate
+ * @param[in] angle angle by which to rotate in radians
+ * @param[in] axis vector around which to rotate
+ * @throws exitWithError
+ * 		if \p rotQubit is outside [0, \p multiQubit.numQubits),
+ * 		or if \p axis is the zero vector
+ */
 void rotateAroundAxis(MultiQubit multiQubit, const int rotQubit, REAL angle, Vector unitAxis);
 
-/** Apply a unitary operation to a single qubit given a 
-control qubit
-Only perform the rotation for elements where the control qubit is one.
-                                                                    
-@param[in,out] multiQubit object representing the set of qubits
-@param[in] targetQubit qubit to rotate
-@param[in] controlQubit perform rotation if this qubit is 1
-@param[in] u unitary matrix to apply
+/** Apply a general controlled unitary (single control, single target), which can include a global phase factor.
+ * The given unitary is applied to the target qubit if the control qubit has value 1,
+ * effecting the two-qubit unitary
+ * \f[
+ * \begin{pmatrix}
+ * 1 \\
+ * & 1 \\
+ * & & u_{00} & u_{01}\\
+ * & & u_{10} & u_{11}
+ * \end{pmatrix}
+ * \f]
+ * on the control and target qubits.
+ *      
+	\f[
+	\setlength{\fboxrule}{0.01pt}
+	\fbox{
+				\begin{tikzpicture}[scale=.5]
+				\node[draw=none] at (-3.5, 2) {control};
+				\node[draw=none] at (-3.5, 0) {target};
+
+				\draw (-2, 2) -- (2, 2);
+				\draw[fill=black] (0, 2) circle (.2);
+				\draw (0, 2) -- (0, 1);
+				
+				\draw (-2,0) -- (-1, 0);
+				\draw (1, 0) -- (2, 0);
+				\draw (-1,-1)--(-1,1)--(1,1)--(1,-1)--cycle;
+				\node[draw=none] at (0, 0) {U};
+				\end{tikzpicture}
+	}
+	\f]
+ *                                                              
+ * @param[in,out] multiQubit object representing the set of all qubits
+ * @param[in] controlQubit apply unitary if this qubit is 1
+ * @param[in] targetQubit qubit to operate on
+ * @param[in] u single-qubit unitary matrix to apply
+ * @throws exitWithError
+ * 		if either \p controlQubit or \p targetQubit are outside [0, \p multiQubit.numQubits) or are equal,
+ * 		or if \p u is not unitary.
  */
 void controlledUnitary(MultiQubit multiQubit, const int controlQubit, const int targetQubit, ComplexMatrix2 u);
 
-/** Apply a unitary operation to a single qubit given an array
-of control qubits
-Only perform the rotation for elements where all control qubits equal 1.
-                                                                    
-@param[in,out] multiQubit object representing the set of qubits
-@param[in] targetQubit qubit to rotate
-@param[in] controlQubits perform rotation if all qubits in this array equal 1
-@param[in] numControlQubits number of control qubits
-@param[in] u unitary matrix to apply
+/** Apply a general multiple-control single-target unitary, which can include
+ * a global phase factor. Any number of control qubits can be specified,
+ * and if all have value 1, the given unitary is applied to the target qubit.
+ * This effects the many-qubit unitary
+ * \f[
+ * \begin{pmatrix}
+ * 1 \\
+ * & 1 \\\
+ * & & \ddots \\
+ * & & & u_{00} & u_{01}\\
+ * & & & u_{10} & u_{11}
+ * \end{pmatrix}
+ * \f]
+ * on the control and target qubits.
+ * The given 2x2 ComplexMatrix must be unitary, otherwise an error is thrown.
+ *
+	\f[
+	\setlength{\fboxrule}{0.01pt}
+	\fbox{
+				\begin{tikzpicture}[scale=.5]
+				\node[draw=none] at (-3.5, 3) {controls};
+				\node[draw=none] at (-3.5, 0) {target};
+
+				\node[draw=none] at (0, 6) {$\vdots$};
+				\draw (0, 5) -- (0, 4);
+				
+				\draw (-2, 4) -- (2, 4);
+				\draw[fill=black] (0, 4) circle (.2);
+				\draw (0, 4) -- (0, 2);			
+				
+				\draw (-2, 2) -- (2, 2);
+				\draw[fill=black] (0, 2) circle (.2);
+				\draw (0, 2) -- (0, 1);
+				
+				\draw (-2,0) -- (-1, 0);
+				\draw (1, 0) -- (2, 0);
+				\draw (-1,-1)--(-1,1)--(1,1)--(1,-1)--cycle;
+				\node[draw=none] at (0, 0) {U};
+				\end{tikzpicture}
+	}
+	\f]
+ *                                                                
+ * @param[in,out] multiQubit object representing the set of all qubits
+ * @param[in] controlQubits applies unitary if all qubits in this array equal 1
+ * @param[in] numControlQubits number of control qubits
+ * @param[in] targetQubit qubit to operate on
+ * @param[in] u single-qubit unitary matrix to apply
+ * @throws exitWithError
+ * 		if \p numControlQubits is outside [1, \p multiQubit.numQubits]),
+ * 		or if any qubit index (\p targetQubit or one in \p controlQubits) is outside
+ * 		[0, \p multiQubit.numQubits]), 
+ * 		or if \p controlQubits contains \p targetQubit,
+ * 		or if \p u is not unitary.
  */
 void multiControlledUnitary(MultiQubit multiQubit, int* controlQubits, const int numControlQubits, const int targetQubit, ComplexMatrix2 u);
 
-/** Rotate a single qubit by {{0,1},{1,0}} -- swap |0> and |1>.
-@param[in,out] multiQubit object representing the set of qubits
-@param[in] targetQubit qubit to rotate
-*/
+/** Apply the single-qubit sigma-X (also known as the X, Pauli-X, NOT or bit-flip) gate.
+ * This is a rotation of \f$\pi\f$ around the x-axis on the Bloch sphere. I.e. 
+ * \f[
+ * \begin{pmatrix}
+ * 0 & 1 \\
+ * 1 & 0
+ * \end{pmatrix}
+ * \f]   
+ *
+	\f[
+	\setlength{\fboxrule}{0.01pt}
+	\fbox{
+				\begin{tikzpicture}[scale=.5]
+				\node[draw=none] at (-3.5, 0) {target};
+
+				\draw (-2,0) -- (2, 0);
+				\draw (0, 0) circle (.5);
+				\draw (0, .5) -- (0, -.5);
+				\end{tikzpicture}
+	}
+	\f]   
+ * 
+ * @param[in,out] multiQubit object representing the set of all qubits
+ * @param[in] targetQubit qubit to operate on
+ * @throws exitWithError
+ * 		if \p targetQubit is outside [0, \p multiQubit.numQubits).
+ */
 void sigmaX(MultiQubit multiQubit, const int targetQubit);
 
-/** Rotate a single qubit by {{0,-i},{i,0}} -- swap |0> and |1> and apply
-a phase of -i or i.
-@param[in,out] multiQubit object representing the set of qubits
-@param[in] targetQubit qubit to rotate
-*/
+/** Apply the single-qubit sigma-Y (also known as the Y or Pauli-Y) gate.
+ * This is a rotation of \f$\pi\f$ around the Y-axis on the Bloch sphere. I.e. 
+ * \f[
+ * \begin{pmatrix}
+ * 0 & -i \\
+ * i & 0
+ * \end{pmatrix}
+ * \f]  
+ *
+	\f[
+	\setlength{\fboxrule}{0.01pt}
+	\fbox{
+				\begin{tikzpicture}[scale=.5]
+				\node[draw=none] at (-3.5, 0) {target};
+
+				\draw (-2,0) -- (-1, 0);
+				\draw (1, 0) -- (2, 0);
+				\draw (-1,-1)--(-1,1)--(1,1)--(1,-1)--cycle;
+				\node[draw=none] at (0, 0) {$\sigma_y$};
+				\end{tikzpicture}
+	}
+	\f]      
+ * 
+ * @param[in,out] multiQubit object representing the set of all qubits
+ * @param[in] targetQubit qubit to operate on
+ * @throws exitWithError
+ * 		if \p targetQubit is outside [0, \p multiQubit.numQubits).
+ */
 void sigmaY(MultiQubit multiQubit, const int targetQubit);
 
-/** Rotate a single qubit by {{1,0},{{0,-1}} -- apply a phase of -1 to |1>.
-@param[in,out] multiQubit object representing the set of qubits
-@param[in] targetQubit qubit to rotate
-*/
+/** Apply the single-qubit sigma-Z (also known as the Z, Pauli-Z or phase-flip) gate.
+ * This is a rotation of \f$\pi\f$ around the Z-axis (a phase shift) on the Bloch sphere. I.e. 
+ * \f[
+ * \begin{pmatrix}
+ * 1 & 0 \\
+ * 0 & -1
+ * \end{pmatrix}
+ * \f]   
+ *
+	\f[
+	\setlength{\fboxrule}{0.01pt}
+	\fbox{
+				\begin{tikzpicture}[scale=.5]
+				\node[draw=none] at (-3.5, 0) {target};
+
+				\draw (-2,0) -- (-1, 0);
+				\draw (1, 0) -- (2, 0);
+				\draw (-1,-1)--(-1,1)--(1,1)--(1,-1)--cycle;
+				\node[draw=none] at (0, 0) {$\sigma_z$};
+				\end{tikzpicture}
+	}
+	\f]     
+ * 
+ * @param[in,out] multiQubit object representing the set of all qubits
+ * @param[in] targetQubit qubit to operate on
+ * @throws exitWithError
+ * 		if \p targetQubit is outside [0, \p multiQubit.numQubits).
+ */
 void sigmaZ(MultiQubit multiQubit, const int targetQubit);
 
-/** Rotate a single qubit by {{1,1},{1,-1}}/sqrt2 -- turn a |0> into a |+>
-and a |1> into a |->.
-@param[in,out] multiQubit object representing the set of qubits
-@param[in] targetQubit qubit to rotate
-*/
+/** Apply the single-qubit Hadamard gate.
+ * This takes \f$|0\rangle\f$ to \f$|+\rangle\f$ and \f$|1\rangle\f$ to \f$|-\rangle\f$, and is equivalent to a rotation of
+ * \f$\pi\f$ around the x-axis then \f$\pi/2\f$ about the y-axis on the Bloch-sphere. I.e.
+ * \f[
+ * \frac{1}{\sqrt{2}}
+ * \begin{pmatrix}
+ * 1 & 1 \\
+ * 1 & -1
+ * \end{pmatrix}
+ * \f]  
+ *
+	\f[
+	\setlength{\fboxrule}{0.01pt}
+	\fbox{
+				\begin{tikzpicture}[scale=.5]
+				\node[draw=none] at (-3.5, 0) {target};
+
+				\draw (-2,0) -- (-1, 0);
+				\draw (1, 0) -- (2, 0);
+				\draw (-1,-1)--(-1,1)--(1,1)--(1,-1)--cycle;
+				\node[draw=none] at (0, 0) {H};
+				\end{tikzpicture}
+	}
+	\f]  
+ *
+ * @param[in,out] multiQubit object representing the set of all qubits
+ * @param[in] targetQubit qubit to operate on
+ * @throws exitWithError
+ * 		if \p targetQubit is outside [0, \p multiQubit.numQubits).
+ */
 void hadamard(MultiQubit multiQubit, const int targetQubit);
 
-/** Rotate a single qubit by {{0,-i},{i,0}} -- swap |0> and |1> and apply
-a phase of -i or i, only for elements when control qubit is 1.
-@param[in,out] multiQubit object representing the set of qubits
-@param[in] targetQubit qubit to rotate
-@param[in] controlQubit perform sigmaX rotation if this qubit is 1
-*/
+/** Apply the controlled not (single control, single target) gate, also
+ * known as the c-X, c-sigma-X, c-Pauli-X and c-bit-flip gate.
+ * This applies sigmaX to the target qubit if the control qubit has value 1.
+ * This effects the two-qubit unitary
+ * \f[
+ * \begin{pmatrix}
+ * 1 \\
+ * & 1 \\\
+ * & & & 1 \\
+ * & & 1
+ * \end{pmatrix}
+ * \f]
+ * on the control and target qubits.
+ *
+	\f[
+	\setlength{\fboxrule}{0.01pt}
+	\fbox{
+				\begin{tikzpicture}[scale=.5]
+				\node[draw=none] at (-3.5, 2) {control};
+				\node[draw=none] at (-3.5, 0) {target};
+
+				\draw (-2, 2) -- (2, 2);
+				\draw[fill=black] (0, 2) circle (.2);
+				\draw (0, 2) -- (0, -.5);
+				
+				\draw (-2,0) -- (2, 0);
+				\draw (0, 0) circle (.5);
+				\end{tikzpicture}
+	}
+	\f]  
+ *
+ * @param[in,out] multiQubit object representing the set of all qubits
+ * @param[in] controlQubit nots the target if this qubit is 1
+ * @param[in] targetQubit qubit to not
+ * @throws exitWithError
+ * 		if either \p controlQubit or \p targetQubit are outside [0, \p multiQubit.numQubits), or are equal.
+ */
 void controlledNot(MultiQubit multiQubit, const int controlQubit, const int targetQubit);
 
-/** Find the probability
-of a specified qubit being in the zero or one state.     
-
-@param[in] multiQubit object representing the set of qubits
-@param[in] measureQubit qubit to measure
-@param[in] outcome to measure the probability of -- either zero or one
-@return probability of qubit measureQubit being either zero or one
-*/
+/** Gives the probability of a specified qubit being measured in the given outcome (0 or 1).
+ * This performs no actual measurement and does not change the state of the qubits.
+ * 
+ * @param[in] multiQubit object representing the set of all qubits
+ * @param[in] measureQubit qubit to study
+ * @param[in] outcome for which to find the probability of the qubit being measured in
+ * @return probability of qubit measureQubit being measured in the given outcome
+ * @throws exitWithError
+ * 		if \p measureQubit is outside [0, \p multiQubit.numQubits),
+ * 		or if \p outcome is not in {0, 1}.
+ */
 REAL findProbabilityOfOutcome(MultiQubit multiQubit, const int measureQubit, int outcome);
 
-/** Update the state vector to be consistent with measuring measureQubit=0 or measureQubit=1 according to the value 
-of outcome. 
-Measure in Zero performs an irreversible change to the state vector: it updates the vector according
-to the event that an outcome has been measured on the qubit indicated by measureQubit (where 
-his label starts from 0, of course). It achieves this by setting all inconsistent amplitudes to 0 and 
-then renormalising based on the total probability of measuring measureQubit=0 if outcome=0 or
-measureQubit=1 if outcome=1. It then returns the probability of making this measurement. 
-
-@param[in,out] multiQubit object representing the set of qubits
-@param[in] measureQubit qubit to measure
-@param[in] outcome to measure the probability of and set the state to -- either zero or one
-@return probability of qubit measureQubit being either zero or one
-*/
+/** Updates the state vector to be consistent with measuring the measure qubit in the given outcome (0 or 1), and returns the probability of such a measurement outcome. 
+ * This is effectively performing a measurement and forcing the outcome.
+ * This is an irreversible change to the state vector, whereby incompatible states
+ * in the state vector are given zero amplitude and the remaining states are renormalised.
+ * Exits with error if the given outcome has ~zero probability, and so cannot be
+ * collapsed into.
+ * 
+ * @param[in,out] multiQubit object representing the set of all qubits
+ * @param[in] measureQubit qubit to measure
+ * @param[in] outcome to force the measure qubit to enter
+ * @return probability of the (forced) measurement outcome
+ * @throws exitWithError
+ * 		if \p measureQubit is outside [0, \p multiQubit.numQubits),
+ * 		or if \p outcome is not in {0, 1},
+ * 		or if the probability of \p outcome is zero (within machine epsilon)
+ */
 REAL collapseToOutcome(MultiQubit multiQubit, const int measureQubit, int outcome);
 
+/** Measures a single qubit, collapsing it randomly to 0 or 1.
+ * Outcome probabilities are weighted by the state vector, which is irreversibly
+ * changed after collapse to be consistent with the outcome.
+ *
+ * @param[in, out] multiQubit object representing the set of all qubits
+ * @param[in] measureQubit qubit to measure
+ * @return the measurement outcome, 0 or 1
+ * @throws exitWithError
+ * 		if \p measureQubit is outside [0, \p multiQubit.numQubits)
+ */
 int measure(MultiQubit multiQubit, int measureQubit);
 
+/** Measures a single qubit, collapsing it randomly to 0 or 1, and
+ * additionally gives the probability of that outcome.
+ * Outcome probabilities are weighted by the state vector, which is irreversibly
+ * changed after collapse to be consistent with the outcome.
+ *
+ * @param[in, out] multiQubit object representing the set of all qubits
+ * @param[in] measureQubit qubit to measure
+ * @param[out] stateProb a pointer to a REAL which is set to the probability of the occurred outcome
+ * @return the measurement outcome, 0 or 1
+ * @throws exitWithError
+ * 		if \p measureQubit is outside [0, \p multiQubit.numQubits)
+ */
 int measureWithStats(MultiQubit multiQubit, int measureQubit, REAL *stateProb);
 
 #endif

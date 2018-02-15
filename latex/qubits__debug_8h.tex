@@ -1,0 +1,240 @@
+\hypertarget{qubits__debug_8h}{
+\subsection{qubits\_\-debug.h File Reference}
+\label{qubits__debug_8h}\index{qubits\_\-debug.h@{qubits\_\-debug.h}}
+}
+
+
+Developer functions used for unit testing and debugging.  
+{\ttfamily \#include \char`\"{}precision.h\char`\"{}}\par
+\subsubsection*{Functions}
+\begin{DoxyCompactItemize}
+\item 
+void \hyperlink{qubits__debug_8h_a7169fd0442cbc3418f3fac4d13363ca2}{initStateOfSingleQubit} (\hyperlink{structMultiQubit}{MultiQubit} $\ast$multiQubit, int qubitId, int outcome)
+\begin{DoxyCompactList}\small\item\em Initialise the state vector of probability amplitudes such that one qubit is set to 'outcome' and all other qubits are in an equal superposition of zero and one. \item\end{DoxyCompactList}\item 
+void \hyperlink{qubits__debug_8h_a03b3577a891731d505bc4b879fcca9d3}{initStateDebug} (\hyperlink{structMultiQubit}{MultiQubit} $\ast$multiQubit)
+\begin{DoxyCompactList}\small\item\em Initialise the state vector of probability amplitudes to an (unphysical) state with each component of each probability amplitude a unique floating point value. \item\end{DoxyCompactList}\item 
+void \hyperlink{qubits__debug_8h_a433876ee9f3bcc54af346300f571fc3c}{initializeStateFromSingleFile} (\hyperlink{structMultiQubit}{MultiQubit} $\ast$multiQubit, char filename\mbox{[}200\mbox{]}, \hyperlink{structQuESTEnv}{QuESTEnv} env)
+\item 
+int \hyperlink{qubits__debug_8h_a793584932ae384c82e7e42db7d35d18d}{compareStates} (\hyperlink{structMultiQubit}{MultiQubit} mq1, \hyperlink{structMultiQubit}{MultiQubit} mq2, REAL precision)
+\item 
+void \hyperlink{qubits__debug_8h_a62da5b58d8ce84e6f4d24be1b872294e}{reportNodeList} (\hyperlink{structQuESTEnv}{QuESTEnv} env)
+\begin{DoxyCompactList}\small\item\em Report a list of CPU hostnames and the rank that is running on each if running with MPI enabled and an error message otherwise. \item\end{DoxyCompactList}\end{DoxyCompactItemize}
+
+
+\subsubsection{Detailed Description}
+Developer functions used for unit testing and debugging. Not part of the public API. May contain functions that are incomplete or untested. 
+
+Definition in file \hyperlink{qubits__debug_8h_source}{qubits\_\-debug.h}.
+
+\subsubsection{Function Documentation}
+\hypertarget{qubits__debug_8h_a793584932ae384c82e7e42db7d35d18d}{
+\index{qubits\_\-debug.h@{qubits\_\-debug.h}!compareStates@{compareStates}}
+\index{compareStates@{compareStates}!qubits_debug.h@{qubits\_\-debug.h}}
+\paragraph[{compareStates}]{\setlength{\rightskip}{0pt plus 5cm}int compareStates ({\bf MultiQubit} {\em mq1}, \/  {\bf MultiQubit} {\em mq2}, \/  REAL {\em precision})}\hfill}
+\label{qubits__debug_8h_a793584932ae384c82e7e42db7d35d18d}
+
+
+Definition at line 326 of file qubits.c.
+
+References ComplexArray::imag, MultiQubit::numAmps, ComplexArray::real, REAL, and MultiQubit::stateVec.
+
+
+\begin{DoxyCode}
+326                                                                  {
+327         REAL diff;
+328         int chunkSize = mq1.numAmps;
+329         for (int i=0; i<chunkSize; i++){
+330                 diff = mq1.stateVec.real[i] - mq2.stateVec.real[i];
+331                 if (diff<0) diff *= -1;
+332                 if (diff>precision) return 0;
+333                 diff = mq1.stateVec.imag[i] - mq2.stateVec.imag[i];
+334                 if (diff<0) diff *= -1;
+335                 if (diff>precision) return 0;
+336         }
+337         return 1;
+338 }
+\end{DoxyCode}
+\hypertarget{qubits__debug_8h_a433876ee9f3bcc54af346300f571fc3c}{
+\index{qubits\_\-debug.h@{qubits\_\-debug.h}!initializeStateFromSingleFile@{initializeStateFromSingleFile}}
+\index{initializeStateFromSingleFile@{initializeStateFromSingleFile}!qubits_debug.h@{qubits\_\-debug.h}}
+\paragraph[{initializeStateFromSingleFile}]{\setlength{\rightskip}{0pt plus 5cm}void initializeStateFromSingleFile ({\bf MultiQubit} $\ast$ {\em multiQubit}, \/  char {\em filename}\mbox{[}200\mbox{]}, \/  {\bf QuESTEnv} {\em env})}\hfill}
+\label{qubits__debug_8h_a433876ee9f3bcc54af346300f571fc3c}
+
+
+fix -\/-\/ format needs to work for single precision values 
+
+Definition at line 291 of file qubits.c.
+
+References MultiQubit::chunkId, ComplexArray::imag, MultiQubit::numAmps, MultiQubit::numChunks, ComplexArray::real, REAL, MultiQubit::stateVec, and syncQuESTEnv().
+
+
+\begin{DoxyCode}
+291                                                                                  
+                 {
+292         long long int chunkSize, stateVecSize;
+293         long long int indexInChunk, totalIndex;
+294 
+295         chunkSize = multiQubit->numAmps;
+296         stateVecSize = chunkSize*multiQubit->numChunks;
+297 
+298         REAL *stateVecReal = multiQubit->stateVec.real;
+299         REAL *stateVecImag = multiQubit->stateVec.imag;
+300         
+301         FILE *fp;
+302         char line[200];
+303 
+304         for (int rank=0; rank<(multiQubit->numChunks); rank++){
+305                 if (rank==multiQubit->chunkId){
+306                         fp = fopen(filename, "r");
+307                         indexInChunk = 0; totalIndex = 0;
+308                         while (fgets(line, sizeof(char)*200, fp) != NULL && total
+      Index<stateVecSize){
+309                                 if (line[0]!='#'){
+310                                         int chunkId = totalIndex/chunkSize;
+311                                         if (chunkId==multiQubit->chunkId){
+313                                                 sscanf(line, "%lf, %lf", &(stateV
+      ecReal[indexInChunk]), 
+314                                                                 &(stateVecImag[in
+      dexInChunk]));
+315                                                 indexInChunk += 1;
+316                                         }
+317                                         totalIndex += 1;
+318                                 }
+319                         }       
+320                         fclose(fp);
+321                 }
+322                 syncQuESTEnv(env);
+323         }
+324 }
+\end{DoxyCode}
+\hypertarget{qubits__debug_8h_a03b3577a891731d505bc4b879fcca9d3}{
+\index{qubits\_\-debug.h@{qubits\_\-debug.h}!initStateDebug@{initStateDebug}}
+\index{initStateDebug@{initStateDebug}!qubits_debug.h@{qubits\_\-debug.h}}
+\paragraph[{initStateDebug}]{\setlength{\rightskip}{0pt plus 5cm}void initStateDebug ({\bf MultiQubit} $\ast$ {\em multiQubit})}\hfill}
+\label{qubits__debug_8h_a03b3577a891731d505bc4b879fcca9d3}
+
+
+Initialise the state vector of probability amplitudes to an (unphysical) state with each component of each probability amplitude a unique floating point value. For debugging processes 
+\begin{DoxyParams}{Parameters}
+\item[\mbox{$\leftrightarrow$} {\em multiQubit}]object representing the set of qubits to be initialised \end{DoxyParams}
+
+
+Definition at line 259 of file qubits.c.
+
+References MultiQubit::chunkId, ComplexArray::imag, MultiQubit::numAmps, ComplexArray::real, REAL, and MultiQubit::stateVec.
+
+
+\begin{DoxyCode}
+260 {
+261         long long int chunkSize;
+262         long long int index;
+263 
+264         // dimension of the state vector
+265         chunkSize = multiQubit->numAmps;
+266 
+267         // Can't use multiQubit->stateVec as a private OMP var
+268         REAL *stateVecReal = multiQubit->stateVec.real;
+269         REAL *stateVecImag = multiQubit->stateVec.imag;
+270 
+271         REAL chunkOffset = (2.0*chunkSize*multiQubit->chunkId)/10.0;
+272 
+273         // initialise the state to |0000..0000>
+274 # ifdef _OPENMP
+275 # pragma omp parallel \
+276         default  (none) \
+277         shared   (chunkSize, stateVecReal, stateVecImag, chunkOffset) \
+278         private  (index) 
+279 # endif
+280         {
+281 # ifdef _OPENMP
+282                 # pragma omp for schedule (static)
+283 # endif
+284                 for (index=0; index<chunkSize; index++) {
+285                         stateVecReal[index] = chunkOffset + (index*2.0)/10.0;
+286                         stateVecImag[index] = chunkOffset + (index*2.0+1.0)/10.0;
+      
+287                 }
+288         }
+289 }
+\end{DoxyCode}
+\hypertarget{qubits__debug_8h_a7169fd0442cbc3418f3fac4d13363ca2}{
+\index{qubits\_\-debug.h@{qubits\_\-debug.h}!initStateOfSingleQubit@{initStateOfSingleQubit}}
+\index{initStateOfSingleQubit@{initStateOfSingleQubit}!qubits_debug.h@{qubits\_\-debug.h}}
+\paragraph[{initStateOfSingleQubit}]{\setlength{\rightskip}{0pt plus 5cm}void initStateOfSingleQubit ({\bf MultiQubit} $\ast$ {\em multiQubit}, \/  int {\em qubitId}, \/  int {\em outcome})}\hfill}
+\label{qubits__debug_8h_a7169fd0442cbc3418f3fac4d13363ca2}
+
+
+Initialise the state vector of probability amplitudes such that one qubit is set to 'outcome' and all other qubits are in an equal superposition of zero and one. 
+\begin{DoxyParams}{Parameters}
+\item[\mbox{$\leftrightarrow$} {\em multiQubit}]object representing the set of qubits to be initialised \item[\mbox{$\leftarrow$} {\em qubitId}]id of qubit to set to state 'outcome' \item[\mbox{$\leftarrow$} {\em value}]of qubit 'qubitId' \end{DoxyParams}
+
+
+Definition at line 212 of file qubits.c.
+
+References MultiQubit::chunkId, DEBUG, extractBit(), ComplexArray::imag, MultiQubit::numAmps, MultiQubit::numChunks, ComplexArray::real, REAL, and MultiQubit::stateVec.
+
+
+\begin{DoxyCode}
+213 {
+214         long long int chunkSize, stateVecSize;
+215         long long int index;
+216         int bit;
+217         const long long int chunkId=multiQubit->chunkId;
+218 
+219         // dimension of the state vector
+220         chunkSize = multiQubit->numAmps;
+221         stateVecSize = chunkSize*multiQubit->numChunks;
+222         REAL normFactor = 1.0/sqrt(stateVecSize/2);
+223 
+224         // Can't use multiQubit->stateVec as a private OMP var
+225         REAL *stateVecReal = multiQubit->stateVec.real;
+226         REAL *stateVecImag = multiQubit->stateVec.imag;
+227 
+228         // initialise the state to |0000..0000>
+229 # ifdef _OPENMP
+230 # pragma omp parallel \
+231         default  (none) \
+232         shared   (chunkSize, stateVecReal, stateVecImag, normFactor, qubitId, out
+      come) \
+233         private  (index, bit) 
+234 # endif
+235         {
+236 # ifdef _OPENMP
+237                 # pragma omp for schedule (static)
+238 # endif
+239                 for (index=0; index<chunkSize; index++) {
+240                         bit = extractBit(qubitId, index+chunkId*chunkSize);
+241                         if (bit==outcome) {
+242                                 stateVecReal[index] = normFactor;
+243                                 stateVecImag[index] = 0.0;
+244                         } else {
+245                                 stateVecReal[index] = 0.0;
+246                                 stateVecImag[index] = 0.0;
+247                         }
+248                 }
+249         }
+250         if (DEBUG) printf("COMPLETED INIT\n");
+251 }
+\end{DoxyCode}
+\hypertarget{qubits__debug_8h_a62da5b58d8ce84e6f4d24be1b872294e}{
+\index{qubits\_\-debug.h@{qubits\_\-debug.h}!reportNodeList@{reportNodeList}}
+\index{reportNodeList@{reportNodeList}!qubits_debug.h@{qubits\_\-debug.h}}
+\paragraph[{reportNodeList}]{\setlength{\rightskip}{0pt plus 5cm}void reportNodeList ({\bf QuESTEnv} {\em env})}\hfill}
+\label{qubits__debug_8h_a62da5b58d8ce84e6f4d24be1b872294e}
+
+
+Report a list of CPU hostnames and the rank that is running on each if running with MPI enabled and an error message otherwise. For debugging purposes. 
+\begin{DoxyParams}{Parameters}
+\item[\mbox{$\leftarrow$} {\em env}]object representing the execution environment. A single instance is used for each program \end{DoxyParams}
+
+
+Definition at line 57 of file qubits\_\-env\_\-local.c.
+
+References QuESTEnv::rank.
+
+
+\begin{DoxyCode}
+57                                  {
+58         printf("Hostname unknown: running locally\n");
+59 }
+\end{DoxyCode}
