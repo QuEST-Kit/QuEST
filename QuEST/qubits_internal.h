@@ -110,12 +110,6 @@ int validateUnitVector(REAL ux, REAL uy, REAL uz);
 
 // Helper functions in qubits_env_local.c and qubits_env_mpi.c that aren't part of the public API
 
-/**
- * Rotate a single qubit by {{1,0},{0,p}} where p is a phase term determined by the type argument
- * @param[in,out] multiQubit object representing the set of qubits
- * @param[in] targetQubit qubit to rotate
- * @param[in] type the type of phase gate to apply -- one of {SIGMA_Z, S_GATE, T_GATE}
- * */
 void phaseGate(MultiQubit multiQubit, const int targetQubit, enum phaseGateType type);
 
 void exitWithError(int errorCode, const char *func);

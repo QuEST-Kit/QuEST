@@ -151,12 +151,12 @@ REAL calcTotalProbability(MultiQubit multiQubit){
 
 /** Returns whether a given chunk in position chunkId is in the upper or lower half of
 a block.
-
-@param[in] chunkId id of chunk in state vector
-@param[in] chunkSize number of amps in chunk
-@param[in] targetQubit qubit being rotated 
-@return 1: chunk is in upper half of block, 0: chunk is in lower half of block 
-*/
+ * 
+ * @param[in] chunkId id of chunk in state vector
+ * @param[in] chunkSize number of amps in chunk
+ * @param[in] targetQubit qubit being rotated 
+ * @return 1: chunk is in upper half of block, 0: chunk is in lower half of block 
+ */
 //! fix -- is this the same as isChunkToSkip?
 static int chunkIsUpper(int chunkId, long long int chunkSize, int targetQubit)
 {       
@@ -167,18 +167,19 @@ static int chunkIsUpper(int chunkId, long long int chunkSize, int targetQubit)
 }
 
 /** Get rotation values for a given chunk
-@param[in] chunkIsUpper 1: chunk is in upper half of block, 0: chunk is in lower half
-
-@param[out] rot1, rot2 rotation values to use, allocated for upper/lower such that
-@verbatim
+ * @param[in] chunkIsUpper 1: chunk is in upper half of block, 0: chunk is in lower half
+ * 
+ * @param[out] rot1, rot2 rotation values to use, allocated for upper/lower such that
+ * @verbatim
 stateUpper = rot1 * stateUpper + conj(rot2)  * stateLower
 @endverbatim
-or
-@verbatim
+ * or
+ * @verbatim
 stateLower = rot1 * stateUpper + conj(rot2)  * stateLower
 @endverbatim
-@param[in] alpha, beta initial rotation values 
-*/
+ *
+ * @param[in] alpha, beta initial rotation values 
+ */
 static void getRotAngle(int chunkIsUpper, Complex *rot1, Complex *rot2, Complex alpha, Complex beta)
 {
         if (chunkIsUpper){
@@ -192,18 +193,18 @@ static void getRotAngle(int chunkIsUpper, Complex *rot1, Complex *rot2, Complex 
 }
 
 /** Get rotation values for a given chunk given a unitary matrix
-@param[in] chunkIsUpper 1: chunk is in upper half of block, 0: chunk is in lower half
-
-@param[out] rot1, rot2 rotation values to use, allocated for upper/lower such that
-@verbatim
+ * @param[in] chunkIsUpper 1: chunk is in upper half of block, 0: chunk is in lower half
+ * 
+ * @param[out] rot1, rot2 rotation values to use, allocated for upper/lower such that
+ * @verbatim
 stateUpper = rot1 * stateUpper + conj(rot2)  * stateLower
 @endverbatim
-or
-@verbatim
+ * or
+ * @verbatim
 stateLower = rot1 * stateUpper + conj(rot2)  * stateLower
 @endverbatim
-@param[in] u unitary matrix operation
-*/
+ * @param[in] u unitary matrix operation
+ */
 static void getRotAngleFromUnitaryMatrix(int chunkIsUpper, Complex *rot1, Complex *rot2, ComplexMatrix2 u)
 {
         if (chunkIsUpper){
@@ -216,15 +217,14 @@ static void getRotAngleFromUnitaryMatrix(int chunkIsUpper, Complex *rot1, Comple
 }
 
 /** get position of corresponding chunk, holding values required to
-update values in my chunk (with chunkId) when rotating targetQubit.
-
-@param[in] chunkIsUpper 1: chunk is in upper half of block, 0: chunk is in lower half
-@param[in] chunkId id of chunk in state vector
-@param[in] chunkSize number of amps in chunk
-@param[in] targetQubit qubit being rotated 
-@return chunkId of chunk required to rotate targetQubit 
-*/
-
+ * update values in my chunk (with chunkId) when rotating targetQubit.
+ * 
+ * @param[in] chunkIsUpper 1: chunk is in upper half of block, 0: chunk is in lower half
+ * @param[in] chunkId id of chunk in state vector
+ * @param[in] chunkSize number of amps in chunk
+ * @param[in] targetQubit qubit being rotated 
+ * @return chunkId of chunk required to rotate targetQubit 
+ */
 static int getChunkPairId(int chunkIsUpper, int chunkId, long long int chunkSize, int targetQubit)
 {
         long long int sizeHalfBlock = 1LL << (targetQubit);
@@ -237,13 +237,12 @@ static int getChunkPairId(int chunkIsUpper, int chunkId, long long int chunkSize
 }
 
 /** return whether the current qubit rotation will use
-blocks that fit within a single chunk.
-
-@param[in] chunkSize number of amps in chunk
-@param[in] targetQubit qubit being rotated 
-@return 1: one chunk fits in one block 0: chunk is larger than block
-*/
-
+ * blocks that fit within a single chunk.
+ * 
+ * @param[in] chunkSize number of amps in chunk
+ * @param[in] targetQubit qubit being rotated 
+ * @return 1: one chunk fits in one block 0: chunk is larger than block
+ */
 static int halfMatrixBlockFitsInChunk(long long int chunkSize, int targetQubit)
 {
         long long int sizeHalfBlock = 1LL << (targetQubit);
@@ -652,16 +651,15 @@ void hadamard(MultiQubit multiQubit, const int targetQubit)
 
 
 /** Find chunks to skip when calculating probability of qubit being zero.
-When calculating probability of a bit q being zero,
-sum up 2^q values, then skip 2^q values, etc. This function finds if an entire chunk
-is in the range of values to be skipped
-
-@param[in] chunkId id of chunk in state vector
-@param[in] chunkSize number of amps in chunk
-@param[in] measureQubi qubit being measured
-@return int -- 1: skip, 0: don't skip
+ * When calculating probability of a bit q being zero,
+ * sum up 2^q values, then skip 2^q values, etc. This function finds if an entire chunk
+ * is in the range of values to be skipped
+ * 
+ * @param[in] chunkId id of chunk in state vector
+ * @param[in] chunkSize number of amps in chunk
+ * @param[in] measureQubi qubit being measured
+ * @return int -- 1: skip, 0: don't skip
 */
-
 static int isChunkToSkipInFindPZero(int chunkId, long long int chunkSize, int measureQubit)
 {
         long long int sizeHalfBlock = 1LL << (measureQubit);
