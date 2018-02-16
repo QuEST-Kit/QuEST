@@ -156,7 +156,7 @@ int main (int narg, char** varg) {
         if (env.rank==0) printf("VERIFICATION: total probability=%.14f\n", totalProbability);
 	if (env.rank==0) printf("Performing 4 qubit phase gate\n");	
     int controlQubits[4] = {0,2,3,4};
-	quadCPhaseGate(multiQubit, controlQubits, 4);
+	multiControlledPhaseGate(multiQubit, controlQubits, 4);
 	totalProbability = calcTotalProbability(multiQubit);
         if (env.rank==0) printf("VERIFICATION: total probability=%.14f\n", totalProbability);
 	
