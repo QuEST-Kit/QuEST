@@ -178,7 +178,7 @@ void initStatePlus (MultiQubit *multiQubit)
 	// dimension of the state vector
 	chunkSize = multiQubit->numAmps;
 	stateVecSize = chunkSize*multiQubit->numChunks;
-	REAL normFactor = 1.0/sqrt(stateVecSize);
+	REAL normFactor = 1.0/sqrt((REAL)stateVecSize);
 
 	// Can't use multiQubit->stateVec as a private OMP var
 	REAL *stateVecReal = multiQubit->stateVec.real;
@@ -219,7 +219,7 @@ void initStateOfSingleQubit(MultiQubit *multiQubit, int qubitId, int outcome)
 	// dimension of the state vector
 	chunkSize = multiQubit->numAmps;
 	stateVecSize = chunkSize*multiQubit->numChunks;
-	REAL normFactor = 1.0/sqrt(stateVecSize/2);
+	REAL normFactor = 1.0/sqrt((REAL)stateVecSize/2.0);
 
 	// Can't use multiQubit->stateVec as a private OMP var
 	REAL *stateVecReal = multiQubit->stateVec.real;
