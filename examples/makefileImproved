@@ -10,7 +10,7 @@
 #
 
 # COMPILER options: {GNU, INTEL}
-COMPILER = INTEL
+COMPILER = GNU
 
 # EXECUTABLE TO GENERATE
 EXE = demo
@@ -19,11 +19,11 @@ EXE = demo
 # This makefile expects all user sources to be in the root directory.
 # If using more than one source, separate by spaces eg 
 # MY_C_SOURCES = basicTemplate helperFunctions
-MY_C_SOURCES = runTests
+MY_C_SOURCES = basicTemplate
 
 # ENABLE DISTRIBUTED PROCESSING (ALLOWS MULTIPLE NODES)
 # On: 1, Off: 0
-USE_MPI=1
+USE_MPI=0
 
 # ENABLE MULTIPLE THREADS PER PROCESS (RECOMMENDED)
 # On: 1, Off: 0
