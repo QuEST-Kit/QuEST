@@ -25,6 +25,7 @@ const char* errorCodes[] = {
     "Invalid system size. Cannot print output for systems greater than 5 qubits.", // 7
     "Can't collapse to state with zero probability." // 8
     "Invalid number of qubits." // 9
+    "Invalid measurement outcome -- must be either 0 or 1." // 10
 };
 
 static int extractBit (const int locationOfBitFromRight, const long long int theEncodedNumber);
@@ -178,7 +179,7 @@ void initStatePlus (MultiQubit *multiQubit)
 	// dimension of the state vector
 	chunkSize = multiQubit->numAmps;
 	stateVecSize = chunkSize*multiQubit->numChunks;
-	REAL normFactor = 1.0/sqrt(stateVecSize);
+	REAL normFactor = 1.0/sqrt((REAL)stateVecSize);
 
 	// Can't use multiQubit->stateVec as a private OMP var
 	REAL *stateVecReal = multiQubit->stateVec.real;
@@ -219,7 +220,7 @@ void initStateOfSingleQubit(MultiQubit *multiQubit, int qubitId, int outcome)
 	// dimension of the state vector
 	chunkSize = multiQubit->numAmps;
 	stateVecSize = chunkSize*multiQubit->numChunks;
-	REAL normFactor = 1.0/sqrt(stateVecSize/2);
+	REAL normFactor = 1.0/sqrt((REAL)stateVecSize/2.0);
 
 	// Can't use multiQubit->stateVec as a private OMP var
 	REAL *stateVecReal = multiQubit->stateVec.real;
