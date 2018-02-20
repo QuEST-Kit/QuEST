@@ -21,7 +21,7 @@ When applying a gate, we pass along the quantum register.
 ```C
 hadamard(qubits, 0);
 controlledNot(qubits, 0, 1);
-rotateY(qubits, 2);
+rotateY(qubits, 2, .1);
 ```
 
 Some gates allow us to specify a general number of control qubits
