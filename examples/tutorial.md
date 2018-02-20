@@ -128,11 +128,23 @@ closeQuESTEnv(env);
 return 0;
 ```
 
-Executing all the code above simulates the below circiut.
+Executing all the [code above](examples/tutorial_example.c) simulates the below circiut
 
 <img src="https://qtechtheory.org/wp-content/uploads/2018/02/github_circuit.png" alt="A quantum circuit" width=400px >
 
+and after compiling (see section below), gives psuedo-random output
 
+> Probability amplitude of |111>: 0.498751
+> Probability of qubit 2 being in state 1: 0.749178
+> Qubit 0 was measured in state 1
+> Qubit 2 collapsed to 1 with probability 0.998752
+
+> Probability amplitude of |111>: 0.498751
+> Probability of qubit 2 being in state 1: 0.749178
+> Qubit 0 was measured in state 0
+> Qubit 2 collapsed to 1 with probability 0.499604
+
+> standby for seeding instructions
 
 ----------------------------
 
@@ -186,6 +198,7 @@ To control how many threads your code uses, modify `OMP_NUM_THREADS`. You should
 export OMP_NUM_THREADS=8
 ./myExecutable
 ```
+QuEST will automatically allocate work between the given number of threads to speedup your simulation.
 
 Simply set `USE_MPI=1` in the makefile above to compile for distributed simulation.
 
@@ -193,6 +206,11 @@ Simply set `USE_MPI=1` in the makefile above to compile for distributed simulati
 
 ---------------------
 
-Running with SLURM and PBS
+Running QuEST on supercomputers
 =======================
 
+There are no special requirements for running QuEST on supercomputers, or through job submission systems. Just call `./myExecutable` as you would any other binary.
+
+Be sure to set `OMP_NUM_THREADS` appropriately, and that you target the hardware your job will ultimately run on when compiling (otherwise simply compile at runtime using the makefile, just as above).
+
+For example, the above 
