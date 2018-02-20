@@ -1,4 +1,39 @@
 
+Coding
+======
+
+Independent of which platform you'll run your simulation on (multicore machine, distributed machines, a GPU), your QuEST code will look the same.
+
+> Currently, a limited set of functions are available on the GPU
+
+A simple simulation of a circuit looks like
+```C
+#include "path/to/QuEST/qubits.h"
+
+int main(int narg, char *varg[]) {
+
+  // load QuEST
+  QuESTEnv env;
+  MultiQubit qubits; 
+  initQuESTEnv(&env);
+  
+  // allocate 2 qubits to |00>
+  createMultiQubit(&qubits, 2, env);
+  initStateZero(&qubits);
+	
+  // apply circuit
+  hadamard(qubits, 0);
+  controlledNot(qubits, 0, 1);
+  measure(qubits, 1);
+	
+  // unload QuEST
+  destroyMultiQubit(qubits, env); 
+  closeQuESTEnv(env);
+  return 0;
+}
+```
+
+Let's walk through a more sophisticated circuit.
 
 We first construct a quest environment, which abstracts away all the MPI and GPU preparation.
 ```C
@@ -88,3 +123,7 @@ return 0;
 
 Executing all the code above simulates the below circiut.
 ![Circuit](https://qtechtheory.org/wp-content/uploads/2018/02/github_circuit.png)
+
+
+Compiling
+======
