@@ -2,7 +2,7 @@
 Coding
 ======
 
-Independent of which platform you'll run your simulation on (multicore machine, distributed machines, a GPU), your QuEST code will look the same.
+Independent of which platform you'll run your simulation on (multicore machine, distributed machines, a GPU), your QuEST code will look the same. View the API [here](https://aniabrown.github.io/QuEST/qubits_8h.html)
 
 > Currently, a limited set of functions are available on the GPU
 
