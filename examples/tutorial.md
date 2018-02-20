@@ -14,10 +14,10 @@ int main(int narg, char *varg[]) {
 
   // load QuEST
   QuESTEnv env;
-  MultiQubit qubits; 
   initQuESTEnv(&env);
   
-  // allocate 2 qubits to |00>
+  // create 2 qubits in the zero state
+  MultiQubit qubits; 
   createMultiQubit(&qubits, 2, env);
   initStateZero(&qubits);
 	
