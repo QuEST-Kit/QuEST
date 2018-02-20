@@ -4,7 +4,7 @@ Coding
 
 Independent of which platform you'll run your simulation on (multicore machine, distributed machines, a GPU), your QuEST code will look the same. View the API [here](https://aniabrown.github.io/QuEST/qubits_8h.html)
 
-> Currently, a limited set of functions are available on the GPU
+> Currently, a limited set of functions are available on the GPU, listed [here](https://aniabrown.github.io/QuEST_GPU/qubits_8h.html)
 
 A simple simulation of a circuit looks like
 ```C
@@ -129,7 +129,9 @@ return 0;
 ```
 
 Executing all the code above simulates the below circiut.
-![Circuit](https://qtechtheory.org/wp-content/uploads/2018/02/github_circuit.png)
+
+<img src="https://qtechtheory.org/wp-content/uploads/2018/02/github_circuit.png" alt="A quantum circuit" width=400px >
+
 
 
 ----------------------------
@@ -137,10 +139,60 @@ Executing all the code above simulates the below circiut.
 Compiling
 ======
 
-TODO
+To compile, copy the [makefile](examples/makefileImproved) to the same folder as your code.
 
-mention
+> Rename the file to `makefile` if necessary
+
+Edit the makefile, letting `MY_C_SOURCES` be a space-separated list of your source files, `EXE` be the name of the output executable, and `QUEST_DIR` point to the folder which contains `qubits.h`. 
 
 ```bash
-export OMP_NUM_THREADS=8
+# COMPILER options: {GNU, INTEL}
+COMPILER = GNU
+
+# EXECUTABLE TO GENERATE
+EXE = myExecutable
+
+# USER SOURCE FILES
+MY_C_SOURCES = myCode1 myCode2 myCode3
+
+# ENABLE DISTRIBUTED PROCESSING (ALLOWS MULTIPLE NODES)
+USE_MPI=0
+
+# ENABLE MULTIPLE THREADS PER PROCESS (RECOMMENDED)
+USE_OPENMP=1
+
+# PATH TO QUEST LIBRARY SOURCES FROM ROOT DIRECTORY
+QUEST_DIR = QuEST
 ```
+You can then compile your code by calling
+```bash
+make
+```
+at the terminal, in the directory of your code. For the above example, this performs
+```bash
+gcc -O2 -std=c99 -mavx -Wall -fopenmp -c ../QuEST_new/QuEST/qubits.c
+gcc -O2 -std=c99 -mavx -Wall -fopenmp -c ../QuEST_new/QuEST/mt19937ar.c
+gcc -O2 -std=c99 -mavx -Wall -fopenmp -c myCode1.c
+gcc -O2 -std=c99 -mavx -Wall -fopenmp -c myCode2.c
+gcc -O2 -std=c99 -mavx -Wall -fopenmp -c ../QuEST_new/QuEST/qubits_env_local.c
+gcc -O2 -std=c99 -mavx -Wall -fopenmp -o myExecutable qubits.o mt19937ar.o myCode1.o myCode2.o qubits_env_local.o -lm
+```
+You can then call your code
+```bash
+./myExecutable
+```
+To control how many threads your code uses, modify `OMP_NUM_THREADS`. You should set it to the number of available cores on your machine
+```bash
+export OMP_NUM_THREADS=8
+./myExecutable
+```
+
+Simply set `USE_MPI=1` in the makefile above to compile for distributed simulation.
+
+> For the moment, compiling for GPU use requires C++ source code (that your files are C++ compatible and have the `.cpp` extension). An alternate makefile is provided [here](https://github.com/aniabrown/QuEST_GPU/blob/master/examples/makefile).
+
+---------------------
+
+Running with SLURM and PBS
+=======================
+
