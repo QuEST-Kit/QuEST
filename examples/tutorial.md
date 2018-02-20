@@ -131,3 +131,11 @@ Executing all the code above simulates the below circiut.
 
 Compiling
 ======
+
+TODO
+
+mention
+
+```bash
+export OMP_NUM_THREADS=8
+```
