@@ -33,6 +33,8 @@ int main(int narg, char *varg[]) {
 }
 ```
 
+----------------------
+
 Let's walk through a more sophisticated circuit.
 
 We first construct a quest environment, which abstracts away all the MPI and GPU preparation.
