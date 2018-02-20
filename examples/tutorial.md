@@ -144,7 +144,7 @@ and after compiling (see section below), gives psuedo-random output
 > Qubit 0 was measured in state 0
 > Qubit 2 collapsed to 1 with probability 0.499604
 
-> standby for seeding instructions
+> standby for seeding instructions!
 
 ----------------------------
 
@@ -200,7 +200,7 @@ export OMP_NUM_THREADS=8
 ```
 QuEST will automatically allocate work between the given number of threads to speedup your simulation.
 
-Simply set `USE_MPI=1` in the makefile above to compile for distributed simulation.
+Simply set `USE_MPI=1` in the makefile above to compile for distributed simulation, and QuEST will spread the quantum state vector between available nodes.
 
 > For the moment, compiling for GPU use requires C++ source code (that your files are C++ compatible and have the `.cpp` extension). An alternate makefile is provided [here](https://github.com/aniabrown/QuEST_GPU/blob/master/examples/makefile).
 
@@ -213,4 +213,46 @@ There are no special requirements for running QuEST on supercomputers, or throug
 
 Be sure to set `OMP_NUM_THREADS` appropriately, and that you target the hardware your job will ultimately run on when compiling (otherwise simply compile at runtime using the makefile, just as above).
 
-For example, the above 
+For example, the [above code](examples/tutorial_example.c) can be split over 4 MPI nodes (each with 8 cores) by setting `USE_MPI=1` (and `USE_OPENMP=1`) in the makefile, and with a SLURM submission script like
+```bash
+#SBATCH --nodes=4
+#SBATCH --ntasks-per-node=1
+
+module purge
+module load mvapich2
+
+make clean
+make
+
+export OMP_NUM_THREADS=8
+mpirun ./myExecutable
+```
+or a PBS submission script like
+```bash
+#PBS -l select=4:ncpus=8
+
+make clean
+make
+
+export OMP_NUM_THREADS=8
+aprun -n 4 -d 8 -cc numa_node ./myExecutable
+```
+
+Running QuEST on a GPU partition is similarly easy (though currently requiring an [alternate makefile](https://github.com/aniabrown/QuEST_GPU/blob/master/examples/makefile)) in SLURM
+```
+#SBATCH --nodes=1
+#SBATCH --ntasks-per-node=1
+#SBATCH --gres=gpu:1 
+
+#SBATCH --partition=gpu    ## name may vary
+
+module purge
+module load cuda  ## name may vary
+
+make clean
+make
+
+./myExecutable
+```
+
+On each platform, there is no change to our source code or our QuEST interface. We simply recompile, and QuEST will utilise the available hardware (a GPU, shared-memory or distributed CPUs) to speedup our code.
