@@ -87,3 +87,4 @@ return 0;
 ```
 
 Executing all the code above simulates the below circiut.
+![Circuit](https://qtechtheory.org/wp-content/uploads/2018/02/github_circuit.png)
