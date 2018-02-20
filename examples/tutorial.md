@@ -63,7 +63,7 @@ rotateY(qubits, 2, .1);
 
 Some gates allow us to specify a general number of control qubits
 ```C
-multiControlledPhaseGate(qubits, {0, 1, 2}, 3);
+multiControlledPhaseGate(qubits, (int []){0, 1, 2}, 3);
 ```
 
 We can specify general single-qubit unitary operations as 2x2 matrices
@@ -84,7 +84,9 @@ compactUnitary(qubits, 1, a, b);
 ```
 or even more compactly, as a rotation around an arbitrary axis on the Bloch-sphere
 ```C
-rotateAroundAxis(qubits, 2, 3.14/2, {1,0,0});
+Vector v;
+v.x = 1; v.y = 0; v.z = 0;
+rotateAroundAxis(qubits, 2, 3.14/2, v);
 ```
 
 We can controlled-apply general unitaries
@@ -93,27 +95,30 @@ controlledCompactUnitary(qubits, 0, 1, a, b);
 ```
 even with multiple control qubits
 ```C
-multiControlledUnitary(qubits, {0, 1}, 2, 2, u);
+multiControlledUnitary(qubits, (int []){0, 1}, 2, 2, u);
 ```
 
-What has this done to the probability of the state |111> = |7>?
+What has this done to the probability of the basis state |111> = |7>?
 ```C
-REAL prob7 = getProbEl(qubits, 7);
+REAL prob = getProbEl(qubits, 7);
+printf("Probability amplitude of |111>: %f\n", prob);
 ```
 
 How probable is measuring our final qubit (2) in outcome `1`?
 ```C
-REAL prob = findProbabilityOfOutcome(qubits, 2, 1);
+prob = findProbabilityOfOutcome(qubits, 2, 1);
+printf("Probability of qubit 2 being in state 1: %f\n", prob);
 ```
 
 Let's measure the first qubit, collapsing it to the classical 0, 1 basis
 ```C
-measure(qubits, 0);
+int outcome = measure(qubits, 0);
+printf("Qubit 0 was measured in state %d\n", outcome);
 ```
 and now measure our final qubit, while also learning of the probability of its outcome.
 ```
-REAL prob;
-int outcome = measureWithStats(qubits, 2, &prob);
+outcome = measureWithStats(qubits, 2, &prob);
+printf("Qubit 2 collapsed to %d with probability %f\n", outcome, prob);
 ```
 
 At the conclusion of our circuit, we should free up our state-vector.
