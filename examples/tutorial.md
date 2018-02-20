@@ -11,7 +11,6 @@ We then create a quantum register, in this case of 3 qubits.
 MultiQubit qubits; 
 createMultiQubit(&qubits, 3, env);
 ```
-
 and set it to be in the zero state.
 ```C
 initStateZero(&qubits);
@@ -46,6 +45,10 @@ a.real = .5; a.imag =  .5;
 b.real = .5; b.imag = -.5;
 compactUnitary(qubits, 0, a, b);
 ```
+or even more compactly, as a rotation around an arbitrary axis on the Bloch-sphere
+```C
+rotateAroundAxis(qubits, 0, 3.14/2, {1,0,0});
+```
 
 We can controlled-apply general unitaries
 ```C
@@ -56,3 +59,31 @@ even with multiple control qubits
 multiControlledUnitary(qubits, {0, 1}, 2, 2, u);
 ```
 
+What has this done to the probability of the state |111> = |7>?
+```C
+REAL prob7 = getProbEl(qubits, 7);
+```
+
+How probable is measuring our final qubit (2) in outcome `1`?
+```C
+REAL prob = findProbabilityOfOutcome(qubits, 2, 1);
+```
+
+Let's measure the first qubit, collapsing it to the classical 0, 1 basis
+```C
+measure(qubits, 0);
+```
+and now measure our final qubit, while also learning of the probability of its outcome.
+```
+REAL prob;
+int outcome = measureWithStats(qubits, 2, &prob);
+```
+
+At the conclusion of our circuit, we should free up our state-vector.
+```C
+destroyMultiQubit(qubits, env); 
+closeQuESTEnv(env);
+return 0;
+```
+
+Executing all the code above simulates the below circiut.
