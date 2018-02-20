@@ -43,11 +43,11 @@ or more compactly, foregoing the global phase factor,
 Complex a, b;
 a.real = .5; a.imag =  .5;
 b.real = .5; b.imag = -.5;
-compactUnitary(qubits, 0, a, b);
+compactUnitary(qubits, 1, a, b);
 ```
 or even more compactly, as a rotation around an arbitrary axis on the Bloch-sphere
 ```C
-rotateAroundAxis(qubits, 0, 3.14/2, {1,0,0});
+rotateAroundAxis(qubits, 2, 3.14/2, {1,0,0});
 ```
 
 We can controlled-apply general unitaries
