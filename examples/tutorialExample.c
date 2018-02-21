@@ -1,17 +1,37 @@
 #include <stdio.h>
-#include "../QuEST_new/QuEST/qubits.h"
+#include "QuEST/qubits.h"
 
 int main (int narg, char *varg[]) {
 
 	/*
-	 * PREPARE QuEST
+	 * PREPARE QuEST environment
+     * (Required only once per program)
 	 */
 	
 	QuESTEnv env;
 	initQuESTEnv(&env);
+
+    if (env.rank==0){
+        printf("-------------------------------------------------------\n");
+        printf("Running QuEST tutorial:\n\t Basic circuit involving a system of 3 qubits.\n");
+        printf("-------------------------------------------------------\n");
+    }
+
+	/*
+	 * PREPARE QUBIT SYSTEM
+	 */
+
 	MultiQubit qubits; 
 	createMultiQubit(&qubits, 3, env);
 	initStateZero(&qubits);
+
+
+	/*
+	 * REPORT SYSTEM AND ENVIRONMENT
+	 */
+    if (env.rank==0) printf("\nThis is our environment:\n");
+    reportMultiQubitParams(qubits);
+    reportQuESTEnv(env);
 	
 	/*
 	 * APPLY CIRCUIT
@@ -43,17 +63,19 @@ int main (int narg, char *varg[]) {
 	
 	multiControlledUnitary(qubits, (int []){0, 1}, 2, 2, u);
 	
+    if (env.rank==0) printf("\nCircuit output:\n");
+
 	REAL prob = getProbEl(qubits, 7);
-	printf("Probability amplitude of |111>: %f\n", prob);
+	if (env.rank==0) printf("Probability amplitude of |111>: %f\n", prob);
 	
 	prob = findProbabilityOfOutcome(qubits, 2, 1);
-	printf("Probability of qubit 2 being in state 1: %f\n", prob);
+	if (env.rank==0) printf("Probability of qubit 2 being in state 1: %f\n", prob);
 	
 	int outcome = measure(qubits, 0);
-	printf("Qubit 0 was measured in state %d\n", outcome);
+	if (env.rank==0) printf("Qubit 0 was measured in state %d\n", outcome);
 	
 	outcome = measureWithStats(qubits, 2, &prob);
-	printf("Qubit 2 collapsed to %d with probability %f\n", outcome, prob);
+	if (env.rank==0) printf("Qubit 2 collapsed to %d with probability %f\n", outcome, prob);
 	
 	
 	/*
@@ -61,6 +83,12 @@ int main (int narg, char *varg[]) {
 	 */
 	
 	destroyMultiQubit(qubits, env); 
+
+
+	/*
+	 * CLOSE QUEST ENVIRONMET
+     * (Required once at end of program)
+	 */
 	closeQuESTEnv(env);
 	return 0;
 }

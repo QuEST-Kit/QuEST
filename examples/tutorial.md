@@ -137,7 +137,7 @@ closeQuESTEnv(env);
 return 0;
 ```
 
-Executing all the [code above](tutorial_example.c) simulates the below circiut
+Executing all the [code above](tutorialExample.c) simulates the below circiut
 
 <img src="https://qtechtheory.org/wp-content/uploads/2018/02/github_circuit.png" alt="A quantum circuit" width=400px >
 
@@ -225,7 +225,7 @@ There are no special requirements for running QuEST through job submission syste
 
 Be sure to set `OMP_NUM_THREADS` appropriately, and that you target the hardware your job will ultimately run on when compiling (otherwise simply compile at runtime using the makefile, just as above).
 
-For example, the [above code](tutorial_example.c) can be split over 4 MPI nodes (each with 8 cores) by setting `USE_MPI=1` (and `USE_OPENMP=1`) in the makefile, and with a SLURM submission script like
+For example, the [above code](tutorialExample.c) can be split over 4 MPI nodes (each with 8 cores) by setting `USE_MPI=1` (and `USE_OPENMP=1`) in the makefile, and with a SLURM submission script like
 ```bash
 #SBATCH --nodes=4
 #SBATCH --ntasks-per-node=1
