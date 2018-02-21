@@ -13,7 +13,7 @@ Independent of which platform you'll run your simulation on (multicore machine, 
 
 > Currently, a limited set of functions are available on the GPU, listed [here](https://aniabrown.github.io/QuEST_GPU/qubits_8h.html)
 
-A simple simulation of a circuit looks like
+A simulation of a very simple circuit looks like
 ```C
 #include "path/to/QuEST/qubits.h"
 
@@ -39,6 +39,8 @@ int main(int narg, char *varg[]) {
   return 0;
 }
 ```
+though of course this doesn't output anything!
+
 
 ----------------------
 
