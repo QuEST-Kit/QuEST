@@ -1,3 +1,6 @@
+// Distributed under MIT licence. See https://github.com/aniabrown/QuEST/blob/master/LICENCE.txt 
+// for details 
+
 /** @file qubits.c
  * The core of the QuEST Library.
  */

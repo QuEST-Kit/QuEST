@@ -1,3 +1,6 @@
+// Distributed under MIT licence. See https://github.com/aniabrown/QuEST/blob/master/LICENCE.txt 
+// for details 
+
 /** @file
 An implementation of the API in qubits.h for an MPI environment.
 */
