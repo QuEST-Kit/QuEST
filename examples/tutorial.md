@@ -267,3 +267,10 @@ make
 ```
 
 On each platform, there is no change to our source code or our QuEST interface. We simply recompile, and QuEST will utilise the available hardware (a GPU, shared-memory or distributed CPUs) to speedup our code.
+
+Note that parallelising with MPI will mean all code in your source file will be repeated on every node. To execute some code (e.g. printing) only on one node, do
+```C
+if (env.rank == 0)
+    printf("Only one node executes this print!");
+```
+Such conditions are valid and always satisfied in code run on a single node.
