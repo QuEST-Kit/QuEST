@@ -33,7 +33,7 @@ multiControlledUnitary(qureg, controls, 5, 0, u);
 
 ## Getting started
 
-QuEST is contained entirely in the `.c` and `.h` files in the `QuEST/` folder. To use QuEST, copy these files to your computer and include `qubits.h` in your C code. We include make files for compiling QuEST, and submission scripts for using QuEST with SLURM and PBS. See [examples/tutorial.md](/examples/tutorial.md) for an introduction.
+QuEST is contained entirely in the `.c` and `.h` files in the `QuEST/` folder. To use QuEST, copy these files to your computer and include `qubits.h` in your C code. We include make files for compiling QuEST, and submission scripts for using QuEST with SLURM and PBS. See [examples/tutorial.md](/examples/tutorial.md) for an introduction. Clone or download this entire repository to include all examples as well as tests and documentation. 
 
 ## API Documentation
 
