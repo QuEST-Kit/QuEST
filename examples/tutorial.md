@@ -161,7 +161,7 @@ and after compiling (see section below), gives psuedo-random output
 
 # Compiling
 
-To compile, copy the [makefile](examples/makefileImproved) to the same folder as your code.
+To compile, copy the [makefile](makefileImproved) to the same folder as your code.
 
 > Rename the file to `makefile` if necessary
 
@@ -222,7 +222,7 @@ There are no special requirements for running QuEST on supercomputers, or throug
 
 Be sure to set `OMP_NUM_THREADS` appropriately, and that you target the hardware your job will ultimately run on when compiling (otherwise simply compile at runtime using the makefile, just as above).
 
-For example, the [above code](examples/tutorial_example.c) can be split over 4 MPI nodes (each with 8 cores) by setting `USE_MPI=1` (and `USE_OPENMP=1`) in the makefile, and with a SLURM submission script like
+For example, the [above code](tutorial_example.c) can be split over 4 MPI nodes (each with 8 cores) by setting `USE_MPI=1` (and `USE_OPENMP=1`) in the makefile, and with a SLURM submission script like
 ```bash
 #SBATCH --nodes=4
 #SBATCH --ntasks-per-node=1
