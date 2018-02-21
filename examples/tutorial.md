@@ -141,15 +141,19 @@ Executing all the [code above](examples/tutorial_example.c) simulates the below 
 
 and after compiling (see section below), gives psuedo-random output
 
+> ```
 > Probability amplitude of |111>: 0.498751
 > Probability of qubit 2 being in state 1: 0.749178
 > Qubit 0 was measured in state 1
 > Qubit 2 collapsed to 1 with probability 0.998752
+> ```
 
+> ```
 > Probability amplitude of |111>: 0.498751
 > Probability of qubit 2 being in state 1: 0.749178
 > Qubit 0 was measured in state 0
 > Qubit 2 collapsed to 1 with probability 0.499604
+> ```
 
 > standby for seeding instructions!
 
@@ -244,7 +248,7 @@ aprun -n 4 -d 8 -cc numa_node ./myExecutable
 ```
 
 Running QuEST on a GPU partition is similarly easy (though currently requiring an [alternate makefile](https://github.com/aniabrown/QuEST_GPU/blob/master/examples/makefile)) in SLURM
-```
+```bash
 #SBATCH --nodes=1
 #SBATCH --ntasks-per-node=1
 #SBATCH --gres=gpu:1 
