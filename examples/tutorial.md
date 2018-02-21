@@ -4,7 +4,7 @@ QuEST Tutorial
 **Table of Contents**
 - [Coding](#coding)
 - [Compiling](#compiling)
-- [Running QuEST on supercomputers](#running-quest-on-supercomputers)
+- [Running QuEST through a job submission system](#running-quest-through-a-job-submission-system)
 
 
 # Coding
@@ -210,15 +210,18 @@ export OMP_NUM_THREADS=8
 ```
 QuEST will automatically allocate work between the given number of threads to speedup your simulation.
 
-Simply set `USE_MPI=1` in the makefile above to compile for distributed simulation, and QuEST will spread the quantum state vector between available nodes.
+To compile for distributed simulation, set `USE_MPI=1`, and QuEST will spread the quantum state vector between available nodes. Launch with the appropriate mpi launcher for your system on a power of 2 number of processes, for example
+```bash
+mpirun -np 8 ./myExecutable
+```
 
-> For the moment, compiling for GPU use requires C++ source code (that your files are C++ compatible and have the `.cpp` extension). An alternate makefile is provided [here](https://github.com/aniabrown/QuEST_GPU/blob/master/examples/makefile).
+> For the moment, compiling for GPU use requires C++ source code (that your files are C++ compatible and have the `.cpp` extension). An example makefile for the GPU is provided [here](https://github.com/aniabrown/QuEST_GPU/blob/master/examples/makefile).
 
 ---------------------
 
-# Running QuEST on supercomputers
+# Running QuEST through a job submission system
 
-There are no special requirements for running QuEST on supercomputers, or through job submission systems. Just call `./myExecutable` as you would any other binary.
+There are no special requirements for running QuEST through job submission systems. Just call `./myExecutable` as you would any other binary.
 
 Be sure to set `OMP_NUM_THREADS` appropriately, and that you target the hardware your job will ultimately run on when compiling (otherwise simply compile at runtime using the makefile, just as above).
 
