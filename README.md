@@ -2,7 +2,34 @@
 
 The **Quantum Exact Simulation Toolkit** is a high performance simulator of universal quantum circuits. QuEST is written in C, hybridises OpenMP and MPI, and can run on a GPU. Needing only compilation, QuEST is easy to run both on laptops and supercomputers, where it can take advantage of multicore and networked machines to quickly simulate circuits on many qubits.
 
-> The GPU version of QuEST is currently located in another repository [here](https://github.com/aniabrown/QuEST_GPU).
+> The GPU version of QuEST is currently located in another repository [here](https://github.com/aniabrown/QuEST_GPU), though the introduction in [examples/tutorial.md](/examples/tutorial.md) is still relevant.
+
+QuEST has a simple interface, independent of its run environment (on CPUs, GPUs or over networks),
+```C
+hadamard(qubits, 0);
+
+controlledNot(qubits, 0, 1);
+
+rotateY(qubits, 0, .1);
+```
+though is flexible
+```C
+Vector v;
+v.x = 1; v.y = 0; v.z = 0;
+rotateAroundAxis(qubits, 0, 3.14/2, v);
+```
+and powerful
+```C
+ComplexMatrix2 u;
+u.r0c0 = (Complex) {.real=.5, .imag= .5};
+u.r0c1 = (Complex) {.real=.5, .imag=-.5}; 
+u.r1c0 = (Complex) {.real=.5, .imag=-.5};
+u.r1c1 = (Complex) {.real=.5, .imag= .5};
+unitary(qubits, 0, u);
+
+int[] controls = {1, 2, 3, 4, 5};
+multiControlledUnitary(qureg, controls, 5, 0, u);
+```
 
 ## Getting started
 
