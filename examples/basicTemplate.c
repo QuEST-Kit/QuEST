@@ -19,6 +19,8 @@
 # define MaxAngles      10
 //! Max number of qubits in the system
 # define maxNumQubits   40
+//! Min number of qubits in the system
+# define minNumQubits   5
 //! 1: print end qubit state to file, 0: don't print
 # define REPORT_STATE 1
 
@@ -46,8 +48,8 @@ int main (int narg, char** varg) {
 	// get number of qubits from command line argument
 	if (narg >= 2) {
 		numQubits = atoi(varg[1]);
-		if (numQubits < 1 || numQubits > maxNumQubits) {
-			printf(" *** error: argument %d out of range (1 -- %d)\n", numQubits,maxNumQubits);
+		if (numQubits < minNumQubits || numQubits > maxNumQubits) {
+			printf(" *** error: argument %d out of range (%d -- %d)\n", numQubits,minNumQubits,maxNumQubits);
 			exit (EXIT_FAILURE);
 		}
 	} else {
