@@ -2,7 +2,10 @@
 
 ## Versions
 
-QuEST is currently in prerelease and may be unstable. Latest version: [0.10.0](https://github.com/aniabrown/QuEST/releases/tag/v0.10.0)
+QuEST is currently in prerelease and may be unstable.  
+
+Latest version: [0.10.0](https://github.com/aniabrown/QuEST/releases/tag/v0.10.0) 
+
 Please report errors or feedback to anna.brown@oerc.ox.ac.uk 
 
 ## Introduction
