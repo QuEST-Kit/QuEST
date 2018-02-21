@@ -163,9 +163,7 @@ and after compiling (see section below), gives psuedo-random output
 
 # Compiling
 
-To compile, copy the [makefile](makefileImproved) to the same folder as your code.
-
-> Rename the file to `makefile` if necessary
+To compile, copy the [makefile](makefile) to the same folder as your code.
 
 Edit the makefile, letting `MY_C_SOURCES` be a space-separated list of your source files, `EXE` be the name of the output executable, and `QUEST_DIR` point to the folder which contains `qubits.h`. 
 
