@@ -1,6 +1,13 @@
-
-Coding
+QuEST Tutorial
 ======
+
+**Table of Contents**
+- [Coding](#coding)
+- [Compiling](#compiling)
+- [Running QuEST on supercomputers](#running-quest-on-supercomputers)
+
+
+# Coding
 
 Independent of which platform you'll run your simulation on (multicore machine, distributed machines, a GPU), your QuEST code will look the same. View the API [here](https://aniabrown.github.io/QuEST/qubits_8h.html)
 
@@ -148,8 +155,7 @@ and after compiling (see section below), gives psuedo-random output
 
 ----------------------------
 
-Compiling
-======
+# Compiling
 
 To compile, copy the [makefile](examples/makefileImproved) to the same folder as your code.
 
@@ -206,8 +212,7 @@ Simply set `USE_MPI=1` in the makefile above to compile for distributed simulati
 
 ---------------------
 
-Running QuEST on supercomputers
-=======================
+# Running QuEST on supercomputers
 
 There are no special requirements for running QuEST on supercomputers, or through job submission systems. Just call `./myExecutable` as you would any other binary.
 
