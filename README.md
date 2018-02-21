@@ -1,5 +1,12 @@
 # QuEST
 
+## Versions
+
+QuEST is currently in prerelease and may be unstable. Latest version: [0.10.0](https://github.com/aniabrown/QuEST/releases/tag/v0.10.0)
+Please report errors or feedback to anna.brown@oerc.ox.ac.uk 
+
+## Introduction
+
 The **Quantum Exact Simulation Toolkit** is a high performance simulator of universal quantum circuits. QuEST is written in C, hybridises OpenMP and MPI, and can run on a GPU. Needing only compilation, QuEST is easy to run both on laptops and supercomputers, where it can take advantage of multicore and networked machines to quickly simulate circuits on many qubits.
 
 > The GPU version of QuEST is currently located in another repository [here](https://github.com/aniabrown/QuEST_GPU), though the introduction in [examples/tutorial.md](/examples/tutorial.md) is still relevant.
@@ -38,3 +45,10 @@ QuEST is contained entirely in the `.c` and `.h` files in the `QuEST/` folder. T
 ## API Documentation
 
 View the API [here](https://aniabrown.github.io/QuEST/qubits_8h.html), and the full documentation at https://aniabrown.github.io/QuEST/
+
+## Licence
+
+QuEST is released under a [MIT Licence](https://github.com/aniabrown/QuEST/blob/master/LICENCE.txt)
+
+
+
