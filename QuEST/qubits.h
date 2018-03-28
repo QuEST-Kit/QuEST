@@ -539,6 +539,159 @@ void rotateZ(MultiQubit multiQubit, const int rotQubit, REAL angle);
  */
 void rotateAroundAxis(MultiQubit multiQubit, const int rotQubit, REAL angle, Vector axis);
 
+
+/** Applies a controlled rotation by a given angle around the X-axis of the Bloch-sphere. 
+ * The target qubit is rotated in states where the control qubit has value 1.
+ *
+	\f[
+	\setlength{\fboxrule}{0.01pt}
+	\fbox{
+				\begin{tikzpicture}[scale=.5]
+				\node[draw=none] at (-3.5, 2) {control};
+				\node[draw=none] at (-3.5, 0) {target};
+
+				\draw (-2, 2) -- (2, 2);
+				\draw[fill=black] (0, 2) circle (.2);
+				\draw (0, 2) -- (0, 1);
+				
+				\draw (-2,0) -- (-1, 0);
+				\draw (1, 0) -- (2, 0);
+				\draw (-1,-1)--(-1,1)--(1,1)--(1,-1)--cycle;
+				\node[draw=none] at (0, 0) {$R_x(\theta)$};
+				\end{tikzpicture}
+	}
+	\f]	
+ *
+ * @param[in,out] multiQubit object representing the set of all qubits
+ * @param[in] controlQubit qubit which has value 1 in the rotated states
+ * @param[in] tagretQubit qubit to rotate
+ * @param[in] angle angle by which to rotate the target qubit in radians
+ * @throws exitWithError
+ * 		if either \p controlQubit or \p targetQubit are outside [0, \p multiQubit.numQubits) or are equal.
+ */
+void controlledRotateX(MultiQubit multiQubit, const int controlQubit, const int targetQubit, REAL angle){
+
+	Vector unitAxis = {1, 0, 0};
+	controlledRotateAroundAxis(multiQubit, controlQubit, targetQubit, angle, unitAxis);
+}
+
+/** Applies a controlled rotation by a given angle around the Y-axis of the Bloch-sphere. 
+ * The target qubit is rotated in states where the control qubit has value 1.
+ *
+	\f[
+	\setlength{\fboxrule}{0.01pt}
+	\fbox{
+				\begin{tikzpicture}[scale=.5]
+				\node[draw=none] at (-3.5, 2) {control};
+				\node[draw=none] at (-3.5, 0) {target};
+
+				\draw (-2, 2) -- (2, 2);
+				\draw[fill=black] (0, 2) circle (.2);
+				\draw (0, 2) -- (0, 1);
+				
+				\draw (-2,0) -- (-1, 0);
+				\draw (1, 0) -- (2, 0);
+				\draw (-1,-1)--(-1,1)--(1,1)--(1,-1)--cycle;
+				\node[draw=none] at (0, 0) {$R_y(\theta)$};
+				\end{tikzpicture}
+	}
+	\f]	
+ *
+ * @param[in,out] multiQubit object representing the set of all qubits
+ * @param[in] controlQubit qubit which has value 1 in the rotated states
+ * @param[in] tagretQubit qubit to rotate
+ * @param[in] angle angle by which to rotate the target qubit in radians
+ * @throws exitWithError
+ * 		if either \p controlQubit or \p targetQubit are outside [0, \p multiQubit.numQubits) or are equal.
+ */
+void controlledRotateY(MultiQubit multiQubit, const int controlQubit, const int targetQubit, REAL angle){
+
+	Vector unitAxis = {0, 1, 0};
+	controlledRotateAroundAxis(multiQubit, controlQubit, targetQubit, angle, unitAxis);
+}
+
+/** Applies a controlled rotation by a given angle around the Z-axis of the Bloch-sphere. 
+ * The target qubit is rotated in states where the control qubit has value 1.
+ *
+	\f[
+	\setlength{\fboxrule}{0.01pt}
+	\fbox{
+				\begin{tikzpicture}[scale=.5]
+				\node[draw=none] at (-3.5, 2) {control};
+				\node[draw=none] at (-3.5, 0) {target};
+
+				\draw (-2, 2) -- (2, 2);
+				\draw[fill=black] (0, 2) circle (.2);
+				\draw (0, 2) -- (0, 1);
+				
+				\draw (-2,0) -- (-1, 0);
+				\draw (1, 0) -- (2, 0);
+				\draw (-1,-1)--(-1,1)--(1,1)--(1,-1)--cycle;
+				\node[draw=none] at (0, 0) {$R_z(\theta)$};
+				\end{tikzpicture}
+	}
+	\f]	
+ *
+ * @param[in,out] multiQubit object representing the set of all qubits
+ * @param[in] controlQubit qubit which has value 1 in the rotated states
+ * @param[in] tagretQubit qubit to rotate
+ * @param[in] angle angle by which to rotate the target qubit in radians
+ * @throws exitWithError
+ * 		if either \p controlQubit or \p targetQubit are outside [0, \p multiQubit.numQubits) or are equal.
+ */
+void controlledRotateZ(MultiQubit multiQubit, const int controlQubit, const int targetQubit, REAL angle){
+
+	Vector unitAxis = {0, 0, 1};
+	controlledRotateAroundAxis(multiQubit, controlQubit, targetQubit, angle, unitAxis);
+}
+
+/** Applies a controlled rotation by a given angle around a given vector on the Bloch-sphere.      
+ * The vector must not be zero (else an error is thrown), but needn't be unit magnitude.
+ *
+ * For angle \f$\theta\f$ and axis vector \f$\vec{n}\f$, applies \f$R_{\hat{n}} = \exp \left(- i \frac{\theta}{2} \hat{n} \cdot \vec{\sigma} \right) \f$ to states where the target qubit is 1 
+ * (\f$\vec{\sigma}\f$ is the vector of Pauli matrices).
+ *
+	\f[
+	\setlength{\fboxrule}{0.01pt}
+	\fbox{
+				\begin{tikzpicture}[scale=.5]
+				\node[draw=none] at (-3.5, 2) {control};
+				\node[draw=none] at (-3.5, 0) {target};
+
+				\draw (-2, 2) -- (2, 2);
+				\draw[fill=black] (0, 2) circle (.2);
+				\draw (0, 2) -- (0, 1);
+				
+				\draw (-2,0) -- (-1, 0);
+				\draw (1, 0) -- (2, 0);
+				\draw (-1,-1)--(-1,1)--(1,1)--(1,-1)--cycle;
+				\node[draw=none] at (0, 0) {$R_{\hat{n}}(\theta)$};
+				\end{tikzpicture}
+	}
+	\f]
+ *
+ * @param[in,out] multiQubit object representing the set of all qubits
+ * @param[in] controlQubit qubit with value 1 in the rotated states
+ * @param[in] targetQubit qubit to rotate
+ * @param[in] angle angle by which to rotate in radians
+ * @param[in] axis vector around which to rotate (can be non-unit; will be normalised)
+ * @throws exitWithError
+ * 		if either \p controlQubit or \p targetQubit are outside [0, \p multiQubit.numQubits) or are equal
+ * 		or if \p axis is the zero vector
+ */
+void controlledRotateAroundAxis(MultiQubit multiQubit, const int controlQubit, const int targetQubit, REAL angle, Vector axis){
+	
+	double mag = sqrt(pow(axis.x,2) + pow(axis.y,2) + pow(axis.z,2));
+	Vector unitAxis = {axis.x/mag, axis.y/mag, axis.z/mag};
+	
+	Complex alpha, beta;
+	alpha.real = cos(angle/2.0);
+	alpha.imag = -sin(angle/2.0)*unitAxis.z;	
+	beta.real = sin(angle/2.0)*unitAxis.y;
+	beta.imag = -sin(angle/2.0)*unitAxis.x;
+	controlledCompactUnitary(multiQubit, controlQubit, targetQubit, alpha, beta);
+}
+
 /** Apply a controlled unitary (single control, single target) parameterised by two given complex scalars.
  * Given valid complex numbers \f$\alpha\f$ and \f$\beta\f$, applies the two-qubit unitary
  * \f[

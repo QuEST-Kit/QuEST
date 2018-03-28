@@ -86,6 +86,14 @@ void \hyperlink{qubits_8h_abd621412ad30c1b034f4ce153c4afe10}{rotateZ} (\hyperlin
 \begin{DoxyCompactList}\small\item\em Rotate a single qubit by a given angle around the Z-\/axis of the Bloch-\/sphere (also known as a phase shift gate). \item\end{DoxyCompactList}\item 
 void \hyperlink{qubits_8h_a8810423457803005fecd415f4299f40d}{rotateAroundAxis} (\hyperlink{structMultiQubit}{MultiQubit} multiQubit, const int rotQubit, REAL angle, \hyperlink{structVector}{Vector} axis)
 \begin{DoxyCompactList}\small\item\em Rotate a single qubit by a given angle around a given vector on the Bloch-\/sphere. \item\end{DoxyCompactList}\item 
+void \hyperlink{qubits_8h_ac6923ac57e67d9a21096e06f6a9012f6}{controlledRotateX} (\hyperlink{structMultiQubit}{MultiQubit} multiQubit, const int controlQubit, const int targetQubit, REAL angle)
+\begin{DoxyCompactList}\small\item\em Applies a controlled rotation by a given angle around the X-\/axis of the Bloch-\/sphere. \item\end{DoxyCompactList}\item 
+void \hyperlink{qubits_8h_a71e90a2f7292116338c062934f9d1202}{controlledRotateY} (\hyperlink{structMultiQubit}{MultiQubit} multiQubit, const int controlQubit, const int targetQubit, REAL angle)
+\begin{DoxyCompactList}\small\item\em Applies a controlled rotation by a given angle around the Y-\/axis of the Bloch-\/sphere. \item\end{DoxyCompactList}\item 
+void \hyperlink{qubits_8h_a668e5d2634b02e98bc73675ccb11d61c}{controlledRotateZ} (\hyperlink{structMultiQubit}{MultiQubit} multiQubit, const int controlQubit, const int targetQubit, REAL angle)
+\begin{DoxyCompactList}\small\item\em Applies a controlled rotation by a given angle around the Z-\/axis of the Bloch-\/sphere. \item\end{DoxyCompactList}\item 
+void \hyperlink{qubits_8h_ad41f82b41149393a642391b67b3a287e}{controlledRotateAroundAxis} (\hyperlink{structMultiQubit}{MultiQubit} multiQubit, const int controlQubit, const int targetQubit, REAL angle, \hyperlink{structVector}{Vector} axis)
+\begin{DoxyCompactList}\small\item\em Applies a controlled rotation by a given angle around a given vector on the Bloch-\/sphere. \item\end{DoxyCompactList}\item 
 void \hyperlink{qubits_8h_ab4812953bc457405b3aa05a4c2f64f4a}{controlledCompactUnitary} (\hyperlink{structMultiQubit}{MultiQubit} multiQubit, const int controlQubit, const int targetQubit, \hyperlink{structComplex}{Complex} alpha, \hyperlink{structComplex}{Complex} beta)
 \begin{DoxyCompactList}\small\item\em Apply a controlled unitary (single control, single target) parameterised by two given complex scalars. \item\end{DoxyCompactList}\item 
 void \hyperlink{qubits_8h_a8a701526263392599aa21d0d0f05d9d8}{controlledUnitary} (\hyperlink{structMultiQubit}{MultiQubit} multiQubit, const int controlQubit, const int targetQubit, \hyperlink{structComplexMatrix2}{ComplexMatrix2} u)
@@ -330,6 +338,8 @@ Definition at line 122 of file qubits\_\-env\_\-local.c.
 
 References MultiQubit::chunkId, chunkIsUpper(), controlledCompactUnitaryDistributed(), controlledCompactUnitaryLocal(), exchangeStateVectors(), getChunkPairId(), getRotAngle(), halfMatrixBlockFitsInChunk(), MultiQubit::numAmps, MultiQubit::numQubits, MultiQubit::pairStateVec, QuESTAssert(), MultiQubit::stateVec, and validateAlphaBeta().
 
+Referenced by controlledRotateAroundAxis().
+
 
 \begin{DoxyCode}
 123 {
@@ -398,45 +408,186 @@ Apply the (two-\/qubit) controlled phase gate, also known as the controlled sigm
 \item[{\em exitWithError}]if {\ttfamily idQubit1} or {\ttfamily idQubit2} are outside \mbox{[}0, {\ttfamily multiQubit.numQubits}), or are equal \end{DoxyExceptions}
 
 
-Definition at line 1698 of file qubits.c.
+Definition at line 1729 of file qubits.c.
 
 References MultiQubit::chunkId, extractBit(), ComplexArray::imag, MultiQubit::numAmps, MultiQubit::numQubits, QuESTAssert(), ComplexArray::real, REAL, and MultiQubit::stateVec.
 
 
 \begin{DoxyCode}
-1699 {
-1700         long long int index;
-1701         long long int stateVecSize;
-1702         int bit1, bit2;
-1703 
-1704         const long long int chunkSize=multiQubit.numAmps;
-1705         const long long int chunkId=multiQubit.chunkId;
-1706 
-1707     QuESTAssert(idQubit1 >= 0 && idQubit1 < multiQubit.numQubits, 2, __func__);
-1708     QuESTAssert(idQubit2 >= 0 && idQubit2 < multiQubit.numQubits, 1, __func__);
-1709     QuESTAssert(idQubit1 != idQubit2, 3, __func__);
-1710 
-1711         // dimension of the state vector
-1712         stateVecSize = multiQubit.numAmps;
-1713         REAL *stateVecReal = multiQubit.stateVec.real;
-1714         REAL *stateVecImag = multiQubit.stateVec.imag;
-1715 
-1716 # ifdef _OPENMP
-1717 # pragma omp parallel for \
-1718         default  (none)                      \
-1719         shared   (stateVecSize, stateVecReal,stateVecImag ) \
-1720         private  (index,bit1,bit2)                     \
-1721         schedule (static)
-1722 # endif
-1723         for (index=0; index<stateVecSize; index++) {
-1724                 bit1 = extractBit (idQubit1, index+chunkId*chunkSize);
-1725                 bit2 = extractBit (idQubit2, index+chunkId*chunkSize);
-1726                 if (bit1 && bit2) {
-1727                         stateVecReal [index] = - stateVecReal [index];
-1728                         stateVecImag [index] = - stateVecImag [index];
-1729                 }
-1730         }
-1731 }
+1730 {
+1731         long long int index;
+1732         long long int stateVecSize;
+1733         int bit1, bit2;
+1734 
+1735         const long long int chunkSize=multiQubit.numAmps;
+1736         const long long int chunkId=multiQubit.chunkId;
+1737 
+1738     QuESTAssert(idQubit1 >= 0 && idQubit1 < multiQubit.numQubits, 2, __func__);
+1739     QuESTAssert(idQubit2 >= 0 && idQubit2 < multiQubit.numQubits, 1, __func__);
+1740     QuESTAssert(idQubit1 != idQubit2, 3, __func__);
+1741 
+1742         // dimension of the state vector
+1743         stateVecSize = multiQubit.numAmps;
+1744         REAL *stateVecReal = multiQubit.stateVec.real;
+1745         REAL *stateVecImag = multiQubit.stateVec.imag;
+1746 
+1747 # ifdef _OPENMP
+1748 # pragma omp parallel for \
+1749         default  (none)                      \
+1750         shared   (stateVecSize, stateVecReal,stateVecImag ) \
+1751         private  (index,bit1,bit2)                     \
+1752         schedule (static)
+1753 # endif
+1754         for (index=0; index<stateVecSize; index++) {
+1755                 bit1 = extractBit (idQubit1, index+chunkId*chunkSize);
+1756                 bit2 = extractBit (idQubit2, index+chunkId*chunkSize);
+1757                 if (bit1 && bit2) {
+1758                         stateVecReal [index] = - stateVecReal [index];
+1759                         stateVecImag [index] = - stateVecImag [index];
+1760                 }
+1761         }
+1762 }
+\end{DoxyCode}
+\hypertarget{qubits_8h_ad41f82b41149393a642391b67b3a287e}{
+\index{qubits.h@{qubits.h}!controlledRotateAroundAxis@{controlledRotateAroundAxis}}
+\index{controlledRotateAroundAxis@{controlledRotateAroundAxis}!qubits.h@{qubits.h}}
+\paragraph[{controlledRotateAroundAxis}]{\setlength{\rightskip}{0pt plus 5cm}void controlledRotateAroundAxis ({\bf MultiQubit} {\em multiQubit}, \/  const int {\em controlQubit}, \/  const int {\em targetQubit}, \/  REAL {\em angle}, \/  {\bf Vector} {\em axis})}\hfill}
+\label{qubits_8h_ad41f82b41149393a642391b67b3a287e}
+
+
+Applies a controlled rotation by a given angle around a given vector on the Bloch-\/sphere. The vector must not be zero (else an error is thrown), but needn't be unit magnitude.
+
+For angle $\theta$ and axis vector $\vec{n}$, applies $R_{\hat{n}} = \exp \left(- i \frac{\theta}{2} \hat{n} \cdot \vec{\sigma} \right) $ to states where the target qubit is 1 ($\vec{\sigma}$ is the vector of Pauli matrices).
+
+\[ \setlength{\fboxrule}{0.01pt} \fbox{ \begin{tikzpicture}[scale=.5] \node[draw=none] at (-3.5, 2) {control}; \node[draw=none] at (-3.5, 0) {target}; \draw (-2, 2) -- (2, 2); \draw[fill=black] (0, 2) circle (.2); \draw (0, 2) -- (0, 1); \draw (-2,0) -- (-1, 0); \draw (1, 0) -- (2, 0); \draw (-1,-1)--(-1,1)--(1,1)--(1,-1)--cycle; \node[draw=none] at (0, 0) {$R_{\hat{n}}(\theta)$}; \end{tikzpicture} } \]
+
+
+\begin{DoxyParams}{Parameters}
+\item[\mbox{$\leftrightarrow$} {\em multiQubit}]object representing the set of all qubits \item[\mbox{$\leftarrow$} {\em controlQubit}]qubit with value 1 in the rotated states \item[\mbox{$\leftarrow$} {\em targetQubit}]qubit to rotate \item[\mbox{$\leftarrow$} {\em angle}]angle by which to rotate in radians \item[\mbox{$\leftarrow$} {\em axis}]vector around which to rotate (can be non-\/unit; will be normalised) \end{DoxyParams}
+
+\begin{DoxyExceptions}{Exceptions}
+\item[{\em exitWithError}]if either {\ttfamily controlQubit} or {\ttfamily targetQubit} are outside \mbox{[}0, {\ttfamily multiQubit.numQubits}) or are equal or if {\ttfamily axis} is the zero vector \end{DoxyExceptions}
+
+
+Definition at line 682 of file qubits.h.
+
+References controlledCompactUnitary(), Complex::imag, Complex::real, Vector::x, Vector::y, and Vector::z.
+
+
+\begin{DoxyCode}
+682                                                                                  
+                                                   {
+683         
+684         double mag = sqrt(pow(axis.x,2) + pow(axis.y,2) + pow(axis.z,2));
+685         Vector unitAxis = {axis.x/mag, axis.y/mag, axis.z/mag};
+686         
+687         Complex alpha, beta;
+688         alpha.real = cos(angle/2.0);
+689         alpha.imag = -sin(angle/2.0)*unitAxis.z;        
+690         beta.real = sin(angle/2.0)*unitAxis.y;
+691         beta.imag = -sin(angle/2.0)*unitAxis.x;
+692         controlledCompactUnitary(multiQubit, controlQubit, targetQubit, alpha, be
+      ta);
+693 }
+\end{DoxyCode}
+\hypertarget{qubits_8h_ac6923ac57e67d9a21096e06f6a9012f6}{
+\index{qubits.h@{qubits.h}!controlledRotateX@{controlledRotateX}}
+\index{controlledRotateX@{controlledRotateX}!qubits.h@{qubits.h}}
+\paragraph[{controlledRotateX}]{\setlength{\rightskip}{0pt plus 5cm}void controlledRotateX ({\bf MultiQubit} {\em multiQubit}, \/  const int {\em controlQubit}, \/  const int {\em targetQubit}, \/  REAL {\em angle})}\hfill}
+\label{qubits_8h_ac6923ac57e67d9a21096e06f6a9012f6}
+
+
+Applies a controlled rotation by a given angle around the X-\/axis of the Bloch-\/sphere. The target qubit is rotated in states where the control qubit has value 1.
+
+\[ \setlength{\fboxrule}{0.01pt} \fbox{ \begin{tikzpicture}[scale=.5] \node[draw=none] at (-3.5, 2) {control}; \node[draw=none] at (-3.5, 0) {target}; \draw (-2, 2) -- (2, 2); \draw[fill=black] (0, 2) circle (.2); \draw (0, 2) -- (0, 1); \draw (-2,0) -- (-1, 0); \draw (1, 0) -- (2, 0); \draw (-1,-1)--(-1,1)--(1,1)--(1,-1)--cycle; \node[draw=none] at (0, 0) {$R_x(\theta)$}; \end{tikzpicture} } \]
+
+
+\begin{DoxyParams}{Parameters}
+\item[\mbox{$\leftrightarrow$} {\em multiQubit}]object representing the set of all qubits \item[\mbox{$\leftarrow$} {\em controlQubit}]qubit which has value 1 in the rotated states \item[\mbox{$\leftarrow$} {\em tagretQubit}]qubit to rotate \item[\mbox{$\leftarrow$} {\em angle}]angle by which to rotate the target qubit in radians \end{DoxyParams}
+
+\begin{DoxyExceptions}{Exceptions}
+\item[{\em exitWithError}]if either {\ttfamily controlQubit} or {\ttfamily targetQubit} are outside \mbox{[}0, {\ttfamily multiQubit.numQubits}) or are equal. \end{DoxyExceptions}
+
+
+Definition at line 572 of file qubits.h.
+
+References controlledRotateAroundAxis().
+
+
+\begin{DoxyCode}
+572                                                                                  
+                             {
+573 
+574         Vector unitAxis = {1, 0, 0};
+575         controlledRotateAroundAxis(multiQubit, controlQubit, targetQubit, angle, 
+      unitAxis);
+576 }
+\end{DoxyCode}
+\hypertarget{qubits_8h_a71e90a2f7292116338c062934f9d1202}{
+\index{qubits.h@{qubits.h}!controlledRotateY@{controlledRotateY}}
+\index{controlledRotateY@{controlledRotateY}!qubits.h@{qubits.h}}
+\paragraph[{controlledRotateY}]{\setlength{\rightskip}{0pt plus 5cm}void controlledRotateY ({\bf MultiQubit} {\em multiQubit}, \/  const int {\em controlQubit}, \/  const int {\em targetQubit}, \/  REAL {\em angle})}\hfill}
+\label{qubits_8h_a71e90a2f7292116338c062934f9d1202}
+
+
+Applies a controlled rotation by a given angle around the Y-\/axis of the Bloch-\/sphere. The target qubit is rotated in states where the control qubit has value 1.
+
+\[ \setlength{\fboxrule}{0.01pt} \fbox{ \begin{tikzpicture}[scale=.5] \node[draw=none] at (-3.5, 2) {control}; \node[draw=none] at (-3.5, 0) {target}; \draw (-2, 2) -- (2, 2); \draw[fill=black] (0, 2) circle (.2); \draw (0, 2) -- (0, 1); \draw (-2,0) -- (-1, 0); \draw (1, 0) -- (2, 0); \draw (-1,-1)--(-1,1)--(1,1)--(1,-1)--cycle; \node[draw=none] at (0, 0) {$R_y(\theta)$}; \end{tikzpicture} } \]
+
+
+\begin{DoxyParams}{Parameters}
+\item[\mbox{$\leftrightarrow$} {\em multiQubit}]object representing the set of all qubits \item[\mbox{$\leftarrow$} {\em controlQubit}]qubit which has value 1 in the rotated states \item[\mbox{$\leftarrow$} {\em tagretQubit}]qubit to rotate \item[\mbox{$\leftarrow$} {\em angle}]angle by which to rotate the target qubit in radians \end{DoxyParams}
+
+\begin{DoxyExceptions}{Exceptions}
+\item[{\em exitWithError}]if either {\ttfamily controlQubit} or {\ttfamily targetQubit} are outside \mbox{[}0, {\ttfamily multiQubit.numQubits}) or are equal. \end{DoxyExceptions}
+
+
+Definition at line 607 of file qubits.h.
+
+References controlledRotateAroundAxis().
+
+
+\begin{DoxyCode}
+607                                                                                  
+                             {
+608 
+609         Vector unitAxis = {0, 1, 0};
+610         controlledRotateAroundAxis(multiQubit, controlQubit, targetQubit, angle, 
+      unitAxis);
+611 }
+\end{DoxyCode}
+\hypertarget{qubits_8h_a668e5d2634b02e98bc73675ccb11d61c}{
+\index{qubits.h@{qubits.h}!controlledRotateZ@{controlledRotateZ}}
+\index{controlledRotateZ@{controlledRotateZ}!qubits.h@{qubits.h}}
+\paragraph[{controlledRotateZ}]{\setlength{\rightskip}{0pt plus 5cm}void controlledRotateZ ({\bf MultiQubit} {\em multiQubit}, \/  const int {\em controlQubit}, \/  const int {\em targetQubit}, \/  REAL {\em angle})}\hfill}
+\label{qubits_8h_a668e5d2634b02e98bc73675ccb11d61c}
+
+
+Applies a controlled rotation by a given angle around the Z-\/axis of the Bloch-\/sphere. The target qubit is rotated in states where the control qubit has value 1.
+
+\[ \setlength{\fboxrule}{0.01pt} \fbox{ \begin{tikzpicture}[scale=.5] \node[draw=none] at (-3.5, 2) {control}; \node[draw=none] at (-3.5, 0) {target}; \draw (-2, 2) -- (2, 2); \draw[fill=black] (0, 2) circle (.2); \draw (0, 2) -- (0, 1); \draw (-2,0) -- (-1, 0); \draw (1, 0) -- (2, 0); \draw (-1,-1)--(-1,1)--(1,1)--(1,-1)--cycle; \node[draw=none] at (0, 0) {$R_z(\theta)$}; \end{tikzpicture} } \]
+
+
+\begin{DoxyParams}{Parameters}
+\item[\mbox{$\leftrightarrow$} {\em multiQubit}]object representing the set of all qubits \item[\mbox{$\leftarrow$} {\em controlQubit}]qubit which has value 1 in the rotated states \item[\mbox{$\leftarrow$} {\em tagretQubit}]qubit to rotate \item[\mbox{$\leftarrow$} {\em angle}]angle by which to rotate the target qubit in radians \end{DoxyParams}
+
+\begin{DoxyExceptions}{Exceptions}
+\item[{\em exitWithError}]if either {\ttfamily controlQubit} or {\ttfamily targetQubit} are outside \mbox{[}0, {\ttfamily multiQubit.numQubits}) or are equal. \end{DoxyExceptions}
+
+
+Definition at line 642 of file qubits.h.
+
+References controlledRotateAroundAxis().
+
+
+\begin{DoxyCode}
+642                                                                                  
+                             {
+643 
+644         Vector unitAxis = {0, 0, 1};
+645         controlledRotateAroundAxis(multiQubit, controlQubit, targetQubit, angle, 
+      unitAxis);
+646 }
 \end{DoxyCode}
 \hypertarget{qubits_8h_a8a701526263392599aa21d0d0f05d9d8}{
 \index{qubits.h@{qubits.h}!controlledUnitary@{controlledUnitary}}
@@ -671,19 +822,19 @@ realEl$\ast$realEl + imagEl$\ast$imagEl
 \item[{\em exitWithError}]if {\ttfamily index} is outside \mbox{[}0, $2^{N}$) where $N = $ {\ttfamily multiQubit.numQubits} \end{DoxyExceptions}
 
 
-Definition at line 1940 of file qubits.c.
+Definition at line 1971 of file qubits.c.
 
 References getImagAmpEl(), getRealAmpEl(), and REAL.
 
 
 \begin{DoxyCode}
-1940                                                           {
-1941         REAL real;
-1942         REAL imag;
-1943         real = getRealAmpEl(multiQubit, index);
-1944         imag = getImagAmpEl(multiQubit, index);
-1945         return real*real + imag*imag;
-1946 }
+1971                                                           {
+1972         REAL real;
+1973         REAL imag;
+1974         real = getRealAmpEl(multiQubit, index);
+1975         imag = getImagAmpEl(multiQubit, index);
+1976         return real*real + imag*imag;
+1977 }
 \end{DoxyCode}
 \hypertarget{qubits_8h_a317b786f577fa6bc136ea7f0ee7330a7}{
 \index{qubits.h@{qubits.h}!getRealAmpEl@{getRealAmpEl}}
@@ -994,48 +1145,48 @@ Apply the multiple-\/qubit controlled phase gate, also known as the multiple-\/q
 \item[{\em exitWithError}]if {\ttfamily numControlQubits} is outside \mbox{[}1, {\ttfamily multiQubit.numQubits}) \end{DoxyExceptions}
 
 
-Definition at line 1733 of file qubits.c.
+Definition at line 1764 of file qubits.c.
 
 References MultiQubit::chunkId, ComplexArray::imag, MultiQubit::numAmps, MultiQubit::numQubits, QuESTAssert(), ComplexArray::real, REAL, and MultiQubit::stateVec.
 
 
 \begin{DoxyCode}
-1734 {
-1735         long long int index;
-1736         long long int stateVecSize;
-1737         
-1738         const long long int chunkSize=multiQubit.numAmps;
-1739         const long long int chunkId=multiQubit.chunkId;
-1740 
-1741     QuESTAssert(numControlQubits > 0 && numControlQubits <= multiQubit.numQubits,
+1765 {
+1766         long long int index;
+1767         long long int stateVecSize;
+1768         
+1769         const long long int chunkSize=multiQubit.numAmps;
+1770         const long long int chunkId=multiQubit.chunkId;
+1771 
+1772     QuESTAssert(numControlQubits > 0 && numControlQubits <= multiQubit.numQubits,
        4, __func__);
-1742     long long int mask=0;
-1743     for (int i=0; i<numControlQubits; i++) mask = mask | (1LL<<controlQubits[i]);
+1773     long long int mask=0;
+1774     for (int i=0; i<numControlQubits; i++) mask = mask | (1LL<<controlQubits[i]);
       
-1744     QuESTAssert(mask >=0 && mask <= (1LL<<multiQubit.numQubits)-1, 2, __func__);
-1745 
-1746         stateVecSize = multiQubit.numAmps;
-1747         REAL *stateVecReal = multiQubit.stateVec.real;
-1748         REAL *stateVecImag = multiQubit.stateVec.imag;
-1749 
-1750 # ifdef _OPENMP
-1751 # pragma omp parallel \
-1752         default  (none)                      \
-1753         shared   (stateVecSize, stateVecReal,stateVecImag, mask ) \
-1754         private  (index)
-1755 # endif
-1756         {
-1757 # ifdef _OPENMP
-1758                 # pragma omp for schedule (static)
-1759 # endif
-1760                 for (index=0; index<stateVecSize; index++) {
-1761                         if (mask == (mask & (index+chunkId*chunkSize)) ){
-1762                                 stateVecReal [index] = - stateVecReal [index];
-1763                                 stateVecImag [index] = - stateVecImag [index];
-1764                         }
-1765                 }
-1766         }
-1767 }
+1775     QuESTAssert(mask >=0 && mask <= (1LL<<multiQubit.numQubits)-1, 2, __func__);
+1776 
+1777         stateVecSize = multiQubit.numAmps;
+1778         REAL *stateVecReal = multiQubit.stateVec.real;
+1779         REAL *stateVecImag = multiQubit.stateVec.imag;
+1780 
+1781 # ifdef _OPENMP
+1782 # pragma omp parallel \
+1783         default  (none)                      \
+1784         shared   (stateVecSize, stateVecReal,stateVecImag, mask ) \
+1785         private  (index)
+1786 # endif
+1787         {
+1788 # ifdef _OPENMP
+1789                 # pragma omp for schedule (static)
+1790 # endif
+1791                 for (index=0; index<stateVecSize; index++) {
+1792                         if (mask == (mask & (index+chunkId*chunkSize)) ){
+1793                                 stateVecReal [index] = - stateVecReal [index];
+1794                                 stateVecImag [index] = - stateVecImag [index];
+1795                         }
+1796                 }
+1797         }
+1798 }
 \end{DoxyCode}
 \hypertarget{qubits_8h_ae395a79690283ed81106afadd7a8cd8a}{
 \index{qubits.h@{qubits.h}!multiControlledUnitary@{multiControlledUnitary}}
@@ -1385,15 +1536,15 @@ Apply the single-\/qubit S gate. This is a rotation of $\pi/2$ around the Z-\/ax
 \item[{\em exitWithError}]if {\ttfamily targetQubit} is outside \mbox{[}0, {\ttfamily multiQubit.numQubits}) \end{DoxyExceptions}
 
 
-Definition at line 1549 of file qubits.c.
+Definition at line 1580 of file qubits.c.
 
 References phaseGate(), and S\_\-GATE.
 
 
 \begin{DoxyCode}
-1550 {
-1551                 phaseGate(multiQubit, targetQubit, S_GATE);
-1552 } 
+1581 {
+1582                 phaseGate(multiQubit, targetQubit, S_GATE);
+1583 } 
 \end{DoxyCode}
 \hypertarget{qubits_8h_a86e396e06b7d527cac20ba0108872423}{
 \index{qubits.h@{qubits.h}!sigmaX@{sigmaX}}
@@ -1478,15 +1629,15 @@ Apply the single-\/qubit sigma-\/Z (also known as the Z, Pauli-\/Z or phase-\/fl
 \item[{\em exitWithError}]if {\ttfamily targetQubit} is outside \mbox{[}0, {\ttfamily multiQubit.numQubits}). \end{DoxyExceptions}
 
 
-Definition at line 1544 of file qubits.c.
+Definition at line 1575 of file qubits.c.
 
 References phaseGate(), and SIGMA\_\-Z.
 
 
 \begin{DoxyCode}
-1545 {
-1546                 phaseGate(multiQubit, targetQubit, SIGMA_Z);
-1547 }
+1576 {
+1577                 phaseGate(multiQubit, targetQubit, SIGMA_Z);
+1578 }
 \end{DoxyCode}
 \hypertarget{qubits_8h_a8d31fe2d1ad4d01e2a1f5f6b8bc15b77}{
 \index{qubits.h@{qubits.h}!syncQuESTEnv@{syncQuESTEnv}}
@@ -1554,15 +1705,15 @@ Apply the single-\/qubit T gate. This is a rotation of $\pi/4$ around the Z-\/ax
 \item[{\em exitWithError}]if {\ttfamily targetQubit} is outside \mbox{[}0, {\ttfamily multiQubit.numQubits}) \end{DoxyExceptions}
 
 
-Definition at line 1554 of file qubits.c.
+Definition at line 1585 of file qubits.c.
 
 References phaseGate(), and T\_\-GATE.
 
 
 \begin{DoxyCode}
-1555 {
-1556                 phaseGate(multiQubit, targetQubit, T_GATE);
-1557 }
+1586 {
+1587                 phaseGate(multiQubit, targetQubit, T_GATE);
+1588 }
 \end{DoxyCode}
 \hypertarget{qubits_8h_a7a0877e33700f6bad48adb51b7b3fb67}{
 \index{qubits.h@{qubits.h}!unitary@{unitary}}

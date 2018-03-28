@@ -103,6 +103,14 @@
 <tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Rotate a single qubit by a given angle around the Z-axis of the Bloch-sphere (also known as a phase shift gate).  <a href="#abd621412ad30c1b034f4ce153c4afe10"></a><br/></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">void&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="qubits_8h.html#a8810423457803005fecd415f4299f40d">rotateAroundAxis</a> (<a class="el" href="structMultiQubit.html">MultiQubit</a> multiQubit, const int rotQubit, REAL angle, <a class="el" href="structVector.html">Vector</a> axis)</td></tr>
 <tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Rotate a single qubit by a given angle around a given vector on the Bloch-sphere.  <a href="#a8810423457803005fecd415f4299f40d"></a><br/></td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">void&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="qubits_8h.html#ac6923ac57e67d9a21096e06f6a9012f6">controlledRotateX</a> (<a class="el" href="structMultiQubit.html">MultiQubit</a> multiQubit, const int controlQubit, const int targetQubit, REAL angle)</td></tr>
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Applies a controlled rotation by a given angle around the X-axis of the Bloch-sphere.  <a href="#ac6923ac57e67d9a21096e06f6a9012f6"></a><br/></td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">void&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="qubits_8h.html#a71e90a2f7292116338c062934f9d1202">controlledRotateY</a> (<a class="el" href="structMultiQubit.html">MultiQubit</a> multiQubit, const int controlQubit, const int targetQubit, REAL angle)</td></tr>
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Applies a controlled rotation by a given angle around the Y-axis of the Bloch-sphere.  <a href="#a71e90a2f7292116338c062934f9d1202"></a><br/></td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">void&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="qubits_8h.html#a668e5d2634b02e98bc73675ccb11d61c">controlledRotateZ</a> (<a class="el" href="structMultiQubit.html">MultiQubit</a> multiQubit, const int controlQubit, const int targetQubit, REAL angle)</td></tr>
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Applies a controlled rotation by a given angle around the Z-axis of the Bloch-sphere.  <a href="#a668e5d2634b02e98bc73675ccb11d61c"></a><br/></td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">void&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="qubits_8h.html#ad41f82b41149393a642391b67b3a287e">controlledRotateAroundAxis</a> (<a class="el" href="structMultiQubit.html">MultiQubit</a> multiQubit, const int controlQubit, const int targetQubit, REAL angle, <a class="el" href="structVector.html">Vector</a> axis)</td></tr>
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Applies a controlled rotation by a given angle around a given vector on the Bloch-sphere.  <a href="#ad41f82b41149393a642391b67b3a287e"></a><br/></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">void&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="qubits_8h.html#ab4812953bc457405b3aa05a4c2f64f4a">controlledCompactUnitary</a> (<a class="el" href="structMultiQubit.html">MultiQubit</a> multiQubit, const int controlQubit, const int targetQubit, <a class="el" href="structComplex.html">Complex</a> alpha, <a class="el" href="structComplex.html">Complex</a> beta)</td></tr>
 <tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Apply a controlled unitary (single control, single target) parameterised by two given complex scalars.  <a href="#ab4812953bc457405b3aa05a4c2f64f4a"></a><br/></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">void&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="qubits_8h.html#a8a701526263392599aa21d0d0f05d9d8">controlledUnitary</a> (<a class="el" href="structMultiQubit.html">MultiQubit</a> multiQubit, const int controlQubit, const int targetQubit, <a class="el" href="structComplexMatrix2.html">ComplexMatrix2</a> u)</td></tr>
@@ -312,7 +320,7 @@
 
 <p>Definition at line <a class="el" href="qubits__env__local_8c_source.html#l00198">198</a> of file <a class="el" href="qubits__env__local_8c_source.html">qubits_env_local.c</a>.</p>
 
-<p>References <a class="el" href="qubits_8h_source.html#l00058">MultiQubit::chunkId</a>, <a class="el" href="qubits_8c_source.html#l01867">collapseToOutcomeDistributedRenorm()</a>, <a class="el" href="qubits_8c_source.html#l01909">collapseToOutcomeDistributedSetZero()</a>, <a class="el" href="qubits_8c_source.html#l01785">collapseToOutcomeLocal()</a>, <a class="el" href="qubits__env__local_8c_source.html#l00189">findProbabilityOfOutcome()</a>, <a class="el" href="qubits__env__mpi_8c_source.html#l00249">halfMatrixBlockFitsInChunk()</a>, <a class="el" href="qubits__env__mpi_8c_source.html#l00666">isChunkToSkipInFindPZero()</a>, <a class="el" href="qubits_8h_source.html#l00056">MultiQubit::numAmps</a>, <a class="el" href="qubits_8h_source.html#l00053">MultiQubit::numQubits</a>, <a class="el" href="qubits__env__local_8c_source.html#l00246">QuESTAssert()</a>, <a class="el" href="precision_8h_source.html#l00025">REAL</a>, and <a class="el" href="precision_8h_source.html#l00028">REAL_EPS</a>.</p>
+<p>References <a class="el" href="qubits_8h_source.html#l00058">MultiQubit::chunkId</a>, <a class="el" href="qubits_8c_source.html#l01898">collapseToOutcomeDistributedRenorm()</a>, <a class="el" href="qubits_8c_source.html#l01940">collapseToOutcomeDistributedSetZero()</a>, <a class="el" href="qubits_8c_source.html#l01816">collapseToOutcomeLocal()</a>, <a class="el" href="qubits__env__local_8c_source.html#l00189">findProbabilityOfOutcome()</a>, <a class="el" href="qubits__env__mpi_8c_source.html#l00249">halfMatrixBlockFitsInChunk()</a>, <a class="el" href="qubits__env__mpi_8c_source.html#l00666">isChunkToSkipInFindPZero()</a>, <a class="el" href="qubits_8h_source.html#l00056">MultiQubit::numAmps</a>, <a class="el" href="qubits_8h_source.html#l00053">MultiQubit::numQubits</a>, <a class="el" href="qubits__env__local_8c_source.html#l00246">QuESTAssert()</a>, <a class="el" href="precision_8h_source.html#l00025">REAL</a>, and <a class="el" href="precision_8h_source.html#l00028">REAL_EPS</a>.</p>
 
 <p><div class="fragment"><pre class="fragment"><a name="l00199"></a>00199 {
 <a name="l00200"></a>00200     <a class="code" href="qubits__env__local_8c.html#a3587b9d533e633ccf1abf9ad2ce45d8d">QuESTAssert</a>(measureQubit &gt;= 0 &amp;&amp; measureQubit &lt; multiQubit.<a class="code" href="structMultiQubit.html#ab5b9795bdc6fb5855e1974dcbbaeb36f" title="Number of qubits in the state.">numQubits</a>, 2, __func__);
@@ -391,7 +399,7 @@
 
 <p>Definition at line <a class="el" href="qubits__env__local_8c_source.html#l00104">104</a> of file <a class="el" href="qubits__env__local_8c_source.html">qubits_env_local.c</a>.</p>
 
-<p>References <a class="el" href="qubits_8h_source.html#l00058">MultiQubit::chunkId</a>, <a class="el" href="qubits__env__mpi_8c_source.html#l00164">chunkIsUpper()</a>, <a class="el" href="qubits_8c_source.html#l00542">compactUnitaryDistributed()</a>, <a class="el" href="qubits_8c_source.html#l00413">compactUnitaryLocal()</a>, <a class="el" href="qubits__env__mpi_8c_source.html#l00256">exchangeStateVectors()</a>, <a class="el" href="qubits__env__mpi_8c_source.html#l00231">getChunkPairId()</a>, <a class="el" href="qubits__env__mpi_8c_source.html#l00186">getRotAngle()</a>, <a class="el" href="qubits__env__mpi_8c_source.html#l00249">halfMatrixBlockFitsInChunk()</a>, <a class="el" href="qubits_8h_source.html#l00056">MultiQubit::numAmps</a>, <a class="el" href="qubits_8h_source.html#l00053">MultiQubit::numQubits</a>, <a class="el" href="qubits_8h_source.html#l00051">MultiQubit::pairStateVec</a>, <a class="el" href="qubits__env__local_8c_source.html#l00246">QuESTAssert()</a>, <a class="el" href="qubits_8h_source.html#l00049">MultiQubit::stateVec</a>, and <a class="el" href="qubits_8c_source.html#l00369">validateAlphaBeta()</a>.</p>
+<p>References <a class="el" href="qubits_8h_source.html#l00058">MultiQubit::chunkId</a>, <a class="el" href="qubits__env__mpi_8c_source.html#l00164">chunkIsUpper()</a>, <a class="el" href="qubits_8c_source.html#l00573">compactUnitaryDistributed()</a>, <a class="el" href="qubits_8c_source.html#l00444">compactUnitaryLocal()</a>, <a class="el" href="qubits__env__mpi_8c_source.html#l00256">exchangeStateVectors()</a>, <a class="el" href="qubits__env__mpi_8c_source.html#l00231">getChunkPairId()</a>, <a class="el" href="qubits__env__mpi_8c_source.html#l00186">getRotAngle()</a>, <a class="el" href="qubits__env__mpi_8c_source.html#l00249">halfMatrixBlockFitsInChunk()</a>, <a class="el" href="qubits_8h_source.html#l00056">MultiQubit::numAmps</a>, <a class="el" href="qubits_8h_source.html#l00053">MultiQubit::numQubits</a>, <a class="el" href="qubits_8h_source.html#l00051">MultiQubit::pairStateVec</a>, <a class="el" href="qubits__env__local_8c_source.html#l00246">QuESTAssert()</a>, <a class="el" href="qubits_8h_source.html#l00049">MultiQubit::stateVec</a>, and <a class="el" href="qubits_8c_source.html#l00369">validateAlphaBeta()</a>.</p>
 
 <p>Referenced by <a class="el" href="qubits_8c_source.html#l00382">rotateAroundAxis()</a>.</p>
 
@@ -477,7 +485,9 @@
 
 <p>Definition at line <a class="el" href="qubits__env__local_8c_source.html#l00122">122</a> of file <a class="el" href="qubits__env__local_8c_source.html">qubits_env_local.c</a>.</p>
 
-<p>References <a class="el" href="qubits_8h_source.html#l00058">MultiQubit::chunkId</a>, <a class="el" href="qubits__env__mpi_8c_source.html#l00164">chunkIsUpper()</a>, <a class="el" href="qubits_8c_source.html#l00852">controlledCompactUnitaryDistributed()</a>, <a class="el" href="qubits_8c_source.html#l00643">controlledCompactUnitaryLocal()</a>, <a class="el" href="qubits__env__mpi_8c_source.html#l00256">exchangeStateVectors()</a>, <a class="el" href="qubits__env__mpi_8c_source.html#l00231">getChunkPairId()</a>, <a class="el" href="qubits__env__mpi_8c_source.html#l00186">getRotAngle()</a>, <a class="el" href="qubits__env__mpi_8c_source.html#l00249">halfMatrixBlockFitsInChunk()</a>, <a class="el" href="qubits_8h_source.html#l00056">MultiQubit::numAmps</a>, <a class="el" href="qubits_8h_source.html#l00053">MultiQubit::numQubits</a>, <a class="el" href="qubits_8h_source.html#l00051">MultiQubit::pairStateVec</a>, <a class="el" href="qubits__env__local_8c_source.html#l00246">QuESTAssert()</a>, <a class="el" href="qubits_8h_source.html#l00049">MultiQubit::stateVec</a>, and <a class="el" href="qubits_8c_source.html#l00369">validateAlphaBeta()</a>.</p>
+<p>References <a class="el" href="qubits_8h_source.html#l00058">MultiQubit::chunkId</a>, <a class="el" href="qubits__env__mpi_8c_source.html#l00164">chunkIsUpper()</a>, <a class="el" href="qubits_8c_source.html#l00883">controlledCompactUnitaryDistributed()</a>, <a class="el" href="qubits_8c_source.html#l00674">controlledCompactUnitaryLocal()</a>, <a class="el" href="qubits__env__mpi_8c_source.html#l00256">exchangeStateVectors()</a>, <a class="el" href="qubits__env__mpi_8c_source.html#l00231">getChunkPairId()</a>, <a class="el" href="qubits__env__mpi_8c_source.html#l00186">getRotAngle()</a>, <a class="el" href="qubits__env__mpi_8c_source.html#l00249">halfMatrixBlockFitsInChunk()</a>, <a class="el" href="qubits_8h_source.html#l00056">MultiQubit::numAmps</a>, <a class="el" href="qubits_8h_source.html#l00053">MultiQubit::numQubits</a>, <a class="el" href="qubits_8h_source.html#l00051">MultiQubit::pairStateVec</a>, <a class="el" href="qubits__env__local_8c_source.html#l00246">QuESTAssert()</a>, <a class="el" href="qubits_8h_source.html#l00049">MultiQubit::stateVec</a>, and <a class="el" href="qubits_8c_source.html#l00369">validateAlphaBeta()</a>.</p>
+
+<p>Referenced by <a class="el" href="qubits_8c_source.html#l00413">controlledRotateAroundAxis()</a>.</p>
 
 <p><div class="fragment"><pre class="fragment"><a name="l00123"></a>00123 {
 <a name="l00124"></a>00124     <a class="code" href="qubits__env__local_8c.html#a3587b9d533e633ccf1abf9ad2ce45d8d">QuESTAssert</a>(targetQubit &gt;= 0 &amp;&amp; targetQubit &lt; multiQubit.<a class="code" href="structMultiQubit.html#ab5b9795bdc6fb5855e1974dcbbaeb36f" title="Number of qubits in the state.">numQubits</a>, 1, __func__);
@@ -549,7 +559,7 @@
 
 <p>Definition at line <a class="el" href="qubits__env__local_8c_source.html#l00181">181</a> of file <a class="el" href="qubits__env__local_8c_source.html">qubits_env_local.c</a>.</p>
 
-<p>References <a class="el" href="qubits_8h_source.html#l00058">MultiQubit::chunkId</a>, <a class="el" href="qubits__env__mpi_8c_source.html#l00164">chunkIsUpper()</a>, <a class="el" href="qubits_8c_source.html#l01181">controlledNotDistributed()</a>, <a class="el" href="qubits_8c_source.html#l01116">controlledNotLocal()</a>, <a class="el" href="qubits__env__mpi_8c_source.html#l00256">exchangeStateVectors()</a>, <a class="el" href="qubits__env__mpi_8c_source.html#l00231">getChunkPairId()</a>, <a class="el" href="qubits__env__mpi_8c_source.html#l00249">halfMatrixBlockFitsInChunk()</a>, <a class="el" href="qubits_8h_source.html#l00056">MultiQubit::numAmps</a>, <a class="el" href="qubits_8h_source.html#l00053">MultiQubit::numQubits</a>, <a class="el" href="qubits_8h_source.html#l00051">MultiQubit::pairStateVec</a>, <a class="el" href="qubits__env__local_8c_source.html#l00246">QuESTAssert()</a>, and <a class="el" href="qubits_8h_source.html#l00049">MultiQubit::stateVec</a>.</p>
+<p>References <a class="el" href="qubits_8h_source.html#l00058">MultiQubit::chunkId</a>, <a class="el" href="qubits__env__mpi_8c_source.html#l00164">chunkIsUpper()</a>, <a class="el" href="qubits_8c_source.html#l01212">controlledNotDistributed()</a>, <a class="el" href="qubits_8c_source.html#l01147">controlledNotLocal()</a>, <a class="el" href="qubits__env__mpi_8c_source.html#l00256">exchangeStateVectors()</a>, <a class="el" href="qubits__env__mpi_8c_source.html#l00231">getChunkPairId()</a>, <a class="el" href="qubits__env__mpi_8c_source.html#l00249">halfMatrixBlockFitsInChunk()</a>, <a class="el" href="qubits_8h_source.html#l00056">MultiQubit::numAmps</a>, <a class="el" href="qubits_8h_source.html#l00053">MultiQubit::numQubits</a>, <a class="el" href="qubits_8h_source.html#l00051">MultiQubit::pairStateVec</a>, <a class="el" href="qubits__env__local_8c_source.html#l00246">QuESTAssert()</a>, and <a class="el" href="qubits_8h_source.html#l00049">MultiQubit::stateVec</a>.</p>
 
 <p><div class="fragment"><pre class="fragment"><a name="l00182"></a>00182 {
 <a name="l00183"></a>00183     <a class="code" href="qubits__env__local_8c.html#a3587b9d533e633ccf1abf9ad2ce45d8d">QuESTAssert</a>(targetQubit &gt;= 0 &amp;&amp; targetQubit &lt; multiQubit.<a class="code" href="structMultiQubit.html#ab5b9795bdc6fb5855e1974dcbbaeb36f" title="Number of qubits in the state.">numQubits</a>, 1, __func__);
@@ -614,43 +624,342 @@
   </dd>
 </dl>
 
-<p>Definition at line <a class="el" href="qubits_8c_source.html#l01698">1698</a> of file <a class="el" href="qubits_8c_source.html">qubits.c</a>.</p>
+<p>Definition at line <a class="el" href="qubits_8c_source.html#l01729">1729</a> of file <a class="el" href="qubits_8c_source.html">qubits.c</a>.</p>
 
-<p>References <a class="el" href="qubits_8h_source.html#l00058">MultiQubit::chunkId</a>, <a class="el" href="qubits_8c_source.html#l01693">extractBit()</a>, <a class="el" href="qubits_8h_source.html#l00017">ComplexArray::imag</a>, <a class="el" href="qubits_8h_source.html#l00056">MultiQubit::numAmps</a>, <a class="el" href="qubits_8h_source.html#l00053">MultiQubit::numQubits</a>, <a class="el" href="qubits__env__local_8c_source.html#l00246">QuESTAssert()</a>, <a class="el" href="qubits_8h_source.html#l00016">ComplexArray::real</a>, <a class="el" href="precision_8h_source.html#l00025">REAL</a>, and <a class="el" href="qubits_8h_source.html#l00049">MultiQubit::stateVec</a>.</p>
+<p>References <a class="el" href="qubits_8h_source.html#l00058">MultiQubit::chunkId</a>, <a class="el" href="qubits_8c_source.html#l01724">extractBit()</a>, <a class="el" href="qubits_8h_source.html#l00017">ComplexArray::imag</a>, <a class="el" href="qubits_8h_source.html#l00056">MultiQubit::numAmps</a>, <a class="el" href="qubits_8h_source.html#l00053">MultiQubit::numQubits</a>, <a class="el" href="qubits__env__local_8c_source.html#l00246">QuESTAssert()</a>, <a class="el" href="qubits_8h_source.html#l00016">ComplexArray::real</a>, <a class="el" href="precision_8h_source.html#l00025">REAL</a>, and <a class="el" href="qubits_8h_source.html#l00049">MultiQubit::stateVec</a>.</p>
 
-<p><div class="fragment"><pre class="fragment"><a name="l01699"></a>01699 {
-<a name="l01700"></a>01700         <span class="keywordtype">long</span> <span class="keywordtype">long</span> <span class="keywordtype">int</span> index;
-<a name="l01701"></a>01701         <span class="keywordtype">long</span> <span class="keywordtype">long</span> <span class="keywordtype">int</span> stateVecSize;
-<a name="l01702"></a>01702         <span class="keywordtype">int</span> bit1, bit2;
-<a name="l01703"></a>01703 
-<a name="l01704"></a>01704         <span class="keyword">const</span> <span class="keywordtype">long</span> <span class="keywordtype">long</span> <span class="keywordtype">int</span> chunkSize=multiQubit.<a class="code" href="structMultiQubit.html#ae16f47d8b725c914fb7f66b6498d79db" title="Number of probability amplitudes held in stateVec by this process In the non-MPI...">numAmps</a>;
-<a name="l01705"></a>01705         <span class="keyword">const</span> <span class="keywordtype">long</span> <span class="keywordtype">long</span> <span class="keywordtype">int</span> chunkId=multiQubit.<a class="code" href="structMultiQubit.html#ab10c88249fa3825d6227ceec01d37e37" title="The position of the chunk of the state vector held by this process in the full state...">chunkId</a>;
-<a name="l01706"></a>01706 
-<a name="l01707"></a>01707     <a class="code" href="qubits__env__local_8c.html#a3587b9d533e633ccf1abf9ad2ce45d8d">QuESTAssert</a>(idQubit1 &gt;= 0 &amp;&amp; idQubit1 &lt; multiQubit.<a class="code" href="structMultiQubit.html#ab5b9795bdc6fb5855e1974dcbbaeb36f" title="Number of qubits in the state.">numQubits</a>, 2, __func__);
-<a name="l01708"></a>01708     <a class="code" href="qubits__env__local_8c.html#a3587b9d533e633ccf1abf9ad2ce45d8d">QuESTAssert</a>(idQubit2 &gt;= 0 &amp;&amp; idQubit2 &lt; multiQubit.<a class="code" href="structMultiQubit.html#ab5b9795bdc6fb5855e1974dcbbaeb36f" title="Number of qubits in the state.">numQubits</a>, 1, __func__);
-<a name="l01709"></a>01709     <a class="code" href="qubits__env__local_8c.html#a3587b9d533e633ccf1abf9ad2ce45d8d">QuESTAssert</a>(idQubit1 != idQubit2, 3, __func__);
-<a name="l01710"></a>01710 
-<a name="l01711"></a>01711         <span class="comment">// dimension of the state vector</span>
-<a name="l01712"></a>01712         stateVecSize = multiQubit.<a class="code" href="structMultiQubit.html#ae16f47d8b725c914fb7f66b6498d79db" title="Number of probability amplitudes held in stateVec by this process In the non-MPI...">numAmps</a>;
-<a name="l01713"></a>01713         <a class="code" href="precision_8h.html#a4b654506f18b8bfd61ad2a29a7e38c25">REAL</a> *stateVecReal = multiQubit.<a class="code" href="structMultiQubit.html#a45483190d6b01ef6b2f98f2bec9ab94f" title="Probablilty amplitudes for the multi qubit state.">stateVec</a>.<a class="code" href="structComplexArray.html#a4195cac6c784ea1b6271f1c7dba1548a">real</a>;
-<a name="l01714"></a>01714         <a class="code" href="precision_8h.html#a4b654506f18b8bfd61ad2a29a7e38c25">REAL</a> *stateVecImag = multiQubit.<a class="code" href="structMultiQubit.html#a45483190d6b01ef6b2f98f2bec9ab94f" title="Probablilty amplitudes for the multi qubit state.">stateVec</a>.<a class="code" href="structComplexArray.html#a79dde47c7ae530c79cebfdf57b225968">imag</a>;
-<a name="l01715"></a>01715 
-<a name="l01716"></a>01716 <span class="preprocessor"># ifdef _OPENMP</span>
-<a name="l01717"></a>01717 <span class="preprocessor"></span><span class="preprocessor"># pragma omp parallel for \</span>
-<a name="l01718"></a>01718 <span class="preprocessor">        default  (none)                      \</span>
-<a name="l01719"></a>01719 <span class="preprocessor">        shared   (stateVecSize, stateVecReal,stateVecImag ) \</span>
-<a name="l01720"></a>01720 <span class="preprocessor">        private  (index,bit1,bit2)                     \</span>
-<a name="l01721"></a>01721 <span class="preprocessor">        schedule (static)</span>
-<a name="l01722"></a>01722 <span class="preprocessor"></span><span class="preprocessor"># endif</span>
-<a name="l01723"></a>01723 <span class="preprocessor"></span>        <span class="keywordflow">for</span> (index=0; index&lt;stateVecSize; index++) {
-<a name="l01724"></a>01724                 bit1 = <a class="code" href="qubits_8c.html#a100463f6ec212c76a5fad99579000505" title="Get the value of the bit at a particular index in a number.">extractBit</a> (idQubit1, index+chunkId*chunkSize);
-<a name="l01725"></a>01725                 bit2 = <a class="code" href="qubits_8c.html#a100463f6ec212c76a5fad99579000505" title="Get the value of the bit at a particular index in a number.">extractBit</a> (idQubit2, index+chunkId*chunkSize);
-<a name="l01726"></a>01726                 <span class="keywordflow">if</span> (bit1 &amp;&amp; bit2) {
-<a name="l01727"></a>01727                         stateVecReal [index] = - stateVecReal [index];
-<a name="l01728"></a>01728                         stateVecImag [index] = - stateVecImag [index];
-<a name="l01729"></a>01729                 }
-<a name="l01730"></a>01730         }
-<a name="l01731"></a>01731 }
+<p><div class="fragment"><pre class="fragment"><a name="l01730"></a>01730 {
+<a name="l01731"></a>01731         <span class="keywordtype">long</span> <span class="keywordtype">long</span> <span class="keywordtype">int</span> index;
+<a name="l01732"></a>01732         <span class="keywordtype">long</span> <span class="keywordtype">long</span> <span class="keywordtype">int</span> stateVecSize;
+<a name="l01733"></a>01733         <span class="keywordtype">int</span> bit1, bit2;
+<a name="l01734"></a>01734 
+<a name="l01735"></a>01735         <span class="keyword">const</span> <span class="keywordtype">long</span> <span class="keywordtype">long</span> <span class="keywordtype">int</span> chunkSize=multiQubit.<a class="code" href="structMultiQubit.html#ae16f47d8b725c914fb7f66b6498d79db" title="Number of probability amplitudes held in stateVec by this process In the non-MPI...">numAmps</a>;
+<a name="l01736"></a>01736         <span class="keyword">const</span> <span class="keywordtype">long</span> <span class="keywordtype">long</span> <span class="keywordtype">int</span> chunkId=multiQubit.<a class="code" href="structMultiQubit.html#ab10c88249fa3825d6227ceec01d37e37" title="The position of the chunk of the state vector held by this process in the full state...">chunkId</a>;
+<a name="l01737"></a>01737 
+<a name="l01738"></a>01738     <a class="code" href="qubits__env__local_8c.html#a3587b9d533e633ccf1abf9ad2ce45d8d">QuESTAssert</a>(idQubit1 &gt;= 0 &amp;&amp; idQubit1 &lt; multiQubit.<a class="code" href="structMultiQubit.html#ab5b9795bdc6fb5855e1974dcbbaeb36f" title="Number of qubits in the state.">numQubits</a>, 2, __func__);
+<a name="l01739"></a>01739     <a class="code" href="qubits__env__local_8c.html#a3587b9d533e633ccf1abf9ad2ce45d8d">QuESTAssert</a>(idQubit2 &gt;= 0 &amp;&amp; idQubit2 &lt; multiQubit.<a class="code" href="structMultiQubit.html#ab5b9795bdc6fb5855e1974dcbbaeb36f" title="Number of qubits in the state.">numQubits</a>, 1, __func__);
+<a name="l01740"></a>01740     <a class="code" href="qubits__env__local_8c.html#a3587b9d533e633ccf1abf9ad2ce45d8d">QuESTAssert</a>(idQubit1 != idQubit2, 3, __func__);
+<a name="l01741"></a>01741 
+<a name="l01742"></a>01742         <span class="comment">// dimension of the state vector</span>
+<a name="l01743"></a>01743         stateVecSize = multiQubit.<a class="code" href="structMultiQubit.html#ae16f47d8b725c914fb7f66b6498d79db" title="Number of probability amplitudes held in stateVec by this process In the non-MPI...">numAmps</a>;
+<a name="l01744"></a>01744         <a class="code" href="precision_8h.html#a4b654506f18b8bfd61ad2a29a7e38c25">REAL</a> *stateVecReal = multiQubit.<a class="code" href="structMultiQubit.html#a45483190d6b01ef6b2f98f2bec9ab94f" title="Probablilty amplitudes for the multi qubit state.">stateVec</a>.<a class="code" href="structComplexArray.html#a4195cac6c784ea1b6271f1c7dba1548a">real</a>;
+<a name="l01745"></a>01745         <a class="code" href="precision_8h.html#a4b654506f18b8bfd61ad2a29a7e38c25">REAL</a> *stateVecImag = multiQubit.<a class="code" href="structMultiQubit.html#a45483190d6b01ef6b2f98f2bec9ab94f" title="Probablilty amplitudes for the multi qubit state.">stateVec</a>.<a class="code" href="structComplexArray.html#a79dde47c7ae530c79cebfdf57b225968">imag</a>;
+<a name="l01746"></a>01746 
+<a name="l01747"></a>01747 <span class="preprocessor"># ifdef _OPENMP</span>
+<a name="l01748"></a>01748 <span class="preprocessor"></span><span class="preprocessor"># pragma omp parallel for \</span>
+<a name="l01749"></a>01749 <span class="preprocessor">        default  (none)                      \</span>
+<a name="l01750"></a>01750 <span class="preprocessor">        shared   (stateVecSize, stateVecReal,stateVecImag ) \</span>
+<a name="l01751"></a>01751 <span class="preprocessor">        private  (index,bit1,bit2)                     \</span>
+<a name="l01752"></a>01752 <span class="preprocessor">        schedule (static)</span>
+<a name="l01753"></a>01753 <span class="preprocessor"></span><span class="preprocessor"># endif</span>
+<a name="l01754"></a>01754 <span class="preprocessor"></span>        <span class="keywordflow">for</span> (index=0; index&lt;stateVecSize; index++) {
+<a name="l01755"></a>01755                 bit1 = <a class="code" href="qubits_8c.html#a100463f6ec212c76a5fad99579000505" title="Get the value of the bit at a particular index in a number.">extractBit</a> (idQubit1, index+chunkId*chunkSize);
+<a name="l01756"></a>01756                 bit2 = <a class="code" href="qubits_8c.html#a100463f6ec212c76a5fad99579000505" title="Get the value of the bit at a particular index in a number.">extractBit</a> (idQubit2, index+chunkId*chunkSize);
+<a name="l01757"></a>01757                 <span class="keywordflow">if</span> (bit1 &amp;&amp; bit2) {
+<a name="l01758"></a>01758                         stateVecReal [index] = - stateVecReal [index];
+<a name="l01759"></a>01759                         stateVecImag [index] = - stateVecImag [index];
+<a name="l01760"></a>01760                 }
+<a name="l01761"></a>01761         }
+<a name="l01762"></a>01762 }
+</pre></div></p>
+
+</div>
+</div>
+<a class="anchor" id="ad41f82b41149393a642391b67b3a287e"></a><!-- doxytag: member="qubits.h::controlledRotateAroundAxis" ref="ad41f82b41149393a642391b67b3a287e" args="(MultiQubit multiQubit, const int controlQubit, const int targetQubit, REAL angle, Vector axis)" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void controlledRotateAroundAxis </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="structMultiQubit.html">MultiQubit</a>&nbsp;</td>
+          <td class="paramname"> <em>multiQubit</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const int&nbsp;</td>
+          <td class="paramname"> <em>controlQubit</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const int&nbsp;</td>
+          <td class="paramname"> <em>targetQubit</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">REAL&nbsp;</td>
+          <td class="paramname"> <em>angle</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="structVector.html">Vector</a>&nbsp;</td>
+          <td class="paramname"> <em>axis</em></td><td>&nbsp;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td><td></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+<p>Applies a controlled rotation by a given angle around a given vector on the Bloch-sphere. </p>
+<p>The vector must not be zero (else an error is thrown), but needn't be unit magnitude.</p>
+<p>For angle <img class="formulaInl" alt="$\theta$" src="form_23.png"/> and axis vector <img class="formulaInl" alt="$\vec{n}$" src="form_52.png"/>, applies <img class="formulaInl" alt="$R_{\hat{n}} = \exp \left(- i \frac{\theta}{2} \hat{n} \cdot \vec{\sigma} \right) $" src="form_55.png"/> to states where the target qubit is 1 (<img class="formulaInl" alt="$\vec{\sigma}$" src="form_54.png"/> is the vector of Pauli matrices).</p>
+<p class="formulaDsp">
+<img class="formulaDsp" alt="\[ \setlength{\fboxrule}{0.01pt} \fbox{ \begin{tikzpicture}[scale=.5] \node[draw=none] at (-3.5, 2) {control}; \node[draw=none] at (-3.5, 0) {target}; \draw (-2, 2) -- (2, 2); \draw[fill=black] (0, 2) circle (.2); \draw (0, 2) -- (0, 1); \draw (-2,0) -- (-1, 0); \draw (1, 0) -- (2, 0); \draw (-1,-1)--(-1,1)--(1,1)--(1,-1)--cycle; \node[draw=none] at (0, 0) {$R_{\hat{n}}(\theta)$}; \end{tikzpicture} } \]" src="form_59.png"/>
+</p>
+<dl><dt><b>Parameters:</b></dt><dd>
+  <table border="0" cellspacing="2" cellpadding="0">
+    <tr><td valign="top"><tt>[in,out]</tt>&nbsp;</td><td valign="top"><em>multiQubit</em>&nbsp;</td><td>object representing the set of all qubits </td></tr>
+    <tr><td valign="top"><tt>[in]</tt>&nbsp;</td><td valign="top"><em>controlQubit</em>&nbsp;</td><td>qubit with value 1 in the rotated states </td></tr>
+    <tr><td valign="top"><tt>[in]</tt>&nbsp;</td><td valign="top"><em>targetQubit</em>&nbsp;</td><td>qubit to rotate </td></tr>
+    <tr><td valign="top"><tt>[in]</tt>&nbsp;</td><td valign="top"><em>angle</em>&nbsp;</td><td>angle by which to rotate in radians </td></tr>
+    <tr><td valign="top"><tt>[in]</tt>&nbsp;</td><td valign="top"><em>axis</em>&nbsp;</td><td>vector around which to rotate (can be non-unit; will be normalised) </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl><dt><b>Exceptions:</b></dt><dd>
+  <table border="0" cellspacing="2" cellpadding="0">
+    <tr><td valign="top"></td><td valign="top"><em>exitWithError</em>&nbsp;</td><td>if either <code>controlQubit</code> or <code>targetQubit</code> are outside [0, <code>multiQubit.numQubits</code>) or are equal or if <code>axis</code> is the zero vector </td></tr>
+  </table>
+  </dd>
+</dl>
+
+<p>Definition at line <a class="el" href="qubits_8h_source.html#l00682">682</a> of file <a class="el" href="qubits_8h_source.html">qubits.h</a>.</p>
+
+<p>References <a class="el" href="qubits__env__local_8c_source.html#l00122">controlledCompactUnitary()</a>, <a class="el" href="qubits_8h_source.html#l00025">Complex::imag</a>, <a class="el" href="qubits_8h_source.html#l00024">Complex::real</a>, <a class="el" href="qubits_8h_source.html#l00040">Vector::x</a>, <a class="el" href="qubits_8h_source.html#l00040">Vector::y</a>, and <a class="el" href="qubits_8h_source.html#l00040">Vector::z</a>.</p>
+
+<p><div class="fragment"><pre class="fragment"><a name="l00682"></a>00682                                                                                                                               {
+<a name="l00683"></a>00683         
+<a name="l00684"></a>00684         <span class="keywordtype">double</span> mag = sqrt(pow(axis.<a class="code" href="structVector.html#aac7abe171ba4bada50ed72acba6259fc">x</a>,2) + pow(axis.<a class="code" href="structVector.html#a375ca805d4c808a53d7c4e0c737ae3de">y</a>,2) + pow(axis.<a class="code" href="structVector.html#ad4e863651be7d6b7e2b28cd7445a0ccf">z</a>,2));
+<a name="l00685"></a>00685         <a class="code" href="structVector.html" title="Represents a 3-vector of real numbers.">Vector</a> unitAxis = {axis.<a class="code" href="structVector.html#aac7abe171ba4bada50ed72acba6259fc">x</a>/mag, axis.<a class="code" href="structVector.html#a375ca805d4c808a53d7c4e0c737ae3de">y</a>/mag, axis.<a class="code" href="structVector.html#ad4e863651be7d6b7e2b28cd7445a0ccf">z</a>/mag};
+<a name="l00686"></a>00686         
+<a name="l00687"></a>00687         <a class="code" href="structComplex.html" title="Represents one complex number.">Complex</a> alpha, beta;
+<a name="l00688"></a>00688         alpha.<a class="code" href="structComplex.html#a479ad939835457595fcca3ca55c06283">real</a> = cos(angle/2.0);
+<a name="l00689"></a>00689         alpha.<a class="code" href="structComplex.html#a1151948284b21c0052f203f23ab931d9">imag</a> = -sin(angle/2.0)*unitAxis.<a class="code" href="structVector.html#ad4e863651be7d6b7e2b28cd7445a0ccf">z</a>;        
+<a name="l00690"></a>00690         beta.<a class="code" href="structComplex.html#a479ad939835457595fcca3ca55c06283">real</a> = sin(angle/2.0)*unitAxis.<a class="code" href="structVector.html#a375ca805d4c808a53d7c4e0c737ae3de">y</a>;
+<a name="l00691"></a>00691         beta.<a class="code" href="structComplex.html#a1151948284b21c0052f203f23ab931d9">imag</a> = -sin(angle/2.0)*unitAxis.<a class="code" href="structVector.html#aac7abe171ba4bada50ed72acba6259fc">x</a>;
+<a name="l00692"></a>00692         <a class="code" href="qubits_8h.html#ab4812953bc457405b3aa05a4c2f64f4a" title="Apply a controlled unitary (single control, single target) parameterised by two given...">controlledCompactUnitary</a>(multiQubit, controlQubit, targetQubit, alpha, beta);
+<a name="l00693"></a>00693 }
+</pre></div></p>
+
+</div>
+</div>
+<a class="anchor" id="ac6923ac57e67d9a21096e06f6a9012f6"></a><!-- doxytag: member="qubits.h::controlledRotateX" ref="ac6923ac57e67d9a21096e06f6a9012f6" args="(MultiQubit multiQubit, const int controlQubit, const int targetQubit, REAL angle)" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void controlledRotateX </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="structMultiQubit.html">MultiQubit</a>&nbsp;</td>
+          <td class="paramname"> <em>multiQubit</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const int&nbsp;</td>
+          <td class="paramname"> <em>controlQubit</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const int&nbsp;</td>
+          <td class="paramname"> <em>targetQubit</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">REAL&nbsp;</td>
+          <td class="paramname"> <em>angle</em></td><td>&nbsp;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td><td></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+<p>Applies a controlled rotation by a given angle around the X-axis of the Bloch-sphere. </p>
+<p>The target qubit is rotated in states where the control qubit has value 1.</p>
+<p class="formulaDsp">
+<img class="formulaDsp" alt="\[ \setlength{\fboxrule}{0.01pt} \fbox{ \begin{tikzpicture}[scale=.5] \node[draw=none] at (-3.5, 2) {control}; \node[draw=none] at (-3.5, 0) {target}; \draw (-2, 2) -- (2, 2); \draw[fill=black] (0, 2) circle (.2); \draw (0, 2) -- (0, 1); \draw (-2,0) -- (-1, 0); \draw (1, 0) -- (2, 0); \draw (-1,-1)--(-1,1)--(1,1)--(1,-1)--cycle; \node[draw=none] at (0, 0) {$R_x(\theta)$}; \end{tikzpicture} } \]" src="form_56.png"/>
+</p>
+<dl><dt><b>Parameters:</b></dt><dd>
+  <table border="0" cellspacing="2" cellpadding="0">
+    <tr><td valign="top"><tt>[in,out]</tt>&nbsp;</td><td valign="top"><em>multiQubit</em>&nbsp;</td><td>object representing the set of all qubits </td></tr>
+    <tr><td valign="top"><tt>[in]</tt>&nbsp;</td><td valign="top"><em>controlQubit</em>&nbsp;</td><td>qubit which has value 1 in the rotated states </td></tr>
+    <tr><td valign="top"><tt>[in]</tt>&nbsp;</td><td valign="top"><em>tagretQubit</em>&nbsp;</td><td>qubit to rotate </td></tr>
+    <tr><td valign="top"><tt>[in]</tt>&nbsp;</td><td valign="top"><em>angle</em>&nbsp;</td><td>angle by which to rotate the target qubit in radians </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl><dt><b>Exceptions:</b></dt><dd>
+  <table border="0" cellspacing="2" cellpadding="0">
+    <tr><td valign="top"></td><td valign="top"><em>exitWithError</em>&nbsp;</td><td>if either <code>controlQubit</code> or <code>targetQubit</code> are outside [0, <code>multiQubit.numQubits</code>) or are equal. </td></tr>
+  </table>
+  </dd>
+</dl>
+
+<p>Definition at line <a class="el" href="qubits_8h_source.html#l00572">572</a> of file <a class="el" href="qubits_8h_source.html">qubits.h</a>.</p>
+
+<p>References <a class="el" href="qubits_8c_source.html#l00413">controlledRotateAroundAxis()</a>.</p>
+
+<p><div class="fragment"><pre class="fragment"><a name="l00572"></a>00572                                                                                                         {
+<a name="l00573"></a>00573 
+<a name="l00574"></a>00574         <a class="code" href="structVector.html" title="Represents a 3-vector of real numbers.">Vector</a> unitAxis = {1, 0, 0};
+<a name="l00575"></a>00575         <a class="code" href="qubits_8c.html#ad41f82b41149393a642391b67b3a287e">controlledRotateAroundAxis</a>(multiQubit, controlQubit, targetQubit, angle, unitAxis);
+<a name="l00576"></a>00576 }
+</pre></div></p>
+
+</div>
+</div>
+<a class="anchor" id="a71e90a2f7292116338c062934f9d1202"></a><!-- doxytag: member="qubits.h::controlledRotateY" ref="a71e90a2f7292116338c062934f9d1202" args="(MultiQubit multiQubit, const int controlQubit, const int targetQubit, REAL angle)" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void controlledRotateY </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="structMultiQubit.html">MultiQubit</a>&nbsp;</td>
+          <td class="paramname"> <em>multiQubit</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const int&nbsp;</td>
+          <td class="paramname"> <em>controlQubit</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const int&nbsp;</td>
+          <td class="paramname"> <em>targetQubit</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">REAL&nbsp;</td>
+          <td class="paramname"> <em>angle</em></td><td>&nbsp;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td><td></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+<p>Applies a controlled rotation by a given angle around the Y-axis of the Bloch-sphere. </p>
+<p>The target qubit is rotated in states where the control qubit has value 1.</p>
+<p class="formulaDsp">
+<img class="formulaDsp" alt="\[ \setlength{\fboxrule}{0.01pt} \fbox{ \begin{tikzpicture}[scale=.5] \node[draw=none] at (-3.5, 2) {control}; \node[draw=none] at (-3.5, 0) {target}; \draw (-2, 2) -- (2, 2); \draw[fill=black] (0, 2) circle (.2); \draw (0, 2) -- (0, 1); \draw (-2,0) -- (-1, 0); \draw (1, 0) -- (2, 0); \draw (-1,-1)--(-1,1)--(1,1)--(1,-1)--cycle; \node[draw=none] at (0, 0) {$R_y(\theta)$}; \end{tikzpicture} } \]" src="form_57.png"/>
+</p>
+<dl><dt><b>Parameters:</b></dt><dd>
+  <table border="0" cellspacing="2" cellpadding="0">
+    <tr><td valign="top"><tt>[in,out]</tt>&nbsp;</td><td valign="top"><em>multiQubit</em>&nbsp;</td><td>object representing the set of all qubits </td></tr>
+    <tr><td valign="top"><tt>[in]</tt>&nbsp;</td><td valign="top"><em>controlQubit</em>&nbsp;</td><td>qubit which has value 1 in the rotated states </td></tr>
+    <tr><td valign="top"><tt>[in]</tt>&nbsp;</td><td valign="top"><em>tagretQubit</em>&nbsp;</td><td>qubit to rotate </td></tr>
+    <tr><td valign="top"><tt>[in]</tt>&nbsp;</td><td valign="top"><em>angle</em>&nbsp;</td><td>angle by which to rotate the target qubit in radians </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl><dt><b>Exceptions:</b></dt><dd>
+  <table border="0" cellspacing="2" cellpadding="0">
+    <tr><td valign="top"></td><td valign="top"><em>exitWithError</em>&nbsp;</td><td>if either <code>controlQubit</code> or <code>targetQubit</code> are outside [0, <code>multiQubit.numQubits</code>) or are equal. </td></tr>
+  </table>
+  </dd>
+</dl>
+
+<p>Definition at line <a class="el" href="qubits_8h_source.html#l00607">607</a> of file <a class="el" href="qubits_8h_source.html">qubits.h</a>.</p>
+
+<p>References <a class="el" href="qubits_8c_source.html#l00413">controlledRotateAroundAxis()</a>.</p>
+
+<p><div class="fragment"><pre class="fragment"><a name="l00607"></a>00607                                                                                                         {
+<a name="l00608"></a>00608 
+<a name="l00609"></a>00609         <a class="code" href="structVector.html" title="Represents a 3-vector of real numbers.">Vector</a> unitAxis = {0, 1, 0};
+<a name="l00610"></a>00610         <a class="code" href="qubits_8c.html#ad41f82b41149393a642391b67b3a287e">controlledRotateAroundAxis</a>(multiQubit, controlQubit, targetQubit, angle, unitAxis);
+<a name="l00611"></a>00611 }
+</pre></div></p>
+
+</div>
+</div>
+<a class="anchor" id="a668e5d2634b02e98bc73675ccb11d61c"></a><!-- doxytag: member="qubits.h::controlledRotateZ" ref="a668e5d2634b02e98bc73675ccb11d61c" args="(MultiQubit multiQubit, const int controlQubit, const int targetQubit, REAL angle)" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void controlledRotateZ </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="structMultiQubit.html">MultiQubit</a>&nbsp;</td>
+          <td class="paramname"> <em>multiQubit</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const int&nbsp;</td>
+          <td class="paramname"> <em>controlQubit</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const int&nbsp;</td>
+          <td class="paramname"> <em>targetQubit</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">REAL&nbsp;</td>
+          <td class="paramname"> <em>angle</em></td><td>&nbsp;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td><td></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+<p>Applies a controlled rotation by a given angle around the Z-axis of the Bloch-sphere. </p>
+<p>The target qubit is rotated in states where the control qubit has value 1.</p>
+<p class="formulaDsp">
+<img class="formulaDsp" alt="\[ \setlength{\fboxrule}{0.01pt} \fbox{ \begin{tikzpicture}[scale=.5] \node[draw=none] at (-3.5, 2) {control}; \node[draw=none] at (-3.5, 0) {target}; \draw (-2, 2) -- (2, 2); \draw[fill=black] (0, 2) circle (.2); \draw (0, 2) -- (0, 1); \draw (-2,0) -- (-1, 0); \draw (1, 0) -- (2, 0); \draw (-1,-1)--(-1,1)--(1,1)--(1,-1)--cycle; \node[draw=none] at (0, 0) {$R_z(\theta)$}; \end{tikzpicture} } \]" src="form_58.png"/>
+</p>
+<dl><dt><b>Parameters:</b></dt><dd>
+  <table border="0" cellspacing="2" cellpadding="0">
+    <tr><td valign="top"><tt>[in,out]</tt>&nbsp;</td><td valign="top"><em>multiQubit</em>&nbsp;</td><td>object representing the set of all qubits </td></tr>
+    <tr><td valign="top"><tt>[in]</tt>&nbsp;</td><td valign="top"><em>controlQubit</em>&nbsp;</td><td>qubit which has value 1 in the rotated states </td></tr>
+    <tr><td valign="top"><tt>[in]</tt>&nbsp;</td><td valign="top"><em>tagretQubit</em>&nbsp;</td><td>qubit to rotate </td></tr>
+    <tr><td valign="top"><tt>[in]</tt>&nbsp;</td><td valign="top"><em>angle</em>&nbsp;</td><td>angle by which to rotate the target qubit in radians </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl><dt><b>Exceptions:</b></dt><dd>
+  <table border="0" cellspacing="2" cellpadding="0">
+    <tr><td valign="top"></td><td valign="top"><em>exitWithError</em>&nbsp;</td><td>if either <code>controlQubit</code> or <code>targetQubit</code> are outside [0, <code>multiQubit.numQubits</code>) or are equal. </td></tr>
+  </table>
+  </dd>
+</dl>
+
+<p>Definition at line <a class="el" href="qubits_8h_source.html#l00642">642</a> of file <a class="el" href="qubits_8h_source.html">qubits.h</a>.</p>
+
+<p>References <a class="el" href="qubits_8c_source.html#l00413">controlledRotateAroundAxis()</a>.</p>
+
+<p><div class="fragment"><pre class="fragment"><a name="l00642"></a>00642                                                                                                         {
+<a name="l00643"></a>00643 
+<a name="l00644"></a>00644         <a class="code" href="structVector.html" title="Represents a 3-vector of real numbers.">Vector</a> unitAxis = {0, 0, 1};
+<a name="l00645"></a>00645         <a class="code" href="qubits_8c.html#ad41f82b41149393a642391b67b3a287e">controlledRotateAroundAxis</a>(multiQubit, controlQubit, targetQubit, angle, unitAxis);
+<a name="l00646"></a>00646 }
 </pre></div></p>
 
 </div>
@@ -719,7 +1028,7 @@
 
 <p>Definition at line <a class="el" href="qubits__env__local_8c_source.html#l00133">133</a> of file <a class="el" href="qubits__env__local_8c_source.html">qubits_env_local.c</a>.</p>
 
-<p>References <a class="el" href="qubits_8h_source.html#l00058">MultiQubit::chunkId</a>, <a class="el" href="qubits__env__mpi_8c_source.html#l00164">chunkIsUpper()</a>, <a class="el" href="qubits_8c_source.html#l00915">controlledUnitaryDistributed()</a>, <a class="el" href="qubits_8c_source.html#l00773">controlledUnitaryLocal()</a>, <a class="el" href="qubits__env__mpi_8c_source.html#l00256">exchangeStateVectors()</a>, <a class="el" href="qubits__env__mpi_8c_source.html#l00231">getChunkPairId()</a>, <a class="el" href="qubits__env__mpi_8c_source.html#l00211">getRotAngleFromUnitaryMatrix()</a>, <a class="el" href="qubits__env__mpi_8c_source.html#l00249">halfMatrixBlockFitsInChunk()</a>, <a class="el" href="qubits_8h_source.html#l00056">MultiQubit::numAmps</a>, <a class="el" href="qubits_8h_source.html#l00053">MultiQubit::numQubits</a>, <a class="el" href="qubits_8h_source.html#l00051">MultiQubit::pairStateVec</a>, <a class="el" href="qubits__env__local_8c_source.html#l00246">QuESTAssert()</a>, <a class="el" href="qubits_8h_source.html#l00049">MultiQubit::stateVec</a>, and <a class="el" href="qubits_8c_source.html#l00344">validateMatrixIsUnitary()</a>.</p>
+<p>References <a class="el" href="qubits_8h_source.html#l00058">MultiQubit::chunkId</a>, <a class="el" href="qubits__env__mpi_8c_source.html#l00164">chunkIsUpper()</a>, <a class="el" href="qubits_8c_source.html#l00946">controlledUnitaryDistributed()</a>, <a class="el" href="qubits_8c_source.html#l00804">controlledUnitaryLocal()</a>, <a class="el" href="qubits__env__mpi_8c_source.html#l00256">exchangeStateVectors()</a>, <a class="el" href="qubits__env__mpi_8c_source.html#l00231">getChunkPairId()</a>, <a class="el" href="qubits__env__mpi_8c_source.html#l00211">getRotAngleFromUnitaryMatrix()</a>, <a class="el" href="qubits__env__mpi_8c_source.html#l00249">halfMatrixBlockFitsInChunk()</a>, <a class="el" href="qubits_8h_source.html#l00056">MultiQubit::numAmps</a>, <a class="el" href="qubits_8h_source.html#l00053">MultiQubit::numQubits</a>, <a class="el" href="qubits_8h_source.html#l00051">MultiQubit::pairStateVec</a>, <a class="el" href="qubits__env__local_8c_source.html#l00246">QuESTAssert()</a>, <a class="el" href="qubits_8h_source.html#l00049">MultiQubit::stateVec</a>, and <a class="el" href="qubits_8c_source.html#l00344">validateMatrixIsUnitary()</a>.</p>
 
 <p><div class="fragment"><pre class="fragment"><a name="l00134"></a>00134 {
 <a name="l00135"></a>00135     <a class="code" href="qubits__env__local_8c.html#a3587b9d533e633ccf1abf9ad2ce45d8d">QuESTAssert</a>(targetQubit &gt;= 0 &amp;&amp; targetQubit &lt; multiQubit.<a class="code" href="structMultiQubit.html#ab5b9795bdc6fb5855e1974dcbbaeb36f" title="Number of qubits in the state.">numQubits</a>, 1, __func__);
@@ -921,7 +1230,7 @@
 
 <p>Definition at line <a class="el" href="qubits__env__local_8c_source.html#l00189">189</a> of file <a class="el" href="qubits__env__local_8c_source.html">qubits_env_local.c</a>.</p>
 
-<p>References <a class="el" href="qubits_8h_source.html#l00058">MultiQubit::chunkId</a>, <a class="el" href="qubits_8c_source.html#l01638">findProbabilityOfZeroDistributed()</a>, <a class="el" href="qubits_8c_source.html#l01566">findProbabilityOfZeroLocal()</a>, <a class="el" href="qubits__env__mpi_8c_source.html#l00249">halfMatrixBlockFitsInChunk()</a>, <a class="el" href="qubits__env__mpi_8c_source.html#l00666">isChunkToSkipInFindPZero()</a>, <a class="el" href="precision_8h_source.html#l00026">MPI_QuEST_REAL</a>, <a class="el" href="qubits_8h_source.html#l00056">MultiQubit::numAmps</a>, <a class="el" href="qubits_8h_source.html#l00053">MultiQubit::numQubits</a>, <a class="el" href="qubits__env__local_8c_source.html#l00246">QuESTAssert()</a>, and <a class="el" href="precision_8h_source.html#l00025">REAL</a>.</p>
+<p>References <a class="el" href="qubits_8h_source.html#l00058">MultiQubit::chunkId</a>, <a class="el" href="qubits_8c_source.html#l01669">findProbabilityOfZeroDistributed()</a>, <a class="el" href="qubits_8c_source.html#l01597">findProbabilityOfZeroLocal()</a>, <a class="el" href="qubits__env__mpi_8c_source.html#l00249">halfMatrixBlockFitsInChunk()</a>, <a class="el" href="qubits__env__mpi_8c_source.html#l00666">isChunkToSkipInFindPZero()</a>, <a class="el" href="precision_8h_source.html#l00026">MPI_QuEST_REAL</a>, <a class="el" href="qubits_8h_source.html#l00056">MultiQubit::numAmps</a>, <a class="el" href="qubits_8h_source.html#l00053">MultiQubit::numQubits</a>, <a class="el" href="qubits__env__local_8c_source.html#l00246">QuESTAssert()</a>, and <a class="el" href="precision_8h_source.html#l00025">REAL</a>.</p>
 
 <p>Referenced by <a class="el" href="qubits__env__local_8c_source.html#l00198">collapseToOutcome()</a>, and <a class="el" href="qubits__env__local_8c_source.html#l00215">measureWithStats()</a>.</p>
 
@@ -1028,7 +1337,7 @@
 
 <p>References <a class="el" href="qubits_8h_source.html#l00058">MultiQubit::chunkId</a>, <a class="el" href="qubits__env__mpi_8c_source.html#l00102">getChunkIdFromIndex()</a>, <a class="el" href="qubits_8h_source.html#l00017">ComplexArray::imag</a>, <a class="el" href="precision_8h_source.html#l00026">MPI_QuEST_REAL</a>, <a class="el" href="qubits_8h_source.html#l00056">MultiQubit::numAmps</a>, <a class="el" href="precision_8h_source.html#l00025">REAL</a>, and <a class="el" href="qubits_8h_source.html#l00049">MultiQubit::stateVec</a>.</p>
 
-<p>Referenced by <a class="el" href="qubits_8c_source.html#l01940">getProbEl()</a>.</p>
+<p>Referenced by <a class="el" href="qubits_8c_source.html#l01971">getProbEl()</a>.</p>
 
 <p><div class="fragment"><pre class="fragment"><a name="l00100"></a>00100                                                              {
 <a name="l00101"></a>00101         <span class="keywordflow">return</span> multiQubit.<a class="code" href="structMultiQubit.html#a45483190d6b01ef6b2f98f2bec9ab94f" title="Probablilty amplitudes for the multi qubit state.">stateVec</a>.<a class="code" href="structComplexArray.html#a79dde47c7ae530c79cebfdf57b225968">imag</a>[index];
@@ -1078,17 +1387,17 @@
   </dd>
 </dl>
 
-<p>Definition at line <a class="el" href="qubits_8c_source.html#l01940">1940</a> of file <a class="el" href="qubits_8c_source.html">qubits.c</a>.</p>
+<p>Definition at line <a class="el" href="qubits_8c_source.html#l01971">1971</a> of file <a class="el" href="qubits_8c_source.html">qubits.c</a>.</p>
 
 <p>References <a class="el" href="qubits__env__local_8c_source.html#l00100">getImagAmpEl()</a>, <a class="el" href="qubits__env__local_8c_source.html#l00096">getRealAmpEl()</a>, and <a class="el" href="precision_8h_source.html#l00025">REAL</a>.</p>
 
-<p><div class="fragment"><pre class="fragment"><a name="l01940"></a>01940                                                           {
-<a name="l01941"></a>01941         <a class="code" href="precision_8h.html#a4b654506f18b8bfd61ad2a29a7e38c25">REAL</a> real;
-<a name="l01942"></a>01942         <a class="code" href="precision_8h.html#a4b654506f18b8bfd61ad2a29a7e38c25">REAL</a> imag;
-<a name="l01943"></a>01943         real = <a class="code" href="qubits_8h.html#a317b786f577fa6bc136ea7f0ee7330a7" title="Get the real component of the complex probability amplitude at an index in the state...">getRealAmpEl</a>(multiQubit, index);
-<a name="l01944"></a>01944         imag = <a class="code" href="qubits_8h.html#a3615f76fd5f57008d9b74bbd10533dd0" title="Get the imaginary component of the complex probability amplitude at an index in the...">getImagAmpEl</a>(multiQubit, index);
-<a name="l01945"></a>01945         <span class="keywordflow">return</span> real*real + imag*imag;
-<a name="l01946"></a>01946 }
+<p><div class="fragment"><pre class="fragment"><a name="l01971"></a>01971                                                           {
+<a name="l01972"></a>01972         <a class="code" href="precision_8h.html#a4b654506f18b8bfd61ad2a29a7e38c25">REAL</a> real;
+<a name="l01973"></a>01973         <a class="code" href="precision_8h.html#a4b654506f18b8bfd61ad2a29a7e38c25">REAL</a> imag;
+<a name="l01974"></a>01974         real = <a class="code" href="qubits_8h.html#a317b786f577fa6bc136ea7f0ee7330a7" title="Get the real component of the complex probability amplitude at an index in the state...">getRealAmpEl</a>(multiQubit, index);
+<a name="l01975"></a>01975         imag = <a class="code" href="qubits_8h.html#a3615f76fd5f57008d9b74bbd10533dd0" title="Get the imaginary component of the complex probability amplitude at an index in the...">getImagAmpEl</a>(multiQubit, index);
+<a name="l01976"></a>01976         <span class="keywordflow">return</span> real*real + imag*imag;
+<a name="l01977"></a>01977 }
 </pre></div></p>
 
 </div>
@@ -1139,7 +1448,7 @@
 
 <p>References <a class="el" href="qubits_8h_source.html#l00058">MultiQubit::chunkId</a>, <a class="el" href="qubits__env__mpi_8c_source.html#l00102">getChunkIdFromIndex()</a>, <a class="el" href="precision_8h_source.html#l00026">MPI_QuEST_REAL</a>, <a class="el" href="qubits_8h_source.html#l00056">MultiQubit::numAmps</a>, <a class="el" href="precision_8h_source.html#l00025">REAL</a>, <a class="el" href="qubits_8h_source.html#l00016">ComplexArray::real</a>, and <a class="el" href="qubits_8h_source.html#l00049">MultiQubit::stateVec</a>.</p>
 
-<p>Referenced by <a class="el" href="qubits_8c_source.html#l01940">getProbEl()</a>.</p>
+<p>Referenced by <a class="el" href="qubits_8c_source.html#l01971">getProbEl()</a>.</p>
 
 <p><div class="fragment"><pre class="fragment"><a name="l00096"></a>00096                                                              {
 <a name="l00097"></a>00097         <span class="keywordflow">return</span> multiQubit.<a class="code" href="structMultiQubit.html#a45483190d6b01ef6b2f98f2bec9ab94f" title="Probablilty amplitudes for the multi qubit state.">stateVec</a>.<a class="code" href="structComplexArray.html#a4195cac6c784ea1b6271f1c7dba1548a">real</a>[index];
@@ -1197,7 +1506,7 @@
 
 <p>Definition at line <a class="el" href="qubits__env__local_8c_source.html#l00175">175</a> of file <a class="el" href="qubits__env__local_8c_source.html">qubits_env_local.c</a>.</p>
 
-<p>References <a class="el" href="qubits_8h_source.html#l00058">MultiQubit::chunkId</a>, <a class="el" href="qubits__env__mpi_8c_source.html#l00164">chunkIsUpper()</a>, <a class="el" href="qubits__env__mpi_8c_source.html#l00256">exchangeStateVectors()</a>, <a class="el" href="qubits__env__mpi_8c_source.html#l00231">getChunkPairId()</a>, <a class="el" href="qubits_8c_source.html#l01369">hadamardDistributed()</a>, <a class="el" href="qubits_8c_source.html#l01308">hadamardLocal()</a>, <a class="el" href="qubits__env__mpi_8c_source.html#l00249">halfMatrixBlockFitsInChunk()</a>, <a class="el" href="qubits_8h_source.html#l00056">MultiQubit::numAmps</a>, <a class="el" href="qubits_8h_source.html#l00053">MultiQubit::numQubits</a>, <a class="el" href="qubits_8h_source.html#l00051">MultiQubit::pairStateVec</a>, <a class="el" href="qubits__env__local_8c_source.html#l00246">QuESTAssert()</a>, and <a class="el" href="qubits_8h_source.html#l00049">MultiQubit::stateVec</a>.</p>
+<p>References <a class="el" href="qubits_8h_source.html#l00058">MultiQubit::chunkId</a>, <a class="el" href="qubits__env__mpi_8c_source.html#l00164">chunkIsUpper()</a>, <a class="el" href="qubits__env__mpi_8c_source.html#l00256">exchangeStateVectors()</a>, <a class="el" href="qubits__env__mpi_8c_source.html#l00231">getChunkPairId()</a>, <a class="el" href="qubits_8c_source.html#l01400">hadamardDistributed()</a>, <a class="el" href="qubits_8c_source.html#l01339">hadamardLocal()</a>, <a class="el" href="qubits__env__mpi_8c_source.html#l00249">halfMatrixBlockFitsInChunk()</a>, <a class="el" href="qubits_8h_source.html#l00056">MultiQubit::numAmps</a>, <a class="el" href="qubits_8h_source.html#l00053">MultiQubit::numQubits</a>, <a class="el" href="qubits_8h_source.html#l00051">MultiQubit::pairStateVec</a>, <a class="el" href="qubits__env__local_8c_source.html#l00246">QuESTAssert()</a>, and <a class="el" href="qubits_8h_source.html#l00049">MultiQubit::stateVec</a>.</p>
 
 <p><div class="fragment"><pre class="fragment"><a name="l00176"></a>00176 {
 <a name="l00177"></a>00177     <a class="code" href="qubits__env__local_8c.html#a3587b9d533e633ccf1abf9ad2ce45d8d">QuESTAssert</a>(targetQubit &gt;= 0 &amp;&amp; targetQubit &lt; multiQubit.<a class="code" href="structMultiQubit.html#ab5b9795bdc6fb5855e1974dcbbaeb36f" title="Number of qubits in the state.">numQubits</a>, 1, __func__);
@@ -1490,7 +1799,7 @@
 
 <p>Definition at line <a class="el" href="qubits__env__local_8c_source.html#l00215">215</a> of file <a class="el" href="qubits__env__local_8c_source.html">qubits_env_local.c</a>.</p>
 
-<p>References <a class="el" href="qubits_8h_source.html#l00058">MultiQubit::chunkId</a>, <a class="el" href="qubits_8c_source.html#l01867">collapseToOutcomeDistributedRenorm()</a>, <a class="el" href="qubits_8c_source.html#l01909">collapseToOutcomeDistributedSetZero()</a>, <a class="el" href="qubits_8c_source.html#l01785">collapseToOutcomeLocal()</a>, <a class="el" href="qubits__env__local_8c_source.html#l00189">findProbabilityOfOutcome()</a>, <a class="el" href="mt19937ar_8c_source.html#l00146">genrand_real1()</a>, <a class="el" href="qubits__env__mpi_8c_source.html#l00249">halfMatrixBlockFitsInChunk()</a>, <a class="el" href="qubits__env__mpi_8c_source.html#l00666">isChunkToSkipInFindPZero()</a>, <a class="el" href="qubits_8h_source.html#l00056">MultiQubit::numAmps</a>, <a class="el" href="qubits_8h_source.html#l00053">MultiQubit::numQubits</a>, <a class="el" href="qubits__env__local_8c_source.html#l00246">QuESTAssert()</a>, <a class="el" href="precision_8h_source.html#l00025">REAL</a>, and <a class="el" href="precision_8h_source.html#l00028">REAL_EPS</a>.</p>
+<p>References <a class="el" href="qubits_8h_source.html#l00058">MultiQubit::chunkId</a>, <a class="el" href="qubits_8c_source.html#l01898">collapseToOutcomeDistributedRenorm()</a>, <a class="el" href="qubits_8c_source.html#l01940">collapseToOutcomeDistributedSetZero()</a>, <a class="el" href="qubits_8c_source.html#l01816">collapseToOutcomeLocal()</a>, <a class="el" href="qubits__env__local_8c_source.html#l00189">findProbabilityOfOutcome()</a>, <a class="el" href="mt19937ar_8c_source.html#l00146">genrand_real1()</a>, <a class="el" href="qubits__env__mpi_8c_source.html#l00249">halfMatrixBlockFitsInChunk()</a>, <a class="el" href="qubits__env__mpi_8c_source.html#l00666">isChunkToSkipInFindPZero()</a>, <a class="el" href="qubits_8h_source.html#l00056">MultiQubit::numAmps</a>, <a class="el" href="qubits_8h_source.html#l00053">MultiQubit::numQubits</a>, <a class="el" href="qubits__env__local_8c_source.html#l00246">QuESTAssert()</a>, <a class="el" href="precision_8h_source.html#l00025">REAL</a>, and <a class="el" href="precision_8h_source.html#l00028">REAL_EPS</a>.</p>
 
 <p>Referenced by <a class="el" href="qubits__env__local_8c_source.html#l00209">measure()</a>.</p>
 
@@ -1575,44 +1884,44 @@
   </dd>
 </dl>
 
-<p>Definition at line <a class="el" href="qubits_8c_source.html#l01733">1733</a> of file <a class="el" href="qubits_8c_source.html">qubits.c</a>.</p>
+<p>Definition at line <a class="el" href="qubits_8c_source.html#l01764">1764</a> of file <a class="el" href="qubits_8c_source.html">qubits.c</a>.</p>
 
 <p>References <a class="el" href="qubits_8h_source.html#l00058">MultiQubit::chunkId</a>, <a class="el" href="qubits_8h_source.html#l00017">ComplexArray::imag</a>, <a class="el" href="qubits_8h_source.html#l00056">MultiQubit::numAmps</a>, <a class="el" href="qubits_8h_source.html#l00053">MultiQubit::numQubits</a>, <a class="el" href="qubits__env__local_8c_source.html#l00246">QuESTAssert()</a>, <a class="el" href="qubits_8h_source.html#l00016">ComplexArray::real</a>, <a class="el" href="precision_8h_source.html#l00025">REAL</a>, and <a class="el" href="qubits_8h_source.html#l00049">MultiQubit::stateVec</a>.</p>
 
-<p><div class="fragment"><pre class="fragment"><a name="l01734"></a>01734 {
-<a name="l01735"></a>01735         <span class="keywordtype">long</span> <span class="keywordtype">long</span> <span class="keywordtype">int</span> index;
-<a name="l01736"></a>01736         <span class="keywordtype">long</span> <span class="keywordtype">long</span> <span class="keywordtype">int</span> stateVecSize;
-<a name="l01737"></a>01737         
-<a name="l01738"></a>01738         <span class="keyword">const</span> <span class="keywordtype">long</span> <span class="keywordtype">long</span> <span class="keywordtype">int</span> chunkSize=multiQubit.<a class="code" href="structMultiQubit.html#ae16f47d8b725c914fb7f66b6498d79db" title="Number of probability amplitudes held in stateVec by this process In the non-MPI...">numAmps</a>;
-<a name="l01739"></a>01739         <span class="keyword">const</span> <span class="keywordtype">long</span> <span class="keywordtype">long</span> <span class="keywordtype">int</span> chunkId=multiQubit.<a class="code" href="structMultiQubit.html#ab10c88249fa3825d6227ceec01d37e37" title="The position of the chunk of the state vector held by this process in the full state...">chunkId</a>;
-<a name="l01740"></a>01740 
-<a name="l01741"></a>01741     <a class="code" href="qubits__env__local_8c.html#a3587b9d533e633ccf1abf9ad2ce45d8d">QuESTAssert</a>(numControlQubits &gt; 0 &amp;&amp; numControlQubits &lt;= multiQubit.<a class="code" href="structMultiQubit.html#ab5b9795bdc6fb5855e1974dcbbaeb36f" title="Number of qubits in the state.">numQubits</a>, 4, __func__);
-<a name="l01742"></a>01742     <span class="keywordtype">long</span> <span class="keywordtype">long</span> <span class="keywordtype">int</span> mask=0;
-<a name="l01743"></a>01743     <span class="keywordflow">for</span> (<span class="keywordtype">int</span> i=0; i&lt;numControlQubits; i++) mask = mask | (1LL&lt;&lt;controlQubits[i]);
-<a name="l01744"></a>01744     <a class="code" href="qubits__env__local_8c.html#a3587b9d533e633ccf1abf9ad2ce45d8d">QuESTAssert</a>(mask &gt;=0 &amp;&amp; mask &lt;= (1LL&lt;&lt;multiQubit.<a class="code" href="structMultiQubit.html#ab5b9795bdc6fb5855e1974dcbbaeb36f" title="Number of qubits in the state.">numQubits</a>)-1, 2, __func__);
-<a name="l01745"></a>01745 
-<a name="l01746"></a>01746         stateVecSize = multiQubit.<a class="code" href="structMultiQubit.html#ae16f47d8b725c914fb7f66b6498d79db" title="Number of probability amplitudes held in stateVec by this process In the non-MPI...">numAmps</a>;
-<a name="l01747"></a>01747         <a class="code" href="precision_8h.html#a4b654506f18b8bfd61ad2a29a7e38c25">REAL</a> *stateVecReal = multiQubit.<a class="code" href="structMultiQubit.html#a45483190d6b01ef6b2f98f2bec9ab94f" title="Probablilty amplitudes for the multi qubit state.">stateVec</a>.<a class="code" href="structComplexArray.html#a4195cac6c784ea1b6271f1c7dba1548a">real</a>;
-<a name="l01748"></a>01748         <a class="code" href="precision_8h.html#a4b654506f18b8bfd61ad2a29a7e38c25">REAL</a> *stateVecImag = multiQubit.<a class="code" href="structMultiQubit.html#a45483190d6b01ef6b2f98f2bec9ab94f" title="Probablilty amplitudes for the multi qubit state.">stateVec</a>.<a class="code" href="structComplexArray.html#a79dde47c7ae530c79cebfdf57b225968">imag</a>;
-<a name="l01749"></a>01749 
-<a name="l01750"></a>01750 <span class="preprocessor"># ifdef _OPENMP</span>
-<a name="l01751"></a>01751 <span class="preprocessor"></span><span class="preprocessor"># pragma omp parallel \</span>
-<a name="l01752"></a>01752 <span class="preprocessor">        default  (none)                      \</span>
-<a name="l01753"></a>01753 <span class="preprocessor">        shared   (stateVecSize, stateVecReal,stateVecImag, mask ) \</span>
-<a name="l01754"></a>01754 <span class="preprocessor">        private  (index)</span>
-<a name="l01755"></a>01755 <span class="preprocessor"></span><span class="preprocessor"># endif</span>
-<a name="l01756"></a>01756 <span class="preprocessor"></span>        {
-<a name="l01757"></a>01757 <span class="preprocessor"># ifdef _OPENMP</span>
-<a name="l01758"></a>01758 <span class="preprocessor"></span><span class="preprocessor">                # pragma omp for schedule (static)</span>
-<a name="l01759"></a>01759 <span class="preprocessor"></span><span class="preprocessor"># endif</span>
-<a name="l01760"></a>01760 <span class="preprocessor"></span>                <span class="keywordflow">for</span> (index=0; index&lt;stateVecSize; index++) {
-<a name="l01761"></a>01761                         <span class="keywordflow">if</span> (mask == (mask &amp; (index+chunkId*chunkSize)) ){
-<a name="l01762"></a>01762                                 stateVecReal [index] = - stateVecReal [index];
-<a name="l01763"></a>01763                                 stateVecImag [index] = - stateVecImag [index];
-<a name="l01764"></a>01764                         }
-<a name="l01765"></a>01765                 }
-<a name="l01766"></a>01766         }
-<a name="l01767"></a>01767 }
+<p><div class="fragment"><pre class="fragment"><a name="l01765"></a>01765 {
+<a name="l01766"></a>01766         <span class="keywordtype">long</span> <span class="keywordtype">long</span> <span class="keywordtype">int</span> index;
+<a name="l01767"></a>01767         <span class="keywordtype">long</span> <span class="keywordtype">long</span> <span class="keywordtype">int</span> stateVecSize;
+<a name="l01768"></a>01768         
+<a name="l01769"></a>01769         <span class="keyword">const</span> <span class="keywordtype">long</span> <span class="keywordtype">long</span> <span class="keywordtype">int</span> chunkSize=multiQubit.<a class="code" href="structMultiQubit.html#ae16f47d8b725c914fb7f66b6498d79db" title="Number of probability amplitudes held in stateVec by this process In the non-MPI...">numAmps</a>;
+<a name="l01770"></a>01770         <span class="keyword">const</span> <span class="keywordtype">long</span> <span class="keywordtype">long</span> <span class="keywordtype">int</span> chunkId=multiQubit.<a class="code" href="structMultiQubit.html#ab10c88249fa3825d6227ceec01d37e37" title="The position of the chunk of the state vector held by this process in the full state...">chunkId</a>;
+<a name="l01771"></a>01771 
+<a name="l01772"></a>01772     <a class="code" href="qubits__env__local_8c.html#a3587b9d533e633ccf1abf9ad2ce45d8d">QuESTAssert</a>(numControlQubits &gt; 0 &amp;&amp; numControlQubits &lt;= multiQubit.<a class="code" href="structMultiQubit.html#ab5b9795bdc6fb5855e1974dcbbaeb36f" title="Number of qubits in the state.">numQubits</a>, 4, __func__);
+<a name="l01773"></a>01773     <span class="keywordtype">long</span> <span class="keywordtype">long</span> <span class="keywordtype">int</span> mask=0;
+<a name="l01774"></a>01774     <span class="keywordflow">for</span> (<span class="keywordtype">int</span> i=0; i&lt;numControlQubits; i++) mask = mask | (1LL&lt;&lt;controlQubits[i]);
+<a name="l01775"></a>01775     <a class="code" href="qubits__env__local_8c.html#a3587b9d533e633ccf1abf9ad2ce45d8d">QuESTAssert</a>(mask &gt;=0 &amp;&amp; mask &lt;= (1LL&lt;&lt;multiQubit.<a class="code" href="structMultiQubit.html#ab5b9795bdc6fb5855e1974dcbbaeb36f" title="Number of qubits in the state.">numQubits</a>)-1, 2, __func__);
+<a name="l01776"></a>01776 
+<a name="l01777"></a>01777         stateVecSize = multiQubit.<a class="code" href="structMultiQubit.html#ae16f47d8b725c914fb7f66b6498d79db" title="Number of probability amplitudes held in stateVec by this process In the non-MPI...">numAmps</a>;
+<a name="l01778"></a>01778         <a class="code" href="precision_8h.html#a4b654506f18b8bfd61ad2a29a7e38c25">REAL</a> *stateVecReal = multiQubit.<a class="code" href="structMultiQubit.html#a45483190d6b01ef6b2f98f2bec9ab94f" title="Probablilty amplitudes for the multi qubit state.">stateVec</a>.<a class="code" href="structComplexArray.html#a4195cac6c784ea1b6271f1c7dba1548a">real</a>;
+<a name="l01779"></a>01779         <a class="code" href="precision_8h.html#a4b654506f18b8bfd61ad2a29a7e38c25">REAL</a> *stateVecImag = multiQubit.<a class="code" href="structMultiQubit.html#a45483190d6b01ef6b2f98f2bec9ab94f" title="Probablilty amplitudes for the multi qubit state.">stateVec</a>.<a class="code" href="structComplexArray.html#a79dde47c7ae530c79cebfdf57b225968">imag</a>;
+<a name="l01780"></a>01780 
+<a name="l01781"></a>01781 <span class="preprocessor"># ifdef _OPENMP</span>
+<a name="l01782"></a>01782 <span class="preprocessor"></span><span class="preprocessor"># pragma omp parallel \</span>
+<a name="l01783"></a>01783 <span class="preprocessor">        default  (none)                      \</span>
+<a name="l01784"></a>01784 <span class="preprocessor">        shared   (stateVecSize, stateVecReal,stateVecImag, mask ) \</span>
+<a name="l01785"></a>01785 <span class="preprocessor">        private  (index)</span>
+<a name="l01786"></a>01786 <span class="preprocessor"></span><span class="preprocessor"># endif</span>
+<a name="l01787"></a>01787 <span class="preprocessor"></span>        {
+<a name="l01788"></a>01788 <span class="preprocessor"># ifdef _OPENMP</span>
+<a name="l01789"></a>01789 <span class="preprocessor"></span><span class="preprocessor">                # pragma omp for schedule (static)</span>
+<a name="l01790"></a>01790 <span class="preprocessor"></span><span class="preprocessor"># endif</span>
+<a name="l01791"></a>01791 <span class="preprocessor"></span>                <span class="keywordflow">for</span> (index=0; index&lt;stateVecSize; index++) {
+<a name="l01792"></a>01792                         <span class="keywordflow">if</span> (mask == (mask &amp; (index+chunkId*chunkSize)) ){
+<a name="l01793"></a>01793                                 stateVecReal [index] = - stateVecReal [index];
+<a name="l01794"></a>01794                                 stateVecImag [index] = - stateVecImag [index];
+<a name="l01795"></a>01795                         }
+<a name="l01796"></a>01796                 }
+<a name="l01797"></a>01797         }
+<a name="l01798"></a>01798 }
 </pre></div></p>
 
 </div>
@@ -1688,7 +1997,7 @@
 
 <p>Definition at line <a class="el" href="qubits__env__local_8c_source.html#l00143">143</a> of file <a class="el" href="qubits__env__local_8c_source.html">qubits_env_local.c</a>.</p>
 
-<p>References <a class="el" href="qubits_8h_source.html#l00058">MultiQubit::chunkId</a>, <a class="el" href="qubits__env__mpi_8c_source.html#l00164">chunkIsUpper()</a>, <a class="el" href="qubits__env__mpi_8c_source.html#l00256">exchangeStateVectors()</a>, <a class="el" href="qubits__env__mpi_8c_source.html#l00231">getChunkPairId()</a>, <a class="el" href="qubits__env__mpi_8c_source.html#l00211">getRotAngleFromUnitaryMatrix()</a>, <a class="el" href="qubits__env__mpi_8c_source.html#l00249">halfMatrixBlockFitsInChunk()</a>, <a class="el" href="qubits_8c_source.html#l00979">multiControlledUnitaryDistributed()</a>, <a class="el" href="qubits_8c_source.html#l00710">multiControlledUnitaryLocal()</a>, <a class="el" href="qubits_8h_source.html#l00056">MultiQubit::numAmps</a>, <a class="el" href="qubits_8h_source.html#l00053">MultiQubit::numQubits</a>, <a class="el" href="qubits_8h_source.html#l00051">MultiQubit::pairStateVec</a>, <a class="el" href="qubits__env__local_8c_source.html#l00246">QuESTAssert()</a>, <a class="el" href="qubits_8h_source.html#l00049">MultiQubit::stateVec</a>, and <a class="el" href="qubits_8c_source.html#l00344">validateMatrixIsUnitary()</a>.</p>
+<p>References <a class="el" href="qubits_8h_source.html#l00058">MultiQubit::chunkId</a>, <a class="el" href="qubits__env__mpi_8c_source.html#l00164">chunkIsUpper()</a>, <a class="el" href="qubits__env__mpi_8c_source.html#l00256">exchangeStateVectors()</a>, <a class="el" href="qubits__env__mpi_8c_source.html#l00231">getChunkPairId()</a>, <a class="el" href="qubits__env__mpi_8c_source.html#l00211">getRotAngleFromUnitaryMatrix()</a>, <a class="el" href="qubits__env__mpi_8c_source.html#l00249">halfMatrixBlockFitsInChunk()</a>, <a class="el" href="qubits_8c_source.html#l01010">multiControlledUnitaryDistributed()</a>, <a class="el" href="qubits_8c_source.html#l00741">multiControlledUnitaryLocal()</a>, <a class="el" href="qubits_8h_source.html#l00056">MultiQubit::numAmps</a>, <a class="el" href="qubits_8h_source.html#l00053">MultiQubit::numQubits</a>, <a class="el" href="qubits_8h_source.html#l00051">MultiQubit::pairStateVec</a>, <a class="el" href="qubits__env__local_8c_source.html#l00246">QuESTAssert()</a>, <a class="el" href="qubits_8h_source.html#l00049">MultiQubit::stateVec</a>, and <a class="el" href="qubits_8c_source.html#l00344">validateMatrixIsUnitary()</a>.</p>
 
 <p><div class="fragment"><pre class="fragment"><a name="l00144"></a>00144 {
 <a name="l00145"></a>00145     <a class="code" href="qubits__env__local_8c.html#a3587b9d533e633ccf1abf9ad2ce45d8d">QuESTAssert</a>(targetQubit &gt;= 0 &amp;&amp; targetQubit &lt; multiQubit.<a class="code" href="structMultiQubit.html#ab5b9795bdc6fb5855e1974dcbbaeb36f" title="Number of qubits in the state.">numQubits</a>, 1, __func__);
@@ -2242,13 +2551,13 @@ real, imag
   </dd>
 </dl>
 
-<p>Definition at line <a class="el" href="qubits_8c_source.html#l01549">1549</a> of file <a class="el" href="qubits_8c_source.html">qubits.c</a>.</p>
+<p>Definition at line <a class="el" href="qubits_8c_source.html#l01580">1580</a> of file <a class="el" href="qubits_8c_source.html">qubits.c</a>.</p>
 
 <p>References <a class="el" href="qubits__env__local_8c_source.html#l00169">phaseGate()</a>, and <a class="el" href="qubits_8h_source.html#l00073">S_GATE</a>.</p>
 
-<p><div class="fragment"><pre class="fragment"><a name="l01550"></a>01550 {
-<a name="l01551"></a>01551                 <a class="code" href="qubits__env__local_8c.html#aae7a8a7f1ccbddb7f76b6c52b746bb43">phaseGate</a>(multiQubit, targetQubit, <a class="code" href="qubits_8h.html#a5739021c733cecc49647956b2f7338eaa06e60f80fa80cce271793d6d31bcc21f">S_GATE</a>);
-<a name="l01552"></a>01552 } 
+<p><div class="fragment"><pre class="fragment"><a name="l01581"></a>01581 {
+<a name="l01582"></a>01582                 <a class="code" href="qubits__env__local_8c.html#aae7a8a7f1ccbddb7f76b6c52b746bb43">phaseGate</a>(multiQubit, targetQubit, <a class="code" href="qubits_8h.html#a5739021c733cecc49647956b2f7338eaa06e60f80fa80cce271793d6d31bcc21f">S_GATE</a>);
+<a name="l01583"></a>01583 } 
 </pre></div></p>
 
 </div>
@@ -2302,7 +2611,7 @@ real, imag
 
 <p>Definition at line <a class="el" href="qubits__env__local_8c_source.html#l00157">157</a> of file <a class="el" href="qubits__env__local_8c_source.html">qubits_env_local.c</a>.</p>
 
-<p>References <a class="el" href="qubits_8h_source.html#l00058">MultiQubit::chunkId</a>, <a class="el" href="qubits__env__mpi_8c_source.html#l00164">chunkIsUpper()</a>, <a class="el" href="qubits__env__mpi_8c_source.html#l00256">exchangeStateVectors()</a>, <a class="el" href="qubits__env__mpi_8c_source.html#l00231">getChunkPairId()</a>, <a class="el" href="qubits__env__mpi_8c_source.html#l00249">halfMatrixBlockFitsInChunk()</a>, <a class="el" href="qubits_8h_source.html#l00056">MultiQubit::numAmps</a>, <a class="el" href="qubits_8h_source.html#l00053">MultiQubit::numQubits</a>, <a class="el" href="qubits_8h_source.html#l00051">MultiQubit::pairStateVec</a>, <a class="el" href="qubits__env__local_8c_source.html#l00246">QuESTAssert()</a>, <a class="el" href="qubits_8c_source.html#l01088">sigmaXDistributed()</a>, <a class="el" href="qubits_8c_source.html#l01029">sigmaXLocal()</a>, and <a class="el" href="qubits_8h_source.html#l00049">MultiQubit::stateVec</a>.</p>
+<p>References <a class="el" href="qubits_8h_source.html#l00058">MultiQubit::chunkId</a>, <a class="el" href="qubits__env__mpi_8c_source.html#l00164">chunkIsUpper()</a>, <a class="el" href="qubits__env__mpi_8c_source.html#l00256">exchangeStateVectors()</a>, <a class="el" href="qubits__env__mpi_8c_source.html#l00231">getChunkPairId()</a>, <a class="el" href="qubits__env__mpi_8c_source.html#l00249">halfMatrixBlockFitsInChunk()</a>, <a class="el" href="qubits_8h_source.html#l00056">MultiQubit::numAmps</a>, <a class="el" href="qubits_8h_source.html#l00053">MultiQubit::numQubits</a>, <a class="el" href="qubits_8h_source.html#l00051">MultiQubit::pairStateVec</a>, <a class="el" href="qubits__env__local_8c_source.html#l00246">QuESTAssert()</a>, <a class="el" href="qubits_8c_source.html#l01119">sigmaXDistributed()</a>, <a class="el" href="qubits_8c_source.html#l01060">sigmaXLocal()</a>, and <a class="el" href="qubits_8h_source.html#l00049">MultiQubit::stateVec</a>.</p>
 
 <p><div class="fragment"><pre class="fragment"><a name="l00158"></a>00158 {
 <a name="l00159"></a>00159     <a class="code" href="qubits__env__local_8c.html#a3587b9d533e633ccf1abf9ad2ce45d8d">QuESTAssert</a>(targetQubit &gt;= 0 &amp;&amp; targetQubit &lt; multiQubit.<a class="code" href="structMultiQubit.html#ab5b9795bdc6fb5855e1974dcbbaeb36f" title="Number of qubits in the state.">numQubits</a>, 1, __func__);
@@ -2364,7 +2673,7 @@ real, imag
 
 <p>Definition at line <a class="el" href="qubits__env__local_8c_source.html#l00163">163</a> of file <a class="el" href="qubits__env__local_8c_source.html">qubits_env_local.c</a>.</p>
 
-<p>References <a class="el" href="qubits_8h_source.html#l00058">MultiQubit::chunkId</a>, <a class="el" href="qubits__env__mpi_8c_source.html#l00164">chunkIsUpper()</a>, <a class="el" href="qubits__env__mpi_8c_source.html#l00256">exchangeStateVectors()</a>, <a class="el" href="qubits__env__mpi_8c_source.html#l00231">getChunkPairId()</a>, <a class="el" href="qubits__env__mpi_8c_source.html#l00249">halfMatrixBlockFitsInChunk()</a>, <a class="el" href="qubits_8h_source.html#l00056">MultiQubit::numAmps</a>, <a class="el" href="qubits_8h_source.html#l00053">MultiQubit::numQubits</a>, <a class="el" href="qubits_8h_source.html#l00051">MultiQubit::pairStateVec</a>, <a class="el" href="qubits__env__local_8c_source.html#l00246">QuESTAssert()</a>, <a class="el" href="qubits_8c_source.html#l01275">sigmaYDistributed()</a>, <a class="el" href="qubits_8c_source.html#l01216">sigmaYLocal()</a>, and <a class="el" href="qubits_8h_source.html#l00049">MultiQubit::stateVec</a>.</p>
+<p>References <a class="el" href="qubits_8h_source.html#l00058">MultiQubit::chunkId</a>, <a class="el" href="qubits__env__mpi_8c_source.html#l00164">chunkIsUpper()</a>, <a class="el" href="qubits__env__mpi_8c_source.html#l00256">exchangeStateVectors()</a>, <a class="el" href="qubits__env__mpi_8c_source.html#l00231">getChunkPairId()</a>, <a class="el" href="qubits__env__mpi_8c_source.html#l00249">halfMatrixBlockFitsInChunk()</a>, <a class="el" href="qubits_8h_source.html#l00056">MultiQubit::numAmps</a>, <a class="el" href="qubits_8h_source.html#l00053">MultiQubit::numQubits</a>, <a class="el" href="qubits_8h_source.html#l00051">MultiQubit::pairStateVec</a>, <a class="el" href="qubits__env__local_8c_source.html#l00246">QuESTAssert()</a>, <a class="el" href="qubits_8c_source.html#l01306">sigmaYDistributed()</a>, <a class="el" href="qubits_8c_source.html#l01247">sigmaYLocal()</a>, and <a class="el" href="qubits_8h_source.html#l00049">MultiQubit::stateVec</a>.</p>
 
 <p><div class="fragment"><pre class="fragment"><a name="l00164"></a>00164 {
 <a name="l00165"></a>00165     <a class="code" href="qubits__env__local_8c.html#a3587b9d533e633ccf1abf9ad2ce45d8d">QuESTAssert</a>(targetQubit &gt;= 0 &amp;&amp; targetQubit &lt; multiQubit.<a class="code" href="structMultiQubit.html#ab5b9795bdc6fb5855e1974dcbbaeb36f" title="Number of qubits in the state.">numQubits</a>, 1, __func__);
@@ -2421,13 +2730,13 @@ real, imag
   </dd>
 </dl>
 
-<p>Definition at line <a class="el" href="qubits_8c_source.html#l01544">1544</a> of file <a class="el" href="qubits_8c_source.html">qubits.c</a>.</p>
+<p>Definition at line <a class="el" href="qubits_8c_source.html#l01575">1575</a> of file <a class="el" href="qubits_8c_source.html">qubits.c</a>.</p>
 
 <p>References <a class="el" href="qubits__env__local_8c_source.html#l00169">phaseGate()</a>, and <a class="el" href="qubits_8h_source.html#l00073">SIGMA_Z</a>.</p>
 
-<p><div class="fragment"><pre class="fragment"><a name="l01545"></a>01545 {
-<a name="l01546"></a>01546                 <a class="code" href="qubits__env__local_8c.html#aae7a8a7f1ccbddb7f76b6c52b746bb43">phaseGate</a>(multiQubit, targetQubit, <a class="code" href="qubits_8h.html#a5739021c733cecc49647956b2f7338eaa754922d1e1846a1961ff2bf163483dac">SIGMA_Z</a>);
-<a name="l01547"></a>01547 }
+<p><div class="fragment"><pre class="fragment"><a name="l01576"></a>01576 {
+<a name="l01577"></a>01577                 <a class="code" href="qubits__env__local_8c.html#aae7a8a7f1ccbddb7f76b6c52b746bb43">phaseGate</a>(multiQubit, targetQubit, <a class="code" href="qubits_8h.html#a5739021c733cecc49647956b2f7338eaa754922d1e1846a1961ff2bf163483dac">SIGMA_Z</a>);
+<a name="l01578"></a>01578 }
 </pre></div></p>
 
 </div>
@@ -2550,13 +2859,13 @@ real, imag
   </dd>
 </dl>
 
-<p>Definition at line <a class="el" href="qubits_8c_source.html#l01554">1554</a> of file <a class="el" href="qubits_8c_source.html">qubits.c</a>.</p>
+<p>Definition at line <a class="el" href="qubits_8c_source.html#l01585">1585</a> of file <a class="el" href="qubits_8c_source.html">qubits.c</a>.</p>
 
 <p>References <a class="el" href="qubits__env__local_8c_source.html#l00169">phaseGate()</a>, and <a class="el" href="qubits_8h_source.html#l00073">T_GATE</a>.</p>
 
-<p><div class="fragment"><pre class="fragment"><a name="l01555"></a>01555 {
-<a name="l01556"></a>01556                 <a class="code" href="qubits__env__local_8c.html#aae7a8a7f1ccbddb7f76b6c52b746bb43">phaseGate</a>(multiQubit, targetQubit, <a class="code" href="qubits_8h.html#a5739021c733cecc49647956b2f7338eaa614d07d597a8e320cc556bc0e652e4ab">T_GATE</a>);
-<a name="l01557"></a>01557 }
+<p><div class="fragment"><pre class="fragment"><a name="l01586"></a>01586 {
+<a name="l01587"></a>01587                 <a class="code" href="qubits__env__local_8c.html#aae7a8a7f1ccbddb7f76b6c52b746bb43">phaseGate</a>(multiQubit, targetQubit, <a class="code" href="qubits_8h.html#a5739021c733cecc49647956b2f7338eaa614d07d597a8e320cc556bc0e652e4ab">T_GATE</a>);
+<a name="l01588"></a>01588 }
 </pre></div></p>
 
 </div>
@@ -2614,7 +2923,7 @@ real, imag
 
 <p>Definition at line <a class="el" href="qubits__env__local_8c_source.html#l00113">113</a> of file <a class="el" href="qubits__env__local_8c_source.html">qubits_env_local.c</a>.</p>
 
-<p>References <a class="el" href="qubits_8h_source.html#l00058">MultiQubit::chunkId</a>, <a class="el" href="qubits__env__mpi_8c_source.html#l00164">chunkIsUpper()</a>, <a class="el" href="qubits__env__mpi_8c_source.html#l00256">exchangeStateVectors()</a>, <a class="el" href="qubits__env__mpi_8c_source.html#l00231">getChunkPairId()</a>, <a class="el" href="qubits__env__mpi_8c_source.html#l00211">getRotAngleFromUnitaryMatrix()</a>, <a class="el" href="qubits__env__mpi_8c_source.html#l00249">halfMatrixBlockFitsInChunk()</a>, <a class="el" href="qubits_8h_source.html#l00056">MultiQubit::numAmps</a>, <a class="el" href="qubits_8h_source.html#l00053">MultiQubit::numQubits</a>, <a class="el" href="qubits_8h_source.html#l00051">MultiQubit::pairStateVec</a>, <a class="el" href="qubits__env__local_8c_source.html#l00246">QuESTAssert()</a>, <a class="el" href="qubits_8h_source.html#l00049">MultiQubit::stateVec</a>, <a class="el" href="qubits_8c_source.html#l00598">unitaryDistributed()</a>, <a class="el" href="qubits_8c_source.html#l00472">unitaryLocal()</a>, and <a class="el" href="qubits_8c_source.html#l00344">validateMatrixIsUnitary()</a>.</p>
+<p>References <a class="el" href="qubits_8h_source.html#l00058">MultiQubit::chunkId</a>, <a class="el" href="qubits__env__mpi_8c_source.html#l00164">chunkIsUpper()</a>, <a class="el" href="qubits__env__mpi_8c_source.html#l00256">exchangeStateVectors()</a>, <a class="el" href="qubits__env__mpi_8c_source.html#l00231">getChunkPairId()</a>, <a class="el" href="qubits__env__mpi_8c_source.html#l00211">getRotAngleFromUnitaryMatrix()</a>, <a class="el" href="qubits__env__mpi_8c_source.html#l00249">halfMatrixBlockFitsInChunk()</a>, <a class="el" href="qubits_8h_source.html#l00056">MultiQubit::numAmps</a>, <a class="el" href="qubits_8h_source.html#l00053">MultiQubit::numQubits</a>, <a class="el" href="qubits_8h_source.html#l00051">MultiQubit::pairStateVec</a>, <a class="el" href="qubits__env__local_8c_source.html#l00246">QuESTAssert()</a>, <a class="el" href="qubits_8h_source.html#l00049">MultiQubit::stateVec</a>, <a class="el" href="qubits_8c_source.html#l00629">unitaryDistributed()</a>, <a class="el" href="qubits_8c_source.html#l00503">unitaryLocal()</a>, and <a class="el" href="qubits_8c_source.html#l00344">validateMatrixIsUnitary()</a>.</p>
 
 <p><div class="fragment"><pre class="fragment"><a name="l00114"></a>00114 {
 <a name="l00115"></a>00115     <a class="code" href="qubits__env__local_8c.html#a3587b9d533e633ccf1abf9ad2ce45d8d">QuESTAssert</a>(targetQubit &gt;= 0 &amp;&amp; targetQubit &lt; multiQubit.<a class="code" href="structMultiQubit.html#ab5b9795bdc6fb5855e1974dcbbaeb36f" title="Number of qubits in the state.">numQubits</a>, 1, __func__);
