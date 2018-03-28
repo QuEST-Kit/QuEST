@@ -108,14 +108,14 @@ Definition in file \hyperlink{qubits__env__mpi_8c_source}{qubits\_\-env\_\-mpi.c
 \label{qubits__env__mpi_8c_ad3d8a3bd0c0b677acef144f2c2ef6d73}
 
 
-Definition at line 5 of file qubits\_\-env\_\-mpi.c.\hypertarget{qubits__env__mpi_8c_ad72dbcf6d0153db1b8d8a58001feed83}{
+Definition at line 8 of file qubits\_\-env\_\-mpi.c.\hypertarget{qubits__env__mpi_8c_ad72dbcf6d0153db1b8d8a58001feed83}{
 \index{qubits\_\-env\_\-mpi.c@{qubits\_\-env\_\-mpi.c}!DEBUG@{DEBUG}}
 \index{DEBUG@{DEBUG}!qubits_env_mpi.c@{qubits\_\-env\_\-mpi.c}}
 \paragraph[{DEBUG}]{\setlength{\rightskip}{0pt plus 5cm}\#define DEBUG~0}\hfill}
 \label{qubits__env__mpi_8c_ad72dbcf6d0153db1b8d8a58001feed83}
 
 
-Definition at line 24 of file qubits\_\-env\_\-mpi.c.
+Definition at line 27 of file qubits\_\-env\_\-mpi.c.
 
 \subsubsection{Function Documentation}
 \hypertarget{qubits__env__mpi_8c_a818a4c7cd7252d2b10b896b12fa431d3}{
@@ -135,45 +135,45 @@ total probability
 \end{DoxyReturn}
 
 
-Definition at line 123 of file qubits\_\-env\_\-mpi.c.
+Definition at line 126 of file qubits\_\-env\_\-mpi.c.
 
 References DEBUG, ComplexArray::imag, MPI\_\-QuEST\_\-REAL, MultiQubit::numAmps, MultiQubit::numChunks, ComplexArray::real, REAL, and MultiQubit::stateVec.
 
 
 \begin{DoxyCode}
-123                                                 {
-124   /* IJB - implemented using Kahan summation for greater accuracy at a slight flo
+126                                                 {
+127   /* IJB - implemented using Kahan summation for greater accuracy at a slight flo
       ating
-125      point operation overhead. For more details see https://en.wikipedia.org/wiki
+128      point operation overhead. For more details see https://en.wikipedia.org/wiki
       /Kahan_summation_algorithm */
-126   /* Don't change the bracketing in this routine! */
-127   REAL pTotal=0; 
-128   REAL y, t, c;
-129   REAL allRankTotals=0;
-130   long long int index;
-131   long long int numAmpsPerRank = multiQubit.numAmps;
-132   c = 0.0;
-133   for (index=0; index<numAmpsPerRank; index++){ 
-134     /* Perform pTotal+=multiQubit.stateVec.real[index]*multiQubit.stateVec.real[i
+129   /* Don't change the bracketing in this routine! */
+130   REAL pTotal=0; 
+131   REAL y, t, c;
+132   REAL allRankTotals=0;
+133   long long int index;
+134   long long int numAmpsPerRank = multiQubit.numAmps;
+135   c = 0.0;
+136   for (index=0; index<numAmpsPerRank; index++){ 
+137     /* Perform pTotal+=multiQubit.stateVec.real[index]*multiQubit.stateVec.real[i
       ndex]; by Kahan */
-135     y = multiQubit.stateVec.real[index]*multiQubit.stateVec.real[index] - c;
-136     t = pTotal + y;
-137     c = ( t - pTotal ) - y;
-138     pTotal = t;
-139     /* Perform pTotal+=multiQubit.stateVec.imag[index]*multiQubit.stateVec.imag[i
+138     y = multiQubit.stateVec.real[index]*multiQubit.stateVec.real[index] - c;
+139     t = pTotal + y;
+140     c = ( t - pTotal ) - y;
+141     pTotal = t;
+142     /* Perform pTotal+=multiQubit.stateVec.imag[index]*multiQubit.stateVec.imag[i
       ndex]; by Kahan */
-140     y = multiQubit.stateVec.imag[index]*multiQubit.stateVec.imag[index] - c;
-141     t = pTotal + y;
-142     c = ( t - pTotal ) - y;
-143     pTotal = t;
-144   } 
-145   if (DEBUG) printf("before calc prob. %d\n", multiQubit.numChunks);
-146   if (multiQubit.numChunks>1) MPI_Allreduce(&pTotal, &allRankTotals, 1, 
+143     y = multiQubit.stateVec.imag[index]*multiQubit.stateVec.imag[index] - c;
+144     t = pTotal + y;
+145     c = ( t - pTotal ) - y;
+146     pTotal = t;
+147   } 
+148   if (DEBUG) printf("before calc prob. %d\n", multiQubit.numChunks);
+149   if (multiQubit.numChunks>1) MPI_Allreduce(&pTotal, &allRankTotals, 1, 
       MPI_QuEST_REAL, MPI_SUM, MPI_COMM_WORLD);
-147   else allRankTotals=pTotal;
-148   
-149   return allRankTotals;
-150 }
+150   else allRankTotals=pTotal;
+151   
+152   return allRankTotals;
+153 }
 \end{DoxyCode}
 \hypertarget{qubits__env__mpi_8c_a0552889d6f57d9e0ed8b209bf426482d}{
 \index{qubits\_\-env\_\-mpi.c@{qubits\_\-env\_\-mpi.c}!chunkIsUpper@{chunkIsUpper}}
@@ -190,18 +190,18 @@ Returns whether a given chunk in position chunkId is in the upper or lower half 
 \end{DoxyReturn}
 
 
-Definition at line 161 of file qubits\_\-env\_\-mpi.c.
+Definition at line 164 of file qubits\_\-env\_\-mpi.c.
 
 Referenced by compactUnitary(), controlledCompactUnitary(), controlledNot(), controlledUnitary(), hadamard(), multiControlledUnitary(), phaseGate(), sigmaX(), sigmaY(), and unitary().
 
 
 \begin{DoxyCode}
-162 {       
-163         long long int sizeHalfBlock = 1LL << (targetQubit);
-164         long long int sizeBlock = sizeHalfBlock*2;
-165         long long int posInBlock = (chunkId*chunkSize) % sizeBlock;
-166         return posInBlock<sizeHalfBlock;
-167 }
+165 {       
+166         long long int sizeHalfBlock = 1LL << (targetQubit);
+167         long long int sizeBlock = sizeHalfBlock*2;
+168         long long int posInBlock = (chunkId*chunkSize) % sizeBlock;
+169         return posInBlock<sizeHalfBlock;
+170 }
 \end{DoxyCode}
 \hypertarget{qubits__env__mpi_8c_abd4bc926cd3f9b65610bb228d0c59fe0}{
 \index{qubits\_\-env\_\-mpi.c@{qubits\_\-env\_\-mpi.c}!closeQuESTEnv@{closeQuESTEnv}}
@@ -217,17 +217,17 @@ Close QuEST environment. If something needs to be done to clean up the execution
 \item[\mbox{$\leftarrow$} {\em env}]object representing the execution environment. A single instance is used for each program \end{DoxyParams}
 
 
-Definition at line 71 of file qubits\_\-env\_\-mpi.c.
+Definition at line 74 of file qubits\_\-env\_\-mpi.c.
 
 
 \begin{DoxyCode}
-71                                 {
-72         int finalized;
-73         MPI_Finalized(&finalized);
-74         if (!finalized) MPI_Finalize();
-75         else printf("ERROR: Trying to close QuESTEnv multiple times. Ignoring\n")
+74                                 {
+75         int finalized;
+76         MPI_Finalized(&finalized);
+77         if (!finalized) MPI_Finalize();
+78         else printf("ERROR: Trying to close QuESTEnv multiple times. Ignoring\n")
       ;
-76 }
+79 }
 \end{DoxyCode}
 \hypertarget{qubits__env__mpi_8c_a07418ebac70fd9ae5d051d089961631d}{
 \index{qubits\_\-env\_\-mpi.c@{qubits\_\-env\_\-mpi.c}!collapseToOutcome@{collapseToOutcome}}
@@ -249,44 +249,44 @@ probability of the (forced) measurement outcome
 \item[{\em exitWithError}]if {\ttfamily measureQubit} is outside \mbox{[}0, {\ttfamily multiQubit.numQubits}), or if {\ttfamily outcome} is not in \{0, 1\}, or if the probability of {\ttfamily outcome} is zero (within machine epsilon) \end{DoxyExceptions}
 
 
-Definition at line 691 of file qubits\_\-env\_\-mpi.c.
+Definition at line 694 of file qubits\_\-env\_\-mpi.c.
 
 References MultiQubit::chunkId, collapseToOutcomeDistributedRenorm(), collapseToOutcomeDistributedSetZero(), collapseToOutcomeLocal(), findProbabilityOfOutcome(), halfMatrixBlockFitsInChunk(), isChunkToSkipInFindPZero(), MultiQubit::numAmps, MultiQubit::numQubits, QuESTAssert(), REAL, and REAL\_\-EPS.
 
 
 \begin{DoxyCode}
-692 {
-693     QuESTAssert(measureQubit >= 0 && measureQubit < multiQubit.numQubits, 2, __fu
+695 {
+696     QuESTAssert(measureQubit >= 0 && measureQubit < multiQubit.numQubits, 2, __fu
       nc__);
-694     QuESTAssert((outcome==0 || outcome==1), 10, __func__);
-695 
-696         REAL totalStateProb=findProbabilityOfOutcome(multiQubit, measureQubit, ou
-      tcome);
-697     QuESTAssert(fabs(totalStateProb)>REAL_EPS, 8, __func__);
+697     QuESTAssert((outcome==0 || outcome==1), 10, __func__);
 698 
-699         int skipValuesWithinRank = halfMatrixBlockFitsInChunk(multiQubit.numAmps,
+699         REAL totalStateProb=findProbabilityOfOutcome(multiQubit, measureQubit, ou
+      tcome);
+700     QuESTAssert(fabs(totalStateProb)>REAL_EPS, 8, __func__);
+701 
+702         int skipValuesWithinRank = halfMatrixBlockFitsInChunk(multiQubit.numAmps,
        measureQubit);
-700     if (skipValuesWithinRank) {
-701         collapseToOutcomeLocal(multiQubit, measureQubit, totalStateProb, outcome)
+703     if (skipValuesWithinRank) {
+704         collapseToOutcomeLocal(multiQubit, measureQubit, totalStateProb, outcome)
       ;
-702     } else {
-703         if (!isChunkToSkipInFindPZero(multiQubit.chunkId, multiQubit.numAmps, mea
+705     } else {
+706         if (!isChunkToSkipInFindPZero(multiQubit.chunkId, multiQubit.numAmps, mea
       sureQubit)){
-704             // chunk has amps for q=0
-705             if (outcome==0) collapseToOutcomeDistributedRenorm(multiQubit, measur
+707             // chunk has amps for q=0
+708             if (outcome==0) collapseToOutcomeDistributedRenorm(multiQubit, measur
       eQubit, 
-706                     totalStateProb);
-707             else collapseToOutcomeDistributedSetZero(multiQubit, measureQubit);
-708         } else {
-709             // chunk has amps for q=1
-710             if (outcome==1) collapseToOutcomeDistributedRenorm(multiQubit, measur
+709                     totalStateProb);
+710             else collapseToOutcomeDistributedSetZero(multiQubit, measureQubit);
+711         } else {
+712             // chunk has amps for q=1
+713             if (outcome==1) collapseToOutcomeDistributedRenorm(multiQubit, measur
       eQubit, 
-711                     totalStateProb);
-712             else collapseToOutcomeDistributedSetZero(multiQubit, measureQubit);
-713         }
-714     }
-715         return totalStateProb;
-716 }
+714                     totalStateProb);
+715             else collapseToOutcomeDistributedSetZero(multiQubit, measureQubit);
+716         }
+717     }
+718         return totalStateProb;
+719 }
 \end{DoxyCode}
 \hypertarget{qubits__env__mpi_8c_a03b13dfcabd8c59b50dbdd3af44ba8b2}{
 \index{qubits\_\-env\_\-mpi.c@{qubits\_\-env\_\-mpi.c}!compactUnitary@{compactUnitary}}
@@ -307,62 +307,62 @@ Apply a single-\/qubit unitary parameterised by two given complex scalars. Given
 \item[{\em exitWithError}]if {\ttfamily targetQubit} is outside \mbox{[}0, {\ttfamily multiQubit.numQubits}), or if {\ttfamily alpha}, {\ttfamily beta} don't satisfy $|${\ttfamily alpha$|$$^\wedge$2} + $|${\ttfamily beta$|$$^\wedge$2} = 1. \end{DoxyExceptions}
 
 
-Definition at line 285 of file qubits\_\-env\_\-mpi.c.
+Definition at line 288 of file qubits\_\-env\_\-mpi.c.
 
 References MultiQubit::chunkId, chunkIsUpper(), compactUnitaryDistributed(), compactUnitaryLocal(), exchangeStateVectors(), getChunkPairId(), getRotAngle(), halfMatrixBlockFitsInChunk(), MultiQubit::numAmps, MultiQubit::numQubits, MultiQubit::pairStateVec, QuESTAssert(), MultiQubit::stateVec, and validateAlphaBeta().
 
-Referenced by rotateAroundAxis(), rotateX(), rotateY(), and rotateZ().
+Referenced by rotateAroundAxis().
 
 
 \begin{DoxyCode}
-286 {
-287         QuESTAssert(targetQubit >= 0 && targetQubit < multiQubit.numQubits, 1, __
+289 {
+290         QuESTAssert(targetQubit >= 0 && targetQubit < multiQubit.numQubits, 1, __
       func__);
-288         QuESTAssert(validateAlphaBeta(alpha, beta), 6, __func__);
-289 
-290         // flag to require memory exchange. 1: an entire block fits on one rank, 
+291         QuESTAssert(validateAlphaBeta(alpha, beta), 6, __func__);
+292 
+293         // flag to require memory exchange. 1: an entire block fits on one rank, 
       0: at most half a block fits on one rank
-291         int useLocalDataOnly = halfMatrixBlockFitsInChunk(multiQubit.numAmps, tar
+294         int useLocalDataOnly = halfMatrixBlockFitsInChunk(multiQubit.numAmps, tar
       getQubit);
-292         Complex rot1, rot2;
-293 
-294         // rank's chunk is in upper half of block 
-295         int rankIsUpper;
-296         int pairRank; // rank of corresponding chunk
-297 
-298         if (useLocalDataOnly){
-299                 // all values required to update state vector lie in this rank
-300                 compactUnitaryLocal(multiQubit, targetQubit, alpha, beta);
-301         } else {
-302                 // need to get corresponding chunk of state vector from other ran
+295         Complex rot1, rot2;
+296 
+297         // rank's chunk is in upper half of block 
+298         int rankIsUpper;
+299         int pairRank; // rank of corresponding chunk
+300 
+301         if (useLocalDataOnly){
+302                 // all values required to update state vector lie in this rank
+303                 compactUnitaryLocal(multiQubit, targetQubit, alpha, beta);
+304         } else {
+305                 // need to get corresponding chunk of state vector from other ran
       k
-303                 rankIsUpper = chunkIsUpper(multiQubit.chunkId, multiQubit.
+306                 rankIsUpper = chunkIsUpper(multiQubit.chunkId, multiQubit.
       numAmps, targetQubit);
-304                 getRotAngle(rankIsUpper, &rot1, &rot2, alpha, beta);
-305                 pairRank = getChunkPairId(rankIsUpper, multiQubit.chunkId, multiQ
+307                 getRotAngle(rankIsUpper, &rot1, &rot2, alpha, beta);
+308                 pairRank = getChunkPairId(rankIsUpper, multiQubit.chunkId, multiQ
       ubit.numAmps, targetQubit);
-306                 // get corresponding values from my pair
-307                         exchangeStateVectors(multiQubit, pairRank);
-308 
-309                 // this rank's values are either in the upper of lower half of th
+309                 // get corresponding values from my pair
+310                         exchangeStateVectors(multiQubit, pairRank);
+311 
+312                 // this rank's values are either in the upper of lower half of th
       e block. 
-310                         // send values to compactUnitaryDistributed in the correc
+313                         // send values to compactUnitaryDistributed in the correc
       t order
-311                 if (rankIsUpper){
-312                         compactUnitaryDistributed(multiQubit,targetQubit,rot1,rot
+314                 if (rankIsUpper){
+315                         compactUnitaryDistributed(multiQubit,targetQubit,rot1,rot
       2,
-313                                 multiQubit.stateVec, //upper
-314                                 multiQubit.pairStateVec, //lower
-315                                 multiQubit.stateVec); //output
-316                 } else {
-317                         compactUnitaryDistributed(multiQubit,targetQubit,rot1,rot
+316                                 multiQubit.stateVec, //upper
+317                                 multiQubit.pairStateVec, //lower
+318                                 multiQubit.stateVec); //output
+319                 } else {
+320                         compactUnitaryDistributed(multiQubit,targetQubit,rot1,rot
       2,
-318                                 multiQubit.pairStateVec, //upper
-319                                 multiQubit.stateVec, //lower
-320                                 multiQubit.stateVec); //output
-321                 }
-322         }
-323 }
+321                                 multiQubit.pairStateVec, //upper
+322                                 multiQubit.stateVec, //lower
+323                                 multiQubit.stateVec); //output
+324                 }
+325         }
+326 }
 \end{DoxyCode}
 \hypertarget{qubits__env__mpi_8c_ab4812953bc457405b3aa05a4c2f64f4a}{
 \index{qubits\_\-env\_\-mpi.c@{qubits\_\-env\_\-mpi.c}!controlledCompactUnitary@{controlledCompactUnitary}}
@@ -383,65 +383,65 @@ Apply a controlled unitary (single control, single target) parameterised by two 
 \item[{\em exitWithError}]if either {\ttfamily controlQubit} or {\ttfamily targetQubit} are outside \mbox{[}0, {\ttfamily multiQubit.numQubits}) or are equal, or if {\ttfamily alpha}, {\ttfamily beta} don't satisfy $|${\ttfamily alpha$|$$^\wedge$2} + $|${\ttfamily beta$|$$^\wedge$2} = 1. \end{DoxyExceptions}
 
 
-Definition at line 367 of file qubits\_\-env\_\-mpi.c.
+Definition at line 370 of file qubits\_\-env\_\-mpi.c.
 
 References MultiQubit::chunkId, chunkIsUpper(), controlledCompactUnitaryDistributed(), controlledCompactUnitaryLocal(), exchangeStateVectors(), getChunkPairId(), getRotAngle(), halfMatrixBlockFitsInChunk(), MultiQubit::numAmps, MultiQubit::numQubits, MultiQubit::pairStateVec, QuESTAssert(), MultiQubit::stateVec, and validateAlphaBeta().
 
 
 \begin{DoxyCode}
-368 {
-369         QuESTAssert(targetQubit >= 0 && targetQubit < multiQubit.numQubits, 1, __
+371 {
+372         QuESTAssert(targetQubit >= 0 && targetQubit < multiQubit.numQubits, 1, __
       func__);
-370         QuESTAssert(controlQubit >= 0 && controlQubit < multiQubit.numQubits, 2, 
+373         QuESTAssert(controlQubit >= 0 && controlQubit < multiQubit.numQubits, 2, 
       __func__);
-371         QuESTAssert(controlQubit != targetQubit, 3, __func__);
-372         QuESTAssert(validateAlphaBeta(alpha, beta), 6, __func__);
-373 
-374         // flag to require memory exchange. 1: an entire block fits on one rank, 
+374         QuESTAssert(controlQubit != targetQubit, 3, __func__);
+375         QuESTAssert(validateAlphaBeta(alpha, beta), 6, __func__);
+376 
+377         // flag to require memory exchange. 1: an entire block fits on one rank, 
       0: at most half a block fits on one rank
-375         int useLocalDataOnly = halfMatrixBlockFitsInChunk(multiQubit.numAmps, tar
+378         int useLocalDataOnly = halfMatrixBlockFitsInChunk(multiQubit.numAmps, tar
       getQubit);
-376         Complex rot1, rot2;
-377 
-378         // rank's chunk is in upper half of block 
-379         int rankIsUpper;
-380         int pairRank; // rank of corresponding chunk
-381 
-382         if (useLocalDataOnly){
-383                 // all values required to update state vector lie in this rank
-384                 controlledCompactUnitaryLocal(multiQubit, controlQubit, targetQub
+379         Complex rot1, rot2;
+380 
+381         // rank's chunk is in upper half of block 
+382         int rankIsUpper;
+383         int pairRank; // rank of corresponding chunk
+384 
+385         if (useLocalDataOnly){
+386                 // all values required to update state vector lie in this rank
+387                 controlledCompactUnitaryLocal(multiQubit, controlQubit, targetQub
       it, alpha, beta);
-385         } else {
-386                 // need to get corresponding chunk of state vector from other ran
+388         } else {
+389                 // need to get corresponding chunk of state vector from other ran
       k
-387                 rankIsUpper = chunkIsUpper(multiQubit.chunkId, multiQubit.
+390                 rankIsUpper = chunkIsUpper(multiQubit.chunkId, multiQubit.
       numAmps, targetQubit);
-388                 getRotAngle(rankIsUpper, &rot1, &rot2, alpha, beta);
-389                 pairRank = getChunkPairId(rankIsUpper, multiQubit.chunkId, multiQ
+391                 getRotAngle(rankIsUpper, &rot1, &rot2, alpha, beta);
+392                 pairRank = getChunkPairId(rankIsUpper, multiQubit.chunkId, multiQ
       ubit.numAmps, targetQubit);
-390                 //printf("%d rank has pair rank: %d\n", multiQubit.rank, pairRank
+393                 //printf("%d rank has pair rank: %d\n", multiQubit.rank, pairRank
       );
-391                 // get corresponding values from my pair
-392                 exchangeStateVectors(multiQubit, pairRank);
-393                 
-394                 // this rank's values are either in the upper of lower half of th
+394                 // get corresponding values from my pair
+395                 exchangeStateVectors(multiQubit, pairRank);
+396                 
+397                 // this rank's values are either in the upper of lower half of th
       e block. send values to controlledCompactUnitaryDistributed
-395                 // in the correct order
-396                 if (rankIsUpper){
-397                         controlledCompactUnitaryDistributed(multiQubit,controlQub
+398                 // in the correct order
+399                 if (rankIsUpper){
+400                         controlledCompactUnitaryDistributed(multiQubit,controlQub
       it,targetQubit,rot1,rot2,
-398                                 multiQubit.stateVec, //upper
-399                                 multiQubit.pairStateVec, //lower
-400                                 multiQubit.stateVec); //output
-401                 } else {
-402                         controlledCompactUnitaryDistributed(multiQubit,controlQub
+401                                 multiQubit.stateVec, //upper
+402                                 multiQubit.pairStateVec, //lower
+403                                 multiQubit.stateVec); //output
+404                 } else {
+405                         controlledCompactUnitaryDistributed(multiQubit,controlQub
       it,targetQubit,rot1,rot2,
-403                                 multiQubit.pairStateVec, //upper
-404                                 multiQubit.stateVec, //lower
-405                                 multiQubit.stateVec); //output
-406                 }
-407         }
-408 }
+406                                 multiQubit.pairStateVec, //upper
+407                                 multiQubit.stateVec, //lower
+408                                 multiQubit.stateVec); //output
+409                 }
+410         }
+411 }
 \end{DoxyCode}
 \hypertarget{qubits__env__mpi_8c_a67576895bbc65463481a8ea24d9b1e22}{
 \index{qubits\_\-env\_\-mpi.c@{qubits\_\-env\_\-mpi.c}!controlledNot@{controlledNot}}
@@ -462,58 +462,58 @@ Apply the controlled not (single control, single target) gate, also known as the
 \item[{\em exitWithError}]if either {\ttfamily controlQubit} or {\ttfamily targetQubit} are outside \mbox{[}0, {\ttfamily multiQubit.numQubits}), or are equal. \end{DoxyExceptions}
 
 
-Definition at line 529 of file qubits\_\-env\_\-mpi.c.
+Definition at line 532 of file qubits\_\-env\_\-mpi.c.
 
 References MultiQubit::chunkId, chunkIsUpper(), controlledNotDistributed(), controlledNotLocal(), exchangeStateVectors(), getChunkPairId(), halfMatrixBlockFitsInChunk(), MultiQubit::numAmps, MultiQubit::numQubits, MultiQubit::pairStateVec, QuESTAssert(), and MultiQubit::stateVec.
 
 
 \begin{DoxyCode}
-530 {
-531         QuESTAssert(targetQubit >= 0 && targetQubit < multiQubit.numQubits, 1, __
+533 {
+534         QuESTAssert(targetQubit >= 0 && targetQubit < multiQubit.numQubits, 1, __
       func__);
-532         QuESTAssert(controlQubit >= 0 && controlQubit < multiQubit.numQubits, 2, 
+535         QuESTAssert(controlQubit >= 0 && controlQubit < multiQubit.numQubits, 2, 
       __func__);
-533         QuESTAssert(controlQubit != targetQubit, 3, __func__);
-534 
-535         // flag to require memory exchange. 1: an entire block fits on one rank, 
-      0: at most half a block fits on one rank
-536         int useLocalDataOnly = halfMatrixBlockFitsInChunk(multiQubit.numAmps, tar
-      getQubit);
+536         QuESTAssert(controlQubit != targetQubit, 3, __func__);
 537 
-538         // rank's chunk is in upper half of block 
-539         int rankIsUpper;
-540         int pairRank; // rank of corresponding chunk
-541 
-542         if (useLocalDataOnly){
-543                 // all values required to update state vector lie in this rank
-544                 controlledNotLocal(multiQubit, controlQubit, targetQubit);
-545         } else {
-546                 // need to get corresponding chunk of state vector from other ran
+538         // flag to require memory exchange. 1: an entire block fits on one rank, 
+      0: at most half a block fits on one rank
+539         int useLocalDataOnly = halfMatrixBlockFitsInChunk(multiQubit.numAmps, tar
+      getQubit);
+540 
+541         // rank's chunk is in upper half of block 
+542         int rankIsUpper;
+543         int pairRank; // rank of corresponding chunk
+544 
+545         if (useLocalDataOnly){
+546                 // all values required to update state vector lie in this rank
+547                 controlledNotLocal(multiQubit, controlQubit, targetQubit);
+548         } else {
+549                 // need to get corresponding chunk of state vector from other ran
       k
-547                 rankIsUpper = chunkIsUpper(multiQubit.chunkId, multiQubit.
+550                 rankIsUpper = chunkIsUpper(multiQubit.chunkId, multiQubit.
       numAmps, targetQubit);
-548                 pairRank = getChunkPairId(rankIsUpper, multiQubit.chunkId, multiQ
+551                 pairRank = getChunkPairId(rankIsUpper, multiQubit.chunkId, multiQ
       ubit.numAmps, targetQubit);
-549                 //printf("%d rank has pair rank: %d\n", multiQubit.rank, pairRank
+552                 //printf("%d rank has pair rank: %d\n", multiQubit.rank, pairRank
       );
-550                 // get corresponding values from my pair
-551                 exchangeStateVectors(multiQubit, pairRank);
-552                 // this rank's values are either in the upper of lower half of th
+553                 // get corresponding values from my pair
+554                 exchangeStateVectors(multiQubit, pairRank);
+555                 // this rank's values are either in the upper of lower half of th
       e block. send values to controlledNot
-553                 // in the correct order
-554                 if (rankIsUpper){
-555                         controlledNotDistributed(multiQubit,controlQubit,targetQu
+556                 // in the correct order
+557                 if (rankIsUpper){
+558                         controlledNotDistributed(multiQubit,controlQubit,targetQu
       bit,
-556                                 multiQubit.pairStateVec, //in
-557                                 multiQubit.stateVec); //out
-558                 } else {
-559                         controlledNotDistributed(multiQubit,controlQubit,targetQu
+559                                 multiQubit.pairStateVec, //in
+560                                 multiQubit.stateVec); //out
+561                 } else {
+562                         controlledNotDistributed(multiQubit,controlQubit,targetQu
       bit,
-560                                 multiQubit.pairStateVec, //in
-561                                 multiQubit.stateVec); //out
-562                 }
-563         }
-564 }
+563                                 multiQubit.pairStateVec, //in
+564                                 multiQubit.stateVec); //out
+565                 }
+566         }
+567 }
 \end{DoxyCode}
 \hypertarget{qubits__env__mpi_8c_a8a701526263392599aa21d0d0f05d9d8}{
 \index{qubits\_\-env\_\-mpi.c@{qubits\_\-env\_\-mpi.c}!controlledUnitary@{controlledUnitary}}
@@ -534,65 +534,65 @@ Apply a general controlled unitary (single control, single target), which can in
 \item[{\em exitWithError}]if either {\ttfamily controlQubit} or {\ttfamily targetQubit} are outside \mbox{[}0, {\ttfamily multiQubit.numQubits}) or are equal, or if {\ttfamily u} is not unitary. \end{DoxyExceptions}
 
 
-Definition at line 410 of file qubits\_\-env\_\-mpi.c.
+Definition at line 413 of file qubits\_\-env\_\-mpi.c.
 
 References MultiQubit::chunkId, chunkIsUpper(), controlledUnitaryDistributed(), controlledUnitaryLocal(), exchangeStateVectors(), getChunkPairId(), getRotAngleFromUnitaryMatrix(), halfMatrixBlockFitsInChunk(), MultiQubit::numAmps, MultiQubit::numQubits, MultiQubit::pairStateVec, QuESTAssert(), MultiQubit::stateVec, and validateMatrixIsUnitary().
 
 
 \begin{DoxyCode}
-412 {
-413         QuESTAssert(targetQubit >= 0 && targetQubit < multiQubit.numQubits, 1, __
+415 {
+416         QuESTAssert(targetQubit >= 0 && targetQubit < multiQubit.numQubits, 1, __
       func__);
-414         QuESTAssert(controlQubit >= 0 && controlQubit < multiQubit.numQubits, 2, 
+417         QuESTAssert(controlQubit >= 0 && controlQubit < multiQubit.numQubits, 2, 
       __func__);
-415         QuESTAssert(controlQubit != targetQubit, 3, __func__);
-416         QuESTAssert(validateMatrixIsUnitary(u), 5, __func__);
-417 
-418         // flag to require memory exchange. 1: an entire block fits on one rank, 
+418         QuESTAssert(controlQubit != targetQubit, 3, __func__);
+419         QuESTAssert(validateMatrixIsUnitary(u), 5, __func__);
+420 
+421         // flag to require memory exchange. 1: an entire block fits on one rank, 
       0: at most half a block fits on one rank
-419         int useLocalDataOnly = halfMatrixBlockFitsInChunk(multiQubit.numAmps, tar
+422         int useLocalDataOnly = halfMatrixBlockFitsInChunk(multiQubit.numAmps, tar
       getQubit);
-420         Complex rot1, rot2;
-421 
-422         // rank's chunk is in upper half of block 
-423         int rankIsUpper;
-424         int pairRank; // rank of corresponding chunk
-425 
-426         if (useLocalDataOnly){
-427                 // all values required to update state vector lie in this rank
-428                 controlledUnitaryLocal(multiQubit, controlQubit, targetQubit, u);
+423         Complex rot1, rot2;
+424 
+425         // rank's chunk is in upper half of block 
+426         int rankIsUpper;
+427         int pairRank; // rank of corresponding chunk
+428 
+429         if (useLocalDataOnly){
+430                 // all values required to update state vector lie in this rank
+431                 controlledUnitaryLocal(multiQubit, controlQubit, targetQubit, u);
       
-429         } else {
-430                 // need to get corresponding chunk of state vector from other ran
+432         } else {
+433                 // need to get corresponding chunk of state vector from other ran
       k
-431                 rankIsUpper = chunkIsUpper(multiQubit.chunkId, multiQubit.
+434                 rankIsUpper = chunkIsUpper(multiQubit.chunkId, multiQubit.
       numAmps, targetQubit);
-432                 getRotAngleFromUnitaryMatrix(rankIsUpper, &rot1, &rot2, u);
-433                 pairRank = getChunkPairId(rankIsUpper, multiQubit.chunkId, multiQ
+435                 getRotAngleFromUnitaryMatrix(rankIsUpper, &rot1, &rot2, u);
+436                 pairRank = getChunkPairId(rankIsUpper, multiQubit.chunkId, multiQ
       ubit.numAmps, targetQubit);
-434                 //printf("%d rank has pair rank: %d\n", multiQubit.rank, pairRank
+437                 //printf("%d rank has pair rank: %d\n", multiQubit.rank, pairRank
       );
-435                 // get corresponding values from my pair
-436                 exchangeStateVectors(multiQubit, pairRank);
-437                 
-438                 // this rank's values are either in the upper of lower half of th
+438                 // get corresponding values from my pair
+439                 exchangeStateVectors(multiQubit, pairRank);
+440                 
+441                 // this rank's values are either in the upper of lower half of th
       e block. send values to controlledUnitaryDistributed
-439                 // in the correct order
-440                 if (rankIsUpper){
-441                         controlledUnitaryDistributed(multiQubit,controlQubit,targ
+442                 // in the correct order
+443                 if (rankIsUpper){
+444                         controlledUnitaryDistributed(multiQubit,controlQubit,targ
       etQubit,rot1,rot2,
-442                                 multiQubit.stateVec, //upper
-443                                 multiQubit.pairStateVec, //lower
-444                                 multiQubit.stateVec); //output
-445                 } else {
-446                         controlledUnitaryDistributed(multiQubit,controlQubit,targ
+445                                 multiQubit.stateVec, //upper
+446                                 multiQubit.pairStateVec, //lower
+447                                 multiQubit.stateVec); //output
+448                 } else {
+449                         controlledUnitaryDistributed(multiQubit,controlQubit,targ
       etQubit,rot1,rot2,
-447                                 multiQubit.pairStateVec, //upper
-448                                 multiQubit.stateVec, //lower
-449                                 multiQubit.stateVec); //output
-450                 }
-451         }
-452 }
+450                                 multiQubit.pairStateVec, //upper
+451                                 multiQubit.stateVec, //lower
+452                                 multiQubit.stateVec); //output
+453                 }
+454         }
+455 }
 \end{DoxyCode}
 \hypertarget{qubits__env__mpi_8c_a7682c9a3fd592d34ec15ba8fa172f104}{
 \index{qubits\_\-env\_\-mpi.c@{qubits\_\-env\_\-mpi.c}!exchangeStateVectors@{exchangeStateVectors}}
@@ -601,7 +601,7 @@ References MultiQubit::chunkId, chunkIsUpper(), controlledUnitaryDistributed(), 
 \label{qubits__env__mpi_8c_a7682c9a3fd592d34ec15ba8fa172f104}
 
 
-Definition at line 253 of file qubits\_\-env\_\-mpi.c.
+Definition at line 256 of file qubits\_\-env\_\-mpi.c.
 
 References DEBUG, ComplexArray::imag, MPI\_\-QuEST\_\-REAL, MultiQubit::numAmps, MultiQubit::pairStateVec, ComplexArray::real, REAL, and MultiQubit::stateVec.
 
@@ -609,45 +609,45 @@ Referenced by compactUnitary(), controlledCompactUnitary(), controlledNot(), con
 
 
 \begin{DoxyCode}
-253                                                               {
-254         // MPI send/receive vars
-255         int TAG=100;
-256         MPI_Status status;
-257 
-258         // Multiple messages are required as MPI uses int rather than long long i
+256                                                               {
+257         // MPI send/receive vars
+258         int TAG=100;
+259         MPI_Status status;
+260 
+261         // Multiple messages are required as MPI uses int rather than long long i
       nt for count
-259         // For openmpi, messages are further restricted to 2GB in size -- do this
+262         // For openmpi, messages are further restricted to 2GB in size -- do this
        for all cases
-260         // to be safe
-261         long long int maxMessageCount = 1LL<<29;
-262         if (sizeof(REAL)==8) maxMessageCount = (1LL<<28);
-263         else if (sizeof(REAL)==16) maxMessageCount = (1LL<<27);
-264 
-265         if (multiQubit.numAmps<maxMessageCount) maxMessageCount = multiQubit.
+263         // to be safe
+264         long long int maxMessageCount = 1LL<<29;
+265         if (sizeof(REAL)==8) maxMessageCount = (1LL<<28);
+266         else if (sizeof(REAL)==16) maxMessageCount = (1LL<<27);
+267 
+268         if (multiQubit.numAmps<maxMessageCount) maxMessageCount = multiQubit.
       numAmps;
-266         int numMessages = multiQubit.numAmps/maxMessageCount;
-267         int i;
-268         long long int offset;
-269         if (DEBUG) printf("numMessages %d maxMessageCount %lld\n", numMessages, m
+269         int numMessages = multiQubit.numAmps/maxMessageCount;
+270         int i;
+271         long long int offset;
+272         if (DEBUG) printf("numMessages %d maxMessageCount %lld\n", numMessages, m
       axMessageCount);
-270 
-271         // send my state vector to pairRank's multiQubit.pairStateVec
-272         // receive pairRank's state vector into multiQubit.pairStateVec
-273         for (i=0; i<numMessages; i++){
-274                 offset = i*maxMessageCount;
-275                 MPI_Sendrecv(&multiQubit.stateVec.real[offset], maxMessageCount, 
+273 
+274         // send my state vector to pairRank's multiQubit.pairStateVec
+275         // receive pairRank's state vector into multiQubit.pairStateVec
+276         for (i=0; i<numMessages; i++){
+277                 offset = i*maxMessageCount;
+278                 MPI_Sendrecv(&multiQubit.stateVec.real[offset], maxMessageCount, 
       MPI_QuEST_REAL, pairRank, TAG,
-276                                  &multiQubit.pairStateVec.real[offset], maxMessag
+279                                  &multiQubit.pairStateVec.real[offset], maxMessag
       eCount, MPI_QuEST_REAL,
-277                                  pairRank, TAG, MPI_COMM_WORLD, &status);
-278                 //printf("rank: %d err: %d\n", multiQubit.rank, err);
-279                 MPI_Sendrecv(&multiQubit.stateVec.imag[offset], maxMessageCount, 
+280                                  pairRank, TAG, MPI_COMM_WORLD, &status);
+281                 //printf("rank: %d err: %d\n", multiQubit.rank, err);
+282                 MPI_Sendrecv(&multiQubit.stateVec.imag[offset], maxMessageCount, 
       MPI_QuEST_REAL, pairRank, TAG,
-280                                 &multiQubit.pairStateVec.imag[offset], maxMessage
+283                                 &multiQubit.pairStateVec.imag[offset], maxMessage
       Count, MPI_QuEST_REAL,
-281                                 pairRank, TAG, MPI_COMM_WORLD, &status);
-282         }
-283 }
+284                                 pairRank, TAG, MPI_COMM_WORLD, &status);
+285         }
+286 }
 \end{DoxyCode}
 \hypertarget{qubits__env__mpi_8c_ae5f9019826f35e8b51b1716cfe397b45}{
 \index{qubits\_\-env\_\-mpi.c@{qubits\_\-env\_\-mpi.c}!exitWithError@{exitWithError}}
@@ -656,19 +656,19 @@ Referenced by compactUnitary(), controlledCompactUnitary(), controlledNot(), con
 \label{qubits__env__mpi_8c_ae5f9019826f35e8b51b1716cfe397b45}
 
 
-Definition at line 765 of file qubits\_\-env\_\-mpi.c.
+Definition at line 768 of file qubits\_\-env\_\-mpi.c.
 
 References errorCodes.
 
 
 \begin{DoxyCode}
-765                                                    {
-766     printf("!!!\n");
-767     printf("QuEST Error in function %s: %s\n", func, errorCodes[errorCode]);
-768     printf("!!!\n");
-769     printf("exiting..\n");
-770     MPI_Abort(MPI_COMM_WORLD, errorCode);
-771 }
+768                                                    {
+769     printf("!!!\n");
+770     printf("QuEST Error in function %s: %s\n", func, errorCodes[errorCode]);
+771     printf("!!!\n");
+772     printf("exiting..\n");
+773     MPI_Abort(MPI_COMM_WORLD, errorCode);
+774 }
 \end{DoxyCode}
 \hypertarget{qubits__env__mpi_8c_ad315c941a51bc053d39ebfa2040fd32e}{
 \index{qubits\_\-env\_\-mpi.c@{qubits\_\-env\_\-mpi.c}!findProbabilityOfOutcome@{findProbabilityOfOutcome}}
@@ -690,7 +690,7 @@ probability of qubit measureQubit being measured in the given outcome
 \item[{\em exitWithError}]if {\ttfamily measureQubit} is outside \mbox{[}0, {\ttfamily multiQubit.numQubits}), or if {\ttfamily outcome} is not in \{0, 1\}. \end{DoxyExceptions}
 
 
-Definition at line 672 of file qubits\_\-env\_\-mpi.c.
+Definition at line 675 of file qubits\_\-env\_\-mpi.c.
 
 References MultiQubit::chunkId, findProbabilityOfZeroDistributed(), findProbabilityOfZeroLocal(), halfMatrixBlockFitsInChunk(), isChunkToSkipInFindPZero(), MPI\_\-QuEST\_\-REAL, MultiQubit::numAmps, MultiQubit::numQubits, QuESTAssert(), and REAL.
 
@@ -698,28 +698,28 @@ Referenced by collapseToOutcome(), and measureWithStats().
 
 
 \begin{DoxyCode}
-673 {
-674     QuESTAssert(measureQubit >= 0 && measureQubit < multiQubit.numQubits, 2, __fu
+676 {
+677     QuESTAssert(measureQubit >= 0 && measureQubit < multiQubit.numQubits, 2, __fu
       nc__);
-675 
-676         REAL stateProb=0, totalStateProb=0;
-677         int skipValuesWithinRank = halfMatrixBlockFitsInChunk(multiQubit.numAmps,
+678 
+679         REAL stateProb=0, totalStateProb=0;
+680         int skipValuesWithinRank = halfMatrixBlockFitsInChunk(multiQubit.numAmps,
        measureQubit);
-678         if (skipValuesWithinRank) {
-679                 stateProb = findProbabilityOfZeroLocal(multiQubit, measureQubit);
+681         if (skipValuesWithinRank) {
+682                 stateProb = findProbabilityOfZeroLocal(multiQubit, measureQubit);
       
-680         } else {
-681                 if (!isChunkToSkipInFindPZero(multiQubit.chunkId, multiQubit.
+683         } else {
+684                 if (!isChunkToSkipInFindPZero(multiQubit.chunkId, multiQubit.
       numAmps, measureQubit)){
-682                         stateProb = findProbabilityOfZeroDistributed(multiQubit, 
+685                         stateProb = findProbabilityOfZeroDistributed(multiQubit, 
       measureQubit);
-683                 } else stateProb = 0;
-684         }
-685         MPI_Allreduce(&stateProb, &totalStateProb, 1, MPI_QuEST_REAL, MPI_SUM, MP
+686                 } else stateProb = 0;
+687         }
+688         MPI_Allreduce(&stateProb, &totalStateProb, 1, MPI_QuEST_REAL, MPI_SUM, MP
       I_COMM_WORLD);
-686         if (outcome==1) totalStateProb = 1.0 - totalStateProb;
-687         return totalStateProb;
-688 }
+689         if (outcome==1) totalStateProb = 1.0 - totalStateProb;
+690         return totalStateProb;
+691 }
 \end{DoxyCode}
 \hypertarget{qubits__env__mpi_8c_a8605e6a6295174cb4661156eaa709ec4}{
 \index{qubits\_\-env\_\-mpi.c@{qubits\_\-env\_\-mpi.c}!getChunkIdFromIndex@{getChunkIdFromIndex}}
@@ -728,7 +728,7 @@ Referenced by collapseToOutcome(), and measureWithStats().
 \label{qubits__env__mpi_8c_a8605e6a6295174cb4661156eaa709ec4}
 
 
-Definition at line 99 of file qubits\_\-env\_\-mpi.c.
+Definition at line 102 of file qubits\_\-env\_\-mpi.c.
 
 References MultiQubit::numAmps.
 
@@ -736,9 +736,9 @@ Referenced by getImagAmpEl(), and getRealAmpEl().
 
 
 \begin{DoxyCode}
-99                                                                    {
-100         return index/multiQubit.numAmps; // this is numAmpsPerChunk
-101 }
+102                                                                    {
+103         return index/multiQubit.numAmps; // this is numAmpsPerChunk
+104 }
 \end{DoxyCode}
 \hypertarget{qubits__env__mpi_8c_a7dba097f23f5d48dfdc9f3250444e2e4}{
 \index{qubits\_\-env\_\-mpi.c@{qubits\_\-env\_\-mpi.c}!getChunkPairId@{getChunkPairId}}
@@ -755,21 +755,21 @@ chunkId of chunk required to rotate targetQubit
 \end{DoxyReturn}
 
 
-Definition at line 228 of file qubits\_\-env\_\-mpi.c.
+Definition at line 231 of file qubits\_\-env\_\-mpi.c.
 
 Referenced by compactUnitary(), controlledCompactUnitary(), controlledNot(), controlledUnitary(), hadamard(), multiControlledUnitary(), sigmaX(), sigmaY(), and unitary().
 
 
 \begin{DoxyCode}
-229 {
-230         long long int sizeHalfBlock = 1LL << (targetQubit);
-231         int chunksPerHalfBlock = sizeHalfBlock/chunkSize;
-232         if (chunkIsUpper){
-233                 return chunkId + chunksPerHalfBlock;
-234         } else {
-235                 return chunkId - chunksPerHalfBlock;
-236         }
-237 }
+232 {
+233         long long int sizeHalfBlock = 1LL << (targetQubit);
+234         int chunksPerHalfBlock = sizeHalfBlock/chunkSize;
+235         if (chunkIsUpper){
+236                 return chunkId + chunksPerHalfBlock;
+237         } else {
+238                 return chunkId - chunksPerHalfBlock;
+239         }
+240 }
 \end{DoxyCode}
 \hypertarget{qubits__env__mpi_8c_a3615f76fd5f57008d9b74bbd10533dd0}{
 \index{qubits\_\-env\_\-mpi.c@{qubits\_\-env\_\-mpi.c}!getImagAmpEl@{getImagAmpEl}}
@@ -791,7 +791,7 @@ imaginary component at that index
 \item[{\em exitWithError}]if {\ttfamily index} is outside \mbox{[}0, $2^{N}$) where $N = $ {\ttfamily multiQubit.numQubits} \end{DoxyExceptions}
 
 
-Definition at line 113 of file qubits\_\-env\_\-mpi.c.
+Definition at line 116 of file qubits\_\-env\_\-mpi.c.
 
 References MultiQubit::chunkId, getChunkIdFromIndex(), ComplexArray::imag, MPI\_\-QuEST\_\-REAL, MultiQubit::numAmps, REAL, and MultiQubit::stateVec.
 
@@ -799,15 +799,15 @@ Referenced by getProbEl().
 
 
 \begin{DoxyCode}
-113                                                              {
-114         int chunkId = getChunkIdFromIndex(multiQubit, index);
-115         REAL el; 
-116         if (multiQubit.chunkId==chunkId){
-117                 el = multiQubit.stateVec.imag[index-chunkId*multiQubit.numAmps];
-118         }
-119         MPI_Bcast(&el, 1, MPI_QuEST_REAL, chunkId, MPI_COMM_WORLD);
-120         return el; 
-121 }
+116                                                              {
+117         int chunkId = getChunkIdFromIndex(multiQubit, index);
+118         REAL el; 
+119         if (multiQubit.chunkId==chunkId){
+120                 el = multiQubit.stateVec.imag[index-chunkId*multiQubit.numAmps];
+121         }
+122         MPI_Bcast(&el, 1, MPI_QuEST_REAL, chunkId, MPI_COMM_WORLD);
+123         return el; 
+124 }
 \end{DoxyCode}
 \hypertarget{qubits__env__mpi_8c_a317b786f577fa6bc136ea7f0ee7330a7}{
 \index{qubits\_\-env\_\-mpi.c@{qubits\_\-env\_\-mpi.c}!getRealAmpEl@{getRealAmpEl}}
@@ -829,7 +829,7 @@ real component at that index
 \item[{\em exitWithError}]if {\ttfamily index} is outside \mbox{[}0, $2^{N}$) where $N = $ {\ttfamily multiQubit.numQubits} \end{DoxyExceptions}
 
 
-Definition at line 103 of file qubits\_\-env\_\-mpi.c.
+Definition at line 106 of file qubits\_\-env\_\-mpi.c.
 
 References MultiQubit::chunkId, getChunkIdFromIndex(), MPI\_\-QuEST\_\-REAL, MultiQubit::numAmps, ComplexArray::real, REAL, and MultiQubit::stateVec.
 
@@ -837,15 +837,15 @@ Referenced by getProbEl().
 
 
 \begin{DoxyCode}
-103                                                              {
-104         int chunkId = getChunkIdFromIndex(multiQubit, index);
-105         REAL el; 
-106         if (multiQubit.chunkId==chunkId){
-107                 el = multiQubit.stateVec.real[index-chunkId*multiQubit.numAmps];
-108         }
-109         MPI_Bcast(&el, 1, MPI_QuEST_REAL, chunkId, MPI_COMM_WORLD);
-110         return el; 
-111 } 
+106                                                              {
+107         int chunkId = getChunkIdFromIndex(multiQubit, index);
+108         REAL el; 
+109         if (multiQubit.chunkId==chunkId){
+110                 el = multiQubit.stateVec.real[index-chunkId*multiQubit.numAmps];
+111         }
+112         MPI_Bcast(&el, 1, MPI_QuEST_REAL, chunkId, MPI_COMM_WORLD);
+113         return el; 
+114 } 
 \end{DoxyCode}
 \hypertarget{qubits__env__mpi_8c_adb4b0373425b282abed27742d0ce0872}{
 \index{qubits\_\-env\_\-mpi.c@{qubits\_\-env\_\-mpi.c}!getRotAngle@{getRotAngle}}
@@ -865,7 +865,7 @@ stateLower = rot1 * stateUpper + conj(rot2)  * stateLower
 \item[\mbox{$\leftarrow$} {\em alpha,beta}]initial rotation values \end{DoxyParams}
 
 
-Definition at line 183 of file qubits\_\-env\_\-mpi.c.
+Definition at line 186 of file qubits\_\-env\_\-mpi.c.
 
 References Complex::imag, and Complex::real.
 
@@ -873,16 +873,16 @@ Referenced by compactUnitary(), and controlledCompactUnitary().
 
 
 \begin{DoxyCode}
-184 {
-185         if (chunkIsUpper){
-186                 *rot1=alpha;
-187                 rot2->real=-beta.real;
-188                 rot2->imag=-beta.imag;
-189         } else {
-190                 *rot1=beta;
-191                 *rot2=alpha;
-192         }
-193 }
+187 {
+188         if (chunkIsUpper){
+189                 *rot1=alpha;
+190                 rot2->real=-beta.real;
+191                 rot2->imag=-beta.imag;
+192         } else {
+193                 *rot1=beta;
+194                 *rot2=alpha;
+195         }
+196 }
 \end{DoxyCode}
 \hypertarget{qubits__env__mpi_8c_a5c9b2f129bdffaaba9857f6eddecbb17}{
 \index{qubits\_\-env\_\-mpi.c@{qubits\_\-env\_\-mpi.c}!getRotAngleFromUnitaryMatrix@{getRotAngleFromUnitaryMatrix}}
@@ -902,7 +902,7 @@ stateLower = rot1 * stateUpper + conj(rot2)  * stateLower
  \item[\mbox{$\leftarrow$} {\em u}]unitary matrix operation \end{DoxyParams}
 
 
-Definition at line 208 of file qubits\_\-env\_\-mpi.c.
+Definition at line 211 of file qubits\_\-env\_\-mpi.c.
 
 References ComplexMatrix2::r0c0, ComplexMatrix2::r0c1, ComplexMatrix2::r1c0, and ComplexMatrix2::r1c1.
 
@@ -910,15 +910,15 @@ Referenced by controlledUnitary(), multiControlledUnitary(), and unitary().
 
 
 \begin{DoxyCode}
-209 {
-210         if (chunkIsUpper){
-211                 *rot1=u.r0c0;
-212                 *rot2=u.r0c1;
-213         } else {
-214                 *rot1=u.r1c0;
-215                 *rot2=u.r1c1;
-216         }
-217 }
+212 {
+213         if (chunkIsUpper){
+214                 *rot1=u.r0c0;
+215                 *rot2=u.r0c1;
+216         } else {
+217                 *rot1=u.r1c0;
+218                 *rot2=u.r1c1;
+219         }
+220 }
 \end{DoxyCode}
 \hypertarget{qubits__env__mpi_8c_aa09b5dd93de6df1384b8f2c0041749ab}{
 \index{qubits\_\-env\_\-mpi.c@{qubits\_\-env\_\-mpi.c}!hadamard@{hadamard}}
@@ -939,55 +939,55 @@ Apply the single-\/qubit Hadamard gate. This takes $|0\rangle$ to $|+\rangle$ an
 \item[{\em exitWithError}]if {\ttfamily targetQubit} is outside \mbox{[}0, {\ttfamily multiQubit.numQubits}). \end{DoxyExceptions}
 
 
-Definition at line 615 of file qubits\_\-env\_\-mpi.c.
+Definition at line 618 of file qubits\_\-env\_\-mpi.c.
 
 References MultiQubit::chunkId, chunkIsUpper(), exchangeStateVectors(), getChunkPairId(), hadamardDistributed(), hadamardLocal(), halfMatrixBlockFitsInChunk(), MultiQubit::numAmps, MultiQubit::numQubits, MultiQubit::pairStateVec, QuESTAssert(), and MultiQubit::stateVec.
 
 
 \begin{DoxyCode}
-616 {
-617         QuESTAssert(targetQubit >= 0 && targetQubit < multiQubit.numQubits, 1, __
+619 {
+620         QuESTAssert(targetQubit >= 0 && targetQubit < multiQubit.numQubits, 1, __
       func__);
-618 
-619         // flag to require memory exchange. 1: an entire block fits on one rank, 
-      0: at most half a block fits on one rank
-620         int useLocalDataOnly = halfMatrixBlockFitsInChunk(multiQubit.numAmps, tar
-      getQubit);
 621 
-622         // rank's chunk is in upper half of block 
-623         int rankIsUpper;
-624         int pairRank; // rank of corresponding chunk
-625 
-626         if (useLocalDataOnly){
-627                 // all values required to update state vector lie in this rank
-628                 hadamardLocal(multiQubit, targetQubit);
-629         } else {
-630                 // need to get corresponding chunk of state vector from other ran
+622         // flag to require memory exchange. 1: an entire block fits on one rank, 
+      0: at most half a block fits on one rank
+623         int useLocalDataOnly = halfMatrixBlockFitsInChunk(multiQubit.numAmps, tar
+      getQubit);
+624 
+625         // rank's chunk is in upper half of block 
+626         int rankIsUpper;
+627         int pairRank; // rank of corresponding chunk
+628 
+629         if (useLocalDataOnly){
+630                 // all values required to update state vector lie in this rank
+631                 hadamardLocal(multiQubit, targetQubit);
+632         } else {
+633                 // need to get corresponding chunk of state vector from other ran
       k
-631                 rankIsUpper = chunkIsUpper(multiQubit.chunkId, multiQubit.
+634                 rankIsUpper = chunkIsUpper(multiQubit.chunkId, multiQubit.
       numAmps, targetQubit);
-632                 pairRank = getChunkPairId(rankIsUpper, multiQubit.chunkId, multiQ
+635                 pairRank = getChunkPairId(rankIsUpper, multiQubit.chunkId, multiQ
       ubit.numAmps, targetQubit);
-633                 //printf("%d rank has pair rank: %d\n", multiQubit.rank, pairRank
+636                 //printf("%d rank has pair rank: %d\n", multiQubit.rank, pairRank
       );
-634                 // get corresponding values from my pair
-635                 exchangeStateVectors(multiQubit, pairRank);
-636                 // this rank's values are either in the upper of lower half of th
+637                 // get corresponding values from my pair
+638                 exchangeStateVectors(multiQubit, pairRank);
+639                 // this rank's values are either in the upper of lower half of th
       e block. send values to hadamardDistributed
-637                 // in the correct order
-638                 if (rankIsUpper){
-639                         hadamardDistributed(multiQubit,targetQubit,
-640                                 multiQubit.stateVec, //upper
-641                                 multiQubit.pairStateVec, //lower
-642                                 multiQubit.stateVec, rankIsUpper); //output
-643                 } else {
-644                         hadamardDistributed(multiQubit,targetQubit,
-645                                 multiQubit.pairStateVec, //upper
-646                                 multiQubit.stateVec, //lower
-647                                 multiQubit.stateVec, rankIsUpper); //output
-648                 }
-649         }
-650 }
+640                 // in the correct order
+641                 if (rankIsUpper){
+642                         hadamardDistributed(multiQubit,targetQubit,
+643                                 multiQubit.stateVec, //upper
+644                                 multiQubit.pairStateVec, //lower
+645                                 multiQubit.stateVec, rankIsUpper); //output
+646                 } else {
+647                         hadamardDistributed(multiQubit,targetQubit,
+648                                 multiQubit.pairStateVec, //upper
+649                                 multiQubit.stateVec, //lower
+650                                 multiQubit.stateVec, rankIsUpper); //output
+651                 }
+652         }
+653 }
 \end{DoxyCode}
 \hypertarget{qubits__env__mpi_8c_a4d043bb0cee54a5f94faf3ffc34a6790}{
 \index{qubits\_\-env\_\-mpi.c@{qubits\_\-env\_\-mpi.c}!halfMatrixBlockFitsInChunk@{halfMatrixBlockFitsInChunk}}
@@ -1004,17 +1004,17 @@ return whether the current qubit rotation will use blocks that fit within a sing
 \end{DoxyReturn}
 
 
-Definition at line 246 of file qubits\_\-env\_\-mpi.c.
+Definition at line 249 of file qubits\_\-env\_\-mpi.c.
 
 Referenced by collapseToOutcome(), compactUnitary(), controlledCompactUnitary(), controlledNot(), controlledUnitary(), findProbabilityOfOutcome(), hadamard(), measureWithStats(), multiControlledUnitary(), phaseGate(), sigmaX(), sigmaY(), and unitary().
 
 
 \begin{DoxyCode}
-247 {
-248         long long int sizeHalfBlock = 1LL << (targetQubit);
-249         if (chunkSize > sizeHalfBlock) return 1;
-250         else return 0;
-251 }
+250 {
+251         long long int sizeHalfBlock = 1LL << (targetQubit);
+252         if (chunkSize > sizeHalfBlock) return 1;
+253         else return 0;
+254 }
 \end{DoxyCode}
 \hypertarget{qubits__env__mpi_8c_ad84a3ce68d1ca02b4e3f741ea45b6054}{
 \index{qubits\_\-env\_\-mpi.c@{qubits\_\-env\_\-mpi.c}!initQuESTEnv@{initQuESTEnv}}
@@ -1030,42 +1030,42 @@ Initialize the QuEST environment. If something needs to be done to set up the ex
 \item[\mbox{$\leftrightarrow$} {\em env}]object representing the execution environment. A single instance is used for each program \end{DoxyParams}
 
 
-Definition at line 32 of file qubits\_\-env\_\-mpi.c.
+Definition at line 35 of file qubits\_\-env\_\-mpi.c.
 
 References DEBUG, init\_\-by\_\-array(), QuESTEnv::numRanks, and QuESTEnv::rank.
 
 
 \begin{DoxyCode}
-32                                 {
-33         // init MPI environment
-34         int rank, numRanks, initialized;
-35         MPI_Initialized(&initialized);
-36         if (!initialized){
-37                 MPI_Init(NULL, NULL);
-38                 MPI_Comm_size(MPI_COMM_WORLD, &numRanks);
-39                 MPI_Comm_rank(MPI_COMM_WORLD, &rank);
-40 
-41                 if (DEBUG) {
-42                         char hostName[256];
-43                         int hostNameLen;
-44                         MPI_Get_processor_name(hostName, &hostNameLen);
-45                         printf("rank %d on host %s\n", rank, hostName);
-46                 }
-47                 env->rank=rank;
-48                 env->numRanks=numRanks;
-49 
-50         // init MT random number generator with two keys -- time and pid 
-51         // it is ok that all procs will get the same seed as random numbers will 
+35                                 {
+36         // init MPI environment
+37         int rank, numRanks, initialized;
+38         MPI_Initialized(&initialized);
+39         if (!initialized){
+40                 MPI_Init(NULL, NULL);
+41                 MPI_Comm_size(MPI_COMM_WORLD, &numRanks);
+42                 MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+43 
+44                 if (DEBUG) {
+45                         char hostName[256];
+46                         int hostNameLen;
+47                         MPI_Get_processor_name(hostName, &hostNameLen);
+48                         printf("rank %d on host %s\n", rank, hostName);
+49                 }
+50                 env->rank=rank;
+51                 env->numRanks=numRanks;
+52 
+53         // init MT random number generator with two keys -- time and pid 
+54         // it is ok that all procs will get the same seed as random numbers will 
       only be 
-52         // used by the master process
-53         unsigned long int secs = time(NULL);
-54         unsigned long int pid = getpid();
-55         unsigned long int key[2];
-56         key[0] = secs; key[1] = pid;
-57         init_by_array(key, 2);
-58         } else printf("ERROR: Trying to initialize QuESTEnv multiple times. Ignor
+55         // used by the master process
+56         unsigned long int secs = time(NULL);
+57         unsigned long int pid = getpid();
+58         unsigned long int key[2];
+59         key[0] = secs; key[1] = pid;
+60         init_by_array(key, 2);
+61         } else printf("ERROR: Trying to initialize QuESTEnv multiple times. Ignor
       ing\n");
-59 }
+62 }
 \end{DoxyCode}
 \hypertarget{qubits__env__mpi_8c_af0ea25f00987af4c53f17c9cca62ab41}{
 \index{qubits\_\-env\_\-mpi.c@{qubits\_\-env\_\-mpi.c}!isChunkToSkipInFindPZero@{isChunkToSkipInFindPZero}}
@@ -1084,20 +1084,20 @@ int -\/-\/ 1: skip, 0: don't skip
 \end{DoxyReturn}
 
 
-Definition at line 663 of file qubits\_\-env\_\-mpi.c.
+Definition at line 666 of file qubits\_\-env\_\-mpi.c.
 
 Referenced by collapseToOutcome(), findProbabilityOfOutcome(), and measureWithStats().
 
 
 \begin{DoxyCode}
-664 {
-665         long long int sizeHalfBlock = 1LL << (measureQubit);
-666         int numChunksToSkip = sizeHalfBlock/chunkSize;
-667         // calculate probability by summing over numChunksToSkip, then skipping n
+667 {
+668         long long int sizeHalfBlock = 1LL << (measureQubit);
+669         int numChunksToSkip = sizeHalfBlock/chunkSize;
+670         // calculate probability by summing over numChunksToSkip, then skipping n
       umChunksToSkip, etc
-668         int bitToCheck = chunkId & numChunksToSkip;
-669         return bitToCheck;
-670 }
+671         int bitToCheck = chunkId & numChunksToSkip;
+672         return bitToCheck;
+673 }
 \end{DoxyCode}
 \hypertarget{qubits__env__mpi_8c_ad5774247d836267175c664cd0e451bcb}{
 \index{qubits\_\-env\_\-mpi.c@{qubits\_\-env\_\-mpi.c}!measure@{measure}}
@@ -1119,18 +1119,18 @@ the measurement outcome, 0 or 1
 \item[{\em exitWithError}]if {\ttfamily measureQubit} is outside \mbox{[}0, {\ttfamily multiQubit.numQubits}) \end{DoxyExceptions}
 
 
-Definition at line 719 of file qubits\_\-env\_\-mpi.c.
+Definition at line 722 of file qubits\_\-env\_\-mpi.c.
 
 References measureWithStats(), MultiQubit::numQubits, QuESTAssert(), and REAL.
 
 
 \begin{DoxyCode}
-719                                                     {
-720     QuESTAssert(measureQubit >= 0 && measureQubit < multiQubit.numQubits, 2, __fu
+722                                                     {
+723     QuESTAssert(measureQubit >= 0 && measureQubit < multiQubit.numQubits, 2, __fu
       nc__);
-721     REAL stateProb; 
-722     return measureWithStats(multiQubit, measureQubit, &stateProb); 
-723 }
+724     REAL stateProb; 
+725     return measureWithStats(multiQubit, measureQubit, &stateProb); 
+726 }
 \end{DoxyCode}
 \hypertarget{qubits__env__mpi_8c_a2ac46e470c750bf93c754e06c64b0a7a}{
 \index{qubits\_\-env\_\-mpi.c@{qubits\_\-env\_\-mpi.c}!measureWithStats@{measureWithStats}}
@@ -1152,7 +1152,7 @@ the measurement outcome, 0 or 1
 \item[{\em exitWithError}]if {\ttfamily measureQubit} is outside \mbox{[}0, {\ttfamily multiQubit.numQubits}) \end{DoxyExceptions}
 
 
-Definition at line 725 of file qubits\_\-env\_\-mpi.c.
+Definition at line 728 of file qubits\_\-env\_\-mpi.c.
 
 References MultiQubit::chunkId, collapseToOutcomeDistributedRenorm(), collapseToOutcomeDistributedSetZero(), collapseToOutcomeLocal(), findProbabilityOfOutcome(), genrand\_\-real1(), halfMatrixBlockFitsInChunk(), isChunkToSkipInFindPZero(), MultiQubit::numAmps, MultiQubit::numQubits, QuESTAssert(), REAL, and REAL\_\-EPS.
 
@@ -1160,52 +1160,52 @@ Referenced by measure().
 
 
 \begin{DoxyCode}
-725                                                                               {
-726     QuESTAssert(measureQubit >= 0 && measureQubit < multiQubit.numQubits, 2, __fu
+728                                                                               {
+729     QuESTAssert(measureQubit >= 0 && measureQubit < multiQubit.numQubits, 2, __fu
       nc__);
-727 
-728     int outcome;
-729     // find probability of qubit being in state 1
-730     REAL stateProbInternal = findProbabilityOfOutcome(multiQubit, measureQubit, 1
+730 
+731     int outcome;
+732     // find probability of qubit being in state 1
+733     REAL stateProbInternal = findProbabilityOfOutcome(multiQubit, measureQubit, 1
       );
-731 
-732     // we can't collapse to a state that has a probability too close to zero
-733     if (stateProbInternal<REAL_EPS) outcome=0;
-734     else if (1-stateProbInternal<REAL_EPS) outcome=1;
-735     else {
-736         // ok. both P(0) and P(1) are large enough to resolve
-737         // generate random float on [0,1]
-738         float randNum = genrand_real1();
-739         if (randNum<=stateProbInternal) outcome = 1;
-740         else outcome = 0;
-741     } 
-742     if (outcome==0) stateProbInternal = 1-stateProbInternal;
-743 
-744         int skipValuesWithinRank = halfMatrixBlockFitsInChunk(multiQubit.numAmps,
+734 
+735     // we can't collapse to a state that has a probability too close to zero
+736     if (stateProbInternal<REAL_EPS) outcome=0;
+737     else if (1-stateProbInternal<REAL_EPS) outcome=1;
+738     else {
+739         // ok. both P(0) and P(1) are large enough to resolve
+740         // generate random float on [0,1]
+741         float randNum = genrand_real1();
+742         if (randNum<=stateProbInternal) outcome = 1;
+743         else outcome = 0;
+744     } 
+745     if (outcome==0) stateProbInternal = 1-stateProbInternal;
+746 
+747         int skipValuesWithinRank = halfMatrixBlockFitsInChunk(multiQubit.numAmps,
        measureQubit);
-745     if (skipValuesWithinRank) {
-746         collapseToOutcomeLocal(multiQubit, measureQubit, stateProbInternal, outco
+748     if (skipValuesWithinRank) {
+749         collapseToOutcomeLocal(multiQubit, measureQubit, stateProbInternal, outco
       me);
-747     } else {
-748         if (!isChunkToSkipInFindPZero(multiQubit.chunkId, multiQubit.numAmps, mea
+750     } else {
+751         if (!isChunkToSkipInFindPZero(multiQubit.chunkId, multiQubit.numAmps, mea
       sureQubit)){
-749             // chunk has amps for q=0
-750             if (outcome==0) collapseToOutcomeDistributedRenorm(multiQubit, measur
+752             // chunk has amps for q=0
+753             if (outcome==0) collapseToOutcomeDistributedRenorm(multiQubit, measur
       eQubit, 
-751                     stateProbInternal);
-752             else collapseToOutcomeDistributedSetZero(multiQubit, measureQubit);
-753         } else {
-754             // chunk has amps for q=1
-755             if (outcome==1) collapseToOutcomeDistributedRenorm(multiQubit, measur
+754                     stateProbInternal);
+755             else collapseToOutcomeDistributedSetZero(multiQubit, measureQubit);
+756         } else {
+757             // chunk has amps for q=1
+758             if (outcome==1) collapseToOutcomeDistributedRenorm(multiQubit, measur
       eQubit, 
-756                     stateProbInternal);
-757             else collapseToOutcomeDistributedSetZero(multiQubit, measureQubit);
-758         }
-759     }
-760 
-761     *stateProb = stateProbInternal;
-762     return outcome;
-763 }
+759                     stateProbInternal);
+760             else collapseToOutcomeDistributedSetZero(multiQubit, measureQubit);
+761         }
+762     }
+763 
+764     *stateProb = stateProbInternal;
+765     return outcome;
+766 }
 \end{DoxyCode}
 \hypertarget{qubits__env__mpi_8c_ae395a79690283ed81106afadd7a8cd8a}{
 \index{qubits\_\-env\_\-mpi.c@{qubits\_\-env\_\-mpi.c}!multiControlledUnitary@{multiControlledUnitary}}
@@ -1226,71 +1226,71 @@ Apply a general multiple-\/control single-\/target unitary, which can include a 
 \item[{\em exitWithError}]if {\ttfamily numControlQubits} is outside \mbox{[}1, {\ttfamily multiQubit.numQubits}\mbox{]}), or if any qubit index ({\ttfamily targetQubit} or one in {\ttfamily controlQubits}) is outside \mbox{[}0, {\ttfamily multiQubit.numQubits}\mbox{]}), or if {\ttfamily controlQubits} contains {\ttfamily targetQubit}, or if {\ttfamily u} is not unitary. \end{DoxyExceptions}
 
 
-Definition at line 454 of file qubits\_\-env\_\-mpi.c.
+Definition at line 457 of file qubits\_\-env\_\-mpi.c.
 
 References MultiQubit::chunkId, chunkIsUpper(), exchangeStateVectors(), getChunkPairId(), getRotAngleFromUnitaryMatrix(), halfMatrixBlockFitsInChunk(), multiControlledUnitaryDistributed(), multiControlledUnitaryLocal(), MultiQubit::numAmps, MultiQubit::numQubits, MultiQubit::pairStateVec, QuESTAssert(), MultiQubit::stateVec, and validateMatrixIsUnitary().
 
 
 \begin{DoxyCode}
-455 {
-456         QuESTAssert(targetQubit >= 0 && targetQubit < multiQubit.numQubits, 1, __
+458 {
+459         QuESTAssert(targetQubit >= 0 && targetQubit < multiQubit.numQubits, 1, __
       func__);
-457         QuESTAssert(numControlQubits > 0 && numControlQubits <= multiQubit.
+460         QuESTAssert(numControlQubits > 0 && numControlQubits <= multiQubit.
       numQubits, 4, __func__);
-458         QuESTAssert(validateMatrixIsUnitary(u), 5, __func__);
-459          
-460         long long int mask=0;
-461         for (int i=0; i<numControlQubits; i++) mask = mask | (1LL<<controlQubits[
+461         QuESTAssert(validateMatrixIsUnitary(u), 5, __func__);
+462          
+463         long long int mask=0;
+464         for (int i=0; i<numControlQubits; i++) mask = mask | (1LL<<controlQubits[
       i]);
-462         QuESTAssert(mask >=0 && mask <= (1LL<<multiQubit.numQubits)-1, 2, __func_
+465         QuESTAssert(mask >=0 && mask <= (1LL<<multiQubit.numQubits)-1, 2, __func_
       _);
-463         QuESTAssert((mask & (1LL<<targetQubit)) != (1LL<<targetQubit), 3, __func_
+466         QuESTAssert((mask & (1LL<<targetQubit)) != (1LL<<targetQubit), 3, __func_
       _);
-464         
-465         // flag to require memory exchange. 1: an entire block fits on one rank, 
+467         
+468         // flag to require memory exchange. 1: an entire block fits on one rank, 
       0: at most half a block fits on one rank
-466         int useLocalDataOnly = halfMatrixBlockFitsInChunk(multiQubit.numAmps, tar
+469         int useLocalDataOnly = halfMatrixBlockFitsInChunk(multiQubit.numAmps, tar
       getQubit);
-467         Complex rot1, rot2;
-468 
-469         // rank's chunk is in upper half of block 
-470         int rankIsUpper;
-471         int pairRank; // rank of corresponding chunk
-472 
-473         if (useLocalDataOnly){
-474                 // all values required to update state vector lie in this rank
-475                 multiControlledUnitaryLocal(multiQubit, targetQubit, mask, u);
-476         } else {
-477                 // need to get corresponding chunk of state vector from other ran
+470         Complex rot1, rot2;
+471 
+472         // rank's chunk is in upper half of block 
+473         int rankIsUpper;
+474         int pairRank; // rank of corresponding chunk
+475 
+476         if (useLocalDataOnly){
+477                 // all values required to update state vector lie in this rank
+478                 multiControlledUnitaryLocal(multiQubit, targetQubit, mask, u);
+479         } else {
+480                 // need to get corresponding chunk of state vector from other ran
       k
-478                 rankIsUpper = chunkIsUpper(multiQubit.chunkId, multiQubit.
+481                 rankIsUpper = chunkIsUpper(multiQubit.chunkId, multiQubit.
       numAmps, targetQubit);
-479                 getRotAngleFromUnitaryMatrix(rankIsUpper, &rot1, &rot2, u);
-480                 pairRank = getChunkPairId(rankIsUpper, multiQubit.chunkId, multiQ
+482                 getRotAngleFromUnitaryMatrix(rankIsUpper, &rot1, &rot2, u);
+483                 pairRank = getChunkPairId(rankIsUpper, multiQubit.chunkId, multiQ
       ubit.numAmps, targetQubit);
-481                 //printf("%d rank has pair rank: %d\n", multiQubit.rank, pairRank
+484                 //printf("%d rank has pair rank: %d\n", multiQubit.rank, pairRank
       );
-482                 // get corresponding values from my pair
-483                 exchangeStateVectors(multiQubit, pairRank);
-484                 
-485                 // this rank's values are either in the upper of lower half of th
+485                 // get corresponding values from my pair
+486                 exchangeStateVectors(multiQubit, pairRank);
+487                 
+488                 // this rank's values are either in the upper of lower half of th
       e block. send values to multiControlledUnitaryDistributed
-486                 // in the correct order
-487                 if (rankIsUpper){
-488                         multiControlledUnitaryDistributed(multiQubit,targetQubit,
+489                 // in the correct order
+490                 if (rankIsUpper){
+491                         multiControlledUnitaryDistributed(multiQubit,targetQubit,
       mask,rot1,rot2,
-489                                 multiQubit.stateVec, //upper
-490                                 multiQubit.pairStateVec, //lower
-491                                 multiQubit.stateVec); //output
-492                 } else {
-493                         multiControlledUnitaryDistributed(multiQubit,targetQubit,
+492                                 multiQubit.stateVec, //upper
+493                                 multiQubit.pairStateVec, //lower
+494                                 multiQubit.stateVec); //output
+495                 } else {
+496                         multiControlledUnitaryDistributed(multiQubit,targetQubit,
       mask,rot1,rot2,
-494                                 multiQubit.pairStateVec, //upper
-495                                 multiQubit.stateVec, //lower
-496                                 multiQubit.stateVec); //output
-497                 }
-498         }
-499 }
+497                                 multiQubit.pairStateVec, //upper
+498                                 multiQubit.stateVec, //lower
+499                                 multiQubit.stateVec); //output
+500                 }
+501         }
+502 }
 \end{DoxyCode}
 \hypertarget{qubits__env__mpi_8c_aae7a8a7f1ccbddb7f76b6c52b746bb43}{
 \index{qubits\_\-env\_\-mpi.c@{qubits\_\-env\_\-mpi.c}!phaseGate@{phaseGate}}
@@ -1299,33 +1299,33 @@ References MultiQubit::chunkId, chunkIsUpper(), exchangeStateVectors(), getChunk
 \label{qubits__env__mpi_8c_aae7a8a7f1ccbddb7f76b6c52b746bb43}
 
 
-Definition at line 597 of file qubits\_\-env\_\-mpi.c.
+Definition at line 600 of file qubits\_\-env\_\-mpi.c.
 
 References MultiQubit::chunkId, chunkIsUpper(), halfMatrixBlockFitsInChunk(), MultiQubit::numAmps, MultiQubit::numQubits, phaseGateDistributed(), phaseGateLocal(), and QuESTAssert().
 
 
 \begin{DoxyCode}
-598 {
-599         QuESTAssert(targetQubit >= 0 && targetQubit < multiQubit.numQubits, 1, __
+601 {
+602         QuESTAssert(targetQubit >= 0 && targetQubit < multiQubit.numQubits, 1, __
       func__);
-600 
-601         // flag to require memory exchange. 1: an entire block fits on one rank, 
-      0: at most half a block fits on one rank
-602         int useLocalDataOnly = halfMatrixBlockFitsInChunk(multiQubit.numAmps, tar
-      getQubit);
 603 
-604         // rank's chunk is in upper half of block 
-605         int rankIsUpper;
+604         // flag to require memory exchange. 1: an entire block fits on one rank, 
+      0: at most half a block fits on one rank
+605         int useLocalDataOnly = halfMatrixBlockFitsInChunk(multiQubit.numAmps, tar
+      getQubit);
 606 
-607         if (useLocalDataOnly){
-608                 phaseGateLocal(multiQubit, targetQubit, type);
-609         } else {
-610                 rankIsUpper = chunkIsUpper(multiQubit.chunkId, multiQubit.
+607         // rank's chunk is in upper half of block 
+608         int rankIsUpper;
+609 
+610         if (useLocalDataOnly){
+611                 phaseGateLocal(multiQubit, targetQubit, type);
+612         } else {
+613                 rankIsUpper = chunkIsUpper(multiQubit.chunkId, multiQubit.
       numAmps, targetQubit);
-611                 if (!rankIsUpper) phaseGateDistributed(multiQubit, targetQubit, t
+614                 if (!rankIsUpper) phaseGateDistributed(multiQubit, targetQubit, t
       ype);
-612         }
-613 }
+615         }
+616 }
 \end{DoxyCode}
 \hypertarget{qubits__env__mpi_8c_a3587b9d533e633ccf1abf9ad2ce45d8d}{
 \index{qubits\_\-env\_\-mpi.c@{qubits\_\-env\_\-mpi.c}!QuESTAssert@{QuESTAssert}}
@@ -1334,15 +1334,15 @@ References MultiQubit::chunkId, chunkIsUpper(), halfMatrixBlockFitsInChunk(), Mu
 \label{qubits__env__mpi_8c_a3587b9d533e633ccf1abf9ad2ce45d8d}
 
 
-Definition at line 773 of file qubits\_\-env\_\-mpi.c.
+Definition at line 776 of file qubits\_\-env\_\-mpi.c.
 
 References exitWithError().
 
 
 \begin{DoxyCode}
-773                                                               {
-774     if (!isValid) exitWithError(errorCode, func);
-775 }
+776                                                               {
+777     if (!isValid) exitWithError(errorCode, func);
+778 }
 \end{DoxyCode}
 \hypertarget{qubits__env__mpi_8c_a62da5b58d8ce84e6f4d24be1b872294e}{
 \index{qubits\_\-env\_\-mpi.c@{qubits\_\-env\_\-mpi.c}!reportNodeList@{reportNodeList}}
@@ -1356,17 +1356,17 @@ Report a list of CPU hostnames and the rank that is running on each if running w
 \item[\mbox{$\leftarrow$} {\em env}]object representing the execution environment. A single instance is used for each program \end{DoxyParams}
 
 
-Definition at line 93 of file qubits\_\-env\_\-mpi.c.
+Definition at line 96 of file qubits\_\-env\_\-mpi.c.
 
 References QuESTEnv::rank.
 
 
 \begin{DoxyCode}
-93                                  {
-94         char hostName[256];
-95         gethostname(hostName, 255);
-96         printf("hostname on rank %d: %s\n", env.rank, hostName);
-97 }
+96                                  {
+97         char hostName[256];
+98         gethostname(hostName, 255);
+99         printf("hostname on rank %d: %s\n", env.rank, hostName);
+100 }
 \end{DoxyCode}
 \hypertarget{qubits__env__mpi_8c_af8a14ae79c3fb2c0b5f6255cc37bebf9}{
 \index{qubits\_\-env\_\-mpi.c@{qubits\_\-env\_\-mpi.c}!reportQuESTEnv@{reportQuESTEnv}}
@@ -1380,27 +1380,27 @@ Report information about the QuEST environment.
 \item[\mbox{$\leftarrow$} {\em env}]object representing the execution environment. A single instance is used for each program \end{DoxyParams}
 
 
-Definition at line 78 of file qubits\_\-env\_\-mpi.c.
+Definition at line 81 of file qubits\_\-env\_\-mpi.c.
 
 References QuESTEnv::numRanks, QuESTEnv::rank, and REAL.
 
 
 \begin{DoxyCode}
-78                                  {
-79         if (env.rank==0){
-80                 printf("EXECUTION ENVIRONMENT:\n"); 
-81                 printf("Running distributed (MPI) version\n");
-82                 printf("Number of ranks is %d\n", env.numRanks);
-83 # ifdef _OPENMP
-84                 printf("OpenMP enabled\n");
-85                 printf("Number of threads available is %d\n", omp_get_max_threads
+81                                  {
+82         if (env.rank==0){
+83                 printf("EXECUTION ENVIRONMENT:\n"); 
+84                 printf("Running distributed (MPI) version\n");
+85                 printf("Number of ranks is %d\n", env.numRanks);
+86 # ifdef _OPENMP
+87                 printf("OpenMP enabled\n");
+88                 printf("Number of threads available is %d\n", omp_get_max_threads
       ());
-86 # else
-87                 printf("OpenMP disabled\n");
-88 # endif 
-89                 printf("Precision: size of REAL is %ld bytes\n", sizeof(REAL));
-90         }
-91 }
+89 # else
+90                 printf("OpenMP disabled\n");
+91 # endif 
+92                 printf("Precision: size of REAL is %ld bytes\n", sizeof(REAL));
+93         }
+94 }
 \end{DoxyCode}
 \hypertarget{qubits__env__mpi_8c_a86e396e06b7d527cac20ba0108872423}{
 \index{qubits\_\-env\_\-mpi.c@{qubits\_\-env\_\-mpi.c}!sigmaX@{sigmaX}}
@@ -1421,47 +1421,47 @@ Apply the single-\/qubit sigma-\/X (also known as the X, Pauli-\/X, NOT or bit-\
 \item[{\em exitWithError}]if {\ttfamily targetQubit} is outside \mbox{[}0, {\ttfamily multiQubit.numQubits}). \end{DoxyExceptions}
 
 
-Definition at line 500 of file qubits\_\-env\_\-mpi.c.
+Definition at line 503 of file qubits\_\-env\_\-mpi.c.
 
 References MultiQubit::chunkId, chunkIsUpper(), exchangeStateVectors(), getChunkPairId(), halfMatrixBlockFitsInChunk(), MultiQubit::numAmps, MultiQubit::numQubits, MultiQubit::pairStateVec, QuESTAssert(), sigmaXDistributed(), sigmaXLocal(), and MultiQubit::stateVec.
 
 
 \begin{DoxyCode}
-501 {
-502         QuESTAssert(targetQubit >= 0 && targetQubit < multiQubit.numQubits, 1, __
+504 {
+505         QuESTAssert(targetQubit >= 0 && targetQubit < multiQubit.numQubits, 1, __
       func__);
-503 
-504         // flag to require memory exchange. 1: an entire block fits on one rank, 
-      0: at most half a block fits on one rank
-505         int useLocalDataOnly = halfMatrixBlockFitsInChunk(multiQubit.numAmps, tar
-      getQubit);
 506 
-507         // rank's chunk is in upper half of block 
-508         int rankIsUpper;
-509         int pairRank; // rank of corresponding chunk
-510 
-511         if (useLocalDataOnly){
-512                 // all values required to update state vector lie in this rank
-513                 sigmaXLocal(multiQubit, targetQubit);
-514         } else {
-515                 // need to get corresponding chunk of state vector from other ran
+507         // flag to require memory exchange. 1: an entire block fits on one rank, 
+      0: at most half a block fits on one rank
+508         int useLocalDataOnly = halfMatrixBlockFitsInChunk(multiQubit.numAmps, tar
+      getQubit);
+509 
+510         // rank's chunk is in upper half of block 
+511         int rankIsUpper;
+512         int pairRank; // rank of corresponding chunk
+513 
+514         if (useLocalDataOnly){
+515                 // all values required to update state vector lie in this rank
+516                 sigmaXLocal(multiQubit, targetQubit);
+517         } else {
+518                 // need to get corresponding chunk of state vector from other ran
       k
-516                 rankIsUpper = chunkIsUpper(multiQubit.chunkId, multiQubit.
+519                 rankIsUpper = chunkIsUpper(multiQubit.chunkId, multiQubit.
       numAmps, targetQubit);
-517                 pairRank = getChunkPairId(rankIsUpper, multiQubit.chunkId, multiQ
+520                 pairRank = getChunkPairId(rankIsUpper, multiQubit.chunkId, multiQ
       ubit.numAmps, targetQubit);
-518                 //printf("%d rank has pair rank: %d\n", multiQubit.rank, pairRank
+521                 //printf("%d rank has pair rank: %d\n", multiQubit.rank, pairRank
       );
-519                 // get corresponding values from my pair
-520                 exchangeStateVectors(multiQubit, pairRank);
-521                 // this rank's values are either in the upper of lower half of th
+522                 // get corresponding values from my pair
+523                 exchangeStateVectors(multiQubit, pairRank);
+524                 // this rank's values are either in the upper of lower half of th
       e block. sigmaX just replaces
-522                 // this rank's values with pair values
-523                 sigmaXDistributed(multiQubit, targetQubit,
-524                         multiQubit.pairStateVec, // in
-525                         multiQubit.stateVec); // out
-526         }
-527 }
+525                 // this rank's values with pair values
+526                 sigmaXDistributed(multiQubit, targetQubit,
+527                         multiQubit.pairStateVec, // in
+528                         multiQubit.stateVec); // out
+529         }
+530 }
 \end{DoxyCode}
 \hypertarget{qubits__env__mpi_8c_a1f54d70a42403f7e1c2e2c2007332f61}{
 \index{qubits\_\-env\_\-mpi.c@{qubits\_\-env\_\-mpi.c}!sigmaY@{sigmaY}}
@@ -1484,48 +1484,48 @@ Apply the single-\/qubit sigma-\/Y (also known as the Y or Pauli-\/Y) gate. This
 
 fix -\/-\/ put duplicate code (sigmaX, sigmaY) in seperate function 
 
-Definition at line 566 of file qubits\_\-env\_\-mpi.c.
+Definition at line 569 of file qubits\_\-env\_\-mpi.c.
 
 References MultiQubit::chunkId, chunkIsUpper(), exchangeStateVectors(), getChunkPairId(), halfMatrixBlockFitsInChunk(), MultiQubit::numAmps, MultiQubit::numQubits, MultiQubit::pairStateVec, QuESTAssert(), sigmaYDistributed(), sigmaYLocal(), and MultiQubit::stateVec.
 
 
 \begin{DoxyCode}
-567 {
-568         QuESTAssert(targetQubit >= 0 && targetQubit < multiQubit.numQubits, 1, __
+570 {
+571         QuESTAssert(targetQubit >= 0 && targetQubit < multiQubit.numQubits, 1, __
       func__);
-569 
-570         // flag to require memory exchange. 1: an entire block fits on one rank, 
-      0: at most half a block fits on one rank
-571         int useLocalDataOnly = halfMatrixBlockFitsInChunk(multiQubit.numAmps, tar
-      getQubit);
 572 
-573         // rank's chunk is in upper half of block 
-574         int rankIsUpper;
-575         int pairRank; // rank of corresponding chunk
-576 
-577         if (useLocalDataOnly){
-578                 // all values required to update state vector lie in this rank
-579                 sigmaYLocal(multiQubit, targetQubit);
-580         } else {
-582                 // need to get corresponding chunk of state vector from other ran
+573         // flag to require memory exchange. 1: an entire block fits on one rank, 
+      0: at most half a block fits on one rank
+574         int useLocalDataOnly = halfMatrixBlockFitsInChunk(multiQubit.numAmps, tar
+      getQubit);
+575 
+576         // rank's chunk is in upper half of block 
+577         int rankIsUpper;
+578         int pairRank; // rank of corresponding chunk
+579 
+580         if (useLocalDataOnly){
+581                 // all values required to update state vector lie in this rank
+582                 sigmaYLocal(multiQubit, targetQubit);
+583         } else {
+585                 // need to get corresponding chunk of state vector from other ran
       k
-583                 rankIsUpper = chunkIsUpper(multiQubit.chunkId, multiQubit.
+586                 rankIsUpper = chunkIsUpper(multiQubit.chunkId, multiQubit.
       numAmps, targetQubit);
-584                 pairRank = getChunkPairId(rankIsUpper, multiQubit.chunkId, multiQ
+587                 pairRank = getChunkPairId(rankIsUpper, multiQubit.chunkId, multiQ
       ubit.numAmps, targetQubit);
-585                 //printf("%d rank has pair rank: %d\n", multiQubit.rank, pairRank
+588                 //printf("%d rank has pair rank: %d\n", multiQubit.rank, pairRank
       );
-586                 // get corresponding values from my pair
-587                 exchangeStateVectors(multiQubit, pairRank);
-588                 // this rank's values are either in the upper of lower half of th
+589                 // get corresponding values from my pair
+590                 exchangeStateVectors(multiQubit, pairRank);
+591                 // this rank's values are either in the upper of lower half of th
       e block. sigmaX just replaces
-589                 // this rank's values with pair values
-590                 sigmaYDistributed(multiQubit,targetQubit,
-591                         multiQubit.pairStateVec, // in
-592                         multiQubit.stateVec, // out
-593                         rankIsUpper);
-594         }
-595 }
+592                 // this rank's values with pair values
+593                 sigmaYDistributed(multiQubit,targetQubit,
+594                         multiQubit.pairStateVec, // in
+595                         multiQubit.stateVec, // out
+596                         rankIsUpper);
+597         }
+598 }
 \end{DoxyCode}
 \hypertarget{qubits__env__mpi_8c_a8d31fe2d1ad4d01e2a1f5f6b8bc15b77}{
 \index{qubits\_\-env\_\-mpi.c@{qubits\_\-env\_\-mpi.c}!syncQuESTEnv@{syncQuESTEnv}}
@@ -1539,15 +1539,15 @@ Guarantees that all code up to the given point has been executed on all nodes (i
 \item[\mbox{$\leftarrow$} {\em env}]object representing the execution environment. A single instance is used for each program \end{DoxyParams}
 
 
-Definition at line 61 of file qubits\_\-env\_\-mpi.c.
+Definition at line 64 of file qubits\_\-env\_\-mpi.c.
 
 Referenced by initializeStateFromSingleFile(), and reportStateToScreen().
 
 
 \begin{DoxyCode}
-61                                {
-62         MPI_Barrier(MPI_COMM_WORLD);
-63 }
+64                                {
+65         MPI_Barrier(MPI_COMM_WORLD);
+66 }
 \end{DoxyCode}
 \hypertarget{qubits__env__mpi_8c_ac7e38d768a1bd79019f88cc1e6295092}{
 \index{qubits\_\-env\_\-mpi.c@{qubits\_\-env\_\-mpi.c}!syncQuESTSuccess@{syncQuESTSuccess}}
@@ -1566,16 +1566,16 @@ Performs a logical AND on all successCodes held by all processes. If any one pro
 \end{DoxyReturn}
 
 
-Definition at line 65 of file qubits\_\-env\_\-mpi.c.
+Definition at line 68 of file qubits\_\-env\_\-mpi.c.
 
 
 \begin{DoxyCode}
-65                                      {
-66         int totalSuccess;
-67         MPI_Allreduce(&successCode, &totalSuccess, 1, MPI_INT, MPI_LAND, MPI_COMM
+68                                      {
+69         int totalSuccess;
+70         MPI_Allreduce(&successCode, &totalSuccess, 1, MPI_INT, MPI_LAND, MPI_COMM
       _WORLD);
-68         return totalSuccess;
-69 }
+71         return totalSuccess;
+72 }
 \end{DoxyCode}
 \hypertarget{qubits__env__mpi_8c_a7a0877e33700f6bad48adb51b7b3fb67}{
 \index{qubits\_\-env\_\-mpi.c@{qubits\_\-env\_\-mpi.c}!unitary@{unitary}}
@@ -1596,57 +1596,57 @@ Apply a general single-\/qubit unitary (including a global phase factor). The pa
 \item[{\em exitWithError}]if {\ttfamily targetQubit} is outside \mbox{[}0, {\ttfamily multiQubit.numQubits}), or matrix {\ttfamily u} is not unitary. \end{DoxyExceptions}
 
 
-Definition at line 325 of file qubits\_\-env\_\-mpi.c.
+Definition at line 328 of file qubits\_\-env\_\-mpi.c.
 
 References MultiQubit::chunkId, chunkIsUpper(), exchangeStateVectors(), getChunkPairId(), getRotAngleFromUnitaryMatrix(), halfMatrixBlockFitsInChunk(), MultiQubit::numAmps, MultiQubit::numQubits, MultiQubit::pairStateVec, QuESTAssert(), MultiQubit::stateVec, unitaryDistributed(), unitaryLocal(), and validateMatrixIsUnitary().
 
 
 \begin{DoxyCode}
-326 {
-327         QuESTAssert(targetQubit >= 0 && targetQubit < multiQubit.numQubits, 1, __
+329 {
+330         QuESTAssert(targetQubit >= 0 && targetQubit < multiQubit.numQubits, 1, __
       func__);
-328         QuESTAssert(validateMatrixIsUnitary(u), 5, __func__);
-329 
-330         // flag to require memory exchange. 1: an entire block fits on one rank, 
+331         QuESTAssert(validateMatrixIsUnitary(u), 5, __func__);
+332 
+333         // flag to require memory exchange. 1: an entire block fits on one rank, 
       0: at most half a block fits on one rank
-331         int useLocalDataOnly = halfMatrixBlockFitsInChunk(multiQubit.numAmps, tar
+334         int useLocalDataOnly = halfMatrixBlockFitsInChunk(multiQubit.numAmps, tar
       getQubit);
-332         Complex rot1, rot2;
-333 
-334         // rank's chunk is in upper half of block 
-335         int rankIsUpper;
-336         int pairRank; // rank of corresponding chunk
-337 
-338         if (useLocalDataOnly){
-339                 // all values required to update state vector lie in this rank
-340                 unitaryLocal(multiQubit, targetQubit, u);
-341         } else {
-342                 // need to get corresponding chunk of state vector from other ran
+335         Complex rot1, rot2;
+336 
+337         // rank's chunk is in upper half of block 
+338         int rankIsUpper;
+339         int pairRank; // rank of corresponding chunk
+340 
+341         if (useLocalDataOnly){
+342                 // all values required to update state vector lie in this rank
+343                 unitaryLocal(multiQubit, targetQubit, u);
+344         } else {
+345                 // need to get corresponding chunk of state vector from other ran
       k
-343                 rankIsUpper = chunkIsUpper(multiQubit.chunkId, multiQubit.
+346                 rankIsUpper = chunkIsUpper(multiQubit.chunkId, multiQubit.
       numAmps, targetQubit);
-344                 getRotAngleFromUnitaryMatrix(rankIsUpper, &rot1, &rot2, u);
-345                 pairRank = getChunkPairId(rankIsUpper, multiQubit.chunkId, multiQ
+347                 getRotAngleFromUnitaryMatrix(rankIsUpper, &rot1, &rot2, u);
+348                 pairRank = getChunkPairId(rankIsUpper, multiQubit.chunkId, multiQ
       ubit.numAmps, targetQubit);
-346                 // get corresponding values from my pair
-347                         exchangeStateVectors(multiQubit, pairRank);
-348 
-349                 // this rank's values are either in the upper of lower half of th
+349                 // get corresponding values from my pair
+350                         exchangeStateVectors(multiQubit, pairRank);
+351 
+352                 // this rank's values are either in the upper of lower half of th
       e block. 
-350                 // send values to compactUnitaryDistributed in the correct order
-351                 if (rankIsUpper){
-352                         unitaryDistributed(multiQubit,targetQubit,rot1,rot2,
-353                                 multiQubit.stateVec, //upper
-354                                 multiQubit.pairStateVec, //lower
-355                                 multiQubit.stateVec); //output
-356                 } else {
-357                         unitaryDistributed(multiQubit,targetQubit,rot1,rot2,
-358                                 multiQubit.pairStateVec, //upper
-359                                 multiQubit.stateVec, //lower
-360                                 multiQubit.stateVec); //output
-361                 }
-362         }
-363 
-364 
-365 }
+353                 // send values to compactUnitaryDistributed in the correct order
+354                 if (rankIsUpper){
+355                         unitaryDistributed(multiQubit,targetQubit,rot1,rot2,
+356                                 multiQubit.stateVec, //upper
+357                                 multiQubit.pairStateVec, //lower
+358                                 multiQubit.stateVec); //output
+359                 } else {
+360                         unitaryDistributed(multiQubit,targetQubit,rot1,rot2,
+361                                 multiQubit.pairStateVec, //upper
+362                                 multiQubit.stateVec, //lower
+363                                 multiQubit.stateVec); //output
+364                 }
+365         }
+366 
+367 
+368 }
 \end{DoxyCode}

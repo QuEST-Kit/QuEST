@@ -94,47 +94,47 @@ total probability
 \end{DoxyReturn}
 
 
-Definition at line 61 of file qubits\_\-env\_\-local.c.
+Definition at line 64 of file qubits\_\-env\_\-local.c.
 
 References ComplexArray::imag, MultiQubit::numAmps, ComplexArray::real, REAL, and MultiQubit::stateVec.
 
 
 \begin{DoxyCode}
-61                                                 {
-62   /* IJB - implemented using Kahan summation for greater accuracy at a slight flo
+64                                                 {
+65   /* IJB - implemented using Kahan summation for greater accuracy at a slight flo
       ating
-63      point operation overhead. For more details see https://en.wikipedia.org/wiki
+66      point operation overhead. For more details see https://en.wikipedia.org/wiki
       /Kahan_summation_algorithm */
-64   /* Don't change the bracketing in this routine! */
-65   REAL pTotal=0; 
-66   REAL y, t, c;
-67   long long int index;
-68   long long int numAmpsPerRank = multiQubit.numAmps;
-69   c = 0.0;
-70   for (index=0; index<numAmpsPerRank; index++){ 
-71     /* Perform pTotal+=multiQubit.stateVec.real[index]*multiQubit.stateVec.real[i
+67   /* Don't change the bracketing in this routine! */
+68   REAL pTotal=0; 
+69   REAL y, t, c;
+70   long long int index;
+71   long long int numAmpsPerRank = multiQubit.numAmps;
+72   c = 0.0;
+73   for (index=0; index<numAmpsPerRank; index++){ 
+74     /* Perform pTotal+=multiQubit.stateVec.real[index]*multiQubit.stateVec.real[i
       ndex]; by Kahan */
-72    // pTotal+=multiQubit.stateVec.real[index]*multiQubit.stateVec.real[index];
-73     
-74     y = multiQubit.stateVec.real[index]*multiQubit.stateVec.real[index] - c;
-75     t = pTotal + y;
-76     c = ( t - pTotal ) - y;
-77     pTotal = t;
-78     
-79     /* Perform pTotal+=multiQubit.stateVec.imag[index]*multiQubit.stateVec.imag[i
-      ndex]; by Kahan */
-80     //pTotal+=multiQubit.stateVec.imag[index]*multiQubit.stateVec.imag[index];
+75    // pTotal+=multiQubit.stateVec.real[index]*multiQubit.stateVec.real[index];
+76     
+77     y = multiQubit.stateVec.real[index]*multiQubit.stateVec.real[index] - c;
+78     t = pTotal + y;
+79     c = ( t - pTotal ) - y;
+80     pTotal = t;
 81     
-82     
-83     y = multiQubit.stateVec.imag[index]*multiQubit.stateVec.imag[index] - c;
-84     t = pTotal + y;
-85     c = ( t - pTotal ) - y;
-86     pTotal = t;
-87     
-88     
-89   } 
-90   return pTotal;
-91 }
+82     /* Perform pTotal+=multiQubit.stateVec.imag[index]*multiQubit.stateVec.imag[i
+      ndex]; by Kahan */
+83     //pTotal+=multiQubit.stateVec.imag[index]*multiQubit.stateVec.imag[index];
+84     
+85     
+86     y = multiQubit.stateVec.imag[index]*multiQubit.stateVec.imag[index] - c;
+87     t = pTotal + y;
+88     c = ( t - pTotal ) - y;
+89     pTotal = t;
+90     
+91     
+92   } 
+93   return pTotal;
+94 }
 \end{DoxyCode}
 \hypertarget{qubits__env__local_8c_abd4bc926cd3f9b65610bb228d0c59fe0}{
 \index{qubits\_\-env\_\-local.c@{qubits\_\-env\_\-local.c}!closeQuESTEnv@{closeQuESTEnv}}
@@ -150,14 +150,14 @@ Close QuEST environment. If something needs to be done to clean up the execution
 \item[\mbox{$\leftarrow$} {\em env}]object representing the execution environment. A single instance is used for each program \end{DoxyParams}
 
 
-Definition at line 40 of file qubits\_\-env\_\-local.c.
+Definition at line 43 of file qubits\_\-env\_\-local.c.
 
 
 \begin{DoxyCode}
-40                                 {
-41         // MPI finalize goes here in MPI version. Call this function anyway for c
+43                                 {
+44         // MPI finalize goes here in MPI version. Call this function anyway for c
       onsistency
-42 }
+45 }
 \end{DoxyCode}
 \hypertarget{qubits__env__local_8c_a07418ebac70fd9ae5d051d089961631d}{
 \index{qubits\_\-env\_\-local.c@{qubits\_\-env\_\-local.c}!collapseToOutcome@{collapseToOutcome}}
@@ -179,22 +179,22 @@ probability of the (forced) measurement outcome
 \item[{\em exitWithError}]if {\ttfamily measureQubit} is outside \mbox{[}0, {\ttfamily multiQubit.numQubits}), or if {\ttfamily outcome} is not in \{0, 1\}, or if the probability of {\ttfamily outcome} is zero (within machine epsilon) \end{DoxyExceptions}
 
 
-Definition at line 195 of file qubits\_\-env\_\-local.c.
+Definition at line 198 of file qubits\_\-env\_\-local.c.
 
 References collapseToOutcomeLocal(), findProbabilityOfOutcome(), MultiQubit::numQubits, QuESTAssert(), REAL, and REAL\_\-EPS.
 
 
 \begin{DoxyCode}
-196 {
-197     QuESTAssert(measureQubit >= 0 && measureQubit < multiQubit.numQubits, 2, __fu
+199 {
+200     QuESTAssert(measureQubit >= 0 && measureQubit < multiQubit.numQubits, 2, __fu
       nc__);
-198     QuESTAssert((outcome==0 || outcome==1), 10, __func__);
-199     REAL stateProb;
-200         stateProb = findProbabilityOfOutcome(multiQubit, measureQubit, outcome);
-201     QuESTAssert(fabs(stateProb)>REAL_EPS, 8, __func__);
-202     collapseToOutcomeLocal(multiQubit, measureQubit, stateProb, outcome);
-203     return stateProb;
-204 }
+201     QuESTAssert((outcome==0 || outcome==1), 10, __func__);
+202     REAL stateProb;
+203         stateProb = findProbabilityOfOutcome(multiQubit, measureQubit, outcome);
+204     QuESTAssert(fabs(stateProb)>REAL_EPS, 8, __func__);
+205     collapseToOutcomeLocal(multiQubit, measureQubit, stateProb, outcome);
+206     return stateProb;
+207 }
 \end{DoxyCode}
 \hypertarget{qubits__env__local_8c_a03b13dfcabd8c59b50dbdd3af44ba8b2}{
 \index{qubits\_\-env\_\-local.c@{qubits\_\-env\_\-local.c}!compactUnitary@{compactUnitary}}
@@ -215,20 +215,20 @@ Apply a single-\/qubit unitary parameterised by two given complex scalars. Given
 \item[{\em exitWithError}]if {\ttfamily targetQubit} is outside \mbox{[}0, {\ttfamily multiQubit.numQubits}), or if {\ttfamily alpha}, {\ttfamily beta} don't satisfy $|${\ttfamily alpha$|$$^\wedge$2} + $|${\ttfamily beta$|$$^\wedge$2} = 1. \end{DoxyExceptions}
 
 
-Definition at line 101 of file qubits\_\-env\_\-local.c.
+Definition at line 104 of file qubits\_\-env\_\-local.c.
 
 References compactUnitaryLocal(), MultiQubit::numQubits, QuESTAssert(), and validateAlphaBeta().
 
 
 \begin{DoxyCode}
-102 {
-103     QuESTAssert(targetQubit >= 0 && targetQubit < multiQubit.numQubits, 1, __func
+105 {
+106     QuESTAssert(targetQubit >= 0 && targetQubit < multiQubit.numQubits, 1, __func
       __);
-104     QuESTAssert(validateAlphaBeta(alpha, beta), 6, __func__);
-105 
-106         // all values required to update state vector lie in this rank
-107         compactUnitaryLocal(multiQubit, targetQubit, alpha, beta);
-108 }
+107     QuESTAssert(validateAlphaBeta(alpha, beta), 6, __func__);
+108 
+109         // all values required to update state vector lie in this rank
+110         compactUnitaryLocal(multiQubit, targetQubit, alpha, beta);
+111 }
 \end{DoxyCode}
 \hypertarget{qubits__env__local_8c_ab4812953bc457405b3aa05a4c2f64f4a}{
 \index{qubits\_\-env\_\-local.c@{qubits\_\-env\_\-local.c}!controlledCompactUnitary@{controlledCompactUnitary}}
@@ -249,24 +249,24 @@ Apply a controlled unitary (single control, single target) parameterised by two 
 \item[{\em exitWithError}]if either {\ttfamily controlQubit} or {\ttfamily targetQubit} are outside \mbox{[}0, {\ttfamily multiQubit.numQubits}) or are equal, or if {\ttfamily alpha}, {\ttfamily beta} don't satisfy $|${\ttfamily alpha$|$$^\wedge$2} + $|${\ttfamily beta$|$$^\wedge$2} = 1. \end{DoxyExceptions}
 
 
-Definition at line 119 of file qubits\_\-env\_\-local.c.
+Definition at line 122 of file qubits\_\-env\_\-local.c.
 
 References controlledCompactUnitaryLocal(), MultiQubit::numQubits, QuESTAssert(), and validateAlphaBeta().
 
 
 \begin{DoxyCode}
-120 {
-121     QuESTAssert(targetQubit >= 0 && targetQubit < multiQubit.numQubits, 1, __func
+123 {
+124     QuESTAssert(targetQubit >= 0 && targetQubit < multiQubit.numQubits, 1, __func
       __);
-122     QuESTAssert(controlQubit >= 0 && controlQubit < multiQubit.numQubits, 2, __fu
+125     QuESTAssert(controlQubit >= 0 && controlQubit < multiQubit.numQubits, 2, __fu
       nc__);
-123     QuESTAssert(controlQubit != targetQubit, 3, __func__);
-124     QuESTAssert(validateAlphaBeta(alpha, beta), 6, __func__);
-125     
-126 
-127         controlledCompactUnitaryLocal(multiQubit, controlQubit, targetQubit, alph
+126     QuESTAssert(controlQubit != targetQubit, 3, __func__);
+127     QuESTAssert(validateAlphaBeta(alpha, beta), 6, __func__);
+128     
+129 
+130         controlledCompactUnitaryLocal(multiQubit, controlQubit, targetQubit, alph
       a, beta);
-128 }
+131 }
 \end{DoxyCode}
 \hypertarget{qubits__env__local_8c_a67576895bbc65463481a8ea24d9b1e22}{
 \index{qubits\_\-env\_\-local.c@{qubits\_\-env\_\-local.c}!controlledNot@{controlledNot}}
@@ -287,20 +287,20 @@ Apply the controlled not (single control, single target) gate, also known as the
 \item[{\em exitWithError}]if either {\ttfamily controlQubit} or {\ttfamily targetQubit} are outside \mbox{[}0, {\ttfamily multiQubit.numQubits}), or are equal. \end{DoxyExceptions}
 
 
-Definition at line 178 of file qubits\_\-env\_\-local.c.
+Definition at line 181 of file qubits\_\-env\_\-local.c.
 
 References controlledNotLocal(), MultiQubit::numQubits, and QuESTAssert().
 
 
 \begin{DoxyCode}
-179 {
-180     QuESTAssert(targetQubit >= 0 && targetQubit < multiQubit.numQubits, 1, __func
+182 {
+183     QuESTAssert(targetQubit >= 0 && targetQubit < multiQubit.numQubits, 1, __func
       __);
-181     QuESTAssert(controlQubit >= 0 && controlQubit < multiQubit.numQubits, 2, __fu
+184     QuESTAssert(controlQubit >= 0 && controlQubit < multiQubit.numQubits, 2, __fu
       nc__);
-182     QuESTAssert(controlQubit != targetQubit, 3, __func__);
-183         controlledNotLocal(multiQubit, controlQubit, targetQubit);
-184 }
+185     QuESTAssert(controlQubit != targetQubit, 3, __func__);
+186         controlledNotLocal(multiQubit, controlQubit, targetQubit);
+187 }
 \end{DoxyCode}
 \hypertarget{qubits__env__local_8c_a8a701526263392599aa21d0d0f05d9d8}{
 \index{qubits\_\-env\_\-local.c@{qubits\_\-env\_\-local.c}!controlledUnitary@{controlledUnitary}}
@@ -321,22 +321,22 @@ Apply a general controlled unitary (single control, single target), which can in
 \item[{\em exitWithError}]if either {\ttfamily controlQubit} or {\ttfamily targetQubit} are outside \mbox{[}0, {\ttfamily multiQubit.numQubits}) or are equal, or if {\ttfamily u} is not unitary. \end{DoxyExceptions}
 
 
-Definition at line 130 of file qubits\_\-env\_\-local.c.
+Definition at line 133 of file qubits\_\-env\_\-local.c.
 
 References controlledUnitaryLocal(), MultiQubit::numQubits, QuESTAssert(), and validateMatrixIsUnitary().
 
 
 \begin{DoxyCode}
-131 {
-132     QuESTAssert(targetQubit >= 0 && targetQubit < multiQubit.numQubits, 1, __func
+134 {
+135     QuESTAssert(targetQubit >= 0 && targetQubit < multiQubit.numQubits, 1, __func
       __);
-133     QuESTAssert(controlQubit >= 0 && controlQubit < multiQubit.numQubits, 2, __fu
+136     QuESTAssert(controlQubit >= 0 && controlQubit < multiQubit.numQubits, 2, __fu
       nc__);
-134     QuESTAssert(controlQubit != targetQubit, 3, __func__);
-135     QuESTAssert(validateMatrixIsUnitary(u), 5, __func__);
-136    
-137         controlledUnitaryLocal(multiQubit, controlQubit, targetQubit, u);
-138 }
+137     QuESTAssert(controlQubit != targetQubit, 3, __func__);
+138     QuESTAssert(validateMatrixIsUnitary(u), 5, __func__);
+139    
+140         controlledUnitaryLocal(multiQubit, controlQubit, targetQubit, u);
+141 }
 \end{DoxyCode}
 \hypertarget{qubits__env__local_8c_ae5f9019826f35e8b51b1716cfe397b45}{
 \index{qubits\_\-env\_\-local.c@{qubits\_\-env\_\-local.c}!exitWithError@{exitWithError}}
@@ -345,19 +345,19 @@ References controlledUnitaryLocal(), MultiQubit::numQubits, QuESTAssert(), and v
 \label{qubits__env__local_8c_ae5f9019826f35e8b51b1716cfe397b45}
 
 
-Definition at line 235 of file qubits\_\-env\_\-local.c.
+Definition at line 238 of file qubits\_\-env\_\-local.c.
 
 Referenced by QuESTAssert().
 
 
 \begin{DoxyCode}
-235                                                    {
-236     printf("!!!\n");
-237     printf("QuEST Error in function %s: %s\n", func, errorCodes[errorCode]);
-238     printf("!!!\n");
-239     printf("exiting..\n");
-240     exit(errorCode);
-241 }
+238                                                    {
+239     printf("!!!\n");
+240     printf("QuEST Error in function %s: %s\n", func, errorCodes[errorCode]);
+241     printf("!!!\n");
+242     printf("exiting..\n");
+243     exit(errorCode);
+244 }
 \end{DoxyCode}
 \hypertarget{qubits__env__local_8c_ad315c941a51bc053d39ebfa2040fd32e}{
 \index{qubits\_\-env\_\-local.c@{qubits\_\-env\_\-local.c}!findProbabilityOfOutcome@{findProbabilityOfOutcome}}
@@ -379,20 +379,20 @@ probability of qubit measureQubit being measured in the given outcome
 \item[{\em exitWithError}]if {\ttfamily measureQubit} is outside \mbox{[}0, {\ttfamily multiQubit.numQubits}), or if {\ttfamily outcome} is not in \{0, 1\}. \end{DoxyExceptions}
 
 
-Definition at line 186 of file qubits\_\-env\_\-local.c.
+Definition at line 189 of file qubits\_\-env\_\-local.c.
 
 References findProbabilityOfZeroLocal(), MultiQubit::numQubits, QuESTAssert(), and REAL.
 
 
 \begin{DoxyCode}
-187 {
-188     QuESTAssert(measureQubit >= 0 && measureQubit < multiQubit.numQubits, 2, __fu
+190 {
+191     QuESTAssert(measureQubit >= 0 && measureQubit < multiQubit.numQubits, 2, __fu
       nc__);
-189         REAL stateProb=0;
-190         stateProb = findProbabilityOfZeroLocal(multiQubit, measureQubit);
-191         if (outcome==1) stateProb = 1.0 - stateProb;
-192         return stateProb;
-193 }
+192         REAL stateProb=0;
+193         stateProb = findProbabilityOfZeroLocal(multiQubit, measureQubit);
+194         if (outcome==1) stateProb = 1.0 - stateProb;
+195         return stateProb;
+196 }
 \end{DoxyCode}
 \hypertarget{qubits__env__local_8c_a3615f76fd5f57008d9b74bbd10533dd0}{
 \index{qubits\_\-env\_\-local.c@{qubits\_\-env\_\-local.c}!getImagAmpEl@{getImagAmpEl}}
@@ -414,15 +414,15 @@ imaginary component at that index
 \item[{\em exitWithError}]if {\ttfamily index} is outside \mbox{[}0, $2^{N}$) where $N = $ {\ttfamily multiQubit.numQubits} \end{DoxyExceptions}
 
 
-Definition at line 97 of file qubits\_\-env\_\-local.c.
+Definition at line 100 of file qubits\_\-env\_\-local.c.
 
 References ComplexArray::imag, and MultiQubit::stateVec.
 
 
 \begin{DoxyCode}
-97                                                              {
-98         return multiQubit.stateVec.imag[index];
-99 }
+100                                                              {
+101         return multiQubit.stateVec.imag[index];
+102 }
 \end{DoxyCode}
 \hypertarget{qubits__env__local_8c_a317b786f577fa6bc136ea7f0ee7330a7}{
 \index{qubits\_\-env\_\-local.c@{qubits\_\-env\_\-local.c}!getRealAmpEl@{getRealAmpEl}}
@@ -444,15 +444,15 @@ real component at that index
 \item[{\em exitWithError}]if {\ttfamily index} is outside \mbox{[}0, $2^{N}$) where $N = $ {\ttfamily multiQubit.numQubits} \end{DoxyExceptions}
 
 
-Definition at line 93 of file qubits\_\-env\_\-local.c.
+Definition at line 96 of file qubits\_\-env\_\-local.c.
 
 References ComplexArray::real, and MultiQubit::stateVec.
 
 
 \begin{DoxyCode}
-93                                                              {
-94         return multiQubit.stateVec.real[index];
-95 }
+96                                                              {
+97         return multiQubit.stateVec.real[index];
+98 }
 \end{DoxyCode}
 \hypertarget{qubits__env__local_8c_aa09b5dd93de6df1384b8f2c0041749ab}{
 \index{qubits\_\-env\_\-local.c@{qubits\_\-env\_\-local.c}!hadamard@{hadamard}}
@@ -473,17 +473,17 @@ Apply the single-\/qubit Hadamard gate. This takes $|0\rangle$ to $|+\rangle$ an
 \item[{\em exitWithError}]if {\ttfamily targetQubit} is outside \mbox{[}0, {\ttfamily multiQubit.numQubits}). \end{DoxyExceptions}
 
 
-Definition at line 172 of file qubits\_\-env\_\-local.c.
+Definition at line 175 of file qubits\_\-env\_\-local.c.
 
 References hadamardLocal(), MultiQubit::numQubits, and QuESTAssert().
 
 
 \begin{DoxyCode}
-173 {
-174     QuESTAssert(targetQubit >= 0 && targetQubit < multiQubit.numQubits, 1, __func
+176 {
+177     QuESTAssert(targetQubit >= 0 && targetQubit < multiQubit.numQubits, 1, __func
       __);
-175         hadamardLocal(multiQubit, targetQubit);
-176 }
+178         hadamardLocal(multiQubit, targetQubit);
+179 }
 \end{DoxyCode}
 \hypertarget{qubits__env__local_8c_ad84a3ce68d1ca02b4e3f741ea45b6054}{
 \index{qubits\_\-env\_\-local.c@{qubits\_\-env\_\-local.c}!initQuESTEnv@{initQuESTEnv}}
@@ -499,24 +499,24 @@ Initialize the QuEST environment. If something needs to be done to set up the ex
 \item[\mbox{$\leftrightarrow$} {\em env}]object representing the execution environment. A single instance is used for each program \end{DoxyParams}
 
 
-Definition at line 19 of file qubits\_\-env\_\-local.c.
+Definition at line 22 of file qubits\_\-env\_\-local.c.
 
 References init\_\-by\_\-array(), QuESTEnv::numRanks, and QuESTEnv::rank.
 
 
 \begin{DoxyCode}
-19                                 {
-20         // init MPI environment
-21         env->rank=0;
-22         env->numRanks=1;
-23 
-24     // init MT random number generator with two keys -- time and pid
-25     unsigned long int secs = time(NULL);
-26     unsigned long int pid = getpid();
-27     unsigned long int key[2];
-28     key[0] = secs; key[1] = pid;
-29     init_by_array(key, 2);
-30 }
+22                                 {
+23         // init MPI environment
+24         env->rank=0;
+25         env->numRanks=1;
+26 
+27     // init MT random number generator with two keys -- time and pid
+28     unsigned long int secs = time(NULL);
+29     unsigned long int pid = getpid();
+30     unsigned long int key[2];
+31     key[0] = secs; key[1] = pid;
+32     init_by_array(key, 2);
+33 }
 \end{DoxyCode}
 \hypertarget{qubits__env__local_8c_ad5774247d836267175c664cd0e451bcb}{
 \index{qubits\_\-env\_\-local.c@{qubits\_\-env\_\-local.c}!measure@{measure}}
@@ -538,18 +538,18 @@ the measurement outcome, 0 or 1
 \item[{\em exitWithError}]if {\ttfamily measureQubit} is outside \mbox{[}0, {\ttfamily multiQubit.numQubits}) \end{DoxyExceptions}
 
 
-Definition at line 206 of file qubits\_\-env\_\-local.c.
+Definition at line 209 of file qubits\_\-env\_\-local.c.
 
 References measureWithStats(), MultiQubit::numQubits, QuESTAssert(), and REAL.
 
 
 \begin{DoxyCode}
-206                                                     {
-207     QuESTAssert(measureQubit >= 0 && measureQubit < multiQubit.numQubits, 2, __fu
+209                                                     {
+210     QuESTAssert(measureQubit >= 0 && measureQubit < multiQubit.numQubits, 2, __fu
       nc__);
-208     REAL stateProb;
-209     return measureWithStats(multiQubit, measureQubit, &stateProb);
-210 }
+211     REAL stateProb;
+212     return measureWithStats(multiQubit, measureQubit, &stateProb);
+213 }
 \end{DoxyCode}
 \hypertarget{qubits__env__local_8c_a2ac46e470c750bf93c754e06c64b0a7a}{
 \index{qubits\_\-env\_\-local.c@{qubits\_\-env\_\-local.c}!measureWithStats@{measureWithStats}}
@@ -571,37 +571,37 @@ the measurement outcome, 0 or 1
 \item[{\em exitWithError}]if {\ttfamily measureQubit} is outside \mbox{[}0, {\ttfamily multiQubit.numQubits}) \end{DoxyExceptions}
 
 
-Definition at line 212 of file qubits\_\-env\_\-local.c.
+Definition at line 215 of file qubits\_\-env\_\-local.c.
 
 References collapseToOutcomeLocal(), findProbabilityOfOutcome(), genrand\_\-real1(), MultiQubit::numQubits, QuESTAssert(), REAL, and REAL\_\-EPS.
 
 
 \begin{DoxyCode}
-212                                                                               {
-213     QuESTAssert(measureQubit >= 0 && measureQubit < multiQubit.numQubits, 2, __fu
+215                                                                               {
+216     QuESTAssert(measureQubit >= 0 && measureQubit < multiQubit.numQubits, 2, __fu
       nc__);
-214 
-215     int outcome;
-216     // find probability of qubit being in state 1
-217         REAL stateProbInternal = findProbabilityOfOutcome(multiQubit, measureQubi
+217 
+218     int outcome;
+219     // find probability of qubit being in state 1
+220         REAL stateProbInternal = findProbabilityOfOutcome(multiQubit, measureQubi
       t, 1);
-218 
-219     // we can't collapse to a state that has a probability too close to zero
-220     if (stateProbInternal<REAL_EPS) outcome=0;
-221     else if (1-stateProbInternal<REAL_EPS) outcome=1;
-222     else {
-223         // ok. both P(0) and P(1) are large enough to resolve
-224         // generate random float on [0,1]
-225         float randNum = genrand_real1();
-226         if (randNum<=stateProbInternal) outcome = 1;
-227         else outcome = 0;
-228     } 
-229     if (outcome==0) stateProbInternal = 1-stateProbInternal;
-230     collapseToOutcomeLocal(multiQubit, measureQubit, stateProbInternal, outcome);
+221 
+222     // we can't collapse to a state that has a probability too close to zero
+223     if (stateProbInternal<REAL_EPS) outcome=0;
+224     else if (1-stateProbInternal<REAL_EPS) outcome=1;
+225     else {
+226         // ok. both P(0) and P(1) are large enough to resolve
+227         // generate random float on [0,1]
+228         float randNum = genrand_real1();
+229         if (randNum<=stateProbInternal) outcome = 1;
+230         else outcome = 0;
+231     } 
+232     if (outcome==0) stateProbInternal = 1-stateProbInternal;
+233     collapseToOutcomeLocal(multiQubit, measureQubit, stateProbInternal, outcome);
       
-231     *stateProb = stateProbInternal;
-232     return outcome;
-233 }
+234     *stateProb = stateProbInternal;
+235     return outcome;
+236 }
 \end{DoxyCode}
 \hypertarget{qubits__env__local_8c_ae395a79690283ed81106afadd7a8cd8a}{
 \index{qubits\_\-env\_\-local.c@{qubits\_\-env\_\-local.c}!multiControlledUnitary@{multiControlledUnitary}}
@@ -622,27 +622,27 @@ Apply a general multiple-\/control single-\/target unitary, which can include a 
 \item[{\em exitWithError}]if {\ttfamily numControlQubits} is outside \mbox{[}1, {\ttfamily multiQubit.numQubits}\mbox{]}), or if any qubit index ({\ttfamily targetQubit} or one in {\ttfamily controlQubits}) is outside \mbox{[}0, {\ttfamily multiQubit.numQubits}\mbox{]}), or if {\ttfamily controlQubits} contains {\ttfamily targetQubit}, or if {\ttfamily u} is not unitary. \end{DoxyExceptions}
 
 
-Definition at line 140 of file qubits\_\-env\_\-local.c.
+Definition at line 143 of file qubits\_\-env\_\-local.c.
 
 References multiControlledUnitaryLocal(), MultiQubit::numQubits, QuESTAssert(), and validateMatrixIsUnitary().
 
 
 \begin{DoxyCode}
-141 {
-142     QuESTAssert(targetQubit >= 0 && targetQubit < multiQubit.numQubits, 1, __func
+144 {
+145     QuESTAssert(targetQubit >= 0 && targetQubit < multiQubit.numQubits, 1, __func
       __);
-143     QuESTAssert(numControlQubits > 0 && numControlQubits <= multiQubit.numQubits,
+146     QuESTAssert(numControlQubits > 0 && numControlQubits <= multiQubit.numQubits,
        4, __func__);
-144     QuESTAssert(validateMatrixIsUnitary(u), 5, __func__);
-145 
-146     long long int mask=0; 
-147     for (int i=0; i<numControlQubits; i++) mask = mask | (1LL<<controlQubits[i]);
+147     QuESTAssert(validateMatrixIsUnitary(u), 5, __func__);
+148 
+149     long long int mask=0; 
+150     for (int i=0; i<numControlQubits; i++) mask = mask | (1LL<<controlQubits[i]);
       
-148     QuESTAssert(mask >=0 && mask <= (1LL<<multiQubit.numQubits)-1, 2, __func__);
-149     QuESTAssert((mask & (1LL<<targetQubit)) != (1LL<<targetQubit), 3, __func__);
-150         
-151     multiControlledUnitaryLocal(multiQubit, targetQubit, mask, u);
-152 }
+151     QuESTAssert(mask >=0 && mask <= (1LL<<multiQubit.numQubits)-1, 2, __func__);
+152     QuESTAssert((mask & (1LL<<targetQubit)) != (1LL<<targetQubit), 3, __func__);
+153         
+154     multiControlledUnitaryLocal(multiQubit, targetQubit, mask, u);
+155 }
 \end{DoxyCode}
 \hypertarget{qubits__env__local_8c_aae7a8a7f1ccbddb7f76b6c52b746bb43}{
 \index{qubits\_\-env\_\-local.c@{qubits\_\-env\_\-local.c}!phaseGate@{phaseGate}}
@@ -651,17 +651,17 @@ References multiControlledUnitaryLocal(), MultiQubit::numQubits, QuESTAssert(), 
 \label{qubits__env__local_8c_aae7a8a7f1ccbddb7f76b6c52b746bb43}
 
 
-Definition at line 166 of file qubits\_\-env\_\-local.c.
+Definition at line 169 of file qubits\_\-env\_\-local.c.
 
 Referenced by sGate(), sigmaZ(), and tGate().
 
 
 \begin{DoxyCode}
-167 {
-168     QuESTAssert(targetQubit >= 0 && targetQubit < multiQubit.numQubits, 1, __func
+170 {
+171     QuESTAssert(targetQubit >= 0 && targetQubit < multiQubit.numQubits, 1, __func
       __);
-169         phaseGateLocal(multiQubit, targetQubit, type);
-170 }
+172         phaseGateLocal(multiQubit, targetQubit, type);
+173 }
 \end{DoxyCode}
 \hypertarget{qubits__env__local_8c_a3587b9d533e633ccf1abf9ad2ce45d8d}{
 \index{qubits\_\-env\_\-local.c@{qubits\_\-env\_\-local.c}!QuESTAssert@{QuESTAssert}}
@@ -670,15 +670,15 @@ Referenced by sGate(), sigmaZ(), and tGate().
 \label{qubits__env__local_8c_a3587b9d533e633ccf1abf9ad2ce45d8d}
 
 
-Definition at line 243 of file qubits\_\-env\_\-local.c.
+Definition at line 246 of file qubits\_\-env\_\-local.c.
 
 Referenced by collapseToOutcome(), compactUnitary(), controlledCompactUnitary(), controlledNot(), controlledPhaseGate(), controlledUnitary(), createMultiQubit(), findProbabilityOfOutcome(), hadamard(), measure(), measureWithStats(), multiControlledPhaseGate(), multiControlledUnitary(), phaseGate(), sigmaX(), sigmaY(), and unitary().
 
 
 \begin{DoxyCode}
-243                                                               {
-244     if (!isValid) exitWithError(errorCode, func);
-245 }
+246                                                               {
+247     if (!isValid) exitWithError(errorCode, func);
+248 }
 \end{DoxyCode}
 \hypertarget{qubits__env__local_8c_a62da5b58d8ce84e6f4d24be1b872294e}{
 \index{qubits\_\-env\_\-local.c@{qubits\_\-env\_\-local.c}!reportNodeList@{reportNodeList}}
@@ -692,13 +692,13 @@ Report a list of CPU hostnames and the rank that is running on each if running w
 \item[\mbox{$\leftarrow$} {\em env}]object representing the execution environment. A single instance is used for each program \end{DoxyParams}
 
 
-Definition at line 57 of file qubits\_\-env\_\-local.c.
+Definition at line 60 of file qubits\_\-env\_\-local.c.
 
 
 \begin{DoxyCode}
-57                                  {
-58         printf("Hostname unknown: running locally\n");
-59 }
+60                                  {
+61         printf("Hostname unknown: running locally\n");
+62 }
 \end{DoxyCode}
 \hypertarget{qubits__env__local_8c_af8a14ae79c3fb2c0b5f6255cc37bebf9}{
 \index{qubits\_\-env\_\-local.c@{qubits\_\-env\_\-local.c}!reportQuESTEnv@{reportQuESTEnv}}
@@ -712,24 +712,24 @@ Report information about the QuEST environment.
 \item[\mbox{$\leftarrow$} {\em env}]object representing the execution environment. A single instance is used for each program \end{DoxyParams}
 
 
-Definition at line 44 of file qubits\_\-env\_\-local.c.
+Definition at line 47 of file qubits\_\-env\_\-local.c.
 
 References QuESTEnv::numRanks, and REAL.
 
 
 \begin{DoxyCode}
-44                                  {
-45         printf("EXECUTION ENVIRONMENT:\n");
-46         printf("Running locally on one node\n");
-47         printf("Number of ranks is %d\n", env.numRanks);
-48 # ifdef _OPENMP
-49         printf("OpenMP enabled\n");
-50         printf("Number of threads available is %d\n", omp_get_max_threads());
-51 # else
-52         printf("OpenMP disabled\n");
-53 # endif
-54         printf("Precision: size of REAL is %ld bytes\n", sizeof(REAL));
-55 }
+47                                  {
+48         printf("EXECUTION ENVIRONMENT:\n");
+49         printf("Running locally on one node\n");
+50         printf("Number of ranks is %d\n", env.numRanks);
+51 # ifdef _OPENMP
+52         printf("OpenMP enabled\n");
+53         printf("Number of threads available is %d\n", omp_get_max_threads());
+54 # else
+55         printf("OpenMP disabled\n");
+56 # endif
+57         printf("Precision: size of REAL is %ld bytes\n", sizeof(REAL));
+58 }
 \end{DoxyCode}
 \hypertarget{qubits__env__local_8c_a86e396e06b7d527cac20ba0108872423}{
 \index{qubits\_\-env\_\-local.c@{qubits\_\-env\_\-local.c}!sigmaX@{sigmaX}}
@@ -750,17 +750,17 @@ Apply the single-\/qubit sigma-\/X (also known as the X, Pauli-\/X, NOT or bit-\
 \item[{\em exitWithError}]if {\ttfamily targetQubit} is outside \mbox{[}0, {\ttfamily multiQubit.numQubits}). \end{DoxyExceptions}
 
 
-Definition at line 154 of file qubits\_\-env\_\-local.c.
+Definition at line 157 of file qubits\_\-env\_\-local.c.
 
 References MultiQubit::numQubits, QuESTAssert(), and sigmaXLocal().
 
 
 \begin{DoxyCode}
-155 {
-156     QuESTAssert(targetQubit >= 0 && targetQubit < multiQubit.numQubits, 1, __func
+158 {
+159     QuESTAssert(targetQubit >= 0 && targetQubit < multiQubit.numQubits, 1, __func
       __);
-157         sigmaXLocal(multiQubit, targetQubit);
-158 }
+160         sigmaXLocal(multiQubit, targetQubit);
+161 }
 \end{DoxyCode}
 \hypertarget{qubits__env__local_8c_a1f54d70a42403f7e1c2e2c2007332f61}{
 \index{qubits\_\-env\_\-local.c@{qubits\_\-env\_\-local.c}!sigmaY@{sigmaY}}
@@ -781,17 +781,17 @@ Apply the single-\/qubit sigma-\/Y (also known as the Y or Pauli-\/Y) gate. This
 \item[{\em exitWithError}]if {\ttfamily targetQubit} is outside \mbox{[}0, {\ttfamily multiQubit.numQubits}). \end{DoxyExceptions}
 
 
-Definition at line 160 of file qubits\_\-env\_\-local.c.
+Definition at line 163 of file qubits\_\-env\_\-local.c.
 
 References MultiQubit::numQubits, QuESTAssert(), and sigmaYLocal().
 
 
 \begin{DoxyCode}
-161 {
-162     QuESTAssert(targetQubit >= 0 && targetQubit < multiQubit.numQubits, 1, __func
+164 {
+165     QuESTAssert(targetQubit >= 0 && targetQubit < multiQubit.numQubits, 1, __func
       __);
-163         sigmaYLocal(multiQubit, targetQubit);
-164 }
+166         sigmaYLocal(multiQubit, targetQubit);
+167 }
 \end{DoxyCode}
 \hypertarget{qubits__env__local_8c_a8d31fe2d1ad4d01e2a1f5f6b8bc15b77}{
 \index{qubits\_\-env\_\-local.c@{qubits\_\-env\_\-local.c}!syncQuESTEnv@{syncQuESTEnv}}
@@ -805,13 +805,13 @@ Guarantees that all code up to the given point has been executed on all nodes (i
 \item[\mbox{$\leftarrow$} {\em env}]object representing the execution environment. A single instance is used for each program \end{DoxyParams}
 
 
-Definition at line 32 of file qubits\_\-env\_\-local.c.
+Definition at line 35 of file qubits\_\-env\_\-local.c.
 
 
 \begin{DoxyCode}
-32                                {
-33         // MPI Barrier goes here in MPI version. 
-34 } 
+35                                {
+36         // MPI Barrier goes here in MPI version. 
+37 } 
 \end{DoxyCode}
 \hypertarget{qubits__env__local_8c_ac7e38d768a1bd79019f88cc1e6295092}{
 \index{qubits\_\-env\_\-local.c@{qubits\_\-env\_\-local.c}!syncQuESTSuccess@{syncQuESTSuccess}}
@@ -830,13 +830,13 @@ Performs a logical AND on all successCodes held by all processes. If any one pro
 \end{DoxyReturn}
 
 
-Definition at line 36 of file qubits\_\-env\_\-local.c.
+Definition at line 39 of file qubits\_\-env\_\-local.c.
 
 
 \begin{DoxyCode}
-36                                      {
-37         return successCode;
-38 }
+39                                      {
+40         return successCode;
+41 }
 \end{DoxyCode}
 \hypertarget{qubits__env__local_8c_a7a0877e33700f6bad48adb51b7b3fb67}{
 \index{qubits\_\-env\_\-local.c@{qubits\_\-env\_\-local.c}!unitary@{unitary}}
@@ -857,18 +857,18 @@ Apply a general single-\/qubit unitary (including a global phase factor). The pa
 \item[{\em exitWithError}]if {\ttfamily targetQubit} is outside \mbox{[}0, {\ttfamily multiQubit.numQubits}), or matrix {\ttfamily u} is not unitary. \end{DoxyExceptions}
 
 
-Definition at line 110 of file qubits\_\-env\_\-local.c.
+Definition at line 113 of file qubits\_\-env\_\-local.c.
 
 References MultiQubit::numQubits, QuESTAssert(), unitaryLocal(), and validateMatrixIsUnitary().
 
 
 \begin{DoxyCode}
-111 {
-112     QuESTAssert(targetQubit >= 0 && targetQubit < multiQubit.numQubits, 1, __func
+114 {
+115     QuESTAssert(targetQubit >= 0 && targetQubit < multiQubit.numQubits, 1, __func
       __);
-113     QuESTAssert(validateMatrixIsUnitary(u), 5, __func__);
-114 
-115         // all values required to update state vector lie in this rank
-116         unitaryLocal(multiQubit, targetQubit, u);
-117 }
+116     QuESTAssert(validateMatrixIsUnitary(u), 5, __func__);
+117 
+118         // all values required to update state vector lie in this rank
+119         unitaryLocal(multiQubit, targetQubit, u);
+120 }
 \end{DoxyCode}
