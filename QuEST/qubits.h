@@ -465,7 +465,7 @@ void rotateX(MultiQubit multiQubit, const int rotQubit, REAL angle);
  * For angle \f$\theta\f$, applies
  * \f[
  * \begin{pmatrix}
- * \cos\theta/2 & \sin \theta/2\\
+ * \cos\theta/2 & - \sin \theta/2\\
  * \sin \theta/2 & \cos \theta/2
  * \end{pmatrix}
  * \f]            
