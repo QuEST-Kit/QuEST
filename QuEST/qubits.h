@@ -567,17 +567,21 @@ void rotateZ(MultiQubit multiQubit, const int rotQubit, REAL angle);
  */
 void controlledCompactUnitary(MultiQubit multiQubit, const int controlQubit, const int targetQubit, Complex alpha, Complex beta);
 
-/** Rotate a single qubit by a given angle around a given vector on the Bloch-sphere.      * The vector must not be zero (else an error is thrown), but needn't be unit magnitude.
+/** Rotate a single qubit by a given angle around a given vector on the Bloch-sphere.      
+ * The vector must not be zero (else an error is thrown), but needn't be unit magnitude.
+ *
+ * For angle \f$\theta\f$ and axis vector \f$\vec{n}\f$, applies \f$R_{\hat{n}} = \exp \left(- i \frac{\theta}{2} \hat{n} \cdot \vec{sigma} \right) \f$
+ * where \f$\vec{\sigma}\f$ is the vector of Pauli matrices.
  *
  * @param[in,out] multiQubit object representing the set of all qubits
  * @param[in] rotQubit qubit to rotate
  * @param[in] angle angle by which to rotate in radians
- * @param[in] axis vector around which to rotate
+ * @param[in] axis vector around which to rotate (can be non-unit; will be normalised)
  * @throws exitWithError
  * 		if \p rotQubit is outside [0, \p multiQubit.numQubits),
  * 		or if \p axis is the zero vector
  */
-void rotateAroundAxis(MultiQubit multiQubit, const int rotQubit, REAL angle, Vector unitAxis);
+void rotateAroundAxis(MultiQubit multiQubit, const int rotQubit, REAL angle, Vector axis);
 
 /** Apply a general controlled unitary (single control, single target), which can include a global phase factor.
  * The given unitary is applied to the target qubit if the control qubit has value 1,
