@@ -1,3 +1,6 @@
+// Distributed under MIT licence. See https://github.com/aniabrown/QuEST/blob/master/LICENCE.txt 
+// for details 
+
 # ifndef QUBITS_INTERNAL
 # define QUBITS_INTERNAL
 
