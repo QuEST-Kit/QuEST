@@ -379,43 +379,35 @@ int validateUnitVector(REAL ux, REAL uy, REAL uz){
 	else return 1;
 }
 
-void rotateAroundAxis(MultiQubit multiQubit, const int rotQubit, REAL angle, Vector unitAxis){
+void rotateAroundAxis(MultiQubit multiQubit, const int rotQubit, REAL angle, Vector axis){
+	
+	double mag = sqrt(pow(axis.x,2) + pow(axis.y,2) + pow(axis.z,2));
+	Vector unitAxis = {axis.x/mag, axis.y/mag, axis.z/mag};
+	
 	Complex alpha, beta;
 	alpha.real = cos(angle/2.0);
 	alpha.imag = -sin(angle/2.0)*unitAxis.z;	
-	beta.real = 0;
-	beta.imag = -sin(angle/2.0)*(unitAxis.x + unitAxis.y);
+	beta.real = sin(angle/2.0)*unitAxis.y;
+	beta.imag = -sin(angle/2.0)*unitAxis.x;
 	compactUnitary(multiQubit, rotQubit, alpha, beta);
 }
 
 void rotateX(MultiQubit multiQubit, const int rotQubit, REAL angle){
-	Complex alpha, beta;
-    Vector unitAxis = {1, 0, 0};
-	alpha.real = cos(angle/2.0);
-	alpha.imag = -sin(angle/2.0)*unitAxis.z;	
-	beta.real = 0;
-	beta.imag = -sin(angle/2.0)*(unitAxis.x + unitAxis.y);
-	compactUnitary(multiQubit, rotQubit, alpha, beta);
+
+	Vector unitAxis = {1, 0, 0};
+	rotateAroundAxis(multiQubit, rotQubit, angle, unitAxis);
 }
 
 void rotateY(MultiQubit multiQubit, const int rotQubit, REAL angle){
-	Complex alpha, beta;
-    Vector unitAxis = {0, 1, 0};
-	alpha.real = cos(angle/2.0);
-	alpha.imag = -sin(angle/2.0)*unitAxis.z;	
-	beta.real = 0;
-	beta.imag = -sin(angle/2.0)*(unitAxis.x + unitAxis.y);
-	compactUnitary(multiQubit, rotQubit, alpha, beta);
+	
+	Vector unitAxis = {0, 1, 0};
+	rotateAroundAxis(multiQubit, rotQubit, angle, unitAxis);
 }
 
 void rotateZ(MultiQubit multiQubit, const int rotQubit, REAL angle){
-	Complex alpha, beta;
-    Vector unitAxis = {0, 0, 1};
-	alpha.real = cos(angle/2.0);
-	alpha.imag = -sin(angle/2.0)*unitAxis.z;	
-	beta.real = 0;
-	beta.imag = -sin(angle/2.0)*(unitAxis.x + unitAxis.y);
-	compactUnitary(multiQubit, rotQubit, alpha, beta);
+	
+	Vector unitAxis = {0, 0, 1};
+	rotateAroundAxis(multiQubit, rotQubit, angle, unitAxis);
 }
 
 void compactUnitaryLocal (MultiQubit multiQubit, const int targetQubit, Complex alpha, Complex beta)
