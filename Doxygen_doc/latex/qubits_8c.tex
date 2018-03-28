@@ -62,13 +62,13 @@ void \hyperlink{qubits_8c_ace0d3592d38a990e81a434c4e9681500}{rotateY} (\hyperlin
 void \hyperlink{qubits_8c_abd621412ad30c1b034f4ce153c4afe10}{rotateZ} (\hyperlink{structMultiQubit}{MultiQubit} multiQubit, const int rotQubit, REAL angle)
 \begin{DoxyCompactList}\small\item\em Rotate a single qubit by a given angle around the Z-\/axis of the Bloch-\/sphere (also known as a phase shift gate). \item\end{DoxyCompactList}\item 
 void \hyperlink{qubits_8c_ad41f82b41149393a642391b67b3a287e}{controlledRotateAroundAxis} (\hyperlink{structMultiQubit}{MultiQubit} multiQubit, const int controlQubit, const int targetQubit, REAL angle, \hyperlink{structVector}{Vector} axis)
-\item 
+\begin{DoxyCompactList}\small\item\em Applies a controlled rotation by a given angle around a given vector on the Bloch-\/sphere. \item\end{DoxyCompactList}\item 
 void \hyperlink{qubits_8c_ac6923ac57e67d9a21096e06f6a9012f6}{controlledRotateX} (\hyperlink{structMultiQubit}{MultiQubit} multiQubit, const int controlQubit, const int targetQubit, REAL angle)
-\item 
+\begin{DoxyCompactList}\small\item\em Applies a controlled rotation by a given angle around the X-\/axis of the Bloch-\/sphere. \item\end{DoxyCompactList}\item 
 void \hyperlink{qubits_8c_a71e90a2f7292116338c062934f9d1202}{controlledRotateY} (\hyperlink{structMultiQubit}{MultiQubit} multiQubit, const int controlQubit, const int targetQubit, REAL angle)
-\item 
+\begin{DoxyCompactList}\small\item\em Applies a controlled rotation by a given angle around the Y-\/axis of the Bloch-\/sphere. \item\end{DoxyCompactList}\item 
 void \hyperlink{qubits_8c_a668e5d2634b02e98bc73675ccb11d61c}{controlledRotateZ} (\hyperlink{structMultiQubit}{MultiQubit} multiQubit, const int controlQubit, const int targetQubit, REAL angle)
-\item 
+\begin{DoxyCompactList}\small\item\em Applies a controlled rotation by a given angle around the Z-\/axis of the Bloch-\/sphere. \item\end{DoxyCompactList}\item 
 void \hyperlink{qubits_8c_a9cee2d8716667a3318420a3b672f5b92}{compactUnitaryLocal} (\hyperlink{structMultiQubit}{MultiQubit} multiQubit, const int targetQubit, \hyperlink{structComplex}{Complex} alpha, \hyperlink{structComplex}{Complex} beta)
 \item 
 void \hyperlink{qubits_8c_ac134fb45b0a7248c5d15e16eb7139a35}{unitaryLocal} (\hyperlink{structMultiQubit}{MultiQubit} multiQubit, const int targetQubit, \hyperlink{structComplexMatrix2}{ComplexMatrix2} u)
@@ -903,6 +903,20 @@ References MultiQubit::chunkId, extractBit(), ComplexArray::imag, MultiQubit::nu
 \label{qubits_8c_ad41f82b41149393a642391b67b3a287e}
 
 
+Applies a controlled rotation by a given angle around a given vector on the Bloch-\/sphere. The vector must not be zero (else an error is thrown), but needn't be unit magnitude.
+
+For angle $\theta$ and axis vector $\vec{n}$, applies $R_{\hat{n}} = \exp \left(- i \frac{\theta}{2} \hat{n} \cdot \vec{\sigma} \right) $ to states where the target qubit is 1 ($\vec{\sigma}$ is the vector of Pauli matrices).
+
+\[ \setlength{\fboxrule}{0.01pt} \fbox{ \begin{tikzpicture}[scale=.5] \node[draw=none] at (-3.5, 2) {control}; \node[draw=none] at (-3.5, 0) {target}; \draw (-2, 2) -- (2, 2); \draw[fill=black] (0, 2) circle (.2); \draw (0, 2) -- (0, 1); \draw (-2,0) -- (-1, 0); \draw (1, 0) -- (2, 0); \draw (-1,-1)--(-1,1)--(1,1)--(1,-1)--cycle; \node[draw=none] at (0, 0) {$R_{\hat{n}}(\theta)$}; \end{tikzpicture} } \]
+
+
+\begin{DoxyParams}{Parameters}
+\item[\mbox{$\leftrightarrow$} {\em multiQubit}]object representing the set of all qubits \item[\mbox{$\leftarrow$} {\em controlQubit}]qubit with value 1 in the rotated states \item[\mbox{$\leftarrow$} {\em targetQubit}]qubit to rotate \item[\mbox{$\leftarrow$} {\em angle}]angle by which to rotate in radians \item[\mbox{$\leftarrow$} {\em axis}]vector around which to rotate (can be non-\/unit; will be normalised) \end{DoxyParams}
+
+\begin{DoxyExceptions}{Exceptions}
+\item[{\em exitWithError}]if either {\ttfamily controlQubit} or {\ttfamily targetQubit} are outside \mbox{[}0, {\ttfamily multiQubit.numQubits}) or are equal or if {\ttfamily axis} is the zero vector \end{DoxyExceptions}
+
+
 Definition at line 413 of file qubits.c.
 
 References controlledCompactUnitary(), Complex::imag, Complex::real, Vector::x, Vector::y, and Vector::z.
@@ -933,6 +947,18 @@ Referenced by controlledRotateX(), controlledRotateY(), and controlledRotateZ().
 \label{qubits_8c_ac6923ac57e67d9a21096e06f6a9012f6}
 
 
+Applies a controlled rotation by a given angle around the X-\/axis of the Bloch-\/sphere. The target qubit is rotated in states where the control qubit has value 1.
+
+\[ \setlength{\fboxrule}{0.01pt} \fbox{ \begin{tikzpicture}[scale=.5] \node[draw=none] at (-3.5, 2) {control}; \node[draw=none] at (-3.5, 0) {target}; \draw (-2, 2) -- (2, 2); \draw[fill=black] (0, 2) circle (.2); \draw (0, 2) -- (0, 1); \draw (-2,0) -- (-1, 0); \draw (1, 0) -- (2, 0); \draw (-1,-1)--(-1,1)--(1,1)--(1,-1)--cycle; \node[draw=none] at (0, 0) {$R_x(\theta)$}; \end{tikzpicture} } \]
+
+
+\begin{DoxyParams}{Parameters}
+\item[\mbox{$\leftrightarrow$} {\em multiQubit}]object representing the set of all qubits \item[\mbox{$\leftarrow$} {\em controlQubit}]qubit which has value 1 in the rotated states \item[\mbox{$\leftarrow$} {\em tagretQubit}]qubit to rotate \item[\mbox{$\leftarrow$} {\em angle}]angle by which to rotate the target qubit in radians \end{DoxyParams}
+
+\begin{DoxyExceptions}{Exceptions}
+\item[{\em exitWithError}]if either {\ttfamily controlQubit} or {\ttfamily targetQubit} are outside \mbox{[}0, {\ttfamily multiQubit.numQubits}) or are equal. \end{DoxyExceptions}
+
+
 Definition at line 426 of file qubits.c.
 
 References controlledRotateAroundAxis().
@@ -954,6 +980,18 @@ References controlledRotateAroundAxis().
 \label{qubits_8c_a71e90a2f7292116338c062934f9d1202}
 
 
+Applies a controlled rotation by a given angle around the Y-\/axis of the Bloch-\/sphere. The target qubit is rotated in states where the control qubit has value 1.
+
+\[ \setlength{\fboxrule}{0.01pt} \fbox{ \begin{tikzpicture}[scale=.5] \node[draw=none] at (-3.5, 2) {control}; \node[draw=none] at (-3.5, 0) {target}; \draw (-2, 2) -- (2, 2); \draw[fill=black] (0, 2) circle (.2); \draw (0, 2) -- (0, 1); \draw (-2,0) -- (-1, 0); \draw (1, 0) -- (2, 0); \draw (-1,-1)--(-1,1)--(1,1)--(1,-1)--cycle; \node[draw=none] at (0, 0) {$R_y(\theta)$}; \end{tikzpicture} } \]
+
+
+\begin{DoxyParams}{Parameters}
+\item[\mbox{$\leftrightarrow$} {\em multiQubit}]object representing the set of all qubits \item[\mbox{$\leftarrow$} {\em controlQubit}]qubit which has value 1 in the rotated states \item[\mbox{$\leftarrow$} {\em tagretQubit}]qubit to rotate \item[\mbox{$\leftarrow$} {\em angle}]angle by which to rotate the target qubit in radians \end{DoxyParams}
+
+\begin{DoxyExceptions}{Exceptions}
+\item[{\em exitWithError}]if either {\ttfamily controlQubit} or {\ttfamily targetQubit} are outside \mbox{[}0, {\ttfamily multiQubit.numQubits}) or are equal. \end{DoxyExceptions}
+
+
 Definition at line 432 of file qubits.c.
 
 References controlledRotateAroundAxis().
@@ -973,6 +1011,18 @@ References controlledRotateAroundAxis().
 \index{controlledRotateZ@{controlledRotateZ}!qubits.c@{qubits.c}}
 \paragraph[{controlledRotateZ}]{\setlength{\rightskip}{0pt plus 5cm}void controlledRotateZ ({\bf MultiQubit} {\em multiQubit}, \/  const int {\em controlQubit}, \/  const int {\em targetQubit}, \/  REAL {\em angle})}\hfill}
 \label{qubits_8c_a668e5d2634b02e98bc73675ccb11d61c}
+
+
+Applies a controlled rotation by a given angle around the Z-\/axis of the Bloch-\/sphere. The target qubit is rotated in states where the control qubit has value 1.
+
+\[ \setlength{\fboxrule}{0.01pt} \fbox{ \begin{tikzpicture}[scale=.5] \node[draw=none] at (-3.5, 2) {control}; \node[draw=none] at (-3.5, 0) {target}; \draw (-2, 2) -- (2, 2); \draw[fill=black] (0, 2) circle (.2); \draw (0, 2) -- (0, 1); \draw (-2,0) -- (-1, 0); \draw (1, 0) -- (2, 0); \draw (-1,-1)--(-1,1)--(1,1)--(1,-1)--cycle; \node[draw=none] at (0, 0) {$R_z(\theta)$}; \end{tikzpicture} } \]
+
+
+\begin{DoxyParams}{Parameters}
+\item[\mbox{$\leftrightarrow$} {\em multiQubit}]object representing the set of all qubits \item[\mbox{$\leftarrow$} {\em controlQubit}]qubit which has value 1 in the rotated states \item[\mbox{$\leftarrow$} {\em tagretQubit}]qubit to rotate \item[\mbox{$\leftarrow$} {\em angle}]angle by which to rotate the target qubit in radians \end{DoxyParams}
+
+\begin{DoxyExceptions}{Exceptions}
+\item[{\em exitWithError}]if either {\ttfamily controlQubit} or {\ttfamily targetQubit} are outside \mbox{[}0, {\ttfamily multiQubit.numQubits}) or are equal. \end{DoxyExceptions}
 
 
 Definition at line 438 of file qubits.c.

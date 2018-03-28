@@ -569,11 +569,7 @@ void rotateAroundAxis(MultiQubit multiQubit, const int rotQubit, REAL angle, Vec
  * @throws exitWithError
  * 		if either \p controlQubit or \p targetQubit are outside [0, \p multiQubit.numQubits) or are equal.
  */
-void controlledRotateX(MultiQubit multiQubit, const int controlQubit, const int targetQubit, REAL angle){
-
-	Vector unitAxis = {1, 0, 0};
-	controlledRotateAroundAxis(multiQubit, controlQubit, targetQubit, angle, unitAxis);
-}
+void controlledRotateX(MultiQubit multiQubit, const int controlQubit, const int targetQubit, REAL angle);
 
 /** Applies a controlled rotation by a given angle around the Y-axis of the Bloch-sphere. 
  * The target qubit is rotated in states where the control qubit has value 1.
@@ -604,11 +600,7 @@ void controlledRotateX(MultiQubit multiQubit, const int controlQubit, const int 
  * @throws exitWithError
  * 		if either \p controlQubit or \p targetQubit are outside [0, \p multiQubit.numQubits) or are equal.
  */
-void controlledRotateY(MultiQubit multiQubit, const int controlQubit, const int targetQubit, REAL angle){
-
-	Vector unitAxis = {0, 1, 0};
-	controlledRotateAroundAxis(multiQubit, controlQubit, targetQubit, angle, unitAxis);
-}
+void controlledRotateY(MultiQubit multiQubit, const int controlQubit, const int targetQubit, REAL angle);
 
 /** Applies a controlled rotation by a given angle around the Z-axis of the Bloch-sphere. 
  * The target qubit is rotated in states where the control qubit has value 1.
@@ -639,11 +631,7 @@ void controlledRotateY(MultiQubit multiQubit, const int controlQubit, const int 
  * @throws exitWithError
  * 		if either \p controlQubit or \p targetQubit are outside [0, \p multiQubit.numQubits) or are equal.
  */
-void controlledRotateZ(MultiQubit multiQubit, const int controlQubit, const int targetQubit, REAL angle){
-
-	Vector unitAxis = {0, 0, 1};
-	controlledRotateAroundAxis(multiQubit, controlQubit, targetQubit, angle, unitAxis);
-}
+void controlledRotateZ(MultiQubit multiQubit, const int controlQubit, const int targetQubit, REAL angle);
 
 /** Applies a controlled rotation by a given angle around a given vector on the Bloch-sphere.      
  * The vector must not be zero (else an error is thrown), but needn't be unit magnitude.
@@ -679,18 +667,7 @@ void controlledRotateZ(MultiQubit multiQubit, const int controlQubit, const int 
  * 		if either \p controlQubit or \p targetQubit are outside [0, \p multiQubit.numQubits) or are equal
  * 		or if \p axis is the zero vector
  */
-void controlledRotateAroundAxis(MultiQubit multiQubit, const int controlQubit, const int targetQubit, REAL angle, Vector axis){
-	
-	double mag = sqrt(pow(axis.x,2) + pow(axis.y,2) + pow(axis.z,2));
-	Vector unitAxis = {axis.x/mag, axis.y/mag, axis.z/mag};
-	
-	Complex alpha, beta;
-	alpha.real = cos(angle/2.0);
-	alpha.imag = -sin(angle/2.0)*unitAxis.z;	
-	beta.real = sin(angle/2.0)*unitAxis.y;
-	beta.imag = -sin(angle/2.0)*unitAxis.x;
-	controlledCompactUnitary(multiQubit, controlQubit, targetQubit, alpha, beta);
-}
+void controlledRotateAroundAxis(MultiQubit multiQubit, const int controlQubit, const int targetQubit, REAL angle, Vector axis);
 
 /** Apply a controlled unitary (single control, single target) parameterised by two given complex scalars.
  * Given valid complex numbers \f$\alpha\f$ and \f$\beta\f$, applies the two-qubit unitary

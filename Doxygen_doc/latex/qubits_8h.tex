@@ -469,26 +469,28 @@ For angle $\theta$ and axis vector $\vec{n}$, applies $R_{\hat{n}} = \exp \left(
 \item[{\em exitWithError}]if either {\ttfamily controlQubit} or {\ttfamily targetQubit} are outside \mbox{[}0, {\ttfamily multiQubit.numQubits}) or are equal or if {\ttfamily axis} is the zero vector \end{DoxyExceptions}
 
 
-Definition at line 682 of file qubits.h.
+Definition at line 413 of file qubits.c.
 
 References controlledCompactUnitary(), Complex::imag, Complex::real, Vector::x, Vector::y, and Vector::z.
 
+Referenced by controlledRotateX(), controlledRotateY(), and controlledRotateZ().
+
 
 \begin{DoxyCode}
-682                                                                                  
+413                                                                                  
                                                    {
-683         
-684         double mag = sqrt(pow(axis.x,2) + pow(axis.y,2) + pow(axis.z,2));
-685         Vector unitAxis = {axis.x/mag, axis.y/mag, axis.z/mag};
-686         
-687         Complex alpha, beta;
-688         alpha.real = cos(angle/2.0);
-689         alpha.imag = -sin(angle/2.0)*unitAxis.z;        
-690         beta.real = sin(angle/2.0)*unitAxis.y;
-691         beta.imag = -sin(angle/2.0)*unitAxis.x;
-692         controlledCompactUnitary(multiQubit, controlQubit, targetQubit, alpha, be
+414         
+415         double mag = sqrt(pow(axis.x,2) + pow(axis.y,2) + pow(axis.z,2));
+416         Vector unitAxis = {axis.x/mag, axis.y/mag, axis.z/mag};
+417         
+418         Complex alpha, beta;
+419         alpha.real = cos(angle/2.0);
+420         alpha.imag = -sin(angle/2.0)*unitAxis.z;        
+421         beta.real = sin(angle/2.0)*unitAxis.y;
+422         beta.imag = -sin(angle/2.0)*unitAxis.x;
+423         controlledCompactUnitary(multiQubit, controlQubit, targetQubit, alpha, be
       ta);
-693 }
+424 }
 \end{DoxyCode}
 \hypertarget{qubits_8h_ac6923ac57e67d9a21096e06f6a9012f6}{
 \index{qubits.h@{qubits.h}!controlledRotateX@{controlledRotateX}}
@@ -509,19 +511,19 @@ Applies a controlled rotation by a given angle around the X-\/axis of the Bloch-
 \item[{\em exitWithError}]if either {\ttfamily controlQubit} or {\ttfamily targetQubit} are outside \mbox{[}0, {\ttfamily multiQubit.numQubits}) or are equal. \end{DoxyExceptions}
 
 
-Definition at line 572 of file qubits.h.
+Definition at line 426 of file qubits.c.
 
 References controlledRotateAroundAxis().
 
 
 \begin{DoxyCode}
-572                                                                                  
+426                                                                                  
                              {
-573 
-574         Vector unitAxis = {1, 0, 0};
-575         controlledRotateAroundAxis(multiQubit, controlQubit, targetQubit, angle, 
+427 
+428         Vector unitAxis = {1, 0, 0};
+429         controlledRotateAroundAxis(multiQubit, controlQubit, targetQubit, angle, 
       unitAxis);
-576 }
+430 }
 \end{DoxyCode}
 \hypertarget{qubits_8h_a71e90a2f7292116338c062934f9d1202}{
 \index{qubits.h@{qubits.h}!controlledRotateY@{controlledRotateY}}
@@ -542,19 +544,19 @@ Applies a controlled rotation by a given angle around the Y-\/axis of the Bloch-
 \item[{\em exitWithError}]if either {\ttfamily controlQubit} or {\ttfamily targetQubit} are outside \mbox{[}0, {\ttfamily multiQubit.numQubits}) or are equal. \end{DoxyExceptions}
 
 
-Definition at line 607 of file qubits.h.
+Definition at line 432 of file qubits.c.
 
 References controlledRotateAroundAxis().
 
 
 \begin{DoxyCode}
-607                                                                                  
+432                                                                                  
                              {
-608 
-609         Vector unitAxis = {0, 1, 0};
-610         controlledRotateAroundAxis(multiQubit, controlQubit, targetQubit, angle, 
+433 
+434         Vector unitAxis = {0, 1, 0};
+435         controlledRotateAroundAxis(multiQubit, controlQubit, targetQubit, angle, 
       unitAxis);
-611 }
+436 }
 \end{DoxyCode}
 \hypertarget{qubits_8h_a668e5d2634b02e98bc73675ccb11d61c}{
 \index{qubits.h@{qubits.h}!controlledRotateZ@{controlledRotateZ}}
@@ -575,19 +577,19 @@ Applies a controlled rotation by a given angle around the Z-\/axis of the Bloch-
 \item[{\em exitWithError}]if either {\ttfamily controlQubit} or {\ttfamily targetQubit} are outside \mbox{[}0, {\ttfamily multiQubit.numQubits}) or are equal. \end{DoxyExceptions}
 
 
-Definition at line 642 of file qubits.h.
+Definition at line 438 of file qubits.c.
 
 References controlledRotateAroundAxis().
 
 
 \begin{DoxyCode}
-642                                                                                  
+438                                                                                  
                              {
-643 
-644         Vector unitAxis = {0, 0, 1};
-645         controlledRotateAroundAxis(multiQubit, controlQubit, targetQubit, angle, 
+439 
+440         Vector unitAxis = {0, 0, 1};
+441         controlledRotateAroundAxis(multiQubit, controlQubit, targetQubit, angle, 
       unitAxis);
-646 }
+442 }
 \end{DoxyCode}
 \hypertarget{qubits_8h_a8a701526263392599aa21d0d0f05d9d8}{
 \index{qubits.h@{qubits.h}!controlledUnitary@{controlledUnitary}}

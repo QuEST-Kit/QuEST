@@ -76,9 +76,13 @@
 <tr><td class="memItemLeft" align="right" valign="top">void&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="qubits_8c.html#abd621412ad30c1b034f4ce153c4afe10">rotateZ</a> (<a class="el" href="structMultiQubit.html">MultiQubit</a> multiQubit, const int rotQubit, REAL angle)</td></tr>
 <tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Rotate a single qubit by a given angle around the Z-axis of the Bloch-sphere (also known as a phase shift gate).  <a href="#abd621412ad30c1b034f4ce153c4afe10"></a><br/></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">void&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="qubits_8c.html#ad41f82b41149393a642391b67b3a287e">controlledRotateAroundAxis</a> (<a class="el" href="structMultiQubit.html">MultiQubit</a> multiQubit, const int controlQubit, const int targetQubit, REAL angle, <a class="el" href="structVector.html">Vector</a> axis)</td></tr>
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Applies a controlled rotation by a given angle around a given vector on the Bloch-sphere.  <a href="#ad41f82b41149393a642391b67b3a287e"></a><br/></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">void&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="qubits_8c.html#ac6923ac57e67d9a21096e06f6a9012f6">controlledRotateX</a> (<a class="el" href="structMultiQubit.html">MultiQubit</a> multiQubit, const int controlQubit, const int targetQubit, REAL angle)</td></tr>
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Applies a controlled rotation by a given angle around the X-axis of the Bloch-sphere.  <a href="#ac6923ac57e67d9a21096e06f6a9012f6"></a><br/></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">void&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="qubits_8c.html#a71e90a2f7292116338c062934f9d1202">controlledRotateY</a> (<a class="el" href="structMultiQubit.html">MultiQubit</a> multiQubit, const int controlQubit, const int targetQubit, REAL angle)</td></tr>
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Applies a controlled rotation by a given angle around the Y-axis of the Bloch-sphere.  <a href="#a71e90a2f7292116338c062934f9d1202"></a><br/></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">void&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="qubits_8c.html#a668e5d2634b02e98bc73675ccb11d61c">controlledRotateZ</a> (<a class="el" href="structMultiQubit.html">MultiQubit</a> multiQubit, const int controlQubit, const int targetQubit, REAL angle)</td></tr>
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Applies a controlled rotation by a given angle around the Z-axis of the Bloch-sphere.  <a href="#a668e5d2634b02e98bc73675ccb11d61c"></a><br/></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">void&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="qubits_8c.html#a9cee2d8716667a3318420a3b672f5b92">compactUnitaryLocal</a> (<a class="el" href="structMultiQubit.html">MultiQubit</a> multiQubit, const int targetQubit, <a class="el" href="structComplex.html">Complex</a> alpha, <a class="el" href="structComplex.html">Complex</a> beta)</td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">void&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="qubits_8c.html#ac134fb45b0a7248c5d15e16eb7139a35">unitaryLocal</a> (<a class="el" href="structMultiQubit.html">MultiQubit</a> multiQubit, const int targetQubit, <a class="el" href="structComplexMatrix2.html">ComplexMatrix2</a> u)</td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">void&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="qubits_8c.html#a20ee1878a63ae6112e8845f4a8787592">compactUnitaryDistributed</a> (<a class="el" href="structMultiQubit.html">MultiQubit</a> multiQubit, const int targetQubit, <a class="el" href="structComplex.html">Complex</a> rot1, <a class="el" href="structComplex.html">Complex</a> rot2, <a class="el" href="structComplexArray.html">ComplexArray</a> stateVecUp, <a class="el" href="structComplexArray.html">ComplexArray</a> stateVecLo, <a class="el" href="structComplexArray.html">ComplexArray</a> stateVecOut)</td></tr>
@@ -1280,6 +1284,29 @@
 </div>
 <div class="memdoc">
 
+<p>Applies a controlled rotation by a given angle around a given vector on the Bloch-sphere. </p>
+<p>The vector must not be zero (else an error is thrown), but needn't be unit magnitude.</p>
+<p>For angle <img class="formulaInl" alt="$\theta$" src="form_23.png"/> and axis vector <img class="formulaInl" alt="$\vec{n}$" src="form_52.png"/>, applies <img class="formulaInl" alt="$R_{\hat{n}} = \exp \left(- i \frac{\theta}{2} \hat{n} \cdot \vec{\sigma} \right) $" src="form_55.png"/> to states where the target qubit is 1 (<img class="formulaInl" alt="$\vec{\sigma}$" src="form_54.png"/> is the vector of Pauli matrices).</p>
+<p class="formulaDsp">
+<img class="formulaDsp" alt="\[ \setlength{\fboxrule}{0.01pt} \fbox{ \begin{tikzpicture}[scale=.5] \node[draw=none] at (-3.5, 2) {control}; \node[draw=none] at (-3.5, 0) {target}; \draw (-2, 2) -- (2, 2); \draw[fill=black] (0, 2) circle (.2); \draw (0, 2) -- (0, 1); \draw (-2,0) -- (-1, 0); \draw (1, 0) -- (2, 0); \draw (-1,-1)--(-1,1)--(1,1)--(1,-1)--cycle; \node[draw=none] at (0, 0) {$R_{\hat{n}}(\theta)$}; \end{tikzpicture} } \]" src="form_59.png"/>
+</p>
+<dl><dt><b>Parameters:</b></dt><dd>
+  <table border="0" cellspacing="2" cellpadding="0">
+    <tr><td valign="top"><tt>[in,out]</tt>&nbsp;</td><td valign="top"><em>multiQubit</em>&nbsp;</td><td>object representing the set of all qubits </td></tr>
+    <tr><td valign="top"><tt>[in]</tt>&nbsp;</td><td valign="top"><em>controlQubit</em>&nbsp;</td><td>qubit with value 1 in the rotated states </td></tr>
+    <tr><td valign="top"><tt>[in]</tt>&nbsp;</td><td valign="top"><em>targetQubit</em>&nbsp;</td><td>qubit to rotate </td></tr>
+    <tr><td valign="top"><tt>[in]</tt>&nbsp;</td><td valign="top"><em>angle</em>&nbsp;</td><td>angle by which to rotate in radians </td></tr>
+    <tr><td valign="top"><tt>[in]</tt>&nbsp;</td><td valign="top"><em>axis</em>&nbsp;</td><td>vector around which to rotate (can be non-unit; will be normalised) </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl><dt><b>Exceptions:</b></dt><dd>
+  <table border="0" cellspacing="2" cellpadding="0">
+    <tr><td valign="top"></td><td valign="top"><em>exitWithError</em>&nbsp;</td><td>if either <code>controlQubit</code> or <code>targetQubit</code> are outside [0, <code>multiQubit.numQubits</code>) or are equal or if <code>axis</code> is the zero vector </td></tr>
+  </table>
+  </dd>
+</dl>
+
 <p>Definition at line <a class="el" href="qubits_8c_source.html#l00413">413</a> of file <a class="el" href="qubits_8c_source.html">qubits.c</a>.</p>
 
 <p>References <a class="el" href="qubits__env__local_8c_source.html#l00122">controlledCompactUnitary()</a>, <a class="el" href="qubits_8h_source.html#l00025">Complex::imag</a>, <a class="el" href="qubits_8h_source.html#l00024">Complex::real</a>, <a class="el" href="qubits_8h_source.html#l00040">Vector::x</a>, <a class="el" href="qubits_8h_source.html#l00040">Vector::y</a>, and <a class="el" href="qubits_8h_source.html#l00040">Vector::z</a>.</p>
@@ -1339,6 +1366,27 @@
 </div>
 <div class="memdoc">
 
+<p>Applies a controlled rotation by a given angle around the X-axis of the Bloch-sphere. </p>
+<p>The target qubit is rotated in states where the control qubit has value 1.</p>
+<p class="formulaDsp">
+<img class="formulaDsp" alt="\[ \setlength{\fboxrule}{0.01pt} \fbox{ \begin{tikzpicture}[scale=.5] \node[draw=none] at (-3.5, 2) {control}; \node[draw=none] at (-3.5, 0) {target}; \draw (-2, 2) -- (2, 2); \draw[fill=black] (0, 2) circle (.2); \draw (0, 2) -- (0, 1); \draw (-2,0) -- (-1, 0); \draw (1, 0) -- (2, 0); \draw (-1,-1)--(-1,1)--(1,1)--(1,-1)--cycle; \node[draw=none] at (0, 0) {$R_x(\theta)$}; \end{tikzpicture} } \]" src="form_56.png"/>
+</p>
+<dl><dt><b>Parameters:</b></dt><dd>
+  <table border="0" cellspacing="2" cellpadding="0">
+    <tr><td valign="top"><tt>[in,out]</tt>&nbsp;</td><td valign="top"><em>multiQubit</em>&nbsp;</td><td>object representing the set of all qubits </td></tr>
+    <tr><td valign="top"><tt>[in]</tt>&nbsp;</td><td valign="top"><em>controlQubit</em>&nbsp;</td><td>qubit which has value 1 in the rotated states </td></tr>
+    <tr><td valign="top"><tt>[in]</tt>&nbsp;</td><td valign="top"><em>tagretQubit</em>&nbsp;</td><td>qubit to rotate </td></tr>
+    <tr><td valign="top"><tt>[in]</tt>&nbsp;</td><td valign="top"><em>angle</em>&nbsp;</td><td>angle by which to rotate the target qubit in radians </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl><dt><b>Exceptions:</b></dt><dd>
+  <table border="0" cellspacing="2" cellpadding="0">
+    <tr><td valign="top"></td><td valign="top"><em>exitWithError</em>&nbsp;</td><td>if either <code>controlQubit</code> or <code>targetQubit</code> are outside [0, <code>multiQubit.numQubits</code>) or are equal. </td></tr>
+  </table>
+  </dd>
+</dl>
+
 <p>Definition at line <a class="el" href="qubits_8c_source.html#l00426">426</a> of file <a class="el" href="qubits_8c_source.html">qubits.c</a>.</p>
 
 <p>References <a class="el" href="qubits_8c_source.html#l00413">controlledRotateAroundAxis()</a>.</p>
@@ -1346,7 +1394,7 @@
 <p><div class="fragment"><pre class="fragment"><a name="l00426"></a>00426                                                                                                         {
 <a name="l00427"></a>00427 
 <a name="l00428"></a>00428         <a class="code" href="structVector.html" title="Represents a 3-vector of real numbers.">Vector</a> unitAxis = {1, 0, 0};
-<a name="l00429"></a>00429         <a class="code" href="qubits_8c.html#ad41f82b41149393a642391b67b3a287e">controlledRotateAroundAxis</a>(multiQubit, controlQubit, targetQubit, angle, unitAxis);
+<a name="l00429"></a>00429         <a class="code" href="qubits_8c.html#ad41f82b41149393a642391b67b3a287e" title="Applies a controlled rotation by a given angle around a given vector on the Bloch-sphere...">controlledRotateAroundAxis</a>(multiQubit, controlQubit, targetQubit, angle, unitAxis);
 <a name="l00430"></a>00430 }
 </pre></div></p>
 
@@ -1389,6 +1437,27 @@
 </div>
 <div class="memdoc">
 
+<p>Applies a controlled rotation by a given angle around the Y-axis of the Bloch-sphere. </p>
+<p>The target qubit is rotated in states where the control qubit has value 1.</p>
+<p class="formulaDsp">
+<img class="formulaDsp" alt="\[ \setlength{\fboxrule}{0.01pt} \fbox{ \begin{tikzpicture}[scale=.5] \node[draw=none] at (-3.5, 2) {control}; \node[draw=none] at (-3.5, 0) {target}; \draw (-2, 2) -- (2, 2); \draw[fill=black] (0, 2) circle (.2); \draw (0, 2) -- (0, 1); \draw (-2,0) -- (-1, 0); \draw (1, 0) -- (2, 0); \draw (-1,-1)--(-1,1)--(1,1)--(1,-1)--cycle; \node[draw=none] at (0, 0) {$R_y(\theta)$}; \end{tikzpicture} } \]" src="form_57.png"/>
+</p>
+<dl><dt><b>Parameters:</b></dt><dd>
+  <table border="0" cellspacing="2" cellpadding="0">
+    <tr><td valign="top"><tt>[in,out]</tt>&nbsp;</td><td valign="top"><em>multiQubit</em>&nbsp;</td><td>object representing the set of all qubits </td></tr>
+    <tr><td valign="top"><tt>[in]</tt>&nbsp;</td><td valign="top"><em>controlQubit</em>&nbsp;</td><td>qubit which has value 1 in the rotated states </td></tr>
+    <tr><td valign="top"><tt>[in]</tt>&nbsp;</td><td valign="top"><em>tagretQubit</em>&nbsp;</td><td>qubit to rotate </td></tr>
+    <tr><td valign="top"><tt>[in]</tt>&nbsp;</td><td valign="top"><em>angle</em>&nbsp;</td><td>angle by which to rotate the target qubit in radians </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl><dt><b>Exceptions:</b></dt><dd>
+  <table border="0" cellspacing="2" cellpadding="0">
+    <tr><td valign="top"></td><td valign="top"><em>exitWithError</em>&nbsp;</td><td>if either <code>controlQubit</code> or <code>targetQubit</code> are outside [0, <code>multiQubit.numQubits</code>) or are equal. </td></tr>
+  </table>
+  </dd>
+</dl>
+
 <p>Definition at line <a class="el" href="qubits_8c_source.html#l00432">432</a> of file <a class="el" href="qubits_8c_source.html">qubits.c</a>.</p>
 
 <p>References <a class="el" href="qubits_8c_source.html#l00413">controlledRotateAroundAxis()</a>.</p>
@@ -1396,7 +1465,7 @@
 <p><div class="fragment"><pre class="fragment"><a name="l00432"></a>00432                                                                                                         {
 <a name="l00433"></a>00433 
 <a name="l00434"></a>00434         <a class="code" href="structVector.html" title="Represents a 3-vector of real numbers.">Vector</a> unitAxis = {0, 1, 0};
-<a name="l00435"></a>00435         <a class="code" href="qubits_8c.html#ad41f82b41149393a642391b67b3a287e">controlledRotateAroundAxis</a>(multiQubit, controlQubit, targetQubit, angle, unitAxis);
+<a name="l00435"></a>00435         <a class="code" href="qubits_8c.html#ad41f82b41149393a642391b67b3a287e" title="Applies a controlled rotation by a given angle around a given vector on the Bloch-sphere...">controlledRotateAroundAxis</a>(multiQubit, controlQubit, targetQubit, angle, unitAxis);
 <a name="l00436"></a>00436 }
 </pre></div></p>
 
@@ -1439,6 +1508,27 @@
 </div>
 <div class="memdoc">
 
+<p>Applies a controlled rotation by a given angle around the Z-axis of the Bloch-sphere. </p>
+<p>The target qubit is rotated in states where the control qubit has value 1.</p>
+<p class="formulaDsp">
+<img class="formulaDsp" alt="\[ \setlength{\fboxrule}{0.01pt} \fbox{ \begin{tikzpicture}[scale=.5] \node[draw=none] at (-3.5, 2) {control}; \node[draw=none] at (-3.5, 0) {target}; \draw (-2, 2) -- (2, 2); \draw[fill=black] (0, 2) circle (.2); \draw (0, 2) -- (0, 1); \draw (-2,0) -- (-1, 0); \draw (1, 0) -- (2, 0); \draw (-1,-1)--(-1,1)--(1,1)--(1,-1)--cycle; \node[draw=none] at (0, 0) {$R_z(\theta)$}; \end{tikzpicture} } \]" src="form_58.png"/>
+</p>
+<dl><dt><b>Parameters:</b></dt><dd>
+  <table border="0" cellspacing="2" cellpadding="0">
+    <tr><td valign="top"><tt>[in,out]</tt>&nbsp;</td><td valign="top"><em>multiQubit</em>&nbsp;</td><td>object representing the set of all qubits </td></tr>
+    <tr><td valign="top"><tt>[in]</tt>&nbsp;</td><td valign="top"><em>controlQubit</em>&nbsp;</td><td>qubit which has value 1 in the rotated states </td></tr>
+    <tr><td valign="top"><tt>[in]</tt>&nbsp;</td><td valign="top"><em>tagretQubit</em>&nbsp;</td><td>qubit to rotate </td></tr>
+    <tr><td valign="top"><tt>[in]</tt>&nbsp;</td><td valign="top"><em>angle</em>&nbsp;</td><td>angle by which to rotate the target qubit in radians </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl><dt><b>Exceptions:</b></dt><dd>
+  <table border="0" cellspacing="2" cellpadding="0">
+    <tr><td valign="top"></td><td valign="top"><em>exitWithError</em>&nbsp;</td><td>if either <code>controlQubit</code> or <code>targetQubit</code> are outside [0, <code>multiQubit.numQubits</code>) or are equal. </td></tr>
+  </table>
+  </dd>
+</dl>
+
 <p>Definition at line <a class="el" href="qubits_8c_source.html#l00438">438</a> of file <a class="el" href="qubits_8c_source.html">qubits.c</a>.</p>
 
 <p>References <a class="el" href="qubits_8c_source.html#l00413">controlledRotateAroundAxis()</a>.</p>
@@ -1446,7 +1536,7 @@
 <p><div class="fragment"><pre class="fragment"><a name="l00438"></a>00438                                                                                                         {
 <a name="l00439"></a>00439 
 <a name="l00440"></a>00440         <a class="code" href="structVector.html" title="Represents a 3-vector of real numbers.">Vector</a> unitAxis = {0, 0, 1};
-<a name="l00441"></a>00441         <a class="code" href="qubits_8c.html#ad41f82b41149393a642391b67b3a287e">controlledRotateAroundAxis</a>(multiQubit, controlQubit, targetQubit, angle, unitAxis);
+<a name="l00441"></a>00441         <a class="code" href="qubits_8c.html#ad41f82b41149393a642391b67b3a287e" title="Applies a controlled rotation by a given angle around a given vector on the Bloch-sphere...">controlledRotateAroundAxis</a>(multiQubit, controlQubit, targetQubit, angle, unitAxis);
 <a name="l00442"></a>00442 }
 </pre></div></p>
 

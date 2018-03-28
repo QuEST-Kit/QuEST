@@ -731,22 +731,24 @@
   </dd>
 </dl>
 
-<p>Definition at line <a class="el" href="qubits_8h_source.html#l00682">682</a> of file <a class="el" href="qubits_8h_source.html">qubits.h</a>.</p>
+<p>Definition at line <a class="el" href="qubits_8c_source.html#l00413">413</a> of file <a class="el" href="qubits_8c_source.html">qubits.c</a>.</p>
 
 <p>References <a class="el" href="qubits__env__local_8c_source.html#l00122">controlledCompactUnitary()</a>, <a class="el" href="qubits_8h_source.html#l00025">Complex::imag</a>, <a class="el" href="qubits_8h_source.html#l00024">Complex::real</a>, <a class="el" href="qubits_8h_source.html#l00040">Vector::x</a>, <a class="el" href="qubits_8h_source.html#l00040">Vector::y</a>, and <a class="el" href="qubits_8h_source.html#l00040">Vector::z</a>.</p>
 
-<p><div class="fragment"><pre class="fragment"><a name="l00682"></a>00682                                                                                                                               {
-<a name="l00683"></a>00683         
-<a name="l00684"></a>00684         <span class="keywordtype">double</span> mag = sqrt(pow(axis.<a class="code" href="structVector.html#aac7abe171ba4bada50ed72acba6259fc">x</a>,2) + pow(axis.<a class="code" href="structVector.html#a375ca805d4c808a53d7c4e0c737ae3de">y</a>,2) + pow(axis.<a class="code" href="structVector.html#ad4e863651be7d6b7e2b28cd7445a0ccf">z</a>,2));
-<a name="l00685"></a>00685         <a class="code" href="structVector.html" title="Represents a 3-vector of real numbers.">Vector</a> unitAxis = {axis.<a class="code" href="structVector.html#aac7abe171ba4bada50ed72acba6259fc">x</a>/mag, axis.<a class="code" href="structVector.html#a375ca805d4c808a53d7c4e0c737ae3de">y</a>/mag, axis.<a class="code" href="structVector.html#ad4e863651be7d6b7e2b28cd7445a0ccf">z</a>/mag};
-<a name="l00686"></a>00686         
-<a name="l00687"></a>00687         <a class="code" href="structComplex.html" title="Represents one complex number.">Complex</a> alpha, beta;
-<a name="l00688"></a>00688         alpha.<a class="code" href="structComplex.html#a479ad939835457595fcca3ca55c06283">real</a> = cos(angle/2.0);
-<a name="l00689"></a>00689         alpha.<a class="code" href="structComplex.html#a1151948284b21c0052f203f23ab931d9">imag</a> = -sin(angle/2.0)*unitAxis.<a class="code" href="structVector.html#ad4e863651be7d6b7e2b28cd7445a0ccf">z</a>;        
-<a name="l00690"></a>00690         beta.<a class="code" href="structComplex.html#a479ad939835457595fcca3ca55c06283">real</a> = sin(angle/2.0)*unitAxis.<a class="code" href="structVector.html#a375ca805d4c808a53d7c4e0c737ae3de">y</a>;
-<a name="l00691"></a>00691         beta.<a class="code" href="structComplex.html#a1151948284b21c0052f203f23ab931d9">imag</a> = -sin(angle/2.0)*unitAxis.<a class="code" href="structVector.html#aac7abe171ba4bada50ed72acba6259fc">x</a>;
-<a name="l00692"></a>00692         <a class="code" href="qubits_8h.html#ab4812953bc457405b3aa05a4c2f64f4a" title="Apply a controlled unitary (single control, single target) parameterised by two given...">controlledCompactUnitary</a>(multiQubit, controlQubit, targetQubit, alpha, beta);
-<a name="l00693"></a>00693 }
+<p>Referenced by <a class="el" href="qubits_8c_source.html#l00426">controlledRotateX()</a>, <a class="el" href="qubits_8c_source.html#l00432">controlledRotateY()</a>, and <a class="el" href="qubits_8c_source.html#l00438">controlledRotateZ()</a>.</p>
+
+<p><div class="fragment"><pre class="fragment"><a name="l00413"></a>00413                                                                                                                               {
+<a name="l00414"></a>00414         
+<a name="l00415"></a>00415         <span class="keywordtype">double</span> mag = sqrt(pow(axis.<a class="code" href="structVector.html#aac7abe171ba4bada50ed72acba6259fc">x</a>,2) + pow(axis.<a class="code" href="structVector.html#a375ca805d4c808a53d7c4e0c737ae3de">y</a>,2) + pow(axis.<a class="code" href="structVector.html#ad4e863651be7d6b7e2b28cd7445a0ccf">z</a>,2));
+<a name="l00416"></a>00416         <a class="code" href="structVector.html" title="Represents a 3-vector of real numbers.">Vector</a> unitAxis = {axis.<a class="code" href="structVector.html#aac7abe171ba4bada50ed72acba6259fc">x</a>/mag, axis.<a class="code" href="structVector.html#a375ca805d4c808a53d7c4e0c737ae3de">y</a>/mag, axis.<a class="code" href="structVector.html#ad4e863651be7d6b7e2b28cd7445a0ccf">z</a>/mag};
+<a name="l00417"></a>00417         
+<a name="l00418"></a>00418         <a class="code" href="structComplex.html" title="Represents one complex number.">Complex</a> alpha, beta;
+<a name="l00419"></a>00419         alpha.<a class="code" href="structComplex.html#a479ad939835457595fcca3ca55c06283">real</a> = cos(angle/2.0);
+<a name="l00420"></a>00420         alpha.<a class="code" href="structComplex.html#a1151948284b21c0052f203f23ab931d9">imag</a> = -sin(angle/2.0)*unitAxis.<a class="code" href="structVector.html#ad4e863651be7d6b7e2b28cd7445a0ccf">z</a>;        
+<a name="l00421"></a>00421         beta.<a class="code" href="structComplex.html#a479ad939835457595fcca3ca55c06283">real</a> = sin(angle/2.0)*unitAxis.<a class="code" href="structVector.html#a375ca805d4c808a53d7c4e0c737ae3de">y</a>;
+<a name="l00422"></a>00422         beta.<a class="code" href="structComplex.html#a1151948284b21c0052f203f23ab931d9">imag</a> = -sin(angle/2.0)*unitAxis.<a class="code" href="structVector.html#aac7abe171ba4bada50ed72acba6259fc">x</a>;
+<a name="l00423"></a>00423         <a class="code" href="qubits_8h.html#ab4812953bc457405b3aa05a4c2f64f4a" title="Apply a controlled unitary (single control, single target) parameterised by two given...">controlledCompactUnitary</a>(multiQubit, controlQubit, targetQubit, alpha, beta);
+<a name="l00424"></a>00424 }
 </pre></div></p>
 
 </div>
@@ -809,15 +811,15 @@
   </dd>
 </dl>
 
-<p>Definition at line <a class="el" href="qubits_8h_source.html#l00572">572</a> of file <a class="el" href="qubits_8h_source.html">qubits.h</a>.</p>
+<p>Definition at line <a class="el" href="qubits_8c_source.html#l00426">426</a> of file <a class="el" href="qubits_8c_source.html">qubits.c</a>.</p>
 
 <p>References <a class="el" href="qubits_8c_source.html#l00413">controlledRotateAroundAxis()</a>.</p>
 
-<p><div class="fragment"><pre class="fragment"><a name="l00572"></a>00572                                                                                                         {
-<a name="l00573"></a>00573 
-<a name="l00574"></a>00574         <a class="code" href="structVector.html" title="Represents a 3-vector of real numbers.">Vector</a> unitAxis = {1, 0, 0};
-<a name="l00575"></a>00575         <a class="code" href="qubits_8c.html#ad41f82b41149393a642391b67b3a287e">controlledRotateAroundAxis</a>(multiQubit, controlQubit, targetQubit, angle, unitAxis);
-<a name="l00576"></a>00576 }
+<p><div class="fragment"><pre class="fragment"><a name="l00426"></a>00426                                                                                                         {
+<a name="l00427"></a>00427 
+<a name="l00428"></a>00428         <a class="code" href="structVector.html" title="Represents a 3-vector of real numbers.">Vector</a> unitAxis = {1, 0, 0};
+<a name="l00429"></a>00429         <a class="code" href="qubits_8c.html#ad41f82b41149393a642391b67b3a287e" title="Applies a controlled rotation by a given angle around a given vector on the Bloch-sphere...">controlledRotateAroundAxis</a>(multiQubit, controlQubit, targetQubit, angle, unitAxis);
+<a name="l00430"></a>00430 }
 </pre></div></p>
 
 </div>
@@ -880,15 +882,15 @@
   </dd>
 </dl>
 
-<p>Definition at line <a class="el" href="qubits_8h_source.html#l00607">607</a> of file <a class="el" href="qubits_8h_source.html">qubits.h</a>.</p>
+<p>Definition at line <a class="el" href="qubits_8c_source.html#l00432">432</a> of file <a class="el" href="qubits_8c_source.html">qubits.c</a>.</p>
 
 <p>References <a class="el" href="qubits_8c_source.html#l00413">controlledRotateAroundAxis()</a>.</p>
 
-<p><div class="fragment"><pre class="fragment"><a name="l00607"></a>00607                                                                                                         {
-<a name="l00608"></a>00608 
-<a name="l00609"></a>00609         <a class="code" href="structVector.html" title="Represents a 3-vector of real numbers.">Vector</a> unitAxis = {0, 1, 0};
-<a name="l00610"></a>00610         <a class="code" href="qubits_8c.html#ad41f82b41149393a642391b67b3a287e">controlledRotateAroundAxis</a>(multiQubit, controlQubit, targetQubit, angle, unitAxis);
-<a name="l00611"></a>00611 }
+<p><div class="fragment"><pre class="fragment"><a name="l00432"></a>00432                                                                                                         {
+<a name="l00433"></a>00433 
+<a name="l00434"></a>00434         <a class="code" href="structVector.html" title="Represents a 3-vector of real numbers.">Vector</a> unitAxis = {0, 1, 0};
+<a name="l00435"></a>00435         <a class="code" href="qubits_8c.html#ad41f82b41149393a642391b67b3a287e" title="Applies a controlled rotation by a given angle around a given vector on the Bloch-sphere...">controlledRotateAroundAxis</a>(multiQubit, controlQubit, targetQubit, angle, unitAxis);
+<a name="l00436"></a>00436 }
 </pre></div></p>
 
 </div>
@@ -951,15 +953,15 @@
   </dd>
 </dl>
 
-<p>Definition at line <a class="el" href="qubits_8h_source.html#l00642">642</a> of file <a class="el" href="qubits_8h_source.html">qubits.h</a>.</p>
+<p>Definition at line <a class="el" href="qubits_8c_source.html#l00438">438</a> of file <a class="el" href="qubits_8c_source.html">qubits.c</a>.</p>
 
 <p>References <a class="el" href="qubits_8c_source.html#l00413">controlledRotateAroundAxis()</a>.</p>
 
-<p><div class="fragment"><pre class="fragment"><a name="l00642"></a>00642                                                                                                         {
-<a name="l00643"></a>00643 
-<a name="l00644"></a>00644         <a class="code" href="structVector.html" title="Represents a 3-vector of real numbers.">Vector</a> unitAxis = {0, 0, 1};
-<a name="l00645"></a>00645         <a class="code" href="qubits_8c.html#ad41f82b41149393a642391b67b3a287e">controlledRotateAroundAxis</a>(multiQubit, controlQubit, targetQubit, angle, unitAxis);
-<a name="l00646"></a>00646 }
+<p><div class="fragment"><pre class="fragment"><a name="l00438"></a>00438                                                                                                         {
+<a name="l00439"></a>00439 
+<a name="l00440"></a>00440         <a class="code" href="structVector.html" title="Represents a 3-vector of real numbers.">Vector</a> unitAxis = {0, 0, 1};
+<a name="l00441"></a>00441         <a class="code" href="qubits_8c.html#ad41f82b41149393a642391b67b3a287e" title="Applies a controlled rotation by a given angle around a given vector on the Bloch-sphere...">controlledRotateAroundAxis</a>(multiQubit, controlQubit, targetQubit, angle, unitAxis);
+<a name="l00442"></a>00442 }
 </pre></div></p>
 
 </div>
