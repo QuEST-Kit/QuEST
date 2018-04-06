@@ -27,7 +27,7 @@ int \hyperlink{structMultiQubit_acd43f2f57991709c9e94f73662c972b2}{numChunks}
 \subsubsection{Detailed Description}
 Represents a system of qubits. Qubits are zero-\/based 
 
-Definition at line 43 of file qubits.h.
+Definition at line 46 of file qubits.h.
 
 \subsubsection{Field Documentation}
 \hypertarget{structMultiQubit_ab10c88249fa3825d6227ceec01d37e37}{
@@ -39,7 +39,7 @@ Definition at line 43 of file qubits.h.
 
 The position of the chunk of the state vector held by this process in the full state vector. 
 
-Definition at line 55 of file qubits.h.
+Definition at line 58 of file qubits.h.
 
 Referenced by collapseToOutcome(), compactUnitary(), controlledCompactUnitary(), controlledCompactUnitaryDistributed(), controlledCompactUnitaryLocal(), controlledNot(), controlledNotDistributed(), controlledNotLocal(), controlledPhaseGate(), controlledUnitary(), controlledUnitaryDistributed(), controlledUnitaryLocal(), createMultiQubit(), findProbabilityOfOutcome(), getImagAmpEl(), getRealAmpEl(), hadamard(), initializeStateFromSingleFile(), initStateDebug(), initStateOfSingleQubit(), initStateZero(), measureWithStats(), multiControlledPhaseGate(), multiControlledUnitary(), multiControlledUnitaryDistributed(), multiControlledUnitaryLocal(), phaseGate(), reportMultiQubitParams(), reportState(), reportStateToScreen(), sigmaX(), sigmaY(), and unitary().\hypertarget{structMultiQubit_ae16f47d8b725c914fb7f66b6498d79db}{
 \index{MultiQubit@{MultiQubit}!numAmps@{numAmps}}
@@ -50,7 +50,7 @@ Referenced by collapseToOutcome(), compactUnitary(), controlledCompactUnitary(),
 
 Number of probability amplitudes held in stateVec by this process In the non-\/MPI version, this is the total number of amplitudes. 
 
-Definition at line 53 of file qubits.h.
+Definition at line 56 of file qubits.h.
 
 Referenced by calcTotalProbability(), collapseToOutcome(), collapseToOutcomeDistributedRenorm(), collapseToOutcomeDistributedSetZero(), collapseToOutcomeLocal(), compactUnitary(), compactUnitaryDistributed(), compactUnitaryLocal(), compareStates(), controlledCompactUnitary(), controlledCompactUnitaryDistributed(), controlledCompactUnitaryLocal(), controlledNot(), controlledNotDistributed(), controlledNotLocal(), controlledPhaseGate(), controlledUnitary(), controlledUnitaryDistributed(), controlledUnitaryLocal(), createMultiQubit(), exchangeStateVectors(), findProbabilityOfOutcome(), findProbabilityOfZeroDistributed(), findProbabilityOfZeroLocal(), getChunkIdFromIndex(), getImagAmpEl(), getRealAmpEl(), hadamard(), hadamardDistributed(), hadamardLocal(), initializeStateFromSingleFile(), initStateDebug(), initStateOfSingleQubit(), initStatePlus(), initStateZero(), measureWithStats(), multiControlledPhaseGate(), multiControlledUnitary(), multiControlledUnitaryDistributed(), multiControlledUnitaryLocal(), phaseGate(), phaseGateDistributed(), phaseGateLocal(), reportState(), reportStateToScreen(), sigmaX(), sigmaXDistributed(), sigmaXLocal(), sigmaY(), sigmaYDistributed(), sigmaYLocal(), unitary(), unitaryDistributed(), and unitaryLocal().\hypertarget{structMultiQubit_acd43f2f57991709c9e94f73662c972b2}{
 \index{MultiQubit@{MultiQubit}!numChunks@{numChunks}}
@@ -61,7 +61,7 @@ Referenced by calcTotalProbability(), collapseToOutcome(), collapseToOutcomeDist
 
 Number of chunks the state vector is broken up into -\/-\/ the number of MPI processes used. 
 
-Definition at line 57 of file qubits.h.
+Definition at line 60 of file qubits.h.
 
 Referenced by calcTotalProbability(), createMultiQubit(), initializeStateFromSingleFile(), initStateOfSingleQubit(), initStatePlus(), reportMultiQubitParams(), and reportStateToScreen().\hypertarget{structMultiQubit_ab5b9795bdc6fb5855e1974dcbbaeb36f}{
 \index{MultiQubit@{MultiQubit}!numQubits@{numQubits}}
@@ -72,7 +72,7 @@ Referenced by calcTotalProbability(), createMultiQubit(), initializeStateFromSin
 
 Number of qubits in the state. 
 
-Definition at line 50 of file qubits.h.
+Definition at line 53 of file qubits.h.
 
 Referenced by collapseToOutcome(), compactUnitary(), controlledCompactUnitary(), controlledNot(), controlledPhaseGate(), controlledUnitary(), createMultiQubit(), findProbabilityOfOutcome(), getEnvironmentString(), hadamard(), measure(), measureWithStats(), multiControlledPhaseGate(), multiControlledUnitary(), phaseGate(), reportMultiQubitParams(), reportStateToScreen(), sigmaX(), sigmaY(), and unitary().\hypertarget{structMultiQubit_a76f7db4eab52d2b30f58f973ada809c5}{
 \index{MultiQubit@{MultiQubit}!pairStateVec@{pairStateVec}}
@@ -83,7 +83,7 @@ Referenced by collapseToOutcome(), compactUnitary(), controlledCompactUnitary(),
 
 Temporary storage for a chunk of the state vector received from another process in the MPI version. 
 
-Definition at line 48 of file qubits.h.
+Definition at line 51 of file qubits.h.
 
 Referenced by compactUnitary(), controlledCompactUnitary(), controlledNot(), controlledUnitary(), createMultiQubit(), destroyMultiQubit(), exchangeStateVectors(), hadamard(), multiControlledUnitary(), sigmaX(), sigmaY(), and unitary().\hypertarget{structMultiQubit_a45483190d6b01ef6b2f98f2bec9ab94f}{
 \index{MultiQubit@{MultiQubit}!stateVec@{stateVec}}
@@ -94,7 +94,7 @@ Referenced by compactUnitary(), controlledCompactUnitary(), controlledNot(), con
 
 Probablilty amplitudes for the multi qubit state. 
 
-Definition at line 46 of file qubits.h.
+Definition at line 49 of file qubits.h.
 
 Referenced by calcTotalProbability(), collapseToOutcomeDistributedRenorm(), collapseToOutcomeDistributedSetZero(), collapseToOutcomeLocal(), compactUnitary(), compactUnitaryLocal(), compareStates(), controlledCompactUnitary(), controlledCompactUnitaryLocal(), controlledNot(), controlledNotLocal(), controlledPhaseGate(), controlledUnitary(), controlledUnitaryLocal(), createMultiQubit(), destroyMultiQubit(), exchangeStateVectors(), findProbabilityOfZeroDistributed(), findProbabilityOfZeroLocal(), getImagAmpEl(), getRealAmpEl(), hadamard(), hadamardLocal(), initializeStateFromSingleFile(), initStateDebug(), initStateOfSingleQubit(), initStatePlus(), initStateZero(), multiControlledPhaseGate(), multiControlledUnitary(), multiControlledUnitaryLocal(), phaseGateDistributed(), phaseGateLocal(), reportState(), reportStateToScreen(), sigmaX(), sigmaXLocal(), sigmaY(), sigmaYLocal(), unitary(), and unitaryLocal().
 

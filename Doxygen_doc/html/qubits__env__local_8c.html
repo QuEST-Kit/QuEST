@@ -121,41 +121,41 @@
 </dl>
 <dl class="return"><dt><b>Returns:</b></dt><dd>total probability </dd></dl>
 
-<p>Definition at line <a class="el" href="qubits__env__local_8c_source.html#l00061">61</a> of file <a class="el" href="qubits__env__local_8c_source.html">qubits_env_local.c</a>.</p>
+<p>Definition at line <a class="el" href="qubits__env__local_8c_source.html#l00064">64</a> of file <a class="el" href="qubits__env__local_8c_source.html">qubits_env_local.c</a>.</p>
 
-<p>References <a class="el" href="qubits_8h_source.html#l00014">ComplexArray::imag</a>, <a class="el" href="qubits_8h_source.html#l00053">MultiQubit::numAmps</a>, <a class="el" href="qubits_8h_source.html#l00013">ComplexArray::real</a>, <a class="el" href="precision_8h_source.html#l00023">REAL</a>, and <a class="el" href="qubits_8h_source.html#l00046">MultiQubit::stateVec</a>.</p>
+<p>References <a class="el" href="qubits_8h_source.html#l00017">ComplexArray::imag</a>, <a class="el" href="qubits_8h_source.html#l00056">MultiQubit::numAmps</a>, <a class="el" href="qubits_8h_source.html#l00016">ComplexArray::real</a>, <a class="el" href="precision_8h_source.html#l00025">REAL</a>, and <a class="el" href="qubits_8h_source.html#l00049">MultiQubit::stateVec</a>.</p>
 
-<p><div class="fragment"><pre class="fragment"><a name="l00061"></a>00061                                                 {
-<a name="l00062"></a>00062   <span class="comment">/* IJB - implemented using Kahan summation for greater accuracy at a slight floating</span>
-<a name="l00063"></a>00063 <span class="comment">     point operation overhead. For more details see https://en.wikipedia.org/wiki/Kahan_summation_algorithm */</span>
-<a name="l00064"></a>00064   <span class="comment">/* Don&apos;t change the bracketing in this routine! */</span>
-<a name="l00065"></a>00065   <a class="code" href="precision_8h.html#a4b654506f18b8bfd61ad2a29a7e38c25">REAL</a> pTotal=0; 
-<a name="l00066"></a>00066   <a class="code" href="precision_8h.html#a4b654506f18b8bfd61ad2a29a7e38c25">REAL</a> y, t, c;
-<a name="l00067"></a>00067   <span class="keywordtype">long</span> <span class="keywordtype">long</span> <span class="keywordtype">int</span> index;
-<a name="l00068"></a>00068   <span class="keywordtype">long</span> <span class="keywordtype">long</span> <span class="keywordtype">int</span> numAmpsPerRank = multiQubit.<a class="code" href="structMultiQubit.html#ae16f47d8b725c914fb7f66b6498d79db" title="Number of probability amplitudes held in stateVec by this process In the non-MPI...">numAmps</a>;
-<a name="l00069"></a>00069   c = 0.0;
-<a name="l00070"></a>00070   <span class="keywordflow">for</span> (index=0; index&lt;numAmpsPerRank; index++){ 
-<a name="l00071"></a>00071     <span class="comment">/* Perform pTotal+=multiQubit.stateVec.real[index]*multiQubit.stateVec.real[index]; by Kahan */</span>
-<a name="l00072"></a>00072    <span class="comment">// pTotal+=multiQubit.stateVec.real[index]*multiQubit.stateVec.real[index];</span>
-<a name="l00073"></a>00073     
-<a name="l00074"></a>00074     y = multiQubit.<a class="code" href="structMultiQubit.html#a45483190d6b01ef6b2f98f2bec9ab94f" title="Probablilty amplitudes for the multi qubit state.">stateVec</a>.<a class="code" href="structComplexArray.html#a4195cac6c784ea1b6271f1c7dba1548a">real</a>[index]*multiQubit.<a class="code" href="structMultiQubit.html#a45483190d6b01ef6b2f98f2bec9ab94f" title="Probablilty amplitudes for the multi qubit state.">stateVec</a>.<a class="code" href="structComplexArray.html#a4195cac6c784ea1b6271f1c7dba1548a">real</a>[index] - c;
-<a name="l00075"></a>00075     t = pTotal + y;
-<a name="l00076"></a>00076     c = ( t - pTotal ) - y;
-<a name="l00077"></a>00077     pTotal = t;
-<a name="l00078"></a>00078     
-<a name="l00079"></a>00079     <span class="comment">/* Perform pTotal+=multiQubit.stateVec.imag[index]*multiQubit.stateVec.imag[index]; by Kahan */</span>
-<a name="l00080"></a>00080     <span class="comment">//pTotal+=multiQubit.stateVec.imag[index]*multiQubit.stateVec.imag[index];</span>
+<p><div class="fragment"><pre class="fragment"><a name="l00064"></a>00064                                                 {
+<a name="l00065"></a>00065   <span class="comment">/* IJB - implemented using Kahan summation for greater accuracy at a slight floating</span>
+<a name="l00066"></a>00066 <span class="comment">     point operation overhead. For more details see https://en.wikipedia.org/wiki/Kahan_summation_algorithm */</span>
+<a name="l00067"></a>00067   <span class="comment">/* Don&apos;t change the bracketing in this routine! */</span>
+<a name="l00068"></a>00068   <a class="code" href="precision_8h.html#a4b654506f18b8bfd61ad2a29a7e38c25">REAL</a> pTotal=0; 
+<a name="l00069"></a>00069   <a class="code" href="precision_8h.html#a4b654506f18b8bfd61ad2a29a7e38c25">REAL</a> y, t, c;
+<a name="l00070"></a>00070   <span class="keywordtype">long</span> <span class="keywordtype">long</span> <span class="keywordtype">int</span> index;
+<a name="l00071"></a>00071   <span class="keywordtype">long</span> <span class="keywordtype">long</span> <span class="keywordtype">int</span> numAmpsPerRank = multiQubit.<a class="code" href="structMultiQubit.html#ae16f47d8b725c914fb7f66b6498d79db" title="Number of probability amplitudes held in stateVec by this process In the non-MPI...">numAmps</a>;
+<a name="l00072"></a>00072   c = 0.0;
+<a name="l00073"></a>00073   <span class="keywordflow">for</span> (index=0; index&lt;numAmpsPerRank; index++){ 
+<a name="l00074"></a>00074     <span class="comment">/* Perform pTotal+=multiQubit.stateVec.real[index]*multiQubit.stateVec.real[index]; by Kahan */</span>
+<a name="l00075"></a>00075    <span class="comment">// pTotal+=multiQubit.stateVec.real[index]*multiQubit.stateVec.real[index];</span>
+<a name="l00076"></a>00076     
+<a name="l00077"></a>00077     y = multiQubit.<a class="code" href="structMultiQubit.html#a45483190d6b01ef6b2f98f2bec9ab94f" title="Probablilty amplitudes for the multi qubit state.">stateVec</a>.<a class="code" href="structComplexArray.html#a4195cac6c784ea1b6271f1c7dba1548a">real</a>[index]*multiQubit.<a class="code" href="structMultiQubit.html#a45483190d6b01ef6b2f98f2bec9ab94f" title="Probablilty amplitudes for the multi qubit state.">stateVec</a>.<a class="code" href="structComplexArray.html#a4195cac6c784ea1b6271f1c7dba1548a">real</a>[index] - c;
+<a name="l00078"></a>00078     t = pTotal + y;
+<a name="l00079"></a>00079     c = ( t - pTotal ) - y;
+<a name="l00080"></a>00080     pTotal = t;
 <a name="l00081"></a>00081     
-<a name="l00082"></a>00082     
-<a name="l00083"></a>00083     y = multiQubit.<a class="code" href="structMultiQubit.html#a45483190d6b01ef6b2f98f2bec9ab94f" title="Probablilty amplitudes for the multi qubit state.">stateVec</a>.<a class="code" href="structComplexArray.html#a79dde47c7ae530c79cebfdf57b225968">imag</a>[index]*multiQubit.<a class="code" href="structMultiQubit.html#a45483190d6b01ef6b2f98f2bec9ab94f" title="Probablilty amplitudes for the multi qubit state.">stateVec</a>.<a class="code" href="structComplexArray.html#a79dde47c7ae530c79cebfdf57b225968">imag</a>[index] - c;
-<a name="l00084"></a>00084     t = pTotal + y;
-<a name="l00085"></a>00085     c = ( t - pTotal ) - y;
-<a name="l00086"></a>00086     pTotal = t;
-<a name="l00087"></a>00087     
-<a name="l00088"></a>00088     
-<a name="l00089"></a>00089   } 
-<a name="l00090"></a>00090   <span class="keywordflow">return</span> pTotal;
-<a name="l00091"></a>00091 }
+<a name="l00082"></a>00082     <span class="comment">/* Perform pTotal+=multiQubit.stateVec.imag[index]*multiQubit.stateVec.imag[index]; by Kahan */</span>
+<a name="l00083"></a>00083     <span class="comment">//pTotal+=multiQubit.stateVec.imag[index]*multiQubit.stateVec.imag[index];</span>
+<a name="l00084"></a>00084     
+<a name="l00085"></a>00085     
+<a name="l00086"></a>00086     y = multiQubit.<a class="code" href="structMultiQubit.html#a45483190d6b01ef6b2f98f2bec9ab94f" title="Probablilty amplitudes for the multi qubit state.">stateVec</a>.<a class="code" href="structComplexArray.html#a79dde47c7ae530c79cebfdf57b225968">imag</a>[index]*multiQubit.<a class="code" href="structMultiQubit.html#a45483190d6b01ef6b2f98f2bec9ab94f" title="Probablilty amplitudes for the multi qubit state.">stateVec</a>.<a class="code" href="structComplexArray.html#a79dde47c7ae530c79cebfdf57b225968">imag</a>[index] - c;
+<a name="l00087"></a>00087     t = pTotal + y;
+<a name="l00088"></a>00088     c = ( t - pTotal ) - y;
+<a name="l00089"></a>00089     pTotal = t;
+<a name="l00090"></a>00090     
+<a name="l00091"></a>00091     
+<a name="l00092"></a>00092   } 
+<a name="l00093"></a>00093   <span class="keywordflow">return</span> pTotal;
+<a name="l00094"></a>00094 }
 </pre></div></p>
 
 </div>
@@ -185,11 +185,11 @@
   </dd>
 </dl>
 
-<p>Definition at line <a class="el" href="qubits__env__local_8c_source.html#l00040">40</a> of file <a class="el" href="qubits__env__local_8c_source.html">qubits_env_local.c</a>.</p>
+<p>Definition at line <a class="el" href="qubits__env__local_8c_source.html#l00043">43</a> of file <a class="el" href="qubits__env__local_8c_source.html">qubits_env_local.c</a>.</p>
 
-<p><div class="fragment"><pre class="fragment"><a name="l00040"></a>00040                                 {
-<a name="l00041"></a>00041         <span class="comment">// MPI finalize goes here in MPI version. Call this function anyway for consistency</span>
-<a name="l00042"></a>00042 }
+<p><div class="fragment"><pre class="fragment"><a name="l00043"></a>00043                                 {
+<a name="l00044"></a>00044         <span class="comment">// MPI finalize goes here in MPI version. Call this function anyway for consistency</span>
+<a name="l00045"></a>00045 }
 </pre></div></p>
 
 </div>
@@ -243,19 +243,19 @@
   </dd>
 </dl>
 
-<p>Definition at line <a class="el" href="qubits__env__local_8c_source.html#l00195">195</a> of file <a class="el" href="qubits__env__local_8c_source.html">qubits_env_local.c</a>.</p>
+<p>Definition at line <a class="el" href="qubits__env__local_8c_source.html#l00198">198</a> of file <a class="el" href="qubits__env__local_8c_source.html">qubits_env_local.c</a>.</p>
 
-<p>References <a class="el" href="qubits_8c_source.html#l01790">collapseToOutcomeLocal()</a>, <a class="el" href="qubits__env__local_8c_source.html#l00186">findProbabilityOfOutcome()</a>, <a class="el" href="qubits_8h_source.html#l00050">MultiQubit::numQubits</a>, <a class="el" href="qubits__env__local_8c_source.html#l00243">QuESTAssert()</a>, <a class="el" href="precision_8h_source.html#l00023">REAL</a>, and <a class="el" href="precision_8h_source.html#l00026">REAL_EPS</a>.</p>
+<p>References <a class="el" href="qubits_8c_source.html#l01816">collapseToOutcomeLocal()</a>, <a class="el" href="qubits__env__local_8c_source.html#l00189">findProbabilityOfOutcome()</a>, <a class="el" href="qubits_8h_source.html#l00053">MultiQubit::numQubits</a>, <a class="el" href="qubits__env__local_8c_source.html#l00246">QuESTAssert()</a>, <a class="el" href="precision_8h_source.html#l00025">REAL</a>, and <a class="el" href="precision_8h_source.html#l00028">REAL_EPS</a>.</p>
 
-<p><div class="fragment"><pre class="fragment"><a name="l00196"></a>00196 {
-<a name="l00197"></a>00197     <a class="code" href="qubits__env__local_8c.html#a3587b9d533e633ccf1abf9ad2ce45d8d">QuESTAssert</a>(measureQubit &gt;= 0 &amp;&amp; measureQubit &lt; multiQubit.<a class="code" href="structMultiQubit.html#ab5b9795bdc6fb5855e1974dcbbaeb36f" title="Number of qubits in the state.">numQubits</a>, 2, __func__);
-<a name="l00198"></a>00198     <a class="code" href="qubits__env__local_8c.html#a3587b9d533e633ccf1abf9ad2ce45d8d">QuESTAssert</a>((outcome==0 || outcome==1), 10, __func__);
-<a name="l00199"></a>00199     <a class="code" href="precision_8h.html#a4b654506f18b8bfd61ad2a29a7e38c25">REAL</a> stateProb;
-<a name="l00200"></a>00200         stateProb = <a class="code" href="qubits_8h.html#ad315c941a51bc053d39ebfa2040fd32e" title="Gives the probability of a specified qubit being measured in the given outcome (0...">findProbabilityOfOutcome</a>(multiQubit, measureQubit, outcome);
-<a name="l00201"></a>00201     <a class="code" href="qubits__env__local_8c.html#a3587b9d533e633ccf1abf9ad2ce45d8d">QuESTAssert</a>(fabs(stateProb)&gt;<a class="code" href="precision_8h.html#aebb5e6716e06431296af4d1a71744dec">REAL_EPS</a>, 8, __func__);
-<a name="l00202"></a>00202     <a class="code" href="qubits_8c.html#a01d9a8b7ff0e09ec399e158389783aa9" title="Update the state vector to be consistent with measuring measureQubit=0 if outcome=0...">collapseToOutcomeLocal</a>(multiQubit, measureQubit, stateProb, outcome);
-<a name="l00203"></a>00203     <span class="keywordflow">return</span> stateProb;
-<a name="l00204"></a>00204 }
+<p><div class="fragment"><pre class="fragment"><a name="l00199"></a>00199 {
+<a name="l00200"></a>00200     <a class="code" href="qubits__env__local_8c.html#a3587b9d533e633ccf1abf9ad2ce45d8d">QuESTAssert</a>(measureQubit &gt;= 0 &amp;&amp; measureQubit &lt; multiQubit.<a class="code" href="structMultiQubit.html#ab5b9795bdc6fb5855e1974dcbbaeb36f" title="Number of qubits in the state.">numQubits</a>, 2, __func__);
+<a name="l00201"></a>00201     <a class="code" href="qubits__env__local_8c.html#a3587b9d533e633ccf1abf9ad2ce45d8d">QuESTAssert</a>((outcome==0 || outcome==1), 10, __func__);
+<a name="l00202"></a>00202     <a class="code" href="precision_8h.html#a4b654506f18b8bfd61ad2a29a7e38c25">REAL</a> stateProb;
+<a name="l00203"></a>00203         stateProb = <a class="code" href="qubits_8h.html#ad315c941a51bc053d39ebfa2040fd32e" title="Gives the probability of a specified qubit being measured in the given outcome (0...">findProbabilityOfOutcome</a>(multiQubit, measureQubit, outcome);
+<a name="l00204"></a>00204     <a class="code" href="qubits__env__local_8c.html#a3587b9d533e633ccf1abf9ad2ce45d8d">QuESTAssert</a>(fabs(stateProb)&gt;<a class="code" href="precision_8h.html#aebb5e6716e06431296af4d1a71744dec">REAL_EPS</a>, 8, __func__);
+<a name="l00205"></a>00205     <a class="code" href="qubits_8c.html#a01d9a8b7ff0e09ec399e158389783aa9" title="Update the state vector to be consistent with measuring measureQubit=0 if outcome=0...">collapseToOutcomeLocal</a>(multiQubit, measureQubit, stateProb, outcome);
+<a name="l00206"></a>00206     <span class="keywordflow">return</span> stateProb;
+<a name="l00207"></a>00207 }
 </pre></div></p>
 
 </div>
@@ -322,17 +322,17 @@
   </dd>
 </dl>
 
-<p>Definition at line <a class="el" href="qubits__env__local_8c_source.html#l00101">101</a> of file <a class="el" href="qubits__env__local_8c_source.html">qubits_env_local.c</a>.</p>
+<p>Definition at line <a class="el" href="qubits__env__local_8c_source.html#l00104">104</a> of file <a class="el" href="qubits__env__local_8c_source.html">qubits_env_local.c</a>.</p>
 
-<p>References <a class="el" href="qubits_8c_source.html#l00418">compactUnitaryLocal()</a>, <a class="el" href="qubits_8h_source.html#l00050">MultiQubit::numQubits</a>, <a class="el" href="qubits__env__local_8c_source.html#l00243">QuESTAssert()</a>, and <a class="el" href="qubits_8c_source.html#l00366">validateAlphaBeta()</a>.</p>
+<p>References <a class="el" href="qubits_8c_source.html#l00444">compactUnitaryLocal()</a>, <a class="el" href="qubits_8h_source.html#l00053">MultiQubit::numQubits</a>, <a class="el" href="qubits__env__local_8c_source.html#l00246">QuESTAssert()</a>, and <a class="el" href="qubits_8c_source.html#l00369">validateAlphaBeta()</a>.</p>
 
-<p><div class="fragment"><pre class="fragment"><a name="l00102"></a>00102 {
-<a name="l00103"></a>00103     <a class="code" href="qubits__env__local_8c.html#a3587b9d533e633ccf1abf9ad2ce45d8d">QuESTAssert</a>(targetQubit &gt;= 0 &amp;&amp; targetQubit &lt; multiQubit.<a class="code" href="structMultiQubit.html#ab5b9795bdc6fb5855e1974dcbbaeb36f" title="Number of qubits in the state.">numQubits</a>, 1, __func__);
-<a name="l00104"></a>00104     <a class="code" href="qubits__env__local_8c.html#a3587b9d533e633ccf1abf9ad2ce45d8d">QuESTAssert</a>(<a class="code" href="qubits_8c.html#ae2b2c14a07dd7d50ff86032a3ca101d7">validateAlphaBeta</a>(alpha, beta), 6, __func__);
-<a name="l00105"></a>00105 
-<a name="l00106"></a>00106         <span class="comment">// all values required to update state vector lie in this rank</span>
-<a name="l00107"></a>00107         <a class="code" href="qubits_8c.html#a9cee2d8716667a3318420a3b672f5b92">compactUnitaryLocal</a>(multiQubit, targetQubit, alpha, beta);
-<a name="l00108"></a>00108 }
+<p><div class="fragment"><pre class="fragment"><a name="l00105"></a>00105 {
+<a name="l00106"></a>00106     <a class="code" href="qubits__env__local_8c.html#a3587b9d533e633ccf1abf9ad2ce45d8d">QuESTAssert</a>(targetQubit &gt;= 0 &amp;&amp; targetQubit &lt; multiQubit.<a class="code" href="structMultiQubit.html#ab5b9795bdc6fb5855e1974dcbbaeb36f" title="Number of qubits in the state.">numQubits</a>, 1, __func__);
+<a name="l00107"></a>00107     <a class="code" href="qubits__env__local_8c.html#a3587b9d533e633ccf1abf9ad2ce45d8d">QuESTAssert</a>(<a class="code" href="qubits_8c.html#ae2b2c14a07dd7d50ff86032a3ca101d7">validateAlphaBeta</a>(alpha, beta), 6, __func__);
+<a name="l00108"></a>00108 
+<a name="l00109"></a>00109         <span class="comment">// all values required to update state vector lie in this rank</span>
+<a name="l00110"></a>00110         <a class="code" href="qubits_8c.html#a9cee2d8716667a3318420a3b672f5b92">compactUnitaryLocal</a>(multiQubit, targetQubit, alpha, beta);
+<a name="l00111"></a>00111 }
 </pre></div></p>
 
 </div>
@@ -406,19 +406,19 @@
   </dd>
 </dl>
 
-<p>Definition at line <a class="el" href="qubits__env__local_8c_source.html#l00119">119</a> of file <a class="el" href="qubits__env__local_8c_source.html">qubits_env_local.c</a>.</p>
+<p>Definition at line <a class="el" href="qubits__env__local_8c_source.html#l00122">122</a> of file <a class="el" href="qubits__env__local_8c_source.html">qubits_env_local.c</a>.</p>
 
-<p>References <a class="el" href="qubits_8c_source.html#l00648">controlledCompactUnitaryLocal()</a>, <a class="el" href="qubits_8h_source.html#l00050">MultiQubit::numQubits</a>, <a class="el" href="qubits__env__local_8c_source.html#l00243">QuESTAssert()</a>, and <a class="el" href="qubits_8c_source.html#l00366">validateAlphaBeta()</a>.</p>
+<p>References <a class="el" href="qubits_8c_source.html#l00674">controlledCompactUnitaryLocal()</a>, <a class="el" href="qubits_8h_source.html#l00053">MultiQubit::numQubits</a>, <a class="el" href="qubits__env__local_8c_source.html#l00246">QuESTAssert()</a>, and <a class="el" href="qubits_8c_source.html#l00369">validateAlphaBeta()</a>.</p>
 
-<p><div class="fragment"><pre class="fragment"><a name="l00120"></a>00120 {
-<a name="l00121"></a>00121     <a class="code" href="qubits__env__local_8c.html#a3587b9d533e633ccf1abf9ad2ce45d8d">QuESTAssert</a>(targetQubit &gt;= 0 &amp;&amp; targetQubit &lt; multiQubit.<a class="code" href="structMultiQubit.html#ab5b9795bdc6fb5855e1974dcbbaeb36f" title="Number of qubits in the state.">numQubits</a>, 1, __func__);
-<a name="l00122"></a>00122     <a class="code" href="qubits__env__local_8c.html#a3587b9d533e633ccf1abf9ad2ce45d8d">QuESTAssert</a>(controlQubit &gt;= 0 &amp;&amp; controlQubit &lt; multiQubit.<a class="code" href="structMultiQubit.html#ab5b9795bdc6fb5855e1974dcbbaeb36f" title="Number of qubits in the state.">numQubits</a>, 2, __func__);
-<a name="l00123"></a>00123     <a class="code" href="qubits__env__local_8c.html#a3587b9d533e633ccf1abf9ad2ce45d8d">QuESTAssert</a>(controlQubit != targetQubit, 3, __func__);
-<a name="l00124"></a>00124     <a class="code" href="qubits__env__local_8c.html#a3587b9d533e633ccf1abf9ad2ce45d8d">QuESTAssert</a>(<a class="code" href="qubits_8c.html#ae2b2c14a07dd7d50ff86032a3ca101d7">validateAlphaBeta</a>(alpha, beta), 6, __func__);
-<a name="l00125"></a>00125     
-<a name="l00126"></a>00126 
-<a name="l00127"></a>00127         <a class="code" href="qubits_8c.html#afc77657651d52c47403b44b923a098a8">controlledCompactUnitaryLocal</a>(multiQubit, controlQubit, targetQubit, alpha, beta);
-<a name="l00128"></a>00128 }
+<p><div class="fragment"><pre class="fragment"><a name="l00123"></a>00123 {
+<a name="l00124"></a>00124     <a class="code" href="qubits__env__local_8c.html#a3587b9d533e633ccf1abf9ad2ce45d8d">QuESTAssert</a>(targetQubit &gt;= 0 &amp;&amp; targetQubit &lt; multiQubit.<a class="code" href="structMultiQubit.html#ab5b9795bdc6fb5855e1974dcbbaeb36f" title="Number of qubits in the state.">numQubits</a>, 1, __func__);
+<a name="l00125"></a>00125     <a class="code" href="qubits__env__local_8c.html#a3587b9d533e633ccf1abf9ad2ce45d8d">QuESTAssert</a>(controlQubit &gt;= 0 &amp;&amp; controlQubit &lt; multiQubit.<a class="code" href="structMultiQubit.html#ab5b9795bdc6fb5855e1974dcbbaeb36f" title="Number of qubits in the state.">numQubits</a>, 2, __func__);
+<a name="l00126"></a>00126     <a class="code" href="qubits__env__local_8c.html#a3587b9d533e633ccf1abf9ad2ce45d8d">QuESTAssert</a>(controlQubit != targetQubit, 3, __func__);
+<a name="l00127"></a>00127     <a class="code" href="qubits__env__local_8c.html#a3587b9d533e633ccf1abf9ad2ce45d8d">QuESTAssert</a>(<a class="code" href="qubits_8c.html#ae2b2c14a07dd7d50ff86032a3ca101d7">validateAlphaBeta</a>(alpha, beta), 6, __func__);
+<a name="l00128"></a>00128     
+<a name="l00129"></a>00129 
+<a name="l00130"></a>00130         <a class="code" href="qubits_8c.html#afc77657651d52c47403b44b923a098a8">controlledCompactUnitaryLocal</a>(multiQubit, controlQubit, targetQubit, alpha, beta);
+<a name="l00131"></a>00131 }
 </pre></div></p>
 
 </div>
@@ -478,16 +478,16 @@
   </dd>
 </dl>
 
-<p>Definition at line <a class="el" href="qubits__env__local_8c_source.html#l00178">178</a> of file <a class="el" href="qubits__env__local_8c_source.html">qubits_env_local.c</a>.</p>
+<p>Definition at line <a class="el" href="qubits__env__local_8c_source.html#l00181">181</a> of file <a class="el" href="qubits__env__local_8c_source.html">qubits_env_local.c</a>.</p>
 
-<p>References <a class="el" href="qubits_8c_source.html#l01121">controlledNotLocal()</a>, <a class="el" href="qubits_8h_source.html#l00050">MultiQubit::numQubits</a>, and <a class="el" href="qubits__env__local_8c_source.html#l00243">QuESTAssert()</a>.</p>
+<p>References <a class="el" href="qubits_8c_source.html#l01147">controlledNotLocal()</a>, <a class="el" href="qubits_8h_source.html#l00053">MultiQubit::numQubits</a>, and <a class="el" href="qubits__env__local_8c_source.html#l00246">QuESTAssert()</a>.</p>
 
-<p><div class="fragment"><pre class="fragment"><a name="l00179"></a>00179 {
-<a name="l00180"></a>00180     <a class="code" href="qubits__env__local_8c.html#a3587b9d533e633ccf1abf9ad2ce45d8d">QuESTAssert</a>(targetQubit &gt;= 0 &amp;&amp; targetQubit &lt; multiQubit.<a class="code" href="structMultiQubit.html#ab5b9795bdc6fb5855e1974dcbbaeb36f" title="Number of qubits in the state.">numQubits</a>, 1, __func__);
-<a name="l00181"></a>00181     <a class="code" href="qubits__env__local_8c.html#a3587b9d533e633ccf1abf9ad2ce45d8d">QuESTAssert</a>(controlQubit &gt;= 0 &amp;&amp; controlQubit &lt; multiQubit.<a class="code" href="structMultiQubit.html#ab5b9795bdc6fb5855e1974dcbbaeb36f" title="Number of qubits in the state.">numQubits</a>, 2, __func__);
-<a name="l00182"></a>00182     <a class="code" href="qubits__env__local_8c.html#a3587b9d533e633ccf1abf9ad2ce45d8d">QuESTAssert</a>(controlQubit != targetQubit, 3, __func__);
-<a name="l00183"></a>00183         <a class="code" href="qubits_8c.html#ad357a43e80e3baf013975b1b70942f4c">controlledNotLocal</a>(multiQubit, controlQubit, targetQubit);
-<a name="l00184"></a>00184 }
+<p><div class="fragment"><pre class="fragment"><a name="l00182"></a>00182 {
+<a name="l00183"></a>00183     <a class="code" href="qubits__env__local_8c.html#a3587b9d533e633ccf1abf9ad2ce45d8d">QuESTAssert</a>(targetQubit &gt;= 0 &amp;&amp; targetQubit &lt; multiQubit.<a class="code" href="structMultiQubit.html#ab5b9795bdc6fb5855e1974dcbbaeb36f" title="Number of qubits in the state.">numQubits</a>, 1, __func__);
+<a name="l00184"></a>00184     <a class="code" href="qubits__env__local_8c.html#a3587b9d533e633ccf1abf9ad2ce45d8d">QuESTAssert</a>(controlQubit &gt;= 0 &amp;&amp; controlQubit &lt; multiQubit.<a class="code" href="structMultiQubit.html#ab5b9795bdc6fb5855e1974dcbbaeb36f" title="Number of qubits in the state.">numQubits</a>, 2, __func__);
+<a name="l00185"></a>00185     <a class="code" href="qubits__env__local_8c.html#a3587b9d533e633ccf1abf9ad2ce45d8d">QuESTAssert</a>(controlQubit != targetQubit, 3, __func__);
+<a name="l00186"></a>00186         <a class="code" href="qubits_8c.html#ad357a43e80e3baf013975b1b70942f4c">controlledNotLocal</a>(multiQubit, controlQubit, targetQubit);
+<a name="l00187"></a>00187 }
 </pre></div></p>
 
 </div>
@@ -554,18 +554,18 @@
   </dd>
 </dl>
 
-<p>Definition at line <a class="el" href="qubits__env__local_8c_source.html#l00130">130</a> of file <a class="el" href="qubits__env__local_8c_source.html">qubits_env_local.c</a>.</p>
+<p>Definition at line <a class="el" href="qubits__env__local_8c_source.html#l00133">133</a> of file <a class="el" href="qubits__env__local_8c_source.html">qubits_env_local.c</a>.</p>
 
-<p>References <a class="el" href="qubits_8c_source.html#l00778">controlledUnitaryLocal()</a>, <a class="el" href="qubits_8h_source.html#l00050">MultiQubit::numQubits</a>, <a class="el" href="qubits__env__local_8c_source.html#l00243">QuESTAssert()</a>, and <a class="el" href="qubits_8c_source.html#l00341">validateMatrixIsUnitary()</a>.</p>
+<p>References <a class="el" href="qubits_8c_source.html#l00804">controlledUnitaryLocal()</a>, <a class="el" href="qubits_8h_source.html#l00053">MultiQubit::numQubits</a>, <a class="el" href="qubits__env__local_8c_source.html#l00246">QuESTAssert()</a>, and <a class="el" href="qubits_8c_source.html#l00344">validateMatrixIsUnitary()</a>.</p>
 
-<p><div class="fragment"><pre class="fragment"><a name="l00131"></a>00131 {
-<a name="l00132"></a>00132     <a class="code" href="qubits__env__local_8c.html#a3587b9d533e633ccf1abf9ad2ce45d8d">QuESTAssert</a>(targetQubit &gt;= 0 &amp;&amp; targetQubit &lt; multiQubit.<a class="code" href="structMultiQubit.html#ab5b9795bdc6fb5855e1974dcbbaeb36f" title="Number of qubits in the state.">numQubits</a>, 1, __func__);
-<a name="l00133"></a>00133     <a class="code" href="qubits__env__local_8c.html#a3587b9d533e633ccf1abf9ad2ce45d8d">QuESTAssert</a>(controlQubit &gt;= 0 &amp;&amp; controlQubit &lt; multiQubit.<a class="code" href="structMultiQubit.html#ab5b9795bdc6fb5855e1974dcbbaeb36f" title="Number of qubits in the state.">numQubits</a>, 2, __func__);
-<a name="l00134"></a>00134     <a class="code" href="qubits__env__local_8c.html#a3587b9d533e633ccf1abf9ad2ce45d8d">QuESTAssert</a>(controlQubit != targetQubit, 3, __func__);
-<a name="l00135"></a>00135     <a class="code" href="qubits__env__local_8c.html#a3587b9d533e633ccf1abf9ad2ce45d8d">QuESTAssert</a>(<a class="code" href="qubits_8c.html#ae4fea133d1a8f09ff8da03038100adb2">validateMatrixIsUnitary</a>(u), 5, __func__);
-<a name="l00136"></a>00136    
-<a name="l00137"></a>00137         <a class="code" href="qubits_8c.html#a8a4afcff70195a306c082b8ed8d4e09a">controlledUnitaryLocal</a>(multiQubit, controlQubit, targetQubit, u);
-<a name="l00138"></a>00138 }
+<p><div class="fragment"><pre class="fragment"><a name="l00134"></a>00134 {
+<a name="l00135"></a>00135     <a class="code" href="qubits__env__local_8c.html#a3587b9d533e633ccf1abf9ad2ce45d8d">QuESTAssert</a>(targetQubit &gt;= 0 &amp;&amp; targetQubit &lt; multiQubit.<a class="code" href="structMultiQubit.html#ab5b9795bdc6fb5855e1974dcbbaeb36f" title="Number of qubits in the state.">numQubits</a>, 1, __func__);
+<a name="l00136"></a>00136     <a class="code" href="qubits__env__local_8c.html#a3587b9d533e633ccf1abf9ad2ce45d8d">QuESTAssert</a>(controlQubit &gt;= 0 &amp;&amp; controlQubit &lt; multiQubit.<a class="code" href="structMultiQubit.html#ab5b9795bdc6fb5855e1974dcbbaeb36f" title="Number of qubits in the state.">numQubits</a>, 2, __func__);
+<a name="l00137"></a>00137     <a class="code" href="qubits__env__local_8c.html#a3587b9d533e633ccf1abf9ad2ce45d8d">QuESTAssert</a>(controlQubit != targetQubit, 3, __func__);
+<a name="l00138"></a>00138     <a class="code" href="qubits__env__local_8c.html#a3587b9d533e633ccf1abf9ad2ce45d8d">QuESTAssert</a>(<a class="code" href="qubits_8c.html#ae4fea133d1a8f09ff8da03038100adb2">validateMatrixIsUnitary</a>(u), 5, __func__);
+<a name="l00139"></a>00139    
+<a name="l00140"></a>00140         <a class="code" href="qubits_8c.html#a8a4afcff70195a306c082b8ed8d4e09a">controlledUnitaryLocal</a>(multiQubit, controlQubit, targetQubit, u);
+<a name="l00141"></a>00141 }
 </pre></div></p>
 
 </div>
@@ -595,17 +595,17 @@
 </div>
 <div class="memdoc">
 
-<p>Definition at line <a class="el" href="qubits__env__local_8c_source.html#l00235">235</a> of file <a class="el" href="qubits__env__local_8c_source.html">qubits_env_local.c</a>.</p>
+<p>Definition at line <a class="el" href="qubits__env__local_8c_source.html#l00238">238</a> of file <a class="el" href="qubits__env__local_8c_source.html">qubits_env_local.c</a>.</p>
 
-<p>Referenced by <a class="el" href="qubits__env__local_8c_source.html#l00243">QuESTAssert()</a>.</p>
+<p>Referenced by <a class="el" href="qubits__env__local_8c_source.html#l00246">QuESTAssert()</a>.</p>
 
-<p><div class="fragment"><pre class="fragment"><a name="l00235"></a>00235                                                    {
-<a name="l00236"></a>00236     printf(<span class="stringliteral">&quot;!!!\n&quot;</span>);
-<a name="l00237"></a>00237     printf(<span class="stringliteral">&quot;QuEST Error in function %s: %s\n&quot;</span>, func, <a class="code" href="qubits_8c.html#aac1637696885c75b73a1ecf381cea713">errorCodes</a>[errorCode]);
-<a name="l00238"></a>00238     printf(<span class="stringliteral">&quot;!!!\n&quot;</span>);
-<a name="l00239"></a>00239     printf(<span class="stringliteral">&quot;exiting..\n&quot;</span>);
-<a name="l00240"></a>00240     exit(errorCode);
-<a name="l00241"></a>00241 }
+<p><div class="fragment"><pre class="fragment"><a name="l00238"></a>00238                                                    {
+<a name="l00239"></a>00239     printf(<span class="stringliteral">&quot;!!!\n&quot;</span>);
+<a name="l00240"></a>00240     printf(<span class="stringliteral">&quot;QuEST Error in function %s: %s\n&quot;</span>, func, <a class="code" href="qubits_8c.html#aac1637696885c75b73a1ecf381cea713">errorCodes</a>[errorCode]);
+<a name="l00241"></a>00241     printf(<span class="stringliteral">&quot;!!!\n&quot;</span>);
+<a name="l00242"></a>00242     printf(<span class="stringliteral">&quot;exiting..\n&quot;</span>);
+<a name="l00243"></a>00243     exit(errorCode);
+<a name="l00244"></a>00244 }
 </pre></div></p>
 
 </div>
@@ -659,17 +659,17 @@
   </dd>
 </dl>
 
-<p>Definition at line <a class="el" href="qubits__env__local_8c_source.html#l00186">186</a> of file <a class="el" href="qubits__env__local_8c_source.html">qubits_env_local.c</a>.</p>
+<p>Definition at line <a class="el" href="qubits__env__local_8c_source.html#l00189">189</a> of file <a class="el" href="qubits__env__local_8c_source.html">qubits_env_local.c</a>.</p>
 
-<p>References <a class="el" href="qubits_8c_source.html#l01571">findProbabilityOfZeroLocal()</a>, <a class="el" href="qubits_8h_source.html#l00050">MultiQubit::numQubits</a>, <a class="el" href="qubits__env__local_8c_source.html#l00243">QuESTAssert()</a>, and <a class="el" href="precision_8h_source.html#l00023">REAL</a>.</p>
+<p>References <a class="el" href="qubits_8c_source.html#l01597">findProbabilityOfZeroLocal()</a>, <a class="el" href="qubits_8h_source.html#l00053">MultiQubit::numQubits</a>, <a class="el" href="qubits__env__local_8c_source.html#l00246">QuESTAssert()</a>, and <a class="el" href="precision_8h_source.html#l00025">REAL</a>.</p>
 
-<p><div class="fragment"><pre class="fragment"><a name="l00187"></a>00187 {
-<a name="l00188"></a>00188     <a class="code" href="qubits__env__local_8c.html#a3587b9d533e633ccf1abf9ad2ce45d8d">QuESTAssert</a>(measureQubit &gt;= 0 &amp;&amp; measureQubit &lt; multiQubit.<a class="code" href="structMultiQubit.html#ab5b9795bdc6fb5855e1974dcbbaeb36f" title="Number of qubits in the state.">numQubits</a>, 2, __func__);
-<a name="l00189"></a>00189         <a class="code" href="precision_8h.html#a4b654506f18b8bfd61ad2a29a7e38c25">REAL</a> stateProb=0;
-<a name="l00190"></a>00190         stateProb = <a class="code" href="qubits_8c.html#a7c02cd0e1b4eac19771a0525f023249e" title="Measure the total probability of a specified qubit being in the zero state across...">findProbabilityOfZeroLocal</a>(multiQubit, measureQubit);
-<a name="l00191"></a>00191         <span class="keywordflow">if</span> (outcome==1) stateProb = 1.0 - stateProb;
-<a name="l00192"></a>00192         <span class="keywordflow">return</span> stateProb;
-<a name="l00193"></a>00193 }
+<p><div class="fragment"><pre class="fragment"><a name="l00190"></a>00190 {
+<a name="l00191"></a>00191     <a class="code" href="qubits__env__local_8c.html#a3587b9d533e633ccf1abf9ad2ce45d8d">QuESTAssert</a>(measureQubit &gt;= 0 &amp;&amp; measureQubit &lt; multiQubit.<a class="code" href="structMultiQubit.html#ab5b9795bdc6fb5855e1974dcbbaeb36f" title="Number of qubits in the state.">numQubits</a>, 2, __func__);
+<a name="l00192"></a>00192         <a class="code" href="precision_8h.html#a4b654506f18b8bfd61ad2a29a7e38c25">REAL</a> stateProb=0;
+<a name="l00193"></a>00193         stateProb = <a class="code" href="qubits_8c.html#a7c02cd0e1b4eac19771a0525f023249e" title="Measure the total probability of a specified qubit being in the zero state across...">findProbabilityOfZeroLocal</a>(multiQubit, measureQubit);
+<a name="l00194"></a>00194         <span class="keywordflow">if</span> (outcome==1) stateProb = 1.0 - stateProb;
+<a name="l00195"></a>00195         <span class="keywordflow">return</span> stateProb;
+<a name="l00196"></a>00196 }
 </pre></div></p>
 
 </div>
@@ -716,13 +716,13 @@
   </dd>
 </dl>
 
-<p>Definition at line <a class="el" href="qubits__env__local_8c_source.html#l00097">97</a> of file <a class="el" href="qubits__env__local_8c_source.html">qubits_env_local.c</a>.</p>
+<p>Definition at line <a class="el" href="qubits__env__local_8c_source.html#l00100">100</a> of file <a class="el" href="qubits__env__local_8c_source.html">qubits_env_local.c</a>.</p>
 
-<p>References <a class="el" href="qubits_8h_source.html#l00014">ComplexArray::imag</a>, and <a class="el" href="qubits_8h_source.html#l00046">MultiQubit::stateVec</a>.</p>
+<p>References <a class="el" href="qubits_8h_source.html#l00017">ComplexArray::imag</a>, and <a class="el" href="qubits_8h_source.html#l00049">MultiQubit::stateVec</a>.</p>
 
-<p><div class="fragment"><pre class="fragment"><a name="l00097"></a>00097                                                              {
-<a name="l00098"></a>00098         <span class="keywordflow">return</span> multiQubit.<a class="code" href="structMultiQubit.html#a45483190d6b01ef6b2f98f2bec9ab94f" title="Probablilty amplitudes for the multi qubit state.">stateVec</a>.<a class="code" href="structComplexArray.html#a79dde47c7ae530c79cebfdf57b225968">imag</a>[index];
-<a name="l00099"></a>00099 }
+<p><div class="fragment"><pre class="fragment"><a name="l00100"></a>00100                                                              {
+<a name="l00101"></a>00101         <span class="keywordflow">return</span> multiQubit.<a class="code" href="structMultiQubit.html#a45483190d6b01ef6b2f98f2bec9ab94f" title="Probablilty amplitudes for the multi qubit state.">stateVec</a>.<a class="code" href="structComplexArray.html#a79dde47c7ae530c79cebfdf57b225968">imag</a>[index];
+<a name="l00102"></a>00102 }
 </pre></div></p>
 
 </div>
@@ -769,13 +769,13 @@
   </dd>
 </dl>
 
-<p>Definition at line <a class="el" href="qubits__env__local_8c_source.html#l00093">93</a> of file <a class="el" href="qubits__env__local_8c_source.html">qubits_env_local.c</a>.</p>
+<p>Definition at line <a class="el" href="qubits__env__local_8c_source.html#l00096">96</a> of file <a class="el" href="qubits__env__local_8c_source.html">qubits_env_local.c</a>.</p>
 
-<p>References <a class="el" href="qubits_8h_source.html#l00013">ComplexArray::real</a>, and <a class="el" href="qubits_8h_source.html#l00046">MultiQubit::stateVec</a>.</p>
+<p>References <a class="el" href="qubits_8h_source.html#l00016">ComplexArray::real</a>, and <a class="el" href="qubits_8h_source.html#l00049">MultiQubit::stateVec</a>.</p>
 
-<p><div class="fragment"><pre class="fragment"><a name="l00093"></a>00093                                                              {
-<a name="l00094"></a>00094         <span class="keywordflow">return</span> multiQubit.<a class="code" href="structMultiQubit.html#a45483190d6b01ef6b2f98f2bec9ab94f" title="Probablilty amplitudes for the multi qubit state.">stateVec</a>.<a class="code" href="structComplexArray.html#a4195cac6c784ea1b6271f1c7dba1548a">real</a>[index];
-<a name="l00095"></a>00095 }
+<p><div class="fragment"><pre class="fragment"><a name="l00096"></a>00096                                                              {
+<a name="l00097"></a>00097         <span class="keywordflow">return</span> multiQubit.<a class="code" href="structMultiQubit.html#a45483190d6b01ef6b2f98f2bec9ab94f" title="Probablilty amplitudes for the multi qubit state.">stateVec</a>.<a class="code" href="structComplexArray.html#a4195cac6c784ea1b6271f1c7dba1548a">real</a>[index];
+<a name="l00098"></a>00098 }
 </pre></div></p>
 
 </div>
@@ -827,14 +827,14 @@
   </dd>
 </dl>
 
-<p>Definition at line <a class="el" href="qubits__env__local_8c_source.html#l00172">172</a> of file <a class="el" href="qubits__env__local_8c_source.html">qubits_env_local.c</a>.</p>
+<p>Definition at line <a class="el" href="qubits__env__local_8c_source.html#l00175">175</a> of file <a class="el" href="qubits__env__local_8c_source.html">qubits_env_local.c</a>.</p>
 
-<p>References <a class="el" href="qubits_8c_source.html#l01313">hadamardLocal()</a>, <a class="el" href="qubits_8h_source.html#l00050">MultiQubit::numQubits</a>, and <a class="el" href="qubits__env__local_8c_source.html#l00243">QuESTAssert()</a>.</p>
+<p>References <a class="el" href="qubits_8c_source.html#l01339">hadamardLocal()</a>, <a class="el" href="qubits_8h_source.html#l00053">MultiQubit::numQubits</a>, and <a class="el" href="qubits__env__local_8c_source.html#l00246">QuESTAssert()</a>.</p>
 
-<p><div class="fragment"><pre class="fragment"><a name="l00173"></a>00173 {
-<a name="l00174"></a>00174     <a class="code" href="qubits__env__local_8c.html#a3587b9d533e633ccf1abf9ad2ce45d8d">QuESTAssert</a>(targetQubit &gt;= 0 &amp;&amp; targetQubit &lt; multiQubit.<a class="code" href="structMultiQubit.html#ab5b9795bdc6fb5855e1974dcbbaeb36f" title="Number of qubits in the state.">numQubits</a>, 1, __func__);
-<a name="l00175"></a>00175         <a class="code" href="qubits_8c.html#aa9f0718b4dd794a3e1b143e3b153bfc5">hadamardLocal</a>(multiQubit, targetQubit);
-<a name="l00176"></a>00176 }
+<p><div class="fragment"><pre class="fragment"><a name="l00176"></a>00176 {
+<a name="l00177"></a>00177     <a class="code" href="qubits__env__local_8c.html#a3587b9d533e633ccf1abf9ad2ce45d8d">QuESTAssert</a>(targetQubit &gt;= 0 &amp;&amp; targetQubit &lt; multiQubit.<a class="code" href="structMultiQubit.html#ab5b9795bdc6fb5855e1974dcbbaeb36f" title="Number of qubits in the state.">numQubits</a>, 1, __func__);
+<a name="l00178"></a>00178         <a class="code" href="qubits_8c.html#aa9f0718b4dd794a3e1b143e3b153bfc5">hadamardLocal</a>(multiQubit, targetQubit);
+<a name="l00179"></a>00179 }
 </pre></div></p>
 
 </div>
@@ -864,22 +864,22 @@
   </dd>
 </dl>
 
-<p>Definition at line <a class="el" href="qubits__env__local_8c_source.html#l00019">19</a> of file <a class="el" href="qubits__env__local_8c_source.html">qubits_env_local.c</a>.</p>
+<p>Definition at line <a class="el" href="qubits__env__local_8c_source.html#l00022">22</a> of file <a class="el" href="qubits__env__local_8c_source.html">qubits_env_local.c</a>.</p>
 
-<p>References <a class="el" href="mt19937ar_8c_source.html#l00076">init_by_array()</a>, <a class="el" href="qubits_8h_source.html#l00066">QuESTEnv::numRanks</a>, and <a class="el" href="qubits_8h_source.html#l00065">QuESTEnv::rank</a>.</p>
+<p>References <a class="el" href="mt19937ar_8c_source.html#l00076">init_by_array()</a>, <a class="el" href="qubits_8h_source.html#l00069">QuESTEnv::numRanks</a>, and <a class="el" href="qubits_8h_source.html#l00068">QuESTEnv::rank</a>.</p>
 
-<p><div class="fragment"><pre class="fragment"><a name="l00019"></a>00019                                 {
-<a name="l00020"></a>00020         <span class="comment">// init MPI environment</span>
-<a name="l00021"></a>00021         env-&gt;<a class="code" href="structQuESTEnv.html#aa648bb336cf8598467cb62db00b9cee8">rank</a>=0;
-<a name="l00022"></a>00022         env-&gt;<a class="code" href="structQuESTEnv.html#af22aacd7c9905accae28484785c193b4">numRanks</a>=1;
-<a name="l00023"></a>00023 
-<a name="l00024"></a>00024     <span class="comment">// init MT random number generator with two keys -- time and pid</span>
-<a name="l00025"></a>00025     <span class="keywordtype">unsigned</span> <span class="keywordtype">long</span> <span class="keywordtype">int</span> secs = time(NULL);
-<a name="l00026"></a>00026     <span class="keywordtype">unsigned</span> <span class="keywordtype">long</span> <span class="keywordtype">int</span> pid = getpid();
-<a name="l00027"></a>00027     <span class="keywordtype">unsigned</span> <span class="keywordtype">long</span> <span class="keywordtype">int</span> key[2];
-<a name="l00028"></a>00028     key[0] = secs; key[1] = pid;
-<a name="l00029"></a>00029     <a class="code" href="mt19937ar_8c.html#ac1283f9b1ed571332f5ffe53545ffc16">init_by_array</a>(key, 2);
-<a name="l00030"></a>00030 }
+<p><div class="fragment"><pre class="fragment"><a name="l00022"></a>00022                                 {
+<a name="l00023"></a>00023         <span class="comment">// init MPI environment</span>
+<a name="l00024"></a>00024         env-&gt;<a class="code" href="structQuESTEnv.html#aa648bb336cf8598467cb62db00b9cee8">rank</a>=0;
+<a name="l00025"></a>00025         env-&gt;<a class="code" href="structQuESTEnv.html#af22aacd7c9905accae28484785c193b4">numRanks</a>=1;
+<a name="l00026"></a>00026 
+<a name="l00027"></a>00027     <span class="comment">// init MT random number generator with two keys -- time and pid</span>
+<a name="l00028"></a>00028     <span class="keywordtype">unsigned</span> <span class="keywordtype">long</span> <span class="keywordtype">int</span> secs = time(NULL);
+<a name="l00029"></a>00029     <span class="keywordtype">unsigned</span> <span class="keywordtype">long</span> <span class="keywordtype">int</span> pid = getpid();
+<a name="l00030"></a>00030     <span class="keywordtype">unsigned</span> <span class="keywordtype">long</span> <span class="keywordtype">int</span> key[2];
+<a name="l00031"></a>00031     key[0] = secs; key[1] = pid;
+<a name="l00032"></a>00032     <a class="code" href="mt19937ar_8c.html#ac1283f9b1ed571332f5ffe53545ffc16">init_by_array</a>(key, 2);
+<a name="l00033"></a>00033 }
 </pre></div></p>
 
 </div>
@@ -926,15 +926,15 @@
   </dd>
 </dl>
 
-<p>Definition at line <a class="el" href="qubits__env__local_8c_source.html#l00206">206</a> of file <a class="el" href="qubits__env__local_8c_source.html">qubits_env_local.c</a>.</p>
+<p>Definition at line <a class="el" href="qubits__env__local_8c_source.html#l00209">209</a> of file <a class="el" href="qubits__env__local_8c_source.html">qubits_env_local.c</a>.</p>
 
-<p>References <a class="el" href="qubits__env__local_8c_source.html#l00212">measureWithStats()</a>, <a class="el" href="qubits_8h_source.html#l00050">MultiQubit::numQubits</a>, <a class="el" href="qubits__env__local_8c_source.html#l00243">QuESTAssert()</a>, and <a class="el" href="precision_8h_source.html#l00023">REAL</a>.</p>
+<p>References <a class="el" href="qubits__env__local_8c_source.html#l00215">measureWithStats()</a>, <a class="el" href="qubits_8h_source.html#l00053">MultiQubit::numQubits</a>, <a class="el" href="qubits__env__local_8c_source.html#l00246">QuESTAssert()</a>, and <a class="el" href="precision_8h_source.html#l00025">REAL</a>.</p>
 
-<p><div class="fragment"><pre class="fragment"><a name="l00206"></a>00206                                                     {
-<a name="l00207"></a>00207     <a class="code" href="qubits__env__local_8c.html#a3587b9d533e633ccf1abf9ad2ce45d8d">QuESTAssert</a>(measureQubit &gt;= 0 &amp;&amp; measureQubit &lt; multiQubit.<a class="code" href="structMultiQubit.html#ab5b9795bdc6fb5855e1974dcbbaeb36f" title="Number of qubits in the state.">numQubits</a>, 2, __func__);
-<a name="l00208"></a>00208     <a class="code" href="precision_8h.html#a4b654506f18b8bfd61ad2a29a7e38c25">REAL</a> stateProb;
-<a name="l00209"></a>00209     <span class="keywordflow">return</span> <a class="code" href="qubits_8h.html#a2ac46e470c750bf93c754e06c64b0a7a" title="Measures a single qubit, collapsing it randomly to 0 or 1, and additionally gives...">measureWithStats</a>(multiQubit, measureQubit, &amp;stateProb);
-<a name="l00210"></a>00210 }
+<p><div class="fragment"><pre class="fragment"><a name="l00209"></a>00209                                                     {
+<a name="l00210"></a>00210     <a class="code" href="qubits__env__local_8c.html#a3587b9d533e633ccf1abf9ad2ce45d8d">QuESTAssert</a>(measureQubit &gt;= 0 &amp;&amp; measureQubit &lt; multiQubit.<a class="code" href="structMultiQubit.html#ab5b9795bdc6fb5855e1974dcbbaeb36f" title="Number of qubits in the state.">numQubits</a>, 2, __func__);
+<a name="l00211"></a>00211     <a class="code" href="precision_8h.html#a4b654506f18b8bfd61ad2a29a7e38c25">REAL</a> stateProb;
+<a name="l00212"></a>00212     <span class="keywordflow">return</span> <a class="code" href="qubits_8h.html#a2ac46e470c750bf93c754e06c64b0a7a" title="Measures a single qubit, collapsing it randomly to 0 or 1, and additionally gives...">measureWithStats</a>(multiQubit, measureQubit, &amp;stateProb);
+<a name="l00213"></a>00213 }
 </pre></div></p>
 
 </div>
@@ -988,32 +988,32 @@
   </dd>
 </dl>
 
-<p>Definition at line <a class="el" href="qubits__env__local_8c_source.html#l00212">212</a> of file <a class="el" href="qubits__env__local_8c_source.html">qubits_env_local.c</a>.</p>
+<p>Definition at line <a class="el" href="qubits__env__local_8c_source.html#l00215">215</a> of file <a class="el" href="qubits__env__local_8c_source.html">qubits_env_local.c</a>.</p>
 
-<p>References <a class="el" href="qubits_8c_source.html#l01790">collapseToOutcomeLocal()</a>, <a class="el" href="qubits__env__local_8c_source.html#l00186">findProbabilityOfOutcome()</a>, <a class="el" href="mt19937ar_8c_source.html#l00146">genrand_real1()</a>, <a class="el" href="qubits_8h_source.html#l00050">MultiQubit::numQubits</a>, <a class="el" href="qubits__env__local_8c_source.html#l00243">QuESTAssert()</a>, <a class="el" href="precision_8h_source.html#l00023">REAL</a>, and <a class="el" href="precision_8h_source.html#l00026">REAL_EPS</a>.</p>
+<p>References <a class="el" href="qubits_8c_source.html#l01816">collapseToOutcomeLocal()</a>, <a class="el" href="qubits__env__local_8c_source.html#l00189">findProbabilityOfOutcome()</a>, <a class="el" href="mt19937ar_8c_source.html#l00146">genrand_real1()</a>, <a class="el" href="qubits_8h_source.html#l00053">MultiQubit::numQubits</a>, <a class="el" href="qubits__env__local_8c_source.html#l00246">QuESTAssert()</a>, <a class="el" href="precision_8h_source.html#l00025">REAL</a>, and <a class="el" href="precision_8h_source.html#l00028">REAL_EPS</a>.</p>
 
-<p><div class="fragment"><pre class="fragment"><a name="l00212"></a>00212                                                                               {
-<a name="l00213"></a>00213     <a class="code" href="qubits__env__local_8c.html#a3587b9d533e633ccf1abf9ad2ce45d8d">QuESTAssert</a>(measureQubit &gt;= 0 &amp;&amp; measureQubit &lt; multiQubit.<a class="code" href="structMultiQubit.html#ab5b9795bdc6fb5855e1974dcbbaeb36f" title="Number of qubits in the state.">numQubits</a>, 2, __func__);
-<a name="l00214"></a>00214 
-<a name="l00215"></a>00215     <span class="keywordtype">int</span> outcome;
-<a name="l00216"></a>00216     <span class="comment">// find probability of qubit being in state 1</span>
-<a name="l00217"></a>00217         <a class="code" href="precision_8h.html#a4b654506f18b8bfd61ad2a29a7e38c25">REAL</a> stateProbInternal = <a class="code" href="qubits_8h.html#ad315c941a51bc053d39ebfa2040fd32e" title="Gives the probability of a specified qubit being measured in the given outcome (0...">findProbabilityOfOutcome</a>(multiQubit, measureQubit, 1);
-<a name="l00218"></a>00218 
-<a name="l00219"></a>00219     <span class="comment">// we can&apos;t collapse to a state that has a probability too close to zero</span>
-<a name="l00220"></a>00220     <span class="keywordflow">if</span> (stateProbInternal&lt;<a class="code" href="precision_8h.html#aebb5e6716e06431296af4d1a71744dec">REAL_EPS</a>) outcome=0;
-<a name="l00221"></a>00221     <span class="keywordflow">else</span> <span class="keywordflow">if</span> (1-stateProbInternal&lt;<a class="code" href="precision_8h.html#aebb5e6716e06431296af4d1a71744dec">REAL_EPS</a>) outcome=1;
-<a name="l00222"></a>00222     <span class="keywordflow">else</span> {
-<a name="l00223"></a>00223         <span class="comment">// ok. both P(0) and P(1) are large enough to resolve</span>
-<a name="l00224"></a>00224         <span class="comment">// generate random float on [0,1]</span>
-<a name="l00225"></a>00225         <span class="keywordtype">float</span> randNum = <a class="code" href="mt19937ar_8c.html#ac94ab75771800274ed1a2bedeca86f04">genrand_real1</a>();
-<a name="l00226"></a>00226         <span class="keywordflow">if</span> (randNum&lt;=stateProbInternal) outcome = 1;
-<a name="l00227"></a>00227         <span class="keywordflow">else</span> outcome = 0;
-<a name="l00228"></a>00228     } 
-<a name="l00229"></a>00229     <span class="keywordflow">if</span> (outcome==0) stateProbInternal = 1-stateProbInternal;
-<a name="l00230"></a>00230     <a class="code" href="qubits_8c.html#a01d9a8b7ff0e09ec399e158389783aa9" title="Update the state vector to be consistent with measuring measureQubit=0 if outcome=0...">collapseToOutcomeLocal</a>(multiQubit, measureQubit, stateProbInternal, outcome);
-<a name="l00231"></a>00231     *stateProb = stateProbInternal;
-<a name="l00232"></a>00232     <span class="keywordflow">return</span> outcome;
-<a name="l00233"></a>00233 }
+<p><div class="fragment"><pre class="fragment"><a name="l00215"></a>00215                                                                               {
+<a name="l00216"></a>00216     <a class="code" href="qubits__env__local_8c.html#a3587b9d533e633ccf1abf9ad2ce45d8d">QuESTAssert</a>(measureQubit &gt;= 0 &amp;&amp; measureQubit &lt; multiQubit.<a class="code" href="structMultiQubit.html#ab5b9795bdc6fb5855e1974dcbbaeb36f" title="Number of qubits in the state.">numQubits</a>, 2, __func__);
+<a name="l00217"></a>00217 
+<a name="l00218"></a>00218     <span class="keywordtype">int</span> outcome;
+<a name="l00219"></a>00219     <span class="comment">// find probability of qubit being in state 1</span>
+<a name="l00220"></a>00220         <a class="code" href="precision_8h.html#a4b654506f18b8bfd61ad2a29a7e38c25">REAL</a> stateProbInternal = <a class="code" href="qubits_8h.html#ad315c941a51bc053d39ebfa2040fd32e" title="Gives the probability of a specified qubit being measured in the given outcome (0...">findProbabilityOfOutcome</a>(multiQubit, measureQubit, 1);
+<a name="l00221"></a>00221 
+<a name="l00222"></a>00222     <span class="comment">// we can&apos;t collapse to a state that has a probability too close to zero</span>
+<a name="l00223"></a>00223     <span class="keywordflow">if</span> (stateProbInternal&lt;<a class="code" href="precision_8h.html#aebb5e6716e06431296af4d1a71744dec">REAL_EPS</a>) outcome=0;
+<a name="l00224"></a>00224     <span class="keywordflow">else</span> <span class="keywordflow">if</span> (1-stateProbInternal&lt;<a class="code" href="precision_8h.html#aebb5e6716e06431296af4d1a71744dec">REAL_EPS</a>) outcome=1;
+<a name="l00225"></a>00225     <span class="keywordflow">else</span> {
+<a name="l00226"></a>00226         <span class="comment">// ok. both P(0) and P(1) are large enough to resolve</span>
+<a name="l00227"></a>00227         <span class="comment">// generate random float on [0,1]</span>
+<a name="l00228"></a>00228         <span class="keywordtype">float</span> randNum = <a class="code" href="mt19937ar_8c.html#ac94ab75771800274ed1a2bedeca86f04">genrand_real1</a>();
+<a name="l00229"></a>00229         <span class="keywordflow">if</span> (randNum&lt;=stateProbInternal) outcome = 1;
+<a name="l00230"></a>00230         <span class="keywordflow">else</span> outcome = 0;
+<a name="l00231"></a>00231     } 
+<a name="l00232"></a>00232     <span class="keywordflow">if</span> (outcome==0) stateProbInternal = 1-stateProbInternal;
+<a name="l00233"></a>00233     <a class="code" href="qubits_8c.html#a01d9a8b7ff0e09ec399e158389783aa9" title="Update the state vector to be consistent with measuring measureQubit=0 if outcome=0...">collapseToOutcomeLocal</a>(multiQubit, measureQubit, stateProbInternal, outcome);
+<a name="l00234"></a>00234     *stateProb = stateProbInternal;
+<a name="l00235"></a>00235     <span class="keywordflow">return</span> outcome;
+<a name="l00236"></a>00236 }
 </pre></div></p>
 
 </div>
@@ -1087,22 +1087,22 @@
   </dd>
 </dl>
 
-<p>Definition at line <a class="el" href="qubits__env__local_8c_source.html#l00140">140</a> of file <a class="el" href="qubits__env__local_8c_source.html">qubits_env_local.c</a>.</p>
+<p>Definition at line <a class="el" href="qubits__env__local_8c_source.html#l00143">143</a> of file <a class="el" href="qubits__env__local_8c_source.html">qubits_env_local.c</a>.</p>
 
-<p>References <a class="el" href="qubits_8c_source.html#l00715">multiControlledUnitaryLocal()</a>, <a class="el" href="qubits_8h_source.html#l00050">MultiQubit::numQubits</a>, <a class="el" href="qubits__env__local_8c_source.html#l00243">QuESTAssert()</a>, and <a class="el" href="qubits_8c_source.html#l00341">validateMatrixIsUnitary()</a>.</p>
+<p>References <a class="el" href="qubits_8c_source.html#l00741">multiControlledUnitaryLocal()</a>, <a class="el" href="qubits_8h_source.html#l00053">MultiQubit::numQubits</a>, <a class="el" href="qubits__env__local_8c_source.html#l00246">QuESTAssert()</a>, and <a class="el" href="qubits_8c_source.html#l00344">validateMatrixIsUnitary()</a>.</p>
 
-<p><div class="fragment"><pre class="fragment"><a name="l00141"></a>00141 {
-<a name="l00142"></a>00142     <a class="code" href="qubits__env__local_8c.html#a3587b9d533e633ccf1abf9ad2ce45d8d">QuESTAssert</a>(targetQubit &gt;= 0 &amp;&amp; targetQubit &lt; multiQubit.<a class="code" href="structMultiQubit.html#ab5b9795bdc6fb5855e1974dcbbaeb36f" title="Number of qubits in the state.">numQubits</a>, 1, __func__);
-<a name="l00143"></a>00143     <a class="code" href="qubits__env__local_8c.html#a3587b9d533e633ccf1abf9ad2ce45d8d">QuESTAssert</a>(numControlQubits &gt; 0 &amp;&amp; numControlQubits &lt;= multiQubit.<a class="code" href="structMultiQubit.html#ab5b9795bdc6fb5855e1974dcbbaeb36f" title="Number of qubits in the state.">numQubits</a>, 4, __func__);
-<a name="l00144"></a>00144     <a class="code" href="qubits__env__local_8c.html#a3587b9d533e633ccf1abf9ad2ce45d8d">QuESTAssert</a>(<a class="code" href="qubits_8c.html#ae4fea133d1a8f09ff8da03038100adb2">validateMatrixIsUnitary</a>(u), 5, __func__);
-<a name="l00145"></a>00145 
-<a name="l00146"></a>00146     <span class="keywordtype">long</span> <span class="keywordtype">long</span> <span class="keywordtype">int</span> mask=0; 
-<a name="l00147"></a>00147     <span class="keywordflow">for</span> (<span class="keywordtype">int</span> i=0; i&lt;numControlQubits; i++) mask = mask | (1LL&lt;&lt;controlQubits[i]);
-<a name="l00148"></a>00148     <a class="code" href="qubits__env__local_8c.html#a3587b9d533e633ccf1abf9ad2ce45d8d">QuESTAssert</a>(mask &gt;=0 &amp;&amp; mask &lt;= (1LL&lt;&lt;multiQubit.<a class="code" href="structMultiQubit.html#ab5b9795bdc6fb5855e1974dcbbaeb36f" title="Number of qubits in the state.">numQubits</a>)-1, 2, __func__);
-<a name="l00149"></a>00149     <a class="code" href="qubits__env__local_8c.html#a3587b9d533e633ccf1abf9ad2ce45d8d">QuESTAssert</a>((mask &amp; (1LL&lt;&lt;targetQubit)) != (1LL&lt;&lt;targetQubit), 3, __func__);
-<a name="l00150"></a>00150         
-<a name="l00151"></a>00151     <a class="code" href="qubits_8c.html#a1309eabcba3cb97fbc3cd2e606d17766">multiControlledUnitaryLocal</a>(multiQubit, targetQubit, mask, u);
-<a name="l00152"></a>00152 }
+<p><div class="fragment"><pre class="fragment"><a name="l00144"></a>00144 {
+<a name="l00145"></a>00145     <a class="code" href="qubits__env__local_8c.html#a3587b9d533e633ccf1abf9ad2ce45d8d">QuESTAssert</a>(targetQubit &gt;= 0 &amp;&amp; targetQubit &lt; multiQubit.<a class="code" href="structMultiQubit.html#ab5b9795bdc6fb5855e1974dcbbaeb36f" title="Number of qubits in the state.">numQubits</a>, 1, __func__);
+<a name="l00146"></a>00146     <a class="code" href="qubits__env__local_8c.html#a3587b9d533e633ccf1abf9ad2ce45d8d">QuESTAssert</a>(numControlQubits &gt; 0 &amp;&amp; numControlQubits &lt;= multiQubit.<a class="code" href="structMultiQubit.html#ab5b9795bdc6fb5855e1974dcbbaeb36f" title="Number of qubits in the state.">numQubits</a>, 4, __func__);
+<a name="l00147"></a>00147     <a class="code" href="qubits__env__local_8c.html#a3587b9d533e633ccf1abf9ad2ce45d8d">QuESTAssert</a>(<a class="code" href="qubits_8c.html#ae4fea133d1a8f09ff8da03038100adb2">validateMatrixIsUnitary</a>(u), 5, __func__);
+<a name="l00148"></a>00148 
+<a name="l00149"></a>00149     <span class="keywordtype">long</span> <span class="keywordtype">long</span> <span class="keywordtype">int</span> mask=0; 
+<a name="l00150"></a>00150     <span class="keywordflow">for</span> (<span class="keywordtype">int</span> i=0; i&lt;numControlQubits; i++) mask = mask | (1LL&lt;&lt;controlQubits[i]);
+<a name="l00151"></a>00151     <a class="code" href="qubits__env__local_8c.html#a3587b9d533e633ccf1abf9ad2ce45d8d">QuESTAssert</a>(mask &gt;=0 &amp;&amp; mask &lt;= (1LL&lt;&lt;multiQubit.<a class="code" href="structMultiQubit.html#ab5b9795bdc6fb5855e1974dcbbaeb36f" title="Number of qubits in the state.">numQubits</a>)-1, 2, __func__);
+<a name="l00152"></a>00152     <a class="code" href="qubits__env__local_8c.html#a3587b9d533e633ccf1abf9ad2ce45d8d">QuESTAssert</a>((mask &amp; (1LL&lt;&lt;targetQubit)) != (1LL&lt;&lt;targetQubit), 3, __func__);
+<a name="l00153"></a>00153         
+<a name="l00154"></a>00154     <a class="code" href="qubits_8c.html#a1309eabcba3cb97fbc3cd2e606d17766">multiControlledUnitaryLocal</a>(multiQubit, targetQubit, mask, u);
+<a name="l00155"></a>00155 }
 </pre></div></p>
 
 </div>
@@ -1138,14 +1138,14 @@
 </div>
 <div class="memdoc">
 
-<p>Definition at line <a class="el" href="qubits__env__local_8c_source.html#l00166">166</a> of file <a class="el" href="qubits__env__local_8c_source.html">qubits_env_local.c</a>.</p>
+<p>Definition at line <a class="el" href="qubits__env__local_8c_source.html#l00169">169</a> of file <a class="el" href="qubits__env__local_8c_source.html">qubits_env_local.c</a>.</p>
 
-<p>Referenced by <a class="el" href="qubits_8c_source.html#l01554">sGate()</a>, <a class="el" href="qubits_8c_source.html#l01549">sigmaZ()</a>, and <a class="el" href="qubits_8c_source.html#l01559">tGate()</a>.</p>
+<p>Referenced by <a class="el" href="qubits_8c_source.html#l01580">sGate()</a>, <a class="el" href="qubits_8c_source.html#l01575">sigmaZ()</a>, and <a class="el" href="qubits_8c_source.html#l01585">tGate()</a>.</p>
 
-<p><div class="fragment"><pre class="fragment"><a name="l00167"></a>00167 {
-<a name="l00168"></a>00168     <a class="code" href="qubits__env__local_8c.html#a3587b9d533e633ccf1abf9ad2ce45d8d">QuESTAssert</a>(targetQubit &gt;= 0 &amp;&amp; targetQubit &lt; multiQubit.<a class="code" href="structMultiQubit.html#ab5b9795bdc6fb5855e1974dcbbaeb36f" title="Number of qubits in the state.">numQubits</a>, 1, __func__);
-<a name="l00169"></a>00169         <a class="code" href="qubits_8c.html#a3a54566b73ac84c312d7da4f56ffbc3b">phaseGateLocal</a>(multiQubit, targetQubit, type);
-<a name="l00170"></a>00170 }
+<p><div class="fragment"><pre class="fragment"><a name="l00170"></a>00170 {
+<a name="l00171"></a>00171     <a class="code" href="qubits__env__local_8c.html#a3587b9d533e633ccf1abf9ad2ce45d8d">QuESTAssert</a>(targetQubit &gt;= 0 &amp;&amp; targetQubit &lt; multiQubit.<a class="code" href="structMultiQubit.html#ab5b9795bdc6fb5855e1974dcbbaeb36f" title="Number of qubits in the state.">numQubits</a>, 1, __func__);
+<a name="l00172"></a>00172         <a class="code" href="qubits_8c.html#a3a54566b73ac84c312d7da4f56ffbc3b">phaseGateLocal</a>(multiQubit, targetQubit, type);
+<a name="l00173"></a>00173 }
 </pre></div></p>
 
 </div>
@@ -1181,13 +1181,13 @@
 </div>
 <div class="memdoc">
 
-<p>Definition at line <a class="el" href="qubits__env__local_8c_source.html#l00243">243</a> of file <a class="el" href="qubits__env__local_8c_source.html">qubits_env_local.c</a>.</p>
+<p>Definition at line <a class="el" href="qubits__env__local_8c_source.html#l00246">246</a> of file <a class="el" href="qubits__env__local_8c_source.html">qubits_env_local.c</a>.</p>
 
-<p>Referenced by <a class="el" href="qubits__env__local_8c_source.html#l00195">collapseToOutcome()</a>, <a class="el" href="qubits__env__local_8c_source.html#l00101">compactUnitary()</a>, <a class="el" href="qubits__env__local_8c_source.html#l00119">controlledCompactUnitary()</a>, <a class="el" href="qubits__env__local_8c_source.html#l00178">controlledNot()</a>, <a class="el" href="qubits_8c_source.html#l01703">controlledPhaseGate()</a>, <a class="el" href="qubits__env__local_8c_source.html#l00130">controlledUnitary()</a>, <a class="el" href="qubits_8c_source.html#l00036">createMultiQubit()</a>, <a class="el" href="qubits__env__local_8c_source.html#l00186">findProbabilityOfOutcome()</a>, <a class="el" href="qubits__env__local_8c_source.html#l00172">hadamard()</a>, <a class="el" href="qubits__env__local_8c_source.html#l00206">measure()</a>, <a class="el" href="qubits__env__local_8c_source.html#l00212">measureWithStats()</a>, <a class="el" href="qubits_8c_source.html#l01738">multiControlledPhaseGate()</a>, <a class="el" href="qubits__env__local_8c_source.html#l00140">multiControlledUnitary()</a>, <a class="el" href="qubits__env__local_8c_source.html#l00166">phaseGate()</a>, <a class="el" href="qubits__env__local_8c_source.html#l00154">sigmaX()</a>, <a class="el" href="qubits__env__local_8c_source.html#l00160">sigmaY()</a>, and <a class="el" href="qubits__env__local_8c_source.html#l00110">unitary()</a>.</p>
+<p>Referenced by <a class="el" href="qubits__env__local_8c_source.html#l00198">collapseToOutcome()</a>, <a class="el" href="qubits__env__local_8c_source.html#l00104">compactUnitary()</a>, <a class="el" href="qubits__env__local_8c_source.html#l00122">controlledCompactUnitary()</a>, <a class="el" href="qubits__env__local_8c_source.html#l00181">controlledNot()</a>, <a class="el" href="qubits_8c_source.html#l01729">controlledPhaseGate()</a>, <a class="el" href="qubits__env__local_8c_source.html#l00133">controlledUnitary()</a>, <a class="el" href="qubits_8c_source.html#l00039">createMultiQubit()</a>, <a class="el" href="qubits__env__local_8c_source.html#l00189">findProbabilityOfOutcome()</a>, <a class="el" href="qubits__env__local_8c_source.html#l00175">hadamard()</a>, <a class="el" href="qubits__env__local_8c_source.html#l00209">measure()</a>, <a class="el" href="qubits__env__local_8c_source.html#l00215">measureWithStats()</a>, <a class="el" href="qubits_8c_source.html#l01764">multiControlledPhaseGate()</a>, <a class="el" href="qubits__env__local_8c_source.html#l00143">multiControlledUnitary()</a>, <a class="el" href="qubits__env__local_8c_source.html#l00169">phaseGate()</a>, <a class="el" href="qubits__env__local_8c_source.html#l00157">sigmaX()</a>, <a class="el" href="qubits__env__local_8c_source.html#l00163">sigmaY()</a>, and <a class="el" href="qubits__env__local_8c_source.html#l00113">unitary()</a>.</p>
 
-<p><div class="fragment"><pre class="fragment"><a name="l00243"></a>00243                                                               {
-<a name="l00244"></a>00244     <span class="keywordflow">if</span> (!isValid) <a class="code" href="qubits__env__local_8c.html#ae5f9019826f35e8b51b1716cfe397b45">exitWithError</a>(errorCode, func);
-<a name="l00245"></a>00245 }
+<p><div class="fragment"><pre class="fragment"><a name="l00246"></a>00246                                                               {
+<a name="l00247"></a>00247     <span class="keywordflow">if</span> (!isValid) <a class="code" href="qubits__env__local_8c.html#ae5f9019826f35e8b51b1716cfe397b45">exitWithError</a>(errorCode, func);
+<a name="l00248"></a>00248 }
 </pre></div></p>
 
 </div>
@@ -1217,11 +1217,11 @@
   </dd>
 </dl>
 
-<p>Definition at line <a class="el" href="qubits__env__local_8c_source.html#l00057">57</a> of file <a class="el" href="qubits__env__local_8c_source.html">qubits_env_local.c</a>.</p>
+<p>Definition at line <a class="el" href="qubits__env__local_8c_source.html#l00060">60</a> of file <a class="el" href="qubits__env__local_8c_source.html">qubits_env_local.c</a>.</p>
 
-<p><div class="fragment"><pre class="fragment"><a name="l00057"></a>00057                                  {
-<a name="l00058"></a>00058         printf(<span class="stringliteral">&quot;Hostname unknown: running locally\n&quot;</span>);
-<a name="l00059"></a>00059 }
+<p><div class="fragment"><pre class="fragment"><a name="l00060"></a>00060                                  {
+<a name="l00061"></a>00061         printf(<span class="stringliteral">&quot;Hostname unknown: running locally\n&quot;</span>);
+<a name="l00062"></a>00062 }
 </pre></div></p>
 
 </div>
@@ -1250,22 +1250,22 @@
   </dd>
 </dl>
 
-<p>Definition at line <a class="el" href="qubits__env__local_8c_source.html#l00044">44</a> of file <a class="el" href="qubits__env__local_8c_source.html">qubits_env_local.c</a>.</p>
+<p>Definition at line <a class="el" href="qubits__env__local_8c_source.html#l00047">47</a> of file <a class="el" href="qubits__env__local_8c_source.html">qubits_env_local.c</a>.</p>
 
-<p>References <a class="el" href="qubits_8h_source.html#l00066">QuESTEnv::numRanks</a>, and <a class="el" href="precision_8h_source.html#l00023">REAL</a>.</p>
+<p>References <a class="el" href="qubits_8h_source.html#l00069">QuESTEnv::numRanks</a>, and <a class="el" href="precision_8h_source.html#l00025">REAL</a>.</p>
 
-<p><div class="fragment"><pre class="fragment"><a name="l00044"></a>00044                                  {
-<a name="l00045"></a>00045         printf(<span class="stringliteral">&quot;EXECUTION ENVIRONMENT:\n&quot;</span>);
-<a name="l00046"></a>00046         printf(<span class="stringliteral">&quot;Running locally on one node\n&quot;</span>);
-<a name="l00047"></a>00047         printf(<span class="stringliteral">&quot;Number of ranks is %d\n&quot;</span>, env.<a class="code" href="structQuESTEnv.html#af22aacd7c9905accae28484785c193b4">numRanks</a>);
-<a name="l00048"></a>00048 <span class="preprocessor"># ifdef _OPENMP</span>
-<a name="l00049"></a>00049 <span class="preprocessor"></span>        printf(<span class="stringliteral">&quot;OpenMP enabled\n&quot;</span>);
-<a name="l00050"></a>00050         printf(<span class="stringliteral">&quot;Number of threads available is %d\n&quot;</span>, omp_get_max_threads());
-<a name="l00051"></a>00051 <span class="preprocessor"># else</span>
-<a name="l00052"></a>00052 <span class="preprocessor"></span>        printf(<span class="stringliteral">&quot;OpenMP disabled\n&quot;</span>);
-<a name="l00053"></a>00053 <span class="preprocessor"># endif</span>
-<a name="l00054"></a>00054 <span class="preprocessor"></span>        printf(<span class="stringliteral">&quot;Precision: size of REAL is %ld bytes\n&quot;</span>, <span class="keyword">sizeof</span>(<a class="code" href="precision_8h.html#a4b654506f18b8bfd61ad2a29a7e38c25">REAL</a>));
-<a name="l00055"></a>00055 }
+<p><div class="fragment"><pre class="fragment"><a name="l00047"></a>00047                                  {
+<a name="l00048"></a>00048         printf(<span class="stringliteral">&quot;EXECUTION ENVIRONMENT:\n&quot;</span>);
+<a name="l00049"></a>00049         printf(<span class="stringliteral">&quot;Running locally on one node\n&quot;</span>);
+<a name="l00050"></a>00050         printf(<span class="stringliteral">&quot;Number of ranks is %d\n&quot;</span>, env.<a class="code" href="structQuESTEnv.html#af22aacd7c9905accae28484785c193b4">numRanks</a>);
+<a name="l00051"></a>00051 <span class="preprocessor"># ifdef _OPENMP</span>
+<a name="l00052"></a>00052 <span class="preprocessor"></span>        printf(<span class="stringliteral">&quot;OpenMP enabled\n&quot;</span>);
+<a name="l00053"></a>00053         printf(<span class="stringliteral">&quot;Number of threads available is %d\n&quot;</span>, omp_get_max_threads());
+<a name="l00054"></a>00054 <span class="preprocessor"># else</span>
+<a name="l00055"></a>00055 <span class="preprocessor"></span>        printf(<span class="stringliteral">&quot;OpenMP disabled\n&quot;</span>);
+<a name="l00056"></a>00056 <span class="preprocessor"># endif</span>
+<a name="l00057"></a>00057 <span class="preprocessor"></span>        printf(<span class="stringliteral">&quot;Precision: size of REAL is %ld bytes\n&quot;</span>, <span class="keyword">sizeof</span>(<a class="code" href="precision_8h.html#a4b654506f18b8bfd61ad2a29a7e38c25">REAL</a>));
+<a name="l00058"></a>00058 }
 </pre></div></p>
 
 </div>
@@ -1317,14 +1317,14 @@
   </dd>
 </dl>
 
-<p>Definition at line <a class="el" href="qubits__env__local_8c_source.html#l00154">154</a> of file <a class="el" href="qubits__env__local_8c_source.html">qubits_env_local.c</a>.</p>
+<p>Definition at line <a class="el" href="qubits__env__local_8c_source.html#l00157">157</a> of file <a class="el" href="qubits__env__local_8c_source.html">qubits_env_local.c</a>.</p>
 
-<p>References <a class="el" href="qubits_8h_source.html#l00050">MultiQubit::numQubits</a>, <a class="el" href="qubits__env__local_8c_source.html#l00243">QuESTAssert()</a>, and <a class="el" href="qubits_8c_source.html#l01034">sigmaXLocal()</a>.</p>
+<p>References <a class="el" href="qubits_8h_source.html#l00053">MultiQubit::numQubits</a>, <a class="el" href="qubits__env__local_8c_source.html#l00246">QuESTAssert()</a>, and <a class="el" href="qubits_8c_source.html#l01060">sigmaXLocal()</a>.</p>
 
-<p><div class="fragment"><pre class="fragment"><a name="l00155"></a>00155 {
-<a name="l00156"></a>00156     <a class="code" href="qubits__env__local_8c.html#a3587b9d533e633ccf1abf9ad2ce45d8d">QuESTAssert</a>(targetQubit &gt;= 0 &amp;&amp; targetQubit &lt; multiQubit.<a class="code" href="structMultiQubit.html#ab5b9795bdc6fb5855e1974dcbbaeb36f" title="Number of qubits in the state.">numQubits</a>, 1, __func__);
-<a name="l00157"></a>00157         <a class="code" href="qubits_8c.html#a74822fd86bb5d81766e6e8dbdcd62df1">sigmaXLocal</a>(multiQubit, targetQubit);
-<a name="l00158"></a>00158 }
+<p><div class="fragment"><pre class="fragment"><a name="l00158"></a>00158 {
+<a name="l00159"></a>00159     <a class="code" href="qubits__env__local_8c.html#a3587b9d533e633ccf1abf9ad2ce45d8d">QuESTAssert</a>(targetQubit &gt;= 0 &amp;&amp; targetQubit &lt; multiQubit.<a class="code" href="structMultiQubit.html#ab5b9795bdc6fb5855e1974dcbbaeb36f" title="Number of qubits in the state.">numQubits</a>, 1, __func__);
+<a name="l00160"></a>00160         <a class="code" href="qubits_8c.html#a74822fd86bb5d81766e6e8dbdcd62df1">sigmaXLocal</a>(multiQubit, targetQubit);
+<a name="l00161"></a>00161 }
 </pre></div></p>
 
 </div>
@@ -1376,14 +1376,14 @@
   </dd>
 </dl>
 
-<p>Definition at line <a class="el" href="qubits__env__local_8c_source.html#l00160">160</a> of file <a class="el" href="qubits__env__local_8c_source.html">qubits_env_local.c</a>.</p>
+<p>Definition at line <a class="el" href="qubits__env__local_8c_source.html#l00163">163</a> of file <a class="el" href="qubits__env__local_8c_source.html">qubits_env_local.c</a>.</p>
 
-<p>References <a class="el" href="qubits_8h_source.html#l00050">MultiQubit::numQubits</a>, <a class="el" href="qubits__env__local_8c_source.html#l00243">QuESTAssert()</a>, and <a class="el" href="qubits_8c_source.html#l01221">sigmaYLocal()</a>.</p>
+<p>References <a class="el" href="qubits_8h_source.html#l00053">MultiQubit::numQubits</a>, <a class="el" href="qubits__env__local_8c_source.html#l00246">QuESTAssert()</a>, and <a class="el" href="qubits_8c_source.html#l01247">sigmaYLocal()</a>.</p>
 
-<p><div class="fragment"><pre class="fragment"><a name="l00161"></a>00161 {
-<a name="l00162"></a>00162     <a class="code" href="qubits__env__local_8c.html#a3587b9d533e633ccf1abf9ad2ce45d8d">QuESTAssert</a>(targetQubit &gt;= 0 &amp;&amp; targetQubit &lt; multiQubit.<a class="code" href="structMultiQubit.html#ab5b9795bdc6fb5855e1974dcbbaeb36f" title="Number of qubits in the state.">numQubits</a>, 1, __func__);
-<a name="l00163"></a>00163         <a class="code" href="qubits_8c.html#a81fbfaed65a742a7dfd622e17652245e">sigmaYLocal</a>(multiQubit, targetQubit);
-<a name="l00164"></a>00164 }
+<p><div class="fragment"><pre class="fragment"><a name="l00164"></a>00164 {
+<a name="l00165"></a>00165     <a class="code" href="qubits__env__local_8c.html#a3587b9d533e633ccf1abf9ad2ce45d8d">QuESTAssert</a>(targetQubit &gt;= 0 &amp;&amp; targetQubit &lt; multiQubit.<a class="code" href="structMultiQubit.html#ab5b9795bdc6fb5855e1974dcbbaeb36f" title="Number of qubits in the state.">numQubits</a>, 1, __func__);
+<a name="l00166"></a>00166         <a class="code" href="qubits_8c.html#a81fbfaed65a742a7dfd622e17652245e">sigmaYLocal</a>(multiQubit, targetQubit);
+<a name="l00167"></a>00167 }
 </pre></div></p>
 
 </div>
@@ -1412,11 +1412,11 @@
   </dd>
 </dl>
 
-<p>Definition at line <a class="el" href="qubits__env__local_8c_source.html#l00032">32</a> of file <a class="el" href="qubits__env__local_8c_source.html">qubits_env_local.c</a>.</p>
+<p>Definition at line <a class="el" href="qubits__env__local_8c_source.html#l00035">35</a> of file <a class="el" href="qubits__env__local_8c_source.html">qubits_env_local.c</a>.</p>
 
-<p><div class="fragment"><pre class="fragment"><a name="l00032"></a>00032                                {
-<a name="l00033"></a>00033         <span class="comment">// MPI Barrier goes here in MPI version. </span>
-<a name="l00034"></a>00034 } 
+<p><div class="fragment"><pre class="fragment"><a name="l00035"></a>00035                                {
+<a name="l00036"></a>00036         <span class="comment">// MPI Barrier goes here in MPI version. </span>
+<a name="l00037"></a>00037 } 
 </pre></div></p>
 
 </div>
@@ -1448,11 +1448,11 @@
 </dl>
 <dl class="return"><dt><b>Returns:</b></dt><dd>1 if all processes succeeded, 0 if any one process failed </dd></dl>
 
-<p>Definition at line <a class="el" href="qubits__env__local_8c_source.html#l00036">36</a> of file <a class="el" href="qubits__env__local_8c_source.html">qubits_env_local.c</a>.</p>
+<p>Definition at line <a class="el" href="qubits__env__local_8c_source.html#l00039">39</a> of file <a class="el" href="qubits__env__local_8c_source.html">qubits_env_local.c</a>.</p>
 
-<p><div class="fragment"><pre class="fragment"><a name="l00036"></a>00036                                      {
-<a name="l00037"></a>00037         <span class="keywordflow">return</span> successCode;
-<a name="l00038"></a>00038 }
+<p><div class="fragment"><pre class="fragment"><a name="l00039"></a>00039                                      {
+<a name="l00040"></a>00040         <span class="keywordflow">return</span> successCode;
+<a name="l00041"></a>00041 }
 </pre></div></p>
 
 </div>
@@ -1508,23 +1508,23 @@
   </dd>
 </dl>
 
-<p>Definition at line <a class="el" href="qubits__env__local_8c_source.html#l00110">110</a> of file <a class="el" href="qubits__env__local_8c_source.html">qubits_env_local.c</a>.</p>
+<p>Definition at line <a class="el" href="qubits__env__local_8c_source.html#l00113">113</a> of file <a class="el" href="qubits__env__local_8c_source.html">qubits_env_local.c</a>.</p>
 
-<p>References <a class="el" href="qubits_8h_source.html#l00050">MultiQubit::numQubits</a>, <a class="el" href="qubits__env__local_8c_source.html#l00243">QuESTAssert()</a>, <a class="el" href="qubits_8c_source.html#l00477">unitaryLocal()</a>, and <a class="el" href="qubits_8c_source.html#l00341">validateMatrixIsUnitary()</a>.</p>
+<p>References <a class="el" href="qubits_8h_source.html#l00053">MultiQubit::numQubits</a>, <a class="el" href="qubits__env__local_8c_source.html#l00246">QuESTAssert()</a>, <a class="el" href="qubits_8c_source.html#l00503">unitaryLocal()</a>, and <a class="el" href="qubits_8c_source.html#l00344">validateMatrixIsUnitary()</a>.</p>
 
-<p><div class="fragment"><pre class="fragment"><a name="l00111"></a>00111 {
-<a name="l00112"></a>00112     <a class="code" href="qubits__env__local_8c.html#a3587b9d533e633ccf1abf9ad2ce45d8d">QuESTAssert</a>(targetQubit &gt;= 0 &amp;&amp; targetQubit &lt; multiQubit.<a class="code" href="structMultiQubit.html#ab5b9795bdc6fb5855e1974dcbbaeb36f" title="Number of qubits in the state.">numQubits</a>, 1, __func__);
-<a name="l00113"></a>00113     <a class="code" href="qubits__env__local_8c.html#a3587b9d533e633ccf1abf9ad2ce45d8d">QuESTAssert</a>(<a class="code" href="qubits_8c.html#ae4fea133d1a8f09ff8da03038100adb2">validateMatrixIsUnitary</a>(u), 5, __func__);
-<a name="l00114"></a>00114 
-<a name="l00115"></a>00115         <span class="comment">// all values required to update state vector lie in this rank</span>
-<a name="l00116"></a>00116         <a class="code" href="qubits_8c.html#ac134fb45b0a7248c5d15e16eb7139a35">unitaryLocal</a>(multiQubit, targetQubit, u);
-<a name="l00117"></a>00117 }
+<p><div class="fragment"><pre class="fragment"><a name="l00114"></a>00114 {
+<a name="l00115"></a>00115     <a class="code" href="qubits__env__local_8c.html#a3587b9d533e633ccf1abf9ad2ce45d8d">QuESTAssert</a>(targetQubit &gt;= 0 &amp;&amp; targetQubit &lt; multiQubit.<a class="code" href="structMultiQubit.html#ab5b9795bdc6fb5855e1974dcbbaeb36f" title="Number of qubits in the state.">numQubits</a>, 1, __func__);
+<a name="l00116"></a>00116     <a class="code" href="qubits__env__local_8c.html#a3587b9d533e633ccf1abf9ad2ce45d8d">QuESTAssert</a>(<a class="code" href="qubits_8c.html#ae4fea133d1a8f09ff8da03038100adb2">validateMatrixIsUnitary</a>(u), 5, __func__);
+<a name="l00117"></a>00117 
+<a name="l00118"></a>00118         <span class="comment">// all values required to update state vector lie in this rank</span>
+<a name="l00119"></a>00119         <a class="code" href="qubits_8c.html#ac134fb45b0a7248c5d15e16eb7139a35">unitaryLocal</a>(multiQubit, targetQubit, u);
+<a name="l00120"></a>00120 }
 </pre></div></p>
 
 </div>
 </div>
 </div>
-<hr size="1"/><address style="text-align: right;"><small>Generated on 20 Feb 2018 for Distributed QuEST by&nbsp;
+<hr size="1"/><address style="text-align: right;"><small>Generated on 28 Mar 2018 for Distributed QuEST by&nbsp;
 <a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/></a> 1.6.1 </small></address>
 </body>
