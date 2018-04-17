@@ -8,6 +8,25 @@ Latest version: [0.11.1](https://github.com/aniabrown/QuEST/releases/tag/v0.11.1
 
 Please report errors or feedback to anna.brown@oerc.ox.ac.uk 
 
+## Quick Start
+
+Copy or clone this repository to your machine. 
+
+In the root directory, compile using
+
+```
+make
+```
+
+Run an [example circuit file](tutorialExample.c) using
+
+```
+./demo
+```
+
+The program will print information about your execution environment and some simple operations on a three qubit system. See the [tutorial](examples/tutorial.md) for more information. 
+
+
 ## Introduction
 
 The **Quantum Exact Simulation Toolkit** is a high performance simulator of universal quantum circuits. QuEST is written in C, hybridises OpenMP and MPI, and can run on a GPU. Needing only compilation, QuEST is easy to run both on laptops and supercomputers, where it can take advantage of multicore and networked machines to quickly simulate circuits on many qubits.
