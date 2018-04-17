@@ -163,7 +163,7 @@ and after compiling (see section below), gives psuedo-random output
 
 # Compiling
 
-To compile, copy the [makefile](makefile) to the same folder as your code.
+To compile, make sure there is a [makefile](makefile) in the same folder as your circuit code. An example makefile and the tutorial circuit file will be present in the root directory when you download the code.  
 
 Edit the makefile, letting `MY_C_SOURCES` be a space-separated list of your source files, `EXE` be the name of the output executable, and `QUEST_DIR` point to the folder which contains `qubits.h`. 
 
@@ -192,11 +192,11 @@ make
 ```
 at the terminal, in the directory of your code. For the above example, this performs
 ```bash
-gcc -O2 -std=c99 -mavx -Wall -fopenmp -c ../QuEST_new/QuEST/qubits.c
-gcc -O2 -std=c99 -mavx -Wall -fopenmp -c ../QuEST_new/QuEST/mt19937ar.c
+gcc -O2 -std=c99 -mavx -Wall -fopenmp -c QuEST/qubits.c
+gcc -O2 -std=c99 -mavx -Wall -fopenmp -c QuEST/mt19937ar.c
 gcc -O2 -std=c99 -mavx -Wall -fopenmp -c myCode1.c
 gcc -O2 -std=c99 -mavx -Wall -fopenmp -c myCode2.c
-gcc -O2 -std=c99 -mavx -Wall -fopenmp -c ../QuEST_new/QuEST/qubits_env_local.c
+gcc -O2 -std=c99 -mavx -Wall -fopenmp -c QuEST/qubits_env_local.c
 gcc -O2 -std=c99 -mavx -Wall -fopenmp -o myExecutable qubits.o mt19937ar.o myCode1.o myCode2.o qubits_env_local.o -lm
 ```
 You can then call your code
