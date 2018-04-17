@@ -68,6 +68,10 @@ QuEST is contained entirely in the `.c` and `.h` files in the `QuEST/` folder. T
 
 View the API [here](https://aniabrown.github.io/QuEST/qubits_8h.html), and the full documentation at https://aniabrown.github.io/QuEST/
 
+## Acknowledgements
+
+QuEST uses the [mt19937ar](http://www.math.sci.hiroshima-u.ac.jp/~m-mat/MT/MT2002/emt19937ar.html) Mersenne Twister algorithm for random number generation, under the BSD licence. 
+
 ## Licence
 
 QuEST is released under a [MIT Licence](https://github.com/aniabrown/QuEST/blob/master/LICENCE.txt)
