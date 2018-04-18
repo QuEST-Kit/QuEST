@@ -6,7 +6,7 @@
 # include <math.h>
 # include <omp.h>
 
-# include "QuEST/qubits.h"   // TODO: repoint to your direc
+# include "qubits.h" 
 
 
 int main (int narg, char** varg) {
