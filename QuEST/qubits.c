@@ -33,8 +33,6 @@ const char* errorCodes[] = {
 
 static int extractBit (const int locationOfBitFromRight, const long long int theEncodedNumber);
 
-// Maihi: Where I have made changes I have marked SCB so please note those points - Simon
-
 
 void createMultiQubit(MultiQubit *multiQubit, int numQubits, QuESTEnv env)
 {
@@ -331,11 +329,9 @@ int compareStates(MultiQubit mq1, MultiQubit mq2, REAL precision){
 	REAL diff;
 	int chunkSize = mq1.numAmps;
 	for (int i=0; i<chunkSize; i++){
-		diff = mq1.stateVec.real[i] - mq2.stateVec.real[i];
-		if (diff<0) diff *= -1;
+		diff = fabs(mq1.stateVec.real[i] - mq2.stateVec.real[i]);
 		if (diff>precision) return 0;
-		diff = mq1.stateVec.imag[i] - mq2.stateVec.imag[i];
-		if (diff<0) diff *= -1;
+		diff = fabs(mq1.stateVec.imag[i] - mq2.stateVec.imag[i]);
 		if (diff>precision) return 0;
 	}
 	return 1;
