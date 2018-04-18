@@ -100,6 +100,7 @@ endif
 #
 LIBS = -lm
 
+INCLUDE = -I$(QUEST_DIR)
 
 #
 # --- targets
@@ -120,7 +121,7 @@ endif
 # --- rules
 #
 %.o: %.c
-	$(CC) $(CFLAGS) $(CFLAGS_OMP) -c $<
+	$(CC) $(INCLUDE) $(CFLAGS) $(CFLAGS_OMP) -c $<
 
 %.o: $(QUEST_DIR)/%.c
 	$(CC) $(CFLAGS) $(CFLAGS_OMP) -c $<
@@ -132,7 +133,7 @@ endif
 default:	$(EXE)
 
 $(EXE):		$(OBJ)
-		$(CC) $(CFLAGS) $(CFLAGS_OMP) -o $(EXE) $(OBJ) $(LIBS)
+		$(CC) $(INCLUDE) $(CFLAGS) $(CFLAGS_OMP) -o $(EXE) $(OBJ) $(LIBS) 
 
 .PHONY:		clean veryclean
 clean:
