@@ -15,7 +15,7 @@ Independent of which platform you'll run your simulation on (multicore machine, 
 
 A simulation of a very simple circuit looks like
 ```C
-#include "path/to/QuEST/qubits.h"
+#include "qubits.h"
 
 int main(int narg, char *varg[]) {
 
