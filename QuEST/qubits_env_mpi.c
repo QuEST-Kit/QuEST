@@ -24,7 +24,6 @@
 # include <unistd.h>
 
 
-# define DEBUG 0
 static int isChunkToSkipInFindPZero(int chunkId, long long int chunkSize, int measureQubit);
 static int chunkIsUpper(int chunkId, long long int chunkSize, int targetQubit);
 static void getRotAngle(int chunkIsUpper, Complex *rot1, Complex *rot2, Complex alpha, Complex beta);
@@ -41,12 +40,6 @@ void initQuESTEnv(QuESTEnv *env){
         MPI_Comm_size(MPI_COMM_WORLD, &numRanks);
         MPI_Comm_rank(MPI_COMM_WORLD, &rank);
 
-        if (DEBUG) {
-            char hostName[256];
-            int hostNameLen;
-            MPI_Get_processor_name(hostName, &hostNameLen);
-            printf("rank %d on host %s\n", rank, hostName);
-        }
         env->rank=rank;
         env->numRanks=numRanks;
 
@@ -146,7 +139,6 @@ REAL calcTotalProbability(MultiQubit multiQubit){
         c = ( t - pTotal ) - y;
         pTotal = t;
     } 
-    if (DEBUG) printf("before calc prob. %d\n", multiQubit.numChunks);
     if (multiQubit.numChunks>1) MPI_Allreduce(&pTotal, &allRankTotals, 1, MPI_QuEST_REAL, MPI_SUM, MPI_COMM_WORLD);
     else allRankTotals=pTotal;
 
@@ -270,8 +262,6 @@ void exchangeStateVectors(MultiQubit multiQubit, int pairRank){
     int numMessages = multiQubit.numAmps/maxMessageCount;
     int i;
     long long int offset;
-    if (DEBUG) printf("numMessages %d maxMessageCount %lld\n", numMessages, maxMessageCount);
-
     // send my state vector to pairRank's multiQubit.pairStateVec
     // receive pairRank's state vector into multiQubit.pairStateVec
     for (i=0; i<numMessages; i++){

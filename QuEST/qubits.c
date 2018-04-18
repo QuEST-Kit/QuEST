@@ -15,8 +15,6 @@
 
 # include <omp.h>
 
-# define DEBUG 0
-
 const char* errorCodes[] = {
     "Success",                                              // 0
     "Invalid target qubit. Note qubits are zero indexed.",  // 1
@@ -169,8 +167,6 @@ void initStateZero (MultiQubit *multiQubit)
         stateVecReal[0] = 1.0;
         stateVecImag[0] = 0.0;
     }
-
-    if (DEBUG) printf("COMPLETED INIT\n");
 }
 
 void initStatePlus (MultiQubit *multiQubit)
@@ -203,7 +199,6 @@ void initStatePlus (MultiQubit *multiQubit)
             stateVecImag[index] = 0.0;
         }
     }
-    if (DEBUG) printf("COMPLETED INIT\n");
 }
 
 /**
@@ -250,7 +245,6 @@ void initStateOfSingleQubit(MultiQubit *multiQubit, int qubitId, int outcome)
             }
         }
     }
-    if (DEBUG) printf("COMPLETED INIT\n");
 }
 
 
@@ -1615,8 +1609,6 @@ REAL findProbabilityOfZeroLocal (MultiQubit multiQubit,
 
     // initialise returned value
     totalProbability = 0.0;
-
-    if (DEBUG) printf("sizeHalfBlock=%Ld sizeBlock=%Ld numTasks=%Ld\n",sizeHalfBlock,sizeBlock,numTasks);
 
     REAL *stateVecReal = multiQubit.stateVec.real;
     REAL *stateVecImag = multiQubit.stateVec.imag;
