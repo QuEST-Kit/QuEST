@@ -68,6 +68,8 @@ QuEST is contained entirely in the `.c` and `.h` files in the `QuEST/` folder. T
 
 View the API [here](https://aniabrown.github.io/QuEST/qubits_8h.html), and the full documentation at https://aniabrown.github.io/QuEST/
 
+> For developers: To recreate the full documentation after making changes to the code, run doxygen doxyconf in the root directory. This will generate documentation in Doxygen_doc/html, and can be accessed through index.html in that folder. 
+
 ## Acknowledgements
 
 QuEST uses the [mt19937ar](http://www.math.sci.hiroshima-u.ac.jp/~m-mat/MT/MT2002/emt19937ar.html) Mersenne Twister algorithm for random number generation, under the BSD licence. 
