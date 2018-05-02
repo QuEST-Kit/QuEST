@@ -1028,8 +1028,30 @@ int measure(MultiQubit multiQubit, int measureQubit);
  */
 int measureWithStats(MultiQubit multiQubit, int measureQubit, REAL *stateProb);
 
+/** Seed the Mersenne Twister used for random number generation in the QuEST environment with an example
+ * defualt seed.
+ * This default seeding function uses the mt19937 init_by_array function with three keys -- 
+ * time, pid and hostname. Subsequent calls to mt19937 genrand functions will use this seeding. 
+ * For a multi process code, the same seed is given to all process, therefore this seeding is only
+ * appropriate to use for functions such as measure where all processes require the same random value.
+ *
+ * For more information about the MT, see http://www.math.sci.hiroshima-u.ac.jp/~m-mat/MT/MT2002/emt19937ar.html
+ **/
 void QuESTSeedRandomDefault(void);
 
+/** Seed the Mersenne Twister used for random number generation in the QuEST environment with
+ * a user defined seed.
+ * This function uses the mt19937 init_by_array function with numSeeds keys supplied by the user.
+ * Subsequent calls to mt19937 genrand functions will use this seeding. 
+ * For a multi process code, the same seed is given to all process, therefore this seeding is only
+ * appropriate to use for functions such as measure where all processes require the same random value.
+ *
+ * @param[in] seedArray Array of integers to use as seed. This allows the MT to be initialised with more 
+ * than a 32-bit integer if required
+ * @param[in] numSeeds Length of seedArray
+ *
+ * For more information about the MT, see http://www.math.sci.hiroshima-u.ac.jp/~m-mat/MT/MT2002/emt19937ar.html
+ **/
 void QuESTSeedRandom(unsigned long int *seedArray, int numSeeds);
 
 #endif
