@@ -23,6 +23,7 @@ int main (int narg, char *varg[]) {
     createMultiQubit(&qubits, 3, env);
     initStateZero(&qubits);
 
+    QuESTSeedRandomDefault();
 
     /*
      * REPORT SYSTEM AND ENVIRONMENT

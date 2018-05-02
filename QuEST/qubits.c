@@ -13,6 +13,17 @@
 # include "qubits.h"
 # include "qubits_internal.h"
 
+# include "mt19937ar.h" // MT random number generation
+// for seeding random numbers
+# include <sys/param.h>
+# define _BSD_SOURCE
+# include <unistd.h>
+
+# include <sys/types.h> // include getpid
+
+# include <sys/time.h>
+# include <sys/types.h>
+
 # include <omp.h>
 
 const char* errorCodes[] = {
@@ -31,7 +42,6 @@ const char* errorCodes[] = {
 };
 
 static int extractBit (const int locationOfBitFromRight, const long long int theEncodedNumber);
-
 
 void createMultiQubit(MultiQubit *multiQubit, int numQubits, QuESTEnv env)
 {
@@ -1935,4 +1945,49 @@ REAL getProbEl(MultiQubit multiQubit, long long int index){
     imag = getImagAmpEl(multiQubit, index);
     return real*real + imag*imag;
 }
+
+void QuESTSeedRandomDefault(){
+    // init MT random number generator with three keys -- time, pid and a hash of hostname 
+    // for the MPI version, it is ok that all procs will get the same seed as random numbers will only be 
+    // used by the master process
+   
+    struct timeval  tv;
+    gettimeofday(&tv, NULL);
+
+    double time_in_mill = 
+             (tv.tv_sec) * 1000 + (tv.tv_usec) / 1000 ; // convert tv_sec & tv_usec to millisecond
+ 
+    unsigned long int pid = getpid();
+    unsigned long int msecs = (unsigned long int) time_in_mill;
+    char hostName[MAXHOSTNAMELEN+1];
+    gethostname(hostName, sizeof(hostName));
+    unsigned long int hostNameInt = hashString(hostName);
+    
+    printf("hostname: %s %lu %lu %lu\n", hostName, hostNameInt, pid, msecs);
+
+    unsigned long int key[3];
+    key[0] = msecs; key[1] = pid; key[2] = hostNameInt;
+    init_by_array(key, 3); 
+}
+
+/** 
+ * numSeeds <= 64
+ */
+void QuESTSeedRandom(unsigned long int *seedArray, int numSeeds){
+    // init MT random number generator with user defined list of seeds
+    // for the MPI version, it is ok that all procs will get the same seed as random numbers will only be 
+    // used by the master process
+    init_by_array(seedArray, numSeeds); 
+}
+
+unsigned long int hashString(char *str){
+    unsigned long int hash = 5381;
+    int c;
+
+    while ((c = *str++))
+        hash = ((hash << 5) + hash) + c; /* hash * 33 + c */
+
+    return hash;    
+}
+
 

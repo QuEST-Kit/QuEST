@@ -788,6 +788,9 @@ int test_measure(char testName[200]){
     // visual check:
 	// test qubit = |+> 
     int nTrials=10;
+    unsigned long int seedArray[] = {18239, 12391};
+    int numSeeds = 2;
+    QuESTSeedRandom(seedArray, numSeeds);
 	for (qubit=0; qubit<numQubits; qubit++){
         if (env.rank==0) printf("\n%d trials: measure qubit %d when in state |+>:\n", nTrials, qubit);
         if (env.rank==0) printf("value of qubit = [");

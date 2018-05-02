@@ -12,25 +12,18 @@
 # include "precision.h"
 # include "qubits.h"
 # include "qubits_internal.h"
+
 # include "mt19937ar.h" // MT random number generation
 
-// for seeding random numbers
 # include <time.h>
 # include <sys/types.h>
-# include <unistd.h>
 
 void initQuESTEnv(QuESTEnv *env){
     // init MPI environment
     env->rank=0;
     env->numRanks=1;
-
-    // init MT random number generator with two keys -- time and pid
-    unsigned long int secs = time(NULL);
-    unsigned long int pid = getpid();
-    unsigned long int key[2];
-    key[0] = secs; key[1] = pid;
-    init_by_array(key, 2);
 }
+
 
 void syncQuESTEnv(QuESTEnv env){
     // MPI Barrier goes here in MPI version. 

@@ -1028,5 +1028,9 @@ int measure(MultiQubit multiQubit, int measureQubit);
  */
 int measureWithStats(MultiQubit multiQubit, int measureQubit, REAL *stateProb);
 
+void QuESTSeedRandomDefault(void);
+
+void QuESTSeedRandom(unsigned long int *seedArray, int numSeeds);
+
 #endif
 

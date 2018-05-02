@@ -16,13 +16,11 @@
 # include "precision.h"
 # include "qubits.h"
 # include "qubits_internal.h"
+
 # include "mt19937ar.h" // MT random number generation
 
-// for seeding random numbers
 # include <time.h>
 # include <sys/types.h>
-# include <unistd.h>
-
 
 static int isChunkToSkipInFindPZero(int chunkId, long long int chunkSize, int measureQubit);
 static int chunkIsUpper(int chunkId, long long int chunkSize, int targetQubit);
@@ -43,14 +41,6 @@ void initQuESTEnv(QuESTEnv *env){
         env->rank=rank;
         env->numRanks=numRanks;
 
-        // init MT random number generator with two keys -- time and pid 
-        // it is ok that all procs will get the same seed as random numbers will only be 
-        // used by the master process
-        unsigned long int secs = time(NULL);
-        unsigned long int pid = getpid();
-        unsigned long int key[2];
-        key[0] = secs; key[1] = pid;
-        init_by_array(key, 2);
     } else printf("ERROR: Trying to initialize QuESTEnv multiple times. Ignoring\n");
 }
 
