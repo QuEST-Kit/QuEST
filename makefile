@@ -19,7 +19,7 @@ EXE = demo
 # This makefile expects all user sources to be in the root directory.
 # If using more than one source, separate by spaces eg 
 # MY_C_SOURCES = tutorialExample helperFunctions
-MY_C_SOURCES = runTests
+MY_C_SOURCES = tutorialExample
 
 # ENABLE DISTRIBUTED PROCESSING (ALLOWS MULTIPLE NODES)
 # On: 1, Off: 0
