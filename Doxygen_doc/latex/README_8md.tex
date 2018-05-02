@@ -2,46 +2,165 @@
 \subsection{README.md File Reference}
 \label{README_8md}\index{README.md@{README.md}}
 }
+\subsubsection*{Functions}
+\begin{DoxyCompactItemize}
+\item 
+\hyperlink{README_8md_a919bff7d5f7b67fde28e771903fff6f1}{controlledNot} (qubits, 0, 1)
+\item 
+\hyperlink{README_8md_a6f495fc15ce3f43b4c8adbf43cb881ea}{rotateY} (qubits, 0,.1)
+\item 
+\hyperlink{README_8md_ac4cb8c0825f6c6a74b839bbd4ae22ea4}{rotateAroundAxis} (qubits, 0, 3.14/2, \hyperlink{README_8md_a22eb3b09da74633038e36bd8dfef55c0}{v})
+\item 
+\hyperlink{README_8md_a22b5a2d7f987c5e030a1d683d9483f49}{unitary} (qubits, 0, \hyperlink{README_8md_a5d1c311241dc8d8ffa4badf059977dc5}{u})
+\item 
+\hyperlink{README_8md_a25572bc3f038713ed311fea2b40de0e9}{multiControlledUnitary} (qureg, \hyperlink{README_8md_a636f16bb55903420974dfd184205e591}{controls}, 5, 0, \hyperlink{README_8md_a5d1c311241dc8d8ffa4badf059977dc5}{u})
+\end{DoxyCompactItemize}
 \subsubsection*{Variables}
 \begin{DoxyCompactItemize}
 \item 
-QuEST is currently in prerelease and may be unstable Latest \hyperlink{README_8md_a94df19ae37ab2d673ea00c5d31754e61}{version}
+\hyperlink{README_8md_a2d0f5bba181ef1543dc90d4f1ce64c5e}{QuEST} is currently in prerelease and may be unstable Latest \hyperlink{README_8md_a94df19ae37ab2d673ea00c5d31754e61}{version}
 \item 
-QuEST is currently in prerelease and may be unstable Latest hybridises OpenMP and \hyperlink{README_8md_a0a40be130c04118a27bcd009eebdaa7b}{MPI}
+though is flexible C \hyperlink{structVector}{Vector} \hyperlink{README_8md_a22eb3b09da74633038e36bd8dfef55c0}{v}
 \item 
-QuEST is currently in prerelease and may be unstable Latest hybridises OpenMP and and can run on a GPU Needing only \hyperlink{README_8md_a9deb99efd500e3c4a12304d32da47e19}{compilation}
+\hyperlink{README_8md_a22eb3b09da74633038e36bd8dfef55c0}{v} \hyperlink{README_8md_a6a52a27535805eddc782c67f42c20c69}{x} = 1
 \item 
-QuEST is currently in prerelease and may be unstable Latest hybridises OpenMP and and can run on a GPU Needing only QuEST is easy to run both on laptops and \hyperlink{README_8md_a1a0088f6c565daaa48409371f6c5c36c}{supercomputers}
+\hyperlink{README_8md_a22eb3b09da74633038e36bd8dfef55c0}{v} \hyperlink{README_8md_a003dc5701d53a819228f5417a8089139}{y} = 0
+\item 
+\hyperlink{README_8md_a22eb3b09da74633038e36bd8dfef55c0}{v} \hyperlink{README_8md_a0f9f545825a114923b98de8cc33a5f6a}{z} = 0
+\item 
+and powerful C \hyperlink{structComplexMatrix2}{ComplexMatrix2} \hyperlink{README_8md_a5d1c311241dc8d8ffa4badf059977dc5}{u}
+\item 
+\hyperlink{README_8md_a5d1c311241dc8d8ffa4badf059977dc5}{u} \hyperlink{README_8md_a28c529de4915322d2a51f2c1a424c672}{r0c0} = (\hyperlink{structComplex}{Complex}) \{.real=.5, .imag= .5\}
+\item 
+\hyperlink{README_8md_a5d1c311241dc8d8ffa4badf059977dc5}{u} \hyperlink{README_8md_a444db2ee26ed224e9370770814cb4b50}{r0c1} = (\hyperlink{structComplex}{Complex}) \{.real=.5, .imag=-\/.5\}
+\item 
+\hyperlink{README_8md_a5d1c311241dc8d8ffa4badf059977dc5}{u} \hyperlink{README_8md_a698aa54017453fbfbf429e0e46821ef8}{r1c0} = (\hyperlink{structComplex}{Complex}) \{.real=.5, .imag=-\/.5\}
+\item 
+\hyperlink{README_8md_a5d1c311241dc8d8ffa4badf059977dc5}{u} \hyperlink{README_8md_aae8b0c0e5cc303f7560cb29107cd0787}{r1c1} = (\hyperlink{structComplex}{Complex}) \{.real=.5, .imag= .5\}
+\item 
+int\mbox{[}$\,$\mbox{]} \hyperlink{README_8md_a636f16bb55903420974dfd184205e591}{controls} = \{1, 2, 3, 4, 5\}
+\item 
+\hyperlink{README_8md_a2d0f5bba181ef1543dc90d4f1ce64c5e}{QuEST} is contained entirely in the c and h files in the \hyperlink{README_8md_a2d0f5bba181ef1543dc90d4f1ce64c5e}{QuEST} folder To use \hyperlink{README_8md_a2d0f5bba181ef1543dc90d4f1ce64c5e}{QuEST}
 \end{DoxyCompactItemize}
 
 
+\subsubsection{Function Documentation}
+\hypertarget{README_8md_a919bff7d5f7b67fde28e771903fff6f1}{
+\index{README.md@{README.md}!controlledNot@{controlledNot}}
+\index{controlledNot@{controlledNot}!README.md@{README.md}}
+\paragraph[{controlledNot}]{\setlength{\rightskip}{0pt plus 5cm}controlledNot (qubits, \/  0, \/  1)}\hfill}
+\label{README_8md_a919bff7d5f7b67fde28e771903fff6f1}
+\hypertarget{README_8md_a25572bc3f038713ed311fea2b40de0e9}{
+\index{README.md@{README.md}!multiControlledUnitary@{multiControlledUnitary}}
+\index{multiControlledUnitary@{multiControlledUnitary}!README.md@{README.md}}
+\paragraph[{multiControlledUnitary}]{\setlength{\rightskip}{0pt plus 5cm}multiControlledUnitary (qureg, \/  {\bf controls}, \/  5, \/  0, \/  {\bf u})}\hfill}
+\label{README_8md_a25572bc3f038713ed311fea2b40de0e9}
+\hypertarget{README_8md_ac4cb8c0825f6c6a74b839bbd4ae22ea4}{
+\index{README.md@{README.md}!rotateAroundAxis@{rotateAroundAxis}}
+\index{rotateAroundAxis@{rotateAroundAxis}!README.md@{README.md}}
+\paragraph[{rotateAroundAxis}]{\setlength{\rightskip}{0pt plus 5cm}rotateAroundAxis (qubits, \/  0, \/  3.14/ {\em 2}, \/  {\bf v})}\hfill}
+\label{README_8md_ac4cb8c0825f6c6a74b839bbd4ae22ea4}
+\hypertarget{README_8md_a6f495fc15ce3f43b4c8adbf43cb881ea}{
+\index{README.md@{README.md}!rotateY@{rotateY}}
+\index{rotateY@{rotateY}!README.md@{README.md}}
+\paragraph[{rotateY}]{\setlength{\rightskip}{0pt plus 5cm}rotateY (qubits, \/  0, \/  . {\em 1})}\hfill}
+\label{README_8md_a6f495fc15ce3f43b4c8adbf43cb881ea}
+\hypertarget{README_8md_a22b5a2d7f987c5e030a1d683d9483f49}{
+\index{README.md@{README.md}!unitary@{unitary}}
+\index{unitary@{unitary}!README.md@{README.md}}
+\paragraph[{unitary}]{\setlength{\rightskip}{0pt plus 5cm}unitary (qubits, \/  0, \/  {\bf u})}\hfill}
+\label{README_8md_a22b5a2d7f987c5e030a1d683d9483f49}
+
+
 \subsubsection{Variable Documentation}
-\hypertarget{README_8md_a9deb99efd500e3c4a12304d32da47e19}{
-\index{README.md@{README.md}!compilation@{compilation}}
-\index{compilation@{compilation}!README.md@{README.md}}
-\paragraph[{compilation}]{\setlength{\rightskip}{0pt plus 5cm}QuEST is currently in prerelease and may be unstable Latest hybridises OpenMP and and can run on a GPU Needing only {\bf compilation}}\hfill}
-\label{README_8md_a9deb99efd500e3c4a12304d32da47e19}
+\hypertarget{README_8md_a636f16bb55903420974dfd184205e591}{
+\index{README.md@{README.md}!controls@{controls}}
+\index{controls@{controls}!README.md@{README.md}}
+\paragraph[{controls}]{\setlength{\rightskip}{0pt plus 5cm}int \mbox{[}$\,$\mbox{]} {\bf controls} = \{1, 2, 3, 4, 5\}}\hfill}
+\label{README_8md_a636f16bb55903420974dfd184205e591}
 
 
-Definition at line 13 of file README.md.\hypertarget{README_8md_a0a40be130c04118a27bcd009eebdaa7b}{
-\index{README.md@{README.md}!MPI@{MPI}}
-\index{MPI@{MPI}!README.md@{README.md}}
-\paragraph[{MPI}]{\setlength{\rightskip}{0pt plus 5cm}QuEST is currently in prerelease and may be unstable Latest hybridises OpenMP and {\bf MPI}}\hfill}
-\label{README_8md_a0a40be130c04118a27bcd009eebdaa7b}
+Definition at line 59 of file README.md.\hypertarget{README_8md_a2d0f5bba181ef1543dc90d4f1ce64c5e}{
+\index{README.md@{README.md}!QuEST@{QuEST}}
+\index{QuEST@{QuEST}!README.md@{README.md}}
+\paragraph[{QuEST}]{\setlength{\rightskip}{0pt plus 5cm}{\bf QuEST} is contained entirely in the c and h files in the {\bf QuEST} folder To use copy these files to your computer and include {\bf QuEST} h in your C code We include make files for compiling {\bf QuEST}}\hfill}
+\label{README_8md_a2d0f5bba181ef1543dc90d4f1ce64c5e}
 
 
-Definition at line 13 of file README.md.\hypertarget{README_8md_a1a0088f6c565daaa48409371f6c5c36c}{
-\index{README.md@{README.md}!supercomputers@{supercomputers}}
-\index{supercomputers@{supercomputers}!README.md@{README.md}}
-\paragraph[{supercomputers}]{\setlength{\rightskip}{0pt plus 5cm}QuEST is currently in prerelease and may be unstable Latest hybridises OpenMP and and can run on a GPU Needing only QuEST is easy to run both on laptops and {\bf supercomputers}}\hfill}
-\label{README_8md_a1a0088f6c565daaa48409371f6c5c36c}
+Definition at line 65 of file README.md.\hypertarget{README_8md_a28c529de4915322d2a51f2c1a424c672}{
+\index{README.md@{README.md}!r0c0@{r0c0}}
+\index{r0c0@{r0c0}!README.md@{README.md}}
+\paragraph[{r0c0}]{\setlength{\rightskip}{0pt plus 5cm}{\bf u} {\bf r0c0} = ({\bf Complex}) \{.real=.5, .imag= .5\}}\hfill}
+\label{README_8md_a28c529de4915322d2a51f2c1a424c672}
 
 
-Definition at line 13 of file README.md.\hypertarget{README_8md_a94df19ae37ab2d673ea00c5d31754e61}{
+Definition at line 53 of file README.md.\hypertarget{README_8md_a444db2ee26ed224e9370770814cb4b50}{
+\index{README.md@{README.md}!r0c1@{r0c1}}
+\index{r0c1@{r0c1}!README.md@{README.md}}
+\paragraph[{r0c1}]{\setlength{\rightskip}{0pt plus 5cm}{\bf u} {\bf r0c1} = ({\bf Complex}) \{.real=.5, .imag=-\/.5\}}\hfill}
+\label{README_8md_a444db2ee26ed224e9370770814cb4b50}
+
+
+Definition at line 54 of file README.md.\hypertarget{README_8md_a698aa54017453fbfbf429e0e46821ef8}{
+\index{README.md@{README.md}!r1c0@{r1c0}}
+\index{r1c0@{r1c0}!README.md@{README.md}}
+\paragraph[{r1c0}]{\setlength{\rightskip}{0pt plus 5cm}{\bf u} {\bf r1c0} = ({\bf Complex}) \{.real=.5, .imag=-\/.5\}}\hfill}
+\label{README_8md_a698aa54017453fbfbf429e0e46821ef8}
+
+
+Definition at line 55 of file README.md.\hypertarget{README_8md_aae8b0c0e5cc303f7560cb29107cd0787}{
+\index{README.md@{README.md}!r1c1@{r1c1}}
+\index{r1c1@{r1c1}!README.md@{README.md}}
+\paragraph[{r1c1}]{\setlength{\rightskip}{0pt plus 5cm}{\bf u} {\bf r1c1} = ({\bf Complex}) \{.real=.5, .imag= .5\}}\hfill}
+\label{README_8md_aae8b0c0e5cc303f7560cb29107cd0787}
+
+
+Definition at line 56 of file README.md.\hypertarget{README_8md_a5d1c311241dc8d8ffa4badf059977dc5}{
+\index{README.md@{README.md}!u@{u}}
+\index{u@{u}!README.md@{README.md}}
+\paragraph[{u}]{\setlength{\rightskip}{0pt plus 5cm}and powerful C {\bf ComplexMatrix2} {\bf u}}\hfill}
+\label{README_8md_a5d1c311241dc8d8ffa4badf059977dc5}
+
+
+Definition at line 52 of file README.md.
+
+Referenced by main(), test\_\-controlledUnitary(), test\_\-multiControlledUnitary(), and test\_\-unitary().\hypertarget{README_8md_a22eb3b09da74633038e36bd8dfef55c0}{
+\index{README.md@{README.md}!v@{v}}
+\index{v@{v}!README.md@{README.md}}
+\paragraph[{v}]{\setlength{\rightskip}{0pt plus 5cm}though is flexible C {\bf Vector} {\bf v}}\hfill}
+\label{README_8md_a22eb3b09da74633038e36bd8dfef55c0}
+
+
+Definition at line 46 of file README.md.
+
+Referenced by main().\hypertarget{README_8md_a94df19ae37ab2d673ea00c5d31754e61}{
 \index{README.md@{README.md}!version@{version}}
 \index{version@{version}!README.md@{README.md}}
-\paragraph[{version}]{\setlength{\rightskip}{0pt plus 5cm}QuEST is currently in prerelease and may be unstable Latest {\bf version}}\hfill}
+\paragraph[{version}]{\setlength{\rightskip}{0pt plus 5cm}{\bf QuEST} is currently in prerelease and may be unstable Latest {\bf version}}\hfill}
 \label{README_8md_a94df19ae37ab2d673ea00c5d31754e61}
 
 
-Definition at line 13 of file README.md.
+Definition at line 15 of file README.md.\hypertarget{README_8md_a6a52a27535805eddc782c67f42c20c69}{
+\index{README.md@{README.md}!x@{x}}
+\index{x@{x}!README.md@{README.md}}
+\paragraph[{x}]{\setlength{\rightskip}{0pt plus 5cm}{\bf v} {\bf x} = 1}\hfill}
+\label{README_8md_a6a52a27535805eddc782c67f42c20c69}
+
+
+Definition at line 47 of file README.md.\hypertarget{README_8md_a003dc5701d53a819228f5417a8089139}{
+\index{README.md@{README.md}!y@{y}}
+\index{y@{y}!README.md@{README.md}}
+\paragraph[{y}]{\setlength{\rightskip}{0pt plus 5cm}{\bf v} {\bf y} = 0}\hfill}
+\label{README_8md_a003dc5701d53a819228f5417a8089139}
+
+
+Definition at line 47 of file README.md.
+
+Referenced by calcTotalProbability(), and genrand\_\-int32().\hypertarget{README_8md_a0f9f545825a114923b98de8cc33a5f6a}{
+\index{README.md@{README.md}!z@{z}}
+\index{z@{z}!README.md@{README.md}}
+\paragraph[{z}]{\setlength{\rightskip}{0pt plus 5cm}{\bf v} {\bf z} = 0}\hfill}
+\label{README_8md_a0f9f545825a114923b98de8cc33a5f6a}
+
+
+Definition at line 47 of file README.md.
