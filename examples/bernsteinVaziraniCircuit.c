@@ -6,7 +6,7 @@
 # include <math.h>
 # include <omp.h>
 
-# include "qubits.h" 
+# include "QuEST.h" 
 
 
 int main (int narg, char** varg) {

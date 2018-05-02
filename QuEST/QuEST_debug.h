@@ -1,10 +1,10 @@
 // Distributed under MIT licence. See https://github.com/aniabrown/QuEST/blob/master/LICENCE.txt 
 // for details 
 
-# ifndef QUBITS_DEBUG
-# define QUBITS_DEBUG
+# ifndef QuEST_DEBUG
+# define QuEST_DEBUG
 
-# include "precision.h"
+# include "QuEST_precision.h"
 
 /** @file
  * Developer functions used for unit testing and debugging. Not part of the public API. May contain

@@ -106,15 +106,15 @@ INCLUDE = -I$(QUEST_DIR)
 # --- targets
 #
 USER_OBJ = $(addsuffix .o, $(MY_C_SOURCES))
-OBJ = qubits.o mt19937ar.o
+OBJ = QuEST.o mt19937ar.o
 OBJ += $(USER_OBJ)
 
 # Certain API functions have different implementations for MPI or non-MPI:
 # choose the right file
 ifneq ($(USE_MPI), 0)
-	OBJ += qubits_env_mpi.o
+	OBJ += QuEST_env_mpi.o
 else
-	OBJ += qubits_env_local.o
+	OBJ += QuEST_env_local.o
 endif
 
 #

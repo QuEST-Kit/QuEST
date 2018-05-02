@@ -1,10 +1,10 @@
 // Distributed under MIT licence. See https://github.com/aniabrown/QuEST/blob/master/LICENCE.txt 
 // for details 
 
-# ifndef QUBITS_INTERNAL
-# define QUBITS_INTERNAL
+# ifndef QuEST_INTERNAL
+# define QuEST_INTERNAL
 
-# include "precision.h"
+# include "QuEST_precision.h"
 
 /** @file
  * Internal functions used to implement the public facing API in qubits.h. Do not call these functions

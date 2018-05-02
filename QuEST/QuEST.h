@@ -1,10 +1,10 @@
 // Distributed under MIT licence. See https://github.com/aniabrown/QuEST/blob/master/LICENCE.txt 
 // for details 
 
-# ifndef QUBITS
-# define QUBITS
+# ifndef QuEST
+# define QuEST
 
-# include "precision.h"
+# include "QuEST_precision.h"
 /** @file
  * The QuEST library API and objects. 
 */

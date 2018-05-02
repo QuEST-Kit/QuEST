@@ -1,5 +1,5 @@
 #include <stdio.h>
-#include "qubits.h"
+#include "QuEST.h"
 
 int main (int narg, char *varg[]) {
 
@@ -23,7 +23,6 @@ int main (int narg, char *varg[]) {
     createMultiQubit(&qubits, 3, env);
     initStateZero(&qubits);
 
-    QuESTSeedRandomDefault();
 
     /*
      * REPORT SYSTEM AND ENVIRONMENT

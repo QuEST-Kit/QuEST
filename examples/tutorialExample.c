@@ -1,5 +1,5 @@
 #include <stdio.h>
-#include "qubits.h"
+#include "QuEST.h"
 
 int main (int narg, char *varg[]) {
 
