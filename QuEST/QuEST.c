@@ -1963,8 +1963,6 @@ void QuESTSeedRandomDefault(){
     gethostname(hostName, sizeof(hostName));
     unsigned long int hostNameInt = hashString(hostName);
 
-    printf("hostname: %s %lu %lu %lu\n", hostName, hostNameInt, pid, msecs);
-
     unsigned long int key[3];
     key[0] = msecs; key[1] = pid; key[2] = hostNameInt;
     init_by_array(key, 3); 
