@@ -1950,19 +1950,19 @@ void QuESTSeedRandomDefault(){
     // init MT random number generator with three keys -- time, pid and a hash of hostname 
     // for the MPI version, it is ok that all procs will get the same seed as random numbers will only be 
     // used by the master process
-   
+
     struct timeval  tv;
     gettimeofday(&tv, NULL);
 
     double time_in_mill = 
-             (tv.tv_sec) * 1000 + (tv.tv_usec) / 1000 ; // convert tv_sec & tv_usec to millisecond
- 
+        (tv.tv_sec) * 1000 + (tv.tv_usec) / 1000 ; // convert tv_sec & tv_usec to millisecond
+
     unsigned long int pid = getpid();
     unsigned long int msecs = (unsigned long int) time_in_mill;
     char hostName[MAXHOSTNAMELEN+1];
     gethostname(hostName, sizeof(hostName));
     unsigned long int hostNameInt = hashString(hostName);
-    
+
     printf("hostname: %s %lu %lu %lu\n", hostName, hostNameInt, pid, msecs);
 
     unsigned long int key[3];
