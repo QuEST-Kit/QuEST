@@ -1,0 +1,2496 @@
+\hypertarget{QuEST_8h}{}\subsection{Qu\+E\+S\+T.\+h File Reference}
+\label{QuEST_8h}\index{Qu\+E\+S\+T.\+h@{Qu\+E\+S\+T.\+h}}
+
+
+The Qu\+E\+ST library A\+PI and objects.  
+
+
+{\ttfamily \#include \char`\"{}Qu\+E\+S\+T\+\_\+precision.\+h\char`\"{}}\newline
+\subsubsection*{Data Structures}
+\begin{DoxyCompactItemize}
+\item 
+struct \mbox{\hyperlink{structComplexArray}{Complex\+Array}}
+\begin{DoxyCompactList}\small\item\em Represents an array of complex numbers grouped into an array of real components and an array of coressponding complex components. \end{DoxyCompactList}\item 
+struct \mbox{\hyperlink{structComplex}{Complex}}
+\begin{DoxyCompactList}\small\item\em Represents one complex number. \end{DoxyCompactList}\item 
+struct \mbox{\hyperlink{structComplexMatrix2}{Complex\+Matrix2}}
+\begin{DoxyCompactList}\small\item\em Represents a 2x2 matrix of complex numbers. \end{DoxyCompactList}\item 
+struct \mbox{\hyperlink{structVector}{Vector}}
+\begin{DoxyCompactList}\small\item\em Represents a 3-\/vector of real numbers. \end{DoxyCompactList}\item 
+struct \mbox{\hyperlink{structMultiQubit}{Multi\+Qubit}}
+\begin{DoxyCompactList}\small\item\em Represents a system of qubits. \end{DoxyCompactList}\item 
+struct \mbox{\hyperlink{structQuESTEnv}{Qu\+E\+S\+T\+Env}}
+\begin{DoxyCompactList}\small\item\em Information about the environment the program is running in. \end{DoxyCompactList}\end{DoxyCompactItemize}
+\subsubsection*{Typedefs}
+\begin{DoxyCompactItemize}
+\item 
+typedef struct \mbox{\hyperlink{structComplexArray}{Complex\+Array}} \mbox{\hyperlink{QuEST_8h_a19e00739fde70a851d068f322cf915c8}{Complex\+Array}}
+\begin{DoxyCompactList}\small\item\em Represents an array of complex numbers grouped into an array of real components and an array of coressponding complex components. \end{DoxyCompactList}\item 
+typedef struct \mbox{\hyperlink{structComplex}{Complex}} \mbox{\hyperlink{QuEST_8h_ad59c9e471673c07782e6c403277ffd8d}{Complex}}
+\begin{DoxyCompactList}\small\item\em Represents one complex number. \end{DoxyCompactList}\item 
+typedef struct \mbox{\hyperlink{structComplexMatrix2}{Complex\+Matrix2}} \mbox{\hyperlink{QuEST_8h_aa6e00518bd2c71030c52d5955e506875}{Complex\+Matrix2}}
+\begin{DoxyCompactList}\small\item\em Represents a 2x2 matrix of complex numbers. \end{DoxyCompactList}\item 
+typedef struct \mbox{\hyperlink{structVector}{Vector}} \mbox{\hyperlink{QuEST_8h_a6ded2cf071c127e518317e3c451af3ef}{Vector}}
+\begin{DoxyCompactList}\small\item\em Represents a 3-\/vector of real numbers. \end{DoxyCompactList}\item 
+typedef struct \mbox{\hyperlink{structMultiQubit}{Multi\+Qubit}} \mbox{\hyperlink{QuEST_8h_af4123a681074068eeeee1562758eef61}{Multi\+Qubit}}
+\begin{DoxyCompactList}\small\item\em Represents a system of qubits. \end{DoxyCompactList}\item 
+typedef struct \mbox{\hyperlink{structQuESTEnv}{Qu\+E\+S\+T\+Env}} \mbox{\hyperlink{QuEST_8h_aedfe2bb713c31d6133e53b1bd72d7a2c}{Qu\+E\+S\+T\+Env}}
+\begin{DoxyCompactList}\small\item\em Information about the environment the program is running in. \end{DoxyCompactList}\end{DoxyCompactItemize}
+\subsubsection*{Enumerations}
+\begin{DoxyCompactItemize}
+\item 
+enum \mbox{\hyperlink{QuEST_8h_a5739021c733cecc49647956b2f7338ea}{phase\+Gate\+Type}} \{ \mbox{\hyperlink{QuEST_8h_a5739021c733cecc49647956b2f7338eaa754922d1e1846a1961ff2bf163483dac}{S\+I\+G\+M\+A\+\_\+Z}} =0, 
+\mbox{\hyperlink{QuEST_8h_a5739021c733cecc49647956b2f7338eaa06e60f80fa80cce271793d6d31bcc21f}{S\+\_\+\+G\+A\+TE}} =1, 
+\mbox{\hyperlink{QuEST_8h_a5739021c733cecc49647956b2f7338eaa614d07d597a8e320cc556bc0e652e4ab}{T\+\_\+\+G\+A\+TE}} =2
+ \}
+\end{DoxyCompactItemize}
+\subsubsection*{Functions}
+\begin{DoxyCompactItemize}
+\item 
+void \mbox{\hyperlink{QuEST_8h_a9c02591bc64c2918503afa231d90d83f}{create\+Multi\+Qubit}} (\mbox{\hyperlink{structMultiQubit}{Multi\+Qubit}} $\ast$multi\+Qubit, int num\+Qubits, \mbox{\hyperlink{structQuESTEnv}{Qu\+E\+S\+T\+Env}} env)
+\begin{DoxyCompactList}\small\item\em Create a \mbox{\hyperlink{structMultiQubit}{Multi\+Qubit}} object representing a set of qubits. \end{DoxyCompactList}\item 
+void \mbox{\hyperlink{QuEST_8h_ae5d6acc322314d7a3d8a2eccf00d3b19}{destroy\+Multi\+Qubit}} (\mbox{\hyperlink{structMultiQubit}{Multi\+Qubit}} multi\+Qubit, \mbox{\hyperlink{structQuESTEnv}{Qu\+E\+S\+T\+Env}} env)
+\begin{DoxyCompactList}\small\item\em Deallocate a \mbox{\hyperlink{structMultiQubit}{Multi\+Qubit}} object representing a set of qubits. \end{DoxyCompactList}\item 
+void \mbox{\hyperlink{QuEST_8h_a96f4de9ce7fefc7680a44d601fc3d894}{report\+State}} (\mbox{\hyperlink{structMultiQubit}{Multi\+Qubit}} multi\+Qubit)
+\begin{DoxyCompactList}\small\item\em Print the current state vector of probability amplitudes for a set of qubits to file. \end{DoxyCompactList}\item 
+void \mbox{\hyperlink{QuEST_8h_a842d6884e063a5865a2232cba56b65ac}{report\+State\+To\+Screen}} (\mbox{\hyperlink{structMultiQubit}{Multi\+Qubit}} multi\+Qubit, \mbox{\hyperlink{structQuESTEnv}{Qu\+E\+S\+T\+Env}} env, int report\+Rank)
+\begin{DoxyCompactList}\small\item\em Print the current state vector of probability amplitudes for a set of qubits to standard out. \end{DoxyCompactList}\item 
+void \mbox{\hyperlink{QuEST_8h_aa5e77e0e64f3a4a3d3f5cc7382bffcd9}{report\+Multi\+Qubit\+Params}} (\mbox{\hyperlink{structMultiQubit}{Multi\+Qubit}} multi\+Qubit)
+\begin{DoxyCompactList}\small\item\em Report metainformation about a set of qubits\+: number of qubits, number of probability amplitudes. \end{DoxyCompactList}\item 
+void \mbox{\hyperlink{QuEST_8h_acb5b2eff794339090004d29f02a70d9a}{init\+State\+Zero}} (\mbox{\hyperlink{structMultiQubit}{Multi\+Qubit}} $\ast$multi\+Qubit)
+\begin{DoxyCompactList}\small\item\em Initialise a set of $ N $ qubits to the classical zero state $ {| 0 \rangle}^{\otimes N} $. \end{DoxyCompactList}\item 
+void \mbox{\hyperlink{QuEST_8h_a43bcb279fc9717fbd06a19cdef48b9d8}{init\+State\+Plus}} (\mbox{\hyperlink{structMultiQubit}{Multi\+Qubit}} $\ast$multi\+Qubit)
+\begin{DoxyCompactList}\small\item\em Initialise a set of $ N $ qubits to the plus state $ {| + \rangle}^{\otimes N} = \frac{1}{\sqrt{2^N}} (| 0 \rangle + | 1 \rangle)^{\otimes N} $. \end{DoxyCompactList}\item 
+void \mbox{\hyperlink{QuEST_8h_aea34d45aaea9e64ad3f7786bfb412d0c}{init\+Classical\+State}} (\mbox{\hyperlink{structMultiQubit}{Multi\+Qubit}} $\ast$multi\+Qubit, long long int state\+Ind)
+\begin{DoxyCompactList}\small\item\em Initialise a set of $ N $ qubits to the classical state with index {\ttfamily state\+Ind}. \end{DoxyCompactList}\item 
+void \mbox{\hyperlink{QuEST_8h_afc1835c6b43b6e59ce7df7b13f274fc7}{multi\+Controlled\+Phase\+Gate}} (\mbox{\hyperlink{structMultiQubit}{Multi\+Qubit}} multi\+Qubit, int $\ast$control\+Qubits, int num\+Control\+Qubits)
+\begin{DoxyCompactList}\small\item\em Apply the multiple-\/qubit controlled phase gate, also known as the multiple-\/qubit controlled sigmaZ gate. \end{DoxyCompactList}\item 
+void \mbox{\hyperlink{QuEST_8h_a11a96159191cbf1b01a1080e7f045aac}{controlled\+Phase\+Gate}} (\mbox{\hyperlink{structMultiQubit}{Multi\+Qubit}} multi\+Qubit, const int id\+Qubit1, const int id\+Qubit2)
+\begin{DoxyCompactList}\small\item\em Apply the (two-\/qubit) controlled phase gate, also known as the controlled sigmaZ gate. \end{DoxyCompactList}\item 
+void \mbox{\hyperlink{QuEST_8h_adda6c47876a7676488ed0565a19eaa65}{s\+Gate}} (\mbox{\hyperlink{structMultiQubit}{Multi\+Qubit}} multi\+Qubit, const int target\+Qubit)
+\begin{DoxyCompactList}\small\item\em Apply the single-\/qubit S gate. \end{DoxyCompactList}\item 
+void \mbox{\hyperlink{QuEST_8h_af764ea63a2e870098f4e1ce08562942e}{t\+Gate}} (\mbox{\hyperlink{structMultiQubit}{Multi\+Qubit}} multi\+Qubit, const int target\+Qubit)
+\begin{DoxyCompactList}\small\item\em Apply the single-\/qubit T gate. \end{DoxyCompactList}\item 
+void \mbox{\hyperlink{QuEST_8h_ad84a3ce68d1ca02b4e3f741ea45b6054}{init\+Qu\+E\+S\+T\+Env}} (\mbox{\hyperlink{structQuESTEnv}{Qu\+E\+S\+T\+Env}} $\ast$env)
+\begin{DoxyCompactList}\small\item\em Initialize the Qu\+E\+ST environment. \end{DoxyCompactList}\item 
+void \mbox{\hyperlink{QuEST_8h_abd4bc926cd3f9b65610bb228d0c59fe0}{close\+Qu\+E\+S\+T\+Env}} (\mbox{\hyperlink{structQuESTEnv}{Qu\+E\+S\+T\+Env}} env)
+\begin{DoxyCompactList}\small\item\em Close Qu\+E\+ST environment. \end{DoxyCompactList}\item 
+void \mbox{\hyperlink{QuEST_8h_a8d31fe2d1ad4d01e2a1f5f6b8bc15b77}{sync\+Qu\+E\+S\+T\+Env}} (\mbox{\hyperlink{structQuESTEnv}{Qu\+E\+S\+T\+Env}} env)
+\begin{DoxyCompactList}\small\item\em Guarantees that all code up to the given point has been executed on all nodes (if running in distributed mode) \end{DoxyCompactList}\item 
+int \mbox{\hyperlink{QuEST_8h_ac7e38d768a1bd79019f88cc1e6295092}{sync\+Qu\+E\+S\+T\+Success}} (int success\+Code)
+\begin{DoxyCompactList}\small\item\em Performs a logical A\+ND on all success\+Codes held by all processes. \end{DoxyCompactList}\item 
+void \mbox{\hyperlink{QuEST_8h_af8a14ae79c3fb2c0b5f6255cc37bebf9}{report\+Qu\+E\+S\+T\+Env}} (\mbox{\hyperlink{structQuESTEnv}{Qu\+E\+S\+T\+Env}} env)
+\begin{DoxyCompactList}\small\item\em Report information about the Qu\+E\+ST environment. \end{DoxyCompactList}\item 
+void \mbox{\hyperlink{QuEST_8h_a8f10aabf9f607f19093aee54630caa21}{get\+Environment\+String}} (\mbox{\hyperlink{structQuESTEnv}{Qu\+E\+S\+T\+Env}} env, \mbox{\hyperlink{structMultiQubit}{Multi\+Qubit}} multi\+Qubit, char str\mbox{[}200\mbox{]})
+\item 
+\mbox{\hyperlink{QuEST__precision_8h_a4b654506f18b8bfd61ad2a29a7e38c25}{R\+E\+AL}} \mbox{\hyperlink{QuEST_8h_a317b786f577fa6bc136ea7f0ee7330a7}{get\+Real\+Amp\+El}} (\mbox{\hyperlink{structMultiQubit}{Multi\+Qubit}} multi\+Qubit, long long int index)
+\begin{DoxyCompactList}\small\item\em Get the real component of the complex probability amplitude at an index in the state vector. \end{DoxyCompactList}\item 
+\mbox{\hyperlink{QuEST__precision_8h_a4b654506f18b8bfd61ad2a29a7e38c25}{R\+E\+AL}} \mbox{\hyperlink{QuEST_8h_a3615f76fd5f57008d9b74bbd10533dd0}{get\+Imag\+Amp\+El}} (\mbox{\hyperlink{structMultiQubit}{Multi\+Qubit}} multi\+Qubit, long long int index)
+\begin{DoxyCompactList}\small\item\em Get the imaginary component of the complex probability amplitude at an index in the state vector. \end{DoxyCompactList}\item 
+\mbox{\hyperlink{QuEST__precision_8h_a4b654506f18b8bfd61ad2a29a7e38c25}{R\+E\+AL}} \mbox{\hyperlink{QuEST_8h_a799b10447d6dbdaf960a4d3eedd22014}{get\+Prob\+El}} (\mbox{\hyperlink{structMultiQubit}{Multi\+Qubit}} multi\+Qubit, long long int index)
+\begin{DoxyCompactList}\small\item\em Get the probability of the state at an index in the full state vector. \end{DoxyCompactList}\item 
+\mbox{\hyperlink{QuEST__precision_8h_a4b654506f18b8bfd61ad2a29a7e38c25}{R\+E\+AL}} \mbox{\hyperlink{QuEST_8h_a818a4c7cd7252d2b10b896b12fa431d3}{calc\+Total\+Probability}} (\mbox{\hyperlink{structMultiQubit}{Multi\+Qubit}} multi\+Qubit)
+\begin{DoxyCompactList}\small\item\em Calculate the probability of being in any state by taking the norm of the entire state vector. \end{DoxyCompactList}\item 
+void \mbox{\hyperlink{QuEST_8h_a03b13dfcabd8c59b50dbdd3af44ba8b2}{compact\+Unitary}} (\mbox{\hyperlink{structMultiQubit}{Multi\+Qubit}} multi\+Qubit, const int target\+Qubit, \mbox{\hyperlink{structComplex}{Complex}} alpha, \mbox{\hyperlink{structComplex}{Complex}} beta)
+\begin{DoxyCompactList}\small\item\em Apply a single-\/qubit unitary parameterised by two given complex scalars. \end{DoxyCompactList}\item 
+void \mbox{\hyperlink{QuEST_8h_a7a0877e33700f6bad48adb51b7b3fb67}{unitary}} (\mbox{\hyperlink{structMultiQubit}{Multi\+Qubit}} multi\+Qubit, const int target\+Qubit, \mbox{\hyperlink{structComplexMatrix2}{Complex\+Matrix2}} u)
+\begin{DoxyCompactList}\small\item\em Apply a general single-\/qubit unitary (including a global phase factor). \end{DoxyCompactList}\item 
+void \mbox{\hyperlink{QuEST_8h_a6cc7fa705a2f2e6b486b49c5589d5df5}{rotateX}} (\mbox{\hyperlink{structMultiQubit}{Multi\+Qubit}} multi\+Qubit, const int rot\+Qubit, \mbox{\hyperlink{QuEST__precision_8h_a4b654506f18b8bfd61ad2a29a7e38c25}{R\+E\+AL}} angle)
+\begin{DoxyCompactList}\small\item\em Rotate a single qubit by a given angle around the X-\/axis of the Bloch-\/sphere. \end{DoxyCompactList}\item 
+void \mbox{\hyperlink{QuEST_8h_ace0d3592d38a990e81a434c4e9681500}{rotateY}} (\mbox{\hyperlink{structMultiQubit}{Multi\+Qubit}} multi\+Qubit, const int rot\+Qubit, \mbox{\hyperlink{QuEST__precision_8h_a4b654506f18b8bfd61ad2a29a7e38c25}{R\+E\+AL}} angle)
+\begin{DoxyCompactList}\small\item\em Rotate a single qubit by a given angle around the Y-\/axis of the Bloch-\/sphere. \end{DoxyCompactList}\item 
+void \mbox{\hyperlink{QuEST_8h_abd621412ad30c1b034f4ce153c4afe10}{rotateZ}} (\mbox{\hyperlink{structMultiQubit}{Multi\+Qubit}} multi\+Qubit, const int rot\+Qubit, \mbox{\hyperlink{QuEST__precision_8h_a4b654506f18b8bfd61ad2a29a7e38c25}{R\+E\+AL}} angle)
+\begin{DoxyCompactList}\small\item\em Rotate a single qubit by a given angle around the Z-\/axis of the Bloch-\/sphere (also known as a phase shift gate). \end{DoxyCompactList}\item 
+void \mbox{\hyperlink{QuEST_8h_a8810423457803005fecd415f4299f40d}{rotate\+Around\+Axis}} (\mbox{\hyperlink{structMultiQubit}{Multi\+Qubit}} multi\+Qubit, const int rot\+Qubit, \mbox{\hyperlink{QuEST__precision_8h_a4b654506f18b8bfd61ad2a29a7e38c25}{R\+E\+AL}} angle, \mbox{\hyperlink{structVector}{Vector}} axis)
+\begin{DoxyCompactList}\small\item\em Rotate a single qubit by a given angle around a given vector on the Bloch-\/sphere. \end{DoxyCompactList}\item 
+void \mbox{\hyperlink{QuEST_8h_ac6923ac57e67d9a21096e06f6a9012f6}{controlled\+RotateX}} (\mbox{\hyperlink{structMultiQubit}{Multi\+Qubit}} multi\+Qubit, const int control\+Qubit, const int target\+Qubit, \mbox{\hyperlink{QuEST__precision_8h_a4b654506f18b8bfd61ad2a29a7e38c25}{R\+E\+AL}} angle)
+\begin{DoxyCompactList}\small\item\em Applies a controlled rotation by a given angle around the X-\/axis of the Bloch-\/sphere. \end{DoxyCompactList}\item 
+void \mbox{\hyperlink{QuEST_8h_a71e90a2f7292116338c062934f9d1202}{controlled\+RotateY}} (\mbox{\hyperlink{structMultiQubit}{Multi\+Qubit}} multi\+Qubit, const int control\+Qubit, const int target\+Qubit, \mbox{\hyperlink{QuEST__precision_8h_a4b654506f18b8bfd61ad2a29a7e38c25}{R\+E\+AL}} angle)
+\begin{DoxyCompactList}\small\item\em Applies a controlled rotation by a given angle around the Y-\/axis of the Bloch-\/sphere. \end{DoxyCompactList}\item 
+void \mbox{\hyperlink{QuEST_8h_a668e5d2634b02e98bc73675ccb11d61c}{controlled\+RotateZ}} (\mbox{\hyperlink{structMultiQubit}{Multi\+Qubit}} multi\+Qubit, const int control\+Qubit, const int target\+Qubit, \mbox{\hyperlink{QuEST__precision_8h_a4b654506f18b8bfd61ad2a29a7e38c25}{R\+E\+AL}} angle)
+\begin{DoxyCompactList}\small\item\em Applies a controlled rotation by a given angle around the Z-\/axis of the Bloch-\/sphere. \end{DoxyCompactList}\item 
+void \mbox{\hyperlink{QuEST_8h_ad41f82b41149393a642391b67b3a287e}{controlled\+Rotate\+Around\+Axis}} (\mbox{\hyperlink{structMultiQubit}{Multi\+Qubit}} multi\+Qubit, const int control\+Qubit, const int target\+Qubit, \mbox{\hyperlink{QuEST__precision_8h_a4b654506f18b8bfd61ad2a29a7e38c25}{R\+E\+AL}} angle, \mbox{\hyperlink{structVector}{Vector}} axis)
+\begin{DoxyCompactList}\small\item\em Applies a controlled rotation by a given angle around a given vector on the Bloch-\/sphere. \end{DoxyCompactList}\item 
+void \mbox{\hyperlink{QuEST_8h_ab4812953bc457405b3aa05a4c2f64f4a}{controlled\+Compact\+Unitary}} (\mbox{\hyperlink{structMultiQubit}{Multi\+Qubit}} multi\+Qubit, const int control\+Qubit, const int target\+Qubit, \mbox{\hyperlink{structComplex}{Complex}} alpha, \mbox{\hyperlink{structComplex}{Complex}} beta)
+\begin{DoxyCompactList}\small\item\em Apply a controlled unitary (single control, single target) parameterised by two given complex scalars. \end{DoxyCompactList}\item 
+void \mbox{\hyperlink{QuEST_8h_a8a701526263392599aa21d0d0f05d9d8}{controlled\+Unitary}} (\mbox{\hyperlink{structMultiQubit}{Multi\+Qubit}} multi\+Qubit, const int control\+Qubit, const int target\+Qubit, \mbox{\hyperlink{structComplexMatrix2}{Complex\+Matrix2}} u)
+\begin{DoxyCompactList}\small\item\em Apply a general controlled unitary (single control, single target), which can include a global phase factor. \end{DoxyCompactList}\item 
+void \mbox{\hyperlink{QuEST_8h_ae395a79690283ed81106afadd7a8cd8a}{multi\+Controlled\+Unitary}} (\mbox{\hyperlink{structMultiQubit}{Multi\+Qubit}} multi\+Qubit, int $\ast$control\+Qubits, const int num\+Control\+Qubits, const int target\+Qubit, \mbox{\hyperlink{structComplexMatrix2}{Complex\+Matrix2}} u)
+\begin{DoxyCompactList}\small\item\em Apply a general multiple-\/control single-\/target unitary, which can include a global phase factor. \end{DoxyCompactList}\item 
+void \mbox{\hyperlink{QuEST_8h_a86e396e06b7d527cac20ba0108872423}{sigmaX}} (\mbox{\hyperlink{structMultiQubit}{Multi\+Qubit}} multi\+Qubit, const int target\+Qubit)
+\begin{DoxyCompactList}\small\item\em Apply the single-\/qubit sigma-\/X (also known as the X, Pauli-\/X, N\+OT or bit-\/flip) gate. \end{DoxyCompactList}\item 
+void \mbox{\hyperlink{QuEST_8h_a1f54d70a42403f7e1c2e2c2007332f61}{sigmaY}} (\mbox{\hyperlink{structMultiQubit}{Multi\+Qubit}} multi\+Qubit, const int target\+Qubit)
+\begin{DoxyCompactList}\small\item\em Apply the single-\/qubit sigma-\/Y (also known as the Y or Pauli-\/Y) gate. \end{DoxyCompactList}\item 
+void \mbox{\hyperlink{QuEST_8h_aebaab86326779de55d335cfea3efde8f}{sigmaZ}} (\mbox{\hyperlink{structMultiQubit}{Multi\+Qubit}} multi\+Qubit, const int target\+Qubit)
+\begin{DoxyCompactList}\small\item\em Apply the single-\/qubit sigma-\/Z (also known as the Z, Pauli-\/Z or phase-\/flip) gate. \end{DoxyCompactList}\item 
+void \mbox{\hyperlink{QuEST_8h_aa09b5dd93de6df1384b8f2c0041749ab}{hadamard}} (\mbox{\hyperlink{structMultiQubit}{Multi\+Qubit}} multi\+Qubit, const int target\+Qubit)
+\begin{DoxyCompactList}\small\item\em Apply the single-\/qubit Hadamard gate. \end{DoxyCompactList}\item 
+void \mbox{\hyperlink{QuEST_8h_a67576895bbc65463481a8ea24d9b1e22}{controlled\+Not}} (\mbox{\hyperlink{structMultiQubit}{Multi\+Qubit}} multi\+Qubit, const int control\+Qubit, const int target\+Qubit)
+\begin{DoxyCompactList}\small\item\em Apply the controlled not (single control, single target) gate, also known as the c-\/X, c-\/sigma-\/X, c-\/\+Pauli-\/X and c-\/bit-\/flip gate. \end{DoxyCompactList}\item 
+\mbox{\hyperlink{QuEST__precision_8h_a4b654506f18b8bfd61ad2a29a7e38c25}{R\+E\+AL}} \mbox{\hyperlink{QuEST_8h_ad315c941a51bc053d39ebfa2040fd32e}{find\+Probability\+Of\+Outcome}} (\mbox{\hyperlink{structMultiQubit}{Multi\+Qubit}} multi\+Qubit, const int measure\+Qubit, int outcome)
+\begin{DoxyCompactList}\small\item\em Gives the probability of a specified qubit being measured in the given outcome (0 or 1). \end{DoxyCompactList}\item 
+\mbox{\hyperlink{QuEST__precision_8h_a4b654506f18b8bfd61ad2a29a7e38c25}{R\+E\+AL}} \mbox{\hyperlink{QuEST_8h_a07418ebac70fd9ae5d051d089961631d}{collapse\+To\+Outcome}} (\mbox{\hyperlink{structMultiQubit}{Multi\+Qubit}} multi\+Qubit, const int measure\+Qubit, int outcome)
+\begin{DoxyCompactList}\small\item\em Updates the state vector to be consistent with measuring the measure qubit in the given outcome (0 or 1), and returns the probability of such a measurement outcome. \end{DoxyCompactList}\item 
+int \mbox{\hyperlink{QuEST_8h_ad5774247d836267175c664cd0e451bcb}{measure}} (\mbox{\hyperlink{structMultiQubit}{Multi\+Qubit}} multi\+Qubit, int measure\+Qubit)
+\begin{DoxyCompactList}\small\item\em Measures a single qubit, collapsing it randomly to 0 or 1. \end{DoxyCompactList}\item 
+int \mbox{\hyperlink{QuEST_8h_a2ac46e470c750bf93c754e06c64b0a7a}{measure\+With\+Stats}} (\mbox{\hyperlink{structMultiQubit}{Multi\+Qubit}} multi\+Qubit, int measure\+Qubit, \mbox{\hyperlink{QuEST__precision_8h_a4b654506f18b8bfd61ad2a29a7e38c25}{R\+E\+AL}} $\ast$state\+Prob)
+\begin{DoxyCompactList}\small\item\em Measures a single qubit, collapsing it randomly to 0 or 1, and additionally gives the probability of that outcome. \end{DoxyCompactList}\item 
+void \mbox{\hyperlink{QuEST_8h_ac49f548ee27ae484695f9add1273adb4}{Qu\+E\+S\+T\+Seed\+Random\+Default}} (void)
+\begin{DoxyCompactList}\small\item\em Seed the Mersenne Twister used for random number generation in the Qu\+E\+ST environment with an example defualt seed. \end{DoxyCompactList}\item 
+void \mbox{\hyperlink{QuEST_8h_aedb5ef39da69e7895d714980dc621261}{Qu\+E\+S\+T\+Seed\+Random}} (unsigned long int $\ast$seed\+Array, int num\+Seeds)
+\begin{DoxyCompactList}\small\item\em Seed the Mersenne Twister used for random number generation in the Qu\+E\+ST environment with a user defined seed. \end{DoxyCompactList}\end{DoxyCompactItemize}
+
+
+\subsubsection{Detailed Description}
+The Qu\+E\+ST library A\+PI and objects. 
+
+
+
+\subsubsection{Typedef Documentation}
+\mbox{\Hypertarget{QuEST_8h_ad59c9e471673c07782e6c403277ffd8d}\label{QuEST_8h_ad59c9e471673c07782e6c403277ffd8d}} 
+\index{Qu\+E\+S\+T.\+h@{Qu\+E\+S\+T.\+h}!Complex@{Complex}}
+\index{Complex@{Complex}!Qu\+E\+S\+T.\+h@{Qu\+E\+S\+T.\+h}}
+\paragraph{\texorpdfstring{Complex}{Complex}}
+{\footnotesize\ttfamily typedef struct \mbox{\hyperlink{structComplex}{Complex}}  \mbox{\hyperlink{structComplex}{Complex}}}
+
+
+
+Represents one complex number. 
+
+\mbox{\Hypertarget{QuEST_8h_a19e00739fde70a851d068f322cf915c8}\label{QuEST_8h_a19e00739fde70a851d068f322cf915c8}} 
+\index{Qu\+E\+S\+T.\+h@{Qu\+E\+S\+T.\+h}!Complex\+Array@{Complex\+Array}}
+\index{Complex\+Array@{Complex\+Array}!Qu\+E\+S\+T.\+h@{Qu\+E\+S\+T.\+h}}
+\paragraph{\texorpdfstring{Complex\+Array}{ComplexArray}}
+{\footnotesize\ttfamily typedef struct \mbox{\hyperlink{structComplexArray}{Complex\+Array}}  \mbox{\hyperlink{structComplexArray}{Complex\+Array}}}
+
+
+
+Represents an array of complex numbers grouped into an array of real components and an array of coressponding complex components. 
+
+\mbox{\Hypertarget{QuEST_8h_aa6e00518bd2c71030c52d5955e506875}\label{QuEST_8h_aa6e00518bd2c71030c52d5955e506875}} 
+\index{Qu\+E\+S\+T.\+h@{Qu\+E\+S\+T.\+h}!Complex\+Matrix2@{Complex\+Matrix2}}
+\index{Complex\+Matrix2@{Complex\+Matrix2}!Qu\+E\+S\+T.\+h@{Qu\+E\+S\+T.\+h}}
+\paragraph{\texorpdfstring{Complex\+Matrix2}{ComplexMatrix2}}
+{\footnotesize\ttfamily typedef struct \mbox{\hyperlink{structComplexMatrix2}{Complex\+Matrix2}}  \mbox{\hyperlink{structComplexMatrix2}{Complex\+Matrix2}}}
+
+
+
+Represents a 2x2 matrix of complex numbers. 
+
+\mbox{\Hypertarget{QuEST_8h_af4123a681074068eeeee1562758eef61}\label{QuEST_8h_af4123a681074068eeeee1562758eef61}} 
+\index{Qu\+E\+S\+T.\+h@{Qu\+E\+S\+T.\+h}!Multi\+Qubit@{Multi\+Qubit}}
+\index{Multi\+Qubit@{Multi\+Qubit}!Qu\+E\+S\+T.\+h@{Qu\+E\+S\+T.\+h}}
+\paragraph{\texorpdfstring{Multi\+Qubit}{MultiQubit}}
+{\footnotesize\ttfamily typedef struct \mbox{\hyperlink{structMultiQubit}{Multi\+Qubit}}  \mbox{\hyperlink{structMultiQubit}{Multi\+Qubit}}}
+
+
+
+Represents a system of qubits. 
+
+Qubits are zero-\/based \mbox{\Hypertarget{QuEST_8h_aedfe2bb713c31d6133e53b1bd72d7a2c}\label{QuEST_8h_aedfe2bb713c31d6133e53b1bd72d7a2c}} 
+\index{Qu\+E\+S\+T.\+h@{Qu\+E\+S\+T.\+h}!Qu\+E\+S\+T\+Env@{Qu\+E\+S\+T\+Env}}
+\index{Qu\+E\+S\+T\+Env@{Qu\+E\+S\+T\+Env}!Qu\+E\+S\+T.\+h@{Qu\+E\+S\+T.\+h}}
+\paragraph{\texorpdfstring{Qu\+E\+S\+T\+Env}{QuESTEnv}}
+{\footnotesize\ttfamily typedef struct \mbox{\hyperlink{structQuESTEnv}{Qu\+E\+S\+T\+Env}}  \mbox{\hyperlink{structQuESTEnv}{Qu\+E\+S\+T\+Env}}}
+
+
+
+Information about the environment the program is running in. 
+
+In practice, this holds info about M\+PI ranks and helps to hide M\+PI initialization code \mbox{\Hypertarget{QuEST_8h_a6ded2cf071c127e518317e3c451af3ef}\label{QuEST_8h_a6ded2cf071c127e518317e3c451af3ef}} 
+\index{Qu\+E\+S\+T.\+h@{Qu\+E\+S\+T.\+h}!Vector@{Vector}}
+\index{Vector@{Vector}!Qu\+E\+S\+T.\+h@{Qu\+E\+S\+T.\+h}}
+\paragraph{\texorpdfstring{Vector}{Vector}}
+{\footnotesize\ttfamily typedef struct \mbox{\hyperlink{structVector}{Vector}}  \mbox{\hyperlink{structVector}{Vector}}}
+
+
+
+Represents a 3-\/vector of real numbers. 
+
+
+
+\subsubsection{Enumeration Type Documentation}
+\mbox{\Hypertarget{QuEST_8h_a5739021c733cecc49647956b2f7338ea}\label{QuEST_8h_a5739021c733cecc49647956b2f7338ea}} 
+\index{Qu\+E\+S\+T.\+h@{Qu\+E\+S\+T.\+h}!phase\+Gate\+Type@{phase\+Gate\+Type}}
+\index{phase\+Gate\+Type@{phase\+Gate\+Type}!Qu\+E\+S\+T.\+h@{Qu\+E\+S\+T.\+h}}
+\paragraph{\texorpdfstring{phase\+Gate\+Type}{phaseGateType}}
+{\footnotesize\ttfamily enum \mbox{\hyperlink{QuEST_8h_a5739021c733cecc49647956b2f7338ea}{phase\+Gate\+Type}}}
+
+\begin{DoxyEnumFields}{Enumerator}
+\raisebox{\heightof{T}}[0pt][0pt]{\index{S\+I\+G\+M\+A\+\_\+Z@{S\+I\+G\+M\+A\+\_\+Z}!Qu\+E\+S\+T.\+h@{Qu\+E\+S\+T.\+h}}\index{Qu\+E\+S\+T.\+h@{Qu\+E\+S\+T.\+h}!S\+I\+G\+M\+A\+\_\+Z@{S\+I\+G\+M\+A\+\_\+Z}}}\mbox{\Hypertarget{QuEST_8h_a5739021c733cecc49647956b2f7338eaa754922d1e1846a1961ff2bf163483dac}\label{QuEST_8h_a5739021c733cecc49647956b2f7338eaa754922d1e1846a1961ff2bf163483dac}} 
+S\+I\+G\+M\+A\+\_\+Z&\\
+\hline
+
+\raisebox{\heightof{T}}[0pt][0pt]{\index{S\+\_\+\+G\+A\+TE@{S\+\_\+\+G\+A\+TE}!Qu\+E\+S\+T.\+h@{Qu\+E\+S\+T.\+h}}\index{Qu\+E\+S\+T.\+h@{Qu\+E\+S\+T.\+h}!S\+\_\+\+G\+A\+TE@{S\+\_\+\+G\+A\+TE}}}\mbox{\Hypertarget{QuEST_8h_a5739021c733cecc49647956b2f7338eaa06e60f80fa80cce271793d6d31bcc21f}\label{QuEST_8h_a5739021c733cecc49647956b2f7338eaa06e60f80fa80cce271793d6d31bcc21f}} 
+S\+\_\+\+G\+A\+TE&\\
+\hline
+
+\raisebox{\heightof{T}}[0pt][0pt]{\index{T\+\_\+\+G\+A\+TE@{T\+\_\+\+G\+A\+TE}!Qu\+E\+S\+T.\+h@{Qu\+E\+S\+T.\+h}}\index{Qu\+E\+S\+T.\+h@{Qu\+E\+S\+T.\+h}!T\+\_\+\+G\+A\+TE@{T\+\_\+\+G\+A\+TE}}}\mbox{\Hypertarget{QuEST_8h_a5739021c733cecc49647956b2f7338eaa614d07d597a8e320cc556bc0e652e4ab}\label{QuEST_8h_a5739021c733cecc49647956b2f7338eaa614d07d597a8e320cc556bc0e652e4ab}} 
+T\+\_\+\+G\+A\+TE&\\
+\hline
+
+\end{DoxyEnumFields}
+
+
+Definition at line 73 of file Qu\+E\+S\+T.\+h.
+
+
+\begin{DoxyCode}
+73 \{\mbox{\hyperlink{QuEST_8h_a5739021c733cecc49647956b2f7338eaa754922d1e1846a1961ff2bf163483dac}{SIGMA\_Z}}=0, \mbox{\hyperlink{QuEST_8h_a5739021c733cecc49647956b2f7338eaa06e60f80fa80cce271793d6d31bcc21f}{S\_GATE}}=1, \mbox{\hyperlink{QuEST_8h_a5739021c733cecc49647956b2f7338eaa614d07d597a8e320cc556bc0e652e4ab}{T\_GATE}}=2\};
+\end{DoxyCode}
+
+
+\subsubsection{Function Documentation}
+\mbox{\Hypertarget{QuEST_8h_a818a4c7cd7252d2b10b896b12fa431d3}\label{QuEST_8h_a818a4c7cd7252d2b10b896b12fa431d3}} 
+\index{Qu\+E\+S\+T.\+h@{Qu\+E\+S\+T.\+h}!calc\+Total\+Probability@{calc\+Total\+Probability}}
+\index{calc\+Total\+Probability@{calc\+Total\+Probability}!Qu\+E\+S\+T.\+h@{Qu\+E\+S\+T.\+h}}
+\paragraph{\texorpdfstring{calc\+Total\+Probability()}{calcTotalProbability()}}
+{\footnotesize\ttfamily \mbox{\hyperlink{QuEST__precision_8h_a4b654506f18b8bfd61ad2a29a7e38c25}{R\+E\+AL}} calc\+Total\+Probability (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structMultiQubit}{Multi\+Qubit}}}]{multi\+Qubit }\end{DoxyParamCaption})}
+
+
+
+Calculate the probability of being in any state by taking the norm of the entire state vector. 
+
+Should be equal to 1.
+
+
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\tt in}  & {\em multi\+Qubit} & object representing a set of qubits \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+total probability 
+\end{DoxyReturn}
+
+
+Definition at line 57 of file Qu\+E\+S\+T\+\_\+env\+\_\+local.\+c.
+
+
+
+References Complex\+Array\+::imag, M\+P\+I\+\_\+\+Qu\+E\+S\+T\+\_\+\+R\+E\+AL, Multi\+Qubit\+::num\+Amps, Multi\+Qubit\+::num\+Chunks, Complex\+Array\+::real, R\+E\+AL, and Multi\+Qubit\+::state\+Vec.
+
+
+\begin{DoxyCode}
+57                                                 \{
+58     \textcolor{comment}{// implemented using Kahan summation for greater accuracy at a slight floating}
+59     \textcolor{comment}{// point operation overhead. For more details see
+       https://en.wikipedia.org/wiki/Kahan\_summation\_algorithm}
+60     \mbox{\hyperlink{QuEST__precision_8h_a4b654506f18b8bfd61ad2a29a7e38c25}{REAL}} pTotal=0; 
+61     \mbox{\hyperlink{QuEST__precision_8h_a4b654506f18b8bfd61ad2a29a7e38c25}{REAL}} y, t, c;
+62     \textcolor{keywordtype}{long} \textcolor{keywordtype}{long} \textcolor{keywordtype}{int} index;
+63     \textcolor{keywordtype}{long} \textcolor{keywordtype}{long} \textcolor{keywordtype}{int} numAmpsPerRank = multiQubit.\mbox{\hyperlink{structMultiQubit_ae16f47d8b725c914fb7f66b6498d79db}{numAmps}};
+64     c = 0.0;
+65     \textcolor{keywordflow}{for} (index=0; index<numAmpsPerRank; index++)\{ 
+66         \textcolor{comment}{// Perform pTotal+=multiQubit.stateVec.real[index]*multiQubit.stateVec.real[index]; by Kahan}
+67 
+68         y = multiQubit.\mbox{\hyperlink{structMultiQubit_a45483190d6b01ef6b2f98f2bec9ab94f}{stateVec}}.\mbox{\hyperlink{structComplexArray_a4195cac6c784ea1b6271f1c7dba1548a}{real}}[index]*multiQubit.\mbox{\hyperlink{structMultiQubit_a45483190d6b01ef6b2f98f2bec9ab94f}{stateVec}}.
+      \mbox{\hyperlink{structComplexArray_a4195cac6c784ea1b6271f1c7dba1548a}{real}}[index] - c;
+69         t = pTotal + y;
+70         \textcolor{comment}{// Don't change the bracketing on the following line}
+71         c = ( t - pTotal ) - y;
+72         pTotal = t;
+73 
+74         \textcolor{comment}{// Perform pTotal+=multiQubit.stateVec.imag[index]*multiQubit.stateVec.imag[index]; by Kahan}
+75 
+76         y = multiQubit.\mbox{\hyperlink{structMultiQubit_a45483190d6b01ef6b2f98f2bec9ab94f}{stateVec}}.\mbox{\hyperlink{structComplexArray_a79dde47c7ae530c79cebfdf57b225968}{imag}}[index]*multiQubit.\mbox{\hyperlink{structMultiQubit_a45483190d6b01ef6b2f98f2bec9ab94f}{stateVec}}.
+      \mbox{\hyperlink{structComplexArray_a79dde47c7ae530c79cebfdf57b225968}{imag}}[index] - c;
+77         t = pTotal + y;
+78         \textcolor{comment}{// Don't change the bracketing on the following line}
+79         c = ( t - pTotal ) - y;
+80         pTotal = t;
+81 
+82 
+83     \} 
+84     \textcolor{keywordflow}{return} pTotal;
+85 \}
+\end{DoxyCode}
+\mbox{\Hypertarget{QuEST_8h_abd4bc926cd3f9b65610bb228d0c59fe0}\label{QuEST_8h_abd4bc926cd3f9b65610bb228d0c59fe0}} 
+\index{Qu\+E\+S\+T.\+h@{Qu\+E\+S\+T.\+h}!close\+Qu\+E\+S\+T\+Env@{close\+Qu\+E\+S\+T\+Env}}
+\index{close\+Qu\+E\+S\+T\+Env@{close\+Qu\+E\+S\+T\+Env}!Qu\+E\+S\+T.\+h@{Qu\+E\+S\+T.\+h}}
+\paragraph{\texorpdfstring{close\+Qu\+E\+S\+T\+Env()}{closeQuESTEnv()}}
+{\footnotesize\ttfamily void close\+Qu\+E\+S\+T\+Env (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structQuESTEnv}{Qu\+E\+S\+T\+Env}}}]{env }\end{DoxyParamCaption})}
+
+
+
+Close Qu\+E\+ST environment. 
+
+If something needs to be done to clean up the execution environment, such as finalizing M\+PI when running in distributed mode, it is handled here
+
+
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\tt in}  & {\em env} & object representing the execution environment. A single instance is used for each program \\
+\hline
+\end{DoxyParams}
+
+
+Definition at line 36 of file Qu\+E\+S\+T\+\_\+env\+\_\+local.\+c.
+
+
+
+Referenced by main().
+
+
+\begin{DoxyCode}
+36                                 \{
+37     \textcolor{comment}{// MPI finalize goes here in MPI version. Call this function anyway for consistency}
+38 \}
+\end{DoxyCode}
+\mbox{\Hypertarget{QuEST_8h_a07418ebac70fd9ae5d051d089961631d}\label{QuEST_8h_a07418ebac70fd9ae5d051d089961631d}} 
+\index{Qu\+E\+S\+T.\+h@{Qu\+E\+S\+T.\+h}!collapse\+To\+Outcome@{collapse\+To\+Outcome}}
+\index{collapse\+To\+Outcome@{collapse\+To\+Outcome}!Qu\+E\+S\+T.\+h@{Qu\+E\+S\+T.\+h}}
+\paragraph{\texorpdfstring{collapse\+To\+Outcome()}{collapseToOutcome()}}
+{\footnotesize\ttfamily \mbox{\hyperlink{QuEST__precision_8h_a4b654506f18b8bfd61ad2a29a7e38c25}{R\+E\+AL}} collapse\+To\+Outcome (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structMultiQubit}{Multi\+Qubit}}}]{multi\+Qubit,  }\item[{const int}]{measure\+Qubit,  }\item[{int}]{outcome }\end{DoxyParamCaption})}
+
+
+
+Updates the state vector to be consistent with measuring the measure qubit in the given outcome (0 or 1), and returns the probability of such a measurement outcome. 
+
+This is effectively performing a measurement and forcing the outcome. This is an irreversible change to the state vector, whereby incompatible states in the state vector are given zero amplitude and the remaining states are renormalised. Exits with error if the given outcome has $\sim$zero probability, and so cannot be collapsed into.
+
+
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\tt in,out}  & {\em multi\+Qubit} & object representing the set of all qubits \\
+\hline
+\mbox{\tt in}  & {\em measure\+Qubit} & qubit to measure \\
+\hline
+\mbox{\tt in}  & {\em outcome} & to force the measure qubit to enter \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+probability of the (forced) measurement outcome 
+\end{DoxyReturn}
+
+\begin{DoxyExceptions}{Exceptions}
+{\em exit\+With\+Error} & if {\ttfamily measure\+Qubit} is outside \mbox{[}0, {\ttfamily multi\+Qubit.\+num\+Qubits}), or if {\ttfamily outcome} is not in \{0, 1\}, or if the probability of {\ttfamily outcome} is zero (within machine epsilon) \\
+\hline
+\end{DoxyExceptions}
+
+
+Definition at line 189 of file Qu\+E\+S\+T\+\_\+env\+\_\+local.\+c.
+
+
+
+References Multi\+Qubit\+::chunk\+Id, collapse\+To\+Outcome\+Distributed\+Renorm(), collapse\+To\+Outcome\+Distributed\+Set\+Zero(), collapse\+To\+Outcome\+Local(), find\+Probability\+Of\+Outcome(), half\+Matrix\+Block\+Fits\+In\+Chunk(), is\+Chunk\+To\+Skip\+In\+Find\+P\+Zero(), Multi\+Qubit\+::num\+Amps, Multi\+Qubit\+::num\+Qubits, Qu\+E\+S\+T\+Assert(), R\+E\+AL, and R\+E\+A\+L\+\_\+\+E\+PS.
+
+
+\begin{DoxyCode}
+190 \{
+191     \mbox{\hyperlink{QuEST__env__local_8c_a3587b9d533e633ccf1abf9ad2ce45d8d}{QuESTAssert}}(measureQubit >= 0 && measureQubit < multiQubit.
+      \mbox{\hyperlink{structMultiQubit_ab5b9795bdc6fb5855e1974dcbbaeb36f}{numQubits}}, 2, \_\_func\_\_);
+192     \mbox{\hyperlink{QuEST__env__local_8c_a3587b9d533e633ccf1abf9ad2ce45d8d}{QuESTAssert}}((outcome==0 || outcome==1), 10, \_\_func\_\_);
+193     \mbox{\hyperlink{QuEST__precision_8h_a4b654506f18b8bfd61ad2a29a7e38c25}{REAL}} stateProb;
+194     stateProb = \mbox{\hyperlink{QuEST__env__local_8c_ad315c941a51bc053d39ebfa2040fd32e}{findProbabilityOfOutcome}}(multiQubit, measureQubit, outcome);
+195     \mbox{\hyperlink{QuEST__env__local_8c_a3587b9d533e633ccf1abf9ad2ce45d8d}{QuESTAssert}}(fabs(stateProb)>\mbox{\hyperlink{QuEST__precision_8h_aebb5e6716e06431296af4d1a71744dec}{REAL\_EPS}}, 8, \_\_func\_\_);
+196     \mbox{\hyperlink{QuEST_8c_a01d9a8b7ff0e09ec399e158389783aa9}{collapseToOutcomeLocal}}(multiQubit, measureQubit, stateProb, outcome);
+197     \textcolor{keywordflow}{return} stateProb;
+198 \}
+\end{DoxyCode}
+\mbox{\Hypertarget{QuEST_8h_a03b13dfcabd8c59b50dbdd3af44ba8b2}\label{QuEST_8h_a03b13dfcabd8c59b50dbdd3af44ba8b2}} 
+\index{Qu\+E\+S\+T.\+h@{Qu\+E\+S\+T.\+h}!compact\+Unitary@{compact\+Unitary}}
+\index{compact\+Unitary@{compact\+Unitary}!Qu\+E\+S\+T.\+h@{Qu\+E\+S\+T.\+h}}
+\paragraph{\texorpdfstring{compact\+Unitary()}{compactUnitary()}}
+{\footnotesize\ttfamily void compact\+Unitary (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structMultiQubit}{Multi\+Qubit}}}]{multi\+Qubit,  }\item[{const int}]{target\+Qubit,  }\item[{\mbox{\hyperlink{structComplex}{Complex}}}]{alpha,  }\item[{\mbox{\hyperlink{structComplex}{Complex}}}]{beta }\end{DoxyParamCaption})}
+
+
+
+Apply a single-\/qubit unitary parameterised by two given complex scalars. 
+
+Given valid complex numbers $\alpha$ and $\beta$, applies the unitary \[ U = \begin{pmatrix} \alpha & -\beta^* \\ \beta & \alpha^* \end{pmatrix} \] which is general up to a global phase factor. ~\newline
+Valid $\alpha$, $\beta$ satisfy $|\alpha|^2 + |\beta|^2 = 1$.
+
+\[ \setlength{\fboxrule}{0.01pt} \fbox{ \begin{tikzpicture}[scale=.5] \node[draw=none] at (-3.5, 0) {target}; \draw (-2,0) -- (-1, 0); \draw (1, 0) -- (2, 0); \draw (-1,-1)--(-1,1)--(1,1)--(1,-1)--cycle; \node[draw=none] at (0, 0) {U}; \end{tikzpicture} } \]
+
+
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\tt in,out}  & {\em multi\+Qubit} & object representing the set of all qubits \\
+\hline
+\mbox{\tt in}  & {\em target\+Qubit} & qubit to operate on \\
+\hline
+\mbox{\tt in}  & {\em alpha} & complex unitary parameter (row 1, column 1) \\
+\hline
+\mbox{\tt in}  & {\em beta} & complex unitary parameter (row 2, column 1) \\
+\hline
+\end{DoxyParams}
+
+\begin{DoxyExceptions}{Exceptions}
+{\em exit\+With\+Error} & if {\ttfamily target\+Qubit} is outside \mbox{[}0, {\ttfamily multi\+Qubit.\+num\+Qubits}), or if {\ttfamily alpha}, {\ttfamily beta} don\textquotesingle{}t satisfy $\vert${\ttfamily alpha$\vert$$^\wedge$2} + $\vert${\ttfamily beta$\vert$$^\wedge$2} = 1. \\
+\hline
+\end{DoxyExceptions}
+
+
+Definition at line 95 of file Qu\+E\+S\+T\+\_\+env\+\_\+local.\+c.
+
+
+
+References Multi\+Qubit\+::chunk\+Id, chunk\+Is\+Upper(), compact\+Unitary\+Distributed(), compact\+Unitary\+Local(), exchange\+State\+Vectors(), get\+Chunk\+Pair\+Id(), get\+Rot\+Angle(), half\+Matrix\+Block\+Fits\+In\+Chunk(), Multi\+Qubit\+::num\+Amps, Multi\+Qubit\+::num\+Qubits, Multi\+Qubit\+::pair\+State\+Vec, Qu\+E\+S\+T\+Assert(), Multi\+Qubit\+::state\+Vec, and validate\+Alpha\+Beta().
+
+
+
+Referenced by main(), and rotate\+Around\+Axis().
+
+
+\begin{DoxyCode}
+96 \{
+97     \mbox{\hyperlink{QuEST__env__local_8c_a3587b9d533e633ccf1abf9ad2ce45d8d}{QuESTAssert}}(targetQubit >= 0 && targetQubit < multiQubit.
+      \mbox{\hyperlink{structMultiQubit_ab5b9795bdc6fb5855e1974dcbbaeb36f}{numQubits}}, 1, \_\_func\_\_);
+98     \mbox{\hyperlink{QuEST__env__local_8c_a3587b9d533e633ccf1abf9ad2ce45d8d}{QuESTAssert}}(\mbox{\hyperlink{QuEST_8c_ae2b2c14a07dd7d50ff86032a3ca101d7}{validateAlphaBeta}}(alpha, beta), 6, \_\_func\_\_);
+99 
+100     \textcolor{comment}{// all values required to update state vector lie in this rank}
+101     \mbox{\hyperlink{QuEST_8c_a9cee2d8716667a3318420a3b672f5b92}{compactUnitaryLocal}}(multiQubit, targetQubit, alpha, beta);
+102 \}
+\end{DoxyCode}
+\mbox{\Hypertarget{QuEST_8h_ab4812953bc457405b3aa05a4c2f64f4a}\label{QuEST_8h_ab4812953bc457405b3aa05a4c2f64f4a}} 
+\index{Qu\+E\+S\+T.\+h@{Qu\+E\+S\+T.\+h}!controlled\+Compact\+Unitary@{controlled\+Compact\+Unitary}}
+\index{controlled\+Compact\+Unitary@{controlled\+Compact\+Unitary}!Qu\+E\+S\+T.\+h@{Qu\+E\+S\+T.\+h}}
+\paragraph{\texorpdfstring{controlled\+Compact\+Unitary()}{controlledCompactUnitary()}}
+{\footnotesize\ttfamily void controlled\+Compact\+Unitary (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structMultiQubit}{Multi\+Qubit}}}]{multi\+Qubit,  }\item[{const int}]{control\+Qubit,  }\item[{const int}]{target\+Qubit,  }\item[{\mbox{\hyperlink{structComplex}{Complex}}}]{alpha,  }\item[{\mbox{\hyperlink{structComplex}{Complex}}}]{beta }\end{DoxyParamCaption})}
+
+
+
+Apply a controlled unitary (single control, single target) parameterised by two given complex scalars. 
+
+Given valid complex numbers $\alpha$ and $\beta$, applies the two-\/qubit unitary \[ \begin{pmatrix} 1 \\ & 1 \\ & & \alpha & -\beta^* \\ & & \beta & \alpha^* \end{pmatrix} \] to the control and target qubits. Valid $\alpha$, $\beta$ satisfy $|\alpha|^2 + |\beta|^2 = 1$. The target unitary is general up to a global phase factor. ~\newline
+ \[ \setlength{\fboxrule}{0.01pt} \fbox{ \begin{tikzpicture}[scale=.5] \node[draw=none] at (-3.5, 2) {control}; \node[draw=none] at (-3.5, 0) {target}; \draw (-2, 2) -- (2, 2); \draw[fill=black] (0, 2) circle (.2); \draw (0, 2) -- (0, 1); \draw (-2,0) -- (-1, 0); \draw (1, 0) -- (2, 0); \draw (-1,-1)--(-1,1)--(1,1)--(1,-1)--cycle; \node[draw=none] at (0, 0) {$U_{\alpha, \beta}$}; \end{tikzpicture} } \]
+
+
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\tt in,out}  & {\em multi\+Qubit} & object representing the set of all qubits \\
+\hline
+\mbox{\tt in}  & {\em control\+Qubit} & apply the target unitary if this qubit has value 1 \\
+\hline
+\mbox{\tt in}  & {\em target\+Qubit} & qubit on which to apply the target unitary \\
+\hline
+\mbox{\tt in}  & {\em alpha} & complex unitary parameter (row 1, column 1) \\
+\hline
+\mbox{\tt in}  & {\em beta} & complex unitary parameter (row 2, column 1) \\
+\hline
+\end{DoxyParams}
+
+\begin{DoxyExceptions}{Exceptions}
+{\em exit\+With\+Error} & if either {\ttfamily control\+Qubit} or {\ttfamily target\+Qubit} are outside \mbox{[}0, {\ttfamily multi\+Qubit.\+num\+Qubits}) or are equal, or if {\ttfamily alpha}, {\ttfamily beta} don\textquotesingle{}t satisfy $\vert${\ttfamily alpha$\vert$$^\wedge$2} + $\vert${\ttfamily beta$\vert$$^\wedge$2} = 1. \\
+\hline
+\end{DoxyExceptions}
+
+
+Definition at line 113 of file Qu\+E\+S\+T\+\_\+env\+\_\+local.\+c.
+
+
+
+References Multi\+Qubit\+::chunk\+Id, chunk\+Is\+Upper(), controlled\+Compact\+Unitary\+Distributed(), controlled\+Compact\+Unitary\+Local(), exchange\+State\+Vectors(), get\+Chunk\+Pair\+Id(), get\+Rot\+Angle(), half\+Matrix\+Block\+Fits\+In\+Chunk(), Multi\+Qubit\+::num\+Amps, Multi\+Qubit\+::num\+Qubits, Multi\+Qubit\+::pair\+State\+Vec, Qu\+E\+S\+T\+Assert(), Multi\+Qubit\+::state\+Vec, and validate\+Alpha\+Beta().
+
+
+
+Referenced by controlled\+Rotate\+Around\+Axis(), and main().
+
+
+\begin{DoxyCode}
+114 \{
+115     \mbox{\hyperlink{QuEST__env__local_8c_a3587b9d533e633ccf1abf9ad2ce45d8d}{QuESTAssert}}(targetQubit >= 0 && targetQubit < multiQubit.
+      \mbox{\hyperlink{structMultiQubit_ab5b9795bdc6fb5855e1974dcbbaeb36f}{numQubits}}, 1, \_\_func\_\_);
+116     \mbox{\hyperlink{QuEST__env__local_8c_a3587b9d533e633ccf1abf9ad2ce45d8d}{QuESTAssert}}(controlQubit >= 0 && controlQubit < multiQubit.
+      \mbox{\hyperlink{structMultiQubit_ab5b9795bdc6fb5855e1974dcbbaeb36f}{numQubits}}, 2, \_\_func\_\_);
+117     \mbox{\hyperlink{QuEST__env__local_8c_a3587b9d533e633ccf1abf9ad2ce45d8d}{QuESTAssert}}(controlQubit != targetQubit, 3, \_\_func\_\_);
+118     \mbox{\hyperlink{QuEST__env__local_8c_a3587b9d533e633ccf1abf9ad2ce45d8d}{QuESTAssert}}(\mbox{\hyperlink{QuEST_8c_ae2b2c14a07dd7d50ff86032a3ca101d7}{validateAlphaBeta}}(alpha, beta), 6, \_\_func\_\_);
+119 
+120 
+121     \mbox{\hyperlink{QuEST_8c_afc77657651d52c47403b44b923a098a8}{controlledCompactUnitaryLocal}}(multiQubit, controlQubit, targetQubit, alpha
+      , beta);
+122 \}
+\end{DoxyCode}
+\mbox{\Hypertarget{QuEST_8h_a67576895bbc65463481a8ea24d9b1e22}\label{QuEST_8h_a67576895bbc65463481a8ea24d9b1e22}} 
+\index{Qu\+E\+S\+T.\+h@{Qu\+E\+S\+T.\+h}!controlled\+Not@{controlled\+Not}}
+\index{controlled\+Not@{controlled\+Not}!Qu\+E\+S\+T.\+h@{Qu\+E\+S\+T.\+h}}
+\paragraph{\texorpdfstring{controlled\+Not()}{controlledNot()}}
+{\footnotesize\ttfamily void controlled\+Not (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structMultiQubit}{Multi\+Qubit}}}]{multi\+Qubit,  }\item[{const int}]{control\+Qubit,  }\item[{const int}]{target\+Qubit }\end{DoxyParamCaption})}
+
+
+
+Apply the controlled not (single control, single target) gate, also known as the c-\/X, c-\/sigma-\/X, c-\/\+Pauli-\/X and c-\/bit-\/flip gate. 
+
+This applies sigmaX to the target qubit if the control qubit has value 1. This effects the two-\/qubit unitary \[ \begin{pmatrix} 1 \\ & 1 \\\ & & & 1 \\ & & 1 \end{pmatrix} \] on the control and target qubits.
+
+\[ \setlength{\fboxrule}{0.01pt} \fbox{ \begin{tikzpicture}[scale=.5] \node[draw=none] at (-3.5, 2) {control}; \node[draw=none] at (-3.5, 0) {target}; \draw (-2, 2) -- (2, 2); \draw[fill=black] (0, 2) circle (.2); \draw (0, 2) -- (0, -.5); \draw (-2,0) -- (2, 0); \draw (0, 0) circle (.5); \end{tikzpicture} } \] ~\newline
+ 
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\tt in,out}  & {\em multi\+Qubit} & object representing the set of all qubits \\
+\hline
+\mbox{\tt in}  & {\em control\+Qubit} & nots the target if this qubit is 1 \\
+\hline
+\mbox{\tt in}  & {\em target\+Qubit} & qubit to not \\
+\hline
+\end{DoxyParams}
+
+\begin{DoxyExceptions}{Exceptions}
+{\em exit\+With\+Error} & if either {\ttfamily control\+Qubit} or {\ttfamily target\+Qubit} are outside \mbox{[}0, {\ttfamily multi\+Qubit.\+num\+Qubits}), or are equal. \\
+\hline
+\end{DoxyExceptions}
+
+
+Definition at line 172 of file Qu\+E\+S\+T\+\_\+env\+\_\+local.\+c.
+
+
+
+References Multi\+Qubit\+::chunk\+Id, chunk\+Is\+Upper(), controlled\+Not\+Distributed(), controlled\+Not\+Local(), exchange\+State\+Vectors(), get\+Chunk\+Pair\+Id(), half\+Matrix\+Block\+Fits\+In\+Chunk(), Multi\+Qubit\+::num\+Amps, Multi\+Qubit\+::num\+Qubits, Multi\+Qubit\+::pair\+State\+Vec, Qu\+E\+S\+T\+Assert(), and Multi\+Qubit\+::state\+Vec.
+
+
+
+Referenced by main().
+
+
+\begin{DoxyCode}
+173 \{
+174     \mbox{\hyperlink{QuEST__env__local_8c_a3587b9d533e633ccf1abf9ad2ce45d8d}{QuESTAssert}}(targetQubit >= 0 && targetQubit < multiQubit.
+      \mbox{\hyperlink{structMultiQubit_ab5b9795bdc6fb5855e1974dcbbaeb36f}{numQubits}}, 1, \_\_func\_\_);
+175     \mbox{\hyperlink{QuEST__env__local_8c_a3587b9d533e633ccf1abf9ad2ce45d8d}{QuESTAssert}}(controlQubit >= 0 && controlQubit < multiQubit.
+      \mbox{\hyperlink{structMultiQubit_ab5b9795bdc6fb5855e1974dcbbaeb36f}{numQubits}}, 2, \_\_func\_\_);
+176     \mbox{\hyperlink{QuEST__env__local_8c_a3587b9d533e633ccf1abf9ad2ce45d8d}{QuESTAssert}}(controlQubit != targetQubit, 3, \_\_func\_\_);
+177     \mbox{\hyperlink{QuEST_8c_ad357a43e80e3baf013975b1b70942f4c}{controlledNotLocal}}(multiQubit, controlQubit, targetQubit);
+178 \}
+\end{DoxyCode}
+\mbox{\Hypertarget{QuEST_8h_a11a96159191cbf1b01a1080e7f045aac}\label{QuEST_8h_a11a96159191cbf1b01a1080e7f045aac}} 
+\index{Qu\+E\+S\+T.\+h@{Qu\+E\+S\+T.\+h}!controlled\+Phase\+Gate@{controlled\+Phase\+Gate}}
+\index{controlled\+Phase\+Gate@{controlled\+Phase\+Gate}!Qu\+E\+S\+T.\+h@{Qu\+E\+S\+T.\+h}}
+\paragraph{\texorpdfstring{controlled\+Phase\+Gate()}{controlledPhaseGate()}}
+{\footnotesize\ttfamily void controlled\+Phase\+Gate (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structMultiQubit}{Multi\+Qubit}}}]{multi\+Qubit,  }\item[{const int}]{id\+Qubit1,  }\item[{const int}]{id\+Qubit2 }\end{DoxyParamCaption})}
+
+
+
+Apply the (two-\/qubit) controlled phase gate, also known as the controlled sigmaZ gate. 
+
+For each state, if both input qubits have value one, multiply the amplitude of that state by -\/1. This applies the two-\/qubit unitary\+: \[ \begin{pmatrix} 1 \\ & 1 \\\ & & 1 \\ & & & -1 \end{pmatrix} \]
+
+\[ \setlength{\fboxrule}{0.01pt} \fbox{ \begin{tikzpicture}[scale=.5] \node[draw=none] at (-3.5, 2) {idQubit1}; \node[draw=none] at (-3.5, 0) {idQubit2}; \draw (-2, 2) -- (2, 2); \draw[fill=black] (0, 2) circle (.2); \draw (0, 2) -- (0, 0); \draw (-2,0) -- (2, 0); \draw[fill=black] (0, 0) circle (.2); \end{tikzpicture} } \]
+
+
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\tt in,out}  & {\em multi\+Qubit} & object representing the set of all qubits \\
+\hline
+\mbox{\tt in}  & {\em id\+Qubit1,id\+Qubit2} & qubits to operate upon \\
+\hline
+\end{DoxyParams}
+
+\begin{DoxyExceptions}{Exceptions}
+{\em exit\+With\+Error} & if {\ttfamily id\+Qubit1} or {\ttfamily id\+Qubit2} are outside \mbox{[}0, {\ttfamily multi\+Qubit.\+num\+Qubits}), or are equal \\
+\hline
+\end{DoxyExceptions}
+
+
+Definition at line 1741 of file Qu\+E\+S\+T.\+c.
+
+
+
+References Multi\+Qubit\+::chunk\+Id, extract\+Bit(), Complex\+Array\+::imag, Multi\+Qubit\+::num\+Amps, Multi\+Qubit\+::num\+Qubits, Qu\+E\+S\+T\+Assert(), Complex\+Array\+::real, R\+E\+AL, and Multi\+Qubit\+::state\+Vec.
+
+
+\begin{DoxyCode}
+1742 \{
+1743     \textcolor{keywordtype}{long} \textcolor{keywordtype}{long} \textcolor{keywordtype}{int} index;
+1744     \textcolor{keywordtype}{long} \textcolor{keywordtype}{long} \textcolor{keywordtype}{int} stateVecSize;
+1745     \textcolor{keywordtype}{int} bit1, bit2;
+1746 
+1747     \textcolor{keyword}{const} \textcolor{keywordtype}{long} \textcolor{keywordtype}{long} \textcolor{keywordtype}{int} chunkSize=multiQubit.\mbox{\hyperlink{structMultiQubit_ae16f47d8b725c914fb7f66b6498d79db}{numAmps}};
+1748     \textcolor{keyword}{const} \textcolor{keywordtype}{long} \textcolor{keywordtype}{long} \textcolor{keywordtype}{int} chunkId=multiQubit.\mbox{\hyperlink{structMultiQubit_ab10c88249fa3825d6227ceec01d37e37}{chunkId}};
+1749 
+1750     \mbox{\hyperlink{QuEST__env__local_8c_a3587b9d533e633ccf1abf9ad2ce45d8d}{QuESTAssert}}(idQubit1 >= 0 && idQubit1 < multiQubit.\mbox{\hyperlink{structMultiQubit_ab5b9795bdc6fb5855e1974dcbbaeb36f}{numQubits}}, 2, \_\_func\_\_);
+1751     \mbox{\hyperlink{QuEST__env__local_8c_a3587b9d533e633ccf1abf9ad2ce45d8d}{QuESTAssert}}(idQubit2 >= 0 && idQubit2 < multiQubit.\mbox{\hyperlink{structMultiQubit_ab5b9795bdc6fb5855e1974dcbbaeb36f}{numQubits}}, 1, \_\_func\_\_);
+1752     \mbox{\hyperlink{QuEST__env__local_8c_a3587b9d533e633ccf1abf9ad2ce45d8d}{QuESTAssert}}(idQubit1 != idQubit2, 3, \_\_func\_\_);
+1753 
+1754     \textcolor{comment}{// dimension of the state vector}
+1755     stateVecSize = multiQubit.\mbox{\hyperlink{structMultiQubit_ae16f47d8b725c914fb7f66b6498d79db}{numAmps}};
+1756     \mbox{\hyperlink{QuEST__precision_8h_a4b654506f18b8bfd61ad2a29a7e38c25}{REAL}} *stateVecReal = multiQubit.\mbox{\hyperlink{structMultiQubit_a45483190d6b01ef6b2f98f2bec9ab94f}{stateVec}}.\mbox{\hyperlink{structComplexArray_a4195cac6c784ea1b6271f1c7dba1548a}{real}};
+1757     \mbox{\hyperlink{QuEST__precision_8h_a4b654506f18b8bfd61ad2a29a7e38c25}{REAL}} *stateVecImag = multiQubit.\mbox{\hyperlink{structMultiQubit_a45483190d6b01ef6b2f98f2bec9ab94f}{stateVec}}.\mbox{\hyperlink{structComplexArray_a79dde47c7ae530c79cebfdf57b225968}{imag}};
+1758 
+1759 \textcolor{preprocessor}{# ifdef \_OPENMP}
+1760 \textcolor{preprocessor}{# pragma omp parallel for \(\backslash\)}
+1761 \textcolor{preprocessor}{    default  (none)                          \(\backslash\)}
+1762 \textcolor{preprocessor}{    shared   (stateVecSize, stateVecReal,stateVecImag ) \(\backslash\)}
+1763 \textcolor{preprocessor}{    private  (index,bit1,bit2)                 \(\backslash\)}
+1764 \textcolor{preprocessor}{    schedule (static)}
+1765 \textcolor{preprocessor}{# endif}
+1766     \textcolor{keywordflow}{for} (index=0; index<stateVecSize; index++) \{
+1767         bit1 = \mbox{\hyperlink{QuEST_8c_a100463f6ec212c76a5fad99579000505}{extractBit}} (idQubit1, index+chunkId*chunkSize);
+1768         bit2 = \mbox{\hyperlink{QuEST_8c_a100463f6ec212c76a5fad99579000505}{extractBit}} (idQubit2, index+chunkId*chunkSize);
+1769         \textcolor{keywordflow}{if} (bit1 && bit2) \{
+1770             stateVecReal [index] = - stateVecReal [index];
+1771             stateVecImag [index] = - stateVecImag [index];
+1772         \}
+1773     \}
+1774 \}
+\end{DoxyCode}
+\mbox{\Hypertarget{QuEST_8h_ad41f82b41149393a642391b67b3a287e}\label{QuEST_8h_ad41f82b41149393a642391b67b3a287e}} 
+\index{Qu\+E\+S\+T.\+h@{Qu\+E\+S\+T.\+h}!controlled\+Rotate\+Around\+Axis@{controlled\+Rotate\+Around\+Axis}}
+\index{controlled\+Rotate\+Around\+Axis@{controlled\+Rotate\+Around\+Axis}!Qu\+E\+S\+T.\+h@{Qu\+E\+S\+T.\+h}}
+\paragraph{\texorpdfstring{controlled\+Rotate\+Around\+Axis()}{controlledRotateAroundAxis()}}
+{\footnotesize\ttfamily void controlled\+Rotate\+Around\+Axis (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structMultiQubit}{Multi\+Qubit}}}]{multi\+Qubit,  }\item[{const int}]{control\+Qubit,  }\item[{const int}]{target\+Qubit,  }\item[{\mbox{\hyperlink{QuEST__precision_8h_a4b654506f18b8bfd61ad2a29a7e38c25}{R\+E\+AL}}}]{angle,  }\item[{\mbox{\hyperlink{structVector}{Vector}}}]{axis }\end{DoxyParamCaption})}
+
+
+
+Applies a controlled rotation by a given angle around a given vector on the Bloch-\/sphere. 
+
+The vector must not be zero (else an error is thrown), but needn\textquotesingle{}t be unit magnitude.
+
+For angle $\theta$ and axis vector $\vec{n}$, applies $R_{\hat{n}} = \exp \left(- i \frac{\theta}{2} \hat{n} \cdot \vec{\sigma} \right) $ to states where the target qubit is 1 ( $\vec{\sigma}$ is the vector of Pauli matrices).
+
+\[ \setlength{\fboxrule}{0.01pt} \fbox{ \begin{tikzpicture}[scale=.5] \node[draw=none] at (-3.5, 2) {control}; \node[draw=none] at (-3.5, 0) {target}; \draw (-2, 2) -- (2, 2); \draw[fill=black] (0, 2) circle (.2); \draw (0, 2) -- (0, 1); \draw (-2,0) -- (-1, 0); \draw (1, 0) -- (2, 0); \draw (-1,-1)--(-1,1)--(1,1)--(1,-1)--cycle; \node[draw=none] at (0, 0) {$R_{\hat{n}}(\theta)$}; \end{tikzpicture} } \]
+
+
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\tt in,out}  & {\em multi\+Qubit} & object representing the set of all qubits \\
+\hline
+\mbox{\tt in}  & {\em control\+Qubit} & qubit with value 1 in the rotated states \\
+\hline
+\mbox{\tt in}  & {\em target\+Qubit} & qubit to rotate \\
+\hline
+\mbox{\tt in}  & {\em angle} & angle by which to rotate in radians \\
+\hline
+\mbox{\tt in}  & {\em axis} & vector around which to rotate (can be non-\/unit; will be normalised) \\
+\hline
+\end{DoxyParams}
+
+\begin{DoxyExceptions}{Exceptions}
+{\em exit\+With\+Error} & if either {\ttfamily control\+Qubit} or {\ttfamily target\+Qubit} are outside \mbox{[}0, {\ttfamily multi\+Qubit.\+num\+Qubits}) or are equal or if {\ttfamily axis} is the zero vector \\
+\hline
+\end{DoxyExceptions}
+
+
+Definition at line 452 of file Qu\+E\+S\+T.\+c.
+
+
+
+References controlled\+Compact\+Unitary(), Complex\+::imag, Complex\+::real, Vector\+::x, Vector\+::y, and Vector\+::z.
+
+
+
+Referenced by controlled\+Rotate\+X(), controlled\+Rotate\+Y(), and controlled\+Rotate\+Z().
+
+
+\begin{DoxyCode}
+452                                                                                                            
+                         \{
+453 
+454     \textcolor{keywordtype}{double} mag = sqrt(pow(axis.\mbox{\hyperlink{structVector_aac7abe171ba4bada50ed72acba6259fc}{x}},2) + pow(axis.\mbox{\hyperlink{structVector_a375ca805d4c808a53d7c4e0c737ae3de}{y}},2) + pow(axis.\mbox{\hyperlink{structVector_ad4e863651be7d6b7e2b28cd7445a0ccf}{z}},2));
+455     \mbox{\hyperlink{structVector}{Vector}} unitAxis = \{axis.\mbox{\hyperlink{structVector_aac7abe171ba4bada50ed72acba6259fc}{x}}/mag, axis.\mbox{\hyperlink{structVector_a375ca805d4c808a53d7c4e0c737ae3de}{y}}/mag, axis.\mbox{\hyperlink{structVector_ad4e863651be7d6b7e2b28cd7445a0ccf}{z}}/mag\};
+456 
+457     \mbox{\hyperlink{structComplex}{Complex}} alpha, beta;
+458     alpha.\mbox{\hyperlink{structComplex_a479ad939835457595fcca3ca55c06283}{real}} = cos(angle/2.0);
+459     alpha.\mbox{\hyperlink{structComplex_a1151948284b21c0052f203f23ab931d9}{imag}} = -sin(angle/2.0)*unitAxis.\mbox{\hyperlink{structVector_ad4e863651be7d6b7e2b28cd7445a0ccf}{z}};       
+460     beta.\mbox{\hyperlink{structComplex_a479ad939835457595fcca3ca55c06283}{real}} = sin(angle/2.0)*unitAxis.\mbox{\hyperlink{structVector_a375ca805d4c808a53d7c4e0c737ae3de}{y}};
+461     beta.\mbox{\hyperlink{structComplex_a1151948284b21c0052f203f23ab931d9}{imag}} = -sin(angle/2.0)*unitAxis.\mbox{\hyperlink{structVector_aac7abe171ba4bada50ed72acba6259fc}{x}};
+462     \mbox{\hyperlink{QuEST_8h_ab4812953bc457405b3aa05a4c2f64f4a}{controlledCompactUnitary}}(multiQubit, controlQubit, targetQubit, alpha, beta);
+463 \}
+\end{DoxyCode}
+\mbox{\Hypertarget{QuEST_8h_ac6923ac57e67d9a21096e06f6a9012f6}\label{QuEST_8h_ac6923ac57e67d9a21096e06f6a9012f6}} 
+\index{Qu\+E\+S\+T.\+h@{Qu\+E\+S\+T.\+h}!controlled\+RotateX@{controlled\+RotateX}}
+\index{controlled\+RotateX@{controlled\+RotateX}!Qu\+E\+S\+T.\+h@{Qu\+E\+S\+T.\+h}}
+\paragraph{\texorpdfstring{controlled\+Rotate\+X()}{controlledRotateX()}}
+{\footnotesize\ttfamily void controlled\+RotateX (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structMultiQubit}{Multi\+Qubit}}}]{multi\+Qubit,  }\item[{const int}]{control\+Qubit,  }\item[{const int}]{target\+Qubit,  }\item[{\mbox{\hyperlink{QuEST__precision_8h_a4b654506f18b8bfd61ad2a29a7e38c25}{R\+E\+AL}}}]{angle }\end{DoxyParamCaption})}
+
+
+
+Applies a controlled rotation by a given angle around the X-\/axis of the Bloch-\/sphere. 
+
+The target qubit is rotated in states where the control qubit has value 1.
+
+\[ \setlength{\fboxrule}{0.01pt} \fbox{ \begin{tikzpicture}[scale=.5] \node[draw=none] at (-3.5, 2) {control}; \node[draw=none] at (-3.5, 0) {target}; \draw (-2, 2) -- (2, 2); \draw[fill=black] (0, 2) circle (.2); \draw (0, 2) -- (0, 1); \draw (-2,0) -- (-1, 0); \draw (1, 0) -- (2, 0); \draw (-1,-1)--(-1,1)--(1,1)--(1,-1)--cycle; \node[draw=none] at (0, 0) {$R_x(\theta)$}; \end{tikzpicture} } \] ~\newline
+ 
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\tt in,out}  & {\em multi\+Qubit} & object representing the set of all qubits \\
+\hline
+\mbox{\tt in}  & {\em control\+Qubit} & qubit which has value 1 in the rotated states \\
+\hline
+\mbox{\tt in}  & {\em tagret\+Qubit} & qubit to rotate \\
+\hline
+\mbox{\tt in}  & {\em angle} & angle by which to rotate the target qubit in radians \\
+\hline
+\end{DoxyParams}
+
+\begin{DoxyExceptions}{Exceptions}
+{\em exit\+With\+Error} & if either {\ttfamily control\+Qubit} or {\ttfamily target\+Qubit} are outside \mbox{[}0, {\ttfamily multi\+Qubit.\+num\+Qubits}) or are equal. \\
+\hline
+\end{DoxyExceptions}
+
+
+Definition at line 465 of file Qu\+E\+S\+T.\+c.
+
+
+
+References controlled\+Rotate\+Around\+Axis().
+
+
+\begin{DoxyCode}
+465                                                                                                         \{
+466 
+467     \mbox{\hyperlink{structVector}{Vector}} unitAxis = \{1, 0, 0\};
+468     \mbox{\hyperlink{QuEST_8c_ad41f82b41149393a642391b67b3a287e}{controlledRotateAroundAxis}}(multiQubit, controlQubit, targetQubit, angle, 
+      unitAxis);
+469 \}
+\end{DoxyCode}
+\mbox{\Hypertarget{QuEST_8h_a71e90a2f7292116338c062934f9d1202}\label{QuEST_8h_a71e90a2f7292116338c062934f9d1202}} 
+\index{Qu\+E\+S\+T.\+h@{Qu\+E\+S\+T.\+h}!controlled\+RotateY@{controlled\+RotateY}}
+\index{controlled\+RotateY@{controlled\+RotateY}!Qu\+E\+S\+T.\+h@{Qu\+E\+S\+T.\+h}}
+\paragraph{\texorpdfstring{controlled\+Rotate\+Y()}{controlledRotateY()}}
+{\footnotesize\ttfamily void controlled\+RotateY (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structMultiQubit}{Multi\+Qubit}}}]{multi\+Qubit,  }\item[{const int}]{control\+Qubit,  }\item[{const int}]{target\+Qubit,  }\item[{\mbox{\hyperlink{QuEST__precision_8h_a4b654506f18b8bfd61ad2a29a7e38c25}{R\+E\+AL}}}]{angle }\end{DoxyParamCaption})}
+
+
+
+Applies a controlled rotation by a given angle around the Y-\/axis of the Bloch-\/sphere. 
+
+The target qubit is rotated in states where the control qubit has value 1.
+
+\[ \setlength{\fboxrule}{0.01pt} \fbox{ \begin{tikzpicture}[scale=.5] \node[draw=none] at (-3.5, 2) {control}; \node[draw=none] at (-3.5, 0) {target}; \draw (-2, 2) -- (2, 2); \draw[fill=black] (0, 2) circle (.2); \draw (0, 2) -- (0, 1); \draw (-2,0) -- (-1, 0); \draw (1, 0) -- (2, 0); \draw (-1,-1)--(-1,1)--(1,1)--(1,-1)--cycle; \node[draw=none] at (0, 0) {$R_y(\theta)$}; \end{tikzpicture} } \] ~\newline
+ 
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\tt in,out}  & {\em multi\+Qubit} & object representing the set of all qubits \\
+\hline
+\mbox{\tt in}  & {\em control\+Qubit} & qubit which has value 1 in the rotated states \\
+\hline
+\mbox{\tt in}  & {\em tagret\+Qubit} & qubit to rotate \\
+\hline
+\mbox{\tt in}  & {\em angle} & angle by which to rotate the target qubit in radians \\
+\hline
+\end{DoxyParams}
+
+\begin{DoxyExceptions}{Exceptions}
+{\em exit\+With\+Error} & if either {\ttfamily control\+Qubit} or {\ttfamily target\+Qubit} are outside \mbox{[}0, {\ttfamily multi\+Qubit.\+num\+Qubits}) or are equal. \\
+\hline
+\end{DoxyExceptions}
+
+
+Definition at line 471 of file Qu\+E\+S\+T.\+c.
+
+
+
+References controlled\+Rotate\+Around\+Axis().
+
+
+\begin{DoxyCode}
+471                                                                                                         \{
+472 
+473     \mbox{\hyperlink{structVector}{Vector}} unitAxis = \{0, 1, 0\};
+474     \mbox{\hyperlink{QuEST_8c_ad41f82b41149393a642391b67b3a287e}{controlledRotateAroundAxis}}(multiQubit, controlQubit, targetQubit, angle, 
+      unitAxis);
+475 \}
+\end{DoxyCode}
+\mbox{\Hypertarget{QuEST_8h_a668e5d2634b02e98bc73675ccb11d61c}\label{QuEST_8h_a668e5d2634b02e98bc73675ccb11d61c}} 
+\index{Qu\+E\+S\+T.\+h@{Qu\+E\+S\+T.\+h}!controlled\+RotateZ@{controlled\+RotateZ}}
+\index{controlled\+RotateZ@{controlled\+RotateZ}!Qu\+E\+S\+T.\+h@{Qu\+E\+S\+T.\+h}}
+\paragraph{\texorpdfstring{controlled\+Rotate\+Z()}{controlledRotateZ()}}
+{\footnotesize\ttfamily void controlled\+RotateZ (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structMultiQubit}{Multi\+Qubit}}}]{multi\+Qubit,  }\item[{const int}]{control\+Qubit,  }\item[{const int}]{target\+Qubit,  }\item[{\mbox{\hyperlink{QuEST__precision_8h_a4b654506f18b8bfd61ad2a29a7e38c25}{R\+E\+AL}}}]{angle }\end{DoxyParamCaption})}
+
+
+
+Applies a controlled rotation by a given angle around the Z-\/axis of the Bloch-\/sphere. 
+
+The target qubit is rotated in states where the control qubit has value 1.
+
+\[ \setlength{\fboxrule}{0.01pt} \fbox{ \begin{tikzpicture}[scale=.5] \node[draw=none] at (-3.5, 2) {control}; \node[draw=none] at (-3.5, 0) {target}; \draw (-2, 2) -- (2, 2); \draw[fill=black] (0, 2) circle (.2); \draw (0, 2) -- (0, 1); \draw (-2,0) -- (-1, 0); \draw (1, 0) -- (2, 0); \draw (-1,-1)--(-1,1)--(1,1)--(1,-1)--cycle; \node[draw=none] at (0, 0) {$R_z(\theta)$}; \end{tikzpicture} } \] ~\newline
+ 
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\tt in,out}  & {\em multi\+Qubit} & object representing the set of all qubits \\
+\hline
+\mbox{\tt in}  & {\em control\+Qubit} & qubit which has value 1 in the rotated states \\
+\hline
+\mbox{\tt in}  & {\em tagret\+Qubit} & qubit to rotate \\
+\hline
+\mbox{\tt in}  & {\em angle} & angle by which to rotate the target qubit in radians \\
+\hline
+\end{DoxyParams}
+
+\begin{DoxyExceptions}{Exceptions}
+{\em exit\+With\+Error} & if either {\ttfamily control\+Qubit} or {\ttfamily target\+Qubit} are outside \mbox{[}0, {\ttfamily multi\+Qubit.\+num\+Qubits}) or are equal. \\
+\hline
+\end{DoxyExceptions}
+
+
+Definition at line 477 of file Qu\+E\+S\+T.\+c.
+
+
+
+References controlled\+Rotate\+Around\+Axis().
+
+
+\begin{DoxyCode}
+477                                                                                                         \{
+478 
+479     \mbox{\hyperlink{structVector}{Vector}} unitAxis = \{0, 0, 1\};
+480     \mbox{\hyperlink{QuEST_8c_ad41f82b41149393a642391b67b3a287e}{controlledRotateAroundAxis}}(multiQubit, controlQubit, targetQubit, angle, 
+      unitAxis);
+481 \}
+\end{DoxyCode}
+\mbox{\Hypertarget{QuEST_8h_a8a701526263392599aa21d0d0f05d9d8}\label{QuEST_8h_a8a701526263392599aa21d0d0f05d9d8}} 
+\index{Qu\+E\+S\+T.\+h@{Qu\+E\+S\+T.\+h}!controlled\+Unitary@{controlled\+Unitary}}
+\index{controlled\+Unitary@{controlled\+Unitary}!Qu\+E\+S\+T.\+h@{Qu\+E\+S\+T.\+h}}
+\paragraph{\texorpdfstring{controlled\+Unitary()}{controlledUnitary()}}
+{\footnotesize\ttfamily void controlled\+Unitary (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structMultiQubit}{Multi\+Qubit}}}]{multi\+Qubit,  }\item[{const int}]{control\+Qubit,  }\item[{const int}]{target\+Qubit,  }\item[{\mbox{\hyperlink{structComplexMatrix2}{Complex\+Matrix2}}}]{u }\end{DoxyParamCaption})}
+
+
+
+Apply a general controlled unitary (single control, single target), which can include a global phase factor. 
+
+The given unitary is applied to the target qubit if the control qubit has value 1, effecting the two-\/qubit unitary \[ \begin{pmatrix} 1 \\ & 1 \\ & & u_{00} & u_{01}\\ & & u_{10} & u_{11} \end{pmatrix} \] on the control and target qubits.
+
+\[ \setlength{\fboxrule}{0.01pt} \fbox{ \begin{tikzpicture}[scale=.5] \node[draw=none] at (-3.5, 2) {control}; \node[draw=none] at (-3.5, 0) {target}; \draw (-2, 2) -- (2, 2); \draw[fill=black] (0, 2) circle (.2); \draw (0, 2) -- (0, 1); \draw (-2,0) -- (-1, 0); \draw (1, 0) -- (2, 0); \draw (-1,-1)--(-1,1)--(1,1)--(1,-1)--cycle; \node[draw=none] at (0, 0) {U}; \end{tikzpicture} } \]
+
+
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\tt in,out}  & {\em multi\+Qubit} & object representing the set of all qubits \\
+\hline
+\mbox{\tt in}  & {\em control\+Qubit} & apply unitary if this qubit is 1 \\
+\hline
+\mbox{\tt in}  & {\em target\+Qubit} & qubit to operate on \\
+\hline
+\mbox{\tt in}  & {\em u} & single-\/qubit unitary matrix to apply \\
+\hline
+\end{DoxyParams}
+
+\begin{DoxyExceptions}{Exceptions}
+{\em exit\+With\+Error} & if either {\ttfamily control\+Qubit} or {\ttfamily target\+Qubit} are outside \mbox{[}0, {\ttfamily multi\+Qubit.\+num\+Qubits}) or are equal, or if {\ttfamily u} is not unitary. \\
+\hline
+\end{DoxyExceptions}
+
+
+Definition at line 124 of file Qu\+E\+S\+T\+\_\+env\+\_\+local.\+c.
+
+
+
+References Multi\+Qubit\+::chunk\+Id, chunk\+Is\+Upper(), controlled\+Unitary\+Distributed(), controlled\+Unitary\+Local(), exchange\+State\+Vectors(), get\+Chunk\+Pair\+Id(), get\+Rot\+Angle\+From\+Unitary\+Matrix(), half\+Matrix\+Block\+Fits\+In\+Chunk(), Multi\+Qubit\+::num\+Amps, Multi\+Qubit\+::num\+Qubits, Multi\+Qubit\+::pair\+State\+Vec, Qu\+E\+S\+T\+Assert(), Multi\+Qubit\+::state\+Vec, and validate\+Matrix\+Is\+Unitary().
+
+
+\begin{DoxyCode}
+125 \{
+126     \mbox{\hyperlink{QuEST__env__local_8c_a3587b9d533e633ccf1abf9ad2ce45d8d}{QuESTAssert}}(targetQubit >= 0 && targetQubit < multiQubit.
+      \mbox{\hyperlink{structMultiQubit_ab5b9795bdc6fb5855e1974dcbbaeb36f}{numQubits}}, 1, \_\_func\_\_);
+127     \mbox{\hyperlink{QuEST__env__local_8c_a3587b9d533e633ccf1abf9ad2ce45d8d}{QuESTAssert}}(controlQubit >= 0 && controlQubit < multiQubit.
+      \mbox{\hyperlink{structMultiQubit_ab5b9795bdc6fb5855e1974dcbbaeb36f}{numQubits}}, 2, \_\_func\_\_);
+128     \mbox{\hyperlink{QuEST__env__local_8c_a3587b9d533e633ccf1abf9ad2ce45d8d}{QuESTAssert}}(controlQubit != targetQubit, 3, \_\_func\_\_);
+129     \mbox{\hyperlink{QuEST__env__local_8c_a3587b9d533e633ccf1abf9ad2ce45d8d}{QuESTAssert}}(\mbox{\hyperlink{QuEST_8c_ae4fea133d1a8f09ff8da03038100adb2}{validateMatrixIsUnitary}}(u), 5, \_\_func\_\_);
+130 
+131     \mbox{\hyperlink{QuEST_8c_a8a4afcff70195a306c082b8ed8d4e09a}{controlledUnitaryLocal}}(multiQubit, controlQubit, targetQubit, u);
+132 \}
+\end{DoxyCode}
+\mbox{\Hypertarget{QuEST_8h_a9c02591bc64c2918503afa231d90d83f}\label{QuEST_8h_a9c02591bc64c2918503afa231d90d83f}} 
+\index{Qu\+E\+S\+T.\+h@{Qu\+E\+S\+T.\+h}!create\+Multi\+Qubit@{create\+Multi\+Qubit}}
+\index{create\+Multi\+Qubit@{create\+Multi\+Qubit}!Qu\+E\+S\+T.\+h@{Qu\+E\+S\+T.\+h}}
+\paragraph{\texorpdfstring{create\+Multi\+Qubit()}{createMultiQubit()}}
+{\footnotesize\ttfamily void create\+Multi\+Qubit (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structMultiQubit}{Multi\+Qubit}} $\ast$}]{multi\+Qubit,  }\item[{int}]{num\+Qubits,  }\item[{\mbox{\hyperlink{structQuESTEnv}{Qu\+E\+S\+T\+Env}}}]{env }\end{DoxyParamCaption})}
+
+
+
+Create a \mbox{\hyperlink{structMultiQubit}{Multi\+Qubit}} object representing a set of qubits. 
+
+Allocate space for state vector of probability amplitudes, including space for temporary values to be copied from one other chunk if running the distributed version. Define properties related to the size of the set of qubits. init\+State\+Zero should be called after this to initialise the qubits to the zero state.
+
+
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\tt in,out}  & {\em multi\+Qubit} & a pointer to an object representing the set of qubits \\
+\hline
+\mbox{\tt in}  & {\em num\+Qubits} & number of qubits in the system \\
+\hline
+\mbox{\tt in}  & {\em env} & object representing the execution environment (local, multinode etc) \\
+\hline
+\end{DoxyParams}
+
+\begin{DoxyExceptions}{Exceptions}
+{\em exit\+With\+Error} & if {\ttfamily num\+Qubits} $<$= 0 \\
+\hline
+\end{DoxyExceptions}
+
+
+Definition at line 47 of file Qu\+E\+S\+T.\+c.
+
+
+
+References Multi\+Qubit\+::chunk\+Id, Complex\+Array\+::imag, Multi\+Qubit\+::num\+Amps, Multi\+Qubit\+::num\+Chunks, Multi\+Qubit\+::num\+Qubits, Qu\+E\+S\+T\+Env\+::num\+Ranks, Multi\+Qubit\+::pair\+State\+Vec, Qu\+E\+S\+T\+Assert(), Qu\+E\+S\+T\+Env\+::rank, Complex\+Array\+::real, and Multi\+Qubit\+::state\+Vec.
+
+
+
+Referenced by main().
+
+
+\begin{DoxyCode}
+48 \{
+49     \mbox{\hyperlink{QuEST__env__local_8c_a3587b9d533e633ccf1abf9ad2ce45d8d}{QuESTAssert}}(numQubits>0, 9, \_\_func\_\_);
+50     \textcolor{keywordtype}{long} \textcolor{keywordtype}{long} \textcolor{keywordtype}{int} numAmps = 1L << numQubits;
+51     \textcolor{keywordtype}{long} \textcolor{keywordtype}{long} \textcolor{keywordtype}{int} numAmpsPerRank = numAmps/env.\mbox{\hyperlink{structQuESTEnv_af22aacd7c9905accae28484785c193b4}{numRanks}};
+52 
+53     multiQubit->\mbox{\hyperlink{structMultiQubit_a45483190d6b01ef6b2f98f2bec9ab94f}{stateVec}}.\mbox{\hyperlink{structComplexArray_a4195cac6c784ea1b6271f1c7dba1548a}{real}} = malloc(numAmpsPerRank * \textcolor{keyword}{sizeof}(*(multiQubit->
+      \mbox{\hyperlink{structMultiQubit_a45483190d6b01ef6b2f98f2bec9ab94f}{stateVec}}.\mbox{\hyperlink{structComplexArray_a4195cac6c784ea1b6271f1c7dba1548a}{real}})));
+54     multiQubit->\mbox{\hyperlink{structMultiQubit_a45483190d6b01ef6b2f98f2bec9ab94f}{stateVec}}.\mbox{\hyperlink{structComplexArray_a79dde47c7ae530c79cebfdf57b225968}{imag}} = malloc(numAmpsPerRank * \textcolor{keyword}{sizeof}(*(multiQubit->
+      \mbox{\hyperlink{structMultiQubit_a45483190d6b01ef6b2f98f2bec9ab94f}{stateVec}}.\mbox{\hyperlink{structComplexArray_a79dde47c7ae530c79cebfdf57b225968}{imag}})));
+55     \textcolor{keywordflow}{if} (env.\mbox{\hyperlink{structQuESTEnv_af22aacd7c9905accae28484785c193b4}{numRanks}}>1)\{
+56         multiQubit->\mbox{\hyperlink{structMultiQubit_a76f7db4eab52d2b30f58f973ada809c5}{pairStateVec}}.\mbox{\hyperlink{structComplexArray_a4195cac6c784ea1b6271f1c7dba1548a}{real}} = malloc(numAmpsPerRank * \textcolor{keyword}{sizeof}(*(multiQubit->
+      \mbox{\hyperlink{structMultiQubit_a76f7db4eab52d2b30f58f973ada809c5}{pairStateVec}}.\mbox{\hyperlink{structComplexArray_a4195cac6c784ea1b6271f1c7dba1548a}{real}})));
+57         multiQubit->\mbox{\hyperlink{structMultiQubit_a76f7db4eab52d2b30f58f973ada809c5}{pairStateVec}}.\mbox{\hyperlink{structComplexArray_a79dde47c7ae530c79cebfdf57b225968}{imag}} = malloc(numAmpsPerRank * \textcolor{keyword}{sizeof}(*(multiQubit->
+      \mbox{\hyperlink{structMultiQubit_a76f7db4eab52d2b30f58f973ada809c5}{pairStateVec}}.\mbox{\hyperlink{structComplexArray_a79dde47c7ae530c79cebfdf57b225968}{imag}})));
+58     \}
+59 
+60     \textcolor{keywordflow}{if} ( (!(multiQubit->\mbox{\hyperlink{structMultiQubit_a45483190d6b01ef6b2f98f2bec9ab94f}{stateVec}}.\mbox{\hyperlink{structComplexArray_a4195cac6c784ea1b6271f1c7dba1548a}{real}}) || !(multiQubit->\mbox{\hyperlink{structMultiQubit_a45483190d6b01ef6b2f98f2bec9ab94f}{stateVec}}.
+      \mbox{\hyperlink{structComplexArray_a79dde47c7ae530c79cebfdf57b225968}{imag}}))
+61             && numAmpsPerRank ) \{
+62         printf(\textcolor{stringliteral}{"Could not allocate memory!"});
+63         exit (EXIT\_FAILURE);
+64     \}
+65 
+66     \textcolor{keywordflow}{if} ( env.\mbox{\hyperlink{structQuESTEnv_af22aacd7c9905accae28484785c193b4}{numRanks}}>1 && (!(multiQubit->\mbox{\hyperlink{structMultiQubit_a76f7db4eab52d2b30f58f973ada809c5}{pairStateVec}}.\mbox{\hyperlink{structComplexArray_a4195cac6c784ea1b6271f1c7dba1548a}{real}}) || !(multiQubit->
+      \mbox{\hyperlink{structMultiQubit_a76f7db4eab52d2b30f58f973ada809c5}{pairStateVec}}.\mbox{\hyperlink{structComplexArray_a79dde47c7ae530c79cebfdf57b225968}{imag}}))
+67             && numAmpsPerRank ) \{
+68         printf(\textcolor{stringliteral}{"Could not allocate memory!"});
+69         exit (EXIT\_FAILURE);
+70     \}
+71 
+72     multiQubit->\mbox{\hyperlink{structMultiQubit_ab5b9795bdc6fb5855e1974dcbbaeb36f}{numQubits}} = numQubits;
+73     multiQubit->\mbox{\hyperlink{structMultiQubit_ae16f47d8b725c914fb7f66b6498d79db}{numAmps}} = numAmpsPerRank;
+74     multiQubit->\mbox{\hyperlink{structMultiQubit_ab10c88249fa3825d6227ceec01d37e37}{chunkId}} = env.\mbox{\hyperlink{structQuESTEnv_aa648bb336cf8598467cb62db00b9cee8}{rank}};
+75     multiQubit->\mbox{\hyperlink{structMultiQubit_acd43f2f57991709c9e94f73662c972b2}{numChunks}} = env.\mbox{\hyperlink{structQuESTEnv_af22aacd7c9905accae28484785c193b4}{numRanks}};
+76 
+77 \}
+\end{DoxyCode}
+\mbox{\Hypertarget{QuEST_8h_ae5d6acc322314d7a3d8a2eccf00d3b19}\label{QuEST_8h_ae5d6acc322314d7a3d8a2eccf00d3b19}} 
+\index{Qu\+E\+S\+T.\+h@{Qu\+E\+S\+T.\+h}!destroy\+Multi\+Qubit@{destroy\+Multi\+Qubit}}
+\index{destroy\+Multi\+Qubit@{destroy\+Multi\+Qubit}!Qu\+E\+S\+T.\+h@{Qu\+E\+S\+T.\+h}}
+\paragraph{\texorpdfstring{destroy\+Multi\+Qubit()}{destroyMultiQubit()}}
+{\footnotesize\ttfamily void destroy\+Multi\+Qubit (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structMultiQubit}{Multi\+Qubit}}}]{multi\+Qubit,  }\item[{\mbox{\hyperlink{structQuESTEnv}{Qu\+E\+S\+T\+Env}}}]{env }\end{DoxyParamCaption})}
+
+
+
+Deallocate a \mbox{\hyperlink{structMultiQubit}{Multi\+Qubit}} object representing a set of qubits. 
+
+Free memory allocated to state vector of probability amplitudes, including temporary vector for values copied from another chunk if running the distributed version.
+
+
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\tt in,out}  & {\em multi\+Qubit} & object to be deallocated \\
+\hline
+\mbox{\tt in}  & {\em env} & object representing the execution environment (local, multinode etc) \\
+\hline
+\end{DoxyParams}
+
+
+Definition at line 79 of file Qu\+E\+S\+T.\+c.
+
+
+
+References Complex\+Array\+::imag, Qu\+E\+S\+T\+Env\+::num\+Ranks, Multi\+Qubit\+::pair\+State\+Vec, Complex\+Array\+::real, and Multi\+Qubit\+::state\+Vec.
+
+
+
+Referenced by main().
+
+
+\begin{DoxyCode}
+79                                                            \{
+80     free(multiQubit.\mbox{\hyperlink{structMultiQubit_a45483190d6b01ef6b2f98f2bec9ab94f}{stateVec}}.\mbox{\hyperlink{structComplexArray_a4195cac6c784ea1b6271f1c7dba1548a}{real}});
+81     free(multiQubit.\mbox{\hyperlink{structMultiQubit_a45483190d6b01ef6b2f98f2bec9ab94f}{stateVec}}.\mbox{\hyperlink{structComplexArray_a79dde47c7ae530c79cebfdf57b225968}{imag}});
+82     \textcolor{keywordflow}{if} (env.\mbox{\hyperlink{structQuESTEnv_af22aacd7c9905accae28484785c193b4}{numRanks}}>1)\{
+83         free(multiQubit.\mbox{\hyperlink{structMultiQubit_a76f7db4eab52d2b30f58f973ada809c5}{pairStateVec}}.\mbox{\hyperlink{structComplexArray_a4195cac6c784ea1b6271f1c7dba1548a}{real}});
+84         free(multiQubit.\mbox{\hyperlink{structMultiQubit_a76f7db4eab52d2b30f58f973ada809c5}{pairStateVec}}.\mbox{\hyperlink{structComplexArray_a79dde47c7ae530c79cebfdf57b225968}{imag}});
+85     \}
+86 \}
+\end{DoxyCode}
+\mbox{\Hypertarget{QuEST_8h_ad315c941a51bc053d39ebfa2040fd32e}\label{QuEST_8h_ad315c941a51bc053d39ebfa2040fd32e}} 
+\index{Qu\+E\+S\+T.\+h@{Qu\+E\+S\+T.\+h}!find\+Probability\+Of\+Outcome@{find\+Probability\+Of\+Outcome}}
+\index{find\+Probability\+Of\+Outcome@{find\+Probability\+Of\+Outcome}!Qu\+E\+S\+T.\+h@{Qu\+E\+S\+T.\+h}}
+\paragraph{\texorpdfstring{find\+Probability\+Of\+Outcome()}{findProbabilityOfOutcome()}}
+{\footnotesize\ttfamily \mbox{\hyperlink{QuEST__precision_8h_a4b654506f18b8bfd61ad2a29a7e38c25}{R\+E\+AL}} find\+Probability\+Of\+Outcome (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structMultiQubit}{Multi\+Qubit}}}]{multi\+Qubit,  }\item[{const int}]{measure\+Qubit,  }\item[{int}]{outcome }\end{DoxyParamCaption})}
+
+
+
+Gives the probability of a specified qubit being measured in the given outcome (0 or 1). 
+
+This performs no actual measurement and does not change the state of the qubits.
+
+
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\tt in}  & {\em multi\+Qubit} & object representing the set of all qubits \\
+\hline
+\mbox{\tt in}  & {\em measure\+Qubit} & qubit to study \\
+\hline
+\mbox{\tt in}  & {\em outcome} & for which to find the probability of the qubit being measured in \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+probability of qubit measure\+Qubit being measured in the given outcome 
+\end{DoxyReturn}
+
+\begin{DoxyExceptions}{Exceptions}
+{\em exit\+With\+Error} & if {\ttfamily measure\+Qubit} is outside \mbox{[}0, {\ttfamily multi\+Qubit.\+num\+Qubits}), or if {\ttfamily outcome} is not in \{0, 1\}. \\
+\hline
+\end{DoxyExceptions}
+
+
+Definition at line 180 of file Qu\+E\+S\+T\+\_\+env\+\_\+local.\+c.
+
+
+
+References Multi\+Qubit\+::chunk\+Id, find\+Probability\+Of\+Zero\+Distributed(), find\+Probability\+Of\+Zero\+Local(), half\+Matrix\+Block\+Fits\+In\+Chunk(), is\+Chunk\+To\+Skip\+In\+Find\+P\+Zero(), M\+P\+I\+\_\+\+Qu\+E\+S\+T\+\_\+\+R\+E\+AL, Multi\+Qubit\+::num\+Amps, Multi\+Qubit\+::num\+Qubits, Qu\+E\+S\+T\+Assert(), and R\+E\+AL.
+
+
+
+Referenced by collapse\+To\+Outcome(), main(), and measure\+With\+Stats().
+
+
+\begin{DoxyCode}
+181 \{
+182     \mbox{\hyperlink{QuEST__env__local_8c_a3587b9d533e633ccf1abf9ad2ce45d8d}{QuESTAssert}}(measureQubit >= 0 && measureQubit < multiQubit.
+      \mbox{\hyperlink{structMultiQubit_ab5b9795bdc6fb5855e1974dcbbaeb36f}{numQubits}}, 2, \_\_func\_\_);
+183     \mbox{\hyperlink{QuEST__precision_8h_a4b654506f18b8bfd61ad2a29a7e38c25}{REAL}} stateProb=0;
+184     stateProb = \mbox{\hyperlink{QuEST_8c_a7c02cd0e1b4eac19771a0525f023249e}{findProbabilityOfZeroLocal}}(multiQubit, measureQubit);
+185     \textcolor{keywordflow}{if} (outcome==1) stateProb = 1.0 - stateProb;
+186     \textcolor{keywordflow}{return} stateProb;
+187 \}
+\end{DoxyCode}
+\mbox{\Hypertarget{QuEST_8h_a8f10aabf9f607f19093aee54630caa21}\label{QuEST_8h_a8f10aabf9f607f19093aee54630caa21}} 
+\index{Qu\+E\+S\+T.\+h@{Qu\+E\+S\+T.\+h}!get\+Environment\+String@{get\+Environment\+String}}
+\index{get\+Environment\+String@{get\+Environment\+String}!Qu\+E\+S\+T.\+h@{Qu\+E\+S\+T.\+h}}
+\paragraph{\texorpdfstring{get\+Environment\+String()}{getEnvironmentString()}}
+{\footnotesize\ttfamily void get\+Environment\+String (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structQuESTEnv}{Qu\+E\+S\+T\+Env}}}]{env,  }\item[{\mbox{\hyperlink{structMultiQubit}{Multi\+Qubit}}}]{multi\+Qubit,  }\item[{char}]{str\mbox{[}200\mbox{]} }\end{DoxyParamCaption})}
+
+
+
+Definition at line 139 of file Qu\+E\+S\+T.\+c.
+
+
+
+References Multi\+Qubit\+::num\+Qubits, and Qu\+E\+S\+T\+Env\+::num\+Ranks.
+
+
+\begin{DoxyCode}
+139                                                                              \{
+140     \textcolor{keywordtype}{int} numThreads=1;
+141 \textcolor{preprocessor}{# ifdef \_OPENMP}
+142     numThreads=omp\_get\_max\_threads(); 
+143 \textcolor{preprocessor}{# endif}
+144     sprintf(str, \textcolor{stringliteral}{"%dqubits\_CPU\_%dranksx%dthreads"}, multiQubit.\mbox{\hyperlink{structMultiQubit_ab5b9795bdc6fb5855e1974dcbbaeb36f}{numQubits}}, env.
+      \mbox{\hyperlink{structQuESTEnv_af22aacd7c9905accae28484785c193b4}{numRanks}}, numThreads);
+145 \}
+\end{DoxyCode}
+\mbox{\Hypertarget{QuEST_8h_a3615f76fd5f57008d9b74bbd10533dd0}\label{QuEST_8h_a3615f76fd5f57008d9b74bbd10533dd0}} 
+\index{Qu\+E\+S\+T.\+h@{Qu\+E\+S\+T.\+h}!get\+Imag\+Amp\+El@{get\+Imag\+Amp\+El}}
+\index{get\+Imag\+Amp\+El@{get\+Imag\+Amp\+El}!Qu\+E\+S\+T.\+h@{Qu\+E\+S\+T.\+h}}
+\paragraph{\texorpdfstring{get\+Imag\+Amp\+El()}{getImagAmpEl()}}
+{\footnotesize\ttfamily \mbox{\hyperlink{QuEST__precision_8h_a4b654506f18b8bfd61ad2a29a7e38c25}{R\+E\+AL}} get\+Imag\+Amp\+El (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structMultiQubit}{Multi\+Qubit}}}]{multi\+Qubit,  }\item[{long long int}]{index }\end{DoxyParamCaption})}
+
+
+
+Get the imaginary component of the complex probability amplitude at an index in the state vector. 
+
+For debugging purposes.
+
+
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\tt in}  & {\em multi\+Qubit} & object representing a set of qubits \\
+\hline
+\mbox{\tt in}  & {\em index} & index in state vector of probability amplitudes \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+imaginary component at that index 
+\end{DoxyReturn}
+
+\begin{DoxyExceptions}{Exceptions}
+{\em exit\+With\+Error} & if {\ttfamily index} is outside \mbox{[}0, $2^{N}$) where $N = $ {\ttfamily multi\+Qubit.\+num\+Qubits} \\
+\hline
+\end{DoxyExceptions}
+
+
+Definition at line 91 of file Qu\+E\+S\+T\+\_\+env\+\_\+local.\+c.
+
+
+
+References Multi\+Qubit\+::chunk\+Id, get\+Chunk\+Id\+From\+Index(), Complex\+Array\+::imag, M\+P\+I\+\_\+\+Qu\+E\+S\+T\+\_\+\+R\+E\+AL, Multi\+Qubit\+::num\+Amps, R\+E\+AL, and Multi\+Qubit\+::state\+Vec.
+
+
+
+Referenced by get\+Prob\+El().
+
+
+\begin{DoxyCode}
+91                                                              \{
+92     \textcolor{keywordflow}{return} multiQubit.\mbox{\hyperlink{structMultiQubit_a45483190d6b01ef6b2f98f2bec9ab94f}{stateVec}}.\mbox{\hyperlink{structComplexArray_a79dde47c7ae530c79cebfdf57b225968}{imag}}[index];
+93 \}
+\end{DoxyCode}
+\mbox{\Hypertarget{QuEST_8h_a799b10447d6dbdaf960a4d3eedd22014}\label{QuEST_8h_a799b10447d6dbdaf960a4d3eedd22014}} 
+\index{Qu\+E\+S\+T.\+h@{Qu\+E\+S\+T.\+h}!get\+Prob\+El@{get\+Prob\+El}}
+\index{get\+Prob\+El@{get\+Prob\+El}!Qu\+E\+S\+T.\+h@{Qu\+E\+S\+T.\+h}}
+\paragraph{\texorpdfstring{get\+Prob\+El()}{getProbEl()}}
+{\footnotesize\ttfamily \mbox{\hyperlink{QuEST__precision_8h_a4b654506f18b8bfd61ad2a29a7e38c25}{R\+E\+AL}} get\+Prob\+El (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structMultiQubit}{Multi\+Qubit}}}]{multi\+Qubit,  }\item[{long long int}]{index }\end{DoxyParamCaption})}
+
+
+
+Get the probability of the state at an index in the full state vector. 
+
+
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\tt in}  & {\em multi\+Qubit} & object representing a set of qubits \\
+\hline
+\mbox{\tt in}  & {\em index} & index in state vector of probability amplitudes \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+real\+El$\ast$real\+El + imag\+El$\ast$imag\+El 
+\end{DoxyReturn}
+
+\begin{DoxyExceptions}{Exceptions}
+{\em exit\+With\+Error} & if {\ttfamily index} is outside \mbox{[}0, $2^{N}$) where $N = $ {\ttfamily multi\+Qubit.\+num\+Qubits} \\
+\hline
+\end{DoxyExceptions}
+
+
+Definition at line 1979 of file Qu\+E\+S\+T.\+c.
+
+
+
+References get\+Imag\+Amp\+El(), get\+Real\+Amp\+El(), and R\+E\+AL.
+
+
+
+Referenced by main().
+
+
+\begin{DoxyCode}
+1979                                                           \{
+1980     \mbox{\hyperlink{QuEST__precision_8h_a4b654506f18b8bfd61ad2a29a7e38c25}{REAL}} real;
+1981     \mbox{\hyperlink{QuEST__precision_8h_a4b654506f18b8bfd61ad2a29a7e38c25}{REAL}} imag;
+1982     real = \mbox{\hyperlink{QuEST_8h_a317b786f577fa6bc136ea7f0ee7330a7}{getRealAmpEl}}(multiQubit, index);
+1983     imag = \mbox{\hyperlink{QuEST_8h_a3615f76fd5f57008d9b74bbd10533dd0}{getImagAmpEl}}(multiQubit, index);
+1984     \textcolor{keywordflow}{return} real*real + imag*imag;
+1985 \}
+\end{DoxyCode}
+\mbox{\Hypertarget{QuEST_8h_a317b786f577fa6bc136ea7f0ee7330a7}\label{QuEST_8h_a317b786f577fa6bc136ea7f0ee7330a7}} 
+\index{Qu\+E\+S\+T.\+h@{Qu\+E\+S\+T.\+h}!get\+Real\+Amp\+El@{get\+Real\+Amp\+El}}
+\index{get\+Real\+Amp\+El@{get\+Real\+Amp\+El}!Qu\+E\+S\+T.\+h@{Qu\+E\+S\+T.\+h}}
+\paragraph{\texorpdfstring{get\+Real\+Amp\+El()}{getRealAmpEl()}}
+{\footnotesize\ttfamily \mbox{\hyperlink{QuEST__precision_8h_a4b654506f18b8bfd61ad2a29a7e38c25}{R\+E\+AL}} get\+Real\+Amp\+El (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structMultiQubit}{Multi\+Qubit}}}]{multi\+Qubit,  }\item[{long long int}]{index }\end{DoxyParamCaption})}
+
+
+
+Get the real component of the complex probability amplitude at an index in the state vector. 
+
+For debugging purposes.
+
+
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\tt in}  & {\em multi\+Qubit} & object representing a set of qubits \\
+\hline
+\mbox{\tt in}  & {\em index} & index in state vector of probability amplitudes \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+real component at that index 
+\end{DoxyReturn}
+
+\begin{DoxyExceptions}{Exceptions}
+{\em exit\+With\+Error} & if {\ttfamily index} is outside \mbox{[}0, $2^{N}$) where $N = $ {\ttfamily multi\+Qubit.\+num\+Qubits} \\
+\hline
+\end{DoxyExceptions}
+
+
+Definition at line 87 of file Qu\+E\+S\+T\+\_\+env\+\_\+local.\+c.
+
+
+
+References Multi\+Qubit\+::chunk\+Id, get\+Chunk\+Id\+From\+Index(), M\+P\+I\+\_\+\+Qu\+E\+S\+T\+\_\+\+R\+E\+AL, Multi\+Qubit\+::num\+Amps, Complex\+Array\+::real, R\+E\+AL, and Multi\+Qubit\+::state\+Vec.
+
+
+
+Referenced by get\+Prob\+El().
+
+
+\begin{DoxyCode}
+87                                                              \{
+88     \textcolor{keywordflow}{return} multiQubit.\mbox{\hyperlink{structMultiQubit_a45483190d6b01ef6b2f98f2bec9ab94f}{stateVec}}.\mbox{\hyperlink{structComplexArray_a4195cac6c784ea1b6271f1c7dba1548a}{real}}[index];
+89 \}
+\end{DoxyCode}
+\mbox{\Hypertarget{QuEST_8h_aa09b5dd93de6df1384b8f2c0041749ab}\label{QuEST_8h_aa09b5dd93de6df1384b8f2c0041749ab}} 
+\index{Qu\+E\+S\+T.\+h@{Qu\+E\+S\+T.\+h}!hadamard@{hadamard}}
+\index{hadamard@{hadamard}!Qu\+E\+S\+T.\+h@{Qu\+E\+S\+T.\+h}}
+\paragraph{\texorpdfstring{hadamard()}{hadamard()}}
+{\footnotesize\ttfamily void hadamard (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structMultiQubit}{Multi\+Qubit}}}]{multi\+Qubit,  }\item[{const int}]{target\+Qubit }\end{DoxyParamCaption})}
+
+
+
+Apply the single-\/qubit Hadamard gate. 
+
+This takes $|0\rangle$ to $|+\rangle$ and $|1\rangle$ to $|-\rangle$, and is equivalent to a rotation of $\pi$ around the x-\/axis then $\pi/2$ about the y-\/axis on the Bloch-\/sphere. I.\+e. \[ \frac{1}{\sqrt{2}} \begin{pmatrix} 1 & 1 \\ 1 & -1 \end{pmatrix} \] ~\newline
+ \[ \setlength{\fboxrule}{0.01pt} \fbox{ \begin{tikzpicture}[scale=.5] \node[draw=none] at (-3.5, 0) {target}; \draw (-2,0) -- (-1, 0); \draw (1, 0) -- (2, 0); \draw (-1,-1)--(-1,1)--(1,1)--(1,-1)--cycle; \node[draw=none] at (0, 0) {H}; \end{tikzpicture} } \] ~\newline
+ 
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\tt in,out}  & {\em multi\+Qubit} & object representing the set of all qubits \\
+\hline
+\mbox{\tt in}  & {\em target\+Qubit} & qubit to operate on \\
+\hline
+\end{DoxyParams}
+
+\begin{DoxyExceptions}{Exceptions}
+{\em exit\+With\+Error} & if {\ttfamily target\+Qubit} is outside \mbox{[}0, {\ttfamily multi\+Qubit.\+num\+Qubits}). \\
+\hline
+\end{DoxyExceptions}
+
+
+Definition at line 166 of file Qu\+E\+S\+T\+\_\+env\+\_\+local.\+c.
+
+
+
+References Multi\+Qubit\+::chunk\+Id, chunk\+Is\+Upper(), exchange\+State\+Vectors(), get\+Chunk\+Pair\+Id(), hadamard\+Distributed(), hadamard\+Local(), half\+Matrix\+Block\+Fits\+In\+Chunk(), Multi\+Qubit\+::num\+Amps, Multi\+Qubit\+::num\+Qubits, Multi\+Qubit\+::pair\+State\+Vec, Qu\+E\+S\+T\+Assert(), and Multi\+Qubit\+::state\+Vec.
+
+
+
+Referenced by main().
+
+
+\begin{DoxyCode}
+167 \{
+168     \mbox{\hyperlink{QuEST__env__local_8c_a3587b9d533e633ccf1abf9ad2ce45d8d}{QuESTAssert}}(targetQubit >= 0 && targetQubit < multiQubit.
+      \mbox{\hyperlink{structMultiQubit_ab5b9795bdc6fb5855e1974dcbbaeb36f}{numQubits}}, 1, \_\_func\_\_);
+169     \mbox{\hyperlink{QuEST_8c_aa9f0718b4dd794a3e1b143e3b153bfc5}{hadamardLocal}}(multiQubit, targetQubit);
+170 \}
+\end{DoxyCode}
+\mbox{\Hypertarget{QuEST_8h_aea34d45aaea9e64ad3f7786bfb412d0c}\label{QuEST_8h_aea34d45aaea9e64ad3f7786bfb412d0c}} 
+\index{Qu\+E\+S\+T.\+h@{Qu\+E\+S\+T.\+h}!init\+Classical\+State@{init\+Classical\+State}}
+\index{init\+Classical\+State@{init\+Classical\+State}!Qu\+E\+S\+T.\+h@{Qu\+E\+S\+T.\+h}}
+\paragraph{\texorpdfstring{init\+Classical\+State()}{initClassicalState()}}
+{\footnotesize\ttfamily void init\+Classical\+State (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structMultiQubit}{Multi\+Qubit}} $\ast$}]{multi\+Qubit,  }\item[{long long int}]{state\+Ind }\end{DoxyParamCaption})}
+
+
+
+Initialise a set of $ N $ qubits to the classical state with index {\ttfamily state\+Ind}. 
+
+Note $ | 00 \dots 00 \rangle $ has {\ttfamily state\+Ind} 0, $ | 00 \dots 01 \rangle $ has {\ttfamily state\+Ind} 1, $ | 11 \dots 11 \rangle $ has {\ttfamily state\+Ind} $ 2^N - 1 $, etc. Subsequent calls to get\+Prob\+El will yield 0 for all indices except {\ttfamily state\+Ind}.
+
+
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\tt in,out}  & {\em multi\+Qubit} & a pointer to the object representing the set of qubits to be initialised \\
+\hline
+\mbox{\tt in}  & {\em state\+Ind} & the index (0 to the number of amplitudes, exclusive) of the state to give probability 1 \\
+\hline
+\end{DoxyParams}
+
+
+Definition at line 216 of file Qu\+E\+S\+T.\+c.
+
+
+
+References Multi\+Qubit\+::chunk\+Id, Complex\+Array\+::imag, Multi\+Qubit\+::num\+Amps, Complex\+Array\+::real, R\+E\+AL, and Multi\+Qubit\+::state\+Vec.
+
+
+\begin{DoxyCode}
+217 \{
+218     \textcolor{keywordtype}{long} \textcolor{keywordtype}{long} \textcolor{keywordtype}{int} stateVecSize;
+219     \textcolor{keywordtype}{long} \textcolor{keywordtype}{long} \textcolor{keywordtype}{int} index;
+220 
+221     \textcolor{comment}{// dimension of the state vector}
+222     stateVecSize = multiQubit->\mbox{\hyperlink{structMultiQubit_ae16f47d8b725c914fb7f66b6498d79db}{numAmps}};
+223 
+224     \textcolor{comment}{// Can't use multiQubit->stateVec as a private OMP var}
+225     \mbox{\hyperlink{QuEST__precision_8h_a4b654506f18b8bfd61ad2a29a7e38c25}{REAL}} *stateVecReal = multiQubit->\mbox{\hyperlink{structMultiQubit_a45483190d6b01ef6b2f98f2bec9ab94f}{stateVec}}.\mbox{\hyperlink{structComplexArray_a4195cac6c784ea1b6271f1c7dba1548a}{real}};
+226     \mbox{\hyperlink{QuEST__precision_8h_a4b654506f18b8bfd61ad2a29a7e38c25}{REAL}} *stateVecImag = multiQubit->\mbox{\hyperlink{structMultiQubit_a45483190d6b01ef6b2f98f2bec9ab94f}{stateVec}}.\mbox{\hyperlink{structComplexArray_a79dde47c7ae530c79cebfdf57b225968}{imag}};
+227 
+228     \textcolor{comment}{// initialise the state to |0000..0000>}
+229 \textcolor{preprocessor}{# ifdef \_OPENMP}
+230 \textcolor{preprocessor}{# pragma omp parallel \(\backslash\)}
+231 \textcolor{preprocessor}{    default  (none) \(\backslash\)}
+232 \textcolor{preprocessor}{    shared   (stateInd, stateVecSize, stateVecReal, stateVecImag) \(\backslash\)}
+233 \textcolor{preprocessor}{    private  (index) }
+234 \textcolor{preprocessor}{# endif}
+235     \{
+236 \textcolor{preprocessor}{# ifdef \_OPENMP}
+237 \textcolor{preprocessor}{# pragma omp for schedule (static)}
+238 \textcolor{preprocessor}{# endif}
+239         \textcolor{keywordflow}{for} (index=0; index<stateVecSize; index++) \{
+240             stateVecReal[index] = 0.0;
+241             stateVecImag[index] = 0.0;
+242         \}
+243     \}
+244 
+245         \textcolor{comment}{// give the specified classical state prob 1}
+246     \textcolor{keywordflow}{if} (multiQubit->\mbox{\hyperlink{structMultiQubit_ab10c88249fa3825d6227ceec01d37e37}{chunkId}} == stateInd/stateVecSize)\{
+247         stateVecReal[stateInd % stateVecSize] = 1.0;
+248         stateVecImag[stateInd % stateVecSize] = 0.0;
+249     \}
+250 \}
+\end{DoxyCode}
+\mbox{\Hypertarget{QuEST_8h_ad84a3ce68d1ca02b4e3f741ea45b6054}\label{QuEST_8h_ad84a3ce68d1ca02b4e3f741ea45b6054}} 
+\index{Qu\+E\+S\+T.\+h@{Qu\+E\+S\+T.\+h}!init\+Qu\+E\+S\+T\+Env@{init\+Qu\+E\+S\+T\+Env}}
+\index{init\+Qu\+E\+S\+T\+Env@{init\+Qu\+E\+S\+T\+Env}!Qu\+E\+S\+T.\+h@{Qu\+E\+S\+T.\+h}}
+\paragraph{\texorpdfstring{init\+Qu\+E\+S\+T\+Env()}{initQuESTEnv()}}
+{\footnotesize\ttfamily void init\+Qu\+E\+S\+T\+Env (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structQuESTEnv}{Qu\+E\+S\+T\+Env}} $\ast$}]{env }\end{DoxyParamCaption})}
+
+
+
+Initialize the Qu\+E\+ST environment. 
+
+If something needs to be done to set up the execution environment, such as initializing M\+PI when running in distributed mode, it is handled here
+
+
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\tt in,out}  & {\em env} & object representing the execution environment. A single instance is used for each program \\
+\hline
+\end{DoxyParams}
+
+
+Definition at line 21 of file Qu\+E\+S\+T\+\_\+env\+\_\+local.\+c.
+
+
+
+References Qu\+E\+S\+T\+Env\+::num\+Ranks, and Qu\+E\+S\+T\+Env\+::rank.
+
+
+
+Referenced by main().
+
+
+\begin{DoxyCode}
+21                                 \{
+22     \textcolor{comment}{// init MPI environment}
+23     env->\mbox{\hyperlink{structQuESTEnv_aa648bb336cf8598467cb62db00b9cee8}{rank}}=0;
+24     env->\mbox{\hyperlink{structQuESTEnv_af22aacd7c9905accae28484785c193b4}{numRanks}}=1;
+25 \}
+\end{DoxyCode}
+\mbox{\Hypertarget{QuEST_8h_a43bcb279fc9717fbd06a19cdef48b9d8}\label{QuEST_8h_a43bcb279fc9717fbd06a19cdef48b9d8}} 
+\index{Qu\+E\+S\+T.\+h@{Qu\+E\+S\+T.\+h}!init\+State\+Plus@{init\+State\+Plus}}
+\index{init\+State\+Plus@{init\+State\+Plus}!Qu\+E\+S\+T.\+h@{Qu\+E\+S\+T.\+h}}
+\paragraph{\texorpdfstring{init\+State\+Plus()}{initStatePlus()}}
+{\footnotesize\ttfamily void init\+State\+Plus (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structMultiQubit}{Multi\+Qubit}} $\ast$}]{multi\+Qubit }\end{DoxyParamCaption})}
+
+
+
+Initialise a set of $ N $ qubits to the plus state $ {| + \rangle}^{\otimes N} = \frac{1}{\sqrt{2^N}} (| 0 \rangle + | 1 \rangle)^{\otimes N} $. 
+
+This is the product state of $N$ qubits where every classical state is uniformly populated with real coefficient $\frac{1}{\sqrt{2^N}}$. This is equivalent to applying a Hadamard to every qubit in the zero state\+: $ \hat{H}^{\otimes N} {|0\rangle}^{\otimes N} $
+
+
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\tt in,out}  & {\em multi\+Qubit} & a pointer to the object representing the set of qubits to be initialised \\
+\hline
+\end{DoxyParams}
+
+
+Definition at line 183 of file Qu\+E\+S\+T.\+c.
+
+
+
+References Complex\+Array\+::imag, Multi\+Qubit\+::num\+Amps, Multi\+Qubit\+::num\+Chunks, Complex\+Array\+::real, R\+E\+AL, and Multi\+Qubit\+::state\+Vec.
+
+
+\begin{DoxyCode}
+184 \{
+185     \textcolor{keywordtype}{long} \textcolor{keywordtype}{long} \textcolor{keywordtype}{int} chunkSize, stateVecSize;
+186     \textcolor{keywordtype}{long} \textcolor{keywordtype}{long} \textcolor{keywordtype}{int} index;
+187 
+188     \textcolor{comment}{// dimension of the state vector}
+189     chunkSize = multiQubit->\mbox{\hyperlink{structMultiQubit_ae16f47d8b725c914fb7f66b6498d79db}{numAmps}};
+190     stateVecSize = chunkSize*multiQubit->\mbox{\hyperlink{structMultiQubit_acd43f2f57991709c9e94f73662c972b2}{numChunks}};
+191     \mbox{\hyperlink{QuEST__precision_8h_a4b654506f18b8bfd61ad2a29a7e38c25}{REAL}} normFactor = 1.0/sqrt((\mbox{\hyperlink{QuEST__precision_8h_a4b654506f18b8bfd61ad2a29a7e38c25}{REAL}})stateVecSize);
+192 
+193     \textcolor{comment}{// Can't use multiQubit->stateVec as a private OMP var}
+194     \mbox{\hyperlink{QuEST__precision_8h_a4b654506f18b8bfd61ad2a29a7e38c25}{REAL}} *stateVecReal = multiQubit->\mbox{\hyperlink{structMultiQubit_a45483190d6b01ef6b2f98f2bec9ab94f}{stateVec}}.\mbox{\hyperlink{structComplexArray_a4195cac6c784ea1b6271f1c7dba1548a}{real}};
+195     \mbox{\hyperlink{QuEST__precision_8h_a4b654506f18b8bfd61ad2a29a7e38c25}{REAL}} *stateVecImag = multiQubit->\mbox{\hyperlink{structMultiQubit_a45483190d6b01ef6b2f98f2bec9ab94f}{stateVec}}.\mbox{\hyperlink{structComplexArray_a79dde47c7ae530c79cebfdf57b225968}{imag}};
+196 
+197     \textcolor{comment}{// initialise the state to |0000..0000>}
+198 \textcolor{preprocessor}{# ifdef \_OPENMP}
+199 \textcolor{preprocessor}{# pragma omp parallel \(\backslash\)}
+200 \textcolor{preprocessor}{    default  (none) \(\backslash\)}
+201 \textcolor{preprocessor}{    shared   (chunkSize, stateVecReal, stateVecImag, normFactor) \(\backslash\)}
+202 \textcolor{preprocessor}{    private  (index) }
+203 \textcolor{preprocessor}{# endif}
+204     \{
+205 \textcolor{preprocessor}{# ifdef \_OPENMP}
+206 \textcolor{preprocessor}{# pragma omp for schedule (static)}
+207 \textcolor{preprocessor}{# endif}
+208         \textcolor{keywordflow}{for} (index=0; index<chunkSize; index++) \{
+209             stateVecReal[index] = normFactor;
+210             stateVecImag[index] = 0.0;
+211         \}
+212     \}
+213 \}
+\end{DoxyCode}
+\mbox{\Hypertarget{QuEST_8h_acb5b2eff794339090004d29f02a70d9a}\label{QuEST_8h_acb5b2eff794339090004d29f02a70d9a}} 
+\index{Qu\+E\+S\+T.\+h@{Qu\+E\+S\+T.\+h}!init\+State\+Zero@{init\+State\+Zero}}
+\index{init\+State\+Zero@{init\+State\+Zero}!Qu\+E\+S\+T.\+h@{Qu\+E\+S\+T.\+h}}
+\paragraph{\texorpdfstring{init\+State\+Zero()}{initStateZero()}}
+{\footnotesize\ttfamily void init\+State\+Zero (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structMultiQubit}{Multi\+Qubit}} $\ast$}]{multi\+Qubit }\end{DoxyParamCaption})}
+
+
+
+Initialise a set of $ N $ qubits to the classical zero state $ {| 0 \rangle}^{\otimes N} $. 
+
+
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\tt in,out}  & {\em multi\+Qubit} & a pointer to the object representing the set of all qubits to initialise \\
+\hline
+\end{DoxyParams}
+
+
+Definition at line 147 of file Qu\+E\+S\+T.\+c.
+
+
+
+References Multi\+Qubit\+::chunk\+Id, Complex\+Array\+::imag, Multi\+Qubit\+::num\+Amps, Complex\+Array\+::real, R\+E\+AL, and Multi\+Qubit\+::state\+Vec.
+
+
+
+Referenced by main().
+
+
+\begin{DoxyCode}
+148 \{
+149     \textcolor{keywordtype}{long} \textcolor{keywordtype}{long} \textcolor{keywordtype}{int} stateVecSize;
+150     \textcolor{keywordtype}{long} \textcolor{keywordtype}{long} \textcolor{keywordtype}{int} index;
+151 
+152     \textcolor{comment}{// dimension of the state vector}
+153     stateVecSize = multiQubit->\mbox{\hyperlink{structMultiQubit_ae16f47d8b725c914fb7f66b6498d79db}{numAmps}};
+154 
+155     \textcolor{comment}{// Can't use multiQubit->stateVec as a private OMP var}
+156     \mbox{\hyperlink{QuEST__precision_8h_a4b654506f18b8bfd61ad2a29a7e38c25}{REAL}} *stateVecReal = multiQubit->\mbox{\hyperlink{structMultiQubit_a45483190d6b01ef6b2f98f2bec9ab94f}{stateVec}}.\mbox{\hyperlink{structComplexArray_a4195cac6c784ea1b6271f1c7dba1548a}{real}};
+157     \mbox{\hyperlink{QuEST__precision_8h_a4b654506f18b8bfd61ad2a29a7e38c25}{REAL}} *stateVecImag = multiQubit->\mbox{\hyperlink{structMultiQubit_a45483190d6b01ef6b2f98f2bec9ab94f}{stateVec}}.\mbox{\hyperlink{structComplexArray_a79dde47c7ae530c79cebfdf57b225968}{imag}};
+158 
+159     \textcolor{comment}{// initialise the state to |0000..0000>}
+160 \textcolor{preprocessor}{# ifdef \_OPENMP}
+161 \textcolor{preprocessor}{# pragma omp parallel \(\backslash\)}
+162 \textcolor{preprocessor}{    default  (none) \(\backslash\)}
+163 \textcolor{preprocessor}{    shared   (stateVecSize, stateVecReal, stateVecImag) \(\backslash\)}
+164 \textcolor{preprocessor}{    private  (index) }
+165 \textcolor{preprocessor}{# endif}
+166     \{
+167 \textcolor{preprocessor}{# ifdef \_OPENMP}
+168 \textcolor{preprocessor}{# pragma omp for schedule (static)}
+169 \textcolor{preprocessor}{# endif}
+170         \textcolor{keywordflow}{for} (index=0; index<stateVecSize; index++) \{
+171             stateVecReal[index] = 0.0;
+172             stateVecImag[index] = 0.0;
+173         \}
+174     \}
+175 
+176     \textcolor{keywordflow}{if} (multiQubit->\mbox{\hyperlink{structMultiQubit_ab10c88249fa3825d6227ceec01d37e37}{chunkId}}==0)\{
+177         \textcolor{comment}{// zero state |0000..0000> has probability 1}
+178         stateVecReal[0] = 1.0;
+179         stateVecImag[0] = 0.0;
+180     \}
+181 \}
+\end{DoxyCode}
+\mbox{\Hypertarget{QuEST_8h_ad5774247d836267175c664cd0e451bcb}\label{QuEST_8h_ad5774247d836267175c664cd0e451bcb}} 
+\index{Qu\+E\+S\+T.\+h@{Qu\+E\+S\+T.\+h}!measure@{measure}}
+\index{measure@{measure}!Qu\+E\+S\+T.\+h@{Qu\+E\+S\+T.\+h}}
+\paragraph{\texorpdfstring{measure()}{measure()}}
+{\footnotesize\ttfamily int measure (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structMultiQubit}{Multi\+Qubit}}}]{multi\+Qubit,  }\item[{int}]{measure\+Qubit }\end{DoxyParamCaption})}
+
+
+
+Measures a single qubit, collapsing it randomly to 0 or 1. 
+
+Outcome probabilities are weighted by the state vector, which is irreversibly changed after collapse to be consistent with the outcome.
+
+
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\tt in,out}  & {\em multi\+Qubit} & object representing the set of all qubits \\
+\hline
+\mbox{\tt in}  & {\em measure\+Qubit} & qubit to measure \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+the measurement outcome, 0 or 1 
+\end{DoxyReturn}
+
+\begin{DoxyExceptions}{Exceptions}
+{\em exit\+With\+Error} & if {\ttfamily measure\+Qubit} is outside \mbox{[}0, {\ttfamily multi\+Qubit.\+num\+Qubits}) \\
+\hline
+\end{DoxyExceptions}
+
+
+Definition at line 200 of file Qu\+E\+S\+T\+\_\+env\+\_\+local.\+c.
+
+
+
+References measure\+With\+Stats(), Multi\+Qubit\+::num\+Qubits, Qu\+E\+S\+T\+Assert(), and R\+E\+AL.
+
+
+
+Referenced by main().
+
+
+\begin{DoxyCode}
+200                                                     \{
+201     \mbox{\hyperlink{QuEST__env__local_8c_a3587b9d533e633ccf1abf9ad2ce45d8d}{QuESTAssert}}(measureQubit >= 0 && measureQubit < multiQubit.
+      \mbox{\hyperlink{structMultiQubit_ab5b9795bdc6fb5855e1974dcbbaeb36f}{numQubits}}, 2, \_\_func\_\_);
+202     \mbox{\hyperlink{QuEST__precision_8h_a4b654506f18b8bfd61ad2a29a7e38c25}{REAL}} stateProb;
+203     \textcolor{keywordflow}{return} \mbox{\hyperlink{QuEST__env__local_8c_a2ac46e470c750bf93c754e06c64b0a7a}{measureWithStats}}(multiQubit, measureQubit, &stateProb);
+204 \}
+\end{DoxyCode}
+\mbox{\Hypertarget{QuEST_8h_a2ac46e470c750bf93c754e06c64b0a7a}\label{QuEST_8h_a2ac46e470c750bf93c754e06c64b0a7a}} 
+\index{Qu\+E\+S\+T.\+h@{Qu\+E\+S\+T.\+h}!measure\+With\+Stats@{measure\+With\+Stats}}
+\index{measure\+With\+Stats@{measure\+With\+Stats}!Qu\+E\+S\+T.\+h@{Qu\+E\+S\+T.\+h}}
+\paragraph{\texorpdfstring{measure\+With\+Stats()}{measureWithStats()}}
+{\footnotesize\ttfamily int measure\+With\+Stats (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structMultiQubit}{Multi\+Qubit}}}]{multi\+Qubit,  }\item[{int}]{measure\+Qubit,  }\item[{\mbox{\hyperlink{QuEST__precision_8h_a4b654506f18b8bfd61ad2a29a7e38c25}{R\+E\+AL}} $\ast$}]{state\+Prob }\end{DoxyParamCaption})}
+
+
+
+Measures a single qubit, collapsing it randomly to 0 or 1, and additionally gives the probability of that outcome. 
+
+Outcome probabilities are weighted by the state vector, which is irreversibly changed after collapse to be consistent with the outcome.
+
+
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\tt in,out}  & {\em multi\+Qubit} & object representing the set of all qubits \\
+\hline
+\mbox{\tt in}  & {\em measure\+Qubit} & qubit to measure \\
+\hline
+\mbox{\tt out}  & {\em state\+Prob} & a pointer to a R\+E\+AL which is set to the probability of the occurred outcome \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+the measurement outcome, 0 or 1 
+\end{DoxyReturn}
+
+\begin{DoxyExceptions}{Exceptions}
+{\em exit\+With\+Error} & if {\ttfamily measure\+Qubit} is outside \mbox{[}0, {\ttfamily multi\+Qubit.\+num\+Qubits}) \\
+\hline
+\end{DoxyExceptions}
+
+
+Definition at line 206 of file Qu\+E\+S\+T\+\_\+env\+\_\+local.\+c.
+
+
+
+References Multi\+Qubit\+::chunk\+Id, collapse\+To\+Outcome\+Distributed\+Renorm(), collapse\+To\+Outcome\+Distributed\+Set\+Zero(), collapse\+To\+Outcome\+Local(), find\+Probability\+Of\+Outcome(), genrand\+\_\+real1(), half\+Matrix\+Block\+Fits\+In\+Chunk(), is\+Chunk\+To\+Skip\+In\+Find\+P\+Zero(), Multi\+Qubit\+::num\+Amps, Multi\+Qubit\+::num\+Qubits, Qu\+E\+S\+T\+Assert(), R\+E\+AL, and R\+E\+A\+L\+\_\+\+E\+PS.
+
+
+
+Referenced by main(), and measure().
+
+
+\begin{DoxyCode}
+206                                                                               \{
+207     \mbox{\hyperlink{QuEST__env__local_8c_a3587b9d533e633ccf1abf9ad2ce45d8d}{QuESTAssert}}(measureQubit >= 0 && measureQubit < multiQubit.
+      \mbox{\hyperlink{structMultiQubit_ab5b9795bdc6fb5855e1974dcbbaeb36f}{numQubits}}, 2, \_\_func\_\_);
+208 
+209     \textcolor{keywordtype}{int} outcome;
+210     \textcolor{comment}{// find probability of qubit being in state 1}
+211     \mbox{\hyperlink{QuEST__precision_8h_a4b654506f18b8bfd61ad2a29a7e38c25}{REAL}} stateProbInternal = \mbox{\hyperlink{QuEST__env__local_8c_ad315c941a51bc053d39ebfa2040fd32e}{findProbabilityOfOutcome}}(multiQubit, measureQubit,
+       1);
+212 
+213     \textcolor{comment}{// we can't collapse to a state that has a probability too close to zero}
+214     \textcolor{keywordflow}{if} (stateProbInternal<\mbox{\hyperlink{QuEST__precision_8h_aebb5e6716e06431296af4d1a71744dec}{REAL\_EPS}}) outcome=0;
+215     \textcolor{keywordflow}{else} \textcolor{keywordflow}{if} (1-stateProbInternal<\mbox{\hyperlink{QuEST__precision_8h_aebb5e6716e06431296af4d1a71744dec}{REAL\_EPS}}) outcome=1;
+216     \textcolor{keywordflow}{else} \{
+217         \textcolor{comment}{// ok. both P(0) and P(1) are large enough to resolve}
+218         \textcolor{comment}{// generate random float on [0,1]}
+219         \textcolor{keywordtype}{float} randNum = \mbox{\hyperlink{mt19937ar_8c_ac94ab75771800274ed1a2bedeca86f04}{genrand\_real1}}();
+220         \textcolor{keywordflow}{if} (randNum<=stateProbInternal) outcome = 1;
+221         \textcolor{keywordflow}{else} outcome = 0;
+222     \} 
+223     \textcolor{keywordflow}{if} (outcome==0) stateProbInternal = 1-stateProbInternal;
+224     \mbox{\hyperlink{QuEST_8c_a01d9a8b7ff0e09ec399e158389783aa9}{collapseToOutcomeLocal}}(multiQubit, measureQubit, stateProbInternal, outcome);
+225     *stateProb = stateProbInternal;
+226     \textcolor{keywordflow}{return} outcome;
+227 \}
+\end{DoxyCode}
+\mbox{\Hypertarget{QuEST_8h_afc1835c6b43b6e59ce7df7b13f274fc7}\label{QuEST_8h_afc1835c6b43b6e59ce7df7b13f274fc7}} 
+\index{Qu\+E\+S\+T.\+h@{Qu\+E\+S\+T.\+h}!multi\+Controlled\+Phase\+Gate@{multi\+Controlled\+Phase\+Gate}}
+\index{multi\+Controlled\+Phase\+Gate@{multi\+Controlled\+Phase\+Gate}!Qu\+E\+S\+T.\+h@{Qu\+E\+S\+T.\+h}}
+\paragraph{\texorpdfstring{multi\+Controlled\+Phase\+Gate()}{multiControlledPhaseGate()}}
+{\footnotesize\ttfamily void multi\+Controlled\+Phase\+Gate (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structMultiQubit}{Multi\+Qubit}}}]{multi\+Qubit,  }\item[{int $\ast$}]{control\+Qubits,  }\item[{int}]{num\+Control\+Qubits }\end{DoxyParamCaption})}
+
+
+
+Apply the multiple-\/qubit controlled phase gate, also known as the multiple-\/qubit controlled sigmaZ gate. 
+
+For each state, if all control qubits have value one, multiply the amplitude of that state by -\/1. This applies the many-\/qubit unitary\+: \[ \begin{pmatrix} 1 \\ & 1 \\\ & & \ddots \\ & & & 1 \\ & & & & -1 \end{pmatrix} \] on the control qubits.
+
+\[ \setlength{\fboxrule}{0.01pt} \fbox{ \begin{tikzpicture}[scale=.5] \node[draw=none] at (-3.5, 2) {controls}; \node[draw=none] at (0, 6) {$\vdots$}; \draw (0, 5) -- (0, 4); \draw (-2, 4) -- (2, 4); \draw[fill=black] (0, 4) circle (.2); \draw (0, 4) -- (0, 2); \draw (-2, 2) -- (2, 2); \draw[fill=black] (0, 2) circle (.2); \draw (0, 2) -- (0, 0); \draw (-2,0) -- (2, 0); \draw[fill=black] (0, 0) circle (.2); \end{tikzpicture} } \]
+
+
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\tt in,out}  & {\em multi\+Qubit} & object representing the set of all qubits \\
+\hline
+\mbox{\tt in}  & {\em control\+Qubits} & array of input qubits \\
+\hline
+\mbox{\tt in}  & {\em num\+Control\+Qubits} & number of input qubits \\
+\hline
+\end{DoxyParams}
+
+\begin{DoxyExceptions}{Exceptions}
+{\em exit\+With\+Error} & if {\ttfamily num\+Control\+Qubits} is outside \mbox{[}1, {\ttfamily multi\+Qubit.\+num\+Qubits}) \\
+\hline
+\end{DoxyExceptions}
+
+
+Definition at line 1776 of file Qu\+E\+S\+T.\+c.
+
+
+
+References Multi\+Qubit\+::chunk\+Id, Complex\+Array\+::imag, Multi\+Qubit\+::num\+Amps, Multi\+Qubit\+::num\+Qubits, Qu\+E\+S\+T\+Assert(), Complex\+Array\+::real, R\+E\+AL, and Multi\+Qubit\+::state\+Vec.
+
+
+
+Referenced by main().
+
+
+\begin{DoxyCode}
+1777 \{
+1778     \textcolor{keywordtype}{long} \textcolor{keywordtype}{long} \textcolor{keywordtype}{int} index;
+1779     \textcolor{keywordtype}{long} \textcolor{keywordtype}{long} \textcolor{keywordtype}{int} stateVecSize;
+1780 
+1781     \textcolor{keyword}{const} \textcolor{keywordtype}{long} \textcolor{keywordtype}{long} \textcolor{keywordtype}{int} chunkSize=multiQubit.\mbox{\hyperlink{structMultiQubit_ae16f47d8b725c914fb7f66b6498d79db}{numAmps}};
+1782     \textcolor{keyword}{const} \textcolor{keywordtype}{long} \textcolor{keywordtype}{long} \textcolor{keywordtype}{int} chunkId=multiQubit.\mbox{\hyperlink{structMultiQubit_ab10c88249fa3825d6227ceec01d37e37}{chunkId}};
+1783 
+1784     \mbox{\hyperlink{QuEST__env__local_8c_a3587b9d533e633ccf1abf9ad2ce45d8d}{QuESTAssert}}(numControlQubits > 0 && numControlQubits <= multiQubit.
+      \mbox{\hyperlink{structMultiQubit_ab5b9795bdc6fb5855e1974dcbbaeb36f}{numQubits}}, 4, \_\_func\_\_);
+1785     \textcolor{keywordtype}{long} \textcolor{keywordtype}{long} \textcolor{keywordtype}{int} mask=0;
+1786     \textcolor{keywordflow}{for} (\textcolor{keywordtype}{int} i=0; i<numControlQubits; i++) mask = mask | (1LL<<controlQubits[i]);
+1787     \mbox{\hyperlink{QuEST__env__local_8c_a3587b9d533e633ccf1abf9ad2ce45d8d}{QuESTAssert}}(mask >=0 && mask <= (1LL<<multiQubit.\mbox{\hyperlink{structMultiQubit_ab5b9795bdc6fb5855e1974dcbbaeb36f}{numQubits}})-1, 2, \_\_func\_\_);
+1788 
+1789     stateVecSize = multiQubit.\mbox{\hyperlink{structMultiQubit_ae16f47d8b725c914fb7f66b6498d79db}{numAmps}};
+1790     \mbox{\hyperlink{QuEST__precision_8h_a4b654506f18b8bfd61ad2a29a7e38c25}{REAL}} *stateVecReal = multiQubit.\mbox{\hyperlink{structMultiQubit_a45483190d6b01ef6b2f98f2bec9ab94f}{stateVec}}.\mbox{\hyperlink{structComplexArray_a4195cac6c784ea1b6271f1c7dba1548a}{real}};
+1791     \mbox{\hyperlink{QuEST__precision_8h_a4b654506f18b8bfd61ad2a29a7e38c25}{REAL}} *stateVecImag = multiQubit.\mbox{\hyperlink{structMultiQubit_a45483190d6b01ef6b2f98f2bec9ab94f}{stateVec}}.\mbox{\hyperlink{structComplexArray_a79dde47c7ae530c79cebfdf57b225968}{imag}};
+1792 
+1793 \textcolor{preprocessor}{# ifdef \_OPENMP}
+1794 \textcolor{preprocessor}{# pragma omp parallel \(\backslash\)}
+1795 \textcolor{preprocessor}{    default  (none)                          \(\backslash\)}
+1796 \textcolor{preprocessor}{    shared   (stateVecSize, stateVecReal,stateVecImag, mask ) \(\backslash\)}
+1797 \textcolor{preprocessor}{    private  (index)}
+1798 \textcolor{preprocessor}{# endif}
+1799     \{
+1800 \textcolor{preprocessor}{# ifdef \_OPENMP}
+1801 \textcolor{preprocessor}{# pragma omp for schedule (static)}
+1802 \textcolor{preprocessor}{# endif}
+1803         \textcolor{keywordflow}{for} (index=0; index<stateVecSize; index++) \{
+1804             \textcolor{keywordflow}{if} (mask == (mask & (index+chunkId*chunkSize)) )\{
+1805                 stateVecReal [index] = - stateVecReal [index];
+1806                 stateVecImag [index] = - stateVecImag [index];
+1807             \}
+1808         \}
+1809     \}
+1810 \}
+\end{DoxyCode}
+\mbox{\Hypertarget{QuEST_8h_ae395a79690283ed81106afadd7a8cd8a}\label{QuEST_8h_ae395a79690283ed81106afadd7a8cd8a}} 
+\index{Qu\+E\+S\+T.\+h@{Qu\+E\+S\+T.\+h}!multi\+Controlled\+Unitary@{multi\+Controlled\+Unitary}}
+\index{multi\+Controlled\+Unitary@{multi\+Controlled\+Unitary}!Qu\+E\+S\+T.\+h@{Qu\+E\+S\+T.\+h}}
+\paragraph{\texorpdfstring{multi\+Controlled\+Unitary()}{multiControlledUnitary()}}
+{\footnotesize\ttfamily void multi\+Controlled\+Unitary (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structMultiQubit}{Multi\+Qubit}}}]{multi\+Qubit,  }\item[{int $\ast$}]{control\+Qubits,  }\item[{const int}]{num\+Control\+Qubits,  }\item[{const int}]{target\+Qubit,  }\item[{\mbox{\hyperlink{structComplexMatrix2}{Complex\+Matrix2}}}]{u }\end{DoxyParamCaption})}
+
+
+
+Apply a general multiple-\/control single-\/target unitary, which can include a global phase factor. 
+
+Any number of control qubits can be specified, and if all have value 1, the given unitary is applied to the target qubit. This effects the many-\/qubit unitary \[ \begin{pmatrix} 1 \\ & 1 \\\ & & \ddots \\ & & & u_{00} & u_{01}\\ & & & u_{10} & u_{11} \end{pmatrix} \] on the control and target qubits. The given 2x2 Complex\+Matrix must be unitary, otherwise an error is thrown.
+
+\[ \setlength{\fboxrule}{0.01pt} \fbox{ \begin{tikzpicture}[scale=.5] \node[draw=none] at (-3.5, 3) {controls}; \node[draw=none] at (-3.5, 0) {target}; \node[draw=none] at (0, 6) {$\vdots$}; \draw (0, 5) -- (0, 4); \draw (-2, 4) -- (2, 4); \draw[fill=black] (0, 4) circle (.2); \draw (0, 4) -- (0, 2); \draw (-2, 2) -- (2, 2); \draw[fill=black] (0, 2) circle (.2); \draw (0, 2) -- (0, 1); \draw (-2,0) -- (-1, 0); \draw (1, 0) -- (2, 0); \draw (-1,-1)--(-1,1)--(1,1)--(1,-1)--cycle; \node[draw=none] at (0, 0) {U}; \end{tikzpicture} } \]
+
+
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\tt in,out}  & {\em multi\+Qubit} & object representing the set of all qubits \\
+\hline
+\mbox{\tt in}  & {\em control\+Qubits} & applies unitary if all qubits in this array equal 1 \\
+\hline
+\mbox{\tt in}  & {\em num\+Control\+Qubits} & number of control qubits \\
+\hline
+\mbox{\tt in}  & {\em target\+Qubit} & qubit to operate on \\
+\hline
+\mbox{\tt in}  & {\em u} & single-\/qubit unitary matrix to apply \\
+\hline
+\end{DoxyParams}
+
+\begin{DoxyExceptions}{Exceptions}
+{\em exit\+With\+Error} & if {\ttfamily num\+Control\+Qubits} is outside \mbox{[}1, {\ttfamily multi\+Qubit.\+num\+Qubits}\mbox{]}), or if any qubit index ({\ttfamily target\+Qubit} or one in {\ttfamily control\+Qubits}) is outside \mbox{[}0, {\ttfamily multi\+Qubit.\+num\+Qubits}\mbox{]}), or if {\ttfamily control\+Qubits} contains {\ttfamily target\+Qubit}, or if {\ttfamily u} is not unitary. \\
+\hline
+\end{DoxyExceptions}
+
+
+Definition at line 134 of file Qu\+E\+S\+T\+\_\+env\+\_\+local.\+c.
+
+
+
+References Multi\+Qubit\+::chunk\+Id, chunk\+Is\+Upper(), exchange\+State\+Vectors(), get\+Chunk\+Pair\+Id(), get\+Rot\+Angle\+From\+Unitary\+Matrix(), half\+Matrix\+Block\+Fits\+In\+Chunk(), multi\+Controlled\+Unitary\+Distributed(), multi\+Controlled\+Unitary\+Local(), Multi\+Qubit\+::num\+Amps, Multi\+Qubit\+::num\+Qubits, Multi\+Qubit\+::pair\+State\+Vec, Qu\+E\+S\+T\+Assert(), Multi\+Qubit\+::state\+Vec, and validate\+Matrix\+Is\+Unitary().
+
+
+
+Referenced by main().
+
+
+\begin{DoxyCode}
+135 \{
+136     \mbox{\hyperlink{QuEST__env__local_8c_a3587b9d533e633ccf1abf9ad2ce45d8d}{QuESTAssert}}(targetQubit >= 0 && targetQubit < multiQubit.
+      \mbox{\hyperlink{structMultiQubit_ab5b9795bdc6fb5855e1974dcbbaeb36f}{numQubits}}, 1, \_\_func\_\_);
+137     \mbox{\hyperlink{QuEST__env__local_8c_a3587b9d533e633ccf1abf9ad2ce45d8d}{QuESTAssert}}(numControlQubits > 0 && numControlQubits <= multiQubit.
+      \mbox{\hyperlink{structMultiQubit_ab5b9795bdc6fb5855e1974dcbbaeb36f}{numQubits}}, 4, \_\_func\_\_);
+138     \mbox{\hyperlink{QuEST__env__local_8c_a3587b9d533e633ccf1abf9ad2ce45d8d}{QuESTAssert}}(\mbox{\hyperlink{QuEST_8c_ae4fea133d1a8f09ff8da03038100adb2}{validateMatrixIsUnitary}}(u), 5, \_\_func\_\_);
+139 
+140     \textcolor{keywordtype}{long} \textcolor{keywordtype}{long} \textcolor{keywordtype}{int} mask=0; 
+141     \textcolor{keywordflow}{for} (\textcolor{keywordtype}{int} i=0; i<numControlQubits; i++) mask = mask | (1LL<<controlQubits[i]);
+142     \mbox{\hyperlink{QuEST__env__local_8c_a3587b9d533e633ccf1abf9ad2ce45d8d}{QuESTAssert}}(mask >=0 && mask <= (1LL<<multiQubit.\mbox{\hyperlink{structMultiQubit_ab5b9795bdc6fb5855e1974dcbbaeb36f}{numQubits}})-1, 2, \_\_func\_\_);
+143     \mbox{\hyperlink{QuEST__env__local_8c_a3587b9d533e633ccf1abf9ad2ce45d8d}{QuESTAssert}}((mask & (1LL<<targetQubit)) != (1LL<<targetQubit), 3, \_\_func\_\_);
+144 
+145     \mbox{\hyperlink{QuEST_8c_a1309eabcba3cb97fbc3cd2e606d17766}{multiControlledUnitaryLocal}}(multiQubit, targetQubit, mask, u);
+146 \}
+\end{DoxyCode}
+\mbox{\Hypertarget{QuEST_8h_aedb5ef39da69e7895d714980dc621261}\label{QuEST_8h_aedb5ef39da69e7895d714980dc621261}} 
+\index{Qu\+E\+S\+T.\+h@{Qu\+E\+S\+T.\+h}!Qu\+E\+S\+T\+Seed\+Random@{Qu\+E\+S\+T\+Seed\+Random}}
+\index{Qu\+E\+S\+T\+Seed\+Random@{Qu\+E\+S\+T\+Seed\+Random}!Qu\+E\+S\+T.\+h@{Qu\+E\+S\+T.\+h}}
+\paragraph{\texorpdfstring{Qu\+E\+S\+T\+Seed\+Random()}{QuESTSeedRandom()}}
+{\footnotesize\ttfamily void Qu\+E\+S\+T\+Seed\+Random (\begin{DoxyParamCaption}\item[{unsigned long int $\ast$}]{seed\+Array,  }\item[{int}]{num\+Seeds }\end{DoxyParamCaption})}
+
+
+
+Seed the Mersenne Twister used for random number generation in the Qu\+E\+ST environment with a user defined seed. 
+
+This function uses the mt19937 init\+\_\+by\+\_\+array function with num\+Seeds keys supplied by the user. Subsequent calls to mt19937 genrand functions will use this seeding. For a multi process code, the same seed is given to all process, therefore this seeding is only appropriate to use for functions such as measure where all processes require the same random value.
+
+
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\tt in}  & {\em seed\+Array} & Array of integers to use as seed. This allows the MT to be initialised with more than a 32-\/bit integer if required \\
+\hline
+\mbox{\tt in}  & {\em num\+Seeds} & Length of seed\+Array\\
+\hline
+\end{DoxyParams}
+For more information about the MT, see \href{http://www.math.sci.hiroshima-u.ac.jp/~m-mat/MT/MT2002/emt19937ar.html}{\tt http\+://www.\+math.\+sci.\+hiroshima-\/u.\+ac.\+jp/$\sim$m-\/mat/\+M\+T/\+M\+T2002/emt19937ar.\+html}
+
+Seed the Mersenne Twister used for random number generation in the Qu\+E\+ST environment with a user defined seed. 
+
+Definition at line 2012 of file Qu\+E\+S\+T.\+c.
+
+
+
+References init\+\_\+by\+\_\+array().
+
+
+\begin{DoxyCode}
+2012                                                                 \{
+2013     \textcolor{comment}{// init MT random number generator with user defined list of seeds}
+2014     \textcolor{comment}{// for the MPI version, it is ok that all procs will get the same seed as random numbers will only be }
+2015     \textcolor{comment}{// used by the master process}
+2016     \mbox{\hyperlink{mt19937ar_8c_ac1283f9b1ed571332f5ffe53545ffc16}{init\_by\_array}}(seedArray, numSeeds); 
+2017 \}
+\end{DoxyCode}
+\mbox{\Hypertarget{QuEST_8h_ac49f548ee27ae484695f9add1273adb4}\label{QuEST_8h_ac49f548ee27ae484695f9add1273adb4}} 
+\index{Qu\+E\+S\+T.\+h@{Qu\+E\+S\+T.\+h}!Qu\+E\+S\+T\+Seed\+Random\+Default@{Qu\+E\+S\+T\+Seed\+Random\+Default}}
+\index{Qu\+E\+S\+T\+Seed\+Random\+Default@{Qu\+E\+S\+T\+Seed\+Random\+Default}!Qu\+E\+S\+T.\+h@{Qu\+E\+S\+T.\+h}}
+\paragraph{\texorpdfstring{Qu\+E\+S\+T\+Seed\+Random\+Default()}{QuESTSeedRandomDefault()}}
+{\footnotesize\ttfamily void Qu\+E\+S\+T\+Seed\+Random\+Default (\begin{DoxyParamCaption}\item[{void}]{ }\end{DoxyParamCaption})}
+
+
+
+Seed the Mersenne Twister used for random number generation in the Qu\+E\+ST environment with an example defualt seed. 
+
+This default seeding function uses the mt19937 init\+\_\+by\+\_\+array function with three keys -- time, pid and hostname. Subsequent calls to mt19937 genrand functions will use this seeding. For a multi process code, the same seed is given to all process, therefore this seeding is only appropriate to use for functions such as measure where all processes require the same random value.
+
+For more information about the MT, see \href{http://www.math.sci.hiroshima-u.ac.jp/~m-mat/MT/MT2002/emt19937ar.html}{\tt http\+://www.\+math.\+sci.\+hiroshima-\/u.\+ac.\+jp/$\sim$m-\/mat/\+M\+T/\+M\+T2002/emt19937ar.\+html} 
+
+Definition at line 1987 of file Qu\+E\+S\+T.\+c.
+
+
+
+References hash\+String(), and init\+\_\+by\+\_\+array().
+
+
+\begin{DoxyCode}
+1987                              \{
+1988     \textcolor{comment}{// init MT random number generator with three keys -- time, pid and a hash of hostname }
+1989     \textcolor{comment}{// for the MPI version, it is ok that all procs will get the same seed as random numbers will only be }
+1990     \textcolor{comment}{// used by the master process}
+1991 
+1992     \textcolor{keyword}{struct }timeval  tv;
+1993     gettimeofday(&tv, NULL);
+1994 
+1995     \textcolor{keywordtype}{double} time\_in\_mill = 
+1996         (tv.tv\_sec) * 1000 + (tv.tv\_usec) / 1000 ; \textcolor{comment}{// convert tv\_sec & tv\_usec to millisecond}
+1997 
+1998     \textcolor{keywordtype}{unsigned} \textcolor{keywordtype}{long} \textcolor{keywordtype}{int} pid = getpid();
+1999     \textcolor{keywordtype}{unsigned} \textcolor{keywordtype}{long} \textcolor{keywordtype}{int} msecs = (\textcolor{keywordtype}{unsigned} \textcolor{keywordtype}{long} int) time\_in\_mill;
+2000     \textcolor{keywordtype}{char} hostName[MAXHOSTNAMELEN+1];
+2001     gethostname(hostName, \textcolor{keyword}{sizeof}(hostName));
+2002     \textcolor{keywordtype}{unsigned} \textcolor{keywordtype}{long} \textcolor{keywordtype}{int} hostNameInt = \mbox{\hyperlink{QuEST_8c_ab76254cfde16f0808476649507a1a2fc}{hashString}}(hostName);
+2003 
+2004     \textcolor{keywordtype}{unsigned} \textcolor{keywordtype}{long} \textcolor{keywordtype}{int} key[3];
+2005     key[0] = msecs; key[1] = pid; key[2] = hostNameInt;
+2006     \mbox{\hyperlink{mt19937ar_8c_ac1283f9b1ed571332f5ffe53545ffc16}{init\_by\_array}}(key, 3); 
+2007 \}
+\end{DoxyCode}
+\mbox{\Hypertarget{QuEST_8h_aa5e77e0e64f3a4a3d3f5cc7382bffcd9}\label{QuEST_8h_aa5e77e0e64f3a4a3d3f5cc7382bffcd9}} 
+\index{Qu\+E\+S\+T.\+h@{Qu\+E\+S\+T.\+h}!report\+Multi\+Qubit\+Params@{report\+Multi\+Qubit\+Params}}
+\index{report\+Multi\+Qubit\+Params@{report\+Multi\+Qubit\+Params}!Qu\+E\+S\+T.\+h@{Qu\+E\+S\+T.\+h}}
+\paragraph{\texorpdfstring{report\+Multi\+Qubit\+Params()}{reportMultiQubitParams()}}
+{\footnotesize\ttfamily void report\+Multi\+Qubit\+Params (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structMultiQubit}{Multi\+Qubit}}}]{multi\+Qubit }\end{DoxyParamCaption})}
+
+
+
+Report metainformation about a set of qubits\+: number of qubits, number of probability amplitudes. 
+
+
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\tt in,out}  & {\em multi\+Qubit} & object representing the set of qubits \\
+\hline
+\mbox{\tt in}  & {\em env} & object representing the execution environment (local, multinode etc) \\
+\hline
+\end{DoxyParams}
+
+
+Definition at line 128 of file Qu\+E\+S\+T.\+c.
+
+
+
+References Multi\+Qubit\+::chunk\+Id, Multi\+Qubit\+::num\+Chunks, and Multi\+Qubit\+::num\+Qubits.
+
+
+
+Referenced by main().
+
+
+\begin{DoxyCode}
+128                                                   \{
+129     \textcolor{keywordtype}{long} \textcolor{keywordtype}{long} \textcolor{keywordtype}{int} numAmps = 1L << multiQubit.\mbox{\hyperlink{structMultiQubit_ab5b9795bdc6fb5855e1974dcbbaeb36f}{numQubits}};
+130     \textcolor{keywordtype}{long} \textcolor{keywordtype}{long} \textcolor{keywordtype}{int} numAmpsPerRank = numAmps/multiQubit.\mbox{\hyperlink{structMultiQubit_acd43f2f57991709c9e94f73662c972b2}{numChunks}};
+131     \textcolor{keywordflow}{if} (multiQubit.\mbox{\hyperlink{structMultiQubit_ab10c88249fa3825d6227ceec01d37e37}{chunkId}}==0)\{
+132         printf(\textcolor{stringliteral}{"QUBITS:\(\backslash\)n"});
+133         printf(\textcolor{stringliteral}{"Number of qubits is %d.\(\backslash\)n"}, multiQubit.\mbox{\hyperlink{structMultiQubit_ab5b9795bdc6fb5855e1974dcbbaeb36f}{numQubits}});
+134         printf(\textcolor{stringliteral}{"Number of amps is %lld.\(\backslash\)n"}, numAmps);
+135         printf(\textcolor{stringliteral}{"Number of amps per rank is %lld.\(\backslash\)n"}, numAmpsPerRank);
+136     \}
+137 \}
+\end{DoxyCode}
+\mbox{\Hypertarget{QuEST_8h_af8a14ae79c3fb2c0b5f6255cc37bebf9}\label{QuEST_8h_af8a14ae79c3fb2c0b5f6255cc37bebf9}} 
+\index{Qu\+E\+S\+T.\+h@{Qu\+E\+S\+T.\+h}!report\+Qu\+E\+S\+T\+Env@{report\+Qu\+E\+S\+T\+Env}}
+\index{report\+Qu\+E\+S\+T\+Env@{report\+Qu\+E\+S\+T\+Env}!Qu\+E\+S\+T.\+h@{Qu\+E\+S\+T.\+h}}
+\paragraph{\texorpdfstring{report\+Qu\+E\+S\+T\+Env()}{reportQuESTEnv()}}
+{\footnotesize\ttfamily void report\+Qu\+E\+S\+T\+Env (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structQuESTEnv}{Qu\+E\+S\+T\+Env}}}]{env }\end{DoxyParamCaption})}
+
+
+
+Report information about the Qu\+E\+ST environment. 
+
+
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\tt in}  & {\em env} & object representing the execution environment. A single instance is used for each program \\
+\hline
+\end{DoxyParams}
+
+
+Definition at line 40 of file Qu\+E\+S\+T\+\_\+env\+\_\+local.\+c.
+
+
+
+References Qu\+E\+S\+T\+Env\+::num\+Ranks, Qu\+E\+S\+T\+Env\+::rank, and R\+E\+AL.
+
+
+
+Referenced by main().
+
+
+\begin{DoxyCode}
+40                                  \{
+41     printf(\textcolor{stringliteral}{"EXECUTION ENVIRONMENT:\(\backslash\)n"});
+42     printf(\textcolor{stringliteral}{"Running locally on one node\(\backslash\)n"});
+43     printf(\textcolor{stringliteral}{"Number of ranks is %d\(\backslash\)n"}, env.\mbox{\hyperlink{structQuESTEnv_af22aacd7c9905accae28484785c193b4}{numRanks}});
+44 \textcolor{preprocessor}{# ifdef \_OPENMP}
+45     printf(\textcolor{stringliteral}{"OpenMP enabled\(\backslash\)n"});
+46     printf(\textcolor{stringliteral}{"Number of threads available is %d\(\backslash\)n"}, omp\_get\_max\_threads());
+47 \textcolor{preprocessor}{# else}
+48     printf(\textcolor{stringliteral}{"OpenMP disabled\(\backslash\)n"});
+49 \textcolor{preprocessor}{# endif}
+50     printf(\textcolor{stringliteral}{"Precision: size of REAL is %ld bytes\(\backslash\)n"}, \textcolor{keyword}{sizeof}(\mbox{\hyperlink{QuEST__precision_8h_a4b654506f18b8bfd61ad2a29a7e38c25}{REAL}}));
+51 \}
+\end{DoxyCode}
+\mbox{\Hypertarget{QuEST_8h_a96f4de9ce7fefc7680a44d601fc3d894}\label{QuEST_8h_a96f4de9ce7fefc7680a44d601fc3d894}} 
+\index{Qu\+E\+S\+T.\+h@{Qu\+E\+S\+T.\+h}!report\+State@{report\+State}}
+\index{report\+State@{report\+State}!Qu\+E\+S\+T.\+h@{Qu\+E\+S\+T.\+h}}
+\paragraph{\texorpdfstring{report\+State()}{reportState()}}
+{\footnotesize\ttfamily void report\+State (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structMultiQubit}{Multi\+Qubit}}}]{multi\+Qubit }\end{DoxyParamCaption})}
+
+
+
+Print the current state vector of probability amplitudes for a set of qubits to file. 
+
+File format\+: \begin{DoxyVerb}real, imag
+realComponent1, imagComponent1
+realComponent2, imagComponent2
+...
+realComponentN, imagComponentN
+\end{DoxyVerb}
+
+
+File naming convention\+:
+
+For each node that the program runs on, a file \textquotesingle{}state\+\_\+rank\+\_\+\mbox{[}node\+\_\+rank\mbox{]}.csv\textquotesingle{} is generated. If there is more than one node, ranks after the first do not include the header \begin{DoxyVerb}real, imag
+\end{DoxyVerb}
+ so that files are easier to combine.
+
+
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\tt in,out}  & {\em multi\+Qubit} & object representing the set of qubits \\
+\hline
+\end{DoxyParams}
+
+
+Definition at line 89 of file Qu\+E\+S\+T.\+c.
+
+
+
+References Multi\+Qubit\+::chunk\+Id, Complex\+Array\+::imag, Multi\+Qubit\+::num\+Amps, Qu\+E\+S\+T\+Assert(), Complex\+Array\+::real, R\+E\+A\+L\+\_\+\+S\+T\+R\+I\+N\+G\+\_\+\+F\+O\+R\+M\+AT, and Multi\+Qubit\+::state\+Vec.
+
+
+\begin{DoxyCode}
+89                                        \{
+90     FILE *state;
+91     \textcolor{keywordtype}{char} filename[100];
+92     \textcolor{keywordtype}{long} \textcolor{keywordtype}{long} \textcolor{keywordtype}{int} index;
+93     sprintf(filename, \textcolor{stringliteral}{"state\_rank\_%d.csv"}, multiQubit.\mbox{\hyperlink{structMultiQubit_ab10c88249fa3825d6227ceec01d37e37}{chunkId}});
+94     state = fopen(filename, \textcolor{stringliteral}{"w"});
+95     \mbox{\hyperlink{QuEST__env__local_8c_a3587b9d533e633ccf1abf9ad2ce45d8d}{QuESTAssert}}(state!=NULL, 11, \_\_func\_\_);
+96     \textcolor{keywordflow}{if} (multiQubit.\mbox{\hyperlink{structMultiQubit_ab10c88249fa3825d6227ceec01d37e37}{chunkId}}==0) fprintf(state, \textcolor{stringliteral}{"real, imag\(\backslash\)n"});
+97 
+98     \textcolor{keywordflow}{for}(index=0; index<multiQubit.\mbox{\hyperlink{structMultiQubit_ae16f47d8b725c914fb7f66b6498d79db}{numAmps}}; index++)\{
+99         fprintf(state, \mbox{\hyperlink{QuEST__precision_8h_ad751ac7ddc8ec19f23fb33083c0da8da}{REAL\_STRING\_FORMAT}} \textcolor{stringliteral}{","} 
+      \mbox{\hyperlink{QuEST__precision_8h_ad751ac7ddc8ec19f23fb33083c0da8da}{REAL\_STRING\_FORMAT}} \textcolor{stringliteral}{"\(\backslash\)n"}, multiQubit.\mbox{\hyperlink{structMultiQubit_a45483190d6b01ef6b2f98f2bec9ab94f}{stateVec}}.\mbox{\hyperlink{structComplexArray_a4195cac6c784ea1b6271f1c7dba1548a}{real}}[index], multiQubit.
+      \mbox{\hyperlink{structMultiQubit_a45483190d6b01ef6b2f98f2bec9ab94f}{stateVec}}.\mbox{\hyperlink{structComplexArray_a79dde47c7ae530c79cebfdf57b225968}{imag}}[index]);
+100     \}
+101     fclose(state);
+102 \}
+\end{DoxyCode}
+\mbox{\Hypertarget{QuEST_8h_a842d6884e063a5865a2232cba56b65ac}\label{QuEST_8h_a842d6884e063a5865a2232cba56b65ac}} 
+\index{Qu\+E\+S\+T.\+h@{Qu\+E\+S\+T.\+h}!report\+State\+To\+Screen@{report\+State\+To\+Screen}}
+\index{report\+State\+To\+Screen@{report\+State\+To\+Screen}!Qu\+E\+S\+T.\+h@{Qu\+E\+S\+T.\+h}}
+\paragraph{\texorpdfstring{report\+State\+To\+Screen()}{reportStateToScreen()}}
+{\footnotesize\ttfamily void report\+State\+To\+Screen (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structMultiQubit}{Multi\+Qubit}}}]{multi\+Qubit,  }\item[{\mbox{\hyperlink{structQuESTEnv}{Qu\+E\+S\+T\+Env}}}]{env,  }\item[{int}]{report\+Rank }\end{DoxyParamCaption})}
+
+
+
+Print the current state vector of probability amplitudes for a set of qubits to standard out. 
+
+For debugging purposes. Each rank should print output serially. Only print output for systems $<$= 5 qubits 
+
+Definition at line 104 of file Qu\+E\+S\+T.\+c.
+
+
+
+References Multi\+Qubit\+::chunk\+Id, Complex\+Array\+::imag, Multi\+Qubit\+::num\+Amps, Multi\+Qubit\+::num\+Chunks, Multi\+Qubit\+::num\+Qubits, Complex\+Array\+::real, R\+E\+A\+L\+\_\+\+S\+T\+R\+I\+N\+G\+\_\+\+F\+O\+R\+M\+AT, Multi\+Qubit\+::state\+Vec, and sync\+Qu\+E\+S\+T\+Env().
+
+
+\begin{DoxyCode}
+104                                                                              \{
+105     \textcolor{keywordtype}{long} \textcolor{keywordtype}{long} \textcolor{keywordtype}{int} index;
+106     \textcolor{keywordtype}{int} rank;
+107     \textcolor{keywordflow}{if} (multiQubit.\mbox{\hyperlink{structMultiQubit_ab5b9795bdc6fb5855e1974dcbbaeb36f}{numQubits}}<=5)\{
+108         \textcolor{keywordflow}{for} (rank=0; rank<multiQubit.\mbox{\hyperlink{structMultiQubit_acd43f2f57991709c9e94f73662c972b2}{numChunks}}; rank++)\{
+109             \textcolor{keywordflow}{if} (multiQubit.\mbox{\hyperlink{structMultiQubit_ab10c88249fa3825d6227ceec01d37e37}{chunkId}}==rank)\{
+110                 \textcolor{keywordflow}{if} (reportRank) \{
+111                     printf(\textcolor{stringliteral}{"Reporting state from rank %d [\(\backslash\)n"}, multiQubit.
+      \mbox{\hyperlink{structMultiQubit_ab10c88249fa3825d6227ceec01d37e37}{chunkId}});
+112                     printf(\textcolor{stringliteral}{"real, imag\(\backslash\)n"});
+113                 \} \textcolor{keywordflow}{else} \textcolor{keywordflow}{if} (rank==0) \{
+114                     printf(\textcolor{stringliteral}{"Reporting state [\(\backslash\)n"});
+115                     printf(\textcolor{stringliteral}{"real, imag\(\backslash\)n"});
+116                 \}
+117 
+118                 \textcolor{keywordflow}{for}(index=0; index<multiQubit.\mbox{\hyperlink{structMultiQubit_ae16f47d8b725c914fb7f66b6498d79db}{numAmps}}; index++)\{
+119                     printf(\mbox{\hyperlink{QuEST__precision_8h_ad751ac7ddc8ec19f23fb33083c0da8da}{REAL\_STRING\_FORMAT}} \textcolor{stringliteral}{", "} 
+      \mbox{\hyperlink{QuEST__precision_8h_ad751ac7ddc8ec19f23fb33083c0da8da}{REAL\_STRING\_FORMAT}} \textcolor{stringliteral}{"\(\backslash\)n"}, multiQubit.\mbox{\hyperlink{structMultiQubit_a45483190d6b01ef6b2f98f2bec9ab94f}{stateVec}}.\mbox{\hyperlink{structComplexArray_a4195cac6c784ea1b6271f1c7dba1548a}{real}}[index], multiQubit.
+      \mbox{\hyperlink{structMultiQubit_a45483190d6b01ef6b2f98f2bec9ab94f}{stateVec}}.\mbox{\hyperlink{structComplexArray_a79dde47c7ae530c79cebfdf57b225968}{imag}}[index]);
+120                 \}
+121                 \textcolor{keywordflow}{if} (reportRank || rank==multiQubit.\mbox{\hyperlink{structMultiQubit_acd43f2f57991709c9e94f73662c972b2}{numChunks}}-1) printf(\textcolor{stringliteral}{"]\(\backslash\)n"});
+122             \}
+123             \mbox{\hyperlink{QuEST_8h_a8d31fe2d1ad4d01e2a1f5f6b8bc15b77}{syncQuESTEnv}}(env);
+124         \}
+125     \} \textcolor{keywordflow}{else} printf(\textcolor{stringliteral}{"Error: reportStateToScreen will not print output for systems of more than 5 qubits.\(\backslash\)n"});
+126 \}
+\end{DoxyCode}
+\mbox{\Hypertarget{QuEST_8h_a8810423457803005fecd415f4299f40d}\label{QuEST_8h_a8810423457803005fecd415f4299f40d}} 
+\index{Qu\+E\+S\+T.\+h@{Qu\+E\+S\+T.\+h}!rotate\+Around\+Axis@{rotate\+Around\+Axis}}
+\index{rotate\+Around\+Axis@{rotate\+Around\+Axis}!Qu\+E\+S\+T.\+h@{Qu\+E\+S\+T.\+h}}
+\paragraph{\texorpdfstring{rotate\+Around\+Axis()}{rotateAroundAxis()}}
+{\footnotesize\ttfamily void rotate\+Around\+Axis (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structMultiQubit}{Multi\+Qubit}}}]{multi\+Qubit,  }\item[{const int}]{rot\+Qubit,  }\item[{\mbox{\hyperlink{QuEST__precision_8h_a4b654506f18b8bfd61ad2a29a7e38c25}{R\+E\+AL}}}]{angle,  }\item[{\mbox{\hyperlink{structVector}{Vector}}}]{axis }\end{DoxyParamCaption})}
+
+
+
+Rotate a single qubit by a given angle around a given vector on the Bloch-\/sphere. 
+
+The vector must not be zero (else an error is thrown), but needn\textquotesingle{}t be unit magnitude.
+
+For angle $\theta$ and axis vector $\vec{n}$, applies $R_{\hat{n}} = \exp \left(- i \frac{\theta}{2} \hat{n} \cdot \vec{\sigma} \right) $ where $\vec{\sigma}$ is the vector of Pauli matrices.
+
+
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\tt in,out}  & {\em multi\+Qubit} & object representing the set of all qubits \\
+\hline
+\mbox{\tt in}  & {\em rot\+Qubit} & qubit to rotate \\
+\hline
+\mbox{\tt in}  & {\em angle} & angle by which to rotate in radians \\
+\hline
+\mbox{\tt in}  & {\em axis} & vector around which to rotate (can be non-\/unit; will be normalised) \\
+\hline
+\end{DoxyParams}
+
+\begin{DoxyExceptions}{Exceptions}
+{\em exit\+With\+Error} & if {\ttfamily rot\+Qubit} is outside \mbox{[}0, {\ttfamily multi\+Qubit.\+num\+Qubits}), or if {\ttfamily axis} is the zero vector \\
+\hline
+\end{DoxyExceptions}
+
+
+Definition at line 421 of file Qu\+E\+S\+T.\+c.
+
+
+
+References compact\+Unitary(), Complex\+::imag, Complex\+::real, Vector\+::x, Vector\+::y, and Vector\+::z.
+
+
+
+Referenced by main(), rotate\+X(), rotate\+Y(), and rotate\+Z().
+
+
+\begin{DoxyCode}
+421                                                                                          \{
+422 
+423     \textcolor{keywordtype}{double} mag = sqrt(pow(axis.\mbox{\hyperlink{structVector_aac7abe171ba4bada50ed72acba6259fc}{x}},2) + pow(axis.\mbox{\hyperlink{structVector_a375ca805d4c808a53d7c4e0c737ae3de}{y}},2) + pow(axis.\mbox{\hyperlink{structVector_ad4e863651be7d6b7e2b28cd7445a0ccf}{z}},2));
+424     \mbox{\hyperlink{structVector}{Vector}} unitAxis = \{axis.\mbox{\hyperlink{structVector_aac7abe171ba4bada50ed72acba6259fc}{x}}/mag, axis.\mbox{\hyperlink{structVector_a375ca805d4c808a53d7c4e0c737ae3de}{y}}/mag, axis.\mbox{\hyperlink{structVector_ad4e863651be7d6b7e2b28cd7445a0ccf}{z}}/mag\};
+425 
+426     \mbox{\hyperlink{structComplex}{Complex}} alpha, beta;
+427     alpha.\mbox{\hyperlink{structComplex_a479ad939835457595fcca3ca55c06283}{real}} = cos(angle/2.0);
+428     alpha.\mbox{\hyperlink{structComplex_a1151948284b21c0052f203f23ab931d9}{imag}} = -sin(angle/2.0)*unitAxis.\mbox{\hyperlink{structVector_ad4e863651be7d6b7e2b28cd7445a0ccf}{z}};       
+429     beta.\mbox{\hyperlink{structComplex_a479ad939835457595fcca3ca55c06283}{real}} = sin(angle/2.0)*unitAxis.\mbox{\hyperlink{structVector_a375ca805d4c808a53d7c4e0c737ae3de}{y}};
+430     beta.\mbox{\hyperlink{structComplex_a1151948284b21c0052f203f23ab931d9}{imag}} = -sin(angle/2.0)*unitAxis.\mbox{\hyperlink{structVector_aac7abe171ba4bada50ed72acba6259fc}{x}};
+431     \mbox{\hyperlink{QuEST_8h_a03b13dfcabd8c59b50dbdd3af44ba8b2}{compactUnitary}}(multiQubit, rotQubit, alpha, beta);
+432 \}
+\end{DoxyCode}
+\mbox{\Hypertarget{QuEST_8h_a6cc7fa705a2f2e6b486b49c5589d5df5}\label{QuEST_8h_a6cc7fa705a2f2e6b486b49c5589d5df5}} 
+\index{Qu\+E\+S\+T.\+h@{Qu\+E\+S\+T.\+h}!rotateX@{rotateX}}
+\index{rotateX@{rotateX}!Qu\+E\+S\+T.\+h@{Qu\+E\+S\+T.\+h}}
+\paragraph{\texorpdfstring{rotate\+X()}{rotateX()}}
+{\footnotesize\ttfamily void rotateX (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structMultiQubit}{Multi\+Qubit}}}]{multi\+Qubit,  }\item[{const int}]{rot\+Qubit,  }\item[{\mbox{\hyperlink{QuEST__precision_8h_a4b654506f18b8bfd61ad2a29a7e38c25}{R\+E\+AL}}}]{angle }\end{DoxyParamCaption})}
+
+
+
+Rotate a single qubit by a given angle around the X-\/axis of the Bloch-\/sphere. 
+
+For angle $\theta$, applies \[ \begin{pmatrix} \cos\theta/2 & -i \sin \theta/2\\ -i \sin \theta/2 & \cos \theta/2 \end{pmatrix} \]
+
+\[ \setlength{\fboxrule}{0.01pt} \fbox{ \begin{tikzpicture}[scale=.5] \node[draw=none] at (-3.5, 0) {rot}; \draw (-2,0) -- (-1, 0); \draw (1, 0) -- (2, 0); \draw (-1,-1)--(-1,1)--(1,1)--(1,-1)--cycle; \node[draw=none] at (0, 0) {$R_x(\theta)$}; \end{tikzpicture} } \]
+
+
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\tt in,out}  & {\em multi\+Qubit} & object representing the set of all qubits \\
+\hline
+\mbox{\tt in}  & {\em rot\+Qubit} & qubit to rotate \\
+\hline
+\mbox{\tt in}  & {\em angle} & angle by which to rotate in radians \\
+\hline
+\end{DoxyParams}
+
+\begin{DoxyExceptions}{Exceptions}
+{\em exit\+With\+Error} & if {\ttfamily rot\+Qubit} is outside \mbox{[}0, {\ttfamily multi\+Qubit.\+num\+Qubits}). \\
+\hline
+\end{DoxyExceptions}
+
+
+Definition at line 434 of file Qu\+E\+S\+T.\+c.
+
+
+
+References rotate\+Around\+Axis().
+
+
+\begin{DoxyCode}
+434                                                                    \{
+435 
+436     \mbox{\hyperlink{structVector}{Vector}} unitAxis = \{1, 0, 0\};
+437     \mbox{\hyperlink{QuEST_8c_a8810423457803005fecd415f4299f40d}{rotateAroundAxis}}(multiQubit, rotQubit, angle, unitAxis);
+438 \}
+\end{DoxyCode}
+\mbox{\Hypertarget{QuEST_8h_ace0d3592d38a990e81a434c4e9681500}\label{QuEST_8h_ace0d3592d38a990e81a434c4e9681500}} 
+\index{Qu\+E\+S\+T.\+h@{Qu\+E\+S\+T.\+h}!rotateY@{rotateY}}
+\index{rotateY@{rotateY}!Qu\+E\+S\+T.\+h@{Qu\+E\+S\+T.\+h}}
+\paragraph{\texorpdfstring{rotate\+Y()}{rotateY()}}
+{\footnotesize\ttfamily void rotateY (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structMultiQubit}{Multi\+Qubit}}}]{multi\+Qubit,  }\item[{const int}]{rot\+Qubit,  }\item[{\mbox{\hyperlink{QuEST__precision_8h_a4b654506f18b8bfd61ad2a29a7e38c25}{R\+E\+AL}}}]{angle }\end{DoxyParamCaption})}
+
+
+
+Rotate a single qubit by a given angle around the Y-\/axis of the Bloch-\/sphere. 
+
+For angle $\theta$, applies \[ \begin{pmatrix} \cos\theta/2 & - \sin \theta/2\\ \sin \theta/2 & \cos \theta/2 \end{pmatrix} \] ~\newline
+ \[ \setlength{\fboxrule}{0.01pt} \fbox{ \begin{tikzpicture}[scale=.5] \node[draw=none] at (-3.5, 0) {rot}; \draw (-2,0) -- (-1, 0); \draw (1, 0) -- (2, 0); \draw (-1,-1)--(-1,1)--(1,1)--(1,-1)--cycle; \node[draw=none] at (0, 0) {$R_y(\theta)$}; \end{tikzpicture} } \]
+
+
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\tt in,out}  & {\em multi\+Qubit} & object representing the set of all qubits \\
+\hline
+\mbox{\tt in}  & {\em rot\+Qubit} & qubit to rotate \\
+\hline
+\mbox{\tt in}  & {\em angle} & angle by which to rotate in radians \\
+\hline
+\end{DoxyParams}
+
+\begin{DoxyExceptions}{Exceptions}
+{\em exit\+With\+Error} & if {\ttfamily rot\+Qubit} is outside \mbox{[}0, {\ttfamily multi\+Qubit.\+num\+Qubits}). \\
+\hline
+\end{DoxyExceptions}
+
+
+Definition at line 440 of file Qu\+E\+S\+T.\+c.
+
+
+
+References rotate\+Around\+Axis().
+
+
+
+Referenced by main().
+
+
+\begin{DoxyCode}
+440                                                                    \{
+441 
+442     \mbox{\hyperlink{structVector}{Vector}} unitAxis = \{0, 1, 0\};
+443     \mbox{\hyperlink{QuEST_8c_a8810423457803005fecd415f4299f40d}{rotateAroundAxis}}(multiQubit, rotQubit, angle, unitAxis);
+444 \}
+\end{DoxyCode}
+\mbox{\Hypertarget{QuEST_8h_abd621412ad30c1b034f4ce153c4afe10}\label{QuEST_8h_abd621412ad30c1b034f4ce153c4afe10}} 
+\index{Qu\+E\+S\+T.\+h@{Qu\+E\+S\+T.\+h}!rotateZ@{rotateZ}}
+\index{rotateZ@{rotateZ}!Qu\+E\+S\+T.\+h@{Qu\+E\+S\+T.\+h}}
+\paragraph{\texorpdfstring{rotate\+Z()}{rotateZ()}}
+{\footnotesize\ttfamily void rotateZ (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structMultiQubit}{Multi\+Qubit}}}]{multi\+Qubit,  }\item[{const int}]{rot\+Qubit,  }\item[{\mbox{\hyperlink{QuEST__precision_8h_a4b654506f18b8bfd61ad2a29a7e38c25}{R\+E\+AL}}}]{angle }\end{DoxyParamCaption})}
+
+
+
+Rotate a single qubit by a given angle around the Z-\/axis of the Bloch-\/sphere (also known as a phase shift gate). 
+
+For angle $\theta$, applies \[ \begin{pmatrix} \exp(-i \theta/2) & 0 \\ 0 & \exp(i \theta/2) \end{pmatrix} \]
+
+\[ \setlength{\fboxrule}{0.01pt} \fbox{ \begin{tikzpicture}[scale=.5] \node[draw=none] at (-3.5, 0) {rot}; \draw (-2,0) -- (-1, 0); \draw (1, 0) -- (2, 0); \draw (-1,-1)--(-1,1)--(1,1)--(1,-1)--cycle; \node[draw=none] at (0, 0) {$R_z(\theta)$}; \end{tikzpicture} } \]
+
+
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\tt in,out}  & {\em multi\+Qubit} & object representing the set of all qubits \\
+\hline
+\mbox{\tt in}  & {\em rot\+Qubit} & qubit to rotate \\
+\hline
+\mbox{\tt in}  & {\em angle} & angle by which to rotate in radians \\
+\hline
+\end{DoxyParams}
+
+\begin{DoxyExceptions}{Exceptions}
+{\em exit\+With\+Error} & if {\ttfamily rot\+Qubit} is outside \mbox{[}0, {\ttfamily multi\+Qubit.\+num\+Qubits}). \\
+\hline
+\end{DoxyExceptions}
+
+
+Definition at line 446 of file Qu\+E\+S\+T.\+c.
+
+
+
+References rotate\+Around\+Axis().
+
+
+\begin{DoxyCode}
+446                                                                    \{
+447 
+448     \mbox{\hyperlink{structVector}{Vector}} unitAxis = \{0, 0, 1\};
+449     \mbox{\hyperlink{QuEST_8c_a8810423457803005fecd415f4299f40d}{rotateAroundAxis}}(multiQubit, rotQubit, angle, unitAxis);
+450 \}
+\end{DoxyCode}
+\mbox{\Hypertarget{QuEST_8h_adda6c47876a7676488ed0565a19eaa65}\label{QuEST_8h_adda6c47876a7676488ed0565a19eaa65}} 
+\index{Qu\+E\+S\+T.\+h@{Qu\+E\+S\+T.\+h}!s\+Gate@{s\+Gate}}
+\index{s\+Gate@{s\+Gate}!Qu\+E\+S\+T.\+h@{Qu\+E\+S\+T.\+h}}
+\paragraph{\texorpdfstring{s\+Gate()}{sGate()}}
+{\footnotesize\ttfamily void s\+Gate (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structMultiQubit}{Multi\+Qubit}}}]{multi\+Qubit,  }\item[{const int}]{target\+Qubit }\end{DoxyParamCaption})}
+
+
+
+Apply the single-\/qubit S gate. 
+
+This is a rotation of $\pi/2$ around the Z-\/axis on the Bloch sphere, or the unitary\+: \[ \begin{pmatrix} 1 & 0 \\ 0 & i \end{pmatrix} \]
+
+\[ \setlength{\fboxrule}{0.01pt} \fbox{ \begin{tikzpicture}[scale=.5] \node[draw=none] at (-3.5, 0) {target}; \draw (-2,0) -- (-1, 0); \draw (1, 0) -- (2, 0); \draw (-1,-1)--(-1,1)--(1,1)--(1,-1)--cycle; \node[draw=none] at (0, 0) {S}; \end{tikzpicture} } \]
+
+
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\tt in,out}  & {\em multi\+Qubit} & object representing the set of all qubits \\
+\hline
+\mbox{\tt in}  & {\em target\+Qubit} & qubit to operate upon \\
+\hline
+\end{DoxyParams}
+
+\begin{DoxyExceptions}{Exceptions}
+{\em exit\+With\+Error} & if {\ttfamily target\+Qubit} is outside \mbox{[}0, {\ttfamily multi\+Qubit.\+num\+Qubits}) \\
+\hline
+\end{DoxyExceptions}
+
+
+Definition at line 1619 of file Qu\+E\+S\+T.\+c.
+
+
+
+References phase\+Gate(), and S\+\_\+\+G\+A\+TE.
+
+
+\begin{DoxyCode}
+1620 \{
+1621     \mbox{\hyperlink{QuEST__env__local_8c_aae7a8a7f1ccbddb7f76b6c52b746bb43}{phaseGate}}(multiQubit, targetQubit, \mbox{\hyperlink{QuEST_8h_a5739021c733cecc49647956b2f7338eaa06e60f80fa80cce271793d6d31bcc21f}{S\_GATE}});
+1622 \} 
+\end{DoxyCode}
+\mbox{\Hypertarget{QuEST_8h_a86e396e06b7d527cac20ba0108872423}\label{QuEST_8h_a86e396e06b7d527cac20ba0108872423}} 
+\index{Qu\+E\+S\+T.\+h@{Qu\+E\+S\+T.\+h}!sigmaX@{sigmaX}}
+\index{sigmaX@{sigmaX}!Qu\+E\+S\+T.\+h@{Qu\+E\+S\+T.\+h}}
+\paragraph{\texorpdfstring{sigma\+X()}{sigmaX()}}
+{\footnotesize\ttfamily void sigmaX (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structMultiQubit}{Multi\+Qubit}}}]{multi\+Qubit,  }\item[{const int}]{target\+Qubit }\end{DoxyParamCaption})}
+
+
+
+Apply the single-\/qubit sigma-\/X (also known as the X, Pauli-\/X, N\+OT or bit-\/flip) gate. 
+
+This is a rotation of $\pi$ around the x-\/axis on the Bloch sphere. I.\+e. \[ \begin{pmatrix} 0 & 1 \\ 1 & 0 \end{pmatrix} \] ~\newline
+ \[ \setlength{\fboxrule}{0.01pt} \fbox{ \begin{tikzpicture}[scale=.5] \node[draw=none] at (-3.5, 0) {target}; \draw (-2,0) -- (2, 0); \draw (0, 0) circle (.5); \draw (0, .5) -- (0, -.5); \end{tikzpicture} } \] ~\newline
+ 
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\tt in,out}  & {\em multi\+Qubit} & object representing the set of all qubits \\
+\hline
+\mbox{\tt in}  & {\em target\+Qubit} & qubit to operate on \\
+\hline
+\end{DoxyParams}
+
+\begin{DoxyExceptions}{Exceptions}
+{\em exit\+With\+Error} & if {\ttfamily target\+Qubit} is outside \mbox{[}0, {\ttfamily multi\+Qubit.\+num\+Qubits}). \\
+\hline
+\end{DoxyExceptions}
+
+
+Definition at line 148 of file Qu\+E\+S\+T\+\_\+env\+\_\+local.\+c.
+
+
+
+References Multi\+Qubit\+::chunk\+Id, chunk\+Is\+Upper(), exchange\+State\+Vectors(), get\+Chunk\+Pair\+Id(), half\+Matrix\+Block\+Fits\+In\+Chunk(), Multi\+Qubit\+::num\+Amps, Multi\+Qubit\+::num\+Qubits, Multi\+Qubit\+::pair\+State\+Vec, Qu\+E\+S\+T\+Assert(), sigma\+X\+Distributed(), sigma\+X\+Local(), and Multi\+Qubit\+::state\+Vec.
+
+
+\begin{DoxyCode}
+149 \{
+150     \mbox{\hyperlink{QuEST__env__local_8c_a3587b9d533e633ccf1abf9ad2ce45d8d}{QuESTAssert}}(targetQubit >= 0 && targetQubit < multiQubit.
+      \mbox{\hyperlink{structMultiQubit_ab5b9795bdc6fb5855e1974dcbbaeb36f}{numQubits}}, 1, \_\_func\_\_);
+151     \mbox{\hyperlink{QuEST_8c_a74822fd86bb5d81766e6e8dbdcd62df1}{sigmaXLocal}}(multiQubit, targetQubit);
+152 \}
+\end{DoxyCode}
+\mbox{\Hypertarget{QuEST_8h_a1f54d70a42403f7e1c2e2c2007332f61}\label{QuEST_8h_a1f54d70a42403f7e1c2e2c2007332f61}} 
+\index{Qu\+E\+S\+T.\+h@{Qu\+E\+S\+T.\+h}!sigmaY@{sigmaY}}
+\index{sigmaY@{sigmaY}!Qu\+E\+S\+T.\+h@{Qu\+E\+S\+T.\+h}}
+\paragraph{\texorpdfstring{sigma\+Y()}{sigmaY()}}
+{\footnotesize\ttfamily void sigmaY (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structMultiQubit}{Multi\+Qubit}}}]{multi\+Qubit,  }\item[{const int}]{target\+Qubit }\end{DoxyParamCaption})}
+
+
+
+Apply the single-\/qubit sigma-\/Y (also known as the Y or Pauli-\/Y) gate. 
+
+This is a rotation of $\pi$ around the Y-\/axis on the Bloch sphere. I.\+e. \[ \begin{pmatrix} 0 & -i \\ i & 0 \end{pmatrix} \] ~\newline
+ \[ \setlength{\fboxrule}{0.01pt} \fbox{ \begin{tikzpicture}[scale=.5] \node[draw=none] at (-3.5, 0) {target}; \draw (-2,0) -- (-1, 0); \draw (1, 0) -- (2, 0); \draw (-1,-1)--(-1,1)--(1,1)--(1,-1)--cycle; \node[draw=none] at (0, 0) {$\sigma_y$}; \end{tikzpicture} } \] ~\newline
+ 
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\tt in,out}  & {\em multi\+Qubit} & object representing the set of all qubits \\
+\hline
+\mbox{\tt in}  & {\em target\+Qubit} & qubit to operate on \\
+\hline
+\end{DoxyParams}
+
+\begin{DoxyExceptions}{Exceptions}
+{\em exit\+With\+Error} & if {\ttfamily target\+Qubit} is outside \mbox{[}0, {\ttfamily multi\+Qubit.\+num\+Qubits}). \\
+\hline
+\end{DoxyExceptions}
+fix -- put duplicate code (sigmaX, sigmaY) in seperate function 
+
+Definition at line 154 of file Qu\+E\+S\+T\+\_\+env\+\_\+local.\+c.
+
+
+
+References Multi\+Qubit\+::chunk\+Id, chunk\+Is\+Upper(), exchange\+State\+Vectors(), get\+Chunk\+Pair\+Id(), half\+Matrix\+Block\+Fits\+In\+Chunk(), Multi\+Qubit\+::num\+Amps, Multi\+Qubit\+::num\+Qubits, Multi\+Qubit\+::pair\+State\+Vec, Qu\+E\+S\+T\+Assert(), sigma\+Y\+Distributed(), sigma\+Y\+Local(), and Multi\+Qubit\+::state\+Vec.
+
+
+\begin{DoxyCode}
+155 \{
+156     \mbox{\hyperlink{QuEST__env__local_8c_a3587b9d533e633ccf1abf9ad2ce45d8d}{QuESTAssert}}(targetQubit >= 0 && targetQubit < multiQubit.
+      \mbox{\hyperlink{structMultiQubit_ab5b9795bdc6fb5855e1974dcbbaeb36f}{numQubits}}, 1, \_\_func\_\_);
+157     \mbox{\hyperlink{QuEST_8c_a81fbfaed65a742a7dfd622e17652245e}{sigmaYLocal}}(multiQubit, targetQubit);
+158 \}
+\end{DoxyCode}
+\mbox{\Hypertarget{QuEST_8h_aebaab86326779de55d335cfea3efde8f}\label{QuEST_8h_aebaab86326779de55d335cfea3efde8f}} 
+\index{Qu\+E\+S\+T.\+h@{Qu\+E\+S\+T.\+h}!sigmaZ@{sigmaZ}}
+\index{sigmaZ@{sigmaZ}!Qu\+E\+S\+T.\+h@{Qu\+E\+S\+T.\+h}}
+\paragraph{\texorpdfstring{sigma\+Z()}{sigmaZ()}}
+{\footnotesize\ttfamily void sigmaZ (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structMultiQubit}{Multi\+Qubit}}}]{multi\+Qubit,  }\item[{const int}]{target\+Qubit }\end{DoxyParamCaption})}
+
+
+
+Apply the single-\/qubit sigma-\/Z (also known as the Z, Pauli-\/Z or phase-\/flip) gate. 
+
+This is a rotation of $\pi$ around the Z-\/axis (a phase shift) on the Bloch sphere. I.\+e. \[ \begin{pmatrix} 1 & 0 \\ 0 & -1 \end{pmatrix} \] ~\newline
+ \[ \setlength{\fboxrule}{0.01pt} \fbox{ \begin{tikzpicture}[scale=.5] \node[draw=none] at (-3.5, 0) {target}; \draw (-2,0) -- (-1, 0); \draw (1, 0) -- (2, 0); \draw (-1,-1)--(-1,1)--(1,1)--(1,-1)--cycle; \node[draw=none] at (0, 0) {$\sigma_z$}; \end{tikzpicture} } \] ~\newline
+ 
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\tt in,out}  & {\em multi\+Qubit} & object representing the set of all qubits \\
+\hline
+\mbox{\tt in}  & {\em target\+Qubit} & qubit to operate on \\
+\hline
+\end{DoxyParams}
+
+\begin{DoxyExceptions}{Exceptions}
+{\em exit\+With\+Error} & if {\ttfamily target\+Qubit} is outside \mbox{[}0, {\ttfamily multi\+Qubit.\+num\+Qubits}). \\
+\hline
+\end{DoxyExceptions}
+
+
+Definition at line 1614 of file Qu\+E\+S\+T.\+c.
+
+
+
+References phase\+Gate(), and S\+I\+G\+M\+A\+\_\+Z.
+
+
+\begin{DoxyCode}
+1615 \{
+1616     \mbox{\hyperlink{QuEST__env__local_8c_aae7a8a7f1ccbddb7f76b6c52b746bb43}{phaseGate}}(multiQubit, targetQubit, \mbox{\hyperlink{QuEST_8h_a5739021c733cecc49647956b2f7338eaa754922d1e1846a1961ff2bf163483dac}{SIGMA\_Z}});
+1617 \}
+\end{DoxyCode}
+\mbox{\Hypertarget{QuEST_8h_a8d31fe2d1ad4d01e2a1f5f6b8bc15b77}\label{QuEST_8h_a8d31fe2d1ad4d01e2a1f5f6b8bc15b77}} 
+\index{Qu\+E\+S\+T.\+h@{Qu\+E\+S\+T.\+h}!sync\+Qu\+E\+S\+T\+Env@{sync\+Qu\+E\+S\+T\+Env}}
+\index{sync\+Qu\+E\+S\+T\+Env@{sync\+Qu\+E\+S\+T\+Env}!Qu\+E\+S\+T.\+h@{Qu\+E\+S\+T.\+h}}
+\paragraph{\texorpdfstring{sync\+Qu\+E\+S\+T\+Env()}{syncQuESTEnv()}}
+{\footnotesize\ttfamily void sync\+Qu\+E\+S\+T\+Env (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structQuESTEnv}{Qu\+E\+S\+T\+Env}}}]{env }\end{DoxyParamCaption})}
+
+
+
+Guarantees that all code up to the given point has been executed on all nodes (if running in distributed mode) 
+
+
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\tt in}  & {\em env} & object representing the execution environment. A single instance is used for each program \\
+\hline
+\end{DoxyParams}
+
+
+Definition at line 28 of file Qu\+E\+S\+T\+\_\+env\+\_\+local.\+c.
+
+
+
+Referenced by initialize\+State\+From\+Single\+File(), and report\+State\+To\+Screen().
+
+
+\begin{DoxyCode}
+28                                \{
+29     \textcolor{comment}{// MPI Barrier goes here in MPI version. }
+30 \} 
+\end{DoxyCode}
+\mbox{\Hypertarget{QuEST_8h_ac7e38d768a1bd79019f88cc1e6295092}\label{QuEST_8h_ac7e38d768a1bd79019f88cc1e6295092}} 
+\index{Qu\+E\+S\+T.\+h@{Qu\+E\+S\+T.\+h}!sync\+Qu\+E\+S\+T\+Success@{sync\+Qu\+E\+S\+T\+Success}}
+\index{sync\+Qu\+E\+S\+T\+Success@{sync\+Qu\+E\+S\+T\+Success}!Qu\+E\+S\+T.\+h@{Qu\+E\+S\+T.\+h}}
+\paragraph{\texorpdfstring{sync\+Qu\+E\+S\+T\+Success()}{syncQuESTSuccess()}}
+{\footnotesize\ttfamily int sync\+Qu\+E\+S\+T\+Success (\begin{DoxyParamCaption}\item[{int}]{success\+Code }\end{DoxyParamCaption})}
+
+
+
+Performs a logical A\+ND on all success\+Codes held by all processes. 
+
+If any one process has a zero success\+Code all processes will return a zero success code.
+
+
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\tt in}  & {\em env} & object representing the execution environment. A single instance is used for each program \\
+\hline
+\mbox{\tt in}  & {\em success\+Code} & 1 if process task succeeded, 0 if process task failed \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+1 if all processes succeeded, 0 if any one process failed 
+\end{DoxyReturn}
+
+
+Definition at line 32 of file Qu\+E\+S\+T\+\_\+env\+\_\+local.\+c.
+
+
+\begin{DoxyCode}
+32                                      \{
+33     \textcolor{keywordflow}{return} successCode;
+34 \}
+\end{DoxyCode}
+\mbox{\Hypertarget{QuEST_8h_af764ea63a2e870098f4e1ce08562942e}\label{QuEST_8h_af764ea63a2e870098f4e1ce08562942e}} 
+\index{Qu\+E\+S\+T.\+h@{Qu\+E\+S\+T.\+h}!t\+Gate@{t\+Gate}}
+\index{t\+Gate@{t\+Gate}!Qu\+E\+S\+T.\+h@{Qu\+E\+S\+T.\+h}}
+\paragraph{\texorpdfstring{t\+Gate()}{tGate()}}
+{\footnotesize\ttfamily void t\+Gate (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structMultiQubit}{Multi\+Qubit}}}]{multi\+Qubit,  }\item[{const int}]{target\+Qubit }\end{DoxyParamCaption})}
+
+
+
+Apply the single-\/qubit T gate. 
+
+This is a rotation of $\pi/4$ around the Z-\/axis on the Bloch sphere, or the unitary\+: \[ \begin{pmatrix} 1 & 0 \\ 0 & \exp\left(i \frac{\pi}{4}\right) \end{pmatrix} \]
+
+\[ \setlength{\fboxrule}{0.01pt} \fbox{ \begin{tikzpicture}[scale=.5] \node[draw=none] at (-3.5, 0) {target}; \draw (-2,0) -- (-1, 0); \draw (1, 0) -- (2, 0); \draw (-1,-1)--(-1,1)--(1,1)--(1,-1)--cycle; \node[draw=none] at (0, 0) {T}; \end{tikzpicture} } \]
+
+
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\tt in,out}  & {\em multi\+Qubit} & object representing the set of all qubits \\
+\hline
+\mbox{\tt in}  & {\em target\+Qubit} & qubit to operate upon \\
+\hline
+\end{DoxyParams}
+
+\begin{DoxyExceptions}{Exceptions}
+{\em exit\+With\+Error} & if {\ttfamily target\+Qubit} is outside \mbox{[}0, {\ttfamily multi\+Qubit.\+num\+Qubits}) \\
+\hline
+\end{DoxyExceptions}
+
+
+Definition at line 1624 of file Qu\+E\+S\+T.\+c.
+
+
+
+References phase\+Gate(), and T\+\_\+\+G\+A\+TE.
+
+
+\begin{DoxyCode}
+1625 \{
+1626     \mbox{\hyperlink{QuEST__env__local_8c_aae7a8a7f1ccbddb7f76b6c52b746bb43}{phaseGate}}(multiQubit, targetQubit, \mbox{\hyperlink{QuEST_8h_a5739021c733cecc49647956b2f7338eaa614d07d597a8e320cc556bc0e652e4ab}{T\_GATE}});
+1627 \}
+\end{DoxyCode}
+\mbox{\Hypertarget{QuEST_8h_a7a0877e33700f6bad48adb51b7b3fb67}\label{QuEST_8h_a7a0877e33700f6bad48adb51b7b3fb67}} 
+\index{Qu\+E\+S\+T.\+h@{Qu\+E\+S\+T.\+h}!unitary@{unitary}}
+\index{unitary@{unitary}!Qu\+E\+S\+T.\+h@{Qu\+E\+S\+T.\+h}}
+\paragraph{\texorpdfstring{unitary()}{unitary()}}
+{\footnotesize\ttfamily void unitary (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structMultiQubit}{Multi\+Qubit}}}]{multi\+Qubit,  }\item[{const int}]{target\+Qubit,  }\item[{\mbox{\hyperlink{structComplexMatrix2}{Complex\+Matrix2}}}]{u }\end{DoxyParamCaption})}
+
+
+
+Apply a general single-\/qubit unitary (including a global phase factor). 
+
+The passed 2x2 Complex\+Matrix must be unitary, otherwise an error is thrown.
+
+\[ \setlength{\fboxrule}{0.01pt} \fbox{ \begin{tikzpicture}[scale=.5] \node[draw=none] at (-3.5, 0) {target}; \draw (-2,0) -- (-1, 0); \draw (1, 0) -- (2, 0); \draw (-1,-1)--(-1,1)--(1,1)--(1,-1)--cycle; \node[draw=none] at (0, 0) {U}; \end{tikzpicture} } \]
+
+
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\tt in,out}  & {\em multi\+Qubit} & object representing the set of all qubits \\
+\hline
+\mbox{\tt in}  & {\em target\+Qubit} & qubit to operate on \\
+\hline
+\mbox{\tt in}  & {\em u} & unitary matrix to apply \\
+\hline
+\end{DoxyParams}
+
+\begin{DoxyExceptions}{Exceptions}
+{\em exit\+With\+Error} & if {\ttfamily target\+Qubit} is outside \mbox{[}0, {\ttfamily multi\+Qubit.\+num\+Qubits}), or matrix {\ttfamily u} is not unitary. \\
+\hline
+\end{DoxyExceptions}
+
+
+Definition at line 104 of file Qu\+E\+S\+T\+\_\+env\+\_\+local.\+c.
+
+
+
+References Multi\+Qubit\+::chunk\+Id, chunk\+Is\+Upper(), exchange\+State\+Vectors(), get\+Chunk\+Pair\+Id(), get\+Rot\+Angle\+From\+Unitary\+Matrix(), half\+Matrix\+Block\+Fits\+In\+Chunk(), Multi\+Qubit\+::num\+Amps, Multi\+Qubit\+::num\+Qubits, Multi\+Qubit\+::pair\+State\+Vec, Qu\+E\+S\+T\+Assert(), Multi\+Qubit\+::state\+Vec, unitary\+Distributed(), unitary\+Local(), and validate\+Matrix\+Is\+Unitary().
+
+
+
+Referenced by main().
+
+
+\begin{DoxyCode}
+105 \{
+106     \mbox{\hyperlink{QuEST__env__local_8c_a3587b9d533e633ccf1abf9ad2ce45d8d}{QuESTAssert}}(targetQubit >= 0 && targetQubit < multiQubit.
+      \mbox{\hyperlink{structMultiQubit_ab5b9795bdc6fb5855e1974dcbbaeb36f}{numQubits}}, 1, \_\_func\_\_);
+107     \mbox{\hyperlink{QuEST__env__local_8c_a3587b9d533e633ccf1abf9ad2ce45d8d}{QuESTAssert}}(\mbox{\hyperlink{QuEST_8c_ae4fea133d1a8f09ff8da03038100adb2}{validateMatrixIsUnitary}}(u), 5, \_\_func\_\_);
+108 
+109     \textcolor{comment}{// all values required to update state vector lie in this rank}
+110     \mbox{\hyperlink{QuEST_8c_ac134fb45b0a7248c5d15e16eb7139a35}{unitaryLocal}}(multiQubit, targetQubit, u);
+111 \}
+\end{DoxyCode}
