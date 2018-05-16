@@ -77,9 +77,7 @@ int test_initStatePlus(char testName[200]){
 
 /* Tyson Jones, 16th May 18 */
 int test_initClassicalState(char testName[200]){
-    char filename[200];
     int passed=1;
-
     int numQubits=3;
 	int numAmps=8;
 	
