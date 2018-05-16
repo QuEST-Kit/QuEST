@@ -1,0 +1,2298 @@
+\hypertarget{QuEST__internal_8h}{}\subsection{Qu\+E\+S\+T\+\_\+internal.\+h File Reference}
+\label{QuEST__internal_8h}\index{Qu\+E\+S\+T\+\_\+internal.\+h@{Qu\+E\+S\+T\+\_\+internal.\+h}}
+
+
+Internal functions used to implement the public facing A\+PI in qubits.\+h.  
+
+
+{\ttfamily \#include \char`\"{}Qu\+E\+S\+T\+\_\+precision.\+h\char`\"{}}\newline
+\subsubsection*{Functions}
+\begin{DoxyCompactItemize}
+\item 
+void \mbox{\hyperlink{QuEST__internal_8h_a9cee2d8716667a3318420a3b672f5b92}{compact\+Unitary\+Local}} (\mbox{\hyperlink{structMultiQubit}{Multi\+Qubit}} multi\+Qubit, const int target\+Qubit, \mbox{\hyperlink{structComplex}{Complex}} alpha, \mbox{\hyperlink{structComplex}{Complex}} beta)
+\item 
+void \mbox{\hyperlink{QuEST__internal_8h_a20ee1878a63ae6112e8845f4a8787592}{compact\+Unitary\+Distributed}} (\mbox{\hyperlink{structMultiQubit}{Multi\+Qubit}} multi\+Qubit, const int target\+Qubit, \mbox{\hyperlink{structComplex}{Complex}} rot1, \mbox{\hyperlink{structComplex}{Complex}} rot2, \mbox{\hyperlink{structComplexArray}{Complex\+Array}} state\+Vec\+Up, \mbox{\hyperlink{structComplexArray}{Complex\+Array}} state\+Vec\+Lo, \mbox{\hyperlink{structComplexArray}{Complex\+Array}} state\+Vec\+Out)
+\begin{DoxyCompactList}\small\item\em Rotate a single qubit in the state vector of probability amplitudes, given two complex numbers alpha and beta, and a subset of the state vector with upper and lower block values stored seperately. \end{DoxyCompactList}\item 
+void \mbox{\hyperlink{QuEST__internal_8h_ac134fb45b0a7248c5d15e16eb7139a35}{unitary\+Local}} (\mbox{\hyperlink{structMultiQubit}{Multi\+Qubit}} multi\+Qubit, const int target\+Qubit, \mbox{\hyperlink{structComplexMatrix2}{Complex\+Matrix2}} u)
+\item 
+void \mbox{\hyperlink{QuEST__internal_8h_a2343b7240118e89aa615e2c9140b770b}{unitary\+Distributed}} (\mbox{\hyperlink{structMultiQubit}{Multi\+Qubit}} multi\+Qubit, const int target\+Qubit, \mbox{\hyperlink{structComplex}{Complex}} rot1, \mbox{\hyperlink{structComplex}{Complex}} rot2, \mbox{\hyperlink{structComplexArray}{Complex\+Array}} state\+Vec\+Up, \mbox{\hyperlink{structComplexArray}{Complex\+Array}} state\+Vec\+Lo, \mbox{\hyperlink{structComplexArray}{Complex\+Array}} state\+Vec\+Out)
+\begin{DoxyCompactList}\small\item\em Apply a unitary operation to a single qubit given a subset of the state vector with upper and lower block values stored seperately. \end{DoxyCompactList}\item 
+void \mbox{\hyperlink{QuEST__internal_8h_afc77657651d52c47403b44b923a098a8}{controlled\+Compact\+Unitary\+Local}} (\mbox{\hyperlink{structMultiQubit}{Multi\+Qubit}} multi\+Qubit, const int control\+Qubit, const int target\+Qubit, \mbox{\hyperlink{structComplex}{Complex}} alpha, \mbox{\hyperlink{structComplex}{Complex}} beta)
+\item 
+void \mbox{\hyperlink{QuEST__internal_8h_a717855e835e3161e08c18cdc15325d27}{controlled\+Compact\+Unitary\+Distributed}} (\mbox{\hyperlink{structMultiQubit}{Multi\+Qubit}} multi\+Qubit, const int control\+Qubit, const int target\+Qubit, \mbox{\hyperlink{structComplex}{Complex}} rot1, \mbox{\hyperlink{structComplex}{Complex}} rot2, \mbox{\hyperlink{structComplexArray}{Complex\+Array}} state\+Vec\+Up, \mbox{\hyperlink{structComplexArray}{Complex\+Array}} state\+Vec\+Lo, \mbox{\hyperlink{structComplexArray}{Complex\+Array}} state\+Vec\+Out)
+\begin{DoxyCompactList}\small\item\em Rotate a single qubit in the state vector of probability amplitudes, given two complex numbers alpha and beta and a subset of the state vector with upper and lower block values stored seperately. \end{DoxyCompactList}\item 
+void \mbox{\hyperlink{QuEST__internal_8h_a8a4afcff70195a306c082b8ed8d4e09a}{controlled\+Unitary\+Local}} (\mbox{\hyperlink{structMultiQubit}{Multi\+Qubit}} multi\+Qubit, const int control\+Qubit, const int target\+Qubit, \mbox{\hyperlink{structComplexMatrix2}{Complex\+Matrix2}} u)
+\item 
+void \mbox{\hyperlink{QuEST__internal_8h_a642093063a1f889f61a1311f6d6f2d3f}{controlled\+Unitary\+Distributed}} (\mbox{\hyperlink{structMultiQubit}{Multi\+Qubit}} multi\+Qubit, const int control\+Qubit, const int target\+Qubit, \mbox{\hyperlink{structComplex}{Complex}} rot1, \mbox{\hyperlink{structComplex}{Complex}} rot2, \mbox{\hyperlink{structComplexArray}{Complex\+Array}} state\+Vec\+Up, \mbox{\hyperlink{structComplexArray}{Complex\+Array}} state\+Vec\+Lo, \mbox{\hyperlink{structComplexArray}{Complex\+Array}} state\+Vec\+Out)
+\begin{DoxyCompactList}\small\item\em Rotate a single qubit in the state vector of probability amplitudes, given two complex numbers alpha and beta and a subset of the state vector with upper and lower block values stored seperately. \end{DoxyCompactList}\item 
+void \mbox{\hyperlink{QuEST__internal_8h_a1309eabcba3cb97fbc3cd2e606d17766}{multi\+Controlled\+Unitary\+Local}} (\mbox{\hyperlink{structMultiQubit}{Multi\+Qubit}} multi\+Qubit, const int target\+Qubit, long long int mask, \mbox{\hyperlink{structComplexMatrix2}{Complex\+Matrix2}} u)
+\item 
+void \mbox{\hyperlink{QuEST__internal_8h_a9dbf856ebeea0cf0a3ee5aae6782f2d2}{multi\+Controlled\+Unitary\+Distributed}} (\mbox{\hyperlink{structMultiQubit}{Multi\+Qubit}} multi\+Qubit, const int target\+Qubit, long long int mask, \mbox{\hyperlink{structComplex}{Complex}} rot1, \mbox{\hyperlink{structComplex}{Complex}} rot2, \mbox{\hyperlink{structComplexArray}{Complex\+Array}} state\+Vec\+Up, \mbox{\hyperlink{structComplexArray}{Complex\+Array}} state\+Vec\+Lo, \mbox{\hyperlink{structComplexArray}{Complex\+Array}} state\+Vec\+Out)
+\begin{DoxyCompactList}\small\item\em Apply a unitary operation to a single qubit in the state vector of probability amplitudes, given a subset of the state vector with upper and lower block values stored seperately. \end{DoxyCompactList}\item 
+void \mbox{\hyperlink{QuEST__internal_8h_a74822fd86bb5d81766e6e8dbdcd62df1}{sigma\+X\+Local}} (\mbox{\hyperlink{structMultiQubit}{Multi\+Qubit}} multi\+Qubit, const int target\+Qubit)
+\item 
+void \mbox{\hyperlink{QuEST__internal_8h_a2275fff50824fe47485890ff5a857785}{sigma\+X\+Distributed}} (\mbox{\hyperlink{structMultiQubit}{Multi\+Qubit}} multi\+Qubit, const int target\+Qubit, \mbox{\hyperlink{structComplexArray}{Complex\+Array}} state\+Vec\+In, \mbox{\hyperlink{structComplexArray}{Complex\+Array}} state\+Vec\+Out)
+\begin{DoxyCompactList}\small\item\em Rotate a single qubit by \{\{0,1\},\{1,0\}. \end{DoxyCompactList}\item 
+void \mbox{\hyperlink{QuEST__internal_8h_a81fbfaed65a742a7dfd622e17652245e}{sigma\+Y\+Local}} (\mbox{\hyperlink{structMultiQubit}{Multi\+Qubit}} multi\+Qubit, const int target\+Qubit)
+\item 
+void \mbox{\hyperlink{QuEST__internal_8h_af5ef5166f00c0572354b4ac53dcf40cf}{sigma\+Y\+Distributed}} (\mbox{\hyperlink{structMultiQubit}{Multi\+Qubit}} multi\+Qubit, const int target\+Qubit, \mbox{\hyperlink{structComplexArray}{Complex\+Array}} state\+Vec\+In, \mbox{\hyperlink{structComplexArray}{Complex\+Array}} state\+Vec\+Out, int update\+Upper)
+\begin{DoxyCompactList}\small\item\em Rotate a single qubit by \{\{0,-\/i\},\{i,0\}. \end{DoxyCompactList}\item 
+void \mbox{\hyperlink{QuEST__internal_8h_aa9f0718b4dd794a3e1b143e3b153bfc5}{hadamard\+Local}} (\mbox{\hyperlink{structMultiQubit}{Multi\+Qubit}} multi\+Qubit, const int target\+Qubit)
+\item 
+void \mbox{\hyperlink{QuEST__internal_8h_ae6a897066979fc52d977007d959ca09d}{hadamard\+Distributed}} (\mbox{\hyperlink{structMultiQubit}{Multi\+Qubit}} multi\+Qubit, const int target\+Qubit, \mbox{\hyperlink{structComplexArray}{Complex\+Array}} state\+Vec\+Up, \mbox{\hyperlink{structComplexArray}{Complex\+Array}} state\+Vec\+Lo, \mbox{\hyperlink{structComplexArray}{Complex\+Array}} state\+Vec\+Out, int update\+Upper)
+\begin{DoxyCompactList}\small\item\em Rotate a single qubit by \{\{1,1\},\{1,-\/1\}\}/sqrt2. \end{DoxyCompactList}\item 
+void \mbox{\hyperlink{QuEST__internal_8h_a3a54566b73ac84c312d7da4f56ffbc3b}{phase\+Gate\+Local}} (\mbox{\hyperlink{structMultiQubit}{Multi\+Qubit}} multi\+Qubit, const int target\+Qubit, enum \mbox{\hyperlink{QuEST_8h_a5739021c733cecc49647956b2f7338ea}{phase\+Gate\+Type}} type)
+\item 
+void \mbox{\hyperlink{QuEST__internal_8h_af832ed00b02a0597b7fe0b714032c54a}{phase\+Gate\+Distributed}} (\mbox{\hyperlink{structMultiQubit}{Multi\+Qubit}} multi\+Qubit, const int target\+Qubit, enum \mbox{\hyperlink{QuEST_8h_a5739021c733cecc49647956b2f7338ea}{phase\+Gate\+Type}} type)
+\item 
+void \mbox{\hyperlink{QuEST__internal_8h_ad357a43e80e3baf013975b1b70942f4c}{controlled\+Not\+Local}} (\mbox{\hyperlink{structMultiQubit}{Multi\+Qubit}} multi\+Qubit, const int control\+Qubit, const int target\+Qubit)
+\item 
+void \mbox{\hyperlink{QuEST__internal_8h_a05875a70b539a3efb28d027823403f34}{controlled\+Not\+Distributed}} (\mbox{\hyperlink{structMultiQubit}{Multi\+Qubit}} multi\+Qubit, const int control\+Qubit, const int target\+Qubit, \mbox{\hyperlink{structComplexArray}{Complex\+Array}} state\+Vec\+In, \mbox{\hyperlink{structComplexArray}{Complex\+Array}} state\+Vec\+Out)
+\begin{DoxyCompactList}\small\item\em Rotate a single qubit by \{\{0,1\},\{1,0\}. \end{DoxyCompactList}\item 
+\mbox{\hyperlink{QuEST__precision_8h_a4b654506f18b8bfd61ad2a29a7e38c25}{R\+E\+AL}} \mbox{\hyperlink{QuEST__internal_8h_a7c02cd0e1b4eac19771a0525f023249e}{find\+Probability\+Of\+Zero\+Local}} (\mbox{\hyperlink{structMultiQubit}{Multi\+Qubit}} multi\+Qubit, const int measure\+Qubit)
+\begin{DoxyCompactList}\small\item\em Measure the total probability of a specified qubit being in the zero state across all amplitudes in this chunk. \end{DoxyCompactList}\item 
+\mbox{\hyperlink{QuEST__precision_8h_a4b654506f18b8bfd61ad2a29a7e38c25}{R\+E\+AL}} \mbox{\hyperlink{QuEST__internal_8h_a9ac9bb717a889f09d307eda9f0b65957}{find\+Probability\+Of\+Zero\+Distributed}} (\mbox{\hyperlink{structMultiQubit}{Multi\+Qubit}} multi\+Qubit, const int measure\+Qubit)
+\begin{DoxyCompactList}\small\item\em Measure the probability of a specified qubit being in the zero state across all amplitudes held in this chunk. \end{DoxyCompactList}\item 
+void \mbox{\hyperlink{QuEST__internal_8h_a01d9a8b7ff0e09ec399e158389783aa9}{collapse\+To\+Outcome\+Local}} (\mbox{\hyperlink{structMultiQubit}{Multi\+Qubit}} multi\+Qubit, int measure\+Qubit, \mbox{\hyperlink{QuEST__precision_8h_a4b654506f18b8bfd61ad2a29a7e38c25}{R\+E\+AL}} total\+Probability, int outcome)
+\begin{DoxyCompactList}\small\item\em Update the state vector to be consistent with measuring measure\+Qubit=0 if outcome=0 and measure\+Qubit=1 if outcome=1. \end{DoxyCompactList}\item 
+\mbox{\hyperlink{QuEST__precision_8h_a4b654506f18b8bfd61ad2a29a7e38c25}{R\+E\+AL}} \mbox{\hyperlink{QuEST__internal_8h_a7a1f63ec3c42d9ad72f1f01c14a885db}{collapse\+To\+Outcome\+Distributed\+Renorm}} (\mbox{\hyperlink{structMultiQubit}{Multi\+Qubit}} multi\+Qubit, const int measure\+Qubit, const \mbox{\hyperlink{QuEST__precision_8h_a4b654506f18b8bfd61ad2a29a7e38c25}{R\+E\+AL}} total\+Probability)
+\begin{DoxyCompactList}\small\item\em Renormalise parts of the state vector where measure\+Qubit=0 or 1, based on the total probability of that qubit being in state 0 or 1. \end{DoxyCompactList}\item 
+void \mbox{\hyperlink{QuEST__internal_8h_a78908fe8e75a21fd4f7fa7dff05d6be1}{collapse\+To\+Outcome\+Distributed\+Set\+Zero}} (\mbox{\hyperlink{structMultiQubit}{Multi\+Qubit}} multi\+Qubit, const int measure\+Qubit)
+\begin{DoxyCompactList}\small\item\em Set all amplitudes in one chunk to 0. \end{DoxyCompactList}\item 
+int \mbox{\hyperlink{QuEST__internal_8h_ae4fea133d1a8f09ff8da03038100adb2}{validate\+Matrix\+Is\+Unitary}} (\mbox{\hyperlink{structComplexMatrix2}{Complex\+Matrix2}} u)
+\item 
+int \mbox{\hyperlink{QuEST__internal_8h_ae2b2c14a07dd7d50ff86032a3ca101d7}{validate\+Alpha\+Beta}} (\mbox{\hyperlink{structComplex}{Complex}} alpha, \mbox{\hyperlink{structComplex}{Complex}} beta)
+\item 
+int \mbox{\hyperlink{QuEST__internal_8h_a71c14976f63cfcda70026fa20ee531fe}{validate\+Unit\+Vector}} (\mbox{\hyperlink{QuEST__precision_8h_a4b654506f18b8bfd61ad2a29a7e38c25}{R\+E\+AL}} ux, \mbox{\hyperlink{QuEST__precision_8h_a4b654506f18b8bfd61ad2a29a7e38c25}{R\+E\+AL}} uy, \mbox{\hyperlink{QuEST__precision_8h_a4b654506f18b8bfd61ad2a29a7e38c25}{R\+E\+AL}} uz)
+\item 
+void \mbox{\hyperlink{QuEST__internal_8h_aae7a8a7f1ccbddb7f76b6c52b746bb43}{phase\+Gate}} (\mbox{\hyperlink{structMultiQubit}{Multi\+Qubit}} multi\+Qubit, const int target\+Qubit, enum \mbox{\hyperlink{QuEST_8h_a5739021c733cecc49647956b2f7338ea}{phase\+Gate\+Type}} type)
+\item 
+void \mbox{\hyperlink{QuEST__internal_8h_ae5f9019826f35e8b51b1716cfe397b45}{exit\+With\+Error}} (int error\+Code, const char $\ast$func)
+\item 
+void \mbox{\hyperlink{QuEST__internal_8h_a3587b9d533e633ccf1abf9ad2ce45d8d}{Qu\+E\+S\+T\+Assert}} (int is\+Valid, int error\+Code, const char $\ast$func)
+\item 
+unsigned long int \mbox{\hyperlink{QuEST__internal_8h_ab76254cfde16f0808476649507a1a2fc}{hash\+String}} (char $\ast$str)
+\end{DoxyCompactItemize}
+\subsubsection*{Variables}
+\begin{DoxyCompactItemize}
+\item 
+const char $\ast$ \mbox{\hyperlink{QuEST__internal_8h_aac1637696885c75b73a1ecf381cea713}{error\+Codes}} \mbox{[}$\,$\mbox{]}
+\end{DoxyCompactItemize}
+
+
+\subsubsection{Detailed Description}
+Internal functions used to implement the public facing A\+PI in qubits.\+h. 
+
+Do not call these functions directly. In general, qubits\+\_\+env\+\_\+local.\+c and qubits\+\_\+env\+\_\+mpi.\+c will implement the public A\+PI by choosing the correct function or combination of functions to use from those included here. 
+
+\subsubsection{Function Documentation}
+\mbox{\Hypertarget{QuEST__internal_8h_a7a1f63ec3c42d9ad72f1f01c14a885db}\label{QuEST__internal_8h_a7a1f63ec3c42d9ad72f1f01c14a885db}} 
+\index{Qu\+E\+S\+T\+\_\+internal.\+h@{Qu\+E\+S\+T\+\_\+internal.\+h}!collapse\+To\+Outcome\+Distributed\+Renorm@{collapse\+To\+Outcome\+Distributed\+Renorm}}
+\index{collapse\+To\+Outcome\+Distributed\+Renorm@{collapse\+To\+Outcome\+Distributed\+Renorm}!Qu\+E\+S\+T\+\_\+internal.\+h@{Qu\+E\+S\+T\+\_\+internal.\+h}}
+\paragraph{\texorpdfstring{collapse\+To\+Outcome\+Distributed\+Renorm()}{collapseToOutcomeDistributedRenorm()}}
+{\footnotesize\ttfamily \mbox{\hyperlink{QuEST__precision_8h_a4b654506f18b8bfd61ad2a29a7e38c25}{R\+E\+AL}} collapse\+To\+Outcome\+Distributed\+Renorm (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structMultiQubit}{Multi\+Qubit}}}]{multi\+Qubit,  }\item[{const int}]{measure\+Qubit,  }\item[{const \mbox{\hyperlink{QuEST__precision_8h_a4b654506f18b8bfd61ad2a29a7e38c25}{R\+E\+AL}}}]{total\+Probability }\end{DoxyParamCaption})}
+
+
+
+Renormalise parts of the state vector where measure\+Qubit=0 or 1, based on the total probability of that qubit being in state 0 or 1. 
+
+Measure in Zero performs an irreversible change to the state vector\+: it updates the vector according to the event that the value \textquotesingle{}outcome\textquotesingle{} has been measured on the qubit indicated by measure\+Qubit (where this label starts from 0, of course). It achieves this by setting all inconsistent amplitudes to 0 and then renormalising based on the total probability of measuring measure\+Qubit=0 if outcome=0 and measure\+Qubit=1 if outcome=1. In the distributed version, one block (with measure\+Qubit=0 in the first half of the block and measure\+Qubit=1 in the second half of the block) is spread over multiple chunks, meaning that each chunks performs only renormalisation or only setting amplitudes to 0. This function handles the renormalisation.
+
+
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\tt in,out}  & {\em multi\+Qubit} & object representing the set of qubits \\
+\hline
+\mbox{\tt in}  & {\em measure\+Qubit} & qubit to measure \\
+\hline
+\mbox{\tt in}  & {\em total\+Probability} & probability of qubit measure\+Qubit being zero \\
+\hline
+\end{DoxyParams}
+
+
+Definition at line 1910 of file Qu\+E\+S\+T.\+c.
+
+
+
+References Complex\+Array\+::imag, Multi\+Qubit\+::num\+Amps, Complex\+Array\+::real, R\+E\+AL, and Multi\+Qubit\+::state\+Vec.
+
+
+
+Referenced by collapse\+To\+Outcome(), and measure\+With\+Stats().
+
+
+\begin{DoxyCode}
+1911 \{
+1912     \textcolor{comment}{// ----- temp variables}
+1913     \textcolor{keywordtype}{long} \textcolor{keywordtype}{long} \textcolor{keywordtype}{int} thisTask;                                   
+1914     \textcolor{keywordtype}{long} \textcolor{keywordtype}{long} \textcolor{keywordtype}{int} numTasks=multiQubit.\mbox{\hyperlink{structMultiQubit_ae16f47d8b725c914fb7f66b6498d79db}{numAmps}};
+1915 
+1916     \mbox{\hyperlink{QuEST__precision_8h_a4b654506f18b8bfd61ad2a29a7e38c25}{REAL}} renorm=1/sqrt(totalProbability);
+1917 
+1918     \mbox{\hyperlink{QuEST__precision_8h_a4b654506f18b8bfd61ad2a29a7e38c25}{REAL}} *stateVecReal = multiQubit.\mbox{\hyperlink{structMultiQubit_a45483190d6b01ef6b2f98f2bec9ab94f}{stateVec}}.\mbox{\hyperlink{structComplexArray_a4195cac6c784ea1b6271f1c7dba1548a}{real}};
+1919     \mbox{\hyperlink{QuEST__precision_8h_a4b654506f18b8bfd61ad2a29a7e38c25}{REAL}} *stateVecImag = multiQubit.\mbox{\hyperlink{structMultiQubit_a45483190d6b01ef6b2f98f2bec9ab94f}{stateVec}}.\mbox{\hyperlink{structComplexArray_a79dde47c7ae530c79cebfdf57b225968}{imag}};
+1920 
+1921 \textcolor{preprocessor}{# ifdef \_OPENMP}
+1922 \textcolor{preprocessor}{# pragma omp parallel \(\backslash\)}
+1923 \textcolor{preprocessor}{    shared    (numTasks,stateVecReal,stateVecImag) \(\backslash\)}
+1924 \textcolor{preprocessor}{    private   (thisTask)}
+1925 \textcolor{preprocessor}{# endif}
+1926     \{
+1927 \textcolor{preprocessor}{# ifdef \_OPENMP}
+1928 \textcolor{preprocessor}{# pragma omp for schedule  (static)}
+1929 \textcolor{preprocessor}{# endif}
+1930         \textcolor{keywordflow}{for} (thisTask=0; thisTask<numTasks; thisTask++) \{
+1931             stateVecReal[thisTask] = stateVecReal[thisTask]*renorm;
+1932             stateVecImag[thisTask] = stateVecImag[thisTask]*renorm;
+1933         \}
+1934     \}
+1935     \textcolor{keywordflow}{return} totalProbability;
+1936 \}
+\end{DoxyCode}
+\mbox{\Hypertarget{QuEST__internal_8h_a78908fe8e75a21fd4f7fa7dff05d6be1}\label{QuEST__internal_8h_a78908fe8e75a21fd4f7fa7dff05d6be1}} 
+\index{Qu\+E\+S\+T\+\_\+internal.\+h@{Qu\+E\+S\+T\+\_\+internal.\+h}!collapse\+To\+Outcome\+Distributed\+Set\+Zero@{collapse\+To\+Outcome\+Distributed\+Set\+Zero}}
+\index{collapse\+To\+Outcome\+Distributed\+Set\+Zero@{collapse\+To\+Outcome\+Distributed\+Set\+Zero}!Qu\+E\+S\+T\+\_\+internal.\+h@{Qu\+E\+S\+T\+\_\+internal.\+h}}
+\paragraph{\texorpdfstring{collapse\+To\+Outcome\+Distributed\+Set\+Zero()}{collapseToOutcomeDistributedSetZero()}}
+{\footnotesize\ttfamily void collapse\+To\+Outcome\+Distributed\+Set\+Zero (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structMultiQubit}{Multi\+Qubit}}}]{multi\+Qubit,  }\item[{const int}]{measure\+Qubit }\end{DoxyParamCaption})}
+
+
+
+Set all amplitudes in one chunk to 0. 
+
+Measure in Zero performs an irreversible change to the state vector\+: it updates the vector according to the event that a zero have been measured on the qubit indicated by measure\+Qubit (where this label starts from 0, of course). It achieves this by setting all inconsistent amplitudes to 0 and then renormalising based on the total probability of measuring measure\+Qubit=0 or 1. In the distributed version, one block (with measure\+Qubit=0 in the first half of the block and measure\+Qubit=1 in the second half of the block) is spread over multiple chunks, meaning that each chunks performs only renormalisation or only setting amplitudes to 0. This function handles setting amplitudes to 0.
+
+
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\tt in,out}  & {\em multi\+Qubit} & object representing the set of qubits \\
+\hline
+\mbox{\tt in}  & {\em measure\+Qubit} & qubit to measure \\
+\hline
+\end{DoxyParams}
+
+
+Definition at line 1950 of file Qu\+E\+S\+T.\+c.
+
+
+
+References Complex\+Array\+::imag, Multi\+Qubit\+::num\+Amps, Complex\+Array\+::real, R\+E\+AL, and Multi\+Qubit\+::state\+Vec.
+
+
+
+Referenced by collapse\+To\+Outcome(), and measure\+With\+Stats().
+
+
+\begin{DoxyCode}
+1951 \{
+1952     \textcolor{comment}{// ----- temp variables}
+1953     \textcolor{keywordtype}{long} \textcolor{keywordtype}{long} \textcolor{keywordtype}{int} thisTask;                                   
+1954     \textcolor{keywordtype}{long} \textcolor{keywordtype}{long} \textcolor{keywordtype}{int} numTasks=multiQubit.\mbox{\hyperlink{structMultiQubit_ae16f47d8b725c914fb7f66b6498d79db}{numAmps}};
+1955 
+1956     \textcolor{comment}{// ---------------------------------------------------------------- //}
+1957     \textcolor{comment}{//            find probability                                      //}
+1958     \textcolor{comment}{// ---------------------------------------------------------------- //}
+1959 
+1960     \mbox{\hyperlink{QuEST__precision_8h_a4b654506f18b8bfd61ad2a29a7e38c25}{REAL}} *stateVecReal = multiQubit.\mbox{\hyperlink{structMultiQubit_a45483190d6b01ef6b2f98f2bec9ab94f}{stateVec}}.\mbox{\hyperlink{structComplexArray_a4195cac6c784ea1b6271f1c7dba1548a}{real}};
+1961     \mbox{\hyperlink{QuEST__precision_8h_a4b654506f18b8bfd61ad2a29a7e38c25}{REAL}} *stateVecImag = multiQubit.\mbox{\hyperlink{structMultiQubit_a45483190d6b01ef6b2f98f2bec9ab94f}{stateVec}}.\mbox{\hyperlink{structComplexArray_a79dde47c7ae530c79cebfdf57b225968}{imag}};
+1962 
+1963 \textcolor{preprocessor}{# ifdef \_OPENMP}
+1964 \textcolor{preprocessor}{# pragma omp parallel \(\backslash\)}
+1965 \textcolor{preprocessor}{    shared    (numTasks,stateVecReal,stateVecImag) \(\backslash\)}
+1966 \textcolor{preprocessor}{    private   (thisTask)}
+1967 \textcolor{preprocessor}{# endif}
+1968     \{
+1969 \textcolor{preprocessor}{# ifdef \_OPENMP}
+1970 \textcolor{preprocessor}{# pragma omp for schedule  (static)}
+1971 \textcolor{preprocessor}{# endif}
+1972         \textcolor{keywordflow}{for} (thisTask=0; thisTask<numTasks; thisTask++) \{
+1973             stateVecReal[thisTask] = 0;
+1974             stateVecImag[thisTask] = 0;
+1975         \}
+1976     \}
+1977 \}
+\end{DoxyCode}
+\mbox{\Hypertarget{QuEST__internal_8h_a01d9a8b7ff0e09ec399e158389783aa9}\label{QuEST__internal_8h_a01d9a8b7ff0e09ec399e158389783aa9}} 
+\index{Qu\+E\+S\+T\+\_\+internal.\+h@{Qu\+E\+S\+T\+\_\+internal.\+h}!collapse\+To\+Outcome\+Local@{collapse\+To\+Outcome\+Local}}
+\index{collapse\+To\+Outcome\+Local@{collapse\+To\+Outcome\+Local}!Qu\+E\+S\+T\+\_\+internal.\+h@{Qu\+E\+S\+T\+\_\+internal.\+h}}
+\paragraph{\texorpdfstring{collapse\+To\+Outcome\+Local()}{collapseToOutcomeLocal()}}
+{\footnotesize\ttfamily void collapse\+To\+Outcome\+Local (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structMultiQubit}{Multi\+Qubit}}}]{multi\+Qubit,  }\item[{int}]{measure\+Qubit,  }\item[{\mbox{\hyperlink{QuEST__precision_8h_a4b654506f18b8bfd61ad2a29a7e38c25}{R\+E\+AL}}}]{total\+Probability,  }\item[{int}]{outcome }\end{DoxyParamCaption})}
+
+
+
+Update the state vector to be consistent with measuring measure\+Qubit=0 if outcome=0 and measure\+Qubit=1 if outcome=1. 
+
+Performs an irreversible change to the state vector\+: it updates the vector according to the event that an outcome have been measured on the qubit indicated by measure\+Qubit (where this label starts from 0, of course). It achieves this by setting all inconsistent amplitudes to 0 and then renormalising based on the total probability of measuring measure\+Qubit=0 or 1 according to the value of outcome. In the local version, one or more blocks (with measure\+Qubit=0 in the first half of the block and measure\+Qubit=1 in the second half of the block) fit entirely into one chunk.
+
+
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\tt in,out}  & {\em multi\+Qubit} & object representing the set of qubits \\
+\hline
+\mbox{\tt in}  & {\em measure\+Qubit} & qubit to measure \\
+\hline
+\mbox{\tt in}  & {\em total\+Probability} & probability of qubit measure\+Qubit being either zero or one \\
+\hline
+\mbox{\tt in}  & {\em outcome} & to measure the probability of and set the state to -- either zero or one \\
+\hline
+\end{DoxyParams}
+
+
+Definition at line 1828 of file Qu\+E\+S\+T.\+c.
+
+
+
+References Complex\+Array\+::imag, Multi\+Qubit\+::num\+Amps, Complex\+Array\+::real, R\+E\+AL, and Multi\+Qubit\+::state\+Vec.
+
+
+
+Referenced by collapse\+To\+Outcome(), and measure\+With\+Stats().
+
+
+\begin{DoxyCode}
+1829 \{
+1830     \textcolor{comment}{// ----- sizes}
+1831     \textcolor{keywordtype}{long} \textcolor{keywordtype}{long} \textcolor{keywordtype}{int} sizeBlock,                                  \textcolor{comment}{// size of blocks}
+1832          sizeHalfBlock;                                       \textcolor{comment}{// size of blocks halved}
+1833     \textcolor{comment}{// ----- indices}
+1834     \textcolor{keywordtype}{long} \textcolor{keywordtype}{long} \textcolor{keywordtype}{int} thisBlock,                                  \textcolor{comment}{// current block}
+1835          index;                                               \textcolor{comment}{// current index for first half block}
+1836     \textcolor{comment}{// ----- measured probability}
+1837     \mbox{\hyperlink{QuEST__precision_8h_a4b654506f18b8bfd61ad2a29a7e38c25}{REAL}}   renorm;                                            \textcolor{comment}{// probability (returned) value}
+1838     \textcolor{comment}{// ----- temp variables}
+1839     \textcolor{keywordtype}{long} \textcolor{keywordtype}{long} \textcolor{keywordtype}{int} thisTask;                                   \textcolor{comment}{// task based approach for expose loop with
+       small granularity}
+1840     \textcolor{comment}{// (good for shared memory parallelism)}
+1841     \textcolor{keywordtype}{long} \textcolor{keywordtype}{long} \textcolor{keywordtype}{int} numTasks=multiQubit.\mbox{\hyperlink{structMultiQubit_ae16f47d8b725c914fb7f66b6498d79db}{numAmps}}>>1;
+1842 
+1843     \textcolor{comment}{// ---------------------------------------------------------------- //}
+1844     \textcolor{comment}{//            dimensions                                            //}
+1845     \textcolor{comment}{// ---------------------------------------------------------------- //}
+1846     sizeHalfBlock = 1LL << (measureQubit);                       \textcolor{comment}{// number of state vector elements to sum,}
+1847     \textcolor{comment}{// and then the number to skip}
+1848     sizeBlock     = 2LL * sizeHalfBlock;                         \textcolor{comment}{// size of blocks (pairs of measure and
+       skip entries)}
+1849 
+1850     renorm=1/sqrt(totalProbability);
+1851     \mbox{\hyperlink{QuEST__precision_8h_a4b654506f18b8bfd61ad2a29a7e38c25}{REAL}} *stateVecReal = multiQubit.\mbox{\hyperlink{structMultiQubit_a45483190d6b01ef6b2f98f2bec9ab94f}{stateVec}}.\mbox{\hyperlink{structComplexArray_a4195cac6c784ea1b6271f1c7dba1548a}{real}};
+1852     \mbox{\hyperlink{QuEST__precision_8h_a4b654506f18b8bfd61ad2a29a7e38c25}{REAL}} *stateVecImag = multiQubit.\mbox{\hyperlink{structMultiQubit_a45483190d6b01ef6b2f98f2bec9ab94f}{stateVec}}.\mbox{\hyperlink{structComplexArray_a79dde47c7ae530c79cebfdf57b225968}{imag}};
+1853 
+1854 
+1855 \textcolor{preprocessor}{# ifdef \_OPENMP}
+1856 \textcolor{preprocessor}{# pragma omp parallel \(\backslash\)}
+1857 \textcolor{preprocessor}{    default (none) \(\backslash\)}
+1858 \textcolor{preprocessor}{    shared    (numTasks,sizeBlock,sizeHalfBlock, stateVecReal,stateVecImag,renorm,outcome) \(\backslash\)}
+1859 \textcolor{preprocessor}{    private   (thisTask,thisBlock,index)}
+1860 \textcolor{preprocessor}{# endif}
+1861     \{
+1862         \textcolor{keywordflow}{if} (outcome==0)\{
+1863             \textcolor{comment}{// measure qubit is 0}
+1864 \textcolor{preprocessor}{# ifdef \_OPENMP}
+1865 \textcolor{preprocessor}{# pragma omp for schedule  (static)}
+1866 \textcolor{preprocessor}{# endif}
+1867             \textcolor{keywordflow}{for} (thisTask=0; thisTask<numTasks; thisTask++) \{
+1868                 thisBlock = thisTask / sizeHalfBlock;
+1869                 index     = thisBlock*sizeBlock + thisTask%sizeHalfBlock;
+1870                 stateVecReal[index]=stateVecReal[index]*renorm;
+1871                 stateVecImag[index]=stateVecImag[index]*renorm;
+1872 
+1873                 stateVecReal[index+sizeHalfBlock]=0;
+1874                 stateVecImag[index+sizeHalfBlock]=0;
+1875             \}
+1876         \} \textcolor{keywordflow}{else} \{
+1877             \textcolor{comment}{// measure qubit is 1}
+1878 \textcolor{preprocessor}{# ifdef \_OPENMP}
+1879 \textcolor{preprocessor}{# pragma omp for schedule  (static)}
+1880 \textcolor{preprocessor}{# endif}
+1881             \textcolor{keywordflow}{for} (thisTask=0; thisTask<numTasks; thisTask++) \{
+1882                 thisBlock = thisTask / sizeHalfBlock;
+1883                 index     = thisBlock*sizeBlock + thisTask%sizeHalfBlock;
+1884                 stateVecReal[index]=0;
+1885                 stateVecImag[index]=0;
+1886 
+1887                 stateVecReal[index+sizeHalfBlock]=stateVecReal[index+sizeHalfBlock]*renorm;
+1888                 stateVecImag[index+sizeHalfBlock]=stateVecImag[index+sizeHalfBlock]*renorm;
+1889             \}
+1890         \}
+1891     \}
+1892 
+1893 \}
+\end{DoxyCode}
+\mbox{\Hypertarget{QuEST__internal_8h_a20ee1878a63ae6112e8845f4a8787592}\label{QuEST__internal_8h_a20ee1878a63ae6112e8845f4a8787592}} 
+\index{Qu\+E\+S\+T\+\_\+internal.\+h@{Qu\+E\+S\+T\+\_\+internal.\+h}!compact\+Unitary\+Distributed@{compact\+Unitary\+Distributed}}
+\index{compact\+Unitary\+Distributed@{compact\+Unitary\+Distributed}!Qu\+E\+S\+T\+\_\+internal.\+h@{Qu\+E\+S\+T\+\_\+internal.\+h}}
+\paragraph{\texorpdfstring{compact\+Unitary\+Distributed()}{compactUnitaryDistributed()}}
+{\footnotesize\ttfamily void compact\+Unitary\+Distributed (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structMultiQubit}{Multi\+Qubit}}}]{multi\+Qubit,  }\item[{const int}]{target\+Qubit,  }\item[{\mbox{\hyperlink{structComplex}{Complex}}}]{rot1,  }\item[{\mbox{\hyperlink{structComplex}{Complex}}}]{rot2,  }\item[{\mbox{\hyperlink{structComplexArray}{Complex\+Array}}}]{state\+Vec\+Up,  }\item[{\mbox{\hyperlink{structComplexArray}{Complex\+Array}}}]{state\+Vec\+Lo,  }\item[{\mbox{\hyperlink{structComplexArray}{Complex\+Array}}}]{state\+Vec\+Out }\end{DoxyParamCaption})}
+
+
+
+Rotate a single qubit in the state vector of probability amplitudes, given two complex numbers alpha and beta, and a subset of the state vector with upper and lower block values stored seperately. 
+
+
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\tt in,out}  & {\em multi\+Qubit} & object representing the set of qubits \\
+\hline
+\mbox{\tt in}  & {\em target\+Qubit} & qubit to rotate \\
+\hline
+\mbox{\tt in}  & {\em rot1} & rotation angle \\
+\hline
+\mbox{\tt in}  & {\em rot2} & rotation angle \\
+\hline
+\mbox{\tt in}  & {\em state\+Vec\+Up} & probability amplitudes in upper half of a block \\
+\hline
+\mbox{\tt in}  & {\em state\+Vec\+Lo} & probability amplitudes in lower half of a block \\
+\hline
+\mbox{\tt out}  & {\em state\+Vec\+Out} & array section to update (will correspond to either the lower or upper half of a block) \\
+\hline
+\end{DoxyParams}
+
+
+Definition at line 612 of file Qu\+E\+S\+T.\+c.
+
+
+
+References Complex\+Array\+::imag, Complex\+::imag, Multi\+Qubit\+::num\+Amps, Complex\+Array\+::real, Complex\+::real, and R\+E\+AL.
+
+
+
+Referenced by compact\+Unitary().
+
+
+\begin{DoxyCode}
+617 \{
+618 
+619     \mbox{\hyperlink{QuEST__precision_8h_a4b654506f18b8bfd61ad2a29a7e38c25}{REAL}}   stateRealUp,stateRealLo,stateImagUp,stateImagLo;
+620     \textcolor{keywordtype}{long} \textcolor{keywordtype}{long} \textcolor{keywordtype}{int} thisTask;  
+621     \textcolor{keyword}{const} \textcolor{keywordtype}{long} \textcolor{keywordtype}{long} \textcolor{keywordtype}{int} numTasks=multiQubit.\mbox{\hyperlink{structMultiQubit_ae16f47d8b725c914fb7f66b6498d79db}{numAmps}};
+622 
+623     \mbox{\hyperlink{QuEST__precision_8h_a4b654506f18b8bfd61ad2a29a7e38c25}{REAL}} rot1Real=rot1.\mbox{\hyperlink{structComplex_a479ad939835457595fcca3ca55c06283}{real}}, rot1Imag=rot1.\mbox{\hyperlink{structComplex_a1151948284b21c0052f203f23ab931d9}{imag}};
+624     \mbox{\hyperlink{QuEST__precision_8h_a4b654506f18b8bfd61ad2a29a7e38c25}{REAL}} rot2Real=rot2.\mbox{\hyperlink{structComplex_a479ad939835457595fcca3ca55c06283}{real}}, rot2Imag=rot2.\mbox{\hyperlink{structComplex_a1151948284b21c0052f203f23ab931d9}{imag}};
+625     \mbox{\hyperlink{QuEST__precision_8h_a4b654506f18b8bfd61ad2a29a7e38c25}{REAL}} *stateVecRealUp=stateVecUp.\mbox{\hyperlink{structComplexArray_a4195cac6c784ea1b6271f1c7dba1548a}{real}}, *stateVecImagUp=stateVecUp.
+      \mbox{\hyperlink{structComplexArray_a79dde47c7ae530c79cebfdf57b225968}{imag}};
+626     \mbox{\hyperlink{QuEST__precision_8h_a4b654506f18b8bfd61ad2a29a7e38c25}{REAL}} *stateVecRealLo=stateVecLo.\mbox{\hyperlink{structComplexArray_a4195cac6c784ea1b6271f1c7dba1548a}{real}}, *stateVecImagLo=stateVecLo.
+      \mbox{\hyperlink{structComplexArray_a79dde47c7ae530c79cebfdf57b225968}{imag}};
+627     \mbox{\hyperlink{QuEST__precision_8h_a4b654506f18b8bfd61ad2a29a7e38c25}{REAL}} *stateVecRealOut=stateVecOut.\mbox{\hyperlink{structComplexArray_a4195cac6c784ea1b6271f1c7dba1548a}{real}}, *stateVecImagOut=stateVecOut.
+      \mbox{\hyperlink{structComplexArray_a79dde47c7ae530c79cebfdf57b225968}{imag}};
+628 
+629 \textcolor{preprocessor}{# ifdef \_OPENMP}
+630 \textcolor{preprocessor}{# pragma omp parallel \(\backslash\)}
+631 \textcolor{preprocessor}{    default  (none) \(\backslash\)}
+632 \textcolor{preprocessor}{    shared   (stateVecRealUp,stateVecImagUp,stateVecRealLo,stateVecImagLo,stateVecRealOut,stateVecImagOut, 
+      \(\backslash\)}
+633 \textcolor{preprocessor}{            rot1Real,rot1Imag, rot2Real,rot2Imag) \(\backslash\)}
+634 \textcolor{preprocessor}{    private  (thisTask,stateRealUp,stateImagUp,stateRealLo,stateImagLo)}
+635 \textcolor{preprocessor}{# endif}
+636     \{
+637 \textcolor{preprocessor}{# ifdef \_OPENMP}
+638 \textcolor{preprocessor}{# pragma omp for schedule (static)}
+639 \textcolor{preprocessor}{# endif}
+640         \textcolor{keywordflow}{for} (thisTask=0; thisTask<numTasks; thisTask++) \{
+641             \textcolor{comment}{// store current state vector values in temp variables}
+642             stateRealUp = stateVecRealUp[thisTask];
+643             stateImagUp = stateVecImagUp[thisTask];
+644 
+645             stateRealLo = stateVecRealLo[thisTask];
+646             stateImagLo = stateVecImagLo[thisTask];
+647 
+648             \textcolor{comment}{// state[indexUp] = alpha * state[indexUp] - conj(beta)  * state[indexLo]}
+649             stateVecRealOut[thisTask] = rot1Real*stateRealUp - rot1Imag*stateImagUp + rot2Real*stateRealLo 
+      + rot2Imag*stateImagLo;
+650             stateVecImagOut[thisTask] = rot1Real*stateImagUp + rot1Imag*stateRealUp + rot2Real*stateImagLo 
+      - rot2Imag*stateRealLo;
+651         \}
+652     \}
+653 \}
+\end{DoxyCode}
+\mbox{\Hypertarget{QuEST__internal_8h_a9cee2d8716667a3318420a3b672f5b92}\label{QuEST__internal_8h_a9cee2d8716667a3318420a3b672f5b92}} 
+\index{Qu\+E\+S\+T\+\_\+internal.\+h@{Qu\+E\+S\+T\+\_\+internal.\+h}!compact\+Unitary\+Local@{compact\+Unitary\+Local}}
+\index{compact\+Unitary\+Local@{compact\+Unitary\+Local}!Qu\+E\+S\+T\+\_\+internal.\+h@{Qu\+E\+S\+T\+\_\+internal.\+h}}
+\paragraph{\texorpdfstring{compact\+Unitary\+Local()}{compactUnitaryLocal()}}
+{\footnotesize\ttfamily void compact\+Unitary\+Local (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structMultiQubit}{Multi\+Qubit}}}]{multi\+Qubit,  }\item[{const int}]{target\+Qubit,  }\item[{\mbox{\hyperlink{structComplex}{Complex}}}]{alpha,  }\item[{\mbox{\hyperlink{structComplex}{Complex}}}]{beta }\end{DoxyParamCaption})}
+
+
+
+Definition at line 483 of file Qu\+E\+S\+T.\+c.
+
+
+
+References Complex\+Array\+::imag, Complex\+::imag, Multi\+Qubit\+::num\+Amps, Complex\+Array\+::real, Complex\+::real, R\+E\+AL, and Multi\+Qubit\+::state\+Vec.
+
+
+
+Referenced by compact\+Unitary().
+
+
+\begin{DoxyCode}
+484 \{
+485     \textcolor{keywordtype}{long} \textcolor{keywordtype}{long} \textcolor{keywordtype}{int} sizeBlock, sizeHalfBlock;
+486     \textcolor{keywordtype}{long} \textcolor{keywordtype}{long} \textcolor{keywordtype}{int} thisBlock, \textcolor{comment}{// current block}
+487          indexUp,indexLo;    \textcolor{comment}{// current index and corresponding index in lower half block}
+488 
+489     \mbox{\hyperlink{QuEST__precision_8h_a4b654506f18b8bfd61ad2a29a7e38c25}{REAL}} stateRealUp,stateRealLo,stateImagUp,stateImagLo;
+490     \textcolor{keywordtype}{long} \textcolor{keywordtype}{long} \textcolor{keywordtype}{int} thisTask;         
+491     \textcolor{keyword}{const} \textcolor{keywordtype}{long} \textcolor{keywordtype}{long} \textcolor{keywordtype}{int} numTasks=multiQubit.\mbox{\hyperlink{structMultiQubit_ae16f47d8b725c914fb7f66b6498d79db}{numAmps}}>>1;
+492 
+493     \textcolor{comment}{// set dimensions}
+494     sizeHalfBlock = 1LL << targetQubit;  
+495     sizeBlock     = 2LL * sizeHalfBlock; 
+496 
+497     \textcolor{comment}{// Can't use multiQubit.stateVec as a private OMP var}
+498     \mbox{\hyperlink{QuEST__precision_8h_a4b654506f18b8bfd61ad2a29a7e38c25}{REAL}} *stateVecReal = multiQubit.\mbox{\hyperlink{structMultiQubit_a45483190d6b01ef6b2f98f2bec9ab94f}{stateVec}}.\mbox{\hyperlink{structComplexArray_a4195cac6c784ea1b6271f1c7dba1548a}{real}};
+499     \mbox{\hyperlink{QuEST__precision_8h_a4b654506f18b8bfd61ad2a29a7e38c25}{REAL}} *stateVecImag = multiQubit.\mbox{\hyperlink{structMultiQubit_a45483190d6b01ef6b2f98f2bec9ab94f}{stateVec}}.\mbox{\hyperlink{structComplexArray_a79dde47c7ae530c79cebfdf57b225968}{imag}};
+500     \mbox{\hyperlink{QuEST__precision_8h_a4b654506f18b8bfd61ad2a29a7e38c25}{REAL}} alphaImag=alpha.\mbox{\hyperlink{structComplex_a1151948284b21c0052f203f23ab931d9}{imag}}, alphaReal=alpha.\mbox{\hyperlink{structComplex_a479ad939835457595fcca3ca55c06283}{real}};
+501     \mbox{\hyperlink{QuEST__precision_8h_a4b654506f18b8bfd61ad2a29a7e38c25}{REAL}} betaImag=beta.\mbox{\hyperlink{structComplex_a1151948284b21c0052f203f23ab931d9}{imag}}, betaReal=beta.\mbox{\hyperlink{structComplex_a479ad939835457595fcca3ca55c06283}{real}};
+502 
+503 \textcolor{preprocessor}{# ifdef \_OPENMP}
+504 \textcolor{preprocessor}{# pragma omp parallel \(\backslash\)}
+505 \textcolor{preprocessor}{    default  (none) \(\backslash\)}
+506 \textcolor{preprocessor}{    shared   (sizeBlock,sizeHalfBlock, stateVecReal,stateVecImag, alphaReal,alphaImag, betaReal,betaImag) \(\backslash\)}
+507 \textcolor{preprocessor}{    private  (thisTask,thisBlock ,indexUp,indexLo, stateRealUp,stateImagUp,stateRealLo,stateImagLo) }
+508 \textcolor{preprocessor}{# endif}
+509     \{
+510 \textcolor{preprocessor}{# ifdef \_OPENMP}
+511 \textcolor{preprocessor}{# pragma omp for schedule (static)}
+512 \textcolor{preprocessor}{# endif}
+513         \textcolor{keywordflow}{for} (thisTask=0; thisTask<numTasks; thisTask++) \{
+514 
+515             thisBlock   = thisTask / sizeHalfBlock;
+516             indexUp     = thisBlock*sizeBlock + thisTask%sizeHalfBlock;
+517             indexLo     = indexUp + sizeHalfBlock;
+518 
+519             \textcolor{comment}{// store current state vector values in temp variables}
+520             stateRealUp = stateVecReal[indexUp];
+521             stateImagUp = stateVecImag[indexUp];
+522 
+523             stateRealLo = stateVecReal[indexLo];
+524             stateImagLo = stateVecImag[indexLo];
+525 
+526             \textcolor{comment}{// state[indexUp] = alpha * state[indexUp] - conj(beta)  * state[indexLo]}
+527             stateVecReal[indexUp] = alphaReal*stateRealUp - alphaImag*stateImagUp 
+528                 - betaReal*stateRealLo - betaImag*stateImagLo;
+529             stateVecImag[indexUp] = alphaReal*stateImagUp + alphaImag*stateRealUp 
+530                 - betaReal*stateImagLo + betaImag*stateRealLo;
+531 
+532             \textcolor{comment}{// state[indexLo] = beta  * state[indexUp] + conj(alpha) * state[indexLo]}
+533             stateVecReal[indexLo] = betaReal*stateRealUp - betaImag*stateImagUp 
+534                 + alphaReal*stateRealLo + alphaImag*stateImagLo;
+535             stateVecImag[indexLo] = betaReal*stateImagUp + betaImag*stateRealUp 
+536                 + alphaReal*stateImagLo - alphaImag*stateRealLo;
+537         \} 
+538     \}
+539 
+540 \} 
+\end{DoxyCode}
+\mbox{\Hypertarget{QuEST__internal_8h_a717855e835e3161e08c18cdc15325d27}\label{QuEST__internal_8h_a717855e835e3161e08c18cdc15325d27}} 
+\index{Qu\+E\+S\+T\+\_\+internal.\+h@{Qu\+E\+S\+T\+\_\+internal.\+h}!controlled\+Compact\+Unitary\+Distributed@{controlled\+Compact\+Unitary\+Distributed}}
+\index{controlled\+Compact\+Unitary\+Distributed@{controlled\+Compact\+Unitary\+Distributed}!Qu\+E\+S\+T\+\_\+internal.\+h@{Qu\+E\+S\+T\+\_\+internal.\+h}}
+\paragraph{\texorpdfstring{controlled\+Compact\+Unitary\+Distributed()}{controlledCompactUnitaryDistributed()}}
+{\footnotesize\ttfamily void controlled\+Compact\+Unitary\+Distributed (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structMultiQubit}{Multi\+Qubit}}}]{multi\+Qubit,  }\item[{const int}]{control\+Qubit,  }\item[{const int}]{target\+Qubit,  }\item[{\mbox{\hyperlink{structComplex}{Complex}}}]{rot1,  }\item[{\mbox{\hyperlink{structComplex}{Complex}}}]{rot2,  }\item[{\mbox{\hyperlink{structComplexArray}{Complex\+Array}}}]{state\+Vec\+Up,  }\item[{\mbox{\hyperlink{structComplexArray}{Complex\+Array}}}]{state\+Vec\+Lo,  }\item[{\mbox{\hyperlink{structComplexArray}{Complex\+Array}}}]{state\+Vec\+Out }\end{DoxyParamCaption})}
+
+
+
+Rotate a single qubit in the state vector of probability amplitudes, given two complex numbers alpha and beta and a subset of the state vector with upper and lower block values stored seperately. 
+
+Only perform the rotation where the control qubit is one.
+
+
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\tt in,out}  & {\em multi\+Qubit} & object representing the set of qubits \\
+\hline
+\mbox{\tt in}  & {\em target\+Qubit} & qubit to rotate \\
+\hline
+\mbox{\tt in}  & {\em control\+Qubit} & qubit to determine whether or not to perform a rotation \\
+\hline
+\mbox{\tt in}  & {\em rot1} & rotation angle \\
+\hline
+\mbox{\tt in}  & {\em rot2} & rotation angle \\
+\hline
+\mbox{\tt in}  & {\em state\+Vec\+Up} & probability amplitudes in upper half of a block \\
+\hline
+\mbox{\tt in}  & {\em state\+Vec\+Lo} & probability amplitudes in lower half of a block \\
+\hline
+\mbox{\tt out}  & {\em state\+Vec\+Out} & array section to update (will correspond to either the lower or upper half of a block) \\
+\hline
+\end{DoxyParams}
+
+
+Definition at line 922 of file Qu\+E\+S\+T.\+c.
+
+
+
+References Multi\+Qubit\+::chunk\+Id, extract\+Bit(), Complex\+Array\+::imag, Complex\+::imag, Multi\+Qubit\+::num\+Amps, Complex\+Array\+::real, Complex\+::real, and R\+E\+AL.
+
+
+
+Referenced by controlled\+Compact\+Unitary().
+
+
+\begin{DoxyCode}
+927 \{
+928 
+929     \mbox{\hyperlink{QuEST__precision_8h_a4b654506f18b8bfd61ad2a29a7e38c25}{REAL}}   stateRealUp,stateRealLo,stateImagUp,stateImagLo;
+930     \textcolor{keywordtype}{long} \textcolor{keywordtype}{long} \textcolor{keywordtype}{int} thisTask;  
+931     \textcolor{keyword}{const} \textcolor{keywordtype}{long} \textcolor{keywordtype}{long} \textcolor{keywordtype}{int} numTasks=multiQubit.\mbox{\hyperlink{structMultiQubit_ae16f47d8b725c914fb7f66b6498d79db}{numAmps}};
+932     \textcolor{keyword}{const} \textcolor{keywordtype}{long} \textcolor{keywordtype}{long} \textcolor{keywordtype}{int} chunkSize=multiQubit.\mbox{\hyperlink{structMultiQubit_ae16f47d8b725c914fb7f66b6498d79db}{numAmps}};
+933     \textcolor{keyword}{const} \textcolor{keywordtype}{long} \textcolor{keywordtype}{long} \textcolor{keywordtype}{int} chunkId=multiQubit.\mbox{\hyperlink{structMultiQubit_ab10c88249fa3825d6227ceec01d37e37}{chunkId}};
+934 
+935     \textcolor{keywordtype}{int} controlBit;
+936 
+937     \mbox{\hyperlink{QuEST__precision_8h_a4b654506f18b8bfd61ad2a29a7e38c25}{REAL}} rot1Real=rot1.\mbox{\hyperlink{structComplex_a479ad939835457595fcca3ca55c06283}{real}}, rot1Imag=rot1.\mbox{\hyperlink{structComplex_a1151948284b21c0052f203f23ab931d9}{imag}};
+938     \mbox{\hyperlink{QuEST__precision_8h_a4b654506f18b8bfd61ad2a29a7e38c25}{REAL}} rot2Real=rot2.\mbox{\hyperlink{structComplex_a479ad939835457595fcca3ca55c06283}{real}}, rot2Imag=rot2.\mbox{\hyperlink{structComplex_a1151948284b21c0052f203f23ab931d9}{imag}};
+939     \mbox{\hyperlink{QuEST__precision_8h_a4b654506f18b8bfd61ad2a29a7e38c25}{REAL}} *stateVecRealUp=stateVecUp.\mbox{\hyperlink{structComplexArray_a4195cac6c784ea1b6271f1c7dba1548a}{real}}, *stateVecImagUp=stateVecUp.
+      \mbox{\hyperlink{structComplexArray_a79dde47c7ae530c79cebfdf57b225968}{imag}};
+940     \mbox{\hyperlink{QuEST__precision_8h_a4b654506f18b8bfd61ad2a29a7e38c25}{REAL}} *stateVecRealLo=stateVecLo.\mbox{\hyperlink{structComplexArray_a4195cac6c784ea1b6271f1c7dba1548a}{real}}, *stateVecImagLo=stateVecLo.
+      \mbox{\hyperlink{structComplexArray_a79dde47c7ae530c79cebfdf57b225968}{imag}};
+941     \mbox{\hyperlink{QuEST__precision_8h_a4b654506f18b8bfd61ad2a29a7e38c25}{REAL}} *stateVecRealOut=stateVecOut.\mbox{\hyperlink{structComplexArray_a4195cac6c784ea1b6271f1c7dba1548a}{real}}, *stateVecImagOut=stateVecOut.
+      \mbox{\hyperlink{structComplexArray_a79dde47c7ae530c79cebfdf57b225968}{imag}};
+942 
+943 \textcolor{preprocessor}{# ifdef \_OPENMP}
+944 \textcolor{preprocessor}{# pragma omp parallel \(\backslash\)}
+945 \textcolor{preprocessor}{    default  (none) \(\backslash\)}
+946 \textcolor{preprocessor}{    shared   (stateVecRealUp,stateVecImagUp,stateVecRealLo,stateVecImagLo,stateVecRealOut,stateVecImagOut, 
+      \(\backslash\)}
+947 \textcolor{preprocessor}{            rot1Real,rot1Imag, rot2Real,rot2Imag) \(\backslash\)}
+948 \textcolor{preprocessor}{    private  (thisTask,stateRealUp,stateImagUp,stateRealLo,stateImagLo,controlBit)}
+949 \textcolor{preprocessor}{# endif}
+950     \{
+951 \textcolor{preprocessor}{# ifdef \_OPENMP}
+952 \textcolor{preprocessor}{# pragma omp for schedule (static)}
+953 \textcolor{preprocessor}{# endif}
+954         \textcolor{keywordflow}{for} (thisTask=0; thisTask<numTasks; thisTask++) \{
+955             controlBit = \mbox{\hyperlink{QuEST_8c_a100463f6ec212c76a5fad99579000505}{extractBit}} (controlQubit, thisTask+chunkId*chunkSize);
+956             \textcolor{keywordflow}{if} (controlBit)\{
+957                 \textcolor{comment}{// store current state vector values in temp variables}
+958                 stateRealUp = stateVecRealUp[thisTask];
+959                 stateImagUp = stateVecImagUp[thisTask];
+960 
+961                 stateRealLo = stateVecRealLo[thisTask];
+962                 stateImagLo = stateVecImagLo[thisTask];
+963 
+964                 \textcolor{comment}{// state[indexUp] = alpha * state[indexUp] - conj(beta)  * state[indexLo]}
+965                 stateVecRealOut[thisTask] = rot1Real*stateRealUp - rot1Imag*stateImagUp + rot2Real*
+      stateRealLo + rot2Imag*stateImagLo;
+966                 stateVecImagOut[thisTask] = rot1Real*stateImagUp + rot1Imag*stateRealUp + rot2Real*
+      stateImagLo - rot2Imag*stateRealLo;
+967             \}
+968         \}
+969     \}
+970 \}
+\end{DoxyCode}
+\mbox{\Hypertarget{QuEST__internal_8h_afc77657651d52c47403b44b923a098a8}\label{QuEST__internal_8h_afc77657651d52c47403b44b923a098a8}} 
+\index{Qu\+E\+S\+T\+\_\+internal.\+h@{Qu\+E\+S\+T\+\_\+internal.\+h}!controlled\+Compact\+Unitary\+Local@{controlled\+Compact\+Unitary\+Local}}
+\index{controlled\+Compact\+Unitary\+Local@{controlled\+Compact\+Unitary\+Local}!Qu\+E\+S\+T\+\_\+internal.\+h@{Qu\+E\+S\+T\+\_\+internal.\+h}}
+\paragraph{\texorpdfstring{controlled\+Compact\+Unitary\+Local()}{controlledCompactUnitaryLocal()}}
+{\footnotesize\ttfamily void controlled\+Compact\+Unitary\+Local (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structMultiQubit}{Multi\+Qubit}}}]{multi\+Qubit,  }\item[{const int}]{control\+Qubit,  }\item[{const int}]{target\+Qubit,  }\item[{\mbox{\hyperlink{structComplex}{Complex}}}]{alpha,  }\item[{\mbox{\hyperlink{structComplex}{Complex}}}]{beta }\end{DoxyParamCaption})}
+
+
+
+Definition at line 713 of file Qu\+E\+S\+T.\+c.
+
+
+
+References Multi\+Qubit\+::chunk\+Id, extract\+Bit(), Complex\+Array\+::imag, Complex\+::imag, Multi\+Qubit\+::num\+Amps, Complex\+Array\+::real, Complex\+::real, R\+E\+AL, and Multi\+Qubit\+::state\+Vec.
+
+
+
+Referenced by controlled\+Compact\+Unitary().
+
+
+\begin{DoxyCode}
+715 \{
+716     \textcolor{keywordtype}{long} \textcolor{keywordtype}{long} \textcolor{keywordtype}{int} sizeBlock, sizeHalfBlock;
+717     \textcolor{keywordtype}{long} \textcolor{keywordtype}{long} \textcolor{keywordtype}{int} thisBlock, \textcolor{comment}{// current block}
+718          indexUp,indexLo;    \textcolor{comment}{// current index and corresponding index in lower half block}
+719 
+720     \mbox{\hyperlink{QuEST__precision_8h_a4b654506f18b8bfd61ad2a29a7e38c25}{REAL}} stateRealUp,stateRealLo,stateImagUp,stateImagLo;
+721     \textcolor{keywordtype}{long} \textcolor{keywordtype}{long} \textcolor{keywordtype}{int} thisTask;         
+722     \textcolor{keyword}{const} \textcolor{keywordtype}{long} \textcolor{keywordtype}{long} \textcolor{keywordtype}{int} numTasks=multiQubit.\mbox{\hyperlink{structMultiQubit_ae16f47d8b725c914fb7f66b6498d79db}{numAmps}}>>1;
+723     \textcolor{keyword}{const} \textcolor{keywordtype}{long} \textcolor{keywordtype}{long} \textcolor{keywordtype}{int} chunkSize=multiQubit.\mbox{\hyperlink{structMultiQubit_ae16f47d8b725c914fb7f66b6498d79db}{numAmps}};
+724     \textcolor{keyword}{const} \textcolor{keywordtype}{long} \textcolor{keywordtype}{long} \textcolor{keywordtype}{int} chunkId=multiQubit.\mbox{\hyperlink{structMultiQubit_ab10c88249fa3825d6227ceec01d37e37}{chunkId}};
+725 
+726     \textcolor{keywordtype}{int} controlBit;
+727 
+728     \textcolor{comment}{// set dimensions}
+729     sizeHalfBlock = 1LL << targetQubit;  
+730     sizeBlock     = 2LL * sizeHalfBlock; 
+731 
+732     \textcolor{comment}{// Can't use multiQubit.stateVec as a private OMP var}
+733     \mbox{\hyperlink{QuEST__precision_8h_a4b654506f18b8bfd61ad2a29a7e38c25}{REAL}} *stateVecReal = multiQubit.\mbox{\hyperlink{structMultiQubit_a45483190d6b01ef6b2f98f2bec9ab94f}{stateVec}}.\mbox{\hyperlink{structComplexArray_a4195cac6c784ea1b6271f1c7dba1548a}{real}};
+734     \mbox{\hyperlink{QuEST__precision_8h_a4b654506f18b8bfd61ad2a29a7e38c25}{REAL}} *stateVecImag = multiQubit.\mbox{\hyperlink{structMultiQubit_a45483190d6b01ef6b2f98f2bec9ab94f}{stateVec}}.\mbox{\hyperlink{structComplexArray_a79dde47c7ae530c79cebfdf57b225968}{imag}};
+735     \mbox{\hyperlink{QuEST__precision_8h_a4b654506f18b8bfd61ad2a29a7e38c25}{REAL}} alphaImag=alpha.\mbox{\hyperlink{structComplex_a1151948284b21c0052f203f23ab931d9}{imag}}, alphaReal=alpha.\mbox{\hyperlink{structComplex_a479ad939835457595fcca3ca55c06283}{real}};
+736     \mbox{\hyperlink{QuEST__precision_8h_a4b654506f18b8bfd61ad2a29a7e38c25}{REAL}} betaImag=beta.\mbox{\hyperlink{structComplex_a1151948284b21c0052f203f23ab931d9}{imag}}, betaReal=beta.\mbox{\hyperlink{structComplex_a479ad939835457595fcca3ca55c06283}{real}};
+737 
+738 \textcolor{preprocessor}{# ifdef \_OPENMP}
+739 \textcolor{preprocessor}{# pragma omp parallel \(\backslash\)}
+740 \textcolor{preprocessor}{    default  (none) \(\backslash\)}
+741 \textcolor{preprocessor}{    shared   (sizeBlock,sizeHalfBlock, stateVecReal,stateVecImag, alphaReal,alphaImag, betaReal,betaImag) \(\backslash\)}
+742 \textcolor{preprocessor}{    private  (thisTask,thisBlock ,indexUp,indexLo,
+       stateRealUp,stateImagUp,stateRealLo,stateImagLo,controlBit) }
+743 \textcolor{preprocessor}{# endif}
+744     \{
+745 \textcolor{preprocessor}{# ifdef \_OPENMP}
+746 \textcolor{preprocessor}{# pragma omp for schedule (static)}
+747 \textcolor{preprocessor}{# endif}
+748         \textcolor{keywordflow}{for} (thisTask=0; thisTask<numTasks; thisTask++) \{
+749 
+750             thisBlock   = thisTask / sizeHalfBlock;
+751             indexUp     = thisBlock*sizeBlock + thisTask%sizeHalfBlock;
+752             indexLo     = indexUp + sizeHalfBlock;
+753 
+754             controlBit = \mbox{\hyperlink{QuEST_8c_a100463f6ec212c76a5fad99579000505}{extractBit}} (controlQubit, indexUp+chunkId*chunkSize);
+755             \textcolor{keywordflow}{if} (controlBit)\{
+756                 \textcolor{comment}{// store current state vector values in temp variables}
+757                 stateRealUp = stateVecReal[indexUp];
+758                 stateImagUp = stateVecImag[indexUp];
+759 
+760                 stateRealLo = stateVecReal[indexLo];
+761                 stateImagLo = stateVecImag[indexLo];
+762 
+763                 \textcolor{comment}{// state[indexUp] = alpha * state[indexUp] - conj(beta)  * state[indexLo]}
+764                 stateVecReal[indexUp] = alphaReal*stateRealUp - alphaImag*stateImagUp 
+765                     - betaReal*stateRealLo - betaImag*stateImagLo;
+766                 stateVecImag[indexUp] = alphaReal*stateImagUp + alphaImag*stateRealUp 
+767                     - betaReal*stateImagLo + betaImag*stateRealLo;
+768 
+769                 \textcolor{comment}{// state[indexLo] = beta  * state[indexUp] + conj(alpha) * state[indexLo]}
+770                 stateVecReal[indexLo] = betaReal*stateRealUp - betaImag*stateImagUp 
+771                     + alphaReal*stateRealLo + alphaImag*stateImagLo;
+772                 stateVecImag[indexLo] = betaReal*stateImagUp + betaImag*stateRealUp 
+773                     + alphaReal*stateImagLo - alphaImag*stateRealLo;
+774             \}
+775         \} 
+776     \}
+777 
+778 \} 
+\end{DoxyCode}
+\mbox{\Hypertarget{QuEST__internal_8h_a05875a70b539a3efb28d027823403f34}\label{QuEST__internal_8h_a05875a70b539a3efb28d027823403f34}} 
+\index{Qu\+E\+S\+T\+\_\+internal.\+h@{Qu\+E\+S\+T\+\_\+internal.\+h}!controlled\+Not\+Distributed@{controlled\+Not\+Distributed}}
+\index{controlled\+Not\+Distributed@{controlled\+Not\+Distributed}!Qu\+E\+S\+T\+\_\+internal.\+h@{Qu\+E\+S\+T\+\_\+internal.\+h}}
+\paragraph{\texorpdfstring{controlled\+Not\+Distributed()}{controlledNotDistributed()}}
+{\footnotesize\ttfamily void controlled\+Not\+Distributed (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structMultiQubit}{Multi\+Qubit}}}]{multi\+Qubit,  }\item[{const int}]{control\+Qubit,  }\item[{const int}]{target\+Qubit,  }\item[{\mbox{\hyperlink{structComplexArray}{Complex\+Array}}}]{state\+Vec\+In,  }\item[{\mbox{\hyperlink{structComplexArray}{Complex\+Array}}}]{state\+Vec\+Out }\end{DoxyParamCaption})}
+
+
+
+Rotate a single qubit by \{\{0,1\},\{1,0\}. 
+
+Operate on a subset of the state vector with upper and lower block values stored seperately. This rotation is just swapping upper and lower values, and state\+Vec\+In must already be the correct section for this chunk. Only perform the rotation for elements where control\+Qubit is one.
+
+
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\tt in,out}  & {\em multi\+Qubit} & object representing the set of qubits \\
+\hline
+\mbox{\tt in}  & {\em target\+Qubit} & qubit to rotate \\
+\hline
+\mbox{\tt in}  & {\em state\+Vec\+In} & probability amplitudes in lower or upper half of a block depending on chunk\+Id \\
+\hline
+\mbox{\tt out}  & {\em state\+Vec\+Out} & array section to update (will correspond to either the lower or upper half of a block) \\
+\hline
+\end{DoxyParams}
+
+
+Definition at line 1251 of file Qu\+E\+S\+T.\+c.
+
+
+
+References Multi\+Qubit\+::chunk\+Id, extract\+Bit(), Complex\+Array\+::imag, Multi\+Qubit\+::num\+Amps, Complex\+Array\+::real, and R\+E\+AL.
+
+
+
+Referenced by controlled\+Not().
+
+
+\begin{DoxyCode}
+1254 \{
+1255 
+1256     \textcolor{keywordtype}{long} \textcolor{keywordtype}{long} \textcolor{keywordtype}{int} thisTask;  
+1257     \textcolor{keyword}{const} \textcolor{keywordtype}{long} \textcolor{keywordtype}{long} \textcolor{keywordtype}{int} numTasks=multiQubit.\mbox{\hyperlink{structMultiQubit_ae16f47d8b725c914fb7f66b6498d79db}{numAmps}};
+1258     \textcolor{keyword}{const} \textcolor{keywordtype}{long} \textcolor{keywordtype}{long} \textcolor{keywordtype}{int} chunkSize=multiQubit.\mbox{\hyperlink{structMultiQubit_ae16f47d8b725c914fb7f66b6498d79db}{numAmps}};
+1259     \textcolor{keyword}{const} \textcolor{keywordtype}{long} \textcolor{keywordtype}{long} \textcolor{keywordtype}{int} chunkId=multiQubit.\mbox{\hyperlink{structMultiQubit_ab10c88249fa3825d6227ceec01d37e37}{chunkId}};
+1260 
+1261     \textcolor{keywordtype}{int} controlBit;
+1262 
+1263     \mbox{\hyperlink{QuEST__precision_8h_a4b654506f18b8bfd61ad2a29a7e38c25}{REAL}} *stateVecRealIn=stateVecIn.\mbox{\hyperlink{structComplexArray_a4195cac6c784ea1b6271f1c7dba1548a}{real}}, *stateVecImagIn=stateVecIn.
+      \mbox{\hyperlink{structComplexArray_a79dde47c7ae530c79cebfdf57b225968}{imag}};
+1264     \mbox{\hyperlink{QuEST__precision_8h_a4b654506f18b8bfd61ad2a29a7e38c25}{REAL}} *stateVecRealOut=stateVecOut.\mbox{\hyperlink{structComplexArray_a4195cac6c784ea1b6271f1c7dba1548a}{real}}, *stateVecImagOut=stateVecOut.
+      \mbox{\hyperlink{structComplexArray_a79dde47c7ae530c79cebfdf57b225968}{imag}};
+1265 
+1266 \textcolor{preprocessor}{# ifdef \_OPENMP}
+1267 \textcolor{preprocessor}{# pragma omp parallel \(\backslash\)}
+1268 \textcolor{preprocessor}{    default  (none) \(\backslash\)}
+1269 \textcolor{preprocessor}{    shared   (stateVecRealIn,stateVecImagIn,stateVecRealOut,stateVecImagOut) \(\backslash\)}
+1270 \textcolor{preprocessor}{    private  (thisTask,controlBit)}
+1271 \textcolor{preprocessor}{# endif}
+1272     \{
+1273 \textcolor{preprocessor}{# ifdef \_OPENMP}
+1274 \textcolor{preprocessor}{# pragma omp for schedule (static)}
+1275 \textcolor{preprocessor}{# endif}
+1276         \textcolor{keywordflow}{for} (thisTask=0; thisTask<numTasks; thisTask++) \{
+1277             controlBit = \mbox{\hyperlink{QuEST_8c_a100463f6ec212c76a5fad99579000505}{extractBit}} (controlQubit, thisTask+chunkId*chunkSize);
+1278             \textcolor{keywordflow}{if} (controlBit)\{
+1279                 stateVecRealOut[thisTask] = stateVecRealIn[thisTask];
+1280                 stateVecImagOut[thisTask] = stateVecImagIn[thisTask];
+1281             \}
+1282         \}
+1283     \}
+1284 \} 
+\end{DoxyCode}
+\mbox{\Hypertarget{QuEST__internal_8h_ad357a43e80e3baf013975b1b70942f4c}\label{QuEST__internal_8h_ad357a43e80e3baf013975b1b70942f4c}} 
+\index{Qu\+E\+S\+T\+\_\+internal.\+h@{Qu\+E\+S\+T\+\_\+internal.\+h}!controlled\+Not\+Local@{controlled\+Not\+Local}}
+\index{controlled\+Not\+Local@{controlled\+Not\+Local}!Qu\+E\+S\+T\+\_\+internal.\+h@{Qu\+E\+S\+T\+\_\+internal.\+h}}
+\paragraph{\texorpdfstring{controlled\+Not\+Local()}{controlledNotLocal()}}
+{\footnotesize\ttfamily void controlled\+Not\+Local (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structMultiQubit}{Multi\+Qubit}}}]{multi\+Qubit,  }\item[{const int}]{control\+Qubit,  }\item[{const int}]{target\+Qubit }\end{DoxyParamCaption})}
+
+
+
+Definition at line 1186 of file Qu\+E\+S\+T.\+c.
+
+
+
+References Multi\+Qubit\+::chunk\+Id, extract\+Bit(), Complex\+Array\+::imag, Multi\+Qubit\+::num\+Amps, Complex\+Array\+::real, R\+E\+AL, and Multi\+Qubit\+::state\+Vec.
+
+
+
+Referenced by controlled\+Not().
+
+
+\begin{DoxyCode}
+1187 \{
+1188     \textcolor{keywordtype}{long} \textcolor{keywordtype}{long} \textcolor{keywordtype}{int} sizeBlock, sizeHalfBlock;
+1189     \textcolor{keywordtype}{long} \textcolor{keywordtype}{long} \textcolor{keywordtype}{int} thisBlock, \textcolor{comment}{// current block}
+1190          indexUp,indexLo;    \textcolor{comment}{// current index and corresponding index in lower half block}
+1191 
+1192     \mbox{\hyperlink{QuEST__precision_8h_a4b654506f18b8bfd61ad2a29a7e38c25}{REAL}} stateRealUp,stateImagUp;
+1193     \textcolor{keywordtype}{long} \textcolor{keywordtype}{long} \textcolor{keywordtype}{int} thisTask;         
+1194     \textcolor{keyword}{const} \textcolor{keywordtype}{long} \textcolor{keywordtype}{long} \textcolor{keywordtype}{int} numTasks=multiQubit.\mbox{\hyperlink{structMultiQubit_ae16f47d8b725c914fb7f66b6498d79db}{numAmps}}>>1;
+1195     \textcolor{keyword}{const} \textcolor{keywordtype}{long} \textcolor{keywordtype}{long} \textcolor{keywordtype}{int} chunkSize=multiQubit.\mbox{\hyperlink{structMultiQubit_ae16f47d8b725c914fb7f66b6498d79db}{numAmps}};
+1196     \textcolor{keyword}{const} \textcolor{keywordtype}{long} \textcolor{keywordtype}{long} \textcolor{keywordtype}{int} chunkId=multiQubit.\mbox{\hyperlink{structMultiQubit_ab10c88249fa3825d6227ceec01d37e37}{chunkId}};
+1197 
+1198     \textcolor{keywordtype}{int} controlBit;
+1199 
+1200     \textcolor{comment}{// set dimensions}
+1201     sizeHalfBlock = 1LL << targetQubit;  
+1202     sizeBlock     = 2LL * sizeHalfBlock; 
+1203 
+1204 
+1205     \textcolor{comment}{// Can't use multiQubit.stateVec as a private OMP var}
+1206     \mbox{\hyperlink{QuEST__precision_8h_a4b654506f18b8bfd61ad2a29a7e38c25}{REAL}} *stateVecReal = multiQubit.\mbox{\hyperlink{structMultiQubit_a45483190d6b01ef6b2f98f2bec9ab94f}{stateVec}}.\mbox{\hyperlink{structComplexArray_a4195cac6c784ea1b6271f1c7dba1548a}{real}};
+1207     \mbox{\hyperlink{QuEST__precision_8h_a4b654506f18b8bfd61ad2a29a7e38c25}{REAL}} *stateVecImag = multiQubit.\mbox{\hyperlink{structMultiQubit_a45483190d6b01ef6b2f98f2bec9ab94f}{stateVec}}.\mbox{\hyperlink{structComplexArray_a79dde47c7ae530c79cebfdf57b225968}{imag}};
+1208 
+1209 \textcolor{preprocessor}{# ifdef \_OPENMP}
+1210 \textcolor{preprocessor}{# pragma omp parallel \(\backslash\)}
+1211 \textcolor{preprocessor}{    default  (none) \(\backslash\)}
+1212 \textcolor{preprocessor}{    shared   (sizeBlock,sizeHalfBlock, stateVecReal,stateVecImag) \(\backslash\)}
+1213 \textcolor{preprocessor}{    private  (thisTask,thisBlock ,indexUp,indexLo, stateRealUp,stateImagUp,controlBit) }
+1214 \textcolor{preprocessor}{# endif}
+1215     \{
+1216 \textcolor{preprocessor}{# ifdef \_OPENMP}
+1217 \textcolor{preprocessor}{# pragma omp for schedule (static)}
+1218 \textcolor{preprocessor}{# endif}
+1219         \textcolor{keywordflow}{for} (thisTask=0; thisTask<numTasks; thisTask++) \{
+1220             thisBlock   = thisTask / sizeHalfBlock;
+1221             indexUp     = thisBlock*sizeBlock + thisTask%sizeHalfBlock;
+1222             indexLo     = indexUp + sizeHalfBlock;
+1223 
+1224             controlBit = \mbox{\hyperlink{QuEST_8c_a100463f6ec212c76a5fad99579000505}{extractBit}}(controlQubit, indexUp+chunkId*chunkSize);
+1225             \textcolor{keywordflow}{if} (controlBit)\{
+1226                 stateRealUp = stateVecReal[indexUp];
+1227                 stateImagUp = stateVecImag[indexUp];
+1228 
+1229                 stateVecReal[indexUp] = stateVecReal[indexLo];
+1230                 stateVecImag[indexUp] = stateVecImag[indexLo];
+1231 
+1232                 stateVecReal[indexLo] = stateRealUp;
+1233                 stateVecImag[indexLo] = stateImagUp;
+1234             \}
+1235         \} 
+1236     \}
+1237 
+1238 \}
+\end{DoxyCode}
+\mbox{\Hypertarget{QuEST__internal_8h_a642093063a1f889f61a1311f6d6f2d3f}\label{QuEST__internal_8h_a642093063a1f889f61a1311f6d6f2d3f}} 
+\index{Qu\+E\+S\+T\+\_\+internal.\+h@{Qu\+E\+S\+T\+\_\+internal.\+h}!controlled\+Unitary\+Distributed@{controlled\+Unitary\+Distributed}}
+\index{controlled\+Unitary\+Distributed@{controlled\+Unitary\+Distributed}!Qu\+E\+S\+T\+\_\+internal.\+h@{Qu\+E\+S\+T\+\_\+internal.\+h}}
+\paragraph{\texorpdfstring{controlled\+Unitary\+Distributed()}{controlledUnitaryDistributed()}}
+{\footnotesize\ttfamily void controlled\+Unitary\+Distributed (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structMultiQubit}{Multi\+Qubit}}}]{multi\+Qubit,  }\item[{const int}]{control\+Qubit,  }\item[{const int}]{target\+Qubit,  }\item[{\mbox{\hyperlink{structComplex}{Complex}}}]{rot1,  }\item[{\mbox{\hyperlink{structComplex}{Complex}}}]{rot2,  }\item[{\mbox{\hyperlink{structComplexArray}{Complex\+Array}}}]{state\+Vec\+Up,  }\item[{\mbox{\hyperlink{structComplexArray}{Complex\+Array}}}]{state\+Vec\+Lo,  }\item[{\mbox{\hyperlink{structComplexArray}{Complex\+Array}}}]{state\+Vec\+Out }\end{DoxyParamCaption})}
+
+
+
+Rotate a single qubit in the state vector of probability amplitudes, given two complex numbers alpha and beta and a subset of the state vector with upper and lower block values stored seperately. 
+
+Only perform the rotation where the control qubit is one.
+
+
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\tt in,out}  & {\em multi\+Qubit} & object representing the set of qubits \\
+\hline
+\mbox{\tt in}  & {\em target\+Qubit} & qubit to rotate \\
+\hline
+\mbox{\tt in}  & {\em control\+Qubit} & qubit to determine whether or not to perform a rotation \\
+\hline
+\mbox{\tt in}  & {\em rot1} & rotation angle \\
+\hline
+\mbox{\tt in}  & {\em rot2} & rotation angle \\
+\hline
+\mbox{\tt in}  & {\em state\+Vec\+Up} & probability amplitudes in upper half of a block \\
+\hline
+\mbox{\tt in}  & {\em state\+Vec\+Lo} & probability amplitudes in lower half of a block \\
+\hline
+\mbox{\tt out}  & {\em state\+Vec\+Out} & array section to update (will correspond to either the lower or upper half of a block) \\
+\hline
+\end{DoxyParams}
+
+
+Definition at line 985 of file Qu\+E\+S\+T.\+c.
+
+
+
+References Multi\+Qubit\+::chunk\+Id, extract\+Bit(), Complex\+Array\+::imag, Complex\+::imag, Multi\+Qubit\+::num\+Amps, Complex\+Array\+::real, Complex\+::real, and R\+E\+AL.
+
+
+
+Referenced by controlled\+Unitary().
+
+
+\begin{DoxyCode}
+990 \{
+991 
+992     \mbox{\hyperlink{QuEST__precision_8h_a4b654506f18b8bfd61ad2a29a7e38c25}{REAL}}   stateRealUp,stateRealLo,stateImagUp,stateImagLo;
+993     \textcolor{keywordtype}{long} \textcolor{keywordtype}{long} \textcolor{keywordtype}{int} thisTask;  
+994     \textcolor{keyword}{const} \textcolor{keywordtype}{long} \textcolor{keywordtype}{long} \textcolor{keywordtype}{int} numTasks=multiQubit.\mbox{\hyperlink{structMultiQubit_ae16f47d8b725c914fb7f66b6498d79db}{numAmps}};
+995     \textcolor{keyword}{const} \textcolor{keywordtype}{long} \textcolor{keywordtype}{long} \textcolor{keywordtype}{int} chunkSize=multiQubit.\mbox{\hyperlink{structMultiQubit_ae16f47d8b725c914fb7f66b6498d79db}{numAmps}};
+996     \textcolor{keyword}{const} \textcolor{keywordtype}{long} \textcolor{keywordtype}{long} \textcolor{keywordtype}{int} chunkId=multiQubit.\mbox{\hyperlink{structMultiQubit_ab10c88249fa3825d6227ceec01d37e37}{chunkId}};
+997 
+998     \textcolor{keywordtype}{int} controlBit;
+999 
+1000     \mbox{\hyperlink{QuEST__precision_8h_a4b654506f18b8bfd61ad2a29a7e38c25}{REAL}} rot1Real=rot1.\mbox{\hyperlink{structComplex_a479ad939835457595fcca3ca55c06283}{real}}, rot1Imag=rot1.\mbox{\hyperlink{structComplex_a1151948284b21c0052f203f23ab931d9}{imag}};
+1001     \mbox{\hyperlink{QuEST__precision_8h_a4b654506f18b8bfd61ad2a29a7e38c25}{REAL}} rot2Real=rot2.\mbox{\hyperlink{structComplex_a479ad939835457595fcca3ca55c06283}{real}}, rot2Imag=rot2.\mbox{\hyperlink{structComplex_a1151948284b21c0052f203f23ab931d9}{imag}};
+1002     \mbox{\hyperlink{QuEST__precision_8h_a4b654506f18b8bfd61ad2a29a7e38c25}{REAL}} *stateVecRealUp=stateVecUp.\mbox{\hyperlink{structComplexArray_a4195cac6c784ea1b6271f1c7dba1548a}{real}}, *stateVecImagUp=stateVecUp.
+      \mbox{\hyperlink{structComplexArray_a79dde47c7ae530c79cebfdf57b225968}{imag}};
+1003     \mbox{\hyperlink{QuEST__precision_8h_a4b654506f18b8bfd61ad2a29a7e38c25}{REAL}} *stateVecRealLo=stateVecLo.\mbox{\hyperlink{structComplexArray_a4195cac6c784ea1b6271f1c7dba1548a}{real}}, *stateVecImagLo=stateVecLo.
+      \mbox{\hyperlink{structComplexArray_a79dde47c7ae530c79cebfdf57b225968}{imag}};
+1004     \mbox{\hyperlink{QuEST__precision_8h_a4b654506f18b8bfd61ad2a29a7e38c25}{REAL}} *stateVecRealOut=stateVecOut.\mbox{\hyperlink{structComplexArray_a4195cac6c784ea1b6271f1c7dba1548a}{real}}, *stateVecImagOut=stateVecOut.
+      \mbox{\hyperlink{structComplexArray_a79dde47c7ae530c79cebfdf57b225968}{imag}};
+1005 
+1006 \textcolor{preprocessor}{# ifdef \_OPENMP}
+1007 \textcolor{preprocessor}{# pragma omp parallel \(\backslash\)}
+1008 \textcolor{preprocessor}{    default  (none) \(\backslash\)}
+1009 \textcolor{preprocessor}{    shared   (stateVecRealUp,stateVecImagUp,stateVecRealLo,stateVecImagLo,stateVecRealOut,stateVecImagOut, 
+      \(\backslash\)}
+1010 \textcolor{preprocessor}{            rot1Real,rot1Imag, rot2Real,rot2Imag) \(\backslash\)}
+1011 \textcolor{preprocessor}{    private  (thisTask,stateRealUp,stateImagUp,stateRealLo,stateImagLo,controlBit)}
+1012 \textcolor{preprocessor}{# endif}
+1013     \{
+1014 \textcolor{preprocessor}{# ifdef \_OPENMP}
+1015 \textcolor{preprocessor}{# pragma omp for schedule (static)}
+1016 \textcolor{preprocessor}{# endif}
+1017         \textcolor{keywordflow}{for} (thisTask=0; thisTask<numTasks; thisTask++) \{
+1018             controlBit = \mbox{\hyperlink{QuEST_8c_a100463f6ec212c76a5fad99579000505}{extractBit}} (controlQubit, thisTask+chunkId*chunkSize);
+1019             \textcolor{keywordflow}{if} (controlBit)\{
+1020                 \textcolor{comment}{// store current state vector values in temp variables}
+1021                 stateRealUp = stateVecRealUp[thisTask];
+1022                 stateImagUp = stateVecImagUp[thisTask];
+1023 
+1024                 stateRealLo = stateVecRealLo[thisTask];
+1025                 stateImagLo = stateVecImagLo[thisTask];
+1026 
+1027                 stateVecRealOut[thisTask] = rot1Real*stateRealUp - rot1Imag*stateImagUp 
+1028                     + rot2Real*stateRealLo - rot2Imag*stateImagLo;
+1029                 stateVecImagOut[thisTask] = rot1Real*stateImagUp + rot1Imag*stateRealUp 
+1030                     + rot2Real*stateImagLo + rot2Imag*stateRealLo;
+1031             \}
+1032         \}
+1033     \}
+1034 \}
+\end{DoxyCode}
+\mbox{\Hypertarget{QuEST__internal_8h_a8a4afcff70195a306c082b8ed8d4e09a}\label{QuEST__internal_8h_a8a4afcff70195a306c082b8ed8d4e09a}} 
+\index{Qu\+E\+S\+T\+\_\+internal.\+h@{Qu\+E\+S\+T\+\_\+internal.\+h}!controlled\+Unitary\+Local@{controlled\+Unitary\+Local}}
+\index{controlled\+Unitary\+Local@{controlled\+Unitary\+Local}!Qu\+E\+S\+T\+\_\+internal.\+h@{Qu\+E\+S\+T\+\_\+internal.\+h}}
+\paragraph{\texorpdfstring{controlled\+Unitary\+Local()}{controlledUnitaryLocal()}}
+{\footnotesize\ttfamily void controlled\+Unitary\+Local (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structMultiQubit}{Multi\+Qubit}}}]{multi\+Qubit,  }\item[{const int}]{control\+Qubit,  }\item[{const int}]{target\+Qubit,  }\item[{\mbox{\hyperlink{structComplexMatrix2}{Complex\+Matrix2}}}]{u }\end{DoxyParamCaption})}
+
+
+
+Definition at line 843 of file Qu\+E\+S\+T.\+c.
+
+
+
+References Multi\+Qubit\+::chunk\+Id, extract\+Bit(), Complex\+Array\+::imag, Complex\+::imag, Multi\+Qubit\+::num\+Amps, Complex\+Matrix2\+::r0c0, Complex\+Matrix2\+::r0c1, Complex\+Matrix2\+::r1c0, Complex\+Matrix2\+::r1c1, Complex\+Array\+::real, Complex\+::real, R\+E\+AL, and Multi\+Qubit\+::state\+Vec.
+
+
+
+Referenced by controlled\+Unitary().
+
+
+\begin{DoxyCode}
+845 \{
+846     \textcolor{keywordtype}{long} \textcolor{keywordtype}{long} \textcolor{keywordtype}{int} sizeBlock, sizeHalfBlock;
+847     \textcolor{keywordtype}{long} \textcolor{keywordtype}{long} \textcolor{keywordtype}{int} thisBlock, \textcolor{comment}{// current block}
+848          indexUp,indexLo;    \textcolor{comment}{// current index and corresponding index in lower half block}
+849 
+850     \mbox{\hyperlink{QuEST__precision_8h_a4b654506f18b8bfd61ad2a29a7e38c25}{REAL}} stateRealUp,stateRealLo,stateImagUp,stateImagLo;
+851     \textcolor{keywordtype}{long} \textcolor{keywordtype}{long} \textcolor{keywordtype}{int} thisTask;         
+852     \textcolor{keyword}{const} \textcolor{keywordtype}{long} \textcolor{keywordtype}{long} \textcolor{keywordtype}{int} numTasks=multiQubit.\mbox{\hyperlink{structMultiQubit_ae16f47d8b725c914fb7f66b6498d79db}{numAmps}}>>1;
+853     \textcolor{keyword}{const} \textcolor{keywordtype}{long} \textcolor{keywordtype}{long} \textcolor{keywordtype}{int} chunkSize=multiQubit.\mbox{\hyperlink{structMultiQubit_ae16f47d8b725c914fb7f66b6498d79db}{numAmps}};
+854     \textcolor{keyword}{const} \textcolor{keywordtype}{long} \textcolor{keywordtype}{long} \textcolor{keywordtype}{int} chunkId=multiQubit.\mbox{\hyperlink{structMultiQubit_ab10c88249fa3825d6227ceec01d37e37}{chunkId}};
+855 
+856     \textcolor{keywordtype}{int} controlBit;
+857 
+858     \textcolor{comment}{// set dimensions}
+859     sizeHalfBlock = 1LL << targetQubit;  
+860     sizeBlock     = 2LL * sizeHalfBlock; 
+861 
+862     \textcolor{comment}{// Can't use multiQubit.stateVec as a private OMP var}
+863     \mbox{\hyperlink{QuEST__precision_8h_a4b654506f18b8bfd61ad2a29a7e38c25}{REAL}} *stateVecReal = multiQubit.\mbox{\hyperlink{structMultiQubit_a45483190d6b01ef6b2f98f2bec9ab94f}{stateVec}}.\mbox{\hyperlink{structComplexArray_a4195cac6c784ea1b6271f1c7dba1548a}{real}};
+864     \mbox{\hyperlink{QuEST__precision_8h_a4b654506f18b8bfd61ad2a29a7e38c25}{REAL}} *stateVecImag = multiQubit.\mbox{\hyperlink{structMultiQubit_a45483190d6b01ef6b2f98f2bec9ab94f}{stateVec}}.\mbox{\hyperlink{structComplexArray_a79dde47c7ae530c79cebfdf57b225968}{imag}};
+865 
+866 \textcolor{preprocessor}{# ifdef \_OPENMP}
+867 \textcolor{preprocessor}{# pragma omp parallel \(\backslash\)}
+868 \textcolor{preprocessor}{    default  (none) \(\backslash\)}
+869 \textcolor{preprocessor}{    shared   (sizeBlock,sizeHalfBlock, stateVecReal,stateVecImag, u) \(\backslash\)}
+870 \textcolor{preprocessor}{    private  (thisTask,thisBlock ,indexUp,indexLo,
+       stateRealUp,stateImagUp,stateRealLo,stateImagLo,controlBit) }
+871 \textcolor{preprocessor}{# endif}
+872     \{
+873 \textcolor{preprocessor}{# ifdef \_OPENMP}
+874 \textcolor{preprocessor}{# pragma omp for schedule (static)}
+875 \textcolor{preprocessor}{# endif}
+876         \textcolor{keywordflow}{for} (thisTask=0; thisTask<numTasks; thisTask++) \{
+877 
+878             thisBlock   = thisTask / sizeHalfBlock;
+879             indexUp     = thisBlock*sizeBlock + thisTask%sizeHalfBlock;
+880             indexLo     = indexUp + sizeHalfBlock;
+881 
+882             controlBit = \mbox{\hyperlink{QuEST_8c_a100463f6ec212c76a5fad99579000505}{extractBit}} (controlQubit, indexUp+chunkId*chunkSize);
+883             \textcolor{keywordflow}{if} (controlBit)\{
+884                 \textcolor{comment}{// store current state vector values in temp variables}
+885                 stateRealUp = stateVecReal[indexUp];
+886                 stateImagUp = stateVecImag[indexUp];
+887 
+888                 stateRealLo = stateVecReal[indexLo];
+889                 stateImagLo = stateVecImag[indexLo];
+890 
+891 
+892                 \textcolor{comment}{// state[indexUp] = u00 * state[indexUp] + u01 * state[indexLo]}
+893                 stateVecReal[indexUp] = u.\mbox{\hyperlink{structComplexMatrix2_ae72b4458233b077a636beee1892e81ff}{r0c0}}.\mbox{\hyperlink{structComplex_a479ad939835457595fcca3ca55c06283}{real}}*stateRealUp - u.\mbox{\hyperlink{structComplexMatrix2_ae72b4458233b077a636beee1892e81ff}{r0c0}}.
+      \mbox{\hyperlink{structComplex_a1151948284b21c0052f203f23ab931d9}{imag}}*stateImagUp 
+894                     + u.\mbox{\hyperlink{structComplexMatrix2_a0f3932f055a8b05cef361bce25d51172}{r0c1}}.\mbox{\hyperlink{structComplex_a479ad939835457595fcca3ca55c06283}{real}}*stateRealLo - u.\mbox{\hyperlink{structComplexMatrix2_a0f3932f055a8b05cef361bce25d51172}{r0c1}}.\mbox{\hyperlink{structComplex_a1151948284b21c0052f203f23ab931d9}{imag}}*stateImagLo;
+895                 stateVecImag[indexUp] = u.\mbox{\hyperlink{structComplexMatrix2_ae72b4458233b077a636beee1892e81ff}{r0c0}}.\mbox{\hyperlink{structComplex_a479ad939835457595fcca3ca55c06283}{real}}*stateImagUp + u.\mbox{\hyperlink{structComplexMatrix2_ae72b4458233b077a636beee1892e81ff}{r0c0}}.
+      \mbox{\hyperlink{structComplex_a1151948284b21c0052f203f23ab931d9}{imag}}*stateRealUp 
+896                     + u.\mbox{\hyperlink{structComplexMatrix2_a0f3932f055a8b05cef361bce25d51172}{r0c1}}.\mbox{\hyperlink{structComplex_a479ad939835457595fcca3ca55c06283}{real}}*stateImagLo + u.\mbox{\hyperlink{structComplexMatrix2_a0f3932f055a8b05cef361bce25d51172}{r0c1}}.\mbox{\hyperlink{structComplex_a1151948284b21c0052f203f23ab931d9}{imag}}*stateRealLo;
+897 
+898                 \textcolor{comment}{// state[indexLo] = u10  * state[indexUp] + u11 * state[indexLo]}
+899                 stateVecReal[indexLo] = u.\mbox{\hyperlink{structComplexMatrix2_ab98282015ed2065e53fbc9638e2583ab}{r1c0}}.\mbox{\hyperlink{structComplex_a479ad939835457595fcca3ca55c06283}{real}}*stateRealUp  - u.
+      \mbox{\hyperlink{structComplexMatrix2_ab98282015ed2065e53fbc9638e2583ab}{r1c0}}.\mbox{\hyperlink{structComplex_a1151948284b21c0052f203f23ab931d9}{imag}}*stateImagUp 
+900                     + u.\mbox{\hyperlink{structComplexMatrix2_a763007c3070802373549ba0350f83c8a}{r1c1}}.\mbox{\hyperlink{structComplex_a479ad939835457595fcca3ca55c06283}{real}}*stateRealLo  -  u.\mbox{\hyperlink{structComplexMatrix2_a763007c3070802373549ba0350f83c8a}{r1c1}}.\mbox{\hyperlink{structComplex_a1151948284b21c0052f203f23ab931d9}{imag}}*stateImagLo;
+901                 stateVecImag[indexLo] = u.\mbox{\hyperlink{structComplexMatrix2_ab98282015ed2065e53fbc9638e2583ab}{r1c0}}.\mbox{\hyperlink{structComplex_a479ad939835457595fcca3ca55c06283}{real}}*stateImagUp + u.\mbox{\hyperlink{structComplexMatrix2_ab98282015ed2065e53fbc9638e2583ab}{r1c0}}.
+      \mbox{\hyperlink{structComplex_a1151948284b21c0052f203f23ab931d9}{imag}}*stateRealUp 
+902                     + u.\mbox{\hyperlink{structComplexMatrix2_a763007c3070802373549ba0350f83c8a}{r1c1}}.\mbox{\hyperlink{structComplex_a479ad939835457595fcca3ca55c06283}{real}}*stateImagLo + u.\mbox{\hyperlink{structComplexMatrix2_a763007c3070802373549ba0350f83c8a}{r1c1}}.\mbox{\hyperlink{structComplex_a1151948284b21c0052f203f23ab931d9}{imag}}*stateRealLo;
+903             \}
+904         \} 
+905     \}
+906 
+907 \}
+\end{DoxyCode}
+\mbox{\Hypertarget{QuEST__internal_8h_ae5f9019826f35e8b51b1716cfe397b45}\label{QuEST__internal_8h_ae5f9019826f35e8b51b1716cfe397b45}} 
+\index{Qu\+E\+S\+T\+\_\+internal.\+h@{Qu\+E\+S\+T\+\_\+internal.\+h}!exit\+With\+Error@{exit\+With\+Error}}
+\index{exit\+With\+Error@{exit\+With\+Error}!Qu\+E\+S\+T\+\_\+internal.\+h@{Qu\+E\+S\+T\+\_\+internal.\+h}}
+\paragraph{\texorpdfstring{exit\+With\+Error()}{exitWithError()}}
+{\footnotesize\ttfamily void exit\+With\+Error (\begin{DoxyParamCaption}\item[{int}]{error\+Code,  }\item[{const char $\ast$}]{func }\end{DoxyParamCaption})}
+
+
+
+Definition at line 229 of file Qu\+E\+S\+T\+\_\+env\+\_\+local.\+c.
+
+
+
+References error\+Codes.
+
+
+
+Referenced by Qu\+E\+S\+T\+Assert().
+
+
+\begin{DoxyCode}
+229                                                    \{
+230     printf(\textcolor{stringliteral}{"!!!\(\backslash\)n"});
+231     printf(\textcolor{stringliteral}{"QuEST Error in function %s: %s\(\backslash\)n"}, func, \mbox{\hyperlink{QuEST_8c_aac1637696885c75b73a1ecf381cea713}{errorCodes}}[errorCode]);
+232     printf(\textcolor{stringliteral}{"!!!\(\backslash\)n"});
+233     printf(\textcolor{stringliteral}{"exiting..\(\backslash\)n"});
+234     exit(errorCode);
+235 \}
+\end{DoxyCode}
+\mbox{\Hypertarget{QuEST__internal_8h_a9ac9bb717a889f09d307eda9f0b65957}\label{QuEST__internal_8h_a9ac9bb717a889f09d307eda9f0b65957}} 
+\index{Qu\+E\+S\+T\+\_\+internal.\+h@{Qu\+E\+S\+T\+\_\+internal.\+h}!find\+Probability\+Of\+Zero\+Distributed@{find\+Probability\+Of\+Zero\+Distributed}}
+\index{find\+Probability\+Of\+Zero\+Distributed@{find\+Probability\+Of\+Zero\+Distributed}!Qu\+E\+S\+T\+\_\+internal.\+h@{Qu\+E\+S\+T\+\_\+internal.\+h}}
+\paragraph{\texorpdfstring{find\+Probability\+Of\+Zero\+Distributed()}{findProbabilityOfZeroDistributed()}}
+{\footnotesize\ttfamily \mbox{\hyperlink{QuEST__precision_8h_a4b654506f18b8bfd61ad2a29a7e38c25}{R\+E\+AL}} find\+Probability\+Of\+Zero\+Distributed (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structMultiQubit}{Multi\+Qubit}}}]{multi\+Qubit,  }\item[{const int}]{measure\+Qubit }\end{DoxyParamCaption})}
+
+
+
+Measure the probability of a specified qubit being in the zero state across all amplitudes held in this chunk. 
+
+Size of regions to skip is a multiple of chunk\+Size.
+
+
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\tt in}  & {\em multi\+Qubit} & object representing the set of qubits \\
+\hline
+\mbox{\tt in}  & {\em measure\+Qubit} & qubit to measure \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+probability of qubit measure\+Qubit being zero 
+\end{DoxyReturn}
+
+
+Definition at line 1692 of file Qu\+E\+S\+T.\+c.
+
+
+
+References Complex\+Array\+::imag, Multi\+Qubit\+::num\+Amps, Complex\+Array\+::real, R\+E\+AL, and Multi\+Qubit\+::state\+Vec.
+
+
+
+Referenced by find\+Probability\+Of\+Outcome().
+
+
+\begin{DoxyCode}
+1694 \{
+1695     \textcolor{comment}{// ----- measured probability}
+1696     \mbox{\hyperlink{QuEST__precision_8h_a4b654506f18b8bfd61ad2a29a7e38c25}{REAL}}   totalProbability;                                  \textcolor{comment}{// probability (returned) value}
+1697     \textcolor{comment}{// ----- temp variables}
+1698     \textcolor{keywordtype}{long} \textcolor{keywordtype}{long} \textcolor{keywordtype}{int} thisTask;                                   \textcolor{comment}{// task based approach for expose loop with
+       small granularity}
+1699     \textcolor{keywordtype}{long} \textcolor{keywordtype}{long} \textcolor{keywordtype}{int} numTasks=multiQubit.\mbox{\hyperlink{structMultiQubit_ae16f47d8b725c914fb7f66b6498d79db}{numAmps}};
+1700 
+1701     \textcolor{comment}{// ---------------------------------------------------------------- //}
+1702     \textcolor{comment}{//            find probability                                      //}
+1703     \textcolor{comment}{// ---------------------------------------------------------------- //}
+1704 
+1705     \textcolor{comment}{// initialise returned value}
+1706     totalProbability = 0.0;
+1707 
+1708     \mbox{\hyperlink{QuEST__precision_8h_a4b654506f18b8bfd61ad2a29a7e38c25}{REAL}} *stateVecReal = multiQubit.\mbox{\hyperlink{structMultiQubit_a45483190d6b01ef6b2f98f2bec9ab94f}{stateVec}}.\mbox{\hyperlink{structComplexArray_a4195cac6c784ea1b6271f1c7dba1548a}{real}};
+1709     \mbox{\hyperlink{QuEST__precision_8h_a4b654506f18b8bfd61ad2a29a7e38c25}{REAL}} *stateVecImag = multiQubit.\mbox{\hyperlink{structMultiQubit_a45483190d6b01ef6b2f98f2bec9ab94f}{stateVec}}.\mbox{\hyperlink{structComplexArray_a79dde47c7ae530c79cebfdf57b225968}{imag}};
+1710 
+1711 \textcolor{preprocessor}{# ifdef \_OPENMP}
+1712 \textcolor{preprocessor}{# pragma omp parallel \(\backslash\)}
+1713 \textcolor{preprocessor}{    shared    (numTasks,stateVecReal,stateVecImag) \(\backslash\)}
+1714 \textcolor{preprocessor}{    private   (thisTask) \(\backslash\)}
+1715 \textcolor{preprocessor}{    reduction ( +:totalProbability )}
+1716 \textcolor{preprocessor}{# endif}
+1717     \{
+1718 \textcolor{preprocessor}{# ifdef \_OPENMP}
+1719 \textcolor{preprocessor}{# pragma omp for schedule  (static)}
+1720 \textcolor{preprocessor}{# endif}
+1721         \textcolor{keywordflow}{for} (thisTask=0; thisTask<numTasks; thisTask++) \{
+1722             totalProbability += stateVecReal[thisTask]*stateVecReal[thisTask]
+1723                 + stateVecImag[thisTask]*stateVecImag[thisTask];
+1724         \}
+1725     \}
+1726 
+1727     \textcolor{keywordflow}{return} totalProbability;
+1728 \}
+\end{DoxyCode}
+\mbox{\Hypertarget{QuEST__internal_8h_a7c02cd0e1b4eac19771a0525f023249e}\label{QuEST__internal_8h_a7c02cd0e1b4eac19771a0525f023249e}} 
+\index{Qu\+E\+S\+T\+\_\+internal.\+h@{Qu\+E\+S\+T\+\_\+internal.\+h}!find\+Probability\+Of\+Zero\+Local@{find\+Probability\+Of\+Zero\+Local}}
+\index{find\+Probability\+Of\+Zero\+Local@{find\+Probability\+Of\+Zero\+Local}!Qu\+E\+S\+T\+\_\+internal.\+h@{Qu\+E\+S\+T\+\_\+internal.\+h}}
+\paragraph{\texorpdfstring{find\+Probability\+Of\+Zero\+Local()}{findProbabilityOfZeroLocal()}}
+{\footnotesize\ttfamily \mbox{\hyperlink{QuEST__precision_8h_a4b654506f18b8bfd61ad2a29a7e38c25}{R\+E\+AL}} find\+Probability\+Of\+Zero\+Local (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structMultiQubit}{Multi\+Qubit}}}]{multi\+Qubit,  }\item[{const int}]{measure\+Qubit }\end{DoxyParamCaption})}
+
+
+
+Measure the total probability of a specified qubit being in the zero state across all amplitudes in this chunk. 
+
+Size of regions to skip is less than the size of one chunk. ~\newline
+ 
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\tt in}  & {\em multi\+Qubit} & object representing the set of qubits \\
+\hline
+\mbox{\tt in}  & {\em measure\+Qubit} & qubit to measure \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+probability of qubit measure\+Qubit being zero 
+\end{DoxyReturn}
+
+
+Definition at line 1636 of file Qu\+E\+S\+T.\+c.
+
+
+
+References Complex\+Array\+::imag, Multi\+Qubit\+::num\+Amps, Complex\+Array\+::real, R\+E\+AL, and Multi\+Qubit\+::state\+Vec.
+
+
+
+Referenced by find\+Probability\+Of\+Outcome().
+
+
+\begin{DoxyCode}
+1638 \{
+1639     \textcolor{comment}{// ----- sizes}
+1640     \textcolor{keywordtype}{long} \textcolor{keywordtype}{long} \textcolor{keywordtype}{int} sizeBlock,                                  \textcolor{comment}{// size of blocks}
+1641          sizeHalfBlock;                                       \textcolor{comment}{// size of blocks halved}
+1642     \textcolor{comment}{// ----- indices}
+1643     \textcolor{keywordtype}{long} \textcolor{keywordtype}{long} \textcolor{keywordtype}{int} thisBlock,                                  \textcolor{comment}{// current block}
+1644          index;                                               \textcolor{comment}{// current index for first half block}
+1645     \textcolor{comment}{// ----- measured probability}
+1646     \mbox{\hyperlink{QuEST__precision_8h_a4b654506f18b8bfd61ad2a29a7e38c25}{REAL}}   totalProbability;                                  \textcolor{comment}{// probability (returned) value}
+1647     \textcolor{comment}{// ----- temp variables}
+1648     \textcolor{keywordtype}{long} \textcolor{keywordtype}{long} \textcolor{keywordtype}{int} thisTask;                                   
+1649     \textcolor{keywordtype}{long} \textcolor{keywordtype}{long} \textcolor{keywordtype}{int} numTasks=multiQubit.\mbox{\hyperlink{structMultiQubit_ae16f47d8b725c914fb7f66b6498d79db}{numAmps}}>>1;
+1650 
+1651     \textcolor{comment}{// ---------------------------------------------------------------- //}
+1652     \textcolor{comment}{//            dimensions                                            //}
+1653     \textcolor{comment}{// ---------------------------------------------------------------- //}
+1654     sizeHalfBlock = 1LL << (measureQubit);                       \textcolor{comment}{// number of state vector elements to sum,}
+1655     \textcolor{comment}{// and then the number to skip}
+1656     sizeBlock     = 2LL * sizeHalfBlock;                         \textcolor{comment}{// size of blocks (pairs of measure and
+       skip entries)}
+1657 
+1658     \textcolor{comment}{// initialise returned value}
+1659     totalProbability = 0.0;
+1660 
+1661     \mbox{\hyperlink{QuEST__precision_8h_a4b654506f18b8bfd61ad2a29a7e38c25}{REAL}} *stateVecReal = multiQubit.\mbox{\hyperlink{structMultiQubit_a45483190d6b01ef6b2f98f2bec9ab94f}{stateVec}}.\mbox{\hyperlink{structComplexArray_a4195cac6c784ea1b6271f1c7dba1548a}{real}};
+1662     \mbox{\hyperlink{QuEST__precision_8h_a4b654506f18b8bfd61ad2a29a7e38c25}{REAL}} *stateVecImag = multiQubit.\mbox{\hyperlink{structMultiQubit_a45483190d6b01ef6b2f98f2bec9ab94f}{stateVec}}.\mbox{\hyperlink{structComplexArray_a79dde47c7ae530c79cebfdf57b225968}{imag}};
+1663 
+1664 \textcolor{preprocessor}{# ifdef \_OPENMP}
+1665 \textcolor{preprocessor}{# pragma omp parallel \(\backslash\)}
+1666 \textcolor{preprocessor}{    shared    (numTasks,sizeBlock,sizeHalfBlock, stateVecReal,stateVecImag) \(\backslash\)}
+1667 \textcolor{preprocessor}{    private   (thisTask,thisBlock,index) \(\backslash\)}
+1668 \textcolor{preprocessor}{    reduction ( +:totalProbability )}
+1669 \textcolor{preprocessor}{# endif }
+1670     \{
+1671 \textcolor{preprocessor}{# ifdef \_OPENMP}
+1672 \textcolor{preprocessor}{# pragma omp for schedule  (static)}
+1673 \textcolor{preprocessor}{# endif}
+1674         \textcolor{keywordflow}{for} (thisTask=0; thisTask<numTasks; thisTask++) \{
+1675             thisBlock = thisTask / sizeHalfBlock;
+1676             index     = thisBlock*sizeBlock + thisTask%sizeHalfBlock;
+1677 
+1678             totalProbability += stateVecReal[index]*stateVecReal[index]
+1679                 + stateVecImag[index]*stateVecImag[index];
+1680         \}
+1681     \}
+1682     \textcolor{keywordflow}{return} totalProbability;
+1683 \}
+\end{DoxyCode}
+\mbox{\Hypertarget{QuEST__internal_8h_ae6a897066979fc52d977007d959ca09d}\label{QuEST__internal_8h_ae6a897066979fc52d977007d959ca09d}} 
+\index{Qu\+E\+S\+T\+\_\+internal.\+h@{Qu\+E\+S\+T\+\_\+internal.\+h}!hadamard\+Distributed@{hadamard\+Distributed}}
+\index{hadamard\+Distributed@{hadamard\+Distributed}!Qu\+E\+S\+T\+\_\+internal.\+h@{Qu\+E\+S\+T\+\_\+internal.\+h}}
+\paragraph{\texorpdfstring{hadamard\+Distributed()}{hadamardDistributed()}}
+{\footnotesize\ttfamily void hadamard\+Distributed (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structMultiQubit}{Multi\+Qubit}}}]{multi\+Qubit,  }\item[{const int}]{target\+Qubit,  }\item[{\mbox{\hyperlink{structComplexArray}{Complex\+Array}}}]{state\+Vec\+Up,  }\item[{\mbox{\hyperlink{structComplexArray}{Complex\+Array}}}]{state\+Vec\+Lo,  }\item[{\mbox{\hyperlink{structComplexArray}{Complex\+Array}}}]{state\+Vec\+Out,  }\item[{int}]{update\+Upper }\end{DoxyParamCaption})}
+
+
+
+Rotate a single qubit by \{\{1,1\},\{1,-\/1\}\}/sqrt2. 
+
+Operate on a subset of the state vector with upper and lower block values stored seperately. This rotation is just swapping upper and lower values, and state\+Vec\+In must already be the correct section for this chunk
+
+
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\tt in,out}  & {\em multi\+Qubit} & object representing the set of qubits \\
+\hline
+\mbox{\tt in}  & {\em target\+Qubit} & qubit to rotate \\
+\hline
+\mbox{\tt in}  & {\em state\+Vec\+In} & probability amplitudes in lower or upper half of a block depending on chunk\+Id \\
+\hline
+\mbox{\tt in}  & {\em update\+Upper} & flag, 1\+: updating upper values, 0\+: updating lower values in block \\
+\hline
+\mbox{\tt out}  & {\em state\+Vec\+Out} & array section to update (will correspond to either the lower or upper half of a block) \\
+\hline
+\end{DoxyParams}
+
+
+Definition at line 1439 of file Qu\+E\+S\+T.\+c.
+
+
+
+References Complex\+Array\+::imag, Multi\+Qubit\+::num\+Amps, Complex\+Array\+::real, and R\+E\+AL.
+
+
+
+Referenced by hadamard().
+
+
+\begin{DoxyCode}
+1444 \{
+1445 
+1446     \mbox{\hyperlink{QuEST__precision_8h_a4b654506f18b8bfd61ad2a29a7e38c25}{REAL}}   stateRealUp,stateRealLo,stateImagUp,stateImagLo;
+1447     \textcolor{keywordtype}{long} \textcolor{keywordtype}{long} \textcolor{keywordtype}{int} thisTask;  
+1448     \textcolor{keyword}{const} \textcolor{keywordtype}{long} \textcolor{keywordtype}{long} \textcolor{keywordtype}{int} numTasks=multiQubit.\mbox{\hyperlink{structMultiQubit_ae16f47d8b725c914fb7f66b6498d79db}{numAmps}};
+1449 
+1450     \textcolor{keywordtype}{int} sign;
+1451     \textcolor{keywordflow}{if} (updateUpper) sign=1;
+1452     \textcolor{keywordflow}{else} sign=-1;
+1453 
+1454     \mbox{\hyperlink{QuEST__precision_8h_a4b654506f18b8bfd61ad2a29a7e38c25}{REAL}} recRoot2 = 1.0/sqrt(2);
+1455 
+1456     \mbox{\hyperlink{QuEST__precision_8h_a4b654506f18b8bfd61ad2a29a7e38c25}{REAL}} *stateVecRealUp=stateVecUp.\mbox{\hyperlink{structComplexArray_a4195cac6c784ea1b6271f1c7dba1548a}{real}}, *stateVecImagUp=stateVecUp.
+      \mbox{\hyperlink{structComplexArray_a79dde47c7ae530c79cebfdf57b225968}{imag}};
+1457     \mbox{\hyperlink{QuEST__precision_8h_a4b654506f18b8bfd61ad2a29a7e38c25}{REAL}} *stateVecRealLo=stateVecLo.\mbox{\hyperlink{structComplexArray_a4195cac6c784ea1b6271f1c7dba1548a}{real}}, *stateVecImagLo=stateVecLo.
+      \mbox{\hyperlink{structComplexArray_a79dde47c7ae530c79cebfdf57b225968}{imag}};
+1458     \mbox{\hyperlink{QuEST__precision_8h_a4b654506f18b8bfd61ad2a29a7e38c25}{REAL}} *stateVecRealOut=stateVecOut.\mbox{\hyperlink{structComplexArray_a4195cac6c784ea1b6271f1c7dba1548a}{real}}, *stateVecImagOut=stateVecOut.
+      \mbox{\hyperlink{structComplexArray_a79dde47c7ae530c79cebfdf57b225968}{imag}};
+1459 
+1460 \textcolor{preprocessor}{# ifdef \_OPENMP}
+1461 \textcolor{preprocessor}{# pragma omp parallel \(\backslash\)}
+1462 \textcolor{preprocessor}{    default  (none) \(\backslash\)}
+1463 \textcolor{preprocessor}{    shared   (stateVecRealUp,stateVecImagUp,stateVecRealLo,stateVecImagLo,stateVecRealOut,stateVecImagOut, 
+      \(\backslash\)}
+1464 \textcolor{preprocessor}{            recRoot2, sign) \(\backslash\)}
+1465 \textcolor{preprocessor}{    private  (thisTask,stateRealUp,stateImagUp,stateRealLo,stateImagLo)}
+1466 \textcolor{preprocessor}{# endif}
+1467     \{
+1468 \textcolor{preprocessor}{# ifdef \_OPENMP}
+1469 \textcolor{preprocessor}{# pragma omp for schedule (static)}
+1470 \textcolor{preprocessor}{# endif}
+1471         \textcolor{keywordflow}{for} (thisTask=0; thisTask<numTasks; thisTask++) \{
+1472             \textcolor{comment}{// store current state vector values in temp variables}
+1473             stateRealUp = stateVecRealUp[thisTask];
+1474             stateImagUp = stateVecImagUp[thisTask];
+1475 
+1476             stateRealLo = stateVecRealLo[thisTask];
+1477             stateImagLo = stateVecImagLo[thisTask];
+1478 
+1479             stateVecRealOut[thisTask] = recRoot2*(stateRealUp + sign*stateRealLo);
+1480             stateVecImagOut[thisTask] = recRoot2*(stateImagUp + sign*stateImagLo);
+1481         \}
+1482     \}
+1483 \}
+\end{DoxyCode}
+\mbox{\Hypertarget{QuEST__internal_8h_aa9f0718b4dd794a3e1b143e3b153bfc5}\label{QuEST__internal_8h_aa9f0718b4dd794a3e1b143e3b153bfc5}} 
+\index{Qu\+E\+S\+T\+\_\+internal.\+h@{Qu\+E\+S\+T\+\_\+internal.\+h}!hadamard\+Local@{hadamard\+Local}}
+\index{hadamard\+Local@{hadamard\+Local}!Qu\+E\+S\+T\+\_\+internal.\+h@{Qu\+E\+S\+T\+\_\+internal.\+h}}
+\paragraph{\texorpdfstring{hadamard\+Local()}{hadamardLocal()}}
+{\footnotesize\ttfamily void hadamard\+Local (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structMultiQubit}{Multi\+Qubit}}}]{multi\+Qubit,  }\item[{const int}]{target\+Qubit }\end{DoxyParamCaption})}
+
+
+
+Definition at line 1378 of file Qu\+E\+S\+T.\+c.
+
+
+
+References Complex\+Array\+::imag, Multi\+Qubit\+::num\+Amps, Complex\+Array\+::real, R\+E\+AL, and Multi\+Qubit\+::state\+Vec.
+
+
+
+Referenced by hadamard().
+
+
+\begin{DoxyCode}
+1379 \{
+1380     \textcolor{keywordtype}{long} \textcolor{keywordtype}{long} \textcolor{keywordtype}{int} sizeBlock, sizeHalfBlock;
+1381     \textcolor{keywordtype}{long} \textcolor{keywordtype}{long} \textcolor{keywordtype}{int} thisBlock, \textcolor{comment}{// current block}
+1382          indexUp,indexLo;    \textcolor{comment}{// current index and corresponding index in lower half block}
+1383 
+1384     \mbox{\hyperlink{QuEST__precision_8h_a4b654506f18b8bfd61ad2a29a7e38c25}{REAL}} stateRealUp,stateRealLo,stateImagUp,stateImagLo;
+1385     \textcolor{keywordtype}{long} \textcolor{keywordtype}{long} \textcolor{keywordtype}{int} thisTask;         
+1386     \textcolor{keyword}{const} \textcolor{keywordtype}{long} \textcolor{keywordtype}{long} \textcolor{keywordtype}{int} numTasks=multiQubit.\mbox{\hyperlink{structMultiQubit_ae16f47d8b725c914fb7f66b6498d79db}{numAmps}}>>1;
+1387 
+1388     \textcolor{comment}{// set dimensions}
+1389     sizeHalfBlock = 1LL << targetQubit;  
+1390     sizeBlock     = 2LL * sizeHalfBlock; 
+1391 
+1392     \textcolor{comment}{// Can't use multiQubit.stateVec as a private OMP var}
+1393     \mbox{\hyperlink{QuEST__precision_8h_a4b654506f18b8bfd61ad2a29a7e38c25}{REAL}} *stateVecReal = multiQubit.\mbox{\hyperlink{structMultiQubit_a45483190d6b01ef6b2f98f2bec9ab94f}{stateVec}}.\mbox{\hyperlink{structComplexArray_a4195cac6c784ea1b6271f1c7dba1548a}{real}};
+1394     \mbox{\hyperlink{QuEST__precision_8h_a4b654506f18b8bfd61ad2a29a7e38c25}{REAL}} *stateVecImag = multiQubit.\mbox{\hyperlink{structMultiQubit_a45483190d6b01ef6b2f98f2bec9ab94f}{stateVec}}.\mbox{\hyperlink{structComplexArray_a79dde47c7ae530c79cebfdf57b225968}{imag}};
+1395 
+1396     \mbox{\hyperlink{QuEST__precision_8h_a4b654506f18b8bfd61ad2a29a7e38c25}{REAL}} recRoot2 = 1.0/sqrt(2);
+1397 
+1398 \textcolor{preprocessor}{# ifdef \_OPENMP}
+1399 \textcolor{preprocessor}{# pragma omp parallel \(\backslash\)}
+1400 \textcolor{preprocessor}{    default  (none) \(\backslash\)}
+1401 \textcolor{preprocessor}{    shared   (sizeBlock,sizeHalfBlock, stateVecReal,stateVecImag, recRoot2) \(\backslash\)}
+1402 \textcolor{preprocessor}{    private  (thisTask,thisBlock ,indexUp,indexLo, stateRealUp,stateImagUp,stateRealLo,stateImagLo) }
+1403 \textcolor{preprocessor}{# endif}
+1404     \{
+1405 \textcolor{preprocessor}{# ifdef \_OPENMP}
+1406 \textcolor{preprocessor}{# pragma omp for schedule (static)}
+1407 \textcolor{preprocessor}{# endif}
+1408         \textcolor{keywordflow}{for} (thisTask=0; thisTask<numTasks; thisTask++) \{
+1409             thisBlock   = thisTask / sizeHalfBlock;
+1410             indexUp     = thisBlock*sizeBlock + thisTask%sizeHalfBlock;
+1411             indexLo     = indexUp + sizeHalfBlock;
+1412 
+1413             stateRealUp = stateVecReal[indexUp];
+1414             stateImagUp = stateVecImag[indexUp];
+1415 
+1416             stateRealLo = stateVecReal[indexLo];
+1417             stateImagLo = stateVecImag[indexLo];
+1418 
+1419             stateVecReal[indexUp] = recRoot2*(stateRealUp + stateRealLo);
+1420             stateVecImag[indexUp] = recRoot2*(stateImagUp + stateImagLo);
+1421 
+1422             stateVecReal[indexLo] = recRoot2*(stateRealUp - stateRealLo);
+1423             stateVecImag[indexLo] = recRoot2*(stateImagUp - stateImagLo);
+1424         \} 
+1425     \}
+1426 \}
+\end{DoxyCode}
+\mbox{\Hypertarget{QuEST__internal_8h_ab76254cfde16f0808476649507a1a2fc}\label{QuEST__internal_8h_ab76254cfde16f0808476649507a1a2fc}} 
+\index{Qu\+E\+S\+T\+\_\+internal.\+h@{Qu\+E\+S\+T\+\_\+internal.\+h}!hash\+String@{hash\+String}}
+\index{hash\+String@{hash\+String}!Qu\+E\+S\+T\+\_\+internal.\+h@{Qu\+E\+S\+T\+\_\+internal.\+h}}
+\paragraph{\texorpdfstring{hash\+String()}{hashString()}}
+{\footnotesize\ttfamily unsigned long int hash\+String (\begin{DoxyParamCaption}\item[{char $\ast$}]{str }\end{DoxyParamCaption})}
+
+
+
+Definition at line 2019 of file Qu\+E\+S\+T.\+c.
+
+
+
+Referenced by Qu\+E\+S\+T\+Seed\+Random\+Default().
+
+
+\begin{DoxyCode}
+2019                                        \{
+2020     \textcolor{keywordtype}{unsigned} \textcolor{keywordtype}{long} \textcolor{keywordtype}{int} hash = 5381;
+2021     \textcolor{keywordtype}{int} c;
+2022 
+2023     \textcolor{keywordflow}{while} ((c = *str++))
+2024         hash = ((hash << 5) + hash) + c; \textcolor{comment}{/* hash * 33 + c */}
+2025 
+2026     \textcolor{keywordflow}{return} hash;    
+2027 \}
+\end{DoxyCode}
+\mbox{\Hypertarget{QuEST__internal_8h_a9dbf856ebeea0cf0a3ee5aae6782f2d2}\label{QuEST__internal_8h_a9dbf856ebeea0cf0a3ee5aae6782f2d2}} 
+\index{Qu\+E\+S\+T\+\_\+internal.\+h@{Qu\+E\+S\+T\+\_\+internal.\+h}!multi\+Controlled\+Unitary\+Distributed@{multi\+Controlled\+Unitary\+Distributed}}
+\index{multi\+Controlled\+Unitary\+Distributed@{multi\+Controlled\+Unitary\+Distributed}!Qu\+E\+S\+T\+\_\+internal.\+h@{Qu\+E\+S\+T\+\_\+internal.\+h}}
+\paragraph{\texorpdfstring{multi\+Controlled\+Unitary\+Distributed()}{multiControlledUnitaryDistributed()}}
+{\footnotesize\ttfamily void multi\+Controlled\+Unitary\+Distributed (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structMultiQubit}{Multi\+Qubit}}}]{multi\+Qubit,  }\item[{const int}]{target\+Qubit,  }\item[{long long int}]{mask,  }\item[{\mbox{\hyperlink{structComplex}{Complex}}}]{rot1,  }\item[{\mbox{\hyperlink{structComplex}{Complex}}}]{rot2,  }\item[{\mbox{\hyperlink{structComplexArray}{Complex\+Array}}}]{state\+Vec\+Up,  }\item[{\mbox{\hyperlink{structComplexArray}{Complex\+Array}}}]{state\+Vec\+Lo,  }\item[{\mbox{\hyperlink{structComplexArray}{Complex\+Array}}}]{state\+Vec\+Out }\end{DoxyParamCaption})}
+
+
+
+Apply a unitary operation to a single qubit in the state vector of probability amplitudes, given a subset of the state vector with upper and lower block values stored seperately. 
+
+Only perform the rotation where all the control qubits are 1.
+
+
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\tt in,out}  & {\em multi\+Qubit} & object representing the set of qubits \\
+\hline
+\mbox{\tt in}  & {\em target\+Qubit} & qubit to rotate \\
+\hline
+\mbox{\tt in}  & {\em control\+Qubit} & qubit to determine whether or not to perform a rotation \\
+\hline
+\mbox{\tt in}  & {\em rot1} & rotation angle \\
+\hline
+\mbox{\tt in}  & {\em rot2} & rotation angle \\
+\hline
+\mbox{\tt in}  & {\em state\+Vec\+Up} & probability amplitudes in upper half of a block \\
+\hline
+\mbox{\tt in}  & {\em state\+Vec\+Lo} & probability amplitudes in lower half of a block \\
+\hline
+\mbox{\tt out}  & {\em state\+Vec\+Out} & array section to update (will correspond to either the lower or upper half of a block) \\
+\hline
+\end{DoxyParams}
+
+
+Definition at line 1049 of file Qu\+E\+S\+T.\+c.
+
+
+
+References Multi\+Qubit\+::chunk\+Id, Complex\+Array\+::imag, Complex\+::imag, Multi\+Qubit\+::num\+Amps, Complex\+Array\+::real, Complex\+::real, and R\+E\+AL.
+
+
+
+Referenced by multi\+Controlled\+Unitary().
+
+
+\begin{DoxyCode}
+1056 \{
+1057 
+1058     \mbox{\hyperlink{QuEST__precision_8h_a4b654506f18b8bfd61ad2a29a7e38c25}{REAL}}   stateRealUp,stateRealLo,stateImagUp,stateImagLo;
+1059     \textcolor{keywordtype}{long} \textcolor{keywordtype}{long} \textcolor{keywordtype}{int} thisTask;  
+1060     \textcolor{keyword}{const} \textcolor{keywordtype}{long} \textcolor{keywordtype}{long} \textcolor{keywordtype}{int} numTasks=multiQubit.\mbox{\hyperlink{structMultiQubit_ae16f47d8b725c914fb7f66b6498d79db}{numAmps}};
+1061     \textcolor{keyword}{const} \textcolor{keywordtype}{long} \textcolor{keywordtype}{long} \textcolor{keywordtype}{int} chunkSize=multiQubit.\mbox{\hyperlink{structMultiQubit_ae16f47d8b725c914fb7f66b6498d79db}{numAmps}};
+1062     \textcolor{keyword}{const} \textcolor{keywordtype}{long} \textcolor{keywordtype}{long} \textcolor{keywordtype}{int} chunkId=multiQubit.\mbox{\hyperlink{structMultiQubit_ab10c88249fa3825d6227ceec01d37e37}{chunkId}};
+1063 
+1064     \mbox{\hyperlink{QuEST__precision_8h_a4b654506f18b8bfd61ad2a29a7e38c25}{REAL}} rot1Real=rot1.\mbox{\hyperlink{structComplex_a479ad939835457595fcca3ca55c06283}{real}}, rot1Imag=rot1.\mbox{\hyperlink{structComplex_a1151948284b21c0052f203f23ab931d9}{imag}};
+1065     \mbox{\hyperlink{QuEST__precision_8h_a4b654506f18b8bfd61ad2a29a7e38c25}{REAL}} rot2Real=rot2.\mbox{\hyperlink{structComplex_a479ad939835457595fcca3ca55c06283}{real}}, rot2Imag=rot2.\mbox{\hyperlink{structComplex_a1151948284b21c0052f203f23ab931d9}{imag}};
+1066     \mbox{\hyperlink{QuEST__precision_8h_a4b654506f18b8bfd61ad2a29a7e38c25}{REAL}} *stateVecRealUp=stateVecUp.\mbox{\hyperlink{structComplexArray_a4195cac6c784ea1b6271f1c7dba1548a}{real}}, *stateVecImagUp=stateVecUp.
+      \mbox{\hyperlink{structComplexArray_a79dde47c7ae530c79cebfdf57b225968}{imag}};
+1067     \mbox{\hyperlink{QuEST__precision_8h_a4b654506f18b8bfd61ad2a29a7e38c25}{REAL}} *stateVecRealLo=stateVecLo.\mbox{\hyperlink{structComplexArray_a4195cac6c784ea1b6271f1c7dba1548a}{real}}, *stateVecImagLo=stateVecLo.
+      \mbox{\hyperlink{structComplexArray_a79dde47c7ae530c79cebfdf57b225968}{imag}};
+1068     \mbox{\hyperlink{QuEST__precision_8h_a4b654506f18b8bfd61ad2a29a7e38c25}{REAL}} *stateVecRealOut=stateVecOut.\mbox{\hyperlink{structComplexArray_a4195cac6c784ea1b6271f1c7dba1548a}{real}}, *stateVecImagOut=stateVecOut.
+      \mbox{\hyperlink{structComplexArray_a79dde47c7ae530c79cebfdf57b225968}{imag}};
+1069 
+1070 \textcolor{preprocessor}{# ifdef \_OPENMP}
+1071 \textcolor{preprocessor}{# pragma omp parallel \(\backslash\)}
+1072 \textcolor{preprocessor}{    default  (none) \(\backslash\)}
+1073 \textcolor{preprocessor}{    shared   (stateVecRealUp,stateVecImagUp,stateVecRealLo,stateVecImagLo,stateVecRealOut,stateVecImagOut, 
+      \(\backslash\)}
+1074 \textcolor{preprocessor}{            rot1Real,rot1Imag, rot2Real,rot2Imag, mask) \(\backslash\)}
+1075 \textcolor{preprocessor}{    private  (thisTask,stateRealUp,stateImagUp,stateRealLo,stateImagLo)}
+1076 \textcolor{preprocessor}{# endif}
+1077     \{
+1078 \textcolor{preprocessor}{# ifdef \_OPENMP}
+1079 \textcolor{preprocessor}{# pragma omp for schedule (static)}
+1080 \textcolor{preprocessor}{# endif}
+1081         \textcolor{keywordflow}{for} (thisTask=0; thisTask<numTasks; thisTask++) \{
+1082             \textcolor{keywordflow}{if} (mask == (mask & (thisTask+chunkId*chunkSize)) )\{
+1083                 \textcolor{comment}{// store current state vector values in temp variables}
+1084                 stateRealUp = stateVecRealUp[thisTask];
+1085                 stateImagUp = stateVecImagUp[thisTask];
+1086 
+1087                 stateRealLo = stateVecRealLo[thisTask];
+1088                 stateImagLo = stateVecImagLo[thisTask];
+1089 
+1090                 stateVecRealOut[thisTask] = rot1Real*stateRealUp - rot1Imag*stateImagUp 
+1091                     + rot2Real*stateRealLo - rot2Imag*stateImagLo;
+1092                 stateVecImagOut[thisTask] = rot1Real*stateImagUp + rot1Imag*stateRealUp 
+1093                     + rot2Real*stateImagLo + rot2Imag*stateRealLo;
+1094             \}
+1095         \}
+1096     \}
+1097 \}
+\end{DoxyCode}
+\mbox{\Hypertarget{QuEST__internal_8h_a1309eabcba3cb97fbc3cd2e606d17766}\label{QuEST__internal_8h_a1309eabcba3cb97fbc3cd2e606d17766}} 
+\index{Qu\+E\+S\+T\+\_\+internal.\+h@{Qu\+E\+S\+T\+\_\+internal.\+h}!multi\+Controlled\+Unitary\+Local@{multi\+Controlled\+Unitary\+Local}}
+\index{multi\+Controlled\+Unitary\+Local@{multi\+Controlled\+Unitary\+Local}!Qu\+E\+S\+T\+\_\+internal.\+h@{Qu\+E\+S\+T\+\_\+internal.\+h}}
+\paragraph{\texorpdfstring{multi\+Controlled\+Unitary\+Local()}{multiControlledUnitaryLocal()}}
+{\footnotesize\ttfamily void multi\+Controlled\+Unitary\+Local (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structMultiQubit}{Multi\+Qubit}}}]{multi\+Qubit,  }\item[{const int}]{target\+Qubit,  }\item[{long long int}]{mask,  }\item[{\mbox{\hyperlink{structComplexMatrix2}{Complex\+Matrix2}}}]{u }\end{DoxyParamCaption})}
+
+
+
+Definition at line 780 of file Qu\+E\+S\+T.\+c.
+
+
+
+References Multi\+Qubit\+::chunk\+Id, Complex\+Array\+::imag, Complex\+::imag, Multi\+Qubit\+::num\+Amps, Complex\+Matrix2\+::r0c0, Complex\+Matrix2\+::r0c1, Complex\+Matrix2\+::r1c0, Complex\+Matrix2\+::r1c1, Complex\+Array\+::real, Complex\+::real, R\+E\+AL, and Multi\+Qubit\+::state\+Vec.
+
+
+
+Referenced by multi\+Controlled\+Unitary().
+
+
+\begin{DoxyCode}
+782 \{
+783     \textcolor{keywordtype}{long} \textcolor{keywordtype}{long} \textcolor{keywordtype}{int} sizeBlock, sizeHalfBlock;
+784     \textcolor{keywordtype}{long} \textcolor{keywordtype}{long} \textcolor{keywordtype}{int} thisBlock, \textcolor{comment}{// current block}
+785          indexUp,indexLo;    \textcolor{comment}{// current index and corresponding index in lower half block}
+786 
+787     \mbox{\hyperlink{QuEST__precision_8h_a4b654506f18b8bfd61ad2a29a7e38c25}{REAL}} stateRealUp,stateRealLo,stateImagUp,stateImagLo;
+788     \textcolor{keywordtype}{long} \textcolor{keywordtype}{long} \textcolor{keywordtype}{int} thisTask;         
+789     \textcolor{keyword}{const} \textcolor{keywordtype}{long} \textcolor{keywordtype}{long} \textcolor{keywordtype}{int} numTasks=multiQubit.\mbox{\hyperlink{structMultiQubit_ae16f47d8b725c914fb7f66b6498d79db}{numAmps}}>>1;
+790     \textcolor{keyword}{const} \textcolor{keywordtype}{long} \textcolor{keywordtype}{long} \textcolor{keywordtype}{int} chunkSize=multiQubit.\mbox{\hyperlink{structMultiQubit_ae16f47d8b725c914fb7f66b6498d79db}{numAmps}};
+791     \textcolor{keyword}{const} \textcolor{keywordtype}{long} \textcolor{keywordtype}{long} \textcolor{keywordtype}{int} chunkId=multiQubit.\mbox{\hyperlink{structMultiQubit_ab10c88249fa3825d6227ceec01d37e37}{chunkId}};
+792 
+793     \textcolor{comment}{// set dimensions}
+794     sizeHalfBlock = 1LL << targetQubit;  
+795     sizeBlock     = 2LL * sizeHalfBlock; 
+796 
+797     \textcolor{comment}{// Can't use multiQubit.stateVec as a private OMP var}
+798     \mbox{\hyperlink{QuEST__precision_8h_a4b654506f18b8bfd61ad2a29a7e38c25}{REAL}} *stateVecReal = multiQubit.\mbox{\hyperlink{structMultiQubit_a45483190d6b01ef6b2f98f2bec9ab94f}{stateVec}}.\mbox{\hyperlink{structComplexArray_a4195cac6c784ea1b6271f1c7dba1548a}{real}};
+799     \mbox{\hyperlink{QuEST__precision_8h_a4b654506f18b8bfd61ad2a29a7e38c25}{REAL}} *stateVecImag = multiQubit.\mbox{\hyperlink{structMultiQubit_a45483190d6b01ef6b2f98f2bec9ab94f}{stateVec}}.\mbox{\hyperlink{structComplexArray_a79dde47c7ae530c79cebfdf57b225968}{imag}};
+800 
+801 \textcolor{preprocessor}{# ifdef \_OPENMP}
+802 \textcolor{preprocessor}{# pragma omp parallel \(\backslash\)}
+803 \textcolor{preprocessor}{    default  (none) \(\backslash\)}
+804 \textcolor{preprocessor}{    shared   (sizeBlock,sizeHalfBlock, stateVecReal,stateVecImag, u, mask) \(\backslash\)}
+805 \textcolor{preprocessor}{    private  (thisTask,thisBlock ,indexUp,indexLo, stateRealUp,stateImagUp,stateRealLo,stateImagLo) }
+806 \textcolor{preprocessor}{# endif}
+807     \{
+808 \textcolor{preprocessor}{# ifdef \_OPENMP}
+809 \textcolor{preprocessor}{# pragma omp for schedule (static)}
+810 \textcolor{preprocessor}{# endif}
+811         \textcolor{keywordflow}{for} (thisTask=0; thisTask<numTasks; thisTask++) \{
+812 
+813             thisBlock   = thisTask / sizeHalfBlock;
+814             indexUp     = thisBlock*sizeBlock + thisTask%sizeHalfBlock;
+815             indexLo     = indexUp + sizeHalfBlock;
+816 
+817             \textcolor{keywordflow}{if} (mask == (mask & (indexUp+chunkId*chunkSize)) )\{
+818                 \textcolor{comment}{// store current state vector values in temp variables}
+819                 stateRealUp = stateVecReal[indexUp];
+820                 stateImagUp = stateVecImag[indexUp];
+821 
+822                 stateRealLo = stateVecReal[indexLo];
+823                 stateImagLo = stateVecImag[indexLo];
+824 
+825 
+826                 \textcolor{comment}{// state[indexUp] = u00 * state[indexUp] + u01 * state[indexLo]}
+827                 stateVecReal[indexUp] = u.\mbox{\hyperlink{structComplexMatrix2_ae72b4458233b077a636beee1892e81ff}{r0c0}}.\mbox{\hyperlink{structComplex_a479ad939835457595fcca3ca55c06283}{real}}*stateRealUp - u.\mbox{\hyperlink{structComplexMatrix2_ae72b4458233b077a636beee1892e81ff}{r0c0}}.
+      \mbox{\hyperlink{structComplex_a1151948284b21c0052f203f23ab931d9}{imag}}*stateImagUp 
+828                     + u.\mbox{\hyperlink{structComplexMatrix2_a0f3932f055a8b05cef361bce25d51172}{r0c1}}.\mbox{\hyperlink{structComplex_a479ad939835457595fcca3ca55c06283}{real}}*stateRealLo - u.\mbox{\hyperlink{structComplexMatrix2_a0f3932f055a8b05cef361bce25d51172}{r0c1}}.\mbox{\hyperlink{structComplex_a1151948284b21c0052f203f23ab931d9}{imag}}*stateImagLo;
+829                 stateVecImag[indexUp] = u.\mbox{\hyperlink{structComplexMatrix2_ae72b4458233b077a636beee1892e81ff}{r0c0}}.\mbox{\hyperlink{structComplex_a479ad939835457595fcca3ca55c06283}{real}}*stateImagUp + u.\mbox{\hyperlink{structComplexMatrix2_ae72b4458233b077a636beee1892e81ff}{r0c0}}.
+      \mbox{\hyperlink{structComplex_a1151948284b21c0052f203f23ab931d9}{imag}}*stateRealUp 
+830                     + u.\mbox{\hyperlink{structComplexMatrix2_a0f3932f055a8b05cef361bce25d51172}{r0c1}}.\mbox{\hyperlink{structComplex_a479ad939835457595fcca3ca55c06283}{real}}*stateImagLo + u.\mbox{\hyperlink{structComplexMatrix2_a0f3932f055a8b05cef361bce25d51172}{r0c1}}.\mbox{\hyperlink{structComplex_a1151948284b21c0052f203f23ab931d9}{imag}}*stateRealLo;
+831 
+832                 \textcolor{comment}{// state[indexLo] = u10  * state[indexUp] + u11 * state[indexLo]}
+833                 stateVecReal[indexLo] = u.\mbox{\hyperlink{structComplexMatrix2_ab98282015ed2065e53fbc9638e2583ab}{r1c0}}.\mbox{\hyperlink{structComplex_a479ad939835457595fcca3ca55c06283}{real}}*stateRealUp  - u.
+      \mbox{\hyperlink{structComplexMatrix2_ab98282015ed2065e53fbc9638e2583ab}{r1c0}}.\mbox{\hyperlink{structComplex_a1151948284b21c0052f203f23ab931d9}{imag}}*stateImagUp 
+834                     + u.\mbox{\hyperlink{structComplexMatrix2_a763007c3070802373549ba0350f83c8a}{r1c1}}.\mbox{\hyperlink{structComplex_a479ad939835457595fcca3ca55c06283}{real}}*stateRealLo  -  u.\mbox{\hyperlink{structComplexMatrix2_a763007c3070802373549ba0350f83c8a}{r1c1}}.\mbox{\hyperlink{structComplex_a1151948284b21c0052f203f23ab931d9}{imag}}*stateImagLo;
+835                 stateVecImag[indexLo] = u.\mbox{\hyperlink{structComplexMatrix2_ab98282015ed2065e53fbc9638e2583ab}{r1c0}}.\mbox{\hyperlink{structComplex_a479ad939835457595fcca3ca55c06283}{real}}*stateImagUp + u.\mbox{\hyperlink{structComplexMatrix2_ab98282015ed2065e53fbc9638e2583ab}{r1c0}}.
+      \mbox{\hyperlink{structComplex_a1151948284b21c0052f203f23ab931d9}{imag}}*stateRealUp 
+836                     + u.\mbox{\hyperlink{structComplexMatrix2_a763007c3070802373549ba0350f83c8a}{r1c1}}.\mbox{\hyperlink{structComplex_a479ad939835457595fcca3ca55c06283}{real}}*stateImagLo + u.\mbox{\hyperlink{structComplexMatrix2_a763007c3070802373549ba0350f83c8a}{r1c1}}.\mbox{\hyperlink{structComplex_a1151948284b21c0052f203f23ab931d9}{imag}}*stateRealLo;
+837             \}
+838         \} 
+839     \}
+840 
+841 \}
+\end{DoxyCode}
+\mbox{\Hypertarget{QuEST__internal_8h_aae7a8a7f1ccbddb7f76b6c52b746bb43}\label{QuEST__internal_8h_aae7a8a7f1ccbddb7f76b6c52b746bb43}} 
+\index{Qu\+E\+S\+T\+\_\+internal.\+h@{Qu\+E\+S\+T\+\_\+internal.\+h}!phase\+Gate@{phase\+Gate}}
+\index{phase\+Gate@{phase\+Gate}!Qu\+E\+S\+T\+\_\+internal.\+h@{Qu\+E\+S\+T\+\_\+internal.\+h}}
+\paragraph{\texorpdfstring{phase\+Gate()}{phaseGate()}}
+{\footnotesize\ttfamily void phase\+Gate (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structMultiQubit}{Multi\+Qubit}}}]{multi\+Qubit,  }\item[{const int}]{target\+Qubit,  }\item[{enum \mbox{\hyperlink{QuEST_8h_a5739021c733cecc49647956b2f7338ea}{phase\+Gate\+Type}}}]{type }\end{DoxyParamCaption})}
+
+
+
+Definition at line 160 of file Qu\+E\+S\+T\+\_\+env\+\_\+local.\+c.
+
+
+
+References Multi\+Qubit\+::chunk\+Id, chunk\+Is\+Upper(), half\+Matrix\+Block\+Fits\+In\+Chunk(), Multi\+Qubit\+::num\+Amps, Multi\+Qubit\+::num\+Qubits, phase\+Gate\+Distributed(), phase\+Gate\+Local(), and Qu\+E\+S\+T\+Assert().
+
+
+
+Referenced by s\+Gate(), sigma\+Z(), and t\+Gate().
+
+
+\begin{DoxyCode}
+161 \{
+162     \mbox{\hyperlink{QuEST__env__local_8c_a3587b9d533e633ccf1abf9ad2ce45d8d}{QuESTAssert}}(targetQubit >= 0 && targetQubit < multiQubit.
+      \mbox{\hyperlink{structMultiQubit_ab5b9795bdc6fb5855e1974dcbbaeb36f}{numQubits}}, 1, \_\_func\_\_);
+163     \mbox{\hyperlink{QuEST_8c_a3a54566b73ac84c312d7da4f56ffbc3b}{phaseGateLocal}}(multiQubit, targetQubit, type);
+164 \}
+\end{DoxyCode}
+\mbox{\Hypertarget{QuEST__internal_8h_af832ed00b02a0597b7fe0b714032c54a}\label{QuEST__internal_8h_af832ed00b02a0597b7fe0b714032c54a}} 
+\index{Qu\+E\+S\+T\+\_\+internal.\+h@{Qu\+E\+S\+T\+\_\+internal.\+h}!phase\+Gate\+Distributed@{phase\+Gate\+Distributed}}
+\index{phase\+Gate\+Distributed@{phase\+Gate\+Distributed}!Qu\+E\+S\+T\+\_\+internal.\+h@{Qu\+E\+S\+T\+\_\+internal.\+h}}
+\paragraph{\texorpdfstring{phase\+Gate\+Distributed()}{phaseGateDistributed()}}
+{\footnotesize\ttfamily void phase\+Gate\+Distributed (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structMultiQubit}{Multi\+Qubit}}}]{multi\+Qubit,  }\item[{const int}]{target\+Qubit,  }\item[{enum \mbox{\hyperlink{QuEST_8h_a5739021c733cecc49647956b2f7338ea}{phase\+Gate\+Type}}}]{type }\end{DoxyParamCaption})}
+
+
+
+Definition at line 1561 of file Qu\+E\+S\+T.\+c.
+
+
+
+References Complex\+Array\+::imag, Multi\+Qubit\+::num\+Amps, Complex\+Array\+::real, R\+E\+AL, S\+\_\+\+G\+A\+TE, S\+I\+G\+M\+A\+\_\+Z, Multi\+Qubit\+::state\+Vec, and T\+\_\+\+G\+A\+TE.
+
+
+
+Referenced by phase\+Gate().
+
+
+\begin{DoxyCode}
+1562 \{
+1563     \mbox{\hyperlink{QuEST__precision_8h_a4b654506f18b8bfd61ad2a29a7e38c25}{REAL}} stateRealLo,stateImagLo;
+1564     \textcolor{keywordtype}{long} \textcolor{keywordtype}{long} \textcolor{keywordtype}{int} thisTask;         
+1565     \textcolor{keyword}{const} \textcolor{keywordtype}{long} \textcolor{keywordtype}{long} \textcolor{keywordtype}{int} numTasks=multiQubit.\mbox{\hyperlink{structMultiQubit_ae16f47d8b725c914fb7f66b6498d79db}{numAmps}};
+1566 
+1567     \textcolor{comment}{// Can't use multiQubit.stateVec as a private OMP var}
+1568     \mbox{\hyperlink{QuEST__precision_8h_a4b654506f18b8bfd61ad2a29a7e38c25}{REAL}} *stateVecReal = multiQubit.\mbox{\hyperlink{structMultiQubit_a45483190d6b01ef6b2f98f2bec9ab94f}{stateVec}}.\mbox{\hyperlink{structComplexArray_a4195cac6c784ea1b6271f1c7dba1548a}{real}};
+1569     \mbox{\hyperlink{QuEST__precision_8h_a4b654506f18b8bfd61ad2a29a7e38c25}{REAL}} *stateVecImag = multiQubit.\mbox{\hyperlink{structMultiQubit_a45483190d6b01ef6b2f98f2bec9ab94f}{stateVec}}.\mbox{\hyperlink{structComplexArray_a79dde47c7ae530c79cebfdf57b225968}{imag}};
+1570 
+1571     \mbox{\hyperlink{QuEST__precision_8h_a4b654506f18b8bfd61ad2a29a7e38c25}{REAL}} recRoot2 = 1.0/sqrt(2);
+1572 
+1573 \textcolor{preprocessor}{# ifdef \_OPENMP}
+1574 \textcolor{preprocessor}{# pragma omp parallel \(\backslash\)}
+1575 \textcolor{preprocessor}{    default  (none) \(\backslash\)}
+1576 \textcolor{preprocessor}{    shared   (stateVecReal,stateVecImag, recRoot2, type) \(\backslash\)}
+1577 \textcolor{preprocessor}{    private  (thisTask,stateRealLo,stateImagLo) }
+1578 \textcolor{preprocessor}{# endif}
+1579     \{
+1580         \textcolor{keywordflow}{if} (type==\mbox{\hyperlink{QuEST_8h_a5739021c733cecc49647956b2f7338eaa754922d1e1846a1961ff2bf163483dac}{SIGMA\_Z}})\{
+1581 \textcolor{preprocessor}{# ifdef \_OPENMP}
+1582 \textcolor{preprocessor}{# pragma omp for schedule (static)}
+1583 \textcolor{preprocessor}{# endif}
+1584             \textcolor{keywordflow}{for} (thisTask=0; thisTask<numTasks; thisTask++) \{
+1585                 stateVecReal[thisTask] = -stateVecReal[thisTask];
+1586                 stateVecImag[thisTask] = -stateVecImag[thisTask];
+1587             \} 
+1588         \} \textcolor{keywordflow}{else} \textcolor{keywordflow}{if} (type==\mbox{\hyperlink{QuEST_8h_a5739021c733cecc49647956b2f7338eaa06e60f80fa80cce271793d6d31bcc21f}{S\_GATE}})\{
+1589 \textcolor{preprocessor}{# ifdef \_OPENMP}
+1590 \textcolor{preprocessor}{# pragma omp for schedule (static)}
+1591 \textcolor{preprocessor}{# endif}
+1592             \textcolor{keywordflow}{for} (thisTask=0; thisTask<numTasks; thisTask++) \{
+1593                 stateRealLo = stateVecReal[thisTask];
+1594                 stateImagLo = stateVecImag[thisTask];
+1595 
+1596                 stateVecReal[thisTask] = -stateImagLo;
+1597                 stateVecImag[thisTask] = stateRealLo;
+1598             \} 
+1599         \} \textcolor{keywordflow}{else} \textcolor{keywordflow}{if} (type==\mbox{\hyperlink{QuEST_8h_a5739021c733cecc49647956b2f7338eaa614d07d597a8e320cc556bc0e652e4ab}{T\_GATE}})\{
+1600 \textcolor{preprocessor}{# ifdef \_OPENMP}
+1601 \textcolor{preprocessor}{# pragma omp for schedule (static)}
+1602 \textcolor{preprocessor}{# endif}
+1603             \textcolor{keywordflow}{for} (thisTask=0; thisTask<numTasks; thisTask++) \{
+1604                 stateRealLo = stateVecReal[thisTask];
+1605                 stateImagLo = stateVecImag[thisTask];
+1606 
+1607                 stateVecReal[thisTask] = recRoot2 * (stateRealLo - stateImagLo);
+1608                 stateVecImag[thisTask] = recRoot2 * (stateRealLo + stateImagLo);
+1609             \} 
+1610         \} \textcolor{keywordflow}{else} printf(\textcolor{stringliteral}{"Type %d is an invalid phase gate\(\backslash\)n"}, type);
+1611     \}
+1612 \}
+\end{DoxyCode}
+\mbox{\Hypertarget{QuEST__internal_8h_a3a54566b73ac84c312d7da4f56ffbc3b}\label{QuEST__internal_8h_a3a54566b73ac84c312d7da4f56ffbc3b}} 
+\index{Qu\+E\+S\+T\+\_\+internal.\+h@{Qu\+E\+S\+T\+\_\+internal.\+h}!phase\+Gate\+Local@{phase\+Gate\+Local}}
+\index{phase\+Gate\+Local@{phase\+Gate\+Local}!Qu\+E\+S\+T\+\_\+internal.\+h@{Qu\+E\+S\+T\+\_\+internal.\+h}}
+\paragraph{\texorpdfstring{phase\+Gate\+Local()}{phaseGateLocal()}}
+{\footnotesize\ttfamily void phase\+Gate\+Local (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structMultiQubit}{Multi\+Qubit}}}]{multi\+Qubit,  }\item[{const int}]{target\+Qubit,  }\item[{enum \mbox{\hyperlink{QuEST_8h_a5739021c733cecc49647956b2f7338ea}{phase\+Gate\+Type}}}]{type }\end{DoxyParamCaption})}
+
+fix -- can i rewrite this to not use mod?
+
+fix -- can i rewrite this to not use mod?
+
+fix -- can i rewrite this to not use mod? 
+
+Definition at line 1485 of file Qu\+E\+S\+T.\+c.
+
+
+
+References Complex\+Array\+::imag, Multi\+Qubit\+::num\+Amps, Complex\+Array\+::real, R\+E\+AL, S\+\_\+\+G\+A\+TE, S\+I\+G\+M\+A\+\_\+Z, Multi\+Qubit\+::state\+Vec, and T\+\_\+\+G\+A\+TE.
+
+
+
+Referenced by phase\+Gate().
+
+
+\begin{DoxyCode}
+1486 \{
+1487     \textcolor{keywordtype}{long} \textcolor{keywordtype}{long} \textcolor{keywordtype}{int} sizeBlock, sizeHalfBlock;
+1488     \textcolor{keywordtype}{long} \textcolor{keywordtype}{long} \textcolor{keywordtype}{int} thisBlock, \textcolor{comment}{// current block}
+1489          indexUp,indexLo;    \textcolor{comment}{// current index and corresponding index in lower half block}
+1490 
+1491     \mbox{\hyperlink{QuEST__precision_8h_a4b654506f18b8bfd61ad2a29a7e38c25}{REAL}} stateRealLo,stateImagLo;
+1492     \textcolor{keywordtype}{long} \textcolor{keywordtype}{long} \textcolor{keywordtype}{int} thisTask;         
+1493     \textcolor{keyword}{const} \textcolor{keywordtype}{long} \textcolor{keywordtype}{long} \textcolor{keywordtype}{int} numTasks=multiQubit.\mbox{\hyperlink{structMultiQubit_ae16f47d8b725c914fb7f66b6498d79db}{numAmps}}>>1;
+1494 
+1495     \textcolor{comment}{// set dimensions}
+1496     sizeHalfBlock = 1LL << targetQubit;  
+1497     sizeBlock     = 2LL * sizeHalfBlock; 
+1498 
+1499     \textcolor{comment}{// Can't use multiQubit.stateVec as a private OMP var}
+1500     \mbox{\hyperlink{QuEST__precision_8h_a4b654506f18b8bfd61ad2a29a7e38c25}{REAL}} *stateVecReal = multiQubit.\mbox{\hyperlink{structMultiQubit_a45483190d6b01ef6b2f98f2bec9ab94f}{stateVec}}.\mbox{\hyperlink{structComplexArray_a4195cac6c784ea1b6271f1c7dba1548a}{real}};
+1501     \mbox{\hyperlink{QuEST__precision_8h_a4b654506f18b8bfd61ad2a29a7e38c25}{REAL}} *stateVecImag = multiQubit.\mbox{\hyperlink{structMultiQubit_a45483190d6b01ef6b2f98f2bec9ab94f}{stateVec}}.\mbox{\hyperlink{structComplexArray_a79dde47c7ae530c79cebfdf57b225968}{imag}};
+1502 
+1503     \mbox{\hyperlink{QuEST__precision_8h_a4b654506f18b8bfd61ad2a29a7e38c25}{REAL}} recRoot2 = 1.0/sqrt(2);
+1504 
+1505 \textcolor{preprocessor}{# ifdef \_OPENMP}
+1506 \textcolor{preprocessor}{# pragma omp parallel \(\backslash\)}
+1507 \textcolor{preprocessor}{    default  (none) \(\backslash\)}
+1508 \textcolor{preprocessor}{    shared   (sizeBlock,sizeHalfBlock,stateVecReal,stateVecImag,recRoot2,type) \(\backslash\)}
+1509 \textcolor{preprocessor}{    private  (thisTask,thisBlock,indexUp,indexLo,stateRealLo,stateImagLo) }
+1510 \textcolor{preprocessor}{# endif}
+1511     \{
+1512         \textcolor{keywordflow}{if} (type==\mbox{\hyperlink{QuEST_8h_a5739021c733cecc49647956b2f7338eaa754922d1e1846a1961ff2bf163483dac}{SIGMA\_Z}})\{
+1513 \textcolor{preprocessor}{# ifdef \_OPENMP}
+1514 \textcolor{preprocessor}{# pragma omp for schedule (static)}
+1515 \textcolor{preprocessor}{# endif}
+1516             \textcolor{keywordflow}{for} (thisTask=0; thisTask<numTasks; thisTask++) \{
+1518                 thisBlock   = thisTask / sizeHalfBlock;
+1519                 indexUp     = thisBlock*sizeBlock + thisTask%sizeHalfBlock;
+1520                 indexLo     = indexUp + sizeHalfBlock;
+1521 
+1522                 stateVecReal[indexLo] = -stateVecReal[indexLo];
+1523                 stateVecImag[indexLo] = -stateVecImag[indexLo];
+1524             \} 
+1525         \} 
+1526 
+1527         \textcolor{keywordflow}{else} \textcolor{keywordflow}{if} (type==\mbox{\hyperlink{QuEST_8h_a5739021c733cecc49647956b2f7338eaa06e60f80fa80cce271793d6d31bcc21f}{S\_GATE}})\{
+1528 \textcolor{preprocessor}{# ifdef \_OPENMP}
+1529 \textcolor{preprocessor}{# pragma omp for schedule (static)}
+1530 \textcolor{preprocessor}{# endif}
+1531             \textcolor{keywordflow}{for} (thisTask=0; thisTask<numTasks; thisTask++) \{
+1533                 thisBlock   = thisTask / sizeHalfBlock;
+1534                 indexUp     = thisBlock*sizeBlock + thisTask%sizeHalfBlock;
+1535                 indexLo     = indexUp + sizeHalfBlock;
+1536                 stateRealLo = stateVecReal[indexLo];
+1537                 stateImagLo = stateVecImag[indexLo];
+1538 
+1539                 stateVecReal[indexLo] = -stateImagLo;
+1540                 stateVecImag[indexLo] = stateRealLo;
+1541             \} 
+1542         \} \textcolor{keywordflow}{else} \textcolor{keywordflow}{if} (type==\mbox{\hyperlink{QuEST_8h_a5739021c733cecc49647956b2f7338eaa614d07d597a8e320cc556bc0e652e4ab}{T\_GATE}})\{
+1543 \textcolor{preprocessor}{# ifdef \_OPENMP}
+1544 \textcolor{preprocessor}{# pragma omp for schedule (static)}
+1545 \textcolor{preprocessor}{# endif}
+1546             \textcolor{keywordflow}{for} (thisTask=0; thisTask<numTasks; thisTask++) \{
+1548                 thisBlock   = thisTask / sizeHalfBlock;
+1549                 indexUp     = thisBlock*sizeBlock + thisTask%sizeHalfBlock;
+1550                 indexLo     = indexUp + sizeHalfBlock;
+1551                 stateRealLo = stateVecReal[indexLo];
+1552                 stateImagLo = stateVecImag[indexLo];
+1553 
+1554                 stateVecReal[indexLo] = recRoot2 * (stateRealLo - stateImagLo);
+1555                 stateVecImag[indexLo] = recRoot2 * (stateRealLo + stateImagLo);
+1556             \} 
+1557         \} \textcolor{keywordflow}{else} printf(\textcolor{stringliteral}{"Type %d is an invalid phase gate\(\backslash\)n"}, type);
+1558     \}
+1559 \}
+\end{DoxyCode}
+\mbox{\Hypertarget{QuEST__internal_8h_a3587b9d533e633ccf1abf9ad2ce45d8d}\label{QuEST__internal_8h_a3587b9d533e633ccf1abf9ad2ce45d8d}} 
+\index{Qu\+E\+S\+T\+\_\+internal.\+h@{Qu\+E\+S\+T\+\_\+internal.\+h}!Qu\+E\+S\+T\+Assert@{Qu\+E\+S\+T\+Assert}}
+\index{Qu\+E\+S\+T\+Assert@{Qu\+E\+S\+T\+Assert}!Qu\+E\+S\+T\+\_\+internal.\+h@{Qu\+E\+S\+T\+\_\+internal.\+h}}
+\paragraph{\texorpdfstring{Qu\+E\+S\+T\+Assert()}{QuESTAssert()}}
+{\footnotesize\ttfamily void Qu\+E\+S\+T\+Assert (\begin{DoxyParamCaption}\item[{int}]{is\+Valid,  }\item[{int}]{error\+Code,  }\item[{const char $\ast$}]{func }\end{DoxyParamCaption})}
+
+
+
+Definition at line 237 of file Qu\+E\+S\+T\+\_\+env\+\_\+local.\+c.
+
+
+
+References exit\+With\+Error().
+
+
+
+Referenced by collapse\+To\+Outcome(), compact\+Unitary(), controlled\+Compact\+Unitary(), controlled\+Not(), controlled\+Phase\+Gate(), controlled\+Unitary(), create\+Multi\+Qubit(), find\+Probability\+Of\+Outcome(), hadamard(), initialize\+State\+From\+Single\+File(), measure(), measure\+With\+Stats(), multi\+Controlled\+Phase\+Gate(), multi\+Controlled\+Unitary(), phase\+Gate(), report\+State(), sigma\+X(), sigma\+Y(), and unitary().
+
+
+\begin{DoxyCode}
+237                                                               \{
+238     \textcolor{keywordflow}{if} (!isValid) \mbox{\hyperlink{QuEST__env__local_8c_ae5f9019826f35e8b51b1716cfe397b45}{exitWithError}}(errorCode, func);
+239 \}
+\end{DoxyCode}
+\mbox{\Hypertarget{QuEST__internal_8h_a2275fff50824fe47485890ff5a857785}\label{QuEST__internal_8h_a2275fff50824fe47485890ff5a857785}} 
+\index{Qu\+E\+S\+T\+\_\+internal.\+h@{Qu\+E\+S\+T\+\_\+internal.\+h}!sigma\+X\+Distributed@{sigma\+X\+Distributed}}
+\index{sigma\+X\+Distributed@{sigma\+X\+Distributed}!Qu\+E\+S\+T\+\_\+internal.\+h@{Qu\+E\+S\+T\+\_\+internal.\+h}}
+\paragraph{\texorpdfstring{sigma\+X\+Distributed()}{sigmaXDistributed()}}
+{\footnotesize\ttfamily void sigma\+X\+Distributed (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structMultiQubit}{Multi\+Qubit}}}]{multi\+Qubit,  }\item[{const int}]{target\+Qubit,  }\item[{\mbox{\hyperlink{structComplexArray}{Complex\+Array}}}]{state\+Vec\+In,  }\item[{\mbox{\hyperlink{structComplexArray}{Complex\+Array}}}]{state\+Vec\+Out }\end{DoxyParamCaption})}
+
+
+
+Rotate a single qubit by \{\{0,1\},\{1,0\}. 
+
+Operate on a subset of the state vector with upper and lower block values stored seperately. This rotation is just swapping upper and lower values, and state\+Vec\+In must already be the correct section for this chunk
+
+\begin{DoxyRemark}{Remarks}
+Qubits are zero-\/based and the ~\newline
+the first qubit is the rightmost ~\newline
+ 
+\end{DoxyRemark}
+
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\tt in,out}  & {\em multi\+Qubit} & object representing the set of qubits \\
+\hline
+\mbox{\tt in}  & {\em target\+Qubit} & qubit to rotate \\
+\hline
+\mbox{\tt in}  & {\em state\+Vec\+In} & probability amplitudes in lower or upper half of a block depending on chunk\+Id \\
+\hline
+\mbox{\tt out}  & {\em state\+Vec\+Out} & array section to update (will correspond to either the lower or upper half of a block) \\
+\hline
+\end{DoxyParams}
+
+
+Definition at line 1158 of file Qu\+E\+S\+T.\+c.
+
+
+
+References Complex\+Array\+::imag, Multi\+Qubit\+::num\+Amps, Complex\+Array\+::real, and R\+E\+AL.
+
+
+
+Referenced by sigma\+X().
+
+
+\begin{DoxyCode}
+1161 \{
+1162 
+1163     \textcolor{keywordtype}{long} \textcolor{keywordtype}{long} \textcolor{keywordtype}{int} thisTask;  
+1164     \textcolor{keyword}{const} \textcolor{keywordtype}{long} \textcolor{keywordtype}{long} \textcolor{keywordtype}{int} numTasks=multiQubit.\mbox{\hyperlink{structMultiQubit_ae16f47d8b725c914fb7f66b6498d79db}{numAmps}};
+1165 
+1166     \mbox{\hyperlink{QuEST__precision_8h_a4b654506f18b8bfd61ad2a29a7e38c25}{REAL}} *stateVecRealIn=stateVecIn.\mbox{\hyperlink{structComplexArray_a4195cac6c784ea1b6271f1c7dba1548a}{real}}, *stateVecImagIn=stateVecIn.
+      \mbox{\hyperlink{structComplexArray_a79dde47c7ae530c79cebfdf57b225968}{imag}};
+1167     \mbox{\hyperlink{QuEST__precision_8h_a4b654506f18b8bfd61ad2a29a7e38c25}{REAL}} *stateVecRealOut=stateVecOut.\mbox{\hyperlink{structComplexArray_a4195cac6c784ea1b6271f1c7dba1548a}{real}}, *stateVecImagOut=stateVecOut.
+      \mbox{\hyperlink{structComplexArray_a79dde47c7ae530c79cebfdf57b225968}{imag}};
+1168 
+1169 \textcolor{preprocessor}{# ifdef \_OPENMP}
+1170 \textcolor{preprocessor}{# pragma omp parallel \(\backslash\)}
+1171 \textcolor{preprocessor}{    default  (none) \(\backslash\)}
+1172 \textcolor{preprocessor}{    shared   (stateVecRealIn,stateVecImagIn,stateVecRealOut,stateVecImagOut) \(\backslash\)}
+1173 \textcolor{preprocessor}{    private  (thisTask)}
+1174 \textcolor{preprocessor}{# endif}
+1175     \{
+1176 \textcolor{preprocessor}{# ifdef \_OPENMP}
+1177 \textcolor{preprocessor}{# pragma omp for schedule (static)}
+1178 \textcolor{preprocessor}{# endif}
+1179         \textcolor{keywordflow}{for} (thisTask=0; thisTask<numTasks; thisTask++) \{
+1180             stateVecRealOut[thisTask] = stateVecRealIn[thisTask];
+1181             stateVecImagOut[thisTask] = stateVecImagIn[thisTask];
+1182         \}
+1183     \}
+1184 \} 
+\end{DoxyCode}
+\mbox{\Hypertarget{QuEST__internal_8h_a74822fd86bb5d81766e6e8dbdcd62df1}\label{QuEST__internal_8h_a74822fd86bb5d81766e6e8dbdcd62df1}} 
+\index{Qu\+E\+S\+T\+\_\+internal.\+h@{Qu\+E\+S\+T\+\_\+internal.\+h}!sigma\+X\+Local@{sigma\+X\+Local}}
+\index{sigma\+X\+Local@{sigma\+X\+Local}!Qu\+E\+S\+T\+\_\+internal.\+h@{Qu\+E\+S\+T\+\_\+internal.\+h}}
+\paragraph{\texorpdfstring{sigma\+X\+Local()}{sigmaXLocal()}}
+{\footnotesize\ttfamily void sigma\+X\+Local (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structMultiQubit}{Multi\+Qubit}}}]{multi\+Qubit,  }\item[{const int}]{target\+Qubit }\end{DoxyParamCaption})}
+
+
+
+Definition at line 1099 of file Qu\+E\+S\+T.\+c.
+
+
+
+References Complex\+Array\+::imag, Multi\+Qubit\+::num\+Amps, Complex\+Array\+::real, R\+E\+AL, and Multi\+Qubit\+::state\+Vec.
+
+
+
+Referenced by sigma\+X().
+
+
+\begin{DoxyCode}
+1100 \{
+1101     \textcolor{keywordtype}{long} \textcolor{keywordtype}{long} \textcolor{keywordtype}{int} sizeBlock, sizeHalfBlock;
+1102     \textcolor{keywordtype}{long} \textcolor{keywordtype}{long} \textcolor{keywordtype}{int} thisBlock, \textcolor{comment}{// current block}
+1103          indexUp,indexLo;    \textcolor{comment}{// current index and corresponding index in lower half block}
+1104 
+1105     \mbox{\hyperlink{QuEST__precision_8h_a4b654506f18b8bfd61ad2a29a7e38c25}{REAL}} stateRealUp,stateImagUp;
+1106     \textcolor{keywordtype}{long} \textcolor{keywordtype}{long} \textcolor{keywordtype}{int} thisTask;         
+1107     \textcolor{keyword}{const} \textcolor{keywordtype}{long} \textcolor{keywordtype}{long} \textcolor{keywordtype}{int} numTasks=multiQubit.\mbox{\hyperlink{structMultiQubit_ae16f47d8b725c914fb7f66b6498d79db}{numAmps}}>>1;
+1108 
+1109     \textcolor{comment}{// set dimensions}
+1110     sizeHalfBlock = 1LL << targetQubit;  
+1111     sizeBlock     = 2LL * sizeHalfBlock; 
+1112 
+1113     \textcolor{comment}{// Can't use multiQubit.stateVec as a private OMP var}
+1114     \mbox{\hyperlink{QuEST__precision_8h_a4b654506f18b8bfd61ad2a29a7e38c25}{REAL}} *stateVecReal = multiQubit.\mbox{\hyperlink{structMultiQubit_a45483190d6b01ef6b2f98f2bec9ab94f}{stateVec}}.\mbox{\hyperlink{structComplexArray_a4195cac6c784ea1b6271f1c7dba1548a}{real}};
+1115     \mbox{\hyperlink{QuEST__precision_8h_a4b654506f18b8bfd61ad2a29a7e38c25}{REAL}} *stateVecImag = multiQubit.\mbox{\hyperlink{structMultiQubit_a45483190d6b01ef6b2f98f2bec9ab94f}{stateVec}}.\mbox{\hyperlink{structComplexArray_a79dde47c7ae530c79cebfdf57b225968}{imag}};
+1116 
+1117 \textcolor{preprocessor}{# ifdef \_OPENMP}
+1118 \textcolor{preprocessor}{# pragma omp parallel \(\backslash\)}
+1119 \textcolor{preprocessor}{    default  (none) \(\backslash\)}
+1120 \textcolor{preprocessor}{    shared   (sizeBlock,sizeHalfBlock, stateVecReal,stateVecImag) \(\backslash\)}
+1121 \textcolor{preprocessor}{    private  (thisTask,thisBlock ,indexUp,indexLo, stateRealUp,stateImagUp) }
+1122 \textcolor{preprocessor}{# endif}
+1123     \{
+1124 \textcolor{preprocessor}{# ifdef \_OPENMP}
+1125 \textcolor{preprocessor}{# pragma omp for schedule (static)}
+1126 \textcolor{preprocessor}{# endif}
+1127         \textcolor{keywordflow}{for} (thisTask=0; thisTask<numTasks; thisTask++) \{
+1128             thisBlock   = thisTask / sizeHalfBlock;
+1129             indexUp     = thisBlock*sizeBlock + thisTask%sizeHalfBlock;
+1130             indexLo     = indexUp + sizeHalfBlock;
+1131 
+1132             stateRealUp = stateVecReal[indexUp];
+1133             stateImagUp = stateVecImag[indexUp];
+1134 
+1135             stateVecReal[indexUp] = stateVecReal[indexLo];
+1136             stateVecImag[indexUp] = stateVecImag[indexLo];
+1137 
+1138             stateVecReal[indexLo] = stateRealUp;
+1139             stateVecImag[indexLo] = stateImagUp;
+1140         \} 
+1141     \}
+1142 
+1143 \}
+\end{DoxyCode}
+\mbox{\Hypertarget{QuEST__internal_8h_af5ef5166f00c0572354b4ac53dcf40cf}\label{QuEST__internal_8h_af5ef5166f00c0572354b4ac53dcf40cf}} 
+\index{Qu\+E\+S\+T\+\_\+internal.\+h@{Qu\+E\+S\+T\+\_\+internal.\+h}!sigma\+Y\+Distributed@{sigma\+Y\+Distributed}}
+\index{sigma\+Y\+Distributed@{sigma\+Y\+Distributed}!Qu\+E\+S\+T\+\_\+internal.\+h@{Qu\+E\+S\+T\+\_\+internal.\+h}}
+\paragraph{\texorpdfstring{sigma\+Y\+Distributed()}{sigmaYDistributed()}}
+{\footnotesize\ttfamily void sigma\+Y\+Distributed (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structMultiQubit}{Multi\+Qubit}}}]{multi\+Qubit,  }\item[{const int}]{target\+Qubit,  }\item[{\mbox{\hyperlink{structComplexArray}{Complex\+Array}}}]{state\+Vec\+In,  }\item[{\mbox{\hyperlink{structComplexArray}{Complex\+Array}}}]{state\+Vec\+Out,  }\item[{int}]{update\+Upper }\end{DoxyParamCaption})}
+
+
+
+Rotate a single qubit by \{\{0,-\/i\},\{i,0\}. 
+
+Operate on a subset of the state vector with upper and lower block values stored seperately. This rotation is just swapping upper and lower values, and state\+Vec\+In must already be the correct section for this chunk
+
+\begin{DoxyRemark}{Remarks}
+Qubits are zero-\/based and the ~\newline
+the first qubit is the rightmost ~\newline
+ 
+\end{DoxyRemark}
+
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\tt in,out}  & {\em multi\+Qubit} & object representing the set of qubits \\
+\hline
+\mbox{\tt in}  & {\em target\+Qubit} & qubit to rotate \\
+\hline
+\mbox{\tt in}  & {\em state\+Vec\+In} & probability amplitudes in lower or upper half of a block depending on chunk\+Id \\
+\hline
+\mbox{\tt in}  & {\em update\+Upper} & flag, 1\+: updating upper values, 0\+: updating lower values in block \\
+\hline
+\mbox{\tt out}  & {\em state\+Vec\+Out} & array section to update (will correspond to either the lower or upper half of a block) \\
+\hline
+\end{DoxyParams}
+
+
+Definition at line 1345 of file Qu\+E\+S\+T.\+c.
+
+
+
+References Complex\+Array\+::imag, Multi\+Qubit\+::num\+Amps, Complex\+Array\+::real, and R\+E\+AL.
+
+
+
+Referenced by sigma\+Y().
+
+
+\begin{DoxyCode}
+1349 \{
+1350 
+1351     \textcolor{keywordtype}{long} \textcolor{keywordtype}{long} \textcolor{keywordtype}{int} thisTask;  
+1352     \textcolor{keyword}{const} \textcolor{keywordtype}{long} \textcolor{keywordtype}{long} \textcolor{keywordtype}{int} numTasks=multiQubit.\mbox{\hyperlink{structMultiQubit_ae16f47d8b725c914fb7f66b6498d79db}{numAmps}};
+1353 
+1354     \mbox{\hyperlink{QuEST__precision_8h_a4b654506f18b8bfd61ad2a29a7e38c25}{REAL}} *stateVecRealIn=stateVecIn.\mbox{\hyperlink{structComplexArray_a4195cac6c784ea1b6271f1c7dba1548a}{real}}, *stateVecImagIn=stateVecIn.
+      \mbox{\hyperlink{structComplexArray_a79dde47c7ae530c79cebfdf57b225968}{imag}};
+1355     \mbox{\hyperlink{QuEST__precision_8h_a4b654506f18b8bfd61ad2a29a7e38c25}{REAL}} *stateVecRealOut=stateVecOut.\mbox{\hyperlink{structComplexArray_a4195cac6c784ea1b6271f1c7dba1548a}{real}}, *stateVecImagOut=stateVecOut.
+      \mbox{\hyperlink{structComplexArray_a79dde47c7ae530c79cebfdf57b225968}{imag}};
+1356 
+1357     \textcolor{keywordtype}{int} realSign=1, imagSign=1;
+1358     \textcolor{keywordflow}{if} (updateUpper) imagSign=-1;
+1359     \textcolor{keywordflow}{else} realSign = -1;
+1360 
+1361 \textcolor{preprocessor}{# ifdef \_OPENMP}
+1362 \textcolor{preprocessor}{# pragma omp parallel \(\backslash\)}
+1363 \textcolor{preprocessor}{    default  (none) \(\backslash\)}
+1364 \textcolor{preprocessor}{    shared   (stateVecRealIn,stateVecImagIn,stateVecRealOut,stateVecImagOut,realSign,imagSign) \(\backslash\)}
+1365 \textcolor{preprocessor}{    private  (thisTask)}
+1366 \textcolor{preprocessor}{# endif}
+1367     \{
+1368 \textcolor{preprocessor}{# ifdef \_OPENMP}
+1369 \textcolor{preprocessor}{# pragma omp for schedule (static)}
+1370 \textcolor{preprocessor}{# endif}
+1371         \textcolor{keywordflow}{for} (thisTask=0; thisTask<numTasks; thisTask++) \{
+1372             stateVecRealOut[thisTask] = realSign*stateVecImagIn[thisTask];
+1373             stateVecImagOut[thisTask] = imagSign*stateVecRealIn[thisTask];
+1374         \}
+1375     \}
+1376 \} 
+\end{DoxyCode}
+\mbox{\Hypertarget{QuEST__internal_8h_a81fbfaed65a742a7dfd622e17652245e}\label{QuEST__internal_8h_a81fbfaed65a742a7dfd622e17652245e}} 
+\index{Qu\+E\+S\+T\+\_\+internal.\+h@{Qu\+E\+S\+T\+\_\+internal.\+h}!sigma\+Y\+Local@{sigma\+Y\+Local}}
+\index{sigma\+Y\+Local@{sigma\+Y\+Local}!Qu\+E\+S\+T\+\_\+internal.\+h@{Qu\+E\+S\+T\+\_\+internal.\+h}}
+\paragraph{\texorpdfstring{sigma\+Y\+Local()}{sigmaYLocal()}}
+{\footnotesize\ttfamily void sigma\+Y\+Local (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structMultiQubit}{Multi\+Qubit}}}]{multi\+Qubit,  }\item[{const int}]{target\+Qubit }\end{DoxyParamCaption})}
+
+
+
+Definition at line 1286 of file Qu\+E\+S\+T.\+c.
+
+
+
+References Complex\+Array\+::imag, Multi\+Qubit\+::num\+Amps, Complex\+Array\+::real, R\+E\+AL, and Multi\+Qubit\+::state\+Vec.
+
+
+
+Referenced by sigma\+Y().
+
+
+\begin{DoxyCode}
+1287 \{
+1288     \textcolor{keywordtype}{long} \textcolor{keywordtype}{long} \textcolor{keywordtype}{int} sizeBlock, sizeHalfBlock;
+1289     \textcolor{keywordtype}{long} \textcolor{keywordtype}{long} \textcolor{keywordtype}{int} thisBlock, \textcolor{comment}{// current block}
+1290          indexUp,indexLo;    \textcolor{comment}{// current index and corresponding index in lower half block}
+1291 
+1292     \mbox{\hyperlink{QuEST__precision_8h_a4b654506f18b8bfd61ad2a29a7e38c25}{REAL}} stateRealUp,stateImagUp;
+1293     \textcolor{keywordtype}{long} \textcolor{keywordtype}{long} \textcolor{keywordtype}{int} thisTask;         
+1294     \textcolor{keyword}{const} \textcolor{keywordtype}{long} \textcolor{keywordtype}{long} \textcolor{keywordtype}{int} numTasks=multiQubit.\mbox{\hyperlink{structMultiQubit_ae16f47d8b725c914fb7f66b6498d79db}{numAmps}}>>1;
+1295 
+1296     \textcolor{comment}{// set dimensions}
+1297     sizeHalfBlock = 1LL << targetQubit;  
+1298     sizeBlock     = 2LL * sizeHalfBlock; 
+1299 
+1300     \textcolor{comment}{// Can't use multiQubit.stateVec as a private OMP var}
+1301     \mbox{\hyperlink{QuEST__precision_8h_a4b654506f18b8bfd61ad2a29a7e38c25}{REAL}} *stateVecReal = multiQubit.\mbox{\hyperlink{structMultiQubit_a45483190d6b01ef6b2f98f2bec9ab94f}{stateVec}}.\mbox{\hyperlink{structComplexArray_a4195cac6c784ea1b6271f1c7dba1548a}{real}};
+1302     \mbox{\hyperlink{QuEST__precision_8h_a4b654506f18b8bfd61ad2a29a7e38c25}{REAL}} *stateVecImag = multiQubit.\mbox{\hyperlink{structMultiQubit_a45483190d6b01ef6b2f98f2bec9ab94f}{stateVec}}.\mbox{\hyperlink{structComplexArray_a79dde47c7ae530c79cebfdf57b225968}{imag}};
+1303 
+1304 \textcolor{preprocessor}{# ifdef \_OPENMP}
+1305 \textcolor{preprocessor}{# pragma omp parallel \(\backslash\)}
+1306 \textcolor{preprocessor}{    default  (none) \(\backslash\)}
+1307 \textcolor{preprocessor}{    shared   (sizeBlock,sizeHalfBlock, stateVecReal,stateVecImag) \(\backslash\)}
+1308 \textcolor{preprocessor}{    private  (thisTask,thisBlock ,indexUp,indexLo, stateRealUp,stateImagUp) }
+1309 \textcolor{preprocessor}{# endif}
+1310     \{
+1311 \textcolor{preprocessor}{# ifdef \_OPENMP}
+1312 \textcolor{preprocessor}{# pragma omp for schedule (static)}
+1313 \textcolor{preprocessor}{# endif}
+1314         \textcolor{keywordflow}{for} (thisTask=0; thisTask<numTasks; thisTask++) \{
+1315             thisBlock   = thisTask / sizeHalfBlock;
+1316             indexUp     = thisBlock*sizeBlock + thisTask%sizeHalfBlock;
+1317             indexLo     = indexUp + sizeHalfBlock;
+1318 
+1319             stateRealUp = stateVecReal[indexUp];
+1320             stateImagUp = stateVecImag[indexUp];
+1321 
+1322             stateVecReal[indexUp] = stateVecImag[indexLo];
+1323             stateVecImag[indexUp] = -stateVecReal[indexLo];
+1324 
+1325             stateVecReal[indexLo] = -stateImagUp;
+1326             stateVecImag[indexLo] = stateRealUp;
+1327         \} 
+1328     \}
+1329 \}
+\end{DoxyCode}
+\mbox{\Hypertarget{QuEST__internal_8h_a2343b7240118e89aa615e2c9140b770b}\label{QuEST__internal_8h_a2343b7240118e89aa615e2c9140b770b}} 
+\index{Qu\+E\+S\+T\+\_\+internal.\+h@{Qu\+E\+S\+T\+\_\+internal.\+h}!unitary\+Distributed@{unitary\+Distributed}}
+\index{unitary\+Distributed@{unitary\+Distributed}!Qu\+E\+S\+T\+\_\+internal.\+h@{Qu\+E\+S\+T\+\_\+internal.\+h}}
+\paragraph{\texorpdfstring{unitary\+Distributed()}{unitaryDistributed()}}
+{\footnotesize\ttfamily void unitary\+Distributed (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structMultiQubit}{Multi\+Qubit}}}]{multi\+Qubit,  }\item[{const int}]{target\+Qubit,  }\item[{\mbox{\hyperlink{structComplex}{Complex}}}]{rot1,  }\item[{\mbox{\hyperlink{structComplex}{Complex}}}]{rot2,  }\item[{\mbox{\hyperlink{structComplexArray}{Complex\+Array}}}]{state\+Vec\+Up,  }\item[{\mbox{\hyperlink{structComplexArray}{Complex\+Array}}}]{state\+Vec\+Lo,  }\item[{\mbox{\hyperlink{structComplexArray}{Complex\+Array}}}]{state\+Vec\+Out }\end{DoxyParamCaption})}
+
+
+
+Apply a unitary operation to a single qubit given a subset of the state vector with upper and lower block values stored seperately. 
+
+\begin{DoxyRemark}{Remarks}
+Qubits are zero-\/based and the first qubit is the rightmost ~\newline
+ 
+\end{DoxyRemark}
+
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\tt in,out}  & {\em multi\+Qubit} & object representing the set of qubits \\
+\hline
+\mbox{\tt in}  & {\em target\+Qubit} & qubit to rotate \\
+\hline
+\mbox{\tt in}  & {\em u} & unitary matrix to apply \\
+\hline
+\mbox{\tt in}  & {\em state\+Vec\+Up} & probability amplitudes in upper half of a block \\
+\hline
+\mbox{\tt in}  & {\em state\+Vec\+Lo} & probability amplitudes in lower half of a block \\
+\hline
+\mbox{\tt out}  & {\em state\+Vec\+Out} & array section to update (will correspond to either the lower or upper half of a block) \\
+\hline
+\end{DoxyParams}
+
+
+Definition at line 668 of file Qu\+E\+S\+T.\+c.
+
+
+
+References Complex\+Array\+::imag, Complex\+::imag, Multi\+Qubit\+::num\+Amps, Complex\+Array\+::real, Complex\+::real, and R\+E\+AL.
+
+
+
+Referenced by unitary().
+
+
+\begin{DoxyCode}
+673 \{
+674 
+675     \mbox{\hyperlink{QuEST__precision_8h_a4b654506f18b8bfd61ad2a29a7e38c25}{REAL}}   stateRealUp,stateRealLo,stateImagUp,stateImagLo;
+676     \textcolor{keywordtype}{long} \textcolor{keywordtype}{long} \textcolor{keywordtype}{int} thisTask;  
+677     \textcolor{keyword}{const} \textcolor{keywordtype}{long} \textcolor{keywordtype}{long} \textcolor{keywordtype}{int} numTasks=multiQubit.\mbox{\hyperlink{structMultiQubit_ae16f47d8b725c914fb7f66b6498d79db}{numAmps}};
+678 
+679     \mbox{\hyperlink{QuEST__precision_8h_a4b654506f18b8bfd61ad2a29a7e38c25}{REAL}} rot1Real=rot1.\mbox{\hyperlink{structComplex_a479ad939835457595fcca3ca55c06283}{real}}, rot1Imag=rot1.\mbox{\hyperlink{structComplex_a1151948284b21c0052f203f23ab931d9}{imag}};
+680     \mbox{\hyperlink{QuEST__precision_8h_a4b654506f18b8bfd61ad2a29a7e38c25}{REAL}} rot2Real=rot2.\mbox{\hyperlink{structComplex_a479ad939835457595fcca3ca55c06283}{real}}, rot2Imag=rot2.\mbox{\hyperlink{structComplex_a1151948284b21c0052f203f23ab931d9}{imag}};
+681     \mbox{\hyperlink{QuEST__precision_8h_a4b654506f18b8bfd61ad2a29a7e38c25}{REAL}} *stateVecRealUp=stateVecUp.\mbox{\hyperlink{structComplexArray_a4195cac6c784ea1b6271f1c7dba1548a}{real}}, *stateVecImagUp=stateVecUp.
+      \mbox{\hyperlink{structComplexArray_a79dde47c7ae530c79cebfdf57b225968}{imag}};
+682     \mbox{\hyperlink{QuEST__precision_8h_a4b654506f18b8bfd61ad2a29a7e38c25}{REAL}} *stateVecRealLo=stateVecLo.\mbox{\hyperlink{structComplexArray_a4195cac6c784ea1b6271f1c7dba1548a}{real}}, *stateVecImagLo=stateVecLo.
+      \mbox{\hyperlink{structComplexArray_a79dde47c7ae530c79cebfdf57b225968}{imag}};
+683     \mbox{\hyperlink{QuEST__precision_8h_a4b654506f18b8bfd61ad2a29a7e38c25}{REAL}} *stateVecRealOut=stateVecOut.\mbox{\hyperlink{structComplexArray_a4195cac6c784ea1b6271f1c7dba1548a}{real}}, *stateVecImagOut=stateVecOut.
+      \mbox{\hyperlink{structComplexArray_a79dde47c7ae530c79cebfdf57b225968}{imag}};
+684 
+685 
+686 \textcolor{preprocessor}{# ifdef \_OPENMP}
+687 \textcolor{preprocessor}{# pragma omp parallel \(\backslash\)}
+688 \textcolor{preprocessor}{    default  (none) \(\backslash\)}
+689 \textcolor{preprocessor}{    shared   (stateVecRealUp,stateVecImagUp,stateVecRealLo,stateVecImagLo,stateVecRealOut,stateVecImagOut, 
+      \(\backslash\)}
+690 \textcolor{preprocessor}{            rot1Real, rot1Imag, rot2Real, rot2Imag) \(\backslash\)}
+691 \textcolor{preprocessor}{    private  (thisTask,stateRealUp,stateImagUp,stateRealLo,stateImagLo)}
+692 \textcolor{preprocessor}{# endif}
+693     \{
+694 \textcolor{preprocessor}{# ifdef \_OPENMP}
+695 \textcolor{preprocessor}{# pragma omp for schedule (static)}
+696 \textcolor{preprocessor}{# endif}
+697         \textcolor{keywordflow}{for} (thisTask=0; thisTask<numTasks; thisTask++) \{
+698             \textcolor{comment}{// store current state vector values in temp variables}
+699             stateRealUp = stateVecRealUp[thisTask];
+700             stateImagUp = stateVecImagUp[thisTask];
+701 
+702             stateRealLo = stateVecRealLo[thisTask];
+703             stateImagLo = stateVecImagLo[thisTask];
+704 
+705             stateVecRealOut[thisTask] = rot1Real*stateRealUp - rot1Imag*stateImagUp 
+706                 + rot2Real*stateRealLo - rot2Imag*stateImagLo;
+707             stateVecImagOut[thisTask] = rot1Real*stateImagUp + rot1Imag*stateRealUp 
+708                 + rot2Real*stateImagLo + rot2Imag*stateRealLo;
+709         \}
+710     \}
+711 \}
+\end{DoxyCode}
+\mbox{\Hypertarget{QuEST__internal_8h_ac134fb45b0a7248c5d15e16eb7139a35}\label{QuEST__internal_8h_ac134fb45b0a7248c5d15e16eb7139a35}} 
+\index{Qu\+E\+S\+T\+\_\+internal.\+h@{Qu\+E\+S\+T\+\_\+internal.\+h}!unitary\+Local@{unitary\+Local}}
+\index{unitary\+Local@{unitary\+Local}!Qu\+E\+S\+T\+\_\+internal.\+h@{Qu\+E\+S\+T\+\_\+internal.\+h}}
+\paragraph{\texorpdfstring{unitary\+Local()}{unitaryLocal()}}
+{\footnotesize\ttfamily void unitary\+Local (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structMultiQubit}{Multi\+Qubit}}}]{multi\+Qubit,  }\item[{const int}]{target\+Qubit,  }\item[{\mbox{\hyperlink{structComplexMatrix2}{Complex\+Matrix2}}}]{u }\end{DoxyParamCaption})}
+
+
+
+Definition at line 542 of file Qu\+E\+S\+T.\+c.
+
+
+
+References Complex\+Array\+::imag, Complex\+::imag, Multi\+Qubit\+::num\+Amps, Complex\+Matrix2\+::r0c0, Complex\+Matrix2\+::r0c1, Complex\+Matrix2\+::r1c0, Complex\+Matrix2\+::r1c1, Complex\+Array\+::real, Complex\+::real, R\+E\+AL, and Multi\+Qubit\+::state\+Vec.
+
+
+
+Referenced by unitary().
+
+
+\begin{DoxyCode}
+543 \{
+544     \textcolor{keywordtype}{long} \textcolor{keywordtype}{long} \textcolor{keywordtype}{int} sizeBlock, sizeHalfBlock;
+545     \textcolor{keywordtype}{long} \textcolor{keywordtype}{long} \textcolor{keywordtype}{int} thisBlock, \textcolor{comment}{// current block}
+546          indexUp,indexLo;    \textcolor{comment}{// current index and corresponding index in lower half block}
+547 
+548     \mbox{\hyperlink{QuEST__precision_8h_a4b654506f18b8bfd61ad2a29a7e38c25}{REAL}} stateRealUp,stateRealLo,stateImagUp,stateImagLo;
+549     \textcolor{keywordtype}{long} \textcolor{keywordtype}{long} \textcolor{keywordtype}{int} thisTask;         
+550     \textcolor{keyword}{const} \textcolor{keywordtype}{long} \textcolor{keywordtype}{long} \textcolor{keywordtype}{int} numTasks=multiQubit.\mbox{\hyperlink{structMultiQubit_ae16f47d8b725c914fb7f66b6498d79db}{numAmps}}>>1;
+551 
+552     \textcolor{comment}{// set dimensions}
+553     sizeHalfBlock = 1LL << targetQubit;  
+554     sizeBlock     = 2LL * sizeHalfBlock; 
+555 
+556     \textcolor{comment}{// Can't use multiQubit.stateVec as a private OMP var}
+557     \mbox{\hyperlink{QuEST__precision_8h_a4b654506f18b8bfd61ad2a29a7e38c25}{REAL}} *stateVecReal = multiQubit.\mbox{\hyperlink{structMultiQubit_a45483190d6b01ef6b2f98f2bec9ab94f}{stateVec}}.\mbox{\hyperlink{structComplexArray_a4195cac6c784ea1b6271f1c7dba1548a}{real}};
+558     \mbox{\hyperlink{QuEST__precision_8h_a4b654506f18b8bfd61ad2a29a7e38c25}{REAL}} *stateVecImag = multiQubit.\mbox{\hyperlink{structMultiQubit_a45483190d6b01ef6b2f98f2bec9ab94f}{stateVec}}.\mbox{\hyperlink{structComplexArray_a79dde47c7ae530c79cebfdf57b225968}{imag}};
+559 
+560 \textcolor{preprocessor}{# ifdef \_OPENMP}
+561 \textcolor{preprocessor}{# pragma omp parallel \(\backslash\)}
+562 \textcolor{preprocessor}{    default  (none) \(\backslash\)}
+563 \textcolor{preprocessor}{    shared   (sizeBlock,sizeHalfBlock, stateVecReal,stateVecImag, u) \(\backslash\)}
+564 \textcolor{preprocessor}{    private  (thisTask,thisBlock ,indexUp,indexLo, stateRealUp,stateImagUp,stateRealLo,stateImagLo) }
+565 \textcolor{preprocessor}{# endif}
+566     \{
+567 \textcolor{preprocessor}{# ifdef \_OPENMP}
+568 \textcolor{preprocessor}{# pragma omp for schedule (static)}
+569 \textcolor{preprocessor}{# endif}
+570         \textcolor{keywordflow}{for} (thisTask=0; thisTask<numTasks; thisTask++) \{
+571 
+572             thisBlock   = thisTask / sizeHalfBlock;
+573             indexUp     = thisBlock*sizeBlock + thisTask%sizeHalfBlock;
+574             indexLo     = indexUp + sizeHalfBlock;
+575 
+576             \textcolor{comment}{// store current state vector values in temp variables}
+577             stateRealUp = stateVecReal[indexUp];
+578             stateImagUp = stateVecImag[indexUp];
+579 
+580             stateRealLo = stateVecReal[indexLo];
+581             stateImagLo = stateVecImag[indexLo];
+582 
+583 
+584             \textcolor{comment}{// state[indexUp] = u00 * state[indexUp] + u01 * state[indexLo]}
+585             stateVecReal[indexUp] = u.\mbox{\hyperlink{structComplexMatrix2_ae72b4458233b077a636beee1892e81ff}{r0c0}}.\mbox{\hyperlink{structComplex_a479ad939835457595fcca3ca55c06283}{real}}*stateRealUp - u.\mbox{\hyperlink{structComplexMatrix2_ae72b4458233b077a636beee1892e81ff}{r0c0}}.
+      \mbox{\hyperlink{structComplex_a1151948284b21c0052f203f23ab931d9}{imag}}*stateImagUp 
+586                 + u.\mbox{\hyperlink{structComplexMatrix2_a0f3932f055a8b05cef361bce25d51172}{r0c1}}.\mbox{\hyperlink{structComplex_a479ad939835457595fcca3ca55c06283}{real}}*stateRealLo - u.\mbox{\hyperlink{structComplexMatrix2_a0f3932f055a8b05cef361bce25d51172}{r0c1}}.\mbox{\hyperlink{structComplex_a1151948284b21c0052f203f23ab931d9}{imag}}*stateImagLo;
+587             stateVecImag[indexUp] = u.\mbox{\hyperlink{structComplexMatrix2_ae72b4458233b077a636beee1892e81ff}{r0c0}}.\mbox{\hyperlink{structComplex_a479ad939835457595fcca3ca55c06283}{real}}*stateImagUp + u.\mbox{\hyperlink{structComplexMatrix2_ae72b4458233b077a636beee1892e81ff}{r0c0}}.
+      \mbox{\hyperlink{structComplex_a1151948284b21c0052f203f23ab931d9}{imag}}*stateRealUp 
+588                 + u.\mbox{\hyperlink{structComplexMatrix2_a0f3932f055a8b05cef361bce25d51172}{r0c1}}.\mbox{\hyperlink{structComplex_a479ad939835457595fcca3ca55c06283}{real}}*stateImagLo + u.\mbox{\hyperlink{structComplexMatrix2_a0f3932f055a8b05cef361bce25d51172}{r0c1}}.\mbox{\hyperlink{structComplex_a1151948284b21c0052f203f23ab931d9}{imag}}*stateRealLo;
+589 
+590             \textcolor{comment}{// state[indexLo] = u10  * state[indexUp] + u11 * state[indexLo]}
+591             stateVecReal[indexLo] = u.\mbox{\hyperlink{structComplexMatrix2_ab98282015ed2065e53fbc9638e2583ab}{r1c0}}.\mbox{\hyperlink{structComplex_a479ad939835457595fcca3ca55c06283}{real}}*stateRealUp  - u.\mbox{\hyperlink{structComplexMatrix2_ab98282015ed2065e53fbc9638e2583ab}{r1c0}}.
+      \mbox{\hyperlink{structComplex_a1151948284b21c0052f203f23ab931d9}{imag}}*stateImagUp 
+592                 + u.\mbox{\hyperlink{structComplexMatrix2_a763007c3070802373549ba0350f83c8a}{r1c1}}.\mbox{\hyperlink{structComplex_a479ad939835457595fcca3ca55c06283}{real}}*stateRealLo  -  u.\mbox{\hyperlink{structComplexMatrix2_a763007c3070802373549ba0350f83c8a}{r1c1}}.\mbox{\hyperlink{structComplex_a1151948284b21c0052f203f23ab931d9}{imag}}*stateImagLo;
+593             stateVecImag[indexLo] = u.\mbox{\hyperlink{structComplexMatrix2_ab98282015ed2065e53fbc9638e2583ab}{r1c0}}.\mbox{\hyperlink{structComplex_a479ad939835457595fcca3ca55c06283}{real}}*stateImagUp + u.\mbox{\hyperlink{structComplexMatrix2_ab98282015ed2065e53fbc9638e2583ab}{r1c0}}.
+      \mbox{\hyperlink{structComplex_a1151948284b21c0052f203f23ab931d9}{imag}}*stateRealUp 
+594                 + u.\mbox{\hyperlink{structComplexMatrix2_a763007c3070802373549ba0350f83c8a}{r1c1}}.\mbox{\hyperlink{structComplex_a479ad939835457595fcca3ca55c06283}{real}}*stateImagLo + u.\mbox{\hyperlink{structComplexMatrix2_a763007c3070802373549ba0350f83c8a}{r1c1}}.\mbox{\hyperlink{structComplex_a1151948284b21c0052f203f23ab931d9}{imag}}*stateRealLo;
+595 
+596         \} 
+597     \}
+598 \} 
+\end{DoxyCode}
+\mbox{\Hypertarget{QuEST__internal_8h_ae2b2c14a07dd7d50ff86032a3ca101d7}\label{QuEST__internal_8h_ae2b2c14a07dd7d50ff86032a3ca101d7}} 
+\index{Qu\+E\+S\+T\+\_\+internal.\+h@{Qu\+E\+S\+T\+\_\+internal.\+h}!validate\+Alpha\+Beta@{validate\+Alpha\+Beta}}
+\index{validate\+Alpha\+Beta@{validate\+Alpha\+Beta}!Qu\+E\+S\+T\+\_\+internal.\+h@{Qu\+E\+S\+T\+\_\+internal.\+h}}
+\paragraph{\texorpdfstring{validate\+Alpha\+Beta()}{validateAlphaBeta()}}
+{\footnotesize\ttfamily int validate\+Alpha\+Beta (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structComplex}{Complex}}}]{alpha,  }\item[{\mbox{\hyperlink{structComplex}{Complex}}}]{beta }\end{DoxyParamCaption})}
+
+
+
+Definition at line 408 of file Qu\+E\+S\+T.\+c.
+
+
+
+References Complex\+::imag, Complex\+::real, and R\+E\+A\+L\+\_\+\+E\+PS.
+
+
+
+Referenced by compact\+Unitary(), and controlled\+Compact\+Unitary().
+
+
+\begin{DoxyCode}
+408                                                   \{
+409     \textcolor{keywordflow}{if} ( fabs(alpha.\mbox{\hyperlink{structComplex_a479ad939835457595fcca3ca55c06283}{real}}*alpha.\mbox{\hyperlink{structComplex_a479ad939835457595fcca3ca55c06283}{real}} 
+410                 + alpha.\mbox{\hyperlink{structComplex_a1151948284b21c0052f203f23ab931d9}{imag}}*alpha.\mbox{\hyperlink{structComplex_a1151948284b21c0052f203f23ab931d9}{imag}}
+411                 + beta.\mbox{\hyperlink{structComplex_a479ad939835457595fcca3ca55c06283}{real}}*beta.\mbox{\hyperlink{structComplex_a479ad939835457595fcca3ca55c06283}{real}} 
+412                 + beta.\mbox{\hyperlink{structComplex_a1151948284b21c0052f203f23ab931d9}{imag}}*beta.\mbox{\hyperlink{structComplex_a1151948284b21c0052f203f23ab931d9}{imag}} - 1) > \mbox{\hyperlink{QuEST__precision_8h_aebb5e6716e06431296af4d1a71744dec}{REAL\_EPS}} ) \textcolor{keywordflow}{return} 0;
+413     \textcolor{keywordflow}{else} \textcolor{keywordflow}{return} 1;
+414 \}
+\end{DoxyCode}
+\mbox{\Hypertarget{QuEST__internal_8h_ae4fea133d1a8f09ff8da03038100adb2}\label{QuEST__internal_8h_ae4fea133d1a8f09ff8da03038100adb2}} 
+\index{Qu\+E\+S\+T\+\_\+internal.\+h@{Qu\+E\+S\+T\+\_\+internal.\+h}!validate\+Matrix\+Is\+Unitary@{validate\+Matrix\+Is\+Unitary}}
+\index{validate\+Matrix\+Is\+Unitary@{validate\+Matrix\+Is\+Unitary}!Qu\+E\+S\+T\+\_\+internal.\+h@{Qu\+E\+S\+T\+\_\+internal.\+h}}
+\paragraph{\texorpdfstring{validate\+Matrix\+Is\+Unitary()}{validateMatrixIsUnitary()}}
+{\footnotesize\ttfamily int validate\+Matrix\+Is\+Unitary (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structComplexMatrix2}{Complex\+Matrix2}}}]{u }\end{DoxyParamCaption})}
+
+
+
+Definition at line 384 of file Qu\+E\+S\+T.\+c.
+
+
+
+References Complex\+::imag, Complex\+Matrix2\+::r0c0, Complex\+Matrix2\+::r0c1, Complex\+Matrix2\+::r1c0, Complex\+Matrix2\+::r1c1, Complex\+::real, and R\+E\+A\+L\+\_\+\+E\+PS.
+
+
+
+Referenced by controlled\+Unitary(), multi\+Controlled\+Unitary(), and unitary().
+
+
+\begin{DoxyCode}
+384                                              \{
+385 
+386     \textcolor{keywordflow}{if} ( fabs(u.\mbox{\hyperlink{structComplexMatrix2_ae72b4458233b077a636beee1892e81ff}{r0c0}}.\mbox{\hyperlink{structComplex_a479ad939835457595fcca3ca55c06283}{real}}*u.\mbox{\hyperlink{structComplexMatrix2_ae72b4458233b077a636beee1892e81ff}{r0c0}}.\mbox{\hyperlink{structComplex_a479ad939835457595fcca3ca55c06283}{real}} 
+387                 + u.\mbox{\hyperlink{structComplexMatrix2_ae72b4458233b077a636beee1892e81ff}{r0c0}}.\mbox{\hyperlink{structComplex_a1151948284b21c0052f203f23ab931d9}{imag}}*u.\mbox{\hyperlink{structComplexMatrix2_ae72b4458233b077a636beee1892e81ff}{r0c0}}.\mbox{\hyperlink{structComplex_a1151948284b21c0052f203f23ab931d9}{imag}}
+388                 + u.\mbox{\hyperlink{structComplexMatrix2_ab98282015ed2065e53fbc9638e2583ab}{r1c0}}.\mbox{\hyperlink{structComplex_a479ad939835457595fcca3ca55c06283}{real}}*u.\mbox{\hyperlink{structComplexMatrix2_ab98282015ed2065e53fbc9638e2583ab}{r1c0}}.\mbox{\hyperlink{structComplex_a479ad939835457595fcca3ca55c06283}{real}}
+389                 + u.\mbox{\hyperlink{structComplexMatrix2_ab98282015ed2065e53fbc9638e2583ab}{r1c0}}.\mbox{\hyperlink{structComplex_a1151948284b21c0052f203f23ab931d9}{imag}}*u.\mbox{\hyperlink{structComplexMatrix2_ab98282015ed2065e53fbc9638e2583ab}{r1c0}}.\mbox{\hyperlink{structComplex_a1151948284b21c0052f203f23ab931d9}{imag}} - 1) > \mbox{\hyperlink{QuEST__precision_8h_aebb5e6716e06431296af4d1a71744dec}{REAL\_EPS}} ) \textcolor{keywordflow}{return} 0;
+390     \textcolor{keywordflow}{if} ( fabs(u.\mbox{\hyperlink{structComplexMatrix2_a0f3932f055a8b05cef361bce25d51172}{r0c1}}.\mbox{\hyperlink{structComplex_a479ad939835457595fcca3ca55c06283}{real}}*u.\mbox{\hyperlink{structComplexMatrix2_a0f3932f055a8b05cef361bce25d51172}{r0c1}}.\mbox{\hyperlink{structComplex_a479ad939835457595fcca3ca55c06283}{real}} 
+391                 + u.\mbox{\hyperlink{structComplexMatrix2_a0f3932f055a8b05cef361bce25d51172}{r0c1}}.\mbox{\hyperlink{structComplex_a1151948284b21c0052f203f23ab931d9}{imag}}*u.\mbox{\hyperlink{structComplexMatrix2_a0f3932f055a8b05cef361bce25d51172}{r0c1}}.\mbox{\hyperlink{structComplex_a1151948284b21c0052f203f23ab931d9}{imag}}
+392                 + u.\mbox{\hyperlink{structComplexMatrix2_a763007c3070802373549ba0350f83c8a}{r1c1}}.\mbox{\hyperlink{structComplex_a479ad939835457595fcca3ca55c06283}{real}}*u.\mbox{\hyperlink{structComplexMatrix2_a763007c3070802373549ba0350f83c8a}{r1c1}}.\mbox{\hyperlink{structComplex_a479ad939835457595fcca3ca55c06283}{real}}
+393                 + u.\mbox{\hyperlink{structComplexMatrix2_a763007c3070802373549ba0350f83c8a}{r1c1}}.\mbox{\hyperlink{structComplex_a1151948284b21c0052f203f23ab931d9}{imag}}*u.\mbox{\hyperlink{structComplexMatrix2_a763007c3070802373549ba0350f83c8a}{r1c1}}.\mbox{\hyperlink{structComplex_a1151948284b21c0052f203f23ab931d9}{imag}} - 1) > \mbox{\hyperlink{QuEST__precision_8h_aebb5e6716e06431296af4d1a71744dec}{REAL\_EPS}} ) \textcolor{keywordflow}{return} 0;
+394 
+395     \textcolor{keywordflow}{if} ( fabs(u.\mbox{\hyperlink{structComplexMatrix2_ae72b4458233b077a636beee1892e81ff}{r0c0}}.\mbox{\hyperlink{structComplex_a479ad939835457595fcca3ca55c06283}{real}}*u.\mbox{\hyperlink{structComplexMatrix2_a0f3932f055a8b05cef361bce25d51172}{r0c1}}.\mbox{\hyperlink{structComplex_a479ad939835457595fcca3ca55c06283}{real}} 
+396                 + u.\mbox{\hyperlink{structComplexMatrix2_ae72b4458233b077a636beee1892e81ff}{r0c0}}.\mbox{\hyperlink{structComplex_a1151948284b21c0052f203f23ab931d9}{imag}}*u.\mbox{\hyperlink{structComplexMatrix2_a0f3932f055a8b05cef361bce25d51172}{r0c1}}.\mbox{\hyperlink{structComplex_a1151948284b21c0052f203f23ab931d9}{imag}}
+397                 + u.\mbox{\hyperlink{structComplexMatrix2_ab98282015ed2065e53fbc9638e2583ab}{r1c0}}.\mbox{\hyperlink{structComplex_a479ad939835457595fcca3ca55c06283}{real}}*u.\mbox{\hyperlink{structComplexMatrix2_a763007c3070802373549ba0350f83c8a}{r1c1}}.\mbox{\hyperlink{structComplex_a479ad939835457595fcca3ca55c06283}{real}}
+398                 + u.\mbox{\hyperlink{structComplexMatrix2_ab98282015ed2065e53fbc9638e2583ab}{r1c0}}.\mbox{\hyperlink{structComplex_a1151948284b21c0052f203f23ab931d9}{imag}}*u.\mbox{\hyperlink{structComplexMatrix2_a763007c3070802373549ba0350f83c8a}{r1c1}}.\mbox{\hyperlink{structComplex_a1151948284b21c0052f203f23ab931d9}{imag}}) > \mbox{\hyperlink{QuEST__precision_8h_aebb5e6716e06431296af4d1a71744dec}{REAL\_EPS}} ) \textcolor{keywordflow}{return} 0;
+399 
+400     \textcolor{keywordflow}{if} ( fabs(u.\mbox{\hyperlink{structComplexMatrix2_a0f3932f055a8b05cef361bce25d51172}{r0c1}}.\mbox{\hyperlink{structComplex_a479ad939835457595fcca3ca55c06283}{real}}*u.\mbox{\hyperlink{structComplexMatrix2_ae72b4458233b077a636beee1892e81ff}{r0c0}}.\mbox{\hyperlink{structComplex_a1151948284b21c0052f203f23ab931d9}{imag}}
+401                 - u.\mbox{\hyperlink{structComplexMatrix2_ae72b4458233b077a636beee1892e81ff}{r0c0}}.\mbox{\hyperlink{structComplex_a479ad939835457595fcca3ca55c06283}{real}}*u.\mbox{\hyperlink{structComplexMatrix2_a0f3932f055a8b05cef361bce25d51172}{r0c1}}.\mbox{\hyperlink{structComplex_a1151948284b21c0052f203f23ab931d9}{imag}}
+402                 + u.\mbox{\hyperlink{structComplexMatrix2_a763007c3070802373549ba0350f83c8a}{r1c1}}.\mbox{\hyperlink{structComplex_a479ad939835457595fcca3ca55c06283}{real}}*u.\mbox{\hyperlink{structComplexMatrix2_ab98282015ed2065e53fbc9638e2583ab}{r1c0}}.\mbox{\hyperlink{structComplex_a1151948284b21c0052f203f23ab931d9}{imag}}
+403                 - u.\mbox{\hyperlink{structComplexMatrix2_ab98282015ed2065e53fbc9638e2583ab}{r1c0}}.\mbox{\hyperlink{structComplex_a479ad939835457595fcca3ca55c06283}{real}}*u.\mbox{\hyperlink{structComplexMatrix2_a763007c3070802373549ba0350f83c8a}{r1c1}}.\mbox{\hyperlink{structComplex_a1151948284b21c0052f203f23ab931d9}{imag}}) > \mbox{\hyperlink{QuEST__precision_8h_aebb5e6716e06431296af4d1a71744dec}{REAL\_EPS}} ) \textcolor{keywordflow}{return} 0;
+404 
+405     \textcolor{keywordflow}{return} 1;
+406 \}
+\end{DoxyCode}
+\mbox{\Hypertarget{QuEST__internal_8h_a71c14976f63cfcda70026fa20ee531fe}\label{QuEST__internal_8h_a71c14976f63cfcda70026fa20ee531fe}} 
+\index{Qu\+E\+S\+T\+\_\+internal.\+h@{Qu\+E\+S\+T\+\_\+internal.\+h}!validate\+Unit\+Vector@{validate\+Unit\+Vector}}
+\index{validate\+Unit\+Vector@{validate\+Unit\+Vector}!Qu\+E\+S\+T\+\_\+internal.\+h@{Qu\+E\+S\+T\+\_\+internal.\+h}}
+\paragraph{\texorpdfstring{validate\+Unit\+Vector()}{validateUnitVector()}}
+{\footnotesize\ttfamily int validate\+Unit\+Vector (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{QuEST__precision_8h_a4b654506f18b8bfd61ad2a29a7e38c25}{R\+E\+AL}}}]{ux,  }\item[{\mbox{\hyperlink{QuEST__precision_8h_a4b654506f18b8bfd61ad2a29a7e38c25}{R\+E\+AL}}}]{uy,  }\item[{\mbox{\hyperlink{QuEST__precision_8h_a4b654506f18b8bfd61ad2a29a7e38c25}{R\+E\+AL}}}]{uz }\end{DoxyParamCaption})}
+
+
+
+Definition at line 416 of file Qu\+E\+S\+T.\+c.
+
+
+
+References R\+E\+A\+L\+\_\+\+E\+PS.
+
+
+\begin{DoxyCode}
+416                                                  \{
+417     \textcolor{keywordflow}{if} ( fabs(sqrt(ux*ux + uy*uy + uz*uz) - 1) > \mbox{\hyperlink{QuEST__precision_8h_aebb5e6716e06431296af4d1a71744dec}{REAL\_EPS}} ) \textcolor{keywordflow}{return} 0;
+418     \textcolor{keywordflow}{else} \textcolor{keywordflow}{return} 1;
+419 \}
+\end{DoxyCode}
+
+
+\subsubsection{Variable Documentation}
+\mbox{\Hypertarget{QuEST__internal_8h_aac1637696885c75b73a1ecf381cea713}\label{QuEST__internal_8h_aac1637696885c75b73a1ecf381cea713}} 
+\index{Qu\+E\+S\+T\+\_\+internal.\+h@{Qu\+E\+S\+T\+\_\+internal.\+h}!error\+Codes@{error\+Codes}}
+\index{error\+Codes@{error\+Codes}!Qu\+E\+S\+T\+\_\+internal.\+h@{Qu\+E\+S\+T\+\_\+internal.\+h}}
+\paragraph{\texorpdfstring{error\+Codes}{errorCodes}}
+{\footnotesize\ttfamily const char$\ast$ error\+Codes\mbox{[}$\,$\mbox{]}}
+
+
+
+Definition at line 30 of file Qu\+E\+S\+T.\+c.
+
+
+
+Referenced by exit\+With\+Error().
+
