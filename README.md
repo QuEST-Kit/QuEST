@@ -2,11 +2,29 @@
 
 ## Versions
 
-QuEST is currently in prerelease and may be unstable.  
 
-Latest version: [0.11.1](https://github.com/aniabrown/QuEST/releases/tag/v0.11.1) 
+Latest version: [1.0.0](https://github.com/aniabrown/QuEST/releases/tag/v1.0.0) 
 
 Please report errors or feedback to anna.brown@oerc.ox.ac.uk 
+
+## Quick Start
+
+Copy or clone this repository to your machine. 
+
+In the root directory, compile using
+
+```
+make
+```
+
+Run an [example circuit file](tutorialExample.c) using
+
+```
+./demo
+```
+
+The program will print information about your execution environment and some simple operations on a three qubit system. See the [tutorial](examples/tutorial.md) for more information. 
+
 
 ## Introduction
 
@@ -43,11 +61,19 @@ multiControlledUnitary(qureg, controls, 5, 0, u);
 
 ## Getting started
 
-QuEST is contained entirely in the `.c` and `.h` files in the `QuEST/` folder. To use QuEST, copy these files to your computer and include `qubits.h` in your C code. We include make files for compiling QuEST, and submission scripts for using QuEST with SLURM and PBS. See [examples/tutorial.md](/examples/tutorial.md) for an introduction. Clone or download this entire repository to include all examples as well as tests and documentation. 
+QuEST is contained entirely in the `.c` and `.h` files in the `QuEST/` folder. To use QuEST, copy these files to your computer and include `QuEST.h` in your C code. We include make files for compiling QuEST, and submission scripts for using QuEST with SLURM and PBS. See [examples/tutorial.md](/examples/tutorial.md) for an introduction. Clone or download this entire repository to include all examples as well as tests and documentation. 
+
+Explicit instructions to download and run QuEST from the command line can be found at [quest.qtechtheory.org/download](https://quest.qtechtheory.org/download/).
 
 ## API Documentation
 
-View the API [here](https://aniabrown.github.io/QuEST/qubits_8h.html), and the full documentation at https://aniabrown.github.io/QuEST/
+View the API [here](https://aniabrown.github.io/QuEST/QuEST_8h.html), and the full documentation at https://aniabrown.github.io/QuEST/
+
+> For developers: To recreate the full documentation after making changes to the code, run doxygen doxyconf in the root directory. This will generate documentation in Doxygen_doc/html, and can be accessed through index.html in that folder. 
+
+## Acknowledgements
+
+QuEST uses the [mt19937ar](http://www.math.sci.hiroshima-u.ac.jp/~m-mat/MT/MT2002/emt19937ar.html) Mersenne Twister algorithm for random number generation, under the BSD licence. 
 
 ## Licence
 

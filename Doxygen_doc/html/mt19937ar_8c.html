@@ -179,12 +179,12 @@
 
 <p>Definition at line <a class="el" href="mt19937ar_8c_source.html#l00102">102</a> of file <a class="el" href="mt19937ar_8c_source.html">mt19937ar.c</a>.</p>
 
-<p>References <a class="el" href="mt19937ar_8c_source.html#l00057">init_genrand()</a>, <a class="el" href="mt19937ar_8c_source.html#l00051">LOWER_MASK</a>, <a class="el" href="mt19937ar_8c_source.html#l00048">M</a>, <a class="el" href="mt19937ar_8c_source.html#l00049">MATRIX_A</a>, <a class="el" href="mt19937ar_8c_source.html#l00053">mt</a>, <a class="el" href="mt19937ar_8c_source.html#l00054">mti</a>, <a class="el" href="mt19937ar_8c_source.html#l00047">N</a>, and <a class="el" href="mt19937ar_8c_source.html#l00050">UPPER_MASK</a>.</p>
+<p>References <a class="el" href="mt19937ar_8c_source.html#l00057">init_genrand()</a>, <a class="el" href="mt19937ar_8c_source.html#l00051">LOWER_MASK</a>, <a class="el" href="mt19937ar_8c_source.html#l00048">M</a>, <a class="el" href="mt19937ar_8c_source.html#l00049">MATRIX_A</a>, <a class="el" href="mt19937ar_8c_source.html#l00053">mt</a>, <a class="el" href="mt19937ar_8c_source.html#l00054">mti</a>, <a class="el" href="mt19937ar_8c_source.html#l00047">N</a>, <a class="el" href="mt19937ar_8c_source.html#l00050">UPPER_MASK</a>, and <a class="el" href="README_8md_source.html#l00047">y</a>.</p>
 
 <p>Referenced by <a class="el" href="mt19937ar_8c_source.html#l00140">genrand_int31()</a>, <a class="el" href="mt19937ar_8c_source.html#l00146">genrand_real1()</a>, <a class="el" href="mt19937ar_8c_source.html#l00153">genrand_real2()</a>, <a class="el" href="mt19937ar_8c_source.html#l00160">genrand_real3()</a>, and <a class="el" href="mt19937ar_8c_source.html#l00167">genrand_res53()</a>.</p>
 
 <p><div class="fragment"><pre class="fragment"><a name="l00103"></a>00103 {
-<a name="l00104"></a>00104     <span class="keywordtype">unsigned</span> <span class="keywordtype">long</span> y;
+<a name="l00104"></a>00104     <span class="keywordtype">unsigned</span> <span class="keywordtype">long</span> <a class="code" href="README_8md.html#a003dc5701d53a819228f5417a8089139">y</a>;
 <a name="l00105"></a>00105     <span class="keyword">static</span> <span class="keywordtype">unsigned</span> <span class="keywordtype">long</span> mag01[2]={0x0UL, <a class="code" href="mt19937ar_8c.html#a376c3581bae3c2367fc9ce694e5a8949">MATRIX_A</a>};
 <a name="l00106"></a>00106     <span class="comment">/* mag01[x] = x * MATRIX_A  for x=0,1 */</span>
 <a name="l00107"></a>00107 
@@ -242,7 +242,7 @@
 
 <p>References <a class="el" href="mt19937ar_8c_source.html#l00102">genrand_int32()</a>.</p>
 
-<p>Referenced by <a class="el" href="qubits__env__local_8c_source.html#l00215">measureWithStats()</a>.</p>
+<p>Referenced by <a class="el" href="QuEST__env__local_8c_source.html#l00206">measureWithStats()</a>.</p>
 
 <p><div class="fragment"><pre class="fragment"><a name="l00147"></a>00147 {
 <a name="l00148"></a>00148     <span class="keywordflow">return</span> <a class="code" href="mt19937ar_8c.html#a2b30ec504bc40c51320d14da9dfab43b">genrand_int32</a>()*(1.0/4294967295.0); 
@@ -365,7 +365,7 @@
 
 <p>References <a class="el" href="mt19937ar_8c_source.html#l00057">init_genrand()</a>, <a class="el" href="mt19937ar_8c_source.html#l00053">mt</a>, and <a class="el" href="mt19937ar_8c_source.html#l00047">N</a>.</p>
 
-<p>Referenced by <a class="el" href="qubits__env__local_8c_source.html#l00022">initQuESTEnv()</a>.</p>
+<p>Referenced by <a class="el" href="QuEST_8c_source.html#l01976">QuESTSeedRandom()</a>, and <a class="el" href="QuEST_8c_source.html#l01949">QuESTSeedRandomDefault()</a>.</p>
 
 <p><div class="fragment"><pre class="fragment"><a name="l00077"></a>00077 {
 <a name="l00078"></a>00078     <span class="keywordtype">int</span> i, j, k;
@@ -469,7 +469,7 @@
 </div>
 </div>
 </div>
-<hr size="1"/><address style="text-align: right;"><small>Generated on 28 Mar 2018 for Distributed QuEST by&nbsp;
+<hr size="1"/><address style="text-align: right;"><small>Generated on 2 May 2018 for Distributed QuEST by&nbsp;
 <a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/></a> 1.6.1 </small></address>
 </body>

@@ -26,61 +26,86 @@
 <a name="l00002"></a>00002 <span class="preprocessor"></span>
 <a name="l00003"></a>00003 <span class="preprocessor">## Versions</span>
 <a name="l00004"></a>00004 <span class="preprocessor"></span>
-<a name="l00005"></a>00005 QuEST is currently in prerelease and may be unstable.  
+<a name="l00005"></a>00005 <a class="code" href="README_8md.html#a2d0f5bba181ef1543dc90d4f1ce64c5e">QuEST</a> is currently in prerelease and may be unstable.  
 <a name="l00006"></a>00006 
 <a name="l00007"></a>00007 Latest <a class="code" href="README_8md.html#a94df19ae37ab2d673ea00c5d31754e61">version</a>: [0.11.1](https:<span class="comment">//github.com/aniabrown/QuEST/releases/tag/v0.11.1) </span>
 <a name="l00008"></a>00008 
 <a name="l00009"></a>00009 Please report errors or feedback to anna.brown@oerc.ox.ac.uk 
 <a name="l00010"></a>00010 
-<a name="l00011"></a>00011 <span class="preprocessor">## Introduction</span>
+<a name="l00011"></a>00011 <span class="preprocessor">## Quick Start</span>
 <a name="l00012"></a>00012 <span class="preprocessor"></span>
-<a name="l00013"></a><a class="code" href="README_8md.html#a94df19ae37ab2d673ea00c5d31754e61">00013</a> The **Quantum Exact Simulation Toolkit** is a high performance simulator of universal quantum circuits. QuEST is written in C, hybridises OpenMP and <a class="code" href="README_8md.html#a0a40be130c04118a27bcd009eebdaa7b">MPI</a>, and can run on a GPU. Needing only <a class="code" href="README_8md.html#a9deb99efd500e3c4a12304d32da47e19">compilation</a>, QuEST is easy to run both on laptops and <a class="code" href="README_8md.html#a1a0088f6c565daaa48409371f6c5c36c">supercomputers</a>, where it can take advantage of multicore and networked machines to quickly simulate circuits on many qubits.
+<a name="l00013"></a>00013 Copy or clone <span class="keyword">this</span> repository to your machine. 
 <a name="l00014"></a>00014 
-<a name="l00015"></a>00015 &gt; The GPU <a class="code" href="README_8md.html#a94df19ae37ab2d673ea00c5d31754e61">version</a> of QuEST is currently located in another repository [here](https:<span class="comment">//github.com/aniabrown/QuEST_GPU), though the introduction in [examples/tutorial.md](/examples/tutorial.md) is still relevant.</span>
+<a name="l00015"></a><a class="code" href="README_8md.html#a94df19ae37ab2d673ea00c5d31754e61">00015</a> In the root directory, compile <span class="keyword">using</span>
 <a name="l00016"></a>00016 
-<a name="l00017"></a>00017 QuEST has a simple interface, independent of its run environment (on CPUs, GPUs or over networks),
-<a name="l00018"></a>00018 ```C
-<a name="l00019"></a>00019 <a class="code" href="qubits_8h.html#aa09b5dd93de6df1384b8f2c0041749ab" title="Apply the single-qubit Hadamard gate.">hadamard</a>(qubits, 0);
+<a name="l00017"></a>00017 ```
+<a name="l00018"></a>00018 make
+<a name="l00019"></a>00019 ```
 <a name="l00020"></a>00020 
-<a name="l00021"></a>00021 <a class="code" href="qubits_8h.html#a67576895bbc65463481a8ea24d9b1e22" title="Apply the controlled not (single control, single target) gate, also known as the...">controlledNot</a>(qubits, 0, 1);
+<a name="l00021"></a>00021 Run an [example circuit file](tutorialExample.c) <span class="keyword">using</span>
 <a name="l00022"></a>00022 
-<a name="l00023"></a>00023 <a class="code" href="qubits_8c.html#ace0d3592d38a990e81a434c4e9681500" title="Rotate a single qubit by a given angle around the Y-axis of the Bloch-sphere.">rotateY</a>(qubits, 0, .1);
-<a name="l00024"></a>00024 ```
-<a name="l00025"></a>00025 though is flexible
-<a name="l00026"></a>00026 ```C
-<a name="l00027"></a>00027 <a class="code" href="structVector.html" title="Represents a 3-vector of real numbers.">Vector</a> v;
-<a name="l00028"></a>00028 v.x = 1; v.y = 0; v.z = 0;
-<a name="l00029"></a>00029 <a class="code" href="qubits_8c.html#a8810423457803005fecd415f4299f40d" title="Rotate a single qubit by a given angle around a given vector on the Bloch-sphere...">rotateAroundAxis</a>(qubits, 0, 3.14/2, v);
-<a name="l00030"></a>00030 ```
-<a name="l00031"></a>00031 and powerful
-<a name="l00032"></a>00032 ```C
-<a name="l00033"></a>00033 <a class="code" href="structComplexMatrix2.html" title="Represents a 2x2 matrix of complex numbers.">ComplexMatrix2</a> u;
-<a name="l00034"></a>00034 u.r0c0 = (<a class="code" href="structComplex.html" title="Represents one complex number.">Complex</a>) {.real=.5, .imag= .5};
-<a name="l00035"></a>00035 u.r0c1 = (<a class="code" href="structComplex.html" title="Represents one complex number.">Complex</a>) {.real=.5, .imag=-.5}; 
-<a name="l00036"></a>00036 u.r1c0 = (<a class="code" href="structComplex.html" title="Represents one complex number.">Complex</a>) {.real=.5, .imag=-.5};
-<a name="l00037"></a>00037 u.r1c1 = (<a class="code" href="structComplex.html" title="Represents one complex number.">Complex</a>) {.real=.5, .imag= .5};
-<a name="l00038"></a>00038 <a class="code" href="qubits_8h.html#a7a0877e33700f6bad48adb51b7b3fb67" title="Apply a general single-qubit unitary (including a global phase factor).">unitary</a>(qubits, 0, u);
+<a name="l00023"></a>00023 ```
+<a name="l00024"></a>00024 ./demo
+<a name="l00025"></a>00025 ```
+<a name="l00026"></a>00026 
+<a name="l00027"></a>00027 The program will print information about your execution environment and some simple operations on a three qubit system. See the [tutorial](examples/tutorial.md) <span class="keywordflow">for</span> more information. 
+<a name="l00028"></a>00028 
+<a name="l00029"></a>00029 
+<a name="l00030"></a>00030 <span class="preprocessor">## Introduction</span>
+<a name="l00031"></a>00031 <span class="preprocessor"></span>
+<a name="l00032"></a>00032 The **Quantum Exact Simulation Toolkit** is a high performance simulator of universal quantum circuits. <a class="code" href="README_8md.html#a2d0f5bba181ef1543dc90d4f1ce64c5e">QuEST</a> is written in C, hybridises OpenMP and MPI, and can run on a GPU. Needing only compilation, <a class="code" href="README_8md.html#a2d0f5bba181ef1543dc90d4f1ce64c5e">QuEST</a> is easy to run both on laptops and supercomputers, where it can take advantage of multicore and networked machines to quickly simulate circuits on many qubits.
+<a name="l00033"></a>00033 
+<a name="l00034"></a>00034 &gt; The GPU <a class="code" href="README_8md.html#a94df19ae37ab2d673ea00c5d31754e61">version</a> of <a class="code" href="README_8md.html#a2d0f5bba181ef1543dc90d4f1ce64c5e">QuEST</a> is currently located in another repository [here](https:<span class="comment">//github.com/aniabrown/QuEST_GPU), though the introduction in [examples/tutorial.md](/examples/tutorial.md) is still relevant.</span>
+<a name="l00035"></a>00035 
+<a name="l00036"></a>00036 <a class="code" href="README_8md.html#a2d0f5bba181ef1543dc90d4f1ce64c5e">QuEST</a> has a simple interface, independent of its run environment (on CPUs, GPUs or over networks),
+<a name="l00037"></a>00037 ```C
+<a name="l00038"></a>00038 <a class="code" href="QuEST_8h.html#aa09b5dd93de6df1384b8f2c0041749ab" title="Apply the single-qubit Hadamard gate.">hadamard</a>(qubits, 0);
 <a name="l00039"></a>00039 
-<a name="l00040"></a>00040 <span class="keywordtype">int</span>[] controls = {1, 2, 3, 4, 5};
-<a name="l00041"></a>00041 <a class="code" href="qubits_8h.html#ae395a79690283ed81106afadd7a8cd8a" title="Apply a general multiple-control single-target unitary, which can include a global...">multiControlledUnitary</a>(qureg, controls, 5, 0, u);
-<a name="l00042"></a>00042 ```
-<a name="l00043"></a>00043 
-<a name="l00044"></a>00044 <span class="preprocessor">## Getting started</span>
-<a name="l00045"></a>00045 <span class="preprocessor"></span>
-<a name="l00046"></a>00046 QuEST is contained entirely in the `.c` and `.h` files in the `QuEST/` folder. To use QuEST, copy these files to your computer and include `qubits.h` in your C code. We include make files <span class="keywordflow">for</span> compiling QuEST, and submission scripts <span class="keywordflow">for</span> <span class="keyword">using</span> QuEST with SLURM and PBS. See [examples/tutorial.md](/examples/tutorial.md) <span class="keywordflow">for</span> an introduction. Clone or download <span class="keyword">this</span> entire repository to include all examples as well as tests and documentation. 
-<a name="l00047"></a>00047 
-<a name="l00048"></a>00048 ## API Documentation
-<a name="l00049"></a>00049 
-<a name="l00050"></a>00050 View the API [here](https:<span class="comment">//aniabrown.github.io/QuEST/qubits_8h.html), and the full documentation at https://aniabrown.github.io/QuEST/</span>
-<a name="l00051"></a>00051 
-<a name="l00052"></a>00052 ## Licence
-<a name="l00053"></a>00053 
-<a name="l00054"></a>00054 QuEST is released under a [MIT Licence](https:<span class="comment">//github.com/aniabrown/QuEST/blob/master/LICENCE.txt)</span>
-<a name="l00055"></a>00055 
-<a name="l00056"></a>00056 
-<a name="l00057"></a>00057 
+<a name="l00040"></a>00040 <a class="code" href="QuEST_8h.html#a67576895bbc65463481a8ea24d9b1e22" title="Apply the controlled not (single control, single target) gate, also known as the...">controlledNot</a>(qubits, 0, 1);
+<a name="l00041"></a>00041 
+<a name="l00042"></a>00042 <a class="code" href="QuEST_8c.html#ace0d3592d38a990e81a434c4e9681500" title="Rotate a single qubit by a given angle around the Y-axis of the Bloch-sphere.">rotateY</a>(qubits, 0, .1);
+<a name="l00043"></a>00043 ```
+<a name="l00044"></a>00044 though is flexible
+<a name="l00045"></a>00045 ```C
+<a name="l00046"></a><a class="code" href="README_8md.html#a22eb3b09da74633038e36bd8dfef55c0">00046</a> <a class="code" href="structVector.html" title="Represents a 3-vector of real numbers.">Vector</a> <a class="code" href="README_8md.html#a22eb3b09da74633038e36bd8dfef55c0">v</a>;
+<a name="l00047"></a><a class="code" href="README_8md.html#a0f9f545825a114923b98de8cc33a5f6a">00047</a> v.<a class="code" href="structVector.html#aac7abe171ba4bada50ed72acba6259fc">x</a> = 1; v.<a class="code" href="structVector.html#a375ca805d4c808a53d7c4e0c737ae3de">y</a> = 0; v.<a class="code" href="structVector.html#ad4e863651be7d6b7e2b28cd7445a0ccf">z</a> = 0;
+<a name="l00048"></a>00048 <a class="code" href="QuEST_8c.html#a8810423457803005fecd415f4299f40d" title="Rotate a single qubit by a given angle around a given vector on the Bloch-sphere...">rotateAroundAxis</a>(qubits, 0, 3.14/2, v);
+<a name="l00049"></a>00049 ```
+<a name="l00050"></a>00050 and powerful
+<a name="l00051"></a>00051 ```C
+<a name="l00052"></a><a class="code" href="README_8md.html#a5d1c311241dc8d8ffa4badf059977dc5">00052</a> <a class="code" href="structComplexMatrix2.html" title="Represents a 2x2 matrix of complex numbers.">ComplexMatrix2</a> <a class="code" href="README_8md.html#a5d1c311241dc8d8ffa4badf059977dc5">u</a>;
+<a name="l00053"></a><a class="code" href="README_8md.html#a28c529de4915322d2a51f2c1a424c672">00053</a> u.<a class="code" href="structComplexMatrix2.html#ae72b4458233b077a636beee1892e81ff">r0c0</a> = (<a class="code" href="structComplex.html" title="Represents one complex number.">Complex</a>) {.<a class="code" href="structComplex.html#a479ad939835457595fcca3ca55c06283">real</a>=.5, .imag= .5};
+<a name="l00054"></a><a class="code" href="README_8md.html#a444db2ee26ed224e9370770814cb4b50">00054</a> u.<a class="code" href="structComplexMatrix2.html#a0f3932f055a8b05cef361bce25d51172">r0c1</a> = (<a class="code" href="structComplex.html" title="Represents one complex number.">Complex</a>) {.<a class="code" href="structComplex.html#a479ad939835457595fcca3ca55c06283">real</a>=.5, .imag=-.5}; 
+<a name="l00055"></a><a class="code" href="README_8md.html#a698aa54017453fbfbf429e0e46821ef8">00055</a> u.<a class="code" href="structComplexMatrix2.html#ab98282015ed2065e53fbc9638e2583ab">r1c0</a> = (<a class="code" href="structComplex.html" title="Represents one complex number.">Complex</a>) {.<a class="code" href="structComplex.html#a479ad939835457595fcca3ca55c06283">real</a>=.5, .imag=-.5};
+<a name="l00056"></a><a class="code" href="README_8md.html#aae8b0c0e5cc303f7560cb29107cd0787">00056</a> u.<a class="code" href="structComplexMatrix2.html#a763007c3070802373549ba0350f83c8a">r1c1</a> = (<a class="code" href="structComplex.html" title="Represents one complex number.">Complex</a>) {.<a class="code" href="structComplex.html#a479ad939835457595fcca3ca55c06283">real</a>=.5, .imag= .5};
+<a name="l00057"></a>00057 <a class="code" href="QuEST_8h.html#a7a0877e33700f6bad48adb51b7b3fb67" title="Apply a general single-qubit unitary (including a global phase factor).">unitary</a>(qubits, 0, u);
+<a name="l00058"></a>00058 
+<a name="l00059"></a><a class="code" href="README_8md.html#a636f16bb55903420974dfd184205e591">00059</a> <span class="keywordtype">int</span>[] <a class="code" href="README_8md.html#a636f16bb55903420974dfd184205e591">controls</a> = {1, 2, 3, 4, 5};
+<a name="l00060"></a>00060 <a class="code" href="QuEST_8h.html#ae395a79690283ed81106afadd7a8cd8a" title="Apply a general multiple-control single-target unitary, which can include a global...">multiControlledUnitary</a>(qureg, <a class="code" href="README_8md.html#a636f16bb55903420974dfd184205e591">controls</a>, 5, 0, u);
+<a name="l00061"></a>00061 ```
+<a name="l00062"></a>00062 
+<a name="l00063"></a>00063 <span class="preprocessor">## Getting started</span>
+<a name="l00064"></a>00064 <span class="preprocessor"></span>
+<a name="l00065"></a><a class="code" href="README_8md.html#a2d0f5bba181ef1543dc90d4f1ce64c5e">00065</a> <a class="code" href="README_8md.html#a2d0f5bba181ef1543dc90d4f1ce64c5e">QuEST</a> is contained entirely in the `.c` and `.h` files in the `<a class="code" href="README_8md.html#a2d0f5bba181ef1543dc90d4f1ce64c5e">QuEST</a>/` folder. To use <a class="code" href="README_8md.html#a2d0f5bba181ef1543dc90d4f1ce64c5e">QuEST</a>, copy these files to your computer and include `<a class="code" href="README_8md.html#a2d0f5bba181ef1543dc90d4f1ce64c5e">QuEST</a>.h` in your C code. We include make files <span class="keywordflow">for</span> compiling <a class="code" href="README_8md.html#a2d0f5bba181ef1543dc90d4f1ce64c5e">QuEST</a>, and submission scripts <span class="keywordflow">for</span> <span class="keyword">using</span> <a class="code" href="README_8md.html#a2d0f5bba181ef1543dc90d4f1ce64c5e">QuEST</a> with SLURM and PBS. See [examples/tutorial.md](/examples/tutorial.md) <span class="keywordflow">for</span> an introduction. Clone or download <span class="keyword">this</span> entire repository to include all examples as well as tests and documentation. 
+<a name="l00066"></a>00066 
+<a name="l00067"></a>00067 ## API Documentation
+<a name="l00068"></a>00068 
+<a name="l00069"></a>00069 View the API [here](https:<span class="comment">//aniabrown.github.io/QuEST/QuEST_8h.html), and the full documentation at https://aniabrown.github.io/QuEST/</span>
+<a name="l00070"></a>00070 
+<a name="l00071"></a>00071 &gt; For developers: To recreate the full documentation after making changes to the code, run doxygen doxyconf in the root directory. This will generate documentation in Doxygen_doc/html, and can be accessed through index.html in that folder. 
+<a name="l00072"></a>00072 
+<a name="l00073"></a>00073 ## Acknowledgements
+<a name="l00074"></a>00074 
+<a name="l00075"></a>00075 <a class="code" href="README_8md.html#a2d0f5bba181ef1543dc90d4f1ce64c5e">QuEST</a> uses the [mt19937ar](http:<span class="comment">//www.math.sci.hiroshima-u.ac.jp/~m-mat/MT/MT2002/emt19937ar.html) Mersenne Twister algorithm for random number generation, under the BSD licence. </span>
+<a name="l00076"></a>00076 
+<a name="l00077"></a>00077 ## Licence
+<a name="l00078"></a>00078 
+<a name="l00079"></a>00079 <a class="code" href="README_8md.html#a2d0f5bba181ef1543dc90d4f1ce64c5e">QuEST</a> is released under a [MIT Licence](https:<span class="comment">//github.com/aniabrown/QuEST/blob/master/LICENCE.txt)</span>
+<a name="l00080"></a>00080 
+<a name="l00081"></a>00081 
+<a name="l00082"></a>00082 
 </pre></div></div>
-<hr size="1"/><address style="text-align: right;"><small>Generated on 28 Mar 2018 for Distributed QuEST by&nbsp;
+<hr size="1"/><address style="text-align: right;"><small>Generated on 2 May 2018 for Distributed QuEST by&nbsp;
 <a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/></a> 1.6.1 </small></address>
 </body>

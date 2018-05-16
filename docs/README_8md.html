@@ -27,68 +27,336 @@
 <h1>README.md File Reference</h1>
 <p><a href="README_8md_source.html">Go to the source code of this file.</a></p>
 <table border="0" cellpadding="0" cellspacing="0">
+<tr><td colspan="2"><h2>Functions</h2></td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="README_8md.html#a919bff7d5f7b67fde28e771903fff6f1">controlledNot</a> (qubits, 0, 1)</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="README_8md.html#a6f495fc15ce3f43b4c8adbf43cb881ea">rotateY</a> (qubits, 0,.1)</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="README_8md.html#ac4cb8c0825f6c6a74b839bbd4ae22ea4">rotateAroundAxis</a> (qubits, 0, 3.14/2, <a class="el" href="README_8md.html#a22eb3b09da74633038e36bd8dfef55c0">v</a>)</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="README_8md.html#a22b5a2d7f987c5e030a1d683d9483f49">unitary</a> (qubits, 0, <a class="el" href="README_8md.html#a5d1c311241dc8d8ffa4badf059977dc5">u</a>)</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="README_8md.html#a25572bc3f038713ed311fea2b40de0e9">multiControlledUnitary</a> (qureg, <a class="el" href="README_8md.html#a636f16bb55903420974dfd184205e591">controls</a>, 5, 0, <a class="el" href="README_8md.html#a5d1c311241dc8d8ffa4badf059977dc5">u</a>)</td></tr>
 <tr><td colspan="2"><h2>Variables</h2></td></tr>
-<tr><td class="memItemLeft" align="right" valign="top">QuEST is currently in <br class="typebreak"/>
+<tr><td class="memItemLeft" align="right" valign="top"><a class="el" href="README_8md.html#a2d0f5bba181ef1543dc90d4f1ce64c5e">QuEST</a> is currently in <br class="typebreak"/>
 prerelease and may be unstable <br class="typebreak"/>
 Latest&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="README_8md.html#a94df19ae37ab2d673ea00c5d31754e61">version</a></td></tr>
-<tr><td class="memItemLeft" align="right" valign="top">QuEST is currently in <br class="typebreak"/>
-prerelease and may be unstable <br class="typebreak"/>
-Latest hybridises OpenMP and&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="README_8md.html#a0a40be130c04118a27bcd009eebdaa7b">MPI</a></td></tr>
-<tr><td class="memItemLeft" align="right" valign="top">QuEST is currently in <br class="typebreak"/>
-prerelease and may be unstable <br class="typebreak"/>
-Latest hybridises OpenMP and <br class="typebreak"/>
-and can run on a GPU Needing <br class="typebreak"/>
-only&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="README_8md.html#a9deb99efd500e3c4a12304d32da47e19">compilation</a></td></tr>
-<tr><td class="memItemLeft" align="right" valign="top">QuEST is currently in <br class="typebreak"/>
-prerelease and may be unstable <br class="typebreak"/>
-Latest hybridises OpenMP and <br class="typebreak"/>
-and can run on a GPU Needing <br class="typebreak"/>
-only QuEST is easy to run both <br class="typebreak"/>
-on laptops and&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="README_8md.html#a1a0088f6c565daaa48409371f6c5c36c">supercomputers</a></td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">though is flexible C <a class="el" href="structVector.html">Vector</a>&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="README_8md.html#a22eb3b09da74633038e36bd8dfef55c0">v</a></td></tr>
+<tr><td class="memItemLeft" align="right" valign="top"><a class="el" href="README_8md.html#a22eb3b09da74633038e36bd8dfef55c0">v</a>&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="README_8md.html#a6a52a27535805eddc782c67f42c20c69">x</a> = 1</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top"><a class="el" href="README_8md.html#a22eb3b09da74633038e36bd8dfef55c0">v</a>&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="README_8md.html#a003dc5701d53a819228f5417a8089139">y</a> = 0</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top"><a class="el" href="README_8md.html#a22eb3b09da74633038e36bd8dfef55c0">v</a>&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="README_8md.html#a0f9f545825a114923b98de8cc33a5f6a">z</a> = 0</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">and powerful C <a class="el" href="structComplexMatrix2.html">ComplexMatrix2</a>&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="README_8md.html#a5d1c311241dc8d8ffa4badf059977dc5">u</a></td></tr>
+<tr><td class="memItemLeft" align="right" valign="top"><a class="el" href="README_8md.html#a5d1c311241dc8d8ffa4badf059977dc5">u</a>&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="README_8md.html#a28c529de4915322d2a51f2c1a424c672">r0c0</a> = (<a class="el" href="structComplex.html">Complex</a>) {.real=.5, .imag= .5}</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top"><a class="el" href="README_8md.html#a5d1c311241dc8d8ffa4badf059977dc5">u</a>&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="README_8md.html#a444db2ee26ed224e9370770814cb4b50">r0c1</a> = (<a class="el" href="structComplex.html">Complex</a>) {.real=.5, .imag=-.5}</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top"><a class="el" href="README_8md.html#a5d1c311241dc8d8ffa4badf059977dc5">u</a>&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="README_8md.html#a698aa54017453fbfbf429e0e46821ef8">r1c0</a> = (<a class="el" href="structComplex.html">Complex</a>) {.real=.5, .imag=-.5}</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top"><a class="el" href="README_8md.html#a5d1c311241dc8d8ffa4badf059977dc5">u</a>&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="README_8md.html#aae8b0c0e5cc303f7560cb29107cd0787">r1c1</a> = (<a class="el" href="structComplex.html">Complex</a>) {.real=.5, .imag= .5}</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">int[]&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="README_8md.html#a636f16bb55903420974dfd184205e591">controls</a> = {1, 2, 3, 4, 5}</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top"><a class="el" href="README_8md.html#a2d0f5bba181ef1543dc90d4f1ce64c5e">QuEST</a> is contained entirely in <br class="typebreak"/>
+the c and h files in the <a class="el" href="README_8md.html#a2d0f5bba181ef1543dc90d4f1ce64c5e">QuEST</a> <br class="typebreak"/>
+folder To use&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="README_8md.html#a2d0f5bba181ef1543dc90d4f1ce64c5e">QuEST</a></td></tr>
 </table>
+<hr/><h2>Function Documentation</h2>
+<a class="anchor" id="a919bff7d5f7b67fde28e771903fff6f1"></a><!-- doxytag: member="README.md::controlledNot" ref="a919bff7d5f7b67fde28e771903fff6f1" args="(qubits, 0, 1)" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">controlledNot </td>
+          <td>(</td>
+          <td class="paramtype">qubits&nbsp;</td>
+          <td class="paramname">, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">0&nbsp;</td>
+          <td class="paramname">, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">1&nbsp;</td>
+          <td class="paramname"></td><td>&nbsp;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td><td></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="a25572bc3f038713ed311fea2b40de0e9"></a><!-- doxytag: member="README.md::multiControlledUnitary" ref="a25572bc3f038713ed311fea2b40de0e9" args="(qureg, controls, 5, 0, u)" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">multiControlledUnitary </td>
+          <td>(</td>
+          <td class="paramtype">qureg&nbsp;</td>
+          <td class="paramname">, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="README_8md.html#a636f16bb55903420974dfd184205e591">controls</a>&nbsp;</td>
+          <td class="paramname">, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">5&nbsp;</td>
+          <td class="paramname">, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">0&nbsp;</td>
+          <td class="paramname">, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="README_8md.html#a5d1c311241dc8d8ffa4badf059977dc5">u</a>&nbsp;</td>
+          <td class="paramname"></td><td>&nbsp;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td><td></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="ac4cb8c0825f6c6a74b839bbd4ae22ea4"></a><!-- doxytag: member="README.md::rotateAroundAxis" ref="ac4cb8c0825f6c6a74b839bbd4ae22ea4" args="(qubits, 0, 3.14/2, v)" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">rotateAroundAxis </td>
+          <td>(</td>
+          <td class="paramtype">qubits&nbsp;</td>
+          <td class="paramname">, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">0&nbsp;</td>
+          <td class="paramname">, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">3.14/&nbsp;</td>
+          <td class="paramname"> <em>2</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="README_8md.html#a22eb3b09da74633038e36bd8dfef55c0">v</a>&nbsp;</td>
+          <td class="paramname"></td><td>&nbsp;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td><td></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="a6f495fc15ce3f43b4c8adbf43cb881ea"></a><!-- doxytag: member="README.md::rotateY" ref="a6f495fc15ce3f43b4c8adbf43cb881ea" args="(qubits, 0,.1)" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">rotateY </td>
+          <td>(</td>
+          <td class="paramtype">qubits&nbsp;</td>
+          <td class="paramname">, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">0&nbsp;</td>
+          <td class="paramname">, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">.&nbsp;</td>
+          <td class="paramname"> <em>1</em></td><td>&nbsp;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td><td></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="a22b5a2d7f987c5e030a1d683d9483f49"></a><!-- doxytag: member="README.md::unitary" ref="a22b5a2d7f987c5e030a1d683d9483f49" args="(qubits, 0, u)" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">unitary </td>
+          <td>(</td>
+          <td class="paramtype">qubits&nbsp;</td>
+          <td class="paramname">, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">0&nbsp;</td>
+          <td class="paramname">, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="README_8md.html#a5d1c311241dc8d8ffa4badf059977dc5">u</a>&nbsp;</td>
+          <td class="paramname"></td><td>&nbsp;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td><td></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+</div>
+</div>
 <hr/><h2>Variable Documentation</h2>
-<a class="anchor" id="a9deb99efd500e3c4a12304d32da47e19"></a><!-- doxytag: member="README.md::compilation" ref="a9deb99efd500e3c4a12304d32da47e19" args="" -->
+<a class="anchor" id="a636f16bb55903420974dfd184205e591"></a><!-- doxytag: member="README.md::controls" ref="a636f16bb55903420974dfd184205e591" args="" -->
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">QuEST is currently in prerelease and may be unstable Latest hybridises OpenMP and and can run on a GPU Needing only <a class="el" href="README_8md.html#a9deb99efd500e3c4a12304d32da47e19">compilation</a></td>
+          <td class="memname">int [] <a class="el" href="README_8md.html#a636f16bb55903420974dfd184205e591">controls</a> = {1, 2, 3, 4, 5}</td>
         </tr>
       </table>
 </div>
 <div class="memdoc">
 
-<p>Definition at line <a class="el" href="README_8md_source.html#l00013">13</a> of file <a class="el" href="README_8md_source.html">README.md</a>.</p>
+<p>Definition at line <a class="el" href="README_8md_source.html#l00059">59</a> of file <a class="el" href="README_8md_source.html">README.md</a>.</p>
 
 </div>
 </div>
-<a class="anchor" id="a0a40be130c04118a27bcd009eebdaa7b"></a><!-- doxytag: member="README.md::MPI" ref="a0a40be130c04118a27bcd009eebdaa7b" args="" -->
+<a class="anchor" id="a2d0f5bba181ef1543dc90d4f1ce64c5e"></a><!-- doxytag: member="README.md::QuEST" ref="a2d0f5bba181ef1543dc90d4f1ce64c5e" args="" -->
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">QuEST is currently in prerelease and may be unstable Latest hybridises OpenMP and <a class="el" href="README_8md.html#a0a40be130c04118a27bcd009eebdaa7b">MPI</a></td>
+          <td class="memname"><a class="el" href="README_8md.html#a2d0f5bba181ef1543dc90d4f1ce64c5e">QuEST</a> is contained entirely in the c and h files in the <a class="el" href="README_8md.html#a2d0f5bba181ef1543dc90d4f1ce64c5e">QuEST</a> folder To use copy these files to your computer and include <a class="el" href="README_8md.html#a2d0f5bba181ef1543dc90d4f1ce64c5e">QuEST</a> h in your C code We include make files for compiling <a class="el" href="README_8md.html#a2d0f5bba181ef1543dc90d4f1ce64c5e">QuEST</a></td>
         </tr>
       </table>
 </div>
 <div class="memdoc">
 
-<p>Definition at line <a class="el" href="README_8md_source.html#l00013">13</a> of file <a class="el" href="README_8md_source.html">README.md</a>.</p>
+<p>Definition at line <a class="el" href="README_8md_source.html#l00065">65</a> of file <a class="el" href="README_8md_source.html">README.md</a>.</p>
 
 </div>
 </div>
-<a class="anchor" id="a1a0088f6c565daaa48409371f6c5c36c"></a><!-- doxytag: member="README.md::supercomputers" ref="a1a0088f6c565daaa48409371f6c5c36c" args="" -->
+<a class="anchor" id="a28c529de4915322d2a51f2c1a424c672"></a><!-- doxytag: member="README.md::r0c0" ref="a28c529de4915322d2a51f2c1a424c672" args="" -->
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">QuEST is currently in prerelease and may be unstable Latest hybridises OpenMP and and can run on a GPU Needing only QuEST is easy to run both on laptops and <a class="el" href="README_8md.html#a1a0088f6c565daaa48409371f6c5c36c">supercomputers</a></td>
+          <td class="memname"><a class="el" href="README_8md.html#a5d1c311241dc8d8ffa4badf059977dc5">u</a> <a class="el" href="README_8md.html#a28c529de4915322d2a51f2c1a424c672">r0c0</a> = (<a class="el" href="structComplex.html">Complex</a>) {.real=.5, .imag= .5}</td>
         </tr>
       </table>
 </div>
 <div class="memdoc">
 
-<p>Definition at line <a class="el" href="README_8md_source.html#l00013">13</a> of file <a class="el" href="README_8md_source.html">README.md</a>.</p>
+<p>Definition at line <a class="el" href="README_8md_source.html#l00053">53</a> of file <a class="el" href="README_8md_source.html">README.md</a>.</p>
+
+</div>
+</div>
+<a class="anchor" id="a444db2ee26ed224e9370770814cb4b50"></a><!-- doxytag: member="README.md::r0c1" ref="a444db2ee26ed224e9370770814cb4b50" args="" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="README_8md.html#a5d1c311241dc8d8ffa4badf059977dc5">u</a> <a class="el" href="README_8md.html#a444db2ee26ed224e9370770814cb4b50">r0c1</a> = (<a class="el" href="structComplex.html">Complex</a>) {.real=.5, .imag=-.5}</td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+<p>Definition at line <a class="el" href="README_8md_source.html#l00054">54</a> of file <a class="el" href="README_8md_source.html">README.md</a>.</p>
+
+</div>
+</div>
+<a class="anchor" id="a698aa54017453fbfbf429e0e46821ef8"></a><!-- doxytag: member="README.md::r1c0" ref="a698aa54017453fbfbf429e0e46821ef8" args="" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="README_8md.html#a5d1c311241dc8d8ffa4badf059977dc5">u</a> <a class="el" href="README_8md.html#a698aa54017453fbfbf429e0e46821ef8">r1c0</a> = (<a class="el" href="structComplex.html">Complex</a>) {.real=.5, .imag=-.5}</td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+<p>Definition at line <a class="el" href="README_8md_source.html#l00055">55</a> of file <a class="el" href="README_8md_source.html">README.md</a>.</p>
+
+</div>
+</div>
+<a class="anchor" id="aae8b0c0e5cc303f7560cb29107cd0787"></a><!-- doxytag: member="README.md::r1c1" ref="aae8b0c0e5cc303f7560cb29107cd0787" args="" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="README_8md.html#a5d1c311241dc8d8ffa4badf059977dc5">u</a> <a class="el" href="README_8md.html#aae8b0c0e5cc303f7560cb29107cd0787">r1c1</a> = (<a class="el" href="structComplex.html">Complex</a>) {.real=.5, .imag= .5}</td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+<p>Definition at line <a class="el" href="README_8md_source.html#l00056">56</a> of file <a class="el" href="README_8md_source.html">README.md</a>.</p>
+
+</div>
+</div>
+<a class="anchor" id="a5d1c311241dc8d8ffa4badf059977dc5"></a><!-- doxytag: member="README.md::u" ref="a5d1c311241dc8d8ffa4badf059977dc5" args="" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">and powerful C <a class="el" href="structComplexMatrix2.html">ComplexMatrix2</a> <a class="el" href="README_8md.html#a5d1c311241dc8d8ffa4badf059977dc5">u</a></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+<p>Definition at line <a class="el" href="README_8md_source.html#l00052">52</a> of file <a class="el" href="README_8md_source.html">README.md</a>.</p>
+
+<p>Referenced by <a class="el" href="tutorialExample_8c_source.html#l00004">main()</a>, <a class="el" href="runTests_8c_source.html#l00515">test_controlledUnitary()</a>, <a class="el" href="runTests_8c_source.html#l00567">test_multiControlledUnitary()</a>, and <a class="el" href="runTests_8c_source.html#l00403">test_unitary()</a>.</p>
+
+</div>
+</div>
+<a class="anchor" id="a22eb3b09da74633038e36bd8dfef55c0"></a><!-- doxytag: member="README.md::v" ref="a22eb3b09da74633038e36bd8dfef55c0" args="" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">though is flexible C <a class="el" href="structVector.html">Vector</a> <a class="el" href="README_8md.html#a22eb3b09da74633038e36bd8dfef55c0">v</a></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+<p>Definition at line <a class="el" href="README_8md_source.html#l00046">46</a> of file <a class="el" href="README_8md_source.html">README.md</a>.</p>
+
+<p>Referenced by <a class="el" href="tutorialExample_8c_source.html#l00004">main()</a>.</p>
 
 </div>
 </div>
@@ -97,18 +365,65 @@ on laptops and&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" 
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">QuEST is currently in prerelease and may be unstable Latest <a class="el" href="README_8md.html#a94df19ae37ab2d673ea00c5d31754e61">version</a></td>
+          <td class="memname"><a class="el" href="README_8md.html#a2d0f5bba181ef1543dc90d4f1ce64c5e">QuEST</a> is currently in prerelease and may be unstable Latest <a class="el" href="README_8md.html#a94df19ae37ab2d673ea00c5d31754e61">version</a></td>
         </tr>
       </table>
 </div>
 <div class="memdoc">
 
-<p>Definition at line <a class="el" href="README_8md_source.html#l00013">13</a> of file <a class="el" href="README_8md_source.html">README.md</a>.</p>
+<p>Definition at line <a class="el" href="README_8md_source.html#l00015">15</a> of file <a class="el" href="README_8md_source.html">README.md</a>.</p>
+
+</div>
+</div>
+<a class="anchor" id="a6a52a27535805eddc782c67f42c20c69"></a><!-- doxytag: member="README.md::x" ref="a6a52a27535805eddc782c67f42c20c69" args="" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="README_8md.html#a22eb3b09da74633038e36bd8dfef55c0">v</a> <a class="el" href="README_8md.html#a6a52a27535805eddc782c67f42c20c69">x</a> = 1</td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+<p>Definition at line <a class="el" href="README_8md_source.html#l00047">47</a> of file <a class="el" href="README_8md_source.html">README.md</a>.</p>
+
+</div>
+</div>
+<a class="anchor" id="a003dc5701d53a819228f5417a8089139"></a><!-- doxytag: member="README.md::y" ref="a003dc5701d53a819228f5417a8089139" args="" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="README_8md.html#a22eb3b09da74633038e36bd8dfef55c0">v</a> <a class="el" href="README_8md.html#a003dc5701d53a819228f5417a8089139">y</a> = 0</td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+<p>Definition at line <a class="el" href="README_8md_source.html#l00047">47</a> of file <a class="el" href="README_8md_source.html">README.md</a>.</p>
+
+<p>Referenced by <a class="el" href="QuEST__env__local_8c_source.html#l00057">calcTotalProbability()</a>, and <a class="el" href="mt19937ar_8c_source.html#l00102">genrand_int32()</a>.</p>
+
+</div>
+</div>
+<a class="anchor" id="a0f9f545825a114923b98de8cc33a5f6a"></a><!-- doxytag: member="README.md::z" ref="a0f9f545825a114923b98de8cc33a5f6a" args="" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="README_8md.html#a22eb3b09da74633038e36bd8dfef55c0">v</a> <a class="el" href="README_8md.html#a0f9f545825a114923b98de8cc33a5f6a">z</a> = 0</td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+<p>Definition at line <a class="el" href="README_8md_source.html#l00047">47</a> of file <a class="el" href="README_8md_source.html">README.md</a>.</p>
 
 </div>
 </div>
 </div>
-<hr size="1"/><address style="text-align: right;"><small>Generated on 28 Mar 2018 for Distributed QuEST by&nbsp;
+<hr size="1"/><address style="text-align: right;"><small>Generated on 2 May 2018 for Distributed QuEST by&nbsp;
 <a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/></a> 1.6.1 </small></address>
 </body>

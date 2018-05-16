@@ -1,7 +1,7 @@
 // Distributed under MIT licence. See https://github.com/aniabrown/QuEST/blob/master/LICENCE.txt for details
 
-# ifndef PRECISION
-# define PRECISION
+# ifndef QuEST_PRECISION
+# define QuEST_PRECISION
 
 // *** EDIT PRECISION HERE
 // OPTIONS: 1, 2, 4

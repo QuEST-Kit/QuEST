@@ -9,13 +9,13 @@ QuEST Tutorial
 
 # Coding
 
-Independent of which platform you'll run your simulation on (multicore machine, distributed machines, a GPU), your QuEST code will look the same. View the API [here](https://aniabrown.github.io/QuEST/qubits_8h.html)
+Independent of which platform you'll run your simulation on (multicore machine, distributed machines, a GPU), your QuEST code will look the same. View the API [here](https://aniabrown.github.io/QuEST/QuEST_8h.html)
 
-> Currently, a limited set of functions are available on the GPU, listed [here](https://aniabrown.github.io/QuEST_GPU/qubits_8h.html)
+> Currently, a limited set of functions are available on the GPU, listed [here](https://aniabrown.github.io/QuEST_GPU/QuEST_8h.html)
 
 A simulation of a very simple circuit looks like
 ```C
-#include "path/to/QuEST/qubits.h"
+#include "QuEST.h"
 
 int main(int narg, char *varg[]) {
 
@@ -163,9 +163,9 @@ and after compiling (see section below), gives psuedo-random output
 
 # Compiling
 
-To compile, copy the [makefile](makefile) to the same folder as your code.
+To compile, make sure there is a [makefile](makefile) in the same folder as your circuit code. An example makefile and the tutorial circuit file will be present in the root directory when you download the code.  
 
-Edit the makefile, letting `MY_C_SOURCES` be a space-separated list of your source files, `EXE` be the name of the output executable, and `QUEST_DIR` point to the folder which contains `qubits.h`. 
+Edit the makefile, letting `MY_C_SOURCES` be a space-separated list of your source files, `EXE` be the name of the output executable, and `QUEST_DIR` point to the folder which contains `QuEST.h`. 
 
 ```bash
 # COMPILER options: {GNU, INTEL}
@@ -192,12 +192,12 @@ make
 ```
 at the terminal, in the directory of your code. For the above example, this performs
 ```bash
-gcc -O2 -std=c99 -mavx -Wall -fopenmp -c ../QuEST_new/QuEST/qubits.c
-gcc -O2 -std=c99 -mavx -Wall -fopenmp -c ../QuEST_new/QuEST/mt19937ar.c
+gcc -O2 -std=c99 -mavx -Wall -fopenmp -c QuEST/QuEST.c
+gcc -O2 -std=c99 -mavx -Wall -fopenmp -c QuEST/mt19937ar.c
 gcc -O2 -std=c99 -mavx -Wall -fopenmp -c myCode1.c
 gcc -O2 -std=c99 -mavx -Wall -fopenmp -c myCode2.c
-gcc -O2 -std=c99 -mavx -Wall -fopenmp -c ../QuEST_new/QuEST/qubits_env_local.c
-gcc -O2 -std=c99 -mavx -Wall -fopenmp -o myExecutable qubits.o mt19937ar.o myCode1.o myCode2.o qubits_env_local.o -lm
+gcc -O2 -std=c99 -mavx -Wall -fopenmp -c QuEST/QuEST_env_local.c
+gcc -O2 -std=c99 -mavx -Wall -fopenmp -o myExecutable QuEST.o mt19937ar.o myCode1.o myCode2.o QuEST_env_local.o -lm
 ```
 You can then call your code
 ```bash
