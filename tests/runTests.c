@@ -10,7 +10,7 @@
 # include "QuEST_precision.h"
 # include "QuEST_debug.h"
 
-# define NUM_TESTS 20
+# define NUM_TESTS 21
 # define COMPARE_PRECISION 10e-13
 # define PATH_TO_TESTS "tests/unit/"
 # define VERBOSE 0
@@ -72,6 +72,34 @@ int test_initStatePlus(char testName[200]){
     destroyMultiQubit(mq, env);
     destroyMultiQubit(mqVerif, env);
 
+    return passed;
+}
+
+/* Tyson Jones, 16th May 18 */
+int test_initClassicalState(char testName[200]){
+    char filename[200];
+    int passed=1;
+
+    int numQubits=3;
+	int numAmps=8;
+	
+    MultiQubit mq;
+    createMultiQubit(&mq, numQubits, env);
+
+	// test every classical state
+	for (long long int stateInd=0LL; stateInd < numAmps; stateInd++) {
+    	initClassicalState(&mq, stateInd);
+		
+		// check that every other state has prob 0
+		for (long long int i=0LL; i < numAmps; i++) {
+			if (i == stateInd)
+				passed = passed && (getProbEl(mq,i) == 1.0);
+			else
+				passed = passed && (getProbEl(mq,i) == 0.0);
+		}
+	}
+
+    destroyMultiQubit(mq, env);
     return passed;
 }
 
@@ -861,6 +889,7 @@ int main (int narg, char** varg) {
         test_controlledNot,
         test_initStateZero,
         test_initStatePlus,
+		test_initClassicalState,
         test_sigmaX,
         test_sigmaY,
         test_sigmaZ,
@@ -884,6 +913,7 @@ int main (int narg, char** varg) {
         "controlledNot",
         "initStateZero",
         "initStatePlus",
+		"initClassicalState",
         "sigmaX",
         "sigmaY",
         "sigmaZ",
