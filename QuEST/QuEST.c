@@ -212,6 +212,43 @@ void initStatePlus (MultiQubit *multiQubit)
     }
 }
 
+/* Tyson Jones, 16th May 2018 4pm */
+void initClassicalState (MultiQubit *multiQubit, long long int stateInd)
+{
+    long long int stateVecSize;
+    long long int index;
+
+    // dimension of the state vector
+    stateVecSize = multiQubit->numAmps;
+
+    // Can't use multiQubit->stateVec as a private OMP var
+    REAL *stateVecReal = multiQubit->stateVec.real;
+    REAL *stateVecImag = multiQubit->stateVec.imag;
+
+    // initialise the state to |0000..0000>
+# ifdef _OPENMP
+# pragma omp parallel \
+    default  (none) \
+    shared   (stateInd, stateVecSize, stateVecReal, stateVecImag) \
+    private  (index) 
+# endif
+    {
+# ifdef _OPENMP
+# pragma omp for schedule (static)
+# endif
+        for (index=0; index<stateVecSize; index++) {
+            stateVecReal[index] = 0.0;
+            stateVecImag[index] = 0.0;
+        }
+    }
+
+	// give the specified classical state prob 1
+    if (multiQubit->chunkId == stateInd/stateVecSize){
+        stateVecReal[stateInd % stateVecSize] = 1.0;
+        stateVecImag[stateInd % stateVecSize] = 0.0;
+    }
+}
+
 /**
  * Initialise the state vector of probability amplitudes such that one qubit is set to 'outcome' and all other qubits are in an equal superposition of zero and one.
  * @param[in,out] multiQubit object representing the set of qubits to be initialised
