@@ -5,7 +5,8 @@
  * The core of the QuEST Library.
  */
 
-# include <math.h>  //SCB new line
+# define _XOPEN_SOURCE 500
+# include <math.h>  
 # include <stdio.h>
 # include <stdlib.h>
 # include <assert.h>
@@ -16,7 +17,7 @@
 # include "mt19937ar.h" // MT random number generation
 // for seeding random numbers
 # include <sys/param.h>
-# define _BSD_SOURCE
+
 # include <unistd.h>
 
 # include <sys/types.h> // include getpid
