@@ -151,6 +151,17 @@ void initStateZero(MultiQubit *multiQubit);
  */
 void initStatePlus(MultiQubit *multiQubit);
 
+/**
+ * Initialise a set of \f$ N \f$ qubits to the classical state with index \p stateInd.
+ * Note \f$ | 00 \dots 00 \rangle \f$ has \p stateInd 0, \f$ | 00 \dots 01 \rangle \f$ has \p stateInd 1, 
+ * \f$ | 11 \dots 11 \rangle \f$ has \p stateInd \f$ 2^N - 1 \f$, etc.
+ * Subsequent calls to getProbEl will yield 0 for all indices except \p stateInd.
+ *
+ * @param[in,out] multiQubit a pointer to the object representing the set of qubits to be initialised
+ * @param[in] stateInd the index (0 to the number of amplitudes, exclusive) of the state to give probability 1
+ */
+void initClassicalState(MultiQubit *multiQubit, long long int stateInd);
+
 /** Apply the multiple-qubit controlled phase gate, also known as the multiple-qubit controlled sigmaZ gate.
  * For each state, if all control qubits have value one, multiply the amplitude of that state by -1. This applies the many-qubit unitary:
  * \f[
