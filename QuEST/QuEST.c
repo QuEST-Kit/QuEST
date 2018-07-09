@@ -25,7 +25,9 @@
 # include <sys/time.h>
 # include <sys/types.h>
 
+# ifdef _OPENMP
 # include <omp.h>
+# endif
 
 const char* errorCodes[] = {
     "Success",                                              // 0
