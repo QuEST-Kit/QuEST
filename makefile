@@ -20,10 +20,10 @@ SOURCES = tutorialExample
 QUEST_DIR = QuEST
 
 # compiler to use, which should support both C and C++, to be wrapped by GPU/MPI compilers
-COMPILER = clang
+COMPILER = gcc
 
 # type of above compiler, one of {GNU, INTEL, CLANG}, used for setting compiler flags
-COMPILER_TYPE = CLANG
+COMPILER_TYPE = GNU
 
 # hardwares to target: 1 means use, 0 means don't use
 MULTITHREADED = 0

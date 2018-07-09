@@ -26,7 +26,7 @@ COMPILER = gcc
 COMPILER_TYPE = GNU
 
 # hardwares to target: 1 means use, 0 means don't use
-MULTITHREADED = 1
+MULTITHREADED = 0
 DISTRIBUTED = 0
 GPUACCELERATED = 0
 
@@ -47,6 +47,14 @@ SUPPRESS_WARNING = 0
 # always allow cleaning without errors or warnings
 ifneq ($(MAKECMDGOALS), clean)
 ifneq ($(MAKECMDGOALS), veryclean)
+
+ifneq ($(COMPILER_TYPE), CLANG)
+ifneq ($(COMPILER_TYPE), GNU)
+ifneq ($(COMPILER_TYPE), INTEL)
+    $(error COMPILER_TYPE must be one of CLANG, GNU or INTEL)
+endif
+endif
+endif
 
 ifeq ($(DISTRIBUTED), 1)
 ifeq ($(GPUACCELERATED), 1)
@@ -89,6 +97,7 @@ endif
 endif
 
 
+
 #======================================================================#
 #                                                                      #
 #      Automated Compilation                                           #
@@ -123,38 +132,41 @@ MPI_COMPILER = mpicc
 # --- compiler flags
 #
 
+# threading flag
 ifeq ($(MULTITHREADED), 1)
     ifeq ($(COMPILER_TYPE), GNU)
         THREAD_FLAGS = -fopenmp
     else ifeq ($(COMPILER_TYPE), INTEL)
-        THREAD_FLAGS = -openmp
+        THREAD_FLAGS = -qopenmp # -openmp   # intel make up your mind
     endif
 else
     THREAD_FLAGS =
 endif
 
-# c/c++ compiling
-CLANG_LINK_FLAGS = -O2 -std=c99 -mavx -Wall
-GNU_LINK_FLAGS = -O2 -std=c99 -mavx -Wall $(THREAD_FLAGS)
-INTEL_LINK_FLAGS = -O2 -std=c99 -fprotect-parens -Wall -xAVX -axCORE-AVX2 -diag-disable -cpu-dispatch $(THREAD_FLAGS)
+# c
+C_CLANG_FLAGS = -O2 -std=c99 -mavx -Wall
+C_GNU_FLAGS = -O2 -std=c99 -mavx -Wall $(THREAD_FLAGS)
+C_INTEL_FLAGS = -O2 -std=c99 -fprotect-parens -Wall -xAVX -axCORE-AVX2 -diag-disable -cpu-dispatch $(THREAD_FLAGS)
 
-# wrapper compiling
-CUDA_LINK_FLAGS = -O2 -arch=compute_$(GPU_COMPUTE_CAPABILITY) -code=sm_$(GPU_COMPUTE_CAPABILITY) -ccbin $(COMPILER)
-CUDA_COMP_FLAGS = -dc -O2 -arch=compute_$(GPU_COMPUTE_CAPABILITY) -code=sm_$(GPU_COMPUTE_CAPABILITY) -ccbin $(COMPILER)
+# c++
+CPP_CLANG_FLAGS = -O2 -std=c++11 -mavx -Wall
+CPP_GNU_FLAGS = -O2 -std=c++11 -mavx -Wall $(THREAD_FLAGS)
+CPP_INTEL_FLAGS = -O2 -std=c++11 -fprotect-parens -Wall -xAVX -axCORE-AVX2 -diag-disable -cpu-dispatch $(THREAD_FLAGS)
 
-# choose compiler flags
+# wrappers
+CPP_CUDA_FLAGS = -O2 -arch=compute_$(GPU_COMPUTE_CAPABILITY) -code=sm_$(GPU_COMPUTE_CAPABILITY) -ccbin $(COMPILER)
+
+# choose c/c++ flags based on compiler type
 ifeq ($(COMPILER_TYPE), CLANG)
-    C_LINK_FLAGS = $(CLANG_LINK_FLAGS)
-    C_COMP_FLAGS = -x c $(CLANG_LINK_FLAGS)
+    C_FLAGS = $(C_CLANG_FLAGS)
+    CPP_FLAGS = $(CPP_CLANG_FLAGS)
 else ifeq ($(COMPILER_TYPE), GNU)
-    C_LINK_FLAGS = $(GNU_LINK_FLAGS)
-    C_COMP_FLAGS = -x c $(GNU_LINK_FLAGS)
+    C_FLAGS = $(C_GNU_FLAGS)
+    CPP_FLAGS = $(CPP_GNU_FLAGS)
 else ifeq ($(COMPILER_TYPE), INTEL)
-    C_LINK_FLAGS = $(INTEL_LINK_FLAGS)
-    C_COMP_FLAGS = $(INTEL_LINK_FLAGS)
+    C_FLAGS = $(C_INTEL_FLAGS)
+    CPP_FLAGS = $(CPP_INTEL_FLAGS)
 endif
-
-
 
 #
 # --- targets
@@ -176,39 +188,49 @@ OBJ += $(addsuffix .o, $(SOURCES))
 # --- rules
 #
 
-# CUDA
+# GPU
 ifeq ($(GPUACCELERATED), 1)
 
   %.o: %.c
-	$(COMPILER) $(C_COMP_FLAGS) $(QUEST_INCLUDE) -c $<
+	$(COMPILER) -x c $(C_FLAGS) $(QUEST_INCLUDE) -c $<
   %.o: $(QUEST_INNER_DIR)/%.c
-	$(COMPILER) $(C_COMP_FLAGS) -c $<
+	$(COMPILER) -x c $(C_FLAGS) -c $<
 
   %.o: %.cu
-	$(CUDA_COMPILER) $(CUDA_COMP_FLAGS) $(QUEST_INCLUDE) $<
-  %.o: %.cpp
-	$(CUDA_COMPILER) $(CUDA_COMP_FLAGS) $(QUEST_INCLUDE) $<
-	
+	$(CUDA_COMPILER) -dc $(CPP_CUDA_FLAGS) $(QUEST_INCLUDE) $<
   %.o: $(QUEST_INNER_DIR)/%.cu
-	$(CUDA_COMPILER) $(CUDA_COMP_FLAGS) $<
+	$(CUDA_COMPILER) -dc $(CPP_CUDA_FLAGS) $<
+	
+  %.o: %.cpp
+	$(CUDA_COMPILER) -dc $(CPP_CUDA_FLAGS) $(QUEST_INCLUDE) $<
   %.o: $(QUEST_INNER_DIR)/%.cpp
-	$(CUDA_COMPILER) $(CUDA_COMP_FLAGS) $<
+	$(CUDA_COMPILER) -dc $(CPP_CUDA_FLAGS) $<
 
-# MPI
+# distributed
 else ifeq ($(DISTRIBUTED), 1)
 
   %.o: %.c
-	OMPI_CC=$(COMPILER) $(MPI_COMPILER) $(C_COMP_FLAGS) $(QUEST_INCLUDE) -c $<
+	OMPI_CC=$(COMPILER) $(MPI_COMPILER) -x c $(C_FLAGS) $(QUEST_INCLUDE) -c $<
   %.o: $(QUEST_INNER_DIR)/%.c
-	OMPI_CC=$(COMPILER) $(MPI_COMPILER) $(C_COMP_FLAGS) -c $<
+	OMPI_CC=$(COMPILER) $(MPI_COMPILER) -x c $(C_FLAGS) -c $<
+	
+  %.o: %.cpp
+	OMPI_CC=$(COMPILER) $(MPI_COMPILER) $(CPP_FLAGS) $(QUEST_INCLUDE) -c $<
+  %.o: $(QUEST_INNER_DIR)/%.cpp
+	OMPI_CC=$(COMPILER) $(MPI_COMPILER) $(CPP_FLAGS) -c $<
 
-# C
+# CPU
 else
 
   %.o: %.c
-	$(COMPILER) $(C_COMP_FLAGS) $(QUEST_INCLUDE) -c $<
+	$(COMPILER) -x c $(C_FLAGS) $(QUEST_INCLUDE) -c $<
   %.o: $(QUEST_INNER_DIR)/%.c
-	$(COMPILER) $(C_COMP_FLAGS) -c $<
+	$(COMPILER) -x c $(C_FLAGS) -c $<
+	
+  %.o: %.cpp
+	$(COMPILER) $(CPP_FLAGS) $(QUEST_INCLUDE) -c $<
+  %.o: $(QUEST_INNER_DIR)/%.cpp
+	$(COMPILER) $(CPP_FLAGS) -c $<
 
 endif
 
@@ -222,21 +244,21 @@ endif
 ifeq ($(GPUACCELERATED), 1)
 
   all:	$(OBJ)
-		$(CUDA_COMPILER) $(CUDA_LINK_FLAGS) $(QUEST_INCLUDE) -o $(EXE) $(OBJ) $(LIBS)
+		$(CUDA_COMPILER) $(CPP_CUDA_FLAGS) $(QUEST_INCLUDE) -o $(EXE) $(OBJ) $(LIBS)
 
 # MPI
 else ifeq ($(DISTRIBUTED), 1)
 
   default:	$(EXE)
   $(EXE):	$(OBJ)
-			OMPI_CC=$(COMPILER) $(MPI_COMPILER) $(C_LINK_FLAGS) $(QUEST_INCLUDE) -o $(EXE) $(OBJ) $(LIBS) 
+			OMPI_CC=$(COMPILER) $(MPI_COMPILER) $(C_FLAGS) $(QUEST_INCLUDE) -o $(EXE) $(OBJ) $(LIBS) 
 
 # C
 else
 
   default:	$(EXE)
   $(EXE):	$(OBJ)
-			$(COMPILER) $(C_LINK_FLAGS) $(QUEST_INCLUDE) -o $(EXE) $(OBJ) $(LIBS) 
+			$(COMPILER) $(C_FLAGS) $(QUEST_INCLUDE) -o $(EXE) $(OBJ) $(LIBS) 
 
 endif
 
