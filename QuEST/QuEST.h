@@ -53,7 +53,7 @@ typedef struct MultiQubit
 	int numQubits;
 	//! Number of probability amplitudes held in stateVec by this process
 	//! In the non-MPI version, this is the total number of amplitudes
-	long long int numAmps;
+	long long int numAmpsDividedByNumChunks;
 	//! The position of the chunk of the state vector held by this process in the full state vector
 	int chunkId;
 	//! Number of chunks the state vector is broken up into -- the number of MPI processes used
@@ -130,6 +130,14 @@ void reportStateToScreen(MultiQubit multiQubit, QuESTEnv env, int reportRank);
  * @param[in] env object representing the execution environment (local, multinode etc)
  */
 void reportMultiQubitParams(MultiQubit multiQubit);
+
+/** Get the number of qubits in a multiQubit object
+ */
+int getNumQubits(MultiQubit multiQubit);
+
+/** Get the number of probability amplitudes in a multiQubit object, given by 2^numQubits
+ */
+int getNumAmps(MultiQubit multiQubit);
 
 /**
  * Initialise a set of \f$ N \f$ qubits to the classical zero state 
