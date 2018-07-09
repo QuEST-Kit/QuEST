@@ -63,8 +63,10 @@ int main (int narg, char *varg[]) {
 
     printf("\nCircuit output:\n");
 
-    REAL prob = getProbEl(qubits, 7);
-    printf("Probability amplitude of |111>: %f\n", prob);
+    // needs to be implemented in GPU QuEST
+    REAL prob;
+    // prob = getProbEl(qubits, 7);
+    // printf("Probability amplitude of |111>: %f\n", prob);
 
     prob = findProbabilityOfOutcome(qubits, 2, 1);
     printf("Probability of qubit 2 being in state 1: %f\n", prob);
