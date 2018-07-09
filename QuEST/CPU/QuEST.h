@@ -9,6 +9,10 @@
  * The QuEST library API and objects. 
 */
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /** Represents an array of complex numbers grouped into an array of real components and an array of coressponding complex components.
 */
 typedef struct ComplexArray
@@ -1072,6 +1076,10 @@ void QuESTSeedRandomDefault(void);
  * For more information about the MT, see http://www.math.sci.hiroshima-u.ac.jp/~m-mat/MT/MT2002/emt19937ar.html
  **/
 void QuESTSeedRandom(unsigned long int *seedArray, int numSeeds);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif
 
