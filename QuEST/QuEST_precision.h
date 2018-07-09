@@ -5,15 +5,15 @@
 
 // *** EDIT PRECISION HERE
 // OPTIONS: 1, 2, 4
-# define PREC 2
+# define QuEST_PREC 2
 
-# if PREC==1
+# if QuEST_PREC==1
 	// SINGLE PRECISION
 	# define REAL float
 	# define MPI_QuEST_REAL MPI_FLOAT
 	# define REAL_STRING_FORMAT "%.8f"
 	# define REAL_EPS 1e-5
-# elif PREC==4
+# elif QuEST_PREC==4
 	// QUAD PRECISION
 	// 80-bit precision for most implementations
 	# define REAL long double
