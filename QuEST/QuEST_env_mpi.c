@@ -12,7 +12,6 @@
 # include <stdlib.h>
 # include <stdio.h>
 # include <math.h>
-# include <omp.h>
 # include "QuEST_precision.h"
 # include "QuEST.h"
 # include "QuEST_internal.h"
@@ -21,6 +20,10 @@
 
 # include <time.h>
 # include <sys/types.h>
+
+# ifdef _OPENMP
+# include <omp.h>
+# endif
 
 static int isChunkToSkipInFindPZero(int chunkId, long long int chunkSize, int measureQubit);
 static int chunkIsUpper(int chunkId, long long int chunkSize, int targetQubit);
