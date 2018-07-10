@@ -188,6 +188,14 @@ endif
 
 
 #
+# --- compiler environment vars
+#
+
+MPI_WRAPPED_COMP = I_MPI_CC=$(COMPILER) OMPI_CC=$(COMPILER) MPICH_CC=$(COMPILER)
+
+
+
+#
 # --- targets
 #
 
@@ -235,14 +243,14 @@ ifeq ($(GPUACCELERATED), 1)
 else ifeq ($(DISTRIBUTED), 1)
 
   %.o: %.c
-	OMPI_CC=$(COMPILER) $(MPI_COMPILER) -x c $(C_FLAGS) $(QUEST_INCLUDE) -c $<
+	$(MPI_WRAPPED_COMP) $(MPI_COMPILER) -x c $(C_FLAGS) $(QUEST_INCLUDE) -c $<
   %.o: $(QUEST_INNER_DIR)/%.c
-	OMPI_CC=$(COMPILER) $(MPI_COMPILER) -x c $(C_FLAGS) -c $<
+	$(MPI_WRAPPED_COMP) $(MPI_COMPILER) -x c $(C_FLAGS) -c $<
 	
   %.o: %.cpp
-	OMPI_CC=$(COMPILER) $(MPI_COMPILER) $(CPP_FLAGS) $(QUEST_INCLUDE) -c $<
+	$(MPI_WRAPPED_COMP) $(MPI_COMPILER) $(CPP_FLAGS) $(QUEST_INCLUDE) -c $<
   %.o: $(QUEST_INNER_DIR)/%.cpp
-	OMPI_CC=$(COMPILER) $(MPI_COMPILER) $(CPP_FLAGS) -c $<
+	$(MPI_WRAPPED_COMP) $(MPI_COMPILER) $(CPP_FLAGS) -c $<
 
 # CPU
 else
@@ -276,7 +284,7 @@ else ifeq ($(DISTRIBUTED), 1)
 
   default:	$(EXE)
   $(EXE):	$(OBJ)
-			OMPI_CC=$(COMPILER) $(MPI_COMPILER) $(C_FLAGS) $(QUEST_INCLUDE) -o $(EXE) $(OBJ) $(LIBS) 
+			$(MPI_WRAPPED_COMP) $(MPI_COMPILER) $(C_FLAGS) $(QUEST_INCLUDE) -o $(EXE) $(OBJ) $(LIBS) 
 
 # C
 else
