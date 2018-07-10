@@ -132,6 +132,15 @@ MPI_COMPILER = mpicc
 # --- compiler flags
 #
 
+# note:
+#	several flag names depend not just on the compiler type, but also compiler version
+#	the user should update these below. For example:
+#
+#	- GNU C++ compilers of version < 4.7 use -std=c++0x instead of -std=c++11
+#	- INTEL compilers of version < ? use -openmp instead of -qopenmp
+#	- INTEL compilers of version < ? won't recognise -diad-disable and -cpu-dispatch
+
+
 # threading flag
 ifeq ($(MULTITHREADED), 1)
     ifeq ($(COMPILER_TYPE), GNU)
