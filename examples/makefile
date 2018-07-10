@@ -2,11 +2,12 @@
 # This makefile builds the QuEST library and links/compiles user code
 # While attempting to accomodate as many platforms and compilers,
 # unforeseen problems are inevitable: please email anna.brown@oerc.ox.ac.uk
-# about any errors or complications, or raise an issue on Github
+# or tyson.jones@materials.ox.ac.uk about any errors or complications, or 
+# raise an issue on Github
 
 #======================================================================#
 #                                                                      #
-#      User Settings                                                   #
+#      User settings                                                   #
 #                                                                      #
 #======================================================================#
 
@@ -17,7 +18,7 @@ EXE = demo
 SOURCES = tutorialExample
 
 # path to QuEST library from root directory
-QUEST_DIR = QuEST
+QUEST_DIR = ../QuEST
 
 # compiler to use, which should support both C and C++, to be wrapped by GPU/MPI compilers
 COMPILER = gcc
@@ -40,7 +41,7 @@ SUPPRESS_WARNING = 0
 
 #======================================================================#
 #                                                                      #
-#      Adjusting Settings                                              #
+#      Checking user settings                                          #
 #                                                                      #
 #======================================================================#
 
@@ -48,49 +49,55 @@ SUPPRESS_WARNING = 0
 ifneq ($(MAKECMDGOALS), clean)
 ifneq ($(MAKECMDGOALS), veryclean)
 
-ifneq ($(COMPILER_TYPE), CLANG)
-ifneq ($(COMPILER_TYPE), GNU)
-ifneq ($(COMPILER_TYPE), INTEL)
-    $(error COMPILER_TYPE must be one of CLANG, GNU or INTEL)
-endif
-endif
-endif
+    # check $COMPILER_TYPE is correct
+    ifneq ($(COMPILER_TYPE), CLANG)
+    ifneq ($(COMPILER_TYPE), GNU)
+    ifneq ($(COMPILER_TYPE), INTEL)
+        $(error COMPILER_TYPE must be one of CLANG, GNU or INTEL)
+      endif
+      endif
+      endif
 
-ifeq ($(DISTRIBUTED), 1)
-ifeq ($(GPUACCELERATED), 1)
-    $(error Distributed GPU acceleration not supported)
-endif
-endif
+    # distributed GPU not supported
+    ifeq ($(DISTRIBUTED), 1)
+    ifeq ($(GPUACCELERATED), 1)
+        $(error Distributed GPU acceleration not supported)
+    endif
+    endif
 
-ifeq ($(MULTITHREADED), 1)
-ifeq ($(GPUACCELERATED), 1)
-    $(warning GPU acceleration makes no use of multithreading. Disabling the latter...)
-    MULTITHREADED = 0
-endif
-endif
+    # GPU doesn't use threading
+    ifeq ($(MULTITHREADED), 1)
+    ifeq ($(GPUACCELERATED), 1)
+        $(warning GPU acceleration makes no use of multithreading. Disabling the latter...)
+        MULTITHREADED = 0
+    endif
+    endif
 
-ifeq ($(MULTITHREADED), 1)
-ifeq ($(COMPILER_TYPE), CLANG)
-    $(warning Clang does not support multithreading. Disabling...)
-    MULTITHREADED = 0
-endif
-endif
+    # CLANG compilers don't support threading
+    ifeq ($(MULTITHREADED), 1)
+    ifeq ($(COMPILER_TYPE), CLANG)
+        $(warning Clang does not support multithreading. Disabling...)
+        MULTITHREADED = 0
+    endif
+    endif
 
-ifeq ($(GPUACCELERATED), 1)
-ifeq ($(COMPILER_TYPE), CLANG)
-ifeq ($(SUPPRESS_WARNING), 0)
-    $(info Some versions of Clang are not NVIDIA-GPU compatible. If compilation fails, try Clang 3.7)
-endif
-endif
-endif
+    # NVCC doesn't support new CLANG compilers
+    ifeq ($(GPUACCELERATED), 1)
+    ifeq ($(COMPILER_TYPE), CLANG)
+    ifeq ($(SUPPRESS_WARNING), 0)
+        $(info Some versions of Clang are not NVIDIA-GPU compatible. If compilation fails, try Clang 3.7)
+    endif
+    endif
+    endif
 
-ifeq ($(GPUACCELERATED), 1)
-ifeq ($(COMPILER_TYPE), GNU)
-ifeq ($(SUPPRESS_WARNING), 0)
-    $(info On some platforms (e.g. OSX), NVIDIA-GPUs are not compatible with GNU compilers. If compilation fails, try an alternative compiler, like Clang 3.7)
-endif
-endif
-endif
+    # NVCC doesn't support GNU compilers on OSX
+    ifeq ($(GPUACCELERATED), 1)
+    ifeq ($(COMPILER_TYPE), GNU)
+    ifeq ($(SUPPRESS_WARNING), 0)
+        $(info On some platforms (e.g. OSX), NVIDIA-GPUs are not compatible with GNU compilers. If compilation fails, try an alternative compiler, like Clang 3.7)
+    endif
+    endif
+    endif
 
 # end of allowed cleaning
 endif
@@ -100,7 +107,7 @@ endif
 
 #======================================================================#
 #                                                                      #
-#      Automated Compilation                                           #
+#     Compilation                                                      #
 #                                                                      #
 #======================================================================#
 
@@ -139,6 +146,7 @@ MPI_COMPILER = mpicc
 #	- GNU C++ compilers of version < 4.7 use -std=c++0x instead of -std=c++11
 #	- INTEL compilers of version < ? use -openmp instead of -qopenmp
 #	- INTEL compilers of version < ? won't recognise -diad-disable and -cpu-dispatch
+#	- CLANG compilers don't support openmp (threading) at all
 
 
 # threading flag
@@ -146,7 +154,7 @@ ifeq ($(MULTITHREADED), 1)
     ifeq ($(COMPILER_TYPE), GNU)
         THREAD_FLAGS = -fopenmp
     else ifeq ($(COMPILER_TYPE), INTEL)
-        THREAD_FLAGS = -qopenmp # -openmp   # intel make up your mind
+        THREAD_FLAGS = -qopenmp
     endif
 else
     THREAD_FLAGS =
@@ -177,6 +185,8 @@ else ifeq ($(COMPILER_TYPE), INTEL)
     CPP_FLAGS = $(CPP_INTEL_FLAGS)
 endif
 
+
+
 #
 # --- targets
 #
@@ -196,6 +206,12 @@ OBJ += $(addsuffix .o, $(SOURCES))
 #
 # --- rules
 #
+
+# notes:
+#	- if $SOURCES appear as both c and c++ files, the c files will be compiled
+#	- CUDA won't compile .c files ($COMPILER will), only .cpp and .cu
+#	- MPICC will compile .c and .cpp files (wrapping $COMPILER)
+
 
 # GPU
 ifeq ($(GPUACCELERATED), 1)
