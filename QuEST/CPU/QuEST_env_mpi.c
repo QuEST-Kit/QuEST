@@ -45,6 +45,8 @@ void initQuESTEnv(QuESTEnv *env){
         env->numRanks=numRanks;
 
     } else printf("ERROR: Trying to initialize QuESTEnv multiple times. Ignoring\n");
+	
+	QuESTSeedRandomDefault();
 }
 
 void syncQuESTEnv(QuESTEnv env){
