@@ -18,7 +18,7 @@ declare -a wrappers=("NONE" "MPICC" "NVCC")
 declare -a languages=("c" "cpp")
 
 # write table headers to file
-echo "LANGUAGE,COMPILER,VERSION,WRAPPER,VERSION,COMPILED,RAN\n" > $outputname
+echo "LANGUAGE,COMPILER,VERSION,WRAPPER,VERSION,COMPILED,RAN" > $outputname
 
 # try every language
 for language in "${languages[@]}"
