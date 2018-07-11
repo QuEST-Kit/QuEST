@@ -66,7 +66,7 @@ Explicit instructions to download and run QuEST from the command line can be fou
 
 ## API Documentation
 
-View the API [here](https://aniabrown.github.io/QuEST/QuEST_8h.html), and the full documentation at https://aniabrown.github.io/QuEST/
+View the API [here](https://aniabrown.github.io/QuEST/QuEST_8h.html), and check compatible compiler versions [here](https://github.com/TysonRayJones/QuEST/blob/master/tests/compilers/compatibility.md).
 
 > For developers: To recreate the full documentation after making changes to the code, run doxygen doxyconf in the root directory. This will generate documentation in Doxygen_doc/html, and can be accessed through index.html in that folder. 
 
