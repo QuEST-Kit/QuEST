@@ -25,6 +25,8 @@ void initQuESTEnv(QuESTEnv *env){
     // init MPI environment
     env->rank=0;
     env->numRanks=1;
+	
+	QuESTSeedRandomDefault();
 }
 
 
