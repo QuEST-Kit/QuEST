@@ -147,6 +147,10 @@ void copyStateToGPU(MultiQubit multiQubit)
     if (DEBUG) printf("Copying data to GPU\n");
     cudaMemcpy(multiQubit.deviceStateVec.real, multiQubit.stateVec.real, 
             multiQubit.numAmpsDividedByNumChunks*sizeof(*(multiQubit.deviceStateVec.real)), cudaMemcpyHostToDevice);
+	cudaMemcpy(multiQubit.deviceStateVec.real, multiQubit.stateVec.real, 
+		    multiQubit.numAmpsDividedByNumChunks*sizeof(*(multiQubit.deviceStateVec.real)), cudaMemcpyHostToDevice);
+	cudaMemcpy(multiQubit.deviceStateVec.imag, multiQubit.stateVec.imag, 
+		    multiQubit.numAmpsDividedByNumChunks*sizeof(*(multiQubit.deviceStateVec.imag)), cudaMemcpyHostToDevice);
     cudaMemcpy(multiQubit.deviceStateVec.imag, multiQubit.stateVec.imag, 
             multiQubit.numAmpsDividedByNumChunks*sizeof(*(multiQubit.deviceStateVec.imag)), cudaMemcpyHostToDevice);
     if (DEBUG) printf("Finished copying data to GPU\n");
@@ -190,6 +194,20 @@ void reportStateToScreen(MultiQubit multiQubit, QuESTEnv env, int reportRank){
             syncQuESTEnv(env);
         }
     }
+}
+
+REAL getRealAmpEl(MultiQubit multiQubit, long long int index){
+    REAL el=0;
+    cudaMemcpy(&el, &(multiQubit.deviceStateVec.real[index]), 
+            sizeof(*(multiQubit.deviceStateVec.real)), cudaMemcpyDeviceToHost);
+    return el;
+}
+
+REAL getImagAmpEl(MultiQubit multiQubit, long long int index){
+    REAL el=0;
+    cudaMemcpy(&el, &(multiQubit.deviceStateVec.imag[index]), 
+            sizeof(*(multiQubit.deviceStateVec.imag)), cudaMemcpyDeviceToHost);
+    return el;
 }
 
 void __global__ initStateZeroKernel(long long int stateVecSize, REAL *stateVecReal, REAL *stateVecImag){
