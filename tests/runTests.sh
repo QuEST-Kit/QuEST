@@ -35,7 +35,12 @@ printf "============================\n\n"
 
 # run the unit tests
 export OMP_NUM_THREADS=3
-./runTests
+if [ $DISTRIBUTED == 0 ]
+then
+    ./runTests
+else
+    mpirun $MPI_HOSTS ./runTests
+fi
 
 # report test success
 exitcode=$?
