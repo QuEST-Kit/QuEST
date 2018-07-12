@@ -1,7 +1,7 @@
 # user settings for test compilation
 COMPILER=gcc
 COMPILER_TYPE=GNU
-MULTITHREADED=0
+MULTITHREADED=1
 DISTRIBUTED=0
 GPUACCELERATED=0
 GPU_COMPUTE_CAPABILITY=30
@@ -34,6 +34,7 @@ printf "     RUNNING UNIT TESTS     \n"
 printf "============================\n\n"
 
 # run the unit tests
+export OMP_NUM_THREADS=3
 ./runTests
 
 # report test success
