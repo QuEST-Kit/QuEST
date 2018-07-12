@@ -96,6 +96,14 @@ int getNumAmps(MultiQubit multiQubit){
     return multiQubit.numAmpsDividedByNumChunks*multiQubit.numChunks;
 }
 
+REAL getProbEl(MultiQubit multiQubit, long long int index){
+    REAL real;
+    REAL imag;
+    real = getRealAmpEl(multiQubit, index);
+    imag = getImagAmpEl(multiQubit, index);
+    return real*real + imag*imag;
+}
+
 void rotateAroundAxis(MultiQubit multiQubit, const int rotQubit, REAL angle, Vector axis){
 
     double mag = sqrt(pow(axis.x,2) + pow(axis.y,2) + pow(axis.z,2));
