@@ -44,7 +44,7 @@ then
 	printf "\nTESTING PASSED"
 	printf "\n--------------\n\n"
 else
-	printf "\TESTOMG FAILED"
+	printf "\nTESTING FAILED"
 	printf "\n--------------\n\n"
 fi
 
