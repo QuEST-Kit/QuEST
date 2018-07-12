@@ -316,6 +316,7 @@ void initStateDebug (MultiQubit *multiQubit)
 {
     long long int chunkSize;
     long long int index;
+	long long int indexOffset;
 
     // dimension of the state vector
     chunkSize = multiQubit->numAmpsDividedByNumChunks;
@@ -324,13 +325,13 @@ void initStateDebug (MultiQubit *multiQubit)
     REAL *stateVecReal = multiQubit->stateVec.real;
     REAL *stateVecImag = multiQubit->stateVec.imag;
 
-    REAL chunkOffset = (2.0*chunkSize*multiQubit->chunkId)/10.0;
+	indexOffset = chunkSize * multiQubit->chunkId;
 
     // initialise the state to |0000..0000>
 # ifdef _OPENMP
 # pragma omp parallel \
     default  (none) \
-    shared   (chunkSize, stateVecReal, stateVecImag, chunkOffset) \
+    shared   (chunkSize, stateVecReal, stateVecImag, indexOffset) \
     private  (index) 
 # endif
     {
@@ -338,8 +339,8 @@ void initStateDebug (MultiQubit *multiQubit)
 # pragma omp for schedule (static)
 # endif
         for (index=0; index<chunkSize; index++) {
-            stateVecReal[index] = chunkOffset + (index*2.0)/10.0;
-            stateVecImag[index] = chunkOffset + (index*2.0+1.0)/10.0;
+            stateVecReal[index] = ((indexOffset + index)*2.0)/10.0;
+            stateVecImag[index] = ((indexOffset + index)*2.0+1.0)/10.0;
         }
     }
 }
