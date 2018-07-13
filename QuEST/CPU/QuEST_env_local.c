@@ -5,15 +5,14 @@
   An implementation of the API in qubits.h for a local (non-MPI) environment.
   */
 
+# include "../QuEST.h"
+# include "../QuEST_precision.h"
+# include "../mt19937ar.h"
+# include "QuEST_internal.h"
+
 # include <stdlib.h>
 # include <stdio.h>
 # include <math.h>
-# include "../QuEST_precision.h"
-# include "../QuEST.h"
-# include "QuEST_internal.h"
-
-# include "../mt19937ar.h" // MT random number generation
-
 # include <time.h>
 # include <sys/types.h>
 
@@ -28,7 +27,6 @@ void initQuESTEnv(QuESTEnv *env){
 	
 	QuESTSeedRandomDefault();
 }
-
 
 void syncQuESTEnv(QuESTEnv env){
     // MPI Barrier goes here in MPI version. 
