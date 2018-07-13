@@ -8,7 +8,6 @@ An implementation of the A\+PI in qubits.\+h for a local (non-\/\+M\+PI) environ
 {\ttfamily \#include $<$stdlib.\+h$>$}\newline
 {\ttfamily \#include $<$stdio.\+h$>$}\newline
 {\ttfamily \#include $<$math.\+h$>$}\newline
-{\ttfamily \#include $<$omp.\+h$>$}\newline
 {\ttfamily \#include \char`\"{}Qu\+E\+S\+T\+\_\+precision.\+h\char`\"{}}\newline
 {\ttfamily \#include \char`\"{}Qu\+E\+S\+T.\+h\char`\"{}}\newline
 {\ttfamily \#include \char`\"{}Qu\+E\+S\+T\+\_\+internal.\+h\char`\"{}}\newline
@@ -18,56 +17,56 @@ An implementation of the A\+PI in qubits.\+h for a local (non-\/\+M\+PI) environ
 \subsubsection*{Functions}
 \begin{DoxyCompactItemize}
 \item 
-void \mbox{\hyperlink{QuEST__env__local_8c_ad84a3ce68d1ca02b4e3f741ea45b6054}{init\+Qu\+E\+S\+T\+Env}} (\mbox{\hyperlink{structQuESTEnv}{Qu\+E\+S\+T\+Env}} $\ast$env)
-\begin{DoxyCompactList}\small\item\em Initialize the Qu\+E\+ST environment. \end{DoxyCompactList}\item 
-void \mbox{\hyperlink{QuEST__env__local_8c_a8d31fe2d1ad4d01e2a1f5f6b8bc15b77}{sync\+Qu\+E\+S\+T\+Env}} (\mbox{\hyperlink{structQuESTEnv}{Qu\+E\+S\+T\+Env}} env)
-\begin{DoxyCompactList}\small\item\em Guarantees that all code up to the given point has been executed on all nodes (if running in distributed mode) \end{DoxyCompactList}\item 
-int \mbox{\hyperlink{QuEST__env__local_8c_ac7e38d768a1bd79019f88cc1e6295092}{sync\+Qu\+E\+S\+T\+Success}} (int success\+Code)
-\begin{DoxyCompactList}\small\item\em Performs a logical A\+ND on all success\+Codes held by all processes. \end{DoxyCompactList}\item 
-void \mbox{\hyperlink{QuEST__env__local_8c_abd4bc926cd3f9b65610bb228d0c59fe0}{close\+Qu\+E\+S\+T\+Env}} (\mbox{\hyperlink{structQuESTEnv}{Qu\+E\+S\+T\+Env}} env)
-\begin{DoxyCompactList}\small\item\em Close Qu\+E\+ST environment. \end{DoxyCompactList}\item 
-void \mbox{\hyperlink{QuEST__env__local_8c_af8a14ae79c3fb2c0b5f6255cc37bebf9}{report\+Qu\+E\+S\+T\+Env}} (\mbox{\hyperlink{structQuESTEnv}{Qu\+E\+S\+T\+Env}} env)
-\begin{DoxyCompactList}\small\item\em Report information about the Qu\+E\+ST environment. \end{DoxyCompactList}\item 
-void \mbox{\hyperlink{QuEST__env__local_8c_a62da5b58d8ce84e6f4d24be1b872294e}{report\+Node\+List}} (\mbox{\hyperlink{structQuESTEnv}{Qu\+E\+S\+T\+Env}} env)
-\begin{DoxyCompactList}\small\item\em Report a list of C\+PU hostnames and the rank that is running on each if running with M\+PI enabled and an error message otherwise. \end{DoxyCompactList}\item 
 \mbox{\hyperlink{QuEST__precision_8h_a4b654506f18b8bfd61ad2a29a7e38c25}{R\+E\+AL}} \mbox{\hyperlink{QuEST__env__local_8c_a818a4c7cd7252d2b10b896b12fa431d3}{calc\+Total\+Probability}} (\mbox{\hyperlink{structMultiQubit}{Multi\+Qubit}} multi\+Qubit)
 \begin{DoxyCompactList}\small\item\em Calculate the probability of being in any state by taking the norm of the entire state vector. \end{DoxyCompactList}\item 
-\mbox{\hyperlink{QuEST__precision_8h_a4b654506f18b8bfd61ad2a29a7e38c25}{R\+E\+AL}} \mbox{\hyperlink{QuEST__env__local_8c_a317b786f577fa6bc136ea7f0ee7330a7}{get\+Real\+Amp\+El}} (\mbox{\hyperlink{structMultiQubit}{Multi\+Qubit}} multi\+Qubit, long long int index)
-\begin{DoxyCompactList}\small\item\em Get the real component of the complex probability amplitude at an index in the state vector. \end{DoxyCompactList}\item 
-\mbox{\hyperlink{QuEST__precision_8h_a4b654506f18b8bfd61ad2a29a7e38c25}{R\+E\+AL}} \mbox{\hyperlink{QuEST__env__local_8c_a3615f76fd5f57008d9b74bbd10533dd0}{get\+Imag\+Amp\+El}} (\mbox{\hyperlink{structMultiQubit}{Multi\+Qubit}} multi\+Qubit, long long int index)
-\begin{DoxyCompactList}\small\item\em Get the imaginary component of the complex probability amplitude at an index in the state vector. \end{DoxyCompactList}\item 
-void \mbox{\hyperlink{QuEST__env__local_8c_a03b13dfcabd8c59b50dbdd3af44ba8b2}{compact\+Unitary}} (\mbox{\hyperlink{structMultiQubit}{Multi\+Qubit}} multi\+Qubit, const int target\+Qubit, \mbox{\hyperlink{structComplex}{Complex}} alpha, \mbox{\hyperlink{structComplex}{Complex}} beta)
-\begin{DoxyCompactList}\small\item\em Apply a single-\/qubit unitary parameterised by two given complex scalars. \end{DoxyCompactList}\item 
-void \mbox{\hyperlink{QuEST__env__local_8c_a7a0877e33700f6bad48adb51b7b3fb67}{unitary}} (\mbox{\hyperlink{structMultiQubit}{Multi\+Qubit}} multi\+Qubit, const int target\+Qubit, \mbox{\hyperlink{structComplexMatrix2}{Complex\+Matrix2}} u)
-\begin{DoxyCompactList}\small\item\em Apply a general single-\/qubit unitary (including a global phase factor). \end{DoxyCompactList}\item 
-void \mbox{\hyperlink{QuEST__env__local_8c_ab4812953bc457405b3aa05a4c2f64f4a}{controlled\+Compact\+Unitary}} (\mbox{\hyperlink{structMultiQubit}{Multi\+Qubit}} multi\+Qubit, const int control\+Qubit, const int target\+Qubit, \mbox{\hyperlink{structComplex}{Complex}} alpha, \mbox{\hyperlink{structComplex}{Complex}} beta)
-\begin{DoxyCompactList}\small\item\em Apply a controlled unitary (single control, single target) parameterised by two given complex scalars. \end{DoxyCompactList}\item 
-void \mbox{\hyperlink{QuEST__env__local_8c_a8a701526263392599aa21d0d0f05d9d8}{controlled\+Unitary}} (\mbox{\hyperlink{structMultiQubit}{Multi\+Qubit}} multi\+Qubit, const int control\+Qubit, const int target\+Qubit, \mbox{\hyperlink{structComplexMatrix2}{Complex\+Matrix2}} u)
-\begin{DoxyCompactList}\small\item\em Apply a general controlled unitary (single control, single target), which can include a global phase factor. \end{DoxyCompactList}\item 
-void \mbox{\hyperlink{QuEST__env__local_8c_ae395a79690283ed81106afadd7a8cd8a}{multi\+Controlled\+Unitary}} (\mbox{\hyperlink{structMultiQubit}{Multi\+Qubit}} multi\+Qubit, int $\ast$control\+Qubits, const int num\+Control\+Qubits, const int target\+Qubit, \mbox{\hyperlink{structComplexMatrix2}{Complex\+Matrix2}} u)
-\begin{DoxyCompactList}\small\item\em Apply a general multiple-\/control single-\/target unitary, which can include a global phase factor. \end{DoxyCompactList}\item 
-void \mbox{\hyperlink{QuEST__env__local_8c_a86e396e06b7d527cac20ba0108872423}{sigmaX}} (\mbox{\hyperlink{structMultiQubit}{Multi\+Qubit}} multi\+Qubit, const int target\+Qubit)
-\begin{DoxyCompactList}\small\item\em Apply the single-\/qubit sigma-\/X (also known as the X, Pauli-\/X, N\+OT or bit-\/flip) gate. \end{DoxyCompactList}\item 
-void \mbox{\hyperlink{QuEST__env__local_8c_a1f54d70a42403f7e1c2e2c2007332f61}{sigmaY}} (\mbox{\hyperlink{structMultiQubit}{Multi\+Qubit}} multi\+Qubit, const int target\+Qubit)
-\begin{DoxyCompactList}\small\item\em Apply the single-\/qubit sigma-\/Y (also known as the Y or Pauli-\/Y) gate. \end{DoxyCompactList}\item 
-void \mbox{\hyperlink{QuEST__env__local_8c_aae7a8a7f1ccbddb7f76b6c52b746bb43}{phase\+Gate}} (\mbox{\hyperlink{structMultiQubit}{Multi\+Qubit}} multi\+Qubit, const int target\+Qubit, enum \mbox{\hyperlink{QuEST_8h_a5739021c733cecc49647956b2f7338ea}{phase\+Gate\+Type}} type)
-\item 
-void \mbox{\hyperlink{QuEST__env__local_8c_aa09b5dd93de6df1384b8f2c0041749ab}{hadamard}} (\mbox{\hyperlink{structMultiQubit}{Multi\+Qubit}} multi\+Qubit, const int target\+Qubit)
-\begin{DoxyCompactList}\small\item\em Apply the single-\/qubit Hadamard gate. \end{DoxyCompactList}\item 
-void \mbox{\hyperlink{QuEST__env__local_8c_a67576895bbc65463481a8ea24d9b1e22}{controlled\+Not}} (\mbox{\hyperlink{structMultiQubit}{Multi\+Qubit}} multi\+Qubit, const int control\+Qubit, const int target\+Qubit)
-\begin{DoxyCompactList}\small\item\em Apply the controlled not (single control, single target) gate, also known as the c-\/X, c-\/sigma-\/X, c-\/\+Pauli-\/X and c-\/bit-\/flip gate. \end{DoxyCompactList}\item 
-\mbox{\hyperlink{QuEST__precision_8h_a4b654506f18b8bfd61ad2a29a7e38c25}{R\+E\+AL}} \mbox{\hyperlink{QuEST__env__local_8c_ad315c941a51bc053d39ebfa2040fd32e}{find\+Probability\+Of\+Outcome}} (\mbox{\hyperlink{structMultiQubit}{Multi\+Qubit}} multi\+Qubit, const int measure\+Qubit, int outcome)
-\begin{DoxyCompactList}\small\item\em Gives the probability of a specified qubit being measured in the given outcome (0 or 1). \end{DoxyCompactList}\item 
+void \mbox{\hyperlink{QuEST__env__local_8c_abd4bc926cd3f9b65610bb228d0c59fe0}{close\+Qu\+E\+S\+T\+Env}} (\mbox{\hyperlink{structQuESTEnv}{Qu\+E\+S\+T\+Env}} env)
+\begin{DoxyCompactList}\small\item\em Close Qu\+E\+ST environment. \end{DoxyCompactList}\item 
 \mbox{\hyperlink{QuEST__precision_8h_a4b654506f18b8bfd61ad2a29a7e38c25}{R\+E\+AL}} \mbox{\hyperlink{QuEST__env__local_8c_a07418ebac70fd9ae5d051d089961631d}{collapse\+To\+Outcome}} (\mbox{\hyperlink{structMultiQubit}{Multi\+Qubit}} multi\+Qubit, const int measure\+Qubit, int outcome)
 \begin{DoxyCompactList}\small\item\em Updates the state vector to be consistent with measuring the measure qubit in the given outcome (0 or 1), and returns the probability of such a measurement outcome. \end{DoxyCompactList}\item 
+void \mbox{\hyperlink{QuEST__env__local_8c_a03b13dfcabd8c59b50dbdd3af44ba8b2}{compact\+Unitary}} (\mbox{\hyperlink{structMultiQubit}{Multi\+Qubit}} multi\+Qubit, const int target\+Qubit, \mbox{\hyperlink{structComplex}{Complex}} alpha, \mbox{\hyperlink{structComplex}{Complex}} beta)
+\begin{DoxyCompactList}\small\item\em Apply a single-\/qubit unitary parameterised by two given complex scalars. \end{DoxyCompactList}\item 
+void \mbox{\hyperlink{QuEST__env__local_8c_ab4812953bc457405b3aa05a4c2f64f4a}{controlled\+Compact\+Unitary}} (\mbox{\hyperlink{structMultiQubit}{Multi\+Qubit}} multi\+Qubit, const int control\+Qubit, const int target\+Qubit, \mbox{\hyperlink{structComplex}{Complex}} alpha, \mbox{\hyperlink{structComplex}{Complex}} beta)
+\begin{DoxyCompactList}\small\item\em Apply a controlled unitary (single control, single target) parameterised by two given complex scalars. \end{DoxyCompactList}\item 
+void \mbox{\hyperlink{QuEST__env__local_8c_a67576895bbc65463481a8ea24d9b1e22}{controlled\+Not}} (\mbox{\hyperlink{structMultiQubit}{Multi\+Qubit}} multi\+Qubit, const int control\+Qubit, const int target\+Qubit)
+\begin{DoxyCompactList}\small\item\em Apply the controlled not (single control, single target) gate, also known as the c-\/X, c-\/sigma-\/X, c-\/\+Pauli-\/X and c-\/bit-\/flip gate. \end{DoxyCompactList}\item 
+void \mbox{\hyperlink{QuEST__env__local_8c_a8a701526263392599aa21d0d0f05d9d8}{controlled\+Unitary}} (\mbox{\hyperlink{structMultiQubit}{Multi\+Qubit}} multi\+Qubit, const int control\+Qubit, const int target\+Qubit, \mbox{\hyperlink{structComplexMatrix2}{Complex\+Matrix2}} u)
+\begin{DoxyCompactList}\small\item\em Apply a general controlled unitary (single control, single target), which can include a global phase factor. \end{DoxyCompactList}\item 
+void \mbox{\hyperlink{QuEST__env__local_8c_ae5f9019826f35e8b51b1716cfe397b45}{exit\+With\+Error}} (int error\+Code, const char $\ast$func)
+\item 
+\mbox{\hyperlink{QuEST__precision_8h_a4b654506f18b8bfd61ad2a29a7e38c25}{R\+E\+AL}} \mbox{\hyperlink{QuEST__env__local_8c_ad315c941a51bc053d39ebfa2040fd32e}{find\+Probability\+Of\+Outcome}} (\mbox{\hyperlink{structMultiQubit}{Multi\+Qubit}} multi\+Qubit, const int measure\+Qubit, int outcome)
+\begin{DoxyCompactList}\small\item\em Gives the probability of a specified qubit being measured in the given outcome (0 or 1). \end{DoxyCompactList}\item 
+\mbox{\hyperlink{QuEST__precision_8h_a4b654506f18b8bfd61ad2a29a7e38c25}{R\+E\+AL}} \mbox{\hyperlink{QuEST__env__local_8c_a3615f76fd5f57008d9b74bbd10533dd0}{get\+Imag\+Amp\+El}} (\mbox{\hyperlink{structMultiQubit}{Multi\+Qubit}} multi\+Qubit, long long int index)
+\begin{DoxyCompactList}\small\item\em Get the imaginary component of the complex probability amplitude at an index in the state vector. \end{DoxyCompactList}\item 
+\mbox{\hyperlink{QuEST__precision_8h_a4b654506f18b8bfd61ad2a29a7e38c25}{R\+E\+AL}} \mbox{\hyperlink{QuEST__env__local_8c_a317b786f577fa6bc136ea7f0ee7330a7}{get\+Real\+Amp\+El}} (\mbox{\hyperlink{structMultiQubit}{Multi\+Qubit}} multi\+Qubit, long long int index)
+\begin{DoxyCompactList}\small\item\em Get the real component of the complex probability amplitude at an index in the state vector. \end{DoxyCompactList}\item 
+void \mbox{\hyperlink{QuEST__env__local_8c_aa09b5dd93de6df1384b8f2c0041749ab}{hadamard}} (\mbox{\hyperlink{structMultiQubit}{Multi\+Qubit}} multi\+Qubit, const int target\+Qubit)
+\begin{DoxyCompactList}\small\item\em Apply the single-\/qubit Hadamard gate. \end{DoxyCompactList}\item 
+void \mbox{\hyperlink{QuEST__env__local_8c_ad84a3ce68d1ca02b4e3f741ea45b6054}{init\+Qu\+E\+S\+T\+Env}} (\mbox{\hyperlink{structQuESTEnv}{Qu\+E\+S\+T\+Env}} $\ast$env)
+\begin{DoxyCompactList}\small\item\em Initialize the Qu\+E\+ST environment. \end{DoxyCompactList}\item 
 int \mbox{\hyperlink{QuEST__env__local_8c_ad5774247d836267175c664cd0e451bcb}{measure}} (\mbox{\hyperlink{structMultiQubit}{Multi\+Qubit}} multi\+Qubit, int measure\+Qubit)
 \begin{DoxyCompactList}\small\item\em Measures a single qubit, collapsing it randomly to 0 or 1. \end{DoxyCompactList}\item 
 int \mbox{\hyperlink{QuEST__env__local_8c_a2ac46e470c750bf93c754e06c64b0a7a}{measure\+With\+Stats}} (\mbox{\hyperlink{structMultiQubit}{Multi\+Qubit}} multi\+Qubit, int measure\+Qubit, \mbox{\hyperlink{QuEST__precision_8h_a4b654506f18b8bfd61ad2a29a7e38c25}{R\+E\+AL}} $\ast$state\+Prob)
 \begin{DoxyCompactList}\small\item\em Measures a single qubit, collapsing it randomly to 0 or 1, and additionally gives the probability of that outcome. \end{DoxyCompactList}\item 
-void \mbox{\hyperlink{QuEST__env__local_8c_ae5f9019826f35e8b51b1716cfe397b45}{exit\+With\+Error}} (int error\+Code, const char $\ast$func)
+void \mbox{\hyperlink{QuEST__env__local_8c_ae395a79690283ed81106afadd7a8cd8a}{multi\+Controlled\+Unitary}} (\mbox{\hyperlink{structMultiQubit}{Multi\+Qubit}} multi\+Qubit, int $\ast$control\+Qubits, const int num\+Control\+Qubits, const int target\+Qubit, \mbox{\hyperlink{structComplexMatrix2}{Complex\+Matrix2}} u)
+\begin{DoxyCompactList}\small\item\em Apply a general multiple-\/control single-\/target unitary, which can include a global phase factor. \end{DoxyCompactList}\item 
+void \mbox{\hyperlink{QuEST__env__local_8c_aae7a8a7f1ccbddb7f76b6c52b746bb43}{phase\+Gate}} (\mbox{\hyperlink{structMultiQubit}{Multi\+Qubit}} multi\+Qubit, const int target\+Qubit, enum \mbox{\hyperlink{QuEST_8h_a5739021c733cecc49647956b2f7338ea}{phase\+Gate\+Type}} type)
 \item 
 void \mbox{\hyperlink{QuEST__env__local_8c_a3587b9d533e633ccf1abf9ad2ce45d8d}{Qu\+E\+S\+T\+Assert}} (int is\+Valid, int error\+Code, const char $\ast$func)
-\end{DoxyCompactItemize}
+\item 
+void \mbox{\hyperlink{QuEST__env__local_8c_a62da5b58d8ce84e6f4d24be1b872294e}{report\+Node\+List}} (\mbox{\hyperlink{structQuESTEnv}{Qu\+E\+S\+T\+Env}} env)
+\begin{DoxyCompactList}\small\item\em Report a list of C\+PU hostnames and the rank that is running on each if running with M\+PI enabled and an error message otherwise. \end{DoxyCompactList}\item 
+void \mbox{\hyperlink{QuEST__env__local_8c_af8a14ae79c3fb2c0b5f6255cc37bebf9}{report\+Qu\+E\+S\+T\+Env}} (\mbox{\hyperlink{structQuESTEnv}{Qu\+E\+S\+T\+Env}} env)
+\begin{DoxyCompactList}\small\item\em Report information about the Qu\+E\+ST environment. \end{DoxyCompactList}\item 
+void \mbox{\hyperlink{QuEST__env__local_8c_a86e396e06b7d527cac20ba0108872423}{sigmaX}} (\mbox{\hyperlink{structMultiQubit}{Multi\+Qubit}} multi\+Qubit, const int target\+Qubit)
+\begin{DoxyCompactList}\small\item\em Apply the single-\/qubit sigma-\/X (also known as the X, Pauli-\/X, N\+OT or bit-\/flip) gate. \end{DoxyCompactList}\item 
+void \mbox{\hyperlink{QuEST__env__local_8c_a1f54d70a42403f7e1c2e2c2007332f61}{sigmaY}} (\mbox{\hyperlink{structMultiQubit}{Multi\+Qubit}} multi\+Qubit, const int target\+Qubit)
+\begin{DoxyCompactList}\small\item\em Apply the single-\/qubit sigma-\/Y (also known as the Y or Pauli-\/Y) gate. \end{DoxyCompactList}\item 
+void \mbox{\hyperlink{QuEST__env__local_8c_a8d31fe2d1ad4d01e2a1f5f6b8bc15b77}{sync\+Qu\+E\+S\+T\+Env}} (\mbox{\hyperlink{structQuESTEnv}{Qu\+E\+S\+T\+Env}} env)
+\begin{DoxyCompactList}\small\item\em Guarantees that all code up to the given point has been executed on all nodes (if running in distributed mode) \end{DoxyCompactList}\item 
+int \mbox{\hyperlink{QuEST__env__local_8c_ac7e38d768a1bd79019f88cc1e6295092}{sync\+Qu\+E\+S\+T\+Success}} (int success\+Code)
+\begin{DoxyCompactList}\small\item\em Performs a logical A\+ND on all success\+Codes held by all processes. \end{DoxyCompactList}\item 
+void \mbox{\hyperlink{QuEST__env__local_8c_a7a0877e33700f6bad48adb51b7b3fb67}{unitary}} (\mbox{\hyperlink{structMultiQubit}{Multi\+Qubit}} multi\+Qubit, const int target\+Qubit, \mbox{\hyperlink{structComplexMatrix2}{Complex\+Matrix2}} u)
+\begin{DoxyCompactList}\small\item\em Apply a general single-\/qubit unitary (including a global phase factor). \end{DoxyCompactList}\end{DoxyCompactItemize}
 
 
 \subsubsection{Detailed Description}
@@ -98,46 +97,46 @@ total probability
 \end{DoxyReturn}
 
 
-Definition at line 57 of file Qu\+E\+S\+T\+\_\+env\+\_\+local.\+c.
+Definition at line 62 of file Qu\+E\+S\+T\+\_\+env\+\_\+local.\+c.
 
 
 
-References Complex\+Array\+::imag, Multi\+Qubit\+::num\+Amps, Complex\+Array\+::real, R\+E\+AL, and Multi\+Qubit\+::state\+Vec.
+References Complex\+Array\+::imag, Multi\+Qubit\+::num\+Amps\+Divided\+By\+Num\+Chunks, Complex\+Array\+::real, R\+E\+AL, and Multi\+Qubit\+::state\+Vec.
 
 
 \begin{DoxyCode}
-57                                                 \{
-58     \textcolor{comment}{// implemented using Kahan summation for greater accuracy at a slight floating}
-59     \textcolor{comment}{// point operation overhead. For more details see
+62                                                 \{
+63     \textcolor{comment}{// implemented using Kahan summation for greater accuracy at a slight floating}
+64     \textcolor{comment}{// point operation overhead. For more details see
        https://en.wikipedia.org/wiki/Kahan\_summation\_algorithm}
-60     \mbox{\hyperlink{QuEST__precision_8h_a4b654506f18b8bfd61ad2a29a7e38c25}{REAL}} pTotal=0; 
-61     \mbox{\hyperlink{QuEST__precision_8h_a4b654506f18b8bfd61ad2a29a7e38c25}{REAL}} y, t, c;
-62     \textcolor{keywordtype}{long} \textcolor{keywordtype}{long} \textcolor{keywordtype}{int} index;
-63     \textcolor{keywordtype}{long} \textcolor{keywordtype}{long} \textcolor{keywordtype}{int} numAmpsPerRank = multiQubit.\mbox{\hyperlink{structMultiQubit_ae16f47d8b725c914fb7f66b6498d79db}{numAmps}};
-64     c = 0.0;
-65     \textcolor{keywordflow}{for} (index=0; index<numAmpsPerRank; index++)\{ 
-66         \textcolor{comment}{// Perform pTotal+=multiQubit.stateVec.real[index]*multiQubit.stateVec.real[index]; by Kahan}
-67 
-68         y = multiQubit.\mbox{\hyperlink{structMultiQubit_a45483190d6b01ef6b2f98f2bec9ab94f}{stateVec}}.\mbox{\hyperlink{structComplexArray_a4195cac6c784ea1b6271f1c7dba1548a}{real}}[index]*multiQubit.\mbox{\hyperlink{structMultiQubit_a45483190d6b01ef6b2f98f2bec9ab94f}{stateVec}}.
+65     \mbox{\hyperlink{QuEST__precision_8h_a4b654506f18b8bfd61ad2a29a7e38c25}{REAL}} pTotal=0; 
+66     \mbox{\hyperlink{QuEST__precision_8h_a4b654506f18b8bfd61ad2a29a7e38c25}{REAL}} y, t, c;
+67     \textcolor{keywordtype}{long} \textcolor{keywordtype}{long} \textcolor{keywordtype}{int} index;
+68     \textcolor{keywordtype}{long} \textcolor{keywordtype}{long} \textcolor{keywordtype}{int} numAmpsPerRank = multiQubit.\mbox{\hyperlink{structMultiQubit_a04c9f5254af58e4c4a54712eb32e7082}{numAmpsDividedByNumChunks}};
+69     c = 0.0;
+70     \textcolor{keywordflow}{for} (index=0; index<numAmpsPerRank; index++)\{ 
+71         \textcolor{comment}{// Perform pTotal+=multiQubit.stateVec.real[index]*multiQubit.stateVec.real[index]; by Kahan}
+72 
+73         y = multiQubit.\mbox{\hyperlink{structMultiQubit_a45483190d6b01ef6b2f98f2bec9ab94f}{stateVec}}.\mbox{\hyperlink{structComplexArray_a4195cac6c784ea1b6271f1c7dba1548a}{real}}[index]*multiQubit.\mbox{\hyperlink{structMultiQubit_a45483190d6b01ef6b2f98f2bec9ab94f}{stateVec}}.
       \mbox{\hyperlink{structComplexArray_a4195cac6c784ea1b6271f1c7dba1548a}{real}}[index] - c;
-69         t = pTotal + y;
-70         \textcolor{comment}{// Don't change the bracketing on the following line}
-71         c = ( t - pTotal ) - y;
-72         pTotal = t;
-73 
-74         \textcolor{comment}{// Perform pTotal+=multiQubit.stateVec.imag[index]*multiQubit.stateVec.imag[index]; by Kahan}
-75 
-76         y = multiQubit.\mbox{\hyperlink{structMultiQubit_a45483190d6b01ef6b2f98f2bec9ab94f}{stateVec}}.\mbox{\hyperlink{structComplexArray_a79dde47c7ae530c79cebfdf57b225968}{imag}}[index]*multiQubit.\mbox{\hyperlink{structMultiQubit_a45483190d6b01ef6b2f98f2bec9ab94f}{stateVec}}.
+74         t = pTotal + y;
+75         \textcolor{comment}{// Don't change the bracketing on the following line}
+76         c = ( t - pTotal ) - y;
+77         pTotal = t;
+78 
+79         \textcolor{comment}{// Perform pTotal+=multiQubit.stateVec.imag[index]*multiQubit.stateVec.imag[index]; by Kahan}
+80 
+81         y = multiQubit.\mbox{\hyperlink{structMultiQubit_a45483190d6b01ef6b2f98f2bec9ab94f}{stateVec}}.\mbox{\hyperlink{structComplexArray_a79dde47c7ae530c79cebfdf57b225968}{imag}}[index]*multiQubit.\mbox{\hyperlink{structMultiQubit_a45483190d6b01ef6b2f98f2bec9ab94f}{stateVec}}.
       \mbox{\hyperlink{structComplexArray_a79dde47c7ae530c79cebfdf57b225968}{imag}}[index] - c;
-77         t = pTotal + y;
-78         \textcolor{comment}{// Don't change the bracketing on the following line}
-79         c = ( t - pTotal ) - y;
-80         pTotal = t;
-81 
-82 
-83     \} 
-84     \textcolor{keywordflow}{return} pTotal;
-85 \}
+82         t = pTotal + y;
+83         \textcolor{comment}{// Don't change the bracketing on the following line}
+84         c = ( t - pTotal ) - y;
+85         pTotal = t;
+86 
+87 
+88     \} 
+89     \textcolor{keywordflow}{return} pTotal;
+90 \}
 \end{DoxyCode}
 \mbox{\Hypertarget{QuEST__env__local_8c_abd4bc926cd3f9b65610bb228d0c59fe0}\label{QuEST__env__local_8c_abd4bc926cd3f9b65610bb228d0c59fe0}} 
 \index{Qu\+E\+S\+T\+\_\+env\+\_\+local.\+c@{Qu\+E\+S\+T\+\_\+env\+\_\+local.\+c}!close\+Qu\+E\+S\+T\+Env@{close\+Qu\+E\+S\+T\+Env}}
@@ -158,13 +157,13 @@ If something needs to be done to clean up the execution environment, such as fin
 \end{DoxyParams}
 
 
-Definition at line 36 of file Qu\+E\+S\+T\+\_\+env\+\_\+local.\+c.
+Definition at line 41 of file Qu\+E\+S\+T\+\_\+env\+\_\+local.\+c.
 
 
 \begin{DoxyCode}
-36                                 \{
-37     \textcolor{comment}{// MPI finalize goes here in MPI version. Call this function anyway for consistency}
-38 \}
+41                                 \{
+42     \textcolor{comment}{// MPI finalize goes here in MPI version. Call this function anyway for consistency}
+43 \}
 \end{DoxyCode}
 \mbox{\Hypertarget{QuEST__env__local_8c_a07418ebac70fd9ae5d051d089961631d}\label{QuEST__env__local_8c_a07418ebac70fd9ae5d051d089961631d}} 
 \index{Qu\+E\+S\+T\+\_\+env\+\_\+local.\+c@{Qu\+E\+S\+T\+\_\+env\+\_\+local.\+c}!collapse\+To\+Outcome@{collapse\+To\+Outcome}}
@@ -197,7 +196,7 @@ probability of the (forced) measurement outcome
 \end{DoxyExceptions}
 
 
-Definition at line 189 of file Qu\+E\+S\+T\+\_\+env\+\_\+local.\+c.
+Definition at line 194 of file Qu\+E\+S\+T\+\_\+env\+\_\+local.\+c.
 
 
 
@@ -205,16 +204,16 @@ References collapse\+To\+Outcome\+Local(), find\+Probability\+Of\+Outcome(), Mul
 
 
 \begin{DoxyCode}
-190 \{
-191     \mbox{\hyperlink{QuEST__env__local_8c_a3587b9d533e633ccf1abf9ad2ce45d8d}{QuESTAssert}}(measureQubit >= 0 && measureQubit < multiQubit.
+195 \{
+196     \mbox{\hyperlink{QuEST__env__local_8c_a3587b9d533e633ccf1abf9ad2ce45d8d}{QuESTAssert}}(measureQubit >= 0 && measureQubit < multiQubit.
       \mbox{\hyperlink{structMultiQubit_ab5b9795bdc6fb5855e1974dcbbaeb36f}{numQubits}}, 2, \_\_func\_\_);
-192     \mbox{\hyperlink{QuEST__env__local_8c_a3587b9d533e633ccf1abf9ad2ce45d8d}{QuESTAssert}}((outcome==0 || outcome==1), 10, \_\_func\_\_);
-193     \mbox{\hyperlink{QuEST__precision_8h_a4b654506f18b8bfd61ad2a29a7e38c25}{REAL}} stateProb;
-194     stateProb = \mbox{\hyperlink{QuEST__env__local_8c_ad315c941a51bc053d39ebfa2040fd32e}{findProbabilityOfOutcome}}(multiQubit, measureQubit, outcome);
-195     \mbox{\hyperlink{QuEST__env__local_8c_a3587b9d533e633ccf1abf9ad2ce45d8d}{QuESTAssert}}(fabs(stateProb)>\mbox{\hyperlink{QuEST__precision_8h_aebb5e6716e06431296af4d1a71744dec}{REAL\_EPS}}, 8, \_\_func\_\_);
-196     \mbox{\hyperlink{QuEST_8c_a01d9a8b7ff0e09ec399e158389783aa9}{collapseToOutcomeLocal}}(multiQubit, measureQubit, stateProb, outcome);
-197     \textcolor{keywordflow}{return} stateProb;
-198 \}
+197     \mbox{\hyperlink{QuEST__env__local_8c_a3587b9d533e633ccf1abf9ad2ce45d8d}{QuESTAssert}}((outcome==0 || outcome==1), 10, \_\_func\_\_);
+198     \mbox{\hyperlink{QuEST__precision_8h_a4b654506f18b8bfd61ad2a29a7e38c25}{REAL}} stateProb;
+199     stateProb = \mbox{\hyperlink{QuEST__env__local_8c_ad315c941a51bc053d39ebfa2040fd32e}{findProbabilityOfOutcome}}(multiQubit, measureQubit, outcome);
+200     \mbox{\hyperlink{QuEST__env__local_8c_a3587b9d533e633ccf1abf9ad2ce45d8d}{QuESTAssert}}(fabs(stateProb)>\mbox{\hyperlink{QuEST__precision_8h_aebb5e6716e06431296af4d1a71744dec}{REAL\_EPS}}, 8, \_\_func\_\_);
+201     \mbox{\hyperlink{QuEST_8c_a01d9a8b7ff0e09ec399e158389783aa9}{collapseToOutcomeLocal}}(multiQubit, measureQubit, stateProb, outcome);
+202     \textcolor{keywordflow}{return} stateProb;
+203 \}
 \end{DoxyCode}
 \mbox{\Hypertarget{QuEST__env__local_8c_a03b13dfcabd8c59b50dbdd3af44ba8b2}\label{QuEST__env__local_8c_a03b13dfcabd8c59b50dbdd3af44ba8b2}} 
 \index{Qu\+E\+S\+T\+\_\+env\+\_\+local.\+c@{Qu\+E\+S\+T\+\_\+env\+\_\+local.\+c}!compact\+Unitary@{compact\+Unitary}}
@@ -249,7 +248,7 @@ Valid $\alpha$, $\beta$ satisfy $|\alpha|^2 + |\beta|^2 = 1$.
 \end{DoxyExceptions}
 
 
-Definition at line 95 of file Qu\+E\+S\+T\+\_\+env\+\_\+local.\+c.
+Definition at line 100 of file Qu\+E\+S\+T\+\_\+env\+\_\+local.\+c.
 
 
 
@@ -257,14 +256,14 @@ References compact\+Unitary\+Local(), Multi\+Qubit\+::num\+Qubits, Qu\+E\+S\+T\+
 
 
 \begin{DoxyCode}
-96 \{
-97     \mbox{\hyperlink{QuEST__env__local_8c_a3587b9d533e633ccf1abf9ad2ce45d8d}{QuESTAssert}}(targetQubit >= 0 && targetQubit < multiQubit.
+101 \{
+102     \mbox{\hyperlink{QuEST__env__local_8c_a3587b9d533e633ccf1abf9ad2ce45d8d}{QuESTAssert}}(targetQubit >= 0 && targetQubit < multiQubit.
       \mbox{\hyperlink{structMultiQubit_ab5b9795bdc6fb5855e1974dcbbaeb36f}{numQubits}}, 1, \_\_func\_\_);
-98     \mbox{\hyperlink{QuEST__env__local_8c_a3587b9d533e633ccf1abf9ad2ce45d8d}{QuESTAssert}}(\mbox{\hyperlink{QuEST_8c_ae2b2c14a07dd7d50ff86032a3ca101d7}{validateAlphaBeta}}(alpha, beta), 6, \_\_func\_\_);
-99 
-100     \textcolor{comment}{// all values required to update state vector lie in this rank}
-101     \mbox{\hyperlink{QuEST_8c_a9cee2d8716667a3318420a3b672f5b92}{compactUnitaryLocal}}(multiQubit, targetQubit, alpha, beta);
-102 \}
+103     \mbox{\hyperlink{QuEST__env__local_8c_a3587b9d533e633ccf1abf9ad2ce45d8d}{QuESTAssert}}(\mbox{\hyperlink{QuEST_8c_ae2b2c14a07dd7d50ff86032a3ca101d7}{validateAlphaBeta}}(alpha, beta), 6, \_\_func\_\_);
+104 
+105     \textcolor{comment}{// all values required to update state vector lie in this rank}
+106     \mbox{\hyperlink{QuEST_8c_a9cee2d8716667a3318420a3b672f5b92}{compactUnitaryLocal}}(multiQubit, targetQubit, alpha, beta);
+107 \}
 \end{DoxyCode}
 \mbox{\Hypertarget{QuEST__env__local_8c_ab4812953bc457405b3aa05a4c2f64f4a}\label{QuEST__env__local_8c_ab4812953bc457405b3aa05a4c2f64f4a}} 
 \index{Qu\+E\+S\+T\+\_\+env\+\_\+local.\+c@{Qu\+E\+S\+T\+\_\+env\+\_\+local.\+c}!controlled\+Compact\+Unitary@{controlled\+Compact\+Unitary}}
@@ -299,7 +298,7 @@ Given valid complex numbers $\alpha$ and $\beta$, applies the two-\/qubit unitar
 \end{DoxyExceptions}
 
 
-Definition at line 113 of file Qu\+E\+S\+T\+\_\+env\+\_\+local.\+c.
+Definition at line 118 of file Qu\+E\+S\+T\+\_\+env\+\_\+local.\+c.
 
 
 
@@ -307,18 +306,18 @@ References controlled\+Compact\+Unitary\+Local(), Multi\+Qubit\+::num\+Qubits, Q
 
 
 \begin{DoxyCode}
-114 \{
-115     \mbox{\hyperlink{QuEST__env__local_8c_a3587b9d533e633ccf1abf9ad2ce45d8d}{QuESTAssert}}(targetQubit >= 0 && targetQubit < multiQubit.
+119 \{
+120     \mbox{\hyperlink{QuEST__env__local_8c_a3587b9d533e633ccf1abf9ad2ce45d8d}{QuESTAssert}}(targetQubit >= 0 && targetQubit < multiQubit.
       \mbox{\hyperlink{structMultiQubit_ab5b9795bdc6fb5855e1974dcbbaeb36f}{numQubits}}, 1, \_\_func\_\_);
-116     \mbox{\hyperlink{QuEST__env__local_8c_a3587b9d533e633ccf1abf9ad2ce45d8d}{QuESTAssert}}(controlQubit >= 0 && controlQubit < multiQubit.
+121     \mbox{\hyperlink{QuEST__env__local_8c_a3587b9d533e633ccf1abf9ad2ce45d8d}{QuESTAssert}}(controlQubit >= 0 && controlQubit < multiQubit.
       \mbox{\hyperlink{structMultiQubit_ab5b9795bdc6fb5855e1974dcbbaeb36f}{numQubits}}, 2, \_\_func\_\_);
-117     \mbox{\hyperlink{QuEST__env__local_8c_a3587b9d533e633ccf1abf9ad2ce45d8d}{QuESTAssert}}(controlQubit != targetQubit, 3, \_\_func\_\_);
-118     \mbox{\hyperlink{QuEST__env__local_8c_a3587b9d533e633ccf1abf9ad2ce45d8d}{QuESTAssert}}(\mbox{\hyperlink{QuEST_8c_ae2b2c14a07dd7d50ff86032a3ca101d7}{validateAlphaBeta}}(alpha, beta), 6, \_\_func\_\_);
-119 
-120 
-121     \mbox{\hyperlink{QuEST_8c_afc77657651d52c47403b44b923a098a8}{controlledCompactUnitaryLocal}}(multiQubit, controlQubit, targetQubit, alpha
+122     \mbox{\hyperlink{QuEST__env__local_8c_a3587b9d533e633ccf1abf9ad2ce45d8d}{QuESTAssert}}(controlQubit != targetQubit, 3, \_\_func\_\_);
+123     \mbox{\hyperlink{QuEST__env__local_8c_a3587b9d533e633ccf1abf9ad2ce45d8d}{QuESTAssert}}(\mbox{\hyperlink{QuEST_8c_ae2b2c14a07dd7d50ff86032a3ca101d7}{validateAlphaBeta}}(alpha, beta), 6, \_\_func\_\_);
+124 
+125 
+126     \mbox{\hyperlink{QuEST_8c_afc77657651d52c47403b44b923a098a8}{controlledCompactUnitaryLocal}}(multiQubit, controlQubit, targetQubit, alpha
       , beta);
-122 \}
+127 \}
 \end{DoxyCode}
 \mbox{\Hypertarget{QuEST__env__local_8c_a67576895bbc65463481a8ea24d9b1e22}\label{QuEST__env__local_8c_a67576895bbc65463481a8ea24d9b1e22}} 
 \index{Qu\+E\+S\+T\+\_\+env\+\_\+local.\+c@{Qu\+E\+S\+T\+\_\+env\+\_\+local.\+c}!controlled\+Not@{controlled\+Not}}
@@ -349,7 +348,7 @@ This applies sigmaX to the target qubit if the control qubit has value 1. This e
 \end{DoxyExceptions}
 
 
-Definition at line 172 of file Qu\+E\+S\+T\+\_\+env\+\_\+local.\+c.
+Definition at line 177 of file Qu\+E\+S\+T\+\_\+env\+\_\+local.\+c.
 
 
 
@@ -357,14 +356,14 @@ References controlled\+Not\+Local(), Multi\+Qubit\+::num\+Qubits, and Qu\+E\+S\+
 
 
 \begin{DoxyCode}
-173 \{
-174     \mbox{\hyperlink{QuEST__env__local_8c_a3587b9d533e633ccf1abf9ad2ce45d8d}{QuESTAssert}}(targetQubit >= 0 && targetQubit < multiQubit.
+178 \{
+179     \mbox{\hyperlink{QuEST__env__local_8c_a3587b9d533e633ccf1abf9ad2ce45d8d}{QuESTAssert}}(targetQubit >= 0 && targetQubit < multiQubit.
       \mbox{\hyperlink{structMultiQubit_ab5b9795bdc6fb5855e1974dcbbaeb36f}{numQubits}}, 1, \_\_func\_\_);
-175     \mbox{\hyperlink{QuEST__env__local_8c_a3587b9d533e633ccf1abf9ad2ce45d8d}{QuESTAssert}}(controlQubit >= 0 && controlQubit < multiQubit.
+180     \mbox{\hyperlink{QuEST__env__local_8c_a3587b9d533e633ccf1abf9ad2ce45d8d}{QuESTAssert}}(controlQubit >= 0 && controlQubit < multiQubit.
       \mbox{\hyperlink{structMultiQubit_ab5b9795bdc6fb5855e1974dcbbaeb36f}{numQubits}}, 2, \_\_func\_\_);
-176     \mbox{\hyperlink{QuEST__env__local_8c_a3587b9d533e633ccf1abf9ad2ce45d8d}{QuESTAssert}}(controlQubit != targetQubit, 3, \_\_func\_\_);
-177     \mbox{\hyperlink{QuEST_8c_ad357a43e80e3baf013975b1b70942f4c}{controlledNotLocal}}(multiQubit, controlQubit, targetQubit);
-178 \}
+181     \mbox{\hyperlink{QuEST__env__local_8c_a3587b9d533e633ccf1abf9ad2ce45d8d}{QuESTAssert}}(controlQubit != targetQubit, 3, \_\_func\_\_);
+182     \mbox{\hyperlink{QuEST_8c_ad357a43e80e3baf013975b1b70942f4c}{controlledNotLocal}}(multiQubit, controlQubit, targetQubit);
+183 \}
 \end{DoxyCode}
 \mbox{\Hypertarget{QuEST__env__local_8c_a8a701526263392599aa21d0d0f05d9d8}\label{QuEST__env__local_8c_a8a701526263392599aa21d0d0f05d9d8}} 
 \index{Qu\+E\+S\+T\+\_\+env\+\_\+local.\+c@{Qu\+E\+S\+T\+\_\+env\+\_\+local.\+c}!controlled\+Unitary@{controlled\+Unitary}}
@@ -398,7 +397,7 @@ The given unitary is applied to the target qubit if the control qubit has value 
 \end{DoxyExceptions}
 
 
-Definition at line 124 of file Qu\+E\+S\+T\+\_\+env\+\_\+local.\+c.
+Definition at line 129 of file Qu\+E\+S\+T\+\_\+env\+\_\+local.\+c.
 
 
 
@@ -406,16 +405,16 @@ References controlled\+Unitary\+Local(), Multi\+Qubit\+::num\+Qubits, Qu\+E\+S\+
 
 
 \begin{DoxyCode}
-125 \{
-126     \mbox{\hyperlink{QuEST__env__local_8c_a3587b9d533e633ccf1abf9ad2ce45d8d}{QuESTAssert}}(targetQubit >= 0 && targetQubit < multiQubit.
+130 \{
+131     \mbox{\hyperlink{QuEST__env__local_8c_a3587b9d533e633ccf1abf9ad2ce45d8d}{QuESTAssert}}(targetQubit >= 0 && targetQubit < multiQubit.
       \mbox{\hyperlink{structMultiQubit_ab5b9795bdc6fb5855e1974dcbbaeb36f}{numQubits}}, 1, \_\_func\_\_);
-127     \mbox{\hyperlink{QuEST__env__local_8c_a3587b9d533e633ccf1abf9ad2ce45d8d}{QuESTAssert}}(controlQubit >= 0 && controlQubit < multiQubit.
+132     \mbox{\hyperlink{QuEST__env__local_8c_a3587b9d533e633ccf1abf9ad2ce45d8d}{QuESTAssert}}(controlQubit >= 0 && controlQubit < multiQubit.
       \mbox{\hyperlink{structMultiQubit_ab5b9795bdc6fb5855e1974dcbbaeb36f}{numQubits}}, 2, \_\_func\_\_);
-128     \mbox{\hyperlink{QuEST__env__local_8c_a3587b9d533e633ccf1abf9ad2ce45d8d}{QuESTAssert}}(controlQubit != targetQubit, 3, \_\_func\_\_);
-129     \mbox{\hyperlink{QuEST__env__local_8c_a3587b9d533e633ccf1abf9ad2ce45d8d}{QuESTAssert}}(\mbox{\hyperlink{QuEST_8c_ae4fea133d1a8f09ff8da03038100adb2}{validateMatrixIsUnitary}}(u), 5, \_\_func\_\_);
-130 
-131     \mbox{\hyperlink{QuEST_8c_a8a4afcff70195a306c082b8ed8d4e09a}{controlledUnitaryLocal}}(multiQubit, controlQubit, targetQubit, u);
-132 \}
+133     \mbox{\hyperlink{QuEST__env__local_8c_a3587b9d533e633ccf1abf9ad2ce45d8d}{QuESTAssert}}(controlQubit != targetQubit, 3, \_\_func\_\_);
+134     \mbox{\hyperlink{QuEST__env__local_8c_a3587b9d533e633ccf1abf9ad2ce45d8d}{QuESTAssert}}(\mbox{\hyperlink{QuEST_8c_ae4fea133d1a8f09ff8da03038100adb2}{validateMatrixIsUnitary}}(u), 5, \_\_func\_\_);
+135 
+136     \mbox{\hyperlink{QuEST_8c_a8a4afcff70195a306c082b8ed8d4e09a}{controlledUnitaryLocal}}(multiQubit, controlQubit, targetQubit, u);
+137 \}
 \end{DoxyCode}
 \mbox{\Hypertarget{QuEST__env__local_8c_ae5f9019826f35e8b51b1716cfe397b45}\label{QuEST__env__local_8c_ae5f9019826f35e8b51b1716cfe397b45}} 
 \index{Qu\+E\+S\+T\+\_\+env\+\_\+local.\+c@{Qu\+E\+S\+T\+\_\+env\+\_\+local.\+c}!exit\+With\+Error@{exit\+With\+Error}}
@@ -425,7 +424,7 @@ References controlled\+Unitary\+Local(), Multi\+Qubit\+::num\+Qubits, Qu\+E\+S\+
 
 
 
-Definition at line 229 of file Qu\+E\+S\+T\+\_\+env\+\_\+local.\+c.
+Definition at line 234 of file Qu\+E\+S\+T\+\_\+env\+\_\+local.\+c.
 
 
 
@@ -433,13 +432,13 @@ Referenced by Qu\+E\+S\+T\+Assert().
 
 
 \begin{DoxyCode}
-229                                                    \{
-230     printf(\textcolor{stringliteral}{"!!!\(\backslash\)n"});
-231     printf(\textcolor{stringliteral}{"QuEST Error in function %s: %s\(\backslash\)n"}, func, \mbox{\hyperlink{QuEST_8c_aac1637696885c75b73a1ecf381cea713}{errorCodes}}[errorCode]);
-232     printf(\textcolor{stringliteral}{"!!!\(\backslash\)n"});
-233     printf(\textcolor{stringliteral}{"exiting..\(\backslash\)n"});
-234     exit(errorCode);
-235 \}
+234                                                    \{
+235     printf(\textcolor{stringliteral}{"!!!\(\backslash\)n"});
+236     printf(\textcolor{stringliteral}{"QuEST Error in function %s: %s\(\backslash\)n"}, func, \mbox{\hyperlink{QuEST_8c_aac1637696885c75b73a1ecf381cea713}{errorCodes}}[errorCode]);
+237     printf(\textcolor{stringliteral}{"!!!\(\backslash\)n"});
+238     printf(\textcolor{stringliteral}{"exiting..\(\backslash\)n"});
+239     exit(errorCode);
+240 \}
 \end{DoxyCode}
 \mbox{\Hypertarget{QuEST__env__local_8c_ad315c941a51bc053d39ebfa2040fd32e}\label{QuEST__env__local_8c_ad315c941a51bc053d39ebfa2040fd32e}} 
 \index{Qu\+E\+S\+T\+\_\+env\+\_\+local.\+c@{Qu\+E\+S\+T\+\_\+env\+\_\+local.\+c}!find\+Probability\+Of\+Outcome@{find\+Probability\+Of\+Outcome}}
@@ -472,7 +471,7 @@ probability of qubit measure\+Qubit being measured in the given outcome
 \end{DoxyExceptions}
 
 
-Definition at line 180 of file Qu\+E\+S\+T\+\_\+env\+\_\+local.\+c.
+Definition at line 185 of file Qu\+E\+S\+T\+\_\+env\+\_\+local.\+c.
 
 
 
@@ -484,14 +483,14 @@ Referenced by collapse\+To\+Outcome(), and measure\+With\+Stats().
 
 
 \begin{DoxyCode}
-181 \{
-182     \mbox{\hyperlink{QuEST__env__local_8c_a3587b9d533e633ccf1abf9ad2ce45d8d}{QuESTAssert}}(measureQubit >= 0 && measureQubit < multiQubit.
+186 \{
+187     \mbox{\hyperlink{QuEST__env__local_8c_a3587b9d533e633ccf1abf9ad2ce45d8d}{QuESTAssert}}(measureQubit >= 0 && measureQubit < multiQubit.
       \mbox{\hyperlink{structMultiQubit_ab5b9795bdc6fb5855e1974dcbbaeb36f}{numQubits}}, 2, \_\_func\_\_);
-183     \mbox{\hyperlink{QuEST__precision_8h_a4b654506f18b8bfd61ad2a29a7e38c25}{REAL}} stateProb=0;
-184     stateProb = \mbox{\hyperlink{QuEST_8c_a7c02cd0e1b4eac19771a0525f023249e}{findProbabilityOfZeroLocal}}(multiQubit, measureQubit);
-185     \textcolor{keywordflow}{if} (outcome==1) stateProb = 1.0 - stateProb;
-186     \textcolor{keywordflow}{return} stateProb;
-187 \}
+188     \mbox{\hyperlink{QuEST__precision_8h_a4b654506f18b8bfd61ad2a29a7e38c25}{REAL}} stateProb=0;
+189     stateProb = \mbox{\hyperlink{QuEST_8c_a7c02cd0e1b4eac19771a0525f023249e}{findProbabilityOfZeroLocal}}(multiQubit, measureQubit);
+190     \textcolor{keywordflow}{if} (outcome==1) stateProb = 1.0 - stateProb;
+191     \textcolor{keywordflow}{return} stateProb;
+192 \}
 \end{DoxyCode}
 \mbox{\Hypertarget{QuEST__env__local_8c_a3615f76fd5f57008d9b74bbd10533dd0}\label{QuEST__env__local_8c_a3615f76fd5f57008d9b74bbd10533dd0}} 
 \index{Qu\+E\+S\+T\+\_\+env\+\_\+local.\+c@{Qu\+E\+S\+T\+\_\+env\+\_\+local.\+c}!get\+Imag\+Amp\+El@{get\+Imag\+Amp\+El}}
@@ -522,7 +521,7 @@ imaginary component at that index
 \end{DoxyExceptions}
 
 
-Definition at line 91 of file Qu\+E\+S\+T\+\_\+env\+\_\+local.\+c.
+Definition at line 96 of file Qu\+E\+S\+T\+\_\+env\+\_\+local.\+c.
 
 
 
@@ -530,9 +529,9 @@ References Complex\+Array\+::imag, and Multi\+Qubit\+::state\+Vec.
 
 
 \begin{DoxyCode}
-91                                                              \{
-92     \textcolor{keywordflow}{return} multiQubit.\mbox{\hyperlink{structMultiQubit_a45483190d6b01ef6b2f98f2bec9ab94f}{stateVec}}.\mbox{\hyperlink{structComplexArray_a79dde47c7ae530c79cebfdf57b225968}{imag}}[index];
-93 \}
+96                                                              \{
+97     \textcolor{keywordflow}{return} multiQubit.\mbox{\hyperlink{structMultiQubit_a45483190d6b01ef6b2f98f2bec9ab94f}{stateVec}}.\mbox{\hyperlink{structComplexArray_a79dde47c7ae530c79cebfdf57b225968}{imag}}[index];
+98 \}
 \end{DoxyCode}
 \mbox{\Hypertarget{QuEST__env__local_8c_a317b786f577fa6bc136ea7f0ee7330a7}\label{QuEST__env__local_8c_a317b786f577fa6bc136ea7f0ee7330a7}} 
 \index{Qu\+E\+S\+T\+\_\+env\+\_\+local.\+c@{Qu\+E\+S\+T\+\_\+env\+\_\+local.\+c}!get\+Real\+Amp\+El@{get\+Real\+Amp\+El}}
@@ -563,7 +562,7 @@ real component at that index
 \end{DoxyExceptions}
 
 
-Definition at line 87 of file Qu\+E\+S\+T\+\_\+env\+\_\+local.\+c.
+Definition at line 92 of file Qu\+E\+S\+T\+\_\+env\+\_\+local.\+c.
 
 
 
@@ -571,9 +570,9 @@ References Complex\+Array\+::real, and Multi\+Qubit\+::state\+Vec.
 
 
 \begin{DoxyCode}
-87                                                              \{
-88     \textcolor{keywordflow}{return} multiQubit.\mbox{\hyperlink{structMultiQubit_a45483190d6b01ef6b2f98f2bec9ab94f}{stateVec}}.\mbox{\hyperlink{structComplexArray_a4195cac6c784ea1b6271f1c7dba1548a}{real}}[index];
-89 \}
+92                                                              \{
+93     \textcolor{keywordflow}{return} multiQubit.\mbox{\hyperlink{structMultiQubit_a45483190d6b01ef6b2f98f2bec9ab94f}{stateVec}}.\mbox{\hyperlink{structComplexArray_a4195cac6c784ea1b6271f1c7dba1548a}{real}}[index];
+94 \}
 \end{DoxyCode}
 \mbox{\Hypertarget{QuEST__env__local_8c_aa09b5dd93de6df1384b8f2c0041749ab}\label{QuEST__env__local_8c_aa09b5dd93de6df1384b8f2c0041749ab}} 
 \index{Qu\+E\+S\+T\+\_\+env\+\_\+local.\+c@{Qu\+E\+S\+T\+\_\+env\+\_\+local.\+c}!hadamard@{hadamard}}
@@ -601,7 +600,7 @@ This takes $|0\rangle$ to $|+\rangle$ and $|1\rangle$ to $|-\rangle$, and is equ
 \end{DoxyExceptions}
 
 
-Definition at line 166 of file Qu\+E\+S\+T\+\_\+env\+\_\+local.\+c.
+Definition at line 171 of file Qu\+E\+S\+T\+\_\+env\+\_\+local.\+c.
 
 
 
@@ -609,11 +608,11 @@ References hadamard\+Local(), Multi\+Qubit\+::num\+Qubits, and Qu\+E\+S\+T\+Asse
 
 
 \begin{DoxyCode}
-167 \{
-168     \mbox{\hyperlink{QuEST__env__local_8c_a3587b9d533e633ccf1abf9ad2ce45d8d}{QuESTAssert}}(targetQubit >= 0 && targetQubit < multiQubit.
+172 \{
+173     \mbox{\hyperlink{QuEST__env__local_8c_a3587b9d533e633ccf1abf9ad2ce45d8d}{QuESTAssert}}(targetQubit >= 0 && targetQubit < multiQubit.
       \mbox{\hyperlink{structMultiQubit_ab5b9795bdc6fb5855e1974dcbbaeb36f}{numQubits}}, 1, \_\_func\_\_);
-169     \mbox{\hyperlink{QuEST_8c_aa9f0718b4dd794a3e1b143e3b153bfc5}{hadamardLocal}}(multiQubit, targetQubit);
-170 \}
+174     \mbox{\hyperlink{QuEST_8c_aa9f0718b4dd794a3e1b143e3b153bfc5}{hadamardLocal}}(multiQubit, targetQubit);
+175 \}
 \end{DoxyCode}
 \mbox{\Hypertarget{QuEST__env__local_8c_ad84a3ce68d1ca02b4e3f741ea45b6054}\label{QuEST__env__local_8c_ad84a3ce68d1ca02b4e3f741ea45b6054}} 
 \index{Qu\+E\+S\+T\+\_\+env\+\_\+local.\+c@{Qu\+E\+S\+T\+\_\+env\+\_\+local.\+c}!init\+Qu\+E\+S\+T\+Env@{init\+Qu\+E\+S\+T\+Env}}
@@ -634,19 +633,21 @@ If something needs to be done to set up the execution environment, such as initi
 \end{DoxyParams}
 
 
-Definition at line 21 of file Qu\+E\+S\+T\+\_\+env\+\_\+local.\+c.
+Definition at line 24 of file Qu\+E\+S\+T\+\_\+env\+\_\+local.\+c.
 
 
 
-References Qu\+E\+S\+T\+Env\+::num\+Ranks, and Qu\+E\+S\+T\+Env\+::rank.
+References Qu\+E\+S\+T\+Env\+::num\+Ranks, Qu\+E\+S\+T\+Seed\+Random\+Default(), and Qu\+E\+S\+T\+Env\+::rank.
 
 
 \begin{DoxyCode}
-21                                 \{
-22     \textcolor{comment}{// init MPI environment}
-23     env->\mbox{\hyperlink{structQuESTEnv_aa648bb336cf8598467cb62db00b9cee8}{rank}}=0;
-24     env->\mbox{\hyperlink{structQuESTEnv_af22aacd7c9905accae28484785c193b4}{numRanks}}=1;
-25 \}
+24                                 \{
+25     \textcolor{comment}{// init MPI environment}
+26     env->\mbox{\hyperlink{structQuESTEnv_aa648bb336cf8598467cb62db00b9cee8}{rank}}=0;
+27     env->\mbox{\hyperlink{structQuESTEnv_af22aacd7c9905accae28484785c193b4}{numRanks}}=1;
+28         
+29         \mbox{\hyperlink{QuEST_8c_a30b2a5228b8a21419db8aa82fa5e3167}{QuESTSeedRandomDefault}}();
+30 \}
 \end{DoxyCode}
 \mbox{\Hypertarget{QuEST__env__local_8c_ad5774247d836267175c664cd0e451bcb}\label{QuEST__env__local_8c_ad5774247d836267175c664cd0e451bcb}} 
 \index{Qu\+E\+S\+T\+\_\+env\+\_\+local.\+c@{Qu\+E\+S\+T\+\_\+env\+\_\+local.\+c}!measure@{measure}}
@@ -677,7 +678,7 @@ the measurement outcome, 0 or 1
 \end{DoxyExceptions}
 
 
-Definition at line 200 of file Qu\+E\+S\+T\+\_\+env\+\_\+local.\+c.
+Definition at line 205 of file Qu\+E\+S\+T\+\_\+env\+\_\+local.\+c.
 
 
 
@@ -685,12 +686,12 @@ References measure\+With\+Stats(), Multi\+Qubit\+::num\+Qubits, Qu\+E\+S\+T\+Ass
 
 
 \begin{DoxyCode}
-200                                                     \{
-201     \mbox{\hyperlink{QuEST__env__local_8c_a3587b9d533e633ccf1abf9ad2ce45d8d}{QuESTAssert}}(measureQubit >= 0 && measureQubit < multiQubit.
+205                                                     \{
+206     \mbox{\hyperlink{QuEST__env__local_8c_a3587b9d533e633ccf1abf9ad2ce45d8d}{QuESTAssert}}(measureQubit >= 0 && measureQubit < multiQubit.
       \mbox{\hyperlink{structMultiQubit_ab5b9795bdc6fb5855e1974dcbbaeb36f}{numQubits}}, 2, \_\_func\_\_);
-202     \mbox{\hyperlink{QuEST__precision_8h_a4b654506f18b8bfd61ad2a29a7e38c25}{REAL}} stateProb;
-203     \textcolor{keywordflow}{return} \mbox{\hyperlink{QuEST__env__local_8c_a2ac46e470c750bf93c754e06c64b0a7a}{measureWithStats}}(multiQubit, measureQubit, &stateProb);
-204 \}
+207     \mbox{\hyperlink{QuEST__precision_8h_a4b654506f18b8bfd61ad2a29a7e38c25}{REAL}} stateProb;
+208     \textcolor{keywordflow}{return} \mbox{\hyperlink{QuEST__env__local_8c_a2ac46e470c750bf93c754e06c64b0a7a}{measureWithStats}}(multiQubit, measureQubit, &stateProb);
+209 \}
 \end{DoxyCode}
 \mbox{\Hypertarget{QuEST__env__local_8c_a2ac46e470c750bf93c754e06c64b0a7a}\label{QuEST__env__local_8c_a2ac46e470c750bf93c754e06c64b0a7a}} 
 \index{Qu\+E\+S\+T\+\_\+env\+\_\+local.\+c@{Qu\+E\+S\+T\+\_\+env\+\_\+local.\+c}!measure\+With\+Stats@{measure\+With\+Stats}}
@@ -723,7 +724,7 @@ the measurement outcome, 0 or 1
 \end{DoxyExceptions}
 
 
-Definition at line 206 of file Qu\+E\+S\+T\+\_\+env\+\_\+local.\+c.
+Definition at line 211 of file Qu\+E\+S\+T\+\_\+env\+\_\+local.\+c.
 
 
 
@@ -735,30 +736,30 @@ Referenced by measure().
 
 
 \begin{DoxyCode}
-206                                                                               \{
-207     \mbox{\hyperlink{QuEST__env__local_8c_a3587b9d533e633ccf1abf9ad2ce45d8d}{QuESTAssert}}(measureQubit >= 0 && measureQubit < multiQubit.
+211                                                                               \{
+212     \mbox{\hyperlink{QuEST__env__local_8c_a3587b9d533e633ccf1abf9ad2ce45d8d}{QuESTAssert}}(measureQubit >= 0 && measureQubit < multiQubit.
       \mbox{\hyperlink{structMultiQubit_ab5b9795bdc6fb5855e1974dcbbaeb36f}{numQubits}}, 2, \_\_func\_\_);
-208 
-209     \textcolor{keywordtype}{int} outcome;
-210     \textcolor{comment}{// find probability of qubit being in state 1}
-211     \mbox{\hyperlink{QuEST__precision_8h_a4b654506f18b8bfd61ad2a29a7e38c25}{REAL}} stateProbInternal = \mbox{\hyperlink{QuEST__env__local_8c_ad315c941a51bc053d39ebfa2040fd32e}{findProbabilityOfOutcome}}(multiQubit, measureQubit,
+213 
+214     \textcolor{keywordtype}{int} outcome;
+215     \textcolor{comment}{// find probability of qubit being in state 1}
+216     \mbox{\hyperlink{QuEST__precision_8h_a4b654506f18b8bfd61ad2a29a7e38c25}{REAL}} stateProbInternal = \mbox{\hyperlink{QuEST__env__local_8c_ad315c941a51bc053d39ebfa2040fd32e}{findProbabilityOfOutcome}}(multiQubit, measureQubit,
        1);
-212 
-213     \textcolor{comment}{// we can't collapse to a state that has a probability too close to zero}
-214     \textcolor{keywordflow}{if} (stateProbInternal<\mbox{\hyperlink{QuEST__precision_8h_aebb5e6716e06431296af4d1a71744dec}{REAL\_EPS}}) outcome=0;
-215     \textcolor{keywordflow}{else} \textcolor{keywordflow}{if} (1-stateProbInternal<\mbox{\hyperlink{QuEST__precision_8h_aebb5e6716e06431296af4d1a71744dec}{REAL\_EPS}}) outcome=1;
-216     \textcolor{keywordflow}{else} \{
-217         \textcolor{comment}{// ok. both P(0) and P(1) are large enough to resolve}
-218         \textcolor{comment}{// generate random float on [0,1]}
-219         \textcolor{keywordtype}{float} randNum = \mbox{\hyperlink{mt19937ar_8c_ac94ab75771800274ed1a2bedeca86f04}{genrand\_real1}}();
-220         \textcolor{keywordflow}{if} (randNum<=stateProbInternal) outcome = 1;
-221         \textcolor{keywordflow}{else} outcome = 0;
-222     \} 
-223     \textcolor{keywordflow}{if} (outcome==0) stateProbInternal = 1-stateProbInternal;
-224     \mbox{\hyperlink{QuEST_8c_a01d9a8b7ff0e09ec399e158389783aa9}{collapseToOutcomeLocal}}(multiQubit, measureQubit, stateProbInternal, outcome);
-225     *stateProb = stateProbInternal;
-226     \textcolor{keywordflow}{return} outcome;
-227 \}
+217 
+218     \textcolor{comment}{// we can't collapse to a state that has a probability too close to zero}
+219     \textcolor{keywordflow}{if} (stateProbInternal<\mbox{\hyperlink{QuEST__precision_8h_aebb5e6716e06431296af4d1a71744dec}{REAL\_EPS}}) outcome=0;
+220     \textcolor{keywordflow}{else} \textcolor{keywordflow}{if} (1-stateProbInternal<\mbox{\hyperlink{QuEST__precision_8h_aebb5e6716e06431296af4d1a71744dec}{REAL\_EPS}}) outcome=1;
+221     \textcolor{keywordflow}{else} \{
+222         \textcolor{comment}{// ok. both P(0) and P(1) are large enough to resolve}
+223         \textcolor{comment}{// generate random float on [0,1]}
+224         \textcolor{keywordtype}{float} randNum = \mbox{\hyperlink{mt19937ar_8c_ac94ab75771800274ed1a2bedeca86f04}{genrand\_real1}}();
+225         \textcolor{keywordflow}{if} (randNum<=stateProbInternal) outcome = 1;
+226         \textcolor{keywordflow}{else} outcome = 0;
+227     \} 
+228     \textcolor{keywordflow}{if} (outcome==0) stateProbInternal = 1-stateProbInternal;
+229     \mbox{\hyperlink{QuEST_8c_a01d9a8b7ff0e09ec399e158389783aa9}{collapseToOutcomeLocal}}(multiQubit, measureQubit, stateProbInternal, outcome);
+230     *stateProb = stateProbInternal;
+231     \textcolor{keywordflow}{return} outcome;
+232 \}
 \end{DoxyCode}
 \mbox{\Hypertarget{QuEST__env__local_8c_ae395a79690283ed81106afadd7a8cd8a}\label{QuEST__env__local_8c_ae395a79690283ed81106afadd7a8cd8a}} 
 \index{Qu\+E\+S\+T\+\_\+env\+\_\+local.\+c@{Qu\+E\+S\+T\+\_\+env\+\_\+local.\+c}!multi\+Controlled\+Unitary@{multi\+Controlled\+Unitary}}
@@ -794,7 +795,7 @@ Any number of control qubits can be specified, and if all have value 1, the give
 \end{DoxyExceptions}
 
 
-Definition at line 134 of file Qu\+E\+S\+T\+\_\+env\+\_\+local.\+c.
+Definition at line 139 of file Qu\+E\+S\+T\+\_\+env\+\_\+local.\+c.
 
 
 
@@ -802,20 +803,20 @@ References multi\+Controlled\+Unitary\+Local(), Multi\+Qubit\+::num\+Qubits, Qu\
 
 
 \begin{DoxyCode}
-135 \{
-136     \mbox{\hyperlink{QuEST__env__local_8c_a3587b9d533e633ccf1abf9ad2ce45d8d}{QuESTAssert}}(targetQubit >= 0 && targetQubit < multiQubit.
+140 \{
+141     \mbox{\hyperlink{QuEST__env__local_8c_a3587b9d533e633ccf1abf9ad2ce45d8d}{QuESTAssert}}(targetQubit >= 0 && targetQubit < multiQubit.
       \mbox{\hyperlink{structMultiQubit_ab5b9795bdc6fb5855e1974dcbbaeb36f}{numQubits}}, 1, \_\_func\_\_);
-137     \mbox{\hyperlink{QuEST__env__local_8c_a3587b9d533e633ccf1abf9ad2ce45d8d}{QuESTAssert}}(numControlQubits > 0 && numControlQubits <= multiQubit.
+142     \mbox{\hyperlink{QuEST__env__local_8c_a3587b9d533e633ccf1abf9ad2ce45d8d}{QuESTAssert}}(numControlQubits > 0 && numControlQubits <= multiQubit.
       \mbox{\hyperlink{structMultiQubit_ab5b9795bdc6fb5855e1974dcbbaeb36f}{numQubits}}, 4, \_\_func\_\_);
-138     \mbox{\hyperlink{QuEST__env__local_8c_a3587b9d533e633ccf1abf9ad2ce45d8d}{QuESTAssert}}(\mbox{\hyperlink{QuEST_8c_ae4fea133d1a8f09ff8da03038100adb2}{validateMatrixIsUnitary}}(u), 5, \_\_func\_\_);
-139 
-140     \textcolor{keywordtype}{long} \textcolor{keywordtype}{long} \textcolor{keywordtype}{int} mask=0; 
-141     \textcolor{keywordflow}{for} (\textcolor{keywordtype}{int} i=0; i<numControlQubits; i++) mask = mask | (1LL<<controlQubits[i]);
-142     \mbox{\hyperlink{QuEST__env__local_8c_a3587b9d533e633ccf1abf9ad2ce45d8d}{QuESTAssert}}(mask >=0 && mask <= (1LL<<multiQubit.\mbox{\hyperlink{structMultiQubit_ab5b9795bdc6fb5855e1974dcbbaeb36f}{numQubits}})-1, 2, \_\_func\_\_);
-143     \mbox{\hyperlink{QuEST__env__local_8c_a3587b9d533e633ccf1abf9ad2ce45d8d}{QuESTAssert}}((mask & (1LL<<targetQubit)) != (1LL<<targetQubit), 3, \_\_func\_\_);
+143     \mbox{\hyperlink{QuEST__env__local_8c_a3587b9d533e633ccf1abf9ad2ce45d8d}{QuESTAssert}}(\mbox{\hyperlink{QuEST_8c_ae4fea133d1a8f09ff8da03038100adb2}{validateMatrixIsUnitary}}(u), 5, \_\_func\_\_);
 144 
-145     \mbox{\hyperlink{QuEST_8c_a1309eabcba3cb97fbc3cd2e606d17766}{multiControlledUnitaryLocal}}(multiQubit, targetQubit, mask, u);
-146 \}
+145     \textcolor{keywordtype}{long} \textcolor{keywordtype}{long} \textcolor{keywordtype}{int} mask=0; 
+146     \textcolor{keywordflow}{for} (\textcolor{keywordtype}{int} i=0; i<numControlQubits; i++) mask = mask | (1LL<<controlQubits[i]);
+147     \mbox{\hyperlink{QuEST__env__local_8c_a3587b9d533e633ccf1abf9ad2ce45d8d}{QuESTAssert}}(mask >=0 && mask <= (1LL<<multiQubit.\mbox{\hyperlink{structMultiQubit_ab5b9795bdc6fb5855e1974dcbbaeb36f}{numQubits}})-1, 2, \_\_func\_\_);
+148     \mbox{\hyperlink{QuEST__env__local_8c_a3587b9d533e633ccf1abf9ad2ce45d8d}{QuESTAssert}}((mask & (1LL<<targetQubit)) != (1LL<<targetQubit), 3, \_\_func\_\_);
+149 
+150     \mbox{\hyperlink{QuEST_8c_a1309eabcba3cb97fbc3cd2e606d17766}{multiControlledUnitaryLocal}}(multiQubit, targetQubit, mask, u);
+151 \}
 \end{DoxyCode}
 \mbox{\Hypertarget{QuEST__env__local_8c_aae7a8a7f1ccbddb7f76b6c52b746bb43}\label{QuEST__env__local_8c_aae7a8a7f1ccbddb7f76b6c52b746bb43}} 
 \index{Qu\+E\+S\+T\+\_\+env\+\_\+local.\+c@{Qu\+E\+S\+T\+\_\+env\+\_\+local.\+c}!phase\+Gate@{phase\+Gate}}
@@ -825,7 +826,7 @@ References multi\+Controlled\+Unitary\+Local(), Multi\+Qubit\+::num\+Qubits, Qu\
 
 
 
-Definition at line 160 of file Qu\+E\+S\+T\+\_\+env\+\_\+local.\+c.
+Definition at line 165 of file Qu\+E\+S\+T\+\_\+env\+\_\+local.\+c.
 
 
 
@@ -833,11 +834,11 @@ Referenced by s\+Gate(), sigma\+Z(), and t\+Gate().
 
 
 \begin{DoxyCode}
-161 \{
-162     \mbox{\hyperlink{QuEST__env__local_8c_a3587b9d533e633ccf1abf9ad2ce45d8d}{QuESTAssert}}(targetQubit >= 0 && targetQubit < multiQubit.
+166 \{
+167     \mbox{\hyperlink{QuEST__env__local_8c_a3587b9d533e633ccf1abf9ad2ce45d8d}{QuESTAssert}}(targetQubit >= 0 && targetQubit < multiQubit.
       \mbox{\hyperlink{structMultiQubit_ab5b9795bdc6fb5855e1974dcbbaeb36f}{numQubits}}, 1, \_\_func\_\_);
-163     \mbox{\hyperlink{QuEST_8c_a3a54566b73ac84c312d7da4f56ffbc3b}{phaseGateLocal}}(multiQubit, targetQubit, type);
-164 \}
+168     \mbox{\hyperlink{QuEST_8c_a3a54566b73ac84c312d7da4f56ffbc3b}{phaseGateLocal}}(multiQubit, targetQubit, type);
+169 \}
 \end{DoxyCode}
 \mbox{\Hypertarget{QuEST__env__local_8c_a3587b9d533e633ccf1abf9ad2ce45d8d}\label{QuEST__env__local_8c_a3587b9d533e633ccf1abf9ad2ce45d8d}} 
 \index{Qu\+E\+S\+T\+\_\+env\+\_\+local.\+c@{Qu\+E\+S\+T\+\_\+env\+\_\+local.\+c}!Qu\+E\+S\+T\+Assert@{Qu\+E\+S\+T\+Assert}}
@@ -847,7 +848,7 @@ Referenced by s\+Gate(), sigma\+Z(), and t\+Gate().
 
 
 
-Definition at line 237 of file Qu\+E\+S\+T\+\_\+env\+\_\+local.\+c.
+Definition at line 242 of file Qu\+E\+S\+T\+\_\+env\+\_\+local.\+c.
 
 
 
@@ -855,9 +856,9 @@ Referenced by collapse\+To\+Outcome(), compact\+Unitary(), controlled\+Compact\+
 
 
 \begin{DoxyCode}
-237                                                               \{
-238     \textcolor{keywordflow}{if} (!isValid) \mbox{\hyperlink{QuEST__env__local_8c_ae5f9019826f35e8b51b1716cfe397b45}{exitWithError}}(errorCode, func);
-239 \}
+242                                                               \{
+243     \textcolor{keywordflow}{if} (!isValid) \mbox{\hyperlink{QuEST__env__local_8c_ae5f9019826f35e8b51b1716cfe397b45}{exitWithError}}(errorCode, func);
+244 \}
 \end{DoxyCode}
 \mbox{\Hypertarget{QuEST__env__local_8c_a62da5b58d8ce84e6f4d24be1b872294e}\label{QuEST__env__local_8c_a62da5b58d8ce84e6f4d24be1b872294e}} 
 \index{Qu\+E\+S\+T\+\_\+env\+\_\+local.\+c@{Qu\+E\+S\+T\+\_\+env\+\_\+local.\+c}!report\+Node\+List@{report\+Node\+List}}
@@ -876,13 +877,13 @@ For debugging purposes.
 \end{DoxyParams}
 
 
-Definition at line 53 of file Qu\+E\+S\+T\+\_\+env\+\_\+local.\+c.
+Definition at line 58 of file Qu\+E\+S\+T\+\_\+env\+\_\+local.\+c.
 
 
 \begin{DoxyCode}
-53                                  \{
-54     printf(\textcolor{stringliteral}{"Hostname unknown: running locally\(\backslash\)n"});
-55 \}
+58                                  \{
+59     printf(\textcolor{stringliteral}{"Hostname unknown: running locally\(\backslash\)n"});
+60 \}
 \end{DoxyCode}
 \mbox{\Hypertarget{QuEST__env__local_8c_af8a14ae79c3fb2c0b5f6255cc37bebf9}\label{QuEST__env__local_8c_af8a14ae79c3fb2c0b5f6255cc37bebf9}} 
 \index{Qu\+E\+S\+T\+\_\+env\+\_\+local.\+c@{Qu\+E\+S\+T\+\_\+env\+\_\+local.\+c}!report\+Qu\+E\+S\+T\+Env@{report\+Qu\+E\+S\+T\+Env}}
@@ -901,7 +902,7 @@ Report information about the Qu\+E\+ST environment.
 \end{DoxyParams}
 
 
-Definition at line 40 of file Qu\+E\+S\+T\+\_\+env\+\_\+local.\+c.
+Definition at line 45 of file Qu\+E\+S\+T\+\_\+env\+\_\+local.\+c.
 
 
 
@@ -909,18 +910,18 @@ References Qu\+E\+S\+T\+Env\+::num\+Ranks, and R\+E\+AL.
 
 
 \begin{DoxyCode}
-40                                  \{
-41     printf(\textcolor{stringliteral}{"EXECUTION ENVIRONMENT:\(\backslash\)n"});
-42     printf(\textcolor{stringliteral}{"Running locally on one node\(\backslash\)n"});
-43     printf(\textcolor{stringliteral}{"Number of ranks is %d\(\backslash\)n"}, env.\mbox{\hyperlink{structQuESTEnv_af22aacd7c9905accae28484785c193b4}{numRanks}});
-44 \textcolor{preprocessor}{# ifdef \_OPENMP}
-45     printf(\textcolor{stringliteral}{"OpenMP enabled\(\backslash\)n"});
-46     printf(\textcolor{stringliteral}{"Number of threads available is %d\(\backslash\)n"}, omp\_get\_max\_threads());
-47 \textcolor{preprocessor}{# else}
-48     printf(\textcolor{stringliteral}{"OpenMP disabled\(\backslash\)n"});
-49 \textcolor{preprocessor}{# endif}
-50     printf(\textcolor{stringliteral}{"Precision: size of REAL is %ld bytes\(\backslash\)n"}, \textcolor{keyword}{sizeof}(\mbox{\hyperlink{QuEST__precision_8h_a4b654506f18b8bfd61ad2a29a7e38c25}{REAL}}));
-51 \}
+45                                  \{
+46     printf(\textcolor{stringliteral}{"EXECUTION ENVIRONMENT:\(\backslash\)n"});
+47     printf(\textcolor{stringliteral}{"Running locally on one node\(\backslash\)n"});
+48     printf(\textcolor{stringliteral}{"Number of ranks is %d\(\backslash\)n"}, env.\mbox{\hyperlink{structQuESTEnv_af22aacd7c9905accae28484785c193b4}{numRanks}});
+49 \textcolor{preprocessor}{# ifdef \_OPENMP}
+50     printf(\textcolor{stringliteral}{"OpenMP enabled\(\backslash\)n"});
+51     printf(\textcolor{stringliteral}{"Number of threads available is %d\(\backslash\)n"}, omp\_get\_max\_threads());
+52 \textcolor{preprocessor}{# else}
+53     printf(\textcolor{stringliteral}{"OpenMP disabled\(\backslash\)n"});
+54 \textcolor{preprocessor}{# endif}
+55     printf(\textcolor{stringliteral}{"Precision: size of REAL is %ld bytes\(\backslash\)n"}, \textcolor{keyword}{sizeof}(\mbox{\hyperlink{QuEST__precision_8h_a4b654506f18b8bfd61ad2a29a7e38c25}{REAL}}));
+56 \}
 \end{DoxyCode}
 \mbox{\Hypertarget{QuEST__env__local_8c_a86e396e06b7d527cac20ba0108872423}\label{QuEST__env__local_8c_a86e396e06b7d527cac20ba0108872423}} 
 \index{Qu\+E\+S\+T\+\_\+env\+\_\+local.\+c@{Qu\+E\+S\+T\+\_\+env\+\_\+local.\+c}!sigmaX@{sigmaX}}
@@ -948,7 +949,7 @@ This is a rotation of $\pi$ around the x-\/axis on the Bloch sphere. I.\+e. \[ \
 \end{DoxyExceptions}
 
 
-Definition at line 148 of file Qu\+E\+S\+T\+\_\+env\+\_\+local.\+c.
+Definition at line 153 of file Qu\+E\+S\+T\+\_\+env\+\_\+local.\+c.
 
 
 
@@ -956,11 +957,11 @@ References Multi\+Qubit\+::num\+Qubits, Qu\+E\+S\+T\+Assert(), and sigma\+X\+Loc
 
 
 \begin{DoxyCode}
-149 \{
-150     \mbox{\hyperlink{QuEST__env__local_8c_a3587b9d533e633ccf1abf9ad2ce45d8d}{QuESTAssert}}(targetQubit >= 0 && targetQubit < multiQubit.
+154 \{
+155     \mbox{\hyperlink{QuEST__env__local_8c_a3587b9d533e633ccf1abf9ad2ce45d8d}{QuESTAssert}}(targetQubit >= 0 && targetQubit < multiQubit.
       \mbox{\hyperlink{structMultiQubit_ab5b9795bdc6fb5855e1974dcbbaeb36f}{numQubits}}, 1, \_\_func\_\_);
-151     \mbox{\hyperlink{QuEST_8c_a74822fd86bb5d81766e6e8dbdcd62df1}{sigmaXLocal}}(multiQubit, targetQubit);
-152 \}
+156     \mbox{\hyperlink{QuEST_8c_a74822fd86bb5d81766e6e8dbdcd62df1}{sigmaXLocal}}(multiQubit, targetQubit);
+157 \}
 \end{DoxyCode}
 \mbox{\Hypertarget{QuEST__env__local_8c_a1f54d70a42403f7e1c2e2c2007332f61}\label{QuEST__env__local_8c_a1f54d70a42403f7e1c2e2c2007332f61}} 
 \index{Qu\+E\+S\+T\+\_\+env\+\_\+local.\+c@{Qu\+E\+S\+T\+\_\+env\+\_\+local.\+c}!sigmaY@{sigmaY}}
@@ -988,7 +989,7 @@ This is a rotation of $\pi$ around the Y-\/axis on the Bloch sphere. I.\+e. \[ \
 \end{DoxyExceptions}
 
 
-Definition at line 154 of file Qu\+E\+S\+T\+\_\+env\+\_\+local.\+c.
+Definition at line 159 of file Qu\+E\+S\+T\+\_\+env\+\_\+local.\+c.
 
 
 
@@ -996,11 +997,11 @@ References Multi\+Qubit\+::num\+Qubits, Qu\+E\+S\+T\+Assert(), and sigma\+Y\+Loc
 
 
 \begin{DoxyCode}
-155 \{
-156     \mbox{\hyperlink{QuEST__env__local_8c_a3587b9d533e633ccf1abf9ad2ce45d8d}{QuESTAssert}}(targetQubit >= 0 && targetQubit < multiQubit.
+160 \{
+161     \mbox{\hyperlink{QuEST__env__local_8c_a3587b9d533e633ccf1abf9ad2ce45d8d}{QuESTAssert}}(targetQubit >= 0 && targetQubit < multiQubit.
       \mbox{\hyperlink{structMultiQubit_ab5b9795bdc6fb5855e1974dcbbaeb36f}{numQubits}}, 1, \_\_func\_\_);
-157     \mbox{\hyperlink{QuEST_8c_a81fbfaed65a742a7dfd622e17652245e}{sigmaYLocal}}(multiQubit, targetQubit);
-158 \}
+162     \mbox{\hyperlink{QuEST_8c_a81fbfaed65a742a7dfd622e17652245e}{sigmaYLocal}}(multiQubit, targetQubit);
+163 \}
 \end{DoxyCode}
 \mbox{\Hypertarget{QuEST__env__local_8c_a8d31fe2d1ad4d01e2a1f5f6b8bc15b77}\label{QuEST__env__local_8c_a8d31fe2d1ad4d01e2a1f5f6b8bc15b77}} 
 \index{Qu\+E\+S\+T\+\_\+env\+\_\+local.\+c@{Qu\+E\+S\+T\+\_\+env\+\_\+local.\+c}!sync\+Qu\+E\+S\+T\+Env@{sync\+Qu\+E\+S\+T\+Env}}
@@ -1019,13 +1020,13 @@ Guarantees that all code up to the given point has been executed on all nodes (i
 \end{DoxyParams}
 
 
-Definition at line 28 of file Qu\+E\+S\+T\+\_\+env\+\_\+local.\+c.
+Definition at line 33 of file Qu\+E\+S\+T\+\_\+env\+\_\+local.\+c.
 
 
 \begin{DoxyCode}
-28                                \{
-29     \textcolor{comment}{// MPI Barrier goes here in MPI version. }
-30 \} 
+33                                \{
+34     \textcolor{comment}{// MPI Barrier goes here in MPI version. }
+35 \} 
 \end{DoxyCode}
 \mbox{\Hypertarget{QuEST__env__local_8c_ac7e38d768a1bd79019f88cc1e6295092}\label{QuEST__env__local_8c_ac7e38d768a1bd79019f88cc1e6295092}} 
 \index{Qu\+E\+S\+T\+\_\+env\+\_\+local.\+c@{Qu\+E\+S\+T\+\_\+env\+\_\+local.\+c}!sync\+Qu\+E\+S\+T\+Success@{sync\+Qu\+E\+S\+T\+Success}}
@@ -1051,13 +1052,13 @@ If any one process has a zero success\+Code all processes will return a zero suc
 \end{DoxyReturn}
 
 
-Definition at line 32 of file Qu\+E\+S\+T\+\_\+env\+\_\+local.\+c.
+Definition at line 37 of file Qu\+E\+S\+T\+\_\+env\+\_\+local.\+c.
 
 
 \begin{DoxyCode}
-32                                      \{
-33     \textcolor{keywordflow}{return} successCode;
-34 \}
+37                                      \{
+38     \textcolor{keywordflow}{return} successCode;
+39 \}
 \end{DoxyCode}
 \mbox{\Hypertarget{QuEST__env__local_8c_a7a0877e33700f6bad48adb51b7b3fb67}\label{QuEST__env__local_8c_a7a0877e33700f6bad48adb51b7b3fb67}} 
 \index{Qu\+E\+S\+T\+\_\+env\+\_\+local.\+c@{Qu\+E\+S\+T\+\_\+env\+\_\+local.\+c}!unitary@{unitary}}
@@ -1089,7 +1090,7 @@ The passed 2x2 Complex\+Matrix must be unitary, otherwise an error is thrown.
 \end{DoxyExceptions}
 
 
-Definition at line 104 of file Qu\+E\+S\+T\+\_\+env\+\_\+local.\+c.
+Definition at line 109 of file Qu\+E\+S\+T\+\_\+env\+\_\+local.\+c.
 
 
 
@@ -1097,12 +1098,12 @@ References Multi\+Qubit\+::num\+Qubits, Qu\+E\+S\+T\+Assert(), unitary\+Local(),
 
 
 \begin{DoxyCode}
-105 \{
-106     \mbox{\hyperlink{QuEST__env__local_8c_a3587b9d533e633ccf1abf9ad2ce45d8d}{QuESTAssert}}(targetQubit >= 0 && targetQubit < multiQubit.
+110 \{
+111     \mbox{\hyperlink{QuEST__env__local_8c_a3587b9d533e633ccf1abf9ad2ce45d8d}{QuESTAssert}}(targetQubit >= 0 && targetQubit < multiQubit.
       \mbox{\hyperlink{structMultiQubit_ab5b9795bdc6fb5855e1974dcbbaeb36f}{numQubits}}, 1, \_\_func\_\_);
-107     \mbox{\hyperlink{QuEST__env__local_8c_a3587b9d533e633ccf1abf9ad2ce45d8d}{QuESTAssert}}(\mbox{\hyperlink{QuEST_8c_ae4fea133d1a8f09ff8da03038100adb2}{validateMatrixIsUnitary}}(u), 5, \_\_func\_\_);
-108 
-109     \textcolor{comment}{// all values required to update state vector lie in this rank}
-110     \mbox{\hyperlink{QuEST_8c_ac134fb45b0a7248c5d15e16eb7139a35}{unitaryLocal}}(multiQubit, targetQubit, u);
-111 \}
+112     \mbox{\hyperlink{QuEST__env__local_8c_a3587b9d533e633ccf1abf9ad2ce45d8d}{QuESTAssert}}(\mbox{\hyperlink{QuEST_8c_ae4fea133d1a8f09ff8da03038100adb2}{validateMatrixIsUnitary}}(u), 5, \_\_func\_\_);
+113 
+114     \textcolor{comment}{// all values required to update state vector lie in this rank}
+115     \mbox{\hyperlink{QuEST_8c_ac134fb45b0a7248c5d15e16eb7139a35}{unitaryLocal}}(multiQubit, targetQubit, u);
+116 \}
 \end{DoxyCode}
