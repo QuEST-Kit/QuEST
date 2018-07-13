@@ -10,11 +10,11 @@
 # include <stdio.h>
 # include <stdlib.h>
 # include <assert.h>
-# include "QuEST_precision.h"
-# include "QuEST.h"
+# include "../QuEST_precision.h"
+# include "../QuEST.h"
 # include "QuEST_internal.h"
 
-# include "mt19937ar.h" // MT random number generation
+# include "../mt19937ar.h" // MT random number generation
 // for seeding random numbers
 # include <sys/param.h>
 

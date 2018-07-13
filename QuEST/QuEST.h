@@ -49,10 +49,14 @@ Qubits are zero-based
 */
 typedef struct MultiQubit
 {
-	//! Probablilty amplitudes for the multi qubit state
+	//! Computational state amplitudes - a subset thereof in the MPI version
 	ComplexArray stateVec; 
 	//! Temporary storage for a chunk of the state vector received from another process in the MPI version
 	ComplexArray pairStateVec;
+	//! Storage for wavefunction amplitudes in the GPU version
+	ComplexArray deviceStateVec;
+	//! Storage for reduction of probabilities on GPU
+	REAL *firstLevelReduction, *secondLevelReduction;
 	//! Number of qubits in the state
 	int numQubits;
 	//! Number of probability amplitudes held in stateVec by this process
