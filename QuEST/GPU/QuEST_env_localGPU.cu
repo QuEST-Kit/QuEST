@@ -344,14 +344,16 @@ void initializeStateFromSingleFile(MultiQubit *multiQubit, char filename[200], Q
         if (line[0]!='#'){
             int chunkId = totalIndex/chunkSize;
             if (chunkId==multiQubit->chunkId){
-                //! fix -- hacky
-                if (QuEST_PREC==1){
+				# if QuEST_PREC==1
                     sscanf(line, "%f, %f", &(stateVecReal[indexInChunk]),
                             &(stateVecImag[indexInChunk]));
-                } else {
+                # elif QuEST_PREC==2
                     sscanf(line, "%lf, %lf", &(stateVecReal[indexInChunk]),
                             &(stateVecImag[indexInChunk]));
-                }
+                # elif QuEST_PREC==4
+                    sscanf(line, "%lf, %lf", &(stateVecReal[indexInChunk]),
+                            &(stateVecImag[indexInChunk]));
+                # endif
                 indexInChunk += 1;
             }
             totalIndex += 1;
