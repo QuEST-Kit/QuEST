@@ -18,7 +18,7 @@ then
 else
 	printf "\nCOMPILATION FAILED"
 	printf "\n---------------------\n\n"
-	make clean --silent
+	make clean EXE=runTests --silent
 	exit 1
 fi
 
@@ -28,7 +28,8 @@ printf "============================\n\n"
 
 # run the unit tests
 export OMP_NUM_THREADS=3
-if [ $(make getvalue-DISTRIBUTED) == 0 ]
+distributed=$(make SUPPRESS_WARNING=1 getvalue-DISTRIBUTED --silent)
+if [ $distributed == 0 ]
 then
     ./runTests
 else
