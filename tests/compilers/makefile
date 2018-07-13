@@ -119,12 +119,13 @@ endif
 
 LIBS = -lm
 
+QUEST_COMMON_DIR = $(QUEST_DIR)
 ifeq ($(GPUACCELERATED), 1)
     QUEST_INNER_DIR = $(QUEST_DIR)/GPU
 else
     QUEST_INNER_DIR = $(QUEST_DIR)/CPU
 endif
-QUEST_INCLUDE = -I$(QUEST_INNER_DIR)
+QUEST_INCLUDE = -I$(QUEST_INNER_DIR) -I$(QUEST_COMMON_DIR)
 
 
 
@@ -230,6 +231,8 @@ ifeq ($(GPUACCELERATED), 1)
 	$(COMPILER) -x c $(C_FLAGS) $(QUEST_INCLUDE) -c $<
   %.o: $(QUEST_INNER_DIR)/%.c
 	$(COMPILER) -x c $(C_FLAGS) -c $<
+  %.o: $(QUEST_COMMON_DIR)/%.c
+	$(COMPILER) -x c $(C_FLAGS) -c $<
 
   %.o: %.cu
 	$(CUDA_COMPILER) -dc $(CPP_CUDA_FLAGS) $(QUEST_INCLUDE) $<
@@ -248,6 +251,8 @@ else ifeq ($(DISTRIBUTED), 1)
 	$(MPI_WRAPPED_COMP) $(MPI_COMPILER) -x c $(C_FLAGS) $(QUEST_INCLUDE) -c $<
   %.o: $(QUEST_INNER_DIR)/%.c
 	$(MPI_WRAPPED_COMP) $(MPI_COMPILER) -x c $(C_FLAGS) -c $<
+  %.o: $(QUEST_COMMON_DIR)/%.c
+	$(MPI_WRAPPED_COMP) $(MPI_COMPILER) -x c $(C_FLAGS) -c $<
 	
   %.o: %.cpp
 	$(MPI_WRAPPED_COMP) $(MPI_COMPILER) $(CPP_FLAGS) $(QUEST_INCLUDE) -c $<
@@ -260,6 +265,8 @@ else
   %.o: %.c
 	$(COMPILER) -x c $(C_FLAGS) $(QUEST_INCLUDE) -c $<
   %.o: $(QUEST_INNER_DIR)/%.c
+	$(COMPILER) -x c $(C_FLAGS) -c $<
+  %.o: $(QUEST_COMMON_DIR)/%.c
 	$(COMPILER) -x c $(C_FLAGS) -c $<
 	
   %.o: %.cpp
