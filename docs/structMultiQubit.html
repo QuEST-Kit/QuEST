@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=9"/>
 <meta name="generator" content="Doxygen 1.8.14"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>Distributed QuEST: MultiQubit Struct Reference</title>
+<title>Quantum Exact Simulation Toolkit: MultiQubit Struct Reference</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -18,7 +18,7 @@
  <tbody>
  <tr style="height: 56px;">
   <td id="projectalign" style="padding-left: 0.5em;">
-   <div id="projectname">Distributed QuEST
+   <div id="projectname">Quantum Exact Simulation Toolkit
    </div>
   </td>
  </tr>
@@ -52,30 +52,38 @@ $(function() {
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-attribs"></a>
 Data Fields</h2></td></tr>
-<tr class="memitem:a45483190d6b01ef6b2f98f2bec9ab94f"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structComplexArray.html">ComplexArray</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structMultiQubit.html#a45483190d6b01ef6b2f98f2bec9ab94f">stateVec</a></td></tr>
-<tr class="memdesc:a45483190d6b01ef6b2f98f2bec9ab94f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Probablilty amplitudes for the multi qubit state.  <a href="#a45483190d6b01ef6b2f98f2bec9ab94f">More...</a><br /></td></tr>
-<tr class="separator:a45483190d6b01ef6b2f98f2bec9ab94f"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a76f7db4eab52d2b30f58f973ada809c5"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structComplexArray.html">ComplexArray</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structMultiQubit.html#a76f7db4eab52d2b30f58f973ada809c5">pairStateVec</a></td></tr>
-<tr class="memdesc:a76f7db4eab52d2b30f58f973ada809c5"><td class="mdescLeft">&#160;</td><td class="mdescRight">Temporary storage for a chunk of the state vector received from another process in the MPI version.  <a href="#a76f7db4eab52d2b30f58f973ada809c5">More...</a><br /></td></tr>
-<tr class="separator:a76f7db4eab52d2b30f58f973ada809c5"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ab5b9795bdc6fb5855e1974dcbbaeb36f"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structMultiQubit.html#ab5b9795bdc6fb5855e1974dcbbaeb36f">numQubits</a></td></tr>
-<tr class="memdesc:ab5b9795bdc6fb5855e1974dcbbaeb36f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Number of qubits in the state.  <a href="#ab5b9795bdc6fb5855e1974dcbbaeb36f">More...</a><br /></td></tr>
-<tr class="separator:ab5b9795bdc6fb5855e1974dcbbaeb36f"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ae16f47d8b725c914fb7f66b6498d79db"><td class="memItemLeft" align="right" valign="top">long long int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structMultiQubit.html#ae16f47d8b725c914fb7f66b6498d79db">numAmps</a></td></tr>
-<tr class="memdesc:ae16f47d8b725c914fb7f66b6498d79db"><td class="mdescLeft">&#160;</td><td class="mdescRight">Number of probability amplitudes held in stateVec by this process In the non-MPI version, this is the total number of amplitudes.  <a href="#ae16f47d8b725c914fb7f66b6498d79db">More...</a><br /></td></tr>
-<tr class="separator:ae16f47d8b725c914fb7f66b6498d79db"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ab10c88249fa3825d6227ceec01d37e37"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structMultiQubit.html#ab10c88249fa3825d6227ceec01d37e37">chunkId</a></td></tr>
 <tr class="memdesc:ab10c88249fa3825d6227ceec01d37e37"><td class="mdescLeft">&#160;</td><td class="mdescRight">The position of the chunk of the state vector held by this process in the full state vector.  <a href="#ab10c88249fa3825d6227ceec01d37e37">More...</a><br /></td></tr>
 <tr class="separator:ab10c88249fa3825d6227ceec01d37e37"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a59ac613486a41b8c9a4b6e79cc8d2cc3"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structComplexArray.html">ComplexArray</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structMultiQubit.html#a59ac613486a41b8c9a4b6e79cc8d2cc3">deviceStateVec</a></td></tr>
+<tr class="memdesc:a59ac613486a41b8c9a4b6e79cc8d2cc3"><td class="mdescLeft">&#160;</td><td class="mdescRight">Storage for wavefunction amplitudes in the GPU version.  <a href="#a59ac613486a41b8c9a4b6e79cc8d2cc3">More...</a><br /></td></tr>
+<tr class="separator:a59ac613486a41b8c9a4b6e79cc8d2cc3"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a4e0088b41adab0a40b7a31e528ed42b5"><td class="memItemLeft" align="right" valign="top"><a class="el" href="QuEST__precision_8h.html#a4b654506f18b8bfd61ad2a29a7e38c25">REAL</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structMultiQubit.html#a4e0088b41adab0a40b7a31e528ed42b5">firstLevelReduction</a></td></tr>
+<tr class="memdesc:a4e0088b41adab0a40b7a31e528ed42b5"><td class="mdescLeft">&#160;</td><td class="mdescRight">Storage for reduction of probabilities on GPU.  <a href="#a4e0088b41adab0a40b7a31e528ed42b5">More...</a><br /></td></tr>
+<tr class="separator:a4e0088b41adab0a40b7a31e528ed42b5"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a04c9f5254af58e4c4a54712eb32e7082"><td class="memItemLeft" align="right" valign="top">long long int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structMultiQubit.html#a04c9f5254af58e4c4a54712eb32e7082">numAmpsDividedByNumChunks</a></td></tr>
+<tr class="memdesc:a04c9f5254af58e4c4a54712eb32e7082"><td class="mdescLeft">&#160;</td><td class="mdescRight">Number of probability amplitudes held in stateVec by this process In the non-MPI version, this is the total number of amplitudes.  <a href="#a04c9f5254af58e4c4a54712eb32e7082">More...</a><br /></td></tr>
+<tr class="separator:a04c9f5254af58e4c4a54712eb32e7082"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:acd43f2f57991709c9e94f73662c972b2"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structMultiQubit.html#acd43f2f57991709c9e94f73662c972b2">numChunks</a></td></tr>
 <tr class="memdesc:acd43f2f57991709c9e94f73662c972b2"><td class="mdescLeft">&#160;</td><td class="mdescRight">Number of chunks the state vector is broken up into &ndash; the number of MPI processes used.  <a href="#acd43f2f57991709c9e94f73662c972b2">More...</a><br /></td></tr>
 <tr class="separator:acd43f2f57991709c9e94f73662c972b2"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab5b9795bdc6fb5855e1974dcbbaeb36f"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structMultiQubit.html#ab5b9795bdc6fb5855e1974dcbbaeb36f">numQubits</a></td></tr>
+<tr class="memdesc:ab5b9795bdc6fb5855e1974dcbbaeb36f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Number of qubits in the state.  <a href="#ab5b9795bdc6fb5855e1974dcbbaeb36f">More...</a><br /></td></tr>
+<tr class="separator:ab5b9795bdc6fb5855e1974dcbbaeb36f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a76f7db4eab52d2b30f58f973ada809c5"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structComplexArray.html">ComplexArray</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structMultiQubit.html#a76f7db4eab52d2b30f58f973ada809c5">pairStateVec</a></td></tr>
+<tr class="memdesc:a76f7db4eab52d2b30f58f973ada809c5"><td class="mdescLeft">&#160;</td><td class="mdescRight">Temporary storage for a chunk of the state vector received from another process in the MPI version.  <a href="#a76f7db4eab52d2b30f58f973ada809c5">More...</a><br /></td></tr>
+<tr class="separator:a76f7db4eab52d2b30f58f973ada809c5"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a3e859cefa146ec7b30464ab3d897930b"><td class="memItemLeft" align="right" valign="top"><a class="el" href="QuEST__precision_8h.html#a4b654506f18b8bfd61ad2a29a7e38c25">REAL</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structMultiQubit.html#a3e859cefa146ec7b30464ab3d897930b">secondLevelReduction</a></td></tr>
+<tr class="separator:a3e859cefa146ec7b30464ab3d897930b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a45483190d6b01ef6b2f98f2bec9ab94f"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structComplexArray.html">ComplexArray</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structMultiQubit.html#a45483190d6b01ef6b2f98f2bec9ab94f">stateVec</a></td></tr>
+<tr class="memdesc:a45483190d6b01ef6b2f98f2bec9ab94f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Computational state amplitudes - a subset thereof in the MPI version.  <a href="#a45483190d6b01ef6b2f98f2bec9ab94f">More...</a><br /></td></tr>
+<tr class="separator:a45483190d6b01ef6b2f98f2bec9ab94f"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>Represents a system of qubits. </p>
 <p>Qubits are zero-based </p>
 
-<p class="definition">Definition at line <a class="el" href="QuEST_8h_source.html#l00046">46</a> of file <a class="el" href="QuEST_8h_source.html">QuEST.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="QuEST_8h_source.html#l00050">50</a> of file <a class="el" href="QuEST_8h_source.html">QuEST.h</a>.</p>
 </div><h2 class="groupheader">Field Documentation</h2>
 <a id="ab10c88249fa3825d6227ceec01d37e37"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#ab10c88249fa3825d6227ceec01d37e37">&#9670;&nbsp;</a></span>chunkId</h2>
@@ -91,29 +99,61 @@ Data Fields</h2></td></tr>
 
 <p>The position of the chunk of the state vector held by this process in the full state vector. </p>
 
-<p class="definition">Definition at line <a class="el" href="QuEST_8h_source.html#l00058">58</a> of file <a class="el" href="QuEST_8h_source.html">QuEST.h</a>.</p>
-
-<p class="reference">Referenced by <a class="el" href="QuEST__env__mpi_8c_source.html#l00675">collapseToOutcome()</a>, <a class="el" href="QuEST__env__mpi_8c_source.html#l00269">compactUnitary()</a>, <a class="el" href="QuEST__env__mpi_8c_source.html#l00351">controlledCompactUnitary()</a>, <a class="el" href="QuEST_8c_source.html#l00922">controlledCompactUnitaryDistributed()</a>, <a class="el" href="QuEST_8c_source.html#l00713">controlledCompactUnitaryLocal()</a>, <a class="el" href="QuEST__env__mpi_8c_source.html#l00513">controlledNot()</a>, <a class="el" href="QuEST_8c_source.html#l01251">controlledNotDistributed()</a>, <a class="el" href="QuEST_8c_source.html#l01186">controlledNotLocal()</a>, <a class="el" href="QuEST_8c_source.html#l01741">controlledPhaseGate()</a>, <a class="el" href="QuEST__env__mpi_8c_source.html#l00394">controlledUnitary()</a>, <a class="el" href="QuEST_8c_source.html#l00985">controlledUnitaryDistributed()</a>, <a class="el" href="QuEST_8c_source.html#l00843">controlledUnitaryLocal()</a>, <a class="el" href="QuEST_8c_source.html#l00047">createMultiQubit()</a>, <a class="el" href="QuEST__env__mpi_8c_source.html#l00656">findProbabilityOfOutcome()</a>, <a class="el" href="QuEST__env__mpi_8c_source.html#l00099">getImagAmpEl()</a>, <a class="el" href="QuEST__env__mpi_8c_source.html#l00089">getRealAmpEl()</a>, <a class="el" href="QuEST__env__mpi_8c_source.html#l00599">hadamard()</a>, <a class="el" href="QuEST_8c_source.html#l00216">initClassicalState()</a>, <a class="el" href="QuEST_8c_source.html#l00336">initializeStateFromSingleFile()</a>, <a class="el" href="QuEST_8c_source.html#l00304">initStateDebug()</a>, <a class="el" href="QuEST_8c_source.html#l00258">initStateOfSingleQubit()</a>, <a class="el" href="QuEST_8c_source.html#l00147">initStateZero()</a>, <a class="el" href="QuEST__env__mpi_8c_source.html#l00709">measureWithStats()</a>, <a class="el" href="QuEST_8c_source.html#l01776">multiControlledPhaseGate()</a>, <a class="el" href="QuEST__env__mpi_8c_source.html#l00438">multiControlledUnitary()</a>, <a class="el" href="QuEST_8c_source.html#l01049">multiControlledUnitaryDistributed()</a>, <a class="el" href="QuEST_8c_source.html#l00780">multiControlledUnitaryLocal()</a>, <a class="el" href="QuEST__env__mpi_8c_source.html#l00581">phaseGate()</a>, <a class="el" href="QuEST_8c_source.html#l00128">reportMultiQubitParams()</a>, <a class="el" href="QuEST_8c_source.html#l00089">reportState()</a>, <a class="el" href="QuEST_8c_source.html#l00104">reportStateToScreen()</a>, <a class="el" href="QuEST__env__mpi_8c_source.html#l00484">sigmaX()</a>, <a class="el" href="QuEST__env__mpi_8c_source.html#l00550">sigmaY()</a>, and <a class="el" href="QuEST__env__mpi_8c_source.html#l00309">unitary()</a>.</p>
+<p class="definition">Definition at line <a class="el" href="QuEST_8h_source.html#l00066">66</a> of file <a class="el" href="QuEST_8h_source.html">QuEST.h</a>.</p>
 
 </div>
 </div>
-<a id="ae16f47d8b725c914fb7f66b6498d79db"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ae16f47d8b725c914fb7f66b6498d79db">&#9670;&nbsp;</a></span>numAmps</h2>
+<a id="a59ac613486a41b8c9a4b6e79cc8d2cc3"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a59ac613486a41b8c9a4b6e79cc8d2cc3">&#9670;&nbsp;</a></span>deviceStateVec</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">long long int MultiQubit::numAmps</td>
+          <td class="memname"><a class="el" href="structComplexArray.html">ComplexArray</a> MultiQubit::deviceStateVec</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Storage for wavefunction amplitudes in the GPU version. </p>
+
+<p class="definition">Definition at line <a class="el" href="QuEST_8h_source.html#l00057">57</a> of file <a class="el" href="QuEST_8h_source.html">QuEST.h</a>.</p>
+
+</div>
+</div>
+<a id="a4e0088b41adab0a40b7a31e528ed42b5"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a4e0088b41adab0a40b7a31e528ed42b5">&#9670;&nbsp;</a></span>firstLevelReduction</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="QuEST__precision_8h.html#a4b654506f18b8bfd61ad2a29a7e38c25">REAL</a>* MultiQubit::firstLevelReduction</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Storage for reduction of probabilities on GPU. </p>
+
+<p class="definition">Definition at line <a class="el" href="QuEST_8h_source.html#l00059">59</a> of file <a class="el" href="QuEST_8h_source.html">QuEST.h</a>.</p>
+
+</div>
+</div>
+<a id="a04c9f5254af58e4c4a54712eb32e7082"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a04c9f5254af58e4c4a54712eb32e7082">&#9670;&nbsp;</a></span>numAmpsDividedByNumChunks</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">long long int MultiQubit::numAmpsDividedByNumChunks</td>
         </tr>
       </table>
 </div><div class="memdoc">
 
 <p>Number of probability amplitudes held in stateVec by this process In the non-MPI version, this is the total number of amplitudes. </p>
 
-<p class="definition">Definition at line <a class="el" href="QuEST_8h_source.html#l00056">56</a> of file <a class="el" href="QuEST_8h_source.html">QuEST.h</a>.</p>
-
-<p class="reference">Referenced by <a class="el" href="QuEST__env__local_8c_source.html#l00057">calcTotalProbability()</a>, <a class="el" href="QuEST__env__mpi_8c_source.html#l00675">collapseToOutcome()</a>, <a class="el" href="QuEST_8c_source.html#l01910">collapseToOutcomeDistributedRenorm()</a>, <a class="el" href="QuEST_8c_source.html#l01950">collapseToOutcomeDistributedSetZero()</a>, <a class="el" href="QuEST_8c_source.html#l01828">collapseToOutcomeLocal()</a>, <a class="el" href="QuEST__env__mpi_8c_source.html#l00269">compactUnitary()</a>, <a class="el" href="QuEST_8c_source.html#l00612">compactUnitaryDistributed()</a>, <a class="el" href="QuEST_8c_source.html#l00483">compactUnitaryLocal()</a>, <a class="el" href="QuEST_8c_source.html#l00372">compareStates()</a>, <a class="el" href="QuEST__env__mpi_8c_source.html#l00351">controlledCompactUnitary()</a>, <a class="el" href="QuEST_8c_source.html#l00922">controlledCompactUnitaryDistributed()</a>, <a class="el" href="QuEST_8c_source.html#l00713">controlledCompactUnitaryLocal()</a>, <a class="el" href="QuEST__env__mpi_8c_source.html#l00513">controlledNot()</a>, <a class="el" href="QuEST_8c_source.html#l01251">controlledNotDistributed()</a>, <a class="el" href="QuEST_8c_source.html#l01186">controlledNotLocal()</a>, <a class="el" href="QuEST_8c_source.html#l01741">controlledPhaseGate()</a>, <a class="el" href="QuEST__env__mpi_8c_source.html#l00394">controlledUnitary()</a>, <a class="el" href="QuEST_8c_source.html#l00985">controlledUnitaryDistributed()</a>, <a class="el" href="QuEST_8c_source.html#l00843">controlledUnitaryLocal()</a>, <a class="el" href="QuEST_8c_source.html#l00047">createMultiQubit()</a>, <a class="el" href="QuEST__env__mpi_8c_source.html#l00239">exchangeStateVectors()</a>, <a class="el" href="QuEST__env__mpi_8c_source.html#l00656">findProbabilityOfOutcome()</a>, <a class="el" href="QuEST_8c_source.html#l01692">findProbabilityOfZeroDistributed()</a>, <a class="el" href="QuEST_8c_source.html#l01636">findProbabilityOfZeroLocal()</a>, <a class="el" href="QuEST__env__mpi_8c_source.html#l00085">getChunkIdFromIndex()</a>, <a class="el" href="QuEST__env__mpi_8c_source.html#l00099">getImagAmpEl()</a>, <a class="el" href="QuEST__env__mpi_8c_source.html#l00089">getRealAmpEl()</a>, <a class="el" href="QuEST__env__mpi_8c_source.html#l00599">hadamard()</a>, <a class="el" href="QuEST_8c_source.html#l01439">hadamardDistributed()</a>, <a class="el" href="QuEST_8c_source.html#l01378">hadamardLocal()</a>, <a class="el" href="QuEST_8c_source.html#l00216">initClassicalState()</a>, <a class="el" href="QuEST_8c_source.html#l00336">initializeStateFromSingleFile()</a>, <a class="el" href="QuEST_8c_source.html#l00304">initStateDebug()</a>, <a class="el" href="QuEST_8c_source.html#l00258">initStateOfSingleQubit()</a>, <a class="el" href="QuEST_8c_source.html#l00183">initStatePlus()</a>, <a class="el" href="QuEST_8c_source.html#l00147">initStateZero()</a>, <a class="el" href="QuEST__env__mpi_8c_source.html#l00709">measureWithStats()</a>, <a class="el" href="QuEST_8c_source.html#l01776">multiControlledPhaseGate()</a>, <a class="el" href="QuEST__env__mpi_8c_source.html#l00438">multiControlledUnitary()</a>, <a class="el" href="QuEST_8c_source.html#l01049">multiControlledUnitaryDistributed()</a>, <a class="el" href="QuEST_8c_source.html#l00780">multiControlledUnitaryLocal()</a>, <a class="el" href="QuEST__env__mpi_8c_source.html#l00581">phaseGate()</a>, <a class="el" href="QuEST_8c_source.html#l01561">phaseGateDistributed()</a>, <a class="el" href="QuEST_8c_source.html#l01485">phaseGateLocal()</a>, <a class="el" href="QuEST_8c_source.html#l00089">reportState()</a>, <a class="el" href="QuEST_8c_source.html#l00104">reportStateToScreen()</a>, <a class="el" href="QuEST__env__mpi_8c_source.html#l00484">sigmaX()</a>, <a class="el" href="QuEST_8c_source.html#l01158">sigmaXDistributed()</a>, <a class="el" href="QuEST_8c_source.html#l01099">sigmaXLocal()</a>, <a class="el" href="QuEST__env__mpi_8c_source.html#l00550">sigmaY()</a>, <a class="el" href="QuEST_8c_source.html#l01345">sigmaYDistributed()</a>, <a class="el" href="QuEST_8c_source.html#l01286">sigmaYLocal()</a>, <a class="el" href="QuEST__env__mpi_8c_source.html#l00309">unitary()</a>, <a class="el" href="QuEST_8c_source.html#l00668">unitaryDistributed()</a>, and <a class="el" href="QuEST_8c_source.html#l00542">unitaryLocal()</a>.</p>
+<p class="definition">Definition at line <a class="el" href="QuEST_8h_source.html#l00064">64</a> of file <a class="el" href="QuEST_8h_source.html">QuEST.h</a>.</p>
 
 </div>
 </div>
@@ -131,9 +171,7 @@ Data Fields</h2></td></tr>
 
 <p>Number of chunks the state vector is broken up into &ndash; the number of MPI processes used. </p>
 
-<p class="definition">Definition at line <a class="el" href="QuEST_8h_source.html#l00060">60</a> of file <a class="el" href="QuEST_8h_source.html">QuEST.h</a>.</p>
-
-<p class="reference">Referenced by <a class="el" href="QuEST__env__mpi_8c_source.html#l00109">calcTotalProbability()</a>, <a class="el" href="QuEST_8c_source.html#l00047">createMultiQubit()</a>, <a class="el" href="QuEST_8c_source.html#l00336">initializeStateFromSingleFile()</a>, <a class="el" href="QuEST_8c_source.html#l00258">initStateOfSingleQubit()</a>, <a class="el" href="QuEST_8c_source.html#l00183">initStatePlus()</a>, <a class="el" href="QuEST_8c_source.html#l00128">reportMultiQubitParams()</a>, and <a class="el" href="QuEST_8c_source.html#l00104">reportStateToScreen()</a>.</p>
+<p class="definition">Definition at line <a class="el" href="QuEST_8h_source.html#l00068">68</a> of file <a class="el" href="QuEST_8h_source.html">QuEST.h</a>.</p>
 
 </div>
 </div>
@@ -151,9 +189,7 @@ Data Fields</h2></td></tr>
 
 <p>Number of qubits in the state. </p>
 
-<p class="definition">Definition at line <a class="el" href="QuEST_8h_source.html#l00053">53</a> of file <a class="el" href="QuEST_8h_source.html">QuEST.h</a>.</p>
-
-<p class="reference">Referenced by <a class="el" href="QuEST__env__local_8c_source.html#l00189">collapseToOutcome()</a>, <a class="el" href="QuEST__env__local_8c_source.html#l00095">compactUnitary()</a>, <a class="el" href="QuEST__env__local_8c_source.html#l00113">controlledCompactUnitary()</a>, <a class="el" href="QuEST__env__local_8c_source.html#l00172">controlledNot()</a>, <a class="el" href="QuEST_8c_source.html#l01741">controlledPhaseGate()</a>, <a class="el" href="QuEST__env__local_8c_source.html#l00124">controlledUnitary()</a>, <a class="el" href="QuEST_8c_source.html#l00047">createMultiQubit()</a>, <a class="el" href="QuEST__env__local_8c_source.html#l00180">findProbabilityOfOutcome()</a>, <a class="el" href="QuEST_8c_source.html#l00139">getEnvironmentString()</a>, <a class="el" href="QuEST__env__local_8c_source.html#l00166">hadamard()</a>, <a class="el" href="QuEST__env__local_8c_source.html#l00200">measure()</a>, <a class="el" href="QuEST__env__local_8c_source.html#l00206">measureWithStats()</a>, <a class="el" href="QuEST_8c_source.html#l01776">multiControlledPhaseGate()</a>, <a class="el" href="QuEST__env__local_8c_source.html#l00134">multiControlledUnitary()</a>, <a class="el" href="QuEST__env__local_8c_source.html#l00160">phaseGate()</a>, <a class="el" href="QuEST_8c_source.html#l00128">reportMultiQubitParams()</a>, <a class="el" href="QuEST_8c_source.html#l00104">reportStateToScreen()</a>, <a class="el" href="QuEST__env__local_8c_source.html#l00148">sigmaX()</a>, <a class="el" href="QuEST__env__local_8c_source.html#l00154">sigmaY()</a>, and <a class="el" href="QuEST__env__local_8c_source.html#l00104">unitary()</a>.</p>
+<p class="definition">Definition at line <a class="el" href="QuEST_8h_source.html#l00061">61</a> of file <a class="el" href="QuEST_8h_source.html">QuEST.h</a>.</p>
 
 </div>
 </div>
@@ -171,9 +207,23 @@ Data Fields</h2></td></tr>
 
 <p>Temporary storage for a chunk of the state vector received from another process in the MPI version. </p>
 
-<p class="definition">Definition at line <a class="el" href="QuEST_8h_source.html#l00051">51</a> of file <a class="el" href="QuEST_8h_source.html">QuEST.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="QuEST_8h_source.html#l00055">55</a> of file <a class="el" href="QuEST_8h_source.html">QuEST.h</a>.</p>
 
-<p class="reference">Referenced by <a class="el" href="QuEST__env__mpi_8c_source.html#l00269">compactUnitary()</a>, <a class="el" href="QuEST__env__mpi_8c_source.html#l00351">controlledCompactUnitary()</a>, <a class="el" href="QuEST__env__mpi_8c_source.html#l00513">controlledNot()</a>, <a class="el" href="QuEST__env__mpi_8c_source.html#l00394">controlledUnitary()</a>, <a class="el" href="QuEST_8c_source.html#l00047">createMultiQubit()</a>, <a class="el" href="QuEST_8c_source.html#l00079">destroyMultiQubit()</a>, <a class="el" href="QuEST__env__mpi_8c_source.html#l00239">exchangeStateVectors()</a>, <a class="el" href="QuEST__env__mpi_8c_source.html#l00599">hadamard()</a>, <a class="el" href="QuEST__env__mpi_8c_source.html#l00438">multiControlledUnitary()</a>, <a class="el" href="QuEST__env__mpi_8c_source.html#l00484">sigmaX()</a>, <a class="el" href="QuEST__env__mpi_8c_source.html#l00550">sigmaY()</a>, and <a class="el" href="QuEST__env__mpi_8c_source.html#l00309">unitary()</a>.</p>
+</div>
+</div>
+<a id="a3e859cefa146ec7b30464ab3d897930b"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a3e859cefa146ec7b30464ab3d897930b">&#9670;&nbsp;</a></span>secondLevelReduction</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="QuEST__precision_8h.html#a4b654506f18b8bfd61ad2a29a7e38c25">REAL</a> * MultiQubit::secondLevelReduction</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p class="definition">Definition at line <a class="el" href="QuEST_8h_source.html#l00059">59</a> of file <a class="el" href="QuEST_8h_source.html">QuEST.h</a>.</p>
 
 </div>
 </div>
@@ -189,11 +239,9 @@ Data Fields</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p>Probablilty amplitudes for the multi qubit state. </p>
+<p>Computational state amplitudes - a subset thereof in the MPI version. </p>
 
-<p class="definition">Definition at line <a class="el" href="QuEST_8h_source.html#l00049">49</a> of file <a class="el" href="QuEST_8h_source.html">QuEST.h</a>.</p>
-
-<p class="reference">Referenced by <a class="el" href="QuEST__env__local_8c_source.html#l00057">calcTotalProbability()</a>, <a class="el" href="QuEST_8c_source.html#l01910">collapseToOutcomeDistributedRenorm()</a>, <a class="el" href="QuEST_8c_source.html#l01950">collapseToOutcomeDistributedSetZero()</a>, <a class="el" href="QuEST_8c_source.html#l01828">collapseToOutcomeLocal()</a>, <a class="el" href="QuEST__env__mpi_8c_source.html#l00269">compactUnitary()</a>, <a class="el" href="QuEST_8c_source.html#l00483">compactUnitaryLocal()</a>, <a class="el" href="QuEST_8c_source.html#l00372">compareStates()</a>, <a class="el" href="QuEST__env__mpi_8c_source.html#l00351">controlledCompactUnitary()</a>, <a class="el" href="QuEST_8c_source.html#l00713">controlledCompactUnitaryLocal()</a>, <a class="el" href="QuEST__env__mpi_8c_source.html#l00513">controlledNot()</a>, <a class="el" href="QuEST_8c_source.html#l01186">controlledNotLocal()</a>, <a class="el" href="QuEST_8c_source.html#l01741">controlledPhaseGate()</a>, <a class="el" href="QuEST__env__mpi_8c_source.html#l00394">controlledUnitary()</a>, <a class="el" href="QuEST_8c_source.html#l00843">controlledUnitaryLocal()</a>, <a class="el" href="QuEST_8c_source.html#l00047">createMultiQubit()</a>, <a class="el" href="QuEST_8c_source.html#l00079">destroyMultiQubit()</a>, <a class="el" href="QuEST__env__mpi_8c_source.html#l00239">exchangeStateVectors()</a>, <a class="el" href="QuEST_8c_source.html#l01692">findProbabilityOfZeroDistributed()</a>, <a class="el" href="QuEST_8c_source.html#l01636">findProbabilityOfZeroLocal()</a>, <a class="el" href="QuEST__env__local_8c_source.html#l00091">getImagAmpEl()</a>, <a class="el" href="QuEST__env__local_8c_source.html#l00087">getRealAmpEl()</a>, <a class="el" href="QuEST__env__mpi_8c_source.html#l00599">hadamard()</a>, <a class="el" href="QuEST_8c_source.html#l01378">hadamardLocal()</a>, <a class="el" href="QuEST_8c_source.html#l00216">initClassicalState()</a>, <a class="el" href="QuEST_8c_source.html#l00336">initializeStateFromSingleFile()</a>, <a class="el" href="QuEST_8c_source.html#l00304">initStateDebug()</a>, <a class="el" href="QuEST_8c_source.html#l00258">initStateOfSingleQubit()</a>, <a class="el" href="QuEST_8c_source.html#l00183">initStatePlus()</a>, <a class="el" href="QuEST_8c_source.html#l00147">initStateZero()</a>, <a class="el" href="QuEST_8c_source.html#l01776">multiControlledPhaseGate()</a>, <a class="el" href="QuEST__env__mpi_8c_source.html#l00438">multiControlledUnitary()</a>, <a class="el" href="QuEST_8c_source.html#l00780">multiControlledUnitaryLocal()</a>, <a class="el" href="QuEST_8c_source.html#l01561">phaseGateDistributed()</a>, <a class="el" href="QuEST_8c_source.html#l01485">phaseGateLocal()</a>, <a class="el" href="QuEST_8c_source.html#l00089">reportState()</a>, <a class="el" href="QuEST_8c_source.html#l00104">reportStateToScreen()</a>, <a class="el" href="QuEST__env__mpi_8c_source.html#l00484">sigmaX()</a>, <a class="el" href="QuEST_8c_source.html#l01099">sigmaXLocal()</a>, <a class="el" href="QuEST__env__mpi_8c_source.html#l00550">sigmaY()</a>, <a class="el" href="QuEST_8c_source.html#l01286">sigmaYLocal()</a>, <a class="el" href="QuEST__env__mpi_8c_source.html#l00309">unitary()</a>, and <a class="el" href="QuEST_8c_source.html#l00542">unitaryLocal()</a>.</p>
+<p class="definition">Definition at line <a class="el" href="QuEST_8h_source.html#l00053">53</a> of file <a class="el" href="QuEST_8h_source.html">QuEST.h</a>.</p>
 
 </div>
 </div>
@@ -203,7 +251,7 @@ Data Fields</h2></td></tr>
 </div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Wed May 16 2018 16:28:21 for Distributed QuEST by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Fri Jul 13 2018 16:15:33 for Quantum Exact Simulation Toolkit by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.14
 </small></address>

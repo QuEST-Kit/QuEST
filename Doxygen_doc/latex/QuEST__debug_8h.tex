@@ -5,17 +5,17 @@
 Developer functions used for unit testing and debugging.  
 
 
-{\ttfamily \#include \char`\"{}Qu\+E\+S\+T\+\_\+precision.\+h\char`\"{}}\newline
+{\ttfamily \#include \char`\"{}../\+Qu\+E\+S\+T\+\_\+precision.\+h\char`\"{}}\newline
 \subsubsection*{Functions}
 \begin{DoxyCompactItemize}
 \item 
-void \mbox{\hyperlink{QuEST__debug_8h_a7169fd0442cbc3418f3fac4d13363ca2}{init\+State\+Of\+Single\+Qubit}} (\mbox{\hyperlink{structMultiQubit}{Multi\+Qubit}} $\ast$multi\+Qubit, int qubit\+Id, int outcome)
-\begin{DoxyCompactList}\small\item\em Initialise the state vector of probability amplitudes such that one qubit is set to \textquotesingle{}outcome\textquotesingle{} and all other qubits are in an equal superposition of zero and one. \end{DoxyCompactList}\item 
-void \mbox{\hyperlink{QuEST__debug_8h_a03b3577a891731d505bc4b879fcca9d3}{init\+State\+Debug}} (\mbox{\hyperlink{structMultiQubit}{Multi\+Qubit}} $\ast$multi\+Qubit)
-\begin{DoxyCompactList}\small\item\em Initialise the state vector of probability amplitudes to an (unphysical) state with each component of each probability amplitude a unique floating point value. \end{DoxyCompactList}\item 
+int \mbox{\hyperlink{QuEST__debug_8h_a793584932ae384c82e7e42db7d35d18d}{compare\+States}} (\mbox{\hyperlink{structMultiQubit}{Multi\+Qubit}} mq1, \mbox{\hyperlink{structMultiQubit}{Multi\+Qubit}} mq2, \mbox{\hyperlink{QuEST__precision_8h_a4b654506f18b8bfd61ad2a29a7e38c25}{R\+E\+AL}} precision)
+\item 
 void \mbox{\hyperlink{QuEST__debug_8h_a433876ee9f3bcc54af346300f571fc3c}{initialize\+State\+From\+Single\+File}} (\mbox{\hyperlink{structMultiQubit}{Multi\+Qubit}} $\ast$multi\+Qubit, char filename\mbox{[}200\mbox{]}, \mbox{\hyperlink{structQuESTEnv}{Qu\+E\+S\+T\+Env}} env)
 \item 
-int \mbox{\hyperlink{QuEST__debug_8h_a793584932ae384c82e7e42db7d35d18d}{compare\+States}} (\mbox{\hyperlink{structMultiQubit}{Multi\+Qubit}} mq1, \mbox{\hyperlink{structMultiQubit}{Multi\+Qubit}} mq2, \mbox{\hyperlink{QuEST__precision_8h_a4b654506f18b8bfd61ad2a29a7e38c25}{R\+E\+AL}} precision)
+void \mbox{\hyperlink{QuEST__debug_8h_a03b3577a891731d505bc4b879fcca9d3}{init\+State\+Debug}} (\mbox{\hyperlink{structMultiQubit}{Multi\+Qubit}} $\ast$multi\+Qubit)
+\item 
+void \mbox{\hyperlink{QuEST__debug_8h_a7169fd0442cbc3418f3fac4d13363ca2}{init\+State\+Of\+Single\+Qubit}} (\mbox{\hyperlink{structMultiQubit}{Multi\+Qubit}} $\ast$multi\+Qubit, int qubit\+Id, int outcome)
 \item 
 void \mbox{\hyperlink{QuEST__debug_8h_a62da5b58d8ce84e6f4d24be1b872294e}{report\+Node\+List}} (\mbox{\hyperlink{structQuESTEnv}{Qu\+E\+S\+T\+Env}} env)
 \begin{DoxyCompactList}\small\item\em Report a list of C\+PU hostnames and the rank that is running on each if running with M\+PI enabled and an error message otherwise. \end{DoxyCompactList}\end{DoxyCompactItemize}
@@ -33,203 +33,24 @@ Not part of the public A\+PI. May contain functions that are incomplete or untes
 \paragraph{\texorpdfstring{compare\+States()}{compareStates()}}
 {\footnotesize\ttfamily int compare\+States (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structMultiQubit}{Multi\+Qubit}}}]{mq1,  }\item[{\mbox{\hyperlink{structMultiQubit}{Multi\+Qubit}}}]{mq2,  }\item[{\mbox{\hyperlink{QuEST__precision_8h_a4b654506f18b8bfd61ad2a29a7e38c25}{R\+E\+AL}}}]{precision }\end{DoxyParamCaption})}
 
-
-
-Definition at line 372 of file Qu\+E\+S\+T.\+c.
-
-
-
-References Complex\+Array\+::imag, Multi\+Qubit\+::num\+Amps, Complex\+Array\+::real, R\+E\+AL, and Multi\+Qubit\+::state\+Vec.
-
-
-\begin{DoxyCode}
-372                                                                  \{
-373     \mbox{\hyperlink{QuEST__precision_8h_a4b654506f18b8bfd61ad2a29a7e38c25}{REAL}} diff;
-374     \textcolor{keywordtype}{int} chunkSize = mq1.\mbox{\hyperlink{structMultiQubit_ae16f47d8b725c914fb7f66b6498d79db}{numAmps}};
-375     \textcolor{keywordflow}{for} (\textcolor{keywordtype}{int} i=0; i<chunkSize; i++)\{
-376         diff = fabs(mq1.\mbox{\hyperlink{structMultiQubit_a45483190d6b01ef6b2f98f2bec9ab94f}{stateVec}}.\mbox{\hyperlink{structComplexArray_a4195cac6c784ea1b6271f1c7dba1548a}{real}}[i] - mq2.\mbox{\hyperlink{structMultiQubit_a45483190d6b01ef6b2f98f2bec9ab94f}{stateVec}}.\mbox{\hyperlink{structComplexArray_a4195cac6c784ea1b6271f1c7dba1548a}{real}}[i]);
-377         \textcolor{keywordflow}{if} (diff>precision) \textcolor{keywordflow}{return} 0;
-378         diff = fabs(mq1.\mbox{\hyperlink{structMultiQubit_a45483190d6b01ef6b2f98f2bec9ab94f}{stateVec}}.\mbox{\hyperlink{structComplexArray_a79dde47c7ae530c79cebfdf57b225968}{imag}}[i] - mq2.\mbox{\hyperlink{structMultiQubit_a45483190d6b01ef6b2f98f2bec9ab94f}{stateVec}}.\mbox{\hyperlink{structComplexArray_a79dde47c7ae530c79cebfdf57b225968}{imag}}[i]);
-379         \textcolor{keywordflow}{if} (diff>precision) \textcolor{keywordflow}{return} 0;
-380     \}
-381     \textcolor{keywordflow}{return} 1;
-382 \}
-\end{DoxyCode}
 \mbox{\Hypertarget{QuEST__debug_8h_a433876ee9f3bcc54af346300f571fc3c}\label{QuEST__debug_8h_a433876ee9f3bcc54af346300f571fc3c}} 
 \index{Qu\+E\+S\+T\+\_\+debug.\+h@{Qu\+E\+S\+T\+\_\+debug.\+h}!initialize\+State\+From\+Single\+File@{initialize\+State\+From\+Single\+File}}
 \index{initialize\+State\+From\+Single\+File@{initialize\+State\+From\+Single\+File}!Qu\+E\+S\+T\+\_\+debug.\+h@{Qu\+E\+S\+T\+\_\+debug.\+h}}
 \paragraph{\texorpdfstring{initialize\+State\+From\+Single\+File()}{initializeStateFromSingleFile()}}
 {\footnotesize\ttfamily void initialize\+State\+From\+Single\+File (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structMultiQubit}{Multi\+Qubit}} $\ast$}]{multi\+Qubit,  }\item[{char}]{filename\mbox{[}200\mbox{]},  }\item[{\mbox{\hyperlink{structQuESTEnv}{Qu\+E\+S\+T\+Env}}}]{env }\end{DoxyParamCaption})}
 
-fix -- format needs to work for single precision values 
-
-Definition at line 336 of file Qu\+E\+S\+T.\+c.
-
-
-
-References Multi\+Qubit\+::chunk\+Id, Complex\+Array\+::imag, Multi\+Qubit\+::num\+Amps, Multi\+Qubit\+::num\+Chunks, Qu\+E\+S\+T\+Assert(), Complex\+Array\+::real, R\+E\+AL, Multi\+Qubit\+::state\+Vec, and sync\+Qu\+E\+S\+T\+Env().
-
-
-\begin{DoxyCode}
-336                                                                                             \{
-337     \textcolor{keywordtype}{long} \textcolor{keywordtype}{long} \textcolor{keywordtype}{int} chunkSize, stateVecSize;
-338     \textcolor{keywordtype}{long} \textcolor{keywordtype}{long} \textcolor{keywordtype}{int} indexInChunk, totalIndex;
-339 
-340     chunkSize = multiQubit->\mbox{\hyperlink{structMultiQubit_ae16f47d8b725c914fb7f66b6498d79db}{numAmps}};
-341     stateVecSize = chunkSize*multiQubit->\mbox{\hyperlink{structMultiQubit_acd43f2f57991709c9e94f73662c972b2}{numChunks}};
-342 
-343     \mbox{\hyperlink{QuEST__precision_8h_a4b654506f18b8bfd61ad2a29a7e38c25}{REAL}} *stateVecReal = multiQubit->\mbox{\hyperlink{structMultiQubit_a45483190d6b01ef6b2f98f2bec9ab94f}{stateVec}}.\mbox{\hyperlink{structComplexArray_a4195cac6c784ea1b6271f1c7dba1548a}{real}};
-344     \mbox{\hyperlink{QuEST__precision_8h_a4b654506f18b8bfd61ad2a29a7e38c25}{REAL}} *stateVecImag = multiQubit->\mbox{\hyperlink{structMultiQubit_a45483190d6b01ef6b2f98f2bec9ab94f}{stateVec}}.\mbox{\hyperlink{structComplexArray_a79dde47c7ae530c79cebfdf57b225968}{imag}};
-345 
-346     FILE *fp;
-347     \textcolor{keywordtype}{char} line[200];
-348 
-349     \textcolor{keywordflow}{for} (\textcolor{keywordtype}{int} rank=0; rank<(multiQubit->\mbox{\hyperlink{structMultiQubit_acd43f2f57991709c9e94f73662c972b2}{numChunks}}); rank++)\{
-350         \textcolor{keywordflow}{if} (rank==multiQubit->\mbox{\hyperlink{structMultiQubit_ab10c88249fa3825d6227ceec01d37e37}{chunkId}})\{
-351             fp = fopen(filename, \textcolor{stringliteral}{"r"});
-352             \mbox{\hyperlink{QuEST__env__local_8c_a3587b9d533e633ccf1abf9ad2ce45d8d}{QuESTAssert}}(fp!=NULL, 11, \_\_func\_\_);
-353             indexInChunk = 0; totalIndex = 0;
-354             \textcolor{keywordflow}{while} (fgets(line, \textcolor{keyword}{sizeof}(\textcolor{keywordtype}{char})*200, fp) != NULL && totalIndex<stateVecSize)\{
-355                 \textcolor{keywordflow}{if} (line[0]!=\textcolor{charliteral}{'#'})\{
-356                     \textcolor{keywordtype}{int} chunkId = totalIndex/chunkSize;
-357                     \textcolor{keywordflow}{if} (chunkId==multiQubit->\mbox{\hyperlink{structMultiQubit_ab10c88249fa3825d6227ceec01d37e37}{chunkId}})\{
-359                         sscanf(line, \textcolor{stringliteral}{"%lf, %lf"}, &(stateVecReal[indexInChunk]), 
-360                                 &(stateVecImag[indexInChunk]));
-361                         indexInChunk += 1;
-362                     \}
-363                     totalIndex += 1;
-364                 \}
-365             \}   
-366             fclose(fp);
-367         \}
-368         \mbox{\hyperlink{QuEST_8h_a8d31fe2d1ad4d01e2a1f5f6b8bc15b77}{syncQuESTEnv}}(env);
-369     \}
-370 \}
-\end{DoxyCode}
 \mbox{\Hypertarget{QuEST__debug_8h_a03b3577a891731d505bc4b879fcca9d3}\label{QuEST__debug_8h_a03b3577a891731d505bc4b879fcca9d3}} 
 \index{Qu\+E\+S\+T\+\_\+debug.\+h@{Qu\+E\+S\+T\+\_\+debug.\+h}!init\+State\+Debug@{init\+State\+Debug}}
 \index{init\+State\+Debug@{init\+State\+Debug}!Qu\+E\+S\+T\+\_\+debug.\+h@{Qu\+E\+S\+T\+\_\+debug.\+h}}
 \paragraph{\texorpdfstring{init\+State\+Debug()}{initStateDebug()}}
 {\footnotesize\ttfamily void init\+State\+Debug (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structMultiQubit}{Multi\+Qubit}} $\ast$}]{multi\+Qubit }\end{DoxyParamCaption})}
 
-
-
-Initialise the state vector of probability amplitudes to an (unphysical) state with each component of each probability amplitude a unique floating point value. 
-
-For debugging processes 
-\begin{DoxyParams}[1]{Parameters}
-\mbox{\tt in,out}  & {\em multi\+Qubit} & object representing the set of qubits to be initialised \\
-\hline
-\end{DoxyParams}
-
-
-Definition at line 304 of file Qu\+E\+S\+T.\+c.
-
-
-
-References Multi\+Qubit\+::chunk\+Id, Complex\+Array\+::imag, Multi\+Qubit\+::num\+Amps, Complex\+Array\+::real, R\+E\+AL, and Multi\+Qubit\+::state\+Vec.
-
-
-\begin{DoxyCode}
-305 \{
-306     \textcolor{keywordtype}{long} \textcolor{keywordtype}{long} \textcolor{keywordtype}{int} chunkSize;
-307     \textcolor{keywordtype}{long} \textcolor{keywordtype}{long} \textcolor{keywordtype}{int} index;
-308 
-309     \textcolor{comment}{// dimension of the state vector}
-310     chunkSize = multiQubit->\mbox{\hyperlink{structMultiQubit_ae16f47d8b725c914fb7f66b6498d79db}{numAmps}};
-311 
-312     \textcolor{comment}{// Can't use multiQubit->stateVec as a private OMP var}
-313     \mbox{\hyperlink{QuEST__precision_8h_a4b654506f18b8bfd61ad2a29a7e38c25}{REAL}} *stateVecReal = multiQubit->\mbox{\hyperlink{structMultiQubit_a45483190d6b01ef6b2f98f2bec9ab94f}{stateVec}}.\mbox{\hyperlink{structComplexArray_a4195cac6c784ea1b6271f1c7dba1548a}{real}};
-314     \mbox{\hyperlink{QuEST__precision_8h_a4b654506f18b8bfd61ad2a29a7e38c25}{REAL}} *stateVecImag = multiQubit->\mbox{\hyperlink{structMultiQubit_a45483190d6b01ef6b2f98f2bec9ab94f}{stateVec}}.\mbox{\hyperlink{structComplexArray_a79dde47c7ae530c79cebfdf57b225968}{imag}};
-315 
-316     \mbox{\hyperlink{QuEST__precision_8h_a4b654506f18b8bfd61ad2a29a7e38c25}{REAL}} chunkOffset = (2.0*chunkSize*multiQubit->\mbox{\hyperlink{structMultiQubit_ab10c88249fa3825d6227ceec01d37e37}{chunkId}})/10.0;
-317 
-318     \textcolor{comment}{// initialise the state to |0000..0000>}
-319 \textcolor{preprocessor}{# ifdef \_OPENMP}
-320 \textcolor{preprocessor}{# pragma omp parallel \(\backslash\)}
-321 \textcolor{preprocessor}{    default  (none) \(\backslash\)}
-322 \textcolor{preprocessor}{    shared   (chunkSize, stateVecReal, stateVecImag, chunkOffset) \(\backslash\)}
-323 \textcolor{preprocessor}{    private  (index) }
-324 \textcolor{preprocessor}{# endif}
-325     \{
-326 \textcolor{preprocessor}{# ifdef \_OPENMP}
-327 \textcolor{preprocessor}{# pragma omp for schedule (static)}
-328 \textcolor{preprocessor}{# endif}
-329         \textcolor{keywordflow}{for} (index=0; index<chunkSize; index++) \{
-330             stateVecReal[index] = chunkOffset + (index*2.0)/10.0;
-331             stateVecImag[index] = chunkOffset + (index*2.0+1.0)/10.0;
-332         \}
-333     \}
-334 \}
-\end{DoxyCode}
 \mbox{\Hypertarget{QuEST__debug_8h_a7169fd0442cbc3418f3fac4d13363ca2}\label{QuEST__debug_8h_a7169fd0442cbc3418f3fac4d13363ca2}} 
 \index{Qu\+E\+S\+T\+\_\+debug.\+h@{Qu\+E\+S\+T\+\_\+debug.\+h}!init\+State\+Of\+Single\+Qubit@{init\+State\+Of\+Single\+Qubit}}
 \index{init\+State\+Of\+Single\+Qubit@{init\+State\+Of\+Single\+Qubit}!Qu\+E\+S\+T\+\_\+debug.\+h@{Qu\+E\+S\+T\+\_\+debug.\+h}}
 \paragraph{\texorpdfstring{init\+State\+Of\+Single\+Qubit()}{initStateOfSingleQubit()}}
 {\footnotesize\ttfamily void init\+State\+Of\+Single\+Qubit (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structMultiQubit}{Multi\+Qubit}} $\ast$}]{multi\+Qubit,  }\item[{int}]{qubit\+Id,  }\item[{int}]{outcome }\end{DoxyParamCaption})}
 
-
-
-Initialise the state vector of probability amplitudes such that one qubit is set to \textquotesingle{}outcome\textquotesingle{} and all other qubits are in an equal superposition of zero and one. 
-
-
-\begin{DoxyParams}[1]{Parameters}
-\mbox{\tt in,out}  & {\em multi\+Qubit} & object representing the set of qubits to be initialised \\
-\hline
-\mbox{\tt in}  & {\em qubit\+Id} & id of qubit to set to state \textquotesingle{}outcome\textquotesingle{} \\
-\hline
-\mbox{\tt in}  & {\em value} & of qubit \textquotesingle{}qubit\+Id\textquotesingle{} \\
-\hline
-\end{DoxyParams}
-
-
-Definition at line 258 of file Qu\+E\+S\+T.\+c.
-
-
-
-References Multi\+Qubit\+::chunk\+Id, extract\+Bit(), Complex\+Array\+::imag, Multi\+Qubit\+::num\+Amps, Multi\+Qubit\+::num\+Chunks, Complex\+Array\+::real, R\+E\+AL, and Multi\+Qubit\+::state\+Vec.
-
-
-\begin{DoxyCode}
-259 \{
-260     \textcolor{keywordtype}{long} \textcolor{keywordtype}{long} \textcolor{keywordtype}{int} chunkSize, stateVecSize;
-261     \textcolor{keywordtype}{long} \textcolor{keywordtype}{long} \textcolor{keywordtype}{int} index;
-262     \textcolor{keywordtype}{int} bit;
-263     \textcolor{keyword}{const} \textcolor{keywordtype}{long} \textcolor{keywordtype}{long} \textcolor{keywordtype}{int} chunkId=multiQubit->\mbox{\hyperlink{structMultiQubit_ab10c88249fa3825d6227ceec01d37e37}{chunkId}};
-264 
-265     \textcolor{comment}{// dimension of the state vector}
-266     chunkSize = multiQubit->\mbox{\hyperlink{structMultiQubit_ae16f47d8b725c914fb7f66b6498d79db}{numAmps}};
-267     stateVecSize = chunkSize*multiQubit->\mbox{\hyperlink{structMultiQubit_acd43f2f57991709c9e94f73662c972b2}{numChunks}};
-268     \mbox{\hyperlink{QuEST__precision_8h_a4b654506f18b8bfd61ad2a29a7e38c25}{REAL}} normFactor = 1.0/sqrt((\mbox{\hyperlink{QuEST__precision_8h_a4b654506f18b8bfd61ad2a29a7e38c25}{REAL}})stateVecSize/2.0);
-269 
-270     \textcolor{comment}{// Can't use multiQubit->stateVec as a private OMP var}
-271     \mbox{\hyperlink{QuEST__precision_8h_a4b654506f18b8bfd61ad2a29a7e38c25}{REAL}} *stateVecReal = multiQubit->\mbox{\hyperlink{structMultiQubit_a45483190d6b01ef6b2f98f2bec9ab94f}{stateVec}}.\mbox{\hyperlink{structComplexArray_a4195cac6c784ea1b6271f1c7dba1548a}{real}};
-272     \mbox{\hyperlink{QuEST__precision_8h_a4b654506f18b8bfd61ad2a29a7e38c25}{REAL}} *stateVecImag = multiQubit->\mbox{\hyperlink{structMultiQubit_a45483190d6b01ef6b2f98f2bec9ab94f}{stateVec}}.\mbox{\hyperlink{structComplexArray_a79dde47c7ae530c79cebfdf57b225968}{imag}};
-273 
-274     \textcolor{comment}{// initialise the state to |0000..0000>}
-275 \textcolor{preprocessor}{# ifdef \_OPENMP}
-276 \textcolor{preprocessor}{# pragma omp parallel \(\backslash\)}
-277 \textcolor{preprocessor}{    default  (none) \(\backslash\)}
-278 \textcolor{preprocessor}{    shared   (chunkSize, stateVecReal, stateVecImag, normFactor, qubitId, outcome) \(\backslash\)}
-279 \textcolor{preprocessor}{    private  (index, bit) }
-280 \textcolor{preprocessor}{# endif}
-281     \{
-282 \textcolor{preprocessor}{# ifdef \_OPENMP}
-283 \textcolor{preprocessor}{# pragma omp for schedule (static)}
-284 \textcolor{preprocessor}{# endif}
-285         \textcolor{keywordflow}{for} (index=0; index<chunkSize; index++) \{
-286             bit = \mbox{\hyperlink{QuEST_8c_a100463f6ec212c76a5fad99579000505}{extractBit}}(qubitId, index+chunkId*chunkSize);
-287             \textcolor{keywordflow}{if} (bit==outcome) \{
-288                 stateVecReal[index] = normFactor;
-289                 stateVecImag[index] = 0.0;
-290             \} \textcolor{keywordflow}{else} \{
-291                 stateVecReal[index] = 0.0;
-292                 stateVecImag[index] = 0.0;
-293             \}
-294         \}
-295     \}
-296 \}
-\end{DoxyCode}
 \mbox{\Hypertarget{QuEST__debug_8h_a62da5b58d8ce84e6f4d24be1b872294e}\label{QuEST__debug_8h_a62da5b58d8ce84e6f4d24be1b872294e}} 
 \index{Qu\+E\+S\+T\+\_\+debug.\+h@{Qu\+E\+S\+T\+\_\+debug.\+h}!report\+Node\+List@{report\+Node\+List}}
 \index{report\+Node\+List@{report\+Node\+List}!Qu\+E\+S\+T\+\_\+debug.\+h@{Qu\+E\+S\+T\+\_\+debug.\+h}}
@@ -245,17 +66,3 @@ For debugging purposes.
 \mbox{\tt in}  & {\em env} & object representing the execution environment. A single instance is used for each program \\
 \hline
 \end{DoxyParams}
-
-
-Definition at line 53 of file Qu\+E\+S\+T\+\_\+env\+\_\+local.\+c.
-
-
-
-References Qu\+E\+S\+T\+Env\+::rank.
-
-
-\begin{DoxyCode}
-53                                  \{
-54     printf(\textcolor{stringliteral}{"Hostname unknown: running locally\(\backslash\)n"});
-55 \}
-\end{DoxyCode}

@@ -3,10 +3,6 @@
 \subsubsection*{Functions}
 \begin{DoxyCompactItemize}
 \item 
-void \mbox{\hyperlink{mt19937ar_8h_ac1283f9b1ed571332f5ffe53545ffc16}{init\+\_\+by\+\_\+array}} (unsigned long init\+\_\+key\mbox{[}$\,$\mbox{]}, int key\+\_\+length)
-\item 
-void \mbox{\hyperlink{mt19937ar_8h_a57af1d02a3fb56a949fb4c258f0bc066}{init\+\_\+genrand}} (unsigned long s)
-\item 
 double \mbox{\hyperlink{mt19937ar_8h_ac94ab75771800274ed1a2bedeca86f04}{genrand\+\_\+real1}} (void)
 \item 
 double \mbox{\hyperlink{mt19937ar_8h_a4ee58afbdf91669ff8a15fc19e627bea}{genrand\+\_\+real2}} (void)
@@ -14,6 +10,10 @@ double \mbox{\hyperlink{mt19937ar_8h_a4ee58afbdf91669ff8a15fc19e627bea}{genrand\
 double \mbox{\hyperlink{mt19937ar_8h_ab1a90aa68ebfcd712cb05ed9061ecf44}{genrand\+\_\+real3}} (void)
 \item 
 double \mbox{\hyperlink{mt19937ar_8h_ac821d41970276e53e85bde08b24536b8}{genrand\+\_\+res53}} (void)
+\item 
+void \mbox{\hyperlink{mt19937ar_8h_ac1283f9b1ed571332f5ffe53545ffc16}{init\+\_\+by\+\_\+array}} (unsigned long init\+\_\+key\mbox{[}$\,$\mbox{]}, int key\+\_\+length)
+\item 
+void \mbox{\hyperlink{mt19937ar_8h_a57af1d02a3fb56a949fb4c258f0bc066}{init\+\_\+genrand}} (unsigned long s)
 \end{DoxyCompactItemize}
 
 
@@ -26,22 +26,18 @@ double \mbox{\hyperlink{mt19937ar_8h_ac821d41970276e53e85bde08b24536b8}{genrand\
 
 
 
-Definition at line 146 of file mt19937ar.\+c.
+Definition at line 150 of file mt19937ar.\+c.
 
 
 
 References genrand\+\_\+int32().
 
 
-
-Referenced by measure\+With\+Stats().
-
-
 \begin{DoxyCode}
-147 \{
-148     \textcolor{keywordflow}{return} \mbox{\hyperlink{mt19937ar_8c_a2b30ec504bc40c51320d14da9dfab43b}{genrand\_int32}}()*(1.0/4294967295.0); 
-149     \textcolor{comment}{/* divided by 2^32-1 */} 
-150 \}
+151 \{
+152     \textcolor{keywordflow}{return} \mbox{\hyperlink{mt19937ar_8c_a2b30ec504bc40c51320d14da9dfab43b}{genrand\_int32}}()*(1.0/4294967295.0); 
+153     \textcolor{comment}{/* divided by 2^32-1 */} 
+154 \}
 \end{DoxyCode}
 \mbox{\Hypertarget{mt19937ar_8h_a4ee58afbdf91669ff8a15fc19e627bea}\label{mt19937ar_8h_a4ee58afbdf91669ff8a15fc19e627bea}} 
 \index{mt19937ar.\+h@{mt19937ar.\+h}!genrand\+\_\+real2@{genrand\+\_\+real2}}
@@ -51,7 +47,7 @@ Referenced by measure\+With\+Stats().
 
 
 
-Definition at line 153 of file mt19937ar.\+c.
+Definition at line 157 of file mt19937ar.\+c.
 
 
 
@@ -59,10 +55,10 @@ References genrand\+\_\+int32().
 
 
 \begin{DoxyCode}
-154 \{
-155     \textcolor{keywordflow}{return} \mbox{\hyperlink{mt19937ar_8c_a2b30ec504bc40c51320d14da9dfab43b}{genrand\_int32}}()*(1.0/4294967296.0); 
-156     \textcolor{comment}{/* divided by 2^32 */}
-157 \}
+158 \{
+159     \textcolor{keywordflow}{return} \mbox{\hyperlink{mt19937ar_8c_a2b30ec504bc40c51320d14da9dfab43b}{genrand\_int32}}()*(1.0/4294967296.0); 
+160     \textcolor{comment}{/* divided by 2^32 */}
+161 \}
 \end{DoxyCode}
 \mbox{\Hypertarget{mt19937ar_8h_ab1a90aa68ebfcd712cb05ed9061ecf44}\label{mt19937ar_8h_ab1a90aa68ebfcd712cb05ed9061ecf44}} 
 \index{mt19937ar.\+h@{mt19937ar.\+h}!genrand\+\_\+real3@{genrand\+\_\+real3}}
@@ -72,7 +68,7 @@ References genrand\+\_\+int32().
 
 
 
-Definition at line 160 of file mt19937ar.\+c.
+Definition at line 164 of file mt19937ar.\+c.
 
 
 
@@ -80,10 +76,10 @@ References genrand\+\_\+int32().
 
 
 \begin{DoxyCode}
-161 \{
-162     \textcolor{keywordflow}{return} (((\textcolor{keywordtype}{double})\mbox{\hyperlink{mt19937ar_8c_a2b30ec504bc40c51320d14da9dfab43b}{genrand\_int32}}()) + 0.5)*(1.0/4294967296.0); 
-163     \textcolor{comment}{/* divided by 2^32 */}
-164 \}
+165 \{
+166     \textcolor{keywordflow}{return} (((\textcolor{keywordtype}{double})\mbox{\hyperlink{mt19937ar_8c_a2b30ec504bc40c51320d14da9dfab43b}{genrand\_int32}}()) + 0.5)*(1.0/4294967296.0); 
+167     \textcolor{comment}{/* divided by 2^32 */}
+168 \}
 \end{DoxyCode}
 \mbox{\Hypertarget{mt19937ar_8h_ac821d41970276e53e85bde08b24536b8}\label{mt19937ar_8h_ac821d41970276e53e85bde08b24536b8}} 
 \index{mt19937ar.\+h@{mt19937ar.\+h}!genrand\+\_\+res53@{genrand\+\_\+res53}}
@@ -93,7 +89,7 @@ References genrand\+\_\+int32().
 
 
 
-Definition at line 167 of file mt19937ar.\+c.
+Definition at line 171 of file mt19937ar.\+c.
 
 
 
@@ -101,10 +97,10 @@ References genrand\+\_\+int32().
 
 
 \begin{DoxyCode}
-168 \{ 
-169     \textcolor{keywordtype}{unsigned} \textcolor{keywordtype}{long} a=\mbox{\hyperlink{mt19937ar_8c_a2b30ec504bc40c51320d14da9dfab43b}{genrand\_int32}}()>>5, b=\mbox{\hyperlink{mt19937ar_8c_a2b30ec504bc40c51320d14da9dfab43b}{genrand\_int32}}()>>6; 
-170     \textcolor{keywordflow}{return}(a*67108864.0+b)*(1.0/9007199254740992.0); 
-171 \} 
+172 \{ 
+173     \textcolor{keywordtype}{unsigned} \textcolor{keywordtype}{long} a=\mbox{\hyperlink{mt19937ar_8c_a2b30ec504bc40c51320d14da9dfab43b}{genrand\_int32}}()>>5, b=\mbox{\hyperlink{mt19937ar_8c_a2b30ec504bc40c51320d14da9dfab43b}{genrand\_int32}}()>>6; 
+174     \textcolor{keywordflow}{return}(a*67108864.0+b)*(1.0/9007199254740992.0); 
+175 \} 
 \end{DoxyCode}
 \mbox{\Hypertarget{mt19937ar_8h_ac1283f9b1ed571332f5ffe53545ffc16}\label{mt19937ar_8h_ac1283f9b1ed571332f5ffe53545ffc16}} 
 \index{mt19937ar.\+h@{mt19937ar.\+h}!init\+\_\+by\+\_\+array@{init\+\_\+by\+\_\+array}}
@@ -114,41 +110,37 @@ References genrand\+\_\+int32().
 
 
 
-Definition at line 76 of file mt19937ar.\+c.
+Definition at line 80 of file mt19937ar.\+c.
 
 
 
 References init\+\_\+genrand(), mt, and N.
 
 
-
-Referenced by Qu\+E\+S\+T\+Seed\+Random(), and Qu\+E\+S\+T\+Seed\+Random\+Default().
-
-
 \begin{DoxyCode}
-77 \{
-78     \textcolor{keywordtype}{int} i, j, k;
-79     \mbox{\hyperlink{mt19937ar_8c_a57af1d02a3fb56a949fb4c258f0bc066}{init\_genrand}}(19650218UL);
-80     i=1; j=0;
-81     k = (\mbox{\hyperlink{mt19937ar_8c_a0240ac851181b84ac374872dc5434ee4}{N}}>key\_length ? \mbox{\hyperlink{mt19937ar_8c_a0240ac851181b84ac374872dc5434ee4}{N}} : key\_length);
-82     \textcolor{keywordflow}{for} (; k; k--) \{
-83         \mbox{\hyperlink{mt19937ar_8c_aff3cefd0011b487c57a7af7cb3bc499f}{mt}}[i] = (\mbox{\hyperlink{mt19937ar_8c_aff3cefd0011b487c57a7af7cb3bc499f}{mt}}[i] ^ ((\mbox{\hyperlink{mt19937ar_8c_aff3cefd0011b487c57a7af7cb3bc499f}{mt}}[i-1] ^ (\mbox{\hyperlink{mt19937ar_8c_aff3cefd0011b487c57a7af7cb3bc499f}{mt}}[i-1] >> 30)) * 1664525UL))
-84           + init\_key[j] + j; \textcolor{comment}{/* non linear */}
-85         \mbox{\hyperlink{mt19937ar_8c_aff3cefd0011b487c57a7af7cb3bc499f}{mt}}[i] &= 0xffffffffUL; \textcolor{comment}{/* for WORDSIZE > 32 machines */}
-86         i++; j++;
-87         \textcolor{keywordflow}{if} (i>=\mbox{\hyperlink{mt19937ar_8c_a0240ac851181b84ac374872dc5434ee4}{N}}) \{ \mbox{\hyperlink{mt19937ar_8c_aff3cefd0011b487c57a7af7cb3bc499f}{mt}}[0] = \mbox{\hyperlink{mt19937ar_8c_aff3cefd0011b487c57a7af7cb3bc499f}{mt}}[\mbox{\hyperlink{mt19937ar_8c_a0240ac851181b84ac374872dc5434ee4}{N}}-1]; i=1; \}
-88         \textcolor{keywordflow}{if} (j>=key\_length) j=0;
-89     \}
-90     \textcolor{keywordflow}{for} (k=\mbox{\hyperlink{mt19937ar_8c_a0240ac851181b84ac374872dc5434ee4}{N}}-1; k; k--) \{
-91         \mbox{\hyperlink{mt19937ar_8c_aff3cefd0011b487c57a7af7cb3bc499f}{mt}}[i] = (\mbox{\hyperlink{mt19937ar_8c_aff3cefd0011b487c57a7af7cb3bc499f}{mt}}[i] ^ ((\mbox{\hyperlink{mt19937ar_8c_aff3cefd0011b487c57a7af7cb3bc499f}{mt}}[i-1] ^ (\mbox{\hyperlink{mt19937ar_8c_aff3cefd0011b487c57a7af7cb3bc499f}{mt}}[i-1] >> 30)) * 1566083941UL))
-92           - i; \textcolor{comment}{/* non linear */}
-93         \mbox{\hyperlink{mt19937ar_8c_aff3cefd0011b487c57a7af7cb3bc499f}{mt}}[i] &= 0xffffffffUL; \textcolor{comment}{/* for WORDSIZE > 32 machines */}
-94         i++;
-95         \textcolor{keywordflow}{if} (i>=\mbox{\hyperlink{mt19937ar_8c_a0240ac851181b84ac374872dc5434ee4}{N}}) \{ \mbox{\hyperlink{mt19937ar_8c_aff3cefd0011b487c57a7af7cb3bc499f}{mt}}[0] = \mbox{\hyperlink{mt19937ar_8c_aff3cefd0011b487c57a7af7cb3bc499f}{mt}}[\mbox{\hyperlink{mt19937ar_8c_a0240ac851181b84ac374872dc5434ee4}{N}}-1]; i=1; \}
-96     \}
-97 
-98     \mbox{\hyperlink{mt19937ar_8c_aff3cefd0011b487c57a7af7cb3bc499f}{mt}}[0] = 0x80000000UL; \textcolor{comment}{/* MSB is 1; assuring non-zero initial array */} 
-99 \}
+81 \{
+82     \textcolor{keywordtype}{int} i, j, k;
+83     \mbox{\hyperlink{mt19937ar_8c_a57af1d02a3fb56a949fb4c258f0bc066}{init\_genrand}}(19650218UL);
+84     i=1; j=0;
+85     k = (\mbox{\hyperlink{mt19937ar_8c_a0240ac851181b84ac374872dc5434ee4}{N}}>key\_length ? \mbox{\hyperlink{mt19937ar_8c_a0240ac851181b84ac374872dc5434ee4}{N}} : key\_length);
+86     \textcolor{keywordflow}{for} (; k; k--) \{
+87         \mbox{\hyperlink{mt19937ar_8c_aff3cefd0011b487c57a7af7cb3bc499f}{mt}}[i] = (\mbox{\hyperlink{mt19937ar_8c_aff3cefd0011b487c57a7af7cb3bc499f}{mt}}[i] ^ ((\mbox{\hyperlink{mt19937ar_8c_aff3cefd0011b487c57a7af7cb3bc499f}{mt}}[i-1] ^ (\mbox{\hyperlink{mt19937ar_8c_aff3cefd0011b487c57a7af7cb3bc499f}{mt}}[i-1] >> 30)) * 1664525UL))
+88           + init\_key[j] + j; \textcolor{comment}{/* non linear */}
+89         \mbox{\hyperlink{mt19937ar_8c_aff3cefd0011b487c57a7af7cb3bc499f}{mt}}[i] &= 0xffffffffUL; \textcolor{comment}{/* for WORDSIZE > 32 machines */}
+90         i++; j++;
+91         \textcolor{keywordflow}{if} (i>=\mbox{\hyperlink{mt19937ar_8c_a0240ac851181b84ac374872dc5434ee4}{N}}) \{ \mbox{\hyperlink{mt19937ar_8c_aff3cefd0011b487c57a7af7cb3bc499f}{mt}}[0] = \mbox{\hyperlink{mt19937ar_8c_aff3cefd0011b487c57a7af7cb3bc499f}{mt}}[\mbox{\hyperlink{mt19937ar_8c_a0240ac851181b84ac374872dc5434ee4}{N}}-1]; i=1; \}
+92         \textcolor{keywordflow}{if} (j>=key\_length) j=0;
+93     \}
+94     \textcolor{keywordflow}{for} (k=\mbox{\hyperlink{mt19937ar_8c_a0240ac851181b84ac374872dc5434ee4}{N}}-1; k; k--) \{
+95         \mbox{\hyperlink{mt19937ar_8c_aff3cefd0011b487c57a7af7cb3bc499f}{mt}}[i] = (\mbox{\hyperlink{mt19937ar_8c_aff3cefd0011b487c57a7af7cb3bc499f}{mt}}[i] ^ ((\mbox{\hyperlink{mt19937ar_8c_aff3cefd0011b487c57a7af7cb3bc499f}{mt}}[i-1] ^ (\mbox{\hyperlink{mt19937ar_8c_aff3cefd0011b487c57a7af7cb3bc499f}{mt}}[i-1] >> 30)) * 1566083941UL))
+96           - i; \textcolor{comment}{/* non linear */}
+97         \mbox{\hyperlink{mt19937ar_8c_aff3cefd0011b487c57a7af7cb3bc499f}{mt}}[i] &= 0xffffffffUL; \textcolor{comment}{/* for WORDSIZE > 32 machines */}
+98         i++;
+99         \textcolor{keywordflow}{if} (i>=\mbox{\hyperlink{mt19937ar_8c_a0240ac851181b84ac374872dc5434ee4}{N}}) \{ \mbox{\hyperlink{mt19937ar_8c_aff3cefd0011b487c57a7af7cb3bc499f}{mt}}[0] = \mbox{\hyperlink{mt19937ar_8c_aff3cefd0011b487c57a7af7cb3bc499f}{mt}}[\mbox{\hyperlink{mt19937ar_8c_a0240ac851181b84ac374872dc5434ee4}{N}}-1]; i=1; \}
+100     \}
+101 
+102     \mbox{\hyperlink{mt19937ar_8c_aff3cefd0011b487c57a7af7cb3bc499f}{mt}}[0] = 0x80000000UL; \textcolor{comment}{/* MSB is 1; assuring non-zero initial array */} 
+103 \}
 \end{DoxyCode}
 \mbox{\Hypertarget{mt19937ar_8h_a57af1d02a3fb56a949fb4c258f0bc066}\label{mt19937ar_8h_a57af1d02a3fb56a949fb4c258f0bc066}} 
 \index{mt19937ar.\+h@{mt19937ar.\+h}!init\+\_\+genrand@{init\+\_\+genrand}}
@@ -158,7 +150,7 @@ Referenced by Qu\+E\+S\+T\+Seed\+Random(), and Qu\+E\+S\+T\+Seed\+Random\+Defaul
 
 
 
-Definition at line 57 of file mt19937ar.\+c.
+Definition at line 61 of file mt19937ar.\+c.
 
 
 
@@ -170,17 +162,17 @@ Referenced by genrand\+\_\+int32(), and init\+\_\+by\+\_\+array().
 
 
 \begin{DoxyCode}
-58 \{
-59     \mbox{\hyperlink{mt19937ar_8c_aff3cefd0011b487c57a7af7cb3bc499f}{mt}}[0]= s & 0xffffffffUL;
-60     \textcolor{keywordflow}{for} (\mbox{\hyperlink{mt19937ar_8c_a0893639c022032e006e5b13378f7b4b2}{mti}}=1; \mbox{\hyperlink{mt19937ar_8c_a0893639c022032e006e5b13378f7b4b2}{mti}}<\mbox{\hyperlink{mt19937ar_8c_a0240ac851181b84ac374872dc5434ee4}{N}}; \mbox{\hyperlink{mt19937ar_8c_a0893639c022032e006e5b13378f7b4b2}{mti}}++) \{
-61         \mbox{\hyperlink{mt19937ar_8c_aff3cefd0011b487c57a7af7cb3bc499f}{mt}}[\mbox{\hyperlink{mt19937ar_8c_a0893639c022032e006e5b13378f7b4b2}{mti}}] = 
-62             (1812433253UL * (\mbox{\hyperlink{mt19937ar_8c_aff3cefd0011b487c57a7af7cb3bc499f}{mt}}[\mbox{\hyperlink{mt19937ar_8c_a0893639c022032e006e5b13378f7b4b2}{mti}}-1] ^ (\mbox{\hyperlink{mt19937ar_8c_aff3cefd0011b487c57a7af7cb3bc499f}{mt}}[\mbox{\hyperlink{mt19937ar_8c_a0893639c022032e006e5b13378f7b4b2}{mti}}-1] >> 30)) + \mbox{\hyperlink{mt19937ar_8c_a0893639c022032e006e5b13378f7b4b2}{mti}}); 
-63         \textcolor{comment}{/* See Knuth TAOCP Vol2. 3rd Ed. P.106 for multiplier. */}
-64         \textcolor{comment}{/* In the previous versions, MSBs of the seed affect   */}
-65         \textcolor{comment}{/* only MSBs of the array mt[].                        */}
-66         \textcolor{comment}{/* 2002/01/09 modified by Makoto Matsumoto             */}
-67         \mbox{\hyperlink{mt19937ar_8c_aff3cefd0011b487c57a7af7cb3bc499f}{mt}}[\mbox{\hyperlink{mt19937ar_8c_a0893639c022032e006e5b13378f7b4b2}{mti}}] &= 0xffffffffUL;
-68         \textcolor{comment}{/* for >32 bit machines */}
-69     \}
-70 \}
+62 \{
+63     \mbox{\hyperlink{mt19937ar_8c_aff3cefd0011b487c57a7af7cb3bc499f}{mt}}[0]= s & 0xffffffffUL;
+64     \textcolor{keywordflow}{for} (\mbox{\hyperlink{mt19937ar_8c_a0893639c022032e006e5b13378f7b4b2}{mti}}=1; \mbox{\hyperlink{mt19937ar_8c_a0893639c022032e006e5b13378f7b4b2}{mti}}<\mbox{\hyperlink{mt19937ar_8c_a0240ac851181b84ac374872dc5434ee4}{N}}; \mbox{\hyperlink{mt19937ar_8c_a0893639c022032e006e5b13378f7b4b2}{mti}}++) \{
+65         \mbox{\hyperlink{mt19937ar_8c_aff3cefd0011b487c57a7af7cb3bc499f}{mt}}[\mbox{\hyperlink{mt19937ar_8c_a0893639c022032e006e5b13378f7b4b2}{mti}}] = 
+66             (1812433253UL * (\mbox{\hyperlink{mt19937ar_8c_aff3cefd0011b487c57a7af7cb3bc499f}{mt}}[\mbox{\hyperlink{mt19937ar_8c_a0893639c022032e006e5b13378f7b4b2}{mti}}-1] ^ (\mbox{\hyperlink{mt19937ar_8c_aff3cefd0011b487c57a7af7cb3bc499f}{mt}}[\mbox{\hyperlink{mt19937ar_8c_a0893639c022032e006e5b13378f7b4b2}{mti}}-1] >> 30)) + \mbox{\hyperlink{mt19937ar_8c_a0893639c022032e006e5b13378f7b4b2}{mti}}); 
+67         \textcolor{comment}{/* See Knuth TAOCP Vol2. 3rd Ed. P.106 for multiplier. */}
+68         \textcolor{comment}{/* In the previous versions, MSBs of the seed affect   */}
+69         \textcolor{comment}{/* only MSBs of the array mt[].                        */}
+70         \textcolor{comment}{/* 2002/01/09 modified by Makoto Matsumoto             */}
+71         \mbox{\hyperlink{mt19937ar_8c_aff3cefd0011b487c57a7af7cb3bc499f}{mt}}[\mbox{\hyperlink{mt19937ar_8c_a0893639c022032e006e5b13378f7b4b2}{mti}}] &= 0xffffffffUL;
+72         \textcolor{comment}{/* for >32 bit machines */}
+73     \}
+74 \}
 \end{DoxyCode}
