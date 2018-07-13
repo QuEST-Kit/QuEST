@@ -12,10 +12,10 @@
 #======================================================================#
 
 # name of the executable to create
-EXE = 
+EXE = demo
 
 # space-separated names (no file type) of all user source files (.c or .cpp) in the root directory
-SOURCES = 
+SOURCES = tutorial_example
 
 # path to QuEST library from root directory
 QUEST_DIR = QuEST
