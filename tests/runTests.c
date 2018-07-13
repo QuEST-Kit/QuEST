@@ -538,9 +538,7 @@ int test_controlledCompactUnitary(char testName[200]){
 }
 
 int test_controlledUnitary(char testName[200]){
-    char filename[200];
     int passed=1;
-    int count=1;
 
     int numQubits=10;
     int rotQubit, controlQubit;
@@ -879,7 +877,6 @@ int test_measureWithStats(char testName[200]){
 }
 
 int test_getRealAmpEl(char testName[200]){
-    char filename[200];
     int passed=1;
 
     int numQubits=5;
@@ -900,7 +897,6 @@ int test_getRealAmpEl(char testName[200]){
 }
 
 int test_getImagAmpEl(char testName[200]){
-    char filename[200];
     int passed=1;
 
     int numQubits=5;
@@ -921,7 +917,6 @@ int test_getImagAmpEl(char testName[200]){
 }
 
 int test_getProbEl(char testName[200]){
-    char filename[200];
     int passed=1;
 
     int numQubits=5;
