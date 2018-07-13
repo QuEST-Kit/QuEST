@@ -1,4 +1,4 @@
-# QuEST
+# [QuEST](quest.qtechtheory.org)
 
 ## Versions
 
@@ -9,26 +9,28 @@ Please report errors or feedback to anna.brown@oerc.ox.ac.uk
 
 ## Quick Start
 
-Copy or clone this repository to your machine. 
-
-In the root directory, compile using
-
+Copy or clone this repository to your machine. E.g. in the desired directory, enter
+```bash
+git clone https://github.com/TysonRayJones/QuEST.git
 ```
+at terminal.
+
+In the root directory, compile the [example](examples/tutorial_example.c) using
+```bash
+cp examples/tutorial_example tutorial_example
 make
 ```
-
-Run an [example circuit file](tutorialExample.c) using
-
-```
+then run it with
+```bash
 ./demo
 ```
 
-The program will print information about your execution environment and some simple operations on a three qubit system. See the [tutorial](examples/tutorial.md) for more information. 
+The program will print information about your execution environment and some simple operations on a three qubit system. See the [tutorial](examples/README.md) for a better introduction. Additionally, run `tests/runTests.sh` to test QuEST runs correctly in your environment.
 
 
 ## Introduction
 
-The **Quantum Exact Simulation Toolkit** is a high performance simulator of universal quantum circuits. QuEST is written in C, hybridises OpenMP and MPI, and can run on a GPU. Needing only compilation, QuEST is easy to run both on laptops and supercomputers, where it can take advantage of multicore and networked machines to quickly simulate circuits on many qubits.
+The **Quantum Exact Simulation Toolkit** is a high performance simulator of universal quantum circuits. QuEST is written in C, hybridises OpenMP and MPI, and can run on a GPU. Needing only compilation, QuEST is easy to run both on laptops and supercomputers, where it can take advantage of multicore, GPU-accelerated and networked machines to quickly simulate circuits on many qubits.
 
 QuEST has a simple interface, independent of its run environment (on CPUs, GPUs or over networks),
 ```C
@@ -60,7 +62,7 @@ multiControlledUnitary(qureg, controls, 5, 0, u);
 
 ## Getting started
 
-QuEST is contained entirely in the files in the `QuEST/` folder. To use QuEST, copy this folder to your computer and include `QuEST.h` in your `C` or `C++` code. We include make files for compiling QuEST, and submission scripts for using QuEST with SLURM and PBS. See [examples/tutorial.md](/examples/tutorial.md) for an introduction. Clone or download this entire repository to include all examples as well as tests and documentation. 
+QuEST is contained entirely in the files in the `QuEST/` folder. To use QuEST, copy this folder to your computer and include `QuEST.h` in your `C` or `C++` code, and compile using the [makefile](makefile). We include [submission scripts](examples/submissionScripts/) for using QuEST with SLURM and PBS. See the [tutorial](/examples/README.md) for an introduction.
 
 Explicit instructions to download and run QuEST from the command line can be found at [quest.qtechtheory.org/download](https://quest.qtechtheory.org/download/).
 
