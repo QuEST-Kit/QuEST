@@ -3,7 +3,7 @@
 # ifndef QuEST_DEBUG
 # define QuEST_DEBUG
 
-# include "QuEST_precision.h"
+# include "../QuEST_precision.h"
 
 #ifdef __cplusplus
 extern "C" {

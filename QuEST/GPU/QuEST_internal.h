@@ -8,7 +8,7 @@
  * directly. 
  */
 
-#include "QuEST_precision.h"
+#include "../QuEST_precision.h"
 
 extern const char* errorCodes[];
 

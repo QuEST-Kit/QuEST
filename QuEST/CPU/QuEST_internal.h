@@ -4,7 +4,7 @@
 # ifndef QuEST_INTERNAL
 # define QuEST_INTERNAL
 
-# include "QuEST_precision.h"
+# include "../QuEST_precision.h"
 
 /** @file
  * Internal functions used to implement the public facing API in qubits.h. Do not call these functions

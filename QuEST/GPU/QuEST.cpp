@@ -8,11 +8,11 @@
 # include <stdio.h>
 # include <stdlib.h>
 # include <assert.h>
-# include "QuEST_precision.h"
-# include "QuEST.h"
+# include "../QuEST_precision.h"
+# include "../QuEST.h"
 # include "QuEST_internal.h"
 
-# include "mt19937ar.h" // MT random number generation for random measurement seeding
+# include "../mt19937ar.h" // MT random number generation for random measurement seeding
 # include <sys/param.h>
 # include <unistd.h>
 
