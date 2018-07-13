@@ -1,4 +1,4 @@
-# [QuEST](quest.qtechtheory.org)
+# [QuEST](https://quest.qtechtheory.org)
 
 ## Versions
 
