@@ -10,13 +10,13 @@
 # include "../mt19937ar.h"
 # include "QuEST_internal.h"
 
-# define _XOPEN_SOURCE 500
+# define _BSD_SOURCE
+# include <unistd.h>
 # include <math.h>  
 # include <stdio.h>
 # include <stdlib.h>
 # include <assert.h>
 # include <sys/param.h>
-# include <unistd.h>
 # include <sys/types.h> 
 # include <sys/time.h>
 
