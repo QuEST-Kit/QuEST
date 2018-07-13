@@ -1,13 +1,14 @@
-// Distributed under MIT licence. See https://github.com/aniabrown/QuEST/blob/master/LICENCE.txt 
-// for details 
+// Distributed under MIT licence. See https://github.com/aniabrown/QuEST/blob/master/LICENCE.txt for details 
+
+/** @file
+ * The QuEST library API and objects. 
+ * Contains the comments used by doxygen for generating API doc
+*/
 
 # ifndef QuEST
 # define QuEST
 
 # include "QuEST_precision.h"
-/** @file
- * The QuEST library API and objects. 
-*/
 
 #ifdef __cplusplus
 extern "C" {

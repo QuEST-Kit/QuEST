@@ -4,14 +4,14 @@
   An implementation of the API in qubits.h for a local (non-MPI) environment.
  */
 
+# include "../QuEST.h"
+# include "../QuEST_precision.h"
+# include "../mt19937ar.h"
+# include "QuEST_internal.h"
+
 # include <stdlib.h>
 # include <stdio.h>
 # include <math.h>
-# include "../QuEST.h"
-# include "../QuEST_precision.h"
-# include "QuEST_internal.h"
-
-# include "../mt19937ar.h" // MT random number generation
 
 # define REDUCE_SHARED_SIZE 512
 # define DEBUG 0

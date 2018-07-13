@@ -4,20 +4,18 @@
 /** @file
   An implementation of the API in qubits.h for an MPI environment.
   */
-// defining prototype for gethostname
-#define _BSD_SOURCE
-#include <unistd.h>
 
+# include "../QuEST.h"
+# include "../QuEST_precision.h"
+# include "../mt19937ar.h"
+# include "QuEST_internal.h"
+
+#define _BSD_SOURCE // defining prototype for gethostname 
+# include <unistd.h>
 # include <mpi.h>
 # include <stdlib.h>
 # include <stdio.h>
 # include <math.h>
-# include "../QuEST_precision.h"
-# include "../QuEST.h"
-# include "QuEST_internal.h"
-
-# include "../mt19937ar.h" // MT random number generation
-
 # include <time.h>
 # include <sys/types.h>
 

@@ -5,25 +5,20 @@
  * The core of the QuEST Library.
  */
 
+# include "../QuEST.h"
+# include "../QuEST_precision.h"
+# include "../mt19937ar.h"
+# include "QuEST_internal.h"
+
 # define _XOPEN_SOURCE 500
 # include <math.h>  
 # include <stdio.h>
 # include <stdlib.h>
 # include <assert.h>
-# include "../QuEST_precision.h"
-# include "../QuEST.h"
-# include "QuEST_internal.h"
-
-# include "../mt19937ar.h" // MT random number generation
-// for seeding random numbers
 # include <sys/param.h>
-
 # include <unistd.h>
-
-# include <sys/types.h> // include getpid
-
+# include <sys/types.h> 
 # include <sys/time.h>
-# include <sys/types.h>
 
 # ifdef _OPENMP
 # include <omp.h>

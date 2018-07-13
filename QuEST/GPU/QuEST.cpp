@@ -4,19 +4,18 @@
  * The core of the QuEST Library.
  */
 
+# include "../QuEST.h"
+# include "../QuEST_precision.h"
+# include "../mt19937ar.h"
+# include "QuEST_internal.h"
+
 # include <math.h> 
 # include <stdio.h>
 # include <stdlib.h>
 # include <assert.h>
-# include "../QuEST_precision.h"
-# include "../QuEST.h"
-# include "QuEST_internal.h"
-
-# include "../mt19937ar.h" // MT random number generation for random measurement seeding
-# include <sys/param.h>
 # include <unistd.h>
-
-# include <sys/types.h> // include getpid
+# include <sys/param.h>
+# include <sys/types.h>
 # include <sys/time.h>
 
 # define DEBUG 0
