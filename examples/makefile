@@ -69,18 +69,18 @@ ifneq ($(MAKECMDGOALS), veryclean)
     ifeq ($(MULTITHREADED), 1)
     ifeq ($(GPUACCELERATED), 1)
         $(warning GPU acceleration makes no use of multithreading. Disabling the latter...)
-        MULTITHREADED = 0
+        override MULTITHREADED = 0
     endif
     endif
-
+	
     # CLANG compilers don't support threading
     ifeq ($(MULTITHREADED), 1)
     ifeq ($(COMPILER_TYPE), CLANG)
         $(warning Clang does not support multithreading. Disabling...)
-        MULTITHREADED = 0
+        override MULTITHREADED = 0
     endif
     endif
-
+	
     # NVCC doesn't support new CLANG compilers
     ifeq ($(GPUACCELERATED), 1)
     ifeq ($(COMPILER_TYPE), CLANG)
