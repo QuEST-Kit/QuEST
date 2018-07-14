@@ -4,6 +4,7 @@
 
 # include <stdio.h>
 # include <math.h>
+# include <omp.h>
 
 # include "QuEST.h" 
 
@@ -26,7 +27,7 @@ int main (int narg, char** varg) {
     // create register; let zeroth qubit be ancilla
     MultiQubit multiQubit; 
     createMultiQubit(&multiQubit, numQubits, env);
-    initStateZero(multiQubit);
+    initStateZero(&multiQubit);
 
 
     /* 	

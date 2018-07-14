@@ -21,7 +21,7 @@ int main (int narg, char *varg[]) {
 
     MultiQubit qubits; 
     createMultiQubit(&qubits, 3, env);
-    initStateZero(qubits);
+    initStateZero(&qubits);
 
 
     /*
