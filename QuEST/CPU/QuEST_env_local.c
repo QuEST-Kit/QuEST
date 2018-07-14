@@ -25,7 +25,7 @@ void initQuESTEnv(QuESTEnv *env){
     env->rank=0;
     env->numRanks=1;
 	
-	seedQuESTDefault();
+	QuESTSeedRandomDefault();
 }
 
 void syncQuESTEnv(QuESTEnv env){

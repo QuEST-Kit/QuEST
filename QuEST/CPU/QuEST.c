@@ -1991,7 +1991,7 @@ REAL getProbEl(MultiQubit multiQubit, long long int index){
     return real*real + imag*imag;
 }
 
-void seedQuESTDefault(){
+void QuESTSeedRandomDefault(){
     // init MT random number generator with three keys -- time, pid and a hash of hostname 
     // for the MPI version, it is ok that all procs will get the same seed as random numbers will only be 
     // used by the master process
@@ -2016,7 +2016,7 @@ void seedQuESTDefault(){
 /** 
  * numSeeds <= 64
  */
-void seedQuEST(unsigned long int *seedArray, int numSeeds){
+void QuESTSeedRandom(unsigned long int *seedArray, int numSeeds){
     // init MT random number generator with user defined list of seeds
     // for the MPI version, it is ok that all procs will get the same seed as random numbers will only be 
     // used by the master process

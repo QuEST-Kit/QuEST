@@ -44,7 +44,7 @@ void initQuESTEnv(QuESTEnv *env){
 
     } else printf("ERROR: Trying to initialize QuESTEnv multiple times. Ignoring\n");
 	
-	seedQuESTDefault();
+	QuESTSeedRandomDefault();
 }
 
 void syncQuESTEnv(QuESTEnv env){
