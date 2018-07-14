@@ -66,7 +66,7 @@ void reportState(MultiQubit multiQubit){
 	state = fopen(filename, "w");
 	if (multiQubit.chunkId==0) fprintf(state, "real, imag\n");
 
-	for(index=0; index<multiQubit.numAmpsDividedByNumChunks; index++){
+	for(index=0; index<multiQubit.numAmpsPerChunk; index++){
 		fprintf(state, "%.12f, %.12f\n", multiQubit.stateVec.real[index], multiQubit.stateVec.imag[index]);
 	}
 	fclose(state);
@@ -92,7 +92,7 @@ int getNumQubits(MultiQubit multiQubit){
 }
 
 int getNumAmps(MultiQubit multiQubit){
-    return multiQubit.numAmpsDividedByNumChunks*multiQubit.numChunks;
+    return multiQubit.numAmpsPerChunk*multiQubit.numChunks;
 }
 
 REAL getProbEl(MultiQubit multiQubit, long long int index){

@@ -62,7 +62,7 @@ typedef struct MultiQubit
 	int numQubits;
 	//! Number of probability amplitudes held in stateVec by this process
 	//! In the non-MPI version, this is the total number of amplitudes
-	long long int numAmpsDividedByNumChunks;
+	long long int numAmpsPerChunk;
 	//! The position of the chunk of the state vector held by this process in the full state vector
 	int chunkId;
 	//! Number of chunks the state vector is broken up into -- the number of MPI processes used
@@ -152,9 +152,9 @@ int getNumAmps(MultiQubit multiQubit);
  * Initialise a set of \f$ N \f$ qubits to the classical zero state 
  * \f$ {| 0 \rangle}^{\otimes N} \f$.
  *
- * @param[in,out] multiQubit a pointer to the object representing the set of all qubits to initialise
+ * @param[in,out] multiQubit the object representing the set of all qubits to initialise
  */
-void initStateZero(MultiQubit *multiQubit);
+void initStateZero(MultiQubit multiQubit);
 
 /**
  * Initialise a set of \f$ N \f$ qubits to the plus state
@@ -164,9 +164,9 @@ void initStateZero(MultiQubit *multiQubit);
  * This is equivalent to applying a Hadamard to every qubit in the zero state: 
  * \f$ \hat{H}^{\otimes N} {|0\rangle}^{\otimes N} \f$
  *
- * @param[in,out] multiQubit a pointer to the object representing the set of qubits to be initialised
+ * @param[in,out] multiQubit the object representing the set of qubits to be initialised
  */
-void initStatePlus(MultiQubit *multiQubit);
+void initStatePlus(MultiQubit multiQubit);
 
 /**
  * Initialise a set of \f$ N \f$ qubits to the classical state with index \p stateInd.
@@ -174,10 +174,10 @@ void initStatePlus(MultiQubit *multiQubit);
  * \f$ | 11 \dots 11 \rangle \f$ has \p stateInd \f$ 2^N - 1 \f$, etc.
  * Subsequent calls to getProbEl will yield 0 for all indices except \p stateInd.
  *
- * @param[in,out] multiQubit a pointer to the object representing the set of qubits to be initialised
+ * @param[in,out] multiQubit the object representing the set of qubits to be initialised
  * @param[in] stateInd the index (0 to the number of amplitudes, exclusive) of the state to give probability 1
  */
-void initClassicalState(MultiQubit *multiQubit, long long int stateInd);
+void initClassicalState(MultiQubit multiQubit, long long int stateInd);
 
 /** Apply the multiple-qubit controlled phase gate, also known as the multiple-qubit controlled sigmaZ gate.
  * For each state, if all control qubits have value one, multiply the amplitude of that state by -1. This applies the many-qubit unitary:

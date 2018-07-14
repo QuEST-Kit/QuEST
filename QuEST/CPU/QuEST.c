@@ -67,7 +67,7 @@ void createMultiQubit(MultiQubit *multiQubit, int numQubits, QuESTEnv env)
     }
 
     multiQubit->numQubits = numQubits;
-    multiQubit->numAmpsDividedByNumChunks = numAmpsPerRank;
+    multiQubit->numAmpsPerChunk = numAmpsPerRank;
     multiQubit->chunkId = env.rank;
     multiQubit->numChunks = env.numRanks;
 
@@ -92,7 +92,7 @@ void reportState(MultiQubit multiQubit){
     QuESTAssert(state!=NULL, 11, __func__);
     if (multiQubit.chunkId==0) fprintf(state, "real, imag\n");
 
-    for(index=0; index<multiQubit.numAmpsDividedByNumChunks; index++){
+    for(index=0; index<multiQubit.numAmpsPerChunk; index++){
         fprintf(state, REAL_STRING_FORMAT "," REAL_STRING_FORMAT "\n", multiQubit.stateVec.real[index], multiQubit.stateVec.imag[index]);
     }
     fclose(state);
@@ -112,7 +112,7 @@ void reportStateToScreen(MultiQubit multiQubit, QuESTEnv env, int reportRank){
                     printf("real, imag\n");
                 }
 
-                for(index=0; index<multiQubit.numAmpsDividedByNumChunks; index++){
+                for(index=0; index<multiQubit.numAmpsPerChunk; index++){
                     printf(REAL_STRING_FORMAT ", " REAL_STRING_FORMAT "\n", multiQubit.stateVec.real[index], multiQubit.stateVec.imag[index]);
                 }
                 if (reportRank || rank==multiQubit.numChunks-1) printf("]\n");
@@ -138,7 +138,7 @@ int getNumQubits(MultiQubit multiQubit){
 }
 
 int getNumAmps(MultiQubit multiQubit){
-    return multiQubit.numAmpsDividedByNumChunks*multiQubit.numChunks;
+    return multiQubit.numAmpsPerChunk*multiQubit.numChunks;
 }
 
 
@@ -150,17 +150,17 @@ void getEnvironmentString(QuESTEnv env, MultiQubit multiQubit, char str[200]){
     sprintf(str, "%dqubits_CPU_%dranksx%dthreads", multiQubit.numQubits, env.numRanks, numThreads);
 }
 
-void initStateZero (MultiQubit *multiQubit)
+void initStateZero (MultiQubit multiQubit)
 {
     long long int stateVecSize;
     long long int index;
 
     // dimension of the state vector
-    stateVecSize = multiQubit->numAmpsDividedByNumChunks;
+    stateVecSize = multiQubit.numAmpsPerChunk;
 
     // Can't use multiQubit->stateVec as a private OMP var
-    REAL *stateVecReal = multiQubit->stateVec.real;
-    REAL *stateVecImag = multiQubit->stateVec.imag;
+    REAL *stateVecReal = multiQubit.stateVec.real;
+    REAL *stateVecImag = multiQubit.stateVec.imag;
 
     // initialise the state to |0000..0000>
 # ifdef _OPENMP
@@ -179,26 +179,26 @@ void initStateZero (MultiQubit *multiQubit)
         }
     }
 
-    if (multiQubit->chunkId==0){
+    if (multiQubit.chunkId==0){
         // zero state |0000..0000> has probability 1
         stateVecReal[0] = 1.0;
         stateVecImag[0] = 0.0;
     }
 }
 
-void initStatePlus (MultiQubit *multiQubit)
+void initStatePlus (MultiQubit multiQubit)
 {
     long long int chunkSize, stateVecSize;
     long long int index;
 
     // dimension of the state vector
-    chunkSize = multiQubit->numAmpsDividedByNumChunks;
-    stateVecSize = chunkSize*multiQubit->numChunks;
+    chunkSize = multiQubit.numAmpsPerChunk;
+    stateVecSize = chunkSize*multiQubit.numChunks;
     REAL normFactor = 1.0/sqrt((REAL)stateVecSize);
 
     // Can't use multiQubit->stateVec as a private OMP var
-    REAL *stateVecReal = multiQubit->stateVec.real;
-    REAL *stateVecImag = multiQubit->stateVec.imag;
+    REAL *stateVecReal = multiQubit.stateVec.real;
+    REAL *stateVecImag = multiQubit.stateVec.imag;
 
     // initialise the state to |0000..0000>
 # ifdef _OPENMP
@@ -219,17 +219,17 @@ void initStatePlus (MultiQubit *multiQubit)
 }
 
 /* Tyson Jones, 16th May 2018 4pm */
-void initClassicalState (MultiQubit *multiQubit, long long int stateInd)
+void initClassicalState (MultiQubit multiQubit, long long int stateInd)
 {
     long long int stateVecSize;
     long long int index;
 
     // dimension of the state vector
-    stateVecSize = multiQubit->numAmpsDividedByNumChunks;
+    stateVecSize = multiQubit.numAmpsPerChunk;
 
     // Can't use multiQubit->stateVec as a private OMP var
-    REAL *stateVecReal = multiQubit->stateVec.real;
-    REAL *stateVecImag = multiQubit->stateVec.imag;
+    REAL *stateVecReal = multiQubit.stateVec.real;
+    REAL *stateVecImag = multiQubit.stateVec.imag;
 
     // initialise the state to |0000..0000>
 # ifdef _OPENMP
@@ -249,7 +249,7 @@ void initClassicalState (MultiQubit *multiQubit, long long int stateInd)
     }
 
 	// give the specified classical state prob 1
-    if (multiQubit->chunkId == stateInd/stateVecSize){
+    if (multiQubit.chunkId == stateInd/stateVecSize){
         stateVecReal[stateInd % stateVecSize] = 1.0;
         stateVecImag[stateInd % stateVecSize] = 0.0;
     }
@@ -269,7 +269,7 @@ void initStateOfSingleQubit(MultiQubit *multiQubit, int qubitId, int outcome)
     const long long int chunkId=multiQubit->chunkId;
 
     // dimension of the state vector
-    chunkSize = multiQubit->numAmpsDividedByNumChunks;
+    chunkSize = multiQubit->numAmpsPerChunk;
     stateVecSize = chunkSize*multiQubit->numChunks;
     REAL normFactor = 1.0/sqrt((REAL)stateVecSize/2.0);
 
@@ -307,20 +307,20 @@ void initStateOfSingleQubit(MultiQubit *multiQubit, int qubitId, int outcome)
  * each component of each probability amplitude a unique floating point value. For debugging processes
  * @param[in,out] multiQubit object representing the set of qubits to be initialised
  */
-void initStateDebug (MultiQubit *multiQubit)
+void initStateDebug (MultiQubit multiQubit)
 {
     long long int chunkSize;
     long long int index;
 	long long int indexOffset;
 
     // dimension of the state vector
-    chunkSize = multiQubit->numAmpsDividedByNumChunks;
+    chunkSize = multiQubit.numAmpsPerChunk;
 
     // Can't use multiQubit->stateVec as a private OMP var
-    REAL *stateVecReal = multiQubit->stateVec.real;
-    REAL *stateVecImag = multiQubit->stateVec.imag;
+    REAL *stateVecReal = multiQubit.stateVec.real;
+    REAL *stateVecImag = multiQubit.stateVec.imag;
 
-	indexOffset = chunkSize * multiQubit->chunkId;
+	indexOffset = chunkSize * multiQubit.chunkId;
 
     // initialise the state to |0000..0000>
 # ifdef _OPENMP
@@ -344,7 +344,7 @@ void initializeStateFromSingleFile(MultiQubit *multiQubit, char filename[200], Q
     long long int chunkSize, stateVecSize;
     long long int indexInChunk, totalIndex;
 
-    chunkSize = multiQubit->numAmpsDividedByNumChunks;
+    chunkSize = multiQubit->numAmpsPerChunk;
     stateVecSize = chunkSize*multiQubit->numChunks;
 
     REAL *stateVecReal = multiQubit->stateVec.real;
@@ -378,7 +378,7 @@ void initializeStateFromSingleFile(MultiQubit *multiQubit, char filename[200], Q
 
 int compareStates(MultiQubit mq1, MultiQubit mq2, REAL precision){
     REAL diff;
-    int chunkSize = mq1.numAmpsDividedByNumChunks;
+    int chunkSize = mq1.numAmpsPerChunk;
     for (int i=0; i<chunkSize; i++){
         diff = fabs(mq1.stateVec.real[i] - mq2.stateVec.real[i]);
         if (diff>precision) return 0;
@@ -495,7 +495,7 @@ void compactUnitaryLocal (MultiQubit multiQubit, const int targetQubit, Complex 
 
     REAL stateRealUp,stateRealLo,stateImagUp,stateImagLo;
     long long int thisTask;         
-    const long long int numTasks=multiQubit.numAmpsDividedByNumChunks>>1;
+    const long long int numTasks=multiQubit.numAmpsPerChunk>>1;
 
     // set dimensions
     sizeHalfBlock = 1LL << targetQubit;  
@@ -554,7 +554,7 @@ void unitaryLocal(MultiQubit multiQubit, const int targetQubit, ComplexMatrix2 u
 
     REAL stateRealUp,stateRealLo,stateImagUp,stateImagLo;
     long long int thisTask;         
-    const long long int numTasks=multiQubit.numAmpsDividedByNumChunks>>1;
+    const long long int numTasks=multiQubit.numAmpsPerChunk>>1;
 
     // set dimensions
     sizeHalfBlock = 1LL << targetQubit;  
@@ -625,7 +625,7 @@ void compactUnitaryDistributed (MultiQubit multiQubit, const int targetQubit,
 
     REAL   stateRealUp,stateRealLo,stateImagUp,stateImagLo;
     long long int thisTask;  
-    const long long int numTasks=multiQubit.numAmpsDividedByNumChunks;
+    const long long int numTasks=multiQubit.numAmpsPerChunk;
 
     REAL rot1Real=rot1.real, rot1Imag=rot1.imag;
     REAL rot2Real=rot2.real, rot2Imag=rot2.imag;
@@ -681,7 +681,7 @@ void unitaryDistributed (MultiQubit multiQubit, const int targetQubit,
 
     REAL   stateRealUp,stateRealLo,stateImagUp,stateImagLo;
     long long int thisTask;  
-    const long long int numTasks=multiQubit.numAmpsDividedByNumChunks;
+    const long long int numTasks=multiQubit.numAmpsPerChunk;
 
     REAL rot1Real=rot1.real, rot1Imag=rot1.imag;
     REAL rot2Real=rot2.real, rot2Imag=rot2.imag;
@@ -726,8 +726,8 @@ void controlledCompactUnitaryLocal (MultiQubit multiQubit, const int controlQubi
 
     REAL stateRealUp,stateRealLo,stateImagUp,stateImagLo;
     long long int thisTask;         
-    const long long int numTasks=multiQubit.numAmpsDividedByNumChunks>>1;
-    const long long int chunkSize=multiQubit.numAmpsDividedByNumChunks;
+    const long long int numTasks=multiQubit.numAmpsPerChunk>>1;
+    const long long int chunkSize=multiQubit.numAmpsPerChunk;
     const long long int chunkId=multiQubit.chunkId;
 
     int controlBit;
@@ -793,8 +793,8 @@ void multiControlledUnitaryLocal(MultiQubit multiQubit, const int targetQubit,
 
     REAL stateRealUp,stateRealLo,stateImagUp,stateImagLo;
     long long int thisTask;         
-    const long long int numTasks=multiQubit.numAmpsDividedByNumChunks>>1;
-    const long long int chunkSize=multiQubit.numAmpsDividedByNumChunks;
+    const long long int numTasks=multiQubit.numAmpsPerChunk>>1;
+    const long long int chunkSize=multiQubit.numAmpsPerChunk;
     const long long int chunkId=multiQubit.chunkId;
 
     // set dimensions
@@ -856,8 +856,8 @@ void controlledUnitaryLocal(MultiQubit multiQubit, const int controlQubit, const
 
     REAL stateRealUp,stateRealLo,stateImagUp,stateImagLo;
     long long int thisTask;         
-    const long long int numTasks=multiQubit.numAmpsDividedByNumChunks>>1;
-    const long long int chunkSize=multiQubit.numAmpsDividedByNumChunks;
+    const long long int numTasks=multiQubit.numAmpsPerChunk>>1;
+    const long long int chunkSize=multiQubit.numAmpsPerChunk;
     const long long int chunkId=multiQubit.chunkId;
 
     int controlBit;
@@ -935,8 +935,8 @@ void controlledCompactUnitaryDistributed (MultiQubit multiQubit, const int contr
 
     REAL   stateRealUp,stateRealLo,stateImagUp,stateImagLo;
     long long int thisTask;  
-    const long long int numTasks=multiQubit.numAmpsDividedByNumChunks;
-    const long long int chunkSize=multiQubit.numAmpsDividedByNumChunks;
+    const long long int numTasks=multiQubit.numAmpsPerChunk;
+    const long long int chunkSize=multiQubit.numAmpsPerChunk;
     const long long int chunkId=multiQubit.chunkId;
 
     int controlBit;
@@ -998,8 +998,8 @@ void controlledUnitaryDistributed (MultiQubit multiQubit, const int controlQubit
 
     REAL   stateRealUp,stateRealLo,stateImagUp,stateImagLo;
     long long int thisTask;  
-    const long long int numTasks=multiQubit.numAmpsDividedByNumChunks;
-    const long long int chunkSize=multiQubit.numAmpsDividedByNumChunks;
+    const long long int numTasks=multiQubit.numAmpsPerChunk;
+    const long long int chunkSize=multiQubit.numAmpsPerChunk;
     const long long int chunkId=multiQubit.chunkId;
 
     int controlBit;
@@ -1064,8 +1064,8 @@ void multiControlledUnitaryDistributed (MultiQubit multiQubit,
 
     REAL   stateRealUp,stateRealLo,stateImagUp,stateImagLo;
     long long int thisTask;  
-    const long long int numTasks=multiQubit.numAmpsDividedByNumChunks;
-    const long long int chunkSize=multiQubit.numAmpsDividedByNumChunks;
+    const long long int numTasks=multiQubit.numAmpsPerChunk;
+    const long long int chunkSize=multiQubit.numAmpsPerChunk;
     const long long int chunkId=multiQubit.chunkId;
 
     REAL rot1Real=rot1.real, rot1Imag=rot1.imag;
@@ -1111,7 +1111,7 @@ void sigmaXLocal(MultiQubit multiQubit, const int targetQubit)
 
     REAL stateRealUp,stateImagUp;
     long long int thisTask;         
-    const long long int numTasks=multiQubit.numAmpsDividedByNumChunks>>1;
+    const long long int numTasks=multiQubit.numAmpsPerChunk>>1;
 
     // set dimensions
     sizeHalfBlock = 1LL << targetQubit;  
@@ -1168,7 +1168,7 @@ void sigmaXDistributed (MultiQubit multiQubit, const int targetQubit,
 {
 
     long long int thisTask;  
-    const long long int numTasks=multiQubit.numAmpsDividedByNumChunks;
+    const long long int numTasks=multiQubit.numAmpsPerChunk;
 
     REAL *stateVecRealIn=stateVecIn.real, *stateVecImagIn=stateVecIn.imag;
     REAL *stateVecRealOut=stateVecOut.real, *stateVecImagOut=stateVecOut.imag;
@@ -1198,8 +1198,8 @@ void controlledNotLocal(MultiQubit multiQubit, const int controlQubit, const int
 
     REAL stateRealUp,stateImagUp;
     long long int thisTask;         
-    const long long int numTasks=multiQubit.numAmpsDividedByNumChunks>>1;
-    const long long int chunkSize=multiQubit.numAmpsDividedByNumChunks;
+    const long long int numTasks=multiQubit.numAmpsPerChunk>>1;
+    const long long int chunkSize=multiQubit.numAmpsPerChunk;
     const long long int chunkId=multiQubit.chunkId;
 
     int controlBit;
@@ -1261,8 +1261,8 @@ void controlledNotDistributed (MultiQubit multiQubit, const int controlQubit, co
 {
 
     long long int thisTask;  
-    const long long int numTasks=multiQubit.numAmpsDividedByNumChunks;
-    const long long int chunkSize=multiQubit.numAmpsDividedByNumChunks;
+    const long long int numTasks=multiQubit.numAmpsPerChunk;
+    const long long int chunkSize=multiQubit.numAmpsPerChunk;
     const long long int chunkId=multiQubit.chunkId;
 
     int controlBit;
@@ -1298,7 +1298,7 @@ void sigmaYLocal(MultiQubit multiQubit, const int targetQubit)
 
     REAL stateRealUp,stateImagUp;
     long long int thisTask;         
-    const long long int numTasks=multiQubit.numAmpsDividedByNumChunks>>1;
+    const long long int numTasks=multiQubit.numAmpsPerChunk>>1;
 
     // set dimensions
     sizeHalfBlock = 1LL << targetQubit;  
@@ -1356,7 +1356,7 @@ void sigmaYDistributed(MultiQubit multiQubit, const int targetQubit,
 {
 
     long long int thisTask;  
-    const long long int numTasks=multiQubit.numAmpsDividedByNumChunks;
+    const long long int numTasks=multiQubit.numAmpsPerChunk;
 
     REAL *stateVecRealIn=stateVecIn.real, *stateVecImagIn=stateVecIn.imag;
     REAL *stateVecRealOut=stateVecOut.real, *stateVecImagOut=stateVecOut.imag;
@@ -1390,7 +1390,7 @@ void hadamardLocal(MultiQubit multiQubit, const int targetQubit)
 
     REAL stateRealUp,stateRealLo,stateImagUp,stateImagLo;
     long long int thisTask;         
-    const long long int numTasks=multiQubit.numAmpsDividedByNumChunks>>1;
+    const long long int numTasks=multiQubit.numAmpsPerChunk>>1;
 
     // set dimensions
     sizeHalfBlock = 1LL << targetQubit;  
@@ -1452,7 +1452,7 @@ void hadamardDistributed(MultiQubit multiQubit, const int targetQubit,
 
     REAL   stateRealUp,stateRealLo,stateImagUp,stateImagLo;
     long long int thisTask;  
-    const long long int numTasks=multiQubit.numAmpsDividedByNumChunks;
+    const long long int numTasks=multiQubit.numAmpsPerChunk;
 
     int sign;
     if (updateUpper) sign=1;
@@ -1497,7 +1497,7 @@ void phaseGateLocal(MultiQubit multiQubit, const int targetQubit, enum phaseGate
 
     REAL stateRealLo,stateImagLo;
     long long int thisTask;         
-    const long long int numTasks=multiQubit.numAmpsDividedByNumChunks>>1;
+    const long long int numTasks=multiQubit.numAmpsPerChunk>>1;
 
     // set dimensions
     sizeHalfBlock = 1LL << targetQubit;  
@@ -1569,7 +1569,7 @@ void phaseGateDistributed(MultiQubit multiQubit, const int targetQubit, enum pha
 {
     REAL stateRealLo,stateImagLo;
     long long int thisTask;         
-    const long long int numTasks=multiQubit.numAmpsDividedByNumChunks;
+    const long long int numTasks=multiQubit.numAmpsPerChunk;
 
     // Can't use multiQubit.stateVec as a private OMP var
     REAL *stateVecReal = multiQubit.stateVec.real;
@@ -1653,7 +1653,7 @@ REAL findProbabilityOfZeroLocal (MultiQubit multiQubit,
     REAL   totalProbability;                                  // probability (returned) value
     // ----- temp variables
     long long int thisTask;                                   
-    long long int numTasks=multiQubit.numAmpsDividedByNumChunks>>1;
+    long long int numTasks=multiQubit.numAmpsPerChunk>>1;
 
     // ---------------------------------------------------------------- //
     //            dimensions                                            //
@@ -1703,7 +1703,7 @@ REAL findProbabilityOfZeroDistributed (MultiQubit multiQubit,
     REAL   totalProbability;                                  // probability (returned) value
     // ----- temp variables
     long long int thisTask;                                   // task based approach for expose loop with small granularity
-    long long int numTasks=multiQubit.numAmpsDividedByNumChunks;
+    long long int numTasks=multiQubit.numAmpsPerChunk;
 
     // ---------------------------------------------------------------- //
     //            find probability                                      //
@@ -1751,7 +1751,7 @@ void controlledPhaseGate (MultiQubit multiQubit, const int idQubit1, const int i
     long long int stateVecSize;
     int bit1, bit2;
 
-    const long long int chunkSize=multiQubit.numAmpsDividedByNumChunks;
+    const long long int chunkSize=multiQubit.numAmpsPerChunk;
     const long long int chunkId=multiQubit.chunkId;
 
     QuESTAssert(idQubit1 >= 0 && idQubit1 < multiQubit.numQubits, 2, __func__);
@@ -1759,7 +1759,7 @@ void controlledPhaseGate (MultiQubit multiQubit, const int idQubit1, const int i
     QuESTAssert(idQubit1 != idQubit2, 3, __func__);
 
     // dimension of the state vector
-    stateVecSize = multiQubit.numAmpsDividedByNumChunks;
+    stateVecSize = multiQubit.numAmpsPerChunk;
     REAL *stateVecReal = multiQubit.stateVec.real;
     REAL *stateVecImag = multiQubit.stateVec.imag;
 
@@ -1785,7 +1785,7 @@ void multiControlledPhaseGate(MultiQubit multiQubit, int *controlQubits, int num
     long long int index;
     long long int stateVecSize;
 
-    const long long int chunkSize=multiQubit.numAmpsDividedByNumChunks;
+    const long long int chunkSize=multiQubit.numAmpsPerChunk;
     const long long int chunkId=multiQubit.chunkId;
 
     QuESTAssert(numControlQubits > 0 && numControlQubits <= multiQubit.numQubits, 4, __func__);
@@ -1793,7 +1793,7 @@ void multiControlledPhaseGate(MultiQubit multiQubit, int *controlQubits, int num
     for (int i=0; i<numControlQubits; i++) mask = mask | (1LL<<controlQubits[i]);
     QuESTAssert(mask >=0 && mask <= (1LL<<multiQubit.numQubits)-1, 2, __func__);
 
-    stateVecSize = multiQubit.numAmpsDividedByNumChunks;
+    stateVecSize = multiQubit.numAmpsPerChunk;
     REAL *stateVecReal = multiQubit.stateVec.real;
     REAL *stateVecImag = multiQubit.stateVec.imag;
 
@@ -1845,7 +1845,7 @@ void collapseToOutcomeLocal(MultiQubit multiQubit, int measureQubit, REAL totalP
     // ----- temp variables
     long long int thisTask;                                   // task based approach for expose loop with small granularity
     // (good for shared memory parallelism)
-    long long int numTasks=multiQubit.numAmpsDividedByNumChunks>>1;
+    long long int numTasks=multiQubit.numAmpsPerChunk>>1;
 
     // ---------------------------------------------------------------- //
     //            dimensions                                            //
@@ -1918,7 +1918,7 @@ REAL collapseToOutcomeDistributedRenorm (MultiQubit multiQubit, const int measur
 {
     // ----- temp variables
     long long int thisTask;                                   
-    long long int numTasks=multiQubit.numAmpsDividedByNumChunks;
+    long long int numTasks=multiQubit.numAmpsPerChunk;
 
     REAL renorm=1/sqrt(totalProbability);
 
@@ -1958,7 +1958,7 @@ void collapseToOutcomeDistributedSetZero(MultiQubit multiQubit, const int measur
 {
     // ----- temp variables
     long long int thisTask;                                   
-    long long int numTasks=multiQubit.numAmpsDividedByNumChunks;
+    long long int numTasks=multiQubit.numAmpsPerChunk;
 
     // ---------------------------------------------------------------- //
     //            find probability                                      //
