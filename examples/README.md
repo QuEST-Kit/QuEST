@@ -163,7 +163,7 @@ and after compiling (see section below), gives psuedo-random output
 > Qubit 2 collapsed to 1 with probability 0.499604
 > ```
 
-QuEST uses the [Mersenne Twister](http://www.math.sci.hiroshima-u.ac.jp/~m-mat/MT/MT2002/emt19937ar.html) algorithm to generate random numbers used for randomly collapsing the state-vector. The user can seed this RNG using `seedQuEST(arrayOfSeeds, arrayLength)`, otherwise QuEST will by default (through `seedQuESTDefault()`) create a seed from the current time, the process id, and the hostname.
+QuEST uses the [Mersenne Twister](http://www.math.sci.hiroshima-u.ac.jp/~m-mat/MT/MT2002/emt19937ar.html) algorithm to generate random numbers used for randomly collapsing the state-vector. The user can seed this RNG using `QuESTSeedRandom(arrayOfSeeds, arrayLength)`, otherwise QuEST will by default (through `QuESTSeedRandomDefault()`) create a seed from the current time, the process id, and the hostname.
 
 ----------------------------
 
