@@ -14,7 +14,7 @@ QuEST can be used in your C or C++ code, simply by including
 #include <QuEST.h>
 ```
 
-Independent of which platform you'll run your simulation on (multicore CPUS, a GPU, or over a network), your QuEST code will look the same, compile with the same [makefile](https://github.com/TysonRayJones/QuEST/blob/master/makefile), and use the same [API](https://tysonrayjones.github.io/QuEST/QuEST_8h.html).
+Independent of which platform you'll run your simulation on (multicore CPUS, a GPU, or over a network), your QuEST code will look the same, compile with the same [makefile](../makefile), and use the same [API](https://aniabrown.github.io/QuEST/QuEST_8h.html).
 
 Here's a simulation of a very simple circuit which measures  ![equation](https://latex.codecogs.com/gif.latex?C_0%28X_1%29%20H_0%20%7C00%5Crangle).
 ```C
