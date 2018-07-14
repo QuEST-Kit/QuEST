@@ -1,13 +1,18 @@
-// Distributed under MIT licence. See https://github.com/aniabrown/QuEST/blob/master/LICENCE.txt 
-// for details 
+// Distributed under MIT licence. See https://github.com/aniabrown/QuEST/blob/master/LICENCE.txt for details 
+
+/** @file
+ * The QuEST library API and objects. 
+ * Contains the comments used by doxygen for generating API doc
+*/
 
 # ifndef QuEST
 # define QuEST
 
 # include "QuEST_precision.h"
-/** @file
- * The QuEST library API and objects. 
-*/
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 /** Represents an array of complex numbers grouped into an array of real components and an array of coressponding complex components.
 */
@@ -45,15 +50,19 @@ Qubits are zero-based
 */
 typedef struct MultiQubit
 {
-	//! Probablilty amplitudes for the multi qubit state
+	//! Computational state amplitudes - a subset thereof in the MPI version
 	ComplexArray stateVec; 
 	//! Temporary storage for a chunk of the state vector received from another process in the MPI version
 	ComplexArray pairStateVec;
+	//! Storage for wavefunction amplitudes in the GPU version
+	ComplexArray deviceStateVec;
+	//! Storage for reduction of probabilities on GPU
+	REAL *firstLevelReduction, *secondLevelReduction;
 	//! Number of qubits in the state
 	int numQubits;
 	//! Number of probability amplitudes held in stateVec by this process
 	//! In the non-MPI version, this is the total number of amplitudes
-	long long int numAmpsDividedByNumChunks;
+	long long int numAmpsPerChunk;
 	//! The position of the chunk of the state vector held by this process in the full state vector
 	int chunkId;
 	//! Number of chunks the state vector is broken up into -- the number of MPI processes used
@@ -1072,6 +1081,10 @@ void QuESTSeedRandomDefault(void);
  * For more information about the MT, see http://www.math.sci.hiroshima-u.ac.jp/~m-mat/MT/MT2002/emt19937ar.html
  **/
 void QuESTSeedRandom(unsigned long int *seedArray, int numSeeds);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif
 

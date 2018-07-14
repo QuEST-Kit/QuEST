@@ -1,6 +1,10 @@
 #ifndef MT_RAND
 #define MT_RAND
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 void init_by_array(unsigned long init_key[], int key_length);
 
 void init_genrand(unsigned long s);
@@ -19,6 +23,10 @@ double genrand_real3(void);
 
 /* generates a random number on [0,1) with 53-bit resolution*/
 double genrand_res53(void);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif
 
