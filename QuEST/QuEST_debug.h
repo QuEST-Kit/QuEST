@@ -28,7 +28,7 @@ void initStateOfSingleQubit(MultiQubit *multiQubit, int qubitId, int outcome);
  * each component of each probability amplitude a unique floating point value. For debugging processes
  * @param[in,out] multiQubit object representing the set of qubits to be initialised
  */
-void initStateDebug(MultiQubit *multiQubit);
+void initStateDebug(MultiQubit multiQubit);
 
 /** Initialises the wavefunction amplitudes according to those specified in a file.
  * For debugging purpsoses 
