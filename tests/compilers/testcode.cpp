@@ -6,7 +6,7 @@ int main (int narg, char *varg[]) {
 	MultiQubit qubits; 
     initQuESTEnv(&env);
     createMultiQubit(&qubits, 3, env);
-    initStateZero(&qubits);
+    initStateZero(qubits);
 
     hadamard(qubits, 0);
     controlledNot(qubits, 0, 1);
