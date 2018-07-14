@@ -61,9 +61,9 @@ Data Fields</h2></td></tr>
 <tr class="memitem:a4e0088b41adab0a40b7a31e528ed42b5"><td class="memItemLeft" align="right" valign="top"><a class="el" href="QuEST__precision_8h.html#a4b654506f18b8bfd61ad2a29a7e38c25">REAL</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structMultiQubit.html#a4e0088b41adab0a40b7a31e528ed42b5">firstLevelReduction</a></td></tr>
 <tr class="memdesc:a4e0088b41adab0a40b7a31e528ed42b5"><td class="mdescLeft">&#160;</td><td class="mdescRight">Storage for reduction of probabilities on GPU.  <a href="#a4e0088b41adab0a40b7a31e528ed42b5">More...</a><br /></td></tr>
 <tr class="separator:a4e0088b41adab0a40b7a31e528ed42b5"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a1cad83601a78635dd278259c7ed54f18"><td class="memItemLeft" align="right" valign="top">long long int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structMultiQubit.html#a1cad83601a78635dd278259c7ed54f18">numAmpsPerChunk</a></td></tr>
-<tr class="memdesc:a1cad83601a78635dd278259c7ed54f18"><td class="mdescLeft">&#160;</td><td class="mdescRight">Number of probability amplitudes held in stateVec by this process In the non-MPI version, this is the total number of amplitudes.  <a href="#a1cad83601a78635dd278259c7ed54f18">More...</a><br /></td></tr>
-<tr class="separator:a1cad83601a78635dd278259c7ed54f18"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a04c9f5254af58e4c4a54712eb32e7082"><td class="memItemLeft" align="right" valign="top">long long int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structMultiQubit.html#a04c9f5254af58e4c4a54712eb32e7082">numAmpsDividedByNumChunks</a></td></tr>
+<tr class="memdesc:a04c9f5254af58e4c4a54712eb32e7082"><td class="mdescLeft">&#160;</td><td class="mdescRight">Number of probability amplitudes held in stateVec by this process In the non-MPI version, this is the total number of amplitudes.  <a href="#a04c9f5254af58e4c4a54712eb32e7082">More...</a><br /></td></tr>
+<tr class="separator:a04c9f5254af58e4c4a54712eb32e7082"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:acd43f2f57991709c9e94f73662c972b2"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structMultiQubit.html#acd43f2f57991709c9e94f73662c972b2">numChunks</a></td></tr>
 <tr class="memdesc:acd43f2f57991709c9e94f73662c972b2"><td class="mdescLeft">&#160;</td><td class="mdescRight">Number of chunks the state vector is broken up into &ndash; the number of MPI processes used.  <a href="#acd43f2f57991709c9e94f73662c972b2">More...</a><br /></td></tr>
 <tr class="separator:acd43f2f57991709c9e94f73662c972b2"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -139,14 +139,14 @@ Data Fields</h2></td></tr>
 
 </div>
 </div>
-<a id="a1cad83601a78635dd278259c7ed54f18"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a1cad83601a78635dd278259c7ed54f18">&#9670;&nbsp;</a></span>numAmpsPerChunk</h2>
+<a id="a04c9f5254af58e4c4a54712eb32e7082"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a04c9f5254af58e4c4a54712eb32e7082">&#9670;&nbsp;</a></span>numAmpsDividedByNumChunks</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">long long int MultiQubit::numAmpsPerChunk</td>
+          <td class="memname">long long int MultiQubit::numAmpsDividedByNumChunks</td>
         </tr>
       </table>
 </div><div class="memdoc">
@@ -251,7 +251,7 @@ Data Fields</h2></td></tr>
 </div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Sat Jul 14 2018 15:21:21 for Quantum Exact Simulation Toolkit by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Fri Jul 13 2018 22:39:29 for Quantum Exact Simulation Toolkit by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.14
 </small></address>

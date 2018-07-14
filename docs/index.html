@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=9"/>
 <meta name="generator" content="Doxygen 1.8.14"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>Quantum Exact Simulation Toolkit: [QuEST](https://quest.qtechtheory.org)</title>
+<title>Quantum Exact Simulation Toolkit: QuEST</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -39,19 +39,21 @@ $(function() {
 </div><!-- top -->
 <div class="header">
   <div class="headertitle">
-<div class="title">[QuEST](<a href="https://quest.qtechtheory.org">https://quest.qtechtheory.org</a>) </div>  </div>
+<div class="title">QuEST </div>  </div>
 </div><!--header-->
 <div class="contents">
 <div class="textblock"><h2>Versions</h2>
 <p>Latest version: <a href="https://github.com/aniabrown/QuEST/releases/tag/v1.0.0">1.0.0</a></p>
 <p>Please report errors or feedback to <a href="#" onclick="location.href='mai'+'lto:'+'ann'+'a.'+'bro'+'wn'+'@oe'+'rc'+'.ox'+'.a'+'c.u'+'k'; return false;">anna.<span style="display: none;">.nosp@m.</span>brow<span style="display: none;">.nosp@m.</span>n@oer<span style="display: none;">.nosp@m.</span>c.ox<span style="display: none;">.nosp@m.</span>.ac.u<span style="display: none;">.nosp@m.</span>k</a></p>
 <h2>Quick Start</h2>
-<p>Copy or clone this repository to your machine. E.g. in the desired directory, enter </p><div class="fragment"><div class="line">git clone https://github.com/TysonRayJones/QuEST.git</div></div><!-- fragment --><p> at terminal.</p>
-<p>In the root directory, compile the <a href="examples/tutorial_example.c">example</a> using </p><div class="fragment"><div class="line">cp examples/tutorial_example tutorial_example</div><div class="line">make</div></div><!-- fragment --><p> then run it with </p><div class="fragment"><div class="line">./demo</div></div><!-- fragment --><p>The program will print information about your execution environment and some simple operations on a three qubit system. See the tutorial for a better introduction. Additionally, run <code>tests/runTests.sh</code> to test QuEST runs correctly in your environment.</p>
+<p>Copy or clone this repository to your machine.</p>
+<p>In the root directory, compile using</p>
+<div class="fragment"><div class="line">make</div></div><!-- fragment --><p>Run an <a href="tutorialExample.c">example circuit file</a> using</p>
+<div class="fragment"><div class="line">./demo</div></div><!-- fragment --><p>The program will print information about your execution environment and some simple operations on a three qubit system. See the tutorial for more information.</p>
 <h2>Introduction</h2>
-<p>The <b>Quantum Exact Simulation Toolkit</b> is a high performance simulator of universal quantum circuits. QuEST is written in C, hybridises OpenMP and MPI, and can run on a GPU. Needing only compilation, QuEST is easy to run both on laptops and supercomputers, where it can take advantage of multicore, GPU-accelerated and networked machines to quickly simulate circuits on many qubits.</p>
+<p>The <b>Quantum Exact Simulation Toolkit</b> is a high performance simulator of universal quantum circuits. QuEST is written in C, hybridises OpenMP and MPI, and can run on a GPU. Needing only compilation, QuEST is easy to run both on laptops and supercomputers, where it can take advantage of multicore and networked machines to quickly simulate circuits on many qubits.</p>
 <p>QuEST has a simple interface, independent of its run environment (on CPUs, GPUs or over networks), </p><div class="fragment"><div class="line"><a class="code" href="QuEST_8h.html#aa09b5dd93de6df1384b8f2c0041749ab">hadamard</a>(qubits, 0);</div><div class="line"></div><div class="line"><a class="code" href="QuEST_8h.html#a67576895bbc65463481a8ea24d9b1e22">controlledNot</a>(qubits, 0, 1);</div><div class="line"></div><div class="line"><a class="code" href="QuEST_8h.html#ace0d3592d38a990e81a434c4e9681500">rotateY</a>(qubits, 0, .1);</div></div><!-- fragment --><p> though is flexible </p><div class="fragment"><div class="line"><a class="code" href="structVector.html">Vector</a> v;</div><div class="line">v.<a class="code" href="structVector.html#aac7abe171ba4bada50ed72acba6259fc">x</a> = 1; v.<a class="code" href="structVector.html#a375ca805d4c808a53d7c4e0c737ae3de">y</a> = 0; v.<a class="code" href="structVector.html#ad4e863651be7d6b7e2b28cd7445a0ccf">z</a> = 0;</div><div class="line"><a class="code" href="QuEST_8h.html#a8810423457803005fecd415f4299f40d">rotateAroundAxis</a>(qubits, 0, 3.14/2, v);</div></div><!-- fragment --><p> and powerful </p><div class="fragment"><div class="line"><span class="comment">// sqrt(X) with pi/4 global phase</span></div><div class="line"><a class="code" href="structComplexMatrix2.html">ComplexMatrix2</a> u;</div><div class="line">u.<a class="code" href="structComplexMatrix2.html#ae72b4458233b077a636beee1892e81ff">r0c0</a> = (<a class="code" href="QuEST_8h.html#ad59c9e471673c07782e6c403277ffd8d">Complex</a>) {.<a class="code" href="structComplex.html#a479ad939835457595fcca3ca55c06283">real</a>=.5, .imag= .5};</div><div class="line">u.<a class="code" href="structComplexMatrix2.html#a0f3932f055a8b05cef361bce25d51172">r0c1</a> = (<a class="code" href="QuEST_8h.html#ad59c9e471673c07782e6c403277ffd8d">Complex</a>) {.<a class="code" href="structComplex.html#a479ad939835457595fcca3ca55c06283">real</a>=.5, .imag=-.5}; </div><div class="line">u.<a class="code" href="structComplexMatrix2.html#ab98282015ed2065e53fbc9638e2583ab">r1c0</a> = (<a class="code" href="QuEST_8h.html#ad59c9e471673c07782e6c403277ffd8d">Complex</a>) {.<a class="code" href="structComplex.html#a479ad939835457595fcca3ca55c06283">real</a>=.5, .imag=-.5};</div><div class="line">u.<a class="code" href="structComplexMatrix2.html#a763007c3070802373549ba0350f83c8a">r1c1</a> = (<a class="code" href="QuEST_8h.html#ad59c9e471673c07782e6c403277ffd8d">Complex</a>) {.<a class="code" href="structComplex.html#a479ad939835457595fcca3ca55c06283">real</a>=.5, .imag= .5};</div><div class="line"><a class="code" href="QuEST_8h.html#a7a0877e33700f6bad48adb51b7b3fb67">unitary</a>(qubits, 0, u);</div><div class="line"></div><div class="line"><span class="keywordtype">int</span>[] controls = {1, 2, 3, 4, 5};</div><div class="line"><a class="code" href="QuEST_8h.html#ae395a79690283ed81106afadd7a8cd8a">multiControlledUnitary</a>(qureg, controls, 5, 0, u);</div></div><!-- fragment --><h2>Getting started</h2>
-<p>QuEST is contained entirely in the files in the <code>QuEST/</code> folder. To use QuEST, copy this folder to your computer and include <code><a class="el" href="QuEST_8h.html" title="The QuEST library API and objects. ">QuEST.h</a></code> in your <code>C</code> or <code>C++</code> code, and compile using the [makefile](makefile). We include <a href="examples/submissionScripts/">submission scripts</a> for using QuEST with SLURM and PBS. See the /examples/README.md "tutorial" for an introduction.</p>
+<p>QuEST is contained entirely in the files in the <code>QuEST/</code> folder. To use QuEST, copy this folder to your computer and include <code><a class="el" href="QuEST_8h.html" title="The QuEST library API and objects. ">QuEST.h</a></code> in your <code>C</code> or <code>C++</code> code. We include make files for compiling QuEST, and submission scripts for using QuEST with SLURM and PBS. See /examples/tutorial.md "examples/tutorial.md" for an introduction. Clone or download this entire repository to include all examples as well as tests and documentation.</p>
 <p>Explicit instructions to download and run QuEST from the command line can be found at <a href="https://quest.qtechtheory.org/download/">quest.qtechtheory.org/download</a>.</p>
 <h2>API Documentation</h2>
 <p>View the API <a href="https://tysonrayjones.github.io/QuEST/QuEST_8h.html">here</a>, and check compatible compiler versions here.</p>
@@ -65,7 +67,7 @@ $(function() {
 </div></div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Sat Jul 14 2018 15:21:37 for Quantum Exact Simulation Toolkit by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Fri Jul 13 2018 22:39:44 for Quantum Exact Simulation Toolkit by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.14
 </small></address>
