@@ -63,7 +63,7 @@ REAL calcTotalProbability(MultiQubit multiQubit){
     REAL pTotal=0; 
     REAL y, t, c;
     long long int index;
-    long long int numAmpsPerRank = multiQubit.numAmpsDividedByNumChunks;
+    long long int numAmpsPerRank = multiQubit.numAmpsPerChunk;
     c = 0.0;
     for (index=0; index<numAmpsPerRank; index++){ 
         // Perform pTotal+=multiQubit.stateVec.real[index]*multiQubit.stateVec.real[index]; by Kahan

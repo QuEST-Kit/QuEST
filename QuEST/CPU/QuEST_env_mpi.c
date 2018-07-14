@@ -86,14 +86,14 @@ void reportNodeList(QuESTEnv env){
 }
 
 int getChunkIdFromIndex(MultiQubit multiQubit, long long int index){
-    return index/multiQubit.numAmpsDividedByNumChunks; // this is numAmpsPerChunk
+    return index/multiQubit.numAmpsPerChunk; // this is numAmpsPerChunk
 }
 
 REAL getRealAmpEl(MultiQubit multiQubit, long long int index){
     int chunkId = getChunkIdFromIndex(multiQubit, index);
     REAL el; 
     if (multiQubit.chunkId==chunkId){
-        el = multiQubit.stateVec.real[index-chunkId*multiQubit.numAmpsDividedByNumChunks];
+        el = multiQubit.stateVec.real[index-chunkId*multiQubit.numAmpsPerChunk];
     }
     MPI_Bcast(&el, 1, MPI_QuEST_REAL, chunkId, MPI_COMM_WORLD);
     return el; 
@@ -103,7 +103,7 @@ REAL getImagAmpEl(MultiQubit multiQubit, long long int index){
     int chunkId = getChunkIdFromIndex(multiQubit, index);
     REAL el; 
     if (multiQubit.chunkId==chunkId){
-        el = multiQubit.stateVec.imag[index-chunkId*multiQubit.numAmpsDividedByNumChunks];
+        el = multiQubit.stateVec.imag[index-chunkId*multiQubit.numAmpsPerChunk];
     }
     MPI_Bcast(&el, 1, MPI_QuEST_REAL, chunkId, MPI_COMM_WORLD);
     return el; 
@@ -116,7 +116,7 @@ REAL calcTotalProbability(MultiQubit multiQubit){
     REAL y, t, c;
     REAL allRankTotals=0;
     long long int index;
-    long long int numAmpsPerRank = multiQubit.numAmpsDividedByNumChunks;
+    long long int numAmpsPerRank = multiQubit.numAmpsPerChunk;
     c = 0.0;
     for (index=0; index<numAmpsPerRank; index++){ 
         // Perform pTotal+=multiQubit.stateVec.real[index]*multiQubit.stateVec.real[index]; by Kahan
@@ -251,8 +251,8 @@ void exchangeStateVectors(MultiQubit multiQubit, int pairRank){
     if (sizeof(REAL)==8) maxMessageCount = (1LL<<28);
     else if (sizeof(REAL)==16) maxMessageCount = (1LL<<27);
 
-    if (multiQubit.numAmpsDividedByNumChunks<maxMessageCount) maxMessageCount = multiQubit.numAmpsDividedByNumChunks;
-    int numMessages = multiQubit.numAmpsDividedByNumChunks/maxMessageCount;
+    if (multiQubit.numAmpsPerChunk<maxMessageCount) maxMessageCount = multiQubit.numAmpsPerChunk;
+    int numMessages = multiQubit.numAmpsPerChunk/maxMessageCount;
     int i;
     long long int offset;
     // send my state vector to pairRank's multiQubit.pairStateVec
@@ -275,7 +275,7 @@ void compactUnitary(MultiQubit multiQubit, const int targetQubit, Complex alpha,
     QuESTAssert(validateAlphaBeta(alpha, beta), 6, __func__);
 
     // flag to require memory exchange. 1: an entire block fits on one rank, 0: at most half a block fits on one rank
-    int useLocalDataOnly = halfMatrixBlockFitsInChunk(multiQubit.numAmpsDividedByNumChunks, targetQubit);
+    int useLocalDataOnly = halfMatrixBlockFitsInChunk(multiQubit.numAmpsPerChunk, targetQubit);
     Complex rot1, rot2;
 
     // rank's chunk is in upper half of block 
@@ -287,9 +287,9 @@ void compactUnitary(MultiQubit multiQubit, const int targetQubit, Complex alpha,
         compactUnitaryLocal(multiQubit, targetQubit, alpha, beta);
     } else {
         // need to get corresponding chunk of state vector from other rank
-        rankIsUpper = chunkIsUpper(multiQubit.chunkId, multiQubit.numAmpsDividedByNumChunks, targetQubit);
+        rankIsUpper = chunkIsUpper(multiQubit.chunkId, multiQubit.numAmpsPerChunk, targetQubit);
         getRotAngle(rankIsUpper, &rot1, &rot2, alpha, beta);
-        pairRank = getChunkPairId(rankIsUpper, multiQubit.chunkId, multiQubit.numAmpsDividedByNumChunks, targetQubit);
+        pairRank = getChunkPairId(rankIsUpper, multiQubit.chunkId, multiQubit.numAmpsPerChunk, targetQubit);
         // get corresponding values from my pair
         exchangeStateVectors(multiQubit, pairRank);
 
@@ -315,7 +315,7 @@ void unitary(MultiQubit multiQubit, const int targetQubit, ComplexMatrix2 u)
     QuESTAssert(validateMatrixIsUnitary(u), 5, __func__);
 
     // flag to require memory exchange. 1: an entire block fits on one rank, 0: at most half a block fits on one rank
-    int useLocalDataOnly = halfMatrixBlockFitsInChunk(multiQubit.numAmpsDividedByNumChunks, targetQubit);
+    int useLocalDataOnly = halfMatrixBlockFitsInChunk(multiQubit.numAmpsPerChunk, targetQubit);
     Complex rot1, rot2;
 
     // rank's chunk is in upper half of block 
@@ -327,9 +327,9 @@ void unitary(MultiQubit multiQubit, const int targetQubit, ComplexMatrix2 u)
         unitaryLocal(multiQubit, targetQubit, u);
     } else {
         // need to get corresponding chunk of state vector from other rank
-        rankIsUpper = chunkIsUpper(multiQubit.chunkId, multiQubit.numAmpsDividedByNumChunks, targetQubit);
+        rankIsUpper = chunkIsUpper(multiQubit.chunkId, multiQubit.numAmpsPerChunk, targetQubit);
         getRotAngleFromUnitaryMatrix(rankIsUpper, &rot1, &rot2, u);
-        pairRank = getChunkPairId(rankIsUpper, multiQubit.chunkId, multiQubit.numAmpsDividedByNumChunks, targetQubit);
+        pairRank = getChunkPairId(rankIsUpper, multiQubit.chunkId, multiQubit.numAmpsPerChunk, targetQubit);
         // get corresponding values from my pair
         exchangeStateVectors(multiQubit, pairRank);
 
@@ -359,7 +359,7 @@ void controlledCompactUnitary(MultiQubit multiQubit, const int controlQubit, con
     QuESTAssert(validateAlphaBeta(alpha, beta), 6, __func__);
 
     // flag to require memory exchange. 1: an entire block fits on one rank, 0: at most half a block fits on one rank
-    int useLocalDataOnly = halfMatrixBlockFitsInChunk(multiQubit.numAmpsDividedByNumChunks, targetQubit);
+    int useLocalDataOnly = halfMatrixBlockFitsInChunk(multiQubit.numAmpsPerChunk, targetQubit);
     Complex rot1, rot2;
 
     // rank's chunk is in upper half of block 
@@ -371,9 +371,9 @@ void controlledCompactUnitary(MultiQubit multiQubit, const int controlQubit, con
         controlledCompactUnitaryLocal(multiQubit, controlQubit, targetQubit, alpha, beta);
     } else {
         // need to get corresponding chunk of state vector from other rank
-        rankIsUpper = chunkIsUpper(multiQubit.chunkId, multiQubit.numAmpsDividedByNumChunks, targetQubit);
+        rankIsUpper = chunkIsUpper(multiQubit.chunkId, multiQubit.numAmpsPerChunk, targetQubit);
         getRotAngle(rankIsUpper, &rot1, &rot2, alpha, beta);
-        pairRank = getChunkPairId(rankIsUpper, multiQubit.chunkId, multiQubit.numAmpsDividedByNumChunks, targetQubit);
+        pairRank = getChunkPairId(rankIsUpper, multiQubit.chunkId, multiQubit.numAmpsPerChunk, targetQubit);
         //printf("%d rank has pair rank: %d\n", multiQubit.rank, pairRank);
         // get corresponding values from my pair
         exchangeStateVectors(multiQubit, pairRank);
@@ -403,7 +403,7 @@ void controlledUnitary(MultiQubit multiQubit, const int controlQubit, const int 
     QuESTAssert(validateMatrixIsUnitary(u), 5, __func__);
 
     // flag to require memory exchange. 1: an entire block fits on one rank, 0: at most half a block fits on one rank
-    int useLocalDataOnly = halfMatrixBlockFitsInChunk(multiQubit.numAmpsDividedByNumChunks, targetQubit);
+    int useLocalDataOnly = halfMatrixBlockFitsInChunk(multiQubit.numAmpsPerChunk, targetQubit);
     Complex rot1, rot2;
 
     // rank's chunk is in upper half of block 
@@ -415,9 +415,9 @@ void controlledUnitary(MultiQubit multiQubit, const int controlQubit, const int 
         controlledUnitaryLocal(multiQubit, controlQubit, targetQubit, u);
     } else {
         // need to get corresponding chunk of state vector from other rank
-        rankIsUpper = chunkIsUpper(multiQubit.chunkId, multiQubit.numAmpsDividedByNumChunks, targetQubit);
+        rankIsUpper = chunkIsUpper(multiQubit.chunkId, multiQubit.numAmpsPerChunk, targetQubit);
         getRotAngleFromUnitaryMatrix(rankIsUpper, &rot1, &rot2, u);
-        pairRank = getChunkPairId(rankIsUpper, multiQubit.chunkId, multiQubit.numAmpsDividedByNumChunks, targetQubit);
+        pairRank = getChunkPairId(rankIsUpper, multiQubit.chunkId, multiQubit.numAmpsPerChunk, targetQubit);
         //printf("%d rank has pair rank: %d\n", multiQubit.rank, pairRank);
         // get corresponding values from my pair
         exchangeStateVectors(multiQubit, pairRank);
@@ -450,7 +450,7 @@ void multiControlledUnitary(MultiQubit multiQubit, int* controlQubits, const int
     QuESTAssert((mask & (1LL<<targetQubit)) != (1LL<<targetQubit), 3, __func__);
 
     // flag to require memory exchange. 1: an entire block fits on one rank, 0: at most half a block fits on one rank
-    int useLocalDataOnly = halfMatrixBlockFitsInChunk(multiQubit.numAmpsDividedByNumChunks, targetQubit);
+    int useLocalDataOnly = halfMatrixBlockFitsInChunk(multiQubit.numAmpsPerChunk, targetQubit);
     Complex rot1, rot2;
 
     // rank's chunk is in upper half of block 
@@ -462,9 +462,9 @@ void multiControlledUnitary(MultiQubit multiQubit, int* controlQubits, const int
         multiControlledUnitaryLocal(multiQubit, targetQubit, mask, u);
     } else {
         // need to get corresponding chunk of state vector from other rank
-        rankIsUpper = chunkIsUpper(multiQubit.chunkId, multiQubit.numAmpsDividedByNumChunks, targetQubit);
+        rankIsUpper = chunkIsUpper(multiQubit.chunkId, multiQubit.numAmpsPerChunk, targetQubit);
         getRotAngleFromUnitaryMatrix(rankIsUpper, &rot1, &rot2, u);
-        pairRank = getChunkPairId(rankIsUpper, multiQubit.chunkId, multiQubit.numAmpsDividedByNumChunks, targetQubit);
+        pairRank = getChunkPairId(rankIsUpper, multiQubit.chunkId, multiQubit.numAmpsPerChunk, targetQubit);
         //printf("%d rank has pair rank: %d\n", multiQubit.rank, pairRank);
         // get corresponding values from my pair
         exchangeStateVectors(multiQubit, pairRank);
@@ -489,7 +489,7 @@ void sigmaX(MultiQubit multiQubit, const int targetQubit)
     QuESTAssert(targetQubit >= 0 && targetQubit < multiQubit.numQubits, 1, __func__);
 
     // flag to require memory exchange. 1: an entire block fits on one rank, 0: at most half a block fits on one rank
-    int useLocalDataOnly = halfMatrixBlockFitsInChunk(multiQubit.numAmpsDividedByNumChunks, targetQubit);
+    int useLocalDataOnly = halfMatrixBlockFitsInChunk(multiQubit.numAmpsPerChunk, targetQubit);
 
     // rank's chunk is in upper half of block 
     int rankIsUpper;
@@ -500,8 +500,8 @@ void sigmaX(MultiQubit multiQubit, const int targetQubit)
         sigmaXLocal(multiQubit, targetQubit);
     } else {
         // need to get corresponding chunk of state vector from other rank
-        rankIsUpper = chunkIsUpper(multiQubit.chunkId, multiQubit.numAmpsDividedByNumChunks, targetQubit);
-        pairRank = getChunkPairId(rankIsUpper, multiQubit.chunkId, multiQubit.numAmpsDividedByNumChunks, targetQubit);
+        rankIsUpper = chunkIsUpper(multiQubit.chunkId, multiQubit.numAmpsPerChunk, targetQubit);
+        pairRank = getChunkPairId(rankIsUpper, multiQubit.chunkId, multiQubit.numAmpsPerChunk, targetQubit);
         //printf("%d rank has pair rank: %d\n", multiQubit.rank, pairRank);
         // get corresponding values from my pair
         exchangeStateVectors(multiQubit, pairRank);
@@ -520,7 +520,7 @@ void controlledNot(MultiQubit multiQubit, const int controlQubit, const int targ
     QuESTAssert(controlQubit != targetQubit, 3, __func__);
 
     // flag to require memory exchange. 1: an entire block fits on one rank, 0: at most half a block fits on one rank
-    int useLocalDataOnly = halfMatrixBlockFitsInChunk(multiQubit.numAmpsDividedByNumChunks, targetQubit);
+    int useLocalDataOnly = halfMatrixBlockFitsInChunk(multiQubit.numAmpsPerChunk, targetQubit);
 
     // rank's chunk is in upper half of block 
     int rankIsUpper;
@@ -531,8 +531,8 @@ void controlledNot(MultiQubit multiQubit, const int controlQubit, const int targ
         controlledNotLocal(multiQubit, controlQubit, targetQubit);
     } else {
         // need to get corresponding chunk of state vector from other rank
-        rankIsUpper = chunkIsUpper(multiQubit.chunkId, multiQubit.numAmpsDividedByNumChunks, targetQubit);
-        pairRank = getChunkPairId(rankIsUpper, multiQubit.chunkId, multiQubit.numAmpsDividedByNumChunks, targetQubit);
+        rankIsUpper = chunkIsUpper(multiQubit.chunkId, multiQubit.numAmpsPerChunk, targetQubit);
+        pairRank = getChunkPairId(rankIsUpper, multiQubit.chunkId, multiQubit.numAmpsPerChunk, targetQubit);
         //printf("%d rank has pair rank: %d\n", multiQubit.rank, pairRank);
         // get corresponding values from my pair
         exchangeStateVectors(multiQubit, pairRank);
@@ -555,7 +555,7 @@ void sigmaY(MultiQubit multiQubit, const int targetQubit)
     QuESTAssert(targetQubit >= 0 && targetQubit < multiQubit.numQubits, 1, __func__);
 
     // flag to require memory exchange. 1: an entire block fits on one rank, 0: at most half a block fits on one rank
-    int useLocalDataOnly = halfMatrixBlockFitsInChunk(multiQubit.numAmpsDividedByNumChunks, targetQubit);
+    int useLocalDataOnly = halfMatrixBlockFitsInChunk(multiQubit.numAmpsPerChunk, targetQubit);
 
     // rank's chunk is in upper half of block 
     int rankIsUpper;
@@ -567,8 +567,8 @@ void sigmaY(MultiQubit multiQubit, const int targetQubit)
     } else {
         //! fix -- put duplicate code (sigmaX, sigmaY) in seperate function
         // need to get corresponding chunk of state vector from other rank
-        rankIsUpper = chunkIsUpper(multiQubit.chunkId, multiQubit.numAmpsDividedByNumChunks, targetQubit);
-        pairRank = getChunkPairId(rankIsUpper, multiQubit.chunkId, multiQubit.numAmpsDividedByNumChunks, targetQubit);
+        rankIsUpper = chunkIsUpper(multiQubit.chunkId, multiQubit.numAmpsPerChunk, targetQubit);
+        pairRank = getChunkPairId(rankIsUpper, multiQubit.chunkId, multiQubit.numAmpsPerChunk, targetQubit);
         //printf("%d rank has pair rank: %d\n", multiQubit.rank, pairRank);
         // get corresponding values from my pair
         exchangeStateVectors(multiQubit, pairRank);
@@ -586,7 +586,7 @@ void phaseGate(MultiQubit multiQubit, const int targetQubit, enum phaseGateType 
     QuESTAssert(targetQubit >= 0 && targetQubit < multiQubit.numQubits, 1, __func__);
 
     // flag to require memory exchange. 1: an entire block fits on one rank, 0: at most half a block fits on one rank
-    int useLocalDataOnly = halfMatrixBlockFitsInChunk(multiQubit.numAmpsDividedByNumChunks, targetQubit);
+    int useLocalDataOnly = halfMatrixBlockFitsInChunk(multiQubit.numAmpsPerChunk, targetQubit);
 
     // rank's chunk is in upper half of block 
     int rankIsUpper;
@@ -594,7 +594,7 @@ void phaseGate(MultiQubit multiQubit, const int targetQubit, enum phaseGateType 
     if (useLocalDataOnly){
         phaseGateLocal(multiQubit, targetQubit, type);
     } else {
-        rankIsUpper = chunkIsUpper(multiQubit.chunkId, multiQubit.numAmpsDividedByNumChunks, targetQubit);
+        rankIsUpper = chunkIsUpper(multiQubit.chunkId, multiQubit.numAmpsPerChunk, targetQubit);
         if (!rankIsUpper) phaseGateDistributed(multiQubit, targetQubit, type);
     }
 }
@@ -604,7 +604,7 @@ void hadamard(MultiQubit multiQubit, const int targetQubit)
     QuESTAssert(targetQubit >= 0 && targetQubit < multiQubit.numQubits, 1, __func__);
 
     // flag to require memory exchange. 1: an entire block fits on one rank, 0: at most half a block fits on one rank
-    int useLocalDataOnly = halfMatrixBlockFitsInChunk(multiQubit.numAmpsDividedByNumChunks, targetQubit);
+    int useLocalDataOnly = halfMatrixBlockFitsInChunk(multiQubit.numAmpsPerChunk, targetQubit);
 
     // rank's chunk is in upper half of block 
     int rankIsUpper;
@@ -615,8 +615,8 @@ void hadamard(MultiQubit multiQubit, const int targetQubit)
         hadamardLocal(multiQubit, targetQubit);
     } else {
         // need to get corresponding chunk of state vector from other rank
-        rankIsUpper = chunkIsUpper(multiQubit.chunkId, multiQubit.numAmpsDividedByNumChunks, targetQubit);
-        pairRank = getChunkPairId(rankIsUpper, multiQubit.chunkId, multiQubit.numAmpsDividedByNumChunks, targetQubit);
+        rankIsUpper = chunkIsUpper(multiQubit.chunkId, multiQubit.numAmpsPerChunk, targetQubit);
+        pairRank = getChunkPairId(rankIsUpper, multiQubit.chunkId, multiQubit.numAmpsPerChunk, targetQubit);
         //printf("%d rank has pair rank: %d\n", multiQubit.rank, pairRank);
         // get corresponding values from my pair
         exchangeStateVectors(multiQubit, pairRank);
@@ -661,11 +661,11 @@ REAL findProbabilityOfOutcome(MultiQubit multiQubit, const int measureQubit, int
     QuESTAssert(measureQubit >= 0 && measureQubit < multiQubit.numQubits, 2, __func__);
 
     REAL stateProb=0, totalStateProb=0;
-    int skipValuesWithinRank = halfMatrixBlockFitsInChunk(multiQubit.numAmpsDividedByNumChunks, measureQubit);
+    int skipValuesWithinRank = halfMatrixBlockFitsInChunk(multiQubit.numAmpsPerChunk, measureQubit);
     if (skipValuesWithinRank) {
         stateProb = findProbabilityOfZeroLocal(multiQubit, measureQubit);
     } else {
-        if (!isChunkToSkipInFindPZero(multiQubit.chunkId, multiQubit.numAmpsDividedByNumChunks, measureQubit)){
+        if (!isChunkToSkipInFindPZero(multiQubit.chunkId, multiQubit.numAmpsPerChunk, measureQubit)){
             stateProb = findProbabilityOfZeroDistributed(multiQubit, measureQubit);
         } else stateProb = 0;
     }
@@ -683,11 +683,11 @@ REAL collapseToOutcome(MultiQubit multiQubit, const int measureQubit, int outcom
     REAL totalStateProb=findProbabilityOfOutcome(multiQubit, measureQubit, outcome);
     QuESTAssert(fabs(totalStateProb)>REAL_EPS, 8, __func__);
 
-    int skipValuesWithinRank = halfMatrixBlockFitsInChunk(multiQubit.numAmpsDividedByNumChunks, measureQubit);
+    int skipValuesWithinRank = halfMatrixBlockFitsInChunk(multiQubit.numAmpsPerChunk, measureQubit);
     if (skipValuesWithinRank) {
         collapseToOutcomeLocal(multiQubit, measureQubit, totalStateProb, outcome);
     } else {
-        if (!isChunkToSkipInFindPZero(multiQubit.chunkId, multiQubit.numAmpsDividedByNumChunks, measureQubit)){
+        if (!isChunkToSkipInFindPZero(multiQubit.chunkId, multiQubit.numAmpsPerChunk, measureQubit)){
             // chunk has amps for q=0
             if (outcome==0) collapseToOutcomeDistributedRenorm(multiQubit, measureQubit, 
                     totalStateProb);
@@ -728,11 +728,11 @@ int measureWithStats(MultiQubit multiQubit, int measureQubit, REAL *stateProb){
     } 
     if (outcome==0) stateProbInternal = 1-stateProbInternal;
 
-    int skipValuesWithinRank = halfMatrixBlockFitsInChunk(multiQubit.numAmpsDividedByNumChunks, measureQubit);
+    int skipValuesWithinRank = halfMatrixBlockFitsInChunk(multiQubit.numAmpsPerChunk, measureQubit);
     if (skipValuesWithinRank) {
         collapseToOutcomeLocal(multiQubit, measureQubit, stateProbInternal, outcome);
     } else {
-        if (!isChunkToSkipInFindPZero(multiQubit.chunkId, multiQubit.numAmpsDividedByNumChunks, measureQubit)){
+        if (!isChunkToSkipInFindPZero(multiQubit.chunkId, multiQubit.numAmpsPerChunk, measureQubit)){
             // chunk has amps for q=0
             if (outcome==0) collapseToOutcomeDistributedRenorm(multiQubit, measureQubit, 
                     stateProbInternal);
