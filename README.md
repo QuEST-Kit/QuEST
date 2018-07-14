@@ -3,7 +3,7 @@
 ## Versions
 
 
-Latest version: [1.0.0](https://github.com/aniabrown/QuEST/releases/tag/v1.0.0) 
+Latest version: [1.1.0](https://github.com/aniabrown/QuEST/releases/tag/v1.1.0) 
 
 Please report errors or feedback to anna.brown@oerc.ox.ac.uk 
 
@@ -11,13 +11,13 @@ Please report errors or feedback to anna.brown@oerc.ox.ac.uk
 
 Copy or clone this repository to your machine. E.g. in the desired directory, enter
 ```bash
-git clone https://github.com/TysonRayJones/QuEST.git
+git clone https://github.com/aniabrown/QuEST.git
 ```
 at terminal.
 
 In the root directory, compile the [example](examples/tutorial_example.c) using
 ```bash
-cp examples/tutorial_example tutorial_example
+cp examples/tutorial_example.c tutorial_example.c
 make
 ```
 then run it with
@@ -68,7 +68,7 @@ Explicit instructions to download and run QuEST from the command line can be fou
 
 ## API Documentation
 
-View the API [here](https://tysonrayjones.github.io/QuEST/QuEST_8h.html), and check compatible compiler versions [here](tests/compilers/compatibility.md).
+View the API [here](https://aniabrown.github.io/QuEST/QuEST_8h.html), and check compatible compiler versions [here](tests/compilers/compatibility.md).
 
 > For developers: To recreate the full documentation after making changes to the code, run doxygen doxyconf in the root directory. This will generate documentation in Doxygen_doc/html, and can be accessed through index.html in that folder. 
 
