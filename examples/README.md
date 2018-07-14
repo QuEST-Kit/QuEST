@@ -29,7 +29,7 @@ int main(int narg, char *varg[]) {
   // create 2 qubits in the zero state
   MultiQubit qubits; 
   createMultiQubit(&qubits, 2, env);
-  initStateZero(qubits);
+  initStateZero(&qubits);
 	
   // apply circuit
   hadamard(qubits, 0);
@@ -62,7 +62,7 @@ createMultiQubit(&qubits, 3, env);
 ```
 and set it to be in the zero state.
 ```C
-initStateZero(qubits);
+initStateZero(&qubits);
 ```
 We can create multiple `MultiQubit` instances, and QuEST will sort out allocating memory for the state-vectors, even over networks!
 
