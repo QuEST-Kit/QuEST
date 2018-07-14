@@ -1,0 +1,4016 @@
+Below are the results of attempting to compile Qu\+E\+ST with the given makefile when included in both C and C++ programs, with different compiler versions, and when wrapped with different versions of nvcc and mpicc (for G\+PU and distributed platforms respectively). Only compilers supporting C99 and C++11 will pass. C\+O\+M\+P\+I\+L\+ED indicates a successful compilation, and R\+AN further indicates the script executing correctly. Note that the script not executing correctly after successful compilation is almost always due to insufficiently setup distributed environments (when wrapped with M\+P\+I\+CC) or a G\+PU not being connected (when wrapped with N\+V\+CC). Generally, the R\+AN column is not informative.
+
+\tabulinesep=1mm
+\begin{longtabu} spread 0pt [c]{*{7}{|X[-1]}|}
+\hline
+\rowcolor{\tableheadbgcolor}\textbf{ L\+A\+N\+G\+U\+A\+GE  }&\textbf{ C\+O\+M\+P\+I\+L\+ER  }&\textbf{ V\+E\+R\+S\+I\+ON  }&\textbf{ W\+R\+A\+P\+P\+ER  }&\textbf{ V\+E\+R\+S\+I\+ON  }&\textbf{ C\+O\+M\+P\+I\+L\+ED  }&\textbf{ R\+AN   }\\\cline{1-7}
+\endfirsthead
+\hline
+\endfoot
+\hline
+\rowcolor{\tableheadbgcolor}\textbf{ L\+A\+N\+G\+U\+A\+GE  }&\textbf{ C\+O\+M\+P\+I\+L\+ER  }&\textbf{ V\+E\+R\+S\+I\+ON  }&\textbf{ W\+R\+A\+P\+P\+ER  }&\textbf{ V\+E\+R\+S\+I\+ON  }&\textbf{ C\+O\+M\+P\+I\+L\+ED  }&\textbf{ R\+AN   }\\\cline{1-7}
+\endhead
+C  &G\+NU  &4.\+2.\+0  &&&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C  &G\+NU  &4.\+6.\+3  &&&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C  &G\+NU  &4.\+8.\+2  &&&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C  &G\+NU  &4.\+9.\+2  &&&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C  &G\+NU  &5.\+3.\+0  &&&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C  &G\+NU  &5.\+4.\+0  &&&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C  &G\+NU  &6.\+4.\+0  &&&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C  &G\+NU  &7.\+3.\+0  &&&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C  &G\+NU  &4.\+2.\+0  &mpicc  &intel-\/mpi/2012  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C  &G\+NU  &4.\+2.\+0  &mpicc  &intel-\/mpi/2013  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C  &G\+NU  &4.\+2.\+0  &mpicc  &intel-\/mpi/2015  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C  &G\+NU  &4.\+2.\+0  &mpicc  &intel-\/mpi/2016  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C  &G\+NU  &4.\+2.\+0  &mpicc  &intel-\/mpi/2017  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C  &G\+NU  &4.\+2.\+0  &mpicc  &intel-\/mpi/2018  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C  &G\+NU  &4.\+2.\+0  &mpicc  &openmpi/1.\+6.\+5  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&\\\cline{1-7}
+C  &G\+NU  &4.\+2.\+0  &mpicc  &openmpi/1.\+8.\+4  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&\\\cline{1-7}
+C  &G\+NU  &4.\+2.\+0  &mpicc  &openmpi/1.\+8.\+4  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&\\\cline{1-7}
+C  &G\+NU  &4.\+2.\+0  &mpicc  &openmpi/2.\+0.\+2  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C  &G\+NU  &4.\+2.\+0  &mpicc  &openmpi/2.\+0.\+2  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C  &G\+NU  &4.\+2.\+0  &mpicc  &openmpi/2.\+0.\+2  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C  &G\+NU  &4.\+2.\+0  &mpicc  &openmpi/3.\+1.\+0  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C  &G\+NU  &4.\+2.\+0  &mpicc  &mpich2/1.\+5.\+3  &&\\\cline{1-7}
+C  &G\+NU  &4.\+2.\+0  &mpicc  &mpich2/1.\+5.\+3  &&\\\cline{1-7}
+C  &G\+NU  &4.\+2.\+0  &mpicc  &mpich2/1.\+5.\+3  &&\\\cline{1-7}
+C  &G\+NU  &4.\+2.\+0  &mpicc  &mpich2/1.\+5.\+3  &&\\\cline{1-7}
+C  &G\+NU  &4.\+2.\+0  &mpicc  &mvapich2/2.\+0.\+1  &&\\\cline{1-7}
+C  &G\+NU  &4.\+2.\+0  &mpicc  &mvapich2/2.\+0.\+1  &&\\\cline{1-7}
+C  &G\+NU  &4.\+2.\+0  &mpicc  &mvapich2/2.\+1.\+0  &&\\\cline{1-7}
+C  &G\+NU  &4.\+2.\+0  &mpicc  &mvapich2/2.\+2.\+2  &&\\\cline{1-7}
+C  &G\+NU  &4.\+6.\+3  &mpicc  &intel-\/mpi/2012  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C  &G\+NU  &4.\+6.\+3  &mpicc  &intel-\/mpi/2013  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C  &G\+NU  &4.\+6.\+3  &mpicc  &intel-\/mpi/2015  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C  &G\+NU  &4.\+6.\+3  &mpicc  &intel-\/mpi/2016  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C  &G\+NU  &4.\+6.\+3  &mpicc  &intel-\/mpi/2017  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C  &G\+NU  &4.\+6.\+3  &mpicc  &intel-\/mpi/2018  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C  &G\+NU  &4.\+6.\+3  &mpicc  &openmpi/1.\+6.\+5  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&\\\cline{1-7}
+C  &G\+NU  &4.\+6.\+3  &mpicc  &openmpi/1.\+6.\+5  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&\\\cline{1-7}
+C  &G\+NU  &4.\+6.\+3  &mpicc  &openmpi/1.\+8.\+4  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&\\\cline{1-7}
+C  &G\+NU  &4.\+6.\+3  &mpicc  &openmpi/1.\+8.\+4  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&\\\cline{1-7}
+C  &G\+NU  &4.\+6.\+3  &mpicc  &openmpi/2.\+0.\+2  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C  &G\+NU  &4.\+6.\+3  &mpicc  &openmpi/2.\+0.\+2  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C  &G\+NU  &4.\+6.\+3  &mpicc  &openmpi/2.\+0.\+2  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C  &G\+NU  &4.\+6.\+3  &mpicc  &openmpi/3.\+1.\+0  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C  &G\+NU  &4.\+6.\+3  &mpicc  &mpich2/1.\+5.\+3  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C  &G\+NU  &4.\+6.\+3  &mpicc  &mpich2/1.\+5.\+3  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C  &G\+NU  &4.\+6.\+3  &mpicc  &mpich2/1.\+5.\+3  &&\\\cline{1-7}
+C  &G\+NU  &4.\+6.\+3  &mpicc  &mpich2/1.\+5.\+3  &&\\\cline{1-7}
+C  &G\+NU  &4.\+6.\+3  &mpicc  &mvapich2/2.\+0.\+1  &&\\\cline{1-7}
+C  &G\+NU  &4.\+6.\+3  &mpicc  &mvapich2/2.\+0.\+1  &&\\\cline{1-7}
+C  &G\+NU  &4.\+6.\+3  &mpicc  &mvapich2/2.\+1.\+0  &&\\\cline{1-7}
+C  &G\+NU  &4.\+6.\+3  &mpicc  &mvapich2/2.\+2.\+2  &&\\\cline{1-7}
+C  &G\+NU  &4.\+8.\+2  &mpicc  &intel-\/mpi/2012  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C  &G\+NU  &4.\+8.\+2  &mpicc  &intel-\/mpi/2013  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C  &G\+NU  &4.\+8.\+2  &mpicc  &intel-\/mpi/2015  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C  &G\+NU  &4.\+8.\+2  &mpicc  &intel-\/mpi/2016  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C  &G\+NU  &4.\+8.\+2  &mpicc  &intel-\/mpi/2017  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C  &G\+NU  &4.\+8.\+2  &mpicc  &intel-\/mpi/2018  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C  &G\+NU  &4.\+8.\+2  &mpicc  &openmpi/1.\+6.\+5  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&\\\cline{1-7}
+C  &G\+NU  &4.\+8.\+2  &mpicc  &openmpi/1.\+8.\+4  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&\\\cline{1-7}
+C  &G\+NU  &4.\+8.\+2  &mpicc  &openmpi/1.\+8.\+4  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&\\\cline{1-7}
+C  &G\+NU  &4.\+8.\+2  &mpicc  &openmpi/2.\+0.\+2  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C  &G\+NU  &4.\+8.\+2  &mpicc  &openmpi/2.\+0.\+2  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C  &G\+NU  &4.\+8.\+2  &mpicc  &openmpi/2.\+0.\+2  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C  &G\+NU  &4.\+8.\+2  &mpicc  &openmpi/3.\+1.\+0  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C  &G\+NU  &4.\+8.\+2  &mpicc  &mpich2/1.\+5.\+3  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C  &G\+NU  &4.\+8.\+2  &mpicc  &mpich2/1.\+5.\+3  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C  &G\+NU  &4.\+8.\+2  &mpicc  &mpich2/1.\+5.\+3  &&\\\cline{1-7}
+C  &G\+NU  &4.\+8.\+2  &mpicc  &mpich2/1.\+5.\+3  &&\\\cline{1-7}
+C  &G\+NU  &4.\+8.\+2  &mpicc  &mvapich2/2.\+0.\+1  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C  &G\+NU  &4.\+8.\+2  &mpicc  &mvapich2/2.\+0.\+1  &&\\\cline{1-7}
+C  &G\+NU  &4.\+8.\+2  &mpicc  &mvapich2/2.\+0.\+1  &&\\\cline{1-7}
+C  &G\+NU  &4.\+8.\+2  &mpicc  &mvapich2/2.\+1.\+0  &&\\\cline{1-7}
+C  &G\+NU  &4.\+8.\+2  &mpicc  &mvapich2/2.\+2.\+2  &&\\\cline{1-7}
+C  &G\+NU  &4.\+9.\+2  &mpicc  &intel-\/mpi/2012  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C  &G\+NU  &4.\+9.\+2  &mpicc  &intel-\/mpi/2013  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C  &G\+NU  &4.\+9.\+2  &mpicc  &intel-\/mpi/2015  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C  &G\+NU  &4.\+9.\+2  &mpicc  &intel-\/mpi/2016  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C  &G\+NU  &4.\+9.\+2  &mpicc  &intel-\/mpi/2017  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C  &G\+NU  &4.\+9.\+2  &mpicc  &intel-\/mpi/2018  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C  &G\+NU  &4.\+9.\+2  &mpicc  &openmpi/1.\+6.\+5  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&\\\cline{1-7}
+C  &G\+NU  &4.\+9.\+2  &mpicc  &openmpi/1.\+6.\+5  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&\\\cline{1-7}
+C  &G\+NU  &4.\+9.\+2  &mpicc  &openmpi/1.\+8.\+4  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&\\\cline{1-7}
+C  &G\+NU  &4.\+9.\+2  &mpicc  &openmpi/1.\+8.\+4  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&\\\cline{1-7}
+C  &G\+NU  &4.\+9.\+2  &mpicc  &openmpi/1.\+8.\+4  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&\\\cline{1-7}
+C  &G\+NU  &4.\+9.\+2  &mpicc  &openmpi/2.\+0.\+2  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C  &G\+NU  &4.\+9.\+2  &mpicc  &openmpi/2.\+0.\+2  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C  &G\+NU  &4.\+9.\+2  &mpicc  &openmpi/2.\+0.\+2  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C  &G\+NU  &4.\+9.\+2  &mpicc  &openmpi/3.\+1.\+0  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C  &G\+NU  &4.\+9.\+2  &mpicc  &openmpi/3.\+1.\+0  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C  &G\+NU  &4.\+9.\+2  &mpicc  &openmpi/3.\+1.\+0  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C  &G\+NU  &4.\+9.\+2  &mpicc  &mpich2/1.\+5.\+3  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C  &G\+NU  &4.\+9.\+2  &mpicc  &mpich2/1.\+5.\+3  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C  &G\+NU  &4.\+9.\+2  &mpicc  &mpich2/1.\+5.\+3  &&\\\cline{1-7}
+C  &G\+NU  &4.\+9.\+2  &mpicc  &mpich2/1.\+5.\+3  &&\\\cline{1-7}
+C  &G\+NU  &4.\+9.\+2  &mpicc  &mvapich2/2.\+0.\+1  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C  &G\+NU  &4.\+9.\+2  &mpicc  &mvapich2/2.\+0.\+1  &&\\\cline{1-7}
+C  &G\+NU  &4.\+9.\+2  &mpicc  &mvapich2/2.\+0.\+1  &&\\\cline{1-7}
+C  &G\+NU  &4.\+9.\+2  &mpicc  &mvapich2/2.\+1.\+0  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C  &G\+NU  &4.\+9.\+2  &mpicc  &mvapich2/2.\+1.\+0  &&\\\cline{1-7}
+C  &G\+NU  &4.\+9.\+2  &mpicc  &mvapich2/2.\+2.\+2  &&\\\cline{1-7}
+C  &G\+NU  &5.\+3.\+0  &mpicc  &intel-\/mpi/2012  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C  &G\+NU  &5.\+3.\+0  &mpicc  &intel-\/mpi/2013  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C  &G\+NU  &5.\+3.\+0  &mpicc  &intel-\/mpi/2015  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C  &G\+NU  &5.\+3.\+0  &mpicc  &intel-\/mpi/2016  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C  &G\+NU  &5.\+3.\+0  &mpicc  &intel-\/mpi/2017  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C  &G\+NU  &5.\+3.\+0  &mpicc  &intel-\/mpi/2018  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C  &G\+NU  &5.\+3.\+0  &mpicc  &openmpi/1.\+6.\+5  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&\\\cline{1-7}
+C  &G\+NU  &5.\+3.\+0  &mpicc  &openmpi/1.\+8.\+4  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&\\\cline{1-7}
+C  &G\+NU  &5.\+3.\+0  &mpicc  &openmpi/1.\+8.\+4  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&\\\cline{1-7}
+C  &G\+NU  &5.\+3.\+0  &mpicc  &openmpi/2.\+0.\+2  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C  &G\+NU  &5.\+3.\+0  &mpicc  &openmpi/2.\+0.\+2  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C  &G\+NU  &5.\+3.\+0  &mpicc  &openmpi/2.\+0.\+2  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C  &G\+NU  &5.\+3.\+0  &mpicc  &openmpi/3.\+1.\+0  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C  &G\+NU  &5.\+3.\+0  &mpicc  &mpich2/1.\+5.\+3  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C  &G\+NU  &5.\+3.\+0  &mpicc  &mpich2/1.\+5.\+3  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C  &G\+NU  &5.\+3.\+0  &mpicc  &mpich2/1.\+5.\+3  &&\\\cline{1-7}
+C  &G\+NU  &5.\+3.\+0  &mpicc  &mpich2/1.\+5.\+3  &&\\\cline{1-7}
+C  &G\+NU  &5.\+3.\+0  &mpicc  &mvapich2/2.\+0.\+1  &&\\\cline{1-7}
+C  &G\+NU  &5.\+3.\+0  &mpicc  &mvapich2/2.\+0.\+1  &&\\\cline{1-7}
+C  &G\+NU  &5.\+3.\+0  &mpicc  &mvapich2/2.\+1.\+0  &&\\\cline{1-7}
+C  &G\+NU  &5.\+3.\+0  &mpicc  &mvapich2/2.\+2.\+2  &&\\\cline{1-7}
+C  &G\+NU  &5.\+4.\+0  &mpicc  &intel-\/mpi/2012  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C  &G\+NU  &5.\+4.\+0  &mpicc  &intel-\/mpi/2013  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C  &G\+NU  &5.\+4.\+0  &mpicc  &intel-\/mpi/2015  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C  &G\+NU  &5.\+4.\+0  &mpicc  &intel-\/mpi/2016  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C  &G\+NU  &5.\+4.\+0  &mpicc  &intel-\/mpi/2017  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C  &G\+NU  &5.\+4.\+0  &mpicc  &intel-\/mpi/2018  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C  &G\+NU  &5.\+4.\+0  &mpicc  &openmpi/1.\+6.\+5  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&\\\cline{1-7}
+C  &G\+NU  &5.\+4.\+0  &mpicc  &openmpi/1.\+8.\+4  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&\\\cline{1-7}
+C  &G\+NU  &5.\+4.\+0  &mpicc  &openmpi/1.\+8.\+4  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&\\\cline{1-7}
+C  &G\+NU  &5.\+4.\+0  &mpicc  &openmpi/2.\+0.\+2  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C  &G\+NU  &5.\+4.\+0  &mpicc  &openmpi/2.\+0.\+2  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C  &G\+NU  &5.\+4.\+0  &mpicc  &openmpi/2.\+0.\+2  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C  &G\+NU  &5.\+4.\+0  &mpicc  &openmpi/3.\+1.\+0  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C  &G\+NU  &5.\+4.\+0  &mpicc  &mpich2/1.\+5.\+3  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C  &G\+NU  &5.\+4.\+0  &mpicc  &mpich2/1.\+5.\+3  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C  &G\+NU  &5.\+4.\+0  &mpicc  &mpich2/1.\+5.\+3  &&\\\cline{1-7}
+C  &G\+NU  &5.\+4.\+0  &mpicc  &mpich2/1.\+5.\+3  &&\\\cline{1-7}
+C  &G\+NU  &5.\+4.\+0  &mpicc  &mvapich2/2.\+0.\+1  &&\\\cline{1-7}
+C  &G\+NU  &5.\+4.\+0  &mpicc  &mvapich2/2.\+0.\+1  &&\\\cline{1-7}
+C  &G\+NU  &5.\+4.\+0  &mpicc  &mvapich2/2.\+1.\+0  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C  &G\+NU  &5.\+4.\+0  &mpicc  &mvapich2/2.\+1.\+0  &&\\\cline{1-7}
+C  &G\+NU  &5.\+4.\+0  &mpicc  &mvapich2/2.\+2.\+2  &&\\\cline{1-7}
+C  &G\+NU  &6.\+4.\+0  &mpicc  &intel-\/mpi/2012  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C  &G\+NU  &6.\+4.\+0  &mpicc  &intel-\/mpi/2013  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C  &G\+NU  &6.\+4.\+0  &mpicc  &intel-\/mpi/2015  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C  &G\+NU  &6.\+4.\+0  &mpicc  &intel-\/mpi/2016  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C  &G\+NU  &6.\+4.\+0  &mpicc  &intel-\/mpi/2017  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C  &G\+NU  &6.\+4.\+0  &mpicc  &intel-\/mpi/2018  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C  &G\+NU  &6.\+4.\+0  &mpicc  &openmpi/1.\+6.\+5  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&\\\cline{1-7}
+C  &G\+NU  &6.\+4.\+0  &mpicc  &openmpi/1.\+8.\+4  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&\\\cline{1-7}
+C  &G\+NU  &6.\+4.\+0  &mpicc  &openmpi/1.\+8.\+4  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&\\\cline{1-7}
+C  &G\+NU  &6.\+4.\+0  &mpicc  &openmpi/2.\+0.\+2  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C  &G\+NU  &6.\+4.\+0  &mpicc  &openmpi/2.\+0.\+2  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C  &G\+NU  &6.\+4.\+0  &mpicc  &openmpi/2.\+0.\+2  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C  &G\+NU  &6.\+4.\+0  &mpicc  &openmpi/3.\+1.\+0  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C  &G\+NU  &6.\+4.\+0  &mpicc  &mpich2/1.\+5.\+3  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C  &G\+NU  &6.\+4.\+0  &mpicc  &mpich2/1.\+5.\+3  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C  &G\+NU  &6.\+4.\+0  &mpicc  &mpich2/1.\+5.\+3  &&\\\cline{1-7}
+C  &G\+NU  &6.\+4.\+0  &mpicc  &mpich2/1.\+5.\+3  &&\\\cline{1-7}
+C  &G\+NU  &6.\+4.\+0  &mpicc  &mvapich2/2.\+0.\+1  &&\\\cline{1-7}
+C  &G\+NU  &6.\+4.\+0  &mpicc  &mvapich2/2.\+0.\+1  &&\\\cline{1-7}
+C  &G\+NU  &6.\+4.\+0  &mpicc  &mvapich2/2.\+1.\+0  &&\\\cline{1-7}
+C  &G\+NU  &6.\+4.\+0  &mpicc  &mvapich2/2.\+2.\+2  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C  &G\+NU  &6.\+4.\+0  &mpicc  &mvapich2/2.\+2.\+2  &&\\\cline{1-7}
+C  &G\+NU  &7.\+3.\+0  &mpicc  &intel-\/mpi/2012  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C  &G\+NU  &7.\+3.\+0  &mpicc  &intel-\/mpi/2013  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C  &G\+NU  &7.\+3.\+0  &mpicc  &intel-\/mpi/2015  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C  &G\+NU  &7.\+3.\+0  &mpicc  &intel-\/mpi/2016  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C  &G\+NU  &7.\+3.\+0  &mpicc  &intel-\/mpi/2017  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C  &G\+NU  &7.\+3.\+0  &mpicc  &intel-\/mpi/2018  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C  &G\+NU  &7.\+3.\+0  &mpicc  &openmpi/1.\+6.\+5  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&\\\cline{1-7}
+C  &G\+NU  &7.\+3.\+0  &mpicc  &openmpi/1.\+8.\+4  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&\\\cline{1-7}
+C  &G\+NU  &7.\+3.\+0  &mpicc  &openmpi/1.\+8.\+4  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&\\\cline{1-7}
+C  &G\+NU  &7.\+3.\+0  &mpicc  &openmpi/2.\+0.\+2  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C  &G\+NU  &7.\+3.\+0  &mpicc  &openmpi/2.\+0.\+2  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C  &G\+NU  &7.\+3.\+0  &mpicc  &openmpi/2.\+0.\+2  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C  &G\+NU  &7.\+3.\+0  &mpicc  &openmpi/3.\+1.\+0  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C  &G\+NU  &7.\+3.\+0  &mpicc  &mpich2/1.\+5.\+3  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C  &G\+NU  &7.\+3.\+0  &mpicc  &mpich2/1.\+5.\+3  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C  &G\+NU  &7.\+3.\+0  &mpicc  &mpich2/1.\+5.\+3  &&\\\cline{1-7}
+C  &G\+NU  &7.\+3.\+0  &mpicc  &mpich2/1.\+5.\+3  &&\\\cline{1-7}
+C  &G\+NU  &7.\+3.\+0  &mpicc  &mvapich2/2.\+0.\+1  &&\\\cline{1-7}
+C  &G\+NU  &7.\+3.\+0  &mpicc  &mvapich2/2.\+0.\+1  &&\\\cline{1-7}
+C  &G\+NU  &7.\+3.\+0  &mpicc  &mvapich2/2.\+1.\+0  &&\\\cline{1-7}
+C  &G\+NU  &7.\+3.\+0  &mpicc  &mvapich2/2.\+2.\+2  &&\\\cline{1-7}
+C  &G\+NU  &4.\+2.\+0  &nvcc  &6.\+0.\+37  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&\\\cline{1-7}
+C  &G\+NU  &4.\+2.\+0  &nvcc  &6.\+5.\+14  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&\\\cline{1-7}
+C  &G\+NU  &4.\+2.\+0  &nvcc  &7.\+0.\+28  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&\\\cline{1-7}
+C  &G\+NU  &4.\+2.\+0  &nvcc  &7.\+5.\+18  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&\\\cline{1-7}
+C  &G\+NU  &4.\+2.\+0  &nvcc  &8.\+0.\+44  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&\\\cline{1-7}
+C  &G\+NU  &4.\+2.\+0  &nvcc  &9.\+0.\+176  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&\\\cline{1-7}
+C  &G\+NU  &4.\+6.\+3  &nvcc  &6.\+0.\+37  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&\\\cline{1-7}
+C  &G\+NU  &4.\+6.\+3  &nvcc  &6.\+5.\+14  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&\\\cline{1-7}
+C  &G\+NU  &4.\+6.\+3  &nvcc  &7.\+0.\+28  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&\\\cline{1-7}
+C  &G\+NU  &4.\+6.\+3  &nvcc  &7.\+5.\+18  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&\\\cline{1-7}
+C  &G\+NU  &4.\+6.\+3  &nvcc  &8.\+0.\+44  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&\\\cline{1-7}
+C  &G\+NU  &4.\+6.\+3  &nvcc  &9.\+0.\+176  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&\\\cline{1-7}
+C  &G\+NU  &4.\+8.\+2  &nvcc  &6.\+0.\+37  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&\\\cline{1-7}
+C  &G\+NU  &4.\+8.\+2  &nvcc  &6.\+5.\+14  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&\\\cline{1-7}
+C  &G\+NU  &4.\+8.\+2  &nvcc  &7.\+0.\+28  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&\\\cline{1-7}
+C  &G\+NU  &4.\+8.\+2  &nvcc  &7.\+5.\+18  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&\\\cline{1-7}
+C  &G\+NU  &4.\+8.\+2  &nvcc  &8.\+0.\+44  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&\\\cline{1-7}
+C  &G\+NU  &4.\+8.\+2  &nvcc  &9.\+0.\+176  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&\\\cline{1-7}
+C  &G\+NU  &4.\+9.\+2  &nvcc  &6.\+0.\+37  &&\\\cline{1-7}
+C  &G\+NU  &4.\+9.\+2  &nvcc  &6.\+5.\+14  &&\\\cline{1-7}
+C  &G\+NU  &4.\+9.\+2  &nvcc  &7.\+0.\+28  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&\\\cline{1-7}
+C  &G\+NU  &4.\+9.\+2  &nvcc  &7.\+5.\+18  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&\\\cline{1-7}
+C  &G\+NU  &4.\+9.\+2  &nvcc  &8.\+0.\+44  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&\\\cline{1-7}
+C  &G\+NU  &4.\+9.\+2  &nvcc  &9.\+0.\+176  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&\\\cline{1-7}
+C  &G\+NU  &5.\+3.\+0  &nvcc  &6.\+0.\+37  &&\\\cline{1-7}
+C  &G\+NU  &5.\+3.\+0  &nvcc  &6.\+5.\+14  &&\\\cline{1-7}
+C  &G\+NU  &5.\+3.\+0  &nvcc  &7.\+0.\+28  &&\\\cline{1-7}
+C  &G\+NU  &5.\+3.\+0  &nvcc  &7.\+5.\+18  &&\\\cline{1-7}
+C  &G\+NU  &5.\+3.\+0  &nvcc  &8.\+0.\+44  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&\\\cline{1-7}
+C  &G\+NU  &5.\+3.\+0  &nvcc  &9.\+0.\+176  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&\\\cline{1-7}
+C  &G\+NU  &5.\+4.\+0  &nvcc  &6.\+0.\+37  &&\\\cline{1-7}
+C  &G\+NU  &5.\+4.\+0  &nvcc  &6.\+5.\+14  &&\\\cline{1-7}
+C  &G\+NU  &5.\+4.\+0  &nvcc  &7.\+0.\+28  &&\\\cline{1-7}
+C  &G\+NU  &5.\+4.\+0  &nvcc  &7.\+5.\+18  &&\\\cline{1-7}
+C  &G\+NU  &5.\+4.\+0  &nvcc  &8.\+0.\+44  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&\\\cline{1-7}
+C  &G\+NU  &5.\+4.\+0  &nvcc  &9.\+0.\+176  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&\\\cline{1-7}
+C  &G\+NU  &6.\+4.\+0  &nvcc  &6.\+0.\+37  &&\\\cline{1-7}
+C  &G\+NU  &6.\+4.\+0  &nvcc  &6.\+5.\+14  &&\\\cline{1-7}
+C  &G\+NU  &6.\+4.\+0  &nvcc  &7.\+0.\+28  &&\\\cline{1-7}
+C  &G\+NU  &6.\+4.\+0  &nvcc  &7.\+5.\+18  &&\\\cline{1-7}
+C  &G\+NU  &6.\+4.\+0  &nvcc  &8.\+0.\+44  &&\\\cline{1-7}
+C  &G\+NU  &6.\+4.\+0  &nvcc  &9.\+0.\+176  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&\\\cline{1-7}
+C  &G\+NU  &7.\+3.\+0  &nvcc  &6.\+0.\+37  &&\\\cline{1-7}
+C  &G\+NU  &7.\+3.\+0  &nvcc  &6.\+5.\+14  &&\\\cline{1-7}
+C  &G\+NU  &7.\+3.\+0  &nvcc  &7.\+0.\+28  &&\\\cline{1-7}
+C  &G\+NU  &7.\+3.\+0  &nvcc  &7.\+5.\+18  &&\\\cline{1-7}
+C  &G\+NU  &7.\+3.\+0  &nvcc  &8.\+0.\+44  &&\\\cline{1-7}
+C  &G\+NU  &7.\+3.\+0  &nvcc  &9.\+0.\+176  &&\\\cline{1-7}
+C  &I\+N\+T\+EL  &2011  &&&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C  &I\+N\+T\+EL  &2012  &&&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C  &I\+N\+T\+EL  &2013  &&&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C  &I\+N\+T\+EL  &2015  &&&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C  &I\+N\+T\+EL  &2016  &&&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C  &I\+N\+T\+EL  &2017  &&&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C  &I\+N\+T\+EL  &2018  &&&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C  &I\+N\+T\+EL  &2011  &mpicc  &intel-\/mpi/2013  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C  &I\+N\+T\+EL  &2011  &mpicc  &intel-\/mpi/2015  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C  &I\+N\+T\+EL  &2011  &mpicc  &intel-\/mpi/2016  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C  &I\+N\+T\+EL  &2011  &mpicc  &intel-\/mpi/2017  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C  &I\+N\+T\+EL  &2011  &mpicc  &intel-\/mpi/2018  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C  &I\+N\+T\+EL  &2011  &mpicc  &openmpi/1.\+6.\+5  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&\\\cline{1-7}
+C  &I\+N\+T\+EL  &2011  &mpicc  &openmpi/1.\+6.\+5  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&\\\cline{1-7}
+C  &I\+N\+T\+EL  &2011  &mpicc  &openmpi/1.\+8.\+4  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&\\\cline{1-7}
+C  &I\+N\+T\+EL  &2011  &mpicc  &openmpi/3.\+1.\+0  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C  &I\+N\+T\+EL  &2011  &mpicc  &openmpi/3.\+1.\+0  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C  &I\+N\+T\+EL  &2011  &mpicc  &mpich2/1.\+5.\+3  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C  &I\+N\+T\+EL  &2011  &mpicc  &mpich2/1.\+5.\+3  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C  &I\+N\+T\+EL  &2011  &mpicc  &mpich2/1.\+5.\+3  &&\\\cline{1-7}
+C  &I\+N\+T\+EL  &2011  &mpicc  &mpich2/1.\+5.\+3  &&\\\cline{1-7}
+C  &I\+N\+T\+EL  &2011  &mpicc  &mvapich2/2.\+0.\+1  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C  &I\+N\+T\+EL  &2011  &mpicc  &mvapich2/2.\+0.\+1  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C  &I\+N\+T\+EL  &2011  &mpicc  &mvapich2/2.\+1.\+0  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C  &I\+N\+T\+EL  &2011  &mpicc  &mvapich2/2.\+1.\+0  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C  &I\+N\+T\+EL  &2011  &mpicc  &mvapich2/2.\+2.\+2  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C  &I\+N\+T\+EL  &2012  &mpicc  &intel-\/mpi/2012  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C  &I\+N\+T\+EL  &2012  &mpicc  &intel-\/mpi/2013  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C  &I\+N\+T\+EL  &2012  &mpicc  &intel-\/mpi/2015  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C  &I\+N\+T\+EL  &2012  &mpicc  &intel-\/mpi/2016  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C  &I\+N\+T\+EL  &2012  &mpicc  &intel-\/mpi/2017  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C  &I\+N\+T\+EL  &2012  &mpicc  &intel-\/mpi/2018  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C  &I\+N\+T\+EL  &2012  &mpicc  &openmpi/1.\+6.\+5  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&\\\cline{1-7}
+C  &I\+N\+T\+EL  &2012  &mpicc  &openmpi/1.\+6.\+5  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&\\\cline{1-7}
+C  &I\+N\+T\+EL  &2012  &mpicc  &openmpi/1.\+8.\+4  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&\\\cline{1-7}
+C  &I\+N\+T\+EL  &2012  &mpicc  &openmpi/3.\+1.\+0  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C  &I\+N\+T\+EL  &2012  &mpicc  &openmpi/3.\+1.\+0  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C  &I\+N\+T\+EL  &2012  &mpicc  &mpich2/1.\+5.\+3  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C  &I\+N\+T\+EL  &2012  &mpicc  &mpich2/1.\+5.\+3  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C  &I\+N\+T\+EL  &2012  &mpicc  &mpich2/1.\+5.\+3  &&\\\cline{1-7}
+C  &I\+N\+T\+EL  &2012  &mpicc  &mpich2/1.\+5.\+3  &&\\\cline{1-7}
+C  &I\+N\+T\+EL  &2012  &mpicc  &mvapich2/2.\+0.\+1  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C  &I\+N\+T\+EL  &2012  &mpicc  &mvapich2/2.\+0.\+1  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C  &I\+N\+T\+EL  &2012  &mpicc  &mvapich2/2.\+1.\+0  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C  &I\+N\+T\+EL  &2012  &mpicc  &mvapich2/2.\+1.\+0  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C  &I\+N\+T\+EL  &2012  &mpicc  &mvapich2/2.\+2.\+2  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C  &I\+N\+T\+EL  &2013  &mpicc  &intel-\/mpi/2013  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C  &I\+N\+T\+EL  &2013  &mpicc  &intel-\/mpi/2015  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C  &I\+N\+T\+EL  &2013  &mpicc  &intel-\/mpi/2016  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C  &I\+N\+T\+EL  &2013  &mpicc  &intel-\/mpi/2017  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C  &I\+N\+T\+EL  &2013  &mpicc  &intel-\/mpi/2018  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C  &I\+N\+T\+EL  &2013  &mpicc  &openmpi/1.\+6.\+5  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&\\\cline{1-7}
+C  &I\+N\+T\+EL  &2013  &mpicc  &openmpi/1.\+6.\+5  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&\\\cline{1-7}
+C  &I\+N\+T\+EL  &2013  &mpicc  &openmpi/1.\+6.\+5  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&\\\cline{1-7}
+C  &I\+N\+T\+EL  &2013  &mpicc  &openmpi/1.\+8.\+4  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&\\\cline{1-7}
+C  &I\+N\+T\+EL  &2013  &mpicc  &openmpi/1.\+8.\+4  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&\\\cline{1-7}
+C  &I\+N\+T\+EL  &2013  &mpicc  &openmpi/3.\+1.\+0  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C  &I\+N\+T\+EL  &2013  &mpicc  &openmpi/3.\+1.\+0  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C  &I\+N\+T\+EL  &2013  &mpicc  &mpich2/1.\+5.\+3  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C  &I\+N\+T\+EL  &2013  &mpicc  &mpich2/1.\+5.\+3  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C  &I\+N\+T\+EL  &2013  &mpicc  &mpich2/1.\+5.\+3  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C  &I\+N\+T\+EL  &2013  &mpicc  &mpich2/1.\+5.\+3  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C  &I\+N\+T\+EL  &2013  &mpicc  &mvapich2/2.\+0.\+1  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C  &I\+N\+T\+EL  &2013  &mpicc  &mvapich2/2.\+0.\+1  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C  &I\+N\+T\+EL  &2013  &mpicc  &mvapich2/2.\+0.\+1  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C  &I\+N\+T\+EL  &2013  &mpicc  &mvapich2/2.\+1.\+0  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C  &I\+N\+T\+EL  &2013  &mpicc  &mvapich2/2.\+1.\+0  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C  &I\+N\+T\+EL  &2013  &mpicc  &mvapich2/2.\+2.\+2  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C  &I\+N\+T\+EL  &2015  &mpicc  &intel-\/mpi/2013  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C  &I\+N\+T\+EL  &2015  &mpicc  &intel-\/mpi/2015  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C  &I\+N\+T\+EL  &2015  &mpicc  &intel-\/mpi/2016  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C  &I\+N\+T\+EL  &2015  &mpicc  &intel-\/mpi/2017  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C  &I\+N\+T\+EL  &2015  &mpicc  &intel-\/mpi/2018  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C  &I\+N\+T\+EL  &2015  &mpicc  &openmpi/1.\+6.\+5  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&\\\cline{1-7}
+C  &I\+N\+T\+EL  &2015  &mpicc  &openmpi/1.\+6.\+5  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&\\\cline{1-7}
+C  &I\+N\+T\+EL  &2015  &mpicc  &openmpi/1.\+8.\+4  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&\\\cline{1-7}
+C  &I\+N\+T\+EL  &2015  &mpicc  &openmpi/1.\+8.\+4  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&\\\cline{1-7}
+C  &I\+N\+T\+EL  &2015  &mpicc  &openmpi/2.\+0.\+2  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C  &I\+N\+T\+EL  &2015  &mpicc  &openmpi/3.\+1.\+0  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C  &I\+N\+T\+EL  &2015  &mpicc  &openmpi/3.\+1.\+0  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C  &I\+N\+T\+EL  &2015  &mpicc  &mpich2/1.\+5.\+3  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C  &I\+N\+T\+EL  &2015  &mpicc  &mpich2/1.\+5.\+3  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C  &I\+N\+T\+EL  &2015  &mpicc  &mpich2/1.\+5.\+3  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C  &I\+N\+T\+EL  &2015  &mpicc  &mpich2/1.\+5.\+3  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C  &I\+N\+T\+EL  &2015  &mpicc  &mvapich2/2.\+0.\+1  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C  &I\+N\+T\+EL  &2015  &mpicc  &mvapich2/2.\+0.\+1  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C  &I\+N\+T\+EL  &2015  &mpicc  &mvapich2/2.\+0.\+1  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C  &I\+N\+T\+EL  &2015  &mpicc  &mvapich2/2.\+1.\+0  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C  &I\+N\+T\+EL  &2015  &mpicc  &mvapich2/2.\+1.\+0  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C  &I\+N\+T\+EL  &2015  &mpicc  &mvapich2/2.\+2.\+2  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C  &I\+N\+T\+EL  &2016  &mpicc  &intel-\/mpi/2013  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C  &I\+N\+T\+EL  &2016  &mpicc  &intel-\/mpi/2015  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C  &I\+N\+T\+EL  &2016  &mpicc  &intel-\/mpi/2016  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C  &I\+N\+T\+EL  &2016  &mpicc  &intel-\/mpi/2017  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C  &I\+N\+T\+EL  &2016  &mpicc  &intel-\/mpi/2018  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C  &I\+N\+T\+EL  &2016  &mpicc  &openmpi/1.\+6.\+5  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&\\\cline{1-7}
+C  &I\+N\+T\+EL  &2016  &mpicc  &openmpi/1.\+6.\+5  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&\\\cline{1-7}
+C  &I\+N\+T\+EL  &2016  &mpicc  &openmpi/1.\+8.\+4  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&\\\cline{1-7}
+C  &I\+N\+T\+EL  &2016  &mpicc  &openmpi/2.\+0.\+2  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C  &I\+N\+T\+EL  &2016  &mpicc  &openmpi/3.\+1.\+0  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C  &I\+N\+T\+EL  &2016  &mpicc  &openmpi/3.\+1.\+0  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C  &I\+N\+T\+EL  &2016  &mpicc  &mpich2/1.\+5.\+3  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C  &I\+N\+T\+EL  &2016  &mpicc  &mpich2/1.\+5.\+3  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C  &I\+N\+T\+EL  &2016  &mpicc  &mpich2/1.\+5.\+3  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C  &I\+N\+T\+EL  &2016  &mpicc  &mpich2/1.\+5.\+3  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C  &I\+N\+T\+EL  &2016  &mpicc  &mvapich2/2.\+0.\+1  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C  &I\+N\+T\+EL  &2016  &mpicc  &mvapich2/2.\+0.\+1  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C  &I\+N\+T\+EL  &2016  &mpicc  &mvapich2/2.\+1.\+0  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C  &I\+N\+T\+EL  &2016  &mpicc  &mvapich2/2.\+1.\+0  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C  &I\+N\+T\+EL  &2016  &mpicc  &mvapich2/2.\+1.\+0  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C  &I\+N\+T\+EL  &2016  &mpicc  &mvapich2/2.\+2.\+2  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C  &I\+N\+T\+EL  &2017  &mpicc  &intel-\/mpi/2013  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C  &I\+N\+T\+EL  &2017  &mpicc  &intel-\/mpi/2015  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C  &I\+N\+T\+EL  &2017  &mpicc  &intel-\/mpi/2016  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C  &I\+N\+T\+EL  &2017  &mpicc  &intel-\/mpi/2017  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C  &I\+N\+T\+EL  &2017  &mpicc  &intel-\/mpi/2018  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C  &I\+N\+T\+EL  &2017  &mpicc  &openmpi/1.\+6.\+5  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&\\\cline{1-7}
+C  &I\+N\+T\+EL  &2017  &mpicc  &openmpi/1.\+6.\+5  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&\\\cline{1-7}
+C  &I\+N\+T\+EL  &2017  &mpicc  &openmpi/1.\+8.\+4  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&\\\cline{1-7}
+C  &I\+N\+T\+EL  &2017  &mpicc  &openmpi/2.\+0.\+2  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C  &I\+N\+T\+EL  &2017  &mpicc  &openmpi/3.\+1.\+0  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C  &I\+N\+T\+EL  &2017  &mpicc  &openmpi/3.\+1.\+0  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C  &I\+N\+T\+EL  &2017  &mpicc  &mpich2/1.\+5.\+3  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C  &I\+N\+T\+EL  &2017  &mpicc  &mpich2/1.\+5.\+3  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C  &I\+N\+T\+EL  &2017  &mpicc  &mpich2/1.\+5.\+3  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C  &I\+N\+T\+EL  &2017  &mpicc  &mpich2/1.\+5.\+3  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C  &I\+N\+T\+EL  &2017  &mpicc  &mvapich2/2.\+0.\+1  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C  &I\+N\+T\+EL  &2017  &mpicc  &mvapich2/2.\+0.\+1  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C  &I\+N\+T\+EL  &2017  &mpicc  &mvapich2/2.\+1.\+0  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C  &I\+N\+T\+EL  &2017  &mpicc  &mvapich2/2.\+1.\+0  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C  &I\+N\+T\+EL  &2017  &mpicc  &mvapich2/2.\+2.\+2  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C  &I\+N\+T\+EL  &2018  &mpicc  &intel-\/mpi/2013  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C  &I\+N\+T\+EL  &2018  &mpicc  &intel-\/mpi/2015  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C  &I\+N\+T\+EL  &2018  &mpicc  &intel-\/mpi/2016  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C  &I\+N\+T\+EL  &2018  &mpicc  &intel-\/mpi/2017  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C  &I\+N\+T\+EL  &2018  &mpicc  &intel-\/mpi/2018  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C  &I\+N\+T\+EL  &2018  &mpicc  &openmpi/1.\+6.\+5  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&\\\cline{1-7}
+C  &I\+N\+T\+EL  &2018  &mpicc  &openmpi/1.\+6.\+5  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&\\\cline{1-7}
+C  &I\+N\+T\+EL  &2018  &mpicc  &openmpi/1.\+8.\+4  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&\\\cline{1-7}
+C  &I\+N\+T\+EL  &2018  &mpicc  &openmpi/3.\+1.\+0  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C  &I\+N\+T\+EL  &2018  &mpicc  &openmpi/3.\+1.\+0  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C  &I\+N\+T\+EL  &2018  &mpicc  &openmpi/3.\+1.\+0  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C  &I\+N\+T\+EL  &2018  &mpicc  &mpich2/1.\+5.\+3  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C  &I\+N\+T\+EL  &2018  &mpicc  &mpich2/1.\+5.\+3  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C  &I\+N\+T\+EL  &2018  &mpicc  &mpich2/1.\+5.\+3  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C  &I\+N\+T\+EL  &2018  &mpicc  &mpich2/1.\+5.\+3  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C  &I\+N\+T\+EL  &2018  &mpicc  &mvapich2/2.\+0.\+1  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C  &I\+N\+T\+EL  &2018  &mpicc  &mvapich2/2.\+0.\+1  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C  &I\+N\+T\+EL  &2018  &mpicc  &mvapich2/2.\+1.\+0  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C  &I\+N\+T\+EL  &2018  &mpicc  &mvapich2/2.\+1.\+0  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C  &I\+N\+T\+EL  &2018  &mpicc  &mvapich2/2.\+2.\+2  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C  &I\+N\+T\+EL  &2018  &mpicc  &mvapich2/2.\+2.\+2  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C  &I\+N\+T\+EL  &2011  &nvcc  &6.\+0.\+37  &&\\\cline{1-7}
+C  &I\+N\+T\+EL  &2011  &nvcc  &6.\+5.\+14  &&\\\cline{1-7}
+C  &I\+N\+T\+EL  &2011  &nvcc  &7.\+0.\+28  &&\\\cline{1-7}
+C  &I\+N\+T\+EL  &2011  &nvcc  &7.\+5.\+18  &&\\\cline{1-7}
+C  &I\+N\+T\+EL  &2011  &nvcc  &8.\+0.\+44  &&\\\cline{1-7}
+C  &I\+N\+T\+EL  &2011  &nvcc  &9.\+0.\+176  &&\\\cline{1-7}
+C  &I\+N\+T\+EL  &2012  &nvcc  &6.\+0.\+37  &&\\\cline{1-7}
+C  &I\+N\+T\+EL  &2012  &nvcc  &6.\+5.\+14  &&\\\cline{1-7}
+C  &I\+N\+T\+EL  &2012  &nvcc  &7.\+0.\+28  &&\\\cline{1-7}
+C  &I\+N\+T\+EL  &2012  &nvcc  &7.\+5.\+18  &&\\\cline{1-7}
+C  &I\+N\+T\+EL  &2012  &nvcc  &8.\+0.\+44  &&\\\cline{1-7}
+C  &I\+N\+T\+EL  &2012  &nvcc  &9.\+0.\+176  &&\\\cline{1-7}
+C  &I\+N\+T\+EL  &2013  &nvcc  &6.\+0.\+37  &&\\\cline{1-7}
+C  &I\+N\+T\+EL  &2013  &nvcc  &6.\+5.\+14  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&\\\cline{1-7}
+C  &I\+N\+T\+EL  &2013  &nvcc  &7.\+0.\+28  &&\\\cline{1-7}
+C  &I\+N\+T\+EL  &2013  &nvcc  &7.\+5.\+18  &&\\\cline{1-7}
+C  &I\+N\+T\+EL  &2013  &nvcc  &8.\+0.\+44  &&\\\cline{1-7}
+C  &I\+N\+T\+EL  &2013  &nvcc  &9.\+0.\+176  &&\\\cline{1-7}
+C  &I\+N\+T\+EL  &2015  &nvcc  &6.\+0.\+37  &&\\\cline{1-7}
+C  &I\+N\+T\+EL  &2015  &nvcc  &6.\+5.\+14  &&\\\cline{1-7}
+C  &I\+N\+T\+EL  &2015  &nvcc  &7.\+0.\+28  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&\\\cline{1-7}
+C  &I\+N\+T\+EL  &2015  &nvcc  &7.\+5.\+18  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&\\\cline{1-7}
+C  &I\+N\+T\+EL  &2015  &nvcc  &8.\+0.\+44  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&\\\cline{1-7}
+C  &I\+N\+T\+EL  &2015  &nvcc  &9.\+0.\+176  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&\\\cline{1-7}
+C  &I\+N\+T\+EL  &2016  &nvcc  &6.\+0.\+37  &&\\\cline{1-7}
+C  &I\+N\+T\+EL  &2016  &nvcc  &6.\+5.\+14  &&\\\cline{1-7}
+C  &I\+N\+T\+EL  &2016  &nvcc  &7.\+0.\+28  &&\\\cline{1-7}
+C  &I\+N\+T\+EL  &2016  &nvcc  &7.\+5.\+18  &&\\\cline{1-7}
+C  &I\+N\+T\+EL  &2016  &nvcc  &8.\+0.\+44  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&\\\cline{1-7}
+C  &I\+N\+T\+EL  &2016  &nvcc  &9.\+0.\+176  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&\\\cline{1-7}
+C  &I\+N\+T\+EL  &2017  &nvcc  &6.\+0.\+37  &&\\\cline{1-7}
+C  &I\+N\+T\+EL  &2017  &nvcc  &6.\+5.\+14  &&\\\cline{1-7}
+C  &I\+N\+T\+EL  &2017  &nvcc  &7.\+0.\+28  &&\\\cline{1-7}
+C  &I\+N\+T\+EL  &2017  &nvcc  &7.\+5.\+18  &&\\\cline{1-7}
+C  &I\+N\+T\+EL  &2017  &nvcc  &8.\+0.\+44  &&\\\cline{1-7}
+C  &I\+N\+T\+EL  &2017  &nvcc  &9.\+0.\+176  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&\\\cline{1-7}
+C  &I\+N\+T\+EL  &2018  &nvcc  &6.\+0.\+37  &&\\\cline{1-7}
+C  &I\+N\+T\+EL  &2018  &nvcc  &6.\+5.\+14  &&\\\cline{1-7}
+C  &I\+N\+T\+EL  &2018  &nvcc  &7.\+0.\+28  &&\\\cline{1-7}
+C  &I\+N\+T\+EL  &2018  &nvcc  &7.\+5.\+18  &&\\\cline{1-7}
+C  &I\+N\+T\+EL  &2018  &nvcc  &8.\+0.\+44  &&\\\cline{1-7}
+C  &I\+N\+T\+EL  &2018  &nvcc  &9.\+0.\+176  &&\\\cline{1-7}
+C++  &G\+NU  &4.\+2.\+0  &&&&\\\cline{1-7}
+C++  &G\+NU  &4.\+6.\+3  &&&&\\\cline{1-7}
+C++  &G\+NU  &4.\+8.\+2  &&&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C++  &G\+NU  &4.\+9.\+2  &&&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C++  &G\+NU  &5.\+3.\+0  &&&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C++  &G\+NU  &5.\+4.\+0  &&&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C++  &G\+NU  &6.\+4.\+0  &&&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C++  &G\+NU  &7.\+3.\+0  &&&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C++  &G\+NU  &4.\+2.\+0  &mpicc  &intel-\/mpi/2012  &&\\\cline{1-7}
+C++  &G\+NU  &4.\+2.\+0  &mpicc  &intel-\/mpi/2013  &&\\\cline{1-7}
+C++  &G\+NU  &4.\+2.\+0  &mpicc  &intel-\/mpi/2015  &&\\\cline{1-7}
+C++  &G\+NU  &4.\+2.\+0  &mpicc  &intel-\/mpi/2016  &&\\\cline{1-7}
+C++  &G\+NU  &4.\+2.\+0  &mpicc  &intel-\/mpi/2017  &&\\\cline{1-7}
+C++  &G\+NU  &4.\+2.\+0  &mpicc  &intel-\/mpi/2018  &&\\\cline{1-7}
+C++  &G\+NU  &4.\+2.\+0  &mpicc  &openmpi/1.\+6.\+5  &&\\\cline{1-7}
+C++  &G\+NU  &4.\+2.\+0  &mpicc  &openmpi/1.\+8.\+4  &&\\\cline{1-7}
+C++  &G\+NU  &4.\+2.\+0  &mpicc  &openmpi/1.\+8.\+4  &&\\\cline{1-7}
+C++  &G\+NU  &4.\+2.\+0  &mpicc  &openmpi/2.\+0.\+2  &&\\\cline{1-7}
+C++  &G\+NU  &4.\+2.\+0  &mpicc  &openmpi/2.\+0.\+2  &&\\\cline{1-7}
+C++  &G\+NU  &4.\+2.\+0  &mpicc  &openmpi/2.\+0.\+2  &&\\\cline{1-7}
+C++  &G\+NU  &4.\+2.\+0  &mpicc  &openmpi/3.\+1.\+0  &&\\\cline{1-7}
+C++  &G\+NU  &4.\+2.\+0  &mpicc  &mpich2/1.\+5.\+3  &&\\\cline{1-7}
+C++  &G\+NU  &4.\+2.\+0  &mpicc  &mpich2/1.\+5.\+3  &&\\\cline{1-7}
+C++  &G\+NU  &4.\+2.\+0  &mpicc  &mpich2/1.\+5.\+3  &&\\\cline{1-7}
+C++  &G\+NU  &4.\+2.\+0  &mpicc  &mpich2/1.\+5.\+3  &&\\\cline{1-7}
+C++  &G\+NU  &4.\+2.\+0  &mpicc  &mvapich2/2.\+0.\+1  &&\\\cline{1-7}
+C++  &G\+NU  &4.\+2.\+0  &mpicc  &mvapich2/2.\+0.\+1  &&\\\cline{1-7}
+C++  &G\+NU  &4.\+2.\+0  &mpicc  &mvapich2/2.\+1.\+0  &&\\\cline{1-7}
+C++  &G\+NU  &4.\+2.\+0  &mpicc  &mvapich2/2.\+2.\+2  &&\\\cline{1-7}
+C++  &G\+NU  &4.\+6.\+3  &mpicc  &intel-\/mpi/2012  &&\\\cline{1-7}
+C++  &G\+NU  &4.\+6.\+3  &mpicc  &intel-\/mpi/2013  &&\\\cline{1-7}
+C++  &G\+NU  &4.\+6.\+3  &mpicc  &intel-\/mpi/2015  &&\\\cline{1-7}
+C++  &G\+NU  &4.\+6.\+3  &mpicc  &intel-\/mpi/2016  &&\\\cline{1-7}
+C++  &G\+NU  &4.\+6.\+3  &mpicc  &intel-\/mpi/2017  &&\\\cline{1-7}
+C++  &G\+NU  &4.\+6.\+3  &mpicc  &intel-\/mpi/2018  &&\\\cline{1-7}
+C++  &G\+NU  &4.\+6.\+3  &mpicc  &openmpi/1.\+6.\+5  &&\\\cline{1-7}
+C++  &G\+NU  &4.\+6.\+3  &mpicc  &openmpi/1.\+6.\+5  &&\\\cline{1-7}
+C++  &G\+NU  &4.\+6.\+3  &mpicc  &openmpi/1.\+8.\+4  &&\\\cline{1-7}
+C++  &G\+NU  &4.\+6.\+3  &mpicc  &openmpi/1.\+8.\+4  &&\\\cline{1-7}
+C++  &G\+NU  &4.\+6.\+3  &mpicc  &openmpi/2.\+0.\+2  &&\\\cline{1-7}
+C++  &G\+NU  &4.\+6.\+3  &mpicc  &openmpi/2.\+0.\+2  &&\\\cline{1-7}
+C++  &G\+NU  &4.\+6.\+3  &mpicc  &openmpi/2.\+0.\+2  &&\\\cline{1-7}
+C++  &G\+NU  &4.\+6.\+3  &mpicc  &openmpi/3.\+1.\+0  &&\\\cline{1-7}
+C++  &G\+NU  &4.\+6.\+3  &mpicc  &mpich2/1.\+5.\+3  &&\\\cline{1-7}
+C++  &G\+NU  &4.\+6.\+3  &mpicc  &mpich2/1.\+5.\+3  &&\\\cline{1-7}
+C++  &G\+NU  &4.\+6.\+3  &mpicc  &mpich2/1.\+5.\+3  &&\\\cline{1-7}
+C++  &G\+NU  &4.\+6.\+3  &mpicc  &mpich2/1.\+5.\+3  &&\\\cline{1-7}
+C++  &G\+NU  &4.\+6.\+3  &mpicc  &mvapich2/2.\+0.\+1  &&\\\cline{1-7}
+C++  &G\+NU  &4.\+6.\+3  &mpicc  &mvapich2/2.\+0.\+1  &&\\\cline{1-7}
+C++  &G\+NU  &4.\+6.\+3  &mpicc  &mvapich2/2.\+1.\+0  &&\\\cline{1-7}
+C++  &G\+NU  &4.\+6.\+3  &mpicc  &mvapich2/2.\+2.\+2  &&\\\cline{1-7}
+C++  &G\+NU  &4.\+8.\+2  &mpicc  &intel-\/mpi/2012  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C++  &G\+NU  &4.\+8.\+2  &mpicc  &intel-\/mpi/2013  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C++  &G\+NU  &4.\+8.\+2  &mpicc  &intel-\/mpi/2015  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C++  &G\+NU  &4.\+8.\+2  &mpicc  &intel-\/mpi/2016  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C++  &G\+NU  &4.\+8.\+2  &mpicc  &intel-\/mpi/2017  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C++  &G\+NU  &4.\+8.\+2  &mpicc  &intel-\/mpi/2018  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C++  &G\+NU  &4.\+8.\+2  &mpicc  &openmpi/1.\+6.\+5  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&\\\cline{1-7}
+C++  &G\+NU  &4.\+8.\+2  &mpicc  &openmpi/1.\+8.\+4  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&\\\cline{1-7}
+C++  &G\+NU  &4.\+8.\+2  &mpicc  &openmpi/1.\+8.\+4  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&\\\cline{1-7}
+C++  &G\+NU  &4.\+8.\+2  &mpicc  &openmpi/2.\+0.\+2  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C++  &G\+NU  &4.\+8.\+2  &mpicc  &openmpi/2.\+0.\+2  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C++  &G\+NU  &4.\+8.\+2  &mpicc  &openmpi/2.\+0.\+2  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C++  &G\+NU  &4.\+8.\+2  &mpicc  &openmpi/3.\+1.\+0  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C++  &G\+NU  &4.\+8.\+2  &mpicc  &mpich2/1.\+5.\+3  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C++  &G\+NU  &4.\+8.\+2  &mpicc  &mpich2/1.\+5.\+3  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C++  &G\+NU  &4.\+8.\+2  &mpicc  &mpich2/1.\+5.\+3  &&\\\cline{1-7}
+C++  &G\+NU  &4.\+8.\+2  &mpicc  &mpich2/1.\+5.\+3  &&\\\cline{1-7}
+C++  &G\+NU  &4.\+8.\+2  &mpicc  &mvapich2/2.\+0.\+1  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C++  &G\+NU  &4.\+8.\+2  &mpicc  &mvapich2/2.\+0.\+1  &&\\\cline{1-7}
+C++  &G\+NU  &4.\+8.\+2  &mpicc  &mvapich2/2.\+0.\+1  &&\\\cline{1-7}
+C++  &G\+NU  &4.\+8.\+2  &mpicc  &mvapich2/2.\+1.\+0  &&\\\cline{1-7}
+C++  &G\+NU  &4.\+8.\+2  &mpicc  &mvapich2/2.\+2.\+2  &&\\\cline{1-7}
+C++  &G\+NU  &4.\+9.\+2  &mpicc  &intel-\/mpi/2012  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C++  &G\+NU  &4.\+9.\+2  &mpicc  &intel-\/mpi/2013  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C++  &G\+NU  &4.\+9.\+2  &mpicc  &intel-\/mpi/2015  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C++  &G\+NU  &4.\+9.\+2  &mpicc  &intel-\/mpi/2016  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C++  &G\+NU  &4.\+9.\+2  &mpicc  &intel-\/mpi/2017  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C++  &G\+NU  &4.\+9.\+2  &mpicc  &intel-\/mpi/2018  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C++  &G\+NU  &4.\+9.\+2  &mpicc  &openmpi/1.\+6.\+5  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&\\\cline{1-7}
+C++  &G\+NU  &4.\+9.\+2  &mpicc  &openmpi/1.\+6.\+5  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&\\\cline{1-7}
+C++  &G\+NU  &4.\+9.\+2  &mpicc  &openmpi/1.\+8.\+4  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&\\\cline{1-7}
+C++  &G\+NU  &4.\+9.\+2  &mpicc  &openmpi/1.\+8.\+4  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&\\\cline{1-7}
+C++  &G\+NU  &4.\+9.\+2  &mpicc  &openmpi/1.\+8.\+4  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&\\\cline{1-7}
+C++  &G\+NU  &4.\+9.\+2  &mpicc  &openmpi/2.\+0.\+2  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C++  &G\+NU  &4.\+9.\+2  &mpicc  &openmpi/2.\+0.\+2  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C++  &G\+NU  &4.\+9.\+2  &mpicc  &openmpi/2.\+0.\+2  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C++  &G\+NU  &4.\+9.\+2  &mpicc  &openmpi/3.\+1.\+0  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C++  &G\+NU  &4.\+9.\+2  &mpicc  &openmpi/3.\+1.\+0  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C++  &G\+NU  &4.\+9.\+2  &mpicc  &openmpi/3.\+1.\+0  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C++  &G\+NU  &4.\+9.\+2  &mpicc  &mpich2/1.\+5.\+3  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C++  &G\+NU  &4.\+9.\+2  &mpicc  &mpich2/1.\+5.\+3  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C++  &G\+NU  &4.\+9.\+2  &mpicc  &mpich2/1.\+5.\+3  &&\\\cline{1-7}
+C++  &G\+NU  &4.\+9.\+2  &mpicc  &mpich2/1.\+5.\+3  &&\\\cline{1-7}
+C++  &G\+NU  &4.\+9.\+2  &mpicc  &mvapich2/2.\+0.\+1  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C++  &G\+NU  &4.\+9.\+2  &mpicc  &mvapich2/2.\+0.\+1  &&\\\cline{1-7}
+C++  &G\+NU  &4.\+9.\+2  &mpicc  &mvapich2/2.\+0.\+1  &&\\\cline{1-7}
+C++  &G\+NU  &4.\+9.\+2  &mpicc  &mvapich2/2.\+1.\+0  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C++  &G\+NU  &4.\+9.\+2  &mpicc  &mvapich2/2.\+1.\+0  &&\\\cline{1-7}
+C++  &G\+NU  &4.\+9.\+2  &mpicc  &mvapich2/2.\+2.\+2  &&\\\cline{1-7}
+C++  &G\+NU  &5.\+3.\+0  &mpicc  &intel-\/mpi/2012  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C++  &G\+NU  &5.\+3.\+0  &mpicc  &intel-\/mpi/2013  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C++  &G\+NU  &5.\+3.\+0  &mpicc  &intel-\/mpi/2015  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C++  &G\+NU  &5.\+3.\+0  &mpicc  &intel-\/mpi/2016  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C++  &G\+NU  &5.\+3.\+0  &mpicc  &intel-\/mpi/2017  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C++  &G\+NU  &5.\+3.\+0  &mpicc  &intel-\/mpi/2018  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C++  &G\+NU  &5.\+3.\+0  &mpicc  &openmpi/1.\+6.\+5  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&\\\cline{1-7}
+C++  &G\+NU  &5.\+3.\+0  &mpicc  &openmpi/1.\+8.\+4  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&\\\cline{1-7}
+C++  &G\+NU  &5.\+3.\+0  &mpicc  &openmpi/1.\+8.\+4  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&\\\cline{1-7}
+C++  &G\+NU  &5.\+3.\+0  &mpicc  &openmpi/2.\+0.\+2  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C++  &G\+NU  &5.\+3.\+0  &mpicc  &openmpi/2.\+0.\+2  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C++  &G\+NU  &5.\+3.\+0  &mpicc  &openmpi/2.\+0.\+2  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C++  &G\+NU  &5.\+3.\+0  &mpicc  &openmpi/3.\+1.\+0  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C++  &G\+NU  &5.\+3.\+0  &mpicc  &mpich2/1.\+5.\+3  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C++  &G\+NU  &5.\+3.\+0  &mpicc  &mpich2/1.\+5.\+3  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C++  &G\+NU  &5.\+3.\+0  &mpicc  &mpich2/1.\+5.\+3  &&\\\cline{1-7}
+C++  &G\+NU  &5.\+3.\+0  &mpicc  &mpich2/1.\+5.\+3  &&\\\cline{1-7}
+C++  &G\+NU  &5.\+3.\+0  &mpicc  &mvapich2/2.\+0.\+1  &&\\\cline{1-7}
+C++  &G\+NU  &5.\+3.\+0  &mpicc  &mvapich2/2.\+0.\+1  &&\\\cline{1-7}
+C++  &G\+NU  &5.\+3.\+0  &mpicc  &mvapich2/2.\+1.\+0  &&\\\cline{1-7}
+C++  &G\+NU  &5.\+3.\+0  &mpicc  &mvapich2/2.\+2.\+2  &&\\\cline{1-7}
+C++  &G\+NU  &5.\+4.\+0  &mpicc  &intel-\/mpi/2012  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C++  &G\+NU  &5.\+4.\+0  &mpicc  &intel-\/mpi/2013  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C++  &G\+NU  &5.\+4.\+0  &mpicc  &intel-\/mpi/2015  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C++  &G\+NU  &5.\+4.\+0  &mpicc  &intel-\/mpi/2016  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C++  &G\+NU  &5.\+4.\+0  &mpicc  &intel-\/mpi/2017  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C++  &G\+NU  &5.\+4.\+0  &mpicc  &intel-\/mpi/2018  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C++  &G\+NU  &5.\+4.\+0  &mpicc  &openmpi/1.\+6.\+5  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&\\\cline{1-7}
+C++  &G\+NU  &5.\+4.\+0  &mpicc  &openmpi/1.\+8.\+4  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&\\\cline{1-7}
+C++  &G\+NU  &5.\+4.\+0  &mpicc  &openmpi/1.\+8.\+4  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&\\\cline{1-7}
+C++  &G\+NU  &5.\+4.\+0  &mpicc  &openmpi/2.\+0.\+2  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C++  &G\+NU  &5.\+4.\+0  &mpicc  &openmpi/2.\+0.\+2  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C++  &G\+NU  &5.\+4.\+0  &mpicc  &openmpi/2.\+0.\+2  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C++  &G\+NU  &5.\+4.\+0  &mpicc  &openmpi/3.\+1.\+0  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C++  &G\+NU  &5.\+4.\+0  &mpicc  &mpich2/1.\+5.\+3  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C++  &G\+NU  &5.\+4.\+0  &mpicc  &mpich2/1.\+5.\+3  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C++  &G\+NU  &5.\+4.\+0  &mpicc  &mpich2/1.\+5.\+3  &&\\\cline{1-7}
+C++  &G\+NU  &5.\+4.\+0  &mpicc  &mpich2/1.\+5.\+3  &&\\\cline{1-7}
+C++  &G\+NU  &5.\+4.\+0  &mpicc  &mvapich2/2.\+0.\+1  &&\\\cline{1-7}
+C++  &G\+NU  &5.\+4.\+0  &mpicc  &mvapich2/2.\+0.\+1  &&\\\cline{1-7}
+C++  &G\+NU  &5.\+4.\+0  &mpicc  &mvapich2/2.\+1.\+0  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C++  &G\+NU  &5.\+4.\+0  &mpicc  &mvapich2/2.\+1.\+0  &&\\\cline{1-7}
+C++  &G\+NU  &5.\+4.\+0  &mpicc  &mvapich2/2.\+2.\+2  &&\\\cline{1-7}
+C++  &G\+NU  &6.\+4.\+0  &mpicc  &intel-\/mpi/2012  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C++  &G\+NU  &6.\+4.\+0  &mpicc  &intel-\/mpi/2013  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C++  &G\+NU  &6.\+4.\+0  &mpicc  &intel-\/mpi/2015  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C++  &G\+NU  &6.\+4.\+0  &mpicc  &intel-\/mpi/2016  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C++  &G\+NU  &6.\+4.\+0  &mpicc  &intel-\/mpi/2017  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C++  &G\+NU  &6.\+4.\+0  &mpicc  &intel-\/mpi/2018  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C++  &G\+NU  &6.\+4.\+0  &mpicc  &openmpi/1.\+6.\+5  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&\\\cline{1-7}
+C++  &G\+NU  &6.\+4.\+0  &mpicc  &openmpi/1.\+8.\+4  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&\\\cline{1-7}
+C++  &G\+NU  &6.\+4.\+0  &mpicc  &openmpi/1.\+8.\+4  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&\\\cline{1-7}
+C++  &G\+NU  &6.\+4.\+0  &mpicc  &openmpi/2.\+0.\+2  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C++  &G\+NU  &6.\+4.\+0  &mpicc  &openmpi/2.\+0.\+2  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C++  &G\+NU  &6.\+4.\+0  &mpicc  &openmpi/2.\+0.\+2  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C++  &G\+NU  &6.\+4.\+0  &mpicc  &openmpi/3.\+1.\+0  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C++  &G\+NU  &6.\+4.\+0  &mpicc  &mpich2/1.\+5.\+3  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C++  &G\+NU  &6.\+4.\+0  &mpicc  &mpich2/1.\+5.\+3  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C++  &G\+NU  &6.\+4.\+0  &mpicc  &mpich2/1.\+5.\+3  &&\\\cline{1-7}
+C++  &G\+NU  &6.\+4.\+0  &mpicc  &mpich2/1.\+5.\+3  &&\\\cline{1-7}
+C++  &G\+NU  &6.\+4.\+0  &mpicc  &mvapich2/2.\+0.\+1  &&\\\cline{1-7}
+C++  &G\+NU  &6.\+4.\+0  &mpicc  &mvapich2/2.\+0.\+1  &&\\\cline{1-7}
+C++  &G\+NU  &6.\+4.\+0  &mpicc  &mvapich2/2.\+1.\+0  &&\\\cline{1-7}
+C++  &G\+NU  &6.\+4.\+0  &mpicc  &mvapich2/2.\+2.\+2  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C++  &G\+NU  &6.\+4.\+0  &mpicc  &mvapich2/2.\+2.\+2  &&\\\cline{1-7}
+C++  &G\+NU  &7.\+3.\+0  &mpicc  &intel-\/mpi/2012  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C++  &G\+NU  &7.\+3.\+0  &mpicc  &intel-\/mpi/2013  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C++  &G\+NU  &7.\+3.\+0  &mpicc  &intel-\/mpi/2015  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C++  &G\+NU  &7.\+3.\+0  &mpicc  &intel-\/mpi/2016  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C++  &G\+NU  &7.\+3.\+0  &mpicc  &intel-\/mpi/2017  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C++  &G\+NU  &7.\+3.\+0  &mpicc  &intel-\/mpi/2018  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C++  &G\+NU  &7.\+3.\+0  &mpicc  &openmpi/1.\+6.\+5  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&\\\cline{1-7}
+C++  &G\+NU  &7.\+3.\+0  &mpicc  &openmpi/1.\+8.\+4  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&\\\cline{1-7}
+C++  &G\+NU  &7.\+3.\+0  &mpicc  &openmpi/1.\+8.\+4  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&\\\cline{1-7}
+C++  &G\+NU  &7.\+3.\+0  &mpicc  &openmpi/2.\+0.\+2  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C++  &G\+NU  &7.\+3.\+0  &mpicc  &openmpi/2.\+0.\+2  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C++  &G\+NU  &7.\+3.\+0  &mpicc  &openmpi/2.\+0.\+2  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C++  &G\+NU  &7.\+3.\+0  &mpicc  &openmpi/3.\+1.\+0  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C++  &G\+NU  &7.\+3.\+0  &mpicc  &mpich2/1.\+5.\+3  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C++  &G\+NU  &7.\+3.\+0  &mpicc  &mpich2/1.\+5.\+3  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C++  &G\+NU  &7.\+3.\+0  &mpicc  &mpich2/1.\+5.\+3  &&\\\cline{1-7}
+C++  &G\+NU  &7.\+3.\+0  &mpicc  &mpich2/1.\+5.\+3  &&\\\cline{1-7}
+C++  &G\+NU  &7.\+3.\+0  &mpicc  &mvapich2/2.\+0.\+1  &&\\\cline{1-7}
+C++  &G\+NU  &7.\+3.\+0  &mpicc  &mvapich2/2.\+0.\+1  &&\\\cline{1-7}
+C++  &G\+NU  &7.\+3.\+0  &mpicc  &mvapich2/2.\+1.\+0  &&\\\cline{1-7}
+C++  &G\+NU  &7.\+3.\+0  &mpicc  &mvapich2/2.\+2.\+2  &&\\\cline{1-7}
+C++  &G\+NU  &4.\+2.\+0  &nvcc  &6.\+0.\+37  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&\\\cline{1-7}
+C++  &G\+NU  &4.\+2.\+0  &nvcc  &6.\+5.\+14  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&\\\cline{1-7}
+C++  &G\+NU  &4.\+2.\+0  &nvcc  &7.\+0.\+28  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&\\\cline{1-7}
+C++  &G\+NU  &4.\+2.\+0  &nvcc  &7.\+5.\+18  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&\\\cline{1-7}
+C++  &G\+NU  &4.\+2.\+0  &nvcc  &8.\+0.\+44  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&\\\cline{1-7}
+C++  &G\+NU  &4.\+2.\+0  &nvcc  &9.\+0.\+176  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&\\\cline{1-7}
+C++  &G\+NU  &4.\+6.\+3  &nvcc  &6.\+0.\+37  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&\\\cline{1-7}
+C++  &G\+NU  &4.\+6.\+3  &nvcc  &6.\+5.\+14  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&\\\cline{1-7}
+C++  &G\+NU  &4.\+6.\+3  &nvcc  &7.\+0.\+28  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&\\\cline{1-7}
+C++  &G\+NU  &4.\+6.\+3  &nvcc  &7.\+5.\+18  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&\\\cline{1-7}
+C++  &G\+NU  &4.\+6.\+3  &nvcc  &8.\+0.\+44  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&\\\cline{1-7}
+C++  &G\+NU  &4.\+6.\+3  &nvcc  &9.\+0.\+176  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&\\\cline{1-7}
+C++  &G\+NU  &4.\+8.\+2  &nvcc  &6.\+0.\+37  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&\\\cline{1-7}
+C++  &G\+NU  &4.\+8.\+2  &nvcc  &6.\+5.\+14  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&\\\cline{1-7}
+C++  &G\+NU  &4.\+8.\+2  &nvcc  &7.\+0.\+28  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&\\\cline{1-7}
+C++  &G\+NU  &4.\+8.\+2  &nvcc  &7.\+5.\+18  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&\\\cline{1-7}
+C++  &G\+NU  &4.\+8.\+2  &nvcc  &8.\+0.\+44  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&\\\cline{1-7}
+C++  &G\+NU  &4.\+8.\+2  &nvcc  &9.\+0.\+176  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&\\\cline{1-7}
+C++  &G\+NU  &4.\+9.\+2  &nvcc  &6.\+0.\+37  &&\\\cline{1-7}
+C++  &G\+NU  &4.\+9.\+2  &nvcc  &6.\+5.\+14  &&\\\cline{1-7}
+C++  &G\+NU  &4.\+9.\+2  &nvcc  &7.\+0.\+28  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&\\\cline{1-7}
+C++  &G\+NU  &4.\+9.\+2  &nvcc  &7.\+5.\+18  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&\\\cline{1-7}
+C++  &G\+NU  &4.\+9.\+2  &nvcc  &8.\+0.\+44  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&\\\cline{1-7}
+C++  &G\+NU  &4.\+9.\+2  &nvcc  &9.\+0.\+176  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&\\\cline{1-7}
+C++  &G\+NU  &5.\+3.\+0  &nvcc  &6.\+0.\+37  &&\\\cline{1-7}
+C++  &G\+NU  &5.\+3.\+0  &nvcc  &6.\+5.\+14  &&\\\cline{1-7}
+C++  &G\+NU  &5.\+3.\+0  &nvcc  &7.\+0.\+28  &&\\\cline{1-7}
+C++  &G\+NU  &5.\+3.\+0  &nvcc  &7.\+5.\+18  &&\\\cline{1-7}
+C++  &G\+NU  &5.\+3.\+0  &nvcc  &8.\+0.\+44  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&\\\cline{1-7}
+C++  &G\+NU  &5.\+3.\+0  &nvcc  &9.\+0.\+176  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&\\\cline{1-7}
+C++  &G\+NU  &5.\+4.\+0  &nvcc  &6.\+0.\+37  &&\\\cline{1-7}
+C++  &G\+NU  &5.\+4.\+0  &nvcc  &6.\+5.\+14  &&\\\cline{1-7}
+C++  &G\+NU  &5.\+4.\+0  &nvcc  &7.\+0.\+28  &&\\\cline{1-7}
+C++  &G\+NU  &5.\+4.\+0  &nvcc  &7.\+5.\+18  &&\\\cline{1-7}
+C++  &G\+NU  &5.\+4.\+0  &nvcc  &8.\+0.\+44  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&\\\cline{1-7}
+C++  &G\+NU  &5.\+4.\+0  &nvcc  &9.\+0.\+176  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&\\\cline{1-7}
+C++  &G\+NU  &6.\+4.\+0  &nvcc  &6.\+0.\+37  &&\\\cline{1-7}
+C++  &G\+NU  &6.\+4.\+0  &nvcc  &6.\+5.\+14  &&\\\cline{1-7}
+C++  &G\+NU  &6.\+4.\+0  &nvcc  &7.\+0.\+28  &&\\\cline{1-7}
+C++  &G\+NU  &6.\+4.\+0  &nvcc  &7.\+5.\+18  &&\\\cline{1-7}
+C++  &G\+NU  &6.\+4.\+0  &nvcc  &8.\+0.\+44  &&\\\cline{1-7}
+C++  &G\+NU  &6.\+4.\+0  &nvcc  &9.\+0.\+176  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&\\\cline{1-7}
+C++  &G\+NU  &7.\+3.\+0  &nvcc  &6.\+0.\+37  &&\\\cline{1-7}
+C++  &G\+NU  &7.\+3.\+0  &nvcc  &6.\+5.\+14  &&\\\cline{1-7}
+C++  &G\+NU  &7.\+3.\+0  &nvcc  &7.\+0.\+28  &&\\\cline{1-7}
+C++  &G\+NU  &7.\+3.\+0  &nvcc  &7.\+5.\+18  &&\\\cline{1-7}
+C++  &G\+NU  &7.\+3.\+0  &nvcc  &8.\+0.\+44  &&\\\cline{1-7}
+C++  &G\+NU  &7.\+3.\+0  &nvcc  &9.\+0.\+176  &&\\\cline{1-7}
+C++  &I\+N\+T\+EL  &2011  &&&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C++  &I\+N\+T\+EL  &2012  &&&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C++  &I\+N\+T\+EL  &2013  &&&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C++  &I\+N\+T\+EL  &2015  &&&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C++  &I\+N\+T\+EL  &2016  &&&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C++  &I\+N\+T\+EL  &2017  &&&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C++  &I\+N\+T\+EL  &2018  &&&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C++  &I\+N\+T\+EL  &2011  &mpicc  &intel-\/mpi/2013  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C++  &I\+N\+T\+EL  &2011  &mpicc  &intel-\/mpi/2015  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C++  &I\+N\+T\+EL  &2011  &mpicc  &intel-\/mpi/2016  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C++  &I\+N\+T\+EL  &2011  &mpicc  &intel-\/mpi/2017  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C++  &I\+N\+T\+EL  &2011  &mpicc  &intel-\/mpi/2018  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C++  &I\+N\+T\+EL  &2011  &mpicc  &openmpi/1.\+6.\+5  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&\\\cline{1-7}
+C++  &I\+N\+T\+EL  &2011  &mpicc  &openmpi/1.\+6.\+5  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&\\\cline{1-7}
+C++  &I\+N\+T\+EL  &2011  &mpicc  &openmpi/1.\+8.\+4  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&\\\cline{1-7}
+C++  &I\+N\+T\+EL  &2011  &mpicc  &openmpi/3.\+1.\+0  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C++  &I\+N\+T\+EL  &2011  &mpicc  &openmpi/3.\+1.\+0  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C++  &I\+N\+T\+EL  &2011  &mpicc  &mpich2/1.\+5.\+3  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C++  &I\+N\+T\+EL  &2011  &mpicc  &mpich2/1.\+5.\+3  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C++  &I\+N\+T\+EL  &2011  &mpicc  &mpich2/1.\+5.\+3  &&\\\cline{1-7}
+C++  &I\+N\+T\+EL  &2011  &mpicc  &mpich2/1.\+5.\+3  &&\\\cline{1-7}
+C++  &I\+N\+T\+EL  &2011  &mpicc  &mvapich2/2.\+0.\+1  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C++  &I\+N\+T\+EL  &2011  &mpicc  &mvapich2/2.\+0.\+1  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C++  &I\+N\+T\+EL  &2011  &mpicc  &mvapich2/2.\+1.\+0  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C++  &I\+N\+T\+EL  &2011  &mpicc  &mvapich2/2.\+1.\+0  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C++  &I\+N\+T\+EL  &2011  &mpicc  &mvapich2/2.\+2.\+2  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C++  &I\+N\+T\+EL  &2012  &mpicc  &intel-\/mpi/2012  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C++  &I\+N\+T\+EL  &2012  &mpicc  &intel-\/mpi/2013  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C++  &I\+N\+T\+EL  &2012  &mpicc  &intel-\/mpi/2015  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C++  &I\+N\+T\+EL  &2012  &mpicc  &intel-\/mpi/2016  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C++  &I\+N\+T\+EL  &2012  &mpicc  &intel-\/mpi/2017  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C++  &I\+N\+T\+EL  &2012  &mpicc  &intel-\/mpi/2018  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C++  &I\+N\+T\+EL  &2012  &mpicc  &openmpi/1.\+6.\+5  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&\\\cline{1-7}
+C++  &I\+N\+T\+EL  &2012  &mpicc  &openmpi/1.\+6.\+5  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&\\\cline{1-7}
+C++  &I\+N\+T\+EL  &2012  &mpicc  &openmpi/1.\+8.\+4  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&\\\cline{1-7}
+C++  &I\+N\+T\+EL  &2012  &mpicc  &openmpi/3.\+1.\+0  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C++  &I\+N\+T\+EL  &2012  &mpicc  &openmpi/3.\+1.\+0  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C++  &I\+N\+T\+EL  &2012  &mpicc  &mpich2/1.\+5.\+3  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C++  &I\+N\+T\+EL  &2012  &mpicc  &mpich2/1.\+5.\+3  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C++  &I\+N\+T\+EL  &2012  &mpicc  &mpich2/1.\+5.\+3  &&\\\cline{1-7}
+C++  &I\+N\+T\+EL  &2012  &mpicc  &mpich2/1.\+5.\+3  &&\\\cline{1-7}
+C++  &I\+N\+T\+EL  &2012  &mpicc  &mvapich2/2.\+0.\+1  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C++  &I\+N\+T\+EL  &2012  &mpicc  &mvapich2/2.\+0.\+1  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C++  &I\+N\+T\+EL  &2012  &mpicc  &mvapich2/2.\+1.\+0  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C++  &I\+N\+T\+EL  &2012  &mpicc  &mvapich2/2.\+1.\+0  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C++  &I\+N\+T\+EL  &2012  &mpicc  &mvapich2/2.\+2.\+2  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C++  &I\+N\+T\+EL  &2013  &mpicc  &intel-\/mpi/2013  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C++  &I\+N\+T\+EL  &2013  &mpicc  &intel-\/mpi/2015  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C++  &I\+N\+T\+EL  &2013  &mpicc  &intel-\/mpi/2016  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C++  &I\+N\+T\+EL  &2013  &mpicc  &intel-\/mpi/2017  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C++  &I\+N\+T\+EL  &2013  &mpicc  &intel-\/mpi/2018  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C++  &I\+N\+T\+EL  &2013  &mpicc  &openmpi/1.\+6.\+5  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&\\\cline{1-7}
+C++  &I\+N\+T\+EL  &2013  &mpicc  &openmpi/1.\+6.\+5  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&\\\cline{1-7}
+C++  &I\+N\+T\+EL  &2013  &mpicc  &openmpi/1.\+6.\+5  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&\\\cline{1-7}
+C++  &I\+N\+T\+EL  &2013  &mpicc  &openmpi/1.\+8.\+4  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&\\\cline{1-7}
+C++  &I\+N\+T\+EL  &2013  &mpicc  &openmpi/1.\+8.\+4  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&\\\cline{1-7}
+C++  &I\+N\+T\+EL  &2013  &mpicc  &openmpi/3.\+1.\+0  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C++  &I\+N\+T\+EL  &2013  &mpicc  &openmpi/3.\+1.\+0  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C++  &I\+N\+T\+EL  &2013  &mpicc  &mpich2/1.\+5.\+3  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C++  &I\+N\+T\+EL  &2013  &mpicc  &mpich2/1.\+5.\+3  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C++  &I\+N\+T\+EL  &2013  &mpicc  &mpich2/1.\+5.\+3  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C++  &I\+N\+T\+EL  &2013  &mpicc  &mpich2/1.\+5.\+3  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C++  &I\+N\+T\+EL  &2013  &mpicc  &mvapich2/2.\+0.\+1  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C++  &I\+N\+T\+EL  &2013  &mpicc  &mvapich2/2.\+0.\+1  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C++  &I\+N\+T\+EL  &2013  &mpicc  &mvapich2/2.\+0.\+1  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C++  &I\+N\+T\+EL  &2013  &mpicc  &mvapich2/2.\+1.\+0  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C++  &I\+N\+T\+EL  &2013  &mpicc  &mvapich2/2.\+1.\+0  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C++  &I\+N\+T\+EL  &2013  &mpicc  &mvapich2/2.\+2.\+2  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C++  &I\+N\+T\+EL  &2015  &mpicc  &intel-\/mpi/2013  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C++  &I\+N\+T\+EL  &2015  &mpicc  &intel-\/mpi/2015  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C++  &I\+N\+T\+EL  &2015  &mpicc  &intel-\/mpi/2016  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C++  &I\+N\+T\+EL  &2015  &mpicc  &intel-\/mpi/2017  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C++  &I\+N\+T\+EL  &2015  &mpicc  &intel-\/mpi/2018  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C++  &I\+N\+T\+EL  &2015  &mpicc  &openmpi/1.\+6.\+5  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&\\\cline{1-7}
+C++  &I\+N\+T\+EL  &2015  &mpicc  &openmpi/1.\+6.\+5  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&\\\cline{1-7}
+C++  &I\+N\+T\+EL  &2015  &mpicc  &openmpi/1.\+8.\+4  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&\\\cline{1-7}
+C++  &I\+N\+T\+EL  &2015  &mpicc  &openmpi/1.\+8.\+4  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&\\\cline{1-7}
+C++  &I\+N\+T\+EL  &2015  &mpicc  &openmpi/2.\+0.\+2  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C++  &I\+N\+T\+EL  &2015  &mpicc  &openmpi/3.\+1.\+0  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C++  &I\+N\+T\+EL  &2015  &mpicc  &openmpi/3.\+1.\+0  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C++  &I\+N\+T\+EL  &2015  &mpicc  &mpich2/1.\+5.\+3  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C++  &I\+N\+T\+EL  &2015  &mpicc  &mpich2/1.\+5.\+3  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C++  &I\+N\+T\+EL  &2015  &mpicc  &mpich2/1.\+5.\+3  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C++  &I\+N\+T\+EL  &2015  &mpicc  &mpich2/1.\+5.\+3  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C++  &I\+N\+T\+EL  &2015  &mpicc  &mvapich2/2.\+0.\+1  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C++  &I\+N\+T\+EL  &2015  &mpicc  &mvapich2/2.\+0.\+1  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C++  &I\+N\+T\+EL  &2015  &mpicc  &mvapich2/2.\+0.\+1  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C++  &I\+N\+T\+EL  &2015  &mpicc  &mvapich2/2.\+1.\+0  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C++  &I\+N\+T\+EL  &2015  &mpicc  &mvapich2/2.\+1.\+0  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C++  &I\+N\+T\+EL  &2015  &mpicc  &mvapich2/2.\+2.\+2  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C++  &I\+N\+T\+EL  &2016  &mpicc  &intel-\/mpi/2013  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C++  &I\+N\+T\+EL  &2016  &mpicc  &intel-\/mpi/2015  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C++  &I\+N\+T\+EL  &2016  &mpicc  &intel-\/mpi/2016  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C++  &I\+N\+T\+EL  &2016  &mpicc  &intel-\/mpi/2017  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C++  &I\+N\+T\+EL  &2016  &mpicc  &intel-\/mpi/2018  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C++  &I\+N\+T\+EL  &2016  &mpicc  &openmpi/1.\+6.\+5  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&\\\cline{1-7}
+C++  &I\+N\+T\+EL  &2016  &mpicc  &openmpi/1.\+6.\+5  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&\\\cline{1-7}
+C++  &I\+N\+T\+EL  &2016  &mpicc  &openmpi/1.\+8.\+4  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&\\\cline{1-7}
+C++  &I\+N\+T\+EL  &2016  &mpicc  &openmpi/2.\+0.\+2  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C++  &I\+N\+T\+EL  &2016  &mpicc  &openmpi/3.\+1.\+0  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C++  &I\+N\+T\+EL  &2016  &mpicc  &openmpi/3.\+1.\+0  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C++  &I\+N\+T\+EL  &2016  &mpicc  &mpich2/1.\+5.\+3  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C++  &I\+N\+T\+EL  &2016  &mpicc  &mpich2/1.\+5.\+3  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C++  &I\+N\+T\+EL  &2016  &mpicc  &mpich2/1.\+5.\+3  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C++  &I\+N\+T\+EL  &2016  &mpicc  &mpich2/1.\+5.\+3  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C++  &I\+N\+T\+EL  &2016  &mpicc  &mvapich2/2.\+0.\+1  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C++  &I\+N\+T\+EL  &2016  &mpicc  &mvapich2/2.\+0.\+1  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C++  &I\+N\+T\+EL  &2016  &mpicc  &mvapich2/2.\+1.\+0  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C++  &I\+N\+T\+EL  &2016  &mpicc  &mvapich2/2.\+1.\+0  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C++  &I\+N\+T\+EL  &2016  &mpicc  &mvapich2/2.\+1.\+0  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C++  &I\+N\+T\+EL  &2016  &mpicc  &mvapich2/2.\+2.\+2  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C++  &I\+N\+T\+EL  &2017  &mpicc  &intel-\/mpi/2013  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C++  &I\+N\+T\+EL  &2017  &mpicc  &intel-\/mpi/2015  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C++  &I\+N\+T\+EL  &2017  &mpicc  &intel-\/mpi/2016  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C++  &I\+N\+T\+EL  &2017  &mpicc  &intel-\/mpi/2017  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C++  &I\+N\+T\+EL  &2017  &mpicc  &intel-\/mpi/2018  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C++  &I\+N\+T\+EL  &2017  &mpicc  &openmpi/1.\+6.\+5  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&\\\cline{1-7}
+C++  &I\+N\+T\+EL  &2017  &mpicc  &openmpi/1.\+6.\+5  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&\\\cline{1-7}
+C++  &I\+N\+T\+EL  &2017  &mpicc  &openmpi/1.\+8.\+4  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&\\\cline{1-7}
+C++  &I\+N\+T\+EL  &2017  &mpicc  &openmpi/2.\+0.\+2  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C++  &I\+N\+T\+EL  &2017  &mpicc  &openmpi/3.\+1.\+0  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C++  &I\+N\+T\+EL  &2017  &mpicc  &openmpi/3.\+1.\+0  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C++  &I\+N\+T\+EL  &2017  &mpicc  &mpich2/1.\+5.\+3  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C++  &I\+N\+T\+EL  &2017  &mpicc  &mpich2/1.\+5.\+3  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C++  &I\+N\+T\+EL  &2017  &mpicc  &mpich2/1.\+5.\+3  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C++  &I\+N\+T\+EL  &2017  &mpicc  &mpich2/1.\+5.\+3  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C++  &I\+N\+T\+EL  &2017  &mpicc  &mvapich2/2.\+0.\+1  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C++  &I\+N\+T\+EL  &2017  &mpicc  &mvapich2/2.\+0.\+1  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C++  &I\+N\+T\+EL  &2017  &mpicc  &mvapich2/2.\+1.\+0  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C++  &I\+N\+T\+EL  &2017  &mpicc  &mvapich2/2.\+1.\+0  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C++  &I\+N\+T\+EL  &2017  &mpicc  &mvapich2/2.\+2.\+2  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C++  &I\+N\+T\+EL  &2018  &mpicc  &intel-\/mpi/2013  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C++  &I\+N\+T\+EL  &2018  &mpicc  &intel-\/mpi/2015  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C++  &I\+N\+T\+EL  &2018  &mpicc  &intel-\/mpi/2016  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C++  &I\+N\+T\+EL  &2018  &mpicc  &intel-\/mpi/2017  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C++  &I\+N\+T\+EL  &2018  &mpicc  &intel-\/mpi/2018  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C++  &I\+N\+T\+EL  &2018  &mpicc  &openmpi/1.\+6.\+5  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&\\\cline{1-7}
+C++  &I\+N\+T\+EL  &2018  &mpicc  &openmpi/1.\+6.\+5  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&\\\cline{1-7}
+C++  &I\+N\+T\+EL  &2018  &mpicc  &openmpi/1.\+8.\+4  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&\\\cline{1-7}
+C++  &I\+N\+T\+EL  &2018  &mpicc  &openmpi/3.\+1.\+0  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C++  &I\+N\+T\+EL  &2018  &mpicc  &openmpi/3.\+1.\+0  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C++  &I\+N\+T\+EL  &2018  &mpicc  &openmpi/3.\+1.\+0  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C++  &I\+N\+T\+EL  &2018  &mpicc  &mpich2/1.\+5.\+3  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C++  &I\+N\+T\+EL  &2018  &mpicc  &mpich2/1.\+5.\+3  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C++  &I\+N\+T\+EL  &2018  &mpicc  &mpich2/1.\+5.\+3  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C++  &I\+N\+T\+EL  &2018  &mpicc  &mpich2/1.\+5.\+3  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C++  &I\+N\+T\+EL  &2018  &mpicc  &mvapich2/2.\+0.\+1  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C++  &I\+N\+T\+EL  &2018  &mpicc  &mvapich2/2.\+0.\+1  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C++  &I\+N\+T\+EL  &2018  &mpicc  &mvapich2/2.\+1.\+0  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C++  &I\+N\+T\+EL  &2018  &mpicc  &mvapich2/2.\+1.\+0  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C++  &I\+N\+T\+EL  &2018  &mpicc  &mvapich2/2.\+2.\+2  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C++  &I\+N\+T\+EL  &2018  &mpicc  &mvapich2/2.\+2.\+2  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}    
+\end{DoxyItemize}\\\cline{1-7}
+C++  &I\+N\+T\+EL  &2011  &nvcc  &6.\+0.\+37  &&\\\cline{1-7}
+C++  &I\+N\+T\+EL  &2011  &nvcc  &6.\+5.\+14  &&\\\cline{1-7}
+C++  &I\+N\+T\+EL  &2011  &nvcc  &7.\+0.\+28  &&\\\cline{1-7}
+C++  &I\+N\+T\+EL  &2011  &nvcc  &7.\+5.\+18  &&\\\cline{1-7}
+C++  &I\+N\+T\+EL  &2011  &nvcc  &8.\+0.\+44  &&\\\cline{1-7}
+C++  &I\+N\+T\+EL  &2011  &nvcc  &9.\+0.\+176  &&\\\cline{1-7}
+C++  &I\+N\+T\+EL  &2012  &nvcc  &6.\+0.\+37  &&\\\cline{1-7}
+C++  &I\+N\+T\+EL  &2012  &nvcc  &6.\+5.\+14  &&\\\cline{1-7}
+C++  &I\+N\+T\+EL  &2012  &nvcc  &7.\+0.\+28  &&\\\cline{1-7}
+C++  &I\+N\+T\+EL  &2012  &nvcc  &7.\+5.\+18  &&\\\cline{1-7}
+C++  &I\+N\+T\+EL  &2012  &nvcc  &8.\+0.\+44  &&\\\cline{1-7}
+C++  &I\+N\+T\+EL  &2012  &nvcc  &9.\+0.\+176  &&\\\cline{1-7}
+C++  &I\+N\+T\+EL  &2013  &nvcc  &6.\+0.\+37  &&\\\cline{1-7}
+C++  &I\+N\+T\+EL  &2013  &nvcc  &6.\+5.\+14  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&\\\cline{1-7}
+C++  &I\+N\+T\+EL  &2013  &nvcc  &7.\+0.\+28  &&\\\cline{1-7}
+C++  &I\+N\+T\+EL  &2013  &nvcc  &7.\+5.\+18  &&\\\cline{1-7}
+C++  &I\+N\+T\+EL  &2013  &nvcc  &8.\+0.\+44  &&\\\cline{1-7}
+C++  &I\+N\+T\+EL  &2013  &nvcc  &9.\+0.\+176  &&\\\cline{1-7}
+C++  &I\+N\+T\+EL  &2015  &nvcc  &6.\+0.\+37  &&\\\cline{1-7}
+C++  &I\+N\+T\+EL  &2015  &nvcc  &6.\+5.\+14  &&\\\cline{1-7}
+C++  &I\+N\+T\+EL  &2015  &nvcc  &7.\+0.\+28  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&\\\cline{1-7}
+C++  &I\+N\+T\+EL  &2015  &nvcc  &7.\+5.\+18  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&\\\cline{1-7}
+C++  &I\+N\+T\+EL  &2015  &nvcc  &8.\+0.\+44  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&\\\cline{1-7}
+C++  &I\+N\+T\+EL  &2015  &nvcc  &9.\+0.\+176  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&\\\cline{1-7}
+C++  &I\+N\+T\+EL  &2016  &nvcc  &6.\+0.\+37  &&\\\cline{1-7}
+C++  &I\+N\+T\+EL  &2016  &nvcc  &6.\+5.\+14  &&\\\cline{1-7}
+C++  &I\+N\+T\+EL  &2016  &nvcc  &7.\+0.\+28  &&\\\cline{1-7}
+C++  &I\+N\+T\+EL  &2016  &nvcc  &7.\+5.\+18  &&\\\cline{1-7}
+C++  &I\+N\+T\+EL  &2016  &nvcc  &8.\+0.\+44  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&\\\cline{1-7}
+C++  &I\+N\+T\+EL  &2016  &nvcc  &9.\+0.\+176  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&\\\cline{1-7}
+C++  &I\+N\+T\+EL  &2017  &nvcc  &6.\+0.\+37  &&\\\cline{1-7}
+C++  &I\+N\+T\+EL  &2017  &nvcc  &6.\+5.\+14  &&\\\cline{1-7}
+C++  &I\+N\+T\+EL  &2017  &nvcc  &7.\+0.\+28  &&\\\cline{1-7}
+C++  &I\+N\+T\+EL  &2017  &nvcc  &7.\+5.\+18  &&\\\cline{1-7}
+C++  &I\+N\+T\+EL  &2017  &nvcc  &8.\+0.\+44  &&\\\cline{1-7}
+C++  &I\+N\+T\+EL  &2017  &nvcc  &9.\+0.\+176  &
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]}   
+\end{DoxyItemize}&\\\cline{1-7}
+C++  &I\+N\+T\+EL  &2018  &nvcc  &6.\+0.\+37  &&\\\cline{1-7}
+C++  &I\+N\+T\+EL  &2018  &nvcc  &6.\+5.\+14  &&\\\cline{1-7}
+C++  &I\+N\+T\+EL  &2018  &nvcc  &7.\+0.\+28  &&\\\cline{1-7}
+C++  &I\+N\+T\+EL  &2018  &nvcc  &7.\+5.\+18  &&\\\cline{1-7}
+C++  &I\+N\+T\+EL  &2018  &nvcc  &8.\+0.\+44  &&\\\cline{1-7}
+C++  &I\+N\+T\+EL  &2018  &nvcc  &9.\+0.\+176  &&\\\cline{1-7}
+\end{longtabu}

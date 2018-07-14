@@ -1,0 +1,207 @@
+\hypertarget{structMultiQubit}{}\subsection{Multi\+Qubit Struct Reference}
+\label{structMultiQubit}\index{Multi\+Qubit@{Multi\+Qubit}}
+
+
+Represents a system of qubits.  
+
+
+
+
+{\ttfamily \#include $<$Qu\+E\+S\+T.\+h$>$}
+
+\subsubsection*{Data Fields}
+\begin{DoxyCompactItemize}
+\item 
+int \mbox{\hyperlink{structMultiQubit_ab10c88249fa3825d6227ceec01d37e37}{chunk\+Id}}
+\begin{DoxyCompactList}\small\item\em The position of the chunk of the state vector held by this process in the full state vector. \end{DoxyCompactList}\item 
+\mbox{\hyperlink{structComplexArray}{Complex\+Array}} \mbox{\hyperlink{structMultiQubit_a59ac613486a41b8c9a4b6e79cc8d2cc3}{device\+State\+Vec}}
+\begin{DoxyCompactList}\small\item\em Storage for wavefunction amplitudes in the G\+PU version. \end{DoxyCompactList}\item 
+\mbox{\hyperlink{QuEST__precision_8h_a4b654506f18b8bfd61ad2a29a7e38c25}{R\+E\+AL}} $\ast$ \mbox{\hyperlink{structMultiQubit_a4e0088b41adab0a40b7a31e528ed42b5}{first\+Level\+Reduction}}
+\begin{DoxyCompactList}\small\item\em Storage for reduction of probabilities on G\+PU. \end{DoxyCompactList}\item 
+long long int \mbox{\hyperlink{structMultiQubit_a1cad83601a78635dd278259c7ed54f18}{num\+Amps\+Per\+Chunk}}
+\begin{DoxyCompactList}\small\item\em Number of probability amplitudes held in state\+Vec by this process In the non-\/\+M\+PI version, this is the total number of amplitudes. \end{DoxyCompactList}\item 
+int \mbox{\hyperlink{structMultiQubit_acd43f2f57991709c9e94f73662c972b2}{num\+Chunks}}
+\begin{DoxyCompactList}\small\item\em Number of chunks the state vector is broken up into -- the number of M\+PI processes used. \end{DoxyCompactList}\item 
+int \mbox{\hyperlink{structMultiQubit_ab5b9795bdc6fb5855e1974dcbbaeb36f}{num\+Qubits}}
+\begin{DoxyCompactList}\small\item\em Number of qubits in the state. \end{DoxyCompactList}\item 
+\mbox{\hyperlink{structComplexArray}{Complex\+Array}} \mbox{\hyperlink{structMultiQubit_a76f7db4eab52d2b30f58f973ada809c5}{pair\+State\+Vec}}
+\begin{DoxyCompactList}\small\item\em Temporary storage for a chunk of the state vector received from another process in the M\+PI version. \end{DoxyCompactList}\item 
+\mbox{\hyperlink{QuEST__precision_8h_a4b654506f18b8bfd61ad2a29a7e38c25}{R\+E\+AL}} $\ast$ \mbox{\hyperlink{structMultiQubit_a3e859cefa146ec7b30464ab3d897930b}{second\+Level\+Reduction}}
+\item 
+\mbox{\hyperlink{structComplexArray}{Complex\+Array}} \mbox{\hyperlink{structMultiQubit_a45483190d6b01ef6b2f98f2bec9ab94f}{state\+Vec}}
+\begin{DoxyCompactList}\small\item\em Computational state amplitudes -\/ a subset thereof in the M\+PI version. \end{DoxyCompactList}\end{DoxyCompactItemize}
+
+
+\subsubsection{Detailed Description}
+Represents a system of qubits. 
+
+Qubits are zero-\/based 
+
+Definition at line 51 of file Qu\+E\+S\+T.\+h.
+
+
+
+\subsubsection{Field Documentation}
+\mbox{\Hypertarget{structMultiQubit_ab10c88249fa3825d6227ceec01d37e37}\label{structMultiQubit_ab10c88249fa3825d6227ceec01d37e37}} 
+\index{Multi\+Qubit@{Multi\+Qubit}!chunk\+Id@{chunk\+Id}}
+\index{chunk\+Id@{chunk\+Id}!Multi\+Qubit@{Multi\+Qubit}}
+\paragraph{\texorpdfstring{chunk\+Id}{chunkId}}
+{\footnotesize\ttfamily int Multi\+Qubit\+::chunk\+Id}
+
+
+
+The position of the chunk of the state vector held by this process in the full state vector. 
+
+
+
+Definition at line 67 of file Qu\+E\+S\+T.\+h.
+
+
+
+Referenced by collapse\+To\+Outcome(), compact\+Unitary(), controlled\+Compact\+Unitary(), controlled\+Compact\+Unitary\+Distributed(), controlled\+Compact\+Unitary\+Local(), controlled\+Not(), controlled\+Not\+Distributed(), controlled\+Not\+Local(), controlled\+Phase\+Gate(), controlled\+Unitary(), controlled\+Unitary\+Distributed(), controlled\+Unitary\+Local(), create\+Multi\+Qubit(), find\+Probability\+Of\+Outcome(), get\+Imag\+Amp\+El(), get\+Real\+Amp\+El(), hadamard(), init\+Classical\+State(), initialize\+State\+From\+Single\+File(), init\+State\+Debug(), init\+State\+Of\+Single\+Qubit(), init\+State\+Zero(), measure\+With\+Stats(), multi\+Controlled\+Phase\+Gate(), multi\+Controlled\+Unitary(), multi\+Controlled\+Unitary\+Distributed(), multi\+Controlled\+Unitary\+Local(), phase\+Gate(), report\+Multi\+Qubit\+Params(), report\+State(), report\+State\+To\+Screen(), sigma\+X(), sigma\+Y(), and unitary().
+
+\mbox{\Hypertarget{structMultiQubit_a59ac613486a41b8c9a4b6e79cc8d2cc3}\label{structMultiQubit_a59ac613486a41b8c9a4b6e79cc8d2cc3}} 
+\index{Multi\+Qubit@{Multi\+Qubit}!device\+State\+Vec@{device\+State\+Vec}}
+\index{device\+State\+Vec@{device\+State\+Vec}!Multi\+Qubit@{Multi\+Qubit}}
+\paragraph{\texorpdfstring{device\+State\+Vec}{deviceStateVec}}
+{\footnotesize\ttfamily \mbox{\hyperlink{structComplexArray}{Complex\+Array}} Multi\+Qubit\+::device\+State\+Vec}
+
+
+
+Storage for wavefunction amplitudes in the G\+PU version. 
+
+
+
+Definition at line 58 of file Qu\+E\+S\+T.\+h.
+
+
+
+Referenced by collapse\+To\+Outcome\+Kernel(), compact\+Unitary\+Kernel(), controlled\+Compact\+Unitary\+Kernel(), controlled\+Not\+Kernel(), controlled\+Phase\+Gate\+Kernel(), controlled\+Unitary\+Kernel(), copy\+State\+From\+G\+P\+U(), copy\+State\+To\+G\+P\+U(), create\+Multi\+Qubit(), destroy\+Multi\+Qubit(), find\+Probability\+Of\+Zero\+Kernel(), get\+Imag\+Amp\+El(), get\+Real\+Amp\+El(), hadamard\+Kernel(), init\+Classical\+State(), init\+State\+Debug(), init\+State\+Of\+Single\+Qubit(), init\+State\+Plus(), init\+State\+Zero(), measure\+In\+Zero\+Kernel(), multi\+Controlled\+Phase\+Gate\+Kernel(), multi\+Controlled\+Unitary\+Kernel(), phase\+Gate\+Kernel(), sigma\+X\+Kernel(), sigma\+Y\+Kernel(), and unitary\+Kernel().
+
+\mbox{\Hypertarget{structMultiQubit_a4e0088b41adab0a40b7a31e528ed42b5}\label{structMultiQubit_a4e0088b41adab0a40b7a31e528ed42b5}} 
+\index{Multi\+Qubit@{Multi\+Qubit}!first\+Level\+Reduction@{first\+Level\+Reduction}}
+\index{first\+Level\+Reduction@{first\+Level\+Reduction}!Multi\+Qubit@{Multi\+Qubit}}
+\paragraph{\texorpdfstring{first\+Level\+Reduction}{firstLevelReduction}}
+{\footnotesize\ttfamily \mbox{\hyperlink{QuEST__precision_8h_a4b654506f18b8bfd61ad2a29a7e38c25}{R\+E\+AL}}$\ast$ Multi\+Qubit\+::first\+Level\+Reduction}
+
+
+
+Storage for reduction of probabilities on G\+PU. 
+
+
+
+Definition at line 60 of file Qu\+E\+S\+T.\+h.
+
+
+
+Referenced by create\+Multi\+Qubit(), and find\+Probability\+Of\+Zero().
+
+\mbox{\Hypertarget{structMultiQubit_a1cad83601a78635dd278259c7ed54f18}\label{structMultiQubit_a1cad83601a78635dd278259c7ed54f18}} 
+\index{Multi\+Qubit@{Multi\+Qubit}!num\+Amps\+Per\+Chunk@{num\+Amps\+Per\+Chunk}}
+\index{num\+Amps\+Per\+Chunk@{num\+Amps\+Per\+Chunk}!Multi\+Qubit@{Multi\+Qubit}}
+\paragraph{\texorpdfstring{num\+Amps\+Per\+Chunk}{numAmpsPerChunk}}
+{\footnotesize\ttfamily long long int Multi\+Qubit\+::num\+Amps\+Per\+Chunk}
+
+
+
+Number of probability amplitudes held in state\+Vec by this process In the non-\/\+M\+PI version, this is the total number of amplitudes. 
+
+
+
+Definition at line 65 of file Qu\+E\+S\+T.\+h.
+
+
+
+Referenced by calc\+Total\+Probability(), collapse\+To\+Outcome(), collapse\+To\+Outcome\+Distributed\+Renorm(), collapse\+To\+Outcome\+Distributed\+Set\+Zero(), collapse\+To\+Outcome\+Kernel(), collapse\+To\+Outcome\+Local(), compact\+Unitary(), compact\+Unitary\+Distributed(), compact\+Unitary\+Kernel(), compact\+Unitary\+Local(), compare\+States(), controlled\+Compact\+Unitary(), controlled\+Compact\+Unitary\+Distributed(), controlled\+Compact\+Unitary\+Kernel(), controlled\+Compact\+Unitary\+Local(), controlled\+Not(), controlled\+Not\+Distributed(), controlled\+Not\+Kernel(), controlled\+Not\+Local(), controlled\+Phase\+Gate(), controlled\+Phase\+Gate\+Kernel(), controlled\+Unitary(), controlled\+Unitary\+Distributed(), controlled\+Unitary\+Kernel(), controlled\+Unitary\+Local(), copy\+State\+From\+G\+P\+U(), copy\+State\+To\+G\+P\+U(), create\+Multi\+Qubit(), exchange\+State\+Vectors(), find\+Probability\+Of\+Outcome(), find\+Probability\+Of\+Zero(), find\+Probability\+Of\+Zero\+Distributed(), find\+Probability\+Of\+Zero\+Kernel(), find\+Probability\+Of\+Zero\+Local(), get\+Chunk\+Id\+From\+Index(), get\+Imag\+Amp\+El(), get\+Num\+Amps(), get\+Real\+Amp\+El(), hadamard(), hadamard\+Distributed(), hadamard\+Kernel(), hadamard\+Local(), init\+Classical\+State(), initialize\+State\+From\+Single\+File(), init\+State\+Debug(), init\+State\+Of\+Single\+Qubit(), init\+State\+Plus(), init\+State\+Zero(), measure\+In\+Zero(), measure\+In\+Zero\+Kernel(), measure\+With\+Stats(), multi\+Controlled\+Phase\+Gate(), multi\+Controlled\+Phase\+Gate\+Kernel(), multi\+Controlled\+Unitary(), multi\+Controlled\+Unitary\+Distributed(), multi\+Controlled\+Unitary\+Kernel(), multi\+Controlled\+Unitary\+Local(), phase\+Gate(), phase\+Gate\+Distributed(), phase\+Gate\+Kernel(), phase\+Gate\+Local(), report\+State(), report\+State\+To\+Screen(), sigma\+X(), sigma\+X\+Distributed(), sigma\+X\+Kernel(), sigma\+X\+Local(), sigma\+Y(), sigma\+Y\+Distributed(), sigma\+Y\+Kernel(), sigma\+Y\+Local(), unitary(), unitary\+Distributed(), unitary\+Kernel(), and unitary\+Local().
+
+\mbox{\Hypertarget{structMultiQubit_acd43f2f57991709c9e94f73662c972b2}\label{structMultiQubit_acd43f2f57991709c9e94f73662c972b2}} 
+\index{Multi\+Qubit@{Multi\+Qubit}!num\+Chunks@{num\+Chunks}}
+\index{num\+Chunks@{num\+Chunks}!Multi\+Qubit@{Multi\+Qubit}}
+\paragraph{\texorpdfstring{num\+Chunks}{numChunks}}
+{\footnotesize\ttfamily int Multi\+Qubit\+::num\+Chunks}
+
+
+
+Number of chunks the state vector is broken up into -- the number of M\+PI processes used. 
+
+
+
+Definition at line 69 of file Qu\+E\+S\+T.\+h.
+
+
+
+Referenced by calc\+Total\+Probability(), create\+Multi\+Qubit(), get\+Num\+Amps(), initialize\+State\+From\+Single\+File(), init\+State\+Of\+Single\+Qubit(), init\+State\+Plus(), report\+Multi\+Qubit\+Params(), and report\+State\+To\+Screen().
+
+\mbox{\Hypertarget{structMultiQubit_ab5b9795bdc6fb5855e1974dcbbaeb36f}\label{structMultiQubit_ab5b9795bdc6fb5855e1974dcbbaeb36f}} 
+\index{Multi\+Qubit@{Multi\+Qubit}!num\+Qubits@{num\+Qubits}}
+\index{num\+Qubits@{num\+Qubits}!Multi\+Qubit@{Multi\+Qubit}}
+\paragraph{\texorpdfstring{num\+Qubits}{numQubits}}
+{\footnotesize\ttfamily int Multi\+Qubit\+::num\+Qubits}
+
+
+
+Number of qubits in the state. 
+
+
+
+Definition at line 62 of file Qu\+E\+S\+T.\+h.
+
+
+
+Referenced by collapse\+To\+Outcome(), collapse\+To\+Outcome\+Kernel(), compact\+Unitary(), controlled\+Compact\+Unitary(), controlled\+Not(), controlled\+Phase\+Gate(), controlled\+Unitary(), create\+Multi\+Qubit(), find\+Probability\+Of\+Outcome(), get\+Environment\+String(), get\+Num\+Qubits(), hadamard(), measure(), measure\+With\+Stats(), multi\+Controlled\+Phase\+Gate(), multi\+Controlled\+Unitary(), phase\+Gate(), report\+Multi\+Qubit\+Params(), report\+State\+To\+Screen(), sigma\+X(), sigma\+Y(), and unitary().
+
+\mbox{\Hypertarget{structMultiQubit_a76f7db4eab52d2b30f58f973ada809c5}\label{structMultiQubit_a76f7db4eab52d2b30f58f973ada809c5}} 
+\index{Multi\+Qubit@{Multi\+Qubit}!pair\+State\+Vec@{pair\+State\+Vec}}
+\index{pair\+State\+Vec@{pair\+State\+Vec}!Multi\+Qubit@{Multi\+Qubit}}
+\paragraph{\texorpdfstring{pair\+State\+Vec}{pairStateVec}}
+{\footnotesize\ttfamily \mbox{\hyperlink{structComplexArray}{Complex\+Array}} Multi\+Qubit\+::pair\+State\+Vec}
+
+
+
+Temporary storage for a chunk of the state vector received from another process in the M\+PI version. 
+
+
+
+Definition at line 56 of file Qu\+E\+S\+T.\+h.
+
+
+
+Referenced by compact\+Unitary(), controlled\+Compact\+Unitary(), controlled\+Not(), controlled\+Unitary(), create\+Multi\+Qubit(), destroy\+Multi\+Qubit(), exchange\+State\+Vectors(), hadamard(), multi\+Controlled\+Unitary(), sigma\+X(), sigma\+Y(), and unitary().
+
+\mbox{\Hypertarget{structMultiQubit_a3e859cefa146ec7b30464ab3d897930b}\label{structMultiQubit_a3e859cefa146ec7b30464ab3d897930b}} 
+\index{Multi\+Qubit@{Multi\+Qubit}!second\+Level\+Reduction@{second\+Level\+Reduction}}
+\index{second\+Level\+Reduction@{second\+Level\+Reduction}!Multi\+Qubit@{Multi\+Qubit}}
+\paragraph{\texorpdfstring{second\+Level\+Reduction}{secondLevelReduction}}
+{\footnotesize\ttfamily \mbox{\hyperlink{QuEST__precision_8h_a4b654506f18b8bfd61ad2a29a7e38c25}{R\+E\+AL}} $\ast$ Multi\+Qubit\+::second\+Level\+Reduction}
+
+
+
+Definition at line 60 of file Qu\+E\+S\+T.\+h.
+
+
+
+Referenced by create\+Multi\+Qubit(), and find\+Probability\+Of\+Zero().
+
+\mbox{\Hypertarget{structMultiQubit_a45483190d6b01ef6b2f98f2bec9ab94f}\label{structMultiQubit_a45483190d6b01ef6b2f98f2bec9ab94f}} 
+\index{Multi\+Qubit@{Multi\+Qubit}!state\+Vec@{state\+Vec}}
+\index{state\+Vec@{state\+Vec}!Multi\+Qubit@{Multi\+Qubit}}
+\paragraph{\texorpdfstring{state\+Vec}{stateVec}}
+{\footnotesize\ttfamily \mbox{\hyperlink{structComplexArray}{Complex\+Array}} Multi\+Qubit\+::state\+Vec}
+
+
+
+Computational state amplitudes -\/ a subset thereof in the M\+PI version. 
+
+
+
+Definition at line 54 of file Qu\+E\+S\+T.\+h.
+
+
+
+Referenced by calc\+Total\+Probability(), collapse\+To\+Outcome\+Distributed\+Renorm(), collapse\+To\+Outcome\+Distributed\+Set\+Zero(), collapse\+To\+Outcome\+Local(), compact\+Unitary(), compact\+Unitary\+Local(), compare\+States(), controlled\+Compact\+Unitary(), controlled\+Compact\+Unitary\+Local(), controlled\+Not(), controlled\+Not\+Local(), controlled\+Phase\+Gate(), controlled\+Unitary(), controlled\+Unitary\+Local(), copy\+State\+From\+G\+P\+U(), copy\+State\+To\+G\+P\+U(), create\+Multi\+Qubit(), destroy\+Multi\+Qubit(), exchange\+State\+Vectors(), find\+Probability\+Of\+Zero\+Distributed(), find\+Probability\+Of\+Zero\+Local(), get\+Imag\+Amp\+El(), get\+Real\+Amp\+El(), hadamard(), hadamard\+Local(), init\+Classical\+State(), initialize\+State\+From\+Single\+File(), init\+State\+Debug(), init\+State\+Of\+Single\+Qubit(), init\+State\+Plus(), init\+State\+Zero(), multi\+Controlled\+Phase\+Gate(), multi\+Controlled\+Unitary(), multi\+Controlled\+Unitary\+Local(), phase\+Gate\+Distributed(), phase\+Gate\+Local(), report\+State(), report\+State\+To\+Screen(), sigma\+X(), sigma\+X\+Local(), sigma\+Y(), sigma\+Y\+Local(), unitary(), and unitary\+Local().
+
+
+
+The documentation for this struct was generated from the following file\+:\begin{DoxyCompactItemize}
+\item 
+\mbox{\hyperlink{QuEST_8h}{Qu\+E\+S\+T.\+h}}\end{DoxyCompactItemize}

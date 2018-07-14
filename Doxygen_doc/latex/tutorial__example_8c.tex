@@ -1,0 +1,119 @@
+\hypertarget{tutorial__example_8c}{}\subsection{tutorial\+\_\+example.\+c File Reference}
+\label{tutorial__example_8c}\index{tutorial\+\_\+example.\+c@{tutorial\+\_\+example.\+c}}
+{\ttfamily \#include $<$stdio.\+h$>$}\newline
+{\ttfamily \#include \char`\"{}Qu\+E\+S\+T.\+h\char`\"{}}\newline
+\subsubsection*{Functions}
+\begin{DoxyCompactItemize}
+\item 
+int \mbox{\hyperlink{tutorial__example_8c_a32b4528424672580be0dc0e6cd8544c3}{main}} (int narg, char $\ast$varg\mbox{[}$\,$\mbox{]})
+\end{DoxyCompactItemize}
+
+
+\subsubsection{Function Documentation}
+\mbox{\Hypertarget{tutorial__example_8c_a32b4528424672580be0dc0e6cd8544c3}\label{tutorial__example_8c_a32b4528424672580be0dc0e6cd8544c3}} 
+\index{tutorial\+\_\+example.\+c@{tutorial\+\_\+example.\+c}!main@{main}}
+\index{main@{main}!tutorial\+\_\+example.\+c@{tutorial\+\_\+example.\+c}}
+\paragraph{\texorpdfstring{main()}{main()}}
+{\footnotesize\ttfamily int main (\begin{DoxyParamCaption}\item[{int}]{narg,  }\item[{char $\ast$}]{varg\mbox{[}$\,$\mbox{]} }\end{DoxyParamCaption})}
+
+
+
+Definition at line 4 of file tutorial\+\_\+example.\+c.
+
+
+
+References close\+Qu\+E\+S\+T\+Env(), compact\+Unitary(), controlled\+Compact\+Unitary(), controlled\+Not(), create\+Multi\+Qubit(), destroy\+Multi\+Qubit(), env, find\+Probability\+Of\+Outcome(), get\+Prob\+El(), hadamard(), Complex\+::imag, init\+Qu\+E\+S\+T\+Env(), init\+State\+Zero(), measure(), measure\+With\+Stats(), multi\+Controlled\+Phase\+Gate(), multi\+Controlled\+Unitary(), Complex\+Matrix2\+::r0c0, R\+E\+AL, Complex\+::real, report\+Multi\+Qubit\+Params(), report\+Qu\+E\+S\+T\+Env(), rotate\+Around\+Axis(), rotate\+Y(), unitary(), Vector\+::x, Vector\+::y, and Vector\+::z.
+
+
+\begin{DoxyCode}
+4                                   \{
+5 
+6     \textcolor{comment}{/*}
+7 \textcolor{comment}{     * PREPARE QuEST environment}
+8 \textcolor{comment}{     * (Required only once per program)}
+9 \textcolor{comment}{     */}
+10 
+11     \mbox{\hyperlink{structQuESTEnv}{QuESTEnv}} \mbox{\hyperlink{runTests_8c_a5fd8ba97fcae3408ae6221dfc3cc1f93}{env}};
+12     \mbox{\hyperlink{QuEST__env__local_8c_ad84a3ce68d1ca02b4e3f741ea45b6054}{initQuESTEnv}}(&\mbox{\hyperlink{runTests_8c_a5fd8ba97fcae3408ae6221dfc3cc1f93}{env}});
+13 
+14     printf(\textcolor{stringliteral}{"-------------------------------------------------------\(\backslash\)n"});
+15     printf(\textcolor{stringliteral}{"Running QuEST tutorial:\(\backslash\)n\(\backslash\)t Basic circuit involving a system of 3 qubits.\(\backslash\)n"});
+16     printf(\textcolor{stringliteral}{"-------------------------------------------------------\(\backslash\)n"});
+17 
+18     \textcolor{comment}{/*}
+19 \textcolor{comment}{     * PREPARE QUBIT SYSTEM}
+20 \textcolor{comment}{     */}
+21 
+22     \mbox{\hyperlink{structMultiQubit}{MultiQubit}} qubits; 
+23     \mbox{\hyperlink{QuEST_8c_a9c02591bc64c2918503afa231d90d83f}{createMultiQubit}}(&qubits, 3, \mbox{\hyperlink{runTests_8c_a5fd8ba97fcae3408ae6221dfc3cc1f93}{env}});
+24     \mbox{\hyperlink{QuEST_8c_a9ba8171c9ec5c42202b144026527e9ec}{initStateZero}}(qubits);
+25 
+26 
+27     \textcolor{comment}{/*}
+28 \textcolor{comment}{     * REPORT SYSTEM AND ENVIRONMENT}
+29 \textcolor{comment}{     */}
+30     printf(\textcolor{stringliteral}{"\(\backslash\)nThis is our environment:\(\backslash\)n"});
+31     \mbox{\hyperlink{QuEST_8c_aa5e77e0e64f3a4a3d3f5cc7382bffcd9}{reportMultiQubitParams}}(qubits);
+32     \mbox{\hyperlink{QuEST__env__local_8c_af8a14ae79c3fb2c0b5f6255cc37bebf9}{reportQuESTEnv}}(\mbox{\hyperlink{runTests_8c_a5fd8ba97fcae3408ae6221dfc3cc1f93}{env}});
+33 
+34     \textcolor{comment}{/*}
+35 \textcolor{comment}{     * APPLY CIRCUIT}
+36 \textcolor{comment}{     */}
+37 
+38     \mbox{\hyperlink{QuEST__env__local_8c_aa09b5dd93de6df1384b8f2c0041749ab}{hadamard}}(qubits, 0);
+39     \mbox{\hyperlink{QuEST__env__local_8c_a67576895bbc65463481a8ea24d9b1e22}{controlledNot}}(qubits, 0, 1);
+40     \mbox{\hyperlink{QuEST_8c_ace0d3592d38a990e81a434c4e9681500}{rotateY}}(qubits, 2, .1);
+41 
+42     \mbox{\hyperlink{QuEST_8c_afc1835c6b43b6e59ce7df7b13f274fc7}{multiControlledPhaseGate}}(qubits, (\textcolor{keywordtype}{int} [])\{0, 1, 2\}, 3);
+43 
+44     \mbox{\hyperlink{structComplexMatrix2}{ComplexMatrix2}} u;
+45     u.\mbox{\hyperlink{structComplexMatrix2_ae72b4458233b077a636beee1892e81ff}{r0c0}} = (\mbox{\hyperlink{QuEST_8h_ad59c9e471673c07782e6c403277ffd8d}{Complex}}) \{.\mbox{\hyperlink{structComplex_a479ad939835457595fcca3ca55c06283}{real}}=.5, .imag= .5\};
+46     u.r0c1 = (\mbox{\hyperlink{QuEST_8h_ad59c9e471673c07782e6c403277ffd8d}{Complex}}) \{.real=.5, .imag=-.5\}; 
+47     u.r1c0 = (\mbox{\hyperlink{QuEST_8h_ad59c9e471673c07782e6c403277ffd8d}{Complex}}) \{.real=.5, .imag=-.5\};
+48     u.r1c1 = (\mbox{\hyperlink{QuEST_8h_ad59c9e471673c07782e6c403277ffd8d}{Complex}}) \{.real=.5, .imag= .5\};
+49     \mbox{\hyperlink{QuEST__env__local_8c_a7a0877e33700f6bad48adb51b7b3fb67}{unitary}}(qubits, 0, u);
+50 
+51     \mbox{\hyperlink{structComplex}{Complex}} a, b;
+52     a.\mbox{\hyperlink{structComplex_a479ad939835457595fcca3ca55c06283}{real}} = .5; a.\mbox{\hyperlink{structComplex_a1151948284b21c0052f203f23ab931d9}{imag}} =  .5;
+53     b.\mbox{\hyperlink{structComplex_a479ad939835457595fcca3ca55c06283}{real}} = .5; b.\mbox{\hyperlink{structComplex_a1151948284b21c0052f203f23ab931d9}{imag}} = -.5;
+54     \mbox{\hyperlink{QuEST__env__local_8c_a03b13dfcabd8c59b50dbdd3af44ba8b2}{compactUnitary}}(qubits, 1, a, b);
+55 
+56     \mbox{\hyperlink{structVector}{Vector}} v;
+57     v.\mbox{\hyperlink{structVector_aac7abe171ba4bada50ed72acba6259fc}{x}} = 1; v.\mbox{\hyperlink{structVector_a375ca805d4c808a53d7c4e0c737ae3de}{y}} = 0; v.\mbox{\hyperlink{structVector_ad4e863651be7d6b7e2b28cd7445a0ccf}{z}} = 0;
+58     \mbox{\hyperlink{QuEST_8c_a8810423457803005fecd415f4299f40d}{rotateAroundAxis}}(qubits, 2, 3.14/2, v);
+59 
+60     \mbox{\hyperlink{QuEST__env__local_8c_ab4812953bc457405b3aa05a4c2f64f4a}{controlledCompactUnitary}}(qubits, 0, 1, a, b);
+61 
+62     \mbox{\hyperlink{QuEST__env__local_8c_ae395a79690283ed81106afadd7a8cd8a}{multiControlledUnitary}}(qubits, (\textcolor{keywordtype}{int} [])\{0, 1\}, 2, 2, u);
+63 
+64     printf(\textcolor{stringliteral}{"\(\backslash\)nCircuit output:\(\backslash\)n"});
+65 
+66     \mbox{\hyperlink{QuEST__precision_8h_a4b654506f18b8bfd61ad2a29a7e38c25}{REAL}} prob;
+67     prob = \mbox{\hyperlink{QuEST_8c_a799b10447d6dbdaf960a4d3eedd22014}{getProbEl}}(qubits, 7);
+68     printf(\textcolor{stringliteral}{"Probability amplitude of |111>: %f\(\backslash\)n"}, prob);
+69 
+70     prob = \mbox{\hyperlink{QuEST__env__local_8c_ad315c941a51bc053d39ebfa2040fd32e}{findProbabilityOfOutcome}}(qubits, 2, 1);
+71     printf(\textcolor{stringliteral}{"Probability of qubit 2 being in state 1: %f\(\backslash\)n"}, prob);
+72 
+73     \textcolor{keywordtype}{int} outcome = \mbox{\hyperlink{QuEST__env__local_8c_ad5774247d836267175c664cd0e451bcb}{measure}}(qubits, 0);
+74     printf(\textcolor{stringliteral}{"Qubit 0 was measured in state %d\(\backslash\)n"}, outcome);
+75 
+76     outcome = \mbox{\hyperlink{QuEST__env__local_8c_a2ac46e470c750bf93c754e06c64b0a7a}{measureWithStats}}(qubits, 2, &prob);
+77     printf(\textcolor{stringliteral}{"Qubit 2 collapsed to %d with probability %f\(\backslash\)n"}, outcome, prob);
+78 
+79 
+80     \textcolor{comment}{/*}
+81 \textcolor{comment}{     * FREE MEMORY}
+82 \textcolor{comment}{     */}
+83 
+84     \mbox{\hyperlink{QuEST_8c_ae5d6acc322314d7a3d8a2eccf00d3b19}{destroyMultiQubit}}(qubits, \mbox{\hyperlink{runTests_8c_a5fd8ba97fcae3408ae6221dfc3cc1f93}{env}}); 
+85 
+86 
+87     \textcolor{comment}{/*}
+88 \textcolor{comment}{     * CLOSE QUEST ENVIRONMET}
+89 \textcolor{comment}{     * (Required once at end of program)}
+90 \textcolor{comment}{     */}
+91     \mbox{\hyperlink{QuEST__env__local_8c_abd4bc926cd3f9b65610bb228d0c59fe0}{closeQuESTEnv}}(\mbox{\hyperlink{runTests_8c_a5fd8ba97fcae3408ae6221dfc3cc1f93}{env}});
+92     \textcolor{keywordflow}{return} 0;
+93 \}
+\end{DoxyCode}

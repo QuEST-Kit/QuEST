@@ -1,0 +1,106 @@
+\hypertarget{bernstein__vazirani__circuit_8c}{}\subsection{bernstein\+\_\+vazirani\+\_\+circuit.\+c File Reference}
+\label{bernstein__vazirani__circuit_8c}\index{bernstein\+\_\+vazirani\+\_\+circuit.\+c@{bernstein\+\_\+vazirani\+\_\+circuit.\+c}}
+
+
+Implements the Bernstien--Vazirani circuit.  
+
+
+{\ttfamily \#include $<$stdio.\+h$>$}\newline
+{\ttfamily \#include $<$math.\+h$>$}\newline
+{\ttfamily \#include \char`\"{}Qu\+E\+S\+T.\+h\char`\"{}}\newline
+\subsubsection*{Functions}
+\begin{DoxyCompactItemize}
+\item 
+int \mbox{\hyperlink{bernstein__vazirani__circuit_8c_a0b1907e3d123f469a739aa425bd05574}{main}} (int narg, char $\ast$$\ast$varg)
+\end{DoxyCompactItemize}
+
+
+\subsubsection{Detailed Description}
+Implements the Bernstien--Vazirani circuit. 
+
+
+
+\subsubsection{Function Documentation}
+\mbox{\Hypertarget{bernstein__vazirani__circuit_8c_a0b1907e3d123f469a739aa425bd05574}\label{bernstein__vazirani__circuit_8c_a0b1907e3d123f469a739aa425bd05574}} 
+\index{bernstein\+\_\+vazirani\+\_\+circuit.\+c@{bernstein\+\_\+vazirani\+\_\+circuit.\+c}!main@{main}}
+\index{main@{main}!bernstein\+\_\+vazirani\+\_\+circuit.\+c@{bernstein\+\_\+vazirani\+\_\+circuit.\+c}}
+\paragraph{\texorpdfstring{main()}{main()}}
+{\footnotesize\ttfamily int main (\begin{DoxyParamCaption}\item[{int}]{narg,  }\item[{char $\ast$$\ast$}]{varg }\end{DoxyParamCaption})}
+
+
+
+Definition at line 11 of file bernstein\+\_\+vazirani\+\_\+circuit.\+c.
+
+
+
+References close\+Qu\+E\+S\+T\+Env(), controlled\+Not(), create\+Multi\+Qubit(), destroy\+Multi\+Qubit(), env, find\+Probability\+Of\+Outcome(), init\+Qu\+E\+S\+T\+Env(), init\+State\+Zero(), and sigma\+X().
+
+
+\begin{DoxyCode}
+11                                  \{
+12 
+13 
+14     \textcolor{comment}{/*  }
+15 \textcolor{comment}{     * PREPARE QuEST}
+16 \textcolor{comment}{     */}
+17 
+18     \textcolor{comment}{// model parameters}
+19     \textcolor{keywordtype}{int} numQubits = 9;
+20     \textcolor{keywordtype}{int} secretNum = pow(2,4) + 1;
+21 
+22     \textcolor{comment}{// prepare QuEST}
+23     \mbox{\hyperlink{structQuESTEnv}{QuESTEnv}} \mbox{\hyperlink{runTests_8c_a5fd8ba97fcae3408ae6221dfc3cc1f93}{env}};
+24     \mbox{\hyperlink{QuEST__env__local_8c_ad84a3ce68d1ca02b4e3f741ea45b6054}{initQuESTEnv}}(&\mbox{\hyperlink{runTests_8c_a5fd8ba97fcae3408ae6221dfc3cc1f93}{env}});
+25 
+26     \textcolor{comment}{// create register; let zeroth qubit be ancilla}
+27     \mbox{\hyperlink{structMultiQubit}{MultiQubit}} multiQubit; 
+28     \mbox{\hyperlink{QuEST_8c_a9c02591bc64c2918503afa231d90d83f}{createMultiQubit}}(&multiQubit, numQubits, \mbox{\hyperlink{runTests_8c_a5fd8ba97fcae3408ae6221dfc3cc1f93}{env}});
+29     \mbox{\hyperlink{QuEST_8c_a9ba8171c9ec5c42202b144026527e9ec}{initStateZero}}(multiQubit);
+30 
+31 
+32     \textcolor{comment}{/*  }
+33 \textcolor{comment}{     * APPLY ALGORITHM}
+34 \textcolor{comment}{     */}
+35 
+36     \textcolor{comment}{// NOT the ancilla}
+37     \mbox{\hyperlink{QuEST__env__local_8c_a86e396e06b7d527cac20ba0108872423}{sigmaX}}(multiQubit, 0);
+38 
+39     \textcolor{comment}{// CNOT secretNum bits with ancilla}
+40     \textcolor{keywordtype}{int} bits = secretNum;
+41     \textcolor{keywordtype}{int} bit;
+42     \textcolor{keywordflow}{for} (\textcolor{keywordtype}{int} qb=1; qb < numQubits; qb++) \{
+43         bit = bits % 2;
+44         bits /= 2;
+45         \textcolor{keywordflow}{if} (bit)
+46             \mbox{\hyperlink{QuEST__env__local_8c_a67576895bbc65463481a8ea24d9b1e22}{controlledNot}}(multiQubit, 0, qb);
+47     \}
+48 
+49 
+50     \textcolor{comment}{/*  }
+51 \textcolor{comment}{     * VERIFY FINAL STATE}
+52 \textcolor{comment}{     */}
+53 
+54     \textcolor{comment}{// calculate prob of solution state}
+55     \textcolor{keywordtype}{double} successProb = 1.0;
+56     bits = secretNum;
+57     \textcolor{keywordflow}{for} (\textcolor{keywordtype}{int} qb=1; qb < numQubits; qb++) \{
+58         bit = bits % 2;
+59         bits /= 2;
+60         successProb *= \mbox{\hyperlink{QuEST__env__local_8c_ad315c941a51bc053d39ebfa2040fd32e}{findProbabilityOfOutcome}}(
+61                 multiQubit, qb, bit);
+62     \}
+63 
+64     printf(\textcolor{stringliteral}{"solution reached with probability "});
+65     printf(\textcolor{stringliteral}{"%f"}, successProb);
+66     printf(\textcolor{stringliteral}{"\(\backslash\)n"});
+67 
+68 
+69     \textcolor{comment}{/*}
+70 \textcolor{comment}{     * FREE MEMORY}
+71 \textcolor{comment}{     */}
+72 
+73     \mbox{\hyperlink{QuEST_8c_ae5d6acc322314d7a3d8a2eccf00d3b19}{destroyMultiQubit}}(multiQubit, \mbox{\hyperlink{runTests_8c_a5fd8ba97fcae3408ae6221dfc3cc1f93}{env}}); 
+74     \mbox{\hyperlink{QuEST__env__local_8c_abd4bc926cd3f9b65610bb228d0c59fe0}{closeQuESTEnv}}(\mbox{\hyperlink{runTests_8c_a5fd8ba97fcae3408ae6221dfc3cc1f93}{env}});
+75     \textcolor{keywordflow}{return} 0;
+76 \}
+\end{DoxyCode}

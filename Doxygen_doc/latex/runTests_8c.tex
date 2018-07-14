@@ -1,0 +1,1741 @@
+\hypertarget{runTests_8c}{}\subsection{run\+Tests.\+c File Reference}
+\label{runTests_8c}\index{run\+Tests.\+c@{run\+Tests.\+c}}
+{\ttfamily \#include $<$stdio.\+h$>$}\newline
+{\ttfamily \#include $<$stdlib.\+h$>$}\newline
+{\ttfamily \#include $<$time.\+h$>$}\newline
+{\ttfamily \#include $<$math.\+h$>$}\newline
+{\ttfamily \#include $<$unistd.\+h$>$}\newline
+{\ttfamily \#include $<$string.\+h$>$}\newline
+{\ttfamily \#include \char`\"{}Qu\+E\+S\+T.\+h\char`\"{}}\newline
+{\ttfamily \#include \char`\"{}Qu\+E\+S\+T\+\_\+precision.\+h\char`\"{}}\newline
+{\ttfamily \#include \char`\"{}Qu\+E\+S\+T\+\_\+debug.\+h\char`\"{}}\newline
+\subsubsection*{Macros}
+\begin{DoxyCompactItemize}
+\item 
+\#define \mbox{\hyperlink{runTests_8c_ab6750b3d9bd8ef6616ba0e5acd182a32}{C\+O\+M\+P\+A\+R\+E\+\_\+\+P\+R\+E\+C\+I\+S\+I\+ON}}~10e-\/13
+\item 
+\#define \mbox{\hyperlink{runTests_8c_a513819cf6a35e11aa0bb36eeb6601dc2}{N\+U\+M\+\_\+\+T\+E\+S\+TS}}~24
+\item 
+\#define \mbox{\hyperlink{runTests_8c_a62f14505cc795eb5f045ad26bd77e3e1}{P\+A\+T\+H\+\_\+\+T\+O\+\_\+\+T\+E\+S\+TS}}~\char`\"{}unit/\char`\"{}
+\item 
+\#define \mbox{\hyperlink{runTests_8c_a42f8c497a1968074f38bf5055c650dca}{V\+E\+R\+B\+O\+SE}}~0
+\end{DoxyCompactItemize}
+\subsubsection*{Functions}
+\begin{DoxyCompactItemize}
+\item 
+int \mbox{\hyperlink{runTests_8c_ac171a0362fb526932484eb64604b10e8}{compare\+Reals}} (\mbox{\hyperlink{QuEST__precision_8h_a4b654506f18b8bfd61ad2a29a7e38c25}{R\+E\+AL}} a, \mbox{\hyperlink{QuEST__precision_8h_a4b654506f18b8bfd61ad2a29a7e38c25}{R\+E\+AL}} b, \mbox{\hyperlink{QuEST__precision_8h_a4b654506f18b8bfd61ad2a29a7e38c25}{R\+E\+AL}} precision)
+\item 
+int \mbox{\hyperlink{runTests_8c_a0b1907e3d123f469a739aa425bd05574}{main}} (int narg, char $\ast$$\ast$varg)
+\item 
+void \mbox{\hyperlink{runTests_8c_a18afc51b5830032e23bacc9910c8f0ed}{report\+Test}} (\mbox{\hyperlink{structMultiQubit}{Multi\+Qubit}} multi\+Qubit, char test\+Name\mbox{[}200\mbox{]})
+\item 
+int \mbox{\hyperlink{runTests_8c_a56bb0a0cbe635fea44ba72fd80dc0013}{test\+\_\+collapse\+To\+Outcome}} (char test\+Name\mbox{[}200\mbox{]})
+\item 
+int \mbox{\hyperlink{runTests_8c_a129b322313637f91ce85748518acf0a5}{test\+\_\+compact\+Unitary}} (char test\+Name\mbox{[}200\mbox{]})
+\item 
+int \mbox{\hyperlink{runTests_8c_a3bcaf13c4a090604da14f886cbe85649}{test\+\_\+controlled\+Compact\+Unitary}} (char test\+Name\mbox{[}200\mbox{]})
+\item 
+int \mbox{\hyperlink{runTests_8c_aa1879f91f42b9d0cffb2e64ba1980702}{test\+\_\+controlled\+Not}} (char test\+Name\mbox{[}200\mbox{]})
+\item 
+int \mbox{\hyperlink{runTests_8c_a93a0a1e98c376935d13dfa432e88e860}{test\+\_\+controlled\+Phase\+Gate}} (char test\+Name\mbox{[}200\mbox{]})
+\item 
+int \mbox{\hyperlink{runTests_8c_a9d891f1f1f9591b0c38387b1e6c022e6}{test\+\_\+controlled\+Unitary}} (char test\+Name\mbox{[}200\mbox{]})
+\item 
+int \mbox{\hyperlink{runTests_8c_aa212e99a60c05c89ea6d9a5518ba425e}{test\+\_\+find\+Probability\+Of\+Outcome}} (char test\+Name\mbox{[}200\mbox{]})
+\item 
+int \mbox{\hyperlink{runTests_8c_a3c211ed5e4ac7d86fae9dfd174b1d74d}{test\+\_\+get\+Imag\+Amp\+El}} (char test\+Name\mbox{[}200\mbox{]})
+\item 
+int \mbox{\hyperlink{runTests_8c_ac95b46a6516e3f7f993e483d3d7f573a}{test\+\_\+get\+Prob\+El}} (char test\+Name\mbox{[}200\mbox{]})
+\item 
+int \mbox{\hyperlink{runTests_8c_adc10103b3ce72daac74e7ca244a616e9}{test\+\_\+get\+Real\+Amp\+El}} (char test\+Name\mbox{[}200\mbox{]})
+\item 
+int \mbox{\hyperlink{runTests_8c_ab7cf7a4d8821ce1ebddb5fa029008d8c}{test\+\_\+hadamard}} (char test\+Name\mbox{[}200\mbox{]})
+\item 
+int \mbox{\hyperlink{runTests_8c_ad9a7da9ff0d7b26dd1fa88750c81eebb}{test\+\_\+init\+Classical\+State}} (char test\+Name\mbox{[}200\mbox{]})
+\item 
+int \mbox{\hyperlink{runTests_8c_ae3432238c18bcd06eec79cfc0922c0bb}{test\+\_\+init\+State\+Plus}} (char test\+Name\mbox{[}200\mbox{]})
+\item 
+int \mbox{\hyperlink{runTests_8c_a6e9d6632dbac867ffdf28bad20a65e72}{test\+\_\+init\+State\+Zero}} (char test\+Name\mbox{[}200\mbox{]})
+\item 
+int \mbox{\hyperlink{runTests_8c_a47620b9a78a309a41b01514a3f6f9157}{test\+\_\+measure}} (char test\+Name\mbox{[}200\mbox{]})
+\item 
+int \mbox{\hyperlink{runTests_8c_a7565fe9a15eeda9a7aa19dd9af6fb3cf}{test\+\_\+measure\+With\+Stats}} (char test\+Name\mbox{[}200\mbox{]})
+\item 
+int \mbox{\hyperlink{runTests_8c_a26f37a21204975210a038863e9cce56e}{test\+\_\+multi\+Controlled\+Phase\+Gate}} (char test\+Name\mbox{[}200\mbox{]})
+\item 
+int \mbox{\hyperlink{runTests_8c_adf241c5732dc3f8d4aa025bc231d7472}{test\+\_\+multi\+Controlled\+Unitary}} (char test\+Name\mbox{[}200\mbox{]})
+\item 
+int \mbox{\hyperlink{runTests_8c_a3b454557cf3c7eaa6cd422a19f7641c9}{test\+\_\+s\+Gate}} (char test\+Name\mbox{[}200\mbox{]})
+\item 
+int \mbox{\hyperlink{runTests_8c_aa1431f98522afb42a7cbef3055905f91}{test\+\_\+sigmaX}} (char test\+Name\mbox{[}200\mbox{]})
+\item 
+int \mbox{\hyperlink{runTests_8c_af6fe08f1f307014ef9963197ce35ee47}{test\+\_\+sigmaY}} (char test\+Name\mbox{[}200\mbox{]})
+\item 
+int \mbox{\hyperlink{runTests_8c_af9f1119848cfc00c9a699ee81f33bb82}{test\+\_\+sigmaZ}} (char test\+Name\mbox{[}200\mbox{]})
+\item 
+int \mbox{\hyperlink{runTests_8c_aa6be048ce1df1f2b1e72eb3fadaf69ab}{test\+\_\+t\+Gate}} (char test\+Name\mbox{[}200\mbox{]})
+\item 
+int \mbox{\hyperlink{runTests_8c_a479d17b9b1f58a696ee427de0b4aa395}{test\+\_\+unitary}} (char test\+Name\mbox{[}200\mbox{]})
+\end{DoxyCompactItemize}
+\subsubsection*{Variables}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\hyperlink{structQuESTEnv}{Qu\+E\+S\+T\+Env}} \mbox{\hyperlink{runTests_8c_a5fd8ba97fcae3408ae6221dfc3cc1f93}{env}}
+\end{DoxyCompactItemize}
+
+
+\subsubsection{Macro Definition Documentation}
+\mbox{\Hypertarget{runTests_8c_ab6750b3d9bd8ef6616ba0e5acd182a32}\label{runTests_8c_ab6750b3d9bd8ef6616ba0e5acd182a32}} 
+\index{run\+Tests.\+c@{run\+Tests.\+c}!C\+O\+M\+P\+A\+R\+E\+\_\+\+P\+R\+E\+C\+I\+S\+I\+ON@{C\+O\+M\+P\+A\+R\+E\+\_\+\+P\+R\+E\+C\+I\+S\+I\+ON}}
+\index{C\+O\+M\+P\+A\+R\+E\+\_\+\+P\+R\+E\+C\+I\+S\+I\+ON@{C\+O\+M\+P\+A\+R\+E\+\_\+\+P\+R\+E\+C\+I\+S\+I\+ON}!run\+Tests.\+c@{run\+Tests.\+c}}
+\paragraph{\texorpdfstring{C\+O\+M\+P\+A\+R\+E\+\_\+\+P\+R\+E\+C\+I\+S\+I\+ON}{COMPARE\_PRECISION}}
+{\footnotesize\ttfamily \#define C\+O\+M\+P\+A\+R\+E\+\_\+\+P\+R\+E\+C\+I\+S\+I\+ON~10e-\/13}
+
+
+
+Definition at line 13 of file run\+Tests.\+c.
+
+
+
+Referenced by test\+\_\+collapse\+To\+Outcome(), test\+\_\+compact\+Unitary(), test\+\_\+controlled\+Compact\+Unitary(), test\+\_\+controlled\+Not(), test\+\_\+controlled\+Phase\+Gate(), test\+\_\+controlled\+Unitary(), test\+\_\+find\+Probability\+Of\+Outcome(), test\+\_\+hadamard(), test\+\_\+init\+State\+Plus(), test\+\_\+init\+State\+Zero(), test\+\_\+measure(), test\+\_\+measure\+With\+Stats(), test\+\_\+multi\+Controlled\+Phase\+Gate(), test\+\_\+multi\+Controlled\+Unitary(), test\+\_\+s\+Gate(), test\+\_\+sigma\+X(), test\+\_\+sigma\+Y(), test\+\_\+sigma\+Z(), test\+\_\+t\+Gate(), and test\+\_\+unitary().
+
+\mbox{\Hypertarget{runTests_8c_a513819cf6a35e11aa0bb36eeb6601dc2}\label{runTests_8c_a513819cf6a35e11aa0bb36eeb6601dc2}} 
+\index{run\+Tests.\+c@{run\+Tests.\+c}!N\+U\+M\+\_\+\+T\+E\+S\+TS@{N\+U\+M\+\_\+\+T\+E\+S\+TS}}
+\index{N\+U\+M\+\_\+\+T\+E\+S\+TS@{N\+U\+M\+\_\+\+T\+E\+S\+TS}!run\+Tests.\+c@{run\+Tests.\+c}}
+\paragraph{\texorpdfstring{N\+U\+M\+\_\+\+T\+E\+S\+TS}{NUM\_TESTS}}
+{\footnotesize\ttfamily \#define N\+U\+M\+\_\+\+T\+E\+S\+TS~24}
+
+
+
+Definition at line 12 of file run\+Tests.\+c.
+
+
+
+Referenced by main().
+
+\mbox{\Hypertarget{runTests_8c_a62f14505cc795eb5f045ad26bd77e3e1}\label{runTests_8c_a62f14505cc795eb5f045ad26bd77e3e1}} 
+\index{run\+Tests.\+c@{run\+Tests.\+c}!P\+A\+T\+H\+\_\+\+T\+O\+\_\+\+T\+E\+S\+TS@{P\+A\+T\+H\+\_\+\+T\+O\+\_\+\+T\+E\+S\+TS}}
+\index{P\+A\+T\+H\+\_\+\+T\+O\+\_\+\+T\+E\+S\+TS@{P\+A\+T\+H\+\_\+\+T\+O\+\_\+\+T\+E\+S\+TS}!run\+Tests.\+c@{run\+Tests.\+c}}
+\paragraph{\texorpdfstring{P\+A\+T\+H\+\_\+\+T\+O\+\_\+\+T\+E\+S\+TS}{PATH\_TO\_TESTS}}
+{\footnotesize\ttfamily \#define P\+A\+T\+H\+\_\+\+T\+O\+\_\+\+T\+E\+S\+TS~\char`\"{}unit/\char`\"{}}
+
+
+
+Definition at line 14 of file run\+Tests.\+c.
+
+
+
+Referenced by test\+\_\+controlled\+Compact\+Unitary(), test\+\_\+controlled\+Not(), test\+\_\+controlled\+Phase\+Gate(), test\+\_\+hadamard(), test\+\_\+init\+State\+Plus(), test\+\_\+init\+State\+Zero(), test\+\_\+multi\+Controlled\+Phase\+Gate(), test\+\_\+multi\+Controlled\+Unitary(), test\+\_\+s\+Gate(), test\+\_\+sigma\+X(), test\+\_\+sigma\+Y(), test\+\_\+sigma\+Z(), and test\+\_\+t\+Gate().
+
+\mbox{\Hypertarget{runTests_8c_a42f8c497a1968074f38bf5055c650dca}\label{runTests_8c_a42f8c497a1968074f38bf5055c650dca}} 
+\index{run\+Tests.\+c@{run\+Tests.\+c}!V\+E\+R\+B\+O\+SE@{V\+E\+R\+B\+O\+SE}}
+\index{V\+E\+R\+B\+O\+SE@{V\+E\+R\+B\+O\+SE}!run\+Tests.\+c@{run\+Tests.\+c}}
+\paragraph{\texorpdfstring{V\+E\+R\+B\+O\+SE}{VERBOSE}}
+{\footnotesize\ttfamily \#define V\+E\+R\+B\+O\+SE~0}
+
+
+
+Definition at line 15 of file run\+Tests.\+c.
+
+
+
+\subsubsection{Function Documentation}
+\mbox{\Hypertarget{runTests_8c_ac171a0362fb526932484eb64604b10e8}\label{runTests_8c_ac171a0362fb526932484eb64604b10e8}} 
+\index{run\+Tests.\+c@{run\+Tests.\+c}!compare\+Reals@{compare\+Reals}}
+\index{compare\+Reals@{compare\+Reals}!run\+Tests.\+c@{run\+Tests.\+c}}
+\paragraph{\texorpdfstring{compare\+Reals()}{compareReals()}}
+{\footnotesize\ttfamily int compare\+Reals (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{QuEST__precision_8h_a4b654506f18b8bfd61ad2a29a7e38c25}{R\+E\+AL}}}]{a,  }\item[{\mbox{\hyperlink{QuEST__precision_8h_a4b654506f18b8bfd61ad2a29a7e38c25}{R\+E\+AL}}}]{b,  }\item[{\mbox{\hyperlink{QuEST__precision_8h_a4b654506f18b8bfd61ad2a29a7e38c25}{R\+E\+AL}}}]{precision }\end{DoxyParamCaption})}
+
+
+
+Definition at line 24 of file run\+Tests.\+c.
+
+
+
+References R\+E\+AL.
+
+
+
+Referenced by test\+\_\+collapse\+To\+Outcome(), test\+\_\+compact\+Unitary(), test\+\_\+find\+Probability\+Of\+Outcome(), test\+\_\+measure\+With\+Stats(), and test\+\_\+unitary().
+
+
+\begin{DoxyCode}
+24                                                 \{
+25     \mbox{\hyperlink{QuEST__precision_8h_a4b654506f18b8bfd61ad2a29a7e38c25}{REAL}} diff = a-b;
+26     \textcolor{keywordflow}{if} (diff<0) diff *= -1;
+27     \textcolor{keywordflow}{if} (diff>precision) \textcolor{keywordflow}{return} 0;
+28     \textcolor{keywordflow}{else} \textcolor{keywordflow}{return} 1;
+29 \}
+\end{DoxyCode}
+\mbox{\Hypertarget{runTests_8c_a0b1907e3d123f469a739aa425bd05574}\label{runTests_8c_a0b1907e3d123f469a739aa425bd05574}} 
+\index{run\+Tests.\+c@{run\+Tests.\+c}!main@{main}}
+\index{main@{main}!run\+Tests.\+c@{run\+Tests.\+c}}
+\paragraph{\texorpdfstring{main()}{main()}}
+{\footnotesize\ttfamily int main (\begin{DoxyParamCaption}\item[{int}]{narg,  }\item[{char $\ast$$\ast$}]{varg }\end{DoxyParamCaption})}
+
+
+
+Definition at line 943 of file run\+Tests.\+c.
+
+
+
+References close\+Qu\+E\+S\+T\+Env(), env, init\+Qu\+E\+S\+T\+Env(), N\+U\+M\+\_\+\+T\+E\+S\+TS, Qu\+E\+S\+T\+Env\+::rank, report\+Qu\+E\+S\+T\+Env(), sync\+Qu\+E\+S\+T\+Success(), test\+\_\+collapse\+To\+Outcome(), test\+\_\+compact\+Unitary(), test\+\_\+controlled\+Compact\+Unitary(), test\+\_\+controlled\+Not(), test\+\_\+controlled\+Phase\+Gate(), test\+\_\+controlled\+Unitary(), test\+\_\+find\+Probability\+Of\+Outcome(), test\+\_\+get\+Imag\+Amp\+El(), test\+\_\+get\+Prob\+El(), test\+\_\+get\+Real\+Amp\+El(), test\+\_\+hadamard(), test\+\_\+init\+Classical\+State(), test\+\_\+init\+State\+Plus(), test\+\_\+init\+State\+Zero(), test\+\_\+measure(), test\+\_\+measure\+With\+Stats(), test\+\_\+multi\+Controlled\+Phase\+Gate(), test\+\_\+multi\+Controlled\+Unitary(), test\+\_\+s\+Gate(), test\+\_\+sigma\+X(), test\+\_\+sigma\+Y(), test\+\_\+sigma\+Z(), test\+\_\+t\+Gate(), and test\+\_\+unitary().
+
+
+\begin{DoxyCode}
+943                                  \{
+944     \mbox{\hyperlink{QuEST__env__local_8c_ad84a3ce68d1ca02b4e3f741ea45b6054}{initQuESTEnv}}(&\mbox{\hyperlink{runTests_8c_a5fd8ba97fcae3408ae6221dfc3cc1f93}{env}});
+945     \mbox{\hyperlink{QuEST__env__local_8c_af8a14ae79c3fb2c0b5f6255cc37bebf9}{reportQuESTEnv}}(\mbox{\hyperlink{runTests_8c_a5fd8ba97fcae3408ae6221dfc3cc1f93}{env}});
+946 
+947     int (*tests[\mbox{\hyperlink{runTests_8c_a513819cf6a35e11aa0bb36eeb6601dc2}{NUM\_TESTS}}])(\textcolor{keywordtype}{char}[200]) = \{
+948         \mbox{\hyperlink{runTests_8c_aa1879f91f42b9d0cffb2e64ba1980702}{test\_controlledNot}},
+949         \mbox{\hyperlink{runTests_8c_a6e9d6632dbac867ffdf28bad20a65e72}{test\_initStateZero}},
+950         \mbox{\hyperlink{runTests_8c_ae3432238c18bcd06eec79cfc0922c0bb}{test\_initStatePlus}},
+951                 \mbox{\hyperlink{runTests_8c_ad9a7da9ff0d7b26dd1fa88750c81eebb}{test\_initClassicalState}},
+952         \mbox{\hyperlink{runTests_8c_aa1431f98522afb42a7cbef3055905f91}{test\_sigmaX}},
+953         \mbox{\hyperlink{runTests_8c_af6fe08f1f307014ef9963197ce35ee47}{test\_sigmaY}},
+954         \mbox{\hyperlink{runTests_8c_af9f1119848cfc00c9a699ee81f33bb82}{test\_sigmaZ}},
+955         \mbox{\hyperlink{runTests_8c_ab7cf7a4d8821ce1ebddb5fa029008d8c}{test\_hadamard}},
+956         \mbox{\hyperlink{runTests_8c_a3b454557cf3c7eaa6cd422a19f7641c9}{test\_sGate}},
+957         \mbox{\hyperlink{runTests_8c_aa6be048ce1df1f2b1e72eb3fadaf69ab}{test\_tGate}},
+958         \mbox{\hyperlink{runTests_8c_a93a0a1e98c376935d13dfa432e88e860}{test\_controlledPhaseGate}},
+959         \mbox{\hyperlink{runTests_8c_a26f37a21204975210a038863e9cce56e}{test\_multiControlledPhaseGate}},
+960         \mbox{\hyperlink{runTests_8c_a129b322313637f91ce85748518acf0a5}{test\_compactUnitary}},
+961         \mbox{\hyperlink{runTests_8c_a479d17b9b1f58a696ee427de0b4aa395}{test\_unitary}},
+962         \mbox{\hyperlink{runTests_8c_a3bcaf13c4a090604da14f886cbe85649}{test\_controlledCompactUnitary}},
+963         \mbox{\hyperlink{runTests_8c_a9d891f1f1f9591b0c38387b1e6c022e6}{test\_controlledUnitary}},
+964         \mbox{\hyperlink{runTests_8c_adf241c5732dc3f8d4aa025bc231d7472}{test\_multiControlledUnitary}},
+965         \mbox{\hyperlink{runTests_8c_aa212e99a60c05c89ea6d9a5518ba425e}{test\_findProbabilityOfOutcome}},
+966         \mbox{\hyperlink{runTests_8c_a56bb0a0cbe635fea44ba72fd80dc0013}{test\_collapseToOutcome}},
+967         \mbox{\hyperlink{runTests_8c_a47620b9a78a309a41b01514a3f6f9157}{test\_measure}},
+968         \mbox{\hyperlink{runTests_8c_a7565fe9a15eeda9a7aa19dd9af6fb3cf}{test\_measureWithStats}},
+969                 \mbox{\hyperlink{runTests_8c_adc10103b3ce72daac74e7ca244a616e9}{test\_getRealAmpEl}},
+970                 \mbox{\hyperlink{runTests_8c_a3c211ed5e4ac7d86fae9dfd174b1d74d}{test\_getImagAmpEl}},
+971                 \mbox{\hyperlink{runTests_8c_ac95b46a6516e3f7f993e483d3d7f573a}{test\_getProbEl}}
+972     \};
+973 
+974     \textcolor{keywordtype}{char} testNames[\mbox{\hyperlink{runTests_8c_a513819cf6a35e11aa0bb36eeb6601dc2}{NUM\_TESTS}}][200] = \{
+975         \textcolor{stringliteral}{"controlledNot"},
+976         \textcolor{stringliteral}{"initStateZero"},
+977         \textcolor{stringliteral}{"initStatePlus"},
+978                 \textcolor{stringliteral}{"initClassicalState"},
+979         \textcolor{stringliteral}{"sigmaX"},
+980         \textcolor{stringliteral}{"sigmaY"},
+981         \textcolor{stringliteral}{"sigmaZ"},
+982         \textcolor{stringliteral}{"hadamard"},
+983         \textcolor{stringliteral}{"sGate"},
+984         \textcolor{stringliteral}{"tGate"},
+985         \textcolor{stringliteral}{"controlledPhaseGate"},
+986         \textcolor{stringliteral}{"multiControlledPhaseGate"},
+987         \textcolor{stringliteral}{"compactUnitary"},
+988         \textcolor{stringliteral}{"unitary"},
+989         \textcolor{stringliteral}{"controlledCompactUnitary"},
+990         \textcolor{stringliteral}{"controlledUnitary"},
+991         \textcolor{stringliteral}{"multiControlledUnitary"},
+992         \textcolor{stringliteral}{"findProbabilityOfOutcome"},
+993         \textcolor{stringliteral}{"collapseToOutcome"},
+994         \textcolor{stringliteral}{"measure"},
+995         \textcolor{stringliteral}{"measureWithStats"},
+996                 \textcolor{stringliteral}{"getRealAmpEl"},
+997                 \textcolor{stringliteral}{"getImagAmpEl"},
+998                 \textcolor{stringliteral}{"getProbEl"}
+999     \};
+1000     \textcolor{keywordtype}{int} passed=0;
+1001     \textcolor{keywordflow}{if} (\mbox{\hyperlink{runTests_8c_a5fd8ba97fcae3408ae6221dfc3cc1f93}{env}}.\mbox{\hyperlink{structQuESTEnv_aa648bb336cf8598467cb62db00b9cee8}{rank}}==0) printf(\textcolor{stringliteral}{"\(\backslash\)nRunning unit tests\(\backslash\)n"});
+1002     \textcolor{keywordflow}{for} (\textcolor{keywordtype}{int} i=0; i<\mbox{\hyperlink{runTests_8c_a513819cf6a35e11aa0bb36eeb6601dc2}{NUM\_TESTS}}; i++)\{
+1003         passed=(*tests[i])(testNames[i]);       
+1004         passed=\mbox{\hyperlink{QuEST__env__local_8c_ac7e38d768a1bd79019f88cc1e6295092}{syncQuESTSuccess}}(passed);
+1005         \textcolor{keywordflow}{if} (!passed)\{
+1006             \textcolor{keywordflow}{if} (\mbox{\hyperlink{runTests_8c_a5fd8ba97fcae3408ae6221dfc3cc1f93}{env}}.\mbox{\hyperlink{structQuESTEnv_aa648bb336cf8598467cb62db00b9cee8}{rank}}==0) printf(\textcolor{stringliteral}{"!!! FAILED in test %d -- %s\(\backslash\)n"}, i, testNames[i]);
+1007             \mbox{\hyperlink{QuEST__env__local_8c_abd4bc926cd3f9b65610bb228d0c59fe0}{closeQuESTEnv}}(\mbox{\hyperlink{runTests_8c_a5fd8ba97fcae3408ae6221dfc3cc1f93}{env}});
+1008             \textcolor{keywordflow}{return} 1;
+1009         \} \textcolor{keywordflow}{else} \textcolor{keywordflow}{if} (\mbox{\hyperlink{runTests_8c_a5fd8ba97fcae3408ae6221dfc3cc1f93}{env}}.\mbox{\hyperlink{structQuESTEnv_aa648bb336cf8598467cb62db00b9cee8}{rank}}==0) printf(\textcolor{stringliteral}{"Passed test %d -- %s\(\backslash\)n"}, i, testNames[i]);
+1010     \}
+1011     \mbox{\hyperlink{QuEST__env__local_8c_abd4bc926cd3f9b65610bb228d0c59fe0}{closeQuESTEnv}}(\mbox{\hyperlink{runTests_8c_a5fd8ba97fcae3408ae6221dfc3cc1f93}{env}});
+1012 
+1013     \textcolor{keywordflow}{return} 0;
+1014 \}
+\end{DoxyCode}
+\mbox{\Hypertarget{runTests_8c_a18afc51b5830032e23bacc9910c8f0ed}\label{runTests_8c_a18afc51b5830032e23bacc9910c8f0ed}} 
+\index{run\+Tests.\+c@{run\+Tests.\+c}!report\+Test@{report\+Test}}
+\index{report\+Test@{report\+Test}!run\+Tests.\+c@{run\+Tests.\+c}}
+\paragraph{\texorpdfstring{report\+Test()}{reportTest()}}
+{\footnotesize\ttfamily void report\+Test (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structMultiQubit}{Multi\+Qubit}}}]{multi\+Qubit,  }\item[{char}]{test\+Name\mbox{[}200\mbox{]} }\end{DoxyParamCaption})}
+
+
+
+Definition at line 19 of file run\+Tests.\+c.
+
+
+
+References env, and report\+State\+To\+Screen().
+
+
+\begin{DoxyCode}
+19                                                           \{
+20     printf(\textcolor{stringliteral}{"\(\backslash\)nTest: %s\(\backslash\)n"}, testName);
+21     \mbox{\hyperlink{QuEST_8c_a842d6884e063a5865a2232cba56b65ac}{reportStateToScreen}}(multiQubit, \mbox{\hyperlink{runTests_8c_a5fd8ba97fcae3408ae6221dfc3cc1f93}{env}}, 0);
+22 \}
+\end{DoxyCode}
+\mbox{\Hypertarget{runTests_8c_a56bb0a0cbe635fea44ba72fd80dc0013}\label{runTests_8c_a56bb0a0cbe635fea44ba72fd80dc0013}} 
+\index{run\+Tests.\+c@{run\+Tests.\+c}!test\+\_\+collapse\+To\+Outcome@{test\+\_\+collapse\+To\+Outcome}}
+\index{test\+\_\+collapse\+To\+Outcome@{test\+\_\+collapse\+To\+Outcome}!run\+Tests.\+c@{run\+Tests.\+c}}
+\paragraph{\texorpdfstring{test\+\_\+collapse\+To\+Outcome()}{test\_collapseToOutcome()}}
+{\footnotesize\ttfamily int test\+\_\+collapse\+To\+Outcome (\begin{DoxyParamCaption}\item[{char}]{test\+Name\mbox{[}200\mbox{]} }\end{DoxyParamCaption})}
+
+
+
+Definition at line 717 of file run\+Tests.\+c.
+
+
+
+References collapse\+To\+Outcome(), C\+O\+M\+P\+A\+R\+E\+\_\+\+P\+R\+E\+C\+I\+S\+I\+ON, compare\+Reals(), compare\+States(), create\+Multi\+Qubit(), destroy\+Multi\+Qubit(), env, init\+State\+Of\+Single\+Qubit(), init\+State\+Plus(), init\+State\+Zero(), and R\+E\+AL.
+
+
+
+Referenced by main().
+
+
+\begin{DoxyCode}
+717                                               \{
+718     \textcolor{keywordtype}{int} passed=1;
+719 
+720     \textcolor{keywordtype}{int} numQubits=3;
+721     \mbox{\hyperlink{structMultiQubit}{MultiQubit}} mq, mqVerif;
+722     \textcolor{keywordtype}{int} qubit;
+723     \mbox{\hyperlink{QuEST__precision_8h_a4b654506f18b8bfd61ad2a29a7e38c25}{REAL}} prob;
+724 
+725     \mbox{\hyperlink{QuEST_8c_a9c02591bc64c2918503afa231d90d83f}{createMultiQubit}}(&mq, numQubits, \mbox{\hyperlink{runTests_8c_a5fd8ba97fcae3408ae6221dfc3cc1f93}{env}});
+726     \mbox{\hyperlink{QuEST_8c_a9c02591bc64c2918503afa231d90d83f}{createMultiQubit}}(&mqVerif, numQubits, \mbox{\hyperlink{runTests_8c_a5fd8ba97fcae3408ae6221dfc3cc1f93}{env}});
+727 
+728     \textcolor{comment}{// test qubit = |0> }
+729     \textcolor{keywordflow}{for} (qubit=0; qubit<numQubits; qubit++)\{
+730         \mbox{\hyperlink{QuEST_8c_a9ba8171c9ec5c42202b144026527e9ec}{initStateZero}}(mq);
+731         \mbox{\hyperlink{QuEST_8c_a9ba8171c9ec5c42202b144026527e9ec}{initStateZero}}(mqVerif);
+732         prob = \mbox{\hyperlink{QuEST__env__local_8c_a07418ebac70fd9ae5d051d089961631d}{collapseToOutcome}}(mq, qubit, 0);
+733         \textcolor{keywordflow}{if} (passed) passed = \mbox{\hyperlink{runTests_8c_ac171a0362fb526932484eb64604b10e8}{compareReals}}(1, prob, \mbox{\hyperlink{runTests_8c_ab6750b3d9bd8ef6616ba0e5acd182a32}{COMPARE\_PRECISION}});
+734         \textcolor{keywordflow}{if} (passed) passed = \mbox{\hyperlink{QuEST_8c_a793584932ae384c82e7e42db7d35d18d}{compareStates}}(mq, mqVerif, 
+      \mbox{\hyperlink{runTests_8c_ab6750b3d9bd8ef6616ba0e5acd182a32}{COMPARE\_PRECISION}});
+735 
+736         \textcolor{comment}{/* uncomment to test error is thrown}
+737 \textcolor{comment}{           initStateZero(&mq);}
+738 \textcolor{comment}{           initStateZero(&mqVerif);}
+739 \textcolor{comment}{           prob = collapseToOutcome(mq, qubit, 1);}
+740 \textcolor{comment}{           if (passed) passed = compareReals(0, prob, COMPARE\_PRECISION);}
+741 \textcolor{comment}{           if (passed) passed = compareStates(mq, mqVerif, COMPARE\_PRECISION);}
+742 \textcolor{comment}{           */}
+743     \}
+744 
+745     \textcolor{comment}{// test qubit = |1> }
+746     \textcolor{keywordflow}{for} (qubit=0; qubit<numQubits; qubit++)\{
+747         \textcolor{comment}{/* uncomment to test error is thrown}
+748 \textcolor{comment}{           initStateOfSingleQubit(&mq, qubit, 1);}
+749 \textcolor{comment}{           initStateOfSingleQubit(&mqVerif, qubit, 1);}
+750 \textcolor{comment}{           prob = collapseToOutcome(mq, qubit, 0);}
+751 \textcolor{comment}{           if (passed) passed = compareReals(0, prob, COMPARE\_PRECISION);}
+752 \textcolor{comment}{           if (passed) passed = compareStates(mq, mqVerif, COMPARE\_PRECISION);}
+753 \textcolor{comment}{           */}
+754 
+755         \mbox{\hyperlink{QuEST_8c_a7169fd0442cbc3418f3fac4d13363ca2}{initStateOfSingleQubit}}(&mq, qubit, 1);
+756         \mbox{\hyperlink{QuEST_8c_a7169fd0442cbc3418f3fac4d13363ca2}{initStateOfSingleQubit}}(&mqVerif, qubit, 1);
+757         prob = \mbox{\hyperlink{QuEST__env__local_8c_a07418ebac70fd9ae5d051d089961631d}{collapseToOutcome}}(mq, qubit, 1);
+758         \textcolor{keywordflow}{if} (passed) passed = \mbox{\hyperlink{runTests_8c_ac171a0362fb526932484eb64604b10e8}{compareReals}}(1, prob, \mbox{\hyperlink{runTests_8c_ab6750b3d9bd8ef6616ba0e5acd182a32}{COMPARE\_PRECISION}});
+759         \textcolor{keywordflow}{if} (passed) passed = \mbox{\hyperlink{QuEST_8c_a793584932ae384c82e7e42db7d35d18d}{compareStates}}(mq, mqVerif, 
+      \mbox{\hyperlink{runTests_8c_ab6750b3d9bd8ef6616ba0e5acd182a32}{COMPARE\_PRECISION}});
+760     \}
+761 
+762     \textcolor{comment}{// test qubit = |+> }
+763     \textcolor{keywordflow}{for} (qubit=0; qubit<numQubits; qubit++)\{
+764         \mbox{\hyperlink{QuEST_8c_af8a0082e2f695145bbfbb572e4c2e4f1}{initStatePlus}}(mq);
+765         \mbox{\hyperlink{QuEST_8c_a7169fd0442cbc3418f3fac4d13363ca2}{initStateOfSingleQubit}}(&mqVerif, qubit, 0);
+766         prob = \mbox{\hyperlink{QuEST__env__local_8c_a07418ebac70fd9ae5d051d089961631d}{collapseToOutcome}}(mq, qubit, 0);
+767         \textcolor{keywordflow}{if} (passed) passed = \mbox{\hyperlink{runTests_8c_ac171a0362fb526932484eb64604b10e8}{compareReals}}(0.5, prob, 
+      \mbox{\hyperlink{runTests_8c_ab6750b3d9bd8ef6616ba0e5acd182a32}{COMPARE\_PRECISION}});
+768         \textcolor{keywordflow}{if} (passed) passed = \mbox{\hyperlink{QuEST_8c_a793584932ae384c82e7e42db7d35d18d}{compareStates}}(mq, mqVerif, 
+      \mbox{\hyperlink{runTests_8c_ab6750b3d9bd8ef6616ba0e5acd182a32}{COMPARE\_PRECISION}});
+769 
+770         \mbox{\hyperlink{QuEST_8c_af8a0082e2f695145bbfbb572e4c2e4f1}{initStatePlus}}(mq);
+771         \mbox{\hyperlink{QuEST_8c_a7169fd0442cbc3418f3fac4d13363ca2}{initStateOfSingleQubit}}(&mqVerif, qubit, 1);
+772         prob = \mbox{\hyperlink{QuEST__env__local_8c_a07418ebac70fd9ae5d051d089961631d}{collapseToOutcome}}(mq, qubit, 1);
+773         \textcolor{keywordflow}{if} (passed) passed = \mbox{\hyperlink{runTests_8c_ac171a0362fb526932484eb64604b10e8}{compareReals}}(0.5, prob, 
+      \mbox{\hyperlink{runTests_8c_ab6750b3d9bd8ef6616ba0e5acd182a32}{COMPARE\_PRECISION}});
+774         \textcolor{keywordflow}{if} (passed) passed = \mbox{\hyperlink{QuEST_8c_a793584932ae384c82e7e42db7d35d18d}{compareStates}}(mq, mqVerif, 
+      \mbox{\hyperlink{runTests_8c_ab6750b3d9bd8ef6616ba0e5acd182a32}{COMPARE\_PRECISION}});
+775     \}
+776     \mbox{\hyperlink{QuEST_8c_ae5d6acc322314d7a3d8a2eccf00d3b19}{destroyMultiQubit}}(mq, \mbox{\hyperlink{runTests_8c_a5fd8ba97fcae3408ae6221dfc3cc1f93}{env}});
+777     \mbox{\hyperlink{QuEST_8c_ae5d6acc322314d7a3d8a2eccf00d3b19}{destroyMultiQubit}}(mqVerif, \mbox{\hyperlink{runTests_8c_a5fd8ba97fcae3408ae6221dfc3cc1f93}{env}});
+778 
+779     \textcolor{keywordflow}{return} passed;
+780 \}
+\end{DoxyCode}
+\mbox{\Hypertarget{runTests_8c_a129b322313637f91ce85748518acf0a5}\label{runTests_8c_a129b322313637f91ce85748518acf0a5}} 
+\index{run\+Tests.\+c@{run\+Tests.\+c}!test\+\_\+compact\+Unitary@{test\+\_\+compact\+Unitary}}
+\index{test\+\_\+compact\+Unitary@{test\+\_\+compact\+Unitary}!run\+Tests.\+c@{run\+Tests.\+c}}
+\paragraph{\texorpdfstring{test\+\_\+compact\+Unitary()}{test\_compactUnitary()}}
+{\footnotesize\ttfamily int test\+\_\+compact\+Unitary (\begin{DoxyParamCaption}\item[{char}]{test\+Name\mbox{[}200\mbox{]} }\end{DoxyParamCaption})}
+
+
+
+Definition at line 366 of file run\+Tests.\+c.
+
+
+
+References calc\+Total\+Probability(), compact\+Unitary(), C\+O\+M\+P\+A\+R\+E\+\_\+\+P\+R\+E\+C\+I\+S\+I\+ON, compare\+Reals(), compare\+States(), create\+Multi\+Qubit(), destroy\+Multi\+Qubit(), env, Complex\+::imag, init\+State\+Debug(), init\+State\+Plus(), R\+E\+AL, and Complex\+::real.
+
+
+
+Referenced by main().
+
+
+\begin{DoxyCode}
+366                                            \{
+367     \textcolor{keywordtype}{int} passed=1;
+368 
+369     \textcolor{keywordtype}{int} numQubits=10;
+370     \textcolor{keywordtype}{int} rotQubit;
+371     \mbox{\hyperlink{structMultiQubit}{MultiQubit}} mq, mqVerif; 
+372 
+373     \mbox{\hyperlink{QuEST__precision_8h_a4b654506f18b8bfd61ad2a29a7e38c25}{REAL}} angs[3];
+374     \mbox{\hyperlink{structComplex}{Complex}} alpha, beta;
+375 
+376     angs[0]=1.2; angs[1]=-2.4; angs[2]=0.3;
+377     alpha.\mbox{\hyperlink{structComplex_a479ad939835457595fcca3ca55c06283}{real}} = cos(angs[0]) * cos(angs[1]);
+378     alpha.\mbox{\hyperlink{structComplex_a1151948284b21c0052f203f23ab931d9}{imag}} = cos(angs[0]) * sin(angs[1]);
+379     beta.\mbox{\hyperlink{structComplex_a479ad939835457595fcca3ca55c06283}{real}}  = sin(angs[0]) * cos(angs[2]);
+380     beta.\mbox{\hyperlink{structComplex_a1151948284b21c0052f203f23ab931d9}{imag}}  = sin(angs[0]) * sin(angs[2]);
+381 
+382     \mbox{\hyperlink{QuEST_8c_a9c02591bc64c2918503afa231d90d83f}{createMultiQubit}}(&mq, numQubits, \mbox{\hyperlink{runTests_8c_a5fd8ba97fcae3408ae6221dfc3cc1f93}{env}});
+383     \mbox{\hyperlink{QuEST_8c_a9c02591bc64c2918503afa231d90d83f}{createMultiQubit}}(&mqVerif, numQubits, \mbox{\hyperlink{runTests_8c_a5fd8ba97fcae3408ae6221dfc3cc1f93}{env}});
+384 
+385     \mbox{\hyperlink{QuEST_8c_a4b737ff9b4267609ef27e6cb4c42dc68}{initStateDebug}}(mq);
+386     \mbox{\hyperlink{QuEST_8c_a4b737ff9b4267609ef27e6cb4c42dc68}{initStateDebug}}(mqVerif);
+387     \textcolor{keywordflow}{for} (\textcolor{keywordtype}{int} i=0; i<numQubits; i++)\{
+388         rotQubit=i;
+389         \mbox{\hyperlink{QuEST__env__local_8c_a03b13dfcabd8c59b50dbdd3af44ba8b2}{compactUnitary}}(mq, rotQubit, alpha, beta);
+390     \}
+391     \textcolor{comment}{// note -- this is only checking if the state changed at all due to rotation,}
+392     \textcolor{comment}{// not that it changed correctly}
+393     \textcolor{keywordflow}{if} (passed) passed = !\mbox{\hyperlink{QuEST_8c_a793584932ae384c82e7e42db7d35d18d}{compareStates}}(mq, mqVerif, 
+      \mbox{\hyperlink{runTests_8c_ab6750b3d9bd8ef6616ba0e5acd182a32}{COMPARE\_PRECISION}});
+394 
+395 
+396     \textcolor{comment}{// Rotate back the other way and check we arrive back at the initial state}
+397     alpha.\mbox{\hyperlink{structComplex_a479ad939835457595fcca3ca55c06283}{real}} = alpha.\mbox{\hyperlink{structComplex_a479ad939835457595fcca3ca55c06283}{real}};
+398     alpha.\mbox{\hyperlink{structComplex_a1151948284b21c0052f203f23ab931d9}{imag}} = -alpha.\mbox{\hyperlink{structComplex_a1151948284b21c0052f203f23ab931d9}{imag}};
+399     beta.\mbox{\hyperlink{structComplex_a479ad939835457595fcca3ca55c06283}{real}}  = -beta.\mbox{\hyperlink{structComplex_a479ad939835457595fcca3ca55c06283}{real}};
+400     beta.\mbox{\hyperlink{structComplex_a1151948284b21c0052f203f23ab931d9}{imag}}  = -beta.\mbox{\hyperlink{structComplex_a1151948284b21c0052f203f23ab931d9}{imag}};
+401 
+402     \textcolor{keywordflow}{for} (\textcolor{keywordtype}{int} i=numQubits-1; i>=0; i--)\{
+403         rotQubit=i;
+404         \mbox{\hyperlink{QuEST__env__local_8c_a03b13dfcabd8c59b50dbdd3af44ba8b2}{compactUnitary}}(mq, rotQubit, alpha, beta);
+405     \}
+406 
+407     \textcolor{keywordflow}{if} (passed) passed = \mbox{\hyperlink{QuEST_8c_a793584932ae384c82e7e42db7d35d18d}{compareStates}}(mq, mqVerif, 
+      \mbox{\hyperlink{runTests_8c_ab6750b3d9bd8ef6616ba0e5acd182a32}{COMPARE\_PRECISION}});
+408 
+409     \mbox{\hyperlink{QuEST_8c_ae5d6acc322314d7a3d8a2eccf00d3b19}{destroyMultiQubit}}(mq, \mbox{\hyperlink{runTests_8c_a5fd8ba97fcae3408ae6221dfc3cc1f93}{env}});
+410     \mbox{\hyperlink{QuEST_8c_ae5d6acc322314d7a3d8a2eccf00d3b19}{destroyMultiQubit}}(mqVerif, \mbox{\hyperlink{runTests_8c_a5fd8ba97fcae3408ae6221dfc3cc1f93}{env}});
+411 
+412     \textcolor{comment}{// check for normalisation}
+413     numQubits=25;
+414     \mbox{\hyperlink{QuEST_8c_a9c02591bc64c2918503afa231d90d83f}{createMultiQubit}}(&mq, numQubits, \mbox{\hyperlink{runTests_8c_a5fd8ba97fcae3408ae6221dfc3cc1f93}{env}});
+415     \mbox{\hyperlink{QuEST_8c_af8a0082e2f695145bbfbb572e4c2e4f1}{initStatePlus}}(mq);
+416     \textcolor{keywordflow}{for} (\textcolor{keywordtype}{int} i=0; i<numQubits; i++)\{
+417         rotQubit=i;
+418         \mbox{\hyperlink{QuEST__env__local_8c_a03b13dfcabd8c59b50dbdd3af44ba8b2}{compactUnitary}}(mq, rotQubit, alpha, beta);
+419     \}
+420     \mbox{\hyperlink{QuEST__precision_8h_a4b654506f18b8bfd61ad2a29a7e38c25}{REAL}} outcome = \mbox{\hyperlink{QuEST__env__local_8c_a818a4c7cd7252d2b10b896b12fa431d3}{calcTotalProbability}}(mq);    
+421     \textcolor{keywordflow}{if} (passed) passed = \mbox{\hyperlink{runTests_8c_ac171a0362fb526932484eb64604b10e8}{compareReals}}(1.0, outcome, 
+      \mbox{\hyperlink{runTests_8c_ab6750b3d9bd8ef6616ba0e5acd182a32}{COMPARE\_PRECISION}});
+422     \mbox{\hyperlink{QuEST_8c_ae5d6acc322314d7a3d8a2eccf00d3b19}{destroyMultiQubit}}(mq, \mbox{\hyperlink{runTests_8c_a5fd8ba97fcae3408ae6221dfc3cc1f93}{env}});
+423 
+424 
+425     \textcolor{keywordflow}{return} passed;
+426 \}
+\end{DoxyCode}
+\mbox{\Hypertarget{runTests_8c_a3bcaf13c4a090604da14f886cbe85649}\label{runTests_8c_a3bcaf13c4a090604da14f886cbe85649}} 
+\index{run\+Tests.\+c@{run\+Tests.\+c}!test\+\_\+controlled\+Compact\+Unitary@{test\+\_\+controlled\+Compact\+Unitary}}
+\index{test\+\_\+controlled\+Compact\+Unitary@{test\+\_\+controlled\+Compact\+Unitary}!run\+Tests.\+c@{run\+Tests.\+c}}
+\paragraph{\texorpdfstring{test\+\_\+controlled\+Compact\+Unitary()}{test\_controlledCompactUnitary()}}
+{\footnotesize\ttfamily int test\+\_\+controlled\+Compact\+Unitary (\begin{DoxyParamCaption}\item[{char}]{test\+Name\mbox{[}200\mbox{]} }\end{DoxyParamCaption})}
+
+
+
+Definition at line 495 of file run\+Tests.\+c.
+
+
+
+References C\+O\+M\+P\+A\+R\+E\+\_\+\+P\+R\+E\+C\+I\+S\+I\+ON, compare\+States(), controlled\+Compact\+Unitary(), create\+Multi\+Qubit(), destroy\+Multi\+Qubit(), env, Complex\+::imag, initialize\+State\+From\+Single\+File(), init\+State\+Debug(), P\+A\+T\+H\+\_\+\+T\+O\+\_\+\+T\+E\+S\+TS, R\+E\+AL, and Complex\+::real.
+
+
+
+Referenced by main().
+
+
+\begin{DoxyCode}
+495                                                      \{
+496     \textcolor{keywordtype}{char} filename[200];
+497     \textcolor{keywordtype}{int} passed=1;
+498     \textcolor{keywordtype}{int} count=1;
+499 
+500     \textcolor{keywordtype}{int} numQubits=3;
+501     \textcolor{keywordtype}{int} rotQubit, controlQubit;
+502     \mbox{\hyperlink{structMultiQubit}{MultiQubit}} mq, mqVerif; 
+503 
+504     \textcolor{comment}{// assumes compactUnitary function is correct}
+505 
+506     \mbox{\hyperlink{QuEST__precision_8h_a4b654506f18b8bfd61ad2a29a7e38c25}{REAL}} ang1, ang2, ang3;
+507     ang1 = 1.2320;
+508     ang2 = 0.4230;
+509     ang3 = -0.65230;
+510 
+511     \mbox{\hyperlink{structComplex}{Complex}} alpha, beta;
+512     alpha.\mbox{\hyperlink{structComplex_a479ad939835457595fcca3ca55c06283}{real}} = cos(ang1) * cos(ang2);
+513     alpha.\mbox{\hyperlink{structComplex_a1151948284b21c0052f203f23ab931d9}{imag}} = cos(ang1) * sin(ang2);
+514     beta.\mbox{\hyperlink{structComplex_a479ad939835457595fcca3ca55c06283}{real}}  = sin(ang1) * cos(ang3);
+515     beta.\mbox{\hyperlink{structComplex_a1151948284b21c0052f203f23ab931d9}{imag}}  = sin(ang1) * sin(ang3);
+516 
+517     \mbox{\hyperlink{QuEST_8c_a9c02591bc64c2918503afa231d90d83f}{createMultiQubit}}(&mq, numQubits, \mbox{\hyperlink{runTests_8c_a5fd8ba97fcae3408ae6221dfc3cc1f93}{env}});
+518     \mbox{\hyperlink{QuEST_8c_a9c02591bc64c2918503afa231d90d83f}{createMultiQubit}}(&mqVerif, numQubits, \mbox{\hyperlink{runTests_8c_a5fd8ba97fcae3408ae6221dfc3cc1f93}{env}});
+519 
+520     \textcolor{keywordflow}{for} (\textcolor{keywordtype}{int} j=0; j<3; j++)\{
+521         controlQubit=j;
+522         \textcolor{keywordflow}{for} (\textcolor{keywordtype}{int} i=0; i<3; i++)\{
+523             \textcolor{keywordflow}{if} (i==j)\{count++; \textcolor{keywordflow}{continue};\}
+524             \mbox{\hyperlink{QuEST_8c_a4b737ff9b4267609ef27e6cb4c42dc68}{initStateDebug}}(mq);
+525             rotQubit=i;
+526             \mbox{\hyperlink{QuEST__env__local_8c_ab4812953bc457405b3aa05a4c2f64f4a}{controlledCompactUnitary}}(mq, controlQubit, rotQubit, alpha, beta);
+527 
+528             sprintf(filename, \textcolor{stringliteral}{"%s%s%d.out"}, \mbox{\hyperlink{runTests_8c_a62f14505cc795eb5f045ad26bd77e3e1}{PATH\_TO\_TESTS}}, testName, count++);     
+529             \mbox{\hyperlink{QuEST_8c_a433876ee9f3bcc54af346300f571fc3c}{initializeStateFromSingleFile}}(&mqVerif, filename, 
+      \mbox{\hyperlink{runTests_8c_a5fd8ba97fcae3408ae6221dfc3cc1f93}{env}});
+530 
+531             \textcolor{keywordflow}{if} (passed) passed = \mbox{\hyperlink{QuEST_8c_a793584932ae384c82e7e42db7d35d18d}{compareStates}}(mq, mqVerif, 
+      \mbox{\hyperlink{runTests_8c_ab6750b3d9bd8ef6616ba0e5acd182a32}{COMPARE\_PRECISION}});
+532         \}
+533     \}
+534     \mbox{\hyperlink{QuEST_8c_ae5d6acc322314d7a3d8a2eccf00d3b19}{destroyMultiQubit}}(mq, \mbox{\hyperlink{runTests_8c_a5fd8ba97fcae3408ae6221dfc3cc1f93}{env}});
+535     \mbox{\hyperlink{QuEST_8c_ae5d6acc322314d7a3d8a2eccf00d3b19}{destroyMultiQubit}}(mqVerif, \mbox{\hyperlink{runTests_8c_a5fd8ba97fcae3408ae6221dfc3cc1f93}{env}});
+536 
+537     \textcolor{keywordflow}{return} passed;
+538 \}
+\end{DoxyCode}
+\mbox{\Hypertarget{runTests_8c_aa1879f91f42b9d0cffb2e64ba1980702}\label{runTests_8c_aa1879f91f42b9d0cffb2e64ba1980702}} 
+\index{run\+Tests.\+c@{run\+Tests.\+c}!test\+\_\+controlled\+Not@{test\+\_\+controlled\+Not}}
+\index{test\+\_\+controlled\+Not@{test\+\_\+controlled\+Not}!run\+Tests.\+c@{run\+Tests.\+c}}
+\paragraph{\texorpdfstring{test\+\_\+controlled\+Not()}{test\_controlledNot()}}
+{\footnotesize\ttfamily int test\+\_\+controlled\+Not (\begin{DoxyParamCaption}\item[{char}]{test\+Name\mbox{[}200\mbox{]} }\end{DoxyParamCaption})}
+
+
+
+Definition at line 274 of file run\+Tests.\+c.
+
+
+
+References C\+O\+M\+P\+A\+R\+E\+\_\+\+P\+R\+E\+C\+I\+S\+I\+ON, compare\+States(), controlled\+Not(), create\+Multi\+Qubit(), destroy\+Multi\+Qubit(), env, initialize\+State\+From\+Single\+File(), init\+State\+Debug(), P\+A\+T\+H\+\_\+\+T\+O\+\_\+\+T\+E\+S\+TS, and sync\+Qu\+E\+S\+T\+Env().
+
+
+
+Referenced by main().
+
+
+\begin{DoxyCode}
+274                                           \{
+275     \textcolor{keywordtype}{char} filename[200];
+276     \textcolor{keywordtype}{int} passed=1;
+277     \textcolor{keywordtype}{int} count=1;
+278 
+279     \textcolor{keywordtype}{int} numQubits=3;
+280     \textcolor{keywordtype}{int} rotateQubit, controlQubit;
+281     \mbox{\hyperlink{structMultiQubit}{MultiQubit}} mq, mqVerif; 
+282 
+283     \mbox{\hyperlink{QuEST_8c_a9c02591bc64c2918503afa231d90d83f}{createMultiQubit}}(&mq, numQubits, \mbox{\hyperlink{runTests_8c_a5fd8ba97fcae3408ae6221dfc3cc1f93}{env}});
+284     \mbox{\hyperlink{QuEST_8c_a9c02591bc64c2918503afa231d90d83f}{createMultiQubit}}(&mqVerif, numQubits, \mbox{\hyperlink{runTests_8c_a5fd8ba97fcae3408ae6221dfc3cc1f93}{env}});
+285 
+286     \textcolor{keywordflow}{for} (\textcolor{keywordtype}{int} j=0; j<3; j++)\{
+287         controlQubit=j;
+288         \textcolor{keywordflow}{for} (\textcolor{keywordtype}{int} i=0; i<3; i++)\{
+289             \textcolor{keywordflow}{if} (i==j) \{count++; \textcolor{keywordflow}{continue};\}
+290             \mbox{\hyperlink{QuEST__env__local_8c_a8d31fe2d1ad4d01e2a1f5f6b8bc15b77}{syncQuESTEnv}}(\mbox{\hyperlink{runTests_8c_a5fd8ba97fcae3408ae6221dfc3cc1f93}{env}});
+291             \mbox{\hyperlink{QuEST_8c_a4b737ff9b4267609ef27e6cb4c42dc68}{initStateDebug}}(mq);
+292             rotateQubit=i;
+293             \mbox{\hyperlink{QuEST__env__local_8c_a67576895bbc65463481a8ea24d9b1e22}{controlledNot}}(mq, controlQubit, rotateQubit);
+294 
+295             sprintf(filename, \textcolor{stringliteral}{"%s%s%d.out"}, \mbox{\hyperlink{runTests_8c_a62f14505cc795eb5f045ad26bd77e3e1}{PATH\_TO\_TESTS}}, testName, count++);     
+296             \mbox{\hyperlink{QuEST_8c_a433876ee9f3bcc54af346300f571fc3c}{initializeStateFromSingleFile}}(&mqVerif, filename, 
+      \mbox{\hyperlink{runTests_8c_a5fd8ba97fcae3408ae6221dfc3cc1f93}{env}});
+297 
+298             \textcolor{keywordflow}{if} (passed) passed = \mbox{\hyperlink{QuEST_8c_a793584932ae384c82e7e42db7d35d18d}{compareStates}}(mq, mqVerif, 
+      \mbox{\hyperlink{runTests_8c_ab6750b3d9bd8ef6616ba0e5acd182a32}{COMPARE\_PRECISION}});
+299         \}
+300     \}
+301 
+302     \mbox{\hyperlink{QuEST_8c_ae5d6acc322314d7a3d8a2eccf00d3b19}{destroyMultiQubit}}(mq, \mbox{\hyperlink{runTests_8c_a5fd8ba97fcae3408ae6221dfc3cc1f93}{env}});
+303     \mbox{\hyperlink{QuEST_8c_ae5d6acc322314d7a3d8a2eccf00d3b19}{destroyMultiQubit}}(mqVerif, \mbox{\hyperlink{runTests_8c_a5fd8ba97fcae3408ae6221dfc3cc1f93}{env}});
+304 
+305     \textcolor{keywordflow}{return} passed;
+306 \}
+\end{DoxyCode}
+\mbox{\Hypertarget{runTests_8c_a93a0a1e98c376935d13dfa432e88e860}\label{runTests_8c_a93a0a1e98c376935d13dfa432e88e860}} 
+\index{run\+Tests.\+c@{run\+Tests.\+c}!test\+\_\+controlled\+Phase\+Gate@{test\+\_\+controlled\+Phase\+Gate}}
+\index{test\+\_\+controlled\+Phase\+Gate@{test\+\_\+controlled\+Phase\+Gate}!run\+Tests.\+c@{run\+Tests.\+c}}
+\paragraph{\texorpdfstring{test\+\_\+controlled\+Phase\+Gate()}{test\_controlledPhaseGate()}}
+{\footnotesize\ttfamily int test\+\_\+controlled\+Phase\+Gate (\begin{DoxyParamCaption}\item[{char}]{test\+Name\mbox{[}200\mbox{]} }\end{DoxyParamCaption})}
+
+
+
+Definition at line 308 of file run\+Tests.\+c.
+
+
+
+References C\+O\+M\+P\+A\+R\+E\+\_\+\+P\+R\+E\+C\+I\+S\+I\+ON, compare\+States(), controlled\+Phase\+Gate(), create\+Multi\+Qubit(), destroy\+Multi\+Qubit(), env, initialize\+State\+From\+Single\+File(), init\+State\+Debug(), and P\+A\+T\+H\+\_\+\+T\+O\+\_\+\+T\+E\+S\+TS.
+
+
+
+Referenced by main().
+
+
+\begin{DoxyCode}
+308                                                 \{
+309     \textcolor{keywordtype}{char} filename[200];
+310     \textcolor{keywordtype}{int} passed=1;
+311     \textcolor{keywordtype}{int} count=1;
+312 
+313     \textcolor{keywordtype}{int} numQubits=3;
+314     \textcolor{keywordtype}{int} rotateQubit, controlQubit;
+315     \mbox{\hyperlink{structMultiQubit}{MultiQubit}} mq, mqVerif; 
+316 
+317     \mbox{\hyperlink{QuEST_8c_a9c02591bc64c2918503afa231d90d83f}{createMultiQubit}}(&mq, numQubits, \mbox{\hyperlink{runTests_8c_a5fd8ba97fcae3408ae6221dfc3cc1f93}{env}});
+318     \mbox{\hyperlink{QuEST_8c_a9c02591bc64c2918503afa231d90d83f}{createMultiQubit}}(&mqVerif, numQubits, \mbox{\hyperlink{runTests_8c_a5fd8ba97fcae3408ae6221dfc3cc1f93}{env}});
+319 
+320     \textcolor{keywordflow}{for} (\textcolor{keywordtype}{int} j=0; j<3; j++)\{
+321         controlQubit=j;
+322         \textcolor{keywordflow}{for} (\textcolor{keywordtype}{int} i=0; i<3; i++)\{
+323             \textcolor{keywordflow}{if} (i==j) \{count++; \textcolor{keywordflow}{continue};\}
+324             \mbox{\hyperlink{QuEST_8c_a4b737ff9b4267609ef27e6cb4c42dc68}{initStateDebug}}(mq);
+325             rotateQubit=i;
+326             \mbox{\hyperlink{QuEST_8c_a11a96159191cbf1b01a1080e7f045aac}{controlledPhaseGate}}(mq, rotateQubit, controlQubit);
+327 
+328             sprintf(filename, \textcolor{stringliteral}{"%s%s%d.out"}, \mbox{\hyperlink{runTests_8c_a62f14505cc795eb5f045ad26bd77e3e1}{PATH\_TO\_TESTS}}, testName, count++);     
+329             \mbox{\hyperlink{QuEST_8c_a433876ee9f3bcc54af346300f571fc3c}{initializeStateFromSingleFile}}(&mqVerif, filename, 
+      \mbox{\hyperlink{runTests_8c_a5fd8ba97fcae3408ae6221dfc3cc1f93}{env}});
+330 
+331             \textcolor{keywordflow}{if} (passed) passed = \mbox{\hyperlink{QuEST_8c_a793584932ae384c82e7e42db7d35d18d}{compareStates}}(mq, mqVerif, 
+      \mbox{\hyperlink{runTests_8c_ab6750b3d9bd8ef6616ba0e5acd182a32}{COMPARE\_PRECISION}});
+332         \}
+333     \}
+334     \mbox{\hyperlink{QuEST_8c_ae5d6acc322314d7a3d8a2eccf00d3b19}{destroyMultiQubit}}(mq, \mbox{\hyperlink{runTests_8c_a5fd8ba97fcae3408ae6221dfc3cc1f93}{env}});
+335     \mbox{\hyperlink{QuEST_8c_ae5d6acc322314d7a3d8a2eccf00d3b19}{destroyMultiQubit}}(mqVerif, \mbox{\hyperlink{runTests_8c_a5fd8ba97fcae3408ae6221dfc3cc1f93}{env}});
+336 
+337     \textcolor{keywordflow}{return} passed;
+338 \}
+\end{DoxyCode}
+\mbox{\Hypertarget{runTests_8c_a9d891f1f1f9591b0c38387b1e6c022e6}\label{runTests_8c_a9d891f1f1f9591b0c38387b1e6c022e6}} 
+\index{run\+Tests.\+c@{run\+Tests.\+c}!test\+\_\+controlled\+Unitary@{test\+\_\+controlled\+Unitary}}
+\index{test\+\_\+controlled\+Unitary@{test\+\_\+controlled\+Unitary}!run\+Tests.\+c@{run\+Tests.\+c}}
+\paragraph{\texorpdfstring{test\+\_\+controlled\+Unitary()}{test\_controlledUnitary()}}
+{\footnotesize\ttfamily int test\+\_\+controlled\+Unitary (\begin{DoxyParamCaption}\item[{char}]{test\+Name\mbox{[}200\mbox{]} }\end{DoxyParamCaption})}
+
+
+
+Definition at line 540 of file run\+Tests.\+c.
+
+
+
+References C\+O\+M\+P\+A\+R\+E\+\_\+\+P\+R\+E\+C\+I\+S\+I\+ON, compare\+States(), controlled\+Compact\+Unitary(), controlled\+Unitary(), create\+Multi\+Qubit(), destroy\+Multi\+Qubit(), env, Complex\+::imag, init\+State\+Debug(), Complex\+Matrix2\+::r0c0, Complex\+Matrix2\+::r0c1, Complex\+Matrix2\+::r1c0, Complex\+Matrix2\+::r1c1, R\+E\+AL, and Complex\+::real.
+
+
+
+Referenced by main().
+
+
+\begin{DoxyCode}
+540                                               \{
+541     \textcolor{keywordtype}{int} passed=1;
+542 
+543     \textcolor{keywordtype}{int} numQubits=10;
+544     \textcolor{keywordtype}{int} rotQubit, controlQubit;
+545 
+546     \mbox{\hyperlink{structComplexMatrix2}{ComplexMatrix2}} u;
+547     \mbox{\hyperlink{structMultiQubit}{MultiQubit}} mq, mqVerif; 
+548 
+549     \textcolor{comment}{// assumes controlledCompactUnitary function is correct}
+550 
+551     \mbox{\hyperlink{QuEST__precision_8h_a4b654506f18b8bfd61ad2a29a7e38c25}{REAL}} ang1, ang2, ang3;
+552     ang1 = 1.2320;
+553     ang2 = 0.4230;
+554     ang3 = -0.65230;
+555 
+556     \mbox{\hyperlink{structComplex}{Complex}} alpha, beta;
+557     alpha.\mbox{\hyperlink{structComplex_a479ad939835457595fcca3ca55c06283}{real}} = cos(ang1) * cos(ang2);
+558     alpha.\mbox{\hyperlink{structComplex_a1151948284b21c0052f203f23ab931d9}{imag}} = cos(ang1) * sin(ang2);
+559     beta.\mbox{\hyperlink{structComplex_a479ad939835457595fcca3ca55c06283}{real}}  = sin(ang1) * cos(ang3);
+560     beta.\mbox{\hyperlink{structComplex_a1151948284b21c0052f203f23ab931d9}{imag}}  = sin(ang1) * sin(ang3);
+561 
+562     u.\mbox{\hyperlink{structComplexMatrix2_ae72b4458233b077a636beee1892e81ff}{r0c0}} = (\mbox{\hyperlink{QuEST_8h_ad59c9e471673c07782e6c403277ffd8d}{Complex}}) \{.\mbox{\hyperlink{structComplex_a479ad939835457595fcca3ca55c06283}{real}}=alpha.\mbox{\hyperlink{structComplex_a479ad939835457595fcca3ca55c06283}{real}}, .imag=alpha.\mbox{\hyperlink{structComplex_a1151948284b21c0052f203f23ab931d9}{imag}}\};
+563     u.\mbox{\hyperlink{structComplexMatrix2_a0f3932f055a8b05cef361bce25d51172}{r0c1}} = (\mbox{\hyperlink{QuEST_8h_ad59c9e471673c07782e6c403277ffd8d}{Complex}}) \{.\mbox{\hyperlink{structComplex_a479ad939835457595fcca3ca55c06283}{real}}=-beta.\mbox{\hyperlink{structComplex_a479ad939835457595fcca3ca55c06283}{real}}, .imag=beta.\mbox{\hyperlink{structComplex_a1151948284b21c0052f203f23ab931d9}{imag}}\}; 
+564     u.\mbox{\hyperlink{structComplexMatrix2_ab98282015ed2065e53fbc9638e2583ab}{r1c0}} = (\mbox{\hyperlink{QuEST_8h_ad59c9e471673c07782e6c403277ffd8d}{Complex}}) \{.\mbox{\hyperlink{structComplex_a479ad939835457595fcca3ca55c06283}{real}}=beta.\mbox{\hyperlink{structComplex_a479ad939835457595fcca3ca55c06283}{real}}, .imag=beta.\mbox{\hyperlink{structComplex_a1151948284b21c0052f203f23ab931d9}{imag}}\};
+565     u.\mbox{\hyperlink{structComplexMatrix2_a763007c3070802373549ba0350f83c8a}{r1c1}} = (\mbox{\hyperlink{QuEST_8h_ad59c9e471673c07782e6c403277ffd8d}{Complex}}) \{.\mbox{\hyperlink{structComplex_a479ad939835457595fcca3ca55c06283}{real}}=alpha.\mbox{\hyperlink{structComplex_a479ad939835457595fcca3ca55c06283}{real}}, .imag=-alpha.\mbox{\hyperlink{structComplex_a1151948284b21c0052f203f23ab931d9}{imag}}\};
+566 
+567     \mbox{\hyperlink{QuEST_8c_a9c02591bc64c2918503afa231d90d83f}{createMultiQubit}}(&mq, numQubits, \mbox{\hyperlink{runTests_8c_a5fd8ba97fcae3408ae6221dfc3cc1f93}{env}});
+568     \mbox{\hyperlink{QuEST_8c_a9c02591bc64c2918503afa231d90d83f}{createMultiQubit}}(&mqVerif, numQubits, \mbox{\hyperlink{runTests_8c_a5fd8ba97fcae3408ae6221dfc3cc1f93}{env}});
+569 
+570     \textcolor{keywordflow}{for} (\textcolor{keywordtype}{int} j=0; j<numQubits; j++)\{
+571         controlQubit=j;
+572         \textcolor{keywordflow}{for} (\textcolor{keywordtype}{int} i=0; i<numQubits; i++)\{
+573             \textcolor{keywordflow}{if} (j==i) \textcolor{keywordflow}{continue};
+574             \mbox{\hyperlink{QuEST_8c_a4b737ff9b4267609ef27e6cb4c42dc68}{initStateDebug}}(mq);
+575             \mbox{\hyperlink{QuEST_8c_a4b737ff9b4267609ef27e6cb4c42dc68}{initStateDebug}}(mqVerif);
+576             rotQubit=i;
+577             \mbox{\hyperlink{QuEST__env__local_8c_ab4812953bc457405b3aa05a4c2f64f4a}{controlledCompactUnitary}}(mqVerif, controlQubit, rotQubit, alpha, beta);
+578             \mbox{\hyperlink{QuEST__env__local_8c_a8a701526263392599aa21d0d0f05d9d8}{controlledUnitary}}(mq, controlQubit, rotQubit, u);
+579 
+580             \textcolor{keywordflow}{if} (passed) passed = \mbox{\hyperlink{QuEST_8c_a793584932ae384c82e7e42db7d35d18d}{compareStates}}(mq, mqVerif, 
+      \mbox{\hyperlink{runTests_8c_ab6750b3d9bd8ef6616ba0e5acd182a32}{COMPARE\_PRECISION}});
+581         \}
+582     \}
+583 
+584     \mbox{\hyperlink{QuEST_8c_ae5d6acc322314d7a3d8a2eccf00d3b19}{destroyMultiQubit}}(mq, \mbox{\hyperlink{runTests_8c_a5fd8ba97fcae3408ae6221dfc3cc1f93}{env}});
+585     \mbox{\hyperlink{QuEST_8c_ae5d6acc322314d7a3d8a2eccf00d3b19}{destroyMultiQubit}}(mqVerif, \mbox{\hyperlink{runTests_8c_a5fd8ba97fcae3408ae6221dfc3cc1f93}{env}});
+586 
+587     \textcolor{keywordflow}{return} passed;
+588 \}
+\end{DoxyCode}
+\mbox{\Hypertarget{runTests_8c_aa212e99a60c05c89ea6d9a5518ba425e}\label{runTests_8c_aa212e99a60c05c89ea6d9a5518ba425e}} 
+\index{run\+Tests.\+c@{run\+Tests.\+c}!test\+\_\+find\+Probability\+Of\+Outcome@{test\+\_\+find\+Probability\+Of\+Outcome}}
+\index{test\+\_\+find\+Probability\+Of\+Outcome@{test\+\_\+find\+Probability\+Of\+Outcome}!run\+Tests.\+c@{run\+Tests.\+c}}
+\paragraph{\texorpdfstring{test\+\_\+find\+Probability\+Of\+Outcome()}{test\_findProbabilityOfOutcome()}}
+{\footnotesize\ttfamily int test\+\_\+find\+Probability\+Of\+Outcome (\begin{DoxyParamCaption}\item[{char}]{test\+Name\mbox{[}200\mbox{]} }\end{DoxyParamCaption})}
+
+
+
+Definition at line 672 of file run\+Tests.\+c.
+
+
+
+References C\+O\+M\+P\+A\+R\+E\+\_\+\+P\+R\+E\+C\+I\+S\+I\+ON, compare\+Reals(), create\+Multi\+Qubit(), destroy\+Multi\+Qubit(), env, find\+Probability\+Of\+Outcome(), init\+State\+Of\+Single\+Qubit(), init\+State\+Plus(), init\+State\+Zero(), and R\+E\+AL.
+
+
+
+Referenced by main().
+
+
+\begin{DoxyCode}
+672                                                      \{
+673     \textcolor{keywordtype}{int} passed=1;
+674 
+675     \textcolor{keywordtype}{int} numQubits=12;
+676     \mbox{\hyperlink{structMultiQubit}{MultiQubit}} mq; 
+677     \textcolor{keywordtype}{int} qubit;
+678     \mbox{\hyperlink{QuEST__precision_8h_a4b654506f18b8bfd61ad2a29a7e38c25}{REAL}} outcome;
+679 
+680     \mbox{\hyperlink{QuEST_8c_a9c02591bc64c2918503afa231d90d83f}{createMultiQubit}}(&mq, numQubits, \mbox{\hyperlink{runTests_8c_a5fd8ba97fcae3408ae6221dfc3cc1f93}{env}});
+681 
+682     \textcolor{comment}{// test qubit = |0> }
+683     \mbox{\hyperlink{QuEST_8c_a9ba8171c9ec5c42202b144026527e9ec}{initStateZero}}(mq);
+684     \textcolor{keywordflow}{for} (qubit=0; qubit<numQubits; qubit++)\{
+685         outcome = \mbox{\hyperlink{QuEST__env__local_8c_ad315c941a51bc053d39ebfa2040fd32e}{findProbabilityOfOutcome}}(mq, qubit, 0);
+686         \textcolor{keywordflow}{if} (passed) passed = \mbox{\hyperlink{runTests_8c_ac171a0362fb526932484eb64604b10e8}{compareReals}}(1, outcome, 
+      \mbox{\hyperlink{runTests_8c_ab6750b3d9bd8ef6616ba0e5acd182a32}{COMPARE\_PRECISION}});
+687 
+688         outcome = \mbox{\hyperlink{QuEST__env__local_8c_ad315c941a51bc053d39ebfa2040fd32e}{findProbabilityOfOutcome}}(mq, qubit, 1);
+689         \textcolor{keywordflow}{if} (passed) passed = \mbox{\hyperlink{runTests_8c_ac171a0362fb526932484eb64604b10e8}{compareReals}}(0, outcome, 
+      \mbox{\hyperlink{runTests_8c_ab6750b3d9bd8ef6616ba0e5acd182a32}{COMPARE\_PRECISION}});
+690     \}
+691 
+692     \textcolor{comment}{// test qubit = |1> }
+693     \textcolor{keywordflow}{for} (qubit=0; qubit<numQubits; qubit++)\{
+694         \mbox{\hyperlink{QuEST_8c_a7169fd0442cbc3418f3fac4d13363ca2}{initStateOfSingleQubit}}(&mq, qubit, 1);
+695         outcome = \mbox{\hyperlink{QuEST__env__local_8c_ad315c941a51bc053d39ebfa2040fd32e}{findProbabilityOfOutcome}}(mq, qubit, 0);
+696         \textcolor{keywordflow}{if} (passed) passed = \mbox{\hyperlink{runTests_8c_ac171a0362fb526932484eb64604b10e8}{compareReals}}(0, outcome, 
+      \mbox{\hyperlink{runTests_8c_ab6750b3d9bd8ef6616ba0e5acd182a32}{COMPARE\_PRECISION}});
+697 
+698         outcome = \mbox{\hyperlink{QuEST__env__local_8c_ad315c941a51bc053d39ebfa2040fd32e}{findProbabilityOfOutcome}}(mq, qubit, 1);
+699         \textcolor{keywordflow}{if} (passed) passed = \mbox{\hyperlink{runTests_8c_ac171a0362fb526932484eb64604b10e8}{compareReals}}(1, outcome, 
+      \mbox{\hyperlink{runTests_8c_ab6750b3d9bd8ef6616ba0e5acd182a32}{COMPARE\_PRECISION}});
+700     \}
+701 
+702     \textcolor{comment}{// test qubit = |+> }
+703     \textcolor{keywordflow}{for} (qubit=0; qubit<numQubits; qubit++)\{
+704         \mbox{\hyperlink{QuEST_8c_af8a0082e2f695145bbfbb572e4c2e4f1}{initStatePlus}}(mq);
+705         outcome = \mbox{\hyperlink{QuEST__env__local_8c_ad315c941a51bc053d39ebfa2040fd32e}{findProbabilityOfOutcome}}(mq, qubit, 0);
+706         \textcolor{keywordflow}{if} (passed) passed = \mbox{\hyperlink{runTests_8c_ac171a0362fb526932484eb64604b10e8}{compareReals}}(0.5, outcome, 
+      \mbox{\hyperlink{runTests_8c_ab6750b3d9bd8ef6616ba0e5acd182a32}{COMPARE\_PRECISION}});
+707 
+708         outcome = \mbox{\hyperlink{QuEST__env__local_8c_ad315c941a51bc053d39ebfa2040fd32e}{findProbabilityOfOutcome}}(mq, qubit, 1);
+709         \textcolor{keywordflow}{if} (passed) passed = \mbox{\hyperlink{runTests_8c_ac171a0362fb526932484eb64604b10e8}{compareReals}}(0.5, outcome, 
+      \mbox{\hyperlink{runTests_8c_ab6750b3d9bd8ef6616ba0e5acd182a32}{COMPARE\_PRECISION}});
+710     \}
+711 
+712     \mbox{\hyperlink{QuEST_8c_ae5d6acc322314d7a3d8a2eccf00d3b19}{destroyMultiQubit}}(mq, \mbox{\hyperlink{runTests_8c_a5fd8ba97fcae3408ae6221dfc3cc1f93}{env}});
+713 
+714     \textcolor{keywordflow}{return} passed;
+715 \}
+\end{DoxyCode}
+\mbox{\Hypertarget{runTests_8c_a3c211ed5e4ac7d86fae9dfd174b1d74d}\label{runTests_8c_a3c211ed5e4ac7d86fae9dfd174b1d74d}} 
+\index{run\+Tests.\+c@{run\+Tests.\+c}!test\+\_\+get\+Imag\+Amp\+El@{test\+\_\+get\+Imag\+Amp\+El}}
+\index{test\+\_\+get\+Imag\+Amp\+El@{test\+\_\+get\+Imag\+Amp\+El}!run\+Tests.\+c@{run\+Tests.\+c}}
+\paragraph{\texorpdfstring{test\+\_\+get\+Imag\+Amp\+El()}{test\_getImagAmpEl()}}
+{\footnotesize\ttfamily int test\+\_\+get\+Imag\+Amp\+El (\begin{DoxyParamCaption}\item[{char}]{test\+Name\mbox{[}200\mbox{]} }\end{DoxyParamCaption})}
+
+
+
+Definition at line 899 of file run\+Tests.\+c.
+
+
+
+References create\+Multi\+Qubit(), destroy\+Multi\+Qubit(), env, get\+Imag\+Amp\+El(), get\+Num\+Amps(), init\+State\+Debug(), and R\+E\+AL.
+
+
+
+Referenced by main().
+
+
+\begin{DoxyCode}
+899                                          \{
+900     \textcolor{keywordtype}{int} passed=1;
+901 
+902     \textcolor{keywordtype}{int} numQubits=5;
+903     \mbox{\hyperlink{QuEST__precision_8h_a4b654506f18b8bfd61ad2a29a7e38c25}{REAL}} ampEl=0, ampElVerif=0;
+904 
+905     \mbox{\hyperlink{structMultiQubit}{MultiQubit}} mq; 
+906     \mbox{\hyperlink{QuEST_8c_a9c02591bc64c2918503afa231d90d83f}{createMultiQubit}}(&mq, numQubits, \mbox{\hyperlink{runTests_8c_a5fd8ba97fcae3408ae6221dfc3cc1f93}{env}});
+907 
+908     \mbox{\hyperlink{QuEST_8c_a4b737ff9b4267609ef27e6cb4c42dc68}{initStateDebug}}(mq);
+909     \textcolor{keywordflow}{for} (\textcolor{keywordtype}{int} i=0; i<\mbox{\hyperlink{QuEST_8c_ac61ecf4fd9ab2ac8453c4eb5b0d34089}{getNumAmps}}(mq); i++)\{
+910         ampElVerif = (i*2.0+1)/10.0;
+911         ampEl = \mbox{\hyperlink{QuEST__env__local_8c_a3615f76fd5f57008d9b74bbd10533dd0}{getImagAmpEl}}(mq, i);
+912         \textcolor{keywordflow}{if} (passed) passed = (ampElVerif==ampEl);
+913     \}
+914     \mbox{\hyperlink{QuEST_8c_ae5d6acc322314d7a3d8a2eccf00d3b19}{destroyMultiQubit}}(mq, \mbox{\hyperlink{runTests_8c_a5fd8ba97fcae3408ae6221dfc3cc1f93}{env}});
+915 
+916     \textcolor{keywordflow}{return} passed;
+917 \}
+\end{DoxyCode}
+\mbox{\Hypertarget{runTests_8c_ac95b46a6516e3f7f993e483d3d7f573a}\label{runTests_8c_ac95b46a6516e3f7f993e483d3d7f573a}} 
+\index{run\+Tests.\+c@{run\+Tests.\+c}!test\+\_\+get\+Prob\+El@{test\+\_\+get\+Prob\+El}}
+\index{test\+\_\+get\+Prob\+El@{test\+\_\+get\+Prob\+El}!run\+Tests.\+c@{run\+Tests.\+c}}
+\paragraph{\texorpdfstring{test\+\_\+get\+Prob\+El()}{test\_getProbEl()}}
+{\footnotesize\ttfamily int test\+\_\+get\+Prob\+El (\begin{DoxyParamCaption}\item[{char}]{test\+Name\mbox{[}200\mbox{]} }\end{DoxyParamCaption})}
+
+
+
+Definition at line 919 of file run\+Tests.\+c.
+
+
+
+References create\+Multi\+Qubit(), destroy\+Multi\+Qubit(), env, get\+Num\+Amps(), get\+Prob\+El(), init\+State\+Debug(), and R\+E\+AL.
+
+
+
+Referenced by main().
+
+
+\begin{DoxyCode}
+919                                       \{
+920     \textcolor{keywordtype}{int} passed=1;
+921 
+922     \textcolor{keywordtype}{int} numQubits=5;
+923     \mbox{\hyperlink{QuEST__precision_8h_a4b654506f18b8bfd61ad2a29a7e38c25}{REAL}} ampEl=0, ampElVerif=0;
+924     \mbox{\hyperlink{QuEST__precision_8h_a4b654506f18b8bfd61ad2a29a7e38c25}{REAL}} realEl, imagEl;
+925 
+926     \mbox{\hyperlink{structMultiQubit}{MultiQubit}} mq; 
+927     \mbox{\hyperlink{QuEST_8c_a9c02591bc64c2918503afa231d90d83f}{createMultiQubit}}(&mq, numQubits, \mbox{\hyperlink{runTests_8c_a5fd8ba97fcae3408ae6221dfc3cc1f93}{env}});
+928 
+929     \mbox{\hyperlink{QuEST_8c_a4b737ff9b4267609ef27e6cb4c42dc68}{initStateDebug}}(mq);
+930     \textcolor{keywordflow}{for} (\textcolor{keywordtype}{int} i=0; i<\mbox{\hyperlink{QuEST_8c_ac61ecf4fd9ab2ac8453c4eb5b0d34089}{getNumAmps}}(mq); i++)\{
+931         realEl = (i*2.0)/10.0;
+932         imagEl = (i*2.0+1)/10.0;
+933         ampElVerif = realEl*realEl + imagEl*imagEl;
+934         ampEl = \mbox{\hyperlink{QuEST_8c_a799b10447d6dbdaf960a4d3eedd22014}{getProbEl}}(mq, i);
+935         \textcolor{keywordflow}{if} (passed) passed = (ampElVerif==ampEl);
+936     \}
+937     \mbox{\hyperlink{QuEST_8c_ae5d6acc322314d7a3d8a2eccf00d3b19}{destroyMultiQubit}}(mq, \mbox{\hyperlink{runTests_8c_a5fd8ba97fcae3408ae6221dfc3cc1f93}{env}});
+938 
+939     \textcolor{keywordflow}{return} passed;
+940 \}
+\end{DoxyCode}
+\mbox{\Hypertarget{runTests_8c_adc10103b3ce72daac74e7ca244a616e9}\label{runTests_8c_adc10103b3ce72daac74e7ca244a616e9}} 
+\index{run\+Tests.\+c@{run\+Tests.\+c}!test\+\_\+get\+Real\+Amp\+El@{test\+\_\+get\+Real\+Amp\+El}}
+\index{test\+\_\+get\+Real\+Amp\+El@{test\+\_\+get\+Real\+Amp\+El}!run\+Tests.\+c@{run\+Tests.\+c}}
+\paragraph{\texorpdfstring{test\+\_\+get\+Real\+Amp\+El()}{test\_getRealAmpEl()}}
+{\footnotesize\ttfamily int test\+\_\+get\+Real\+Amp\+El (\begin{DoxyParamCaption}\item[{char}]{test\+Name\mbox{[}200\mbox{]} }\end{DoxyParamCaption})}
+
+
+
+Definition at line 879 of file run\+Tests.\+c.
+
+
+
+References create\+Multi\+Qubit(), destroy\+Multi\+Qubit(), env, get\+Num\+Amps(), get\+Real\+Amp\+El(), init\+State\+Debug(), and R\+E\+AL.
+
+
+
+Referenced by main().
+
+
+\begin{DoxyCode}
+879                                          \{
+880     \textcolor{keywordtype}{int} passed=1;
+881 
+882     \textcolor{keywordtype}{int} numQubits=5;
+883     \mbox{\hyperlink{QuEST__precision_8h_a4b654506f18b8bfd61ad2a29a7e38c25}{REAL}} ampEl=0, ampElVerif=0;
+884 
+885     \mbox{\hyperlink{structMultiQubit}{MultiQubit}} mq; 
+886     \mbox{\hyperlink{QuEST_8c_a9c02591bc64c2918503afa231d90d83f}{createMultiQubit}}(&mq, numQubits, \mbox{\hyperlink{runTests_8c_a5fd8ba97fcae3408ae6221dfc3cc1f93}{env}});
+887     \mbox{\hyperlink{QuEST_8c_a4b737ff9b4267609ef27e6cb4c42dc68}{initStateDebug}}(mq);
+888 
+889     \textcolor{keywordflow}{for} (\textcolor{keywordtype}{int} i=0; i<\mbox{\hyperlink{QuEST_8c_ac61ecf4fd9ab2ac8453c4eb5b0d34089}{getNumAmps}}(mq); i++)\{
+890         ampElVerif = (i*2.0)/10.0;
+891         ampEl = \mbox{\hyperlink{QuEST__env__local_8c_a317b786f577fa6bc136ea7f0ee7330a7}{getRealAmpEl}}(mq, i);
+892         \textcolor{keywordflow}{if} (passed) passed = (ampElVerif==ampEl);
+893     \}
+894     \mbox{\hyperlink{QuEST_8c_ae5d6acc322314d7a3d8a2eccf00d3b19}{destroyMultiQubit}}(mq, \mbox{\hyperlink{runTests_8c_a5fd8ba97fcae3408ae6221dfc3cc1f93}{env}});
+895 
+896     \textcolor{keywordflow}{return} passed;
+897 \}
+\end{DoxyCode}
+\mbox{\Hypertarget{runTests_8c_ab7cf7a4d8821ce1ebddb5fa029008d8c}\label{runTests_8c_ab7cf7a4d8821ce1ebddb5fa029008d8c}} 
+\index{run\+Tests.\+c@{run\+Tests.\+c}!test\+\_\+hadamard@{test\+\_\+hadamard}}
+\index{test\+\_\+hadamard@{test\+\_\+hadamard}!run\+Tests.\+c@{run\+Tests.\+c}}
+\paragraph{\texorpdfstring{test\+\_\+hadamard()}{test\_hadamard()}}
+{\footnotesize\ttfamily int test\+\_\+hadamard (\begin{DoxyParamCaption}\item[{char}]{test\+Name\mbox{[}200\mbox{]} }\end{DoxyParamCaption})}
+
+
+
+Definition at line 190 of file run\+Tests.\+c.
+
+
+
+References C\+O\+M\+P\+A\+R\+E\+\_\+\+P\+R\+E\+C\+I\+S\+I\+ON, compare\+States(), create\+Multi\+Qubit(), destroy\+Multi\+Qubit(), env, hadamard(), initialize\+State\+From\+Single\+File(), init\+State\+Debug(), and P\+A\+T\+H\+\_\+\+T\+O\+\_\+\+T\+E\+S\+TS.
+
+
+
+Referenced by main().
+
+
+\begin{DoxyCode}
+190                                      \{
+191     \textcolor{keywordtype}{char} filename[200];
+192     \textcolor{keywordtype}{int} passed=1;
+193     \textcolor{keywordtype}{int} count=1;
+194 
+195     \textcolor{keywordtype}{int} numQubits=3;
+196     \textcolor{keywordtype}{int} rotateQubit;
+197     \mbox{\hyperlink{structMultiQubit}{MultiQubit}} mq, mqVerif; 
+198 
+199     \mbox{\hyperlink{QuEST_8c_a9c02591bc64c2918503afa231d90d83f}{createMultiQubit}}(&mq, numQubits, \mbox{\hyperlink{runTests_8c_a5fd8ba97fcae3408ae6221dfc3cc1f93}{env}});
+200     \mbox{\hyperlink{QuEST_8c_a9c02591bc64c2918503afa231d90d83f}{createMultiQubit}}(&mqVerif, numQubits, \mbox{\hyperlink{runTests_8c_a5fd8ba97fcae3408ae6221dfc3cc1f93}{env}});
+201 
+202     \textcolor{keywordflow}{for} (\textcolor{keywordtype}{int} i=0; i<3; i++)\{
+203         \mbox{\hyperlink{QuEST_8c_a4b737ff9b4267609ef27e6cb4c42dc68}{initStateDebug}}(mq);
+204         rotateQubit=i;
+205         \mbox{\hyperlink{QuEST__env__local_8c_aa09b5dd93de6df1384b8f2c0041749ab}{hadamard}}(mq, rotateQubit);
+206 
+207         sprintf(filename, \textcolor{stringliteral}{"%s%s%d.out"}, \mbox{\hyperlink{runTests_8c_a62f14505cc795eb5f045ad26bd77e3e1}{PATH\_TO\_TESTS}}, testName, count++);         
+208         \mbox{\hyperlink{QuEST_8c_a433876ee9f3bcc54af346300f571fc3c}{initializeStateFromSingleFile}}(&mqVerif, filename, 
+      \mbox{\hyperlink{runTests_8c_a5fd8ba97fcae3408ae6221dfc3cc1f93}{env}});
+209 
+210         \textcolor{keywordflow}{if} (passed) passed = \mbox{\hyperlink{QuEST_8c_a793584932ae384c82e7e42db7d35d18d}{compareStates}}(mq, mqVerif, 
+      \mbox{\hyperlink{runTests_8c_ab6750b3d9bd8ef6616ba0e5acd182a32}{COMPARE\_PRECISION}});
+211     \}
+212     \mbox{\hyperlink{QuEST_8c_ae5d6acc322314d7a3d8a2eccf00d3b19}{destroyMultiQubit}}(mq, \mbox{\hyperlink{runTests_8c_a5fd8ba97fcae3408ae6221dfc3cc1f93}{env}});
+213     \mbox{\hyperlink{QuEST_8c_ae5d6acc322314d7a3d8a2eccf00d3b19}{destroyMultiQubit}}(mqVerif, \mbox{\hyperlink{runTests_8c_a5fd8ba97fcae3408ae6221dfc3cc1f93}{env}});
+214 
+215     \textcolor{keywordflow}{return} passed;
+216 \}
+\end{DoxyCode}
+\mbox{\Hypertarget{runTests_8c_ad9a7da9ff0d7b26dd1fa88750c81eebb}\label{runTests_8c_ad9a7da9ff0d7b26dd1fa88750c81eebb}} 
+\index{run\+Tests.\+c@{run\+Tests.\+c}!test\+\_\+init\+Classical\+State@{test\+\_\+init\+Classical\+State}}
+\index{test\+\_\+init\+Classical\+State@{test\+\_\+init\+Classical\+State}!run\+Tests.\+c@{run\+Tests.\+c}}
+\paragraph{\texorpdfstring{test\+\_\+init\+Classical\+State()}{test\_initClassicalState()}}
+{\footnotesize\ttfamily int test\+\_\+init\+Classical\+State (\begin{DoxyParamCaption}\item[{char}]{test\+Name\mbox{[}200\mbox{]} }\end{DoxyParamCaption})}
+
+
+
+Definition at line 78 of file run\+Tests.\+c.
+
+
+
+References create\+Multi\+Qubit(), destroy\+Multi\+Qubit(), env, get\+Prob\+El(), and init\+Classical\+State().
+
+
+
+Referenced by main().
+
+
+\begin{DoxyCode}
+78                                                \{
+79     \textcolor{keywordtype}{int} passed=1;
+80     \textcolor{keywordtype}{int} numQubits=3;
+81         \textcolor{keywordtype}{int} numAmps=8;
+82         
+83     \mbox{\hyperlink{structMultiQubit}{MultiQubit}} mq;
+84     \mbox{\hyperlink{QuEST_8c_a9c02591bc64c2918503afa231d90d83f}{createMultiQubit}}(&mq, numQubits, \mbox{\hyperlink{runTests_8c_a5fd8ba97fcae3408ae6221dfc3cc1f93}{env}});
+85 
+86         \textcolor{comment}{// test every classical state}
+87         \textcolor{keywordflow}{for} (\textcolor{keywordtype}{long} \textcolor{keywordtype}{long} \textcolor{keywordtype}{int} stateInd=0LL; stateInd < numAmps; stateInd++) \{
+88         \mbox{\hyperlink{QuEST_8c_ae1b983b41249836ed2c2a81f77d83c40}{initClassicalState}}(mq, stateInd);
+89                 
+90                 \textcolor{comment}{// check that every other state has prob 0}
+91                 \textcolor{keywordflow}{for} (\textcolor{keywordtype}{long} \textcolor{keywordtype}{long} \textcolor{keywordtype}{int} i=0LL; i < numAmps; i++) \{
+92                         \textcolor{keywordflow}{if} (i == stateInd)
+93                                 passed = passed && (\mbox{\hyperlink{QuEST_8c_a799b10447d6dbdaf960a4d3eedd22014}{getProbEl}}(mq,i) == 1.0);
+94                         \textcolor{keywordflow}{else}
+95                                 passed = passed && (\mbox{\hyperlink{QuEST_8c_a799b10447d6dbdaf960a4d3eedd22014}{getProbEl}}(mq,i) == 0.0);
+96                 \}
+97         \}
+98 
+99     \mbox{\hyperlink{QuEST_8c_ae5d6acc322314d7a3d8a2eccf00d3b19}{destroyMultiQubit}}(mq, \mbox{\hyperlink{runTests_8c_a5fd8ba97fcae3408ae6221dfc3cc1f93}{env}});
+100     \textcolor{keywordflow}{return} passed;
+101 \}
+\end{DoxyCode}
+\mbox{\Hypertarget{runTests_8c_ae3432238c18bcd06eec79cfc0922c0bb}\label{runTests_8c_ae3432238c18bcd06eec79cfc0922c0bb}} 
+\index{run\+Tests.\+c@{run\+Tests.\+c}!test\+\_\+init\+State\+Plus@{test\+\_\+init\+State\+Plus}}
+\index{test\+\_\+init\+State\+Plus@{test\+\_\+init\+State\+Plus}!run\+Tests.\+c@{run\+Tests.\+c}}
+\paragraph{\texorpdfstring{test\+\_\+init\+State\+Plus()}{test\_initStatePlus()}}
+{\footnotesize\ttfamily int test\+\_\+init\+State\+Plus (\begin{DoxyParamCaption}\item[{char}]{test\+Name\mbox{[}200\mbox{]} }\end{DoxyParamCaption})}
+
+
+
+Definition at line 54 of file run\+Tests.\+c.
+
+
+
+References C\+O\+M\+P\+A\+R\+E\+\_\+\+P\+R\+E\+C\+I\+S\+I\+ON, compare\+States(), create\+Multi\+Qubit(), destroy\+Multi\+Qubit(), env, initialize\+State\+From\+Single\+File(), init\+State\+Plus(), and P\+A\+T\+H\+\_\+\+T\+O\+\_\+\+T\+E\+S\+TS.
+
+
+
+Referenced by main().
+
+
+\begin{DoxyCode}
+54                                           \{
+55     \textcolor{keywordtype}{char} filename[200];
+56     \textcolor{keywordtype}{int} passed=1;
+57     \textcolor{keywordtype}{int} count=1;
+58 
+59     \textcolor{keywordtype}{int} numQubits=3;
+60     \mbox{\hyperlink{structMultiQubit}{MultiQubit}} mq, mqVerif; 
+61 
+62     \mbox{\hyperlink{QuEST_8c_a9c02591bc64c2918503afa231d90d83f}{createMultiQubit}}(&mq, numQubits, \mbox{\hyperlink{runTests_8c_a5fd8ba97fcae3408ae6221dfc3cc1f93}{env}});
+63     \mbox{\hyperlink{QuEST_8c_a9c02591bc64c2918503afa231d90d83f}{createMultiQubit}}(&mqVerif, numQubits, \mbox{\hyperlink{runTests_8c_a5fd8ba97fcae3408ae6221dfc3cc1f93}{env}});
+64 
+65     \mbox{\hyperlink{QuEST_8c_af8a0082e2f695145bbfbb572e4c2e4f1}{initStatePlus}}(mq);
+66 
+67     sprintf(filename, \textcolor{stringliteral}{"%s%s%d.out"}, \mbox{\hyperlink{runTests_8c_a62f14505cc795eb5f045ad26bd77e3e1}{PATH\_TO\_TESTS}}, testName, count++);     
+68     \mbox{\hyperlink{QuEST_8c_a433876ee9f3bcc54af346300f571fc3c}{initializeStateFromSingleFile}}(&mqVerif, filename, 
+      \mbox{\hyperlink{runTests_8c_a5fd8ba97fcae3408ae6221dfc3cc1f93}{env}});
+69 
+70     passed = \mbox{\hyperlink{QuEST_8c_a793584932ae384c82e7e42db7d35d18d}{compareStates}}(mq, mqVerif, \mbox{\hyperlink{runTests_8c_ab6750b3d9bd8ef6616ba0e5acd182a32}{COMPARE\_PRECISION}});
+71     \mbox{\hyperlink{QuEST_8c_ae5d6acc322314d7a3d8a2eccf00d3b19}{destroyMultiQubit}}(mq, \mbox{\hyperlink{runTests_8c_a5fd8ba97fcae3408ae6221dfc3cc1f93}{env}});
+72     \mbox{\hyperlink{QuEST_8c_ae5d6acc322314d7a3d8a2eccf00d3b19}{destroyMultiQubit}}(mqVerif, \mbox{\hyperlink{runTests_8c_a5fd8ba97fcae3408ae6221dfc3cc1f93}{env}});
+73 
+74     \textcolor{keywordflow}{return} passed;
+75 \}
+\end{DoxyCode}
+\mbox{\Hypertarget{runTests_8c_a6e9d6632dbac867ffdf28bad20a65e72}\label{runTests_8c_a6e9d6632dbac867ffdf28bad20a65e72}} 
+\index{run\+Tests.\+c@{run\+Tests.\+c}!test\+\_\+init\+State\+Zero@{test\+\_\+init\+State\+Zero}}
+\index{test\+\_\+init\+State\+Zero@{test\+\_\+init\+State\+Zero}!run\+Tests.\+c@{run\+Tests.\+c}}
+\paragraph{\texorpdfstring{test\+\_\+init\+State\+Zero()}{test\_initStateZero()}}
+{\footnotesize\ttfamily int test\+\_\+init\+State\+Zero (\begin{DoxyParamCaption}\item[{char}]{test\+Name\mbox{[}200\mbox{]} }\end{DoxyParamCaption})}
+
+
+
+Definition at line 31 of file run\+Tests.\+c.
+
+
+
+References C\+O\+M\+P\+A\+R\+E\+\_\+\+P\+R\+E\+C\+I\+S\+I\+ON, compare\+States(), create\+Multi\+Qubit(), destroy\+Multi\+Qubit(), env, initialize\+State\+From\+Single\+File(), init\+State\+Zero(), and P\+A\+T\+H\+\_\+\+T\+O\+\_\+\+T\+E\+S\+TS.
+
+
+
+Referenced by main().
+
+
+\begin{DoxyCode}
+31                                           \{
+32     \textcolor{keywordtype}{char} filename[200];
+33     \textcolor{keywordtype}{int} passed=1;
+34     \textcolor{keywordtype}{int} count=1;
+35 
+36     \textcolor{keywordtype}{int} numQubits=3;
+37     \mbox{\hyperlink{structMultiQubit}{MultiQubit}} mq, mqVerif; 
+38 
+39     \mbox{\hyperlink{QuEST_8c_a9c02591bc64c2918503afa231d90d83f}{createMultiQubit}}(&mq, numQubits, \mbox{\hyperlink{runTests_8c_a5fd8ba97fcae3408ae6221dfc3cc1f93}{env}});
+40     \mbox{\hyperlink{QuEST_8c_a9c02591bc64c2918503afa231d90d83f}{createMultiQubit}}(&mqVerif, numQubits, \mbox{\hyperlink{runTests_8c_a5fd8ba97fcae3408ae6221dfc3cc1f93}{env}});
+41 
+42     \mbox{\hyperlink{QuEST_8c_a9ba8171c9ec5c42202b144026527e9ec}{initStateZero}}(mq);
+43 
+44     sprintf(filename, \textcolor{stringliteral}{"%s%s%d.out"}, \mbox{\hyperlink{runTests_8c_a62f14505cc795eb5f045ad26bd77e3e1}{PATH\_TO\_TESTS}}, testName, count++);     
+45     \mbox{\hyperlink{QuEST_8c_a433876ee9f3bcc54af346300f571fc3c}{initializeStateFromSingleFile}}(&mqVerif, filename, 
+      \mbox{\hyperlink{runTests_8c_a5fd8ba97fcae3408ae6221dfc3cc1f93}{env}});
+46 
+47     passed = \mbox{\hyperlink{QuEST_8c_a793584932ae384c82e7e42db7d35d18d}{compareStates}}(mq, mqVerif, \mbox{\hyperlink{runTests_8c_ab6750b3d9bd8ef6616ba0e5acd182a32}{COMPARE\_PRECISION}});
+48     \mbox{\hyperlink{QuEST_8c_ae5d6acc322314d7a3d8a2eccf00d3b19}{destroyMultiQubit}}(mq, \mbox{\hyperlink{runTests_8c_a5fd8ba97fcae3408ae6221dfc3cc1f93}{env}});
+49     \mbox{\hyperlink{QuEST_8c_ae5d6acc322314d7a3d8a2eccf00d3b19}{destroyMultiQubit}}(mqVerif, \mbox{\hyperlink{runTests_8c_a5fd8ba97fcae3408ae6221dfc3cc1f93}{env}});
+50 
+51     \textcolor{keywordflow}{return} passed;
+52 \}
+\end{DoxyCode}
+\mbox{\Hypertarget{runTests_8c_a47620b9a78a309a41b01514a3f6f9157}\label{runTests_8c_a47620b9a78a309a41b01514a3f6f9157}} 
+\index{run\+Tests.\+c@{run\+Tests.\+c}!test\+\_\+measure@{test\+\_\+measure}}
+\index{test\+\_\+measure@{test\+\_\+measure}!run\+Tests.\+c@{run\+Tests.\+c}}
+\paragraph{\texorpdfstring{test\+\_\+measure()}{test\_measure()}}
+{\footnotesize\ttfamily int test\+\_\+measure (\begin{DoxyParamCaption}\item[{char}]{test\+Name\mbox{[}200\mbox{]} }\end{DoxyParamCaption})}
+
+
+
+Definition at line 782 of file run\+Tests.\+c.
+
+
+
+References C\+O\+M\+P\+A\+R\+E\+\_\+\+P\+R\+E\+C\+I\+S\+I\+ON, compare\+States(), create\+Multi\+Qubit(), destroy\+Multi\+Qubit(), env, init\+State\+Of\+Single\+Qubit(), init\+State\+Plus(), init\+State\+Zero(), measure(), Qu\+E\+S\+T\+Env\+::rank, and seed\+Qu\+E\+S\+T().
+
+
+
+Referenced by main().
+
+
+\begin{DoxyCode}
+782                                     \{
+783     \textcolor{keywordtype}{int} passed=1;
+784 
+785     \textcolor{keywordtype}{int} numQubits=4;
+786     \mbox{\hyperlink{structMultiQubit}{MultiQubit}} mq, mqVerif;
+787     \textcolor{keywordtype}{int} qubit;
+788     \textcolor{keywordtype}{int} outcome;
+789 
+790     \mbox{\hyperlink{QuEST_8c_a9c02591bc64c2918503afa231d90d83f}{createMultiQubit}}(&mq, numQubits, \mbox{\hyperlink{runTests_8c_a5fd8ba97fcae3408ae6221dfc3cc1f93}{env}});
+791     \mbox{\hyperlink{QuEST_8c_a9c02591bc64c2918503afa231d90d83f}{createMultiQubit}}(&mqVerif, numQubits, \mbox{\hyperlink{runTests_8c_a5fd8ba97fcae3408ae6221dfc3cc1f93}{env}});
+792 
+793     \textcolor{comment}{// test qubit = |0> }
+794     \textcolor{keywordflow}{for} (qubit=0; qubit<numQubits; qubit++)\{
+795         \mbox{\hyperlink{QuEST_8c_a9ba8171c9ec5c42202b144026527e9ec}{initStateZero}}(mq);
+796         \mbox{\hyperlink{QuEST_8c_a9ba8171c9ec5c42202b144026527e9ec}{initStateZero}}(mqVerif);
+797         outcome = \mbox{\hyperlink{QuEST__env__local_8c_ad5774247d836267175c664cd0e451bcb}{measure}}(mq, qubit);
+798         \textcolor{keywordflow}{if} (passed) passed = (outcome==0);
+799         \textcolor{keywordflow}{if} (passed) passed = \mbox{\hyperlink{QuEST_8c_a793584932ae384c82e7e42db7d35d18d}{compareStates}}(mq, mqVerif, 
+      \mbox{\hyperlink{runTests_8c_ab6750b3d9bd8ef6616ba0e5acd182a32}{COMPARE\_PRECISION}});
+800     \}
+801 
+802     \textcolor{comment}{// test qubit = |1> }
+803     \textcolor{keywordflow}{for} (qubit=0; qubit<numQubits; qubit++)\{
+804         \mbox{\hyperlink{QuEST_8c_a7169fd0442cbc3418f3fac4d13363ca2}{initStateOfSingleQubit}}(&mq, qubit, 1);
+805         \mbox{\hyperlink{QuEST_8c_a7169fd0442cbc3418f3fac4d13363ca2}{initStateOfSingleQubit}}(&mqVerif, qubit, 1);
+806         outcome = \mbox{\hyperlink{QuEST__env__local_8c_ad5774247d836267175c664cd0e451bcb}{measure}}(mq, qubit);
+807         \textcolor{keywordflow}{if} (passed) passed = (outcome==1);
+808         \textcolor{keywordflow}{if} (passed) passed = \mbox{\hyperlink{QuEST_8c_a793584932ae384c82e7e42db7d35d18d}{compareStates}}(mq, mqVerif, 
+      \mbox{\hyperlink{runTests_8c_ab6750b3d9bd8ef6616ba0e5acd182a32}{COMPARE\_PRECISION}});
+809     \}
+810 
+811     \textcolor{comment}{// visual check:}
+812     \textcolor{comment}{// test qubit = |+> }
+813     \textcolor{keywordtype}{int} nTrials=10;
+814     \textcolor{keywordtype}{unsigned} \textcolor{keywordtype}{long} \textcolor{keywordtype}{int} seedArray[] = \{18239, 12391\};
+815     \textcolor{keywordtype}{int} numSeeds = 2;
+816     \mbox{\hyperlink{QuEST_8c_a95012dad46509b4b461974c34cfd7b3d}{seedQuEST}}(seedArray, numSeeds);
+817     \textcolor{keywordflow}{for} (qubit=0; qubit<numQubits; qubit++)\{
+818         \textcolor{keywordflow}{if} (\mbox{\hyperlink{runTests_8c_a5fd8ba97fcae3408ae6221dfc3cc1f93}{env}}.\mbox{\hyperlink{structQuESTEnv_aa648bb336cf8598467cb62db00b9cee8}{rank}}==0) printf(\textcolor{stringliteral}{"\(\backslash\)n%d trials: measure qubit %d when in state |+>:\(\backslash\)n"}, nTrials, qubit
+      );
+819         \textcolor{keywordflow}{if} (\mbox{\hyperlink{runTests_8c_a5fd8ba97fcae3408ae6221dfc3cc1f93}{env}}.\mbox{\hyperlink{structQuESTEnv_aa648bb336cf8598467cb62db00b9cee8}{rank}}==0) printf(\textcolor{stringliteral}{"value of qubit = ["});
+820         \textcolor{keywordflow}{for} (\textcolor{keywordtype}{int} i=0; i<nTrials; i++)\{
+821             \mbox{\hyperlink{QuEST_8c_af8a0082e2f695145bbfbb572e4c2e4f1}{initStatePlus}}(mq);
+822             outcome = \mbox{\hyperlink{QuEST__env__local_8c_ad5774247d836267175c664cd0e451bcb}{measure}}(mq, qubit);
+823             \textcolor{keywordflow}{if} (\mbox{\hyperlink{runTests_8c_a5fd8ba97fcae3408ae6221dfc3cc1f93}{env}}.\mbox{\hyperlink{structQuESTEnv_aa648bb336cf8598467cb62db00b9cee8}{rank}}==0) printf(\textcolor{stringliteral}{" %d"}, outcome);
+824         \}
+825         \textcolor{keywordflow}{if} (\mbox{\hyperlink{runTests_8c_a5fd8ba97fcae3408ae6221dfc3cc1f93}{env}}.\mbox{\hyperlink{structQuESTEnv_aa648bb336cf8598467cb62db00b9cee8}{rank}}==0) printf(\textcolor{stringliteral}{"]\(\backslash\)n"});
+826     \}
+827     \mbox{\hyperlink{QuEST_8c_ae5d6acc322314d7a3d8a2eccf00d3b19}{destroyMultiQubit}}(mq, \mbox{\hyperlink{runTests_8c_a5fd8ba97fcae3408ae6221dfc3cc1f93}{env}});
+828     \mbox{\hyperlink{QuEST_8c_ae5d6acc322314d7a3d8a2eccf00d3b19}{destroyMultiQubit}}(mqVerif, \mbox{\hyperlink{runTests_8c_a5fd8ba97fcae3408ae6221dfc3cc1f93}{env}});
+829 
+830     \textcolor{keywordflow}{return} passed;
+831 \}
+\end{DoxyCode}
+\mbox{\Hypertarget{runTests_8c_a7565fe9a15eeda9a7aa19dd9af6fb3cf}\label{runTests_8c_a7565fe9a15eeda9a7aa19dd9af6fb3cf}} 
+\index{run\+Tests.\+c@{run\+Tests.\+c}!test\+\_\+measure\+With\+Stats@{test\+\_\+measure\+With\+Stats}}
+\index{test\+\_\+measure\+With\+Stats@{test\+\_\+measure\+With\+Stats}!run\+Tests.\+c@{run\+Tests.\+c}}
+\paragraph{\texorpdfstring{test\+\_\+measure\+With\+Stats()}{test\_measureWithStats()}}
+{\footnotesize\ttfamily int test\+\_\+measure\+With\+Stats (\begin{DoxyParamCaption}\item[{char}]{test\+Name\mbox{[}200\mbox{]} }\end{DoxyParamCaption})}
+
+
+
+Definition at line 833 of file run\+Tests.\+c.
+
+
+
+References C\+O\+M\+P\+A\+R\+E\+\_\+\+P\+R\+E\+C\+I\+S\+I\+ON, compare\+Reals(), compare\+States(), create\+Multi\+Qubit(), destroy\+Multi\+Qubit(), env, init\+State\+Of\+Single\+Qubit(), init\+State\+Plus(), init\+State\+Zero(), measure\+With\+Stats(), and R\+E\+AL.
+
+
+
+Referenced by main().
+
+
+\begin{DoxyCode}
+833                                              \{
+834     \textcolor{keywordtype}{int} passed=1;
+835 
+836     \textcolor{keywordtype}{int} numQubits=4;
+837     \mbox{\hyperlink{structMultiQubit}{MultiQubit}} mq, mqVerif;
+838     \textcolor{keywordtype}{int} qubit;
+839     \textcolor{keywordtype}{int} outcome;
+840     \mbox{\hyperlink{QuEST__precision_8h_a4b654506f18b8bfd61ad2a29a7e38c25}{REAL}} prob;
+841 
+842     \mbox{\hyperlink{QuEST_8c_a9c02591bc64c2918503afa231d90d83f}{createMultiQubit}}(&mq, numQubits, \mbox{\hyperlink{runTests_8c_a5fd8ba97fcae3408ae6221dfc3cc1f93}{env}});
+843     \mbox{\hyperlink{QuEST_8c_a9c02591bc64c2918503afa231d90d83f}{createMultiQubit}}(&mqVerif, numQubits, \mbox{\hyperlink{runTests_8c_a5fd8ba97fcae3408ae6221dfc3cc1f93}{env}});
+844 
+845     \textcolor{comment}{// test qubit = |0> }
+846     \textcolor{keywordflow}{for} (qubit=0; qubit<numQubits; qubit++)\{
+847         \mbox{\hyperlink{QuEST_8c_a9ba8171c9ec5c42202b144026527e9ec}{initStateZero}}(mq);
+848         \mbox{\hyperlink{QuEST_8c_a9ba8171c9ec5c42202b144026527e9ec}{initStateZero}}(mqVerif);
+849         prob=0;
+850         outcome = \mbox{\hyperlink{QuEST__env__local_8c_a2ac46e470c750bf93c754e06c64b0a7a}{measureWithStats}}(mq, qubit, &prob);
+851         \textcolor{keywordflow}{if} (passed) passed = (outcome==0);
+852         \textcolor{keywordflow}{if} (passed) passed = \mbox{\hyperlink{runTests_8c_ac171a0362fb526932484eb64604b10e8}{compareReals}}(prob, 1, \mbox{\hyperlink{runTests_8c_ab6750b3d9bd8ef6616ba0e5acd182a32}{COMPARE\_PRECISION}});
+853         \textcolor{keywordflow}{if} (passed) passed = \mbox{\hyperlink{QuEST_8c_a793584932ae384c82e7e42db7d35d18d}{compareStates}}(mq, mqVerif, 
+      \mbox{\hyperlink{runTests_8c_ab6750b3d9bd8ef6616ba0e5acd182a32}{COMPARE\_PRECISION}});
+854     \}
+855 
+856     \textcolor{comment}{// test qubit = |1> }
+857     \textcolor{keywordflow}{for} (qubit=0; qubit<numQubits; qubit++)\{
+858         \mbox{\hyperlink{QuEST_8c_a7169fd0442cbc3418f3fac4d13363ca2}{initStateOfSingleQubit}}(&mq, qubit, 1);
+859         \mbox{\hyperlink{QuEST_8c_a7169fd0442cbc3418f3fac4d13363ca2}{initStateOfSingleQubit}}(&mqVerif, qubit, 1);
+860         prob=0;
+861         outcome = \mbox{\hyperlink{QuEST__env__local_8c_a2ac46e470c750bf93c754e06c64b0a7a}{measureWithStats}}(mq, qubit, &prob);
+862         \textcolor{keywordflow}{if} (passed) passed = \mbox{\hyperlink{runTests_8c_ac171a0362fb526932484eb64604b10e8}{compareReals}}(prob, 1, \mbox{\hyperlink{runTests_8c_ab6750b3d9bd8ef6616ba0e5acd182a32}{COMPARE\_PRECISION}});
+863         \textcolor{keywordflow}{if} (passed) passed = \mbox{\hyperlink{QuEST_8c_a793584932ae384c82e7e42db7d35d18d}{compareStates}}(mq, mqVerif, 
+      \mbox{\hyperlink{runTests_8c_ab6750b3d9bd8ef6616ba0e5acd182a32}{COMPARE\_PRECISION}});
+864     \}
+865 
+866     \textcolor{comment}{// test qubit = |+> }
+867     \textcolor{keywordflow}{for} (qubit=0; qubit<numQubits; qubit++)\{
+868         \mbox{\hyperlink{QuEST_8c_af8a0082e2f695145bbfbb572e4c2e4f1}{initStatePlus}}(mq);
+869         prob=0;
+870         outcome = \mbox{\hyperlink{QuEST__env__local_8c_a2ac46e470c750bf93c754e06c64b0a7a}{measureWithStats}}(mq, qubit, &prob);
+871         \textcolor{keywordflow}{if} (passed) passed = \mbox{\hyperlink{runTests_8c_ac171a0362fb526932484eb64604b10e8}{compareReals}}(prob, 0.5, 
+      \mbox{\hyperlink{runTests_8c_ab6750b3d9bd8ef6616ba0e5acd182a32}{COMPARE\_PRECISION}});
+872     \}
+873     \mbox{\hyperlink{QuEST_8c_ae5d6acc322314d7a3d8a2eccf00d3b19}{destroyMultiQubit}}(mq, \mbox{\hyperlink{runTests_8c_a5fd8ba97fcae3408ae6221dfc3cc1f93}{env}});
+874     \mbox{\hyperlink{QuEST_8c_ae5d6acc322314d7a3d8a2eccf00d3b19}{destroyMultiQubit}}(mqVerif, \mbox{\hyperlink{runTests_8c_a5fd8ba97fcae3408ae6221dfc3cc1f93}{env}});
+875 
+876     \textcolor{keywordflow}{return} passed;
+877 \}
+\end{DoxyCode}
+\mbox{\Hypertarget{runTests_8c_a26f37a21204975210a038863e9cce56e}\label{runTests_8c_a26f37a21204975210a038863e9cce56e}} 
+\index{run\+Tests.\+c@{run\+Tests.\+c}!test\+\_\+multi\+Controlled\+Phase\+Gate@{test\+\_\+multi\+Controlled\+Phase\+Gate}}
+\index{test\+\_\+multi\+Controlled\+Phase\+Gate@{test\+\_\+multi\+Controlled\+Phase\+Gate}!run\+Tests.\+c@{run\+Tests.\+c}}
+\paragraph{\texorpdfstring{test\+\_\+multi\+Controlled\+Phase\+Gate()}{test\_multiControlledPhaseGate()}}
+{\footnotesize\ttfamily int test\+\_\+multi\+Controlled\+Phase\+Gate (\begin{DoxyParamCaption}\item[{char}]{test\+Name\mbox{[}200\mbox{]} }\end{DoxyParamCaption})}
+
+
+
+Definition at line 340 of file run\+Tests.\+c.
+
+
+
+References C\+O\+M\+P\+A\+R\+E\+\_\+\+P\+R\+E\+C\+I\+S\+I\+ON, compare\+States(), create\+Multi\+Qubit(), destroy\+Multi\+Qubit(), env, initialize\+State\+From\+Single\+File(), init\+State\+Debug(), multi\+Controlled\+Phase\+Gate(), and P\+A\+T\+H\+\_\+\+T\+O\+\_\+\+T\+E\+S\+TS.
+
+
+
+Referenced by main().
+
+
+\begin{DoxyCode}
+340                                                      \{
+341     \textcolor{keywordtype}{char} filename[200];
+342     \textcolor{keywordtype}{int} passed=1;
+343     \textcolor{keywordtype}{int} count=1;
+344 
+345     \textcolor{keywordtype}{int} numQubits=4;
+346     \mbox{\hyperlink{structMultiQubit}{MultiQubit}} mq, mqVerif; 
+347 
+348     \mbox{\hyperlink{QuEST_8c_a9c02591bc64c2918503afa231d90d83f}{createMultiQubit}}(&mq, numQubits, \mbox{\hyperlink{runTests_8c_a5fd8ba97fcae3408ae6221dfc3cc1f93}{env}});
+349     \mbox{\hyperlink{QuEST_8c_a9c02591bc64c2918503afa231d90d83f}{createMultiQubit}}(&mqVerif, numQubits, \mbox{\hyperlink{runTests_8c_a5fd8ba97fcae3408ae6221dfc3cc1f93}{env}});
+350 
+351     \textcolor{keywordtype}{int} qubits[4]=\{0,1,2,3\};
+352     \mbox{\hyperlink{QuEST_8c_a4b737ff9b4267609ef27e6cb4c42dc68}{initStateDebug}}(mq);
+353     \mbox{\hyperlink{QuEST_8c_afc1835c6b43b6e59ce7df7b13f274fc7}{multiControlledPhaseGate}}(mq, qubits, 4);
+354 
+355     sprintf(filename, \textcolor{stringliteral}{"%s%s%d.out"}, \mbox{\hyperlink{runTests_8c_a62f14505cc795eb5f045ad26bd77e3e1}{PATH\_TO\_TESTS}}, testName, count++);     
+356     \mbox{\hyperlink{QuEST_8c_a433876ee9f3bcc54af346300f571fc3c}{initializeStateFromSingleFile}}(&mqVerif, filename, 
+      \mbox{\hyperlink{runTests_8c_a5fd8ba97fcae3408ae6221dfc3cc1f93}{env}});
+357 
+358     passed = \mbox{\hyperlink{QuEST_8c_a793584932ae384c82e7e42db7d35d18d}{compareStates}}(mq, mqVerif, \mbox{\hyperlink{runTests_8c_ab6750b3d9bd8ef6616ba0e5acd182a32}{COMPARE\_PRECISION}});
+359 
+360     \mbox{\hyperlink{QuEST_8c_ae5d6acc322314d7a3d8a2eccf00d3b19}{destroyMultiQubit}}(mq, \mbox{\hyperlink{runTests_8c_a5fd8ba97fcae3408ae6221dfc3cc1f93}{env}});
+361     \mbox{\hyperlink{QuEST_8c_ae5d6acc322314d7a3d8a2eccf00d3b19}{destroyMultiQubit}}(mqVerif, \mbox{\hyperlink{runTests_8c_a5fd8ba97fcae3408ae6221dfc3cc1f93}{env}});
+362 
+363     \textcolor{keywordflow}{return} passed;
+364 \}
+\end{DoxyCode}
+\mbox{\Hypertarget{runTests_8c_adf241c5732dc3f8d4aa025bc231d7472}\label{runTests_8c_adf241c5732dc3f8d4aa025bc231d7472}} 
+\index{run\+Tests.\+c@{run\+Tests.\+c}!test\+\_\+multi\+Controlled\+Unitary@{test\+\_\+multi\+Controlled\+Unitary}}
+\index{test\+\_\+multi\+Controlled\+Unitary@{test\+\_\+multi\+Controlled\+Unitary}!run\+Tests.\+c@{run\+Tests.\+c}}
+\paragraph{\texorpdfstring{test\+\_\+multi\+Controlled\+Unitary()}{test\_multiControlledUnitary()}}
+{\footnotesize\ttfamily int test\+\_\+multi\+Controlled\+Unitary (\begin{DoxyParamCaption}\item[{char}]{test\+Name\mbox{[}200\mbox{]} }\end{DoxyParamCaption})}
+
+
+
+Definition at line 590 of file run\+Tests.\+c.
+
+
+
+References C\+O\+M\+P\+A\+R\+E\+\_\+\+P\+R\+E\+C\+I\+S\+I\+ON, compare\+States(), controlled\+Compact\+Unitary(), create\+Multi\+Qubit(), destroy\+Multi\+Qubit(), env, Complex\+::imag, initialize\+State\+From\+Single\+File(), init\+State\+Debug(), multi\+Controlled\+Unitary(), P\+A\+T\+H\+\_\+\+T\+O\+\_\+\+T\+E\+S\+TS, Complex\+Matrix2\+::r0c0, Complex\+Matrix2\+::r0c1, Complex\+Matrix2\+::r1c0, Complex\+Matrix2\+::r1c1, R\+E\+AL, and Complex\+::real.
+
+
+
+Referenced by main().
+
+
+\begin{DoxyCode}
+590                                                    \{
+591     \textcolor{keywordtype}{char} filename[200];
+592     \textcolor{keywordtype}{int} passed=1;
+593     \textcolor{keywordtype}{int} count=1;
+594 
+595     \textcolor{keywordtype}{int} numQubits=10;
+596     \textcolor{keywordtype}{int} rotQubit, controlQubit;
+597     \mbox{\hyperlink{structComplexMatrix2}{ComplexMatrix2}} u;
+598     \mbox{\hyperlink{structMultiQubit}{MultiQubit}} mq, mqVerif; 
+599 
+600     \textcolor{comment}{// assumes controlledCompactUnitary function is correct}
+601 
+602     \mbox{\hyperlink{QuEST__precision_8h_a4b654506f18b8bfd61ad2a29a7e38c25}{REAL}} ang1, ang2, ang3;
+603     ang1 = 1.2320;
+604     ang2 = 0.4230;
+605     ang3 = -0.65230;
+606 
+607     \mbox{\hyperlink{structComplex}{Complex}} alpha, beta;
+608     alpha.\mbox{\hyperlink{structComplex_a479ad939835457595fcca3ca55c06283}{real}} = cos(ang1) * cos(ang2);
+609     alpha.\mbox{\hyperlink{structComplex_a1151948284b21c0052f203f23ab931d9}{imag}} = cos(ang1) * sin(ang2);
+610     beta.\mbox{\hyperlink{structComplex_a479ad939835457595fcca3ca55c06283}{real}}  = sin(ang1) * cos(ang3);
+611     beta.\mbox{\hyperlink{structComplex_a1151948284b21c0052f203f23ab931d9}{imag}}  = sin(ang1) * sin(ang3);
+612 
+613     u.\mbox{\hyperlink{structComplexMatrix2_ae72b4458233b077a636beee1892e81ff}{r0c0}} = (\mbox{\hyperlink{QuEST_8h_ad59c9e471673c07782e6c403277ffd8d}{Complex}}) \{.\mbox{\hyperlink{structComplex_a479ad939835457595fcca3ca55c06283}{real}}=alpha.\mbox{\hyperlink{structComplex_a479ad939835457595fcca3ca55c06283}{real}}, .imag=alpha.\mbox{\hyperlink{structComplex_a1151948284b21c0052f203f23ab931d9}{imag}}\};
+614     u.\mbox{\hyperlink{structComplexMatrix2_a0f3932f055a8b05cef361bce25d51172}{r0c1}} = (\mbox{\hyperlink{QuEST_8h_ad59c9e471673c07782e6c403277ffd8d}{Complex}}) \{.\mbox{\hyperlink{structComplex_a479ad939835457595fcca3ca55c06283}{real}}=-beta.\mbox{\hyperlink{structComplex_a479ad939835457595fcca3ca55c06283}{real}}, .imag=beta.\mbox{\hyperlink{structComplex_a1151948284b21c0052f203f23ab931d9}{imag}}\}; 
+615     u.\mbox{\hyperlink{structComplexMatrix2_ab98282015ed2065e53fbc9638e2583ab}{r1c0}} = (\mbox{\hyperlink{QuEST_8h_ad59c9e471673c07782e6c403277ffd8d}{Complex}}) \{.\mbox{\hyperlink{structComplex_a479ad939835457595fcca3ca55c06283}{real}}=beta.\mbox{\hyperlink{structComplex_a479ad939835457595fcca3ca55c06283}{real}}, .imag=beta.\mbox{\hyperlink{structComplex_a1151948284b21c0052f203f23ab931d9}{imag}}\};
+616     u.\mbox{\hyperlink{structComplexMatrix2_a763007c3070802373549ba0350f83c8a}{r1c1}} = (\mbox{\hyperlink{QuEST_8h_ad59c9e471673c07782e6c403277ffd8d}{Complex}}) \{.\mbox{\hyperlink{structComplex_a479ad939835457595fcca3ca55c06283}{real}}=alpha.\mbox{\hyperlink{structComplex_a479ad939835457595fcca3ca55c06283}{real}}, .imag=-alpha.\mbox{\hyperlink{structComplex_a1151948284b21c0052f203f23ab931d9}{imag}}\};
+617 
+618     \mbox{\hyperlink{QuEST_8c_a9c02591bc64c2918503afa231d90d83f}{createMultiQubit}}(&mq, numQubits, \mbox{\hyperlink{runTests_8c_a5fd8ba97fcae3408ae6221dfc3cc1f93}{env}});
+619     \mbox{\hyperlink{QuEST_8c_a9c02591bc64c2918503afa231d90d83f}{createMultiQubit}}(&mqVerif, numQubits, \mbox{\hyperlink{runTests_8c_a5fd8ba97fcae3408ae6221dfc3cc1f93}{env}});
+620 
+621     \textcolor{comment}{// test mask contains one control qubit}
+622     \textcolor{keywordflow}{for} (\textcolor{keywordtype}{int} j=0; j<numQubits; j++)\{
+623         controlQubit=j;
+624         \textcolor{keywordflow}{for} (\textcolor{keywordtype}{int} i=0; i<numQubits; i++)\{
+625             \textcolor{keywordflow}{if} (j==i) \textcolor{keywordflow}{continue};
+626             \mbox{\hyperlink{QuEST_8c_a4b737ff9b4267609ef27e6cb4c42dc68}{initStateDebug}}(mq);
+627             \mbox{\hyperlink{QuEST_8c_a4b737ff9b4267609ef27e6cb4c42dc68}{initStateDebug}}(mqVerif);
+628             rotQubit=i;
+629             \mbox{\hyperlink{QuEST__env__local_8c_ab4812953bc457405b3aa05a4c2f64f4a}{controlledCompactUnitary}}(mqVerif, controlQubit, rotQubit, alpha, beta);
+630             \mbox{\hyperlink{QuEST__env__local_8c_ae395a79690283ed81106afadd7a8cd8a}{multiControlledUnitary}}(mq, &controlQubit, 1, rotQubit, u);
+631 
+632             \textcolor{keywordflow}{if} (passed) passed = \mbox{\hyperlink{QuEST_8c_a793584932ae384c82e7e42db7d35d18d}{compareStates}}(mq, mqVerif, 
+      \mbox{\hyperlink{runTests_8c_ab6750b3d9bd8ef6616ba0e5acd182a32}{COMPARE\_PRECISION}});
+633         \}
+634     \}
+635 
+636     \mbox{\hyperlink{QuEST_8c_ae5d6acc322314d7a3d8a2eccf00d3b19}{destroyMultiQubit}}(mq, \mbox{\hyperlink{runTests_8c_a5fd8ba97fcae3408ae6221dfc3cc1f93}{env}});
+637     \mbox{\hyperlink{QuEST_8c_ae5d6acc322314d7a3d8a2eccf00d3b19}{destroyMultiQubit}}(mqVerif, \mbox{\hyperlink{runTests_8c_a5fd8ba97fcae3408ae6221dfc3cc1f93}{env}});
+638 
+639     \textcolor{comment}{// randomly test a few different other multi control qubit masks }
+640     numQubits=4;
+641     \textcolor{keywordtype}{int} controlQubits[3];
+642     \mbox{\hyperlink{QuEST_8c_a9c02591bc64c2918503afa231d90d83f}{createMultiQubit}}(&mq, numQubits, \mbox{\hyperlink{runTests_8c_a5fd8ba97fcae3408ae6221dfc3cc1f93}{env}});
+643     \mbox{\hyperlink{QuEST_8c_a9c02591bc64c2918503afa231d90d83f}{createMultiQubit}}(&mqVerif, numQubits, \mbox{\hyperlink{runTests_8c_a5fd8ba97fcae3408ae6221dfc3cc1f93}{env}});
+644 
+645     rotQubit=3;
+646     controlQubits[0]=0;
+647     controlQubits[1]=2;
+648 
+649     \mbox{\hyperlink{QuEST_8c_a4b737ff9b4267609ef27e6cb4c42dc68}{initStateDebug}}(mq);
+650     \mbox{\hyperlink{QuEST__env__local_8c_ae395a79690283ed81106afadd7a8cd8a}{multiControlledUnitary}}(mq, controlQubits, 2, rotQubit, u);
+651     sprintf(filename, \textcolor{stringliteral}{"%s%s%d.out"}, \mbox{\hyperlink{runTests_8c_a62f14505cc795eb5f045ad26bd77e3e1}{PATH\_TO\_TESTS}}, testName, count++);     
+652     \mbox{\hyperlink{QuEST_8c_a433876ee9f3bcc54af346300f571fc3c}{initializeStateFromSingleFile}}(&mqVerif, filename, 
+      \mbox{\hyperlink{runTests_8c_a5fd8ba97fcae3408ae6221dfc3cc1f93}{env}});
+653     \textcolor{keywordflow}{if} (passed) passed = \mbox{\hyperlink{QuEST_8c_a793584932ae384c82e7e42db7d35d18d}{compareStates}}(mq, mqVerif, 
+      \mbox{\hyperlink{runTests_8c_ab6750b3d9bd8ef6616ba0e5acd182a32}{COMPARE\_PRECISION}});
+654 
+655     rotQubit=1;
+656     controlQubits[0]=0;
+657     controlQubits[1]=2;
+658     controlQubits[2]=3;
+659 
+660     \mbox{\hyperlink{QuEST_8c_a4b737ff9b4267609ef27e6cb4c42dc68}{initStateDebug}}(mq);
+661     \mbox{\hyperlink{QuEST__env__local_8c_ae395a79690283ed81106afadd7a8cd8a}{multiControlledUnitary}}(mq, controlQubits, 3, rotQubit, u);
+662     sprintf(filename, \textcolor{stringliteral}{"%s%s%d.out"}, \mbox{\hyperlink{runTests_8c_a62f14505cc795eb5f045ad26bd77e3e1}{PATH\_TO\_TESTS}}, testName, count++);     
+663     \mbox{\hyperlink{QuEST_8c_a433876ee9f3bcc54af346300f571fc3c}{initializeStateFromSingleFile}}(&mqVerif, filename, 
+      \mbox{\hyperlink{runTests_8c_a5fd8ba97fcae3408ae6221dfc3cc1f93}{env}});
+664     \textcolor{keywordflow}{if} (passed) passed = \mbox{\hyperlink{QuEST_8c_a793584932ae384c82e7e42db7d35d18d}{compareStates}}(mq, mqVerif, 
+      \mbox{\hyperlink{runTests_8c_ab6750b3d9bd8ef6616ba0e5acd182a32}{COMPARE\_PRECISION}});
+665 
+666     \mbox{\hyperlink{QuEST_8c_ae5d6acc322314d7a3d8a2eccf00d3b19}{destroyMultiQubit}}(mq, \mbox{\hyperlink{runTests_8c_a5fd8ba97fcae3408ae6221dfc3cc1f93}{env}});
+667     \mbox{\hyperlink{QuEST_8c_ae5d6acc322314d7a3d8a2eccf00d3b19}{destroyMultiQubit}}(mqVerif, \mbox{\hyperlink{runTests_8c_a5fd8ba97fcae3408ae6221dfc3cc1f93}{env}});
+668 
+669     \textcolor{keywordflow}{return} passed;
+670 \}
+\end{DoxyCode}
+\mbox{\Hypertarget{runTests_8c_a3b454557cf3c7eaa6cd422a19f7641c9}\label{runTests_8c_a3b454557cf3c7eaa6cd422a19f7641c9}} 
+\index{run\+Tests.\+c@{run\+Tests.\+c}!test\+\_\+s\+Gate@{test\+\_\+s\+Gate}}
+\index{test\+\_\+s\+Gate@{test\+\_\+s\+Gate}!run\+Tests.\+c@{run\+Tests.\+c}}
+\paragraph{\texorpdfstring{test\+\_\+s\+Gate()}{test\_sGate()}}
+{\footnotesize\ttfamily int test\+\_\+s\+Gate (\begin{DoxyParamCaption}\item[{char}]{test\+Name\mbox{[}200\mbox{]} }\end{DoxyParamCaption})}
+
+
+
+Definition at line 218 of file run\+Tests.\+c.
+
+
+
+References C\+O\+M\+P\+A\+R\+E\+\_\+\+P\+R\+E\+C\+I\+S\+I\+ON, compare\+States(), create\+Multi\+Qubit(), destroy\+Multi\+Qubit(), env, initialize\+State\+From\+Single\+File(), init\+State\+Debug(), P\+A\+T\+H\+\_\+\+T\+O\+\_\+\+T\+E\+S\+TS, and s\+Gate().
+
+
+
+Referenced by main().
+
+
+\begin{DoxyCode}
+218                                   \{
+219     \textcolor{keywordtype}{char} filename[200];
+220     \textcolor{keywordtype}{int} passed=1;
+221     \textcolor{keywordtype}{int} count=1;
+222 
+223     \textcolor{keywordtype}{int} numQubits=3;
+224     \textcolor{keywordtype}{int} rotateQubit;
+225     \mbox{\hyperlink{structMultiQubit}{MultiQubit}} mq, mqVerif; 
+226 
+227     \mbox{\hyperlink{QuEST_8c_a9c02591bc64c2918503afa231d90d83f}{createMultiQubit}}(&mq, numQubits, \mbox{\hyperlink{runTests_8c_a5fd8ba97fcae3408ae6221dfc3cc1f93}{env}});
+228     \mbox{\hyperlink{QuEST_8c_a9c02591bc64c2918503afa231d90d83f}{createMultiQubit}}(&mqVerif, numQubits, \mbox{\hyperlink{runTests_8c_a5fd8ba97fcae3408ae6221dfc3cc1f93}{env}});
+229 
+230     \textcolor{keywordflow}{for} (\textcolor{keywordtype}{int} i=0; i<3; i++)\{
+231         \mbox{\hyperlink{QuEST_8c_a4b737ff9b4267609ef27e6cb4c42dc68}{initStateDebug}}(mq);
+232         rotateQubit=i;
+233         \mbox{\hyperlink{QuEST_8c_adda6c47876a7676488ed0565a19eaa65}{sGate}}(mq, rotateQubit);
+234 
+235         sprintf(filename, \textcolor{stringliteral}{"%s%s%d.out"}, \mbox{\hyperlink{runTests_8c_a62f14505cc795eb5f045ad26bd77e3e1}{PATH\_TO\_TESTS}}, testName, count++);         
+236         \mbox{\hyperlink{QuEST_8c_a433876ee9f3bcc54af346300f571fc3c}{initializeStateFromSingleFile}}(&mqVerif, filename, 
+      \mbox{\hyperlink{runTests_8c_a5fd8ba97fcae3408ae6221dfc3cc1f93}{env}});
+237 
+238         \textcolor{keywordflow}{if} (passed) passed = \mbox{\hyperlink{QuEST_8c_a793584932ae384c82e7e42db7d35d18d}{compareStates}}(mq, mqVerif, 
+      \mbox{\hyperlink{runTests_8c_ab6750b3d9bd8ef6616ba0e5acd182a32}{COMPARE\_PRECISION}});
+239     \}
+240     \mbox{\hyperlink{QuEST_8c_ae5d6acc322314d7a3d8a2eccf00d3b19}{destroyMultiQubit}}(mq, \mbox{\hyperlink{runTests_8c_a5fd8ba97fcae3408ae6221dfc3cc1f93}{env}});
+241     \mbox{\hyperlink{QuEST_8c_ae5d6acc322314d7a3d8a2eccf00d3b19}{destroyMultiQubit}}(mqVerif, \mbox{\hyperlink{runTests_8c_a5fd8ba97fcae3408ae6221dfc3cc1f93}{env}});
+242 
+243     \textcolor{keywordflow}{return} passed;
+244 \}
+\end{DoxyCode}
+\mbox{\Hypertarget{runTests_8c_aa1431f98522afb42a7cbef3055905f91}\label{runTests_8c_aa1431f98522afb42a7cbef3055905f91}} 
+\index{run\+Tests.\+c@{run\+Tests.\+c}!test\+\_\+sigmaX@{test\+\_\+sigmaX}}
+\index{test\+\_\+sigmaX@{test\+\_\+sigmaX}!run\+Tests.\+c@{run\+Tests.\+c}}
+\paragraph{\texorpdfstring{test\+\_\+sigma\+X()}{test\_sigmaX()}}
+{\footnotesize\ttfamily int test\+\_\+sigmaX (\begin{DoxyParamCaption}\item[{char}]{test\+Name\mbox{[}200\mbox{]} }\end{DoxyParamCaption})}
+
+
+
+Definition at line 103 of file run\+Tests.\+c.
+
+
+
+References C\+O\+M\+P\+A\+R\+E\+\_\+\+P\+R\+E\+C\+I\+S\+I\+ON, compare\+States(), create\+Multi\+Qubit(), destroy\+Multi\+Qubit(), env, initialize\+State\+From\+Single\+File(), init\+State\+Debug(), P\+A\+T\+H\+\_\+\+T\+O\+\_\+\+T\+E\+S\+TS, and sigma\+X().
+
+
+
+Referenced by main().
+
+
+\begin{DoxyCode}
+103                                    \{
+104     \textcolor{keywordtype}{char} filename[200];
+105     \textcolor{keywordtype}{int} passed=1;
+106     \textcolor{keywordtype}{int} count=1;
+107 
+108     \textcolor{keywordtype}{int} numQubits=3;
+109     \textcolor{keywordtype}{int} rotateQubit;
+110     \mbox{\hyperlink{structMultiQubit}{MultiQubit}} mq, mqVerif; 
+111 
+112     \mbox{\hyperlink{QuEST_8c_a9c02591bc64c2918503afa231d90d83f}{createMultiQubit}}(&mq, numQubits, \mbox{\hyperlink{runTests_8c_a5fd8ba97fcae3408ae6221dfc3cc1f93}{env}});
+113     \mbox{\hyperlink{QuEST_8c_a9c02591bc64c2918503afa231d90d83f}{createMultiQubit}}(&mqVerif, numQubits, \mbox{\hyperlink{runTests_8c_a5fd8ba97fcae3408ae6221dfc3cc1f93}{env}});
+114 
+115     \textcolor{keywordflow}{for} (\textcolor{keywordtype}{int} i=0; i<3; i++)\{
+116         \mbox{\hyperlink{QuEST_8c_a4b737ff9b4267609ef27e6cb4c42dc68}{initStateDebug}}(mq);
+117         rotateQubit=i;
+118         \mbox{\hyperlink{QuEST__env__local_8c_a86e396e06b7d527cac20ba0108872423}{sigmaX}}(mq, rotateQubit);
+119 
+120         sprintf(filename, \textcolor{stringliteral}{"%s%s%d.out"}, \mbox{\hyperlink{runTests_8c_a62f14505cc795eb5f045ad26bd77e3e1}{PATH\_TO\_TESTS}}, testName, count++);         
+121         \mbox{\hyperlink{QuEST_8c_a433876ee9f3bcc54af346300f571fc3c}{initializeStateFromSingleFile}}(&mqVerif, filename, 
+      \mbox{\hyperlink{runTests_8c_a5fd8ba97fcae3408ae6221dfc3cc1f93}{env}});
+122 
+123         \textcolor{keywordflow}{if} (passed) passed = \mbox{\hyperlink{QuEST_8c_a793584932ae384c82e7e42db7d35d18d}{compareStates}}(mq, mqVerif, 
+      \mbox{\hyperlink{runTests_8c_ab6750b3d9bd8ef6616ba0e5acd182a32}{COMPARE\_PRECISION}});
+124     \}
+125 
+126     \mbox{\hyperlink{QuEST_8c_ae5d6acc322314d7a3d8a2eccf00d3b19}{destroyMultiQubit}}(mq, \mbox{\hyperlink{runTests_8c_a5fd8ba97fcae3408ae6221dfc3cc1f93}{env}});
+127     \mbox{\hyperlink{QuEST_8c_ae5d6acc322314d7a3d8a2eccf00d3b19}{destroyMultiQubit}}(mqVerif, \mbox{\hyperlink{runTests_8c_a5fd8ba97fcae3408ae6221dfc3cc1f93}{env}});
+128 
+129     \textcolor{keywordflow}{return} passed;
+130 \}
+\end{DoxyCode}
+\mbox{\Hypertarget{runTests_8c_af6fe08f1f307014ef9963197ce35ee47}\label{runTests_8c_af6fe08f1f307014ef9963197ce35ee47}} 
+\index{run\+Tests.\+c@{run\+Tests.\+c}!test\+\_\+sigmaY@{test\+\_\+sigmaY}}
+\index{test\+\_\+sigmaY@{test\+\_\+sigmaY}!run\+Tests.\+c@{run\+Tests.\+c}}
+\paragraph{\texorpdfstring{test\+\_\+sigma\+Y()}{test\_sigmaY()}}
+{\footnotesize\ttfamily int test\+\_\+sigmaY (\begin{DoxyParamCaption}\item[{char}]{test\+Name\mbox{[}200\mbox{]} }\end{DoxyParamCaption})}
+
+
+
+Definition at line 132 of file run\+Tests.\+c.
+
+
+
+References C\+O\+M\+P\+A\+R\+E\+\_\+\+P\+R\+E\+C\+I\+S\+I\+ON, compare\+States(), create\+Multi\+Qubit(), destroy\+Multi\+Qubit(), env, initialize\+State\+From\+Single\+File(), init\+State\+Debug(), P\+A\+T\+H\+\_\+\+T\+O\+\_\+\+T\+E\+S\+TS, and sigma\+Y().
+
+
+
+Referenced by main().
+
+
+\begin{DoxyCode}
+132                                    \{
+133     \textcolor{keywordtype}{char} filename[200];
+134     \textcolor{keywordtype}{int} passed=1;
+135     \textcolor{keywordtype}{int} count=1;
+136 
+137     \textcolor{keywordtype}{int} numQubits=3;
+138     \textcolor{keywordtype}{int} rotateQubit;
+139     \mbox{\hyperlink{structMultiQubit}{MultiQubit}} mq, mqVerif; 
+140 
+141     \mbox{\hyperlink{QuEST_8c_a9c02591bc64c2918503afa231d90d83f}{createMultiQubit}}(&mq, numQubits, \mbox{\hyperlink{runTests_8c_a5fd8ba97fcae3408ae6221dfc3cc1f93}{env}});
+142     \mbox{\hyperlink{QuEST_8c_a9c02591bc64c2918503afa231d90d83f}{createMultiQubit}}(&mqVerif, numQubits, \mbox{\hyperlink{runTests_8c_a5fd8ba97fcae3408ae6221dfc3cc1f93}{env}});
+143 
+144     \textcolor{keywordflow}{for} (\textcolor{keywordtype}{int} i=0; i<3; i++)\{
+145         \mbox{\hyperlink{QuEST_8c_a4b737ff9b4267609ef27e6cb4c42dc68}{initStateDebug}}(mq);
+146         rotateQubit=i;
+147         \mbox{\hyperlink{QuEST__env__local_8c_a1f54d70a42403f7e1c2e2c2007332f61}{sigmaY}}(mq, rotateQubit);
+148 
+149         sprintf(filename, \textcolor{stringliteral}{"%s%s%d.out"}, \mbox{\hyperlink{runTests_8c_a62f14505cc795eb5f045ad26bd77e3e1}{PATH\_TO\_TESTS}}, testName, count++);         
+150         \mbox{\hyperlink{QuEST_8c_a433876ee9f3bcc54af346300f571fc3c}{initializeStateFromSingleFile}}(&mqVerif, filename, 
+      \mbox{\hyperlink{runTests_8c_a5fd8ba97fcae3408ae6221dfc3cc1f93}{env}});
+151 
+152         \textcolor{keywordflow}{if} (passed) passed = \mbox{\hyperlink{QuEST_8c_a793584932ae384c82e7e42db7d35d18d}{compareStates}}(mq, mqVerif, 
+      \mbox{\hyperlink{runTests_8c_ab6750b3d9bd8ef6616ba0e5acd182a32}{COMPARE\_PRECISION}});
+153     \}
+154 
+155     \mbox{\hyperlink{QuEST_8c_ae5d6acc322314d7a3d8a2eccf00d3b19}{destroyMultiQubit}}(mq, \mbox{\hyperlink{runTests_8c_a5fd8ba97fcae3408ae6221dfc3cc1f93}{env}});
+156     \mbox{\hyperlink{QuEST_8c_ae5d6acc322314d7a3d8a2eccf00d3b19}{destroyMultiQubit}}(mqVerif, \mbox{\hyperlink{runTests_8c_a5fd8ba97fcae3408ae6221dfc3cc1f93}{env}});
+157 
+158     \textcolor{keywordflow}{return} passed;
+159 \}
+\end{DoxyCode}
+\mbox{\Hypertarget{runTests_8c_af9f1119848cfc00c9a699ee81f33bb82}\label{runTests_8c_af9f1119848cfc00c9a699ee81f33bb82}} 
+\index{run\+Tests.\+c@{run\+Tests.\+c}!test\+\_\+sigmaZ@{test\+\_\+sigmaZ}}
+\index{test\+\_\+sigmaZ@{test\+\_\+sigmaZ}!run\+Tests.\+c@{run\+Tests.\+c}}
+\paragraph{\texorpdfstring{test\+\_\+sigma\+Z()}{test\_sigmaZ()}}
+{\footnotesize\ttfamily int test\+\_\+sigmaZ (\begin{DoxyParamCaption}\item[{char}]{test\+Name\mbox{[}200\mbox{]} }\end{DoxyParamCaption})}
+
+
+
+Definition at line 161 of file run\+Tests.\+c.
+
+
+
+References C\+O\+M\+P\+A\+R\+E\+\_\+\+P\+R\+E\+C\+I\+S\+I\+ON, compare\+States(), create\+Multi\+Qubit(), destroy\+Multi\+Qubit(), env, initialize\+State\+From\+Single\+File(), init\+State\+Debug(), P\+A\+T\+H\+\_\+\+T\+O\+\_\+\+T\+E\+S\+TS, and sigma\+Z().
+
+
+
+Referenced by main().
+
+
+\begin{DoxyCode}
+161                                    \{
+162     \textcolor{keywordtype}{char} filename[200];
+163     \textcolor{keywordtype}{int} passed=1;
+164     \textcolor{keywordtype}{int} count=1;
+165 
+166     \textcolor{keywordtype}{int} numQubits=3;
+167     \textcolor{keywordtype}{int} rotateQubit;
+168     \mbox{\hyperlink{structMultiQubit}{MultiQubit}} mq, mqVerif; 
+169 
+170     \mbox{\hyperlink{QuEST_8c_a9c02591bc64c2918503afa231d90d83f}{createMultiQubit}}(&mq, numQubits, \mbox{\hyperlink{runTests_8c_a5fd8ba97fcae3408ae6221dfc3cc1f93}{env}});
+171     \mbox{\hyperlink{QuEST_8c_a9c02591bc64c2918503afa231d90d83f}{createMultiQubit}}(&mqVerif, numQubits, \mbox{\hyperlink{runTests_8c_a5fd8ba97fcae3408ae6221dfc3cc1f93}{env}});
+172 
+173     \textcolor{keywordflow}{for} (\textcolor{keywordtype}{int} i=0; i<3; i++)\{
+174         \mbox{\hyperlink{QuEST_8c_a4b737ff9b4267609ef27e6cb4c42dc68}{initStateDebug}}(mq);
+175         rotateQubit=i;
+176         \mbox{\hyperlink{QuEST_8c_aebaab86326779de55d335cfea3efde8f}{sigmaZ}}(mq, rotateQubit);
+177 
+178         sprintf(filename, \textcolor{stringliteral}{"%s%s%d.out"}, \mbox{\hyperlink{runTests_8c_a62f14505cc795eb5f045ad26bd77e3e1}{PATH\_TO\_TESTS}}, testName, count++);         
+179         \mbox{\hyperlink{QuEST_8c_a433876ee9f3bcc54af346300f571fc3c}{initializeStateFromSingleFile}}(&mqVerif, filename, 
+      \mbox{\hyperlink{runTests_8c_a5fd8ba97fcae3408ae6221dfc3cc1f93}{env}});
+180 
+181         \textcolor{keywordflow}{if} (passed) passed = \mbox{\hyperlink{QuEST_8c_a793584932ae384c82e7e42db7d35d18d}{compareStates}}(mq, mqVerif, 
+      \mbox{\hyperlink{runTests_8c_ab6750b3d9bd8ef6616ba0e5acd182a32}{COMPARE\_PRECISION}});
+182     \}
+183 
+184     \mbox{\hyperlink{QuEST_8c_ae5d6acc322314d7a3d8a2eccf00d3b19}{destroyMultiQubit}}(mq, \mbox{\hyperlink{runTests_8c_a5fd8ba97fcae3408ae6221dfc3cc1f93}{env}});
+185     \mbox{\hyperlink{QuEST_8c_ae5d6acc322314d7a3d8a2eccf00d3b19}{destroyMultiQubit}}(mqVerif, \mbox{\hyperlink{runTests_8c_a5fd8ba97fcae3408ae6221dfc3cc1f93}{env}});
+186 
+187     \textcolor{keywordflow}{return} passed;
+188 \}
+\end{DoxyCode}
+\mbox{\Hypertarget{runTests_8c_aa6be048ce1df1f2b1e72eb3fadaf69ab}\label{runTests_8c_aa6be048ce1df1f2b1e72eb3fadaf69ab}} 
+\index{run\+Tests.\+c@{run\+Tests.\+c}!test\+\_\+t\+Gate@{test\+\_\+t\+Gate}}
+\index{test\+\_\+t\+Gate@{test\+\_\+t\+Gate}!run\+Tests.\+c@{run\+Tests.\+c}}
+\paragraph{\texorpdfstring{test\+\_\+t\+Gate()}{test\_tGate()}}
+{\footnotesize\ttfamily int test\+\_\+t\+Gate (\begin{DoxyParamCaption}\item[{char}]{test\+Name\mbox{[}200\mbox{]} }\end{DoxyParamCaption})}
+
+
+
+Definition at line 246 of file run\+Tests.\+c.
+
+
+
+References C\+O\+M\+P\+A\+R\+E\+\_\+\+P\+R\+E\+C\+I\+S\+I\+ON, compare\+States(), create\+Multi\+Qubit(), destroy\+Multi\+Qubit(), env, initialize\+State\+From\+Single\+File(), init\+State\+Debug(), P\+A\+T\+H\+\_\+\+T\+O\+\_\+\+T\+E\+S\+TS, and t\+Gate().
+
+
+
+Referenced by main().
+
+
+\begin{DoxyCode}
+246                                   \{
+247     \textcolor{keywordtype}{char} filename[200];
+248     \textcolor{keywordtype}{int} passed=1;
+249     \textcolor{keywordtype}{int} count=1;
+250 
+251     \textcolor{keywordtype}{int} numQubits=3;
+252     \textcolor{keywordtype}{int} rotateQubit;
+253     \mbox{\hyperlink{structMultiQubit}{MultiQubit}} mq, mqVerif; 
+254 
+255     \mbox{\hyperlink{QuEST_8c_a9c02591bc64c2918503afa231d90d83f}{createMultiQubit}}(&mq, numQubits, \mbox{\hyperlink{runTests_8c_a5fd8ba97fcae3408ae6221dfc3cc1f93}{env}});
+256     \mbox{\hyperlink{QuEST_8c_a9c02591bc64c2918503afa231d90d83f}{createMultiQubit}}(&mqVerif, numQubits, \mbox{\hyperlink{runTests_8c_a5fd8ba97fcae3408ae6221dfc3cc1f93}{env}});
+257 
+258     \textcolor{keywordflow}{for} (\textcolor{keywordtype}{int} i=0; i<3; i++)\{
+259         \mbox{\hyperlink{QuEST_8c_a4b737ff9b4267609ef27e6cb4c42dc68}{initStateDebug}}(mq);
+260         rotateQubit=i;
+261         \mbox{\hyperlink{QuEST_8c_af764ea63a2e870098f4e1ce08562942e}{tGate}}(mq, rotateQubit);
+262 
+263         sprintf(filename, \textcolor{stringliteral}{"%s%s%d.out"}, \mbox{\hyperlink{runTests_8c_a62f14505cc795eb5f045ad26bd77e3e1}{PATH\_TO\_TESTS}}, testName, count++);         
+264         \mbox{\hyperlink{QuEST_8c_a433876ee9f3bcc54af346300f571fc3c}{initializeStateFromSingleFile}}(&mqVerif, filename, 
+      \mbox{\hyperlink{runTests_8c_a5fd8ba97fcae3408ae6221dfc3cc1f93}{env}});
+265 
+266         \textcolor{keywordflow}{if} (passed) passed = \mbox{\hyperlink{QuEST_8c_a793584932ae384c82e7e42db7d35d18d}{compareStates}}(mq, mqVerif, 
+      \mbox{\hyperlink{runTests_8c_ab6750b3d9bd8ef6616ba0e5acd182a32}{COMPARE\_PRECISION}});
+267     \}
+268     \mbox{\hyperlink{QuEST_8c_ae5d6acc322314d7a3d8a2eccf00d3b19}{destroyMultiQubit}}(mq, \mbox{\hyperlink{runTests_8c_a5fd8ba97fcae3408ae6221dfc3cc1f93}{env}});
+269     \mbox{\hyperlink{QuEST_8c_ae5d6acc322314d7a3d8a2eccf00d3b19}{destroyMultiQubit}}(mqVerif, \mbox{\hyperlink{runTests_8c_a5fd8ba97fcae3408ae6221dfc3cc1f93}{env}});
+270 
+271     \textcolor{keywordflow}{return} passed;
+272 \}
+\end{DoxyCode}
+\mbox{\Hypertarget{runTests_8c_a479d17b9b1f58a696ee427de0b4aa395}\label{runTests_8c_a479d17b9b1f58a696ee427de0b4aa395}} 
+\index{run\+Tests.\+c@{run\+Tests.\+c}!test\+\_\+unitary@{test\+\_\+unitary}}
+\index{test\+\_\+unitary@{test\+\_\+unitary}!run\+Tests.\+c@{run\+Tests.\+c}}
+\paragraph{\texorpdfstring{test\+\_\+unitary()}{test\_unitary()}}
+{\footnotesize\ttfamily int test\+\_\+unitary (\begin{DoxyParamCaption}\item[{char}]{test\+Name\mbox{[}200\mbox{]} }\end{DoxyParamCaption})}
+
+
+
+Definition at line 428 of file run\+Tests.\+c.
+
+
+
+References calc\+Total\+Probability(), compact\+Unitary(), C\+O\+M\+P\+A\+R\+E\+\_\+\+P\+R\+E\+C\+I\+S\+I\+ON, compare\+Reals(), compare\+States(), create\+Multi\+Qubit(), destroy\+Multi\+Qubit(), env, Complex\+::imag, init\+State\+Debug(), init\+State\+Plus(), Complex\+Matrix2\+::r0c0, Complex\+Matrix2\+::r0c1, Complex\+Matrix2\+::r1c0, Complex\+Matrix2\+::r1c1, R\+E\+AL, Complex\+::real, and unitary().
+
+
+
+Referenced by main().
+
+
+\begin{DoxyCode}
+428                                     \{
+429     \textcolor{keywordtype}{int} passed=1;
+430 
+431     \textcolor{keywordtype}{int} numQubits=10;
+432     \textcolor{keywordtype}{int} rotQubit;
+433     \mbox{\hyperlink{structMultiQubit}{MultiQubit}} mq, mqVerif; 
+434 
+435     \mbox{\hyperlink{QuEST__precision_8h_a4b654506f18b8bfd61ad2a29a7e38c25}{REAL}} angs[3];
+436     \mbox{\hyperlink{structComplex}{Complex}} alpha, beta;
+437     \mbox{\hyperlink{structComplexMatrix2}{ComplexMatrix2}} u, uDagger;
+438 
+439     angs[0]=1.2; angs[1]=-2.4; angs[2]=0.3;
+440     alpha.\mbox{\hyperlink{structComplex_a479ad939835457595fcca3ca55c06283}{real}} = cos(angs[0]) * cos(angs[1]);
+441     alpha.\mbox{\hyperlink{structComplex_a1151948284b21c0052f203f23ab931d9}{imag}} = cos(angs[0]) * sin(angs[1]);
+442     beta.\mbox{\hyperlink{structComplex_a479ad939835457595fcca3ca55c06283}{real}}  = sin(angs[0]) * cos(angs[2]);
+443     beta.\mbox{\hyperlink{structComplex_a1151948284b21c0052f203f23ab931d9}{imag}}  = sin(angs[0]) * sin(angs[2]);
+444 
+445     u.\mbox{\hyperlink{structComplexMatrix2_ae72b4458233b077a636beee1892e81ff}{r0c0}} = (\mbox{\hyperlink{QuEST_8h_ad59c9e471673c07782e6c403277ffd8d}{Complex}}) \{.\mbox{\hyperlink{structComplex_a479ad939835457595fcca3ca55c06283}{real}}=alpha.\mbox{\hyperlink{structComplex_a479ad939835457595fcca3ca55c06283}{real}}, .imag=alpha.\mbox{\hyperlink{structComplex_a1151948284b21c0052f203f23ab931d9}{imag}}\};
+446     u.\mbox{\hyperlink{structComplexMatrix2_a0f3932f055a8b05cef361bce25d51172}{r0c1}} = (\mbox{\hyperlink{QuEST_8h_ad59c9e471673c07782e6c403277ffd8d}{Complex}}) \{.\mbox{\hyperlink{structComplex_a479ad939835457595fcca3ca55c06283}{real}}=-beta.\mbox{\hyperlink{structComplex_a479ad939835457595fcca3ca55c06283}{real}}, .imag=beta.\mbox{\hyperlink{structComplex_a1151948284b21c0052f203f23ab931d9}{imag}}\}; 
+447     u.\mbox{\hyperlink{structComplexMatrix2_ab98282015ed2065e53fbc9638e2583ab}{r1c0}} = (\mbox{\hyperlink{QuEST_8h_ad59c9e471673c07782e6c403277ffd8d}{Complex}}) \{.\mbox{\hyperlink{structComplex_a479ad939835457595fcca3ca55c06283}{real}}=beta.\mbox{\hyperlink{structComplex_a479ad939835457595fcca3ca55c06283}{real}}, .imag=beta.\mbox{\hyperlink{structComplex_a1151948284b21c0052f203f23ab931d9}{imag}}\};
+448     u.\mbox{\hyperlink{structComplexMatrix2_a763007c3070802373549ba0350f83c8a}{r1c1}} = (\mbox{\hyperlink{QuEST_8h_ad59c9e471673c07782e6c403277ffd8d}{Complex}}) \{.\mbox{\hyperlink{structComplex_a479ad939835457595fcca3ca55c06283}{real}}=alpha.\mbox{\hyperlink{structComplex_a479ad939835457595fcca3ca55c06283}{real}}, .imag=-alpha.\mbox{\hyperlink{structComplex_a1151948284b21c0052f203f23ab931d9}{imag}}\};
+449 
+450     \mbox{\hyperlink{QuEST_8c_a9c02591bc64c2918503afa231d90d83f}{createMultiQubit}}(&mq, numQubits, \mbox{\hyperlink{runTests_8c_a5fd8ba97fcae3408ae6221dfc3cc1f93}{env}});
+451     \mbox{\hyperlink{QuEST_8c_a9c02591bc64c2918503afa231d90d83f}{createMultiQubit}}(&mqVerif, numQubits, \mbox{\hyperlink{runTests_8c_a5fd8ba97fcae3408ae6221dfc3cc1f93}{env}});
+452 
+453     \mbox{\hyperlink{QuEST_8c_a4b737ff9b4267609ef27e6cb4c42dc68}{initStateDebug}}(mq);
+454     \mbox{\hyperlink{QuEST_8c_a4b737ff9b4267609ef27e6cb4c42dc68}{initStateDebug}}(mqVerif);
+455     \textcolor{keywordflow}{for} (\textcolor{keywordtype}{int} i=0; i<numQubits; i++)\{
+456         rotQubit=i;
+457         \mbox{\hyperlink{QuEST__env__local_8c_a03b13dfcabd8c59b50dbdd3af44ba8b2}{compactUnitary}}(mqVerif, rotQubit, alpha, beta);
+458         \mbox{\hyperlink{QuEST__env__local_8c_a7a0877e33700f6bad48adb51b7b3fb67}{unitary}}(mq, rotQubit, u);
+459     \}
+460     \textcolor{comment}{// assigning alpha/beta values to u such that compactUnitary should match unitary}
+461     \textcolor{keywordflow}{if} (passed) passed = \mbox{\hyperlink{QuEST_8c_a793584932ae384c82e7e42db7d35d18d}{compareStates}}(mq, mqVerif, 
+      \mbox{\hyperlink{runTests_8c_ab6750b3d9bd8ef6616ba0e5acd182a32}{COMPARE\_PRECISION}});
+462 
+463     \textcolor{comment}{// Rotate back the other way and check we arrive back at the initial state}
+464     uDagger.\mbox{\hyperlink{structComplexMatrix2_ae72b4458233b077a636beee1892e81ff}{r0c0}}.\mbox{\hyperlink{structComplex_a479ad939835457595fcca3ca55c06283}{real}}=u.\mbox{\hyperlink{structComplexMatrix2_ae72b4458233b077a636beee1892e81ff}{r0c0}}.\mbox{\hyperlink{structComplex_a479ad939835457595fcca3ca55c06283}{real}}; uDagger.\mbox{\hyperlink{structComplexMatrix2_ae72b4458233b077a636beee1892e81ff}{r0c0}}.\mbox{\hyperlink{structComplex_a1151948284b21c0052f203f23ab931d9}{imag}}=-u.
+      \mbox{\hyperlink{structComplexMatrix2_ae72b4458233b077a636beee1892e81ff}{r0c0}}.\mbox{\hyperlink{structComplex_a1151948284b21c0052f203f23ab931d9}{imag}};
+465     uDagger.\mbox{\hyperlink{structComplexMatrix2_a0f3932f055a8b05cef361bce25d51172}{r0c1}}.\mbox{\hyperlink{structComplex_a479ad939835457595fcca3ca55c06283}{real}}=u.\mbox{\hyperlink{structComplexMatrix2_ab98282015ed2065e53fbc9638e2583ab}{r1c0}}.\mbox{\hyperlink{structComplex_a479ad939835457595fcca3ca55c06283}{real}}; uDagger.\mbox{\hyperlink{structComplexMatrix2_a0f3932f055a8b05cef361bce25d51172}{r0c1}}.\mbox{\hyperlink{structComplex_a1151948284b21c0052f203f23ab931d9}{imag}}=-u.
+      \mbox{\hyperlink{structComplexMatrix2_ab98282015ed2065e53fbc9638e2583ab}{r1c0}}.\mbox{\hyperlink{structComplex_a1151948284b21c0052f203f23ab931d9}{imag}};
+466     uDagger.\mbox{\hyperlink{structComplexMatrix2_ab98282015ed2065e53fbc9638e2583ab}{r1c0}}.\mbox{\hyperlink{structComplex_a479ad939835457595fcca3ca55c06283}{real}}=u.\mbox{\hyperlink{structComplexMatrix2_a0f3932f055a8b05cef361bce25d51172}{r0c1}}.\mbox{\hyperlink{structComplex_a479ad939835457595fcca3ca55c06283}{real}}; uDagger.\mbox{\hyperlink{structComplexMatrix2_ab98282015ed2065e53fbc9638e2583ab}{r1c0}}.\mbox{\hyperlink{structComplex_a1151948284b21c0052f203f23ab931d9}{imag}}=-u.
+      \mbox{\hyperlink{structComplexMatrix2_a0f3932f055a8b05cef361bce25d51172}{r0c1}}.\mbox{\hyperlink{structComplex_a1151948284b21c0052f203f23ab931d9}{imag}}; 
+467     uDagger.\mbox{\hyperlink{structComplexMatrix2_a763007c3070802373549ba0350f83c8a}{r1c1}}.\mbox{\hyperlink{structComplex_a479ad939835457595fcca3ca55c06283}{real}}=u.\mbox{\hyperlink{structComplexMatrix2_a763007c3070802373549ba0350f83c8a}{r1c1}}.\mbox{\hyperlink{structComplex_a479ad939835457595fcca3ca55c06283}{real}}; uDagger.\mbox{\hyperlink{structComplexMatrix2_a763007c3070802373549ba0350f83c8a}{r1c1}}.\mbox{\hyperlink{structComplex_a1151948284b21c0052f203f23ab931d9}{imag}}=-u.
+      \mbox{\hyperlink{structComplexMatrix2_a763007c3070802373549ba0350f83c8a}{r1c1}}.\mbox{\hyperlink{structComplex_a1151948284b21c0052f203f23ab931d9}{imag}};
+468 
+469     \textcolor{keywordflow}{for} (\textcolor{keywordtype}{int} i=numQubits-1; i>=0; i--)\{
+470         rotQubit=i;
+471         \mbox{\hyperlink{QuEST__env__local_8c_a7a0877e33700f6bad48adb51b7b3fb67}{unitary}}(mq, rotQubit, uDagger);
+472     \}
+473 
+474     \mbox{\hyperlink{QuEST_8c_a4b737ff9b4267609ef27e6cb4c42dc68}{initStateDebug}}(mqVerif);
+475     \textcolor{keywordflow}{if} (passed) passed = \mbox{\hyperlink{QuEST_8c_a793584932ae384c82e7e42db7d35d18d}{compareStates}}(mq, mqVerif, 
+      \mbox{\hyperlink{runTests_8c_ab6750b3d9bd8ef6616ba0e5acd182a32}{COMPARE\_PRECISION}});
+476 
+477     \mbox{\hyperlink{QuEST_8c_ae5d6acc322314d7a3d8a2eccf00d3b19}{destroyMultiQubit}}(mq, \mbox{\hyperlink{runTests_8c_a5fd8ba97fcae3408ae6221dfc3cc1f93}{env}});
+478     \mbox{\hyperlink{QuEST_8c_ae5d6acc322314d7a3d8a2eccf00d3b19}{destroyMultiQubit}}(mqVerif, \mbox{\hyperlink{runTests_8c_a5fd8ba97fcae3408ae6221dfc3cc1f93}{env}});
+479 
+480     \textcolor{comment}{// check for normalisation}
+481     numQubits = 25;
+482     \mbox{\hyperlink{QuEST_8c_a9c02591bc64c2918503afa231d90d83f}{createMultiQubit}}(&mq, numQubits, \mbox{\hyperlink{runTests_8c_a5fd8ba97fcae3408ae6221dfc3cc1f93}{env}});
+483     \mbox{\hyperlink{QuEST_8c_af8a0082e2f695145bbfbb572e4c2e4f1}{initStatePlus}}(mq);
+484     \textcolor{keywordflow}{for} (\textcolor{keywordtype}{int} i=0; i<numQubits; i++)\{
+485         rotQubit=i;
+486         \mbox{\hyperlink{QuEST__env__local_8c_a7a0877e33700f6bad48adb51b7b3fb67}{unitary}}(mq, rotQubit, uDagger);
+487     \}
+488     \mbox{\hyperlink{QuEST__precision_8h_a4b654506f18b8bfd61ad2a29a7e38c25}{REAL}} outcome = \mbox{\hyperlink{QuEST__env__local_8c_a818a4c7cd7252d2b10b896b12fa431d3}{calcTotalProbability}}(mq);    
+489     \textcolor{keywordflow}{if} (passed) passed = \mbox{\hyperlink{runTests_8c_ac171a0362fb526932484eb64604b10e8}{compareReals}}(1.0, outcome, 
+      \mbox{\hyperlink{runTests_8c_ab6750b3d9bd8ef6616ba0e5acd182a32}{COMPARE\_PRECISION}});
+490     \mbox{\hyperlink{QuEST_8c_ae5d6acc322314d7a3d8a2eccf00d3b19}{destroyMultiQubit}}(mq, \mbox{\hyperlink{runTests_8c_a5fd8ba97fcae3408ae6221dfc3cc1f93}{env}});
+491 
+492     \textcolor{keywordflow}{return} passed;
+493 \}
+\end{DoxyCode}
+
+
+\subsubsection{Variable Documentation}
+\mbox{\Hypertarget{runTests_8c_a5fd8ba97fcae3408ae6221dfc3cc1f93}\label{runTests_8c_a5fd8ba97fcae3408ae6221dfc3cc1f93}} 
+\index{run\+Tests.\+c@{run\+Tests.\+c}!env@{env}}
+\index{env@{env}!run\+Tests.\+c@{run\+Tests.\+c}}
+\paragraph{\texorpdfstring{env}{env}}
+{\footnotesize\ttfamily \mbox{\hyperlink{structQuESTEnv}{Qu\+E\+S\+T\+Env}} env}
+
+
+
+Definition at line 17 of file run\+Tests.\+c.
+
+
+
+Referenced by create\+Multi\+Qubit(), destroy\+Multi\+Qubit(), get\+Environment\+String(), initialize\+State\+From\+Single\+File(), init\+Qu\+E\+S\+T\+Env(), main(), report\+Node\+List(), report\+Qu\+E\+S\+T\+Env(), report\+State\+To\+Screen(), report\+Test(), test\+\_\+collapse\+To\+Outcome(), test\+\_\+compact\+Unitary(), test\+\_\+controlled\+Compact\+Unitary(), test\+\_\+controlled\+Not(), test\+\_\+controlled\+Phase\+Gate(), test\+\_\+controlled\+Unitary(), test\+\_\+find\+Probability\+Of\+Outcome(), test\+\_\+get\+Imag\+Amp\+El(), test\+\_\+get\+Prob\+El(), test\+\_\+get\+Real\+Amp\+El(), test\+\_\+hadamard(), test\+\_\+init\+Classical\+State(), test\+\_\+init\+State\+Plus(), test\+\_\+init\+State\+Zero(), test\+\_\+measure(), test\+\_\+measure\+With\+Stats(), test\+\_\+multi\+Controlled\+Phase\+Gate(), test\+\_\+multi\+Controlled\+Unitary(), test\+\_\+s\+Gate(), test\+\_\+sigma\+X(), test\+\_\+sigma\+Y(), test\+\_\+sigma\+Z(), test\+\_\+t\+Gate(), and test\+\_\+unitary().
+

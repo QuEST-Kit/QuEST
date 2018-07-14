@@ -1,0 +1,374 @@
+\hypertarget{GPU_2QuEST__internal_8h}{}\subsection{Qu\+E\+S\+T\+\_\+internal.\+h File Reference}
+\label{GPU_2QuEST__internal_8h}\index{Qu\+E\+S\+T\+\_\+internal.\+h@{Qu\+E\+S\+T\+\_\+internal.\+h}}
+
+
+Internal functions used to implement the public facing A\+PI in qubits.\+h.  
+
+
+{\ttfamily \#include \char`\"{}../\+Qu\+E\+S\+T\+\_\+precision.\+h\char`\"{}}\newline
+\subsubsection*{Functions}
+\begin{DoxyCompactItemize}
+\item 
+void \mbox{\hyperlink{GPU_2QuEST__internal_8h_ae5f9019826f35e8b51b1716cfe397b45}{exit\+With\+Error}} (int error\+Code, const char $\ast$func)
+\item 
+\mbox{\hyperlink{QuEST__precision_8h_a4b654506f18b8bfd61ad2a29a7e38c25}{R\+E\+AL}} \mbox{\hyperlink{GPU_2QuEST__internal_8h_a2e4cedb70bd181d250b3abb945cc108e}{find\+Probability\+Of\+Zero}} (\mbox{\hyperlink{structMultiQubit}{Multi\+Qubit}} multi\+Qubit, const int measure\+Qubit)
+\begin{DoxyCompactList}\small\item\em Measure the probability of a specified qubit being in the zero state. \end{DoxyCompactList}\item 
+unsigned long int \mbox{\hyperlink{GPU_2QuEST__internal_8h_ab76254cfde16f0808476649507a1a2fc}{hash\+String}} (char $\ast$str)
+\item 
+\mbox{\hyperlink{QuEST__precision_8h_a4b654506f18b8bfd61ad2a29a7e38c25}{R\+E\+AL}} \mbox{\hyperlink{GPU_2QuEST__internal_8h_a21094de735f3cb48488a184cfa4d8d41}{measure\+In\+Zero}} (\mbox{\hyperlink{structMultiQubit}{Multi\+Qubit}} multi\+Qubit, const int measure\+Qubit)
+\begin{DoxyCompactList}\small\item\em Update the state vector to be consistent with measuring measure\+Qubit=0. \end{DoxyCompactList}\item 
+void \mbox{\hyperlink{GPU_2QuEST__internal_8h_aae7a8a7f1ccbddb7f76b6c52b746bb43}{phase\+Gate}} (\mbox{\hyperlink{structMultiQubit}{Multi\+Qubit}} multi\+Qubit, const int target\+Qubit, enum \mbox{\hyperlink{QuEST_8h_a5739021c733cecc49647956b2f7338ea}{phase\+Gate\+Type}} type)
+\item 
+void \mbox{\hyperlink{GPU_2QuEST__internal_8h_a3587b9d533e633ccf1abf9ad2ce45d8d}{Qu\+E\+S\+T\+Assert}} (int is\+Valid, int error\+Code, const char $\ast$func)
+\item 
+int \mbox{\hyperlink{GPU_2QuEST__internal_8h_ae2b2c14a07dd7d50ff86032a3ca101d7}{validate\+Alpha\+Beta}} (\mbox{\hyperlink{structComplex}{Complex}} alpha, \mbox{\hyperlink{structComplex}{Complex}} beta)
+\item 
+int \mbox{\hyperlink{GPU_2QuEST__internal_8h_ae4fea133d1a8f09ff8da03038100adb2}{validate\+Matrix\+Is\+Unitary}} (\mbox{\hyperlink{structComplexMatrix2}{Complex\+Matrix2}} u)
+\item 
+int \mbox{\hyperlink{GPU_2QuEST__internal_8h_a71c14976f63cfcda70026fa20ee531fe}{validate\+Unit\+Vector}} (\mbox{\hyperlink{QuEST__precision_8h_a4b654506f18b8bfd61ad2a29a7e38c25}{R\+E\+AL}} ux, \mbox{\hyperlink{QuEST__precision_8h_a4b654506f18b8bfd61ad2a29a7e38c25}{R\+E\+AL}} uy, \mbox{\hyperlink{QuEST__precision_8h_a4b654506f18b8bfd61ad2a29a7e38c25}{R\+E\+AL}} uz)
+\end{DoxyCompactItemize}
+\subsubsection*{Variables}
+\begin{DoxyCompactItemize}
+\item 
+const char $\ast$ \mbox{\hyperlink{GPU_2QuEST__internal_8h_aac1637696885c75b73a1ecf381cea713}{error\+Codes}} \mbox{[}$\,$\mbox{]}
+\end{DoxyCompactItemize}
+
+
+\subsubsection{Detailed Description}
+Internal functions used to implement the public facing A\+PI in qubits.\+h. 
+
+Do not call these functions directly. 
+
+\subsubsection{Function Documentation}
+\mbox{\Hypertarget{GPU_2QuEST__internal_8h_ae5f9019826f35e8b51b1716cfe397b45}\label{GPU_2QuEST__internal_8h_ae5f9019826f35e8b51b1716cfe397b45}} 
+\index{G\+P\+U/\+Qu\+E\+S\+T\+\_\+internal.\+h@{G\+P\+U/\+Qu\+E\+S\+T\+\_\+internal.\+h}!exit\+With\+Error@{exit\+With\+Error}}
+\index{exit\+With\+Error@{exit\+With\+Error}!G\+P\+U/\+Qu\+E\+S\+T\+\_\+internal.\+h@{G\+P\+U/\+Qu\+E\+S\+T\+\_\+internal.\+h}}
+\paragraph{\texorpdfstring{exit\+With\+Error()}{exitWithError()}}
+{\footnotesize\ttfamily void exit\+With\+Error (\begin{DoxyParamCaption}\item[{int}]{error\+Code,  }\item[{const char $\ast$}]{func }\end{DoxyParamCaption})}
+
+
+
+Definition at line 232 of file Qu\+E\+S\+T\+\_\+env\+\_\+local.\+c.
+
+
+
+References error\+Codes.
+
+
+
+Referenced by Qu\+E\+S\+T\+Assert().
+
+
+\begin{DoxyCode}
+232                                                    \{
+233     printf(\textcolor{stringliteral}{"!!!\(\backslash\)n"});
+234     printf(\textcolor{stringliteral}{"QuEST Error in function %s: %s\(\backslash\)n"}, func, \mbox{\hyperlink{QuEST_8c_aac1637696885c75b73a1ecf381cea713}{errorCodes}}[errorCode]);
+235     printf(\textcolor{stringliteral}{"!!!\(\backslash\)n"});
+236     printf(\textcolor{stringliteral}{"exiting..\(\backslash\)n"});
+237     exit(errorCode);
+238 \}
+\end{DoxyCode}
+\mbox{\Hypertarget{GPU_2QuEST__internal_8h_a2e4cedb70bd181d250b3abb945cc108e}\label{GPU_2QuEST__internal_8h_a2e4cedb70bd181d250b3abb945cc108e}} 
+\index{G\+P\+U/\+Qu\+E\+S\+T\+\_\+internal.\+h@{G\+P\+U/\+Qu\+E\+S\+T\+\_\+internal.\+h}!find\+Probability\+Of\+Zero@{find\+Probability\+Of\+Zero}}
+\index{find\+Probability\+Of\+Zero@{find\+Probability\+Of\+Zero}!G\+P\+U/\+Qu\+E\+S\+T\+\_\+internal.\+h@{G\+P\+U/\+Qu\+E\+S\+T\+\_\+internal.\+h}}
+\paragraph{\texorpdfstring{find\+Probability\+Of\+Zero()}{findProbabilityOfZero()}}
+{\footnotesize\ttfamily \mbox{\hyperlink{QuEST__precision_8h_a4b654506f18b8bfd61ad2a29a7e38c25}{R\+E\+AL}} find\+Probability\+Of\+Zero (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structMultiQubit}{Multi\+Qubit}}}]{multi\+Qubit,  }\item[{const int}]{measure\+Qubit }\end{DoxyParamCaption})}
+
+
+
+Measure the probability of a specified qubit being in the zero state. 
+
+
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\tt in}  & {\em multi\+Qubit} & object representing the set of qubits \\
+\hline
+\mbox{\tt in}  & {\em measure\+Qubit} & qubit to measure \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+probability of qubit measure\+Qubit being zero 
+\end{DoxyReturn}
+
+
+Definition at line 1217 of file Qu\+E\+S\+T\+\_\+env\+\_\+local\+G\+P\+U.\+cu.
+
+
+
+References copy\+Shared\+Reduce\+Block(), Multi\+Qubit\+::first\+Level\+Reduction, Multi\+Qubit\+::num\+Amps\+Per\+Chunk, R\+E\+AL, R\+E\+D\+U\+C\+E\+\_\+\+S\+H\+A\+R\+E\+D\+\_\+\+S\+I\+ZE, Multi\+Qubit\+::second\+Level\+Reduction, and swap\+Double().
+
+
+
+Referenced by find\+Probability\+Of\+Outcome(), and measure\+In\+Zero().
+
+
+\begin{DoxyCode}
+1219 \{
+1220     \textcolor{keywordtype}{long} \textcolor{keywordtype}{long} \textcolor{keywordtype}{int} numValuesToReduce = multiQubit.\mbox{\hyperlink{structMultiQubit_a1cad83601a78635dd278259c7ed54f18}{numAmpsPerChunk}}>>1;
+1221     \textcolor{keywordtype}{int} valuesPerCUDABlock, numCUDABlocks, sharedMemSize;
+1222     \mbox{\hyperlink{QuEST__precision_8h_a4b654506f18b8bfd61ad2a29a7e38c25}{REAL}} stateProb=0;
+1223     \textcolor{keywordtype}{int} firstTime=1;
+1224     \textcolor{keywordtype}{int} maxReducedPerLevel = \mbox{\hyperlink{QuEST__env__localGPU_8cu_aa57d77a0903e334e963c66ddc5ed3f53}{REDUCE\_SHARED\_SIZE}};
+1225 
+1226     \textcolor{keywordflow}{while}(numValuesToReduce>1)\{ 
+1227         \textcolor{keywordflow}{if} (numValuesToReduce<maxReducedPerLevel)\{
+1228             \textcolor{comment}{// Need less than one CUDA block to reduce values}
+1229             valuesPerCUDABlock = numValuesToReduce;
+1230             numCUDABlocks = 1;
+1231         \} \textcolor{keywordflow}{else} \{
+1232             \textcolor{comment}{// Use full CUDA blocks, with block size constrained by shared mem usage}
+1233             valuesPerCUDABlock = maxReducedPerLevel;
+1234             numCUDABlocks = ceil((\mbox{\hyperlink{QuEST__precision_8h_a4b654506f18b8bfd61ad2a29a7e38c25}{REAL}})numValuesToReduce/valuesPerCUDABlock);
+1235         \}
+1236         sharedMemSize = valuesPerCUDABlock*\textcolor{keyword}{sizeof}(\mbox{\hyperlink{QuEST__precision_8h_a4b654506f18b8bfd61ad2a29a7e38c25}{REAL}});
+1237 
+1238         \textcolor{keywordflow}{if} (firstTime)\{
+1239             findProbabilityOfZeroKernel<<<numCUDABlocks, valuesPerCUDABlock, sharedMemSize>>>(
+1240                     multiQubit, measureQubit, multiQubit.\mbox{\hyperlink{structMultiQubit_a4e0088b41adab0a40b7a31e528ed42b5}{firstLevelReduction}});
+1241             firstTime=0;
+1242         \} \textcolor{keywordflow}{else} \{
+1243             cudaDeviceSynchronize();    
+1244             \mbox{\hyperlink{QuEST__env__localGPU_8cu_a250e9d66ad94ed2682e76a3c7502c8e1}{copySharedReduceBlock}}<<<numCUDABlocks, valuesPerCUDABlock/2, sharedMemSize
+      >>>(
+1245                     multiQubit.\mbox{\hyperlink{structMultiQubit_a4e0088b41adab0a40b7a31e528ed42b5}{firstLevelReduction}}, 
+1246                     multiQubit.\mbox{\hyperlink{structMultiQubit_a3e859cefa146ec7b30464ab3d897930b}{secondLevelReduction}}, valuesPerCUDABlock); 
+1247             cudaDeviceSynchronize();    
+1248             \mbox{\hyperlink{QuEST__env__localGPU_8cu_aac328dfe6dd7cceec36a83d989b180b6}{swapDouble}}(&(multiQubit.\mbox{\hyperlink{structMultiQubit_a4e0088b41adab0a40b7a31e528ed42b5}{firstLevelReduction}}), &(multiQubit.
+      \mbox{\hyperlink{structMultiQubit_a3e859cefa146ec7b30464ab3d897930b}{secondLevelReduction}}));
+1249         \}
+1250         numValuesToReduce = numValuesToReduce/maxReducedPerLevel;
+1251     \}
+1252     cudaMemcpy(&stateProb, multiQubit.\mbox{\hyperlink{structMultiQubit_a4e0088b41adab0a40b7a31e528ed42b5}{firstLevelReduction}}, \textcolor{keyword}{sizeof}(
+      \mbox{\hyperlink{QuEST__precision_8h_a4b654506f18b8bfd61ad2a29a7e38c25}{REAL}}), cudaMemcpyDeviceToHost);
+1253     \textcolor{keywordflow}{return} stateProb;
+1254 \}
+\end{DoxyCode}
+\mbox{\Hypertarget{GPU_2QuEST__internal_8h_ab76254cfde16f0808476649507a1a2fc}\label{GPU_2QuEST__internal_8h_ab76254cfde16f0808476649507a1a2fc}} 
+\index{G\+P\+U/\+Qu\+E\+S\+T\+\_\+internal.\+h@{G\+P\+U/\+Qu\+E\+S\+T\+\_\+internal.\+h}!hash\+String@{hash\+String}}
+\index{hash\+String@{hash\+String}!G\+P\+U/\+Qu\+E\+S\+T\+\_\+internal.\+h@{G\+P\+U/\+Qu\+E\+S\+T\+\_\+internal.\+h}}
+\paragraph{\texorpdfstring{hash\+String()}{hashString()}}
+{\footnotesize\ttfamily unsigned long int hash\+String (\begin{DoxyParamCaption}\item[{char $\ast$}]{str }\end{DoxyParamCaption})}
+
+
+
+Definition at line 2026 of file Qu\+E\+S\+T.\+c.
+
+
+
+Referenced by seed\+Qu\+E\+S\+T\+Default().
+
+
+\begin{DoxyCode}
+2026                                        \{
+2027     \textcolor{keywordtype}{unsigned} \textcolor{keywordtype}{long} \textcolor{keywordtype}{int} hash = 5381;
+2028     \textcolor{keywordtype}{int} c;
+2029 
+2030     \textcolor{keywordflow}{while} ((c = *str++))
+2031         hash = ((hash << 5) + hash) + c; \textcolor{comment}{/* hash * 33 + c */}
+2032 
+2033     \textcolor{keywordflow}{return} hash;    
+2034 \}
+\end{DoxyCode}
+\mbox{\Hypertarget{GPU_2QuEST__internal_8h_a21094de735f3cb48488a184cfa4d8d41}\label{GPU_2QuEST__internal_8h_a21094de735f3cb48488a184cfa4d8d41}} 
+\index{G\+P\+U/\+Qu\+E\+S\+T\+\_\+internal.\+h@{G\+P\+U/\+Qu\+E\+S\+T\+\_\+internal.\+h}!measure\+In\+Zero@{measure\+In\+Zero}}
+\index{measure\+In\+Zero@{measure\+In\+Zero}!G\+P\+U/\+Qu\+E\+S\+T\+\_\+internal.\+h@{G\+P\+U/\+Qu\+E\+S\+T\+\_\+internal.\+h}}
+\paragraph{\texorpdfstring{measure\+In\+Zero()}{measureInZero()}}
+{\footnotesize\ttfamily \mbox{\hyperlink{QuEST__precision_8h_a4b654506f18b8bfd61ad2a29a7e38c25}{R\+E\+AL}} measure\+In\+Zero (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structMultiQubit}{Multi\+Qubit}}}]{multi\+Qubit,  }\item[{const int}]{measure\+Qubit }\end{DoxyParamCaption})}
+
+
+
+Update the state vector to be consistent with measuring measure\+Qubit=0. 
+
+Measure in Zero performs an irreversible change to the state vector\+: it updates the vector according to the event that a zero have been measured on the qubit indicated by measure\+Qubit (where his label starts from 0, of course). It achieves this by setting all inconsistent amplitudes to 0 and then renormalising based on the total probability of measuring measure\+Qubit=0. It then returns the probability of making this measurement.
+
+
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\tt in,out}  & {\em multi\+Qubit} & object representing the set of qubits \\
+\hline
+\mbox{\tt in}  & {\em measure\+Qubit} & qubit to measure \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+probability of qubit measure\+Qubit being zero 
+\end{DoxyReturn}
+
+
+Definition at line 1388 of file Qu\+E\+S\+T\+\_\+env\+\_\+local\+G\+P\+U.\+cu.
+
+
+
+References find\+Probability\+Of\+Zero(), Multi\+Qubit\+::num\+Amps\+Per\+Chunk, and R\+E\+AL.
+
+
+\begin{DoxyCode}
+1389 \{        
+1390     \mbox{\hyperlink{QuEST__precision_8h_a4b654506f18b8bfd61ad2a29a7e38c25}{REAL}} stateProb;
+1391     stateProb = \mbox{\hyperlink{QuEST__env__localGPU_8cu_a2e4cedb70bd181d250b3abb945cc108e}{findProbabilityOfZero}}(multiQubit, measureQubit);
+1392 
+1393     \textcolor{keywordtype}{int} threadsPerCUDABlock, CUDABlocks;
+1394     threadsPerCUDABlock = 128;
+1395     CUDABlocks = ceil((\mbox{\hyperlink{QuEST__precision_8h_a4b654506f18b8bfd61ad2a29a7e38c25}{REAL}})(multiQubit.\mbox{\hyperlink{structMultiQubit_a1cad83601a78635dd278259c7ed54f18}{numAmpsPerChunk}}>>1)/threadsPerCUDABlock);
+1396     \textcolor{keywordflow}{if} (stateProb!=0) measureInZeroKernel<<<CUDABlocks, threadsPerCUDABlock>>>(multiQubit, measureQubit, 
+      stateProb);
+1397     \textcolor{keywordflow}{return} stateProb;
+1398 \}
+\end{DoxyCode}
+\mbox{\Hypertarget{GPU_2QuEST__internal_8h_aae7a8a7f1ccbddb7f76b6c52b746bb43}\label{GPU_2QuEST__internal_8h_aae7a8a7f1ccbddb7f76b6c52b746bb43}} 
+\index{G\+P\+U/\+Qu\+E\+S\+T\+\_\+internal.\+h@{G\+P\+U/\+Qu\+E\+S\+T\+\_\+internal.\+h}!phase\+Gate@{phase\+Gate}}
+\index{phase\+Gate@{phase\+Gate}!G\+P\+U/\+Qu\+E\+S\+T\+\_\+internal.\+h@{G\+P\+U/\+Qu\+E\+S\+T\+\_\+internal.\+h}}
+\paragraph{\texorpdfstring{phase\+Gate()}{phaseGate()}}
+{\footnotesize\ttfamily void phase\+Gate (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structMultiQubit}{Multi\+Qubit}}}]{multi\+Qubit,  }\item[{const int}]{target\+Qubit,  }\item[{enum \mbox{\hyperlink{QuEST_8h_a5739021c733cecc49647956b2f7338ea}{phase\+Gate\+Type}}}]{type }\end{DoxyParamCaption})}
+
+
+
+Definition at line 163 of file Qu\+E\+S\+T\+\_\+env\+\_\+local.\+c.
+
+
+
+References Multi\+Qubit\+::chunk\+Id, chunk\+Is\+Upper(), half\+Matrix\+Block\+Fits\+In\+Chunk(), Multi\+Qubit\+::num\+Amps\+Per\+Chunk, Multi\+Qubit\+::num\+Qubits, phase\+Gate\+Distributed(), phase\+Gate\+Local(), Qu\+E\+S\+T\+Assert(), and R\+E\+AL.
+
+
+
+Referenced by s\+Gate(), sigma\+Z(), and t\+Gate().
+
+
+\begin{DoxyCode}
+164 \{
+165     \mbox{\hyperlink{QuEST__env__local_8c_a3587b9d533e633ccf1abf9ad2ce45d8d}{QuESTAssert}}(targetQubit >= 0 && targetQubit < multiQubit.
+      \mbox{\hyperlink{structMultiQubit_ab5b9795bdc6fb5855e1974dcbbaeb36f}{numQubits}}, 1, \_\_func\_\_);
+166     \mbox{\hyperlink{QuEST_8c_a3a54566b73ac84c312d7da4f56ffbc3b}{phaseGateLocal}}(multiQubit, targetQubit, type);
+167 \}
+\end{DoxyCode}
+\mbox{\Hypertarget{GPU_2QuEST__internal_8h_a3587b9d533e633ccf1abf9ad2ce45d8d}\label{GPU_2QuEST__internal_8h_a3587b9d533e633ccf1abf9ad2ce45d8d}} 
+\index{G\+P\+U/\+Qu\+E\+S\+T\+\_\+internal.\+h@{G\+P\+U/\+Qu\+E\+S\+T\+\_\+internal.\+h}!Qu\+E\+S\+T\+Assert@{Qu\+E\+S\+T\+Assert}}
+\index{Qu\+E\+S\+T\+Assert@{Qu\+E\+S\+T\+Assert}!G\+P\+U/\+Qu\+E\+S\+T\+\_\+internal.\+h@{G\+P\+U/\+Qu\+E\+S\+T\+\_\+internal.\+h}}
+\paragraph{\texorpdfstring{Qu\+E\+S\+T\+Assert()}{QuESTAssert()}}
+{\footnotesize\ttfamily void Qu\+E\+S\+T\+Assert (\begin{DoxyParamCaption}\item[{int}]{is\+Valid,  }\item[{int}]{error\+Code,  }\item[{const char $\ast$}]{func }\end{DoxyParamCaption})}
+
+
+
+Definition at line 240 of file Qu\+E\+S\+T\+\_\+env\+\_\+local.\+c.
+
+
+
+References exit\+With\+Error().
+
+
+
+Referenced by collapse\+To\+Outcome(), compact\+Unitary(), controlled\+Compact\+Unitary(), controlled\+Not(), controlled\+Phase\+Gate(), controlled\+Unitary(), create\+Multi\+Qubit(), find\+Probability\+Of\+Outcome(), hadamard(), initialize\+State\+From\+Single\+File(), measure(), measure\+With\+Stats(), multi\+Controlled\+Phase\+Gate(), multi\+Controlled\+Unitary(), phase\+Gate(), report\+State(), sigma\+X(), sigma\+Y(), and unitary().
+
+
+\begin{DoxyCode}
+240                                                               \{
+241     \textcolor{keywordflow}{if} (!isValid) \mbox{\hyperlink{QuEST__env__local_8c_ae5f9019826f35e8b51b1716cfe397b45}{exitWithError}}(errorCode, func);
+242 \}
+\end{DoxyCode}
+\mbox{\Hypertarget{GPU_2QuEST__internal_8h_ae2b2c14a07dd7d50ff86032a3ca101d7}\label{GPU_2QuEST__internal_8h_ae2b2c14a07dd7d50ff86032a3ca101d7}} 
+\index{G\+P\+U/\+Qu\+E\+S\+T\+\_\+internal.\+h@{G\+P\+U/\+Qu\+E\+S\+T\+\_\+internal.\+h}!validate\+Alpha\+Beta@{validate\+Alpha\+Beta}}
+\index{validate\+Alpha\+Beta@{validate\+Alpha\+Beta}!G\+P\+U/\+Qu\+E\+S\+T\+\_\+internal.\+h@{G\+P\+U/\+Qu\+E\+S\+T\+\_\+internal.\+h}}
+\paragraph{\texorpdfstring{validate\+Alpha\+Beta()}{validateAlphaBeta()}}
+{\footnotesize\ttfamily int validate\+Alpha\+Beta (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structComplex}{Complex}}}]{alpha,  }\item[{\mbox{\hyperlink{structComplex}{Complex}}}]{beta }\end{DoxyParamCaption})}
+
+
+
+Definition at line 415 of file Qu\+E\+S\+T.\+c.
+
+
+
+References Complex\+::imag, Complex\+::real, and R\+E\+A\+L\+\_\+\+E\+PS.
+
+
+
+Referenced by compact\+Unitary(), and controlled\+Compact\+Unitary().
+
+
+\begin{DoxyCode}
+415                                                   \{
+416     \textcolor{keywordflow}{if} ( fabs(alpha.\mbox{\hyperlink{structComplex_a479ad939835457595fcca3ca55c06283}{real}}*alpha.\mbox{\hyperlink{structComplex_a479ad939835457595fcca3ca55c06283}{real}} 
+417                 + alpha.\mbox{\hyperlink{structComplex_a1151948284b21c0052f203f23ab931d9}{imag}}*alpha.\mbox{\hyperlink{structComplex_a1151948284b21c0052f203f23ab931d9}{imag}}
+418                 + beta.\mbox{\hyperlink{structComplex_a479ad939835457595fcca3ca55c06283}{real}}*beta.\mbox{\hyperlink{structComplex_a479ad939835457595fcca3ca55c06283}{real}} 
+419                 + beta.\mbox{\hyperlink{structComplex_a1151948284b21c0052f203f23ab931d9}{imag}}*beta.\mbox{\hyperlink{structComplex_a1151948284b21c0052f203f23ab931d9}{imag}} - 1) > \mbox{\hyperlink{QuEST__precision_8h_aebb5e6716e06431296af4d1a71744dec}{REAL\_EPS}} ) \textcolor{keywordflow}{return} 0;
+420     \textcolor{keywordflow}{else} \textcolor{keywordflow}{return} 1;
+421 \}
+\end{DoxyCode}
+\mbox{\Hypertarget{GPU_2QuEST__internal_8h_ae4fea133d1a8f09ff8da03038100adb2}\label{GPU_2QuEST__internal_8h_ae4fea133d1a8f09ff8da03038100adb2}} 
+\index{G\+P\+U/\+Qu\+E\+S\+T\+\_\+internal.\+h@{G\+P\+U/\+Qu\+E\+S\+T\+\_\+internal.\+h}!validate\+Matrix\+Is\+Unitary@{validate\+Matrix\+Is\+Unitary}}
+\index{validate\+Matrix\+Is\+Unitary@{validate\+Matrix\+Is\+Unitary}!G\+P\+U/\+Qu\+E\+S\+T\+\_\+internal.\+h@{G\+P\+U/\+Qu\+E\+S\+T\+\_\+internal.\+h}}
+\paragraph{\texorpdfstring{validate\+Matrix\+Is\+Unitary()}{validateMatrixIsUnitary()}}
+{\footnotesize\ttfamily int validate\+Matrix\+Is\+Unitary (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structComplexMatrix2}{Complex\+Matrix2}}}]{u }\end{DoxyParamCaption})}
+
+
+
+Definition at line 391 of file Qu\+E\+S\+T.\+c.
+
+
+
+References Complex\+::imag, Complex\+Matrix2\+::r0c0, Complex\+Matrix2\+::r0c1, Complex\+Matrix2\+::r1c0, Complex\+Matrix2\+::r1c1, Complex\+::real, and R\+E\+A\+L\+\_\+\+E\+PS.
+
+
+
+Referenced by controlled\+Unitary(), multi\+Controlled\+Unitary(), and unitary().
+
+
+\begin{DoxyCode}
+391                                              \{
+392 
+393     \textcolor{keywordflow}{if} ( fabs(u.\mbox{\hyperlink{structComplexMatrix2_ae72b4458233b077a636beee1892e81ff}{r0c0}}.\mbox{\hyperlink{structComplex_a479ad939835457595fcca3ca55c06283}{real}}*u.\mbox{\hyperlink{structComplexMatrix2_ae72b4458233b077a636beee1892e81ff}{r0c0}}.\mbox{\hyperlink{structComplex_a479ad939835457595fcca3ca55c06283}{real}} 
+394                 + u.\mbox{\hyperlink{structComplexMatrix2_ae72b4458233b077a636beee1892e81ff}{r0c0}}.\mbox{\hyperlink{structComplex_a1151948284b21c0052f203f23ab931d9}{imag}}*u.\mbox{\hyperlink{structComplexMatrix2_ae72b4458233b077a636beee1892e81ff}{r0c0}}.\mbox{\hyperlink{structComplex_a1151948284b21c0052f203f23ab931d9}{imag}}
+395                 + u.\mbox{\hyperlink{structComplexMatrix2_ab98282015ed2065e53fbc9638e2583ab}{r1c0}}.\mbox{\hyperlink{structComplex_a479ad939835457595fcca3ca55c06283}{real}}*u.\mbox{\hyperlink{structComplexMatrix2_ab98282015ed2065e53fbc9638e2583ab}{r1c0}}.\mbox{\hyperlink{structComplex_a479ad939835457595fcca3ca55c06283}{real}}
+396                 + u.\mbox{\hyperlink{structComplexMatrix2_ab98282015ed2065e53fbc9638e2583ab}{r1c0}}.\mbox{\hyperlink{structComplex_a1151948284b21c0052f203f23ab931d9}{imag}}*u.\mbox{\hyperlink{structComplexMatrix2_ab98282015ed2065e53fbc9638e2583ab}{r1c0}}.\mbox{\hyperlink{structComplex_a1151948284b21c0052f203f23ab931d9}{imag}} - 1) > \mbox{\hyperlink{QuEST__precision_8h_aebb5e6716e06431296af4d1a71744dec}{REAL\_EPS}} ) \textcolor{keywordflow}{return} 0;
+397     \textcolor{keywordflow}{if} ( fabs(u.\mbox{\hyperlink{structComplexMatrix2_a0f3932f055a8b05cef361bce25d51172}{r0c1}}.\mbox{\hyperlink{structComplex_a479ad939835457595fcca3ca55c06283}{real}}*u.\mbox{\hyperlink{structComplexMatrix2_a0f3932f055a8b05cef361bce25d51172}{r0c1}}.\mbox{\hyperlink{structComplex_a479ad939835457595fcca3ca55c06283}{real}} 
+398                 + u.\mbox{\hyperlink{structComplexMatrix2_a0f3932f055a8b05cef361bce25d51172}{r0c1}}.\mbox{\hyperlink{structComplex_a1151948284b21c0052f203f23ab931d9}{imag}}*u.\mbox{\hyperlink{structComplexMatrix2_a0f3932f055a8b05cef361bce25d51172}{r0c1}}.\mbox{\hyperlink{structComplex_a1151948284b21c0052f203f23ab931d9}{imag}}
+399                 + u.\mbox{\hyperlink{structComplexMatrix2_a763007c3070802373549ba0350f83c8a}{r1c1}}.\mbox{\hyperlink{structComplex_a479ad939835457595fcca3ca55c06283}{real}}*u.\mbox{\hyperlink{structComplexMatrix2_a763007c3070802373549ba0350f83c8a}{r1c1}}.\mbox{\hyperlink{structComplex_a479ad939835457595fcca3ca55c06283}{real}}
+400                 + u.\mbox{\hyperlink{structComplexMatrix2_a763007c3070802373549ba0350f83c8a}{r1c1}}.\mbox{\hyperlink{structComplex_a1151948284b21c0052f203f23ab931d9}{imag}}*u.\mbox{\hyperlink{structComplexMatrix2_a763007c3070802373549ba0350f83c8a}{r1c1}}.\mbox{\hyperlink{structComplex_a1151948284b21c0052f203f23ab931d9}{imag}} - 1) > \mbox{\hyperlink{QuEST__precision_8h_aebb5e6716e06431296af4d1a71744dec}{REAL\_EPS}} ) \textcolor{keywordflow}{return} 0;
+401 
+402     \textcolor{keywordflow}{if} ( fabs(u.\mbox{\hyperlink{structComplexMatrix2_ae72b4458233b077a636beee1892e81ff}{r0c0}}.\mbox{\hyperlink{structComplex_a479ad939835457595fcca3ca55c06283}{real}}*u.\mbox{\hyperlink{structComplexMatrix2_a0f3932f055a8b05cef361bce25d51172}{r0c1}}.\mbox{\hyperlink{structComplex_a479ad939835457595fcca3ca55c06283}{real}} 
+403                 + u.\mbox{\hyperlink{structComplexMatrix2_ae72b4458233b077a636beee1892e81ff}{r0c0}}.\mbox{\hyperlink{structComplex_a1151948284b21c0052f203f23ab931d9}{imag}}*u.\mbox{\hyperlink{structComplexMatrix2_a0f3932f055a8b05cef361bce25d51172}{r0c1}}.\mbox{\hyperlink{structComplex_a1151948284b21c0052f203f23ab931d9}{imag}}
+404                 + u.\mbox{\hyperlink{structComplexMatrix2_ab98282015ed2065e53fbc9638e2583ab}{r1c0}}.\mbox{\hyperlink{structComplex_a479ad939835457595fcca3ca55c06283}{real}}*u.\mbox{\hyperlink{structComplexMatrix2_a763007c3070802373549ba0350f83c8a}{r1c1}}.\mbox{\hyperlink{structComplex_a479ad939835457595fcca3ca55c06283}{real}}
+405                 + u.\mbox{\hyperlink{structComplexMatrix2_ab98282015ed2065e53fbc9638e2583ab}{r1c0}}.\mbox{\hyperlink{structComplex_a1151948284b21c0052f203f23ab931d9}{imag}}*u.\mbox{\hyperlink{structComplexMatrix2_a763007c3070802373549ba0350f83c8a}{r1c1}}.\mbox{\hyperlink{structComplex_a1151948284b21c0052f203f23ab931d9}{imag}}) > \mbox{\hyperlink{QuEST__precision_8h_aebb5e6716e06431296af4d1a71744dec}{REAL\_EPS}} ) \textcolor{keywordflow}{return} 0;
+406 
+407     \textcolor{keywordflow}{if} ( fabs(u.\mbox{\hyperlink{structComplexMatrix2_a0f3932f055a8b05cef361bce25d51172}{r0c1}}.\mbox{\hyperlink{structComplex_a479ad939835457595fcca3ca55c06283}{real}}*u.\mbox{\hyperlink{structComplexMatrix2_ae72b4458233b077a636beee1892e81ff}{r0c0}}.\mbox{\hyperlink{structComplex_a1151948284b21c0052f203f23ab931d9}{imag}}
+408                 - u.\mbox{\hyperlink{structComplexMatrix2_ae72b4458233b077a636beee1892e81ff}{r0c0}}.\mbox{\hyperlink{structComplex_a479ad939835457595fcca3ca55c06283}{real}}*u.\mbox{\hyperlink{structComplexMatrix2_a0f3932f055a8b05cef361bce25d51172}{r0c1}}.\mbox{\hyperlink{structComplex_a1151948284b21c0052f203f23ab931d9}{imag}}
+409                 + u.\mbox{\hyperlink{structComplexMatrix2_a763007c3070802373549ba0350f83c8a}{r1c1}}.\mbox{\hyperlink{structComplex_a479ad939835457595fcca3ca55c06283}{real}}*u.\mbox{\hyperlink{structComplexMatrix2_ab98282015ed2065e53fbc9638e2583ab}{r1c0}}.\mbox{\hyperlink{structComplex_a1151948284b21c0052f203f23ab931d9}{imag}}
+410                 - u.\mbox{\hyperlink{structComplexMatrix2_ab98282015ed2065e53fbc9638e2583ab}{r1c0}}.\mbox{\hyperlink{structComplex_a479ad939835457595fcca3ca55c06283}{real}}*u.\mbox{\hyperlink{structComplexMatrix2_a763007c3070802373549ba0350f83c8a}{r1c1}}.\mbox{\hyperlink{structComplex_a1151948284b21c0052f203f23ab931d9}{imag}}) > \mbox{\hyperlink{QuEST__precision_8h_aebb5e6716e06431296af4d1a71744dec}{REAL\_EPS}} ) \textcolor{keywordflow}{return} 0;
+411 
+412     \textcolor{keywordflow}{return} 1;
+413 \}
+\end{DoxyCode}
+\mbox{\Hypertarget{GPU_2QuEST__internal_8h_a71c14976f63cfcda70026fa20ee531fe}\label{GPU_2QuEST__internal_8h_a71c14976f63cfcda70026fa20ee531fe}} 
+\index{G\+P\+U/\+Qu\+E\+S\+T\+\_\+internal.\+h@{G\+P\+U/\+Qu\+E\+S\+T\+\_\+internal.\+h}!validate\+Unit\+Vector@{validate\+Unit\+Vector}}
+\index{validate\+Unit\+Vector@{validate\+Unit\+Vector}!G\+P\+U/\+Qu\+E\+S\+T\+\_\+internal.\+h@{G\+P\+U/\+Qu\+E\+S\+T\+\_\+internal.\+h}}
+\paragraph{\texorpdfstring{validate\+Unit\+Vector()}{validateUnitVector()}}
+{\footnotesize\ttfamily int validate\+Unit\+Vector (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{QuEST__precision_8h_a4b654506f18b8bfd61ad2a29a7e38c25}{R\+E\+AL}}}]{ux,  }\item[{\mbox{\hyperlink{QuEST__precision_8h_a4b654506f18b8bfd61ad2a29a7e38c25}{R\+E\+AL}}}]{uy,  }\item[{\mbox{\hyperlink{QuEST__precision_8h_a4b654506f18b8bfd61ad2a29a7e38c25}{R\+E\+AL}}}]{uz }\end{DoxyParamCaption})}
+
+
+
+Definition at line 423 of file Qu\+E\+S\+T.\+c.
+
+
+
+References R\+E\+A\+L\+\_\+\+E\+PS.
+
+
+\begin{DoxyCode}
+423                                                  \{
+424     \textcolor{keywordflow}{if} ( fabs(sqrt(ux*ux + uy*uy + uz*uz) - 1) > \mbox{\hyperlink{QuEST__precision_8h_aebb5e6716e06431296af4d1a71744dec}{REAL\_EPS}} ) \textcolor{keywordflow}{return} 0;
+425     \textcolor{keywordflow}{else} \textcolor{keywordflow}{return} 1;
+426 \}
+\end{DoxyCode}
+
+
+\subsubsection{Variable Documentation}
+\mbox{\Hypertarget{GPU_2QuEST__internal_8h_aac1637696885c75b73a1ecf381cea713}\label{GPU_2QuEST__internal_8h_aac1637696885c75b73a1ecf381cea713}} 
+\index{G\+P\+U/\+Qu\+E\+S\+T\+\_\+internal.\+h@{G\+P\+U/\+Qu\+E\+S\+T\+\_\+internal.\+h}!error\+Codes@{error\+Codes}}
+\index{error\+Codes@{error\+Codes}!G\+P\+U/\+Qu\+E\+S\+T\+\_\+internal.\+h@{G\+P\+U/\+Qu\+E\+S\+T\+\_\+internal.\+h}}
+\paragraph{\texorpdfstring{error\+Codes}{errorCodes}}
+{\footnotesize\ttfamily const char$\ast$ error\+Codes\mbox{[}$\,$\mbox{]}}
+
+
+
+Definition at line 27 of file Qu\+E\+S\+T.\+c.
+
+
+
+Referenced by exit\+With\+Error().
+

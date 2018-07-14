@@ -1,0 +1,45 @@
+\hypertarget{testcode_8cpp}{}\subsection{testcode.\+cpp File Reference}
+\label{testcode_8cpp}\index{testcode.\+cpp@{testcode.\+cpp}}
+{\ttfamily \#include $<$Qu\+E\+S\+T.\+h$>$}\newline
+\subsubsection*{Functions}
+\begin{DoxyCompactItemize}
+\item 
+int \mbox{\hyperlink{testcode_8cpp_a32b4528424672580be0dc0e6cd8544c3}{main}} (int narg, char $\ast$varg\mbox{[}$\,$\mbox{]})
+\end{DoxyCompactItemize}
+
+
+\subsubsection{Function Documentation}
+\mbox{\Hypertarget{testcode_8cpp_a32b4528424672580be0dc0e6cd8544c3}\label{testcode_8cpp_a32b4528424672580be0dc0e6cd8544c3}} 
+\index{testcode.\+cpp@{testcode.\+cpp}!main@{main}}
+\index{main@{main}!testcode.\+cpp@{testcode.\+cpp}}
+\paragraph{\texorpdfstring{main()}{main()}}
+{\footnotesize\ttfamily int main (\begin{DoxyParamCaption}\item[{int}]{narg,  }\item[{char $\ast$}]{varg\mbox{[}$\,$\mbox{]} }\end{DoxyParamCaption})}
+
+
+
+Definition at line 3 of file testcode.\+cpp.
+
+
+
+References close\+Qu\+E\+S\+T\+Env(), controlled\+Not(), create\+Multi\+Qubit(), destroy\+Multi\+Qubit(), env, hadamard(), init\+Qu\+E\+S\+T\+Env(), init\+State\+Zero(), and rotate\+Y().
+
+
+\begin{DoxyCode}
+3                                   \{
+4 
+5     \mbox{\hyperlink{structQuESTEnv}{QuESTEnv}} \mbox{\hyperlink{runTests_8c_a5fd8ba97fcae3408ae6221dfc3cc1f93}{env}};
+6         \mbox{\hyperlink{structMultiQubit}{MultiQubit}} qubits; 
+7     \mbox{\hyperlink{QuEST__env__local_8c_ad84a3ce68d1ca02b4e3f741ea45b6054}{initQuESTEnv}}(&\mbox{\hyperlink{runTests_8c_a5fd8ba97fcae3408ae6221dfc3cc1f93}{env}});
+8     \mbox{\hyperlink{QuEST_8c_a9c02591bc64c2918503afa231d90d83f}{createMultiQubit}}(&qubits, 3, \mbox{\hyperlink{runTests_8c_a5fd8ba97fcae3408ae6221dfc3cc1f93}{env}});
+9     \mbox{\hyperlink{QuEST_8c_a9ba8171c9ec5c42202b144026527e9ec}{initStateZero}}(qubits);
+10 
+11     \mbox{\hyperlink{QuEST__env__local_8c_aa09b5dd93de6df1384b8f2c0041749ab}{hadamard}}(qubits, 0);
+12     \mbox{\hyperlink{QuEST__env__local_8c_a67576895bbc65463481a8ea24d9b1e22}{controlledNot}}(qubits, 0, 1);
+13     \mbox{\hyperlink{QuEST_8c_ace0d3592d38a990e81a434c4e9681500}{rotateY}}(qubits, 2, .1);
+14 
+15     \mbox{\hyperlink{QuEST_8c_ae5d6acc322314d7a3d8a2eccf00d3b19}{destroyMultiQubit}}(qubits, \mbox{\hyperlink{runTests_8c_a5fd8ba97fcae3408ae6221dfc3cc1f93}{env}}); 
+16     \mbox{\hyperlink{QuEST__env__local_8c_abd4bc926cd3f9b65610bb228d0c59fe0}{closeQuESTEnv}}(\mbox{\hyperlink{runTests_8c_a5fd8ba97fcae3408ae6221dfc3cc1f93}{env}});
+17 
+18     \textcolor{keywordflow}{return} 0;
+19 \}
+\end{DoxyCode}
