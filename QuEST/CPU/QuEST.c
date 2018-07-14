@@ -150,17 +150,17 @@ void getEnvironmentString(QuESTEnv env, MultiQubit multiQubit, char str[200]){
     sprintf(str, "%dqubits_CPU_%dranksx%dthreads", multiQubit.numQubits, env.numRanks, numThreads);
 }
 
-void initStateZero (MultiQubit multiQubit)
+void initStateZero (MultiQubit *multiQubit)
 {
     long long int stateVecSize;
     long long int index;
 
     // dimension of the state vector
-    stateVecSize = multiQubit.numAmpsPerChunk;
+    stateVecSize = multiQubit->numAmpsPerChunk;
 
     // Can't use multiQubit->stateVec as a private OMP var
-    REAL *stateVecReal = multiQubit.stateVec.real;
-    REAL *stateVecImag = multiQubit.stateVec.imag;
+    REAL *stateVecReal = multiQubit->stateVec.real;
+    REAL *stateVecImag = multiQubit->stateVec.imag;
 
     // initialise the state to |0000..0000>
 # ifdef _OPENMP
@@ -179,26 +179,26 @@ void initStateZero (MultiQubit multiQubit)
         }
     }
 
-    if (multiQubit.chunkId==0){
+    if (multiQubit->chunkId==0){
         // zero state |0000..0000> has probability 1
         stateVecReal[0] = 1.0;
         stateVecImag[0] = 0.0;
     }
 }
 
-void initStatePlus (MultiQubit multiQubit)
+void initStatePlus (MultiQubit *multiQubit)
 {
     long long int chunkSize, stateVecSize;
     long long int index;
 
     // dimension of the state vector
-    chunkSize = multiQubit.numAmpsPerChunk;
-    stateVecSize = chunkSize*multiQubit.numChunks;
+    chunkSize = multiQubit->numAmpsPerChunk;
+    stateVecSize = chunkSize*multiQubit->numChunks;
     REAL normFactor = 1.0/sqrt((REAL)stateVecSize);
 
     // Can't use multiQubit->stateVec as a private OMP var
-    REAL *stateVecReal = multiQubit.stateVec.real;
-    REAL *stateVecImag = multiQubit.stateVec.imag;
+    REAL *stateVecReal = multiQubit->stateVec.real;
+    REAL *stateVecImag = multiQubit->stateVec.imag;
 
     // initialise the state to |0000..0000>
 # ifdef _OPENMP
@@ -219,17 +219,17 @@ void initStatePlus (MultiQubit multiQubit)
 }
 
 /* Tyson Jones, 16th May 2018 4pm */
-void initClassicalState (MultiQubit multiQubit, long long int stateInd)
+void initClassicalState (MultiQubit *multiQubit, long long int stateInd)
 {
     long long int stateVecSize;
     long long int index;
 
     // dimension of the state vector
-    stateVecSize = multiQubit.numAmpsPerChunk;
+    stateVecSize = multiQubit->numAmpsPerChunk;
 
     // Can't use multiQubit->stateVec as a private OMP var
-    REAL *stateVecReal = multiQubit.stateVec.real;
-    REAL *stateVecImag = multiQubit.stateVec.imag;
+    REAL *stateVecReal = multiQubit->stateVec.real;
+    REAL *stateVecImag = multiQubit->stateVec.imag;
 
     // initialise the state to |0000..0000>
 # ifdef _OPENMP
@@ -249,7 +249,7 @@ void initClassicalState (MultiQubit multiQubit, long long int stateInd)
     }
 
 	// give the specified classical state prob 1
-    if (multiQubit.chunkId == stateInd/stateVecSize){
+    if (multiQubit->chunkId == stateInd/stateVecSize){
         stateVecReal[stateInd % stateVecSize] = 1.0;
         stateVecImag[stateInd % stateVecSize] = 0.0;
     }
@@ -307,20 +307,20 @@ void initStateOfSingleQubit(MultiQubit *multiQubit, int qubitId, int outcome)
  * each component of each probability amplitude a unique floating point value. For debugging processes
  * @param[in,out] multiQubit object representing the set of qubits to be initialised
  */
-void initStateDebug (MultiQubit multiQubit)
+void initStateDebug (MultiQubit *multiQubit)
 {
     long long int chunkSize;
     long long int index;
 	long long int indexOffset;
 
     // dimension of the state vector
-    chunkSize = multiQubit.numAmpsPerChunk;
+    chunkSize = multiQubit->numAmpsPerChunk;
 
     // Can't use multiQubit->stateVec as a private OMP var
-    REAL *stateVecReal = multiQubit.stateVec.real;
-    REAL *stateVecImag = multiQubit.stateVec.imag;
+    REAL *stateVecReal = multiQubit->stateVec.real;
+    REAL *stateVecImag = multiQubit->stateVec.imag;
 
-	indexOffset = chunkSize * multiQubit.chunkId;
+	indexOffset = chunkSize * multiQubit->chunkId;
 
     // initialise the state to |0000..0000>
 # ifdef _OPENMP
