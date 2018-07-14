@@ -226,15 +226,13 @@ void __global__ initStateZeroKernel(long long int stateVecSize, REAL *stateVecRe
     }
 }
 
-void initStateZero(MultiQubit multiQubit)
+void initStateZero(MultiQubit *multiQubit)
 {
     int threadsPerCUDABlock, CUDABlocks;
     threadsPerCUDABlock = 128;
-    CUDABlocks = ceil((REAL)(multiQubit.numAmpsPerChunk)/threadsPerCUDABlock);
-    initStateZeroKernel<<<CUDABlocks, threadsPerCUDABlock>>>(
-        multiQubit.numAmpsPerChunk, 
-        multiQubit.deviceStateVec.real, 
-        multiQubit.deviceStateVec.imag);
+    CUDABlocks = ceil((REAL)(multiQubit->numAmpsPerChunk)/threadsPerCUDABlock);
+    initStateZeroKernel<<<CUDABlocks, threadsPerCUDABlock>>>(multiQubit->numAmpsPerChunk, multiQubit->deviceStateVec.real, 
+            multiQubit->deviceStateVec.imag);
 }
 
 void __global__ initStatePlusKernel(long long int stateVecSize, REAL *stateVecReal, REAL *stateVecImag){
@@ -248,15 +246,13 @@ void __global__ initStatePlusKernel(long long int stateVecSize, REAL *stateVecRe
     stateVecImag[index] = 0.0;
 }
 
-void initStatePlus(MultiQubit multiQubit)
+void initStatePlus(MultiQubit *multiQubit)
 {
     int threadsPerCUDABlock, CUDABlocks;
     threadsPerCUDABlock = 128;
-    CUDABlocks = ceil((REAL)(multiQubit.numAmpsPerChunk)/threadsPerCUDABlock);
-    initStatePlusKernel<<<CUDABlocks, threadsPerCUDABlock>>>(
-        multiQubit.numAmpsPerChunk, 
-        multiQubit.deviceStateVec.real, 
-        multiQubit.deviceStateVec.imag);
+    CUDABlocks = ceil((REAL)(multiQubit->numAmpsPerChunk)/threadsPerCUDABlock);
+    initStatePlusKernel<<<CUDABlocks, threadsPerCUDABlock>>>(multiQubit->numAmpsPerChunk, multiQubit->deviceStateVec.real, 
+            multiQubit->deviceStateVec.imag);
 }
 
 /* Tyson Jones, 4th July 2018 8pm */
@@ -275,15 +271,13 @@ void __global__ initClassicalStateKernel(long long int stateVecSize, REAL *state
         stateVecImag[stateInd] = 0.0;
     }
 }
-void initClassicalState(MultiQubit multiQubit, long long int stateInd)
+void initClassicalState(MultiQubit *multiQubit, long long int stateInd)
 {
     int threadsPerCUDABlock, CUDABlocks;
     threadsPerCUDABlock = 128;
-    CUDABlocks = ceil((REAL)(multiQubit.numAmpsPerChunk)/threadsPerCUDABlock);
-    initClassicalStateKernel<<<CUDABlocks, threadsPerCUDABlock>>>(
-        multiQubit.numAmpsPerChunk, 
-        multiQubit.deviceStateVec.real, 
-        multiQubit.deviceStateVec.imag, stateInd);
+    CUDABlocks = ceil((REAL)(multiQubit->numAmpsPerChunk)/threadsPerCUDABlock);
+    initClassicalStateKernel<<<CUDABlocks, threadsPerCUDABlock>>>(multiQubit->numAmpsPerChunk, multiQubit->deviceStateVec.real, 
+            multiQubit->deviceStateVec.imag, stateInd);
 }
 
 void __global__ initStateDebugKernel(long long int stateVecSize, REAL *stateVecReal, REAL *stateVecImag){
@@ -296,15 +290,13 @@ void __global__ initStateDebugKernel(long long int stateVecSize, REAL *stateVecR
     stateVecImag[index] = (index*2.0+1.0)/10.0;
 }
 
-void initStateDebug(MultiQubit multiQubit)
+void initStateDebug(MultiQubit *multiQubit)
 {
     int threadsPerCUDABlock, CUDABlocks;
     threadsPerCUDABlock = 128;
-    CUDABlocks = ceil((REAL)(multiQubit.numAmpsPerChunk)/threadsPerCUDABlock);
-    initStateDebugKernel<<<CUDABlocks, threadsPerCUDABlock>>>(
-        multiQubit.numAmpsPerChunk,
-        multiQubit.deviceStateVec.real, 
-        multiQubit.deviceStateVec.imag);
+    CUDABlocks = ceil((REAL)(multiQubit->numAmpsPerChunk)/threadsPerCUDABlock);
+    initStateDebugKernel<<<CUDABlocks, threadsPerCUDABlock>>>(multiQubit->numAmpsPerChunk, multiQubit->deviceStateVec.real, 
+            multiQubit->deviceStateVec.imag);
 }
 
 void __global__ initStateOfSingleQubitKernel(long long int stateVecSize, REAL *stateVecReal, REAL *stateVecImag, int qubitId, int outcome){
