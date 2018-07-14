@@ -1065,7 +1065,7 @@ int measureWithStats(MultiQubit multiQubit, int measureQubit, REAL *stateProb);
  *
  * For more information about the MT, see http://www.math.sci.hiroshima-u.ac.jp/~m-mat/MT/MT2002/emt19937ar.html
  **/
-void seedQuESTDefault(void);
+void QuESTSeedRandomDefault(void);
 
 /** Seed the Mersenne Twister used for random number generation in the QuEST environment with
  * a user defined seed.
@@ -1080,7 +1080,7 @@ void seedQuESTDefault(void);
  *
  * For more information about the MT, see http://www.math.sci.hiroshima-u.ac.jp/~m-mat/MT/MT2002/emt19937ar.html
  **/
-void seedQuEST(unsigned long int *seedArray, int numSeeds);
+void QuESTSeedRandom(unsigned long int *seedArray, int numSeeds);
 
 #ifdef __cplusplus
 }
