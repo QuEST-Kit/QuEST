@@ -62,7 +62,7 @@ typedef struct MultiQubit
 	int numQubits;
 	//! Number of probability amplitudes held in stateVec by this process
 	//! In the non-MPI version, this is the total number of amplitudes
-	long long int numAmpsDividedByNumChunks;
+	long long int numAmpsPerChunk;
 	//! The position of the chunk of the state vector held by this process in the full state vector
 	int chunkId;
 	//! Number of chunks the state vector is broken up into -- the number of MPI processes used
