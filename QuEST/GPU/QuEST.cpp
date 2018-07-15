@@ -67,7 +67,11 @@ void reportState(MultiQubit multiQubit){
 	if (multiQubit.chunkId==0) fprintf(state, "real, imag\n");
 
 	for(index=0; index<multiQubit.numAmpsPerChunk; index++){
+		# if QuEST_PREC==1 || QuEST_PREC==2
 		fprintf(state, "%.12f, %.12f\n", multiQubit.stateVec.real[index], multiQubit.stateVec.imag[index]);
+		# elif QuEST_PREC == 4
+		fprintf(state, "%.12Lf, %.12Lf\n", multiQubit.stateVec.real[index], multiQubit.stateVec.imag[index]);
+		#endif
 	}
 	fclose(state);
 }
@@ -96,16 +100,14 @@ int getNumAmps(MultiQubit multiQubit){
 }
 
 REAL getProbEl(MultiQubit multiQubit, long long int index){
-    REAL real;
-    REAL imag;
-    real = getRealAmpEl(multiQubit, index);
-    imag = getImagAmpEl(multiQubit, index);
+    REAL real = getRealAmpEl(multiQubit, index);
+    REAL imag = getImagAmpEl(multiQubit, index);
     return real*real + imag*imag;
 }
 
 void rotateAroundAxis(MultiQubit multiQubit, const int rotQubit, REAL angle, Vector axis){
 
-    double mag = sqrt(pow(axis.x,2) + pow(axis.y,2) + pow(axis.z,2));
+    REAL mag = sqrt(pow(axis.x,2) + pow(axis.y,2) + pow(axis.z,2));
     Vector unitAxis = {axis.x/mag, axis.y/mag, axis.z/mag};
 
     Complex alpha, beta;
@@ -136,7 +138,7 @@ void rotateZ(MultiQubit multiQubit, const int rotQubit, REAL angle){
 
 void controlledRotateAroundAxis(MultiQubit multiQubit, const int controlQubit, const int targetQubit, REAL angle, Vector axis){
 
-    double mag = sqrt(pow(axis.x,2) + pow(axis.y,2) + pow(axis.z,2));
+    REAL mag = sqrt(pow(axis.x,2) + pow(axis.y,2) + pow(axis.z,2));
     Vector unitAxis = {axis.x/mag, axis.y/mag, axis.z/mag};
 
     Complex alpha, beta;
@@ -181,23 +183,22 @@ void tGate(MultiQubit multiQubit, const int targetQubit)
 }
 
 int validateMatrixIsUnitary(ComplexMatrix2 u){
-
-    if ( fabs(u.r0c0.real*u.r0c0.real 
+	
+    if ( absReal(u.r0c0.real*u.r0c0.real 
         + u.r0c0.imag*u.r0c0.imag
         + u.r1c0.real*u.r1c0.real
         + u.r1c0.imag*u.r1c0.imag - 1) > REAL_EPS ) return 0;
-    // check
-    if ( fabs(u.r0c1.real*u.r0c1.real 
+    if ( absReal(u.r0c1.real*u.r0c1.real 
         + u.r0c1.imag*u.r0c1.imag
         + u.r1c1.real*u.r1c1.real
         + u.r1c1.imag*u.r1c1.imag - 1) > REAL_EPS ) return 0;
 
-    if ( fabs(u.r0c0.real*u.r0c1.real 
+    if ( absReal(u.r0c0.real*u.r0c1.real 
         + u.r0c0.imag*u.r0c1.imag
         + u.r1c0.real*u.r1c1.real
         + u.r1c0.imag*u.r1c1.imag) > REAL_EPS ) return 0;
 
-    if ( fabs(u.r0c1.real*u.r0c0.imag
+    if ( absReal(u.r0c1.real*u.r0c0.imag
         - u.r0c0.real*u.r0c1.imag
         + u.r1c1.real*u.r1c0.imag
         - u.r1c0.real*u.r1c1.imag) > REAL_EPS ) return 0;
@@ -206,7 +207,8 @@ int validateMatrixIsUnitary(ComplexMatrix2 u){
 }
 
 int validateAlphaBeta(Complex alpha, Complex beta){
-    if ( fabs(alpha.real*alpha.real 
+	
+    if ( absReal(alpha.real*alpha.real 
         + alpha.imag*alpha.imag
         + beta.real*beta.real 
         + beta.imag*beta.imag - 1) > REAL_EPS ) return 0;
@@ -214,7 +216,7 @@ int validateAlphaBeta(Complex alpha, Complex beta){
 }
 
 int validateUnitVector(REAL ux, REAL uy, REAL uz){
-    if ( fabs(sqrt(ux*ux + uy*uy + uz*uz) - 1) > REAL_EPS ) return 0;
+    if ( absReal(sqrt(ux*ux + uy*uy + uz*uz) - 1) > REAL_EPS ) return 0;
     else return 1;
 }
 
