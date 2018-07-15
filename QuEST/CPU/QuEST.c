@@ -362,9 +362,16 @@ void initializeStateFromSingleFile(MultiQubit *multiQubit, char filename[200], Q
                 if (line[0]!='#'){
                     int chunkId = totalIndex/chunkSize;
                     if (chunkId==multiQubit->chunkId){
-                        //! fix -- format needs to work for single precision values
+                        # if QuEST_PREC==1
+                        sscanf(line, "%f, %f", &(stateVecReal[indexInChunk]), 
+                                &(stateVecImag[indexInChunk]));	
+						# elif QuEST_PREC==2					
                         sscanf(line, "%lf, %lf", &(stateVecReal[indexInChunk]), 
                                 &(stateVecImag[indexInChunk]));
+						# elif QuEST_PREC==4
+		                sscanf(line, "%Lf, %Lf", &(stateVecReal[indexInChunk]), 
+		                        &(stateVecImag[indexInChunk]));
+						# endif
                         indexInChunk += 1;
                     }
                     totalIndex += 1;
@@ -379,10 +386,11 @@ void initializeStateFromSingleFile(MultiQubit *multiQubit, char filename[200], Q
 int compareStates(MultiQubit mq1, MultiQubit mq2, REAL precision){
     REAL diff;
     int chunkSize = mq1.numAmpsPerChunk;
+	
     for (int i=0; i<chunkSize; i++){
-        diff = fabs(mq1.stateVec.real[i] - mq2.stateVec.real[i]);
+        diff = absReal(mq1.stateVec.real[i] - mq2.stateVec.real[i]);
         if (diff>precision) return 0;
-        diff = fabs(mq1.stateVec.imag[i] - mq2.stateVec.imag[i]);
+        diff = absReal(mq1.stateVec.imag[i] - mq2.stateVec.imag[i]);
         if (diff>precision) return 0;
     }
     return 1;
@@ -390,21 +398,21 @@ int compareStates(MultiQubit mq1, MultiQubit mq2, REAL precision){
 
 int validateMatrixIsUnitary(ComplexMatrix2 u){
 
-    if ( fabs(u.r0c0.real*u.r0c0.real 
+    if ( absReal(u.r0c0.real*u.r0c0.real 
                 + u.r0c0.imag*u.r0c0.imag
                 + u.r1c0.real*u.r1c0.real
                 + u.r1c0.imag*u.r1c0.imag - 1) > REAL_EPS ) return 0;
-    if ( fabs(u.r0c1.real*u.r0c1.real 
+    if ( absReal(u.r0c1.real*u.r0c1.real 
                 + u.r0c1.imag*u.r0c1.imag
                 + u.r1c1.real*u.r1c1.real
                 + u.r1c1.imag*u.r1c1.imag - 1) > REAL_EPS ) return 0;
 
-    if ( fabs(u.r0c0.real*u.r0c1.real 
+    if ( absReal(u.r0c0.real*u.r0c1.real 
                 + u.r0c0.imag*u.r0c1.imag
                 + u.r1c0.real*u.r1c1.real
                 + u.r1c0.imag*u.r1c1.imag) > REAL_EPS ) return 0;
 
-    if ( fabs(u.r0c1.real*u.r0c0.imag
+    if ( absReal(u.r0c1.real*u.r0c0.imag
                 - u.r0c0.real*u.r0c1.imag
                 + u.r1c1.real*u.r1c0.imag
                 - u.r1c0.real*u.r1c1.imag) > REAL_EPS ) return 0;
@@ -413,7 +421,7 @@ int validateMatrixIsUnitary(ComplexMatrix2 u){
 }
 
 int validateAlphaBeta(Complex alpha, Complex beta){
-    if ( fabs(alpha.real*alpha.real 
+    if ( absReal(alpha.real*alpha.real 
                 + alpha.imag*alpha.imag
                 + beta.real*beta.real 
                 + beta.imag*beta.imag - 1) > REAL_EPS ) return 0;
@@ -421,13 +429,13 @@ int validateAlphaBeta(Complex alpha, Complex beta){
 }
 
 int validateUnitVector(REAL ux, REAL uy, REAL uz){
-    if ( fabs(sqrt(ux*ux + uy*uy + uz*uz) - 1) > REAL_EPS ) return 0;
+    if ( absReal(sqrt(ux*ux + uy*uy + uz*uz) - 1) > REAL_EPS ) return 0;
     else return 1;
 }
 
 void rotateAroundAxis(MultiQubit multiQubit, const int rotQubit, REAL angle, Vector axis){
 
-    double mag = sqrt(pow(axis.x,2) + pow(axis.y,2) + pow(axis.z,2));
+    REAL mag = sqrt(pow(axis.x,2) + pow(axis.y,2) + pow(axis.z,2));
     Vector unitAxis = {axis.x/mag, axis.y/mag, axis.z/mag};
 
     Complex alpha, beta;
@@ -458,7 +466,7 @@ void rotateZ(MultiQubit multiQubit, const int rotQubit, REAL angle){
 
 void controlledRotateAroundAxis(MultiQubit multiQubit, const int controlQubit, const int targetQubit, REAL angle, Vector axis){
 
-    double mag = sqrt(pow(axis.x,2) + pow(axis.y,2) + pow(axis.z,2));
+    REAL mag = sqrt(pow(axis.x,2) + pow(axis.y,2) + pow(axis.z,2));
     Vector unitAxis = {axis.x/mag, axis.y/mag, axis.z/mag};
 
     Complex alpha, beta;

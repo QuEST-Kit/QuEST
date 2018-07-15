@@ -28,7 +28,7 @@ printf "============================\n\n"
 
 # run the unit tests
 export OMP_NUM_THREADS=3
-distributed=$(make SUPPRESS_WARNING=1 getvalue-DISTRIBUTED --silent)
+distributed=$(make SUPPRESS_WARNING=1 getvalue-DISTRIBUTED SILENT=1 --silent)
 if [ $distributed == 0 ]
 then
     ./runTests

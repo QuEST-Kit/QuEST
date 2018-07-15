@@ -205,6 +205,14 @@ Note that using multithreading requires an OpenMP compatible compiler (e.g. [GCC
 > ```
 > An incorrect *Compute Capability* will lead to drastically incorrect computations. You can check if you've set the right *Compute Capability* by running the unit tests via `tests/runTests.c`.
 
+You can additionally customise the precision with which the state-vector is stored.
+```bash
+# whether to use single, double or quad floating point precision in the state-vector {1,2,4}
+PRECISION = 2
+```
+Using greater precision means more precise computation but at the expense of additional memory requirements and runtime.
+Checking results are unchanged when altaring the precision can be a great test that your calculations are sufficiently precise.
+
 You're now ready to compile your code by entering
 ```bash
 make

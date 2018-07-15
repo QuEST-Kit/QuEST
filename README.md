@@ -1,11 +1,6 @@
 # [QuEST](https://quest.qtechtheory.org)
 
-## Versions
-
-
-Latest version: [1.1.0](https://github.com/aniabrown/QuEST/releases/tag/v1.1.0) 
-
-Please report errors or feedback to anna.brown@oerc.ox.ac.uk 
+This is the **development** branch, where the latest changes, features and bug-fixes are pushed.
 
 ## Quick Start
 
