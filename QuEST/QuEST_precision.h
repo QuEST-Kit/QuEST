@@ -3,9 +3,10 @@
 # ifndef QuEST_PRECISION
 # define QuEST_PRECISION
 
-// *** EDIT PRECISION HERE
-// OPTIONS: 1, 2, 4
+// set precision here if not set during compilation
+# ifndef QuEST_PREC
 # define QuEST_PREC 2
+# endif
 
 # if QuEST_PREC==1
 	// SINGLE PRECISION
