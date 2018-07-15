@@ -681,7 +681,7 @@ REAL collapseToOutcome(MultiQubit multiQubit, const int measureQubit, int outcom
     QuESTAssert((outcome==0 || outcome==1), 10, __func__);
 
     REAL totalStateProb=findProbabilityOfOutcome(multiQubit, measureQubit, outcome);
-    QuESTAssert(fabs(totalStateProb)>REAL_EPS, 8, __func__);
+    QuESTAssert(absReal(totalStateProb)>REAL_EPS, 8, __func__);
 
     int skipValuesWithinRank = halfMatrixBlockFitsInChunk(multiQubit.numAmpsPerChunk, measureQubit);
     if (skipValuesWithinRank) {

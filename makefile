@@ -37,6 +37,9 @@ GPU_COMPUTE_CAPABILITY = 30
 # whether to suppress the below warnings about compiler compatibility
 SUPPRESS_WARNING = 0
 
+# whether to use single, double or quad floating point precision in the state-vector {1,2,4}
+PRECISION = 2
+
 
 
 #======================================================================#
@@ -45,18 +48,22 @@ SUPPRESS_WARNING = 0
 #                                                                      #
 #======================================================================#
 
+# suppresses all non-gcc output, useful for calling scripts
+SILENT = 0
+
 # always allow cleaning without errors or warnings
 ifneq ($(MAKECMDGOALS), clean)
 ifneq ($(MAKECMDGOALS), veryclean)
+ifneq ($(SILENT), 1)
 
     # check $COMPILER_TYPE is correct
     ifneq ($(COMPILER_TYPE), CLANG)
     ifneq ($(COMPILER_TYPE), GNU)
     ifneq ($(COMPILER_TYPE), INTEL)
         $(error COMPILER_TYPE must be one of CLANG, GNU or INTEL)
-      endif
-      endif
-      endif
+    endif
+    endif
+    endif
 
     # distributed GPU not supported
     ifeq ($(DISTRIBUTED), 1)
@@ -81,6 +88,23 @@ ifneq ($(MAKECMDGOALS), veryclean)
     endif
     endif
 	
+	# check PRECISION is valid
+    ifneq ($(PRECISION), 1)
+    ifneq ($(PRECISION), 2)
+    ifneq ($(PRECISION), 4)
+        $(error PRECISION must be set to 1, 2 or 4)
+    endif
+    endif
+    endif
+	
+	# GPU does not support quad precision
+    ifeq ($(PRECISION), 4)
+    ifeq ($(GPUACCELERATED), 1)
+    $(warning GPUs do not support quad precision. Setting PRECISION=2...)
+    override PRECISION = 2	
+    endif
+    endif
+	
     # NVCC doesn't support new CLANG compilers
     ifeq ($(GPUACCELERATED), 1)
     ifeq ($(COMPILER_TYPE), CLANG)
@@ -102,7 +126,7 @@ ifneq ($(MAKECMDGOALS), veryclean)
 # end of allowed cleaning
 endif
 endif
-
+endif
 
 
 #======================================================================#
@@ -162,17 +186,17 @@ else
 endif
 
 # c
-C_CLANG_FLAGS = -O2 -std=c99 -mavx -Wall
-C_GNU_FLAGS = -O2 -std=c99 -mavx -Wall $(THREAD_FLAGS)
-C_INTEL_FLAGS = -O2 -std=c99 -fprotect-parens -Wall -xAVX -axCORE-AVX2 -diag-disable -cpu-dispatch $(THREAD_FLAGS)
+C_CLANG_FLAGS = -O2 -std=c99 -mavx -Wall -DQuEST_PREC=$(PRECISION)
+C_GNU_FLAGS = -O2 -std=c99 -mavx -Wall -DQuEST_PREC=$(PRECISION) $(THREAD_FLAGS)
+C_INTEL_FLAGS = -O2 -std=c99 -fprotect-parens -Wall -xAVX -axCORE-AVX2 -diag-disable -cpu-dispatch -DQuEST_PREC=$(PRECISION) $(THREAD_FLAGS)
 
 # c++
-CPP_CLANG_FLAGS = -O2 -std=c++11 -mavx -Wall
-CPP_GNU_FLAGS = -O2 -std=c++11 -mavx -Wall $(THREAD_FLAGS)
-CPP_INTEL_FLAGS = -O2 -std=c++11 -fprotect-parens -Wall -xAVX -axCORE-AVX2 -diag-disable -cpu-dispatch $(THREAD_FLAGS)
+CPP_CLANG_FLAGS = -O2 -std=c++11 -mavx -Wall -DQuEST_PREC=$(PRECISION)
+CPP_GNU_FLAGS = -O2 -std=c++11 -mavx -Wall -DQuEST_PREC=$(PRECISION) $(THREAD_FLAGS)
+CPP_INTEL_FLAGS = -O2 -std=c++11 -fprotect-parens -Wall -xAVX -axCORE-AVX2 -diag-disable -cpu-dispatch -DQuEST_PREC=$(PRECISION) $(THREAD_FLAGS)
 
 # wrappers
-CPP_CUDA_FLAGS = -O2 -arch=compute_$(GPU_COMPUTE_CAPABILITY) -code=sm_$(GPU_COMPUTE_CAPABILITY) -ccbin $(COMPILER)
+CPP_CUDA_FLAGS = -O2 -arch=compute_$(GPU_COMPUTE_CAPABILITY) -code=sm_$(GPU_COMPUTE_CAPABILITY) -DQuEST_PREC=$(PRECISION) -ccbin $(COMPILER)
 
 # choose c/c++ flags based on compiler type
 ifeq ($(COMPILER_TYPE), CLANG)
