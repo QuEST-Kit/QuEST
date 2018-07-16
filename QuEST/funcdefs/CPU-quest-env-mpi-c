@@ -1,0 +1,39 @@
+QuESTAssert      function    760 ../CPU/QuEST_env_mpi.c void QuESTAssert(int isValid, int errorCode, const char* func){
+calcTotalProbability function    112 ../CPU/QuEST_env_mpi.c REAL calcTotalProbability(MultiQubit multiQubit){
+chunkIsUpper     function    150 ../CPU/QuEST_env_mpi.c static int chunkIsUpper(int chunkId, long long int chunkSize, int targetQubit)
+chunkIsUpper     prototype    27 ../CPU/QuEST_env_mpi.c static int chunkIsUpper(int chunkId, long long int chunkSize, int targetQubit);
+closeQuESTEnv    function     60 ../CPU/QuEST_env_mpi.c void closeQuESTEnv(QuESTEnv env){
+collapseToOutcome function    678 ../CPU/QuEST_env_mpi.c REAL collapseToOutcome(MultiQubit multiQubit, const int measureQubit, int outcome)
+compactUnitary   function    272 ../CPU/QuEST_env_mpi.c void compactUnitary(MultiQubit multiQubit, const int targetQubit, Complex alpha, Complex beta)
+controlledCompactUnitary function    354 ../CPU/QuEST_env_mpi.c void controlledCompactUnitary(MultiQubit multiQubit, const int controlQubit, const int targetQubit, Complex alpha, Complex beta)
+controlledNot    function    516 ../CPU/QuEST_env_mpi.c void controlledNot(MultiQubit multiQubit, const int controlQubit, const int targetQubit)
+controlledUnitary function    397 ../CPU/QuEST_env_mpi.c void controlledUnitary(MultiQubit multiQubit, const int controlQubit, const int targetQubit, 
+exchangeStateVectors function    242 ../CPU/QuEST_env_mpi.c void exchangeStateVectors(MultiQubit multiQubit, int pairRank){
+exitWithError    function    752 ../CPU/QuEST_env_mpi.c void exitWithError(int errorCode, const char* func){
+findProbabilityOfOutcome function    659 ../CPU/QuEST_env_mpi.c REAL findProbabilityOfOutcome(MultiQubit multiQubit, const int measureQubit, int outcome)
+getChunkIdFromIndex function     88 ../CPU/QuEST_env_mpi.c int getChunkIdFromIndex(MultiQubit multiQubit, long long int index){
+getChunkIdFromIndex prototype    31 ../CPU/QuEST_env_mpi.c static int getChunkIdFromIndex(MultiQubit multiQubit, long long int index);
+getChunkPairId   function    217 ../CPU/QuEST_env_mpi.c static int getChunkPairId(int chunkIsUpper, int chunkId, long long int chunkSize, int targetQubit)
+getChunkPairId   prototype    29 ../CPU/QuEST_env_mpi.c static int getChunkPairId(int chunkIsUpper, int chunkId, long long int chunkSize, int targetQubit);
+getImagAmpEl     function    102 ../CPU/QuEST_env_mpi.c REAL getImagAmpEl(MultiQubit multiQubit, long long int index){
+getRealAmpEl     function     92 ../CPU/QuEST_env_mpi.c REAL getRealAmpEl(MultiQubit multiQubit, long long int index){
+getRotAngle      function    172 ../CPU/QuEST_env_mpi.c static void getRotAngle(int chunkIsUpper, Complex *rot1, Complex *rot2, Complex alpha, Complex beta)
+getRotAngle      prototype    28 ../CPU/QuEST_env_mpi.c static void getRotAngle(int chunkIsUpper, Complex *rot1, Complex *rot2, Complex alpha, Complex beta);
+getRotAngleFromUnitaryMatrix function    197 ../CPU/QuEST_env_mpi.c static void getRotAngleFromUnitaryMatrix(int chunkIsUpper, Complex *rot1, Complex *rot2, ComplexMatrix2 u)
+hadamard         function    602 ../CPU/QuEST_env_mpi.c void hadamard(MultiQubit multiQubit, const int targetQubit)
+halfMatrixBlockFitsInChunk function    235 ../CPU/QuEST_env_mpi.c static int halfMatrixBlockFitsInChunk(long long int chunkSize, int targetQubit)
+halfMatrixBlockFitsInChunk prototype    30 ../CPU/QuEST_env_mpi.c static int halfMatrixBlockFitsInChunk(long long int chunkSize, int targetQubit);
+initQuESTEnv     function     33 ../CPU/QuEST_env_mpi.c void initQuESTEnv(QuESTEnv *env){
+isChunkToSkipInFindPZero function    650 ../CPU/QuEST_env_mpi.c static int isChunkToSkipInFindPZero(int chunkId, long long int chunkSize, int measureQubit)
+isChunkToSkipInFindPZero prototype    26 ../CPU/QuEST_env_mpi.c static int isChunkToSkipInFindPZero(int chunkId, long long int chunkSize, int measureQubit);
+measure          function    706 ../CPU/QuEST_env_mpi.c int measure(MultiQubit multiQubit, int measureQubit){
+measureWithStats function    712 ../CPU/QuEST_env_mpi.c int measureWithStats(MultiQubit multiQubit, int measureQubit, REAL *stateProb){
+multiControlledUnitary function    441 ../CPU/QuEST_env_mpi.c void multiControlledUnitary(MultiQubit multiQubit, int* controlQubits, const int numControlQubits, const int targetQubit, ComplexMatrix2 u)
+phaseGate        function    584 ../CPU/QuEST_env_mpi.c void phaseGate(MultiQubit multiQubit, const int targetQubit, enum phaseGateType type)
+reportNodeList   function     82 ../CPU/QuEST_env_mpi.c void reportNodeList(QuESTEnv env){
+reportQuESTEnv   function     67 ../CPU/QuEST_env_mpi.c void reportQuESTEnv(QuESTEnv env){
+sigmaX           function    487 ../CPU/QuEST_env_mpi.c void sigmaX(MultiQubit multiQubit, const int targetQubit)
+sigmaY           function    553 ../CPU/QuEST_env_mpi.c void sigmaY(MultiQubit multiQubit, const int targetQubit)
+syncQuESTEnv     function     50 ../CPU/QuEST_env_mpi.c void syncQuESTEnv(QuESTEnv env){
+syncQuESTSuccess function     54 ../CPU/QuEST_env_mpi.c int syncQuESTSuccess(int successCode){
+unitary          function    312 ../CPU/QuEST_env_mpi.c void unitary(MultiQubit multiQubit, const int targetQubit, ComplexMatrix2 u)

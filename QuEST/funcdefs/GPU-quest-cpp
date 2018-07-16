@@ -1,0 +1,22 @@
+controlledRotateAroundAxis function    139 ../GPU/QuEST.cpp void controlledRotateAroundAxis(MultiQubit multiQubit, const int controlQubit, const int targetQubit, REAL angle, Vector axis){
+controlledRotateX function    152 ../GPU/QuEST.cpp void controlledRotateX(MultiQubit multiQubit, const int controlQubit, const int targetQubit, REAL angle){
+controlledRotateY function    158 ../GPU/QuEST.cpp void controlledRotateY(MultiQubit multiQubit, const int controlQubit, const int targetQubit, REAL angle){
+controlledRotateZ function    164 ../GPU/QuEST.cpp void controlledRotateZ(MultiQubit multiQubit, const int controlQubit, const int targetQubit, REAL angle){
+getNumAmps       function     98 ../GPU/QuEST.cpp int getNumAmps(MultiQubit multiQubit){
+getNumQubits     function     94 ../GPU/QuEST.cpp int getNumQubits(MultiQubit multiQubit){
+getProbEl        function    102 ../GPU/QuEST.cpp REAL getProbEl(MultiQubit multiQubit, long long int index){
+hashString       function    255 ../GPU/QuEST.cpp unsigned long int hashString(char *str){
+reportMultiQubitParams function     83 ../GPU/QuEST.cpp void reportMultiQubitParams(MultiQubit multiQubit){
+reportState      function     61 ../GPU/QuEST.cpp void reportState(MultiQubit multiQubit){
+rotateAroundAxis function    108 ../GPU/QuEST.cpp void rotateAroundAxis(MultiQubit multiQubit, const int rotQubit, REAL angle, Vector axis){
+rotateX          function    121 ../GPU/QuEST.cpp void rotateX(MultiQubit multiQubit, const int rotQubit, REAL angle){
+rotateY          function    127 ../GPU/QuEST.cpp void rotateY(MultiQubit multiQubit, const int rotQubit, REAL angle){
+rotateZ          function    133 ../GPU/QuEST.cpp void rotateZ(MultiQubit multiQubit, const int rotQubit, REAL angle){
+sGate            function    175 ../GPU/QuEST.cpp void sGate(MultiQubit multiQubit, const int targetQubit)
+seedQuEST        function    248 ../GPU/QuEST.cpp void seedQuEST(unsigned long int *seedArray, int numSeeds){
+seedQuESTDefault function    223 ../GPU/QuEST.cpp void seedQuESTDefault(){
+sigmaZ           function    170 ../GPU/QuEST.cpp void sigmaZ(MultiQubit multiQubit, const int targetQubit)
+tGate            function    180 ../GPU/QuEST.cpp void tGate(MultiQubit multiQubit, const int targetQubit)
+validateAlphaBeta function    209 ../GPU/QuEST.cpp int validateAlphaBeta(Complex alpha, Complex beta){
+validateMatrixIsUnitary function    185 ../GPU/QuEST.cpp int validateMatrixIsUnitary(ComplexMatrix2 u){
+validateUnitVector function    218 ../GPU/QuEST.cpp int validateUnitVector(REAL ux, REAL uy, REAL uz){

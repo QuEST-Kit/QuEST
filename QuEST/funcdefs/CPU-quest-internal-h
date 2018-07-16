@@ -1,0 +1,32 @@
+QuESTAssert      prototype   118 ../CPU/QuEST_internal.h void QuESTAssert(int isValid, int errorCode, const char *func);
+collapseToOutcomeDistributedRenorm prototype   100 ../CPU/QuEST_internal.h REAL collapseToOutcomeDistributedRenorm (MultiQubit multiQubit, const int measureQubit, const REAL totalProbability);
+collapseToOutcomeDistributedSetZero prototype   102 ../CPU/QuEST_internal.h void collapseToOutcomeDistributedSetZero(MultiQubit multiQubit, const int measureQubit);
+collapseToOutcomeLocal prototype    98 ../CPU/QuEST_internal.h void collapseToOutcomeLocal(MultiQubit multiQubit, int measureQubit, REAL totalProbability, int outcome);
+compactUnitaryDistributed prototype    19 ../CPU/QuEST_internal.h void compactUnitaryDistributed (MultiQubit multiQubit, const int targetQubit,
+compactUnitaryLocal prototype    17 ../CPU/QuEST_internal.h void compactUnitaryLocal (MultiQubit multiQubit, const int targetQubit, Complex alpha, Complex beta);
+controlledCompactUnitaryDistributed prototype    36 ../CPU/QuEST_internal.h void controlledCompactUnitaryDistributed (MultiQubit multiQubit, const int controlQubit, const int targetQubit,
+controlledCompactUnitaryLocal prototype    33 ../CPU/QuEST_internal.h void controlledCompactUnitaryLocal (MultiQubit multiQubit, const int controlQubit, const int targetQubit,
+controlledNotDistributed prototype    88 ../CPU/QuEST_internal.h void controlledNotDistributed (MultiQubit multiQubit, const int controlQubit, const int targetQubit,
+controlledNotLocal prototype    86 ../CPU/QuEST_internal.h void controlledNotLocal(MultiQubit multiQubit, const int controlQubit, const int targetQubit);
+controlledUnitaryDistributed prototype    44 ../CPU/QuEST_internal.h void controlledUnitaryDistributed (MultiQubit multiQubit, const int controlQubit, const int targetQubit,
+controlledUnitaryLocal prototype    42 ../CPU/QuEST_internal.h void controlledUnitaryLocal(MultiQubit multiQubit, const int controlQubit, const int targetQubit, ComplexMatrix2 u);
+exitWithError    prototype   116 ../CPU/QuEST_internal.h void exitWithError(int errorCode, const char *func);
+findProbabilityOfZeroDistributed prototype    95 ../CPU/QuEST_internal.h REAL findProbabilityOfZeroDistributed (MultiQubit multiQubit,
+findProbabilityOfZeroLocal prototype    92 ../CPU/QuEST_internal.h REAL findProbabilityOfZeroLocal (MultiQubit multiQubit,
+hadamardDistributed prototype    76 ../CPU/QuEST_internal.h void hadamardDistributed (MultiQubit multiQubit, const int targetQubit,
+hadamardLocal    prototype    74 ../CPU/QuEST_internal.h void hadamardLocal (MultiQubit multiQubit, const int targetQubit);
+hashString       prototype   120 ../CPU/QuEST_internal.h unsigned long int hashString(char *str);
+multiControlledUnitaryDistributed prototype    53 ../CPU/QuEST_internal.h void multiControlledUnitaryDistributed (MultiQubit multiQubit,
+multiControlledUnitaryLocal prototype    50 ../CPU/QuEST_internal.h void multiControlledUnitaryLocal(MultiQubit multiQubit, const int targetQubit,
+phaseGate        prototype   114 ../CPU/QuEST_internal.h void phaseGate(MultiQubit multiQubit, const int targetQubit, enum phaseGateType type);
+phaseGateDistributed prototype    84 ../CPU/QuEST_internal.h void phaseGateDistributed(MultiQubit multiQubit, const int targetQubit, enum phaseGateType type);
+phaseGateLocal   prototype    82 ../CPU/QuEST_internal.h void phaseGateLocal(MultiQubit multiQubit, const int targetQubit, enum phaseGateType type);
+sigmaXDistributed prototype    63 ../CPU/QuEST_internal.h void sigmaXDistributed (MultiQubit multiQubit, const int targetQubit,
+sigmaXLocal      prototype    61 ../CPU/QuEST_internal.h void sigmaXLocal(MultiQubit multiQubit, const int targetQubit);
+sigmaYDistributed prototype    69 ../CPU/QuEST_internal.h void sigmaYDistributed(MultiQubit multiQubit, const int targetQubit,
+sigmaYLocal      prototype    67 ../CPU/QuEST_internal.h void sigmaYLocal(MultiQubit multiQubit, const int targetQubit);
+unitaryDistributed prototype    27 ../CPU/QuEST_internal.h void unitaryDistributed (MultiQubit multiQubit, const int targetQubit,
+unitaryLocal     prototype    25 ../CPU/QuEST_internal.h void unitaryLocal(MultiQubit multiQubit, const int targetQubit, ComplexMatrix2 u);
+validateAlphaBeta prototype   108 ../CPU/QuEST_internal.h int validateAlphaBeta(Complex alpha, Complex beta);
+validateMatrixIsUnitary prototype   106 ../CPU/QuEST_internal.h int validateMatrixIsUnitary(ComplexMatrix2 u);
+validateUnitVector prototype   110 ../CPU/QuEST_internal.h int validateUnitVector(REAL ux, REAL uy, REAL uz);
