@@ -5,6 +5,7 @@ import os
 # where ctags is brew installed (not default OSX)
 
 fns = ['quest-h',
+       'quest-debug-h',
        'GPU-quest-cpp',
        'GPU-quest-internal-h',
        'GPU-quest-env-localgpu-cu',
