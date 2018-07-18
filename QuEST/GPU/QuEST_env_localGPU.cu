@@ -26,7 +26,7 @@ static __device__ int extractBit (int locationOfBitFromRight, long long int theE
 extern "C" {
 #endif
 
-void createMultiQubit(MultiQubit *multiQubit, int numQubits, QuESTEnv env)
+void pure_createMultiQubit(MultiQubit *multiQubit, int numQubits, QuESTEnv env)
 {
     QuESTAssert(numQubits>0, 9, __func__);
     // Allocate CPU memory
@@ -71,7 +71,7 @@ void createMultiQubit(MultiQubit *multiQubit, int numQubits, QuESTEnv env)
 
 }
 
-void destroyMultiQubit(MultiQubit multiQubit, QuESTEnv env)
+void pure_destroyMultiQubit(MultiQubit multiQubit, QuESTEnv env)
 {
     // Free CPU memory
     free(multiQubit.stateVec.real);
@@ -171,7 +171,7 @@ void copyStateFromGPU(MultiQubit multiQubit)
 /** Print the current state vector of probability amplitudes for a set of qubits to standard out. 
   For debugging purposes. Each rank should print output serially. Only print output for systems <= 5 qubits
  */
-void reportStateToScreen(MultiQubit multiQubit, QuESTEnv env, int reportRank){
+void pure_reportStateToScreen(MultiQubit multiQubit, QuESTEnv env, int reportRank){
     long long int index;
     int rank;
     copyStateFromGPU(multiQubit); 
@@ -197,14 +197,14 @@ void reportStateToScreen(MultiQubit multiQubit, QuESTEnv env, int reportRank){
     }
 }
 
-REAL getRealAmpEl(MultiQubit multiQubit, long long int index){
+REAL pure_getRealAmpEl(MultiQubit multiQubit, long long int index){
     REAL el=0;
     cudaMemcpy(&el, &(multiQubit.deviceStateVec.real[index]), 
             sizeof(*(multiQubit.deviceStateVec.real)), cudaMemcpyDeviceToHost);
     return el;
 }
 
-REAL getImagAmpEl(MultiQubit multiQubit, long long int index){
+REAL pure_getImagAmpEl(MultiQubit multiQubit, long long int index){
     REAL el=0;
     cudaMemcpy(&el, &(multiQubit.deviceStateVec.imag[index]), 
             sizeof(*(multiQubit.deviceStateVec.imag)), cudaMemcpyDeviceToHost);
@@ -227,7 +227,7 @@ void __global__ initStateZeroKernel(long long int stateVecSize, REAL *stateVecRe
     }
 }
 
-void initStateZero(MultiQubit multiQubit)
+void pure_initStateZero(MultiQubit multiQubit)
 {
     int threadsPerCUDABlock, CUDABlocks;
     threadsPerCUDABlock = 128;
@@ -249,7 +249,7 @@ void __global__ initStatePlusKernel(long long int stateVecSize, REAL *stateVecRe
     stateVecImag[index] = 0.0;
 }
 
-void initStatePlus(MultiQubit multiQubit)
+void pure_initStatePlus(MultiQubit multiQubit)
 {
     int threadsPerCUDABlock, CUDABlocks;
     threadsPerCUDABlock = 128;
@@ -276,7 +276,7 @@ void __global__ initClassicalStateKernel(long long int stateVecSize, REAL *state
         stateVecImag[stateInd] = 0.0;
     }
 }
-void initClassicalState(MultiQubit multiQubit, long long int stateInd)
+void pure_initClassicalState(MultiQubit multiQubit, long long int stateInd)
 {
     int threadsPerCUDABlock, CUDABlocks;
     threadsPerCUDABlock = 128;
@@ -297,7 +297,7 @@ void __global__ initStateDebugKernel(long long int stateVecSize, REAL *stateVecR
     stateVecImag[index] = (index*2.0+1.0)/10.0;
 }
 
-void initStateDebug(MultiQubit multiQubit)
+void pure_initStateDebug(MultiQubit multiQubit)
 {
     int threadsPerCUDABlock, CUDABlocks;
     threadsPerCUDABlock = 128;
@@ -326,7 +326,7 @@ void __global__ initStateOfSingleQubitKernel(long long int stateVecSize, REAL *s
     }
 }
 
-void initStateOfSingleQubit(MultiQubit *multiQubit, int qubitId, int outcome)
+void pure_initStateOfSingleQubit(MultiQubit *multiQubit, int qubitId, int outcome)
 {
     int threadsPerCUDABlock, CUDABlocks;
     threadsPerCUDABlock = 128;
@@ -334,7 +334,7 @@ void initStateOfSingleQubit(MultiQubit *multiQubit, int qubitId, int outcome)
     initStateOfSingleQubitKernel<<<CUDABlocks, threadsPerCUDABlock>>>(multiQubit->numAmpsPerChunk, multiQubit->deviceStateVec.real, multiQubit->deviceStateVec.imag, qubitId, outcome);
 }
 
-void initializeStateFromSingleFile(MultiQubit *multiQubit, char filename[200], QuESTEnv env){
+void pure_initializeStateFromSingleFile(MultiQubit *multiQubit, char filename[200], QuESTEnv env){
     long long int chunkSize, stateVecSize;
     long long int indexInChunk, totalIndex;
 
@@ -373,7 +373,7 @@ void initializeStateFromSingleFile(MultiQubit *multiQubit, char filename[200], Q
     copyStateToGPU(*multiQubit);
 }
 
-int compareStates(MultiQubit mq1, MultiQubit mq2, REAL precision){
+int pure_compareStates(MultiQubit mq1, MultiQubit mq2, REAL precision){
     REAL diff;
     int chunkSize = mq1.numAmpsPerChunk;
 
@@ -392,7 +392,7 @@ int compareStates(MultiQubit mq1, MultiQubit mq2, REAL precision){
 }
 
 
-REAL calcTotalProbability(MultiQubit multiQubit){
+REAL pure_calcTotalProbability(MultiQubit multiQubit){
     /* IJB - implemented using Kahan summation for greater accuracy at a slight floating
        point operation overhead. For more details see https://en.wikipedia.org/wiki/Kahan_summation_algorithm */
     /* Don't change the bracketing in this routine! */
@@ -483,7 +483,7 @@ __global__ void compactUnitaryKernel (MultiQubit multiQubit, const int rotQubit,
         + alphaReal*stateImagLo - alphaImag*stateRealLo;
 }
 
-void compactUnitary(MultiQubit multiQubit, const int targetQubit, Complex alpha, Complex beta) 
+void pure_compactUnitary(MultiQubit multiQubit, const int targetQubit, Complex alpha, Complex beta) 
 {
     QuESTAssert(targetQubit >= 0 && targetQubit < multiQubit.numQubits, 1, __func__);
     QuESTAssert(validateAlphaBeta(alpha, beta), 6, __func__);
@@ -552,7 +552,7 @@ __global__ void controlledCompactUnitaryKernel (MultiQubit multiQubit, const int
     }
 }
 
-void controlledCompactUnitary(MultiQubit multiQubit, const int controlQubit, const int targetQubit, Complex alpha, Complex beta) 
+void pure_controlledCompactUnitary(MultiQubit multiQubit, const int controlQubit, const int targetQubit, Complex alpha, Complex beta) 
 {
     QuESTAssert(targetQubit >= 0 && targetQubit < multiQubit.numQubits, 1, __func__);
     QuESTAssert(controlQubit >= 0 && controlQubit < multiQubit.numQubits, 2, __func__);
@@ -618,7 +618,7 @@ __global__ void unitaryKernel(MultiQubit multiQubit, const int targetQubit, Comp
         + u.r1c1.real*stateImagLo + u.r1c1.imag*stateRealLo;
 }
 
-void unitary(MultiQubit multiQubit, const int targetQubit, ComplexMatrix2 u)
+void pure_unitary(MultiQubit multiQubit, const int targetQubit, ComplexMatrix2 u)
 {
     QuESTAssert(targetQubit >= 0 && targetQubit < multiQubit.numQubits, 1, __func__);
     QuESTAssert(validateMatrixIsUnitary(u), 5, __func__);
@@ -686,7 +686,7 @@ __global__ void controlledUnitaryKernel(MultiQubit multiQubit, const int control
     }
 }
 
-void controlledUnitary(MultiQubit multiQubit, const int controlQubit, const int targetQubit, ComplexMatrix2 u)
+void pure_controlledUnitary(MultiQubit multiQubit, const int controlQubit, const int targetQubit, ComplexMatrix2 u)
 {
     QuESTAssert(targetQubit >= 0 && targetQubit < multiQubit.numQubits, 1, __func__);
     QuESTAssert(controlQubit >= 0 && controlQubit < multiQubit.numQubits, 2, __func__);
@@ -755,7 +755,7 @@ __global__ void multiControlledUnitaryKernel(MultiQubit multiQubit, long long in
     }
 }
 
-void multiControlledUnitary(MultiQubit multiQubit, int *controlQubits, int numControlQubits, const int targetQubit, ComplexMatrix2 u)
+void pure_multiControlledUnitary(MultiQubit multiQubit, int *controlQubits, int numControlQubits, const int targetQubit, ComplexMatrix2 u)
 {
     QuESTAssert(targetQubit >= 0 && targetQubit < multiQubit.numQubits, 1, __func__);
     QuESTAssert(numControlQubits > 0 && numControlQubits <= multiQubit.numQubits, 4, __func__);
@@ -815,7 +815,7 @@ __global__ void sigmaXKernel(MultiQubit multiQubit, const int targetQubit){
     stateVecImag[indexLo] = stateImagUp;
 }
 
-void sigmaX(MultiQubit multiQubit, const int targetQubit) 
+void pure_sigmaX(MultiQubit multiQubit, const int targetQubit) 
 {
     QuESTAssert(targetQubit >= 0 && targetQubit < multiQubit.numQubits, 1, __func__);
     int threadsPerCUDABlock, CUDABlocks;
@@ -869,7 +869,7 @@ __global__ void sigmaYKernel(MultiQubit multiQubit, const int targetQubit){
     stateVecImag[indexLo] = stateRealUp;
 }
 
-void sigmaY(MultiQubit multiQubit, const int targetQubit) 
+void pure_sigmaY(MultiQubit multiQubit, const int targetQubit) 
 {
     QuESTAssert(targetQubit >= 0 && targetQubit < multiQubit.numQubits, 1, __func__);
     int threadsPerCUDABlock, CUDABlocks;
@@ -931,7 +931,7 @@ __global__ void phaseGateKernel(MultiQubit multiQubit, const int targetQubit, en
 
 }
 
-void phaseGate(MultiQubit multiQubit, const int targetQubit, enum phaseGateType type) 
+void pure_phaseGate(MultiQubit multiQubit, const int targetQubit, enum phaseGateType type) 
 {
     QuESTAssert(targetQubit >= 0 && targetQubit < multiQubit.numQubits, 1, __func__);
     int threadsPerCUDABlock, CUDABlocks;
@@ -961,7 +961,7 @@ __global__ void controlledPhaseGateKernel(MultiQubit multiQubit, const int idQub
     }
 }
 
-void controlledPhaseGate(MultiQubit multiQubit, const int idQubit1, const int idQubit2)
+void pure_controlledPhaseGate(MultiQubit multiQubit, const int idQubit1, const int idQubit2)
 {
     QuESTAssert(idQubit1 >= 0 && idQubit1 < multiQubit.numQubits, 2, __func__);
     QuESTAssert(idQubit2 >= 0 && idQubit2 < multiQubit.numQubits, 1, __func__);
@@ -991,7 +991,7 @@ __global__ void multiControlledPhaseGateKernel(MultiQubit multiQubit, long long 
     }
 }
 
-void multiControlledPhaseGate(MultiQubit multiQubit, int *controlQubits, int numControlQubits)
+void pure_multiControlledPhaseGate(MultiQubit multiQubit, int *controlQubits, int numControlQubits)
 {
     QuESTAssert(numControlQubits > 0 && numControlQubits <= multiQubit.numQubits, 4, __func__);
 
@@ -1054,7 +1054,7 @@ __global__ void hadamardKernel (MultiQubit multiQubit, const int targetQubit){
     stateVecImag[indexLo] = recRoot2*(stateImagUp - stateImagLo);
 }
 
-void hadamard(MultiQubit multiQubit, const int targetQubit) 
+void pure_hadamard(MultiQubit multiQubit, const int targetQubit) 
 {
     QuESTAssert(targetQubit >= 0 && targetQubit < multiQubit.numQubits, 1, __func__);
     int threadsPerCUDABlock, CUDABlocks;
@@ -1102,7 +1102,7 @@ __global__ void controlledNotKernel(MultiQubit multiQubit, const int controlQubi
     }
 }
 
-void controlledNot(MultiQubit multiQubit, const int controlQubit, const int targetQubit)
+void pure_controlledNot(MultiQubit multiQubit, const int controlQubit, const int targetQubit)
 {
     QuESTAssert(targetQubit >= 0 && targetQubit < multiQubit.numQubits, 1, __func__);
     QuESTAssert(controlQubit >= 0 && controlQubit < multiQubit.numQubits, 2, __func__);
@@ -1215,8 +1215,7 @@ void swapDouble(REAL **a, REAL **b){
     *b = temp;
 }
 
-REAL findProbabilityOfZero(MultiQubit multiQubit,
-        const int measureQubit)
+REAL pure_findProbabilityOfZero(MultiQubit multiQubit, const int measureQubit)
 {
     long long int numValuesToReduce = multiQubit.numAmpsPerChunk>>1;
     int valuesPerCUDABlock, numCUDABlocks, sharedMemSize;
@@ -1254,11 +1253,11 @@ REAL findProbabilityOfZero(MultiQubit multiQubit,
     return stateProb;
 }
 
-REAL findProbabilityOfOutcome(MultiQubit multiQubit, const int measureQubit, int outcome)
+REAL pure_findProbabilityOfOutcome(MultiQubit multiQubit, const int measureQubit, int outcome)
 {
     QuESTAssert(measureQubit >= 0 && measureQubit < multiQubit.numQubits, 1, __func__);
     REAL stateProb=0;
-    stateProb = findProbabilityOfZero(multiQubit, measureQubit);
+    stateProb = pure_findProbabilityOfZero(multiQubit, measureQubit);
     if (outcome==1) stateProb = 1.0 - stateProb;
     return stateProb;
 }
@@ -1324,12 +1323,12 @@ __global__ void collapseToOutcomeKernel(MultiQubit multiQubit, int measureQubit,
 
 }
 
-REAL collapseToOutcome(MultiQubit multiQubit, const int measureQubit, int outcome)
+REAL pure_collapseToOutcome(MultiQubit multiQubit, const int measureQubit, int outcome)
 {        
     QuESTAssert(measureQubit >= 0 && measureQubit < multiQubit.numQubits, 2, __func__);
     QuESTAssert((outcome==0 || outcome==1), 10, __func__);
     REAL stateProb;
-    stateProb = findProbabilityOfOutcome(multiQubit, measureQubit, outcome);
+    stateProb = pure_findProbabilityOfOutcome(multiQubit, measureQubit, outcome);
     QuESTAssert(fabs(stateProb)>REAL_EPS, 8, __func__);
 
     int threadsPerCUDABlock, CUDABlocks;
@@ -1386,10 +1385,10 @@ __global__ void measureInZeroKernel(MultiQubit multiQubit, int measureQubit, REA
     stateVecImag[index+sizeHalfBlock]=0;
 }
 
-REAL measureInZero(MultiQubit multiQubit, const int measureQubit)
+REAL pure_measureInZero(MultiQubit multiQubit, const int measureQubit)
 {        
     REAL stateProb;
-    stateProb = findProbabilityOfZero(multiQubit, measureQubit);
+    stateProb = pure_findProbabilityOfZero(multiQubit, measureQubit);
 
     int threadsPerCUDABlock, CUDABlocks;
     threadsPerCUDABlock = 128;
@@ -1398,18 +1397,12 @@ REAL measureInZero(MultiQubit multiQubit, const int measureQubit)
     return stateProb;
 }
 
-int measure(MultiQubit multiQubit, int measureQubit){
-    QuESTAssert(measureQubit >= 0 && measureQubit < multiQubit.numQubits, 2, __func__);
-    REAL stateProb;
-    return measureWithStats(multiQubit, measureQubit, &stateProb);
-}
-
-int measureWithStats(MultiQubit multiQubit, int measureQubit, REAL *stateProb){
+int pure_measureWithStats(MultiQubit multiQubit, int measureQubit, REAL *stateProb){
     QuESTAssert(measureQubit >= 0 && measureQubit < multiQubit.numQubits, 2, __func__);
 
     int outcome;
     // find probability of qubit being in state 1
-    REAL stateProbInternal = findProbabilityOfOutcome(multiQubit, measureQubit, 1);
+    REAL stateProbInternal = pure_findProbabilityOfOutcome(multiQubit, measureQubit, 1);
 
     // we can't collapse to a state that has a probability too close to zero
     if (stateProbInternal<REAL_EPS) outcome=0;
@@ -1430,6 +1423,12 @@ int measureWithStats(MultiQubit multiQubit, int measureQubit, REAL *stateProb){
 
     *stateProb = stateProbInternal;
     return outcome;
+}
+
+int pure_measure(MultiQubit multiQubit, int measureQubit){
+    QuESTAssert(measureQubit >= 0 && measureQubit < multiQubit.numQubits, 2, __func__);
+    REAL stateProb;
+    return pure_measureWithStats(multiQubit, measureQubit, &stateProb);
 }
 
 #ifdef __cplusplus

@@ -29,7 +29,7 @@ COMPILER_TYPE = CLANG
 # hardwares to target: 1 means use, 0 means don't use
 MULTITHREADED = 0
 DISTRIBUTED = 0
-GPUACCELERATED = 0
+GPUACCELERATED = 1
 
 # GPU hardware dependent, lookup at https://developer.nvidia.com/cuda-gpus, write without fullstop
 GPU_COMPUTE_CAPABILITY = 30
@@ -224,7 +224,7 @@ MPI_WRAPPED_COMP = I_MPI_CC=$(COMPILER) OMPI_CC=$(COMPILER) MPICH_CC=$(COMPILER)
 # --- targets
 #
 
-OBJ = mt19937ar.o QuEST_common.o
+OBJ = mt19937ar.o QuEST_common.o QuEST_ops.o
 ifeq ($(GPUACCELERATED), 1)
     OBJ += QuEST_env_localGPU.o
 else ifeq ($(DISTRIBUTED), 1)

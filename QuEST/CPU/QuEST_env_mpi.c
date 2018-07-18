@@ -91,7 +91,7 @@ int getChunkIdFromIndex(MultiQubit multiQubit, long long int index){
     return index/multiQubit.numAmpsPerChunk; // this is numAmpsPerChunk
 }
 
-REAL getRealAmpEl(MultiQubit multiQubit, long long int index){
+REAL pure_getRealAmpEl(MultiQubit multiQubit, long long int index){
     int chunkId = getChunkIdFromIndex(multiQubit, index);
     REAL el; 
     if (multiQubit.chunkId==chunkId){
@@ -101,7 +101,7 @@ REAL getRealAmpEl(MultiQubit multiQubit, long long int index){
     return el; 
 } 
 
-REAL getImagAmpEl(MultiQubit multiQubit, long long int index){
+REAL pure_getImagAmpEl(MultiQubit multiQubit, long long int index){
     int chunkId = getChunkIdFromIndex(multiQubit, index);
     REAL el; 
     if (multiQubit.chunkId==chunkId){
@@ -111,7 +111,7 @@ REAL getImagAmpEl(MultiQubit multiQubit, long long int index){
     return el; 
 }
 
-REAL calcTotalProbability(MultiQubit multiQubit){
+REAL pure_calcTotalProbability(MultiQubit multiQubit){
     // Implemented using Kahan summation for greater accuracy at a slight floating
     //   point operation overhead. For more details see https://en.wikipedia.org/wiki/Kahan_summation_algorithm
     REAL pTotal=0; 
@@ -271,7 +271,7 @@ void exchangeStateVectors(MultiQubit multiQubit, int pairRank){
     }
 }
 
-void compactUnitary(MultiQubit multiQubit, const int targetQubit, Complex alpha, Complex beta)
+void pure_compactUnitary(MultiQubit multiQubit, const int targetQubit, Complex alpha, Complex beta)
 {
     QuESTAssert(targetQubit >= 0 && targetQubit < multiQubit.numQubits, 1, __func__);
     QuESTAssert(validateAlphaBeta(alpha, beta), 6, __func__);
@@ -311,7 +311,7 @@ void compactUnitary(MultiQubit multiQubit, const int targetQubit, Complex alpha,
     }
 }
 
-void unitary(MultiQubit multiQubit, const int targetQubit, ComplexMatrix2 u)
+void pure_unitary(MultiQubit multiQubit, const int targetQubit, ComplexMatrix2 u)
 {
     QuESTAssert(targetQubit >= 0 && targetQubit < multiQubit.numQubits, 1, __func__);
     QuESTAssert(validateMatrixIsUnitary(u), 5, __func__);
@@ -353,7 +353,7 @@ void unitary(MultiQubit multiQubit, const int targetQubit, ComplexMatrix2 u)
 
 }
 
-void controlledCompactUnitary(MultiQubit multiQubit, const int controlQubit, const int targetQubit, Complex alpha, Complex beta)
+void pure_controlledCompactUnitary(MultiQubit multiQubit, const int controlQubit, const int targetQubit, Complex alpha, Complex beta)
 {
     QuESTAssert(targetQubit >= 0 && targetQubit < multiQubit.numQubits, 1, __func__);
     QuESTAssert(controlQubit >= 0 && controlQubit < multiQubit.numQubits, 2, __func__);
@@ -396,7 +396,7 @@ void controlledCompactUnitary(MultiQubit multiQubit, const int controlQubit, con
     }
 }
 
-void controlledUnitary(MultiQubit multiQubit, const int controlQubit, const int targetQubit, 
+void pure_controlledUnitary(MultiQubit multiQubit, const int controlQubit, const int targetQubit, 
         ComplexMatrix2 u)
 {
     QuESTAssert(targetQubit >= 0 && targetQubit < multiQubit.numQubits, 1, __func__);
@@ -440,7 +440,7 @@ void controlledUnitary(MultiQubit multiQubit, const int controlQubit, const int 
     }
 }
 
-void multiControlledUnitary(MultiQubit multiQubit, int* controlQubits, const int numControlQubits, const int targetQubit, ComplexMatrix2 u)
+void pure_multiControlledUnitary(MultiQubit multiQubit, int* controlQubits, const int numControlQubits, const int targetQubit, ComplexMatrix2 u)
 {
     QuESTAssert(targetQubit >= 0 && targetQubit < multiQubit.numQubits, 1, __func__);
     QuESTAssert(numControlQubits > 0 && numControlQubits <= multiQubit.numQubits, 4, __func__);
@@ -486,7 +486,7 @@ void multiControlledUnitary(MultiQubit multiQubit, int* controlQubits, const int
         }
     }
 }
-void sigmaX(MultiQubit multiQubit, const int targetQubit)
+void pure_sigmaX(MultiQubit multiQubit, const int targetQubit)
 {
     QuESTAssert(targetQubit >= 0 && targetQubit < multiQubit.numQubits, 1, __func__);
 
@@ -515,7 +515,7 @@ void sigmaX(MultiQubit multiQubit, const int targetQubit)
     }
 }
 
-void controlledNot(MultiQubit multiQubit, const int controlQubit, const int targetQubit)
+void pure_controlledNot(MultiQubit multiQubit, const int controlQubit, const int targetQubit)
 {
     QuESTAssert(targetQubit >= 0 && targetQubit < multiQubit.numQubits, 1, __func__);
     QuESTAssert(controlQubit >= 0 && controlQubit < multiQubit.numQubits, 2, __func__);
@@ -552,7 +552,7 @@ void controlledNot(MultiQubit multiQubit, const int controlQubit, const int targ
     }
 }
 
-void sigmaY(MultiQubit multiQubit, const int targetQubit)
+void pure_sigmaY(MultiQubit multiQubit, const int targetQubit)
 {
     QuESTAssert(targetQubit >= 0 && targetQubit < multiQubit.numQubits, 1, __func__);
 
@@ -583,7 +583,7 @@ void sigmaY(MultiQubit multiQubit, const int targetQubit)
     }
 }
 
-void phaseGate(MultiQubit multiQubit, const int targetQubit, enum phaseGateType type)
+void pure_phaseGate(MultiQubit multiQubit, const int targetQubit, enum phaseGateType type)
 {
     QuESTAssert(targetQubit >= 0 && targetQubit < multiQubit.numQubits, 1, __func__);
 
@@ -601,7 +601,7 @@ void phaseGate(MultiQubit multiQubit, const int targetQubit, enum phaseGateType 
     }
 }
 
-void hadamard(MultiQubit multiQubit, const int targetQubit)
+void pure_hadamard(MultiQubit multiQubit, const int targetQubit)
 {
     QuESTAssert(targetQubit >= 0 && targetQubit < multiQubit.numQubits, 1, __func__);
 
@@ -658,7 +658,7 @@ static int isChunkToSkipInFindPZero(int chunkId, long long int chunkSize, int me
     return bitToCheck;
 }
 
-REAL findProbabilityOfOutcome(MultiQubit multiQubit, const int measureQubit, int outcome)
+REAL pure_findProbabilityOfOutcome(MultiQubit multiQubit, const int measureQubit, int outcome)
 {
     QuESTAssert(measureQubit >= 0 && measureQubit < multiQubit.numQubits, 2, __func__);
 
@@ -677,12 +677,12 @@ REAL findProbabilityOfOutcome(MultiQubit multiQubit, const int measureQubit, int
 }
 
 
-REAL collapseToOutcome(MultiQubit multiQubit, const int measureQubit, int outcome)
+REAL pure_collapseToOutcome(MultiQubit multiQubit, const int measureQubit, int outcome)
 {
     QuESTAssert(measureQubit >= 0 && measureQubit < multiQubit.numQubits, 2, __func__);
     QuESTAssert((outcome==0 || outcome==1), 10, __func__);
 
-    REAL totalStateProb=findProbabilityOfOutcome(multiQubit, measureQubit, outcome);
+    REAL totalStateProb = pure_findProbabilityOfOutcome(multiQubit, measureQubit, outcome);
     QuESTAssert(absReal(totalStateProb)>REAL_EPS, 8, __func__);
 
     int skipValuesWithinRank = halfMatrixBlockFitsInChunk(multiQubit.numAmpsPerChunk, measureQubit);
@@ -705,18 +705,18 @@ REAL collapseToOutcome(MultiQubit multiQubit, const int measureQubit, int outcom
 }
 
 
-int measure(MultiQubit multiQubit, int measureQubit){
+int pure_measure(MultiQubit multiQubit, int measureQubit){
     QuESTAssert(measureQubit >= 0 && measureQubit < multiQubit.numQubits, 2, __func__);
     REAL stateProb; 
-    return measureWithStats(multiQubit, measureQubit, &stateProb); 
+    return pure_measureWithStats(multiQubit, measureQubit, &stateProb); 
 }
 
-int measureWithStats(MultiQubit multiQubit, int measureQubit, REAL *stateProb){
+int pure_measureWithStats(MultiQubit multiQubit, int measureQubit, REAL *stateProb){
     QuESTAssert(measureQubit >= 0 && measureQubit < multiQubit.numQubits, 2, __func__);
 
     int outcome;
     // find probability of qubit being in state 1
-    REAL stateProbInternal = findProbabilityOfOutcome(multiQubit, measureQubit, 1);
+    REAL stateProbInternal = pure_findProbabilityOfOutcome(multiQubit, measureQubit, 1);
 
     // we can't collapse to a state that has a probability too close to zero
     if (stateProbInternal<REAL_EPS) outcome=0;

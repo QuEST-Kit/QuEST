@@ -27,7 +27,7 @@
 
 static int extractBit (const int locationOfBitFromRight, const long long int theEncodedNumber);
 
-void createMultiQubit(MultiQubit *multiQubit, int numQubits, QuESTEnv env)
+void pure_createMultiQubit(MultiQubit *multiQubit, int numQubits, QuESTEnv env)
 {
     QuESTAssert(numQubits>0, 9, __func__);
     long long int numAmps = 1L << numQubits;
@@ -59,7 +59,7 @@ void createMultiQubit(MultiQubit *multiQubit, int numQubits, QuESTEnv env)
 
 }
 
-void destroyMultiQubit(MultiQubit multiQubit, QuESTEnv env){
+void pure_destroyMultiQubit(MultiQubit multiQubit, QuESTEnv env){
     free(multiQubit.stateVec.real);
     free(multiQubit.stateVec.imag);
     if (env.numRanks>1){
@@ -68,7 +68,7 @@ void destroyMultiQubit(MultiQubit multiQubit, QuESTEnv env){
     }
 }
 
-void reportStateToScreen(MultiQubit multiQubit, QuESTEnv env, int reportRank){
+void pure_reportStateToScreen(MultiQubit multiQubit, QuESTEnv env, int reportRank){
     long long int index;
     int rank;
     if (multiQubit.numQubits<=5){
@@ -92,7 +92,7 @@ void reportStateToScreen(MultiQubit multiQubit, QuESTEnv env, int reportRank){
     } else printf("Error: reportStateToScreen will not print output for systems of more than 5 qubits.\n");
 }
 
-void getEnvironmentString(QuESTEnv env, MultiQubit multiQubit, char str[200]){
+void pure_getEnvironmentString(QuESTEnv env, MultiQubit multiQubit, char str[200]){
     int numThreads=1;
 # ifdef _OPENMP
     numThreads=omp_get_max_threads(); 
@@ -100,7 +100,7 @@ void getEnvironmentString(QuESTEnv env, MultiQubit multiQubit, char str[200]){
     sprintf(str, "%dqubits_CPU_%dranksx%dthreads", multiQubit.numQubits, env.numRanks, numThreads);
 }
 
-void initStateZero (MultiQubit multiQubit)
+void pure_initStateZero (MultiQubit multiQubit)
 {
     long long int stateVecSize;
     long long int index;
@@ -136,7 +136,7 @@ void initStateZero (MultiQubit multiQubit)
     }
 }
 
-void initStatePlus (MultiQubit multiQubit)
+void pure_initStatePlus (MultiQubit multiQubit)
 {
     long long int chunkSize, stateVecSize;
     long long int index;
@@ -169,7 +169,7 @@ void initStatePlus (MultiQubit multiQubit)
 }
 
 /* Tyson Jones, 16th May 2018 4pm */
-void initClassicalState (MultiQubit multiQubit, long long int stateInd)
+void pure_initClassicalState (MultiQubit multiQubit, long long int stateInd)
 {
     long long int stateVecSize;
     long long int index;
@@ -211,7 +211,7 @@ void initClassicalState (MultiQubit multiQubit, long long int stateInd)
  * @param[in] qubitId id of qubit to set to state 'outcome'
  * @param[in] value of qubit 'qubitId'
  */
-void initStateOfSingleQubit(MultiQubit *multiQubit, int qubitId, int outcome)
+void pure_initStateOfSingleQubit(MultiQubit *multiQubit, int qubitId, int outcome)
 {
     long long int chunkSize, stateVecSize;
     long long int index;
@@ -257,7 +257,7 @@ void initStateOfSingleQubit(MultiQubit *multiQubit, int qubitId, int outcome)
  * each component of each probability amplitude a unique floating point value. For debugging processes
  * @param[in,out] multiQubit object representing the set of qubits to be initialised
  */
-void initStateDebug (MultiQubit multiQubit)
+void pure_initStateDebug (MultiQubit multiQubit)
 {
     long long int chunkSize;
     long long int index;
@@ -290,7 +290,7 @@ void initStateDebug (MultiQubit multiQubit)
     }
 }
 
-void initializeStateFromSingleFile(MultiQubit *multiQubit, char filename[200], QuESTEnv env){
+void pure_initializeStateFromSingleFile(MultiQubit *multiQubit, char filename[200], QuESTEnv env){
     long long int chunkSize, stateVecSize;
     long long int indexInChunk, totalIndex;
 
@@ -333,7 +333,7 @@ void initializeStateFromSingleFile(MultiQubit *multiQubit, char filename[200], Q
     }
 }
 
-int compareStates(MultiQubit mq1, MultiQubit mq2, REAL precision){
+int pure_compareStates(MultiQubit mq1, MultiQubit mq2, REAL precision){
     REAL diff;
     int chunkSize = mq1.numAmpsPerChunk;
 	
@@ -1595,7 +1595,7 @@ static int extractBit (const int locationOfBitFromRight, const long long int the
     return (theEncodedNumber & ( 1LL << locationOfBitFromRight )) >> locationOfBitFromRight;
 }
 
-void controlledPhaseGate (MultiQubit multiQubit, const int idQubit1, const int idQubit2)
+void pure_controlledPhaseGate (MultiQubit multiQubit, const int idQubit1, const int idQubit2)
 {
     long long int index;
     long long int stateVecSize;
@@ -1630,7 +1630,7 @@ void controlledPhaseGate (MultiQubit multiQubit, const int idQubit1, const int i
     }
 }
 
-void multiControlledPhaseGate(MultiQubit multiQubit, int *controlQubits, int numControlQubits)
+void pure_multiControlledPhaseGate(MultiQubit multiQubit, int *controlQubits, int numControlQubits)
 {
     long long int index;
     long long int stateVecSize;
