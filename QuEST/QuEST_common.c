@@ -126,65 +126,65 @@ int validateMatrixIsUnitary(ComplexMatrix2 u){
     return 1;
 }
 
-REAL pure_getProbEl(MultiQubit multiQubit, long long int index){
-    REAL real = pure_getRealAmpEl(multiQubit, index);
-    REAL imag = pure_getImagAmpEl(multiQubit, index);
+REAL pure_getProbEl(QubitRegister qureg, long long int index){
+    REAL real = pure_getRealAmpEl(qureg, index);
+    REAL imag = pure_getImagAmpEl(qureg, index);
     return real*real + imag*imag;
 }
 
-int pure_getNumQubits(MultiQubit multiQubit){
-    return multiQubit.numQubits;
+int pure_getNumQubits(QubitRegister qureg){
+    return qureg.numQubits;
 }
 
-int pure_getNumAmps(MultiQubit multiQubit){
-    return multiQubit.numAmpsPerChunk*multiQubit.numChunks;
+int pure_getNumAmps(QubitRegister qureg){
+    return qureg.numAmpsPerChunk*qureg.numChunks;
 }
 
-void reportState(MultiQubit multiQubit){
+void reportState(QubitRegister qureg){
 	FILE *state;
 	char filename[100];
 	long long int index;
-	sprintf(filename, "state_rank_%d.csv", multiQubit.chunkId);
+	sprintf(filename, "state_rank_%d.csv", qureg.chunkId);
 	state = fopen(filename, "w");
-	if (multiQubit.chunkId==0) fprintf(state, "real, imag\n");
+	if (qureg.chunkId==0) fprintf(state, "real, imag\n");
 
-	for(index=0; index<multiQubit.numAmpsPerChunk; index++){
+	for(index=0; index<qureg.numAmpsPerChunk; index++){
 		# if QuEST_PREC==1 || QuEST_PREC==2
-		fprintf(state, "%.12f, %.12f\n", multiQubit.stateVec.real[index], multiQubit.stateVec.imag[index]);
+		fprintf(state, "%.12f, %.12f\n", qureg.stateVec.real[index], qureg.stateVec.imag[index]);
 		# elif QuEST_PREC == 4
-		fprintf(state, "%.12Lf, %.12Lf\n", multiQubit.stateVec.real[index], multiQubit.stateVec.imag[index]);
+		fprintf(state, "%.12Lf, %.12Lf\n", qureg.stateVec.real[index], qureg.stateVec.imag[index]);
 		#endif
 	}
 	fclose(state);
 }
 
-void reportMultiQubitParams(MultiQubit multiQubit){
-    long long int numAmps = 1L << multiQubit.numQubits;
-    long long int numAmpsPerRank = numAmps/multiQubit.numChunks;
-    if (multiQubit.chunkId==0){
+void reportQubitRegisterParams(QubitRegister qureg){
+    long long int numAmps = 1L << qureg.numQubits;
+    long long int numAmpsPerRank = numAmps/qureg.numChunks;
+    if (qureg.chunkId==0){
         printf("QUBITS:\n");
-        printf("Number of qubits is %d.\n", multiQubit.numQubits);
+        printf("Number of qubits is %d.\n", qureg.numQubits);
         printf("Number of amps is %lld.\n", numAmps);
         printf("Number of amps per rank is %lld.\n", numAmpsPerRank);
     }
 }
 
-void pure_sigmaZ(MultiQubit multiQubit, const int targetQubit)
+void pure_sigmaZ(QubitRegister qureg, const int targetQubit)
 {
-    pure_phaseGate(multiQubit, targetQubit, SIGMA_Z);
+    pure_phaseGate(qureg, targetQubit, SIGMA_Z);
 }
 
-void pure_sGate(MultiQubit multiQubit, const int targetQubit)
+void pure_sGate(QubitRegister qureg, const int targetQubit)
 {
-    pure_phaseGate(multiQubit, targetQubit, S_GATE);
+    pure_phaseGate(qureg, targetQubit, S_GATE);
 } 
 
-void pure_tGate(MultiQubit multiQubit, const int targetQubit)
+void pure_tGate(QubitRegister qureg, const int targetQubit)
 {
-    pure_phaseGate(multiQubit, targetQubit, T_GATE);
+    pure_phaseGate(qureg, targetQubit, T_GATE);
 }
 
-void pure_rotateAroundAxis(MultiQubit multiQubit, const int rotQubit, REAL angle, Vector axis){
+void pure_rotateAroundAxis(QubitRegister qureg, const int rotQubit, REAL angle, Vector axis){
 
     REAL mag = sqrt(pow(axis.x,2) + pow(axis.y,2) + pow(axis.z,2));
     Vector unitAxis = {axis.x/mag, axis.y/mag, axis.z/mag};
@@ -194,28 +194,28 @@ void pure_rotateAroundAxis(MultiQubit multiQubit, const int rotQubit, REAL angle
     alpha.imag = -sin(angle/2.0)*unitAxis.z;	
     beta.real = sin(angle/2.0)*unitAxis.y;
     beta.imag = -sin(angle/2.0)*unitAxis.x;
-    pure_compactUnitary(multiQubit, rotQubit, alpha, beta);
+    pure_compactUnitary(qureg, rotQubit, alpha, beta);
 }
 
-void pure_rotateX(MultiQubit multiQubit, const int rotQubit, REAL angle){
+void pure_rotateX(QubitRegister qureg, const int rotQubit, REAL angle){
 
     Vector unitAxis = {1, 0, 0};
-    pure_rotateAroundAxis(multiQubit, rotQubit, angle, unitAxis);
+    pure_rotateAroundAxis(qureg, rotQubit, angle, unitAxis);
 }
 
-void pure_rotateY(MultiQubit multiQubit, const int rotQubit, REAL angle){
+void pure_rotateY(QubitRegister qureg, const int rotQubit, REAL angle){
 
     Vector unitAxis = {0, 1, 0};
-    pure_rotateAroundAxis(multiQubit, rotQubit, angle, unitAxis);
+    pure_rotateAroundAxis(qureg, rotQubit, angle, unitAxis);
 }
 
-void pure_rotateZ(MultiQubit multiQubit, const int rotQubit, REAL angle){
+void pure_rotateZ(QubitRegister qureg, const int rotQubit, REAL angle){
 
     Vector unitAxis = {0, 0, 1};
-    pure_rotateAroundAxis(multiQubit, rotQubit, angle, unitAxis);
+    pure_rotateAroundAxis(qureg, rotQubit, angle, unitAxis);
 }
 
-void pure_controlledRotateAroundAxis(MultiQubit multiQubit, const int controlQubit, const int targetQubit, REAL angle, Vector axis){
+void pure_controlledRotateAroundAxis(QubitRegister qureg, const int controlQubit, const int targetQubit, REAL angle, Vector axis){
 
     REAL mag = sqrt(pow(axis.x,2) + pow(axis.y,2) + pow(axis.z,2));
     Vector unitAxis = {axis.x/mag, axis.y/mag, axis.z/mag};
@@ -225,25 +225,25 @@ void pure_controlledRotateAroundAxis(MultiQubit multiQubit, const int controlQub
     alpha.imag = -sin(angle/2.0)*unitAxis.z;	
     beta.real = sin(angle/2.0)*unitAxis.y;
     beta.imag = -sin(angle/2.0)*unitAxis.x;
-    pure_controlledCompactUnitary(multiQubit, controlQubit, targetQubit, alpha, beta);
+    pure_controlledCompactUnitary(qureg, controlQubit, targetQubit, alpha, beta);
 }
 
-void pure_controlledRotateX(MultiQubit multiQubit, const int controlQubit, const int targetQubit, REAL angle){
+void pure_controlledRotateX(QubitRegister qureg, const int controlQubit, const int targetQubit, REAL angle){
 
     Vector unitAxis = {1, 0, 0};
-    pure_controlledRotateAroundAxis(multiQubit, controlQubit, targetQubit, angle, unitAxis);
+    pure_controlledRotateAroundAxis(qureg, controlQubit, targetQubit, angle, unitAxis);
 }
 
-void pure_controlledRotateY(MultiQubit multiQubit, const int controlQubit, const int targetQubit, REAL angle){
+void pure_controlledRotateY(QubitRegister qureg, const int controlQubit, const int targetQubit, REAL angle){
 
     Vector unitAxis = {0, 1, 0};
-    pure_controlledRotateAroundAxis(multiQubit, controlQubit, targetQubit, angle, unitAxis);
+    pure_controlledRotateAroundAxis(qureg, controlQubit, targetQubit, angle, unitAxis);
 }
 
-void pure_controlledRotateZ(MultiQubit multiQubit, const int controlQubit, const int targetQubit, REAL angle){
+void pure_controlledRotateZ(QubitRegister qureg, const int controlQubit, const int targetQubit, REAL angle){
 
     Vector unitAxis = {0, 0, 1};
-    pure_controlledRotateAroundAxis(multiQubit, controlQubit, targetQubit, angle, unitAxis);
+    pure_controlledRotateAroundAxis(qureg, controlQubit, targetQubit, angle, unitAxis);
 }
 
 
