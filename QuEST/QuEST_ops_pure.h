@@ -1,10 +1,18 @@
+// Distributed under MIT licence. See https://github.com/aniabrown/QuEST_GPU/blob/master/LICENCE.txt for details
+
+/** @file
+ * Functions operating upon pure states which are provided by a hardware-specific backend
+ */
+
+# ifndef QuEST_OPS_PURE
+# define QuEST_OPS_PURE
 
 # include "QuEST.h"
 # include "QuEST_precision.h"
 
-#ifdef __cplusplus
+# ifdef __cplusplus
 extern "C" {
-#endif
+# endif
 
 void pure_initializeStateFromSingleFile(MultiQubit *multiQubit, char filename[200], QuESTEnv env);
 	
@@ -92,7 +100,8 @@ int pure_measure(MultiQubit multiQubit, int measureQubit);
 
 int pure_measureWithStats(MultiQubit multiQubit, int measureQubit, REAL *stateProb);
 
-
-#ifdef __cplusplus
+# ifdef __cplusplus
 }
-#endif
+# endif
+
+# endif //QuEST_OPS_PURE

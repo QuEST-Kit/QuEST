@@ -1,3 +1,8 @@
+// Distributed under MIT licence. See https://github.com/aniabrown/QuEST_GPU/blob/master/LICENCE.txt for details
+
+/** @file
+ * Implements the QuEST.h API, in a hardware-agnostic way, for both pure and mixed states
+ */
 
 # include "QuEST.h"
 # include "QuEST_precision.h"
@@ -6,18 +11,6 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
-
-
-	/*
-for e in y:
-	sig = e[5:-2]
-	name, allargs = sig.replace(')','').strip().split('(')
-	args = allargs.split(', ')
-	params = [arg.split(' ')[-1].replace('*','') for arg in args]
-	call = 'pure_' + name + '(' + ', '.join(params) + ');'
-	print(e[:-2] + ' {\n\t' + call + '\n}\n')
-	*/
-
 	
 int compareStates(MultiQubit mq1, MultiQubit mq2, REAL precision){
 	return pure_compareStates(mq1, mq2, precision);
@@ -73,20 +66,6 @@ int measureWithStats(MultiQubit multiQubit, int measureQubit, REAL *stateProb) {
 
 
 
-
-
-void initializeStateFromSingleFile(MultiQubit *multiQubit, char filename[200], QuESTEnv env) {
-	pure_initializeStateFromSingleFile(multiQubit, filename, env);
-}
-
-void reportStateToScreen(MultiQubit multiQubit, QuESTEnv env, int reportRank)  {
-	pure_reportStateToScreen(multiQubit, env, reportRank);
-}
-
-void phaseGate(MultiQubit multiQubit, const int targetQubit, enum phaseGateType type) {
-	pure_phaseGate(multiQubit, targetQubit, type);
-}
-
 void createMultiQubit(MultiQubit *multiQubit, int numQubits, QuESTEnv env) {
 	pure_createMultiQubit(multiQubit, numQubits, env);
 }
@@ -109,6 +88,18 @@ void initStateDebug(MultiQubit multiQubit) {
 
 void initClassicalState(MultiQubit multiQubit, long long int stateInd) {
 	pure_initClassicalState(multiQubit, stateInd);
+}
+
+void initializeStateFromSingleFile(MultiQubit *multiQubit, char filename[200], QuESTEnv env) {
+	pure_initializeStateFromSingleFile(multiQubit, filename, env);
+}
+
+void reportStateToScreen(MultiQubit multiQubit, QuESTEnv env, int reportRank)  {
+	pure_reportStateToScreen(multiQubit, env, reportRank);
+}
+
+void phaseGate(MultiQubit multiQubit, const int targetQubit, enum phaseGateType type) {
+	pure_phaseGate(multiQubit, targetQubit, type);
 }
 
 void multiControlledPhaseGate(MultiQubit multiQubit, int *controlQubits, int numControlQubits) {
@@ -198,9 +189,6 @@ void hadamard(MultiQubit multiQubit, const int targetQubit) {
 void controlledNot(MultiQubit multiQubit, const int controlQubit, const int targetQubit) {
 	pure_controlledNot(multiQubit, controlQubit, targetQubit);
 }
-
-
-
 
 #ifdef __cplusplus
 }

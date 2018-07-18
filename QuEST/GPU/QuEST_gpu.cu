@@ -1,12 +1,11 @@
 // Distributed under MIT licence. See https://github.com/aniabrown/QuEST_GPU/blob/master/LICENCE.txt for details
 
 /** @file
-  An implementation of the API in qubits.h for a local (non-MPI) environment.
+ * An implementation of the pure backend in ../QuEST_ops_pure.h for a GPU environment.
  */
 
-# include "../QuEST_newinternal.h"
-
 # include "../QuEST.h"
+# include "../QuEST_internal.h"
 # include "../QuEST_precision.h"
 # include "../mt19937ar.h"
 

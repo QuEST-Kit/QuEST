@@ -1,9 +1,13 @@
+// Distributed under MIT licence. See https://github.com/aniabrown/QuEST_GPU/blob/master/LICENCE.txt for details
 
-# include "QuEST_newinternal.h"
-# include "QuEST_ops_pure.h"
+/** @file
+ * Internal and pure-state functions which are hardware-agnostic
+ */
 
 # include "QuEST.h"
+# include "QuEST_internal.h"
 # include "QuEST_precision.h"
+# include "QuEST_ops_pure.h"
 # include "mt19937ar.h"
 
 # define _BSD_SOURCE
@@ -30,11 +34,9 @@ const char* errorCodes[] = {
     "Could not open file" // 11
 };
 
-
 #ifdef __cplusplus
 extern "C" {
 #endif
-
 
 void exitWithError(int errorCode, const char* func){
     printf("!!!\n");
@@ -48,7 +50,6 @@ void QuESTAssert(int isValid, int errorCode, const char* func){
     if (!isValid) exitWithError(errorCode, func);
 }
 
-
 unsigned long int hashString(char *str){
     unsigned long int hash = 5381;
     int c;
@@ -58,7 +59,6 @@ unsigned long int hashString(char *str){
 
     return hash;    
 }
-
 
 void seedQuESTDefault(){
     // init MT random number generator with three keys -- time, pid and a hash of hostname 
@@ -105,7 +105,6 @@ int validateUnitVector(REAL ux, REAL uy, REAL uz){
     else return 1;
 }
 
-
 int validateMatrixIsUnitary(ComplexMatrix2 u){
 
     if ( absReal(u.r0c0.real*u.r0c0.real 
@@ -141,7 +140,6 @@ int pure_getNumAmps(MultiQubit multiQubit){
     return multiQubit.numAmpsPerChunk*multiQubit.numChunks;
 }
 
-
 void reportState(MultiQubit multiQubit){
 	FILE *state;
 	char filename[100];
@@ -170,12 +168,6 @@ void reportMultiQubitParams(MultiQubit multiQubit){
         printf("Number of amps per rank is %lld.\n", numAmpsPerRank);
     }
 }
-
-
-
-
-
-
 
 void pure_sigmaZ(MultiQubit multiQubit, const int targetQubit)
 {

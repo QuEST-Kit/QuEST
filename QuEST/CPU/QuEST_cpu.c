@@ -1,29 +1,26 @@
-// Distributed under MIT licence. See https://github.com/aniabrown/QuEST/blob/master/LICENCE.txt 
-// for details 
+// Distributed under MIT licence. See https://github.com/aniabrown/QuEST/blob/master/LICENCE.txt for details 
 
 /** @file qubits.c
- * The core of the QuEST Library.
+ * The core of the CPU backend functionality. The CPU/MPI implementations of the pure state functions in
+ * ../QuEST_ops_pure.h are in QuEST_cpu_local.c and QuEST_cpu_distributed.c which mostly wrap the core
+ * functions defined here
  */
 
-# include "../QuEST_newinternal.h"
-
 # include "../QuEST.h"
+# include "../QuEST_internal.h"
 # include "../QuEST_precision.h"
 # include "../mt19937ar.h"
-# include "QuEST_internal.h"
+
+# include "QuEST_cpu_internal.h"
 
 # include <math.h>  
 # include <stdio.h>
 # include <stdlib.h>
 # include <assert.h>
 
-
-
 # ifdef _OPENMP
 # include <omp.h>
 # endif
-
-
 
 static int extractBit (const int locationOfBitFromRight, const long long int theEncodedNumber);
 

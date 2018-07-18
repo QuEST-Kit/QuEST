@@ -1,18 +1,18 @@
-// Distributed under MIT licence. See https://github.com/aniabrown/QuEST/blob/master/LICENCE.txt 
-// for details 
+// Distributed under MIT licence. See https://github.com/aniabrown/QuEST/blob/master/LICENCE.txt for details 
 
 /** @file
-  An implementation of the API in qubits.h for an MPI environment.
-  */
-
-# include "../QuEST_newinternal.h"
+ * An implementation of the pure backend in ../QuEST_ops_pure.h for an MPI environment.
+ * Mostly pure-state wrappers for the local/distributed functions implemented in QuEST_cpu
+ */
 
 # include "../QuEST.h"
+# include "../QuEST_internal.h"
 # include "../QuEST_precision.h"
 # include "../mt19937ar.h"
-# include "QuEST_internal.h"
 
-#define _BSD_SOURCE // defining prototype for gethostname 
+# include "QuEST_cpu_internal.h"
+
+#define _BSD_SOURCE
 # include <unistd.h>
 # include <mpi.h>
 # include <stdlib.h>

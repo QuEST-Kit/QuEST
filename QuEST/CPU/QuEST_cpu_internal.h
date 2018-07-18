@@ -1,18 +1,15 @@
 // Distributed under MIT licence. See https://github.com/aniabrown/QuEST/blob/master/LICENCE.txt for details 
 
 /** @file
- * Internal functions used to implement the public facing API in qubits.h. Do not call these functions
- * directly. In general, qubits_env_local.c and qubits_env_mpi.c will implement the public API by choosing
- * the correct function or combination of functions to use from those included here. The remaining functions
- * are defined in qubits.c 
+ * Internal functions used to implement the pure backend in ../QuEST_ops_pure.h. Do not call these functions
+ * directly. In general, qubits_cpu_local.c and qubits_cpu_mpi.c will implement the pure backend by choosing
+ * the correct function or combination of functions to use from those included here, which are defined in QuEST_cpu.c
  */
 
-# ifndef QuEST_INTERNAL
-# define QuEST_INTERNAL
+# ifndef QuEST_CPU_INTERNAL
+# define QuEST_CPU_INTERNAL
 
 # include "../QuEST_precision.h"
-
-
 
 void compactUnitaryLocal (MultiQubit multiQubit, const int targetQubit, Complex alpha, Complex beta);
 
