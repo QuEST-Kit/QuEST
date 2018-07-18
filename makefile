@@ -21,10 +21,10 @@ SOURCES = tutorial_example
 QUEST_DIR = QuEST
 
 # compiler to use, which should support both C and C++, to be wrapped by GPU/MPI compilers
-COMPILER = gcc
+COMPILER = clang++-3.7
 
 # type of above compiler, one of {GNU, INTEL, CLANG}, used for setting compiler flags
-COMPILER_TYPE = GNU
+COMPILER_TYPE = CLANG
 
 # hardwares to target: 1 means use, 0 means don't use
 MULTITHREADED = 0
@@ -38,7 +38,7 @@ GPU_COMPUTE_CAPABILITY = 30
 SUPPRESS_WARNING = 0
 
 # whether to use single, double or quad floating point precision in the state-vector {1,2,4}
-PRECISION = 2
+PRECISION = 4
 
 
 
@@ -224,13 +224,13 @@ MPI_WRAPPED_COMP = I_MPI_CC=$(COMPILER) OMPI_CC=$(COMPILER) MPICH_CC=$(COMPILER)
 # --- targets
 #
 
-OBJ = QuEST.o mt19937ar.o
+OBJ = mt19937ar.o QuEST_common.o
 ifeq ($(GPUACCELERATED), 1)
     OBJ += QuEST_env_localGPU.o
 else ifeq ($(DISTRIBUTED), 1)
-    OBJ += QuEST_env_mpi.o
+    OBJ += QuEST.o QuEST_env_mpi.o
 else
-    OBJ += QuEST_env_local.o
+    OBJ += QuEST.o QuEST_env_local.o
 endif
 OBJ += $(addsuffix .o, $(SOURCES))
 

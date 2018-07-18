@@ -12,7 +12,7 @@
 
 # include "../QuEST_precision.h"
 
-extern const char* errorCodes[];
+
 
 void compactUnitaryLocal (MultiQubit multiQubit, const int targetQubit, Complex alpha, Complex beta);
 
@@ -101,22 +101,7 @@ REAL collapseToOutcomeDistributedRenorm (MultiQubit multiQubit, const int measur
 
 void collapseToOutcomeDistributedSetZero(MultiQubit multiQubit, const int measureQubit);
 
-// Validation
 
-int validateMatrixIsUnitary(ComplexMatrix2 u);
 
-int validateAlphaBeta(Complex alpha, Complex beta);
-
-int validateUnitVector(REAL ux, REAL uy, REAL uz);
-
-// Helper functions in qubits_env_local.c and qubits_env_mpi.c that aren't part of the public API
-
-void phaseGate(MultiQubit multiQubit, const int targetQubit, enum phaseGateType type);
-
-void exitWithError(int errorCode, const char *func);
-
-void QuESTAssert(int isValid, int errorCode, const char *func);
-
-unsigned long int hashString(char *str);
 
 # endif

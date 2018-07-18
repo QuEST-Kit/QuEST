@@ -4,10 +4,11 @@
   An implementation of the API in qubits.h for a local (non-MPI) environment.
  */
 
+# include "../QuEST_newinternal.h"
+
 # include "../QuEST.h"
 # include "../QuEST_precision.h"
 # include "../mt19937ar.h"
-# include "QuEST_internal.h"
 
 # include <stdlib.h>
 # include <stdio.h>
@@ -1429,18 +1430,6 @@ int measureWithStats(MultiQubit multiQubit, int measureQubit, REAL *stateProb){
 
     *stateProb = stateProbInternal;
     return outcome;
-}
-
-void exitWithError(int errorCode, const char* func){
-    printf("!!!\n");
-    printf("QuEST Error in function %s: %s\n", func, errorCodes[errorCode]);
-    printf("!!!\n");
-    printf("exiting..\n");
-    exit(errorCode);
-}
-
-void QuESTAssert(int isValid, int errorCode, const char* func){
-    if (!isValid) exitWithError(errorCode, func);
 }
 
 #ifdef __cplusplus
