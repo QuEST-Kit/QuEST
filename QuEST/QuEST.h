@@ -50,15 +50,7 @@ Qubits are zero-based
 */
 typedef struct QubitRegister
 {
-	//! Computational state amplitudes - a subset thereof in the MPI version
-	ComplexArray stateVec; 
-	//! Temporary storage for a chunk of the state vector received from another process in the MPI version
-	ComplexArray pairStateVec;
-	//! Storage for wavefunction amplitudes in the GPU version
-	ComplexArray deviceStateVec;
-	//! Storage for reduction of probabilities on GPU
-	REAL *firstLevelReduction, *secondLevelReduction;
-	//! Number of qubits in the state
+	//! Number of qubits in the state - double the number represented for mixed states
 	int numQubits;
 	//! Number of probability amplitudes held in stateVec by this process
 	//! In the non-MPI version, this is the total number of amplitudes
@@ -67,6 +59,19 @@ typedef struct QubitRegister
 	int chunkId;
 	//! Number of chunks the state vector is broken up into -- the number of MPI processes used
 	int numChunks;
+	
+	//! Computational state amplitudes - a subset thereof in the MPI version
+	ComplexArray stateVec; 
+	//! Temporary storage for a chunk of the state vector received from another process in the MPI version
+	ComplexArray pairStateVec;
+	//! Storage for wavefunction amplitudes in the GPU version
+	ComplexArray deviceStateVec;
+	//! Storage for reduction of probabilities on GPU
+	REAL *firstLevelReduction, *secondLevelReduction;
+
+	//! Whether this instance is a density-state representation
+	int isDensityMatrix;
+	
 } QubitRegister;
 
 /** Information about the environment the program is running in.
