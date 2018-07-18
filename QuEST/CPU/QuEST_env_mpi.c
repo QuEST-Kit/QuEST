@@ -704,13 +704,6 @@ REAL pure_collapseToOutcome(MultiQubit multiQubit, const int measureQubit, int o
     return totalStateProb;
 }
 
-
-int pure_measure(MultiQubit multiQubit, int measureQubit){
-    QuESTAssert(measureQubit >= 0 && measureQubit < multiQubit.numQubits, 2, __func__);
-    REAL stateProb; 
-    return pure_measureWithStats(multiQubit, measureQubit, &stateProb); 
-}
-
 int pure_measureWithStats(MultiQubit multiQubit, int measureQubit, REAL *stateProb){
     QuESTAssert(measureQubit >= 0 && measureQubit < multiQubit.numQubits, 2, __func__);
 
@@ -749,4 +742,10 @@ int pure_measureWithStats(MultiQubit multiQubit, int measureQubit, REAL *statePr
 
     *stateProb = stateProbInternal;
     return outcome;
+}
+
+int pure_measure(MultiQubit multiQubit, int measureQubit){
+    QuESTAssert(measureQubit >= 0 && measureQubit < multiQubit.numQubits, 2, __func__);
+    REAL stateProb; 
+    return pure_measureWithStats(multiQubit, measureQubit, &stateProb); 
 }

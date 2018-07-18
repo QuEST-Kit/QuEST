@@ -6,6 +6,14 @@
 extern "C" {
 #endif
 
+void pure_initializeStateFromSingleFile(MultiQubit *multiQubit, char filename[200], QuESTEnv env);
+	
+void pure_reportStateToScreen(MultiQubit multiQubit, QuESTEnv env, int reportRank);
+
+int pure_compareStates(MultiQubit mq1, MultiQubit mq2, REAL precision);
+
+void pure_initStateOfSingleQubit(MultiQubit *multiQubit, int qubitId, int outcome);
+
 void pure_phaseGate(MultiQubit multiQubit, const int targetQubit, enum phaseGateType type);
 
 void pure_createMultiQubit(MultiQubit *multiQubit, int numQubits, QuESTEnv env);
@@ -19,6 +27,8 @@ int pure_getNumAmps(MultiQubit multiQubit);
 void pure_initStateZero(MultiQubit multiQubit);
 
 void pure_initStatePlus(MultiQubit multiQubit);
+
+void pure_initStateDebug(MultiQubit multiQubit);
 
 void pure_initClassicalState(MultiQubit multiQubit, long long int stateInd);
 
