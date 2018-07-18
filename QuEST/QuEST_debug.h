@@ -32,7 +32,7 @@ void initStateDebug(QubitRegister qureg);
 /** Initialises the wavefunction amplitudes according to those specified in a file.
  * For debugging purpsoses 
  */
-void initializeStateFromSingleFile(QubitRegister *qureg, char filename[200], QuESTEnv env);
+void initStateFromSingleFile(QubitRegister *qureg, char filename[200], QuESTEnv env);
 
 /** Return whether two given wavefunctions are equivalent within a given precision
  * Global phase included in equivalence check. For debugging purposes.

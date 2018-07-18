@@ -1,7 +1,7 @@
 // Distributed under MIT licence. See https://github.com/aniabrown/QuEST_GPU/blob/master/LICENCE.txt for details
 
 /** @file
- * Implements the QuEST.h API, in a hardware-agnostic way, for both pure and mixed states
+ * Implements the QuEST.h API in a hardware-agnostic way, for both pure and mixed states
  */
 
 # include "QuEST.h"
@@ -17,6 +17,10 @@ extern "C" {
 void createQubitRegister(QubitRegister *qureg, int numQubits, QuESTEnv env) {
 	pure_createQubitRegister(qureg, numQubits, env);
 }
+
+
+
+
 
 void destroyQubitRegister(QubitRegister qureg, QuESTEnv env) {
 	pure_destroyQubitRegister(qureg, env);
@@ -38,8 +42,8 @@ void initClassicalState(QubitRegister qureg, long long int stateInd) {
 	pure_initClassicalState(qureg, stateInd);
 }
 
-void initializeStateFromSingleFile(QubitRegister *qureg, char filename[200], QuESTEnv env) {
-	pure_initializeStateFromSingleFile(qureg, filename, env);
+void initStateFromSingleFile(QubitRegister *qureg, char filename[200], QuESTEnv env) {
+	pure_initStateFromSingleFile(qureg, filename, env);
 }
 
 void reportStateToScreen(QubitRegister qureg, QuESTEnv env, int reportRank)  {

@@ -28,10 +28,10 @@ extern "C" {
 void pure_createQubitRegister(QubitRegister *qureg, int numQubits, QuESTEnv env)
 {
     QuESTAssert(numQubits>0, 9, __func__);
-    // Allocate CPU memory
+	
+    // allocate CPU memory
     long long int numAmps = 1L << numQubits;
     long long int numAmpsPerRank = numAmps/env.numRanks;
-
     qureg->stateVec.real = (REAL*) malloc(numAmpsPerRank * sizeof(qureg->stateVec.real));
     qureg->stateVec.imag = (REAL*) malloc(numAmpsPerRank * sizeof(qureg->stateVec.imag));
     if (env.numRanks>1){
@@ -39,12 +39,12 @@ void pure_createQubitRegister(QubitRegister *qureg, int numQubits, QuESTEnv env)
         qureg->pairStateVec.imag = (REAL*) malloc(numAmpsPerRank * sizeof(qureg->pairStateVec.imag));
     }
 
+	// check cpu memory allocation was successful
     if ( (!(qureg->stateVec.real) || !(qureg->stateVec.imag))
             && numAmpsPerRank ) {
         printf("Could not allocate memory!\n");
         exit (EXIT_FAILURE);
     }
-
     if ( env.numRanks>1 && (!(qureg->pairStateVec.real) || !(qureg->pairStateVec.imag))
             && numAmpsPerRank ) {
         printf("Could not allocate memory!\n");
@@ -55,14 +55,16 @@ void pure_createQubitRegister(QubitRegister *qureg, int numQubits, QuESTEnv env)
     qureg->numAmpsPerChunk = numAmpsPerRank;
     qureg->chunkId = env.rank;
     qureg->numChunks = env.numRanks;
+	qureg->isDensityMatrix = 0;
 
-    // Allocate GPU memory
+    // allocate GPU memory
     cudaMalloc(&(qureg->deviceStateVec.real), qureg->numAmpsPerChunk*sizeof(*(qureg->deviceStateVec.real)));
     cudaMalloc(&(qureg->deviceStateVec.imag), qureg->numAmpsPerChunk*sizeof(*(qureg->deviceStateVec.imag)));
     cudaMalloc(&(qureg->firstLevelReduction), ceil(qureg->numAmpsPerChunk/(REAL)REDUCE_SHARED_SIZE)*sizeof(REAL));
     cudaMalloc(&(qureg->secondLevelReduction), ceil(qureg->numAmpsPerChunk/(REAL)(REDUCE_SHARED_SIZE*REDUCE_SHARED_SIZE))*
             sizeof(REAL));
 
+    // check gpu memory allocation was successful
     if (!(qureg->deviceStateVec.real) || !(qureg->deviceStateVec.imag)){
         printf("Could not allocate memory on GPU!\n");
         exit (EXIT_FAILURE);
@@ -333,7 +335,7 @@ void pure_initStateOfSingleQubit(QubitRegister *qureg, int qubitId, int outcome)
     initStateOfSingleQubitKernel<<<CUDABlocks, threadsPerCUDABlock>>>(qureg->numAmpsPerChunk, qureg->deviceStateVec.real, qureg->deviceStateVec.imag, qubitId, outcome);
 }
 
-void pure_initializeStateFromSingleFile(QubitRegister *qureg, char filename[200], QuESTEnv env){
+void pure_initStateFromSingleFile(QubitRegister *qureg, char filename[200], QuESTEnv env){
     long long int chunkSize, stateVecSize;
     long long int indexInChunk, totalIndex;
 

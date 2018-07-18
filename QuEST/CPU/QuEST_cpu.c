@@ -53,7 +53,7 @@ void pure_createQubitRegister(QubitRegister *qureg, int numQubits, QuESTEnv env)
     qureg->numAmpsPerChunk = numAmpsPerRank;
     qureg->chunkId = env.rank;
     qureg->numChunks = env.numRanks;
-
+	qureg->isDensityMatrix = 0;
 }
 
 void pure_destroyQubitRegister(QubitRegister qureg, QuESTEnv env){
@@ -287,7 +287,7 @@ void pure_initStateDebug (QubitRegister qureg)
     }
 }
 
-void pure_initializeStateFromSingleFile(QubitRegister *qureg, char filename[200], QuESTEnv env){
+void pure_initStateFromSingleFile(QubitRegister *qureg, char filename[200], QuESTEnv env){
     long long int chunkSize, stateVecSize;
     long long int indexInChunk, totalIndex;
 

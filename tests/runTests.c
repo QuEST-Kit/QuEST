@@ -42,7 +42,7 @@ int test_initStateZero(char testName[200]){
     initStateZero(mq);
 
     sprintf(filename, "%s%s%d.out", PATH_TO_TESTS, testName, count++); 	
-    initializeStateFromSingleFile(&mqVerif, filename, env);
+    initStateFromSingleFile(&mqVerif, filename, env);
 
     passed = compareStates(mq, mqVerif, COMPARE_PRECISION);
     destroyQubitRegister(mq, env);
@@ -65,7 +65,7 @@ int test_initStatePlus(char testName[200]){
     initStatePlus(mq);
 
     sprintf(filename, "%s%s%d.out", PATH_TO_TESTS, testName, count++); 	
-    initializeStateFromSingleFile(&mqVerif, filename, env);
+    initStateFromSingleFile(&mqVerif, filename, env);
 
     passed = compareStates(mq, mqVerif, COMPARE_PRECISION);
     destroyQubitRegister(mq, env);
@@ -118,7 +118,7 @@ int test_sigmaX(char testName[200]){
         sigmaX(mq, rotateQubit);
 
         sprintf(filename, "%s%s%d.out", PATH_TO_TESTS, testName, count++); 	
-        initializeStateFromSingleFile(&mqVerif, filename, env);
+        initStateFromSingleFile(&mqVerif, filename, env);
 
         if (passed) passed = compareStates(mq, mqVerif, COMPARE_PRECISION);
     }
@@ -147,7 +147,7 @@ int test_sigmaY(char testName[200]){
         sigmaY(mq, rotateQubit);
 
         sprintf(filename, "%s%s%d.out", PATH_TO_TESTS, testName, count++); 	
-        initializeStateFromSingleFile(&mqVerif, filename, env);
+        initStateFromSingleFile(&mqVerif, filename, env);
 
         if (passed) passed = compareStates(mq, mqVerif, COMPARE_PRECISION);
     }
@@ -176,7 +176,7 @@ int test_sigmaZ(char testName[200]){
         sigmaZ(mq, rotateQubit);
 
         sprintf(filename, "%s%s%d.out", PATH_TO_TESTS, testName, count++); 	
-        initializeStateFromSingleFile(&mqVerif, filename, env);
+        initStateFromSingleFile(&mqVerif, filename, env);
 
         if (passed) passed = compareStates(mq, mqVerif, COMPARE_PRECISION);
     }
@@ -205,7 +205,7 @@ int test_hadamard(char testName[200]){
         hadamard(mq, rotateQubit);
 
         sprintf(filename, "%s%s%d.out", PATH_TO_TESTS, testName, count++); 	
-        initializeStateFromSingleFile(&mqVerif, filename, env);
+        initStateFromSingleFile(&mqVerif, filename, env);
 
         if (passed) passed = compareStates(mq, mqVerif, COMPARE_PRECISION);
     }
@@ -233,7 +233,7 @@ int test_sGate(char testName[200]){
         sGate(mq, rotateQubit);
 
         sprintf(filename, "%s%s%d.out", PATH_TO_TESTS, testName, count++); 	
-        initializeStateFromSingleFile(&mqVerif, filename, env);
+        initStateFromSingleFile(&mqVerif, filename, env);
 
         if (passed) passed = compareStates(mq, mqVerif, COMPARE_PRECISION);
     }
@@ -261,7 +261,7 @@ int test_tGate(char testName[200]){
         tGate(mq, rotateQubit);
 
         sprintf(filename, "%s%s%d.out", PATH_TO_TESTS, testName, count++); 	
-        initializeStateFromSingleFile(&mqVerif, filename, env);
+        initStateFromSingleFile(&mqVerif, filename, env);
 
         if (passed) passed = compareStates(mq, mqVerif, COMPARE_PRECISION);
     }
@@ -293,7 +293,7 @@ int test_controlledNot(char testName[200]){
             controlledNot(mq, controlQubit, rotateQubit);
 
             sprintf(filename, "%s%s%d.out", PATH_TO_TESTS, testName, count++); 	
-            initializeStateFromSingleFile(&mqVerif, filename, env);
+            initStateFromSingleFile(&mqVerif, filename, env);
 
             if (passed) passed = compareStates(mq, mqVerif, COMPARE_PRECISION);
         }
@@ -326,7 +326,7 @@ int test_controlledPhaseGate(char testName[200]){
             controlledPhaseGate(mq, rotateQubit, controlQubit);
 
             sprintf(filename, "%s%s%d.out", PATH_TO_TESTS, testName, count++); 	
-            initializeStateFromSingleFile(&mqVerif, filename, env);
+            initStateFromSingleFile(&mqVerif, filename, env);
 
             if (passed) passed = compareStates(mq, mqVerif, COMPARE_PRECISION);
         }
@@ -353,7 +353,7 @@ int test_multiControlledPhaseGate(char testName[200]){
     multiControlledPhaseGate(mq, qubits, 4);
 
     sprintf(filename, "%s%s%d.out", PATH_TO_TESTS, testName, count++); 	
-    initializeStateFromSingleFile(&mqVerif, filename, env);
+    initStateFromSingleFile(&mqVerif, filename, env);
 
     passed = compareStates(mq, mqVerif, COMPARE_PRECISION);
 
@@ -526,7 +526,7 @@ int test_controlledCompactUnitary(char testName[200]){
             controlledCompactUnitary(mq, controlQubit, rotQubit, alpha, beta);
 
             sprintf(filename, "%s%s%d.out", PATH_TO_TESTS, testName, count++); 	
-            initializeStateFromSingleFile(&mqVerif, filename, env);
+            initStateFromSingleFile(&mqVerif, filename, env);
 
             if (passed) passed = compareStates(mq, mqVerif, COMPARE_PRECISION);
         }
@@ -649,7 +649,7 @@ int test_multiControlledUnitary(char testName[200]){
     initStateDebug(mq);
     multiControlledUnitary(mq, controlQubits, 2, rotQubit, u);
     sprintf(filename, "%s%s%d.out", PATH_TO_TESTS, testName, count++); 	
-    initializeStateFromSingleFile(&mqVerif, filename, env);
+    initStateFromSingleFile(&mqVerif, filename, env);
     if (passed) passed = compareStates(mq, mqVerif, COMPARE_PRECISION);
 
     rotQubit=1;
@@ -660,7 +660,7 @@ int test_multiControlledUnitary(char testName[200]){
     initStateDebug(mq);
     multiControlledUnitary(mq, controlQubits, 3, rotQubit, u);
     sprintf(filename, "%s%s%d.out", PATH_TO_TESTS, testName, count++); 	
-    initializeStateFromSingleFile(&mqVerif, filename, env);
+    initStateFromSingleFile(&mqVerif, filename, env);
     if (passed) passed = compareStates(mq, mqVerif, COMPARE_PRECISION);
 
     destroyQubitRegister(mq, env);

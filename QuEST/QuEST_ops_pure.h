@@ -13,12 +13,12 @@
 # ifdef __cplusplus
 extern "C" {
 # endif
-
-void pure_initializeStateFromSingleFile(QubitRegister *qureg, char filename[200], QuESTEnv env);
 	
 void pure_reportStateToScreen(QubitRegister qureg, QuESTEnv env, int reportRank);
 
 int pure_compareStates(QubitRegister mq1, QubitRegister mq2, REAL precision);
+
+void pure_initStateFromSingleFile(QubitRegister *qureg, char filename[200], QuESTEnv env);
 
 void pure_initStateOfSingleQubit(QubitRegister *qureg, int qubitId, int outcome);
 
