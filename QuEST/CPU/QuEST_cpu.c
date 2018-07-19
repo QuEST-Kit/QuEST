@@ -1458,8 +1458,8 @@ void pure_phaseShiftLocal(QubitRegister qureg, const int targetQubit, REAL angle
     const long long int numTasks = qureg.numAmpsPerChunk >> 1;
     sizeHalfBlock = 1LL << targetQubit;
     sizeBlock     = 2LL * sizeHalfBlock;
-    REAL *stateVecReal = qureg.deviceStateVec.real;
-    REAL *stateVecImag = qureg.deviceStateVec.imag;
+    REAL *stateVecReal = qureg.stateVec.real;
+    REAL *stateVecImag = qureg.stateVec.imag;
 	
 	const REAL cosAngle = cos(angle);
 	const REAL sinAngle = sin(angle);
