@@ -19,8 +19,8 @@ int main (int narg, char *varg[]) {
      * PREPARE QUBIT SYSTEM
      */
 
-    MultiQubit qubits; 
-    createMultiQubit(&qubits, 3, env);
+    QubitRegister qubits; 
+    createQubitRegister(&qubits, 3, env);
     initStateZero(qubits);
 
 
@@ -28,7 +28,7 @@ int main (int narg, char *varg[]) {
      * REPORT SYSTEM AND ENVIRONMENT
      */
     printf("\nThis is our environment:\n");
-    reportMultiQubitParams(qubits);
+    reportQubitRegisterParams(qubits);
     reportQuESTEnv(env);
 
     /*
@@ -81,7 +81,7 @@ int main (int narg, char *varg[]) {
      * FREE MEMORY
      */
 
-    destroyMultiQubit(qubits, env); 
+    destroyQubitRegister(qubits, env); 
 
 
     /*

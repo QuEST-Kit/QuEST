@@ -224,13 +224,13 @@ MPI_WRAPPED_COMP = I_MPI_CC=$(COMPILER) OMPI_CC=$(COMPILER) MPICH_CC=$(COMPILER)
 # --- targets
 #
 
-OBJ = QuEST.o mt19937ar.o
+OBJ = QuEST_common.o QuEST_ops.o mt19937ar.o
 ifeq ($(GPUACCELERATED), 1)
-    OBJ += QuEST_env_localGPU.o
+    OBJ += QuEST_gpu.o
 else ifeq ($(DISTRIBUTED), 1)
-    OBJ += QuEST_env_mpi.o
+    OBJ += QuEST_cpu.o QuEST_cpu_distributed.o
 else
-    OBJ += QuEST_env_local.o
+    OBJ += QuEST_cpu.o QuEST_cpu_local.o
 endif
 OBJ += $(addsuffix .o, $(SOURCES))
 

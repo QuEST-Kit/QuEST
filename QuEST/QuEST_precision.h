@@ -20,6 +20,7 @@
 # elif QuEST_PREC==4
 	// QUAD PRECISION
 	// 80-bit precision for most implementations
+    // not compatible with most GPUs
 	# define REAL long double
 	# define MPI_QuEST_REAL MPI_LONG_DOUBLE
 	# define REAL_STRING_FORMAT "%.17Lf"

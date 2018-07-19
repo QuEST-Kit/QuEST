@@ -1,0 +1,62 @@
+collapseToOutcomeDistributedRenorm function   1925 ../CPU/QuEST.c   REAL collapseToOutcomeDistributedRenorm (MultiQubit multiQubit, const int measureQubit, const REAL totalProbability)
+collapseToOutcomeDistributedSetZero function   1965 ../CPU/QuEST.c   void collapseToOutcomeDistributedSetZero(MultiQubit multiQubit, const int measureQubit)
+collapseToOutcomeLocal function   1843 ../CPU/QuEST.c   void collapseToOutcomeLocal(MultiQubit multiQubit, int measureQubit, REAL totalProbability, int outcome)
+compactUnitaryDistributed function    627 ../CPU/QuEST.c   void compactUnitaryDistributed (MultiQubit multiQubit, const int targetQubit,
+compactUnitaryLocal function    498 ../CPU/QuEST.c   void compactUnitaryLocal (MultiQubit multiQubit, const int targetQubit, Complex alpha, Complex beta)
+compareStates    function    386 ../CPU/QuEST.c   int compareStates(MultiQubit mq1, MultiQubit mq2, REAL precision){
+controlledCompactUnitaryDistributed function    937 ../CPU/QuEST.c   void controlledCompactUnitaryDistributed (MultiQubit multiQubit, const int controlQubit, const int targetQubit,
+controlledCompactUnitaryLocal function    728 ../CPU/QuEST.c   void controlledCompactUnitaryLocal (MultiQubit multiQubit, const int controlQubit, const int targetQubit, 
+controlledNotDistributed function   1266 ../CPU/QuEST.c   void controlledNotDistributed (MultiQubit multiQubit, const int controlQubit, const int targetQubit,
+controlledNotLocal function   1201 ../CPU/QuEST.c   void controlledNotLocal(MultiQubit multiQubit, const int controlQubit, const int targetQubit)
+controlledPhaseGate function   1756 ../CPU/QuEST.c   void controlledPhaseGate (MultiQubit multiQubit, const int idQubit1, const int idQubit2)
+controlledRotateAroundAxis function    467 ../CPU/QuEST.c   void controlledRotateAroundAxis(MultiQubit multiQubit, const int controlQubit, const int targetQubit, REAL angle, Vector axis){
+controlledRotateX function    480 ../CPU/QuEST.c   void controlledRotateX(MultiQubit multiQubit, const int controlQubit, const int targetQubit, REAL angle){
+controlledRotateY function    486 ../CPU/QuEST.c   void controlledRotateY(MultiQubit multiQubit, const int controlQubit, const int targetQubit, REAL angle){
+controlledRotateZ function    492 ../CPU/QuEST.c   void controlledRotateZ(MultiQubit multiQubit, const int controlQubit, const int targetQubit, REAL angle){
+controlledUnitaryDistributed function   1000 ../CPU/QuEST.c   void controlledUnitaryDistributed (MultiQubit multiQubit, const int controlQubit, const int targetQubit,
+controlledUnitaryLocal function    858 ../CPU/QuEST.c   void controlledUnitaryLocal(MultiQubit multiQubit, const int controlQubit, const int targetQubit, 
+createMultiQubit function     44 ../CPU/QuEST.c   void createMultiQubit(MultiQubit *multiQubit, int numQubits, QuESTEnv env)
+destroyMultiQubit function     76 ../CPU/QuEST.c   void destroyMultiQubit(MultiQubit multiQubit, QuESTEnv env){
+extractBit       function   1751 ../CPU/QuEST.c   static int extractBit (const int locationOfBitFromRight, const long long int theEncodedNumber)
+extractBit       prototype    42 ../CPU/QuEST.c   static int extractBit (const int locationOfBitFromRight, const long long int theEncodedNumber);
+findProbabilityOfZeroDistributed function   1707 ../CPU/QuEST.c   REAL findProbabilityOfZeroDistributed (MultiQubit multiQubit,
+findProbabilityOfZeroLocal function   1651 ../CPU/QuEST.c   REAL findProbabilityOfZeroLocal (MultiQubit multiQubit,
+getEnvironmentString function    145 ../CPU/QuEST.c   void getEnvironmentString(QuESTEnv env, MultiQubit multiQubit, char str[200]){
+getNumAmps       function    140 ../CPU/QuEST.c   int getNumAmps(MultiQubit multiQubit){
+getNumQubits     function    136 ../CPU/QuEST.c   int getNumQubits(MultiQubit multiQubit){
+getProbEl        function   1994 ../CPU/QuEST.c   REAL getProbEl(MultiQubit multiQubit, long long int index){
+hadamardDistributed function   1454 ../CPU/QuEST.c   void hadamardDistributed(MultiQubit multiQubit, const int targetQubit,
+hadamardLocal    function   1393 ../CPU/QuEST.c   void hadamardLocal(MultiQubit multiQubit, const int targetQubit)
+hashString       function   2034 ../CPU/QuEST.c   unsigned long int hashString(char *str){
+initClassicalState function    222 ../CPU/QuEST.c   void initClassicalState (MultiQubit multiQubit, long long int stateInd)
+initStateDebug   function    310 ../CPU/QuEST.c   void initStateDebug (MultiQubit multiQubit)
+initStateOfSingleQubit function    264 ../CPU/QuEST.c   void initStateOfSingleQubit(MultiQubit *multiQubit, int qubitId, int outcome)
+initStatePlus    function    189 ../CPU/QuEST.c   void initStatePlus (MultiQubit multiQubit)
+initStateZero    function    153 ../CPU/QuEST.c   void initStateZero (MultiQubit multiQubit)
+initializeStateFromSingleFile function    343 ../CPU/QuEST.c   void initializeStateFromSingleFile(MultiQubit *multiQubit, char filename[200], QuESTEnv env){
+multiControlledPhaseGate function   1791 ../CPU/QuEST.c   void multiControlledPhaseGate(MultiQubit multiQubit, int *controlQubits, int numControlQubits)
+multiControlledUnitaryDistributed function   1064 ../CPU/QuEST.c   void multiControlledUnitaryDistributed (MultiQubit multiQubit, 
+multiControlledUnitaryLocal function    795 ../CPU/QuEST.c   void multiControlledUnitaryLocal(MultiQubit multiQubit, const int targetQubit, 
+phaseGateDistributed function   1576 ../CPU/QuEST.c   void phaseGateDistributed(MultiQubit multiQubit, const int targetQubit, enum phaseGateType type)
+phaseGateLocal   function   1500 ../CPU/QuEST.c   void phaseGateLocal(MultiQubit multiQubit, const int targetQubit, enum phaseGateType type)
+reportMultiQubitParams function    125 ../CPU/QuEST.c   void reportMultiQubitParams(MultiQubit multiQubit){
+reportState      function     86 ../CPU/QuEST.c   void reportState(MultiQubit multiQubit){
+reportStateToScreen function    101 ../CPU/QuEST.c   void reportStateToScreen(MultiQubit multiQubit, QuESTEnv env, int reportRank){
+rotateAroundAxis function    436 ../CPU/QuEST.c   void rotateAroundAxis(MultiQubit multiQubit, const int rotQubit, REAL angle, Vector axis){
+rotateX          function    449 ../CPU/QuEST.c   void rotateX(MultiQubit multiQubit, const int rotQubit, REAL angle){
+rotateY          function    455 ../CPU/QuEST.c   void rotateY(MultiQubit multiQubit, const int rotQubit, REAL angle){
+rotateZ          function    461 ../CPU/QuEST.c   void rotateZ(MultiQubit multiQubit, const int rotQubit, REAL angle){
+sGate            function   1634 ../CPU/QuEST.c   void sGate(MultiQubit multiQubit, const int targetQubit)
+seedQuEST        function   2027 ../CPU/QuEST.c   void seedQuEST(unsigned long int *seedArray, int numSeeds){
+seedQuESTDefault function   2002 ../CPU/QuEST.c   void seedQuESTDefault(){
+sigmaXDistributed function   1173 ../CPU/QuEST.c   void sigmaXDistributed (MultiQubit multiQubit, const int targetQubit,
+sigmaXLocal      function   1114 ../CPU/QuEST.c   void sigmaXLocal(MultiQubit multiQubit, const int targetQubit)
+sigmaYDistributed function   1360 ../CPU/QuEST.c   void sigmaYDistributed(MultiQubit multiQubit, const int targetQubit,
+sigmaYLocal      function   1301 ../CPU/QuEST.c   void sigmaYLocal(MultiQubit multiQubit, const int targetQubit)
+sigmaZ           function   1629 ../CPU/QuEST.c   void sigmaZ(MultiQubit multiQubit, const int targetQubit)
+tGate            function   1639 ../CPU/QuEST.c   void tGate(MultiQubit multiQubit, const int targetQubit)
+unitaryDistributed function    683 ../CPU/QuEST.c   void unitaryDistributed (MultiQubit multiQubit, const int targetQubit,
+unitaryLocal     function    557 ../CPU/QuEST.c   void unitaryLocal(MultiQubit multiQubit, const int targetQubit, ComplexMatrix2 u)
+validateAlphaBeta function    423 ../CPU/QuEST.c   int validateAlphaBeta(Complex alpha, Complex beta){
+validateMatrixIsUnitary function    399 ../CPU/QuEST.c   int validateMatrixIsUnitary(ComplexMatrix2 u){
+validateUnitVector function    431 ../CPU/QuEST.c   int validateUnitVector(REAL ux, REAL uy, REAL uz){
