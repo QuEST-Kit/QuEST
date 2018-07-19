@@ -1467,7 +1467,7 @@ void pure_phaseShiftLocal(QubitRegister qureg, const int targetQubit, REAL angle
 # ifdef _OPENMP
 # pragma omp parallel \
     default  (none) \
-    shared   (numTasks,sizeBlock,sizeHalfBlock,stateVecReal,stateVecImag,cosAngle,sinAngle) \
+    shared   (sizeBlock,sizeHalfBlock,stateVecReal,stateVecImag) \
     private  (thisTask,thisBlock,indexUp,indexLo,stateRealLo,stateImagLo) 
 # endif
     {
@@ -1503,7 +1503,7 @@ void pure_phaseShiftDistributed(QubitRegister qureg, const int targetQubit, REAL
 # ifdef _OPENMP
 # pragma omp parallel \
     default  (none) \
-    shared   (numTasks,stateVecReal,stateVecImag,cosAngle,sinAngle) \
+    shared   (stateVecReal,stateVecImag) \
     private  (thisTask,stateRealLo,stateImagLo) 
 # endif
     {
