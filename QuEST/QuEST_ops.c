@@ -179,20 +179,20 @@ void controlledNot(QubitRegister qureg, const int controlQubit, const int target
 	}
 }
 
-void controlledPhaseGate(QubitRegister qureg, const int idQubit1, const int idQubit2) {
-	pure_controlledPhaseGate(qureg, idQubit1, idQubit2);
+void controlledPhaseFlip(QubitRegister qureg, const int idQubit1, const int idQubit2) {
+	pure_controlledPhaseFlip(qureg, idQubit1, idQubit2);
 	if (qureg.isDensityMatrix) {
 		int shift = qureg.numDensityQubits;
-		pure_controlledPhaseGate(qureg, idQubit1+shift, idQubit2+shift);
+		pure_controlledPhaseFlip(qureg, idQubit1+shift, idQubit2+shift);
 	}
 }
 
-void multiControlledPhaseGate(QubitRegister qureg, int *controlQubits, int numControlQubits) {
-	pure_multiControlledPhaseGate(qureg, controlQubits, numControlQubits);
+void multiControlledPhaseFlip(QubitRegister qureg, int *controlQubits, int numControlQubits) {
+	pure_multiControlledPhaseFlip(qureg, controlQubits, numControlQubits);
 	if (qureg.isDensityMatrix) {
 		int shift = qureg.numDensityQubits;
 		shiftIndices(controlQubits, numControlQubits, shift);
-		pure_multiControlledPhaseGate(qureg, controlQubits, numControlQubits);
+		pure_multiControlledPhaseFlip(qureg, controlQubits, numControlQubits);
 		shiftIndices(controlQubits, numControlQubits, -shift);
 	}
 }

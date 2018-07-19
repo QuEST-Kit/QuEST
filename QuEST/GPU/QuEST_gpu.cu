@@ -960,7 +960,7 @@ void pure_specialPhaseGate(QubitRegister qureg, const int targetQubit, enum phas
     specialPhaseGateKernel<<<CUDABlocks, threadsPerCUDABlock>>>(qureg, targetQubit, type);
 }
 
-__global__ void controlledPhaseGateKernel(QubitRegister qureg, const int idQubit1, const int idQubit2)
+__global__ void controlledPhaseFlipKernel(QubitRegister qureg, const int idQubit1, const int idQubit2)
 {
     long long int index;
     long long int stateVecSize;
@@ -981,7 +981,7 @@ __global__ void controlledPhaseGateKernel(QubitRegister qureg, const int idQubit
     }
 }
 
-void pure_controlledPhaseGate(QubitRegister qureg, const int idQubit1, const int idQubit2)
+void pure_controlledPhaseFlip(QubitRegister qureg, const int idQubit1, const int idQubit2)
 {
     QuESTAssert(idQubit1 >= 0 && idQubit1 < qureg.numQubits, 2, __func__);
     QuESTAssert(idQubit2 >= 0 && idQubit2 < qureg.numQubits, 1, __func__);
@@ -990,10 +990,10 @@ void pure_controlledPhaseGate(QubitRegister qureg, const int idQubit1, const int
     int threadsPerCUDABlock, CUDABlocks;
     threadsPerCUDABlock = 128;
     CUDABlocks = ceil((REAL)(qureg.numAmpsPerChunk)/threadsPerCUDABlock);
-    controlledPhaseGateKernel<<<CUDABlocks, threadsPerCUDABlock>>>(qureg, idQubit1, idQubit2);
+    controlledPhaseFlipKernel<<<CUDABlocks, threadsPerCUDABlock>>>(qureg, idQubit1, idQubit2);
 }
 
-__global__ void multiControlledPhaseGateKernel(QubitRegister qureg, long long int mask)
+__global__ void multiControlledPhaseFlipKernel(QubitRegister qureg, long long int mask)
 {
     long long int index;
     long long int stateVecSize;
@@ -1011,7 +1011,7 @@ __global__ void multiControlledPhaseGateKernel(QubitRegister qureg, long long in
     }
 }
 
-void pure_multiControlledPhaseGate(QubitRegister qureg, int *controlQubits, int numControlQubits)
+void pure_multiControlledPhaseFlip(QubitRegister qureg, int *controlQubits, int numControlQubits)
 {
     QuESTAssert(numControlQubits > 0 && numControlQubits <= qureg.numQubits, 4, __func__);
 
@@ -1021,7 +1021,7 @@ void pure_multiControlledPhaseGate(QubitRegister qureg, int *controlQubits, int 
     QuESTAssert(mask >=0 && mask <= (1LL<<qureg.numQubits)-1, 2, __func__);
     threadsPerCUDABlock = 128;
     CUDABlocks = ceil((REAL)(qureg.numAmpsPerChunk)/threadsPerCUDABlock);
-    multiControlledPhaseGateKernel<<<CUDABlocks, threadsPerCUDABlock>>>(qureg, mask);
+    multiControlledPhaseFlipKernel<<<CUDABlocks, threadsPerCUDABlock>>>(qureg, mask);
 }
 
 

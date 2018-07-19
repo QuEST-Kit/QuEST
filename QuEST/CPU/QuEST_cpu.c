@@ -1689,7 +1689,7 @@ static int extractBit (const int locationOfBitFromRight, const long long int the
     return (theEncodedNumber & ( 1LL << locationOfBitFromRight )) >> locationOfBitFromRight;
 }
 
-void pure_controlledPhaseGate (QubitRegister qureg, const int idQubit1, const int idQubit2)
+void pure_controlledPhaseFlip (QubitRegister qureg, const int idQubit1, const int idQubit2)
 {
     long long int index;
     long long int stateVecSize;
@@ -1724,7 +1724,7 @@ void pure_controlledPhaseGate (QubitRegister qureg, const int idQubit1, const in
     }
 }
 
-void pure_multiControlledPhaseGate(QubitRegister qureg, int *controlQubits, int numControlQubits)
+void pure_multiControlledPhaseFlip(QubitRegister qureg, int *controlQubits, int numControlQubits)
 {
     long long int index;
     long long int stateVecSize;

@@ -305,7 +305,7 @@ int test_controlledNot(char testName[200]){
     return passed;
 }
 
-int test_controlledPhaseGate(char testName[200]){
+int test_controlledPhaseFlip(char testName[200]){
     char filename[200];
     int passed=1;
     int count=1;
@@ -323,7 +323,7 @@ int test_controlledPhaseGate(char testName[200]){
             if (i==j) {count++; continue;}
             initStateDebug(mq);
             rotateQubit=i;
-            controlledPhaseGate(mq, rotateQubit, controlQubit);
+            controlledPhaseFlip(mq, rotateQubit, controlQubit);
 
             sprintf(filename, "%s%s%d.out", PATH_TO_TESTS, testName, count++); 	
             initStateFromSingleFile(&mqVerif, filename, env);
@@ -337,7 +337,7 @@ int test_controlledPhaseGate(char testName[200]){
     return passed;
 }
 
-int test_multiControlledPhaseGate(char testName[200]){
+int test_multiControlledPhaseFlip(char testName[200]){
     char filename[200];
     int passed=1;
     int count=1;
@@ -350,7 +350,7 @@ int test_multiControlledPhaseGate(char testName[200]){
 
     int qubits[4]={0,1,2,3};
     initStateDebug(mq);
-    multiControlledPhaseGate(mq, qubits, 4);
+    multiControlledPhaseFlip(mq, qubits, 4);
 
     sprintf(filename, "%s%s%d.out", PATH_TO_TESTS, testName, count++); 	
     initStateFromSingleFile(&mqVerif, filename, env);
@@ -955,8 +955,8 @@ int main (int narg, char** varg) {
         test_hadamard,
         test_sGate,
         test_tGate,
-        test_controlledPhaseGate,
-        test_multiControlledPhaseGate,
+        test_controlledPhaseFlip,
+        test_multiControlledPhaseFlip,
         test_compactUnitary,
         test_unitary,
         test_controlledCompactUnitary,
@@ -982,8 +982,8 @@ int main (int narg, char** varg) {
         "hadamard",
         "sGate",
         "tGate",
-        "controlledPhaseGate",
-        "multiControlledPhaseGate",
+        "controlledPhaseFlip",
+        "multiControlledPhaseFlip",
         "compactUnitary",
         "unitary",
         "controlledCompactUnitary",

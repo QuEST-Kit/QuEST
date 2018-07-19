@@ -206,7 +206,7 @@ void initClassicalState(QubitRegister qureg, long long int stateInd);
  */
 void initPureState(QubitRegister qureg, QubitRegister pure);
 
-/** Apply the multiple-qubit controlled phase gate, also known as the multiple-qubit controlled sigmaZ gate.
+/** Apply the multiple-qubit controlled phase flip gate, also known as the multiple-qubit controlled sigmaZ gate.
  * For each state, if all control qubits have value one, multiply the amplitude of that state by -1. This applies the many-qubit unitary:
  * \f[
  * \begin{pmatrix}
@@ -248,9 +248,9 @@ void initPureState(QubitRegister qureg, QubitRegister pure);
  * @throws exitWithError 
  * 		if \p numControlQubits is outside [1, \p qureg.numQubits) 
  */
-void multiControlledPhaseGate(QubitRegister qureg, int *controlQubits, int numControlQubits);
+void multiControlledPhaseFlip(QubitRegister qureg, int *controlQubits, int numControlQubits);
 
-/** Apply the (two-qubit) controlled phase gate, also known as the controlled sigmaZ gate.
+/** Apply the (two-qubit) controlled phase flip gate, also known as the controlled sigmaZ gate.
  * For each state, if both input qubits have value one, multiply the amplitude of that state by -1. This applies the two-qubit unitary:
  * \f[
  * \begin{pmatrix}
@@ -283,7 +283,7 @@ void multiControlledPhaseGate(QubitRegister qureg, int *controlQubits, int numCo
  * @throws exitWithError 
  * 	if \p idQubit1 or \p idQubit2 are outside [0, \p qureg.numQubits), or are equal
  */
-void controlledPhaseGate (QubitRegister qureg, const int idQubit1, const int idQubit2);
+void controlledPhaseFlip (QubitRegister qureg, const int idQubit1, const int idQubit2);
 
 /** Apply the single-qubit S gate.
  * This is a rotation of \f$\pi/2\f$ around the Z-axis on the Bloch sphere, or the unitary:
