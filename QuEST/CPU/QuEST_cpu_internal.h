@@ -83,9 +83,9 @@ void pure_hadamardDistributed (QubitRegister qureg, const int targetQubit,
         ComplexArray stateVecOut, int updateUpper);
 
 
-void pure_phaseGateLocal(QubitRegister qureg, const int targetQubit, enum phaseGateType type);
+void pure_specialPhaseGateLocal(QubitRegister qureg, const int targetQubit, enum phaseGateType type);
 
-void pure_phaseGateDistributed(QubitRegister qureg, const int targetQubit, enum phaseGateType type);
+void pure_specialPhaseGateDistributed(QubitRegister qureg, const int targetQubit, enum phaseGateType type);
 
 void pure_controlledNotLocal(QubitRegister qureg, const int controlQubit, const int targetQubit);
 

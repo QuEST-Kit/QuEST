@@ -898,7 +898,7 @@ void pure_sigmaY(QubitRegister qureg, const int targetQubit)
     sigmaYKernel<<<CUDABlocks, threadsPerCUDABlock>>>(qureg, targetQubit);
 }
 
-__global__ void phaseGateKernel(QubitRegister qureg, const int targetQubit, enum phaseGateType type){
+__global__ void specialPhaseGateKernel(QubitRegister qureg, const int targetQubit, enum phaseGateType type){
     // ----- sizes
     long long int sizeBlock,                                           // size of blocks
          sizeHalfBlock;                                       // size of blocks halved
@@ -951,13 +951,13 @@ __global__ void phaseGateKernel(QubitRegister qureg, const int targetQubit, enum
 
 }
 
-void pure_phaseGate(QubitRegister qureg, const int targetQubit, enum phaseGateType type) 
+void pure_specialPhaseGate(QubitRegister qureg, const int targetQubit, enum phaseGateType type) 
 {
     QuESTAssert(targetQubit >= 0 && targetQubit < qureg.numQubits, 1, __func__);
     int threadsPerCUDABlock, CUDABlocks;
     threadsPerCUDABlock = 128;
     CUDABlocks = ceil((REAL)(qureg.numAmpsPerChunk>>1)/threadsPerCUDABlock);
-    phaseGateKernel<<<CUDABlocks, threadsPerCUDABlock>>>(qureg, targetQubit, type);
+    specialPhaseGateKernel<<<CUDABlocks, threadsPerCUDABlock>>>(qureg, targetQubit, type);
 }
 
 __global__ void controlledPhaseGateKernel(QubitRegister qureg, const int idQubit1, const int idQubit2)

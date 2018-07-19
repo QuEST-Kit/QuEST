@@ -22,7 +22,7 @@ void pure_initStateFromSingleFile(QubitRegister *qureg, char filename[200], QuES
 
 void pure_initStateOfSingleQubit(QubitRegister *qureg, int qubitId, int outcome);
 
-void pure_phaseGate(QubitRegister qureg, const int targetQubit, enum phaseGateType type);
+void pure_specialPhaseGate(QubitRegister qureg, const int targetQubit, enum phaseGateType type);
 
 void pure_createQubitRegister(QubitRegister *qureg, int numQubits, QuESTEnv env);
 

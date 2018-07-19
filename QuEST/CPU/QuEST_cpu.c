@@ -1448,7 +1448,7 @@ void pure_hadamardDistributed(QubitRegister qureg, const int targetQubit,
     }
 }
 
-void pure_phaseGateLocal(QubitRegister qureg, const int targetQubit, enum phaseGateType type)
+void pure_specialPhaseGateLocal(QubitRegister qureg, const int targetQubit, enum phaseGateType type)
 {
     long long int sizeBlock, sizeHalfBlock;
     long long int thisBlock, // current block
@@ -1524,7 +1524,7 @@ void pure_phaseGateLocal(QubitRegister qureg, const int targetQubit, enum phaseG
     }
 }
 
-void pure_phaseGateDistributed(QubitRegister qureg, const int targetQubit, enum phaseGateType type)
+void pure_specialPhaseGateDistributed(QubitRegister qureg, const int targetQubit, enum phaseGateType type)
 {
     REAL stateRealLo,stateImagLo;
     long long int thisTask;         

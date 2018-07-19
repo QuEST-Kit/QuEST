@@ -178,10 +178,10 @@ void pure_sigmaY(QubitRegister qureg, const int targetQubit)
     pure_sigmaYLocal(qureg, targetQubit);
 }
 
-void pure_phaseGate(QubitRegister qureg, const int targetQubit, enum phaseGateType type)
+void pure_specialPhaseGate(QubitRegister qureg, const int targetQubit, enum phaseGateType type)
 {
     QuESTAssert(targetQubit >= 0 && targetQubit < qureg.numQubits, 1, __func__);
-    pure_phaseGateLocal(qureg, targetQubit, type);
+    pure_specialPhaseGateLocal(qureg, targetQubit, type);
 }
 
 void pure_hadamard(QubitRegister qureg, const int targetQubit) 

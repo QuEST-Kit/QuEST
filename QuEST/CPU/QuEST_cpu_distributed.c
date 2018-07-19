@@ -596,7 +596,7 @@ void pure_sigmaY(QubitRegister qureg, const int targetQubit)
     }
 }
 
-void pure_phaseGate(QubitRegister qureg, const int targetQubit, enum phaseGateType type)
+void pure_specialPhaseGate(QubitRegister qureg, const int targetQubit, enum phaseGateType type)
 {
     QuESTAssert(targetQubit >= 0 && targetQubit < qureg.numQubits, 1, __func__);
 
@@ -607,10 +607,10 @@ void pure_phaseGate(QubitRegister qureg, const int targetQubit, enum phaseGateTy
     int rankIsUpper;
 
     if (useLocalDataOnly){
-        pure_phaseGateLocal(qureg, targetQubit, type);
+        pure_specialPhaseGateLocal(qureg, targetQubit, type);
     } else {
         rankIsUpper = chunkIsUpper(qureg.chunkId, qureg.numAmpsPerChunk, targetQubit);
-        if (!rankIsUpper) pure_phaseGateDistributed(qureg, targetQubit, type);
+        if (!rankIsUpper) pure_specialPhaseGateDistributed(qureg, targetQubit, type);
     }
 }
 
