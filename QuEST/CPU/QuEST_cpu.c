@@ -383,7 +383,7 @@ int pure_compareStates(QubitRegister mq1, QubitRegister mq2, REAL precision){
 
 
 
-void compactUnitaryLocal (QubitRegister qureg, const int targetQubit, Complex alpha, Complex beta)
+void pure_compactUnitaryLocal (QubitRegister qureg, const int targetQubit, Complex alpha, Complex beta)
 {
     long long int sizeBlock, sizeHalfBlock;
     long long int thisBlock, // current block
@@ -442,7 +442,7 @@ void compactUnitaryLocal (QubitRegister qureg, const int targetQubit, Complex al
 
 } 
 
-void unitaryLocal(QubitRegister qureg, const int targetQubit, ComplexMatrix2 u)
+void pure_unitaryLocal(QubitRegister qureg, const int targetQubit, ComplexMatrix2 u)
 {
     long long int sizeBlock, sizeHalfBlock;
     long long int thisBlock, // current block
@@ -512,7 +512,7 @@ void unitaryLocal(QubitRegister qureg, const int targetQubit, ComplexMatrix2 u)
  *  @param[in] stateVecLo probability amplitudes in lower half of a block
  *  @param[out] stateVecOut array section to update (will correspond to either the lower or upper half of a block)
  */
-void compactUnitaryDistributed (QubitRegister qureg, const int targetQubit,
+void pure_compactUnitaryDistributed (QubitRegister qureg, const int targetQubit,
         Complex rot1, Complex rot2,
         ComplexArray stateVecUp,
         ComplexArray stateVecLo,
@@ -568,7 +568,7 @@ void compactUnitaryDistributed (QubitRegister qureg, const int targetQubit,
  *  @param[in] stateVecLo probability amplitudes in lower half of a block
  *  @param[out] stateVecOut array section to update (will correspond to either the lower or upper half of a block)
  */
-void unitaryDistributed (QubitRegister qureg, const int targetQubit,
+void pure_unitaryDistributed (QubitRegister qureg, const int targetQubit,
         Complex rot1, Complex rot2,
         ComplexArray stateVecUp,
         ComplexArray stateVecLo,
@@ -613,7 +613,7 @@ void unitaryDistributed (QubitRegister qureg, const int targetQubit,
     }
 }
 
-void controlledCompactUnitaryLocal (QubitRegister qureg, const int controlQubit, const int targetQubit, 
+void pure_controlledCompactUnitaryLocal (QubitRegister qureg, const int controlQubit, const int targetQubit, 
         Complex alpha, Complex beta)
 {
     long long int sizeBlock, sizeHalfBlock;
@@ -680,7 +680,7 @@ void controlledCompactUnitaryLocal (QubitRegister qureg, const int controlQubit,
 
 } 
 
-void multiControlledUnitaryLocal(QubitRegister qureg, const int targetQubit, 
+void pure_multiControlledUnitaryLocal(QubitRegister qureg, const int targetQubit, 
         long long int mask, ComplexMatrix2 u)
 {
     long long int sizeBlock, sizeHalfBlock;
@@ -743,7 +743,7 @@ void multiControlledUnitaryLocal(QubitRegister qureg, const int targetQubit,
 
 }
 
-void controlledUnitaryLocal(QubitRegister qureg, const int controlQubit, const int targetQubit, 
+void pure_controlledUnitaryLocal(QubitRegister qureg, const int controlQubit, const int targetQubit, 
         ComplexMatrix2 u)
 {
     long long int sizeBlock, sizeHalfBlock;
@@ -822,7 +822,7 @@ void controlledUnitaryLocal(QubitRegister qureg, const int controlQubit, const i
  *  @param[in] stateVecLo probability amplitudes in lower half of a block
  *  @param[out] stateVecOut array section to update (will correspond to either the lower or upper half of a block)
  */
-void controlledCompactUnitaryDistributed (QubitRegister qureg, const int controlQubit, const int targetQubit,
+void pure_controlledCompactUnitaryDistributed (QubitRegister qureg, const int controlQubit, const int targetQubit,
         Complex rot1, Complex rot2,
         ComplexArray stateVecUp,
         ComplexArray stateVecLo,
@@ -885,7 +885,7 @@ void controlledCompactUnitaryDistributed (QubitRegister qureg, const int control
  *  @param[in] stateVecLo probability amplitudes in lower half of a block
  *  @param[out] stateVecOut array section to update (will correspond to either the lower or upper half of a block)
  */
-void controlledUnitaryDistributed (QubitRegister qureg, const int controlQubit, const int targetQubit,
+void pure_controlledUnitaryDistributed (QubitRegister qureg, const int controlQubit, const int targetQubit,
         Complex rot1, Complex rot2,
         ComplexArray stateVecUp,
         ComplexArray stateVecLo,
@@ -949,7 +949,7 @@ void controlledUnitaryDistributed (QubitRegister qureg, const int controlQubit, 
  *  @param[in] stateVecLo probability amplitudes in lower half of a block
  *  @param[out] stateVecOut array section to update (will correspond to either the lower or upper half of a block)
  */
-void multiControlledUnitaryDistributed (QubitRegister qureg, 
+void pure_multiControlledUnitaryDistributed (QubitRegister qureg, 
         const int targetQubit, 
         long long int mask,
         Complex rot1, Complex rot2,
@@ -999,7 +999,7 @@ void multiControlledUnitaryDistributed (QubitRegister qureg,
     }
 }
 
-void sigmaXLocal(QubitRegister qureg, const int targetQubit)
+void pure_sigmaXLocal(QubitRegister qureg, const int targetQubit)
 {
     long long int sizeBlock, sizeHalfBlock;
     long long int thisBlock, // current block
@@ -1058,7 +1058,7 @@ void sigmaXLocal(QubitRegister qureg, const int targetQubit)
  *  @param[in] stateVecIn probability amplitudes in lower or upper half of a block depending on chunkId
  *  @param[out] stateVecOut array section to update (will correspond to either the lower or upper half of a block)
  */
-void sigmaXDistributed (QubitRegister qureg, const int targetQubit,
+void pure_sigmaXDistributed (QubitRegister qureg, const int targetQubit,
         ComplexArray stateVecIn,
         ComplexArray stateVecOut)
 {
@@ -1086,7 +1086,7 @@ void sigmaXDistributed (QubitRegister qureg, const int targetQubit,
     }
 } 
 
-void controlledNotLocal(QubitRegister qureg, const int controlQubit, const int targetQubit)
+void pure_controlledNotLocal(QubitRegister qureg, const int controlQubit, const int targetQubit)
 {
     long long int sizeBlock, sizeHalfBlock;
     long long int thisBlock, // current block
@@ -1151,7 +1151,7 @@ void controlledNotLocal(QubitRegister qureg, const int controlQubit, const int t
  *  @param[in] stateVecIn probability amplitudes in lower or upper half of a block depending on chunkId
  *  @param[out] stateVecOut array section to update (will correspond to either the lower or upper half of a block)
  */
-void controlledNotDistributed (QubitRegister qureg, const int controlQubit, const int targetQubit,
+void pure_controlledNotDistributed (QubitRegister qureg, const int controlQubit, const int targetQubit,
         ComplexArray stateVecIn,
         ComplexArray stateVecOut)
 {
@@ -1186,7 +1186,7 @@ void controlledNotDistributed (QubitRegister qureg, const int controlQubit, cons
     }
 } 
 
-void sigmaYLocal(QubitRegister qureg, const int targetQubit)
+void pure_sigmaYLocal(QubitRegister qureg, const int targetQubit)
 {
     long long int sizeBlock, sizeHalfBlock;
     long long int thisBlock, // current block
@@ -1245,7 +1245,7 @@ void sigmaYLocal(QubitRegister qureg, const int targetQubit)
  *  @param[in] updateUpper flag, 1: updating upper values, 0: updating lower values in block
  *  @param[out] stateVecOut array section to update (will correspond to either the lower or upper half of a block)
  */
-void sigmaYDistributed(QubitRegister qureg, const int targetQubit,
+void pure_sigmaYDistributed(QubitRegister qureg, const int targetQubit,
         ComplexArray stateVecIn,
         ComplexArray stateVecOut, 
         int updateUpper)
@@ -1278,7 +1278,7 @@ void sigmaYDistributed(QubitRegister qureg, const int targetQubit,
     }
 } 
 
-void hadamardLocal(QubitRegister qureg, const int targetQubit)
+void pure_hadamardLocal(QubitRegister qureg, const int targetQubit)
 {
     long long int sizeBlock, sizeHalfBlock;
     long long int thisBlock, // current block
@@ -1339,7 +1339,7 @@ void hadamardLocal(QubitRegister qureg, const int targetQubit)
  *  @param[in] updateUpper flag, 1: updating upper values, 0: updating lower values in block
  *  @param[out] stateVecOut array section to update (will correspond to either the lower or upper half of a block)
  */
-void hadamardDistributed(QubitRegister qureg, const int targetQubit,
+void pure_hadamardDistributed(QubitRegister qureg, const int targetQubit,
         ComplexArray stateVecUp,
         ComplexArray stateVecLo,
         ComplexArray stateVecOut,
@@ -1385,7 +1385,7 @@ void hadamardDistributed(QubitRegister qureg, const int targetQubit,
     }
 }
 
-void phaseGateLocal(QubitRegister qureg, const int targetQubit, enum phaseGateType type)
+void pure_phaseGateLocal(QubitRegister qureg, const int targetQubit, enum phaseGateType type)
 {
     long long int sizeBlock, sizeHalfBlock;
     long long int thisBlock, // current block
@@ -1461,7 +1461,7 @@ void phaseGateLocal(QubitRegister qureg, const int targetQubit, enum phaseGateTy
     }
 }
 
-void phaseGateDistributed(QubitRegister qureg, const int targetQubit, enum phaseGateType type)
+void pure_phaseGateDistributed(QubitRegister qureg, const int targetQubit, enum phaseGateType type)
 {
     REAL stateRealLo,stateImagLo;
     long long int thisTask;         
@@ -1521,7 +1521,7 @@ void phaseGateDistributed(QubitRegister qureg, const int targetQubit, enum phase
  *  @param[in] measureQubit qubit to measure
  *  @return probability of qubit measureQubit being zero
  */
-REAL findProbabilityOfZeroLocal (QubitRegister qureg,
+REAL pure_findProbabilityOfZeroLocal (QubitRegister qureg,
         const int measureQubit)
 {
     // ----- sizes
@@ -1577,7 +1577,7 @@ REAL findProbabilityOfZeroLocal (QubitRegister qureg,
  *  @param[in] measureQubit qubit to measure
  *  @return probability of qubit measureQubit being zero
  */
-REAL findProbabilityOfZeroDistributed (QubitRegister qureg,
+REAL pure_findProbabilityOfZeroDistributed (QubitRegister qureg,
         const int measureQubit)
 {
     // ----- measured probability
@@ -1713,7 +1713,7 @@ void pure_multiControlledPhaseGate(QubitRegister qureg, int *controlQubits, int 
  *  @param[in] totalProbability probability of qubit measureQubit being either zero or one
  *  @param[in] outcome to measure the probability of and set the state to -- either zero or one
  */
-void collapseToOutcomeLocal(QubitRegister qureg, int measureQubit, REAL totalProbability, int outcome)
+void pure_collapseToOutcomeLocal(QubitRegister qureg, int measureQubit, REAL totalProbability, int outcome)
 {
     // ----- sizes
     long long int sizeBlock,                                  // size of blocks
@@ -1795,7 +1795,7 @@ void collapseToOutcomeLocal(QubitRegister qureg, int measureQubit, REAL totalPro
  *  @param[in] measureQubit qubit to measure
  *  @param[in] totalProbability probability of qubit measureQubit being zero
  */
-REAL collapseToOutcomeDistributedRenorm (QubitRegister qureg, const int measureQubit, const REAL totalProbability)
+REAL pure_collapseToOutcomeDistributedRenorm (QubitRegister qureg, const int measureQubit, const REAL totalProbability)
 {
     // ----- temp variables
     long long int thisTask;                                   
@@ -1835,7 +1835,7 @@ REAL collapseToOutcomeDistributedRenorm (QubitRegister qureg, const int measureQ
  *  @param[in,out] qureg object representing the set of qubits
  *  @param[in] measureQubit qubit to measure
  */
-void collapseToOutcomeDistributedSetZero(QubitRegister qureg, const int measureQubit)
+void pure_collapseToOutcomeDistributedSetZero(QubitRegister qureg, const int measureQubit)
 {
     // ----- temp variables
     long long int thisTask;                                   

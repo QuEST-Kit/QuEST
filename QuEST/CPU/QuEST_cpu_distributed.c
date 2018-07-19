@@ -286,7 +286,7 @@ void pure_compactUnitary(QubitRegister qureg, const int targetQubit, Complex alp
 
     if (useLocalDataOnly){
         // all values required to update state vector lie in this rank
-        compactUnitaryLocal(qureg, targetQubit, alpha, beta);
+        pure_compactUnitaryLocal(qureg, targetQubit, alpha, beta);
     } else {
         // need to get corresponding chunk of state vector from other rank
         rankIsUpper = chunkIsUpper(qureg.chunkId, qureg.numAmpsPerChunk, targetQubit);
@@ -298,12 +298,12 @@ void pure_compactUnitary(QubitRegister qureg, const int targetQubit, Complex alp
         // this rank's values are either in the upper of lower half of the block. 
         // send values to compactUnitaryDistributed in the correct order
         if (rankIsUpper){
-            compactUnitaryDistributed(qureg,targetQubit,rot1,rot2,
+            pure_compactUnitaryDistributed(qureg,targetQubit,rot1,rot2,
                     qureg.stateVec, //upper
                     qureg.pairStateVec, //lower
                     qureg.stateVec); //output
         } else {
-            compactUnitaryDistributed(qureg,targetQubit,rot1,rot2,
+            pure_compactUnitaryDistributed(qureg,targetQubit,rot1,rot2,
                     qureg.pairStateVec, //upper
                     qureg.stateVec, //lower
                     qureg.stateVec); //output
@@ -326,7 +326,7 @@ void pure_unitary(QubitRegister qureg, const int targetQubit, ComplexMatrix2 u)
 
     if (useLocalDataOnly){
         // all values required to update state vector lie in this rank
-        unitaryLocal(qureg, targetQubit, u);
+        pure_unitaryLocal(qureg, targetQubit, u);
     } else {
         // need to get corresponding chunk of state vector from other rank
         rankIsUpper = chunkIsUpper(qureg.chunkId, qureg.numAmpsPerChunk, targetQubit);
@@ -338,12 +338,12 @@ void pure_unitary(QubitRegister qureg, const int targetQubit, ComplexMatrix2 u)
         // this rank's values are either in the upper of lower half of the block. 
         // send values to compactUnitaryDistributed in the correct order
         if (rankIsUpper){
-            unitaryDistributed(qureg,targetQubit,rot1,rot2,
+            pure_unitaryDistributed(qureg,targetQubit,rot1,rot2,
                     qureg.stateVec, //upper
                     qureg.pairStateVec, //lower
                     qureg.stateVec); //output
         } else {
-            unitaryDistributed(qureg,targetQubit,rot1,rot2,
+            pure_unitaryDistributed(qureg,targetQubit,rot1,rot2,
                     qureg.pairStateVec, //upper
                     qureg.stateVec, //lower
                     qureg.stateVec); //output
@@ -370,7 +370,7 @@ void pure_controlledCompactUnitary(QubitRegister qureg, const int controlQubit, 
 
     if (useLocalDataOnly){
         // all values required to update state vector lie in this rank
-        controlledCompactUnitaryLocal(qureg, controlQubit, targetQubit, alpha, beta);
+        pure_controlledCompactUnitaryLocal(qureg, controlQubit, targetQubit, alpha, beta);
     } else {
         // need to get corresponding chunk of state vector from other rank
         rankIsUpper = chunkIsUpper(qureg.chunkId, qureg.numAmpsPerChunk, targetQubit);
@@ -383,12 +383,12 @@ void pure_controlledCompactUnitary(QubitRegister qureg, const int controlQubit, 
         // this rank's values are either in the upper of lower half of the block. send values to controlledCompactUnitaryDistributed
         // in the correct order
         if (rankIsUpper){
-            controlledCompactUnitaryDistributed(qureg,controlQubit,targetQubit,rot1,rot2,
+            pure_controlledCompactUnitaryDistributed(qureg,controlQubit,targetQubit,rot1,rot2,
                     qureg.stateVec, //upper
                     qureg.pairStateVec, //lower
                     qureg.stateVec); //output
         } else {
-            controlledCompactUnitaryDistributed(qureg,controlQubit,targetQubit,rot1,rot2,
+            pure_controlledCompactUnitaryDistributed(qureg,controlQubit,targetQubit,rot1,rot2,
                     qureg.pairStateVec, //upper
                     qureg.stateVec, //lower
                     qureg.stateVec); //output
@@ -414,7 +414,7 @@ void pure_controlledUnitary(QubitRegister qureg, const int controlQubit, const i
 
     if (useLocalDataOnly){
         // all values required to update state vector lie in this rank
-        controlledUnitaryLocal(qureg, controlQubit, targetQubit, u);
+        pure_controlledUnitaryLocal(qureg, controlQubit, targetQubit, u);
     } else {
         // need to get corresponding chunk of state vector from other rank
         rankIsUpper = chunkIsUpper(qureg.chunkId, qureg.numAmpsPerChunk, targetQubit);
@@ -427,12 +427,12 @@ void pure_controlledUnitary(QubitRegister qureg, const int controlQubit, const i
         // this rank's values are either in the upper of lower half of the block. send values to controlledUnitaryDistributed
         // in the correct order
         if (rankIsUpper){
-            controlledUnitaryDistributed(qureg,controlQubit,targetQubit,rot1,rot2,
+            pure_controlledUnitaryDistributed(qureg,controlQubit,targetQubit,rot1,rot2,
                     qureg.stateVec, //upper
                     qureg.pairStateVec, //lower
                     qureg.stateVec); //output
         } else {
-            controlledUnitaryDistributed(qureg,controlQubit,targetQubit,rot1,rot2,
+            pure_controlledUnitaryDistributed(qureg,controlQubit,targetQubit,rot1,rot2,
                     qureg.pairStateVec, //upper
                     qureg.stateVec, //lower
                     qureg.stateVec); //output
@@ -461,7 +461,7 @@ void pure_multiControlledUnitary(QubitRegister qureg, int* controlQubits, const 
 
     if (useLocalDataOnly){
         // all values required to update state vector lie in this rank
-        multiControlledUnitaryLocal(qureg, targetQubit, mask, u);
+        pure_multiControlledUnitaryLocal(qureg, targetQubit, mask, u);
     } else {
         // need to get corresponding chunk of state vector from other rank
         rankIsUpper = chunkIsUpper(qureg.chunkId, qureg.numAmpsPerChunk, targetQubit);
@@ -474,12 +474,12 @@ void pure_multiControlledUnitary(QubitRegister qureg, int* controlQubits, const 
         // this rank's values are either in the upper of lower half of the block. send values to multiControlledUnitaryDistributed
         // in the correct order
         if (rankIsUpper){
-            multiControlledUnitaryDistributed(qureg,targetQubit,mask,rot1,rot2,
+            pure_multiControlledUnitaryDistributed(qureg,targetQubit,mask,rot1,rot2,
                     qureg.stateVec, //upper
                     qureg.pairStateVec, //lower
                     qureg.stateVec); //output
         } else {
-            multiControlledUnitaryDistributed(qureg,targetQubit,mask,rot1,rot2,
+            pure_multiControlledUnitaryDistributed(qureg,targetQubit,mask,rot1,rot2,
                     qureg.pairStateVec, //upper
                     qureg.stateVec, //lower
                     qureg.stateVec); //output
@@ -499,7 +499,7 @@ void pure_sigmaX(QubitRegister qureg, const int targetQubit)
 
     if (useLocalDataOnly){
         // all values required to update state vector lie in this rank
-        sigmaXLocal(qureg, targetQubit);
+        pure_sigmaXLocal(qureg, targetQubit);
     } else {
         // need to get corresponding chunk of state vector from other rank
         rankIsUpper = chunkIsUpper(qureg.chunkId, qureg.numAmpsPerChunk, targetQubit);
@@ -509,7 +509,7 @@ void pure_sigmaX(QubitRegister qureg, const int targetQubit)
         exchangeStateVectors(qureg, pairRank);
         // this rank's values are either in the upper of lower half of the block. sigmaX just replaces
         // this rank's values with pair values
-        sigmaXDistributed(qureg, targetQubit,
+        pure_sigmaXDistributed(qureg, targetQubit,
                 qureg.pairStateVec, // in
                 qureg.stateVec); // out
     }
@@ -530,7 +530,7 @@ void pure_controlledNot(QubitRegister qureg, const int controlQubit, const int t
 
     if (useLocalDataOnly){
         // all values required to update state vector lie in this rank
-        controlledNotLocal(qureg, controlQubit, targetQubit);
+        pure_controlledNotLocal(qureg, controlQubit, targetQubit);
     } else {
         // need to get corresponding chunk of state vector from other rank
         rankIsUpper = chunkIsUpper(qureg.chunkId, qureg.numAmpsPerChunk, targetQubit);
@@ -541,11 +541,11 @@ void pure_controlledNot(QubitRegister qureg, const int controlQubit, const int t
         // this rank's values are either in the upper of lower half of the block. send values to controlledNot
         // in the correct order
         if (rankIsUpper){
-            controlledNotDistributed(qureg,controlQubit,targetQubit,
+            pure_controlledNotDistributed(qureg,controlQubit,targetQubit,
                     qureg.pairStateVec, //in
                     qureg.stateVec); //out
         } else {
-            controlledNotDistributed(qureg,controlQubit,targetQubit,
+            pure_controlledNotDistributed(qureg,controlQubit,targetQubit,
                     qureg.pairStateVec, //in
                     qureg.stateVec); //out
         }
@@ -565,7 +565,7 @@ void pure_sigmaY(QubitRegister qureg, const int targetQubit)
 
     if (useLocalDataOnly){
         // all values required to update state vector lie in this rank
-        sigmaYLocal(qureg, targetQubit);
+        pure_sigmaYLocal(qureg, targetQubit);
     } else {
         //! fix -- put duplicate code (sigmaX, sigmaY) in seperate function
         // need to get corresponding chunk of state vector from other rank
@@ -576,7 +576,7 @@ void pure_sigmaY(QubitRegister qureg, const int targetQubit)
         exchangeStateVectors(qureg, pairRank);
         // this rank's values are either in the upper of lower half of the block. sigmaX just replaces
         // this rank's values with pair values
-        sigmaYDistributed(qureg,targetQubit,
+        pure_sigmaYDistributed(qureg,targetQubit,
                 qureg.pairStateVec, // in
                 qureg.stateVec, // out
                 rankIsUpper);
@@ -594,10 +594,10 @@ void pure_phaseGate(QubitRegister qureg, const int targetQubit, enum phaseGateTy
     int rankIsUpper;
 
     if (useLocalDataOnly){
-        phaseGateLocal(qureg, targetQubit, type);
+        pure_phaseGateLocal(qureg, targetQubit, type);
     } else {
         rankIsUpper = chunkIsUpper(qureg.chunkId, qureg.numAmpsPerChunk, targetQubit);
-        if (!rankIsUpper) phaseGateDistributed(qureg, targetQubit, type);
+        if (!rankIsUpper) pure_phaseGateDistributed(qureg, targetQubit, type);
     }
 }
 
@@ -614,7 +614,7 @@ void pure_hadamard(QubitRegister qureg, const int targetQubit)
 
     if (useLocalDataOnly){
         // all values required to update state vector lie in this rank
-        hadamardLocal(qureg, targetQubit);
+        pure_hadamardLocal(qureg, targetQubit);
     } else {
         // need to get corresponding chunk of state vector from other rank
         rankIsUpper = chunkIsUpper(qureg.chunkId, qureg.numAmpsPerChunk, targetQubit);
@@ -625,12 +625,12 @@ void pure_hadamard(QubitRegister qureg, const int targetQubit)
         // this rank's values are either in the upper of lower half of the block. send values to hadamardDistributed
         // in the correct order
         if (rankIsUpper){
-            hadamardDistributed(qureg,targetQubit,
+            pure_hadamardDistributed(qureg,targetQubit,
                     qureg.stateVec, //upper
                     qureg.pairStateVec, //lower
                     qureg.stateVec, rankIsUpper); //output
         } else {
-            hadamardDistributed(qureg,targetQubit,
+            pure_hadamardDistributed(qureg,targetQubit,
                     qureg.pairStateVec, //upper
                     qureg.stateVec, //lower
                     qureg.stateVec, rankIsUpper); //output
@@ -665,10 +665,10 @@ REAL pure_findProbabilityOfOutcome(QubitRegister qureg, const int measureQubit, 
     REAL stateProb=0, totalStateProb=0;
     int skipValuesWithinRank = halfMatrixBlockFitsInChunk(qureg.numAmpsPerChunk, measureQubit);
     if (skipValuesWithinRank) {
-        stateProb = findProbabilityOfZeroLocal(qureg, measureQubit);
+        stateProb = pure_findProbabilityOfZeroLocal(qureg, measureQubit);
     } else {
         if (!isChunkToSkipInFindPZero(qureg.chunkId, qureg.numAmpsPerChunk, measureQubit)){
-            stateProb = findProbabilityOfZeroDistributed(qureg, measureQubit);
+            stateProb = pure_findProbabilityOfZeroDistributed(qureg, measureQubit);
         } else stateProb = 0;
     }
     MPI_Allreduce(&stateProb, &totalStateProb, 1, MPI_QuEST_REAL, MPI_SUM, MPI_COMM_WORLD);
@@ -687,18 +687,18 @@ REAL pure_collapseToOutcome(QubitRegister qureg, const int measureQubit, int out
 
     int skipValuesWithinRank = halfMatrixBlockFitsInChunk(qureg.numAmpsPerChunk, measureQubit);
     if (skipValuesWithinRank) {
-        collapseToOutcomeLocal(qureg, measureQubit, totalStateProb, outcome);
+        pure_collapseToOutcomeLocal(qureg, measureQubit, totalStateProb, outcome);
     } else {
         if (!isChunkToSkipInFindPZero(qureg.chunkId, qureg.numAmpsPerChunk, measureQubit)){
             // chunk has amps for q=0
-            if (outcome==0) collapseToOutcomeDistributedRenorm(qureg, measureQubit, 
+            if (outcome==0) pure_collapseToOutcomeDistributedRenorm(qureg, measureQubit, 
                     totalStateProb);
-            else collapseToOutcomeDistributedSetZero(qureg, measureQubit);
+            else pure_collapseToOutcomeDistributedSetZero(qureg, measureQubit);
         } else {
             // chunk has amps for q=1
-            if (outcome==1) collapseToOutcomeDistributedRenorm(qureg, measureQubit, 
+            if (outcome==1) pure_collapseToOutcomeDistributedRenorm(qureg, measureQubit, 
                     totalStateProb);
-            else collapseToOutcomeDistributedSetZero(qureg, measureQubit);
+            else pure_collapseToOutcomeDistributedSetZero(qureg, measureQubit);
         }
     }
     return totalStateProb;
@@ -725,18 +725,18 @@ int pure_measureWithStats(QubitRegister qureg, int measureQubit, REAL *stateProb
 
     int skipValuesWithinRank = halfMatrixBlockFitsInChunk(qureg.numAmpsPerChunk, measureQubit);
     if (skipValuesWithinRank) {
-        collapseToOutcomeLocal(qureg, measureQubit, stateProbInternal, outcome);
+        pure_collapseToOutcomeLocal(qureg, measureQubit, stateProbInternal, outcome);
     } else {
         if (!isChunkToSkipInFindPZero(qureg.chunkId, qureg.numAmpsPerChunk, measureQubit)){
             // chunk has amps for q=0
-            if (outcome==0) collapseToOutcomeDistributedRenorm(qureg, measureQubit, 
+            if (outcome==0) pure_collapseToOutcomeDistributedRenorm(qureg, measureQubit, 
                     stateProbInternal);
-            else collapseToOutcomeDistributedSetZero(qureg, measureQubit);
+            else pure_collapseToOutcomeDistributedSetZero(qureg, measureQubit);
         } else {
             // chunk has amps for q=1
-            if (outcome==1) collapseToOutcomeDistributedRenorm(qureg, measureQubit, 
+            if (outcome==1) pure_collapseToOutcomeDistributedRenorm(qureg, measureQubit, 
                     stateProbInternal);
-            else collapseToOutcomeDistributedSetZero(qureg, measureQubit);
+            else pure_collapseToOutcomeDistributedSetZero(qureg, measureQubit);
         }
     }
 

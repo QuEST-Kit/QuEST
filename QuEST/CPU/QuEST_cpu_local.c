@@ -103,7 +103,7 @@ void pure_compactUnitary(QubitRegister qureg, const int targetQubit, Complex alp
     QuESTAssert(validateAlphaBeta(alpha, beta), 6, __func__);
 
     // all values required to update state vector lie in this rank
-    compactUnitaryLocal(qureg, targetQubit, alpha, beta);
+    pure_compactUnitaryLocal(qureg, targetQubit, alpha, beta);
 }
 
 void pure_unitary(QubitRegister qureg, const int targetQubit, ComplexMatrix2 u) 
@@ -112,7 +112,7 @@ void pure_unitary(QubitRegister qureg, const int targetQubit, ComplexMatrix2 u)
     QuESTAssert(validateMatrixIsUnitary(u), 5, __func__);
 
     // all values required to update state vector lie in this rank
-    unitaryLocal(qureg, targetQubit, u);
+    pure_unitaryLocal(qureg, targetQubit, u);
 }
 
 void pure_controlledCompactUnitary(QubitRegister qureg, const int controlQubit, const int targetQubit, Complex alpha, Complex beta) 
@@ -123,7 +123,7 @@ void pure_controlledCompactUnitary(QubitRegister qureg, const int controlQubit, 
     QuESTAssert(validateAlphaBeta(alpha, beta), 6, __func__);
 
 
-    controlledCompactUnitaryLocal(qureg, controlQubit, targetQubit, alpha, beta);
+    pure_controlledCompactUnitaryLocal(qureg, controlQubit, targetQubit, alpha, beta);
 }
 
 void pure_controlledUnitary(QubitRegister qureg, const int controlQubit, const int targetQubit, ComplexMatrix2 u) 
@@ -133,7 +133,7 @@ void pure_controlledUnitary(QubitRegister qureg, const int controlQubit, const i
     QuESTAssert(controlQubit != targetQubit, 3, __func__);
     QuESTAssert(validateMatrixIsUnitary(u), 5, __func__);
 
-    controlledUnitaryLocal(qureg, controlQubit, targetQubit, u);
+    pure_controlledUnitaryLocal(qureg, controlQubit, targetQubit, u);
 }
 
 void pure_multiControlledUnitary(QubitRegister qureg, int* controlQubits, const int numControlQubits, const int targetQubit, ComplexMatrix2 u) 
@@ -147,31 +147,31 @@ void pure_multiControlledUnitary(QubitRegister qureg, int* controlQubits, const 
     QuESTAssert(mask >=0 && mask <= (1LL<<qureg.numQubits)-1, 2, __func__);
     QuESTAssert((mask & (1LL<<targetQubit)) != (1LL<<targetQubit), 3, __func__);
 
-    multiControlledUnitaryLocal(qureg, targetQubit, mask, u);
+    pure_multiControlledUnitaryLocal(qureg, targetQubit, mask, u);
 }
 
 void pure_sigmaX(QubitRegister qureg, const int targetQubit) 
 {
     QuESTAssert(targetQubit >= 0 && targetQubit < qureg.numQubits, 1, __func__);
-    sigmaXLocal(qureg, targetQubit);
+    pure_sigmaXLocal(qureg, targetQubit);
 }
 
 void pure_sigmaY(QubitRegister qureg, const int targetQubit) 
 {
     QuESTAssert(targetQubit >= 0 && targetQubit < qureg.numQubits, 1, __func__);
-    sigmaYLocal(qureg, targetQubit);
+    pure_sigmaYLocal(qureg, targetQubit);
 }
 
 void pure_phaseGate(QubitRegister qureg, const int targetQubit, enum phaseGateType type)
 {
     QuESTAssert(targetQubit >= 0 && targetQubit < qureg.numQubits, 1, __func__);
-    phaseGateLocal(qureg, targetQubit, type);
+    pure_phaseGateLocal(qureg, targetQubit, type);
 }
 
 void pure_hadamard(QubitRegister qureg, const int targetQubit) 
 {
     QuESTAssert(targetQubit >= 0 && targetQubit < qureg.numQubits, 1, __func__);
-    hadamardLocal(qureg, targetQubit);
+    pure_hadamardLocal(qureg, targetQubit);
 }
 
 void pure_controlledNot(QubitRegister qureg, const int controlQubit, const int targetQubit) 
@@ -179,14 +179,14 @@ void pure_controlledNot(QubitRegister qureg, const int controlQubit, const int t
     QuESTAssert(targetQubit >= 0 && targetQubit < qureg.numQubits, 1, __func__);
     QuESTAssert(controlQubit >= 0 && controlQubit < qureg.numQubits, 2, __func__);
     QuESTAssert(controlQubit != targetQubit, 3, __func__);
-    controlledNotLocal(qureg, controlQubit, targetQubit);
+    pure_controlledNotLocal(qureg, controlQubit, targetQubit);
 }
 
 REAL pure_findProbabilityOfOutcome(QubitRegister qureg, const int measureQubit, int outcome)
 {
     QuESTAssert(measureQubit >= 0 && measureQubit < qureg.numQubits, 2, __func__);
     REAL stateProb=0;
-    stateProb = findProbabilityOfZeroLocal(qureg, measureQubit);
+    stateProb = pure_findProbabilityOfZeroLocal(qureg, measureQubit);
     if (outcome==1) stateProb = 1.0 - stateProb;
     return stateProb;
 }
@@ -198,7 +198,7 @@ REAL pure_collapseToOutcome(QubitRegister qureg, const int measureQubit, int out
     REAL stateProb;
     stateProb = pure_findProbabilityOfOutcome(qureg, measureQubit, outcome);
     QuESTAssert(absReal(stateProb)>REAL_EPS, 8, __func__);
-    collapseToOutcomeLocal(qureg, measureQubit, stateProb, outcome);
+    pure_collapseToOutcomeLocal(qureg, measureQubit, stateProb, outcome);
     return stateProb;
 }
 
@@ -220,7 +220,7 @@ int pure_measureWithStats(QubitRegister qureg, int measureQubit, REAL *stateProb
         else outcome = 0;
     } 
     if (outcome==0) stateProbInternal = 1-stateProbInternal;
-    collapseToOutcomeLocal(qureg, measureQubit, stateProbInternal, outcome);
+    pure_collapseToOutcomeLocal(qureg, measureQubit, stateProbInternal, outcome);
     *stateProb = stateProbInternal;
     return outcome;
 }

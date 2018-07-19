@@ -11,43 +11,43 @@
 
 # include "../QuEST_precision.h"
 
-void compactUnitaryLocal (QubitRegister qureg, const int targetQubit, Complex alpha, Complex beta);
+void pure_compactUnitaryLocal (QubitRegister qureg, const int targetQubit, Complex alpha, Complex beta);
 
-void compactUnitaryDistributed (QubitRegister qureg, const int targetQubit,
+void pure_compactUnitaryDistributed (QubitRegister qureg, const int targetQubit,
         Complex rot1, Complex rot2,
         ComplexArray stateVecUp,
         ComplexArray stateVecLo,
         ComplexArray stateVecOut);
 
-void unitaryLocal(QubitRegister qureg, const int targetQubit, ComplexMatrix2 u);
+void pure_unitaryLocal(QubitRegister qureg, const int targetQubit, ComplexMatrix2 u);
 
-void unitaryDistributed (QubitRegister qureg, const int targetQubit,
+void pure_unitaryDistributed (QubitRegister qureg, const int targetQubit,
         Complex rot1, Complex rot2,
         ComplexArray stateVecUp,
         ComplexArray stateVecLo,
         ComplexArray stateVecOut);
 
-void controlledCompactUnitaryLocal (QubitRegister qureg, const int controlQubit, const int targetQubit,
+void pure_controlledCompactUnitaryLocal (QubitRegister qureg, const int controlQubit, const int targetQubit,
         Complex alpha, Complex beta);
 
-void controlledCompactUnitaryDistributed (QubitRegister qureg, const int controlQubit, const int targetQubit,
+void pure_controlledCompactUnitaryDistributed (QubitRegister qureg, const int controlQubit, const int targetQubit,
         Complex rot1, Complex rot2,
         ComplexArray stateVecUp,
         ComplexArray stateVecLo,
         ComplexArray stateVecOut);
 
-void controlledUnitaryLocal(QubitRegister qureg, const int controlQubit, const int targetQubit, ComplexMatrix2 u);
+void pure_controlledUnitaryLocal(QubitRegister qureg, const int controlQubit, const int targetQubit, ComplexMatrix2 u);
 
-void controlledUnitaryDistributed (QubitRegister qureg, const int controlQubit, const int targetQubit,
+void pure_controlledUnitaryDistributed (QubitRegister qureg, const int controlQubit, const int targetQubit,
         Complex rot1, Complex rot2,
         ComplexArray stateVecUp,
         ComplexArray stateVecLo,
         ComplexArray stateVecOut);
 
-void multiControlledUnitaryLocal(QubitRegister qureg, const int targetQubit,
+void pure_multiControlledUnitaryLocal(QubitRegister qureg, const int targetQubit,
         long long int mask, ComplexMatrix2 u);
 
-void multiControlledUnitaryDistributed (QubitRegister qureg,
+void pure_multiControlledUnitaryDistributed (QubitRegister qureg,
         const int targetQubit,
         long long int mask,
         Complex rot1, Complex rot2,
@@ -55,48 +55,48 @@ void multiControlledUnitaryDistributed (QubitRegister qureg,
         ComplexArray stateVecLo,
         ComplexArray stateVecOut);
 
-void sigmaXLocal(QubitRegister qureg, const int targetQubit);
+void pure_sigmaXLocal(QubitRegister qureg, const int targetQubit);
 
-void sigmaXDistributed (QubitRegister qureg, const int targetQubit,
+void pure_sigmaXDistributed (QubitRegister qureg, const int targetQubit,
         ComplexArray stateVecIn,
         ComplexArray stateVecOut);
 
-void sigmaYLocal(QubitRegister qureg, const int targetQubit);
+void pure_sigmaYLocal(QubitRegister qureg, const int targetQubit);
 
-void sigmaYDistributed(QubitRegister qureg, const int targetQubit,
+void pure_sigmaYDistributed(QubitRegister qureg, const int targetQubit,
         ComplexArray stateVecIn,
         ComplexArray stateVecOut,
         int updateUpper);
 
-void hadamardLocal (QubitRegister qureg, const int targetQubit);
+void pure_hadamardLocal (QubitRegister qureg, const int targetQubit);
 
-void hadamardDistributed (QubitRegister qureg, const int targetQubit,
+void pure_hadamardDistributed (QubitRegister qureg, const int targetQubit,
         ComplexArray stateVecUp,
         ComplexArray stateVecLo,
         ComplexArray stateVecOut, int updateUpper);
 
 
-void phaseGateLocal(QubitRegister qureg, const int targetQubit, enum phaseGateType type);
+void pure_phaseGateLocal(QubitRegister qureg, const int targetQubit, enum phaseGateType type);
 
-void phaseGateDistributed(QubitRegister qureg, const int targetQubit, enum phaseGateType type);
+void pure_phaseGateDistributed(QubitRegister qureg, const int targetQubit, enum phaseGateType type);
 
-void controlledNotLocal(QubitRegister qureg, const int controlQubit, const int targetQubit);
+void pure_controlledNotLocal(QubitRegister qureg, const int controlQubit, const int targetQubit);
 
-void controlledNotDistributed (QubitRegister qureg, const int controlQubit, const int targetQubit,
+void pure_controlledNotDistributed (QubitRegister qureg, const int controlQubit, const int targetQubit,
         ComplexArray stateVecIn,
         ComplexArray stateVecOut);
 
-REAL findProbabilityOfZeroLocal (QubitRegister qureg,
+REAL pure_findProbabilityOfZeroLocal (QubitRegister qureg,
         const int measureQubit);
 
-REAL findProbabilityOfZeroDistributed (QubitRegister qureg,
+REAL pure_findProbabilityOfZeroDistributed (QubitRegister qureg,
         const int measureQubit);
 
-void collapseToOutcomeLocal(QubitRegister qureg, int measureQubit, REAL totalProbability, int outcome);
+void pure_collapseToOutcomeLocal(QubitRegister qureg, int measureQubit, REAL totalProbability, int outcome);
 
-REAL collapseToOutcomeDistributedRenorm (QubitRegister qureg, const int measureQubit, const REAL totalProbability);
+REAL pure_collapseToOutcomeDistributedRenorm (QubitRegister qureg, const int measureQubit, const REAL totalProbability);
 
-void collapseToOutcomeDistributedSetZero(QubitRegister qureg, const int measureQubit);
+void pure_collapseToOutcomeDistributedSetZero(QubitRegister qureg, const int measureQubit);
 
 
 

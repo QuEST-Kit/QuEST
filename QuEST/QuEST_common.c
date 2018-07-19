@@ -1,7 +1,7 @@
 // Distributed under MIT licence. See https://github.com/aniabrown/QuEST_GPU/blob/master/LICENCE.txt for details
 
 /** @file
- * Internal and pure-state functions which are hardware-agnostic
+ * Internal and API functions which are hardware-agnostic
  */
 
 # include "QuEST.h"

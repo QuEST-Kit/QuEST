@@ -12,6 +12,7 @@
 # include "QuEST_internal.h"
 # include "QuEST_precision.h"
 # include "QuEST_ops_pure.h"
+# include "QuEST_ops_mixed.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -49,9 +50,7 @@ void initPureState(QubitRegister qureg, QubitRegister pure) {
 		// it might be a nightmare to get the distributed pure state amps to 
 		// the right nodes for the density matrix
 		// @TODO implement this on GPU and CPU
-		// density_initPureState(qureg, pure);
-		QuESTAssert(0, 13, __func__);
-		
+		//mixed_initPureState(qureg, pure);
 	} else {
 		QuESTAssert(qureg.numQubits==pure.numQubits, 13, __func__);
 
@@ -182,7 +181,6 @@ int getNumQubits(QubitRegister qureg) {
 		return qureg.numDensityQubits;
 	else
 		return pure_getNumQubits(qureg);
-	// @TODO fix asymmetry
 }
 
 int compareStates(QubitRegister mq1, QubitRegister mq2, REAL precision) {
