@@ -11,6 +11,13 @@
 
 # include "../QuEST_precision.h"
 
+// @TODO
+void mixed_initPureStateLocal(QubitRegister targetQureg, QubitRegister copyQureg);
+
+// @TODO
+void mixed_initPureStateDistributed(QubitRegister targetQureg, QubitRegister copyQureg);
+
+
 void pure_compactUnitaryLocal (QubitRegister qureg, const int targetQubit, Complex alpha, Complex beta);
 
 void pure_compactUnitaryDistributed (QubitRegister qureg, const int targetQubit,

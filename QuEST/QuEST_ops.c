@@ -4,9 +4,17 @@
  * Implements the QuEST.h API (and some debugging functions) in a hardware-agnostic way, 
  * for both pure and mixed states. These functions mostly wrap hardware-specific functions,
  * and should never call eachother.
+ *
+ * Density matrices rho of N qubits are flattened to appear as state-vectors |s> of 2N qubits.
+ * Operations U rho U^dag are implemented as U^* U |s> and make use of the pure state backend,
+ * and often don't need to explicitly compute U^*.
  */
 
 // @TODO unit test the density functionality of all below methods
+// @TODO for initPureState:
+// 		- pure_initPureState on GPU
+// 		- mixed_initPureState on GPU
+// 		- mixed_initPureStateDistributed on CPU
 
 # include "QuEST.h"
 # include "QuEST_internal.h"
@@ -46,15 +54,10 @@ void initPureState(QubitRegister qureg, QubitRegister pure) {
 	
 	if (qureg.isDensityMatrix) {
 		QuESTAssert(qureg.numDensityQubits==pure.numQubits, 13, __func__);
-
-		// it might be a nightmare to get the distributed pure state amps to 
-		// the right nodes for the density matrix
-		// @TODO implement this on GPU and CPU
-		//mixed_initPureState(qureg, pure);
+		mixed_initPureState(qureg, pure);
+		
 	} else {
 		QuESTAssert(qureg.numQubits==pure.numQubits, 13, __func__);
-
-		// @TODO implement on GPU
 		pure_initPureState(qureg, pure);
 	}
 }
@@ -176,6 +179,26 @@ void controlledNot(QubitRegister qureg, const int controlQubit, const int target
 	}
 }
 
+void controlledPhaseGate(QubitRegister qureg, const int idQubit1, const int idQubit2) {
+	pure_controlledPhaseGate(qureg, idQubit1, idQubit2);
+	if (qureg.isDensityMatrix) {
+		int shift = qureg.numDensityQubits;
+		pure_controlledPhaseGate(qureg, idQubit1+shift, idQubit2+shift);
+	}
+}
+
+void multiControlledPhaseGate(QubitRegister qureg, int *controlQubits, int numControlQubits) {
+	pure_multiControlledPhaseGate(qureg, controlQubits, numControlQubits);
+	if (qureg.isDensityMatrix) {
+		int shift = qureg.numDensityQubits;
+		shiftIndices(controlQubits, numControlQubits, shift);
+		pure_multiControlledPhaseGate(qureg, controlQubits, numControlQubits);
+		shiftIndices(controlQubits, numControlQubits, -shift);
+	}
+}
+
+
+
 int getNumQubits(QubitRegister qureg) {
 	if (qureg.isDensityMatrix)
 		return qureg.numDensityQubits;
@@ -246,15 +269,7 @@ void reportStateToScreen(QubitRegister qureg, QuESTEnv env, int reportRank)  {
 	pure_reportStateToScreen(qureg, env, reportRank);
 }
 
-// @TODO
-void multiControlledPhaseGate(QubitRegister qureg, int *controlQubits, int numControlQubits) {
-	pure_multiControlledPhaseGate(qureg, controlQubits, numControlQubits);
-}
 
-// @TODO
-void controlledPhaseGate (QubitRegister qureg, const int idQubit1, const int idQubit2) {
-	pure_controlledPhaseGate (qureg, idQubit1, idQubit2);
-}
 
 // @TODO
 void sGate(QubitRegister qureg, const int targetQubit) {

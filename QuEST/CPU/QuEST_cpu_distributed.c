@@ -25,6 +25,19 @@
 # include <omp.h>
 # endif
 
+
+
+
+
+// @TODO
+void mixed_initPureState(QubitRegister targetQureg, QubitRegister copyQureg) {
+	mixed_initPureStateDistributed(targetQureg, copyQureg);
+}
+
+
+
+
+
 static int isChunkToSkipInFindPZero(int chunkId, long long int chunkSize, int measureQubit);
 static int chunkIsUpper(int chunkId, long long int chunkSize, int targetQubit);
 static void getRotAngle(int chunkIsUpper, Complex *rot1, Complex *rot2, Complex alpha, Complex beta);

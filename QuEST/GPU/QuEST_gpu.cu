@@ -16,6 +16,7 @@
 # define REDUCE_SHARED_SIZE 512
 # define DEBUG 0
 
+
 static __device__ int extractBit (int locationOfBitFromRight, long long int theEncodedNumber)
 {
     return (theEncodedNumber & ( 1LL << locationOfBitFromRight )) >> locationOfBitFromRight;
@@ -24,6 +25,24 @@ static __device__ int extractBit (int locationOfBitFromRight, long long int theE
 #ifdef __cplusplus
 extern "C" {
 #endif
+	
+	
+	
+	
+	
+	
+// @TODO
+void pure_initPureState(QubitRegister targetQureg, QubitRegister copyQureg) {
+	QuESTAssert(0, 0, __func__);
+}
+// @TODO
+void mixed_initPureState(QubitRegister targetQureg, QubitRegister copyQureg) {
+	QuESTAssert(0, 0, __func__);
+}
+
+
+
+
 
 void pure_createQubitRegister(QubitRegister *qureg, int numQubits, QuESTEnv env)
 {

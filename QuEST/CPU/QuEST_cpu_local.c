@@ -22,6 +22,22 @@
 # include <omp.h>
 # endif
 
+
+
+
+// @TODO
+void mixed_initPureState(QubitRegister targetQureg, QubitRegister copyQureg) {
+	
+	QuESTAssert(targetQureg.isDensityMatrix, 14, __func__);
+	QuESTAssert( !copyQureg.isDensityMatrix, 12, __func__);
+	QuESTAssert(targetQureg.numDensityQubits==copyQureg.numQubits, 13, __func__);
+	
+	mixed_initPureStateLocal(targetQureg, copyQureg);
+}
+
+
+
+
 void initQuESTEnv(QuESTEnv *env){
     // init MPI environment
     env->rank=0;
@@ -230,3 +246,4 @@ int pure_measure(QubitRegister qureg, int measureQubit){
     REAL stateProb;
     return pure_measureWithStats(qureg, measureQubit, &stateProb);
 }
+
