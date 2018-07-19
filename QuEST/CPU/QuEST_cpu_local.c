@@ -178,6 +178,12 @@ void pure_sigmaY(QubitRegister qureg, const int targetQubit)
     pure_sigmaYLocal(qureg, targetQubit);
 }
 
+void pure_phaseShift(QubitRegister qureg, const int targetQubit, REAL angle) {
+	
+	QuESTAssert(targetQubit >= 0 && targetQubit < qureg.numQubits, 1, __func__);
+	pure_phaseShiftLocal(qureg, targetQubit, angle);
+}
+
 void pure_specialPhaseGate(QubitRegister qureg, const int targetQubit, enum phaseGateType type)
 {
     QuESTAssert(targetQubit >= 0 && targetQubit < qureg.numQubits, 1, __func__);

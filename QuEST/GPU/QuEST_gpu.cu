@@ -960,6 +960,51 @@ void pure_specialPhaseGate(QubitRegister qureg, const int targetQubit, enum phas
     specialPhaseGateKernel<<<CUDABlocks, threadsPerCUDABlock>>>(qureg, targetQubit, type);
 }
 
+
+__global__ void phaseShiftKernel(QubitRegister qureg, const int targetQubit, REAL cosAngle, REAL sinAngle) {
+
+    long long int sizeBlock, sizeHalfBlock;
+    long long int thisBlock, indexUp,indexLo;
+
+    REAL   stateRealLo,  stateImagLo;             
+    long long int thisTask; 
+    const long long int numTasks = qureg.numAmpsPerChunk >> 1;
+
+    sizeHalfBlock = 1LL << targetQubit;
+    sizeBlock     = 2LL * sizeHalfBlock;
+
+    REAL *stateVecReal = qureg.deviceStateVec.real;
+    REAL *stateVecImag = qureg.deviceStateVec.imag;
+
+    thisTask = blockIdx.x*blockDim.x + threadIdx.x;
+    if (thisTask>=numTasks) return;
+    thisBlock   = thisTask / sizeHalfBlock;
+    indexUp     = thisBlock*sizeBlock + thisTask%sizeHalfBlock;
+    indexLo     = indexUp + sizeHalfBlock;
+
+
+    stateRealLo = stateVecReal[indexLo];
+    stateImagLo = stateVecImag[indexLo];
+
+    stateVecReal[indexLo] = cosAngle*stateRealLo - sinAngle*stateImagLo;
+    stateVecImag[indexLo] = sinAngle*stateRealLo + cosAngle*stateImagLo;
+}
+
+// @TODO: needs unit test
+void pure_phaseShift(QubitRegister qureg, const int targetQubit, REAL angle)
+{
+    QuESTAssert(targetQubit >= 0 && targetQubit < qureg.numQubits, 1, __func__);
+	REAL cosAngle = cos(angle);
+	REAL sinAngle = sin(angle);
+	
+    int threadsPerCUDABlock, CUDABlocks;
+    threadsPerCUDABlock = 128;
+    CUDABlocks = ceil((REAL)(qureg.numAmpsPerChunk>>1)/threadsPerCUDABlock);
+    phaseShiftKernel<<<CUDABlocks, threadsPerCUDABlock>>>(qureg, targetQubit, cosAngle, sinAngle);
+}
+
+
+
 __global__ void controlledPhaseFlipKernel(QubitRegister qureg, const int idQubit1, const int idQubit2)
 {
     long long int index;

@@ -82,6 +82,9 @@ void pure_hadamardDistributed (QubitRegister qureg, const int targetQubit,
         ComplexArray stateVecLo,
         ComplexArray stateVecOut, int updateUpper);
 
+void pure_phaseShiftLocal(QubitRegister qureg, const int targetQubit, REAL angle);
+
+void pure_phaseShiftDistributed(QubitRegister qureg, const int targetQubit, REAL angle);
 
 void pure_specialPhaseGateLocal(QubitRegister qureg, const int targetQubit, enum phaseGateType type);
 

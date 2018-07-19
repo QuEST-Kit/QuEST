@@ -206,6 +206,73 @@ void initClassicalState(QubitRegister qureg, long long int stateInd);
  */
 void initPureState(QubitRegister qureg, QubitRegister pure);
 
+/** Shift the phase between \f$ |0\rangle \f$ and \f$ |1\rangle \f$ of a single qubit by a given angle.
+ * This is equivalent to a rotation Z-axis of the Bloch-sphere up to a global phase factor.
+ * For angle \f$\theta\f$, applies
+ * \f[
+ * \begin{pmatrix}
+ * 0 & 0 \\
+ * 0 & \exp(i \theta)
+ * \end{pmatrix}
+ * \f] 
+ *     
+	\f[
+	\setlength{\fboxrule}{0.01pt}
+	\fbox{
+				\begin{tikzpicture}[scale=.5]
+				\node[draw=none] at (-3.5, 0) {rot};
+
+				\draw (-2,0) -- (-1, 0);
+				\draw (1, 0) -- (2, 0);
+				\draw (-1,-1)--(-1,1)--(1,1)--(1,-1)--cycle;
+				\node[draw=none] at (0, 0) {$R_\theta$};
+				\end{tikzpicture}
+	}
+	\f]
+ * 
+ * @param[in,out] qureg object representing the set of all qubits
+ * @param[in] rotQubit qubit to undergo a phase shift
+ * @param[in] angle amount by which to shift the phase in radians
+ * @throws exitWithError
+ * 		if \p targetQubit is outside [0, \p qureg.numQubits).
+ */
+void phaseShift(QubitRegister qureg, const int targetQubit, REAL angle);
+
+/** Apply the (two-qubit) controlled phase flip gate, also known as the controlled sigmaZ gate.
+ * For each state, if both input qubits have value one, multiply the amplitude of that state by -1. This applies the two-qubit unitary:
+ * \f[
+ * \begin{pmatrix}
+ * 1 \\
+ * & 1 \\\
+ * & & 1 \\
+ * & & & -1 
+ * \end{pmatrix}
+ * \f]
+ *
+	\f[
+	\setlength{\fboxrule}{0.01pt}
+	\fbox{
+				\begin{tikzpicture}[scale=.5]
+				\node[draw=none] at (-3.5, 2) {idQubit1};
+				\node[draw=none] at (-3.5, 0) {idQubit2};
+
+				\draw (-2, 2) -- (2, 2);
+				\draw[fill=black] (0, 2) circle (.2);
+				\draw (0, 2) -- (0, 0);
+				
+				\draw (-2,0) -- (2, 0);
+				\draw[fill=black] (0, 0) circle (.2);
+				\end{tikzpicture}
+	}
+	\f]
+ *
+ * @param[in,out] qureg object representing the set of all qubits
+ * @param[in] idQubit1, idQubit2 qubits to operate upon
+ * @throws exitWithError 
+ * 	if \p idQubit1 or \p idQubit2 are outside [0, \p qureg.numQubits), or are equal
+ */
+void controlledPhaseFlip (QubitRegister qureg, const int idQubit1, const int idQubit2);
+
 /** Apply the multiple-qubit controlled phase flip gate, also known as the multiple-qubit controlled sigmaZ gate.
  * For each state, if all control qubits have value one, multiply the amplitude of that state by -1. This applies the many-qubit unitary:
  * \f[
@@ -249,41 +316,6 @@ void initPureState(QubitRegister qureg, QubitRegister pure);
  * 		if \p numControlQubits is outside [1, \p qureg.numQubits) 
  */
 void multiControlledPhaseFlip(QubitRegister qureg, int *controlQubits, int numControlQubits);
-
-/** Apply the (two-qubit) controlled phase flip gate, also known as the controlled sigmaZ gate.
- * For each state, if both input qubits have value one, multiply the amplitude of that state by -1. This applies the two-qubit unitary:
- * \f[
- * \begin{pmatrix}
- * 1 \\
- * & 1 \\\
- * & & 1 \\
- * & & & -1 
- * \end{pmatrix}
- * \f]
- *
-	\f[
-	\setlength{\fboxrule}{0.01pt}
-	\fbox{
-				\begin{tikzpicture}[scale=.5]
-				\node[draw=none] at (-3.5, 2) {idQubit1};
-				\node[draw=none] at (-3.5, 0) {idQubit2};
-
-				\draw (-2, 2) -- (2, 2);
-				\draw[fill=black] (0, 2) circle (.2);
-				\draw (0, 2) -- (0, 0);
-				
-				\draw (-2,0) -- (2, 0);
-				\draw[fill=black] (0, 0) circle (.2);
-				\end{tikzpicture}
-	}
-	\f]
- *
- * @param[in,out] qureg object representing the set of all qubits
- * @param[in] idQubit1, idQubit2 qubits to operate upon
- * @throws exitWithError 
- * 	if \p idQubit1 or \p idQubit2 are outside [0, \p qureg.numQubits), or are equal
- */
-void controlledPhaseFlip (QubitRegister qureg, const int idQubit1, const int idQubit2);
 
 /** Apply the single-qubit S gate.
  * This is a rotation of \f$\pi/2\f$ around the Z-axis on the Bloch sphere, or the unitary:

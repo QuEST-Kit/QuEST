@@ -171,6 +171,13 @@ void sigmaZ(QubitRegister qureg, const int targetQubit) {
 	}
 }
 
+void phaseShift(QubitRegister qureg, const int targetQubit, REAL angle) {
+	pure_phaseShift(qureg, targetQubit, angle);
+	if (qureg.isDensityMatrix) {
+		pure_phaseShift(qureg, targetQubit+qureg.numDensityQubits, -angle);
+	}
+}
+
 void controlledNot(QubitRegister qureg, const int controlQubit, const int targetQubit) {
 	pure_controlledNot(qureg, controlQubit, targetQubit);
 	if (qureg.isDensityMatrix) {

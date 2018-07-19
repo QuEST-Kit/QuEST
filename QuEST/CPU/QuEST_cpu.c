@@ -1448,6 +1448,78 @@ void pure_hadamardDistributed(QubitRegister qureg, const int targetQubit,
     }
 }
 
+// @TODO unit test
+void pure_phaseShiftLocal(QubitRegister qureg, const int targetQubit, REAL angle) {
+	
+    long long int sizeBlock, sizeHalfBlock;
+    long long int thisBlock, indexUp,indexLo;
+    REAL stateRealLo,stateImagLo;             
+    long long int thisTask; 
+    const long long int numTasks = qureg.numAmpsPerChunk >> 1;
+    sizeHalfBlock = 1LL << targetQubit;
+    sizeBlock     = 2LL * sizeHalfBlock;
+    REAL *stateVecReal = qureg.deviceStateVec.real;
+    REAL *stateVecImag = qureg.deviceStateVec.imag;
+	
+	const REAL cosAngle = cos(angle);
+	const REAL sinAngle = sin(angle);
+	
+# ifdef _OPENMP
+# pragma omp parallel \
+    default  (none) \
+    shared   (numTasks,sizeBlock,sizeHalfBlock,stateVecReal,stateVecImag,cosAngle,sinAngle) \
+    private  (thisTask,thisBlock,indexUp,indexLo,stateRealLo,stateImagLo) 
+# endif
+    {
+# ifdef _OPENMP
+# pragma omp for schedule (static)
+# endif
+        for (thisTask=0; thisTask<numTasks; thisTask++) {
+            thisBlock   = thisTask / sizeHalfBlock;
+            indexUp     = thisBlock*sizeBlock + thisTask%sizeHalfBlock;
+			indexLo     = indexUp + sizeHalfBlock;
+
+			stateRealLo = stateVecReal[indexLo];
+			stateImagLo = stateVecImag[indexLo];
+	
+			stateVecReal[indexLo] = cosAngle*stateRealLo - sinAngle*stateImagLo;
+			stateVecImag[indexLo] = sinAngle*stateRealLo + cosAngle*stateImagLo;
+		}
+	}
+}
+
+// @TODO unit test
+void pure_phaseShiftDistributed(QubitRegister qureg, const int targetQubit, REAL angle) {
+
+    REAL stateRealLo,stateImagLo;
+    long long int thisTask;         
+    const long long int numTasks=qureg.numAmpsPerChunk;
+    REAL *stateVecReal = qureg.stateVec.real;
+    REAL *stateVecImag = qureg.stateVec.imag;
+
+	const REAL cosAngle = cos(angle);
+	const REAL sinAngle = sin(angle);
+
+# ifdef _OPENMP
+# pragma omp parallel \
+    default  (none) \
+    shared   (numTasks,stateVecReal,stateVecImag,cosAngle,sinAngle) \
+    private  (thisTask,stateRealLo,stateImagLo) 
+# endif
+    {
+# ifdef _OPENMP
+# pragma omp for schedule (static)
+# endif
+        for (thisTask=0; thisTask<numTasks; thisTask++) {
+            stateRealLo = stateVecReal[thisTask];
+            stateImagLo = stateVecImag[thisTask];
+
+			stateVecReal[thisTask] = cosAngle*stateRealLo - sinAngle*stateImagLo;
+			stateVecImag[thisTask] = sinAngle*stateRealLo + cosAngle*stateImagLo;
+        }
+    }
+}
+
 void pure_specialPhaseGateLocal(QubitRegister qureg, const int targetQubit, enum phaseGateType type)
 {
     long long int sizeBlock, sizeHalfBlock;
