@@ -28,10 +28,14 @@ const char* errorCodes[] = {
     "Invalid unitary matrix.",                              // 5
     "Invalid rotation arguments.",                          // 6
     "Invalid system size. Cannot print output for systems greater than 5 qubits.", // 7
-    "Can't collapse to state with zero probability.", // 8
-    "Invalid number of qubits.", // 9
-    "Invalid measurement outcome -- must be either 0 or 1.", // 10
-    "Could not open file" // 11
+    "Can't collapse to state with zero probability.", 		// 8
+    "Invalid number of qubits.", 							// 9
+    "Invalid measurement outcome -- must be either 0 or 1.",// 10
+    "Could not open file.",									// 11
+	"Second argument must be a pure state, not a density matrix.", // 12
+	"Dimensions of the qubit registers do not match.", 		// 13
+	"This operation is only defined for density matrices.",	// 14
+	"This operation is only defined for two pure states."	// 15
 };
 
 #ifdef __cplusplus
@@ -245,6 +249,32 @@ void pure_controlledRotateZ(QubitRegister qureg, const int controlQubit, const i
     Vector unitAxis = {0, 0, 1};
     pure_controlledRotateAroundAxis(qureg, controlQubit, targetQubit, angle, unitAxis);
 }
+
+
+
+Complex getConjugateScalar(Complex scalar) {
+	
+	Complex conjScalar;
+	conjScalar.real =   scalar.real;
+	conjScalar.imag = - scalar.imag;
+	return conjScalar;
+}
+
+ComplexMatrix2 getConjugateMatrix(ComplexMatrix2 matrix) {
+	
+	ComplexMatrix2 conjMatrix;
+	conjMatrix.r0c0 = getConjugateScalar(matrix.r0c0);
+	conjMatrix.r0c1 = getConjugateScalar(matrix.r0c1);
+	conjMatrix.r1c0 = getConjugateScalar(matrix.r1c0);
+	conjMatrix.r1c1 = getConjugateScalar(matrix.r1c1);
+	return conjMatrix;
+}
+
+void shiftIndices(int* indices, int numIndices, int shift) {
+	for (int j=0; j < numIndices; j++)
+		indices[j] += shift;
+}
+
 
 
 #ifdef __cplusplus

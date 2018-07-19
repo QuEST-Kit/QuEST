@@ -40,6 +40,8 @@ void pure_initStateDebug(QubitRegister qureg);
 
 void pure_initClassicalState(QubitRegister qureg, long long int stateInd);
 
+void pure_initPureState(QubitRegister targetQureg, QubitRegister copyQureg);
+
 void pure_multiControlledPhaseGate(QubitRegister qureg, int *controlQubits, int numControlQubits);
 
 void pure_controlledPhaseGate (QubitRegister qureg, const int idQubit1, const int idQubit2);

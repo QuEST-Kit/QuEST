@@ -71,6 +71,8 @@ typedef struct QubitRegister
 
 	//! Whether this instance is a density-state representation
 	int isDensityMatrix;
+	// The number of qubits represented in the density matrix, not that suggested by the size of the data-structure
+	int numDensityQubits;
 	
 } QubitRegister;
 
@@ -86,9 +88,7 @@ typedef struct QuESTEnv
 // Codes for sigmaZ phase gate variations
 enum phaseGateType {SIGMA_Z=0, S_GATE=1, T_GATE=2};
 
-// QuEST library functions whose implementation is independent of environment (local, MPI)
-
-/** Create a QubitRegister object representing a set of qubits.
+/** Create a QubitRegister object representing a set of qubits which will remain in a pure state.
  * Allocate space for state vector of probability amplitudes, including space for temporary values to be copied from
  * one other chunk if running the distributed version. Define properties related to the size of the set of qubits.
  * initStateZero should be called after this to initialise the qubits to the zero state.
@@ -99,6 +99,18 @@ enum phaseGateType {SIGMA_Z=0, S_GATE=1, T_GATE=2};
  * @throws exitWithError if \p numQubits <= 0
  */
 void createQubitRegister(QubitRegister *qureg, int numQubits, QuESTEnv env);
+
+/** Create a QubitRegister for qubits which are represented by a density matrix, and can be in mixed states.
+ * Allocate space for a density matrix of probability amplitudes, including space for temporary values to be copied from
+ * one other chunk if running the distributed version. Define properties related to the size of the set of qubits.
+ * initStateZero should be called after this to initialise the qubits to the zero pure state.
+ *
+ * @param[in,out] qureg a pointer to an object representing the set of qubits
+ * @param[in] numQubits number of qubits in the system
+ * @param[in] env object representing the execution environment (local, multinode etc)
+ * @throws exitWithError if \p numQubits <= 0
+ */
+void createDensityQubitRegister(QubitRegister *qureg, int numQubits, QuESTEnv env);
 
 /** Deallocate a QubitRegister object representing a set of qubits.
  * Free memory allocated to state vector of probability amplitudes, including temporary vector for
@@ -183,6 +195,16 @@ void initStatePlus(QubitRegister qureg);
  * @param[in] stateInd the index (0 to the number of amplitudes, exclusive) of the state to give probability 1
  */
 void initClassicalState(QubitRegister qureg, long long int stateInd);
+
+/**
+ * Initialise a set of \f$ N \f$ qubits, which can be pure or mixed, to a given pure state.
+ * If \p qureg is a pure state, this merely makes \p qureg an identical copy of \p pure.
+ * If \p qureg is a density matrix, this makes \p qureg 100% likely to be in the \p pure state.
+ *
+ * @param[in,out] qureg the object representing the set of qubits to be initialised
+ * @param[in] pure the pure state to be copied or to give probability 1 in qureg
+ */
+void initPureState(QubitRegister qureg, QubitRegister pure);
 
 /** Apply the multiple-qubit controlled phase gate, also known as the multiple-qubit controlled sigmaZ gate.
  * For each state, if all control qubits have value one, multiply the amplitude of that state by -1. This applies the many-qubit unitary:
@@ -320,9 +342,6 @@ void sGate(QubitRegister qureg, const int targetQubit);
  * @throws exitWithError if \p targetQubit is outside [0, \p qureg.numQubits)
  */
 void tGate(QubitRegister qureg, const int targetQubit);
-
-
-// QuEST library functions whose implementation depends on environment (local, MPI)
 
 /** Initialize the QuEST environment. If something needs to be done to set up the execution environment, such as 
  * initializing MPI when running in distributed mode, it is handled here

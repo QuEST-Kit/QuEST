@@ -165,7 +165,6 @@ void pure_initStatePlus (QubitRegister qureg)
     }
 }
 
-/* Tyson Jones, 16th May 2018 4pm */
 void pure_initClassicalState (QubitRegister qureg, long long int stateInd)
 {
     long long int stateVecSize;
@@ -199,6 +198,41 @@ void pure_initClassicalState (QubitRegister qureg, long long int stateInd)
     if (qureg.chunkId == stateInd/stateVecSize){
         stateVecReal[stateInd % stateVecSize] = 1.0;
         stateVecImag[stateInd % stateVecSize] = 0.0;
+    }
+}
+
+// @TODO unit test
+// @TODO add same on GPU
+void pure_initPureState(QubitRegister targetQureg, QubitRegister copyQureg) {
+	
+	// registers are equal sized, so nodes hold the same state-vector partitions
+    long long int stateVecSize;
+    long long int index;
+
+    // dimension of the state vector
+    stateVecSize = targetQureg.numAmpsPerChunk;
+
+    // Can't use qureg->stateVec as a private OMP var
+    REAL *targetStateVecReal = targetQureg.stateVec.real;
+    REAL *targetStateVecImag = targetQureg.stateVec.imag;
+    REAL *copyStateVecReal = copyQureg.stateVec.real;
+    REAL *copyStateVecImag = copyQureg.stateVec.imag;
+
+    // initialise the state to |0000..0000>
+# ifdef _OPENMP
+# pragma omp parallel \
+    default  (none) \
+    shared   (stateVecSize, targetStateVecReal, targetStateVecImag, copyStateVecReal, copyStateVecImag) \
+    private  (index) 
+# endif
+    {
+# ifdef _OPENMP
+# pragma omp for schedule (static)
+# endif
+        for (index=0; index<stateVecSize; index++) {
+            targetStateVecReal[index] = copyStateVecReal[index];
+            targetStateVecImag[index] = copyStateVecImag[index];
+        }
     }
 }
 
