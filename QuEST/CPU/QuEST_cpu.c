@@ -24,6 +24,38 @@
 
 
 
+void mixed_initStatePlus (QubitRegister qureg)
+{
+    long long int chunkSize, stateVecSize;
+    long long int index;
+
+    // dimension of the state vector
+    chunkSize = qureg.numAmpsPerChunk;
+    stateVecSize = chunkSize*qureg.numChunks;
+    REAL probFactor = 1.0/((REAL)stateVecSize);
+
+    // Can't use qureg->stateVec as a private OMP var
+    REAL *stateVecReal = qureg.stateVec.real;
+    REAL *stateVecImag = qureg.stateVec.imag;
+
+    // initialise the state to |+++..+++> = 1/normFactor {1, 1, 1, ...}
+# ifdef _OPENMP
+# pragma omp parallel \
+    default  (none) \
+    shared   (chunkSize, stateVecReal, stateVecImag, probFactor) \
+    private  (index) 
+# endif
+    {
+# ifdef _OPENMP
+# pragma omp for schedule (static)
+# endif
+        for (index=0; index<chunkSize; index++) {
+            stateVecReal[index] = probFactor;
+            stateVecImag[index] = 0.0;
+        }
+    }
+}
+
 void mixed_initPureStateLocal(QubitRegister targetQureg, QubitRegister copyQureg) {
 	
 	// targetQureg is a density matrix of size (2^N)^2, copy is pure of size 2^N
@@ -172,7 +204,7 @@ void pure_initStateZero (QubitRegister qureg)
     REAL *stateVecReal = qureg.stateVec.real;
     REAL *stateVecImag = qureg.stateVec.imag;
 
-    // initialise the state to |0000..0000>
+    // initialise the state-vector to all-zeroes
 # ifdef _OPENMP
 # pragma omp parallel \
     default  (none) \
@@ -210,7 +242,7 @@ void pure_initStatePlus (QubitRegister qureg)
     REAL *stateVecReal = qureg.stateVec.real;
     REAL *stateVecImag = qureg.stateVec.imag;
 
-    // initialise the state to |0000..0000>
+    // initialise the state to |+++..+++> = 1/normFactor {1, 1, 1, ...}
 # ifdef _OPENMP
 # pragma omp parallel \
     default  (none) \

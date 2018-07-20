@@ -14,6 +14,7 @@
 extern "C" {
 # endif
 	
+void mixed_initStatePlus(QubitRegister targetQureg);
 
 void mixed_initPureState(QubitRegister targetQureg, QubitRegister copyQureg);
 

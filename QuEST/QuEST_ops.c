@@ -43,7 +43,14 @@ void destroyQubitRegister(QubitRegister qureg, QuESTEnv env) {
 }
 
 void initStateZero(QubitRegister qureg) {
-	pure_initStateZero(qureg);
+	pure_initStateZero(qureg); // valid for |0> and |0><0|
+}
+
+void initStatePlus(QubitRegister qureg) {
+	if (qureg.isDensityMatrix)
+		mixed_initStatePlus(qureg);
+	else
+		pure_initStatePlus(qureg);
 }
 
 // @TODO add pure copying to GPU
@@ -192,10 +199,6 @@ void tGate(QubitRegister qureg, const int targetQubit) {
 	}
 }
 
-
-
-
-
 void controlledNot(QubitRegister qureg, const int controlQubit, const int targetQubit) {
 	pure_controlledNot(qureg, controlQubit, targetQubit);
 	if (qureg.isDensityMatrix) {
@@ -262,10 +265,7 @@ void sigmaY(QubitRegister qureg, const int targetQubit) {
 
 
 
-// @TODO
-void initStatePlus(QubitRegister qureg) {
-	pure_initStatePlus(qureg);
-}
+
 
 // @TODO
 void initStateDebug(QubitRegister qureg) {

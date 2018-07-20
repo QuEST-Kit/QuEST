@@ -44,6 +44,37 @@ void mixed_initPureState(QubitRegister targetQureg, QubitRegister copyQureg) {
 
 
 
+
+void __global__ mixed_initStatePlusKernel(long long int stateVecSize, REAL *stateVecReal, REAL *stateVecImag){
+    long long int index;
+
+    index = blockIdx.x*blockDim.x + threadIdx.x;
+    if (index>=stateVecSize) return;
+
+    REAL probFactor = 1.0/((REAL)stateVecSize);
+    stateVecReal[index] = probFactor;
+    stateVecImag[index] = 0.0;
+}
+
+void mixed_initStatePlus(QubitRegister qureg)
+{
+    int threadsPerCUDABlock, CUDABlocks;
+    threadsPerCUDABlock = 128;
+    CUDABlocks = ceil((REAL)(qureg.numAmpsPerChunk)/threadsPerCUDABlock);
+    mixed_initStatePlusKernel<<<CUDABlocks, threadsPerCUDABlock>>>(
+        qureg.numAmpsPerChunk, 
+        qureg.deviceStateVec.real, 
+        qureg.deviceStateVec.imag);
+}
+
+
+
+
+
+
+
+
+
 void pure_createQubitRegister(QubitRegister *qureg, int numQubits, QuESTEnv env)
 {
     QuESTAssert(numQubits>0, 9, __func__);
