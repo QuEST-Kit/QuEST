@@ -178,6 +178,24 @@ void phaseShift(QubitRegister qureg, const int targetQubit, REAL angle) {
 	}
 }
 
+void sGate(QubitRegister qureg, const int targetQubit) {
+	pure_sGate(qureg, targetQubit);
+	if (qureg.isDensityMatrix) {
+		pure_sGateConj(qureg, targetQubit+qureg.numDensityQubits);
+	}
+}
+
+void tGate(QubitRegister qureg, const int targetQubit) {
+	pure_tGate(qureg, targetQubit);
+	if (qureg.isDensityMatrix) {
+		pure_tGateConj(qureg, targetQubit+qureg.numDensityQubits);
+	}
+}
+
+
+
+
+
 void controlledNot(QubitRegister qureg, const int controlQubit, const int targetQubit) {
 	pure_controlledNot(qureg, controlQubit, targetQubit);
 	if (qureg.isDensityMatrix) {
@@ -276,15 +294,7 @@ void reportStateToScreen(QubitRegister qureg, QuESTEnv env, int reportRank)  {
 
 
 
-// @TODO
-void sGate(QubitRegister qureg, const int targetQubit) {
-	pure_sGate(qureg, targetQubit);
-}
 
-// @TODO
-void tGate(QubitRegister qureg, const int targetQubit) {
-	pure_tGate(qureg, targetQubit);
-}
 
 // @TODO
 void rotateAroundAxis(QubitRegister qureg, const int rotQubit, REAL angle, Vector axis) {

@@ -185,6 +185,14 @@ void pure_tGate(QubitRegister qureg, const int targetQubit) {
     pure_phaseShift(qureg, targetQubit, 3.14159265358979323846 / 4.0);
 }
 
+void pure_sGateConj(QubitRegister qureg, const int targetQubit) {
+    pure_phaseShift(qureg, targetQubit, - 3.14159265358979323846 / 2.0);
+} 
+
+void pure_tGateConj(QubitRegister qureg, const int targetQubit) {
+    pure_phaseShift(qureg, targetQubit, - 3.14159265358979323846 / 4.0);
+}
+
 void pure_rotateAroundAxis(QubitRegister qureg, const int rotQubit, REAL angle, Vector axis){
 
     REAL mag = sqrt(pow(axis.x,2) + pow(axis.y,2) + pow(axis.z,2));

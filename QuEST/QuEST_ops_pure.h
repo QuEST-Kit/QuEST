@@ -42,13 +42,23 @@ void pure_initPureState(QubitRegister targetQureg, QubitRegister copyQureg);
 
 void pure_multiControlledPhaseFlip(QubitRegister qureg, int *controlQubits, int numControlQubits);
 
-void pure_controlledPhaseFlip (QubitRegister qureg, const int idQubit1, const int idQubit2);
+void pure_controlledPhaseFlip(QubitRegister qureg, const int idQubit1, const int idQubit2);
 
 void pure_phaseShift(QubitRegister qureg, const int targetQubit, REAL angle);
 
 void pure_sGate(QubitRegister qureg, const int targetQubit);
 
 void pure_tGate(QubitRegister qureg, const int targetQubit);
+
+void pure_sGateConj(QubitRegister qureg, const int targetQubit);
+
+void pure_tGateConj(QubitRegister qureg, const int targetQubit);
+
+void pure_sigmaX(QubitRegister qureg, const int targetQubit);
+
+void pure_sigmaY(QubitRegister qureg, const int targetQubit);
+
+void pure_sigmaZ(QubitRegister qureg, const int targetQubit);
 
 REAL pure_getRealAmpEl(QubitRegister qureg, long long int index);
 
@@ -83,12 +93,6 @@ void pure_controlledCompactUnitary(QubitRegister qureg, const int controlQubit, 
 void pure_controlledUnitary(QubitRegister qureg, const int controlQubit, const int targetQubit, ComplexMatrix2 u);
 
 void pure_multiControlledUnitary(QubitRegister qureg, int* controlQubits, const int numControlQubits, const int targetQubit, ComplexMatrix2 u);
-
-void pure_sigmaX(QubitRegister qureg, const int targetQubit);
-
-void pure_sigmaY(QubitRegister qureg, const int targetQubit);
-
-void pure_sigmaZ(QubitRegister qureg, const int targetQubit);
 
 void pure_hadamard(QubitRegister qureg, const int targetQubit);
 
