@@ -86,10 +86,6 @@ void pure_phaseShiftLocal(QubitRegister qureg, const int targetQubit, REAL angle
 
 void pure_phaseShiftDistributed(QubitRegister qureg, const int targetQubit, REAL angle);
 
-void pure_specialPhaseGateLocal(QubitRegister qureg, const int targetQubit, enum phaseGateType type);
-
-void pure_specialPhaseGateDistributed(QubitRegister qureg, const int targetQubit, enum phaseGateType type);
-
 void pure_controlledNotLocal(QubitRegister qureg, const int controlQubit, const int targetQubit);
 
 void pure_controlledNotDistributed (QubitRegister qureg, const int controlQubit, const int targetQubit,

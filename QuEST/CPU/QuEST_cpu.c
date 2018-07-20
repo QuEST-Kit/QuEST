@@ -1448,7 +1448,6 @@ void pure_hadamardDistributed(QubitRegister qureg, const int targetQubit,
     }
 }
 
-// @TODO unit test
 void pure_phaseShiftLocal(QubitRegister qureg, const int targetQubit, REAL angle) {
 	
     long long int sizeBlock, sizeHalfBlock;
@@ -1488,7 +1487,6 @@ void pure_phaseShiftLocal(QubitRegister qureg, const int targetQubit, REAL angle
 	}
 }
 
-// @TODO unit test
 void pure_phaseShiftDistributed(QubitRegister qureg, const int targetQubit, REAL angle) {
 
     REAL stateRealLo,stateImagLo;
@@ -1517,135 +1515,6 @@ void pure_phaseShiftDistributed(QubitRegister qureg, const int targetQubit, REAL
 			stateVecReal[thisTask] = cosAngle*stateRealLo - sinAngle*stateImagLo;
 			stateVecImag[thisTask] = sinAngle*stateRealLo + cosAngle*stateImagLo;
         }
-    }
-}
-
-void pure_specialPhaseGateLocal(QubitRegister qureg, const int targetQubit, enum phaseGateType type)
-{
-    long long int sizeBlock, sizeHalfBlock;
-    long long int thisBlock, // current block
-         indexUp,indexLo;    // current index and corresponding index in lower half block
-
-    REAL stateRealLo,stateImagLo;
-    long long int thisTask;         
-    const long long int numTasks=qureg.numAmpsPerChunk>>1;
-
-    // set dimensions
-    sizeHalfBlock = 1LL << targetQubit;  
-    sizeBlock     = 2LL * sizeHalfBlock; 
-
-    // Can't use qureg.stateVec as a private OMP var
-    REAL *stateVecReal = qureg.stateVec.real;
-    REAL *stateVecImag = qureg.stateVec.imag;
-
-    REAL recRoot2 = 1.0/sqrt(2);
-
-# ifdef _OPENMP
-# pragma omp parallel \
-    default  (none) \
-    shared   (sizeBlock,sizeHalfBlock,stateVecReal,stateVecImag,recRoot2,type) \
-    private  (thisTask,thisBlock,indexUp,indexLo,stateRealLo,stateImagLo) 
-# endif
-    {
-        if (type==SIGMA_Z){
-# ifdef _OPENMP
-# pragma omp for schedule (static)
-# endif
-            for (thisTask=0; thisTask<numTasks; thisTask++) {
-                //! fix -- can i rewrite this to not use mod?
-                thisBlock   = thisTask / sizeHalfBlock;
-                indexUp     = thisBlock*sizeBlock + thisTask%sizeHalfBlock;
-                indexLo     = indexUp + sizeHalfBlock;
-
-                stateVecReal[indexLo] = -stateVecReal[indexLo];
-                stateVecImag[indexLo] = -stateVecImag[indexLo];
-            } 
-        } 
-
-        else if (type==S_GATE){
-# ifdef _OPENMP
-# pragma omp for schedule (static)
-# endif
-            for (thisTask=0; thisTask<numTasks; thisTask++) {
-                //! fix -- can i rewrite this to not use mod?
-                thisBlock   = thisTask / sizeHalfBlock;
-                indexUp     = thisBlock*sizeBlock + thisTask%sizeHalfBlock;
-                indexLo     = indexUp + sizeHalfBlock;
-                stateRealLo = stateVecReal[indexLo];
-                stateImagLo = stateVecImag[indexLo];
-
-                stateVecReal[indexLo] = -stateImagLo;
-                stateVecImag[indexLo] = stateRealLo;
-            } 
-        } else if (type==T_GATE){
-# ifdef _OPENMP
-# pragma omp for schedule (static)
-# endif
-            for (thisTask=0; thisTask<numTasks; thisTask++) {
-                //! fix -- can i rewrite this to not use mod?
-                thisBlock   = thisTask / sizeHalfBlock;
-                indexUp     = thisBlock*sizeBlock + thisTask%sizeHalfBlock;
-                indexLo     = indexUp + sizeHalfBlock;
-                stateRealLo = stateVecReal[indexLo];
-                stateImagLo = stateVecImag[indexLo];
-
-                stateVecReal[indexLo] = recRoot2 * (stateRealLo - stateImagLo);
-                stateVecImag[indexLo] = recRoot2 * (stateRealLo + stateImagLo);
-            } 
-        } else printf("Type %d is an invalid phase gate\n", type);
-    }
-}
-
-void pure_specialPhaseGateDistributed(QubitRegister qureg, const int targetQubit, enum phaseGateType type)
-{
-    REAL stateRealLo,stateImagLo;
-    long long int thisTask;         
-    const long long int numTasks=qureg.numAmpsPerChunk;
-
-    // Can't use qureg.stateVec as a private OMP var
-    REAL *stateVecReal = qureg.stateVec.real;
-    REAL *stateVecImag = qureg.stateVec.imag;
-
-    REAL recRoot2 = 1.0/sqrt(2);
-
-# ifdef _OPENMP
-# pragma omp parallel \
-    default  (none) \
-    shared   (stateVecReal,stateVecImag, recRoot2, type) \
-    private  (thisTask,stateRealLo,stateImagLo) 
-# endif
-    {
-        if (type==SIGMA_Z){
-# ifdef _OPENMP
-# pragma omp for schedule (static)
-# endif
-            for (thisTask=0; thisTask<numTasks; thisTask++) {
-                stateVecReal[thisTask] = -stateVecReal[thisTask];
-                stateVecImag[thisTask] = -stateVecImag[thisTask];
-            } 
-        } else if (type==S_GATE){
-# ifdef _OPENMP
-# pragma omp for schedule (static)
-# endif
-            for (thisTask=0; thisTask<numTasks; thisTask++) {
-                stateRealLo = stateVecReal[thisTask];
-                stateImagLo = stateVecImag[thisTask];
-
-                stateVecReal[thisTask] = -stateImagLo;
-                stateVecImag[thisTask] = stateRealLo;
-            } 
-        } else if (type==T_GATE){
-# ifdef _OPENMP
-# pragma omp for schedule (static)
-# endif
-            for (thisTask=0; thisTask<numTasks; thisTask++) {
-                stateRealLo = stateVecReal[thisTask];
-                stateImagLo = stateVecImag[thisTask];
-
-                stateVecReal[thisTask] = recRoot2 * (stateRealLo - stateImagLo);
-                stateVecImag[thisTask] = recRoot2 * (stateRealLo + stateImagLo);
-            } 
-        } else printf("Type %d is an invalid phase gate\n", type);
     }
 }
 

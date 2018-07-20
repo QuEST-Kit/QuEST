@@ -174,15 +174,15 @@ void reportQubitRegisterParams(QubitRegister qureg){
 }
 
 void pure_sigmaZ(QubitRegister qureg, const int targetQubit) {
-    pure_specialPhaseGate(qureg, targetQubit, SIGMA_Z);
+    pure_phaseShift(qureg, targetQubit, 3.14159265358979323846);
 }
 
 void pure_sGate(QubitRegister qureg, const int targetQubit) {
-    pure_specialPhaseGate(qureg, targetQubit, S_GATE);
+    pure_phaseShift(qureg, targetQubit, 3.14159265358979323846 / 2.0);
 } 
 
 void pure_tGate(QubitRegister qureg, const int targetQubit) {
-    pure_specialPhaseGate(qureg, targetQubit, T_GATE);
+    pure_phaseShift(qureg, targetQubit, 3.14159265358979323846 / 4.0);
 }
 
 void pure_rotateAroundAxis(QubitRegister qureg, const int rotQubit, REAL angle, Vector axis){

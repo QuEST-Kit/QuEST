@@ -204,8 +204,6 @@ void multiControlledPhaseFlip(QubitRegister qureg, int *controlQubits, int numCo
 	}
 }
 
-
-
 int getNumQubits(QubitRegister qureg) {
 	if (qureg.isDensityMatrix)
 		return qureg.numDensityQubits;
