@@ -24,6 +24,45 @@
 
 
 
+void mixed_initClassicalState (QubitRegister qureg, long long int stateInd)
+{
+    // dimension of the state vector
+    long long int densityNumElems = qureg.numAmpsPerChunk;
+
+    // Can't use qureg->stateVec as a private OMP var
+    REAL *densityReal = qureg.stateVec.real;
+    REAL *densityImag = qureg.stateVec.imag;
+
+    // initialise the state to all zeros
+	long long int index;
+# ifdef _OPENMP
+# pragma omp parallel \
+    default  (none) \
+    shared   (densityNumElems, densityReal, densityImag) \
+    private  (index) 
+# endif
+    {
+# ifdef _OPENMP
+# pragma omp for schedule (static)
+# endif
+        for (index=0; index<densityNumElems; index++) {
+            densityReal[index] = 0.0;
+            densityImag[index] = 0.0;
+        }
+    }
+	
+	// index of the single density matrix elem to set non-zero
+	long long int densityDim = 1LL << qureg.numDensityQubits;
+	long long int densityInd = (densityDim + 1)*stateInd;
+
+	// give the specified classical state prob 1
+    if (qureg.chunkId == densityInd / densityDim){
+        densityReal[densityInd % densityDim] = 1.0;
+        densityImag[densityInd % densityDim] = 0.0;
+    }
+}
+
+
 void mixed_initStatePlus (QubitRegister qureg)
 {
     long long int chunkSize, stateVecSize;
@@ -35,14 +74,14 @@ void mixed_initStatePlus (QubitRegister qureg)
     REAL probFactor = 1.0/((REAL)stateVecSize);
 
     // Can't use qureg->stateVec as a private OMP var
-    REAL *stateVecReal = qureg.stateVec.real;
-    REAL *stateVecImag = qureg.stateVec.imag;
+    REAL *densityReal = qureg.stateVec.real;
+    REAL *densityImag = qureg.stateVec.imag;
 
     // initialise the state to |+++..+++> = 1/normFactor {1, 1, 1, ...}
 # ifdef _OPENMP
 # pragma omp parallel \
     default  (none) \
-    shared   (chunkSize, stateVecReal, stateVecImag, probFactor) \
+    shared   (chunkSize, densityReal, densityImag, probFactor) \
     private  (index) 
 # endif
     {
@@ -50,8 +89,8 @@ void mixed_initStatePlus (QubitRegister qureg)
 # pragma omp for schedule (static)
 # endif
         for (index=0; index<chunkSize; index++) {
-            stateVecReal[index] = probFactor;
-            stateVecImag[index] = 0.0;
+            densityReal[index] = probFactor;
+            densityImag[index] = 0.0;
         }
     }
 }
@@ -272,11 +311,11 @@ void pure_initClassicalState (QubitRegister qureg, long long int stateInd)
     REAL *stateVecReal = qureg.stateVec.real;
     REAL *stateVecImag = qureg.stateVec.imag;
 
-    // initialise the state to |0000..0000>
+    // initialise the state to vector to all zeros
 # ifdef _OPENMP
 # pragma omp parallel \
     default  (none) \
-    shared   (stateInd, stateVecSize, stateVecReal, stateVecImag) \
+    shared   (stateVecSize, stateVecReal, stateVecImag) \
     private  (index) 
 # endif
     {

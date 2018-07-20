@@ -68,7 +68,40 @@ void mixed_initStatePlus(QubitRegister qureg)
 }
 
 
+void __global__ mixed_initClassicalStateKernel(
+	long long int densityNumElems, 
+	REAL *densityReal, REAL *densityImag, 
+	long long int densityInd)
+{
+    // initialise the state to all zeros
+    long long int index = blockIdx.x*blockDim.x + threadIdx.x;
+    if (index >= densityNumElems) return;
+    densityReal[index] = 0.0;
+    densityImag[index] = 0.0;
+	
+    if (index==densityInd){
+        // classical state has probability 1
+        densityReal[densityInd] = 1.0;
+        densityImag[densityInd] = 0.0;
+    }
+}
 
+void mixed_initClassicalState(QubitRegister qureg, long long int stateInd)
+{
+    int threadsPerCUDABlock, CUDABlocks;
+    threadsPerCUDABlock = 128;
+    CUDABlocks = ceil((REAL)(qureg.numAmpsPerChunk)/threadsPerCUDABlock);
+	
+	// index of the desired state in the flat density matrix
+	long long int densityDim = 1LL << qureg.numDensityQubits;
+	long long int densityInd = (densityDim + 1)*stateInd;
+	
+	// identical to pure version
+    mixed_initClassicalStateKernel<<<CUDABlocks, threadsPerCUDABlock>>>(
+        qureg.numAmpsPerChunk, 
+        qureg.deviceStateVec.real, 
+        qureg.deviceStateVec.imag, densityInd);
+}
 
 
 

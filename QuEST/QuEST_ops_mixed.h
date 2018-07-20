@@ -13,8 +13,10 @@
 # ifdef __cplusplus
 extern "C" {
 # endif
-	
+
 void mixed_initStatePlus(QubitRegister targetQureg);
+
+void mixed_initClassicalState(QubitRegister qureg, long long int stateInd);
 
 void mixed_initPureState(QubitRegister targetQureg, QubitRegister copyQureg);
 

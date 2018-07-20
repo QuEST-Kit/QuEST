@@ -54,7 +54,7 @@ void initStatePlus(QubitRegister qureg) {
 }
 
 // @TODO add pure copying to GPU
-// @TODO add density copying to CPU
+// @TODO add density copying to distributed CPU
 // @TODO add density copying to GPU
 void initPureState(QubitRegister qureg, QubitRegister pure) {
 	QuESTAssert(!pure.isDensityMatrix, 12, __func__);
