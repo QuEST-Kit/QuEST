@@ -103,11 +103,6 @@ void mixed_initClassicalState(QubitRegister qureg, long long int stateInd)
         qureg.deviceStateVec.imag, densityInd);
 }
 
-
-
-
-
-
 void pure_createQubitRegister(QubitRegister *qureg, int numQubits, QuESTEnv env)
 {
     QuESTAssert(numQubits>0, 9, __func__);

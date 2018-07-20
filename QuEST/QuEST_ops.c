@@ -53,6 +53,13 @@ void initStatePlus(QubitRegister qureg) {
 		pure_initStatePlus(qureg);
 }
 
+void initClassicalState(QubitRegister qureg, long long int stateInd) {
+	if (qureg.isDensityMatrix)
+		mixed_initClassicalState(qureg, stateInd);
+	else
+		pure_initClassicalState(qureg, stateInd);
+}
+
 // @TODO add pure copying to GPU
 // @TODO add density copying to distributed CPU
 // @TODO add density copying to GPU
@@ -272,10 +279,7 @@ void initStateDebug(QubitRegister qureg) {
 	pure_initStateDebug(qureg);
 }
 
-// @TODO
-void initClassicalState(QubitRegister qureg, long long int stateInd) {
-	pure_initClassicalState(qureg, stateInd);
-}
+
 
 // @TODO
 void initStateFromSingleFile(QubitRegister *qureg, char filename[200], QuESTEnv env) {
