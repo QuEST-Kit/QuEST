@@ -46,7 +46,7 @@ void pure_controlledPhaseFlip(QubitRegister qureg, const int idQubit1, const int
 
 void pure_phaseShift(QubitRegister qureg, const int targetQubit, REAL angle);
 
-void pure_controlledPhaseShift(QubitRegister qureg, const int controlQubit, const int targetQubit, REAL angle); 
+void pure_controlledPhaseShift(QubitRegister qureg, const int idQubit1, const int idQubit2, REAL angle); 
 
 void pure_multiControlledPhaseShift(QubitRegister qureg, int *controlQubits, int numControlQubits, int targetQubit, REAL angle);
 

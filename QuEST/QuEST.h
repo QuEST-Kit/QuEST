@@ -238,8 +238,8 @@ void initPureState(QubitRegister qureg, QubitRegister pure);
  */
 void phaseShift(QubitRegister qureg, const int targetQubit, REAL angle);
 
-/** Shift the phase between \f$ |0\rangle \f$ and \f$ |1\rangle \f$ of a single target qubit by a given angle, 
- * for states where the given controlQubit has value 1.
+/** Introduce a phase factor \f$ \exp(i \theta) \f$ on state \f$ |11\rangle \f$ of qubits
+ * \p idQubit1 and \p idQubit2.
  * For angle \f$\theta\f$, this effects the unitary
  * \f[
  * \begin{pmatrix}
@@ -249,7 +249,7 @@ void phaseShift(QubitRegister qureg, const int targetQubit, REAL angle);
  * & & & \exp(i \theta)
  * \end{pmatrix}
  * \f] 
- * between the control and target qubit
+ * on \p idQubit1 and \p idQubit2.
  *     
 	\f[
 	\setlength{\fboxrule}{0.01pt}
@@ -271,13 +271,13 @@ void phaseShift(QubitRegister qureg, const int targetQubit, REAL angle);
 	\f]
  * 
  * @param[in,out] qureg object representing the set of all qubits
- * @param[in] controlQubit qubit which must have value 1 in shifted states
- * @param[in] targetQubit qubit to undergo a phase shift
+ * @param[in] idQubit1 first qubit in the state to phase shift
+ * @param[in] idQubit2 second qubit in the state to phase shift
  * @param[in] angle amount by which to shift the phase in radians
  * @throws exitWithError
- * 	if \p controlQubit or \p targetQubit are outside [0, \p qureg.numQubits), or are equal
+ * 	if \p idQubit1 or \p idQubit2 are outside [0, \p qureg.numQubits), or are equal
  */
-void controlledPhaseShift(QubitRegister qureg, const int controlQubit, const int targetQubit, REAL angle);
+void controlledPhaseShift(QubitRegister qureg, const int idQubit1, const int idQubit2, REAL angle);
 
 /** Shift the phase between \f$ |0\rangle \f$ and \f$ |1\rangle \f$ of a single target qubit by a given angle, 
  * for states where the given control qubits all have value 1.

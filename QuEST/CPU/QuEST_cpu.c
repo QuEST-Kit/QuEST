@@ -1558,11 +1558,11 @@ void pure_phaseShift (QubitRegister qureg, const int targetQubit, REAL angle)
     }
 }
 
-void pure_controlledPhaseShift (QubitRegister qureg, const int controlQubit, const int targetQubit, REAL angle)
+void pure_controlledPhaseShift (QubitRegister qureg, const int idQubit1, const int idQubit2, REAL angle)
 {
     long long int index;
     long long int stateVecSize;
-    int controlBit, targetBit;
+    int bit1, bit2;
 	
     const long long int chunkSize=qureg.numAmpsPerChunk;
     const long long int chunkId=qureg.chunkId;
@@ -1580,13 +1580,13 @@ void pure_controlledPhaseShift (QubitRegister qureg, const int controlQubit, con
 # pragma omp parallel for \
     default  (none)			     \
     shared   (stateVecSize, stateVecReal,stateVecImag ) \
-    private  (index,controlBit,targetBit,stateRealLo,stateImagLo)		       \
+    private  (index,bit1,bit2,stateRealLo,stateImagLo)		       \
     schedule (static)
 # endif
     for (index=0; index<stateVecSize; index++) {
-        controlBit = extractBit (controlQubit, index+chunkId*chunkSize);
-        targetBit = extractBit (targetQubit, index+chunkId*chunkSize);
-        if (controlBit && targetBit) {
+        bit1 = extractBit (idQubit1, index+chunkId*chunkSize);
+        bit2 = extractBit (idQubit2, index+chunkId*chunkSize);
+        if (bit1 && bit2) {
 			
         	stateRealLo = stateVecReal[index];
         	stateImagLo = stateVecImag[index];

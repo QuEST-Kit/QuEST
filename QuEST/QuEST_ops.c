@@ -206,11 +206,11 @@ void phaseShift(QubitRegister qureg, const int targetQubit, REAL angle) {
 	}
 }
 
-void controlledPhaseShift(QubitRegister qureg, const int controlQubit, const int targetQubit, REAL angle) {
-	pure_controlledPhaseShift(qureg, controlQubit, targetQubit, angle);
+void controlledPhaseShift(QubitRegister qureg, const int idQubit1, const int idQubit2, REAL angle) {
+	pure_controlledPhaseShift(qureg, idQubit1, idQubit2, angle);
 	if (qureg.isDensityMatrix) {
 		int shift = qureg.numDensityQubits;
-		pure_controlledPhaseShift(qureg, controlQubit+shift, targetQubit+shift, -angle);
+		pure_controlledPhaseShift(qureg, idQubit1+shift, idQubit2+shift, -angle);
 	}
 }
 

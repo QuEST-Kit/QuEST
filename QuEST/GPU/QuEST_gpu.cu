@@ -997,41 +997,36 @@ void pure_phaseShift(QubitRegister qureg, const int targetQubit, REAL angle)
     pure_phaseShiftKernel<<<CUDABlocks, threadsPerCUDABlock>>>(qureg, targetQubit, cosAngle, sinAngle);
 }
 
-__global__ void pure_controlledPhaseShiftKernel(QubitRegister qureg, const int controlQubit, const int targetQubit, REAL cosAngle, REAL sinAngle)
+__global__ void pure_controlledPhaseShiftKernel(QubitRegister qureg, const int idQubit1, const int idQubit2, REAL cosAngle, REAL sinAngle)
 {
-    long long int sizeBlock, sizeHalfBlock;
-    long long int thisBlock, indexUp,indexLo;
+    long long int index;
+    long long int stateVecSize;
+    int bit1, bit2;
+	REAL stateRealLo, stateImagLo;
 
-    REAL stateRealLo, stateImagLo;             
-    long long int thisTask; 
-    const long long int numTasks = qureg.numAmpsPerChunk >> 1;
-
-    sizeHalfBlock = 1LL << targetQubit;
-    sizeBlock     = 2LL * sizeHalfBlock;
-
+    stateVecSize = qureg.numAmpsPerChunk;
     REAL *stateVecReal = qureg.deviceStateVec.real;
     REAL *stateVecImag = qureg.deviceStateVec.imag;
 
-    thisTask = blockIdx.x*blockDim.x + threadIdx.x;
-    if (thisTask>=numTasks) return;
-    thisBlock = thisTask / sizeHalfBlock;
-    indexUp   = thisBlock*sizeBlock + thisTask%sizeHalfBlock;
-    indexLo   = indexUp + sizeHalfBlock;
+    index = blockIdx.x*blockDim.x + threadIdx.x;
+    if (index>=stateVecSize) return;
 
-    int controlBit = extractBit(controlQubit, indexUp);
-    if (controlBit) {
-	    stateRealLo = stateVecReal[indexLo];
-	    stateImagLo = stateVecImag[indexLo];
-	    stateVecReal[indexLo] = cosAngle*stateRealLo - sinAngle*stateImagLo;
-	    stateVecImag[indexLo] = sinAngle*stateRealLo + cosAngle*stateImagLo;
-	}
+    bit1 = extractBit (idQubit1, index);
+    bit2 = extractBit (idQubit2, index);
+    if (bit1 && bit2) {
+	    stateRealLo = stateVecReal[index];
+	    stateImagLo = stateVecImag[index];
+		
+	    stateVecReal[index] = cosAngle*stateRealLo - sinAngle*stateImagLo;
+	    stateVecImag[index] = sinAngle*stateRealLo + cosAngle*stateImagLo;
+    }
 }
 
-void pure_controlledPhaseShift(QubitRegister qureg, const int controlQubit, const int targetQubit, REAL angle)
+void pure_controlledPhaseShift(QubitRegister qureg, const int idQubit1, const int idQubit2, REAL angle)
 {
-    QuESTAssert(targetQubit >= 0 && targetQubit < qureg.numQubits, 1, __func__);
-	QuESTAssert(controlQubit >= 0 && controlQubit < qureg.numQubits, 2, __func__);
-	QuESTAssert(targetQubit != controlQubit, 3, __func__);
+    QuESTAssert(idQubit1 >= 0 && idQubit1 < qureg.numQubits, 1, __func__);
+	QuESTAssert(idQubit2 >= 0 && idQubit2 < qureg.numQubits, 2, __func__);
+	QuESTAssert(idQubit1 != idQubit2, 3, __func__);
 	
 	REAL cosAngle = cos(angle);
 	REAL sinAngle = sin(angle);
@@ -1039,7 +1034,7 @@ void pure_controlledPhaseShift(QubitRegister qureg, const int controlQubit, cons
     int threadsPerCUDABlock, CUDABlocks;
     threadsPerCUDABlock = 128;
     CUDABlocks = ceil((REAL)(qureg.numAmpsPerChunk>>1)/threadsPerCUDABlock);
-    pure_controlledPhaseShiftKernel<<<CUDABlocks, threadsPerCUDABlock>>>(qureg, controlQubit, targetQubit, cosAngle, sinAngle);
+    pure_controlledPhaseShiftKernel<<<CUDABlocks, threadsPerCUDABlock>>>(qureg, idQubit1, idQubit2, cosAngle, sinAngle);
 }
 
 __global__ void pure_multiControlledPhaseShiftKernel(QubitRegister qureg, long long int mask, REAL cosAngle, REAL sinAngle) {
