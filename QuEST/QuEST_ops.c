@@ -265,6 +265,20 @@ REAL getProbEl(QubitRegister qureg, long long int index) {
 }
 
 
+// @TODO very dubious
+void controlledPhaseShift(QubitRegister qureg, const int controlQubit, const int targetQubit, REAL angle) {
+	pure_controlledPhaseShift(qureg, controlQubit, targetQubit, angle);
+	if (qureg.isDensityMatrix) {
+		int shift = qureg.numDensityQubits;
+		pure_controlledPhaseShift(qureg, controlQubit+shift, targetQubit+shift, -angle);
+	}
+}
+
+
+
+
+
+
 // @TODO
 void sigmaY(QubitRegister qureg, const int targetQubit) {
 	pure_sigmaY(qureg, targetQubit);

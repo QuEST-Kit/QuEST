@@ -86,17 +86,19 @@ void pure_phaseShiftLocal(QubitRegister qureg, const int targetQubit, REAL angle
 
 void pure_phaseShiftDistributed(QubitRegister qureg, const int targetQubit, REAL angle);
 
+void pure_controlledPhaseShiftLocal(QubitRegister qureg, const int controlQubit, const int targetQubit, REAL angle);
+
+void pure_controlledPhaseShiftDistributed(QubitRegister qureg, const int controlQubit, const int targetQubit, REAL angle);
+
 void pure_controlledNotLocal(QubitRegister qureg, const int controlQubit, const int targetQubit);
 
 void pure_controlledNotDistributed (QubitRegister qureg, const int controlQubit, const int targetQubit,
         ComplexArray stateVecIn,
         ComplexArray stateVecOut);
 
-REAL pure_findProbabilityOfZeroLocal (QubitRegister qureg,
-        const int measureQubit);
+REAL pure_findProbabilityOfZeroLocal (QubitRegister qureg, const int measureQubit);
 
-REAL pure_findProbabilityOfZeroDistributed (QubitRegister qureg,
-        const int measureQubit);
+REAL pure_findProbabilityOfZeroDistributed (QubitRegister qureg, const int measureQubit);
 
 void pure_collapseToOutcomeLocal(QubitRegister qureg, int measureQubit, REAL totalProbability, int outcome);
 

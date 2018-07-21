@@ -596,6 +596,7 @@ void pure_sigmaY(QubitRegister qureg, const int targetQubit)
     }
 }
 
+// @ probably wrong
 void pure_phaseShift(QubitRegister qureg, const int targetQubit, REAL angle)
 {
     QuESTAssert(targetQubit >= 0 && targetQubit < qureg.numQubits, 1, __func__);
@@ -611,6 +612,29 @@ void pure_phaseShift(QubitRegister qureg, const int targetQubit, REAL angle)
     } else {
         rankIsUpper = chunkIsUpper(qureg.chunkId, qureg.numAmpsPerChunk, targetQubit);
         if (!rankIsUpper) pure_phaseShiftDistributed(qureg, targetQubit, angle);
+    }
+}
+
+// @TODO surely this is wrong
+void pure_controlledPhaseShift(QubitRegister qureg, const int controlQubit, const int targetQubit, REAL angle)
+{
+    QuESTAssert(targetQubit >= 0 && targetQubit < qureg.numQubits, 1, __func__);
+    QuESTAssert(controlQubit >= 0 && controlQubit < qureg.numQubits, 2, __func__);
+    QuESTAssert(controlQubit != targetQubit, 3, __func__);
+
+    // flag to require memory exchange. 1: an entire block fits on one rank, 0: at most half a block fits on one rank
+    int useLocalDataOnly = halfMatrixBlockFitsInChunk(qureg.numAmpsPerChunk, targetQubit);
+
+    // rank's chunk is in upper half of block 
+    int rankIsUpper;
+    if (useLocalDataOnly){
+        // all values required to update state vector lie in this rank
+        pure_controlledPhaseShiftLocal(qureg, controlQubit, targetQubit,angle);
+    } else {
+        rankIsUpper = chunkIsUpper(qureg.chunkId, qureg.numAmpsPerChunk, targetQubit);
+        if (!rankIsUpper){
+            pure_controlledPhaseShiftDistributed(qureg,controlQubit,targetQubit,angle);
+        } 
     }
 }
 
