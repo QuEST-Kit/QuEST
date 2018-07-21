@@ -1518,72 +1518,42 @@ void pure_hadamardDistributed(QubitRegister qureg, const int targetQubit,
     }
 }
 
-void pure_phaseShiftLocal(QubitRegister qureg, const int targetQubit, REAL angle) {
+void pure_phaseShift (QubitRegister qureg, const int targetQubit, REAL angle)
+{
+    long long int index;
+    long long int stateVecSize;
+    int targetBit;
 	
-    long long int sizeBlock, sizeHalfBlock;
-    long long int thisBlock, indexUp,indexLo;
-    REAL stateRealLo,stateImagLo;             
-    long long int thisTask; 
-    const long long int numTasks = qureg.numAmpsPerChunk >> 1;
-    sizeHalfBlock = 1LL << targetQubit;
-    sizeBlock     = 2LL * sizeHalfBlock;
+    const long long int chunkSize=qureg.numAmpsPerChunk;
+    const long long int chunkId=qureg.chunkId;
+
+    // dimension of the state vector
+    stateVecSize = qureg.numAmpsPerChunk;
     REAL *stateVecReal = qureg.stateVec.real;
     REAL *stateVecImag = qureg.stateVec.imag;
 	
-	const REAL cosAngle = cos(angle);
-	const REAL sinAngle = sin(angle);
-	
-# ifdef _OPENMP
-# pragma omp parallel \
-    default  (none) \
-    shared   (sizeBlock,sizeHalfBlock,stateVecReal,stateVecImag) \
-    private  (thisTask,thisBlock,indexUp,indexLo,stateRealLo,stateImagLo) 
-# endif
-    {
-# ifdef _OPENMP
-# pragma omp for schedule (static)
-# endif
-        for (thisTask=0; thisTask<numTasks; thisTask++) {
-            thisBlock   = thisTask / sizeHalfBlock;
-            indexUp     = thisBlock*sizeBlock + thisTask%sizeHalfBlock;
-			indexLo     = indexUp + sizeHalfBlock;
-
-			stateRealLo = stateVecReal[indexLo];
-			stateImagLo = stateVecImag[indexLo];
-	
-			stateVecReal[indexLo] = cosAngle*stateRealLo - sinAngle*stateImagLo;
-			stateVecImag[indexLo] = sinAngle*stateRealLo + cosAngle*stateImagLo;
-		}
-	}
-}
-
-void pure_phaseShiftDistributed(QubitRegister qureg, const int targetQubit, REAL angle) {
-
-    REAL stateRealLo,stateImagLo;
-    long long int thisTask;         
-    const long long int numTasks=qureg.numAmpsPerChunk;
-    REAL *stateVecReal = qureg.stateVec.real;
-    REAL *stateVecImag = qureg.stateVec.imag;
-
+	REAL stateRealLo, stateImagLo;
 	const REAL cosAngle = cos(angle);
 	const REAL sinAngle = sin(angle);
 
 # ifdef _OPENMP
-# pragma omp parallel \
-    default  (none) \
-    shared   (stateVecReal,stateVecImag) \
-    private  (thisTask,stateRealLo,stateImagLo) 
+# pragma omp parallel for \
+    default  (none)			     \
+    shared   (stateVecSize, stateVecReal,stateVecImag ) \
+    private  (index,targetBit,stateRealLo,stateImagLo)		       \
+    schedule (static)
 # endif
-    {
-# ifdef _OPENMP
-# pragma omp for schedule (static)
-# endif
-        for (thisTask=0; thisTask<numTasks; thisTask++) {
-            stateRealLo = stateVecReal[thisTask];
-            stateImagLo = stateVecImag[thisTask];
-
-			stateVecReal[thisTask] = cosAngle*stateRealLo - sinAngle*stateImagLo;
-			stateVecImag[thisTask] = sinAngle*stateRealLo + cosAngle*stateImagLo;
+    for (index=0; index<stateVecSize; index++) {
+		
+		// update the coeff of the |1> state of the target qubit
+        targetBit = extractBit (targetQubit, index+chunkId*chunkSize);
+        if (targetBit) {
+			
+        	stateRealLo = stateVecReal[index];
+        	stateImagLo = stateVecImag[index];
+			
+			stateVecReal[index] = cosAngle*stateRealLo - sinAngle*stateImagLo;
+			stateVecImag[index] = sinAngle*stateRealLo + cosAngle*stateImagLo;	
         }
     }
 }

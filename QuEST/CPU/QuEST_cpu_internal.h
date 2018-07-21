@@ -82,10 +82,6 @@ void pure_hadamardDistributed (QubitRegister qureg, const int targetQubit,
         ComplexArray stateVecLo,
         ComplexArray stateVecOut, int updateUpper);
 
-void pure_phaseShiftLocal(QubitRegister qureg, const int targetQubit, REAL angle);
-
-void pure_phaseShiftDistributed(QubitRegister qureg, const int targetQubit, REAL angle);
-
 void pure_controlledNotLocal(QubitRegister qureg, const int controlQubit, const int targetQubit);
 
 void pure_controlledNotDistributed (QubitRegister qureg, const int controlQubit, const int targetQubit,
