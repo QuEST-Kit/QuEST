@@ -193,19 +193,6 @@ void pure_tGateConj(QubitRegister qureg, const int targetQubit) {
     pure_phaseShift(qureg, targetQubit, - 3.14159265358979323846 / 4.0);
 }
 
-void pure_rotateAroundAxis(QubitRegister qureg, const int rotQubit, REAL angle, Vector axis){
-
-    REAL mag = sqrt(pow(axis.x,2) + pow(axis.y,2) + pow(axis.z,2));
-    Vector unitAxis = {axis.x/mag, axis.y/mag, axis.z/mag};
-
-    Complex alpha, beta;
-    alpha.real = cos(angle/2.0);
-    alpha.imag = -sin(angle/2.0)*unitAxis.z;	
-    beta.real = sin(angle/2.0)*unitAxis.y;
-    beta.imag = -sin(angle/2.0)*unitAxis.x;
-    pure_compactUnitary(qureg, rotQubit, alpha, beta);
-}
-
 void pure_rotateX(QubitRegister qureg, const int rotQubit, REAL angle){
 
     Vector unitAxis = {1, 0, 0};
@@ -224,16 +211,46 @@ void pure_rotateZ(QubitRegister qureg, const int rotQubit, REAL angle){
     pure_rotateAroundAxis(qureg, rotQubit, angle, unitAxis);
 }
 
-void pure_controlledRotateAroundAxis(QubitRegister qureg, const int controlQubit, const int targetQubit, REAL angle, Vector axis){
-
+void getAlphaBetaFromRotation(REAL angle, Vector axis, Complex* alpha, Complex* beta) {
+	
     REAL mag = sqrt(pow(axis.x,2) + pow(axis.y,2) + pow(axis.z,2));
     Vector unitAxis = {axis.x/mag, axis.y/mag, axis.z/mag};
 
+    alpha->real =   cos(angle/2.0);
+    alpha->imag = - sin(angle/2.0)*unitAxis.z;	
+    beta->real  =   sin(angle/2.0)*unitAxis.y;
+    beta->imag  = - sin(angle/2.0)*unitAxis.x;
+}
+
+void pure_rotateAroundAxis(QubitRegister qureg, const int rotQubit, REAL angle, Vector axis){
+
     Complex alpha, beta;
-    alpha.real = cos(angle/2.0);
-    alpha.imag = -sin(angle/2.0)*unitAxis.z;	
-    beta.real = sin(angle/2.0)*unitAxis.y;
-    beta.imag = -sin(angle/2.0)*unitAxis.x;
+    getAlphaBetaFromRotation(angle, axis, &alpha, &beta);
+    pure_compactUnitary(qureg, rotQubit, alpha, beta);
+}
+
+void pure_rotateAroundAxisConj(QubitRegister qureg, const int rotQubit, REAL angle, Vector axis){
+
+    Complex alpha, beta;
+    getAlphaBetaFromRotation(angle, axis, &alpha, &beta);
+	alpha.imag *= -1; 
+	beta.imag *= -1;
+    pure_compactUnitary(qureg, rotQubit, alpha, beta);
+}
+
+void pure_controlledRotateAroundAxis(QubitRegister qureg, const int controlQubit, const int targetQubit, REAL angle, Vector axis){
+
+    Complex alpha, beta;
+    getAlphaBetaFromRotation(angle, axis, &alpha, &beta);
+    pure_controlledCompactUnitary(qureg, controlQubit, targetQubit, alpha, beta);
+}
+
+void pure_controlledRotateAroundAxisConj(QubitRegister qureg, const int controlQubit, const int targetQubit, REAL angle, Vector axis){
+
+    Complex alpha, beta;
+    getAlphaBetaFromRotation(angle, axis, &alpha, &beta);
+	alpha.imag *= -1; 
+	beta.imag *= -1;
     pure_controlledCompactUnitary(qureg, controlQubit, targetQubit, alpha, beta);
 }
 

@@ -214,7 +214,7 @@ void controlledPhaseShift(QubitRegister qureg, const int controlQubit, const int
 	}
 }
 
-// @TODO
+// @TODO: strip target
 void multiControlledPhaseShift(QubitRegister qureg, int *controlQubits, int numControlQubits, int targetQubit, REAL angle) {
 	pure_multiControlledPhaseShift(qureg, controlQubits, numControlQubits, targetQubit, angle);
 	if (qureg.isDensityMatrix) {
@@ -248,6 +248,22 @@ void multiControlledPhaseFlip(QubitRegister qureg, int *controlQubits, int numCo
 		shiftIndices(controlQubits, numControlQubits, shift);
 		pure_multiControlledPhaseFlip(qureg, controlQubits, numControlQubits);
 		shiftIndices(controlQubits, numControlQubits, -shift);
+	}
+}
+
+void rotateAroundAxis(QubitRegister qureg, const int rotQubit, REAL angle, Vector axis) {
+	pure_rotateAroundAxis(qureg, rotQubit, angle, axis);
+	if (qureg.isDensityMatrix) {
+		int shift = qureg.numDensityQubits;
+		pure_rotateAroundAxisConj(qureg, rotQubit+shift, angle, axis);
+	}
+}
+
+void controlledRotateAroundAxis(QubitRegister qureg, const int controlQubit, const int targetQubit, REAL angle, Vector axis) {
+	pure_controlledRotateAroundAxis(qureg, controlQubit, targetQubit, angle, axis);
+	if (qureg.isDensityMatrix) {
+		int shift = qureg.numDensityQubits;
+		pure_controlledRotateAroundAxisConj(qureg, controlQubit+shift, targetQubit+shift, angle, axis);
 	}
 }
 
@@ -325,15 +341,7 @@ void reportStateToScreen(QubitRegister qureg, QuESTEnv env, int reportRank)  {
 
 
 
-// @TODO
-void rotateAroundAxis(QubitRegister qureg, const int rotQubit, REAL angle, Vector axis) {
-	pure_rotateAroundAxis(qureg, rotQubit, angle, axis);
-}
 
-// @TODO
-void controlledRotateAroundAxis(QubitRegister qureg, const int controlQubit, const int targetQubit, REAL angle, Vector axis) {
-	pure_controlledRotateAroundAxis(qureg, controlQubit, targetQubit, angle, axis);
-}
 
 // @TODO
 REAL calcTotalProbability(QubitRegister qureg) {

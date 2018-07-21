@@ -84,6 +84,8 @@ void pure_rotateZ(QubitRegister qureg, const int rotQubit, REAL angle);
 
 void pure_rotateAroundAxis(QubitRegister qureg, const int rotQubit, REAL angle, Vector axis);
 
+void pure_rotateAroundAxisConj(QubitRegister qureg, const int rotQubit, REAL angle, Vector axis);
+
 void pure_controlledRotateX(QubitRegister qureg, const int controlQubit, const int targetQubit, REAL angle);
 
 void pure_controlledRotateY(QubitRegister qureg, const int controlQubit, const int targetQubit, REAL angle);
@@ -91,6 +93,8 @@ void pure_controlledRotateY(QubitRegister qureg, const int controlQubit, const i
 void pure_controlledRotateZ(QubitRegister qureg, const int controlQubit, const int targetQubit, REAL angle);
 
 void pure_controlledRotateAroundAxis(QubitRegister qureg, const int controlQubit, const int targetQubit, REAL angle, Vector axis);
+
+void pure_controlledRotateAroundAxisConj(QubitRegister qureg, const int controlQubit, const int targetQubit, REAL angle, Vector axis);
 
 void pure_controlledCompactUnitary(QubitRegister qureg, const int controlQubit, const int targetQubit, Complex alpha, Complex beta);
 
