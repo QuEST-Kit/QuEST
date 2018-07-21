@@ -956,7 +956,7 @@ void pure_sigmaY(QubitRegister qureg, const int targetQubit)
     pure_sigmaYKernel<<<CUDABlocks, threadsPerCUDABlock>>>(qureg, targetQubit);
 }
 
-__global__ void pure_phaseShiftKernel(QubitRegister qureg, const int targetQubit, REAL cosAngle, REAL sinAngle) {
+__global__ void pure_phaseShiftByTermKernel(QubitRegister qureg, const int targetQubit, REAL cosAngle, REAL sinAngle) {
 
     long long int sizeBlock, sizeHalfBlock;
     long long int thisBlock, indexUp,indexLo;
@@ -985,11 +985,13 @@ __global__ void pure_phaseShiftKernel(QubitRegister qureg, const int targetQubit
     stateVecImag[indexLo] = sinAngle*stateRealLo + cosAngle*stateImagLo;
 }
 
-void pure_phaseShift(QubitRegister qureg, const int targetQubit, REAL angle)
+void pure_phaseShiftByTerm(QubitRegister qureg, const int targetQubit, Complex term)
 {
     QuESTAssert(targetQubit >= 0 && targetQubit < qureg.numQubits, 1, __func__);
-	REAL cosAngle = cos(angle);
-	REAL sinAngle = sin(angle);
+	QuESTAssert(validateUnitComplex(term), 16, __func__);
+	
+	REAL cosAngle = term.real;
+	REAL sinAngle = term.imag;
 	
     int threadsPerCUDABlock, CUDABlocks;
     threadsPerCUDABlock = 128;
@@ -1022,14 +1024,14 @@ __global__ void pure_controlledPhaseShiftKernel(QubitRegister qureg, const int i
     }
 }
 
-void pure_controlledPhaseShift(QubitRegister qureg, const int idQubit1, const int idQubit2, REAL angle)
+void pure_controlledPhaseShift(QubitRegister qureg, const int idQubit1, const int idQubit2, Complex term)
 {
     QuESTAssert(idQubit1 >= 0 && idQubit1 < qureg.numQubits, 1, __func__);
 	QuESTAssert(idQubit2 >= 0 && idQubit2 < qureg.numQubits, 2, __func__);
 	QuESTAssert(idQubit1 != idQubit2, 3, __func__);
 	
-	REAL cosAngle = cos(angle);
-	REAL sinAngle = sin(angle);
+	REAL cosAngle = term.real;
+	REAL sinAngle = term.imag;
 	
     int threadsPerCUDABlock, CUDABlocks;
     threadsPerCUDABlock = 128;

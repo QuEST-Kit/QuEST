@@ -1518,8 +1518,10 @@ void pure_hadamardDistributed(QubitRegister qureg, const int targetQubit,
     }
 }
 
-void pure_phaseShift (QubitRegister qureg, const int targetQubit, REAL angle)
+void pure_phaseShiftByTerm (QubitRegister qureg, const int targetQubit, Complex term)
 {
+	QuESTAssert(validateUnitComplex(term), 16, __func__);
+	
     long long int index;
     long long int stateVecSize;
     int targetBit;
@@ -1533,8 +1535,8 @@ void pure_phaseShift (QubitRegister qureg, const int targetQubit, REAL angle)
     REAL *stateVecImag = qureg.stateVec.imag;
 	
 	REAL stateRealLo, stateImagLo;
-	const REAL cosAngle = cos(angle);
-	const REAL sinAngle = sin(angle);
+	const REAL cosAngle = term.real;
+	const REAL sinAngle = term.imag;
 
 # ifdef _OPENMP
 # pragma omp parallel for \

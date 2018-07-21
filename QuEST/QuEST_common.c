@@ -35,7 +35,8 @@ const char* errorCodes[] = {
 	"Second argument must be a pure state, not a density matrix.", // 12
 	"Dimensions of the qubit registers do not match.", 		// 13
 	"This operation is only defined for density matrices.",	// 14
-	"This operation is only defined for two pure states."	// 15
+	"This operation is only defined for two pure states.",	// 15
+	"An non-unitary internal operation (phaseShift) occured.", //16
 };
 
 #ifdef __cplusplus
@@ -94,6 +95,10 @@ void seedQuEST(unsigned long int *seedArray, int numSeeds){
     // for the MPI version, it is ok that all procs will get the same seed as random numbers will only be 
     // used by the master process
     init_by_array(seedArray, numSeeds); 
+}
+
+int validateUnitComplex(Complex alpha) {
+	return (absReal(1 - sqrt(alpha.real*alpha.real + alpha.imag*alpha.imag)) < REAL_EPS); 
 }
 
 int validateAlphaBeta(Complex alpha, Complex beta){
@@ -173,24 +178,46 @@ void reportQubitRegisterParams(QubitRegister qureg){
     }
 }
 
+void pure_phaseShift(QubitRegister qureg, const int targetQubit, REAL angle) {
+	Complex term; 
+	term.real = cos(angle); 
+	term.imag = sin(angle);
+	pure_phaseShiftByTerm(qureg, targetQubit, term);
+}
+
 void pure_sigmaZ(QubitRegister qureg, const int targetQubit) {
-    pure_phaseShift(qureg, targetQubit, 3.14159265358979323846);
+	Complex term; 
+	term.real = -1;
+	term.imag =  0;
+    pure_phaseShiftByTerm(qureg, targetQubit, term);
 }
 
 void pure_sGate(QubitRegister qureg, const int targetQubit) {
-    pure_phaseShift(qureg, targetQubit, 3.14159265358979323846 / 2.0);
+	Complex term; 
+	term.real = 0;
+	term.imag = 1;
+    pure_phaseShiftByTerm(qureg, targetQubit, term);
 } 
 
 void pure_tGate(QubitRegister qureg, const int targetQubit) {
-    pure_phaseShift(qureg, targetQubit, 3.14159265358979323846 / 4.0);
+	Complex term; 
+	term.real = 1/sqrt(2);
+	term.imag = 1/sqrt(2);
+    pure_phaseShiftByTerm(qureg, targetQubit, term);
 }
 
 void pure_sGateConj(QubitRegister qureg, const int targetQubit) {
-    pure_phaseShift(qureg, targetQubit, - 3.14159265358979323846 / 2.0);
+	Complex term; 
+	term.real =  0;
+	term.imag = -1;
+    pure_phaseShiftByTerm(qureg, targetQubit, term);
 } 
 
 void pure_tGateConj(QubitRegister qureg, const int targetQubit) {
-    pure_phaseShift(qureg, targetQubit, - 3.14159265358979323846 / 4.0);
+	Complex term; 
+	term.real =  1/sqrt(2);
+	term.imag = -1/sqrt(2);
+    pure_phaseShiftByTerm(qureg, targetQubit, term);
 }
 
 void pure_rotateX(QubitRegister qureg, const int rotQubit, REAL angle){
