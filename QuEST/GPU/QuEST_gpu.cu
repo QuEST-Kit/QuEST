@@ -1045,7 +1045,7 @@ __global__ void pure_multiControlledPhaseShiftKernel(QubitRegister qureg, long l
     stateVecSize = qureg.numAmpsPerChunk;
     REAL *stateVecReal = qureg.deviceStateVec.real;
     REAL *stateVecImag = qureg.deviceStateVec.imag;
-
+	
     index = blockIdx.x*blockDim.x + threadIdx.x;
     if (index>=stateVecSize) return;
 
@@ -1058,7 +1058,7 @@ __global__ void pure_multiControlledPhaseShiftKernel(QubitRegister qureg, long l
 }
 
 
-void pure_multiControlledPhaseShift(QubitRegister qureg, int *controlQubits, int numControlQubits, int targetQubit, REAL angle)
+void pure_multiControlledPhaseShift(QubitRegister qureg, int *controlQubits, int numControlQubits, REAL angle)
 {
     QuESTAssert(numControlQubits > 0 && numControlQubits <= qureg.numQubits, 4, __func__);
 	
@@ -1068,7 +1068,6 @@ void pure_multiControlledPhaseShift(QubitRegister qureg, int *controlQubits, int
     long long int mask=0;
     for (int i=0; i<numControlQubits; i++) 
 		mask = mask | (1LL<<controlQubits[i]);
-	mask = mask | (1LL<<targetQubit);
 	
     QuESTAssert(mask >=0 && mask <= (1LL<<qureg.numQubits)-1, 2, __func__);
 	

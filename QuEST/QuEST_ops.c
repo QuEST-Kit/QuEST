@@ -215,12 +215,12 @@ void controlledPhaseShift(QubitRegister qureg, const int idQubit1, const int idQ
 }
 
 // @TODO: strip target
-void multiControlledPhaseShift(QubitRegister qureg, int *controlQubits, int numControlQubits, int targetQubit, REAL angle) {
-	pure_multiControlledPhaseShift(qureg, controlQubits, numControlQubits, targetQubit, angle);
+void multiControlledPhaseShift(QubitRegister qureg, int *controlQubits, int numControlQubits, REAL angle) {
+	pure_multiControlledPhaseShift(qureg, controlQubits, numControlQubits, angle);
 	if (qureg.isDensityMatrix) {
 		int shift = qureg.numDensityQubits;
 		shiftIndices(controlQubits, numControlQubits, shift);
-		pure_multiControlledPhaseShift(qureg, controlQubits, numControlQubits, targetQubit+shift, angle);
+		pure_multiControlledPhaseShift(qureg, controlQubits, numControlQubits, angle);
 		shiftIndices(controlQubits, numControlQubits, -shift);
 	}
 }

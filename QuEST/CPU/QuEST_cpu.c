@@ -1597,7 +1597,7 @@ void pure_controlledPhaseShift (QubitRegister qureg, const int idQubit1, const i
     }
 }
 
-void pure_multiControlledPhaseShift(QubitRegister qureg, int *controlQubits, int numControlQubits, int targetQubit, REAL angle)
+void pure_multiControlledPhaseShift(QubitRegister qureg, int *controlQubits, int numControlQubits, REAL angle)
 {
     long long int index;
     long long int stateVecSize;
@@ -1609,7 +1609,6 @@ void pure_multiControlledPhaseShift(QubitRegister qureg, int *controlQubits, int
     long long int mask=0;
     for (int i=0; i<numControlQubits; i++) 
 		mask = mask | (1LL<<controlQubits[i]);
-	mask = mask | (1LL<<targetQubit);
     QuESTAssert(mask >=0 && mask <= (1LL<<qureg.numQubits)-1, 2, __func__);
 
     stateVecSize = qureg.numAmpsPerChunk;
