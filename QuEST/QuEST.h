@@ -315,8 +315,7 @@ void controlledPhaseShift(QubitRegister qureg, const int idQubit1, const int idQ
  * @throws exitWithError
  * 		if \p numControlQubits is outside [1, \p qureg.numQubits]),
  * 		or if any qubit index in \p controlQubits is outside
- * 		[0, \p qureg.numQubits]), 
- * 		or if \p controlQubits contains \p targetQubit
+ * 		[0, \p qureg.numQubits])
  */
 void multiControlledPhaseShift(QubitRegister qureg, int *controlQubits, int numControlQubits, REAL angle);
 
