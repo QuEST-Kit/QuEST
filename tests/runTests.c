@@ -9,7 +9,7 @@
 # include "QuEST_precision.h"
 # include "QuEST_debug.h"
 
-# define NUM_TESTS 25
+# define NUM_TESTS 26
 # define COMPARE_PRECISION 10e-13
 # define PATH_TO_TESTS "unit/"
 # define VERBOSE 0
@@ -310,6 +310,52 @@ int test_phaseShift(char testName[200]) {
 	
 	return passed;
 }
+
+
+
+
+
+
+int test_controlledPhaseShift(char testName[200]) {
+	int passed=1;
+	
+	REAL pi = 3.1415926535897932384626;
+	
+	QubitRegister mq;
+	createQubitRegister(&mq, 4, env);
+	
+	// prepare state (|0> + |1>)/sqrt(2) |010>
+	initStateZero(mq);
+	sigmaX(mq, 1);
+	hadamard(mq, 3);
+	
+	// confirm controlling first and third qubits does nothing (state |1010> = 2^1 + 2^3 = 10)
+	controlledPhaseShift(mq, 0, 3, pi * 5/4.0);
+	if (passed) passed = compareReals(getRealAmpEl(mq, 10), 1/sqrt(2), COMPARE_PRECISION);
+	controlledPhaseShift(mq, 2, 3, pi * 5/4.0);
+	if (passed) passed = compareReals(getRealAmpEl(mq, 10), 1/sqrt(2), COMPARE_PRECISION);
+	
+	// controlling 2nd qubit enters state (|0> - 1/sqrt(2) (1 + i) |1>)/sqrt(2) |010>
+	controlledPhaseShift(mq, 1, 3, pi * 5/4.0);
+	if (passed) passed = compareReals(getRealAmpEl(mq, 10), -1/2.0, COMPARE_PRECISION);
+	if (passed) passed = compareReals(getImagAmpEl(mq, 10), -1/2.0, COMPARE_PRECISION);
+	
+	// enter (|0> - 1/sqrt(2) (1 + i) |1>)/sqrt(2) |011>
+	sigmaX(mq, 0);
+	
+	// enter (|0> + |1>)/sqrt(2) |011> where |0011> = 2^0 + 2^1 = 3
+	controlledPhaseShift(mq, 0, 3, - pi * 5/4.0);
+	if (passed) passed = compareReals(getRealAmpEl(mq, 3), 1/sqrt(2), COMPARE_PRECISION);
+	
+	destroyQubitRegister(mq, env);
+	
+	return passed;
+}
+
+
+
+
+
 
 int test_controlledNot(char testName[200]){
     char filename[200];
@@ -1020,6 +1066,7 @@ int main (int narg, char** varg) {
         test_sGate,
         test_tGate,
 		test_phaseShift,
+		test_controlledPhaseShift,
         test_controlledPhaseFlip,
         test_multiControlledPhaseFlip,
         test_compactUnitary,
@@ -1048,6 +1095,7 @@ int main (int narg, char** varg) {
         "sGate",
         "tGate",
 		"phaseShift",
+		"controlledPhaseShift",
         "controlledPhaseFlip",
         "multiControlledPhaseFlip",
         "compactUnitary",
