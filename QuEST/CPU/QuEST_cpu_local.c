@@ -184,17 +184,6 @@ void pure_phaseShift(QubitRegister qureg, const int targetQubit, REAL angle) {
 	pure_phaseShiftLocal(qureg, targetQubit, angle);
 }
 
-
-void pure_controlledPhaseShift(QubitRegister qureg, const int controlQubit, const int targetQubit, REAL angle) {
-	
-	QuESTAssert(targetQubit >= 0 && targetQubit < qureg.numQubits, 1, __func__);
-	QuESTAssert(controlQubit >= 0 && controlQubit < qureg.numQubits, 2, __func__);
-	QuESTAssert(targetQubit != controlQubit, 3, __func__);
-	
-	pure_controlledPhaseShiftLocal(qureg, controlQubit, targetQubit, angle);
-}
-
-
 void pure_hadamard(QubitRegister qureg, const int targetQubit) 
 {
     QuESTAssert(targetQubit >= 0 && targetQubit < qureg.numQubits, 1, __func__);

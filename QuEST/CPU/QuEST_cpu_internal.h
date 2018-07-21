@@ -86,10 +86,6 @@ void pure_phaseShiftLocal(QubitRegister qureg, const int targetQubit, REAL angle
 
 void pure_phaseShiftDistributed(QubitRegister qureg, const int targetQubit, REAL angle);
 
-void pure_controlledPhaseShiftLocal(QubitRegister qureg, const int controlQubit, const int targetQubit, REAL angle);
-
-void pure_controlledPhaseShiftDistributed(QubitRegister qureg, const int controlQubit, const int targetQubit, REAL angle);
-
 void pure_controlledNotLocal(QubitRegister qureg, const int controlQubit, const int targetQubit);
 
 void pure_controlledNotDistributed (QubitRegister qureg, const int controlQubit, const int targetQubit,

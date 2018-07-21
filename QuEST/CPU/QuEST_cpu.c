@@ -1588,109 +1588,44 @@ void pure_phaseShiftDistributed(QubitRegister qureg, const int targetQubit, REAL
     }
 }
 
-
-void pure_controlledPhaseShiftLocal(QubitRegister qureg, const int controlQubit, const int targetQubit, REAL angle)
+void pure_controlledPhaseShift (QubitRegister qureg, const int controlQubit, const int targetQubit, REAL angle)
 {
-    long long int sizeBlock, sizeHalfBlock;
-    long long int thisBlock, indexUp,indexLo;
-
-    REAL stateRealLo, stateImagLo;
-    long long int thisTask;         
-    const long long int numTasks=qureg.numAmpsPerChunk>>1;
-    const long long int chunkSize=qureg.numAmpsPerChunk;
-    const long long int chunkId=qureg.chunkId;
-
-    int controlBit;
-	const REAL cosAngle = cos(angle);
-	const REAL sinAngle = sin(angle);
-
-    // set dimensions
-    sizeHalfBlock = 1LL << targetQubit;  
-    sizeBlock     = 2LL * sizeHalfBlock; 
-
-    // Can't use qureg.stateVec as a private OMP var
-    REAL *stateVecReal = qureg.stateVec.real;
-    REAL *stateVecImag = qureg.stateVec.imag;
-
-# ifdef _OPENMP
-# pragma omp parallel \
-    default  (none) \
-    shared   (sizeBlock,sizeHalfBlock, stateVecReal,stateVecImag) \
-    private  (thisTask,thisBlock, indexUp,indexLo, stateRealLo,stateImagLo, controlBit) 
-# endif
-    {
-# ifdef _OPENMP
-# pragma omp for schedule (static)
-# endif
-        for (thisTask=0; thisTask<numTasks; thisTask++) {
-            thisBlock   = thisTask / sizeHalfBlock;
-            indexUp     = thisBlock*sizeBlock + thisTask%sizeHalfBlock;
-            indexLo     = indexUp + sizeHalfBlock;
-
-            controlBit = extractBit(controlQubit, indexUp+chunkId*chunkSize);
-            if (controlBit){
-				stateRealLo = stateVecReal[indexLo];
-				stateImagLo = stateVecImag[indexLo];
+    long long int index;
+    long long int stateVecSize;
+    int controlBit, targetBit;
 	
-				stateVecReal[indexLo] = cosAngle*stateRealLo - sinAngle*stateImagLo;
-				stateVecImag[indexLo] = sinAngle*stateRealLo + cosAngle*stateImagLo;
-            }
-        } 
-    }
-}
-
-void pure_controlledPhaseShiftDistributed(QubitRegister qureg, const int controlQubit, const int targetQubit, REAL angle)
-{
-    REAL stateRealLo,stateImagLo;
-    long long int thisTask;         
-    const long long int numTasks=qureg.numAmpsPerChunk;
     const long long int chunkSize=qureg.numAmpsPerChunk;
     const long long int chunkId=qureg.chunkId;
+
+    // dimension of the state vector
+    stateVecSize = qureg.numAmpsPerChunk;
     REAL *stateVecReal = qureg.stateVec.real;
     REAL *stateVecImag = qureg.stateVec.imag;
-
-	int controlBit;
+	
+	REAL stateRealLo, stateImagLo;
 	const REAL cosAngle = cos(angle);
 	const REAL sinAngle = sin(angle);
 
 # ifdef _OPENMP
-# pragma omp parallel \
-    default  (none) \
-    shared   (stateVecReal,stateVecImag) \
-    private  (thisTask,controlBit,stateRealLo,stateImagLo) 
+# pragma omp parallel for \
+    default  (none)			     \
+    shared   (stateVecSize, stateVecReal,stateVecImag ) \
+    private  (index,controlBit,targetBit,stateRealLo,stateImagLo)		       \
+    schedule (static)
 # endif
-    {
-# ifdef _OPENMP
-# pragma omp for schedule (static)
-# endif
-        for (thisTask=0; thisTask<numTasks; thisTask++) {
+    for (index=0; index<stateVecSize; index++) {
+        controlBit = extractBit (controlQubit, index+chunkId*chunkSize);
+        targetBit = extractBit (targetQubit, index+chunkId*chunkSize);
+        if (controlBit && targetBit) {
 			
-            controlBit = extractBit (controlQubit, thisTask+chunkId*chunkSize);
-            if (controlBit){
+        	stateRealLo = stateVecReal[index];
+        	stateImagLo = stateVecImag[index];
 			
-            	stateRealLo = stateVecReal[thisTask];
-            	stateImagLo = stateVecImag[thisTask];
-
-				stateVecReal[thisTask] = cosAngle*stateRealLo - sinAngle*stateImagLo;
-				stateVecImag[thisTask] = sinAngle*stateRealLo + cosAngle*stateImagLo;	
-			}
+			stateVecReal[index] = cosAngle*stateRealLo - sinAngle*stateImagLo;
+			stateVecImag[index] = sinAngle*stateRealLo + cosAngle*stateImagLo;	
         }
     }
-} 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+}
 
 /** Measure the total probability of a specified qubit being in the zero state across all amplitudes in this chunk.
  *  Size of regions to skip is less than the size of one chunk.                   
