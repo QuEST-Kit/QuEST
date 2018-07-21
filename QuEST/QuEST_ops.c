@@ -185,13 +185,6 @@ void sigmaZ(QubitRegister qureg, const int targetQubit) {
 	}
 }
 
-void phaseShift(QubitRegister qureg, const int targetQubit, REAL angle) {
-	pure_phaseShift(qureg, targetQubit, angle);
-	if (qureg.isDensityMatrix) {
-		pure_phaseShift(qureg, targetQubit+qureg.numDensityQubits, -angle);
-	}
-}
-
 void sGate(QubitRegister qureg, const int targetQubit) {
 	pure_sGate(qureg, targetQubit);
 	if (qureg.isDensityMatrix) {
@@ -203,6 +196,32 @@ void tGate(QubitRegister qureg, const int targetQubit) {
 	pure_tGate(qureg, targetQubit);
 	if (qureg.isDensityMatrix) {
 		pure_tGateConj(qureg, targetQubit+qureg.numDensityQubits);
+	}
+}
+
+void phaseShift(QubitRegister qureg, const int targetQubit, REAL angle) {
+	pure_phaseShift(qureg, targetQubit, angle);
+	if (qureg.isDensityMatrix) {
+		pure_phaseShift(qureg, targetQubit+qureg.numDensityQubits, -angle);
+	}
+}
+
+void controlledPhaseShift(QubitRegister qureg, const int controlQubit, const int targetQubit, REAL angle) {
+	pure_controlledPhaseShift(qureg, controlQubit, targetQubit, angle);
+	if (qureg.isDensityMatrix) {
+		int shift = qureg.numDensityQubits;
+		pure_controlledPhaseShift(qureg, controlQubit+shift, targetQubit+shift, -angle);
+	}
+}
+
+// @TODO
+void multiControlledPhaseShift(QubitRegister qureg, int *controlQubits, int numControlQubits, int targetQubit, REAL angle) {
+	pure_multiControlledPhaseShift(qureg, controlQubits, numControlQubits, targetQubit, angle);
+	if (qureg.isDensityMatrix) {
+		int shift = qureg.numDensityQubits;
+		shiftIndices(controlQubits, numControlQubits, shift);
+		pure_multiControlledPhaseShift(qureg, controlQubits, numControlQubits, targetQubit+shift, angle);
+		shiftIndices(controlQubits, numControlQubits, -shift);
 	}
 }
 
@@ -265,14 +284,6 @@ REAL getProbEl(QubitRegister qureg, long long int index) {
 }
 
 
-// @TODO very dubious
-void controlledPhaseShift(QubitRegister qureg, const int controlQubit, const int targetQubit, REAL angle) {
-	pure_controlledPhaseShift(qureg, controlQubit, targetQubit, angle);
-	if (qureg.isDensityMatrix) {
-		int shift = qureg.numDensityQubits;
-		pure_controlledPhaseShift(qureg, controlQubit+shift, targetQubit+shift, -angle);
-	}
-}
 
 
 

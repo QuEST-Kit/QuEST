@@ -1597,6 +1597,53 @@ void pure_controlledPhaseShift (QubitRegister qureg, const int controlQubit, con
     }
 }
 
+void pure_multiControlledPhaseShift(QubitRegister qureg, int *controlQubits, int numControlQubits, int targetQubit, REAL angle)
+{
+    long long int index;
+    long long int stateVecSize;
+
+    const long long int chunkSize=qureg.numAmpsPerChunk;
+    const long long int chunkId=qureg.chunkId;
+
+    QuESTAssert(numControlQubits > 0 && numControlQubits <= qureg.numQubits, 4, __func__);
+    long long int mask=0;
+    for (int i=0; i<numControlQubits; i++) 
+		mask = mask | (1LL<<controlQubits[i]);
+	mask = mask | (1LL<<targetQubit);
+    QuESTAssert(mask >=0 && mask <= (1LL<<qureg.numQubits)-1, 2, __func__);
+
+    stateVecSize = qureg.numAmpsPerChunk;
+    REAL *stateVecReal = qureg.stateVec.real;
+    REAL *stateVecImag = qureg.stateVec.imag;
+	
+	REAL stateRealLo, stateImagLo;
+	const REAL cosAngle = cos(angle);
+	const REAL sinAngle = sin(angle);
+
+# ifdef _OPENMP
+# pragma omp parallel \
+    default  (none)			     \
+    shared   (stateVecSize, stateVecReal, stateVecImag, mask) \
+    private  (index, stateRealLo, stateImagLo)
+# endif
+    {
+# ifdef _OPENMP
+# pragma omp for schedule (static)
+# endif
+        for (index=0; index<stateVecSize; index++) {
+            if (mask == (mask & (index+chunkId*chunkSize)) ){
+				
+	        	stateRealLo = stateVecReal[index];
+	        	stateImagLo = stateVecImag[index];
+			
+				stateVecReal[index] = cosAngle*stateRealLo - sinAngle*stateImagLo;
+				stateVecImag[index] = sinAngle*stateRealLo + cosAngle*stateImagLo;	
+            }
+        }
+    }
+}
+
+
 /** Measure the total probability of a specified qubit being in the zero state across all amplitudes in this chunk.
  *  Size of regions to skip is less than the size of one chunk.                   
  *  

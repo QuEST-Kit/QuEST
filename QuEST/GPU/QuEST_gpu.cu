@@ -1042,6 +1042,56 @@ void pure_controlledPhaseShift(QubitRegister qureg, const int controlQubit, cons
     pure_controlledPhaseShiftKernel<<<CUDABlocks, threadsPerCUDABlock>>>(qureg, controlQubit, targetQubit, cosAngle, sinAngle);
 }
 
+__global__ void pure_multiControlledPhaseShiftKernel(QubitRegister qureg, long long int mask, REAL cosAngle, REAL sinAngle) {
+	REAL stateRealLo, stateImagLo;
+    long long int index;
+    long long int stateVecSize;
+
+    stateVecSize = qureg.numAmpsPerChunk;
+    REAL *stateVecReal = qureg.deviceStateVec.real;
+    REAL *stateVecImag = qureg.deviceStateVec.imag;
+
+    index = blockIdx.x*blockDim.x + threadIdx.x;
+    if (index>=stateVecSize) return;
+
+    if (mask == (mask & index) ){
+	    stateRealLo = stateVecReal[index];
+	    stateImagLo = stateVecImag[index];
+	    stateVecReal[index] = cosAngle*stateRealLo - sinAngle*stateImagLo;
+	    stateVecImag[index] = sinAngle*stateRealLo + cosAngle*stateImagLo;
+    }
+}
+
+
+void pure_multiControlledPhaseShift(QubitRegister qureg, int *controlQubits, int numControlQubits, int targetQubit, REAL angle)
+{
+    QuESTAssert(numControlQubits > 0 && numControlQubits <= qureg.numQubits, 4, __func__);
+	
+	REAL cosAngle = cos(angle);
+	REAL sinAngle = sin(angle);
+
+    long long int mask=0;
+    for (int i=0; i<numControlQubits; i++) 
+		mask = mask | (1LL<<controlQubits[i]);
+	mask = mask | (1LL<<targetQubit);
+	
+    QuESTAssert(mask >=0 && mask <= (1LL<<qureg.numQubits)-1, 2, __func__);
+	
+	int threadsPerCUDABlock, CUDABlocks;
+    threadsPerCUDABlock = 128;
+    CUDABlocks = ceil((REAL)(qureg.numAmpsPerChunk)/threadsPerCUDABlock);
+    pure_multiControlledPhaseShiftKernel<<<CUDABlocks, threadsPerCUDABlock>>>(qureg, mask, cosAngle, sinAngle);
+}
+
+
+
+
+
+
+
+
+
+
 
 
 
