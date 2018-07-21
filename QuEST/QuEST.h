@@ -238,6 +238,46 @@ void initPureState(QubitRegister qureg, QubitRegister pure);
  */
 void phaseShift(QubitRegister qureg, const int targetQubit, REAL angle);
 
+/** Shift the phase between \f$ |0\rangle \f$ and \f$ |1\rangle \f$ of a single target qubit by a given angle, 
+ * for states where the given controlQubit has value 1.
+ * For angle \f$\theta\f$, this effects the unitary
+ * \f[
+ * \begin{pmatrix}
+ * 1 & & & \\
+ * & 1 & & \\
+ * & & 1 & \\
+ * & & & \exp(i \theta)
+ * \end{pmatrix}
+ * \f] 
+ * between the control and target qubit
+ *     
+	\f[
+	\setlength{\fboxrule}{0.01pt}
+	\fbox{
+				\begin{tikzpicture}[scale=.5]
+				\node[draw=none] at (-3.5, 2) {control};
+				\node[draw=none] at (-3.5, 0) {target};
+
+				\draw (-2, 2) -- (2, 2);
+				\draw[fill=black] (0, 2) circle (.2);
+				\draw (0, 2) -- (0, 1);
+				
+				\draw (-2,0) -- (-1, 0);
+				\draw (1, 0) -- (2, 0);
+				\draw (-1,-1)--(-1,1)--(1,1)--(1,-1)--cycle;
+				\node[draw=none] at (0, 0) {$R_\theta$};
+				\end{tikzpicture}
+	}
+	\f]
+ * 
+ * @param[in,out] qureg object representing the set of all qubits
+ * @param[in] rotQubit qubit to undergo a phase shift
+ * @param[in] angle amount by which to shift the phase in radians
+ * @throws exitWithError
+ * 		if \p targetQubit is outside [0, \p qureg.numQubits).
+ */
+void controlledPhaseShift(QubitRegister qureg, const int controlQubit, const int targetQubit, REAL angle);
+
 /** Apply the (two-qubit) controlled phase flip gate, also known as the controlled sigmaZ gate.
  * For each state, if both input qubits have value one, multiply the amplitude of that state by -1. This applies the two-qubit unitary:
  * \f[
