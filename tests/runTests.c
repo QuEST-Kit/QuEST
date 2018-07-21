@@ -9,7 +9,7 @@
 # include "QuEST_precision.h"
 # include "QuEST_debug.h"
 
-# define NUM_TESTS 26
+# define NUM_TESTS 27
 # define COMPARE_PRECISION 10e-13
 # define PATH_TO_TESTS "unit/"
 # define VERBOSE 0
@@ -352,6 +352,41 @@ int test_controlledPhaseShift(char testName[200]) {
 	return passed;
 }
 
+
+
+
+
+
+int test_multiControlledPhaseShift(char testName[200]) {
+	int passed=1;
+	
+	REAL pi = 3.1415926535897932384626;
+	
+	QubitRegister mq;
+	createQubitRegister(&mq, 4, env);
+	
+	// prepare state (|0> + |1>)/sqrt(2) |010>
+	initStateZero(mq);
+	sigmaX(mq, 1);
+	hadamard(mq, 3);
+	
+	// confirm controlling on 2nd,3rd,4th qubits does nothing (state |1010> = 2^1 + 2^3 = 10)
+	multiControlledPhaseShift(mq, (int[]) {1,2,3}, 3, pi * 5/4.0);
+	if (passed) passed = compareReals(getRealAmpEl(mq, 10), 1/sqrt(2), COMPARE_PRECISION);
+	
+	// enter state (|0> + |1>)/sqrt(2) |110>
+	sigmaX(mq, 2);
+	
+	// controlling on 2nd,3rd,4th qubits enters state (|0> - 1/sqrt(2) (1 + i) |1>)/sqrt(2) |110>
+	// index of state |1110> = 2^1 + 2^2 + 2^3 = 14
+	multiControlledPhaseShift(mq, (int[]) {1,2,3}, 3, pi * 5/4.0);
+	if (passed) passed = compareReals(getRealAmpEl(mq, 14), -1/2.0, COMPARE_PRECISION);
+	if (passed) passed = compareReals(getImagAmpEl(mq, 14), -1/2.0, COMPARE_PRECISION);
+	
+	destroyQubitRegister(mq, env);
+	
+	return passed;
+}
 
 
 
@@ -1067,6 +1102,7 @@ int main (int narg, char** varg) {
         test_tGate,
 		test_phaseShift,
 		test_controlledPhaseShift,
+		test_multiControlledPhaseShift,
         test_controlledPhaseFlip,
         test_multiControlledPhaseFlip,
         test_compactUnitary,
@@ -1096,6 +1132,7 @@ int main (int narg, char** varg) {
         "tGate",
 		"phaseShift",
 		"controlledPhaseShift",
+		"multiControlledPhaseShift",
         "controlledPhaseFlip",
         "multiControlledPhaseFlip",
         "compactUnitary",
