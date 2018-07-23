@@ -28,15 +28,21 @@ extern "C" {
 
 	
 // @TODO
-void pure_initPureState(QubitRegister targetQureg, QubitRegister copyQureg) {
-	QuESTAssert(0, 0, __func__);
-}
-// @TODO
 void mixed_initPureState(QubitRegister targetQureg, QubitRegister copyQureg) {
 	QuESTAssert(0, 0, __func__);
 }
 
-
+// @TODO test 
+void pure_initPureState(QubitRegister targetQureg, QubitRegister copyQureg) {
+	
+	// copy copyQureg's GPU statevec to targetQureg's GPU statevec
+	copyStateFromGPU(copyQureg);
+    cudaMemcpy(
+		copyQureg.deviceStateVec.real, 
+		targetQureg.deviceStateVec.real, 
+		targetQureg.numAmpsPerChunk*sizeof(*(targetQureg.deviceStateVec.real)), 
+		cudaMemcpyDeviceToDevice);
+}
 
 
 
