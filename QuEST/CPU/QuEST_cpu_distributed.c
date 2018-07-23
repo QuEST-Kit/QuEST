@@ -26,16 +26,76 @@
 # endif
 
 
-
-
-
 // @TODO
 void mixed_initPureState(QubitRegister targetQureg, QubitRegister copyQureg) {
 	mixed_initPureStateDistributed(targetQureg, copyQureg);
 }
 
+REAL mixed_calcTotalProbability(QubitRegister qureg) {
+	
+	// computes the trace by summing every element ("diag") with global index (2^n + 1)i for i in [0, 2^n-1]
+	
+	// computers first local index containing a diagonal element
+	long long int diagSpacing = 1LL + (1LL << qureg.numDensityQubits);
+	long long int numPrevDiags = (qureg.chunkId * qureg.numAmpsPerChunk) / diagSpacing;
+	long long int globalIndNextDiag = diagSpacing * numPrevDiags;
+	long long int localIndNextDiag = globalIndNextDiag % qureg.numAmpsPerChunk;
+	long long int index;
+	
+	REAL rankTotal = 0;
+	REAL y, t, c;
+	c = 0;
+	
+	// iterates every local diagonal
+	for (index=localIndNextDiag; index < qureg.numAmpsPerChunk; index += diagSpacing) {
+		
+		// Kahan summation - brackets are important
+		y = qureg.stateVec.real[index] - c;
+		t = rankTotal + y;
+		c = ( t - rankTotal ) - y;
+		rankTotal = t;
+	}
+	
+	// combine each node's sum of diagonals
+	REAL globalTotal;
+	if (qureg.numChunks > 1)
+		MPI_Allreduce(&rankTotal, &globalTotal, 1, MPI_QuEST_REAL, MPI_SUM, MPI_COMM_WORLD);
+	else
+		globalTotal = rankTotal;
+	
+	return globalTotal;
+}
 
+REAL pure_calcTotalProbability(QubitRegister qureg){
+    // Implemented using Kahan summation for greater accuracy at a slight floating
+    //   point operation overhead. For more details see https://en.wikipedia.org/wiki/Kahan_summation_algorithm
+    REAL pTotal=0; 
+    REAL y, t, c;
+    REAL allRankTotals=0;
+    long long int index;
+    long long int numAmpsPerRank = qureg.numAmpsPerChunk;
+    c = 0.0;
+    for (index=0; index<numAmpsPerRank; index++){ 
+        // Perform pTotal+=qureg.stateVec.real[index]*qureg.stateVec.real[index]; by Kahan
+        y = qureg.stateVec.real[index]*qureg.stateVec.real[index] - c;
+        t = pTotal + y;
+        // Don't change the bracketing on the following line
+        c = ( t - pTotal ) - y;
+        pTotal = t;
+        // Perform pTotal+=qureg.stateVec.imag[index]*qureg.stateVec.imag[index]; by Kahan
+        y = qureg.stateVec.imag[index]*qureg.stateVec.imag[index] - c;
+        t = pTotal + y;
+        // Don't change the bracketing on the following line
+        c = ( t - pTotal ) - y;
+        pTotal = t;
+    } 
+    if (qureg.numChunks>1)
+		MPI_Allreduce(&pTotal, &allRankTotals, 1, MPI_QuEST_REAL, MPI_SUM, MPI_COMM_WORLD);
+    else 
+		allRankTotals=pTotal;
 
+    return allRankTotals;
+}
 
 
 static int isChunkToSkipInFindPZero(int chunkId, long long int chunkSize, int measureQubit);
@@ -122,35 +182,6 @@ REAL pure_getImagAmpEl(QubitRegister qureg, long long int index){
     }
     MPI_Bcast(&el, 1, MPI_QuEST_REAL, chunkId, MPI_COMM_WORLD);
     return el; 
-}
-
-REAL pure_calcTotalProbability(QubitRegister qureg){
-    // Implemented using Kahan summation for greater accuracy at a slight floating
-    //   point operation overhead. For more details see https://en.wikipedia.org/wiki/Kahan_summation_algorithm
-    REAL pTotal=0; 
-    REAL y, t, c;
-    REAL allRankTotals=0;
-    long long int index;
-    long long int numAmpsPerRank = qureg.numAmpsPerChunk;
-    c = 0.0;
-    for (index=0; index<numAmpsPerRank; index++){ 
-        // Perform pTotal+=qureg.stateVec.real[index]*qureg.stateVec.real[index]; by Kahan
-        y = qureg.stateVec.real[index]*qureg.stateVec.real[index] - c;
-        t = pTotal + y;
-        // Don't change the bracketing on the following line
-        c = ( t - pTotal ) - y;
-        pTotal = t;
-        // Perform pTotal+=qureg.stateVec.imag[index]*qureg.stateVec.imag[index]; by Kahan
-        y = qureg.stateVec.imag[index]*qureg.stateVec.imag[index] - c;
-        t = pTotal + y;
-        // Don't change the bracketing on the following line
-        c = ( t - pTotal ) - y;
-        pTotal = t;
-    } 
-    if (qureg.numChunks>1) MPI_Allreduce(&pTotal, &allRankTotals, 1, MPI_QuEST_REAL, MPI_SUM, MPI_COMM_WORLD);
-    else allRankTotals=pTotal;
-
-    return allRankTotals;
 }
 
 /** Returns whether a given chunk in position chunkId is in the upper or lower half of

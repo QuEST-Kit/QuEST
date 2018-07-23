@@ -25,11 +25,7 @@ static __device__ int extractBit (int locationOfBitFromRight, long long int theE
 #ifdef __cplusplus
 extern "C" {
 #endif
-	
-	
-	
-	
-	
+
 	
 // @TODO
 void pure_initPureState(QubitRegister targetQureg, QubitRegister copyQureg) {
@@ -39,7 +35,6 @@ void pure_initPureState(QubitRegister targetQureg, QubitRegister copyQureg) {
 void mixed_initPureState(QubitRegister targetQureg, QubitRegister copyQureg) {
 	QuESTAssert(0, 0, __func__);
 }
-
 
 
 
@@ -470,40 +465,11 @@ int pure_compareStates(QubitRegister mq1, QubitRegister mq2, REAL precision){
 }
 
 
-REAL pure_calcTotalProbability(QubitRegister qureg){
-    /* IJB - implemented using Kahan summation for greater accuracy at a slight floating
-       point operation overhead. For more details see https://en.wikipedia.org/wiki/Kahan_summation_algorithm */
-    /* Don't change the bracketing in this routine! */
-    REAL pTotal=0;
-    REAL y, t, c;
-    long long int index;
-    long long int numAmpsPerRank = qureg.numAmpsPerChunk;
-
-    copyStateFromGPU(qureg);
-
-    c = 0.0;
-    for (index=0; index<numAmpsPerRank; index++){
-        /* Perform pTotal+=qureg.stateVec.real[index]*qureg.stateVec.real[index]; by Kahan */
-        // pTotal+=qureg.stateVec.real[index]*qureg.stateVec.real[index];
-
-        y = qureg.stateVec.real[index]*qureg.stateVec.real[index] - c;
-        t = pTotal + y;
-        c = ( t - pTotal ) - y;
-        pTotal = t;
-
-        /* Perform pTotal+=qureg.stateVec.imag[index]*qureg.stateVec.imag[index]; by Kahan */
-        //pTotal+=qureg.stateVec.imag[index]*qureg.stateVec.imag[index];
 
 
-        y = qureg.stateVec.imag[index]*qureg.stateVec.imag[index] - c;
-        t = pTotal + y;
-        c = ( t - pTotal ) - y;
-        pTotal = t;
 
 
-    }
-    return pTotal;
-}
+
 
 
 __global__ void pure_compactUnitaryKernel (QubitRegister qureg, const int rotQubit, Complex alpha, Complex beta){
@@ -977,7 +943,6 @@ __global__ void pure_phaseShiftByTermKernel(QubitRegister qureg, const int targe
     indexUp     = thisBlock*sizeBlock + thisTask%sizeHalfBlock;
     indexLo     = indexUp + sizeHalfBlock;
 
-
     stateRealLo = stateVecReal[indexLo];
     stateImagLo = stateVecImag[indexLo];
 
@@ -996,7 +961,7 @@ void pure_phaseShiftByTerm(QubitRegister qureg, const int targetQubit, Complex t
     int threadsPerCUDABlock, CUDABlocks;
     threadsPerCUDABlock = 128;
     CUDABlocks = ceil((REAL)(qureg.numAmpsPerChunk>>1)/threadsPerCUDABlock);
-    pure_phaseShiftKernel<<<CUDABlocks, threadsPerCUDABlock>>>(qureg, targetQubit, cosAngle, sinAngle);
+    pure_phaseShiftByTermKernel<<<CUDABlocks, threadsPerCUDABlock>>>(qureg, targetQubit, cosAngle, sinAngle);
 }
 
 __global__ void pure_controlledPhaseShiftKernel(QubitRegister qureg, const int idQubit1, const int idQubit2, REAL cosAngle, REAL sinAngle)
@@ -1079,17 +1044,60 @@ void pure_multiControlledPhaseShift(QubitRegister qureg, int *controlQubits, int
     pure_multiControlledPhaseShiftKernel<<<CUDABlocks, threadsPerCUDABlock>>>(qureg, mask, cosAngle, sinAngle);
 }
 
+REAL mixed_calcTotalProbability(QubitRegister qureg) {
+	
+	// computes the trace using Kahan summation
+	REAL pTotal=0;
+	REAL y, t, c;
+	c = 0;
+	
+	long long int numCols = 1LL << qureg.numDensityQubits;
+	long long diagIndex;
+	
+	copyStateFromGPU(qureg);
+	
+	for (int col=0; col< numCols; col++) {
+		diagIndex = col*(numCols + 1);
+		y = qureg.stateVec.real[diagIndex] - c;
+		t = pTotal + y;
+		c = ( t - pTotal ) - y; // brackets are important
+		pTotal = t;
+	}
+	
+	return pTotal;
+}
+
+REAL pure_calcTotalProbability(QubitRegister qureg){
+    /* IJB - implemented using Kahan summation for greater accuracy at a slight floating
+       point operation overhead. For more details see https://en.wikipedia.org/wiki/Kahan_summation_algorithm */
+    /* Don't change the bracketing in this routine! */
+    REAL pTotal=0;
+    REAL y, t, c;
+    long long int index;
+    long long int numAmpsPerRank = qureg.numAmpsPerChunk;
+
+    copyStateFromGPU(qureg);
+
+    c = 0.0;
+    for (index=0; index<numAmpsPerRank; index++){
+        /* Perform pTotal+=qureg.stateVec.real[index]*qureg.stateVec.real[index]; by Kahan */
+        // pTotal+=qureg.stateVec.real[index]*qureg.stateVec.real[index];
+        y = qureg.stateVec.real[index]*qureg.stateVec.real[index] - c;
+        t = pTotal + y;
+        c = ( t - pTotal ) - y;
+        pTotal = t;
+
+        /* Perform pTotal+=qureg.stateVec.imag[index]*qureg.stateVec.imag[index]; by Kahan */
+        //pTotal+=qureg.stateVec.imag[index]*qureg.stateVec.imag[index];
+        y = qureg.stateVec.imag[index]*qureg.stateVec.imag[index] - c;
+        t = pTotal + y;
+        c = ( t - pTotal ) - y;
+        pTotal = t;
 
 
-
-
-
-
-
-
-
-
-
+    }
+    return pTotal;
+}
 
 __global__ void pure_controlledPhaseFlipKernel(QubitRegister qureg, const int idQubit1, const int idQubit2)
 {

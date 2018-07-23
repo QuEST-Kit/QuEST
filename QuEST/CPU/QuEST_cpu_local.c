@@ -35,7 +35,56 @@ void mixed_initPureState(QubitRegister targetQureg, QubitRegister copyQureg) {
 	mixed_initPureStateLocal(targetQureg, copyQureg);
 }
 
+REAL mixed_calcTotalProbability(QubitRegister qureg) {
+	
+	// computes the trace using Kahan summation
+	REAL pTotal=0;
+	REAL y, t, c;
+	c = 0;
+	
+	long long int numCols = 1LL << qureg.numDensityQubits;
+	long long diagIndex;
+	
+	for (int col=0; col< numCols; col++) {
+		diagIndex = col*(numCols + 1);
+		y = qureg.stateVec.real[diagIndex] - c;
+		t = pTotal + y;
+		c = ( t - pTotal ) - y; // brackets are important
+		pTotal = t;
+	}
+	
+	return pTotal;
+}
 
+REAL pure_calcTotalProbability(QubitRegister qureg){
+    // implemented using Kahan summation for greater accuracy at a slight floating
+    // point operation overhead. For more details see https://en.wikipedia.org/wiki/Kahan_summation_algorithm
+    REAL pTotal=0; 
+    REAL y, t, c;
+    long long int index;
+    long long int numAmpsPerRank = qureg.numAmpsPerChunk;
+    c = 0.0;
+    for (index=0; index<numAmpsPerRank; index++){ 
+        // Perform pTotal+=qureg.stateVec.real[index]*qureg.stateVec.real[index]; by Kahan
+
+        y = qureg.stateVec.real[index]*qureg.stateVec.real[index] - c;
+        t = pTotal + y;
+        // Don't change the bracketing on the following line
+        c = ( t - pTotal ) - y;
+        pTotal = t;
+
+        // Perform pTotal+=qureg.stateVec.imag[index]*qureg.stateVec.imag[index]; by Kahan
+
+        y = qureg.stateVec.imag[index]*qureg.stateVec.imag[index] - c;
+        t = pTotal + y;
+        // Don't change the bracketing on the following line
+        c = ( t - pTotal ) - y;
+        pTotal = t;
+
+
+    } 
+    return pTotal;
+}
 
 
 void initQuESTEnv(QuESTEnv *env){
@@ -73,36 +122,6 @@ void reportQuESTEnv(QuESTEnv env){
 
 void reportNodeList(QuESTEnv env){
     printf("Hostname unknown: running locally\n");
-}
-
-REAL pure_calcTotalProbability(QubitRegister qureg){
-    // implemented using Kahan summation for greater accuracy at a slight floating
-    // point operation overhead. For more details see https://en.wikipedia.org/wiki/Kahan_summation_algorithm
-    REAL pTotal=0; 
-    REAL y, t, c;
-    long long int index;
-    long long int numAmpsPerRank = qureg.numAmpsPerChunk;
-    c = 0.0;
-    for (index=0; index<numAmpsPerRank; index++){ 
-        // Perform pTotal+=qureg.stateVec.real[index]*qureg.stateVec.real[index]; by Kahan
-
-        y = qureg.stateVec.real[index]*qureg.stateVec.real[index] - c;
-        t = pTotal + y;
-        // Don't change the bracketing on the following line
-        c = ( t - pTotal ) - y;
-        pTotal = t;
-
-        // Perform pTotal+=qureg.stateVec.imag[index]*qureg.stateVec.imag[index]; by Kahan
-
-        y = qureg.stateVec.imag[index]*qureg.stateVec.imag[index] - c;
-        t = pTotal + y;
-        // Don't change the bracketing on the following line
-        c = ( t - pTotal ) - y;
-        pTotal = t;
-
-
-    } 
-    return pTotal;
 }
 
 REAL pure_getRealAmpEl(QubitRegister qureg, long long int index){

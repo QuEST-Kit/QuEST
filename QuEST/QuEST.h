@@ -526,8 +526,9 @@ REAL getImagAmpEl(QubitRegister qureg, long long int index);
  */
 REAL getProbEl(QubitRegister qureg, long long int index);
 
-/** Calculate the probability of being in any state by taking the norm of the entire state vector. 
- * Should be equal to 1.
+/** A debugging function which calculates the probability of being in any state, which should be 1.
+ * For pure states, this is the norm of the entire state vector and for mixed states, is the trace of
+ * the density matrix.
  *
  * @param[in] qureg object representing a set of qubits
  * @return total probability

@@ -43,7 +43,8 @@ void destroyQubitRegister(QubitRegister qureg, QuESTEnv env) {
 }
 
 void initStateZero(QubitRegister qureg) {
-	pure_initStateZero(qureg); // valid for |0> and |0><0|
+	// valid for both pure and mixed states
+	pure_initStateZero(qureg); 
 }
 
 void initStatePlus(QubitRegister qureg) {
@@ -58,22 +59,6 @@ void initClassicalState(QubitRegister qureg, long long int stateInd) {
 		mixed_initClassicalState(qureg, stateInd);
 	else
 		pure_initClassicalState(qureg, stateInd);
-}
-
-// @TODO add pure copying to GPU
-// @TODO add density copying to distributed CPU
-// @TODO add density copying to GPU
-void initPureState(QubitRegister qureg, QubitRegister pure) {
-	QuESTAssert(!pure.isDensityMatrix, 12, __func__);
-	
-	if (qureg.isDensityMatrix) {
-		QuESTAssert(qureg.numDensityQubits==pure.numQubits, 13, __func__);
-		mixed_initPureState(qureg, pure);
-		
-	} else {
-		QuESTAssert(qureg.numQubits==pure.numQubits, 13, __func__);
-		pure_initPureState(qureg, pure);
-	}
 }
 
 void hadamard(QubitRegister qureg, const int targetQubit) {
@@ -214,7 +199,6 @@ void controlledPhaseShift(QubitRegister qureg, const int idQubit1, const int idQ
 	}
 }
 
-// @TODO: strip target
 void multiControlledPhaseShift(QubitRegister qureg, int *controlQubits, int numControlQubits, REAL angle) {
 	pure_multiControlledPhaseShift(qureg, controlQubits, numControlQubits, angle);
 	if (qureg.isDensityMatrix) {
@@ -299,6 +283,35 @@ REAL getProbEl(QubitRegister qureg, long long int index) {
 	return pure_getProbEl(qureg, index);
 }
 
+REAL calcTotalProbability(QubitRegister qureg) {
+	if (qureg.isDensityMatrix)	
+			return mixed_calcTotalProbability(qureg);
+		else
+			return pure_calcTotalProbability(qureg);
+}
+
+
+
+
+
+
+
+
+// @TODO add pure copying to GPU
+// @TODO add density copying to distributed CPU
+// @TODO add density copying to GPU
+void initPureState(QubitRegister qureg, QubitRegister pure) {
+	QuESTAssert(!pure.isDensityMatrix, 12, __func__);
+	
+	if (qureg.isDensityMatrix) {
+		QuESTAssert(qureg.numDensityQubits==pure.numQubits, 13, __func__);
+		mixed_initPureState(qureg, pure);
+		
+	} else {
+		QuESTAssert(qureg.numQubits==pure.numQubits, 13, __func__);
+		pure_initPureState(qureg, pure);
+	}
+}
 
 
 
@@ -339,14 +352,6 @@ void reportStateToScreen(QubitRegister qureg, QuESTEnv env, int reportRank)  {
 
 
 
-
-
-
-
-// @TODO
-REAL calcTotalProbability(QubitRegister qureg) {
-	return pure_calcTotalProbability(qureg);
-}
 
 // @TODO
 REAL findProbabilityOfOutcome(QubitRegister qureg, const int measureQubit, int outcome) {

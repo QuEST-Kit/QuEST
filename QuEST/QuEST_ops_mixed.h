@@ -20,8 +20,9 @@ void mixed_initClassicalState(QubitRegister qureg, long long int stateInd);
 
 void mixed_initPureState(QubitRegister targetQureg, QubitRegister copyQureg);
 
+REAL mixed_calcTotalProbability(QubitRegister qureg);
 
-	
+
 # ifdef __cplusplus
 }
 # endif
