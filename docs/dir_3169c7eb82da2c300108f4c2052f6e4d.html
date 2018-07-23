@@ -38,7 +38,7 @@ $(function() {
 <div id="main-nav"></div>
 <div id="nav-path" class="navpath">
   <ul>
-<li class="navelem"><a class="el" href="dir_d522931ffa1371640980b621734a4381.html">Users</a></li><li class="navelem"><a class="el" href="dir_70834f0dcd10de01d2e35ab402a2238e.html">tysonjones</a></li><li class="navelem"><a class="el" href="dir_1957401ef452be7528010ba0f4832a45.html">Desktop</a></li><li class="navelem"><a class="el" href="dir_b324011597fd8fcb95787eb1de191397.html">QuESTCombinedRepo</a></li><li class="navelem"><a class="el" href="dir_b0c46ee45a97ce0faa132e440cb1243b.html">QuEST</a></li><li class="navelem"><a class="el" href="dir_27e49354d678aeade023c3e85ad65e59.html">QuEST</a></li>  </ul>
+<li class="navelem"><a class="el" href="dir_d522931ffa1371640980b621734a4381.html">Users</a></li><li class="navelem"><a class="el" href="dir_70834f0dcd10de01d2e35ab402a2238e.html">tysonjones</a></li><li class="navelem"><a class="el" href="dir_1957401ef452be7528010ba0f4832a45.html">Desktop</a></li><li class="navelem"><a class="el" href="dir_e763e4f63987bc6dd0ff21f56afcfed4.html">QuESTRestructured</a></li><li class="navelem"><a class="el" href="dir_b6ad6e9ca9478e43d4c44cdd00457d5f.html">QuEST</a></li><li class="navelem"><a class="el" href="dir_3169c7eb82da2c300108f4c2052f6e4d.html">QuEST</a></li>  </ul>
 </div>
 </div><!-- top -->
 <div class="header">
@@ -56,8 +56,23 @@ Files</h2></td></tr>
 <tr class="memitem:QuEST_8h"><td class="memItemLeft" align="right" valign="top">file &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="QuEST_8h.html">QuEST.h</a> <a href="QuEST_8h_source.html">[code]</a></td></tr>
 <tr class="memdesc:QuEST_8h"><td class="mdescLeft">&#160;</td><td class="mdescRight">The QuEST library API and objects. <br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:QuEST__common_8c"><td class="memItemLeft" align="right" valign="top">file &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="QuEST__common_8c.html">QuEST_common.c</a> <a href="QuEST__common_8c_source.html">[code]</a></td></tr>
+<tr class="memdesc:QuEST__common_8c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Internal and API functions which are hardware-agnostic. <br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:QuEST__debug_8h"><td class="memItemLeft" align="right" valign="top">file &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="QuEST__debug_8h.html">QuEST_debug.h</a> <a href="QuEST__debug_8h_source.html">[code]</a></td></tr>
-<tr class="memdesc:QuEST__debug_8h"><td class="mdescLeft">&#160;</td><td class="mdescRight">Developer functions used for unit testing and debugging. <br /></td></tr>
+<tr class="memdesc:QuEST__debug_8h"><td class="mdescLeft">&#160;</td><td class="mdescRight">Developer functions used for unit testing and debugging, which are not part of the public API. <br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:QuEST__internal_8h"><td class="memItemLeft" align="right" valign="top">file &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="QuEST__internal_8h.html">QuEST_internal.h</a> <a href="QuEST__internal_8h_source.html">[code]</a></td></tr>
+<tr class="memdesc:QuEST__internal_8h"><td class="mdescLeft">&#160;</td><td class="mdescRight">Functions defined in QuEST_common which are only for internal use by hardware-specific backends. <br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:QuEST__ops_8c"><td class="memItemLeft" align="right" valign="top">file &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="QuEST__ops_8c.html">QuEST_ops.c</a> <a href="QuEST__ops_8c_source.html">[code]</a></td></tr>
+<tr class="memdesc:QuEST__ops_8c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Implements the <a class="el" href="QuEST_8h.html" title="The QuEST library API and objects. ">QuEST.h</a> API (and some debugging functions) in a hardware-agnostic way, for both pure and mixed states. <br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:QuEST__ops__mixed_8h"><td class="memItemLeft" align="right" valign="top">file &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="QuEST__ops__mixed_8h.html">QuEST_ops_mixed.h</a> <a href="QuEST__ops__mixed_8h_source.html">[code]</a></td></tr>
+<tr class="memdesc:QuEST__ops__mixed_8h"><td class="mdescLeft">&#160;</td><td class="mdescRight">Functions operating upon mixed states which are provided by a hardware-specific backend. <br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:QuEST__ops__pure_8h"><td class="memItemLeft" align="right" valign="top">file &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="QuEST__ops__pure_8h.html">QuEST_ops_pure.h</a> <a href="QuEST__ops__pure_8h_source.html">[code]</a></td></tr>
+<tr class="memdesc:QuEST__ops__pure_8h"><td class="mdescLeft">&#160;</td><td class="mdescRight">Functions operating upon pure states which are provided by a hardware-specific backend. <br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:QuEST__precision_8h"><td class="memItemLeft" align="right" valign="top">file &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="QuEST__precision_8h.html">QuEST_precision.h</a> <a href="QuEST__precision_8h_source.html">[code]</a></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -65,7 +80,7 @@ Files</h2></td></tr>
 </div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Sat Jul 14 2018 15:21:21 for Quantum Exact Simulation Toolkit by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Mon Jul 23 2018 15:29:56 for Quantum Exact Simulation Toolkit by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.14
 </small></address>

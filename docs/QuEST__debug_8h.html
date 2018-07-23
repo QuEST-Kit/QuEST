@@ -38,7 +38,7 @@ $(function() {
 <div id="main-nav"></div>
 <div id="nav-path" class="navpath">
   <ul>
-<li class="navelem"><a class="el" href="dir_d522931ffa1371640980b621734a4381.html">Users</a></li><li class="navelem"><a class="el" href="dir_70834f0dcd10de01d2e35ab402a2238e.html">tysonjones</a></li><li class="navelem"><a class="el" href="dir_1957401ef452be7528010ba0f4832a45.html">Desktop</a></li><li class="navelem"><a class="el" href="dir_b324011597fd8fcb95787eb1de191397.html">QuESTCombinedRepo</a></li><li class="navelem"><a class="el" href="dir_b0c46ee45a97ce0faa132e440cb1243b.html">QuEST</a></li><li class="navelem"><a class="el" href="dir_27e49354d678aeade023c3e85ad65e59.html">QuEST</a></li>  </ul>
+<li class="navelem"><a class="el" href="dir_d522931ffa1371640980b621734a4381.html">Users</a></li><li class="navelem"><a class="el" href="dir_70834f0dcd10de01d2e35ab402a2238e.html">tysonjones</a></li><li class="navelem"><a class="el" href="dir_1957401ef452be7528010ba0f4832a45.html">Desktop</a></li><li class="navelem"><a class="el" href="dir_e763e4f63987bc6dd0ff21f56afcfed4.html">QuESTRestructured</a></li><li class="navelem"><a class="el" href="dir_b6ad6e9ca9478e43d4c44cdd00457d5f.html">QuEST</a></li><li class="navelem"><a class="el" href="dir_3169c7eb82da2c300108f4c2052f6e4d.html">QuEST</a></li>  </ul>
 </div>
 </div><!-- top -->
 <div class="header">
@@ -49,7 +49,7 @@ $(function() {
 </div><!--header-->
 <div class="contents">
 
-<p>Developer functions used for unit testing and debugging.  
+<p>Developer functions used for unit testing and debugging, which are not part of the public API.  
 <a href="#details">More...</a></p>
 <div class="textblock"><code>#include &quot;<a class="el" href="QuEST__precision_8h_source.html">QuEST_precision.h</a>&quot;</code><br />
 </div>
@@ -57,30 +57,30 @@ $(function() {
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="func-members"></a>
 Functions</h2></td></tr>
-<tr class="memitem:a793584932ae384c82e7e42db7d35d18d"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="QuEST__debug_8h.html#a793584932ae384c82e7e42db7d35d18d">compareStates</a> (<a class="el" href="structMultiQubit.html">MultiQubit</a> mq1, <a class="el" href="structMultiQubit.html">MultiQubit</a> mq2, <a class="el" href="QuEST__precision_8h.html#a4b654506f18b8bfd61ad2a29a7e38c25">REAL</a> precision)</td></tr>
-<tr class="memdesc:a793584932ae384c82e7e42db7d35d18d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return whether two given wavefunctions are equivalent within a given precision Global phase included in equivalence check.  <a href="#a793584932ae384c82e7e42db7d35d18d">More...</a><br /></td></tr>
-<tr class="separator:a793584932ae384c82e7e42db7d35d18d"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a433876ee9f3bcc54af346300f571fc3c"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="QuEST__debug_8h.html#a433876ee9f3bcc54af346300f571fc3c">initializeStateFromSingleFile</a> (<a class="el" href="structMultiQubit.html">MultiQubit</a> *multiQubit, char filename[200], <a class="el" href="structQuESTEnv.html">QuESTEnv</a> env)</td></tr>
-<tr class="memdesc:a433876ee9f3bcc54af346300f571fc3c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Initialises the wavefunction amplitudes according to those specified in a file.  <a href="#a433876ee9f3bcc54af346300f571fc3c">More...</a><br /></td></tr>
-<tr class="separator:a433876ee9f3bcc54af346300f571fc3c"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a4b737ff9b4267609ef27e6cb4c42dc68"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="QuEST__debug_8h.html#a4b737ff9b4267609ef27e6cb4c42dc68">initStateDebug</a> (<a class="el" href="structMultiQubit.html">MultiQubit</a> multiQubit)</td></tr>
-<tr class="memdesc:a4b737ff9b4267609ef27e6cb4c42dc68"><td class="mdescLeft">&#160;</td><td class="mdescRight">Initialise the state vector of probability amplitudes to an (unphysical) state with each component of each probability amplitude a unique floating point value.  <a href="#a4b737ff9b4267609ef27e6cb4c42dc68">More...</a><br /></td></tr>
-<tr class="separator:a4b737ff9b4267609ef27e6cb4c42dc68"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a7169fd0442cbc3418f3fac4d13363ca2"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="QuEST__debug_8h.html#a7169fd0442cbc3418f3fac4d13363ca2">initStateOfSingleQubit</a> (<a class="el" href="structMultiQubit.html">MultiQubit</a> *multiQubit, int qubitId, int outcome)</td></tr>
-<tr class="memdesc:a7169fd0442cbc3418f3fac4d13363ca2"><td class="mdescLeft">&#160;</td><td class="mdescRight">Initialise the state vector of probability amplitudes such that one qubit is set to 'outcome' and all other qubits are in an equal superposition of zero and one.  <a href="#a7169fd0442cbc3418f3fac4d13363ca2">More...</a><br /></td></tr>
-<tr class="separator:a7169fd0442cbc3418f3fac4d13363ca2"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a2042b3cee85bafd7021375b451502eea"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="QuEST__debug_8h.html#a2042b3cee85bafd7021375b451502eea">compareStates</a> (<a class="el" href="structQubitRegister.html">QubitRegister</a> mq1, <a class="el" href="structQubitRegister.html">QubitRegister</a> mq2, <a class="el" href="QuEST__precision_8h.html#a4b654506f18b8bfd61ad2a29a7e38c25">REAL</a> precision)</td></tr>
+<tr class="memdesc:a2042b3cee85bafd7021375b451502eea"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return whether two given wavefunctions are equivalent within a given precision Global phase included in equivalence check.  <a href="#a2042b3cee85bafd7021375b451502eea">More...</a><br /></td></tr>
+<tr class="separator:a2042b3cee85bafd7021375b451502eea"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aba01a5e38e1dab85a13cabcb64bdf681"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="QuEST__debug_8h.html#aba01a5e38e1dab85a13cabcb64bdf681">initStateDebug</a> (<a class="el" href="structQubitRegister.html">QubitRegister</a> qureg)</td></tr>
+<tr class="memdesc:aba01a5e38e1dab85a13cabcb64bdf681"><td class="mdescLeft">&#160;</td><td class="mdescRight">Initialise the state vector of probability amplitudes to an (unphysical) state with each component of each probability amplitude a unique floating point value.  <a href="#aba01a5e38e1dab85a13cabcb64bdf681">More...</a><br /></td></tr>
+<tr class="separator:aba01a5e38e1dab85a13cabcb64bdf681"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aeef4916c76093aa8afbe730e7800bbd3"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="QuEST__debug_8h.html#aeef4916c76093aa8afbe730e7800bbd3">initStateFromSingleFile</a> (<a class="el" href="structQubitRegister.html">QubitRegister</a> *qureg, char filename[200], <a class="el" href="structQuESTEnv.html">QuESTEnv</a> env)</td></tr>
+<tr class="memdesc:aeef4916c76093aa8afbe730e7800bbd3"><td class="mdescLeft">&#160;</td><td class="mdescRight">Initialises the wavefunction amplitudes according to those specified in a file.  <a href="#aeef4916c76093aa8afbe730e7800bbd3">More...</a><br /></td></tr>
+<tr class="separator:aeef4916c76093aa8afbe730e7800bbd3"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a96fb3804db46f4702d5d90b9ab28934e"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="QuEST__debug_8h.html#a96fb3804db46f4702d5d90b9ab28934e">initStateOfSingleQubit</a> (<a class="el" href="structQubitRegister.html">QubitRegister</a> *qureg, int qubitId, int outcome)</td></tr>
+<tr class="memdesc:a96fb3804db46f4702d5d90b9ab28934e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Initialise the state vector of probability amplitudes such that one qubit is set to 'outcome' and all other qubits are in an equal superposition of zero and one.  <a href="#a96fb3804db46f4702d5d90b9ab28934e">More...</a><br /></td></tr>
+<tr class="separator:a96fb3804db46f4702d5d90b9ab28934e"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a62da5b58d8ce84e6f4d24be1b872294e"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="QuEST__debug_8h.html#a62da5b58d8ce84e6f4d24be1b872294e">reportNodeList</a> (<a class="el" href="structQuESTEnv.html">QuESTEnv</a> env)</td></tr>
 <tr class="memdesc:a62da5b58d8ce84e6f4d24be1b872294e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Report a list of CPU hostnames and the rank that is running on each if running with MPI enabled and an error message otherwise.  <a href="#a62da5b58d8ce84e6f4d24be1b872294e">More...</a><br /></td></tr>
 <tr class="separator:a62da5b58d8ce84e6f4d24be1b872294e"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
-<div class="textblock"><p>Developer functions used for unit testing and debugging. </p>
-<p>Not part of the public API. May contain functions that are incomplete or untested. </p>
+<div class="textblock"><p>Developer functions used for unit testing and debugging, which are not part of the public API. </p>
+<p>May contain functions that are incomplete or untested. </p>
 
 <p class="definition">Definition in file <a class="el" href="QuEST__debug_8h_source.html">QuEST_debug.h</a>.</p>
 </div><h2 class="groupheader">Function Documentation</h2>
-<a id="a793584932ae384c82e7e42db7d35d18d"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a793584932ae384c82e7e42db7d35d18d">&#9670;&nbsp;</a></span>compareStates()</h2>
+<a id="a2042b3cee85bafd7021375b451502eea"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a2042b3cee85bafd7021375b451502eea">&#9670;&nbsp;</a></span>compareStates()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -88,13 +88,13 @@ Functions</h2></td></tr>
         <tr>
           <td class="memname">int compareStates </td>
           <td>(</td>
-          <td class="paramtype"><a class="el" href="structMultiQubit.html">MultiQubit</a>&#160;</td>
+          <td class="paramtype"><a class="el" href="structQubitRegister.html">QubitRegister</a>&#160;</td>
           <td class="paramname"><em>mq1</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype"><a class="el" href="structMultiQubit.html">MultiQubit</a>&#160;</td>
+          <td class="paramtype"><a class="el" href="structQubitRegister.html">QubitRegister</a>&#160;</td>
           <td class="paramname"><em>mq2</em>, </td>
         </tr>
         <tr>
@@ -114,19 +114,57 @@ Functions</h2></td></tr>
 <p>Return whether two given wavefunctions are equivalent within a given precision Global phase included in equivalence check. </p>
 <p>For debugging purposes. </p>
 
+<p class="definition">Definition at line <a class="el" href="QuEST__ops_8c_source.html#l00261">261</a> of file <a class="el" href="QuEST__ops_8c_source.html">QuEST_ops.c</a>.</p>
+
+<p class="reference">References <a class="el" href="QuEST_8h_source.html#l00073">QubitRegister::isDensityMatrix</a>, <a class="el" href="QuEST__ops__pure_8h.html#a9fe5eda90fc64ffb00b9a9392dc1dc5f">pure_compareStates()</a>, and <a class="el" href="QuEST__common_8c_source.html#l00054">QuESTAssert()</a>.</p>
+<div class="fragment"><div class="line"><a name="l00261"></a><span class="lineno">  261</span>&#160;                                                                        {</div><div class="line"><a name="l00262"></a><span class="lineno">  262</span>&#160;        <a class="code" href="QuEST__common_8c.html#a3587b9d533e633ccf1abf9ad2ce45d8d">QuESTAssert</a>(!mq1.<a class="code" href="structQubitRegister.html#a4be3de31c08b3f2f958a210e98fcfeb1">isDensityMatrix</a> &amp;&amp; !mq2.<a class="code" href="structQubitRegister.html#a4be3de31c08b3f2f958a210e98fcfeb1">isDensityMatrix</a>, 15, __func__);</div><div class="line"><a name="l00263"></a><span class="lineno">  263</span>&#160;        <span class="keywordflow">return</span> <a class="code" href="QuEST__ops__pure_8h.html#a9fe5eda90fc64ffb00b9a9392dc1dc5f">pure_compareStates</a>(mq1, mq2, precision);</div><div class="line"><a name="l00264"></a><span class="lineno">  264</span>&#160;}</div><div class="ttc" id="QuEST__ops__pure_8h_html_a9fe5eda90fc64ffb00b9a9392dc1dc5f"><div class="ttname"><a href="QuEST__ops__pure_8h.html#a9fe5eda90fc64ffb00b9a9392dc1dc5f">pure_compareStates</a></div><div class="ttdeci">int pure_compareStates(QubitRegister mq1, QubitRegister mq2, REAL precision)</div></div>
+<div class="ttc" id="structQubitRegister_html_a4be3de31c08b3f2f958a210e98fcfeb1"><div class="ttname"><a href="structQubitRegister.html#a4be3de31c08b3f2f958a210e98fcfeb1">QubitRegister::isDensityMatrix</a></div><div class="ttdeci">int isDensityMatrix</div><div class="ttdoc">Whether this instance is a density-state representation. </div><div class="ttdef"><b>Definition:</b> <a href="QuEST_8h_source.html#l00073">QuEST.h:73</a></div></div>
+<div class="ttc" id="QuEST__common_8c_html_a3587b9d533e633ccf1abf9ad2ce45d8d"><div class="ttname"><a href="QuEST__common_8c.html#a3587b9d533e633ccf1abf9ad2ce45d8d">QuESTAssert</a></div><div class="ttdeci">void QuESTAssert(int isValid, int errorCode, const char *func)</div><div class="ttdef"><b>Definition:</b> <a href="QuEST__common_8c_source.html#l00054">QuEST_common.c:54</a></div></div>
+</div><!-- fragment -->
 </div>
 </div>
-<a id="a433876ee9f3bcc54af346300f571fc3c"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a433876ee9f3bcc54af346300f571fc3c">&#9670;&nbsp;</a></span>initializeStateFromSingleFile()</h2>
+<a id="aba01a5e38e1dab85a13cabcb64bdf681"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aba01a5e38e1dab85a13cabcb64bdf681">&#9670;&nbsp;</a></span>initStateDebug()</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">void initializeStateFromSingleFile </td>
+          <td class="memname">void initStateDebug </td>
           <td>(</td>
-          <td class="paramtype"><a class="el" href="structMultiQubit.html">MultiQubit</a> *&#160;</td>
-          <td class="paramname"><em>multiQubit</em>, </td>
+          <td class="paramtype"><a class="el" href="structQubitRegister.html">QubitRegister</a>&#160;</td>
+          <td class="paramname"><em>qureg</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Initialise the state vector of probability amplitudes to an (unphysical) state with each component of each probability amplitude a unique floating point value. </p>
+<p>For debugging processes </p><dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in,out]</td><td class="paramname">qureg</td><td>object representing the set of qubits to be initialised </td></tr>
+  </table>
+  </dd>
+</dl>
+
+<p class="definition">Definition at line <a class="el" href="QuEST__ops_8c_source.html#l00335">335</a> of file <a class="el" href="QuEST__ops_8c_source.html">QuEST_ops.c</a>.</p>
+
+<p class="reference">References <a class="el" href="QuEST__ops__pure_8h.html#ac5e0ece6c01f10c316e187a373773ae6">pure_initStateDebug()</a>.</p>
+<div class="fragment"><div class="line"><a name="l00335"></a><span class="lineno">  335</span>&#160;                                         {</div><div class="line"><a name="l00336"></a><span class="lineno">  336</span>&#160;        <a class="code" href="QuEST__ops__pure_8h.html#ac5e0ece6c01f10c316e187a373773ae6">pure_initStateDebug</a>(qureg);</div><div class="line"><a name="l00337"></a><span class="lineno">  337</span>&#160;}</div><div class="ttc" id="QuEST__ops__pure_8h_html_ac5e0ece6c01f10c316e187a373773ae6"><div class="ttname"><a href="QuEST__ops__pure_8h.html#ac5e0ece6c01f10c316e187a373773ae6">pure_initStateDebug</a></div><div class="ttdeci">void pure_initStateDebug(QubitRegister qureg)</div></div>
+</div><!-- fragment -->
+</div>
+</div>
+<a id="aeef4916c76093aa8afbe730e7800bbd3"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aeef4916c76093aa8afbe730e7800bbd3">&#9670;&nbsp;</a></span>initStateFromSingleFile()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void initStateFromSingleFile </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="structQubitRegister.html">QubitRegister</a> *&#160;</td>
+          <td class="paramname"><em>qureg</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
@@ -151,36 +189,15 @@ Functions</h2></td></tr>
 <p>Initialises the wavefunction amplitudes according to those specified in a file. </p>
 <p>For debugging purpsoses </p>
 
-</div>
-</div>
-<a id="a4b737ff9b4267609ef27e6cb4c42dc68"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a4b737ff9b4267609ef27e6cb4c42dc68">&#9670;&nbsp;</a></span>initStateDebug()</h2>
+<p class="definition">Definition at line <a class="el" href="QuEST__ops_8c_source.html#l00342">342</a> of file <a class="el" href="QuEST__ops_8c_source.html">QuEST_ops.c</a>.</p>
 
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">void initStateDebug </td>
-          <td>(</td>
-          <td class="paramtype"><a class="el" href="structMultiQubit.html">MultiQubit</a>&#160;</td>
-          <td class="paramname"><em>multiQubit</em></td><td>)</td>
-          <td></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p>Initialise the state vector of probability amplitudes to an (unphysical) state with each component of each probability amplitude a unique floating point value. </p>
-<p>For debugging processes </p><dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramdir">[in,out]</td><td class="paramname">multiQubit</td><td>object representing the set of qubits to be initialised </td></tr>
-  </table>
-  </dd>
-</dl>
-
+<p class="reference">References <a class="el" href="QuEST__ops__pure_8h.html#ae21bb70e3bf8789a95c5d4158bb30ee5">pure_initStateFromSingleFile()</a>.</p>
+<div class="fragment"><div class="line"><a name="l00342"></a><span class="lineno">  342</span>&#160;                                                                                     {</div><div class="line"><a name="l00343"></a><span class="lineno">  343</span>&#160;        <a class="code" href="QuEST__ops__pure_8h.html#ae21bb70e3bf8789a95c5d4158bb30ee5">pure_initStateFromSingleFile</a>(qureg, filename, env);</div><div class="line"><a name="l00344"></a><span class="lineno">  344</span>&#160;}</div><div class="ttc" id="QuEST__ops__pure_8h_html_ae21bb70e3bf8789a95c5d4158bb30ee5"><div class="ttname"><a href="QuEST__ops__pure_8h.html#ae21bb70e3bf8789a95c5d4158bb30ee5">pure_initStateFromSingleFile</a></div><div class="ttdeci">void pure_initStateFromSingleFile(QubitRegister *qureg, char filename[200], QuESTEnv env)</div></div>
+</div><!-- fragment -->
 </div>
 </div>
-<a id="a7169fd0442cbc3418f3fac4d13363ca2"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a7169fd0442cbc3418f3fac4d13363ca2">&#9670;&nbsp;</a></span>initStateOfSingleQubit()</h2>
+<a id="a96fb3804db46f4702d5d90b9ab28934e"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a96fb3804db46f4702d5d90b9ab28934e">&#9670;&nbsp;</a></span>initStateOfSingleQubit()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -188,8 +205,8 @@ Functions</h2></td></tr>
         <tr>
           <td class="memname">void initStateOfSingleQubit </td>
           <td>(</td>
-          <td class="paramtype"><a class="el" href="structMultiQubit.html">MultiQubit</a> *&#160;</td>
-          <td class="paramname"><em>multiQubit</em>, </td>
+          <td class="paramtype"><a class="el" href="structQubitRegister.html">QubitRegister</a> *&#160;</td>
+          <td class="paramname"><em>qureg</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
@@ -214,13 +231,18 @@ Functions</h2></td></tr>
 <p>Initialise the state vector of probability amplitudes such that one qubit is set to 'outcome' and all other qubits are in an equal superposition of zero and one. </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramdir">[in,out]</td><td class="paramname">multiQubit</td><td>object representing the set of qubits to be initialised </td></tr>
+    <tr><td class="paramdir">[in,out]</td><td class="paramname">qureg</td><td>object representing the set of qubits to be initialised </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">qubitId</td><td>id of qubit to set to state 'outcome' </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">value</td><td>of qubit 'qubitId' </td></tr>
   </table>
   </dd>
 </dl>
 
+<p class="definition">Definition at line <a class="el" href="QuEST__ops_8c_source.html#l00347">347</a> of file <a class="el" href="QuEST__ops_8c_source.html">QuEST_ops.c</a>.</p>
+
+<p class="reference">References <a class="el" href="QuEST__ops__pure_8h.html#a4266a1a55fed110d628a96454eaf3fba">pure_initStateOfSingleQubit()</a>.</p>
+<div class="fragment"><div class="line"><a name="l00347"></a><span class="lineno">  347</span>&#160;                                                                            {</div><div class="line"><a name="l00348"></a><span class="lineno">  348</span>&#160;        <span class="keywordflow">return</span> <a class="code" href="QuEST__ops__pure_8h.html#a4266a1a55fed110d628a96454eaf3fba">pure_initStateOfSingleQubit</a>(qureg, qubitId, outcome);</div><div class="line"><a name="l00349"></a><span class="lineno">  349</span>&#160;}</div><div class="ttc" id="QuEST__ops__pure_8h_html_a4266a1a55fed110d628a96454eaf3fba"><div class="ttname"><a href="QuEST__ops__pure_8h.html#a4266a1a55fed110d628a96454eaf3fba">pure_initStateOfSingleQubit</a></div><div class="ttdeci">void pure_initStateOfSingleQubit(QubitRegister *qureg, int qubitId, int outcome)</div></div>
+</div><!-- fragment -->
 </div>
 </div>
 <a id="a62da5b58d8ce84e6f4d24be1b872294e"></a>
@@ -252,7 +274,7 @@ Functions</h2></td></tr>
 </div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Sat Jul 14 2018 15:21:21 for Quantum Exact Simulation Toolkit by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Mon Jul 23 2018 15:29:56 for Quantum Exact Simulation Toolkit by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.14
 </small></address>
