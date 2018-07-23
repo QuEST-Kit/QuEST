@@ -26,17 +26,12 @@ static __device__ int extractBit (int locationOfBitFromRight, long long int theE
 extern "C" {
 #endif
 
-	
-// @TODO
-void mixed_initPureState(QubitRegister targetQureg, QubitRegister copyQureg) {
-	QuESTAssert(0, 0, __func__);
-}
 
 // @TODO test 
 void pure_initPureState(QubitRegister targetQureg, QubitRegister copyQureg) {
 	
 	// copy copyQureg's GPU statevec to targetQureg's GPU statevec
-    cudaMemcpy(
+	   cudaMemcpy(
 		copyQureg.deviceStateVec.real, 
 		targetQureg.deviceStateVec.real, 
 		targetQureg.numAmpsPerChunk*sizeof(*(targetQureg.deviceStateVec.real)), 
@@ -47,6 +42,41 @@ void pure_initPureState(QubitRegister targetQureg, QubitRegister copyQureg) {
 		targetQureg.numAmpsPerChunk*sizeof(*(targetQureg.deviceStateVec.imag)), 
 		cudaMemcpyDeviceToDevice);
 }
+	
+
+void __global__ mixed_initPureStateKernel(
+	long long int numPureAmps,
+	REAL *targetVecReal, REAL *targetVecImag, 
+	REAL *copyVecReal, REAL *copyVecImag) 
+{
+	// this is a particular index of the pure copyQureg
+    long long int index = blockIdx.x*blockDim.x + threadIdx.x;
+    if (index>=numPureAmps) return;
+	
+	REAL realRow = copyVecReal[index];
+	REAL imagRow = copyVecImag[index];
+	for (long long int col=0; col < numPureAmps; col++) {
+		REAL realCol =   copyVecReal[col];
+		REAL imagCol = - copyVecImag[col]; // minus for conjugation
+		targetVecReal[col*numPureAmps + index] = realRow*realCol - imagRow*imagCol;
+		targetVecImag[col*numPureAmps + index] = realRow*imagCol + imagRow*realCol;
+	}
+
+}
+
+// @TODO test 
+void mixed_initPureState(QubitRegister targetQureg, QubitRegister copyQureg)
+{
+    int threadsPerCUDABlock, CUDABlocks;
+    threadsPerCUDABlock = 128;
+	CUDABlocks = ceil((REAL)(copyQureg.numAmpsPerChunk)/threadsPerCUDABlock);
+	mixed_initPureStateKernel<<<CUDABlocks, threadsPerCUDABlock>>>(
+		copyQureg.numAmpsPerChunk,
+		targetQureg.deviceStateVec.real, targetQureg.deviceStateVec.imag,
+		copyQureg.deviceStateVec.real,   copyQureg.deviceStateVec.imag);
+}
+
+
 
 
 
