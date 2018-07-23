@@ -36,11 +36,15 @@ void mixed_initPureState(QubitRegister targetQureg, QubitRegister copyQureg) {
 void pure_initPureState(QubitRegister targetQureg, QubitRegister copyQureg) {
 	
 	// copy copyQureg's GPU statevec to targetQureg's GPU statevec
-	copyStateFromGPU(copyQureg);
     cudaMemcpy(
 		copyQureg.deviceStateVec.real, 
 		targetQureg.deviceStateVec.real, 
 		targetQureg.numAmpsPerChunk*sizeof(*(targetQureg.deviceStateVec.real)), 
+		cudaMemcpyDeviceToDevice);
+	cudaMemcpy(
+		copyQureg.deviceStateVec.imag, 
+		targetQureg.deviceStateVec.imag, 
+		targetQureg.numAmpsPerChunk*sizeof(*(targetQureg.deviceStateVec.imag)), 
 		cudaMemcpyDeviceToDevice);
 }
 
