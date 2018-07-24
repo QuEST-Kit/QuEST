@@ -908,48 +908,29 @@ void pure_sigmaX(QubitRegister qureg, const int targetQubit)
 }
 
 
-__global__ void pure_sigmaYKernel(QubitRegister qureg, const int targetQubit){
-    // ----- sizes
-    long long int sizeBlock,                                           // size of blocks
-         sizeHalfBlock;                                       // size of blocks halved
-    // ----- indices
-    long long int thisBlock,                                           // current block
-         indexUp,indexLo;                                     // current index and corresponding index in lower half block
+__global__ void pure_sigmaYKernel(QubitRegister qureg, const int targetQubit, const int conjFac){
 
-    // ----- temp variables
-    REAL   stateRealUp,                             // storage for previous state values
-           stateImagUp;                             // (used in updates)
-    // ----- temp variables
-    long long int thisTask;                                   // task based approach for expose loop with small granularity
-    const long long int numTasks=qureg.numAmpsPerChunk>>1;
+    long long int sizeHalfBlock = 1LL << targetQubit;
+    long long int sizeBlock     = 2LL * sizeHalfBlock;
+	long long int numTasks      = qureg.numAmpsPerChunk >> 1;
+	long long int thisTask      = blockIdx.x*blockDim.x + threadIdx.x;
+	if (thisTask>=numTasks) return;
+	
+	long long int thisBlock     = thisTask / sizeHalfBlock;
+	long long int indexUp       = thisBlock*sizeBlock + thisTask%sizeHalfBlock;
+	long long int indexLo       = indexUp + sizeHalfBlock;
+	REAL  stateRealUp, stateImagUp;
 
-    sizeHalfBlock = 1LL << targetQubit;                               // size of blocks halved
-    sizeBlock     = 2LL * sizeHalfBlock;                           // size of blocks
-
-    // ---------------------------------------------------------------- //
-    //            rotate                                                //
-    // ---------------------------------------------------------------- //
-
-    //! fix -- no necessary for GPU version
     REAL *stateVecReal = qureg.deviceStateVec.real;
     REAL *stateVecImag = qureg.deviceStateVec.imag;
-
-    thisTask = blockIdx.x*blockDim.x + threadIdx.x;
-    if (thisTask>=numTasks) return;
-
-    thisBlock   = thisTask / sizeHalfBlock;
-    indexUp     = thisBlock*sizeBlock + thisTask%sizeHalfBlock;
-    indexLo     = indexUp + sizeHalfBlock;
-
-    // store current state vector values in temp variables
     stateRealUp = stateVecReal[indexUp];
     stateImagUp = stateVecImag[indexUp];
 
-    stateVecReal[indexUp] = stateVecImag[indexLo];
-    stateVecImag[indexUp] = -stateVecReal[indexLo];
-
-    stateVecReal[indexLo] = -stateImagUp;
-    stateVecImag[indexLo] = stateRealUp;
+	// update under +-{{0, -i}, {i, 0}}
+    stateVecReal[indexUp] = conjFac * stateVecImag[indexLo];
+    stateVecImag[indexUp] = conjFac * -stateVecReal[indexLo];
+    stateVecReal[indexLo] = conjFac * -stateImagUp;
+    stateVecImag[indexLo] = conjFac * stateRealUp;
 }
 
 void pure_sigmaY(QubitRegister qureg, const int targetQubit) 
@@ -958,7 +939,16 @@ void pure_sigmaY(QubitRegister qureg, const int targetQubit)
     int threadsPerCUDABlock, CUDABlocks;
     threadsPerCUDABlock = 128;
     CUDABlocks = ceil((REAL)(qureg.numAmpsPerChunk>>1)/threadsPerCUDABlock);
-    pure_sigmaYKernel<<<CUDABlocks, threadsPerCUDABlock>>>(qureg, targetQubit);
+    pure_sigmaYKernel<<<CUDABlocks, threadsPerCUDABlock>>>(qureg, targetQubit, 1);
+}
+
+void pure_sigmaYConj(QubitRegister qureg, const int targetQubit) 
+{
+    QuESTAssert(targetQubit >= 0 && targetQubit < qureg.numQubits, 1, __func__);
+    int threadsPerCUDABlock, CUDABlocks;
+    threadsPerCUDABlock = 128;
+    CUDABlocks = ceil((REAL)(qureg.numAmpsPerChunk>>1)/threadsPerCUDABlock);
+    pure_sigmaYKernel<<<CUDABlocks, threadsPerCUDABlock>>>(qureg, targetQubit, -1);
 }
 
 __global__ void pure_phaseShiftByTermKernel(QubitRegister qureg, const int targetQubit, REAL cosAngle, REAL sinAngle) {

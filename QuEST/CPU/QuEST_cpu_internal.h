@@ -68,12 +68,12 @@ void pure_sigmaXDistributed (QubitRegister qureg, const int targetQubit,
         ComplexArray stateVecIn,
         ComplexArray stateVecOut);
 
-void pure_sigmaYLocal(QubitRegister qureg, const int targetQubit);
+void pure_sigmaYLocal(QubitRegister qureg, const int targetQubit, int conjFac);
 
 void pure_sigmaYDistributed(QubitRegister qureg, const int targetQubit,
         ComplexArray stateVecIn,
         ComplexArray stateVecOut,
-        int updateUpper);
+        int updateUpper, int conjFac);
 
 void pure_hadamardLocal (QubitRegister qureg, const int targetQubit);
 

@@ -12,8 +12,6 @@
 
 // @TODO unit test the density functionality of all below methods
 // @TODO for initPureState:
-// 		- pure_initPureState on GPU
-// 		- mixed_initPureState on GPU
 // 		- mixed_initPureStateDistributed on CPU
 
 # include "QuEST.h"
@@ -21,6 +19,12 @@
 # include "QuEST_precision.h"
 # include "QuEST_ops_pure.h"
 # include "QuEST_ops_mixed.h"
+
+
+// just for debug printing and exiting: can remove later
+# include <stdio.h>
+# include <stdlib.h>
+
 
 #ifdef __cplusplus
 extern "C" {
@@ -163,6 +167,13 @@ void sigmaX(QubitRegister qureg, const int targetQubit) {
 	}
 }
 
+void sigmaY(QubitRegister qureg, const int targetQubit) {
+	pure_sigmaY(qureg, targetQubit);
+	if (qureg.isDensityMatrix) {
+		pure_sigmaYConj(qureg, targetQubit + qureg.numDensityQubits);
+	}
+}
+
 void sigmaZ(QubitRegister qureg, const int targetQubit) {
 	pure_sigmaZ(qureg, targetQubit);
 	if (qureg.isDensityMatrix) {
@@ -291,9 +302,6 @@ REAL calcTotalProbability(QubitRegister qureg) {
 }
 
 
-
-
-
 // @TODO add density copying to distributed CPU
 void initPureState(QubitRegister qureg, QubitRegister pure) {
 	QuESTAssert(!pure.isDensityMatrix, 12, __func__);
@@ -308,8 +316,6 @@ void initPureState(QubitRegister qureg, QubitRegister pure) {
 	}
 }
 
-
-// @Todo add mixed_ on local and distributed CPU
 REAL findProbabilityOfOutcome(QubitRegister qureg, const int measureQubit, int outcome) {
 	if (qureg.isDensityMatrix)
 		return mixed_findProbabilityOfOutcome(qureg, measureQubit, outcome);
@@ -321,10 +327,48 @@ REAL findProbabilityOfOutcome(QubitRegister qureg, const int measureQubit, int o
 
 
 
+
+
+
+
 // @TODO
-void sigmaY(QubitRegister qureg, const int targetQubit) {
-	pure_sigmaY(qureg, targetQubit);
+REAL collapseToOutcome(QubitRegister qureg, const int measureQubit, int outcome) {
+
+	if (qureg.isDensityMatrix) {
+		printf("ERROR: sigmaY NOT YET IMPLEMENTED FOR DENSITY MATRICES");
+		exit(1);
+	}	
+
+	return pure_collapseToOutcome(qureg, measureQubit, outcome);
 }
+
+// @TODO
+int measure(QubitRegister qureg, int measureQubit) {
+	
+	if (qureg.isDensityMatrix) {
+		printf("ERROR: sigmaY NOT YET IMPLEMENTED FOR DENSITY MATRICES");
+		exit(1);
+	}
+	
+	return pure_measure(qureg, measureQubit);
+}
+
+// @TODO
+int measureWithStats(QubitRegister qureg, int measureQubit, REAL *stateProb) {
+
+	if (qureg.isDensityMatrix) {
+		printf("ERROR: sigmaY NOT YET IMPLEMENTED FOR DENSITY MATRICES");
+		exit(1);
+	}	
+
+	return pure_measureWithStats(qureg, measureQubit, stateProb);
+}
+
+
+
+
+
+
 
 
 
@@ -352,20 +396,7 @@ void reportStateToScreen(QubitRegister qureg, QuESTEnv env, int reportRank)  {
 
 
 
-// @TODO
-REAL collapseToOutcome(QubitRegister qureg, const int measureQubit, int outcome) {
-	return pure_collapseToOutcome(qureg, measureQubit, outcome);
-}
 
-// @TODO
-int measure(QubitRegister qureg, int measureQubit) {
-	return pure_measure(qureg, measureQubit);
-}
-
-// @TODO
-int measureWithStats(QubitRegister qureg, int measureQubit, REAL *stateProb) {
-	return pure_measureWithStats(qureg, measureQubit, stateProb);
-}
 
 
 

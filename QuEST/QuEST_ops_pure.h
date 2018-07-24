@@ -64,6 +64,8 @@ void pure_sigmaX(QubitRegister qureg, const int targetQubit);
 
 void pure_sigmaY(QubitRegister qureg, const int targetQubit);
 
+void pure_sigmaYConj(QubitRegister qureg, const int targetQubit);
+
 void pure_sigmaZ(QubitRegister qureg, const int targetQubit);
 
 REAL pure_getRealAmpEl(QubitRegister qureg, long long int index);

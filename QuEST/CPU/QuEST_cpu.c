@@ -339,7 +339,6 @@ void pure_initClassicalState (QubitRegister qureg, long long int stateInd)
     }
 }
 
-// @TODO unit test
 void pure_initPureState(QubitRegister targetQureg, QubitRegister copyQureg) {
 	
 	// registers are equal sized, so nodes hold the same state-vector partitions
@@ -1322,7 +1321,7 @@ void pure_controlledNotDistributed (QubitRegister qureg, const int controlQubit,
     }
 } 
 
-void pure_sigmaYLocal(QubitRegister qureg, const int targetQubit)
+void pure_sigmaYLocal(QubitRegister qureg, const int targetQubit, const int conjFac)
 {
     long long int sizeBlock, sizeHalfBlock;
     long long int thisBlock, // current block
@@ -1358,16 +1357,15 @@ void pure_sigmaYLocal(QubitRegister qureg, const int targetQubit)
             stateRealUp = stateVecReal[indexUp];
             stateImagUp = stateVecImag[indexUp];
 
-            stateVecReal[indexUp] = stateVecImag[indexLo];
-            stateVecImag[indexUp] = -stateVecReal[indexLo];
-
-            stateVecReal[indexLo] = -stateImagUp;
-            stateVecImag[indexLo] = stateRealUp;
+            stateVecReal[indexUp] = conjFac * stateVecImag[indexLo];
+            stateVecImag[indexUp] = conjFac * -stateVecReal[indexLo];
+            stateVecReal[indexLo] = conjFac * -stateImagUp;
+            stateVecImag[indexLo] = conjFac * stateRealUp;
         } 
     }
 }
 
-/** Rotate a single qubit by {{0,-i},{i,0}.
+/** Rotate a single qubit by +-{{0,-i},{i,0}.
  *  Operate on a subset of the state vector with upper and lower block values 
  *  stored seperately. This rotation is just swapping upper and lower values, and
  *  stateVecIn must already be the correct section for this chunk
@@ -1384,7 +1382,7 @@ void pure_sigmaYLocal(QubitRegister qureg, const int targetQubit)
 void pure_sigmaYDistributed(QubitRegister qureg, const int targetQubit,
         ComplexArray stateVecIn,
         ComplexArray stateVecOut, 
-        int updateUpper)
+        int updateUpper, const int conjFac)
 {
 
     long long int thisTask;  
@@ -1408,8 +1406,8 @@ void pure_sigmaYDistributed(QubitRegister qureg, const int targetQubit,
 # pragma omp for schedule (static)
 # endif
         for (thisTask=0; thisTask<numTasks; thisTask++) {
-            stateVecRealOut[thisTask] = realSign*stateVecImagIn[thisTask];
-            stateVecImagOut[thisTask] = imagSign*stateVecRealIn[thisTask];
+            stateVecRealOut[thisTask] = conjFac * realSign * stateVecImagIn[thisTask];
+            stateVecImagOut[thisTask] = conjFac * imagSign * stateVecRealIn[thisTask];
         }
     }
 } 

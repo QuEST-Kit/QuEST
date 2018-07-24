@@ -196,7 +196,15 @@ void pure_sigmaX(QubitRegister qureg, const int targetQubit)
 void pure_sigmaY(QubitRegister qureg, const int targetQubit) 
 {
     QuESTAssert(targetQubit >= 0 && targetQubit < qureg.numQubits, 1, __func__);
-    pure_sigmaYLocal(qureg, targetQubit);
+	int conjFac = 1;
+    pure_sigmaYLocal(qureg, targetQubit, conjFac);
+}
+
+void pure_sigmaYConj(QubitRegister qureg, const int targetQubit) 
+{
+    QuESTAssert(targetQubit >= 0 && targetQubit < qureg.numQubits, 1, __func__);
+	int conjFac = -1;
+    pure_sigmaYLocal(qureg, targetQubit, conjFac);
 }
 
 void pure_hadamard(QubitRegister qureg, const int targetQubit) 
