@@ -23,6 +23,17 @@
 # endif
 
 
+/** Get the value of the bit at a particular index in a number.
+  SCB edit: new definition of extractBit is much faster ***
+ * @param[in] locationOfBitFromRight location of bit in theEncodedNumber
+ * @param[in] theEncodedNumber number to search
+ * @return the value of the bit in theEncodedNumber
+ */
+static int extractBit (const int locationOfBitFromRight, const long long int theEncodedNumber)
+{
+    return (theEncodedNumber & ( 1LL << locationOfBitFromRight )) >> locationOfBitFromRight;
+}
+
 
 void mixed_initClassicalState (QubitRegister qureg, long long int stateInd)
 {
@@ -150,13 +161,6 @@ void mixed_initPureStateDistributed(QubitRegister targetQureg, QubitRegister cop
 	QuESTAssert(0, 0, __func__);
 }
 
-
-
-
-
-
-
-static int extractBit (const int locationOfBitFromRight, const long long int theEncodedNumber);
 
 void pure_createQubitRegister(QubitRegister *qureg, int numQubits, QuESTEnv env)
 {
@@ -336,7 +340,6 @@ void pure_initClassicalState (QubitRegister qureg, long long int stateInd)
 }
 
 // @TODO unit test
-// @TODO add same on GPU
 void pure_initPureState(QubitRegister targetQureg, QubitRegister copyQureg) {
 	
 	// registers are equal sized, so nodes hold the same state-vector partitions
@@ -1644,6 +1647,52 @@ void pure_multiControlledPhaseShift(QubitRegister qureg, int *controlQubits, int
     }
 }
 
+REAL mixed_findProbabilityOfZeroLocal(QubitRegister qureg, const int measureQubit) {
+	
+	// computes first local index containing a diagonal element
+	long long int localNumAmps = qureg.numAmpsPerChunk;
+	long long int densityDim = (1LL << qureg.numDensityQubits);
+	long long int diagSpacing = 1LL + densityDim;
+	long long int maxNumDiagsPerChunk = localNumAmps / diagSpacing;
+	long long int numPrevDiags = (qureg.chunkId * localNumAmps) / diagSpacing;
+	long long int globalIndNextDiag = diagSpacing * numPrevDiags;
+	long long int localIndNextDiag = globalIndNextDiag % localNumAmps;
+	
+	// computes how many diagonals are contained in this chunk
+	long long int numDiagsInThisChunk = maxNumDiagsPerChunk;
+	if (localIndNextDiag + numDiagsInThisChunk*diagSpacing >= localNumAmps)
+		numDiagsInThisChunk -= 1;
+	
+	long long int visitedDiags;		// number of visited diagonals in this chunk so far
+	long long int basisStateInd;	// current diagonal index being considered
+	long long int index;			// index in the local chunk
+	
+	REAL zeroProb = 0;
+    REAL *stateVecReal = qureg.stateVec.real;
+	
+# ifdef _OPENMP
+# pragma omp parallel \
+    shared    (localIndNextDiag, numPrevDiags, diagSpacing, stateVecReal) \
+    private   (visitedDiags, basisStateInd, index) \
+    reduction ( +:zeroProb )
+# endif	
+    {
+# ifdef _OPENMP
+# pragma omp for schedule  (static)
+# endif
+		// sums the diagonal elems of the density matrix where measureQubit=0
+		for (visitedDiags = 0; visitedDiags < numDiagsInThisChunk; visitedDiags++) {
+			
+			basisStateInd = numPrevDiags + visitedDiags;
+			index = localIndNextDiag + diagSpacing * visitedDiags;
+
+			if (extractBit(measureQubit, basisStateInd++) == 0)
+            	zeroProb += stateVecReal[index]; // assume imag[diagonls] ~ 0
+
+		}
+    }
+    return zeroProb;
+}
 
 /** Measure the total probability of a specified qubit being in the zero state across all amplitudes in this chunk.
  *  Size of regions to skip is less than the size of one chunk.                   
@@ -1702,7 +1751,8 @@ REAL pure_findProbabilityOfZeroLocal (QubitRegister qureg,
 }
 
 /** Measure the probability of a specified qubit being in the zero state across all amplitudes held in this chunk.
- *  Size of regions to skip is a multiple of chunkSize.
+ * Size of regions to skip is a multiple of chunkSize.
+ * The results are communicated and aggregated by the caller
  *  
  *  @param[in] qureg object representing the set of qubits
  *  @param[in] measureQubit qubit to measure
@@ -1746,16 +1796,7 @@ REAL pure_findProbabilityOfZeroDistributed (QubitRegister qureg,
     return totalProbability;
 }
 
-/** Get the value of the bit at a particular index in a number.
-  SCB edit: new definition of extractBit is much faster ***
- * @param[in] locationOfBitFromRight location of bit in theEncodedNumber
- * @param[in] theEncodedNumber number to search
- * @return the value of the bit in theEncodedNumber
- */
-static int extractBit (const int locationOfBitFromRight, const long long int theEncodedNumber)
-{
-    return (theEncodedNumber & ( 1LL << locationOfBitFromRight )) >> locationOfBitFromRight;
-}
+
 
 void pure_controlledPhaseFlip (QubitRegister qureg, const int idQubit1, const int idQubit2)
 {

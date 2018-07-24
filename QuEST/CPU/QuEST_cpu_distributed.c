@@ -35,7 +35,7 @@ REAL mixed_calcTotalProbability(QubitRegister qureg) {
 	
 	// computes the trace by summing every element ("diag") with global index (2^n + 1)i for i in [0, 2^n-1]
 	
-	// computers first local index containing a diagonal element
+	// computes first local index containing a diagonal element
 	long long int diagSpacing = 1LL + (1LL << qureg.numDensityQubits);
 	long long int numPrevDiags = (qureg.chunkId * qureg.numAmpsPerChunk) / diagSpacing;
 	long long int globalIndNextDiag = diagSpacing * numPrevDiags;
@@ -702,6 +702,17 @@ REAL pure_findProbabilityOfOutcome(QubitRegister qureg, const int measureQubit, 
     return totalStateProb;
 }
 
+REAL mixed_findProbabilityOfOutcome(QubitRegister qureg, const int measureQubit, int outcome) {
+	
+	REAL zeroProb = mixed_findProbabilityOfZeroLocal(qureg, measureQubit);
+	
+	REAL outcomeProb;
+	MPI_Allreduce(&zeroProb, &outcomeProb, 1, MPI_QuEST_REAL, MPI_SUM, MPI_COMM_WORLD);
+	if (outcome == 1)
+		outcomeProb = 1.0 - outcomeProb;
+	
+	return outcomeProb;
+}
 
 REAL pure_collapseToOutcome(QubitRegister qureg, const int measureQubit, int outcome)
 {

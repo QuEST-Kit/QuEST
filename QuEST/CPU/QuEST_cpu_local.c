@@ -53,6 +53,8 @@ REAL mixed_calcTotalProbability(QubitRegister qureg) {
 		pTotal = t;
 	}
 	
+	// @TODO should maybe do a cheap test that imaginary components are ~0
+	
 	return pTotal;
 }
 
@@ -218,6 +220,14 @@ REAL pure_findProbabilityOfOutcome(QubitRegister qureg, const int measureQubit, 
     stateProb = pure_findProbabilityOfZeroLocal(qureg, measureQubit);
     if (outcome==1) stateProb = 1.0 - stateProb;
     return stateProb;
+}
+
+REAL mixed_findProbabilityOfOutcome(QubitRegister qureg, const int measureQubit, int outcome) {
+	
+	REAL outcomeProb = mixed_findProbabilityOfZeroLocal(qureg, measureQubit);
+	if (outcome == 1)
+		outcomeProb = 1.0 - outcomeProb;
+	return outcomeProb;
 }
 
 REAL pure_collapseToOutcome(QubitRegister qureg, const int measureQubit, int outcome)
