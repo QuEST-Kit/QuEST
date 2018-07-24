@@ -22,6 +22,8 @@ void mixed_initPureState(QubitRegister targetQureg, QubitRegister copyQureg);
 
 REAL mixed_calcTotalProbability(QubitRegister qureg);
 
+REAL mixed_findProbabilityOfOutcome(QubitRegister qureg, const int measureQubit, int outcome);
+
 
 # ifdef __cplusplus
 }

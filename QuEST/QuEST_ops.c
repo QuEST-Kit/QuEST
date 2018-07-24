@@ -309,6 +309,13 @@ void initPureState(QubitRegister qureg, QubitRegister pure) {
 }
 
 
+// @Todo add mixed_ on local and distributed CPU
+REAL findProbabilityOfOutcome(QubitRegister qureg, const int measureQubit, int outcome) {
+	if (qureg.isDensityMatrix)
+		return mixed_findProbabilityOfOutcome(qureg, measureQubit, outcome);
+	else
+		return pure_findProbabilityOfOutcome(qureg, measureQubit, outcome);
+}
 
 
 
@@ -328,8 +335,6 @@ void initStateDebug(QubitRegister qureg) {
 	pure_initStateDebug(qureg);
 }
 
-
-
 // @TODO
 void initStateFromSingleFile(QubitRegister *qureg, char filename[200], QuESTEnv env) {
 	pure_initStateFromSingleFile(qureg, filename, env);
@@ -346,12 +351,6 @@ void reportStateToScreen(QubitRegister qureg, QuESTEnv env, int reportRank)  {
 }
 
 
-
-
-// @TODO
-REAL findProbabilityOfOutcome(QubitRegister qureg, const int measureQubit, int outcome) {
-	return pure_findProbabilityOfOutcome(qureg, measureQubit, outcome);
-}
 
 // @TODO
 REAL collapseToOutcome(QubitRegister qureg, const int measureQubit, int outcome) {

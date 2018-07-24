@@ -31,7 +31,7 @@ extern "C" {
 void pure_initPureState(QubitRegister targetQureg, QubitRegister copyQureg) {
 	
 	// copy copyQureg's GPU statevec to targetQureg's GPU statevec
-	   cudaMemcpy(
+	cudaMemcpy(
 		copyQureg.deviceStateVec.real, 
 		targetQureg.deviceStateVec.real, 
 		targetQureg.numAmpsPerChunk*sizeof(*(targetQureg.deviceStateVec.real)), 
@@ -61,7 +61,6 @@ void __global__ mixed_initPureStateKernel(
 		targetVecReal[col*numPureAmps + index] = realRow*realCol - imagRow*imagCol;
 		targetVecImag[col*numPureAmps + index] = realRow*imagCol + imagRow*realCol;
 	}
-
 }
 
 // @TODO test 
@@ -1348,9 +1347,47 @@ __global__ void copySharedReduceBlock(REAL*arrayIn, REAL *reducedArray, int leng
     reduceBlock(tempReductionArray, reducedArray, length);
 }
 
-__global__ void pure_findProbabilityOfZeroKernel(QubitRegister qureg,
-        const int measureQubit, REAL *reducedArray)
-{
+__global__ void mixed_findProbabilityOfZeroKernel(
+	QubitRegister qureg, const int measureQubit, REAL *reducedArray
+) {
+	// run by each thread
+	// use of block here refers to contiguous amplitudes where measureQubit = 0, 
+	// (then =1) and NOT the CUDA block, which is the partitioning of CUDA threads
+	
+	long long int densityDim    = 1LL << qureg.numDensityQubits;
+	long long int numTasks      = densityDim >> 1;
+	long long int sizeHalfBlock = 1LL << (measureQubit);
+	long long int sizeBlock     = 2LL * sizeHalfBlock;
+	
+	long long int thisBlock;	// which block this thread is processing
+	long long int thisTask;		// which part of the block this thread is processing
+	long long int basisIndex; 	// index of this thread's computational basis state
+	long long int densityIndex;	// " " index of |basis><basis| in the flat density matrix
+	
+	// array of each thread's collected probability, to be summed
+	extern __shared__ REAL tempReductionArray[];
+	
+	// figure out which density matrix prob that this thread is assigned
+	thisTask = blockIdx.x*blockDim.x + threadIdx.x;
+	if (thisTask>=numTasks) return;
+	thisBlock = thisTask / sizeHalfBlock;
+	basisIndex = thisBlock*sizeBlock + thisTask%sizeHalfBlock;
+	densityIndex = (densityDim + 1) * basisIndex;
+	
+	// record the probability in the CUDA-BLOCK-wide array
+	REAL prob = qureg.deviceStateVec.real[densityIndex];   // im[densityIndex] assumed ~ 0
+	tempReductionArray[threadIdx.x] = prob;
+	
+	// sum the probs collected by this CUDA-BLOCK's threads into a per-CUDA-BLOCK array
+	__syncthreads();
+    if (threadIdx.x<blockDim.x/2){
+        reduceBlock(tempReductionArray, reducedArray, blockDim.x);
+    }
+}
+
+__global__ void pure_findProbabilityOfZeroKernel(
+		QubitRegister qureg, const int measureQubit, REAL *reducedArray
+) {
     // ----- sizes
     long long int sizeBlock,                                           // size of blocks
          sizeHalfBlock;                                       // size of blocks halved
@@ -1414,6 +1451,54 @@ void swapDouble(REAL **a, REAL **b){
     *b = temp;
 }
 
+REAL mixed_findProbabilityOfZero(QubitRegister qureg, const int measureQubit)
+{
+	long long int densityDim = 1LL << qureg.numDensityQubits;
+	long long int numValuesToReduce = densityDim >> 1;  // half of the diagonal has measureQubit=0
+	
+	int valuesPerCUDABlock, numCUDABlocks, sharedMemSize;
+	int maxReducedPerLevel = REDUCE_SHARED_SIZE;
+	int firstTime = 1;
+	
+	while (numValuesToReduce > 1) {
+		
+		// need less than one CUDA-BLOCK to reduce
+		if (numValuesToReduce < maxReducedPerLevel) {
+			valuesPerCUDABlock = numValuesToReduce;
+			numCUDABlocks = 1;
+		}
+		// otherwise use only full CUDA-BLOCKS
+		else {
+			valuesPerCUDABlock = maxReducedPerLevel; // constrained by shared memory
+			numCUDABlocks = ceil((REAL)numValuesToReduce/valuesPerCUDABlock);
+		}
+		
+		sharedMemSize = valuesPerCUDABlock*sizeof(REAL);
+		
+		// spawn threads to sum the probs in each block
+		if (firstTime) {
+			mixed_findProbabilityOfZeroKernel<<<numCUDABlocks, valuesPerCUDABlock, sharedMemSize>>>(
+				qureg, measureQubit, qureg.firstLevelReduction);
+			firstTime = 0;
+			
+		// sum the block probs
+		} else {
+            cudaDeviceSynchronize();	
+            copySharedReduceBlock<<<numCUDABlocks, valuesPerCUDABlock/2, sharedMemSize>>>(
+                    qureg.firstLevelReduction, 
+                    qureg.secondLevelReduction, valuesPerCUDABlock); 
+            cudaDeviceSynchronize();	
+            swapDouble(&(qureg.firstLevelReduction), &(qureg.secondLevelReduction));
+		}
+		
+		numValuesToReduce = numValuesToReduce/maxReducedPerLevel;
+	}
+	
+	REAL zeroProb;
+    cudaMemcpy(&zeroProb, qureg.firstLevelReduction, sizeof(REAL), cudaMemcpyDeviceToHost);
+    return zeroProb;
+}
+
 REAL pure_findProbabilityOfZero(QubitRegister qureg, const int measureQubit)
 {
     long long int numValuesToReduce = qureg.numAmpsPerChunk>>1;
@@ -1459,6 +1544,15 @@ REAL pure_findProbabilityOfOutcome(QubitRegister qureg, const int measureQubit, 
     stateProb = pure_findProbabilityOfZero(qureg, measureQubit);
     if (outcome==1) stateProb = 1.0 - stateProb;
     return stateProb;
+}
+
+REAL mixed_findProbabilityOfOutcome(QubitRegister qureg, const int measureQubit, int outcome)
+{
+    QuESTAssert(measureQubit >= 0 && measureQubit < qureg.numQubits, 1, __func__);
+    REAL outcomeProb = pure_findProbabilityOfZero(qureg, measureQubit);
+    if (outcome==1) 
+		outcomeProb = 1.0 - outcomeProb;
+    return outcomeProb;
 }
 
 __global__ void pure_collapseToOutcomeKernel(QubitRegister qureg, int measureQubit, REAL totalProbability, int outcome)
