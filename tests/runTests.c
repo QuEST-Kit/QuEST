@@ -9,7 +9,7 @@
 # include "QuEST_precision.h"
 # include "QuEST_debug.h"
 
-# define NUM_TESTS 27
+# define NUM_TESTS 28
 # define COMPARE_PRECISION 10e-13
 # define PATH_TO_TESTS "unit/"
 # define VERBOSE 0
@@ -68,18 +68,17 @@ int test_initStatePlus(char testName[200]){
     sprintf(filename, "%s%s%d.out", PATH_TO_TESTS, testName, count++); 	
     initStateFromSingleFile(&mqVerif, filename, env);
 
-    passed = compareStates(mq, mqVerif, COMPARE_PRECISION);
+    if (passed) passed = compareStates(mq, mqVerif, COMPARE_PRECISION);
     destroyQubitRegister(mq, env);
     destroyQubitRegister(mqVerif, env);
 
     return passed;
 }
 
-/* Tyson Jones, 16th May 18 */
 int test_initClassicalState(char testName[200]){
     int passed=1;
     int numQubits=3;
-	int numAmps=8;
+	int numAmps=1 << numQubits;
 	
     QubitRegister mq;
     createQubitRegister(&mq, numQubits, env);
@@ -99,6 +98,23 @@ int test_initClassicalState(char testName[200]){
 
     destroyQubitRegister(mq, env);
     return passed;
+}
+
+int test_initPureState(char testName[200]) {
+	int passed=1;
+	int numQubits=3;
+	
+	QubitRegister mq, mqVerif;
+	createQubitRegister(&mq, numQubits, env);
+	createQubitRegister(&mqVerif, numQubits, env);
+	
+	initStateZero(mq);
+	initStateDebug(mqVerif);
+	
+	initPureState(mq, mqVerif);
+	if (passed) passed = compareStates(mq, mqVerif, COMPARE_PRECISION);
+	
+	return passed;
 }
 
 int test_sigmaX(char testName[200]){
@@ -1094,6 +1110,7 @@ int main (int narg, char** varg) {
         test_initStateZero,
         test_initStatePlus,
 		test_initClassicalState,
+		test_initPureState,
         test_sigmaX,
         test_sigmaY,
         test_sigmaZ,
@@ -1124,6 +1141,7 @@ int main (int narg, char** varg) {
         "initStateZero",
         "initStatePlus",
 		"initClassicalState",
+		"initPureState",
         "sigmaX",
         "sigmaY",
         "sigmaZ",
