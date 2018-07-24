@@ -1028,14 +1028,14 @@ __global__ void pure_controlledPhaseShiftKernel(QubitRegister qureg, const int i
     }
 }
 
-void pure_controlledPhaseShift(QubitRegister qureg, const int idQubit1, const int idQubit2, Complex term)
+void pure_controlledPhaseShift(QubitRegister qureg, const int idQubit1, const int idQubit2, REAL angle)
 {
     QuESTAssert(idQubit1 >= 0 && idQubit1 < qureg.numQubits, 1, __func__);
 	QuESTAssert(idQubit2 >= 0 && idQubit2 < qureg.numQubits, 2, __func__);
 	QuESTAssert(idQubit1 != idQubit2, 3, __func__);
 	
-	REAL cosAngle = term.real;
-	REAL sinAngle = term.imag;
+	REAL cosAngle = cos(angle);
+	REAL sinAngle = sin(angle);
 	
     int threadsPerCUDABlock, CUDABlocks;
     threadsPerCUDABlock = 128;
