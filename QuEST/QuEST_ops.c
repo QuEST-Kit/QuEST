@@ -228,6 +228,14 @@ void controlledNot(QubitRegister qureg, const int controlQubit, const int target
 	}
 }
 
+void controlledSigmaY(QubitRegister qureg, const int controlQubit, const int targetQubit) {
+	pure_controlledSigmaY(qureg, controlQubit, targetQubit);
+	if (qureg.isDensityMatrix) {
+		int shift = qureg.numDensityQubits;
+		pure_controlledSigmaYConj(qureg, controlQubit+shift, targetQubit+shift);
+	}
+}
+
 void controlledPhaseFlip(QubitRegister qureg, const int idQubit1, const int idQubit2) {
 	pure_controlledPhaseFlip(qureg, idQubit1, idQubit2);
 	if (qureg.isDensityMatrix) {
@@ -301,6 +309,20 @@ REAL calcTotalProbability(QubitRegister qureg) {
 			return pure_calcTotalProbability(qureg);
 }
 
+REAL findProbabilityOfOutcome(QubitRegister qureg, const int measureQubit, int outcome) {
+	if (qureg.isDensityMatrix)
+		return mixed_findProbabilityOfOutcome(qureg, measureQubit, outcome);
+	else
+		return pure_findProbabilityOfOutcome(qureg, measureQubit, outcome);
+}
+
+
+
+
+
+
+
+
 
 // @TODO add density copying to distributed CPU
 void initPureState(QubitRegister qureg, QubitRegister pure) {
@@ -316,12 +338,7 @@ void initPureState(QubitRegister qureg, QubitRegister pure) {
 	}
 }
 
-REAL findProbabilityOfOutcome(QubitRegister qureg, const int measureQubit, int outcome) {
-	if (qureg.isDensityMatrix)
-		return mixed_findProbabilityOfOutcome(qureg, measureQubit, outcome);
-	else
-		return pure_findProbabilityOfOutcome(qureg, measureQubit, outcome);
-}
+
 
 
 

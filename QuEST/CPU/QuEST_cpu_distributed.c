@@ -567,10 +567,8 @@ void pure_controlledNot(QubitRegister qureg, const int controlQubit, const int t
 
     // flag to require memory exchange. 1: an entire block fits on one rank, 0: at most half a block fits on one rank
     int useLocalDataOnly = halfMatrixBlockFitsInChunk(qureg.numAmpsPerChunk, targetQubit);
-
-    // rank's chunk is in upper half of block 
-    int rankIsUpper;
-    int pairRank; // rank of corresponding chunk
+    int rankIsUpper; 	// rank's chunk is in upper half of block 
+    int pairRank; 		// rank of corresponding chunk
 
     if (useLocalDataOnly){
         // all values required to update state vector lie in this rank
@@ -579,11 +577,9 @@ void pure_controlledNot(QubitRegister qureg, const int controlQubit, const int t
         // need to get corresponding chunk of state vector from other rank
         rankIsUpper = chunkIsUpper(qureg.chunkId, qureg.numAmpsPerChunk, targetQubit);
         pairRank = getChunkPairId(rankIsUpper, qureg.chunkId, qureg.numAmpsPerChunk, targetQubit);
-        //printf("%d rank has pair rank: %d\n", qureg.rank, pairRank);
         // get corresponding values from my pair
         exchangeStateVectors(qureg, pairRank);
-        // this rank's values are either in the upper of lower half of the block. send values to controlledNot
-        // in the correct order
+        // this rank's values are either in the upper of lower half of the block
         if (rankIsUpper){
             pure_controlledNotDistributed(qureg,controlQubit,targetQubit,
                     qureg.pairStateVec, //in
@@ -647,6 +643,80 @@ void pure_sigmaYConj(QubitRegister qureg, const int targetQubit)
                 qureg.pairStateVec, // in
                 qureg.stateVec, // out
                 rankIsUpper, conjFac);
+    }
+}
+
+void pure_controlledSigmaY(QubitRegister qureg, const int controlQubit, const int targetQubit)
+{
+    QuESTAssert(targetQubit >= 0 && targetQubit < qureg.numQubits, 1, __func__);
+    QuESTAssert(controlQubit >= 0 && controlQubit < qureg.numQubits, 2, __func__);
+    QuESTAssert(controlQubit != targetQubit, 3, __func__);
+	
+	int conjFac = 1;
+
+    // flag to require memory exchange. 1: an entire block fits on one rank, 0: at most half a block fits on one rank
+    int useLocalDataOnly = halfMatrixBlockFitsInChunk(qureg.numAmpsPerChunk, targetQubit);
+    int rankIsUpper; 	// rank's chunk is in upper half of block 
+    int pairRank; 		// rank of corresponding chunk
+
+    if (useLocalDataOnly){
+        // all values required to update state vector lie in this rank
+        pure_controlledSigmaYLocal(qureg, controlQubit, targetQubit, conjFac);
+    } else {
+        // need to get corresponding chunk of state vector from other rank
+        rankIsUpper = chunkIsUpper(qureg.chunkId, qureg.numAmpsPerChunk, targetQubit);
+        pairRank = getChunkPairId(rankIsUpper, qureg.chunkId, qureg.numAmpsPerChunk, targetQubit);
+        // get corresponding values from my pair
+        exchangeStateVectors(qureg, pairRank);
+        // this rank's values are either in the upper of lower half of the block
+        if (rankIsUpper){
+            pure_controlledSigmaYDistributed(qureg,controlQubit,targetQubit,
+                    qureg.pairStateVec, //in
+                    qureg.stateVec,
+					conjFac); //out
+        } else {
+            pure_controlledSigmaYDistributed(qureg,controlQubit,targetQubit,
+                    qureg.pairStateVec, //in
+                    qureg.stateVec,
+					conjFac); //out
+        }
+    }
+}
+
+void pure_controlledSigmaYConj(QubitRegister qureg, const int controlQubit, const int targetQubit)
+{
+    QuESTAssert(targetQubit >= 0 && targetQubit < qureg.numQubits, 1, __func__);
+    QuESTAssert(controlQubit >= 0 && controlQubit < qureg.numQubits, 2, __func__);
+    QuESTAssert(controlQubit != targetQubit, 3, __func__);
+	
+	int conjFac = -1;
+
+    // flag to require memory exchange. 1: an entire block fits on one rank, 0: at most half a block fits on one rank
+    int useLocalDataOnly = halfMatrixBlockFitsInChunk(qureg.numAmpsPerChunk, targetQubit);
+    int rankIsUpper; 	// rank's chunk is in upper half of block 
+    int pairRank; 		// rank of corresponding chunk
+
+    if (useLocalDataOnly){
+        // all values required to update state vector lie in this rank
+        pure_controlledSigmaYLocal(qureg, controlQubit, targetQubit, conjFac);
+    } else {
+        // need to get corresponding chunk of state vector from other rank
+        rankIsUpper = chunkIsUpper(qureg.chunkId, qureg.numAmpsPerChunk, targetQubit);
+        pairRank = getChunkPairId(rankIsUpper, qureg.chunkId, qureg.numAmpsPerChunk, targetQubit);
+        // get corresponding values from my pair
+        exchangeStateVectors(qureg, pairRank);
+        // this rank's values are either in the upper of lower half of the block
+        if (rankIsUpper){
+            pure_controlledSigmaYDistributed(qureg,controlQubit,targetQubit,
+                    qureg.pairStateVec, //in
+                    qureg.stateVec,
+					conjFac); //out
+        } else {
+            pure_controlledSigmaYDistributed(qureg,controlQubit,targetQubit,
+                    qureg.pairStateVec, //in
+                    qureg.stateVec,
+					conjFac); //out
+        }
     }
 }
 

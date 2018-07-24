@@ -68,6 +68,10 @@ void pure_sigmaYConj(QubitRegister qureg, const int targetQubit);
 
 void pure_sigmaZ(QubitRegister qureg, const int targetQubit);
 
+void pure_controlledSigmaY(QubitRegister qureg, const int controlQubit, const int targetQubit);
+
+void pure_controlledSigmaYConj(QubitRegister qureg, const int controlQubit, const int targetQubit);
+
 REAL pure_getRealAmpEl(QubitRegister qureg, long long int index);
 
 REAL pure_getImagAmpEl(QubitRegister qureg, long long int index);

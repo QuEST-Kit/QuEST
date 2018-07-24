@@ -255,8 +255,8 @@ void phaseShift(QubitRegister qureg, const int targetQubit, REAL angle);
 	\setlength{\fboxrule}{0.01pt}
 	\fbox{
 				\begin{tikzpicture}[scale=.5]
-				\node[draw=none] at (-3.5, 2) {control};
-				\node[draw=none] at (-3.5, 0) {target};
+				\node[draw=none] at (-3.5, 2) {qubit1};
+				\node[draw=none] at (-3.5, 0) {qubit2};
 
 				\draw (-2, 2) -- (2, 2);
 				\draw[fill=black] (0, 2) circle (.2);
@@ -1137,6 +1137,47 @@ void hadamard(QubitRegister qureg, const int targetQubit);
  * 		if either \p controlQubit or \p targetQubit are outside [0, \p qureg.numQubits), or are equal.
  */
 void controlledNot(QubitRegister qureg, const int controlQubit, const int targetQubit);
+
+/** Apply the controlled sigmaY (single control, single target) gate, also
+ * known as the c-Y, c-sigma-Y and c-Pauli-Y.
+ * This applies sigmaY to the target qubit if the control qubit has value 1.
+ * This effects the two-qubit unitary
+ * \f[
+ * \begin{pmatrix}
+ * 1 \\
+ * & 1 \\\
+ * & & & -i \\
+ * & & i
+ * \end{pmatrix}
+ * \f]
+ * on the control and target qubits.
+ *
+	\f[
+	\setlength{\fboxrule}{0.01pt}
+	\fbox{
+				\begin{tikzpicture}[scale=.5]
+				\node[draw=none] at (-3.5, 2) {control};
+				\node[draw=none] at (-3.5, 0) {target};
+
+				\draw (-2, 2) -- (2, 2);
+				\draw[fill=black] (0, 2) circle (.2);
+				\draw (0, 2) -- (0, 1);
+				
+				\draw (-2,0) -- (-1, 0);
+				\draw (1, 0) -- (2, 0);
+				\draw (-1,-1)--(-1,1)--(1,1)--(1,-1)--cycle;
+				\node[draw=none] at (0, 0) {Y};
+				\end{tikzpicture}
+	}
+	\f]
+ *
+ * @param[in,out] qureg object representing the set of all qubits
+ * @param[in] controlQubit applies sigmaY to the target if this qubit is 1
+ * @param[in] targetQubit qubit to not
+ * @throws exitWithError
+ * 		if either \p controlQubit or \p targetQubit are outside [0, \p qureg.numQubits), or are equal.
+ */
+void controlledSigmaY(QubitRegister qureg, const int controlQubit, const int targetQubit);
 
 /** Gives the probability of a specified qubit being measured in the given outcome (0 or 1).
  * This performs no actual measurement and does not change the state of the qubits.

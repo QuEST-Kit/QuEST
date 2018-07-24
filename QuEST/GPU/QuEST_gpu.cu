@@ -951,6 +951,72 @@ void pure_sigmaYConj(QubitRegister qureg, const int targetQubit)
     pure_sigmaYKernel<<<CUDABlocks, threadsPerCUDABlock>>>(qureg, targetQubit, -1);
 }
 
+
+
+
+
+__global__ void pure_controlledSigmaYKernel(QubitRegister qureg, const int controlQubit, const int targetQubit, const int conjFac)
+{
+    long long int index;
+    long long int sizeBlock, sizeHalfBlock;
+    long long int stateVecSize;
+    int controlBit;
+
+    REAL   stateRealUp, stateImagUp; 
+    long long int thisBlock, indexUp, indexLo;                                     
+    sizeHalfBlock = 1LL << targetQubit;
+    sizeBlock     = 2LL * sizeHalfBlock;
+
+    stateVecSize = qureg.numAmpsPerChunk;
+    REAL *stateVecReal = qureg.deviceStateVec.real;
+    REAL *stateVecImag = qureg.deviceStateVec.imag;
+
+    index = blockIdx.x*blockDim.x + threadIdx.x;
+    if (index>=(stateVecSize>>1)) return;
+    thisBlock   = index / sizeHalfBlock;
+    indexUp     = thisBlock*sizeBlock + index%sizeHalfBlock;
+    indexLo     = indexUp + sizeHalfBlock;
+
+    controlBit = extractBit(controlQubit, indexUp);
+    if (controlBit){
+
+        stateRealUp = stateVecReal[indexUp];
+        stateImagUp = stateVecImag[indexUp];
+
+		// update under +-{{0, -i}, {i, 0}}
+	    stateVecReal[indexUp] = conjFac * stateVecImag[indexLo];
+	    stateVecImag[indexUp] = conjFac * -stateVecReal[indexLo];
+	    stateVecReal[indexLo] = conjFac * -stateImagUp;
+	    stateVecImag[indexLo] = conjFac * stateRealUp;
+    }
+}
+
+void pure_controlledSigmaY(QubitRegister qureg, const int controlQubit, const int targetQubit)
+{
+    QuESTAssert(targetQubit >= 0 && targetQubit < qureg.numQubits, 1, __func__);
+    QuESTAssert(controlQubit >= 0 && controlQubit < qureg.numQubits, 2, __func__);
+    QuESTAssert(controlQubit != targetQubit, 3, __func__);
+
+	int conjFactor = 1;
+    int threadsPerCUDABlock, CUDABlocks;
+    threadsPerCUDABlock = 128;
+    CUDABlocks = ceil((REAL)(qureg.numAmpsPerChunk)/threadsPerCUDABlock);
+    pure_controlledSigmaYKernel<<<CUDABlocks, threadsPerCUDABlock>>>(qureg, controlQubit, targetQubit, conjFactor);
+}
+
+void pure_controlledSigmaYConj(QubitRegister qureg, const int controlQubit, const int targetQubit)
+{
+    QuESTAssert(targetQubit >= 0 && targetQubit < qureg.numQubits, 1, __func__);
+    QuESTAssert(controlQubit >= 0 && controlQubit < qureg.numQubits, 2, __func__);
+    QuESTAssert(controlQubit != targetQubit, 3, __func__);
+
+	int conjFactor = 1;
+    int threadsPerCUDABlock, CUDABlocks;
+    threadsPerCUDABlock = 128;
+    CUDABlocks = ceil((REAL)(qureg.numAmpsPerChunk)/threadsPerCUDABlock);
+    pure_controlledSigmaYKernel<<<CUDABlocks, threadsPerCUDABlock>>>(qureg, controlQubit, targetQubit, conjFactor);
+}
+
 __global__ void pure_phaseShiftByTermKernel(QubitRegister qureg, const int targetQubit, REAL cosAngle, REAL sinAngle) {
 
     long long int sizeBlock, sizeHalfBlock;

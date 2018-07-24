@@ -1240,7 +1240,6 @@ void pure_controlledNotLocal(QubitRegister qureg, const int controlQubit, const 
     sizeHalfBlock = 1LL << targetQubit;  
     sizeBlock     = 2LL * sizeHalfBlock; 
 
-
     // Can't use qureg.stateVec as a private OMP var
     REAL *stateVecReal = qureg.stateVec.real;
     REAL *stateVecImag = qureg.stateVec.imag;
@@ -1411,6 +1410,103 @@ void pure_sigmaYDistributed(QubitRegister qureg, const int targetQubit,
         }
     }
 } 
+
+
+
+
+void pure_controlledSigmaYLocal(QubitRegister qureg, const int controlQubit, const int targetQubit, const int conjFac)
+{
+    long long int sizeBlock, sizeHalfBlock;
+    long long int thisBlock, // current block
+         indexUp,indexLo;    // current index and corresponding index in lower half block
+
+    REAL stateRealUp,stateImagUp;
+    long long int thisTask;         
+    const long long int numTasks=qureg.numAmpsPerChunk>>1;
+    const long long int chunkSize=qureg.numAmpsPerChunk;
+    const long long int chunkId=qureg.chunkId;
+
+    int controlBit;
+
+    // set dimensions
+    sizeHalfBlock = 1LL << targetQubit;  
+    sizeBlock     = 2LL * sizeHalfBlock; 
+
+    // Can't use qureg.stateVec as a private OMP var
+    REAL *stateVecReal = qureg.stateVec.real;
+    REAL *stateVecImag = qureg.stateVec.imag;
+
+# ifdef _OPENMP
+# pragma omp parallel \
+    default  (none) \
+    shared   (sizeBlock,sizeHalfBlock, stateVecReal,stateVecImag) \
+    private  (thisTask,thisBlock ,indexUp,indexLo, stateRealUp,stateImagUp,controlBit) 
+# endif
+    {
+# ifdef _OPENMP
+# pragma omp for schedule (static)
+# endif
+        for (thisTask=0; thisTask<numTasks; thisTask++) {
+            thisBlock   = thisTask / sizeHalfBlock;
+            indexUp     = thisBlock*sizeBlock + thisTask%sizeHalfBlock;
+            indexLo     = indexUp + sizeHalfBlock;
+
+            controlBit = extractBit(controlQubit, indexUp+chunkId*chunkSize);
+            if (controlBit){
+                stateRealUp = stateVecReal[indexUp];
+                stateImagUp = stateVecImag[indexUp];
+
+				// update under +-{{0, -i}, {i, 0}}
+			    stateVecReal[indexUp] = conjFac * stateVecImag[indexLo];
+			    stateVecImag[indexUp] = conjFac * -stateVecReal[indexLo];
+			    stateVecReal[indexLo] = conjFac * -stateImagUp;
+			    stateVecImag[indexLo] = conjFac * stateRealUp;
+            }
+        } 
+    }
+}
+
+
+void pure_controlledSigmaYDistributed (QubitRegister qureg, const int controlQubit, const int targetQubit,
+        ComplexArray stateVecIn,
+        ComplexArray stateVecOut, const int conjFac)
+{
+
+    long long int thisTask;  
+    const long long int numTasks=qureg.numAmpsPerChunk;
+    const long long int chunkSize=qureg.numAmpsPerChunk;
+    const long long int chunkId=qureg.chunkId;
+
+    int controlBit;
+
+    REAL *stateVecRealIn=stateVecIn.real, *stateVecImagIn=stateVecIn.imag;
+    REAL *stateVecRealOut=stateVecOut.real, *stateVecImagOut=stateVecOut.imag;
+
+# ifdef _OPENMP
+# pragma omp parallel \
+    default  (none) \
+    shared   (stateVecRealIn,stateVecImagIn,stateVecRealOut,stateVecImagOut) \
+    private  (thisTask,controlBit)
+# endif
+    {
+# ifdef _OPENMP
+# pragma omp for schedule (static)
+# endif
+        for (thisTask=0; thisTask<numTasks; thisTask++) {
+            controlBit = extractBit (controlQubit, thisTask+chunkId*chunkSize);
+            if (controlBit){
+                stateVecRealOut[thisTask] = conjFac * stateVecRealIn[thisTask];
+                stateVecImagOut[thisTask] = conjFac * stateVecImagIn[thisTask];
+            }
+        }
+    }
+} 
+
+
+
+
+
+
 
 void pure_hadamardLocal(QubitRegister qureg, const int targetQubit)
 {
