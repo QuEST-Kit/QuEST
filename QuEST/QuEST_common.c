@@ -24,6 +24,7 @@ static const char* errorMessages[] = {
 	[E_INVALID_NUM_QUBITS] = "Invalid number of qubits. Must create >0.",
 	[E_INVALID_TARGET_QUBIT] = "Invalid target qubit. Note qubits are zero indexed.",
 	[E_INVALID_CONTROL_QUBIT] = "Invalid control qubit. Note qubits are zero indexed.",
+	[E_INVALID_STATE_INDEX] = "Invalid state index. Must be >=0 and <2^numQubits.",
 	[E_TARGET_IS_CONTROL] = "Control qubit cannot equal target qubit.",
 	[E_TARGET_IN_CONTROLS] = "Control qubits cannot include target qubit.",
 	[E_INVALID_NUM_CONTROLS] = "Invalid number of control qubits. Must be >0 and <numQubits.",
@@ -164,7 +165,7 @@ REAL statevec_getProbEl(QubitRegister qureg, long long int index){
 }
 
 int statevec_getNumQubits(QubitRegister qureg){
-    return qureg.numQubits;
+    return qureg.numQubitsInStateVec;
 }
 
 int statevec_getNumAmps(QubitRegister qureg){
@@ -190,11 +191,11 @@ void reportState(QubitRegister qureg){
 }
 
 void reportQubitRegisterParams(QubitRegister qureg){
-    long long int numAmps = 1L << qureg.numQubits;
+    long long int numAmps = 1L << qureg.numQubitsInStateVec;
     long long int numAmpsPerRank = numAmps/qureg.numChunks;
     if (qureg.chunkId==0){
         printf("QUBITS:\n");
-        printf("Number of qubits is %d.\n", qureg.numQubits);
+        printf("Number of qubits is %d.\n", qureg.numQubitsInStateVec);
         printf("Number of amps is %lld.\n", numAmps);
         printf("Number of amps per rank is %lld.\n", numAmpsPerRank);
     }

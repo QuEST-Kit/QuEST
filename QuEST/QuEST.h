@@ -50,8 +50,8 @@ Qubits are zero-based
 */
 typedef struct QubitRegister
 {
-	//! Number of qubits in the state - double the number represented for mixed states
-	int numQubits;
+	//! Number of qubits in the state-vector - this is double the number represented for mixed states
+	int numQubitsInStateVec;
 	//! Number of probability amplitudes held in stateVec by this process
 	//! In the non-MPI version, this is the total number of amplitudes
 	long long int numAmpsPerChunk;

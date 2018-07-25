@@ -187,7 +187,7 @@ void statevec_createQubitRegister(QubitRegister *qureg, int numQubits, QuESTEnv 
         exit (EXIT_FAILURE);
     }
 
-    qureg->numQubits = numQubits;
+    qureg->numQubitsInStateVec = numQubits;
 	qureg->numAmpsTotal = numAmps;
     qureg->numAmpsPerChunk = numAmpsPerRank;
     qureg->chunkId = env.rank;
@@ -207,7 +207,7 @@ void statevec_destroyQubitRegister(QubitRegister qureg, QuESTEnv env){
 void statevec_reportStateToScreen(QubitRegister qureg, QuESTEnv env, int reportRank){
     long long int index;
     int rank;
-    if (qureg.numQubits<=5){
+    if (qureg.numQubitsInStateVec<=5){
         for (rank=0; rank<qureg.numChunks; rank++){
             if (qureg.chunkId==rank){
                 if (reportRank) {
@@ -233,7 +233,7 @@ void statevec_getEnvironmentString(QuESTEnv env, QubitRegister qureg, char str[2
 # ifdef _OPENMP
     numThreads=omp_get_max_threads(); 
 # endif
-    sprintf(str, "%dqubits_CPU_%dranksx%dthreads", qureg.numQubits, env.numRanks, numThreads);
+    sprintf(str, "%dqubits_CPU_%dranksx%dthreads", qureg.numQubitsInStateVec, env.numRanks, numThreads);
 }
 
 void statevec_initStateZero (QubitRegister qureg)
@@ -1705,11 +1705,11 @@ void statevec_multiControlledPhaseShift(QubitRegister qureg, int *controlQubits,
     const long long int chunkSize=qureg.numAmpsPerChunk;
     const long long int chunkId=qureg.chunkId;
 
-    QuESTAssert(numControlQubits > 0 && numControlQubits <= qureg.numQubits, 4, __func__);
+    QuESTAssert(numControlQubits > 0 && numControlQubits <= qureg.numQubitsInStateVec, 4, __func__);
     long long int mask=0;
     for (int i=0; i<numControlQubits; i++) 
 		mask = mask | (1LL<<controlQubits[i]);
-    QuESTAssert(mask >=0 && mask <= (1LL<<qureg.numQubits)-1, 2, __func__);
+    QuESTAssert(mask >=0 && mask <= (1LL<<qureg.numQubitsInStateVec)-1, 2, __func__);
 
     stateVecSize = qureg.numAmpsPerChunk;
     REAL *stateVecReal = qureg.stateVec.real;
@@ -1902,8 +1902,8 @@ void statevec_controlledPhaseFlip (QubitRegister qureg, const int idQubit1, cons
     const long long int chunkSize=qureg.numAmpsPerChunk;
     const long long int chunkId=qureg.chunkId;
 
-    QuESTAssert(idQubit1 >= 0 && idQubit1 < qureg.numQubits, 2, __func__);
-    QuESTAssert(idQubit2 >= 0 && idQubit2 < qureg.numQubits, 1, __func__);
+    QuESTAssert(idQubit1 >= 0 && idQubit1 < qureg.numQubitsInStateVec, 2, __func__);
+    QuESTAssert(idQubit2 >= 0 && idQubit2 < qureg.numQubitsInStateVec, 1, __func__);
     QuESTAssert(idQubit1 != idQubit2, 3, __func__);
 
     // dimension of the state vector
@@ -1936,10 +1936,10 @@ void statevec_multiControlledPhaseFlip(QubitRegister qureg, int *controlQubits, 
     const long long int chunkSize=qureg.numAmpsPerChunk;
     const long long int chunkId=qureg.chunkId;
 
-    QuESTAssert(numControlQubits > 0 && numControlQubits <= qureg.numQubits, 4, __func__);
+    QuESTAssert(numControlQubits > 0 && numControlQubits <= qureg.numQubitsInStateVec, 4, __func__);
     long long int mask=0;
     for (int i=0; i<numControlQubits; i++) mask = mask | (1LL<<controlQubits[i]);
-    QuESTAssert(mask >=0 && mask <= (1LL<<qureg.numQubits)-1, 2, __func__);
+    QuESTAssert(mask >=0 && mask <= (1LL<<qureg.numQubitsInStateVec)-1, 2, __func__);
 
     stateVecSize = qureg.numAmpsPerChunk;
     REAL *stateVecReal = qureg.stateVec.real;
