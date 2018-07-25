@@ -1621,7 +1621,7 @@ void statevec_hadamardDistributed(QubitRegister qureg, const int targetQubit,
 
 void statevec_phaseShiftByTerm (QubitRegister qureg, const int targetQubit, Complex term)
 {
-	QuESTAssert(validateUnitComplex(term), 16, __func__);
+	QuESTAssert(isComplexUnit(term), 16, __func__);
 	
     long long int index;
     long long int stateVecSize;

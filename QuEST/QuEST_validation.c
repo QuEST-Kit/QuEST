@@ -87,39 +87,46 @@ void QuESTAssert(int isValid, ErrorCode code, const char* func){
     if (!isValid) exitWithError(code, func);
 }
 
-int validateAlphaBeta(Complex alpha, Complex beta){
-    if ( absReal(alpha.real*alpha.real 
+//int validateUnitComplex(Complex alpha) {
+int isComplexUnit(Complex alpha) {
+	return (absReal(1 - sqrt(alpha.real*alpha.real + alpha.imag*alpha.imag)) < REAL_EPS); 
+}
+
+//int validateUnitVector(REAL ux, REAL uy, REAL uz){
+int isVectorUnit(REAL ux, REAL uy, REAL uz) {
+    return (absReal(1 - sqrt(ux*ux + uy*uy + uz*uz)) < REAL_EPS );
+}
+
+//int validateAlphaBeta(Complex alpha, Complex beta){
+int isComplexPairUnitary(Complex alpha, Complex beta) {
+    return ( absReal( -1
+				+ alpha.real*alpha.real 
                 + alpha.imag*alpha.imag
                 + beta.real*beta.real 
-                + beta.imag*beta.imag - 1) > REAL_EPS ) return 0;
-    else return 1;
+                + beta.imag*beta.imag) < REAL_EPS );
 }
 
-int validateUnitVector(REAL ux, REAL uy, REAL uz){
-    if ( absReal(sqrt(ux*ux + uy*uy + uz*uz) - 1) > REAL_EPS ) return 0;
-    else return 1;
-}
-
-int validateMatrixIsUnitary(ComplexMatrix2 u){
-
-    if ( absReal(u.r0c0.real*u.r0c0.real 
+// int validateMatrixIsUnitary(ComplexMatrix2 u){
+int isMatrixUnitary(ComplexMatrix2 u) {
+    if ( absReal( u.r0c0.real*u.r0c0.real 
                 + u.r0c0.imag*u.r0c0.imag
                 + u.r1c0.real*u.r1c0.real
                 + u.r1c0.imag*u.r1c0.imag - 1) > REAL_EPS ) return 0;
-    if ( absReal(u.r0c1.real*u.r0c1.real 
+    if ( absReal( u.r0c1.real*u.r0c1.real 
                 + u.r0c1.imag*u.r0c1.imag
                 + u.r1c1.real*u.r1c1.real
                 + u.r1c1.imag*u.r1c1.imag - 1) > REAL_EPS ) return 0;
-    if ( absReal(u.r0c0.real*u.r0c1.real 
+    if ( absReal( u.r0c0.real*u.r0c1.real 
                 + u.r0c0.imag*u.r0c1.imag
                 + u.r1c0.real*u.r1c1.real
                 + u.r1c0.imag*u.r1c1.imag) > REAL_EPS ) return 0;
-    if ( absReal(u.r0c1.real*u.r0c0.imag
+    if ( absReal( u.r0c1.real*u.r0c0.imag
                 - u.r0c0.real*u.r0c1.imag
                 + u.r1c1.real*u.r1c0.imag
                 - u.r1c0.real*u.r1c1.imag) > REAL_EPS ) return 0;
     return 1;
 }
+
 
 
 #ifdef __cplusplus

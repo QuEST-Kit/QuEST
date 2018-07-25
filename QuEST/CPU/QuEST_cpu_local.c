@@ -140,7 +140,7 @@ REAL statevec_getImagAmpEl(QubitRegister qureg, long long int index){
 void statevec_compactUnitary(QubitRegister qureg, const int targetQubit, Complex alpha, Complex beta) 
 {
     QuESTAssert(targetQubit >= 0 && targetQubit < qureg.numQubitsInStateVec, 1, __func__);
-    QuESTAssert(validateAlphaBeta(alpha, beta), 6, __func__);
+    QuESTAssert(isComplexPairUnitary(alpha, beta), 6, __func__);
 
     // all values required to update state vector lie in this rank
     statevec_compactUnitaryLocal(qureg, targetQubit, alpha, beta);
@@ -149,7 +149,7 @@ void statevec_compactUnitary(QubitRegister qureg, const int targetQubit, Complex
 void statevec_unitary(QubitRegister qureg, const int targetQubit, ComplexMatrix2 u) 
 {
     QuESTAssert(targetQubit >= 0 && targetQubit < qureg.numQubitsInStateVec, 1, __func__);
-    QuESTAssert(validateMatrixIsUnitary(u), 5, __func__);
+    QuESTAssert(isMatrixUnitary(u), 5, __func__);
 
     // all values required to update state vector lie in this rank
     statevec_unitaryLocal(qureg, targetQubit, u);
@@ -160,7 +160,7 @@ void statevec_controlledCompactUnitary(QubitRegister qureg, const int controlQub
     QuESTAssert(targetQubit >= 0 && targetQubit < qureg.numQubitsInStateVec, 1, __func__);
     QuESTAssert(controlQubit >= 0 && controlQubit < qureg.numQubitsInStateVec, 2, __func__);
     QuESTAssert(controlQubit != targetQubit, 3, __func__);
-    QuESTAssert(validateAlphaBeta(alpha, beta), 6, __func__);
+    QuESTAssert(isComplexPairUnitary(alpha, beta), 6, __func__);
 
 
     statevec_controlledCompactUnitaryLocal(qureg, controlQubit, targetQubit, alpha, beta);
@@ -171,7 +171,7 @@ void statevec_controlledUnitary(QubitRegister qureg, const int controlQubit, con
     QuESTAssert(targetQubit >= 0 && targetQubit < qureg.numQubitsInStateVec, 1, __func__);
     QuESTAssert(controlQubit >= 0 && controlQubit < qureg.numQubitsInStateVec, 2, __func__);
     QuESTAssert(controlQubit != targetQubit, 3, __func__);
-    QuESTAssert(validateMatrixIsUnitary(u), 5, __func__);
+    QuESTAssert(isMatrixUnitary(u), 5, __func__);
 
     statevec_controlledUnitaryLocal(qureg, controlQubit, targetQubit, u);
 }
@@ -180,7 +180,7 @@ void statevec_multiControlledUnitary(QubitRegister qureg, int* controlQubits, co
 {
     QuESTAssert(targetQubit >= 0 && targetQubit < qureg.numQubitsInStateVec, 1, __func__);
     QuESTAssert(numControlQubits > 0 && numControlQubits <= qureg.numQubitsInStateVec, 4, __func__);
-    QuESTAssert(validateMatrixIsUnitary(u), 5, __func__);
+    QuESTAssert(isMatrixUnitary(u), 5, __func__);
 
     long long int mask=0; 
     for (int i=0; i<numControlQubits; i++) mask = mask | (1LL<<controlQubits[i]);

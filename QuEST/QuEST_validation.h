@@ -51,13 +51,13 @@ void exitWithError(ErrorCode code, const char *func);
 void QuESTAssert(int isValid, ErrorCode code, const char *func);
 
 // need renaming
-int validateUnitComplex(Complex alpha);
+int isComplexUnit(Complex alpha);
 
-int validateMatrixIsUnitary(ComplexMatrix2 u);
+int isMatrixUnitary(ComplexMatrix2 u);
 
-int validateAlphaBeta(Complex alpha, Complex beta);
+int isComplexPairUnitary(Complex alpha, Complex beta);
 
-int validateUnitVector(REAL ux, REAL uy, REAL uz);
+int isVectorUnit(REAL ux, REAL uy, REAL uz);
 
 
 # ifdef __cplusplus

@@ -560,7 +560,7 @@ __global__ void statevec_compactUnitaryKernel (QubitRegister qureg, const int ro
 void statevec_compactUnitary(QubitRegister qureg, const int targetQubit, Complex alpha, Complex beta) 
 {
     QuESTAssert(targetQubit >= 0 && targetQubit < qureg.numQubitsInStateVec, 1, __func__);
-    QuESTAssert(validateAlphaBeta(alpha, beta), 6, __func__);
+    QuESTAssert(isComplexPairUnitary(alpha, beta), 6, __func__);
     int threadsPerCUDABlock, CUDABlocks;
     threadsPerCUDABlock = 128;
     CUDABlocks = ceil((REAL)(qureg.numAmpsPerChunk>>1)/threadsPerCUDABlock);
@@ -631,7 +631,7 @@ void statevec_controlledCompactUnitary(QubitRegister qureg, const int controlQub
     QuESTAssert(targetQubit >= 0 && targetQubit < qureg.numQubitsInStateVec, 1, __func__);
     QuESTAssert(controlQubit >= 0 && controlQubit < qureg.numQubitsInStateVec, 2, __func__);
     QuESTAssert(controlQubit != targetQubit, 3, __func__);
-    QuESTAssert(validateAlphaBeta(alpha, beta), 6, __func__);
+    QuESTAssert(isComplexPairUnitary(alpha, beta), 6, __func__);
 
     int threadsPerCUDABlock, CUDABlocks;
     threadsPerCUDABlock = 128;
@@ -695,7 +695,7 @@ __global__ void statevec_unitaryKernel(QubitRegister qureg, const int targetQubi
 void statevec_unitary(QubitRegister qureg, const int targetQubit, ComplexMatrix2 u)
 {
     QuESTAssert(targetQubit >= 0 && targetQubit < qureg.numQubitsInStateVec, 1, __func__);
-    QuESTAssert(validateMatrixIsUnitary(u), 5, __func__);
+    QuESTAssert(isMatrixUnitary(u), 5, __func__);
     int threadsPerCUDABlock, CUDABlocks;
     threadsPerCUDABlock = 128;
     CUDABlocks = ceil((REAL)(qureg.numAmpsPerChunk>>1)/threadsPerCUDABlock);
@@ -765,7 +765,7 @@ void statevec_controlledUnitary(QubitRegister qureg, const int controlQubit, con
     QuESTAssert(targetQubit >= 0 && targetQubit < qureg.numQubitsInStateVec, 1, __func__);
     QuESTAssert(controlQubit >= 0 && controlQubit < qureg.numQubitsInStateVec, 2, __func__);
     QuESTAssert(controlQubit != targetQubit, 3, __func__);
-    QuESTAssert(validateMatrixIsUnitary(u), 5, __func__);
+    QuESTAssert(isMatrixUnitary(u), 5, __func__);
 
     int threadsPerCUDABlock, CUDABlocks;
     threadsPerCUDABlock = 128;
@@ -833,7 +833,7 @@ void statevec_multiControlledUnitary(QubitRegister qureg, int *controlQubits, in
 {
     QuESTAssert(targetQubit >= 0 && targetQubit < qureg.numQubitsInStateVec, 1, __func__);
     QuESTAssert(numControlQubits > 0 && numControlQubits <= qureg.numQubitsInStateVec, 4, __func__);
-    QuESTAssert(validateMatrixIsUnitary(u), 5, __func__);
+    QuESTAssert(isMatrixUnitary(u), 5, __func__);
     int threadsPerCUDABlock, CUDABlocks;
     long long int mask=0;
     for (int i=0; i<numControlQubits; i++) mask = mask | (1LL<<controlQubits[i]);
@@ -1035,7 +1035,7 @@ __global__ void statevec_phaseShiftByTermKernel(QubitRegister qureg, const int t
 void statevec_phaseShiftByTerm(QubitRegister qureg, const int targetQubit, Complex term)
 {
     QuESTAssert(targetQubit >= 0 && targetQubit < qureg.numQubitsInStateVec, 1, __func__);
-	QuESTAssert(validateUnitComplex(term), 16, __func__);
+	QuESTAssert(isComplexUnit(term), 16, __func__);
 	
 	REAL cosAngle = term.real;
 	REAL sinAngle = term.imag;

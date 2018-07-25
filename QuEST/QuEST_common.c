@@ -68,9 +68,7 @@ void seedQuEST(unsigned long int *seedArray, int numSeeds){
     init_by_array(seedArray, numSeeds); 
 }
 
-int validateUnitComplex(Complex alpha) {
-	return (absReal(1 - sqrt(alpha.real*alpha.real + alpha.imag*alpha.imag)) < REAL_EPS); 
-}
+
 
 
 

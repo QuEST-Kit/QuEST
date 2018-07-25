@@ -321,7 +321,7 @@ void exchangeStateVectors(QubitRegister qureg, int pairRank){
 void statevec_compactUnitary(QubitRegister qureg, const int targetQubit, Complex alpha, Complex beta)
 {
     QuESTAssert(targetQubit >= 0 && targetQubit < qureg.numQubitsInStateVec, 1, __func__);
-    QuESTAssert(validateAlphaBeta(alpha, beta), 6, __func__);
+    QuESTAssert(isComplexPairUnitary(alpha, beta), 6, __func__);
 
     // flag to require memory exchange. 1: an entire block fits on one rank, 0: at most half a block fits on one rank
     int useLocalDataOnly = halfMatrixBlockFitsInChunk(qureg.numAmpsPerChunk, targetQubit);
@@ -361,7 +361,7 @@ void statevec_compactUnitary(QubitRegister qureg, const int targetQubit, Complex
 void statevec_unitary(QubitRegister qureg, const int targetQubit, ComplexMatrix2 u)
 {
     QuESTAssert(targetQubit >= 0 && targetQubit < qureg.numQubitsInStateVec, 1, __func__);
-    QuESTAssert(validateMatrixIsUnitary(u), 5, __func__);
+    QuESTAssert(isMatrixUnitary(u), 5, __func__);
 
     // flag to require memory exchange. 1: an entire block fits on one rank, 0: at most half a block fits on one rank
     int useLocalDataOnly = halfMatrixBlockFitsInChunk(qureg.numAmpsPerChunk, targetQubit);
@@ -405,7 +405,7 @@ void statevec_controlledCompactUnitary(QubitRegister qureg, const int controlQub
     QuESTAssert(targetQubit >= 0 && targetQubit < qureg.numQubitsInStateVec, 1, __func__);
     QuESTAssert(controlQubit >= 0 && controlQubit < qureg.numQubitsInStateVec, 2, __func__);
     QuESTAssert(controlQubit != targetQubit, 3, __func__);
-    QuESTAssert(validateAlphaBeta(alpha, beta), 6, __func__);
+    QuESTAssert(isComplexPairUnitary(alpha, beta), 6, __func__);
 
     // flag to require memory exchange. 1: an entire block fits on one rank, 0: at most half a block fits on one rank
     int useLocalDataOnly = halfMatrixBlockFitsInChunk(qureg.numAmpsPerChunk, targetQubit);
@@ -449,7 +449,7 @@ void statevec_controlledUnitary(QubitRegister qureg, const int controlQubit, con
     QuESTAssert(targetQubit >= 0 && targetQubit < qureg.numQubitsInStateVec, 1, __func__);
     QuESTAssert(controlQubit >= 0 && controlQubit < qureg.numQubitsInStateVec, 2, __func__);
     QuESTAssert(controlQubit != targetQubit, 3, __func__);
-    QuESTAssert(validateMatrixIsUnitary(u), 5, __func__);
+    QuESTAssert(isMatrixUnitary(u), 5, __func__);
 
     // flag to require memory exchange. 1: an entire block fits on one rank, 0: at most half a block fits on one rank
     int useLocalDataOnly = halfMatrixBlockFitsInChunk(qureg.numAmpsPerChunk, targetQubit);
@@ -491,7 +491,7 @@ void statevec_multiControlledUnitary(QubitRegister qureg, int* controlQubits, co
 {
     QuESTAssert(targetQubit >= 0 && targetQubit < qureg.numQubitsInStateVec, 1, __func__);
     QuESTAssert(numControlQubits > 0 && numControlQubits <= qureg.numQubitsInStateVec, 4, __func__);
-    QuESTAssert(validateMatrixIsUnitary(u), 5, __func__);
+    QuESTAssert(isMatrixUnitary(u), 5, __func__);
 
     long long int mask=0;
     for (int i=0; i<numControlQubits; i++) mask = mask | (1LL<<controlQubits[i]);
