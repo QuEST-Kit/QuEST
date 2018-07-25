@@ -15,9 +15,21 @@ extern "C" {
 # include <stdio.h>
 # include <stdlib.h>
 		
-void myTestFunc(const char* caller) {
-	printf("Called from: %s\n", caller);
+
+void auto_validateStateIndex(QubitRegister qureg, long long int stateInd, const char* caller) {
+	QuESTAssert(stateInd>=0 && stateInd<qureg.numAmpsTotal, E_INVALID_STATE_INDEX, caller);
 }
+
+void auto_validateTarget(QubitRegister qureg, int targetQubit, const char* caller) {
+	QuESTAssert(targetQubit>=0 && targetQubit<qureg.numQubitsRepresented, E_INVALID_TARGET_QUBIT, caller);
+}
+
+void auto_validateControlTarget(QubitRegister qureg, int controlQubit, int targetQubit, const char* caller) {
+	auto_validateTarget(qureg, targetQubit, caller);
+	QuESTAssert(controlQubit>=0 && controlQubit<qureg.numQubitsRepresented, E_INVALID_CONTROL_QUBIT, caller);
+	QuESTAssert(controlQubit != targetQubit, E_TARGET_IS_CONTROL, caller);
+}
+
 
 static const char* errorMessages[] = {
 	[E_INVALID_NUM_QUBITS] = "Invalid number of qubits. Must create >0.",

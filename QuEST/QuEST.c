@@ -64,7 +64,7 @@ void initStatePlus(QubitRegister qureg) {
 }
 
 void initClassicalState(QubitRegister qureg, long long int stateInd) {
-	QuESTAssert(stateInd>=0 && stateInd<qureg.numAmpsTotal, E_INVALID_STATE_INDEX, __func__);
+	validateStateIndex(qureg, stateInd);
 	
 	if (qureg.isDensityMatrix)
 		densmatr_initClassicalState(qureg, stateInd);
@@ -73,7 +73,7 @@ void initClassicalState(QubitRegister qureg, long long int stateInd) {
 }
 
 void hadamard(QubitRegister qureg, const int targetQubit) {
-	QuESTAssert(targetQubit>=0 && targetQubit<qureg.numQubitsRepresented, E_INVALID_TARGET_QUBIT, __func__);
+	validateTarget(qureg, targetQubit);
 
 	statevec_hadamard(qureg, targetQubit);
 	if (qureg.isDensityMatrix) {
@@ -82,7 +82,7 @@ void hadamard(QubitRegister qureg, const int targetQubit) {
 }
 
 void rotateX(QubitRegister qureg, const int targetQubit, REAL angle) {
-	QuESTAssert(targetQubit>=0 && targetQubit<qureg.numQubitsRepresented, E_INVALID_TARGET_QUBIT, __func__);
+	validateTarget(qureg, targetQubit);
 	
 	statevec_rotateX(qureg, targetQubit, angle);
 	if (qureg.isDensityMatrix) {
@@ -91,7 +91,7 @@ void rotateX(QubitRegister qureg, const int targetQubit, REAL angle) {
 }
 
 void rotateY(QubitRegister qureg, const int targetQubit, REAL angle) {
-	QuESTAssert(targetQubit>=0 && targetQubit<qureg.numQubitsRepresented, E_INVALID_TARGET_QUBIT, __func__);
+	validateTarget(qureg, targetQubit);
 	
 	statevec_rotateY(qureg, targetQubit, angle);
 	if (qureg.isDensityMatrix) {
@@ -100,7 +100,7 @@ void rotateY(QubitRegister qureg, const int targetQubit, REAL angle) {
 }
 
 void rotateZ(QubitRegister qureg, const int targetQubit, REAL angle) {
-	QuESTAssert(targetQubit>=0 && targetQubit<qureg.numQubitsRepresented, E_INVALID_TARGET_QUBIT, __func__);
+	validateTarget(qureg, targetQubit);
 	
 	statevec_rotateZ(qureg, targetQubit, angle);
 	if (qureg.isDensityMatrix) {
@@ -109,8 +109,7 @@ void rotateZ(QubitRegister qureg, const int targetQubit, REAL angle) {
 }
 
 void controlledRotateX(QubitRegister qureg, const int controlQubit, const int targetQubit, REAL angle) {
-	QuESTAssert(targetQubit>=0 && targetQubit<qureg.numQubitsRepresented, E_INVALID_TARGET_QUBIT, __func__);
-	QuESTAssert(controlQubit>=0 && controlQubit<qureg.numQubitsRepresented, E_INVALID_CONTROL_QUBIT, __func__);
+	validateControlTarget(qureg, controlQubit, targetQubit);
 	
 	statevec_controlledRotateX(qureg, controlQubit, targetQubit, angle);
 	if (qureg.isDensityMatrix) {
@@ -120,6 +119,8 @@ void controlledRotateX(QubitRegister qureg, const int controlQubit, const int ta
 }
 
 void controlledRotateY(QubitRegister qureg, const int controlQubit, const int targetQubit, REAL angle) {
+	validateControlTarget(qureg, controlQubit, targetQubit);
+	
 	statevec_controlledRotateY(qureg, controlQubit, targetQubit, angle);
 	if (qureg.isDensityMatrix) {
 		int shift = qureg.numQubitsRepresented;
@@ -128,6 +129,8 @@ void controlledRotateY(QubitRegister qureg, const int controlQubit, const int ta
 }
 
 void controlledRotateZ(QubitRegister qureg, const int controlQubit, const int targetQubit, REAL angle) {
+	validateControlTarget(qureg, controlQubit, targetQubit);
+	
 	statevec_controlledRotateZ(qureg, controlQubit, targetQubit, angle);
 	if (qureg.isDensityMatrix) {
 		int shift = qureg.numQubitsRepresented;
@@ -136,6 +139,9 @@ void controlledRotateZ(QubitRegister qureg, const int controlQubit, const int ta
 }
 
 void unitary(QubitRegister qureg, const int targetQubit, ComplexMatrix2 u) {
+	validateTarget(qureg, targetQubit);
+	
+	
 	statevec_unitary(qureg, targetQubit, u);
 	if (qureg.isDensityMatrix) {
 		statevec_unitary(qureg, targetQubit+qureg.numQubitsRepresented, getConjugateMatrix(u));

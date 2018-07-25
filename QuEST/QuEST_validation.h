@@ -13,10 +13,18 @@
 extern "C" {
 # endif
 	
+/* Wraps validation to automatically pass along the caller's signature.
+ * Q = qureg, S = state, T = target, C = control
+ */
+# define validateStateIndex(Q, S) auto_validateStateIndex(Q, S, __func__)
+# define validateTarget(Q, T) auto_validateTarget(Q, T, __func__)
+# define validateControlTarget(Q, C, T) auto_validateControlTarget(Q, C, T, __func__)
 
+void auto_validateStateIndex(QubitRegister qureg, long long int stateInd, const char* caller);
+void auto_validateTarget(QubitRegister qureg, int targetQubit, const char* caller);
+void auto_validateControlTarget(QubitRegister qureg, int controlQubit, int targetQubit, const char* caller);
 
-# define testGetCaller() myTestFunc(__func__)
-
+/* BELOW WON'T NEED TO BE EXPOSED AFTER ALL INTEGRATED INTO QuEST_validation.h! :D */
 typedef enum {
 	E_SUCCESS=0,
 	E_INVALID_NUM_QUBITS,
