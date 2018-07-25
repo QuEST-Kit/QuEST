@@ -188,6 +188,7 @@ void statevec_createQubitRegister(QubitRegister *qureg, int numQubits, QuESTEnv 
     }
 
     qureg->numQubits = numQubits;
+	qureg->numAmpsTotal = numAmps;
     qureg->numAmpsPerChunk = numAmpsPerRank;
     qureg->chunkId = env.rank;
     qureg->numChunks = env.numRanks;

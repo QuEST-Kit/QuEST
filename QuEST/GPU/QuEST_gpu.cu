@@ -63,7 +63,6 @@ void __global__ densmatr_initPureStateKernel(
 	}
 }
 
-// @TODO test 
 void densmatr_initPureState(QubitRegister targetQureg, QubitRegister copyQureg)
 {
     int threadsPerCUDABlock, CUDABlocks;
@@ -74,10 +73,6 @@ void densmatr_initPureState(QubitRegister targetQureg, QubitRegister copyQureg)
 		targetQureg.deviceStateVec.real, targetQureg.deviceStateVec.imag,
 		copyQureg.deviceStateVec.real,   copyQureg.deviceStateVec.imag);
 }
-
-
-
-
 
 void __global__ densmatr_initStatePlusKernel(long long int stateVecSize, REAL *stateVecReal, REAL *stateVecImag){
     long long int index;
@@ -165,6 +160,7 @@ void statevec_createQubitRegister(QubitRegister *qureg, int numQubits, QuESTEnv 
 
     qureg->numQubits = numQubits;
     qureg->numAmpsPerChunk = numAmpsPerRank;
+	qureg->numAmpsTotal = numAmps;
     qureg->chunkId = env.rank;
     qureg->numChunks = env.numRanks;
 	qureg->isDensityMatrix = 0;
@@ -502,14 +498,6 @@ int statevec_compareStates(QubitRegister mq1, QubitRegister mq2, REAL precision)
     }
     return 1;
 }
-
-
-
-
-
-
-
-
 
 __global__ void statevec_compactUnitaryKernel (QubitRegister qureg, const int rotQubit, Complex alpha, Complex beta){
     // ----- sizes
@@ -951,10 +939,6 @@ void statevec_sigmaYConj(QubitRegister qureg, const int targetQubit)
     statevec_sigmaYKernel<<<CUDABlocks, threadsPerCUDABlock>>>(qureg, targetQubit, -1);
 }
 
-
-
-
-
 __global__ void statevec_controlledSigmaYKernel(QubitRegister qureg, const int controlQubit, const int targetQubit, const int conjFac)
 {
     long long int index;
@@ -1118,7 +1102,6 @@ __global__ void statevec_multiControlledPhaseShiftKernel(QubitRegister qureg, lo
 	    stateVecImag[index] = sinAngle*stateRealLo + cosAngle*stateImagLo;
     }
 }
-
 
 void statevec_multiControlledPhaseShift(QubitRegister qureg, int *controlQubits, int numControlQubits, REAL angle)
 {
