@@ -12,6 +12,9 @@
 
 # include "QuEST_cpu_internal.h"
 
+// debug: remove this after all validation is removed
+# include "../QuEST_validation.h"
+
 #define _BSD_SOURCE
 # include <unistd.h>
 # include <mpi.h>

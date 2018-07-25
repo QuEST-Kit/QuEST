@@ -9,6 +9,9 @@
 # include "../QuEST_precision.h"
 # include "../mt19937ar.h"
 
+// debug: remove this after all validation is removed
+# include "../QuEST_validation.h"
+
 # include <stdlib.h>
 # include <stdio.h>
 # include <math.h>
