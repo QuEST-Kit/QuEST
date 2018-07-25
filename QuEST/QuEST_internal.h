@@ -15,6 +15,8 @@ extern "C" {
 
 unsigned long int hashString(char *str);
 
+REAL getVectorMagnitude(Vector vec);
+
 Complex getConjugateScalar(Complex scalar);
 
 ComplexMatrix2 getConjugateMatrix(ComplexMatrix2 matr);

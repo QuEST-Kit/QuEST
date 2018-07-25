@@ -40,10 +40,6 @@ void statevec_createQubitRegister(QubitRegister *qureg, int numQubits, QuESTEnv 
 
 void statevec_destroyQubitRegister(QubitRegister qureg, QuESTEnv env);
 
-int statevec_getNumQubits(QubitRegister qureg);
-
-int statevec_getNumAmps(QubitRegister qureg);
-
 void statevec_initStateZero(QubitRegister qureg);
 
 void statevec_initStatePlus(QubitRegister qureg);

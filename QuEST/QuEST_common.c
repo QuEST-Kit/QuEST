@@ -25,6 +25,39 @@ extern "C" {
 #endif
 
 
+REAL getVectorMagnitude(Vector vec) {
+	return sqrt(vec.x*vec.x + vec.y*vec.y + vec.z*vec.z);
+}
+
+Vector getUnitVector(Vector vec) {
+	
+	REAL mag = getVectorMagnitude(vec);
+	Vector unitVec = (Vector) {.x=vec.x/mag, .y=vec.y/mag, .z=vec.z/mag};
+	return unitVec;
+}
+
+Complex getConjugateScalar(Complex scalar) {
+	
+	Complex conjScalar;
+	conjScalar.real =   scalar.real;
+	conjScalar.imag = - scalar.imag;
+	return conjScalar;
+}
+
+ComplexMatrix2 getConjugateMatrix(ComplexMatrix2 matrix) {
+	
+	ComplexMatrix2 conjMatrix;
+	conjMatrix.r0c0 = getConjugateScalar(matrix.r0c0);
+	conjMatrix.r0c1 = getConjugateScalar(matrix.r0c1);
+	conjMatrix.r1c0 = getConjugateScalar(matrix.r1c0);
+	conjMatrix.r1c1 = getConjugateScalar(matrix.r1c1);
+	return conjMatrix;
+}
+
+void shiftIndices(int* indices, int numIndices, int shift) {
+	for (int j=0; j < numIndices; j++)
+		indices[j] += shift;
+}
 
 unsigned long int hashString(char *str){
     unsigned long int hash = 5381;
@@ -68,22 +101,10 @@ void seedQuEST(unsigned long int *seedArray, int numSeeds){
     init_by_array(seedArray, numSeeds); 
 }
 
-
-
-
-
 REAL statevec_getProbEl(QubitRegister qureg, long long int index){
     REAL real = statevec_getRealAmpEl(qureg, index);
     REAL imag = statevec_getImagAmpEl(qureg, index);
     return real*real + imag*imag;
-}
-
-int statevec_getNumQubits(QubitRegister qureg){
-    return qureg.numQubitsInStateVec;
-}
-
-int statevec_getNumAmps(QubitRegister qureg){
-    return qureg.numAmpsPerChunk*qureg.numChunks;
 }
 
 void reportState(QubitRegister qureg){
@@ -177,9 +198,7 @@ void statevec_rotateZ(QubitRegister qureg, const int rotQubit, REAL angle){
 
 void getAlphaBetaFromRotation(REAL angle, Vector axis, Complex* alpha, Complex* beta) {
 	
-    REAL mag = sqrt(pow(axis.x,2) + pow(axis.y,2) + pow(axis.z,2));
-    Vector unitAxis = {axis.x/mag, axis.y/mag, axis.z/mag};
-
+    Vector unitAxis = getUnitVector(axis);
     alpha->real =   cos(angle/2.0);
     alpha->imag = - sin(angle/2.0)*unitAxis.z;	
     beta->real  =   sin(angle/2.0)*unitAxis.y;
@@ -236,28 +255,7 @@ void statevec_controlledRotateZ(QubitRegister qureg, const int controlQubit, con
     statevec_controlledRotateAroundAxis(qureg, controlQubit, targetQubit, angle, unitAxis);
 }
 
-Complex getConjugateScalar(Complex scalar) {
-	
-	Complex conjScalar;
-	conjScalar.real =   scalar.real;
-	conjScalar.imag = - scalar.imag;
-	return conjScalar;
-}
 
-ComplexMatrix2 getConjugateMatrix(ComplexMatrix2 matrix) {
-	
-	ComplexMatrix2 conjMatrix;
-	conjMatrix.r0c0 = getConjugateScalar(matrix.r0c0);
-	conjMatrix.r0c1 = getConjugateScalar(matrix.r0c1);
-	conjMatrix.r1c0 = getConjugateScalar(matrix.r1c0);
-	conjMatrix.r1c1 = getConjugateScalar(matrix.r1c1);
-	return conjMatrix;
-}
-
-void shiftIndices(int* indices, int numIndices, int shift) {
-	for (int j=0; j < numIndices; j++)
-		indices[j] += shift;
-}
 
 
 
