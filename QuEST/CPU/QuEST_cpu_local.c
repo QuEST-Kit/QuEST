@@ -30,7 +30,7 @@ void densmatr_initPureState(QubitRegister targetQureg, QubitRegister copyQureg) 
 	
 	QuESTAssert(targetQureg.isDensityMatrix, 14, __func__);
 	QuESTAssert( !copyQureg.isDensityMatrix, 12, __func__);
-	QuESTAssert(targetQureg.numDensityQubits==copyQureg.numQubitsInStateVec, 13, __func__);
+	QuESTAssert(targetQureg.numQubitsRepresented==copyQureg.numQubitsInStateVec, 13, __func__);
 	
 	densmatr_initPureStateLocal(targetQureg, copyQureg);
 }
@@ -42,7 +42,7 @@ REAL densmatr_calcTotalProbability(QubitRegister qureg) {
 	REAL y, t, c;
 	c = 0;
 	
-	long long int numCols = 1LL << qureg.numDensityQubits;
+	long long int numCols = 1LL << qureg.numQubitsRepresented;
 	long long diagIndex;
 	
 	for (int col=0; col< numCols; col++) {

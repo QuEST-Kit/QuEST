@@ -122,7 +122,7 @@ void densmatr_initClassicalState(QubitRegister qureg, long long int stateInd)
     CUDABlocks = ceil((REAL)(qureg.numAmpsPerChunk)/threadsPerCUDABlock);
 	
 	// index of the desired state in the flat density matrix
-	long long int densityDim = 1LL << qureg.numDensityQubits;
+	long long int densityDim = 1LL << qureg.numQubitsRepresented;
 	long long int densityInd = (densityDim + 1)*stateInd;
 	
 	// identical to pure version
@@ -1129,7 +1129,7 @@ REAL densmatr_calcTotalProbability(QubitRegister qureg) {
 	REAL y, t, c;
 	c = 0;
 	
-	long long int numCols = 1LL << qureg.numDensityQubits;
+	long long int numCols = 1LL << qureg.numQubitsRepresented;
 	long long diagIndex;
 	
 	copyStateFromGPU(qureg);
@@ -1393,7 +1393,7 @@ __global__ void densmatr_findProbabilityOfZeroKernel(
 	// use of block here refers to contiguous amplitudes where measureQubit = 0, 
 	// (then =1) and NOT the CUDA block, which is the partitioning of CUDA threads
 	
-	long long int densityDim    = 1LL << qureg.numDensityQubits;
+	long long int densityDim    = 1LL << qureg.numQubitsRepresented;
 	long long int numTasks      = densityDim >> 1;
 	long long int sizeHalfBlock = 1LL << (measureQubit);
 	long long int sizeBlock     = 2LL * sizeHalfBlock;
@@ -1492,7 +1492,7 @@ void swapDouble(REAL **a, REAL **b){
 
 REAL densmatr_findProbabilityOfZero(QubitRegister qureg, const int measureQubit)
 {
-	long long int densityDim = 1LL << qureg.numDensityQubits;
+	long long int densityDim = 1LL << qureg.numQubitsRepresented;
 	long long int numValuesToReduce = densityDim >> 1;  // half of the diagonal has measureQubit=0
 	
 	int valuesPerCUDABlock, numCUDABlocks, sharedMemSize;

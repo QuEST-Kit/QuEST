@@ -36,7 +36,7 @@ REAL densmatr_calcTotalProbability(QubitRegister qureg) {
 	// computes the trace by summing every element ("diag") with global index (2^n + 1)i for i in [0, 2^n-1]
 	
 	// computes first local index containing a diagonal element
-	long long int diagSpacing = 1LL + (1LL << qureg.numDensityQubits);
+	long long int diagSpacing = 1LL + (1LL << qureg.numQubitsRepresented);
 	long long int numPrevDiags = (qureg.chunkId * qureg.numAmpsPerChunk) / diagSpacing;
 	long long int globalIndNextDiag = diagSpacing * numPrevDiags;
 	long long int localIndNextDiag = globalIndNextDiag % qureg.numAmpsPerChunk;

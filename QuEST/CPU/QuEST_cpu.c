@@ -63,7 +63,7 @@ void densmatr_initClassicalState (QubitRegister qureg, long long int stateInd)
     }
 	
 	// index of the single density matrix elem to set non-zero
-	long long int densityDim = 1LL << qureg.numDensityQubits;
+	long long int densityDim = 1LL << qureg.numQubitsRepresented;
 	long long int densityInd = (densityDim + 1)*stateInd;
 
 	// give the specified classical state prob 1
@@ -1746,7 +1746,7 @@ REAL densmatr_findProbabilityOfZeroLocal(QubitRegister qureg, const int measureQ
 	
 	// computes first local index containing a diagonal element
 	long long int localNumAmps = qureg.numAmpsPerChunk;
-	long long int densityDim = (1LL << qureg.numDensityQubits);
+	long long int densityDim = (1LL << qureg.numQubitsRepresented);
 	long long int diagSpacing = 1LL + densityDim;
 	long long int maxNumDiagsPerChunk = localNumAmps / diagSpacing;
 	long long int numPrevDiags = (qureg.chunkId * localNumAmps) / diagSpacing;

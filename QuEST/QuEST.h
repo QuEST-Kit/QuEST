@@ -73,8 +73,8 @@ typedef struct QubitRegister
 
 	//! Whether this instance is a density-state representation
 	int isDensityMatrix;
-	// The number of qubits represented in the density matrix, not that suggested by the size of the data-structure
-	int numDensityQubits;
+	//! The number of qubits represented in either the state-vector or density matrix
+	int numQubitsRepresented;
 	
 } QubitRegister;
 
