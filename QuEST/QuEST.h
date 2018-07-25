@@ -56,7 +56,7 @@ typedef struct QubitRegister
 	//! In the non-MPI version, this is the total number of amplitudes
 	long long int numAmpsPerChunk;
 	//! Total number of amplitudes, which are possibly distributed among machines
-	long long int totalNumAmps;
+	long long int numAmpsTotal;
 	//! The position of the chunk of the state vector held by this process in the full state vector
 	int chunkId;
 	//! Number of chunks the state vector is broken up into -- the number of MPI processes used
