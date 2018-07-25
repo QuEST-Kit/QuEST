@@ -13,11 +13,29 @@
 extern "C" {
 # endif
 
-extern const char* errorCodes[];
+typedef enum {
+	E_SUCCESS=0,
+	E_INVALID_NUM_QUBITS,
+	E_INVALID_TARGET_QUBIT,
+	E_INVALID_CONTROL_QUBIT,
+	E_TARGET_IS_CONTROL,
+	E_TARGET_IN_CONTROLS,
+	E_INVALID_NUM_CONTROLS,
+	E_NON_UNITARY_MATRIX,
+	E_NON_UNITARY_COMPACT,
+	E_SYS_TOO_BIG_TO_PRINT,
+	E_COLLAPSE_STATE_ZERO_PROB,
+	E_INVALID_QUBIT_OUTCOME,
+	E_CANNOT_OPEN_FILE,
+	E_SECOND_ARG_MUST_BE_STATEVEC,
+	E_MISMATCHING_REGISTER_DIMENSIONS,
+	E_DEFINED_ONLY_FOR_STATEVECS,
+	E_DEFINED_ONLY_FOR_DENSMATRS
+} ErrorCode;
 
-void exitWithError(int errorCode, const char *func);
+void exitWithError(ErrorCode code, const char *func);
 
-void QuESTAssert(int isValid, int errorCode, const char *func);
+void QuESTAssert(int isValid, ErrorCode code, const char *func);
 
 unsigned long int hashString(char *str);
 

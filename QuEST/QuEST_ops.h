@@ -13,7 +13,7 @@
 # ifdef __cplusplus
 extern "C" {
 # endif
-	
+
 /* operations upon state-vectors */
 
 void densmatr_initStatePlus(QubitRegister targetQureg);
