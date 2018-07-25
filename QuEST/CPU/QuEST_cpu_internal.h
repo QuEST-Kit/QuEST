@@ -12,49 +12,49 @@
 # include "../QuEST_precision.h"
 
 // @TODO
-void mixed_initPureStateDistributed(QubitRegister targetQureg, QubitRegister copyQureg);
+void densmatr_initPureStateDistributed(QubitRegister targetQureg, QubitRegister copyQureg);
 
-void mixed_initPureStateLocal(QubitRegister targetQureg, QubitRegister copyQureg);
+void densmatr_initPureStateLocal(QubitRegister targetQureg, QubitRegister copyQureg);
 
-REAL mixed_findProbabilityOfZeroLocal(QubitRegister qureg, const int measureQubit);
+REAL densmatr_findProbabilityOfZeroLocal(QubitRegister qureg, const int measureQubit);
 
-void pure_compactUnitaryLocal (QubitRegister qureg, const int targetQubit, Complex alpha, Complex beta);
+void statevec_compactUnitaryLocal (QubitRegister qureg, const int targetQubit, Complex alpha, Complex beta);
 
-void pure_compactUnitaryDistributed (QubitRegister qureg, const int targetQubit,
+void statevec_compactUnitaryDistributed (QubitRegister qureg, const int targetQubit,
         Complex rot1, Complex rot2,
         ComplexArray stateVecUp,
         ComplexArray stateVecLo,
         ComplexArray stateVecOut);
 
-void pure_unitaryLocal(QubitRegister qureg, const int targetQubit, ComplexMatrix2 u);
+void statevec_unitaryLocal(QubitRegister qureg, const int targetQubit, ComplexMatrix2 u);
 
-void pure_unitaryDistributed (QubitRegister qureg, const int targetQubit,
+void statevec_unitaryDistributed (QubitRegister qureg, const int targetQubit,
         Complex rot1, Complex rot2,
         ComplexArray stateVecUp,
         ComplexArray stateVecLo,
         ComplexArray stateVecOut);
 
-void pure_controlledCompactUnitaryLocal (QubitRegister qureg, const int controlQubit, const int targetQubit,
+void statevec_controlledCompactUnitaryLocal (QubitRegister qureg, const int controlQubit, const int targetQubit,
         Complex alpha, Complex beta);
 
-void pure_controlledCompactUnitaryDistributed (QubitRegister qureg, const int controlQubit, const int targetQubit,
+void statevec_controlledCompactUnitaryDistributed (QubitRegister qureg, const int controlQubit, const int targetQubit,
         Complex rot1, Complex rot2,
         ComplexArray stateVecUp,
         ComplexArray stateVecLo,
         ComplexArray stateVecOut);
 
-void pure_controlledUnitaryLocal(QubitRegister qureg, const int controlQubit, const int targetQubit, ComplexMatrix2 u);
+void statevec_controlledUnitaryLocal(QubitRegister qureg, const int controlQubit, const int targetQubit, ComplexMatrix2 u);
 
-void pure_controlledUnitaryDistributed (QubitRegister qureg, const int controlQubit, const int targetQubit,
+void statevec_controlledUnitaryDistributed (QubitRegister qureg, const int controlQubit, const int targetQubit,
         Complex rot1, Complex rot2,
         ComplexArray stateVecUp,
         ComplexArray stateVecLo,
         ComplexArray stateVecOut);
 
-void pure_multiControlledUnitaryLocal(QubitRegister qureg, const int targetQubit,
+void statevec_multiControlledUnitaryLocal(QubitRegister qureg, const int targetQubit,
         long long int mask, ComplexMatrix2 u);
 
-void pure_multiControlledUnitaryDistributed (QubitRegister qureg,
+void statevec_multiControlledUnitaryDistributed (QubitRegister qureg,
         const int targetQubit,
         long long int mask,
         Complex rot1, Complex rot2,
@@ -62,47 +62,47 @@ void pure_multiControlledUnitaryDistributed (QubitRegister qureg,
         ComplexArray stateVecLo,
         ComplexArray stateVecOut);
 
-void pure_sigmaXLocal(QubitRegister qureg, const int targetQubit);
+void statevec_sigmaXLocal(QubitRegister qureg, const int targetQubit);
 
-void pure_sigmaXDistributed (QubitRegister qureg, const int targetQubit,
+void statevec_sigmaXDistributed (QubitRegister qureg, const int targetQubit,
         ComplexArray stateVecIn,
         ComplexArray stateVecOut);
 
-void pure_sigmaYLocal(QubitRegister qureg, const int targetQubit, int conjFac);
+void statevec_sigmaYLocal(QubitRegister qureg, const int targetQubit, int conjFac);
 
-void pure_sigmaYDistributed(QubitRegister qureg, const int targetQubit,
+void statevec_sigmaYDistributed(QubitRegister qureg, const int targetQubit,
         ComplexArray stateVecIn,
         ComplexArray stateVecOut,
         int updateUpper, int conjFac);
 
-void pure_hadamardLocal (QubitRegister qureg, const int targetQubit);
+void statevec_hadamardLocal (QubitRegister qureg, const int targetQubit);
 
-void pure_controlledSigmaYLocal(QubitRegister qureg, const int controlQubit, const int targetQubit, const int conjFactor);
+void statevec_controlledSigmaYLocal(QubitRegister qureg, const int controlQubit, const int targetQubit, const int conjFactor);
 
-void pure_controlledSigmaYDistributed(QubitRegister qureg, const int controlQubit, const int targetQubit,
+void statevec_controlledSigmaYDistributed(QubitRegister qureg, const int controlQubit, const int targetQubit,
         ComplexArray stateVecIn,
         ComplexArray stateVecOut, const int conjFactor);
 
-void pure_hadamardDistributed (QubitRegister qureg, const int targetQubit,
+void statevec_hadamardDistributed (QubitRegister qureg, const int targetQubit,
         ComplexArray stateVecUp,
         ComplexArray stateVecLo,
         ComplexArray stateVecOut, int updateUpper);
 
-void pure_controlledNotLocal(QubitRegister qureg, const int controlQubit, const int targetQubit);
+void statevec_controlledNotLocal(QubitRegister qureg, const int controlQubit, const int targetQubit);
 
-void pure_controlledNotDistributed (QubitRegister qureg, const int controlQubit, const int targetQubit,
+void statevec_controlledNotDistributed (QubitRegister qureg, const int controlQubit, const int targetQubit,
         ComplexArray stateVecIn,
         ComplexArray stateVecOut);
 
-REAL pure_findProbabilityOfZeroLocal (QubitRegister qureg, const int measureQubit);
+REAL statevec_findProbabilityOfZeroLocal (QubitRegister qureg, const int measureQubit);
 
-REAL pure_findProbabilityOfZeroDistributed (QubitRegister qureg, const int measureQubit);
+REAL statevec_findProbabilityOfZeroDistributed (QubitRegister qureg, const int measureQubit);
 
-void pure_collapseToOutcomeLocal(QubitRegister qureg, int measureQubit, REAL totalProbability, int outcome);
+void statevec_collapseToOutcomeLocal(QubitRegister qureg, int measureQubit, REAL totalProbability, int outcome);
 
-REAL pure_collapseToOutcomeDistributedRenorm (QubitRegister qureg, const int measureQubit, const REAL totalProbability);
+REAL statevec_collapseToOutcomeDistributedRenorm (QubitRegister qureg, const int measureQubit, const REAL totalProbability);
 
-void pure_collapseToOutcomeDistributedSetZero(QubitRegister qureg, const int measureQubit);
+void statevec_collapseToOutcomeDistributedSetZero(QubitRegister qureg, const int measureQubit);
 
 
 

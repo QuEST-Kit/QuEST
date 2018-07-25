@@ -14,15 +14,15 @@
 extern "C" {
 # endif
 
-void mixed_initStatePlus(QubitRegister targetQureg);
+void densmatr_initStatePlus(QubitRegister targetQureg);
 
-void mixed_initClassicalState(QubitRegister qureg, long long int stateInd);
+void densmatr_initClassicalState(QubitRegister qureg, long long int stateInd);
 
-void mixed_initPureState(QubitRegister targetQureg, QubitRegister copyQureg);
+void densmatr_initPureState(QubitRegister targetQureg, QubitRegister copyQureg);
 
-REAL mixed_calcTotalProbability(QubitRegister qureg);
+REAL densmatr_calcTotalProbability(QubitRegister qureg);
 
-REAL mixed_findProbabilityOfOutcome(QubitRegister qureg, const int measureQubit, int outcome);
+REAL densmatr_findProbabilityOfOutcome(QubitRegister qureg, const int measureQubit, int outcome);
 
 
 # ifdef __cplusplus
