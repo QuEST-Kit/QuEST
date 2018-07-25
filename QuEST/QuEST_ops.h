@@ -4,8 +4,8 @@
  * Functions operating upon pure states which are provided by a hardware-specific backend
  */
 
-# ifndef QuEST_OPS_PURE
-# define QuEST_OPS_PURE
+# ifndef QuEST_OPS
+# define QuEST_OPS
 
 # include "QuEST.h"
 # include "QuEST_precision.h"
@@ -13,6 +13,20 @@
 # ifdef __cplusplus
 extern "C" {
 # endif
+	
+/* operations upon state-vectors */
+
+void densmatr_initStatePlus(QubitRegister targetQureg);
+
+void densmatr_initClassicalState(QubitRegister qureg, long long int stateInd);
+
+void densmatr_initPureState(QubitRegister targetQureg, QubitRegister copyQureg);
+
+REAL densmatr_calcTotalProbability(QubitRegister qureg);
+
+REAL densmatr_findProbabilityOfOutcome(QubitRegister qureg, const int measureQubit, int outcome);
+	
+/* operations upon density matrices */
 	
 void statevec_reportStateToScreen(QubitRegister qureg, QuESTEnv env, int reportRank);
 
@@ -126,4 +140,4 @@ int statevec_measureWithStats(QubitRegister qureg, int measureQubit, REAL *state
 }
 # endif
 
-# endif //QuEST_OPS_PURE
+# endif //QuEST_OPS

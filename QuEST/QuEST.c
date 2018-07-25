@@ -17,8 +17,7 @@
 # include "QuEST.h"
 # include "QuEST_internal.h"
 # include "QuEST_precision.h"
-# include "QuEST_ops_pure.h"
-# include "QuEST_ops_mixed.h"
+# include "QuEST_ops.h"
 
 
 // just for debug printing and exiting: can remove later
@@ -47,8 +46,7 @@ void destroyQubitRegister(QubitRegister qureg, QuESTEnv env) {
 }
 
 void initStateZero(QubitRegister qureg) {
-	// valid for both pure and mixed states
-	statevec_initStateZero(qureg); 
+	statevec_initStateZero(qureg); // valid for both statevec and density matrices
 }
 
 void initStatePlus(QubitRegister qureg) {

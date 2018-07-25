@@ -7,7 +7,7 @@
 # include "QuEST.h"
 # include "QuEST_internal.h"
 # include "QuEST_precision.h"
-# include "QuEST_ops_pure.h"
+# include "QuEST_ops.h"
 # include "mt19937ar.h"
 
 # define _BSD_SOURCE
@@ -298,8 +298,6 @@ void statevec_controlledRotateZ(QubitRegister qureg, const int controlQubit, con
     Vector unitAxis = {0, 0, 1};
     statevec_controlledRotateAroundAxis(qureg, controlQubit, targetQubit, angle, unitAxis);
 }
-
-
 
 Complex getConjugateScalar(Complex scalar) {
 	
