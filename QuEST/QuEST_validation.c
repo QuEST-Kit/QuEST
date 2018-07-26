@@ -208,6 +208,9 @@ void validateSecondQuregStateVec(QubitRegister qureg2, const char *caller) {
 	QuESTAssert( ! qureg2.isDensityMatrix, E_SECOND_ARG_MUST_BE_STATEVEC, caller);
 }
 
+void validateFileOpened(int found, const char* caller) {
+	QuESTAssert(found, E_CANNOT_OPEN_FILE, caller);
+}
 
 
 #ifdef __cplusplus

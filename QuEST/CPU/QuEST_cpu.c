@@ -13,9 +13,6 @@
 
 # include "QuEST_cpu_internal.h"
 
-// debug: remove this after all validation is removed
-# include "../QuEST_validation.h"
-
 # include <math.h>  
 # include <stdio.h>
 # include <stdlib.h>
@@ -36,6 +33,19 @@ static int extractBit (const int locationOfBitFromRight, const long long int the
 {
     return (theEncodedNumber & ( 1LL << locationOfBitFromRight )) >> locationOfBitFromRight;
 }
+
+
+
+// @TODO
+void densmatr_initPureStateDistributed(QubitRegister targetQureg, QubitRegister copyQureg) {
+
+
+	printf("densmatr_initPureStateDistributed NOT YET IMPLEMENTED ON CPU");
+
+}
+
+
+
 
 
 void densmatr_initClassicalState (QubitRegister qureg, long long int stateInd)
@@ -156,18 +166,8 @@ void densmatr_initPureStateLocal(QubitRegister targetQureg, QubitRegister copyQu
     }
 }
 
-
-
-
-// @TODO
-void densmatr_initPureStateDistributed(QubitRegister targetQureg, QubitRegister copyQureg) {
-	QuESTAssert(0, 0, __func__);
-}
-
-
 void statevec_createQubitRegister(QubitRegister *qureg, int numQubits, QuESTEnv env)
 {
-    QuESTAssert(numQubits>0, 9, __func__);
     long long int numAmps = 1L << numQubits;
     long long int numAmpsPerRank = numAmps/env.numRanks;
 
@@ -461,7 +461,8 @@ void statevec_initStateDebug (QubitRegister qureg)
     }
 }
 
-void statevec_initStateFromSingleFile(QubitRegister *qureg, char filename[200], QuESTEnv env){
+// returns 1 if successful, else 0
+int statevec_initStateFromSingleFile(QubitRegister *qureg, char filename[200], QuESTEnv env){
     long long int chunkSize, stateVecSize;
     long long int indexInChunk, totalIndex;
 
@@ -477,7 +478,11 @@ void statevec_initStateFromSingleFile(QubitRegister *qureg, char filename[200], 
     for (int rank=0; rank<(qureg->numChunks); rank++){
         if (rank==qureg->chunkId){
             fp = fopen(filename, "r");
-            QuESTAssert(fp!=NULL, 11, __func__);
+			
+			// indicate file open failure
+			if (fp == NULL)
+				return 0;
+			
             indexInChunk = 0; totalIndex = 0;
             while (fgets(line, sizeof(char)*200, fp) != NULL && totalIndex<stateVecSize){
                 if (line[0]!='#'){
@@ -502,6 +507,9 @@ void statevec_initStateFromSingleFile(QubitRegister *qureg, char filename[200], 
         }
         syncQuESTEnv(env);
     }
+	
+	// indicate success
+	return 1;
 }
 
 int statevec_compareStates(QubitRegister mq1, QubitRegister mq2, REAL precision){

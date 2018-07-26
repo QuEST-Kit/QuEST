@@ -450,6 +450,7 @@ void statevec_initStateOfSingleQubit(QubitRegister *qureg, int qubitId, int outc
     statevec_initStateOfSingleQubitKernel<<<CUDABlocks, threadsPerCUDABlock>>>(qureg->numAmpsPerChunk, qureg->deviceStateVec.real, qureg->deviceStateVec.imag, qubitId, outcome);
 }
 
+// returns 1 if successful, else 0
 void statevec_initStateFromSingleFile(QubitRegister *qureg, char filename[200], QuESTEnv env){
     long long int chunkSize, stateVecSize;
     long long int indexInChunk, totalIndex;
@@ -464,6 +465,9 @@ void statevec_initStateFromSingleFile(QubitRegister *qureg, char filename[200], 
     char line[200];
 
     fp = fopen(filename, "r");
+	if (fp == NULL)
+		return 0;
+	
     indexInChunk = 0; totalIndex = 0;
     while (fgets(line, sizeof(char)*200, fp) != NULL && totalIndex<stateVecSize){
         if (line[0]!='#'){
@@ -485,8 +489,10 @@ void statevec_initStateFromSingleFile(QubitRegister *qureg, char filename[200], 
         }
     }
     fclose(fp);
-
     copyStateToGPU(*qureg);
+	
+	// indicate success
+	return 1;
 }
 
 int statevec_compareStates(QubitRegister mq1, QubitRegister mq2, REAL precision){

@@ -37,7 +37,7 @@ void statevec_reportStateToScreen(QubitRegister qureg, QuESTEnv env, int reportR
 
 int statevec_compareStates(QubitRegister mq1, QubitRegister mq2, REAL precision);
 
-void statevec_initStateFromSingleFile(QubitRegister *qureg, char filename[200], QuESTEnv env);
+int statevec_initStateFromSingleFile(QubitRegister *qureg, char filename[200], QuESTEnv env);
 
 void statevec_initStateOfSingleQubit(QubitRegister *qureg, int qubitId, int outcome);
 

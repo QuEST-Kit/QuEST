@@ -467,7 +467,17 @@ void initStateDebug(QubitRegister qureg) {
 
 // @TODO
 void initStateFromSingleFile(QubitRegister *qureg, char filename[200], QuESTEnv env) {
-	statevec_initStateFromSingleFile(qureg, filename, env);
+	
+	int success = 0;
+	
+	// @TODO allow density matrix loading from file
+	if (qureg->isDensityMatrix)
+		validateStateVecQureg(*qureg, __func__);
+	
+	else
+		success = statevec_initStateFromSingleFile(qureg, filename, env);
+	
+	validateFileOpened(success, __func__);
 }
 
 // @TODO

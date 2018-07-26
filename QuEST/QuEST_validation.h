@@ -43,6 +43,8 @@ void validateMatchingQuregDims(QubitRegister qureg1, QubitRegister qureg2, const
 
 void validateSecondQuregStateVec(QubitRegister qureg2, const char *caller);
 
+void validateFileOpened(int opened, const char* caller);
+
 # ifdef __cplusplus
 }
 # endif
