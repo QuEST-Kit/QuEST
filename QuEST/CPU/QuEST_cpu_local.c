@@ -12,9 +12,6 @@
 
 # include "QuEST_cpu_internal.h"
 
-// debug: remove this after all validation is removed
-# include "../QuEST_validation.h"
-
 # include <stdlib.h>
 # include <stdio.h>
 # include <math.h>

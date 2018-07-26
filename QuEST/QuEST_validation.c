@@ -59,30 +59,6 @@ static const char* errorMessages[] = {
 	[E_DEFINED_ONLY_FOR_DENSMATRS] = "Operation valid only for density matrices."
 };
 
-/*
- OLD CODES: MIGHT BE NEEDED IN REFACTORING OLD VALIDATION
-
-const char* errorCodes[] = {
-    "Success",                                              // 0
-    "Invalid target qubit. Note qubits are zero indexed.",  // 1
-    "Invalid control qubit. Note qubits are zero indexed.", // 2 
-    "Control qubit cannot equal target qubit.",             // 3
-    "Invalid number of control qubits",                     // 4
-    "Invalid unitary matrix.",                              // 5
-    "as" // wot, this is actually compact non-initary       // 6
-    "Invalid system size. Cannot print output for systems greater than 5 qubits.", // 7
-    "Can't collapse to state with zero probability.", 		// 8
-    "Invalid number of qubits.", 							// 9
-    "Invalid measurement outcome -- must be either 0 or 1.",// 10
-    "Could not open file.",									// 11
-	"Second argument must be a pure state, not a density matrix.", // 12
-	"Dimensions of the qubit registers do not match.", 		// 13
-	"This operation is only defined for density matrices.",	// 14
-	"This operation is only defined for two pure states.",	// 15
-	"An non-unitary internal operation (phaseShift) occured.", //16
-};
-*/
-
 void exitWithError(ErrorCode code, const char* func){
     printf("!!!\n");
     printf("QuEST Error in function %s: %s\n", func, errorMessages[code]);

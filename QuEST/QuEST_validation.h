@@ -1,7 +1,7 @@
 // Distributed under MIT licence. See https://github.com/aniabrown/QuEST_GPU/blob/master/LICENCE.txt for details
 
 /** @file
- * Provides defined in QuEST_validation.c which are used by QuEST.c
+ * Provides validation defined in QuEST_validation.c which is used exclusively by QuEST.c
  */
  
 # ifndef QuEST_VALIDATION
