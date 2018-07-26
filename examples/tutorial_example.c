@@ -39,7 +39,7 @@ int main (int narg, char *varg[]) {
     controlledNot(qubits, 0, 1);
     rotateY(qubits, 2, .1);
 
-    multiControlledPhaseGate(qubits, (int []){0, 1, 2}, 3);
+    multiControlledPhaseFlip(qubits, (int []){0, 1, 2}, 3);
 
     ComplexMatrix2 u;
     u.r0c0 = (Complex) {.real=.5, .imag= .5};

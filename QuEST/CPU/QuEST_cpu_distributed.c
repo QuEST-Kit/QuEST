@@ -25,6 +25,95 @@
 # include <omp.h>
 # endif
 
+
+
+
+
+// @TODO
+void densmatr_initPureState(QubitRegister targetQureg, QubitRegister copyQureg) {
+
+	printf("densmatr_initPureState NOT YET IMPLEMENTED IN distributed CPU!\n");
+}
+
+// @TODO
+void densmatr_collapseToKnownProbOutcome(QubitRegister qureg, const int measureQubit, int outcome, REAL totalStateProb) {
+	
+	printf("densmatr_collapseToKnownProbOutcome NOT YET IMPLEMENTED IN distributed CPU!\n");
+	
+}
+
+
+
+
+
+
+REAL densmatr_calcTotalProbability(QubitRegister qureg) {
+	
+	// computes the trace by summing every element ("diag") with global index (2^n + 1)i for i in [0, 2^n-1]
+	
+	// computes first local index containing a diagonal element
+	long long int diagSpacing = 1LL + (1LL << qureg.numQubitsRepresented);
+	long long int numPrevDiags = (qureg.chunkId * qureg.numAmpsPerChunk) / diagSpacing;
+	long long int globalIndNextDiag = diagSpacing * numPrevDiags;
+	long long int localIndNextDiag = globalIndNextDiag % qureg.numAmpsPerChunk;
+	long long int index;
+	
+	REAL rankTotal = 0;
+	REAL y, t, c;
+	c = 0;
+	
+	// iterates every local diagonal
+	for (index=localIndNextDiag; index < qureg.numAmpsPerChunk; index += diagSpacing) {
+		
+		// Kahan summation - brackets are important
+		y = qureg.stateVec.real[index] - c;
+		t = rankTotal + y;
+		c = ( t - rankTotal ) - y;
+		rankTotal = t;
+	}
+	
+	// combine each node's sum of diagonals
+	REAL globalTotal;
+	if (qureg.numChunks > 1)
+		MPI_Allreduce(&rankTotal, &globalTotal, 1, MPI_QuEST_REAL, MPI_SUM, MPI_COMM_WORLD);
+	else
+		globalTotal = rankTotal;
+	
+	return globalTotal;
+}
+
+REAL statevec_calcTotalProbability(QubitRegister qureg){
+    // Implemented using Kahan summation for greater accuracy at a slight floating
+    //   point operation overhead. For more details see https://en.wikipedia.org/wiki/Kahan_summation_algorithm
+    REAL pTotal=0; 
+    REAL y, t, c;
+    REAL allRankTotals=0;
+    long long int index;
+    long long int numAmpsPerRank = qureg.numAmpsPerChunk;
+    c = 0.0;
+    for (index=0; index<numAmpsPerRank; index++){ 
+        // Perform pTotal+=qureg.stateVec.real[index]*qureg.stateVec.real[index]; by Kahan
+        y = qureg.stateVec.real[index]*qureg.stateVec.real[index] - c;
+        t = pTotal + y;
+        // Don't change the bracketing on the following line
+        c = ( t - pTotal ) - y;
+        pTotal = t;
+        // Perform pTotal+=qureg.stateVec.imag[index]*qureg.stateVec.imag[index]; by Kahan
+        y = qureg.stateVec.imag[index]*qureg.stateVec.imag[index] - c;
+        t = pTotal + y;
+        // Don't change the bracketing on the following line
+        c = ( t - pTotal ) - y;
+        pTotal = t;
+    } 
+    if (qureg.numChunks>1)
+		MPI_Allreduce(&pTotal, &allRankTotals, 1, MPI_QuEST_REAL, MPI_SUM, MPI_COMM_WORLD);
+    else 
+		allRankTotals=pTotal;
+
+    return allRankTotals;
+}
+
+
 static int isChunkToSkipInFindPZero(int chunkId, long long int chunkSize, int measureQubit);
 static int chunkIsUpper(int chunkId, long long int chunkSize, int targetQubit);
 static void getRotAngle(int chunkIsUpper, Complex *rot1, Complex *rot2, Complex alpha, Complex beta);
@@ -91,7 +180,7 @@ int getChunkIdFromIndex(QubitRegister qureg, long long int index){
     return index/qureg.numAmpsPerChunk; // this is numAmpsPerChunk
 }
 
-REAL pure_getRealAmpEl(QubitRegister qureg, long long int index){
+REAL statevec_getRealAmpEl(QubitRegister qureg, long long int index){
     int chunkId = getChunkIdFromIndex(qureg, index);
     REAL el; 
     if (qureg.chunkId==chunkId){
@@ -101,7 +190,7 @@ REAL pure_getRealAmpEl(QubitRegister qureg, long long int index){
     return el; 
 } 
 
-REAL pure_getImagAmpEl(QubitRegister qureg, long long int index){
+REAL statevec_getImagAmpEl(QubitRegister qureg, long long int index){
     int chunkId = getChunkIdFromIndex(qureg, index);
     REAL el; 
     if (qureg.chunkId==chunkId){
@@ -109,35 +198,6 @@ REAL pure_getImagAmpEl(QubitRegister qureg, long long int index){
     }
     MPI_Bcast(&el, 1, MPI_QuEST_REAL, chunkId, MPI_COMM_WORLD);
     return el; 
-}
-
-REAL pure_calcTotalProbability(QubitRegister qureg){
-    // Implemented using Kahan summation for greater accuracy at a slight floating
-    //   point operation overhead. For more details see https://en.wikipedia.org/wiki/Kahan_summation_algorithm
-    REAL pTotal=0; 
-    REAL y, t, c;
-    REAL allRankTotals=0;
-    long long int index;
-    long long int numAmpsPerRank = qureg.numAmpsPerChunk;
-    c = 0.0;
-    for (index=0; index<numAmpsPerRank; index++){ 
-        // Perform pTotal+=qureg.stateVec.real[index]*qureg.stateVec.real[index]; by Kahan
-        y = qureg.stateVec.real[index]*qureg.stateVec.real[index] - c;
-        t = pTotal + y;
-        // Don't change the bracketing on the following line
-        c = ( t - pTotal ) - y;
-        pTotal = t;
-        // Perform pTotal+=qureg.stateVec.imag[index]*qureg.stateVec.imag[index]; by Kahan
-        y = qureg.stateVec.imag[index]*qureg.stateVec.imag[index] - c;
-        t = pTotal + y;
-        // Don't change the bracketing on the following line
-        c = ( t - pTotal ) - y;
-        pTotal = t;
-    } 
-    if (qureg.numChunks>1) MPI_Allreduce(&pTotal, &allRankTotals, 1, MPI_QuEST_REAL, MPI_SUM, MPI_COMM_WORLD);
-    else allRankTotals=pTotal;
-
-    return allRankTotals;
 }
 
 /** Returns whether a given chunk in position chunkId is in the upper or lower half of
@@ -271,11 +331,8 @@ void exchangeStateVectors(QubitRegister qureg, int pairRank){
     }
 }
 
-void pure_compactUnitary(QubitRegister qureg, const int targetQubit, Complex alpha, Complex beta)
+void statevec_compactUnitary(QubitRegister qureg, const int targetQubit, Complex alpha, Complex beta)
 {
-    QuESTAssert(targetQubit >= 0 && targetQubit < qureg.numQubits, 1, __func__);
-    QuESTAssert(validateAlphaBeta(alpha, beta), 6, __func__);
-
     // flag to require memory exchange. 1: an entire block fits on one rank, 0: at most half a block fits on one rank
     int useLocalDataOnly = halfMatrixBlockFitsInChunk(qureg.numAmpsPerChunk, targetQubit);
     Complex rot1, rot2;
@@ -286,7 +343,7 @@ void pure_compactUnitary(QubitRegister qureg, const int targetQubit, Complex alp
 
     if (useLocalDataOnly){
         // all values required to update state vector lie in this rank
-        compactUnitaryLocal(qureg, targetQubit, alpha, beta);
+        statevec_compactUnitaryLocal(qureg, targetQubit, alpha, beta);
     } else {
         // need to get corresponding chunk of state vector from other rank
         rankIsUpper = chunkIsUpper(qureg.chunkId, qureg.numAmpsPerChunk, targetQubit);
@@ -298,12 +355,12 @@ void pure_compactUnitary(QubitRegister qureg, const int targetQubit, Complex alp
         // this rank's values are either in the upper of lower half of the block. 
         // send values to compactUnitaryDistributed in the correct order
         if (rankIsUpper){
-            compactUnitaryDistributed(qureg,targetQubit,rot1,rot2,
+            statevec_compactUnitaryDistributed(qureg,targetQubit,rot1,rot2,
                     qureg.stateVec, //upper
                     qureg.pairStateVec, //lower
                     qureg.stateVec); //output
         } else {
-            compactUnitaryDistributed(qureg,targetQubit,rot1,rot2,
+            statevec_compactUnitaryDistributed(qureg,targetQubit,rot1,rot2,
                     qureg.pairStateVec, //upper
                     qureg.stateVec, //lower
                     qureg.stateVec); //output
@@ -311,11 +368,8 @@ void pure_compactUnitary(QubitRegister qureg, const int targetQubit, Complex alp
     }
 }
 
-void pure_unitary(QubitRegister qureg, const int targetQubit, ComplexMatrix2 u)
+void statevec_unitary(QubitRegister qureg, const int targetQubit, ComplexMatrix2 u)
 {
-    QuESTAssert(targetQubit >= 0 && targetQubit < qureg.numQubits, 1, __func__);
-    QuESTAssert(validateMatrixIsUnitary(u), 5, __func__);
-
     // flag to require memory exchange. 1: an entire block fits on one rank, 0: at most half a block fits on one rank
     int useLocalDataOnly = halfMatrixBlockFitsInChunk(qureg.numAmpsPerChunk, targetQubit);
     Complex rot1, rot2;
@@ -326,7 +380,7 @@ void pure_unitary(QubitRegister qureg, const int targetQubit, ComplexMatrix2 u)
 
     if (useLocalDataOnly){
         // all values required to update state vector lie in this rank
-        unitaryLocal(qureg, targetQubit, u);
+        statevec_unitaryLocal(qureg, targetQubit, u);
     } else {
         // need to get corresponding chunk of state vector from other rank
         rankIsUpper = chunkIsUpper(qureg.chunkId, qureg.numAmpsPerChunk, targetQubit);
@@ -338,12 +392,12 @@ void pure_unitary(QubitRegister qureg, const int targetQubit, ComplexMatrix2 u)
         // this rank's values are either in the upper of lower half of the block. 
         // send values to compactUnitaryDistributed in the correct order
         if (rankIsUpper){
-            unitaryDistributed(qureg,targetQubit,rot1,rot2,
+            statevec_unitaryDistributed(qureg,targetQubit,rot1,rot2,
                     qureg.stateVec, //upper
                     qureg.pairStateVec, //lower
                     qureg.stateVec); //output
         } else {
-            unitaryDistributed(qureg,targetQubit,rot1,rot2,
+            statevec_unitaryDistributed(qureg,targetQubit,rot1,rot2,
                     qureg.pairStateVec, //upper
                     qureg.stateVec, //lower
                     qureg.stateVec); //output
@@ -353,13 +407,8 @@ void pure_unitary(QubitRegister qureg, const int targetQubit, ComplexMatrix2 u)
 
 }
 
-void pure_controlledCompactUnitary(QubitRegister qureg, const int controlQubit, const int targetQubit, Complex alpha, Complex beta)
+void statevec_controlledCompactUnitary(QubitRegister qureg, const int controlQubit, const int targetQubit, Complex alpha, Complex beta)
 {
-    QuESTAssert(targetQubit >= 0 && targetQubit < qureg.numQubits, 1, __func__);
-    QuESTAssert(controlQubit >= 0 && controlQubit < qureg.numQubits, 2, __func__);
-    QuESTAssert(controlQubit != targetQubit, 3, __func__);
-    QuESTAssert(validateAlphaBeta(alpha, beta), 6, __func__);
-
     // flag to require memory exchange. 1: an entire block fits on one rank, 0: at most half a block fits on one rank
     int useLocalDataOnly = halfMatrixBlockFitsInChunk(qureg.numAmpsPerChunk, targetQubit);
     Complex rot1, rot2;
@@ -370,7 +419,7 @@ void pure_controlledCompactUnitary(QubitRegister qureg, const int controlQubit, 
 
     if (useLocalDataOnly){
         // all values required to update state vector lie in this rank
-        controlledCompactUnitaryLocal(qureg, controlQubit, targetQubit, alpha, beta);
+        statevec_controlledCompactUnitaryLocal(qureg, controlQubit, targetQubit, alpha, beta);
     } else {
         // need to get corresponding chunk of state vector from other rank
         rankIsUpper = chunkIsUpper(qureg.chunkId, qureg.numAmpsPerChunk, targetQubit);
@@ -383,12 +432,12 @@ void pure_controlledCompactUnitary(QubitRegister qureg, const int controlQubit, 
         // this rank's values are either in the upper of lower half of the block. send values to controlledCompactUnitaryDistributed
         // in the correct order
         if (rankIsUpper){
-            controlledCompactUnitaryDistributed(qureg,controlQubit,targetQubit,rot1,rot2,
+            statevec_controlledCompactUnitaryDistributed(qureg,controlQubit,targetQubit,rot1,rot2,
                     qureg.stateVec, //upper
                     qureg.pairStateVec, //lower
                     qureg.stateVec); //output
         } else {
-            controlledCompactUnitaryDistributed(qureg,controlQubit,targetQubit,rot1,rot2,
+            statevec_controlledCompactUnitaryDistributed(qureg,controlQubit,targetQubit,rot1,rot2,
                     qureg.pairStateVec, //upper
                     qureg.stateVec, //lower
                     qureg.stateVec); //output
@@ -396,14 +445,9 @@ void pure_controlledCompactUnitary(QubitRegister qureg, const int controlQubit, 
     }
 }
 
-void pure_controlledUnitary(QubitRegister qureg, const int controlQubit, const int targetQubit, 
+void statevec_controlledUnitary(QubitRegister qureg, const int controlQubit, const int targetQubit, 
         ComplexMatrix2 u)
 {
-    QuESTAssert(targetQubit >= 0 && targetQubit < qureg.numQubits, 1, __func__);
-    QuESTAssert(controlQubit >= 0 && controlQubit < qureg.numQubits, 2, __func__);
-    QuESTAssert(controlQubit != targetQubit, 3, __func__);
-    QuESTAssert(validateMatrixIsUnitary(u), 5, __func__);
-
     // flag to require memory exchange. 1: an entire block fits on one rank, 0: at most half a block fits on one rank
     int useLocalDataOnly = halfMatrixBlockFitsInChunk(qureg.numAmpsPerChunk, targetQubit);
     Complex rot1, rot2;
@@ -414,7 +458,7 @@ void pure_controlledUnitary(QubitRegister qureg, const int controlQubit, const i
 
     if (useLocalDataOnly){
         // all values required to update state vector lie in this rank
-        controlledUnitaryLocal(qureg, controlQubit, targetQubit, u);
+        statevec_controlledUnitaryLocal(qureg, controlQubit, targetQubit, u);
     } else {
         // need to get corresponding chunk of state vector from other rank
         rankIsUpper = chunkIsUpper(qureg.chunkId, qureg.numAmpsPerChunk, targetQubit);
@@ -427,12 +471,12 @@ void pure_controlledUnitary(QubitRegister qureg, const int controlQubit, const i
         // this rank's values are either in the upper of lower half of the block. send values to controlledUnitaryDistributed
         // in the correct order
         if (rankIsUpper){
-            controlledUnitaryDistributed(qureg,controlQubit,targetQubit,rot1,rot2,
+            statevec_controlledUnitaryDistributed(qureg,controlQubit,targetQubit,rot1,rot2,
                     qureg.stateVec, //upper
                     qureg.pairStateVec, //lower
                     qureg.stateVec); //output
         } else {
-            controlledUnitaryDistributed(qureg,controlQubit,targetQubit,rot1,rot2,
+            statevec_controlledUnitaryDistributed(qureg,controlQubit,targetQubit,rot1,rot2,
                     qureg.pairStateVec, //upper
                     qureg.stateVec, //lower
                     qureg.stateVec); //output
@@ -440,16 +484,10 @@ void pure_controlledUnitary(QubitRegister qureg, const int controlQubit, const i
     }
 }
 
-void pure_multiControlledUnitary(QubitRegister qureg, int* controlQubits, const int numControlQubits, const int targetQubit, ComplexMatrix2 u)
+void statevec_multiControlledUnitary(QubitRegister qureg, int* controlQubits, const int numControlQubits, const int targetQubit, ComplexMatrix2 u)
 {
-    QuESTAssert(targetQubit >= 0 && targetQubit < qureg.numQubits, 1, __func__);
-    QuESTAssert(numControlQubits > 0 && numControlQubits <= qureg.numQubits, 4, __func__);
-    QuESTAssert(validateMatrixIsUnitary(u), 5, __func__);
-
     long long int mask=0;
     for (int i=0; i<numControlQubits; i++) mask = mask | (1LL<<controlQubits[i]);
-    QuESTAssert(mask >=0 && mask <= (1LL<<qureg.numQubits)-1, 2, __func__);
-    QuESTAssert((mask & (1LL<<targetQubit)) != (1LL<<targetQubit), 3, __func__);
 
     // flag to require memory exchange. 1: an entire block fits on one rank, 0: at most half a block fits on one rank
     int useLocalDataOnly = halfMatrixBlockFitsInChunk(qureg.numAmpsPerChunk, targetQubit);
@@ -461,7 +499,7 @@ void pure_multiControlledUnitary(QubitRegister qureg, int* controlQubits, const 
 
     if (useLocalDataOnly){
         // all values required to update state vector lie in this rank
-        multiControlledUnitaryLocal(qureg, targetQubit, mask, u);
+        statevec_multiControlledUnitaryLocal(qureg, targetQubit, mask, u);
     } else {
         // need to get corresponding chunk of state vector from other rank
         rankIsUpper = chunkIsUpper(qureg.chunkId, qureg.numAmpsPerChunk, targetQubit);
@@ -474,22 +512,20 @@ void pure_multiControlledUnitary(QubitRegister qureg, int* controlQubits, const 
         // this rank's values are either in the upper of lower half of the block. send values to multiControlledUnitaryDistributed
         // in the correct order
         if (rankIsUpper){
-            multiControlledUnitaryDistributed(qureg,targetQubit,mask,rot1,rot2,
+            statevec_multiControlledUnitaryDistributed(qureg,targetQubit,mask,rot1,rot2,
                     qureg.stateVec, //upper
                     qureg.pairStateVec, //lower
                     qureg.stateVec); //output
         } else {
-            multiControlledUnitaryDistributed(qureg,targetQubit,mask,rot1,rot2,
+            statevec_multiControlledUnitaryDistributed(qureg,targetQubit,mask,rot1,rot2,
                     qureg.pairStateVec, //upper
                     qureg.stateVec, //lower
                     qureg.stateVec); //output
         }
     }
 }
-void pure_sigmaX(QubitRegister qureg, const int targetQubit)
+void statevec_sigmaX(QubitRegister qureg, const int targetQubit)
 {
-    QuESTAssert(targetQubit >= 0 && targetQubit < qureg.numQubits, 1, __func__);
-
     // flag to require memory exchange. 1: an entire block fits on one rank, 0: at most half a block fits on one rank
     int useLocalDataOnly = halfMatrixBlockFitsInChunk(qureg.numAmpsPerChunk, targetQubit);
 
@@ -499,7 +535,7 @@ void pure_sigmaX(QubitRegister qureg, const int targetQubit)
 
     if (useLocalDataOnly){
         // all values required to update state vector lie in this rank
-        sigmaXLocal(qureg, targetQubit);
+        statevec_sigmaXLocal(qureg, targetQubit);
     } else {
         // need to get corresponding chunk of state vector from other rank
         rankIsUpper = chunkIsUpper(qureg.chunkId, qureg.numAmpsPerChunk, targetQubit);
@@ -509,102 +545,159 @@ void pure_sigmaX(QubitRegister qureg, const int targetQubit)
         exchangeStateVectors(qureg, pairRank);
         // this rank's values are either in the upper of lower half of the block. sigmaX just replaces
         // this rank's values with pair values
-        sigmaXDistributed(qureg, targetQubit,
+        statevec_sigmaXDistributed(qureg, targetQubit,
                 qureg.pairStateVec, // in
                 qureg.stateVec); // out
     }
 }
 
-void pure_controlledNot(QubitRegister qureg, const int controlQubit, const int targetQubit)
+void statevec_controlledNot(QubitRegister qureg, const int controlQubit, const int targetQubit)
 {
-    QuESTAssert(targetQubit >= 0 && targetQubit < qureg.numQubits, 1, __func__);
-    QuESTAssert(controlQubit >= 0 && controlQubit < qureg.numQubits, 2, __func__);
-    QuESTAssert(controlQubit != targetQubit, 3, __func__);
-
     // flag to require memory exchange. 1: an entire block fits on one rank, 0: at most half a block fits on one rank
     int useLocalDataOnly = halfMatrixBlockFitsInChunk(qureg.numAmpsPerChunk, targetQubit);
-
-    // rank's chunk is in upper half of block 
-    int rankIsUpper;
-    int pairRank; // rank of corresponding chunk
+    int rankIsUpper; 	// rank's chunk is in upper half of block 
+    int pairRank; 		// rank of corresponding chunk
 
     if (useLocalDataOnly){
         // all values required to update state vector lie in this rank
-        controlledNotLocal(qureg, controlQubit, targetQubit);
+        statevec_controlledNotLocal(qureg, controlQubit, targetQubit);
     } else {
         // need to get corresponding chunk of state vector from other rank
         rankIsUpper = chunkIsUpper(qureg.chunkId, qureg.numAmpsPerChunk, targetQubit);
         pairRank = getChunkPairId(rankIsUpper, qureg.chunkId, qureg.numAmpsPerChunk, targetQubit);
-        //printf("%d rank has pair rank: %d\n", qureg.rank, pairRank);
         // get corresponding values from my pair
         exchangeStateVectors(qureg, pairRank);
-        // this rank's values are either in the upper of lower half of the block. send values to controlledNot
-        // in the correct order
+        // this rank's values are either in the upper of lower half of the block
         if (rankIsUpper){
-            controlledNotDistributed(qureg,controlQubit,targetQubit,
+            statevec_controlledNotDistributed(qureg,controlQubit,targetQubit,
                     qureg.pairStateVec, //in
                     qureg.stateVec); //out
         } else {
-            controlledNotDistributed(qureg,controlQubit,targetQubit,
+            statevec_controlledNotDistributed(qureg,controlQubit,targetQubit,
                     qureg.pairStateVec, //in
                     qureg.stateVec); //out
         }
     }
 }
 
-void pure_sigmaY(QubitRegister qureg, const int targetQubit)
-{
-    QuESTAssert(targetQubit >= 0 && targetQubit < qureg.numQubits, 1, __func__);
+void statevec_sigmaY(QubitRegister qureg, const int targetQubit)
+{	
+	int conjFac = 1;
 
     // flag to require memory exchange. 1: an entire block fits on one rank, 0: at most half a block fits on one rank
     int useLocalDataOnly = halfMatrixBlockFitsInChunk(qureg.numAmpsPerChunk, targetQubit);
-
-    // rank's chunk is in upper half of block 
-    int rankIsUpper;
-    int pairRank; // rank of corresponding chunk
+    int rankIsUpper;	// rank's chunk is in upper half of block 
+    int pairRank; 		// rank of corresponding chunk
 
     if (useLocalDataOnly){
-        // all values required to update state vector lie in this rank
-        sigmaYLocal(qureg, targetQubit);
+        statevec_sigmaYLocal(qureg, targetQubit, conjFac);
     } else {
-        //! fix -- put duplicate code (sigmaX, sigmaY) in seperate function
         // need to get corresponding chunk of state vector from other rank
         rankIsUpper = chunkIsUpper(qureg.chunkId, qureg.numAmpsPerChunk, targetQubit);
         pairRank = getChunkPairId(rankIsUpper, qureg.chunkId, qureg.numAmpsPerChunk, targetQubit);
-        //printf("%d rank has pair rank: %d\n", qureg.rank, pairRank);
         // get corresponding values from my pair
         exchangeStateVectors(qureg, pairRank);
-        // this rank's values are either in the upper of lower half of the block. sigmaX just replaces
-        // this rank's values with pair values
-        sigmaYDistributed(qureg,targetQubit,
+        // this rank's values are either in the upper of lower half of the block
+        statevec_sigmaYDistributed(qureg,targetQubit,
                 qureg.pairStateVec, // in
                 qureg.stateVec, // out
-                rankIsUpper);
+                rankIsUpper, conjFac);
     }
 }
 
-void pure_phaseGate(QubitRegister qureg, const int targetQubit, enum phaseGateType type)
-{
-    QuESTAssert(targetQubit >= 0 && targetQubit < qureg.numQubits, 1, __func__);
+void statevec_sigmaYConj(QubitRegister qureg, const int targetQubit)
+{	
+	int conjFac = -1;
 
     // flag to require memory exchange. 1: an entire block fits on one rank, 0: at most half a block fits on one rank
     int useLocalDataOnly = halfMatrixBlockFitsInChunk(qureg.numAmpsPerChunk, targetQubit);
-
-    // rank's chunk is in upper half of block 
-    int rankIsUpper;
+    int rankIsUpper;	// rank's chunk is in upper half of block 
+    int pairRank; 		// rank of corresponding chunk
 
     if (useLocalDataOnly){
-        phaseGateLocal(qureg, targetQubit, type);
+        statevec_sigmaYLocal(qureg, targetQubit, conjFac);
     } else {
+        // need to get corresponding chunk of state vector from other rank
         rankIsUpper = chunkIsUpper(qureg.chunkId, qureg.numAmpsPerChunk, targetQubit);
-        if (!rankIsUpper) phaseGateDistributed(qureg, targetQubit, type);
+        pairRank = getChunkPairId(rankIsUpper, qureg.chunkId, qureg.numAmpsPerChunk, targetQubit);
+        // get corresponding values from my pair
+        exchangeStateVectors(qureg, pairRank);
+        // this rank's values are either in the upper of lower half of the block
+        statevec_sigmaYDistributed(qureg,targetQubit,
+                qureg.pairStateVec, // in
+                qureg.stateVec, // out
+                rankIsUpper, conjFac);
     }
 }
 
-void pure_hadamard(QubitRegister qureg, const int targetQubit)
+void statevec_controlledSigmaY(QubitRegister qureg, const int controlQubit, const int targetQubit)
 {
-    QuESTAssert(targetQubit >= 0 && targetQubit < qureg.numQubits, 1, __func__);
+	int conjFac = 1;
 
+    // flag to require memory exchange. 1: an entire block fits on one rank, 0: at most half a block fits on one rank
+    int useLocalDataOnly = halfMatrixBlockFitsInChunk(qureg.numAmpsPerChunk, targetQubit);
+    int rankIsUpper; 	// rank's chunk is in upper half of block 
+    int pairRank; 		// rank of corresponding chunk
+
+    if (useLocalDataOnly){
+        // all values required to update state vector lie in this rank
+        statevec_controlledSigmaYLocal(qureg, controlQubit, targetQubit, conjFac);
+    } else {
+        // need to get corresponding chunk of state vector from other rank
+        rankIsUpper = chunkIsUpper(qureg.chunkId, qureg.numAmpsPerChunk, targetQubit);
+        pairRank = getChunkPairId(rankIsUpper, qureg.chunkId, qureg.numAmpsPerChunk, targetQubit);
+        // get corresponding values from my pair
+        exchangeStateVectors(qureg, pairRank);
+        // this rank's values are either in the upper of lower half of the block
+        if (rankIsUpper){
+            statevec_controlledSigmaYDistributed(qureg,controlQubit,targetQubit,
+                    qureg.pairStateVec, //in
+                    qureg.stateVec,
+					conjFac); //out
+        } else {
+            statevec_controlledSigmaYDistributed(qureg,controlQubit,targetQubit,
+                    qureg.pairStateVec, //in
+                    qureg.stateVec,
+					conjFac); //out
+        }
+    }
+}
+
+void statevec_controlledSigmaYConj(QubitRegister qureg, const int controlQubit, const int targetQubit)
+{
+	int conjFac = -1;
+
+    // flag to require memory exchange. 1: an entire block fits on one rank, 0: at most half a block fits on one rank
+    int useLocalDataOnly = halfMatrixBlockFitsInChunk(qureg.numAmpsPerChunk, targetQubit);
+    int rankIsUpper; 	// rank's chunk is in upper half of block 
+    int pairRank; 		// rank of corresponding chunk
+
+    if (useLocalDataOnly){
+        // all values required to update state vector lie in this rank
+        statevec_controlledSigmaYLocal(qureg, controlQubit, targetQubit, conjFac);
+    } else {
+        // need to get corresponding chunk of state vector from other rank
+        rankIsUpper = chunkIsUpper(qureg.chunkId, qureg.numAmpsPerChunk, targetQubit);
+        pairRank = getChunkPairId(rankIsUpper, qureg.chunkId, qureg.numAmpsPerChunk, targetQubit);
+        // get corresponding values from my pair
+        exchangeStateVectors(qureg, pairRank);
+        // this rank's values are either in the upper of lower half of the block
+        if (rankIsUpper){
+            statevec_controlledSigmaYDistributed(qureg,controlQubit,targetQubit,
+                    qureg.pairStateVec, //in
+                    qureg.stateVec,
+					conjFac); //out
+        } else {
+            statevec_controlledSigmaYDistributed(qureg,controlQubit,targetQubit,
+                    qureg.pairStateVec, //in
+                    qureg.stateVec,
+					conjFac); //out
+        }
+    }
+}
+
+void statevec_hadamard(QubitRegister qureg, const int targetQubit)
+{
     // flag to require memory exchange. 1: an entire block fits on one rank, 0: at most half a block fits on one rank
     int useLocalDataOnly = halfMatrixBlockFitsInChunk(qureg.numAmpsPerChunk, targetQubit);
 
@@ -614,7 +707,7 @@ void pure_hadamard(QubitRegister qureg, const int targetQubit)
 
     if (useLocalDataOnly){
         // all values required to update state vector lie in this rank
-        hadamardLocal(qureg, targetQubit);
+        statevec_hadamardLocal(qureg, targetQubit);
     } else {
         // need to get corresponding chunk of state vector from other rank
         rankIsUpper = chunkIsUpper(qureg.chunkId, qureg.numAmpsPerChunk, targetQubit);
@@ -625,12 +718,12 @@ void pure_hadamard(QubitRegister qureg, const int targetQubit)
         // this rank's values are either in the upper of lower half of the block. send values to hadamardDistributed
         // in the correct order
         if (rankIsUpper){
-            hadamardDistributed(qureg,targetQubit,
+            statevec_hadamardDistributed(qureg,targetQubit,
                     qureg.stateVec, //upper
                     qureg.pairStateVec, //lower
                     qureg.stateVec, rankIsUpper); //output
         } else {
-            hadamardDistributed(qureg,targetQubit,
+            statevec_hadamardDistributed(qureg,targetQubit,
                     qureg.pairStateVec, //upper
                     qureg.stateVec, //lower
                     qureg.stateVec, rankIsUpper); //output
@@ -658,17 +751,15 @@ static int isChunkToSkipInFindPZero(int chunkId, long long int chunkSize, int me
     return bitToCheck;
 }
 
-REAL pure_findProbabilityOfOutcome(QubitRegister qureg, const int measureQubit, int outcome)
+REAL statevec_findProbabilityOfOutcome(QubitRegister qureg, const int measureQubit, int outcome)
 {
-    QuESTAssert(measureQubit >= 0 && measureQubit < qureg.numQubits, 2, __func__);
-
     REAL stateProb=0, totalStateProb=0;
     int skipValuesWithinRank = halfMatrixBlockFitsInChunk(qureg.numAmpsPerChunk, measureQubit);
     if (skipValuesWithinRank) {
-        stateProb = findProbabilityOfZeroLocal(qureg, measureQubit);
+        stateProb = statevec_findProbabilityOfZeroLocal(qureg, measureQubit);
     } else {
         if (!isChunkToSkipInFindPZero(qureg.chunkId, qureg.numAmpsPerChunk, measureQubit)){
-            stateProb = findProbabilityOfZeroDistributed(qureg, measureQubit);
+            stateProb = statevec_findProbabilityOfZeroDistributed(qureg, measureQubit);
         } else stateProb = 0;
     }
     MPI_Allreduce(&stateProb, &totalStateProb, 1, MPI_QuEST_REAL, MPI_SUM, MPI_COMM_WORLD);
@@ -676,76 +767,34 @@ REAL pure_findProbabilityOfOutcome(QubitRegister qureg, const int measureQubit, 
     return totalStateProb;
 }
 
+REAL densmatr_findProbabilityOfOutcome(QubitRegister qureg, const int measureQubit, int outcome) {
+	
+	REAL zeroProb = densmatr_findProbabilityOfZeroLocal(qureg, measureQubit);
+	
+	REAL outcomeProb;
+	MPI_Allreduce(&zeroProb, &outcomeProb, 1, MPI_QuEST_REAL, MPI_SUM, MPI_COMM_WORLD);
+	if (outcome == 1)
+		outcomeProb = 1.0 - outcomeProb;
+	
+	return outcomeProb;
+}
 
-REAL pure_collapseToOutcome(QubitRegister qureg, const int measureQubit, int outcome)
+void statevec_collapseToKnownProbOutcome(QubitRegister qureg, const int measureQubit, int outcome, REAL totalStateProb)
 {
-    QuESTAssert(measureQubit >= 0 && measureQubit < qureg.numQubits, 2, __func__);
-    QuESTAssert((outcome==0 || outcome==1), 10, __func__);
-
-    REAL totalStateProb = pure_findProbabilityOfOutcome(qureg, measureQubit, outcome);
-    QuESTAssert(absReal(totalStateProb)>REAL_EPS, 8, __func__);
-
     int skipValuesWithinRank = halfMatrixBlockFitsInChunk(qureg.numAmpsPerChunk, measureQubit);
     if (skipValuesWithinRank) {
-        collapseToOutcomeLocal(qureg, measureQubit, totalStateProb, outcome);
+        statevec_collapseToKnownProbOutcomeLocal(qureg, measureQubit, outcome, totalStateProb);
     } else {
         if (!isChunkToSkipInFindPZero(qureg.chunkId, qureg.numAmpsPerChunk, measureQubit)){
             // chunk has amps for q=0
-            if (outcome==0) collapseToOutcomeDistributedRenorm(qureg, measureQubit, 
+            if (outcome==0) statevec_collapseToKnownProbOutcomeDistributedRenorm(qureg, measureQubit, 
                     totalStateProb);
-            else collapseToOutcomeDistributedSetZero(qureg, measureQubit);
+            else statevec_collapseToOutcomeDistributedSetZero(qureg);
         } else {
             // chunk has amps for q=1
-            if (outcome==1) collapseToOutcomeDistributedRenorm(qureg, measureQubit, 
+            if (outcome==1) statevec_collapseToKnownProbOutcomeDistributedRenorm(qureg, measureQubit, 
                     totalStateProb);
-            else collapseToOutcomeDistributedSetZero(qureg, measureQubit);
+            else statevec_collapseToOutcomeDistributedSetZero(qureg);
         }
     }
-    return totalStateProb;
-}
-
-int pure_measureWithStats(QubitRegister qureg, int measureQubit, REAL *stateProb){
-    QuESTAssert(measureQubit >= 0 && measureQubit < qureg.numQubits, 2, __func__);
-
-    int outcome;
-    // find probability of qubit being in state 1
-    REAL stateProbInternal = pure_findProbabilityOfOutcome(qureg, measureQubit, 1);
-
-    // we can't collapse to a state that has a probability too close to zero
-    if (stateProbInternal<REAL_EPS) outcome=0;
-    else if (1-stateProbInternal<REAL_EPS) outcome=1;
-    else {
-        // ok. both P(0) and P(1) are large enough to resolve
-        // generate random float on [0,1]
-        float randNum = genrand_real1();
-        if (randNum<=stateProbInternal) outcome = 1;
-        else outcome = 0;
-    } 
-    if (outcome==0) stateProbInternal = 1-stateProbInternal;
-
-    int skipValuesWithinRank = halfMatrixBlockFitsInChunk(qureg.numAmpsPerChunk, measureQubit);
-    if (skipValuesWithinRank) {
-        collapseToOutcomeLocal(qureg, measureQubit, stateProbInternal, outcome);
-    } else {
-        if (!isChunkToSkipInFindPZero(qureg.chunkId, qureg.numAmpsPerChunk, measureQubit)){
-            // chunk has amps for q=0
-            if (outcome==0) collapseToOutcomeDistributedRenorm(qureg, measureQubit, 
-                    stateProbInternal);
-            else collapseToOutcomeDistributedSetZero(qureg, measureQubit);
-        } else {
-            // chunk has amps for q=1
-            if (outcome==1) collapseToOutcomeDistributedRenorm(qureg, measureQubit, 
-                    stateProbInternal);
-            else collapseToOutcomeDistributedSetZero(qureg, measureQubit);
-        }
-    }
-
-    *stateProb = stateProbInternal;
-    return outcome;
-}
-
-int pure_measure(QubitRegister qureg, int measureQubit){
-    QuESTAssert(measureQubit >= 0 && measureQubit < qureg.numQubits, 2, __func__);
-    REAL stateProb; 
-    return pure_measureWithStats(qureg, measureQubit, &stateProb); 
 }

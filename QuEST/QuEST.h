@@ -50,11 +50,13 @@ Qubits are zero-based
 */
 typedef struct QubitRegister
 {
-	//! Number of qubits in the state - double the number represented for mixed states
-	int numQubits;
+	//! Number of qubits in the state-vector - this is double the number represented for mixed states
+	int numQubitsInStateVec;
 	//! Number of probability amplitudes held in stateVec by this process
 	//! In the non-MPI version, this is the total number of amplitudes
 	long long int numAmpsPerChunk;
+	//! Total number of amplitudes, which are possibly distributed among machines
+	long long int numAmpsTotal;
 	//! The position of the chunk of the state vector held by this process in the full state vector
 	int chunkId;
 	//! Number of chunks the state vector is broken up into -- the number of MPI processes used
@@ -71,6 +73,8 @@ typedef struct QubitRegister
 
 	//! Whether this instance is a density-state representation
 	int isDensityMatrix;
+	//! The number of qubits represented in either the state-vector or density matrix
+	int numQubitsRepresented;
 	
 } QubitRegister;
 
@@ -86,9 +90,7 @@ typedef struct QuESTEnv
 // Codes for sigmaZ phase gate variations
 enum phaseGateType {SIGMA_Z=0, S_GATE=1, T_GATE=2};
 
-// QuEST library functions whose implementation is independent of environment (local, MPI)
-
-/** Create a QubitRegister object representing a set of qubits.
+/** Create a QubitRegister object representing a set of qubits which will remain in a pure state.
  * Allocate space for state vector of probability amplitudes, including space for temporary values to be copied from
  * one other chunk if running the distributed version. Define properties related to the size of the set of qubits.
  * initStateZero should be called after this to initialise the qubits to the zero state.
@@ -99,6 +101,18 @@ enum phaseGateType {SIGMA_Z=0, S_GATE=1, T_GATE=2};
  * @throws exitWithError if \p numQubits <= 0
  */
 void createQubitRegister(QubitRegister *qureg, int numQubits, QuESTEnv env);
+
+/** Create a QubitRegister for qubits which are represented by a density matrix, and can be in mixed states.
+ * Allocate space for a density matrix of probability amplitudes, including space for temporary values to be copied from
+ * one other chunk if running the distributed version. Define properties related to the size of the set of qubits.
+ * initStateZero should be called after this to initialise the qubits to the zero pure state.
+ *
+ * @param[in,out] qureg a pointer to an object representing the set of qubits
+ * @param[in] numQubits number of qubits in the system
+ * @param[in] env object representing the execution environment (local, multinode etc)
+ * @throws exitWithError if \p numQubits <= 0
+ */
+void createDensityQubitRegister(QubitRegister *qureg, int numQubits, QuESTEnv env);
 
 /** Deallocate a QubitRegister object representing a set of qubits.
  * Free memory allocated to state vector of probability amplitudes, including temporary vector for
@@ -184,7 +198,166 @@ void initStatePlus(QubitRegister qureg);
  */
 void initClassicalState(QubitRegister qureg, long long int stateInd);
 
-/** Apply the multiple-qubit controlled phase gate, also known as the multiple-qubit controlled sigmaZ gate.
+/**
+ * Initialise a set of \f$ N \f$ qubits, which can be pure or mixed, to a given pure state.
+ * If \p qureg is a pure state, this merely makes \p qureg an identical copy of \p pure.
+ * If \p qureg is a density matrix, this makes \p qureg 100% likely to be in the \p pure state.
+ *
+ * @param[in,out] qureg the object representing the set of qubits to be initialised
+ * @param[in] pure the pure state to be copied or to give probability 1 in qureg
+ */
+void initPureState(QubitRegister qureg, QubitRegister pure);
+
+/** Shift the phase between \f$ |0\rangle \f$ and \f$ |1\rangle \f$ of a single qubit by a given angle.
+ * This is equivalent to a rotation Z-axis of the Bloch-sphere up to a global phase factor.
+ * For angle \f$\theta\f$, applies
+ * \f[
+ * \begin{pmatrix}
+ * 0 & 0 \\
+ * 0 & \exp(i \theta)
+ * \end{pmatrix}
+ * \f] 
+ *     
+	\f[
+	\setlength{\fboxrule}{0.01pt}
+	\fbox{
+				\begin{tikzpicture}[scale=.5]
+				\node[draw=none] at (-3.5, 0) {rot};
+
+				\draw (-2,0) -- (-1, 0);
+				\draw (1, 0) -- (2, 0);
+				\draw (-1,-1)--(-1,1)--(1,1)--(1,-1)--cycle;
+				\node[draw=none] at (0, 0) {$R_\theta$};
+				\end{tikzpicture}
+	}
+	\f]
+ * 
+ * @param[in,out] qureg object representing the set of all qubits
+ * @param[in] targetQubit qubit to undergo a phase shift
+ * @param[in] angle amount by which to shift the phase in radians
+ * @throws exitWithError
+ * 		if \p targetQubit is outside [0, \p qureg.numQubits).
+ */
+void phaseShift(QubitRegister qureg, const int targetQubit, REAL angle);
+
+/** Introduce a phase factor \f$ \exp(i \theta) \f$ on state \f$ |11\rangle \f$ of qubits
+ * \p idQubit1 and \p idQubit2.
+ * For angle \f$\theta\f$, this effects the unitary
+ * \f[
+ * \begin{pmatrix}
+ * 1 & & & \\
+ * & 1 & & \\
+ * & & 1 & \\
+ * & & & \exp(i \theta)
+ * \end{pmatrix}
+ * \f] 
+ * on \p idQubit1 and \p idQubit2.
+ *     
+	\f[
+	\setlength{\fboxrule}{0.01pt}
+	\fbox{
+				\begin{tikzpicture}[scale=.5]
+				\node[draw=none] at (-3.5, 2) {qubit1};
+				\node[draw=none] at (-3.5, 0) {qubit2};
+
+				\draw (-2, 2) -- (2, 2);
+				\draw[fill=black] (0, 2) circle (.2);
+				\draw (0, 2) -- (0, 1);
+				
+				\draw (-2,0) -- (-1, 0);
+				\draw (1, 0) -- (2, 0);
+				\draw (-1,-1)--(-1,1)--(1,1)--(1,-1)--cycle;
+				\node[draw=none] at (0, 0) {$R_\theta$};
+				\end{tikzpicture}
+	}
+	\f]
+ * 
+ * @param[in,out] qureg object representing the set of all qubits
+ * @param[in] idQubit1 first qubit in the state to phase shift
+ * @param[in] idQubit2 second qubit in the state to phase shift
+ * @param[in] angle amount by which to shift the phase in radians
+ * @throws exitWithError
+ * 	if \p idQubit1 or \p idQubit2 are outside [0, \p qureg.numQubits), or are equal
+ */
+void controlledPhaseShift(QubitRegister qureg, const int idQubit1, const int idQubit2, REAL angle);
+
+/** Introduce a phase factor \f$ \exp(i \theta) \f$ on state \f$ |1 \dots 1 \rangle \f$
+ * of the passed qubits.
+ *     
+	\f[
+	\setlength{\fboxrule}{0.01pt}
+	\fbox{
+				\begin{tikzpicture}[scale=.5]
+				\node[draw=none] at (-3.5, 3) {controls};
+				\node[draw=none] at (-3.5, 0) {target};
+
+				\node[draw=none] at (0, 6) {$\vdots$};
+				\draw (0, 5) -- (0, 4);
+				
+				\draw (-2, 4) -- (2, 4);
+				\draw[fill=black] (0, 4) circle (.2);
+				\draw (0, 4) -- (0, 2);			
+				
+				\draw (-2, 2) -- (2, 2);
+				\draw[fill=black] (0, 2) circle (.2);
+				\draw (0, 2) -- (0, 1);
+				
+				\draw (-2,0) -- (-1, 0);
+				\draw (1, 0) -- (2, 0);
+				\draw (-1,-1)--(-1,1)--(1,1)--(1,-1)--cycle;
+				\node[draw=none] at (0, 0) {$R_\theta$};
+				\end{tikzpicture}
+	}
+	\f]
+ * 
+ * @param[in,out] qureg object representing the set of all qubits
+ * @param[in] controlQubits array of qubits to phase shift
+ * @param[in] numControlQubits the length of array \p controlQubits
+ * @param[in] angle amount by which to shift the phase in radians
+ * @throws exitWithError
+ * 		if \p numControlQubits is outside [1, \p qureg.numQubits]),
+ * 		or if any qubit index in \p controlQubits is outside
+ * 		[0, \p qureg.numQubits])
+ */
+void multiControlledPhaseShift(QubitRegister qureg, int *controlQubits, int numControlQubits, REAL angle);
+
+
+/** Apply the (two-qubit) controlled phase flip gate, also known as the controlled sigmaZ gate.
+ * For each state, if both input qubits have value one, multiply the amplitude of that state by -1. This applies the two-qubit unitary:
+ * \f[
+ * \begin{pmatrix}
+ * 1 \\
+ * & 1 \\\
+ * & & 1 \\
+ * & & & -1 
+ * \end{pmatrix}
+ * \f]
+ *
+	\f[
+	\setlength{\fboxrule}{0.01pt}
+	\fbox{
+				\begin{tikzpicture}[scale=.5]
+				\node[draw=none] at (-3.5, 2) {idQubit1};
+				\node[draw=none] at (-3.5, 0) {idQubit2};
+
+				\draw (-2, 2) -- (2, 2);
+				\draw[fill=black] (0, 2) circle (.2);
+				\draw (0, 2) -- (0, 0);
+				
+				\draw (-2,0) -- (2, 0);
+				\draw[fill=black] (0, 0) circle (.2);
+				\end{tikzpicture}
+	}
+	\f]
+ *
+ * @param[in,out] qureg object representing the set of all qubits
+ * @param[in] idQubit1, idQubit2 qubits to operate upon
+ * @throws exitWithError 
+ * 	if \p idQubit1 or \p idQubit2 are outside [0, \p qureg.numQubits), or are equal
+ */
+void controlledPhaseFlip (QubitRegister qureg, const int idQubit1, const int idQubit2);
+
+/** Apply the multiple-qubit controlled phase flip gate, also known as the multiple-qubit controlled sigmaZ gate.
  * For each state, if all control qubits have value one, multiply the amplitude of that state by -1. This applies the many-qubit unitary:
  * \f[
  * \begin{pmatrix}
@@ -226,42 +399,7 @@ void initClassicalState(QubitRegister qureg, long long int stateInd);
  * @throws exitWithError 
  * 		if \p numControlQubits is outside [1, \p qureg.numQubits) 
  */
-void multiControlledPhaseGate(QubitRegister qureg, int *controlQubits, int numControlQubits);
-
-/** Apply the (two-qubit) controlled phase gate, also known as the controlled sigmaZ gate.
- * For each state, if both input qubits have value one, multiply the amplitude of that state by -1. This applies the two-qubit unitary:
- * \f[
- * \begin{pmatrix}
- * 1 \\
- * & 1 \\\
- * & & 1 \\
- * & & & -1 
- * \end{pmatrix}
- * \f]
- *
-	\f[
-	\setlength{\fboxrule}{0.01pt}
-	\fbox{
-				\begin{tikzpicture}[scale=.5]
-				\node[draw=none] at (-3.5, 2) {idQubit1};
-				\node[draw=none] at (-3.5, 0) {idQubit2};
-
-				\draw (-2, 2) -- (2, 2);
-				\draw[fill=black] (0, 2) circle (.2);
-				\draw (0, 2) -- (0, 0);
-				
-				\draw (-2,0) -- (2, 0);
-				\draw[fill=black] (0, 0) circle (.2);
-				\end{tikzpicture}
-	}
-	\f]
- *
- * @param[in,out] qureg object representing the set of all qubits
- * @param[in] idQubit1, idQubit2 qubits to operate upon
- * @throws exitWithError 
- * 	if \p idQubit1 or \p idQubit2 are outside [0, \p qureg.numQubits), or are equal
- */
-void controlledPhaseGate (QubitRegister qureg, const int idQubit1, const int idQubit2);
+void multiControlledPhaseFlip(QubitRegister qureg, int *controlQubits, int numControlQubits);
 
 /** Apply the single-qubit S gate.
  * This is a rotation of \f$\pi/2\f$ around the Z-axis on the Bloch sphere, or the unitary:
@@ -320,9 +458,6 @@ void sGate(QubitRegister qureg, const int targetQubit);
  * @throws exitWithError if \p targetQubit is outside [0, \p qureg.numQubits)
  */
 void tGate(QubitRegister qureg, const int targetQubit);
-
-
-// QuEST library functions whose implementation depends on environment (local, MPI)
 
 /** Initialize the QuEST environment. If something needs to be done to set up the execution environment, such as 
  * initializing MPI when running in distributed mode, it is handled here
@@ -393,8 +528,9 @@ REAL getImagAmpEl(QubitRegister qureg, long long int index);
  */
 REAL getProbEl(QubitRegister qureg, long long int index);
 
-/** Calculate the probability of being in any state by taking the norm of the entire state vector. 
- * Should be equal to 1.
+/** A debugging function which calculates the probability of being in any state, which should be 1.
+ * For pure states, this is the norm of the entire state vector and for mixed states, is the trace of
+ * the density matrix.
  *
  * @param[in] qureg object representing a set of qubits
  * @return total probability
@@ -1004,6 +1140,47 @@ void hadamard(QubitRegister qureg, const int targetQubit);
  */
 void controlledNot(QubitRegister qureg, const int controlQubit, const int targetQubit);
 
+/** Apply the controlled sigmaY (single control, single target) gate, also
+ * known as the c-Y, c-sigma-Y and c-Pauli-Y.
+ * This applies sigmaY to the target qubit if the control qubit has value 1.
+ * This effects the two-qubit unitary
+ * \f[
+ * \begin{pmatrix}
+ * 1 \\
+ * & 1 \\\
+ * & & & -i \\
+ * & & i
+ * \end{pmatrix}
+ * \f]
+ * on the control and target qubits.
+ *
+	\f[
+	\setlength{\fboxrule}{0.01pt}
+	\fbox{
+				\begin{tikzpicture}[scale=.5]
+				\node[draw=none] at (-3.5, 2) {control};
+				\node[draw=none] at (-3.5, 0) {target};
+
+				\draw (-2, 2) -- (2, 2);
+				\draw[fill=black] (0, 2) circle (.2);
+				\draw (0, 2) -- (0, 1);
+				
+				\draw (-2,0) -- (-1, 0);
+				\draw (1, 0) -- (2, 0);
+				\draw (-1,-1)--(-1,1)--(1,1)--(1,-1)--cycle;
+				\node[draw=none] at (0, 0) {Y};
+				\end{tikzpicture}
+	}
+	\f]
+ *
+ * @param[in,out] qureg object representing the set of all qubits
+ * @param[in] controlQubit applies sigmaY to the target if this qubit is 1
+ * @param[in] targetQubit qubit to not
+ * @throws exitWithError
+ * 		if either \p controlQubit or \p targetQubit are outside [0, \p qureg.numQubits), or are equal.
+ */
+void controlledSigmaY(QubitRegister qureg, const int controlQubit, const int targetQubit);
+
 /** Gives the probability of a specified qubit being measured in the given outcome (0 or 1).
  * This performs no actual measurement and does not change the state of the qubits.
  * 
@@ -1054,12 +1231,12 @@ int measure(QubitRegister qureg, int measureQubit);
  *
  * @param[in, out] qureg object representing the set of all qubits
  * @param[in] measureQubit qubit to measure
- * @param[out] stateProb a pointer to a REAL which is set to the probability of the occurred outcome
+ * @param[out] outcomeProb a pointer to a REAL which is set to the probability of the occurred outcome
  * @return the measurement outcome, 0 or 1
  * @throws exitWithError
  * 		if \p measureQubit is outside [0, \p qureg.numQubits)
  */
-int measureWithStats(QubitRegister qureg, int measureQubit, REAL *stateProb);
+int measureWithStats(QubitRegister qureg, int measureQubit, REAL *outcomeProb);
 
 /** Seed the Mersenne Twister used for random number generation in the QuEST environment with an example
  * defualt seed.

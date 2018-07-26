@@ -1,9 +1,0 @@
-QuESTAssert      prototype    57 ../GPU/QuEST_internal.h void QuESTAssert(int isValid, int errorCode, const char *func);
-exitWithError    prototype    55 ../GPU/QuEST_internal.h void exitWithError(int errorCode, const char *func);
-findProbabilityOfZero prototype    28 ../GPU/QuEST_internal.h REAL findProbabilityOfZero(MultiQubit multiQubit, const int measureQubit);
-hashString       prototype    59 ../GPU/QuEST_internal.h unsigned long int hashString(char *str);
-measureInZero    prototype    42 ../GPU/QuEST_internal.h REAL measureInZero(MultiQubit multiQubit, const int measureQubit);
-phaseGate        prototype    19 ../GPU/QuEST_internal.h void phaseGate(MultiQubit multiQubit, const int targetQubit, enum phaseGateType type);
-validateAlphaBeta prototype    48 ../GPU/QuEST_internal.h int validateAlphaBeta(Complex alpha, Complex beta);
-validateMatrixIsUnitary prototype    46 ../GPU/QuEST_internal.h int validateMatrixIsUnitary(ComplexMatrix2 u);
-validateUnitVector prototype    50 ../GPU/QuEST_internal.h int validateUnitVector(REAL ux, REAL uy, REAL uz);

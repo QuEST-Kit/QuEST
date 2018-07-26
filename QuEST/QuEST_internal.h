@@ -13,19 +13,15 @@
 extern "C" {
 # endif
 
-extern const char* errorCodes[];
-
-void exitWithError(int errorCode, const char *func);
-
-void QuESTAssert(int isValid, int errorCode, const char *func);
-
 unsigned long int hashString(char *str);
 
-int validateMatrixIsUnitary(ComplexMatrix2 u);
+REAL getVectorMagnitude(Vector vec);
 
-int validateAlphaBeta(Complex alpha, Complex beta);
+Complex getConjugateScalar(Complex scalar);
 
-int validateUnitVector(REAL ux, REAL uy, REAL uz);
+ComplexMatrix2 getConjugateMatrix(ComplexMatrix2 matr);
+
+void shiftIndices(int* indices, int numIndices, int shift);
 
 # ifdef __cplusplus
 }

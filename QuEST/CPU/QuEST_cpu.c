@@ -3,7 +3,7 @@
 /** @file qubits.c
  * The core of the CPU backend functionality. The CPU/MPI implementations of the pure state functions in
  * ../QuEST_ops_pure.h are in QuEST_cpu_local.c and QuEST_cpu_distributed.c which mostly wrap the core
- * functions defined here
+ * functions defined here. Some additional hardware-agnostic functions are defined here
  */
 
 # include "../QuEST.h"
@@ -22,11 +22,149 @@
 # include <omp.h>
 # endif
 
-static int extractBit (const int locationOfBitFromRight, const long long int theEncodedNumber);
 
-void pure_createQubitRegister(QubitRegister *qureg, int numQubits, QuESTEnv env)
+/** Get the value of the bit at a particular index in a number.
+  SCB edit: new definition of extractBit is much faster ***
+ * @param[in] locationOfBitFromRight location of bit in theEncodedNumber
+ * @param[in] theEncodedNumber number to search
+ * @return the value of the bit in theEncodedNumber
+ */
+static int extractBit (const int locationOfBitFromRight, const long long int theEncodedNumber)
 {
-    QuESTAssert(numQubits>0, 9, __func__);
+    return (theEncodedNumber & ( 1LL << locationOfBitFromRight )) >> locationOfBitFromRight;
+}
+
+
+
+// @TODO
+void densmatr_initPureStateDistributed(QubitRegister targetQureg, QubitRegister copyQureg) {
+
+
+	printf("densmatr_initPureStateDistributed NOT YET IMPLEMENTED ON CPU");
+
+}
+
+
+void densmatr_initClassicalState (QubitRegister qureg, long long int stateInd)
+{
+    // dimension of the state vector
+    long long int densityNumElems = qureg.numAmpsPerChunk;
+
+    // Can't use qureg->stateVec as a private OMP var
+    REAL *densityReal = qureg.stateVec.real;
+    REAL *densityImag = qureg.stateVec.imag;
+
+    // initialise the state to all zeros
+	long long int index;
+# ifdef _OPENMP
+# pragma omp parallel \
+    default  (none) \
+    shared   (densityNumElems, densityReal, densityImag) \
+    private  (index) 
+# endif
+    {
+# ifdef _OPENMP
+# pragma omp for schedule (static)
+# endif
+        for (index=0; index<densityNumElems; index++) {
+            densityReal[index] = 0.0;
+            densityImag[index] = 0.0;
+        }
+    }
+	
+	// index of the single density matrix elem to set non-zero
+	long long int densityDim = 1LL << qureg.numQubitsRepresented;
+	long long int densityInd = (densityDim + 1)*stateInd;
+
+	// give the specified classical state prob 1
+    if (qureg.chunkId == densityInd / densityDim){
+        densityReal[densityInd % densityDim] = 1.0;
+        densityImag[densityInd % densityDim] = 0.0;
+    }
+}
+
+
+void densmatr_initStatePlus (QubitRegister qureg)
+{
+    long long int chunkSize, stateVecSize;
+    long long int index;
+
+    // dimension of the state vector
+    chunkSize = qureg.numAmpsPerChunk;
+    stateVecSize = chunkSize*qureg.numChunks;
+    REAL probFactor = 1.0/((REAL)stateVecSize);
+
+    // Can't use qureg->stateVec as a private OMP var
+    REAL *densityReal = qureg.stateVec.real;
+    REAL *densityImag = qureg.stateVec.imag;
+
+    // initialise the state to |+++..+++> = 1/normFactor {1, 1, 1, ...}
+# ifdef _OPENMP
+# pragma omp parallel \
+    default  (none) \
+    shared   (chunkSize, densityReal, densityImag, probFactor) \
+    private  (index) 
+# endif
+    {
+# ifdef _OPENMP
+# pragma omp for schedule (static)
+# endif
+        for (index=0; index<chunkSize; index++) {
+            densityReal[index] = probFactor;
+            densityImag[index] = 0.0;
+        }
+    }
+}
+
+void densmatr_initPureStateLocal(QubitRegister targetQureg, QubitRegister copyQureg) {
+	
+	// targetQureg is a density matrix of size (2^N)^2, copy is pure of size 2^N
+
+    // dimension of the pure state vector
+    long long int stateVecSize = copyQureg.numAmpsPerChunk;
+
+    // Can't use qureg->stateVec as a private OMP var
+    REAL *targetDensityReal = targetQureg.stateVec.real;
+    REAL *targetDensityImag = targetQureg.stateVec.imag;
+    REAL *copyStateVecReal = copyQureg.stateVec.real;
+    REAL *copyStateVecImag = copyQureg.stateVec.imag;
+	
+	// iterates density entries
+	long long int row, col;
+	
+	// involved elements
+	REAL realRow, imagRow, realCol, imagCol;
+
+    // initialise targetQureg to be 100% likely in the puerstate of copyQureg
+# ifdef _OPENMP
+# pragma omp parallel \
+    default  (none) \
+    shared   (stateVecSize, targetDensityReal, targetDensityImag, copyStateVecReal, copyStateVecImag) \
+    private  (row, col, realRow, imagRow, realCol, imagCol) 
+# endif
+    {
+# ifdef _OPENMP
+# pragma omp for schedule (static)
+# endif
+        for (row=0; row < stateVecSize; row++) {
+			
+			realRow = copyStateVecReal[row];
+			imagRow = copyStateVecImag[row];
+			
+			for (col=0; col < stateVecSize; col++) {
+
+				realCol =   copyStateVecReal[col];
+				imagCol = - copyStateVecImag[col]; //note minus for conjugation
+			
+				targetDensityReal[col*stateVecSize + row] = realRow*realCol - imagRow*imagCol;
+				targetDensityImag[col*stateVecSize + row] = realRow*imagCol + imagRow*realCol;
+			}
+        }
+    }
+}
+
+void statevec_createQubitRegister(QubitRegister *qureg, int numQubits, QuESTEnv env)
+{
     long long int numAmps = 1L << numQubits;
     long long int numAmpsPerRank = numAmps/env.numRanks;
 
@@ -49,14 +187,15 @@ void pure_createQubitRegister(QubitRegister *qureg, int numQubits, QuESTEnv env)
         exit (EXIT_FAILURE);
     }
 
-    qureg->numQubits = numQubits;
+    qureg->numQubitsInStateVec = numQubits;
+	qureg->numAmpsTotal = numAmps;
     qureg->numAmpsPerChunk = numAmpsPerRank;
     qureg->chunkId = env.rank;
     qureg->numChunks = env.numRanks;
 	qureg->isDensityMatrix = 0;
 }
 
-void pure_destroyQubitRegister(QubitRegister qureg, QuESTEnv env){
+void statevec_destroyQubitRegister(QubitRegister qureg, QuESTEnv env){
     free(qureg.stateVec.real);
     free(qureg.stateVec.imag);
     if (env.numRanks>1){
@@ -65,10 +204,10 @@ void pure_destroyQubitRegister(QubitRegister qureg, QuESTEnv env){
     }
 }
 
-void pure_reportStateToScreen(QubitRegister qureg, QuESTEnv env, int reportRank){
+void statevec_reportStateToScreen(QubitRegister qureg, QuESTEnv env, int reportRank){
     long long int index;
     int rank;
-    if (qureg.numQubits<=5){
+    if (qureg.numQubitsInStateVec<=5){
         for (rank=0; rank<qureg.numChunks; rank++){
             if (qureg.chunkId==rank){
                 if (reportRank) {
@@ -89,15 +228,15 @@ void pure_reportStateToScreen(QubitRegister qureg, QuESTEnv env, int reportRank)
     } else printf("Error: reportStateToScreen will not print output for systems of more than 5 qubits.\n");
 }
 
-void pure_getEnvironmentString(QuESTEnv env, QubitRegister qureg, char str[200]){
+void statevec_getEnvironmentString(QuESTEnv env, QubitRegister qureg, char str[200]){
     int numThreads=1;
 # ifdef _OPENMP
     numThreads=omp_get_max_threads(); 
 # endif
-    sprintf(str, "%dqubits_CPU_%dranksx%dthreads", qureg.numQubits, env.numRanks, numThreads);
+    sprintf(str, "%dqubits_CPU_%dranksx%dthreads", qureg.numQubitsInStateVec, env.numRanks, numThreads);
 }
 
-void pure_initStateZero (QubitRegister qureg)
+void statevec_initStateZero (QubitRegister qureg)
 {
     long long int stateVecSize;
     long long int index;
@@ -109,7 +248,7 @@ void pure_initStateZero (QubitRegister qureg)
     REAL *stateVecReal = qureg.stateVec.real;
     REAL *stateVecImag = qureg.stateVec.imag;
 
-    // initialise the state to |0000..0000>
+    // initialise the state-vector to all-zeroes
 # ifdef _OPENMP
 # pragma omp parallel \
     default  (none) \
@@ -133,7 +272,7 @@ void pure_initStateZero (QubitRegister qureg)
     }
 }
 
-void pure_initStatePlus (QubitRegister qureg)
+void statevec_initStatePlus (QubitRegister qureg)
 {
     long long int chunkSize, stateVecSize;
     long long int index;
@@ -147,7 +286,7 @@ void pure_initStatePlus (QubitRegister qureg)
     REAL *stateVecReal = qureg.stateVec.real;
     REAL *stateVecImag = qureg.stateVec.imag;
 
-    // initialise the state to |0000..0000>
+    // initialise the state to |+++..+++> = 1/normFactor {1, 1, 1, ...}
 # ifdef _OPENMP
 # pragma omp parallel \
     default  (none) \
@@ -165,8 +304,7 @@ void pure_initStatePlus (QubitRegister qureg)
     }
 }
 
-/* Tyson Jones, 16th May 2018 4pm */
-void pure_initClassicalState (QubitRegister qureg, long long int stateInd)
+void statevec_initClassicalState (QubitRegister qureg, long long int stateInd)
 {
     long long int stateVecSize;
     long long int index;
@@ -178,11 +316,11 @@ void pure_initClassicalState (QubitRegister qureg, long long int stateInd)
     REAL *stateVecReal = qureg.stateVec.real;
     REAL *stateVecImag = qureg.stateVec.imag;
 
-    // initialise the state to |0000..0000>
+    // initialise the state to vector to all zeros
 # ifdef _OPENMP
 # pragma omp parallel \
     default  (none) \
-    shared   (stateInd, stateVecSize, stateVecReal, stateVecImag) \
+    shared   (stateVecSize, stateVecReal, stateVecImag) \
     private  (index) 
 # endif
     {
@@ -202,13 +340,46 @@ void pure_initClassicalState (QubitRegister qureg, long long int stateInd)
     }
 }
 
+void statevec_initPureState(QubitRegister targetQureg, QubitRegister copyQureg) {
+	
+	// registers are equal sized, so nodes hold the same state-vector partitions
+    long long int stateVecSize;
+    long long int index;
+
+    // dimension of the state vector
+    stateVecSize = targetQureg.numAmpsPerChunk;
+
+    // Can't use qureg->stateVec as a private OMP var
+    REAL *targetStateVecReal = targetQureg.stateVec.real;
+    REAL *targetStateVecImag = targetQureg.stateVec.imag;
+    REAL *copyStateVecReal = copyQureg.stateVec.real;
+    REAL *copyStateVecImag = copyQureg.stateVec.imag;
+
+    // initialise the state to |0000..0000>
+# ifdef _OPENMP
+# pragma omp parallel \
+    default  (none) \
+    shared   (stateVecSize, targetStateVecReal, targetStateVecImag, copyStateVecReal, copyStateVecImag) \
+    private  (index) 
+# endif
+    {
+# ifdef _OPENMP
+# pragma omp for schedule (static)
+# endif
+        for (index=0; index<stateVecSize; index++) {
+            targetStateVecReal[index] = copyStateVecReal[index];
+            targetStateVecImag[index] = copyStateVecImag[index];
+        }
+    }
+}
+
 /**
  * Initialise the state vector of probability amplitudes such that one qubit is set to 'outcome' and all other qubits are in an equal superposition of zero and one.
  * @param[in,out] qureg object representing the set of qubits to be initialised
  * @param[in] qubitId id of qubit to set to state 'outcome'
  * @param[in] value of qubit 'qubitId'
  */
-void pure_initStateOfSingleQubit(QubitRegister *qureg, int qubitId, int outcome)
+void statevec_initStateOfSingleQubit(QubitRegister *qureg, int qubitId, int outcome)
 {
     long long int chunkSize, stateVecSize;
     long long int index;
@@ -254,7 +425,7 @@ void pure_initStateOfSingleQubit(QubitRegister *qureg, int qubitId, int outcome)
  * each component of each probability amplitude a unique floating point value. For debugging processes
  * @param[in,out] qureg object representing the set of qubits to be initialised
  */
-void pure_initStateDebug (QubitRegister qureg)
+void statevec_initStateDebug (QubitRegister qureg)
 {
     long long int chunkSize;
     long long int index;
@@ -287,7 +458,8 @@ void pure_initStateDebug (QubitRegister qureg)
     }
 }
 
-void pure_initStateFromSingleFile(QubitRegister *qureg, char filename[200], QuESTEnv env){
+// returns 1 if successful, else 0
+int statevec_initStateFromSingleFile(QubitRegister *qureg, char filename[200], QuESTEnv env){
     long long int chunkSize, stateVecSize;
     long long int indexInChunk, totalIndex;
 
@@ -303,7 +475,11 @@ void pure_initStateFromSingleFile(QubitRegister *qureg, char filename[200], QuES
     for (int rank=0; rank<(qureg->numChunks); rank++){
         if (rank==qureg->chunkId){
             fp = fopen(filename, "r");
-            QuESTAssert(fp!=NULL, 11, __func__);
+			
+			// indicate file open failure
+			if (fp == NULL)
+				return 0;
+			
             indexInChunk = 0; totalIndex = 0;
             while (fgets(line, sizeof(char)*200, fp) != NULL && totalIndex<stateVecSize){
                 if (line[0]!='#'){
@@ -328,9 +504,12 @@ void pure_initStateFromSingleFile(QubitRegister *qureg, char filename[200], QuES
         }
         syncQuESTEnv(env);
     }
+	
+	// indicate success
+	return 1;
 }
 
-int pure_compareStates(QubitRegister mq1, QubitRegister mq2, REAL precision){
+int statevec_compareStates(QubitRegister mq1, QubitRegister mq2, REAL precision){
     REAL diff;
     int chunkSize = mq1.numAmpsPerChunk;
 	
@@ -349,7 +528,7 @@ int pure_compareStates(QubitRegister mq1, QubitRegister mq2, REAL precision){
 
 
 
-void compactUnitaryLocal (QubitRegister qureg, const int targetQubit, Complex alpha, Complex beta)
+void statevec_compactUnitaryLocal (QubitRegister qureg, const int targetQubit, Complex alpha, Complex beta)
 {
     long long int sizeBlock, sizeHalfBlock;
     long long int thisBlock, // current block
@@ -408,7 +587,7 @@ void compactUnitaryLocal (QubitRegister qureg, const int targetQubit, Complex al
 
 } 
 
-void unitaryLocal(QubitRegister qureg, const int targetQubit, ComplexMatrix2 u)
+void statevec_unitaryLocal(QubitRegister qureg, const int targetQubit, ComplexMatrix2 u)
 {
     long long int sizeBlock, sizeHalfBlock;
     long long int thisBlock, // current block
@@ -478,7 +657,7 @@ void unitaryLocal(QubitRegister qureg, const int targetQubit, ComplexMatrix2 u)
  *  @param[in] stateVecLo probability amplitudes in lower half of a block
  *  @param[out] stateVecOut array section to update (will correspond to either the lower or upper half of a block)
  */
-void compactUnitaryDistributed (QubitRegister qureg, const int targetQubit,
+void statevec_compactUnitaryDistributed (QubitRegister qureg, const int targetQubit,
         Complex rot1, Complex rot2,
         ComplexArray stateVecUp,
         ComplexArray stateVecLo,
@@ -534,7 +713,7 @@ void compactUnitaryDistributed (QubitRegister qureg, const int targetQubit,
  *  @param[in] stateVecLo probability amplitudes in lower half of a block
  *  @param[out] stateVecOut array section to update (will correspond to either the lower or upper half of a block)
  */
-void unitaryDistributed (QubitRegister qureg, const int targetQubit,
+void statevec_unitaryDistributed (QubitRegister qureg, const int targetQubit,
         Complex rot1, Complex rot2,
         ComplexArray stateVecUp,
         ComplexArray stateVecLo,
@@ -579,7 +758,7 @@ void unitaryDistributed (QubitRegister qureg, const int targetQubit,
     }
 }
 
-void controlledCompactUnitaryLocal (QubitRegister qureg, const int controlQubit, const int targetQubit, 
+void statevec_controlledCompactUnitaryLocal (QubitRegister qureg, const int controlQubit, const int targetQubit, 
         Complex alpha, Complex beta)
 {
     long long int sizeBlock, sizeHalfBlock;
@@ -646,7 +825,7 @@ void controlledCompactUnitaryLocal (QubitRegister qureg, const int controlQubit,
 
 } 
 
-void multiControlledUnitaryLocal(QubitRegister qureg, const int targetQubit, 
+void statevec_multiControlledUnitaryLocal(QubitRegister qureg, const int targetQubit, 
         long long int mask, ComplexMatrix2 u)
 {
     long long int sizeBlock, sizeHalfBlock;
@@ -709,7 +888,7 @@ void multiControlledUnitaryLocal(QubitRegister qureg, const int targetQubit,
 
 }
 
-void controlledUnitaryLocal(QubitRegister qureg, const int controlQubit, const int targetQubit, 
+void statevec_controlledUnitaryLocal(QubitRegister qureg, const int controlQubit, const int targetQubit, 
         ComplexMatrix2 u)
 {
     long long int sizeBlock, sizeHalfBlock;
@@ -788,7 +967,7 @@ void controlledUnitaryLocal(QubitRegister qureg, const int controlQubit, const i
  *  @param[in] stateVecLo probability amplitudes in lower half of a block
  *  @param[out] stateVecOut array section to update (will correspond to either the lower or upper half of a block)
  */
-void controlledCompactUnitaryDistributed (QubitRegister qureg, const int controlQubit, const int targetQubit,
+void statevec_controlledCompactUnitaryDistributed (QubitRegister qureg, const int controlQubit, const int targetQubit,
         Complex rot1, Complex rot2,
         ComplexArray stateVecUp,
         ComplexArray stateVecLo,
@@ -851,7 +1030,7 @@ void controlledCompactUnitaryDistributed (QubitRegister qureg, const int control
  *  @param[in] stateVecLo probability amplitudes in lower half of a block
  *  @param[out] stateVecOut array section to update (will correspond to either the lower or upper half of a block)
  */
-void controlledUnitaryDistributed (QubitRegister qureg, const int controlQubit, const int targetQubit,
+void statevec_controlledUnitaryDistributed (QubitRegister qureg, const int controlQubit, const int targetQubit,
         Complex rot1, Complex rot2,
         ComplexArray stateVecUp,
         ComplexArray stateVecLo,
@@ -915,7 +1094,7 @@ void controlledUnitaryDistributed (QubitRegister qureg, const int controlQubit, 
  *  @param[in] stateVecLo probability amplitudes in lower half of a block
  *  @param[out] stateVecOut array section to update (will correspond to either the lower or upper half of a block)
  */
-void multiControlledUnitaryDistributed (QubitRegister qureg, 
+void statevec_multiControlledUnitaryDistributed (QubitRegister qureg, 
         const int targetQubit, 
         long long int mask,
         Complex rot1, Complex rot2,
@@ -965,7 +1144,7 @@ void multiControlledUnitaryDistributed (QubitRegister qureg,
     }
 }
 
-void sigmaXLocal(QubitRegister qureg, const int targetQubit)
+void statevec_sigmaXLocal(QubitRegister qureg, const int targetQubit)
 {
     long long int sizeBlock, sizeHalfBlock;
     long long int thisBlock, // current block
@@ -1024,7 +1203,7 @@ void sigmaXLocal(QubitRegister qureg, const int targetQubit)
  *  @param[in] stateVecIn probability amplitudes in lower or upper half of a block depending on chunkId
  *  @param[out] stateVecOut array section to update (will correspond to either the lower or upper half of a block)
  */
-void sigmaXDistributed (QubitRegister qureg, const int targetQubit,
+void statevec_sigmaXDistributed (QubitRegister qureg, const int targetQubit,
         ComplexArray stateVecIn,
         ComplexArray stateVecOut)
 {
@@ -1052,7 +1231,7 @@ void sigmaXDistributed (QubitRegister qureg, const int targetQubit,
     }
 } 
 
-void controlledNotLocal(QubitRegister qureg, const int controlQubit, const int targetQubit)
+void statevec_controlledNotLocal(QubitRegister qureg, const int controlQubit, const int targetQubit)
 {
     long long int sizeBlock, sizeHalfBlock;
     long long int thisBlock, // current block
@@ -1069,7 +1248,6 @@ void controlledNotLocal(QubitRegister qureg, const int controlQubit, const int t
     // set dimensions
     sizeHalfBlock = 1LL << targetQubit;  
     sizeBlock     = 2LL * sizeHalfBlock; 
-
 
     // Can't use qureg.stateVec as a private OMP var
     REAL *stateVecReal = qureg.stateVec.real;
@@ -1103,7 +1281,6 @@ void controlledNotLocal(QubitRegister qureg, const int controlQubit, const int t
             }
         } 
     }
-
 }
 
 /** Rotate a single qubit by {{0,1},{1,0}.
@@ -1117,7 +1294,7 @@ void controlledNotLocal(QubitRegister qureg, const int controlQubit, const int t
  *  @param[in] stateVecIn probability amplitudes in lower or upper half of a block depending on chunkId
  *  @param[out] stateVecOut array section to update (will correspond to either the lower or upper half of a block)
  */
-void controlledNotDistributed (QubitRegister qureg, const int controlQubit, const int targetQubit,
+void statevec_controlledNotDistributed (QubitRegister qureg, const int controlQubit, const int targetQubit,
         ComplexArray stateVecIn,
         ComplexArray stateVecOut)
 {
@@ -1152,7 +1329,7 @@ void controlledNotDistributed (QubitRegister qureg, const int controlQubit, cons
     }
 } 
 
-void sigmaYLocal(QubitRegister qureg, const int targetQubit)
+void statevec_sigmaYLocal(QubitRegister qureg, const int targetQubit, const int conjFac)
 {
     long long int sizeBlock, sizeHalfBlock;
     long long int thisBlock, // current block
@@ -1188,16 +1365,15 @@ void sigmaYLocal(QubitRegister qureg, const int targetQubit)
             stateRealUp = stateVecReal[indexUp];
             stateImagUp = stateVecImag[indexUp];
 
-            stateVecReal[indexUp] = stateVecImag[indexLo];
-            stateVecImag[indexUp] = -stateVecReal[indexLo];
-
-            stateVecReal[indexLo] = -stateImagUp;
-            stateVecImag[indexLo] = stateRealUp;
+            stateVecReal[indexUp] = conjFac * stateVecImag[indexLo];
+            stateVecImag[indexUp] = conjFac * -stateVecReal[indexLo];
+            stateVecReal[indexLo] = conjFac * -stateImagUp;
+            stateVecImag[indexLo] = conjFac * stateRealUp;
         } 
     }
 }
 
-/** Rotate a single qubit by {{0,-i},{i,0}.
+/** Rotate a single qubit by +-{{0,-i},{i,0}.
  *  Operate on a subset of the state vector with upper and lower block values 
  *  stored seperately. This rotation is just swapping upper and lower values, and
  *  stateVecIn must already be the correct section for this chunk
@@ -1211,10 +1387,10 @@ void sigmaYLocal(QubitRegister qureg, const int targetQubit)
  *  @param[in] updateUpper flag, 1: updating upper values, 0: updating lower values in block
  *  @param[out] stateVecOut array section to update (will correspond to either the lower or upper half of a block)
  */
-void sigmaYDistributed(QubitRegister qureg, const int targetQubit,
+void statevec_sigmaYDistributed(QubitRegister qureg, const int targetQubit,
         ComplexArray stateVecIn,
         ComplexArray stateVecOut, 
-        int updateUpper)
+        int updateUpper, const int conjFac)
 {
 
     long long int thisTask;  
@@ -1238,13 +1414,110 @@ void sigmaYDistributed(QubitRegister qureg, const int targetQubit,
 # pragma omp for schedule (static)
 # endif
         for (thisTask=0; thisTask<numTasks; thisTask++) {
-            stateVecRealOut[thisTask] = realSign*stateVecImagIn[thisTask];
-            stateVecImagOut[thisTask] = imagSign*stateVecRealIn[thisTask];
+            stateVecRealOut[thisTask] = conjFac * realSign * stateVecImagIn[thisTask];
+            stateVecImagOut[thisTask] = conjFac * imagSign * stateVecRealIn[thisTask];
         }
     }
 } 
 
-void hadamardLocal(QubitRegister qureg, const int targetQubit)
+
+
+
+void statevec_controlledSigmaYLocal(QubitRegister qureg, const int controlQubit, const int targetQubit, const int conjFac)
+{
+    long long int sizeBlock, sizeHalfBlock;
+    long long int thisBlock, // current block
+         indexUp,indexLo;    // current index and corresponding index in lower half block
+
+    REAL stateRealUp,stateImagUp;
+    long long int thisTask;         
+    const long long int numTasks=qureg.numAmpsPerChunk>>1;
+    const long long int chunkSize=qureg.numAmpsPerChunk;
+    const long long int chunkId=qureg.chunkId;
+
+    int controlBit;
+
+    // set dimensions
+    sizeHalfBlock = 1LL << targetQubit;  
+    sizeBlock     = 2LL * sizeHalfBlock; 
+
+    // Can't use qureg.stateVec as a private OMP var
+    REAL *stateVecReal = qureg.stateVec.real;
+    REAL *stateVecImag = qureg.stateVec.imag;
+
+# ifdef _OPENMP
+# pragma omp parallel \
+    default  (none) \
+    shared   (sizeBlock,sizeHalfBlock, stateVecReal,stateVecImag) \
+    private  (thisTask,thisBlock ,indexUp,indexLo, stateRealUp,stateImagUp,controlBit) 
+# endif
+    {
+# ifdef _OPENMP
+# pragma omp for schedule (static)
+# endif
+        for (thisTask=0; thisTask<numTasks; thisTask++) {
+            thisBlock   = thisTask / sizeHalfBlock;
+            indexUp     = thisBlock*sizeBlock + thisTask%sizeHalfBlock;
+            indexLo     = indexUp + sizeHalfBlock;
+
+            controlBit = extractBit(controlQubit, indexUp+chunkId*chunkSize);
+            if (controlBit){
+                stateRealUp = stateVecReal[indexUp];
+                stateImagUp = stateVecImag[indexUp];
+
+				// update under +-{{0, -i}, {i, 0}}
+			    stateVecReal[indexUp] = conjFac * stateVecImag[indexLo];
+			    stateVecImag[indexUp] = conjFac * -stateVecReal[indexLo];
+			    stateVecReal[indexLo] = conjFac * -stateImagUp;
+			    stateVecImag[indexLo] = conjFac * stateRealUp;
+            }
+        } 
+    }
+}
+
+
+void statevec_controlledSigmaYDistributed (QubitRegister qureg, const int controlQubit, const int targetQubit,
+        ComplexArray stateVecIn,
+        ComplexArray stateVecOut, const int conjFac)
+{
+
+    long long int thisTask;  
+    const long long int numTasks=qureg.numAmpsPerChunk;
+    const long long int chunkSize=qureg.numAmpsPerChunk;
+    const long long int chunkId=qureg.chunkId;
+
+    int controlBit;
+
+    REAL *stateVecRealIn=stateVecIn.real, *stateVecImagIn=stateVecIn.imag;
+    REAL *stateVecRealOut=stateVecOut.real, *stateVecImagOut=stateVecOut.imag;
+
+# ifdef _OPENMP
+# pragma omp parallel \
+    default  (none) \
+    shared   (stateVecRealIn,stateVecImagIn,stateVecRealOut,stateVecImagOut) \
+    private  (thisTask,controlBit)
+# endif
+    {
+# ifdef _OPENMP
+# pragma omp for schedule (static)
+# endif
+        for (thisTask=0; thisTask<numTasks; thisTask++) {
+            controlBit = extractBit (controlQubit, thisTask+chunkId*chunkSize);
+            if (controlBit){
+                stateVecRealOut[thisTask] = conjFac * stateVecRealIn[thisTask];
+                stateVecImagOut[thisTask] = conjFac * stateVecImagIn[thisTask];
+            }
+        }
+    }
+} 
+
+
+
+
+
+
+
+void statevec_hadamardLocal(QubitRegister qureg, const int targetQubit)
 {
     long long int sizeBlock, sizeHalfBlock;
     long long int thisBlock, // current block
@@ -1305,7 +1578,7 @@ void hadamardLocal(QubitRegister qureg, const int targetQubit)
  *  @param[in] updateUpper flag, 1: updating upper values, 0: updating lower values in block
  *  @param[out] stateVecOut array section to update (will correspond to either the lower or upper half of a block)
  */
-void hadamardDistributed(QubitRegister qureg, const int targetQubit,
+void statevec_hadamardDistributed(QubitRegister qureg, const int targetQubit,
         ComplexArray stateVecUp,
         ComplexArray stateVecLo,
         ComplexArray stateVecOut,
@@ -1351,133 +1624,173 @@ void hadamardDistributed(QubitRegister qureg, const int targetQubit,
     }
 }
 
-void phaseGateLocal(QubitRegister qureg, const int targetQubit, enum phaseGateType type)
-{
-    long long int sizeBlock, sizeHalfBlock;
-    long long int thisBlock, // current block
-         indexUp,indexLo;    // current index and corresponding index in lower half block
+void statevec_phaseShiftByTerm (QubitRegister qureg, const int targetQubit, Complex term)
+{	
+    long long int index;
+    long long int stateVecSize;
+    int targetBit;
+	
+    const long long int chunkSize=qureg.numAmpsPerChunk;
+    const long long int chunkId=qureg.chunkId;
 
-    REAL stateRealLo,stateImagLo;
-    long long int thisTask;         
-    const long long int numTasks=qureg.numAmpsPerChunk>>1;
-
-    // set dimensions
-    sizeHalfBlock = 1LL << targetQubit;  
-    sizeBlock     = 2LL * sizeHalfBlock; 
-
-    // Can't use qureg.stateVec as a private OMP var
+    // dimension of the state vector
+    stateVecSize = qureg.numAmpsPerChunk;
     REAL *stateVecReal = qureg.stateVec.real;
     REAL *stateVecImag = qureg.stateVec.imag;
-
-    REAL recRoot2 = 1.0/sqrt(2);
+	
+	REAL stateRealLo, stateImagLo;
+	const REAL cosAngle = term.real;
+	const REAL sinAngle = term.imag;
 
 # ifdef _OPENMP
-# pragma omp parallel \
-    default  (none) \
-    shared   (sizeBlock,sizeHalfBlock,stateVecReal,stateVecImag,recRoot2,type) \
-    private  (thisTask,thisBlock,indexUp,indexLo,stateRealLo,stateImagLo) 
+# pragma omp parallel for \
+    default  (none)			     \
+    shared   (stateVecSize, stateVecReal,stateVecImag ) \
+    private  (index,targetBit,stateRealLo,stateImagLo)		       \
+    schedule (static)
 # endif
-    {
-        if (type==SIGMA_Z){
-# ifdef _OPENMP
-# pragma omp for schedule (static)
-# endif
-            for (thisTask=0; thisTask<numTasks; thisTask++) {
-                //! fix -- can i rewrite this to not use mod?
-                thisBlock   = thisTask / sizeHalfBlock;
-                indexUp     = thisBlock*sizeBlock + thisTask%sizeHalfBlock;
-                indexLo     = indexUp + sizeHalfBlock;
-
-                stateVecReal[indexLo] = -stateVecReal[indexLo];
-                stateVecImag[indexLo] = -stateVecImag[indexLo];
-            } 
-        } 
-
-        else if (type==S_GATE){
-# ifdef _OPENMP
-# pragma omp for schedule (static)
-# endif
-            for (thisTask=0; thisTask<numTasks; thisTask++) {
-                //! fix -- can i rewrite this to not use mod?
-                thisBlock   = thisTask / sizeHalfBlock;
-                indexUp     = thisBlock*sizeBlock + thisTask%sizeHalfBlock;
-                indexLo     = indexUp + sizeHalfBlock;
-                stateRealLo = stateVecReal[indexLo];
-                stateImagLo = stateVecImag[indexLo];
-
-                stateVecReal[indexLo] = -stateImagLo;
-                stateVecImag[indexLo] = stateRealLo;
-            } 
-        } else if (type==T_GATE){
-# ifdef _OPENMP
-# pragma omp for schedule (static)
-# endif
-            for (thisTask=0; thisTask<numTasks; thisTask++) {
-                //! fix -- can i rewrite this to not use mod?
-                thisBlock   = thisTask / sizeHalfBlock;
-                indexUp     = thisBlock*sizeBlock + thisTask%sizeHalfBlock;
-                indexLo     = indexUp + sizeHalfBlock;
-                stateRealLo = stateVecReal[indexLo];
-                stateImagLo = stateVecImag[indexLo];
-
-                stateVecReal[indexLo] = recRoot2 * (stateRealLo - stateImagLo);
-                stateVecImag[indexLo] = recRoot2 * (stateRealLo + stateImagLo);
-            } 
-        } else printf("Type %d is an invalid phase gate\n", type);
+    for (index=0; index<stateVecSize; index++) {
+		
+		// update the coeff of the |1> state of the target qubit
+        targetBit = extractBit (targetQubit, index+chunkId*chunkSize);
+        if (targetBit) {
+			
+        	stateRealLo = stateVecReal[index];
+        	stateImagLo = stateVecImag[index];
+			
+			stateVecReal[index] = cosAngle*stateRealLo - sinAngle*stateImagLo;
+			stateVecImag[index] = sinAngle*stateRealLo + cosAngle*stateImagLo;	
+        }
     }
 }
 
-void phaseGateDistributed(QubitRegister qureg, const int targetQubit, enum phaseGateType type)
+void statevec_controlledPhaseShift (QubitRegister qureg, const int idQubit1, const int idQubit2, REAL angle)
 {
-    REAL stateRealLo,stateImagLo;
-    long long int thisTask;         
-    const long long int numTasks=qureg.numAmpsPerChunk;
+    long long int index;
+    long long int stateVecSize;
+    int bit1, bit2;
+	
+    const long long int chunkSize=qureg.numAmpsPerChunk;
+    const long long int chunkId=qureg.chunkId;
 
-    // Can't use qureg.stateVec as a private OMP var
+    // dimension of the state vector
+    stateVecSize = qureg.numAmpsPerChunk;
     REAL *stateVecReal = qureg.stateVec.real;
     REAL *stateVecImag = qureg.stateVec.imag;
+	
+	REAL stateRealLo, stateImagLo;
+	const REAL cosAngle = cos(angle);
+	const REAL sinAngle = sin(angle);
 
-    REAL recRoot2 = 1.0/sqrt(2);
+# ifdef _OPENMP
+# pragma omp parallel for \
+    default  (none)			     \
+    shared   (stateVecSize, stateVecReal,stateVecImag ) \
+    private  (index,bit1,bit2,stateRealLo,stateImagLo)		       \
+    schedule (static)
+# endif
+    for (index=0; index<stateVecSize; index++) {
+        bit1 = extractBit (idQubit1, index+chunkId*chunkSize);
+        bit2 = extractBit (idQubit2, index+chunkId*chunkSize);
+        if (bit1 && bit2) {
+			
+        	stateRealLo = stateVecReal[index];
+        	stateImagLo = stateVecImag[index];
+			
+			stateVecReal[index] = cosAngle*stateRealLo - sinAngle*stateImagLo;
+			stateVecImag[index] = sinAngle*stateRealLo + cosAngle*stateImagLo;	
+        }
+    }
+}
+
+void statevec_multiControlledPhaseShift(QubitRegister qureg, int *controlQubits, int numControlQubits, REAL angle)
+{
+    long long int index;
+    long long int stateVecSize;
+
+    const long long int chunkSize=qureg.numAmpsPerChunk;
+    const long long int chunkId=qureg.chunkId;
+
+    long long int mask=0;
+    for (int i=0; i<numControlQubits; i++) 
+		mask = mask | (1LL<<controlQubits[i]);
+
+    stateVecSize = qureg.numAmpsPerChunk;
+    REAL *stateVecReal = qureg.stateVec.real;
+    REAL *stateVecImag = qureg.stateVec.imag;
+	
+	REAL stateRealLo, stateImagLo;
+	const REAL cosAngle = cos(angle);
+	const REAL sinAngle = sin(angle);
 
 # ifdef _OPENMP
 # pragma omp parallel \
-    default  (none) \
-    shared   (stateVecReal,stateVecImag, recRoot2, type) \
-    private  (thisTask,stateRealLo,stateImagLo) 
+    default  (none)			     \
+    shared   (stateVecSize, stateVecReal, stateVecImag, mask) \
+    private  (index, stateRealLo, stateImagLo)
 # endif
     {
-        if (type==SIGMA_Z){
 # ifdef _OPENMP
 # pragma omp for schedule (static)
 # endif
-            for (thisTask=0; thisTask<numTasks; thisTask++) {
-                stateVecReal[thisTask] = -stateVecReal[thisTask];
-                stateVecImag[thisTask] = -stateVecImag[thisTask];
-            } 
-        } else if (type==S_GATE){
-# ifdef _OPENMP
-# pragma omp for schedule (static)
-# endif
-            for (thisTask=0; thisTask<numTasks; thisTask++) {
-                stateRealLo = stateVecReal[thisTask];
-                stateImagLo = stateVecImag[thisTask];
-
-                stateVecReal[thisTask] = -stateImagLo;
-                stateVecImag[thisTask] = stateRealLo;
-            } 
-        } else if (type==T_GATE){
-# ifdef _OPENMP
-# pragma omp for schedule (static)
-# endif
-            for (thisTask=0; thisTask<numTasks; thisTask++) {
-                stateRealLo = stateVecReal[thisTask];
-                stateImagLo = stateVecImag[thisTask];
-
-                stateVecReal[thisTask] = recRoot2 * (stateRealLo - stateImagLo);
-                stateVecImag[thisTask] = recRoot2 * (stateRealLo + stateImagLo);
-            } 
-        } else printf("Type %d is an invalid phase gate\n", type);
+        for (index=0; index<stateVecSize; index++) {
+            if (mask == (mask & (index+chunkId*chunkSize)) ){
+				
+	        	stateRealLo = stateVecReal[index];
+	        	stateImagLo = stateVecImag[index];
+			
+				stateVecReal[index] = cosAngle*stateRealLo - sinAngle*stateImagLo;
+				stateVecImag[index] = sinAngle*stateRealLo + cosAngle*stateImagLo;	
+            }
+        }
     }
+}
+
+REAL densmatr_findProbabilityOfZeroLocal(QubitRegister qureg, const int measureQubit) {
+	
+	// computes first local index containing a diagonal element
+	long long int localNumAmps = qureg.numAmpsPerChunk;
+	long long int densityDim = (1LL << qureg.numQubitsRepresented);
+	long long int diagSpacing = 1LL + densityDim;
+	long long int maxNumDiagsPerChunk = localNumAmps / diagSpacing;
+	long long int numPrevDiags = (qureg.chunkId * localNumAmps) / diagSpacing;
+	long long int globalIndNextDiag = diagSpacing * numPrevDiags;
+	long long int localIndNextDiag = globalIndNextDiag % localNumAmps;
+	
+	// computes how many diagonals are contained in this chunk
+	long long int numDiagsInThisChunk = maxNumDiagsPerChunk;
+	if (localIndNextDiag + numDiagsInThisChunk*diagSpacing >= localNumAmps)
+		numDiagsInThisChunk -= 1;
+	
+	long long int visitedDiags;		// number of visited diagonals in this chunk so far
+	long long int basisStateInd;	// current diagonal index being considered
+	long long int index;			// index in the local chunk
+	
+	REAL zeroProb = 0;
+    REAL *stateVecReal = qureg.stateVec.real;
+	
+# ifdef _OPENMP
+# pragma omp parallel \
+    shared    (localIndNextDiag, numPrevDiags, diagSpacing, stateVecReal) \
+    private   (visitedDiags, basisStateInd, index) \
+    reduction ( +:zeroProb )
+# endif	
+    {
+# ifdef _OPENMP
+# pragma omp for schedule  (static)
+# endif
+		// sums the diagonal elems of the density matrix where measureQubit=0
+		for (visitedDiags = 0; visitedDiags < numDiagsInThisChunk; visitedDiags++) {
+			
+			basisStateInd = numPrevDiags + visitedDiags;
+			index = localIndNextDiag + diagSpacing * visitedDiags;
+
+			if (extractBit(measureQubit, basisStateInd++) == 0)
+            	zeroProb += stateVecReal[index]; // assume imag[diagonls] ~ 0
+
+		}
+    }
+    return zeroProb;
 }
 
 /** Measure the total probability of a specified qubit being in the zero state across all amplitudes in this chunk.
@@ -1487,7 +1800,7 @@ void phaseGateDistributed(QubitRegister qureg, const int targetQubit, enum phase
  *  @param[in] measureQubit qubit to measure
  *  @return probability of qubit measureQubit being zero
  */
-REAL findProbabilityOfZeroLocal (QubitRegister qureg,
+REAL statevec_findProbabilityOfZeroLocal (QubitRegister qureg,
         const int measureQubit)
 {
     // ----- sizes
@@ -1537,13 +1850,14 @@ REAL findProbabilityOfZeroLocal (QubitRegister qureg,
 }
 
 /** Measure the probability of a specified qubit being in the zero state across all amplitudes held in this chunk.
- *  Size of regions to skip is a multiple of chunkSize.
+ * Size of regions to skip is a multiple of chunkSize.
+ * The results are communicated and aggregated by the caller
  *  
  *  @param[in] qureg object representing the set of qubits
  *  @param[in] measureQubit qubit to measure
  *  @return probability of qubit measureQubit being zero
  */
-REAL findProbabilityOfZeroDistributed (QubitRegister qureg,
+REAL statevec_findProbabilityOfZeroDistributed (QubitRegister qureg,
         const int measureQubit)
 {
     // ----- measured probability
@@ -1581,18 +1895,9 @@ REAL findProbabilityOfZeroDistributed (QubitRegister qureg,
     return totalProbability;
 }
 
-/** Get the value of the bit at a particular index in a number.
-  SCB edit: new definition of extractBit is much faster ***
- * @param[in] locationOfBitFromRight location of bit in theEncodedNumber
- * @param[in] theEncodedNumber number to search
- * @return the value of the bit in theEncodedNumber
- */
-static int extractBit (const int locationOfBitFromRight, const long long int theEncodedNumber)
-{
-    return (theEncodedNumber & ( 1LL << locationOfBitFromRight )) >> locationOfBitFromRight;
-}
 
-void pure_controlledPhaseGate (QubitRegister qureg, const int idQubit1, const int idQubit2)
+
+void statevec_controlledPhaseFlip (QubitRegister qureg, const int idQubit1, const int idQubit2)
 {
     long long int index;
     long long int stateVecSize;
@@ -1600,11 +1905,7 @@ void pure_controlledPhaseGate (QubitRegister qureg, const int idQubit1, const in
 
     const long long int chunkSize=qureg.numAmpsPerChunk;
     const long long int chunkId=qureg.chunkId;
-
-    QuESTAssert(idQubit1 >= 0 && idQubit1 < qureg.numQubits, 2, __func__);
-    QuESTAssert(idQubit2 >= 0 && idQubit2 < qureg.numQubits, 1, __func__);
-    QuESTAssert(idQubit1 != idQubit2, 3, __func__);
-
+	
     // dimension of the state vector
     stateVecSize = qureg.numAmpsPerChunk;
     REAL *stateVecReal = qureg.stateVec.real;
@@ -1627,7 +1928,7 @@ void pure_controlledPhaseGate (QubitRegister qureg, const int idQubit1, const in
     }
 }
 
-void pure_multiControlledPhaseGate(QubitRegister qureg, int *controlQubits, int numControlQubits)
+void statevec_multiControlledPhaseFlip(QubitRegister qureg, int *controlQubits, int numControlQubits)
 {
     long long int index;
     long long int stateVecSize;
@@ -1635,10 +1936,9 @@ void pure_multiControlledPhaseGate(QubitRegister qureg, int *controlQubits, int 
     const long long int chunkSize=qureg.numAmpsPerChunk;
     const long long int chunkId=qureg.chunkId;
 
-    QuESTAssert(numControlQubits > 0 && numControlQubits <= qureg.numQubits, 4, __func__);
     long long int mask=0;
-    for (int i=0; i<numControlQubits; i++) mask = mask | (1LL<<controlQubits[i]);
-    QuESTAssert(mask >=0 && mask <= (1LL<<qureg.numQubits)-1, 2, __func__);
+    for (int i=0; i<numControlQubits; i++)
+		mask = mask | (1LL<<controlQubits[i]);
 
     stateVecSize = qureg.numAmpsPerChunk;
     REAL *stateVecReal = qureg.stateVec.real;
@@ -1679,7 +1979,7 @@ void pure_multiControlledPhaseGate(QubitRegister qureg, int *controlQubits, int 
  *  @param[in] totalProbability probability of qubit measureQubit being either zero or one
  *  @param[in] outcome to measure the probability of and set the state to -- either zero or one
  */
-void collapseToOutcomeLocal(QubitRegister qureg, int measureQubit, REAL totalProbability, int outcome)
+void statevec_collapseToKnownProbOutcomeLocal(QubitRegister qureg, int measureQubit, int outcome, REAL totalProbability)
 {
     // ----- sizes
     long long int sizeBlock,                                  // size of blocks
@@ -1761,7 +2061,7 @@ void collapseToOutcomeLocal(QubitRegister qureg, int measureQubit, REAL totalPro
  *  @param[in] measureQubit qubit to measure
  *  @param[in] totalProbability probability of qubit measureQubit being zero
  */
-REAL collapseToOutcomeDistributedRenorm (QubitRegister qureg, const int measureQubit, const REAL totalProbability)
+void statevec_collapseToKnownProbOutcomeDistributedRenorm (QubitRegister qureg, const int measureQubit, const REAL totalProbability)
 {
     // ----- temp variables
     long long int thisTask;                                   
@@ -1786,7 +2086,6 @@ REAL collapseToOutcomeDistributedRenorm (QubitRegister qureg, const int measureQ
             stateVecImag[thisTask] = stateVecImag[thisTask]*renorm;
         }
     }
-    return totalProbability;
 }
 
 /** Set all amplitudes in one chunk to 0. 
@@ -1801,7 +2100,7 @@ REAL collapseToOutcomeDistributedRenorm (QubitRegister qureg, const int measureQ
  *  @param[in,out] qureg object representing the set of qubits
  *  @param[in] measureQubit qubit to measure
  */
-void collapseToOutcomeDistributedSetZero(QubitRegister qureg, const int measureQubit)
+void statevec_collapseToOutcomeDistributedSetZero(QubitRegister qureg)
 {
     // ----- temp variables
     long long int thisTask;                                   
@@ -1829,11 +2128,5 @@ void collapseToOutcomeDistributedSetZero(QubitRegister qureg, const int measureQ
         }
     }
 }
-
-
-
-
-
-
 
 
