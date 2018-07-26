@@ -25,6 +25,11 @@ void densmatr_initPureState(QubitRegister targetQureg, QubitRegister copyQureg);
 REAL densmatr_calcTotalProbability(QubitRegister qureg);
 
 REAL densmatr_findProbabilityOfOutcome(QubitRegister qureg, const int measureQubit, int outcome);
+
+void densmatr_collapseToKnownProbOutcome(QubitRegister qureg, const int measureQubit, int outcome, REAL outcomeProb);
+	
+int densmatr_measureWithStats(QubitRegister qureg, int measureQubit, REAL *outcomeProb);
+	
 	
 /* operations upon density matrices */
 	
@@ -126,11 +131,11 @@ void statevec_controlledNot(QubitRegister qureg, const int controlQubit, const i
 
 REAL statevec_findProbabilityOfOutcome(QubitRegister qureg, const int measureQubit, int outcome);
 
-REAL statevec_collapseToOutcome(QubitRegister qureg, const int measureQubit, int outcome);
+void statevec_collapseToKnownProbOutcome(QubitRegister qureg, const int measureQubit, int outcome, REAL outcomeProb);
 
-int statevec_measure(QubitRegister qureg, int measureQubit);
+int statevec_measureWithStats(QubitRegister qureg, int measureQubit, REAL *outcomeProb);
 
-int statevec_measureWithStats(QubitRegister qureg, int measureQubit, REAL *stateProb);
+
 
 # ifdef __cplusplus
 }

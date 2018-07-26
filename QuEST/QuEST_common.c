@@ -59,6 +59,26 @@ void shiftIndices(int* indices, int numIndices, int shift) {
 		indices[j] += shift;
 }
 
+int generateMeasurementOutcome(REAL zeroProb, REAL *outcomeProb) {
+	
+	// randomly choose outcome
+	int outcome;
+    if (zeroProb < REAL_EPS) 
+		outcome = 1;
+    else if (1-zeroProb < REAL_EPS) 
+		outcome = 0;
+    else
+        outcome = (genrand_real1() > zeroProb);
+	
+	// set probability of outcome
+	if (outcome == 0)
+		*outcomeProb = zeroProb;
+	else
+		*outcomeProb = 1 - zeroProb;
+	
+	return outcome;
+}
+
 unsigned long int hashString(char *str){
     unsigned long int hash = 5381;
     int c;
@@ -255,7 +275,21 @@ void statevec_controlledRotateZ(QubitRegister qureg, const int controlQubit, con
     statevec_controlledRotateAroundAxis(qureg, controlQubit, targetQubit, angle, unitAxis);
 }
 
+int statevec_measureWithStats(QubitRegister qureg, int measureQubit, REAL *outcomeProb) {
+	
+	REAL zeroProb = statevec_findProbabilityOfOutcome(qureg, measureQubit, 0);
+	int outcome = generateMeasurementOutcome(zeroProb, outcomeProb);
+	statevec_collapseToKnownProbOutcome(qureg, measureQubit, outcome, *outcomeProb);
+	return outcome;
+}
 
+int densmatr_measureWithStats(QubitRegister qureg, int measureQubit, REAL *outcomeProb) {
+	
+	REAL zeroProb = densmatr_findProbabilityOfOutcome(qureg, measureQubit, 0);
+	int outcome = generateMeasurementOutcome(zeroProb, outcomeProb);
+	densmatr_collapseToKnownProbOutcome(qureg, measureQubit, outcome, *outcomeProb);
+	return outcome;
+}
 
 
 

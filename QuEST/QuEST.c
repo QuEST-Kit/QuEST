@@ -424,53 +424,44 @@ void initPureState(QubitRegister qureg, QubitRegister pure) {
 
 
 
-// @TODO
+// @TODO implement densmatr_collapseToKnownProbOutcome(qureg, measureQubit, outcome, outcomeProb);
 REAL collapseToOutcome(QubitRegister qureg, const int measureQubit, int outcome) {
 	validateTarget(qureg, measureQubit); // should rename? eh
 	validateOutcome(outcome);
-
-	if (qureg.isDensityMatrix) {
-		printf("ERROR: collapseToOutcome YET IMPLEMENTED FOR DENSITY MATRICES");
-		exit(1);
-	}	
 	
-	/*
-	capture probability of collapse and validate here? Or just let it be caught internally?
-	*/
+	REAL outcomeProb;
+	if (qureg.isDensityMatrix) {
+		outcomeProb = densmatr_findProbabilityOfOutcome(qureg, measureQubit, outcome);
+		validateMeasurementProb(outcomeProb);
+		densmatr_collapseToKnownProbOutcome(qureg, measureQubit, outcome, outcomeProb);
+	} else {
+		outcomeProb = statevec_findProbabilityOfOutcome(qureg, measureQubit, outcome);
+		validateMeasurementProb(outcomeProb);
+		statevec_collapseToKnownProbOutcome(qureg, measureQubit, outcome, outcomeProb);
+	}
 
-	return statevec_collapseToOutcome(qureg, measureQubit, outcome);
+	return outcomeProb;
 }
 
-// @TODO
+int measureWithStats(QubitRegister qureg, int measureQubit, REAL *outcomeProb) {
+	validateTarget(qureg, measureQubit); // should rename? eh
+
+	if (qureg.isDensityMatrix)
+		return densmatr_measureWithStats(qureg, measureQubit, outcomeProb);
+	else
+		return statevec_measureWithStats(qureg, measureQubit, outcomeProb);
+}
+
+
 int measure(QubitRegister qureg, int measureQubit) {
 	validateTarget(qureg, measureQubit); // should rename? eh
 	
-	if (qureg.isDensityMatrix) {
-		printf("ERROR: measure YET IMPLEMENTED FOR DENSITY MATRICES");
-		exit(1);
-	}
-	
-	return statevec_measure(qureg, measureQubit);
+	REAL discardedProb;
+	if (qureg.isDensityMatrix)
+		return densmatr_measureWithStats(qureg, measureQubit, &discardedProb);
+	else
+		return statevec_measureWithStats(qureg, measureQubit, &discardedProb);
 }
-
-// @TODO
-int measureWithStats(QubitRegister qureg, int measureQubit, REAL *stateProb) {
-	validateTarget(qureg, measureQubit); // should rename? eh
-
-
-	if (qureg.isDensityMatrix) {
-		printf("ERROR: measureWithStates NOT YET IMPLEMENTED FOR DENSITY MATRICES");
-		exit(1);
-	}	
-	
-	/*
-	capture probability of collapse and validate here? Or just let it be caught internally?
-	*/
-
-	return statevec_measureWithStats(qureg, measureQubit, stateProb);
-}
-
-
 
 
 

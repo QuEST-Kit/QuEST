@@ -5,13 +5,8 @@
  */
 
 # include "../QuEST.h"
-# include "../QuEST_internal.h"
 # include "../QuEST_precision.h"
-# include "../QuEST_validation.h" // throwing measurement prob errors after discovery
 # include "../mt19937ar.h"
-
-// debug: remove this after all validation is removed
-# include "../QuEST_validation.h"
 
 # include <stdlib.h>
 # include <stdio.h>
@@ -31,7 +26,20 @@ extern "C" {
 #endif
 
 
-// @TODO test 
+
+
+
+// @TODO implement
+void densmatr_collapseToKnownProbOutcome(QubitRegister qureg, const int measureQubit, int outcome, REAL outcomeProb) {
+	
+	/* IMPLEMENT THIS!!! */
+	
+	printf("densmatr_collapseToKnownProbOutcome not yet implemented on GPU!\n");
+	
+	
+}
+
+
 void statevec_initPureState(QubitRegister targetQureg, QubitRegister copyQureg) {
 	
 	// copy copyQureg's GPU statevec to targetQureg's GPU statevec
@@ -46,7 +54,6 @@ void statevec_initPureState(QubitRegister targetQureg, QubitRegister copyQureg) 
 		targetQureg.numAmpsPerChunk*sizeof(*(targetQureg.deviceStateVec.imag)), 
 		cudaMemcpyDeviceToDevice);
 }
-	
 
 void __global__ densmatr_initPureStateKernel(
 	long long int numPureAmps,
@@ -99,7 +106,6 @@ void densmatr_initStatePlus(QubitRegister qureg)
         qureg.deviceStateVec.real, 
         qureg.deviceStateVec.imag);
 }
-
 
 void __global__ densmatr_initClassicalStateKernel(
 	long long int densityNumElems, 
@@ -1540,7 +1546,7 @@ REAL densmatr_findProbabilityOfOutcome(QubitRegister qureg, const int measureQub
     return outcomeProb;
 }
 
-__global__ void statevec_collapseToOutcomeKernel(QubitRegister qureg, int measureQubit, REAL totalProbability, int outcome)
+__global__ void statevec_collapseToKnownProbOutcomeKernel(QubitRegister qureg, int measureQubit, int outcome, REAL totalProbability)
 {
     // ----- sizes
     long long int sizeBlock,                                           // size of blocks
@@ -1598,115 +1604,18 @@ __global__ void statevec_collapseToOutcomeKernel(QubitRegister qureg, int measur
         stateVecReal[index+sizeHalfBlock]=stateVecReal[index+sizeHalfBlock]*renorm;
         stateVecImag[index+sizeHalfBlock]=stateVecImag[index+sizeHalfBlock]*renorm;
     }
-
 }
 
 /*
- restructure this so that QuEST.c caller can inspect the probability first.
- Then, validation won't need to happen at all in here
+ * outcomeProb must accurately be the probability of that qubit outcome in the state-vector, or
+ * else the state-vector will lose normalisation
  */
-REAL statevec_collapseToOutcome(QubitRegister qureg, const int measureQubit, int outcome)
+void statevec_collapseToKnownProbOutcome(QubitRegister qureg, const int measureQubit, int outcome, REAL outcomeProb)
 {        
-    REAL stateProb;
-    stateProb = statevec_findProbabilityOfOutcome(qureg, measureQubit, outcome);
-    //auto_validateMeasurementProb(stateProb, collapseToOutcome);
-
     int threadsPerCUDABlock, CUDABlocks;
     threadsPerCUDABlock = 128;
     CUDABlocks = ceil((REAL)(qureg.numAmpsPerChunk>>1)/threadsPerCUDABlock);
-    if (stateProb!=0) statevec_collapseToOutcomeKernel<<<CUDABlocks, threadsPerCUDABlock>>>(qureg, measureQubit, stateProb, outcome);
-    return stateProb;
-}
-
-__global__ void statevec_measureInZeroKernel(QubitRegister qureg, int measureQubit, REAL totalProbability)
-{
-    // ----- sizes
-    long long int sizeBlock,                                           // size of blocks
-         sizeHalfBlock;                                       // size of blocks halved
-    // ----- indices
-    long long int thisBlock,                                           // current block
-         index;                                               // current index for first half block
-    // ----- measured probability
-    REAL   renorm;                                    // probability (returned) value
-    // ----- temp variables
-    long long int thisTask;                                   // task based approach for expose loop with small granularity
-    // (good for shared memory parallelism)
-    long long int numTasks=qureg.numAmpsPerChunk>>1;
-
-    // ---------------------------------------------------------------- //
-    //            tests                                                 //
-    // ---------------------------------------------------------------- //
-    // ---------------------------------------------------------------- //
-    //            dimensions                                            //
-    // ---------------------------------------------------------------- //
-    sizeHalfBlock = 1LL << (measureQubit);                       // number of state vector elements to sum,
-    // and then the number to skip
-    sizeBlock     = 2LL * sizeHalfBlock;                           // size of blocks (pairs of measure and skip entries)
-
-    // ---------------------------------------------------------------- //
-    //            find probability                                      //
-    // ---------------------------------------------------------------- //
-
-    //
-    // --- task-based shared-memory parallel implementation
-    //
-    renorm=1/sqrt(totalProbability);
-    REAL *stateVecReal = qureg.deviceStateVec.real;
-    REAL *stateVecImag = qureg.deviceStateVec.imag;
-
-    thisTask = blockIdx.x*blockDim.x + threadIdx.x;
-    if (thisTask>=numTasks) return;
-    thisBlock = thisTask / sizeHalfBlock;
-    index     = thisBlock*sizeBlock + thisTask%sizeHalfBlock;
-    stateVecReal[index]=stateVecReal[index]*renorm;
-    stateVecImag[index]=stateVecImag[index]*renorm;
-
-    stateVecReal[index+sizeHalfBlock]=0;
-    stateVecImag[index+sizeHalfBlock]=0;
-}
-
-REAL statevec_measureInZero(QubitRegister qureg, const int measureQubit)
-{        
-    REAL stateProb;
-    stateProb = statevec_findProbabilityOfZero(qureg, measureQubit);
-
-    int threadsPerCUDABlock, CUDABlocks;
-    threadsPerCUDABlock = 128;
-    CUDABlocks = ceil((REAL)(qureg.numAmpsPerChunk>>1)/threadsPerCUDABlock);
-    if (stateProb!=0) statevec_measureInZeroKernel<<<CUDABlocks, threadsPerCUDABlock>>>(qureg, measureQubit, stateProb);
-    return stateProb;
-}
-
-int statevec_measureWithStats(QubitRegister qureg, int measureQubit, REAL *stateProb){
-
-    int outcome;
-    // find probability of qubit being in state 1
-    REAL stateProbInternal = statevec_findProbabilityOfOutcome(qureg, measureQubit, 1);
-
-    // we can't collapse to a state that has a probability too close to zero
-    if (stateProbInternal<REAL_EPS) outcome=0;
-    else if (1-stateProbInternal<REAL_EPS) outcome=1;
-    else {
-        // ok. both P(0) and P(1) are large enough to resolve
-        // generate random float on [0,1]
-        float randNum = genrand_real1();
-        if (randNum<=stateProbInternal) outcome = 1;
-        else outcome = 0;
-    } 
-    if (outcome==0) stateProbInternal = 1-stateProbInternal;
-
-    int threadsPerCUDABlock, CUDABlocks;
-    threadsPerCUDABlock = 128;
-    CUDABlocks = ceil((REAL)(qureg.numAmpsPerChunk>>1)/threadsPerCUDABlock);
-    statevec_collapseToOutcomeKernel<<<CUDABlocks, threadsPerCUDABlock>>>(qureg, measureQubit, stateProbInternal, outcome);
-
-    *stateProb = stateProbInternal;
-    return outcome;
-}
-
-int statevec_measure(QubitRegister qureg, int measureQubit){
-    REAL stateProb;
-    return statevec_measureWithStats(qureg, measureQubit, &stateProb);
+    statevec_collapseToKnownProbOutcomeKernel<<<CUDABlocks, threadsPerCUDABlock>>>(qureg, measureQubit, outcome, outcomeProb);
 }
 
 #ifdef __cplusplus

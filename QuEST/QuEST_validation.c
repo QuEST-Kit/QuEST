@@ -81,6 +81,10 @@ void auto_validateOutcome(int outcome, const char* caller) {
 	QuESTAssert(outcome==0 || outcome==1, E_INVALID_QUBIT_OUTCOME, caller);
 }
 
+void auto_validateMeasurementProb(REAL prob, const char* caller) {
+	QuESTAssert(prob>REAL_EPS, E_COLLAPSE_STATE_ZERO_PROB, caller);
+}
+
 static const char* errorMessages[] = {
 	[E_INVALID_NUM_QUBITS] = "Invalid number of qubits. Must create >0.",
 	[E_INVALID_TARGET_QUBIT] = "Invalid target qubit. Note qubits are zero indexed.",

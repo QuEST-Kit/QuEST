@@ -1231,12 +1231,12 @@ int measure(QubitRegister qureg, int measureQubit);
  *
  * @param[in, out] qureg object representing the set of all qubits
  * @param[in] measureQubit qubit to measure
- * @param[out] stateProb a pointer to a REAL which is set to the probability of the occurred outcome
+ * @param[out] outcomeProb a pointer to a REAL which is set to the probability of the occurred outcome
  * @return the measurement outcome, 0 or 1
  * @throws exitWithError
  * 		if \p measureQubit is outside [0, \p qureg.numQubits)
  */
-int measureWithStats(QubitRegister qureg, int measureQubit, REAL *stateProb);
+int measureWithStats(QubitRegister qureg, int measureQubit, REAL *outcomeProb);
 
 /** Seed the Mersenne Twister used for random number generation in the QuEST environment with an example
  * defualt seed.

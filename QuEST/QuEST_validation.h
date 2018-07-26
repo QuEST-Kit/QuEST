@@ -15,7 +15,7 @@ extern "C" {
 	
 /* Wraps validation to automatically pass along the caller's signature.
  * N = number, Q = qureg, S = state, T = target, C = control, CS = controls, U = unitary
- * A = alpha, B = beta, V = vector, M = measurement outcome
+ * A = alpha, B = beta, V = vector, M = measurement outcome, P = probability
  */
 # define validateCreateNumQubits(N) auto_validateCreateNumQubits(N, __func__)
 # define validateStateIndex(Q, S) auto_validateStateIndex(Q, S, __func__)
@@ -27,8 +27,9 @@ extern "C" {
 # define validateUnitaryComplexPair(A, B) auto_validateUnitaryComplexPair(A, B, __func__)
 # define validateVector(V) auto_validateVector(V, __func__)
 # define validateStateVecQureg(Q) auto_validateStateVecQureg(Q, __func__)
-# define validatDensityMatrQureg(Q) auto_validatDensityMatrQureg(Q, __func__)
+# define validateDensityMatrQureg(Q) auto_validatDensityMatrQureg(Q, __func__)
 # define validateOutcome(M) auto_validateOutcome(M, __func__)
+# define validateMeasurementProb(P) auto_validateMeasurementProb(P, __func__)
 
 void auto_validateCreateNumQubits(int numQubits, const char* caller);
 void auto_validateStateIndex(QubitRegister qureg, long long int stateInd, const char* caller);
@@ -42,6 +43,7 @@ void auto_validateVector(Vector vector, const char* caller);
 void auto_validateStateVecQureg(QubitRegister qureg, const char* caller);
 void auto_validatDensityMatrQureg(QubitRegister qureg, const char* caller);
 void auto_validateOutcome(int outcome, const char* caller);
+void auto_validateMeasurementProb(REAL prob, const char* caller);
 
 /* BELOW WON'T NEED TO BE EXPOSED AFTER ALL INTEGRATED INTO QuEST_validation.h! :D */
 typedef enum {
