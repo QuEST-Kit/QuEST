@@ -49,41 +49,6 @@ void auto_validateMeasurementProb(REAL prob, const char* caller);
 void auto_validateMatchingQuregDims(QubitRegister qureg1, QubitRegister qureg2, const char *caller);
 void auto_validateSecondQuregStateVec(QubitRegister qureg2, const char *caller);
 
-/* BELOW WON'T NEED TO BE EXPOSED AFTER ALL INTEGRATED INTO QuEST_validation.h! :D */
-typedef enum {
-	E_SUCCESS=0,
-	E_INVALID_NUM_QUBITS,
-	E_INVALID_TARGET_QUBIT,
-	E_INVALID_CONTROL_QUBIT,
-	E_INVALID_STATE_INDEX,
-	E_TARGET_IS_CONTROL,
-	E_TARGET_IN_CONTROLS,
-	E_INVALID_NUM_CONTROLS,
-	E_NON_UNITARY_MATRIX,
-	E_NON_UNITARY_COMPLEX_PAIR,
-	E_ZERO_VECTOR,
-	E_SYS_TOO_BIG_TO_PRINT,
-	E_COLLAPSE_STATE_ZERO_PROB,
-	E_INVALID_QUBIT_OUTCOME,
-	E_CANNOT_OPEN_FILE,
-	E_SECOND_ARG_MUST_BE_STATEVEC,
-	E_MISMATCHING_REGISTER_DIMENSIONS,
-	E_DEFINED_ONLY_FOR_STATEVECS,
-	E_DEFINED_ONLY_FOR_DENSMATRS,
-} ErrorCode;
-
-/* BELOW WON'T NEED TO BE EXPOSED AFTER ALL INTEGRATED INTO QuEST_validation.h! :D */
-
-void exitWithError(ErrorCode code, const char *func);
-void QuESTAssert(int isValid, ErrorCode code, const char *func);
-
-/* BELOW WON'T NEED TO BE EXPOSED AFTER ALL INTEGRATED INTO QuEST_validation.h! :D */
-int isComplexUnit(Complex alpha);
-int isMatrixUnitary(ComplexMatrix2 u);
-int isComplexPairUnitary(Complex alpha, Complex beta);
-int isVectorUnit(REAL ux, REAL uy, REAL uz);
-
-
 # ifdef __cplusplus
 }
 # endif
