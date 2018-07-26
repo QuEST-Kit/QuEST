@@ -45,9 +45,6 @@ void densmatr_initPureStateDistributed(QubitRegister targetQureg, QubitRegister 
 }
 
 
-
-
-
 void densmatr_initClassicalState (QubitRegister qureg, long long int stateInd)
 {
     // dimension of the state vector
@@ -1628,9 +1625,7 @@ void statevec_hadamardDistributed(QubitRegister qureg, const int targetQubit,
 }
 
 void statevec_phaseShiftByTerm (QubitRegister qureg, const int targetQubit, Complex term)
-{
-	QuESTAssert(isComplexUnit(term), 16, __func__);
-	
+{	
     long long int index;
     long long int stateVecSize;
     int targetBit;
@@ -1716,11 +1711,9 @@ void statevec_multiControlledPhaseShift(QubitRegister qureg, int *controlQubits,
     const long long int chunkSize=qureg.numAmpsPerChunk;
     const long long int chunkId=qureg.chunkId;
 
-    QuESTAssert(numControlQubits > 0 && numControlQubits <= qureg.numQubitsInStateVec, 4, __func__);
     long long int mask=0;
     for (int i=0; i<numControlQubits; i++) 
 		mask = mask | (1LL<<controlQubits[i]);
-    QuESTAssert(mask >=0 && mask <= (1LL<<qureg.numQubitsInStateVec)-1, 2, __func__);
 
     stateVecSize = qureg.numAmpsPerChunk;
     REAL *stateVecReal = qureg.stateVec.real;
@@ -1912,11 +1905,7 @@ void statevec_controlledPhaseFlip (QubitRegister qureg, const int idQubit1, cons
 
     const long long int chunkSize=qureg.numAmpsPerChunk;
     const long long int chunkId=qureg.chunkId;
-
-    QuESTAssert(idQubit1 >= 0 && idQubit1 < qureg.numQubitsInStateVec, 2, __func__);
-    QuESTAssert(idQubit2 >= 0 && idQubit2 < qureg.numQubitsInStateVec, 1, __func__);
-    QuESTAssert(idQubit1 != idQubit2, 3, __func__);
-
+	
     // dimension of the state vector
     stateVecSize = qureg.numAmpsPerChunk;
     REAL *stateVecReal = qureg.stateVec.real;
@@ -1947,10 +1936,9 @@ void statevec_multiControlledPhaseFlip(QubitRegister qureg, int *controlQubits, 
     const long long int chunkSize=qureg.numAmpsPerChunk;
     const long long int chunkId=qureg.chunkId;
 
-    QuESTAssert(numControlQubits > 0 && numControlQubits <= qureg.numQubitsInStateVec, 4, __func__);
     long long int mask=0;
-    for (int i=0; i<numControlQubits; i++) mask = mask | (1LL<<controlQubits[i]);
-    QuESTAssert(mask >=0 && mask <= (1LL<<qureg.numQubitsInStateVec)-1, 2, __func__);
+    for (int i=0; i<numControlQubits; i++)
+		mask = mask | (1LL<<controlQubits[i]);
 
     stateVecSize = qureg.numAmpsPerChunk;
     REAL *stateVecReal = qureg.stateVec.real;

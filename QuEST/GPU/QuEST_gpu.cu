@@ -451,7 +451,7 @@ void statevec_initStateOfSingleQubit(QubitRegister *qureg, int qubitId, int outc
 }
 
 // returns 1 if successful, else 0
-void statevec_initStateFromSingleFile(QubitRegister *qureg, char filename[200], QuESTEnv env){
+int statevec_initStateFromSingleFile(QubitRegister *qureg, char filename[200], QuESTEnv env){
     long long int chunkSize, stateVecSize;
     long long int indexInChunk, totalIndex;
 

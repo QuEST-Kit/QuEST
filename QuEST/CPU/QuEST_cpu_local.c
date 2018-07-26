@@ -28,13 +28,20 @@
 
 
 
+
+
+
 // @TODO
+void densmatr_collapseToKnownProbOutcome(QubitRegister qureg, const int measureQubit, int outcome, REAL stateProb)
+{
+    //statevec_collapseToKnownProbOutcomeLocal(qureg, measureQubit, outcome, stateProb);
+}
+
+
+
+
+
 void densmatr_initPureState(QubitRegister targetQureg, QubitRegister copyQureg) {
-	
-	QuESTAssert(targetQureg.isDensityMatrix, 14, __func__);
-	QuESTAssert( !copyQureg.isDensityMatrix, 12, __func__);
-	QuESTAssert(targetQureg.numQubitsRepresented==copyQureg.numQubitsInStateVec, 13, __func__);
-	
 	densmatr_initPureStateLocal(targetQureg, copyQureg);
 }
 
@@ -139,73 +146,46 @@ REAL statevec_getImagAmpEl(QubitRegister qureg, long long int index){
 
 void statevec_compactUnitary(QubitRegister qureg, const int targetQubit, Complex alpha, Complex beta) 
 {
-    QuESTAssert(targetQubit >= 0 && targetQubit < qureg.numQubitsInStateVec, 1, __func__);
-    QuESTAssert(isComplexPairUnitary(alpha, beta), 6, __func__);
-
-    // all values required to update state vector lie in this rank
     statevec_compactUnitaryLocal(qureg, targetQubit, alpha, beta);
 }
 
 void statevec_unitary(QubitRegister qureg, const int targetQubit, ComplexMatrix2 u) 
 {
-    QuESTAssert(targetQubit >= 0 && targetQubit < qureg.numQubitsInStateVec, 1, __func__);
-    QuESTAssert(isMatrixUnitary(u), 5, __func__);
-
-    // all values required to update state vector lie in this rank
     statevec_unitaryLocal(qureg, targetQubit, u);
 }
 
 void statevec_controlledCompactUnitary(QubitRegister qureg, const int controlQubit, const int targetQubit, Complex alpha, Complex beta) 
 {
-    QuESTAssert(targetQubit >= 0 && targetQubit < qureg.numQubitsInStateVec, 1, __func__);
-    QuESTAssert(controlQubit >= 0 && controlQubit < qureg.numQubitsInStateVec, 2, __func__);
-    QuESTAssert(controlQubit != targetQubit, 3, __func__);
-    QuESTAssert(isComplexPairUnitary(alpha, beta), 6, __func__);
-
-
     statevec_controlledCompactUnitaryLocal(qureg, controlQubit, targetQubit, alpha, beta);
 }
 
 void statevec_controlledUnitary(QubitRegister qureg, const int controlQubit, const int targetQubit, ComplexMatrix2 u) 
 {
-    QuESTAssert(targetQubit >= 0 && targetQubit < qureg.numQubitsInStateVec, 1, __func__);
-    QuESTAssert(controlQubit >= 0 && controlQubit < qureg.numQubitsInStateVec, 2, __func__);
-    QuESTAssert(controlQubit != targetQubit, 3, __func__);
-    QuESTAssert(isMatrixUnitary(u), 5, __func__);
-
     statevec_controlledUnitaryLocal(qureg, controlQubit, targetQubit, u);
 }
 
 void statevec_multiControlledUnitary(QubitRegister qureg, int* controlQubits, const int numControlQubits, const int targetQubit, ComplexMatrix2 u) 
 {
-    QuESTAssert(targetQubit >= 0 && targetQubit < qureg.numQubitsInStateVec, 1, __func__);
-    QuESTAssert(numControlQubits > 0 && numControlQubits <= qureg.numQubitsInStateVec, 4, __func__);
-    QuESTAssert(isMatrixUnitary(u), 5, __func__);
-
     long long int mask=0; 
-    for (int i=0; i<numControlQubits; i++) mask = mask | (1LL<<controlQubits[i]);
-    QuESTAssert(mask >=0 && mask <= (1LL<<qureg.numQubitsInStateVec)-1, 2, __func__);
-    QuESTAssert((mask & (1LL<<targetQubit)) != (1LL<<targetQubit), 3, __func__);
+    for (int i=0; i<numControlQubits; i++)
+		mask = mask | (1LL<<controlQubits[i]);
 
     statevec_multiControlledUnitaryLocal(qureg, targetQubit, mask, u);
 }
 
 void statevec_sigmaX(QubitRegister qureg, const int targetQubit) 
 {
-    QuESTAssert(targetQubit >= 0 && targetQubit < qureg.numQubitsInStateVec, 1, __func__);
     statevec_sigmaXLocal(qureg, targetQubit);
 }
 
 void statevec_sigmaY(QubitRegister qureg, const int targetQubit) 
 {
-    QuESTAssert(targetQubit >= 0 && targetQubit < qureg.numQubitsInStateVec, 1, __func__);
 	int conjFac = 1;
     statevec_sigmaYLocal(qureg, targetQubit, conjFac);
 }
 
 void statevec_sigmaYConj(QubitRegister qureg, const int targetQubit) 
 {
-    QuESTAssert(targetQubit >= 0 && targetQubit < qureg.numQubitsInStateVec, 1, __func__);
 	int conjFac = -1;
     statevec_sigmaYLocal(qureg, targetQubit, conjFac);
 }
@@ -224,21 +204,16 @@ void statevec_controlledSigmaYConj(QubitRegister qureg, const int controlQubit, 
 
 void statevec_hadamard(QubitRegister qureg, const int targetQubit) 
 {
-    QuESTAssert(targetQubit >= 0 && targetQubit < qureg.numQubitsInStateVec, 1, __func__);
     statevec_hadamardLocal(qureg, targetQubit);
 }
 
 void statevec_controlledNot(QubitRegister qureg, const int controlQubit, const int targetQubit) 
 {
-    QuESTAssert(targetQubit >= 0 && targetQubit < qureg.numQubitsInStateVec, 1, __func__);
-    QuESTAssert(controlQubit >= 0 && controlQubit < qureg.numQubitsInStateVec, 2, __func__);
-    QuESTAssert(controlQubit != targetQubit, 3, __func__);
     statevec_controlledNotLocal(qureg, controlQubit, targetQubit);
 }
 
 REAL statevec_findProbabilityOfOutcome(QubitRegister qureg, const int measureQubit, int outcome)
 {
-    QuESTAssert(measureQubit >= 0 && measureQubit < qureg.numQubitsInStateVec, 2, __func__);
     REAL stateProb=0;
     stateProb = statevec_findProbabilityOfZeroLocal(qureg, measureQubit);
     if (outcome==1) stateProb = 1.0 - stateProb;
@@ -253,8 +228,7 @@ REAL densmatr_findProbabilityOfOutcome(QubitRegister qureg, const int measureQub
 	return outcomeProb;
 }
 
-REAL statevec_collapseToKnownProbOutcome(QubitRegister qureg, const int measureQubit, int outcome, REAL stateProb)
+void statevec_collapseToKnownProbOutcome(QubitRegister qureg, const int measureQubit, int outcome, REAL stateProb)
 {
-    statevec_collapseToOutcomeLocal(qureg, measureQubit, outcome, stateProb);
-    return stateProb;
+    statevec_collapseToKnownProbOutcomeLocal(qureg, measureQubit, outcome, stateProb);
 }
