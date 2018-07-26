@@ -7,6 +7,7 @@
 # include "../QuEST.h"
 # include "../QuEST_internal.h"
 # include "../QuEST_precision.h"
+# include "../QuEST_validation.h" // throwing measurement prob errors after discovery
 # include "../mt19937ar.h"
 
 // debug: remove this after all validation is removed
@@ -136,9 +137,7 @@ void densmatr_initClassicalState(QubitRegister qureg, long long int stateInd)
 }
 
 void statevec_createQubitRegister(QubitRegister *qureg, int numQubits, QuESTEnv env)
-{
-    QuESTAssert(numQubits>0, 9, __func__);
-	
+{	
     // allocate CPU memory
     long long int numAmps = 1L << numQubits;
     long long int numAmpsPerRank = numAmps/env.numRanks;
@@ -559,8 +558,6 @@ __global__ void statevec_compactUnitaryKernel (QubitRegister qureg, const int ro
 
 void statevec_compactUnitary(QubitRegister qureg, const int targetQubit, Complex alpha, Complex beta) 
 {
-    QuESTAssert(targetQubit >= 0 && targetQubit < qureg.numQubitsInStateVec, 1, __func__);
-    QuESTAssert(isComplexPairUnitary(alpha, beta), 6, __func__);
     int threadsPerCUDABlock, CUDABlocks;
     threadsPerCUDABlock = 128;
     CUDABlocks = ceil((REAL)(qureg.numAmpsPerChunk>>1)/threadsPerCUDABlock);
@@ -628,11 +625,6 @@ __global__ void statevec_controlledCompactUnitaryKernel (QubitRegister qureg, co
 
 void statevec_controlledCompactUnitary(QubitRegister qureg, const int controlQubit, const int targetQubit, Complex alpha, Complex beta) 
 {
-    QuESTAssert(targetQubit >= 0 && targetQubit < qureg.numQubitsInStateVec, 1, __func__);
-    QuESTAssert(controlQubit >= 0 && controlQubit < qureg.numQubitsInStateVec, 2, __func__);
-    QuESTAssert(controlQubit != targetQubit, 3, __func__);
-    QuESTAssert(isComplexPairUnitary(alpha, beta), 6, __func__);
-
     int threadsPerCUDABlock, CUDABlocks;
     threadsPerCUDABlock = 128;
     CUDABlocks = ceil((REAL)(qureg.numAmpsPerChunk>>1)/threadsPerCUDABlock);
@@ -694,8 +686,6 @@ __global__ void statevec_unitaryKernel(QubitRegister qureg, const int targetQubi
 
 void statevec_unitary(QubitRegister qureg, const int targetQubit, ComplexMatrix2 u)
 {
-    QuESTAssert(targetQubit >= 0 && targetQubit < qureg.numQubitsInStateVec, 1, __func__);
-    QuESTAssert(isMatrixUnitary(u), 5, __func__);
     int threadsPerCUDABlock, CUDABlocks;
     threadsPerCUDABlock = 128;
     CUDABlocks = ceil((REAL)(qureg.numAmpsPerChunk>>1)/threadsPerCUDABlock);
@@ -762,11 +752,6 @@ __global__ void statevec_controlledUnitaryKernel(QubitRegister qureg, const int 
 
 void statevec_controlledUnitary(QubitRegister qureg, const int controlQubit, const int targetQubit, ComplexMatrix2 u)
 {
-    QuESTAssert(targetQubit >= 0 && targetQubit < qureg.numQubitsInStateVec, 1, __func__);
-    QuESTAssert(controlQubit >= 0 && controlQubit < qureg.numQubitsInStateVec, 2, __func__);
-    QuESTAssert(controlQubit != targetQubit, 3, __func__);
-    QuESTAssert(isMatrixUnitary(u), 5, __func__);
-
     int threadsPerCUDABlock, CUDABlocks;
     threadsPerCUDABlock = 128;
     CUDABlocks = ceil((REAL)(qureg.numAmpsPerChunk>>1)/threadsPerCUDABlock);
@@ -831,17 +816,11 @@ __global__ void statevec_multiControlledUnitaryKernel(QubitRegister qureg, long 
 
 void statevec_multiControlledUnitary(QubitRegister qureg, int *controlQubits, int numControlQubits, const int targetQubit, ComplexMatrix2 u)
 {
-    QuESTAssert(targetQubit >= 0 && targetQubit < qureg.numQubitsInStateVec, 1, __func__);
-    QuESTAssert(numControlQubits > 0 && numControlQubits <= qureg.numQubitsInStateVec, 4, __func__);
-    QuESTAssert(isMatrixUnitary(u), 5, __func__);
     int threadsPerCUDABlock, CUDABlocks;
     long long int mask=0;
     for (int i=0; i<numControlQubits; i++) mask = mask | (1LL<<controlQubits[i]);
-    QuESTAssert(mask >=0 && mask <= (1LL<<qureg.numQubitsInStateVec)-1, 2, __func__);
-    QuESTAssert((mask & (1LL<<targetQubit)) != (1LL<<targetQubit), 3, __func__);
     threadsPerCUDABlock = 128;
     CUDABlocks = ceil((REAL)(qureg.numAmpsPerChunk>>1)/threadsPerCUDABlock);
-
     statevec_multiControlledUnitaryKernel<<<CUDABlocks, threadsPerCUDABlock>>>(qureg, mask, targetQubit, u);
 }
 
@@ -891,7 +870,6 @@ __global__ void statevec_sigmaXKernel(QubitRegister qureg, const int targetQubit
 
 void statevec_sigmaX(QubitRegister qureg, const int targetQubit) 
 {
-    QuESTAssert(targetQubit >= 0 && targetQubit < qureg.numQubitsInStateVec, 1, __func__);
     int threadsPerCUDABlock, CUDABlocks;
     threadsPerCUDABlock = 128;
     CUDABlocks = ceil((REAL)(qureg.numAmpsPerChunk>>1)/threadsPerCUDABlock);
@@ -926,7 +904,6 @@ __global__ void statevec_sigmaYKernel(QubitRegister qureg, const int targetQubit
 
 void statevec_sigmaY(QubitRegister qureg, const int targetQubit) 
 {
-    QuESTAssert(targetQubit >= 0 && targetQubit < qureg.numQubitsInStateVec, 1, __func__);
     int threadsPerCUDABlock, CUDABlocks;
     threadsPerCUDABlock = 128;
     CUDABlocks = ceil((REAL)(qureg.numAmpsPerChunk>>1)/threadsPerCUDABlock);
@@ -935,7 +912,6 @@ void statevec_sigmaY(QubitRegister qureg, const int targetQubit)
 
 void statevec_sigmaYConj(QubitRegister qureg, const int targetQubit) 
 {
-    QuESTAssert(targetQubit >= 0 && targetQubit < qureg.numQubitsInStateVec, 1, __func__);
     int threadsPerCUDABlock, CUDABlocks;
     threadsPerCUDABlock = 128;
     CUDABlocks = ceil((REAL)(qureg.numAmpsPerChunk>>1)/threadsPerCUDABlock);
@@ -980,10 +956,6 @@ __global__ void statevec_controlledSigmaYKernel(QubitRegister qureg, const int c
 
 void statevec_controlledSigmaY(QubitRegister qureg, const int controlQubit, const int targetQubit)
 {
-    QuESTAssert(targetQubit >= 0 && targetQubit < qureg.numQubitsInStateVec, 1, __func__);
-    QuESTAssert(controlQubit >= 0 && controlQubit < qureg.numQubitsInStateVec, 2, __func__);
-    QuESTAssert(controlQubit != targetQubit, 3, __func__);
-
 	int conjFactor = 1;
     int threadsPerCUDABlock, CUDABlocks;
     threadsPerCUDABlock = 128;
@@ -993,10 +965,6 @@ void statevec_controlledSigmaY(QubitRegister qureg, const int controlQubit, cons
 
 void statevec_controlledSigmaYConj(QubitRegister qureg, const int controlQubit, const int targetQubit)
 {
-    QuESTAssert(targetQubit >= 0 && targetQubit < qureg.numQubitsInStateVec, 1, __func__);
-    QuESTAssert(controlQubit >= 0 && controlQubit < qureg.numQubitsInStateVec, 2, __func__);
-    QuESTAssert(controlQubit != targetQubit, 3, __func__);
-
 	int conjFactor = 1;
     int threadsPerCUDABlock, CUDABlocks;
     threadsPerCUDABlock = 128;
@@ -1033,10 +1001,7 @@ __global__ void statevec_phaseShiftByTermKernel(QubitRegister qureg, const int t
 }
 
 void statevec_phaseShiftByTerm(QubitRegister qureg, const int targetQubit, Complex term)
-{
-    QuESTAssert(targetQubit >= 0 && targetQubit < qureg.numQubitsInStateVec, 1, __func__);
-	QuESTAssert(isComplexUnit(term), 16, __func__);
-	
+{	
 	REAL cosAngle = term.real;
 	REAL sinAngle = term.imag;
 	
@@ -1073,10 +1038,6 @@ __global__ void statevec_controlledPhaseShiftKernel(QubitRegister qureg, const i
 
 void statevec_controlledPhaseShift(QubitRegister qureg, const int idQubit1, const int idQubit2, REAL angle)
 {
-    QuESTAssert(idQubit1 >= 0 && idQubit1 < qureg.numQubitsInStateVec, 1, __func__);
-	QuESTAssert(idQubit2 >= 0 && idQubit2 < qureg.numQubitsInStateVec, 2, __func__);
-	QuESTAssert(idQubit1 != idQubit2, 3, __func__);
-	
 	REAL cosAngle = cos(angle);
 	REAL sinAngle = sin(angle);
 	
@@ -1107,18 +1068,14 @@ __global__ void statevec_multiControlledPhaseShiftKernel(QubitRegister qureg, lo
 }
 
 void statevec_multiControlledPhaseShift(QubitRegister qureg, int *controlQubits, int numControlQubits, REAL angle)
-{
-    QuESTAssert(numControlQubits > 0 && numControlQubits <= qureg.numQubitsInStateVec, 4, __func__);
-	
+{	
 	REAL cosAngle = cos(angle);
 	REAL sinAngle = sin(angle);
 
     long long int mask=0;
     for (int i=0; i<numControlQubits; i++) 
 		mask = mask | (1LL<<controlQubits[i]);
-	
-    QuESTAssert(mask >=0 && mask <= (1LL<<qureg.numQubitsInStateVec)-1, 2, __func__);
-	
+		
 	int threadsPerCUDABlock, CUDABlocks;
     threadsPerCUDABlock = 128;
     CUDABlocks = ceil((REAL)(qureg.numAmpsPerChunk)/threadsPerCUDABlock);
@@ -1203,10 +1160,6 @@ __global__ void statevec_controlledPhaseFlipKernel(QubitRegister qureg, const in
 
 void statevec_controlledPhaseFlip(QubitRegister qureg, const int idQubit1, const int idQubit2)
 {
-    QuESTAssert(idQubit1 >= 0 && idQubit1 < qureg.numQubitsInStateVec, 2, __func__);
-    QuESTAssert(idQubit2 >= 0 && idQubit2 < qureg.numQubitsInStateVec, 1, __func__);
-    QuESTAssert(idQubit1 != idQubit2, 3, __func__);
-
     int threadsPerCUDABlock, CUDABlocks;
     threadsPerCUDABlock = 128;
     CUDABlocks = ceil((REAL)(qureg.numAmpsPerChunk)/threadsPerCUDABlock);
@@ -1233,12 +1186,9 @@ __global__ void statevec_multiControlledPhaseFlipKernel(QubitRegister qureg, lon
 
 void statevec_multiControlledPhaseFlip(QubitRegister qureg, int *controlQubits, int numControlQubits)
 {
-    QuESTAssert(numControlQubits > 0 && numControlQubits <= qureg.numQubitsInStateVec, 4, __func__);
-
     int threadsPerCUDABlock, CUDABlocks;
     long long int mask=0;
     for (int i=0; i<numControlQubits; i++) mask = mask | (1LL<<controlQubits[i]);
-    QuESTAssert(mask >=0 && mask <= (1LL<<qureg.numQubitsInStateVec)-1, 2, __func__);
     threadsPerCUDABlock = 128;
     CUDABlocks = ceil((REAL)(qureg.numAmpsPerChunk)/threadsPerCUDABlock);
     statevec_multiControlledPhaseFlipKernel<<<CUDABlocks, threadsPerCUDABlock>>>(qureg, mask);
@@ -1296,7 +1246,6 @@ __global__ void statevec_hadamardKernel (QubitRegister qureg, const int targetQu
 
 void statevec_hadamard(QubitRegister qureg, const int targetQubit) 
 {
-    QuESTAssert(targetQubit >= 0 && targetQubit < qureg.numQubitsInStateVec, 1, __func__);
     int threadsPerCUDABlock, CUDABlocks;
     threadsPerCUDABlock = 128;
     CUDABlocks = ceil((REAL)(qureg.numAmpsPerChunk>>1)/threadsPerCUDABlock);
@@ -1344,10 +1293,6 @@ __global__ void statevec_controlledNotKernel(QubitRegister qureg, const int cont
 
 void statevec_controlledNot(QubitRegister qureg, const int controlQubit, const int targetQubit)
 {
-    QuESTAssert(targetQubit >= 0 && targetQubit < qureg.numQubitsInStateVec, 1, __func__);
-    QuESTAssert(controlQubit >= 0 && controlQubit < qureg.numQubitsInStateVec, 2, __func__);
-    QuESTAssert(controlQubit != targetQubit, 3, __func__);
-
     int threadsPerCUDABlock, CUDABlocks;
     threadsPerCUDABlock = 128;
     CUDABlocks = ceil((REAL)(qureg.numAmpsPerChunk)/threadsPerCUDABlock);
@@ -1581,7 +1526,6 @@ REAL statevec_findProbabilityOfZero(QubitRegister qureg, const int measureQubit)
 
 REAL statevec_findProbabilityOfOutcome(QubitRegister qureg, const int measureQubit, int outcome)
 {
-    QuESTAssert(measureQubit >= 0 && measureQubit < qureg.numQubitsInStateVec, 1, __func__);
     REAL stateProb=0;
     stateProb = statevec_findProbabilityOfZero(qureg, measureQubit);
     if (outcome==1) stateProb = 1.0 - stateProb;
@@ -1590,7 +1534,6 @@ REAL statevec_findProbabilityOfOutcome(QubitRegister qureg, const int measureQub
 
 REAL densmatr_findProbabilityOfOutcome(QubitRegister qureg, const int measureQubit, int outcome)
 {
-    QuESTAssert(measureQubit >= 0 && measureQubit < qureg.numQubitsInStateVec, 1, __func__);
     REAL outcomeProb = statevec_findProbabilityOfZero(qureg, measureQubit);
     if (outcome==1) 
 		outcomeProb = 1.0 - outcomeProb;
@@ -1658,13 +1601,15 @@ __global__ void statevec_collapseToOutcomeKernel(QubitRegister qureg, int measur
 
 }
 
+/*
+ restructure this so that QuEST.c caller can inspect the probability first.
+ Then, validation won't need to happen at all in here
+ */
 REAL statevec_collapseToOutcome(QubitRegister qureg, const int measureQubit, int outcome)
 {        
-    QuESTAssert(measureQubit >= 0 && measureQubit < qureg.numQubitsInStateVec, 2, __func__);
-    QuESTAssert((outcome==0 || outcome==1), 10, __func__);
     REAL stateProb;
     stateProb = statevec_findProbabilityOfOutcome(qureg, measureQubit, outcome);
-    QuESTAssert(fabs(stateProb)>REAL_EPS, 8, __func__);
+    //auto_validateMeasurementProb(stateProb, collapseToOutcome);
 
     int threadsPerCUDABlock, CUDABlocks;
     threadsPerCUDABlock = 128;
@@ -1733,7 +1678,6 @@ REAL statevec_measureInZero(QubitRegister qureg, const int measureQubit)
 }
 
 int statevec_measureWithStats(QubitRegister qureg, int measureQubit, REAL *stateProb){
-    QuESTAssert(measureQubit >= 0 && measureQubit < qureg.numQubitsInStateVec, 2, __func__);
 
     int outcome;
     // find probability of qubit being in state 1
@@ -1761,7 +1705,6 @@ int statevec_measureWithStats(QubitRegister qureg, int measureQubit, REAL *state
 }
 
 int statevec_measure(QubitRegister qureg, int measureQubit){
-    QuESTAssert(measureQubit >= 0 && measureQubit < qureg.numQubitsInStateVec, 2, __func__);
     REAL stateProb;
     return statevec_measureWithStats(qureg, measureQubit, &stateProb);
 }
