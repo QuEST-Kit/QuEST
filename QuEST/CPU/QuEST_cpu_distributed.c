@@ -810,75 +810,23 @@ REAL densmatr_findProbabilityOfOutcome(QubitRegister qureg, const int measureQub
 	return outcomeProb;
 }
 
-REAL statevec_collapseToOutcome(QubitRegister qureg, const int measureQubit, int outcome)
+REAL statevec_collapseToKnownProbOutcome(QubitRegister qureg, const int measureQubit, int outcome, REAL totalStateProb)
 {
-    QuESTAssert(measureQubit >= 0 && measureQubit < qureg.numQubitsInStateVec, 2, __func__);
-    QuESTAssert((outcome==0 || outcome==1), 10, __func__);
-
-    REAL totalStateProb = statevec_findProbabilityOfOutcome(qureg, measureQubit, outcome);
-    QuESTAssert(absReal(totalStateProb)>REAL_EPS, 8, __func__);
-
     int skipValuesWithinRank = halfMatrixBlockFitsInChunk(qureg.numAmpsPerChunk, measureQubit);
     if (skipValuesWithinRank) {
-        statevec_collapseToOutcomeLocal(qureg, measureQubit, totalStateProb, outcome);
+        statevec_collapseToKnownProbOutcomeLocal(qureg, measureQubit, outcome, totalStateProb);
     } else {
         if (!isChunkToSkipInFindPZero(qureg.chunkId, qureg.numAmpsPerChunk, measureQubit)){
             // chunk has amps for q=0
-            if (outcome==0) statevec_collapseToOutcomeDistributedRenorm(qureg, measureQubit, 
+            if (outcome==0) statevec_collapseToKnownProbOutcomeDistributedRenorm(qureg, measureQubit, 
                     totalStateProb);
-            else statevec_collapseToOutcomeDistributedSetZero(qureg, measureQubit);
+            else statevec_collapseToOutcomeDistributedSetZero(qureg);
         } else {
             // chunk has amps for q=1
-            if (outcome==1) statevec_collapseToOutcomeDistributedRenorm(qureg, measureQubit, 
+            if (outcome==1) statevec_collapseToKnownProbOutcomeDistributedRenorm(qureg, measureQubit, 
                     totalStateProb);
-            else statevec_collapseToOutcomeDistributedSetZero(qureg, measureQubit);
+            else statevec_collapseToOutcomeDistributedSetZero(qureg);
         }
     }
     return totalStateProb;
-}
-
-int statevec_measureWithStats(QubitRegister qureg, int measureQubit, REAL *stateProb){
-    QuESTAssert(measureQubit >= 0 && measureQubit < qureg.numQubitsInStateVec, 2, __func__);
-
-    int outcome;
-    // find probability of qubit being in state 1
-    REAL stateProbInternal = statevec_findProbabilityOfOutcome(qureg, measureQubit, 1);
-
-    // we can't collapse to a state that has a probability too close to zero
-    if (stateProbInternal<REAL_EPS) outcome=0;
-    else if (1-stateProbInternal<REAL_EPS) outcome=1;
-    else {
-        // ok. both P(0) and P(1) are large enough to resolve
-        // generate random float on [0,1]
-        float randNum = genrand_real1();
-        if (randNum<=stateProbInternal) outcome = 1;
-        else outcome = 0;
-    } 
-    if (outcome==0) stateProbInternal = 1-stateProbInternal;
-
-    int skipValuesWithinRank = halfMatrixBlockFitsInChunk(qureg.numAmpsPerChunk, measureQubit);
-    if (skipValuesWithinRank) {
-        statevec_collapseToOutcomeLocal(qureg, measureQubit, stateProbInternal, outcome);
-    } else {
-        if (!isChunkToSkipInFindPZero(qureg.chunkId, qureg.numAmpsPerChunk, measureQubit)){
-            // chunk has amps for q=0
-            if (outcome==0) statevec_collapseToOutcomeDistributedRenorm(qureg, measureQubit, 
-                    stateProbInternal);
-            else statevec_collapseToOutcomeDistributedSetZero(qureg, measureQubit);
-        } else {
-            // chunk has amps for q=1
-            if (outcome==1) statevec_collapseToOutcomeDistributedRenorm(qureg, measureQubit, 
-                    stateProbInternal);
-            else statevec_collapseToOutcomeDistributedSetZero(qureg, measureQubit);
-        }
-    }
-
-    *stateProb = stateProbInternal;
-    return outcome;
-}
-
-int statevec_measure(QubitRegister qureg, int measureQubit){
-    QuESTAssert(measureQubit >= 0 && measureQubit < qureg.numQubitsInStateVec, 2, __func__);
-    REAL stateProb; 
-    return statevec_measureWithStats(qureg, measureQubit, &stateProb); 
 }

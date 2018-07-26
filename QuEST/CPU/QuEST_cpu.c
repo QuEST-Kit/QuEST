@@ -1983,7 +1983,7 @@ void statevec_multiControlledPhaseFlip(QubitRegister qureg, int *controlQubits, 
  *  @param[in] totalProbability probability of qubit measureQubit being either zero or one
  *  @param[in] outcome to measure the probability of and set the state to -- either zero or one
  */
-void statevec_collapseToOutcomeLocal(QubitRegister qureg, int measureQubit, REAL totalProbability, int outcome)
+void statevec_collapseToKnownProbOutcomeLocal(QubitRegister qureg, int measureQubit, int outcome, REAL totalProbability)
 {
     // ----- sizes
     long long int sizeBlock,                                  // size of blocks
@@ -2065,7 +2065,7 @@ void statevec_collapseToOutcomeLocal(QubitRegister qureg, int measureQubit, REAL
  *  @param[in] measureQubit qubit to measure
  *  @param[in] totalProbability probability of qubit measureQubit being zero
  */
-REAL statevec_collapseToOutcomeDistributedRenorm (QubitRegister qureg, const int measureQubit, const REAL totalProbability)
+void statevec_collapseToKnownProbOutcomeDistributedRenorm (QubitRegister qureg, const int measureQubit, const REAL totalProbability)
 {
     // ----- temp variables
     long long int thisTask;                                   
@@ -2090,7 +2090,6 @@ REAL statevec_collapseToOutcomeDistributedRenorm (QubitRegister qureg, const int
             stateVecImag[thisTask] = stateVecImag[thisTask]*renorm;
         }
     }
-    return totalProbability;
 }
 
 /** Set all amplitudes in one chunk to 0. 
@@ -2105,7 +2104,7 @@ REAL statevec_collapseToOutcomeDistributedRenorm (QubitRegister qureg, const int
  *  @param[in,out] qureg object representing the set of qubits
  *  @param[in] measureQubit qubit to measure
  */
-void statevec_collapseToOutcomeDistributedSetZero(QubitRegister qureg, const int measureQubit)
+void statevec_collapseToOutcomeDistributedSetZero(QubitRegister qureg)
 {
     // ----- temp variables
     long long int thisTask;                                   
