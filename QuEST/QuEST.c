@@ -20,12 +20,6 @@
 # include "QuEST_validation.h"
 # include "QuEST_ops.h"
 
-
-// just for debug printing and exiting: can remove later
-# include <stdio.h>
-# include <stdlib.h>
-
-
 #ifdef __cplusplus
 extern "C" {
 #endif
