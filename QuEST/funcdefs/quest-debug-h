@@ -1,5 +1,0 @@
-compareStates    prototype    41 ../QuEST_debug.h int compareStates(MultiQubit mq1, MultiQubit mq2, REAL precision);
-initStateDebug   prototype    31 ../QuEST_debug.h void initStateDebug(MultiQubit multiQubit);
-initStateOfSingleQubit prototype    24 ../QuEST_debug.h void initStateOfSingleQubit(MultiQubit *multiQubit, int qubitId, int outcome);
-initializeStateFromSingleFile prototype    36 ../QuEST_debug.h void initializeStateFromSingleFile(MultiQubit *multiQubit, char filename[200], QuESTEnv env);
-reportNodeList   prototype    47 ../QuEST_debug.h void reportNodeList(QuESTEnv env);

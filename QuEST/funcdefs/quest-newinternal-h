@@ -1,7 +1,0 @@
-QuESTAssert      prototype    14 QuEST_newinternal.h void QuESTAssert(int isValid, int errorCode, const char *func);
-exitWithError    prototype    12 QuEST_newinternal.h void exitWithError(int errorCode, const char *func);
-hashString       prototype    16 QuEST_newinternal.h unsigned long int hashString(char *str);
-phaseGate        prototype    10 QuEST_newinternal.h void phaseGate(MultiQubit multiQubit, const int targetQubit, enum phaseGateType type);
-validateAlphaBeta prototype    21 QuEST_newinternal.h int validateAlphaBeta(Complex alpha, Complex beta);
-validateMatrixIsUnitary prototype    19 QuEST_newinternal.h int validateMatrixIsUnitary(ComplexMatrix2 u);
-validateUnitVector prototype    23 QuEST_newinternal.h int validateUnitVector(REAL ux, REAL uy, REAL uz);
