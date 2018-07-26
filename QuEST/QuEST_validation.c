@@ -7,7 +7,7 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
-	
+    
 # include "QuEST.h"
 # include "QuEST_precision.h"
 # include "QuEST_internal.h"
@@ -17,46 +17,46 @@ extern "C" {
 # include <stdlib.h>
 
 typedef enum {
-	E_SUCCESS=0,
-	E_INVALID_NUM_QUBITS,
-	E_INVALID_TARGET_QUBIT,
-	E_INVALID_CONTROL_QUBIT,
-	E_INVALID_STATE_INDEX,
-	E_TARGET_IS_CONTROL,
-	E_TARGET_IN_CONTROLS,
-	E_INVALID_NUM_CONTROLS,
-	E_NON_UNITARY_MATRIX,
-	E_NON_UNITARY_COMPLEX_PAIR,
-	E_ZERO_VECTOR,
-	E_SYS_TOO_BIG_TO_PRINT,
-	E_COLLAPSE_STATE_ZERO_PROB,
-	E_INVALID_QUBIT_OUTCOME,
-	E_CANNOT_OPEN_FILE,
-	E_SECOND_ARG_MUST_BE_STATEVEC,
-	E_MISMATCHING_REGISTER_DIMENSIONS,
-	E_DEFINED_ONLY_FOR_STATEVECS,
-	E_DEFINED_ONLY_FOR_DENSMATRS,
+    E_SUCCESS=0,
+    E_INVALID_NUM_QUBITS,
+    E_INVALID_TARGET_QUBIT,
+    E_INVALID_CONTROL_QUBIT,
+    E_INVALID_STATE_INDEX,
+    E_TARGET_IS_CONTROL,
+    E_TARGET_IN_CONTROLS,
+    E_INVALID_NUM_CONTROLS,
+    E_NON_UNITARY_MATRIX,
+    E_NON_UNITARY_COMPLEX_PAIR,
+    E_ZERO_VECTOR,
+    E_SYS_TOO_BIG_TO_PRINT,
+    E_COLLAPSE_STATE_ZERO_PROB,
+    E_INVALID_QUBIT_OUTCOME,
+    E_CANNOT_OPEN_FILE,
+    E_SECOND_ARG_MUST_BE_STATEVEC,
+    E_MISMATCHING_REGISTER_DIMENSIONS,
+    E_DEFINED_ONLY_FOR_STATEVECS,
+    E_DEFINED_ONLY_FOR_DENSMATRS,
 } ErrorCode;
 
 static const char* errorMessages[] = {
-	[E_INVALID_NUM_QUBITS] = "Invalid number of qubits. Must create >0.",
-	[E_INVALID_TARGET_QUBIT] = "Invalid target qubit. Note qubits are zero indexed.",
-	[E_INVALID_CONTROL_QUBIT] = "Invalid control qubit. Note qubits are zero indexed.",
-	[E_INVALID_STATE_INDEX] = "Invalid state index. Must be >=0 and <2^numQubits.",
-	[E_TARGET_IS_CONTROL] = "Control qubit cannot equal target qubit.",
-	[E_TARGET_IN_CONTROLS] = "Control qubits cannot include target qubit.",
-	[E_INVALID_NUM_CONTROLS] = "Invalid number of control qubits. Must be >0 and <numQubits.",
-	[E_NON_UNITARY_MATRIX] = "Matrix is not unitary.",
-	[E_NON_UNITARY_COMPLEX_PAIR] = "Compact matrix formed by given complex numbers is not unitary.",
-	[E_ZERO_VECTOR] = "Invalid axis vector. Must be non-zero.",
-	[E_SYS_TOO_BIG_TO_PRINT] = "Invalid system size. Cannot print output for systems greater than 5 qubits.",
-	[E_COLLAPSE_STATE_ZERO_PROB] = "Can't collapse to state with zero probability.",
-	[E_INVALID_QUBIT_OUTCOME] = "Invalid measurement outcome -- must be either 0 or 1.",
-	[E_CANNOT_OPEN_FILE] = "Could not open file",
-	[E_SECOND_ARG_MUST_BE_STATEVEC] = "Second argument must be a state-vector.",
-	[E_MISMATCHING_REGISTER_DIMENSIONS] = "Dimensions of the qubit registers don't match.",
-	[E_DEFINED_ONLY_FOR_STATEVECS] = "Operation valid only for state-vectors.",
-	[E_DEFINED_ONLY_FOR_DENSMATRS] = "Operation valid only for density matrices."
+    [E_INVALID_NUM_QUBITS] = "Invalid number of qubits. Must create >0.",
+    [E_INVALID_TARGET_QUBIT] = "Invalid target qubit. Note qubits are zero indexed.",
+    [E_INVALID_CONTROL_QUBIT] = "Invalid control qubit. Note qubits are zero indexed.",
+    [E_INVALID_STATE_INDEX] = "Invalid state index. Must be >=0 and <2^numQubits.",
+    [E_TARGET_IS_CONTROL] = "Control qubit cannot equal target qubit.",
+    [E_TARGET_IN_CONTROLS] = "Control qubits cannot include target qubit.",
+    [E_INVALID_NUM_CONTROLS] = "Invalid number of control qubits. Must be >0 and <numQubits.",
+    [E_NON_UNITARY_MATRIX] = "Matrix is not unitary.",
+    [E_NON_UNITARY_COMPLEX_PAIR] = "Compact matrix formed by given complex numbers is not unitary.",
+    [E_ZERO_VECTOR] = "Invalid axis vector. Must be non-zero.",
+    [E_SYS_TOO_BIG_TO_PRINT] = "Invalid system size. Cannot print output for systems greater than 5 qubits.",
+    [E_COLLAPSE_STATE_ZERO_PROB] = "Can't collapse to state with zero probability.",
+    [E_INVALID_QUBIT_OUTCOME] = "Invalid measurement outcome -- must be either 0 or 1.",
+    [E_CANNOT_OPEN_FILE] = "Could not open file",
+    [E_SECOND_ARG_MUST_BE_STATEVEC] = "Second argument must be a state-vector.",
+    [E_MISMATCHING_REGISTER_DIMENSIONS] = "Dimensions of the qubit registers don't match.",
+    [E_DEFINED_ONLY_FOR_STATEVECS] = "Operation valid only for state-vectors.",
+    [E_DEFINED_ONLY_FOR_DENSMATRS] = "Operation valid only for density matrices."
 };
 
 void exitWithError(ErrorCode code, const char* func){
@@ -72,7 +72,7 @@ void QuESTAssert(int isValid, ErrorCode code, const char* func){
 }
 
 int isComplexUnit(Complex alpha) {
-	return (absReal(1 - sqrt(alpha.real*alpha.real + alpha.imag*alpha.imag)) < REAL_EPS); 
+    return (absReal(1 - sqrt(alpha.real*alpha.real + alpha.imag*alpha.imag)) < REAL_EPS); 
 }
 
 int isVectorUnit(REAL ux, REAL uy, REAL uz) {
@@ -81,7 +81,7 @@ int isVectorUnit(REAL ux, REAL uy, REAL uz) {
 
 int isComplexPairUnitary(Complex alpha, Complex beta) {
     return ( absReal( -1
-				+ alpha.real*alpha.real 
+                + alpha.real*alpha.real 
                 + alpha.imag*alpha.imag
                 + beta.real*beta.real 
                 + beta.imag*beta.imag) < REAL_EPS );
@@ -108,84 +108,84 @@ int isMatrixUnitary(ComplexMatrix2 u) {
 }
 
 void validateCreateNumQubits(int numQubits, const char* caller) {
-	QuESTAssert(numQubits>0, E_INVALID_NUM_QUBITS, caller);
+    QuESTAssert(numQubits>0, E_INVALID_NUM_QUBITS, caller);
 }
 
 void validateStateIndex(QubitRegister qureg, long long int stateInd, const char* caller) {
-	QuESTAssert(stateInd>=0 && stateInd<qureg.numAmpsTotal, E_INVALID_STATE_INDEX, caller);
+    QuESTAssert(stateInd>=0 && stateInd<qureg.numAmpsTotal, E_INVALID_STATE_INDEX, caller);
 }
 
 void validateTarget(QubitRegister qureg, int targetQubit, const char* caller) {
-	QuESTAssert(targetQubit>=0 && targetQubit<qureg.numQubitsRepresented, E_INVALID_TARGET_QUBIT, caller);
+    QuESTAssert(targetQubit>=0 && targetQubit<qureg.numQubitsRepresented, E_INVALID_TARGET_QUBIT, caller);
 }
 
 void validateControl(QubitRegister qureg, int controlQubit, const char* caller) {
-	QuESTAssert(controlQubit>=0 && controlQubit<qureg.numQubitsRepresented, E_INVALID_CONTROL_QUBIT, caller);
+    QuESTAssert(controlQubit>=0 && controlQubit<qureg.numQubitsRepresented, E_INVALID_CONTROL_QUBIT, caller);
 }
 
 void validateControlTarget(QubitRegister qureg, int controlQubit, int targetQubit, const char* caller) {
-	validateTarget(qureg, targetQubit, caller);
-	validateControl(qureg, controlQubit, caller);
-	QuESTAssert(controlQubit != targetQubit, E_TARGET_IS_CONTROL, caller);
+    validateTarget(qureg, targetQubit, caller);
+    validateControl(qureg, controlQubit, caller);
+    QuESTAssert(controlQubit != targetQubit, E_TARGET_IS_CONTROL, caller);
 }
 
 void validateNumControls(QubitRegister qureg, const int numControlQubits, const char* caller) {
-	// this could reject repeated qubits and cite "too many"
-	QuESTAssert(numControlQubits>0 && numControlQubits<=qureg.numQubitsRepresented, E_INVALID_NUM_CONTROLS, caller);
+    // this could reject repeated qubits and cite "too many"
+    QuESTAssert(numControlQubits>0 && numControlQubits<=qureg.numQubitsRepresented, E_INVALID_NUM_CONTROLS, caller);
 }
 
 void validateMultiControls(QubitRegister qureg, int* controlQubits, const int numControlQubits, const char* caller) {
-	validateNumControls(qureg, numControlQubits, caller);
-	for (int i=0; i < numControlQubits; i++) {
-		validateControl(qureg, controlQubits[i], caller);
-	}
+    validateNumControls(qureg, numControlQubits, caller);
+    for (int i=0; i < numControlQubits; i++) {
+        validateControl(qureg, controlQubits[i], caller);
+    }
 }
 
 void validateMultiControlsTarget(QubitRegister qureg, int* controlQubits, const int numControlQubits, const int targetQubit, const char* caller) {
-	validateTarget(qureg, targetQubit, caller);
-	validateMultiControls(qureg, controlQubits, numControlQubits, caller);
-	for (int i=0; i < numControlQubits; i++)
-		QuESTAssert(controlQubits[i] != targetQubit, E_TARGET_IN_CONTROLS, caller);
+    validateTarget(qureg, targetQubit, caller);
+    validateMultiControls(qureg, controlQubits, numControlQubits, caller);
+    for (int i=0; i < numControlQubits; i++)
+        QuESTAssert(controlQubits[i] != targetQubit, E_TARGET_IN_CONTROLS, caller);
 }
 
 void validateUnitaryMatrix(ComplexMatrix2 u, const char* caller) {
-	QuESTAssert(isMatrixUnitary(u), E_NON_UNITARY_MATRIX, caller);
+    QuESTAssert(isMatrixUnitary(u), E_NON_UNITARY_MATRIX, caller);
 }
 
 void validateUnitaryComplexPair(Complex alpha, Complex beta, const char* caller) {
-	QuESTAssert(isComplexPairUnitary(alpha, beta), E_NON_UNITARY_COMPLEX_PAIR, caller);
+    QuESTAssert(isComplexPairUnitary(alpha, beta), E_NON_UNITARY_COMPLEX_PAIR, caller);
 }
 
 void validateVector(Vector vec, const char* caller) {
-	QuESTAssert(getVectorMagnitude(vec) > REAL_EPS, E_ZERO_VECTOR, caller);
+    QuESTAssert(getVectorMagnitude(vec) > REAL_EPS, E_ZERO_VECTOR, caller);
 }
 
 void validateStateVecQureg(QubitRegister qureg, const char* caller) {
-	QuESTAssert( ! qureg.isDensityMatrix, E_DEFINED_ONLY_FOR_STATEVECS, caller);
+    QuESTAssert( ! qureg.isDensityMatrix, E_DEFINED_ONLY_FOR_STATEVECS, caller);
 }
 
 void validatDensityMatrQureg(QubitRegister qureg, const char* caller) {
-	QuESTAssert(qureg.isDensityMatrix, E_DEFINED_ONLY_FOR_DENSMATRS, caller);
+    QuESTAssert(qureg.isDensityMatrix, E_DEFINED_ONLY_FOR_DENSMATRS, caller);
 }
 
 void validateOutcome(int outcome, const char* caller) {
-	QuESTAssert(outcome==0 || outcome==1, E_INVALID_QUBIT_OUTCOME, caller);
+    QuESTAssert(outcome==0 || outcome==1, E_INVALID_QUBIT_OUTCOME, caller);
 }
 
 void validateMeasurementProb(REAL prob, const char* caller) {
-	QuESTAssert(prob>REAL_EPS, E_COLLAPSE_STATE_ZERO_PROB, caller);
+    QuESTAssert(prob>REAL_EPS, E_COLLAPSE_STATE_ZERO_PROB, caller);
 }
 
 void validateMatchingQuregDims(QubitRegister qureg1, QubitRegister qureg2, const char *caller) {
-	QuESTAssert(qureg1.numQubitsRepresented==qureg2.numQubitsRepresented, E_MISMATCHING_REGISTER_DIMENSIONS, caller);
+    QuESTAssert(qureg1.numQubitsRepresented==qureg2.numQubitsRepresented, E_MISMATCHING_REGISTER_DIMENSIONS, caller);
 }
 
 void validateSecondQuregStateVec(QubitRegister qureg2, const char *caller) {
-	QuESTAssert( ! qureg2.isDensityMatrix, E_SECOND_ARG_MUST_BE_STATEVEC, caller);
+    QuESTAssert( ! qureg2.isDensityMatrix, E_SECOND_ARG_MUST_BE_STATEVEC, caller);
 }
 
 void validateFileOpened(int found, const char* caller) {
-	QuESTAssert(found, E_CANNOT_OPEN_FILE, caller);
+    QuESTAssert(found, E_CANNOT_OPEN_FILE, caller);
 }
 
 

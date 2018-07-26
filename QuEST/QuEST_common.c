@@ -26,57 +26,57 @@ extern "C" {
 
 
 REAL getVectorMagnitude(Vector vec) {
-	return sqrt(vec.x*vec.x + vec.y*vec.y + vec.z*vec.z);
+    return sqrt(vec.x*vec.x + vec.y*vec.y + vec.z*vec.z);
 }
 
 Vector getUnitVector(Vector vec) {
-	
-	REAL mag = getVectorMagnitude(vec);
-	Vector unitVec = (Vector) {.x=vec.x/mag, .y=vec.y/mag, .z=vec.z/mag};
-	return unitVec;
+    
+    REAL mag = getVectorMagnitude(vec);
+    Vector unitVec = (Vector) {.x=vec.x/mag, .y=vec.y/mag, .z=vec.z/mag};
+    return unitVec;
 }
 
 Complex getConjugateScalar(Complex scalar) {
-	
-	Complex conjScalar;
-	conjScalar.real =   scalar.real;
-	conjScalar.imag = - scalar.imag;
-	return conjScalar;
+    
+    Complex conjScalar;
+    conjScalar.real =   scalar.real;
+    conjScalar.imag = - scalar.imag;
+    return conjScalar;
 }
 
 ComplexMatrix2 getConjugateMatrix(ComplexMatrix2 matrix) {
-	
-	ComplexMatrix2 conjMatrix;
-	conjMatrix.r0c0 = getConjugateScalar(matrix.r0c0);
-	conjMatrix.r0c1 = getConjugateScalar(matrix.r0c1);
-	conjMatrix.r1c0 = getConjugateScalar(matrix.r1c0);
-	conjMatrix.r1c1 = getConjugateScalar(matrix.r1c1);
-	return conjMatrix;
+    
+    ComplexMatrix2 conjMatrix;
+    conjMatrix.r0c0 = getConjugateScalar(matrix.r0c0);
+    conjMatrix.r0c1 = getConjugateScalar(matrix.r0c1);
+    conjMatrix.r1c0 = getConjugateScalar(matrix.r1c0);
+    conjMatrix.r1c1 = getConjugateScalar(matrix.r1c1);
+    return conjMatrix;
 }
 
 void shiftIndices(int* indices, int numIndices, int shift) {
-	for (int j=0; j < numIndices; j++)
-		indices[j] += shift;
+    for (int j=0; j < numIndices; j++)
+        indices[j] += shift;
 }
 
 int generateMeasurementOutcome(REAL zeroProb, REAL *outcomeProb) {
-	
-	// randomly choose outcome
-	int outcome;
+    
+    // randomly choose outcome
+    int outcome;
     if (zeroProb < REAL_EPS) 
-		outcome = 1;
+        outcome = 1;
     else if (1-zeroProb < REAL_EPS) 
-		outcome = 0;
+        outcome = 0;
     else
         outcome = (genrand_real1() > zeroProb);
-	
-	// set probability of outcome
-	if (outcome == 0)
-		*outcomeProb = zeroProb;
-	else
-		*outcomeProb = 1 - zeroProb;
-	
-	return outcome;
+    
+    // set probability of outcome
+    if (outcome == 0)
+        *outcomeProb = zeroProb;
+    else
+        *outcomeProb = 1 - zeroProb;
+    
+    return outcome;
 }
 
 unsigned long int hashString(char *str){
@@ -128,21 +128,21 @@ REAL statevec_getProbEl(QubitRegister qureg, long long int index){
 }
 
 void reportState(QubitRegister qureg){
-	FILE *state;
-	char filename[100];
-	long long int index;
-	sprintf(filename, "state_rank_%d.csv", qureg.chunkId);
-	state = fopen(filename, "w");
-	if (qureg.chunkId==0) fprintf(state, "real, imag\n");
+    FILE *state;
+    char filename[100];
+    long long int index;
+    sprintf(filename, "state_rank_%d.csv", qureg.chunkId);
+    state = fopen(filename, "w");
+    if (qureg.chunkId==0) fprintf(state, "real, imag\n");
 
-	for(index=0; index<qureg.numAmpsPerChunk; index++){
-		# if QuEST_PREC==1 || QuEST_PREC==2
-		fprintf(state, "%.12f, %.12f\n", qureg.stateVec.real[index], qureg.stateVec.imag[index]);
-		# elif QuEST_PREC == 4
-		fprintf(state, "%.12Lf, %.12Lf\n", qureg.stateVec.real[index], qureg.stateVec.imag[index]);
-		#endif
-	}
-	fclose(state);
+    for(index=0; index<qureg.numAmpsPerChunk; index++){
+        # if QuEST_PREC==1 || QuEST_PREC==2
+        fprintf(state, "%.12f, %.12f\n", qureg.stateVec.real[index], qureg.stateVec.imag[index]);
+        # elif QuEST_PREC == 4
+        fprintf(state, "%.12Lf, %.12Lf\n", qureg.stateVec.real[index], qureg.stateVec.imag[index]);
+        #endif
+    }
+    fclose(state);
 }
 
 void reportQubitRegisterParams(QubitRegister qureg){
@@ -157,44 +157,44 @@ void reportQubitRegisterParams(QubitRegister qureg){
 }
 
 void statevec_phaseShift(QubitRegister qureg, const int targetQubit, REAL angle) {
-	Complex term; 
-	term.real = cos(angle); 
-	term.imag = sin(angle);
-	statevec_phaseShiftByTerm(qureg, targetQubit, term);
+    Complex term; 
+    term.real = cos(angle); 
+    term.imag = sin(angle);
+    statevec_phaseShiftByTerm(qureg, targetQubit, term);
 }
 
 void statevec_sigmaZ(QubitRegister qureg, const int targetQubit) {
-	Complex term; 
-	term.real = -1;
-	term.imag =  0;
+    Complex term; 
+    term.real = -1;
+    term.imag =  0;
     statevec_phaseShiftByTerm(qureg, targetQubit, term);
 }
 
 void statevec_sGate(QubitRegister qureg, const int targetQubit) {
-	Complex term; 
-	term.real = 0;
-	term.imag = 1;
+    Complex term; 
+    term.real = 0;
+    term.imag = 1;
     statevec_phaseShiftByTerm(qureg, targetQubit, term);
 } 
 
 void statevec_tGate(QubitRegister qureg, const int targetQubit) {
-	Complex term; 
-	term.real = 1/sqrt(2);
-	term.imag = 1/sqrt(2);
+    Complex term; 
+    term.real = 1/sqrt(2);
+    term.imag = 1/sqrt(2);
     statevec_phaseShiftByTerm(qureg, targetQubit, term);
 }
 
 void statevec_sGateConj(QubitRegister qureg, const int targetQubit) {
-	Complex term; 
-	term.real =  0;
-	term.imag = -1;
+    Complex term; 
+    term.real =  0;
+    term.imag = -1;
     statevec_phaseShiftByTerm(qureg, targetQubit, term);
 } 
 
 void statevec_tGateConj(QubitRegister qureg, const int targetQubit) {
-	Complex term; 
-	term.real =  1/sqrt(2);
-	term.imag = -1/sqrt(2);
+    Complex term; 
+    term.real =  1/sqrt(2);
+    term.imag = -1/sqrt(2);
     statevec_phaseShiftByTerm(qureg, targetQubit, term);
 }
 
@@ -217,10 +217,10 @@ void statevec_rotateZ(QubitRegister qureg, const int rotQubit, REAL angle){
 }
 
 void getAlphaBetaFromRotation(REAL angle, Vector axis, Complex* alpha, Complex* beta) {
-	
+    
     Vector unitAxis = getUnitVector(axis);
     alpha->real =   cos(angle/2.0);
-    alpha->imag = - sin(angle/2.0)*unitAxis.z;	
+    alpha->imag = - sin(angle/2.0)*unitAxis.z;  
     beta->real  =   sin(angle/2.0)*unitAxis.y;
     beta->imag  = - sin(angle/2.0)*unitAxis.x;
 }
@@ -236,8 +236,8 @@ void statevec_rotateAroundAxisConj(QubitRegister qureg, const int rotQubit, REAL
 
     Complex alpha, beta;
     getAlphaBetaFromRotation(angle, axis, &alpha, &beta);
-	alpha.imag *= -1; 
-	beta.imag *= -1;
+    alpha.imag *= -1; 
+    beta.imag *= -1;
     statevec_compactUnitary(qureg, rotQubit, alpha, beta);
 }
 
@@ -252,8 +252,8 @@ void statevec_controlledRotateAroundAxisConj(QubitRegister qureg, const int cont
 
     Complex alpha, beta;
     getAlphaBetaFromRotation(angle, axis, &alpha, &beta);
-	alpha.imag *= -1; 
-	beta.imag *= -1;
+    alpha.imag *= -1; 
+    beta.imag *= -1;
     statevec_controlledCompactUnitary(qureg, controlQubit, targetQubit, alpha, beta);
 }
 
@@ -276,19 +276,19 @@ void statevec_controlledRotateZ(QubitRegister qureg, const int controlQubit, con
 }
 
 int statevec_measureWithStats(QubitRegister qureg, int measureQubit, REAL *outcomeProb) {
-	
-	REAL zeroProb = statevec_findProbabilityOfOutcome(qureg, measureQubit, 0);
-	int outcome = generateMeasurementOutcome(zeroProb, outcomeProb);
-	statevec_collapseToKnownProbOutcome(qureg, measureQubit, outcome, *outcomeProb);
-	return outcome;
+    
+    REAL zeroProb = statevec_findProbabilityOfOutcome(qureg, measureQubit, 0);
+    int outcome = generateMeasurementOutcome(zeroProb, outcomeProb);
+    statevec_collapseToKnownProbOutcome(qureg, measureQubit, outcome, *outcomeProb);
+    return outcome;
 }
 
 int densmatr_measureWithStats(QubitRegister qureg, int measureQubit, REAL *outcomeProb) {
-	
-	REAL zeroProb = densmatr_findProbabilityOfOutcome(qureg, measureQubit, 0);
-	int outcome = generateMeasurementOutcome(zeroProb, outcomeProb);
-	densmatr_collapseToKnownProbOutcome(qureg, measureQubit, outcome, *outcomeProb);
-	return outcome;
+    
+    REAL zeroProb = densmatr_findProbabilityOfOutcome(qureg, measureQubit, 0);
+    int outcome = generateMeasurementOutcome(zeroProb, outcomeProb);
+    densmatr_collapseToKnownProbOutcome(qureg, measureQubit, outcome, *outcomeProb);
+    return outcome;
 }
 
 

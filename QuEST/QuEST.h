@@ -18,31 +18,31 @@ extern "C" {
 */
 typedef struct ComplexArray
 {
-	REAL *real; 
-	REAL *imag;
+    REAL *real; 
+    REAL *imag;
 } ComplexArray;
 
 /** Represents one complex number.
 */
 typedef struct Complex
 {
-	REAL real;
-	REAL imag;
+    REAL real;
+    REAL imag;
 } Complex;
 
 /** Represents a 2x2 matrix of complex numbers
 */
 typedef struct ComplexMatrix2
 {
-	Complex r0c0, r0c1;
-	Complex r1c0, r1c1;
+    Complex r0c0, r0c1;
+    Complex r1c0, r1c1;
 } ComplexMatrix2;
 
 /** Represents a 3-vector of real numbers
 */
 typedef struct Vector
 {
-	REAL x, y, z;
+    REAL x, y, z;
 } Vector;
 
 /** Represents a system of qubits.
@@ -50,32 +50,32 @@ Qubits are zero-based
 */
 typedef struct QubitRegister
 {
-	//! Number of qubits in the state-vector - this is double the number represented for mixed states
-	int numQubitsInStateVec;
-	//! Number of probability amplitudes held in stateVec by this process
-	//! In the non-MPI version, this is the total number of amplitudes
-	long long int numAmpsPerChunk;
-	//! Total number of amplitudes, which are possibly distributed among machines
-	long long int numAmpsTotal;
-	//! The position of the chunk of the state vector held by this process in the full state vector
-	int chunkId;
-	//! Number of chunks the state vector is broken up into -- the number of MPI processes used
-	int numChunks;
-	
-	//! Computational state amplitudes - a subset thereof in the MPI version
-	ComplexArray stateVec; 
-	//! Temporary storage for a chunk of the state vector received from another process in the MPI version
-	ComplexArray pairStateVec;
-	//! Storage for wavefunction amplitudes in the GPU version
-	ComplexArray deviceStateVec;
-	//! Storage for reduction of probabilities on GPU
-	REAL *firstLevelReduction, *secondLevelReduction;
+    //! Number of qubits in the state-vector - this is double the number represented for mixed states
+    int numQubitsInStateVec;
+    //! Number of probability amplitudes held in stateVec by this process
+    //! In the non-MPI version, this is the total number of amplitudes
+    long long int numAmpsPerChunk;
+    //! Total number of amplitudes, which are possibly distributed among machines
+    long long int numAmpsTotal;
+    //! The position of the chunk of the state vector held by this process in the full state vector
+    int chunkId;
+    //! Number of chunks the state vector is broken up into -- the number of MPI processes used
+    int numChunks;
+    
+    //! Computational state amplitudes - a subset thereof in the MPI version
+    ComplexArray stateVec; 
+    //! Temporary storage for a chunk of the state vector received from another process in the MPI version
+    ComplexArray pairStateVec;
+    //! Storage for wavefunction amplitudes in the GPU version
+    ComplexArray deviceStateVec;
+    //! Storage for reduction of probabilities on GPU
+    REAL *firstLevelReduction, *secondLevelReduction;
 
-	//! Whether this instance is a density-state representation
-	int isDensityMatrix;
-	//! The number of qubits represented in either the state-vector or density matrix
-	int numQubitsRepresented;
-	
+    //! Whether this instance is a density-state representation
+    int isDensityMatrix;
+    //! The number of qubits represented in either the state-vector or density matrix
+    int numQubitsRepresented;
+    
 } QubitRegister;
 
 /** Information about the environment the program is running in.
@@ -83,8 +83,8 @@ In practice, this holds info about MPI ranks and helps to hide MPI initializatio
 */
 typedef struct QuESTEnv
 {
-	int rank;
-	int numRanks;
+    int rank;
+    int numRanks;
 } QuESTEnv;
 
 // Codes for sigmaZ phase gate variations
@@ -218,25 +218,25 @@ void initPureState(QubitRegister qureg, QubitRegister pure);
  * \end{pmatrix}
  * \f] 
  *     
-	\f[
-	\setlength{\fboxrule}{0.01pt}
-	\fbox{
-				\begin{tikzpicture}[scale=.5]
-				\node[draw=none] at (-3.5, 0) {rot};
+    \f[
+    \setlength{\fboxrule}{0.01pt}
+    \fbox{
+                \begin{tikzpicture}[scale=.5]
+                \node[draw=none] at (-3.5, 0) {rot};
 
-				\draw (-2,0) -- (-1, 0);
-				\draw (1, 0) -- (2, 0);
-				\draw (-1,-1)--(-1,1)--(1,1)--(1,-1)--cycle;
-				\node[draw=none] at (0, 0) {$R_\theta$};
-				\end{tikzpicture}
-	}
-	\f]
+                \draw (-2,0) -- (-1, 0);
+                \draw (1, 0) -- (2, 0);
+                \draw (-1,-1)--(-1,1)--(1,1)--(1,-1)--cycle;
+                \node[draw=none] at (0, 0) {$R_\theta$};
+                \end{tikzpicture}
+    }
+    \f]
  * 
  * @param[in,out] qureg object representing the set of all qubits
  * @param[in] targetQubit qubit to undergo a phase shift
  * @param[in] angle amount by which to shift the phase in radians
  * @throws exitWithError
- * 		if \p targetQubit is outside [0, \p qureg.numQubits).
+ *      if \p targetQubit is outside [0, \p qureg.numQubits).
  */
 void phaseShift(QubitRegister qureg, const int targetQubit, REAL angle);
 
@@ -253,71 +253,71 @@ void phaseShift(QubitRegister qureg, const int targetQubit, REAL angle);
  * \f] 
  * on \p idQubit1 and \p idQubit2.
  *     
-	\f[
-	\setlength{\fboxrule}{0.01pt}
-	\fbox{
-				\begin{tikzpicture}[scale=.5]
-				\node[draw=none] at (-3.5, 2) {qubit1};
-				\node[draw=none] at (-3.5, 0) {qubit2};
+    \f[
+    \setlength{\fboxrule}{0.01pt}
+    \fbox{
+                \begin{tikzpicture}[scale=.5]
+                \node[draw=none] at (-3.5, 2) {qubit1};
+                \node[draw=none] at (-3.5, 0) {qubit2};
 
-				\draw (-2, 2) -- (2, 2);
-				\draw[fill=black] (0, 2) circle (.2);
-				\draw (0, 2) -- (0, 1);
-				
-				\draw (-2,0) -- (-1, 0);
-				\draw (1, 0) -- (2, 0);
-				\draw (-1,-1)--(-1,1)--(1,1)--(1,-1)--cycle;
-				\node[draw=none] at (0, 0) {$R_\theta$};
-				\end{tikzpicture}
-	}
-	\f]
+                \draw (-2, 2) -- (2, 2);
+                \draw[fill=black] (0, 2) circle (.2);
+                \draw (0, 2) -- (0, 1);
+                
+                \draw (-2,0) -- (-1, 0);
+                \draw (1, 0) -- (2, 0);
+                \draw (-1,-1)--(-1,1)--(1,1)--(1,-1)--cycle;
+                \node[draw=none] at (0, 0) {$R_\theta$};
+                \end{tikzpicture}
+    }
+    \f]
  * 
  * @param[in,out] qureg object representing the set of all qubits
  * @param[in] idQubit1 first qubit in the state to phase shift
  * @param[in] idQubit2 second qubit in the state to phase shift
  * @param[in] angle amount by which to shift the phase in radians
  * @throws exitWithError
- * 	if \p idQubit1 or \p idQubit2 are outside [0, \p qureg.numQubits), or are equal
+ *  if \p idQubit1 or \p idQubit2 are outside [0, \p qureg.numQubits), or are equal
  */
 void controlledPhaseShift(QubitRegister qureg, const int idQubit1, const int idQubit2, REAL angle);
 
 /** Introduce a phase factor \f$ \exp(i \theta) \f$ on state \f$ |1 \dots 1 \rangle \f$
  * of the passed qubits.
  *     
-	\f[
-	\setlength{\fboxrule}{0.01pt}
-	\fbox{
-				\begin{tikzpicture}[scale=.5]
-				\node[draw=none] at (-3.5, 3) {controls};
-				\node[draw=none] at (-3.5, 0) {target};
+    \f[
+    \setlength{\fboxrule}{0.01pt}
+    \fbox{
+                \begin{tikzpicture}[scale=.5]
+                \node[draw=none] at (-3.5, 3) {controls};
+                \node[draw=none] at (-3.5, 0) {target};
 
-				\node[draw=none] at (0, 6) {$\vdots$};
-				\draw (0, 5) -- (0, 4);
-				
-				\draw (-2, 4) -- (2, 4);
-				\draw[fill=black] (0, 4) circle (.2);
-				\draw (0, 4) -- (0, 2);			
-				
-				\draw (-2, 2) -- (2, 2);
-				\draw[fill=black] (0, 2) circle (.2);
-				\draw (0, 2) -- (0, 1);
-				
-				\draw (-2,0) -- (-1, 0);
-				\draw (1, 0) -- (2, 0);
-				\draw (-1,-1)--(-1,1)--(1,1)--(1,-1)--cycle;
-				\node[draw=none] at (0, 0) {$R_\theta$};
-				\end{tikzpicture}
-	}
-	\f]
+                \node[draw=none] at (0, 6) {$\vdots$};
+                \draw (0, 5) -- (0, 4);
+                
+                \draw (-2, 4) -- (2, 4);
+                \draw[fill=black] (0, 4) circle (.2);
+                \draw (0, 4) -- (0, 2);         
+                
+                \draw (-2, 2) -- (2, 2);
+                \draw[fill=black] (0, 2) circle (.2);
+                \draw (0, 2) -- (0, 1);
+                
+                \draw (-2,0) -- (-1, 0);
+                \draw (1, 0) -- (2, 0);
+                \draw (-1,-1)--(-1,1)--(1,1)--(1,-1)--cycle;
+                \node[draw=none] at (0, 0) {$R_\theta$};
+                \end{tikzpicture}
+    }
+    \f]
  * 
  * @param[in,out] qureg object representing the set of all qubits
  * @param[in] controlQubits array of qubits to phase shift
  * @param[in] numControlQubits the length of array \p controlQubits
  * @param[in] angle amount by which to shift the phase in radians
  * @throws exitWithError
- * 		if \p numControlQubits is outside [1, \p qureg.numQubits]),
- * 		or if any qubit index in \p controlQubits is outside
- * 		[0, \p qureg.numQubits])
+ *      if \p numControlQubits is outside [1, \p qureg.numQubits]),
+ *      or if any qubit index in \p controlQubits is outside
+ *      [0, \p qureg.numQubits])
  */
 void multiControlledPhaseShift(QubitRegister qureg, int *controlQubits, int numControlQubits, REAL angle);
 
@@ -333,27 +333,27 @@ void multiControlledPhaseShift(QubitRegister qureg, int *controlQubits, int numC
  * \end{pmatrix}
  * \f]
  *
-	\f[
-	\setlength{\fboxrule}{0.01pt}
-	\fbox{
-				\begin{tikzpicture}[scale=.5]
-				\node[draw=none] at (-3.5, 2) {idQubit1};
-				\node[draw=none] at (-3.5, 0) {idQubit2};
+    \f[
+    \setlength{\fboxrule}{0.01pt}
+    \fbox{
+                \begin{tikzpicture}[scale=.5]
+                \node[draw=none] at (-3.5, 2) {idQubit1};
+                \node[draw=none] at (-3.5, 0) {idQubit2};
 
-				\draw (-2, 2) -- (2, 2);
-				\draw[fill=black] (0, 2) circle (.2);
-				\draw (0, 2) -- (0, 0);
-				
-				\draw (-2,0) -- (2, 0);
-				\draw[fill=black] (0, 0) circle (.2);
-				\end{tikzpicture}
-	}
-	\f]
+                \draw (-2, 2) -- (2, 2);
+                \draw[fill=black] (0, 2) circle (.2);
+                \draw (0, 2) -- (0, 0);
+                
+                \draw (-2,0) -- (2, 0);
+                \draw[fill=black] (0, 0) circle (.2);
+                \end{tikzpicture}
+    }
+    \f]
  *
  * @param[in,out] qureg object representing the set of all qubits
  * @param[in] idQubit1, idQubit2 qubits to operate upon
  * @throws exitWithError 
- * 	if \p idQubit1 or \p idQubit2 are outside [0, \p qureg.numQubits), or are equal
+ *  if \p idQubit1 or \p idQubit2 are outside [0, \p qureg.numQubits), or are equal
  */
 void controlledPhaseFlip (QubitRegister qureg, const int idQubit1, const int idQubit2);
 
@@ -371,33 +371,33 @@ void controlledPhaseFlip (QubitRegister qureg, const int idQubit1, const int idQ
  * on the control qubits.
  *
  * \f[
-	\setlength{\fboxrule}{0.01pt}
-	\fbox{
-				\begin{tikzpicture}[scale=.5]
-				\node[draw=none] at (-3.5, 2) {controls};
-				
-				\node[draw=none] at (0, 6) {$\vdots$};
-				\draw (0, 5) -- (0, 4);
-				
-				\draw (-2, 4) -- (2, 4);
-				\draw[fill=black] (0, 4) circle (.2);
-				\draw (0, 4) -- (0, 2);	
-				
-				\draw (-2, 2) -- (2, 2);
-				\draw[fill=black] (0, 2) circle (.2);
-				\draw (0, 2) -- (0, 0);
-				
-				\draw (-2,0) -- (2, 0);
-				\draw[fill=black] (0, 0) circle (.2);
-				\end{tikzpicture}
-	}
+    \setlength{\fboxrule}{0.01pt}
+    \fbox{
+                \begin{tikzpicture}[scale=.5]
+                \node[draw=none] at (-3.5, 2) {controls};
+                
+                \node[draw=none] at (0, 6) {$\vdots$};
+                \draw (0, 5) -- (0, 4);
+                
+                \draw (-2, 4) -- (2, 4);
+                \draw[fill=black] (0, 4) circle (.2);
+                \draw (0, 4) -- (0, 2); 
+                
+                \draw (-2, 2) -- (2, 2);
+                \draw[fill=black] (0, 2) circle (.2);
+                \draw (0, 2) -- (0, 0);
+                
+                \draw (-2,0) -- (2, 0);
+                \draw[fill=black] (0, 0) circle (.2);
+                \end{tikzpicture}
+    }
    \f]
  *
  * @param[in,out] qureg object representing the set of all qubits
  * @param[in] controlQubits array of input qubits
  * @param[in] numControlQubits number of input qubits
  * @throws exitWithError 
- * 		if \p numControlQubits is outside [1, \p qureg.numQubits) 
+ *      if \p numControlQubits is outside [1, \p qureg.numQubits) 
  */
 void multiControlledPhaseFlip(QubitRegister qureg, int *controlQubits, int numControlQubits);
 
@@ -410,19 +410,19 @@ void multiControlledPhaseFlip(QubitRegister qureg, int *controlQubits, int numCo
  * \end{pmatrix}
  * \f]
  *
-	\f[
-	\setlength{\fboxrule}{0.01pt}
-	\fbox{
-				\begin{tikzpicture}[scale=.5]
-				\node[draw=none] at (-3.5, 0) {target};
+    \f[
+    \setlength{\fboxrule}{0.01pt}
+    \fbox{
+                \begin{tikzpicture}[scale=.5]
+                \node[draw=none] at (-3.5, 0) {target};
 
-				\draw (-2,0) -- (-1, 0);
-				\draw (1, 0) -- (2, 0);
-				\draw (-1,-1)--(-1,1)--(1,1)--(1,-1)--cycle;
-				\node[draw=none] at (0, 0) {S};
-				\end{tikzpicture}
-	}
-	\f]
+                \draw (-2,0) -- (-1, 0);
+                \draw (1, 0) -- (2, 0);
+                \draw (-1,-1)--(-1,1)--(1,1)--(1,-1)--cycle;
+                \node[draw=none] at (0, 0) {S};
+                \end{tikzpicture}
+    }
+    \f]
  *
  * @param[in,out] qureg object representing the set of all qubits
  * @param[in] targetQubit qubit to operate upon
@@ -439,19 +439,19 @@ void sGate(QubitRegister qureg, const int targetQubit);
  * \end{pmatrix}
  * \f]
  *
-	\f[
-	\setlength{\fboxrule}{0.01pt}
-	\fbox{
-				\begin{tikzpicture}[scale=.5]
-				\node[draw=none] at (-3.5, 0) {target};
+    \f[
+    \setlength{\fboxrule}{0.01pt}
+    \fbox{
+                \begin{tikzpicture}[scale=.5]
+                \node[draw=none] at (-3.5, 0) {target};
 
-				\draw (-2,0) -- (-1, 0);
-				\draw (1, 0) -- (2, 0);
-				\draw (-1,-1)--(-1,1)--(1,1)--(1,-1)--cycle;
-				\node[draw=none] at (0, 0) {T};
-				\end{tikzpicture}
-	}
-	\f]
+                \draw (-2,0) -- (-1, 0);
+                \draw (1, 0) -- (2, 0);
+                \draw (-1,-1)--(-1,1)--(1,1)--(1,-1)--cycle;
+                \node[draw=none] at (0, 0) {T};
+                \end{tikzpicture}
+    }
+    \f]
  *
  * @param[in,out] qureg object representing the set of all qubits
  * @param[in] targetQubit qubit to operate upon
@@ -503,7 +503,7 @@ void getEnvironmentString(QuESTEnv env, QubitRegister qureg, char str[200]);
  * @param[in] index index in state vector of probability amplitudes
  * @return real component at that index
  * @throws exitWithError
- * 		if \p index is outside [0, \f$2^{N}\f$) where \f$N = \f$ \p qureg.numQubits
+ *      if \p index is outside [0, \f$2^{N}\f$) where \f$N = \f$ \p qureg.numQubits
  */
 REAL getRealAmpEl(QubitRegister qureg, long long int index);
 
@@ -514,7 +514,7 @@ REAL getRealAmpEl(QubitRegister qureg, long long int index);
  * @param[in] index index in state vector of probability amplitudes
  * @return imaginary component at that index
  * @throws exitWithError
- * 		if \p index is outside [0, \f$2^{N}\f$) where \f$N = \f$ \p qureg.numQubits
+ *      if \p index is outside [0, \f$2^{N}\f$) where \f$N = \f$ \p qureg.numQubits
  */
 REAL getImagAmpEl(QubitRegister qureg, long long int index);
 
@@ -524,7 +524,7 @@ REAL getImagAmpEl(QubitRegister qureg, long long int index);
  * @param[in] index index in state vector of probability amplitudes
  * @return realEl*realEl + imagEl*imagEl
  * @throws exitWithError
- * 		if \p index is outside [0, \f$2^{N}\f$) where \f$N = \f$ \p qureg.numQubits
+ *      if \p index is outside [0, \f$2^{N}\f$) where \f$N = \f$ \p qureg.numQubits
  */
 REAL getProbEl(QubitRegister qureg, long long int index);
 
@@ -549,53 +549,53 @@ REAL calcTotalProbability(QubitRegister qureg);
  * which is general up to a global phase factor.               
  * Valid \f$\alpha\f$, \f$\beta\f$ satisfy \f$|\alpha|^2 + |\beta|^2 = 1\f$. 
  *
-	\f[
-	\setlength{\fboxrule}{0.01pt}
-	\fbox{
-				\begin{tikzpicture}[scale=.5]
-				\node[draw=none] at (-3.5, 0) {target};
+    \f[
+    \setlength{\fboxrule}{0.01pt}
+    \fbox{
+                \begin{tikzpicture}[scale=.5]
+                \node[draw=none] at (-3.5, 0) {target};
 
-				\draw (-2,0) -- (-1, 0);
-				\draw (1, 0) -- (2, 0);
-				\draw (-1,-1)--(-1,1)--(1,1)--(1,-1)--cycle;
-				\node[draw=none] at (0, 0) {U};
-				\end{tikzpicture}
-	}
-	\f]
+                \draw (-2,0) -- (-1, 0);
+                \draw (1, 0) -- (2, 0);
+                \draw (-1,-1)--(-1,1)--(1,1)--(1,-1)--cycle;
+                \node[draw=none] at (0, 0) {U};
+                \end{tikzpicture}
+    }
+    \f]
  *                                                                    
  * @param[in,out] qureg object representing the set of all qubits
  * @param[in] targetQubit qubit to operate on
  * @param[in] alpha complex unitary parameter (row 1, column 1)
  * @param[in] beta complex unitary parameter (row 2, column 1)
  * @throws exitWithError
- * 		if \p targetQubit is outside [0, \p qureg.numQubits),
- * 		or if \p alpha, \p beta don't satisfy |\p alpha|^2 + |\p beta|^2 = 1.
+ *      if \p targetQubit is outside [0, \p qureg.numQubits),
+ *      or if \p alpha, \p beta don't satisfy |\p alpha|^2 + |\p beta|^2 = 1.
  */
 void compactUnitary(QubitRegister qureg, const int targetQubit, Complex alpha, Complex beta);
 
 /** Apply a general single-qubit unitary (including a global phase factor).
  * The passed 2x2 ComplexMatrix must be unitary, otherwise an error is thrown.
  *
-	\f[
-	\setlength{\fboxrule}{0.01pt}
-	\fbox{
-				\begin{tikzpicture}[scale=.5]
-				\node[draw=none] at (-3.5, 0) {target};
+    \f[
+    \setlength{\fboxrule}{0.01pt}
+    \fbox{
+                \begin{tikzpicture}[scale=.5]
+                \node[draw=none] at (-3.5, 0) {target};
 
-				\draw (-2,0) -- (-1, 0);
-				\draw (1, 0) -- (2, 0);
-				\draw (-1,-1)--(-1,1)--(1,1)--(1,-1)--cycle;
-				\node[draw=none] at (0, 0) {U};
-				\end{tikzpicture}
-	}
-	\f]
+                \draw (-2,0) -- (-1, 0);
+                \draw (1, 0) -- (2, 0);
+                \draw (-1,-1)--(-1,1)--(1,1)--(1,-1)--cycle;
+                \node[draw=none] at (0, 0) {U};
+                \end{tikzpicture}
+    }
+    \f]
  *                                                                    
  * @param[in,out] qureg object representing the set of all qubits
  * @param[in] targetQubit qubit to operate on
  * @param[in] u unitary matrix to apply
  * @throws exitWithError
- * 		if \p targetQubit is outside [0, \p qureg.numQubits),
- * 		or matrix \p u is not unitary.
+ *      if \p targetQubit is outside [0, \p qureg.numQubits),
+ *      or matrix \p u is not unitary.
  */
 void unitary(QubitRegister qureg, const int targetQubit, ComplexMatrix2 u);
 
@@ -607,26 +607,26 @@ void unitary(QubitRegister qureg, const int targetQubit, ComplexMatrix2 u);
  * \end{pmatrix}
  * \f]
  *
-	\f[
-	\setlength{\fboxrule}{0.01pt}
-	\fbox{
-				\begin{tikzpicture}[scale=.5]
-				\node[draw=none] at (-3.5, 0) {rot};
+    \f[
+    \setlength{\fboxrule}{0.01pt}
+    \fbox{
+                \begin{tikzpicture}[scale=.5]
+                \node[draw=none] at (-3.5, 0) {rot};
 
-				\draw (-2,0) -- (-1, 0);
-				\draw (1, 0) -- (2, 0);
-				\draw (-1,-1)--(-1,1)--(1,1)--(1,-1)--cycle;
-				\node[draw=none] at (0, 0) {$R_x(\theta)$};
-				\end{tikzpicture}
-	}
-	\f]
+                \draw (-2,0) -- (-1, 0);
+                \draw (1, 0) -- (2, 0);
+                \draw (-1,-1)--(-1,1)--(1,1)--(1,-1)--cycle;
+                \node[draw=none] at (0, 0) {$R_x(\theta)$};
+                \end{tikzpicture}
+    }
+    \f]
  *
  *
  * @param[in,out] qureg object representing the set of all qubits
  * @param[in] rotQubit qubit to rotate
  * @param[in] angle angle by which to rotate in radians
  * @throws exitWithError
- * 		if \p rotQubit is outside [0, \p qureg.numQubits).
+ *      if \p rotQubit is outside [0, \p qureg.numQubits).
  */
 void rotateX(QubitRegister qureg, const int rotQubit, REAL angle);
 
@@ -639,25 +639,25 @@ void rotateX(QubitRegister qureg, const int rotQubit, REAL angle);
  * \end{pmatrix}
  * \f]            
  * 
-	\f[
-	\setlength{\fboxrule}{0.01pt}
-	\fbox{
-				\begin{tikzpicture}[scale=.5]
-				\node[draw=none] at (-3.5, 0) {rot};
+    \f[
+    \setlength{\fboxrule}{0.01pt}
+    \fbox{
+                \begin{tikzpicture}[scale=.5]
+                \node[draw=none] at (-3.5, 0) {rot};
 
-				\draw (-2,0) -- (-1, 0);
-				\draw (1, 0) -- (2, 0);
-				\draw (-1,-1)--(-1,1)--(1,1)--(1,-1)--cycle;
-				\node[draw=none] at (0, 0) {$R_y(\theta)$};
-				\end{tikzpicture}
-	}
-	\f]
+                \draw (-2,0) -- (-1, 0);
+                \draw (1, 0) -- (2, 0);
+                \draw (-1,-1)--(-1,1)--(1,1)--(1,-1)--cycle;
+                \node[draw=none] at (0, 0) {$R_y(\theta)$};
+                \end{tikzpicture}
+    }
+    \f]
  *
  * @param[in,out] qureg object representing the set of all qubits
  * @param[in] rotQubit qubit to rotate
  * @param[in] angle angle by which to rotate in radians
  * @throws exitWithError
- * 		if \p rotQubit is outside [0, \p qureg.numQubits).
+ *      if \p rotQubit is outside [0, \p qureg.numQubits).
  */
 void rotateY(QubitRegister qureg, const int rotQubit, REAL angle);
 
@@ -670,25 +670,25 @@ void rotateY(QubitRegister qureg, const int rotQubit, REAL angle);
  * \end{pmatrix}
  * \f] 
  *     
-	\f[
-	\setlength{\fboxrule}{0.01pt}
-	\fbox{
-				\begin{tikzpicture}[scale=.5]
-				\node[draw=none] at (-3.5, 0) {rot};
+    \f[
+    \setlength{\fboxrule}{0.01pt}
+    \fbox{
+                \begin{tikzpicture}[scale=.5]
+                \node[draw=none] at (-3.5, 0) {rot};
 
-				\draw (-2,0) -- (-1, 0);
-				\draw (1, 0) -- (2, 0);
-				\draw (-1,-1)--(-1,1)--(1,1)--(1,-1)--cycle;
-				\node[draw=none] at (0, 0) {$R_z(\theta)$};
-				\end{tikzpicture}
-	}
-	\f]
+                \draw (-2,0) -- (-1, 0);
+                \draw (1, 0) -- (2, 0);
+                \draw (-1,-1)--(-1,1)--(1,1)--(1,-1)--cycle;
+                \node[draw=none] at (0, 0) {$R_z(\theta)$};
+                \end{tikzpicture}
+    }
+    \f]
  * 
  * @param[in,out] qureg object representing the set of all qubits
  * @param[in] rotQubit qubit to rotate
  * @param[in] angle angle by which to rotate in radians
  * @throws exitWithError
- * 		if \p rotQubit is outside [0, \p qureg.numQubits).
+ *      if \p rotQubit is outside [0, \p qureg.numQubits).
  */
 void rotateZ(QubitRegister qureg, const int rotQubit, REAL angle);
 
@@ -703,8 +703,8 @@ void rotateZ(QubitRegister qureg, const int rotQubit, REAL angle);
  * @param[in] angle angle by which to rotate in radians
  * @param[in] axis vector around which to rotate (can be non-unit; will be normalised)
  * @throws exitWithError
- * 		if \p rotQubit is outside [0, \p qureg.numQubits),
- * 		or if \p axis is the zero vector
+ *      if \p rotQubit is outside [0, \p qureg.numQubits),
+ *      or if \p axis is the zero vector
  */
 void rotateAroundAxis(QubitRegister qureg, const int rotQubit, REAL angle, Vector axis);
 
@@ -712,93 +712,93 @@ void rotateAroundAxis(QubitRegister qureg, const int rotQubit, REAL angle, Vecto
 /** Applies a controlled rotation by a given angle around the X-axis of the Bloch-sphere. 
  * The target qubit is rotated in states where the control qubit has value 1.
  *
-	\f[
-	\setlength{\fboxrule}{0.01pt}
-	\fbox{
-				\begin{tikzpicture}[scale=.5]
-				\node[draw=none] at (-3.5, 2) {control};
-				\node[draw=none] at (-3.5, 0) {target};
+    \f[
+    \setlength{\fboxrule}{0.01pt}
+    \fbox{
+                \begin{tikzpicture}[scale=.5]
+                \node[draw=none] at (-3.5, 2) {control};
+                \node[draw=none] at (-3.5, 0) {target};
 
-				\draw (-2, 2) -- (2, 2);
-				\draw[fill=black] (0, 2) circle (.2);
-				\draw (0, 2) -- (0, 1);
-				
-				\draw (-2,0) -- (-1, 0);
-				\draw (1, 0) -- (2, 0);
-				\draw (-1,-1)--(-1,1)--(1,1)--(1,-1)--cycle;
-				\node[draw=none] at (0, 0) {$R_x(\theta)$};
-				\end{tikzpicture}
-	}
-	\f]	
+                \draw (-2, 2) -- (2, 2);
+                \draw[fill=black] (0, 2) circle (.2);
+                \draw (0, 2) -- (0, 1);
+                
+                \draw (-2,0) -- (-1, 0);
+                \draw (1, 0) -- (2, 0);
+                \draw (-1,-1)--(-1,1)--(1,1)--(1,-1)--cycle;
+                \node[draw=none] at (0, 0) {$R_x(\theta)$};
+                \end{tikzpicture}
+    }
+    \f] 
  *
  * @param[in,out] qureg object representing the set of all qubits
  * @param[in] controlQubit qubit which has value 1 in the rotated states
  * @param[in] tagretQubit qubit to rotate
  * @param[in] angle angle by which to rotate the target qubit in radians
  * @throws exitWithError
- * 		if either \p controlQubit or \p targetQubit are outside [0, \p qureg.numQubits) or are equal.
+ *      if either \p controlQubit or \p targetQubit are outside [0, \p qureg.numQubits) or are equal.
  */
 void controlledRotateX(QubitRegister qureg, const int controlQubit, const int targetQubit, REAL angle);
 
 /** Applies a controlled rotation by a given angle around the Y-axis of the Bloch-sphere. 
  * The target qubit is rotated in states where the control qubit has value 1.
  *
-	\f[
-	\setlength{\fboxrule}{0.01pt}
-	\fbox{
-				\begin{tikzpicture}[scale=.5]
-				\node[draw=none] at (-3.5, 2) {control};
-				\node[draw=none] at (-3.5, 0) {target};
+    \f[
+    \setlength{\fboxrule}{0.01pt}
+    \fbox{
+                \begin{tikzpicture}[scale=.5]
+                \node[draw=none] at (-3.5, 2) {control};
+                \node[draw=none] at (-3.5, 0) {target};
 
-				\draw (-2, 2) -- (2, 2);
-				\draw[fill=black] (0, 2) circle (.2);
-				\draw (0, 2) -- (0, 1);
-				
-				\draw (-2,0) -- (-1, 0);
-				\draw (1, 0) -- (2, 0);
-				\draw (-1,-1)--(-1,1)--(1,1)--(1,-1)--cycle;
-				\node[draw=none] at (0, 0) {$R_y(\theta)$};
-				\end{tikzpicture}
-	}
-	\f]	
+                \draw (-2, 2) -- (2, 2);
+                \draw[fill=black] (0, 2) circle (.2);
+                \draw (0, 2) -- (0, 1);
+                
+                \draw (-2,0) -- (-1, 0);
+                \draw (1, 0) -- (2, 0);
+                \draw (-1,-1)--(-1,1)--(1,1)--(1,-1)--cycle;
+                \node[draw=none] at (0, 0) {$R_y(\theta)$};
+                \end{tikzpicture}
+    }
+    \f] 
  *
  * @param[in,out] qureg object representing the set of all qubits
  * @param[in] controlQubit qubit which has value 1 in the rotated states
  * @param[in] tagretQubit qubit to rotate
  * @param[in] angle angle by which to rotate the target qubit in radians
  * @throws exitWithError
- * 		if either \p controlQubit or \p targetQubit are outside [0, \p qureg.numQubits) or are equal.
+ *      if either \p controlQubit or \p targetQubit are outside [0, \p qureg.numQubits) or are equal.
  */
 void controlledRotateY(QubitRegister qureg, const int controlQubit, const int targetQubit, REAL angle);
 
 /** Applies a controlled rotation by a given angle around the Z-axis of the Bloch-sphere. 
  * The target qubit is rotated in states where the control qubit has value 1.
  *
-	\f[
-	\setlength{\fboxrule}{0.01pt}
-	\fbox{
-				\begin{tikzpicture}[scale=.5]
-				\node[draw=none] at (-3.5, 2) {control};
-				\node[draw=none] at (-3.5, 0) {target};
+    \f[
+    \setlength{\fboxrule}{0.01pt}
+    \fbox{
+                \begin{tikzpicture}[scale=.5]
+                \node[draw=none] at (-3.5, 2) {control};
+                \node[draw=none] at (-3.5, 0) {target};
 
-				\draw (-2, 2) -- (2, 2);
-				\draw[fill=black] (0, 2) circle (.2);
-				\draw (0, 2) -- (0, 1);
-				
-				\draw (-2,0) -- (-1, 0);
-				\draw (1, 0) -- (2, 0);
-				\draw (-1,-1)--(-1,1)--(1,1)--(1,-1)--cycle;
-				\node[draw=none] at (0, 0) {$R_z(\theta)$};
-				\end{tikzpicture}
-	}
-	\f]	
+                \draw (-2, 2) -- (2, 2);
+                \draw[fill=black] (0, 2) circle (.2);
+                \draw (0, 2) -- (0, 1);
+                
+                \draw (-2,0) -- (-1, 0);
+                \draw (1, 0) -- (2, 0);
+                \draw (-1,-1)--(-1,1)--(1,1)--(1,-1)--cycle;
+                \node[draw=none] at (0, 0) {$R_z(\theta)$};
+                \end{tikzpicture}
+    }
+    \f] 
  *
  * @param[in,out] qureg object representing the set of all qubits
  * @param[in] controlQubit qubit which has value 1 in the rotated states
  * @param[in] tagretQubit qubit to rotate
  * @param[in] angle angle by which to rotate the target qubit in radians
  * @throws exitWithError
- * 		if either \p controlQubit or \p targetQubit are outside [0, \p qureg.numQubits) or are equal.
+ *      if either \p controlQubit or \p targetQubit are outside [0, \p qureg.numQubits) or are equal.
  */
 void controlledRotateZ(QubitRegister qureg, const int controlQubit, const int targetQubit, REAL angle);
 
@@ -808,24 +808,24 @@ void controlledRotateZ(QubitRegister qureg, const int controlQubit, const int ta
  * For angle \f$\theta\f$ and axis vector \f$\vec{n}\f$, applies \f$R_{\hat{n}} = \exp \left(- i \frac{\theta}{2} \hat{n} \cdot \vec{\sigma} \right) \f$ to states where the target qubit is 1 
  * (\f$\vec{\sigma}\f$ is the vector of Pauli matrices).
  *
-	\f[
-	\setlength{\fboxrule}{0.01pt}
-	\fbox{
-				\begin{tikzpicture}[scale=.5]
-				\node[draw=none] at (-3.5, 2) {control};
-				\node[draw=none] at (-3.5, 0) {target};
+    \f[
+    \setlength{\fboxrule}{0.01pt}
+    \fbox{
+                \begin{tikzpicture}[scale=.5]
+                \node[draw=none] at (-3.5, 2) {control};
+                \node[draw=none] at (-3.5, 0) {target};
 
-				\draw (-2, 2) -- (2, 2);
-				\draw[fill=black] (0, 2) circle (.2);
-				\draw (0, 2) -- (0, 1);
-				
-				\draw (-2,0) -- (-1, 0);
-				\draw (1, 0) -- (2, 0);
-				\draw (-1,-1)--(-1,1)--(1,1)--(1,-1)--cycle;
-				\node[draw=none] at (0, 0) {$R_{\hat{n}}(\theta)$};
-				\end{tikzpicture}
-	}
-	\f]
+                \draw (-2, 2) -- (2, 2);
+                \draw[fill=black] (0, 2) circle (.2);
+                \draw (0, 2) -- (0, 1);
+                
+                \draw (-2,0) -- (-1, 0);
+                \draw (1, 0) -- (2, 0);
+                \draw (-1,-1)--(-1,1)--(1,1)--(1,-1)--cycle;
+                \node[draw=none] at (0, 0) {$R_{\hat{n}}(\theta)$};
+                \end{tikzpicture}
+    }
+    \f]
  *
  * @param[in,out] qureg object representing the set of all qubits
  * @param[in] controlQubit qubit with value 1 in the rotated states
@@ -833,8 +833,8 @@ void controlledRotateZ(QubitRegister qureg, const int controlQubit, const int ta
  * @param[in] angle angle by which to rotate in radians
  * @param[in] axis vector around which to rotate (can be non-unit; will be normalised)
  * @throws exitWithError
- * 		if either \p controlQubit or \p targetQubit are outside [0, \p qureg.numQubits) or are equal
- * 		or if \p axis is the zero vector
+ *      if either \p controlQubit or \p targetQubit are outside [0, \p qureg.numQubits) or are equal
+ *      or if \p axis is the zero vector
  */
 void controlledRotateAroundAxis(QubitRegister qureg, const int controlQubit, const int targetQubit, REAL angle, Vector axis);
 
@@ -852,24 +852,24 @@ void controlledRotateAroundAxis(QubitRegister qureg, const int controlQubit, con
  * Valid \f$\alpha\f$, \f$\beta\f$ satisfy \f$|\alpha|^2 + |\beta|^2 = 1\f$. 
  * The target unitary is general up to a global phase factor.         
  *
-	\f[
-	\setlength{\fboxrule}{0.01pt}
-	\fbox{
-				\begin{tikzpicture}[scale=.5]
-				\node[draw=none] at (-3.5, 2) {control};
-				\node[draw=none] at (-3.5, 0) {target};
+    \f[
+    \setlength{\fboxrule}{0.01pt}
+    \fbox{
+                \begin{tikzpicture}[scale=.5]
+                \node[draw=none] at (-3.5, 2) {control};
+                \node[draw=none] at (-3.5, 0) {target};
 
-				\draw (-2, 2) -- (2, 2);
-				\draw[fill=black] (0, 2) circle (.2);
-				\draw (0, 2) -- (0, 1);
-				
-				\draw (-2,0) -- (-1, 0);
-				\draw (1, 0) -- (2, 0);
-				\draw (-1,-1)--(-1,1)--(1,1)--(1,-1)--cycle;
-				\node[draw=none] at (0, 0) {$U_{\alpha, \beta}$};
-				\end{tikzpicture}
-	}
-	\f]
+                \draw (-2, 2) -- (2, 2);
+                \draw[fill=black] (0, 2) circle (.2);
+                \draw (0, 2) -- (0, 1);
+                
+                \draw (-2,0) -- (-1, 0);
+                \draw (1, 0) -- (2, 0);
+                \draw (-1,-1)--(-1,1)--(1,1)--(1,-1)--cycle;
+                \node[draw=none] at (0, 0) {$U_{\alpha, \beta}$};
+                \end{tikzpicture}
+    }
+    \f]
  *                                                                    
  * @param[in,out] qureg object representing the set of all qubits
  * @param[in] controlQubit apply the target unitary if this qubit has value 1
@@ -877,8 +877,8 @@ void controlledRotateAroundAxis(QubitRegister qureg, const int controlQubit, con
  * @param[in] alpha complex unitary parameter (row 1, column 1)
  * @param[in] beta complex unitary parameter (row 2, column 1)
  * @throws exitWithError
- * 		if either \p controlQubit or \p targetQubit are outside [0, \p qureg.numQubits) or are equal,
- * 		or if \p alpha, \p beta don't satisfy |\p alpha|^2 + |\p beta|^2 = 1.
+ *      if either \p controlQubit or \p targetQubit are outside [0, \p qureg.numQubits) or are equal,
+ *      or if \p alpha, \p beta don't satisfy |\p alpha|^2 + |\p beta|^2 = 1.
  */
 void controlledCompactUnitary(QubitRegister qureg, const int controlQubit, const int targetQubit, Complex alpha, Complex beta);
 
@@ -895,32 +895,32 @@ void controlledCompactUnitary(QubitRegister qureg, const int controlQubit, const
  * \f]
  * on the control and target qubits.
  *      
-	\f[
-	\setlength{\fboxrule}{0.01pt}
-	\fbox{
-				\begin{tikzpicture}[scale=.5]
-				\node[draw=none] at (-3.5, 2) {control};
-				\node[draw=none] at (-3.5, 0) {target};
+    \f[
+    \setlength{\fboxrule}{0.01pt}
+    \fbox{
+                \begin{tikzpicture}[scale=.5]
+                \node[draw=none] at (-3.5, 2) {control};
+                \node[draw=none] at (-3.5, 0) {target};
 
-				\draw (-2, 2) -- (2, 2);
-				\draw[fill=black] (0, 2) circle (.2);
-				\draw (0, 2) -- (0, 1);
-				
-				\draw (-2,0) -- (-1, 0);
-				\draw (1, 0) -- (2, 0);
-				\draw (-1,-1)--(-1,1)--(1,1)--(1,-1)--cycle;
-				\node[draw=none] at (0, 0) {U};
-				\end{tikzpicture}
-	}
-	\f]
+                \draw (-2, 2) -- (2, 2);
+                \draw[fill=black] (0, 2) circle (.2);
+                \draw (0, 2) -- (0, 1);
+                
+                \draw (-2,0) -- (-1, 0);
+                \draw (1, 0) -- (2, 0);
+                \draw (-1,-1)--(-1,1)--(1,1)--(1,-1)--cycle;
+                \node[draw=none] at (0, 0) {U};
+                \end{tikzpicture}
+    }
+    \f]
  *                                                              
  * @param[in,out] qureg object representing the set of all qubits
  * @param[in] controlQubit apply unitary if this qubit is 1
  * @param[in] targetQubit qubit to operate on
  * @param[in] u single-qubit unitary matrix to apply
  * @throws exitWithError
- * 		if either \p controlQubit or \p targetQubit are outside [0, \p qureg.numQubits) or are equal,
- * 		or if \p u is not unitary.
+ *      if either \p controlQubit or \p targetQubit are outside [0, \p qureg.numQubits) or are equal,
+ *      or if \p u is not unitary.
  */
 void controlledUnitary(QubitRegister qureg, const int controlQubit, const int targetQubit, ComplexMatrix2 u);
 
@@ -940,31 +940,31 @@ void controlledUnitary(QubitRegister qureg, const int controlQubit, const int ta
  * on the control and target qubits.
  * The given 2x2 ComplexMatrix must be unitary, otherwise an error is thrown.
  *
-	\f[
-	\setlength{\fboxrule}{0.01pt}
-	\fbox{
-				\begin{tikzpicture}[scale=.5]
-				\node[draw=none] at (-3.5, 3) {controls};
-				\node[draw=none] at (-3.5, 0) {target};
+    \f[
+    \setlength{\fboxrule}{0.01pt}
+    \fbox{
+                \begin{tikzpicture}[scale=.5]
+                \node[draw=none] at (-3.5, 3) {controls};
+                \node[draw=none] at (-3.5, 0) {target};
 
-				\node[draw=none] at (0, 6) {$\vdots$};
-				\draw (0, 5) -- (0, 4);
-				
-				\draw (-2, 4) -- (2, 4);
-				\draw[fill=black] (0, 4) circle (.2);
-				\draw (0, 4) -- (0, 2);			
-				
-				\draw (-2, 2) -- (2, 2);
-				\draw[fill=black] (0, 2) circle (.2);
-				\draw (0, 2) -- (0, 1);
-				
-				\draw (-2,0) -- (-1, 0);
-				\draw (1, 0) -- (2, 0);
-				\draw (-1,-1)--(-1,1)--(1,1)--(1,-1)--cycle;
-				\node[draw=none] at (0, 0) {U};
-				\end{tikzpicture}
-	}
-	\f]
+                \node[draw=none] at (0, 6) {$\vdots$};
+                \draw (0, 5) -- (0, 4);
+                
+                \draw (-2, 4) -- (2, 4);
+                \draw[fill=black] (0, 4) circle (.2);
+                \draw (0, 4) -- (0, 2);         
+                
+                \draw (-2, 2) -- (2, 2);
+                \draw[fill=black] (0, 2) circle (.2);
+                \draw (0, 2) -- (0, 1);
+                
+                \draw (-2,0) -- (-1, 0);
+                \draw (1, 0) -- (2, 0);
+                \draw (-1,-1)--(-1,1)--(1,1)--(1,-1)--cycle;
+                \node[draw=none] at (0, 0) {U};
+                \end{tikzpicture}
+    }
+    \f]
  *                                                                
  * @param[in,out] qureg object representing the set of all qubits
  * @param[in] controlQubits applies unitary if all qubits in this array equal 1
@@ -972,11 +972,11 @@ void controlledUnitary(QubitRegister qureg, const int controlQubit, const int ta
  * @param[in] targetQubit qubit to operate on
  * @param[in] u single-qubit unitary matrix to apply
  * @throws exitWithError
- * 		if \p numControlQubits is outside [1, \p qureg.numQubits]),
- * 		or if any qubit index (\p targetQubit or one in \p controlQubits) is outside
- * 		[0, \p qureg.numQubits]), 
- * 		or if \p controlQubits contains \p targetQubit,
- * 		or if \p u is not unitary.
+ *      if \p numControlQubits is outside [1, \p qureg.numQubits]),
+ *      or if any qubit index (\p targetQubit or one in \p controlQubits) is outside
+ *      [0, \p qureg.numQubits]), 
+ *      or if \p controlQubits contains \p targetQubit,
+ *      or if \p u is not unitary.
  */
 void multiControlledUnitary(QubitRegister qureg, int* controlQubits, const int numControlQubits, const int targetQubit, ComplexMatrix2 u);
 
@@ -989,23 +989,23 @@ void multiControlledUnitary(QubitRegister qureg, int* controlQubits, const int n
  * \end{pmatrix}
  * \f]   
  *
-	\f[
-	\setlength{\fboxrule}{0.01pt}
-	\fbox{
-				\begin{tikzpicture}[scale=.5]
-				\node[draw=none] at (-3.5, 0) {target};
+    \f[
+    \setlength{\fboxrule}{0.01pt}
+    \fbox{
+                \begin{tikzpicture}[scale=.5]
+                \node[draw=none] at (-3.5, 0) {target};
 
-				\draw (-2,0) -- (2, 0);
-				\draw (0, 0) circle (.5);
-				\draw (0, .5) -- (0, -.5);
-				\end{tikzpicture}
-	}
-	\f]   
+                \draw (-2,0) -- (2, 0);
+                \draw (0, 0) circle (.5);
+                \draw (0, .5) -- (0, -.5);
+                \end{tikzpicture}
+    }
+    \f]   
  * 
  * @param[in,out] qureg object representing the set of all qubits
  * @param[in] targetQubit qubit to operate on
  * @throws exitWithError
- * 		if \p targetQubit is outside [0, \p qureg.numQubits).
+ *      if \p targetQubit is outside [0, \p qureg.numQubits).
  */
 void sigmaX(QubitRegister qureg, const int targetQubit);
 
@@ -1018,24 +1018,24 @@ void sigmaX(QubitRegister qureg, const int targetQubit);
  * \end{pmatrix}
  * \f]  
  *
-	\f[
-	\setlength{\fboxrule}{0.01pt}
-	\fbox{
-				\begin{tikzpicture}[scale=.5]
-				\node[draw=none] at (-3.5, 0) {target};
+    \f[
+    \setlength{\fboxrule}{0.01pt}
+    \fbox{
+                \begin{tikzpicture}[scale=.5]
+                \node[draw=none] at (-3.5, 0) {target};
 
-				\draw (-2,0) -- (-1, 0);
-				\draw (1, 0) -- (2, 0);
-				\draw (-1,-1)--(-1,1)--(1,1)--(1,-1)--cycle;
-				\node[draw=none] at (0, 0) {$\sigma_y$};
-				\end{tikzpicture}
-	}
-	\f]      
+                \draw (-2,0) -- (-1, 0);
+                \draw (1, 0) -- (2, 0);
+                \draw (-1,-1)--(-1,1)--(1,1)--(1,-1)--cycle;
+                \node[draw=none] at (0, 0) {$\sigma_y$};
+                \end{tikzpicture}
+    }
+    \f]      
  * 
  * @param[in,out] qureg object representing the set of all qubits
  * @param[in] targetQubit qubit to operate on
  * @throws exitWithError
- * 		if \p targetQubit is outside [0, \p qureg.numQubits).
+ *      if \p targetQubit is outside [0, \p qureg.numQubits).
  */
 void sigmaY(QubitRegister qureg, const int targetQubit);
 
@@ -1048,24 +1048,24 @@ void sigmaY(QubitRegister qureg, const int targetQubit);
  * \end{pmatrix}
  * \f]   
  *
-	\f[
-	\setlength{\fboxrule}{0.01pt}
-	\fbox{
-				\begin{tikzpicture}[scale=.5]
-				\node[draw=none] at (-3.5, 0) {target};
+    \f[
+    \setlength{\fboxrule}{0.01pt}
+    \fbox{
+                \begin{tikzpicture}[scale=.5]
+                \node[draw=none] at (-3.5, 0) {target};
 
-				\draw (-2,0) -- (-1, 0);
-				\draw (1, 0) -- (2, 0);
-				\draw (-1,-1)--(-1,1)--(1,1)--(1,-1)--cycle;
-				\node[draw=none] at (0, 0) {$\sigma_z$};
-				\end{tikzpicture}
-	}
-	\f]     
+                \draw (-2,0) -- (-1, 0);
+                \draw (1, 0) -- (2, 0);
+                \draw (-1,-1)--(-1,1)--(1,1)--(1,-1)--cycle;
+                \node[draw=none] at (0, 0) {$\sigma_z$};
+                \end{tikzpicture}
+    }
+    \f]     
  * 
  * @param[in,out] qureg object representing the set of all qubits
  * @param[in] targetQubit qubit to operate on
  * @throws exitWithError
- * 		if \p targetQubit is outside [0, \p qureg.numQubits).
+ *      if \p targetQubit is outside [0, \p qureg.numQubits).
  */
 void sigmaZ(QubitRegister qureg, const int targetQubit);
 
@@ -1080,24 +1080,24 @@ void sigmaZ(QubitRegister qureg, const int targetQubit);
  * \end{pmatrix}
  * \f]  
  *
-	\f[
-	\setlength{\fboxrule}{0.01pt}
-	\fbox{
-				\begin{tikzpicture}[scale=.5]
-				\node[draw=none] at (-3.5, 0) {target};
+    \f[
+    \setlength{\fboxrule}{0.01pt}
+    \fbox{
+                \begin{tikzpicture}[scale=.5]
+                \node[draw=none] at (-3.5, 0) {target};
 
-				\draw (-2,0) -- (-1, 0);
-				\draw (1, 0) -- (2, 0);
-				\draw (-1,-1)--(-1,1)--(1,1)--(1,-1)--cycle;
-				\node[draw=none] at (0, 0) {H};
-				\end{tikzpicture}
-	}
-	\f]  
+                \draw (-2,0) -- (-1, 0);
+                \draw (1, 0) -- (2, 0);
+                \draw (-1,-1)--(-1,1)--(1,1)--(1,-1)--cycle;
+                \node[draw=none] at (0, 0) {H};
+                \end{tikzpicture}
+    }
+    \f]  
  *
  * @param[in,out] qureg object representing the set of all qubits
  * @param[in] targetQubit qubit to operate on
  * @throws exitWithError
- * 		if \p targetQubit is outside [0, \p qureg.numQubits).
+ *      if \p targetQubit is outside [0, \p qureg.numQubits).
  */
 void hadamard(QubitRegister qureg, const int targetQubit);
 
@@ -1115,28 +1115,28 @@ void hadamard(QubitRegister qureg, const int targetQubit);
  * \f]
  * on the control and target qubits.
  *
-	\f[
-	\setlength{\fboxrule}{0.01pt}
-	\fbox{
-				\begin{tikzpicture}[scale=.5]
-				\node[draw=none] at (-3.5, 2) {control};
-				\node[draw=none] at (-3.5, 0) {target};
+    \f[
+    \setlength{\fboxrule}{0.01pt}
+    \fbox{
+                \begin{tikzpicture}[scale=.5]
+                \node[draw=none] at (-3.5, 2) {control};
+                \node[draw=none] at (-3.5, 0) {target};
 
-				\draw (-2, 2) -- (2, 2);
-				\draw[fill=black] (0, 2) circle (.2);
-				\draw (0, 2) -- (0, -.5);
-				
-				\draw (-2,0) -- (2, 0);
-				\draw (0, 0) circle (.5);
-				\end{tikzpicture}
-	}
-	\f]  
+                \draw (-2, 2) -- (2, 2);
+                \draw[fill=black] (0, 2) circle (.2);
+                \draw (0, 2) -- (0, -.5);
+                
+                \draw (-2,0) -- (2, 0);
+                \draw (0, 0) circle (.5);
+                \end{tikzpicture}
+    }
+    \f]  
  *
  * @param[in,out] qureg object representing the set of all qubits
  * @param[in] controlQubit nots the target if this qubit is 1
  * @param[in] targetQubit qubit to not
  * @throws exitWithError
- * 		if either \p controlQubit or \p targetQubit are outside [0, \p qureg.numQubits), or are equal.
+ *      if either \p controlQubit or \p targetQubit are outside [0, \p qureg.numQubits), or are equal.
  */
 void controlledNot(QubitRegister qureg, const int controlQubit, const int targetQubit);
 
@@ -1154,30 +1154,30 @@ void controlledNot(QubitRegister qureg, const int controlQubit, const int target
  * \f]
  * on the control and target qubits.
  *
-	\f[
-	\setlength{\fboxrule}{0.01pt}
-	\fbox{
-				\begin{tikzpicture}[scale=.5]
-				\node[draw=none] at (-3.5, 2) {control};
-				\node[draw=none] at (-3.5, 0) {target};
+    \f[
+    \setlength{\fboxrule}{0.01pt}
+    \fbox{
+                \begin{tikzpicture}[scale=.5]
+                \node[draw=none] at (-3.5, 2) {control};
+                \node[draw=none] at (-3.5, 0) {target};
 
-				\draw (-2, 2) -- (2, 2);
-				\draw[fill=black] (0, 2) circle (.2);
-				\draw (0, 2) -- (0, 1);
-				
-				\draw (-2,0) -- (-1, 0);
-				\draw (1, 0) -- (2, 0);
-				\draw (-1,-1)--(-1,1)--(1,1)--(1,-1)--cycle;
-				\node[draw=none] at (0, 0) {Y};
-				\end{tikzpicture}
-	}
-	\f]
+                \draw (-2, 2) -- (2, 2);
+                \draw[fill=black] (0, 2) circle (.2);
+                \draw (0, 2) -- (0, 1);
+                
+                \draw (-2,0) -- (-1, 0);
+                \draw (1, 0) -- (2, 0);
+                \draw (-1,-1)--(-1,1)--(1,1)--(1,-1)--cycle;
+                \node[draw=none] at (0, 0) {Y};
+                \end{tikzpicture}
+    }
+    \f]
  *
  * @param[in,out] qureg object representing the set of all qubits
  * @param[in] controlQubit applies sigmaY to the target if this qubit is 1
  * @param[in] targetQubit qubit to not
  * @throws exitWithError
- * 		if either \p controlQubit or \p targetQubit are outside [0, \p qureg.numQubits), or are equal.
+ *      if either \p controlQubit or \p targetQubit are outside [0, \p qureg.numQubits), or are equal.
  */
 void controlledSigmaY(QubitRegister qureg, const int controlQubit, const int targetQubit);
 
@@ -1189,8 +1189,8 @@ void controlledSigmaY(QubitRegister qureg, const int controlQubit, const int tar
  * @param[in] outcome for which to find the probability of the qubit being measured in
  * @return probability of qubit measureQubit being measured in the given outcome
  * @throws exitWithError
- * 		if \p measureQubit is outside [0, \p qureg.numQubits),
- * 		or if \p outcome is not in {0, 1}.
+ *      if \p measureQubit is outside [0, \p qureg.numQubits),
+ *      or if \p outcome is not in {0, 1}.
  */
 REAL findProbabilityOfOutcome(QubitRegister qureg, const int measureQubit, int outcome);
 
@@ -1206,9 +1206,9 @@ REAL findProbabilityOfOutcome(QubitRegister qureg, const int measureQubit, int o
  * @param[in] outcome to force the measure qubit to enter
  * @return probability of the (forced) measurement outcome
  * @throws exitWithError
- * 		if \p measureQubit is outside [0, \p qureg.numQubits),
- * 		or if \p outcome is not in {0, 1},
- * 		or if the probability of \p outcome is zero (within machine epsilon)
+ *      if \p measureQubit is outside [0, \p qureg.numQubits),
+ *      or if \p outcome is not in {0, 1},
+ *      or if the probability of \p outcome is zero (within machine epsilon)
  */
 REAL collapseToOutcome(QubitRegister qureg, const int measureQubit, int outcome);
 
@@ -1220,7 +1220,7 @@ REAL collapseToOutcome(QubitRegister qureg, const int measureQubit, int outcome)
  * @param[in] measureQubit qubit to measure
  * @return the measurement outcome, 0 or 1
  * @throws exitWithError
- * 		if \p measureQubit is outside [0, \p qureg.numQubits)
+ *      if \p measureQubit is outside [0, \p qureg.numQubits)
  */
 int measure(QubitRegister qureg, int measureQubit);
 
@@ -1234,7 +1234,7 @@ int measure(QubitRegister qureg, int measureQubit);
  * @param[out] outcomeProb a pointer to a REAL which is set to the probability of the occurred outcome
  * @return the measurement outcome, 0 or 1
  * @throws exitWithError
- * 		if \p measureQubit is outside [0, \p qureg.numQubits)
+ *      if \p measureQubit is outside [0, \p qureg.numQubits)
  */
 int measureWithStats(QubitRegister qureg, int measureQubit, REAL *outcomeProb);
 

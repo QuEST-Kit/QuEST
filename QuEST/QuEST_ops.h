@@ -27,11 +27,11 @@ REAL densmatr_calcTotalProbability(QubitRegister qureg);
 REAL densmatr_findProbabilityOfOutcome(QubitRegister qureg, const int measureQubit, int outcome);
 
 void densmatr_collapseToKnownProbOutcome(QubitRegister qureg, const int measureQubit, int outcome, REAL outcomeProb);
-	
+    
 int densmatr_measureWithStats(QubitRegister qureg, int measureQubit, REAL *outcomeProb);
-	
+    
 /* operations upon density matrices */
-	
+    
 void statevec_reportStateToScreen(QubitRegister qureg, QuESTEnv env, int reportRank);
 
 int statevec_compareStates(QubitRegister mq1, QubitRegister mq2, REAL precision);
