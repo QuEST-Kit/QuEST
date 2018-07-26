@@ -131,80 +131,80 @@ int isMatrixUnitary(ComplexMatrix2 u) {
     return 1;
 }
 
-void auto_validateCreateNumQubits(int numQubits, const char* caller) {
+void validateCreateNumQubits(int numQubits, const char* caller) {
 	QuESTAssert(numQubits>0, E_INVALID_NUM_QUBITS, caller);
 }
 
-void auto_validateStateIndex(QubitRegister qureg, long long int stateInd, const char* caller) {
+void validateStateIndex(QubitRegister qureg, long long int stateInd, const char* caller) {
 	QuESTAssert(stateInd>=0 && stateInd<qureg.numAmpsTotal, E_INVALID_STATE_INDEX, caller);
 }
 
-void auto_validateTarget(QubitRegister qureg, int targetQubit, const char* caller) {
+void validateTarget(QubitRegister qureg, int targetQubit, const char* caller) {
 	QuESTAssert(targetQubit>=0 && targetQubit<qureg.numQubitsRepresented, E_INVALID_TARGET_QUBIT, caller);
 }
 
-void auto_validateControl(QubitRegister qureg, int controlQubit, const char* caller) {
+void validateControl(QubitRegister qureg, int controlQubit, const char* caller) {
 	QuESTAssert(controlQubit>=0 && controlQubit<qureg.numQubitsRepresented, E_INVALID_CONTROL_QUBIT, caller);
 }
 
-void auto_validateControlTarget(QubitRegister qureg, int controlQubit, int targetQubit, const char* caller) {
-	auto_validateTarget(qureg, targetQubit, caller);
-	auto_validateControl(qureg, controlQubit, caller);
+void validateControlTarget(QubitRegister qureg, int controlQubit, int targetQubit, const char* caller) {
+	validateTarget(qureg, targetQubit, caller);
+	validateControl(qureg, controlQubit, caller);
 	QuESTAssert(controlQubit != targetQubit, E_TARGET_IS_CONTROL, caller);
 }
 
-void auto_validateNumControls(QubitRegister qureg, const int numControlQubits, const char* caller) {
+void validateNumControls(QubitRegister qureg, const int numControlQubits, const char* caller) {
 	// this could reject repeated qubits and cite "too many"
 	QuESTAssert(numControlQubits>0 && numControlQubits<=qureg.numQubitsRepresented, E_INVALID_NUM_CONTROLS, caller);
 }
 
-void auto_validateMultiControls(QubitRegister qureg, int* controlQubits, const int numControlQubits, const char* caller) {
-	auto_validateNumControls(qureg, numControlQubits, caller);
+void validateMultiControls(QubitRegister qureg, int* controlQubits, const int numControlQubits, const char* caller) {
+	validateNumControls(qureg, numControlQubits, caller);
 	for (int i=0; i < numControlQubits; i++) {
-		auto_validateControl(qureg, controlQubits[i], caller);
+		validateControl(qureg, controlQubits[i], caller);
 	}
 }
 
-void auto_validateMultiControlsTarget(QubitRegister qureg, int* controlQubits, const int numControlQubits, const int targetQubit, const char* caller) {
-	auto_validateTarget(qureg, targetQubit, caller);
-	auto_validateMultiControls(qureg, controlQubits, numControlQubits, caller);
+void validateMultiControlsTarget(QubitRegister qureg, int* controlQubits, const int numControlQubits, const int targetQubit, const char* caller) {
+	validateTarget(qureg, targetQubit, caller);
+	validateMultiControls(qureg, controlQubits, numControlQubits, caller);
 	for (int i=0; i < numControlQubits; i++)
 		QuESTAssert(controlQubits[i] != targetQubit, E_TARGET_IN_CONTROLS, caller);
 }
 
-void auto_validateUnitaryMatrix(ComplexMatrix2 u, const char* caller) {
+void validateUnitaryMatrix(ComplexMatrix2 u, const char* caller) {
 	QuESTAssert(isMatrixUnitary(u), E_NON_UNITARY_MATRIX, caller);
 }
 
-void auto_validateUnitaryComplexPair(Complex alpha, Complex beta, const char* caller) {
+void validateUnitaryComplexPair(Complex alpha, Complex beta, const char* caller) {
 	QuESTAssert(isComplexPairUnitary(alpha, beta), E_NON_UNITARY_COMPLEX_PAIR, caller);
 }
 
-void auto_validateVector(Vector vec, const char* caller) {
+void validateVector(Vector vec, const char* caller) {
 	QuESTAssert(getVectorMagnitude(vec) > REAL_EPS, E_ZERO_VECTOR, caller);
 }
 
-void auto_validateStateVecQureg(QubitRegister qureg, const char* caller) {
+void validateStateVecQureg(QubitRegister qureg, const char* caller) {
 	QuESTAssert( ! qureg.isDensityMatrix, E_DEFINED_ONLY_FOR_STATEVECS, caller);
 }
 
-void auto_validatDensityMatrQureg(QubitRegister qureg, const char* caller) {
+void validatDensityMatrQureg(QubitRegister qureg, const char* caller) {
 	QuESTAssert(qureg.isDensityMatrix, E_DEFINED_ONLY_FOR_DENSMATRS, caller);
 }
 
-void auto_validateOutcome(int outcome, const char* caller) {
+void validateOutcome(int outcome, const char* caller) {
 	QuESTAssert(outcome==0 || outcome==1, E_INVALID_QUBIT_OUTCOME, caller);
 }
 
-void auto_validateMeasurementProb(REAL prob, const char* caller) {
+void validateMeasurementProb(REAL prob, const char* caller) {
 	QuESTAssert(prob>REAL_EPS, E_COLLAPSE_STATE_ZERO_PROB, caller);
 }
 
-void auto_validateMatchingQuregDims(QubitRegister qureg1, QubitRegister qureg2, const char *caller) {
+void validateMatchingQuregDims(QubitRegister qureg1, QubitRegister qureg2, const char *caller) {
 	QuESTAssert(qureg1.numQubitsRepresented==qureg2.numQubitsRepresented, E_MISMATCHING_REGISTER_DIMENSIONS, caller);
 }
 
-void auto_validateSecondQuregStateVec(QubitRegister qureg2, const char *caller) {
+void validateSecondQuregStateVec(QubitRegister qureg2, const char *caller) {
 	QuESTAssert( ! qureg2.isDensityMatrix, E_SECOND_ARG_MUST_BE_STATEVEC, caller);
 }
 
