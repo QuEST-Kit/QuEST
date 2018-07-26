@@ -85,6 +85,14 @@ void auto_validateMeasurementProb(REAL prob, const char* caller) {
 	QuESTAssert(prob>REAL_EPS, E_COLLAPSE_STATE_ZERO_PROB, caller);
 }
 
+void auto_validateMatchingQuregDims(QubitRegister qureg1, QubitRegister qureg2, const char *caller) {
+	QuESTAssert(qureg1.numQubitsRepresented==qureg2.numQubitsRepresented, E_MISMATCHING_REGISTER_DIMENSIONS, caller);
+}
+
+void auto_validateSecondQuregStateVec(QubitRegister qureg2, const char *caller) {
+	QuESTAssert( ! qureg2.isDensityMatrix, E_SECOND_ARG_MUST_BE_STATEVEC, caller);
+}
+
 static const char* errorMessages[] = {
 	[E_INVALID_NUM_QUBITS] = "Invalid number of qubits. Must create >0.",
 	[E_INVALID_TARGET_QUBIT] = "Invalid target qubit. Note qubits are zero indexed.",
@@ -102,8 +110,8 @@ static const char* errorMessages[] = {
 	[E_CANNOT_OPEN_FILE] = "Could not open file",
 	[E_SECOND_ARG_MUST_BE_STATEVEC] = "Second argument must be a state-vector.",
 	[E_MISMATCHING_REGISTER_DIMENSIONS] = "Dimensions of the qubit registers don't match.",
-	[E_DEFINED_ONLY_FOR_STATEVECS] = "Valid only for state-vectors.",
-	[E_DEFINED_ONLY_FOR_DENSMATRS] = "Valid only for density matrices."
+	[E_DEFINED_ONLY_FOR_STATEVECS] = "Operation valid only for state-vectors.",
+	[E_DEFINED_ONLY_FOR_DENSMATRS] = "Operation valid only for density matrices."
 };
 
 /*

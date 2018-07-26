@@ -30,6 +30,8 @@ extern "C" {
 # define validateDensityMatrQureg(Q) auto_validatDensityMatrQureg(Q, __func__)
 # define validateOutcome(M) auto_validateOutcome(M, __func__)
 # define validateMeasurementProb(P) auto_validateMeasurementProb(P, __func__)
+# define validateMatchingQuregDims(Q1, Q2) auto_validateMatchingQuregDims(Q1, Q2, __func__)
+# define validateSecondQuregStateVec(Q2) auto_validateSecondQuregStateVec(Q2, __func__)
 
 void auto_validateCreateNumQubits(int numQubits, const char* caller);
 void auto_validateStateIndex(QubitRegister qureg, long long int stateInd, const char* caller);
@@ -44,6 +46,8 @@ void auto_validateStateVecQureg(QubitRegister qureg, const char* caller);
 void auto_validatDensityMatrQureg(QubitRegister qureg, const char* caller);
 void auto_validateOutcome(int outcome, const char* caller);
 void auto_validateMeasurementProb(REAL prob, const char* caller);
+void auto_validateMatchingQuregDims(QubitRegister qureg1, QubitRegister qureg2, const char *caller);
+void auto_validateSecondQuregStateVec(QubitRegister qureg2, const char *caller);
 
 /* BELOW WON'T NEED TO BE EXPOSED AFTER ALL INTEGRATED INTO QuEST_validation.h! :D */
 typedef enum {

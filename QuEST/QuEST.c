@@ -392,26 +392,15 @@ REAL findProbabilityOfOutcome(QubitRegister qureg, const int measureQubit, int o
 }
 
 
-
-
-
-
-
-
-
 // @TODO add density copying to distributed CPU
 void initPureState(QubitRegister qureg, QubitRegister pure) {
-	
-	// validation here that second arg is a state-vector
-	
-	if (qureg.isDensityMatrix) {
-		QuESTAssert(qureg.numQubitsRepresented==pure.numQubitsInStateVec, 13, __func__);
+	validateSecondQuregStateVec(pure);
+	validateMatchingQuregDims(qureg, pure);
+
+	if (qureg.isDensityMatrix)
 		densmatr_initPureState(qureg, pure);
-		
-	} else {
-		QuESTAssert(qureg.numQubitsInStateVec==pure.numQubitsInStateVec, 13, __func__);
+	else
 		statevec_initPureState(qureg, pure);
-	}
 }
 
 
