@@ -39,30 +39,30 @@ void densmatr_collapseToKnownProbOutcome(QubitRegister qureg, const int measureQ
 
 
 void densmatr_initPureState(QubitRegister targetQureg, QubitRegister copyQureg) {
-	densmatr_initPureStateLocal(targetQureg, copyQureg);
+    densmatr_initPureStateLocal(targetQureg, copyQureg);
 }
 
 REAL densmatr_calcTotalProbability(QubitRegister qureg) {
-	
-	// computes the trace using Kahan summation
-	REAL pTotal=0;
-	REAL y, t, c;
-	c = 0;
-	
-	long long int numCols = 1LL << qureg.numQubitsRepresented;
-	long long diagIndex;
-	
-	for (int col=0; col< numCols; col++) {
-		diagIndex = col*(numCols + 1);
-		y = qureg.stateVec.real[diagIndex] - c;
-		t = pTotal + y;
-		c = ( t - pTotal ) - y; // brackets are important
-		pTotal = t;
-	}
-	
-	// @TODO should maybe do a cheap test that imaginary components are ~0
-	
-	return pTotal;
+    
+    // computes the trace using Kahan summation
+    REAL pTotal=0;
+    REAL y, t, c;
+    c = 0;
+    
+    long long int numCols = 1LL << qureg.numQubitsRepresented;
+    long long diagIndex;
+    
+    for (int col=0; col< numCols; col++) {
+        diagIndex = col*(numCols + 1);
+        y = qureg.stateVec.real[diagIndex] - c;
+        t = pTotal + y;
+        c = ( t - pTotal ) - y; // brackets are important
+        pTotal = t;
+    }
+    
+    // @TODO should maybe do a cheap test that imaginary components are ~0
+    
+    return pTotal;
 }
 
 REAL statevec_calcTotalProbability(QubitRegister qureg){
@@ -100,8 +100,8 @@ void initQuESTEnv(QuESTEnv *env){
     // init MPI environment
     env->rank=0;
     env->numRanks=1;
-	
-	seedQuESTDefault();
+    
+    seedQuESTDefault();
 }
 
 void syncQuESTEnv(QuESTEnv env){
@@ -165,7 +165,7 @@ void statevec_multiControlledUnitary(QubitRegister qureg, int* controlQubits, co
 {
     long long int mask=0; 
     for (int i=0; i<numControlQubits; i++)
-		mask = mask | (1LL<<controlQubits[i]);
+        mask = mask | (1LL<<controlQubits[i]);
 
     statevec_multiControlledUnitaryLocal(qureg, targetQubit, mask, u);
 }
@@ -177,26 +177,26 @@ void statevec_sigmaX(QubitRegister qureg, const int targetQubit)
 
 void statevec_sigmaY(QubitRegister qureg, const int targetQubit) 
 {
-	int conjFac = 1;
+    int conjFac = 1;
     statevec_sigmaYLocal(qureg, targetQubit, conjFac);
 }
 
 void statevec_sigmaYConj(QubitRegister qureg, const int targetQubit) 
 {
-	int conjFac = -1;
+    int conjFac = -1;
     statevec_sigmaYLocal(qureg, targetQubit, conjFac);
 }
 
 void statevec_controlledSigmaY(QubitRegister qureg, const int controlQubit, const int targetQubit)
 {
-	int conjFac = 1;
-	statevec_controlledSigmaYLocal(qureg, controlQubit, targetQubit, conjFac);
+    int conjFac = 1;
+    statevec_controlledSigmaYLocal(qureg, controlQubit, targetQubit, conjFac);
 }
 
 void statevec_controlledSigmaYConj(QubitRegister qureg, const int controlQubit, const int targetQubit)
 {
-	int conjFac = -1;
-	statevec_controlledSigmaYLocal(qureg, controlQubit, targetQubit, conjFac);
+    int conjFac = -1;
+    statevec_controlledSigmaYLocal(qureg, controlQubit, targetQubit, conjFac);
 }
 
 void statevec_hadamard(QubitRegister qureg, const int targetQubit) 
@@ -218,11 +218,11 @@ REAL statevec_findProbabilityOfOutcome(QubitRegister qureg, const int measureQub
 }
 
 REAL densmatr_findProbabilityOfOutcome(QubitRegister qureg, const int measureQubit, int outcome) {
-	
-	REAL outcomeProb = densmatr_findProbabilityOfZeroLocal(qureg, measureQubit);
-	if (outcome == 1)
-		outcomeProb = 1.0 - outcomeProb;
-	return outcomeProb;
+    
+    REAL outcomeProb = densmatr_findProbabilityOfZeroLocal(qureg, measureQubit);
+    if (outcome == 1)
+        outcomeProb = 1.0 - outcomeProb;
+    return outcomeProb;
 }
 
 void statevec_collapseToKnownProbOutcome(QubitRegister qureg, const int measureQubit, int outcome, REAL stateProb)
