@@ -17,28 +17,29 @@
 # include "QuEST.h"
 # include "QuEST_internal.h"
 # include "QuEST_precision.h"
+# include "QuEST_validation.h"
 # include "QuEST_ops.h"
-
-
-// just for debug printing and exiting: can remove later
-# include <stdio.h>
-# include <stdlib.h>
-
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-void createDensityQubitRegister(QubitRegister *qureg, int numQubits, QuESTEnv env) {
-	statevec_createQubitRegister(qureg, 2*numQubits, env);
-	qureg->isDensityMatrix = 1;
-	qureg->numDensityQubits = numQubits;
-}
-
 void createQubitRegister(QubitRegister *qureg, int numQubits, QuESTEnv env) {
+	validateCreateNumQubits(numQubits, __func__);
+	
 	statevec_createQubitRegister(qureg, numQubits, env);
 	qureg->isDensityMatrix = 0;
-	qureg->numDensityQubits = -1;
+	qureg->numQubitsRepresented = numQubits;
+	qureg->numQubitsInStateVec = numQubits;
+}
+
+void createDensityQubitRegister(QubitRegister *qureg, int numQubits, QuESTEnv env) {
+	validateCreateNumQubits(numQubits, __func__);
+	
+	statevec_createQubitRegister(qureg, 2*numQubits, env);
+	qureg->isDensityMatrix = 1;
+	qureg->numQubitsRepresented = numQubits;
+	qureg->numQubitsInStateVec = 2*numQubits;
 }
 
 void destroyQubitRegister(QubitRegister qureg, QuESTEnv env) {
@@ -57,6 +58,8 @@ void initStatePlus(QubitRegister qureg) {
 }
 
 void initClassicalState(QubitRegister qureg, long long int stateInd) {
+	validateStateIndex(qureg, stateInd, __func__);
+	
 	if (qureg.isDensityMatrix)
 		densmatr_initClassicalState(qureg, stateInd);
 	else
@@ -64,76 +67,99 @@ void initClassicalState(QubitRegister qureg, long long int stateInd) {
 }
 
 void hadamard(QubitRegister qureg, const int targetQubit) {
+	validateTarget(qureg, targetQubit, __func__);
+
 	statevec_hadamard(qureg, targetQubit);
 	if (qureg.isDensityMatrix) {
-		statevec_hadamard(qureg, targetQubit+qureg.numDensityQubits);
+		statevec_hadamard(qureg, targetQubit+qureg.numQubitsRepresented);
 	}
 }
 
-void rotateX(QubitRegister qureg, const int rotQubit, REAL angle) {
-	statevec_rotateX(qureg, rotQubit, angle);
+void rotateX(QubitRegister qureg, const int targetQubit, REAL angle) {
+	validateTarget(qureg, targetQubit, __func__);
+	
+	statevec_rotateX(qureg, targetQubit, angle);
 	if (qureg.isDensityMatrix) {
-		statevec_rotateX(qureg, rotQubit+qureg.numDensityQubits, -angle);
+		statevec_rotateX(qureg, targetQubit+qureg.numQubitsRepresented, -angle);
 	}
 }
 
-void rotateY(QubitRegister qureg, const int rotQubit, REAL angle) {
-	statevec_rotateY(qureg, rotQubit, angle);
+void rotateY(QubitRegister qureg, const int targetQubit, REAL angle) {
+	validateTarget(qureg, targetQubit, __func__);
+	
+	statevec_rotateY(qureg, targetQubit, angle);
 	if (qureg.isDensityMatrix) {
-		statevec_rotateY(qureg, rotQubit+qureg.numDensityQubits, angle);
+		statevec_rotateY(qureg, targetQubit+qureg.numQubitsRepresented, angle);
 	}
 }
 
-void rotateZ(QubitRegister qureg, const int rotQubit, REAL angle) {
-	statevec_rotateZ(qureg, rotQubit, angle);
+void rotateZ(QubitRegister qureg, const int targetQubit, REAL angle) {
+	validateTarget(qureg, targetQubit, __func__);
+	
+	statevec_rotateZ(qureg, targetQubit, angle);
 	if (qureg.isDensityMatrix) {
-		statevec_rotateZ(qureg, rotQubit+qureg.numDensityQubits, -angle);
+		statevec_rotateZ(qureg, targetQubit+qureg.numQubitsRepresented, -angle);
 	}
 }
 
 void controlledRotateX(QubitRegister qureg, const int controlQubit, const int targetQubit, REAL angle) {
+	validateControlTarget(qureg, controlQubit, targetQubit, __func__);
+	
 	statevec_controlledRotateX(qureg, controlQubit, targetQubit, angle);
 	if (qureg.isDensityMatrix) {
-		int shift = qureg.numDensityQubits;
+		int shift = qureg.numQubitsRepresented;
 		statevec_controlledRotateX(qureg, controlQubit+shift, targetQubit+shift, -angle);
 	}
 }
 
 void controlledRotateY(QubitRegister qureg, const int controlQubit, const int targetQubit, REAL angle) {
+	validateControlTarget(qureg, controlQubit, targetQubit, __func__);
+	
 	statevec_controlledRotateY(qureg, controlQubit, targetQubit, angle);
 	if (qureg.isDensityMatrix) {
-		int shift = qureg.numDensityQubits;
+		int shift = qureg.numQubitsRepresented;
 		statevec_controlledRotateY(qureg, controlQubit+shift, targetQubit+shift, angle);
 	}
 }
 
 void controlledRotateZ(QubitRegister qureg, const int controlQubit, const int targetQubit, REAL angle) {
+	validateControlTarget(qureg, controlQubit, targetQubit, __func__);
+	
 	statevec_controlledRotateZ(qureg, controlQubit, targetQubit, angle);
 	if (qureg.isDensityMatrix) {
-		int shift = qureg.numDensityQubits;
+		int shift = qureg.numQubitsRepresented;
 		statevec_controlledRotateZ(qureg, controlQubit+shift, targetQubit+shift, -angle);
 	}
 }
 
 void unitary(QubitRegister qureg, const int targetQubit, ComplexMatrix2 u) {
+	validateTarget(qureg, targetQubit, __func__);
+	validateUnitaryMatrix(u, __func__);
+	
 	statevec_unitary(qureg, targetQubit, u);
 	if (qureg.isDensityMatrix) {
-		statevec_unitary(qureg, targetQubit+qureg.numDensityQubits, getConjugateMatrix(u));
+		statevec_unitary(qureg, targetQubit+qureg.numQubitsRepresented, getConjugateMatrix(u));
 	}
 }
 
 void controlledUnitary(QubitRegister qureg, const int controlQubit, const int targetQubit, ComplexMatrix2 u) {
+	validateControlTarget(qureg, controlQubit, targetQubit, __func__);
+	validateUnitaryMatrix(u, __func__);
+	
 	statevec_controlledUnitary(qureg, controlQubit, targetQubit, u);
 	if (qureg.isDensityMatrix) {
-		int shift = qureg.numDensityQubits;
+		int shift = qureg.numQubitsRepresented;
 		statevec_controlledUnitary(qureg, controlQubit+shift, targetQubit+shift, getConjugateMatrix(u));
 	}
 }
 
 void multiControlledUnitary(QubitRegister qureg, int* controlQubits, const int numControlQubits, const int targetQubit, ComplexMatrix2 u) {
+	validateMultiControlsTarget(qureg, controlQubits, numControlQubits, targetQubit, __func__);
+	validateUnitaryMatrix(u, __func__);
+	
 	statevec_multiControlledUnitary(qureg, controlQubits, numControlQubits, targetQubit, u);
 	if (qureg.isDensityMatrix) {
-		int shift = qureg.numDensityQubits;
+		int shift = qureg.numQubitsRepresented;
 		shiftIndices(controlQubits, numControlQubits, shift);
 		statevec_multiControlledUnitary(qureg, controlQubits, numControlQubits, targetQubit+shift, getConjugateMatrix(u));
 		shiftIndices(controlQubits, numControlQubits, -shift);
@@ -141,17 +167,23 @@ void multiControlledUnitary(QubitRegister qureg, int* controlQubits, const int n
 }
 
 void compactUnitary(QubitRegister qureg, const int targetQubit, Complex alpha, Complex beta) {
+	validateTarget(qureg, targetQubit, __func__);
+	validateUnitaryComplexPair(alpha, beta, __func__);
+	
 	statevec_compactUnitary(qureg, targetQubit, alpha, beta);
 	if (qureg.isDensityMatrix) {
-		int shift = qureg.numDensityQubits;
+		int shift = qureg.numQubitsRepresented;
 		statevec_compactUnitary(qureg, targetQubit+shift, getConjugateScalar(alpha), getConjugateScalar(beta));
 	}
 }
 
 void controlledCompactUnitary(QubitRegister qureg, const int controlQubit, const int targetQubit, Complex alpha, Complex beta) {
+	validateControlTarget(qureg, controlQubit, targetQubit, __func__);
+	validateUnitaryComplexPair(alpha, beta, __func__);
+	
 	statevec_controlledCompactUnitary(qureg, controlQubit, targetQubit, alpha, beta);
 	if (qureg.isDensityMatrix) {
-		int shift = qureg.numDensityQubits;
+		int shift = qureg.numQubitsRepresented;
 		statevec_controlledCompactUnitary(qureg, 
 			controlQubit+shift, targetQubit+shift, 
 			getConjugateScalar(alpha), getConjugateScalar(beta));
@@ -159,59 +191,75 @@ void controlledCompactUnitary(QubitRegister qureg, const int controlQubit, const
 }
 
 void sigmaX(QubitRegister qureg, const int targetQubit) {
+	validateTarget(qureg, targetQubit, __func__);
+	
 	statevec_sigmaX(qureg, targetQubit);
 	if (qureg.isDensityMatrix) {
-		statevec_sigmaX(qureg, targetQubit+qureg.numDensityQubits);
+		statevec_sigmaX(qureg, targetQubit+qureg.numQubitsRepresented);
 	}
 }
 
 void sigmaY(QubitRegister qureg, const int targetQubit) {
+	validateTarget(qureg, targetQubit, __func__);
+	
 	statevec_sigmaY(qureg, targetQubit);
 	if (qureg.isDensityMatrix) {
-		statevec_sigmaYConj(qureg, targetQubit + qureg.numDensityQubits);
+		statevec_sigmaYConj(qureg, targetQubit + qureg.numQubitsRepresented);
 	}
 }
 
 void sigmaZ(QubitRegister qureg, const int targetQubit) {
+	validateTarget(qureg, targetQubit, __func__);
+	
 	statevec_sigmaZ(qureg, targetQubit);
 	if (qureg.isDensityMatrix) {
-		statevec_sigmaZ(qureg, targetQubit+qureg.numDensityQubits);
+		statevec_sigmaZ(qureg, targetQubit+qureg.numQubitsRepresented);
 	}
 }
 
 void sGate(QubitRegister qureg, const int targetQubit) {
+	validateTarget(qureg, targetQubit, __func__);
+	
 	statevec_sGate(qureg, targetQubit);
 	if (qureg.isDensityMatrix) {
-		statevec_sGateConj(qureg, targetQubit+qureg.numDensityQubits);
+		statevec_sGateConj(qureg, targetQubit+qureg.numQubitsRepresented);
 	}
 }
 
 void tGate(QubitRegister qureg, const int targetQubit) {
+	validateTarget(qureg, targetQubit, __func__);
+	
 	statevec_tGate(qureg, targetQubit);
 	if (qureg.isDensityMatrix) {
-		statevec_tGateConj(qureg, targetQubit+qureg.numDensityQubits);
+		statevec_tGateConj(qureg, targetQubit+qureg.numQubitsRepresented);
 	}
 }
 
 void phaseShift(QubitRegister qureg, const int targetQubit, REAL angle) {
+	validateTarget(qureg, targetQubit, __func__);
+	
 	statevec_phaseShift(qureg, targetQubit, angle);
 	if (qureg.isDensityMatrix) {
-		statevec_phaseShift(qureg, targetQubit+qureg.numDensityQubits, -angle);
+		statevec_phaseShift(qureg, targetQubit+qureg.numQubitsRepresented, -angle);
 	}
 }
 
 void controlledPhaseShift(QubitRegister qureg, const int idQubit1, const int idQubit2, REAL angle) {
+	validateControlTarget(qureg, idQubit1, idQubit2, __func__); // a little bit semantically dodgy
+	
 	statevec_controlledPhaseShift(qureg, idQubit1, idQubit2, angle);
 	if (qureg.isDensityMatrix) {
-		int shift = qureg.numDensityQubits;
+		int shift = qureg.numQubitsRepresented;
 		statevec_controlledPhaseShift(qureg, idQubit1+shift, idQubit2+shift, -angle);
 	}
 }
 
 void multiControlledPhaseShift(QubitRegister qureg, int *controlQubits, int numControlQubits, REAL angle) {
+	validateMultiControls(qureg, controlQubits, numControlQubits, __func__);
+	
 	statevec_multiControlledPhaseShift(qureg, controlQubits, numControlQubits, angle);
 	if (qureg.isDensityMatrix) {
-		int shift = qureg.numDensityQubits;
+		int shift = qureg.numQubitsRepresented;
 		shiftIndices(controlQubits, numControlQubits, shift);
 		statevec_multiControlledPhaseShift(qureg, controlQubits, numControlQubits, angle);
 		shiftIndices(controlQubits, numControlQubits, -shift);
@@ -219,33 +267,41 @@ void multiControlledPhaseShift(QubitRegister qureg, int *controlQubits, int numC
 }
 
 void controlledNot(QubitRegister qureg, const int controlQubit, const int targetQubit) {
+	validateControlTarget(qureg, controlQubit, targetQubit, __func__);
+	
 	statevec_controlledNot(qureg, controlQubit, targetQubit);
 	if (qureg.isDensityMatrix) {
-		int shift = qureg.numDensityQubits;
+		int shift = qureg.numQubitsRepresented;
 		statevec_controlledNot(qureg, controlQubit+shift, targetQubit+shift);
 	}
 }
 
 void controlledSigmaY(QubitRegister qureg, const int controlQubit, const int targetQubit) {
+	validateControlTarget(qureg, controlQubit, targetQubit, __func__);
+	
 	statevec_controlledSigmaY(qureg, controlQubit, targetQubit);
 	if (qureg.isDensityMatrix) {
-		int shift = qureg.numDensityQubits;
+		int shift = qureg.numQubitsRepresented;
 		statevec_controlledSigmaYConj(qureg, controlQubit+shift, targetQubit+shift);
 	}
 }
 
 void controlledPhaseFlip(QubitRegister qureg, const int idQubit1, const int idQubit2) {
+	validateControlTarget(qureg, idQubit1, idQubit2, __func__); // a little bit semantically dodgy
+	
 	statevec_controlledPhaseFlip(qureg, idQubit1, idQubit2);
 	if (qureg.isDensityMatrix) {
-		int shift = qureg.numDensityQubits;
+		int shift = qureg.numQubitsRepresented;
 		statevec_controlledPhaseFlip(qureg, idQubit1+shift, idQubit2+shift);
 	}
 }
 
 void multiControlledPhaseFlip(QubitRegister qureg, int *controlQubits, int numControlQubits) {
+	validateMultiControls(qureg, controlQubits, numControlQubits, __func__);
+	
 	statevec_multiControlledPhaseFlip(qureg, controlQubits, numControlQubits);
 	if (qureg.isDensityMatrix) {
-		int shift = qureg.numDensityQubits;
+		int shift = qureg.numQubitsRepresented;
 		shiftIndices(controlQubits, numControlQubits, shift);
 		statevec_multiControlledPhaseFlip(qureg, controlQubits, numControlQubits);
 		shiftIndices(controlQubits, numControlQubits, -shift);
@@ -253,51 +309,63 @@ void multiControlledPhaseFlip(QubitRegister qureg, int *controlQubits, int numCo
 }
 
 void rotateAroundAxis(QubitRegister qureg, const int rotQubit, REAL angle, Vector axis) {
+	validateTarget(qureg, rotQubit, __func__);
+	validateVector(axis, __func__);
+	
 	statevec_rotateAroundAxis(qureg, rotQubit, angle, axis);
 	if (qureg.isDensityMatrix) {
-		int shift = qureg.numDensityQubits;
+		int shift = qureg.numQubitsRepresented;
 		statevec_rotateAroundAxisConj(qureg, rotQubit+shift, angle, axis);
 	}
 }
 
 void controlledRotateAroundAxis(QubitRegister qureg, const int controlQubit, const int targetQubit, REAL angle, Vector axis) {
+	validateControlTarget(qureg, controlQubit, targetQubit, __func__);
+	validateVector(axis, __func__);
+	
 	statevec_controlledRotateAroundAxis(qureg, controlQubit, targetQubit, angle, axis);
 	if (qureg.isDensityMatrix) {
-		int shift = qureg.numDensityQubits;
+		int shift = qureg.numQubitsRepresented;
 		statevec_controlledRotateAroundAxisConj(qureg, controlQubit+shift, targetQubit+shift, angle, axis);
 	}
 }
 
 int getNumQubits(QubitRegister qureg) {
-	if (qureg.isDensityMatrix)
-		return qureg.numDensityQubits;
-	else
-		return statevec_getNumQubits(qureg);
-}
-
-int compareStates(QubitRegister mq1, QubitRegister mq2, REAL precision) {
-	QuESTAssert(!mq1.isDensityMatrix && !mq2.isDensityMatrix, 15, __func__);
-	return statevec_compareStates(mq1, mq2, precision);
+	return qureg.numQubitsRepresented;
 }
 
 int getNumAmps(QubitRegister qureg) {
-	QuESTAssert(!qureg.isDensityMatrix, 14, __func__);
-	return statevec_getNumAmps(qureg);
+	validateStateVecQureg(qureg, __func__);
+	
+	return qureg.numAmpsTotal;
 }
 
 REAL getRealAmpEl(QubitRegister qureg, long long int index) {
-	QuESTAssert(!qureg.isDensityMatrix, 14, __func__);
+	validateStateVecQureg(qureg, __func__);
+	validateStateIndex(qureg, index, __func__);
+	
 	return statevec_getRealAmpEl(qureg, index);
 }
 
 REAL getImagAmpEl(QubitRegister qureg, long long int index) {
-	QuESTAssert(!qureg.isDensityMatrix, 14, __func__);
+	validateStateVecQureg(qureg, __func__);
+	validateStateIndex(qureg, index, __func__);
+	
 	return statevec_getImagAmpEl(qureg, index);
 }
 
 REAL getProbEl(QubitRegister qureg, long long int index) {
-	QuESTAssert(!qureg.isDensityMatrix, 14, __func__);
+	validateStateVecQureg(qureg, __func__);
+	validateStateIndex(qureg, index, __func__);
+	
 	return statevec_getProbEl(qureg, index);
+}
+
+int compareStates(QubitRegister mq1, QubitRegister mq2, REAL precision) {
+	validateStateVecQureg(mq1, __func__);
+	validateStateVecQureg(mq2, __func__);
+	
+	return statevec_compareStates(mq1, mq2, precision);
 }
 
 REAL calcTotalProbability(QubitRegister qureg) {
@@ -308,6 +376,9 @@ REAL calcTotalProbability(QubitRegister qureg) {
 }
 
 REAL findProbabilityOfOutcome(QubitRegister qureg, const int measureQubit, int outcome) {
+	validateTarget(qureg, measureQubit, __func__); // should rename? meh
+	validateOutcome(outcome, __func__);
+	
 	if (qureg.isDensityMatrix)
 		return densmatr_findProbabilityOfOutcome(qureg, measureQubit, outcome);
 	else
@@ -315,71 +386,65 @@ REAL findProbabilityOfOutcome(QubitRegister qureg, const int measureQubit, int o
 }
 
 
-
-
-
-
-
-
-
 // @TODO add density copying to distributed CPU
 void initPureState(QubitRegister qureg, QubitRegister pure) {
-	QuESTAssert(!pure.isDensityMatrix, 12, __func__);
-	
-	if (qureg.isDensityMatrix) {
-		QuESTAssert(qureg.numDensityQubits==pure.numQubits, 13, __func__);
+	validateSecondQuregStateVec(pure, __func__);
+	validateMatchingQuregDims(qureg, pure, __func__);
+
+	if (qureg.isDensityMatrix)
 		densmatr_initPureState(qureg, pure);
-		
-	} else {
-		QuESTAssert(qureg.numQubits==pure.numQubits, 13, __func__);
+	else
 		statevec_initPureState(qureg, pure);
-	}
 }
 
 
 
 
 
+/* simons requested func for cloning density matrices */
 
 
 
 
 
-
-// @TODO
+// @TODO implement densmatr_collapseToKnownProbOutcome(qureg, measureQubit, outcome, outcomeProb);
 REAL collapseToOutcome(QubitRegister qureg, const int measureQubit, int outcome) {
-
-	if (qureg.isDensityMatrix) {
-		printf("ERROR: sigmaY NOT YET IMPLEMENTED FOR DENSITY MATRICES");
-		exit(1);
-	}	
-
-	return statevec_collapseToOutcome(qureg, measureQubit, outcome);
-}
-
-// @TODO
-int measure(QubitRegister qureg, int measureQubit) {
+	validateTarget(qureg, measureQubit, __func__); // should rename? eh
+	validateOutcome(outcome, __func__);
 	
+	REAL outcomeProb;
 	if (qureg.isDensityMatrix) {
-		printf("ERROR: sigmaY NOT YET IMPLEMENTED FOR DENSITY MATRICES");
-		exit(1);
+		outcomeProb = densmatr_findProbabilityOfOutcome(qureg, measureQubit, outcome);
+		validateMeasurementProb(outcomeProb, __func__);
+		densmatr_collapseToKnownProbOutcome(qureg, measureQubit, outcome, outcomeProb);
+	} else {
+		outcomeProb = statevec_findProbabilityOfOutcome(qureg, measureQubit, outcome);
+		validateMeasurementProb(outcomeProb, __func__);
+		statevec_collapseToKnownProbOutcome(qureg, measureQubit, outcome, outcomeProb);
 	}
+
+	return outcomeProb;
+}
+
+int measureWithStats(QubitRegister qureg, int measureQubit, REAL *outcomeProb) {
+	validateTarget(qureg, measureQubit, __func__); // should rename? eh
+
+	if (qureg.isDensityMatrix)
+		return densmatr_measureWithStats(qureg, measureQubit, outcomeProb);
+	else
+		return statevec_measureWithStats(qureg, measureQubit, outcomeProb);
+}
+
+
+int measure(QubitRegister qureg, int measureQubit) {
+	validateTarget(qureg, measureQubit, __func__); // should rename? eh
 	
-	return statevec_measure(qureg, measureQubit);
+	REAL discardedProb;
+	if (qureg.isDensityMatrix)
+		return densmatr_measureWithStats(qureg, measureQubit, &discardedProb);
+	else
+		return statevec_measureWithStats(qureg, measureQubit, &discardedProb);
 }
-
-// @TODO
-int measureWithStats(QubitRegister qureg, int measureQubit, REAL *stateProb) {
-
-	if (qureg.isDensityMatrix) {
-		printf("ERROR: sigmaY NOT YET IMPLEMENTED FOR DENSITY MATRICES");
-		exit(1);
-	}	
-
-	return statevec_measureWithStats(qureg, measureQubit, stateProb);
-}
-
-
 
 
 
@@ -396,7 +461,17 @@ void initStateDebug(QubitRegister qureg) {
 
 // @TODO
 void initStateFromSingleFile(QubitRegister *qureg, char filename[200], QuESTEnv env) {
-	statevec_initStateFromSingleFile(qureg, filename, env);
+	
+	int success = 0;
+	
+	// @TODO allow density matrix loading from file
+	if (qureg->isDensityMatrix)
+		validateStateVecQureg(*qureg, __func__);
+	
+	else
+		success = statevec_initStateFromSingleFile(qureg, filename, env);
+	
+	validateFileOpened(success, __func__);
 }
 
 // @TODO

@@ -35,6 +35,16 @@ static int extractBit (const int locationOfBitFromRight, const long long int the
 }
 
 
+
+// @TODO
+void densmatr_initPureStateDistributed(QubitRegister targetQureg, QubitRegister copyQureg) {
+
+
+	printf("densmatr_initPureStateDistributed NOT YET IMPLEMENTED ON CPU");
+
+}
+
+
 void densmatr_initClassicalState (QubitRegister qureg, long long int stateInd)
 {
     // dimension of the state vector
@@ -63,7 +73,7 @@ void densmatr_initClassicalState (QubitRegister qureg, long long int stateInd)
     }
 	
 	// index of the single density matrix elem to set non-zero
-	long long int densityDim = 1LL << qureg.numDensityQubits;
+	long long int densityDim = 1LL << qureg.numQubitsRepresented;
 	long long int densityInd = (densityDim + 1)*stateInd;
 
 	// give the specified classical state prob 1
@@ -153,18 +163,8 @@ void densmatr_initPureStateLocal(QubitRegister targetQureg, QubitRegister copyQu
     }
 }
 
-
-
-
-// @TODO
-void densmatr_initPureStateDistributed(QubitRegister targetQureg, QubitRegister copyQureg) {
-	QuESTAssert(0, 0, __func__);
-}
-
-
 void statevec_createQubitRegister(QubitRegister *qureg, int numQubits, QuESTEnv env)
 {
-    QuESTAssert(numQubits>0, 9, __func__);
     long long int numAmps = 1L << numQubits;
     long long int numAmpsPerRank = numAmps/env.numRanks;
 
@@ -187,7 +187,8 @@ void statevec_createQubitRegister(QubitRegister *qureg, int numQubits, QuESTEnv 
         exit (EXIT_FAILURE);
     }
 
-    qureg->numQubits = numQubits;
+    qureg->numQubitsInStateVec = numQubits;
+	qureg->numAmpsTotal = numAmps;
     qureg->numAmpsPerChunk = numAmpsPerRank;
     qureg->chunkId = env.rank;
     qureg->numChunks = env.numRanks;
@@ -206,7 +207,7 @@ void statevec_destroyQubitRegister(QubitRegister qureg, QuESTEnv env){
 void statevec_reportStateToScreen(QubitRegister qureg, QuESTEnv env, int reportRank){
     long long int index;
     int rank;
-    if (qureg.numQubits<=5){
+    if (qureg.numQubitsInStateVec<=5){
         for (rank=0; rank<qureg.numChunks; rank++){
             if (qureg.chunkId==rank){
                 if (reportRank) {
@@ -232,7 +233,7 @@ void statevec_getEnvironmentString(QuESTEnv env, QubitRegister qureg, char str[2
 # ifdef _OPENMP
     numThreads=omp_get_max_threads(); 
 # endif
-    sprintf(str, "%dqubits_CPU_%dranksx%dthreads", qureg.numQubits, env.numRanks, numThreads);
+    sprintf(str, "%dqubits_CPU_%dranksx%dthreads", qureg.numQubitsInStateVec, env.numRanks, numThreads);
 }
 
 void statevec_initStateZero (QubitRegister qureg)
@@ -457,7 +458,8 @@ void statevec_initStateDebug (QubitRegister qureg)
     }
 }
 
-void statevec_initStateFromSingleFile(QubitRegister *qureg, char filename[200], QuESTEnv env){
+// returns 1 if successful, else 0
+int statevec_initStateFromSingleFile(QubitRegister *qureg, char filename[200], QuESTEnv env){
     long long int chunkSize, stateVecSize;
     long long int indexInChunk, totalIndex;
 
@@ -473,7 +475,11 @@ void statevec_initStateFromSingleFile(QubitRegister *qureg, char filename[200], 
     for (int rank=0; rank<(qureg->numChunks); rank++){
         if (rank==qureg->chunkId){
             fp = fopen(filename, "r");
-            QuESTAssert(fp!=NULL, 11, __func__);
+			
+			// indicate file open failure
+			if (fp == NULL)
+				return 0;
+			
             indexInChunk = 0; totalIndex = 0;
             while (fgets(line, sizeof(char)*200, fp) != NULL && totalIndex<stateVecSize){
                 if (line[0]!='#'){
@@ -498,6 +504,9 @@ void statevec_initStateFromSingleFile(QubitRegister *qureg, char filename[200], 
         }
         syncQuESTEnv(env);
     }
+	
+	// indicate success
+	return 1;
 }
 
 int statevec_compareStates(QubitRegister mq1, QubitRegister mq2, REAL precision){
@@ -1616,9 +1625,7 @@ void statevec_hadamardDistributed(QubitRegister qureg, const int targetQubit,
 }
 
 void statevec_phaseShiftByTerm (QubitRegister qureg, const int targetQubit, Complex term)
-{
-	QuESTAssert(validateUnitComplex(term), 16, __func__);
-	
+{	
     long long int index;
     long long int stateVecSize;
     int targetBit;
@@ -1704,11 +1711,9 @@ void statevec_multiControlledPhaseShift(QubitRegister qureg, int *controlQubits,
     const long long int chunkSize=qureg.numAmpsPerChunk;
     const long long int chunkId=qureg.chunkId;
 
-    QuESTAssert(numControlQubits > 0 && numControlQubits <= qureg.numQubits, 4, __func__);
     long long int mask=0;
     for (int i=0; i<numControlQubits; i++) 
 		mask = mask | (1LL<<controlQubits[i]);
-    QuESTAssert(mask >=0 && mask <= (1LL<<qureg.numQubits)-1, 2, __func__);
 
     stateVecSize = qureg.numAmpsPerChunk;
     REAL *stateVecReal = qureg.stateVec.real;
@@ -1745,7 +1750,7 @@ REAL densmatr_findProbabilityOfZeroLocal(QubitRegister qureg, const int measureQ
 	
 	// computes first local index containing a diagonal element
 	long long int localNumAmps = qureg.numAmpsPerChunk;
-	long long int densityDim = (1LL << qureg.numDensityQubits);
+	long long int densityDim = (1LL << qureg.numQubitsRepresented);
 	long long int diagSpacing = 1LL + densityDim;
 	long long int maxNumDiagsPerChunk = localNumAmps / diagSpacing;
 	long long int numPrevDiags = (qureg.chunkId * localNumAmps) / diagSpacing;
@@ -1900,11 +1905,7 @@ void statevec_controlledPhaseFlip (QubitRegister qureg, const int idQubit1, cons
 
     const long long int chunkSize=qureg.numAmpsPerChunk;
     const long long int chunkId=qureg.chunkId;
-
-    QuESTAssert(idQubit1 >= 0 && idQubit1 < qureg.numQubits, 2, __func__);
-    QuESTAssert(idQubit2 >= 0 && idQubit2 < qureg.numQubits, 1, __func__);
-    QuESTAssert(idQubit1 != idQubit2, 3, __func__);
-
+	
     // dimension of the state vector
     stateVecSize = qureg.numAmpsPerChunk;
     REAL *stateVecReal = qureg.stateVec.real;
@@ -1935,10 +1936,9 @@ void statevec_multiControlledPhaseFlip(QubitRegister qureg, int *controlQubits, 
     const long long int chunkSize=qureg.numAmpsPerChunk;
     const long long int chunkId=qureg.chunkId;
 
-    QuESTAssert(numControlQubits > 0 && numControlQubits <= qureg.numQubits, 4, __func__);
     long long int mask=0;
-    for (int i=0; i<numControlQubits; i++) mask = mask | (1LL<<controlQubits[i]);
-    QuESTAssert(mask >=0 && mask <= (1LL<<qureg.numQubits)-1, 2, __func__);
+    for (int i=0; i<numControlQubits; i++)
+		mask = mask | (1LL<<controlQubits[i]);
 
     stateVecSize = qureg.numAmpsPerChunk;
     REAL *stateVecReal = qureg.stateVec.real;
@@ -1979,7 +1979,7 @@ void statevec_multiControlledPhaseFlip(QubitRegister qureg, int *controlQubits, 
  *  @param[in] totalProbability probability of qubit measureQubit being either zero or one
  *  @param[in] outcome to measure the probability of and set the state to -- either zero or one
  */
-void statevec_collapseToOutcomeLocal(QubitRegister qureg, int measureQubit, REAL totalProbability, int outcome)
+void statevec_collapseToKnownProbOutcomeLocal(QubitRegister qureg, int measureQubit, int outcome, REAL totalProbability)
 {
     // ----- sizes
     long long int sizeBlock,                                  // size of blocks
@@ -2061,7 +2061,7 @@ void statevec_collapseToOutcomeLocal(QubitRegister qureg, int measureQubit, REAL
  *  @param[in] measureQubit qubit to measure
  *  @param[in] totalProbability probability of qubit measureQubit being zero
  */
-REAL statevec_collapseToOutcomeDistributedRenorm (QubitRegister qureg, const int measureQubit, const REAL totalProbability)
+void statevec_collapseToKnownProbOutcomeDistributedRenorm (QubitRegister qureg, const int measureQubit, const REAL totalProbability)
 {
     // ----- temp variables
     long long int thisTask;                                   
@@ -2086,7 +2086,6 @@ REAL statevec_collapseToOutcomeDistributedRenorm (QubitRegister qureg, const int
             stateVecImag[thisTask] = stateVecImag[thisTask]*renorm;
         }
     }
-    return totalProbability;
 }
 
 /** Set all amplitudes in one chunk to 0. 
@@ -2101,7 +2100,7 @@ REAL statevec_collapseToOutcomeDistributedRenorm (QubitRegister qureg, const int
  *  @param[in,out] qureg object representing the set of qubits
  *  @param[in] measureQubit qubit to measure
  */
-void statevec_collapseToOutcomeDistributedSetZero(QubitRegister qureg, const int measureQubit)
+void statevec_collapseToOutcomeDistributedSetZero(QubitRegister qureg)
 {
     // ----- temp variables
     long long int thisTask;                                   

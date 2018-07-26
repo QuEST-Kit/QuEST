@@ -19,6 +19,7 @@ else
 	printf "\nCOMPILATION FAILED"
 	printf "\n---------------------\n\n"
 	make clean EXE=runTests --silent
+	rm makefile        
 	exit 1
 fi
 

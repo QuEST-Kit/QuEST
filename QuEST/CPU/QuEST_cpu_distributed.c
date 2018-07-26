@@ -26,17 +26,33 @@
 # endif
 
 
+
+
+
 // @TODO
 void densmatr_initPureState(QubitRegister targetQureg, QubitRegister copyQureg) {
-	densmatr_initPureStateDistributed(targetQureg, copyQureg);
+
+	printf("densmatr_initPureState NOT YET IMPLEMENTED IN distributed CPU!\n");
 }
+
+// @TODO
+void densmatr_collapseToKnownProbOutcome(QubitRegister qureg, const int measureQubit, int outcome, REAL totalStateProb) {
+	
+	printf("densmatr_collapseToKnownProbOutcome NOT YET IMPLEMENTED IN distributed CPU!\n");
+	
+}
+
+
+
+
+
 
 REAL densmatr_calcTotalProbability(QubitRegister qureg) {
 	
 	// computes the trace by summing every element ("diag") with global index (2^n + 1)i for i in [0, 2^n-1]
 	
 	// computes first local index containing a diagonal element
-	long long int diagSpacing = 1LL + (1LL << qureg.numDensityQubits);
+	long long int diagSpacing = 1LL + (1LL << qureg.numQubitsRepresented);
 	long long int numPrevDiags = (qureg.chunkId * qureg.numAmpsPerChunk) / diagSpacing;
 	long long int globalIndNextDiag = diagSpacing * numPrevDiags;
 	long long int localIndNextDiag = globalIndNextDiag % qureg.numAmpsPerChunk;
@@ -317,9 +333,6 @@ void exchangeStateVectors(QubitRegister qureg, int pairRank){
 
 void statevec_compactUnitary(QubitRegister qureg, const int targetQubit, Complex alpha, Complex beta)
 {
-    QuESTAssert(targetQubit >= 0 && targetQubit < qureg.numQubits, 1, __func__);
-    QuESTAssert(validateAlphaBeta(alpha, beta), 6, __func__);
-
     // flag to require memory exchange. 1: an entire block fits on one rank, 0: at most half a block fits on one rank
     int useLocalDataOnly = halfMatrixBlockFitsInChunk(qureg.numAmpsPerChunk, targetQubit);
     Complex rot1, rot2;
@@ -357,9 +370,6 @@ void statevec_compactUnitary(QubitRegister qureg, const int targetQubit, Complex
 
 void statevec_unitary(QubitRegister qureg, const int targetQubit, ComplexMatrix2 u)
 {
-    QuESTAssert(targetQubit >= 0 && targetQubit < qureg.numQubits, 1, __func__);
-    QuESTAssert(validateMatrixIsUnitary(u), 5, __func__);
-
     // flag to require memory exchange. 1: an entire block fits on one rank, 0: at most half a block fits on one rank
     int useLocalDataOnly = halfMatrixBlockFitsInChunk(qureg.numAmpsPerChunk, targetQubit);
     Complex rot1, rot2;
@@ -399,11 +409,6 @@ void statevec_unitary(QubitRegister qureg, const int targetQubit, ComplexMatrix2
 
 void statevec_controlledCompactUnitary(QubitRegister qureg, const int controlQubit, const int targetQubit, Complex alpha, Complex beta)
 {
-    QuESTAssert(targetQubit >= 0 && targetQubit < qureg.numQubits, 1, __func__);
-    QuESTAssert(controlQubit >= 0 && controlQubit < qureg.numQubits, 2, __func__);
-    QuESTAssert(controlQubit != targetQubit, 3, __func__);
-    QuESTAssert(validateAlphaBeta(alpha, beta), 6, __func__);
-
     // flag to require memory exchange. 1: an entire block fits on one rank, 0: at most half a block fits on one rank
     int useLocalDataOnly = halfMatrixBlockFitsInChunk(qureg.numAmpsPerChunk, targetQubit);
     Complex rot1, rot2;
@@ -443,11 +448,6 @@ void statevec_controlledCompactUnitary(QubitRegister qureg, const int controlQub
 void statevec_controlledUnitary(QubitRegister qureg, const int controlQubit, const int targetQubit, 
         ComplexMatrix2 u)
 {
-    QuESTAssert(targetQubit >= 0 && targetQubit < qureg.numQubits, 1, __func__);
-    QuESTAssert(controlQubit >= 0 && controlQubit < qureg.numQubits, 2, __func__);
-    QuESTAssert(controlQubit != targetQubit, 3, __func__);
-    QuESTAssert(validateMatrixIsUnitary(u), 5, __func__);
-
     // flag to require memory exchange. 1: an entire block fits on one rank, 0: at most half a block fits on one rank
     int useLocalDataOnly = halfMatrixBlockFitsInChunk(qureg.numAmpsPerChunk, targetQubit);
     Complex rot1, rot2;
@@ -486,14 +486,8 @@ void statevec_controlledUnitary(QubitRegister qureg, const int controlQubit, con
 
 void statevec_multiControlledUnitary(QubitRegister qureg, int* controlQubits, const int numControlQubits, const int targetQubit, ComplexMatrix2 u)
 {
-    QuESTAssert(targetQubit >= 0 && targetQubit < qureg.numQubits, 1, __func__);
-    QuESTAssert(numControlQubits > 0 && numControlQubits <= qureg.numQubits, 4, __func__);
-    QuESTAssert(validateMatrixIsUnitary(u), 5, __func__);
-
     long long int mask=0;
     for (int i=0; i<numControlQubits; i++) mask = mask | (1LL<<controlQubits[i]);
-    QuESTAssert(mask >=0 && mask <= (1LL<<qureg.numQubits)-1, 2, __func__);
-    QuESTAssert((mask & (1LL<<targetQubit)) != (1LL<<targetQubit), 3, __func__);
 
     // flag to require memory exchange. 1: an entire block fits on one rank, 0: at most half a block fits on one rank
     int useLocalDataOnly = halfMatrixBlockFitsInChunk(qureg.numAmpsPerChunk, targetQubit);
@@ -532,8 +526,6 @@ void statevec_multiControlledUnitary(QubitRegister qureg, int* controlQubits, co
 }
 void statevec_sigmaX(QubitRegister qureg, const int targetQubit)
 {
-    QuESTAssert(targetQubit >= 0 && targetQubit < qureg.numQubits, 1, __func__);
-
     // flag to require memory exchange. 1: an entire block fits on one rank, 0: at most half a block fits on one rank
     int useLocalDataOnly = halfMatrixBlockFitsInChunk(qureg.numAmpsPerChunk, targetQubit);
 
@@ -561,10 +553,6 @@ void statevec_sigmaX(QubitRegister qureg, const int targetQubit)
 
 void statevec_controlledNot(QubitRegister qureg, const int controlQubit, const int targetQubit)
 {
-    QuESTAssert(targetQubit >= 0 && targetQubit < qureg.numQubits, 1, __func__);
-    QuESTAssert(controlQubit >= 0 && controlQubit < qureg.numQubits, 2, __func__);
-    QuESTAssert(controlQubit != targetQubit, 3, __func__);
-
     // flag to require memory exchange. 1: an entire block fits on one rank, 0: at most half a block fits on one rank
     int useLocalDataOnly = halfMatrixBlockFitsInChunk(qureg.numAmpsPerChunk, targetQubit);
     int rankIsUpper; 	// rank's chunk is in upper half of block 
@@ -593,9 +581,7 @@ void statevec_controlledNot(QubitRegister qureg, const int controlQubit, const i
 }
 
 void statevec_sigmaY(QubitRegister qureg, const int targetQubit)
-{
-    QuESTAssert(targetQubit >= 0 && targetQubit < qureg.numQubits, 1, __func__);
-	
+{	
 	int conjFac = 1;
 
     // flag to require memory exchange. 1: an entire block fits on one rank, 0: at most half a block fits on one rank
@@ -620,9 +606,7 @@ void statevec_sigmaY(QubitRegister qureg, const int targetQubit)
 }
 
 void statevec_sigmaYConj(QubitRegister qureg, const int targetQubit)
-{
-    QuESTAssert(targetQubit >= 0 && targetQubit < qureg.numQubits, 1, __func__);
-	
+{	
 	int conjFac = -1;
 
     // flag to require memory exchange. 1: an entire block fits on one rank, 0: at most half a block fits on one rank
@@ -648,10 +632,6 @@ void statevec_sigmaYConj(QubitRegister qureg, const int targetQubit)
 
 void statevec_controlledSigmaY(QubitRegister qureg, const int controlQubit, const int targetQubit)
 {
-    QuESTAssert(targetQubit >= 0 && targetQubit < qureg.numQubits, 1, __func__);
-    QuESTAssert(controlQubit >= 0 && controlQubit < qureg.numQubits, 2, __func__);
-    QuESTAssert(controlQubit != targetQubit, 3, __func__);
-	
 	int conjFac = 1;
 
     // flag to require memory exchange. 1: an entire block fits on one rank, 0: at most half a block fits on one rank
@@ -685,10 +665,6 @@ void statevec_controlledSigmaY(QubitRegister qureg, const int controlQubit, cons
 
 void statevec_controlledSigmaYConj(QubitRegister qureg, const int controlQubit, const int targetQubit)
 {
-    QuESTAssert(targetQubit >= 0 && targetQubit < qureg.numQubits, 1, __func__);
-    QuESTAssert(controlQubit >= 0 && controlQubit < qureg.numQubits, 2, __func__);
-    QuESTAssert(controlQubit != targetQubit, 3, __func__);
-	
 	int conjFac = -1;
 
     // flag to require memory exchange. 1: an entire block fits on one rank, 0: at most half a block fits on one rank
@@ -722,8 +698,6 @@ void statevec_controlledSigmaYConj(QubitRegister qureg, const int controlQubit, 
 
 void statevec_hadamard(QubitRegister qureg, const int targetQubit)
 {
-    QuESTAssert(targetQubit >= 0 && targetQubit < qureg.numQubits, 1, __func__);
-
     // flag to require memory exchange. 1: an entire block fits on one rank, 0: at most half a block fits on one rank
     int useLocalDataOnly = halfMatrixBlockFitsInChunk(qureg.numAmpsPerChunk, targetQubit);
 
@@ -779,8 +753,6 @@ static int isChunkToSkipInFindPZero(int chunkId, long long int chunkSize, int me
 
 REAL statevec_findProbabilityOfOutcome(QubitRegister qureg, const int measureQubit, int outcome)
 {
-    QuESTAssert(measureQubit >= 0 && measureQubit < qureg.numQubits, 2, __func__);
-
     REAL stateProb=0, totalStateProb=0;
     int skipValuesWithinRank = halfMatrixBlockFitsInChunk(qureg.numAmpsPerChunk, measureQubit);
     if (skipValuesWithinRank) {
@@ -807,75 +779,22 @@ REAL densmatr_findProbabilityOfOutcome(QubitRegister qureg, const int measureQub
 	return outcomeProb;
 }
 
-REAL statevec_collapseToOutcome(QubitRegister qureg, const int measureQubit, int outcome)
+void statevec_collapseToKnownProbOutcome(QubitRegister qureg, const int measureQubit, int outcome, REAL totalStateProb)
 {
-    QuESTAssert(measureQubit >= 0 && measureQubit < qureg.numQubits, 2, __func__);
-    QuESTAssert((outcome==0 || outcome==1), 10, __func__);
-
-    REAL totalStateProb = statevec_findProbabilityOfOutcome(qureg, measureQubit, outcome);
-    QuESTAssert(absReal(totalStateProb)>REAL_EPS, 8, __func__);
-
     int skipValuesWithinRank = halfMatrixBlockFitsInChunk(qureg.numAmpsPerChunk, measureQubit);
     if (skipValuesWithinRank) {
-        statevec_collapseToOutcomeLocal(qureg, measureQubit, totalStateProb, outcome);
+        statevec_collapseToKnownProbOutcomeLocal(qureg, measureQubit, outcome, totalStateProb);
     } else {
         if (!isChunkToSkipInFindPZero(qureg.chunkId, qureg.numAmpsPerChunk, measureQubit)){
             // chunk has amps for q=0
-            if (outcome==0) statevec_collapseToOutcomeDistributedRenorm(qureg, measureQubit, 
+            if (outcome==0) statevec_collapseToKnownProbOutcomeDistributedRenorm(qureg, measureQubit, 
                     totalStateProb);
-            else statevec_collapseToOutcomeDistributedSetZero(qureg, measureQubit);
+            else statevec_collapseToOutcomeDistributedSetZero(qureg);
         } else {
             // chunk has amps for q=1
-            if (outcome==1) statevec_collapseToOutcomeDistributedRenorm(qureg, measureQubit, 
+            if (outcome==1) statevec_collapseToKnownProbOutcomeDistributedRenorm(qureg, measureQubit, 
                     totalStateProb);
-            else statevec_collapseToOutcomeDistributedSetZero(qureg, measureQubit);
+            else statevec_collapseToOutcomeDistributedSetZero(qureg);
         }
     }
-    return totalStateProb;
-}
-
-int statevec_measureWithStats(QubitRegister qureg, int measureQubit, REAL *stateProb){
-    QuESTAssert(measureQubit >= 0 && measureQubit < qureg.numQubits, 2, __func__);
-
-    int outcome;
-    // find probability of qubit being in state 1
-    REAL stateProbInternal = statevec_findProbabilityOfOutcome(qureg, measureQubit, 1);
-
-    // we can't collapse to a state that has a probability too close to zero
-    if (stateProbInternal<REAL_EPS) outcome=0;
-    else if (1-stateProbInternal<REAL_EPS) outcome=1;
-    else {
-        // ok. both P(0) and P(1) are large enough to resolve
-        // generate random float on [0,1]
-        float randNum = genrand_real1();
-        if (randNum<=stateProbInternal) outcome = 1;
-        else outcome = 0;
-    } 
-    if (outcome==0) stateProbInternal = 1-stateProbInternal;
-
-    int skipValuesWithinRank = halfMatrixBlockFitsInChunk(qureg.numAmpsPerChunk, measureQubit);
-    if (skipValuesWithinRank) {
-        statevec_collapseToOutcomeLocal(qureg, measureQubit, stateProbInternal, outcome);
-    } else {
-        if (!isChunkToSkipInFindPZero(qureg.chunkId, qureg.numAmpsPerChunk, measureQubit)){
-            // chunk has amps for q=0
-            if (outcome==0) statevec_collapseToOutcomeDistributedRenorm(qureg, measureQubit, 
-                    stateProbInternal);
-            else statevec_collapseToOutcomeDistributedSetZero(qureg, measureQubit);
-        } else {
-            // chunk has amps for q=1
-            if (outcome==1) statevec_collapseToOutcomeDistributedRenorm(qureg, measureQubit, 
-                    stateProbInternal);
-            else statevec_collapseToOutcomeDistributedSetZero(qureg, measureQubit);
-        }
-    }
-
-    *stateProb = stateProbInternal;
-    return outcome;
-}
-
-int statevec_measure(QubitRegister qureg, int measureQubit){
-    QuESTAssert(measureQubit >= 0 && measureQubit < qureg.numQubits, 2, __func__);
-    REAL stateProb; 
-    return statevec_measureWithStats(qureg, measureQubit, &stateProb); 
 }

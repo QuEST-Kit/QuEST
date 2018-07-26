@@ -98,11 +98,11 @@ REAL statevec_findProbabilityOfZeroLocal (QubitRegister qureg, const int measure
 
 REAL statevec_findProbabilityOfZeroDistributed (QubitRegister qureg, const int measureQubit);
 
-void statevec_collapseToOutcomeLocal(QubitRegister qureg, int measureQubit, REAL totalProbability, int outcome);
+void statevec_collapseToKnownProbOutcomeLocal(QubitRegister qureg, int measureQubit, int outcome, REAL totalProbability);
 
-REAL statevec_collapseToOutcomeDistributedRenorm (QubitRegister qureg, const int measureQubit, const REAL totalProbability);
+void statevec_collapseToKnownProbOutcomeDistributedRenorm (QubitRegister qureg, const int measureQubit, const REAL totalProbability);
 
-void statevec_collapseToOutcomeDistributedSetZero(QubitRegister qureg, const int measureQubit);
+void statevec_collapseToOutcomeDistributedSetZero(QubitRegister qureg);
 
 
 

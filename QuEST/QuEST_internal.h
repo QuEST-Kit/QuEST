@@ -13,21 +13,9 @@
 extern "C" {
 # endif
 
-extern const char* errorCodes[];
-
-void exitWithError(int errorCode, const char *func);
-
-void QuESTAssert(int isValid, int errorCode, const char *func);
-
 unsigned long int hashString(char *str);
 
-int validateUnitComplex(Complex alpha);
-
-int validateMatrixIsUnitary(ComplexMatrix2 u);
-
-int validateAlphaBeta(Complex alpha, Complex beta);
-
-int validateUnitVector(REAL ux, REAL uy, REAL uz);
+REAL getVectorMagnitude(Vector vec);
 
 Complex getConjugateScalar(Complex scalar);
 

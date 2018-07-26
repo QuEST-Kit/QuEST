@@ -50,11 +50,13 @@ Qubits are zero-based
 */
 typedef struct QubitRegister
 {
-	//! Number of qubits in the state - double the number represented for mixed states
-	int numQubits;
+	//! Number of qubits in the state-vector - this is double the number represented for mixed states
+	int numQubitsInStateVec;
 	//! Number of probability amplitudes held in stateVec by this process
 	//! In the non-MPI version, this is the total number of amplitudes
 	long long int numAmpsPerChunk;
+	//! Total number of amplitudes, which are possibly distributed among machines
+	long long int numAmpsTotal;
 	//! The position of the chunk of the state vector held by this process in the full state vector
 	int chunkId;
 	//! Number of chunks the state vector is broken up into -- the number of MPI processes used
@@ -71,8 +73,8 @@ typedef struct QubitRegister
 
 	//! Whether this instance is a density-state representation
 	int isDensityMatrix;
-	// The number of qubits represented in the density matrix, not that suggested by the size of the data-structure
-	int numDensityQubits;
+	//! The number of qubits represented in either the state-vector or density matrix
+	int numQubitsRepresented;
 	
 } QubitRegister;
 
@@ -1229,12 +1231,12 @@ int measure(QubitRegister qureg, int measureQubit);
  *
  * @param[in, out] qureg object representing the set of all qubits
  * @param[in] measureQubit qubit to measure
- * @param[out] stateProb a pointer to a REAL which is set to the probability of the occurred outcome
+ * @param[out] outcomeProb a pointer to a REAL which is set to the probability of the occurred outcome
  * @return the measurement outcome, 0 or 1
  * @throws exitWithError
  * 		if \p measureQubit is outside [0, \p qureg.numQubits)
  */
-int measureWithStats(QubitRegister qureg, int measureQubit, REAL *stateProb);
+int measureWithStats(QubitRegister qureg, int measureQubit, REAL *outcomeProb);
 
 /** Seed the Mersenne Twister used for random number generation in the QuEST environment with an example
  * defualt seed.

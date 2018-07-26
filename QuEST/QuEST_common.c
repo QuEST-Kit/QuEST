@@ -7,6 +7,7 @@
 # include "QuEST.h"
 # include "QuEST_internal.h"
 # include "QuEST_precision.h"
+# include "QuEST_validation.h"
 # include "QuEST_ops.h"
 # include "mt19937ar.h"
 
@@ -15,44 +16,67 @@
 # include <sys/types.h> 
 # include <sys/time.h>
 # include <sys/param.h>
-
 # include <stdio.h>
 # include <stdlib.h>
 
-const char* errorCodes[] = {
-    "Success",                                              // 0
-    "Invalid target qubit. Note qubits are zero indexed.",  // 1
-    "Invalid control qubit. Note qubits are zero indexed.", // 2 
-    "Control qubit cannot equal target qubit.",             // 3
-    "Invalid number of control qubits",                     // 4
-    "Invalid unitary matrix.",                              // 5
-    "Invalid rotation arguments.",                          // 6
-    "Invalid system size. Cannot print output for systems greater than 5 qubits.", // 7
-    "Can't collapse to state with zero probability.", 		// 8
-    "Invalid number of qubits.", 							// 9
-    "Invalid measurement outcome -- must be either 0 or 1.",// 10
-    "Could not open file.",									// 11
-	"Second argument must be a pure state, not a density matrix.", // 12
-	"Dimensions of the qubit registers do not match.", 		// 13
-	"This operation is only defined for density matrices.",	// 14
-	"This operation is only defined for two pure states.",	// 15
-	"An non-unitary internal operation (phaseShift) occured.", //16
-};
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-void exitWithError(int errorCode, const char* func){
-    printf("!!!\n");
-    printf("QuEST Error in function %s: %s\n", func, errorCodes[errorCode]);
-    printf("!!!\n");
-    printf("exiting..\n");
-    exit(errorCode);
+
+REAL getVectorMagnitude(Vector vec) {
+	return sqrt(vec.x*vec.x + vec.y*vec.y + vec.z*vec.z);
 }
 
-void QuESTAssert(int isValid, int errorCode, const char* func){
-    if (!isValid) exitWithError(errorCode, func);
+Vector getUnitVector(Vector vec) {
+	
+	REAL mag = getVectorMagnitude(vec);
+	Vector unitVec = (Vector) {.x=vec.x/mag, .y=vec.y/mag, .z=vec.z/mag};
+	return unitVec;
+}
+
+Complex getConjugateScalar(Complex scalar) {
+	
+	Complex conjScalar;
+	conjScalar.real =   scalar.real;
+	conjScalar.imag = - scalar.imag;
+	return conjScalar;
+}
+
+ComplexMatrix2 getConjugateMatrix(ComplexMatrix2 matrix) {
+	
+	ComplexMatrix2 conjMatrix;
+	conjMatrix.r0c0 = getConjugateScalar(matrix.r0c0);
+	conjMatrix.r0c1 = getConjugateScalar(matrix.r0c1);
+	conjMatrix.r1c0 = getConjugateScalar(matrix.r1c0);
+	conjMatrix.r1c1 = getConjugateScalar(matrix.r1c1);
+	return conjMatrix;
+}
+
+void shiftIndices(int* indices, int numIndices, int shift) {
+	for (int j=0; j < numIndices; j++)
+		indices[j] += shift;
+}
+
+int generateMeasurementOutcome(REAL zeroProb, REAL *outcomeProb) {
+	
+	// randomly choose outcome
+	int outcome;
+    if (zeroProb < REAL_EPS) 
+		outcome = 1;
+    else if (1-zeroProb < REAL_EPS) 
+		outcome = 0;
+    else
+        outcome = (genrand_real1() > zeroProb);
+	
+	// set probability of outcome
+	if (outcome == 0)
+		*outcomeProb = zeroProb;
+	else
+		*outcomeProb = 1 - zeroProb;
+	
+	return outcome;
 }
 
 unsigned long int hashString(char *str){
@@ -97,56 +121,10 @@ void seedQuEST(unsigned long int *seedArray, int numSeeds){
     init_by_array(seedArray, numSeeds); 
 }
 
-int validateUnitComplex(Complex alpha) {
-	return (absReal(1 - sqrt(alpha.real*alpha.real + alpha.imag*alpha.imag)) < REAL_EPS); 
-}
-
-int validateAlphaBeta(Complex alpha, Complex beta){
-    if ( absReal(alpha.real*alpha.real 
-                + alpha.imag*alpha.imag
-                + beta.real*beta.real 
-                + beta.imag*beta.imag - 1) > REAL_EPS ) return 0;
-    else return 1;
-}
-
-int validateUnitVector(REAL ux, REAL uy, REAL uz){
-    if ( absReal(sqrt(ux*ux + uy*uy + uz*uz) - 1) > REAL_EPS ) return 0;
-    else return 1;
-}
-
-int validateMatrixIsUnitary(ComplexMatrix2 u){
-
-    if ( absReal(u.r0c0.real*u.r0c0.real 
-                + u.r0c0.imag*u.r0c0.imag
-                + u.r1c0.real*u.r1c0.real
-                + u.r1c0.imag*u.r1c0.imag - 1) > REAL_EPS ) return 0;
-    if ( absReal(u.r0c1.real*u.r0c1.real 
-                + u.r0c1.imag*u.r0c1.imag
-                + u.r1c1.real*u.r1c1.real
-                + u.r1c1.imag*u.r1c1.imag - 1) > REAL_EPS ) return 0;
-    if ( absReal(u.r0c0.real*u.r0c1.real 
-                + u.r0c0.imag*u.r0c1.imag
-                + u.r1c0.real*u.r1c1.real
-                + u.r1c0.imag*u.r1c1.imag) > REAL_EPS ) return 0;
-    if ( absReal(u.r0c1.real*u.r0c0.imag
-                - u.r0c0.real*u.r0c1.imag
-                + u.r1c1.real*u.r1c0.imag
-                - u.r1c0.real*u.r1c1.imag) > REAL_EPS ) return 0;
-    return 1;
-}
-
 REAL statevec_getProbEl(QubitRegister qureg, long long int index){
     REAL real = statevec_getRealAmpEl(qureg, index);
     REAL imag = statevec_getImagAmpEl(qureg, index);
     return real*real + imag*imag;
-}
-
-int statevec_getNumQubits(QubitRegister qureg){
-    return qureg.numQubits;
-}
-
-int statevec_getNumAmps(QubitRegister qureg){
-    return qureg.numAmpsPerChunk*qureg.numChunks;
 }
 
 void reportState(QubitRegister qureg){
@@ -168,11 +146,11 @@ void reportState(QubitRegister qureg){
 }
 
 void reportQubitRegisterParams(QubitRegister qureg){
-    long long int numAmps = 1L << qureg.numQubits;
+    long long int numAmps = 1L << qureg.numQubitsInStateVec;
     long long int numAmpsPerRank = numAmps/qureg.numChunks;
     if (qureg.chunkId==0){
         printf("QUBITS:\n");
-        printf("Number of qubits is %d.\n", qureg.numQubits);
+        printf("Number of qubits is %d.\n", qureg.numQubitsInStateVec);
         printf("Number of amps is %lld.\n", numAmps);
         printf("Number of amps per rank is %lld.\n", numAmpsPerRank);
     }
@@ -240,9 +218,7 @@ void statevec_rotateZ(QubitRegister qureg, const int rotQubit, REAL angle){
 
 void getAlphaBetaFromRotation(REAL angle, Vector axis, Complex* alpha, Complex* beta) {
 	
-    REAL mag = sqrt(pow(axis.x,2) + pow(axis.y,2) + pow(axis.z,2));
-    Vector unitAxis = {axis.x/mag, axis.y/mag, axis.z/mag};
-
+    Vector unitAxis = getUnitVector(axis);
     alpha->real =   cos(angle/2.0);
     alpha->imag = - sin(angle/2.0)*unitAxis.z;	
     beta->real  =   sin(angle/2.0)*unitAxis.y;
@@ -299,27 +275,20 @@ void statevec_controlledRotateZ(QubitRegister qureg, const int controlQubit, con
     statevec_controlledRotateAroundAxis(qureg, controlQubit, targetQubit, angle, unitAxis);
 }
 
-Complex getConjugateScalar(Complex scalar) {
+int statevec_measureWithStats(QubitRegister qureg, int measureQubit, REAL *outcomeProb) {
 	
-	Complex conjScalar;
-	conjScalar.real =   scalar.real;
-	conjScalar.imag = - scalar.imag;
-	return conjScalar;
+	REAL zeroProb = statevec_findProbabilityOfOutcome(qureg, measureQubit, 0);
+	int outcome = generateMeasurementOutcome(zeroProb, outcomeProb);
+	statevec_collapseToKnownProbOutcome(qureg, measureQubit, outcome, *outcomeProb);
+	return outcome;
 }
 
-ComplexMatrix2 getConjugateMatrix(ComplexMatrix2 matrix) {
+int densmatr_measureWithStats(QubitRegister qureg, int measureQubit, REAL *outcomeProb) {
 	
-	ComplexMatrix2 conjMatrix;
-	conjMatrix.r0c0 = getConjugateScalar(matrix.r0c0);
-	conjMatrix.r0c1 = getConjugateScalar(matrix.r0c1);
-	conjMatrix.r1c0 = getConjugateScalar(matrix.r1c0);
-	conjMatrix.r1c1 = getConjugateScalar(matrix.r1c1);
-	return conjMatrix;
-}
-
-void shiftIndices(int* indices, int numIndices, int shift) {
-	for (int j=0; j < numIndices; j++)
-		indices[j] += shift;
+	REAL zeroProb = densmatr_findProbabilityOfOutcome(qureg, measureQubit, 0);
+	int outcome = generateMeasurementOutcome(zeroProb, outcomeProb);
+	densmatr_collapseToKnownProbOutcome(qureg, measureQubit, outcome, *outcomeProb);
+	return outcome;
 }
 
 

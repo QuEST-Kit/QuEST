@@ -13,7 +13,7 @@
 # ifdef __cplusplus
 extern "C" {
 # endif
-	
+
 /* operations upon state-vectors */
 
 void densmatr_initStatePlus(QubitRegister targetQureg);
@@ -25,6 +25,10 @@ void densmatr_initPureState(QubitRegister targetQureg, QubitRegister copyQureg);
 REAL densmatr_calcTotalProbability(QubitRegister qureg);
 
 REAL densmatr_findProbabilityOfOutcome(QubitRegister qureg, const int measureQubit, int outcome);
+
+void densmatr_collapseToKnownProbOutcome(QubitRegister qureg, const int measureQubit, int outcome, REAL outcomeProb);
+	
+int densmatr_measureWithStats(QubitRegister qureg, int measureQubit, REAL *outcomeProb);
 	
 /* operations upon density matrices */
 	
@@ -32,17 +36,13 @@ void statevec_reportStateToScreen(QubitRegister qureg, QuESTEnv env, int reportR
 
 int statevec_compareStates(QubitRegister mq1, QubitRegister mq2, REAL precision);
 
-void statevec_initStateFromSingleFile(QubitRegister *qureg, char filename[200], QuESTEnv env);
+int statevec_initStateFromSingleFile(QubitRegister *qureg, char filename[200], QuESTEnv env);
 
 void statevec_initStateOfSingleQubit(QubitRegister *qureg, int qubitId, int outcome);
 
 void statevec_createQubitRegister(QubitRegister *qureg, int numQubits, QuESTEnv env);
 
 void statevec_destroyQubitRegister(QubitRegister qureg, QuESTEnv env);
-
-int statevec_getNumQubits(QubitRegister qureg);
-
-int statevec_getNumAmps(QubitRegister qureg);
 
 void statevec_initStateZero(QubitRegister qureg);
 
@@ -130,11 +130,11 @@ void statevec_controlledNot(QubitRegister qureg, const int controlQubit, const i
 
 REAL statevec_findProbabilityOfOutcome(QubitRegister qureg, const int measureQubit, int outcome);
 
-REAL statevec_collapseToOutcome(QubitRegister qureg, const int measureQubit, int outcome);
+void statevec_collapseToKnownProbOutcome(QubitRegister qureg, const int measureQubit, int outcome, REAL outcomeProb);
 
-int statevec_measure(QubitRegister qureg, int measureQubit);
+int statevec_measureWithStats(QubitRegister qureg, int measureQubit, REAL *outcomeProb);
 
-int statevec_measureWithStats(QubitRegister qureg, int measureQubit, REAL *stateProb);
+
 
 # ifdef __cplusplus
 }
