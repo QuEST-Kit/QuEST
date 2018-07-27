@@ -42,10 +42,23 @@ void densmatr_collapseToKnownProbOutcome(QubitRegister qureg, const int measureQ
 	
 }
 
-
-
-
-
+Complex statevec_getInnerProduct(QubitRegister bra, QubitRegister ket) {
+    
+    Complex localInnerProd = statevec_getInnerProductLocal(bra, ket);
+    if (qureg.numChunks == 1)
+        return localInnerProd;
+    
+    REAL localReal = localInnerProd.real;
+    REAL localImag = localInnerProd.imag;
+    REAL globalReal, globalImag;
+    MPI_Allreduce(&localReal, &globalReal, 1, MPI_QuEST_REAL, MPI_SUM, MPI_COMM_WORLD);
+    MPI_Allreduce(&localImag, &globalImag, 1, MPI_QuEST_REAL, MPI_SUM, MPI_COMM_WORLD);
+    
+    Complex globalInnerProd;
+    globalInnerProd.real = globalReal;
+    globalInnerProd.imag = globalImag;
+    return globalInnerProd;
+}
 
 REAL densmatr_calcTotalProbability(QubitRegister qureg) {
 	

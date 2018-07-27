@@ -45,6 +45,53 @@ void densmatr_initPureStateDistributed(QubitRegister targetQureg, QubitRegister 
 }
 
 
+
+
+
+Complex statevec_getInnerProductLocal(QubitRegister bra, QubitRegister ket) {
+    
+    REAL innerProdReal = 0;
+    REAL innerProdImag = 0;
+    
+    long long int index;
+    long long int numAmps = bra.numAmpsPerChunk;
+    REAL *braVecReal = bra.stateVec.real;
+    REAL *braVecImag = bra.stateVec.imag;
+    REAL *ketVecReal = ket.stateVec.real;
+    REAL *ketVecImag = ket.stateVec.imag;
+    
+    REAL braRe, braIm, ketRe, ketIm;
+    
+# ifdef _OPENMP
+# pragma omp parallel \
+    shared    (braVecReal, braVecImag, ketVecReal, ketVecImag, numAmps) \
+    private   (index, braRe, braIm, ketRe, ketIm) \
+    reduction ( +:innerProdReal, innerProdImag )
+# endif 
+    {
+# ifdef _OPENMP
+# pragma omp for schedule  (static)
+# endif
+        for (index=0; index < numAmps; index++) {
+            braRe = braVecReal[index];
+            braIm = braVecImag[index];
+            ketRe = ketVecReal[index];
+            ketIm = ketVecImag[index];
+            
+            // conj(bra_i) * ket_i
+            innerProdReal += braRe*ketRe - braIm*ketIm;
+            innerProdImag += braRe*ketIm + braIm*ketRe;
+        }
+    }
+    
+    Complex innerProd;
+    innerProd.real = innerProdReal;
+    innerProd.imag = innerProdImag;
+    return innerProd;
+}
+
+
+
 void densmatr_initClassicalState (QubitRegister qureg, long long int stateInd)
 {
     // dimension of the state vector

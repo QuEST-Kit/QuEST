@@ -31,6 +31,8 @@ void densmatr_collapseToKnownProbOutcome(QubitRegister qureg, const int measureQ
 int densmatr_measureWithStats(QubitRegister qureg, int measureQubit, REAL *outcomeProb);
     
 /* operations upon density matrices */
+
+Complex statevec_getInnerProduct(QubitRegister bra, QubitRegister ket);
     
 void statevec_reportStateToScreen(QubitRegister qureg, QuESTEnv env, int reportRank);
 

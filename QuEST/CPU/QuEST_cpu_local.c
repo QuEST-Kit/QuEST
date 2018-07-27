@@ -38,6 +38,12 @@ void densmatr_collapseToKnownProbOutcome(QubitRegister qureg, const int measureQ
 
 
 
+
+
+Complex statevec_getInnerProduct(QubitRegister bra, QubitRegister ket) {
+    return statevec_getInnerProductLocal(bra, ket);
+}
+
 void densmatr_initPureState(QubitRegister targetQureg, QubitRegister copyQureg) {
     densmatr_initPureStateLocal(targetQureg, copyQureg);
 }

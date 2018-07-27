@@ -18,6 +18,8 @@ void densmatr_initPureStateLocal(QubitRegister targetQureg, QubitRegister copyQu
 
 REAL densmatr_findProbabilityOfZeroLocal(QubitRegister qureg, const int measureQubit);
 
+Complex statevec_getInnerProductLocal(QubitRegister bra, QubitRegister ket);
+
 void statevec_compactUnitaryLocal (QubitRegister qureg, const int targetQubit, Complex alpha, Complex beta);
 
 void statevec_compactUnitaryDistributed (QubitRegister qureg, const int targetQubit,
@@ -75,13 +77,13 @@ void statevec_sigmaYDistributed(QubitRegister qureg, const int targetQubit,
         ComplexArray stateVecOut,
         int updateUpper, int conjFac);
 
-void statevec_hadamardLocal (QubitRegister qureg, const int targetQubit);
-
 void statevec_controlledSigmaYLocal(QubitRegister qureg, const int controlQubit, const int targetQubit, const int conjFactor);
 
 void statevec_controlledSigmaYDistributed(QubitRegister qureg, const int controlQubit, const int targetQubit,
         ComplexArray stateVecIn,
         ComplexArray stateVecOut, const int conjFactor);
+        
+void statevec_hadamardLocal (QubitRegister qureg, const int targetQubit);
 
 void statevec_hadamardDistributed (QubitRegister qureg, const int targetQubit,
         ComplexArray stateVecUp,

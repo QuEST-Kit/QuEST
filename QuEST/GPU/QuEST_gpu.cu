@@ -1624,6 +1624,37 @@ void statevec_collapseToKnownProbOutcome(QubitRegister qureg, const int measureQ
     statevec_collapseToKnownProbOutcomeKernel<<<CUDABlocks, threadsPerCUDABlock>>>(qureg, measureQubit, outcome, outcomeProb);
 }
 
+
+
+/*
+
+SHOULD REALLY REDUCE A 2*LENGTH ARRAY, not reduce twice
+__global__ void statevec_getInnerProductKernel(QubitRegister bra, QubitRegister ket, REAL *reducedArray) {
+    
+    // work amplitude index
+    long long int stateVecSize = bra.numAmpsPerChunk;
+    long long int index = blockIdx.x*blockDim.x + threadIdx.x;
+    if (index>=stateVecSize) return;
+    
+    REAL braRe = bra.deviceStateVec.real[index];
+    REAL braIm = bra.deviceStateVec.imag[index];
+    REAL ketRe = ket.deviceStateVec.real[index];
+    REAL ketIm = ket.deviceStateVec.imag[index];
+    
+    // conj(bra_i) * ket_i
+    REAL innerProdReal = braRe*ketRe - braIm*ketIm;
+    REAL innerProdImag = braRe*ketIm + braIm*ketRe;
+    
+    // array of each thread's collected innerProdReal and innerProdImag, alternating
+    // real in even inds, imag in off inds: this array has length 2*numThreads
+    extern __shared__ REAL innerProdReductionArray[];
+    innerProdReductionArray[2*thread.x    ] = innerProdReal;
+    innerProdReductionArray[2*thread.x + 1] = innerProdImag;
+    __syncthreads(); 
+}
+*/
+
+
 #ifdef __cplusplus
 }
 #endif
