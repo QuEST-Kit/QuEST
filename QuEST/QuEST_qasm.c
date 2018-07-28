@@ -40,7 +40,7 @@ void qasm_setup(QubitRegister* qureg) {
     qasmLog->isLogging = 0;
     qasmLog->bufferSize = BUF_INIT_SIZE;
     qasmLog->buffer = malloc(qasmLog->bufferSize * sizeof *(qasmLog->buffer));
-    qasmLog->bufferFill = sprintf(qasmLog->buffer, "qreg q[%d]\n", qureg->numQubitsRepresented);
+    qasmLog->bufferFill = sprintf(qasmLog->buffer, "qreg q[%d];\n", qureg->numQubitsRepresented);
 
     qureg->qasmLog = qasmLog;
 }
@@ -57,30 +57,6 @@ void qasm_stopRecording(QubitRegister qureg) {
 void bufferOverflow() {
     printf("!!!\nINTERNAL ERROR: QASM line buffer filled!\n!!!");
     exit(1);
-}
-
-
-int addQubitIndsString(char buf[], int bufLen, int* controlQubits, const int numControlQubits, const int targetQubit) {
-
-    for (int i=0; i < numControlQubits; i++)
-        bufLen += snprintf(buf+bufLen, MAX_LINE_LEN, "%s[%d],", QUREG_LABEL, controlQubits[i]);
-    
-    bufLen += snprintf(buf+bufLen, MAX_LINE_LEN, "%s[%d]", QUREG_LABEL, targetQubit);
-
-    // @TODO will snprintf return -1 if failed/overflow? That would ruin our condition
-    if (bufLen >= MAX_LINE_LEN)
-        bufferOverflow();
-    
-    return bufLen;
-}
-
-int addParamString(char buf[], int bufLen, REAL param) {
-    
-    // might want to make sci notation or something
-    bufLen += sprintf(buf+bufLen, "(");
-    bufLen += sprintf(buf+bufLen, REAL_STRING_FORMAT, param);
-    bufLen += sprintf(buf+bufLen, ") ");
-    return bufLen;
 }
 
 void addStringToQASM(QubitRegister qureg, char line[], int lineLen) {
@@ -108,23 +84,48 @@ void addStringToQASM(QubitRegister qureg, char line[], int lineLen) {
     qureg.qasmLog->bufferFill += lineLen;    
 }
 
+void addGateToQASM(QubitRegister qureg, TargetGate gate, int* controlQubits, int numControlQubits, int targetQubit, int hasParam, REAL param) {
+    
+    int len = 0;
+    char line[MAX_LINE_LEN + 1]; // for trailing \0
+    
+    // add control labels
+    for (int i=0; i < numControlQubits; i++)
+        len += snprintf(line+len, MAX_LINE_LEN-len, CTRL_LABEL_PREF);
+    
+    // add target gate
+    len += snprintf(line+len, MAX_LINE_LEN-len, qasmGateLabels[gate]);
+    
+    // add argument if exists
+    if (hasParam) {
+        len += snprintf(line+len, MAX_LINE_LEN-len, "(");
+        len += snprintf(line+len, MAX_LINE_LEN-len, REAL_STRING_FORMAT, param);
+        len += snprintf(line+len, MAX_LINE_LEN-len, ")");
+    }
+    
+    // add space
+    len += snprintf(line+len, MAX_LINE_LEN-len, " ");
+    
+    // add control qubits
+    for (int i=0; i < numControlQubits; i++)
+        len += snprintf(line+len, MAX_LINE_LEN-len, "%s[%d],", QUREG_LABEL, controlQubits[i]);
+    
+    // add target qubit, colon and newline
+    len += snprintf(line+len, MAX_LINE_LEN-len, "%s[%d];\n", QUREG_LABEL, targetQubit);
+    
+    // check whether we overflowed buffer
+    if (len >= MAX_LINE_LEN)
+        bufferOverflow();
+        
+    addStringToQASM(qureg, line, len);
+}
 
 void qasm_recordGate(QubitRegister qureg, TargetGate gate, int targetQubit) {
     
     if (!qureg.qasmLog->isLogging)
         return;
     
-    int len;
-    char line[MAX_LINE_LEN + 1]; // for trailing \0
-    len  = sprintf(line, "%s ", qasmGateLabels[gate]);
-    len  = addQubitIndsString(line, len, NULL, 0, targetQubit);
-    len += sprintf(line+len, ";\n");
-    
-    // @TODO will snprintf return -1 if failed/overflow? That would ruin our condition
-    if (len >= MAX_LINE_LEN)
-        bufferOverflow();
-        
-    addStringToQASM(qureg, line, len);
+    addGateToQASM(qureg, gate, NULL, 0, targetQubit, 0, 0);
 }
 
 void qasm_recordParamGate(QubitRegister qureg, TargetGate gate, int targetQubit, REAL param) {
@@ -132,18 +133,7 @@ void qasm_recordParamGate(QubitRegister qureg, TargetGate gate, int targetQubit,
     if (!qureg.qasmLog->isLogging)
         return;
     
-    int len;
-    char line[MAX_LINE_LEN + 1]; // for trailing \0
-    len  = sprintf(line, "%s", qasmGateLabels[gate]);
-    len  = addParamString(line, len, param);
-    len  = addQubitIndsString(line, len, NULL, 0, targetQubit);
-    len += sprintf(line+len, ";\n");
-    
-    // @TODO will snprintf return -1 if failed/overflow? That would ruin our condition
-    if (len >= MAX_LINE_LEN)
-        bufferOverflow();
-        
-    addStringToQASM(qureg, line, len);
+    addGateToQASM(qureg, gate, NULL, 0, targetQubit, 1, param);
 }
 
 void qasm_recordControlledGate(QubitRegister qureg, TargetGate gate, int controlQubit, int targetQubit) {
@@ -151,18 +141,8 @@ void qasm_recordControlledGate(QubitRegister qureg, TargetGate gate, int control
     if (!qureg.qasmLog->isLogging)
         return;
     
-    int len;
-    char line[MAX_LINE_LEN + 1]; // for trailing \0
-    len  = sprintf(line, "%s%s ", CTRL_LABEL_PREF, qasmGateLabels[gate]);
-    len  = addQubitIndsString(line, len, (int []) {controlQubit}, 1, targetQubit);
-    len += sprintf(line+len, ";\n");
-    
-    // @TODO will snprintf return -1 if failed/overflow? That would ruin our condition
-    if (len >= MAX_LINE_LEN)
-        bufferOverflow();
-        
-    addStringToQASM(qureg, line, len);
-    
+    int controls[1] = {controlQubit};
+    addGateToQASM(qureg, gate, controls, 1, targetQubit, 0, 0);    
 }
 
 void qasm_recordControlledParamGate(QubitRegister qureg, TargetGate gate, int controlQubit, int targetQubit, REAL param) {
@@ -170,18 +150,8 @@ void qasm_recordControlledParamGate(QubitRegister qureg, TargetGate gate, int co
     if (!qureg.qasmLog->isLogging)
         return;
     
-    int len;
-    char line[MAX_LINE_LEN + 1]; // for trailing \0
-    len  = sprintf(line, "%s%s", CTRL_LABEL_PREF, qasmGateLabels[gate]);
-    len  = addParamString(line, len, param);
-    len  = addQubitIndsString(line, len, (int []) {controlQubit}, 1, targetQubit);
-    len += sprintf(line+len, ";\n");
-    
-    // @TODO will snprintf return -1 if failed/overflow? That would ruin our condition
-    if (len >= MAX_LINE_LEN)
-        bufferOverflow();
-        
-    addStringToQASM(qureg, line, len);
+    int controls[1] = {controlQubit};
+    addGateToQASM(qureg, gate, controls, 1, targetQubit, 1, param);
 }
 
 void qasm_recordMultiControlledGate(QubitRegister qureg, TargetGate gate, int* controlQubits, const int numControlQubits, const int targetQubit) {
@@ -189,17 +159,7 @@ void qasm_recordMultiControlledGate(QubitRegister qureg, TargetGate gate, int* c
     if (!qureg.qasmLog->isLogging)
         return;
     
-    int len;
-    char line[MAX_LINE_LEN + 1]; // for trailing \0
-    len  = sprintf(line, "%s%s ", CTRL_LABEL_PREF, qasmGateLabels[gate]);
-    len  = addQubitIndsString(line, len, controlQubits, numControlQubits, targetQubit);
-    len += sprintf(line+len, ";\n");
-    
-    // @TODO will snprintf return -1 if failed/overflow? That would ruin our condition
-    if (len >= MAX_LINE_LEN)
-        bufferOverflow();
-        
-    addStringToQASM(qureg, line, len);
+    addGateToQASM(qureg, gate, controlQubits, numControlQubits, targetQubit, 0, 0);
 }
 
 void qasm_recordMultiControlledParamGate(QubitRegister qureg, TargetGate gate, int* controlQubits, const int numControlQubits, const int targetQubit, REAL param) {
@@ -207,18 +167,8 @@ void qasm_recordMultiControlledParamGate(QubitRegister qureg, TargetGate gate, i
     if (!qureg.qasmLog->isLogging)
         return;
     
-    int len;
-    char line[MAX_LINE_LEN + 1]; // for trailing \0
-    len  = sprintf(line, "%s%s", CTRL_LABEL_PREF, qasmGateLabels[gate]);
-    len  = addParamString(line, len, param);
-    len  = addQubitIndsString(line, len, controlQubits, numControlQubits, targetQubit);
-    len += sprintf(line+len, ";\n");
-    
-    // @TODO will snprintf return -1 if failed/overflow? That would ruin our condition
-    if (len >= MAX_LINE_LEN)
-        bufferOverflow();
-        
-    addStringToQASM(qureg, line, len);
+    addGateToQASM(qureg, gate, controlQubits, numControlQubits, targetQubit, 1, param);
+
 }
 
 void qasm_clearRecorded(QubitRegister qureg) {
