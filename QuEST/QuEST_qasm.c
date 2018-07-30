@@ -8,15 +8,23 @@
 # include "QuEST_precision.h"
 # include "QuEST_qasm.h"
 
+# include <math.h>
 # include <stdio.h>
 # include <stdlib.h>
 # include <string.h>
 
 # define QUREG_LABEL "q"        // QASM var-name for the quantum register
+# define MESREG_LABEL "c"       // QASM var-name for the classical measurement register
 # define CTRL_LABEL_PREF "c"    // QASM syntax which prefixes gates when controlled
+# define MEASURE_CMD "measure"  // QASM label for measurement operation
+
 # define MAX_LINE_LEN 100       // maximum length (#chars) of a single QASM instruction
 # define BUF_INIT_SIZE 1000     // initial size of the QASM buffer (#chars)
 # define BUF_GROW_FAC 2         // growth factor when buffer dynamically resizes
+
+/* @TODO
+    - shrink param strings where possible
+*/
 
 static const char* qasmGateLabels[] = {
     [GATE_SIGMA_X] = "x",
@@ -27,9 +35,9 @@ static const char* qasmGateLabels[] = {
     [GATE_HADAMARD] = "h",
     [GATE_ROTATE_X] = "Rx",
     [GATE_ROTATE_Y] = "Ry",
-    [GATE_ROTATE_Z] = "Rz"
+    [GATE_ROTATE_Z] = "Rz",
+    [GATE_UNITARY] = "U"
     //[GATE_ROTATE_AROUND_AXIS] = ,
-    //[GATE_UNITARY] = ,
     //[GATE_PHASE_SHIFT] = 
 };
 
@@ -40,7 +48,9 @@ void qasm_setup(QubitRegister* qureg) {
     qasmLog->isLogging = 0;
     qasmLog->bufferSize = BUF_INIT_SIZE;
     qasmLog->buffer = malloc(qasmLog->bufferSize * sizeof *(qasmLog->buffer));
-    qasmLog->bufferFill = sprintf(qasmLog->buffer, "qreg q[%d];\n", qureg->numQubitsRepresented);
+    qasmLog->bufferFill = sprintf(qasmLog->buffer, "OPENQASM 2.0;\nqreg %s[%d];\ncreg %s[%d];\n", 
+        QUREG_LABEL, qureg->numQubitsRepresented,
+        MESREG_LABEL, qureg->numQubitsRepresented);
 
     qureg->qasmLog = qasmLog;
 }
@@ -53,10 +63,22 @@ void qasm_stopRecording(QubitRegister qureg) {
     qureg.qasmLog->isLogging = 0;
 }
 
-// make a proper internal error thing
+// @TODO make a proper internal error thing
 void bufferOverflow() {
     printf("!!!\nINTERNAL ERROR: QASM line buffer filled!\n!!!");
     exit(1);
+}
+
+/** maps U(alpha, beta) to Rz(rz2) Ry(ry) Rz(rz1) */
+void getRotAnglesFromComplexPair(Complex alpha, Complex beta, REAL* rz2, REAL* ry, REAL* rz1) {
+    
+    REAL alphaMag = sqrt(alpha.real*alpha.real + alpha.imag*alpha.imag);
+    *ry = 2.0 * acos(alphaMag);
+    
+    REAL alphaPhase = atan2(alpha.imag, alpha.real);
+    REAL betaPhase  = atan2(beta.imag,  beta.real);
+    *rz2 = - alphaPhase + betaPhase;
+    *rz1 = - alphaPhase - betaPhase;
 }
 
 void addStringToQASM(QubitRegister qureg, char line[], int lineLen) {
@@ -84,7 +106,7 @@ void addStringToQASM(QubitRegister qureg, char line[], int lineLen) {
     qureg.qasmLog->bufferFill += lineLen;    
 }
 
-void addGateToQASM(QubitRegister qureg, TargetGate gate, int* controlQubits, int numControlQubits, int targetQubit, int hasParam, REAL param) {
+void addGateToQASM(QubitRegister qureg, TargetGate gate, int* controlQubits, int numControlQubits, int targetQubit, REAL* params, int numParams) {
     
     int len = 0;
     char line[MAX_LINE_LEN + 1]; // for trailing \0
@@ -97,9 +119,13 @@ void addGateToQASM(QubitRegister qureg, TargetGate gate, int* controlQubits, int
     len += snprintf(line+len, MAX_LINE_LEN-len, qasmGateLabels[gate]);
     
     // add argument if exists
-    if (hasParam) {
+    if (numParams > 0) {
         len += snprintf(line+len, MAX_LINE_LEN-len, "(");
-        len += snprintf(line+len, MAX_LINE_LEN-len, REAL_STRING_FORMAT, param);
+        for (int i=0; i < numParams; i++) {
+            len += snprintf(line+len, MAX_LINE_LEN-len, REAL_STRING_FORMAT, params[i]);
+            if (i != numParams - 1)
+                len += snprintf(line+len, MAX_LINE_LEN-len, ",");
+        }
         len += snprintf(line+len, MAX_LINE_LEN-len, ")");
     }
     
@@ -125,7 +151,7 @@ void qasm_recordGate(QubitRegister qureg, TargetGate gate, int targetQubit) {
     if (!qureg.qasmLog->isLogging)
         return;
     
-    addGateToQASM(qureg, gate, NULL, 0, targetQubit, 0, 0);
+    addGateToQASM(qureg, gate, NULL, 0, targetQubit, NULL, 0);
 }
 
 void qasm_recordParamGate(QubitRegister qureg, TargetGate gate, int targetQubit, REAL param) {
@@ -133,7 +159,20 @@ void qasm_recordParamGate(QubitRegister qureg, TargetGate gate, int targetQubit,
     if (!qureg.qasmLog->isLogging)
         return;
     
-    addGateToQASM(qureg, gate, NULL, 0, targetQubit, 1, param);
+    REAL params[1] = {param};
+    addGateToQASM(qureg, gate, NULL, 0, targetQubit, params, 1);
+}
+
+void qasm_recordCompactUnitary(QubitRegister qureg, Complex alpha, Complex beta, int targetQubit) {
+    
+    if (!qureg.qasmLog->isLogging)
+        return;
+    
+    REAL rz2, ry, rz1;
+    getRotAnglesFromComplexPair(alpha, beta, &rz2, &ry, &rz1);
+    
+    REAL params[3] = {rz2, ry, rz1};
+    addGateToQASM(qureg, GATE_UNITARY, NULL, 0, targetQubit, params, 3);
 }
 
 void qasm_recordControlledGate(QubitRegister qureg, TargetGate gate, int controlQubit, int targetQubit) {
@@ -151,7 +190,21 @@ void qasm_recordControlledParamGate(QubitRegister qureg, TargetGate gate, int co
         return;
     
     int controls[1] = {controlQubit};
-    addGateToQASM(qureg, gate, controls, 1, targetQubit, 1, param);
+    REAL params[1] = {param};
+    addGateToQASM(qureg, gate, controls, 1, targetQubit, params, 1);
+}
+
+void qasm_recordControlledCompactUnitary(QubitRegister qureg, Complex alpha, Complex beta, int controlQubit, int targetQubit) {
+    
+    if (!qureg.qasmLog->isLogging)
+        return;
+    
+    REAL rz2, ry, rz1;
+    getRotAnglesFromComplexPair(alpha, beta, &rz2, &ry, &rz1);
+    
+    int controls[1] = {controlQubit};
+    REAL params[3] = {rz2, ry, rz1};
+    addGateToQASM(qureg, GATE_UNITARY, controls, 1, targetQubit, params, 3);
 }
 
 void qasm_recordMultiControlledGate(QubitRegister qureg, TargetGate gate, int* controlQubits, const int numControlQubits, const int targetQubit) {
@@ -159,7 +212,7 @@ void qasm_recordMultiControlledGate(QubitRegister qureg, TargetGate gate, int* c
     if (!qureg.qasmLog->isLogging)
         return;
     
-    addGateToQASM(qureg, gate, controlQubits, numControlQubits, targetQubit, 0, 0);
+    addGateToQASM(qureg, gate, controlQubits, numControlQubits, targetQubit, NULL, 0);
 }
 
 void qasm_recordMultiControlledParamGate(QubitRegister qureg, TargetGate gate, int* controlQubits, const int numControlQubits, const int targetQubit, REAL param) {
@@ -167,8 +220,25 @@ void qasm_recordMultiControlledParamGate(QubitRegister qureg, TargetGate gate, i
     if (!qureg.qasmLog->isLogging)
         return;
     
-    addGateToQASM(qureg, gate, controlQubits, numControlQubits, targetQubit, 1, param);
+    REAL params[1] = {param};
+    addGateToQASM(qureg, gate, controlQubits, numControlQubits, targetQubit, params, 1);
+}
 
+void qasm_recordMeasurement(QubitRegister qureg, const int measureQubit) {
+
+    if (!qureg.qasmLog->isLogging)
+        return;
+    
+    char line[MAX_LINE_LEN + 1]; // for trailing \0
+    int len = snprintf(
+        line, MAX_LINE_LEN, "%s %s[%d] -> %s[%d];\n",
+        MEASURE_CMD, QUREG_LABEL, measureQubit, MESREG_LABEL, measureQubit);
+        
+    // check whether we overflowed buffer
+    if (len >= MAX_LINE_LEN)
+        bufferOverflow();
+    
+    addStringToQASM(qureg, line, len);
 }
 
 void qasm_clearRecorded(QubitRegister qureg) {

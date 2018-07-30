@@ -14,6 +14,8 @@
 // @TODO for initPureState:
 //      - densmatr_initPureStateDistributed on CPU
 
+// @TODO add controlled Hadamard
+
 # include "QuEST.h"
 # include "QuEST_precision.h"
 # include "QuEST_internal.h"
@@ -221,7 +223,7 @@ void compactUnitary(QubitRegister qureg, const int targetQubit, Complex alpha, C
         statevec_compactUnitary(qureg, targetQubit+shift, getConjugateScalar(alpha), getConjugateScalar(beta));
     }
 
-    // @TODO: QASM
+    qasm_recordCompactUnitary(qureg, alpha, beta, targetQubit);
 }
 
 void controlledCompactUnitary(QubitRegister qureg, const int controlQubit, const int targetQubit, Complex alpha, Complex beta) {
@@ -236,7 +238,7 @@ void controlledCompactUnitary(QubitRegister qureg, const int controlQubit, const
             getConjugateScalar(alpha), getConjugateScalar(beta));
     }
     
-    // @TODO: QASM
+    qasm_recordControlledCompactUnitary(qureg, alpha, beta, controlQubit, targetQubit);
 }
 
 void sigmaX(QubitRegister qureg, const int targetQubit) {
@@ -502,7 +504,8 @@ REAL collapseToOutcome(QubitRegister qureg, const int measureQubit, int outcome)
         statevec_collapseToKnownProbOutcome(qureg, measureQubit, outcome, outcomeProb);
     }
     
-    // @TODO: QASM?
+    // @TODO: add QASM for post-selecting the outcome?
+    qasm_recordMeasurement(qureg, measureQubit);
 
     return outcomeProb;
 }
@@ -510,25 +513,29 @@ REAL collapseToOutcome(QubitRegister qureg, const int measureQubit, int outcome)
 int measureWithStats(QubitRegister qureg, int measureQubit, REAL *outcomeProb) {
     validateTarget(qureg, measureQubit, __func__); // should rename? eh
 
+    int outcome;
     if (qureg.isDensityMatrix)
-        return densmatr_measureWithStats(qureg, measureQubit, outcomeProb);
+        outcome = densmatr_measureWithStats(qureg, measureQubit, outcomeProb);
     else
-        return statevec_measureWithStats(qureg, measureQubit, outcomeProb);
+        outcome = statevec_measureWithStats(qureg, measureQubit, outcomeProb);
     
-    // @TODO: QASM?
+    qasm_recordMeasurement(qureg, measureQubit);
+    return outcome;
 }
 
 
 int measure(QubitRegister qureg, int measureQubit) {
     validateTarget(qureg, measureQubit, __func__); // should rename? eh
     
+    int outcome;
     REAL discardedProb;
     if (qureg.isDensityMatrix)
-        return densmatr_measureWithStats(qureg, measureQubit, &discardedProb);
+        outcome = densmatr_measureWithStats(qureg, measureQubit, &discardedProb);
     else
-        return statevec_measureWithStats(qureg, measureQubit, &discardedProb);
+        outcome = statevec_measureWithStats(qureg, measureQubit, &discardedProb);
     
-    // @TODO: QASM?
+    qasm_recordMeasurement(qureg, measureQubit);
+    return outcome;
 }
 
 
