@@ -38,9 +38,8 @@ static const char* qasmGateLabels[] = {
     [GATE_ROTATE_X] = "Rx",
     [GATE_ROTATE_Y] = "Ry",
     [GATE_ROTATE_Z] = "Rz",
-    [GATE_UNITARY] = "U"
-    //[GATE_ROTATE_AROUND_AXIS] = ,
-    //[GATE_PHASE_SHIFT] = 
+    [GATE_UNITARY] = "U",
+    [GATE_PHASE_SHIFT] = "PHASESHIFT"
 };
 
 // @TODO make a proper internal error thing
