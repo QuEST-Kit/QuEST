@@ -1293,6 +1293,11 @@ void stopRecordingQASM(QubitRegister qureg);
  */
 void clearRecordedQASM(QubitRegister qureg);
 
+/** Print recorded QASM to stdout */
+void printRecordedQASM(QubitRegister qureg);
+
+/** Writes recorded QASM to a file, throwing an error if inaccessible */
+void writeRecordedQASMToFile(QubitRegister qureg, char* filename);
 
 
 /* noise functions in the works! */

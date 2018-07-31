@@ -71,6 +71,10 @@ void qasm_recordMeasurement(QubitRegister qureg, const int measureQubit);
 
 void qasm_clearRecorded(QubitRegister qureg);
 
+void qasm_printRecorded(QubitRegister qureg);
+
+int qasm_writeRecordedToFile(QubitRegister qureg, char* filename);
+
 void qasm_free(QubitRegister qureg);
 
 # ifdef __cplusplus

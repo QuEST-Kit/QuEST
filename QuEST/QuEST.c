@@ -66,6 +66,14 @@ void clearRecordedQASM(QubitRegister qureg) {
     qasm_clearRecorded(qureg);
 }
 
+void printRecordedQASM(QubitRegister qureg) {
+    qasm_printRecorded(qureg);
+}
+
+void writeRecordedQASMToFile(QubitRegister qureg, char* filename) {
+    int success = qasm_writeRecordedToFile(qureg, filename);
+    validateFileOpened(success, __func__);
+}
 
 void initStateZero(QubitRegister qureg) {
     statevec_initStateZero(qureg); // valid for both statevec and density matrices

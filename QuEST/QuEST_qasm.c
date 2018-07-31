@@ -358,6 +358,22 @@ void qasm_clearRecorded(QubitRegister qureg) {
     qureg.qasmLog->bufferFill = 0;
 }
 
+void qasm_printRecorded(QubitRegister qureg) {
+    printf("%s\n", qureg.qasmLog->buffer);
+}
+
+/** returns success of file write */
+int qasm_writeRecordedToFile(QubitRegister qureg, char* filename) {
+    
+    FILE *file = fopen(filename, "w");
+    if (file == NULL)
+        return 0;
+    
+    fprintf(file, "%s", qureg.qasmLog->buffer);
+    fclose(file);
+    return 1;
+}
+
 void qasm_free(QubitRegister qureg) {
     
     free(qureg.qasmLog->buffer);
