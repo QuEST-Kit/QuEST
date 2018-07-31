@@ -359,7 +359,7 @@ void qasm_clearRecorded(QubitRegister qureg) {
 }
 
 void qasm_printRecorded(QubitRegister qureg) {
-    printf("%s\n", qureg.qasmLog->buffer);
+    printf("%s", qureg.qasmLog->buffer);
 }
 
 /** returns success of file write */
