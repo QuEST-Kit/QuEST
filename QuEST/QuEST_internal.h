@@ -21,6 +21,12 @@ Complex getConjugateScalar(Complex scalar);
 
 ComplexMatrix2 getConjugateMatrix(ComplexMatrix2 matr);
 
+void getComplexPairFromRotation(REAL angle, Vector axis, Complex* alpha, Complex* beta);
+
+void getZYZRotAnglesFromComplexPair(Complex alpha, Complex beta, REAL* rz2, REAL* ry, REAL* rz1);
+
+void getComplexPairAndPhaseFromUnitary(ComplexMatrix2 u, Complex* alpha, Complex* beta, REAL* globalPhase);
+
 void shiftIndices(int* indices, int numIndices, int shift);
 
 # ifdef __cplusplus

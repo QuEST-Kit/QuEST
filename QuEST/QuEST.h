@@ -9,6 +9,7 @@
 # define QuEST
 
 # include "QuEST_precision.h"
+//# include "QuEST_qasm.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -45,11 +46,25 @@ typedef struct Vector
     REAL x, y, z;
 } Vector;
 
+/** A logger of QASM instructions */
+typedef struct {
+    
+    char* buffer;       // generated QASM string
+    int bufferSize;     // maximum number of chars before overflow
+    int bufferFill;     // number of chars currently in buffer
+    int isLogging;      // whether gates are being added to buffer
+    
+} QASMLogger;
+
 /** Represents a system of qubits.
-Qubits are zero-based
-*/
+ * Qubits are zero-based
+ */
 typedef struct QubitRegister
 {
+    //! Whether this instance is a density-state representation
+    int isDensityMatrix;
+    //! The number of qubits represented in either the state-vector or density matrix
+    int numQubitsRepresented;
     //! Number of qubits in the state-vector - this is double the number represented for mixed states
     int numQubitsInStateVec;
     //! Number of probability amplitudes held in stateVec by this process
@@ -66,15 +81,14 @@ typedef struct QubitRegister
     ComplexArray stateVec; 
     //! Temporary storage for a chunk of the state vector received from another process in the MPI version
     ComplexArray pairStateVec;
+    
     //! Storage for wavefunction amplitudes in the GPU version
     ComplexArray deviceStateVec;
     //! Storage for reduction of probabilities on GPU
     REAL *firstLevelReduction, *secondLevelReduction;
 
-    //! Whether this instance is a density-state representation
-    int isDensityMatrix;
-    //! The number of qubits represented in either the state-vector or density matrix
-    int numQubitsRepresented;
+    //! Storage for generated QASM output
+    QASMLogger* qasmLog;
     
 } QubitRegister;
 
@@ -1263,6 +1277,21 @@ void seedQuESTDefault(void);
  * For more information about the MT, see http://www.math.sci.hiroshima-u.ac.jp/~m-mat/MT/MT2002/emt19937ar.html
  **/
 void seedQuEST(unsigned long int *seedArray, int numSeeds);
+
+/** Enable QASM recording. Gates applied to qureg will here-after be added to growing QASM instructions,
+ * progressively consuming more memory until stopped
+ */
+void startRecordingQASM(QubitRegister qureg);
+
+/** Disable QASM recording. The recorded QASM will be maintained in qureg
+and continue to be
+ * added to if startRecordingQASM is recalled.
+ */
+void stopRecordingQASM(QubitRegister qureg);
+
+/** Clear all QASM so far recorded. This does not start or stop recording
+ */
+void clearRecordedQASM(QubitRegister qureg);
 
 #ifdef __cplusplus
 }
