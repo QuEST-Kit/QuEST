@@ -15,6 +15,7 @@
 # define REDUCE_SHARED_SIZE 512
 # define DEBUG 0
 
+
 static __device__ int extractBit (int locationOfBitFromRight, long long int theEncodedNumber)
 {
     return (theEncodedNumber & ( 1LL << locationOfBitFromRight )) >> locationOfBitFromRight;
@@ -28,22 +29,14 @@ extern "C" {
 
 
 
-// @TODO implement
-void densmatr_collapseToKnownProbOutcome(QubitRegister qureg, const int measureQubit, int outcome, REAL outcomeProb) {
-    
-    /* IMPLEMENT THIS!!! */
-    
-    printf("densmatr_collapseToKnownProbOutcome not yet implemented on GPU!\n");
-    
-    
-}
+
 
 /** Called once for every 4 amplitudes in density matrix 
  * Works by establishing the |..0..><..0..| state (for its given index) then 
  * visiting |..1..><..0..| and |..0..><..1..|. Labels |part1 X pa><rt2 NOT(X) part3|
  * From the brain of Simon Benjamin
  */
-void __global__ densmatr_oneQubitDephaseKernel(
+__global__ void densmatr_oneQubitDephaseKernel(
     REAL fac, REAL* vecReal, REAL *vecImag, long long int numAmpsToVisit,
     long long int part1, long long int part2, long long int part3, 
     long long int colBit, long long int rowBit)
@@ -81,7 +74,7 @@ void densmatr_oneQubitDephase(QubitRegister qureg, const int targetQubit, REAL d
 
 
 
-void __global__ densmatr_twoQubitDephaseKernel(
+__global__ void densmatr_twoQubitDephaseKernel(
     REAL fac, REAL* vecReal, REAL *vecImag, long long int numBackgroundStates, long long int numAmpsToVisit,
     long long int part1, long long int part2, long long int part3, long long int part4, long long int part5,
     long long int colBit1, long long int rowBit1, long long int colBit2, long long int rowBit2) 
@@ -144,7 +137,7 @@ void densmatr_twoQubitDephase(QubitRegister qureg, int qubit1, int qubit2, REAL 
         part1, part2, part3, part4, part5, colBit1, rowBit1, colBit2, rowBit2);
 }
 
-void __global__ densmatr_oneQubitDepolariseKernel(
+__global__ void densmatr_oneQubitDepolariseKernel(
     REAL depolLevel, REAL* vecReal, REAL *vecImag, long long int numAmpsToVisit,
     long long int part1, long long int part2, long long int part3, 
     long long int bothBits)
@@ -195,7 +188,7 @@ void densmatr_oneQubitDepolarise(QubitRegister qureg, const int targetQubit, REA
         part1, part2, part3, bothBits);
 }
 
-void __global__ densmatr_twoQubitDepolariseKernel(
+__global__ void densmatr_twoQubitDepolariseKernel(
     REAL depolLevel, REAL* vecReal, REAL *vecImag, long long int numAmpsToVisit,
     long long int part1, long long int part2, long long int part3, 
     long long int part4, long long int part5,
@@ -282,7 +275,7 @@ void statevec_initPureState(QubitRegister targetQureg, QubitRegister copyQureg) 
         cudaMemcpyDeviceToDevice);
 }
 
-void __global__ densmatr_initPureStateKernel(
+__global__ void densmatr_initPureStateKernel(
     long long int numPureAmps,
     REAL *targetVecReal, REAL *targetVecImag, 
     REAL *copyVecReal, REAL *copyVecImag) 
@@ -312,7 +305,7 @@ void densmatr_initPureState(QubitRegister targetQureg, QubitRegister copyQureg)
         copyQureg.deviceStateVec.real,   copyQureg.deviceStateVec.imag);
 }
 
-void __global__ densmatr_initStatePlusKernel(long long int stateVecSize, REAL *stateVecReal, REAL *stateVecImag){
+__global__ void densmatr_initStatePlusKernel(long long int stateVecSize, REAL *stateVecReal, REAL *stateVecImag){
     long long int index;
 
     index = blockIdx.x*blockDim.x + threadIdx.x;
@@ -334,7 +327,7 @@ void densmatr_initStatePlus(QubitRegister qureg)
         qureg.deviceStateVec.imag);
 }
 
-void __global__ densmatr_initClassicalStateKernel(
+__global__ void densmatr_initClassicalStateKernel(
     long long int densityNumElems, 
     REAL *densityReal, REAL *densityImag, 
     long long int densityInd)
@@ -555,7 +548,7 @@ REAL statevec_getImagAmpEl(QubitRegister qureg, long long int index){
     return el;
 }
 
-void __global__ statevec_initStateZeroKernel(long long int stateVecSize, REAL *stateVecReal, REAL *stateVecImag){
+__global__ void statevec_initStateZeroKernel(long long int stateVecSize, REAL *stateVecReal, REAL *stateVecImag){
     long long int index;
 
     // initialise the state to |0000..0000>
@@ -582,7 +575,7 @@ void statevec_initStateZero(QubitRegister qureg)
         qureg.deviceStateVec.imag);
 }
 
-void __global__ statevec_initStatePlusKernel(long long int stateVecSize, REAL *stateVecReal, REAL *stateVecImag){
+__global__ void statevec_initStatePlusKernel(long long int stateVecSize, REAL *stateVecReal, REAL *stateVecImag){
     long long int index;
 
     index = blockIdx.x*blockDim.x + threadIdx.x;
@@ -604,7 +597,7 @@ void statevec_initStatePlus(QubitRegister qureg)
         qureg.deviceStateVec.imag);
 }
 
-void __global__ statevec_initClassicalStateKernel(long long int stateVecSize, REAL *stateVecReal, REAL *stateVecImag, long long int stateInd){
+__global__ void statevec_initClassicalStateKernel(long long int stateVecSize, REAL *stateVecReal, REAL *stateVecImag, long long int stateInd){
     long long int index;
 
     // initialise the state to |stateInd>
@@ -630,7 +623,7 @@ void statevec_initClassicalState(QubitRegister qureg, long long int stateInd)
         qureg.deviceStateVec.imag, stateInd);
 }
 
-void __global__ statevec_initStateDebugKernel(long long int stateVecSize, REAL *stateVecReal, REAL *stateVecImag){
+__global__ void statevec_initStateDebugKernel(long long int stateVecSize, REAL *stateVecReal, REAL *stateVecImag){
     long long int index;
 
     index = blockIdx.x*blockDim.x + threadIdx.x;
@@ -651,7 +644,7 @@ void statevec_initStateDebug(QubitRegister qureg)
         qureg.deviceStateVec.imag);
 }
 
-void __global__ statevec_initStateOfSingleQubitKernel(long long int stateVecSize, REAL *stateVecReal, REAL *stateVecImag, int qubitId, int outcome){
+__global__ void statevec_initStateOfSingleQubitKernel(long long int stateVecSize, REAL *stateVecReal, REAL *stateVecImag, int qubitId, int outcome){
     long long int index;
     int bit;
 
@@ -1844,6 +1837,60 @@ void statevec_collapseToKnownProbOutcome(QubitRegister qureg, const int measureQ
     statevec_collapseToKnownProbOutcomeKernel<<<CUDABlocks, threadsPerCUDABlock>>>(qureg, measureQubit, outcome, outcomeProb);
 }
 
+
+__global__ void densmatr_collapseToKnownProbOutcomeKernel(
+    REAL outcomeProb, REAL* vecReal, REAL *vecImag, long long int numBasesToVisit,
+    long long int part1, long long int part2, long long int part3, 
+    long long int rowBit, long long int colBit, long long int desired, long long int undesired) 
+{
+    long long int scanInd = blockIdx.x*blockDim.x + threadIdx.x;
+    if (scanInd >= numBasesToVisit) return;
+    
+    long long int base = (scanInd&part1) + ((scanInd&part2)<<1) + ((scanInd&part3)<<2);
+    
+    // renormalise desired outcome
+    vecReal[base + desired] /= outcomeProb;
+    vecImag[base + desired] /= outcomeProb;
+    
+    // kill undesired outcome
+    vecReal[base + undesired] = 0;
+    vecImag[base + undesired] = 0;
+    
+    // kill |..0..><..1..| states
+    vecReal[base + colBit] = 0;
+    vecImag[base + colBit] = 0;
+    vecReal[base + rowBit] = 0;
+    vecImag[base + rowBit] = 0;
+}
+
+void densmatr_collapseToKnownProbOutcome(QubitRegister qureg, const int measureQubit, int outcome, REAL outcomeProb) {
+    
+	int rowQubit = measureQubit + qureg.numQubitsRepresented;
+    
+    int colBit = 1LL << measureQubit;
+    int rowBit = 1LL << rowQubit;
+
+    long long int numBasesToVisit = qureg.numAmpsPerChunk/4;
+	long long int part1 = colBit -1;	
+	long long int part2 = (rowBit >> 1) - colBit;
+	long long int part3 = numBasesToVisit - (rowBit >> 1);
+    
+    long long int desired, undesired;
+    if (outcome == 0) {
+        desired = 0;
+        undesired = colBit | rowBit;
+    } else {
+        desired = colBit | rowBit;
+        undesired = 0;
+    }
+    
+    int threadsPerCUDABlock, CUDABlocks;
+    threadsPerCUDABlock = 128;
+    CUDABlocks = ceil(numBasesToVisit / (REAL) threadsPerCUDABlock);
+    densmatr_collapseToKnownProbOutcomeKernel<<<CUDABlocks, threadsPerCUDABlock>>>(
+        outcomeProb, qureg.deviceStateVec.real, qureg.deviceStateVec.imag, numBasesToVisit,
+        part1, part2, part3, rowBit, colBit, desired, undesired);
+}
 
 
 /*

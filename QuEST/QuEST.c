@@ -504,7 +504,7 @@ void initPureState(QubitRegister qureg, QubitRegister pure) {
 
 
 
-// @TODO implement densmatr_collapseToKnownProbOutcome(qureg, measureQubit, outcome, outcomeProb);
+// @TODO implement CPU (local & MPI) densmatr_collapseToKnownProbOutcome(qureg, measureQubit, outcome, outcomeProb);
 REAL collapseToOutcome(QubitRegister qureg, const int measureQubit, int outcome) {
     validateTarget(qureg, measureQubit, __func__); // should rename? eh
     validateOutcome(outcome, __func__);
