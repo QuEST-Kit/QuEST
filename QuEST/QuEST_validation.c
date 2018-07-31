@@ -36,6 +36,7 @@ typedef enum {
     E_MISMATCHING_REGISTER_DIMENSIONS,
     E_DEFINED_ONLY_FOR_STATEVECS,
     E_DEFINED_ONLY_FOR_DENSMATRS,
+    E_INVALID_NOISE
 } ErrorCode;
 
 static const char* errorMessages[] = {
@@ -56,7 +57,8 @@ static const char* errorMessages[] = {
     [E_SECOND_ARG_MUST_BE_STATEVEC] = "Second argument must be a state-vector.",
     [E_MISMATCHING_REGISTER_DIMENSIONS] = "Dimensions of the qubit registers don't match.",
     [E_DEFINED_ONLY_FOR_STATEVECS] = "Operation valid only for state-vectors.",
-    [E_DEFINED_ONLY_FOR_DENSMATRS] = "Operation valid only for density matrices."
+    [E_DEFINED_ONLY_FOR_DENSMATRS] = "Operation valid only for density matrices.",
+    [E_INVALID_NOISE] = "Dephasing and depolarising errors must be in [0, 1]."
 };
 
 void exitWithError(ErrorCode code, const char* func){
@@ -186,6 +188,10 @@ void validateSecondQuregStateVec(QubitRegister qureg2, const char *caller) {
 
 void validateFileOpened(int found, const char* caller) {
     QuESTAssert(found, E_CANNOT_OPEN_FILE, caller);
+}
+
+void validateNoise(REAL noise, const char* caller) {
+    QuESTAssert(noise >= 0 && noise <= 1, E_INVALID_NOISE, caller);
 }
 
 

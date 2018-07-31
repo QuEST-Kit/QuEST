@@ -600,11 +600,12 @@ void reportStateToScreen(QubitRegister qureg, QuESTEnv env, int reportRank)  {
 
 
 // new experimental dephasing functions
+
 // @TODO add to CPU local and distributed
-// @TODO add dephase level validation
 void oneQubitDeppase(QubitRegister qureg, const int targetQubit, REAL dephase) {
     validatDensityMatrQureg(qureg, __func__);
     validateTarget(qureg, targetQubit, __func__);
+    validateNoise(dephase, __func__);
     
     densmatr_oneQubitDephase(qureg, targetQubit, dephase);
 }
@@ -615,6 +616,7 @@ void twoQubitDephase(QubitRegister qureg, const int qubit1, const int qubit2, RE
     validatDensityMatrQureg(qureg, __func__);
     validateTarget(qureg, qubit1, __func__);
     validateTarget(qureg, qubit2, __func__);
+    validateNoise(dephase, __func__);
 
     densmatr_twoQubitDephase(qureg, qubit1, qubit2, dephase);
 }
@@ -625,6 +627,7 @@ void twoQubitDephase(QubitRegister qureg, const int qubit1, const int qubit2, RE
 void oneQubitDepolarise(QubitRegister qureg, const int targetQubit, REAL depolLevel) {
     validatDensityMatrQureg(qureg, __func__);
     validateTarget(qureg, targetQubit, __func__);
+    validateNoise(depolLevel, __func__);
     
     densmatr_oneQubitDepolarise(qureg, targetQubit, depolLevel);
 }
@@ -636,6 +639,7 @@ void twoQubitDepolarise(QubitRegister qureg, const int qubit1, const int qubit2,
     validatDensityMatrQureg(qureg, __func__);
     validateTarget(qureg, qubit1, __func__);
     validateTarget(qureg, qubit2, __func__);
+    validateNoise(depolLevel, __func__);
     
     densmatr_twoQubitDepolarise(qureg, qubit1, qubit2, depolLevel);
 }

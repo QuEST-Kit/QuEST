@@ -45,6 +45,8 @@ void validateSecondQuregStateVec(QubitRegister qureg2, const char *caller);
 
 void validateFileOpened(int opened, const char* caller);
 
+void validateNoise(REAL noise, const char* caller);
+
 # ifdef __cplusplus
 }
 # endif
