@@ -38,10 +38,27 @@ static int extractBit (const int locationOfBitFromRight, const long long int the
 
 // @TODO
 void densmatr_initPureStateDistributed(QubitRegister targetQureg, QubitRegister copyQureg) {
-
-
     printf("densmatr_initPureStateDistributed NOT YET IMPLEMENTED ON CPU");
+}
 
+// @TODO
+void densmatr_oneQubitDephase(QubitRegister qureg, const int targetQubit, REAL dephase) {
+    
+}
+
+// @TODO
+void densmatr_twoQubitDephase(QubitRegister qureg, const int qubit1, const int qubit2, REAL dephase) {
+    
+}
+
+// @TODO
+void densmatr_oneQubitDepolarise(QubitRegister qureg, const int targetQubit, REAL depolLevel) {
+    
+}
+
+// @TODO
+void densmatr_twoQubitDepolarise(QubitRegister qureg, int qubit1, int qubit2, REAL depolLevel) {
+    
 }
 
 
