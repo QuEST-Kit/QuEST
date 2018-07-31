@@ -52,7 +52,7 @@ void bufferOverflow() {
 void qasm_setup(QubitRegister* qureg) {
     
     // populate and attach QASM logger
-    QASMLogger *qasmLog = malloc(sizeof qasmLog);
+    QASMLogger *qasmLog = malloc(sizeof *qasmLog);
     qureg->qasmLog = qasmLog;
     if (qasmLog == NULL)
         bufferOverflow();
@@ -107,10 +107,6 @@ void addStringToQASM(QubitRegister qureg, char line[], int lineLen) {
     // add new str
     int addedChars = snprintf(buf+bufFill, bufSize-bufFill, "%s", line);
     qureg.qasmLog->bufferFill += addedChars;
-    
-    printf("New string added: %s\n", line);
-    printf("which added %d=%d new chars\n", lineLen, addedChars);
-    printf("so the QASM is now:\n%s\n\n", qureg.qasmLog->buffer);
 }
 
 void addGateToQASM(QubitRegister qureg, TargetGate gate, int* controlQubits, int numControlQubits, int targetQubit, REAL* params, int numParams) {
