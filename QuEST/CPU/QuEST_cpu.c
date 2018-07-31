@@ -1,6 +1,6 @@
 // Distributed under MIT licence. See https://github.com/aniabrown/QuEST/blob/master/LICENCE.txt for details 
 
-/** @file qubits.c
+/** @file
  * The core of the CPU backend functionality. The CPU/MPI implementations of the pure state functions in
  * ../QuEST_ops_pure.h are in QuEST_cpu_local.c and QuEST_cpu_distributed.c which mostly wrap the core
  * functions defined here. Some additional hardware-agnostic functions are defined here
@@ -248,7 +248,7 @@ void statevec_destroyQubitRegister(QubitRegister qureg, QuESTEnv env){
     if (env.numRanks>1){
         free(qureg.pairStateVec.real);
         free(qureg.pairStateVec.imag);
-    }
+    }    
 }
 
 void statevec_reportStateToScreen(QubitRegister qureg, QuESTEnv env, int reportRank){
