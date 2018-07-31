@@ -15,7 +15,6 @@
 # define REDUCE_SHARED_SIZE 512
 # define DEBUG 0
 
-
 static __device__ int extractBit (int locationOfBitFromRight, long long int theEncodedNumber)
 {
     return (theEncodedNumber & ( 1LL << locationOfBitFromRight )) >> locationOfBitFromRight;
@@ -1795,13 +1794,6 @@ __global__ void statevec_collapseToKnownProbOutcomeKernel(QubitRegister qureg, i
     // (good for shared memory parallelism)
     long long int numTasks=qureg.numAmpsPerChunk>>1;
 
-    // ---------------------------------------------------------------- //
-    //            tests                                                 //
-    // ---------------------------------------------------------------- //
-
-    //! fix -- this should report an error
-    if (!(measureQubit >= 0 && measureQubit < qureg.numQubitsInStateVec)) return;
-    if (!(totalProbability != 0)) return;
     // ---------------------------------------------------------------- //
     //            dimensions                                            //
     // ---------------------------------------------------------------- //
