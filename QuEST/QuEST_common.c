@@ -54,6 +54,42 @@ ComplexMatrix2 getConjugateMatrix(ComplexMatrix2 matrix) {
     return conjMatrix;
 }
 
+void getComplexPairFromRotation(REAL angle, Vector axis, Complex* alpha, Complex* beta) {
+    
+    Vector unitAxis = getUnitVector(axis);
+    alpha->real =   cos(angle/2.0);
+    alpha->imag = - sin(angle/2.0)*unitAxis.z;  
+    beta->real  =   sin(angle/2.0)*unitAxis.y;
+    beta->imag  = - sin(angle/2.0)*unitAxis.x;
+}
+
+/** maps U(alpha, beta) to Rz(rz2) Ry(ry) Rz(rz1) */
+void getZYZRotAnglesFromComplexPair(Complex alpha, Complex beta, REAL* rz2, REAL* ry, REAL* rz1) {
+    
+    REAL alphaMag = sqrt(alpha.real*alpha.real + alpha.imag*alpha.imag);
+    *ry = 2.0 * acos(alphaMag);
+    
+    REAL alphaPhase = atan2(alpha.imag, alpha.real);
+    REAL betaPhase  = atan2(beta.imag,  beta.real);
+    *rz2 = - alphaPhase + betaPhase;
+    *rz1 = - alphaPhase - betaPhase;
+}
+
+/** maps U(r0c0, r0c1, r1c0, r1c1) to exp(i globalPhase) U(alpha, beta) */
+void getComplexPairAndPhaseFromUnitary(ComplexMatrix2 u, Complex* alpha, Complex* beta, REAL* globalPhase) {
+    
+    REAL r0c0Phase = atan2(u.r0c0.imag, u.r0c0.real);
+    REAL r1c1Phase = atan2(u.r1c1.imag, u.r1c1.real);
+    *globalPhase = (r0c0Phase + r1c1Phase)/2.0;
+    
+    REAL cosPhase = cos(*globalPhase);
+    REAL sinPhase = sin(*globalPhase);
+    alpha->real = u.r0c0.real*cosPhase + u.r0c0.imag*sinPhase;
+    alpha->imag = u.r0c0.imag*cosPhase - u.r0c0.real*sinPhase;
+    beta->real = u.r1c0.real*cosPhase + u.r1c0.imag*sinPhase;
+    beta->imag = u.r1c0.imag*cosPhase - u.r1c0.real*sinPhase;
+}
+
 void shiftIndices(int* indices, int numIndices, int shift) {
     for (int j=0; j < numIndices; j++)
         indices[j] += shift;
@@ -216,26 +252,17 @@ void statevec_rotateZ(QubitRegister qureg, const int rotQubit, REAL angle){
     statevec_rotateAroundAxis(qureg, rotQubit, angle, unitAxis);
 }
 
-void getAlphaBetaFromRotation(REAL angle, Vector axis, Complex* alpha, Complex* beta) {
-    
-    Vector unitAxis = getUnitVector(axis);
-    alpha->real =   cos(angle/2.0);
-    alpha->imag = - sin(angle/2.0)*unitAxis.z;  
-    beta->real  =   sin(angle/2.0)*unitAxis.y;
-    beta->imag  = - sin(angle/2.0)*unitAxis.x;
-}
-
 void statevec_rotateAroundAxis(QubitRegister qureg, const int rotQubit, REAL angle, Vector axis){
 
     Complex alpha, beta;
-    getAlphaBetaFromRotation(angle, axis, &alpha, &beta);
+    getComplexPairFromRotation(angle, axis, &alpha, &beta);
     statevec_compactUnitary(qureg, rotQubit, alpha, beta);
 }
 
 void statevec_rotateAroundAxisConj(QubitRegister qureg, const int rotQubit, REAL angle, Vector axis){
 
     Complex alpha, beta;
-    getAlphaBetaFromRotation(angle, axis, &alpha, &beta);
+    getComplexPairFromRotation(angle, axis, &alpha, &beta);
     alpha.imag *= -1; 
     beta.imag *= -1;
     statevec_compactUnitary(qureg, rotQubit, alpha, beta);
@@ -244,14 +271,14 @@ void statevec_rotateAroundAxisConj(QubitRegister qureg, const int rotQubit, REAL
 void statevec_controlledRotateAroundAxis(QubitRegister qureg, const int controlQubit, const int targetQubit, REAL angle, Vector axis){
 
     Complex alpha, beta;
-    getAlphaBetaFromRotation(angle, axis, &alpha, &beta);
+    getComplexPairFromRotation(angle, axis, &alpha, &beta);
     statevec_controlledCompactUnitary(qureg, controlQubit, targetQubit, alpha, beta);
 }
 
 void statevec_controlledRotateAroundAxisConj(QubitRegister qureg, const int controlQubit, const int targetQubit, REAL angle, Vector axis){
 
     Complex alpha, beta;
-    getAlphaBetaFromRotation(angle, axis, &alpha, &beta);
+    getComplexPairFromRotation(angle, axis, &alpha, &beta);
     alpha.imag *= -1; 
     beta.imag *= -1;
     statevec_controlledCompactUnitary(qureg, controlQubit, targetQubit, alpha, beta);

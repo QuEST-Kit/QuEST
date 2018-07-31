@@ -393,7 +393,7 @@ void rotateAroundAxis(QubitRegister qureg, const int rotQubit, REAL angle, Vecto
         statevec_rotateAroundAxisConj(qureg, rotQubit+shift, angle, axis);
     }
     
-    // @TODO: QASM
+    qasm_recordAxisRotation(qureg, angle, axis, rotQubit);
 }
 
 void controlledRotateAroundAxis(QubitRegister qureg, const int controlQubit, const int targetQubit, REAL angle, Vector axis) {
@@ -406,7 +406,7 @@ void controlledRotateAroundAxis(QubitRegister qureg, const int controlQubit, con
         statevec_controlledRotateAroundAxisConj(qureg, controlQubit+shift, targetQubit+shift, angle, axis);
     }
     
-    // @TODO: QASM
+    qasm_recordControlledAxisRotation(qureg, angle, axis, controlQubit, targetQubit);
 }
 
 int getNumQubits(QubitRegister qureg) {
