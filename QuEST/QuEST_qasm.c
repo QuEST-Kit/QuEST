@@ -19,7 +19,7 @@
 # define CTRL_LABEL_PREF "c"    // QASM syntax which prefixes gates when controlled
 # define MEASURE_CMD "measure"  // QASM label for measurement operation
 
-# define MAX_LINE_LEN 100       // maximum length (#chars) of a single QASM instruction
+# define MAX_LINE_LEN 200       // maximum length (#chars) of a single QASM instruction
 # define BUF_INIT_SIZE 1000     // initial size of the QASM buffer (#chars)
 # define BUF_GROW_FAC 2         // growth factor when buffer dynamically resizes
 
@@ -43,18 +43,30 @@ static const char* qasmGateLabels[] = {
     //[GATE_PHASE_SHIFT] = 
 };
 
+// @TODO make a proper internal error thing
+void bufferOverflow() {
+    printf("!!!\nINTERNAL ERROR: QASM line buffer filled!\n!!!");
+    exit(1);
+}
+
 void qasm_setup(QubitRegister* qureg) {
     
     // populate and attach QASM logger
     QASMLogger *qasmLog = malloc(sizeof qasmLog);
+    qureg->qasmLog = qasmLog;
+    if (qasmLog == NULL)
+        bufferOverflow();
+    
     qasmLog->isLogging = 0;
     qasmLog->bufferSize = BUF_INIT_SIZE;
     qasmLog->buffer = malloc(qasmLog->bufferSize * sizeof *(qasmLog->buffer));
+    if (qasmLog->buffer == NULL)
+        bufferOverflow();
+    
+    // add headers and quantum / classical register creation
     qasmLog->bufferFill = sprintf(qasmLog->buffer, "OPENQASM 2.0;\nqreg %s[%d];\ncreg %s[%d];\n", 
         QUREG_LABEL, qureg->numQubitsRepresented,
         MESREG_LABEL, qureg->numQubitsRepresented);
-
-    qureg->qasmLog = qasmLog;
 }
 
 void qasm_startRecording(QubitRegister qureg) {
@@ -65,18 +77,9 @@ void qasm_stopRecording(QubitRegister qureg) {
     qureg.qasmLog->isLogging = 0;
 }
 
-// @TODO make a proper internal error thing
-void bufferOverflow() {
-    printf("!!!\nINTERNAL ERROR: QASM line buffer filled!\n!!!");
-    exit(1);
-}
-
-
-
-
-
 void addStringToQASM(QubitRegister qureg, char line[], int lineLen) {
     
+    char* buf = qureg.qasmLog->buffer;
     int bufSize = qureg.qasmLog->bufferSize;
     int bufFill = qureg.qasmLog->bufferFill;
     
@@ -88,19 +91,21 @@ void addStringToQASM(QubitRegister qureg, char line[], int lineLen) {
             bufferOverflow();
         
         char* newBuffer = malloc(newBufSize * sizeof *newBuffer);
-        sprintf(newBuffer, "%s", qureg.qasmLog->buffer);
-        free(qureg.qasmLog->buffer);
+        sprintf(newBuffer, "%s", buf);
+        free(buf);
         
         qureg.qasmLog->bufferSize = newBufSize;
         qureg.qasmLog->buffer = newBuffer;
+        bufSize = newBufSize;
+        buf = newBuffer;
     }
         
     // add new str
-    sprintf(qureg.qasmLog->buffer + qureg.qasmLog->bufferFill, "%s", line);
-    qureg.qasmLog->bufferFill += lineLen;   
+    int addedChars = snprintf(buf+bufFill, bufSize-bufFill, "%s", line);
+    qureg.qasmLog->bufferFill += addedChars;
     
     printf("New string added: %s\n", line);
-    printf("which added %d new chars\n", lineLen);
+    printf("which added %d=%d new chars\n", lineLen, addedChars);
     printf("so the QASM is now:\n%s\n\n", qureg.qasmLog->buffer);
 }
 
