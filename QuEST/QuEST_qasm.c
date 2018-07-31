@@ -64,9 +64,13 @@ void qasm_setup(QubitRegister* qureg) {
         bufferOverflow();
     
     // add headers and quantum / classical register creation
-    qasmLog->bufferFill = sprintf(qasmLog->buffer, "OPENQASM 2.0;\nqreg %s[%d];\ncreg %s[%d];\n", 
+    qasmLog->bufferFill = snprintf(
+        qasmLog->buffer, qasmLog->bufferSize,
+        "OPENQASM 2.0;\nqreg %s[%d];\ncreg %s[%d];\n", 
         QUREG_LABEL, qureg->numQubitsRepresented,
         MESREG_LABEL, qureg->numQubitsRepresented);
+    if (qasmLog->bufferFill >= qasmLog->bufferSize)
+        bufferOverflow();
 }
 
 void qasm_startRecording(QubitRegister qureg) {
@@ -116,10 +120,10 @@ void addGateToQASM(QubitRegister qureg, TargetGate gate, int* controlQubits, int
     
     // add control labels
     for (int i=0; i < numControlQubits; i++)
-        len += snprintf(line+len, MAX_LINE_LEN-len, CTRL_LABEL_PREF);
+        len += snprintf(line+len, MAX_LINE_LEN-len, "%s", CTRL_LABEL_PREF);
     
     // add target gate
-    len += snprintf(line+len, MAX_LINE_LEN-len, qasmGateLabels[gate]);
+    len += snprintf(line+len, MAX_LINE_LEN-len, "%s", qasmGateLabels[gate]);
     
     // add argument if exists
     if (numParams > 0) {
