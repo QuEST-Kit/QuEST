@@ -602,7 +602,7 @@ void reportStateToScreen(QubitRegister qureg, QuESTEnv env, int reportRank)  {
 // new experimental dephasing functions
 
 // @TODO add to CPU local and distributed
-void oneQubitDeppase(QubitRegister qureg, const int targetQubit, REAL dephase) {
+void oneQubitDephase(QubitRegister qureg, const int targetQubit, REAL dephase) {
     validatDensityMatrQureg(qureg, __func__);
     validateTarget(qureg, targetQubit, __func__);
     validateNoise(dephase, __func__);

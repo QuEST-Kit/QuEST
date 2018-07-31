@@ -1301,7 +1301,7 @@ void writeRecordedQASMToFile(QubitRegister qureg, char* filename);
 
 
 /* noise functions in the works! */
-void oneQubitDeppase(QubitRegister qureg, const int targetQubit, REAL dephase);
+void oneQubitDephase(QubitRegister qureg, const int targetQubit, REAL dephase);
 void twoQubitDephase(QubitRegister qureg, const int qubit1, const int qubit2, REAL dephase);
 void oneQubitDepolarise(QubitRegister qureg, const int targetQubit, REAL depolLevel);
 void twoQubitDepolarise(QubitRegister qureg, const int qubit1, const int qubit2, REAL depolLevel);
