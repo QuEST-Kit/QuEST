@@ -39,6 +39,234 @@ void densmatr_collapseToKnownProbOutcome(QubitRegister qureg, const int measureQ
     
 }
 
+/** Called once for every 4 amplitudes in density matrix 
+ * Works by establishing the |..0..><..0..| state (for its given index) then 
+ * visiting |..1..><..0..| and |..0..><..1..|. Labels |part1 X pa><rt2 NOT(X) part3|
+ * From the brain of Simon Benjamin
+ */
+void __global__ densmatr_oneQubitDephaseKernel(
+    REAL fac, REAL* vecReal, REAL *vecImag, long long int numAmpsToVisit,
+    long long int part1, long long int part2, long long int part3, 
+    long long int colBit, long long int rowBit)
+{
+    long long int scanInd = blockIdx.x*blockDim.x + threadIdx.x;
+    if (scanInd >= numAmpsToVisit) return;
+    
+    long long int ampInd = (scanInd&part1) + ((scanInd&part2)<<1) + ((scanInd&part3)<<2);
+    vecReal[ampInd + colBit] *= fac;
+    vecImag[ampInd + colBit] *= fac;
+    vecReal[ampInd + rowBit] *= fac;
+    vecImag[ampInd + rowBit] *= fac;
+}
+
+void densmatr_oneQubitDephase(QubitRegister qureg, const int targetQubit, REAL dephase) {
+    
+    long long int numAmpsToVisit = qureg.numAmpsPerChunk/4;
+    
+    int rowQubit = targetQubit + qureg.numQubitsRepresented;
+    long long int colBit = 1LL << targetQubit;
+    long long int rowBit = 1LL << rowQubit;
+    
+    long long int part1 = colBit - 1;
+    long long int part2 = (rowBit >> 1) - colBit;
+    long long int part3 = numAmpsToVisit - (rowBit >> 1);
+    REAL dephFac = 1 - dephase;
+    
+    int threadsPerCUDABlock, CUDABlocks;
+    threadsPerCUDABlock = 128;
+    CUDABlocks = ceil(numAmpsToVisit / (REAL) threadsPerCUDABlock);
+    densmatr_oneQubitDephaseKernel<<<CUDABlocks, threadsPerCUDABlock>>>(
+        dephFac, qureg.deviceStateVec.real, qureg.deviceStateVec.imag, numAmpsToVisit,
+        part1, part2, part3, colBit, rowBit);
+}
+
+
+
+void __global__ densmatr_twoQubitDephaseKernel(
+    REAL fac, REAL* vecReal, REAL *vecImag, long long int numBackgroundStates, long long int numAmpsToVisit,
+    long long int part1, long long int part2, long long int part3, long long int part4, long long int part5,
+    long long int colBit1, long long int rowBit1, long long int colBit2, long long int rowBit2) 
+{
+    long long int outerInd = blockIdx.x*blockDim.x + threadIdx.x;
+    if (outerInd >= numAmpsToVisit) return;
+    
+    // sets meta in 1...14 excluding 5, 10, creating bit string DCBA for |..D..C..><..B..A|
+    int meta = 1 + (outerInd/numBackgroundStates);
+    if (meta > 4) meta++;
+    if (meta > 9) meta++;
+    
+    long long int shift = rowBit2*((meta>>3)%2) + rowBit1*((meta>>2)%2) + colBit2*((meta>>1)%2) + colBit1*(meta%2);
+    long long int scanInd = outerInd % numBackgroundStates;
+    long long int stateInd = (
+        shift + 
+        (scanInd&part1) + ((scanInd&part2)<<1) + ((scanInd&part3)<<2) + ((scanInd&part4)<<3) + ((scanInd&part5)<<4));
+    
+    vecReal[stateInd] *= fac;
+    vecImag[stateInd] *= fac;
+}
+
+void densmatr_twoQubitDephase(QubitRegister qureg, int qubit1, int qubit2, REAL dephase) {
+    if (dephase == 0)
+        return;
+    
+    // ensure qubit2 is further left than qubit1
+    if (qubit1 > qubit2)  {
+        int tmp = qubit1;
+        qubit1 = qubit2;
+        qubit2 = tmp;
+    }
+    
+    int rowQubit1 = qubit1 + qureg.numQubitsRepresented;
+    int rowQubit2 = qubit2 + qureg.numQubitsRepresented;
+    
+    long long int colBit1 = 1LL << qubit1;
+    long long int rowBit1 = 1LL << rowQubit1;
+    long long int colBit2 = 1LL << qubit2;
+    long long int rowBit2 = 1LL << rowQubit2;
+    
+    long long int part1 = colBit1 - 1;
+    long long int part2 = (colBit2 >> 1) - colBit1;
+    long long int part3 = (rowBit1 >> 2) - (colBit2 >> 1);
+    long long int part4 = (rowBit2 >> 3) - (rowBit1 >> 2);
+    long long int part5 = (qureg.numAmpsPerChunk/16) - (rowBit2 >> 3);
+    REAL dephFac = 1 - dephase;
+    
+    // refers to states |a 0 b 0 c><d 0 e 0 f| (target qubits are fixed)
+    long long int numBackgroundStates = qureg.numAmpsPerChunk/16;
+    
+    // 12 of these states experience dephasing
+    long long int numAmpsToVisit = 12 * numBackgroundStates;
+    
+    int threadsPerCUDABlock, CUDABlocks;
+    threadsPerCUDABlock = 128;
+    CUDABlocks = ceil(numAmpsToVisit / (REAL) threadsPerCUDABlock);
+    densmatr_twoQubitDephaseKernel<<<CUDABlocks, threadsPerCUDABlock>>>(
+        dephFac, qureg.deviceStateVec.real, qureg.deviceStateVec.imag, numBackgroundStates, numAmpsToVisit,
+        part1, part2, part3, part4, part5, colBit1, rowBit1, colBit2, rowBit2);
+}
+
+void __global__ densmatr_oneQubitDepolariseKernel(
+    REAL depolLevel, REAL* vecReal, REAL *vecImag, long long int numAmpsToVisit,
+    long long int part1, long long int part2, long long int part3, 
+    long long int bothBits)
+{
+    long long int scanInd = blockIdx.x*blockDim.x + threadIdx.x;
+    if (scanInd >= numAmpsToVisit) return;
+    
+    long long int baseInd = (scanInd&part1) + ((scanInd&part2)<<1) + ((scanInd&part3)<<2);
+    long long int targetInd = baseInd + bothBits;
+    
+    REAL realAvDepol = depolLevel * 0.5 * (vecReal[baseInd] + vecReal[targetInd]);
+    REAL imagAvDepol = depolLevel * 0.5 * (vecImag[baseInd] + vecImag[targetInd]);
+    
+    vecReal[baseInd]   *= 1 - depolLevel;
+    vecImag[baseInd]   *= 1 - depolLevel;
+    vecReal[targetInd] *= 1 - depolLevel;
+    vecImag[targetInd] *= 1 - depolLevel;
+    
+    vecReal[baseInd]   += realAvDepol;
+    vecImag[baseInd]   += imagAvDepol;
+    vecReal[targetInd] += realAvDepol;
+    vecImag[targetInd] += imagAvDepol;
+}
+
+void densmatr_oneQubitDepolarise(QubitRegister qureg, const int targetQubit, REAL depolLevel) {
+    
+    if (depolLevel == 0)
+        return;
+    
+    densmatr_oneQubitDephase(qureg, targetQubit, depolLevel);
+    
+    long long int numAmpsToVisit = qureg.numAmpsPerChunk/4;
+    int rowQubit = targetQubit + qureg.numQubitsRepresented;
+    
+    long long int colBit = 1LL << targetQubit;
+    long long int rowBit = 1LL << rowQubit;
+    long long int bothBits = colBit | rowBit;
+    
+    long long int part1 = colBit - 1;
+    long long int part2 = (rowBit >> 1) - colBit;
+    long long int part3 = numAmpsToVisit - (rowBit >> 1);
+    
+    int threadsPerCUDABlock, CUDABlocks;
+    threadsPerCUDABlock = 128;
+    CUDABlocks = ceil(numAmpsToVisit / (REAL) threadsPerCUDABlock);
+    densmatr_oneQubitDepolariseKernel<<<CUDABlocks, threadsPerCUDABlock>>>(
+        depolLevel, qureg.deviceStateVec.real, qureg.deviceStateVec.imag, numAmpsToVisit,
+        part1, part2, part3, bothBits);
+}
+
+void __global__ densmatr_twoQubitDepolariseKernel(
+    REAL depolLevel, REAL* vecReal, REAL *vecImag, long long int numAmpsToVisit,
+    long long int part1, long long int part2, long long int part3, 
+    long long int part4, long long int part5,
+    long long int rowCol1, long long int rowCol2)
+{
+    long long int scanInd = blockIdx.x*blockDim.x + threadIdx.x;
+    if (scanInd >= numAmpsToVisit) return;
+    
+    // index of |..0..0..><..0..0|
+    long long int ind00 = (scanInd&part1) + ((scanInd&part2)<<1) + ((scanInd&part3)<<2) + ((scanInd&part4)<<3) + ((scanInd&part5)<<4);
+    long long int ind01 = ind00 + rowCol1;
+    long long int ind10 = ind00 + rowCol2;
+    long long int ind11 = ind00 + rowCol1 + rowCol2;
+    
+    REAL realAvDepol = depolLevel * 0.25 * (
+        vecReal[ind00] + vecReal[ind01] + vecReal[ind10] + vecReal[ind11]);
+    REAL imagAvDepol = depolLevel * 0.25 * (
+        vecImag[ind00] + vecImag[ind01] + vecImag[ind10] + vecImag[ind11]);
+    
+    REAL retain = 1 - depolLevel;
+    vecReal[ind00] *= retain; vecImag[ind00] *= retain;
+    vecReal[ind01] *= retain; vecImag[ind01] *= retain;
+    vecReal[ind10] *= retain; vecImag[ind10] *= retain;
+    vecReal[ind11] *= retain; vecImag[ind11] *= retain;
+
+    vecReal[ind00] += depolLevel*realAvDepol; vecImag[ind00] += depolLevel*imagAvDepol;
+    vecReal[ind01] += depolLevel*realAvDepol; vecImag[ind01] += depolLevel*imagAvDepol;
+    vecReal[ind10] += depolLevel*realAvDepol; vecImag[ind10] += depolLevel*imagAvDepol;
+    vecReal[ind11] += depolLevel*realAvDepol; vecImag[ind11] += depolLevel*imagAvDepol;
+}
+
+void densmatr_twoQubitDepolarise(QubitRegister qureg, int qubit1, int qubit2, REAL depolLevel) {
+    
+    if (depolLevel == 0)
+        return;
+    
+    // ensure qubit2 is further left than qubit1
+    if (qubit1 > qubit2)  {
+        int tmp = qubit1;
+        qubit1 = qubit2;
+        qubit2 = tmp;
+    }
+    
+    densmatr_twoQubitDephase(qureg, qubit1, qubit2, depolLevel);
+    
+    int rowQubit1 = qubit1 + qureg.numQubitsRepresented;
+    int rowQubit2 = qubit2 + qureg.numQubitsRepresented;
+    
+    long long int colBit1 = 1LL << qubit1;
+    long long int rowBit1 = 1LL << rowQubit1;
+    long long int colBit2 = 1LL << qubit2;
+    long long int rowBit2 = 1LL << rowQubit2;
+    
+    long long int rowCol1 = colBit1 | rowBit1;
+    long long int rowCol2 = colBit2 | rowBit2;
+    
+    long long int numAmpsToVisit = qureg.numAmpsPerChunk/16;
+    long long int part1 = colBit1 - 1;
+    long long int part2 = (colBit2 >> 1) - colBit1;
+    long long int part3 = (rowBit1 >> 2) - (colBit2 >> 1);
+    long long int part4 = (rowBit2 >> 3) - (rowBit1 >> 2);
+    long long int part5 = numAmpsToVisit - (rowBit2 >> 3);
+    
+    int threadsPerCUDABlock, CUDABlocks;
+    threadsPerCUDABlock = 128;
+    CUDABlocks = ceil(numAmpsToVisit / (REAL) threadsPerCUDABlock);
+    densmatr_twoQubitDepolariseKernel<<<CUDABlocks, threadsPerCUDABlock>>>(
+        depolLevel, qureg.deviceStateVec.real, qureg.deviceStateVec.imag, numAmpsToVisit,
+        part1, part2, part3, part4, part5, rowCol1, rowCol2);
+}
 
 void statevec_initPureState(QubitRegister targetQureg, QubitRegister copyQureg) {
     

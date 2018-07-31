@@ -29,6 +29,14 @@ REAL densmatr_findProbabilityOfOutcome(QubitRegister qureg, const int measureQub
 void densmatr_collapseToKnownProbOutcome(QubitRegister qureg, const int measureQubit, int outcome, REAL outcomeProb);
     
 int densmatr_measureWithStats(QubitRegister qureg, int measureQubit, REAL *outcomeProb);
+
+void densmatr_oneQubitDephase(QubitRegister qureg, const int targetQubit, REAL dephase);
+
+void densmatr_twoQubitDephase(QubitRegister qureg, const int qubit1, const int qubit2, REAL dephase);
+
+void densmatr_oneQubitDepolarise(QubitRegister qureg, const int targetQubit, REAL depolLevel);
+
+void densmatr_twoQubitDepolarise(QubitRegister qureg, int qubit1, int qubit2, REAL depolLevel);
     
 /* operations upon density matrices */
 
