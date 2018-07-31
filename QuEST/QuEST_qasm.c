@@ -81,6 +81,21 @@ void getRotAnglesFromComplexPair(Complex alpha, Complex beta, REAL* rz2, REAL* r
     *rz1 = - alphaPhase - betaPhase;
 }
 
+/** maps U(r0c0, r0c1, r1c0, r1c1) to exp(i globalPhase) U(alpha, beta) */
+void getComplexPairAndPhaseFromUnitary(ComplexMatrix2 u, Complex* alpha, Complex* beta, REAL* globalPhase) {
+    
+    REAL r0c0Phase = atan2(u.r0c0.imag, u.r0c0.real);
+    REAL r1c1Phase = atan2(u.r1c1.imag, u.r1c1.real);
+    *globalPhase = (r0c0Phase + r1c1Phase)/2.0;
+    
+    REAL cosPhase = cos(*globalPhase);
+    REAL sinPhase = sin(*globalPhase);
+    alpha->real = u.r0c0.real*cosPhase + u.r0c0.imag*sinPhase;
+    alpha->imag = u.r0c0.imag*cosPhase - u.r0c0.real*sinPhase;
+    beta->real = u.r1c0.real*cosPhase + u.r1c0.imag*sinPhase;
+    beta->imag = u.r1c0.imag*cosPhase - u.r1c0.real*sinPhase;
+}
+
 void addStringToQASM(QubitRegister qureg, char line[], int lineLen) {
     
     int bufSize = qureg.qasmLog->bufferSize;
@@ -175,6 +190,22 @@ void qasm_recordCompactUnitary(QubitRegister qureg, Complex alpha, Complex beta,
     addGateToQASM(qureg, GATE_UNITARY, NULL, 0, targetQubit, params, 3);
 }
 
+void qasm_recordUnitary(QubitRegister qureg, ComplexMatrix2 u, int targetQubit) {
+    
+    if (!qureg.qasmLog->isLogging)
+        return;
+    
+    Complex alpha, beta;
+    REAL discardedGlobalPhase;
+    getComplexPairAndPhaseFromUnitary(u, &alpha, &beta, &discardedGlobalPhase);
+    
+    REAL rz2, ry, rz1;
+    getRotAnglesFromComplexPair(alpha, beta, &rz2, &ry, &rz1);
+    
+    REAL params[3] = {rz2, ry, rz1};
+    addGateToQASM(qureg, GATE_UNITARY, NULL, 0, targetQubit, params, 3);
+}
+
 void qasm_recordControlledGate(QubitRegister qureg, TargetGate gate, int controlQubit, int targetQubit) {
 
     if (!qureg.qasmLog->isLogging)
@@ -207,6 +238,28 @@ void qasm_recordControlledCompactUnitary(QubitRegister qureg, Complex alpha, Com
     addGateToQASM(qureg, GATE_UNITARY, controls, 1, targetQubit, params, 3);
 }
 
+/** additionally performs Rz on target to restore the global phase lost from u in QASM U(a,b,c) */
+void qasm_recordControlledUnitary(QubitRegister qureg, ComplexMatrix2 u, int controlQubit, int targetQubit) {
+    
+    if (!qureg.qasmLog->isLogging)
+        return;
+    
+    Complex alpha, beta;
+    REAL globalPhase;
+    getComplexPairAndPhaseFromUnitary(u, &alpha, &beta, &globalPhase);
+    
+    REAL rz2, ry, rz1;
+    getRotAnglesFromComplexPair(alpha, beta, &rz2, &ry, &rz1);
+    
+    int controls[1] = {controlQubit};
+    REAL params[3] = {rz2, ry, rz1};
+    addGateToQASM(qureg, GATE_UNITARY, controls, 1, targetQubit, params, 3);
+    
+    // add Rz
+    REAL phaseFix[1] = {globalPhase};
+    addGateToQASM(qureg, GATE_ROTATE_Z, NULL, 0, targetQubit, phaseFix, 1);
+}
+
 void qasm_recordMultiControlledGate(QubitRegister qureg, TargetGate gate, int* controlQubits, const int numControlQubits, const int targetQubit) {
 
     if (!qureg.qasmLog->isLogging)
@@ -222,6 +275,27 @@ void qasm_recordMultiControlledParamGate(QubitRegister qureg, TargetGate gate, i
     
     REAL params[1] = {param};
     addGateToQASM(qureg, gate, controlQubits, numControlQubits, targetQubit, params, 1);
+}
+
+/** additionally performs Rz on target to restore the global phase lost from u in QASM U(a,b,c) */
+void qasm_recordMultiControlledUnitary(QubitRegister qureg, ComplexMatrix2 u, int* controlQubits, const int numControlQubits, const int targetQubit) {
+    
+    if (!qureg.qasmLog->isLogging)
+        return;
+    
+    Complex alpha, beta;
+    REAL globalPhase;
+    getComplexPairAndPhaseFromUnitary(u, &alpha, &beta, &globalPhase);
+    
+    REAL rz2, ry, rz1;
+    getRotAnglesFromComplexPair(alpha, beta, &rz2, &ry, &rz1);
+    
+    REAL params[3] = {rz2, ry, rz1};
+    addGateToQASM(qureg, GATE_UNITARY, controlQubits, numControlQubits, targetQubit, params, 3);
+    
+    // add Rz
+    REAL phaseFix[1] = {globalPhase};
+    addGateToQASM(qureg, GATE_ROTATE_Z, NULL, 0, targetQubit, phaseFix, 1);
 }
 
 void qasm_recordMeasurement(QubitRegister qureg, const int measureQubit) {

@@ -42,16 +42,22 @@ void qasm_recordParamGate(QubitRegister qureg, TargetGate gate, int targetQubit,
 
 void qasm_recordCompactUnitary(QubitRegister qureg, Complex alpha, Complex beta, int targetQubit);
 
+void qasm_recordUnitary(QubitRegister qureg, ComplexMatrix2 u, int targetQubit);
+
 void qasm_recordControlledGate(QubitRegister qureg, TargetGate gate, int controlQubit, int targetQubit);
 
 void qasm_recordControlledParamGate(QubitRegister qureg, TargetGate gate, int controlQubit, int targetQubit, REAL param);
 
 void qasm_recordControlledCompactUnitary(QubitRegister qureg, Complex alpha, Complex beta, int controlQubit, int targetQubit);
 
+void qasm_recordControlledUnitary(QubitRegister qureg, ComplexMatrix2 u, int controlQubit, int targetQubit);
+
 void qasm_recordMultiControlledGate(QubitRegister qureg,
 TargetGate gate, int* controlQubits, const int numControlQubits, const int targetQubit);
 
 void qasm_recordMultiControlledParamGate(QubitRegister qureg, TargetGate gate, int* controlQubits, const int numControlQubits, const int targetQubit, REAL param);
+
+void qasm_recordMultiControlledUnitary(QubitRegister qureg, ComplexMatrix2 u, int* controlQubits, const int numControlQubits, const int targetQubit);
 
 void qasm_recordMeasurement(QubitRegister qureg, const int measureQubit);
 

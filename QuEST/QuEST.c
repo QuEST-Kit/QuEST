@@ -182,7 +182,7 @@ void unitary(QubitRegister qureg, const int targetQubit, ComplexMatrix2 u) {
         statevec_unitary(qureg, targetQubit+qureg.numQubitsRepresented, getConjugateMatrix(u));
     }
     
-    // @TODO: QASM
+    qasm_recordUnitary(qureg, u, targetQubit);
 }
 
 void controlledUnitary(QubitRegister qureg, const int controlQubit, const int targetQubit, ComplexMatrix2 u) {
@@ -195,7 +195,7 @@ void controlledUnitary(QubitRegister qureg, const int controlQubit, const int ta
         statevec_controlledUnitary(qureg, controlQubit+shift, targetQubit+shift, getConjugateMatrix(u));
     }
     
-    // @TODO: QASM
+    qasm_recordControlledUnitary(qureg, u, controlQubit, targetQubit);
 }
 
 void multiControlledUnitary(QubitRegister qureg, int* controlQubits, const int numControlQubits, const int targetQubit, ComplexMatrix2 u) {
@@ -210,7 +210,7 @@ void multiControlledUnitary(QubitRegister qureg, int* controlQubits, const int n
         shiftIndices(controlQubits, numControlQubits, -shift);
     }
     
-    // @TODO: QASM
+    qasm_recordMultiControlledUnitary(qureg, u, controlQubits, numControlQubits, targetQubit);
 }
 
 void compactUnitary(QubitRegister qureg, const int targetQubit, Complex alpha, Complex beta) {
