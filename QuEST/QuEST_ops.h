@@ -44,7 +44,8 @@ void densmatr_combineDensityMatrices(REAL combineProb, QubitRegister combineQure
     
 /* operations upon density matrices */
 
-Complex statevec_getInnerProduct(QubitRegister bra, QubitRegister ket);
+
+Complex statevec_calcInnerProduct(QubitRegister bra, QubitRegister ket);
     
 void statevec_reportStateToScreen(QubitRegister qureg, QuESTEnv env, int reportRank);
 

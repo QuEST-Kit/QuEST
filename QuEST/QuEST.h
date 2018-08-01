@@ -1259,6 +1259,9 @@ int measure(QubitRegister qureg, int measureQubit);
  */
 int measureWithStats(QubitRegister qureg, int measureQubit, REAL *outcomeProb);
 
+/** Computes <bra|ket> */
+Complex calcInnerProduct(QubitRegister bra, QubitRegister ket);
+
 /** Seed the Mersenne Twister used for random number generation in the QuEST environment with an example
  * defualt seed.
  * This default seeding function uses the mt19937 init_by_array function with three keys -- 
@@ -1331,6 +1334,7 @@ void combineDensityMatrices(REAL combineProb, QubitRegister combineQureg, REAL o
  * For a pure state, this =1, and is <1 for mixed states
  */
 REAL calcPurity(QubitRegister qureg);
+
 
 
 #ifdef __cplusplus

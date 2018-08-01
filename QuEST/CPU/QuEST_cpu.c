@@ -69,7 +69,7 @@ void densmatr_combineDensityMatrices(REAL combineProb, QubitRegister combineQure
 
 
 
-Complex statevec_getInnerProductLocal(QubitRegister bra, QubitRegister ket) {
+Complex statevec_calcInnerProductLocal(QubitRegister bra, QubitRegister ket) {
     
     REAL innerProdReal = 0;
     REAL innerProdImag = 0;

@@ -1436,74 +1436,6 @@ void swapDouble(REAL **a, REAL **b){
     *b = temp;
 }
 
-__global__ void densmatr_calcPurityKernel(REAL* vecReal, REAL* vecImag, long long int numAmpsToSum, REAL *reducedArray) {
-    
-    // figure out which density matrix term this thread is assigned
-    long long int index = blockIdx.x*blockDim.x + threadIdx.x;
-    if (index >= numAmpsToSum) return;
-    
-    REAL term = vecReal[index]*vecReal[index] + vecImag[index]*vecImag[index];
-    
-    // array of each thread's collected probability, to be summed
-    extern __shared__ REAL tempReductionArray[];
-    tempReductionArray[threadIdx.x] = term;
-    __syncthreads();
-    
-    // every second thread reduces
-    if (threadIdx.x<blockDim.x/2)
-        reduceBlock(tempReductionArray, reducedArray, blockDim.x);
-}
-
-/** Computes the trace of the density matrix squared */
-REAL densmatr_calcPurity(QubitRegister qureg) {
-    
-    // we're summing the square of every term in the density matrix
-    long long int numValuesToReduce = qureg.numAmpsPerChunk;
-    
-    int valuesPerCUDABlock, numCUDABlocks, sharedMemSize;
-    int maxReducedPerLevel = REDUCE_SHARED_SIZE;
-    int firstTime = 1;
-    
-    while (numValuesToReduce > 1) {
-        
-        // need less than one CUDA-BLOCK to reduce
-        if (numValuesToReduce < maxReducedPerLevel) {
-            valuesPerCUDABlock = numValuesToReduce;
-            numCUDABlocks = 1;
-        }
-        // otherwise use only full CUDA-BLOCKS
-        else {
-            valuesPerCUDABlock = maxReducedPerLevel; // constrained by shared memory
-            numCUDABlocks = ceil((REAL)numValuesToReduce/valuesPerCUDABlock);
-        }
-        // dictates size of reduction array
-        sharedMemSize = valuesPerCUDABlock*sizeof(REAL);
-        
-        // spawn threads to sum the probs in each block
-        if (firstTime) {
-             densmatr_calcPurityKernel<<<numCUDABlocks, valuesPerCUDABlock, sharedMemSize>>>(
-                 qureg.deviceStateVec.real, qureg.deviceStateVec.imag, 
-                 numValuesToReduce, qureg.firstLevelReduction);
-            firstTime = 0;
-            
-        // sum the block probs
-        } else {
-            cudaDeviceSynchronize();    
-            copySharedReduceBlock<<<numCUDABlocks, valuesPerCUDABlock/2, sharedMemSize>>>(
-                    qureg.firstLevelReduction, 
-                    qureg.secondLevelReduction, valuesPerCUDABlock); 
-            cudaDeviceSynchronize();    
-            swapDouble(&(qureg.firstLevelReduction), &(qureg.secondLevelReduction));
-        }
-        
-        numValuesToReduce = numValuesToReduce/maxReducedPerLevel;
-    }
-    
-    REAL traceDensSquared;
-    cudaMemcpy(&traceDensSquared, qureg.firstLevelReduction, sizeof(REAL), cudaMemcpyDeviceToHost);
-    return traceDensSquared;
-}
-
 REAL densmatr_findProbabilityOfZero(QubitRegister qureg, const int measureQubit)
 {
     long long int densityDim = 1LL << qureg.numQubitsRepresented;
@@ -1604,6 +1536,196 @@ REAL densmatr_findProbabilityOfOutcome(QubitRegister qureg, const int measureQub
     if (outcome==1) 
         outcomeProb = 1.0 - outcomeProb;
     return outcomeProb;
+}
+
+
+/** computes either a real or imag term in the inner product */
+__global__ void statevec_calcInnerProductKernel(
+    int getRealComp,
+    REAL* vecReal1, REAL* vecImag1, REAL* vecReal2, REAL* vecImag2, 
+    long long int numTermsToSum, REAL* reducedArray) 
+{
+    long long int index = blockIdx.x*blockDim.x + threadIdx.x;
+    if (index >= numTermsToSum) return;
+    
+    // choose whether to calculate the real or imaginary term of the inner product
+    REAL innerProdTerm;
+    if (getRealComp)
+        innerProdTerm = vecReal1[index]*vecReal2[index] + vecImag1[index]*vecImag2[index];
+    else
+        innerProdTerm = vecReal1[index]*vecImag2[index] - vecImag1[index]*vecReal2[index];
+    
+    // array of each thread's collected probability, to be summed
+    extern __shared__ REAL tempReductionArray[];
+    tempReductionArray[threadIdx.x] = innerProdTerm;
+    __syncthreads();
+    
+    // every second thread reduces
+    if (threadIdx.x<blockDim.x/2)
+        reduceBlock(tempReductionArray, reducedArray, blockDim.x);
+}
+
+/** Terrible code which unnecessarily individually computes and sums the real and imaginary components of the
+ * inner product, so as to not have to worry about keeping the sums separated during reduction.
+ * Truly disgusting, probably doubles runtime, please fix.
+ * @TODO could even do the kernel twice, storing real in bra.reduc and imag in ket.reduc?
+ */
+Complex statevec_calcInnerProduct(QubitRegister bra, QubitRegister ket) {
+    
+    REAL innerProdReal, innerProdImag;
+    
+    int getRealComp;
+    long long int numValuesToReduce;
+    int valuesPerCUDABlock, numCUDABlocks, sharedMemSize;
+    int maxReducedPerLevel;
+    int firstTime;
+    
+    // compute real component of inner product
+    getRealComp = 1;
+    numValuesToReduce = bra.numAmpsPerChunk;
+    maxReducedPerLevel = REDUCE_SHARED_SIZE;
+    firstTime = 1;
+    while (numValuesToReduce > 1) {
+        if (numValuesToReduce < maxReducedPerLevel) {
+            valuesPerCUDABlock = numValuesToReduce;
+            numCUDABlocks = 1;
+        }
+        else {
+            valuesPerCUDABlock = maxReducedPerLevel;
+            numCUDABlocks = ceil((REAL)numValuesToReduce/valuesPerCUDABlock);
+        }
+        sharedMemSize = valuesPerCUDABlock*sizeof(REAL);
+        if (firstTime) {
+             statevec_calcInnerProductKernel<<<numCUDABlocks, valuesPerCUDABlock, sharedMemSize>>>(
+                 getRealComp,
+                 bra.deviceStateVec.real, bra.deviceStateVec.imag, 
+                 ket.deviceStateVec.real, ket.deviceStateVec.imag, 
+                 numValuesToReduce, 
+                 bra.firstLevelReduction);
+            firstTime = 0;
+        } else {
+            cudaDeviceSynchronize();    
+            copySharedReduceBlock<<<numCUDABlocks, valuesPerCUDABlock/2, sharedMemSize>>>(
+                    bra.firstLevelReduction, 
+                    bra.secondLevelReduction, valuesPerCUDABlock); 
+            cudaDeviceSynchronize();    
+            swapDouble(&(bra.firstLevelReduction), &(bra.secondLevelReduction));
+        }
+        numValuesToReduce = numValuesToReduce/maxReducedPerLevel;
+    }
+    cudaMemcpy(&innerProdReal, bra.firstLevelReduction, sizeof(REAL), cudaMemcpyDeviceToHost);
+    
+    // compute imag component of inner product
+    getRealComp = 0;
+    numValuesToReduce = bra.numAmpsPerChunk;
+    maxReducedPerLevel = REDUCE_SHARED_SIZE;
+    firstTime = 1;
+    while (numValuesToReduce > 1) {
+        if (numValuesToReduce < maxReducedPerLevel) {
+            valuesPerCUDABlock = numValuesToReduce;
+            numCUDABlocks = 1;
+        }
+        else {
+            valuesPerCUDABlock = maxReducedPerLevel;
+            numCUDABlocks = ceil((REAL)numValuesToReduce/valuesPerCUDABlock);
+        }
+        sharedMemSize = valuesPerCUDABlock*sizeof(REAL);
+        if (firstTime) {
+             statevec_calcInnerProductKernel<<<numCUDABlocks, valuesPerCUDABlock, sharedMemSize>>>(
+                 getRealComp,
+                 bra.deviceStateVec.real, bra.deviceStateVec.imag, 
+                 ket.deviceStateVec.real, ket.deviceStateVec.imag, 
+                 numValuesToReduce, 
+                 bra.firstLevelReduction);
+            firstTime = 0;
+        } else {
+            cudaDeviceSynchronize();    
+            copySharedReduceBlock<<<numCUDABlocks, valuesPerCUDABlock/2, sharedMemSize>>>(
+                    bra.firstLevelReduction, 
+                    bra.secondLevelReduction, valuesPerCUDABlock); 
+            cudaDeviceSynchronize();    
+            swapDouble(&(bra.firstLevelReduction), &(bra.secondLevelReduction));
+        }
+        numValuesToReduce = numValuesToReduce/maxReducedPerLevel;
+    }
+    cudaMemcpy(&innerProdImag, bra.firstLevelReduction, sizeof(REAL), cudaMemcpyDeviceToHost);
+    
+    // return complex
+    Complex innerProd;
+    innerProd.real = innerProdReal;
+    innerProd.imag = innerProdImag;
+    return innerProd;
+}
+
+
+
+
+__global__ void densmatr_calcPurityKernel(REAL* vecReal, REAL* vecImag, long long int numAmpsToSum, REAL *reducedArray) {
+    
+    // figure out which density matrix term this thread is assigned
+    long long int index = blockIdx.x*blockDim.x + threadIdx.x;
+    if (index >= numAmpsToSum) return;
+    
+    REAL term = vecReal[index]*vecReal[index] + vecImag[index]*vecImag[index];
+    
+    // array of each thread's collected probability, to be summed
+    extern __shared__ REAL tempReductionArray[];
+    tempReductionArray[threadIdx.x] = term;
+    __syncthreads();
+    
+    // every second thread reduces
+    if (threadIdx.x<blockDim.x/2)
+        reduceBlock(tempReductionArray, reducedArray, blockDim.x);
+}
+
+/** Computes the trace of the density matrix squared */
+REAL densmatr_calcPurity(QubitRegister qureg) {
+    
+    // we're summing the square of every term in the density matrix
+    long long int numValuesToReduce = qureg.numAmpsPerChunk;
+    
+    int valuesPerCUDABlock, numCUDABlocks, sharedMemSize;
+    int maxReducedPerLevel = REDUCE_SHARED_SIZE;
+    int firstTime = 1;
+    
+    while (numValuesToReduce > 1) {
+        
+        // need less than one CUDA-BLOCK to reduce
+        if (numValuesToReduce < maxReducedPerLevel) {
+            valuesPerCUDABlock = numValuesToReduce;
+            numCUDABlocks = 1;
+        }
+        // otherwise use only full CUDA-BLOCKS
+        else {
+            valuesPerCUDABlock = maxReducedPerLevel; // constrained by shared memory
+            numCUDABlocks = ceil((REAL)numValuesToReduce/valuesPerCUDABlock);
+        }
+        // dictates size of reduction array
+        sharedMemSize = valuesPerCUDABlock*sizeof(REAL);
+        
+        // spawn threads to sum the probs in each block
+        if (firstTime) {
+             densmatr_calcPurityKernel<<<numCUDABlocks, valuesPerCUDABlock, sharedMemSize>>>(
+                 qureg.deviceStateVec.real, qureg.deviceStateVec.imag, 
+                 numValuesToReduce, qureg.firstLevelReduction);
+            firstTime = 0;
+            
+        // sum the block probs
+        } else {
+            cudaDeviceSynchronize();    
+            copySharedReduceBlock<<<numCUDABlocks, valuesPerCUDABlock/2, sharedMemSize>>>(
+                    qureg.firstLevelReduction, 
+                    qureg.secondLevelReduction, valuesPerCUDABlock); 
+            cudaDeviceSynchronize();    
+            swapDouble(&(qureg.firstLevelReduction), &(qureg.secondLevelReduction));
+        }
+        
+        numValuesToReduce = numValuesToReduce/maxReducedPerLevel;
+    }
+    
+    REAL traceDensSquared;
+    cudaMemcpy(&traceDensSquared, qureg.firstLevelReduction, sizeof(REAL), cudaMemcpyDeviceToHost);
+    return traceDensSquared;
 }
 
 __global__ void statevec_collapseToKnownProbOutcomeKernel(QubitRegister qureg, int measureQubit, int outcome, REAL totalProbability)
@@ -1986,34 +2108,6 @@ void densmatr_twoQubitDepolarise(QubitRegister qureg, int qubit1, int qubit2, RE
         depolLevel, qureg.deviceStateVec.real, qureg.deviceStateVec.imag, numAmpsToVisit,
         part1, part2, part3, part4, part5, rowCol1, rowCol2);
 }
-
-/*
-
-SHOULD REALLY REDUCE A 2*LENGTH ARRAY, not reduce twice
-__global__ void statevec_getInnerProductKernel(QubitRegister bra, QubitRegister ket, REAL *reducedArray) {
-    
-    // work amplitude index
-    long long int stateVecSize = bra.numAmpsPerChunk;
-    long long int index = blockIdx.x*blockDim.x + threadIdx.x;
-    if (index>=stateVecSize) return;
-    
-    REAL braRe = bra.deviceStateVec.real[index];
-    REAL braIm = bra.deviceStateVec.imag[index];
-    REAL ketRe = ket.deviceStateVec.real[index];
-    REAL ketIm = ket.deviceStateVec.imag[index];
-    
-    // conj(bra_i) * ket_i
-    REAL innerProdReal = braRe*ketRe - braIm*ketIm;
-    REAL innerProdImag = braRe*ketIm + braIm*ketRe;
-    
-    // array of each thread's collected innerProdReal and innerProdImag, alternating
-    // real in even inds, imag in off inds: this array has length 2*numThreads
-    extern __shared__ REAL innerProdReductionArray[];
-    innerProdReductionArray[2*thread.x    ] = innerProdReal;
-    innerProdReductionArray[2*thread.x + 1] = innerProdImag;
-    __syncthreads(); 
-}
-*/
 
 
 #ifdef __cplusplus

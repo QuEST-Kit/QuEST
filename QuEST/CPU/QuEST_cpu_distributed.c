@@ -42,9 +42,9 @@ void densmatr_collapseToKnownProbOutcome(QubitRegister qureg, const int measureQ
 	
 }
 
-Complex statevec_getInnerProduct(QubitRegister bra, QubitRegister ket) {
+Complex statevec_calcInnerProduct(QubitRegister bra, QubitRegister ket) {
     
-    Complex localInnerProd = statevec_getInnerProductLocal(bra, ket);
+    Complex localInnerProd = statevec_calcInnerProductLocal(bra, ket);
     if (qureg.numChunks == 1)
         return localInnerProd;
     

@@ -18,7 +18,7 @@ void densmatr_initPureStateLocal(QubitRegister targetQureg, QubitRegister copyQu
 
 REAL densmatr_findProbabilityOfZeroLocal(QubitRegister qureg, const int measureQubit);
 
-Complex statevec_getInnerProductLocal(QubitRegister bra, QubitRegister ket);
+Complex statevec_calcInnerProductLocal(QubitRegister bra, QubitRegister ket);
 
 void statevec_compactUnitaryLocal (QubitRegister qureg, const int targetQubit, Complex alpha, Complex beta);
 

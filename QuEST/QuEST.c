@@ -448,13 +448,6 @@ REAL getProbEl(QubitRegister qureg, long long int index) {
     return statevec_getProbEl(qureg, index);
 }
 
-int compareStates(QubitRegister mq1, QubitRegister mq2, REAL precision) {
-    validateStateVecQureg(mq1, __func__);
-    validateStateVecQureg(mq2, __func__);
-    
-    return statevec_compareStates(mq1, mq2, precision);
-}
-
 REAL calcTotalProbability(QubitRegister qureg) {
     if (qureg.isDensityMatrix)  
             return densmatr_calcTotalProbability(qureg);
@@ -466,6 +459,14 @@ REAL calcPurity(QubitRegister qureg) {
     validateDensityMatrQureg(qureg, __func__);
     
     return densmatr_calcPurity(qureg);
+}
+
+Complex calcInnerProduct(QubitRegister bra, QubitRegister ket) {
+    validateStateVecQureg(bra, __func__);
+    validateStateVecQureg(ket, __func__);
+    validateMatchingQuregDims(bra, ket,  __func__);
+    
+    return statevec_calcInnerProduct(bra, ket);
 }
 
 REAL findProbabilityOfOutcome(QubitRegister qureg, const int measureQubit, int outcome) {
@@ -616,7 +617,13 @@ void combineDensityMatrices(REAL combineProb, QubitRegister combineQureg, REAL o
 
 
 
-
+int compareStates(QubitRegister qureg1, QubitRegister qureg2, REAL precision) {
+    validateStateVecQureg(qureg1, __func__);
+    validateStateVecQureg(qureg2, __func__);
+    // @TODO: validate precision
+    
+    return statevec_compareStates(qureg1, qureg2, precision);
+}
 
 // @TODO
 void initStateDebug(QubitRegister qureg) {
