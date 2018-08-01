@@ -1766,7 +1766,7 @@ REAL statevec_findProbabilityOfOutcome(QubitRegister qureg, const int measureQub
 
 REAL densmatr_findProbabilityOfOutcome(QubitRegister qureg, const int measureQubit, int outcome)
 {
-    REAL outcomeProb = statevec_findProbabilityOfZero(qureg, measureQubit);
+    REAL outcomeProb = densmatr_findProbabilityOfZero(qureg, measureQubit);
     if (outcome==1) 
         outcomeProb = 1.0 - outcomeProb;
     return outcomeProb;
@@ -1837,7 +1837,7 @@ void statevec_collapseToKnownProbOutcome(QubitRegister qureg, const int measureQ
     statevec_collapseToKnownProbOutcomeKernel<<<CUDABlocks, threadsPerCUDABlock>>>(qureg, measureQubit, outcome, outcomeProb);
 }
 
-
+/** Maps thread ID to a |..0..><..0..| state and then locates |0><1|, |1><0| and |1><1| */
 __global__ void densmatr_collapseToKnownProbOutcomeKernel(
     REAL outcomeProb, REAL* vecReal, REAL *vecImag, long long int numBasesToVisit,
     long long int part1, long long int part2, long long int part3, 
@@ -1863,6 +1863,7 @@ __global__ void densmatr_collapseToKnownProbOutcomeKernel(
     vecImag[base + rowBit] = 0;
 }
 
+/** This involves finding |...i...><...j...| states and killing those where i!=j */
 void densmatr_collapseToKnownProbOutcome(QubitRegister qureg, const int measureQubit, int outcome, REAL outcomeProb) {
     
 	int rowQubit = measureQubit + qureg.numQubitsRepresented;
