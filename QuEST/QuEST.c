@@ -462,7 +462,11 @@ REAL calcTotalProbability(QubitRegister qureg) {
             return statevec_calcTotalProbability(qureg);
 }
 
-
+REAL calcPurity(QubitRegister qureg) {
+    validateDensityMatrQureg(qureg, __func__);
+    
+    return densmatr_calcPurity(qureg);
+}
 
 REAL findProbabilityOfOutcome(QubitRegister qureg, const int measureQubit, int outcome) {
     validateTarget(qureg, measureQubit, __func__); // should rename? meh

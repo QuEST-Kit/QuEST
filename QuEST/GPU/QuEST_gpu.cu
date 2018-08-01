@@ -1436,6 +1436,74 @@ void swapDouble(REAL **a, REAL **b){
     *b = temp;
 }
 
+__global__ void densmatr_calcPurityKernel(REAL* vecReal, REAL* vecImag, long long int numAmpsToSum, REAL *reducedArray) {
+    
+    // figure out which density matrix term this thread is assigned
+    long long int index = blockIdx.x*blockDim.x + threadIdx.x;
+    if (index >= numAmpsToSum) return;
+    
+    REAL term = vecReal[index]*vecReal[index] + vecImag[index]*vecImag[index];
+    
+    // array of each thread's collected probability, to be summed
+    extern __shared__ REAL tempReductionArray[];
+    tempReductionArray[threadIdx.x] = term;
+    __syncthreads();
+    
+    // every second thread reduces
+    if (threadIdx.x<blockDim.x/2)
+        reduceBlock(tempReductionArray, reducedArray, blockDim.x);
+}
+
+/** Computes the trace of the density matrix squared */
+REAL densmatr_calcPurity(QubitRegister qureg) {
+    
+    // we're summing the square of every term in the density matrix
+    long long int numValuesToReduce = qureg.numAmpsPerChunk;
+    
+    int valuesPerCUDABlock, numCUDABlocks, sharedMemSize;
+    int maxReducedPerLevel = REDUCE_SHARED_SIZE;
+    int firstTime = 1;
+    
+    while (numValuesToReduce > 1) {
+        
+        // need less than one CUDA-BLOCK to reduce
+        if (numValuesToReduce < maxReducedPerLevel) {
+            valuesPerCUDABlock = numValuesToReduce;
+            numCUDABlocks = 1;
+        }
+        // otherwise use only full CUDA-BLOCKS
+        else {
+            valuesPerCUDABlock = maxReducedPerLevel; // constrained by shared memory
+            numCUDABlocks = ceil((REAL)numValuesToReduce/valuesPerCUDABlock);
+        }
+        // dictates size of reduction array
+        sharedMemSize = valuesPerCUDABlock*sizeof(REAL);
+        
+        // spawn threads to sum the probs in each block
+        if (firstTime) {
+             densmatr_calcPurityKernel<<<numCUDABlocks, valuesPerCUDABlock, sharedMemSize>>>(
+                 qureg.deviceStateVec.real, qureg.deviceStateVec.imag, 
+                 numValuesToReduce, qureg.firstLevelReduction);
+            firstTime = 0;
+            
+        // sum the block probs
+        } else {
+            cudaDeviceSynchronize();    
+            copySharedReduceBlock<<<numCUDABlocks, valuesPerCUDABlock/2, sharedMemSize>>>(
+                    qureg.firstLevelReduction, 
+                    qureg.secondLevelReduction, valuesPerCUDABlock); 
+            cudaDeviceSynchronize();    
+            swapDouble(&(qureg.firstLevelReduction), &(qureg.secondLevelReduction));
+        }
+        
+        numValuesToReduce = numValuesToReduce/maxReducedPerLevel;
+    }
+    
+    REAL traceDensSquared;
+    cudaMemcpy(&traceDensSquared, qureg.firstLevelReduction, sizeof(REAL), cudaMemcpyDeviceToHost);
+    return traceDensSquared;
+}
+
 REAL densmatr_findProbabilityOfZero(QubitRegister qureg, const int measureQubit)
 {
     long long int densityDim = 1LL << qureg.numQubitsRepresented;

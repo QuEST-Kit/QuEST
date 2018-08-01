@@ -1307,11 +1307,19 @@ void printRecordedQASM(QubitRegister qureg);
 void writeRecordedQASMToFile(QubitRegister qureg, char* filename);
 
 
+
+
+
 /* noise functions in the works! */
 void oneQubitDephase(QubitRegister qureg, const int targetQubit, REAL dephase);
 void twoQubitDephase(QubitRegister qureg, const int qubit1, const int qubit2, REAL dephase);
 void oneQubitDepolarise(QubitRegister qureg, const int targetQubit, REAL depolLevel);
 void twoQubitDepolarise(QubitRegister qureg, const int qubit1, const int qubit2, REAL depolLevel);
+
+
+
+
+/* density matrix functions */
 
 /** Modifies combineQureg -> combineProb * combineQureg + otherProb * otherQureg
  * Both registers must be equal-dimension density matrices.
@@ -1319,6 +1327,10 @@ void twoQubitDepolarise(QubitRegister qureg, const int qubit1, const int qubit2,
  */
 void combineDensityMatrices(REAL combineProb, QubitRegister combineQureg, REAL otherProb, QubitRegister otherQureg);
 
+/** Calculates the purity of a density matrix, by the trace of the density matrix squared
+ * For a pure state, this =1, and is <1 for mixed states
+ */
+REAL calcPurity(QubitRegister qureg);
 
 
 #ifdef __cplusplus

@@ -24,6 +24,8 @@ void densmatr_initPureState(QubitRegister targetQureg, QubitRegister copyQureg);
 
 REAL densmatr_calcTotalProbability(QubitRegister qureg);
 
+REAL densmatr_calcPurity(QubitRegister qureg);
+
 REAL densmatr_findProbabilityOfOutcome(QubitRegister qureg, const int measureQubit, int outcome);
 
 void densmatr_collapseToKnownProbOutcome(QubitRegister qureg, const int measureQubit, int outcome, REAL outcomeProb);
