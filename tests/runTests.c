@@ -42,7 +42,7 @@ int test_initStateZero(char testName[200]){
 
     initStateZero(mq);
 
-    sprintf(filename, "%s%s%d.out", PATH_TO_TESTS, testName, count++); 	
+    sprintf(filename, "%s%s%d.out", PATH_TO_TESTS, testName, count++);  
     initStateFromSingleFile(&mqVerif, filename, env);
 
     passed = compareStates(mq, mqVerif, COMPARE_PRECISION);
@@ -65,7 +65,7 @@ int test_initStatePlus(char testName[200]){
 
     initStatePlus(mq);
 
-    sprintf(filename, "%s%s%d.out", PATH_TO_TESTS, testName, count++); 	
+    sprintf(filename, "%s%s%d.out", PATH_TO_TESTS, testName, count++);  
     initStateFromSingleFile(&mqVerif, filename, env);
 
     if (passed) passed = compareStates(mq, mqVerif, COMPARE_PRECISION);
@@ -78,43 +78,43 @@ int test_initStatePlus(char testName[200]){
 int test_initClassicalState(char testName[200]){
     int passed=1;
     int numQubits=3;
-	int numAmps=1 << numQubits;
-	
+    int numAmps=1 << numQubits;
+    
     QubitRegister mq;
     createQubitRegister(&mq, numQubits, env);
 
-	// test every classical state
-	for (long long int stateInd=0LL; stateInd < numAmps; stateInd++) {
-    	initClassicalState(mq, stateInd);
-		
-		// check that every other state has prob 0
-		for (long long int i=0LL; i < numAmps; i++) {
-			if (i == stateInd)
-				passed = passed && (getProbEl(mq,i) == 1.0);
-			else
-				passed = passed && (getProbEl(mq,i) == 0.0);
-		}
-	}
+    // test every classical state
+    for (long long int stateInd=0LL; stateInd < numAmps; stateInd++) {
+        initClassicalState(mq, stateInd);
+        
+        // check that every other state has prob 0
+        for (long long int i=0LL; i < numAmps; i++) {
+            if (i == stateInd)
+                passed = passed && (getProbEl(mq,i) == 1.0);
+            else
+                passed = passed && (getProbEl(mq,i) == 0.0);
+        }
+    }
 
     destroyQubitRegister(mq, env);
     return passed;
 }
 
 int test_initPureState(char testName[200]) {
-	int passed=1;
-	int numQubits=3;
-	
-	QubitRegister mq, mqVerif;
-	createQubitRegister(&mq, numQubits, env);
-	createQubitRegister(&mqVerif, numQubits, env);
-	
-	initStateZero(mq);
-	initStateDebug(mqVerif);
-	
-	initPureState(mq, mqVerif);
-	if (passed) passed = compareStates(mq, mqVerif, COMPARE_PRECISION);
-	
-	return passed;
+    int passed=1;
+    int numQubits=3;
+    
+    QubitRegister mq, mqVerif;
+    createQubitRegister(&mq, numQubits, env);
+    createQubitRegister(&mqVerif, numQubits, env);
+    
+    initStateZero(mq);
+    initStateDebug(mqVerif);
+    
+    initPureState(mq, mqVerif);
+    if (passed) passed = compareStates(mq, mqVerif, COMPARE_PRECISION);
+    
+    return passed;
 }
 
 int test_sigmaX(char testName[200]){
@@ -134,7 +134,7 @@ int test_sigmaX(char testName[200]){
         rotateQubit=i;
         sigmaX(mq, rotateQubit);
 
-        sprintf(filename, "%s%s%d.out", PATH_TO_TESTS, testName, count++); 	
+        sprintf(filename, "%s%s%d.out", PATH_TO_TESTS, testName, count++);  
         initStateFromSingleFile(&mqVerif, filename, env);
 
         if (passed) passed = compareStates(mq, mqVerif, COMPARE_PRECISION);
@@ -163,7 +163,7 @@ int test_sigmaY(char testName[200]){
         rotateQubit=i;
         sigmaY(mq, rotateQubit);
 
-        sprintf(filename, "%s%s%d.out", PATH_TO_TESTS, testName, count++); 	
+        sprintf(filename, "%s%s%d.out", PATH_TO_TESTS, testName, count++);  
         initStateFromSingleFile(&mqVerif, filename, env);
 
         if (passed) passed = compareStates(mq, mqVerif, COMPARE_PRECISION);
@@ -192,7 +192,7 @@ int test_sigmaZ(char testName[200]){
         rotateQubit=i;
         sigmaZ(mq, rotateQubit);
 
-        sprintf(filename, "%s%s%d.out", PATH_TO_TESTS, testName, count++); 	
+        sprintf(filename, "%s%s%d.out", PATH_TO_TESTS, testName, count++);  
         initStateFromSingleFile(&mqVerif, filename, env);
 
         if (passed) passed = compareStates(mq, mqVerif, COMPARE_PRECISION);
@@ -221,7 +221,7 @@ int test_hadamard(char testName[200]){
         rotateQubit=i;
         hadamard(mq, rotateQubit);
 
-        sprintf(filename, "%s%s%d.out", PATH_TO_TESTS, testName, count++); 	
+        sprintf(filename, "%s%s%d.out", PATH_TO_TESTS, testName, count++);  
         initStateFromSingleFile(&mqVerif, filename, env);
 
         if (passed) passed = compareStates(mq, mqVerif, COMPARE_PRECISION);
@@ -249,7 +249,7 @@ int test_sGate(char testName[200]){
         rotateQubit=i;
         sGate(mq, rotateQubit);
 
-        sprintf(filename, "%s%s%d.out", PATH_TO_TESTS, testName, count++); 	
+        sprintf(filename, "%s%s%d.out", PATH_TO_TESTS, testName, count++);  
         initStateFromSingleFile(&mqVerif, filename, env);
 
         if (passed) passed = compareStates(mq, mqVerif, COMPARE_PRECISION);
@@ -277,7 +277,7 @@ int test_tGate(char testName[200]){
         rotateQubit=i;
         tGate(mq, rotateQubit);
 
-        sprintf(filename, "%s%s%d.out", PATH_TO_TESTS, testName, count++); 	
+        sprintf(filename, "%s%s%d.out", PATH_TO_TESTS, testName, count++);  
         initStateFromSingleFile(&mqVerif, filename, env);
 
         if (passed) passed = compareStates(mq, mqVerif, COMPARE_PRECISION);
@@ -289,42 +289,42 @@ int test_tGate(char testName[200]){
 }
 
 int test_phaseShift(char testName[200]) {
-	int passed=1;
+    int passed=1;
 
-	// prepare (|0> + |1>)/sqrt(2)
-	QubitRegister mq;
-	createQubitRegister(&mq, 1, env);
-	initStatePlus(mq);
-	
-	// enter state (|0> - 1/sqrt(2) (1 + i) |1>)/sqrt(2)
-	// coeff of |0>:  1/sqrt(2)
-	// coeff of |1>: - (1 + i)/2
-	REAL pi = 3.1415926535897932384626;
-	phaseShift(mq, 0, pi * 5/4.0 );
-	
-	if (passed) passed = compareReals(getRealAmpEl(mq, 0), 1/sqrt(2), COMPARE_PRECISION);
-	if (passed) passed = compareReals(getImagAmpEl(mq, 0),         0, COMPARE_PRECISION);
-	if (passed) passed = compareReals(getRealAmpEl(mq, 1),    -1/2.0, COMPARE_PRECISION);
-	if (passed) passed = compareReals(getImagAmpEl(mq, 1),    -1/2.0, COMPARE_PRECISION);
-	destroyQubitRegister(mq, env);
-	
-	// also test MPI version
-	createQubitRegister(&mq, 4, env);
-	
-	// prepare state (|0> + |1>)/sqrt(2) |111>
-	initStateZero(mq);
-	for (int i=0; i < 3; i++)
-		sigmaX(mq, i);
-	hadamard(mq, 3);
-	
-	// enter state (|0> - 1/sqrt(2) (1 + i) |1>)/sqrt(2) |111>
-	// coef of |1111> is - (1 + i)/2
-	// index of |1111> is 2^4 - 1 = 15
-	phaseShift(mq, 0, pi * 5/4.0 );
-	if (passed) passed = compareReals(getRealAmpEl(mq, 15), -1/2.0, COMPARE_PRECISION);
-	if (passed) passed = compareReals(getImagAmpEl(mq, 15), -1/2.0, COMPARE_PRECISION);
-	
-	return passed;
+    // prepare (|0> + |1>)/sqrt(2)
+    QubitRegister mq;
+    createQubitRegister(&mq, 1, env);
+    initStatePlus(mq);
+    
+    // enter state (|0> - 1/sqrt(2) (1 + i) |1>)/sqrt(2)
+    // coeff of |0>:  1/sqrt(2)
+    // coeff of |1>: - (1 + i)/2
+    REAL pi = 3.1415926535897932384626;
+    phaseShift(mq, 0, pi * 5/4.0 );
+    
+    if (passed) passed = compareReals(getRealAmpEl(mq, 0), 1/sqrt(2), COMPARE_PRECISION);
+    if (passed) passed = compareReals(getImagAmpEl(mq, 0),         0, COMPARE_PRECISION);
+    if (passed) passed = compareReals(getRealAmpEl(mq, 1),    -1/2.0, COMPARE_PRECISION);
+    if (passed) passed = compareReals(getImagAmpEl(mq, 1),    -1/2.0, COMPARE_PRECISION);
+    destroyQubitRegister(mq, env);
+    
+    // also test MPI version
+    createQubitRegister(&mq, 4, env);
+    
+    // prepare state (|0> + |1>)/sqrt(2) |111>
+    initStateZero(mq);
+    for (int i=0; i < 3; i++)
+        sigmaX(mq, i);
+    hadamard(mq, 3);
+    
+    // enter state (|0> - 1/sqrt(2) (1 + i) |1>)/sqrt(2) |111>
+    // coef of |1111> is - (1 + i)/2
+    // index of |1111> is 2^4 - 1 = 15
+    phaseShift(mq, 0, pi * 5/4.0 );
+    if (passed) passed = compareReals(getRealAmpEl(mq, 15), -1/2.0, COMPARE_PRECISION);
+    if (passed) passed = compareReals(getImagAmpEl(mq, 15), -1/2.0, COMPARE_PRECISION);
+    
+    return passed;
 }
 
 
@@ -333,70 +333,70 @@ int test_phaseShift(char testName[200]) {
 
 
 int test_controlledPhaseShift(char testName[200]) {
-	int passed=1;
-	
-	REAL pi = 3.1415926535897932384626;
-	
-	QubitRegister mq;
-	createQubitRegister(&mq, 4, env);
-	
-	// prepare state (|0> + |1>)/sqrt(2) |010>
-	initStateZero(mq);
-	sigmaX(mq, 1);
-	hadamard(mq, 3);
-	
-	// confirm controlling first and third qubits does nothing (state |1010> = 2^1 + 2^3 = 10)
-	controlledPhaseShift(mq, 0, 3, pi * 5/4.0);
-	if (passed) passed = compareReals(getRealAmpEl(mq, 10), 1/sqrt(2), COMPARE_PRECISION);
-	controlledPhaseShift(mq, 2, 3, pi * 5/4.0);
-	if (passed) passed = compareReals(getRealAmpEl(mq, 10), 1/sqrt(2), COMPARE_PRECISION);
-	
-	// controlling 2nd qubit enters state (|0> - 1/sqrt(2) (1 + i) |1>)/sqrt(2) |010>
-	controlledPhaseShift(mq, 1, 3, pi * 5/4.0);
-	if (passed) passed = compareReals(getRealAmpEl(mq, 10), -1/2.0, COMPARE_PRECISION);
-	if (passed) passed = compareReals(getImagAmpEl(mq, 10), -1/2.0, COMPARE_PRECISION);
-	
-	// enter (|0> - 1/sqrt(2) (1 + i) |1>)/sqrt(2) |011>
-	sigmaX(mq, 0);
-	
-	// enter (|0> + |1>)/sqrt(2) |011> where |0011> = 2^0 + 2^1 = 3
-	controlledPhaseShift(mq, 0, 3, - pi * 5/4.0);
-	if (passed) passed = compareReals(getRealAmpEl(mq, 3), 1/sqrt(2), COMPARE_PRECISION);
-	
-	destroyQubitRegister(mq, env);
-	
-	return passed;
+    int passed=1;
+    
+    REAL pi = 3.1415926535897932384626;
+    
+    QubitRegister mq;
+    createQubitRegister(&mq, 4, env);
+    
+    // prepare state (|0> + |1>)/sqrt(2) |010>
+    initStateZero(mq);
+    sigmaX(mq, 1);
+    hadamard(mq, 3);
+    
+    // confirm controlling first and third qubits does nothing (state |1010> = 2^1 + 2^3 = 10)
+    controlledPhaseShift(mq, 0, 3, pi * 5/4.0);
+    if (passed) passed = compareReals(getRealAmpEl(mq, 10), 1/sqrt(2), COMPARE_PRECISION);
+    controlledPhaseShift(mq, 2, 3, pi * 5/4.0);
+    if (passed) passed = compareReals(getRealAmpEl(mq, 10), 1/sqrt(2), COMPARE_PRECISION);
+    
+    // controlling 2nd qubit enters state (|0> - 1/sqrt(2) (1 + i) |1>)/sqrt(2) |010>
+    controlledPhaseShift(mq, 1, 3, pi * 5/4.0);
+    if (passed) passed = compareReals(getRealAmpEl(mq, 10), -1/2.0, COMPARE_PRECISION);
+    if (passed) passed = compareReals(getImagAmpEl(mq, 10), -1/2.0, COMPARE_PRECISION);
+    
+    // enter (|0> - 1/sqrt(2) (1 + i) |1>)/sqrt(2) |011>
+    sigmaX(mq, 0);
+    
+    // enter (|0> + |1>)/sqrt(2) |011> where |0011> = 2^0 + 2^1 = 3
+    controlledPhaseShift(mq, 0, 3, - pi * 5/4.0);
+    if (passed) passed = compareReals(getRealAmpEl(mq, 3), 1/sqrt(2), COMPARE_PRECISION);
+    
+    destroyQubitRegister(mq, env);
+    
+    return passed;
 }
 
 int test_multiControlledPhaseShift(char testName[200]) {
-	int passed=1;
-	
-	REAL pi = 3.1415926535897932384626;
-	
-	QubitRegister mq;
-	createQubitRegister(&mq, 4, env);
-	
-	// prepare state (|0> + |1>)/sqrt(2) |010>
-	initStateZero(mq);
-	sigmaX(mq, 1);
-	hadamard(mq, 3);
-	
-	// confirm controlling on 2nd,3rd,4th qubits does nothing (state |1010> = 2^1 + 2^3 = 10)
-	multiControlledPhaseShift(mq, (int[]) {1,2,3}, 3, pi * 5/4.0);
-	if (passed) passed = compareReals(getRealAmpEl(mq, 10), 1/sqrt(2), COMPARE_PRECISION);
-	
-	// enter state (|0> + |1>)/sqrt(2) |110>
-	sigmaX(mq, 2);
-	
-	// controlling on 2nd,3rd,4th qubits enters state (|0> - 1/sqrt(2) (1 + i) |1>)/sqrt(2) |110>
-	// index of state |1110> = 2^1 + 2^2 + 2^3 = 14
-	multiControlledPhaseShift(mq, (int[]) {1,2,3}, 3, pi * 5/4.0);
-	if (passed) passed = compareReals(getRealAmpEl(mq, 14), -1/2.0, COMPARE_PRECISION);
-	if (passed) passed = compareReals(getImagAmpEl(mq, 14), -1/2.0, COMPARE_PRECISION);
-	
-	destroyQubitRegister(mq, env);
-	
-	return passed;
+    int passed=1;
+    
+    REAL pi = 3.1415926535897932384626;
+    
+    QubitRegister mq;
+    createQubitRegister(&mq, 4, env);
+    
+    // prepare state (|0> + |1>)/sqrt(2) |010>
+    initStateZero(mq);
+    sigmaX(mq, 1);
+    hadamard(mq, 3);
+    
+    // confirm controlling on 2nd,3rd,4th qubits does nothing (state |1010> = 2^1 + 2^3 = 10)
+    multiControlledPhaseShift(mq, (int[]) {1,2,3}, 3, pi * 5/4.0);
+    if (passed) passed = compareReals(getRealAmpEl(mq, 10), 1/sqrt(2), COMPARE_PRECISION);
+    
+    // enter state (|0> + |1>)/sqrt(2) |110>
+    sigmaX(mq, 2);
+    
+    // controlling on 2nd,3rd,4th qubits enters state (|0> - 1/sqrt(2) (1 + i) |1>)/sqrt(2) |110>
+    // index of state |1110> = 2^1 + 2^2 + 2^3 = 14
+    multiControlledPhaseShift(mq, (int[]) {1,2,3}, 3, pi * 5/4.0);
+    if (passed) passed = compareReals(getRealAmpEl(mq, 14), -1/2.0, COMPARE_PRECISION);
+    if (passed) passed = compareReals(getImagAmpEl(mq, 14), -1/2.0, COMPARE_PRECISION);
+    
+    destroyQubitRegister(mq, env);
+    
+    return passed;
 }
 
 int test_controlledNot(char testName[200]){
@@ -420,7 +420,7 @@ int test_controlledNot(char testName[200]){
             rotateQubit=i;
             controlledNot(mq, controlQubit, rotateQubit);
 
-            sprintf(filename, "%s%s%d.out", PATH_TO_TESTS, testName, count++); 	
+            sprintf(filename, "%s%s%d.out", PATH_TO_TESTS, testName, count++);  
             initStateFromSingleFile(&mqVerif, filename, env);
 
             if (passed) passed = compareStates(mq, mqVerif, COMPARE_PRECISION);
@@ -453,17 +453,17 @@ int test_controlledPhaseFlip(char testName[200]){
             rotateQubit=i;
             controlledPhaseFlip(mq, rotateQubit, controlQubit);
 
-            sprintf(filename, "%s%s%d.out", PATH_TO_TESTS, testName, count++); 	
+            sprintf(filename, "%s%s%d.out", PATH_TO_TESTS, testName, count++);  
             initStateFromSingleFile(&mqVerif, filename, env);
 
             if (passed) passed = compareStates(mq, mqVerif, COMPARE_PRECISION);
         }
     }
-	
+    
     destroyQubitRegister(mq, env);
     destroyQubitRegister(mqVerif, env);
-	
-	return passed;
+    
+    return passed;
 }
 
 int test_multiControlledPhaseFlip(char testName[200]){
@@ -481,33 +481,33 @@ int test_multiControlledPhaseFlip(char testName[200]){
     initStateDebug(mq);
     multiControlledPhaseFlip(mq, qubits, 4);
 
-    sprintf(filename, "%s%s%d.out", PATH_TO_TESTS, testName, count++); 	
+    sprintf(filename, "%s%s%d.out", PATH_TO_TESTS, testName, count++);  
     initStateFromSingleFile(&mqVerif, filename, env);
 
     passed = compareStates(mq, mqVerif, COMPARE_PRECISION);
 
-	/* Tyson 21 July */
+    /* Tyson 21 July */
     if (passed) {
-		int i;
-		
-		// prepare state |111>(|0> - |1>)/sqrt(2)
-		initStateZero(mqVerif);
-		for (i=0; i < 4; i++)
-			sigmaX(mqVerif, i);
-		hadamard(mqVerif, 3);
-	
-		// prepare state |111>(|0> + |1>)/sqrt(2)
-		initStateZero(mq);
-		for (i=0; i < 3; i++)
-			sigmaX(mq, i);
-		hadamard(mq, 3);
-		
-		// and transition to |111>(|0> - |1>)/sqrt(2)
-		multiControlledPhaseFlip(mq, qubits, 4);
-	
-		// compare these states
-		passed = compareStates(mq, mqVerif, COMPARE_PRECISION);
-	}
+        int i;
+        
+        // prepare state |111>(|0> - |1>)/sqrt(2)
+        initStateZero(mqVerif);
+        for (i=0; i < 4; i++)
+            sigmaX(mqVerif, i);
+        hadamard(mqVerif, 3);
+    
+        // prepare state |111>(|0> + |1>)/sqrt(2)
+        initStateZero(mq);
+        for (i=0; i < 3; i++)
+            sigmaX(mq, i);
+        hadamard(mq, 3);
+        
+        // and transition to |111>(|0> - |1>)/sqrt(2)
+        multiControlledPhaseFlip(mq, qubits, 4);
+    
+        // compare these states
+        passed = compareStates(mq, mqVerif, COMPARE_PRECISION);
+    }
 
     destroyQubitRegister(mq, env);
     destroyQubitRegister(mqVerif, env);
@@ -677,7 +677,7 @@ int test_controlledCompactUnitary(char testName[200]){
             rotQubit=i;
             controlledCompactUnitary(mq, controlQubit, rotQubit, alpha, beta);
 
-            sprintf(filename, "%s%s%d.out", PATH_TO_TESTS, testName, count++); 	
+            sprintf(filename, "%s%s%d.out", PATH_TO_TESTS, testName, count++);  
             initStateFromSingleFile(&mqVerif, filename, env);
 
             if (passed) passed = compareStates(mq, mqVerif, COMPARE_PRECISION);
@@ -800,7 +800,7 @@ int test_multiControlledUnitary(char testName[200]){
 
     initStateDebug(mq);
     multiControlledUnitary(mq, controlQubits, 2, rotQubit, u);
-    sprintf(filename, "%s%s%d.out", PATH_TO_TESTS, testName, count++); 	
+    sprintf(filename, "%s%s%d.out", PATH_TO_TESTS, testName, count++);  
     initStateFromSingleFile(&mqVerif, filename, env);
     if (passed) passed = compareStates(mq, mqVerif, COMPARE_PRECISION);
 
@@ -811,7 +811,7 @@ int test_multiControlledUnitary(char testName[200]){
 
     initStateDebug(mq);
     multiControlledUnitary(mq, controlQubits, 3, rotQubit, u);
-    sprintf(filename, "%s%s%d.out", PATH_TO_TESTS, testName, count++); 	
+    sprintf(filename, "%s%s%d.out", PATH_TO_TESTS, testName, count++);  
     initStateFromSingleFile(&mqVerif, filename, env);
     if (passed) passed = compareStates(mq, mqVerif, COMPARE_PRECISION);
 
@@ -1093,7 +1093,7 @@ int test_getProbEl(char testName[200]){
 
 int test_calcInnerProduct(char testName[200]) {
     
-	REAL pi = 3.1415926535897932384626;
+    REAL pi = 3.1415926535897932384626;
 
     int passed = 1;
     
@@ -1156,17 +1156,17 @@ int main (int narg, char** varg) {
         test_controlledNot,
         test_initStateZero,
         test_initStatePlus,
-		test_initClassicalState,
-		test_initPureState,
+        test_initClassicalState,
+        test_initPureState,
         test_sigmaX,
         test_sigmaY,
         test_sigmaZ,
         test_hadamard,
         test_sGate,
         test_tGate,
-		test_phaseShift,
-		test_controlledPhaseShift,
-		test_multiControlledPhaseShift,
+        test_phaseShift,
+        test_controlledPhaseShift,
+        test_multiControlledPhaseShift,
         test_controlledPhaseFlip,
         test_multiControlledPhaseFlip,
         test_compactUnitary,
@@ -1178,9 +1178,9 @@ int main (int narg, char** varg) {
         test_collapseToOutcome,
         test_measure,
         test_measureWithStats,
-		test_getRealAmpEl,
-		test_getImagAmpEl,
-		test_getProbEl,
+        test_getRealAmpEl,
+        test_getImagAmpEl,
+        test_getProbEl,
         test_calcInnerProduct
     };
 
@@ -1188,17 +1188,17 @@ int main (int narg, char** varg) {
         "controlledNot",
         "initStateZero",
         "initStatePlus",
-		"initClassicalState",
-		"initPureState",
+        "initClassicalState",
+        "initPureState",
         "sigmaX",
         "sigmaY",
         "sigmaZ",
         "hadamard",
         "sGate",
         "tGate",
-		"phaseShift",
-		"controlledPhaseShift",
-		"multiControlledPhaseShift",
+        "phaseShift",
+        "controlledPhaseShift",
+        "multiControlledPhaseShift",
         "controlledPhaseFlip",
         "multiControlledPhaseFlip",
         "compactUnitary",
@@ -1210,15 +1210,15 @@ int main (int narg, char** varg) {
         "collapseToOutcome",
         "measure",
         "measureWithStats",
-		"getRealAmpEl",
-		"getImagAmpEl",
-		"getProbEl",
+        "getRealAmpEl",
+        "getImagAmpEl",
+        "getProbEl",
         "calcInnerProduct"
     };
     int passed=0;
     if (env.rank==0) printf("\nRunning unit tests\n");
     for (int i=0; i<NUM_TESTS; i++){
-        passed=(*tests[i])(testNames[i]);	
+        passed=(*tests[i])(testNames[i]);   
         passed=syncQuESTSuccess(passed);
         if (!passed){
             if (env.rank==0) printf("!!! FAILED in test %d -- %s\n", i, testNames[i]);
