@@ -33,7 +33,8 @@ typedef enum {
     E_INVALID_QUBIT_OUTCOME,
     E_CANNOT_OPEN_FILE,
     E_SECOND_ARG_MUST_BE_STATEVEC,
-    E_MISMATCHING_REGISTER_DIMENSIONS,
+    E_MISMATCHING_QUREG_DIMENSIONS,
+    E_MISMATCHING_QUREG_TYPES,
     E_DEFINED_ONLY_FOR_STATEVECS,
     E_DEFINED_ONLY_FOR_DENSMATRS,
     E_INVALID_NOISE,
@@ -57,7 +58,8 @@ static const char* errorMessages[] = {
     [E_INVALID_QUBIT_OUTCOME] = "Invalid measurement outcome -- must be either 0 or 1.",
     [E_CANNOT_OPEN_FILE] = "Could not open file",
     [E_SECOND_ARG_MUST_BE_STATEVEC] = "Second argument must be a state-vector.",
-    [E_MISMATCHING_REGISTER_DIMENSIONS] = "Dimensions of the qubit registers don't match.",
+    [E_MISMATCHING_QUREG_DIMENSIONS] = "Dimensions of the qubit registers don't match.",
+    [E_MISMATCHING_QUREG_TYPES] = "Registers must both be state-vectors or both be density matrices.",
     [E_DEFINED_ONLY_FOR_STATEVECS] = "Operation valid only for state-vectors.",
     [E_DEFINED_ONLY_FOR_DENSMATRS] = "Operation valid only for density matrices.",
     [E_INVALID_NOISE] = "Dephasing and depolarising errors must be in [0, 1].",
@@ -183,7 +185,11 @@ void validateMeasurementProb(REAL prob, const char* caller) {
 }
 
 void validateMatchingQuregDims(QubitRegister qureg1, QubitRegister qureg2, const char *caller) {
-    QuESTAssert(qureg1.numQubitsRepresented==qureg2.numQubitsRepresented, E_MISMATCHING_REGISTER_DIMENSIONS, caller);
+    QuESTAssert(qureg1.numQubitsRepresented==qureg2.numQubitsRepresented, E_MISMATCHING_QUREG_DIMENSIONS, caller);
+}
+
+void validateMatchingQuregTypes(QubitRegister qureg1, QubitRegister qureg2, const char *caller) {
+    QuESTAssert(qureg1.isDensityMatrix==qureg2.isDensityMatrix, E_MISMATCHING_QUREG_TYPES, caller);
 }
 
 void validateSecondQuregStateVec(QubitRegister qureg2, const char *caller) {

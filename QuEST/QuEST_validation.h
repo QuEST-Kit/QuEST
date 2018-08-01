@@ -41,6 +41,8 @@ void validateMeasurementProb(REAL prob, const char* caller);
 
 void validateMatchingQuregDims(QubitRegister qureg1, QubitRegister qureg2, const char *caller);
 
+void validateMatchingQuregTypes(QubitRegister qureg1, QubitRegister qureg2, const char *caller);
+
 void validateSecondQuregStateVec(QubitRegister qureg2, const char *caller);
 
 void validateFileOpened(int opened, const char* caller);

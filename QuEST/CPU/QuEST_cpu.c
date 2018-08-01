@@ -408,7 +408,7 @@ void statevec_initClassicalState (QubitRegister qureg, long long int stateInd)
     }
 }
 
-void statevec_initPureState(QubitRegister targetQureg, QubitRegister copyQureg) {
+void statevec_cloneQubitRegister(QubitRegister targetQureg, QubitRegister copyQureg) {
     
     // registers are equal sized, so nodes hold the same state-vector partitions
     long long int stateVecSize;

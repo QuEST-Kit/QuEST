@@ -472,10 +472,12 @@ REAL findProbabilityOfOutcome(QubitRegister qureg, const int measureQubit, int o
         return statevec_findProbabilityOfOutcome(qureg, measureQubit, outcome);
 }
 
-
-
-
-
+void cloneQubitRegister(QubitRegister targetQureg, QubitRegister copyQureg) {
+    validateMatchingQuregTypes(targetQureg, copyQureg, __func__);
+    validateMatchingQuregDims(targetQureg, copyQureg, __func__);
+    
+    statevec_cloneQubitRegister(targetQureg, copyQureg);
+}
 
 
 
@@ -489,7 +491,7 @@ void initPureState(QubitRegister qureg, QubitRegister pure) {
     if (qureg.isDensityMatrix)
         densmatr_initPureState(qureg, pure);
     else
-        statevec_initPureState(qureg, pure);
+        statevec_cloneQubitRegister(qureg, pure);
     
     // @TODO: QASM?
 }
@@ -497,8 +499,6 @@ void initPureState(QubitRegister qureg, QubitRegister pure) {
 
 
 
-
-/* simons requested func for cloning density matrices */
 
 
 
@@ -557,48 +557,6 @@ int measure(QubitRegister qureg, int measureQubit) {
 
 
 
-
-
-
-
-// @TODO
-void initStateDebug(QubitRegister qureg) {
-    statevec_initStateDebug(qureg);
-}
-
-// @TODO
-void initStateFromSingleFile(QubitRegister *qureg, char filename[200], QuESTEnv env) {
-    
-    int success = 0;
-    
-    // @TODO allow density matrix loading from file
-    if (qureg->isDensityMatrix)
-        validateStateVecQureg(*qureg, __func__);
-    
-    else
-        success = statevec_initStateFromSingleFile(qureg, filename, env);
-    
-    validateFileOpened(success, __func__);
-}
-
-// @TODO
-void initStateOfSingleQubit(QubitRegister *qureg, int qubitId, int outcome) {
-    return statevec_initStateOfSingleQubit(qureg, qubitId, outcome);
-}
-
-// @TODO
-void reportStateToScreen(QubitRegister qureg, QuESTEnv env, int reportRank)  {
-    statevec_reportStateToScreen(qureg, env, reportRank);
-}
-
-
-
-
-
-
-
-
-
 // new experimental dephasing functions
 
 // @TODO add to CPU local and distributed
@@ -648,6 +606,45 @@ void combineDensityMatrices(REAL combineProb, QubitRegister combineQureg, REAL o
     
     densmatr_combineDensityMatrices(combineProb, combineQureg, otherProb, otherQureg);
 }
+
+
+
+
+
+
+// @TODO
+void initStateDebug(QubitRegister qureg) {
+    statevec_initStateDebug(qureg);
+}
+
+// @TODO
+void initStateFromSingleFile(QubitRegister *qureg, char filename[200], QuESTEnv env) {
+    
+    int success = 0;
+    
+    // @TODO allow density matrix loading from file
+    if (qureg->isDensityMatrix)
+        validateStateVecQureg(*qureg, __func__);
+    
+    else
+        success = statevec_initStateFromSingleFile(qureg, filename, env);
+    
+    validateFileOpened(success, __func__);
+}
+
+// @TODO
+void initStateOfSingleQubit(QubitRegister *qureg, int qubitId, int outcome) {
+    return statevec_initStateOfSingleQubit(qureg, qubitId, outcome);
+}
+
+// @TODO
+void reportStateToScreen(QubitRegister qureg, QuESTEnv env, int reportRank)  {
+    statevec_reportStateToScreen(qureg, env, reportRank);
+}
+
+
+
+
 
 
 #ifdef __cplusplus

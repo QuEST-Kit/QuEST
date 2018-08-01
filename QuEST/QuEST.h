@@ -189,8 +189,7 @@ int getNumAmps(QubitRegister qureg);
  */
 void initStateZero(QubitRegister qureg);
 
-/**
- * Initialise a set of \f$ N \f$ qubits to the plus state
+/** Initialise a set of \f$ N \f$ qubits to the plus state
  * \f$ {| + \rangle}^{\otimes N} = \frac{1}{\sqrt{2^N}} (| 0 \rangle + | 1 \rangle)^{\otimes N} \f$.
  * This is the product state of \f$N\f$ qubits where every classical state is uniformly 
  * populated with real coefficient \f$\frac{1}{\sqrt{2^N}}\f$.
@@ -201,8 +200,7 @@ void initStateZero(QubitRegister qureg);
  */
 void initStatePlus(QubitRegister qureg);
 
-/**
- * Initialise a set of \f$ N \f$ qubits to the classical state with index \p stateInd.
+/** Initialise a set of \f$ N \f$ qubits to the classical state with index \p stateInd.
  * Note \f$ | 00 \dots 00 \rangle \f$ has \p stateInd 0, \f$ | 00 \dots 01 \rangle \f$ has \p stateInd 1, 
  * \f$ | 11 \dots 11 \rangle \f$ has \p stateInd \f$ 2^N - 1 \f$, etc.
  * Subsequent calls to getProbEl will yield 0 for all indices except \p stateInd.
@@ -212,8 +210,7 @@ void initStatePlus(QubitRegister qureg);
  */
 void initClassicalState(QubitRegister qureg, long long int stateInd);
 
-/**
- * Initialise a set of \f$ N \f$ qubits, which can be pure or mixed, to a given pure state.
+/** Initialise a set of \f$ N \f$ qubits, which can be pure or mixed, to a given pure state.
  * If \p qureg is a pure state, this merely makes \p qureg an identical copy of \p pure.
  * If \p qureg is a density matrix, this makes \p qureg 100% likely to be in the \p pure state.
  *
@@ -221,6 +218,16 @@ void initClassicalState(QubitRegister qureg, long long int stateInd);
  * @param[in] pure the pure state to be copied or to give probability 1 in qureg
  */
 void initPureState(QubitRegister qureg, QubitRegister pure);
+
+/** Set targetQureg to be a clone of copyQureg. 
+ * Registers must either both be state-vectors, or both be density matrices.
+ * Only the quantum state is cloned, auxilary info (like recorded QASM) is unchanged.
+ * copyQureg is unaffected.
+ *
+ * @param[in, out] targetQureg the qureg to have its quantum state overwritten
+ * @param[in] copyQureg the qureg to have its quantum state cloned in targetQureg.
+ */
+void cloneQubitRegister(QubitRegister targetQureg, QubitRegister copyQureg);
 
 /** Shift the phase between \f$ |0\rangle \f$ and \f$ |1\rangle \f$ of a single qubit by a given angle.
  * This is equivalent to a rotation Z-axis of the Bloch-sphere up to a global phase factor.
