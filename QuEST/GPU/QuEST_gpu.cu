@@ -194,7 +194,7 @@ void densmatr_oneQubitDepolarise(QubitRegister qureg, const int targetQubit, REA
         part1, part2, part3, bothBits);
 }
 
-/** Works like twoQubitDephase but modifies every other element, and elements are averaged in groups of 4 */
+/** Called once for every 16 amplitudes */
 __global__ void densmatr_twoQubitDepolariseKernel(
     REAL depolLevel, REAL* vecReal, REAL *vecImag, long long int numAmpsToVisit,
     long long int part1, long long int part2, long long int part3, 
@@ -221,10 +221,10 @@ __global__ void densmatr_twoQubitDepolariseKernel(
     vecReal[ind10] *= retain; vecImag[ind10] *= retain;
     vecReal[ind11] *= retain; vecImag[ind11] *= retain;
 
-    vecReal[ind00] += depolLevel*realAvDepol; vecImag[ind00] += depolLevel*imagAvDepol;
-    vecReal[ind01] += depolLevel*realAvDepol; vecImag[ind01] += depolLevel*imagAvDepol;
-    vecReal[ind10] += depolLevel*realAvDepol; vecImag[ind10] += depolLevel*imagAvDepol;
-    vecReal[ind11] += depolLevel*realAvDepol; vecImag[ind11] += depolLevel*imagAvDepol;
+    vecReal[ind00] += realAvDepol; vecImag[ind00] += imagAvDepol;
+    vecReal[ind01] += realAvDepol; vecImag[ind01] += imagAvDepol;
+    vecReal[ind10] += realAvDepol; vecImag[ind10] += imagAvDepol;
+    vecReal[ind11] += realAvDepol; vecImag[ind11] += imagAvDepol;
 }
 
 void densmatr_twoQubitDepolarise(QubitRegister qureg, int qubit1, int qubit2, REAL depolLevel) {
