@@ -640,13 +640,11 @@ void twoQubitDepolarise(QubitRegister qureg, const int qubit1, const int qubit2,
 }
 
 // @TODO add to CPU local and distributed
-// @TODO add invidiaul probs validation
-// @TODO add normalised probs validation
 void combineDensityMatrices(REAL combineProb, QubitRegister combineQureg, REAL otherProb, QubitRegister otherQureg) {
     validatDensityMatrQureg(combineQureg, __func__);
     validatDensityMatrQureg(otherQureg, __func__);
     validateMatchingQuregDims(combineQureg, otherQureg, __func__);
-    // @TODO validate probs
+    validateNormProbs(combineProb, otherProb, __func__);
     
     densmatr_combineDensityMatrices(combineProb, combineQureg, otherProb, otherQureg);
 }

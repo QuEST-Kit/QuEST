@@ -36,7 +36,9 @@ typedef enum {
     E_MISMATCHING_REGISTER_DIMENSIONS,
     E_DEFINED_ONLY_FOR_STATEVECS,
     E_DEFINED_ONLY_FOR_DENSMATRS,
-    E_INVALID_NOISE
+    E_INVALID_NOISE,
+    E_INVALID_PROB,
+    E_UNNORM_PROBS
 } ErrorCode;
 
 static const char* errorMessages[] = {
@@ -58,7 +60,9 @@ static const char* errorMessages[] = {
     [E_MISMATCHING_REGISTER_DIMENSIONS] = "Dimensions of the qubit registers don't match.",
     [E_DEFINED_ONLY_FOR_STATEVECS] = "Operation valid only for state-vectors.",
     [E_DEFINED_ONLY_FOR_DENSMATRS] = "Operation valid only for density matrices.",
-    [E_INVALID_NOISE] = "Dephasing and depolarising errors must be in [0, 1]."
+    [E_INVALID_NOISE] = "Dephasing and depolarising errors must be in [0, 1].",
+    [E_INVALID_PROB] = "Probabilities must be in [0, 1].",
+    [E_UNNORM_PROBS] = "Probabilities must sum to ~1."
 };
 
 void exitWithError(ErrorCode code, const char* func){
@@ -192,6 +196,18 @@ void validateFileOpened(int found, const char* caller) {
 
 void validateNoise(REAL noise, const char* caller) {
     QuESTAssert(noise >= 0 && noise <= 1, E_INVALID_NOISE, caller);
+}
+
+void validateProb(REAL prob, const char* caller) {
+    QuESTAssert(prob >= 0 && prob <= 1, E_INVALID_PROB, caller);
+}
+
+void validateNormProbs(REAL prob1, REAL prob2, const char* caller) {
+    validateProb(prob1, caller);
+    validateProb(prob2, caller);
+    
+    REAL sum = prob1 + prob2;
+    QuESTAssert(absReal(1 - sum) < REAL_EPS, E_UNNORM_PROBS, caller);
 }
 
 

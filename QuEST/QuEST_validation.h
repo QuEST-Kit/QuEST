@@ -47,6 +47,10 @@ void validateFileOpened(int opened, const char* caller);
 
 void validateNoise(REAL noise, const char* caller);
 
+void validateProb(REAL prob, const char* caller);
+
+void validateNormProbs(REAL prob1, REAL prob2, const char* caller);
+
 # ifdef __cplusplus
 }
 # endif
