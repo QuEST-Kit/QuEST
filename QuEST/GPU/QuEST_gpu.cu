@@ -72,8 +72,12 @@ void densmatr_oneQubitDephase(QubitRegister qureg, const int targetQubit, REAL d
         part1, part2, part3, colBit, rowBit);
 }
 
-
-
+/** Called 12 times for every 16 amplitudes in density matrix 
+ * Each sums from the |..0..0..><..0..0..| index to visit either
+ * |..0..0..><..0..1..|,  |..0..0..><..1..0..|,  |..0..0..><..1..1..|,  |..0..1..><..0..0..|
+ * etc and so on to |..1..1..><..1..0|. Labels |part1 0 part2 0 par><t3 0 part4 0 part5|.
+ * From the brain of Simon Benjamin
+ */
 __global__ void densmatr_twoQubitDephaseKernel(
     REAL fac, REAL* vecReal, REAL *vecImag, long long int numBackgroundStates, long long int numAmpsToVisit,
     long long int part1, long long int part2, long long int part3, long long int part4, long long int part5,
@@ -97,6 +101,7 @@ __global__ void densmatr_twoQubitDephaseKernel(
     vecImag[stateInd] *= fac;
 }
 
+// @TODO is separating these 12 amplitudes really faster than letting every 16th base modify 12 elems?
 void densmatr_twoQubitDephase(QubitRegister qureg, int qubit1, int qubit2, REAL dephase) {
     if (dephase == 0)
         return;
@@ -137,6 +142,7 @@ void densmatr_twoQubitDephase(QubitRegister qureg, int qubit1, int qubit2, REAL 
         part1, part2, part3, part4, part5, colBit1, rowBit1, colBit2, rowBit2);
 }
 
+/** Works like oneQubitDephase but modifies every other element, and elements are averaged in pairs */
 __global__ void densmatr_oneQubitDepolariseKernel(
     REAL depolLevel, REAL* vecReal, REAL *vecImag, long long int numAmpsToVisit,
     long long int part1, long long int part2, long long int part3, 
@@ -188,6 +194,7 @@ void densmatr_oneQubitDepolarise(QubitRegister qureg, const int targetQubit, REA
         part1, part2, part3, bothBits);
 }
 
+/** Works like twoQubitDephase but modifies every other element, and elements are averaged in groups of 4 */
 __global__ void densmatr_twoQubitDepolariseKernel(
     REAL depolLevel, REAL* vecReal, REAL *vecImag, long long int numAmpsToVisit,
     long long int part1, long long int part2, long long int part3, 
@@ -335,6 +342,7 @@ __global__ void densmatr_initClassicalStateKernel(
     // initialise the state to all zeros
     long long int index = blockIdx.x*blockDim.x + threadIdx.x;
     if (index >= densityNumElems) return;
+    
     densityReal[index] = 0.0;
     densityImag[index] = 0.0;
     
@@ -1107,7 +1115,6 @@ void statevec_sigmaX(QubitRegister qureg, const int targetQubit)
     CUDABlocks = ceil((REAL)(qureg.numAmpsPerChunk>>1)/threadsPerCUDABlock);
     statevec_sigmaXKernel<<<CUDABlocks, threadsPerCUDABlock>>>(qureg, targetQubit);
 }
-
 
 __global__ void statevec_sigmaYKernel(QubitRegister qureg, const int targetQubit, const int conjFac){
 
