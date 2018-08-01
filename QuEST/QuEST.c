@@ -462,6 +462,8 @@ REAL calcTotalProbability(QubitRegister qureg) {
             return statevec_calcTotalProbability(qureg);
 }
 
+
+
 REAL findProbabilityOfOutcome(QubitRegister qureg, const int measureQubit, int outcome) {
     validateTarget(qureg, measureQubit, __func__); // should rename? meh
     validateOutcome(outcome, __func__);
@@ -561,7 +563,7 @@ int measure(QubitRegister qureg, int measureQubit) {
 
 // @TODO add to CPU local and distributed
 void oneQubitDephase(QubitRegister qureg, const int targetQubit, REAL dephase) {
-    validatDensityMatrQureg(qureg, __func__);
+    validateDensityMatrQureg(qureg, __func__);
     validateTarget(qureg, targetQubit, __func__);
     validateNoise(dephase, __func__);
     
@@ -570,7 +572,7 @@ void oneQubitDephase(QubitRegister qureg, const int targetQubit, REAL dephase) {
 
 // @TODO add to CPU local and distributed
 void twoQubitDephase(QubitRegister qureg, const int qubit1, const int qubit2, REAL dephase) {
-    validatDensityMatrQureg(qureg, __func__);
+    validateDensityMatrQureg(qureg, __func__);
     validateTarget(qureg, qubit1, __func__);
     validateTarget(qureg, qubit2, __func__);
     validateNoise(dephase, __func__);
@@ -580,7 +582,7 @@ void twoQubitDephase(QubitRegister qureg, const int qubit1, const int qubit2, RE
 
 // @TODO add to CPU local and distributed
 void oneQubitDepolarise(QubitRegister qureg, const int targetQubit, REAL depolLevel) {
-    validatDensityMatrQureg(qureg, __func__);
+    validateDensityMatrQureg(qureg, __func__);
     validateTarget(qureg, targetQubit, __func__);
     validateNoise(depolLevel, __func__);
     
@@ -589,7 +591,7 @@ void oneQubitDepolarise(QubitRegister qureg, const int targetQubit, REAL depolLe
 
 // @TODO add to CPU local and distributed
 void twoQubitDepolarise(QubitRegister qureg, const int qubit1, const int qubit2, REAL depolLevel) {
-    validatDensityMatrQureg(qureg, __func__);
+    validateDensityMatrQureg(qureg, __func__);
     validateTarget(qureg, qubit1, __func__);
     validateTarget(qureg, qubit2, __func__);
     validateNoise(depolLevel, __func__);
@@ -599,8 +601,8 @@ void twoQubitDepolarise(QubitRegister qureg, const int qubit1, const int qubit2,
 
 // @TODO add to CPU local and distributed
 void combineDensityMatrices(REAL combineProb, QubitRegister combineQureg, REAL otherProb, QubitRegister otherQureg) {
-    validatDensityMatrQureg(combineQureg, __func__);
-    validatDensityMatrQureg(otherQureg, __func__);
+    validateDensityMatrQureg(combineQureg, __func__);
+    validateDensityMatrQureg(otherQureg, __func__);
     validateMatchingQuregDims(combineQureg, otherQureg, __func__);
     validateNormProbs(combineProb, otherProb, __func__);
     

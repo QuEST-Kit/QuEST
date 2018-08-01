@@ -33,7 +33,7 @@ void validateVector(Vector vector, const char* caller);
 
 void validateStateVecQureg(QubitRegister qureg, const char* caller);
 
-void validatDensityMatrQureg(QubitRegister qureg, const char* caller);
+void validateDensityMatrQureg(QubitRegister qureg, const char* caller);
 
 void validateOutcome(int outcome, const char* caller);
 

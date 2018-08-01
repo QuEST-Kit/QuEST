@@ -172,7 +172,7 @@ void validateStateVecQureg(QubitRegister qureg, const char* caller) {
     QuESTAssert( ! qureg.isDensityMatrix, E_DEFINED_ONLY_FOR_STATEVECS, caller);
 }
 
-void validatDensityMatrQureg(QubitRegister qureg, const char* caller) {
+void validateDensityMatrQureg(QubitRegister qureg, const char* caller) {
     QuESTAssert(qureg.isDensityMatrix, E_DEFINED_ONLY_FOR_DENSMATRS, caller);
 }
 
