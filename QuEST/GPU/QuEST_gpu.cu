@@ -1758,10 +1758,10 @@ REAL statevec_findProbabilityOfZero(QubitRegister qureg, const int measureQubit)
 
 REAL statevec_findProbabilityOfOutcome(QubitRegister qureg, const int measureQubit, int outcome)
 {
-    REAL stateProb=0;
-    stateProb = statevec_findProbabilityOfZero(qureg, measureQubit);
-    if (outcome==1) stateProb = 1.0 - stateProb;
-    return stateProb;
+    REAL outcomeProb = statevec_findProbabilityOfZero(qureg, measureQubit);
+    if (outcome==1)
+        outcomeProb = 1.0 - outcomeProb;
+    return outcomeProb;
 }
 
 REAL densmatr_findProbabilityOfOutcome(QubitRegister qureg, const int measureQubit, int outcome)
