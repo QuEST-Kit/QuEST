@@ -37,6 +37,8 @@ void densmatr_twoQubitDephase(QubitRegister qureg, const int qubit1, const int q
 void densmatr_oneQubitDepolarise(QubitRegister qureg, const int targetQubit, REAL depolLevel);
 
 void densmatr_twoQubitDepolarise(QubitRegister qureg, int qubit1, int qubit2, REAL depolLevel);
+
+void densmatr_combineDensityMatrices(REAL combineProb, QubitRegister combineQureg, REAL otherProb, QubitRegister otherQureg);
     
 /* operations upon density matrices */
 

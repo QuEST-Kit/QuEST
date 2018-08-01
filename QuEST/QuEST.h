@@ -1306,6 +1306,12 @@ void twoQubitDephase(QubitRegister qureg, const int qubit1, const int qubit2, RE
 void oneQubitDepolarise(QubitRegister qureg, const int targetQubit, REAL depolLevel);
 void twoQubitDepolarise(QubitRegister qureg, const int qubit1, const int qubit2, REAL depolLevel);
 
+/** Modifies combineQureg -> combineProb * combineQureg + otherProb * otherQureg
+ * Both registers must be equal-dimension density matrices.
+ * Each probability must be in [0, 1] and together sum to 1.
+ */
+void combineDensityMatrices(REAL combineProb, QubitRegister combineQureg, REAL otherProb, QubitRegister otherQureg);
+
 
 
 #ifdef __cplusplus

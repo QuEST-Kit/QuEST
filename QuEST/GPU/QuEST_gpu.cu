@@ -1900,6 +1900,30 @@ void densmatr_collapseToKnownProbOutcome(QubitRegister qureg, const int measureQ
         part1, part2, part3, rowBit, colBit, desired, undesired);
 }
 
+__global__ void densmatr_combineDensityMatricesKernel(REAL combineProb, QubitRegister combineQureg, REAL otherProb, QubitRegister otherQureg, long long int numAmpsToVisit) {
+    
+    long long int ampInd = blockIdx.x*blockDim.x + threadIdx.x;
+    if (ampInd >= numAmpsToVisit) return;
+    
+    combineQureg.deviceStateVec.real[ampInd] *= combineProb;
+    combineQureg.deviceStateVec.imag[ampInd] *= combineProb;
+  
+    combineQureg.deviceStateVec.real[ampInd] += otherProb*otherQureg.deviceStateVec.real[ampInd];
+    combineQureg.deviceStateVec.imag[ampInd] += otherProb*otherQureg.deviceStateVec.imag[ampInd];
+}
+
+void densmatr_combineDensityMatrices(REAL combineProb, QubitRegister combineQureg, REAL otherProb, QubitRegister otherQureg) {
+    
+    long long int numAmpsToVisit = combineQureg.numAmpsPerChunk;
+    
+    int threadsPerCUDABlock, CUDABlocks;
+    threadsPerCUDABlock = 128;
+    CUDABlocks = ceil(numAmpsToVisit / (REAL) threadsPerCUDABlock);
+    densmatr_combineDensityMatricesKernel<<<CUDABlocks, threadsPerCUDABlock>>>(
+        combineProb, combineQureg, otherProb, otherQureg, numAmpsToVisit
+    );
+}
+
 
 /*
 

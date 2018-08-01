@@ -611,7 +611,6 @@ void oneQubitDephase(QubitRegister qureg, const int targetQubit, REAL dephase) {
 }
 
 // @TODO add to CPU local and distributed
-// @TODO add dephase level validation
 void twoQubitDephase(QubitRegister qureg, const int qubit1, const int qubit2, REAL dephase) {
     validatDensityMatrQureg(qureg, __func__);
     validateTarget(qureg, qubit1, __func__);
@@ -621,9 +620,7 @@ void twoQubitDephase(QubitRegister qureg, const int qubit1, const int qubit2, RE
     densmatr_twoQubitDephase(qureg, qubit1, qubit2, dephase);
 }
 
-// new experimental dephasing functions
 // @TODO add to CPU local and distributed
-// @TODO add depol level validation
 void oneQubitDepolarise(QubitRegister qureg, const int targetQubit, REAL depolLevel) {
     validatDensityMatrQureg(qureg, __func__);
     validateTarget(qureg, targetQubit, __func__);
@@ -632,9 +629,7 @@ void oneQubitDepolarise(QubitRegister qureg, const int targetQubit, REAL depolLe
     densmatr_oneQubitDepolarise(qureg, targetQubit, depolLevel);
 }
 
-// new experimental dephasing functions
 // @TODO add to CPU local and distributed
-// @TODO add depol level validation
 void twoQubitDepolarise(QubitRegister qureg, const int qubit1, const int qubit2, REAL depolLevel) {
     validatDensityMatrQureg(qureg, __func__);
     validateTarget(qureg, qubit1, __func__);
@@ -644,6 +639,17 @@ void twoQubitDepolarise(QubitRegister qureg, const int qubit1, const int qubit2,
     densmatr_twoQubitDepolarise(qureg, qubit1, qubit2, depolLevel);
 }
 
+// @TODO add to CPU local and distributed
+// @TODO add invidiaul probs validation
+// @TODO add normalised probs validation
+void combineDensityMatrices(REAL combineProb, QubitRegister combineQureg, REAL otherProb, QubitRegister otherQureg) {
+    validatDensityMatrQureg(combineQureg, __func__);
+    validatDensityMatrQureg(otherQureg, __func__);
+    validateMatchingQuregDims(combineQureg, otherQureg, __func__);
+    // @TODO validate probs
+    
+    densmatr_combineDensityMatrices(combineProb, combineQureg, otherProb, otherQureg);
+}
 
 
 #ifdef __cplusplus
