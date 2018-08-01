@@ -9,7 +9,7 @@
 # include "QuEST_precision.h"
 # include "QuEST_debug.h"
 
-# define NUM_TESTS 28
+# define NUM_TESTS 29
 # define COMPARE_PRECISION 10e-13
 # define PATH_TO_TESTS "unit/"
 # define VERBOSE 0
@@ -368,11 +368,6 @@ int test_controlledPhaseShift(char testName[200]) {
 	return passed;
 }
 
-
-
-
-
-
 int test_multiControlledPhaseShift(char testName[200]) {
 	int passed=1;
 	
@@ -403,10 +398,6 @@ int test_multiControlledPhaseShift(char testName[200]) {
 	
 	return passed;
 }
-
-
-
-
 
 int test_controlledNot(char testName[200]){
     char filename[200];
@@ -1100,6 +1091,62 @@ int test_getProbEl(char testName[200]){
     return passed;
 }
 
+int test_calcInnerProduct(char testName[200]) {
+    
+	REAL pi = 3.1415926535897932384626;
+
+    int passed = 1;
+    
+    // create two 3-qubit pure states
+    QubitRegister bra, ket;
+    createQubitRegister(&bra, 3, env);
+    createQubitRegister(&ket, 3, env);
+    Complex prod;
+    
+    // when states are equal, <s|s> = 1
+    initStatePlus(bra);
+    initStatePlus(ket);
+    prod = calcInnerProduct(bra, ket);
+    if (passed) passed = compareReals(prod.real, 1, COMPARE_PRECISION);
+    if (passed) passed = compareReals(prod.imag, 0, COMPARE_PRECISION);
+    
+    // orthogonal states return <bra|ket> = 0
+    initClassicalState(bra, 1);
+    initClassicalState(ket, 2);
+    prod = calcInnerProduct(bra, ket);
+    if (passed) passed = compareReals(prod.real, 0, COMPARE_PRECISION);
+    if (passed) passed = compareReals(prod.imag, 0, COMPARE_PRECISION);
+    
+    // <000|+++> = 1/sqrt(2)^3
+    initStateZero(bra);
+    initStatePlus(ket);
+    prod = calcInnerProduct(bra, ket);
+    if (passed) passed = compareReals(prod.real, pow(1/sqrt(2),3), COMPARE_PRECISION);
+    if (passed) passed = compareReals(prod.imag, 0, COMPARE_PRECISION);
+    
+    // test imag component is populated
+    initClassicalState(bra, 1);         // <001|
+    initStateZero(ket);                 // |000>
+    hadamard(ket, 0);                   // |00+>
+    phaseShift(ket, 0, pi * 5/4.0 );    // |a> = |00> (1/sqrt(2) |0> - 1/2 (1 + i) |1>)
+    prod = calcInnerProduct(bra, ket);  // <001|a> = - 1/2 (1 + i)
+    if (passed) passed = compareReals(prod.real, -1/2.0, COMPARE_PRECISION);
+    if (passed) passed = compareReals(prod.imag, -1/2.0, COMPARE_PRECISION);
+    
+    // test bra has complex conjugated amps
+    initClassicalState(ket, 1);         // |001>
+    initStateZero(bra);                 // <000|
+    hadamard(bra, 0);                   // <00+|
+    phaseShift(bra, 0, pi * 5/4.0 );    // <a| = <00| (1/sqrt(2) <0| + 1/2 (i - 1) <1|)
+    prod = calcInnerProduct(bra, ket);  // <a|001> = 1/2 (i - 1)
+    if (passed) passed = compareReals(prod.real, -1/2.0, COMPARE_PRECISION);
+    if (passed) passed = compareReals(prod.imag,  1/2.0, COMPARE_PRECISION);
+    
+    destroyQubitRegister(bra, env);
+    destroyQubitRegister(ket, env);
+    return passed;
+}
+
 
 int main (int narg, char** varg) {
     initQuESTEnv(&env);
@@ -1133,7 +1180,8 @@ int main (int narg, char** varg) {
         test_measureWithStats,
 		test_getRealAmpEl,
 		test_getImagAmpEl,
-		test_getProbEl
+		test_getProbEl,
+        test_calcInnerProduct
     };
 
     char testNames[NUM_TESTS][200] = {
@@ -1164,7 +1212,8 @@ int main (int narg, char** varg) {
         "measureWithStats",
 		"getRealAmpEl",
 		"getImagAmpEl",
-		"getProbEl"
+		"getProbEl",
+        "calcInnerProduct"
     };
     int passed=0;
     if (env.rank==0) printf("\nRunning unit tests\n");
