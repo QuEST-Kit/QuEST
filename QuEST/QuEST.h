@@ -1336,7 +1336,9 @@ void combineDensityMatrices(REAL combineProb, QubitRegister combineQureg, REAL o
 REAL calcPurity(QubitRegister qureg);
 
 /** Calculates the fidelity of qureg (a statevector or density matrix) against 
- * a reference pure state (necessarily a statevector)
+ * a reference pure state (necessarily a statevector).
+ * For two pure states, this is |<qureg|pureState>|^2
+ * For a mixed and pure state, this is <pureState|qureg|pureState>
  */
 REAL calcFidelity(QubitRegister qureg, QubitRegister pureState);
 

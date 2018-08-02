@@ -489,9 +489,8 @@ void cloneQubitRegister(QubitRegister targetQureg, QubitRegister copyQureg) {
 
 
 
-// @TODO implement GPU densmatr_calcFidelity
-// @TODO " " CPU local " "
-// @TODO " " CPU MPI " "
+// @TODO CPU local densmatr_calcFidelity
+// @TODO CPU MPI densmatr_calcFidelity
 REAL calcFidelity(QubitRegister qureg, QubitRegister pureState) {
     validateSecondQuregStateVec(pureState, __func__);
     validateMatchingQuregDims(qureg, pureState, __func__);

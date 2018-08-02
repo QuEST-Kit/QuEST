@@ -28,12 +28,6 @@ extern "C" {
 
 
 
-// @TODO implement
-REAL densmatr_calcFidelity(QubitRegister qureg, QubitRegister pureState) {
-    
-    return -1;
-}
-
 
 
 
@@ -1670,7 +1664,95 @@ Complex statevec_calcInnerProduct(QubitRegister bra, QubitRegister ket) {
     return innerProd;
 }
 
+/** computes one term of (vec^*T) dens * vec */
+__global__ void densmatr_calcFidelityKernel(QubitRegister dens, QubitRegister vec, long long int dim, REAL* reducedArray) {
 
+    // figure out which density matrix row to consider
+    long long int col;
+    long long int row = blockIdx.x*blockDim.x + threadIdx.x;
+    if (row >= dim) return;
+    
+    REAL* densReal = dens.deviceStateVec.real;
+    REAL* densImag = dens.deviceStateVec.imag;
+    REAL *vecReal = vec.deviceStateVec.real;
+    REAL *vecImag = vec.deviceStateVec.imag;
+    
+    // compute the row-th element of the product dens*vec
+    REAL prodReal = 0;
+    REAL prodImag = 0;
+    for (col=0LL; col < dim; col++) {
+        REAL densElemReal = densReal[dim*col + row];
+        REAL densElemImag = densImag[dim*col + row];
+        
+        prodReal += densElemReal*vecReal[col] - densElemImag*vecImag[col];
+        prodImag += densElemReal*vecImag[col] + densElemImag*vecReal[col];
+    }
+    
+    // multiply with row-th elem of (vec^*)
+    REAL termReal = prodImag*vecImag[row] + prodReal*vecReal[row];
+    
+    // imag of every term should be zero, because each is a valid fidelity calc of an eigenstate
+    //REAL termImag = prodImag*vecReal[row] - prodReal*vecImag[row];
+    
+    extern __shared__ REAL tempReductionArray[];
+    tempReductionArray[threadIdx.x] = termReal;
+    __syncthreads();
+    
+    // every second thread reduces
+    if (threadIdx.x<blockDim.x/2)
+        reduceBlock(tempReductionArray, reducedArray, blockDim.x);
+}
+
+// @TODO implement
+REAL densmatr_calcFidelity(QubitRegister qureg, QubitRegister pureState) {
+    
+    // we're summing the square of every term in the density matrix
+    long long int densityDim = 1LL << qureg.numQubitsRepresented;
+    long long int numValuesToReduce = densityDim;
+    
+    int valuesPerCUDABlock, numCUDABlocks, sharedMemSize;
+    int maxReducedPerLevel = REDUCE_SHARED_SIZE;
+    int firstTime = 1;
+    
+    while (numValuesToReduce > 1) {
+        
+        // need less than one CUDA-BLOCK to reduce
+        if (numValuesToReduce < maxReducedPerLevel) {
+            valuesPerCUDABlock = numValuesToReduce;
+            numCUDABlocks = 1;
+        }
+        // otherwise use only full CUDA-BLOCKS
+        else {
+            valuesPerCUDABlock = maxReducedPerLevel; // constrained by shared memory
+            numCUDABlocks = ceil((REAL)numValuesToReduce/valuesPerCUDABlock);
+        }
+        // dictates size of reduction array
+        sharedMemSize = valuesPerCUDABlock*sizeof(REAL);
+        
+        // spawn threads to sum the probs in each block
+        // store the reduction in the pureState array
+        if (firstTime) {
+             densmatr_calcFidelityKernel<<<numCUDABlocks, valuesPerCUDABlock, sharedMemSize>>>(
+                 qureg, pureState, densityDim, pureState.firstLevelReduction);
+            firstTime = 0;
+            
+        // sum the block probs
+        } else {
+            cudaDeviceSynchronize();    
+            copySharedReduceBlock<<<numCUDABlocks, valuesPerCUDABlock/2, sharedMemSize>>>(
+                    pureState.firstLevelReduction, 
+                    pureState.secondLevelReduction, valuesPerCUDABlock); 
+            cudaDeviceSynchronize();    
+            swapDouble(&(pureState.firstLevelReduction), &(pureState.secondLevelReduction));
+        }
+        
+        numValuesToReduce = numValuesToReduce/maxReducedPerLevel;
+    }
+    
+    REAL fidelity;
+    cudaMemcpy(&fidelity, pureState.firstLevelReduction, sizeof(REAL), cudaMemcpyDeviceToHost);
+    return fidelity;
+}
 
 
 __global__ void densmatr_calcPurityKernel(REAL* vecReal, REAL* vecImag, long long int numAmpsToSum, REAL *reducedArray) {
