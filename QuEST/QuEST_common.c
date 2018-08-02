@@ -318,6 +318,13 @@ int densmatr_measureWithStats(QubitRegister qureg, int measureQubit, REAL *outco
     return outcome;
 }
 
+REAL statevec_calcFidelity(QubitRegister qureg, QubitRegister pureState) {
+    
+    Complex innerProd = statevec_calcInnerProduct(qureg, pureState);
+    REAL innerProdMag = innerProd.real*innerProd.real + innerProd.imag*innerProd.imag;
+    return innerProdMag;
+}
+
 
 
 #ifdef __cplusplus

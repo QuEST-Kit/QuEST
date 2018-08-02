@@ -24,6 +24,19 @@ static __device__ int extractBit (int locationOfBitFromRight, long long int theE
 #ifdef __cplusplus
 extern "C" {
 #endif
+    
+
+
+
+// @TODO implement
+REAL densmatr_calcFidelity(QubitRegister qureg, QubitRegister pureState) {
+    
+    return -1;
+}
+
+
+
+
 
 /** works for both statevectors and density matrices */
 void statevec_cloneQubitRegister(QubitRegister targetQureg, QubitRegister copyQureg) {
