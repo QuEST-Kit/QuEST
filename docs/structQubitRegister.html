@@ -82,6 +82,9 @@ Data Fields</h2></td></tr>
 <tr class="memitem:a6e58b026bdaea750b70419130a731d5c"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structComplexArray.html">ComplexArray</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structQubitRegister.html#a6e58b026bdaea750b70419130a731d5c">pairStateVec</a></td></tr>
 <tr class="memdesc:a6e58b026bdaea750b70419130a731d5c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Temporary storage for a chunk of the state vector received from another process in the MPI version.  <a href="#a6e58b026bdaea750b70419130a731d5c">More...</a><br /></td></tr>
 <tr class="separator:a6e58b026bdaea750b70419130a731d5c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a23c10ff834d429881ff05c94512cf03a"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structQASMLogger.html">QASMLogger</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structQubitRegister.html#a23c10ff834d429881ff05c94512cf03a">qasmLog</a></td></tr>
+<tr class="memdesc:a23c10ff834d429881ff05c94512cf03a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Storage for generated QASM output.  <a href="#a23c10ff834d429881ff05c94512cf03a">More...</a><br /></td></tr>
+<tr class="separator:a23c10ff834d429881ff05c94512cf03a"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a0ef92c418957052ed3b8c909835fff4e"><td class="memItemLeft" align="right" valign="top"><a class="el" href="QuEST__precision_8h.html#a4b654506f18b8bfd61ad2a29a7e38c25">REAL</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structQubitRegister.html#a0ef92c418957052ed3b8c909835fff4e">secondLevelReduction</a></td></tr>
 <tr class="separator:a0ef92c418957052ed3b8c909835fff4e"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ad906e11d9bc637298e3b1668252027e7"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structComplexArray.html">ComplexArray</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structQubitRegister.html#ad906e11d9bc637298e3b1668252027e7">stateVec</a></td></tr>
@@ -92,7 +95,7 @@ Data Fields</h2></td></tr>
 <div class="textblock"><p>Represents a system of qubits. </p>
 <p>Qubits are zero-based </p>
 
-<p class="definition">Definition at line <a class="el" href="QuEST_8h_source.html#l00051">51</a> of file <a class="el" href="QuEST_8h_source.html">QuEST.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="QuEST_8h_source.html#l00062">62</a> of file <a class="el" href="QuEST_8h_source.html">QuEST.h</a>.</p>
 </div><h2 class="groupheader">Field Documentation</h2>
 <a id="a75acd3f608fe4ea3ae8ced2a925c9c78"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a75acd3f608fe4ea3ae8ced2a925c9c78">&#9670;&nbsp;</a></span>chunkId</h2>
@@ -108,9 +111,9 @@ Data Fields</h2></td></tr>
 
 <p>The position of the chunk of the state vector held by this process in the full state vector. </p>
 
-<p class="definition">Definition at line <a class="el" href="QuEST_8h_source.html#l00061">61</a> of file <a class="el" href="QuEST_8h_source.html">QuEST.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="QuEST_8h_source.html#l00076">76</a> of file <a class="el" href="QuEST_8h_source.html">QuEST.h</a>.</p>
 
-<p class="reference">Referenced by <a class="el" href="QuEST__common_8c_source.html#l00148">reportQubitRegisterParams()</a>, and <a class="el" href="QuEST__common_8c_source.html#l00130">reportState()</a>.</p>
+<p class="reference">Referenced by <a class="el" href="QuEST__common_8c_source.html#l00184">reportQubitRegisterParams()</a>, and <a class="el" href="QuEST__common_8c_source.html#l00166">reportState()</a>.</p>
 
 </div>
 </div>
@@ -128,7 +131,7 @@ Data Fields</h2></td></tr>
 
 <p>Storage for wavefunction amplitudes in the GPU version. </p>
 
-<p class="definition">Definition at line <a class="el" href="QuEST_8h_source.html#l00070">70</a> of file <a class="el" href="QuEST_8h_source.html">QuEST.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="QuEST_8h_source.html#l00086">86</a> of file <a class="el" href="QuEST_8h_source.html">QuEST.h</a>.</p>
 
 </div>
 </div>
@@ -146,7 +149,7 @@ Data Fields</h2></td></tr>
 
 <p>Storage for reduction of probabilities on GPU. </p>
 
-<p class="definition">Definition at line <a class="el" href="QuEST_8h_source.html#l00072">72</a> of file <a class="el" href="QuEST_8h_source.html">QuEST.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="QuEST_8h_source.html#l00088">88</a> of file <a class="el" href="QuEST_8h_source.html">QuEST.h</a>.</p>
 
 </div>
 </div>
@@ -164,9 +167,9 @@ Data Fields</h2></td></tr>
 
 <p>Whether this instance is a density-state representation. </p>
 
-<p class="definition">Definition at line <a class="el" href="QuEST_8h_source.html#l00075">75</a> of file <a class="el" href="QuEST_8h_source.html">QuEST.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="QuEST_8h_source.html#l00065">65</a> of file <a class="el" href="QuEST_8h_source.html">QuEST.h</a>.</p>
 
-<p class="reference">Referenced by <a class="el" href="QuEST_8c_source.html#l00371">calcTotalProbability()</a>, <a class="el" href="QuEST_8c_source.html#l00411">collapseToOutcome()</a>, <a class="el" href="QuEST_8c_source.html#l00169">compactUnitary()</a>, <a class="el" href="QuEST_8c_source.html#l00180">controlledCompactUnitary()</a>, <a class="el" href="QuEST_8c_source.html#l00269">controlledNot()</a>, <a class="el" href="QuEST_8c_source.html#l00289">controlledPhaseFlip()</a>, <a class="el" href="QuEST_8c_source.html#l00247">controlledPhaseShift()</a>, <a class="el" href="QuEST_8c_source.html#l00322">controlledRotateAroundAxis()</a>, <a class="el" href="QuEST_8c_source.html#l00105">controlledRotateX()</a>, <a class="el" href="QuEST_8c_source.html#l00115">controlledRotateY()</a>, <a class="el" href="QuEST_8c_source.html#l00125">controlledRotateZ()</a>, <a class="el" href="QuEST_8c_source.html#l00279">controlledSigmaY()</a>, <a class="el" href="QuEST_8c_source.html#l00145">controlledUnitary()</a>, <a class="el" href="QuEST_8c_source.html#l00036">createDensityQubitRegister()</a>, <a class="el" href="QuEST_8c_source.html#l00027">createQubitRegister()</a>, <a class="el" href="QuEST_8c_source.html#l00378">findProbabilityOfOutcome()</a>, <a class="el" href="QuEST_8c_source.html#l00069">hadamard()</a>, <a class="el" href="QuEST_8c_source.html#l00060">initClassicalState()</a>, <a class="el" href="QuEST_8c_source.html#l00390">initPureState()</a>, <a class="el" href="QuEST_8c_source.html#l00463">initStateFromSingleFile()</a>, <a class="el" href="QuEST_8c_source.html#l00053">initStatePlus()</a>, <a class="el" href="QuEST_8c_source.html#l00439">measure()</a>, <a class="el" href="QuEST_8c_source.html#l00429">measureWithStats()</a>, <a class="el" href="QuEST_8c_source.html#l00299">multiControlledPhaseFlip()</a>, <a class="el" href="QuEST_8c_source.html#l00257">multiControlledPhaseShift()</a>, <a class="el" href="QuEST_8c_source.html#l00156">multiControlledUnitary()</a>, <a class="el" href="QuEST_8c_source.html#l00238">phaseShift()</a>, <a class="el" href="QuEST_8c_source.html#l00311">rotateAroundAxis()</a>, <a class="el" href="QuEST_8c_source.html#l00078">rotateX()</a>, <a class="el" href="QuEST_8c_source.html#l00087">rotateY()</a>, <a class="el" href="QuEST_8c_source.html#l00096">rotateZ()</a>, <a class="el" href="QuEST_8c_source.html#l00220">sGate()</a>, <a class="el" href="QuEST_8c_source.html#l00193">sigmaX()</a>, <a class="el" href="QuEST_8c_source.html#l00202">sigmaY()</a>, <a class="el" href="QuEST_8c_source.html#l00211">sigmaZ()</a>, <a class="el" href="QuEST_8c_source.html#l00229">tGate()</a>, <a class="el" href="QuEST_8c_source.html#l00135">unitary()</a>, <a class="el" href="QuEST__validation_8c_source.html#l00167">validatDensityMatrQureg()</a>, <a class="el" href="QuEST__validation_8c_source.html#l00183">validateSecondQuregStateVec()</a>, and <a class="el" href="QuEST__validation_8c_source.html#l00163">validateStateVecQureg()</a>.</p>
+<p class="reference">Referenced by <a class="el" href="QuEST_8c_source.html#l00506">calcFidelity()</a>, <a class="el" href="QuEST_8c_source.html#l00463">calcTotalProbability()</a>, <a class="el" href="QuEST_8c_source.html#l00541">collapseToOutcome()</a>, <a class="el" href="QuEST_8c_source.html#l00224">compactUnitary()</a>, <a class="el" href="QuEST_8c_source.html#l00237">controlledCompactUnitary()</a>, <a class="el" href="QuEST_8c_source.html#l00344">controlledNot()</a>, <a class="el" href="QuEST_8c_source.html#l00368">controlledPhaseFlip()</a>, <a class="el" href="QuEST_8c_source.html#l00318">controlledPhaseShift()</a>, <a class="el" href="QuEST_8c_source.html#l00407">controlledRotateAroundAxis()</a>, <a class="el" href="QuEST_8c_source.html#l00148">controlledRotateX()</a>, <a class="el" href="QuEST_8c_source.html#l00160">controlledRotateY()</a>, <a class="el" href="QuEST_8c_source.html#l00172">controlledRotateZ()</a>, <a class="el" href="QuEST_8c_source.html#l00356">controlledSigmaY()</a>, <a class="el" href="QuEST_8c_source.html#l00196">controlledUnitary()</a>, <a class="el" href="QuEST_8c_source.html#l00041">createDensityQubitRegister()</a>, <a class="el" href="QuEST_8c_source.html#l00030">createQubitRegister()</a>, <a class="el" href="QuEST_8c_source.html#l00484">findProbabilityOfOutcome()</a>, <a class="el" href="QuEST_8c_source.html#l00104">hadamard()</a>, <a class="el" href="QuEST_8c_source.html#l00093">initClassicalState()</a>, <a class="el" href="QuEST_8c_source.html#l00520">initPureState()</a>, <a class="el" href="QuEST_8c_source.html#l00660">initStateFromSingleFile()</a>, <a class="el" href="QuEST_8c_source.html#l00084">initStatePlus()</a>, <a class="el" href="QuEST_8c_source.html#l00575">measure()</a>, <a class="el" href="QuEST_8c_source.html#l00562">measureWithStats()</a>, <a class="el" href="QuEST_8c_source.html#l00380">multiControlledPhaseFlip()</a>, <a class="el" href="QuEST_8c_source.html#l00330">multiControlledPhaseShift()</a>, <a class="el" href="QuEST_8c_source.html#l00209">multiControlledUnitary()</a>, <a class="el" href="QuEST_8c_source.html#l00307">phaseShift()</a>, <a class="el" href="denstest_8c_source.html#l00008">printDenMat()</a>, <a class="el" href="old__simonstest_8c_source.html#l00073">printStateV()</a>, <a class="el" href="QuEST_8c_source.html#l00394">rotateAroundAxis()</a>, <a class="el" href="QuEST_8c_source.html#l00115">rotateX()</a>, <a class="el" href="QuEST_8c_source.html#l00126">rotateY()</a>, <a class="el" href="QuEST_8c_source.html#l00137">rotateZ()</a>, <a class="el" href="QuEST_8c_source.html#l00285">sGate()</a>, <a class="el" href="QuEST_8c_source.html#l00252">sigmaX()</a>, <a class="el" href="QuEST_8c_source.html#l00263">sigmaY()</a>, <a class="el" href="QuEST_8c_source.html#l00274">sigmaZ()</a>, <a class="el" href="QuEST_8c_source.html#l00296">tGate()</a>, <a class="el" href="QuEST_8c_source.html#l00184">unitary()</a>, <a class="el" href="QuEST__validation_8c_source.html#l00175">validateDensityMatrQureg()</a>, <a class="el" href="QuEST__validation_8c_source.html#l00191">validateMatchingQuregTypes()</a>, <a class="el" href="QuEST__validation_8c_source.html#l00195">validateSecondQuregStateVec()</a>, and <a class="el" href="QuEST__validation_8c_source.html#l00171">validateStateVecQureg()</a>.</p>
 
 </div>
 </div>
@@ -184,9 +187,9 @@ Data Fields</h2></td></tr>
 
 <p>Number of probability amplitudes held in stateVec by this process In the non-MPI version, this is the total number of amplitudes. </p>
 
-<p class="definition">Definition at line <a class="el" href="QuEST_8h_source.html#l00057">57</a> of file <a class="el" href="QuEST_8h_source.html">QuEST.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="QuEST_8h_source.html#l00072">72</a> of file <a class="el" href="QuEST_8h_source.html">QuEST.h</a>.</p>
 
-<p class="reference">Referenced by <a class="el" href="QuEST__common_8c_source.html#l00130">reportState()</a>.</p>
+<p class="reference">Referenced by <a class="el" href="QuEST__common_8c_source.html#l00166">reportState()</a>.</p>
 
 </div>
 </div>
@@ -204,9 +207,9 @@ Data Fields</h2></td></tr>
 
 <p>Total number of amplitudes, which are possibly distributed among machines. </p>
 
-<p class="definition">Definition at line <a class="el" href="QuEST_8h_source.html#l00059">59</a> of file <a class="el" href="QuEST_8h_source.html">QuEST.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="QuEST_8h_source.html#l00074">74</a> of file <a class="el" href="QuEST_8h_source.html">QuEST.h</a>.</p>
 
-<p class="reference">Referenced by <a class="el" href="QuEST_8c_source.html#l00337">getNumAmps()</a>, and <a class="el" href="QuEST__validation_8c_source.html#l00114">validateStateIndex()</a>.</p>
+<p class="reference">Referenced by <a class="el" href="QuEST_8c_source.html#l00424">getNumAmps()</a>, and <a class="el" href="QuEST__validation_8c_source.html#l00122">validateStateIndex()</a>.</p>
 
 </div>
 </div>
@@ -224,9 +227,9 @@ Data Fields</h2></td></tr>
 
 <p>Number of chunks the state vector is broken up into &ndash; the number of MPI processes used. </p>
 
-<p class="definition">Definition at line <a class="el" href="QuEST_8h_source.html#l00063">63</a> of file <a class="el" href="QuEST_8h_source.html">QuEST.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="QuEST_8h_source.html#l00078">78</a> of file <a class="el" href="QuEST_8h_source.html">QuEST.h</a>.</p>
 
-<p class="reference">Referenced by <a class="el" href="QuEST__common_8c_source.html#l00148">reportQubitRegisterParams()</a>.</p>
+<p class="reference">Referenced by <a class="el" href="QuEST__common_8c_source.html#l00184">reportQubitRegisterParams()</a>.</p>
 
 </div>
 </div>
@@ -244,9 +247,9 @@ Data Fields</h2></td></tr>
 
 <p>Number of qubits in the state-vector - this is double the number represented for mixed states. </p>
 
-<p class="definition">Definition at line <a class="el" href="QuEST_8h_source.html#l00054">54</a> of file <a class="el" href="QuEST_8h_source.html">QuEST.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="QuEST_8h_source.html#l00069">69</a> of file <a class="el" href="QuEST_8h_source.html">QuEST.h</a>.</p>
 
-<p class="reference">Referenced by <a class="el" href="QuEST_8c_source.html#l00036">createDensityQubitRegister()</a>, <a class="el" href="QuEST_8c_source.html#l00027">createQubitRegister()</a>, and <a class="el" href="QuEST__common_8c_source.html#l00148">reportQubitRegisterParams()</a>.</p>
+<p class="reference">Referenced by <a class="el" href="old__simonstest_8c_source.html#l00320">addDenMats()</a>, <a class="el" href="old__simonstest_8c_source.html#l00157">checkHermitian()</a>, <a class="el" href="old__simonstest_8c_source.html#l00304">cloneState()</a>, <a class="el" href="QuEST_8c_source.html#l00041">createDensityQubitRegister()</a>, <a class="el" href="QuEST_8c_source.html#l00030">createQubitRegister()</a>, <a class="el" href="old__simonstest_8c_source.html#l00182">getTrace()</a>, <a class="el" href="old__simonstest_8c_source.html#l00052">printDenMat()</a>, <a class="el" href="old__simonstest_8c_source.html#l00073">printStateV()</a>, <a class="el" href="QuEST__common_8c_source.html#l00184">reportQubitRegisterParams()</a>, <a class="el" href="old__simonstest_8c_source.html#l00241">simpleFidelity()</a>, and <a class="el" href="old__simonstest_8c_source.html#l00210">traceDenMatSqr()</a>.</p>
 
 </div>
 </div>
@@ -264,9 +267,9 @@ Data Fields</h2></td></tr>
 
 <p>The number of qubits represented in either the state-vector or density matrix. </p>
 
-<p class="definition">Definition at line <a class="el" href="QuEST_8h_source.html#l00077">77</a> of file <a class="el" href="QuEST_8h_source.html">QuEST.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="QuEST_8h_source.html#l00067">67</a> of file <a class="el" href="QuEST_8h_source.html">QuEST.h</a>.</p>
 
-<p class="reference">Referenced by <a class="el" href="QuEST_8c_source.html#l00169">compactUnitary()</a>, <a class="el" href="QuEST_8c_source.html#l00180">controlledCompactUnitary()</a>, <a class="el" href="QuEST_8c_source.html#l00269">controlledNot()</a>, <a class="el" href="QuEST_8c_source.html#l00289">controlledPhaseFlip()</a>, <a class="el" href="QuEST_8c_source.html#l00247">controlledPhaseShift()</a>, <a class="el" href="QuEST_8c_source.html#l00322">controlledRotateAroundAxis()</a>, <a class="el" href="QuEST_8c_source.html#l00105">controlledRotateX()</a>, <a class="el" href="QuEST_8c_source.html#l00115">controlledRotateY()</a>, <a class="el" href="QuEST_8c_source.html#l00125">controlledRotateZ()</a>, <a class="el" href="QuEST_8c_source.html#l00279">controlledSigmaY()</a>, <a class="el" href="QuEST_8c_source.html#l00145">controlledUnitary()</a>, <a class="el" href="QuEST_8c_source.html#l00036">createDensityQubitRegister()</a>, <a class="el" href="QuEST_8c_source.html#l00027">createQubitRegister()</a>, <a class="el" href="QuEST_8c_source.html#l00333">getNumQubits()</a>, <a class="el" href="QuEST_8c_source.html#l00069">hadamard()</a>, <a class="el" href="QuEST_8c_source.html#l00299">multiControlledPhaseFlip()</a>, <a class="el" href="QuEST_8c_source.html#l00257">multiControlledPhaseShift()</a>, <a class="el" href="QuEST_8c_source.html#l00156">multiControlledUnitary()</a>, <a class="el" href="QuEST_8c_source.html#l00238">phaseShift()</a>, <a class="el" href="QuEST_8c_source.html#l00311">rotateAroundAxis()</a>, <a class="el" href="QuEST_8c_source.html#l00078">rotateX()</a>, <a class="el" href="QuEST_8c_source.html#l00087">rotateY()</a>, <a class="el" href="QuEST_8c_source.html#l00096">rotateZ()</a>, <a class="el" href="QuEST_8c_source.html#l00220">sGate()</a>, <a class="el" href="QuEST_8c_source.html#l00193">sigmaX()</a>, <a class="el" href="QuEST_8c_source.html#l00202">sigmaY()</a>, <a class="el" href="QuEST_8c_source.html#l00211">sigmaZ()</a>, <a class="el" href="QuEST_8c_source.html#l00229">tGate()</a>, <a class="el" href="QuEST_8c_source.html#l00135">unitary()</a>, <a class="el" href="QuEST__validation_8c_source.html#l00122">validateControl()</a>, <a class="el" href="QuEST__validation_8c_source.html#l00179">validateMatchingQuregDims()</a>, <a class="el" href="QuEST__validation_8c_source.html#l00132">validateNumControls()</a>, and <a class="el" href="QuEST__validation_8c_source.html#l00118">validateTarget()</a>.</p>
+<p class="reference">Referenced by <a class="el" href="QuEST_8c_source.html#l00224">compactUnitary()</a>, <a class="el" href="QuEST_8c_source.html#l00237">controlledCompactUnitary()</a>, <a class="el" href="QuEST_8c_source.html#l00344">controlledNot()</a>, <a class="el" href="QuEST_8c_source.html#l00368">controlledPhaseFlip()</a>, <a class="el" href="QuEST_8c_source.html#l00318">controlledPhaseShift()</a>, <a class="el" href="QuEST_8c_source.html#l00407">controlledRotateAroundAxis()</a>, <a class="el" href="QuEST_8c_source.html#l00148">controlledRotateX()</a>, <a class="el" href="QuEST_8c_source.html#l00160">controlledRotateY()</a>, <a class="el" href="QuEST_8c_source.html#l00172">controlledRotateZ()</a>, <a class="el" href="QuEST_8c_source.html#l00356">controlledSigmaY()</a>, <a class="el" href="QuEST_8c_source.html#l00196">controlledUnitary()</a>, <a class="el" href="QuEST_8c_source.html#l00041">createDensityQubitRegister()</a>, <a class="el" href="QuEST_8c_source.html#l00030">createQubitRegister()</a>, <a class="el" href="QuEST_8c_source.html#l00451">getDensityAmplitude()</a>, <a class="el" href="QuEST_8c_source.html#l00420">getNumQubits()</a>, <a class="el" href="QuEST_8c_source.html#l00104">hadamard()</a>, <a class="el" href="QuEST_8c_source.html#l00380">multiControlledPhaseFlip()</a>, <a class="el" href="QuEST_8c_source.html#l00330">multiControlledPhaseShift()</a>, <a class="el" href="QuEST_8c_source.html#l00209">multiControlledUnitary()</a>, <a class="el" href="QuEST_8c_source.html#l00307">phaseShift()</a>, <a class="el" href="denstest_8c_source.html#l00008">printDenMat()</a>, <a class="el" href="QuEST__qasm_8c_source.html#l00051">qasm_setup()</a>, <a class="el" href="QuEST_8c_source.html#l00394">rotateAroundAxis()</a>, <a class="el" href="QuEST_8c_source.html#l00115">rotateX()</a>, <a class="el" href="QuEST_8c_source.html#l00126">rotateY()</a>, <a class="el" href="QuEST_8c_source.html#l00137">rotateZ()</a>, <a class="el" href="QuEST_8c_source.html#l00285">sGate()</a>, <a class="el" href="QuEST_8c_source.html#l00252">sigmaX()</a>, <a class="el" href="QuEST_8c_source.html#l00263">sigmaY()</a>, <a class="el" href="QuEST_8c_source.html#l00274">sigmaZ()</a>, <a class="el" href="QuEST_8c_source.html#l00296">tGate()</a>, <a class="el" href="QuEST_8c_source.html#l00184">unitary()</a>, <a class="el" href="QuEST__validation_8c_source.html#l00130">validateControl()</a>, <a class="el" href="QuEST__validation_8c_source.html#l00187">validateMatchingQuregDims()</a>, <a class="el" href="QuEST__validation_8c_source.html#l00140">validateNumControls()</a>, and <a class="el" href="QuEST__validation_8c_source.html#l00126">validateTarget()</a>.</p>
 
 </div>
 </div>
@@ -284,7 +287,27 @@ Data Fields</h2></td></tr>
 
 <p>Temporary storage for a chunk of the state vector received from another process in the MPI version. </p>
 
-<p class="definition">Definition at line <a class="el" href="QuEST_8h_source.html#l00068">68</a> of file <a class="el" href="QuEST_8h_source.html">QuEST.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="QuEST_8h_source.html#l00083">83</a> of file <a class="el" href="QuEST_8h_source.html">QuEST.h</a>.</p>
+
+</div>
+</div>
+<a id="a23c10ff834d429881ff05c94512cf03a"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a23c10ff834d429881ff05c94512cf03a">&#9670;&nbsp;</a></span>qasmLog</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="structQASMLogger.html">QASMLogger</a>* QubitRegister::qasmLog</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Storage for generated QASM output. </p>
+
+<p class="definition">Definition at line <a class="el" href="QuEST_8h_source.html#l00091">91</a> of file <a class="el" href="QuEST_8h_source.html">QuEST.h</a>.</p>
+
+<p class="reference">Referenced by <a class="el" href="QuEST__qasm_8c_source.html#l00083">addStringToQASM()</a>, <a class="el" href="QuEST__qasm_8c_source.html#l00353">qasm_clearRecorded()</a>, <a class="el" href="QuEST__qasm_8c_source.html#l00376">qasm_free()</a>, <a class="el" href="QuEST__qasm_8c_source.html#l00360">qasm_printRecorded()</a>, <a class="el" href="QuEST__qasm_8c_source.html#l00196">qasm_recordAxisRotation()</a>, <a class="el" href="QuEST__qasm_8c_source.html#l00168">qasm_recordCompactUnitary()</a>, <a class="el" href="QuEST__qasm_8c_source.html#l00265">qasm_recordControlledAxisRotation()</a>, <a class="el" href="QuEST__qasm_8c_source.html#l00230">qasm_recordControlledCompactUnitary()</a>, <a class="el" href="QuEST__qasm_8c_source.html#l00211">qasm_recordControlledGate()</a>, <a class="el" href="QuEST__qasm_8c_source.html#l00220">qasm_recordControlledParamGate()</a>, <a class="el" href="QuEST__qasm_8c_source.html#l00244">qasm_recordControlledUnitary()</a>, <a class="el" href="QuEST__qasm_8c_source.html#l00151">qasm_recordGate()</a>, <a class="el" href="QuEST__qasm_8c_source.html#l00336">qasm_recordMeasurement()</a>, <a class="el" href="QuEST__qasm_8c_source.html#l00281">qasm_recordMultiControlledGate()</a>, <a class="el" href="QuEST__qasm_8c_source.html#l00289">qasm_recordMultiControlledParamGate()</a>, <a class="el" href="QuEST__qasm_8c_source.html#l00299">qasm_recordMultiControlledUnitary()</a>, <a class="el" href="QuEST__qasm_8c_source.html#l00159">qasm_recordParamGate()</a>, <a class="el" href="QuEST__qasm_8c_source.html#l00180">qasm_recordUnitary()</a>, <a class="el" href="QuEST__qasm_8c_source.html#l00051">qasm_setup()</a>, <a class="el" href="QuEST__qasm_8c_source.html#l00075">qasm_startRecording()</a>, <a class="el" href="QuEST__qasm_8c_source.html#l00079">qasm_stopRecording()</a>, and <a class="el" href="QuEST__qasm_8c_source.html#l00365">qasm_writeRecordedToFile()</a>.</p>
 
 </div>
 </div>
@@ -300,7 +323,7 @@ Data Fields</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="QuEST_8h_source.html#l00072">72</a> of file <a class="el" href="QuEST_8h_source.html">QuEST.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="QuEST_8h_source.html#l00088">88</a> of file <a class="el" href="QuEST_8h_source.html">QuEST.h</a>.</p>
 
 </div>
 </div>
@@ -318,9 +341,9 @@ Data Fields</h2></td></tr>
 
 <p>Computational state amplitudes - a subset thereof in the MPI version. </p>
 
-<p class="definition">Definition at line <a class="el" href="QuEST_8h_source.html#l00066">66</a> of file <a class="el" href="QuEST_8h_source.html">QuEST.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="QuEST_8h_source.html#l00081">81</a> of file <a class="el" href="QuEST_8h_source.html">QuEST.h</a>.</p>
 
-<p class="reference">Referenced by <a class="el" href="QuEST__common_8c_source.html#l00130">reportState()</a>.</p>
+<p class="reference">Referenced by <a class="el" href="old__simonstest_8c_source.html#l00320">addDenMats()</a>, <a class="el" href="old__simonstest_8c_source.html#l00157">checkHermitian()</a>, <a class="el" href="old__simonstest_8c_source.html#l00304">cloneState()</a>, <a class="el" href="old__simonstest_8c_source.html#l00182">getTrace()</a>, <a class="el" href="old__simonstest_8c_source.html#l00360">main()</a>, <a class="el" href="QuEST__common_8c_source.html#l00166">reportState()</a>, <a class="el" href="old__simonstest_8c_source.html#l00241">simpleFidelity()</a>, and <a class="el" href="old__simonstest_8c_source.html#l00210">traceDenMatSqr()</a>.</p>
 
 </div>
 </div>
@@ -330,7 +353,7 @@ Data Fields</h2></td></tr>
 </div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Thu Jul 26 2018 17:16:59 for Quantum Exact Simulation Toolkit by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Thu Aug 2 2018 15:52:12 for Quantum Exact Simulation Toolkit by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.14
 </small></address>
