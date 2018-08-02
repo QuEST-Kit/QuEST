@@ -448,6 +448,18 @@ REAL getProbEl(QubitRegister qureg, long long int index) {
     return statevec_getProbEl(qureg, index);
 }
 
+Complex getDensityAmplitude(QubitRegister qureg, long long int row, long long int col) {
+    validateDensityMatrQureg(qureg, __func__);
+    validateStateIndex(qureg, row, __func__);
+    validateStateIndex(qureg, col, __func__);
+    
+    long long ind = row + col*(1LL << qureg.numQubitsRepresented);
+    Complex amp;
+    amp.real = statevec_getRealAmpEl(qureg, ind);
+    amp.imag = statevec_getImagAmpEl(qureg, ind);
+    return amp;
+}
+
 REAL calcTotalProbability(QubitRegister qureg) {
     if (qureg.isDensityMatrix)  
             return densmatr_calcTotalProbability(qureg);

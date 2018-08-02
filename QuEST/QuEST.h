@@ -524,7 +524,7 @@ void getEnvironmentString(QuESTEnv env, QubitRegister qureg, char str[200]);
  * @param[in] index index in state vector of probability amplitudes
  * @return real component at that index
  * @throws exitWithError
- *      if \p index is outside [0, \f$2^{N}\f$) where \f$N = \f$ \p qureg.numQubits
+ *      if \p index is outside [0, \f$2^{N}\f$) where \f$N = \f$ \p qureg.numQubitsRepresented
  */
 REAL getRealAmpEl(QubitRegister qureg, long long int index);
 
@@ -535,7 +535,7 @@ REAL getRealAmpEl(QubitRegister qureg, long long int index);
  * @param[in] index index in state vector of probability amplitudes
  * @return imaginary component at that index
  * @throws exitWithError
- *      if \p index is outside [0, \f$2^{N}\f$) where \f$N = \f$ \p qureg.numQubits
+ *      if \p index is outside [0, \f$2^{N}\f$) where \f$N = \f$ \p qureg.numQubitsRepresented
  */
 REAL getImagAmpEl(QubitRegister qureg, long long int index);
 
@@ -545,9 +545,20 @@ REAL getImagAmpEl(QubitRegister qureg, long long int index);
  * @param[in] index index in state vector of probability amplitudes
  * @return realEl*realEl + imagEl*imagEl
  * @throws exitWithError
- *      if \p index is outside [0, \f$2^{N}\f$) where \f$N = \f$ \p qureg.numQubits
+ *      if \p index is outside [0, \f$2^{N}\f$) where \f$N = \f$ \p qureg.numQubitsRepresented
  */
 REAL getProbEl(QubitRegister qureg, long long int index);
+
+/** Get an amplitude from a density matrix at a given row and column.
+ *
+ * @oaram[in] qureg object representing a density matrix
+ * @param[in] row row of the desired amplitude in the density matrix
+ * @param[in] col column of the desired amplitude in the density matrix
+ * @return a Complex scalar representing the desired amplitude
+ * @throws exitWithError
+ *      if \p qureg is a statevector, or if \p row or \p col are outside [0, \f$2^{N}\f$) where \f$N = \f$ \p qureg.numQubitsRepresented
+ */
+Complex getDensityAmplitude(QubitRegister qureg, long long int row, long long int col);
 
 /** A debugging function which calculates the probability of being in any state, which should be 1.
  * For pure states, this is the norm of the entire state vector and for mixed states, is the trace of
