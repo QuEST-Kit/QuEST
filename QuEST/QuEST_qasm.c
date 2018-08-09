@@ -28,6 +28,7 @@
 # define CTRL_LABEL_PREF "c"    // QASM syntax which prefixes gates when controlled
 # define MEASURE_CMD "measure"  // QASM cmd for measurement operation
 # define INIT_ZERO_CMD "reset"  // QASM cmd for setting state 0
+# define COMMENT_PREF "//"     // QASM syntax for a comment ;)
 
 # define MAX_LINE_LEN 200       // maximum length (#chars) of a single QASM instruction
 # define BUF_INIT_SIZE 1000     // initial size of the QASM buffer (#chars)
@@ -116,6 +117,16 @@ void addStringToQASM(QubitRegister qureg, char line[], int lineLen) {
     // add new str
     int addedChars = snprintf(buf+bufFill, bufSize-bufFill, "%s", line);
     qureg.qasmLog->bufferFill += addedChars;
+}
+
+void qasm_recordComment(QubitRegister qureg, char* comment) {
+    
+    if (!qureg.qasmLog->isLogging)
+        return;
+    
+    char line[MAX_LINE_LEN + 1]; // for trailing \0
+    int len = snprintf(line, MAX_LINE_LEN, "%s %s\n", COMMENT_PREF, comment);
+    addStringToQASM(qureg, line, len);
 }
 
 void addGateToQASM(QubitRegister qureg, TargetGate gate, int* controlQubits, int numControlQubits, int targetQubit, REAL* params, int numParams) {
@@ -379,6 +390,11 @@ void qasm_recordInitClassical(QubitRegister qureg, long long int stateInd) {
     
     if (!qureg.qasmLog->isLogging)
         return;
+    
+    // add an explanatory comment
+    char cmt[MAX_LINE_LEN+1];
+    sprintf(cmt, "Initialising state |%Ld>", stateInd);
+    qasm_recordComment(qureg, cmt);
     
     // start in |0>
     qasm_recordInitZero(qureg);
