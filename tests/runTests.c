@@ -9,7 +9,7 @@
 # include "QuEST_precision.h"
 # include "QuEST_debug.h"
 
-# define NUM_TESTS 29
+# define NUM_TESTS 30
 # define COMPARE_PRECISION 10e-13
 # define PATH_TO_TESTS "unit/"
 # define VERBOSE 0
@@ -101,6 +101,9 @@ int test_initClassicalState(char testName[200]){
 }
 
 int test_initPureState(char testName[200]) {
+    
+    // remember, this only tests initPureState for statevecs (not density matrices)
+    
     int passed=1;
     int numQubits=3;
     
@@ -114,6 +117,48 @@ int test_initPureState(char testName[200]) {
     initPureState(mq, mqVerif);
     if (passed) passed = compareStates(mq, mqVerif, COMPARE_PRECISION);
     
+    return passed;
+}
+
+int test_initStateFromAmps(char testName[200]) {
+    
+    int passed=1;
+    int numQubits=3;
+    
+    QubitRegister qureg;
+    createQubitRegister(&qureg, numQubits, env);
+    
+    // test writing total state vec
+    REAL reals[8] = {1,2,3,4,5,6,7,8};
+    REAL imags[8] = {8,7,6,5,4,3,2,1};
+    initStateFromAmps(qureg, 0, reals, imags, qureg.numAmpsTotal);
+    for (long long int i=0; i < 8; i++) {
+        if (passed) passed = compareReals(getRealAmpEl(qureg,i), reals[i], 0);
+        if (passed) passed = compareReals(getImagAmpEl(qureg,i), imags[i], 0);
+    }
+    
+    // test writing only some of statevec
+    initStateZero(qureg);
+    initStateFromAmps(qureg, 2, reals+2, imags+2, 4); // write {3,4,5,6} to inds {2,3,4,5}
+    for (long long int i=0; i < 8; i++) {
+        
+        // indices outside {2,3,4,5} are unchanged from |0> = {1,0,0,0}...
+        if (i==0) {
+            if (passed) passed = compareReals(getRealAmpEl(qureg,i), 1, 0);
+            if (passed) passed = compareReals(getImagAmpEl(qureg,i), 0, 0);
+        }
+        else if (i<2 || i>=6) {
+            if (passed) passed = compareReals(getRealAmpEl(qureg,i), 0, 0);
+            if (passed) passed = compareReals(getImagAmpEl(qureg,i), 0, 0);
+        }
+        // otherwise, indices should be set to those in reals and imag
+        else {
+            if (passed) passed = compareReals(getRealAmpEl(qureg,i), reals[i], 0);
+            if (passed) passed = compareReals(getImagAmpEl(qureg,i), imags[i], 0);
+        }
+    }
+    
+    destroyQubitRegister(qureg, env);
     return passed;
 }
 
@@ -1148,6 +1193,9 @@ int test_calcInnerProduct(char testName[200]) {
 }
 
 
+
+
+
 int main (int narg, char** varg) {
     initQuESTEnv(&env);
     reportQuESTEnv(env);
@@ -1158,6 +1206,7 @@ int main (int narg, char** varg) {
         test_initStatePlus,
         test_initClassicalState,
         test_initPureState,
+        test_initStateFromAmps,
         test_sigmaX,
         test_sigmaY,
         test_sigmaZ,
@@ -1190,6 +1239,7 @@ int main (int narg, char** varg) {
         "initStatePlus",
         "initClassicalState",
         "initPureState",
+        "initStateFromAmps",
         "sigmaX",
         "sigmaY",
         "sigmaZ",
