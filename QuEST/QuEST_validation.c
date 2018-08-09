@@ -22,6 +22,8 @@ typedef enum {
     E_INVALID_TARGET_QUBIT,
     E_INVALID_CONTROL_QUBIT,
     E_INVALID_STATE_INDEX,
+    E_INVALID_NUM_AMPS,
+    E_INVALID_OFFSET_NUM_AMPS,
     E_TARGET_IS_CONTROL,
     E_TARGET_IN_CONTROLS,
     E_INVALID_NUM_CONTROLS,
@@ -47,6 +49,8 @@ static const char* errorMessages[] = {
     [E_INVALID_TARGET_QUBIT] = "Invalid target qubit. Note qubits are zero indexed.",
     [E_INVALID_CONTROL_QUBIT] = "Invalid control qubit. Note qubits are zero indexed.",
     [E_INVALID_STATE_INDEX] = "Invalid state index. Must be >=0 and <2^numQubits.",
+    [E_INVALID_NUM_AMPS] = "Invalid number of amplitudes. Must be >=0 and <=2^numQubits.",
+    [E_INVALID_OFFSET_NUM_AMPS] = "More amplitudes given than exist in the statevector from the given starting index.",
     [E_TARGET_IS_CONTROL] = "Control qubit cannot equal target qubit.",
     [E_TARGET_IN_CONTROLS] = "Control qubits cannot include target qubit.",
     [E_INVALID_NUM_CONTROLS] = "Invalid number of control qubits. Must be >0 and <numQubits.",
@@ -121,6 +125,12 @@ void validateCreateNumQubits(int numQubits, const char* caller) {
 
 void validateStateIndex(QubitRegister qureg, long long int stateInd, const char* caller) {
     QuESTAssert(stateInd>=0 && stateInd<qureg.numAmpsTotal, E_INVALID_STATE_INDEX, caller);
+}
+
+void validateNumAmps(QubitRegister qureg, long long int startInd, long long int numAmps, const char* caller) {
+    validateStateIndex(qureg, startInd, caller);
+    QuESTAssert(numAmps >= 0 && numAmps <= qureg.numAmpsTotal, E_INVALID_NUM_AMPS, caller);
+    QuESTAssert(numAmps + startInd <= qureg.numAmpsTotal, E_INVALID_OFFSET_NUM_AMPS, caller);
 }
 
 void validateTarget(QubitRegister qureg, int targetQubit, const char* caller) {
@@ -215,6 +225,8 @@ void validateNormProbs(REAL prob1, REAL prob2, const char* caller) {
     REAL sum = prob1 + prob2;
     QuESTAssert(absReal(1 - sum) < REAL_EPS, E_UNNORM_PROBS, caller);
 }
+
+
 
 
 #ifdef __cplusplus

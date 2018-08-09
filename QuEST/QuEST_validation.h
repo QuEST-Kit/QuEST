@@ -45,6 +45,8 @@ void validateMatchingQuregTypes(QubitRegister qureg1, QubitRegister qureg2, cons
 
 void validateSecondQuregStateVec(QubitRegister qureg2, const char *caller);
 
+void validateNumAmps(QubitRegister qureg, long long int startInd, long long int numAmps, const char* caller);
+
 void validateFileOpened(int opened, const char* caller);
 
 void validateNoise(REAL noise, const char* caller);
@@ -52,6 +54,7 @@ void validateNoise(REAL noise, const char* caller);
 void validateProb(REAL prob, const char* caller);
 
 void validateNormProbs(REAL prob1, REAL prob2, const char* caller);
+
 
 # ifdef __cplusplus
 }

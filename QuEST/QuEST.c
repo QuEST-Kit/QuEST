@@ -101,6 +101,15 @@ void initClassicalState(QubitRegister qureg, long long int stateInd) {
     // @TODO QASM?
 }
 
+void initStateFromAmps(QubitRegister qureg, long long int startInd, REAL* reals, REAL* imags, long long int numAmps) {
+    validateStateVecQureg(qureg, __func__);
+    validateNumAmps(qureg, startInd, numAmps, __func__);
+    
+    statevec_initStateFromAmps(qureg, startInd, reals, imags, numAmps);
+    
+    // @TODO QASM?
+}
+
 void hadamard(QubitRegister qureg, const int targetQubit) {
     validateTarget(qureg, targetQubit, __func__);
     
@@ -531,15 +540,6 @@ void initPureState(QubitRegister qureg, QubitRegister pure) {
 
 
 
-
-// @TODO improve this, implemented CPU (local and MPI)
-void initStateFromAmps(QubitRegister qureg, long long int startInd, REAL* reals, REAL* imags, long long int numAmps) {
-    
-    validateStateIndex(qureg, startInd, __func__);
-    //@ @TODO validate numAmps > 0 <= totalNumAmps (not per chunk)
-    
-    statevec_initStateFromAmps(qureg, startInd, reals, imags, numAmps);
-}
 
 
 
