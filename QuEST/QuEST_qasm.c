@@ -17,7 +17,8 @@
 # define QUREG_LABEL "q"        // QASM var-name for the quantum register
 # define MESREG_LABEL "c"       // QASM var-name for the classical measurement register
 # define CTRL_LABEL_PREF "c"    // QASM syntax which prefixes gates when controlled
-# define MEASURE_CMD "measure"  // QASM label for measurement operation
+# define MEASURE_CMD "measure"  // QASM cmd for measurement operation
+# define INIT_ZERO_CMD "reset"  // QASM cmd for setting state 0
 
 # define MAX_LINE_LEN 200       // maximum length (#chars) of a single QASM instruction
 # define BUF_INIT_SIZE 1000     // initial size of the QASM buffer (#chars)
@@ -39,7 +40,7 @@ static const char* qasmGateLabels[] = {
     [GATE_ROTATE_Y] = "Ry",
     [GATE_ROTATE_Z] = "Rz",
     [GATE_UNITARY] = "U",
-    [GATE_PHASE_SHIFT] = "PHASESHIFT"
+    [GATE_PHASE_SHIFT] = "PHASESHIFT" // Rz for single gate, then need phase fix for controlled
 };
 
 // @TODO make a proper internal error thing
@@ -343,6 +344,21 @@ void qasm_recordMeasurement(QubitRegister qureg, const int measureQubit) {
         line, MAX_LINE_LEN, "%s %s[%d] -> %s[%d];\n",
         MEASURE_CMD, QUREG_LABEL, measureQubit, MESREG_LABEL, measureQubit);
         
+    // check whether we overflowed buffer
+    if (len >= MAX_LINE_LEN)
+        bufferOverflow();
+    
+    addStringToQASM(qureg, line, len);
+}
+
+void qasm_recordInitZero(QubitRegister qureg) {
+    
+    if (!qureg.qasmLog->isLogging)
+        return;
+    
+    char line[MAX_LINE_LEN + 1]; // for trailing \0
+    int len = snprintf(line, MAX_LINE_LEN, "%s %s;\n", INIT_ZERO_CMD, QUREG_LABEL);
+    
     // check whether we overflowed buffer
     if (len >= MAX_LINE_LEN)
         bufferOverflow();

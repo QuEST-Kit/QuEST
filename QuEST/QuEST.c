@@ -78,7 +78,7 @@ void writeRecordedQASMToFile(QubitRegister qureg, char* filename) {
 void initStateZero(QubitRegister qureg) {
     statevec_initStateZero(qureg); // valid for both statevec and density matrices
     
-    // @TODO QASM?
+    qasm_recordInitZero(qureg);
 }
 
 void initStatePlus(QubitRegister qureg) {
