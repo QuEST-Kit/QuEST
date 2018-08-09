@@ -32,15 +32,17 @@ extern "C" {
 
 void statevec_initStateFromAmps(QubitRegister qureg, long long int startInd, REAL* reals, REAL* imags, long long int numAmps) {
     
+    // !!! is this going to crap out if the user gives us an array of doubles, not reals?
+    
     cudaDeviceSynchronize();
     cudaMemcpy(
-        reals,
         qureg.deviceStateVec.real + startInd, 
+        reals,
         numAmps * sizeof(*(qureg.deviceStateVec.real)), 
         cudaMemcpyHostToDevice);
     cudaMemcpy(
+        qureg.deviceStateVec.imag + startInd,
         imags,
-        qureg.deviceStateVec.imag + startInd, 
         numAmps * sizeof(*(qureg.deviceStateVec.real)), 
         cudaMemcpyHostToDevice);
 }
@@ -52,13 +54,13 @@ void statevec_cloneQubitRegister(QubitRegister targetQureg, QubitRegister copyQu
     // copy copyQureg's GPU statevec to targetQureg's GPU statevec
     cudaDeviceSynchronize();
     cudaMemcpy(
-        copyQureg.deviceStateVec.real, 
         targetQureg.deviceStateVec.real, 
+        copyQureg.deviceStateVec.real, 
         targetQureg.numAmpsPerChunk*sizeof(*(targetQureg.deviceStateVec.real)), 
         cudaMemcpyDeviceToDevice);
     cudaMemcpy(
-        copyQureg.deviceStateVec.imag, 
         targetQureg.deviceStateVec.imag, 
+        copyQureg.deviceStateVec.imag, 
         targetQureg.numAmpsPerChunk*sizeof(*(targetQureg.deviceStateVec.imag)), 
         cudaMemcpyDeviceToDevice);
 }
