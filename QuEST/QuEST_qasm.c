@@ -33,11 +33,6 @@
 # define BUF_INIT_SIZE 1000     // initial size of the QASM buffer (#chars)
 # define BUF_GROW_FAC 2         // growth factor when buffer dynamically resizes
 
-/* @TODO
-    - buffer writing is sometimes failing - why?
-    - shrink param strings where possible
-*/
-
 static const char* qasmGateLabels[] = {
     [GATE_SIGMA_X] = "x",
     [GATE_SIGMA_Y] = "y",
