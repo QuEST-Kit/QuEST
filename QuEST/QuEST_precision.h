@@ -15,6 +15,7 @@
     # define REAL float
     # define MPI_QuEST_REAL MPI_FLOAT
     # define REAL_STRING_FORMAT "%.8f"
+    # define REAL_QASM_FORMAT "%.8g"
     # define REAL_EPS 1e-5
     # define absReal(X) fabs(X) // fabsf(X) - better to return doubles where possible
 # elif QuEST_PREC==4
@@ -24,6 +25,7 @@
     # define REAL long double
     # define MPI_QuEST_REAL MPI_LONG_DOUBLE
     # define REAL_STRING_FORMAT "%.17Lf"
+    # define REAL_QASM_FORMAT "%.17g"
     # define REAL_EPS 1e-14
     # define absReal(X) fabsl(X)
 # else
@@ -31,6 +33,7 @@
     # define REAL double
     # define MPI_QuEST_REAL MPI_DOUBLE
     # define REAL_STRING_FORMAT "%.14f"
+    # define REAL_QASM_FORMAT "%.14g"
     # define REAL_EPS 1e-13
     # define absReal(X) fabs(X)
 # endif

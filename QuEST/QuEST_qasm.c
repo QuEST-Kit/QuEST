@@ -5,7 +5,6 @@
  */
 
 /** @TODO
- * - trim 0s from decimals strings
  * - allow user-set decimal precision (useful for when QASM is passed to a plotter)
  * - sort out fixing global phase in controlledPhaseShift to controlledRotateZ plug
  * - add QASM comments to explain when multiple instructions are generated
@@ -141,11 +140,11 @@ void addGateToQASM(QubitRegister qureg, TargetGate gate, int* controlQubits, int
     // add target gate
     len += snprintf(line+len, MAX_LINE_LEN-len, "%s", qasmGateLabels[gate]);
     
-    // add argument if exists
+    // add parameters
     if (numParams > 0) {
         len += snprintf(line+len, MAX_LINE_LEN-len, "(");
         for (int i=0; i < numParams; i++) {
-            len += snprintf(line+len, MAX_LINE_LEN-len, REAL_STRING_FORMAT, params[i]);
+            len += snprintf(line+len, MAX_LINE_LEN-len, REAL_QASM_FORMAT, params[i]);
             if (i != numParams - 1)
                 len += snprintf(line+len, MAX_LINE_LEN-len, ",");
         }
