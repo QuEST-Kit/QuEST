@@ -532,6 +532,14 @@ void initPureState(QubitRegister qureg, QubitRegister pure) {
 
 
 
+// @TODO improve this, implemented CPU (local and MPI)
+void initStateFromAmps(QubitRegister qureg, long long int startInd, REAL* reals, REAL* imags, long long int numAmps) {
+    
+    validateStateIndex(qureg, startInd, __func__);
+    //@ @TODO validate numAmps > 0 <= totalNumAmps (not per chunk)
+    
+    statevec_initStateFromAmps(qureg, startInd, reals, imags, numAmps);
+}
 
 
 

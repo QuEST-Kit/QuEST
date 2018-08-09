@@ -30,12 +30,27 @@ extern "C" {
 
 
 
+void statevec_initStateFromAmps(QubitRegister qureg, long long int startInd, REAL* reals, REAL* imags, long long int numAmps) {
+    
+    cudaDeviceSynchronize();
+    cudaMemcpy(
+        reals,
+        qureg.deviceStateVec.real + startInd, 
+        numAmps * sizeof(*(qureg.deviceStateVec.real)), 
+        cudaMemcpyHostToDevice);
+    cudaMemcpy(
+        imags,
+        qureg.deviceStateVec.imag + startInd, 
+        numAmps * sizeof(*(qureg.deviceStateVec.real)), 
+        cudaMemcpyHostToDevice);
+}
 
 
 /** works for both statevectors and density matrices */
 void statevec_cloneQubitRegister(QubitRegister targetQureg, QubitRegister copyQureg) {
     
     // copy copyQureg's GPU statevec to targetQureg's GPU statevec
+    cudaDeviceSynchronize();
     cudaMemcpy(
         copyQureg.deviceStateVec.real, 
         targetQureg.deviceStateVec.real, 
