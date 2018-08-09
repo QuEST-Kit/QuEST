@@ -467,12 +467,6 @@ REAL calcTotalProbability(QubitRegister qureg) {
             return statevec_calcTotalProbability(qureg);
 }
 
-REAL calcPurity(QubitRegister qureg) {
-    validateDensityMatrQureg(qureg, __func__);
-    
-    return densmatr_calcPurity(qureg);
-}
-
 Complex calcInnerProduct(QubitRegister bra, QubitRegister ket) {
     validateStateVecQureg(bra, __func__);
     validateStateVecQureg(ket, __func__);
@@ -500,6 +494,12 @@ void cloneQubitRegister(QubitRegister targetQureg, QubitRegister copyQureg) {
 
 
 
+// @TODO CPU local/MPI 
+REAL calcPurity(QubitRegister qureg) {
+    validateDensityMatrQureg(qureg, __func__);
+    
+    return densmatr_calcPurity(qureg);
+}
 
 // @TODO CPU local densmatr_calcFidelity
 // @TODO CPU MPI densmatr_calcFidelity
