@@ -135,8 +135,8 @@ Complex statevec_calcInnerProductLocal(QubitRegister bra, QubitRegister ket) {
             ketIm = ketVecImag[index];
             
             // conj(bra_i) * ket_i
-            innerProdReal += braRe*ketRe - braIm*ketIm;
-            innerProdImag += braRe*ketIm + braIm*ketRe;
+            innerProdReal += braRe*ketRe + braIm*ketIm;
+            innerProdImag += braRe*ketIm - braIm*ketRe;
         }
     }
     
