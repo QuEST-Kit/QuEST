@@ -71,6 +71,8 @@ void qasm_recordMeasurement(QubitRegister qureg, const int measureQubit);
 
 void qasm_recordInitZero(QubitRegister qureg);
 
+void qasm_recordInitClassical(QubitRegister qureg, long long int stateInd);
+
 void qasm_clearRecorded(QubitRegister qureg);
 
 void qasm_printRecorded(QubitRegister qureg);

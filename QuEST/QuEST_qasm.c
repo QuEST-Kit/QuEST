@@ -4,6 +4,15 @@
  * Functions for generating QASM output from QuEST circuits
  */
 
+/** @TODO
+ * - trim 0s from decimals strings
+ * - allow user-set decimal precision (useful for when QASM is passed to a plotter)
+ * - sort out fixing global phase in controlledPhaseShift to controlledRotateZ plug
+ * - add QASM comments to explain when multiple instructions are generated
+ * - add functions to directly add comments to QASM by user
+ * - add abilitiy for user to directly add strings to QASM buffer??
+ */
+
 # include "QuEST.h"
 # include "QuEST_precision.h"
 # include "QuEST_internal.h"
@@ -364,6 +373,20 @@ void qasm_recordInitZero(QubitRegister qureg) {
         bufferOverflow();
     
     addStringToQASM(qureg, line, len);
+}
+
+void qasm_recordInitClassical(QubitRegister qureg, long long int stateInd) {
+    
+    if (!qureg.qasmLog->isLogging)
+        return;
+    
+    // start in |0>
+    qasm_recordInitZero(qureg);
+    
+    // NOT the 1 bits in stateInd
+    for (int q=0; q < qureg.numQubitsRepresented; q++) 
+        if ((stateInd >> q) & 1)
+            qasm_recordGate(qureg, GATE_SIGMA_X, q);
 }
 
 void qasm_clearRecorded(QubitRegister qureg) {

@@ -98,7 +98,8 @@ void initClassicalState(QubitRegister qureg, long long int stateInd) {
     else
         statevec_initClassicalState(qureg, stateInd);
     
-    // @TODO QASM?
+    qasm_recordInitClassical(qureg, stateInd);
+    
 }
 
 void initStateFromAmps(QubitRegister qureg, long long int startInd, REAL* reals, REAL* imags, long long int numAmps) {
