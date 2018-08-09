@@ -66,6 +66,41 @@ void densmatr_combineDensityMatrices(REAL combineProb, QubitRegister combineQure
     
 }
 
+// @TODO
+REAL densmatr_calcFidelity(QubitRegister qureg, QubitRegister pureState) {
+    return 0;
+}
+
+// @TODO
+REAL densmatr_calcPurity(QubitRegister qureg) {
+    return 0;
+}
+
+
+// @TODO unit test
+void statevec_initStateFromAmps(QubitRegister qureg, long long int startInd, REAL* reals, REAL* imags, long long int numAmps) {
+    
+    // local start/end indices of the given amplitudes, assuming they fit in this chunk
+    // these may be negative or above qureg.numAmpsPerChunk
+    long long int localStartInd = startInd - qureg.chunkId*qureg.numAmpsPerChunk;
+    long long int localEndInd = localStartInd + numAmps; // exclusive
+    
+    // add this to a local index to get corresponding elem in reals & imags
+    long long int offset = qureg.chunkId*qureg.numAmpsPerChunk - startInd;
+    
+    // restrict these indices to fit into this chunk
+    if (localStartInd < 0)
+        localStartInd = 0;
+    if (localEndInd > qureg.numAmpsPerChunk)
+        localEndInd = qureg.numAmpsPerChunk;
+    // they may now be out of order = no iterations
+    
+    // iterate these local inds - this might involved no iterations
+    for (long long int index=localStartInd; index < localEndInd; index++) {
+        qureg.stateVec.real[index] = reals[index + offset];
+        qureg.stateVec.imag[index] = imags[index + offset];
+    }
+}
 
 
 
