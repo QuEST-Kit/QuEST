@@ -279,6 +279,7 @@ void qasm_recordControlledUnitary(QubitRegister qureg, ComplexMatrix2 u, int con
     addGateToQASM(qureg, GATE_UNITARY, controls, 1, targetQubit, params, 3);
     
     // add Rz
+    qasm_recordComment(qureg, "Restoring the discarded global phase of the previous controlled unitary");
     REAL phaseFix[1] = {globalPhase};
     addGateToQASM(qureg, GATE_ROTATE_Z, NULL, 0, targetQubit, phaseFix, 1);
 }
