@@ -10,9 +10,16 @@
 # include "QuEST_debug.h"
 
 # define NUM_TESTS 30
-# define COMPARE_PRECISION 10e-13
 # define PATH_TO_TESTS "unit/"
 # define VERBOSE 0
+
+// quad precision unit testing no more stringent than double
+# if QuEST_PREC==1
+# define COMPARE_PRECISION 10e-5
+# else
+# define COMPARE_PRECISION 10e-13
+# endif
+
 
 QuESTEnv env;
 
@@ -575,7 +582,7 @@ int test_compactUnitary(char testName[200]){
     alpha.imag = cos(angs[0]) * sin(angs[1]);
     beta.real  = sin(angs[0]) * cos(angs[2]);
     beta.imag  = sin(angs[0]) * sin(angs[2]);
-
+    
     createQubitRegister(&mq, numQubits, env);
     createQubitRegister(&mqVerif, numQubits, env);
 
@@ -589,19 +596,20 @@ int test_compactUnitary(char testName[200]){
     // not that it changed correctly
     if (passed) passed = !compareStates(mq, mqVerif, COMPARE_PRECISION);
 
-
     // Rotate back the other way and check we arrive back at the initial state
-    alpha.real = alpha.real;
-    alpha.imag = -alpha.imag;
-    beta.real  = -beta.real;
-    beta.imag  = -beta.imag;
+    // (conjugate transpose of the unitary)
+    alpha.imag *= -1;
+    beta.real  *= -1;
+    beta.imag  *= -1;
 
-    for (int i=numQubits-1; i>=0; i--){
+    // (order of qubits operated upon doesn't matter)
+    for (int i=0; i<numQubits; i++){
         rotQubit=i;
         compactUnitary(mq, rotQubit, alpha, beta);
     }
 
-    if (passed) passed = compareStates(mq, mqVerif, COMPARE_PRECISION);
+    // unitaries are relatively imprecise (10* needed for signle precision)
+    if (passed) passed = compareStates(mq, mqVerif, 10*COMPARE_PRECISION);
 
     destroyQubitRegister(mq, env);
     destroyQubitRegister(mqVerif, env);
@@ -669,7 +677,9 @@ int test_unitary(char testName[200]){
     }
 
     initStateDebug(mqVerif);
-    if (passed) passed = compareStates(mq, mqVerif, COMPARE_PRECISION);
+    
+    // unitaries are relatively imprecise (10* needed for single precision)
+    if (passed) passed = compareStates(mq, mqVerif, 10*COMPARE_PRECISION);
 
     destroyQubitRegister(mq, env);
     destroyQubitRegister(mqVerif, env);
@@ -1199,6 +1209,10 @@ int test_calcInnerProduct(char testName[200]) {
 int main (int narg, char** varg) {
     initQuESTEnv(&env);
     reportQuESTEnv(env);
+    
+    printf("COMP_PREC: ");
+    printf("%.14lf", COMPARE_PRECISION);
+    printf("\n");
 
     int (*tests[NUM_TESTS])(char[200]) = {
         test_controlledNot,
