@@ -987,7 +987,7 @@ void statevec_controlledSigmaY(QubitRegister qureg, const int controlQubit, cons
 
 void statevec_controlledSigmaYConj(QubitRegister qureg, const int controlQubit, const int targetQubit)
 {
-    int conjFactor = 1;
+    int conjFactor = -1;
     int threadsPerCUDABlock, CUDABlocks;
     threadsPerCUDABlock = 128;
     CUDABlocks = ceil((REAL)(qureg.numAmpsPerChunk)/threadsPerCUDABlock);
