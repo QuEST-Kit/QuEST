@@ -1209,10 +1209,6 @@ int test_calcInnerProduct(char testName[200]) {
 int main (int narg, char** varg) {
     initQuESTEnv(&env);
     reportQuESTEnv(env);
-    
-    printf("COMP_PREC: ");
-    printf("%.14lf", COMPARE_PRECISION);
-    printf("\n");
 
     int (*tests[NUM_TESTS])(char[200]) = {
         test_controlledNot,
