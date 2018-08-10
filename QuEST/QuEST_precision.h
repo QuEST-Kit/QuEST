@@ -25,7 +25,7 @@
     # define REAL long double
     # define MPI_QuEST_REAL MPI_LONG_DOUBLE
     # define REAL_STRING_FORMAT "%.17Lf"
-    # define REAL_QASM_FORMAT "%.17g"
+    # define REAL_QASM_FORMAT "%.17Lg"
     # define REAL_EPS 1e-14
     # define absReal(X) fabsl(X)
 # else

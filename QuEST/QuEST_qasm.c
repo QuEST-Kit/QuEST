@@ -7,7 +7,6 @@
 /** @TODO
  * - allow user-set decimal precision (useful for when QASM is passed to a plotter)
  * - sort out fixing global phase in controlledPhaseShift to controlledRotateZ plug
- * - add QASM comments to explain when multiple instructions are generated
  * - add functions to directly add comments to QASM by user
  * - add abilitiy for user to directly add strings to QASM buffer??
  */
@@ -428,15 +427,3 @@ void qasm_free(QubitRegister qureg) {
     free(qureg.qasmLog->buffer);
     free(qureg.qasmLog);
 }
-
-
-// will need more for specifying general gates (rotations, unitaries, etc)
-
-
-
-
-
-
-
-
-
