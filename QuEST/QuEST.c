@@ -87,7 +87,7 @@ void initStatePlus(QubitRegister qureg) {
     else
         statevec_initStatePlus(qureg);
     
-    // @TODO QASM?
+    qasm_recordInitPlus(qureg);
 }
 
 void initClassicalState(QubitRegister qureg, long long int stateInd) {

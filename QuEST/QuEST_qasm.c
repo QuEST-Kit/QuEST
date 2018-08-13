@@ -380,6 +380,34 @@ void qasm_recordInitZero(QubitRegister qureg) {
     addStringToQASM(qureg, line, len);
 }
 
+void qasm_recordInitPlus(QubitRegister qureg) {
+    
+    if (!qureg.qasmLog->isLogging)
+        return;
+    
+    // add an explanatory comment
+    char buf[MAX_LINE_LEN+1];
+    sprintf(buf, "Initialising state |+>");
+    qasm_recordComment(qureg, buf);
+    
+    // it's valid QASM to h the register (I think)
+    // |+> = H |0>
+    qasm_recordInitZero(qureg);
+    int charsWritten = snprintf(
+        buf, MAX_LINE_LEN, "%s %s;\n", 
+        qasmGateLabels[GATE_HADAMARD], QUREG_LABEL);
+    if (charsWritten >= MAX_LINE_LEN)
+        bufferOverflow();
+    addStringToQASM(qureg, buf, charsWritten);
+    
+    
+    /*
+    qasm_recordInitZero(qureg);
+    for (int q=0; q < qureg.numQubitsRepresented; q++)
+        qasm_recordGate(qureg, GATE_HADAMARD, q);
+    */
+}
+
 void qasm_recordInitClassical(QubitRegister qureg, long long int stateInd) {
     
     if (!qureg.qasmLog->isLogging)
