@@ -16,6 +16,10 @@ void densmatr_initPureStateDistributed(QubitRegister targetQureg, QubitRegister 
 
 void densmatr_initPureStateLocal(QubitRegister targetQureg, QubitRegister copyQureg);
 
+REAL densmatr_calcFidelityLocal(QubitRegister qureg, QubitRegister pureState);
+
+REAL densmatr_calcFidelityDistributed(QubitRegister qureg, QubitRegister pureState);
+
 REAL densmatr_findProbabilityOfZeroLocal(QubitRegister qureg, const int measureQubit);
 
 Complex statevec_calcInnerProductLocal(QubitRegister bra, QubitRegister ket);

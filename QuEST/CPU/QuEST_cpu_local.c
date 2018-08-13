@@ -35,7 +35,9 @@ void densmatr_collapseToKnownProbOutcome(QubitRegister qureg, const int measureQ
 }
 
 
-
+REAL densmatr_calcFidelity(QubitRegister qureg, QubitRegister pureState) {
+    return densmatr_calcFidelityLocal(qureg, pureState);
+}
 
 
 

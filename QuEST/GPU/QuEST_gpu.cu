@@ -1691,8 +1691,8 @@ __global__ void densmatr_calcFidelityKernel(QubitRegister dens, QubitRegister ve
     
     REAL* densReal = dens.deviceStateVec.real;
     REAL* densImag = dens.deviceStateVec.imag;
-    REAL *vecReal = vec.deviceStateVec.real;
-    REAL *vecImag = vec.deviceStateVec.imag;
+    REAL* vecReal  = vec.deviceStateVec.real;
+    REAL* vecImag  = vec.deviceStateVec.imag;
     
     // compute the row-th element of the product dens*vec
     REAL prodReal = 0;

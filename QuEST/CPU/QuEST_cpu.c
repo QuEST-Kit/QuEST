@@ -67,14 +67,109 @@ void densmatr_combineDensityMatrices(REAL combineProb, QubitRegister combineQure
 }
 
 // @TODO
-REAL densmatr_calcFidelity(QubitRegister qureg, QubitRegister pureState) {
-    return 0;
-}
-
-// @TODO
 REAL densmatr_calcPurity(QubitRegister qureg) {
     return 0;
 }
+
+
+
+
+// @TODO openMP parallelise
+
+/** computes a few dens-columns-worth of (vec^*T) dens * vec */
+REAL densmatr_calcFidelityLocal(QubitRegister qureg, QubitRegister pureState) {
+    
+    /* Here, elements of pureState are not accessed (instead grabbed from qureg.pair).
+     * We only consult the attributes.
+     *
+     * qureg is a density matrix, and pureState is a statevector.
+     * Every node contains as many columns of qureg as amps by pureState.
+     * Ergo, this node contains columns:
+     * qureg.chunkID * pureState.numAmpsPerChunk  to
+     * (qureg.chunkID + 1) * pureState.numAmpsPerChunk
+     *
+     * The first pureState.numAmpsTotal elements of qureg.pairStateVec are the
+     * full pure state-vector
+     */
+    
+    // unpack everything for OPENMP
+    REAL* vecRe  = qureg.pairStateVec.real;
+    REAL* vecIm  = qureg.pairStateVec.imag;
+    REAL* densRe = qureg.stateVec.real;
+    REAL* densIm = qureg.stateVec.imag;
+    
+    int row, col;
+    int dim = pureState.numAmpsTotal;
+    int colsPerNode = pureState.numAmpsPerChunk;
+    
+    REAL densElemRe, densElemIm;
+    REAL prefacRe, prefacIm;
+    REAL rowSumRe, rowSumIm;
+    REAL vecElemRe, vecElemIm;
+    
+    // starting GLOBAL column index of the qureg columns on this node
+    int startCol = qureg.chunkId * pureState.numAmpsPerChunk;
+    
+    // quantity computed by this node
+    REAL globalSumRe = 0;   // imag-component is assumed zero
+    
+# ifdef _OPENMP
+# pragma omp parallel \
+    shared    (vecRe,vecIm,densRe,densIm, dim,colsPerNode,startCol) \
+    private   (row,col, prefacRe,prefacIm, rowSumRe,rowSumIm, densElemRe,densElemIm, vecElemRe,vecElemIm) \
+    reduction ( +:globalSumRe )
+# endif 
+    {
+# ifdef _OPENMP
+# pragma omp for schedule  (static)
+# endif
+        // indices of my GLOBAL row
+        for (row=0; row < dim; row++) {
+            
+            // single element of conj(pureState)
+            prefacRe =   vecRe[row];
+            prefacIm = - vecIm[row];
+        
+            rowSumRe = 0;
+            rowSumIm = 0;
+            
+            // indices of my LOCAL column
+            for (col=0; col < colsPerNode; col++) {
+            
+                // my local density element
+                densElemRe = densRe[row + dim*col];
+                densElemIm = densIm[row + dim*col];
+            
+                // state-vector element
+                vecElemRe = vecRe[startCol + col];
+                vecElemIm = vecIm[startCol + col];
+            
+                rowSumRe += densElemRe*vecElemRe - densElemIm*vecElemIm;
+                rowSumIm += densElemRe*vecElemIm + densElemIm*vecElemRe;
+            }
+        
+            globalSumRe += rowSumRe*prefacRe + rowSumIm*prefacIm;   
+        }
+    }
+    
+    return globalSumRe;
+}
+
+
+// @TODO 
+REAL densmatr_calcFidelityDistributed(QubitRegister qureg, QubitRegister pureState) {
+    
+    // send the pureState to every machine's qureg.pairStateVec
+    // every pureState machine here has a slice of pureState, and will send
+    // it to the appropriate starting index of qureg.pairStateVec
+    
+    // collect calcFidelityLocal by every machine
+    
+    // MPI reduce
+}
+
+
+
 
 Complex statevec_calcInnerProductLocal(QubitRegister bra, QubitRegister ket) {
     
