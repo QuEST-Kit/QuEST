@@ -108,7 +108,7 @@ void initStateFromAmps(QubitRegister qureg, long long int startInd, REAL* reals,
     
     statevec_initStateFromAmps(qureg, startInd, reals, imags, numAmps);
     
-    // @TODO QASM?
+    qasm_recordComment(qureg, "(Initialising state from amplitude arrays not encoded)");
 }
 
 void hadamard(QubitRegister qureg, const int targetQubit) {
@@ -326,7 +326,7 @@ void phaseShift(QubitRegister qureg, const int targetQubit, REAL angle) {
 }
 
 void controlledPhaseShift(QubitRegister qureg, const int idQubit1, const int idQubit2, REAL angle) {
-    validateControlTarget(qureg, idQubit1, idQubit2, __func__); // a little bit semantically dodgy
+    validateControlTarget(qureg, idQubit1, idQubit2, __func__);
     
     statevec_controlledPhaseShift(qureg, idQubit1, idQubit2, angle);
     if (qureg.isDensityMatrix) {
@@ -376,7 +376,7 @@ void controlledSigmaY(QubitRegister qureg, const int controlQubit, const int tar
 }
 
 void controlledPhaseFlip(QubitRegister qureg, const int idQubit1, const int idQubit2) {
-    validateControlTarget(qureg, idQubit1, idQubit2, __func__); // a little bit semantically dodgy
+    validateControlTarget(qureg, idQubit1, idQubit2, __func__);
     
     statevec_controlledPhaseFlip(qureg, idQubit1, idQubit2);
     if (qureg.isDensityMatrix) {
@@ -486,7 +486,7 @@ Complex calcInnerProduct(QubitRegister bra, QubitRegister ket) {
 }
 
 REAL findProbabilityOfOutcome(QubitRegister qureg, const int measureQubit, int outcome) {
-    validateTarget(qureg, measureQubit, __func__); // should rename? meh
+    validateTarget(qureg, measureQubit, __func__);
     validateOutcome(outcome, __func__);
     
     if (qureg.isDensityMatrix)
