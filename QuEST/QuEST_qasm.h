@@ -75,6 +75,8 @@ void qasm_recordInitPlus(QubitRegister qureg);
 
 void qasm_recordInitClassical(QubitRegister qureg, long long int stateInd);
 
+void qasm_recordComment(QubitRegister qureg, char* comment);
+
 void qasm_clearRecorded(QubitRegister qureg);
 
 void qasm_printRecorded(QubitRegister qureg);
