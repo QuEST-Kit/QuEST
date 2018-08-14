@@ -5,6 +5,8 @@
  * state-vector precision. Using single, double or quad floating point precision
  * has consequences for operation precision, total memory requirements,
  * network bandwidth and ultimately runtime.
+
+
  */
 
 # include <math.h>
@@ -22,7 +24,7 @@
     // 4 bytes per amplitude component
     # define REAL float
     # define MPI_QuEST_REAL MPI_FLOAT
-    # define MPI_MAX_AMPS_IN_MSG (1LL<<29)
+    # define MPI_MAX_AMPS_IN_MSG (1LL<<29) // must be 2^int
     # define REAL_STRING_FORMAT "%.8f"
     # define REAL_QASM_FORMAT "%.8g"
     # define REAL_EPS 1e-5
@@ -32,7 +34,7 @@
     // 8 bytes per amplitude component
     # define REAL double
     # define MPI_QuEST_REAL MPI_DOUBLE
-    # define MPI_MAX_AMPS_IN_MSG (1LL<<28)
+    # define MPI_MAX_AMPS_IN_MSG (1LL<<28) // must be 2^int
     # define REAL_STRING_FORMAT "%.14f"
     # define REAL_QASM_FORMAT "%.14g"
     # define REAL_EPS 1e-13
@@ -43,7 +45,7 @@
     // not compatible with most GPUs
     # define REAL long double
     # define MPI_QuEST_REAL MPI_LONG_DOUBLE
-    # define MPI_MAX_AMPS_IN_MSG (1LL<<27)
+    # define MPI_MAX_AMPS_IN_MSG (1LL<<27) // must be 2^int
     # define REAL_STRING_FORMAT "%.17Lf"
     # define REAL_QASM_FORMAT "%.17Lg"
     # define REAL_EPS 1e-14
