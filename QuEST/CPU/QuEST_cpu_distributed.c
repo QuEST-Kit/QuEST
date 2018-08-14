@@ -17,6 +17,7 @@
 # include <mpi.h>
 # include <stdlib.h>
 # include <stdio.h>
+# include <string.h>    // for memcpy
 # include <math.h>
 # include <time.h>
 # include <sys/types.h>
@@ -41,6 +42,52 @@ void densmatr_collapseToKnownProbOutcome(QubitRegister qureg, const int measureQ
 	printf("densmatr_collapseToKnownProbOutcome NOT YET IMPLEMENTED IN distributed CPU!\n");
 	
 }
+
+
+
+
+// @TODO 
+REAL densmatr_calcFidelity(QubitRegister qureg, QubitRegister pureState) {
+    
+   /* qureg is a density matrix, and pureState is a statevector.
+    * Every node contains as many columns of qureg as amps by pureState.
+    * Ergo, this node contains columns:
+    * qureg.chunkID * pureState.numAmpsPerChunk  to
+    * (qureg.chunkID + 1) * pureState.numAmpsPerChunk
+    *
+    * The first pureState.numAmpsTotal elements of qureg.pairStateVec are to be
+    * set to the full pure state-vector
+    */
+    
+    // send the pureState to every machine's qureg.pairStateVec
+    // every pureState machine here has a slice of pureState, and will send
+    // it to the appropriate starting index of qureg.pairStateVec
+    
+    // copy this state's pure state section into this qureg's pairState
+    long long int numLocalAmps = pureState.numAmpsPerChunk;
+    long long int offset = pureState.chunkId * numLocalAmps;
+    memcpy(&qureg.pairStateVec.real[offset], pureState.stateVec.real, numLocalAmps * sizeof(REAL));
+    memcpy(&qureg.pairStateVec.imag[offset], pureState.stateVec.imag, numLocalAmps * sizeof(REAL));
+    
+    // @TODO can't send the whole state in one go like this:
+    // @TODO see exchangeStateVectors
+    
+    // every node sends a slice of qureg's pairState to every other
+    MPI_Bcast(&qureg.pairStateVec.real[offset], numLocalAmps,  MPI_QuEST_REAL, pureState.chunkId, MPI_COMM_WORLD);
+    MPI_Bcast(&qureg.pairStateVec.imag[offset], numLocalAmps,  MPI_QuEST_REAL, pureState.chunkId, MPI_COMM_WORLD);
+    
+    // qureg's pairState is now the full pureState
+ 
+    // collect calcFidelityLocal by every machine
+    REAL localSum = densmatr_calcFidelityLocal(qureg, pureState);
+    
+    // MPI reduce
+    REAL globalSum;
+    MPI_Allreduce(&localSum, &globalSum, 1, MPI_QuEST_REAL, MPI_SUM, MPI_COMM_WORLD);
+    
+    return globalSum;
+}
+
 
 
 

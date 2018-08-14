@@ -155,22 +155,6 @@ REAL densmatr_calcFidelityLocal(QubitRegister qureg, QubitRegister pureState) {
     return globalSumRe;
 }
 
-
-// @TODO 
-REAL densmatr_calcFidelityDistributed(QubitRegister qureg, QubitRegister pureState) {
-    
-    // send the pureState to every machine's qureg.pairStateVec
-    // every pureState machine here has a slice of pureState, and will send
-    // it to the appropriate starting index of qureg.pairStateVec
-    
-    // collect calcFidelityLocal by every machine
-    
-    // MPI reduce
-}
-
-
-
-
 Complex statevec_calcInnerProductLocal(QubitRegister bra, QubitRegister ket) {
     
     REAL innerProdReal = 0;
