@@ -326,6 +326,11 @@ void copyVecIntoMatrixPairState(QubitRegister matr, QubitRegister vec) {
     // @TODO can't send the whole state in one go like this:
     // @TODO see exchangeStateVectors
     
+    long long int maxMsgSize = MPI_MAX_AMPS_IN_MSG;
+    if (numLocalAmps < maxMsgSize) 
+        maxMsgSize = numLocalAmps;
+    int numMsgs = numLocalAmps / maxMsgSize;
+    
     // every node sends a slice of qureg's pairState to every other
     MPI_Bcast(&matr.pairStateVec.real[offset], numLocalAmps,  MPI_QuEST_REAL, vec.chunkId, MPI_COMM_WORLD);
     MPI_Bcast(&matr.pairStateVec.imag[offset], numLocalAmps,  MPI_QuEST_REAL, vec.chunkId, MPI_COMM_WORLD);
@@ -339,7 +344,7 @@ void exchangeStateVectors(QubitRegister qureg, int pairRank){
     // Multiple messages are required as MPI uses int rather than long long int for count
     // For openmpi, messages are further restricted to 2GB in size -- do this for all cases
     // to be safe
-    long long int maxMessageCount = MPI_MAX_MSG_SIZE;
+    long long int maxMessageCount = MPI_MAX_AMPS_IN_MSG;
     if (qureg.numAmpsPerChunk < maxMessageCount) 
         maxMessageCount = qureg.numAmpsPerChunk;
     
