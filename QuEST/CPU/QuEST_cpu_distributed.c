@@ -46,7 +46,7 @@ void densmatr_collapseToKnownProbOutcome(QubitRegister qureg, const int measureQ
 
 
 
-// @TODO 
+// @TODO fragment MPI arr sending
 REAL densmatr_calcFidelity(QubitRegister qureg, QubitRegister pureState) {
     
    /* qureg is a density matrix, and pureState is a statevector.

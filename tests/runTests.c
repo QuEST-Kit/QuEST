@@ -9,7 +9,7 @@
 # include "QuEST_precision.h"
 # include "QuEST_debug.h"
 
-# define NUM_TESTS 30
+# define NUM_TESTS 31
 # define PATH_TO_TESTS "unit/"
 # define VERBOSE 0
 
@@ -1205,6 +1205,64 @@ int test_calcInnerProduct(char testName[200]) {
 
 
 
+int test_calcFidelity(char testName[200]) {
+    int passed=1;
+    int numQubits=5;
+    REAL fid;
+    
+    QubitRegister pure;
+    createQubitRegister(&pure, numQubits, env);
+    
+    /*
+     * test pure fid = |<a|b>|^2 (trivially calcInnerProduct, so not rigorous)
+     */
+    QubitRegister otherPure;
+    createQubitRegister(&otherPure, numQubits, env);
+    
+    initStateZero(pure);
+    initStatePlus(otherPure); // <0|+> = 1/sqrt(2^n)
+    fid = calcFidelity(otherPure, pure); // |<0|+>|^2 = 1/2^n
+    if (passed) passed = compareReals(fid, 1.0/pow(2.0,numQubits), COMPARE_PRECISION);
+    
+    destroyQubitRegister(otherPure, env);
+    
+    /* 
+     * test mixed fid = <a| b |a>
+     */
+    QubitRegister mixed;
+    createDensityQubitRegister(&mixed, numQubits, env);
+    
+    // <0|0><0|0> = 1
+    initStateZero(pure);
+    initStateZero(mixed);
+    fid = calcFidelity(mixed, pure); 
+    if (passed) passed = compareReals(fid, 1.0, COMPARE_PRECISION);
+    
+    // <0|0...1><0...1|0> = 0
+    initStateZero(pure);
+    initClassicalState(mixed, 1);
+    fid = calcFidelity(mixed, pure); 
+    if (passed) passed = compareReals(fid, 0.0, COMPARE_PRECISION);
+    
+    // <0| .2 |0><0| + .8 |..1><..1| |0> = .2
+    QubitRegister otherMixed;
+    createDensityQubitRegister(&otherMixed, numQubits, env);
+    initStateZero(pure);
+    initStateZero(mixed);
+    initClassicalState(otherMixed, 1);
+    combineDensityMatrices(0.2, mixed, 0.8, otherMixed); // .2 |0><0| + .8 |..1><..1|
+    fid = calcFidelity(mixed, pure); 
+    //if (passed) passed = compareReals(fid, 0.2, COMPARE_PRECISION);
+    printf("@TODO: calcFidelity needs combineDensityMatrices!\n");
+    
+    destroyQubitRegister(otherMixed, env);
+    destroyQubitRegister(mixed, env);
+    
+    // finish
+    destroyQubitRegister(pure, env);
+    return passed;
+}
+
 
 int main (int narg, char** varg) {
     initQuESTEnv(&env);
@@ -1240,7 +1298,8 @@ int main (int narg, char** varg) {
         test_getRealAmpEl,
         test_getImagAmpEl,
         test_getProbEl,
-        test_calcInnerProduct
+        test_calcInnerProduct,
+        test_calcFidelity
     };
 
     char testNames[NUM_TESTS][200] = {
@@ -1273,7 +1332,8 @@ int main (int narg, char** varg) {
         "getRealAmpEl",
         "getImagAmpEl",
         "getProbEl",
-        "calcInnerProduct"
+        "calcInnerProduct",
+        "calcFidelity"
     };
     int passed=0;
     if (env.rank==0) printf("\nRunning unit tests\n");

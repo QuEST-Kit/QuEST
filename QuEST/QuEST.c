@@ -511,8 +511,8 @@ REAL calcPurity(QubitRegister qureg) {
     return densmatr_calcPurity(qureg);
 }
 
-// @TODO CPU local densmatr_calcFidelity
-// @TODO CPU MPI densmatr_calcFidelity
+
+
 REAL calcFidelity(QubitRegister qureg, QubitRegister pureState) {
     validateSecondQuregStateVec(pureState, __func__);
     validateMatchingQuregDims(qureg, pureState, __func__);
