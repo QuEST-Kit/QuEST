@@ -43,54 +43,6 @@ void densmatr_collapseToKnownProbOutcome(QubitRegister qureg, const int measureQ
 	
 }
 
-
-
-
-// @TODO fragment MPI arr sending
-REAL densmatr_calcFidelity(QubitRegister qureg, QubitRegister pureState) {
-    
-   /* qureg is a density matrix, and pureState is a statevector.
-    * Every node contains as many columns of qureg as amps by pureState.
-    * Ergo, this node contains columns:
-    * qureg.chunkID * pureState.numAmpsPerChunk  to
-    * (qureg.chunkID + 1) * pureState.numAmpsPerChunk
-    *
-    * The first pureState.numAmpsTotal elements of qureg.pairStateVec are to be
-    * set to the full pure state-vector
-    */
-    
-    // send the pureState to every machine's qureg.pairStateVec
-    // every pureState machine here has a slice of pureState, and will send
-    // it to the appropriate starting index of qureg.pairStateVec
-    
-    // copy this state's pure state section into this qureg's pairState
-    long long int numLocalAmps = pureState.numAmpsPerChunk;
-    long long int offset = pureState.chunkId * numLocalAmps;
-    memcpy(&qureg.pairStateVec.real[offset], pureState.stateVec.real, numLocalAmps * sizeof(REAL));
-    memcpy(&qureg.pairStateVec.imag[offset], pureState.stateVec.imag, numLocalAmps * sizeof(REAL));
-    
-    // @TODO can't send the whole state in one go like this:
-    // @TODO see exchangeStateVectors
-    
-    // every node sends a slice of qureg's pairState to every other
-    MPI_Bcast(&qureg.pairStateVec.real[offset], numLocalAmps,  MPI_QuEST_REAL, pureState.chunkId, MPI_COMM_WORLD);
-    MPI_Bcast(&qureg.pairStateVec.imag[offset], numLocalAmps,  MPI_QuEST_REAL, pureState.chunkId, MPI_COMM_WORLD);
-    
-    // qureg's pairState is now the full pureState
- 
-    // collect calcFidelityLocal by every machine
-    REAL localSum = densmatr_calcFidelityLocal(qureg, pureState);
-    
-    // MPI reduce
-    REAL globalSum;
-    MPI_Allreduce(&localSum, &globalSum, 1, MPI_QuEST_REAL, MPI_SUM, MPI_COMM_WORLD);
-    
-    return globalSum;
-}
-
-
-
-
 Complex statevec_calcInnerProduct(QubitRegister bra, QubitRegister ket) {
     
     Complex localInnerProd = statevec_calcInnerProductLocal(bra, ket);
@@ -363,6 +315,22 @@ static int halfMatrixBlockFitsInChunk(long long int chunkSize, int targetQubit)
     else return 0;
 }
 
+void copyVecIntoMatrixPairState(QubitRegister matr, QubitRegister vec) {
+    
+    // copy this state's pure state section into this qureg's pairState
+    long long int numLocalAmps = vec.numAmpsPerChunk;
+    long long int offset = vec.chunkId * numLocalAmps;
+    memcpy(&matr.pairStateVec.real[offset], vec.stateVec.real, numLocalAmps * sizeof(REAL));
+    memcpy(&matr.pairStateVec.imag[offset], vec.stateVec.imag, numLocalAmps * sizeof(REAL));
+    
+    // @TODO can't send the whole state in one go like this:
+    // @TODO see exchangeStateVectors
+    
+    // every node sends a slice of qureg's pairState to every other
+    MPI_Bcast(&matr.pairStateVec.real[offset], numLocalAmps,  MPI_QuEST_REAL, vec.chunkId, MPI_COMM_WORLD);
+    MPI_Bcast(&matr.pairStateVec.imag[offset], numLocalAmps,  MPI_QuEST_REAL, vec.chunkId, MPI_COMM_WORLD);
+}
+
 void exchangeStateVectors(QubitRegister qureg, int pairRank){
     // MPI send/receive vars
     int TAG=100;
@@ -371,11 +339,10 @@ void exchangeStateVectors(QubitRegister qureg, int pairRank){
     // Multiple messages are required as MPI uses int rather than long long int for count
     // For openmpi, messages are further restricted to 2GB in size -- do this for all cases
     // to be safe
-    long long int maxMessageCount = 1LL<<29;
-    if (sizeof(REAL)==8) maxMessageCount = (1LL<<28);
-    else if (sizeof(REAL)==16) maxMessageCount = (1LL<<27);
-
-    if (qureg.numAmpsPerChunk<maxMessageCount) maxMessageCount = qureg.numAmpsPerChunk;
+    long long int maxMessageCount = MPI_MAX_MSG_SIZE;
+    if (qureg.numAmpsPerChunk < maxMessageCount) 
+        maxMessageCount = qureg.numAmpsPerChunk;
+    
     int numMessages = qureg.numAmpsPerChunk/maxMessageCount;
     int i;
     long long int offset;
@@ -391,6 +358,22 @@ void exchangeStateVectors(QubitRegister qureg, int pairRank){
                 &qureg.pairStateVec.imag[offset], maxMessageCount, MPI_QuEST_REAL,
                 pairRank, TAG, MPI_COMM_WORLD, &status);
     }
+}
+
+// @TODO move up
+REAL densmatr_calcFidelity(QubitRegister qureg, QubitRegister pureState) {
+    
+    // set qureg's pairState is to be the full pureState (on every node)
+    copyVecIntoMatrixPairState(qureg, pureState);
+ 
+    // collect calcFidelityLocal by every machine
+    REAL localSum = densmatr_calcFidelityLocal(qureg, pureState);
+    
+    // sum each localSum
+    REAL globalSum;
+    MPI_Allreduce(&localSum, &globalSum, 1, MPI_QuEST_REAL, MPI_SUM, MPI_COMM_WORLD);
+    
+    return globalSum;
 }
 
 void statevec_compactUnitary(QubitRegister qureg, const int targetQubit, Complex alpha, Complex beta)
