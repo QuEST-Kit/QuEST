@@ -36,18 +36,45 @@ void densmatr_collapseToKnownProbOutcome(QubitRegister qureg, const int measureQ
 
 
 REAL densmatr_calcFidelity(QubitRegister qureg, QubitRegister pureState) {
-    return densmatr_calcFidelityLocal(qureg, pureState);
+    
+    // save pointers to qureg's pair state
+    REAL* quregPairRePtr = qureg.pairStateVec.real;
+    REAL* quregPairImPtr = qureg.pairStateVec.imag;
+    
+    // populate qureg pair state with pure state (by repointing)
+    qureg.pairStateVec.real = pureState.stateVec.real;
+    qureg.pairStateVec.imag = pureState.stateVec.imag;
+    
+    // calculate fidelity using pairState
+    REAL fid = densmatr_calcFidelityLocal(qureg, pureState);
+    
+    // restore pointers
+    qureg.pairStateVec.real = quregPairRePtr;
+    qureg.pairStateVec.imag = quregPairImPtr;
+    
+    return fid;
 }
 
+void densmatr_initPureState(QubitRegister qureg, QubitRegister pureState) {
+    
+    // save pointers to qureg's pair state
+    REAL* quregPairRePtr = qureg.pairStateVec.real;
+    REAL* quregPairImPtr = qureg.pairStateVec.imag;
+    
+    // populate qureg pair state with pure state (by repointing)
+    qureg.pairStateVec.real = pureState.stateVec.real;
+    qureg.pairStateVec.imag = pureState.stateVec.imag;
 
-
+    // populate density matrix via it's pairState
+    densmatr_initPureStateLocal(qureg, pureState);
+    
+    // restore pointers
+    qureg.pairStateVec.real = quregPairRePtr;
+    qureg.pairStateVec.imag = quregPairImPtr;
+}
 
 Complex statevec_calcInnerProduct(QubitRegister bra, QubitRegister ket) {
     return statevec_calcInnerProductLocal(bra, ket);
-}
-
-void densmatr_initPureState(QubitRegister targetQureg, QubitRegister copyQureg) {
-    densmatr_initPureStateLocal(targetQureg, copyQureg);
 }
 
 REAL densmatr_calcTotalProbability(QubitRegister qureg) {

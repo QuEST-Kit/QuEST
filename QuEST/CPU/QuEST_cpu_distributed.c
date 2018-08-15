@@ -30,11 +30,7 @@
 
 
 
-// @TODO
-void densmatr_initPureState(QubitRegister targetQureg, QubitRegister copyQureg) {
 
-	printf("densmatr_initPureState NOT YET IMPLEMENTED IN distributed CPU!\n");
-}
 
 // @TODO
 void densmatr_collapseToKnownProbOutcome(QubitRegister qureg, const int measureQubit, int outcome, REAL totalStateProb) {
@@ -356,6 +352,15 @@ REAL densmatr_calcFidelity(QubitRegister qureg, QubitRegister pureState) {
     MPI_Allreduce(&localSum, &globalSum, 1, MPI_QuEST_REAL, MPI_SUM, MPI_COMM_WORLD);
     
     return globalSum;
+}
+
+void densmatr_initPureState(QubitRegister targetQureg, QubitRegister copyQureg) {
+
+    // set qureg's pairState is to be the full pure state (on every node)
+    copyVecIntoMatrixPairState(targetQureg, copyQureg);
+    
+    // update every density matrix chunk using pairState
+    densmatr_initPureStateLocal(targetQureg, copyQureg);
 }
 
 void exchangeStateVectors(QubitRegister qureg, int pairRank){

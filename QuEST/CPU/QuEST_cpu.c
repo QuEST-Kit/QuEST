@@ -35,12 +35,6 @@ static int extractBit (const int locationOfBitFromRight, const long long int the
 }
 
 
-
-// @TODO
-void densmatr_initPureStateDistributed(QubitRegister targetQureg, QubitRegister copyQureg) {
-    printf("densmatr_initPureStateDistributed NOT YET IMPLEMENTED ON CPU");
-}
-
 // @TODO
 void densmatr_oneQubitDephase(QubitRegister qureg, const int targetQubit, REAL dephase) {
     
@@ -73,12 +67,9 @@ REAL densmatr_calcPurity(QubitRegister qureg) {
 
 
 
-
-// @TODO openMP parallelise
-
 /** computes a few dens-columns-worth of (vec^*T) dens * vec */
 REAL densmatr_calcFidelityLocal(QubitRegister qureg, QubitRegister pureState) {
-    
+        
     /* Here, elements of pureState are not accessed (instead grabbed from qureg.pair).
      * We only consult the attributes.
      *
@@ -129,7 +120,7 @@ REAL densmatr_calcFidelityLocal(QubitRegister qureg, QubitRegister pureState) {
             // single element of conj(pureState)
             prefacRe =   vecRe[row];
             prefacIm = - vecIm[row];
-        
+                    
             rowSumRe = 0;
             rowSumIm = 0;
             
@@ -272,6 +263,40 @@ void densmatr_initStatePlus (QubitRegister qureg)
 
 void densmatr_initPureStateLocal(QubitRegister targetQureg, QubitRegister copyQureg) {
     
+    /* copyQureg aren't explicitly used - they're accessed through targetQureg.pair,
+     * which contains the full pure statevector.
+     * targetQureg has as many columns on node as copyQureg has amps
+     */
+    
+    long long int col, row, index;
+    long long int colOffset = targetQureg.chunkId * copyQureg.numAmpsPerChunk;
+    
+    // a_i conj(a_j) |i><j|
+    REAL ketRe, ketIm, braRe, braIm;
+    
+    // local column
+    for (col=0; col < copyQureg.numAmpsPerChunk; col++) {
+        
+        // global row
+        for (row=0; row < copyQureg.numAmpsTotal; row++) {
+            
+            // get pure state amps
+            ketRe = targetQureg.pairStateVec.real[row];
+            ketIm = targetQureg.pairStateVec.imag[row];
+            braRe = targetQureg.pairStateVec.real[col + colOffset];
+            braIm = targetQureg.pairStateVec.imag[col + colOffset];
+            
+            // update density matrix
+            index = row + col*copyQureg.numAmpsTotal; // local ind
+            targetQureg.stateVec.real[index] = ketRe*braRe - ketIm*braIm;
+            targetQureg.stateVec.imag[index] = ketRe*braIm - ketIm*braRe;
+        }
+    }
+}
+
+/*
+void densmatr_initPureStateLocal(QubitRegister targetQureg, QubitRegister copyQureg) {
+    
     // targetQureg is a density matrix of size (2^N)^2, copy is pure of size 2^N
 
     // dimension of the pure state vector
@@ -316,6 +341,7 @@ void densmatr_initPureStateLocal(QubitRegister targetQureg, QubitRegister copyQu
         }
     }
 }
+*/
 
 void statevec_initStateFromAmps(QubitRegister qureg, long long int startInd, REAL* reals, REAL* imags, long long int numAmps) {
     
