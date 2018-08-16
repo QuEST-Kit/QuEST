@@ -1944,20 +1944,21 @@ void statevec_multiControlledPhaseShift(QubitRegister qureg, int *controlQubits,
     }
 }
 
+
 REAL densmatr_findProbabilityOfZeroLocal(QubitRegister qureg, const int measureQubit) {
     
     // computes first local index containing a diagonal element
     long long int localNumAmps = qureg.numAmpsPerChunk;
     long long int densityDim = (1LL << qureg.numQubitsRepresented);
     long long int diagSpacing = 1LL + densityDim;
-    long long int maxNumDiagsPerChunk = localNumAmps / diagSpacing;
-    long long int numPrevDiags = (qureg.chunkId * localNumAmps) / diagSpacing;
+    long long int maxNumDiagsPerChunk = 1 + localNumAmps / diagSpacing;
+    long long int numPrevDiags = (qureg.chunkId>0)? 1+(qureg.chunkId*localNumAmps)/diagSpacing : 0;
     long long int globalIndNextDiag = diagSpacing * numPrevDiags;
     long long int localIndNextDiag = globalIndNextDiag % localNumAmps;
     
     // computes how many diagonals are contained in this chunk
     long long int numDiagsInThisChunk = maxNumDiagsPerChunk;
-    if (localIndNextDiag + numDiagsInThisChunk*diagSpacing >= localNumAmps)
+    if (localIndNextDiag + (numDiagsInThisChunk-1)*diagSpacing >= localNumAmps)
         numDiagsInThisChunk -= 1;
     
     long long int visitedDiags;     // number of visited diagonals in this chunk so far
@@ -1969,7 +1970,7 @@ REAL densmatr_findProbabilityOfZeroLocal(QubitRegister qureg, const int measureQ
     
 # ifdef _OPENMP
 # pragma omp parallel \
-    shared    (localIndNextDiag, numPrevDiags, diagSpacing, stateVecReal) \
+    shared    (localIndNextDiag, numPrevDiags, diagSpacing, stateVecReal, numDiagsInThisChunk) \
     private   (visitedDiags, basisStateInd, index) \
     reduction ( +:zeroProb )
 # endif 
@@ -1982,12 +1983,13 @@ REAL densmatr_findProbabilityOfZeroLocal(QubitRegister qureg, const int measureQ
             
             basisStateInd = numPrevDiags + visitedDiags;
             index = localIndNextDiag + diagSpacing * visitedDiags;
-
-            if (extractBit(measureQubit, basisStateInd++) == 0)
+    
+            if (extractBit(measureQubit, basisStateInd) == 0)
                 zeroProb += stateVecReal[index]; // assume imag[diagonls] ~ 0
 
         }
     }
+    
     return zeroProb;
 }
 
