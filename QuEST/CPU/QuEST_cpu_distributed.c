@@ -315,9 +315,9 @@ void copyVecIntoMatrixPairState(QubitRegister matr, QubitRegister vec) {
     
     // copy this state's pure state section into this qureg's pairState
     long long int numLocalAmps = vec.numAmpsPerChunk;
-    long long int offset = vec.chunkId * numLocalAmps;
-    memcpy(&matr.pairStateVec.real[offset], vec.stateVec.real, numLocalAmps * sizeof(REAL));
-    memcpy(&matr.pairStateVec.imag[offset], vec.stateVec.imag, numLocalAmps * sizeof(REAL));
+    long long int myOffset = vec.chunkId * numLocalAmps;
+    memcpy(&matr.pairStateVec.real[myOffset], vec.stateVec.real, numLocalAmps * sizeof(REAL));
+    memcpy(&matr.pairStateVec.imag[myOffset], vec.stateVec.imag, numLocalAmps * sizeof(REAL));
 
     // work out how many messages needed to send vec chunks (2GB limit)
     long long int maxMsgSize = MPI_MAX_AMPS_IN_MSG;
@@ -326,16 +326,25 @@ void copyVecIntoMatrixPairState(QubitRegister matr, QubitRegister vec) {
     // safely assume MPI_MAX... = 2^n, so division always exact:
     int numMsgs = numLocalAmps / maxMsgSize;
     
-    // every node sends a slice of qureg's pairState to every other
-    for (int i=0; i< numMsgs; i++) {
+    // every node gets a turn at being the broadcaster
+    for (int broadcaster=0; broadcaster < vec.numChunks; broadcaster++) {
+        
+        long long int otherOffset = broadcaster * numLocalAmps;
     
-        // by sending that slice in further slices (due to bandwidth limit)
-        MPI_Bcast(
-            &matr.pairStateVec.real[offset + i*maxMsgSize], 
-            maxMsgSize,  MPI_QuEST_REAL, vec.chunkId, MPI_COMM_WORLD);
-        MPI_Bcast(
-            &matr.pairStateVec.imag[offset + i*maxMsgSize], 
-            maxMsgSize,  MPI_QuEST_REAL, vec.chunkId, MPI_COMM_WORLD);
+        // every node sends a slice of qureg's pairState to every other
+        for (int i=0; i< numMsgs; i++) {
+    
+            // by sending that slice in further slices (due to bandwidth limit)
+        
+            MPI_Bcast(
+                &matr.pairStateVec.real[otherOffset + i*maxMsgSize], 
+                maxMsgSize,  MPI_QuEST_REAL, broadcaster, MPI_COMM_WORLD);
+            MPI_Bcast(
+                &matr.pairStateVec.imag[otherOffset + i*maxMsgSize], 
+                maxMsgSize,  MPI_QuEST_REAL, broadcaster, MPI_COMM_WORLD);
+        
+        }
+    
     }
 }
 
