@@ -259,6 +259,7 @@ void densmatr_initStatePlus (QubitRegister qureg)
     }
 }
 
+// @TODO: openMP Parallelise
 void densmatr_initPureStateLocal(QubitRegister targetQureg, QubitRegister copyQureg) {
     
     /* copyQureg aren't explicitly used - they're accessed through targetQureg.pair,
@@ -291,55 +292,6 @@ void densmatr_initPureStateLocal(QubitRegister targetQureg, QubitRegister copyQu
         }
     }
 }
-
-/*
-void densmatr_initPureStateLocal(QubitRegister targetQureg, QubitRegister copyQureg) {
-    
-    // targetQureg is a density matrix of size (2^N)^2, copy is pure of size 2^N
-
-    // dimension of the pure state vector
-    long long int stateVecSize = copyQureg.numAmpsPerChunk;
-
-    // Can't use qureg->stateVec as a private OMP var
-    REAL *targetDensityReal = targetQureg.stateVec.real;
-    REAL *targetDensityImag = targetQureg.stateVec.imag;
-    REAL *copyStateVecReal = copyQureg.stateVec.real;
-    REAL *copyStateVecImag = copyQureg.stateVec.imag;
-    
-    // iterates density entries
-    long long int row, col;
-    
-    // involved elements
-    REAL realRow, imagRow, realCol, imagCol;
-
-    // initialise targetQureg to be 100% likely in the puerstate of copyQureg
-# ifdef _OPENMP
-# pragma omp parallel \
-    default  (none) \
-    shared   (stateVecSize, targetDensityReal, targetDensityImag, copyStateVecReal, copyStateVecImag) \
-    private  (row, col, realRow, imagRow, realCol, imagCol) 
-# endif
-    {
-# ifdef _OPENMP
-# pragma omp for schedule (static)
-# endif
-        for (row=0; row < stateVecSize; row++) {
-            
-            realRow = copyStateVecReal[row];
-            imagRow = copyStateVecImag[row];
-            
-            for (col=0; col < stateVecSize; col++) {
-
-                realCol =   copyStateVecReal[col];
-                imagCol = - copyStateVecImag[col]; //note minus for conjugation
-            
-                targetDensityReal[col*stateVecSize + row] = realRow*realCol - imagRow*imagCol;
-                targetDensityImag[col*stateVecSize + row] = realRow*imagCol + imagRow*realCol;
-            }
-        }
-    }
-}
-*/
 
 // @TODO this isn'tdistiributed you chimp
 // @TODO it's not even OpenMP parallelised
