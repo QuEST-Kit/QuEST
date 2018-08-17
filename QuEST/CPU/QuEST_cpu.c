@@ -259,36 +259,55 @@ void densmatr_initStatePlus (QubitRegister qureg)
     }
 }
 
-// @TODO: openMP Parallelise
 void densmatr_initPureStateLocal(QubitRegister targetQureg, QubitRegister copyQureg) {
     
-    /* copyQureg aren't explicitly used - they're accessed through targetQureg.pair,
+    /* copyQureg amps aren't explicitly used - they're accessed through targetQureg.pair,
      * which contains the full pure statevector.
      * targetQureg has as many columns on node as copyQureg has amps
      */
     
-    long long int col, row, index;
     long long int colOffset = targetQureg.chunkId * copyQureg.numAmpsPerChunk;
+    long long int colsPerNode = copyQureg.numAmpsPerChunk;
+    long long int rowsPerNode = copyQureg.numAmpsTotal;
+    
+    // unpack vars for OpenMP
+    REAL* vecRe = targetQureg.pairStateVec.real;
+    REAL* vecIm = targetQureg.pairStateVec.imag;
+    REAL* densRe = targetQureg.stateVec.real;
+    REAL* densIm = targetQureg.stateVec.imag;
+    
+    long long int col, row, index;
     
     // a_i conj(a_j) |i><j|
     REAL ketRe, ketIm, braRe, braIm;
     
-    // local column
-    for (col=0; col < copyQureg.numAmpsPerChunk; col++) {
+# ifdef _OPENMP
+# pragma omp parallel \
+    default  (none) \
+    shared   (colOffset, colsPerNode,rowsPerNode, vecRe,vecIm,densRe,densIm) \
+    private  (col,row, ketRe,ketIm,braRe,braIm, index) 
+# endif
+    {
+# ifdef _OPENMP
+# pragma omp for schedule (static)
+# endif
+        // local column
+        for (col=0; col < colsPerNode; col++) {
         
-        // global row
-        for (row=0; row < copyQureg.numAmpsTotal; row++) {
+            // global row
+            for (row=0; row < rowsPerNode; row++) {
             
-            // get pure state amps
-            ketRe = targetQureg.pairStateVec.real[row];
-            ketIm = targetQureg.pairStateVec.imag[row];
-            braRe = targetQureg.pairStateVec.real[col + colOffset];
-            braIm = targetQureg.pairStateVec.imag[col + colOffset];
+                // get pure state amps
+                ketRe = vecRe[row];
+                ketIm = vecIm[row];
+                braRe = vecRe[col + colOffset];
+                braIm = vecIm[col + colOffset];
             
-            // update density matrix
-            index = row + col*copyQureg.numAmpsTotal; // local ind
-            targetQureg.stateVec.real[index] = ketRe*braRe - ketIm*braIm;
-            targetQureg.stateVec.imag[index] = ketRe*braIm - ketIm*braRe;
+                // update density matrix
+                index = row + col*rowsPerNode; // local ind
+                densRe[index] = ketRe*braRe - ketIm*braIm;
+                densIm[index] = ketRe*braIm - ketIm*braRe;
+            }
         }
     }
 }
