@@ -1312,6 +1312,12 @@ int test_calcFidelity(char testName[200]) {
     fid = calcFidelity(mixed, pure); 
     if (passed) passed = compareReals(fid, 0.0, COMPARE_PRECISION);
     
+    // <111...|+><+|111...> = 1/2^n
+    initClassicalState(pure, (1<<numQubits)-1);
+    initStatePlus(mixed);
+    fid = calcFidelity(mixed, pure);
+    if (passed) passed = compareReals(fid, 1/(REAL)(1<<numQubits), COMPARE_PRECISION);
+    
     // <0| .2 |0><0| + .8 |..1><..1| |0> = .2
     QubitRegister otherMixed;
     createDensityQubitRegister(&otherMixed, numQubits, env);
@@ -1320,9 +1326,8 @@ int test_calcFidelity(char testName[200]) {
     initClassicalState(otherMixed, 1);
     combineDensityMatrices(0.2, mixed, 0.8, otherMixed); // .2 |0><0| + .8 |..1><..1|
     fid = calcFidelity(mixed, pure); 
-    //if (passed) passed = compareReals(fid, 0.2, COMPARE_PRECISION);
-    printf("@TODO: calcFidelity needs combineDensityMatrices!\n");
-    
+    if (passed) passed = compareReals(fid, 0.2, COMPARE_PRECISION);
+        
     destroyQubitRegister(otherMixed, env);
     destroyQubitRegister(mixed, env);
     
