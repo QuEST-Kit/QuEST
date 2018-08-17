@@ -56,16 +56,46 @@ void densmatr_twoQubitDepolarise(QubitRegister qureg, int qubit1, int qubit2, RE
 }
 
 // @TODO
-void densmatr_combineDensityMatrices(REAL combineProb, QubitRegister combineQureg, REAL otherProb, QubitRegister otherQureg) {
-    
-}
-
-// @TODO
 REAL densmatr_calcPurity(QubitRegister qureg) {
     return 0;
 }
 
 
+
+
+
+
+void densmatr_combineDensityMatrices(REAL combineProb, QubitRegister combineQureg, REAL otherProb, QubitRegister otherQureg) {
+    
+    /* corresponding amplitudes live on the same node (same dimensions) */
+    
+    // unpack vars for OpenMP
+    REAL* combineVecRe = combineQureg.stateVec.real;
+    REAL* combineVecIm = combineQureg.stateVec.imag;
+    REAL* otherVecRe = otherQureg.stateVec.real;
+    REAL* otherVecIm = otherQureg.stateVec.imag;
+    long long int numAmps = combineQureg.numAmpsPerChunk;
+    long long int index;
+    
+# ifdef _OPENMP
+# pragma omp parallel \
+    default (none) \
+    shared  (combineVecRe,combineVecIm,otherVecRe,otherVecIm, combineProb,otherProb, numAmps) \
+    private (index)
+# endif 
+    {
+# ifdef _OPENMP
+# pragma omp for schedule  (static)
+# endif
+        for (index=0; index < numAmps; index++) {
+            combineVecRe[index] *= combineProb;
+            combineVecIm[index] *= combineProb;
+            
+            combineVecRe[index] += otherProb * otherVecRe[index];
+            combineVecIm[index] += otherProb * otherVecIm[index];
+        }
+    }
+}
 
 /** computes a few dens-columns-worth of (vec^*T) dens * vec */
 REAL densmatr_calcFidelityLocal(QubitRegister qureg, QubitRegister pureState) {
