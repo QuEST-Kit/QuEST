@@ -95,20 +95,12 @@ int test_initStatePlus(char testName[200]){
     QubitRegister dens;
     createDensityQubitRegister(&dens, numQubits, env);
     
-    printf("INIT STATE PLUS  for DENSITY MATRICES IS BROKEN! Currently using Hadamards......\n");
-    //initStatePlus(dens);
-    
-    initStateZero(dens);
-    for (int q=0; q < numQubits; q++)
-        hadamard(dens, q);
-    
-    
+    initStatePlus(dens);
     
     for (int q=0; q < numQubits; q++) {
         REAL prob = findProbabilityOfOutcome(dens, q, 0);            
         if (passed) passed = compareReals(prob, 0.5, COMPARE_PRECISION);
     }
-    
     
     destroyQubitRegister(dens, env);
 

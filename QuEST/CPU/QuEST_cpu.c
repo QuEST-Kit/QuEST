@@ -231,18 +231,16 @@ void densmatr_initClassicalState (QubitRegister qureg, long long int stateInd)
 
 void densmatr_initStatePlus (QubitRegister qureg)
 {
-    long long int chunkSize, stateVecSize;
-    long long int index;
-
-    // dimension of the state vector
-    chunkSize = qureg.numAmpsPerChunk;
-    stateVecSize = chunkSize*qureg.numChunks;
-    REAL probFactor = 1.0/((REAL)stateVecSize);
+    // |+><+| = sum_i 1/sqrt(2^N) |i> 1/sqrt(2^N) <j| = sum_ij 1/2^N |i><j|
+    long long int dim = (1LL << qureg.numQubitsRepresented);
+    REAL probFactor = 1.0/((REAL) dim);
 
     // Can't use qureg->stateVec as a private OMP var
     REAL *densityReal = qureg.stateVec.real;
     REAL *densityImag = qureg.stateVec.imag;
 
+    long long int index;
+    long long int chunkSize = qureg.numAmpsPerChunk;
     // initialise the state to |+++..+++> = 1/normFactor {1, 1, 1, ...}
 # ifdef _OPENMP
 # pragma omp parallel \
@@ -343,6 +341,8 @@ void densmatr_initPureStateLocal(QubitRegister targetQureg, QubitRegister copyQu
 }
 */
 
+// @TODO this isn'tdistiributed you chimp
+// @TODO it's not even OpenMP parallelised
 void statevec_initStateFromAmps(QubitRegister qureg, long long int startInd, REAL* reals, REAL* imags, long long int numAmps) {
     
     // local start/end indices of the given amplitudes, assuming they fit in this chunk
@@ -400,6 +400,7 @@ void statevec_createQubitRegister(QubitRegister *qureg, int numQubits, QuESTEnv 
 }
 
 void statevec_destroyQubitRegister(QubitRegister qureg, QuESTEnv env){
+    
     free(qureg.stateVec.real);
     free(qureg.stateVec.imag);
     if (env.numRanks>1){
@@ -1823,7 +1824,7 @@ void statevec_hadamardDistributed(QubitRegister qureg, const int targetQubit,
 }
 
 void statevec_phaseShiftByTerm (QubitRegister qureg, const int targetQubit, Complex term)
-{   
+{       
     long long int index;
     long long int stateVecSize;
     int targetBit;
