@@ -9,7 +9,7 @@
 # include "QuEST_precision.h"
 # include "QuEST_debug.h"
 
-# define NUM_TESTS 31
+# define NUM_TESTS 32
 # define PATH_TO_TESTS "unit/"
 # define VERBOSE 0
 
@@ -1336,6 +1336,37 @@ int test_calcFidelity(char testName[200]) {
     return passed;
 }
 
+int test_combineDensityMatrices(char testName[200]) {
+    int passed=1;
+    int numQubits=5;
+    
+    REAL prob;
+    QubitRegister reg1, reg2;
+    createDensityQubitRegister(&reg1, numQubits, env);
+    createDensityQubitRegister(&reg2, numQubits, env);
+    
+    // prob_0( p1 |0...><0...| + (1-p1) |1...><1...| ) = p1
+    REAL p1 = 0.3;
+    initStateZero(reg1);
+    initClassicalState(reg2, 1);
+    combineDensityMatrices(p1, reg1, 1-p1, reg2);
+    prob = findProbabilityOfOutcome(reg1, 0, 0);
+    if (passed) passed = compareReals(prob, p1, COMPARE_PRECISION);
+    
+    // prob_0( p2 {p1 |0...><0...| + (1-p1) |1...><1...|} + (1-p2)|+><+| ) 
+    // = p2 p1 + (1-p2) / sqrt(2)
+    REAL p2 = 0.7;
+    initStatePlus(reg2);
+    combineDensityMatrices(p2, reg1, 1-p2, reg2);
+    prob = findProbabilityOfOutcome(reg1, 0, 0);
+    REAL trueProb = p2*p1 + (1-p2)*0.5;
+    if (passed) passed = compareReals(prob, trueProb, COMPARE_PRECISION);
+    
+    destroyQubitRegister(reg1, env);
+    destroyQubitRegister(reg2, env);
+    return passed;
+}
+
 int main (int narg, char** varg) {
     initQuESTEnv(&env);
     reportQuESTEnv(env);
@@ -1371,7 +1402,8 @@ int main (int narg, char** varg) {
         test_getImagAmpEl,
         test_getProbEl,
         test_calcInnerProduct,
-        test_calcFidelity
+        test_calcFidelity,
+        test_combineDensityMatrices
     };
 
     char testNames[NUM_TESTS][200] = {
@@ -1405,7 +1437,8 @@ int main (int narg, char** varg) {
         "getImagAmpEl",
         "getProbEl",
         "calcInnerProduct",
-        "calcFidelity"
+        "calcFidelity",
+        "combineDensityMatrices"
     };
     int passed=0;
     if (env.rank==0) printf("\nRunning unit tests\n");
