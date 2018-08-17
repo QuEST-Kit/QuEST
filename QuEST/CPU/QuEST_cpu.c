@@ -312,9 +312,9 @@ void densmatr_initPureStateLocal(QubitRegister targetQureg, QubitRegister copyQu
     }
 }
 
-// @TODO this isn'tdistiributed you chimp
-// @TODO it's not even OpenMP parallelised
 void statevec_initStateFromAmps(QubitRegister qureg, long long int startInd, REAL* reals, REAL* imags, long long int numAmps) {
+    
+    /* this is actually distributed, since the user's code runs on every node */
     
     // local start/end indices of the given amplitudes, assuming they fit in this chunk
     // these may be negative or above qureg.numAmpsPerChunk
@@ -331,10 +331,26 @@ void statevec_initStateFromAmps(QubitRegister qureg, long long int startInd, REA
         localEndInd = qureg.numAmpsPerChunk;
     // they may now be out of order = no iterations
     
-    // iterate these local inds - this might involved no iterations
-    for (long long int index=localStartInd; index < localEndInd; index++) {
-        qureg.stateVec.real[index] = reals[index + offset];
-        qureg.stateVec.imag[index] = imags[index + offset];
+    // unpacking OpenMP vars
+    long long int index;
+    REAL* vecRe = qureg.stateVec.real;
+    REAL* vecIm = qureg.stateVec.imag;
+    
+# ifdef _OPENMP
+# pragma omp parallel \
+    default  (none) \
+    shared   (localStartInd,localEndInd, vecRe,vecIm, reals,imags, offset) \
+    private  (index) 
+# endif
+    {
+# ifdef _OPENMP
+# pragma omp for schedule (static)
+# endif
+        // iterate these local inds - this might involve no iterations
+        for (index=localStartInd; index < localEndInd; index++) {
+            vecRe[index] = reals[index + offset];
+            vecIm[index] = imags[index + offset];
+        }
     }
 }
 

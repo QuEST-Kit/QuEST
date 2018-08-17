@@ -13,7 +13,7 @@
 # define PATH_TO_TESTS "unit/"
 # define VERBOSE 0
 
-// quad precision unit testing no more stringent than double
+// quad precision unit testing is no more stringent than double
 # if QuEST_PREC==1
 # define COMPARE_PRECISION 10e-5
 # else
@@ -178,9 +178,6 @@ int test_initPureState(char testName[200]) {
 }
 
 int test_initStateFromAmps(char testName[200]) {
-    
-    printf("TEMPORARILY SKIPPING initStateFromAmps (needs distrib)\n");
-    return 1;
     
     int passed=1;
     int numQubits=3;
