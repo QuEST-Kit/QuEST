@@ -55,15 +55,36 @@ void densmatr_twoQubitDepolarise(QubitRegister qureg, int qubit1, int qubit2, RE
     
 }
 
-// @TODO
-REAL densmatr_calcPurity(QubitRegister qureg) {
-    return 0;
+
+
+
+
+REAL densmatr_calcPurityLocal(QubitRegister qureg) {
+    
+    /* sum of qureg^2, which is sum_i |qureg[i]|^2 */
+    long long int index;
+    long long int numAmps = qureg.numAmpsPerChunk;
+    REAL trace = 0;
+    REAL *vecRe = qureg.stateVec.real;
+    REAL *vecIm = qureg.stateVec.imag;
+    
+# ifdef _OPENMP
+# pragma omp parallel \
+    shared    (vecRe, vecIm, numAmps) \
+    private   (index) \
+    reduction ( +:trace )
+# endif 
+    {
+# ifdef _OPENMP
+# pragma omp for schedule  (static)
+# endif
+        for (index=0; index<numAmps; index++) {
+            trace += vecRe[index]*vecRe[index] + vecIm[index]*vecIm[index];
+        }
+    }
+    
+    return trace;
 }
-
-
-
-
-
 
 void densmatr_combineDensityMatrices(REAL combineProb, QubitRegister combineQureg, REAL otherProb, QubitRegister otherQureg) {
     

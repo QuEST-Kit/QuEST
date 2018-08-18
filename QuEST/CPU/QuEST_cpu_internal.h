@@ -11,6 +11,8 @@
 
 # include "../QuEST_precision.h"
 
+REAL densmatr_calcPurityLocal(QubitRegister qureg);
+
 void densmatr_initPureStateLocal(QubitRegister targetQureg, QubitRegister copyQureg);
 
 REAL densmatr_calcFidelityLocal(QubitRegister qureg, QubitRegister pureState);

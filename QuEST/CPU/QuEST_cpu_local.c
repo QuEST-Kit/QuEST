@@ -35,6 +35,13 @@ void densmatr_collapseToKnownProbOutcome(QubitRegister qureg, const int measureQ
 }
 
 
+
+
+
+REAL densmatr_calcPurity(QubitRegister qureg) {
+    return densmatr_calcPurityLocal(qureg);
+}
+
 REAL densmatr_calcFidelity(QubitRegister qureg, QubitRegister pureState) {
     
     // save pointers to qureg's pair state

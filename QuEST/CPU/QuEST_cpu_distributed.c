@@ -1,7 +1,7 @@
 // Distributed under MIT licence. See https://github.com/aniabrown/QuEST/blob/master/LICENCE.txt for details 
 
 /** @file
- * An implementation of the pure backend in ../QuEST_ops_pure.h for an MPI environment.
+ * An implementation of the backend in ../QuEST_ops.h for an MPI environment.
  * Mostly pure-state wrappers for the local/distributed functions implemented in QuEST_cpu
  */
 
@@ -335,16 +335,13 @@ void copyVecIntoMatrixPairState(QubitRegister matr, QubitRegister vec) {
         for (int i=0; i< numMsgs; i++) {
     
             // by sending that slice in further slices (due to bandwidth limit)
-        
             MPI_Bcast(
                 &matr.pairStateVec.real[otherOffset + i*maxMsgSize], 
                 maxMsgSize,  MPI_QuEST_REAL, broadcaster, MPI_COMM_WORLD);
             MPI_Bcast(
                 &matr.pairStateVec.imag[otherOffset + i*maxMsgSize], 
                 maxMsgSize,  MPI_QuEST_REAL, broadcaster, MPI_COMM_WORLD);
-        
         }
-    
     }
 }
 
@@ -848,6 +845,15 @@ REAL densmatr_findProbabilityOfOutcome(QubitRegister qureg, const int measureQub
 		outcomeProb = 1.0 - outcomeProb;
 	
 	return outcomeProb;
+}
+
+REAL densmatr_calcPurity(QubitRegister qureg) {
+    
+    REAL localPurity = densmatr_calcPurityLocal(qureg);
+    REAL globalPurity;
+    MPI_Allreduce(&localPurity, &globalPurity, 1, MPI_QuEST_REAL, MPI_SUM, MPI_COMM_WORLD);
+    
+    return globalPurity;
 }
 
 void statevec_collapseToKnownProbOutcome(QubitRegister qureg, const int measureQubit, int outcome, REAL totalStateProb)
