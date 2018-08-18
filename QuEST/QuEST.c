@@ -36,6 +36,7 @@ void createQubitRegister(QubitRegister *qureg, int numQubits, QuESTEnv env) {
     qureg->numQubitsInStateVec = numQubits;
     
     qasm_setup(qureg);
+    initStateZero(*qureg);
 }
 
 void createDensityQubitRegister(QubitRegister *qureg, int numQubits, QuESTEnv env) {
@@ -47,6 +48,7 @@ void createDensityQubitRegister(QubitRegister *qureg, int numQubits, QuESTEnv en
     qureg->numQubitsInStateVec = 2*numQubits;
     
     qasm_setup(qureg);
+    initStateZero(*qureg);
 }
 
 void destroyQubitRegister(QubitRegister qureg, QuESTEnv env) {
