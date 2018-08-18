@@ -9,7 +9,7 @@
 # include "QuEST_precision.h"
 # include "QuEST_debug.h"
 
-# define NUM_TESTS 32
+# define NUM_TESTS 33
 # define PATH_TO_TESTS "unit/"
 # define VERBOSE 0
 
@@ -1367,6 +1367,40 @@ int test_combineDensityMatrices(char testName[200]) {
     return passed;
 }
 
+int test_calcPurity(char testName[200]) {
+    int passed=1;
+    int numQubits=3;
+    REAL purity;
+    
+    QubitRegister qureg;
+    createDensityQubitRegister(&qureg, numQubits, env);
+    
+    // pure states are pure
+    initStatePlus(qureg);
+    purity = calcPurity(qureg);
+    if (passed) passed = compareReals(purity, 1, COMPARE_PRECISION);
+    
+    QubitRegister otherQureg;
+    createDensityQubitRegister(&otherQureg, numQubits, env);
+    
+    // a|+><+| + b|+><+| = (a+b) |+><+| (pure)
+    initStatePlus(qureg);
+    initStatePlus(otherQureg);
+    combineDensityMatrices(0.5, qureg, 0.5, otherQureg);
+    purity = calcPurity(qureg);
+    if (passed) passed = compareReals(purity, 1, COMPARE_PRECISION);
+    
+    initClassicalState(qureg, 0);
+    initClassicalState(otherQureg, 1);
+    combineDensityMatrices(0.5, qureg, 0.5, otherQureg);
+    purity = calcPurity(qureg);
+    if (passed) passed = compareReals(purity, 0.5, COMPARE_PRECISION);
+        
+    destroyQubitRegister(qureg, env);
+    destroyQubitRegister(otherQureg, env);
+    return passed;
+}
+
 int main (int narg, char** varg) {
     initQuESTEnv(&env);
     reportQuESTEnv(env);
@@ -1403,7 +1437,8 @@ int main (int narg, char** varg) {
         test_getProbEl,
         test_calcInnerProduct,
         test_calcFidelity,
-        test_combineDensityMatrices
+        test_combineDensityMatrices,
+        test_calcPurity
     };
 
     char testNames[NUM_TESTS][200] = {
@@ -1438,7 +1473,8 @@ int main (int narg, char** varg) {
         "getProbEl",
         "calcInnerProduct",
         "calcFidelity",
-        "combineDensityMatrices"
+        "combineDensityMatrices",
+        "calcPurity"
     };
     int passed=0;
     if (env.rank==0) printf("\nRunning unit tests\n");
