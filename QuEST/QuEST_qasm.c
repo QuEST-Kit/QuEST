@@ -415,7 +415,7 @@ void qasm_recordInitClassical(QubitRegister qureg, long long int stateInd) {
     
     // add an explanatory comment
     char cmt[MAX_LINE_LEN+1];
-    sprintf(cmt, "Initialising state |%Ld>", stateInd);
+    sprintf(cmt, "Initialising state |%lld>", stateInd);
     qasm_recordComment(qureg, cmt);
     
     // start in |0>
