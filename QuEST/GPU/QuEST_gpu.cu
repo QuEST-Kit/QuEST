@@ -95,24 +95,25 @@ void densmatr_initPureState(QubitRegister targetQureg, QubitRegister copyQureg)
         copyQureg.deviceStateVec.real,   copyQureg.deviceStateVec.imag);
 }
 
-__global__ void densmatr_initStatePlusKernel(long long int stateVecSize, REAL *stateVecReal, REAL *stateVecImag){
+__global__ void densmatr_initStatePlusKernel(long long int stateVecSize, REAL probFactor, REAL *stateVecReal, REAL *stateVecImag){
     long long int index;
 
     index = blockIdx.x*blockDim.x + threadIdx.x;
     if (index>=stateVecSize) return;
 
-    REAL probFactor = 1.0/((REAL)stateVecSize);
     stateVecReal[index] = probFactor;
     stateVecImag[index] = 0.0;
 }
 
 void densmatr_initStatePlus(QubitRegister qureg)
 {
+    REAL probFactor = 1.0/((REAL) (1LL << qureg.numQubitsRepresented));
     int threadsPerCUDABlock, CUDABlocks;
     threadsPerCUDABlock = 128;
     CUDABlocks = ceil((REAL)(qureg.numAmpsPerChunk)/threadsPerCUDABlock);
     densmatr_initStatePlusKernel<<<CUDABlocks, threadsPerCUDABlock>>>(
         qureg.numAmpsPerChunk, 
+        probFactor,
         qureg.deviceStateVec.real, 
         qureg.deviceStateVec.imag);
 }
