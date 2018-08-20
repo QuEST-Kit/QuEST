@@ -9,7 +9,7 @@
 # include "QuEST_precision.h"
 # include "QuEST_debug.h"
 
-# define NUM_TESTS 33
+# define NUM_TESTS 34
 # define PATH_TO_TESTS "unit/"
 # define VERBOSE 0
 
@@ -1423,6 +1423,49 @@ int test_calcPurity(char testName[200]) {
     return passed;
 }
 
+int test_calcTotalProbability(char testName[200]) {
+    int passed=1;
+    int numQubits=3;
+    REAL prob;
+    
+    /* 
+     * state-vector
+     */
+    QubitRegister qureg;
+    createQubitRegister(&qureg, numQubits, env);
+    
+    hadamard(qureg, 0);
+    rotateY(qureg, 0, 0.1);
+    rotateZ(qureg, 0, 0.4);
+    controlledRotateY(qureg, 0, 1, 0.9);
+    controlledRotateX(qureg, 1, 2, 1.45);
+    multiControlledPhaseFlip(qureg, (int []) {0,1,2}, 3);
+    controlledRotateAroundAxis(qureg, 1, 0, 0.3, (Vector) {.x=1,.y=2,.z=3});
+    prob = calcTotalProbability(qureg);
+    if (passed) passed = compareReals(prob, 1, COMPARE_PRECISION);
+    
+    destroyQubitRegister(qureg, env);
+    
+    /* 
+     * density matrix
+     */
+    createDensityQubitRegister(&qureg, numQubits, env);
+
+    hadamard(qureg, 0);
+    rotateY(qureg, 0, 0.1);
+    rotateZ(qureg, 0, 0.4);
+    controlledRotateY(qureg, 0, 1, 0.9);
+    controlledRotateX(qureg, 1, 2, 1.45);
+    multiControlledPhaseFlip(qureg, (int []) {0,1,2}, 3);
+    controlledRotateAroundAxis(qureg, 1, 0, 0.3, (Vector) {.x=1,.y=2,.z=3});
+    prob = calcTotalProbability(qureg);
+    if (passed) passed = compareReals(prob, 1, COMPARE_PRECISION);
+    
+    destroyQubitRegister(qureg, env);
+    return passed;
+    
+}
+
 int main (int narg, char** varg) {
     initQuESTEnv(&env);
     reportQuESTEnv(env);
@@ -1460,7 +1503,8 @@ int main (int narg, char** varg) {
         test_calcInnerProduct,
         test_calcFidelity,
         test_combineDensityMatrices,
-        test_calcPurity
+        test_calcPurity,
+        test_calcTotalProbability
     };
 
     char testNames[NUM_TESTS][200] = {
@@ -1496,7 +1540,8 @@ int main (int narg, char** varg) {
         "calcInnerProduct",
         "calcFidelity",
         "combineDensityMatrices",
-        "calcPurity"
+        "calcPurity",
+        "calcTotalProbability"
     };
     int passed=0;
     if (env.rank==0) printf("\nRunning unit tests\n");
