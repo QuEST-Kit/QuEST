@@ -34,9 +34,9 @@
 
 // @TODO
 void densmatr_collapseToKnownProbOutcome(QubitRegister qureg, const int measureQubit, int outcome, REAL totalStateProb) {
-	
+
 	printf("densmatr_collapseToKnownProbOutcome NOT YET IMPLEMENTED IN distributed CPU!\n");
-	
+
 }
 
 Complex statevec_calcInnerProduct(QubitRegister bra, QubitRegister ket) {
@@ -850,6 +850,7 @@ REAL densmatr_findProbabilityOfOutcome(QubitRegister qureg, const int measureQub
 REAL densmatr_calcPurity(QubitRegister qureg) {
     
     REAL localPurity = densmatr_calcPurityLocal(qureg);
+        
     REAL globalPurity;
     MPI_Allreduce(&localPurity, &globalPurity, 1, MPI_QuEST_REAL, MPI_SUM, MPI_COMM_WORLD);
     

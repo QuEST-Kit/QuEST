@@ -9,7 +9,6 @@
 # define QuEST
 
 # include "QuEST_precision.h"
-//# include "QuEST_qasm.h"
 
 #ifdef __cplusplus
 extern "C" {
