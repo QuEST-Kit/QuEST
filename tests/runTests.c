@@ -1390,11 +1390,33 @@ int test_calcPurity(char testName[200]) {
     purity = calcPurity(qureg);
     if (passed) passed = compareReals(purity, 1, COMPARE_PRECISION);
     
-    initClassicalState(qureg, 0);
-    initClassicalState(otherQureg, 1);
-    combineDensityMatrices(0.5, qureg, 0.5, otherQureg);
+    // mixture of orthogonal pure states (purity = p1^2 + (1-p1)^2)
+    initClassicalState(qureg, 0);       // |0><0|
+    initClassicalState(otherQureg, 1);  // |0...01><0...01|
+    
+    REAL p1 = 0.3;
+    combineDensityMatrices(p1, qureg, 1-p1, otherQureg);    
     purity = calcPurity(qureg);
-    if (passed) passed = compareReals(purity, 0.5, COMPARE_PRECISION);
+    if (passed) passed = compareReals(purity, p1*p1 + (1-p1)*(1-p1), COMPARE_PRECISION);
+    
+    // mixture of non-orthogonal pure states, where <a|b> = c.
+    /* Let rho = p1 |a><a| + (1-p1) |b><b|
+     * Then rho^2 =   p1^2|a><a|     + p1(1-p1)|a><a|b><b| 
+     *              + (1-p1)^2|b><b| + p1(1-p1)|b><b|a><a|
+     *            = p1^2 |a><a| + (1-p1)^2|b><b| + p1(1-p1)(c|a><b| + c* |b><a|)
+     * By using that Tr(|b><a|) = <a|b> = c, and linearity, we have
+     * Tr(rho^2) = p1^2 + (1-p1)^2 + p1(1-p1)( c c* + c* c)
+     *           = p1^2 + (1-p1)^2 + 2p1(1-p1)|c|^2
+     *           = d p1^2 - d p1 + 1,   where d = 2(1-|c|^2)
+    */ 
+    initStateZero(qureg);       // |0> |0...>
+    initStateZero(otherQureg);  
+    hadamard(otherQureg, 0);    // 1/sqrt(2)(|0> + |1>) |0...>
+    
+    // c = 1/sqrt(2), d = 2(1-1/2) = 1, Tr(rho^2) = p1^2 - p1 + 1
+    combineDensityMatrices(p1, qureg, 1-p1, otherQureg);
+    purity = calcPurity(qureg);
+    if (passed) passed = compareReals(purity, p1*p1 - p1 + 1, COMPARE_PRECISION);
         
     destroyQubitRegister(qureg, env);
     destroyQubitRegister(otherQureg, env);
