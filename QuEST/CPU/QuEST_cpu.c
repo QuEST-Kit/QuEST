@@ -64,6 +64,9 @@ REAL densmatr_calcPurityLocal(QubitRegister qureg) {
     /* sum of qureg^2, which is sum_i |qureg[i]|^2 */
     long long int index;
     long long int numAmps = qureg.numAmpsPerChunk;
+    
+    printf("numAmps local: %lld\n", numAmps);
+    
     REAL trace = 0;
     REAL *vecRe = qureg.stateVec.real;
     REAL *vecIm = qureg.stateVec.imag;
@@ -79,6 +82,9 @@ REAL densmatr_calcPurityLocal(QubitRegister qureg) {
 # pragma omp for schedule  (static)
 # endif
         for (index=0; index<numAmps; index++) {
+            
+            printf("amp %lld: %lf + %lf i\n", index+numAmps*qureg.chunkId, vecRe[index], vecIm[index]);
+            
             trace += vecRe[index]*vecRe[index] + vecIm[index]*vecIm[index];
         }
     }
@@ -273,9 +279,9 @@ void densmatr_initClassicalState (QubitRegister qureg, long long int stateInd)
     long long int densityInd = (densityDim + 1)*stateInd;
 
     // give the specified classical state prob 1
-    if (qureg.chunkId == densityInd / densityDim){
-        densityReal[densityInd % densityDim] = 1.0;
-        densityImag[densityInd % densityDim] = 0.0;
+    if (qureg.chunkId == densityInd / densityNumElems){
+        densityReal[densityInd % densityNumElems] = 1.0;
+        densityImag[densityInd % densityNumElems] = 0.0;
     }
 }
 
