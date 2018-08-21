@@ -572,9 +572,11 @@ REAL getProbEl(QubitRegister qureg, long long int index);
  */
 Complex getDensityAmplitude(QubitRegister qureg, long long int row, long long int col);
 
-/** A debugging function which calculates the probability of being in any state, which should be 1.
+/** A debugging function which calculates the probability of being in any state, which should always be 1.
  * For pure states, this is the norm of the entire state vector and for mixed states, is the trace of
  * the density matrix.
+ * Note this calculation utilises Kahan summation for greaster accuracy, but is
+ * not parallelised and so will be slower than other functions.
  *
  * @param[in] qureg object representing a set of qubits
  * @return total probability
