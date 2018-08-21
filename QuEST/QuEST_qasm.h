@@ -69,7 +69,19 @@ void qasm_recordMultiControlledAxisRotation(QubitRegister qureg, REAL angle, Vec
 
 void qasm_recordMeasurement(QubitRegister qureg, const int measureQubit);
 
+void qasm_recordInitZero(QubitRegister qureg);
+
+void qasm_recordInitPlus(QubitRegister qureg);
+
+void qasm_recordInitClassical(QubitRegister qureg, long long int stateInd);
+
+void qasm_recordComment(QubitRegister qureg, char* comment);
+
 void qasm_clearRecorded(QubitRegister qureg);
+
+void qasm_printRecorded(QubitRegister qureg);
+
+int qasm_writeRecordedToFile(QubitRegister qureg, char* filename);
 
 void qasm_free(QubitRegister qureg);
 

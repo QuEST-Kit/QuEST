@@ -11,12 +11,15 @@
 
 # include "../QuEST_precision.h"
 
-// @TODO
-void densmatr_initPureStateDistributed(QubitRegister targetQureg, QubitRegister copyQureg);
+REAL densmatr_calcPurityLocal(QubitRegister qureg);
 
 void densmatr_initPureStateLocal(QubitRegister targetQureg, QubitRegister copyQureg);
 
+REAL densmatr_calcFidelityLocal(QubitRegister qureg, QubitRegister pureState);
+
 REAL densmatr_findProbabilityOfZeroLocal(QubitRegister qureg, const int measureQubit);
+
+Complex statevec_calcInnerProductLocal(QubitRegister bra, QubitRegister ket);
 
 void statevec_compactUnitaryLocal (QubitRegister qureg, const int targetQubit, Complex alpha, Complex beta);
 
@@ -75,13 +78,13 @@ void statevec_sigmaYDistributed(QubitRegister qureg, const int targetQubit,
         ComplexArray stateVecOut,
         int updateUpper, int conjFac);
 
-void statevec_hadamardLocal (QubitRegister qureg, const int targetQubit);
-
 void statevec_controlledSigmaYLocal(QubitRegister qureg, const int controlQubit, const int targetQubit, const int conjFactor);
 
 void statevec_controlledSigmaYDistributed(QubitRegister qureg, const int controlQubit, const int targetQubit,
         ComplexArray stateVecIn,
         ComplexArray stateVecOut, const int conjFactor);
+        
+void statevec_hadamardLocal (QubitRegister qureg, const int targetQubit);
 
 void statevec_hadamardDistributed (QubitRegister qureg, const int targetQubit,
         ComplexArray stateVecUp,

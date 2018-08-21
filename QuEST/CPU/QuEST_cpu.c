@@ -35,14 +35,212 @@ static int extractBit (const int locationOfBitFromRight, const long long int the
 }
 
 
+// @TODO
+void densmatr_oneQubitDephase(QubitRegister qureg, const int targetQubit, REAL dephase) {
+    
+}
 
 // @TODO
-void densmatr_initPureStateDistributed(QubitRegister targetQureg, QubitRegister copyQureg) {
-
-
-    printf("densmatr_initPureStateDistributed NOT YET IMPLEMENTED ON CPU");
-
+void densmatr_twoQubitDephase(QubitRegister qureg, const int qubit1, const int qubit2, REAL dephase) {
+    
 }
+
+// @TODO
+void densmatr_oneQubitDepolarise(QubitRegister qureg, const int targetQubit, REAL depolLevel) {
+    
+}
+
+// @TODO
+void densmatr_twoQubitDepolarise(QubitRegister qureg, int qubit1, int qubit2, REAL depolLevel) {
+    
+}
+
+
+
+
+
+REAL densmatr_calcPurityLocal(QubitRegister qureg) {
+    
+    /* sum of qureg^2, which is sum_i |qureg[i]|^2 */
+    long long int index;
+    long long int numAmps = qureg.numAmpsPerChunk;
+        
+    REAL trace = 0;
+    REAL *vecRe = qureg.stateVec.real;
+    REAL *vecIm = qureg.stateVec.imag;
+    
+# ifdef _OPENMP
+# pragma omp parallel \
+    shared    (vecRe, vecIm, numAmps) \
+    private   (index) \
+    reduction ( +:trace )
+# endif 
+    {
+# ifdef _OPENMP
+# pragma omp for schedule  (static)
+# endif
+        for (index=0; index<numAmps; index++) {
+                        
+            trace += vecRe[index]*vecRe[index] + vecIm[index]*vecIm[index];
+        }
+    }
+    
+    return trace;
+}
+
+void densmatr_combineDensityMatrices(REAL combineProb, QubitRegister combineQureg, REAL otherProb, QubitRegister otherQureg) {
+    
+    /* corresponding amplitudes live on the same node (same dimensions) */
+    
+    // unpack vars for OpenMP
+    REAL* combineVecRe = combineQureg.stateVec.real;
+    REAL* combineVecIm = combineQureg.stateVec.imag;
+    REAL* otherVecRe = otherQureg.stateVec.real;
+    REAL* otherVecIm = otherQureg.stateVec.imag;
+    long long int numAmps = combineQureg.numAmpsPerChunk;
+    long long int index;
+    
+# ifdef _OPENMP
+# pragma omp parallel \
+    default (none) \
+    shared  (combineVecRe,combineVecIm,otherVecRe,otherVecIm, combineProb,otherProb, numAmps) \
+    private (index)
+# endif 
+    {
+# ifdef _OPENMP
+# pragma omp for schedule  (static)
+# endif
+        for (index=0; index < numAmps; index++) {
+            combineVecRe[index] *= combineProb;
+            combineVecIm[index] *= combineProb;
+            
+            combineVecRe[index] += otherProb * otherVecRe[index];
+            combineVecIm[index] += otherProb * otherVecIm[index];
+        }
+    }
+}
+
+/** computes a few dens-columns-worth of (vec^*T) dens * vec */
+REAL densmatr_calcFidelityLocal(QubitRegister qureg, QubitRegister pureState) {
+        
+    /* Here, elements of pureState are not accessed (instead grabbed from qureg.pair).
+     * We only consult the attributes.
+     *
+     * qureg is a density matrix, and pureState is a statevector.
+     * Every node contains as many columns of qureg as amps by pureState.
+     * Ergo, this node contains columns:
+     * qureg.chunkID * pureState.numAmpsPerChunk  to
+     * (qureg.chunkID + 1) * pureState.numAmpsPerChunk
+     *
+     * The first pureState.numAmpsTotal elements of qureg.pairStateVec are the
+     * full pure state-vector
+     */
+    
+    // unpack everything for OPENMP
+    REAL* vecRe  = qureg.pairStateVec.real;
+    REAL* vecIm  = qureg.pairStateVec.imag;
+    REAL* densRe = qureg.stateVec.real;
+    REAL* densIm = qureg.stateVec.imag;
+    
+    int row, col;
+    int dim = pureState.numAmpsTotal;
+    int colsPerNode = pureState.numAmpsPerChunk;
+    
+    REAL densElemRe, densElemIm;
+    REAL prefacRe, prefacIm;
+    REAL rowSumRe, rowSumIm;
+    REAL vecElemRe, vecElemIm;
+    
+    // starting GLOBAL column index of the qureg columns on this node
+    int startCol = qureg.chunkId * pureState.numAmpsPerChunk;
+    
+    // quantity computed by this node
+    REAL globalSumRe = 0;   // imag-component is assumed zero
+    
+# ifdef _OPENMP
+# pragma omp parallel \
+    shared    (vecRe,vecIm,densRe,densIm, dim,colsPerNode,startCol) \
+    private   (row,col, prefacRe,prefacIm, rowSumRe,rowSumIm, densElemRe,densElemIm, vecElemRe,vecElemIm) \
+    reduction ( +:globalSumRe )
+# endif 
+    {
+# ifdef _OPENMP
+# pragma omp for schedule  (static)
+# endif
+        // indices of my GLOBAL row
+        for (row=0; row < dim; row++) {
+            
+            // single element of conj(pureState)
+            prefacRe =   vecRe[row];
+            prefacIm = - vecIm[row];
+                    
+            rowSumRe = 0;
+            rowSumIm = 0;
+            
+            // indices of my LOCAL column
+            for (col=0; col < colsPerNode; col++) {
+            
+                // my local density element
+                densElemRe = densRe[row + dim*col];
+                densElemIm = densIm[row + dim*col];
+            
+                // state-vector element
+                vecElemRe = vecRe[startCol + col];
+                vecElemIm = vecIm[startCol + col];
+            
+                rowSumRe += densElemRe*vecElemRe - densElemIm*vecElemIm;
+                rowSumIm += densElemRe*vecElemIm + densElemIm*vecElemRe;
+            }
+        
+            globalSumRe += rowSumRe*prefacRe + rowSumIm*prefacIm;   
+        }
+    }
+    
+    return globalSumRe;
+}
+
+Complex statevec_calcInnerProductLocal(QubitRegister bra, QubitRegister ket) {
+    
+    REAL innerProdReal = 0;
+    REAL innerProdImag = 0;
+    
+    long long int index;
+    long long int numAmps = bra.numAmpsPerChunk;
+    REAL *braVecReal = bra.stateVec.real;
+    REAL *braVecImag = bra.stateVec.imag;
+    REAL *ketVecReal = ket.stateVec.real;
+    REAL *ketVecImag = ket.stateVec.imag;
+    
+    REAL braRe, braIm, ketRe, ketIm;
+    
+# ifdef _OPENMP
+# pragma omp parallel \
+    shared    (braVecReal, braVecImag, ketVecReal, ketVecImag, numAmps) \
+    private   (index, braRe, braIm, ketRe, ketIm) \
+    reduction ( +:innerProdReal, innerProdImag )
+# endif 
+    {
+# ifdef _OPENMP
+# pragma omp for schedule  (static)
+# endif
+        for (index=0; index < numAmps; index++) {
+            braRe = braVecReal[index];
+            braIm = braVecImag[index];
+            ketRe = ketVecReal[index];
+            ketIm = ketVecImag[index];
+            
+            // conj(bra_i) * ket_i
+            innerProdReal += braRe*ketRe + braIm*ketIm;
+            innerProdImag += braRe*ketIm - braIm*ketRe;
+        }
+    }
+    
+    Complex innerProd;
+    innerProd.real = innerProdReal;
+    innerProd.imag = innerProdImag;
+    return innerProd;
+}
+
 
 
 void densmatr_initClassicalState (QubitRegister qureg, long long int stateInd)
@@ -77,27 +275,25 @@ void densmatr_initClassicalState (QubitRegister qureg, long long int stateInd)
     long long int densityInd = (densityDim + 1)*stateInd;
 
     // give the specified classical state prob 1
-    if (qureg.chunkId == densityInd / densityDim){
-        densityReal[densityInd % densityDim] = 1.0;
-        densityImag[densityInd % densityDim] = 0.0;
+    if (qureg.chunkId == densityInd / densityNumElems){
+        densityReal[densityInd % densityNumElems] = 1.0;
+        densityImag[densityInd % densityNumElems] = 0.0;
     }
 }
 
 
 void densmatr_initStatePlus (QubitRegister qureg)
 {
-    long long int chunkSize, stateVecSize;
-    long long int index;
-
-    // dimension of the state vector
-    chunkSize = qureg.numAmpsPerChunk;
-    stateVecSize = chunkSize*qureg.numChunks;
-    REAL probFactor = 1.0/((REAL)stateVecSize);
+    // |+><+| = sum_i 1/sqrt(2^N) |i> 1/sqrt(2^N) <j| = sum_ij 1/2^N |i><j|
+    long long int dim = (1LL << qureg.numQubitsRepresented);
+    REAL probFactor = 1.0/((REAL) dim);
 
     // Can't use qureg->stateVec as a private OMP var
     REAL *densityReal = qureg.stateVec.real;
     REAL *densityImag = qureg.stateVec.imag;
 
+    long long int index;
+    long long int chunkSize = qureg.numAmpsPerChunk;
     // initialise the state to |+++..+++> = 1/normFactor {1, 1, 1, ...}
 # ifdef _OPENMP
 # pragma omp parallel \
@@ -118,47 +314,95 @@ void densmatr_initStatePlus (QubitRegister qureg)
 
 void densmatr_initPureStateLocal(QubitRegister targetQureg, QubitRegister copyQureg) {
     
-    // targetQureg is a density matrix of size (2^N)^2, copy is pure of size 2^N
-
-    // dimension of the pure state vector
-    long long int stateVecSize = copyQureg.numAmpsPerChunk;
-
-    // Can't use qureg->stateVec as a private OMP var
-    REAL *targetDensityReal = targetQureg.stateVec.real;
-    REAL *targetDensityImag = targetQureg.stateVec.imag;
-    REAL *copyStateVecReal = copyQureg.stateVec.real;
-    REAL *copyStateVecImag = copyQureg.stateVec.imag;
+    /* copyQureg amps aren't explicitly used - they're accessed through targetQureg.pair,
+     * which contains the full pure statevector.
+     * targetQureg has as many columns on node as copyQureg has amps
+     */
     
-    // iterates density entries
-    long long int row, col;
+    long long int colOffset = targetQureg.chunkId * copyQureg.numAmpsPerChunk;
+    long long int colsPerNode = copyQureg.numAmpsPerChunk;
+    long long int rowsPerNode = copyQureg.numAmpsTotal;
     
-    // involved elements
-    REAL realRow, imagRow, realCol, imagCol;
-
-    // initialise targetQureg to be 100% likely in the puerstate of copyQureg
+    // unpack vars for OpenMP
+    REAL* vecRe = targetQureg.pairStateVec.real;
+    REAL* vecIm = targetQureg.pairStateVec.imag;
+    REAL* densRe = targetQureg.stateVec.real;
+    REAL* densIm = targetQureg.stateVec.imag;
+    
+    long long int col, row, index;
+    
+    // a_i conj(a_j) |i><j|
+    REAL ketRe, ketIm, braRe, braIm;
+    
 # ifdef _OPENMP
 # pragma omp parallel \
     default  (none) \
-    shared   (stateVecSize, targetDensityReal, targetDensityImag, copyStateVecReal, copyStateVecImag) \
-    private  (row, col, realRow, imagRow, realCol, imagCol) 
+    shared   (colOffset, colsPerNode,rowsPerNode, vecRe,vecIm,densRe,densIm) \
+    private  (col,row, ketRe,ketIm,braRe,braIm, index) 
 # endif
     {
 # ifdef _OPENMP
 # pragma omp for schedule (static)
 # endif
-        for (row=0; row < stateVecSize; row++) {
+        // local column
+        for (col=0; col < colsPerNode; col++) {
+        
+            // global row
+            for (row=0; row < rowsPerNode; row++) {
             
-            realRow = copyStateVecReal[row];
-            imagRow = copyStateVecImag[row];
+                // get pure state amps
+                ketRe = vecRe[row];
+                ketIm = vecIm[row];
+                braRe = vecRe[col + colOffset];
+                braIm = vecIm[col + colOffset];
             
-            for (col=0; col < stateVecSize; col++) {
-
-                realCol =   copyStateVecReal[col];
-                imagCol = - copyStateVecImag[col]; //note minus for conjugation
-            
-                targetDensityReal[col*stateVecSize + row] = realRow*realCol - imagRow*imagCol;
-                targetDensityImag[col*stateVecSize + row] = realRow*imagCol + imagRow*realCol;
+                // update density matrix
+                index = row + col*rowsPerNode; // local ind
+                densRe[index] = ketRe*braRe - ketIm*braIm;
+                densIm[index] = ketRe*braIm - ketIm*braRe;
             }
+        }
+    }
+}
+
+void statevec_initStateFromAmps(QubitRegister qureg, long long int startInd, REAL* reals, REAL* imags, long long int numAmps) {
+    
+    /* this is actually distributed, since the user's code runs on every node */
+    
+    // local start/end indices of the given amplitudes, assuming they fit in this chunk
+    // these may be negative or above qureg.numAmpsPerChunk
+    long long int localStartInd = startInd - qureg.chunkId*qureg.numAmpsPerChunk;
+    long long int localEndInd = localStartInd + numAmps; // exclusive
+    
+    // add this to a local index to get corresponding elem in reals & imags
+    long long int offset = qureg.chunkId*qureg.numAmpsPerChunk - startInd;
+    
+    // restrict these indices to fit into this chunk
+    if (localStartInd < 0)
+        localStartInd = 0;
+    if (localEndInd > qureg.numAmpsPerChunk)
+        localEndInd = qureg.numAmpsPerChunk;
+    // they may now be out of order = no iterations
+    
+    // unpacking OpenMP vars
+    long long int index;
+    REAL* vecRe = qureg.stateVec.real;
+    REAL* vecIm = qureg.stateVec.imag;
+    
+# ifdef _OPENMP
+# pragma omp parallel \
+    default  (none) \
+    shared   (localStartInd,localEndInd, vecRe,vecIm, reals,imags, offset) \
+    private  (index) 
+# endif
+    {
+# ifdef _OPENMP
+# pragma omp for schedule (static)
+# endif
+        // iterate these local inds - this might involve no iterations
+        for (index=localStartInd; index < localEndInd; index++) {
+            vecRe[index] = reals[index + offset];
+            vecIm[index] = imags[index + offset];
         }
     }
 }
@@ -196,6 +440,7 @@ void statevec_createQubitRegister(QubitRegister *qureg, int numQubits, QuESTEnv 
 }
 
 void statevec_destroyQubitRegister(QubitRegister qureg, QuESTEnv env){
+    
     free(qureg.stateVec.real);
     free(qureg.stateVec.imag);
     if (env.numRanks>1){
@@ -340,7 +585,7 @@ void statevec_initClassicalState (QubitRegister qureg, long long int stateInd)
     }
 }
 
-void statevec_initPureState(QubitRegister targetQureg, QubitRegister copyQureg) {
+void statevec_cloneQubitRegister(QubitRegister targetQureg, QubitRegister copyQureg) {
     
     // registers are equal sized, so nodes hold the same state-vector partitions
     long long int stateVecSize;
@@ -1619,7 +1864,7 @@ void statevec_hadamardDistributed(QubitRegister qureg, const int targetQubit,
 }
 
 void statevec_phaseShiftByTerm (QubitRegister qureg, const int targetQubit, Complex term)
-{   
+{       
     long long int index;
     long long int stateVecSize;
     int targetBit;
@@ -1740,20 +1985,21 @@ void statevec_multiControlledPhaseShift(QubitRegister qureg, int *controlQubits,
     }
 }
 
+
 REAL densmatr_findProbabilityOfZeroLocal(QubitRegister qureg, const int measureQubit) {
     
     // computes first local index containing a diagonal element
     long long int localNumAmps = qureg.numAmpsPerChunk;
     long long int densityDim = (1LL << qureg.numQubitsRepresented);
     long long int diagSpacing = 1LL + densityDim;
-    long long int maxNumDiagsPerChunk = localNumAmps / diagSpacing;
-    long long int numPrevDiags = (qureg.chunkId * localNumAmps) / diagSpacing;
+    long long int maxNumDiagsPerChunk = 1 + localNumAmps / diagSpacing;
+    long long int numPrevDiags = (qureg.chunkId>0)? 1+(qureg.chunkId*localNumAmps)/diagSpacing : 0;
     long long int globalIndNextDiag = diagSpacing * numPrevDiags;
     long long int localIndNextDiag = globalIndNextDiag % localNumAmps;
     
     // computes how many diagonals are contained in this chunk
     long long int numDiagsInThisChunk = maxNumDiagsPerChunk;
-    if (localIndNextDiag + numDiagsInThisChunk*diagSpacing >= localNumAmps)
+    if (localIndNextDiag + (numDiagsInThisChunk-1)*diagSpacing >= localNumAmps)
         numDiagsInThisChunk -= 1;
     
     long long int visitedDiags;     // number of visited diagonals in this chunk so far
@@ -1765,7 +2011,7 @@ REAL densmatr_findProbabilityOfZeroLocal(QubitRegister qureg, const int measureQ
     
 # ifdef _OPENMP
 # pragma omp parallel \
-    shared    (localIndNextDiag, numPrevDiags, diagSpacing, stateVecReal) \
+    shared    (localIndNextDiag, numPrevDiags, diagSpacing, stateVecReal, numDiagsInThisChunk) \
     private   (visitedDiags, basisStateInd, index) \
     reduction ( +:zeroProb )
 # endif 
@@ -1778,12 +2024,13 @@ REAL densmatr_findProbabilityOfZeroLocal(QubitRegister qureg, const int measureQ
             
             basisStateInd = numPrevDiags + visitedDiags;
             index = localIndNextDiag + diagSpacing * visitedDiags;
-
-            if (extractBit(measureQubit, basisStateInd++) == 0)
+    
+            if (extractBit(measureQubit, basisStateInd) == 0)
                 zeroProb += stateVecReal[index]; // assume imag[diagonls] ~ 0
 
         }
     }
+    
     return zeroProb;
 }
 

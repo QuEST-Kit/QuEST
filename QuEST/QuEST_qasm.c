@@ -4,6 +4,13 @@
  * Functions for generating QASM output from QuEST circuits
  */
 
+/** @TODO
+ * - allow user-set decimal precision (useful for when QASM is passed to a plotter)
+ * - sort out fixing global phase in controlledPhaseShift to controlledRotateZ plug
+ * - add functions to directly add comments to QASM by user
+ * - add abilitiy for user to directly add strings to QASM buffer??
+ */
+
 # include "QuEST.h"
 # include "QuEST_precision.h"
 # include "QuEST_internal.h"
@@ -17,16 +24,13 @@
 # define QUREG_LABEL "q"        // QASM var-name for the quantum register
 # define MESREG_LABEL "c"       // QASM var-name for the classical measurement register
 # define CTRL_LABEL_PREF "c"    // QASM syntax which prefixes gates when controlled
-# define MEASURE_CMD "measure"  // QASM label for measurement operation
+# define MEASURE_CMD "measure"  // QASM cmd for measurement operation
+# define INIT_ZERO_CMD "reset"  // QASM cmd for setting state 0
+# define COMMENT_PREF "//"     // QASM syntax for a comment ;)
 
-# define MAX_LINE_LEN 100       // maximum length (#chars) of a single QASM instruction
+# define MAX_LINE_LEN 200       // maximum length (#chars) of a single QASM instruction
 # define BUF_INIT_SIZE 1000     // initial size of the QASM buffer (#chars)
 # define BUF_GROW_FAC 2         // growth factor when buffer dynamically resizes
-
-/* @TODO
-    - buffer writing is sometimes failing - why?
-    - shrink param strings where possible
-*/
 
 static const char* qasmGateLabels[] = {
     [GATE_SIGMA_X] = "x",
@@ -38,23 +42,38 @@ static const char* qasmGateLabels[] = {
     [GATE_ROTATE_X] = "Rx",
     [GATE_ROTATE_Y] = "Ry",
     [GATE_ROTATE_Z] = "Rz",
-    [GATE_UNITARY] = "U"
-    //[GATE_ROTATE_AROUND_AXIS] = ,
-    //[GATE_PHASE_SHIFT] = 
+    [GATE_UNITARY] = "U",
+    [GATE_PHASE_SHIFT] = "PHASESHIFT" // Rz for single gate, then need phase fix for controlled
 };
+
+// @TODO make a proper internal error thing
+void bufferOverflow() {
+    printf("!!!\nINTERNAL ERROR: QASM line buffer filled!\n!!!");
+    exit(1);
+}
 
 void qasm_setup(QubitRegister* qureg) {
     
     // populate and attach QASM logger
-    QASMLogger *qasmLog = malloc(sizeof qasmLog);
+    QASMLogger *qasmLog = malloc(sizeof *qasmLog);
+    qureg->qasmLog = qasmLog;
+    if (qasmLog == NULL)
+        bufferOverflow();
+    
     qasmLog->isLogging = 0;
     qasmLog->bufferSize = BUF_INIT_SIZE;
     qasmLog->buffer = malloc(qasmLog->bufferSize * sizeof *(qasmLog->buffer));
-    qasmLog->bufferFill = sprintf(qasmLog->buffer, "OPENQASM 2.0;\nqreg %s[%d];\ncreg %s[%d];\n", 
+    if (qasmLog->buffer == NULL)
+        bufferOverflow();
+    
+    // add headers and quantum / classical register creation
+    qasmLog->bufferFill = snprintf(
+        qasmLog->buffer, qasmLog->bufferSize,
+        "OPENQASM 2.0;\nqreg %s[%d];\ncreg %s[%d];\n", 
         QUREG_LABEL, qureg->numQubitsRepresented,
         MESREG_LABEL, qureg->numQubitsRepresented);
-
-    qureg->qasmLog = qasmLog;
+    if (qasmLog->bufferFill >= qasmLog->bufferSize)
+        bufferOverflow();
 }
 
 void qasm_startRecording(QubitRegister qureg) {
@@ -65,18 +84,9 @@ void qasm_stopRecording(QubitRegister qureg) {
     qureg.qasmLog->isLogging = 0;
 }
 
-// @TODO make a proper internal error thing
-void bufferOverflow() {
-    printf("!!!\nINTERNAL ERROR: QASM line buffer filled!\n!!!");
-    exit(1);
-}
-
-
-
-
-
 void addStringToQASM(QubitRegister qureg, char line[], int lineLen) {
     
+    char* buf = qureg.qasmLog->buffer;
     int bufSize = qureg.qasmLog->bufferSize;
     int bufFill = qureg.qasmLog->bufferFill;
     
@@ -88,20 +98,28 @@ void addStringToQASM(QubitRegister qureg, char line[], int lineLen) {
             bufferOverflow();
         
         char* newBuffer = malloc(newBufSize * sizeof *newBuffer);
-        sprintf(newBuffer, "%s", qureg.qasmLog->buffer);
-        free(qureg.qasmLog->buffer);
+        sprintf(newBuffer, "%s", buf);
+        free(buf);
         
         qureg.qasmLog->bufferSize = newBufSize;
         qureg.qasmLog->buffer = newBuffer;
+        bufSize = newBufSize;
+        buf = newBuffer;
     }
         
     // add new str
-    sprintf(qureg.qasmLog->buffer + qureg.qasmLog->bufferFill, "%s", line);
-    qureg.qasmLog->bufferFill += lineLen;   
+    int addedChars = snprintf(buf+bufFill, bufSize-bufFill, "%s", line);
+    qureg.qasmLog->bufferFill += addedChars;
+}
+
+void qasm_recordComment(QubitRegister qureg, char* comment) {
     
-    printf("New string added: %s\n", line);
-    printf("which added %d new chars\n", lineLen);
-    printf("so the QASM is now:\n%s\n\n", qureg.qasmLog->buffer);
+    if (!qureg.qasmLog->isLogging)
+        return;
+    
+    char line[MAX_LINE_LEN + 1]; // for trailing \0
+    int len = snprintf(line, MAX_LINE_LEN, "%s %s\n", COMMENT_PREF, comment);
+    addStringToQASM(qureg, line, len);
 }
 
 void addGateToQASM(QubitRegister qureg, TargetGate gate, int* controlQubits, int numControlQubits, int targetQubit, REAL* params, int numParams) {
@@ -111,16 +129,16 @@ void addGateToQASM(QubitRegister qureg, TargetGate gate, int* controlQubits, int
     
     // add control labels
     for (int i=0; i < numControlQubits; i++)
-        len += snprintf(line+len, MAX_LINE_LEN-len, CTRL_LABEL_PREF);
+        len += snprintf(line+len, MAX_LINE_LEN-len, "%s", CTRL_LABEL_PREF);
     
     // add target gate
-    len += snprintf(line+len, MAX_LINE_LEN-len, qasmGateLabels[gate]);
+    len += snprintf(line+len, MAX_LINE_LEN-len, "%s", qasmGateLabels[gate]);
     
-    // add argument if exists
+    // add parameters
     if (numParams > 0) {
         len += snprintf(line+len, MAX_LINE_LEN-len, "(");
         for (int i=0; i < numParams; i++) {
-            len += snprintf(line+len, MAX_LINE_LEN-len, REAL_STRING_FORMAT, params[i]);
+            len += snprintf(line+len, MAX_LINE_LEN-len, REAL_QASM_FORMAT, params[i]);
             if (i != numParams - 1)
                 len += snprintf(line+len, MAX_LINE_LEN-len, ",");
         }
@@ -254,6 +272,7 @@ void qasm_recordControlledUnitary(QubitRegister qureg, ComplexMatrix2 u, int con
     addGateToQASM(qureg, GATE_UNITARY, controls, 1, targetQubit, params, 3);
     
     // add Rz
+    qasm_recordComment(qureg, "Restoring the discarded global phase of the previous controlled unitary");
     REAL phaseFix[1] = {globalPhase};
     addGateToQASM(qureg, GATE_ROTATE_Z, NULL, 0, targetQubit, phaseFix, 1);
 }
@@ -346,6 +365,68 @@ void qasm_recordMeasurement(QubitRegister qureg, const int measureQubit) {
     addStringToQASM(qureg, line, len);
 }
 
+void qasm_recordInitZero(QubitRegister qureg) {
+    
+    if (!qureg.qasmLog->isLogging)
+        return;
+    
+    char line[MAX_LINE_LEN + 1]; // for trailing \0
+    int len = snprintf(line, MAX_LINE_LEN, "%s %s;\n", INIT_ZERO_CMD, QUREG_LABEL);
+    
+    // check whether we overflowed buffer
+    if (len >= MAX_LINE_LEN)
+        bufferOverflow();
+    
+    addStringToQASM(qureg, line, len);
+}
+
+void qasm_recordInitPlus(QubitRegister qureg) {
+    
+    if (!qureg.qasmLog->isLogging)
+        return;
+    
+    // add an explanatory comment
+    char buf[MAX_LINE_LEN+1];
+    sprintf(buf, "Initialising state |+>");
+    qasm_recordComment(qureg, buf);
+    
+    // it's valid QASM to h the register (I think)
+    // |+> = H |0>
+    qasm_recordInitZero(qureg);
+    int charsWritten = snprintf(
+        buf, MAX_LINE_LEN, "%s %s;\n", 
+        qasmGateLabels[GATE_HADAMARD], QUREG_LABEL);
+    if (charsWritten >= MAX_LINE_LEN)
+        bufferOverflow();
+    addStringToQASM(qureg, buf, charsWritten);
+    
+    
+    /*
+    qasm_recordInitZero(qureg);
+    for (int q=0; q < qureg.numQubitsRepresented; q++)
+        qasm_recordGate(qureg, GATE_HADAMARD, q);
+    */
+}
+
+void qasm_recordInitClassical(QubitRegister qureg, long long int stateInd) {
+    
+    if (!qureg.qasmLog->isLogging)
+        return;
+    
+    // add an explanatory comment
+    char cmt[MAX_LINE_LEN+1];
+    sprintf(cmt, "Initialising state |%lld>", stateInd);
+    qasm_recordComment(qureg, cmt);
+    
+    // start in |0>
+    qasm_recordInitZero(qureg);
+    
+    // NOT the 1 bits in stateInd
+    for (int q=0; q < qureg.numQubitsRepresented; q++) 
+        if ((stateInd >> q) & 1)
+            qasm_recordGate(qureg, GATE_SIGMA_X, q);
+}
+
 void qasm_clearRecorded(QubitRegister qureg) {
     
     // maintains current buffer size
@@ -353,20 +434,24 @@ void qasm_clearRecorded(QubitRegister qureg) {
     qureg.qasmLog->bufferFill = 0;
 }
 
+void qasm_printRecorded(QubitRegister qureg) {
+    printf("%s", qureg.qasmLog->buffer);
+}
+
+/** returns success of file write */
+int qasm_writeRecordedToFile(QubitRegister qureg, char* filename) {
+    
+    FILE *file = fopen(filename, "w");
+    if (file == NULL)
+        return 0;
+    
+    fprintf(file, "%s", qureg.qasmLog->buffer);
+    fclose(file);
+    return 1;
+}
+
 void qasm_free(QubitRegister qureg) {
     
     free(qureg.qasmLog->buffer);
     free(qureg.qasmLog);
 }
-
-
-// will need more for specifying general gates (rotations, unitaries, etc)
-
-
-
-
-
-
-
-
-

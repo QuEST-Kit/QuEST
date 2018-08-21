@@ -9,7 +9,6 @@
 # define QuEST
 
 # include "QuEST_precision.h"
-//# include "QuEST_qasm.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -189,8 +188,7 @@ int getNumAmps(QubitRegister qureg);
  */
 void initStateZero(QubitRegister qureg);
 
-/**
- * Initialise a set of \f$ N \f$ qubits to the plus state
+/** Initialise a set of \f$ N \f$ qubits to the plus state
  * \f$ {| + \rangle}^{\otimes N} = \frac{1}{\sqrt{2^N}} (| 0 \rangle + | 1 \rangle)^{\otimes N} \f$.
  * This is the product state of \f$N\f$ qubits where every classical state is uniformly 
  * populated with real coefficient \f$\frac{1}{\sqrt{2^N}}\f$.
@@ -201,8 +199,7 @@ void initStateZero(QubitRegister qureg);
  */
 void initStatePlus(QubitRegister qureg);
 
-/**
- * Initialise a set of \f$ N \f$ qubits to the classical state with index \p stateInd.
+/** Initialise a set of \f$ N \f$ qubits to the classical state with index \p stateInd.
  * Note \f$ | 00 \dots 00 \rangle \f$ has \p stateInd 0, \f$ | 00 \dots 01 \rangle \f$ has \p stateInd 1, 
  * \f$ | 11 \dots 11 \rangle \f$ has \p stateInd \f$ 2^N - 1 \f$, etc.
  * Subsequent calls to getProbEl will yield 0 for all indices except \p stateInd.
@@ -212,8 +209,7 @@ void initStatePlus(QubitRegister qureg);
  */
 void initClassicalState(QubitRegister qureg, long long int stateInd);
 
-/**
- * Initialise a set of \f$ N \f$ qubits, which can be pure or mixed, to a given pure state.
+/** Initialise a set of \f$ N \f$ qubits, which can be pure or mixed, to a given pure state.
  * If \p qureg is a pure state, this merely makes \p qureg an identical copy of \p pure.
  * If \p qureg is a density matrix, this makes \p qureg 100% likely to be in the \p pure state.
  *
@@ -221,6 +217,29 @@ void initClassicalState(QubitRegister qureg, long long int stateInd);
  * @param[in] pure the pure state to be copied or to give probability 1 in qureg
  */
 void initPureState(QubitRegister qureg, QubitRegister pure);
+
+/** Initialise qureg in the state suggested by the subset of amplitudes passed in \p reals and \p imags.
+ * Only amplitudes with indices in [\p startInd, \p startInd + \p numAmps] will be changed, which means
+ * the new state may not be L2 normalised. This allows the user to initialise a custom state by 
+ * setting batches of amplitudes.
+ *
+ * @param[in,out] qureg the object representing the set of qubits to be initialised
+ * @param[in] startInd the index of the first amplitude in \p qureg's statevector to modify
+ * @param[in] reals array of the real components of the new amplitudes
+ * @param[in] imags array of the imaginary components of the new amplitudes
+ * @param[in] numAmps the length of each of the reals and imags arrays.
+ */
+void initStateFromAmps(QubitRegister qureg, long long int startInd, REAL* reals, REAL* imags, long long int numAmps);
+
+/** Set targetQureg to be a clone of copyQureg. 
+ * Registers must either both be state-vectors, or both be density matrices.
+ * Only the quantum state is cloned, auxilary info (like recorded QASM) is unchanged.
+ * copyQureg is unaffected.
+ *
+ * @param[in, out] targetQureg the qureg to have its quantum state overwritten
+ * @param[in] copyQureg the qureg to have its quantum state cloned in targetQureg.
+ */
+void cloneQubitRegister(QubitRegister targetQureg, QubitRegister copyQureg);
 
 /** Shift the phase between \f$ |0\rangle \f$ and \f$ |1\rangle \f$ of a single qubit by a given angle.
  * This is equivalent to a rotation Z-axis of the Bloch-sphere up to a global phase factor.
@@ -517,7 +536,7 @@ void getEnvironmentString(QuESTEnv env, QubitRegister qureg, char str[200]);
  * @param[in] index index in state vector of probability amplitudes
  * @return real component at that index
  * @throws exitWithError
- *      if \p index is outside [0, \f$2^{N}\f$) where \f$N = \f$ \p qureg.numQubits
+ *      if \p index is outside [0, \f$2^{N}\f$) where \f$N = \f$ \p qureg.numQubitsRepresented
  */
 REAL getRealAmpEl(QubitRegister qureg, long long int index);
 
@@ -528,7 +547,7 @@ REAL getRealAmpEl(QubitRegister qureg, long long int index);
  * @param[in] index index in state vector of probability amplitudes
  * @return imaginary component at that index
  * @throws exitWithError
- *      if \p index is outside [0, \f$2^{N}\f$) where \f$N = \f$ \p qureg.numQubits
+ *      if \p index is outside [0, \f$2^{N}\f$) where \f$N = \f$ \p qureg.numQubitsRepresented
  */
 REAL getImagAmpEl(QubitRegister qureg, long long int index);
 
@@ -538,9 +557,20 @@ REAL getImagAmpEl(QubitRegister qureg, long long int index);
  * @param[in] index index in state vector of probability amplitudes
  * @return realEl*realEl + imagEl*imagEl
  * @throws exitWithError
- *      if \p index is outside [0, \f$2^{N}\f$) where \f$N = \f$ \p qureg.numQubits
+ *      if \p index is outside [0, \f$2^{N}\f$) where \f$N = \f$ \p qureg.numQubitsRepresented
  */
 REAL getProbEl(QubitRegister qureg, long long int index);
+
+/** Get an amplitude from a density matrix at a given row and column.
+ *
+ * @oaram[in] qureg object representing a density matrix
+ * @param[in] row row of the desired amplitude in the density matrix
+ * @param[in] col column of the desired amplitude in the density matrix
+ * @return a Complex scalar representing the desired amplitude
+ * @throws exitWithError
+ *      if \p qureg is a statevector, or if \p row or \p col are outside [0, \f$2^{N}\f$) where \f$N = \f$ \p qureg.numQubitsRepresented
+ */
+Complex getDensityAmplitude(QubitRegister qureg, long long int row, long long int col);
 
 /** A debugging function which calculates the probability of being in any state, which should be 1.
  * For pure states, this is the norm of the entire state vector and for mixed states, is the trace of
@@ -1252,6 +1282,9 @@ int measure(QubitRegister qureg, int measureQubit);
  */
 int measureWithStats(QubitRegister qureg, int measureQubit, REAL *outcomeProb);
 
+/** Computes <bra|ket> */
+Complex calcInnerProduct(QubitRegister bra, QubitRegister ket);
+
 /** Seed the Mersenne Twister used for random number generation in the QuEST environment with an example
  * defualt seed.
  * This default seeding function uses the mt19937 init_by_array function with three keys -- 
@@ -1292,6 +1325,46 @@ void stopRecordingQASM(QubitRegister qureg);
 /** Clear all QASM so far recorded. This does not start or stop recording
  */
 void clearRecordedQASM(QubitRegister qureg);
+
+/** Print recorded QASM to stdout */
+void printRecordedQASM(QubitRegister qureg);
+
+/** Writes recorded QASM to a file, throwing an error if inaccessible */
+void writeRecordedQASMToFile(QubitRegister qureg, char* filename);
+
+
+
+
+
+/* noise functions in the works! */
+void oneQubitDephase(QubitRegister qureg, const int targetQubit, REAL dephase);
+void twoQubitDephase(QubitRegister qureg, const int qubit1, const int qubit2, REAL dephase);
+void oneQubitDepolarise(QubitRegister qureg, const int targetQubit, REAL depolLevel);
+void twoQubitDepolarise(QubitRegister qureg, const int qubit1, const int qubit2, REAL depolLevel);
+
+
+
+
+/* density matrix functions */
+
+/** Modifies combineQureg -> combineProb * combineQureg + otherProb * otherQureg
+ * Both registers must be equal-dimension density matrices.
+ * Each probability must be in [0, 1] and together sum to 1.
+ */
+void combineDensityMatrices(REAL combineProb, QubitRegister combineQureg, REAL otherProb, QubitRegister otherQureg);
+
+/** Calculates the purity of a density matrix, by the trace of the density matrix squared
+ * For a pure state, this =1, and is <1 for mixed states
+ */
+REAL calcPurity(QubitRegister qureg);
+
+/** Calculates the fidelity of qureg (a statevector or density matrix) against 
+ * a reference pure state (necessarily a statevector).
+ * For two pure states, this is |<qureg|pureState>|^2
+ * For a mixed and pure state, this is <pureState|qureg|pureState>
+ */
+REAL calcFidelity(QubitRegister qureg, QubitRegister pureState);
+
 
 #ifdef __cplusplus
 }

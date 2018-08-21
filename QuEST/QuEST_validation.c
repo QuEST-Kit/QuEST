@@ -22,6 +22,8 @@ typedef enum {
     E_INVALID_TARGET_QUBIT,
     E_INVALID_CONTROL_QUBIT,
     E_INVALID_STATE_INDEX,
+    E_INVALID_NUM_AMPS,
+    E_INVALID_OFFSET_NUM_AMPS,
     E_TARGET_IS_CONTROL,
     E_TARGET_IN_CONTROLS,
     E_INVALID_NUM_CONTROLS,
@@ -33,9 +35,13 @@ typedef enum {
     E_INVALID_QUBIT_OUTCOME,
     E_CANNOT_OPEN_FILE,
     E_SECOND_ARG_MUST_BE_STATEVEC,
-    E_MISMATCHING_REGISTER_DIMENSIONS,
+    E_MISMATCHING_QUREG_DIMENSIONS,
+    E_MISMATCHING_QUREG_TYPES,
     E_DEFINED_ONLY_FOR_STATEVECS,
     E_DEFINED_ONLY_FOR_DENSMATRS,
+    E_INVALID_NOISE,
+    E_INVALID_PROB,
+    E_UNNORM_PROBS
 } ErrorCode;
 
 static const char* errorMessages[] = {
@@ -43,6 +49,8 @@ static const char* errorMessages[] = {
     [E_INVALID_TARGET_QUBIT] = "Invalid target qubit. Note qubits are zero indexed.",
     [E_INVALID_CONTROL_QUBIT] = "Invalid control qubit. Note qubits are zero indexed.",
     [E_INVALID_STATE_INDEX] = "Invalid state index. Must be >=0 and <2^numQubits.",
+    [E_INVALID_NUM_AMPS] = "Invalid number of amplitudes. Must be >=0 and <=2^numQubits.",
+    [E_INVALID_OFFSET_NUM_AMPS] = "More amplitudes given than exist in the statevector from the given starting index.",
     [E_TARGET_IS_CONTROL] = "Control qubit cannot equal target qubit.",
     [E_TARGET_IN_CONTROLS] = "Control qubits cannot include target qubit.",
     [E_INVALID_NUM_CONTROLS] = "Invalid number of control qubits. Must be >0 and <numQubits.",
@@ -54,9 +62,13 @@ static const char* errorMessages[] = {
     [E_INVALID_QUBIT_OUTCOME] = "Invalid measurement outcome -- must be either 0 or 1.",
     [E_CANNOT_OPEN_FILE] = "Could not open file",
     [E_SECOND_ARG_MUST_BE_STATEVEC] = "Second argument must be a state-vector.",
-    [E_MISMATCHING_REGISTER_DIMENSIONS] = "Dimensions of the qubit registers don't match.",
+    [E_MISMATCHING_QUREG_DIMENSIONS] = "Dimensions of the qubit registers don't match.",
+    [E_MISMATCHING_QUREG_TYPES] = "Registers must both be state-vectors or both be density matrices.",
     [E_DEFINED_ONLY_FOR_STATEVECS] = "Operation valid only for state-vectors.",
-    [E_DEFINED_ONLY_FOR_DENSMATRS] = "Operation valid only for density matrices."
+    [E_DEFINED_ONLY_FOR_DENSMATRS] = "Operation valid only for density matrices.",
+    [E_INVALID_NOISE] = "Dephasing and depolarising errors must be in [0, 1].",
+    [E_INVALID_PROB] = "Probabilities must be in [0, 1].",
+    [E_UNNORM_PROBS] = "Probabilities must sum to ~1."
 };
 
 void exitWithError(ErrorCode code, const char* func){
@@ -115,6 +127,12 @@ void validateStateIndex(QubitRegister qureg, long long int stateInd, const char*
     QuESTAssert(stateInd>=0 && stateInd<qureg.numAmpsTotal, E_INVALID_STATE_INDEX, caller);
 }
 
+void validateNumAmps(QubitRegister qureg, long long int startInd, long long int numAmps, const char* caller) {
+    validateStateIndex(qureg, startInd, caller);
+    QuESTAssert(numAmps >= 0 && numAmps <= qureg.numAmpsTotal, E_INVALID_NUM_AMPS, caller);
+    QuESTAssert(numAmps + startInd <= qureg.numAmpsTotal, E_INVALID_OFFSET_NUM_AMPS, caller);
+}
+
 void validateTarget(QubitRegister qureg, int targetQubit, const char* caller) {
     QuESTAssert(targetQubit>=0 && targetQubit<qureg.numQubitsRepresented, E_INVALID_TARGET_QUBIT, caller);
 }
@@ -164,7 +182,7 @@ void validateStateVecQureg(QubitRegister qureg, const char* caller) {
     QuESTAssert( ! qureg.isDensityMatrix, E_DEFINED_ONLY_FOR_STATEVECS, caller);
 }
 
-void validatDensityMatrQureg(QubitRegister qureg, const char* caller) {
+void validateDensityMatrQureg(QubitRegister qureg, const char* caller) {
     QuESTAssert(qureg.isDensityMatrix, E_DEFINED_ONLY_FOR_DENSMATRS, caller);
 }
 
@@ -177,7 +195,11 @@ void validateMeasurementProb(REAL prob, const char* caller) {
 }
 
 void validateMatchingQuregDims(QubitRegister qureg1, QubitRegister qureg2, const char *caller) {
-    QuESTAssert(qureg1.numQubitsRepresented==qureg2.numQubitsRepresented, E_MISMATCHING_REGISTER_DIMENSIONS, caller);
+    QuESTAssert(qureg1.numQubitsRepresented==qureg2.numQubitsRepresented, E_MISMATCHING_QUREG_DIMENSIONS, caller);
+}
+
+void validateMatchingQuregTypes(QubitRegister qureg1, QubitRegister qureg2, const char *caller) {
+    QuESTAssert(qureg1.isDensityMatrix==qureg2.isDensityMatrix, E_MISMATCHING_QUREG_TYPES, caller);
 }
 
 void validateSecondQuregStateVec(QubitRegister qureg2, const char *caller) {
@@ -187,6 +209,24 @@ void validateSecondQuregStateVec(QubitRegister qureg2, const char *caller) {
 void validateFileOpened(int found, const char* caller) {
     QuESTAssert(found, E_CANNOT_OPEN_FILE, caller);
 }
+
+void validateNoise(REAL noise, const char* caller) {
+    QuESTAssert(noise >= 0 && noise <= 1, E_INVALID_NOISE, caller);
+}
+
+void validateProb(REAL prob, const char* caller) {
+    QuESTAssert(prob >= 0 && prob <= 1, E_INVALID_PROB, caller);
+}
+
+void validateNormProbs(REAL prob1, REAL prob2, const char* caller) {
+    validateProb(prob1, caller);
+    validateProb(prob2, caller);
+    
+    REAL sum = prob1 + prob2;
+    QuESTAssert(absReal(1 - sum) < REAL_EPS, E_UNNORM_PROBS, caller);
+}
+
+
 
 
 #ifdef __cplusplus

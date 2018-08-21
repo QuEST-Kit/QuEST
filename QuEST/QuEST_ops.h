@@ -14,7 +14,7 @@
 extern "C" {
 # endif
 
-/* operations upon state-vectors */
+/* operations upon density matrices */
 
 void densmatr_initStatePlus(QubitRegister targetQureg);
 
@@ -24,13 +24,27 @@ void densmatr_initPureState(QubitRegister targetQureg, QubitRegister copyQureg);
 
 REAL densmatr_calcTotalProbability(QubitRegister qureg);
 
+REAL densmatr_calcPurity(QubitRegister qureg);
+
+REAL densmatr_calcFidelity(QubitRegister qureg, QubitRegister pureState);
+
 REAL densmatr_findProbabilityOfOutcome(QubitRegister qureg, const int measureQubit, int outcome);
 
 void densmatr_collapseToKnownProbOutcome(QubitRegister qureg, const int measureQubit, int outcome, REAL outcomeProb);
     
 int densmatr_measureWithStats(QubitRegister qureg, int measureQubit, REAL *outcomeProb);
+
+void densmatr_oneQubitDephase(QubitRegister qureg, const int targetQubit, REAL dephase);
+
+void densmatr_twoQubitDephase(QubitRegister qureg, const int qubit1, const int qubit2, REAL dephase);
+
+void densmatr_oneQubitDepolarise(QubitRegister qureg, const int targetQubit, REAL depolLevel);
+
+void densmatr_twoQubitDepolarise(QubitRegister qureg, int qubit1, int qubit2, REAL depolLevel);
+
+void densmatr_combineDensityMatrices(REAL combineProb, QubitRegister combineQureg, REAL otherProb, QubitRegister otherQureg);
     
-/* operations upon density matrices */
+/* operations upon state vectors */
     
 void statevec_reportStateToScreen(QubitRegister qureg, QuESTEnv env, int reportRank);
 
@@ -52,7 +66,9 @@ void statevec_initStateDebug(QubitRegister qureg);
 
 void statevec_initClassicalState(QubitRegister qureg, long long int stateInd);
 
-void statevec_initPureState(QubitRegister targetQureg, QubitRegister copyQureg);
+void statevec_initStateFromAmps(QubitRegister qureg, long long int startInd, REAL* reals, REAL* imags, long long int numAmps);
+
+void statevec_cloneQubitRegister(QubitRegister targetQureg, QubitRegister copyQureg);
 
 void statevec_multiControlledPhaseFlip(QubitRegister qureg, int *controlQubits, int numControlQubits);
 
@@ -93,6 +109,10 @@ REAL statevec_getImagAmpEl(QubitRegister qureg, long long int index);
 REAL statevec_getProbEl(QubitRegister qureg, long long int index);
 
 REAL statevec_calcTotalProbability(QubitRegister qureg);
+
+REAL statevec_calcFidelity(QubitRegister qureg, QubitRegister pureState);
+
+Complex statevec_calcInnerProduct(QubitRegister bra, QubitRegister ket);
 
 void statevec_compactUnitary(QubitRegister qureg, const int targetQubit, Complex alpha, Complex beta);
 
