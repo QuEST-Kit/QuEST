@@ -525,7 +525,7 @@ void initPureState(QubitRegister qureg, QubitRegister pure) {
     else
         statevec_cloneQubitRegister(qureg, pure);
     
-    qasm_recordComment(qureg, "The register was initialised by a undisclosed given pure state.")
+    qasm_recordComment(qureg, "The register was initialised by a undisclosed given pure state.");
 }
 
 REAL collapseToOutcome(QubitRegister qureg, const int measureQubit, int outcome) {
@@ -643,7 +643,7 @@ void initStateDebug(QubitRegister qureg) {
 }
 
 void initStateFromSingleFile(QubitRegister *qureg, char filename[200], QuESTEnv env) {
-    validateStateVecQureg(qureg, __func__);
+    validateStateVecQureg(*qureg, __func__);
 
     int success = statevec_initStateFromSingleFile(qureg, filename, env);
     validateFileOpened(success, __func__);
