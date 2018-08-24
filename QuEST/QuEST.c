@@ -10,11 +10,7 @@
  * and often don't need to explicitly compute U^*.
  */
 
-// @TODO unit test the density functionality of all below methods
-// @TODO for initPureState:
-//      - densmatr_initPureStateDistributed on CPU
-
-// @TODO add controlled Hadamard
+// @TODO: 4 noise functions on CPU
 
 # include "QuEST.h"
 # include "QuEST_precision.h"
@@ -175,7 +171,7 @@ void controlledRotateY(QubitRegister qureg, const int controlQubit, const int ta
     statevec_controlledRotateY(qureg, controlQubit, targetQubit, angle);
     if (qureg.isDensityMatrix) {
         int shift = qureg.numQubitsRepresented;
-        statevec_controlledRotateY(qureg, controlQubit+shift, targetQubit+shift, angle);
+        statevec_controlledRotateY(qureg, controlQubit+shift, targetQubit+shift, angle); // rotateY is real
     }
 
     qasm_recordControlledParamGate(qureg, GATE_ROTATE_Y, controlQubit, targetQubit, angle);
@@ -655,10 +651,6 @@ void combineDensityMatrices(REAL combineProb, QubitRegister combineQureg, REAL o
 
 
 int compareStates(QubitRegister qureg1, QubitRegister qureg2, REAL precision) {
-    validateStateVecQureg(qureg1, __func__);
-    validateStateVecQureg(qureg2, __func__);
-    // @TODO: validate precision
-    
     return statevec_compareStates(qureg1, qureg2, precision);
 }
 
