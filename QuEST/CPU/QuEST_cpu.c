@@ -22,19 +22,6 @@
 # include <omp.h>
 # endif
 
-
-/** Get the value of the bit at a particular index in a number.
-  SCB edit: new definition of extractBit is much faster ***
- * @param[in] locationOfBitFromRight location of bit in theEncodedNumber
- * @param[in] theEncodedNumber number to search
- * @return the value of the bit in theEncodedNumber
- */
-static int extractBit (const int locationOfBitFromRight, const long long int theEncodedNumber)
-{
-    return (theEncodedNumber & ( 1LL << locationOfBitFromRight )) >> locationOfBitFromRight;
-}
-
-
 // @TODO
 void densmatr_oneQubitDephase(QubitRegister qureg, const int targetQubit, REAL dephase) {
     
@@ -56,8 +43,141 @@ void densmatr_twoQubitDepolarise(QubitRegister qureg, int qubit1, int qubit2, RE
 }
 
 
+/** Get the value of the bit at a particular index in a number.
+  SCB edit: new definition of extractBit is much faster ***
+ * @param[in] locationOfBitFromRight location of bit in theEncodedNumber
+ * @param[in] theEncodedNumber number to search
+ * @return the value of the bit in theEncodedNumber
+ */
+static int extractBit (const int locationOfBitFromRight, const long long int theEncodedNumber)
+{
+    return (theEncodedNumber & ( 1LL << locationOfBitFromRight )) >> locationOfBitFromRight;
+}
 
 
+// @TODO openMP parallelise
+void zeroSomeAmps(QubitRegister qureg, long long int startInd, long long int numAmps) {
+    for (long long int i=startInd; i < startInd+numAmps; i++) {
+        qureg.stateVec.real[i] = 0;
+        qureg.stateVec.imag[i] = 0;
+    }
+}
+
+// @TODO openMP parallelise
+void normaliseSomeAmps(QubitRegister qureg, REAL norm, long long int startInd, long long int numAmps) {
+    for (long long int i=startInd; i < startInd+numAmps; i++) {
+        qureg.stateVec.real[i] /= norm;
+        qureg.stateVec.imag[i] /= norm;
+    }
+}
+
+// @TODO OpenMP parallelise
+void alternateNormZeroingSomeAmpBlocks(
+    QubitRegister qureg, REAL norm, int normFirst, 
+    long long int startAmpInd, long long int numAmps, long long int blockSize
+) {     
+    long long int numDubBlocks = numAmps / (2*blockSize);
+    long long int blockStartInd;
+    
+    if (normFirst) {
+        for (long long int dubBlockInd=0; dubBlockInd < numDubBlocks; dubBlockInd++) {
+            blockStartInd = startAmpInd + dubBlockInd*2*blockSize;
+            normaliseSomeAmps(qureg, norm, blockStartInd,             blockSize); // |0><0|
+            zeroSomeAmps(     qureg,       blockStartInd + blockSize, blockSize);
+        }
+    } else {
+        for (long long int dubBlockInd=0; dubBlockInd < numDubBlocks; dubBlockInd++) {
+            blockStartInd = startAmpInd + dubBlockInd*2*blockSize;
+            zeroSomeAmps(     qureg,       blockStartInd,             blockSize);
+            normaliseSomeAmps(qureg, norm, blockStartInd + blockSize, blockSize); // |1><1|
+        }
+    }
+}
+
+void zeroAllAmps(QubitRegister qureg) {
+    zeroSomeAmps(qureg, 0, qureg.numAmpsPerChunk);
+}
+void normaliseAllAmps(QubitRegister qureg, REAL norm) {
+    normaliseSomeAmps(qureg, norm, 0, qureg.numAmpsPerChunk);
+}
+
+void alternateNormZeroingAllAmpBlocks(QubitRegister qureg, REAL norm, int normFirst, long long int blockSize) {
+    alternateNormZeroingSomeAmpBlocks(qureg, norm, normFirst, 0, qureg.numAmpsPerChunk, blockSize);
+}
+
+/** Renorms (/prob) every | * outcome * >< * outcome * | state, setting all others to zero */
+void densmatr_collapseToKnownProbOutcome(QubitRegister qureg, const int measureQubit, int outcome, REAL totalStateProb) {
+
+	// only (global) indices (as bit sequence): '* outcome *(n+q) outcome *q are spared
+    // where n = measureQubit, q = qureg.numQubitsRepresented.
+    // We can thus step in blocks of 2^q+n, killing every second, and inside the others,
+    //  stepping in sub-blocks of 2^q, killing every second.
+    // When outcome=1, we offset the start of these blocks by their size.
+    long long int innerBlockSize = (1LL << measureQubit);
+    long long int outerBlockSize = (1LL << (measureQubit + qureg.numQubitsRepresented));
+    
+    // Because there are 2^a number of nodes(/chunks), each node will contain 2^b number of blocks,
+    // or each block will span 2^c number of nodes. Similarly for the innerblocks.
+    long long int locNumAmps = qureg.numAmpsPerChunk;
+    long long int globalStartInd = qureg.chunkId * locNumAmps;
+    int innerBit = extractBit(measureQubit, globalStartInd);
+    int outerBit = extractBit(measureQubit + qureg.numQubitsRepresented, globalStartInd);
+
+    
+    // If this chunk's amps are entirely inside an outer block
+    if (locNumAmps <= outerBlockSize) {
+        
+        // if this is an undesired outer block, kill all elems
+        if (outerBit != outcome)
+            return zeroAllAmps(qureg);
+        
+        // othwerwise, if this is a desired outer block, and also entirely an inner block
+        if (locNumAmps <= innerBlockSize) {
+            
+            // and that inner block is undesired, kill all elems
+            if (innerBit != outcome)
+                return zeroAllAmps(qureg);
+            // otherwise normalise all elems
+            else
+                return normaliseAllAmps(qureg, totalStateProb);
+        }
+                
+        // otherwise this is a desired outer block which contains 2^a inner blocks; kill/renorm every second inner block
+        return alternateNormZeroingAllAmpBlocks(qureg, totalStateProb, innerBit==outcome, innerBlockSize);
+    }
+    
+    // Otherwise, this chunk's amps contain multiple outer blocks (and hence multiple inner blocks)
+    long long int numOuterDoubleBlocks = locNumAmps / (2*outerBlockSize);
+    long long int firstBlockInd;
+    
+    // alternate norming* and zeroing the outer blocks (with order based on the desired outcome)
+    if (outerBit == outcome) {
+        
+        //@TODO OpenMP parallelise?
+        for (long long int outerDubBlockInd = 0; outerDubBlockInd < numOuterDoubleBlocks; outerDubBlockInd++) {
+            firstBlockInd = outerDubBlockInd*2*outerBlockSize;
+            
+            // *norm only the desired inner blocks in the desired outer block
+            alternateNormZeroingSomeAmpBlocks(
+                qureg, totalStateProb, innerBit==outcome, 
+                firstBlockInd, outerBlockSize, innerBlockSize);
+            
+            // zero the undesired outer block
+            zeroSomeAmps(qureg, firstBlockInd + outerBlockSize, outerBlockSize);
+        }
+    } else {
+        for (long long int outerDubBlockInd = 0; outerDubBlockInd < numOuterDoubleBlocks; outerDubBlockInd++) {
+            firstBlockInd = outerDubBlockInd*2*outerBlockSize;
+            
+            // same thing but undesired outer blocks come first
+            zeroSomeAmps(qureg, firstBlockInd, outerBlockSize);
+            alternateNormZeroingSomeAmpBlocks(
+                qureg, totalStateProb, innerBit==outcome, 
+                firstBlockInd + outerBlockSize, outerBlockSize, innerBlockSize);
+        }
+    }
+    
+}
 
 REAL densmatr_calcPurityLocal(QubitRegister qureg) {
     
@@ -79,7 +199,7 @@ REAL densmatr_calcPurityLocal(QubitRegister qureg) {
 # ifdef _OPENMP
 # pragma omp for schedule  (static)
 # endif
-        for (index=0; index<numAmps; index++) {
+        for (index=0LL; index<numAmps; index++) {
                         
             trace += vecRe[index]*vecRe[index] + vecIm[index]*vecIm[index];
         }
