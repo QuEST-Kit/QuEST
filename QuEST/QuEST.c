@@ -500,16 +500,11 @@ void cloneQubitRegister(QubitRegister targetQureg, QubitRegister copyQureg) {
     statevec_cloneQubitRegister(targetQureg, copyQureg);
 }
 
-
-
-// @TODO CPU local/MPI 
 REAL calcPurity(QubitRegister qureg) {
     validateDensityMatrQureg(qureg, __func__);
     
     return densmatr_calcPurity(qureg);
 }
-
-
 
 REAL calcFidelity(QubitRegister qureg, QubitRegister pureState) {
     validateSecondQuregStateVec(pureState, __func__);
@@ -521,10 +516,6 @@ REAL calcFidelity(QubitRegister qureg, QubitRegister pureState) {
         return statevec_calcFidelity(qureg, pureState);
 }
 
-
-
-
-// @TODO add density copying to distributed CPU
 void initPureState(QubitRegister qureg, QubitRegister pure) {
     validateSecondQuregStateVec(pure, __func__);
     validateMatchingQuregDims(qureg, pure, __func__);
@@ -534,19 +525,11 @@ void initPureState(QubitRegister qureg, QubitRegister pure) {
     else
         statevec_cloneQubitRegister(qureg, pure);
     
-    // @TODO: QASM?
+    qasm_recordComment(qureg, "The register was initialised by a undisclosed given pure state.")
 }
 
-
-
-
-
-
-
-
-// @TODO implement CPU (local & MPI) densmatr_collapseToKnownProbOutcome(qureg, measureQubit, outcome, outcomeProb);
 REAL collapseToOutcome(QubitRegister qureg, const int measureQubit, int outcome) {
-    validateTarget(qureg, measureQubit, __func__); // should rename? eh
+    validateTarget(qureg, measureQubit, __func__);
     validateOutcome(outcome, __func__);
     
     REAL outcomeProb;
@@ -560,14 +543,12 @@ REAL collapseToOutcome(QubitRegister qureg, const int measureQubit, int outcome)
         statevec_collapseToKnownProbOutcome(qureg, measureQubit, outcome, outcomeProb);
     }
     
-    // @TODO: add QASM for post-selecting the outcome?
     qasm_recordMeasurement(qureg, measureQubit);
-
     return outcomeProb;
 }
 
 int measureWithStats(QubitRegister qureg, int measureQubit, REAL *outcomeProb) {
-    validateTarget(qureg, measureQubit, __func__); // should rename? eh
+    validateTarget(qureg, measureQubit, __func__);
 
     int outcome;
     if (qureg.isDensityMatrix)
@@ -580,7 +561,7 @@ int measureWithStats(QubitRegister qureg, int measureQubit, REAL *outcomeProb) {
 }
 
 int measure(QubitRegister qureg, int measureQubit) {
-    validateTarget(qureg, measureQubit, __func__); // should rename? eh
+    validateTarget(qureg, measureQubit, __func__);
     
     int outcome;
     REAL discardedProb;
@@ -593,11 +574,18 @@ int measure(QubitRegister qureg, int measureQubit) {
     return outcome;
 }
 
+void combineDensityMatrices(REAL combineProb, QubitRegister combineQureg, REAL otherProb, QubitRegister otherQureg) {
+    validateDensityMatrQureg(combineQureg, __func__);
+    validateDensityMatrQureg(otherQureg, __func__);
+    validateMatchingQuregDims(combineQureg, otherQureg, __func__);
+    validateNormProbs(combineProb, otherProb, __func__);
+    
+    densmatr_combineDensityMatrices(combineProb, combineQureg, otherProb, otherQureg);
+}
 
 
 
-
-// new experimental dephasing functions
+/* new experimental dephasing functions */
 
 // @TODO add to CPU local and distributed
 void oneQubitDephase(QubitRegister qureg, const int targetQubit, REAL dephase) {
@@ -637,56 +625,37 @@ void twoQubitDepolarise(QubitRegister qureg, const int qubit1, const int qubit2,
     densmatr_twoQubitDepolarise(qureg, qubit1, qubit2, depolLevel);
 }
 
-// @TODO add to CPU local and distributed
-void combineDensityMatrices(REAL combineProb, QubitRegister combineQureg, REAL otherProb, QubitRegister otherQureg) {
-    validateDensityMatrQureg(combineQureg, __func__);
-    validateDensityMatrQureg(otherQureg, __func__);
-    validateMatchingQuregDims(combineQureg, otherQureg, __func__);
-    validateNormProbs(combineProb, otherProb, __func__);
-    
-    densmatr_combineDensityMatrices(combineProb, combineQureg, otherProb, otherQureg);
-}
 
 
 
+
+
+
+
+/* debug and unit-testing functions */
 
 int compareStates(QubitRegister qureg1, QubitRegister qureg2, REAL precision) {
     return statevec_compareStates(qureg1, qureg2, precision);
 }
 
-// @TODO
 void initStateDebug(QubitRegister qureg) {
     statevec_initStateDebug(qureg);
 }
 
-// @TODO
 void initStateFromSingleFile(QubitRegister *qureg, char filename[200], QuESTEnv env) {
-    
-    int success = 0;
-    
-    // @TODO allow density matrix loading from file
-    if (qureg->isDensityMatrix)
-        validateStateVecQureg(*qureg, __func__);
-    
-    else
-        success = statevec_initStateFromSingleFile(qureg, filename, env);
-    
+    validateStateVecQureg(qureg, __func__);
+
+    int success = statevec_initStateFromSingleFile(qureg, filename, env);
     validateFileOpened(success, __func__);
 }
 
-// @TODO
 void initStateOfSingleQubit(QubitRegister *qureg, int qubitId, int outcome) {
     return statevec_initStateOfSingleQubit(qureg, qubitId, outcome);
 }
 
-// @TODO
 void reportStateToScreen(QubitRegister qureg, QuESTEnv env, int reportRank)  {
     statevec_reportStateToScreen(qureg, env, reportRank);
 }
-
-
-
-
 
 
 #ifdef __cplusplus
