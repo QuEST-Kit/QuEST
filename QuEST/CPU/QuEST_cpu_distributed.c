@@ -27,18 +27,6 @@
 # endif
 
 
-
-
-
-
-
-// @TODO
-void densmatr_collapseToKnownProbOutcome(QubitRegister qureg, const int measureQubit, int outcome, REAL totalStateProb) {
-
-	printf("densmatr_collapseToKnownProbOutcome NOT YET IMPLEMENTED IN distributed CPU!\n");
-
-}
-
 Complex statevec_calcInnerProduct(QubitRegister bra, QubitRegister ket) {
     
     Complex localInnerProd = statevec_calcInnerProductLocal(bra, ket);
@@ -63,7 +51,7 @@ REAL densmatr_calcTotalProbability(QubitRegister qureg) {
 	
 	// computes first local index containing a diagonal element
 	long long int diagSpacing = 1LL + (1LL << qureg.numQubitsRepresented);
-	long long int numPrevDiags = (qureg.chunkId * qureg.numAmpsPerChunk) / diagSpacing;
+    long long int numPrevDiags = (qureg.chunkId>0)? 1+(qureg.chunkId*qureg.numAmpsPerChunk)/diagSpacing : 0;
 	long long int globalIndNextDiag = diagSpacing * numPrevDiags;
 	long long int localIndNextDiag = globalIndNextDiag % qureg.numAmpsPerChunk;
 	long long int index;
