@@ -42,7 +42,7 @@ void densmatr_oneQubitDepolarise(QubitRegister qureg, const int targetQubit, REA
 
 void densmatr_twoQubitDepolarise(QubitRegister qureg, int qubit1, int qubit2, REAL depolLevel);
 
-void densmatr_combineDensityMatrices(REAL combineProb, QubitRegister combineQureg, REAL otherProb, QubitRegister otherQureg);
+void densmatr_addDensityMatrix(QubitRegister combineQureg, REAL otherProb, QubitRegister otherQureg);
     
 /* operations upon state vectors */
     

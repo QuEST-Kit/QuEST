@@ -86,7 +86,7 @@ void alternateNormZeroingSomeAmpBlocks(
     if (normFirst) {
         
 # ifdef _OPENMP
-# pragma omp parallel private (dubBlockInd,blockStartInd) for schedule (static)
+# pragma omp parallel for schedule (static) private (blockStartInd)
 # endif 
         for (long long int dubBlockInd=0; dubBlockInd < numDubBlocks; dubBlockInd++) {
             blockStartInd = startAmpInd + dubBlockInd*2*blockSize;
@@ -96,7 +96,7 @@ void alternateNormZeroingSomeAmpBlocks(
     } else {
         
 # ifdef _OPENMP
-# pragma omp parallel private (dubBlockInd,blockStartInd) for schedule (static)
+# pragma omp parallel for schedule (static) private (blockStartInd)
 # endif 
         for (long long int dubBlockInd=0; dubBlockInd < numDubBlocks; dubBlockInd++) {
             blockStartInd = startAmpInd + dubBlockInd*2*blockSize;
@@ -212,7 +212,7 @@ REAL densmatr_calcPurityLocal(QubitRegister qureg) {
     return trace;
 }
 
-void densmatr_combineDensityMatrices(REAL combineProb, QubitRegister combineQureg, REAL otherProb, QubitRegister otherQureg) {
+void densmatr_addDensityMatrix(QubitRegister combineQureg, REAL otherProb, QubitRegister otherQureg) {
     
     /* corresponding amplitudes live on the same node (same dimensions) */
     
@@ -227,7 +227,7 @@ void densmatr_combineDensityMatrices(REAL combineProb, QubitRegister combineQure
 # ifdef _OPENMP
 # pragma omp parallel \
     default (none) \
-    shared  (combineVecRe,combineVecIm,otherVecRe,otherVecIm, combineProb,otherProb, numAmps) \
+    shared  (combineVecRe,combineVecIm,otherVecRe,otherVecIm, otherProb, numAmps) \
     private (index)
 # endif 
     {
@@ -235,8 +235,8 @@ void densmatr_combineDensityMatrices(REAL combineProb, QubitRegister combineQure
 # pragma omp for schedule  (static)
 # endif
         for (index=0; index < numAmps; index++) {
-            combineVecRe[index] *= combineProb;
-            combineVecIm[index] *= combineProb;
+            combineVecRe[index] *= 1-otherProb;
+            combineVecIm[index] *= 1-otherProb;
             
             combineVecRe[index] += otherProb * otherVecRe[index];
             combineVecIm[index] += otherProb * otherVecIm[index];

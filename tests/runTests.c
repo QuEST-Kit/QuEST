@@ -1104,7 +1104,7 @@ int test_collapseToOutcome(char testName[200]){
     
     initStateZero(reg); // |0...0>
     initClassicalState(regVerif, (1<<numQubits)-1); // |1...1>
-    combineDensityMatrices(.5, reg, .5, regVerif); // .5 |0><0| + .5 |1><1|
+    addDensityMatrix(reg, .5, regVerif); // .5 |0><0| + .5 |1><1|
     collapseToOutcome(reg, 0, 1); // collapse to |1...1><1...1|
     if (passed) passed = compareStates(reg, regVerif, COMPARE_PRECISION);
     if (passed) passed = compareReals(findProbabilityOfOutcome(reg, 0, 1), 1, COMPARE_PRECISION);
@@ -1118,7 +1118,7 @@ int test_collapseToOutcome(char testName[200]){
     initStateZero(regVerif);
     hadamard(regVerif,1);
     hadamard(regVerif,2); // |++>|0>
-    combineDensityMatrices(0.3, reg, 1-0.3, regVerif); // 0.3|000><000| + 0.7|++0><++0|
+    addDensityMatrix(reg, 1-0.3, regVerif); // 0.3|000><000| + 0.7|++0><++0|
     cloneQubitRegister(regVerif, reg);
     collapseToOutcome(reg, 0, 0);
     if (passed) passed = compareStates(reg, regVerif, COMPARE_PRECISION);
@@ -1127,7 +1127,7 @@ int test_collapseToOutcome(char testName[200]){
     // ... when measurement kills a mixture and collapses a superposition (here producing a pure state)
     initStateZero(reg);      // |000><000|
     initStatePlus(regVerif); // |+++><+++|
-    combineDensityMatrices(0.4, reg, 1-0.4, regVerif); // 0.4 |000><000| + 0.6 |+++><+++|
+    addDensityMatrix(reg, 1-0.4, regVerif); // 0.4 |000><000| + 0.6 |+++><+++|
     collapseToOutcome(reg, 0, 1); // |++1><++1|
     initClassicalState(regVerif,1); hadamard(regVerif,1); hadamard(regVerif,2); // |++1><++1|
     if (passed) passed = compareStates(reg, regVerif, COMPARE_PRECISION);
@@ -1137,7 +1137,7 @@ int test_collapseToOutcome(char testName[200]){
 
     initStatePlus(reg); // |+++><+++|
     initClassicalState(regVerif, (1<<numQubits)-1); // |111><111|
-    combineDensityMatrices(0.1, reg, 1-0.1, regVerif); // 0.1 |+++><+++| + 0.9 |111><111|
+    addDensityMatrix(reg, 1-0.1, regVerif); // 0.1 |+++><+++| + 0.9 |111><111|
     collapseToOutcome(reg, 0, 1); // 0.1 |++1><++1| + 0.9 |111><111|
     if (passed) passed = compareReals(findProbabilityOfOutcome(reg, 0, 1), 1, COMPARE_PRECISION);
     if (passed) passed = (calcPurity(reg) < 1.0); // we should still be mixed
@@ -1415,7 +1415,7 @@ int test_calcFidelity(char testName[200]) {
     initStateZero(pure);
     initStateZero(mixed);
     initClassicalState(otherMixed, 1);
-    combineDensityMatrices(0.2, mixed, 0.8, otherMixed); // .2 |0><0| + .8 |..1><..1|
+    addDensityMatrix(mixed, 0.8, otherMixed); // .2 |0><0| + .8 |..1><..1|
     fid = calcFidelity(mixed, pure); 
     if (passed) passed = compareReals(fid, 0.2, COMPARE_PRECISION);
         
@@ -1427,7 +1427,7 @@ int test_calcFidelity(char testName[200]) {
     return passed;
 }
 
-int test_combineDensityMatrices(char testName[200]) {
+int test_addDensityMatrix(char testName[200]) {
     int passed=1;
     int numQubits=5;
     
@@ -1440,7 +1440,7 @@ int test_combineDensityMatrices(char testName[200]) {
     REAL p1 = 0.3;
     initStateZero(reg1);
     initClassicalState(reg2, 1);
-    combineDensityMatrices(p1, reg1, 1-p1, reg2);
+    addDensityMatrix(reg1, 1-p1, reg2);
     prob = findProbabilityOfOutcome(reg1, 0, 0);
     if (passed) passed = compareReals(prob, p1, COMPARE_PRECISION);
     
@@ -1448,7 +1448,7 @@ int test_combineDensityMatrices(char testName[200]) {
     // = p2 p1 + (1-p2) / sqrt(2)
     REAL p2 = 0.7;
     initStatePlus(reg2);
-    combineDensityMatrices(p2, reg1, 1-p2, reg2);
+    addDensityMatrix(reg1, 1-p2, reg2);
     prob = findProbabilityOfOutcome(reg1, 0, 0);
     REAL trueProb = p2*p1 + (1-p2)*0.5;
     if (passed) passed = compareReals(prob, trueProb, COMPARE_PRECISION);
@@ -1482,7 +1482,7 @@ int test_calcPurity(char testName[200]) {
     // a|+><+| + b|+><+| = (a+b) |+><+| (pure)
     initStatePlus(qureg);
     initStatePlus(otherQureg);
-    combineDensityMatrices(0.5, qureg, 0.5, otherQureg);
+    addDensityMatrix(qureg, 0.5, otherQureg);
     purity = calcPurity(qureg);
     if (passed) passed = compareReals(purity, 1, COMPARE_PRECISION);
     
@@ -1491,7 +1491,7 @@ int test_calcPurity(char testName[200]) {
     initClassicalState(otherQureg, 1);  // |0...01><0...01|
     
     REAL p1 = 0.3;
-    combineDensityMatrices(p1, qureg, 1-p1, otherQureg);    
+    addDensityMatrix(qureg, 1-p1, otherQureg);    
     purity = calcPurity(qureg);
     if (passed) passed = compareReals(purity, p1*p1 + (1-p1)*(1-p1), COMPARE_PRECISION);
     
@@ -1510,7 +1510,7 @@ int test_calcPurity(char testName[200]) {
     hadamard(otherQureg, 0);    // 1/sqrt(2)(|0> + |1>) |0...>
     
     // c = 1/sqrt(2), d = 2(1-1/2) = 1, Tr(rho^2) = p1^2 - p1 + 1
-    combineDensityMatrices(p1, qureg, 1-p1, otherQureg);
+    addDensityMatrix(qureg, 1-p1, otherQureg);
     purity = calcPurity(qureg);
     if (passed) passed = compareReals(purity, p1*p1 - p1 + 1, COMPARE_PRECISION);
         
@@ -1598,7 +1598,7 @@ int main (int narg, char** varg) {
         test_getProbEl,
         test_calcInnerProduct,
         test_calcFidelity,
-        test_combineDensityMatrices,
+        test_addDensityMatrix,
         test_calcPurity,
         test_calcTotalProbability
     };
@@ -1635,7 +1635,7 @@ int main (int narg, char** varg) {
         "getProbEl",
         "calcInnerProduct",
         "calcFidelity",
-        "combineDensityMatrices",
+        "addDensityMatrix",
         "calcPurity",
         "calcTotalProbability"
     };

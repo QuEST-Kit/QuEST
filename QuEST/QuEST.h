@@ -1349,11 +1349,10 @@ void twoQubitDepolarise(QubitRegister qureg, const int qubit1, const int qubit2,
 
 /* density matrix functions */
 
-/** Modifies combineQureg -> combineProb * combineQureg + otherProb * otherQureg
- * Both registers must be equal-dimension density matrices.
- * Each probability must be in [0, 1] and together sum to 1.
+/** Modifies combineQureg to become (1-prob)combineProb + prob otherQureg
+ * Both registers must be equal-dimension density matrices, and prob must be in [0, 1]
  */
-void combineDensityMatrices(REAL combineProb, QubitRegister combineQureg, REAL otherProb, QubitRegister otherQureg);
+void addDensityMatrix(QubitRegister combineQureg, REAL prob, QubitRegister otherQureg);
 
 /** Calculates the purity of a density matrix, by the trace of the density matrix squared
  * For a pure state, this =1, and is <1 for mixed states

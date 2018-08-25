@@ -574,13 +574,13 @@ int measure(QubitRegister qureg, int measureQubit) {
     return outcome;
 }
 
-void combineDensityMatrices(REAL combineProb, QubitRegister combineQureg, REAL otherProb, QubitRegister otherQureg) {
+void addDensityMatrix(QubitRegister combineQureg, REAL otherProb, QubitRegister otherQureg) {
     validateDensityMatrQureg(combineQureg, __func__);
     validateDensityMatrQureg(otherQureg, __func__);
     validateMatchingQuregDims(combineQureg, otherQureg, __func__);
-    validateNormProbs(combineProb, otherProb, __func__);
+    validateProb(otherProb, __func__);
     
-    densmatr_combineDensityMatrices(combineProb, combineQureg, otherProb, otherQureg);
+    densmatr_addDensityMatrix(combineQureg, otherProb, otherQureg);
 }
 
 
