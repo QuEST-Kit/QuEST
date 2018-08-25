@@ -400,7 +400,7 @@ void qasm_recordInitPlus(QubitRegister qureg) {
         bufferOverflow();
     addStringToQASM(qureg, buf, charsWritten);
     
-    
+    // old code (before above QASM shortcut)
     /*
     qasm_recordInitZero(qureg);
     for (int q=0; q < qureg.numQubitsRepresented; q++)

@@ -572,9 +572,11 @@ REAL getProbEl(QubitRegister qureg, long long int index);
  */
 Complex getDensityAmplitude(QubitRegister qureg, long long int row, long long int col);
 
-/** A debugging function which calculates the probability of being in any state, which should be 1.
+/** A debugging function which calculates the probability of being in any state, which should always be 1.
  * For pure states, this is the norm of the entire state vector and for mixed states, is the trace of
  * the density matrix.
+ * Note this calculation utilises Kahan summation for greaster accuracy, but is
+ * not parallelised and so will be slower than other functions.
  *
  * @param[in] qureg object representing a set of qubits
  * @return total probability
@@ -1347,11 +1349,10 @@ void twoQubitDepolarise(QubitRegister qureg, const int qubit1, const int qubit2,
 
 /* density matrix functions */
 
-/** Modifies combineQureg -> combineProb * combineQureg + otherProb * otherQureg
- * Both registers must be equal-dimension density matrices.
- * Each probability must be in [0, 1] and together sum to 1.
+/** Modifies combineQureg to become (1-prob)combineProb + prob otherQureg
+ * Both registers must be equal-dimension density matrices, and prob must be in [0, 1]
  */
-void combineDensityMatrices(REAL combineProb, QubitRegister combineQureg, REAL otherProb, QubitRegister otherQureg);
+void addDensityMatrix(QubitRegister combineQureg, REAL prob, QubitRegister otherQureg);
 
 /** Calculates the purity of a density matrix, by the trace of the density matrix squared
  * For a pure state, this =1, and is <1 for mixed states

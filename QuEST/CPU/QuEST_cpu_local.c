@@ -22,22 +22,6 @@
 # include <omp.h>
 # endif
 
-
-
-
-
-
-
-// @TODO
-void densmatr_collapseToKnownProbOutcome(QubitRegister qureg, const int measureQubit, int outcome, REAL stateProb)
-{
-    //statevec_collapseToKnownProbOutcomeLocal(qureg, measureQubit, outcome, stateProb);
-}
-
-
-
-
-
 REAL densmatr_calcPurity(QubitRegister qureg) {
     return densmatr_calcPurityLocal(qureg);
 }

@@ -124,7 +124,8 @@ void validateCreateNumQubits(int numQubits, const char* caller) {
 }
 
 void validateStateIndex(QubitRegister qureg, long long int stateInd, const char* caller) {
-    QuESTAssert(stateInd>=0 && stateInd<qureg.numAmpsTotal, E_INVALID_STATE_INDEX, caller);
+    long long int stateMax = 1LL << qureg.numQubitsRepresented;
+    QuESTAssert(stateInd>=0 && stateInd<stateMax, E_INVALID_STATE_INDEX, caller);
 }
 
 void validateNumAmps(QubitRegister qureg, long long int startInd, long long int numAmps, const char* caller) {
