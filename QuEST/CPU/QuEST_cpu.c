@@ -55,23 +55,27 @@ static int extractBit (const int locationOfBitFromRight, const long long int the
 }
 
 
-// @TODO openMP parallelise
+/* Without nested parallelisation, only the outer most loops which call below are parallelised */
 void zeroSomeAmps(QubitRegister qureg, long long int startInd, long long int numAmps) {
+    
+# ifdef _OPENMP
+# pragma omp parallel for schedule (static)
+# endif
     for (long long int i=startInd; i < startInd+numAmps; i++) {
         qureg.stateVec.real[i] = 0;
         qureg.stateVec.imag[i] = 0;
     }
 }
-
-// @TODO openMP parallelise
 void normaliseSomeAmps(QubitRegister qureg, REAL norm, long long int startInd, long long int numAmps) {
+    
+# ifdef _OPENMP
+# pragma omp parallel for schedule (static)
+# endif
     for (long long int i=startInd; i < startInd+numAmps; i++) {
         qureg.stateVec.real[i] /= norm;
         qureg.stateVec.imag[i] /= norm;
     }
 }
-
-// @TODO OpenMP parallelise
 void alternateNormZeroingSomeAmpBlocks(
     QubitRegister qureg, REAL norm, int normFirst, 
     long long int startAmpInd, long long int numAmps, long long int blockSize
@@ -80,29 +84,26 @@ void alternateNormZeroingSomeAmpBlocks(
     long long int blockStartInd;
     
     if (normFirst) {
+        
+# ifdef _OPENMP
+# pragma omp parallel private (dubBlockInd,blockStartInd) for schedule (static)
+# endif 
         for (long long int dubBlockInd=0; dubBlockInd < numDubBlocks; dubBlockInd++) {
             blockStartInd = startAmpInd + dubBlockInd*2*blockSize;
             normaliseSomeAmps(qureg, norm, blockStartInd,             blockSize); // |0><0|
             zeroSomeAmps(     qureg,       blockStartInd + blockSize, blockSize);
         }
     } else {
+        
+# ifdef _OPENMP
+# pragma omp parallel private (dubBlockInd,blockStartInd) for schedule (static)
+# endif 
         for (long long int dubBlockInd=0; dubBlockInd < numDubBlocks; dubBlockInd++) {
             blockStartInd = startAmpInd + dubBlockInd*2*blockSize;
             zeroSomeAmps(     qureg,       blockStartInd,             blockSize);
             normaliseSomeAmps(qureg, norm, blockStartInd + blockSize, blockSize); // |1><1|
         }
     }
-}
-
-void zeroAllAmps(QubitRegister qureg) {
-    zeroSomeAmps(qureg, 0, qureg.numAmpsPerChunk);
-}
-void normaliseAllAmps(QubitRegister qureg, REAL norm) {
-    normaliseSomeAmps(qureg, norm, 0, qureg.numAmpsPerChunk);
-}
-
-void alternateNormZeroingAllAmpBlocks(QubitRegister qureg, REAL norm, int normFirst, long long int blockSize) {
-    alternateNormZeroingSomeAmpBlocks(qureg, norm, normFirst, 0, qureg.numAmpsPerChunk, blockSize);
 }
 
 /** Renorms (/prob) every | * outcome * >< * outcome * | state, setting all others to zero */
@@ -122,28 +123,28 @@ void densmatr_collapseToKnownProbOutcome(QubitRegister qureg, const int measureQ
     long long int globalStartInd = qureg.chunkId * locNumAmps;
     int innerBit = extractBit(measureQubit, globalStartInd);
     int outerBit = extractBit(measureQubit + qureg.numQubitsRepresented, globalStartInd);
-
     
     // If this chunk's amps are entirely inside an outer block
     if (locNumAmps <= outerBlockSize) {
         
         // if this is an undesired outer block, kill all elems
         if (outerBit != outcome)
-            return zeroAllAmps(qureg);
+            return zeroSomeAmps(qureg, 0, qureg.numAmpsPerChunk);
         
         // othwerwise, if this is a desired outer block, and also entirely an inner block
         if (locNumAmps <= innerBlockSize) {
             
             // and that inner block is undesired, kill all elems
             if (innerBit != outcome)
-                return zeroAllAmps(qureg);
+                return zeroSomeAmps(qureg, 0, qureg.numAmpsPerChunk);
             // otherwise normalise all elems
             else
-                return normaliseAllAmps(qureg, totalStateProb);
+                return normaliseSomeAmps(qureg, totalStateProb, 0, qureg.numAmpsPerChunk);
         }
                 
         // otherwise this is a desired outer block which contains 2^a inner blocks; kill/renorm every second inner block
-        return alternateNormZeroingAllAmpBlocks(qureg, totalStateProb, innerBit==outcome, innerBlockSize);
+        return alternateNormZeroingSomeAmpBlocks(
+            qureg, totalStateProb, innerBit==outcome, 0, qureg.numAmpsPerChunk, innerBlockSize);
     }
     
     // Otherwise, this chunk's amps contain multiple outer blocks (and hence multiple inner blocks)
@@ -151,9 +152,10 @@ void densmatr_collapseToKnownProbOutcome(QubitRegister qureg, const int measureQ
     long long int firstBlockInd;
     
     // alternate norming* and zeroing the outer blocks (with order based on the desired outcome)
+    // These loops aren't parallelised, since they could have 1 or 2 iterations and will prevent
+    // inner parallelisation
     if (outerBit == outcome) {
-        
-        //@TODO OpenMP parallelise?
+
         for (long long int outerDubBlockInd = 0; outerDubBlockInd < numOuterDoubleBlocks; outerDubBlockInd++) {
             firstBlockInd = outerDubBlockInd*2*outerBlockSize;
             
@@ -165,7 +167,9 @@ void densmatr_collapseToKnownProbOutcome(QubitRegister qureg, const int measureQ
             // zero the undesired outer block
             zeroSomeAmps(qureg, firstBlockInd + outerBlockSize, outerBlockSize);
         }
+
     } else {
+
         for (long long int outerDubBlockInd = 0; outerDubBlockInd < numOuterDoubleBlocks; outerDubBlockInd++) {
             firstBlockInd = outerDubBlockInd*2*outerBlockSize;
             
