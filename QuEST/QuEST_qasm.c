@@ -42,8 +42,8 @@ static const char* qasmGateLabels[] = {
     [GATE_ROTATE_X] = "Rx",
     [GATE_ROTATE_Y] = "Ry",
     [GATE_ROTATE_Z] = "Rz",
-    [GATE_UNITARY] = "U",
-    [GATE_PHASE_SHIFT] = "PHASESHIFT" // Rz for single gate, then need phase fix for controlled
+    [GATE_UNITARY] = "U",     // needs phase fix when controlled
+    [GATE_PHASE_SHIFT] = "Rz" // needs phase fix when controlled
 };
 
 // @TODO make a proper internal error thing
@@ -239,6 +239,13 @@ void qasm_recordControlledParamGate(QubitRegister qureg, TargetGate gate, int co
     int controls[1] = {controlQubit};
     REAL params[1] = {param};
     addGateToQASM(qureg, gate, controls, 1, targetQubit, params, 1);
+    
+    // correct the global phase of controlled phase shifts
+    if (gate == GATE_PHASE_SHIFT) {
+        qasm_recordComment(qureg, "Restoring the discarded global phase of the previous controlled phase gate");
+        REAL phaseFix[1] = {param/2.0};
+        addGateToQASM(qureg, GATE_ROTATE_Z, NULL, 0, targetQubit, phaseFix, 1);
+    }
 }
 
 void qasm_recordControlledCompactUnitary(QubitRegister qureg, Complex alpha, Complex beta, int controlQubit, int targetQubit) {
@@ -308,6 +315,13 @@ void qasm_recordMultiControlledParamGate(QubitRegister qureg, TargetGate gate, i
     
     REAL params[1] = {param};
     addGateToQASM(qureg, gate, controlQubits, numControlQubits, targetQubit, params, 1);
+    
+    // correct the global phase of controlled phase shifts
+    if (gate == GATE_PHASE_SHIFT) {
+        qasm_recordComment(qureg, "Restoring the discarded global phase of the previous multicontrolled phase gate");
+        REAL phaseFix[1] = {param/2.0};
+        addGateToQASM(qureg, GATE_ROTATE_Z, NULL, 0, targetQubit, phaseFix, 1);
+    }
 }
 
 /** additionally performs Rz on target to restore the global phase lost from u in QASM U(a,b,c) */
