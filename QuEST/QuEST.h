@@ -106,26 +106,26 @@ enum phaseGateType {SIGMA_Z=0, S_GATE=1, T_GATE=2};
 /** Create a QubitRegister object representing a set of qubits which will remain in a pure state.
  * Allocate space for state vector of probability amplitudes, including space for temporary values to be copied from
  * one other chunk if running the distributed version. Define properties related to the size of the set of qubits.
- * initStateZero should be called after this to initialise the qubits to the zero state.
+ * The qubits are initialised in the zero state (i.e. initStateZero is automatically called)
  *
- * @param[in,out] qureg a pointer to an object representing the set of qubits
+ * @preturns an object representing the set of qubits
  * @param[in] numQubits number of qubits in the system
  * @param[in] env object representing the execution environment (local, multinode etc)
  * @throws exitWithError if \p numQubits <= 0
  */
-void createQubitRegister(QubitRegister *qureg, int numQubits, QuESTEnv env);
+QubitRegister createQubitRegister(int numQubits, QuESTEnv env);
 
 /** Create a QubitRegister for qubits which are represented by a density matrix, and can be in mixed states.
  * Allocate space for a density matrix of probability amplitudes, including space for temporary values to be copied from
  * one other chunk if running the distributed version. Define properties related to the size of the set of qubits.
  * initStateZero should be called after this to initialise the qubits to the zero pure state.
  *
- * @param[in,out] qureg a pointer to an object representing the set of qubits
+ * @returns an object representing the set of qubits
  * @param[in] numQubits number of qubits in the system
  * @param[in] env object representing the execution environment (local, multinode etc)
  * @throws exitWithError if \p numQubits <= 0
  */
-void createDensityQubitRegister(QubitRegister *qureg, int numQubits, QuESTEnv env);
+QubitRegister createDensityQubitRegister(int numQubits, QuESTEnv env);
 
 /** Deallocate a QubitRegister object representing a set of qubits.
  * Free memory allocated to state vector of probability amplitudes, including temporary vector for

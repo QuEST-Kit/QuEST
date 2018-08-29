@@ -44,8 +44,8 @@ int test_initStateZero(char testName[200]){
     int numQubits=3;
     QubitRegister mq, mqVerif; 
 
-    createQubitRegister(&mq, numQubits, env);
-    createQubitRegister(&mqVerif, numQubits, env);
+    mq = createQubitRegister(numQubits, env);
+    mqVerif = createQubitRegister(numQubits, env);
 
     initStateZero(mq);
 
@@ -70,8 +70,9 @@ int test_initStatePlus(char testName[200]){
      * state vectors
      */
     QubitRegister mq, mqVerif; 
-    createQubitRegister(&mq, numQubits, env);
-    createQubitRegister(&mqVerif, numQubits, env);
+    
+    mq = createQubitRegister(numQubits, env);
+    mqVerif = createQubitRegister(numQubits, env);
 
     initStatePlus(mq);
 
@@ -93,7 +94,7 @@ int test_initStatePlus(char testName[200]){
     * density matrices
     */
     QubitRegister dens;
-    createDensityQubitRegister(&dens, numQubits, env);
+    dens = createDensityQubitRegister(numQubits, env);
     
     initStatePlus(dens);
     
@@ -116,7 +117,7 @@ int test_initClassicalState(char testName[200]){
     /*
      * state-vectors
      */
-    createQubitRegister(&mq, numQubits, env);
+    mq = createQubitRegister(numQubits, env);
 
     // test every classical state
     for (long long int stateInd=0LL; stateInd < numAmps; stateInd++) {
@@ -137,7 +138,7 @@ int test_initClassicalState(char testName[200]){
      * density matrices
      */
     
-    createDensityQubitRegister(&mq, numQubits, env);
+    mq = createDensityQubitRegister(numQubits, env);
     
     // test every classical state
     for (long long int stateInd=0LL; stateInd < numAmps; stateInd++) {
@@ -164,8 +165,8 @@ int test_initPureState(char testName[200]) {
      * for statevectors / purestates
      */
     QubitRegister mq, mqVerif;
-    createQubitRegister(&mq, numQubits, env);
-    createQubitRegister(&mqVerif, numQubits, env);
+    mq = createQubitRegister(numQubits, env);
+    mqVerif = createQubitRegister(numQubits, env);
     
     initStateZero(mq);
     initStateDebug(mqVerif);
@@ -180,8 +181,8 @@ int test_initPureState(char testName[200]) {
      * for density matrices / mixed states
      */
     QubitRegister dens, vec;
-    createQubitRegister(&vec, numQubits, env);
-    createDensityQubitRegister(&dens, numQubits, env);
+    vec = createQubitRegister(numQubits, env);
+    dens = createDensityQubitRegister(numQubits, env);
 
     initStatePlus(vec);
     initStateZero(dens);
@@ -207,7 +208,7 @@ int test_initStateFromAmps(char testName[200]) {
     int numQubits=3;
     
     QubitRegister qureg;
-    createQubitRegister(&qureg, numQubits, env);
+    qureg = createQubitRegister(numQubits, env);
     
     // test writing total state vec
     REAL reals[8] = {1,2,3,4,5,6,7,8};
@@ -252,8 +253,8 @@ int test_sigmaX(char testName[200]){
     int rotateQubit;
     QubitRegister mq, mqVerif; 
 
-    createQubitRegister(&mq, numQubits, env);
-    createQubitRegister(&mqVerif, numQubits, env);
+    mq = createQubitRegister(numQubits, env);
+    mqVerif = createQubitRegister(numQubits, env);
 
     for (int i=0; i<3; i++){
         initStateDebug(mq);
@@ -281,8 +282,8 @@ int test_sigmaY(char testName[200]){
     int rotateQubit;
     QubitRegister mq, mqVerif; 
 
-    createQubitRegister(&mq, numQubits, env);
-    createQubitRegister(&mqVerif, numQubits, env);
+    mq = createQubitRegister(numQubits, env);
+    mqVerif = createQubitRegister(numQubits, env);
 
     for (int i=0; i<3; i++){
         initStateDebug(mq);
@@ -310,8 +311,8 @@ int test_sigmaZ(char testName[200]){
     int rotateQubit;
     QubitRegister mq, mqVerif; 
 
-    createQubitRegister(&mq, numQubits, env);
-    createQubitRegister(&mqVerif, numQubits, env);
+    mq = createQubitRegister(numQubits, env);
+    mqVerif = createQubitRegister(numQubits, env);
 
     for (int i=0; i<3; i++){
         initStateDebug(mq);
@@ -339,8 +340,8 @@ int test_hadamard(char testName[200]){
     int rotateQubit;
     QubitRegister mq, mqVerif; 
 
-    createQubitRegister(&mq, numQubits, env);
-    createQubitRegister(&mqVerif, numQubits, env);
+    mq = createQubitRegister(numQubits, env);
+    mqVerif = createQubitRegister(numQubits, env);
 
     for (int i=0; i<3; i++){
         initStateDebug(mq);
@@ -367,8 +368,8 @@ int test_sGate(char testName[200]){
     int rotateQubit;
     QubitRegister mq, mqVerif; 
 
-    createQubitRegister(&mq, numQubits, env);
-    createQubitRegister(&mqVerif, numQubits, env);
+    mq = createQubitRegister(numQubits, env);
+    mqVerif = createQubitRegister(numQubits, env);
 
     for (int i=0; i<3; i++){
         initStateDebug(mq);
@@ -395,8 +396,8 @@ int test_tGate(char testName[200]){
     int rotateQubit;
     QubitRegister mq, mqVerif; 
 
-    createQubitRegister(&mq, numQubits, env);
-    createQubitRegister(&mqVerif, numQubits, env);
+    mq = createQubitRegister(numQubits, env);
+    mqVerif = createQubitRegister(numQubits, env);
 
     for (int i=0; i<3; i++){
         initStateDebug(mq);
@@ -424,7 +425,7 @@ int test_phaseShift(char testName[200]) {
     printf("TEST phaseShift INITS A SINGLE QUBIT FOR TESTING WHICH BREAKS >2 DISTRIB\n");
 
     // prepare (|0> + |1>)/sqrt(2)
-    createQubitRegister(&mq, 1, env);
+    mq = createQubitRegister(1, env);
     initStatePlus(mq);
     
     // enter state (|0> - 1/sqrt(2) (1 + i) |1>)/sqrt(2)
@@ -441,7 +442,7 @@ int test_phaseShift(char testName[200]) {
 
     
     // also test MPI version
-    createQubitRegister(&mq, 4, env);
+    mq = createQubitRegister(4, env);
     
     // prepare state (|0> + |1>)/sqrt(2) |111>
     initStateZero(mq);
@@ -473,7 +474,7 @@ int test_controlledPhaseShift(char testName[200]) {
     REAL pi = 3.1415926535897932384626;
     
     QubitRegister mq;
-    createQubitRegister(&mq, 4, env);
+    mq = createQubitRegister(4, env);
     
     // prepare state (|0> + |1>)/sqrt(2) |010>
     initStateZero(mq);
@@ -509,7 +510,7 @@ int test_multiControlledPhaseShift(char testName[200]) {
     REAL pi = 3.1415926535897932384626;
     
     QubitRegister mq;
-    createQubitRegister(&mq, 4, env);
+    mq = createQubitRegister(4, env);
     
     // prepare state (|0> + |1>)/sqrt(2) |010>
     initStateZero(mq);
@@ -543,8 +544,8 @@ int test_controlledNot(char testName[200]){
     int rotateQubit, controlQubit;
     QubitRegister mq, mqVerif; 
 
-    createQubitRegister(&mq, numQubits, env);
-    createQubitRegister(&mqVerif, numQubits, env);
+    mq = createQubitRegister(numQubits, env);
+    mqVerif = createQubitRegister(numQubits, env);
 
     for (int j=0; j<3; j++){
         controlQubit=j;
@@ -577,8 +578,8 @@ int test_controlledPhaseFlip(char testName[200]){
     int rotateQubit, controlQubit;
     QubitRegister mq, mqVerif; 
 
-    createQubitRegister(&mq, numQubits, env);
-    createQubitRegister(&mqVerif, numQubits, env);
+    mq = createQubitRegister(numQubits, env);
+    mqVerif = createQubitRegister(numQubits, env);
 
     for (int j=0; j<3; j++){
         controlQubit=j;
@@ -609,8 +610,8 @@ int test_multiControlledPhaseFlip(char testName[200]){
     int numQubits=4;
     QubitRegister mq, mqVerif; 
 
-    createQubitRegister(&mq, numQubits, env);
-    createQubitRegister(&mqVerif, numQubits, env);
+    mq = createQubitRegister(numQubits, env);
+    mqVerif = createQubitRegister(numQubits, env);
 
     int qubits[4]={0,1,2,3};
     initStateDebug(mq);
@@ -666,8 +667,8 @@ int test_compactUnitary(char testName[200]){
     beta.real  = sin(angs[0]) * cos(angs[2]);
     beta.imag  = sin(angs[0]) * sin(angs[2]);
     
-    createQubitRegister(&mq, numQubits, env);
-    createQubitRegister(&mqVerif, numQubits, env);
+    mq = createQubitRegister(numQubits, env);
+    mqVerif = createQubitRegister(numQubits, env);
 
     initStateDebug(mq);
     initStateDebug(mqVerif);
@@ -699,7 +700,7 @@ int test_compactUnitary(char testName[200]){
 
     // check for normalisation
     numQubits=25;
-    createQubitRegister(&mq, numQubits, env);
+    mq = createQubitRegister(numQubits, env);
     initStatePlus(mq);
     for (int i=0; i<numQubits; i++){
         rotQubit=i;
@@ -735,8 +736,8 @@ int test_unitary(char testName[200]){
     u.r1c0 = (Complex) {.real=beta.real, .imag=beta.imag};
     u.r1c1 = (Complex) {.real=alpha.real, .imag=-alpha.imag};
 
-    createQubitRegister(&mq, numQubits, env);
-    createQubitRegister(&mqVerif, numQubits, env);
+    mq = createQubitRegister(numQubits, env);
+    mqVerif = createQubitRegister(numQubits, env);
 
     initStateDebug(mq);
     initStateDebug(mqVerif);
@@ -769,7 +770,7 @@ int test_unitary(char testName[200]){
 
     // check for normalisation
     numQubits = 25;
-    createQubitRegister(&mq, numQubits, env);
+    mq = createQubitRegister(numQubits, env);
     initStatePlus(mq);
     for (int i=0; i<numQubits; i++){
         rotQubit=i;
@@ -804,8 +805,8 @@ int test_controlledCompactUnitary(char testName[200]){
     beta.real  = sin(ang1) * cos(ang3);
     beta.imag  = sin(ang1) * sin(ang3);
 
-    createQubitRegister(&mq, numQubits, env);
-    createQubitRegister(&mqVerif, numQubits, env);
+    mq = createQubitRegister(numQubits, env);
+    mqVerif = createQubitRegister(numQubits, env);
 
     for (int j=0; j<3; j++){
         controlQubit=j;
@@ -854,8 +855,8 @@ int test_controlledUnitary(char testName[200]){
     u.r1c0 = (Complex) {.real=beta.real, .imag=beta.imag};
     u.r1c1 = (Complex) {.real=alpha.real, .imag=-alpha.imag};
 
-    createQubitRegister(&mq, numQubits, env);
-    createQubitRegister(&mqVerif, numQubits, env);
+    mq = createQubitRegister(numQubits, env);
+    mqVerif = createQubitRegister(numQubits, env);
 
     for (int j=0; j<numQubits; j++){
         controlQubit=j;
@@ -905,8 +906,8 @@ int test_multiControlledUnitary(char testName[200]){
     u.r1c0 = (Complex) {.real=beta.real, .imag=beta.imag};
     u.r1c1 = (Complex) {.real=alpha.real, .imag=-alpha.imag};
 
-    createQubitRegister(&mq, numQubits, env);
-    createQubitRegister(&mqVerif, numQubits, env);
+    mq = createQubitRegister(numQubits, env);
+    mqVerif = createQubitRegister(numQubits, env);
 
     // test mask contains one control qubit
     for (int j=0; j<numQubits; j++){
@@ -929,8 +930,8 @@ int test_multiControlledUnitary(char testName[200]){
     // randomly test a few different other multi control qubit masks 
     numQubits=4;
     int controlQubits[3];
-    createQubitRegister(&mq, numQubits, env);
-    createQubitRegister(&mqVerif, numQubits, env);
+    mq = createQubitRegister(numQubits, env);
+    mqVerif = createQubitRegister(numQubits, env);
 
     rotQubit=3;
     controlQubits[0]=0;
@@ -972,7 +973,7 @@ int test_findProbabilityOfOutcome(char testName[200]){
      */
 
     QubitRegister mq; 
-    createQubitRegister(&mq, numQubits, env);
+    mq = createQubitRegister(numQubits, env);
 
     // test qubit = |0> 
     initStateZero(mq);
@@ -1028,8 +1029,8 @@ int test_collapseToOutcome(char testName[200]){
      */
     
     QubitRegister mq, mqVerif;
-    createQubitRegister(&mq, numQubits, env);
-    createQubitRegister(&mqVerif, numQubits, env);
+    mq = createQubitRegister(numQubits, env);
+    mqVerif = createQubitRegister(numQubits, env);
 
     // test qubit = |0> 
     for (qubit=0; qubit<numQubits; qubit++){
@@ -1087,8 +1088,8 @@ int test_collapseToOutcome(char testName[200]){
     */
     
     QubitRegister reg, regVerif;
-    createDensityQubitRegister(&reg, numQubits, env);
-    createDensityQubitRegister(&regVerif, numQubits, env);
+    reg = createDensityQubitRegister(numQubits, env);
+    regVerif = createDensityQubitRegister(numQubits, env);
     
     // test pure state collapse correctly
     
@@ -1156,8 +1157,8 @@ int test_measure(char testName[200]){
     int qubit;
     int outcome;
 
-    createQubitRegister(&mq, numQubits, env);
-    createQubitRegister(&mqVerif, numQubits, env);
+    mq = createQubitRegister(numQubits, env);
+    mqVerif = createQubitRegister(numQubits, env);
 
     // test qubit = |0> 
     for (qubit=0; qubit<numQubits; qubit++){
@@ -1208,8 +1209,8 @@ int test_measureWithStats(char testName[200]){
     int outcome;
     REAL prob;
 
-    createQubitRegister(&mq, numQubits, env);
-    createQubitRegister(&mqVerif, numQubits, env);
+    mq = createQubitRegister(numQubits, env);
+    mqVerif = createQubitRegister(numQubits, env);
 
     // test qubit = |0> 
     for (qubit=0; qubit<numQubits; qubit++){
@@ -1252,7 +1253,7 @@ int test_getRealAmpEl(char testName[200]){
     REAL ampEl=0, ampElVerif=0;
 
     QubitRegister mq; 
-    createQubitRegister(&mq, numQubits, env);
+    mq = createQubitRegister(numQubits, env);
     initStateDebug(mq);
 
     for (int i=0; i<getNumAmps(mq); i++){
@@ -1272,7 +1273,7 @@ int test_getImagAmpEl(char testName[200]){
     REAL ampEl=0, ampElVerif=0;
 
     QubitRegister mq; 
-    createQubitRegister(&mq, numQubits, env);
+    mq = createQubitRegister(numQubits, env);
 
     initStateDebug(mq);
     for (int i=0; i<getNumAmps(mq); i++){
@@ -1293,7 +1294,7 @@ int test_getProbEl(char testName[200]){
     REAL realEl, imagEl;
 
     QubitRegister mq; 
-    createQubitRegister(&mq, numQubits, env);
+    mq = createQubitRegister(numQubits, env);
 
     initStateDebug(mq);
     for (int i=0; i<getNumAmps(mq); i++){
@@ -1316,8 +1317,8 @@ int test_calcInnerProduct(char testName[200]) {
     
     // create two 3-qubit pure states
     QubitRegister bra, ket;
-    createQubitRegister(&bra, 3, env);
-    createQubitRegister(&ket, 3, env);
+    bra = createQubitRegister(3, env);
+    ket = createQubitRegister(3, env);
     Complex prod;
     
     // when states are equal, <s|s> = 1
@@ -1370,13 +1371,13 @@ int test_calcFidelity(char testName[200]) {
     REAL fid;
     
     QubitRegister pure;
-    createQubitRegister(&pure, numQubits, env);
+    pure = createQubitRegister(numQubits, env);
     
     /*
      * test pure fid = |<a|b>|^2 (trivially calcInnerProduct, so not rigorous)
      */
     QubitRegister otherPure;
-    createQubitRegister(&otherPure, numQubits, env);
+    otherPure = createQubitRegister(numQubits, env);
     
     initStateZero(pure);
     initStatePlus(otherPure); // <0|+> = 1/sqrt(2^n)
@@ -1389,7 +1390,7 @@ int test_calcFidelity(char testName[200]) {
      * test mixed fid = <a| b |a>
      */
     QubitRegister mixed;
-    createDensityQubitRegister(&mixed, numQubits, env);
+    mixed = createDensityQubitRegister(numQubits, env);
     
     // <0|0><0|0> = 1
     initStateZero(pure);
@@ -1411,7 +1412,7 @@ int test_calcFidelity(char testName[200]) {
     
     // <0| .2 |0><0| + .8 |..1><..1| |0> = .2
     QubitRegister otherMixed;
-    createDensityQubitRegister(&otherMixed, numQubits, env);
+    otherMixed = createDensityQubitRegister(numQubits, env);
     initStateZero(pure);
     initStateZero(mixed);
     initClassicalState(otherMixed, 1);
@@ -1433,8 +1434,8 @@ int test_addDensityMatrix(char testName[200]) {
     
     REAL prob;
     QubitRegister reg1, reg2;
-    createDensityQubitRegister(&reg1, numQubits, env);
-    createDensityQubitRegister(&reg2, numQubits, env);
+    reg1 = createDensityQubitRegister(numQubits, env);
+    reg2 = createDensityQubitRegister(numQubits, env);
     
     // prob_0( p1 |0...><0...| + (1-p1) |1...><1...| ) = p1
     REAL p1 = 0.3;
@@ -1464,7 +1465,7 @@ int test_calcPurity(char testName[200]) {
     REAL purity;
     
     QubitRegister qureg;
-    createDensityQubitRegister(&qureg, numQubits, env);
+    qureg = createDensityQubitRegister(numQubits, env);
     
     // pure states are pure
     initStatePlus(qureg);
@@ -1477,7 +1478,7 @@ int test_calcPurity(char testName[200]) {
     }
     
     QubitRegister otherQureg;
-    createDensityQubitRegister(&otherQureg, numQubits, env);
+    otherQureg = createDensityQubitRegister(numQubits, env);
     
     // a|+><+| + b|+><+| = (a+b) |+><+| (pure)
     initStatePlus(qureg);
@@ -1528,7 +1529,7 @@ int test_calcTotalProbability(char testName[200]) {
      * state-vector
      */
     QubitRegister qureg;
-    createQubitRegister(&qureg, numQubits, env);
+    qureg = createQubitRegister(numQubits, env);
     
     hadamard(qureg, 0);
     rotateY(qureg, 0, 0.1);
@@ -1545,7 +1546,7 @@ int test_calcTotalProbability(char testName[200]) {
     /* 
      * density matrix
      */
-    createDensityQubitRegister(&qureg, numQubits, env);
+    qureg = createDensityQubitRegister(numQubits, env);
 
     hadamard(qureg, 0);
     rotateY(qureg, 0, 0.1);

@@ -23,28 +23,32 @@
 extern "C" {
 #endif
 
-void createQubitRegister(QubitRegister *qureg, int numQubits, QuESTEnv env) {
+QubitRegister createQubitRegister(int numQubits, QuESTEnv env) {
     validateCreateNumQubits(numQubits, __func__);
     
-    statevec_createQubitRegister(qureg, numQubits, env);
-    qureg->isDensityMatrix = 0;
-    qureg->numQubitsRepresented = numQubits;
-    qureg->numQubitsInStateVec = numQubits;
+    QubitRegister qureg;
+    statevec_createQubitRegister(&qureg, numQubits, env);
+    qureg.isDensityMatrix = 0;
+    qureg.numQubitsRepresented = numQubits;
+    qureg.numQubitsInStateVec = numQubits;
     
-    qasm_setup(qureg);
-    initStateZero(*qureg);
+    qasm_setup(&qureg);
+    initStateZero(qureg);
+    return qureg;
 }
 
-void createDensityQubitRegister(QubitRegister *qureg, int numQubits, QuESTEnv env) {
+QubitRegister createDensityQubitRegister(int numQubits, QuESTEnv env) {
     validateCreateNumQubits(numQubits, __func__);
     
-    statevec_createQubitRegister(qureg, 2*numQubits, env);
-    qureg->isDensityMatrix = 1;
-    qureg->numQubitsRepresented = numQubits;
-    qureg->numQubitsInStateVec = 2*numQubits;
+    QubitRegister qureg;
+    statevec_createQubitRegister(&qureg, 2*numQubits, env);
+    qureg.isDensityMatrix = 1;
+    qureg.numQubitsRepresented = numQubits;
+    qureg.numQubitsInStateVec = 2*numQubits;
     
-    qasm_setup(qureg);
-    initStateZero(*qureg);
+    qasm_setup(&qureg);
+    initStateZero(qureg);
+    return qureg;
 }
 
 void destroyQubitRegister(QubitRegister qureg, QuESTEnv env) {
