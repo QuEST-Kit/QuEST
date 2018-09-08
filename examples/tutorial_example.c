@@ -19,8 +19,7 @@ int main (int narg, char *varg[]) {
      * PREPARE QUBIT SYSTEM
      */
 
-    QubitRegister qubits; 
-    createQubitRegister(&qubits, 3, env);
+    QubitRegister qubits = createQubitRegister(3, env);
     initStateZero(qubits);
 
 

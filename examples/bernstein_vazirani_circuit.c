@@ -24,8 +24,7 @@ int main (int narg, char** varg) {
     initQuESTEnv(&env);
 
     // create qureg; let zeroth qubit be ancilla
-    QubitRegister qureg; 
-    createQubitRegister(&qureg, numQubits, env);
+    QubitRegister qureg = createQubitRegister(numQubits, env);
     initStateZero(qureg);
 
 
