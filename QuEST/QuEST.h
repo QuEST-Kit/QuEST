@@ -495,9 +495,9 @@ void tGate(QubitRegister qureg, const int targetQubit);
 /** Initialize the QuEST environment. If something needs to be done to set up the execution environment, such as 
  * initializing MPI when running in distributed mode, it is handled here
  *
- * @param[in,out] env object representing the execution environment. A single instance is used for each program
+ * @param[out] object representing the execution environment. A single instance is used for each program
  */
-void initQuESTEnv(QuESTEnv *env);
+QuESTEnv initQuESTEnv();
 
 /** Close QuEST environment. If something needs to be done to clean up the execution environment, such as 
  * finalizing MPI when running in distributed mode, it is handled here

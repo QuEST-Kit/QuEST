@@ -119,7 +119,10 @@ static int getChunkPairId(int chunkIsUpper, int chunkId, long long int chunkSize
 static int halfMatrixBlockFitsInChunk(long long int chunkSize, int targetQubit);
 static int getChunkIdFromIndex(QubitRegister qureg, long long int index);
 
-void initQuESTEnv(QuESTEnv *env){
+QuESTEnv initQuESTEnv() {
+    
+    QuESTEnv env;
+    
     // init MPI environment
     int rank, numRanks, initialized;
     MPI_Initialized(&initialized);
@@ -128,12 +131,14 @@ void initQuESTEnv(QuESTEnv *env){
         MPI_Comm_size(MPI_COMM_WORLD, &numRanks);
         MPI_Comm_rank(MPI_COMM_WORLD, &rank);
 
-        env->rank=rank;
-        env->numRanks=numRanks;
+        env.rank=rank;
+        env.numRanks=numRanks;
 
     } else printf("ERROR: Trying to initialize QuESTEnv multiple times. Ignoring\n");
 	
 	seedQuESTDefault();
+    
+    return env;
 }
 
 void syncQuESTEnv(QuESTEnv env){

@@ -232,16 +232,20 @@ int GPUExists(void){
     else return 0;
 }
 
-void initQuESTEnv(QuESTEnv *env){
+QuESTEnv initQuESTEnv() {
     // init MPI environment
     if (!GPUExists()){
         printf("Trying to run GPU code with no GPU available\n");
         exit(EXIT_FAILURE);
     }
-    env->rank=0;
-    env->numRanks=1;
+    
+    QuESTEnv env;
+    env.rank=0;
+    env.numRanks=1;
     
     seedQuESTDefault();
+    
+    return env;
 }
 
 void syncQuESTEnv(QuESTEnv env){

@@ -122,12 +122,16 @@ REAL statevec_calcTotalProbability(QubitRegister qureg){
 }
 
 
-void initQuESTEnv(QuESTEnv *env){
+QuESTEnv initQuESTEnv() {
     // init MPI environment
-    env->rank=0;
-    env->numRanks=1;
+    
+    QuESTEnv env;
+    env.rank=0;
+    env.numRanks=1;
     
     seedQuESTDefault();
+    
+    return env;
 }
 
 void syncQuESTEnv(QuESTEnv env){

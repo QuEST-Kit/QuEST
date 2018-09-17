@@ -8,8 +8,7 @@ int main (int narg, char *varg[]) {
      * (Required only once per program)
      */
 
-    QuESTEnv env;
-    initQuESTEnv(&env);
+    QuESTEnv env = initQuESTEnv();
 
     printf("-------------------------------------------------------\n");
     printf("Running QuEST tutorial:\n\t Basic circuit involving a system of 3 qubits.\n");

@@ -20,8 +20,7 @@ int main (int narg, char** varg) {
     int secretNum = pow(2,4) + 1;
 
     // prepare QuEST
-    QuESTEnv env;
-    initQuESTEnv(&env);
+    QuESTEnv env = initQuESTEnv();
 
     // create qureg; let zeroth qubit be ancilla
     QubitRegister qureg = createQubitRegister(numQubits, env);

@@ -1564,7 +1564,7 @@ int test_calcTotalProbability(char testName[200]) {
 }
 
 int main (int narg, char** varg) {
-    initQuESTEnv(&env);
+    env = initQuESTEnv();
     reportQuESTEnv(env);
 
     int (*tests[NUM_TESTS])(char[200]) = {
