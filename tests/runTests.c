@@ -9,8 +9,9 @@
 # include "QuEST_precision.h"
 # include "QuEST_debug.h"
 
-# define NUM_TESTS 34
-# define PATH_TO_TESTS "unit/"
+# define NUM_TESTS 38
+//!!! CHANGE BACK TO unit/
+# define PATH_TO_TESTS "tests/unit/"
 # define VERBOSE 0
 
 // quad precision unit testing is no more stringent than double
@@ -1520,6 +1521,138 @@ int test_calcPurity(char testName[200]) {
     return passed;
 }
 
+int test_oneQubitDepolarise(char testName[200]) {
+    char filename[200];
+    int passed=1;
+    int numQubits=3;
+
+    int targetQubit;
+    REAL depolLevel=0.5;
+    
+    QubitRegister qureg, quregVerif;
+    qureg = createDensityQubitRegister(numQubits, env);
+    quregVerif = createDensityQubitRegister(numQubits, env);
+
+    for (int i=0; i<numQubits; i++){
+        initStateDebug(qureg);
+        targetQubit=i;
+        oneQubitDepolarise(qureg, targetQubit, depolLevel);
+
+        sprintf(filename, "%s%s%d.out", PATH_TO_TESTS, testName, i);  
+        initStateFromSingleFile(&quregVerif, filename, env);
+        //reportStateToScreen(qureg, env, 0);
+        //reportStateToScreen(quregVerif, env, 0);
+
+        if (passed) passed = compareStates(qureg, quregVerif, COMPARE_PRECISION);
+    }
+    destroyQubitRegister(qureg, env);
+    destroyQubitRegister(quregVerif, env);
+
+    return passed;
+}
+
+int test_oneQubitDephase(char testName[200]) {
+    char filename[200];
+    int passed=1;
+    int numQubits=3;
+
+    int targetQubit;
+    REAL dephaseLevel=0.5;
+    
+    QubitRegister qureg, quregVerif;
+    qureg = createDensityQubitRegister(numQubits, env);
+    quregVerif = createDensityQubitRegister(numQubits, env);
+
+    for (int i=0; i<numQubits; i++){
+        initStateDebug(qureg);
+        targetQubit=i;
+        oneQubitDephase(qureg, targetQubit, dephaseLevel);
+
+        sprintf(filename, "%s%s%d.out", PATH_TO_TESTS, testName, i);  
+        initStateFromSingleFile(&quregVerif, filename, env);
+        //reportStateToScreen(qureg, env, 0);
+        //reportStateToScreen(quregVerif, env, 0);
+
+        if (passed) passed = compareStates(qureg, quregVerif, COMPARE_PRECISION);
+    }
+    destroyQubitRegister(qureg, env);
+    destroyQubitRegister(quregVerif, env);
+
+    return passed;
+}
+
+int test_twoQubitDepolarise(char testName[200]) {
+    printf("NOTE: twoQubitDepolarise test currently assumes GPU version is correct and tests against that version's output\n");
+    char filename[200];
+    int passed=1;
+    int numQubits=3;
+
+    int qubit1, qubit2;
+    REAL depolLevel=0.5;
+    
+    QubitRegister qureg, quregVerif;
+    qureg = createDensityQubitRegister(numQubits, env);
+    quregVerif = createDensityQubitRegister(numQubits, env);
+
+    int count=0;
+    for (int i=0; i<3; i++){
+        for (int j=0; j<3; j++){
+        qubit1=i; qubit2=j;
+        if (qubit1==qubit2) continue;
+
+        initStateDebug(qureg);
+        twoQubitDepolarise(qureg, qubit1, qubit2, depolLevel);
+
+        sprintf(filename, "%s%s%d.out", PATH_TO_TESTS, testName, count++);  
+        initStateFromSingleFile(&quregVerif, filename, env);
+        //reportStateToScreen(qureg, env, 0);
+        //reportStateToScreen(quregVerif, env, 0);
+
+        if (passed) passed = compareStates(qureg, quregVerif, COMPARE_PRECISION);
+        }
+    }
+    destroyQubitRegister(qureg, env);
+    destroyQubitRegister(quregVerif, env);
+
+    return passed;
+}
+
+int test_twoQubitDephase(char testName[200]) {
+    printf("NOTE: twoQubitDephase test currently assumes GPU version is correct and tests against that version's output\n");
+    char filename[200];
+    int passed=1;
+    int numQubits=3;
+
+    int qubit1, qubit2;
+    REAL dephaseLevel=0.5;
+    
+    QubitRegister qureg, quregVerif;
+    qureg = createDensityQubitRegister(numQubits, env);
+    quregVerif = createDensityQubitRegister(numQubits, env);
+
+    int count=0;
+    for (int i=0; i<3; i++){
+        for (int j=0; j<3; j++){
+        qubit1=i; qubit2=j;
+        if (qubit1==qubit2) continue;
+
+        initStateDebug(qureg);
+        twoQubitDephase(qureg, qubit1, qubit2, dephaseLevel);
+
+        sprintf(filename, "%s%s%d.out", PATH_TO_TESTS, testName, count++);  
+        initStateFromSingleFile(&quregVerif, filename, env);
+        //reportStateToScreen(qureg, env, 0);
+        //reportStateToScreen(quregVerif, env, 0);
+
+        if (passed) passed = compareStates(qureg, quregVerif, COMPARE_PRECISION);
+        }
+    }
+    destroyQubitRegister(qureg, env);
+    destroyQubitRegister(quregVerif, env);
+
+    return passed;
+}
+
 int test_calcTotalProbability(char testName[200]) {
     int passed=1;
     int numQubits=3;
@@ -1568,6 +1701,10 @@ int main (int narg, char** varg) {
     reportQuESTEnv(env);
 
     int (*tests[NUM_TESTS])(char[200]) = {
+        test_oneQubitDephase,
+        test_oneQubitDepolarise,
+        test_twoQubitDephase,
+        test_twoQubitDepolarise,
         test_controlledNot,
         test_initStateZero,
         test_initStatePlus,
@@ -1601,10 +1738,14 @@ int main (int narg, char** varg) {
         test_calcFidelity,
         test_addDensityMatrix,
         test_calcPurity,
-        test_calcTotalProbability
+        test_calcTotalProbability,
     };
 
     char testNames[NUM_TESTS][200] = {
+        "oneQubitDephase",
+        "oneQubitDepolarise",
+        "twoQubitDephase",
+        "twoQubitDepolarise",
         "controlledNot",
         "initStateZero",
         "initStatePlus",
@@ -1638,7 +1779,7 @@ int main (int narg, char** varg) {
         "calcFidelity",
         "addDensityMatrix",
         "calcPurity",
-        "calcTotalProbability"
+        "calcTotalProbability",
     };
     int passed=0;
     if (env.rank==0) printf("\nRunning unit tests\n");

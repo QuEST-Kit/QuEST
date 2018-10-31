@@ -647,7 +647,8 @@ void initStateDebug(QubitRegister qureg) {
 }
 
 void initStateFromSingleFile(QubitRegister *qureg, char filename[200], QuESTEnv env) {
-    validateStateVecQureg(*qureg, __func__);
+    //! change back -- uncomment. Consider if we want to allow this operation for density matrices
+    //validateStateVecQureg(*qureg, __func__);
 
     int success = statevec_initStateFromSingleFile(qureg, filename, env);
     validateFileOpened(success, __func__);

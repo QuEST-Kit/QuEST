@@ -6,6 +6,7 @@
  */
 
 # include "../QuEST.h"
+# include "../QuEST_ops.h"
 # include "../QuEST_internal.h"
 # include "../QuEST_precision.h"
 # include "../mt19937ar.h"
@@ -21,6 +22,28 @@
 # ifdef _OPENMP
 # include <omp.h>
 # endif
+
+
+void densmatr_oneQubitDepolarise(QubitRegister qureg, const int targetQubit, REAL depolLevel) {
+    if (depolLevel == 0)
+        return;
+
+    densmatr_oneQubitDepolariseLocal(qureg, targetQubit, depolLevel);
+}
+
+void densmatr_twoQubitDepolarise(QubitRegister qureg, int qubit1, int qubit2, REAL depolLevel){
+    if (depolLevel == 0)
+        return;
+    REAL eta = 2/depolLevel;
+    REAL delta = eta - 1 - sqrt( (eta-1)*(eta-1) - 1 );
+    REAL gamma = 1+delta;
+    // TODO -- test delta too small
+
+    gamma = 1/(gamma*gamma*gamma);
+    densmatr_twoQubitDephase(qureg, qubit1, qubit2, depolLevel);
+    densmatr_twoQubitDepolariseLocal(qureg, qubit1, qubit2, delta, gamma);
+}
+
 
 REAL densmatr_calcPurity(QubitRegister qureg) {
     return densmatr_calcPurityLocal(qureg);

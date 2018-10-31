@@ -19,6 +19,20 @@ REAL densmatr_calcFidelityLocal(QubitRegister qureg, QubitRegister pureState);
 
 REAL densmatr_findProbabilityOfZeroLocal(QubitRegister qureg, const int measureQubit);
 
+void densmatr_oneQubitDepolariseLocal(QubitRegister qureg, const int targetQubit, REAL depolLevel);
+
+void densmatr_oneQubitDepolariseDistributed(QubitRegister qureg, const int targetQubit, REAL depolLevel);
+
+void densmatr_twoQubitDepolariseLocal(QubitRegister qureg, int qubit1, int qubit2, REAL delta, REAL gamma);
+
+void densmatr_twoQubitDepolariseLocalPart1(QubitRegister qureg, int qubit1, int qubit2, REAL delta);
+
+void densmatr_twoQubitDepolariseDistributed(QubitRegister qureg, const int targetQubit,
+                const int qubit2, REAL delta, REAL gamma);
+
+void densmatr_twoQubitDepolariseQ1LocalQ2DistributedPart3(QubitRegister qureg, const int targetQubit,
+                const int qubit2, REAL delta, REAL gamma);
+
 Complex statevec_calcInnerProductLocal(QubitRegister bra, QubitRegister ket);
 
 void statevec_compactUnitaryLocal (QubitRegister qureg, const int targetQubit, Complex alpha, Complex beta);

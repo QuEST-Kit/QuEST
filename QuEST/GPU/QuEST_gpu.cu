@@ -308,7 +308,7 @@ void statevec_reportStateToScreen(QubitRegister qureg, QuESTEnv env, int reportR
     long long int index;
     int rank;
     copyStateFromGPU(qureg); 
-    if (qureg.numQubitsInStateVec<=5){
+    if (qureg.numQubitsInStateVec<=6){
         for (rank=0; rank<qureg.numChunks; rank++){
             if (qureg.chunkId==rank){
                 if (reportRank) {
