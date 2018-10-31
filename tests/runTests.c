@@ -10,8 +10,7 @@
 # include "QuEST_debug.h"
 
 # define NUM_TESTS 38
-//!!! CHANGE BACK TO unit/
-# define PATH_TO_TESTS "tests/unit/"
+# define PATH_TO_TESTS "unit/"
 # define VERBOSE 0
 
 // quad precision unit testing is no more stringent than double
