@@ -34,7 +34,7 @@ if [ $distributed == 0 ]
 then
     ./runTests
 else
-    mpirun $MPI_HOSTS ./runTests
+    mpirun -np $MPI_HOSTS ./runTests
 fi
 
 # report test success

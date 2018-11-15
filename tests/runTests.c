@@ -176,6 +176,7 @@ int test_initPureState(char testName[200]) {
     
     destroyQubitRegister(mq, env);
     destroyQubitRegister(mqVerif, env);
+        
     
     /*
      * for density matrices / mixed states
@@ -187,6 +188,7 @@ int test_initPureState(char testName[200]) {
     initStatePlus(vec);
     initStateZero(dens);
     
+    // @TODO this is causing error on 1-process MPI, due to call to copyVecIntoMatrixPairState
     // set dens = |+><+|
     initPureState(dens, vec);
         
@@ -422,13 +424,12 @@ int test_phaseShift(char testName[200]) {
     int passed=1;
     QubitRegister mq;
 
-    printf("TEST phaseShift INITS A SINGLE QUBIT FOR TESTING WHICH BREAKS >2 DISTRIB\n");
-
-    // prepare (|0> + |1>)/sqrt(2)
-    mq = createQubitRegister(1, env);
-    initStatePlus(mq);
+    // prepare (|00> + |01>)/sqrt(2)
+    mq = createQubitRegister(2, env);
+    initStateZero(mq);
+    hadamard(mq, 0);
     
-    // enter state (|0> - 1/sqrt(2) (1 + i) |1>)/sqrt(2)
+    // enter state |0> (|0> - 1/sqrt(2) (1 + i) |1>)/sqrt(2)
     // coeff of |0>:  1/sqrt(2)
     // coeff of |1>: - (1 + i)/2
     phaseShift(mq, 0, pi * 5/4.0 );
@@ -437,7 +438,7 @@ int test_phaseShift(char testName[200]) {
     if (passed) passed = compareReals(getImagAmpEl(mq, 0),         0, COMPARE_PRECISION);
     if (passed) passed = compareReals(getRealAmpEl(mq, 1),    -1/2.0, COMPARE_PRECISION);
     if (passed) passed = compareReals(getImagAmpEl(mq, 1),    -1/2.0, COMPARE_PRECISION);
-        
+    
     destroyQubitRegister(mq, env);
 
     

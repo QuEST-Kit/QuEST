@@ -527,7 +527,7 @@ void initPureState(QubitRegister qureg, QubitRegister pure) {
     else
         statevec_cloneQubitRegister(qureg, pure);
     
-    qasm_recordComment(qureg, "The register was initialised by a undisclosed given pure state.");
+    qasm_recordComment(qureg, "The register was initialised by an undisclosed given pure state.");
 }
 
 REAL collapseToOutcome(QubitRegister qureg, const int measureQubit, int outcome) {
