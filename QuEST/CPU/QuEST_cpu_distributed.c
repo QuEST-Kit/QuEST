@@ -500,7 +500,8 @@ void compressPairVectorForSingleQubitDepolarise(QubitRegister qureg, const int t
          thisIndex,    // current index in (density matrix representation) state vector
          thisIndexInOuterColumn,
          thisIndexInInnerBlock;
-    int innerBit, outerBit;
+         
+    int outerBit;
 
     long long int thisTask;
     const long long int numTasks=qureg.numAmpsPerChunk>>1;
@@ -563,7 +564,7 @@ void compressPairVectorForTwoQubitDepolarise(QubitRegister qureg, const int targ
     long long int sizeInnerBlockQ1, sizeInnerHalfBlockQ1;
     long long int sizeInnerBlockQ2, sizeInnerHalfBlockQ2, sizeInnerQuarterBlockQ2;
     long long int sizeOuterColumn, sizeOuterQuarterColumn;
-    long long int thisInnerBlockQ1, // current block
+    long long int 
          thisInnerBlockQ2,
          thisOuterColumn, // current column in density matrix
          thisIndex,    // current index in (density matrix representation) state vector
@@ -591,7 +592,7 @@ void compressPairVectorForTwoQubitDepolarise(QubitRegister qureg, const int targ
     shared   (sizeInnerBlockQ1,sizeInnerHalfBlockQ1,sizeInnerQuarterBlockQ2,sizeInnerHalfBlockQ2,sizeInnerBlockQ2, \
                 sizeOuterColumn, \
                 sizeOuterQuarterColumn,qureg) \
-    private  (thisTask,thisInnerBlockQ1,thisInnerBlockQ2,thisOuterColumn,thisIndex,thisIndexInOuterColumn, \
+    private  (thisTask,thisInnerBlockQ2,thisOuterColumn,thisIndex,thisIndexInOuterColumn, \
                 thisIndexInInnerBlockQ1,thisIndexInInnerBlockQ2,thisInnerBlockQ1InInnerBlockQ2,outerBitQ1,outerBitQ2) 
 # endif
     {
@@ -676,7 +677,6 @@ void densmatr_oneQubitDepolarise(QubitRegister qureg, const int targetQubit, REA
 void densmatr_twoQubitDepolarise(QubitRegister qureg, int qubit1, int qubit2, REAL depolLevel){
     if (depolLevel == 0)
         return;
-    int rankIsUpper; // rank is in the upper half of an outer block
     int rankIsUpperBiggerQubit, rankIsUpperSmallerQubit;
     int pairRank; // rank of corresponding chunk
     int biggerQubit, smallerQubit;
