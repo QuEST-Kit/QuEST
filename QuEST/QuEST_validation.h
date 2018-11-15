@@ -21,6 +21,8 @@ void validateTarget(QubitRegister qureg, int targetQubit, const char* caller);
 
 void validateControlTarget(QubitRegister qureg, int controlQubit, int targetQubit, const char* caller);
 
+void validateUniqueTargets(QubitRegister qureg, int qubit1, int qubit2, const char* caller);
+
 void validateMultiControls(QubitRegister qureg, int* controlQubits, const int numControlQubits, const char* caller);
 
 void validateMultiControlsTarget(QubitRegister qureg, int* controlQubits, const int numControlQubits, const int targetQubit, const char* caller);

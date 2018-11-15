@@ -682,8 +682,6 @@ void densmatr_twoQubitDepolarise(QubitRegister qureg, int qubit1, int qubit2, RE
     int biggerQubit, smallerQubit;
 
     densmatr_twoQubitDephase(qureg, qubit1, qubit2, depolLevel);
-
-    // TODO check that qubit1 != qubit2
     
     REAL eta = 2/depolLevel;
     REAL delta = eta - 1 - sqrt( (eta-1)*(eta-1) - 1 ); 
