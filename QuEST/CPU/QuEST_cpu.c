@@ -491,6 +491,7 @@ void densmatr_twoQubitDepolariseQ1LocalQ2DistributedPart3(QubitRegister qureg, c
     long long int thisInnerBlockQ2,
          thisOuterColumn, // current column in density matrix
          thisIndex,    // current index in (density matrix representation) state vector
+         thisIndexInPairVector,
          thisIndexInOuterColumn,
          thisIndexInInnerBlockQ1, 
          thisIndexInInnerBlockQ2, 
@@ -509,19 +510,21 @@ void densmatr_twoQubitDepolariseQ1LocalQ2DistributedPart3(QubitRegister qureg, c
     sizeOuterColumn = 1LL << qureg.numQubitsRepresented;
     sizeOuterQuarterColumn = sizeOuterColumn >> 2;
 
+//# if 0
 # ifdef _OPENMP
 # pragma omp parallel \
     default  (none) \
     shared   (sizeInnerBlockQ1,sizeInnerHalfBlockQ1,sizeInnerBlockQ2,sizeInnerHalfBlockQ2,sizeInnerQuarterBlockQ2,\
                 sizeOuterColumn,sizeOuterQuarterColumn,qureg,delta,gamma) \
     private  (thisTask,thisInnerBlockQ2,thisInnerBlockQ1InInnerBlockQ2, \
-                thisOuterColumn,thisIndex,thisIndexInOuterColumn, \
+                thisOuterColumn,thisIndex,thisIndexInPairVector,thisIndexInOuterColumn, \
                 thisIndexInInnerBlockQ1,thisIndexInInnerBlockQ2,outerBitQ1,outerBitQ2) 
 # endif
     {
 # ifdef _OPENMP
 # pragma omp for schedule (static)
 # endif
+//# endif
         // thisTask iterates over half the elements in this process' chunk of the density matrix
         // treat this as iterating over all columns, then iterating over half the values
         // within one column.
@@ -549,10 +552,10 @@ void densmatr_twoQubitDepolariseQ1LocalQ2DistributedPart3(QubitRegister qureg, c
             // if we are in the lower half of an outer block, shift to be in the lower half
             // of the inner block as well (we want to dephase |0><0| and |1><1| only)
             thisIndex += outerBitQ1*(sizeInnerHalfBlockQ1);
-
+            
             // For part 3 we need to match elements such that (my Q1 != pair Q1) AND (my Q2 != pair Q2)
             // Find correct index in pairStateVector
-            thisTask += (1-outerBitQ1)*sizeInnerHalfBlockQ1*sizeOuterQuarterColumn -
+            thisIndexInPairVector = thisTask + (1-outerBitQ1)*sizeInnerHalfBlockQ1*sizeOuterQuarterColumn -
                 outerBitQ1*sizeInnerHalfBlockQ1*sizeOuterQuarterColumn;
             
             // check if we are in the upper or lower half of an outer block for Q2
@@ -561,19 +564,19 @@ void densmatr_twoQubitDepolariseQ1LocalQ2DistributedPart3(QubitRegister qureg, c
             // of the inner block as well (we want to dephase |0><0| and |1><1| only)
             thisIndex += outerBitQ2*(sizeInnerQuarterBlockQ2<<1);
             
+            
             // NOTE: at this point thisIndex should be the index of the element we want to 
             // dephase in the chunk of the state vector on this process, in the 
             // density matrix representation. 
-            // thisTask is the index of the pair element in pairStateVec
 
            
             // state[thisIndex] = (1-depolLevel)*state[thisIndex] + depolLevel*(state[thisIndex]
-            //      + pair[thisTask])/2
+            //      + pair[thisIndexInPairVector])/2
             qureg.stateVec.real[thisIndex] = gamma*(qureg.stateVec.real[thisIndex] +
-                    delta*qureg.pairStateVec.real[thisTask]);
+                    delta*qureg.pairStateVec.real[thisIndexInPairVector]);
             
             qureg.stateVec.imag[thisIndex] = gamma*(qureg.stateVec.imag[thisIndex] +
-                    delta*qureg.pairStateVec.imag[thisTask]);
+                    delta*qureg.pairStateVec.imag[thisIndexInPairVector]);
         } 
     }    
 
@@ -1101,7 +1104,7 @@ void statevec_destroyQubitRegister(QubitRegister qureg, QuESTEnv env){
 void statevec_reportStateToScreen(QubitRegister qureg, QuESTEnv env, int reportRank){
     long long int index;
     int rank;
-    if (qureg.numQubitsInStateVec<=5){
+    if (qureg.numQubitsInStateVec<=6){
         for (rank=0; rank<qureg.numChunks; rank++){
             if (qureg.chunkId==rank){
                 if (reportRank) {
