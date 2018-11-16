@@ -1100,7 +1100,7 @@ void statevec_destroyQubitRegister(QubitRegister qureg, QuESTEnv env){
 void statevec_reportStateToScreen(QubitRegister qureg, QuESTEnv env, int reportRank){
     long long int index;
     int rank;
-    if (qureg.numQubitsInStateVec<=6){
+    if (qureg.numQubitsInStateVec<=5){
         for (rank=0; rank<qureg.numChunks; rank++){
             if (qureg.chunkId==rank){
                 if (reportRank) {
