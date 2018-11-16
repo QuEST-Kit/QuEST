@@ -10,8 +10,6 @@
  * and often don't need to explicitly compute U^*.
  */
 
-// @TODO: 4 noise functions on CPU
-
 # include "QuEST.h"
 # include "QuEST_precision.h"
 # include "QuEST_internal.h"
@@ -529,7 +527,7 @@ void initPureState(QubitRegister qureg, QubitRegister pure) {
     else
         statevec_cloneQubitRegister(qureg, pure);
     
-    qasm_recordComment(qureg, "The register was initialised by a undisclosed given pure state.");
+    qasm_recordComment(qureg, "The register was initialised by an undisclosed given pure state.");
 }
 
 REAL collapseToOutcome(QubitRegister qureg, const int measureQubit, int outcome) {
@@ -589,9 +587,8 @@ void addDensityMatrix(QubitRegister combineQureg, REAL otherProb, QubitRegister 
 
 
 
-/* new experimental dephasing functions */
 
-// @TODO add to CPU local and distributed
+
 void oneQubitDephase(QubitRegister qureg, const int targetQubit, REAL dephase) {
     validateDensityMatrQureg(qureg, __func__);
     validateTarget(qureg, targetQubit, __func__);
@@ -600,17 +597,14 @@ void oneQubitDephase(QubitRegister qureg, const int targetQubit, REAL dephase) {
     densmatr_oneQubitDephase(qureg, targetQubit, dephase);
 }
 
-// @TODO add to CPU local and distributed
 void twoQubitDephase(QubitRegister qureg, const int qubit1, const int qubit2, REAL dephase) {
     validateDensityMatrQureg(qureg, __func__);
-    validateTarget(qureg, qubit1, __func__);
-    validateTarget(qureg, qubit2, __func__);
+    validateUniqueTargets(qureg, qubit1, qubit2, __func__);
     validateNoise(dephase, __func__);
 
     densmatr_twoQubitDephase(qureg, qubit1, qubit2, dephase);
 }
 
-// @TODO add to CPU local and distributed
 void oneQubitDepolarise(QubitRegister qureg, const int targetQubit, REAL depolLevel) {
     validateDensityMatrQureg(qureg, __func__);
     validateTarget(qureg, targetQubit, __func__);
@@ -619,11 +613,9 @@ void oneQubitDepolarise(QubitRegister qureg, const int targetQubit, REAL depolLe
     densmatr_oneQubitDepolarise(qureg, targetQubit, depolLevel);
 }
 
-// @TODO add to CPU local and distributed
 void twoQubitDepolarise(QubitRegister qureg, const int qubit1, const int qubit2, REAL depolLevel) {
     validateDensityMatrQureg(qureg, __func__);
-    validateTarget(qureg, qubit1, __func__);
-    validateTarget(qureg, qubit2, __func__);
+    validateUniqueTargets(qureg, qubit1, qubit2, __func__);
     validateNoise(depolLevel, __func__);
     
     densmatr_twoQubitDepolarise(qureg, qubit1, qubit2, depolLevel);

@@ -26,6 +26,7 @@ typedef enum {
     E_INVALID_OFFSET_NUM_AMPS,
     E_TARGET_IS_CONTROL,
     E_TARGET_IN_CONTROLS,
+    E_TARGETS_NOT_UNIQUE,
     E_INVALID_NUM_CONTROLS,
     E_NON_UNITARY_MATRIX,
     E_NON_UNITARY_COMPLEX_PAIR,
@@ -53,6 +54,7 @@ static const char* errorMessages[] = {
     [E_INVALID_OFFSET_NUM_AMPS] = "More amplitudes given than exist in the statevector from the given starting index.",
     [E_TARGET_IS_CONTROL] = "Control qubit cannot equal target qubit.",
     [E_TARGET_IN_CONTROLS] = "Control qubits cannot include target qubit.",
+    [E_TARGETS_NOT_UNIQUE] = "The two target qubits must be unique.",
     [E_INVALID_NUM_CONTROLS] = "Invalid number of control qubits. Must be >0 and <numQubits.",
     [E_NON_UNITARY_MATRIX] = "Matrix is not unitary.",
     [E_NON_UNITARY_COMPLEX_PAIR] = "Compact matrix formed by given complex numbers is not unitary.",
@@ -148,8 +150,14 @@ void validateControlTarget(QubitRegister qureg, int controlQubit, int targetQubi
     QuESTAssert(controlQubit != targetQubit, E_TARGET_IS_CONTROL, caller);
 }
 
+void validateUniqueTargets(QubitRegister qureg, int qubit1, int qubit2, const char* caller) {
+    validateTarget(qureg, qubit1, caller);
+    validateTarget(qureg, qubit2, caller);
+    QuESTAssert(qubit1 != qubit2, E_TARGETS_NOT_UNIQUE, caller);
+}
+
 void validateNumControls(QubitRegister qureg, const int numControlQubits, const char* caller) {
-    // this could reject repeated qubits and cite "too many"
+    // this could reject repeated qubits and cite "too many" but oh well
     QuESTAssert(numControlQubits>0 && numControlQubits<=qureg.numQubitsRepresented, E_INVALID_NUM_CONTROLS, caller);
 }
 

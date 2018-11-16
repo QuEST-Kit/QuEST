@@ -33,8 +33,6 @@ static int extractBit (const int locationOfBitFromRight, const long long int the
     return (theEncodedNumber & ( 1LL << locationOfBitFromRight )) >> locationOfBitFromRight;
 }
 
-
-// @TODO
 void densmatr_oneQubitDephase(QubitRegister qureg, const int targetQubit, REAL dephase) {
         REAL retain=1-dephase;
     
@@ -109,7 +107,6 @@ void densmatr_twoQubitDephase(QubitRegister qureg, const int qubit1, const int q
     }
 }
 
-// @TODO
 void densmatr_oneQubitDepolariseLocal(QubitRegister qureg, const int targetQubit, REAL depolLevel) {
     REAL retain=1-depolLevel;
 
@@ -159,7 +156,6 @@ void densmatr_oneQubitDepolariseLocal(QubitRegister qureg, const int targetQubit
     }
 }
 
-// @TODO
 void densmatr_oneQubitDepolariseDistributed(QubitRegister qureg, const int targetQubit, REAL depolLevel) {
 
     // first do dephase part. 
