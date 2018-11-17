@@ -422,18 +422,19 @@ int test_phaseShift(char testName[200]) {
     REAL pi = 3.1415926535897932384626;
 
     int passed=1;
+    int numQubits=3;
     QubitRegister mq;
 
-    // prepare (|00> + |01>)/sqrt(2)
-    mq = createQubitRegister(2, env);
+    // prepare |00>(|0> + |1>)/sqrt(2)
+    mq = createQubitRegister(numQubits, env);
     initStateZero(mq);
     hadamard(mq, 0);
     
-    // enter state |0> (|0> - 1/sqrt(2) (1 + i) |1>)/sqrt(2)
+    // enter state |00> (|0> - 1/sqrt(2) (1 + i) |1>)/sqrt(2)
     // coeff of |0>:  1/sqrt(2)
     // coeff of |1>: - (1 + i)/2
     phaseShift(mq, 0, pi * 5/4.0 );
-            
+    
     if (passed) passed = compareReals(getRealAmpEl(mq, 0), 1/sqrt(2), COMPARE_PRECISION);
     if (passed) passed = compareReals(getImagAmpEl(mq, 0),         0, COMPARE_PRECISION);
     if (passed) passed = compareReals(getRealAmpEl(mq, 1),    -1/2.0, COMPARE_PRECISION);
@@ -441,9 +442,9 @@ int test_phaseShift(char testName[200]) {
     
     destroyQubitRegister(mq, env);
 
-    
     // also test MPI version
-    mq = createQubitRegister(4, env);
+    numQubits = 4;
+    mq = createQubitRegister(numQubits, env);
     
     // prepare state (|0> + |1>)/sqrt(2) |111>
     initStateZero(mq);
@@ -1582,7 +1583,7 @@ int test_oneQubitDephase(char testName[200]) {
 }
 
 int test_twoQubitDepolarise(char testName[200]) {
-    printf("NOTE: twoQubitDepolarise test currently assumes GPU version is correct and tests against that version's output\n");
+    if (env.rank==0) printf("NOTE: twoQubitDepolarise test currently assumes GPU version is correct and tests against that version's output\n");
     char filename[200];
     int passed=1;
     int numQubits=3;
@@ -1618,7 +1619,7 @@ int test_twoQubitDepolarise(char testName[200]) {
 }
 
 int test_twoQubitDephase(char testName[200]) {
-    printf("NOTE: twoQubitDephase test currently assumes GPU version is correct and tests against that version's output\n");
+    if (env.rank==0) printf("NOTE: twoQubitDephase test currently assumes GPU version is correct and tests against that version's output\n");
     char filename[200];
     int passed=1;
     int numQubits=3;
