@@ -1522,6 +1522,49 @@ int test_calcPurity(char testName[200]) {
     return passed;
 }
 
+int test_calcTotalProbability(char testName[200]) {
+    int passed=1;
+    int numQubits=3;
+    REAL prob;
+    
+    /* 
+     * state-vector
+     */
+    QubitRegister qureg;
+    qureg = createQubitRegister(numQubits, env);
+    
+    hadamard(qureg, 0);
+    rotateY(qureg, 0, 0.1);
+    rotateZ(qureg, 0, 0.4);
+    controlledRotateY(qureg, 0, 1, 0.9);
+    controlledRotateX(qureg, 1, 2, 1.45);
+    multiControlledPhaseFlip(qureg, (int []) {0,1,2}, 3);
+    controlledRotateAroundAxis(qureg, 1, 0, 0.3, (Vector) {.x=1,.y=2,.z=3});
+    prob = calcTotalProbability(qureg);
+    if (passed) passed = compareReals(prob, 1, COMPARE_PRECISION);
+    
+    destroyQubitRegister(qureg, env);
+    
+    /* 
+     * density matrix
+     */
+    qureg = createDensityQubitRegister(numQubits, env);
+
+    hadamard(qureg, 0);
+    rotateY(qureg, 0, 0.1);
+    rotateZ(qureg, 0, 0.4);
+    controlledRotateY(qureg, 0, 1, 0.9);
+    controlledRotateX(qureg, 1, 2, 1.45); 
+    multiControlledPhaseFlip(qureg, (int []) {0,1,2}, 3);
+    controlledRotateAroundAxis(qureg, 1, 0, 0.3, (Vector) {.x=1,.y=2,.z=3});
+    prob = calcTotalProbability(qureg);
+        
+    if (passed) passed = compareReals(prob, 1, COMPARE_PRECISION);
+    
+    destroyQubitRegister(qureg, env);
+    return passed;
+}
+
 int test_oneQubitDepolarise(char testName[200]) {
     char filename[200];
     int passed=1;
@@ -1654,58 +1697,13 @@ int test_twoQubitDephase(char testName[200]) {
     return passed;
 }
 
-int test_calcTotalProbability(char testName[200]) {
-    int passed=1;
-    int numQubits=3;
-    REAL prob;
-    
-    /* 
-     * state-vector
-     */
-    QubitRegister qureg;
-    qureg = createQubitRegister(numQubits, env);
-    
-    hadamard(qureg, 0);
-    rotateY(qureg, 0, 0.1);
-    rotateZ(qureg, 0, 0.4);
-    controlledRotateY(qureg, 0, 1, 0.9);
-    controlledRotateX(qureg, 1, 2, 1.45);
-    multiControlledPhaseFlip(qureg, (int []) {0,1,2}, 3);
-    controlledRotateAroundAxis(qureg, 1, 0, 0.3, (Vector) {.x=1,.y=2,.z=3});
-    prob = calcTotalProbability(qureg);
-    if (passed) passed = compareReals(prob, 1, COMPARE_PRECISION);
-    
-    destroyQubitRegister(qureg, env);
-    
-    /* 
-     * density matrix
-     */
-    qureg = createDensityQubitRegister(numQubits, env);
 
-    hadamard(qureg, 0);
-    rotateY(qureg, 0, 0.1);
-    rotateZ(qureg, 0, 0.4);
-    controlledRotateY(qureg, 0, 1, 0.9);
-    controlledRotateX(qureg, 1, 2, 1.45); 
-    multiControlledPhaseFlip(qureg, (int []) {0,1,2}, 3);
-    controlledRotateAroundAxis(qureg, 1, 0, 0.3, (Vector) {.x=1,.y=2,.z=3});
-    prob = calcTotalProbability(qureg);
-        
-    if (passed) passed = compareReals(prob, 1, COMPARE_PRECISION);
-    
-    destroyQubitRegister(qureg, env);
-    return passed;
-}
 
 int main (int narg, char** varg) {
     env = initQuESTEnv();
     reportQuESTEnv(env);
 
     int (*tests[NUM_TESTS])(char[200]) = {
-        test_oneQubitDephase,
-        test_oneQubitDepolarise,
-        test_twoQubitDephase,
-        test_twoQubitDepolarise,
         test_controlledNot,
         test_initStateZero,
         test_initStatePlus,
@@ -1740,13 +1738,13 @@ int main (int narg, char** varg) {
         test_addDensityMatrix,
         test_calcPurity,
         test_calcTotalProbability,
+        test_oneQubitDephase,
+        test_oneQubitDepolarise,
+        test_twoQubitDephase,
+        test_twoQubitDepolarise,
     };
 
     char testNames[NUM_TESTS][200] = {
-        "oneQubitDephase",
-        "oneQubitDepolarise",
-        "twoQubitDephase",
-        "twoQubitDepolarise",
         "controlledNot",
         "initStateZero",
         "initStatePlus",
@@ -1781,6 +1779,10 @@ int main (int narg, char** varg) {
         "addDensityMatrix",
         "calcPurity",
         "calcTotalProbability",
+        "oneQubitDephase",
+        "oneQubitDepolarise",
+        "twoQubitDephase",
+        "twoQubitDepolarise",
     };
     int passed=0;
     if (env.rank==0) printf("\nRunning unit tests\n");
