@@ -1,6 +1,8 @@
 # if not already initialised, set num threads and processes
 if [[ -z "${OMP_NUM_THREADS}" ]]; then
     export OMP_NUM_THREADS=3
+fi
+if [[ -z "${MPI_HOSTS}" ]]; then
     export MPI_HOSTS=4
 fi
 
