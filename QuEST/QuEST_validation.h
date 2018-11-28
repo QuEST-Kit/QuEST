@@ -51,12 +51,17 @@ void validateNumAmps(QubitRegister qureg, long long int startInd, long long int 
 
 void validateFileOpened(int opened, const char* caller);
 
-void validateNoise(REAL noise, const char* caller);
-
 void validateProb(REAL prob, const char* caller);
 
 void validateNormProbs(REAL prob1, REAL prob2, const char* caller);
 
+void validateOneQubitDephaseProb(REAL prob, const char* caller);
+
+void validateTwoQubitDephaseProb(REAL prob, const char* caller);
+
+void validateOneQubitDepolProb(REAL prob, const char* caller);
+
+void validateTwoQubitDepolProb(REAL prob, const char* caller);
 
 # ifdef __cplusplus
 }

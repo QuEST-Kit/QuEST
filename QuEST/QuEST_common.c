@@ -25,6 +25,14 @@ extern "C" {
 #endif
 
 
+void ensureIndsIncrease(int* ind1, int* ind2) {
+    if (*ind1 > *ind2) {
+        int copy = *ind1;
+        *ind1 = *ind2;
+        *ind2 = copy;
+    }
+}
+
 REAL getVectorMagnitude(Vector vec) {
     return sqrt(vec.x*vec.x + vec.y*vec.y + vec.z*vec.z);
 }

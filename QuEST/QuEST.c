@@ -624,36 +624,38 @@ REAL calcFidelity(QubitRegister qureg, QubitRegister pureState) {
  * decoherence
  */
 
-void oneQubitDephase(QubitRegister qureg, const int targetQubit, REAL dephase) {
+void applyOneQubitDephaseError(QubitRegister qureg, const int targetQubit, REAL prob) {
     validateDensityMatrQureg(qureg, __func__);
     validateTarget(qureg, targetQubit, __func__);
-    validateNoise(dephase, __func__);
+    validateOneQubitDephaseProb(prob, __func__);
     
-    densmatr_oneQubitDephase(qureg, targetQubit, dephase);
+    densmatr_oneQubitDephase(qureg, targetQubit, 2*prob);
 }
 
-void twoQubitDephase(QubitRegister qureg, const int qubit1, const int qubit2, REAL dephase) {
+void applyTwoQubitDephaseError(QubitRegister qureg, int qubit1, int qubit2, REAL prob) {
     validateDensityMatrQureg(qureg, __func__);
     validateUniqueTargets(qureg, qubit1, qubit2, __func__);
-    validateNoise(dephase, __func__);
+    validateTwoQubitDephaseProb(prob, __func__);
 
-    densmatr_twoQubitDephase(qureg, qubit1, qubit2, dephase);
+    ensureIndsIncrease(&qubit1, &qubit2);
+    densmatr_twoQubitDephase(qureg, qubit1, qubit2, (4*prob)/3);
 }
 
-void oneQubitDepolarise(QubitRegister qureg, const int targetQubit, REAL depolLevel) {
+void applyOneQubitDepolariseError(QubitRegister qureg, const int targetQubit, REAL prob) {
     validateDensityMatrQureg(qureg, __func__);
     validateTarget(qureg, targetQubit, __func__);
-    validateNoise(depolLevel, __func__);
+    validateOneQubitDepolProb(prob, __func__);
     
-    densmatr_oneQubitDepolarise(qureg, targetQubit, depolLevel);
+    densmatr_oneQubitDepolarise(qureg, targetQubit, (4*prob)/3);
 }
 
-void twoQubitDepolarise(QubitRegister qureg, const int qubit1, const int qubit2, REAL depolLevel) {
+void applyTwoQubitDepolariseError(QubitRegister qureg, int qubit1, int qubit2, REAL prob) {
     validateDensityMatrQureg(qureg, __func__);
     validateUniqueTargets(qureg, qubit1, qubit2, __func__);
-    validateNoise(depolLevel, __func__);
+    validateTwoQubitDepolProb(prob, __func__);
     
-    densmatr_twoQubitDepolarise(qureg, qubit1, qubit2, depolLevel);
+    ensureIndsIncrease(&qubit1, &qubit2);
+    densmatr_twoQubitDepolarise(qureg, qubit1, qubit2, (16*prob)/15);
 }
 
 

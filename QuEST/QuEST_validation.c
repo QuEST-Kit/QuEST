@@ -40,9 +40,12 @@ typedef enum {
     E_MISMATCHING_QUREG_TYPES,
     E_DEFINED_ONLY_FOR_STATEVECS,
     E_DEFINED_ONLY_FOR_DENSMATRS,
-    E_INVALID_NOISE,
     E_INVALID_PROB,
-    E_UNNORM_PROBS
+    E_UNNORM_PROBS,
+    E_INVALID_ONE_QUBIT_DEPHASE_PROB,
+    E_INVALID_TWO_QUBIT_DEPHASE_PROB,
+    E_INVALID_ONE_QUBIT_DEPOL_PROB,
+    E_INVALID_TWO_QUBIT_DEPOL_PROB
 } ErrorCode;
 
 static const char* errorMessages[] = {
@@ -68,9 +71,12 @@ static const char* errorMessages[] = {
     [E_MISMATCHING_QUREG_TYPES] = "Registers must both be state-vectors or both be density matrices.",
     [E_DEFINED_ONLY_FOR_STATEVECS] = "Operation valid only for state-vectors.",
     [E_DEFINED_ONLY_FOR_DENSMATRS] = "Operation valid only for density matrices.",
-    [E_INVALID_NOISE] = "Dephasing and depolarising errors must be in [0, 1].",
     [E_INVALID_PROB] = "Probabilities must be in [0, 1].",
-    [E_UNNORM_PROBS] = "Probabilities must sum to ~1."
+    [E_UNNORM_PROBS] = "Probabilities must sum to ~1.",
+    [E_INVALID_ONE_QUBIT_DEPHASE_PROB] = "The probability of a single qubit dephase error cannot exceed 1/2, which maximally mixes.",
+    [E_INVALID_TWO_QUBIT_DEPHASE_PROB] = "The probability of a two-qubit qubit dephase error cannot exceed 3/4, which maximally mixes.",
+    [E_INVALID_ONE_QUBIT_DEPOL_PROB] = "The probability of a single qubit depolarising error cannot exceed 3/4, which maximally mixes.",
+    [E_INVALID_TWO_QUBIT_DEPOL_PROB] = "The probability of a two-qubit depolarising error cannot exceed 15/16, which maximally mixes."
 };
 
 void exitWithError(ErrorCode code, const char* func){
@@ -219,10 +225,6 @@ void validateFileOpened(int found, const char* caller) {
     QuESTAssert(found, E_CANNOT_OPEN_FILE, caller);
 }
 
-void validateNoise(REAL noise, const char* caller) {
-    QuESTAssert(noise >= 0 && noise <= 1, E_INVALID_NOISE, caller);
-}
-
 void validateProb(REAL prob, const char* caller) {
     QuESTAssert(prob >= 0 && prob <= 1, E_INVALID_PROB, caller);
 }
@@ -233,6 +235,26 @@ void validateNormProbs(REAL prob1, REAL prob2, const char* caller) {
     
     REAL sum = prob1 + prob2;
     QuESTAssert(absReal(1 - sum) < REAL_EPS, E_UNNORM_PROBS, caller);
+}
+
+void validateOneQubitDephaseProb(REAL prob, const char* caller) {
+    validateProb(prob, caller);
+    QuESTAssert(prob <= 1/2.0, E_INVALID_ONE_QUBIT_DEPHASE_PROB, caller);
+}
+
+void validateTwoQubitDephaseProb(REAL prob, const char* caller) {
+    validateProb(prob, caller);
+    QuESTAssert(prob <= 3/4.0, E_INVALID_TWO_QUBIT_DEPHASE_PROB, caller);
+}
+
+void validateOneQubitDepolProb(REAL prob, const char* caller) {
+    validateProb(prob, caller);
+    QuESTAssert(prob <= 3/4.0, E_INVALID_ONE_QUBIT_DEPOL_PROB, caller);
+}
+
+void validateTwoQubitDepolProb(REAL prob, const char* caller) {
+    validateProb(prob, caller);
+    QuESTAssert(prob <= 15/16.0, E_INVALID_TWO_QUBIT_DEPOL_PROB, caller);
 }
 
 

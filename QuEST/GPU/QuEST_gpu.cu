@@ -2012,6 +2012,9 @@ __global__ void densmatr_oneQubitDephaseKernel(
 
 void densmatr_oneQubitDephase(QubitRegister qureg, const int targetQubit, REAL dephase) {
     
+    if (dephase == 0)
+        return;
+    
     long long int numAmpsToVisit = qureg.numAmpsPerChunk/4;
     
     int rowQubit = targetQubit + qureg.numQubitsRepresented;
@@ -2062,15 +2065,11 @@ __global__ void densmatr_twoQubitDephaseKernel(
 
 // @TODO is separating these 12 amplitudes really faster than letting every 16th base modify 12 elems?
 void densmatr_twoQubitDephase(QubitRegister qureg, int qubit1, int qubit2, REAL dephase) {
+    
     if (dephase == 0)
         return;
     
-    // ensure qubit2 is further left than qubit1
-    if (qubit1 > qubit2)  {
-        int tmp = qubit1;
-        qubit1 = qubit2;
-        qubit2 = tmp;
-    }
+    // assumes qubit2 > qubit1
     
     int rowQubit1 = qubit1 + qureg.numQubitsRepresented;
     int rowQubit2 = qubit2 + qureg.numQubitsRepresented;
@@ -2191,12 +2190,7 @@ void densmatr_twoQubitDepolarise(QubitRegister qureg, int qubit1, int qubit2, RE
     if (depolLevel == 0)
         return;
     
-    // ensure qubit2 is further left than qubit1
-    if (qubit1 > qubit2)  {
-        int tmp = qubit1;
-        qubit1 = qubit2;
-        qubit2 = tmp;
-    }
+    // assumes qubit2 > qubit1
     
     densmatr_twoQubitDephase(qureg, qubit1, qubit2, depolLevel);
     

@@ -21,6 +21,8 @@ Complex getConjugateScalar(Complex scalar);
 
 ComplexMatrix2 getConjugateMatrix(ComplexMatrix2 matr);
 
+void ensureIndsIncrease(int* ind1, int* ind2);
+
 void getComplexPairFromRotation(REAL angle, Vector axis, Complex* alpha, Complex* beta);
 
 void getZYZRotAnglesFromComplexPair(Complex alpha, Complex beta, REAL* rz2, REAL* ry, REAL* rz1);
