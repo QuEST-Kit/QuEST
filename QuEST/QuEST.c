@@ -20,6 +20,11 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
+    
+    
+/*
+ * state-vector management
+ */
 
 QubitRegister createQubitRegister(int numQubits, QuESTEnv env) {
     validateCreateNumQubits(numQubits, __func__);
@@ -54,6 +59,11 @@ void destroyQubitRegister(QubitRegister qureg, QuESTEnv env) {
     qasm_free(qureg);
 }
 
+
+/*
+ * QASM
+ */
+
 void startRecordingQASM(QubitRegister qureg) {
     qasm_startRecording(qureg);
 }
@@ -74,6 +84,11 @@ void writeRecordedQASMToFile(QubitRegister qureg, char* filename) {
     int success = qasm_writeRecordedToFile(qureg, filename);
     validateFileOpened(success, __func__);
 }
+
+
+/*
+ * state initialisation
+ */
 
 void initStateZero(QubitRegister qureg) {
     statevec_initStateZero(qureg); // valid for both statevec and density matrices
@@ -102,6 +117,18 @@ void initClassicalState(QubitRegister qureg, long long int stateInd) {
     
 }
 
+void initPureState(QubitRegister qureg, QubitRegister pure) {
+    validateSecondQuregStateVec(pure, __func__);
+    validateMatchingQuregDims(qureg, pure, __func__);
+
+    if (qureg.isDensityMatrix)
+        densmatr_initPureState(qureg, pure);
+    else
+        statevec_cloneQubitRegister(qureg, pure);
+    
+    qasm_recordComment(qureg, "The register was initialised by an undisclosed given pure state.");
+}
+
 void initStateFromAmps(QubitRegister qureg, long long int startInd, REAL* reals, REAL* imags, long long int numAmps) {
     validateStateVecQureg(qureg, __func__);
     validateNumAmps(qureg, startInd, numAmps, __func__);
@@ -110,6 +137,18 @@ void initStateFromAmps(QubitRegister qureg, long long int startInd, REAL* reals,
     
     qasm_recordComment(qureg, "(Initialising state from amplitude arrays not encoded)");
 }
+
+void cloneQubitRegister(QubitRegister targetQureg, QubitRegister copyQureg) {
+    validateMatchingQuregTypes(targetQureg, copyQureg, __func__);
+    validateMatchingQuregDims(targetQureg, copyQureg, __func__);
+    
+    statevec_cloneQubitRegister(targetQureg, copyQureg);
+}
+
+
+/*
+ * unitary gates
+ */
 
 void hadamard(QubitRegister qureg, const int targetQubit) {
     validateTarget(qureg, targetQubit, __func__);
@@ -427,6 +466,10 @@ void controlledRotateAroundAxis(QubitRegister qureg, const int controlQubit, con
     qasm_recordControlledAxisRotation(qureg, angle, axis, controlQubit, targetQubit);
 }
 
+/*
+ * register attributes
+ */
+
 int getNumQubits(QubitRegister qureg) {
     return qureg.numQubitsRepresented;
 }
@@ -470,65 +513,10 @@ Complex getDensityAmplitude(QubitRegister qureg, long long int row, long long in
     return amp;
 }
 
-REAL calcTotalProbability(QubitRegister qureg) {
-    if (qureg.isDensityMatrix)  
-            return densmatr_calcTotalProbability(qureg);
-        else
-            return statevec_calcTotalProbability(qureg);
-}
 
-Complex calcInnerProduct(QubitRegister bra, QubitRegister ket) {
-    validateStateVecQureg(bra, __func__);
-    validateStateVecQureg(ket, __func__);
-    validateMatchingQuregDims(bra, ket,  __func__);
-    
-    return statevec_calcInnerProduct(bra, ket);
-}
-
-REAL findProbabilityOfOutcome(QubitRegister qureg, const int measureQubit, int outcome) {
-    validateTarget(qureg, measureQubit, __func__);
-    validateOutcome(outcome, __func__);
-    
-    if (qureg.isDensityMatrix)
-        return densmatr_findProbabilityOfOutcome(qureg, measureQubit, outcome);
-    else
-        return statevec_findProbabilityOfOutcome(qureg, measureQubit, outcome);
-}
-
-void cloneQubitRegister(QubitRegister targetQureg, QubitRegister copyQureg) {
-    validateMatchingQuregTypes(targetQureg, copyQureg, __func__);
-    validateMatchingQuregDims(targetQureg, copyQureg, __func__);
-    
-    statevec_cloneQubitRegister(targetQureg, copyQureg);
-}
-
-REAL calcPurity(QubitRegister qureg) {
-    validateDensityMatrQureg(qureg, __func__);
-    
-    return densmatr_calcPurity(qureg);
-}
-
-REAL calcFidelity(QubitRegister qureg, QubitRegister pureState) {
-    validateSecondQuregStateVec(pureState, __func__);
-    validateMatchingQuregDims(qureg, pureState, __func__);
-    
-    if (qureg.isDensityMatrix)
-        return densmatr_calcFidelity(qureg, pureState);
-    else
-        return statevec_calcFidelity(qureg, pureState);
-}
-
-void initPureState(QubitRegister qureg, QubitRegister pure) {
-    validateSecondQuregStateVec(pure, __func__);
-    validateMatchingQuregDims(qureg, pure, __func__);
-
-    if (qureg.isDensityMatrix)
-        densmatr_initPureState(qureg, pure);
-    else
-        statevec_cloneQubitRegister(qureg, pure);
-    
-    qasm_recordComment(qureg, "The register was initialised by an undisclosed given pure state.");
-}
+/*
+ * non-unitary actions
+ */
 
 REAL collapseToOutcome(QubitRegister qureg, const int measureQubit, int outcome) {
     validateTarget(qureg, measureQubit, __func__);
@@ -586,8 +574,55 @@ void addDensityMatrix(QubitRegister combineQureg, REAL otherProb, QubitRegister 
 }
 
 
+/*
+ * calculations
+ */
+
+REAL calcTotalProbability(QubitRegister qureg) {
+    if (qureg.isDensityMatrix)  
+            return densmatr_calcTotalProbability(qureg);
+        else
+            return statevec_calcTotalProbability(qureg);
+}
+
+Complex calcInnerProduct(QubitRegister bra, QubitRegister ket) {
+    validateStateVecQureg(bra, __func__);
+    validateStateVecQureg(ket, __func__);
+    validateMatchingQuregDims(bra, ket,  __func__);
+    
+    return statevec_calcInnerProduct(bra, ket);
+}
+
+REAL findProbabilityOfOutcome(QubitRegister qureg, const int measureQubit, int outcome) {
+    validateTarget(qureg, measureQubit, __func__);
+    validateOutcome(outcome, __func__);
+    
+    if (qureg.isDensityMatrix)
+        return densmatr_findProbabilityOfOutcome(qureg, measureQubit, outcome);
+    else
+        return statevec_findProbabilityOfOutcome(qureg, measureQubit, outcome);
+}
+
+REAL calcPurity(QubitRegister qureg) {
+    validateDensityMatrQureg(qureg, __func__);
+    
+    return densmatr_calcPurity(qureg);
+}
+
+REAL calcFidelity(QubitRegister qureg, QubitRegister pureState) {
+    validateSecondQuregStateVec(pureState, __func__);
+    validateMatchingQuregDims(qureg, pureState, __func__);
+    
+    if (qureg.isDensityMatrix)
+        return densmatr_calcFidelity(qureg, pureState);
+    else
+        return statevec_calcFidelity(qureg, pureState);
+}
 
 
+/*
+ * decoherence
+ */
 
 void oneQubitDephase(QubitRegister qureg, const int targetQubit, REAL dephase) {
     validateDensityMatrQureg(qureg, __func__);
@@ -622,13 +657,9 @@ void twoQubitDepolarise(QubitRegister qureg, const int qubit1, const int qubit2,
 }
 
 
-
-
-
-
-
-
-/* debug and unit-testing functions */
+/*
+ * debug
+ */
 
 int compareStates(QubitRegister qureg1, QubitRegister qureg2, REAL precision) {
     return statevec_compareStates(qureg1, qureg2, precision);
