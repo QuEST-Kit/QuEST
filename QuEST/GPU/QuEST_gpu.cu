@@ -95,7 +95,7 @@ void densmatr_initPureState(QubitRegister targetQureg, QubitRegister copyQureg)
         copyQureg.deviceStateVec.real,   copyQureg.deviceStateVec.imag);
 }
 
-__global__ void densmatr_initStatePlusKernel(long long int stateVecSize, REAL probFactor, REAL *stateVecReal, REAL *stateVecImag){
+__global__ void densmatr_initPlusStateKernel(long long int stateVecSize, REAL probFactor, REAL *stateVecReal, REAL *stateVecImag){
     long long int index;
 
     index = blockIdx.x*blockDim.x + threadIdx.x;
@@ -105,13 +105,13 @@ __global__ void densmatr_initStatePlusKernel(long long int stateVecSize, REAL pr
     stateVecImag[index] = 0.0;
 }
 
-void densmatr_initStatePlus(QubitRegister qureg)
+void densmatr_initPlusState(QubitRegister qureg)
 {
     REAL probFactor = 1.0/((REAL) (1LL << qureg.numQubitsRepresented));
     int threadsPerCUDABlock, CUDABlocks;
     threadsPerCUDABlock = 128;
     CUDABlocks = ceil((REAL)(qureg.numAmpsPerChunk)/threadsPerCUDABlock);
-    densmatr_initStatePlusKernel<<<CUDABlocks, threadsPerCUDABlock>>>(
+    densmatr_initPlusStateKernel<<<CUDABlocks, threadsPerCUDABlock>>>(
         qureg.numAmpsPerChunk, 
         probFactor,
         qureg.deviceStateVec.real, 
@@ -344,7 +344,7 @@ REAL statevec_getImagAmpEl(QubitRegister qureg, long long int index){
     return el;
 }
 
-__global__ void statevec_initStateZeroKernel(long long int stateVecSize, REAL *stateVecReal, REAL *stateVecImag){
+__global__ void statevec_initZeroStateKernel(long long int stateVecSize, REAL *stateVecReal, REAL *stateVecImag){
     long long int index;
 
     // initialise the state to |0000..0000>
@@ -360,18 +360,18 @@ __global__ void statevec_initStateZeroKernel(long long int stateVecSize, REAL *s
     }
 }
 
-void statevec_initStateZero(QubitRegister qureg)
+void statevec_initZeroState(QubitRegister qureg)
 {
     int threadsPerCUDABlock, CUDABlocks;
     threadsPerCUDABlock = 128;
     CUDABlocks = ceil((REAL)(qureg.numAmpsPerChunk)/threadsPerCUDABlock);
-    statevec_initStateZeroKernel<<<CUDABlocks, threadsPerCUDABlock>>>(
+    statevec_initZeroStateKernel<<<CUDABlocks, threadsPerCUDABlock>>>(
         qureg.numAmpsPerChunk, 
         qureg.deviceStateVec.real, 
         qureg.deviceStateVec.imag);
 }
 
-__global__ void statevec_initStatePlusKernel(long long int stateVecSize, REAL *stateVecReal, REAL *stateVecImag){
+__global__ void statevec_initPlusStateKernel(long long int stateVecSize, REAL *stateVecReal, REAL *stateVecImag){
     long long int index;
 
     index = blockIdx.x*blockDim.x + threadIdx.x;
@@ -382,12 +382,12 @@ __global__ void statevec_initStatePlusKernel(long long int stateVecSize, REAL *s
     stateVecImag[index] = 0.0;
 }
 
-void statevec_initStatePlus(QubitRegister qureg)
+void statevec_initPlusState(QubitRegister qureg)
 {
     int threadsPerCUDABlock, CUDABlocks;
     threadsPerCUDABlock = 128;
     CUDABlocks = ceil((REAL)(qureg.numAmpsPerChunk)/threadsPerCUDABlock);
-    statevec_initStatePlusKernel<<<CUDABlocks, threadsPerCUDABlock>>>(
+    statevec_initPlusStateKernel<<<CUDABlocks, threadsPerCUDABlock>>>(
         qureg.numAmpsPerChunk, 
         qureg.deviceStateVec.real, 
         qureg.deviceStateVec.imag);

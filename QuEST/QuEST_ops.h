@@ -16,7 +16,7 @@ extern "C" {
 
 /* operations upon density matrices */
 
-void densmatr_initStatePlus(QubitRegister targetQureg);
+void densmatr_initPlusState(QubitRegister targetQureg);
 
 void densmatr_initClassicalState(QubitRegister qureg, long long int stateInd);
 
@@ -58,9 +58,9 @@ void statevec_createQubitRegister(QubitRegister *qureg, int numQubits, QuESTEnv 
 
 void statevec_destroyQubitRegister(QubitRegister qureg, QuESTEnv env);
 
-void statevec_initStateZero(QubitRegister qureg);
+void statevec_initZeroState(QubitRegister qureg);
 
-void statevec_initStatePlus(QubitRegister qureg);
+void statevec_initPlusState(QubitRegister qureg);
 
 void statevec_initStateDebug(QubitRegister qureg);
 

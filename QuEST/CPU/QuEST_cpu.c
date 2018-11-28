@@ -930,7 +930,7 @@ void densmatr_initClassicalState (QubitRegister qureg, long long int stateInd)
 }
 
 
-void densmatr_initStatePlus (QubitRegister qureg)
+void densmatr_initPlusState (QubitRegister qureg)
 {
     // |+><+| = sum_i 1/sqrt(2^N) |i> 1/sqrt(2^N) <j| = sum_ij 1/2^N |i><j|
     long long int dim = (1LL << qureg.numQubitsRepresented);
@@ -1129,7 +1129,7 @@ void statevec_getEnvironmentString(QuESTEnv env, QubitRegister qureg, char str[2
     sprintf(str, "%dqubits_CPU_%dranksx%dthreads", qureg.numQubitsInStateVec, env.numRanks, numThreads);
 }
 
-void statevec_initStateZero (QubitRegister qureg)
+void statevec_initZeroState (QubitRegister qureg)
 {
     long long int stateVecSize;
     long long int index;
@@ -1165,7 +1165,7 @@ void statevec_initStateZero (QubitRegister qureg)
     }
 }
 
-void statevec_initStatePlus (QubitRegister qureg)
+void statevec_initPlusState (QubitRegister qureg)
 {
     long long int chunkSize, stateVecSize;
     long long int index;

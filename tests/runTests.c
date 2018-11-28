@@ -36,7 +36,7 @@ int compareReals(REAL a, REAL b, REAL precision){
     else return 1;
 }
 
-int test_initStateZero(char testName[200]){
+int test_initZeroState(char testName[200]){
     char filename[200];
     int passed=1;
     int count=1;
@@ -47,7 +47,7 @@ int test_initStateZero(char testName[200]){
     mq = createQubitRegister(numQubits, env);
     mqVerif = createQubitRegister(numQubits, env);
 
-    initStateZero(mq);
+    initZeroState(mq);
 
     sprintf(filename, "%s%s%d.out", PATH_TO_TESTS, testName, count++);  
     initStateFromSingleFile(&mqVerif, filename, env);
@@ -59,7 +59,7 @@ int test_initStateZero(char testName[200]){
     return passed;
 }
 
-int test_initStatePlus(char testName[200]){
+int test_initPlusState(char testName[200]){
     char filename[200];
     int passed=1;
     int count=1;
@@ -74,14 +74,14 @@ int test_initStatePlus(char testName[200]){
     mq = createQubitRegister(numQubits, env);
     mqVerif = createQubitRegister(numQubits, env);
 
-    initStatePlus(mq);
+    initPlusState(mq);
 
     sprintf(filename, "%s%s%d.out", PATH_TO_TESTS, testName, count++);  
     initStateFromSingleFile(&mqVerif, filename, env);
     if (passed) passed = compareStates(mq, mqVerif, COMPARE_PRECISION);
     
     // |+> state has every qubit 50% prob in 0
-    initStatePlus(mq);
+    initPlusState(mq);
     for (int q=0; q < numQubits; q++) {
         REAL prob = calcProbOfOutcome(mq, q, 0);
         if (passed) passed = compareReals(prob, 0.5, COMPARE_PRECISION);
@@ -96,7 +96,7 @@ int test_initStatePlus(char testName[200]){
     QubitRegister dens;
     dens = createDensityQubitRegister(numQubits, env);
     
-    initStatePlus(dens);
+    initPlusState(dens);
     
     for (int q=0; q < numQubits; q++) {
         REAL prob = calcProbOfOutcome(dens, q, 0);            
@@ -168,7 +168,7 @@ int test_initPureState(char testName[200]) {
     mq = createQubitRegister(numQubits, env);
     mqVerif = createQubitRegister(numQubits, env);
     
-    initStateZero(mq);
+    initZeroState(mq);
     initStateDebug(mqVerif);
     
     initPureState(mq, mqVerif);
@@ -185,8 +185,8 @@ int test_initPureState(char testName[200]) {
     vec = createQubitRegister(numQubits, env);
     dens = createDensityQubitRegister(numQubits, env);
 
-    initStatePlus(vec);
-    initStateZero(dens);
+    initPlusState(vec);
+    initZeroState(dens);
     
     // @TODO this is causing error on 1-process MPI, due to call to copyVecIntoMatrixPairState
     // set dens = |+><+|
@@ -222,7 +222,7 @@ int test_initStateFromAmps(char testName[200]) {
     }
     
     // test writing only some of statevec
-    initStateZero(qureg);
+    initZeroState(qureg);
     initStateFromAmps(qureg, 2, reals+2, imags+2, 4); // write {3,4,5,6} to inds {2,3,4,5}
     for (long long int i=0; i < 8; i++) {
         
@@ -427,7 +427,7 @@ int test_phaseShift(char testName[200]) {
 
     // prepare |00>(|0> + |1>)/sqrt(2)
     mq = createQubitRegister(numQubits, env);
-    initStateZero(mq);
+    initZeroState(mq);
     hadamard(mq, 0);
     
     // enter state |00> (|0> - 1/sqrt(2) (1 + i) |1>)/sqrt(2)
@@ -447,7 +447,7 @@ int test_phaseShift(char testName[200]) {
     mq = createQubitRegister(numQubits, env);
     
     // prepare state (|0> + |1>)/sqrt(2) |111>
-    initStateZero(mq);
+    initZeroState(mq);
     for (int i=0; i < 3; i++)
         sigmaX(mq, i);
     hadamard(mq, 3);
@@ -479,7 +479,7 @@ int test_controlledPhaseShift(char testName[200]) {
     mq = createQubitRegister(4, env);
     
     // prepare state (|0> + |1>)/sqrt(2) |010>
-    initStateZero(mq);
+    initZeroState(mq);
     sigmaX(mq, 1);
     hadamard(mq, 3);
     
@@ -515,7 +515,7 @@ int test_multiControlledPhaseShift(char testName[200]) {
     mq = createQubitRegister(4, env);
     
     // prepare state (|0> + |1>)/sqrt(2) |010>
-    initStateZero(mq);
+    initZeroState(mq);
     sigmaX(mq, 1);
     hadamard(mq, 3);
     
@@ -629,13 +629,13 @@ int test_multiControlledPhaseFlip(char testName[200]){
         int i;
         
         // prepare state |111>(|0> - |1>)/sqrt(2)
-        initStateZero(mqVerif);
+        initZeroState(mqVerif);
         for (i=0; i < 4; i++)
             sigmaX(mqVerif, i);
         hadamard(mqVerif, 3);
     
         // prepare state |111>(|0> + |1>)/sqrt(2)
-        initStateZero(mq);
+        initZeroState(mq);
         for (i=0; i < 3; i++)
             sigmaX(mq, i);
         hadamard(mq, 3);
@@ -703,7 +703,7 @@ int test_compactUnitary(char testName[200]){
     // check for normalisation
     numQubits=25;
     mq = createQubitRegister(numQubits, env);
-    initStatePlus(mq);
+    initPlusState(mq);
     for (int i=0; i<numQubits; i++){
         rotQubit=i;
         compactUnitary(mq, rotQubit, alpha, beta);
@@ -773,7 +773,7 @@ int test_unitary(char testName[200]){
     // check for normalisation
     numQubits = 25;
     mq = createQubitRegister(numQubits, env);
-    initStatePlus(mq);
+    initPlusState(mq);
     for (int i=0; i<numQubits; i++){
         rotQubit=i;
         unitary(mq, rotQubit, uDagger);
@@ -978,7 +978,7 @@ int test_calcProbOfOutcome(char testName[200]){
     mq = createQubitRegister(numQubits, env);
 
     // test qubit = |0> 
-    initStateZero(mq);
+    initZeroState(mq);
     for (qubit=0; qubit<numQubits; qubit++){
         outcome = calcProbOfOutcome(mq, qubit, 0);
         if (passed) passed = compareReals(1, outcome, COMPARE_PRECISION);
@@ -999,7 +999,7 @@ int test_calcProbOfOutcome(char testName[200]){
 
     // test qubit = |+> 
     for (qubit=0; qubit<numQubits; qubit++){
-        initStatePlus(mq);
+        initPlusState(mq);
         outcome = calcProbOfOutcome(mq, qubit, 0);
         if (passed) passed = compareReals(0.5, outcome, COMPARE_PRECISION);
 
@@ -1036,15 +1036,15 @@ int test_collapseToOutcome(char testName[200]){
 
     // test qubit = |0> 
     for (qubit=0; qubit<numQubits; qubit++){
-        initStateZero(mq);
-        initStateZero(mqVerif);
+        initZeroState(mq);
+        initZeroState(mqVerif);
         prob = collapseToOutcome(mq, qubit, 0);
         if (passed) passed = compareReals(1, prob, COMPARE_PRECISION);
         if (passed) passed = compareStates(mq, mqVerif, COMPARE_PRECISION);
 
         /* uncomment to test error is thrown
-           initStateZero(&mq);
-           initStateZero(&mqVerif);
+           initZeroState(&mq);
+           initZeroState(&mqVerif);
            prob = collapseToOutcome(mq, qubit, 1);
            if (passed) passed = compareReals(0, prob, COMPARE_PRECISION);
            if (passed) passed = compareStates(mq, mqVerif, COMPARE_PRECISION);
@@ -1070,13 +1070,13 @@ int test_collapseToOutcome(char testName[200]){
 
     // test qubit = |+> 
     for (qubit=0; qubit<numQubits; qubit++){
-        initStatePlus(mq);
+        initPlusState(mq);
         initStateOfSingleQubit(&mqVerif, qubit, 0);
         prob = collapseToOutcome(mq, qubit, 0);
         if (passed) passed = compareReals(0.5, prob, COMPARE_PRECISION);
         if (passed) passed = compareStates(mq, mqVerif, COMPARE_PRECISION);
 
-        initStatePlus(mq);
+        initPlusState(mq);
         initStateOfSingleQubit(&mqVerif, qubit, 1);
         prob = collapseToOutcome(mq, qubit, 1);
         if (passed) passed = compareReals(0.5, prob, COMPARE_PRECISION);
@@ -1095,17 +1095,17 @@ int test_collapseToOutcome(char testName[200]){
     
     // test pure state collapse correctly
     
-    initStateZero(regVerif); // make |+...+>|0>
+    initZeroState(regVerif); // make |+...+>|0>
     for (qubit=1; qubit<numQubits; qubit++)
         hadamard(regVerif,qubit);
     
-    initStatePlus(reg); // make |+...+>|+>
+    initPlusState(reg); // make |+...+>|+>
     collapseToOutcome(reg, 0, 0); // collapse to |+...+>|0>
     if (passed) passed = compareStates(reg, regVerif, COMPARE_PRECISION);
     
     // test mixtures of orthogonal pure states collapse correctly (to a pure state)
     
-    initStateZero(reg); // |0...0>
+    initZeroState(reg); // |0...0>
     initClassicalState(regVerif, (1<<numQubits)-1); // |1...1>
     addDensityMatrix(reg, .5, regVerif); // .5 |0><0| + .5 |1><1|
     collapseToOutcome(reg, 0, 1); // collapse to |1...1><1...1|
@@ -1117,8 +1117,8 @@ int test_collapseToOutcome(char testName[200]){
     // test mixed states of non-orthogonal pure states collapse correctly
     
     // ... when measurement does nothing ...
-    initStateZero(reg); // |00>|0>
-    initStateZero(regVerif);
+    initZeroState(reg); // |00>|0>
+    initZeroState(regVerif);
     hadamard(regVerif,1);
     hadamard(regVerif,2); // |++>|0>
     addDensityMatrix(reg, 1-0.3, regVerif); // 0.3|000><000| + 0.7|++0><++0|
@@ -1128,8 +1128,8 @@ int test_collapseToOutcome(char testName[200]){
     if (passed) passed = (calcPurity(reg) < 1.0); // we should still be mixed
     
     // ... when measurement kills a mixture and collapses a superposition (here producing a pure state)
-    initStateZero(reg);      // |000><000|
-    initStatePlus(regVerif); // |+++><+++|
+    initZeroState(reg);      // |000><000|
+    initPlusState(regVerif); // |+++><+++|
     addDensityMatrix(reg, 1-0.4, regVerif); // 0.4 |000><000| + 0.6 |+++><+++|
     collapseToOutcome(reg, 0, 1); // |++1><++1|
     initClassicalState(regVerif,1); hadamard(regVerif,1); hadamard(regVerif,2); // |++1><++1|
@@ -1138,7 +1138,7 @@ int test_collapseToOutcome(char testName[200]){
     
     // ... when measurement collapses superposition but preserves a mixture (pure states are orthogonal)
 
-    initStatePlus(reg); // |+++><+++|
+    initPlusState(reg); // |+++><+++|
     initClassicalState(regVerif, (1<<numQubits)-1); // |111><111|
     addDensityMatrix(reg, 1-0.1, regVerif); // 0.1 |+++><+++| + 0.9 |111><111|
     collapseToOutcome(reg, 0, 1); // 0.1 |++1><++1| + 0.9 |111><111|
@@ -1164,8 +1164,8 @@ int test_measure(char testName[200]){
 
     // test qubit = |0> 
     for (qubit=0; qubit<numQubits; qubit++){
-        initStateZero(mq);
-        initStateZero(mqVerif);
+        initZeroState(mq);
+        initZeroState(mqVerif);
         outcome = measure(mq, qubit);
         if (passed) passed = (outcome==0);
         if (passed) passed = compareStates(mq, mqVerif, COMPARE_PRECISION);
@@ -1190,7 +1190,7 @@ int test_measure(char testName[200]){
         if (env.rank==0) printf("  %d trials: measure qubit %d when in state |+>:\n", nTrials, qubit);
         if (env.rank==0) printf("    value of qubit = [");
         for (int i=0; i<nTrials; i++){
-            initStatePlus(mq);
+            initPlusState(mq);
             outcome = measure(mq, qubit);
             if (env.rank==0) printf(" %d", outcome);
         }
@@ -1216,8 +1216,8 @@ int test_measureWithStats(char testName[200]){
 
     // test qubit = |0> 
     for (qubit=0; qubit<numQubits; qubit++){
-        initStateZero(mq);
-        initStateZero(mqVerif);
+        initZeroState(mq);
+        initZeroState(mqVerif);
         prob=0;
         outcome = measureWithStats(mq, qubit, &prob);
         if (passed) passed = (outcome==0);
@@ -1237,7 +1237,7 @@ int test_measureWithStats(char testName[200]){
 
     // test qubit = |+> 
     for (qubit=0; qubit<numQubits; qubit++){
-        initStatePlus(mq);
+        initPlusState(mq);
         prob=0;
         outcome = measureWithStats(mq, qubit, &prob);
         if (passed) passed = compareReals(prob, 0.5, COMPARE_PRECISION);
@@ -1324,8 +1324,8 @@ int test_calcInnerProduct(char testName[200]) {
     Complex prod;
     
     // when states are equal, <s|s> = 1
-    initStatePlus(bra);
-    initStatePlus(ket);
+    initPlusState(bra);
+    initPlusState(ket);
     prod = calcInnerProduct(bra, ket);
     if (passed) passed = compareReals(prod.real, 1, COMPARE_PRECISION);
     if (passed) passed = compareReals(prod.imag, 0, COMPARE_PRECISION);
@@ -1338,15 +1338,15 @@ int test_calcInnerProduct(char testName[200]) {
     if (passed) passed = compareReals(prod.imag, 0, COMPARE_PRECISION);
     
     // <000|+++> = 1/sqrt(2)^3
-    initStateZero(bra);
-    initStatePlus(ket);
+    initZeroState(bra);
+    initPlusState(ket);
     prod = calcInnerProduct(bra, ket);
     if (passed) passed = compareReals(prod.real, pow(1/sqrt(2),3), COMPARE_PRECISION);
     if (passed) passed = compareReals(prod.imag, 0, COMPARE_PRECISION);
     
     // test imag component is populated
     initClassicalState(bra, 1);         // <001|
-    initStateZero(ket);                 // |000>
+    initZeroState(ket);                 // |000>
     hadamard(ket, 0);                   // |00+>
     phaseShift(ket, 0, pi * 5/4.0 );    // |a> = |00> (1/sqrt(2) |0> - 1/2 (1 + i) |1>)
     prod = calcInnerProduct(bra, ket);  // <001|a> = - 1/2 (1 + i)
@@ -1355,7 +1355,7 @@ int test_calcInnerProduct(char testName[200]) {
     
     // test bra has complex conjugated amps
     initClassicalState(ket, 1);         // |001>
-    initStateZero(bra);                 // <000|
+    initZeroState(bra);                 // <000|
     hadamard(bra, 0);                   // <00+|
     phaseShift(bra, 0, pi * 5/4.0 );    // <a| = <00| (1/sqrt(2) <0| + 1/2 (i - 1) <1|)
     prod = calcInnerProduct(bra, ket);  // <a|001> = 1/2 (i - 1)
@@ -1381,8 +1381,8 @@ int test_calcFidelity(char testName[200]) {
     QubitRegister otherPure;
     otherPure = createQubitRegister(numQubits, env);
     
-    initStateZero(pure);
-    initStatePlus(otherPure); // <0|+> = 1/sqrt(2^n)
+    initZeroState(pure);
+    initPlusState(otherPure); // <0|+> = 1/sqrt(2^n)
     fid = calcFidelity(otherPure, pure); // |<0|+>|^2 = 1/2^n
     if (passed) passed = compareReals(fid, 1.0/pow(2.0,numQubits), COMPARE_PRECISION);
     
@@ -1395,28 +1395,28 @@ int test_calcFidelity(char testName[200]) {
     mixed = createDensityQubitRegister(numQubits, env);
     
     // <0|0><0|0> = 1
-    initStateZero(pure);
-    initStateZero(mixed);
+    initZeroState(pure);
+    initZeroState(mixed);
     fid = calcFidelity(mixed, pure); 
     if (passed) passed = compareReals(fid, 1.0, COMPARE_PRECISION);
     
     // <0|0...1><0...1|0> = 0
-    initStateZero(pure);
+    initZeroState(pure);
     initClassicalState(mixed, 1);
     fid = calcFidelity(mixed, pure); 
     if (passed) passed = compareReals(fid, 0.0, COMPARE_PRECISION);
     
     // <111...|+><+|111...> = 1/2^n
     initClassicalState(pure, (1<<numQubits)-1);
-    initStatePlus(mixed);
+    initPlusState(mixed);
     fid = calcFidelity(mixed, pure);
     if (passed) passed = compareReals(fid, 1/(REAL)(1<<numQubits), COMPARE_PRECISION);
     
     // <0| .2 |0><0| + .8 |..1><..1| |0> = .2
     QubitRegister otherMixed;
     otherMixed = createDensityQubitRegister(numQubits, env);
-    initStateZero(pure);
-    initStateZero(mixed);
+    initZeroState(pure);
+    initZeroState(mixed);
     initClassicalState(otherMixed, 1);
     addDensityMatrix(mixed, 0.8, otherMixed); // .2 |0><0| + .8 |..1><..1|
     fid = calcFidelity(mixed, pure); 
@@ -1441,7 +1441,7 @@ int test_addDensityMatrix(char testName[200]) {
     
     // prob_0( p1 |0...><0...| + (1-p1) |1...><1...| ) = p1
     REAL p1 = 0.3;
-    initStateZero(reg1);
+    initZeroState(reg1);
     initClassicalState(reg2, 1);
     addDensityMatrix(reg1, 1-p1, reg2);
     prob = calcProbOfOutcome(reg1, 0, 0);
@@ -1450,7 +1450,7 @@ int test_addDensityMatrix(char testName[200]) {
     // prob_0( p2 {p1 |0...><0...| + (1-p1) |1...><1...|} + (1-p2)|+><+| ) 
     // = p2 p1 + (1-p2) / sqrt(2)
     REAL p2 = 0.7;
-    initStatePlus(reg2);
+    initPlusState(reg2);
     addDensityMatrix(reg1, 1-p2, reg2);
     prob = calcProbOfOutcome(reg1, 0, 0);
     REAL trueProb = p2*p1 + (1-p2)*0.5;
@@ -1470,7 +1470,7 @@ int test_calcPurity(char testName[200]) {
     qureg = createDensityQubitRegister(numQubits, env);
     
     // pure states are pure
-    initStatePlus(qureg);
+    initPlusState(qureg);
     purity = calcPurity(qureg);
     if (passed) passed = compareReals(purity, 1, COMPARE_PRECISION);
     
@@ -1483,8 +1483,8 @@ int test_calcPurity(char testName[200]) {
     otherQureg = createDensityQubitRegister(numQubits, env);
     
     // a|+><+| + b|+><+| = (a+b) |+><+| (pure)
-    initStatePlus(qureg);
-    initStatePlus(otherQureg);
+    initPlusState(qureg);
+    initPlusState(otherQureg);
     addDensityMatrix(qureg, 0.5, otherQureg);
     purity = calcPurity(qureg);
     if (passed) passed = compareReals(purity, 1, COMPARE_PRECISION);
@@ -1508,8 +1508,8 @@ int test_calcPurity(char testName[200]) {
      *           = p1^2 + (1-p1)^2 + 2p1(1-p1)|c|^2
      *           = d p1^2 - d p1 + 1,   where d = 2(1-|c|^2)
     */ 
-    initStateZero(qureg);       // |0> |0...>
-    initStateZero(otherQureg);  
+    initZeroState(qureg);       // |0> |0...>
+    initZeroState(otherQureg);  
     hadamard(otherQureg, 0);    // 1/sqrt(2)(|0> + |1>) |0...>
     
     // c = 1/sqrt(2), d = 2(1-1/2) = 1, Tr(rho^2) = p1^2 - p1 + 1
@@ -1705,8 +1705,8 @@ int main (int narg, char** varg) {
 
     int (*tests[NUM_TESTS])(char[200]) = {
         test_controlledNot,
-        test_initStateZero,
-        test_initStatePlus,
+        test_initZeroState,
+        test_initPlusState,
         test_initClassicalState,
         test_initPureState,
         test_initStateFromAmps,
@@ -1746,8 +1746,8 @@ int main (int narg, char** varg) {
 
     char testNames[NUM_TESTS][200] = {
         "controlledNot",
-        "initStateZero",
-        "initStatePlus",
+        "initZeroState",
+        "initPlusState",
         "initClassicalState",
         "initPureState",
         "initStateFromAmps",

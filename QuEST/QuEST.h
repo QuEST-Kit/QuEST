@@ -106,7 +106,7 @@ enum phaseGateType {SIGMA_Z=0, S_GATE=1, T_GATE=2};
 /** Create a QubitRegister object representing a set of qubits which will remain in a pure state.
  * Allocate space for state vector of probability amplitudes, including space for temporary values to be copied from
  * one other chunk if running the distributed version. Define properties related to the size of the set of qubits.
- * The qubits are initialised in the zero state (i.e. initStateZero is automatically called)
+ * The qubits are initialised in the zero state (i.e. initZeroState is automatically called)
  *
  * @preturns an object representing the set of qubits
  * @param[in] numQubits number of qubits in the system
@@ -118,7 +118,7 @@ QubitRegister createQubitRegister(int numQubits, QuESTEnv env);
 /** Create a QubitRegister for qubits which are represented by a density matrix, and can be in mixed states.
  * Allocate space for a density matrix of probability amplitudes, including space for temporary values to be copied from
  * one other chunk if running the distributed version. Define properties related to the size of the set of qubits.
- * initStateZero should be called after this to initialise the qubits to the zero pure state.
+ * initZeroState should be called after this to initialise the qubits to the zero pure state.
  *
  * @returns an object representing the set of qubits
  * @param[in] numQubits number of qubits in the system
@@ -186,7 +186,7 @@ int getNumAmps(QubitRegister qureg);
  *
  * @param[in,out] qureg the object representing the set of all qubits to initialise
  */
-void initStateZero(QubitRegister qureg);
+void initZeroState(QubitRegister qureg);
 
 /** Initialise a set of \f$ N \f$ qubits to the plus state
  * \f$ {| + \rangle}^{\otimes N} = \frac{1}{\sqrt{2^N}} (| 0 \rangle + | 1 \rangle)^{\otimes N} \f$.
@@ -197,7 +197,7 @@ void initStateZero(QubitRegister qureg);
  *
  * @param[in,out] qureg the object representing the set of qubits to be initialised
  */
-void initStatePlus(QubitRegister qureg);
+void initPlusState(QubitRegister qureg);
 
 /** Initialise a set of \f$ N \f$ qubits to the classical state with index \p stateInd.
  * Note \f$ | 00 \dots 00 \rangle \f$ has \p stateInd 0, \f$ | 00 \dots 01 \rangle \f$ has \p stateInd 1, 

@@ -36,7 +36,7 @@ QubitRegister createQubitRegister(int numQubits, QuESTEnv env) {
     qureg.numQubitsInStateVec = numQubits;
     
     qasm_setup(&qureg);
-    initStateZero(qureg);
+    initZeroState(qureg);
     return qureg;
 }
 
@@ -50,7 +50,7 @@ QubitRegister createDensityQubitRegister(int numQubits, QuESTEnv env) {
     qureg.numQubitsInStateVec = 2*numQubits;
     
     qasm_setup(&qureg);
-    initStateZero(qureg);
+    initZeroState(qureg);
     return qureg;
 }
 
@@ -90,17 +90,17 @@ void writeRecordedQASMToFile(QubitRegister qureg, char* filename) {
  * state initialisation
  */
 
-void initStateZero(QubitRegister qureg) {
-    statevec_initStateZero(qureg); // valid for both statevec and density matrices
+void initZeroState(QubitRegister qureg) {
+    statevec_initZeroState(qureg); // valid for both statevec and density matrices
     
     qasm_recordInitZero(qureg);
 }
 
-void initStatePlus(QubitRegister qureg) {
+void initPlusState(QubitRegister qureg) {
     if (qureg.isDensityMatrix)
-        densmatr_initStatePlus(qureg);
+        densmatr_initPlusState(qureg);
     else
-        statevec_initStatePlus(qureg);
+        statevec_initPlusState(qureg);
     
     qasm_recordInitPlus(qureg);
 }
