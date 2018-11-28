@@ -100,7 +100,7 @@ typedef struct QuESTEnv
     int numRanks;
 } QuESTEnv;
 
-// Codes for sigmaZ phase gate variations
+// Codes for Z-axis phase gate variations
 enum phaseGateType {SIGMA_Z=0, S_GATE=1, T_GATE=2};
 
 /** Create a QubitRegister object representing a set of qubits which will remain in a pure state.
@@ -355,7 +355,7 @@ void controlledPhaseShift(QubitRegister qureg, const int idQubit1, const int idQ
 void multiControlledPhaseShift(QubitRegister qureg, int *controlQubits, int numControlQubits, REAL angle);
 
 
-/** Apply the (two-qubit) controlled phase flip gate, also known as the controlled sigmaZ gate.
+/** Apply the (two-qubit) controlled phase flip gate, also known as the controlled pauliZ gate.
  * For each state, if both input qubits have value one, multiply the amplitude of that state by -1. This applies the two-qubit unitary:
  * \f[
  * \begin{pmatrix}
@@ -390,7 +390,7 @@ void multiControlledPhaseShift(QubitRegister qureg, int *controlQubits, int numC
  */
 void controlledPhaseFlip (QubitRegister qureg, const int idQubit1, const int idQubit2);
 
-/** Apply the multiple-qubit controlled phase flip gate, also known as the multiple-qubit controlled sigmaZ gate.
+/** Apply the multiple-qubit controlled phase flip gate, also known as the multiple-qubit controlled pauliZ gate.
  * For each state, if all control qubits have value one, multiply the amplitude of that state by -1. This applies the many-qubit unitary:
  * \f[
  * \begin{pmatrix}
@@ -1030,7 +1030,7 @@ void controlledUnitary(QubitRegister qureg, const int controlQubit, const int ta
  */
 void multiControlledUnitary(QubitRegister qureg, int* controlQubits, const int numControlQubits, const int targetQubit, ComplexMatrix2 u);
 
-/** Apply the single-qubit sigma-X (also known as the X, Pauli-X, NOT or bit-flip) gate.
+/** Apply the single-qubit Pauli-X (also known as the X, sigma-X, NOT or bit-flip) gate.
  * This is a rotation of \f$\pi\f$ around the x-axis on the Bloch sphere. I.e. 
  * \f[
  * \begin{pmatrix}
@@ -1057,9 +1057,9 @@ void multiControlledUnitary(QubitRegister qureg, int* controlQubits, const int n
  * @throws exitWithError
  *      if \p targetQubit is outside [0, \p qureg.numQubitsRepresented).
  */
-void sigmaX(QubitRegister qureg, const int targetQubit);
+void pauliX(QubitRegister qureg, const int targetQubit);
 
-/** Apply the single-qubit sigma-Y (also known as the Y or Pauli-Y) gate.
+/** Apply the single-qubit Pauli-Y (also known as the Y or sigma-Y) gate.
  * This is a rotation of \f$\pi\f$ around the Y-axis on the Bloch sphere. I.e. 
  * \f[
  * \begin{pmatrix}
@@ -1087,9 +1087,9 @@ void sigmaX(QubitRegister qureg, const int targetQubit);
  * @throws exitWithError
  *      if \p targetQubit is outside [0, \p qureg.numQubitsRepresented).
  */
-void sigmaY(QubitRegister qureg, const int targetQubit);
+void pauliY(QubitRegister qureg, const int targetQubit);
 
-/** Apply the single-qubit sigma-Z (also known as the Z, Pauli-Z or phase-flip) gate.
+/** Apply the single-qubit Pauli-Z (also known as the Z, sigma-Z or phase-flip) gate.
  * This is a rotation of \f$\pi\f$ around the Z-axis (a phase shift) on the Bloch sphere. I.e. 
  * \f[
  * \begin{pmatrix}
@@ -1117,7 +1117,7 @@ void sigmaY(QubitRegister qureg, const int targetQubit);
  * @throws exitWithError
  *      if \p targetQubit is outside [0, \p qureg.numQubitsRepresented).
  */
-void sigmaZ(QubitRegister qureg, const int targetQubit);
+void pauliZ(QubitRegister qureg, const int targetQubit);
 
 /** Apply the single-qubit Hadamard gate.
  * This takes \f$|0\rangle\f$ to \f$|+\rangle\f$ and \f$|1\rangle\f$ to \f$|-\rangle\f$, and is equivalent to a rotation of
@@ -1153,7 +1153,7 @@ void hadamard(QubitRegister qureg, const int targetQubit);
 
 /** Apply the controlled not (single control, single target) gate, also
  * known as the c-X, c-sigma-X, c-Pauli-X and c-bit-flip gate.
- * This applies sigmaX to the target qubit if the control qubit has value 1.
+ * This applies pauliX to the target qubit if the control qubit has value 1.
  * This effects the two-qubit unitary
  * \f[
  * \begin{pmatrix}
@@ -1190,9 +1190,9 @@ void hadamard(QubitRegister qureg, const int targetQubit);
  */
 void controlledNot(QubitRegister qureg, const int controlQubit, const int targetQubit);
 
-/** Apply the controlled sigmaY (single control, single target) gate, also
- * known as the c-Y, c-sigma-Y and c-Pauli-Y.
- * This applies sigmaY to the target qubit if the control qubit has value 1.
+/** Apply the controlled pauliY (single control, single target) gate, also
+ * known as the c-Y and c-sigma-Y gate.
+ * This applies pauliY to the target qubit if the control qubit has value 1.
  * This effects the two-qubit unitary
  * \f[
  * \begin{pmatrix}
@@ -1224,12 +1224,12 @@ void controlledNot(QubitRegister qureg, const int controlQubit, const int target
     \f]
  *
  * @param[in,out] qureg object representing the set of all qubits
- * @param[in] controlQubit applies sigmaY to the target if this qubit is 1
+ * @param[in] controlQubit applies pauliY to the target if this qubit is 1
  * @param[in] targetQubit qubit to not
  * @throws exitWithError
  *      if either \p controlQubit or \p targetQubit are outside [0, \p qureg.numQubitsRepresented), or are equal.
  */
-void controlledSigmaY(QubitRegister qureg, const int controlQubit, const int targetQubit);
+void controlledPauliY(QubitRegister qureg, const int controlQubit, const int targetQubit);
 
 /** Gives the probability of a specified qubit being measured in the given outcome (0 or 1).
  * This performs no actual measurement and does not change the state of the qubits.

@@ -977,7 +977,7 @@ void statevec_multiControlledUnitary(QubitRegister qureg, int* controlQubits, co
         }
     }
 }
-void statevec_sigmaX(QubitRegister qureg, const int targetQubit)
+void statevec_pauliX(QubitRegister qureg, const int targetQubit)
 {
     // flag to require memory exchange. 1: an entire block fits on one rank, 0: at most half a block fits on one rank
     int useLocalDataOnly = halfMatrixBlockFitsInChunk(qureg.numAmpsPerChunk, targetQubit);
@@ -988,7 +988,7 @@ void statevec_sigmaX(QubitRegister qureg, const int targetQubit)
 
     if (useLocalDataOnly){
         // all values required to update state vector lie in this rank
-        statevec_sigmaXLocal(qureg, targetQubit);
+        statevec_pauliXLocal(qureg, targetQubit);
     } else {
         // need to get corresponding chunk of state vector from other rank
         rankIsUpper = chunkIsUpper(qureg.chunkId, qureg.numAmpsPerChunk, targetQubit);
@@ -996,9 +996,9 @@ void statevec_sigmaX(QubitRegister qureg, const int targetQubit)
         //printf("%d rank has pair rank: %d\n", qureg.rank, pairRank);
         // get corresponding values from my pair
         exchangeStateVectors(qureg, pairRank);
-        // this rank's values are either in the upper of lower half of the block. sigmaX just replaces
+        // this rank's values are either in the upper of lower half of the block. pauliX just replaces
         // this rank's values with pair values
-        statevec_sigmaXDistributed(qureg, targetQubit,
+        statevec_pauliXDistributed(qureg, targetQubit,
                 qureg.pairStateVec, // in
                 qureg.stateVec); // out
     }
@@ -1033,7 +1033,7 @@ void statevec_controlledNot(QubitRegister qureg, const int controlQubit, const i
     }
 }
 
-void statevec_sigmaY(QubitRegister qureg, const int targetQubit)
+void statevec_pauliY(QubitRegister qureg, const int targetQubit)
 {	
 	int conjFac = 1;
 
@@ -1043,7 +1043,7 @@ void statevec_sigmaY(QubitRegister qureg, const int targetQubit)
     int pairRank; 		// rank of corresponding chunk
 
     if (useLocalDataOnly){
-        statevec_sigmaYLocal(qureg, targetQubit, conjFac);
+        statevec_pauliYLocal(qureg, targetQubit, conjFac);
     } else {
         // need to get corresponding chunk of state vector from other rank
         rankIsUpper = chunkIsUpper(qureg.chunkId, qureg.numAmpsPerChunk, targetQubit);
@@ -1051,14 +1051,14 @@ void statevec_sigmaY(QubitRegister qureg, const int targetQubit)
         // get corresponding values from my pair
         exchangeStateVectors(qureg, pairRank);
         // this rank's values are either in the upper of lower half of the block
-        statevec_sigmaYDistributed(qureg,targetQubit,
+        statevec_pauliYDistributed(qureg,targetQubit,
                 qureg.pairStateVec, // in
                 qureg.stateVec, // out
                 rankIsUpper, conjFac);
     }
 }
 
-void statevec_sigmaYConj(QubitRegister qureg, const int targetQubit)
+void statevec_pauliYConj(QubitRegister qureg, const int targetQubit)
 {	
 	int conjFac = -1;
 
@@ -1068,7 +1068,7 @@ void statevec_sigmaYConj(QubitRegister qureg, const int targetQubit)
     int pairRank; 		// rank of corresponding chunk
 
     if (useLocalDataOnly){
-        statevec_sigmaYLocal(qureg, targetQubit, conjFac);
+        statevec_pauliYLocal(qureg, targetQubit, conjFac);
     } else {
         // need to get corresponding chunk of state vector from other rank
         rankIsUpper = chunkIsUpper(qureg.chunkId, qureg.numAmpsPerChunk, targetQubit);
@@ -1076,14 +1076,14 @@ void statevec_sigmaYConj(QubitRegister qureg, const int targetQubit)
         // get corresponding values from my pair
         exchangeStateVectors(qureg, pairRank);
         // this rank's values are either in the upper of lower half of the block
-        statevec_sigmaYDistributed(qureg,targetQubit,
+        statevec_pauliYDistributed(qureg,targetQubit,
                 qureg.pairStateVec, // in
                 qureg.stateVec, // out
                 rankIsUpper, conjFac);
     }
 }
 
-void statevec_controlledSigmaY(QubitRegister qureg, const int controlQubit, const int targetQubit)
+void statevec_controlledPauliY(QubitRegister qureg, const int controlQubit, const int targetQubit)
 {
 	int conjFac = 1;
 
@@ -1094,7 +1094,7 @@ void statevec_controlledSigmaY(QubitRegister qureg, const int controlQubit, cons
 
     if (useLocalDataOnly){
         // all values required to update state vector lie in this rank
-        statevec_controlledSigmaYLocal(qureg, controlQubit, targetQubit, conjFac);
+        statevec_controlledPauliYLocal(qureg, controlQubit, targetQubit, conjFac);
     } else {
         // need to get corresponding chunk of state vector from other rank
         rankIsUpper = chunkIsUpper(qureg.chunkId, qureg.numAmpsPerChunk, targetQubit);
@@ -1103,12 +1103,12 @@ void statevec_controlledSigmaY(QubitRegister qureg, const int controlQubit, cons
         exchangeStateVectors(qureg, pairRank);
         // this rank's values are either in the upper of lower half of the block
         if (rankIsUpper){
-            statevec_controlledSigmaYDistributed(qureg,controlQubit,targetQubit,
+            statevec_controlledPauliYDistributed(qureg,controlQubit,targetQubit,
                     qureg.pairStateVec, //in
                     qureg.stateVec,
 					conjFac); //out
         } else {
-            statevec_controlledSigmaYDistributed(qureg,controlQubit,targetQubit,
+            statevec_controlledPauliYDistributed(qureg,controlQubit,targetQubit,
                     qureg.pairStateVec, //in
                     qureg.stateVec,
 					conjFac); //out
@@ -1116,7 +1116,7 @@ void statevec_controlledSigmaY(QubitRegister qureg, const int controlQubit, cons
     }
 }
 
-void statevec_controlledSigmaYConj(QubitRegister qureg, const int controlQubit, const int targetQubit)
+void statevec_controlledPauliYConj(QubitRegister qureg, const int controlQubit, const int targetQubit)
 {
 	int conjFac = -1;
 
@@ -1127,7 +1127,7 @@ void statevec_controlledSigmaYConj(QubitRegister qureg, const int controlQubit, 
 
     if (useLocalDataOnly){
         // all values required to update state vector lie in this rank
-        statevec_controlledSigmaYLocal(qureg, controlQubit, targetQubit, conjFac);
+        statevec_controlledPauliYLocal(qureg, controlQubit, targetQubit, conjFac);
     } else {
         // need to get corresponding chunk of state vector from other rank
         rankIsUpper = chunkIsUpper(qureg.chunkId, qureg.numAmpsPerChunk, targetQubit);
@@ -1136,12 +1136,12 @@ void statevec_controlledSigmaYConj(QubitRegister qureg, const int controlQubit, 
         exchangeStateVectors(qureg, pairRank);
         // this rank's values are either in the upper of lower half of the block
         if (rankIsUpper){
-            statevec_controlledSigmaYDistributed(qureg,controlQubit,targetQubit,
+            statevec_controlledPauliYDistributed(qureg,controlQubit,targetQubit,
                     qureg.pairStateVec, //in
                     qureg.stateVec,
 					conjFac); //out
         } else {
-            statevec_controlledSigmaYDistributed(qureg,controlQubit,targetQubit,
+            statevec_controlledPauliYDistributed(qureg,controlQubit,targetQubit,
                     qureg.pairStateVec, //in
                     qureg.stateVec,
 					conjFac); //out

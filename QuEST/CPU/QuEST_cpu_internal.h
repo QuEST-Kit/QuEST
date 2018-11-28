@@ -79,22 +79,22 @@ void statevec_multiControlledUnitaryDistributed (QubitRegister qureg,
         ComplexArray stateVecLo,
         ComplexArray stateVecOut);
 
-void statevec_sigmaXLocal(QubitRegister qureg, const int targetQubit);
+void statevec_pauliXLocal(QubitRegister qureg, const int targetQubit);
 
-void statevec_sigmaXDistributed (QubitRegister qureg, const int targetQubit,
+void statevec_pauliXDistributed (QubitRegister qureg, const int targetQubit,
         ComplexArray stateVecIn,
         ComplexArray stateVecOut);
 
-void statevec_sigmaYLocal(QubitRegister qureg, const int targetQubit, int conjFac);
+void statevec_pauliYLocal(QubitRegister qureg, const int targetQubit, int conjFac);
 
-void statevec_sigmaYDistributed(QubitRegister qureg, const int targetQubit,
+void statevec_pauliYDistributed(QubitRegister qureg, const int targetQubit,
         ComplexArray stateVecIn,
         ComplexArray stateVecOut,
         int updateUpper, int conjFac);
 
-void statevec_controlledSigmaYLocal(QubitRegister qureg, const int controlQubit, const int targetQubit, const int conjFactor);
+void statevec_controlledPauliYLocal(QubitRegister qureg, const int controlQubit, const int targetQubit, const int conjFactor);
 
-void statevec_controlledSigmaYDistributed(QubitRegister qureg, const int controlQubit, const int targetQubit,
+void statevec_controlledPauliYDistributed(QubitRegister qureg, const int controlQubit, const int targetQubit,
         ComplexArray stateVecIn,
         ComplexArray stateVecOut, const int conjFactor);
         

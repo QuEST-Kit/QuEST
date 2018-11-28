@@ -298,34 +298,34 @@ void controlledCompactUnitary(QubitRegister qureg, const int controlQubit, const
     qasm_recordControlledCompactUnitary(qureg, alpha, beta, controlQubit, targetQubit);
 }
 
-void sigmaX(QubitRegister qureg, const int targetQubit) {
+void pauliX(QubitRegister qureg, const int targetQubit) {
     validateTarget(qureg, targetQubit, __func__);
     
-    statevec_sigmaX(qureg, targetQubit);
+    statevec_pauliX(qureg, targetQubit);
     if (qureg.isDensityMatrix) {
-        statevec_sigmaX(qureg, targetQubit+qureg.numQubitsRepresented);
+        statevec_pauliX(qureg, targetQubit+qureg.numQubitsRepresented);
     }
     
     qasm_recordGate(qureg, GATE_SIGMA_X, targetQubit);
 }
 
-void sigmaY(QubitRegister qureg, const int targetQubit) {
+void pauliY(QubitRegister qureg, const int targetQubit) {
     validateTarget(qureg, targetQubit, __func__);
     
-    statevec_sigmaY(qureg, targetQubit);
+    statevec_pauliY(qureg, targetQubit);
     if (qureg.isDensityMatrix) {
-        statevec_sigmaYConj(qureg, targetQubit + qureg.numQubitsRepresented);
+        statevec_pauliYConj(qureg, targetQubit + qureg.numQubitsRepresented);
     }
     
     qasm_recordGate(qureg, GATE_SIGMA_Y, targetQubit);
 }
 
-void sigmaZ(QubitRegister qureg, const int targetQubit) {
+void pauliZ(QubitRegister qureg, const int targetQubit) {
     validateTarget(qureg, targetQubit, __func__);
     
-    statevec_sigmaZ(qureg, targetQubit);
+    statevec_pauliZ(qureg, targetQubit);
     if (qureg.isDensityMatrix) {
-        statevec_sigmaZ(qureg, targetQubit+qureg.numQubitsRepresented);
+        statevec_pauliZ(qureg, targetQubit+qureg.numQubitsRepresented);
     }
     
     qasm_recordGate(qureg, GATE_SIGMA_Z, targetQubit);
@@ -402,13 +402,13 @@ void controlledNot(QubitRegister qureg, const int controlQubit, const int target
     qasm_recordControlledGate(qureg, GATE_SIGMA_X, controlQubit, targetQubit);
 }
 
-void controlledSigmaY(QubitRegister qureg, const int controlQubit, const int targetQubit) {
+void controlledPauliY(QubitRegister qureg, const int controlQubit, const int targetQubit) {
     validateControlTarget(qureg, controlQubit, targetQubit, __func__);
     
-    statevec_controlledSigmaY(qureg, controlQubit, targetQubit);
+    statevec_controlledPauliY(qureg, controlQubit, targetQubit);
     if (qureg.isDensityMatrix) {
         int shift = qureg.numQubitsRepresented;
-        statevec_controlledSigmaYConj(qureg, controlQubit+shift, targetQubit+shift);
+        statevec_controlledPauliYConj(qureg, controlQubit+shift, targetQubit+shift);
     }
     
     qasm_recordControlledGate(qureg, GATE_SIGMA_Y, controlQubit, targetQubit);

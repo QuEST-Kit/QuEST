@@ -2031,7 +2031,7 @@ void statevec_multiControlledUnitaryDistributed (QubitRegister qureg,
     }
 }
 
-void statevec_sigmaXLocal(QubitRegister qureg, const int targetQubit)
+void statevec_pauliXLocal(QubitRegister qureg, const int targetQubit)
 {
     long long int sizeBlock, sizeHalfBlock;
     long long int thisBlock, // current block
@@ -2090,7 +2090,7 @@ void statevec_sigmaXLocal(QubitRegister qureg, const int targetQubit)
  *  @param[in] stateVecIn probability amplitudes in lower or upper half of a block depending on chunkId
  *  @param[out] stateVecOut array section to update (will correspond to either the lower or upper half of a block)
  */
-void statevec_sigmaXDistributed (QubitRegister qureg, const int targetQubit,
+void statevec_pauliXDistributed (QubitRegister qureg, const int targetQubit,
         ComplexArray stateVecIn,
         ComplexArray stateVecOut)
 {
@@ -2216,7 +2216,7 @@ void statevec_controlledNotDistributed (QubitRegister qureg, const int controlQu
     }
 } 
 
-void statevec_sigmaYLocal(QubitRegister qureg, const int targetQubit, const int conjFac)
+void statevec_pauliYLocal(QubitRegister qureg, const int targetQubit, const int conjFac)
 {
     long long int sizeBlock, sizeHalfBlock;
     long long int thisBlock, // current block
@@ -2274,7 +2274,7 @@ void statevec_sigmaYLocal(QubitRegister qureg, const int targetQubit, const int 
  *  @param[in] updateUpper flag, 1: updating upper values, 0: updating lower values in block
  *  @param[out] stateVecOut array section to update (will correspond to either the lower or upper half of a block)
  */
-void statevec_sigmaYDistributed(QubitRegister qureg, const int targetQubit,
+void statevec_pauliYDistributed(QubitRegister qureg, const int targetQubit,
         ComplexArray stateVecIn,
         ComplexArray stateVecOut, 
         int updateUpper, const int conjFac)
@@ -2310,7 +2310,7 @@ void statevec_sigmaYDistributed(QubitRegister qureg, const int targetQubit,
 
 
 
-void statevec_controlledSigmaYLocal(QubitRegister qureg, const int controlQubit, const int targetQubit, const int conjFac)
+void statevec_controlledPauliYLocal(QubitRegister qureg, const int controlQubit, const int targetQubit, const int conjFac)
 {
     long long int sizeBlock, sizeHalfBlock;
     long long int thisBlock, // current block
@@ -2363,7 +2363,7 @@ void statevec_controlledSigmaYLocal(QubitRegister qureg, const int controlQubit,
 }
 
 
-void statevec_controlledSigmaYDistributed (QubitRegister qureg, const int controlQubit, const int targetQubit,
+void statevec_controlledPauliYDistributed (QubitRegister qureg, const int controlQubit, const int targetQubit,
         ComplexArray stateVecIn,
         ComplexArray stateVecOut, const int conjFac)
 {

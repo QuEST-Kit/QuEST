@@ -223,33 +223,33 @@ void statevec_multiControlledUnitary(QubitRegister qureg, int* controlQubits, co
     statevec_multiControlledUnitaryLocal(qureg, targetQubit, mask, u);
 }
 
-void statevec_sigmaX(QubitRegister qureg, const int targetQubit) 
+void statevec_pauliX(QubitRegister qureg, const int targetQubit) 
 {
-    statevec_sigmaXLocal(qureg, targetQubit);
+    statevec_pauliXLocal(qureg, targetQubit);
 }
 
-void statevec_sigmaY(QubitRegister qureg, const int targetQubit) 
+void statevec_pauliY(QubitRegister qureg, const int targetQubit) 
 {
     int conjFac = 1;
-    statevec_sigmaYLocal(qureg, targetQubit, conjFac);
+    statevec_pauliYLocal(qureg, targetQubit, conjFac);
 }
 
-void statevec_sigmaYConj(QubitRegister qureg, const int targetQubit) 
+void statevec_pauliYConj(QubitRegister qureg, const int targetQubit) 
 {
     int conjFac = -1;
-    statevec_sigmaYLocal(qureg, targetQubit, conjFac);
+    statevec_pauliYLocal(qureg, targetQubit, conjFac);
 }
 
-void statevec_controlledSigmaY(QubitRegister qureg, const int controlQubit, const int targetQubit)
+void statevec_controlledPauliY(QubitRegister qureg, const int controlQubit, const int targetQubit)
 {
     int conjFac = 1;
-    statevec_controlledSigmaYLocal(qureg, controlQubit, targetQubit, conjFac);
+    statevec_controlledPauliYLocal(qureg, controlQubit, targetQubit, conjFac);
 }
 
-void statevec_controlledSigmaYConj(QubitRegister qureg, const int controlQubit, const int targetQubit)
+void statevec_controlledPauliYConj(QubitRegister qureg, const int controlQubit, const int targetQubit)
 {
     int conjFac = -1;
-    statevec_controlledSigmaYLocal(qureg, controlQubit, targetQubit, conjFac);
+    statevec_controlledPauliYLocal(qureg, controlQubit, targetQubit, conjFac);
 }
 
 void statevec_hadamard(QubitRegister qureg, const int targetQubit) 

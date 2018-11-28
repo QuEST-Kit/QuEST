@@ -90,17 +90,17 @@ void statevec_sGateConj(QubitRegister qureg, const int targetQubit);
 
 void statevec_tGateConj(QubitRegister qureg, const int targetQubit);
 
-void statevec_sigmaX(QubitRegister qureg, const int targetQubit);
+void statevec_pauliX(QubitRegister qureg, const int targetQubit);
 
-void statevec_sigmaY(QubitRegister qureg, const int targetQubit);
+void statevec_pauliY(QubitRegister qureg, const int targetQubit);
 
-void statevec_sigmaYConj(QubitRegister qureg, const int targetQubit);
+void statevec_pauliYConj(QubitRegister qureg, const int targetQubit);
 
-void statevec_sigmaZ(QubitRegister qureg, const int targetQubit);
+void statevec_pauliZ(QubitRegister qureg, const int targetQubit);
 
-void statevec_controlledSigmaY(QubitRegister qureg, const int controlQubit, const int targetQubit);
+void statevec_controlledPauliY(QubitRegister qureg, const int controlQubit, const int targetQubit);
 
-void statevec_controlledSigmaYConj(QubitRegister qureg, const int controlQubit, const int targetQubit);
+void statevec_controlledPauliYConj(QubitRegister qureg, const int controlQubit, const int targetQubit);
 
 REAL statevec_getRealAmpEl(QubitRegister qureg, long long int index);
 

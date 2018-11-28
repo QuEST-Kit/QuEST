@@ -207,7 +207,7 @@ void statevec_phaseShift(QubitRegister qureg, const int targetQubit, REAL angle)
     statevec_phaseShiftByTerm(qureg, targetQubit, term);
 }
 
-void statevec_sigmaZ(QubitRegister qureg, const int targetQubit) {
+void statevec_pauliZ(QubitRegister qureg, const int targetQubit) {
     Complex term; 
     term.real = -1;
     term.imag =  0;

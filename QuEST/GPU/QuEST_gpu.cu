@@ -852,7 +852,7 @@ void statevec_multiControlledUnitary(QubitRegister qureg, int *controlQubits, in
     statevec_multiControlledUnitaryKernel<<<CUDABlocks, threadsPerCUDABlock>>>(qureg, mask, targetQubit, u);
 }
 
-__global__ void statevec_sigmaXKernel(QubitRegister qureg, const int targetQubit){
+__global__ void statevec_pauliXKernel(QubitRegister qureg, const int targetQubit){
     // ----- sizes
     long long int sizeBlock,                                           // size of blocks
          sizeHalfBlock;                                       // size of blocks halved
@@ -896,15 +896,15 @@ __global__ void statevec_sigmaXKernel(QubitRegister qureg, const int targetQubit
     stateVecImag[indexLo] = stateImagUp;
 }
 
-void statevec_sigmaX(QubitRegister qureg, const int targetQubit) 
+void statevec_pauliX(QubitRegister qureg, const int targetQubit) 
 {
     int threadsPerCUDABlock, CUDABlocks;
     threadsPerCUDABlock = 128;
     CUDABlocks = ceil((REAL)(qureg.numAmpsPerChunk>>1)/threadsPerCUDABlock);
-    statevec_sigmaXKernel<<<CUDABlocks, threadsPerCUDABlock>>>(qureg, targetQubit);
+    statevec_pauliXKernel<<<CUDABlocks, threadsPerCUDABlock>>>(qureg, targetQubit);
 }
 
-__global__ void statevec_sigmaYKernel(QubitRegister qureg, const int targetQubit, const int conjFac){
+__global__ void statevec_pauliYKernel(QubitRegister qureg, const int targetQubit, const int conjFac){
 
     long long int sizeHalfBlock = 1LL << targetQubit;
     long long int sizeBlock     = 2LL * sizeHalfBlock;
@@ -929,23 +929,23 @@ __global__ void statevec_sigmaYKernel(QubitRegister qureg, const int targetQubit
     stateVecImag[indexLo] = conjFac * stateRealUp;
 }
 
-void statevec_sigmaY(QubitRegister qureg, const int targetQubit) 
+void statevec_pauliY(QubitRegister qureg, const int targetQubit) 
 {
     int threadsPerCUDABlock, CUDABlocks;
     threadsPerCUDABlock = 128;
     CUDABlocks = ceil((REAL)(qureg.numAmpsPerChunk>>1)/threadsPerCUDABlock);
-    statevec_sigmaYKernel<<<CUDABlocks, threadsPerCUDABlock>>>(qureg, targetQubit, 1);
+    statevec_pauliYKernel<<<CUDABlocks, threadsPerCUDABlock>>>(qureg, targetQubit, 1);
 }
 
-void statevec_sigmaYConj(QubitRegister qureg, const int targetQubit) 
+void statevec_pauliYConj(QubitRegister qureg, const int targetQubit) 
 {
     int threadsPerCUDABlock, CUDABlocks;
     threadsPerCUDABlock = 128;
     CUDABlocks = ceil((REAL)(qureg.numAmpsPerChunk>>1)/threadsPerCUDABlock);
-    statevec_sigmaYKernel<<<CUDABlocks, threadsPerCUDABlock>>>(qureg, targetQubit, -1);
+    statevec_pauliYKernel<<<CUDABlocks, threadsPerCUDABlock>>>(qureg, targetQubit, -1);
 }
 
-__global__ void statevec_controlledSigmaYKernel(QubitRegister qureg, const int controlQubit, const int targetQubit, const int conjFac)
+__global__ void statevec_controlledPauliYKernel(QubitRegister qureg, const int controlQubit, const int targetQubit, const int conjFac)
 {
     long long int index;
     long long int sizeBlock, sizeHalfBlock;
@@ -981,22 +981,22 @@ __global__ void statevec_controlledSigmaYKernel(QubitRegister qureg, const int c
     }
 }
 
-void statevec_controlledSigmaY(QubitRegister qureg, const int controlQubit, const int targetQubit)
+void statevec_controlledPauliY(QubitRegister qureg, const int controlQubit, const int targetQubit)
 {
     int conjFactor = 1;
     int threadsPerCUDABlock, CUDABlocks;
     threadsPerCUDABlock = 128;
     CUDABlocks = ceil((REAL)(qureg.numAmpsPerChunk)/threadsPerCUDABlock);
-    statevec_controlledSigmaYKernel<<<CUDABlocks, threadsPerCUDABlock>>>(qureg, controlQubit, targetQubit, conjFactor);
+    statevec_controlledPauliYKernel<<<CUDABlocks, threadsPerCUDABlock>>>(qureg, controlQubit, targetQubit, conjFactor);
 }
 
-void statevec_controlledSigmaYConj(QubitRegister qureg, const int controlQubit, const int targetQubit)
+void statevec_controlledPauliYConj(QubitRegister qureg, const int controlQubit, const int targetQubit)
 {
     int conjFactor = -1;
     int threadsPerCUDABlock, CUDABlocks;
     threadsPerCUDABlock = 128;
     CUDABlocks = ceil((REAL)(qureg.numAmpsPerChunk)/threadsPerCUDABlock);
-    statevec_controlledSigmaYKernel<<<CUDABlocks, threadsPerCUDABlock>>>(qureg, controlQubit, targetQubit, conjFactor);
+    statevec_controlledPauliYKernel<<<CUDABlocks, threadsPerCUDABlock>>>(qureg, controlQubit, targetQubit, conjFactor);
 }
 
 __global__ void statevec_phaseShiftByTermKernel(QubitRegister qureg, const int targetQubit, REAL cosAngle, REAL sinAngle) {

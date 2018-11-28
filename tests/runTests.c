@@ -246,7 +246,7 @@ int test_initStateFromAmps(char testName[200]) {
     return passed;
 }
 
-int test_sigmaX(char testName[200]){
+int test_pauliX(char testName[200]){
     char filename[200];
     int passed=1;
     int count=1;
@@ -261,7 +261,7 @@ int test_sigmaX(char testName[200]){
     for (int i=0; i<3; i++){
         initStateDebug(mq);
         rotateQubit=i;
-        sigmaX(mq, rotateQubit);
+        pauliX(mq, rotateQubit);
 
         sprintf(filename, "%s%s%d.out", PATH_TO_TESTS, testName, count++);  
         initStateFromSingleFile(&mqVerif, filename, env);
@@ -275,7 +275,7 @@ int test_sigmaX(char testName[200]){
     return passed;
 }
 
-int test_sigmaY(char testName[200]){
+int test_pauliY(char testName[200]){
     char filename[200];
     int passed=1;
     int count=1;
@@ -290,7 +290,7 @@ int test_sigmaY(char testName[200]){
     for (int i=0; i<3; i++){
         initStateDebug(mq);
         rotateQubit=i;
-        sigmaY(mq, rotateQubit);
+        pauliY(mq, rotateQubit);
 
         sprintf(filename, "%s%s%d.out", PATH_TO_TESTS, testName, count++);  
         initStateFromSingleFile(&mqVerif, filename, env);
@@ -304,7 +304,7 @@ int test_sigmaY(char testName[200]){
     return passed;
 }
 
-int test_sigmaZ(char testName[200]){
+int test_pauliZ(char testName[200]){
     char filename[200];
     int passed=1;
     int count=1;
@@ -319,7 +319,7 @@ int test_sigmaZ(char testName[200]){
     for (int i=0; i<3; i++){
         initStateDebug(mq);
         rotateQubit=i;
-        sigmaZ(mq, rotateQubit);
+        pauliZ(mq, rotateQubit);
 
         sprintf(filename, "%s%s%d.out", PATH_TO_TESTS, testName, count++);  
         initStateFromSingleFile(&mqVerif, filename, env);
@@ -449,7 +449,7 @@ int test_phaseShift(char testName[200]) {
     // prepare state (|0> + |1>)/sqrt(2) |111>
     initZeroState(mq);
     for (int i=0; i < 3; i++)
-        sigmaX(mq, i);
+        pauliX(mq, i);
     hadamard(mq, 3);
     
     // enter state (|0> - 1/sqrt(2) (1 + i) |1>)/sqrt(2) |111>
@@ -480,7 +480,7 @@ int test_controlledPhaseShift(char testName[200]) {
     
     // prepare state (|0> + |1>)/sqrt(2) |010>
     initZeroState(mq);
-    sigmaX(mq, 1);
+    pauliX(mq, 1);
     hadamard(mq, 3);
     
     // confirm controlling first and third qubits does nothing (state |1010> = 2^1 + 2^3 = 10)
@@ -495,7 +495,7 @@ int test_controlledPhaseShift(char testName[200]) {
     if (passed) passed = compareReals(getImagAmpEl(mq, 10), -1/2.0, COMPARE_PRECISION);
     
     // enter (|0> - 1/sqrt(2) (1 + i) |1>)/sqrt(2) |011>
-    sigmaX(mq, 0);
+    pauliX(mq, 0);
     
     // enter (|0> + |1>)/sqrt(2) |011> where |0011> = 2^0 + 2^1 = 3
     controlledPhaseShift(mq, 0, 3, - pi * 5/4.0);
@@ -516,7 +516,7 @@ int test_multiControlledPhaseShift(char testName[200]) {
     
     // prepare state (|0> + |1>)/sqrt(2) |010>
     initZeroState(mq);
-    sigmaX(mq, 1);
+    pauliX(mq, 1);
     hadamard(mq, 3);
     
     // confirm controlling on 2nd,3rd,4th qubits does nothing (state |1010> = 2^1 + 2^3 = 10)
@@ -524,7 +524,7 @@ int test_multiControlledPhaseShift(char testName[200]) {
     if (passed) passed = compareReals(getRealAmpEl(mq, 10), 1/sqrt(2), COMPARE_PRECISION);
     
     // enter state (|0> + |1>)/sqrt(2) |110>
-    sigmaX(mq, 2);
+    pauliX(mq, 2);
     
     // controlling on 2nd,3rd,4th qubits enters state (|0> - 1/sqrt(2) (1 + i) |1>)/sqrt(2) |110>
     // index of state |1110> = 2^1 + 2^2 + 2^3 = 14
@@ -631,13 +631,13 @@ int test_multiControlledPhaseFlip(char testName[200]){
         // prepare state |111>(|0> - |1>)/sqrt(2)
         initZeroState(mqVerif);
         for (i=0; i < 4; i++)
-            sigmaX(mqVerif, i);
+            pauliX(mqVerif, i);
         hadamard(mqVerif, 3);
     
         // prepare state |111>(|0> + |1>)/sqrt(2)
         initZeroState(mq);
         for (i=0; i < 3; i++)
-            sigmaX(mq, i);
+            pauliX(mq, i);
         hadamard(mq, 3);
         
         // and transition to |111>(|0> - |1>)/sqrt(2)
@@ -1710,9 +1710,9 @@ int main (int narg, char** varg) {
         test_initClassicalState,
         test_initPureState,
         test_initStateFromAmps,
-        test_sigmaX,
-        test_sigmaY,
-        test_sigmaZ,
+        test_pauliX,
+        test_pauliY,
+        test_pauliZ,
         test_hadamard,
         test_sGate,
         test_tGate,
@@ -1751,9 +1751,9 @@ int main (int narg, char** varg) {
         "initClassicalState",
         "initPureState",
         "initStateFromAmps",
-        "sigmaX",
-        "sigmaY",
-        "sigmaZ",
+        "pauliX",
+        "pauliY",
+        "pauliZ",
         "hadamard",
         "sGate",
         "tGate",
