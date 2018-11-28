@@ -145,7 +145,7 @@ REAL statevec_calcTotalProbability(QubitRegister qureg){
 }
 
 
-QuESTEnv initQuESTEnv(void) {
+QuESTEnv createQuESTEnv(void) {
     // init MPI environment
     
     QuESTEnv env;
@@ -165,7 +165,7 @@ int syncQuESTSuccess(int successCode){
     return successCode;
 }
 
-void closeQuESTEnv(QuESTEnv env){
+void destroyQuESTEnv(QuESTEnv env){
     // MPI finalize goes here in MPI version. Call this function anyway for consistency
 }
 

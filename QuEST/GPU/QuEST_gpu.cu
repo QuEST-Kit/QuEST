@@ -232,7 +232,7 @@ int GPUExists(void){
     else return 0;
 }
 
-QuESTEnv initQuESTEnv(void) {
+QuESTEnv createQuESTEnv(void) {
     // init MPI environment
     if (!GPUExists()){
         printf("Trying to run GPU code with no GPU available\n");
@@ -256,7 +256,7 @@ int syncQuESTSuccess(int successCode){
     return successCode;
 }
 
-void closeQuESTEnv(QuESTEnv env){
+void destroyQuESTEnv(QuESTEnv env){
     // MPI finalize goes here in MPI version. Call this function anyway for consistency
 }
 

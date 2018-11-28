@@ -133,7 +133,7 @@ static int getChunkOuterBlockPairId(int chunkIsUpper, int chunkId, long long int
 static int halfMatrixBlockFitsInChunk(long long int chunkSize, int targetQubit);
 static int getChunkIdFromIndex(QubitRegister qureg, long long int index);
 
-QuESTEnv initQuESTEnv(void) {
+QuESTEnv createQuESTEnv(void) {
     
     QuESTEnv env;
     
@@ -165,7 +165,7 @@ int syncQuESTSuccess(int successCode){
     return totalSuccess;
 }
 
-void closeQuESTEnv(QuESTEnv env){
+void destroyQuESTEnv(QuESTEnv env){
     int finalized;
     MPI_Finalized(&finalized);
     if (!finalized) MPI_Finalize();

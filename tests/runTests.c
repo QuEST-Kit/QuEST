@@ -1700,7 +1700,7 @@ int test_applyTwoQubitDephaseError(char testName[200]) {
 
 
 int main (int narg, char** varg) {
-    env = initQuESTEnv();
+    env = createQuESTEnv();
     reportQuESTEnv(env);
 
     int (*tests[NUM_TESTS])(char[200]) = {
@@ -1791,11 +1791,11 @@ int main (int narg, char** varg) {
         passed=syncQuESTSuccess(passed);
         if (!passed){
             if (env.rank==0) printf("!!! FAILED in test %d -- %s\n", i, testNames[i]);
-            closeQuESTEnv(env);
+            destroyQuESTEnv(env);
             return 1;
         } else if (env.rank==0) printf("Passed test %d -- %s\n", i, testNames[i]);
     }
-    closeQuESTEnv(env);
+    destroyQuESTEnv(env);
 
     return 0;
 }
