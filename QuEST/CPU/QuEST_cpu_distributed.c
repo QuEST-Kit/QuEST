@@ -133,7 +133,7 @@ static int getChunkOuterBlockPairId(int chunkIsUpper, int chunkId, long long int
 static int halfMatrixBlockFitsInChunk(long long int chunkSize, int targetQubit);
 static int getChunkIdFromIndex(QubitRegister qureg, long long int index);
 
-QuESTEnv initQuESTEnv() {
+QuESTEnv initQuESTEnv(void) {
     
     QuESTEnv env;
     

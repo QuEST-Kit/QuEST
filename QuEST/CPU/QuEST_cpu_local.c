@@ -145,7 +145,7 @@ REAL statevec_calcTotalProbability(QubitRegister qureg){
 }
 
 
-QuESTEnv initQuESTEnv() {
+QuESTEnv initQuESTEnv(void) {
     // init MPI environment
     
     QuESTEnv env;
