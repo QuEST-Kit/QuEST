@@ -57,7 +57,7 @@ Complex statevec_calcInnerProduct(QubitRegister bra, QubitRegister ket) {
     return globalInnerProd;
 }
 
-REAL densmatr_calcTotalProbability(QubitRegister qureg) {
+REAL densmatr_calcTotalProb(QubitRegister qureg) {
 	
 	// computes the trace by summing every element ("diag") with global index (2^n + 1)i for i in [0, 2^n-1]
 	
@@ -92,7 +92,7 @@ REAL densmatr_calcTotalProbability(QubitRegister qureg) {
 	return globalTotal;
 }
 
-REAL statevec_calcTotalProbability(QubitRegister qureg){
+REAL statevec_calcTotalProb(QubitRegister qureg){
     // Implemented using Kahan summation for greater accuracy at a slight floating
     //   point operation overhead. For more details see https://en.wikipedia.org/wiki/Kahan_summation_algorithm
     REAL pTotal=0; 
@@ -1204,7 +1204,7 @@ static int isChunkToSkipInFindPZero(int chunkId, long long int chunkSize, int me
     return bitToCheck;
 }
 
-REAL statevec_findProbabilityOfOutcome(QubitRegister qureg, const int measureQubit, int outcome)
+REAL statevec_calcProbOfOutcome(QubitRegister qureg, const int measureQubit, int outcome)
 {
     REAL stateProb=0, totalStateProb=0;
     int skipValuesWithinRank = halfMatrixBlockFitsInChunk(qureg.numAmpsPerChunk, measureQubit);
@@ -1220,7 +1220,7 @@ REAL statevec_findProbabilityOfOutcome(QubitRegister qureg, const int measureQub
     return totalStateProb;
 }
 
-REAL densmatr_findProbabilityOfOutcome(QubitRegister qureg, const int measureQubit, int outcome) {
+REAL densmatr_calcProbOfOutcome(QubitRegister qureg, const int measureQubit, int outcome) {
 	
 	REAL zeroProb = densmatr_findProbabilityOfZeroLocal(qureg, measureQubit);
 	

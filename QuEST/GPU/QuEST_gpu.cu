@@ -1109,7 +1109,7 @@ void statevec_multiControlledPhaseShift(QubitRegister qureg, int *controlQubits,
     statevec_multiControlledPhaseShiftKernel<<<CUDABlocks, threadsPerCUDABlock>>>(qureg, mask, cosAngle, sinAngle);
 }
 
-REAL densmatr_calcTotalProbability(QubitRegister qureg) {
+REAL densmatr_calcTotalProb(QubitRegister qureg) {
     
     // computes the trace using Kahan summation
     REAL pTotal=0;
@@ -1132,7 +1132,7 @@ REAL densmatr_calcTotalProbability(QubitRegister qureg) {
     return pTotal;
 }
 
-REAL statevec_calcTotalProbability(QubitRegister qureg){
+REAL statevec_calcTotalProb(QubitRegister qureg){
     /* IJB - implemented using Kahan summation for greater accuracy at a slight floating
        point operation overhead. For more details see https://en.wikipedia.org/wiki/Kahan_summation_algorithm */
     /* Don't change the bracketing in this routine! */
@@ -1551,7 +1551,7 @@ REAL statevec_findProbabilityOfZero(QubitRegister qureg, const int measureQubit)
     return stateProb;
 }
 
-REAL statevec_findProbabilityOfOutcome(QubitRegister qureg, const int measureQubit, int outcome)
+REAL statevec_calcProbOfOutcome(QubitRegister qureg, const int measureQubit, int outcome)
 {
     REAL outcomeProb = statevec_findProbabilityOfZero(qureg, measureQubit);
     if (outcome==1)
@@ -1559,7 +1559,7 @@ REAL statevec_findProbabilityOfOutcome(QubitRegister qureg, const int measureQub
     return outcomeProb;
 }
 
-REAL densmatr_findProbabilityOfOutcome(QubitRegister qureg, const int measureQubit, int outcome)
+REAL densmatr_calcProbOfOutcome(QubitRegister qureg, const int measureQubit, int outcome)
 {
     REAL outcomeProb = densmatr_findProbabilityOfZero(qureg, measureQubit);
     if (outcome==1) 

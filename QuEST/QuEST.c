@@ -524,11 +524,11 @@ REAL collapseToOutcome(QubitRegister qureg, const int measureQubit, int outcome)
     
     REAL outcomeProb;
     if (qureg.isDensityMatrix) {
-        outcomeProb = densmatr_findProbabilityOfOutcome(qureg, measureQubit, outcome);
+        outcomeProb = densmatr_calcProbOfOutcome(qureg, measureQubit, outcome);
         validateMeasurementProb(outcomeProb, __func__);
         densmatr_collapseToKnownProbOutcome(qureg, measureQubit, outcome, outcomeProb);
     } else {
-        outcomeProb = statevec_findProbabilityOfOutcome(qureg, measureQubit, outcome);
+        outcomeProb = statevec_calcProbOfOutcome(qureg, measureQubit, outcome);
         validateMeasurementProb(outcomeProb, __func__);
         statevec_collapseToKnownProbOutcome(qureg, measureQubit, outcome, outcomeProb);
     }
@@ -578,11 +578,11 @@ void addDensityMatrix(QubitRegister combineQureg, REAL otherProb, QubitRegister 
  * calculations
  */
 
-REAL calcTotalProbability(QubitRegister qureg) {
+REAL calcTotalProb(QubitRegister qureg) {
     if (qureg.isDensityMatrix)  
-            return densmatr_calcTotalProbability(qureg);
+            return densmatr_calcTotalProb(qureg);
         else
-            return statevec_calcTotalProbability(qureg);
+            return statevec_calcTotalProb(qureg);
 }
 
 Complex calcInnerProduct(QubitRegister bra, QubitRegister ket) {
@@ -593,14 +593,14 @@ Complex calcInnerProduct(QubitRegister bra, QubitRegister ket) {
     return statevec_calcInnerProduct(bra, ket);
 }
 
-REAL findProbabilityOfOutcome(QubitRegister qureg, const int measureQubit, int outcome) {
+REAL calcProbOfOutcome(QubitRegister qureg, const int measureQubit, int outcome) {
     validateTarget(qureg, measureQubit, __func__);
     validateOutcome(outcome, __func__);
     
     if (qureg.isDensityMatrix)
-        return densmatr_findProbabilityOfOutcome(qureg, measureQubit, outcome);
+        return densmatr_calcProbOfOutcome(qureg, measureQubit, outcome);
     else
-        return statevec_findProbabilityOfOutcome(qureg, measureQubit, outcome);
+        return statevec_calcProbOfOutcome(qureg, measureQubit, outcome);
 }
 
 REAL calcPurity(QubitRegister qureg) {

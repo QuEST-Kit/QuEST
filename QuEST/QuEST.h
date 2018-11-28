@@ -585,7 +585,7 @@ Complex getDensityAmplitude(QubitRegister qureg, long long int row, long long in
  * @param[in] qureg object representing a set of qubits
  * @return total probability
  */
-REAL calcTotalProbability(QubitRegister qureg);
+REAL calcTotalProb(QubitRegister qureg);
 
 /** Apply a single-qubit unitary parameterised by two given complex scalars.
  * Given valid complex numbers \f$\alpha\f$ and \f$\beta\f$, applies the unitary
@@ -1242,7 +1242,7 @@ void controlledSigmaY(QubitRegister qureg, const int controlQubit, const int tar
  *      if \p measureQubit is outside [0, \p qureg.numQubitsRepresented),
  *      or if \p outcome is not in {0, 1}.
  */
-REAL findProbabilityOfOutcome(QubitRegister qureg, const int measureQubit, int outcome);
+REAL calcProbOfOutcome(QubitRegister qureg, const int measureQubit, int outcome);
 
 /** Updates the state vector to be consistent with measuring the measure qubit in the given outcome (0 or 1), and returns the probability of such a measurement outcome. 
  * This is effectively performing a measurement and forcing the outcome.

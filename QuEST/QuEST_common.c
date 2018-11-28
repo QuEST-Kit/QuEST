@@ -312,7 +312,7 @@ void statevec_controlledRotateZ(QubitRegister qureg, const int controlQubit, con
 
 int statevec_measureWithStats(QubitRegister qureg, int measureQubit, REAL *outcomeProb) {
     
-    REAL zeroProb = statevec_findProbabilityOfOutcome(qureg, measureQubit, 0);
+    REAL zeroProb = statevec_calcProbOfOutcome(qureg, measureQubit, 0);
     int outcome = generateMeasurementOutcome(zeroProb, outcomeProb);
     statevec_collapseToKnownProbOutcome(qureg, measureQubit, outcome, *outcomeProb);
     return outcome;
@@ -320,7 +320,7 @@ int statevec_measureWithStats(QubitRegister qureg, int measureQubit, REAL *outco
 
 int densmatr_measureWithStats(QubitRegister qureg, int measureQubit, REAL *outcomeProb) {
     
-    REAL zeroProb = densmatr_findProbabilityOfOutcome(qureg, measureQubit, 0);
+    REAL zeroProb = densmatr_calcProbOfOutcome(qureg, measureQubit, 0);
     int outcome = generateMeasurementOutcome(zeroProb, outcomeProb);
     densmatr_collapseToKnownProbOutcome(qureg, measureQubit, outcome, *outcomeProb);
     return outcome;

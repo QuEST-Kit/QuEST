@@ -91,7 +91,7 @@ Complex statevec_calcInnerProduct(QubitRegister bra, QubitRegister ket) {
     return statevec_calcInnerProductLocal(bra, ket);
 }
 
-REAL densmatr_calcTotalProbability(QubitRegister qureg) {
+REAL densmatr_calcTotalProb(QubitRegister qureg) {
     
     // computes the trace using Kahan summation
     REAL pTotal=0;
@@ -114,7 +114,7 @@ REAL densmatr_calcTotalProbability(QubitRegister qureg) {
     return pTotal;
 }
 
-REAL statevec_calcTotalProbability(QubitRegister qureg){
+REAL statevec_calcTotalProb(QubitRegister qureg){
     // implemented using Kahan summation for greater accuracy at a slight floating
     // point operation overhead. For more details see https://en.wikipedia.org/wiki/Kahan_summation_algorithm
     REAL pTotal=0; 
@@ -262,7 +262,7 @@ void statevec_controlledNot(QubitRegister qureg, const int controlQubit, const i
     statevec_controlledNotLocal(qureg, controlQubit, targetQubit);
 }
 
-REAL statevec_findProbabilityOfOutcome(QubitRegister qureg, const int measureQubit, int outcome)
+REAL statevec_calcProbOfOutcome(QubitRegister qureg, const int measureQubit, int outcome)
 {
     REAL stateProb=0;
     stateProb = statevec_findProbabilityOfZeroLocal(qureg, measureQubit);
@@ -270,7 +270,7 @@ REAL statevec_findProbabilityOfOutcome(QubitRegister qureg, const int measureQub
     return stateProb;
 }
 
-REAL densmatr_findProbabilityOfOutcome(QubitRegister qureg, const int measureQubit, int outcome) {
+REAL densmatr_calcProbOfOutcome(QubitRegister qureg, const int measureQubit, int outcome) {
     
     REAL outcomeProb = densmatr_findProbabilityOfZeroLocal(qureg, measureQubit);
     if (outcome == 1)

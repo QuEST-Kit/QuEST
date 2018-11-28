@@ -83,7 +83,7 @@ int test_initStatePlus(char testName[200]){
     // |+> state has every qubit 50% prob in 0
     initStatePlus(mq);
     for (int q=0; q < numQubits; q++) {
-        REAL prob = findProbabilityOfOutcome(mq, q, 0);
+        REAL prob = calcProbOfOutcome(mq, q, 0);
         if (passed) passed = compareReals(prob, 0.5, COMPARE_PRECISION);
     }
         
@@ -99,7 +99,7 @@ int test_initStatePlus(char testName[200]){
     initStatePlus(dens);
     
     for (int q=0; q < numQubits; q++) {
-        REAL prob = findProbabilityOfOutcome(dens, q, 0);            
+        REAL prob = calcProbOfOutcome(dens, q, 0);            
         if (passed) passed = compareReals(prob, 0.5, COMPARE_PRECISION);
     }
     
@@ -147,7 +147,7 @@ int test_initClassicalState(char testName[200]){
         // check that every qubit has correct probabilities
         for (long long int q=0; q < numQubits; q++) {
             int bit = (stateInd & ( 1LL << q )) >> q;
-            REAL probOf1 = findProbabilityOfOutcome(mq, q, 1);
+            REAL probOf1 = calcProbOfOutcome(mq, q, 1);
             if (passed) passed = compareReals(probOf1, bit, COMPARE_PRECISION);
         }
     }
@@ -194,7 +194,7 @@ int test_initPureState(char testName[200]) {
         
     REAL prob;
     for (int q=0; q < numQubits; q++) {
-        prob = findProbabilityOfOutcome(dens, q, 0);
+        prob = calcProbOfOutcome(dens, q, 0);
         if (passed) passed = compareReals(prob, 0.5, COMPARE_PRECISION);
     }
 
@@ -708,7 +708,7 @@ int test_compactUnitary(char testName[200]){
         rotQubit=i;
         compactUnitary(mq, rotQubit, alpha, beta);
     }
-    REAL outcome = calcTotalProbability(mq);    
+    REAL outcome = calcTotalProb(mq);    
     if (passed) passed = compareReals(1.0, outcome, COMPARE_PRECISION);
     destroyQubitRegister(mq, env);
 
@@ -778,7 +778,7 @@ int test_unitary(char testName[200]){
         rotQubit=i;
         unitary(mq, rotQubit, uDagger);
     }
-    REAL outcome = calcTotalProbability(mq);    
+    REAL outcome = calcTotalProb(mq);    
     if (passed) passed = compareReals(1.0, outcome, COMPARE_PRECISION);
     destroyQubitRegister(mq, env);
 
@@ -963,7 +963,7 @@ int test_multiControlledUnitary(char testName[200]){
 }
 
 // @TODO add dens testing
-int test_findProbabilityOfOutcome(char testName[200]){
+int test_calcProbOfOutcome(char testName[200]){
     int passed=1;
 
     int numQubits=12;
@@ -980,30 +980,30 @@ int test_findProbabilityOfOutcome(char testName[200]){
     // test qubit = |0> 
     initStateZero(mq);
     for (qubit=0; qubit<numQubits; qubit++){
-        outcome = findProbabilityOfOutcome(mq, qubit, 0);
+        outcome = calcProbOfOutcome(mq, qubit, 0);
         if (passed) passed = compareReals(1, outcome, COMPARE_PRECISION);
 
-        outcome = findProbabilityOfOutcome(mq, qubit, 1);
+        outcome = calcProbOfOutcome(mq, qubit, 1);
         if (passed) passed = compareReals(0, outcome, COMPARE_PRECISION);
     }
 
     // test qubit = |1> 
     for (qubit=0; qubit<numQubits; qubit++){
         initStateOfSingleQubit(&mq, qubit, 1);
-        outcome = findProbabilityOfOutcome(mq, qubit, 0);
+        outcome = calcProbOfOutcome(mq, qubit, 0);
         if (passed) passed = compareReals(0, outcome, COMPARE_PRECISION);
 
-        outcome = findProbabilityOfOutcome(mq, qubit, 1);
+        outcome = calcProbOfOutcome(mq, qubit, 1);
         if (passed) passed = compareReals(1, outcome, COMPARE_PRECISION);
     }
 
     // test qubit = |+> 
     for (qubit=0; qubit<numQubits; qubit++){
         initStatePlus(mq);
-        outcome = findProbabilityOfOutcome(mq, qubit, 0);
+        outcome = calcProbOfOutcome(mq, qubit, 0);
         if (passed) passed = compareReals(0.5, outcome, COMPARE_PRECISION);
 
-        outcome = findProbabilityOfOutcome(mq, qubit, 1);
+        outcome = calcProbOfOutcome(mq, qubit, 1);
         if (passed) passed = compareReals(0.5, outcome, COMPARE_PRECISION);
     }
 
@@ -1110,8 +1110,8 @@ int test_collapseToOutcome(char testName[200]){
     addDensityMatrix(reg, .5, regVerif); // .5 |0><0| + .5 |1><1|
     collapseToOutcome(reg, 0, 1); // collapse to |1...1><1...1|
     if (passed) passed = compareStates(reg, regVerif, COMPARE_PRECISION);
-    if (passed) passed = compareReals(findProbabilityOfOutcome(reg, 0, 1), 1, COMPARE_PRECISION);
-    if (passed) passed = compareReals(findProbabilityOfOutcome(reg, 1, 1), 1, COMPARE_PRECISION); // non-measured qubit also collapsed
+    if (passed) passed = compareReals(calcProbOfOutcome(reg, 0, 1), 1, COMPARE_PRECISION);
+    if (passed) passed = compareReals(calcProbOfOutcome(reg, 1, 1), 1, COMPARE_PRECISION); // non-measured qubit also collapsed
     if (passed) passed = compareReals(calcPurity(reg), 1, COMPARE_PRECISION);
     
     // test mixed states of non-orthogonal pure states collapse correctly
@@ -1142,7 +1142,7 @@ int test_collapseToOutcome(char testName[200]){
     initClassicalState(regVerif, (1<<numQubits)-1); // |111><111|
     addDensityMatrix(reg, 1-0.1, regVerif); // 0.1 |+++><+++| + 0.9 |111><111|
     collapseToOutcome(reg, 0, 1); // 0.1 |++1><++1| + 0.9 |111><111|
-    if (passed) passed = compareReals(findProbabilityOfOutcome(reg, 0, 1), 1, COMPARE_PRECISION);
+    if (passed) passed = compareReals(calcProbOfOutcome(reg, 0, 1), 1, COMPARE_PRECISION);
     if (passed) passed = (calcPurity(reg) < 1.0); // we should still be mixed
     
     destroyQubitRegister(reg, env);
@@ -1444,7 +1444,7 @@ int test_addDensityMatrix(char testName[200]) {
     initStateZero(reg1);
     initClassicalState(reg2, 1);
     addDensityMatrix(reg1, 1-p1, reg2);
-    prob = findProbabilityOfOutcome(reg1, 0, 0);
+    prob = calcProbOfOutcome(reg1, 0, 0);
     if (passed) passed = compareReals(prob, p1, COMPARE_PRECISION);
     
     // prob_0( p2 {p1 |0...><0...| + (1-p1) |1...><1...|} + (1-p2)|+><+| ) 
@@ -1452,7 +1452,7 @@ int test_addDensityMatrix(char testName[200]) {
     REAL p2 = 0.7;
     initStatePlus(reg2);
     addDensityMatrix(reg1, 1-p2, reg2);
-    prob = findProbabilityOfOutcome(reg1, 0, 0);
+    prob = calcProbOfOutcome(reg1, 0, 0);
     REAL trueProb = p2*p1 + (1-p2)*0.5;
     if (passed) passed = compareReals(prob, trueProb, COMPARE_PRECISION);
     
@@ -1522,7 +1522,7 @@ int test_calcPurity(char testName[200]) {
     return passed;
 }
 
-int test_calcTotalProbability(char testName[200]) {
+int test_calcTotalProb(char testName[200]) {
     int passed=1;
     int numQubits=3;
     REAL prob;
@@ -1540,7 +1540,7 @@ int test_calcTotalProbability(char testName[200]) {
     controlledRotateX(qureg, 1, 2, 1.45);
     multiControlledPhaseFlip(qureg, (int []) {0,1,2}, 3);
     controlledRotateAroundAxis(qureg, 1, 0, 0.3, (Vector) {.x=1,.y=2,.z=3});
-    prob = calcTotalProbability(qureg);
+    prob = calcTotalProb(qureg);
     if (passed) passed = compareReals(prob, 1, COMPARE_PRECISION);
     
     destroyQubitRegister(qureg, env);
@@ -1557,7 +1557,7 @@ int test_calcTotalProbability(char testName[200]) {
     controlledRotateX(qureg, 1, 2, 1.45); 
     multiControlledPhaseFlip(qureg, (int []) {0,1,2}, 3);
     controlledRotateAroundAxis(qureg, 1, 0, 0.3, (Vector) {.x=1,.y=2,.z=3});
-    prob = calcTotalProbability(qureg);
+    prob = calcTotalProb(qureg);
         
     if (passed) passed = compareReals(prob, 1, COMPARE_PRECISION);
     
@@ -1726,7 +1726,7 @@ int main (int narg, char** varg) {
         test_controlledCompactUnitary,
         test_controlledUnitary,
         test_multiControlledUnitary,
-        test_findProbabilityOfOutcome,
+        test_calcProbOfOutcome,
         test_collapseToOutcome,
         test_measure,
         test_measureWithStats,
@@ -1737,7 +1737,7 @@ int main (int narg, char** varg) {
         test_calcFidelity,
         test_addDensityMatrix,
         test_calcPurity,
-        test_calcTotalProbability,
+        test_calcTotalProb,
         test_applyOneQubitDephaseError,
         test_applyOneQubitDepolariseError,
         test_applyTwoQubitDephaseError,
@@ -1767,7 +1767,7 @@ int main (int narg, char** varg) {
         "controlledCompactUnitary",
         "controlledUnitary",
         "multiControlledUnitary",
-        "findProbabilityOfOutcome",
+        "calcProbOfOutcome",
         "collapseToOutcome",
         "measure",
         "measureWithStats",
@@ -1778,7 +1778,7 @@ int main (int narg, char** varg) {
         "calcFidelity",
         "addDensityMatrix",
         "calcPurity",
-        "calcTotalProbability",
+        "calcTotalProb",
         "applyOneQubitDephaseError",
         "applyOneQubitDepolariseError",
         "applyTwoQubitDephaseError",

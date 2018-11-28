@@ -22,13 +22,13 @@ void densmatr_initClassicalState(QubitRegister qureg, long long int stateInd);
 
 void densmatr_initPureState(QubitRegister targetQureg, QubitRegister copyQureg);
 
-REAL densmatr_calcTotalProbability(QubitRegister qureg);
+REAL densmatr_calcTotalProb(QubitRegister qureg);
 
 REAL densmatr_calcPurity(QubitRegister qureg);
 
 REAL densmatr_calcFidelity(QubitRegister qureg, QubitRegister pureState);
 
-REAL densmatr_findProbabilityOfOutcome(QubitRegister qureg, const int measureQubit, int outcome);
+REAL densmatr_calcProbOfOutcome(QubitRegister qureg, const int measureQubit, int outcome);
 
 void densmatr_collapseToKnownProbOutcome(QubitRegister qureg, const int measureQubit, int outcome, REAL outcomeProb);
     
@@ -108,7 +108,7 @@ REAL statevec_getImagAmpEl(QubitRegister qureg, long long int index);
 
 REAL statevec_getProbEl(QubitRegister qureg, long long int index);
 
-REAL statevec_calcTotalProbability(QubitRegister qureg);
+REAL statevec_calcTotalProb(QubitRegister qureg);
 
 REAL statevec_calcFidelity(QubitRegister qureg, QubitRegister pureState);
 
@@ -148,7 +148,7 @@ void statevec_hadamard(QubitRegister qureg, const int targetQubit);
 
 void statevec_controlledNot(QubitRegister qureg, const int controlQubit, const int targetQubit);
 
-REAL statevec_findProbabilityOfOutcome(QubitRegister qureg, const int measureQubit, int outcome);
+REAL statevec_calcProbOfOutcome(QubitRegister qureg, const int measureQubit, int outcome);
 
 void statevec_collapseToKnownProbOutcome(QubitRegister qureg, const int measureQubit, int outcome, REAL outcomeProb);
 
