@@ -1565,13 +1565,13 @@ int test_calcTotalProbability(char testName[200]) {
     return passed;
 }
 
-int test_oneQubitDepolarise(char testName[200]) {
+int test_applyOneQubitDepolariseError(char testName[200]) {
     char filename[200];
     int passed=1;
     int numQubits=3;
 
     int targetQubit;
-    REAL depolLevel=0.5;
+    REAL depolProb=0.375;
     
     QubitRegister qureg, quregVerif;
     qureg = createDensityQubitRegister(numQubits, env);
@@ -1580,7 +1580,7 @@ int test_oneQubitDepolarise(char testName[200]) {
     for (int i=0; i<numQubits; i++){
         initStateDebug(qureg);
         targetQubit=i;
-        oneQubitDepolarise(qureg, targetQubit, depolLevel);
+        applyOneQubitDepolariseError(qureg, targetQubit, depolProb);
 
         sprintf(filename, "%s%s%d.out", PATH_TO_TESTS, testName, i);  
         initStateFromSingleFile(&quregVerif, filename, env);
@@ -1595,13 +1595,13 @@ int test_oneQubitDepolarise(char testName[200]) {
     return passed;
 }
 
-int test_oneQubitDephase(char testName[200]) {
+int test_applyOneQubitDephaseError(char testName[200]) {
     char filename[200];
     int passed=1;
     int numQubits=3;
 
     int targetQubit;
-    REAL dephaseLevel=0.5;
+    REAL dephaseProb=0.25;
     
     QubitRegister qureg, quregVerif;
     qureg = createDensityQubitRegister(numQubits, env);
@@ -1610,7 +1610,7 @@ int test_oneQubitDephase(char testName[200]) {
     for (int i=0; i<numQubits; i++){
         initStateDebug(qureg);
         targetQubit=i;
-        oneQubitDephase(qureg, targetQubit, dephaseLevel);
+        applyOneQubitDephaseError(qureg, targetQubit, dephaseProb);
 
         sprintf(filename, "%s%s%d.out", PATH_TO_TESTS, testName, i);  
         initStateFromSingleFile(&quregVerif, filename, env);
@@ -1625,14 +1625,14 @@ int test_oneQubitDephase(char testName[200]) {
     return passed;
 }
 
-int test_twoQubitDepolarise(char testName[200]) {
+int test_applyTwoQubitDepolariseError(char testName[200]) {
     if (env.rank==0) printf("NOTE: twoQubitDepolarise test currently assumes GPU version is correct and tests against that version's output\n");
     char filename[200];
     int passed=1;
     int numQubits=3;
 
     int qubit1, qubit2;
-    REAL depolLevel=0.5;
+    REAL depolProb=0.46875;
     
     QubitRegister qureg, quregVerif;
     qureg = createDensityQubitRegister(numQubits, env);
@@ -1645,7 +1645,7 @@ int test_twoQubitDepolarise(char testName[200]) {
         if (qubit1==qubit2) continue;
 
         initStateDebug(qureg);
-        twoQubitDepolarise(qureg, qubit1, qubit2, depolLevel);
+        applyTwoQubitDepolariseError(qureg, qubit1, qubit2, depolProb);
 
         sprintf(filename, "%s%s%d.out", PATH_TO_TESTS, testName, count++);  
         initStateFromSingleFile(&quregVerif, filename, env);
@@ -1661,14 +1661,14 @@ int test_twoQubitDepolarise(char testName[200]) {
     return passed;
 }
 
-int test_twoQubitDephase(char testName[200]) {
+int test_applyTwoQubitDephaseError(char testName[200]) {
     if (env.rank==0) printf("NOTE: twoQubitDephase test currently assumes GPU version is correct and tests against that version's output\n");
     char filename[200];
     int passed=1;
     int numQubits=3;
 
     int qubit1, qubit2;
-    REAL dephaseLevel=0.5;
+    REAL dephaseProb=0.375;
     
     QubitRegister qureg, quregVerif;
     qureg = createDensityQubitRegister(numQubits, env);
@@ -1681,7 +1681,7 @@ int test_twoQubitDephase(char testName[200]) {
         if (qubit1==qubit2) continue;
 
         initStateDebug(qureg);
-        twoQubitDephase(qureg, qubit1, qubit2, dephaseLevel);
+        applyTwoQubitDephaseError(qureg, qubit1, qubit2, dephaseProb);
 
         sprintf(filename, "%s%s%d.out", PATH_TO_TESTS, testName, count++);  
         initStateFromSingleFile(&quregVerif, filename, env);
@@ -1738,10 +1738,10 @@ int main (int narg, char** varg) {
         test_addDensityMatrix,
         test_calcPurity,
         test_calcTotalProbability,
-        test_oneQubitDephase,
-        test_oneQubitDepolarise,
-        test_twoQubitDephase,
-        test_twoQubitDepolarise,
+        test_applyOneQubitDephaseError,
+        test_applyOneQubitDepolariseError,
+        test_applyTwoQubitDephaseError,
+        test_applyTwoQubitDepolariseError,
     };
 
     char testNames[NUM_TESTS][200] = {
@@ -1779,10 +1779,10 @@ int main (int narg, char** varg) {
         "addDensityMatrix",
         "calcPurity",
         "calcTotalProbability",
-        "oneQubitDephase",
-        "oneQubitDepolarise",
-        "twoQubitDephase",
-        "twoQubitDepolarise",
+        "applyOneQubitDephaseError",
+        "applyOneQubitDepolariseError",
+        "applyTwoQubitDephaseError",
+        "applyTwoQubitDepolariseError",
     };
     int passed=0;
     if (env.rank==0) printf("\nRunning unit tests\n");
