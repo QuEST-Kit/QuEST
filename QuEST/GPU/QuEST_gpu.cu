@@ -30,9 +30,7 @@ extern "C" {
 
 
 
-void statevec_initStateFromAmps(QubitRegister qureg, long long int startInd, REAL* reals, REAL* imags, long long int numAmps) {
-    
-    // !!! is this going to crap out if the user gives us an array of doubles, not reals?
+void statevec_setAmps(QubitRegister qureg, long long int startInd, REAL* reals, REAL* imags, long long int numAmps) {
     
     cudaDeviceSynchronize();
     cudaMemcpy(

@@ -218,18 +218,33 @@ void initClassicalState(QubitRegister qureg, long long int stateInd);
  */
 void initPureState(QubitRegister qureg, QubitRegister pure);
 
-/** Initialise qureg in the state suggested by the subset of amplitudes passed in \p reals and \p imags.
+/** Initialise qureg by specifying the complete statevector.
+ * The real and imaginary components of the amplitudes are passed in separate arrays,
+ * each of which must have length \p qureg.numAmpsTotal.
+ * There is no automatic checking that the passed arrays are L2 normalised.
+ *
+ * @param[in,out] qureg the object representing the set of qubits to be initialised
+ * @param[in] reals array of the real components of the new amplitudes
+ * @param[in] imags array of the imaginary components of the new amplitudes
+ * @throws exitWithError
+ *      if \p qureg is not a statevector (i.e. is a density matrix)
+ */
+void initStateFromAmps(QubitRegister qureg, REAL* reals, REAL* imags);
+
+/** Edit qureg to adopt the subset of amplitudes passed in \p reals and \p imags.
  * Only amplitudes with indices in [\p startInd, \p startInd + \p numAmps] will be changed, which means
  * the new state may not be L2 normalised. This allows the user to initialise a custom state by 
  * setting batches of amplitudes.
  *
- * @param[in,out] qureg the object representing the set of qubits to be initialised
+ * @param[in,out] qureg the statevector to modify
  * @param[in] startInd the index of the first amplitude in \p qureg's statevector to modify
  * @param[in] reals array of the real components of the new amplitudes
  * @param[in] imags array of the imaginary components of the new amplitudes
  * @param[in] numAmps the length of each of the reals and imags arrays.
+ * @throws exitWithError
+ *      if \p qureg is not a statevector (i.e. is a density matrix)
  */
-void initStateFromAmps(QubitRegister qureg, long long int startInd, REAL* reals, REAL* imags, long long int numAmps);
+void setAmps(QubitRegister qureg, long long int startInd, REAL* reals, REAL* imags, long long int numAmps);
 
 /** Set targetQureg to be a clone of copyQureg. 
  * Registers must either both be state-vectors, or both be density matrices.

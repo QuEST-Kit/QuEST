@@ -204,7 +204,7 @@ int test_initPureState(char testName[200]) {
     return passed;
 }
 
-int test_initStateFromAmps(char testName[200]) {
+int test_setAmps(char testName[200]) {
     
     int passed=1;
     int numQubits=3;
@@ -215,7 +215,7 @@ int test_initStateFromAmps(char testName[200]) {
     // test writing total state vec
     REAL reals[8] = {1,2,3,4,5,6,7,8};
     REAL imags[8] = {8,7,6,5,4,3,2,1};
-    initStateFromAmps(qureg, 0, reals, imags, qureg.numAmpsTotal);
+    setAmps(qureg, 0, reals, imags, qureg.numAmpsTotal);
     for (long long int i=0; i < 8; i++) {
         if (passed) passed = compareReals(getRealAmp(qureg,i), reals[i], 0);
         if (passed) passed = compareReals(getImagAmp(qureg,i), imags[i], 0);
@@ -223,7 +223,7 @@ int test_initStateFromAmps(char testName[200]) {
     
     // test writing only some of statevec
     initZeroState(qureg);
-    initStateFromAmps(qureg, 2, reals+2, imags+2, 4); // write {3,4,5,6} to inds {2,3,4,5}
+    setAmps(qureg, 2, reals+2, imags+2, 4); // write {3,4,5,6} to inds {2,3,4,5}
     for (long long int i=0; i < 8; i++) {
         
         // indices outside {2,3,4,5} are unchanged from |0> = {1,0,0,0}...
@@ -1709,7 +1709,7 @@ int main (int narg, char** varg) {
         test_initPlusState,
         test_initClassicalState,
         test_initPureState,
-        test_initStateFromAmps,
+        test_setAmps,
         test_pauliX,
         test_pauliY,
         test_pauliZ,
@@ -1750,7 +1750,7 @@ int main (int narg, char** varg) {
         "initPlusState",
         "initClassicalState",
         "initPureState",
-        "initStateFromAmps",
+        "setAmps",
         "pauliX",
         "pauliY",
         "pauliZ",

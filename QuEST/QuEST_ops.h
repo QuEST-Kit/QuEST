@@ -66,7 +66,7 @@ void statevec_initStateDebug(QubitRegister qureg);
 
 void statevec_initClassicalState(QubitRegister qureg, long long int stateInd);
 
-void statevec_initStateFromAmps(QubitRegister qureg, long long int startInd, REAL* reals, REAL* imags, long long int numAmps);
+void statevec_setAmps(QubitRegister qureg, long long int startInd, REAL* reals, REAL* imags, long long int numAmps);
 
 void statevec_cloneQubitRegister(QubitRegister targetQureg, QubitRegister copyQureg);
 

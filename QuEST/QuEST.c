@@ -126,16 +126,24 @@ void initPureState(QubitRegister qureg, QubitRegister pure) {
     else
         statevec_cloneQubitRegister(qureg, pure);
     
-    qasm_recordComment(qureg, "The register was initialised by an undisclosed given pure state.");
+    qasm_recordComment(qureg, "Here, the register was initialised to an undisclosed given pure state.");
 }
 
-void initStateFromAmps(QubitRegister qureg, long long int startInd, REAL* reals, REAL* imags, long long int numAmps) {
+void initStateFromAmps(QubitRegister qureg, REAL* reals, REAL* imags) {
+    validateStateVecQureg(qureg, __func__);
+    
+    statevec_setAmps(qureg, 0, reals, imags, qureg.numAmpsTotal);
+    
+    qasm_recordComment(qureg, "Here, the register was initialised to an undisclosed given pure state.");
+}
+
+void setAmps(QubitRegister qureg, long long int startInd, REAL* reals, REAL* imags, long long int numAmps) {
     validateStateVecQureg(qureg, __func__);
     validateNumAmps(qureg, startInd, numAmps, __func__);
     
-    statevec_initStateFromAmps(qureg, startInd, reals, imags, numAmps);
+    statevec_setAmps(qureg, startInd, reals, imags, numAmps);
     
-    qasm_recordComment(qureg, "(Initialising state from amplitude arrays not encoded)");
+    qasm_recordComment(qureg, "Here, some amplitudes in the statevector were manually edited.");
 }
 
 void cloneQubitRegister(QubitRegister targetQureg, QubitRegister copyQureg) {

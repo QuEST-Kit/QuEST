@@ -1013,7 +1013,7 @@ void densmatr_initPureStateLocal(QubitRegister targetQureg, QubitRegister copyQu
     }
 }
 
-void statevec_initStateFromAmps(QubitRegister qureg, long long int startInd, REAL* reals, REAL* imags, long long int numAmps) {
+void statevec_setAmps(QubitRegister qureg, long long int startInd, REAL* reals, REAL* imags, long long int numAmps) {
     
     /* this is actually distributed, since the user's code runs on every node */
     
