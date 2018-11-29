@@ -20,24 +20,24 @@ extern "C" {
  * @param[in] qubitId id of qubit to set to state 'outcome'
  * @param[in] value of qubit 'qubitId'
  */
-void initStateOfSingleQubit(QubitRegister *qureg, int qubitId, int outcome);
+void initStateOfSingleQubit(Qureg *qureg, int qubitId, int outcome);
 
 /**
  * Initialise the state vector of probability amplitudes to an (unphysical) state with
  * each component of each probability amplitude a unique floating point value. For debugging processes
  * @param[in,out] qureg object representing the set of qubits to be initialised
  */
-void initStateDebug(QubitRegister qureg);
+void initStateDebug(Qureg qureg);
 
 /** Initialises the wavefunction amplitudes according to those specified in a file.
  * For debugging purpsoses 
  */
-void initStateFromSingleFile(QubitRegister *qureg, char filename[200], QuESTEnv env);
+void initStateFromSingleFile(Qureg *qureg, char filename[200], QuESTEnv env);
 
 /** Return whether two given wavefunctions are equivalent within a given precision
  * Global phase included in equivalence check. For debugging purposes.
  */
-int compareStates(QubitRegister mq1, QubitRegister mq2, REAL precision);
+int compareStates(Qureg mq1, Qureg mq2, REAL precision);
 
 /** Report a list of CPU hostnames and the rank that is running on each if running with MPI enabled and an 
  * error message otherwise. For debugging purposes. 

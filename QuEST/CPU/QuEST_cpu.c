@@ -33,7 +33,7 @@ static int extractBit (const int locationOfBitFromRight, const long long int the
     return (theEncodedNumber & ( 1LL << locationOfBitFromRight )) >> locationOfBitFromRight;
 }
 
-void densmatr_oneQubitDephase(QubitRegister qureg, const int targetQubit, REAL dephase) {
+void densmatr_oneQubitDephase(Qureg qureg, const int targetQubit, REAL dephase) {
         REAL retain=1-dephase;
     
         const long long int numTasks = qureg.numAmpsPerChunk;
@@ -66,7 +66,7 @@ void densmatr_oneQubitDephase(QubitRegister qureg, const int targetQubit, REAL d
     }
 }
 
-void densmatr_twoQubitDephase(QubitRegister qureg, const int qubit1, const int qubit2, REAL dephase) {
+void densmatr_twoQubitDephase(Qureg qureg, const int qubit1, const int qubit2, REAL dephase) {
     REAL retain=1-dephase;
 
     const long long int numTasks = qureg.numAmpsPerChunk;
@@ -107,7 +107,7 @@ void densmatr_twoQubitDephase(QubitRegister qureg, const int qubit1, const int q
     }
 }
 
-void densmatr_oneQubitDepolariseLocal(QubitRegister qureg, const int targetQubit, REAL depolLevel) {
+void densmatr_oneQubitDepolariseLocal(Qureg qureg, const int targetQubit, REAL depolLevel) {
     REAL retain=1-depolLevel;
 
     const long long int numTasks = qureg.numAmpsPerChunk;
@@ -156,7 +156,7 @@ void densmatr_oneQubitDepolariseLocal(QubitRegister qureg, const int targetQubit
     }
 }
 
-void densmatr_oneQubitDepolariseDistributed(QubitRegister qureg, const int targetQubit, REAL depolLevel) {
+void densmatr_oneQubitDepolariseDistributed(Qureg qureg, const int targetQubit, REAL depolLevel) {
 
     // first do dephase part. 
     // TODO -- this might be more efficient to do at the same time as the depolarise if we move to
@@ -232,7 +232,7 @@ void densmatr_oneQubitDepolariseDistributed(QubitRegister qureg, const int targe
 }
 
 // @TODO
-void densmatr_twoQubitDepolariseLocal(QubitRegister qureg, int qubit1, int qubit2, REAL delta, REAL gamma) {
+void densmatr_twoQubitDepolariseLocal(Qureg qureg, int qubit1, int qubit2, REAL delta, REAL gamma) {
     const long long int numTasks = qureg.numAmpsPerChunk;
     long long int innerMaskQubit1 = 1LL << qubit1;
     long long int outerMaskQubit1= 1LL << (qubit1 + qureg.numQubitsRepresented);
@@ -334,7 +334,7 @@ void densmatr_twoQubitDepolariseLocal(QubitRegister qureg, int qubit1, int qubit
     }
 }
 
-void densmatr_twoQubitDepolariseLocalPart1(QubitRegister qureg, int qubit1, int qubit2, REAL delta) {
+void densmatr_twoQubitDepolariseLocalPart1(Qureg qureg, int qubit1, int qubit2, REAL delta) {
     const long long int numTasks = qureg.numAmpsPerChunk;
     long long int innerMaskQubit1 = 1LL << qubit1;
     long long int outerMaskQubit1= 1LL << (qubit1 + qureg.numQubitsRepresented);
@@ -387,7 +387,7 @@ void densmatr_twoQubitDepolariseLocalPart1(QubitRegister qureg, int qubit1, int 
     }
 }
 
-void densmatr_twoQubitDepolariseDistributed(QubitRegister qureg, const int targetQubit, 
+void densmatr_twoQubitDepolariseDistributed(Qureg qureg, const int targetQubit, 
         const int qubit2, REAL delta, REAL gamma) {
 
     long long int sizeInnerBlockQ1, sizeInnerHalfBlockQ1;
@@ -478,7 +478,7 @@ void densmatr_twoQubitDepolariseDistributed(QubitRegister qureg, const int targe
     }    
 }
 
-void densmatr_twoQubitDepolariseQ1LocalQ2DistributedPart3(QubitRegister qureg, const int targetQubit, 
+void densmatr_twoQubitDepolariseQ1LocalQ2DistributedPart3(Qureg qureg, const int targetQubit, 
         const int qubit2, REAL delta, REAL gamma) {
 
     long long int sizeInnerBlockQ1, sizeInnerHalfBlockQ1;
@@ -580,7 +580,7 @@ void densmatr_twoQubitDepolariseQ1LocalQ2DistributedPart3(QubitRegister qureg, c
 
 
 /* Without nested parallelisation, only the outer most loops which call below are parallelised */
-void zeroSomeAmps(QubitRegister qureg, long long int startInd, long long int numAmps) {
+void zeroSomeAmps(Qureg qureg, long long int startInd, long long int numAmps) {
     
 # ifdef _OPENMP
 # pragma omp parallel for schedule (static)
@@ -590,7 +590,7 @@ void zeroSomeAmps(QubitRegister qureg, long long int startInd, long long int num
         qureg.stateVec.imag[i] = 0;
     }
 }
-void normaliseSomeAmps(QubitRegister qureg, REAL norm, long long int startInd, long long int numAmps) {
+void normaliseSomeAmps(Qureg qureg, REAL norm, long long int startInd, long long int numAmps) {
     
 # ifdef _OPENMP
 # pragma omp parallel for schedule (static)
@@ -601,7 +601,7 @@ void normaliseSomeAmps(QubitRegister qureg, REAL norm, long long int startInd, l
     }
 }
 void alternateNormZeroingSomeAmpBlocks(
-    QubitRegister qureg, REAL norm, int normFirst, 
+    Qureg qureg, REAL norm, int normFirst, 
     long long int startAmpInd, long long int numAmps, long long int blockSize
 ) {     
     long long int numDubBlocks = numAmps / (2*blockSize);
@@ -631,7 +631,7 @@ void alternateNormZeroingSomeAmpBlocks(
 }
 
 /** Renorms (/prob) every | * outcome * >< * outcome * | state, setting all others to zero */
-void densmatr_collapseToKnownProbOutcome(QubitRegister qureg, const int measureQubit, int outcome, REAL totalStateProb) {
+void densmatr_collapseToKnownProbOutcome(Qureg qureg, const int measureQubit, int outcome, REAL totalStateProb) {
 
 	// only (global) indices (as bit sequence): '* outcome *(n+q) outcome *q are spared
     // where n = measureQubit, q = qureg.numQubitsRepresented.
@@ -707,7 +707,7 @@ void densmatr_collapseToKnownProbOutcome(QubitRegister qureg, const int measureQ
     
 }
 
-REAL densmatr_calcPurityLocal(QubitRegister qureg) {
+REAL densmatr_calcPurityLocal(Qureg qureg) {
     
     /* sum of qureg^2, which is sum_i |qureg[i]|^2 */
     long long int index;
@@ -736,7 +736,7 @@ REAL densmatr_calcPurityLocal(QubitRegister qureg) {
     return trace;
 }
 
-void densmatr_addDensityMatrix(QubitRegister combineQureg, REAL otherProb, QubitRegister otherQureg) {
+void densmatr_addDensityMatrix(Qureg combineQureg, REAL otherProb, Qureg otherQureg) {
     
     /* corresponding amplitudes live on the same node (same dimensions) */
     
@@ -769,7 +769,7 @@ void densmatr_addDensityMatrix(QubitRegister combineQureg, REAL otherProb, Qubit
 }
 
 /** computes a few dens-columns-worth of (vec^*T) dens * vec */
-REAL densmatr_calcFidelityLocal(QubitRegister qureg, QubitRegister pureState) {
+REAL densmatr_calcFidelityLocal(Qureg qureg, Qureg pureState) {
         
     /* Here, elements of pureState are not accessed (instead grabbed from qureg.pair).
      * We only consult the attributes.
@@ -847,7 +847,7 @@ REAL densmatr_calcFidelityLocal(QubitRegister qureg, QubitRegister pureState) {
     return globalSumRe;
 }
 
-Complex statevec_calcInnerProductLocal(QubitRegister bra, QubitRegister ket) {
+Complex statevec_calcInnerProductLocal(Qureg bra, Qureg ket) {
     
     REAL innerProdReal = 0;
     REAL innerProdImag = 0;
@@ -891,7 +891,7 @@ Complex statevec_calcInnerProductLocal(QubitRegister bra, QubitRegister ket) {
 
 
 
-void densmatr_initClassicalState (QubitRegister qureg, long long int stateInd)
+void densmatr_initClassicalState (Qureg qureg, long long int stateInd)
 {
     // dimension of the state vector
     long long int densityNumElems = qureg.numAmpsPerChunk;
@@ -930,7 +930,7 @@ void densmatr_initClassicalState (QubitRegister qureg, long long int stateInd)
 }
 
 
-void densmatr_initPlusState (QubitRegister qureg)
+void densmatr_initPlusState (Qureg qureg)
 {
     // |+><+| = sum_i 1/sqrt(2^N) |i> 1/sqrt(2^N) <j| = sum_ij 1/2^N |i><j|
     long long int dim = (1LL << qureg.numQubitsRepresented);
@@ -960,7 +960,7 @@ void densmatr_initPlusState (QubitRegister qureg)
     }
 }
 
-void densmatr_initPureStateLocal(QubitRegister targetQureg, QubitRegister copyQureg) {
+void densmatr_initPureStateLocal(Qureg targetQureg, Qureg copyQureg) {
     
     /* copyQureg amps aren't explicitly used - they're accessed through targetQureg.pair,
      * which contains the full pure statevector.
@@ -1013,7 +1013,7 @@ void densmatr_initPureStateLocal(QubitRegister targetQureg, QubitRegister copyQu
     }
 }
 
-void statevec_setAmps(QubitRegister qureg, long long int startInd, REAL* reals, REAL* imags, long long int numAmps) {
+void statevec_setAmps(Qureg qureg, long long int startInd, REAL* reals, REAL* imags, long long int numAmps) {
     
     /* this is actually distributed, since the user's code runs on every node */
     
@@ -1055,7 +1055,7 @@ void statevec_setAmps(QubitRegister qureg, long long int startInd, REAL* reals, 
     }
 }
 
-void statevec_createQubitRegister(QubitRegister *qureg, int numQubits, QuESTEnv env)
+void statevec_createQureg(Qureg *qureg, int numQubits, QuESTEnv env)
 {
     long long int numAmps = 1L << numQubits;
     long long int numAmpsPerRank = numAmps/env.numRanks;
@@ -1087,7 +1087,7 @@ void statevec_createQubitRegister(QubitRegister *qureg, int numQubits, QuESTEnv 
     qureg->isDensityMatrix = 0;
 }
 
-void statevec_destroyQubitRegister(QubitRegister qureg, QuESTEnv env){
+void statevec_destroyQureg(Qureg qureg, QuESTEnv env){
     
     free(qureg.stateVec.real);
     free(qureg.stateVec.imag);
@@ -1097,7 +1097,7 @@ void statevec_destroyQubitRegister(QubitRegister qureg, QuESTEnv env){
     }    
 }
 
-void statevec_reportStateToScreen(QubitRegister qureg, QuESTEnv env, int reportRank){
+void statevec_reportStateToScreen(Qureg qureg, QuESTEnv env, int reportRank){
     long long int index;
     int rank;
     if (qureg.numQubitsInStateVec<=5){
@@ -1121,7 +1121,7 @@ void statevec_reportStateToScreen(QubitRegister qureg, QuESTEnv env, int reportR
         }
     } else printf("Error: reportStateToScreen will not print output for systems of more than 5 qubits.\n");
 }
-void statevec_getEnvironmentString(QuESTEnv env, QubitRegister qureg, char str[200]){
+void statevec_getEnvironmentString(QuESTEnv env, Qureg qureg, char str[200]){
     int numThreads=1;
 # ifdef _OPENMP
     numThreads=omp_get_max_threads(); 
@@ -1129,7 +1129,7 @@ void statevec_getEnvironmentString(QuESTEnv env, QubitRegister qureg, char str[2
     sprintf(str, "%dqubits_CPU_%dranksx%dthreads", qureg.numQubitsInStateVec, env.numRanks, numThreads);
 }
 
-void statevec_initZeroState (QubitRegister qureg)
+void statevec_initZeroState (Qureg qureg)
 {
     long long int stateVecSize;
     long long int index;
@@ -1165,7 +1165,7 @@ void statevec_initZeroState (QubitRegister qureg)
     }
 }
 
-void statevec_initPlusState (QubitRegister qureg)
+void statevec_initPlusState (Qureg qureg)
 {
     long long int chunkSize, stateVecSize;
     long long int index;
@@ -1197,7 +1197,7 @@ void statevec_initPlusState (QubitRegister qureg)
     }
 }
 
-void statevec_initClassicalState (QubitRegister qureg, long long int stateInd)
+void statevec_initClassicalState (Qureg qureg, long long int stateInd)
 {
     long long int stateVecSize;
     long long int index;
@@ -1233,7 +1233,7 @@ void statevec_initClassicalState (QubitRegister qureg, long long int stateInd)
     }
 }
 
-void statevec_cloneQubitRegister(QubitRegister targetQureg, QubitRegister copyQureg) {
+void statevec_cloneQureg(Qureg targetQureg, Qureg copyQureg) {
     
     // registers are equal sized, so nodes hold the same state-vector partitions
     long long int stateVecSize;
@@ -1272,7 +1272,7 @@ void statevec_cloneQubitRegister(QubitRegister targetQureg, QubitRegister copyQu
  * @param[in] qubitId id of qubit to set to state 'outcome'
  * @param[in] value of qubit 'qubitId'
  */
-void statevec_initStateOfSingleQubit(QubitRegister *qureg, int qubitId, int outcome)
+void statevec_initStateOfSingleQubit(Qureg *qureg, int qubitId, int outcome)
 {
     long long int chunkSize, stateVecSize;
     long long int index;
@@ -1318,7 +1318,7 @@ void statevec_initStateOfSingleQubit(QubitRegister *qureg, int qubitId, int outc
  * each component of each probability amplitude a unique floating point value. For debugging processes
  * @param[in,out] qureg object representing the set of qubits to be initialised
  */
-void statevec_initStateDebug (QubitRegister qureg)
+void statevec_initStateDebug (Qureg qureg)
 {
     long long int chunkSize;
     long long int index;
@@ -1352,7 +1352,7 @@ void statevec_initStateDebug (QubitRegister qureg)
 }
 
 // returns 1 if successful, else 0
-int statevec_initStateFromSingleFile(QubitRegister *qureg, char filename[200], QuESTEnv env){
+int statevec_initStateFromSingleFile(Qureg *qureg, char filename[200], QuESTEnv env){
     long long int chunkSize, stateVecSize;
     long long int indexInChunk, totalIndex;
 
@@ -1402,7 +1402,7 @@ int statevec_initStateFromSingleFile(QubitRegister *qureg, char filename[200], Q
     return 1;
 }
 
-int statevec_compareStates(QubitRegister mq1, QubitRegister mq2, REAL precision){
+int statevec_compareStates(Qureg mq1, Qureg mq2, REAL precision){
     REAL diff;
     int chunkSize = mq1.numAmpsPerChunk;
     
@@ -1415,7 +1415,7 @@ int statevec_compareStates(QubitRegister mq1, QubitRegister mq2, REAL precision)
     return 1;
 }
 
-void statevec_compactUnitaryLocal (QubitRegister qureg, const int targetQubit, Complex alpha, Complex beta)
+void statevec_compactUnitaryLocal (Qureg qureg, const int targetQubit, Complex alpha, Complex beta)
 {
     long long int sizeBlock, sizeHalfBlock;
     long long int thisBlock, // current block
@@ -1474,7 +1474,7 @@ void statevec_compactUnitaryLocal (QubitRegister qureg, const int targetQubit, C
 
 } 
 
-void statevec_unitaryLocal(QubitRegister qureg, const int targetQubit, ComplexMatrix2 u)
+void statevec_unitaryLocal(Qureg qureg, const int targetQubit, ComplexMatrix2 u)
 {
     long long int sizeBlock, sizeHalfBlock;
     long long int thisBlock, // current block
@@ -1544,7 +1544,7 @@ void statevec_unitaryLocal(QubitRegister qureg, const int targetQubit, ComplexMa
  *  @param[in] stateVecLo probability amplitudes in lower half of a block
  *  @param[out] stateVecOut array section to update (will correspond to either the lower or upper half of a block)
  */
-void statevec_compactUnitaryDistributed (QubitRegister qureg, const int targetQubit,
+void statevec_compactUnitaryDistributed (Qureg qureg, const int targetQubit,
         Complex rot1, Complex rot2,
         ComplexArray stateVecUp,
         ComplexArray stateVecLo,
@@ -1600,7 +1600,7 @@ void statevec_compactUnitaryDistributed (QubitRegister qureg, const int targetQu
  *  @param[in] stateVecLo probability amplitudes in lower half of a block
  *  @param[out] stateVecOut array section to update (will correspond to either the lower or upper half of a block)
  */
-void statevec_unitaryDistributed (QubitRegister qureg, const int targetQubit,
+void statevec_unitaryDistributed (Qureg qureg, const int targetQubit,
         Complex rot1, Complex rot2,
         ComplexArray stateVecUp,
         ComplexArray stateVecLo,
@@ -1645,7 +1645,7 @@ void statevec_unitaryDistributed (QubitRegister qureg, const int targetQubit,
     }
 }
 
-void statevec_controlledCompactUnitaryLocal (QubitRegister qureg, const int controlQubit, const int targetQubit, 
+void statevec_controlledCompactUnitaryLocal (Qureg qureg, const int controlQubit, const int targetQubit, 
         Complex alpha, Complex beta)
 {
     long long int sizeBlock, sizeHalfBlock;
@@ -1712,7 +1712,7 @@ void statevec_controlledCompactUnitaryLocal (QubitRegister qureg, const int cont
 
 } 
 
-void statevec_multiControlledUnitaryLocal(QubitRegister qureg, const int targetQubit, 
+void statevec_multiControlledUnitaryLocal(Qureg qureg, const int targetQubit, 
         long long int mask, ComplexMatrix2 u)
 {
     long long int sizeBlock, sizeHalfBlock;
@@ -1775,7 +1775,7 @@ void statevec_multiControlledUnitaryLocal(QubitRegister qureg, const int targetQ
 
 }
 
-void statevec_controlledUnitaryLocal(QubitRegister qureg, const int controlQubit, const int targetQubit, 
+void statevec_controlledUnitaryLocal(Qureg qureg, const int controlQubit, const int targetQubit, 
         ComplexMatrix2 u)
 {
     long long int sizeBlock, sizeHalfBlock;
@@ -1854,7 +1854,7 @@ void statevec_controlledUnitaryLocal(QubitRegister qureg, const int controlQubit
  *  @param[in] stateVecLo probability amplitudes in lower half of a block
  *  @param[out] stateVecOut array section to update (will correspond to either the lower or upper half of a block)
  */
-void statevec_controlledCompactUnitaryDistributed (QubitRegister qureg, const int controlQubit, const int targetQubit,
+void statevec_controlledCompactUnitaryDistributed (Qureg qureg, const int controlQubit, const int targetQubit,
         Complex rot1, Complex rot2,
         ComplexArray stateVecUp,
         ComplexArray stateVecLo,
@@ -1917,7 +1917,7 @@ void statevec_controlledCompactUnitaryDistributed (QubitRegister qureg, const in
  *  @param[in] stateVecLo probability amplitudes in lower half of a block
  *  @param[out] stateVecOut array section to update (will correspond to either the lower or upper half of a block)
  */
-void statevec_controlledUnitaryDistributed (QubitRegister qureg, const int controlQubit, const int targetQubit,
+void statevec_controlledUnitaryDistributed (Qureg qureg, const int controlQubit, const int targetQubit,
         Complex rot1, Complex rot2,
         ComplexArray stateVecUp,
         ComplexArray stateVecLo,
@@ -1981,7 +1981,7 @@ void statevec_controlledUnitaryDistributed (QubitRegister qureg, const int contr
  *  @param[in] stateVecLo probability amplitudes in lower half of a block
  *  @param[out] stateVecOut array section to update (will correspond to either the lower or upper half of a block)
  */
-void statevec_multiControlledUnitaryDistributed (QubitRegister qureg, 
+void statevec_multiControlledUnitaryDistributed (Qureg qureg, 
         const int targetQubit, 
         long long int mask,
         Complex rot1, Complex rot2,
@@ -2031,7 +2031,7 @@ void statevec_multiControlledUnitaryDistributed (QubitRegister qureg,
     }
 }
 
-void statevec_pauliXLocal(QubitRegister qureg, const int targetQubit)
+void statevec_pauliXLocal(Qureg qureg, const int targetQubit)
 {
     long long int sizeBlock, sizeHalfBlock;
     long long int thisBlock, // current block
@@ -2090,7 +2090,7 @@ void statevec_pauliXLocal(QubitRegister qureg, const int targetQubit)
  *  @param[in] stateVecIn probability amplitudes in lower or upper half of a block depending on chunkId
  *  @param[out] stateVecOut array section to update (will correspond to either the lower or upper half of a block)
  */
-void statevec_pauliXDistributed (QubitRegister qureg, const int targetQubit,
+void statevec_pauliXDistributed (Qureg qureg, const int targetQubit,
         ComplexArray stateVecIn,
         ComplexArray stateVecOut)
 {
@@ -2118,7 +2118,7 @@ void statevec_pauliXDistributed (QubitRegister qureg, const int targetQubit,
     }
 } 
 
-void statevec_controlledNotLocal(QubitRegister qureg, const int controlQubit, const int targetQubit)
+void statevec_controlledNotLocal(Qureg qureg, const int controlQubit, const int targetQubit)
 {
     long long int sizeBlock, sizeHalfBlock;
     long long int thisBlock, // current block
@@ -2181,7 +2181,7 @@ void statevec_controlledNotLocal(QubitRegister qureg, const int controlQubit, co
  *  @param[in] stateVecIn probability amplitudes in lower or upper half of a block depending on chunkId
  *  @param[out] stateVecOut array section to update (will correspond to either the lower or upper half of a block)
  */
-void statevec_controlledNotDistributed (QubitRegister qureg, const int controlQubit, const int targetQubit,
+void statevec_controlledNotDistributed (Qureg qureg, const int controlQubit, const int targetQubit,
         ComplexArray stateVecIn,
         ComplexArray stateVecOut)
 {
@@ -2216,7 +2216,7 @@ void statevec_controlledNotDistributed (QubitRegister qureg, const int controlQu
     }
 } 
 
-void statevec_pauliYLocal(QubitRegister qureg, const int targetQubit, const int conjFac)
+void statevec_pauliYLocal(Qureg qureg, const int targetQubit, const int conjFac)
 {
     long long int sizeBlock, sizeHalfBlock;
     long long int thisBlock, // current block
@@ -2274,7 +2274,7 @@ void statevec_pauliYLocal(QubitRegister qureg, const int targetQubit, const int 
  *  @param[in] updateUpper flag, 1: updating upper values, 0: updating lower values in block
  *  @param[out] stateVecOut array section to update (will correspond to either the lower or upper half of a block)
  */
-void statevec_pauliYDistributed(QubitRegister qureg, const int targetQubit,
+void statevec_pauliYDistributed(Qureg qureg, const int targetQubit,
         ComplexArray stateVecIn,
         ComplexArray stateVecOut, 
         int updateUpper, const int conjFac)
@@ -2310,7 +2310,7 @@ void statevec_pauliYDistributed(QubitRegister qureg, const int targetQubit,
 
 
 
-void statevec_controlledPauliYLocal(QubitRegister qureg, const int controlQubit, const int targetQubit, const int conjFac)
+void statevec_controlledPauliYLocal(Qureg qureg, const int controlQubit, const int targetQubit, const int conjFac)
 {
     long long int sizeBlock, sizeHalfBlock;
     long long int thisBlock, // current block
@@ -2363,7 +2363,7 @@ void statevec_controlledPauliYLocal(QubitRegister qureg, const int controlQubit,
 }
 
 
-void statevec_controlledPauliYDistributed (QubitRegister qureg, const int controlQubit, const int targetQubit,
+void statevec_controlledPauliYDistributed (Qureg qureg, const int controlQubit, const int targetQubit,
         ComplexArray stateVecIn,
         ComplexArray stateVecOut, const int conjFac)
 {
@@ -2404,7 +2404,7 @@ void statevec_controlledPauliYDistributed (QubitRegister qureg, const int contro
 
 
 
-void statevec_hadamardLocal(QubitRegister qureg, const int targetQubit)
+void statevec_hadamardLocal(Qureg qureg, const int targetQubit)
 {
     long long int sizeBlock, sizeHalfBlock;
     long long int thisBlock, // current block
@@ -2465,7 +2465,7 @@ void statevec_hadamardLocal(QubitRegister qureg, const int targetQubit)
  *  @param[in] updateUpper flag, 1: updating upper values, 0: updating lower values in block
  *  @param[out] stateVecOut array section to update (will correspond to either the lower or upper half of a block)
  */
-void statevec_hadamardDistributed(QubitRegister qureg, const int targetQubit,
+void statevec_hadamardDistributed(Qureg qureg, const int targetQubit,
         ComplexArray stateVecUp,
         ComplexArray stateVecLo,
         ComplexArray stateVecOut,
@@ -2511,7 +2511,7 @@ void statevec_hadamardDistributed(QubitRegister qureg, const int targetQubit,
     }
 }
 
-void statevec_phaseShiftByTerm (QubitRegister qureg, const int targetQubit, Complex term)
+void statevec_phaseShiftByTerm (Qureg qureg, const int targetQubit, Complex term)
 {       
     long long int index;
     long long int stateVecSize;
@@ -2551,7 +2551,7 @@ void statevec_phaseShiftByTerm (QubitRegister qureg, const int targetQubit, Comp
     }
 }
 
-void statevec_controlledPhaseShift (QubitRegister qureg, const int idQubit1, const int idQubit2, REAL angle)
+void statevec_controlledPhaseShift (Qureg qureg, const int idQubit1, const int idQubit2, REAL angle)
 {
     long long int index;
     long long int stateVecSize;
@@ -2590,7 +2590,7 @@ void statevec_controlledPhaseShift (QubitRegister qureg, const int idQubit1, con
     }
 }
 
-void statevec_multiControlledPhaseShift(QubitRegister qureg, int *controlQubits, int numControlQubits, REAL angle)
+void statevec_multiControlledPhaseShift(Qureg qureg, int *controlQubits, int numControlQubits, REAL angle)
 {
     long long int index;
     long long int stateVecSize;
@@ -2634,7 +2634,7 @@ void statevec_multiControlledPhaseShift(QubitRegister qureg, int *controlQubits,
 }
 
 
-REAL densmatr_findProbabilityOfZeroLocal(QubitRegister qureg, const int measureQubit) {
+REAL densmatr_findProbabilityOfZeroLocal(Qureg qureg, const int measureQubit) {
     
     // computes first local index containing a diagonal element
     long long int localNumAmps = qureg.numAmpsPerChunk;
@@ -2689,7 +2689,7 @@ REAL densmatr_findProbabilityOfZeroLocal(QubitRegister qureg, const int measureQ
  *  @param[in] measureQubit qubit to measure
  *  @return probability of qubit measureQubit being zero
  */
-REAL statevec_findProbabilityOfZeroLocal (QubitRegister qureg,
+REAL statevec_findProbabilityOfZeroLocal (Qureg qureg,
         const int measureQubit)
 {
     // ----- sizes
@@ -2746,7 +2746,7 @@ REAL statevec_findProbabilityOfZeroLocal (QubitRegister qureg,
  *  @param[in] measureQubit qubit to measure
  *  @return probability of qubit measureQubit being zero
  */
-REAL statevec_findProbabilityOfZeroDistributed (QubitRegister qureg,
+REAL statevec_findProbabilityOfZeroDistributed (Qureg qureg,
         const int measureQubit)
 {
     // ----- measured probability
@@ -2786,7 +2786,7 @@ REAL statevec_findProbabilityOfZeroDistributed (QubitRegister qureg,
 
 
 
-void statevec_controlledPhaseFlip (QubitRegister qureg, const int idQubit1, const int idQubit2)
+void statevec_controlledPhaseFlip (Qureg qureg, const int idQubit1, const int idQubit2)
 {
     long long int index;
     long long int stateVecSize;
@@ -2817,7 +2817,7 @@ void statevec_controlledPhaseFlip (QubitRegister qureg, const int idQubit1, cons
     }
 }
 
-void statevec_multiControlledPhaseFlip(QubitRegister qureg, int *controlQubits, int numControlQubits)
+void statevec_multiControlledPhaseFlip(Qureg qureg, int *controlQubits, int numControlQubits)
 {
     long long int index;
     long long int stateVecSize;
@@ -2868,7 +2868,7 @@ void statevec_multiControlledPhaseFlip(QubitRegister qureg, int *controlQubits, 
  *  @param[in] totalProbability probability of qubit measureQubit being either zero or one
  *  @param[in] outcome to measure the probability of and set the state to -- either zero or one
  */
-void statevec_collapseToKnownProbOutcomeLocal(QubitRegister qureg, int measureQubit, int outcome, REAL totalProbability)
+void statevec_collapseToKnownProbOutcomeLocal(Qureg qureg, int measureQubit, int outcome, REAL totalProbability)
 {
     // ----- sizes
     long long int sizeBlock,                                  // size of blocks
@@ -2950,7 +2950,7 @@ void statevec_collapseToKnownProbOutcomeLocal(QubitRegister qureg, int measureQu
  *  @param[in] measureQubit qubit to measure
  *  @param[in] totalProbability probability of qubit measureQubit being zero
  */
-void statevec_collapseToKnownProbOutcomeDistributedRenorm (QubitRegister qureg, const int measureQubit, const REAL totalProbability)
+void statevec_collapseToKnownProbOutcomeDistributedRenorm (Qureg qureg, const int measureQubit, const REAL totalProbability)
 {
     // ----- temp variables
     long long int thisTask;                                   
@@ -2989,7 +2989,7 @@ void statevec_collapseToKnownProbOutcomeDistributedRenorm (QubitRegister qureg, 
  *  @param[in,out] qureg object representing the set of qubits
  *  @param[in] measureQubit qubit to measure
  */
-void statevec_collapseToOutcomeDistributedSetZero(QubitRegister qureg)
+void statevec_collapseToOutcomeDistributedSetZero(Qureg qureg)
 {
     // ----- temp variables
     long long int thisTask;                                   

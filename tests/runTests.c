@@ -23,7 +23,7 @@
 
 QuESTEnv env;
 
-void reportTest(QubitRegister qureg, char testName[200]){
+void reportTest(Qureg qureg, char testName[200]){
     printf("\nTest: %s\n", testName);
     reportStateToScreen(qureg, env, 0);
 }
@@ -42,10 +42,10 @@ int test_initZeroState(char testName[200]){
     int count=1;
 
     int numQubits=3;
-    QubitRegister mq, mqVerif; 
+    Qureg mq, mqVerif; 
 
-    mq = createQubitRegister(numQubits, env);
-    mqVerif = createQubitRegister(numQubits, env);
+    mq = createQureg(numQubits, env);
+    mqVerif = createQureg(numQubits, env);
 
     initZeroState(mq);
 
@@ -53,8 +53,8 @@ int test_initZeroState(char testName[200]){
     initStateFromSingleFile(&mqVerif, filename, env);
 
     passed = compareStates(mq, mqVerif, COMPARE_PRECISION);
-    destroyQubitRegister(mq, env);
-    destroyQubitRegister(mqVerif, env);
+    destroyQureg(mq, env);
+    destroyQureg(mqVerif, env);
 
     return passed;
 }
@@ -69,10 +69,10 @@ int test_initPlusState(char testName[200]){
     /*
      * state vectors
      */
-    QubitRegister mq, mqVerif; 
+    Qureg mq, mqVerif; 
     
-    mq = createQubitRegister(numQubits, env);
-    mqVerif = createQubitRegister(numQubits, env);
+    mq = createQureg(numQubits, env);
+    mqVerif = createQureg(numQubits, env);
 
     initPlusState(mq);
 
@@ -87,14 +87,14 @@ int test_initPlusState(char testName[200]){
         if (passed) passed = compareReals(prob, 0.5, COMPARE_PRECISION);
     }
         
-    destroyQubitRegister(mq, env);
-    destroyQubitRegister(mqVerif, env);
+    destroyQureg(mq, env);
+    destroyQureg(mqVerif, env);
     
    /*
     * density matrices
     */
-    QubitRegister dens;
-    dens = createDensityQubitRegister(numQubits, env);
+    Qureg dens;
+    dens = createDensityQureg(numQubits, env);
     
     initPlusState(dens);
     
@@ -103,7 +103,7 @@ int test_initPlusState(char testName[200]){
         if (passed) passed = compareReals(prob, 0.5, COMPARE_PRECISION);
     }
     
-    destroyQubitRegister(dens, env);
+    destroyQureg(dens, env);
 
     return passed;
 }
@@ -112,12 +112,12 @@ int test_initClassicalState(char testName[200]){
     int passed=1;
     int numQubits=3;
     int numAmps=1 << numQubits;
-    QubitRegister mq;
+    Qureg mq;
     
     /*
      * state-vectors
      */
-    mq = createQubitRegister(numQubits, env);
+    mq = createQureg(numQubits, env);
 
     // test every classical state
     for (long long int stateInd=0LL; stateInd < numAmps; stateInd++) {
@@ -132,13 +132,13 @@ int test_initClassicalState(char testName[200]){
         }
     }
 
-    destroyQubitRegister(mq, env);
+    destroyQureg(mq, env);
     
     /*
      * density matrices
      */
     
-    mq = createDensityQubitRegister(numQubits, env);
+    mq = createDensityQureg(numQubits, env);
     
     // test every classical state
     for (long long int stateInd=0LL; stateInd < numAmps; stateInd++) {
@@ -152,7 +152,7 @@ int test_initClassicalState(char testName[200]){
         }
     }
     
-    destroyQubitRegister(mq, env);
+    destroyQureg(mq, env);
     
     return passed;
 }
@@ -164,9 +164,9 @@ int test_initPureState(char testName[200]) {
     /*
      * for statevectors / purestates
      */
-    QubitRegister mq, mqVerif;
-    mq = createQubitRegister(numQubits, env);
-    mqVerif = createQubitRegister(numQubits, env);
+    Qureg mq, mqVerif;
+    mq = createQureg(numQubits, env);
+    mqVerif = createQureg(numQubits, env);
     
     initZeroState(mq);
     initStateDebug(mqVerif);
@@ -174,16 +174,16 @@ int test_initPureState(char testName[200]) {
     initPureState(mq, mqVerif);
     if (passed) passed = compareStates(mq, mqVerif, COMPARE_PRECISION);
     
-    destroyQubitRegister(mq, env);
-    destroyQubitRegister(mqVerif, env);
+    destroyQureg(mq, env);
+    destroyQureg(mqVerif, env);
         
     
     /*
      * for density matrices / mixed states
      */
-    QubitRegister dens, vec;
-    vec = createQubitRegister(numQubits, env);
-    dens = createDensityQubitRegister(numQubits, env);
+    Qureg dens, vec;
+    vec = createQureg(numQubits, env);
+    dens = createDensityQureg(numQubits, env);
 
     initPlusState(vec);
     initZeroState(dens);
@@ -198,8 +198,8 @@ int test_initPureState(char testName[200]) {
         if (passed) passed = compareReals(prob, 0.5, COMPARE_PRECISION);
     }
 
-    destroyQubitRegister(vec, env);
-    destroyQubitRegister(dens, env);
+    destroyQureg(vec, env);
+    destroyQureg(dens, env);
     
     return passed;
 }
@@ -209,8 +209,8 @@ int test_setAmps(char testName[200]) {
     int passed=1;
     int numQubits=3;
     
-    QubitRegister qureg;
-    qureg = createQubitRegister(numQubits, env);
+    Qureg qureg;
+    qureg = createQureg(numQubits, env);
     
     // test writing total state vec
     REAL reals[8] = {1,2,3,4,5,6,7,8};
@@ -242,7 +242,7 @@ int test_setAmps(char testName[200]) {
         }
     }
     
-    destroyQubitRegister(qureg, env);
+    destroyQureg(qureg, env);
     return passed;
 }
 
@@ -253,10 +253,10 @@ int test_pauliX(char testName[200]){
 
     int numQubits=3;
     int rotateQubit;
-    QubitRegister mq, mqVerif; 
+    Qureg mq, mqVerif; 
 
-    mq = createQubitRegister(numQubits, env);
-    mqVerif = createQubitRegister(numQubits, env);
+    mq = createQureg(numQubits, env);
+    mqVerif = createQureg(numQubits, env);
 
     for (int i=0; i<3; i++){
         initStateDebug(mq);
@@ -269,8 +269,8 @@ int test_pauliX(char testName[200]){
         if (passed) passed = compareStates(mq, mqVerif, COMPARE_PRECISION);
     }
 
-    destroyQubitRegister(mq, env);
-    destroyQubitRegister(mqVerif, env);
+    destroyQureg(mq, env);
+    destroyQureg(mqVerif, env);
 
     return passed;
 }
@@ -282,10 +282,10 @@ int test_pauliY(char testName[200]){
 
     int numQubits=3;
     int rotateQubit;
-    QubitRegister mq, mqVerif; 
+    Qureg mq, mqVerif; 
 
-    mq = createQubitRegister(numQubits, env);
-    mqVerif = createQubitRegister(numQubits, env);
+    mq = createQureg(numQubits, env);
+    mqVerif = createQureg(numQubits, env);
 
     for (int i=0; i<3; i++){
         initStateDebug(mq);
@@ -298,8 +298,8 @@ int test_pauliY(char testName[200]){
         if (passed) passed = compareStates(mq, mqVerif, COMPARE_PRECISION);
     }
 
-    destroyQubitRegister(mq, env);
-    destroyQubitRegister(mqVerif, env);
+    destroyQureg(mq, env);
+    destroyQureg(mqVerif, env);
 
     return passed;
 }
@@ -311,10 +311,10 @@ int test_pauliZ(char testName[200]){
 
     int numQubits=3;
     int rotateQubit;
-    QubitRegister mq, mqVerif; 
+    Qureg mq, mqVerif; 
 
-    mq = createQubitRegister(numQubits, env);
-    mqVerif = createQubitRegister(numQubits, env);
+    mq = createQureg(numQubits, env);
+    mqVerif = createQureg(numQubits, env);
 
     for (int i=0; i<3; i++){
         initStateDebug(mq);
@@ -327,8 +327,8 @@ int test_pauliZ(char testName[200]){
         if (passed) passed = compareStates(mq, mqVerif, COMPARE_PRECISION);
     }
 
-    destroyQubitRegister(mq, env);
-    destroyQubitRegister(mqVerif, env);
+    destroyQureg(mq, env);
+    destroyQureg(mqVerif, env);
 
     return passed;
 }
@@ -340,10 +340,10 @@ int test_hadamard(char testName[200]){
 
     int numQubits=3;
     int rotateQubit;
-    QubitRegister mq, mqVerif; 
+    Qureg mq, mqVerif; 
 
-    mq = createQubitRegister(numQubits, env);
-    mqVerif = createQubitRegister(numQubits, env);
+    mq = createQureg(numQubits, env);
+    mqVerif = createQureg(numQubits, env);
 
     for (int i=0; i<3; i++){
         initStateDebug(mq);
@@ -355,8 +355,8 @@ int test_hadamard(char testName[200]){
 
         if (passed) passed = compareStates(mq, mqVerif, COMPARE_PRECISION);
     }
-    destroyQubitRegister(mq, env);
-    destroyQubitRegister(mqVerif, env);
+    destroyQureg(mq, env);
+    destroyQureg(mqVerif, env);
 
     return passed;
 }
@@ -368,10 +368,10 @@ int test_sGate(char testName[200]){
 
     int numQubits=3;
     int rotateQubit;
-    QubitRegister mq, mqVerif; 
+    Qureg mq, mqVerif; 
 
-    mq = createQubitRegister(numQubits, env);
-    mqVerif = createQubitRegister(numQubits, env);
+    mq = createQureg(numQubits, env);
+    mqVerif = createQureg(numQubits, env);
 
     for (int i=0; i<3; i++){
         initStateDebug(mq);
@@ -383,8 +383,8 @@ int test_sGate(char testName[200]){
 
         if (passed) passed = compareStates(mq, mqVerif, COMPARE_PRECISION);
     }
-    destroyQubitRegister(mq, env);
-    destroyQubitRegister(mqVerif, env);
+    destroyQureg(mq, env);
+    destroyQureg(mqVerif, env);
 
     return passed;
 }
@@ -396,10 +396,10 @@ int test_tGate(char testName[200]){
 
     int numQubits=3;
     int rotateQubit;
-    QubitRegister mq, mqVerif; 
+    Qureg mq, mqVerif; 
 
-    mq = createQubitRegister(numQubits, env);
-    mqVerif = createQubitRegister(numQubits, env);
+    mq = createQureg(numQubits, env);
+    mqVerif = createQureg(numQubits, env);
 
     for (int i=0; i<3; i++){
         initStateDebug(mq);
@@ -411,8 +411,8 @@ int test_tGate(char testName[200]){
 
         if (passed) passed = compareStates(mq, mqVerif, COMPARE_PRECISION);
     }
-    destroyQubitRegister(mq, env);
-    destroyQubitRegister(mqVerif, env);
+    destroyQureg(mq, env);
+    destroyQureg(mqVerif, env);
 
     return passed;
 }
@@ -423,10 +423,10 @@ int test_phaseShift(char testName[200]) {
 
     int passed=1;
     int numQubits=3;
-    QubitRegister mq;
+    Qureg mq;
 
     // prepare |00>(|0> + |1>)/sqrt(2)
-    mq = createQubitRegister(numQubits, env);
+    mq = createQureg(numQubits, env);
     initZeroState(mq);
     hadamard(mq, 0);
     
@@ -440,11 +440,11 @@ int test_phaseShift(char testName[200]) {
     if (passed) passed = compareReals(getRealAmp(mq, 1),    -1/2.0, COMPARE_PRECISION);
     if (passed) passed = compareReals(getImagAmp(mq, 1),    -1/2.0, COMPARE_PRECISION);
     
-    destroyQubitRegister(mq, env);
+    destroyQureg(mq, env);
 
     // also test MPI version
     numQubits = 4;
-    mq = createQubitRegister(numQubits, env);
+    mq = createQureg(numQubits, env);
     
     // prepare state (|0> + |1>)/sqrt(2) |111>
     initZeroState(mq);
@@ -460,7 +460,7 @@ int test_phaseShift(char testName[200]) {
     if (passed) passed = compareReals(getImagAmp(mq, 15), -1/2.0, COMPARE_PRECISION);
     
     
-    destroyQubitRegister(mq, env);
+    destroyQureg(mq, env);
     
     return passed;
 }
@@ -475,8 +475,8 @@ int test_controlledPhaseShift(char testName[200]) {
     
     REAL pi = 3.1415926535897932384626;
     
-    QubitRegister mq;
-    mq = createQubitRegister(4, env);
+    Qureg mq;
+    mq = createQureg(4, env);
     
     // prepare state (|0> + |1>)/sqrt(2) |010>
     initZeroState(mq);
@@ -501,7 +501,7 @@ int test_controlledPhaseShift(char testName[200]) {
     controlledPhaseShift(mq, 0, 3, - pi * 5/4.0);
     if (passed) passed = compareReals(getRealAmp(mq, 3), 1/sqrt(2), COMPARE_PRECISION);
     
-    destroyQubitRegister(mq, env);
+    destroyQureg(mq, env);
     
     return passed;
 }
@@ -511,8 +511,8 @@ int test_multiControlledPhaseShift(char testName[200]) {
     
     REAL pi = 3.1415926535897932384626;
     
-    QubitRegister mq;
-    mq = createQubitRegister(4, env);
+    Qureg mq;
+    mq = createQureg(4, env);
     
     // prepare state (|0> + |1>)/sqrt(2) |010>
     initZeroState(mq);
@@ -532,7 +532,7 @@ int test_multiControlledPhaseShift(char testName[200]) {
     if (passed) passed = compareReals(getRealAmp(mq, 14), -1/2.0, COMPARE_PRECISION);
     if (passed) passed = compareReals(getImagAmp(mq, 14), -1/2.0, COMPARE_PRECISION);
     
-    destroyQubitRegister(mq, env);
+    destroyQureg(mq, env);
     
     return passed;
 }
@@ -544,10 +544,10 @@ int test_controlledNot(char testName[200]){
 
     int numQubits=3;
     int rotateQubit, controlQubit;
-    QubitRegister mq, mqVerif; 
+    Qureg mq, mqVerif; 
 
-    mq = createQubitRegister(numQubits, env);
-    mqVerif = createQubitRegister(numQubits, env);
+    mq = createQureg(numQubits, env);
+    mqVerif = createQureg(numQubits, env);
 
     for (int j=0; j<3; j++){
         controlQubit=j;
@@ -565,8 +565,8 @@ int test_controlledNot(char testName[200]){
         }
     }
 
-    destroyQubitRegister(mq, env);
-    destroyQubitRegister(mqVerif, env);
+    destroyQureg(mq, env);
+    destroyQureg(mqVerif, env);
 
     return passed;
 }
@@ -578,10 +578,10 @@ int test_controlledPhaseFlip(char testName[200]){
 
     int numQubits=3;
     int rotateQubit, controlQubit;
-    QubitRegister mq, mqVerif; 
+    Qureg mq, mqVerif; 
 
-    mq = createQubitRegister(numQubits, env);
-    mqVerif = createQubitRegister(numQubits, env);
+    mq = createQureg(numQubits, env);
+    mqVerif = createQureg(numQubits, env);
 
     for (int j=0; j<3; j++){
         controlQubit=j;
@@ -598,8 +598,8 @@ int test_controlledPhaseFlip(char testName[200]){
         }
     }
     
-    destroyQubitRegister(mq, env);
-    destroyQubitRegister(mqVerif, env);
+    destroyQureg(mq, env);
+    destroyQureg(mqVerif, env);
     
     return passed;
 }
@@ -610,10 +610,10 @@ int test_multiControlledPhaseFlip(char testName[200]){
     int count=1;
 
     int numQubits=4;
-    QubitRegister mq, mqVerif; 
+    Qureg mq, mqVerif; 
 
-    mq = createQubitRegister(numQubits, env);
-    mqVerif = createQubitRegister(numQubits, env);
+    mq = createQureg(numQubits, env);
+    mqVerif = createQureg(numQubits, env);
 
     int qubits[4]={0,1,2,3};
     initStateDebug(mq);
@@ -647,8 +647,8 @@ int test_multiControlledPhaseFlip(char testName[200]){
         passed = compareStates(mq, mqVerif, COMPARE_PRECISION);
     }
 
-    destroyQubitRegister(mq, env);
-    destroyQubitRegister(mqVerif, env);
+    destroyQureg(mq, env);
+    destroyQureg(mqVerif, env);
 
     return passed;
 }
@@ -658,7 +658,7 @@ int test_compactUnitary(char testName[200]){
 
     int numQubits=10;
     int rotQubit;
-    QubitRegister mq, mqVerif; 
+    Qureg mq, mqVerif; 
 
     REAL angs[3];
     Complex alpha, beta;
@@ -669,8 +669,8 @@ int test_compactUnitary(char testName[200]){
     beta.real  = sin(angs[0]) * cos(angs[2]);
     beta.imag  = sin(angs[0]) * sin(angs[2]);
     
-    mq = createQubitRegister(numQubits, env);
-    mqVerif = createQubitRegister(numQubits, env);
+    mq = createQureg(numQubits, env);
+    mqVerif = createQureg(numQubits, env);
 
     initStateDebug(mq);
     initStateDebug(mqVerif);
@@ -697,12 +697,12 @@ int test_compactUnitary(char testName[200]){
     // unitaries are relatively imprecise (10* needed for signle precision)
     if (passed) passed = compareStates(mq, mqVerif, 10*COMPARE_PRECISION);
 
-    destroyQubitRegister(mq, env);
-    destroyQubitRegister(mqVerif, env);
+    destroyQureg(mq, env);
+    destroyQureg(mqVerif, env);
 
     // check for normalisation
     numQubits=25;
-    mq = createQubitRegister(numQubits, env);
+    mq = createQureg(numQubits, env);
     initPlusState(mq);
     for (int i=0; i<numQubits; i++){
         rotQubit=i;
@@ -710,7 +710,7 @@ int test_compactUnitary(char testName[200]){
     }
     REAL outcome = calcTotalProb(mq);    
     if (passed) passed = compareReals(1.0, outcome, COMPARE_PRECISION);
-    destroyQubitRegister(mq, env);
+    destroyQureg(mq, env);
 
 
     return passed;
@@ -721,7 +721,7 @@ int test_unitary(char testName[200]){
 
     int numQubits=10;
     int rotQubit;
-    QubitRegister mq, mqVerif; 
+    Qureg mq, mqVerif; 
 
     REAL angs[3];
     Complex alpha, beta;
@@ -738,8 +738,8 @@ int test_unitary(char testName[200]){
     u.r1c0 = (Complex) {.real=beta.real, .imag=beta.imag};
     u.r1c1 = (Complex) {.real=alpha.real, .imag=-alpha.imag};
 
-    mq = createQubitRegister(numQubits, env);
-    mqVerif = createQubitRegister(numQubits, env);
+    mq = createQureg(numQubits, env);
+    mqVerif = createQureg(numQubits, env);
 
     initStateDebug(mq);
     initStateDebug(mqVerif);
@@ -767,12 +767,12 @@ int test_unitary(char testName[200]){
     // unitaries are relatively imprecise (10* needed for single precision)
     if (passed) passed = compareStates(mq, mqVerif, 10*COMPARE_PRECISION);
 
-    destroyQubitRegister(mq, env);
-    destroyQubitRegister(mqVerif, env);
+    destroyQureg(mq, env);
+    destroyQureg(mqVerif, env);
 
     // check for normalisation
     numQubits = 25;
-    mq = createQubitRegister(numQubits, env);
+    mq = createQureg(numQubits, env);
     initPlusState(mq);
     for (int i=0; i<numQubits; i++){
         rotQubit=i;
@@ -780,7 +780,7 @@ int test_unitary(char testName[200]){
     }
     REAL outcome = calcTotalProb(mq);    
     if (passed) passed = compareReals(1.0, outcome, COMPARE_PRECISION);
-    destroyQubitRegister(mq, env);
+    destroyQureg(mq, env);
 
     return passed;
 }
@@ -792,7 +792,7 @@ int test_controlledCompactUnitary(char testName[200]){
 
     int numQubits=3;
     int rotQubit, controlQubit;
-    QubitRegister mq, mqVerif; 
+    Qureg mq, mqVerif; 
 
     // assumes compactUnitary function is correct
 
@@ -807,8 +807,8 @@ int test_controlledCompactUnitary(char testName[200]){
     beta.real  = sin(ang1) * cos(ang3);
     beta.imag  = sin(ang1) * sin(ang3);
 
-    mq = createQubitRegister(numQubits, env);
-    mqVerif = createQubitRegister(numQubits, env);
+    mq = createQureg(numQubits, env);
+    mqVerif = createQureg(numQubits, env);
 
     for (int j=0; j<3; j++){
         controlQubit=j;
@@ -824,8 +824,8 @@ int test_controlledCompactUnitary(char testName[200]){
             if (passed) passed = compareStates(mq, mqVerif, COMPARE_PRECISION);
         }
     }
-    destroyQubitRegister(mq, env);
-    destroyQubitRegister(mqVerif, env);
+    destroyQureg(mq, env);
+    destroyQureg(mqVerif, env);
 
     return passed;
 }
@@ -837,7 +837,7 @@ int test_controlledUnitary(char testName[200]){
     int rotQubit, controlQubit;
 
     ComplexMatrix2 u;
-    QubitRegister mq, mqVerif; 
+    Qureg mq, mqVerif; 
 
     // assumes controlledCompactUnitary function is correct
 
@@ -857,8 +857,8 @@ int test_controlledUnitary(char testName[200]){
     u.r1c0 = (Complex) {.real=beta.real, .imag=beta.imag};
     u.r1c1 = (Complex) {.real=alpha.real, .imag=-alpha.imag};
 
-    mq = createQubitRegister(numQubits, env);
-    mqVerif = createQubitRegister(numQubits, env);
+    mq = createQureg(numQubits, env);
+    mqVerif = createQureg(numQubits, env);
 
     for (int j=0; j<numQubits; j++){
         controlQubit=j;
@@ -874,8 +874,8 @@ int test_controlledUnitary(char testName[200]){
         }
     }
 
-    destroyQubitRegister(mq, env);
-    destroyQubitRegister(mqVerif, env);
+    destroyQureg(mq, env);
+    destroyQureg(mqVerif, env);
 
     return passed;
 }
@@ -888,7 +888,7 @@ int test_multiControlledUnitary(char testName[200]){
     int numQubits=10;
     int rotQubit, controlQubit;
     ComplexMatrix2 u;
-    QubitRegister mq, mqVerif; 
+    Qureg mq, mqVerif; 
 
     // assumes controlledCompactUnitary function is correct
 
@@ -908,8 +908,8 @@ int test_multiControlledUnitary(char testName[200]){
     u.r1c0 = (Complex) {.real=beta.real, .imag=beta.imag};
     u.r1c1 = (Complex) {.real=alpha.real, .imag=-alpha.imag};
 
-    mq = createQubitRegister(numQubits, env);
-    mqVerif = createQubitRegister(numQubits, env);
+    mq = createQureg(numQubits, env);
+    mqVerif = createQureg(numQubits, env);
 
     // test mask contains one control qubit
     for (int j=0; j<numQubits; j++){
@@ -926,14 +926,14 @@ int test_multiControlledUnitary(char testName[200]){
         }
     }
 
-    destroyQubitRegister(mq, env);
-    destroyQubitRegister(mqVerif, env);
+    destroyQureg(mq, env);
+    destroyQureg(mqVerif, env);
 
     // randomly test a few different other multi control qubit masks 
     numQubits=4;
     int controlQubits[3];
-    mq = createQubitRegister(numQubits, env);
-    mqVerif = createQubitRegister(numQubits, env);
+    mq = createQureg(numQubits, env);
+    mqVerif = createQureg(numQubits, env);
 
     rotQubit=3;
     controlQubits[0]=0;
@@ -956,8 +956,8 @@ int test_multiControlledUnitary(char testName[200]){
     initStateFromSingleFile(&mqVerif, filename, env);
     if (passed) passed = compareStates(mq, mqVerif, COMPARE_PRECISION);
 
-    destroyQubitRegister(mq, env);
-    destroyQubitRegister(mqVerif, env);
+    destroyQureg(mq, env);
+    destroyQureg(mqVerif, env);
 
     return passed;
 }
@@ -974,8 +974,8 @@ int test_calcProbOfOutcome(char testName[200]){
      * state vector
      */
 
-    QubitRegister mq; 
-    mq = createQubitRegister(numQubits, env);
+    Qureg mq; 
+    mq = createQureg(numQubits, env);
 
     // test qubit = |0> 
     initZeroState(mq);
@@ -1007,7 +1007,7 @@ int test_calcProbOfOutcome(char testName[200]){
         if (passed) passed = compareReals(0.5, outcome, COMPARE_PRECISION);
     }
 
-    destroyQubitRegister(mq, env);
+    destroyQureg(mq, env);
     
    /*
     * density matrix
@@ -1030,9 +1030,9 @@ int test_collapseToOutcome(char testName[200]){
      * state-vectors
      */
     
-    QubitRegister mq, mqVerif;
-    mq = createQubitRegister(numQubits, env);
-    mqVerif = createQubitRegister(numQubits, env);
+    Qureg mq, mqVerif;
+    mq = createQureg(numQubits, env);
+    mqVerif = createQureg(numQubits, env);
 
     // test qubit = |0> 
     for (qubit=0; qubit<numQubits; qubit++){
@@ -1082,16 +1082,16 @@ int test_collapseToOutcome(char testName[200]){
         if (passed) passed = compareReals(0.5, prob, COMPARE_PRECISION);
         if (passed) passed = compareStates(mq, mqVerif, COMPARE_PRECISION);
     }
-    destroyQubitRegister(mq, env);
-    destroyQubitRegister(mqVerif, env);
+    destroyQureg(mq, env);
+    destroyQureg(mqVerif, env);
     
    /*
     * density matrices
     */
     
-    QubitRegister reg, regVerif;
-    reg = createDensityQubitRegister(numQubits, env);
-    regVerif = createDensityQubitRegister(numQubits, env);
+    Qureg reg, regVerif;
+    reg = createDensityQureg(numQubits, env);
+    regVerif = createDensityQureg(numQubits, env);
     
     // test pure state collapse correctly
     
@@ -1122,7 +1122,7 @@ int test_collapseToOutcome(char testName[200]){
     hadamard(regVerif,1);
     hadamard(regVerif,2); // |++>|0>
     addDensityMatrix(reg, 1-0.3, regVerif); // 0.3|000><000| + 0.7|++0><++0|
-    cloneQubitRegister(regVerif, reg);
+    cloneQureg(regVerif, reg);
     collapseToOutcome(reg, 0, 0);
     if (passed) passed = compareStates(reg, regVerif, COMPARE_PRECISION);
     if (passed) passed = (calcPurity(reg) < 1.0); // we should still be mixed
@@ -1145,8 +1145,8 @@ int test_collapseToOutcome(char testName[200]){
     if (passed) passed = compareReals(calcProbOfOutcome(reg, 0, 1), 1, COMPARE_PRECISION);
     if (passed) passed = (calcPurity(reg) < 1.0); // we should still be mixed
     
-    destroyQubitRegister(reg, env);
-    destroyQubitRegister(regVerif, env);
+    destroyQureg(reg, env);
+    destroyQureg(regVerif, env);
     
     return passed;
 }
@@ -1155,12 +1155,12 @@ int test_measure(char testName[200]){
     int passed=1;
 
     int numQubits=4;
-    QubitRegister mq, mqVerif;
+    Qureg mq, mqVerif;
     int qubit;
     int outcome;
 
-    mq = createQubitRegister(numQubits, env);
-    mqVerif = createQubitRegister(numQubits, env);
+    mq = createQureg(numQubits, env);
+    mqVerif = createQureg(numQubits, env);
 
     // test qubit = |0> 
     for (qubit=0; qubit<numQubits; qubit++){
@@ -1196,8 +1196,8 @@ int test_measure(char testName[200]){
         }
         if (env.rank==0) printf("]\n");
     }
-    destroyQubitRegister(mq, env);
-    destroyQubitRegister(mqVerif, env);
+    destroyQureg(mq, env);
+    destroyQureg(mqVerif, env);
 
     return passed;
 }
@@ -1206,13 +1206,13 @@ int test_measureWithStats(char testName[200]){
     int passed=1;
 
     int numQubits=4;
-    QubitRegister mq, mqVerif;
+    Qureg mq, mqVerif;
     int qubit;
     int outcome;
     REAL prob;
 
-    mq = createQubitRegister(numQubits, env);
-    mqVerif = createQubitRegister(numQubits, env);
+    mq = createQureg(numQubits, env);
+    mqVerif = createQureg(numQubits, env);
 
     // test qubit = |0> 
     for (qubit=0; qubit<numQubits; qubit++){
@@ -1242,8 +1242,8 @@ int test_measureWithStats(char testName[200]){
         outcome = measureWithStats(mq, qubit, &prob);
         if (passed) passed = compareReals(prob, 0.5, COMPARE_PRECISION);
     }
-    destroyQubitRegister(mq, env);
-    destroyQubitRegister(mqVerif, env);
+    destroyQureg(mq, env);
+    destroyQureg(mqVerif, env);
 
     return passed;
 }
@@ -1254,8 +1254,8 @@ int test_getRealAmp(char testName[200]){
     int numQubits=5;
     REAL ampEl=0, ampElVerif=0;
 
-    QubitRegister mq; 
-    mq = createQubitRegister(numQubits, env);
+    Qureg mq; 
+    mq = createQureg(numQubits, env);
     initStateDebug(mq);
 
     for (int i=0; i<getNumAmps(mq); i++){
@@ -1263,7 +1263,7 @@ int test_getRealAmp(char testName[200]){
         ampEl = getRealAmp(mq, i);
         if (passed) passed = (ampElVerif==ampEl);
     }
-    destroyQubitRegister(mq, env);
+    destroyQureg(mq, env);
 
     return passed;
 }
@@ -1274,8 +1274,8 @@ int test_getImagAmp(char testName[200]){
     int numQubits=5;
     REAL ampEl=0, ampElVerif=0;
 
-    QubitRegister mq; 
-    mq = createQubitRegister(numQubits, env);
+    Qureg mq; 
+    mq = createQureg(numQubits, env);
 
     initStateDebug(mq);
     for (int i=0; i<getNumAmps(mq); i++){
@@ -1283,7 +1283,7 @@ int test_getImagAmp(char testName[200]){
         ampEl = getImagAmp(mq, i);
         if (passed) passed = (ampElVerif==ampEl);
     }
-    destroyQubitRegister(mq, env);
+    destroyQureg(mq, env);
 
     return passed;
 }
@@ -1295,8 +1295,8 @@ int test_getProbAmp(char testName[200]){
     REAL ampEl=0, ampElVerif=0;
     REAL realEl, imagEl;
 
-    QubitRegister mq; 
-    mq = createQubitRegister(numQubits, env);
+    Qureg mq; 
+    mq = createQureg(numQubits, env);
 
     initStateDebug(mq);
     for (int i=0; i<getNumAmps(mq); i++){
@@ -1306,7 +1306,7 @@ int test_getProbAmp(char testName[200]){
         ampEl = getProbAmp(mq, i);
         if (passed) passed = (ampElVerif==ampEl);
     }
-    destroyQubitRegister(mq, env);
+    destroyQureg(mq, env);
 
     return passed;
 }
@@ -1318,9 +1318,9 @@ int test_calcInnerProduct(char testName[200]) {
     int passed = 1;
     
     // create two 3-qubit pure states
-    QubitRegister bra, ket;
-    bra = createQubitRegister(3, env);
-    ket = createQubitRegister(3, env);
+    Qureg bra, ket;
+    bra = createQureg(3, env);
+    ket = createQureg(3, env);
     Complex prod;
     
     // when states are equal, <s|s> = 1
@@ -1362,8 +1362,8 @@ int test_calcInnerProduct(char testName[200]) {
     if (passed) passed = compareReals(prod.real, -1/2.0, COMPARE_PRECISION);
     if (passed) passed = compareReals(prod.imag,  1/2.0, COMPARE_PRECISION);
     
-    destroyQubitRegister(bra, env);
-    destroyQubitRegister(ket, env);
+    destroyQureg(bra, env);
+    destroyQureg(ket, env);
     return passed;
 }
 
@@ -1372,27 +1372,27 @@ int test_calcFidelity(char testName[200]) {
     int numQubits=5;
     REAL fid;
     
-    QubitRegister pure;
-    pure = createQubitRegister(numQubits, env);
+    Qureg pure;
+    pure = createQureg(numQubits, env);
     
     /*
      * test pure fid = |<a|b>|^2 (trivially calcInnerProduct, so not rigorous)
      */
-    QubitRegister otherPure;
-    otherPure = createQubitRegister(numQubits, env);
+    Qureg otherPure;
+    otherPure = createQureg(numQubits, env);
     
     initZeroState(pure);
     initPlusState(otherPure); // <0|+> = 1/sqrt(2^n)
     fid = calcFidelity(otherPure, pure); // |<0|+>|^2 = 1/2^n
     if (passed) passed = compareReals(fid, 1.0/pow(2.0,numQubits), COMPARE_PRECISION);
     
-    destroyQubitRegister(otherPure, env);
+    destroyQureg(otherPure, env);
     
     /* 
      * test mixed fid = <a| b |a>
      */
-    QubitRegister mixed;
-    mixed = createDensityQubitRegister(numQubits, env);
+    Qureg mixed;
+    mixed = createDensityQureg(numQubits, env);
     
     // <0|0><0|0> = 1
     initZeroState(pure);
@@ -1413,8 +1413,8 @@ int test_calcFidelity(char testName[200]) {
     if (passed) passed = compareReals(fid, 1/(REAL)(1<<numQubits), COMPARE_PRECISION);
     
     // <0| .2 |0><0| + .8 |..1><..1| |0> = .2
-    QubitRegister otherMixed;
-    otherMixed = createDensityQubitRegister(numQubits, env);
+    Qureg otherMixed;
+    otherMixed = createDensityQureg(numQubits, env);
     initZeroState(pure);
     initZeroState(mixed);
     initClassicalState(otherMixed, 1);
@@ -1422,11 +1422,11 @@ int test_calcFidelity(char testName[200]) {
     fid = calcFidelity(mixed, pure); 
     if (passed) passed = compareReals(fid, 0.2, COMPARE_PRECISION);
         
-    destroyQubitRegister(otherMixed, env);
-    destroyQubitRegister(mixed, env);
+    destroyQureg(otherMixed, env);
+    destroyQureg(mixed, env);
     
     // finish
-    destroyQubitRegister(pure, env);
+    destroyQureg(pure, env);
     return passed;
 }
 
@@ -1435,9 +1435,9 @@ int test_addDensityMatrix(char testName[200]) {
     int numQubits=5;
     
     REAL prob;
-    QubitRegister reg1, reg2;
-    reg1 = createDensityQubitRegister(numQubits, env);
-    reg2 = createDensityQubitRegister(numQubits, env);
+    Qureg reg1, reg2;
+    reg1 = createDensityQureg(numQubits, env);
+    reg2 = createDensityQureg(numQubits, env);
     
     // prob_0( p1 |0...><0...| + (1-p1) |1...><1...| ) = p1
     REAL p1 = 0.3;
@@ -1456,8 +1456,8 @@ int test_addDensityMatrix(char testName[200]) {
     REAL trueProb = p2*p1 + (1-p2)*0.5;
     if (passed) passed = compareReals(prob, trueProb, COMPARE_PRECISION);
     
-    destroyQubitRegister(reg1, env);
-    destroyQubitRegister(reg2, env);
+    destroyQureg(reg1, env);
+    destroyQureg(reg2, env);
     return passed;
 }
 
@@ -1466,8 +1466,8 @@ int test_calcPurity(char testName[200]) {
     int numQubits=3;
     REAL purity;
     
-    QubitRegister qureg;
-    qureg = createDensityQubitRegister(numQubits, env);
+    Qureg qureg;
+    qureg = createDensityQureg(numQubits, env);
     
     // pure states are pure
     initPlusState(qureg);
@@ -1479,8 +1479,8 @@ int test_calcPurity(char testName[200]) {
         if (passed) passed = compareReals(calcPurity(qureg), 1, COMPARE_PRECISION);
     }
     
-    QubitRegister otherQureg;
-    otherQureg = createDensityQubitRegister(numQubits, env);
+    Qureg otherQureg;
+    otherQureg = createDensityQureg(numQubits, env);
     
     // a|+><+| + b|+><+| = (a+b) |+><+| (pure)
     initPlusState(qureg);
@@ -1517,8 +1517,8 @@ int test_calcPurity(char testName[200]) {
     purity = calcPurity(qureg);
     if (passed) passed = compareReals(purity, p1*p1 - p1 + 1, COMPARE_PRECISION);
         
-    destroyQubitRegister(qureg, env);
-    destroyQubitRegister(otherQureg, env);
+    destroyQureg(qureg, env);
+    destroyQureg(otherQureg, env);
     return passed;
 }
 
@@ -1530,8 +1530,8 @@ int test_calcTotalProb(char testName[200]) {
     /* 
      * state-vector
      */
-    QubitRegister qureg;
-    qureg = createQubitRegister(numQubits, env);
+    Qureg qureg;
+    qureg = createQureg(numQubits, env);
     
     hadamard(qureg, 0);
     rotateY(qureg, 0, 0.1);
@@ -1543,12 +1543,12 @@ int test_calcTotalProb(char testName[200]) {
     prob = calcTotalProb(qureg);
     if (passed) passed = compareReals(prob, 1, COMPARE_PRECISION);
     
-    destroyQubitRegister(qureg, env);
+    destroyQureg(qureg, env);
     
     /* 
      * density matrix
      */
-    qureg = createDensityQubitRegister(numQubits, env);
+    qureg = createDensityQureg(numQubits, env);
 
     hadamard(qureg, 0);
     rotateY(qureg, 0, 0.1);
@@ -1561,7 +1561,7 @@ int test_calcTotalProb(char testName[200]) {
         
     if (passed) passed = compareReals(prob, 1, COMPARE_PRECISION);
     
-    destroyQubitRegister(qureg, env);
+    destroyQureg(qureg, env);
     return passed;
 }
 
@@ -1573,9 +1573,9 @@ int test_applyOneQubitDepolariseError(char testName[200]) {
     int targetQubit;
     REAL depolProb=0.375;
     
-    QubitRegister qureg, quregVerif;
-    qureg = createDensityQubitRegister(numQubits, env);
-    quregVerif = createDensityQubitRegister(numQubits, env);
+    Qureg qureg, quregVerif;
+    qureg = createDensityQureg(numQubits, env);
+    quregVerif = createDensityQureg(numQubits, env);
 
     for (int i=0; i<numQubits; i++){
         initStateDebug(qureg);
@@ -1589,8 +1589,8 @@ int test_applyOneQubitDepolariseError(char testName[200]) {
 
         if (passed) passed = compareStates(qureg, quregVerif, COMPARE_PRECISION);
     }
-    destroyQubitRegister(qureg, env);
-    destroyQubitRegister(quregVerif, env);
+    destroyQureg(qureg, env);
+    destroyQureg(quregVerif, env);
 
     return passed;
 }
@@ -1603,9 +1603,9 @@ int test_applyOneQubitDephaseError(char testName[200]) {
     int targetQubit;
     REAL dephaseProb=0.25;
     
-    QubitRegister qureg, quregVerif;
-    qureg = createDensityQubitRegister(numQubits, env);
-    quregVerif = createDensityQubitRegister(numQubits, env);
+    Qureg qureg, quregVerif;
+    qureg = createDensityQureg(numQubits, env);
+    quregVerif = createDensityQureg(numQubits, env);
 
     for (int i=0; i<numQubits; i++){
         initStateDebug(qureg);
@@ -1619,8 +1619,8 @@ int test_applyOneQubitDephaseError(char testName[200]) {
 
         if (passed) passed = compareStates(qureg, quregVerif, COMPARE_PRECISION);
     }
-    destroyQubitRegister(qureg, env);
-    destroyQubitRegister(quregVerif, env);
+    destroyQureg(qureg, env);
+    destroyQureg(quregVerif, env);
 
     return passed;
 }
@@ -1634,9 +1634,9 @@ int test_applyTwoQubitDepolariseError(char testName[200]) {
     int qubit1, qubit2;
     REAL depolProb=0.46875;
     
-    QubitRegister qureg, quregVerif;
-    qureg = createDensityQubitRegister(numQubits, env);
-    quregVerif = createDensityQubitRegister(numQubits, env);
+    Qureg qureg, quregVerif;
+    qureg = createDensityQureg(numQubits, env);
+    quregVerif = createDensityQureg(numQubits, env);
 
     int count=0;
     for (int i=0; i<3; i++){
@@ -1655,8 +1655,8 @@ int test_applyTwoQubitDepolariseError(char testName[200]) {
         if (passed) passed = compareStates(qureg, quregVerif, COMPARE_PRECISION);
         }
     }
-    destroyQubitRegister(qureg, env);
-    destroyQubitRegister(quregVerif, env);
+    destroyQureg(qureg, env);
+    destroyQureg(quregVerif, env);
 
     return passed;
 }
@@ -1670,9 +1670,9 @@ int test_applyTwoQubitDephaseError(char testName[200]) {
     int qubit1, qubit2;
     REAL dephaseProb=0.375;
     
-    QubitRegister qureg, quregVerif;
-    qureg = createDensityQubitRegister(numQubits, env);
-    quregVerif = createDensityQubitRegister(numQubits, env);
+    Qureg qureg, quregVerif;
+    qureg = createDensityQureg(numQubits, env);
+    quregVerif = createDensityQureg(numQubits, env);
 
     int count=0;
     for (int i=0; i<3; i++){
@@ -1691,8 +1691,8 @@ int test_applyTwoQubitDephaseError(char testName[200]) {
         if (passed) passed = compareStates(qureg, quregVerif, COMPARE_PRECISION);
         }
     }
-    destroyQubitRegister(qureg, env);
-    destroyQubitRegister(quregVerif, env);
+    destroyQureg(qureg, env);
+    destroyQureg(quregVerif, env);
 
     return passed;
 }

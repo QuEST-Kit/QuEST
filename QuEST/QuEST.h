@@ -58,7 +58,7 @@ typedef struct {
 /** Represents a system of qubits.
  * Qubits are zero-based
  */
-typedef struct QubitRegister
+typedef struct Qureg
 {
     //! Whether this instance is a density-state representation
     int isDensityMatrix;
@@ -89,7 +89,7 @@ typedef struct QubitRegister
     //! Storage for generated QASM output
     QASMLogger* qasmLog;
     
-} QubitRegister;
+} Qureg;
 
 /** Information about the environment the program is running in.
 In practice, this holds info about MPI ranks and helps to hide MPI initialization code
@@ -103,7 +103,7 @@ typedef struct QuESTEnv
 // Codes for Z-axis phase gate variations
 enum phaseGateType {SIGMA_Z=0, S_GATE=1, T_GATE=2};
 
-/** Create a QubitRegister object representing a set of qubits which will remain in a pure state.
+/** Create a Qureg object representing a set of qubits which will remain in a pure state.
  * Allocate space for state vector of probability amplitudes, including space for temporary values to be copied from
  * one other chunk if running the distributed version. Define properties related to the size of the set of qubits.
  * The qubits are initialised in the zero state (i.e. initZeroState is automatically called)
@@ -113,9 +113,9 @@ enum phaseGateType {SIGMA_Z=0, S_GATE=1, T_GATE=2};
  * @param[in] env object representing the execution environment (local, multinode etc)
  * @throws exitWithError if \p numQubits <= 0
  */
-QubitRegister createQubitRegister(int numQubits, QuESTEnv env);
+Qureg createQureg(int numQubits, QuESTEnv env);
 
-/** Create a QubitRegister for qubits which are represented by a density matrix, and can be in mixed states.
+/** Create a Qureg for qubits which are represented by a density matrix, and can be in mixed states.
  * Allocate space for a density matrix of probability amplitudes, including space for temporary values to be copied from
  * one other chunk if running the distributed version. Define properties related to the size of the set of qubits.
  * initZeroState should be called after this to initialise the qubits to the zero pure state.
@@ -125,16 +125,16 @@ QubitRegister createQubitRegister(int numQubits, QuESTEnv env);
  * @param[in] env object representing the execution environment (local, multinode etc)
  * @throws exitWithError if \p numQubits <= 0
  */
-QubitRegister createDensityQubitRegister(int numQubits, QuESTEnv env);
+Qureg createDensityQureg(int numQubits, QuESTEnv env);
 
-/** Deallocate a QubitRegister object representing a set of qubits.
+/** Deallocate a Qureg object representing a set of qubits.
  * Free memory allocated to state vector of probability amplitudes, including temporary vector for
  * values copied from another chunk if running the distributed version.
  *
  * @param[in,out] qureg object to be deallocated
  * @param[in] env object representing the execution environment (local, multinode etc)
  */
-void destroyQubitRegister(QubitRegister qureg, QuESTEnv env);
+void destroyQureg(Qureg qureg, QuESTEnv env);
 
 /** Print the current state vector of probability amplitudes for a set of qubits to file.
  * File format:
@@ -157,28 +157,28 @@ real, imag
 
  * @param[in,out] qureg object representing the set of qubits
  */
-void reportState(QubitRegister qureg);
+void reportState(Qureg qureg);
 
 /** Print the current state vector of probability amplitudes for a set of qubits to standard out. 
  * For debugging purposes. Each rank should print output serially. 
  * Only print output for systems <= 5 qubits
  */
-void reportStateToScreen(QubitRegister qureg, QuESTEnv env, int reportRank);
+void reportStateToScreen(Qureg qureg, QuESTEnv env, int reportRank);
 
 /** Report metainformation about a set of qubits: number of qubits, number of probability amplitudes.
 
  * @param[in,out] qureg object representing the set of qubits
  * @param[in] env object representing the execution environment (local, multinode etc)
  */
-void reportQubitRegisterParams(QubitRegister qureg);
+void reportQuregParams(Qureg qureg);
 
 /** Get the number of qubits in a qureg object
  */
-int getNumQubits(QubitRegister qureg);
+int getNumQubits(Qureg qureg);
 
 /** Get the number of probability amplitudes in a qureg object, given by 2^numQubits
  */
-int getNumAmps(QubitRegister qureg);
+int getNumAmps(Qureg qureg);
 
 /**
  * Initialise a set of \f$ N \f$ qubits to the classical zero state 
@@ -186,7 +186,7 @@ int getNumAmps(QubitRegister qureg);
  *
  * @param[in,out] qureg the object representing the set of all qubits to initialise
  */
-void initZeroState(QubitRegister qureg);
+void initZeroState(Qureg qureg);
 
 /** Initialise a set of \f$ N \f$ qubits to the plus state
  * \f$ {| + \rangle}^{\otimes N} = \frac{1}{\sqrt{2^N}} (| 0 \rangle + | 1 \rangle)^{\otimes N} \f$.
@@ -197,7 +197,7 @@ void initZeroState(QubitRegister qureg);
  *
  * @param[in,out] qureg the object representing the set of qubits to be initialised
  */
-void initPlusState(QubitRegister qureg);
+void initPlusState(Qureg qureg);
 
 /** Initialise a set of \f$ N \f$ qubits to the classical state with index \p stateInd.
  * Note \f$ | 00 \dots 00 \rangle \f$ has \p stateInd 0, \f$ | 00 \dots 01 \rangle \f$ has \p stateInd 1, 
@@ -207,7 +207,7 @@ void initPlusState(QubitRegister qureg);
  * @param[in,out] qureg the object representing the set of qubits to be initialised
  * @param[in] stateInd the index (0 to the number of amplitudes, exclusive) of the state to give probability 1
  */
-void initClassicalState(QubitRegister qureg, long long int stateInd);
+void initClassicalState(Qureg qureg, long long int stateInd);
 
 /** Initialise a set of \f$ N \f$ qubits, which can be a state vector or density matrix, to a given pure state.
  * If \p qureg is a state-vector, this merely makes \p qureg an identical copy of \p pure.
@@ -216,7 +216,7 @@ void initClassicalState(QubitRegister qureg, long long int stateInd);
  * @param[in,out] qureg the object representing the set of qubits to be initialised
  * @param[in] pure the pure state to be copied or to give probability 1 in qureg
  */
-void initPureState(QubitRegister qureg, QubitRegister pure);
+void initPureState(Qureg qureg, Qureg pure);
 
 /** Initialise qureg by specifying the complete statevector.
  * The real and imaginary components of the amplitudes are passed in separate arrays,
@@ -229,7 +229,7 @@ void initPureState(QubitRegister qureg, QubitRegister pure);
  * @throws exitWithError
  *      if \p qureg is not a statevector (i.e. is a density matrix)
  */
-void initStateFromAmps(QubitRegister qureg, REAL* reals, REAL* imags);
+void initStateFromAmps(Qureg qureg, REAL* reals, REAL* imags);
 
 /** Edit qureg to adopt the subset of amplitudes passed in \p reals and \p imags.
  * Only amplitudes with indices in [\p startInd, \p startInd + \p numAmps] will be changed, which means
@@ -244,7 +244,7 @@ void initStateFromAmps(QubitRegister qureg, REAL* reals, REAL* imags);
  * @throws exitWithError
  *      if \p qureg is not a statevector (i.e. is a density matrix)
  */
-void setAmps(QubitRegister qureg, long long int startInd, REAL* reals, REAL* imags, long long int numAmps);
+void setAmps(Qureg qureg, long long int startInd, REAL* reals, REAL* imags, long long int numAmps);
 
 /** Set targetQureg to be a clone of copyQureg. 
  * Registers must either both be state-vectors, or both be density matrices.
@@ -254,7 +254,7 @@ void setAmps(QubitRegister qureg, long long int startInd, REAL* reals, REAL* ima
  * @param[in, out] targetQureg the qureg to have its quantum state overwritten
  * @param[in] copyQureg the qureg to have its quantum state cloned in targetQureg.
  */
-void cloneQubitRegister(QubitRegister targetQureg, QubitRegister copyQureg);
+void cloneQureg(Qureg targetQureg, Qureg copyQureg);
 
 /** Shift the phase between \f$ |0\rangle \f$ and \f$ |1\rangle \f$ of a single qubit by a given angle.
  * This is equivalent to a rotation Z-axis of the Bloch-sphere up to a global phase factor.
@@ -286,7 +286,7 @@ void cloneQubitRegister(QubitRegister targetQureg, QubitRegister copyQureg);
  * @throws exitWithError
  *      if \p targetQubit is outside [0, \p qureg.numQubitsRepresented).
  */
-void phaseShift(QubitRegister qureg, const int targetQubit, REAL angle);
+void phaseShift(Qureg qureg, const int targetQubit, REAL angle);
 
 /** Introduce a phase factor \f$ \exp(i \theta) \f$ on state \f$ |11\rangle \f$ of qubits
  * \p idQubit1 and \p idQubit2.
@@ -327,7 +327,7 @@ void phaseShift(QubitRegister qureg, const int targetQubit, REAL angle);
  * @throws exitWithError
  *  if \p idQubit1 or \p idQubit2 are outside [0, \p qureg.numQubitsRepresented), or are equal
  */
-void controlledPhaseShift(QubitRegister qureg, const int idQubit1, const int idQubit2, REAL angle);
+void controlledPhaseShift(Qureg qureg, const int idQubit1, const int idQubit2, REAL angle);
 
 /** Introduce a phase factor \f$ \exp(i \theta) \f$ on state \f$ |1 \dots 1 \rangle \f$
  * of the passed qubits.
@@ -367,7 +367,7 @@ void controlledPhaseShift(QubitRegister qureg, const int idQubit1, const int idQ
  *      or if any qubit index in \p controlQubits is outside
  *      [0, \p qureg.numQubitsRepresented])
  */
-void multiControlledPhaseShift(QubitRegister qureg, int *controlQubits, int numControlQubits, REAL angle);
+void multiControlledPhaseShift(Qureg qureg, int *controlQubits, int numControlQubits, REAL angle);
 
 
 /** Apply the (two-qubit) controlled phase flip gate, also known as the controlled pauliZ gate.
@@ -403,7 +403,7 @@ void multiControlledPhaseShift(QubitRegister qureg, int *controlQubits, int numC
  * @throws exitWithError 
  *  if \p idQubit1 or \p idQubit2 are outside [0, \p qureg.numQubitsRepresented), or are equal
  */
-void controlledPhaseFlip (QubitRegister qureg, const int idQubit1, const int idQubit2);
+void controlledPhaseFlip (Qureg qureg, const int idQubit1, const int idQubit2);
 
 /** Apply the multiple-qubit controlled phase flip gate, also known as the multiple-qubit controlled pauliZ gate.
  * For each state, if all control qubits have value one, multiply the amplitude of that state by -1. This applies the many-qubit unitary:
@@ -447,7 +447,7 @@ void controlledPhaseFlip (QubitRegister qureg, const int idQubit1, const int idQ
  * @throws exitWithError 
  *      if \p numControlQubits is outside [1, \p qureg.numQubitsRepresented) 
  */
-void multiControlledPhaseFlip(QubitRegister qureg, int *controlQubits, int numControlQubits);
+void multiControlledPhaseFlip(Qureg qureg, int *controlQubits, int numControlQubits);
 
 /** Apply the single-qubit S gate.
  * This is a rotation of \f$\pi/2\f$ around the Z-axis on the Bloch sphere, or the unitary:
@@ -476,7 +476,7 @@ void multiControlledPhaseFlip(QubitRegister qureg, int *controlQubits, int numCo
  * @param[in] targetQubit qubit to operate upon
  * @throws exitWithError if \p targetQubit is outside [0, \p qureg.numQubitsRepresented)
  */
-void sGate(QubitRegister qureg, const int targetQubit);
+void sGate(Qureg qureg, const int targetQubit);
 
 /** Apply the single-qubit T gate.
  * This is a rotation of \f$\pi/4\f$ around the Z-axis on the Bloch sphere, or the unitary:
@@ -505,7 +505,7 @@ void sGate(QubitRegister qureg, const int targetQubit);
  * @param[in] targetQubit qubit to operate upon
  * @throws exitWithError if \p targetQubit is outside [0, \p qureg.numQubitsRepresented)
  */
-void tGate(QubitRegister qureg, const int targetQubit);
+void tGate(Qureg qureg, const int targetQubit);
 
 /** Create the QuEST execution environment.
  * This should be called only once, and the environment should be freed with destroyQuESTEnv at the end
@@ -546,7 +546,7 @@ int syncQuESTSuccess(int successCode);
  */
 void reportQuESTEnv(QuESTEnv env);
 
-void getEnvironmentString(QuESTEnv env, QubitRegister qureg, char str[200]);
+void getEnvironmentString(QuESTEnv env, Qureg qureg, char str[200]);
 
 /** Getthe complex amplitude at a given index in the state vector.
  *
@@ -556,7 +556,7 @@ void getEnvironmentString(QuESTEnv env, QubitRegister qureg, char str[200]);
  * @throws exitWithError
  *      if \p index is outside [0, \f$2^{N}\f$) where \f$N = \f$ \p qureg.numQubitsRepresented
  */
-Complex getAmp(QubitRegister qureg, long long int index);
+Complex getAmp(Qureg qureg, long long int index);
 
 /** Get the real component of the complex probability amplitude at an index in the state vector.
  * For debugging purposes.
@@ -567,7 +567,7 @@ Complex getAmp(QubitRegister qureg, long long int index);
  * @throws exitWithError
  *      if \p index is outside [0, \f$2^{N}\f$) where \f$N = \f$ \p qureg.numQubitsRepresented
  */
-REAL getRealAmp(QubitRegister qureg, long long int index);
+REAL getRealAmp(Qureg qureg, long long int index);
 
 /** Get the imaginary component of the complex probability amplitude at an index in the state vector.
  * For debugging purposes.
@@ -578,7 +578,7 @@ REAL getRealAmp(QubitRegister qureg, long long int index);
  * @throws exitWithError
  *      if \p index is outside [0, \f$2^{N}\f$) where \f$N = \f$ \p qureg.numQubitsRepresented
  */
-REAL getImagAmp(QubitRegister qureg, long long int index);
+REAL getImagAmp(Qureg qureg, long long int index);
 
 /** Get the probability of the state at an index in the full state vector.
  *
@@ -588,7 +588,7 @@ REAL getImagAmp(QubitRegister qureg, long long int index);
  * @throws exitWithError
  *      if \p index is outside [0, \f$2^{N}\f$) where \f$N = \f$ \p qureg.numQubitsRepresented
  */
-REAL getProbAmp(QubitRegister qureg, long long int index);
+REAL getProbAmp(Qureg qureg, long long int index);
 
 /** Get an amplitude from a density matrix at a given row and column.
  *
@@ -599,7 +599,7 @@ REAL getProbAmp(QubitRegister qureg, long long int index);
  * @throws exitWithError
  *      if \p qureg is a statevector, or if \p row or \p col are outside [0, \f$2^{N}\f$) where \f$N = \f$ \p qureg.numQubitsRepresented
  */
-Complex getDensityAmplitude(QubitRegister qureg, long long int row, long long int col);
+Complex getDensityAmplitude(Qureg qureg, long long int row, long long int col);
 
 /** A debugging function which calculates the probability of being in any state, which should always be 1.
  * For pure states, this is the norm of the entire state vector and for mixed states, is the trace of
@@ -610,7 +610,7 @@ Complex getDensityAmplitude(QubitRegister qureg, long long int row, long long in
  * @param[in] qureg object representing a set of qubits
  * @return total probability
  */
-REAL calcTotalProb(QubitRegister qureg);
+REAL calcTotalProb(Qureg qureg);
 
 /** Apply a single-qubit unitary parameterised by two given complex scalars.
  * Given valid complex numbers \f$\alpha\f$ and \f$\beta\f$, applies the unitary
@@ -646,7 +646,7 @@ REAL calcTotalProb(QubitRegister qureg);
  *      if \p targetQubit is outside [0, \p qureg.numQubitsRepresented),
  *      or if \p alpha, \p beta don't satisfy |\p alpha|^2 + |\p beta|^2 = 1.
  */
-void compactUnitary(QubitRegister qureg, const int targetQubit, Complex alpha, Complex beta);
+void compactUnitary(Qureg qureg, const int targetQubit, Complex alpha, Complex beta);
 
 /** Apply a general single-qubit unitary (including a global phase factor).
  * The passed 2x2 ComplexMatrix must be unitary, otherwise an error is thrown.
@@ -672,7 +672,7 @@ void compactUnitary(QubitRegister qureg, const int targetQubit, Complex alpha, C
  *      if \p targetQubit is outside [0, \p qureg.numQubitsRepresented),
  *      or matrix \p u is not unitary.
  */
-void unitary(QubitRegister qureg, const int targetQubit, ComplexMatrix2 u);
+void unitary(Qureg qureg, const int targetQubit, ComplexMatrix2 u);
 
 /** Rotate a single qubit by a given angle around the X-axis of the Bloch-sphere. For angle \f$\theta\f$, applies
  * \f[
@@ -703,7 +703,7 @@ void unitary(QubitRegister qureg, const int targetQubit, ComplexMatrix2 u);
  * @throws exitWithError
  *      if \p rotQubit is outside [0, \p qureg.numQubitsRepresented).
  */
-void rotateX(QubitRegister qureg, const int rotQubit, REAL angle);
+void rotateX(Qureg qureg, const int rotQubit, REAL angle);
 
 /** Rotate a single qubit by a given angle around the Y-axis of the Bloch-sphere. 
  * For angle \f$\theta\f$, applies
@@ -734,7 +734,7 @@ void rotateX(QubitRegister qureg, const int rotQubit, REAL angle);
  * @throws exitWithError
  *      if \p rotQubit is outside [0, \p qureg.numQubitsRepresented).
  */
-void rotateY(QubitRegister qureg, const int rotQubit, REAL angle);
+void rotateY(Qureg qureg, const int rotQubit, REAL angle);
 
 /** Rotate a single qubit by a given angle around the Z-axis of the Bloch-sphere (also known as a phase shift gate).   
  * For angle \f$\theta\f$, applies
@@ -765,7 +765,7 @@ void rotateY(QubitRegister qureg, const int rotQubit, REAL angle);
  * @throws exitWithError
  *      if \p rotQubit is outside [0, \p qureg.numQubitsRepresented).
  */
-void rotateZ(QubitRegister qureg, const int rotQubit, REAL angle);
+void rotateZ(Qureg qureg, const int rotQubit, REAL angle);
 
 /** Rotate a single qubit by a given angle around a given vector on the Bloch-sphere.      
  * The vector must not be zero (else an error is thrown), but needn't be unit magnitude.
@@ -781,7 +781,7 @@ void rotateZ(QubitRegister qureg, const int rotQubit, REAL angle);
  *      if \p rotQubit is outside [0, \p qureg.numQubitsRepresented),
  *      or if \p axis is the zero vector
  */
-void rotateAroundAxis(QubitRegister qureg, const int rotQubit, REAL angle, Vector axis);
+void rotateAroundAxis(Qureg qureg, const int rotQubit, REAL angle, Vector axis);
 
 
 /** Applies a controlled rotation by a given angle around the X-axis of the Bloch-sphere. 
@@ -813,7 +813,7 @@ void rotateAroundAxis(QubitRegister qureg, const int rotQubit, REAL angle, Vecto
  * @throws exitWithError
  *      if either \p controlQubit or \p targetQubit are outside [0, \p qureg.numQubitsRepresented) or are equal.
  */
-void controlledRotateX(QubitRegister qureg, const int controlQubit, const int targetQubit, REAL angle);
+void controlledRotateX(Qureg qureg, const int controlQubit, const int targetQubit, REAL angle);
 
 /** Applies a controlled rotation by a given angle around the Y-axis of the Bloch-sphere. 
  * The target qubit is rotated in states where the control qubit has value 1.
@@ -844,7 +844,7 @@ void controlledRotateX(QubitRegister qureg, const int controlQubit, const int ta
  * @throws exitWithError
  *      if either \p controlQubit or \p targetQubit are outside [0, \p qureg.numQubitsRepresented) or are equal.
  */
-void controlledRotateY(QubitRegister qureg, const int controlQubit, const int targetQubit, REAL angle);
+void controlledRotateY(Qureg qureg, const int controlQubit, const int targetQubit, REAL angle);
 
 /** Applies a controlled rotation by a given angle around the Z-axis of the Bloch-sphere. 
  * The target qubit is rotated in states where the control qubit has value 1.
@@ -875,7 +875,7 @@ void controlledRotateY(QubitRegister qureg, const int controlQubit, const int ta
  * @throws exitWithError
  *      if either \p controlQubit or \p targetQubit are outside [0, \p qureg.numQubitsRepresented) or are equal.
  */
-void controlledRotateZ(QubitRegister qureg, const int controlQubit, const int targetQubit, REAL angle);
+void controlledRotateZ(Qureg qureg, const int controlQubit, const int targetQubit, REAL angle);
 
 /** Applies a controlled rotation by a given angle around a given vector on the Bloch-sphere.      
  * The vector must not be zero (else an error is thrown), but needn't be unit magnitude.
@@ -911,7 +911,7 @@ void controlledRotateZ(QubitRegister qureg, const int controlQubit, const int ta
  *      if either \p controlQubit or \p targetQubit are outside [0, \p qureg.numQubitsRepresented) or are equal
  *      or if \p axis is the zero vector
  */
-void controlledRotateAroundAxis(QubitRegister qureg, const int controlQubit, const int targetQubit, REAL angle, Vector axis);
+void controlledRotateAroundAxis(Qureg qureg, const int controlQubit, const int targetQubit, REAL angle, Vector axis);
 
 /** Apply a controlled unitary (single control, single target) parameterised by two given complex scalars.
  * Given valid complex numbers \f$\alpha\f$ and \f$\beta\f$, applies the two-qubit unitary
@@ -955,7 +955,7 @@ void controlledRotateAroundAxis(QubitRegister qureg, const int controlQubit, con
  *      if either \p controlQubit or \p targetQubit are outside [0, \p qureg.numQubitsRepresented) or are equal,
  *      or if \p alpha, \p beta don't satisfy |\p alpha|^2 + |\p beta|^2 = 1.
  */
-void controlledCompactUnitary(QubitRegister qureg, const int controlQubit, const int targetQubit, Complex alpha, Complex beta);
+void controlledCompactUnitary(Qureg qureg, const int controlQubit, const int targetQubit, Complex alpha, Complex beta);
 
 /** Apply a general controlled unitary (single control, single target), which can include a global phase factor.
  * The given unitary is applied to the target qubit if the control qubit has value 1,
@@ -997,7 +997,7 @@ void controlledCompactUnitary(QubitRegister qureg, const int controlQubit, const
  *      if either \p controlQubit or \p targetQubit are outside [0, \p qureg.numQubitsRepresented) or are equal,
  *      or if \p u is not unitary.
  */
-void controlledUnitary(QubitRegister qureg, const int controlQubit, const int targetQubit, ComplexMatrix2 u);
+void controlledUnitary(Qureg qureg, const int controlQubit, const int targetQubit, ComplexMatrix2 u);
 
 /** Apply a general multiple-control single-target unitary, which can include
  * a global phase factor. Any number of control qubits can be specified,
@@ -1053,7 +1053,7 @@ void controlledUnitary(QubitRegister qureg, const int controlQubit, const int ta
  *      or if \p controlQubits contains \p targetQubit,
  *      or if \p u is not unitary.
  */
-void multiControlledUnitary(QubitRegister qureg, int* controlQubits, const int numControlQubits, const int targetQubit, ComplexMatrix2 u);
+void multiControlledUnitary(Qureg qureg, int* controlQubits, const int numControlQubits, const int targetQubit, ComplexMatrix2 u);
 
 /** Apply the single-qubit Pauli-X (also known as the X, sigma-X, NOT or bit-flip) gate.
  * This is a rotation of \f$\pi\f$ around the x-axis on the Bloch sphere. I.e. 
@@ -1082,7 +1082,7 @@ void multiControlledUnitary(QubitRegister qureg, int* controlQubits, const int n
  * @throws exitWithError
  *      if \p targetQubit is outside [0, \p qureg.numQubitsRepresented).
  */
-void pauliX(QubitRegister qureg, const int targetQubit);
+void pauliX(Qureg qureg, const int targetQubit);
 
 /** Apply the single-qubit Pauli-Y (also known as the Y or sigma-Y) gate.
  * This is a rotation of \f$\pi\f$ around the Y-axis on the Bloch sphere. I.e. 
@@ -1112,7 +1112,7 @@ void pauliX(QubitRegister qureg, const int targetQubit);
  * @throws exitWithError
  *      if \p targetQubit is outside [0, \p qureg.numQubitsRepresented).
  */
-void pauliY(QubitRegister qureg, const int targetQubit);
+void pauliY(Qureg qureg, const int targetQubit);
 
 /** Apply the single-qubit Pauli-Z (also known as the Z, sigma-Z or phase-flip) gate.
  * This is a rotation of \f$\pi\f$ around the Z-axis (a phase shift) on the Bloch sphere. I.e. 
@@ -1142,7 +1142,7 @@ void pauliY(QubitRegister qureg, const int targetQubit);
  * @throws exitWithError
  *      if \p targetQubit is outside [0, \p qureg.numQubitsRepresented).
  */
-void pauliZ(QubitRegister qureg, const int targetQubit);
+void pauliZ(Qureg qureg, const int targetQubit);
 
 /** Apply the single-qubit Hadamard gate.
  * This takes \f$|0\rangle\f$ to \f$|+\rangle\f$ and \f$|1\rangle\f$ to \f$|-\rangle\f$, and is equivalent to a rotation of
@@ -1174,7 +1174,7 @@ void pauliZ(QubitRegister qureg, const int targetQubit);
  * @throws exitWithError
  *      if \p targetQubit is outside [0, \p qureg.numQubitsRepresented).
  */
-void hadamard(QubitRegister qureg, const int targetQubit);
+void hadamard(Qureg qureg, const int targetQubit);
 
 /** Apply the controlled not (single control, single target) gate, also
  * known as the c-X, c-sigma-X, c-Pauli-X and c-bit-flip gate.
@@ -1213,7 +1213,7 @@ void hadamard(QubitRegister qureg, const int targetQubit);
  * @throws exitWithError
  *      if either \p controlQubit or \p targetQubit are outside [0, \p qureg.numQubitsRepresented), or are equal.
  */
-void controlledNot(QubitRegister qureg, const int controlQubit, const int targetQubit);
+void controlledNot(Qureg qureg, const int controlQubit, const int targetQubit);
 
 /** Apply the controlled pauliY (single control, single target) gate, also
  * known as the c-Y and c-sigma-Y gate.
@@ -1254,7 +1254,7 @@ void controlledNot(QubitRegister qureg, const int controlQubit, const int target
  * @throws exitWithError
  *      if either \p controlQubit or \p targetQubit are outside [0, \p qureg.numQubitsRepresented), or are equal.
  */
-void controlledPauliY(QubitRegister qureg, const int controlQubit, const int targetQubit);
+void controlledPauliY(Qureg qureg, const int controlQubit, const int targetQubit);
 
 /** Gives the probability of a specified qubit being measured in the given outcome (0 or 1).
  * This performs no actual measurement and does not change the state of the qubits.
@@ -1267,7 +1267,7 @@ void controlledPauliY(QubitRegister qureg, const int controlQubit, const int tar
  *      if \p measureQubit is outside [0, \p qureg.numQubitsRepresented),
  *      or if \p outcome is not in {0, 1}.
  */
-REAL calcProbOfOutcome(QubitRegister qureg, const int measureQubit, int outcome);
+REAL calcProbOfOutcome(Qureg qureg, const int measureQubit, int outcome);
 
 /** Updates the state vector to be consistent with measuring the measure qubit in the given outcome (0 or 1), and returns the probability of such a measurement outcome. 
  * This is effectively performing a measurement and forcing the outcome.
@@ -1285,7 +1285,7 @@ REAL calcProbOfOutcome(QubitRegister qureg, const int measureQubit, int outcome)
  *      or if \p outcome is not in {0, 1},
  *      or if the probability of \p outcome is zero (within machine epsilon)
  */
-REAL collapseToOutcome(QubitRegister qureg, const int measureQubit, int outcome);
+REAL collapseToOutcome(Qureg qureg, const int measureQubit, int outcome);
 
 /** Measures a single qubit, collapsing it randomly to 0 or 1.
  * Outcome probabilities are weighted by the state vector, which is irreversibly
@@ -1297,7 +1297,7 @@ REAL collapseToOutcome(QubitRegister qureg, const int measureQubit, int outcome)
  * @throws exitWithError
  *      if \p measureQubit is outside [0, \p qureg.numQubitsRepresented)
  */
-int measure(QubitRegister qureg, int measureQubit);
+int measure(Qureg qureg, int measureQubit);
 
 /** Measures a single qubit, collapsing it randomly to 0 or 1, and
  * additionally gives the probability of that outcome.
@@ -1311,10 +1311,10 @@ int measure(QubitRegister qureg, int measureQubit);
  * @throws exitWithError
  *      if \p measureQubit is outside [0, \p qureg.numQubitsRepresented)
  */
-int measureWithStats(QubitRegister qureg, int measureQubit, REAL *outcomeProb);
+int measureWithStats(Qureg qureg, int measureQubit, REAL *outcomeProb);
 
 /** Computes <bra|ket> */
-Complex calcInnerProduct(QubitRegister bra, QubitRegister ket);
+Complex calcInnerProduct(Qureg bra, Qureg ket);
 
 /** Seed the Mersenne Twister used for random number generation in the QuEST environment with an example
  * defualt seed.
@@ -1345,23 +1345,23 @@ void seedQuEST(unsigned long int *seedArray, int numSeeds);
 /** Enable QASM recording. Gates applied to qureg will here-after be added to growing QASM instructions,
  * progressively consuming more memory until stopped
  */
-void startRecordingQASM(QubitRegister qureg);
+void startRecordingQASM(Qureg qureg);
 
 /** Disable QASM recording. The recorded QASM will be maintained in qureg
 and continue to be
  * added to if startRecordingQASM is recalled.
  */
-void stopRecordingQASM(QubitRegister qureg);
+void stopRecordingQASM(Qureg qureg);
 
 /** Clear all QASM so far recorded. This does not start or stop recording
  */
-void clearRecordedQASM(QubitRegister qureg);
+void clearRecordedQASM(Qureg qureg);
 
 /** Print recorded QASM to stdout */
-void printRecordedQASM(QubitRegister qureg);
+void printRecordedQASM(Qureg qureg);
 
 /** Writes recorded QASM to a file, throwing an error if inaccessible */
-void writeRecordedQASMToFile(QubitRegister qureg, char* filename);
+void writeRecordedQASMToFile(Qureg qureg, char* filename);
 
 /** Mixes a density matrix \p qureg to induce single-qubit dephasing noise.
  * With probability \p prob, applies Pauli Z to \p targetQubit.
@@ -1381,7 +1381,7 @@ void writeRecordedQASMToFile(QubitRegister qureg, char* filename);
  *      or if \p targetQubit is outside [0, \p qureg.numQubitsRepresented),
  *      or if \p prob is not in [0, 1/2]
  */
-void applyOneQubitDephaseError(QubitRegister qureg, const int targetQubit, REAL prob);
+void applyOneQubitDephaseError(Qureg qureg, const int targetQubit, REAL prob);
 
 /** Mixes a density matrix \p qureg to induce two-qubit dephasing noise.
  * With probability \p prob, applies Pauli Z to either or both qubits.
@@ -1407,7 +1407,7 @@ void applyOneQubitDephaseError(QubitRegister qureg, const int targetQubit, REAL 
  *      or if \p qubit1 = \p qubit2,
  *      or if \p prob is not in [0, 3/4]
  */
-void applyTwoQubitDephaseError(QubitRegister qureg, const int qubit1, const int qubit2, REAL prob);
+void applyTwoQubitDephaseError(Qureg qureg, const int qubit1, const int qubit2, REAL prob);
 
 /** Mixes a density matrix \p qureg to induce single-qubit homogeneous depolarising noise.
  * With probability \p prob, applies (uniformly) either Pauli X, Y, or Z to \p targetQubit.
@@ -1431,7 +1431,7 @@ void applyTwoQubitDephaseError(QubitRegister qureg, const int qubit1, const int 
  *      or if \p targetQubit is outside [0, \p qureg.numQubitsRepresented),
  *      or if \p prob is not in [0, 3/4]
  */
-void applyOneQubitDepolariseError(QubitRegister qureg, const int targetQubit, REAL prob);
+void applyOneQubitDepolariseError(Qureg qureg, const int targetQubit, REAL prob);
 
 /** Mixes a density matrix \p qureg to induce two-qubit homogeneous depolarising noise.
  * With probability \p prob, applies to \p qubit1 and \p qubit2 any operator of the set
@@ -1480,7 +1480,7 @@ void applyOneQubitDepolariseError(QubitRegister qureg, const int targetQubit, RE
  *      or if \p qubit1 = \p qubit2,
  *      or if \p prob is not in [0, 15/16]
  */
-void applyTwoQubitDepolariseError(QubitRegister qureg, const int qubit1, const int qubit2, REAL prob);
+void applyTwoQubitDepolariseError(Qureg qureg, const int qubit1, const int qubit2, REAL prob);
 
 /** Modifies combineQureg to become (1-prob)combineProb + prob otherQureg.
  * Both registers must be equal-dimension density matrices, and prob must be in [0, 1].
@@ -1493,7 +1493,7 @@ void applyTwoQubitDepolariseError(QubitRegister qureg, const int qubit1, const i
  *      or if the dimensions of \p combineQureg and \p otherQureg do not match,
  *      or if \p prob is not in [0, 1]
  */
-void addDensityMatrix(QubitRegister combineQureg, REAL prob, QubitRegister otherQureg);
+void addDensityMatrix(Qureg combineQureg, REAL prob, Qureg otherQureg);
 
 /** Calculates the purity of a density matrix, by the trace of the density matrix squared.
  * Returns \f$\text{Tr}(\rho^2)\f$.
@@ -1510,7 +1510,7 @@ void addDensityMatrix(QubitRegister combineQureg, REAL prob, QubitRegister other
  *      or if the dimensions of \p combineQureg and \p otherQureg do not match,
  *      or if \p prob is not in [0, 1]
  */
-REAL calcPurity(QubitRegister qureg);
+REAL calcPurity(Qureg qureg);
 
 /** Calculates the fidelity of qureg (a statevector or density matrix) against 
  * a reference pure state (necessarily a statevector).
@@ -1525,7 +1525,7 @@ REAL calcPurity(QubitRegister qureg);
  * @throws exitWithError
  *      if the dimensions \p qureg and \p pureState do not match
  */
-REAL calcFidelity(QubitRegister qureg, QubitRegister pureState);
+REAL calcFidelity(Qureg qureg, Qureg pureState);
 
 
 #ifdef __cplusplus
