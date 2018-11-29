@@ -197,7 +197,7 @@ int getChunkIdFromIndex(QubitRegister qureg, long long int index){
     return index/qureg.numAmpsPerChunk; // this is numAmpsPerChunk
 }
 
-REAL statevec_getRealAmpEl(QubitRegister qureg, long long int index){
+REAL statevec_getRealAmp(QubitRegister qureg, long long int index){
     int chunkId = getChunkIdFromIndex(qureg, index);
     REAL el; 
     if (qureg.chunkId==chunkId){
@@ -207,7 +207,7 @@ REAL statevec_getRealAmpEl(QubitRegister qureg, long long int index){
     return el; 
 } 
 
-REAL statevec_getImagAmpEl(QubitRegister qureg, long long int index){
+REAL statevec_getImagAmp(QubitRegister qureg, long long int index){
     int chunkId = getChunkIdFromIndex(qureg, index);
     REAL el; 
     if (qureg.chunkId==chunkId){

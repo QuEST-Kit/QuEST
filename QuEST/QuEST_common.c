@@ -165,9 +165,9 @@ void seedQuEST(unsigned long int *seedArray, int numSeeds){
     init_by_array(seedArray, numSeeds); 
 }
 
-REAL statevec_getProbEl(QubitRegister qureg, long long int index){
-    REAL real = statevec_getRealAmpEl(qureg, index);
-    REAL imag = statevec_getImagAmpEl(qureg, index);
+REAL statevec_getProbAmp(QubitRegister qureg, long long int index){
+    REAL real = statevec_getRealAmp(qureg, index);
+    REAL imag = statevec_getImagAmp(qureg, index);
     return real*real + imag*imag;
 }
 

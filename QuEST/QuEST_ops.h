@@ -102,11 +102,11 @@ void statevec_controlledPauliY(QubitRegister qureg, const int controlQubit, cons
 
 void statevec_controlledPauliYConj(QubitRegister qureg, const int controlQubit, const int targetQubit);
 
-REAL statevec_getRealAmpEl(QubitRegister qureg, long long int index);
+REAL statevec_getRealAmp(QubitRegister qureg, long long int index);
 
-REAL statevec_getImagAmpEl(QubitRegister qureg, long long int index);
+REAL statevec_getImagAmp(QubitRegister qureg, long long int index);
 
-REAL statevec_getProbEl(QubitRegister qureg, long long int index);
+REAL statevec_getProbAmp(QubitRegister qureg, long long int index);
 
 REAL statevec_calcTotalProb(QubitRegister qureg);
 

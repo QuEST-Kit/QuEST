@@ -186,11 +186,11 @@ void reportNodeList(QuESTEnv env){
     printf("Hostname unknown: running locally\n");
 }
 
-REAL statevec_getRealAmpEl(QubitRegister qureg, long long int index){
+REAL statevec_getRealAmp(QubitRegister qureg, long long int index){
     return qureg.stateVec.real[index];
 }
 
-REAL statevec_getImagAmpEl(QubitRegister qureg, long long int index){
+REAL statevec_getImagAmp(QubitRegister qureg, long long int index){
     return qureg.stateVec.imag[index];
 }
 

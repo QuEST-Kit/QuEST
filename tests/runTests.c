@@ -126,9 +126,9 @@ int test_initClassicalState(char testName[200]){
         // check that every other state has prob 0
         for (long long int i=0LL; i < numAmps; i++) {
             if (i == stateInd)
-                passed = passed && (getProbEl(mq,i) == 1.0);
+                passed = passed && (getProbAmp(mq,i) == 1.0);
             else
-                passed = passed && (getProbEl(mq,i) == 0.0);
+                passed = passed && (getProbAmp(mq,i) == 0.0);
         }
     }
 
@@ -217,8 +217,8 @@ int test_initStateFromAmps(char testName[200]) {
     REAL imags[8] = {8,7,6,5,4,3,2,1};
     initStateFromAmps(qureg, 0, reals, imags, qureg.numAmpsTotal);
     for (long long int i=0; i < 8; i++) {
-        if (passed) passed = compareReals(getRealAmpEl(qureg,i), reals[i], 0);
-        if (passed) passed = compareReals(getImagAmpEl(qureg,i), imags[i], 0);
+        if (passed) passed = compareReals(getRealAmp(qureg,i), reals[i], 0);
+        if (passed) passed = compareReals(getImagAmp(qureg,i), imags[i], 0);
     }
     
     // test writing only some of statevec
@@ -228,17 +228,17 @@ int test_initStateFromAmps(char testName[200]) {
         
         // indices outside {2,3,4,5} are unchanged from |0> = {1,0,0,0}...
         if (i==0) {
-            if (passed) passed = compareReals(getRealAmpEl(qureg,i), 1, 0);
-            if (passed) passed = compareReals(getImagAmpEl(qureg,i), 0, 0);
+            if (passed) passed = compareReals(getRealAmp(qureg,i), 1, 0);
+            if (passed) passed = compareReals(getImagAmp(qureg,i), 0, 0);
         }
         else if (i<2 || i>=6) {
-            if (passed) passed = compareReals(getRealAmpEl(qureg,i), 0, 0);
-            if (passed) passed = compareReals(getImagAmpEl(qureg,i), 0, 0);
+            if (passed) passed = compareReals(getRealAmp(qureg,i), 0, 0);
+            if (passed) passed = compareReals(getImagAmp(qureg,i), 0, 0);
         }
         // otherwise, indices should be set to those in reals and imag
         else {
-            if (passed) passed = compareReals(getRealAmpEl(qureg,i), reals[i], 0);
-            if (passed) passed = compareReals(getImagAmpEl(qureg,i), imags[i], 0);
+            if (passed) passed = compareReals(getRealAmp(qureg,i), reals[i], 0);
+            if (passed) passed = compareReals(getImagAmp(qureg,i), imags[i], 0);
         }
     }
     
@@ -435,10 +435,10 @@ int test_phaseShift(char testName[200]) {
     // coeff of |1>: - (1 + i)/2
     phaseShift(mq, 0, pi * 5/4.0 );
     
-    if (passed) passed = compareReals(getRealAmpEl(mq, 0), 1/sqrt(2), COMPARE_PRECISION);
-    if (passed) passed = compareReals(getImagAmpEl(mq, 0),         0, COMPARE_PRECISION);
-    if (passed) passed = compareReals(getRealAmpEl(mq, 1),    -1/2.0, COMPARE_PRECISION);
-    if (passed) passed = compareReals(getImagAmpEl(mq, 1),    -1/2.0, COMPARE_PRECISION);
+    if (passed) passed = compareReals(getRealAmp(mq, 0), 1/sqrt(2), COMPARE_PRECISION);
+    if (passed) passed = compareReals(getImagAmp(mq, 0),         0, COMPARE_PRECISION);
+    if (passed) passed = compareReals(getRealAmp(mq, 1),    -1/2.0, COMPARE_PRECISION);
+    if (passed) passed = compareReals(getImagAmp(mq, 1),    -1/2.0, COMPARE_PRECISION);
     
     destroyQubitRegister(mq, env);
 
@@ -456,8 +456,8 @@ int test_phaseShift(char testName[200]) {
     // coef of |1111> is - (1 + i)/2
     // index of |1111> is 2^4 - 1 = 15
     phaseShift(mq, 0, pi * 5/4.0 );
-    if (passed) passed = compareReals(getRealAmpEl(mq, 15), -1/2.0, COMPARE_PRECISION);
-    if (passed) passed = compareReals(getImagAmpEl(mq, 15), -1/2.0, COMPARE_PRECISION);
+    if (passed) passed = compareReals(getRealAmp(mq, 15), -1/2.0, COMPARE_PRECISION);
+    if (passed) passed = compareReals(getImagAmp(mq, 15), -1/2.0, COMPARE_PRECISION);
     
     
     destroyQubitRegister(mq, env);
@@ -485,21 +485,21 @@ int test_controlledPhaseShift(char testName[200]) {
     
     // confirm controlling first and third qubits does nothing (state |1010> = 2^1 + 2^3 = 10)
     controlledPhaseShift(mq, 0, 3, pi * 5/4.0);
-    if (passed) passed = compareReals(getRealAmpEl(mq, 10), 1/sqrt(2), COMPARE_PRECISION);
+    if (passed) passed = compareReals(getRealAmp(mq, 10), 1/sqrt(2), COMPARE_PRECISION);
     controlledPhaseShift(mq, 2, 3, pi * 5/4.0);
-    if (passed) passed = compareReals(getRealAmpEl(mq, 10), 1/sqrt(2), COMPARE_PRECISION);
+    if (passed) passed = compareReals(getRealAmp(mq, 10), 1/sqrt(2), COMPARE_PRECISION);
     
     // controlling 2nd qubit enters state (|0> - 1/sqrt(2) (1 + i) |1>)/sqrt(2) |010>
     controlledPhaseShift(mq, 1, 3, pi * 5/4.0);
-    if (passed) passed = compareReals(getRealAmpEl(mq, 10), -1/2.0, COMPARE_PRECISION);
-    if (passed) passed = compareReals(getImagAmpEl(mq, 10), -1/2.0, COMPARE_PRECISION);
+    if (passed) passed = compareReals(getRealAmp(mq, 10), -1/2.0, COMPARE_PRECISION);
+    if (passed) passed = compareReals(getImagAmp(mq, 10), -1/2.0, COMPARE_PRECISION);
     
     // enter (|0> - 1/sqrt(2) (1 + i) |1>)/sqrt(2) |011>
     pauliX(mq, 0);
     
     // enter (|0> + |1>)/sqrt(2) |011> where |0011> = 2^0 + 2^1 = 3
     controlledPhaseShift(mq, 0, 3, - pi * 5/4.0);
-    if (passed) passed = compareReals(getRealAmpEl(mq, 3), 1/sqrt(2), COMPARE_PRECISION);
+    if (passed) passed = compareReals(getRealAmp(mq, 3), 1/sqrt(2), COMPARE_PRECISION);
     
     destroyQubitRegister(mq, env);
     
@@ -521,7 +521,7 @@ int test_multiControlledPhaseShift(char testName[200]) {
     
     // confirm controlling on 2nd,3rd,4th qubits does nothing (state |1010> = 2^1 + 2^3 = 10)
     multiControlledPhaseShift(mq, (int[]) {1,2,3}, 3, pi * 5/4.0);
-    if (passed) passed = compareReals(getRealAmpEl(mq, 10), 1/sqrt(2), COMPARE_PRECISION);
+    if (passed) passed = compareReals(getRealAmp(mq, 10), 1/sqrt(2), COMPARE_PRECISION);
     
     // enter state (|0> + |1>)/sqrt(2) |110>
     pauliX(mq, 2);
@@ -529,8 +529,8 @@ int test_multiControlledPhaseShift(char testName[200]) {
     // controlling on 2nd,3rd,4th qubits enters state (|0> - 1/sqrt(2) (1 + i) |1>)/sqrt(2) |110>
     // index of state |1110> = 2^1 + 2^2 + 2^3 = 14
     multiControlledPhaseShift(mq, (int[]) {1,2,3}, 3, pi * 5/4.0);
-    if (passed) passed = compareReals(getRealAmpEl(mq, 14), -1/2.0, COMPARE_PRECISION);
-    if (passed) passed = compareReals(getImagAmpEl(mq, 14), -1/2.0, COMPARE_PRECISION);
+    if (passed) passed = compareReals(getRealAmp(mq, 14), -1/2.0, COMPARE_PRECISION);
+    if (passed) passed = compareReals(getImagAmp(mq, 14), -1/2.0, COMPARE_PRECISION);
     
     destroyQubitRegister(mq, env);
     
@@ -1248,7 +1248,7 @@ int test_measureWithStats(char testName[200]){
     return passed;
 }
 
-int test_getRealAmpEl(char testName[200]){
+int test_getRealAmp(char testName[200]){
     int passed=1;
 
     int numQubits=5;
@@ -1260,7 +1260,7 @@ int test_getRealAmpEl(char testName[200]){
 
     for (int i=0; i<getNumAmps(mq); i++){
         ampElVerif = (i*2.0)/10.0;
-        ampEl = getRealAmpEl(mq, i);
+        ampEl = getRealAmp(mq, i);
         if (passed) passed = (ampElVerif==ampEl);
     }
     destroyQubitRegister(mq, env);
@@ -1268,7 +1268,7 @@ int test_getRealAmpEl(char testName[200]){
     return passed;
 }
 
-int test_getImagAmpEl(char testName[200]){
+int test_getImagAmp(char testName[200]){
     int passed=1;
 
     int numQubits=5;
@@ -1280,7 +1280,7 @@ int test_getImagAmpEl(char testName[200]){
     initStateDebug(mq);
     for (int i=0; i<getNumAmps(mq); i++){
         ampElVerif = (i*2.0+1)/10.0;
-        ampEl = getImagAmpEl(mq, i);
+        ampEl = getImagAmp(mq, i);
         if (passed) passed = (ampElVerif==ampEl);
     }
     destroyQubitRegister(mq, env);
@@ -1288,7 +1288,7 @@ int test_getImagAmpEl(char testName[200]){
     return passed;
 }
 
-int test_getProbEl(char testName[200]){
+int test_getProbAmp(char testName[200]){
     int passed=1;
 
     int numQubits=5;
@@ -1303,7 +1303,7 @@ int test_getProbEl(char testName[200]){
         realEl = (i*2.0)/10.0;
         imagEl = (i*2.0+1)/10.0;
         ampElVerif = realEl*realEl + imagEl*imagEl;
-        ampEl = getProbEl(mq, i);
+        ampEl = getProbAmp(mq, i);
         if (passed) passed = (ampElVerif==ampEl);
     }
     destroyQubitRegister(mq, env);
@@ -1730,9 +1730,9 @@ int main (int narg, char** varg) {
         test_collapseToOutcome,
         test_measure,
         test_measureWithStats,
-        test_getRealAmpEl,
-        test_getImagAmpEl,
-        test_getProbEl,
+        test_getRealAmp,
+        test_getImagAmp,
+        test_getProbAmp,
         test_calcInnerProduct,
         test_calcFidelity,
         test_addDensityMatrix,
@@ -1771,9 +1771,9 @@ int main (int narg, char** varg) {
         "collapseToOutcome",
         "measure",
         "measureWithStats",
-        "getRealAmpEl",
-        "getImagAmpEl",
-        "getProbEl",
+        "getRealAmp",
+        "getImagAmp",
+        "getProbAmp",
         "calcInnerProduct",
         "calcFidelity",
         "addDensityMatrix",

@@ -480,36 +480,46 @@ int getNumAmps(QubitRegister qureg) {
     return qureg.numAmpsTotal;
 }
 
-REAL getRealAmpEl(QubitRegister qureg, long long int index) {
+REAL getRealAmp(QubitRegister qureg, long long int index) {
     validateStateVecQureg(qureg, __func__);
     validateStateIndex(qureg, index, __func__);
     
-    return statevec_getRealAmpEl(qureg, index);
+    return statevec_getRealAmp(qureg, index);
 }
 
-REAL getImagAmpEl(QubitRegister qureg, long long int index) {
+REAL getImagAmp(QubitRegister qureg, long long int index) {
     validateStateVecQureg(qureg, __func__);
     validateStateIndex(qureg, index, __func__);
     
-    return statevec_getImagAmpEl(qureg, index);
+    return statevec_getImagAmp(qureg, index);
 }
 
-REAL getProbEl(QubitRegister qureg, long long int index) {
+REAL getProbAmp(QubitRegister qureg, long long int index) {
     validateStateVecQureg(qureg, __func__);
     validateStateIndex(qureg, index, __func__);
     
-    return statevec_getProbEl(qureg, index);
+    return statevec_getProbAmp(qureg, index);
 }
 
-Complex getDensityAmplitude(QubitRegister qureg, long long int row, long long int col) {
+Complex getAmp(QubitRegister qureg, long long int index) {
+    validateStateVecQureg(qureg, __func__);
+    validateStateIndex(qureg, index, __func__);
+    
+    Complex amp;
+    amp.real = statevec_getRealAmp(qureg, index);
+    amp.imag = statevec_getImagAmp(qureg, index);
+    return amp;
+}
+
+Complex getDensityAmp(QubitRegister qureg, long long int row, long long int col) {
     validateDensityMatrQureg(qureg, __func__);
     validateStateIndex(qureg, row, __func__);
     validateStateIndex(qureg, col, __func__);
     
     long long ind = row + col*(1LL << qureg.numQubitsRepresented);
     Complex amp;
-    amp.real = statevec_getRealAmpEl(qureg, ind);
-    amp.imag = statevec_getImagAmpEl(qureg, ind);
+    amp.real = statevec_getRealAmp(qureg, ind);
+    amp.imag = statevec_getImagAmp(qureg, ind);
     return amp;
 }
 

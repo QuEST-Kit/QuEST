@@ -330,14 +330,14 @@ void statevec_reportStateToScreen(QubitRegister qureg, QuESTEnv env, int reportR
     }
 }
 
-REAL statevec_getRealAmpEl(QubitRegister qureg, long long int index){
+REAL statevec_getRealAmp(QubitRegister qureg, long long int index){
     REAL el=0;
     cudaMemcpy(&el, &(qureg.deviceStateVec.real[index]), 
             sizeof(*(qureg.deviceStateVec.real)), cudaMemcpyDeviceToHost);
     return el;
 }
 
-REAL statevec_getImagAmpEl(QubitRegister qureg, long long int index){
+REAL statevec_getImagAmp(QubitRegister qureg, long long int index){
     REAL el=0;
     cudaMemcpy(&el, &(qureg.deviceStateVec.imag[index]), 
             sizeof(*(qureg.deviceStateVec.imag)), cudaMemcpyDeviceToHost);

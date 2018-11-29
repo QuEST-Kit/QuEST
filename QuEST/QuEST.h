@@ -202,7 +202,7 @@ void initPlusState(QubitRegister qureg);
 /** Initialise a set of \f$ N \f$ qubits to the classical state with index \p stateInd.
  * Note \f$ | 00 \dots 00 \rangle \f$ has \p stateInd 0, \f$ | 00 \dots 01 \rangle \f$ has \p stateInd 1, 
  * \f$ | 11 \dots 11 \rangle \f$ has \p stateInd \f$ 2^N - 1 \f$, etc.
- * Subsequent calls to getProbEl will yield 0 for all indices except \p stateInd.
+ * Subsequent calls to getProbAmp will yield 0 for all indices except \p stateInd.
  *
  * @param[in,out] qureg the object representing the set of qubits to be initialised
  * @param[in] stateInd the index (0 to the number of amplitudes, exclusive) of the state to give probability 1
@@ -533,6 +533,16 @@ void reportQuESTEnv(QuESTEnv env);
 
 void getEnvironmentString(QuESTEnv env, QubitRegister qureg, char str[200]);
 
+/** Getthe complex amplitude at a given index in the state vector.
+ *
+ * @param[in] qureg object representing a set of qubits
+ * @param[in] index index in state vector of probability amplitudes
+ * @return amplitude at index, returned as a Complex struct (with .real and .imag attributes)
+ * @throws exitWithError
+ *      if \p index is outside [0, \f$2^{N}\f$) where \f$N = \f$ \p qureg.numQubitsRepresented
+ */
+Complex getAmp(QubitRegister qureg, long long int index);
+
 /** Get the real component of the complex probability amplitude at an index in the state vector.
  * For debugging purposes.
  *
@@ -542,7 +552,7 @@ void getEnvironmentString(QuESTEnv env, QubitRegister qureg, char str[200]);
  * @throws exitWithError
  *      if \p index is outside [0, \f$2^{N}\f$) where \f$N = \f$ \p qureg.numQubitsRepresented
  */
-REAL getRealAmpEl(QubitRegister qureg, long long int index);
+REAL getRealAmp(QubitRegister qureg, long long int index);
 
 /** Get the imaginary component of the complex probability amplitude at an index in the state vector.
  * For debugging purposes.
@@ -553,7 +563,7 @@ REAL getRealAmpEl(QubitRegister qureg, long long int index);
  * @throws exitWithError
  *      if \p index is outside [0, \f$2^{N}\f$) where \f$N = \f$ \p qureg.numQubitsRepresented
  */
-REAL getImagAmpEl(QubitRegister qureg, long long int index);
+REAL getImagAmp(QubitRegister qureg, long long int index);
 
 /** Get the probability of the state at an index in the full state vector.
  *
@@ -563,7 +573,7 @@ REAL getImagAmpEl(QubitRegister qureg, long long int index);
  * @throws exitWithError
  *      if \p index is outside [0, \f$2^{N}\f$) where \f$N = \f$ \p qureg.numQubitsRepresented
  */
-REAL getProbEl(QubitRegister qureg, long long int index);
+REAL getProbAmp(QubitRegister qureg, long long int index);
 
 /** Get an amplitude from a density matrix at a given row and column.
  *
