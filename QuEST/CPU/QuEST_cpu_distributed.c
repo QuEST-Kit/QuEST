@@ -148,8 +148,17 @@ QuESTEnv initQuESTEnv(void) {
         env.rank=rank;
         env.numRanks=numRanks;
 
-    } else printf("ERROR: Trying to initialize QuESTEnv multiple times. Ignoring\n");
-	
+    } else {
+        
+        printf("ERROR: Trying to initialize QuESTEnv multiple times. Ignoring...\n");
+        
+        // ensure env is initialised anyway, so the compiler is happy
+        MPI_Comm_size(MPI_COMM_WORLD, &numRanks);
+        MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+        env.rank=rank;
+        env.numRanks=numRanks;
+	}
+    
 	seedQuESTDefault();
     
     return env;
