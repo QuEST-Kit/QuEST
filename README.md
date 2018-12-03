@@ -2,27 +2,6 @@
 
 This is the **development** branch, where the latest changes, features and bug-fixes are pushed.
 
-## Quick Start
-
-Copy or clone this repository to your machine. E.g. in the desired directory, enter
-```bash
-git clone https://github.com/aniabrown/QuEST.git
-```
-at terminal.
-
-In the root directory, compile the [example](examples/tutorial_example.c) using
-```bash
-cp examples/tutorial_example.c tutorial_example.c
-make
-```
-then run it with
-```bash
-./demo
-```
-
-The program will print information about your execution environment and some simple operations on a three qubit system. See the [tutorial](examples/README.md) for a better introduction. Additionally, run `tests/runTests.sh` to test QuEST runs correctly in your environment.
-
-
 ## Introduction
 
 The **Quantum Exact Simulation Toolkit** is a high performance simulator of universal quantum circuits. QuEST is written in C, hybridises OpenMP and MPI, and can run on a GPU. Needing only compilation, QuEST is easy to run both on laptops and supercomputers, where it can take advantage of multicore, GPU-accelerated and networked machines to quickly simulate circuits on many qubits.
@@ -59,7 +38,32 @@ multiControlledUnitary(qureg, controls, 5, 0, u);
 
 QuEST is contained entirely in the files in the `QuEST/` folder. To use QuEST, copy this folder to your computer and include `QuEST.h` in your `C` or `C++` code, and compile using the [makefile](makefile). We include [submission scripts](examples/submissionScripts/) for using QuEST with SLURM and PBS. See the [tutorial](/examples/README.md) for an introduction.
 
-Explicit instructions to download and run QuEST from the command line can be found at [quest.qtechtheory.org/download](https://quest.qtechtheory.org/download/).
+### Quick Start
+
+Copy or clone this repository to your machine. E.g. in the desired directory, enter
+```bash
+git clone https://github.com/aniabrown/QuEST.git
+```
+at terminal.
+
+In the root directory, compile the [example](examples/tutorial_example.c) using
+```bash
+cp examples/tutorial_example.c .
+make
+```
+then run it with
+```bash
+./demo
+```
+Afterward, clean up with
+```bash
+make clean
+rm tutorial_example.c
+````
+
+The program will print information about your execution environment and some simple operations on a three qubit system. See the [tutorial](examples/README.md) for a better introduction. Additionally, run `cd tests` then `./runTests.sh` to test QuEST runs correctly in your environment, as specified in `makefile`.
+
+
 
 ## API Documentation
 
