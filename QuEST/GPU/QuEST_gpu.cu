@@ -30,9 +30,7 @@ extern "C" {
 
 
 
-void statevec_initStateFromAmps(QubitRegister qureg, long long int startInd, REAL* reals, REAL* imags, long long int numAmps) {
-    
-    // !!! is this going to crap out if the user gives us an array of doubles, not reals?
+void statevec_setAmps(Qureg qureg, long long int startInd, REAL* reals, REAL* imags, long long int numAmps) {
     
     cudaDeviceSynchronize();
     cudaMemcpy(
@@ -49,7 +47,7 @@ void statevec_initStateFromAmps(QubitRegister qureg, long long int startInd, REA
 
 
 /** works for both statevectors and density matrices */
-void statevec_cloneQubitRegister(QubitRegister targetQureg, QubitRegister copyQureg) {
+void statevec_cloneQureg(Qureg targetQureg, Qureg copyQureg) {
     
     // copy copyQureg's GPU statevec to targetQureg's GPU statevec
     cudaDeviceSynchronize();
@@ -84,7 +82,7 @@ __global__ void densmatr_initPureStateKernel(
     }
 }
 
-void densmatr_initPureState(QubitRegister targetQureg, QubitRegister copyQureg)
+void densmatr_initPureState(Qureg targetQureg, Qureg copyQureg)
 {
     int threadsPerCUDABlock, CUDABlocks;
     threadsPerCUDABlock = 128;
@@ -95,7 +93,7 @@ void densmatr_initPureState(QubitRegister targetQureg, QubitRegister copyQureg)
         copyQureg.deviceStateVec.real,   copyQureg.deviceStateVec.imag);
 }
 
-__global__ void densmatr_initStatePlusKernel(long long int stateVecSize, REAL probFactor, REAL *stateVecReal, REAL *stateVecImag){
+__global__ void densmatr_initPlusStateKernel(long long int stateVecSize, REAL probFactor, REAL *stateVecReal, REAL *stateVecImag){
     long long int index;
 
     index = blockIdx.x*blockDim.x + threadIdx.x;
@@ -105,13 +103,13 @@ __global__ void densmatr_initStatePlusKernel(long long int stateVecSize, REAL pr
     stateVecImag[index] = 0.0;
 }
 
-void densmatr_initStatePlus(QubitRegister qureg)
+void densmatr_initPlusState(Qureg qureg)
 {
     REAL probFactor = 1.0/((REAL) (1LL << qureg.numQubitsRepresented));
     int threadsPerCUDABlock, CUDABlocks;
     threadsPerCUDABlock = 128;
     CUDABlocks = ceil((REAL)(qureg.numAmpsPerChunk)/threadsPerCUDABlock);
-    densmatr_initStatePlusKernel<<<CUDABlocks, threadsPerCUDABlock>>>(
+    densmatr_initPlusStateKernel<<<CUDABlocks, threadsPerCUDABlock>>>(
         qureg.numAmpsPerChunk, 
         probFactor,
         qureg.deviceStateVec.real, 
@@ -137,7 +135,7 @@ __global__ void densmatr_initClassicalStateKernel(
     }
 }
 
-void densmatr_initClassicalState(QubitRegister qureg, long long int stateInd)
+void densmatr_initClassicalState(Qureg qureg, long long int stateInd)
 {
     int threadsPerCUDABlock, CUDABlocks;
     threadsPerCUDABlock = 128;
@@ -154,7 +152,7 @@ void densmatr_initClassicalState(QubitRegister qureg, long long int stateInd)
         qureg.deviceStateVec.imag, densityInd);
 }
 
-void statevec_createQubitRegister(QubitRegister *qureg, int numQubits, QuESTEnv env)
+void statevec_createQureg(Qureg *qureg, int numQubits, QuESTEnv env)
 {   
     // allocate CPU memory
     long long int numAmps = 1L << numQubits;
@@ -200,7 +198,7 @@ void statevec_createQubitRegister(QubitRegister *qureg, int numQubits, QuESTEnv 
 
 }
 
-void statevec_destroyQubitRegister(QubitRegister qureg, QuESTEnv env)
+void statevec_destroyQureg(Qureg qureg, QuESTEnv env)
 {
     // Free CPU memory
     free(qureg.stateVec.real);
@@ -232,7 +230,7 @@ int GPUExists(void){
     else return 0;
 }
 
-QuESTEnv initQuESTEnv(void) {
+QuESTEnv createQuESTEnv(void) {
     // init MPI environment
     if (!GPUExists()){
         printf("Trying to run GPU code with no GPU available\n");
@@ -256,7 +254,7 @@ int syncQuESTSuccess(int successCode){
     return successCode;
 }
 
-void closeQuESTEnv(QuESTEnv env){
+void destroyQuESTEnv(QuESTEnv env){
     // MPI finalize goes here in MPI version. Call this function anyway for consistency
 }
 
@@ -272,11 +270,11 @@ void reportQuESTEnv(QuESTEnv env){
 # endif
 }
 
-void getEnvironmentString(QuESTEnv env, QubitRegister qureg, char str[200]){
+void getEnvironmentString(QuESTEnv env, Qureg qureg, char str[200]){
     sprintf(str, "%dqubits_GPU_noMpi_noOMP", qureg.numQubitsInStateVec);    
 }
 
-void copyStateToGPU(QubitRegister qureg)
+void copyStateToGPU(Qureg qureg)
 {
     if (DEBUG) printf("Copying data to GPU\n");
     cudaMemcpy(qureg.deviceStateVec.real, qureg.stateVec.real, 
@@ -290,7 +288,7 @@ void copyStateToGPU(QubitRegister qureg)
     if (DEBUG) printf("Finished copying data to GPU\n");
 }
 
-void copyStateFromGPU(QubitRegister qureg)
+void copyStateFromGPU(Qureg qureg)
 {
     cudaDeviceSynchronize();
     if (DEBUG) printf("Copying data from GPU\n");
@@ -304,7 +302,7 @@ void copyStateFromGPU(QubitRegister qureg)
 /** Print the current state vector of probability amplitudes for a set of qubits to standard out. 
   For debugging purposes. Each rank should print output serially. Only print output for systems <= 5 qubits
  */
-void statevec_reportStateToScreen(QubitRegister qureg, QuESTEnv env, int reportRank){
+void statevec_reportStateToScreen(Qureg qureg, QuESTEnv env, int reportRank){
     long long int index;
     int rank;
     copyStateFromGPU(qureg); 
@@ -330,21 +328,21 @@ void statevec_reportStateToScreen(QubitRegister qureg, QuESTEnv env, int reportR
     }
 }
 
-REAL statevec_getRealAmpEl(QubitRegister qureg, long long int index){
+REAL statevec_getRealAmp(Qureg qureg, long long int index){
     REAL el=0;
     cudaMemcpy(&el, &(qureg.deviceStateVec.real[index]), 
             sizeof(*(qureg.deviceStateVec.real)), cudaMemcpyDeviceToHost);
     return el;
 }
 
-REAL statevec_getImagAmpEl(QubitRegister qureg, long long int index){
+REAL statevec_getImagAmp(Qureg qureg, long long int index){
     REAL el=0;
     cudaMemcpy(&el, &(qureg.deviceStateVec.imag[index]), 
             sizeof(*(qureg.deviceStateVec.imag)), cudaMemcpyDeviceToHost);
     return el;
 }
 
-__global__ void statevec_initStateZeroKernel(long long int stateVecSize, REAL *stateVecReal, REAL *stateVecImag){
+__global__ void statevec_initZeroStateKernel(long long int stateVecSize, REAL *stateVecReal, REAL *stateVecImag){
     long long int index;
 
     // initialise the state to |0000..0000>
@@ -360,18 +358,18 @@ __global__ void statevec_initStateZeroKernel(long long int stateVecSize, REAL *s
     }
 }
 
-void statevec_initStateZero(QubitRegister qureg)
+void statevec_initZeroState(Qureg qureg)
 {
     int threadsPerCUDABlock, CUDABlocks;
     threadsPerCUDABlock = 128;
     CUDABlocks = ceil((REAL)(qureg.numAmpsPerChunk)/threadsPerCUDABlock);
-    statevec_initStateZeroKernel<<<CUDABlocks, threadsPerCUDABlock>>>(
+    statevec_initZeroStateKernel<<<CUDABlocks, threadsPerCUDABlock>>>(
         qureg.numAmpsPerChunk, 
         qureg.deviceStateVec.real, 
         qureg.deviceStateVec.imag);
 }
 
-__global__ void statevec_initStatePlusKernel(long long int stateVecSize, REAL *stateVecReal, REAL *stateVecImag){
+__global__ void statevec_initPlusStateKernel(long long int stateVecSize, REAL *stateVecReal, REAL *stateVecImag){
     long long int index;
 
     index = blockIdx.x*blockDim.x + threadIdx.x;
@@ -382,12 +380,12 @@ __global__ void statevec_initStatePlusKernel(long long int stateVecSize, REAL *s
     stateVecImag[index] = 0.0;
 }
 
-void statevec_initStatePlus(QubitRegister qureg)
+void statevec_initPlusState(Qureg qureg)
 {
     int threadsPerCUDABlock, CUDABlocks;
     threadsPerCUDABlock = 128;
     CUDABlocks = ceil((REAL)(qureg.numAmpsPerChunk)/threadsPerCUDABlock);
-    statevec_initStatePlusKernel<<<CUDABlocks, threadsPerCUDABlock>>>(
+    statevec_initPlusStateKernel<<<CUDABlocks, threadsPerCUDABlock>>>(
         qureg.numAmpsPerChunk, 
         qureg.deviceStateVec.real, 
         qureg.deviceStateVec.imag);
@@ -408,7 +406,7 @@ __global__ void statevec_initClassicalStateKernel(long long int stateVecSize, RE
         stateVecImag[stateInd] = 0.0;
     }
 }
-void statevec_initClassicalState(QubitRegister qureg, long long int stateInd)
+void statevec_initClassicalState(Qureg qureg, long long int stateInd)
 {
     int threadsPerCUDABlock, CUDABlocks;
     threadsPerCUDABlock = 128;
@@ -429,7 +427,7 @@ __global__ void statevec_initStateDebugKernel(long long int stateVecSize, REAL *
     stateVecImag[index] = (index*2.0+1.0)/10.0;
 }
 
-void statevec_initStateDebug(QubitRegister qureg)
+void statevec_initStateDebug(Qureg qureg)
 {
     int threadsPerCUDABlock, CUDABlocks;
     threadsPerCUDABlock = 128;
@@ -458,7 +456,7 @@ __global__ void statevec_initStateOfSingleQubitKernel(long long int stateVecSize
     }
 }
 
-void statevec_initStateOfSingleQubit(QubitRegister *qureg, int qubitId, int outcome)
+void statevec_initStateOfSingleQubit(Qureg *qureg, int qubitId, int outcome)
 {
     int threadsPerCUDABlock, CUDABlocks;
     threadsPerCUDABlock = 128;
@@ -467,7 +465,7 @@ void statevec_initStateOfSingleQubit(QubitRegister *qureg, int qubitId, int outc
 }
 
 // returns 1 if successful, else 0
-int statevec_initStateFromSingleFile(QubitRegister *qureg, char filename[200], QuESTEnv env){
+int statevec_initStateFromSingleFile(Qureg *qureg, char filename[200], QuESTEnv env){
     long long int chunkSize, stateVecSize;
     long long int indexInChunk, totalIndex;
 
@@ -511,7 +509,7 @@ int statevec_initStateFromSingleFile(QubitRegister *qureg, char filename[200], Q
     return 1;
 }
 
-int statevec_compareStates(QubitRegister mq1, QubitRegister mq2, REAL precision){
+int statevec_compareStates(Qureg mq1, Qureg mq2, REAL precision){
     REAL diff;
     int chunkSize = mq1.numAmpsPerChunk;
 
@@ -529,7 +527,7 @@ int statevec_compareStates(QubitRegister mq1, QubitRegister mq2, REAL precision)
     return 1;
 }
 
-__global__ void statevec_compactUnitaryKernel (QubitRegister qureg, const int rotQubit, Complex alpha, Complex beta){
+__global__ void statevec_compactUnitaryKernel (Qureg qureg, const int rotQubit, Complex alpha, Complex beta){
     // ----- sizes
     long long int sizeBlock,                                           // size of blocks
          sizeHalfBlock;                                       // size of blocks halved
@@ -584,7 +582,7 @@ __global__ void statevec_compactUnitaryKernel (QubitRegister qureg, const int ro
         + alphaReal*stateImagLo - alphaImag*stateRealLo;
 }
 
-void statevec_compactUnitary(QubitRegister qureg, const int targetQubit, Complex alpha, Complex beta) 
+void statevec_compactUnitary(Qureg qureg, const int targetQubit, Complex alpha, Complex beta) 
 {
     int threadsPerCUDABlock, CUDABlocks;
     threadsPerCUDABlock = 128;
@@ -592,7 +590,7 @@ void statevec_compactUnitary(QubitRegister qureg, const int targetQubit, Complex
     statevec_compactUnitaryKernel<<<CUDABlocks, threadsPerCUDABlock>>>(qureg, targetQubit, alpha, beta);
 }
 
-__global__ void statevec_controlledCompactUnitaryKernel (QubitRegister qureg, const int controlQubit, const int targetQubit, Complex alpha, Complex beta){
+__global__ void statevec_controlledCompactUnitaryKernel (Qureg qureg, const int controlQubit, const int targetQubit, Complex alpha, Complex beta){
     // ----- sizes
     long long int sizeBlock,                                           // size of blocks
          sizeHalfBlock;                                       // size of blocks halved
@@ -651,7 +649,7 @@ __global__ void statevec_controlledCompactUnitaryKernel (QubitRegister qureg, co
     }
 }
 
-void statevec_controlledCompactUnitary(QubitRegister qureg, const int controlQubit, const int targetQubit, Complex alpha, Complex beta) 
+void statevec_controlledCompactUnitary(Qureg qureg, const int controlQubit, const int targetQubit, Complex alpha, Complex beta) 
 {
     int threadsPerCUDABlock, CUDABlocks;
     threadsPerCUDABlock = 128;
@@ -659,7 +657,7 @@ void statevec_controlledCompactUnitary(QubitRegister qureg, const int controlQub
     statevec_controlledCompactUnitaryKernel<<<CUDABlocks, threadsPerCUDABlock>>>(qureg, controlQubit, targetQubit, alpha, beta);
 }
 
-__global__ void statevec_unitaryKernel(QubitRegister qureg, const int targetQubit, ComplexMatrix2 u){
+__global__ void statevec_unitaryKernel(Qureg qureg, const int targetQubit, ComplexMatrix2 u){
     // ----- sizes
     long long int sizeBlock,                                           // size of blocks
          sizeHalfBlock;                                       // size of blocks halved
@@ -712,7 +710,7 @@ __global__ void statevec_unitaryKernel(QubitRegister qureg, const int targetQubi
         + u.r1c1.real*stateImagLo + u.r1c1.imag*stateRealLo;
 }
 
-void statevec_unitary(QubitRegister qureg, const int targetQubit, ComplexMatrix2 u)
+void statevec_unitary(Qureg qureg, const int targetQubit, ComplexMatrix2 u)
 {
     int threadsPerCUDABlock, CUDABlocks;
     threadsPerCUDABlock = 128;
@@ -720,7 +718,7 @@ void statevec_unitary(QubitRegister qureg, const int targetQubit, ComplexMatrix2
     statevec_unitaryKernel<<<CUDABlocks, threadsPerCUDABlock>>>(qureg, targetQubit, u);
 }
 
-__global__ void statevec_controlledUnitaryKernel(QubitRegister qureg, const int controlQubit, const int targetQubit, ComplexMatrix2 u){
+__global__ void statevec_controlledUnitaryKernel(Qureg qureg, const int controlQubit, const int targetQubit, ComplexMatrix2 u){
     // ----- sizes
     long long int sizeBlock,                                           // size of blocks
          sizeHalfBlock;                                       // size of blocks halved
@@ -778,7 +776,7 @@ __global__ void statevec_controlledUnitaryKernel(QubitRegister qureg, const int 
     }
 }
 
-void statevec_controlledUnitary(QubitRegister qureg, const int controlQubit, const int targetQubit, ComplexMatrix2 u)
+void statevec_controlledUnitary(Qureg qureg, const int controlQubit, const int targetQubit, ComplexMatrix2 u)
 {
     int threadsPerCUDABlock, CUDABlocks;
     threadsPerCUDABlock = 128;
@@ -786,7 +784,7 @@ void statevec_controlledUnitary(QubitRegister qureg, const int controlQubit, con
     statevec_controlledUnitaryKernel<<<CUDABlocks, threadsPerCUDABlock>>>(qureg, controlQubit, targetQubit, u);
 }
 
-__global__ void statevec_multiControlledUnitaryKernel(QubitRegister qureg, long long int mask, const int targetQubit, ComplexMatrix2 u){
+__global__ void statevec_multiControlledUnitaryKernel(Qureg qureg, long long int mask, const int targetQubit, ComplexMatrix2 u){
     // ----- sizes
     long long int sizeBlock,                                           // size of blocks
          sizeHalfBlock;                                       // size of blocks halved
@@ -842,7 +840,7 @@ __global__ void statevec_multiControlledUnitaryKernel(QubitRegister qureg, long 
     }
 }
 
-void statevec_multiControlledUnitary(QubitRegister qureg, int *controlQubits, int numControlQubits, const int targetQubit, ComplexMatrix2 u)
+void statevec_multiControlledUnitary(Qureg qureg, int *controlQubits, int numControlQubits, const int targetQubit, ComplexMatrix2 u)
 {
     int threadsPerCUDABlock, CUDABlocks;
     long long int mask=0;
@@ -852,7 +850,7 @@ void statevec_multiControlledUnitary(QubitRegister qureg, int *controlQubits, in
     statevec_multiControlledUnitaryKernel<<<CUDABlocks, threadsPerCUDABlock>>>(qureg, mask, targetQubit, u);
 }
 
-__global__ void statevec_sigmaXKernel(QubitRegister qureg, const int targetQubit){
+__global__ void statevec_pauliXKernel(Qureg qureg, const int targetQubit){
     // ----- sizes
     long long int sizeBlock,                                           // size of blocks
          sizeHalfBlock;                                       // size of blocks halved
@@ -896,15 +894,15 @@ __global__ void statevec_sigmaXKernel(QubitRegister qureg, const int targetQubit
     stateVecImag[indexLo] = stateImagUp;
 }
 
-void statevec_sigmaX(QubitRegister qureg, const int targetQubit) 
+void statevec_pauliX(Qureg qureg, const int targetQubit) 
 {
     int threadsPerCUDABlock, CUDABlocks;
     threadsPerCUDABlock = 128;
     CUDABlocks = ceil((REAL)(qureg.numAmpsPerChunk>>1)/threadsPerCUDABlock);
-    statevec_sigmaXKernel<<<CUDABlocks, threadsPerCUDABlock>>>(qureg, targetQubit);
+    statevec_pauliXKernel<<<CUDABlocks, threadsPerCUDABlock>>>(qureg, targetQubit);
 }
 
-__global__ void statevec_sigmaYKernel(QubitRegister qureg, const int targetQubit, const int conjFac){
+__global__ void statevec_pauliYKernel(Qureg qureg, const int targetQubit, const int conjFac){
 
     long long int sizeHalfBlock = 1LL << targetQubit;
     long long int sizeBlock     = 2LL * sizeHalfBlock;
@@ -929,23 +927,23 @@ __global__ void statevec_sigmaYKernel(QubitRegister qureg, const int targetQubit
     stateVecImag[indexLo] = conjFac * stateRealUp;
 }
 
-void statevec_sigmaY(QubitRegister qureg, const int targetQubit) 
+void statevec_pauliY(Qureg qureg, const int targetQubit) 
 {
     int threadsPerCUDABlock, CUDABlocks;
     threadsPerCUDABlock = 128;
     CUDABlocks = ceil((REAL)(qureg.numAmpsPerChunk>>1)/threadsPerCUDABlock);
-    statevec_sigmaYKernel<<<CUDABlocks, threadsPerCUDABlock>>>(qureg, targetQubit, 1);
+    statevec_pauliYKernel<<<CUDABlocks, threadsPerCUDABlock>>>(qureg, targetQubit, 1);
 }
 
-void statevec_sigmaYConj(QubitRegister qureg, const int targetQubit) 
+void statevec_pauliYConj(Qureg qureg, const int targetQubit) 
 {
     int threadsPerCUDABlock, CUDABlocks;
     threadsPerCUDABlock = 128;
     CUDABlocks = ceil((REAL)(qureg.numAmpsPerChunk>>1)/threadsPerCUDABlock);
-    statevec_sigmaYKernel<<<CUDABlocks, threadsPerCUDABlock>>>(qureg, targetQubit, -1);
+    statevec_pauliYKernel<<<CUDABlocks, threadsPerCUDABlock>>>(qureg, targetQubit, -1);
 }
 
-__global__ void statevec_controlledSigmaYKernel(QubitRegister qureg, const int controlQubit, const int targetQubit, const int conjFac)
+__global__ void statevec_controlledPauliYKernel(Qureg qureg, const int controlQubit, const int targetQubit, const int conjFac)
 {
     long long int index;
     long long int sizeBlock, sizeHalfBlock;
@@ -981,25 +979,25 @@ __global__ void statevec_controlledSigmaYKernel(QubitRegister qureg, const int c
     }
 }
 
-void statevec_controlledSigmaY(QubitRegister qureg, const int controlQubit, const int targetQubit)
+void statevec_controlledPauliY(Qureg qureg, const int controlQubit, const int targetQubit)
 {
     int conjFactor = 1;
     int threadsPerCUDABlock, CUDABlocks;
     threadsPerCUDABlock = 128;
     CUDABlocks = ceil((REAL)(qureg.numAmpsPerChunk)/threadsPerCUDABlock);
-    statevec_controlledSigmaYKernel<<<CUDABlocks, threadsPerCUDABlock>>>(qureg, controlQubit, targetQubit, conjFactor);
+    statevec_controlledPauliYKernel<<<CUDABlocks, threadsPerCUDABlock>>>(qureg, controlQubit, targetQubit, conjFactor);
 }
 
-void statevec_controlledSigmaYConj(QubitRegister qureg, const int controlQubit, const int targetQubit)
+void statevec_controlledPauliYConj(Qureg qureg, const int controlQubit, const int targetQubit)
 {
     int conjFactor = -1;
     int threadsPerCUDABlock, CUDABlocks;
     threadsPerCUDABlock = 128;
     CUDABlocks = ceil((REAL)(qureg.numAmpsPerChunk)/threadsPerCUDABlock);
-    statevec_controlledSigmaYKernel<<<CUDABlocks, threadsPerCUDABlock>>>(qureg, controlQubit, targetQubit, conjFactor);
+    statevec_controlledPauliYKernel<<<CUDABlocks, threadsPerCUDABlock>>>(qureg, controlQubit, targetQubit, conjFactor);
 }
 
-__global__ void statevec_phaseShiftByTermKernel(QubitRegister qureg, const int targetQubit, REAL cosAngle, REAL sinAngle) {
+__global__ void statevec_phaseShiftByTermKernel(Qureg qureg, const int targetQubit, REAL cosAngle, REAL sinAngle) {
 
     long long int sizeBlock, sizeHalfBlock;
     long long int thisBlock, indexUp,indexLo;
@@ -1027,7 +1025,7 @@ __global__ void statevec_phaseShiftByTermKernel(QubitRegister qureg, const int t
     stateVecImag[indexLo] = sinAngle*stateRealLo + cosAngle*stateImagLo;
 }
 
-void statevec_phaseShiftByTerm(QubitRegister qureg, const int targetQubit, Complex term)
+void statevec_phaseShiftByTerm(Qureg qureg, const int targetQubit, Complex term)
 {   
     REAL cosAngle = term.real;
     REAL sinAngle = term.imag;
@@ -1038,7 +1036,7 @@ void statevec_phaseShiftByTerm(QubitRegister qureg, const int targetQubit, Compl
     statevec_phaseShiftByTermKernel<<<CUDABlocks, threadsPerCUDABlock>>>(qureg, targetQubit, cosAngle, sinAngle);
 }
 
-__global__ void statevec_controlledPhaseShiftKernel(QubitRegister qureg, const int idQubit1, const int idQubit2, REAL cosAngle, REAL sinAngle)
+__global__ void statevec_controlledPhaseShiftKernel(Qureg qureg, const int idQubit1, const int idQubit2, REAL cosAngle, REAL sinAngle)
 {
     long long int index;
     long long int stateVecSize;
@@ -1063,7 +1061,7 @@ __global__ void statevec_controlledPhaseShiftKernel(QubitRegister qureg, const i
     }
 }
 
-void statevec_controlledPhaseShift(QubitRegister qureg, const int idQubit1, const int idQubit2, REAL angle)
+void statevec_controlledPhaseShift(Qureg qureg, const int idQubit1, const int idQubit2, REAL angle)
 {
     REAL cosAngle = cos(angle);
     REAL sinAngle = sin(angle);
@@ -1074,7 +1072,7 @@ void statevec_controlledPhaseShift(QubitRegister qureg, const int idQubit1, cons
     statevec_controlledPhaseShiftKernel<<<CUDABlocks, threadsPerCUDABlock>>>(qureg, idQubit1, idQubit2, cosAngle, sinAngle);
 }
 
-__global__ void statevec_multiControlledPhaseShiftKernel(QubitRegister qureg, long long int mask, REAL cosAngle, REAL sinAngle) {
+__global__ void statevec_multiControlledPhaseShiftKernel(Qureg qureg, long long int mask, REAL cosAngle, REAL sinAngle) {
     REAL stateRealLo, stateImagLo;
     long long int index;
     long long int stateVecSize;
@@ -1094,7 +1092,7 @@ __global__ void statevec_multiControlledPhaseShiftKernel(QubitRegister qureg, lo
     }
 }
 
-void statevec_multiControlledPhaseShift(QubitRegister qureg, int *controlQubits, int numControlQubits, REAL angle)
+void statevec_multiControlledPhaseShift(Qureg qureg, int *controlQubits, int numControlQubits, REAL angle)
 {   
     REAL cosAngle = cos(angle);
     REAL sinAngle = sin(angle);
@@ -1109,7 +1107,7 @@ void statevec_multiControlledPhaseShift(QubitRegister qureg, int *controlQubits,
     statevec_multiControlledPhaseShiftKernel<<<CUDABlocks, threadsPerCUDABlock>>>(qureg, mask, cosAngle, sinAngle);
 }
 
-REAL densmatr_calcTotalProbability(QubitRegister qureg) {
+REAL densmatr_calcTotalProb(Qureg qureg) {
     
     // computes the trace using Kahan summation
     REAL pTotal=0;
@@ -1132,7 +1130,7 @@ REAL densmatr_calcTotalProbability(QubitRegister qureg) {
     return pTotal;
 }
 
-REAL statevec_calcTotalProbability(QubitRegister qureg){
+REAL statevec_calcTotalProb(Qureg qureg){
     /* IJB - implemented using Kahan summation for greater accuracy at a slight floating
        point operation overhead. For more details see https://en.wikipedia.org/wiki/Kahan_summation_algorithm */
     /* Don't change the bracketing in this routine! */
@@ -1164,7 +1162,7 @@ REAL statevec_calcTotalProbability(QubitRegister qureg){
     return pTotal;
 }
 
-__global__ void statevec_controlledPhaseFlipKernel(QubitRegister qureg, const int idQubit1, const int idQubit2)
+__global__ void statevec_controlledPhaseFlipKernel(Qureg qureg, const int idQubit1, const int idQubit2)
 {
     long long int index;
     long long int stateVecSize;
@@ -1185,7 +1183,7 @@ __global__ void statevec_controlledPhaseFlipKernel(QubitRegister qureg, const in
     }
 }
 
-void statevec_controlledPhaseFlip(QubitRegister qureg, const int idQubit1, const int idQubit2)
+void statevec_controlledPhaseFlip(Qureg qureg, const int idQubit1, const int idQubit2)
 {
     int threadsPerCUDABlock, CUDABlocks;
     threadsPerCUDABlock = 128;
@@ -1193,7 +1191,7 @@ void statevec_controlledPhaseFlip(QubitRegister qureg, const int idQubit1, const
     statevec_controlledPhaseFlipKernel<<<CUDABlocks, threadsPerCUDABlock>>>(qureg, idQubit1, idQubit2);
 }
 
-__global__ void statevec_multiControlledPhaseFlipKernel(QubitRegister qureg, long long int mask)
+__global__ void statevec_multiControlledPhaseFlipKernel(Qureg qureg, long long int mask)
 {
     long long int index;
     long long int stateVecSize;
@@ -1211,7 +1209,7 @@ __global__ void statevec_multiControlledPhaseFlipKernel(QubitRegister qureg, lon
     }
 }
 
-void statevec_multiControlledPhaseFlip(QubitRegister qureg, int *controlQubits, int numControlQubits)
+void statevec_multiControlledPhaseFlip(Qureg qureg, int *controlQubits, int numControlQubits)
 {
     int threadsPerCUDABlock, CUDABlocks;
     long long int mask=0;
@@ -1222,7 +1220,7 @@ void statevec_multiControlledPhaseFlip(QubitRegister qureg, int *controlQubits, 
 }
 
 
-__global__ void statevec_hadamardKernel (QubitRegister qureg, const int targetQubit){
+__global__ void statevec_hadamardKernel (Qureg qureg, const int targetQubit){
     // ----- sizes
     long long int sizeBlock,                                           // size of blocks
          sizeHalfBlock;                                       // size of blocks halved
@@ -1271,7 +1269,7 @@ __global__ void statevec_hadamardKernel (QubitRegister qureg, const int targetQu
     stateVecImag[indexLo] = recRoot2*(stateImagUp - stateImagLo);
 }
 
-void statevec_hadamard(QubitRegister qureg, const int targetQubit) 
+void statevec_hadamard(Qureg qureg, const int targetQubit) 
 {
     int threadsPerCUDABlock, CUDABlocks;
     threadsPerCUDABlock = 128;
@@ -1279,7 +1277,7 @@ void statevec_hadamard(QubitRegister qureg, const int targetQubit)
     statevec_hadamardKernel<<<CUDABlocks, threadsPerCUDABlock>>>(qureg, targetQubit);
 }
 
-__global__ void statevec_controlledNotKernel(QubitRegister qureg, const int controlQubit, const int targetQubit)
+__global__ void statevec_controlledNotKernel(Qureg qureg, const int controlQubit, const int targetQubit)
 {
     long long int index;
     long long int sizeBlock,                                           // size of blocks
@@ -1318,7 +1316,7 @@ __global__ void statevec_controlledNotKernel(QubitRegister qureg, const int cont
     }
 }
 
-void statevec_controlledNot(QubitRegister qureg, const int controlQubit, const int targetQubit)
+void statevec_controlledNot(Qureg qureg, const int controlQubit, const int targetQubit)
 {
     int threadsPerCUDABlock, CUDABlocks;
     threadsPerCUDABlock = 128;
@@ -1362,7 +1360,7 @@ __global__ void copySharedReduceBlock(REAL*arrayIn, REAL *reducedArray, int leng
 }
 
 __global__ void densmatr_findProbabilityOfZeroKernel(
-    QubitRegister qureg, const int measureQubit, REAL *reducedArray
+    Qureg qureg, const int measureQubit, REAL *reducedArray
 ) {
     // run by each thread
     // use of block here refers to contiguous amplitudes where measureQubit = 0, 
@@ -1400,7 +1398,7 @@ __global__ void densmatr_findProbabilityOfZeroKernel(
 }
 
 __global__ void statevec_findProbabilityOfZeroKernel(
-        QubitRegister qureg, const int measureQubit, REAL *reducedArray
+        Qureg qureg, const int measureQubit, REAL *reducedArray
 ) {
     // ----- sizes
     long long int sizeBlock,                                           // size of blocks
@@ -1465,7 +1463,7 @@ void swapDouble(REAL **a, REAL **b){
     *b = temp;
 }
 
-REAL densmatr_findProbabilityOfZero(QubitRegister qureg, const int measureQubit)
+REAL densmatr_findProbabilityOfZero(Qureg qureg, const int measureQubit)
 {
     long long int densityDim = 1LL << qureg.numQubitsRepresented;
     long long int numValuesToReduce = densityDim >> 1;  // half of the diagonal has measureQubit=0
@@ -1513,7 +1511,7 @@ REAL densmatr_findProbabilityOfZero(QubitRegister qureg, const int measureQubit)
     return zeroProb;
 }
 
-REAL statevec_findProbabilityOfZero(QubitRegister qureg, const int measureQubit)
+REAL statevec_findProbabilityOfZero(Qureg qureg, const int measureQubit)
 {
     long long int numValuesToReduce = qureg.numAmpsPerChunk>>1;
     int valuesPerCUDABlock, numCUDABlocks, sharedMemSize;
@@ -1551,7 +1549,7 @@ REAL statevec_findProbabilityOfZero(QubitRegister qureg, const int measureQubit)
     return stateProb;
 }
 
-REAL statevec_findProbabilityOfOutcome(QubitRegister qureg, const int measureQubit, int outcome)
+REAL statevec_calcProbOfOutcome(Qureg qureg, const int measureQubit, int outcome)
 {
     REAL outcomeProb = statevec_findProbabilityOfZero(qureg, measureQubit);
     if (outcome==1)
@@ -1559,7 +1557,7 @@ REAL statevec_findProbabilityOfOutcome(QubitRegister qureg, const int measureQub
     return outcomeProb;
 }
 
-REAL densmatr_findProbabilityOfOutcome(QubitRegister qureg, const int measureQubit, int outcome)
+REAL densmatr_calcProbOfOutcome(Qureg qureg, const int measureQubit, int outcome)
 {
     REAL outcomeProb = densmatr_findProbabilityOfZero(qureg, measureQubit);
     if (outcome==1) 
@@ -1599,7 +1597,7 @@ __global__ void statevec_calcInnerProductKernel(
  * Truly disgusting, probably doubles runtime, please fix.
  * @TODO could even do the kernel twice, storing real in bra.reduc and imag in ket.reduc?
  */
-Complex statevec_calcInnerProduct(QubitRegister bra, QubitRegister ket) {
+Complex statevec_calcInnerProduct(Qureg bra, Qureg ket) {
     
     REAL innerProdReal, innerProdImag;
     
@@ -1687,7 +1685,7 @@ Complex statevec_calcInnerProduct(QubitRegister bra, QubitRegister ket) {
 }
 
 /** computes one term of (vec^*T) dens * vec */
-__global__ void densmatr_calcFidelityKernel(QubitRegister dens, QubitRegister vec, long long int dim, REAL* reducedArray) {
+__global__ void densmatr_calcFidelityKernel(Qureg dens, Qureg vec, long long int dim, REAL* reducedArray) {
 
     // figure out which density matrix row to consider
     long long int col;
@@ -1726,7 +1724,7 @@ __global__ void densmatr_calcFidelityKernel(QubitRegister dens, QubitRegister ve
 }
 
 // @TODO implement
-REAL densmatr_calcFidelity(QubitRegister qureg, QubitRegister pureState) {
+REAL densmatr_calcFidelity(Qureg qureg, Qureg pureState) {
     
     // we're summing the square of every term in the density matrix
     long long int densityDim = 1LL << qureg.numQubitsRepresented;
@@ -1796,7 +1794,7 @@ __global__ void densmatr_calcPurityKernel(REAL* vecReal, REAL* vecImag, long lon
 }
 
 /** Computes the trace of the density matrix squared */
-REAL densmatr_calcPurity(QubitRegister qureg) {
+REAL densmatr_calcPurity(Qureg qureg) {
     
     // we're summing the square of every term in the density matrix
     long long int numValuesToReduce = qureg.numAmpsPerChunk;
@@ -1845,7 +1843,7 @@ REAL densmatr_calcPurity(QubitRegister qureg) {
     return traceDensSquared;
 }
 
-__global__ void statevec_collapseToKnownProbOutcomeKernel(QubitRegister qureg, int measureQubit, int outcome, REAL totalProbability)
+__global__ void statevec_collapseToKnownProbOutcomeKernel(Qureg qureg, int measureQubit, int outcome, REAL totalProbability)
 {
     // ----- sizes
     long long int sizeBlock,                                           // size of blocks
@@ -1902,7 +1900,7 @@ __global__ void statevec_collapseToKnownProbOutcomeKernel(QubitRegister qureg, i
  * outcomeProb must accurately be the probability of that qubit outcome in the state-vector, or
  * else the state-vector will lose normalisation
  */
-void statevec_collapseToKnownProbOutcome(QubitRegister qureg, const int measureQubit, int outcome, REAL outcomeProb)
+void statevec_collapseToKnownProbOutcome(Qureg qureg, const int measureQubit, int outcome, REAL outcomeProb)
 {        
     int threadsPerCUDABlock, CUDABlocks;
     threadsPerCUDABlock = 128;
@@ -1937,7 +1935,7 @@ __global__ void densmatr_collapseToKnownProbOutcomeKernel(
 }
 
 /** This involves finding |...i...><...j...| states and killing those where i!=j */
-void densmatr_collapseToKnownProbOutcome(QubitRegister qureg, const int measureQubit, int outcome, REAL outcomeProb) {
+void densmatr_collapseToKnownProbOutcome(Qureg qureg, const int measureQubit, int outcome, REAL outcomeProb) {
     
 	int rowQubit = measureQubit + qureg.numQubitsRepresented;
     
@@ -1966,7 +1964,7 @@ void densmatr_collapseToKnownProbOutcome(QubitRegister qureg, const int measureQ
         part1, part2, part3, rowBit, colBit, desired, undesired);
 }
 
-__global__ void densmatr_addDensityMatrixKernel(QubitRegister combineQureg, REAL otherProb, QubitRegister otherQureg, long long int numAmpsToVisit) {
+__global__ void densmatr_addDensityMatrixKernel(Qureg combineQureg, REAL otherProb, Qureg otherQureg, long long int numAmpsToVisit) {
     
     long long int ampInd = blockIdx.x*blockDim.x + threadIdx.x;
     if (ampInd >= numAmpsToVisit) return;
@@ -1978,7 +1976,7 @@ __global__ void densmatr_addDensityMatrixKernel(QubitRegister combineQureg, REAL
     combineQureg.deviceStateVec.imag[ampInd] += otherProb*otherQureg.deviceStateVec.imag[ampInd];
 }
 
-void densmatr_addDensityMatrix(QubitRegister combineQureg, REAL otherProb, QubitRegister otherQureg) {
+void densmatr_addDensityMatrix(Qureg combineQureg, REAL otherProb, Qureg otherQureg) {
     
     long long int numAmpsToVisit = combineQureg.numAmpsPerChunk;
     
@@ -2010,7 +2008,7 @@ __global__ void densmatr_oneQubitDephaseKernel(
     vecImag[ampInd + rowBit] *= fac;
 }
 
-void densmatr_oneQubitDephase(QubitRegister qureg, const int targetQubit, REAL dephase) {
+void densmatr_oneQubitDephase(Qureg qureg, const int targetQubit, REAL dephase) {
     
     if (dephase == 0)
         return;
@@ -2064,7 +2062,7 @@ __global__ void densmatr_twoQubitDephaseKernel(
 }
 
 // @TODO is separating these 12 amplitudes really faster than letting every 16th base modify 12 elems?
-void densmatr_twoQubitDephase(QubitRegister qureg, int qubit1, int qubit2, REAL dephase) {
+void densmatr_twoQubitDephase(Qureg qureg, int qubit1, int qubit2, REAL dephase) {
     
     if (dephase == 0)
         return;
@@ -2126,7 +2124,7 @@ __global__ void densmatr_oneQubitDepolariseKernel(
     vecImag[targetInd] += imagAvDepol;
 }
 
-void densmatr_oneQubitDepolarise(QubitRegister qureg, const int targetQubit, REAL depolLevel) {
+void densmatr_oneQubitDepolarise(Qureg qureg, const int targetQubit, REAL depolLevel) {
     
     if (depolLevel == 0)
         return;
@@ -2185,7 +2183,7 @@ __global__ void densmatr_twoQubitDepolariseKernel(
     vecReal[ind11] += realAvDepol; vecImag[ind11] += imagAvDepol;
 }
 
-void densmatr_twoQubitDepolarise(QubitRegister qureg, int qubit1, int qubit2, REAL depolLevel) {
+void densmatr_twoQubitDepolarise(Qureg qureg, int qubit1, int qubit2, REAL depolLevel) {
     
     if (depolLevel == 0)
         return;

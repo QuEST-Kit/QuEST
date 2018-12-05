@@ -8,7 +8,7 @@ int main (int narg, char *varg[]) {
      * (Required only once per program)
      */
 
-    QuESTEnv env = initQuESTEnv();
+    QuESTEnv env = createQuESTEnv();
 
     printf("-------------------------------------------------------\n");
     printf("Running QuEST tutorial:\n\t Basic circuit involving a system of 3 qubits.\n");
@@ -18,15 +18,15 @@ int main (int narg, char *varg[]) {
      * PREPARE QUBIT SYSTEM
      */
 
-    QubitRegister qubits = createQubitRegister(3, env);
-    initStateZero(qubits);
+    Qureg qubits = createQureg(3, env);
+    initZeroState(qubits);
 
 
     /*
      * REPORT SYSTEM AND ENVIRONMENT
      */
     printf("\nThis is our environment:\n");
-    reportQubitRegisterParams(qubits);
+    reportQuregParams(qubits);
     reportQuESTEnv(env);
 
     /*
@@ -62,10 +62,10 @@ int main (int narg, char *varg[]) {
     printf("\nCircuit output:\n");
 
     REAL prob;
-    prob = getProbEl(qubits, 7);
+    prob = getProbAmp(qubits, 7);
     printf("Probability amplitude of |111>: %f\n", prob);
 
-    prob = findProbabilityOfOutcome(qubits, 2, 1);
+    prob = calcProbOfOutcome(qubits, 2, 1);
     printf("Probability of qubit 2 being in state 1: %f\n", prob);
 
     int outcome = measure(qubits, 0);
@@ -79,13 +79,13 @@ int main (int narg, char *varg[]) {
      * FREE MEMORY
      */
 
-    destroyQubitRegister(qubits, env); 
+    destroyQureg(qubits, env); 
 
 
     /*
      * CLOSE QUEST ENVIRONMET
      * (Required once at end of program)
      */
-    closeQuESTEnv(env);
+    destroyQuESTEnv(env);
     return 0;
 }

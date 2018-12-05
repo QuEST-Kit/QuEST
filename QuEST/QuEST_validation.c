@@ -131,50 +131,50 @@ void validateCreateNumQubits(int numQubits, const char* caller) {
     QuESTAssert(numQubits>0, E_INVALID_NUM_QUBITS, caller);
 }
 
-void validateStateIndex(QubitRegister qureg, long long int stateInd, const char* caller) {
+void validateStateIndex(Qureg qureg, long long int stateInd, const char* caller) {
     long long int stateMax = 1LL << qureg.numQubitsRepresented;
     QuESTAssert(stateInd>=0 && stateInd<stateMax, E_INVALID_STATE_INDEX, caller);
 }
 
-void validateNumAmps(QubitRegister qureg, long long int startInd, long long int numAmps, const char* caller) {
+void validateNumAmps(Qureg qureg, long long int startInd, long long int numAmps, const char* caller) {
     validateStateIndex(qureg, startInd, caller);
     QuESTAssert(numAmps >= 0 && numAmps <= qureg.numAmpsTotal, E_INVALID_NUM_AMPS, caller);
     QuESTAssert(numAmps + startInd <= qureg.numAmpsTotal, E_INVALID_OFFSET_NUM_AMPS, caller);
 }
 
-void validateTarget(QubitRegister qureg, int targetQubit, const char* caller) {
+void validateTarget(Qureg qureg, int targetQubit, const char* caller) {
     QuESTAssert(targetQubit>=0 && targetQubit<qureg.numQubitsRepresented, E_INVALID_TARGET_QUBIT, caller);
 }
 
-void validateControl(QubitRegister qureg, int controlQubit, const char* caller) {
+void validateControl(Qureg qureg, int controlQubit, const char* caller) {
     QuESTAssert(controlQubit>=0 && controlQubit<qureg.numQubitsRepresented, E_INVALID_CONTROL_QUBIT, caller);
 }
 
-void validateControlTarget(QubitRegister qureg, int controlQubit, int targetQubit, const char* caller) {
+void validateControlTarget(Qureg qureg, int controlQubit, int targetQubit, const char* caller) {
     validateTarget(qureg, targetQubit, caller);
     validateControl(qureg, controlQubit, caller);
     QuESTAssert(controlQubit != targetQubit, E_TARGET_IS_CONTROL, caller);
 }
 
-void validateUniqueTargets(QubitRegister qureg, int qubit1, int qubit2, const char* caller) {
+void validateUniqueTargets(Qureg qureg, int qubit1, int qubit2, const char* caller) {
     validateTarget(qureg, qubit1, caller);
     validateTarget(qureg, qubit2, caller);
     QuESTAssert(qubit1 != qubit2, E_TARGETS_NOT_UNIQUE, caller);
 }
 
-void validateNumControls(QubitRegister qureg, const int numControlQubits, const char* caller) {
+void validateNumControls(Qureg qureg, const int numControlQubits, const char* caller) {
     // this could reject repeated qubits and cite "too many" but oh well
     QuESTAssert(numControlQubits>0 && numControlQubits<=qureg.numQubitsRepresented, E_INVALID_NUM_CONTROLS, caller);
 }
 
-void validateMultiControls(QubitRegister qureg, int* controlQubits, const int numControlQubits, const char* caller) {
+void validateMultiControls(Qureg qureg, int* controlQubits, const int numControlQubits, const char* caller) {
     validateNumControls(qureg, numControlQubits, caller);
     for (int i=0; i < numControlQubits; i++) {
         validateControl(qureg, controlQubits[i], caller);
     }
 }
 
-void validateMultiControlsTarget(QubitRegister qureg, int* controlQubits, const int numControlQubits, const int targetQubit, const char* caller) {
+void validateMultiControlsTarget(Qureg qureg, int* controlQubits, const int numControlQubits, const int targetQubit, const char* caller) {
     validateTarget(qureg, targetQubit, caller);
     validateMultiControls(qureg, controlQubits, numControlQubits, caller);
     for (int i=0; i < numControlQubits; i++)
@@ -193,11 +193,11 @@ void validateVector(Vector vec, const char* caller) {
     QuESTAssert(getVectorMagnitude(vec) > REAL_EPS, E_ZERO_VECTOR, caller);
 }
 
-void validateStateVecQureg(QubitRegister qureg, const char* caller) {
+void validateStateVecQureg(Qureg qureg, const char* caller) {
     QuESTAssert( ! qureg.isDensityMatrix, E_DEFINED_ONLY_FOR_STATEVECS, caller);
 }
 
-void validateDensityMatrQureg(QubitRegister qureg, const char* caller) {
+void validateDensityMatrQureg(Qureg qureg, const char* caller) {
     QuESTAssert(qureg.isDensityMatrix, E_DEFINED_ONLY_FOR_DENSMATRS, caller);
 }
 
@@ -209,15 +209,15 @@ void validateMeasurementProb(REAL prob, const char* caller) {
     QuESTAssert(prob>REAL_EPS, E_COLLAPSE_STATE_ZERO_PROB, caller);
 }
 
-void validateMatchingQuregDims(QubitRegister qureg1, QubitRegister qureg2, const char *caller) {
+void validateMatchingQuregDims(Qureg qureg1, Qureg qureg2, const char *caller) {
     QuESTAssert(qureg1.numQubitsRepresented==qureg2.numQubitsRepresented, E_MISMATCHING_QUREG_DIMENSIONS, caller);
 }
 
-void validateMatchingQuregTypes(QubitRegister qureg1, QubitRegister qureg2, const char *caller) {
+void validateMatchingQuregTypes(Qureg qureg1, Qureg qureg2, const char *caller) {
     QuESTAssert(qureg1.isDensityMatrix==qureg2.isDensityMatrix, E_MISMATCHING_QUREG_TYPES, caller);
 }
 
-void validateSecondQuregStateVec(QubitRegister qureg2, const char *caller) {
+void validateSecondQuregStateVec(Qureg qureg2, const char *caller) {
     QuESTAssert( ! qureg2.isDensityMatrix, E_SECOND_ARG_MUST_BE_STATEVEC, caller);
 }
 

@@ -15,17 +15,17 @@ extern "C" {
 
 void validateCreateNumQubits(int numQubits, const char* caller);
 
-void validateStateIndex(QubitRegister qureg, long long int stateInd, const char* caller);
+void validateStateIndex(Qureg qureg, long long int stateInd, const char* caller);
 
-void validateTarget(QubitRegister qureg, int targetQubit, const char* caller);
+void validateTarget(Qureg qureg, int targetQubit, const char* caller);
 
-void validateControlTarget(QubitRegister qureg, int controlQubit, int targetQubit, const char* caller);
+void validateControlTarget(Qureg qureg, int controlQubit, int targetQubit, const char* caller);
 
-void validateUniqueTargets(QubitRegister qureg, int qubit1, int qubit2, const char* caller);
+void validateUniqueTargets(Qureg qureg, int qubit1, int qubit2, const char* caller);
 
-void validateMultiControls(QubitRegister qureg, int* controlQubits, const int numControlQubits, const char* caller);
+void validateMultiControls(Qureg qureg, int* controlQubits, const int numControlQubits, const char* caller);
 
-void validateMultiControlsTarget(QubitRegister qureg, int* controlQubits, const int numControlQubits, const int targetQubit, const char* caller);
+void validateMultiControlsTarget(Qureg qureg, int* controlQubits, const int numControlQubits, const int targetQubit, const char* caller);
 
 void validateUnitaryMatrix(ComplexMatrix2 u, const char* caller);
 
@@ -33,21 +33,21 @@ void validateUnitaryComplexPair(Complex alpha, Complex beta, const char* caller)
 
 void validateVector(Vector vector, const char* caller);
 
-void validateStateVecQureg(QubitRegister qureg, const char* caller);
+void validateStateVecQureg(Qureg qureg, const char* caller);
 
-void validateDensityMatrQureg(QubitRegister qureg, const char* caller);
+void validateDensityMatrQureg(Qureg qureg, const char* caller);
 
 void validateOutcome(int outcome, const char* caller);
 
 void validateMeasurementProb(REAL prob, const char* caller);
 
-void validateMatchingQuregDims(QubitRegister qureg1, QubitRegister qureg2, const char *caller);
+void validateMatchingQuregDims(Qureg qureg1, Qureg qureg2, const char *caller);
 
-void validateMatchingQuregTypes(QubitRegister qureg1, QubitRegister qureg2, const char *caller);
+void validateMatchingQuregTypes(Qureg qureg1, Qureg qureg2, const char *caller);
 
-void validateSecondQuregStateVec(QubitRegister qureg2, const char *caller);
+void validateSecondQuregStateVec(Qureg qureg2, const char *caller);
 
-void validateNumAmps(QubitRegister qureg, long long int startInd, long long int numAmps, const char* caller);
+void validateNumAmps(Qureg qureg, long long int startInd, long long int numAmps, const char* caller);
 
 void validateFileOpened(int opened, const char* caller);
 

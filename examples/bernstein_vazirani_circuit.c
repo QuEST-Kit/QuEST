@@ -20,11 +20,11 @@ int main (int narg, char** varg) {
     int secretNum = pow(2,4) + 1;
 
     // prepare QuEST
-    QuESTEnv env = initQuESTEnv();
+    QuESTEnv env = createQuESTEnv();
 
     // create qureg; let zeroth qubit be ancilla
-    QubitRegister qureg = createQubitRegister(numQubits, env);
-    initStateZero(qureg);
+    Qureg qureg = createQureg(numQubits, env);
+    initZeroState(qureg);
 
 
     /* 	
@@ -32,7 +32,7 @@ int main (int narg, char** varg) {
      */
 
     // NOT the ancilla
-    sigmaX(qureg, 0);
+    pauliX(qureg, 0);
 
     // CNOT secretNum bits with ancilla
     int bits = secretNum;
@@ -55,8 +55,7 @@ int main (int narg, char** varg) {
     for (int qb=1; qb < numQubits; qb++) {
         bit = bits % 2;
         bits /= 2;
-        successProb *= findProbabilityOfOutcome(
-                qureg, qb, bit);
+        successProb *= calcProbOfOutcome(qureg, qb, bit);
     }
 
     printf("solution reached with probability ");
@@ -68,7 +67,7 @@ int main (int narg, char** varg) {
      * FREE MEMORY
      */
 
-    destroyQubitRegister(qureg, env); 
-    closeQuESTEnv(env);
+    destroyQureg(qureg, env); 
+    destroyQuESTEnv(env);
     return 0;
 }

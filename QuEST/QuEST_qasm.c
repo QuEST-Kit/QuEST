@@ -52,7 +52,7 @@ void bufferOverflow() {
     exit(1);
 }
 
-void qasm_setup(QubitRegister* qureg) {
+void qasm_setup(Qureg* qureg) {
     
     // populate and attach QASM logger
     QASMLogger *qasmLog = malloc(sizeof *qasmLog);
@@ -76,15 +76,15 @@ void qasm_setup(QubitRegister* qureg) {
         bufferOverflow();
 }
 
-void qasm_startRecording(QubitRegister qureg) {
+void qasm_startRecording(Qureg qureg) {
     qureg.qasmLog->isLogging = 1;
 }
 
-void qasm_stopRecording(QubitRegister qureg) {
+void qasm_stopRecording(Qureg qureg) {
     qureg.qasmLog->isLogging = 0;
 }
 
-void addStringToQASM(QubitRegister qureg, char line[], int lineLen) {
+void addStringToQASM(Qureg qureg, char line[], int lineLen) {
     
     char* buf = qureg.qasmLog->buffer;
     int bufSize = qureg.qasmLog->bufferSize;
@@ -112,7 +112,7 @@ void addStringToQASM(QubitRegister qureg, char line[], int lineLen) {
     qureg.qasmLog->bufferFill += addedChars;
 }
 
-void qasm_recordComment(QubitRegister qureg, char* comment) {
+void qasm_recordComment(Qureg qureg, char* comment) {
     
     if (!qureg.qasmLog->isLogging)
         return;
@@ -122,7 +122,7 @@ void qasm_recordComment(QubitRegister qureg, char* comment) {
     addStringToQASM(qureg, line, len);
 }
 
-void addGateToQASM(QubitRegister qureg, TargetGate gate, int* controlQubits, int numControlQubits, int targetQubit, REAL* params, int numParams) {
+void addGateToQASM(Qureg qureg, TargetGate gate, int* controlQubits, int numControlQubits, int targetQubit, REAL* params, int numParams) {
     
     int len = 0;
     char line[MAX_LINE_LEN + 1]; // for trailing \0
@@ -162,7 +162,7 @@ void addGateToQASM(QubitRegister qureg, TargetGate gate, int* controlQubits, int
     addStringToQASM(qureg, line, len);
 }
 
-void qasm_recordGate(QubitRegister qureg, TargetGate gate, int targetQubit) {
+void qasm_recordGate(Qureg qureg, TargetGate gate, int targetQubit) {
     
     if (!qureg.qasmLog->isLogging)
         return;
@@ -170,7 +170,7 @@ void qasm_recordGate(QubitRegister qureg, TargetGate gate, int targetQubit) {
     addGateToQASM(qureg, gate, NULL, 0, targetQubit, NULL, 0);
 }
 
-void qasm_recordParamGate(QubitRegister qureg, TargetGate gate, int targetQubit, REAL param) {
+void qasm_recordParamGate(Qureg qureg, TargetGate gate, int targetQubit, REAL param) {
     
     if (!qureg.qasmLog->isLogging)
         return;
@@ -179,7 +179,7 @@ void qasm_recordParamGate(QubitRegister qureg, TargetGate gate, int targetQubit,
     addGateToQASM(qureg, gate, NULL, 0, targetQubit, params, 1);
 }
 
-void qasm_recordCompactUnitary(QubitRegister qureg, Complex alpha, Complex beta, int targetQubit) {
+void qasm_recordCompactUnitary(Qureg qureg, Complex alpha, Complex beta, int targetQubit) {
     
     if (!qureg.qasmLog->isLogging)
         return;
@@ -191,7 +191,7 @@ void qasm_recordCompactUnitary(QubitRegister qureg, Complex alpha, Complex beta,
     addGateToQASM(qureg, GATE_UNITARY, NULL, 0, targetQubit, params, 3);
 }
 
-void qasm_recordUnitary(QubitRegister qureg, ComplexMatrix2 u, int targetQubit) {
+void qasm_recordUnitary(Qureg qureg, ComplexMatrix2 u, int targetQubit) {
     
     if (!qureg.qasmLog->isLogging)
         return;
@@ -207,7 +207,7 @@ void qasm_recordUnitary(QubitRegister qureg, ComplexMatrix2 u, int targetQubit) 
     addGateToQASM(qureg, GATE_UNITARY, NULL, 0, targetQubit, params, 3);
 }
 
-void qasm_recordAxisRotation(QubitRegister qureg, REAL angle, Vector axis, const int targetQubit) {
+void qasm_recordAxisRotation(Qureg qureg, REAL angle, Vector axis, const int targetQubit) {
     
     if (!qureg.qasmLog->isLogging)
         return;
@@ -222,7 +222,7 @@ void qasm_recordAxisRotation(QubitRegister qureg, REAL angle, Vector axis, const
     addGateToQASM(qureg, GATE_UNITARY, NULL, 0, targetQubit, params, 3);
 }
 
-void qasm_recordControlledGate(QubitRegister qureg, TargetGate gate, int controlQubit, int targetQubit) {
+void qasm_recordControlledGate(Qureg qureg, TargetGate gate, int controlQubit, int targetQubit) {
 
     if (!qureg.qasmLog->isLogging)
         return;
@@ -231,7 +231,7 @@ void qasm_recordControlledGate(QubitRegister qureg, TargetGate gate, int control
     addGateToQASM(qureg, gate, controls, 1, targetQubit, 0, 0);    
 }
 
-void qasm_recordControlledParamGate(QubitRegister qureg, TargetGate gate, int controlQubit, int targetQubit, REAL param) {
+void qasm_recordControlledParamGate(Qureg qureg, TargetGate gate, int controlQubit, int targetQubit, REAL param) {
 
     if (!qureg.qasmLog->isLogging)
         return;
@@ -248,7 +248,7 @@ void qasm_recordControlledParamGate(QubitRegister qureg, TargetGate gate, int co
     }
 }
 
-void qasm_recordControlledCompactUnitary(QubitRegister qureg, Complex alpha, Complex beta, int controlQubit, int targetQubit) {
+void qasm_recordControlledCompactUnitary(Qureg qureg, Complex alpha, Complex beta, int controlQubit, int targetQubit) {
     
     if (!qureg.qasmLog->isLogging)
         return;
@@ -262,7 +262,7 @@ void qasm_recordControlledCompactUnitary(QubitRegister qureg, Complex alpha, Com
 }
 
 /** additionally performs Rz on target to restore the global phase lost from u in QASM U(a,b,c) */
-void qasm_recordControlledUnitary(QubitRegister qureg, ComplexMatrix2 u, int controlQubit, int targetQubit) {
+void qasm_recordControlledUnitary(Qureg qureg, ComplexMatrix2 u, int controlQubit, int targetQubit) {
     
     if (!qureg.qasmLog->isLogging)
         return;
@@ -284,7 +284,7 @@ void qasm_recordControlledUnitary(QubitRegister qureg, ComplexMatrix2 u, int con
     addGateToQASM(qureg, GATE_ROTATE_Z, NULL, 0, targetQubit, phaseFix, 1);
 }
 
-void qasm_recordControlledAxisRotation(QubitRegister qureg, REAL angle, Vector axis, int controlQubit, int targetQubit) {
+void qasm_recordControlledAxisRotation(Qureg qureg, REAL angle, Vector axis, int controlQubit, int targetQubit) {
     
     if (!qureg.qasmLog->isLogging)
         return;
@@ -300,7 +300,7 @@ void qasm_recordControlledAxisRotation(QubitRegister qureg, REAL angle, Vector a
     addGateToQASM(qureg, GATE_UNITARY, controls, 1, targetQubit, params, 3);
 }
 
-void qasm_recordMultiControlledGate(QubitRegister qureg, TargetGate gate, int* controlQubits, const int numControlQubits, const int targetQubit) {
+void qasm_recordMultiControlledGate(Qureg qureg, TargetGate gate, int* controlQubits, const int numControlQubits, const int targetQubit) {
 
     if (!qureg.qasmLog->isLogging)
         return;
@@ -308,7 +308,7 @@ void qasm_recordMultiControlledGate(QubitRegister qureg, TargetGate gate, int* c
     addGateToQASM(qureg, gate, controlQubits, numControlQubits, targetQubit, NULL, 0);
 }
 
-void qasm_recordMultiControlledParamGate(QubitRegister qureg, TargetGate gate, int* controlQubits, const int numControlQubits, const int targetQubit, REAL param) {
+void qasm_recordMultiControlledParamGate(Qureg qureg, TargetGate gate, int* controlQubits, const int numControlQubits, const int targetQubit, REAL param) {
     
     if (!qureg.qasmLog->isLogging)
         return;
@@ -325,7 +325,7 @@ void qasm_recordMultiControlledParamGate(QubitRegister qureg, TargetGate gate, i
 }
 
 /** additionally performs Rz on target to restore the global phase lost from u in QASM U(a,b,c) */
-void qasm_recordMultiControlledUnitary(QubitRegister qureg, ComplexMatrix2 u, int* controlQubits, const int numControlQubits, const int targetQubit) {
+void qasm_recordMultiControlledUnitary(Qureg qureg, ComplexMatrix2 u, int* controlQubits, const int numControlQubits, const int targetQubit) {
     
     if (!qureg.qasmLog->isLogging)
         return;
@@ -346,7 +346,7 @@ void qasm_recordMultiControlledUnitary(QubitRegister qureg, ComplexMatrix2 u, in
 }
 
 /* not actually used, D'Oh!
-void qasm_recordMultiControlledAxisRotation(QubitRegister qureg, REAL angle, Vector axis, int* controlQubits, const int numControlQubits, const int targetQubit) {
+void qasm_recordMultiControlledAxisRotation(Qureg qureg, REAL angle, Vector axis, int* controlQubits, const int numControlQubits, const int targetQubit) {
     
     if (!qureg.qasmLog->isLogging)
         return;
@@ -362,7 +362,7 @@ void qasm_recordMultiControlledAxisRotation(QubitRegister qureg, REAL angle, Vec
 }
 */
 
-void qasm_recordMeasurement(QubitRegister qureg, const int measureQubit) {
+void qasm_recordMeasurement(Qureg qureg, const int measureQubit) {
 
     if (!qureg.qasmLog->isLogging)
         return;
@@ -379,7 +379,7 @@ void qasm_recordMeasurement(QubitRegister qureg, const int measureQubit) {
     addStringToQASM(qureg, line, len);
 }
 
-void qasm_recordInitZero(QubitRegister qureg) {
+void qasm_recordInitZero(Qureg qureg) {
     
     if (!qureg.qasmLog->isLogging)
         return;
@@ -394,7 +394,7 @@ void qasm_recordInitZero(QubitRegister qureg) {
     addStringToQASM(qureg, line, len);
 }
 
-void qasm_recordInitPlus(QubitRegister qureg) {
+void qasm_recordInitPlus(Qureg qureg) {
     
     if (!qureg.qasmLog->isLogging)
         return;
@@ -422,7 +422,7 @@ void qasm_recordInitPlus(QubitRegister qureg) {
     */
 }
 
-void qasm_recordInitClassical(QubitRegister qureg, long long int stateInd) {
+void qasm_recordInitClassical(Qureg qureg, long long int stateInd) {
     
     if (!qureg.qasmLog->isLogging)
         return;
@@ -441,19 +441,19 @@ void qasm_recordInitClassical(QubitRegister qureg, long long int stateInd) {
             qasm_recordGate(qureg, GATE_SIGMA_X, q);
 }
 
-void qasm_clearRecorded(QubitRegister qureg) {
+void qasm_clearRecorded(Qureg qureg) {
     
     // maintains current buffer size
     (qureg.qasmLog->buffer)[0] = '\0';
     qureg.qasmLog->bufferFill = 0;
 }
 
-void qasm_printRecorded(QubitRegister qureg) {
+void qasm_printRecorded(Qureg qureg) {
     printf("%s", qureg.qasmLog->buffer);
 }
 
 /** returns success of file write */
-int qasm_writeRecordedToFile(QubitRegister qureg, char* filename) {
+int qasm_writeRecordedToFile(Qureg qureg, char* filename) {
     
     FILE *file = fopen(filename, "w");
     if (file == NULL)
@@ -464,7 +464,7 @@ int qasm_writeRecordedToFile(QubitRegister qureg, char* filename) {
     return 1;
 }
 
-void qasm_free(QubitRegister qureg) {
+void qasm_free(Qureg qureg) {
     
     free(qureg.qasmLog->buffer);
     free(qureg.qasmLog);
