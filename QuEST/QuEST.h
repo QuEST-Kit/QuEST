@@ -5,8 +5,8 @@
  * Contains the comments used by doxygen for generating API doc
 */
 
-# ifndef QuEST
-# define QuEST
+# ifndef QUEST_H
+# define QUEST_H
 
 # include "QuEST_precision.h"
 
@@ -1532,5 +1532,5 @@ qreal calcFidelity(Qureg qureg, Qureg pureState);
 }
 #endif
 
-#endif
+#endif // QUEST_H
 

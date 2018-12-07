@@ -6,8 +6,8 @@
  * the correct function or combination of functions to use from those included here, which are defined in QuEST_cpu.c
  */
 
-# ifndef QuEST_CPU_INTERNAL
-# define QuEST_CPU_INTERNAL
+# ifndef QUEST_CPU_INTERNAL_H
+# define QUEST_CPU_INTERNAL_H
 
 # include "../QuEST_precision.h"
 
@@ -124,4 +124,4 @@ void statevec_collapseToOutcomeDistributedSetZero(Qureg qureg);
 
 
 
-# endif
+# endif // QUEST_CPU_INTERNAL_H

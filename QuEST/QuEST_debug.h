@@ -5,8 +5,8 @@
  * May contain functions that are incomplete or untested.
  */
 
-# ifndef QuEST_DEBUG
-# define QuEST_DEBUG
+# ifndef QUEST_DEBUG_H
+# define QUEST_DEBUG_H
 
 # include "QuEST_precision.h"
 
@@ -49,4 +49,4 @@ void reportNodeList(QuESTEnv env);
 }
 #endif
 
-# endif
+# endif // QUEST_DEBUG_H

@@ -1,5 +1,5 @@
-#ifndef MT_RAND
-#define MT_RAND
+#ifndef MT_RAND_H
+#define MT_RAND_H
 
 #ifdef __cplusplus
 extern "C" {
@@ -28,5 +28,5 @@ double genrand_res53(void);
 }
 #endif
 
-#endif
+#endif // MT_RAND_H
 

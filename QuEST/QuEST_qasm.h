@@ -4,8 +4,8 @@
  * Functions for generating QASM output from QuEST circuits
  */
 
-# ifndef QuEST_QASM
-# define QuEST_QASM
+# ifndef QUEST_QASM_H
+# define QUEST_QASM_H
 
 # include "QuEST.h"
 # include "QuEST_precision.h"
@@ -89,4 +89,4 @@ void qasm_free(Qureg qureg);
 }
 # endif
 
-# endif // QuEST_QASM
+# endif // QUEST_QASM_H

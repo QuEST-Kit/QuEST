@@ -5,14 +5,12 @@
  * state-vector precision. Using single, double or quad floating point precision
  * has consequences for operation precision, total memory requirements,
  * network bandwidth and ultimately runtime.
-
-
  */
 
 # include <math.h>
 
-# ifndef QuEST_PRECISION
-# define QuEST_PRECISION 
+# ifndef QUEST_PRECISION_H
+# define QUEST_PRECISION_H
 
 // set default double precision if not set during compilation
 # ifndef QuEST_PREC
@@ -53,4 +51,4 @@
 # endif
 
 
-# endif
+# endif // QUEST_PRECISION_H
