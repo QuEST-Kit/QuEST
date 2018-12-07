@@ -45,9 +45,9 @@ Complex statevec_calcInnerProduct(Qureg bra, Qureg ket) {
     if (bra.numChunks == 1)
         return localInnerProd;
     
-    REAL localReal = localInnerProd.real;
-    REAL localImag = localInnerProd.imag;
-    REAL globalReal, globalImag;
+    qreal localReal = localInnerProd.real;
+    qreal localImag = localInnerProd.imag;
+    qreal globalReal, globalImag;
     MPI_Allreduce(&localReal, &globalReal, 1, MPI_QuEST_REAL, MPI_SUM, MPI_COMM_WORLD);
     MPI_Allreduce(&localImag, &globalImag, 1, MPI_QuEST_REAL, MPI_SUM, MPI_COMM_WORLD);
     
@@ -57,7 +57,7 @@ Complex statevec_calcInnerProduct(Qureg bra, Qureg ket) {
     return globalInnerProd;
 }
 
-REAL densmatr_calcTotalProb(Qureg qureg) {
+qreal densmatr_calcTotalProb(Qureg qureg) {
 	
 	// computes the trace by summing every element ("diag") with global index (2^n + 1)i for i in [0, 2^n-1]
 	
@@ -68,8 +68,8 @@ REAL densmatr_calcTotalProb(Qureg qureg) {
 	long long int localIndNextDiag = globalIndNextDiag % qureg.numAmpsPerChunk;
 	long long int index;
 	
-	REAL rankTotal = 0;
-	REAL y, t, c;
+	qreal rankTotal = 0;
+	qreal y, t, c;
 	c = 0;
 	
 	// iterates every local diagonal
@@ -83,7 +83,7 @@ REAL densmatr_calcTotalProb(Qureg qureg) {
 	}
 	
 	// combine each node's sum of diagonals
-	REAL globalTotal;
+	qreal globalTotal;
 	if (qureg.numChunks > 1)
 		MPI_Allreduce(&rankTotal, &globalTotal, 1, MPI_QuEST_REAL, MPI_SUM, MPI_COMM_WORLD);
 	else
@@ -92,12 +92,12 @@ REAL densmatr_calcTotalProb(Qureg qureg) {
 	return globalTotal;
 }
 
-REAL statevec_calcTotalProb(Qureg qureg){
+qreal statevec_calcTotalProb(Qureg qureg){
     // Implemented using Kahan summation for greater accuracy at a slight floating
     //   point operation overhead. For more details see https://en.wikipedia.org/wiki/Kahan_summation_algorithm
-    REAL pTotal=0; 
-    REAL y, t, c;
-    REAL allRankTotals=0;
+    qreal pTotal=0; 
+    qreal y, t, c;
+    qreal allRankTotals=0;
     long long int index;
     long long int numAmpsPerRank = qureg.numAmpsPerChunk;
     c = 0.0;
@@ -192,7 +192,7 @@ void reportQuESTEnv(QuESTEnv env){
 # else
         printf("OpenMP disabled\n");
 # endif 
-        printf("Precision: size of REAL is %ld bytes\n", sizeof(REAL));
+        printf("Precision: size of qreal is %ld bytes\n", sizeof(qreal) );
     }
 }
 
@@ -206,9 +206,9 @@ int getChunkIdFromIndex(Qureg qureg, long long int index){
     return index/qureg.numAmpsPerChunk; // this is numAmpsPerChunk
 }
 
-REAL statevec_getRealAmp(Qureg qureg, long long int index){
+qreal statevec_getRealAmp(Qureg qureg, long long int index){
     int chunkId = getChunkIdFromIndex(qureg, index);
-    REAL el; 
+    qreal el; 
     if (qureg.chunkId==chunkId){
         el = qureg.stateVec.real[index-chunkId*qureg.numAmpsPerChunk];
     }
@@ -216,9 +216,9 @@ REAL statevec_getRealAmp(Qureg qureg, long long int index){
     return el; 
 } 
 
-REAL statevec_getImagAmp(Qureg qureg, long long int index){
+qreal statevec_getImagAmp(Qureg qureg, long long int index){
     int chunkId = getChunkIdFromIndex(qureg, index);
-    REAL el; 
+    qreal el; 
     if (qureg.chunkId==chunkId){
         el = qureg.stateVec.imag[index-chunkId*qureg.numAmpsPerChunk];
     }
@@ -382,8 +382,8 @@ void copyVecIntoMatrixPairState(Qureg matr, Qureg vec) {
     // copy this state's pure state section into this qureg's pairState
     long long int numLocalAmps = vec.numAmpsPerChunk;
     long long int myOffset = vec.chunkId * numLocalAmps;
-    memcpy(&matr.pairStateVec.real[myOffset], vec.stateVec.real, numLocalAmps * sizeof(REAL));
-    memcpy(&matr.pairStateVec.imag[myOffset], vec.stateVec.imag, numLocalAmps * sizeof(REAL));
+    memcpy(&matr.pairStateVec.real[myOffset], vec.stateVec.real, numLocalAmps * sizeof(qreal) );
+    memcpy(&matr.pairStateVec.imag[myOffset], vec.stateVec.imag, numLocalAmps * sizeof(qreal) );
 
     // work out how many messages needed to send vec chunks (2GB limit)
     long long int maxMsgSize = MPI_MAX_AMPS_IN_MSG;
@@ -411,16 +411,16 @@ void copyVecIntoMatrixPairState(Qureg matr, Qureg vec) {
     }
 }
 
-REAL densmatr_calcFidelity(Qureg qureg, Qureg pureState) {
+qreal densmatr_calcFidelity(Qureg qureg, Qureg pureState) {
     
     // set qureg's pairState is to be the full pureState (on every node)
     copyVecIntoMatrixPairState(qureg, pureState);
  
     // collect calcFidelityLocal by every machine
-    REAL localSum = densmatr_calcFidelityLocal(qureg, pureState);
+    qreal localSum = densmatr_calcFidelityLocal(qureg, pureState);
     
     // sum each localSum
-    REAL globalSum;
+    qreal globalSum;
     MPI_Allreduce(&localSum, &globalSum, 1, MPI_QuEST_REAL, MPI_SUM, MPI_COMM_WORLD);
     
     return globalSum;
@@ -431,8 +431,8 @@ void densmatr_initPureState(Qureg targetQureg, Qureg copyQureg) {
     if (targetQureg.numChunks==1){
         // local version
         // save pointers to qureg's pair state
-        REAL* quregPairRePtr = targetQureg.pairStateVec.real;
-        REAL* quregPairImPtr = targetQureg.pairStateVec.imag;
+        qreal* quregPairRePtr = targetQureg.pairStateVec.real;
+        qreal* quregPairImPtr = targetQureg.pairStateVec.imag;
 
         // populate qureg pair state with pure state (by repointing)
         targetQureg.pairStateVec.real = copyQureg.stateVec.real;
@@ -674,7 +674,7 @@ void compressPairVectorForTwoQubitDepolarise(Qureg qureg, const int targetQubit,
 }
 
 
-void densmatr_oneQubitDepolarise(Qureg qureg, const int targetQubit, REAL depolLevel) {
+void densmatr_oneQubitDepolarise(Qureg qureg, const int targetQubit, qreal depolLevel) {
     if (depolLevel == 0)
         return;
     
@@ -701,7 +701,7 @@ void densmatr_oneQubitDepolarise(Qureg qureg, const int targetQubit, REAL depolL
 
 }
 
-void densmatr_twoQubitDepolarise(Qureg qureg, int qubit1, int qubit2, REAL depolLevel){
+void densmatr_twoQubitDepolarise(Qureg qureg, int qubit1, int qubit2, qreal depolLevel){
     if (depolLevel == 0)
         return;
     int rankIsUpperBiggerQubit, rankIsUpperSmallerQubit;
@@ -710,11 +710,11 @@ void densmatr_twoQubitDepolarise(Qureg qureg, int qubit1, int qubit2, REAL depol
 
     densmatr_twoQubitDephase(qureg, qubit1, qubit2, depolLevel);
     
-    REAL eta = 2/depolLevel;
-    REAL delta = eta - 1 - sqrt( (eta-1)*(eta-1) - 1 ); 
-    REAL gamma = 1+delta;
+    qreal eta = 2/depolLevel;
+    qreal delta = eta - 1 - sqrt( (eta-1)*(eta-1) - 1 ); 
+    qreal gamma = 1+delta;
     gamma = 1/(gamma*gamma*gamma);
-    const REAL GAMMA_PARTS_1_OR_2 = 1.0;
+    const qreal GAMMA_PARTS_1_OR_2 = 1.0;
     // TODO -- test delta too small
     /*   
     if (fabs(4*delta*(1+delta)*gamma-depolLevel)>1e-5){
@@ -1213,9 +1213,9 @@ static int isChunkToSkipInFindPZero(int chunkId, long long int chunkSize, int me
     return bitToCheck;
 }
 
-REAL statevec_calcProbOfOutcome(Qureg qureg, const int measureQubit, int outcome)
+qreal statevec_calcProbOfOutcome(Qureg qureg, const int measureQubit, int outcome)
 {
-    REAL stateProb=0, totalStateProb=0;
+    qreal stateProb=0, totalStateProb=0;
     int skipValuesWithinRank = halfMatrixBlockFitsInChunk(qureg.numAmpsPerChunk, measureQubit);
     if (skipValuesWithinRank) {
         stateProb = statevec_findProbabilityOfZeroLocal(qureg, measureQubit);
@@ -1229,11 +1229,11 @@ REAL statevec_calcProbOfOutcome(Qureg qureg, const int measureQubit, int outcome
     return totalStateProb;
 }
 
-REAL densmatr_calcProbOfOutcome(Qureg qureg, const int measureQubit, int outcome) {
+qreal densmatr_calcProbOfOutcome(Qureg qureg, const int measureQubit, int outcome) {
 	
-	REAL zeroProb = densmatr_findProbabilityOfZeroLocal(qureg, measureQubit);
+	qreal zeroProb = densmatr_findProbabilityOfZeroLocal(qureg, measureQubit);
 	
-	REAL outcomeProb;
+	qreal outcomeProb;
 	MPI_Allreduce(&zeroProb, &outcomeProb, 1, MPI_QuEST_REAL, MPI_SUM, MPI_COMM_WORLD);
 	if (outcome == 1)
 		outcomeProb = 1.0 - outcomeProb;
@@ -1241,17 +1241,17 @@ REAL densmatr_calcProbOfOutcome(Qureg qureg, const int measureQubit, int outcome
 	return outcomeProb;
 }
 
-REAL densmatr_calcPurity(Qureg qureg) {
+qreal densmatr_calcPurity(Qureg qureg) {
     
-    REAL localPurity = densmatr_calcPurityLocal(qureg);
+    qreal localPurity = densmatr_calcPurityLocal(qureg);
         
-    REAL globalPurity;
+    qreal globalPurity;
     MPI_Allreduce(&localPurity, &globalPurity, 1, MPI_QuEST_REAL, MPI_SUM, MPI_COMM_WORLD);
     
     return globalPurity;
 }
 
-void statevec_collapseToKnownProbOutcome(Qureg qureg, const int measureQubit, int outcome, REAL totalStateProb)
+void statevec_collapseToKnownProbOutcome(Qureg qureg, const int measureQubit, int outcome, qreal totalStateProb)
 {
     int skipValuesWithinRank = halfMatrixBlockFitsInChunk(qureg.numAmpsPerChunk, measureQubit);
     if (skipValuesWithinRank) {

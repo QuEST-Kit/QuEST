@@ -95,7 +95,7 @@ int isComplexUnit(Complex alpha) {
     return (absReal(1 - sqrt(alpha.real*alpha.real + alpha.imag*alpha.imag)) < REAL_EPS); 
 }
 
-int isVectorUnit(REAL ux, REAL uy, REAL uz) {
+int isVectorUnit(qreal ux, qreal uy, qreal uz) {
     return (absReal(1 - sqrt(ux*ux + uy*uy + uz*uz)) < REAL_EPS );
 }
 
@@ -205,7 +205,7 @@ void validateOutcome(int outcome, const char* caller) {
     QuESTAssert(outcome==0 || outcome==1, E_INVALID_QUBIT_OUTCOME, caller);
 }
 
-void validateMeasurementProb(REAL prob, const char* caller) {
+void validateMeasurementProb(qreal prob, const char* caller) {
     QuESTAssert(prob>REAL_EPS, E_COLLAPSE_STATE_ZERO_PROB, caller);
 }
 
@@ -225,34 +225,34 @@ void validateFileOpened(int found, const char* caller) {
     QuESTAssert(found, E_CANNOT_OPEN_FILE, caller);
 }
 
-void validateProb(REAL prob, const char* caller) {
+void validateProb(qreal prob, const char* caller) {
     QuESTAssert(prob >= 0 && prob <= 1, E_INVALID_PROB, caller);
 }
 
-void validateNormProbs(REAL prob1, REAL prob2, const char* caller) {
+void validateNormProbs(qreal prob1, qreal prob2, const char* caller) {
     validateProb(prob1, caller);
     validateProb(prob2, caller);
     
-    REAL sum = prob1 + prob2;
+    qreal sum = prob1 + prob2;
     QuESTAssert(absReal(1 - sum) < REAL_EPS, E_UNNORM_PROBS, caller);
 }
 
-void validateOneQubitDephaseProb(REAL prob, const char* caller) {
+void validateOneQubitDephaseProb(qreal prob, const char* caller) {
     validateProb(prob, caller);
     QuESTAssert(prob <= 1/2.0, E_INVALID_ONE_QUBIT_DEPHASE_PROB, caller);
 }
 
-void validateTwoQubitDephaseProb(REAL prob, const char* caller) {
+void validateTwoQubitDephaseProb(qreal prob, const char* caller) {
     validateProb(prob, caller);
     QuESTAssert(prob <= 3/4.0, E_INVALID_TWO_QUBIT_DEPHASE_PROB, caller);
 }
 
-void validateOneQubitDepolProb(REAL prob, const char* caller) {
+void validateOneQubitDepolProb(qreal prob, const char* caller) {
     validateProb(prob, caller);
     QuESTAssert(prob <= 3/4.0, E_INVALID_ONE_QUBIT_DEPOL_PROB, caller);
 }
 
-void validateTwoQubitDepolProb(REAL prob, const char* caller) {
+void validateTwoQubitDepolProb(qreal prob, const char* caller) {
     validateProb(prob, caller);
     QuESTAssert(prob <= 15/16.0, E_INVALID_TWO_QUBIT_DEPOL_PROB, caller);
 }

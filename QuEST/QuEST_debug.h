@@ -37,7 +37,7 @@ void initStateFromSingleFile(Qureg *qureg, char filename[200], QuESTEnv env);
 /** Return whether two given wavefunctions are equivalent within a given precision
  * Global phase included in equivalence check. For debugging purposes.
  */
-int compareStates(Qureg mq1, Qureg mq2, REAL precision);
+int compareStates(Qureg mq1, Qureg mq2, qreal precision);
 
 /** Report a list of CPU hostnames and the rank that is running on each if running with MPI enabled and an 
  * error message otherwise. For debugging purposes. 

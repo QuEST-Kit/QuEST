@@ -61,7 +61,7 @@ int main (int narg, char *varg[]) {
 
     printf("\nCircuit output:\n");
 
-    REAL prob;
+    qreal prob;
     prob = getProbAmp(qubits, 7);
     printf("Probability amplitude of |111>: %f\n", prob);
 

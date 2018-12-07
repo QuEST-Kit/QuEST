@@ -22,33 +22,33 @@ void densmatr_initClassicalState(Qureg qureg, long long int stateInd);
 
 void densmatr_initPureState(Qureg targetQureg, Qureg copyQureg);
 
-REAL densmatr_calcTotalProb(Qureg qureg);
+qreal densmatr_calcTotalProb(Qureg qureg);
 
-REAL densmatr_calcPurity(Qureg qureg);
+qreal densmatr_calcPurity(Qureg qureg);
 
-REAL densmatr_calcFidelity(Qureg qureg, Qureg pureState);
+qreal densmatr_calcFidelity(Qureg qureg, Qureg pureState);
 
-REAL densmatr_calcProbOfOutcome(Qureg qureg, const int measureQubit, int outcome);
+qreal densmatr_calcProbOfOutcome(Qureg qureg, const int measureQubit, int outcome);
 
-void densmatr_collapseToKnownProbOutcome(Qureg qureg, const int measureQubit, int outcome, REAL outcomeProb);
+void densmatr_collapseToKnownProbOutcome(Qureg qureg, const int measureQubit, int outcome, qreal outcomeProb);
     
-int densmatr_measureWithStats(Qureg qureg, int measureQubit, REAL *outcomeProb);
+int densmatr_measureWithStats(Qureg qureg, int measureQubit, qreal *outcomeProb);
 
-void densmatr_oneQubitDephase(Qureg qureg, const int targetQubit, REAL dephase);
+void densmatr_oneQubitDephase(Qureg qureg, const int targetQubit, qreal dephase);
 
-void densmatr_twoQubitDephase(Qureg qureg, const int qubit1, const int qubit2, REAL dephase);
+void densmatr_twoQubitDephase(Qureg qureg, const int qubit1, const int qubit2, qreal dephase);
 
-void densmatr_oneQubitDepolarise(Qureg qureg, const int targetQubit, REAL depolLevel);
+void densmatr_oneQubitDepolarise(Qureg qureg, const int targetQubit, qreal depolLevel);
 
-void densmatr_twoQubitDepolarise(Qureg qureg, int qubit1, int qubit2, REAL depolLevel);
+void densmatr_twoQubitDepolarise(Qureg qureg, int qubit1, int qubit2, qreal depolLevel);
 
-void densmatr_addDensityMatrix(Qureg combineQureg, REAL otherProb, Qureg otherQureg);
+void densmatr_addDensityMatrix(Qureg combineQureg, qreal otherProb, Qureg otherQureg);
     
 /* operations upon state vectors */
     
 void statevec_reportStateToScreen(Qureg qureg, QuESTEnv env, int reportRank);
 
-int statevec_compareStates(Qureg mq1, Qureg mq2, REAL precision);
+int statevec_compareStates(Qureg mq1, Qureg mq2, qreal precision);
 
 int statevec_initStateFromSingleFile(Qureg *qureg, char filename[200], QuESTEnv env);
 
@@ -66,7 +66,7 @@ void statevec_initStateDebug(Qureg qureg);
 
 void statevec_initClassicalState(Qureg qureg, long long int stateInd);
 
-void statevec_setAmps(Qureg qureg, long long int startInd, REAL* reals, REAL* imags, long long int numAmps);
+void statevec_setAmps(Qureg qureg, long long int startInd, qreal* reals, qreal* imags, long long int numAmps);
 
 void statevec_cloneQureg(Qureg targetQureg, Qureg copyQureg);
 
@@ -74,13 +74,13 @@ void statevec_multiControlledPhaseFlip(Qureg qureg, int *controlQubits, int numC
 
 void statevec_controlledPhaseFlip(Qureg qureg, const int idQubit1, const int idQubit2);
 
-void statevec_phaseShift(Qureg qureg, const int targetQubit, REAL angle);
+void statevec_phaseShift(Qureg qureg, const int targetQubit, qreal angle);
 
 void statevec_phaseShiftByTerm(Qureg qureg, const int targetQubit, Complex term);
 
-void statevec_controlledPhaseShift(Qureg qureg, const int idQubit1, const int idQubit2, REAL angle); 
+void statevec_controlledPhaseShift(Qureg qureg, const int idQubit1, const int idQubit2, qreal angle); 
 
-void statevec_multiControlledPhaseShift(Qureg qureg, int *controlQubits, int numControlQubits, REAL angle);
+void statevec_multiControlledPhaseShift(Qureg qureg, int *controlQubits, int numControlQubits, qreal angle);
 
 void statevec_sGate(Qureg qureg, const int targetQubit);
 
@@ -102,15 +102,15 @@ void statevec_controlledPauliY(Qureg qureg, const int controlQubit, const int ta
 
 void statevec_controlledPauliYConj(Qureg qureg, const int controlQubit, const int targetQubit);
 
-REAL statevec_getRealAmp(Qureg qureg, long long int index);
+qreal statevec_getRealAmp(Qureg qureg, long long int index);
 
-REAL statevec_getImagAmp(Qureg qureg, long long int index);
+qreal statevec_getImagAmp(Qureg qureg, long long int index);
 
-REAL statevec_getProbAmp(Qureg qureg, long long int index);
+qreal statevec_getProbAmp(Qureg qureg, long long int index);
 
-REAL statevec_calcTotalProb(Qureg qureg);
+qreal statevec_calcTotalProb(Qureg qureg);
 
-REAL statevec_calcFidelity(Qureg qureg, Qureg pureState);
+qreal statevec_calcFidelity(Qureg qureg, Qureg pureState);
 
 Complex statevec_calcInnerProduct(Qureg bra, Qureg ket);
 
@@ -118,25 +118,25 @@ void statevec_compactUnitary(Qureg qureg, const int targetQubit, Complex alpha, 
 
 void statevec_unitary(Qureg qureg, const int targetQubit, ComplexMatrix2 u);
 
-void statevec_rotateX(Qureg qureg, const int rotQubit, REAL angle);
+void statevec_rotateX(Qureg qureg, const int rotQubit, qreal angle);
 
-void statevec_rotateY(Qureg qureg, const int rotQubit, REAL angle);
+void statevec_rotateY(Qureg qureg, const int rotQubit, qreal angle);
 
-void statevec_rotateZ(Qureg qureg, const int rotQubit, REAL angle);
+void statevec_rotateZ(Qureg qureg, const int rotQubit, qreal angle);
 
-void statevec_rotateAroundAxis(Qureg qureg, const int rotQubit, REAL angle, Vector axis);
+void statevec_rotateAroundAxis(Qureg qureg, const int rotQubit, qreal angle, Vector axis);
 
-void statevec_rotateAroundAxisConj(Qureg qureg, const int rotQubit, REAL angle, Vector axis);
+void statevec_rotateAroundAxisConj(Qureg qureg, const int rotQubit, qreal angle, Vector axis);
 
-void statevec_controlledRotateX(Qureg qureg, const int controlQubit, const int targetQubit, REAL angle);
+void statevec_controlledRotateX(Qureg qureg, const int controlQubit, const int targetQubit, qreal angle);
 
-void statevec_controlledRotateY(Qureg qureg, const int controlQubit, const int targetQubit, REAL angle);
+void statevec_controlledRotateY(Qureg qureg, const int controlQubit, const int targetQubit, qreal angle);
 
-void statevec_controlledRotateZ(Qureg qureg, const int controlQubit, const int targetQubit, REAL angle);
+void statevec_controlledRotateZ(Qureg qureg, const int controlQubit, const int targetQubit, qreal angle);
 
-void statevec_controlledRotateAroundAxis(Qureg qureg, const int controlQubit, const int targetQubit, REAL angle, Vector axis);
+void statevec_controlledRotateAroundAxis(Qureg qureg, const int controlQubit, const int targetQubit, qreal angle, Vector axis);
 
-void statevec_controlledRotateAroundAxisConj(Qureg qureg, const int controlQubit, const int targetQubit, REAL angle, Vector axis);
+void statevec_controlledRotateAroundAxisConj(Qureg qureg, const int controlQubit, const int targetQubit, qreal angle, Vector axis);
 
 void statevec_controlledCompactUnitary(Qureg qureg, const int controlQubit, const int targetQubit, Complex alpha, Complex beta);
 
@@ -148,11 +148,11 @@ void statevec_hadamard(Qureg qureg, const int targetQubit);
 
 void statevec_controlledNot(Qureg qureg, const int controlQubit, const int targetQubit);
 
-REAL statevec_calcProbOfOutcome(Qureg qureg, const int measureQubit, int outcome);
+qreal statevec_calcProbOfOutcome(Qureg qureg, const int measureQubit, int outcome);
 
-void statevec_collapseToKnownProbOutcome(Qureg qureg, const int measureQubit, int outcome, REAL outcomeProb);
+void statevec_collapseToKnownProbOutcome(Qureg qureg, const int measureQubit, int outcome, qreal outcomeProb);
 
-int statevec_measureWithStats(Qureg qureg, int measureQubit, REAL *outcomeProb);
+int statevec_measureWithStats(Qureg qureg, int measureQubit, qreal *outcomeProb);
 
 
 

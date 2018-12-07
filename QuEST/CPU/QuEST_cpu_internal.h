@@ -11,27 +11,27 @@
 
 # include "../QuEST_precision.h"
 
-REAL densmatr_calcPurityLocal(Qureg qureg);
+qreal densmatr_calcPurityLocal(Qureg qureg);
 
 void densmatr_initPureStateLocal(Qureg targetQureg, Qureg copyQureg);
 
-REAL densmatr_calcFidelityLocal(Qureg qureg, Qureg pureState);
+qreal densmatr_calcFidelityLocal(Qureg qureg, Qureg pureState);
 
-REAL densmatr_findProbabilityOfZeroLocal(Qureg qureg, const int measureQubit);
+qreal densmatr_findProbabilityOfZeroLocal(Qureg qureg, const int measureQubit);
 
-void densmatr_oneQubitDepolariseLocal(Qureg qureg, const int targetQubit, REAL depolLevel);
+void densmatr_oneQubitDepolariseLocal(Qureg qureg, const int targetQubit, qreal depolLevel);
 
-void densmatr_oneQubitDepolariseDistributed(Qureg qureg, const int targetQubit, REAL depolLevel);
+void densmatr_oneQubitDepolariseDistributed(Qureg qureg, const int targetQubit, qreal depolLevel);
 
-void densmatr_twoQubitDepolariseLocal(Qureg qureg, int qubit1, int qubit2, REAL delta, REAL gamma);
+void densmatr_twoQubitDepolariseLocal(Qureg qureg, int qubit1, int qubit2, qreal delta, qreal gamma);
 
-void densmatr_twoQubitDepolariseLocalPart1(Qureg qureg, int qubit1, int qubit2, REAL delta);
+void densmatr_twoQubitDepolariseLocalPart1(Qureg qureg, int qubit1, int qubit2, qreal delta);
 
 void densmatr_twoQubitDepolariseDistributed(Qureg qureg, const int targetQubit,
-                const int qubit2, REAL delta, REAL gamma);
+                const int qubit2, qreal delta, qreal gamma);
 
 void densmatr_twoQubitDepolariseQ1LocalQ2DistributedPart3(Qureg qureg, const int targetQubit,
-                const int qubit2, REAL delta, REAL gamma);
+                const int qubit2, qreal delta, qreal gamma);
 
 Complex statevec_calcInnerProductLocal(Qureg bra, Qureg ket);
 
@@ -111,13 +111,13 @@ void statevec_controlledNotDistributed (Qureg qureg, const int controlQubit, con
         ComplexArray stateVecIn,
         ComplexArray stateVecOut);
 
-REAL statevec_findProbabilityOfZeroLocal (Qureg qureg, const int measureQubit);
+qreal statevec_findProbabilityOfZeroLocal (Qureg qureg, const int measureQubit);
 
-REAL statevec_findProbabilityOfZeroDistributed (Qureg qureg, const int measureQubit);
+qreal statevec_findProbabilityOfZeroDistributed (Qureg qureg, const int measureQubit);
 
-void statevec_collapseToKnownProbOutcomeLocal(Qureg qureg, int measureQubit, int outcome, REAL totalProbability);
+void statevec_collapseToKnownProbOutcomeLocal(Qureg qureg, int measureQubit, int outcome, qreal totalProbability);
 
-void statevec_collapseToKnownProbOutcomeDistributedRenorm (Qureg qureg, const int measureQubit, const REAL totalProbability);
+void statevec_collapseToKnownProbOutcomeDistributedRenorm (Qureg qureg, const int measureQubit, const qreal totalProbability);
 
 void statevec_collapseToOutcomeDistributedSetZero(Qureg qureg);
 

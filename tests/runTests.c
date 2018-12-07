@@ -29,8 +29,8 @@ void reportTest(Qureg qureg, char testName[200]){
 }
 
 /** returns 1 if equal to within precision */
-int compareReals(REAL a, REAL b, REAL precision){
-    REAL diff = a-b;
+int compareReals(qreal a, qreal b, qreal precision){
+    qreal diff = a-b;
     if (diff<0) diff *= -1;
     if (diff>precision) return 0;
     else return 1;
@@ -83,7 +83,7 @@ int test_initPlusState(char testName[200]){
     // |+> state has every qubit 50% prob in 0
     initPlusState(mq);
     for (int q=0; q < numQubits; q++) {
-        REAL prob = calcProbOfOutcome(mq, q, 0);
+        qreal prob = calcProbOfOutcome(mq, q, 0);
         if (passed) passed = compareReals(prob, 0.5, COMPARE_PRECISION);
     }
         
@@ -99,7 +99,7 @@ int test_initPlusState(char testName[200]){
     initPlusState(dens);
     
     for (int q=0; q < numQubits; q++) {
-        REAL prob = calcProbOfOutcome(dens, q, 0);            
+        qreal prob = calcProbOfOutcome(dens, q, 0);            
         if (passed) passed = compareReals(prob, 0.5, COMPARE_PRECISION);
     }
     
@@ -147,7 +147,7 @@ int test_initClassicalState(char testName[200]){
         // check that every qubit has correct probabilities
         for (long long int q=0; q < numQubits; q++) {
             int bit = (stateInd & ( 1LL << q )) >> q;
-            REAL probOf1 = calcProbOfOutcome(mq, q, 1);
+            qreal probOf1 = calcProbOfOutcome(mq, q, 1);
             if (passed) passed = compareReals(probOf1, bit, COMPARE_PRECISION);
         }
     }
@@ -192,7 +192,7 @@ int test_initPureState(char testName[200]) {
     // set dens = |+><+|
     initPureState(dens, vec);
         
-    REAL prob;
+    qreal prob;
     for (int q=0; q < numQubits; q++) {
         prob = calcProbOfOutcome(dens, q, 0);
         if (passed) passed = compareReals(prob, 0.5, COMPARE_PRECISION);
@@ -213,8 +213,8 @@ int test_setAmps(char testName[200]) {
     qureg = createQureg(numQubits, env);
     
     // test writing total state vec
-    REAL reals[8] = {1,2,3,4,5,6,7,8};
-    REAL imags[8] = {8,7,6,5,4,3,2,1};
+    qreal reals[8] = {1,2,3,4,5,6,7,8};
+    qreal imags[8] = {8,7,6,5,4,3,2,1};
     setAmps(qureg, 0, reals, imags, qureg.numAmpsTotal);
     for (long long int i=0; i < 8; i++) {
         if (passed) passed = compareReals(getRealAmp(qureg,i), reals[i], 0);
@@ -419,7 +419,7 @@ int test_tGate(char testName[200]){
 
 int test_phaseShift(char testName[200]) {
     
-    REAL pi = 3.1415926535897932384626;
+    qreal pi = 3.1415926535897932384626;
 
     int passed=1;
     int numQubits=3;
@@ -473,7 +473,7 @@ int test_phaseShift(char testName[200]) {
 int test_controlledPhaseShift(char testName[200]) {
     int passed=1;
     
-    REAL pi = 3.1415926535897932384626;
+    qreal pi = 3.1415926535897932384626;
     
     Qureg mq;
     mq = createQureg(4, env);
@@ -509,7 +509,7 @@ int test_controlledPhaseShift(char testName[200]) {
 int test_multiControlledPhaseShift(char testName[200]) {
     int passed=1;
     
-    REAL pi = 3.1415926535897932384626;
+    qreal pi = 3.1415926535897932384626;
     
     Qureg mq;
     mq = createQureg(4, env);
@@ -660,7 +660,7 @@ int test_compactUnitary(char testName[200]){
     int rotQubit;
     Qureg mq, mqVerif; 
 
-    REAL angs[3];
+    qreal angs[3];
     Complex alpha, beta;
 
     angs[0]=1.2; angs[1]=-2.4; angs[2]=0.3;
@@ -708,7 +708,7 @@ int test_compactUnitary(char testName[200]){
         rotQubit=i;
         compactUnitary(mq, rotQubit, alpha, beta);
     }
-    REAL outcome = calcTotalProb(mq);    
+    qreal outcome = calcTotalProb(mq);    
     if (passed) passed = compareReals(1.0, outcome, COMPARE_PRECISION);
     destroyQureg(mq, env);
 
@@ -723,7 +723,7 @@ int test_unitary(char testName[200]){
     int rotQubit;
     Qureg mq, mqVerif; 
 
-    REAL angs[3];
+    qreal angs[3];
     Complex alpha, beta;
     ComplexMatrix2 u, uDagger;
 
@@ -778,7 +778,7 @@ int test_unitary(char testName[200]){
         rotQubit=i;
         unitary(mq, rotQubit, uDagger);
     }
-    REAL outcome = calcTotalProb(mq);    
+    qreal outcome = calcTotalProb(mq);    
     if (passed) passed = compareReals(1.0, outcome, COMPARE_PRECISION);
     destroyQureg(mq, env);
 
@@ -796,7 +796,7 @@ int test_controlledCompactUnitary(char testName[200]){
 
     // assumes compactUnitary function is correct
 
-    REAL ang1, ang2, ang3;
+    qreal ang1, ang2, ang3;
     ang1 = 1.2320;
     ang2 = 0.4230;
     ang3 = -0.65230;
@@ -841,7 +841,7 @@ int test_controlledUnitary(char testName[200]){
 
     // assumes controlledCompactUnitary function is correct
 
-    REAL ang1, ang2, ang3;
+    qreal ang1, ang2, ang3;
     ang1 = 1.2320;
     ang2 = 0.4230;
     ang3 = -0.65230;
@@ -892,7 +892,7 @@ int test_multiControlledUnitary(char testName[200]){
 
     // assumes controlledCompactUnitary function is correct
 
-    REAL ang1, ang2, ang3;
+    qreal ang1, ang2, ang3;
     ang1 = 1.2320;
     ang2 = 0.4230;
     ang3 = -0.65230;
@@ -968,7 +968,7 @@ int test_calcProbOfOutcome(char testName[200]){
 
     int numQubits=12;
     int qubit;
-    REAL outcome;
+    qreal outcome;
     
     /*
      * state vector
@@ -1024,7 +1024,7 @@ int test_collapseToOutcome(char testName[200]){
 
     int numQubits=3;
     int qubit;
-    REAL prob;
+    qreal prob;
 
     /*
      * state-vectors
@@ -1209,7 +1209,7 @@ int test_measureWithStats(char testName[200]){
     Qureg mq, mqVerif;
     int qubit;
     int outcome;
-    REAL prob;
+    qreal prob;
 
     mq = createQureg(numQubits, env);
     mqVerif = createQureg(numQubits, env);
@@ -1252,7 +1252,7 @@ int test_getRealAmp(char testName[200]){
     int passed=1;
 
     int numQubits=5;
-    REAL ampEl=0, ampElVerif=0;
+    qreal ampEl=0, ampElVerif=0;
 
     Qureg mq; 
     mq = createQureg(numQubits, env);
@@ -1272,7 +1272,7 @@ int test_getImagAmp(char testName[200]){
     int passed=1;
 
     int numQubits=5;
-    REAL ampEl=0, ampElVerif=0;
+    qreal ampEl=0, ampElVerif=0;
 
     Qureg mq; 
     mq = createQureg(numQubits, env);
@@ -1292,8 +1292,8 @@ int test_getProbAmp(char testName[200]){
     int passed=1;
 
     int numQubits=5;
-    REAL ampEl=0, ampElVerif=0;
-    REAL realEl, imagEl;
+    qreal ampEl=0, ampElVerif=0;
+    qreal realEl, imagEl;
 
     Qureg mq; 
     mq = createQureg(numQubits, env);
@@ -1313,7 +1313,7 @@ int test_getProbAmp(char testName[200]){
 
 int test_calcInnerProduct(char testName[200]) {
     
-    REAL pi = 3.1415926535897932384626;
+    qreal pi = 3.1415926535897932384626;
 
     int passed = 1;
     
@@ -1370,7 +1370,7 @@ int test_calcInnerProduct(char testName[200]) {
 int test_calcFidelity(char testName[200]) {
     int passed=1;
     int numQubits=5;
-    REAL fid;
+    qreal fid;
     
     Qureg pure;
     pure = createQureg(numQubits, env);
@@ -1410,7 +1410,7 @@ int test_calcFidelity(char testName[200]) {
     initClassicalState(pure, (1<<numQubits)-1);
     initPlusState(mixed);
     fid = calcFidelity(mixed, pure);
-    if (passed) passed = compareReals(fid, 1/(REAL)(1<<numQubits), COMPARE_PRECISION);
+    if (passed) passed = compareReals(fid, 1/(qreal)(1<<numQubits), COMPARE_PRECISION);
     
     // <0| .2 |0><0| + .8 |..1><..1| |0> = .2
     Qureg otherMixed;
@@ -1434,13 +1434,13 @@ int test_addDensityMatrix(char testName[200]) {
     int passed=1;
     int numQubits=5;
     
-    REAL prob;
+    qreal prob;
     Qureg reg1, reg2;
     reg1 = createDensityQureg(numQubits, env);
     reg2 = createDensityQureg(numQubits, env);
     
     // prob_0( p1 |0...><0...| + (1-p1) |1...><1...| ) = p1
-    REAL p1 = 0.3;
+    qreal p1 = 0.3;
     initZeroState(reg1);
     initClassicalState(reg2, 1);
     addDensityMatrix(reg1, 1-p1, reg2);
@@ -1449,11 +1449,11 @@ int test_addDensityMatrix(char testName[200]) {
     
     // prob_0( p2 {p1 |0...><0...| + (1-p1) |1...><1...|} + (1-p2)|+><+| ) 
     // = p2 p1 + (1-p2) / sqrt(2)
-    REAL p2 = 0.7;
+    qreal p2 = 0.7;
     initPlusState(reg2);
     addDensityMatrix(reg1, 1-p2, reg2);
     prob = calcProbOfOutcome(reg1, 0, 0);
-    REAL trueProb = p2*p1 + (1-p2)*0.5;
+    qreal trueProb = p2*p1 + (1-p2)*0.5;
     if (passed) passed = compareReals(prob, trueProb, COMPARE_PRECISION);
     
     destroyQureg(reg1, env);
@@ -1464,7 +1464,7 @@ int test_addDensityMatrix(char testName[200]) {
 int test_calcPurity(char testName[200]) {
     int passed=1;
     int numQubits=3;
-    REAL purity;
+    qreal purity;
     
     Qureg qureg;
     qureg = createDensityQureg(numQubits, env);
@@ -1493,7 +1493,7 @@ int test_calcPurity(char testName[200]) {
     initClassicalState(qureg, 0);       // |0><0|
     initClassicalState(otherQureg, 1);  // |0...01><0...01|
     
-    REAL p1 = 0.3;
+    qreal p1 = 0.3;
     addDensityMatrix(qureg, 1-p1, otherQureg);    
     purity = calcPurity(qureg);
     if (passed) passed = compareReals(purity, p1*p1 + (1-p1)*(1-p1), COMPARE_PRECISION);
@@ -1525,7 +1525,7 @@ int test_calcPurity(char testName[200]) {
 int test_calcTotalProb(char testName[200]) {
     int passed=1;
     int numQubits=3;
-    REAL prob;
+    qreal prob;
     
     /* 
      * state-vector
@@ -1571,7 +1571,7 @@ int test_applyOneQubitDepolariseError(char testName[200]) {
     int numQubits=3;
 
     int targetQubit;
-    REAL depolProb=0.375;
+    qreal depolProb=0.375;
     
     Qureg qureg, quregVerif;
     qureg = createDensityQureg(numQubits, env);
@@ -1601,7 +1601,7 @@ int test_applyOneQubitDephaseError(char testName[200]) {
     int numQubits=3;
 
     int targetQubit;
-    REAL dephaseProb=0.25;
+    qreal dephaseProb=0.25;
     
     Qureg qureg, quregVerif;
     qureg = createDensityQureg(numQubits, env);
@@ -1632,7 +1632,7 @@ int test_applyTwoQubitDepolariseError(char testName[200]) {
     int numQubits=3;
 
     int qubit1, qubit2;
-    REAL depolProb=0.46875;
+    qreal depolProb=0.46875;
     
     Qureg qureg, quregVerif;
     qureg = createDensityQureg(numQubits, env);
@@ -1668,7 +1668,7 @@ int test_applyTwoQubitDephaseError(char testName[200]) {
     int numQubits=3;
 
     int qubit1, qubit2;
-    REAL dephaseProb=0.375;
+    qreal dephaseProb=0.375;
     
     Qureg qureg, quregVerif;
     qureg = createDensityQureg(numQubits, env);
