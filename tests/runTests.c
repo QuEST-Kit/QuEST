@@ -6,7 +6,6 @@
 # include <string.h>
 
 # include "QuEST.h"
-# include "QuEST_precision.h"
 # include "QuEST_debug.h"
 
 # define NUM_TESTS 38

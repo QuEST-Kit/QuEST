@@ -14,7 +14,6 @@
 # include "QuEST_precision.h"
 # include "QuEST_internal.h"
 # include "QuEST_validation.h"
-# include "QuEST_ops.h"
 # include "QuEST_qasm.h"
 
 #ifdef __cplusplus
@@ -474,6 +473,7 @@ void controlledRotateAroundAxis(Qureg qureg, const int controlQubit, const int t
     qasm_recordControlledAxisRotation(qureg, angle, axis, controlQubit, targetQubit);
 }
 
+
 /*
  * register attributes
  */
@@ -656,7 +656,7 @@ void applyTwoQubitDephaseError(Qureg qureg, int qubit1, int qubit2, qreal prob) 
     validateTwoQubitDephaseProb(prob, __func__);
 
     ensureIndsIncrease(&qubit1, &qubit2);
-    densmatr_twoQubitDephase(qureg, qubit1, qubit2, (4*prob)/3);
+    densmatr_twoQubitDephase(qureg, qubit1, qubit2, (4*prob)/3.0);
 }
 
 void applyOneQubitDepolariseError(Qureg qureg, const int targetQubit, qreal prob) {
@@ -664,7 +664,7 @@ void applyOneQubitDepolariseError(Qureg qureg, const int targetQubit, qreal prob
     validateTarget(qureg, targetQubit, __func__);
     validateOneQubitDepolProb(prob, __func__);
     
-    densmatr_oneQubitDepolarise(qureg, targetQubit, (4*prob)/3);
+    densmatr_oneQubitDepolarise(qureg, targetQubit, (4*prob)/3.0);
 }
 
 void applyTwoQubitDepolariseError(Qureg qureg, int qubit1, int qubit2, qreal prob) {
@@ -673,7 +673,7 @@ void applyTwoQubitDepolariseError(Qureg qureg, int qubit1, int qubit2, qreal pro
     validateTwoQubitDepolProb(prob, __func__);
     
     ensureIndsIncrease(&qubit1, &qubit2);
-    densmatr_twoQubitDepolarise(qureg, qubit1, qubit2, (16*prob)/15);
+    densmatr_twoQubitDepolarise(qureg, qubit1, qubit2, (16*prob)/15.0);
 }
 
 
@@ -682,6 +682,7 @@ void applyTwoQubitDepolariseError(Qureg qureg, int qubit1, int qubit2, qreal pro
  */
 
 int compareStates(Qureg qureg1, Qureg qureg2, qreal precision) {
+    validateMatchingQuregDims(qureg1, qureg2, __func__);
     return statevec_compareStates(qureg1, qureg2, precision);
 }
 
@@ -690,14 +691,14 @@ void initStateDebug(Qureg qureg) {
 }
 
 void initStateFromSingleFile(Qureg *qureg, char filename[200], QuESTEnv env) {
-    //! change back -- uncomment. Consider if we want to allow this operation for density matrices
-    //validateStateVecQureg(*qureg, __func__);
-
     int success = statevec_initStateFromSingleFile(qureg, filename, env);
     validateFileOpened(success, __func__);
 }
 
 void initStateOfSingleQubit(Qureg *qureg, int qubitId, int outcome) {
+    validateStateVecQureg(*qureg, __func__);
+    validateTarget(*qureg, qubitId, __func__);
+    validateOutcome(outcome, __func__);
     return statevec_initStateOfSingleQubit(qureg, qubitId, outcome);
 }
 
