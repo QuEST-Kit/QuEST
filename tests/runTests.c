@@ -520,7 +520,8 @@ int test_multiControlledPhaseShift(char testName[200]) {
     hadamard(mq, 3);
     
     // confirm controlling on 2nd,3rd,4th qubits does nothing (state |1010> = 2^1 + 2^3 = 10)
-    multiControlledPhaseShift(mq, (int[]) {1,2,3}, 3, pi * 5/4.0);
+    int ctrls[] = {1,2,3};
+    multiControlledPhaseShift(mq, ctrls , 3, pi * 5/4.0);
     if (passed) passed = compareReals(getRealAmp(mq, 10), 1/sqrt(2), COMPARE_PRECISION);
     
     // enter state (|0> + |1>)/sqrt(2) |110>
@@ -528,7 +529,7 @@ int test_multiControlledPhaseShift(char testName[200]) {
     
     // controlling on 2nd,3rd,4th qubits enters state (|0> - 1/sqrt(2) (1 + i) |1>)/sqrt(2) |110>
     // index of state |1110> = 2^1 + 2^2 + 2^3 = 14
-    multiControlledPhaseShift(mq, (int[]) {1,2,3}, 3, pi * 5/4.0);
+    multiControlledPhaseShift(mq, ctrls, 3, pi * 5/4.0);
     if (passed) passed = compareReals(getRealAmp(mq, 14), -1/2.0, COMPARE_PRECISION);
     if (passed) passed = compareReals(getImagAmp(mq, 14), -1/2.0, COMPARE_PRECISION);
     
@@ -1533,12 +1534,15 @@ int test_calcTotalProb(char testName[200]) {
     Qureg qureg;
     qureg = createQureg(numQubits, env);
     
+    
+    
     hadamard(qureg, 0);
     rotateY(qureg, 0, 0.1);
     rotateZ(qureg, 0, 0.4);
     controlledRotateY(qureg, 0, 1, 0.9);
     controlledRotateX(qureg, 1, 2, 1.45);
-    multiControlledPhaseFlip(qureg, (int []) {0,1,2}, 3);
+    int ctrls[] = {0,1,2};
+    multiControlledPhaseFlip(qureg, ctrls, 3);
     controlledRotateAroundAxis(qureg, 1, 0, 0.3, (Vector) {.x=1,.y=2,.z=3});
     prob = calcTotalProb(qureg);
     if (passed) passed = compareReals(prob, 1, COMPARE_PRECISION);
@@ -1555,7 +1559,7 @@ int test_calcTotalProb(char testName[200]) {
     rotateZ(qureg, 0, 0.4);
     controlledRotateY(qureg, 0, 1, 0.9);
     controlledRotateX(qureg, 1, 2, 1.45); 
-    multiControlledPhaseFlip(qureg, (int []) {0,1,2}, 3);
+    multiControlledPhaseFlip(qureg, ctrls, 3);
     controlledRotateAroundAxis(qureg, 1, 0, 0.3, (Vector) {.x=1,.y=2,.z=3});
     prob = calcTotalProb(qureg);
         
