@@ -14,7 +14,6 @@
 # include "QuEST_precision.h"
 # include "QuEST_internal.h"
 # include "QuEST_validation.h"
-# include "QuEST_ops.h"
 # include "QuEST_qasm.h"
 
 #ifdef __cplusplus

@@ -6,7 +6,6 @@
  */
 
 # include "../QuEST.h"
-# include "../QuEST_ops.h"
 # include "../QuEST_internal.h"
 # include "../QuEST_precision.h"
 # include "../mt19937ar.h"
