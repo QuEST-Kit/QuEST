@@ -39,7 +39,7 @@ void validateDensityMatrQureg(Qureg qureg, const char* caller);
 
 void validateOutcome(int outcome, const char* caller);
 
-void validateMeasurementProb(REAL prob, const char* caller);
+void validateMeasurementProb(qreal prob, const char* caller);
 
 void validateMatchingQuregDims(Qureg qureg1, Qureg qureg2, const char *caller);
 
@@ -51,17 +51,17 @@ void validateNumAmps(Qureg qureg, long long int startInd, long long int numAmps,
 
 void validateFileOpened(int opened, const char* caller);
 
-void validateProb(REAL prob, const char* caller);
+void validateProb(qreal prob, const char* caller);
 
-void validateNormProbs(REAL prob1, REAL prob2, const char* caller);
+void validateNormProbs(qreal prob1, qreal prob2, const char* caller);
 
-void validateOneQubitDephaseProb(REAL prob, const char* caller);
+void validateOneQubitDephaseProb(qreal prob, const char* caller);
 
-void validateTwoQubitDephaseProb(REAL prob, const char* caller);
+void validateTwoQubitDephaseProb(qreal prob, const char* caller);
 
-void validateOneQubitDepolProb(REAL prob, const char* caller);
+void validateOneQubitDepolProb(qreal prob, const char* caller);
 
-void validateTwoQubitDepolProb(REAL prob, const char* caller);
+void validateTwoQubitDepolProb(qreal prob, const char* caller);
 
 # ifdef __cplusplus
 }

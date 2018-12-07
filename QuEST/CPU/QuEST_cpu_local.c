@@ -24,19 +24,19 @@
 # endif
 
 
-void densmatr_oneQubitDepolarise(Qureg qureg, const int targetQubit, REAL depolLevel) {
+void densmatr_oneQubitDepolarise(Qureg qureg, const int targetQubit, qreal depolLevel) {
     if (depolLevel == 0)
         return;
 
     densmatr_oneQubitDepolariseLocal(qureg, targetQubit, depolLevel);
 }
 
-void densmatr_twoQubitDepolarise(Qureg qureg, int qubit1, int qubit2, REAL depolLevel){
+void densmatr_twoQubitDepolarise(Qureg qureg, int qubit1, int qubit2, qreal depolLevel){
     if (depolLevel == 0)
         return;
-    REAL eta = 2/depolLevel;
-    REAL delta = eta - 1 - sqrt( (eta-1)*(eta-1) - 1 );
-    REAL gamma = 1+delta;
+    qreal eta = 2/depolLevel;
+    qreal delta = eta - 1 - sqrt( (eta-1)*(eta-1) - 1 );
+    qreal gamma = 1+delta;
     // TODO -- test delta too small
 
     gamma = 1/(gamma*gamma*gamma);
@@ -45,22 +45,22 @@ void densmatr_twoQubitDepolarise(Qureg qureg, int qubit1, int qubit2, REAL depol
 }
 
 
-REAL densmatr_calcPurity(Qureg qureg) {
+qreal densmatr_calcPurity(Qureg qureg) {
     return densmatr_calcPurityLocal(qureg);
 }
 
-REAL densmatr_calcFidelity(Qureg qureg, Qureg pureState) {
+qreal densmatr_calcFidelity(Qureg qureg, Qureg pureState) {
     
     // save pointers to qureg's pair state
-    REAL* quregPairRePtr = qureg.pairStateVec.real;
-    REAL* quregPairImPtr = qureg.pairStateVec.imag;
+    qreal* quregPairRePtr = qureg.pairStateVec.real;
+    qreal* quregPairImPtr = qureg.pairStateVec.imag;
     
     // populate qureg pair state with pure state (by repointing)
     qureg.pairStateVec.real = pureState.stateVec.real;
     qureg.pairStateVec.imag = pureState.stateVec.imag;
     
     // calculate fidelity using pairState
-    REAL fid = densmatr_calcFidelityLocal(qureg, pureState);
+    qreal fid = densmatr_calcFidelityLocal(qureg, pureState);
     
     // restore pointers
     qureg.pairStateVec.real = quregPairRePtr;
@@ -72,8 +72,8 @@ REAL densmatr_calcFidelity(Qureg qureg, Qureg pureState) {
 void densmatr_initPureState(Qureg qureg, Qureg pureState) {
     
     // save pointers to qureg's pair state
-    REAL* quregPairRePtr = qureg.pairStateVec.real;
-    REAL* quregPairImPtr = qureg.pairStateVec.imag;
+    qreal* quregPairRePtr = qureg.pairStateVec.real;
+    qreal* quregPairImPtr = qureg.pairStateVec.imag;
     
     // populate qureg pair state with pure state (by repointing)
     qureg.pairStateVec.real = pureState.stateVec.real;
@@ -91,11 +91,11 @@ Complex statevec_calcInnerProduct(Qureg bra, Qureg ket) {
     return statevec_calcInnerProductLocal(bra, ket);
 }
 
-REAL densmatr_calcTotalProb(Qureg qureg) {
+qreal densmatr_calcTotalProb(Qureg qureg) {
     
     // computes the trace using Kahan summation
-    REAL pTotal=0;
-    REAL y, t, c;
+    qreal pTotal=0;
+    qreal y, t, c;
     c = 0;
     
     long long int numCols = 1LL << qureg.numQubitsRepresented;
@@ -114,11 +114,11 @@ REAL densmatr_calcTotalProb(Qureg qureg) {
     return pTotal;
 }
 
-REAL statevec_calcTotalProb(Qureg qureg){
+qreal statevec_calcTotalProb(Qureg qureg){
     // implemented using Kahan summation for greater accuracy at a slight floating
     // point operation overhead. For more details see https://en.wikipedia.org/wiki/Kahan_summation_algorithm
-    REAL pTotal=0; 
-    REAL y, t, c;
+    qreal pTotal=0; 
+    qreal y, t, c;
     long long int index;
     long long int numAmpsPerRank = qureg.numAmpsPerChunk;
     c = 0.0;
@@ -179,18 +179,18 @@ void reportQuESTEnv(QuESTEnv env){
 # else
     printf("OpenMP disabled\n");
 # endif
-    printf("Precision: size of REAL is %ld bytes\n", sizeof(REAL));
+    printf("Precision: size of qreal is %ld bytes\n", sizeof(qreal));
 }
 
 void reportNodeList(QuESTEnv env){
     printf("Hostname unknown: running locally\n");
 }
 
-REAL statevec_getRealAmp(Qureg qureg, long long int index){
+qreal statevec_getRealAmp(Qureg qureg, long long int index){
     return qureg.stateVec.real[index];
 }
 
-REAL statevec_getImagAmp(Qureg qureg, long long int index){
+qreal statevec_getImagAmp(Qureg qureg, long long int index){
     return qureg.stateVec.imag[index];
 }
 
@@ -262,23 +262,23 @@ void statevec_controlledNot(Qureg qureg, const int controlQubit, const int targe
     statevec_controlledNotLocal(qureg, controlQubit, targetQubit);
 }
 
-REAL statevec_calcProbOfOutcome(Qureg qureg, const int measureQubit, int outcome)
+qreal statevec_calcProbOfOutcome(Qureg qureg, const int measureQubit, int outcome)
 {
-    REAL stateProb=0;
+    qreal stateProb=0;
     stateProb = statevec_findProbabilityOfZeroLocal(qureg, measureQubit);
     if (outcome==1) stateProb = 1.0 - stateProb;
     return stateProb;
 }
 
-REAL densmatr_calcProbOfOutcome(Qureg qureg, const int measureQubit, int outcome) {
+qreal densmatr_calcProbOfOutcome(Qureg qureg, const int measureQubit, int outcome) {
     
-    REAL outcomeProb = densmatr_findProbabilityOfZeroLocal(qureg, measureQubit);
+    qreal outcomeProb = densmatr_findProbabilityOfZeroLocal(qureg, measureQubit);
     if (outcome == 1)
         outcomeProb = 1.0 - outcomeProb;
     return outcomeProb;
 }
 
-void statevec_collapseToKnownProbOutcome(Qureg qureg, const int measureQubit, int outcome, REAL stateProb)
+void statevec_collapseToKnownProbOutcome(Qureg qureg, const int measureQubit, int outcome, qreal stateProb)
 {
     statevec_collapseToKnownProbOutcomeLocal(qureg, measureQubit, outcome, stateProb);
 }

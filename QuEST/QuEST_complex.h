@@ -59,11 +59,11 @@ typedef long double complex long_double_complex;
  */
 
 # if QuEST_PREC==1
-    # define COMPLEX float_complex
+    # define qcomp float_complex
 # elif QuEST_PREC==2
-    # define COMPLEX double_complex
+    # define qcomp double_complex
 # elif QuEST_PREC==4
-    # define COMPLEX long_double_complex
+    # define qcomp long_double_complex
 # endif
 
 
@@ -72,8 +72,8 @@ typedef long double complex long_double_complex;
  * creating converters to/from QuEST's internal type
  */
 
-# define toCOMPLEX(scalar) ((Complex) {.real = creal(scalar), .imag = cimag(scalar)})
-# define fromCOMPLEX(comp) COMPLEX(comp.real, comp.imag)
+# define toComplex(scalar) ((Complex) {.real = creal(scalar), .imag = cimag(scalar)})
+# define fromComplex(comp) qcomp(comp.real, comp.imag)
 
 
 

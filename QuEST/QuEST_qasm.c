@@ -122,7 +122,7 @@ void qasm_recordComment(Qureg qureg, char* comment) {
     addStringToQASM(qureg, line, len);
 }
 
-void addGateToQASM(Qureg qureg, TargetGate gate, int* controlQubits, int numControlQubits, int targetQubit, REAL* params, int numParams) {
+void addGateToQASM(Qureg qureg, TargetGate gate, int* controlQubits, int numControlQubits, int targetQubit, qreal* params, int numParams) {
     
     int len = 0;
     char line[MAX_LINE_LEN + 1]; // for trailing \0
@@ -170,12 +170,12 @@ void qasm_recordGate(Qureg qureg, TargetGate gate, int targetQubit) {
     addGateToQASM(qureg, gate, NULL, 0, targetQubit, NULL, 0);
 }
 
-void qasm_recordParamGate(Qureg qureg, TargetGate gate, int targetQubit, REAL param) {
+void qasm_recordParamGate(Qureg qureg, TargetGate gate, int targetQubit, qreal param) {
     
     if (!qureg.qasmLog->isLogging)
         return;
     
-    REAL params[1] = {param};
+    qreal params[1] = {param};
     addGateToQASM(qureg, gate, NULL, 0, targetQubit, params, 1);
 }
 
@@ -184,10 +184,10 @@ void qasm_recordCompactUnitary(Qureg qureg, Complex alpha, Complex beta, int tar
     if (!qureg.qasmLog->isLogging)
         return;
     
-    REAL rz2, ry, rz1;
+    qreal rz2, ry, rz1;
     getZYZRotAnglesFromComplexPair(alpha, beta, &rz2, &ry, &rz1);
     
-    REAL params[3] = {rz2, ry, rz1};
+    qreal params[3] = {rz2, ry, rz1};
     addGateToQASM(qureg, GATE_UNITARY, NULL, 0, targetQubit, params, 3);
 }
 
@@ -197,17 +197,17 @@ void qasm_recordUnitary(Qureg qureg, ComplexMatrix2 u, int targetQubit) {
         return;
     
     Complex alpha, beta;
-    REAL discardedGlobalPhase;
+    qreal discardedGlobalPhase;
     getComplexPairAndPhaseFromUnitary(u, &alpha, &beta, &discardedGlobalPhase);
     
-    REAL rz2, ry, rz1;
+    qreal rz2, ry, rz1;
     getZYZRotAnglesFromComplexPair(alpha, beta, &rz2, &ry, &rz1);
     
-    REAL params[3] = {rz2, ry, rz1};
+    qreal params[3] = {rz2, ry, rz1};
     addGateToQASM(qureg, GATE_UNITARY, NULL, 0, targetQubit, params, 3);
 }
 
-void qasm_recordAxisRotation(Qureg qureg, REAL angle, Vector axis, const int targetQubit) {
+void qasm_recordAxisRotation(Qureg qureg, qreal angle, Vector axis, const int targetQubit) {
     
     if (!qureg.qasmLog->isLogging)
         return;
@@ -215,10 +215,10 @@ void qasm_recordAxisRotation(Qureg qureg, REAL angle, Vector axis, const int tar
     Complex alpha, beta;
     getComplexPairFromRotation(angle, axis, &alpha, &beta);
     
-    REAL rz2, ry, rz1;
+    qreal rz2, ry, rz1;
     getZYZRotAnglesFromComplexPair(alpha, beta, &rz2, &ry, &rz1);
     
-    REAL params[3] = {rz2, ry, rz1};
+    qreal params[3] = {rz2, ry, rz1};
     addGateToQASM(qureg, GATE_UNITARY, NULL, 0, targetQubit, params, 3);
 }
 
@@ -231,19 +231,19 @@ void qasm_recordControlledGate(Qureg qureg, TargetGate gate, int controlQubit, i
     addGateToQASM(qureg, gate, controls, 1, targetQubit, 0, 0);    
 }
 
-void qasm_recordControlledParamGate(Qureg qureg, TargetGate gate, int controlQubit, int targetQubit, REAL param) {
+void qasm_recordControlledParamGate(Qureg qureg, TargetGate gate, int controlQubit, int targetQubit, qreal param) {
 
     if (!qureg.qasmLog->isLogging)
         return;
     
     int controls[1] = {controlQubit};
-    REAL params[1] = {param};
+    qreal params[1] = {param};
     addGateToQASM(qureg, gate, controls, 1, targetQubit, params, 1);
     
     // correct the global phase of controlled phase shifts
     if (gate == GATE_PHASE_SHIFT) {
         qasm_recordComment(qureg, "Restoring the discarded global phase of the previous controlled phase gate");
-        REAL phaseFix[1] = {param/2.0};
+        qreal phaseFix[1] = {param/2.0};
         addGateToQASM(qureg, GATE_ROTATE_Z, NULL, 0, targetQubit, phaseFix, 1);
     }
 }
@@ -253,11 +253,11 @@ void qasm_recordControlledCompactUnitary(Qureg qureg, Complex alpha, Complex bet
     if (!qureg.qasmLog->isLogging)
         return;
     
-    REAL rz2, ry, rz1;
+    qreal rz2, ry, rz1;
     getZYZRotAnglesFromComplexPair(alpha, beta, &rz2, &ry, &rz1);
     
     int controls[1] = {controlQubit};
-    REAL params[3] = {rz2, ry, rz1};
+    qreal params[3] = {rz2, ry, rz1};
     addGateToQASM(qureg, GATE_UNITARY, controls, 1, targetQubit, params, 3);
 }
 
@@ -268,23 +268,23 @@ void qasm_recordControlledUnitary(Qureg qureg, ComplexMatrix2 u, int controlQubi
         return;
     
     Complex alpha, beta;
-    REAL globalPhase;
+    qreal globalPhase;
     getComplexPairAndPhaseFromUnitary(u, &alpha, &beta, &globalPhase);
     
-    REAL rz2, ry, rz1;
+    qreal rz2, ry, rz1;
     getZYZRotAnglesFromComplexPair(alpha, beta, &rz2, &ry, &rz1);
     
     int controls[1] = {controlQubit};
-    REAL params[3] = {rz2, ry, rz1};
+    qreal params[3] = {rz2, ry, rz1};
     addGateToQASM(qureg, GATE_UNITARY, controls, 1, targetQubit, params, 3);
     
     // add Rz
     qasm_recordComment(qureg, "Restoring the discarded global phase of the previous controlled unitary");
-    REAL phaseFix[1] = {globalPhase};
+    qreal phaseFix[1] = {globalPhase};
     addGateToQASM(qureg, GATE_ROTATE_Z, NULL, 0, targetQubit, phaseFix, 1);
 }
 
-void qasm_recordControlledAxisRotation(Qureg qureg, REAL angle, Vector axis, int controlQubit, int targetQubit) {
+void qasm_recordControlledAxisRotation(Qureg qureg, qreal angle, Vector axis, int controlQubit, int targetQubit) {
     
     if (!qureg.qasmLog->isLogging)
         return;
@@ -292,11 +292,11 @@ void qasm_recordControlledAxisRotation(Qureg qureg, REAL angle, Vector axis, int
     Complex alpha, beta;
     getComplexPairFromRotation(angle, axis, &alpha, &beta);
     
-    REAL rz2, ry, rz1;
+    qreal rz2, ry, rz1;
     getZYZRotAnglesFromComplexPair(alpha, beta, &rz2, &ry, &rz1);
     
     int controls[1] = {controlQubit};
-    REAL params[3] = {rz2, ry, rz1};
+    qreal params[3] = {rz2, ry, rz1};
     addGateToQASM(qureg, GATE_UNITARY, controls, 1, targetQubit, params, 3);
 }
 
@@ -308,18 +308,18 @@ void qasm_recordMultiControlledGate(Qureg qureg, TargetGate gate, int* controlQu
     addGateToQASM(qureg, gate, controlQubits, numControlQubits, targetQubit, NULL, 0);
 }
 
-void qasm_recordMultiControlledParamGate(Qureg qureg, TargetGate gate, int* controlQubits, const int numControlQubits, const int targetQubit, REAL param) {
+void qasm_recordMultiControlledParamGate(Qureg qureg, TargetGate gate, int* controlQubits, const int numControlQubits, const int targetQubit, qreal param) {
     
     if (!qureg.qasmLog->isLogging)
         return;
     
-    REAL params[1] = {param};
+    qreal params[1] = {param};
     addGateToQASM(qureg, gate, controlQubits, numControlQubits, targetQubit, params, 1);
     
     // correct the global phase of controlled phase shifts
     if (gate == GATE_PHASE_SHIFT) {
         qasm_recordComment(qureg, "Restoring the discarded global phase of the previous multicontrolled phase gate");
-        REAL phaseFix[1] = {param/2.0};
+        qreal phaseFix[1] = {param/2.0};
         addGateToQASM(qureg, GATE_ROTATE_Z, NULL, 0, targetQubit, phaseFix, 1);
     }
 }
@@ -331,22 +331,22 @@ void qasm_recordMultiControlledUnitary(Qureg qureg, ComplexMatrix2 u, int* contr
         return;
     
     Complex alpha, beta;
-    REAL globalPhase;
+    qreal globalPhase;
     getComplexPairAndPhaseFromUnitary(u, &alpha, &beta, &globalPhase);
     
-    REAL rz2, ry, rz1;
+    qreal rz2, ry, rz1;
     getZYZRotAnglesFromComplexPair(alpha, beta, &rz2, &ry, &rz1);
     
-    REAL params[3] = {rz2, ry, rz1};
+    qreal params[3] = {rz2, ry, rz1};
     addGateToQASM(qureg, GATE_UNITARY, controlQubits, numControlQubits, targetQubit, params, 3);
     
     // add Rz
-    REAL phaseFix[1] = {globalPhase};
+    qreal phaseFix[1] = {globalPhase};
     addGateToQASM(qureg, GATE_ROTATE_Z, NULL, 0, targetQubit, phaseFix, 1);
 }
 
 /* not actually used, D'Oh!
-void qasm_recordMultiControlledAxisRotation(Qureg qureg, REAL angle, Vector axis, int* controlQubits, const int numControlQubits, const int targetQubit) {
+void qasm_recordMultiControlledAxisRotation(Qureg qureg, qreal angle, Vector axis, int* controlQubits, const int numControlQubits, const int targetQubit) {
     
     if (!qureg.qasmLog->isLogging)
         return;
@@ -354,10 +354,10 @@ void qasm_recordMultiControlledAxisRotation(Qureg qureg, REAL angle, Vector axis
     Complex alpha, beta;
     getComplexPairFromRotation(angle, axis, &alpha, &beta);
     
-    REAL rz2, ry, rz1;
+    qreal rz2, ry, rz1;
     getZYZRotAnglesFromComplexPair(alpha, beta, &rz2, &ry, &rz1);
     
-    REAL params[3] = {rz2, ry, rz1};
+    qreal params[3] = {rz2, ry, rz1};
     addGateToQASM(qureg, GATE_UNITARY, controlQubits, numControlQubits, targetQubit, params, 3);
 }
 */

@@ -33,8 +33,8 @@ static int extractBit (const int locationOfBitFromRight, const long long int the
     return (theEncodedNumber & ( 1LL << locationOfBitFromRight )) >> locationOfBitFromRight;
 }
 
-void densmatr_oneQubitDephase(Qureg qureg, const int targetQubit, REAL dephase) {
-        REAL retain=1-dephase;
+void densmatr_oneQubitDephase(Qureg qureg, const int targetQubit, qreal dephase) {
+        qreal retain=1-dephase;
     
         const long long int numTasks = qureg.numAmpsPerChunk;
         long long int innerMask = 1LL << targetQubit;
@@ -66,8 +66,8 @@ void densmatr_oneQubitDephase(Qureg qureg, const int targetQubit, REAL dephase) 
     }
 }
 
-void densmatr_twoQubitDephase(Qureg qureg, const int qubit1, const int qubit2, REAL dephase) {
-    REAL retain=1-dephase;
+void densmatr_twoQubitDephase(Qureg qureg, const int qubit1, const int qubit2, qreal dephase) {
+    qreal retain=1-dephase;
 
     const long long int numTasks = qureg.numAmpsPerChunk;
     long long int innerMaskQubit1 = 1LL << qubit1;
@@ -107,8 +107,8 @@ void densmatr_twoQubitDephase(Qureg qureg, const int qubit1, const int qubit2, R
     }
 }
 
-void densmatr_oneQubitDepolariseLocal(Qureg qureg, const int targetQubit, REAL depolLevel) {
-    REAL retain=1-depolLevel;
+void densmatr_oneQubitDepolariseLocal(Qureg qureg, const int targetQubit, qreal depolLevel) {
+    qreal retain=1-depolLevel;
 
     const long long int numTasks = qureg.numAmpsPerChunk;
     long long int innerMask = 1LL << targetQubit;
@@ -119,7 +119,7 @@ void densmatr_oneQubitDepolariseLocal(Qureg qureg, const int targetQubit, REAL d
     long long int partner;
     long long int thisPattern;
 
-    REAL realAv, imagAv;
+    qreal realAv, imagAv;
         
 # ifdef _OPENMP
 # pragma omp parallel \
@@ -156,7 +156,7 @@ void densmatr_oneQubitDepolariseLocal(Qureg qureg, const int targetQubit, REAL d
     }
 }
 
-void densmatr_oneQubitDepolariseDistributed(Qureg qureg, const int targetQubit, REAL depolLevel) {
+void densmatr_oneQubitDepolariseDistributed(Qureg qureg, const int targetQubit, qreal depolLevel) {
 
     // first do dephase part. 
     // TODO -- this might be more efficient to do at the same time as the depolarise if we move to
@@ -232,7 +232,7 @@ void densmatr_oneQubitDepolariseDistributed(Qureg qureg, const int targetQubit, 
 }
 
 // @TODO
-void densmatr_twoQubitDepolariseLocal(Qureg qureg, int qubit1, int qubit2, REAL delta, REAL gamma) {
+void densmatr_twoQubitDepolariseLocal(Qureg qureg, int qubit1, int qubit2, qreal delta, qreal gamma) {
     const long long int numTasks = qureg.numAmpsPerChunk;
     long long int innerMaskQubit1 = 1LL << qubit1;
     long long int outerMaskQubit1= 1LL << (qubit1 + qureg.numQubitsRepresented);
@@ -245,7 +245,7 @@ void densmatr_twoQubitDepolariseLocal(Qureg qureg, int qubit1, int qubit2, REAL 
     long long int partner;
     long long int thisPatternQubit1, thisPatternQubit2;
 
-    REAL real00, imag00;
+    qreal real00, imag00;
 
 # ifdef _OPENMP
 # pragma omp parallel \
@@ -334,7 +334,7 @@ void densmatr_twoQubitDepolariseLocal(Qureg qureg, int qubit1, int qubit2, REAL 
     }
 }
 
-void densmatr_twoQubitDepolariseLocalPart1(Qureg qureg, int qubit1, int qubit2, REAL delta) {
+void densmatr_twoQubitDepolariseLocalPart1(Qureg qureg, int qubit1, int qubit2, qreal delta) {
     const long long int numTasks = qureg.numAmpsPerChunk;
     long long int innerMaskQubit1 = 1LL << qubit1;
     long long int outerMaskQubit1= 1LL << (qubit1 + qureg.numQubitsRepresented);
@@ -350,7 +350,7 @@ void densmatr_twoQubitDepolariseLocalPart1(Qureg qureg, int qubit1, int qubit2, 
     long long int partner;
     long long int thisPatternQubit1, thisPatternQubit2;
 
-    REAL real00, imag00;
+    qreal real00, imag00;
 
 # ifdef _OPENMP
 # pragma omp parallel \
@@ -388,7 +388,7 @@ void densmatr_twoQubitDepolariseLocalPart1(Qureg qureg, int qubit1, int qubit2, 
 }
 
 void densmatr_twoQubitDepolariseDistributed(Qureg qureg, const int targetQubit, 
-        const int qubit2, REAL delta, REAL gamma) {
+        const int qubit2, qreal delta, qreal gamma) {
 
     long long int sizeInnerBlockQ1, sizeInnerHalfBlockQ1;
     long long int sizeInnerBlockQ2, sizeInnerHalfBlockQ2, sizeInnerQuarterBlockQ2;
@@ -479,7 +479,7 @@ void densmatr_twoQubitDepolariseDistributed(Qureg qureg, const int targetQubit,
 }
 
 void densmatr_twoQubitDepolariseQ1LocalQ2DistributedPart3(Qureg qureg, const int targetQubit, 
-        const int qubit2, REAL delta, REAL gamma) {
+        const int qubit2, qreal delta, qreal gamma) {
 
     long long int sizeInnerBlockQ1, sizeInnerHalfBlockQ1;
     long long int sizeInnerBlockQ2, sizeInnerHalfBlockQ2, sizeInnerQuarterBlockQ2;
@@ -590,7 +590,7 @@ void zeroSomeAmps(Qureg qureg, long long int startInd, long long int numAmps) {
         qureg.stateVec.imag[i] = 0;
     }
 }
-void normaliseSomeAmps(Qureg qureg, REAL norm, long long int startInd, long long int numAmps) {
+void normaliseSomeAmps(Qureg qureg, qreal norm, long long int startInd, long long int numAmps) {
     
 # ifdef _OPENMP
 # pragma omp parallel for schedule (static)
@@ -601,7 +601,7 @@ void normaliseSomeAmps(Qureg qureg, REAL norm, long long int startInd, long long
     }
 }
 void alternateNormZeroingSomeAmpBlocks(
-    Qureg qureg, REAL norm, int normFirst, 
+    Qureg qureg, qreal norm, int normFirst, 
     long long int startAmpInd, long long int numAmps, long long int blockSize
 ) {     
     long long int numDubBlocks = numAmps / (2*blockSize);
@@ -631,7 +631,7 @@ void alternateNormZeroingSomeAmpBlocks(
 }
 
 /** Renorms (/prob) every | * outcome * >< * outcome * | state, setting all others to zero */
-void densmatr_collapseToKnownProbOutcome(Qureg qureg, const int measureQubit, int outcome, REAL totalStateProb) {
+void densmatr_collapseToKnownProbOutcome(Qureg qureg, const int measureQubit, int outcome, qreal totalStateProb) {
 
 	// only (global) indices (as bit sequence): '* outcome *(n+q) outcome *q are spared
     // where n = measureQubit, q = qureg.numQubitsRepresented.
@@ -707,15 +707,15 @@ void densmatr_collapseToKnownProbOutcome(Qureg qureg, const int measureQubit, in
     
 }
 
-REAL densmatr_calcPurityLocal(Qureg qureg) {
+qreal densmatr_calcPurityLocal(Qureg qureg) {
     
     /* sum of qureg^2, which is sum_i |qureg[i]|^2 */
     long long int index;
     long long int numAmps = qureg.numAmpsPerChunk;
         
-    REAL trace = 0;
-    REAL *vecRe = qureg.stateVec.real;
-    REAL *vecIm = qureg.stateVec.imag;
+    qreal trace = 0;
+    qreal *vecRe = qureg.stateVec.real;
+    qreal *vecIm = qureg.stateVec.imag;
     
 # ifdef _OPENMP
 # pragma omp parallel \
@@ -736,15 +736,15 @@ REAL densmatr_calcPurityLocal(Qureg qureg) {
     return trace;
 }
 
-void densmatr_addDensityMatrix(Qureg combineQureg, REAL otherProb, Qureg otherQureg) {
+void densmatr_addDensityMatrix(Qureg combineQureg, qreal otherProb, Qureg otherQureg) {
     
     /* corresponding amplitudes live on the same node (same dimensions) */
     
     // unpack vars for OpenMP
-    REAL* combineVecRe = combineQureg.stateVec.real;
-    REAL* combineVecIm = combineQureg.stateVec.imag;
-    REAL* otherVecRe = otherQureg.stateVec.real;
-    REAL* otherVecIm = otherQureg.stateVec.imag;
+    qreal* combineVecRe = combineQureg.stateVec.real;
+    qreal* combineVecIm = combineQureg.stateVec.imag;
+    qreal* otherVecRe = otherQureg.stateVec.real;
+    qreal* otherVecIm = otherQureg.stateVec.imag;
     long long int numAmps = combineQureg.numAmpsPerChunk;
     long long int index;
     
@@ -769,7 +769,7 @@ void densmatr_addDensityMatrix(Qureg combineQureg, REAL otherProb, Qureg otherQu
 }
 
 /** computes a few dens-columns-worth of (vec^*T) dens * vec */
-REAL densmatr_calcFidelityLocal(Qureg qureg, Qureg pureState) {
+qreal densmatr_calcFidelityLocal(Qureg qureg, Qureg pureState) {
         
     /* Here, elements of pureState are not accessed (instead grabbed from qureg.pair).
      * We only consult the attributes.
@@ -785,25 +785,25 @@ REAL densmatr_calcFidelityLocal(Qureg qureg, Qureg pureState) {
      */
     
     // unpack everything for OPENMP
-    REAL* vecRe  = qureg.pairStateVec.real;
-    REAL* vecIm  = qureg.pairStateVec.imag;
-    REAL* densRe = qureg.stateVec.real;
-    REAL* densIm = qureg.stateVec.imag;
+    qreal* vecRe  = qureg.pairStateVec.real;
+    qreal* vecIm  = qureg.pairStateVec.imag;
+    qreal* densRe = qureg.stateVec.real;
+    qreal* densIm = qureg.stateVec.imag;
     
     int row, col;
     int dim = pureState.numAmpsTotal;
     int colsPerNode = pureState.numAmpsPerChunk;
     
-    REAL densElemRe, densElemIm;
-    REAL prefacRe, prefacIm;
-    REAL rowSumRe, rowSumIm;
-    REAL vecElemRe, vecElemIm;
+    qreal densElemRe, densElemIm;
+    qreal prefacRe, prefacIm;
+    qreal rowSumRe, rowSumIm;
+    qreal vecElemRe, vecElemIm;
     
     // starting GLOBAL column index of the qureg columns on this node
     int startCol = qureg.chunkId * pureState.numAmpsPerChunk;
     
     // quantity computed by this node
-    REAL globalSumRe = 0;   // imag-component is assumed zero
+    qreal globalSumRe = 0;   // imag-component is assumed zero
     
 # ifdef _OPENMP
 # pragma omp parallel \
@@ -849,17 +849,17 @@ REAL densmatr_calcFidelityLocal(Qureg qureg, Qureg pureState) {
 
 Complex statevec_calcInnerProductLocal(Qureg bra, Qureg ket) {
     
-    REAL innerProdReal = 0;
-    REAL innerProdImag = 0;
+    qreal innerProdReal = 0;
+    qreal innerProdImag = 0;
     
     long long int index;
     long long int numAmps = bra.numAmpsPerChunk;
-    REAL *braVecReal = bra.stateVec.real;
-    REAL *braVecImag = bra.stateVec.imag;
-    REAL *ketVecReal = ket.stateVec.real;
-    REAL *ketVecImag = ket.stateVec.imag;
+    qreal *braVecReal = bra.stateVec.real;
+    qreal *braVecImag = bra.stateVec.imag;
+    qreal *ketVecReal = ket.stateVec.real;
+    qreal *ketVecImag = ket.stateVec.imag;
     
-    REAL braRe, braIm, ketRe, ketIm;
+    qreal braRe, braIm, ketRe, ketIm;
     
 # ifdef _OPENMP
 # pragma omp parallel \
@@ -897,8 +897,8 @@ void densmatr_initClassicalState (Qureg qureg, long long int stateInd)
     long long int densityNumElems = qureg.numAmpsPerChunk;
 
     // Can't use qureg->stateVec as a private OMP var
-    REAL *densityReal = qureg.stateVec.real;
-    REAL *densityImag = qureg.stateVec.imag;
+    qreal *densityReal = qureg.stateVec.real;
+    qreal *densityImag = qureg.stateVec.imag;
 
     // initialise the state to all zeros
     long long int index;
@@ -934,11 +934,11 @@ void densmatr_initPlusState (Qureg qureg)
 {
     // |+><+| = sum_i 1/sqrt(2^N) |i> 1/sqrt(2^N) <j| = sum_ij 1/2^N |i><j|
     long long int dim = (1LL << qureg.numQubitsRepresented);
-    REAL probFactor = 1.0/((REAL) dim);
+    qreal probFactor = 1.0/((qreal) dim);
 
     // Can't use qureg->stateVec as a private OMP var
-    REAL *densityReal = qureg.stateVec.real;
-    REAL *densityImag = qureg.stateVec.imag;
+    qreal *densityReal = qureg.stateVec.real;
+    qreal *densityImag = qureg.stateVec.imag;
 
     long long int index;
     long long int chunkSize = qureg.numAmpsPerChunk;
@@ -972,15 +972,15 @@ void densmatr_initPureStateLocal(Qureg targetQureg, Qureg copyQureg) {
     long long int rowsPerNode = copyQureg.numAmpsTotal;
     
     // unpack vars for OpenMP
-    REAL* vecRe = targetQureg.pairStateVec.real;
-    REAL* vecIm = targetQureg.pairStateVec.imag;
-    REAL* densRe = targetQureg.stateVec.real;
-    REAL* densIm = targetQureg.stateVec.imag;
+    qreal* vecRe = targetQureg.pairStateVec.real;
+    qreal* vecIm = targetQureg.pairStateVec.imag;
+    qreal* densRe = targetQureg.stateVec.real;
+    qreal* densIm = targetQureg.stateVec.imag;
     
     long long int col, row, index;
     
     // a_i conj(a_j) |i><j|
-    REAL ketRe, ketIm, braRe, braIm;
+    qreal ketRe, ketIm, braRe, braIm;
     
 # ifdef _OPENMP
 # pragma omp parallel \
@@ -1013,7 +1013,7 @@ void densmatr_initPureStateLocal(Qureg targetQureg, Qureg copyQureg) {
     }
 }
 
-void statevec_setAmps(Qureg qureg, long long int startInd, REAL* reals, REAL* imags, long long int numAmps) {
+void statevec_setAmps(Qureg qureg, long long int startInd, qreal* reals, qreal* imags, long long int numAmps) {
     
     /* this is actually distributed, since the user's code runs on every node */
     
@@ -1034,8 +1034,8 @@ void statevec_setAmps(Qureg qureg, long long int startInd, REAL* reals, REAL* im
     
     // unpacking OpenMP vars
     long long int index;
-    REAL* vecRe = qureg.stateVec.real;
-    REAL* vecIm = qureg.stateVec.imag;
+    qreal* vecRe = qureg.stateVec.real;
+    qreal* vecIm = qureg.stateVec.imag;
     
 # ifdef _OPENMP
 # pragma omp parallel \
@@ -1138,8 +1138,8 @@ void statevec_initZeroState (Qureg qureg)
     stateVecSize = qureg.numAmpsPerChunk;
 
     // Can't use qureg->stateVec as a private OMP var
-    REAL *stateVecReal = qureg.stateVec.real;
-    REAL *stateVecImag = qureg.stateVec.imag;
+    qreal *stateVecReal = qureg.stateVec.real;
+    qreal *stateVecImag = qureg.stateVec.imag;
 
     // initialise the state-vector to all-zeroes
 # ifdef _OPENMP
@@ -1173,11 +1173,11 @@ void statevec_initPlusState (Qureg qureg)
     // dimension of the state vector
     chunkSize = qureg.numAmpsPerChunk;
     stateVecSize = chunkSize*qureg.numChunks;
-    REAL normFactor = 1.0/sqrt((REAL)stateVecSize);
+    qreal normFactor = 1.0/sqrt((qreal)stateVecSize);
 
     // Can't use qureg->stateVec as a private OMP var
-    REAL *stateVecReal = qureg.stateVec.real;
-    REAL *stateVecImag = qureg.stateVec.imag;
+    qreal *stateVecReal = qureg.stateVec.real;
+    qreal *stateVecImag = qureg.stateVec.imag;
 
     // initialise the state to |+++..+++> = 1/normFactor {1, 1, 1, ...}
 # ifdef _OPENMP
@@ -1206,8 +1206,8 @@ void statevec_initClassicalState (Qureg qureg, long long int stateInd)
     stateVecSize = qureg.numAmpsPerChunk;
 
     // Can't use qureg->stateVec as a private OMP var
-    REAL *stateVecReal = qureg.stateVec.real;
-    REAL *stateVecImag = qureg.stateVec.imag;
+    qreal *stateVecReal = qureg.stateVec.real;
+    qreal *stateVecImag = qureg.stateVec.imag;
 
     // initialise the state to vector to all zeros
 # ifdef _OPENMP
@@ -1243,10 +1243,10 @@ void statevec_cloneQureg(Qureg targetQureg, Qureg copyQureg) {
     stateVecSize = targetQureg.numAmpsPerChunk;
 
     // Can't use qureg->stateVec as a private OMP var
-    REAL *targetStateVecReal = targetQureg.stateVec.real;
-    REAL *targetStateVecImag = targetQureg.stateVec.imag;
-    REAL *copyStateVecReal = copyQureg.stateVec.real;
-    REAL *copyStateVecImag = copyQureg.stateVec.imag;
+    qreal *targetStateVecReal = targetQureg.stateVec.real;
+    qreal *targetStateVecImag = targetQureg.stateVec.imag;
+    qreal *copyStateVecReal = copyQureg.stateVec.real;
+    qreal *copyStateVecImag = copyQureg.stateVec.imag;
 
     // initialise the state to |0000..0000>
 # ifdef _OPENMP
@@ -1282,11 +1282,11 @@ void statevec_initStateOfSingleQubit(Qureg *qureg, int qubitId, int outcome)
     // dimension of the state vector
     chunkSize = qureg->numAmpsPerChunk;
     stateVecSize = chunkSize*qureg->numChunks;
-    REAL normFactor = 1.0/sqrt((REAL)stateVecSize/2.0);
+    qreal normFactor = 1.0/sqrt((qreal)stateVecSize/2.0);
 
     // Can't use qureg->stateVec as a private OMP var
-    REAL *stateVecReal = qureg->stateVec.real;
-    REAL *stateVecImag = qureg->stateVec.imag;
+    qreal *stateVecReal = qureg->stateVec.real;
+    qreal *stateVecImag = qureg->stateVec.imag;
 
     // initialise the state to |0000..0000>
 # ifdef _OPENMP
@@ -1328,8 +1328,8 @@ void statevec_initStateDebug (Qureg qureg)
     chunkSize = qureg.numAmpsPerChunk;
 
     // Can't use qureg->stateVec as a private OMP var
-    REAL *stateVecReal = qureg.stateVec.real;
-    REAL *stateVecImag = qureg.stateVec.imag;
+    qreal *stateVecReal = qureg.stateVec.real;
+    qreal *stateVecImag = qureg.stateVec.imag;
 
     indexOffset = chunkSize * qureg.chunkId;
 
@@ -1359,8 +1359,8 @@ int statevec_initStateFromSingleFile(Qureg *qureg, char filename[200], QuESTEnv 
     chunkSize = qureg->numAmpsPerChunk;
     stateVecSize = chunkSize*qureg->numChunks;
 
-    REAL *stateVecReal = qureg->stateVec.real;
-    REAL *stateVecImag = qureg->stateVec.imag;
+    qreal *stateVecReal = qureg->stateVec.real;
+    qreal *stateVecImag = qureg->stateVec.imag;
 
     FILE *fp;
     char line[200];
@@ -1402,8 +1402,8 @@ int statevec_initStateFromSingleFile(Qureg *qureg, char filename[200], QuESTEnv 
     return 1;
 }
 
-int statevec_compareStates(Qureg mq1, Qureg mq2, REAL precision){
-    REAL diff;
+int statevec_compareStates(Qureg mq1, Qureg mq2, qreal precision){
+    qreal diff;
     int chunkSize = mq1.numAmpsPerChunk;
     
     for (int i=0; i<chunkSize; i++){
@@ -1421,7 +1421,7 @@ void statevec_compactUnitaryLocal (Qureg qureg, const int targetQubit, Complex a
     long long int thisBlock, // current block
          indexUp,indexLo;    // current index and corresponding index in lower half block
 
-    REAL stateRealUp,stateRealLo,stateImagUp,stateImagLo;
+    qreal stateRealUp,stateRealLo,stateImagUp,stateImagLo;
     long long int thisTask;         
     const long long int numTasks=qureg.numAmpsPerChunk>>1;
 
@@ -1430,10 +1430,10 @@ void statevec_compactUnitaryLocal (Qureg qureg, const int targetQubit, Complex a
     sizeBlock     = 2LL * sizeHalfBlock; 
 
     // Can't use qureg.stateVec as a private OMP var
-    REAL *stateVecReal = qureg.stateVec.real;
-    REAL *stateVecImag = qureg.stateVec.imag;
-    REAL alphaImag=alpha.imag, alphaReal=alpha.real;
-    REAL betaImag=beta.imag, betaReal=beta.real;
+    qreal *stateVecReal = qureg.stateVec.real;
+    qreal *stateVecImag = qureg.stateVec.imag;
+    qreal alphaImag=alpha.imag, alphaReal=alpha.real;
+    qreal betaImag=beta.imag, betaReal=beta.real;
 
 # ifdef _OPENMP
 # pragma omp parallel \
@@ -1480,7 +1480,7 @@ void statevec_unitaryLocal(Qureg qureg, const int targetQubit, ComplexMatrix2 u)
     long long int thisBlock, // current block
          indexUp,indexLo;    // current index and corresponding index in lower half block
 
-    REAL stateRealUp,stateRealLo,stateImagUp,stateImagLo;
+    qreal stateRealUp,stateRealLo,stateImagUp,stateImagLo;
     long long int thisTask;         
     const long long int numTasks=qureg.numAmpsPerChunk>>1;
 
@@ -1489,8 +1489,8 @@ void statevec_unitaryLocal(Qureg qureg, const int targetQubit, ComplexMatrix2 u)
     sizeBlock     = 2LL * sizeHalfBlock; 
 
     // Can't use qureg.stateVec as a private OMP var
-    REAL *stateVecReal = qureg.stateVec.real;
-    REAL *stateVecImag = qureg.stateVec.imag;
+    qreal *stateVecReal = qureg.stateVec.real;
+    qreal *stateVecImag = qureg.stateVec.imag;
 
 # ifdef _OPENMP
 # pragma omp parallel \
@@ -1551,15 +1551,15 @@ void statevec_compactUnitaryDistributed (Qureg qureg, const int targetQubit,
         ComplexArray stateVecOut)
 {
 
-    REAL   stateRealUp,stateRealLo,stateImagUp,stateImagLo;
+    qreal   stateRealUp,stateRealLo,stateImagUp,stateImagLo;
     long long int thisTask;  
     const long long int numTasks=qureg.numAmpsPerChunk;
 
-    REAL rot1Real=rot1.real, rot1Imag=rot1.imag;
-    REAL rot2Real=rot2.real, rot2Imag=rot2.imag;
-    REAL *stateVecRealUp=stateVecUp.real, *stateVecImagUp=stateVecUp.imag;
-    REAL *stateVecRealLo=stateVecLo.real, *stateVecImagLo=stateVecLo.imag;
-    REAL *stateVecRealOut=stateVecOut.real, *stateVecImagOut=stateVecOut.imag;
+    qreal rot1Real=rot1.real, rot1Imag=rot1.imag;
+    qreal rot2Real=rot2.real, rot2Imag=rot2.imag;
+    qreal *stateVecRealUp=stateVecUp.real, *stateVecImagUp=stateVecUp.imag;
+    qreal *stateVecRealLo=stateVecLo.real, *stateVecImagLo=stateVecLo.imag;
+    qreal *stateVecRealOut=stateVecOut.real, *stateVecImagOut=stateVecOut.imag;
 
 # ifdef _OPENMP
 # pragma omp parallel \
@@ -1607,15 +1607,15 @@ void statevec_unitaryDistributed (Qureg qureg, const int targetQubit,
         ComplexArray stateVecOut)
 {
 
-    REAL   stateRealUp,stateRealLo,stateImagUp,stateImagLo;
+    qreal   stateRealUp,stateRealLo,stateImagUp,stateImagLo;
     long long int thisTask;  
     const long long int numTasks=qureg.numAmpsPerChunk;
 
-    REAL rot1Real=rot1.real, rot1Imag=rot1.imag;
-    REAL rot2Real=rot2.real, rot2Imag=rot2.imag;
-    REAL *stateVecRealUp=stateVecUp.real, *stateVecImagUp=stateVecUp.imag;
-    REAL *stateVecRealLo=stateVecLo.real, *stateVecImagLo=stateVecLo.imag;
-    REAL *stateVecRealOut=stateVecOut.real, *stateVecImagOut=stateVecOut.imag;
+    qreal rot1Real=rot1.real, rot1Imag=rot1.imag;
+    qreal rot2Real=rot2.real, rot2Imag=rot2.imag;
+    qreal *stateVecRealUp=stateVecUp.real, *stateVecImagUp=stateVecUp.imag;
+    qreal *stateVecRealLo=stateVecLo.real, *stateVecImagLo=stateVecLo.imag;
+    qreal *stateVecRealOut=stateVecOut.real, *stateVecImagOut=stateVecOut.imag;
 
 
 # ifdef _OPENMP
@@ -1652,7 +1652,7 @@ void statevec_controlledCompactUnitaryLocal (Qureg qureg, const int controlQubit
     long long int thisBlock, // current block
          indexUp,indexLo;    // current index and corresponding index in lower half block
 
-    REAL stateRealUp,stateRealLo,stateImagUp,stateImagLo;
+    qreal stateRealUp,stateRealLo,stateImagUp,stateImagLo;
     long long int thisTask;         
     const long long int numTasks=qureg.numAmpsPerChunk>>1;
     const long long int chunkSize=qureg.numAmpsPerChunk;
@@ -1665,10 +1665,10 @@ void statevec_controlledCompactUnitaryLocal (Qureg qureg, const int controlQubit
     sizeBlock     = 2LL * sizeHalfBlock; 
 
     // Can't use qureg.stateVec as a private OMP var
-    REAL *stateVecReal = qureg.stateVec.real;
-    REAL *stateVecImag = qureg.stateVec.imag;
-    REAL alphaImag=alpha.imag, alphaReal=alpha.real;
-    REAL betaImag=beta.imag, betaReal=beta.real;
+    qreal *stateVecReal = qureg.stateVec.real;
+    qreal *stateVecImag = qureg.stateVec.imag;
+    qreal alphaImag=alpha.imag, alphaReal=alpha.real;
+    qreal betaImag=beta.imag, betaReal=beta.real;
 
 # ifdef _OPENMP
 # pragma omp parallel \
@@ -1719,7 +1719,7 @@ void statevec_multiControlledUnitaryLocal(Qureg qureg, const int targetQubit,
     long long int thisBlock, // current block
          indexUp,indexLo;    // current index and corresponding index in lower half block
 
-    REAL stateRealUp,stateRealLo,stateImagUp,stateImagLo;
+    qreal stateRealUp,stateRealLo,stateImagUp,stateImagLo;
     long long int thisTask;         
     const long long int numTasks=qureg.numAmpsPerChunk>>1;
     const long long int chunkSize=qureg.numAmpsPerChunk;
@@ -1730,8 +1730,8 @@ void statevec_multiControlledUnitaryLocal(Qureg qureg, const int targetQubit,
     sizeBlock     = 2LL * sizeHalfBlock; 
 
     // Can't use qureg.stateVec as a private OMP var
-    REAL *stateVecReal = qureg.stateVec.real;
-    REAL *stateVecImag = qureg.stateVec.imag;
+    qreal *stateVecReal = qureg.stateVec.real;
+    qreal *stateVecImag = qureg.stateVec.imag;
 
 # ifdef _OPENMP
 # pragma omp parallel \
@@ -1782,7 +1782,7 @@ void statevec_controlledUnitaryLocal(Qureg qureg, const int controlQubit, const 
     long long int thisBlock, // current block
          indexUp,indexLo;    // current index and corresponding index in lower half block
 
-    REAL stateRealUp,stateRealLo,stateImagUp,stateImagLo;
+    qreal stateRealUp,stateRealLo,stateImagUp,stateImagLo;
     long long int thisTask;         
     const long long int numTasks=qureg.numAmpsPerChunk>>1;
     const long long int chunkSize=qureg.numAmpsPerChunk;
@@ -1795,8 +1795,8 @@ void statevec_controlledUnitaryLocal(Qureg qureg, const int controlQubit, const 
     sizeBlock     = 2LL * sizeHalfBlock; 
 
     // Can't use qureg.stateVec as a private OMP var
-    REAL *stateVecReal = qureg.stateVec.real;
-    REAL *stateVecImag = qureg.stateVec.imag;
+    qreal *stateVecReal = qureg.stateVec.real;
+    qreal *stateVecImag = qureg.stateVec.imag;
 
 # ifdef _OPENMP
 # pragma omp parallel \
@@ -1861,7 +1861,7 @@ void statevec_controlledCompactUnitaryDistributed (Qureg qureg, const int contro
         ComplexArray stateVecOut)
 {
 
-    REAL   stateRealUp,stateRealLo,stateImagUp,stateImagLo;
+    qreal   stateRealUp,stateRealLo,stateImagUp,stateImagLo;
     long long int thisTask;  
     const long long int numTasks=qureg.numAmpsPerChunk;
     const long long int chunkSize=qureg.numAmpsPerChunk;
@@ -1869,11 +1869,11 @@ void statevec_controlledCompactUnitaryDistributed (Qureg qureg, const int contro
 
     int controlBit;
 
-    REAL rot1Real=rot1.real, rot1Imag=rot1.imag;
-    REAL rot2Real=rot2.real, rot2Imag=rot2.imag;
-    REAL *stateVecRealUp=stateVecUp.real, *stateVecImagUp=stateVecUp.imag;
-    REAL *stateVecRealLo=stateVecLo.real, *stateVecImagLo=stateVecLo.imag;
-    REAL *stateVecRealOut=stateVecOut.real, *stateVecImagOut=stateVecOut.imag;
+    qreal rot1Real=rot1.real, rot1Imag=rot1.imag;
+    qreal rot2Real=rot2.real, rot2Imag=rot2.imag;
+    qreal *stateVecRealUp=stateVecUp.real, *stateVecImagUp=stateVecUp.imag;
+    qreal *stateVecRealLo=stateVecLo.real, *stateVecImagLo=stateVecLo.imag;
+    qreal *stateVecRealOut=stateVecOut.real, *stateVecImagOut=stateVecOut.imag;
 
 # ifdef _OPENMP
 # pragma omp parallel \
@@ -1924,7 +1924,7 @@ void statevec_controlledUnitaryDistributed (Qureg qureg, const int controlQubit,
         ComplexArray stateVecOut)
 {
 
-    REAL   stateRealUp,stateRealLo,stateImagUp,stateImagLo;
+    qreal   stateRealUp,stateRealLo,stateImagUp,stateImagLo;
     long long int thisTask;  
     const long long int numTasks=qureg.numAmpsPerChunk;
     const long long int chunkSize=qureg.numAmpsPerChunk;
@@ -1932,11 +1932,11 @@ void statevec_controlledUnitaryDistributed (Qureg qureg, const int controlQubit,
 
     int controlBit;
 
-    REAL rot1Real=rot1.real, rot1Imag=rot1.imag;
-    REAL rot2Real=rot2.real, rot2Imag=rot2.imag;
-    REAL *stateVecRealUp=stateVecUp.real, *stateVecImagUp=stateVecUp.imag;
-    REAL *stateVecRealLo=stateVecLo.real, *stateVecImagLo=stateVecLo.imag;
-    REAL *stateVecRealOut=stateVecOut.real, *stateVecImagOut=stateVecOut.imag;
+    qreal rot1Real=rot1.real, rot1Imag=rot1.imag;
+    qreal rot2Real=rot2.real, rot2Imag=rot2.imag;
+    qreal *stateVecRealUp=stateVecUp.real, *stateVecImagUp=stateVecUp.imag;
+    qreal *stateVecRealLo=stateVecLo.real, *stateVecImagLo=stateVecLo.imag;
+    qreal *stateVecRealOut=stateVecOut.real, *stateVecImagOut=stateVecOut.imag;
 
 # ifdef _OPENMP
 # pragma omp parallel \
@@ -1990,17 +1990,17 @@ void statevec_multiControlledUnitaryDistributed (Qureg qureg,
         ComplexArray stateVecOut)
 {
 
-    REAL   stateRealUp,stateRealLo,stateImagUp,stateImagLo;
+    qreal   stateRealUp,stateRealLo,stateImagUp,stateImagLo;
     long long int thisTask;  
     const long long int numTasks=qureg.numAmpsPerChunk;
     const long long int chunkSize=qureg.numAmpsPerChunk;
     const long long int chunkId=qureg.chunkId;
 
-    REAL rot1Real=rot1.real, rot1Imag=rot1.imag;
-    REAL rot2Real=rot2.real, rot2Imag=rot2.imag;
-    REAL *stateVecRealUp=stateVecUp.real, *stateVecImagUp=stateVecUp.imag;
-    REAL *stateVecRealLo=stateVecLo.real, *stateVecImagLo=stateVecLo.imag;
-    REAL *stateVecRealOut=stateVecOut.real, *stateVecImagOut=stateVecOut.imag;
+    qreal rot1Real=rot1.real, rot1Imag=rot1.imag;
+    qreal rot2Real=rot2.real, rot2Imag=rot2.imag;
+    qreal *stateVecRealUp=stateVecUp.real, *stateVecImagUp=stateVecUp.imag;
+    qreal *stateVecRealLo=stateVecLo.real, *stateVecImagLo=stateVecLo.imag;
+    qreal *stateVecRealOut=stateVecOut.real, *stateVecImagOut=stateVecOut.imag;
 
 # ifdef _OPENMP
 # pragma omp parallel \
@@ -2037,7 +2037,7 @@ void statevec_pauliXLocal(Qureg qureg, const int targetQubit)
     long long int thisBlock, // current block
          indexUp,indexLo;    // current index and corresponding index in lower half block
 
-    REAL stateRealUp,stateImagUp;
+    qreal stateRealUp,stateImagUp;
     long long int thisTask;         
     const long long int numTasks=qureg.numAmpsPerChunk>>1;
 
@@ -2046,8 +2046,8 @@ void statevec_pauliXLocal(Qureg qureg, const int targetQubit)
     sizeBlock     = 2LL * sizeHalfBlock; 
 
     // Can't use qureg.stateVec as a private OMP var
-    REAL *stateVecReal = qureg.stateVec.real;
-    REAL *stateVecImag = qureg.stateVec.imag;
+    qreal *stateVecReal = qureg.stateVec.real;
+    qreal *stateVecImag = qureg.stateVec.imag;
 
 # ifdef _OPENMP
 # pragma omp parallel \
@@ -2098,8 +2098,8 @@ void statevec_pauliXDistributed (Qureg qureg, const int targetQubit,
     long long int thisTask;  
     const long long int numTasks=qureg.numAmpsPerChunk;
 
-    REAL *stateVecRealIn=stateVecIn.real, *stateVecImagIn=stateVecIn.imag;
-    REAL *stateVecRealOut=stateVecOut.real, *stateVecImagOut=stateVecOut.imag;
+    qreal *stateVecRealIn=stateVecIn.real, *stateVecImagIn=stateVecIn.imag;
+    qreal *stateVecRealOut=stateVecOut.real, *stateVecImagOut=stateVecOut.imag;
 
 # ifdef _OPENMP
 # pragma omp parallel \
@@ -2124,7 +2124,7 @@ void statevec_controlledNotLocal(Qureg qureg, const int controlQubit, const int 
     long long int thisBlock, // current block
          indexUp,indexLo;    // current index and corresponding index in lower half block
 
-    REAL stateRealUp,stateImagUp;
+    qreal stateRealUp,stateImagUp;
     long long int thisTask;         
     const long long int numTasks=qureg.numAmpsPerChunk>>1;
     const long long int chunkSize=qureg.numAmpsPerChunk;
@@ -2137,8 +2137,8 @@ void statevec_controlledNotLocal(Qureg qureg, const int controlQubit, const int 
     sizeBlock     = 2LL * sizeHalfBlock; 
 
     // Can't use qureg.stateVec as a private OMP var
-    REAL *stateVecReal = qureg.stateVec.real;
-    REAL *stateVecImag = qureg.stateVec.imag;
+    qreal *stateVecReal = qureg.stateVec.real;
+    qreal *stateVecImag = qureg.stateVec.imag;
 
 # ifdef _OPENMP
 # pragma omp parallel \
@@ -2193,8 +2193,8 @@ void statevec_controlledNotDistributed (Qureg qureg, const int controlQubit, con
 
     int controlBit;
 
-    REAL *stateVecRealIn=stateVecIn.real, *stateVecImagIn=stateVecIn.imag;
-    REAL *stateVecRealOut=stateVecOut.real, *stateVecImagOut=stateVecOut.imag;
+    qreal *stateVecRealIn=stateVecIn.real, *stateVecImagIn=stateVecIn.imag;
+    qreal *stateVecRealOut=stateVecOut.real, *stateVecImagOut=stateVecOut.imag;
 
 # ifdef _OPENMP
 # pragma omp parallel \
@@ -2222,7 +2222,7 @@ void statevec_pauliYLocal(Qureg qureg, const int targetQubit, const int conjFac)
     long long int thisBlock, // current block
          indexUp,indexLo;    // current index and corresponding index in lower half block
 
-    REAL stateRealUp,stateImagUp;
+    qreal stateRealUp,stateImagUp;
     long long int thisTask;         
     const long long int numTasks=qureg.numAmpsPerChunk>>1;
 
@@ -2231,8 +2231,8 @@ void statevec_pauliYLocal(Qureg qureg, const int targetQubit, const int conjFac)
     sizeBlock     = 2LL * sizeHalfBlock; 
 
     // Can't use qureg.stateVec as a private OMP var
-    REAL *stateVecReal = qureg.stateVec.real;
-    REAL *stateVecImag = qureg.stateVec.imag;
+    qreal *stateVecReal = qureg.stateVec.real;
+    qreal *stateVecImag = qureg.stateVec.imag;
 
 # ifdef _OPENMP
 # pragma omp parallel \
@@ -2283,8 +2283,8 @@ void statevec_pauliYDistributed(Qureg qureg, const int targetQubit,
     long long int thisTask;  
     const long long int numTasks=qureg.numAmpsPerChunk;
 
-    REAL *stateVecRealIn=stateVecIn.real, *stateVecImagIn=stateVecIn.imag;
-    REAL *stateVecRealOut=stateVecOut.real, *stateVecImagOut=stateVecOut.imag;
+    qreal *stateVecRealIn=stateVecIn.real, *stateVecImagIn=stateVecIn.imag;
+    qreal *stateVecRealOut=stateVecOut.real, *stateVecImagOut=stateVecOut.imag;
 
     int realSign=1, imagSign=1;
     if (updateUpper) imagSign=-1;
@@ -2316,7 +2316,7 @@ void statevec_controlledPauliYLocal(Qureg qureg, const int controlQubit, const i
     long long int thisBlock, // current block
          indexUp,indexLo;    // current index and corresponding index in lower half block
 
-    REAL stateRealUp,stateImagUp;
+    qreal stateRealUp,stateImagUp;
     long long int thisTask;         
     const long long int numTasks=qureg.numAmpsPerChunk>>1;
     const long long int chunkSize=qureg.numAmpsPerChunk;
@@ -2329,8 +2329,8 @@ void statevec_controlledPauliYLocal(Qureg qureg, const int controlQubit, const i
     sizeBlock     = 2LL * sizeHalfBlock; 
 
     // Can't use qureg.stateVec as a private OMP var
-    REAL *stateVecReal = qureg.stateVec.real;
-    REAL *stateVecImag = qureg.stateVec.imag;
+    qreal *stateVecReal = qureg.stateVec.real;
+    qreal *stateVecImag = qureg.stateVec.imag;
 
 # ifdef _OPENMP
 # pragma omp parallel \
@@ -2375,8 +2375,8 @@ void statevec_controlledPauliYDistributed (Qureg qureg, const int controlQubit, 
 
     int controlBit;
 
-    REAL *stateVecRealIn=stateVecIn.real, *stateVecImagIn=stateVecIn.imag;
-    REAL *stateVecRealOut=stateVecOut.real, *stateVecImagOut=stateVecOut.imag;
+    qreal *stateVecRealIn=stateVecIn.real, *stateVecImagIn=stateVecIn.imag;
+    qreal *stateVecRealOut=stateVecOut.real, *stateVecImagOut=stateVecOut.imag;
 
 # ifdef _OPENMP
 # pragma omp parallel \
@@ -2410,7 +2410,7 @@ void statevec_hadamardLocal(Qureg qureg, const int targetQubit)
     long long int thisBlock, // current block
          indexUp,indexLo;    // current index and corresponding index in lower half block
 
-    REAL stateRealUp,stateRealLo,stateImagUp,stateImagLo;
+    qreal stateRealUp,stateRealLo,stateImagUp,stateImagLo;
     long long int thisTask;         
     const long long int numTasks=qureg.numAmpsPerChunk>>1;
 
@@ -2419,10 +2419,10 @@ void statevec_hadamardLocal(Qureg qureg, const int targetQubit)
     sizeBlock     = 2LL * sizeHalfBlock; 
 
     // Can't use qureg.stateVec as a private OMP var
-    REAL *stateVecReal = qureg.stateVec.real;
-    REAL *stateVecImag = qureg.stateVec.imag;
+    qreal *stateVecReal = qureg.stateVec.real;
+    qreal *stateVecImag = qureg.stateVec.imag;
 
-    REAL recRoot2 = 1.0/sqrt(2);
+    qreal recRoot2 = 1.0/sqrt(2);
 
 # ifdef _OPENMP
 # pragma omp parallel \
@@ -2472,7 +2472,7 @@ void statevec_hadamardDistributed(Qureg qureg, const int targetQubit,
         int updateUpper)
 {
 
-    REAL   stateRealUp,stateRealLo,stateImagUp,stateImagLo;
+    qreal   stateRealUp,stateRealLo,stateImagUp,stateImagLo;
     long long int thisTask;  
     const long long int numTasks=qureg.numAmpsPerChunk;
 
@@ -2480,11 +2480,11 @@ void statevec_hadamardDistributed(Qureg qureg, const int targetQubit,
     if (updateUpper) sign=1;
     else sign=-1;
 
-    REAL recRoot2 = 1.0/sqrt(2);
+    qreal recRoot2 = 1.0/sqrt(2);
 
-    REAL *stateVecRealUp=stateVecUp.real, *stateVecImagUp=stateVecUp.imag;
-    REAL *stateVecRealLo=stateVecLo.real, *stateVecImagLo=stateVecLo.imag;
-    REAL *stateVecRealOut=stateVecOut.real, *stateVecImagOut=stateVecOut.imag;
+    qreal *stateVecRealUp=stateVecUp.real, *stateVecImagUp=stateVecUp.imag;
+    qreal *stateVecRealLo=stateVecLo.real, *stateVecImagLo=stateVecLo.imag;
+    qreal *stateVecRealOut=stateVecOut.real, *stateVecImagOut=stateVecOut.imag;
 
 # ifdef _OPENMP
 # pragma omp parallel \
@@ -2522,12 +2522,12 @@ void statevec_phaseShiftByTerm (Qureg qureg, const int targetQubit, Complex term
 
     // dimension of the state vector
     stateVecSize = qureg.numAmpsPerChunk;
-    REAL *stateVecReal = qureg.stateVec.real;
-    REAL *stateVecImag = qureg.stateVec.imag;
+    qreal *stateVecReal = qureg.stateVec.real;
+    qreal *stateVecImag = qureg.stateVec.imag;
     
-    REAL stateRealLo, stateImagLo;
-    const REAL cosAngle = term.real;
-    const REAL sinAngle = term.imag;
+    qreal stateRealLo, stateImagLo;
+    const qreal cosAngle = term.real;
+    const qreal sinAngle = term.imag;
 
 # ifdef _OPENMP
 # pragma omp parallel for \
@@ -2551,7 +2551,7 @@ void statevec_phaseShiftByTerm (Qureg qureg, const int targetQubit, Complex term
     }
 }
 
-void statevec_controlledPhaseShift (Qureg qureg, const int idQubit1, const int idQubit2, REAL angle)
+void statevec_controlledPhaseShift (Qureg qureg, const int idQubit1, const int idQubit2, qreal angle)
 {
     long long int index;
     long long int stateVecSize;
@@ -2562,12 +2562,12 @@ void statevec_controlledPhaseShift (Qureg qureg, const int idQubit1, const int i
 
     // dimension of the state vector
     stateVecSize = qureg.numAmpsPerChunk;
-    REAL *stateVecReal = qureg.stateVec.real;
-    REAL *stateVecImag = qureg.stateVec.imag;
+    qreal *stateVecReal = qureg.stateVec.real;
+    qreal *stateVecImag = qureg.stateVec.imag;
     
-    REAL stateRealLo, stateImagLo;
-    const REAL cosAngle = cos(angle);
-    const REAL sinAngle = sin(angle);
+    qreal stateRealLo, stateImagLo;
+    const qreal cosAngle = cos(angle);
+    const qreal sinAngle = sin(angle);
 
 # ifdef _OPENMP
 # pragma omp parallel for \
@@ -2590,7 +2590,7 @@ void statevec_controlledPhaseShift (Qureg qureg, const int idQubit1, const int i
     }
 }
 
-void statevec_multiControlledPhaseShift(Qureg qureg, int *controlQubits, int numControlQubits, REAL angle)
+void statevec_multiControlledPhaseShift(Qureg qureg, int *controlQubits, int numControlQubits, qreal angle)
 {
     long long int index;
     long long int stateVecSize;
@@ -2603,12 +2603,12 @@ void statevec_multiControlledPhaseShift(Qureg qureg, int *controlQubits, int num
         mask = mask | (1LL<<controlQubits[i]);
 
     stateVecSize = qureg.numAmpsPerChunk;
-    REAL *stateVecReal = qureg.stateVec.real;
-    REAL *stateVecImag = qureg.stateVec.imag;
+    qreal *stateVecReal = qureg.stateVec.real;
+    qreal *stateVecImag = qureg.stateVec.imag;
     
-    REAL stateRealLo, stateImagLo;
-    const REAL cosAngle = cos(angle);
-    const REAL sinAngle = sin(angle);
+    qreal stateRealLo, stateImagLo;
+    const qreal cosAngle = cos(angle);
+    const qreal sinAngle = sin(angle);
 
 # ifdef _OPENMP
 # pragma omp parallel \
@@ -2634,7 +2634,7 @@ void statevec_multiControlledPhaseShift(Qureg qureg, int *controlQubits, int num
 }
 
 
-REAL densmatr_findProbabilityOfZeroLocal(Qureg qureg, const int measureQubit) {
+qreal densmatr_findProbabilityOfZeroLocal(Qureg qureg, const int measureQubit) {
     
     // computes first local index containing a diagonal element
     long long int localNumAmps = qureg.numAmpsPerChunk;
@@ -2654,8 +2654,8 @@ REAL densmatr_findProbabilityOfZeroLocal(Qureg qureg, const int measureQubit) {
     long long int basisStateInd;    // current diagonal index being considered
     long long int index;            // index in the local chunk
     
-    REAL zeroProb = 0;
-    REAL *stateVecReal = qureg.stateVec.real;
+    qreal zeroProb = 0;
+    qreal *stateVecReal = qureg.stateVec.real;
     
 # ifdef _OPENMP
 # pragma omp parallel \
@@ -2689,7 +2689,7 @@ REAL densmatr_findProbabilityOfZeroLocal(Qureg qureg, const int measureQubit) {
  *  @param[in] measureQubit qubit to measure
  *  @return probability of qubit measureQubit being zero
  */
-REAL statevec_findProbabilityOfZeroLocal (Qureg qureg,
+qreal statevec_findProbabilityOfZeroLocal (Qureg qureg,
         const int measureQubit)
 {
     // ----- sizes
@@ -2699,7 +2699,7 @@ REAL statevec_findProbabilityOfZeroLocal (Qureg qureg,
     long long int thisBlock,                                  // current block
          index;                                               // current index for first half block
     // ----- measured probability
-    REAL   totalProbability;                                  // probability (returned) value
+    qreal   totalProbability;                                  // probability (returned) value
     // ----- temp variables
     long long int thisTask;                                   
     long long int numTasks=qureg.numAmpsPerChunk>>1;
@@ -2714,8 +2714,8 @@ REAL statevec_findProbabilityOfZeroLocal (Qureg qureg,
     // initialise returned value
     totalProbability = 0.0;
 
-    REAL *stateVecReal = qureg.stateVec.real;
-    REAL *stateVecImag = qureg.stateVec.imag;
+    qreal *stateVecReal = qureg.stateVec.real;
+    qreal *stateVecImag = qureg.stateVec.imag;
 
 # ifdef _OPENMP
 # pragma omp parallel \
@@ -2746,11 +2746,11 @@ REAL statevec_findProbabilityOfZeroLocal (Qureg qureg,
  *  @param[in] measureQubit qubit to measure
  *  @return probability of qubit measureQubit being zero
  */
-REAL statevec_findProbabilityOfZeroDistributed (Qureg qureg,
+qreal statevec_findProbabilityOfZeroDistributed (Qureg qureg,
         const int measureQubit)
 {
     // ----- measured probability
-    REAL   totalProbability;                                  // probability (returned) value
+    qreal   totalProbability;                                  // probability (returned) value
     // ----- temp variables
     long long int thisTask;                                   // task based approach for expose loop with small granularity
     long long int numTasks=qureg.numAmpsPerChunk;
@@ -2762,8 +2762,8 @@ REAL statevec_findProbabilityOfZeroDistributed (Qureg qureg,
     // initialise returned value
     totalProbability = 0.0;
 
-    REAL *stateVecReal = qureg.stateVec.real;
-    REAL *stateVecImag = qureg.stateVec.imag;
+    qreal *stateVecReal = qureg.stateVec.real;
+    qreal *stateVecImag = qureg.stateVec.imag;
 
 # ifdef _OPENMP
 # pragma omp parallel \
@@ -2797,8 +2797,8 @@ void statevec_controlledPhaseFlip (Qureg qureg, const int idQubit1, const int id
     
     // dimension of the state vector
     stateVecSize = qureg.numAmpsPerChunk;
-    REAL *stateVecReal = qureg.stateVec.real;
-    REAL *stateVecImag = qureg.stateVec.imag;
+    qreal *stateVecReal = qureg.stateVec.real;
+    qreal *stateVecImag = qureg.stateVec.imag;
 
 # ifdef _OPENMP
 # pragma omp parallel for \
@@ -2830,8 +2830,8 @@ void statevec_multiControlledPhaseFlip(Qureg qureg, int *controlQubits, int numC
         mask = mask | (1LL<<controlQubits[i]);
 
     stateVecSize = qureg.numAmpsPerChunk;
-    REAL *stateVecReal = qureg.stateVec.real;
-    REAL *stateVecImag = qureg.stateVec.imag;
+    qreal *stateVecReal = qureg.stateVec.real;
+    qreal *stateVecImag = qureg.stateVec.imag;
 
 # ifdef _OPENMP
 # pragma omp parallel \
@@ -2868,7 +2868,7 @@ void statevec_multiControlledPhaseFlip(Qureg qureg, int *controlQubits, int numC
  *  @param[in] totalProbability probability of qubit measureQubit being either zero or one
  *  @param[in] outcome to measure the probability of and set the state to -- either zero or one
  */
-void statevec_collapseToKnownProbOutcomeLocal(Qureg qureg, int measureQubit, int outcome, REAL totalProbability)
+void statevec_collapseToKnownProbOutcomeLocal(Qureg qureg, int measureQubit, int outcome, qreal totalProbability)
 {
     // ----- sizes
     long long int sizeBlock,                                  // size of blocks
@@ -2877,7 +2877,7 @@ void statevec_collapseToKnownProbOutcomeLocal(Qureg qureg, int measureQubit, int
     long long int thisBlock,                                  // current block
          index;                                               // current index for first half block
     // ----- measured probability
-    REAL   renorm;                                            // probability (returned) value
+    qreal   renorm;                                            // probability (returned) value
     // ----- temp variables
     long long int thisTask;                                   // task based approach for expose loop with small granularity
     // (good for shared memory parallelism)
@@ -2891,8 +2891,8 @@ void statevec_collapseToKnownProbOutcomeLocal(Qureg qureg, int measureQubit, int
     sizeBlock     = 2LL * sizeHalfBlock;                         // size of blocks (pairs of measure and skip entries)
 
     renorm=1/sqrt(totalProbability);
-    REAL *stateVecReal = qureg.stateVec.real;
-    REAL *stateVecImag = qureg.stateVec.imag;
+    qreal *stateVecReal = qureg.stateVec.real;
+    qreal *stateVecImag = qureg.stateVec.imag;
 
 
 # ifdef _OPENMP
@@ -2950,16 +2950,16 @@ void statevec_collapseToKnownProbOutcomeLocal(Qureg qureg, int measureQubit, int
  *  @param[in] measureQubit qubit to measure
  *  @param[in] totalProbability probability of qubit measureQubit being zero
  */
-void statevec_collapseToKnownProbOutcomeDistributedRenorm (Qureg qureg, const int measureQubit, const REAL totalProbability)
+void statevec_collapseToKnownProbOutcomeDistributedRenorm (Qureg qureg, const int measureQubit, const qreal totalProbability)
 {
     // ----- temp variables
     long long int thisTask;                                   
     long long int numTasks=qureg.numAmpsPerChunk;
 
-    REAL renorm=1/sqrt(totalProbability);
+    qreal renorm=1/sqrt(totalProbability);
 
-    REAL *stateVecReal = qureg.stateVec.real;
-    REAL *stateVecImag = qureg.stateVec.imag;
+    qreal *stateVecReal = qureg.stateVec.real;
+    qreal *stateVecImag = qureg.stateVec.imag;
 
 # ifdef _OPENMP
 # pragma omp parallel \
@@ -2999,8 +2999,8 @@ void statevec_collapseToOutcomeDistributedSetZero(Qureg qureg)
     //            find probability                                      //
     // ---------------------------------------------------------------- //
 
-    REAL *stateVecReal = qureg.stateVec.real;
-    REAL *stateVecImag = qureg.stateVec.imag;
+    qreal *stateVecReal = qureg.stateVec.real;
+    qreal *stateVecImag = qureg.stateVec.imag;
 
 # ifdef _OPENMP
 # pragma omp parallel \

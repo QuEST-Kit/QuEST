@@ -33,13 +33,13 @@ void ensureIndsIncrease(int* ind1, int* ind2) {
     }
 }
 
-REAL getVectorMagnitude(Vector vec) {
+qreal getVectorMagnitude(Vector vec) {
     return sqrt(vec.x*vec.x + vec.y*vec.y + vec.z*vec.z);
 }
 
 Vector getUnitVector(Vector vec) {
     
-    REAL mag = getVectorMagnitude(vec);
+    qreal mag = getVectorMagnitude(vec);
     Vector unitVec = (Vector) {.x=vec.x/mag, .y=vec.y/mag, .z=vec.z/mag};
     return unitVec;
 }
@@ -62,7 +62,7 @@ ComplexMatrix2 getConjugateMatrix(ComplexMatrix2 matrix) {
     return conjMatrix;
 }
 
-void getComplexPairFromRotation(REAL angle, Vector axis, Complex* alpha, Complex* beta) {
+void getComplexPairFromRotation(qreal angle, Vector axis, Complex* alpha, Complex* beta) {
     
     Vector unitAxis = getUnitVector(axis);
     alpha->real =   cos(angle/2.0);
@@ -72,26 +72,26 @@ void getComplexPairFromRotation(REAL angle, Vector axis, Complex* alpha, Complex
 }
 
 /** maps U(alpha, beta) to Rz(rz2) Ry(ry) Rz(rz1) */
-void getZYZRotAnglesFromComplexPair(Complex alpha, Complex beta, REAL* rz2, REAL* ry, REAL* rz1) {
+void getZYZRotAnglesFromComplexPair(Complex alpha, Complex beta, qreal* rz2, qreal* ry, qreal* rz1) {
     
-    REAL alphaMag = sqrt(alpha.real*alpha.real + alpha.imag*alpha.imag);
+    qreal alphaMag = sqrt(alpha.real*alpha.real + alpha.imag*alpha.imag);
     *ry = 2.0 * acos(alphaMag);
     
-    REAL alphaPhase = atan2(alpha.imag, alpha.real);
-    REAL betaPhase  = atan2(beta.imag,  beta.real);
+    qreal alphaPhase = atan2(alpha.imag, alpha.real);
+    qreal betaPhase  = atan2(beta.imag,  beta.real);
     *rz2 = - alphaPhase + betaPhase;
     *rz1 = - alphaPhase - betaPhase;
 }
 
 /** maps U(r0c0, r0c1, r1c0, r1c1) to exp(i globalPhase) U(alpha, beta) */
-void getComplexPairAndPhaseFromUnitary(ComplexMatrix2 u, Complex* alpha, Complex* beta, REAL* globalPhase) {
+void getComplexPairAndPhaseFromUnitary(ComplexMatrix2 u, Complex* alpha, Complex* beta, qreal* globalPhase) {
     
-    REAL r0c0Phase = atan2(u.r0c0.imag, u.r0c0.real);
-    REAL r1c1Phase = atan2(u.r1c1.imag, u.r1c1.real);
+    qreal r0c0Phase = atan2(u.r0c0.imag, u.r0c0.real);
+    qreal r1c1Phase = atan2(u.r1c1.imag, u.r1c1.real);
     *globalPhase = (r0c0Phase + r1c1Phase)/2.0;
     
-    REAL cosPhase = cos(*globalPhase);
-    REAL sinPhase = sin(*globalPhase);
+    qreal cosPhase = cos(*globalPhase);
+    qreal sinPhase = sin(*globalPhase);
     alpha->real = u.r0c0.real*cosPhase + u.r0c0.imag*sinPhase;
     alpha->imag = u.r0c0.imag*cosPhase - u.r0c0.real*sinPhase;
     beta->real = u.r1c0.real*cosPhase + u.r1c0.imag*sinPhase;
@@ -103,7 +103,7 @@ void shiftIndices(int* indices, int numIndices, int shift) {
         indices[j] += shift;
 }
 
-int generateMeasurementOutcome(REAL zeroProb, REAL *outcomeProb) {
+int generateMeasurementOutcome(qreal zeroProb, qreal *outcomeProb) {
     
     // randomly choose outcome
     int outcome;
@@ -165,9 +165,9 @@ void seedQuEST(unsigned long int *seedArray, int numSeeds){
     init_by_array(seedArray, numSeeds); 
 }
 
-REAL statevec_getProbAmp(Qureg qureg, long long int index){
-    REAL real = statevec_getRealAmp(qureg, index);
-    REAL imag = statevec_getImagAmp(qureg, index);
+qreal statevec_getProbAmp(Qureg qureg, long long int index){
+    qreal real = statevec_getRealAmp(qureg, index);
+    qreal imag = statevec_getImagAmp(qureg, index);
     return real*real + imag*imag;
 }
 
@@ -200,7 +200,7 @@ void reportQuregParams(Qureg qureg){
     }
 }
 
-void statevec_phaseShift(Qureg qureg, const int targetQubit, REAL angle) {
+void statevec_phaseShift(Qureg qureg, const int targetQubit, qreal angle) {
     Complex term; 
     term.real = cos(angle); 
     term.imag = sin(angle);
@@ -242,32 +242,32 @@ void statevec_tGateConj(Qureg qureg, const int targetQubit) {
     statevec_phaseShiftByTerm(qureg, targetQubit, term);
 }
 
-void statevec_rotateX(Qureg qureg, const int rotQubit, REAL angle){
+void statevec_rotateX(Qureg qureg, const int rotQubit, qreal angle){
 
     Vector unitAxis = {1, 0, 0};
     statevec_rotateAroundAxis(qureg, rotQubit, angle, unitAxis);
 }
 
-void statevec_rotateY(Qureg qureg, const int rotQubit, REAL angle){
+void statevec_rotateY(Qureg qureg, const int rotQubit, qreal angle){
 
     Vector unitAxis = {0, 1, 0};
     statevec_rotateAroundAxis(qureg, rotQubit, angle, unitAxis);
 }
 
-void statevec_rotateZ(Qureg qureg, const int rotQubit, REAL angle){
+void statevec_rotateZ(Qureg qureg, const int rotQubit, qreal angle){
 
     Vector unitAxis = {0, 0, 1};
     statevec_rotateAroundAxis(qureg, rotQubit, angle, unitAxis);
 }
 
-void statevec_rotateAroundAxis(Qureg qureg, const int rotQubit, REAL angle, Vector axis){
+void statevec_rotateAroundAxis(Qureg qureg, const int rotQubit, qreal angle, Vector axis){
 
     Complex alpha, beta;
     getComplexPairFromRotation(angle, axis, &alpha, &beta);
     statevec_compactUnitary(qureg, rotQubit, alpha, beta);
 }
 
-void statevec_rotateAroundAxisConj(Qureg qureg, const int rotQubit, REAL angle, Vector axis){
+void statevec_rotateAroundAxisConj(Qureg qureg, const int rotQubit, qreal angle, Vector axis){
 
     Complex alpha, beta;
     getComplexPairFromRotation(angle, axis, &alpha, &beta);
@@ -276,14 +276,14 @@ void statevec_rotateAroundAxisConj(Qureg qureg, const int rotQubit, REAL angle, 
     statevec_compactUnitary(qureg, rotQubit, alpha, beta);
 }
 
-void statevec_controlledRotateAroundAxis(Qureg qureg, const int controlQubit, const int targetQubit, REAL angle, Vector axis){
+void statevec_controlledRotateAroundAxis(Qureg qureg, const int controlQubit, const int targetQubit, qreal angle, Vector axis){
 
     Complex alpha, beta;
     getComplexPairFromRotation(angle, axis, &alpha, &beta);
     statevec_controlledCompactUnitary(qureg, controlQubit, targetQubit, alpha, beta);
 }
 
-void statevec_controlledRotateAroundAxisConj(Qureg qureg, const int controlQubit, const int targetQubit, REAL angle, Vector axis){
+void statevec_controlledRotateAroundAxisConj(Qureg qureg, const int controlQubit, const int targetQubit, qreal angle, Vector axis){
 
     Complex alpha, beta;
     getComplexPairFromRotation(angle, axis, &alpha, &beta);
@@ -292,44 +292,44 @@ void statevec_controlledRotateAroundAxisConj(Qureg qureg, const int controlQubit
     statevec_controlledCompactUnitary(qureg, controlQubit, targetQubit, alpha, beta);
 }
 
-void statevec_controlledRotateX(Qureg qureg, const int controlQubit, const int targetQubit, REAL angle){
+void statevec_controlledRotateX(Qureg qureg, const int controlQubit, const int targetQubit, qreal angle){
 
     Vector unitAxis = {1, 0, 0};
     statevec_controlledRotateAroundAxis(qureg, controlQubit, targetQubit, angle, unitAxis);
 }
 
-void statevec_controlledRotateY(Qureg qureg, const int controlQubit, const int targetQubit, REAL angle){
+void statevec_controlledRotateY(Qureg qureg, const int controlQubit, const int targetQubit, qreal angle){
 
     Vector unitAxis = {0, 1, 0};
     statevec_controlledRotateAroundAxis(qureg, controlQubit, targetQubit, angle, unitAxis);
 }
 
-void statevec_controlledRotateZ(Qureg qureg, const int controlQubit, const int targetQubit, REAL angle){
+void statevec_controlledRotateZ(Qureg qureg, const int controlQubit, const int targetQubit, qreal angle){
 
     Vector unitAxis = {0, 0, 1};
     statevec_controlledRotateAroundAxis(qureg, controlQubit, targetQubit, angle, unitAxis);
 }
 
-int statevec_measureWithStats(Qureg qureg, int measureQubit, REAL *outcomeProb) {
+int statevec_measureWithStats(Qureg qureg, int measureQubit, qreal *outcomeProb) {
     
-    REAL zeroProb = statevec_calcProbOfOutcome(qureg, measureQubit, 0);
+    qreal zeroProb = statevec_calcProbOfOutcome(qureg, measureQubit, 0);
     int outcome = generateMeasurementOutcome(zeroProb, outcomeProb);
     statevec_collapseToKnownProbOutcome(qureg, measureQubit, outcome, *outcomeProb);
     return outcome;
 }
 
-int densmatr_measureWithStats(Qureg qureg, int measureQubit, REAL *outcomeProb) {
+int densmatr_measureWithStats(Qureg qureg, int measureQubit, qreal *outcomeProb) {
     
-    REAL zeroProb = densmatr_calcProbOfOutcome(qureg, measureQubit, 0);
+    qreal zeroProb = densmatr_calcProbOfOutcome(qureg, measureQubit, 0);
     int outcome = generateMeasurementOutcome(zeroProb, outcomeProb);
     densmatr_collapseToKnownProbOutcome(qureg, measureQubit, outcome, *outcomeProb);
     return outcome;
 }
 
-REAL statevec_calcFidelity(Qureg qureg, Qureg pureState) {
+qreal statevec_calcFidelity(Qureg qureg, Qureg pureState) {
     
     Complex innerProd = statevec_calcInnerProduct(qureg, pureState);
-    REAL innerProdMag = innerProd.real*innerProd.real + innerProd.imag*innerProd.imag;
+    qreal innerProdMag = innerProd.real*innerProd.real + innerProd.imag*innerProd.imag;
     return innerProdMag;
 }
 

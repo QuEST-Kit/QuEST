@@ -22,7 +22,7 @@
 # if QuEST_PREC==1
     // SINGLE PRECISION
     // 4 bytes per amplitude component
-    # define REAL float
+    # define qreal float
     # define MPI_QuEST_REAL MPI_FLOAT
     # define MPI_MAX_AMPS_IN_MSG (1LL<<29) // must be 2^int
     # define REAL_STRING_FORMAT "%.8f"
@@ -32,7 +32,7 @@
 # elif QuEST_PREC==2
     // DOUBLE PRECISION
     // 8 bytes per amplitude component
-    # define REAL double
+    # define qreal double
     # define MPI_QuEST_REAL MPI_DOUBLE
     # define MPI_MAX_AMPS_IN_MSG (1LL<<28) // must be 2^int
     # define REAL_STRING_FORMAT "%.14f"
@@ -43,7 +43,7 @@
     // QUAD PRECISION
     // 16 bytes / 80-bit precision for most implementations
     // not compatible with most GPUs
-    # define REAL long double
+    # define qreal long double
     # define MPI_QuEST_REAL MPI_LONG_DOUBLE
     # define MPI_MAX_AMPS_IN_MSG (1LL<<27) // must be 2^int
     # define REAL_STRING_FORMAT "%.17Lf"
