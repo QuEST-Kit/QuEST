@@ -47,8 +47,9 @@ We also include example [submission scripts](examples/submissionScripts/) for us
 Copy or clone this repository to your machine. E.g. in the desired directory, enter
 ```bash
 git clone https://github.com/aniabrown/QuEST.git
+cd QuEST
 ```
-at terminal. In the root directory, compile the [example](examples/tutorial_example.c) using
+at terminal. You can then compile the [example](examples/tutorial_example.c) using
 ```bash
 cp examples/tutorial_example.c .
 make
@@ -62,10 +63,7 @@ and afterward, clean up with
 make clean
 rm tutorial_example.c
 ````
-
 The program will print information about your execution environment and some simple operations on a three qubit system. See the [tutorial](examples/README.md) for a better introduction. Additionally, run `cd tests` then `./runTests.sh` to test QuEST runs correctly in your environment, as specified in `makefile`.
-
-
 
 ## Documentation
 
