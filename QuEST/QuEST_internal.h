@@ -4,8 +4,8 @@
  * Functions used internally, supplied by QuEST_common or by hardware-specific backends
  */
 
-# ifndef QuEST_INTERNAL
-# define QuEST_INTERNAL
+# ifndef QUEST_INTERNAL_H
+# define QUEST_INTERNAL_H
 
 # include "QuEST.h"
 # include "QuEST_precision.h"
@@ -188,4 +188,4 @@ int statevec_measureWithStats(Qureg qureg, int measureQubit, qreal *outcomeProb)
 }
 # endif
 
-# endif // QuEST_INTERNAL
+# endif // QUEST_INTERNAL_H

@@ -1,10 +1,8 @@
 # [QuEST](https://quest.qtechtheory.org)
 
-This is the **development** branch, where the latest changes, features and bug-fixes are pushed.
-
 ## Introduction
 
-The **Quantum Exact Simulation Toolkit** is a high performance simulator of universal quantum circuits. QuEST is written in C, hybridises OpenMP and MPI, and can run on a GPU. Needing only compilation, QuEST is easy to run both on laptops and supercomputers, where it can take advantage of multicore, GPU-accelerated and networked machines to quickly simulate circuits on many qubits.
+The **Quantum Exact Simulation Toolkit** is a high performance simulator of universal quantum circuits, state-vectors and density matrices. QuEST is written in C, hybridises OpenMP and MPI, and can run on a GPU. Needing only compilation, QuEST is easy to run both on laptops and supercomputers (in both C and C++), where it can take advantage of multicore, GPU-accelerated and networked machines to quickly simulate circuits on many qubits.
 
 QuEST has a simple interface, independent of its run environment (on CPUs, GPUs or over networks),
 ```C
@@ -17,7 +15,7 @@ rotateY(qubits, 0, .1);
 though is flexible
 ```C
 Vector v;
-v.x = 1; v.y = 0; v.z = 0;
+v.x = 1; v.y = .5; v.z = 0;
 rotateAroundAxis(qubits, 0, 3.14/2, v);
 ```
 and powerful
@@ -34,9 +32,15 @@ int[] controls = {1, 2, 3, 4, 5};
 multiControlledUnitary(qureg, controls, 5, 0, u);
 ```
 
+QuEST can simulate decoherence on mixed states, output [QASM](https://arxiv.org/abs/1707.03429), perform measurements, apply gates with any number of control qubits, and provides cheap/fast access to the underlying statevector. QuEST offers precision-agnostic real and imaginary (additionally include `QuEST_complex.h`) number types, the precision of which can be modified at compile-time, as can the target hardware.
+
+Learn more about QuEST at [quest.qtechtheory.org](https://quest.qtechtheory.org).
+
 ## Getting started
 
-QuEST is contained entirely in the files in the `QuEST/` folder. To use QuEST, copy this folder to your computer and include `QuEST.h` in your `C` or `C++` code, and compile using the [makefile](makefile). We include [submission scripts](examples/submissionScripts/) for using QuEST with SLURM and PBS. See the [tutorial](/examples/README.md) for an introduction.
+QuEST is contained entirely in the files in the `QuEST/` folder. To use QuEST, copy this folder to your computer and include `QuEST.h` in your `C` or `C++` code, and compile using the provided [makefile](makefile). See the [tutorial](/examples/README.md) for an introduction, and view the full API [here](https://aniabrown.github.io/QuEST/QuEST_8h.html).
+
+We also include example [submission scripts](examples/submissionScripts/) for using QuEST with SLURM and PBS. 
 
 ### Quick Start
 
@@ -44,9 +48,7 @@ Copy or clone this repository to your machine. E.g. in the desired directory, en
 ```bash
 git clone https://github.com/aniabrown/QuEST.git
 ```
-at terminal.
-
-In the root directory, compile the [example](examples/tutorial_example.c) using
+at terminal. In the root directory, compile the [example](examples/tutorial_example.c) using
 ```bash
 cp examples/tutorial_example.c .
 make
@@ -55,7 +57,7 @@ then run it with
 ```bash
 ./demo
 ```
-Afterward, clean up with
+and afterward, clean up with
 ```bash
 make clean
 rm tutorial_example.c
@@ -65,7 +67,7 @@ The program will print information about your execution environment and some sim
 
 
 
-## API Documentation
+## Documentation
 
 View the API [here](https://aniabrown.github.io/QuEST/QuEST_8h.html), and check compatible compiler versions [here](tests/compilers/compatibility.md).
 
@@ -73,7 +75,8 @@ View the API [here](https://aniabrown.github.io/QuEST/QuEST_8h.html), and check 
 
 ## Acknowledgements
 
-QuEST uses the [mt19937ar](http://www.math.sci.hiroshima-u.ac.jp/~m-mat/MT/MT2002/emt19937ar.html) Mersenne Twister algorithm for random number generation, under the BSD licence. 
+QuEST uses the [mt19937ar](http://www.math.sci.hiroshima-u.ac.jp/~m-mat/MT/MT2002/emt19937ar.html) Mersenne Twister algorithm for random number generation, under the BSD licence. QuEST optionally (by additionally importing `QuEST_complex.h`) integrates the [language agnostic complex type](http://collaboration.cmc.ec.gc.ca/science/rpn/biblio/ddj/Website/articles/CUJ/2003/0303/cuj0303meyers/index.htm) by Randy Meyers and Dr. Thomas Plum
+
 
 ## Licence
 

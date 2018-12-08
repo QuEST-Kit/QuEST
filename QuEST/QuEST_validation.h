@@ -4,8 +4,8 @@
  * Provides validation defined in QuEST_validation.c which is used exclusively by QuEST.c
  */
  
-# ifndef QuEST_VALIDATION
-# define QuEST_VALIDATION
+# ifndef QUEST_VALIDATION_H
+# define QUEST_VALIDATION_H
 
 # include "QuEST.h"
 
@@ -67,4 +67,4 @@ void validateTwoQubitDepolProb(qreal prob, const char* caller);
 }
 # endif
 
-# endif // QuEST_VALIDATION
+# endif // QUEST_VALIDATION_H
