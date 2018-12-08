@@ -620,7 +620,7 @@ qreal getProbAmp(Qureg qureg, long long int index);
  * @throws exitWithError
  *      if \p qureg is a statevector, or if \p row or \p col are outside [0, \f$2^{N}\f$) where \f$N = \f$ \p qureg.numQubitsRepresented
  */
-Complex getDensityAmplitude(Qureg qureg, long long int row, long long int col);
+Complex getDensityAmp(Qureg qureg, long long int row, long long int col);
 
 /** A debugging function which calculates the probability of being in any state, which should always be 1.
  * For pure states, this is the norm of the entire state vector and for mixed states, is the trace of
