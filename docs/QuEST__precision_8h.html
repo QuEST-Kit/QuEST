@@ -38,7 +38,7 @@ $(function() {
 <div id="main-nav"></div>
 <div id="nav-path" class="navpath">
   <ul>
-<li class="navelem"><a class="el" href="dir_d522931ffa1371640980b621734a4381.html">Users</a></li><li class="navelem"><a class="el" href="dir_70834f0dcd10de01d2e35ab402a2238e.html">tysonjones</a></li><li class="navelem"><a class="el" href="dir_1957401ef452be7528010ba0f4832a45.html">Desktop</a></li><li class="navelem"><a class="el" href="dir_e763e4f63987bc6dd0ff21f56afcfed4.html">QuESTRestructured</a></li><li class="navelem"><a class="el" href="dir_b6ad6e9ca9478e43d4c44cdd00457d5f.html">QuEST</a></li><li class="navelem"><a class="el" href="dir_3169c7eb82da2c300108f4c2052f6e4d.html">QuEST</a></li>  </ul>
+<li class="navelem"><a class="el" href="dir_78b01f221e5d69dbe1f7a50c401396d7.html">Doc</a></li><li class="navelem"><a class="el" href="dir_20db66d2ea5816a17a50d7dd645f51db.html">QuEST</a></li>  </ul>
 </div>
 </div><!-- top -->
 <div class="header">
@@ -48,61 +48,44 @@ $(function() {
 <div class="title">QuEST_precision.h File Reference</div>  </div>
 </div><!--header-->
 <div class="contents">
+
+<p>Sets the QuEST constants which depend on the variable (during compilation) state-vector precision.  
+<a href="#details">More...</a></p>
 <div class="textblock"><code>#include &lt;math.h&gt;</code><br />
 </div>
 <p><a href="QuEST__precision_8h_source.html">Go to the source code of this file.</a></p>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="define-members"></a>
 Macros</h2></td></tr>
-<tr class="memitem:a12cd5a3109a9ea1cf8306474d717b99d"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="QuEST__precision_8h.html#a12cd5a3109a9ea1cf8306474d717b99d">absReal</a>(X)&#160;&#160;&#160;fabs(X)</td></tr>
-<tr class="separator:a12cd5a3109a9ea1cf8306474d717b99d"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a750ad290949ef7dc4afdfbd8231a5057"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="QuEST__precision_8h.html#a750ad290949ef7dc4afdfbd8231a5057">MPI_QuEST_REAL</a>&#160;&#160;&#160;MPI_DOUBLE</td></tr>
-<tr class="separator:a750ad290949ef7dc4afdfbd8231a5057"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a7740e349b4f8bae6451547680f0ce2d6"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="QuEST__precision_8h.html#a7740e349b4f8bae6451547680f0ce2d6">qreal</a>&#160;&#160;&#160;double</td></tr>
+<tr class="memdesc:a7740e349b4f8bae6451547680f0ce2d6"><td class="mdescLeft">&#160;</td><td class="mdescRight">A precision-agnostic floating point number, as determined by <a class="el" href="QuEST__precision_8h.html#a626676e623baa3de702c185736018b2c">QuEST_PREC</a>.  <a href="#a7740e349b4f8bae6451547680f0ce2d6">More...</a><br /></td></tr>
+<tr class="separator:a7740e349b4f8bae6451547680f0ce2d6"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a626676e623baa3de702c185736018b2c"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="QuEST__precision_8h.html#a626676e623baa3de702c185736018b2c">QuEST_PREC</a>&#160;&#160;&#160;2</td></tr>
+<tr class="memdesc:a626676e623baa3de702c185736018b2c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Sets the precision of <a class="el" href="QuEST__precision_8h.html#a7740e349b4f8bae6451547680f0ce2d6">qreal</a> and <a class="el" href="QuEST__complex_8h.html#ad863c5878a01051a2726ce94bf365428">qcomp</a>, and generally that of the state-vectors stored by QuEST.  <a href="#a626676e623baa3de702c185736018b2c">More...</a><br /></td></tr>
 <tr class="separator:a626676e623baa3de702c185736018b2c"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a4b654506f18b8bfd61ad2a29a7e38c25"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="QuEST__precision_8h.html#a4b654506f18b8bfd61ad2a29a7e38c25">REAL</a>&#160;&#160;&#160;double</td></tr>
-<tr class="separator:a4b654506f18b8bfd61ad2a29a7e38c25"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aebb5e6716e06431296af4d1a71744dec"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="QuEST__precision_8h.html#aebb5e6716e06431296af4d1a71744dec">REAL_EPS</a>&#160;&#160;&#160;1e-13</td></tr>
-<tr class="separator:aebb5e6716e06431296af4d1a71744dec"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ad751ac7ddc8ec19f23fb33083c0da8da"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="QuEST__precision_8h.html#ad751ac7ddc8ec19f23fb33083c0da8da">REAL_STRING_FORMAT</a>&#160;&#160;&#160;&quot;%.14f&quot;</td></tr>
-<tr class="separator:ad751ac7ddc8ec19f23fb33083c0da8da"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
-<h2 class="groupheader">Macro Definition Documentation</h2>
-<a id="a12cd5a3109a9ea1cf8306474d717b99d"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a12cd5a3109a9ea1cf8306474d717b99d">&#9670;&nbsp;</a></span>absReal</h2>
+<a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
+<div class="textblock"><p>Sets the QuEST constants which depend on the variable (during compilation) state-vector precision. </p>
+<p>Using single, double or quad floating point precision has consequences for operation precision, total memory requirements, network bandwidth and ultimately runtime. </p>
+
+<p class="definition">Definition in file <a class="el" href="QuEST__precision_8h_source.html">QuEST_precision.h</a>.</p>
+</div><h2 class="groupheader">Macro Definition Documentation</h2>
+<a id="a7740e349b4f8bae6451547680f0ce2d6"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a7740e349b4f8bae6451547680f0ce2d6">&#9670;&nbsp;</a></span>qreal</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">#define absReal</td>
-          <td>(</td>
-          <td class="paramtype">&#160;</td>
-          <td class="paramname">X</td><td>)</td>
-          <td>&#160;&#160;&#160;fabs(X)</td>
+          <td class="memname">#define qreal&#160;&#160;&#160;double</td>
         </tr>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="QuEST__precision_8h_source.html#l00035">35</a> of file <a class="el" href="QuEST__precision_8h_source.html">QuEST_precision.h</a>.</p>
+<p>A precision-agnostic floating point number, as determined by <a class="el" href="QuEST__precision_8h.html#a626676e623baa3de702c185736018b2c">QuEST_PREC</a>. </p>
+<p>Is a single, double or quad precision float when <a class="el" href="QuEST__precision_8h.html#a626676e623baa3de702c185736018b2c">QuEST_PREC</a> is 1, 2 or 4 respectively. </p>
 
-<p class="reference">Referenced by <a class="el" href="QuEST__validation_8c_source.html#l00090">isComplexPairUnitary()</a>, <a class="el" href="QuEST__validation_8c_source.html#l00082">isComplexUnit()</a>, <a class="el" href="QuEST__validation_8c_source.html#l00098">isMatrixUnitary()</a>, <a class="el" href="QuEST__validation_8c_source.html#l00086">isVectorUnit()</a>, and <a class="el" href="QuEST__validation_8c_source.html#l00211">validateNormProbs()</a>.</p>
-
-</div>
-</div>
-<a id="a750ad290949ef7dc4afdfbd8231a5057"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a750ad290949ef7dc4afdfbd8231a5057">&#9670;&nbsp;</a></span>MPI_QuEST_REAL</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">#define MPI_QuEST_REAL&#160;&#160;&#160;MPI_DOUBLE</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p class="definition">Definition at line <a class="el" href="QuEST__precision_8h_source.html#l00032">32</a> of file <a class="el" href="QuEST__precision_8h_source.html">QuEST_precision.h</a>.</p>
+<p class="reference">Referenced by <a class="el" href="QuEST_8c_source.html#l00539">collapseToOutcome()</a>, <a class="el" href="QuEST__common_8c_source.html#l00320">densmatr_measureWithStats()</a>, <a class="el" href="QuEST__common_8c_source.html#l00086">getComplexPairAndPhaseFromUnitary()</a>, <a class="el" href="QuEST__common_8c_source.html#l00039">getUnitVector()</a>, <a class="el" href="QuEST__common_8c_source.html#l00074">getZYZRotAnglesFromComplexPair()</a>, <a class="el" href="QuEST_8c_source.html#l00571">measure()</a>, <a class="el" href="QuEST__qasm_8c_source.html#l00210">qasm_recordAxisRotation()</a>, <a class="el" href="QuEST__qasm_8c_source.html#l00182">qasm_recordCompactUnitary()</a>, <a class="el" href="QuEST__qasm_8c_source.html#l00287">qasm_recordControlledAxisRotation()</a>, <a class="el" href="QuEST__qasm_8c_source.html#l00251">qasm_recordControlledCompactUnitary()</a>, <a class="el" href="QuEST__qasm_8c_source.html#l00234">qasm_recordControlledParamGate()</a>, <a class="el" href="QuEST__qasm_8c_source.html#l00265">qasm_recordControlledUnitary()</a>, <a class="el" href="QuEST__qasm_8c_source.html#l00311">qasm_recordMultiControlledParamGate()</a>, <a class="el" href="QuEST__qasm_8c_source.html#l00328">qasm_recordMultiControlledUnitary()</a>, <a class="el" href="QuEST__qasm_8c_source.html#l00173">qasm_recordParamGate()</a>, <a class="el" href="QuEST__qasm_8c_source.html#l00194">qasm_recordUnitary()</a>, <a class="el" href="QuEST__common_8c_source.html#l00328">statevec_calcFidelity()</a>, <a class="el" href="QuEST__common_8c_source.html#l00167">statevec_getProbAmp()</a>, <a class="el" href="QuEST__common_8c_source.html#l00312">statevec_measureWithStats()</a>, and <a class="el" href="QuEST__validation_8c_source.html#l00232">validateNormProbs()</a>.</p>
 
 </div>
 </div>
@@ -118,68 +101,15 @@ Macros</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="QuEST__precision_8h_source.html#l00010">10</a> of file <a class="el" href="QuEST__precision_8h_source.html">QuEST_precision.h</a>.</p>
-
-</div>
-</div>
-<a id="a4b654506f18b8bfd61ad2a29a7e38c25"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a4b654506f18b8bfd61ad2a29a7e38c25">&#9670;&nbsp;</a></span>REAL</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">#define REAL&#160;&#160;&#160;double</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p class="definition">Definition at line <a class="el" href="QuEST__precision_8h_source.html#l00031">31</a> of file <a class="el" href="QuEST__precision_8h_source.html">QuEST_precision.h</a>.</p>
-
-<p class="reference">Referenced by <a class="el" href="QuEST_8c_source.html#l00541">collapseToOutcome()</a>, <a class="el" href="QuEST__common_8c_source.html#l00313">densmatr_measureWithStats()</a>, <a class="el" href="QuEST__common_8c_source.html#l00079">getComplexPairAndPhaseFromUnitary()</a>, <a class="el" href="QuEST__common_8c_source.html#l00032">getUnitVector()</a>, <a class="el" href="QuEST__common_8c_source.html#l00067">getZYZRotAnglesFromComplexPair()</a>, <a class="el" href="QuEST_8c_source.html#l00575">measure()</a>, <a class="el" href="QuEST__qasm_8c_source.html#l00196">qasm_recordAxisRotation()</a>, <a class="el" href="QuEST__qasm_8c_source.html#l00168">qasm_recordCompactUnitary()</a>, <a class="el" href="QuEST__qasm_8c_source.html#l00265">qasm_recordControlledAxisRotation()</a>, <a class="el" href="QuEST__qasm_8c_source.html#l00230">qasm_recordControlledCompactUnitary()</a>, <a class="el" href="QuEST__qasm_8c_source.html#l00220">qasm_recordControlledParamGate()</a>, <a class="el" href="QuEST__qasm_8c_source.html#l00244">qasm_recordControlledUnitary()</a>, <a class="el" href="QuEST__qasm_8c_source.html#l00289">qasm_recordMultiControlledParamGate()</a>, <a class="el" href="QuEST__qasm_8c_source.html#l00299">qasm_recordMultiControlledUnitary()</a>, <a class="el" href="QuEST__qasm_8c_source.html#l00159">qasm_recordParamGate()</a>, <a class="el" href="QuEST__qasm_8c_source.html#l00180">qasm_recordUnitary()</a>, <a class="el" href="QuEST__common_8c_source.html#l00321">statevec_calcFidelity()</a>, <a class="el" href="QuEST__common_8c_source.html#l00160">statevec_getProbEl()</a>, <a class="el" href="QuEST__common_8c_source.html#l00305">statevec_measureWithStats()</a>, and <a class="el" href="QuEST__validation_8c_source.html#l00211">validateNormProbs()</a>.</p>
-
-</div>
-</div>
-<a id="aebb5e6716e06431296af4d1a71744dec"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#aebb5e6716e06431296af4d1a71744dec">&#9670;&nbsp;</a></span>REAL_EPS</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">#define REAL_EPS&#160;&#160;&#160;1e-13</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p class="definition">Definition at line <a class="el" href="QuEST__precision_8h_source.html#l00034">34</a> of file <a class="el" href="QuEST__precision_8h_source.html">QuEST_precision.h</a>.</p>
-
-<p class="reference">Referenced by <a class="el" href="QuEST__common_8c_source.html#l00098">generateMeasurementOutcome()</a>, <a class="el" href="QuEST__validation_8c_source.html#l00090">isComplexPairUnitary()</a>, <a class="el" href="QuEST__validation_8c_source.html#l00082">isComplexUnit()</a>, <a class="el" href="QuEST__validation_8c_source.html#l00098">isMatrixUnitary()</a>, <a class="el" href="QuEST__validation_8c_source.html#l00086">isVectorUnit()</a>, <a class="el" href="QuEST__validation_8c_source.html#l00183">validateMeasurementProb()</a>, <a class="el" href="QuEST__validation_8c_source.html#l00211">validateNormProbs()</a>, and <a class="el" href="QuEST__validation_8c_source.html#l00167">validateVector()</a>.</p>
-
-</div>
-</div>
-<a id="ad751ac7ddc8ec19f23fb33083c0da8da"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ad751ac7ddc8ec19f23fb33083c0da8da">&#9670;&nbsp;</a></span>REAL_STRING_FORMAT</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">#define REAL_STRING_FORMAT&#160;&#160;&#160;&quot;%.14f&quot;</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p class="definition">Definition at line <a class="el" href="QuEST__precision_8h_source.html#l00033">33</a> of file <a class="el" href="QuEST__precision_8h_source.html">QuEST_precision.h</a>.</p>
-
-<p class="reference">Referenced by <a class="el" href="QuEST__qasm_8c_source.html#l00111">addGateToQASM()</a>.</p>
+<p>Sets the precision of <a class="el" href="QuEST__precision_8h.html#a7740e349b4f8bae6451547680f0ce2d6">qreal</a> and <a class="el" href="QuEST__complex_8h.html#ad863c5878a01051a2726ce94bf365428">qcomp</a>, and generally that of the state-vectors stored by QuEST. </p>
+<p><code>QuEST_PREC</code> can be 1, 2 or 4 for single, double and quad precision - requires 4, 8 and 16 bytes per real &amp; imag component per amplitude of the statevector respectively. This should be passed as a macro to the preprocessor during compilation, which overwrites the value explicitly defined in <a class="el" href="QuEST__precision_8h.html">QuEST_precision.h</a>. Note that quad precision is not compatible with most GPUs. </p>
 
 </div>
 </div>
 </div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Thu Aug 2 2018 15:52:12 for Quantum Exact Simulation Toolkit by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Sat Dec 8 2018 02:16:56 for Quantum Exact Simulation Toolkit by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.14
 </small></address>

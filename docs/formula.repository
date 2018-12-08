@@ -72,3 +72,12 @@
 \form#71:\[ \setlength{\fboxrule}{0.01pt} \fbox{ \begin{tikzpicture}[scale=.5] \node[draw=none] at (-3.5, 2) {control}; \node[draw=none] at (-3.5, 0) {target}; \draw (-2, 2) -- (2, 2); \draw[fill=black] (0, 2) circle (.2); \draw (0, 2) -- (0, -.5); \draw (-2,0) -- (2, 0); \draw (0, 0) circle (.5); \end{tikzpicture} } \]
 \form#72:\[ \begin{pmatrix} 1 \\ & 1 \\\ & & & -i \\ & & i \end{pmatrix} \]
 \form#73:\[ \setlength{\fboxrule}{0.01pt} \fbox{ \begin{tikzpicture}[scale=.5] \node[draw=none] at (-3.5, 2) {control}; \node[draw=none] at (-3.5, 0) {target}; \draw (-2, 2) -- (2, 2); \draw[fill=black] (0, 2) circle (.2); \draw (0, 2) -- (0, 1); \draw (-2,0) -- (-1, 0); \draw (1, 0) -- (2, 0); \draw (-1,-1)--(-1,1)--(1,1)--(1,-1)--cycle; \node[draw=none] at (0, 0) {Y}; \end{tikzpicture} } \]
+\form#74:$\rho$
+\form#75:\[ (1 - \text{prob}) \, \rho + \text{prob} \; Z_q \, \rho \, Z_q \]
+\form#76:\[ (1 - \text{prob}) \, \rho + \frac{\text{prob}}{3} \; \left( Z_a \, \rho \, Z_a + Z_b \, \rho \, Z_b + Z_a Z_b \, \rho \, Z_a Z_b \right) \]
+\form#77:\[ (1 - \text{prob}) \, \rho + \frac{\text{prob}}{3} \; \left( X_q \, \rho \, X_q + Y_q \, \rho \, Y_q + Z_q \, \rho \, Z_q \right) \]
+\form#78:$\{ IX, IY, IZ, XI, YI, ZI, XX, XY, XZ, YX, YY, YZ, ZX, ZY, ZZ \}$
+\form#79:$II$
+\form#80:\[ (1 - \text{prob}) \, \rho \; + \; \frac{\text{prob}}{15} \; \left( \sum \limits_{\sigma_a \in \{X_a,Y_a,Z_a,I_a\}} \sum \limits_{\sigma_b \in \{X_b,Y_b,Z_b,I_b\}} \sigma_a \sigma_b \; \rho \; \sigma_a \sigma_b \right) - \frac{\text{prob}}{15} I_a I_b \; \rho \; I_a I_b \]
+\form#81:\[ (1 - \text{prob}) \, \rho + \frac{\text{prob}}{15} \; \left( X_a \, \rho \, X_a + X_b \, \rho \, X_b + Y_a \, \rho \, Y_a + Y_b \, \rho \, Y_b + Z_a \, \rho \, Z_a + Z_b \, \rho \, Z_b + X_a X_b \, \rho \, X_a X_b + X_a Y_b \, \rho \, X_a Y_b + X_a Z_b \, \rho \, X_a Z_b + Y_a X_b \, \rho \, Y_a X_b + Y_a Y_b \, \rho \, Y_a Y_b + Y_a Z_b \, \rho \, Y_a Z_b + Z_a X_b \, \rho \, Z_a X_b + Z_a Y_b \, \rho \, Z_a Y_b + Z_a Z_b \, \rho \, Z_a Z_b \right) \]
+\form#82:$\text{Tr}(\rho^2)$
