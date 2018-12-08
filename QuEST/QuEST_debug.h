@@ -18,7 +18,7 @@ extern "C" {
  * Initialise the state vector of probability amplitudes such that one qubit is set to 'outcome' and all other qubits are in an equal superposition of zero and one.
  * @param[in,out] qureg object representing the set of qubits to be initialised
  * @param[in] qubitId id of qubit to set to state 'outcome'
- * @param[in] value of qubit 'qubitId'
+ * @param[in] outcome value of qubit 'qubitId' to set
  */
 void initStateOfSingleQubit(Qureg *qureg, int qubitId, int outcome);
 

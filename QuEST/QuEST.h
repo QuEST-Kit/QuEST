@@ -1,8 +1,8 @@
 // Distributed under MIT licence. See https://github.com/aniabrown/QuEST/blob/master/LICENCE.txt for details 
 
 /** @file
- * The QuEST library API and objects. 
- * Contains the comments used by doxygen for generating API doc
+ * The QuEST API.
+ * This file contains the comments used by doxygen for generating API doc
 */
 
 # ifndef QUEST_H
@@ -14,37 +14,17 @@
 extern "C" {
 #endif
 
-/** Represents an array of complex numbers grouped into an array of real components and an array of coressponding complex components.
-*/
-typedef struct ComplexArray
-{
-    qreal *real; 
-    qreal *imag;
-} ComplexArray;
 
-/** Represents one complex number.
-*/
-typedef struct Complex
-{
-    qreal real;
-    qreal imag;
-} Complex;
+/*
+ * private structures
+ */
+    
+// hide these from doxygen
+/// \cond HIDDEN_SYMBOLS    
 
-/** Represents a 2x2 matrix of complex numbers
-*/
-typedef struct ComplexMatrix2
-{
-    Complex r0c0, r0c1;
-    Complex r1c0, r1c1;
-} ComplexMatrix2;
-
-/** Represents a 3-vector of real numbers
-*/
-typedef struct Vector
-{
-    qreal x, y, z;
-} Vector;
-
+// Codes for Z-axis phase gate variations
+enum phaseGateType {SIGMA_Z=0, S_GATE=1, T_GATE=2};    
+    
 /** A logger of QASM instructions */
 typedef struct {
     
@@ -54,6 +34,46 @@ typedef struct {
     int isLogging;      // whether gates are being added to buffer
     
 } QASMLogger;
+
+/** Represents an array of complex numbers grouped into an array of 
+ * real components and an array of coressponding complex components.
+ */
+typedef struct ComplexArray
+{
+    qreal *real; 
+    qreal *imag;
+} ComplexArray;
+
+/// \endcond
+
+    
+
+/*
+ * public structures
+ */
+
+/** Represents one complex number.
+ */
+typedef struct Complex
+{
+    qreal real;
+    qreal imag;
+} Complex;
+
+/** Represents a 2x2 matrix of complex numbers
+ */
+typedef struct ComplexMatrix2
+{
+    Complex r0c0, r0c1;
+    Complex r1c0, r1c1;
+} ComplexMatrix2;
+
+/** Represents a 3-vector of real numbers
+ */
+typedef struct Vector
+{
+    qreal x, y, z;
+} Vector;
 
 /** Represents a system of qubits.
  * Qubits are zero-based
@@ -100,15 +120,18 @@ typedef struct QuESTEnv
     int numRanks;
 } QuESTEnv;
 
-// Codes for Z-axis phase gate variations
-enum phaseGateType {SIGMA_Z=0, S_GATE=1, T_GATE=2};
+
+
+/*
+ * public functions
+ */
 
 /** Create a Qureg object representing a set of qubits which will remain in a pure state.
  * Allocate space for state vector of probability amplitudes, including space for temporary values to be copied from
  * one other chunk if running the distributed version. Define properties related to the size of the set of qubits.
  * The qubits are initialised in the zero state (i.e. initZeroState is automatically called)
  *
- * @preturns an object representing the set of qubits
+ * @returns an object representing the set of qubits
  * @param[in] numQubits number of qubits in the system
  * @param[in] env object representing the execution environment (local, multinode etc)
  * @throws exitWithError if \p numQubits <= 0
@@ -167,8 +190,7 @@ void reportStateToScreen(Qureg qureg, QuESTEnv env, int reportRank);
 
 /** Report metainformation about a set of qubits: number of qubits, number of probability amplitudes.
 
- * @param[in,out] qureg object representing the set of qubits
- * @param[in] env object representing the execution environment (local, multinode etc)
+ * @param[in] qureg object representing the set of qubits
  */
 void reportQuregParams(Qureg qureg);
 
@@ -513,7 +535,7 @@ void tGate(Qureg qureg, const int targetQubit);
 * If something needs to be done to set up the execution environment, such as 
  * initializing MPI when running in distributed mode, it is handled here.
  *
- * @param[out] object representing the execution environment. A single instance is used for each program
+ * @return object representing the execution environment. A single instance is used for each program
  */
 QuESTEnv createQuESTEnv(void);
 
@@ -534,7 +556,6 @@ void syncQuESTEnv(QuESTEnv env);
 /** Performs a logical AND on all successCodes held by all processes. If any one process has a zero successCode
  * all processes will return a zero success code.
  *
- * @param[in] env object representing the execution environment. A single instance is used for each program
  * @param[in] successCode 1 if process task succeeded, 0 if process task failed
  * @returns 1 if all processes succeeded, 0 if any one process failed
  */ 
@@ -592,7 +613,7 @@ qreal getProbAmp(Qureg qureg, long long int index);
 
 /** Get an amplitude from a density matrix at a given row and column.
  *
- * @oaram[in] qureg object representing a density matrix
+ * @param[in] qureg object representing a density matrix
  * @param[in] row row of the desired amplitude in the density matrix
  * @param[in] col column of the desired amplitude in the density matrix
  * @return a Complex scalar representing the desired amplitude
@@ -808,7 +829,7 @@ void rotateAroundAxis(Qureg qureg, const int rotQubit, qreal angle, Vector axis)
  *
  * @param[in,out] qureg object representing the set of all qubits
  * @param[in] controlQubit qubit which has value 1 in the rotated states
- * @param[in] tagretQubit qubit to rotate
+ * @param[in] targetQubit qubit to rotate
  * @param[in] angle angle by which to rotate the target qubit in radians
  * @throws exitWithError
  *      if either \p controlQubit or \p targetQubit are outside [0, \p qureg.numQubitsRepresented) or are equal.
@@ -839,7 +860,7 @@ void controlledRotateX(Qureg qureg, const int controlQubit, const int targetQubi
  *
  * @param[in,out] qureg object representing the set of all qubits
  * @param[in] controlQubit qubit which has value 1 in the rotated states
- * @param[in] tagretQubit qubit to rotate
+ * @param[in] targetQubit qubit to rotate
  * @param[in] angle angle by which to rotate the target qubit in radians
  * @throws exitWithError
  *      if either \p controlQubit or \p targetQubit are outside [0, \p qureg.numQubitsRepresented) or are equal.
@@ -870,7 +891,7 @@ void controlledRotateY(Qureg qureg, const int controlQubit, const int targetQubi
  *
  * @param[in,out] qureg object representing the set of all qubits
  * @param[in] controlQubit qubit which has value 1 in the rotated states
- * @param[in] tagretQubit qubit to rotate
+ * @param[in] targetQubit qubit to rotate
  * @param[in] angle angle by which to rotate the target qubit in radians
  * @throws exitWithError
  *      if either \p controlQubit or \p targetQubit are outside [0, \p qureg.numQubitsRepresented) or are equal.
