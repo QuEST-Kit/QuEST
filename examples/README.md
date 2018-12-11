@@ -23,13 +23,11 @@ Here's a simulation of a very simple circuit which measures  ![equation](https:/
 int main(int narg, char *varg[]) {
 
   // load QuEST
-  QuESTEnv env;
-  initQuESTEnv(&env);
+  QuESTEnv env = createQuESTEnv();
   
-  // create 2 qubits in the zero state
-  MultiQubit qubits; 
-  createMultiQubit(&qubits, 2, env);
-  initStateZero(qubits);
+  // create 2 qubits in the hadamard state
+  Qureg qubits = createQureg(2, env);
+  initPlusState(qubits);
 	
   // apply circuit
   hadamard(qubits, 0);
@@ -37,8 +35,8 @@ int main(int narg, char *varg[]) {
   measure(qubits, 1);
 	
   // unload QuEST
-  destroyMultiQubit(qubits, env); 
-  closeQuESTEnv(env);
+  destroyQureg(qubits, env); 
+  destroyQuESTEnv(env);
   return 0;
 }
 ```
@@ -51,20 +49,18 @@ Let's walk through a more sophisticated circuit.
 
 We first construct a quest environment, which abstracts away any preparation of multithreading, distribution or GPU-acceleration strategies.
 ```C
-QuESTEnv env;
-initQuESTEnv(&env);
+QuESTEnv env = createQuESTEnv();
 ```
 
 We then create a quantum register, in this case of 3 qubits.
 ```C
-MultiQubit qubits; 
-createMultiQubit(&qubits, 3, env);
+Qureg qubits = createQureg(3, env);
 ```
 and set it to be in the zero state.
 ```C
-initStateZero(qubits);
+initZeroState(qubits);
 ```
-We can create multiple `MultiQubit` instances, and QuEST will sort out allocating memory for the state-vectors, even over networks!
+We can create multiple `Qureg` instances, and QuEST will sort out allocating memory for the state-vectors, even over networks! Note we can replace `createQureg` with `createDensityQureg`, a more powerful density matrix representation which can store mixed states!
 
 We're now ready to apply some gates to our qubits, which in this case have indices 0, 1 and 2.
 When applying a gate, we pass along which quantum register to operate upon.
@@ -114,14 +110,14 @@ multiControlledUnitary(qubits, (int []){0, 1}, 2, 2, u);
 
 What has this done to the probability of the basis state |111> = |7>?
 ```C
-REAL prob = getProbEl(qubits, 7);
+qreal prob = getProbAmp(qubits, 7);
 printf("Probability amplitude of |111>: %lf\n", prob);
 ```
-Here, `REAL` is a floating point number (e.g. `double`). The state-vector is stored as `REAL`s so that we can change its precision without any recoding, by configuring [QuEST_precision.h](../QuEST/QuEST_precision.h)
+Here, `qreal` is a floating point number (e.g. `double`). The state-vector is stored as `qreal`s so that we can change its precision without any recoding, by changing `PRECISION` in the [makefile](../makefile)
 
 How probable is measuring our final qubit (2) in outcome `1`?
 ```C
-prob = findProbabilityOfOutcome(qubits, 2, 1);
+prob = calcProbOfOutcome(qubits, 2, 1);
 printf("Probability of qubit 2 being in state 1: %f\n", prob);
 ```
 
@@ -138,9 +134,8 @@ printf("Qubit 2 collapsed to %d with probability %f\n", outcome, prob);
 
 At the conclusion of our circuit, we should free up the memory used by our state-vector.
 ```C
-destroyMultiQubit(qubits, env); 
-closeQuESTEnv(env);
-return 0;
+destroyQureg(qubits, env);
+destroyQuESTEnv(env);
 ```
 
 The effect of the [code above](tutorial_example.c) is to simulate the below circuit
@@ -203,7 +198,7 @@ Note that using multithreading requires an OpenMP compatible compiler (e.g. [GCC
 > ```bash
 > GPU_COMPUTE_CAPABILITY = 30
 > ```
-> An incorrect *Compute Capability* will lead to drastically incorrect computations. You can check if you've set the right *Compute Capability* by running the unit tests via `tests/runTests.c`.
+> An incorrect *Compute Capability* will lead to drastically incorrect computations. You can check if you've set the right *Compute Capability* by running the unit tests via `cd tests` then `./runTests.sh`.
 
 You can additionally customise the precision with which the state-vector is stored.
 ```bash
