@@ -6,10 +6,10 @@
  * functions defined here. Some additional hardware-agnostic functions are defined here
  */
 
-# include "../QuEST.h"
-# include "../QuEST_internal.h"
-# include "../QuEST_precision.h"
-# include "../mt19937ar.h"
+# include "QuEST.h"
+# include "QuEST_internal.h"
+# include "QuEST_precision.h"
+# include "mt19937ar.h"
 
 # include "QuEST_cpu_internal.h"
 

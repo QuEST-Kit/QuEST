@@ -9,7 +9,7 @@
 # ifndef QUEST_CPU_INTERNAL_H
 # define QUEST_CPU_INTERNAL_H
 
-# include "../QuEST_precision.h"
+# include "QuEST_precision.h"
 
 qreal densmatr_calcPurityLocal(Qureg qureg);
 

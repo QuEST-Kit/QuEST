@@ -5,10 +5,10 @@
  * Mostly pure-state wrappers for the local/distributed functions implemented in QuEST_cpu
  */
 
-# include "../QuEST.h"
-# include "../QuEST_internal.h"
-# include "../QuEST_precision.h"
-# include "../mt19937ar.h"
+# include "QuEST.h"
+# include "QuEST_internal.h"
+# include "QuEST_precision.h"
+# include "mt19937ar.h"
 
 # include "QuEST_cpu_internal.h"
 

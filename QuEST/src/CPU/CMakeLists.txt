@@ -1,0 +1,8 @@
+
+set(QuEST_SRC_CPU
+    ${CMAKE_CURRENT_SOURCE_DIR}/QuEST_cpu.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/QuEST_cpu_local.c
+    PARENT_SCOPE
+)
+
+
