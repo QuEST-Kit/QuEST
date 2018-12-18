@@ -38,7 +38,7 @@ Learn more about QuEST at [quest.qtechtheory.org](https://quest.qtechtheory.org)
 
 ## Getting started
 
-QuEST is contained entirely in the files in the `QuEST/` folder. To use QuEST, copy this folder to your computer and include `QuEST.h` in your `C` or `C++` code, and compile using the provided [makefile](makefile). See the [tutorial](/examples/README.md) for an introduction, and view the full API [here](https://aniabrown.github.io/QuEST/QuEST_8h.html).
+QuEST is contained entirely in the files in the `QuEST/` folder. To use QuEST, copy this folder to your computer and include `QuEST.h` in your `C` or `C++` code, and compile using the provided [makefile](makefile). See the [tutorial](/examples/README.md) for an introduction, and view the full API [here](https://quest-kit.github.io/QuEST/QuEST_8h.html).
 
 We also include example [submission scripts](examples/submissionScripts/) for using QuEST with SLURM and PBS. 
 
@@ -46,7 +46,7 @@ We also include example [submission scripts](examples/submissionScripts/) for us
 
 Copy or clone this repository to your machine. E.g. in the desired directory, enter
 ```bash
-git clone https://github.com/aniabrown/QuEST.git
+git clone https://github.com/quest-kit/QuEST.git
 cd QuEST
 ```
 at terminal. You can then compile the [example](examples/tutorial_example.c) using
@@ -67,7 +67,7 @@ The program will print information about your execution environment and some sim
 
 ## Documentation
 
-View the API [here](https://aniabrown.github.io/QuEST/QuEST_8h.html), and check compatible compiler versions [here](tests/compilers/compatibility.md).
+View the API [here](https://quest-kit.github.io/QuEST/QuEST_8h.html), and check compatible compiler versions [here](tests/compilers/compatibility.md).
 
 > For developers: To recreate the full documentation after making changes to the code, run doxygen doxyconf in the root directory. This will generate documentation in Doxygen_doc/html, and can be accessed through index.html in that folder. 
 
@@ -78,7 +78,7 @@ QuEST uses the [mt19937ar](http://www.math.sci.hiroshima-u.ac.jp/~m-mat/MT/MT200
 
 ## Licence
 
-QuEST is released under a [MIT Licence](https://github.com/aniabrown/QuEST/blob/master/LICENCE.txt)
+QuEST is released under a [MIT Licence](https://github.com/quest-kit/QuEST/blob/master/LICENCE.txt)
 
 
 
