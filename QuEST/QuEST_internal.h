@@ -37,6 +37,8 @@ void getComplexPairAndPhaseFromUnitary(ComplexMatrix2 u, Complex* alpha, Complex
 
 void shiftIndices(int* indices, int numIndices, int shift);
 
+void getQuESTDefaultSeedKey(unsigned long int *key);
+
 
 /*
  * operations upon density matrices 

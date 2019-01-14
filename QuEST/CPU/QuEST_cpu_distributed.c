@@ -1269,3 +1269,16 @@ void statevec_collapseToKnownProbOutcome(Qureg qureg, const int measureQubit, in
         }
     }
 }
+
+void seedQuESTDefault(){
+    // init MT random number generator with three keys -- time, pid and a hash of hostname 
+    // for the MPI version, it is ok that all procs will get the same seed as random numbers will only be 
+    // used by the master process
+
+    unsigned long int key[3];
+    getQuESTDefaultSeedKey(key);
+    // this seed will be used to generate the same random number on all procs,
+    // therefore we want to make sure all procs receive the same key
+    MPI_Bcast(key, 3, MPI_LONG_INT, 0, MPI_COMM_WORLD);
+    init_by_array(key, 3);
+}
