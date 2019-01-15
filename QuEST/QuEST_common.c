@@ -132,7 +132,7 @@ unsigned long int hashString(char *str){
     return hash;    
 }
 
-void seedQuESTDefault(){
+void getQuESTDefaultSeedKey(unsigned long int *key){
     // init MT random number generator with three keys -- time, pid and a hash of hostname 
     // for the MPI version, it is ok that all procs will get the same seed as random numbers will only be 
     // used by the master process
@@ -140,7 +140,7 @@ void seedQuESTDefault(){
     struct timeval  tv;
     gettimeofday(&tv, NULL);
 
-    double time_in_mill = 
+    double time_in_mill =
         (tv.tv_sec) * 1000 + (tv.tv_usec) / 1000 ; // convert tv_sec & tv_usec to millisecond
 
     unsigned long int pid = getpid();
@@ -149,9 +149,7 @@ void seedQuESTDefault(){
     gethostname(hostName, sizeof(hostName));
     unsigned long int hostNameInt = hashString(hostName);
 
-    unsigned long int key[3];
     key[0] = msecs; key[1] = pid; key[2] = hostNameInt;
-    init_by_array(key, 3); 
 }
 
 /** 
