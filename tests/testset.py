@@ -1,7 +1,9 @@
 from QuESTFunc import *
 
 tests = {}
-tests["init_operations"] = [ initZeroState, initPlusState, initClassicalState, initPureState, initStateFromAmps, initDebugState, setAmps ],
+testSets = {}
+# Underscored names are internal lists of functions, plain names are the calling name from CLI
+tests["init_operations"] = [ initZeroState, initPlusState, initClassicalState, initPureState, initStateFromAmps, initDebugState, setAmps ]
 
 tests["stnd_operations"] = [ compactUnitary, hadamard, pauliX, pauliY, pauliZ, phaseShift, rotateAroundAxis, rotateX, rotateY, rotateZ, sGate, tGate, unitary ]
     
@@ -12,9 +14,14 @@ tests["mcon_operations"] = [ multiControlledPhaseFlip, multiControlledPhaseShift
 tests["denm_operations"] = [ addDensityMatrix, applyOneQubitDephaseError, applyOneQubitDepolariseError, applyTwoQubitDephaseError, applyTwoQubitDepolariseError ]
         
 tests["math_operations"] = [ calcFidelity, calcInnerProduct, calcProbOfOutcome, calcTotalProb, calcPurity, collapseToOutcome, getAmp, getDensityAmp, getNumAmps, getImagAmp, getProbAmp, getRealAmp, getNumQubits, measure, measureWithStats ]
-        
-tests["all"] = tests["stnd_operations"] + tests["cont_operations"] + tests["mcon_operations"] + tests["denm_operations"] + tests["math_operations"]
 
-tests["qubit_operations"] = tests["stnd_operations"] + tests["cont_operations"] + tests["mcon_operations"]
-    
+# Build individual function tests list
+for testFunc in list_funcs():
+    name = testFunc.funcname
+    testSets[name] = [name]
+    tests[name] = [testFunc]
+del name
 
+
+testSets["all"] = ["stnd_operations", "cont_operations", "mcon_operations", "denm_operations", "math_operations"]
+testSets["qubit_operations"] = ["stnd_operations","cont_operations", "mcon_operations"]

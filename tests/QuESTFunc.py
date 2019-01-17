@@ -9,7 +9,7 @@ _stateIndex = c_longlong
 createQuESTEnv = QuESTTestee('createQuESTEnv',QuESTEnv)
 destroyQuESTEnv = QuESTTestee('destroyQuESTEnv',None,[QuESTEnv],[None])
 createQureg = QuESTTestee('createQureg',Qureg,[c_int,QuESTEnv],[1,None])
-destroyQureg = QuESTTestee('destroyQureg',None,[Qureg],[None])
+destroyQureg = QuESTTestee('destroyQureg',None,[Qureg,QuESTEnv],[None,None])
 
 # Utility Operations
 cloneQureg = QuESTTestee ("cloneQureg", retType=None, argType=[Qureg, Qureg], defArg=[None, None])
@@ -40,7 +40,8 @@ initPlusState = QuESTTestee      ("initPlusState",      retType=None, argType=[Q
 initClassicalState = QuESTTestee ("initClassicalState", retType=None, argType=[Qureg,c_longlong], defArg=[None,None])
 initPureState = QuESTTestee      ("initPureState",      retType=None, argType=[Qureg,Qureg], defArg=[None,None])
 initStateFromAmps = QuESTTestee  ("initStateFromAmps",  retType=None, argType=[Qureg,POINTER(qreal),POINTER(qreal)], defArg=[None,None,None])
-initDebugState = QuESTTestee     ("initStateDebug",     retType=None, argType=[Qureg], defArg=[None])
+initStateDebug = QuESTTestee     ("initStateDebug",     retType=None, argType=[Qureg], defArg=[None])
+initDebugState = initStateDebug  # Alias
 setAmps = QuESTTestee            ("setAmps",            retType=None, argType=[Qureg,_stateIndex,POINTER(qreal),POINTER(qreal),c_longlong], defArg=[None,None,None,None,None]) 
 
 # Basic Operations
