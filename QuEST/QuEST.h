@@ -569,7 +569,7 @@ void reportQuESTEnv(QuESTEnv env);
 
 void getEnvironmentString(QuESTEnv env, Qureg qureg, char str[200]);
 
-/** Getthe complex amplitude at a given index in the state vector.
+/** Get the complex amplitude at a given index in the state vector.
  *
  * @param[in] qureg object representing a set of qubits
  * @param[in] index index in state vector of probability amplitudes
