@@ -23,6 +23,8 @@ class ComplexArray(Structure):
 
 class Complex(Structure):
     __str__ = lambda self:"({},{})".format(self.real,self.imag)
+    __add__ = lambda self, b: Complex(self.real+b.real, self.imag+b.imag)
+    __sub__ = lambda self, b: Complex(self.real-b.real, self.imag-b.imag)
     _fields_ = [("real",qreal),
                 ("imag",qreal)]
 
@@ -37,9 +39,16 @@ class ComplexMatrix2(Structure):
 
 class Vector(Structure):
     __str__ = lambda self:"[{},{},{}]".format(self.x,self.y,self.z)
+    __add__ = lambda self, b: Vector(self.x+b.x, self.y+b.y, self.z+b.z)
+    __sub__ = lambda self, b: Vector(self.x-b.x, self.y-b.y, self.z-b.z)
     _fields_ = [("x",qreal),("y",qreal),("z",qreal)]
 
 class Qureg(Structure):
+    def __str__(self):
+        stateVec = []
+        for state in range(self.numAmpsTotal):
+            stateVec+= [Complex(self.stateVec.real[state], self.stateVec.imag[state])]
+        return "\n".join(list(map(Complex.__str__, stateVec)))
     _fields_ = [("isDensityMatrix", c_int),
                 ("numQubitsRepresented", c_int),
                 ("numQubitsInStateVec", c_int),
@@ -87,7 +96,7 @@ def argComplexArray(arg):
     return ComplexArray(byref(real),byref(imag))
 
 class QuESTTestee:
-    basicTypeConv = {"c_int":int, "c_long":int, "c_longlong":int, "qreal":float, "Vector":argVector, "ComplexMatrix2":argComplexMatrix2, "ComplexArray":argComplexArray, "Complex":argComplex }
+    basicTypeConv = {"c_int":int, "c_long":int, "c_longlong":int, "qreal":float, "Vector":argVector, "ComplexMatrix2":argComplexMatrix2, "ComplexArray":argComplexArray, "Complex":argComplex, "LP_c_double":lambda x: x }
 
     funcsList = []
     
@@ -116,10 +125,12 @@ class QuESTTestee:
             specArg = argsList[0]
         else:
             specArg = list(argsList)
-        self.fix_types(specArg)
+
         if (len(specArg) == 0 and self.nArgs != 0) or (self.nArgs == 0):
+            self.fix_types(specArg)
             return self.thisFunc(*self.defArg)
         elif isinstance(specArg,list) and len(specArg) == self.nArgs:
+            self.fix_types(specArg)
             return self.thisFunc(*specArg)
         else:
             raise IOError(argWarning.format(self.funcname, self.nArgs, len(specArg)))
@@ -133,6 +144,7 @@ class QuESTTestee:
             elif reqTypeName in QuESTTestee.basicTypeConv: 
                 args[i] = QuESTTestee.basicTypeConv[reqTypeName](args[i])
             else:
+                print(args[i], reqTypeName)
                 raise IOError(typeWarning.format(reqTypeName, self.funcname))
 
 def list_funcs():
@@ -140,7 +152,7 @@ def list_funcs():
 
 def list_funcnames():
     return list(map(lambda x: x.funcname, QuESTTestee.funcsList))
-    
+
 # Define some simple basic constants
 complex0 = Complex(0.,0.)
 complex1 = Complex(1.,0.)

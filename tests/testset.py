@@ -2,7 +2,7 @@ from QuESTFunc import *
 
 tests = {}
 testSets = {}
-# Underscored names are internal lists of functions, plain names are the calling name from CLI
+
 tests["init_operations"] = [ initZeroState, initPlusState, initClassicalState, initPureState, initStateFromAmps, initDebugState, setAmps ]
 
 tests["stnd_operations"] = [ compactUnitary, hadamard, pauliX, pauliY, pauliZ, phaseShift, rotateAroundAxis, rotateX, rotateY, rotateZ, sGate, tGate, unitary ]
@@ -25,3 +25,4 @@ del name
 
 testSets["all"] = ["stnd_operations", "cont_operations", "mcon_operations", "denm_operations", "math_operations"]
 testSets["qubit_operations"] = ["stnd_operations","cont_operations", "mcon_operations"]
+
