@@ -22,16 +22,16 @@ class ComplexArray(Structure):
                ("imag", POINTER(qreal))]
 
 class Complex(Structure):
-    __str__ = lambda self:"({},{})".format(self.real,self.imag)
+    __str__ = lambda self:"({:15.13f},{:15.13f})".format(self.real,self.imag)
     __add__ = lambda self, b: Complex(self.real+b.real, self.imag+b.imag)
     __sub__ = lambda self, b: Complex(self.real-b.real, self.imag-b.imag)
     _fields_ = [("real",qreal),
                 ("imag",qreal)]
 
 class ComplexMatrix2(Structure):
-    __str__ = lambda self:"["+"({},{}),"*3+"({},{})]".format(
+    __str__ = lambda self:"[({:15.13f},{:15.13f}),({:15.13f},{:15.13f}),({:15.13f},{:15.13f}),({:15.13f},{:15.13f})]".format(
         self.r0c0.real,self.r0c0.imag,
-        self.r1c1.real,self.r1c1.imag,
+        self.r0c1.real,self.r0c1.imag,
         self.r1c0.real,self.r1c0.imag,
         self.r1c1.real,self.r1c1.imag)
     _fields_ = [("r0c0",Complex),("r0c1",Complex),
@@ -77,7 +77,7 @@ def stringToComplex(a):
     return list(map(float,a.split(',')))
 
 def argVector(arg):
-    Vector(*stringToList(arg))
+    return Vector(*stringToList(arg))
 
 def argComplexMatrix2(arg):
     vals = stringToList(arg)
@@ -87,7 +87,7 @@ def argComplexMatrix2(arg):
     return ComplexMatrix2(*elements)
 
 def argComplex(arg):
-    Complex(*stringToList(arg))
+    return Complex(*stringToComplex(arg))
 
 def argComplexArray(arg):
     vals = stringToList(arg)
@@ -96,7 +96,7 @@ def argComplexArray(arg):
     return ComplexArray(byref(real),byref(imag))
 
 class QuESTTestee:
-    basicTypeConv = {"c_int":int, "c_long":int, "c_longlong":int, "qreal":float, "Vector":argVector, "ComplexMatrix2":argComplexMatrix2, "ComplexArray":argComplexArray, "Complex":argComplex, "LP_c_double":lambda x: x }
+    basicTypeConv = {"c_int":int, "c_long":int, "c_longlong":int, "c_double":float, "Vector":argVector, "ComplexMatrix2":argComplexMatrix2, "ComplexArray":argComplexArray, "Complex":argComplex, "LP_c_double":lambda x: x }
 
     funcsList = []
     
@@ -131,7 +131,11 @@ class QuESTTestee:
             return self.thisFunc(*self.defArg)
         elif isinstance(specArg,list) and len(specArg) == self.nArgs:
             self.fix_types(specArg)
-            return self.thisFunc(*specArg)
+            try:
+                return self.thisFunc(*specArg)
+            except ArgumentError:
+                print(specArg)
+                raise IOError('Bad arguments in function {}'.format(self.funcname))
         else:
             raise IOError(argWarning.format(self.funcname, self.nArgs, len(specArg)))
 

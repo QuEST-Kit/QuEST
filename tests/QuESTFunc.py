@@ -51,7 +51,7 @@ pauliY = QuESTTestee           ("pauliY",           retType=None, argType=[Qureg
 pauliZ = QuESTTestee           ("pauliZ",           retType=None, argType=[Qureg,_targetQubit], defArg=[None,0])
 sGate = QuESTTestee            ("sGate",            retType=None, argType=[Qureg,_targetQubit], defArg=[None,0])
 tGate = QuESTTestee            ("tGate",            retType=None, argType=[Qureg,_targetQubit], defArg=[None,0]) 
-compactUnitary = QuESTTestee   ("compactUnitary",   retType=None, argType=[Qureg,_targetQubit,Complex,Complex], defArg=[None,0,complex1,complex1])
+compactUnitary = QuESTTestee   ("compactUnitary",   retType=None, argType=[Qureg,_targetQubit,Complex,Complex], defArg=[None,0,complex1,complex0])
 phaseShift = QuESTTestee       ("phaseShift",       retType=None, argType=[Qureg,_targetQubit,qreal], defArg=[None,0,90.])
 rotateAroundAxis = QuESTTestee ("rotateAroundAxis", retType=None, argType=[Qureg,_targetQubit,qreal,Vector], defArg=[None,0,90.,xDir])
 rotateX = QuESTTestee          ("rotateX",          retType=None, argType=[Qureg,_targetQubit,qreal], defArg=[None,0,90.])
@@ -60,7 +60,7 @@ rotateZ = QuESTTestee          ("rotateZ",          retType=None, argType=[Qureg
 unitary = QuESTTestee          ("unitary",          retType=None, argType=[Qureg,_targetQubit,ComplexMatrix2], defArg=[None,0,unitMatrix]) 
 
 # Controlled Operations
-controlledCompactUnitary = QuESTTestee   ("controlledCompactUnitary",   retType=None, argType=[Qureg,_controlQubit,_targetQubit,Complex,Complex], defArg=[None,1,0,complex1,complex1])
+controlledCompactUnitary = QuESTTestee   ("controlledCompactUnitary",   retType=None, argType=[Qureg,_controlQubit,_targetQubit,Complex,Complex], defArg=[None,1,0,complex1,complex0])
 controlledNot = QuESTTestee              ("controlledNot",              retType=None, argType=[Qureg,_controlQubit,_targetQubit], defArg=[None,1,0])
 controlledPauliY = QuESTTestee           ("controlledPauliY",           retType=None, argType=[Qureg,_controlQubit,_targetQubit], defArg=[None,1,0])
 controlledPhaseFlip = QuESTTestee        ("controlledPhaseFlip",        retType=None, argType=[Qureg,_controlQubit,_targetQubit], defArg=[None,1,0])

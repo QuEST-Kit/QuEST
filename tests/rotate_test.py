@@ -1,29 +1,13 @@
 from QuESTFunc import *
+from QuESTCore import *
 import math
 
 def run_tests():
     testRot()
 
-def compareStates(a, b, tol):
-    if (a.numQubitsRepresented != b.numQubitsRepresented):
-        raise IndexError('A and B registers are not the same size')
-    
-    for state in range(getNumAmps(a)): # Compare final with expected states
-        aState = getAmp(a,state)
-        bState = getAmp(b,state)
-        if abs(aState.real - bState.real) > tol or abs(aState.imag - bState.imag) > tol:
-            return False
-    return True
-
-def compareReals(a, b, tol):
-    if abs(a - b) > tol: return False
-    return True
-
 def testRot():
     COMPARE_PRECISION = 1e-6
     env = createQuESTEnv()
-
-    passed=1
 
     numQubits=10
     rotQubit = 0
@@ -46,7 +30,11 @@ def testRot():
     
     # note -- this is only checking if the state changed at all due to rotation,
     # not that it changed correctly
-    if passed: passed = not compareStates(mq, mqVerif, COMPARE_PRECISION)
+    passed = not testResults.compareStates(mq, mqVerif, COMPARE_PRECISION)
+    if passed:
+        testResults.pass_test()
+    else:
+        testResults.fail_test()
 
     # Rotate back the other way and check we arrive back at the initial state
     # (conjugate transpose of the unitary)
@@ -60,7 +48,11 @@ def testRot():
         compactUnitary(mq, rotQubit, alpha, beta)
 
     # unitaries are relatively imprecise (10* needed for signle precision)
-    if passed: passed = compareStates(mq, mqVerif, 10*COMPARE_PRECISION)
+    passed = testResults.compareStates(mq, mqVerif, 10*COMPARE_PRECISION)
+    if passed:
+        testResults.pass_test()
+    else:
+        testResults.fail_test()
 
     destroyQureg(mq, env)
     destroyQureg(mqVerif, env)
@@ -75,13 +67,13 @@ def testRot():
         compactUnitary(mq, rotQubit, alpha, beta)
     
     outcome = calcTotalProb(mq);    
-    if passed: passed = compareReals(1.0, outcome, COMPARE_PRECISION)
+    passed = testResults.compareReals(1.0, outcome, COMPARE_PRECISION)
     destroyQureg(mq, env)
 
     if passed:
-        print('.',end='')
+        testResults.pass_test()
     else:
-        print('F',end='')
+        testResults.fail_test()
 
 
     

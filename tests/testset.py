@@ -11,9 +11,9 @@ tests["cont_operations"] = [ controlledCompactUnitary, controlledNot, controlled
         
 tests["mcon_operations"] = [ multiControlledPhaseFlip, multiControlledPhaseShift, multiControlledUnitary ]
         
-tests["denm_operations"] = [ addDensityMatrix, applyOneQubitDephaseError, applyOneQubitDepolariseError, applyTwoQubitDephaseError, applyTwoQubitDepolariseError ]
+tests["denm_operations"] = [ getDensityAmp, calcPurity, addDensityMatrix, applyOneQubitDephaseError, applyOneQubitDepolariseError, applyTwoQubitDephaseError, applyTwoQubitDepolariseError ]
         
-tests["math_operations"] = [ calcFidelity, calcInnerProduct, calcProbOfOutcome, calcTotalProb, calcPurity, collapseToOutcome, getAmp, getDensityAmp, getNumAmps, getImagAmp, getProbAmp, getRealAmp, getNumQubits, measure, measureWithStats ]
+tests["math_operations"] = [ calcFidelity, calcInnerProduct, calcProbOfOutcome, calcTotalProb, collapseToOutcome, getAmp, getNumAmps, getImagAmp, getProbAmp, getRealAmp, getNumQubits, measure, measureWithStats ]
 
 # Build individual function tests list
 for testFunc in list_funcs():
