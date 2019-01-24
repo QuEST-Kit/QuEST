@@ -20,6 +20,10 @@ tests["math_operations"] = [ calcFidelity, calcInnerProduct, calcProbOfOutcome, 
 
 tests["don't_generate"] = tests["essential"] + [ calcFidelity, calcInnerProduct, measure, measureWithStats, addDensityMatrix ]
 
+testSets["essential"] = ["essential"]
+testSets["qubit_operations"] = ["stnd_operations","cont_operations", "mcon_operations"]
+testSets["all"] = ["stnd_operations", "cont_operations", "mcon_operations", "denm_operations", "math_operations"]
+
 # Build individual function tests list
 for testFunc in list_funcs():
     name = testFunc.funcname
@@ -27,9 +31,5 @@ for testFunc in list_funcs():
     tests[name] = [testFunc]
 del name
 
-testSets["essential"] = ["essential"]
-testSets["qubit_operations"] = ["stnd_operations","cont_operations", "mcon_operations"]
-#testSets["spec_operations"] = ["calcFidelity.py", "calcInnerProduct.py"]
-testSets["all"] = ["stnd_operations", "cont_operations", "mcon_operations", "denm_operations", "math_operations"]
 
-specSets = ["spec_operations"]
+printSets = testSets["essential"] + testSets["all"]

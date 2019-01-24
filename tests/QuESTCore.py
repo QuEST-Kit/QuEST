@@ -5,6 +5,7 @@ from testset import tests
 import importlib.util
 import importlib.machinery
 
+
 # Add .test to valid python names
 importlib.machinery.SOURCE_SUFFIXES += ['.test']
 
@@ -13,7 +14,7 @@ logFile = None
 unitPath = None
 Env = None
 testResults = None
-def init_tests(unitTestPath, logFilePath, tolerance=None):
+def init_tests(unitTestPath, logFilePath, tolerance=None, quiet=False):
     global logFile
     global unitPath
     global Env
@@ -21,7 +22,7 @@ def init_tests(unitTestPath, logFilePath, tolerance=None):
     unitPath = unitTestPath
     logFile = open(logFilePath,'w')
     Env = createQuESTEnv()
-    testResults = TestResults(tolerance)
+    testResults = TestResults(tolerance, not quiet)
     return testResults
 
 def finalise_tests():
@@ -104,9 +105,10 @@ class QuESTTestFile:
 class TestResults:
     """ Main class regarding testing framework stores results and comparisons """
     
-    def __init__(self, tolerance = 1.e-6):
+    def __init__(self, tolerance = 1.e-6, printToScreen = True):
         self.passes, self.fails, self.numTests = [0]*3
         self.tolerance = tolerance
+        self.printToScreen = printToScreen
         
     def compareStates(self, a, b, tol = None):
         if tol is None:
@@ -135,6 +137,9 @@ class TestResults:
                 
         return True
 
+    def write_term(self, *out, **kwargs):
+        if self.printToScreen: print(*out, **kwargs)
+    
     def compareReals(self, a, b, tol = None):
         if tol is None:
             tol = self.tolerance
@@ -148,13 +153,13 @@ class TestResults:
         return True
                 
     def pass_test(self, test=""):
-        print('.',end='')
+        self.write_term('.',end='')
         logFile.write('{} Passed\n'.format(test.strip()))
         self.numTests += 1
         self.passes += 1
 
     def fail_test(self, test = "", message = ""):
-        print('F',end='')
+        self.write_term('F',end='')
         if test or message:
             logFile.write('Test {} failed: {}\n'.format(test,message))
         self.numTests += 1
@@ -167,7 +172,7 @@ class TestResults:
             self.fail_test(test, message)
             
     def print_results(self):
-        print('\nPassed {} of {} tests, {} failed.\n'.format(self.passes,self.numTests,self.fails))
+        self.write_term('\nPassed {} of {} tests, {} failed.\n'.format(self.passes,self.numTests,self.fails))
         
     def run_test(self, testFunc, testFile):
         qubitTypeNames = {"Z":"Zero ", "C":"Custom ", "B":"BitState ", "P":"Plus ", "D":"Debug "}
@@ -235,7 +240,7 @@ class TestResults:
 
     def run_std_test(self, testFuncsList,name=''):
     
-        print('Running tests '+name+":", end=' ')
+        self.write_term('Running tests '+name+":", end=' ')
         
         for testFunc in testFuncsList:
     
@@ -259,7 +264,7 @@ class TestResults:
     
             self.run_test(testFunc, testFile)
     
-        print()
+        self.write_term()
 
     def run_python_test(self, testPath):
         spec = importlib.util.spec_from_file_location("templib", testPath)
@@ -394,9 +399,9 @@ def gen_test(testFunc, testFile):
                 outputFile.write(str(result)+"\n")
 
 
-def gen_tests():
+def gen_tests(testsToGen=["all"]):
     from testset import tests
-    for testSet in ["stnd_operations","cont_operations", "mcon_operations", "math_operations","denm_operations"]:
+    for testSet in testToGen:
     
         for testFunc in tests[testSet] :
             if testFunc in tests["don't_generate"]: continue 
