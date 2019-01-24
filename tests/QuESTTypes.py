@@ -1,4 +1,6 @@
 from ctypes import *
+import random
+import math
 
 # Declare several warnings which may occur
 argWarning  = 'Bad argument list in {0:s} expected {1:d}, recieved {2:d} \n'
@@ -25,6 +27,11 @@ class Complex(Structure):
     __str__ = lambda self:"({:15.13f},{:15.13f})".format(self.real,self.imag)
     __add__ = lambda self, b: Complex(self.real+b.real, self.imag+b.imag)
     __sub__ = lambda self, b: Complex(self.real-b.real, self.imag-b.imag)
+    __mul__ = lambda self, b: Complex(self.real*b.real - self.imag*b.imag, self.real*b.imag + self.imag*b.real)
+    __truediv__ = lambda self, b: Complex(self.real*b.real + self.imag*b.imag / (b.real*b.real + b.imag*b.imag),
+                                      self.imag*b.real - self.real*b.imag / (b.real*b.real + b.imag*b.imag))
+    conj = lambda self: Complex(self.real, -self.imag)
+    __abs__ = lambda self: math.sqrt( (self*self.conj()).real )
     _fields_ = [("real",qreal),
                 ("imag",qreal)]
 
@@ -34,6 +41,7 @@ class ComplexMatrix2(Structure):
         self.r0c1.real,self.r0c1.imag,
         self.r1c0.real,self.r1c0.imag,
         self.r1c1.real,self.r1c1.imag)
+    __abs__ = lambda self: abs(self.r0c0*self.r1c1 - self.r1c0*self.r0c1)
     _fields_ = [("r0c0",Complex),("r0c1",Complex),
                 ("r1c0",Complex),("r1c1",Complex)]
 
@@ -72,6 +80,13 @@ def stringToList(a):
     except ValueError:
         raise IOError('Bad array in input file')
 
+def stringToListInt(a):
+    a = a.split(',')
+    try :
+        return list(map(int, a))
+    except ValueError:
+        raise IOError('Bad array in input file')
+
 def stringToComplex(a):
     a=a.lstrip('(').rstrip(')')
     return list(map(float,a.split(',')))
@@ -95,12 +110,46 @@ def argComplexArray(arg):
     imag = vals[1::2]
     return ComplexArray(byref(real),byref(imag))
 
+def argPointerQreal(arg):
+    if isinstance(arg,str):
+        arg = stringToList(arg)
+    
+    if isinstance(arg,list):
+        newArg = (qreal*len(arg))()
+        for i in range(len(arg)):
+            newArg[i] = arg[i]
+        return newArg
+    elif isinstance(arg, qreal):
+        return arg
+
+def argPointerInt(arg):
+    if isinstance(arg,str):
+        arg = stringToListInt(arg)
+
+    if isinstance(arg,list):
+        return (c_int*len(arg))(*arg)
+    elif isinstance(arg, c_int):
+        return arg
+
+def argPointerLongInt(arg):
+    if isinstance(arg,str):
+        arg = stringToListInt(arg)
+
+    if isinstance(arg,list):
+        return (c_long*len(arg))(*arg)
+    elif isinstance(arg, c_int):
+        return arg
+
+    
 class QuESTTestee:
-    basicTypeConv = {"c_int":int, "c_long":int, "c_longlong":int, "c_double":float, "Vector":argVector, "ComplexMatrix2":argComplexMatrix2, "ComplexArray":argComplexArray, "Complex":argComplex, "LP_c_double":lambda x: x }
+    basicTypeConv = {"c_int":int, "c_long":int, "c_ulong":int, "c_longlong":int, "c_double":float,
+                     "Vector":argVector, "ComplexMatrix2":argComplexMatrix2, "ComplexArray":argComplexArray,
+                     "Complex":argComplex, "LP_c_double":argPointerQreal, "LP_c_int":argPointerInt, "LP_c_long":argPointerLongInt }
 
     funcsList = []
+    funcsDict = {}
     
-    def __init__(self, funcname=None, retType=None, argType=[], defArg=[]):
+    def __init__(self, funcname=None, retType=None, argType=[], defArg=[], denMat=False):
         self.funcname = funcname
         if not QuESTLib[funcname]:
             raise IOError(funcname+' not found in QuEST API')
@@ -108,13 +157,15 @@ class QuESTTestee:
 
         if self.funcname not in list_funcnames():
             QuESTTestee.funcsList.append(self)
+            QuESTTestee.funcsDict[self.funcname] = self
         else:
             raise IOError(funcname+' already defined')
-        
+
         self.thisFunc.restype = retType
         self.thisFunc.argtypes = argType
         self.nArgs = len(argType) or 0
         self.defArg = defArg
+        self.denMat = denMat
         
         if self.defArg is not None and len(self.defArg) != self.nArgs:
             raise IOError(argWarning.format(self.funcname, self.nArgs, len(self.defArg)))
@@ -137,6 +188,7 @@ class QuESTTestee:
                 print(specArg)
                 raise IOError('Bad arguments in function {}'.format(self.funcname))
         else:
+            print(specArg)
             raise IOError(argWarning.format(self.funcname, self.nArgs, len(specArg)))
 
     def fix_types(self,args):
@@ -145,12 +197,15 @@ class QuESTTestee:
             reqTypeName = self.thisFunc.argtypes[i].__name__
             if isinstance(args[i],reqType):
                 pass
-            elif reqTypeName in QuESTTestee.basicTypeConv: 
+            elif reqTypeName in QuESTTestee.basicTypeConv:
                 args[i] = QuESTTestee.basicTypeConv[reqTypeName](args[i])
             else:
                 print(args[i], reqTypeName)
                 raise IOError(typeWarning.format(reqTypeName, self.funcname))
 
+def dict_funcs():
+    return QuESTTestee.funcsDict
+    
 def list_funcs():
     return QuESTTestee.funcsList
 
@@ -161,7 +216,29 @@ def list_funcnames():
 complex0 = Complex(0.,0.)
 complex1 = Complex(1.,0.)
 complexi = Complex(0.,1.)
+complexHalf = Complex(0.5,0.)
+complexSqr2 = Complex(1./math.sqrt(2),0.0)
 unitMatrix = ComplexMatrix2(complex1,complex0,complex0,complex1)
 xDir = Vector(1.,0.,0.)
 yDir = Vector(0.,1.,0.)
 zDir = Vector(0.,0.,1.)
+
+def rand_norm_comp():
+    newComplex = Complex(random.random(), random.random())
+    norm = abs(newComplex)
+    newComplex.imag /= norm
+    newComplex.real /= norm
+    return newComplex
+
+def rand_norm_comp_pair():
+    return rand_norm_comp()*complexSqr2, rand_norm_comp()*complexSqr2
+
+def rand_norm_mat():
+    elems = []
+    elems += [complexSqr2*rand_norm_comp()]
+    elems += [complexSqr2*rand_norm_comp()]
+    elems += [Complex(0,0)-elems[1].conj()]
+    elems += [elems[0].conj()]
+    newMat = ComplexMatrix2(*elems)
+
+    return newMat

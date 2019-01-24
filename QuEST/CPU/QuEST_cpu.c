@@ -1088,13 +1088,21 @@ void statevec_createQureg(Qureg *qureg, int numQubits, QuESTEnv env)
 }
 
 void statevec_destroyQureg(Qureg qureg, QuESTEnv env){
-    
+
+    qureg->numQubitsInStateVec = 0;
+    qureg->numAmpsTotal = 0;
+    qureg->numAmpsPerChunk = 0;
+
     free(qureg.stateVec.real);
     free(qureg.stateVec.imag);
     if (env.numRanks>1){
         free(qureg.pairStateVec.real);
         free(qureg.pairStateVec.imag);
-    }    
+    }
+    qureg.stateVec.real = NULL;
+    qureg.stateVec.imag = NULL;
+    qureg.pairStateVec.real = NULL;
+    qureg.pairStateVec.imag = NULL;
 }
 
 void statevec_reportStateToScreen(Qureg qureg, QuESTEnv env, int reportRank){
