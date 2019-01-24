@@ -5,8 +5,10 @@ from testset import tests
 import importlib.util
 import importlib.machinery
 
+# Add .test to valid python names
 importlib.machinery.SOURCE_SUFFIXES += ['.test']
 
+# Make publically accessible
 logFile = None
 unitPath = None
 Env = None
@@ -78,6 +80,7 @@ class QuESTTestFile:
         return line.split()
 
     def remove_brackets(self, line):
+        """ Remove all brackets from a given string (for parsing complex/arrays nicely) """
         remBrac = ''.maketrans('[{()}]','      ','[{()}]')
         return line.translate(remBrac)
                 
@@ -99,6 +102,8 @@ class QuESTTestFile:
         return QubitsOut
         
 class TestResults:
+    """ Main class regarding testing framework stores results and comparisons """
+    
     def __init__(self, tolerance = 1.e-6):
         self.passes, self.fails, self.numTests = [0]*3
         self.tolerance = tolerance
@@ -142,8 +147,9 @@ class TestResults:
         if abs(a.real - b.real) > tol or abs(a.imag - b.imag) > tol: return False
         return True
                 
-    def pass_test(self):
+    def pass_test(self, test=""):
         print('.',end='')
+        logFile.write('{} Passed\n'.format(test.strip()))
         self.numTests += 1
         self.passes += 1
 
@@ -156,7 +162,7 @@ class TestResults:
 
     def validate(self, arg, test = "", message = ""):
         if arg:
-            self.pass_test()
+            self.pass_test(test)
         else:
             self.fail_test(test, message)
             
@@ -164,14 +170,17 @@ class TestResults:
         print('\nPassed {} of {} tests, {} failed.\n'.format(self.passes,self.numTests,self.fails))
         
     def run_test(self, testFunc, testFile):
+        qubitTypeNames = {"Z":"Zero ", "C":"Custom ", "B":"BitState ", "P":"Plus ", "D":"Debug "}
         for test in range(testFile.nTests):
             line, testComment = testFile.readline(True)
 
             qubitType,nBits,*args = testFile.parse_args(line)
 
+            bitString = ""
             if qubitType in "CBcb":
-                Qubits = argQureg(nBits, qubitType, testFile, initBits = args[0], denMat = testFunc.denMat)
+                bitString = args[0]
                 del args[0]
+                Qubits = argQureg(nBits, qubitType, testFile, initBits = bitString, denMat = testFunc.denMat)
             else:
                 Qubits = argQureg(nBits, qubitType, testFile, denMat = testFunc.denMat)
 
@@ -200,7 +209,7 @@ class TestResults:
                     
     
             if success:
-                self.pass_test()
+                self.pass_test("{}{}".format(qubitTypeNames[qubitType],bitString))
             else:
                 if testComment:
                     logFile.write('Test {Func}:{Comm} failed in {File}\n'.format(

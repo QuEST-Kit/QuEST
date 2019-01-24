@@ -1,0 +1,10 @@
+# Python
+import sys
+sys.path.insert(0, '../')
+from QuESTFunc import *
+from QuESTCore import *
+
+def run_tests():
+    Env = createQuESTEnv()
+
+    testResults.validate(Env.numRanks == 1 and Env.rank == 0)

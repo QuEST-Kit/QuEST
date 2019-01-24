@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 from ctypes import *
 from QuESTCore import *
 from sys import argv
