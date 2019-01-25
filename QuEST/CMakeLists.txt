@@ -49,7 +49,22 @@ endif()
 # ----- BUILD LIBRARY ---------------------------------------------------------
 # -----------------------------------------------------------------------------
 
+# ----- Find required packages ----------------------------------------------
+
+if (DISTRIBUTED)
+    find_package(MPI REQUIRED)
+    include_directories(${MPI_INCLUDE_PATH})
+endif()
+
+if (GPUACCELERATED)
+    find_package(CUDA REQUIRED)
+endif()
+
+# ----- Build ----------------------------------------------------------------
+
 add_subdirectory(src)
+
+message("\n\n${QuEST_SRC}\n\n")
 
 if (GPUACCELERATED)
     cuda_add_library(QuEST_lib SHARED
@@ -94,20 +109,14 @@ endif()
 
 # ----- MPI -------------------------------------------------------------------
 
-if (DISTRIBUTED)
-    find_package(MPI REQUIRED)
-    include_directories(${MPI_INCLUDE_PATH})
-endif()
-
 target_link_libraries(QuEST_lib ${MPI_C_LIBRARIES})
 
 # ----- GPU -------------------------------------------------------------------
 
-if (GPUACCELERATED)
-    find_package(CUDA REQUIRED)
-endif()
-
 target_link_libraries(QuEST_lib ${CUDA_LIBRARIES})
+set (CUDA_NVCC_FLAGS "${CUDA_NVCC_FLAGS} \
+    -arch=sm_30"
+)
 
 # ----- COMPILER FLAGS --------------------------------------------------------
 

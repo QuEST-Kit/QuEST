@@ -4,9 +4,9 @@
  * An implementation of the pure backend in ../QuEST_ops_pure.h for a GPU environment.
  */
 
-# include "../QuEST.h"
-# include "../QuEST_precision.h"
-# include "../mt19937ar.h"
+# include "QuEST.h"
+# include "QuEST_precision.h"
+# include "mt19937ar.h"
 
 # include <stdlib.h>
 # include <stdio.h>
