@@ -4,6 +4,8 @@
 # -----------------------------------------------------------------------------
 # -----------------------------------------------------------------------------
 
+# Builds QuEST as a shared library QuEST_lib.
+
 
 # -----------------------------------------------------------------------------
 # ----- LIBRARY USER SETTINGS -------------------------------------------------
@@ -21,6 +23,8 @@ if (NOT DEFINED MULTITHREADED)
     set(MULTITHREADED 1)
 endif()
 
+# Whether the program will be run in distributed mode using MPI
+# Set to 1 to enable
 if (NOT DEFINED DISTRIBUTED)
     set(DISTRIBUTED 0)
 endif()
@@ -39,8 +43,6 @@ endif()
 if (NOT DEFINED GPU_COMPUTE_CAPABILITY)
     set(GPU_COMPUTE_CAPABILITY 30)
 endif()
-
-message("\n\nmultithreaded\n\n ${MULTITHREADED}")
 
 
 # -----------------------------------------------------------------------------
@@ -65,7 +67,7 @@ target_include_directories(QuEST_lib
 )
 
 
-# ----- Macros -----------------------------------------------------
+# ----- Macros ----------------------------------------------------------------
 
 target_compile_definitions(QuEST_lib
     PRIVATE
@@ -81,6 +83,21 @@ if (${MULTITHREADED})
         set (CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${OpenMP_C_FLAGS}")
         set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
     endif()
+endif()
+
+# ----- MPI -------------------------------------------------------------------
+
+if (DISTRIBUTED)
+    find_package(MPI REQUIRED)
+    include_directories(${MPI_INCLUDE_PATH})
+endif()
+
+target_link_libraries(QuEST_lib ${MPI_C_LIBRARIES})
+
+# ----- GPU -------------------------------------------------------------------
+
+if (GPUACCELERATED)
+    find_package(CUDA REQUIRED)
 endif()
 
 # ----- COMPILER FLAGS --------------------------------------------------------

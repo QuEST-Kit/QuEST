@@ -1,7 +1,16 @@
-
-set(QuEST_SRC_CPU
+if (DISTRIBUTED)
+    set(QuEST_SRC_CPU_ARCHITECTURE_SPECIFIC
+        ${CMAKE_CURRENT_SOURCE_DIR}/QuEST_cpu_distributed.c
+    )
+else()
+    set(QuEST_SRC_CPU_ARCHITECTURE_SPECIFIC
+        ${CMAKE_CURRENT_SOURCE_DIR}/QuEST_cpu_local.c
+    )
+endif()
+    
+set(QuEST_SRC_CPU 
     ${CMAKE_CURRENT_SOURCE_DIR}/QuEST_cpu.c
-    ${CMAKE_CURRENT_SOURCE_DIR}/QuEST_cpu_local.c
+    ${QuEST_SRC_CPU_ARCHITECTURE_SPECIFIC}
     PARENT_SCOPE
 )
 

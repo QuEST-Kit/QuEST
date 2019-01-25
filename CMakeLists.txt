@@ -4,7 +4,7 @@ cmake_minimum_required(VERSION 3.1)
 # Project name
 project(QuEST_Project)
 
-# The location of the QuEST library sources
+# The location of the QuEST library sources. Will build the QuEST_lib object if required
 add_subdirectory(QuEST)
 
 # Create user executable
