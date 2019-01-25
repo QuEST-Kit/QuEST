@@ -51,9 +51,16 @@ endif()
 
 add_subdirectory(src)
 
-add_library(QuEST_lib SHARED
-    ${QuEST_SRC}
-)
+if (GPUACCELERATED)
+    cuda_add_library(QuEST_lib SHARED
+        ${QuEST_SRC}
+    )
+else ()
+    add_library(QuEST_lib SHARED
+        ${QuEST_SRC}
+    )
+endif()
+
 
 # -----------------------------------------------------------------------------
 # ----- CONFIGURE LIBRARY -----------------------------------------------------
@@ -99,6 +106,8 @@ target_link_libraries(QuEST_lib ${MPI_C_LIBRARIES})
 if (GPUACCELERATED)
     find_package(CUDA REQUIRED)
 endif()
+
+target_link_libraries(QuEST_lib ${CUDA_LIBRARIES})
 
 # ----- COMPILER FLAGS --------------------------------------------------------
 
