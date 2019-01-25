@@ -19,7 +19,7 @@ def init_tests(unitTestPath, logFilePath, tolerance=None, quiet=False):
     global unitPath
     global Env
     global testResults
-    unitPath = unitTestPath
+    unitPath = unitTestPath.split(':')
     logFile = open(logFilePath,'w')
     Env = createQuESTEnv()
     testResults = TestResults(tolerance, not quiet)
@@ -245,23 +245,23 @@ class TestResults:
         for testFunc in testFuncsList:
     
             logFile.write('\nRunning test {}\n'.format(testFunc.funcname))
-            
-            testPath = unitPath+testFunc.funcname+'.test'
-            
 
-            if os.path.isfile(testPath) :
-                with open(testPath,'r') as testFile:
-                    testPyth = testFile.readline().lstrip('# ').strip()
-                
-                    if testPyth == "Python": # If file flagged as Python
-                        self.run_python_test(testPath)
-                        continue
-                testFile = QuESTTestFile(testPath)
+            for path in unitPath:
+                testPath = path+testFunc.funcname+'.test'
+                if os.path.isfile(testPath) : break
             else:
                 logFile.write(fnfWarning.format(testPath))
                 self.fail_test()
                 continue
-    
+
+            with open(testPath,'r') as testFile:
+                testPyth = testFile.readline().lstrip('# ').strip()
+            
+                if testPyth == "Python": # If file flagged as Python
+                    self.run_python_test(testPath)
+                    continue
+            testFile = QuESTTestFile(testPath)
+
             self.run_test(testFunc, testFile)
     
         self.write_term()
@@ -277,13 +277,14 @@ class TestResults:
     
         if os.path.isfile(testFileName):
             testPath = testFileName
-        elif os.path.isfile(unitPath+testFileName+'.test'):
-            testPath = unitPath+testFileName+'.test'
         else:
-            logFile.write(fnfWarning.format(testFileName))
-            self.fail_test()
-            print()
-            return
+            for path in unitPath:
+                testPath = path+testFileName+'.test'
+                if os.path.isfile(testPath) : break
+            else:
+                logFile.write(fnfWarning.format(testPath))
+                self.fail_test()
+                
             
             
         print('Running test '+testPath+":", end=' ')
@@ -401,9 +402,9 @@ def gen_test(testFunc, testFile):
 
 def gen_tests(testsToGen=["all"]):
     from testset import tests
-    for testSet in testToGen:
+    for testSet in testsToGen:
     
         for testFunc in tests[testSet] :
             if testFunc in tests["don't_generate"]: continue 
-            gen_test(testFunc, unitPath+testFunc.funcname+".test")
+            gen_test(testFunc, unitPath[0]+testFunc.funcname+".test")
 
