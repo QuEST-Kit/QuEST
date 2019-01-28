@@ -44,18 +44,9 @@ if (NOT DEFINED GPU_COMPUTE_CAPABILITY)
     set(GPU_COMPUTE_CAPABILITY 30)
 endif()
 
-
 # -----------------------------------------------------------------------------
-# ----- WRITE TEST CONFIG FILE ------------------------------------------------
+# ----- FIND PACKAGES ---------------------------------------------------------
 # -----------------------------------------------------------------------------
-
-#configure_file(QuESTTest.config.in ${PATH_TO_TESTS}/QuESTTest.config)
-
-# -----------------------------------------------------------------------------
-# ----- BUILD LIBRARY ---------------------------------------------------------
-# -----------------------------------------------------------------------------
-
-# ----- Find required packages ----------------------------------------------
 
 if (DISTRIBUTED)
     find_package(MPI REQUIRED)
@@ -64,20 +55,6 @@ endif()
 
 if (GPUACCELERATED)
     find_package(CUDA REQUIRED)
-endif()
-
-# ----- Build ----------------------------------------------------------------
-
-add_subdirectory(src)
-
-if (GPUACCELERATED)
-    cuda_add_library(QuEST SHARED
-        ${QuEST_SRC}
-    )
-else ()
-    add_library(QuEST SHARED
-        ${QuEST_SRC}
-    )
 endif()
 
 
@@ -93,7 +70,7 @@ target_include_directories(QuEST
 )
 
 
-# ----- Macros ----------------------------------------------------------------
+# ----- Definitions -----------------------------------------------------------
 
 target_compile_definitions(QuEST
     PRIVATE
@@ -111,18 +88,14 @@ if (${MULTITHREADED})
     endif()
 endif()
 
-# ----- MPI -------------------------------------------------------------------
-
-target_link_libraries(QuEST ${MPI_C_LIBRARIES})
-
-# ----- GPU -------------------------------------------------------------------
+# ----- CUDA FLAGS ------------------------------------------------------------
 
 set (CUDA_NVCC_FLAGS "${CUDA_NVCC_FLAGS} \
     -arch=sm_30"
 )
-target_link_libraries(QuEST ${CUDA_LIBRARIES})
 
-# ----- COMPILER FLAGS --------------------------------------------------------
+
+# ----- C/C++ COMPILER FLAGS --------------------------------------------------
 
 # set C/C++ compiler flags that are common between compilers 
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} \
@@ -161,6 +134,35 @@ elseif ("${CMAKE_C_COMPILER_ID}" STREQUAL "Intel")
 elseif ("${CMAKE_C_COMPILER_ID}" STREQUAL "MSVC")
   # using Visual Studio
 endif()
+
+# -----------------------------------------------------------------------------
+# ----- BUILD LIBRARY ---------------------------------------------------------
+# -----------------------------------------------------------------------------
+
+
+add_subdirectory(src)
+
+if (GPUACCELERATED)
+    cuda_add_library(QuEST SHARED
+        ${QuEST_SRC}
+    )
+else ()
+    add_library(QuEST SHARED
+        ${QuEST_SRC}
+    )
+endif()
+
+# -----------------------------------------------------------------------------
+# ----- LINK LIBRARY ---------------------------------------------------------
+# -----------------------------------------------------------------------------
+
+# ----- MPI -------------------------------------------------------------------
+
+target_link_libraries(QuEST ${MPI_C_LIBRARIES})
+
+# ----- GPU -------------------------------------------------------------------
+
+target_link_libraries(QuEST ${CUDA_LIBRARIES})
 
 
 
