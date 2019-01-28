@@ -77,12 +77,12 @@ class QuESTTestFile:
 
     def parse_args(self, line):
         """ Split arguments, but maintain arrays and complex arrays as a block """
-        line = self.remove_brackets(line)
+        line = self._remove_brackets(line)
         return line.split()
 
-    def remove_brackets(self, line):
-        """ Remove all brackets from a given string (for parsing complex/arrays nicely) """
-        remBrac = ''.maketrans('[{()}]','      ','[{()}]')
+    def _remove_brackets(self, line):
+        """ Remove all brackets and underscores from a given string (for parsing complex/arrays nicely) """
+        remBrac = ''.maketrans('[{()}]_|><','          ','[{()}]_|><')
         return line.translate(remBrac)
                 
     def read_state_vec(self, numQubits = 0, denMat=False):
@@ -109,7 +109,10 @@ class TestResults:
         self.passes, self.fails, self.numTests = [0]*3
         self.tolerance = tolerance
         self.printToScreen = printToScreen
-        
+
+    def _write_term(self, *out, **kwargs):
+        if self.printToScreen: print(*out, **kwargs)
+            
     def compareStates(self, a, b, tol = None):
         if tol is None:
             tol = self.tolerance
@@ -137,9 +140,6 @@ class TestResults:
                 
         return True
 
-    def write_term(self, *out, **kwargs):
-        if self.printToScreen: print(*out, **kwargs)
-    
     def compareReals(self, a, b, tol = None):
         if tol is None:
             tol = self.tolerance
@@ -152,16 +152,16 @@ class TestResults:
         if abs(a.real - b.real) > tol or abs(a.imag - b.imag) > tol: return False
         return True
                 
-    def pass_test(self, test=""):
-        self.write_term('.',end='')
-        logFile.write('{} Passed\n'.format(test.strip()))
+    def pass_test(self, testName=""):
+        self._write_term('.',end='')
+        logFile.write('{} Passed\n'.format(testName.strip()))
         self.numTests += 1
         self.passes += 1
 
-    def fail_test(self, test = "", message = ""):
-        self.write_term('F',end='')
-        if test or message:
-            logFile.write('Test {} failed: {}\n'.format(test,message))
+    def fail_test(self, testName = "", message = ""):
+        self._write_term('F',end='')
+        if testName or message:
+            logFile.write('Test {} failed: {}\n'.format(testName,message))
         self.numTests += 1
         self.fails += 1
 
@@ -172,9 +172,9 @@ class TestResults:
             self.fail_test(test, message)
             
     def print_results(self):
-        self.write_term('\nPassed {} of {} tests, {} failed.\n'.format(self.passes,self.numTests,self.fails))
+        self._write_term('\nPassed {} of {} tests, {} failed.\n'.format(self.passes,self.numTests,self.fails))
         
-    def run_test(self, testFunc, testFile):
+    def _run_test(self, testFunc, testFile):
         qubitTypeNames = {"Z":"Zero ", "C":"Custom ", "B":"BitState ", "P":"Plus ", "D":"Debug "}
         for test in range(testFile.nTests):
             line, testComment = testFile.readline(True)
@@ -240,7 +240,7 @@ class TestResults:
 
     def run_std_test(self, testFuncsList,name=''):
     
-        self.write_term('Running tests '+name+":", end=' ')
+        self._write_term('Running tests '+name+":", end=' ')
         
         for testFunc in testFuncsList:
     
@@ -258,15 +258,15 @@ class TestResults:
                 testPyth = testFile.readline().lstrip('# ').strip()
             
                 if testPyth == "Python": # If file flagged as Python
-                    self.run_python_test(testPath)
+                    self._run_python_test(testPath)
                     continue
             testFile = QuESTTestFile(testPath)
 
-            self.run_test(testFunc, testFile)
+            self._run_test(testFunc, testFile)
     
-        self.write_term()
+        self._write_term()
 
-    def run_python_test(self, testPath):
+    def _run_python_test(self, testPath):
         spec = importlib.util.spec_from_file_location("templib", testPath)
         templib = importlib.util.module_from_spec(spec)
         spec.loader.exec_module(templib)
@@ -285,16 +285,14 @@ class TestResults:
                 logFile.write(fnfWarning.format(testPath))
                 self.fail_test()
                 
-            
-            
-        print('Running test '+testPath+":", end=' ')
+        self._write_term('Running test '+testPath+":", end=' ')
     
         if testPath.endswith('.test'): # Run standard formatted tests
             with open(testPath,'r') as testFile:
                 testFunc = testFile.readline().lstrip('# ').strip()
                 
                 if testFunc.capitalize() == "Python": # If file flagged as Python
-                    self.run_python_test(testPath)
+                    self._run_python_test(testPath)
                     return
                 
                 if testFunc not in list_funcnames():
@@ -302,15 +300,15 @@ class TestResults:
             testFunc = tests[testFunc]
             testFile = QuESTTestFile(testPath)
 
-            self.run_test(*testFunc, testFile)
+            self._run_test(*testFunc, testFile)
     
     
         elif testPath.endswith('.py'): # Run custom test scripts
-            self.run_python_test(testPath)
+            self._run_python_test(testPath)
         else:
             raise IOError('Unrecognised filetype in test run of file {}'.format(testPath))
                 
-        print()
+        self._write_term()
 
 def argQureg(nBits, qubitType, testFile=None, initBits = None, denMat = False):
     nBits = int(nBits)
@@ -330,13 +328,12 @@ def argQureg(nBits, qubitType, testFile=None, initBits = None, denMat = False):
                                   file = testFile.name, line=testFile.nLine))
 
     elif qubitType == "B":
-        if any(bit not in "01" for bit in initBits ):
-            raise IOError(fileWarning.format(message = 'Expected qubit state, received {}'.format(state)))
-
         try:
             state = int(initBits, 2)
         except TypeError:
-            raise IOError(fileWarning.format(message = 'Expected qubit state, received {}'.format(state)))
+            raise IOError(fileWarning.format(message = 'Expected qubit state, received {}'.format(state),
+                                              file = testFile.name, line=testFile.nLine))
+        
         
         nIn = len(initBits)
         if (nBits != nIn):

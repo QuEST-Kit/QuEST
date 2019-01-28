@@ -9,7 +9,10 @@ fnfWarning  = 'File {} not found \n'
 funWarning  = 'Function {} does not exist \n'
 typeWarning = 'Unrecognised type {} requested in function {} \n'
 
-QuESTLib = CDLL('./QuEST.so')
+QuESTLib = None
+def init_QuESTLib(QuESTPath):
+    global QuESTLib
+    QuESTLib = CDLL(QuESTPath + "QuEST.so")
 
 qreal = c_double
 
@@ -144,7 +147,8 @@ def argPointerLongInt(arg):
 class QuESTTestee:
     basicTypeConv = {"c_int":int, "c_long":int, "c_ulong":int, "c_longlong":int, "c_double":float,
                      "Vector":argVector, "ComplexMatrix2":argComplexMatrix2, "ComplexArray":argComplexArray,
-                     "Complex":argComplex, "LP_c_double":argPointerQreal, "LP_c_int":argPointerInt, "LP_c_long":argPointerLongInt }
+                     "Complex":argComplex, "LP_c_double":argPointerQreal, "LP_c_int":argPointerInt,
+                     "LP_c_long":argPointerLongInt }
 
     funcsList = []
     funcsDict = {}
@@ -178,10 +182,10 @@ class QuESTTestee:
             specArg = list(argsList)
 
         if (len(specArg) == 0 and self.nArgs != 0) or (self.nArgs == 0):
-            self.fix_types(specArg)
+            self._fix_types(specArg)
             return self.thisFunc(*self.defArg)
         elif isinstance(specArg,list) and len(specArg) == self.nArgs:
-            self.fix_types(specArg)
+            self._fix_types(specArg)
             try:
                 return self.thisFunc(*specArg)
             except ArgumentError:
@@ -191,7 +195,7 @@ class QuESTTestee:
             print(specArg)
             raise IOError(argWarning.format(self.funcname, self.nArgs, len(specArg)))
 
-    def fix_types(self,args):
+    def _fix_types(self,args):
         for i in range(self.nArgs):
             reqType = self.thisFunc.argtypes[i]
             reqTypeName = self.thisFunc.argtypes[i].__name__
@@ -217,8 +221,9 @@ complex0 = Complex(0.,0.)
 complex1 = Complex(1.,0.)
 complexi = Complex(0.,1.)
 complexHalf = Complex(0.5,0.)
-complexSqr2 = Complex(1./math.sqrt(2),0.0)
-unitMatrix = ComplexMatrix2(complex1,complex0,complex0,complex1)
+complexSqr2 = Complex(math.sqrt(2),0.0)
+complexRSqr2 = Complex(1./math.sqrt(2),0.0)
+idenMatrix = ComplexMatrix2(complex1,complex0,complex0,complex1)
 xDir = Vector(1.,0.,0.)
 yDir = Vector(0.,1.,0.)
 zDir = Vector(0.,0.,1.)
@@ -231,12 +236,12 @@ def rand_norm_comp():
     return newComplex
 
 def rand_norm_comp_pair():
-    return rand_norm_comp()*complexSqr2, rand_norm_comp()*complexSqr2
+    return rand_norm_comp()*complexRSqr2, rand_norm_comp()*complexRSqr2
 
-def rand_norm_mat():
+def rand_unit_mat():
     elems = []
-    elems += [complexSqr2*rand_norm_comp()]
-    elems += [complexSqr2*rand_norm_comp()]
+    elems += [complexRSqr2*rand_norm_comp()]
+    elems += [complexRSqr2*rand_norm_comp()]
     elems += [Complex(0,0)-elems[1].conj()]
     elems += [elems[0].conj()]
     newMat = ComplexMatrix2(*elems)

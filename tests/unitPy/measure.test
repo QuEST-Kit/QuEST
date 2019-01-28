@@ -1,11 +1,8 @@
 # Python
-import sys
-sys.path.insert(0, '../')
 from QuESTFunc import *
 from QuESTCore import *
 
 def run_tests():
-    Env = createQuESTEnv()
     prob = qreal(0.)
     Qubits = createQureg(3,Env) 
     initZeroState(Qubits)

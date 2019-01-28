@@ -6,7 +6,6 @@ from QuESTCore import *
 import math
 
 def run_tests():
-    Env = createQuESTEnv()
     numQubits = 3
     Qubits = createDensityQureg(numQubits, Env)
 

@@ -8,7 +8,6 @@ import math
 
 def run_tests():
 
-    Env = createQuESTEnv()
     seedQuEST([ (3*i)%64 for i in range(64)], 64)
 
     QuESTRand = QuESTTestee('genrand_real1',retType = qreal)

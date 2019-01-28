@@ -5,7 +5,6 @@ from QuESTFunc import *
 from QuESTCore import *
 
 def run_tests():
-    Env = createQuESTEnv()
     destroyQuESTEnv(Env)
 
     # If we reached here, we hope we've destroyed it!

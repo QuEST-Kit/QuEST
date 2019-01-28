@@ -5,6 +5,5 @@ from QuESTFunc import *
 from QuESTCore import *
 
 def run_tests():
-    Env = createQuESTEnv()
 
     testResults.validate(Env.numRanks == 1 and Env.rank == 0)

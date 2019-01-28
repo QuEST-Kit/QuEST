@@ -1,9 +1,5 @@
 #!/usr/bin/env python3
 
-from ctypes import *
-from QuESTCore import *
-from testset import *
-from sys import argv
 import argparse
 
 parser = argparse.ArgumentParser(description='Python test suite for the Quantum Exact Simulation Toolkit (QuEST).',epilog='''NOTE: Tests can be specified as full filepaths or testnames, which will be searched for in the TESTPATH, with the earliest path taking priority. 
@@ -11,18 +7,35 @@ parser = argparse.ArgumentParser(description='Python test suite for the Quantum 
 Tests with a full filepath can have ".test" or ".py" extensions. 
 
 Custom .test files can be found as TESTPATH/TESTS.test or by a full filepath. 
-Custom .py files must be specified by a full filepath. ''' )
+Custom .py files must be specified by a full filepath. ''', add_help=False)
+
+# Need to pull some trickery to allow QuESTLib redirection. Probably cleaner way to do this, but...
+parser.add_argument('-h','--help', help="Show this help message and exit", action='store_true')
+parser.add_argument('-Q','--questpath', nargs=1, help="Define alternative QuEST library location. Default=%(default)s", default='./')
+from QuESTTypes import init_QuESTLib
+QuESTPath = parser.parse_known_args()
+
+init_QuESTLib(QuESTPath[0].questpath)
+from ctypes import *
+from QuESTCore import *
+from testset import *
+
 parser.add_argument('-g','--generate', help='Generate a new set of benchmark tests for tests listed redirected to TESTPATH.', action='store_true')
 parser.add_argument('-q','--quiet', help='Do not print results to screen', action='store_true')
-parser.add_argument('-l','--logfile', help='Redirect log. DEFAULT=QuESTLog.log', default='QuESTLog.log')
-parser.add_argument('-p','--testpath', help='Set test directory search path as colon-separated list. DEFAULT=unitPy/', default='unitPy/')
-parser.add_argument('-t','--tolerance', type=float, help='Set the test failure tolerance for float values. DEFAULT=1e-10', default=1.e-10)
+parser.add_argument('-l','--logfile', help='Redirect log. DEFAULT=%(default)s', default='QuESTLog.log')
+parser.add_argument('-p','--testpath', help='Set test directory search path as colon-separated list. DEFAULT=%(default)s', default='unitPy/')
+parser.add_argument('-t','--tolerance', type=float, help='Set the test failure tolerance for float values. DEFAULT=%(default)s', default=1.e-10)
 parser.add_argument('tests', nargs=argparse.REMAINDER, metavar="TESTS",
-                    help='Set of tests one wishes to run, available default sets:'+", ".join(printSets)+", any custom test (see NOTE) or any exposed QuEST function. DEFAULT=all")
+                    help='Set of tests one wishes to run, available default sets:'+", ".join(printSets)+", any custom test (see NOTE) or any exposed QuEST function. DEFAULT=%(default)s")
 
 argList = parser.parse_args()
-if not argList.tests: argList.tests = ["all"]
+if argList.help:
+    parser.print_help()
+    quit()
+
 print(argList)
+
+if not argList.tests: argList.tests = ["all"]
 
 testResults = init_tests(unitTestPath = argList.testpath, logFilePath = argList.logfile, tolerance = argList.tolerance, quiet = argList.quiet)
 

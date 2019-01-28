@@ -59,7 +59,7 @@ rotateAroundAxis = QuESTTestee ("rotateAroundAxis", retType=None, argType=[Qureg
 rotateX          = QuESTTestee ("rotateX",          retType=None, argType=[Qureg,_targetQubit,qreal], defArg=[None,0,random.uniform(0.,360.)])
 rotateY          = QuESTTestee ("rotateY",          retType=None, argType=[Qureg,_targetQubit,qreal], defArg=[None,0,random.uniform(0.,360.)])
 rotateZ          = QuESTTestee ("rotateZ",          retType=None, argType=[Qureg,_targetQubit,qreal], defArg=[None,0,random.uniform(0.,360.)])
-unitary          = QuESTTestee ("unitary",          retType=None, argType=[Qureg,_targetQubit,ComplexMatrix2], defArg=[None,0,rand_norm_mat()]) 
+unitary          = QuESTTestee ("unitary",          retType=None, argType=[Qureg,_targetQubit,ComplexMatrix2], defArg=[None,0,rand_unit_mat()]) 
 
 # Controlled Operations
 controlledCompactUnitary   = QuESTTestee ("controlledCompactUnitary",   retType=None, argType=[Qureg,_controlQubit,_targetQubit,Complex,Complex], defArg=[None,1,0,*rand_norm_comp_pair()])
@@ -71,12 +71,12 @@ controlledRotateAroundAxis = QuESTTestee ("controlledRotateAroundAxis", retType=
 controlledRotateX          = QuESTTestee ("controlledRotateX",          retType=None, argType=[Qureg,_controlQubit,_targetQubit,qreal], defArg=[None,1,0,90.])
 controlledRotateY          = QuESTTestee ("controlledRotateY",          retType=None, argType=[Qureg,_controlQubit,_targetQubit,qreal], defArg=[None,1,0,90.])
 controlledRotateZ          = QuESTTestee ("controlledRotateZ",          retType=None, argType=[Qureg,_controlQubit,_targetQubit,qreal], defArg=[None,1,0,90.])
-controlledUnitary          = QuESTTestee ("controlledUnitary",          retType=None, argType=[Qureg,_controlQubit,_targetQubit,ComplexMatrix2], defArg=[None,1,0,rand_norm_mat()]) 
+controlledUnitary          = QuESTTestee ("controlledUnitary",          retType=None, argType=[Qureg,_controlQubit,_targetQubit,ComplexMatrix2], defArg=[None,1,0,rand_unit_mat()]) 
 
 # Multi-controlled Operations
 multiControlledPhaseFlip  = QuESTTestee ("multiControlledPhaseFlip",  retType=None, argType=[Qureg,POINTER(c_int),c_int], defArg=[None,[0],1])
 multiControlledPhaseShift = QuESTTestee ("multiControlledPhaseShift", retType=None, argType=[Qureg,POINTER(c_int),c_int,qreal], defArg=[None,[0],1,random.uniform(0.,360.)])
-multiControlledUnitary    = QuESTTestee ("multiControlledUnitary",    retType=None, argType=[Qureg,POINTER(c_int),c_int,_targetQubit,ComplexMatrix2], defArg=[None,[1],1,0,unitMatrix]) 
+multiControlledUnitary    = QuESTTestee ("multiControlledUnitary",    retType=None, argType=[Qureg,POINTER(c_int),c_int,_targetQubit,ComplexMatrix2], defArg=[None,[1],1,0,rand_unit_mat()]) 
 
 # Density Matrix Operations
 addDensityMatrix             = QuESTTestee ("addDensityMatrix",             retType=None, argType=[Qureg,qreal,Qureg], defArg=[None,50.,None], denMat=True)
