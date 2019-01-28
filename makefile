@@ -209,9 +209,9 @@ else ifeq ($(COMPILER_TYPE), INTEL)
 endif
 
 ifeq ($(TEST), 1)
-	QUEST_LIB := QuEST
-	OBJ_EXT = .so
-	LIB_NAME = $(addsuffix $(OBJ_EXT), $(QUEST_LIB))
+	QUEST_LIB := libQuEST
+	LIB_EXT = .so
+	LIB_NAME = $(addsuffix $(LIB_EXT), $(QUEST_LIB))
 	C_FLAGS += -fPIC
 endif
 

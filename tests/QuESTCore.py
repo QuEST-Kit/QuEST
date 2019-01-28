@@ -1,6 +1,5 @@
 import os.path
 from QuESTFunc import *
-from QuESTTypes import *
 from testset import tests
 import importlib.util
 import importlib.machinery
@@ -20,6 +19,9 @@ def init_tests(unitTestPath, logFilePath, tolerance=None, quiet=False):
     global Env
     global testResults
     unitPath = unitTestPath.split(':')
+    for path in range(len(unitPath)):
+        unitPath[path] = unitPath[path].rstrip('/ ') + '/'
+
     logFile = open(logFilePath,'w')
     Env = createQuESTEnv()
     testResults = TestResults(tolerance, not quiet)

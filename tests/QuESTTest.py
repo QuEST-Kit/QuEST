@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 
+# Import libraries needed for initialisation
 import argparse
+from QuESTBase import init_QuESTLib
 
 parser = argparse.ArgumentParser(description='Python test suite for the Quantum Exact Simulation Toolkit (QuEST).',epilog='''NOTE: Tests can be specified as full filepaths or testnames, which will be searched for in the TESTPATH, with the earliest path taking priority. 
 
@@ -11,12 +13,14 @@ Custom .py files must be specified by a full filepath. ''', add_help=False)
 
 # Need to pull some trickery to allow QuESTLib redirection. Probably cleaner way to do this, but...
 parser.add_argument('-h','--help', help="Show this help message and exit", action='store_true')
-parser.add_argument('-Q','--questpath', nargs=1, help="Define alternative QuEST library location. Default=%(default)s", default='./')
-from QuESTTypes import init_QuESTLib
+parser.add_argument('-Q','--questpath', help="Define alternative QuEST library location. The library must be named 'libQuEST.so' to be found. Default=%(default)s", default='../')
+
+# Just parse -Q
 QuESTPath = parser.parse_known_args()
 
 init_QuESTLib(QuESTPath[0].questpath)
-from ctypes import *
+
+# Import remaining libraries
 from QuESTCore import *
 from testset import *
 
@@ -32,8 +36,6 @@ argList = parser.parse_args()
 if argList.help:
     parser.print_help()
     quit()
-
-print(argList)
 
 if not argList.tests: argList.tests = ["all"]
 

@@ -1,20 +1,15 @@
-from ctypes import *
+from QuESTBase import *
 import random
 import math
 
-# Declare several warnings which may occur
-argWarning  = 'Bad argument list in {0:s} expected {1:d}, recieved {2:d} \n'
-fileWarning = '{message} in {file} at line {line} \n'
-fnfWarning  = 'File {} not found \n'
-funWarning  = 'Function {} does not exist \n'
-typeWarning = 'Unrecognised type {} requested in function {} \n'
+QuESTPrecFunc = QuESTLib['getQuEST_PREC']
+QuESTPrecFunc.restype = c_int
+QuESTPrec = QuESTPrecFunc()
 
-QuESTLib = None
-def init_QuESTLib(QuESTPath):
-    global QuESTLib
-    QuESTLib = CDLL(QuESTPath + "QuEST.so")
-
-qreal = c_double
+if   QuESTPrec == 1: qreal = c_float
+elif QuESTPrec == 2: qreal = c_double
+elif QuESTPrec == 4: qreal = c_longdouble
+else: raise TypeError('Unable to determine precision of qreal')
 
 class QASMLogger(Structure):
     _fields_ = [("buffer",c_char_p),

@@ -706,6 +706,10 @@ void reportStateToScreen(Qureg qureg, QuESTEnv env, int reportRank)  {
     statevec_reportStateToScreen(qureg, env, reportRank);
 }
 
+int  getQuEST_PREC(void) {
+  return sizeof(qreal)/4;
+}
+  
 
 #ifdef __cplusplus
 }

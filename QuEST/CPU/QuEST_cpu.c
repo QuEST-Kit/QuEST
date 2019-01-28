@@ -1089,9 +1089,9 @@ void statevec_createQureg(Qureg *qureg, int numQubits, QuESTEnv env)
 
 void statevec_destroyQureg(Qureg qureg, QuESTEnv env){
 
-    qureg->numQubitsInStateVec = 0;
-    qureg->numAmpsTotal = 0;
-    qureg->numAmpsPerChunk = 0;
+    qureg.numQubitsInStateVec = 0;
+    qureg.numAmpsTotal = 0;
+    qureg.numAmpsPerChunk = 0;
 
     free(qureg.stateVec.real);
     free(qureg.stateVec.imag);

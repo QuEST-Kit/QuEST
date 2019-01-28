@@ -45,6 +45,12 @@ int compareStates(Qureg mq1, Qureg mq2, qreal precision);
  * */
 void reportNodeList(QuESTEnv env);
 
+
+/** Return the precision of qreal for use in testing 
+ * */
+  
+int QuESTPrecision(void);
+  
 #ifdef __cplusplus
 }
 #endif
