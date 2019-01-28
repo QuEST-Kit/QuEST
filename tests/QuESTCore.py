@@ -371,7 +371,7 @@ def argQureg(nBits, qubitType, testFile=None, initBits = None, denMat = False):
     return Qubits
 
 
-def gen_test(testFunc, testFile):
+def gen_test(testFunc, testFile, nQubits = 3):
     for i in range(1,testFunc.nArgs):
         if testFunc.defArg[i] is None:
             print('Unable to generate test for function {} invalid default arguments'.format(testFunc.funcname))
@@ -384,7 +384,6 @@ def gen_test(testFunc, testFile):
         outputFile.write('3\n')
         
         for qubitType in "ZPD":
-            nQubits = 3
             args = [argQureg(nQubits, qubitType,denMat=testFunc.denMat)]
             argString = "{} {}".format(qubitType, nQubits)
             for arg in range(1,testFunc.nArgs):
@@ -399,11 +398,11 @@ def gen_test(testFunc, testFile):
                 outputFile.write(str(result)+"\n")
 
 
-def gen_tests(testsToGen=["all"]):
+def gen_tests(testsToGen=["all"], nQubits=None):
     from testset import tests
     for testSet in testsToGen:
     
         for testFunc in tests[testSet] :
             if testFunc in tests["don't_generate"]: continue 
-            gen_test(testFunc, unitPath[0]+testFunc.funcname+".test")
+            gen_test(testFunc, unitPath[0]+testFunc.funcname+".test", nQubits)
 
