@@ -4,7 +4,7 @@
 # -----------------------------------------------------------------------------
 # -----------------------------------------------------------------------------
 
-# Builds QuEST as a shared library QuEST_lib.
+# Builds QuEST as a shared library libQuEST.so
 
 
 # -----------------------------------------------------------------------------
@@ -46,6 +46,12 @@ endif()
 
 
 # -----------------------------------------------------------------------------
+# ----- WRITE TEST CONFIG FILE ------------------------------------------------
+# -----------------------------------------------------------------------------
+
+#configure_file(QuESTTest.config.in ${PATH_TO_TESTS}/QuESTTest.config)
+
+# -----------------------------------------------------------------------------
 # ----- BUILD LIBRARY ---------------------------------------------------------
 # -----------------------------------------------------------------------------
 
@@ -64,14 +70,12 @@ endif()
 
 add_subdirectory(src)
 
-message("\n\n${QuEST_SRC}\n\n")
-
 if (GPUACCELERATED)
-    cuda_add_library(QuEST_lib SHARED
+    cuda_add_library(QuEST SHARED
         ${QuEST_SRC}
     )
 else ()
-    add_library(QuEST_lib SHARED
+    add_library(QuEST SHARED
         ${QuEST_SRC}
     )
 endif()
@@ -83,7 +87,7 @@ endif()
 
 # ----- Location of header files ----------------------------------------------
 
-target_include_directories(QuEST_lib 
+target_include_directories(QuEST 
     PRIVATE src
     PUBLIC include
 )
@@ -91,7 +95,7 @@ target_include_directories(QuEST_lib
 
 # ----- Macros ----------------------------------------------------------------
 
-target_compile_definitions(QuEST_lib
+target_compile_definitions(QuEST
     PRIVATE
     QuEST_PREC=${PRECISION}
 )
@@ -109,14 +113,14 @@ endif()
 
 # ----- MPI -------------------------------------------------------------------
 
-target_link_libraries(QuEST_lib ${MPI_C_LIBRARIES})
+target_link_libraries(QuEST ${MPI_C_LIBRARIES})
 
 # ----- GPU -------------------------------------------------------------------
 
-target_link_libraries(QuEST_lib ${CUDA_LIBRARIES})
 set (CUDA_NVCC_FLAGS "${CUDA_NVCC_FLAGS} \
     -arch=sm_30"
 )
+target_link_libraries(QuEST ${CUDA_LIBRARIES})
 
 # ----- COMPILER FLAGS --------------------------------------------------------
 
