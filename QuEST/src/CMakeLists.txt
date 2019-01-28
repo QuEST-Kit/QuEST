@@ -4,8 +4,6 @@ else()
     add_subdirectory(CPU)
 endif()
 
-message("!\n\n${QuEST_SRC_ARCHITECTURE_DEPENDENT}\n\n!")
-
 set(QuEST_SRC
     ${CMAKE_CURRENT_SOURCE_DIR}/QuEST.c
     ${CMAKE_CURRENT_SOURCE_DIR}/QuEST_common.c

@@ -16,10 +16,10 @@ add_executable(demo tutorial_example.c)
 target_link_libraries(demo QuEST m)
 
 
-set(QuEST_TEST_DIR "tests")
+set(QuEST_TEST_DIR "../tests")
 
 #add_subdirectory(${QuEST_TEST_DIR})
 add_custom_target(tests
-    COMMAND
+    COMMAND ${QuEST_TEST_DIR}/example.sh
     DEPENDS QuEST
 )
