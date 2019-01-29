@@ -40,9 +40,69 @@ endif()
 if (NOT DEFINED GPUACCELERATED)
     set(GPUACCELERATED 0)
 endif()
-# GPU hardware dependent, lookup at https://developer.nvidia.com/cuda-gpus, write without fullstop
+# GPU hardware dependent, lookup at https://developer.nvidia.com/cuda-gpus, 
+# write without fullstop
 if (NOT DEFINED GPU_COMPUTE_CAPABILITY)
     set(GPU_COMPUTE_CAPABILITY 52)
+endif()
+
+
+
+
+
+# *****************************************************************************
+# ***** NO CHANGES SHOULD BE REQUIRED BY THE USER BEYOND THIS POINT ***********
+# *****************************************************************************
+
+
+# -----------------------------------------------------------------------------
+# ----- CHECK FOR VALID CONFIG SETTINGS ---------------------------------------
+# -----------------------------------------------------------------------------
+
+# ----- FATAL -----------------------------------------------------------------
+
+if (${DISTRIBUTED} AND ${GPUACCELERATED})
+    message(FATAL_ERROR "DISTRIBUTED=${DISTRIBUTED} and \
+        GPUACCELERATED=${GPUACCELERATED} set but \
+        distributed GPU acceleration not supported. Aborting")
+endif()
+
+if ( NOT(${PRECISION} EQUAL 1) AND
+     NOT(${PRECISION} EQUAL 2) AND 
+     NOT(${PRECISION} EQUAL 4) )
+    message(FATAL_ERROR "PRECISION=${PRECISION} set but valid options for \
+        precision are only 1 for single precision, 2 for double precision \
+        or 4 for quad precision. Aborting")
+endif()
+
+if ( (${PRECISION} EQUAL 4) AND 
+        ${GPUACCELERATED} )
+    message(FATAL_ERROR "PRECISION=${PRECISION} but quad precision is not \
+        supported on GPU. Aborting")
+endif()
+
+# ----- WARNINGS --------------------------------------------------------------
+
+if (${GPUACCELERATED} AND ${MULTITHREADED})
+    message(WARNING "MULTITHREADED=${MULTITHREADED} and \
+        GPUACCELERATED=${GPUACCELERATED} set but GPU \
+        version makes no use of multithreading. Setting MULTITHREADED=0")
+endif()
+
+#TODO Add other supported Clang versions if found
+if ( ("${CMAKE_C_COMPILER_ID}" STREQUAL "Clang") AND 
+        ${GPUACCELERATED} AND
+        NOT("${CMAKE_C_COMPILER_VERSION}" STREQUAL "3.7.0") )
+    message(WARNING "Some versions of Clang are not NVIDIA-GPU compatible. \
+        If compilation fails, try Clang 3.7.")
+endif()
+
+if ( ${GPUACCELERATED} AND 
+    ("${CMAKE_C_COMPILER_ID}" STREQUAL "GNU") AND
+    ("${CMAKE_SYSTEM_NAME}" STREQUAL "DARWIN") ) # DARWIN means Mac OS X
+    message(WARNING "On some platforms (e.g. OSX), NVIDIA-GPUs are not \
+        compatible with GNU compilers. If compilation fails, try an \
+        alternative compiler, like Clang 3.7")
 endif()
 
 # -----------------------------------------------------------------------------
@@ -59,6 +119,8 @@ if (GPUACCELERATED)
 endif()
 
 
+
+
 # -----------------------------------------------------------------------------
 # ----- SET COMPILER FLAGS ----------------------------------------------------
 # -----------------------------------------------------------------------------
@@ -66,7 +128,7 @@ endif()
 
 # ----- OPENMP ----------------------------------------------------------------
 
-if (${MULTITHREADED})
+if (${MULTITHREADED} AND NOT ${GPUACCELERATED})
     find_package(OpenMP)
     if (OPENMP_FOUND)
         set (CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${OpenMP_C_FLAGS}")
