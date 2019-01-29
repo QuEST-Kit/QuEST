@@ -23,7 +23,7 @@ endif()
 # -----------------------------------------------------------------------------
 
 # Create user executable
-add_executable(demo runTests.c)
+add_executable(demo tutorial_example.c)
 
 # Link libraries to user executable, including QuEST library
 target_link_libraries(demo QuEST m)
