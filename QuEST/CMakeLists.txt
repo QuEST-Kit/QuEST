@@ -20,7 +20,6 @@
 #   cmake -DDISTRIBUTED=1 ..
 
 
-# TODO -- this should only be part of debug mode. User shouldn't care.
 set(MULTITHREADED 1 CACHE STRING 
     "Switches on OpenMP Threading if an OpenMP implementation can be found. Set to 0 to disable.")
 
@@ -31,7 +30,7 @@ set(PRECISION 2 CACHE STRING
 
 option(GPUACCELERATED "Whether to program will run on GPU. Set to 1 to enable" 0)
 
-set(GPU_COMPUTE_CAPABILITY 52 STRING "GPU hardware dependent, lookup at https://developer.nvidia.com/cuda-gpus. Write without fullstop")
+set(GPU_COMPUTE_CAPABILITY 52 CACHE STRING "GPU hardware dependent, lookup at https://developer.nvidia.com/cuda-gpus. Write without fullstop")
 
 
 
@@ -75,7 +74,7 @@ endif()
 if (${GPUACCELERATED} AND ${MULTITHREADED})
     message(WARNING "MULTITHREADED=${MULTITHREADED} and \
         GPUACCELERATED=${GPUACCELERATED} set but GPU \
-        version makes no use of multithreading. Setting MULTITHREADED=0")
+        version makes no use of multithreading. Ignoring multithreading settings")
 endif()
 
 #TODO Add other supported Clang versions if found
@@ -129,16 +128,36 @@ endif()
 
 if (GPUACCELERATED)
     set (CUDA_NVCC_FLAGS "${CUDA_NVCC_FLAGS} \
-        -O2 -arch=compute_${GPU_COMPUTE_CAPABILITY} -code=sm_${GPU_COMPUTE_CAPABILITY}"
+        -arch=compute_${GPU_COMPUTE_CAPABILITY} -code=sm_${GPU_COMPUTE_CAPABILITY}"
     )
+    if ("${CMAKE_BUILD_TYPE}" STREQUAL "Release")
+        set (CUDA_NVCC_FLAGS "${CUDA_NVCC_FLAGS} \
+            -O2"
+        )
+    endif()
+    if ("${CMAKE_BUILD_TYPE}" STREQUAL "Debug")
+        set (CUDA_NVCC_FLAGS "${CUDA_NVCC_FLAGS} \
+            -G -g -lineinfo"
+        )
+    endif()
 endif()
 
 
 # ----- C COMPILER FLAGS --------------------------------------------------
 
-# set C flags that are common between compilers 
+# set C flags that are common between compilers and build types
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} \
-    -O2 -std=c99"
+    -std=c99"
+)
+
+# Set c flags for release
+set(CMAKE_C_FLAGS_RELEASE 
+    "-O2"
+)
+
+# Set c flags to use in debug mode
+set(CMAKE_C_FLAGS_DEBUG 
+    "-g"
 )
 
 # TODO standardize
@@ -164,9 +183,19 @@ endif()
 
 # ----- C++ COMPILER FLAGS --------------------------------------------------
 
-# set C++ flags that are common between compilers 
+# set C++ flags that are common between compilers and build types
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} \
-    -O2 -std=c++11 -Wall"
+    -std=c++11 -Wall"
+)
+
+# Set c++ flags for release
+set(CMAKE_CXX_FLAGS_RELEASE
+    "-O2"
+)
+
+# Set c++ flags to use in debug mode
+set(CMAKE_CXX_FLAGS_DEBUG 
+    "-g"
 )
 
 # set C++ compiler flags based on compiler type
@@ -189,16 +218,23 @@ elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC")
   # using Visual Studio
 endif()
 
-
 if (VERBOSE_CMAKE)
-    message("\n")
     message("-- Compiler flags:")
     message("   C Compiler ID: ${CMAKE_C_COMPILER_ID}")
     message("   C++ Compiler ID: ${CMAKE_CXX_COMPILER_ID}")
     message("   C compilation flags: ${CMAKE_C_FLAGS}")
     message("   CUDA compilation flags: ${CUDA_NVCC_FLAGS}")
     message("   C++ compilation flags: ${CMAKE_CXX_FLAGS}")
-    message("\n")
+
+    message("-- Build type: ${CMAKE_BUILD_TYPE}")
+    if ("${CMAKE_BUILD_TYPE}" STREQUAL "Debug")
+        message("   C debug flags: ${CMAKE_C_FLAGS_DEBUG}")
+        message("   C++ debug flags: ${CMAKE_CXX_FLAGS_DEBUG}")
+    endif()
+    if ("${CMAKE_BUILD_TYPE}" STREQUAL "Release")
+        message("   C release flags: ${CMAKE_CXX_FLAGS_RELEASE}")
+        message("   C++ release flags: ${CMAKE_CXX_FLAGS_RELEASE}")
+    endif()
 endif()
 
 # -----------------------------------------------------------------------------
