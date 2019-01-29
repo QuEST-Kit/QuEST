@@ -20,6 +20,7 @@
 # Switches on OpenMP threading if an OpenMP implementation can be found.
 # Set to 0 to disable
 if (NOT DEFINED MULTITHREADED)
+    #TODO change back
     set(MULTITHREADED 1)
 endif()
 
@@ -41,7 +42,7 @@ if (NOT DEFINED GPUACCELERATED)
 endif()
 # GPU hardware dependent, lookup at https://developer.nvidia.com/cuda-gpus, write without fullstop
 if (NOT DEFINED GPU_COMPUTE_CAPABILITY)
-    set(GPU_COMPUTE_CAPABILITY 30)
+    set(GPU_COMPUTE_CAPABILITY 52)
 endif()
 
 # -----------------------------------------------------------------------------
@@ -75,49 +76,78 @@ endif()
 
 # ----- CUDA FLAGS ------------------------------------------------------------
 
-set (CUDA_NVCC_FLAGS "${CUDA_NVCC_FLAGS} \
-    -arch=sm_30"
-)
+if (GPUACCELERATED)
+    set (CUDA_NVCC_FLAGS "${CUDA_NVCC_FLAGS} \
+        -O2 -arch=compute_${GPU_COMPUTE_CAPABILITY} -code=sm_${GPU_COMPUTE_CAPABILITY}"
+    )
+endif()
 
 
-# ----- C/C++ COMPILER FLAGS --------------------------------------------------
+# ----- C COMPILER FLAGS --------------------------------------------------
 
-# set C/C++ compiler flags that are common between compilers 
+# set C flags that are common between compilers 
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} \
     -O2 -std=c99"
 )
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} \
-    -O2 -std=c++11 -Wall"
-)
 
 # TODO standardize
-# set C/C++ compiler flags based on compiler type
+# set C compiler flags based on compiler type
 if ("${CMAKE_C_COMPILER_ID}" STREQUAL "Clang")
   # using Clang
   set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} \
     -mavx -Wall"
-  )
-  set(CMAKE_CXX_FLAGS "${CMAKE_C_FLAGS} \
-    -mavx"
   )
 elseif ("${CMAKE_C_COMPILER_ID}" STREQUAL "GNU")
   # using GCC
   set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} \
     -mavx -Wall"
   )
-  set(CMAKE_CXX_FLAGS "${CMAKE_C_FLAGS} \
-    -mavx"
-  )
 elseif ("${CMAKE_C_COMPILER_ID}" STREQUAL "Intel")
   # using Intel
   set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} \
     -fprotect-parens -Wall -xAVX -axCORE-AVX2 -diag-disable cpu-dispatch"
   )
-  set(CMAKE_CXX_FLAGS "${CMAKE_C_FLAGS} \
-    -xAVX -axCORE-AVX2 -diag-disable -cpu-dispatch"
-  )
 elseif ("${CMAKE_C_COMPILER_ID}" STREQUAL "MSVC")
   # using Visual Studio
+endif()
+
+# ----- C++ COMPILER FLAGS --------------------------------------------------
+
+# set C++ flags that are common between compilers 
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} \
+    -O2 -std=c++11 -Wall"
+)
+
+# set C++ compiler flags based on compiler type
+if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
+  # using Clang
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} \
+    -mavx"
+  )
+elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
+  # using GCC
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} \
+    -mavx"
+  )
+elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Intel")
+  # using Intel
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} \
+    -xAVX -axCORE-AVX2 -diag-disable -cpu-dispatch"
+  )
+elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC")
+  # using Visual Studio
+endif()
+
+
+if (VERBOSE_CMAKE)
+    message("\n")
+    message("-- Compiler flags:")
+    message("   C Compiler ID: ${CMAKE_C_COMPILER_ID}")
+    message("   C++ Compiler ID: ${CMAKE_CXX_COMPILER_ID}")
+    message("   C compilation flags: ${CMAKE_C_FLAGS}")
+    message("   CUDA compilation flags: ${CUDA_NVCC_FLAGS}")
+    message("   C++ compilation flags: ${CMAKE_CXX_FLAGS}")
+    message("\n")
 endif()
 
 # -----------------------------------------------------------------------------
