@@ -185,7 +185,7 @@ endif()
 
 # set C++ flags that are common between compilers and build types
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} \
-    -std=c++11 -Wall"
+    -std=c++98 -Wall"
 )
 
 # Set c++ flags for release
