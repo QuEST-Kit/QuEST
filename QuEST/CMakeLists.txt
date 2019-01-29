@@ -11,48 +11,37 @@
 # ----- LIBRARY USER SETTINGS -------------------------------------------------
 # -----------------------------------------------------------------------------
 
-# These defaults can also be overridden using:
+# These variables are cached across multiple calls to cmake. Use cmake -LH for 
+# current cache values
+
+# To override, use:
 #   cmake -D[VAR]=[VALUE] [Path to root CMakeLists.txt]
 # eg
 #   cmake -DDISTRIBUTED=1 ..
 
+
 # TODO -- this should only be part of debug mode. User shouldn't care.
-# Switches on OpenMP threading if an OpenMP implementation can be found.
-# Set to 0 to disable
-if (NOT DEFINED MULTITHREADED)
-    #TODO change back
-    set(MULTITHREADED 1)
-endif()
+set(MULTITHREADED 1 CACHE STRING 
+    "Switches on OpenMP Threading if an OpenMP implementation can be found. Set to 0 to disable.")
 
-# Whether the program will be run in distributed mode using MPI
-# Set to 1 to enable
-if (NOT DEFINED DISTRIBUTED)
-    set(DISTRIBUTED 0)
-endif()
+option(DISTRIBUTED "Whether the program will be run in distributed mode using MPI. Set to 1 to enable" 0)
 
-# Whether to use single, double or quad floating point precision in the 
-# state-vector {1,2,4}
-if (NOT DEFINED PRECISION)
-    set(PRECISION 2)
-endif()
+set(PRECISION 2 CACHE STRING
+    "Whether to use single, double or quad floating point precision in the state vector. {1,2,4}")
 
-# GPU config. Set to 1 to enable
-if (NOT DEFINED GPUACCELERATED)
-    set(GPUACCELERATED 0)
-endif()
-# GPU hardware dependent, lookup at https://developer.nvidia.com/cuda-gpus, 
-# write without fullstop
-if (NOT DEFINED GPU_COMPUTE_CAPABILITY)
-    set(GPU_COMPUTE_CAPABILITY 52)
-endif()
+option(GPUACCELERATED "Whether to program will run on GPU. Set to 1 to enable" 0)
 
-
+set(GPU_COMPUTE_CAPABILITY 52 STRING "GPU hardware dependent, lookup at https://developer.nvidia.com/cuda-gpus. Write without fullstop")
 
 
 
 # *****************************************************************************
-# ***** NO CHANGES SHOULD BE REQUIRED BY THE USER BEYOND THIS POINT ***********
+# ***** NO CHANGES SHOULD BE REQUIRED FROM THE USER BEYOND THIS POINT *********
 # *****************************************************************************
+
+
+
+
 
 
 # -----------------------------------------------------------------------------
@@ -105,6 +94,7 @@ if ( ${GPUACCELERATED} AND
         alternative compiler, like Clang 3.7")
 endif()
 
+
 # -----------------------------------------------------------------------------
 # ----- FIND PACKAGES ---------------------------------------------------------
 # -----------------------------------------------------------------------------
@@ -117,7 +107,6 @@ endif()
 if (GPUACCELERATED)
     find_package(CUDA REQUIRED)
 endif()
-
 
 
 
