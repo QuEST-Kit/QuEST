@@ -30,6 +30,7 @@ parser.add_argument('-p','--testpath', help='Set test directory search path as c
 parser.add_argument('-t','--tolerance', type=float, help='Set the test failure tolerance for float values. DEFAULT=%(default)s', default=1.e-10)
 parser.add_argument('-g','--generate', help='Generate a new set of benchmark tests for tests listed redirected to TESTPATH.', action='store_true')
 parser.add_argument('-n','--numqubits', type=int, help='Specify the number of qubits to generate on generation. DEFAULT=%(default)s', default=3)
+parser.add_argument('-f','--mpilog', help='Full MPI logging on a per-process basis, creates a new file for each process of "<LOGFILE>.<MPIRANK>" . Default=False', action='store_true')
 parser.add_argument('tests', nargs=argparse.REMAINDER, metavar="TESTS",
                     help='Set of tests one wishes to run, available default sets:'+", ".join(printSets)+", any custom test (see NOTE) or any exposed QuEST function. DEFAULT=all")
 
@@ -37,14 +38,12 @@ argList = parser.parse_args()
 
 if not argList.tests: argList.tests = ["all"]
 
-# Set up Parallel environment and testing framework
-init_tests(unitTestPath = argList.testpath, logFilePath = argList.logfile, tolerance = argList.tolerance, quiet = argList.quiet)
-
-root = Env.rank == 0
-
 if argList.help:
     if root: parser.print_help()
     quit()
+
+# Set up Parallel environment and testing framework
+init_tests(unitTestPath = argList.testpath, logFilePath = argList.logfile, tolerance = argList.tolerance, quiet = argList.quiet, fullLogging=argList.mpilog)
 
 # If our argument is generate
 if argList.generate:
