@@ -119,7 +119,7 @@ class TestResults:
         self._logFile = None
 
     def _write_term(self, *out, **kwargs):
-        if self._printToScreen and root: print(*out, **kwargs)
+        if self._printToScreen and root: print(*out, **kwargs, flush=True)
 
     def open_log(self, logFile):
         self.close_log()
