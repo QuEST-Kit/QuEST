@@ -3,7 +3,7 @@ from QuESTFunc import *
 tests = {}
 testSets = {}
 
-tests["essential"] = [createQuESTEnv, destroyQuESTEnv, createQureg, createDensityQureg, destroyQureg, seedQuEST, initZeroState, initPlusState, initClassicalState, initDebugState, setAmps]
+tests["essential"] = [createQureg, createDensityQureg, destroyQureg, seedQuEST, initZeroState, initPlusState, initClassicalState, initDebugState, setAmps]
 
 
 tests["init_operations"] = [ initZeroState, initPlusState, initClassicalState, initPureState, initStateFromAmps, initDebugState, setAmps ]

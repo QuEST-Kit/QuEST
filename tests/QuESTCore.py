@@ -8,35 +8,32 @@ import importlib.machinery
 # Add .test to valid python names
 importlib.machinery.SOURCE_SUFFIXES += ['.test']
 
-# Make publically accessible
-logFile = None
-unitPath = None
-Env = None
-testResults = None
 def init_tests(unitTestPath, logFilePath, tolerance=None, quiet=False):
-    global logFile
     global unitPath
-    global Env
     global testResults
+    global root
+    global Env
+    root = Env.rank == 0
+    
     unitPath = unitTestPath.split(':')
     for path in range(len(unitPath)):
         unitPath[path] = unitPath[path].rstrip('/ ') + '/'
 
-    logFile = open(logFilePath,'w')
-    Env = createQuESTEnv()
-    testResults = TestResults(tolerance, not quiet)
-    return testResults
+    
+    testResults.open_log(logFilePath)    
+    testResults.set_tol(tolerance)
+    testResults.set_quiet(quiet)
 
+    
 def finalise_tests():
     global unitPath
-    global logFile
     global Env
     global testResults
     del unitPath
-    logFile.close()
-    del logFile
     destroyQuESTEnv(Env)
     del Env
+    testResults.print_results()
+    testResults.close_log()
     del testResults
  
 class QuESTTestFile:
@@ -94,7 +91,10 @@ class QuESTTestFile:
         else:
             QubitsOut = createQureg(numQubits, Env)
 
-        for state in range(QubitsOut.numAmpsTotal): # Compare final with expected states
+        for _ in range(QubitsOut.numAmpsPerChunk*QubitsOut.chunkId): # Skip vals which aren't mine
+            self.readline()
+            
+        for state in range(QubitsOut.numAmpsPerChunk): # Compare final with expected states
             try:
                 stateElem = argComplex(self.readline())
             except ValueError:
@@ -102,22 +102,46 @@ class QuESTTestFile:
             #setAmps(QubitsOut, state, qreal(stateElem.real), qreal(stateElem.imag), 1)
             QubitsOut.stateVec.real[state] = stateElem.real
             QubitsOut.stateVec.imag[state] = stateElem.imag
+
+        for _ in range(QubitsOut.numAmpsPerChunk*(QubitsOut.numChunks - QubitsOut.chunkId - 1)): # Skip vals which aren't mine
+            self.readline()
+
         return QubitsOut
-        
+
+
 class TestResults:
     """ Main class regarding testing framework stores results and comparisons """
     
     def __init__(self, tolerance = 1.e-6, printToScreen = True):
         self.passes, self.fails, self.numTests = [0]*3
-        self.tolerance = tolerance
-        self.printToScreen = printToScreen
+        self._tolerance = tolerance
+        self._printToScreen = printToScreen
+        self._logFile = None
 
     def _write_term(self, *out, **kwargs):
-        if self.printToScreen: print(*out, **kwargs)
-            
+        if self._printToScreen and root: print(*out, **kwargs)
+
+    def open_log(self, logFile):
+        self.close_log()
+        self._logFile = open(logFile+".{}".format(Env.rank), 'w')
+
+    def close_log(self):
+        if self._logFile is not None:
+            self._logFile.close()
+        self._logFile = None
+        
+    def log(self, message = "\n"):
+        self._logFile.write(message)
+        
+    def set_tol(self, tol = None):
+        self._tolerance = tol
+
+    def set_quiet(self, quiet = True):
+        self._printToScreen = not quiet
+        
     def compareStates(self, a, b, tol = None):
         if tol is None:
-            tol = self.tolerance
+            tol = self._tolerance
 
         if a.isDensityMatrix and not b.isDensityMatrix or a.isDensityMatrix and not b.isDensityMatrix:
             raise TypeError('A and B are not both density matrices')
@@ -144,26 +168,26 @@ class TestResults:
 
     def compareReals(self, a, b, tol = None):
         if tol is None:
-            tol = self.tolerance
+            tol = self._tolerance
         if abs(a - b) > tol: return False
         return True
 
     def compareComplex(self, a, b, tol = None):
         if tol is None:
-            tol = self.tolerance
+            tol = self._tolerance
         if abs(a.real - b.real) > tol or abs(a.imag - b.imag) > tol: return False
         return True
                 
     def pass_test(self, testName=""):
         self._write_term('.',end='')
-        logFile.write('{} Passed\n'.format(testName.strip()))
+        self.log('{} Passed\n'.format(testName.strip()))
         self.numTests += 1
         self.passes += 1
 
     def fail_test(self, testName = "", message = ""):
         self._write_term('F',end='')
         if testName or message:
-            logFile.write('Test {} failed: {}\n'.format(testName,message))
+            self.log('Test {} failed: {}\n'.format(testName,message))
         self.numTests += 1
         self.fails += 1
 
@@ -193,6 +217,8 @@ class TestResults:
 
             args.insert(0,Qubits)
 
+
+            
             retType = testFunc.thisFunc.restype
             if retType is None:
                 testFunc(args)
@@ -214,26 +240,25 @@ class TestResults:
                 else:
                     raise TypeError('Cannot test type {} currently'.format(retType.__name__))
                     
-    
             if success:
                 self.pass_test("{}{}".format(qubitTypeNames[qubitType],bitString))
             else:
                 if testComment:
-                    logFile.write('Test {Func}:{Comm} failed in {File}\n'.format(
+                    self.log('Test {Func}:{Comm} failed in {File}\n'.format(
                         Func = testFunc.funcname,
                         Comm = "\n".join(testComment),
                         File = testFile.name))
                 else:
-                    logFile.write('Testing {Func} failed in {File}\n'.format(
+                    self.log('Testing {Func} failed in {File}\n'.format(
                         Func =testFunc.funcname,
                         File =testFile.name))
                 if retType is None:
                     for state in range(getNumAmps(Qubits)):
                         a = getAmp(Qubits, state)
                         b = getAmp(expectState, state)
-                        logFile.write('{} {}\n'.format(a, b))
+                        self.log('{} {}\n'.format(a, b))
                 else:
-                    logFile.write('{} {}\n'.format( result, expect))
+                    self.log('{} {}\n'.format( result, expect))
                 self.fail_test()
                 
             destroyQureg(Qubits,Env)
@@ -241,18 +266,17 @@ class TestResults:
         del testFile
 
     def run_std_test(self, testFuncsList,name=''):
-    
         self._write_term('Running tests '+name+":", end=' ')
         
         for testFunc in testFuncsList:
     
-            logFile.write('\nRunning test {}\n'.format(testFunc.funcname))
+            self.log('\nRunning test {}\n'.format(testFunc.funcname))
 
             for path in unitPath:
                 testPath = path+testFunc.funcname+'.test'
                 if os.path.isfile(testPath) : break
             else:
-                logFile.write(fnfWarning.format(testPath))
+                self.log(fnfWarning.format(testPath))
                 self.fail_test()
                 continue
 
@@ -284,7 +308,7 @@ class TestResults:
                 testPath = path+testFileName+'.test'
                 if os.path.isfile(testPath) : break
             else:
-                logFile.write(fnfWarning.format(testPath))
+                self.log(fnfWarning.format(testPath))
                 self.fail_test()
                 
         self._write_term('Running test '+testPath+":", end=' ')
@@ -406,3 +430,9 @@ def gen_tests(testsToGen=["all"], nQubits=None):
             if testFunc in tests["don't_generate"]: continue 
             gen_test(testFunc, unitPath[0]+testFunc.funcname+".test", nQubits)
 
+
+# Make Key variables publically accessible
+Env = createQuESTEnv()
+unitPath = None
+testResults = TestResults()
+root = False

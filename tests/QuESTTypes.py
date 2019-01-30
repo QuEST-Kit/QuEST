@@ -52,7 +52,7 @@ class Vector(Structure):
 class Qureg(Structure):
     def __str__(self):
         stateVec = []
-        for state in range(self.numAmpsTotal):
+        for state in range(self.numAmpsPerChunk):
             stateVec+= [Complex(self.stateVec.real[state], self.stateVec.imag[state])]
         return "\n".join(list(map(Complex.__str__, stateVec)))
     _fields_ = [("isDensityMatrix", c_int),

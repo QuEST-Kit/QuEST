@@ -5,15 +5,18 @@ from QuESTFunc import *
 from QuESTCore import *
 
 def run_tests():
-    
-    args = [createDensityQureg(2,Env),0.5,createDensityQureg(2,Env)]
+
+    QubitsA = createDensityQureg(2,Env)
+    QubitsB = createDensityQureg(2,Env)
+    args = [QubitsA,0.5,QubitsB]
 
     initDebugState(args[2])
     addDensityMatrix(*args)
 
     state = 0
     passed = True
-    for expect in [Complex(0.5000000000000,0.0500000000000),
+
+    expectArray = [Complex(0.5000000000000,0.0500000000000),
                 Complex(0.1000000000000,0.1500000000000),
                 Complex(0.2000000000000,0.2500000000000),
                 Complex(0.3000000000000,0.3500000000000),
@@ -28,9 +31,15 @@ def run_tests():
                 Complex(1.2000000000000,1.2500000000000),
                 Complex(1.3000000000000,1.3500000000000),
                 Complex(1.4000000000000,1.4500000000000),
-                Complex(1.5000000000000,1.5500000000000)]:
+                Complex(1.5000000000000,1.5500000000000)]
+
+    
+    myStartIndex = QubitsA.chunkId * QubitsA.numAmpsPerChunk
+    myEndIndex   = myStartIndex + QubitsA.numAmpsPerChunk
+    
+    for expect in expectArray[myStartIndex:myEndIndex]:
         result = Complex(args[0].stateVec.real[state], args[0].stateVec.imag[state])
         passed = passed and testResults.compareComplex(result,expect)
-        if not passed: logFile.write("Amp {} does not match:\n {} {}".format(state, result, expect))
+        if not passed: testResults.log("Amp {} does not match:\n {} {}".format(state, result, expect))
         state += 1
     testResults.validate(passed, "Debug-Zero test")

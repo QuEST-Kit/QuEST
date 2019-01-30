@@ -6,7 +6,6 @@ def run_tests():
     testRot()
 
 def testRot():
-    env = createQuESTEnv()
 
     numQubits=10
     rotQubit = 0

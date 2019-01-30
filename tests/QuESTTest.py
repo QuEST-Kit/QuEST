@@ -34,17 +34,21 @@ parser.add_argument('tests', nargs=argparse.REMAINDER, metavar="TESTS",
                     help='Set of tests one wishes to run, available default sets:'+", ".join(printSets)+", any custom test (see NOTE) or any exposed QuEST function. DEFAULT=all")
 
 argList = parser.parse_args()
-if argList.help:
-    parser.print_help()
-    quit()
 
 if not argList.tests: argList.tests = ["all"]
 
-testResults = init_tests(unitTestPath = argList.testpath, logFilePath = argList.logfile, tolerance = argList.tolerance, quiet = argList.quiet)
+# Set up Parallel environment and testing framework
+init_tests(unitTestPath = argList.testpath, logFilePath = argList.logfile, tolerance = argList.tolerance, quiet = argList.quiet)
+
+root = Env.rank == 0
+
+if argList.help:
+    if root: parser.print_help()
+    quit()
 
 # If our argument is generate
 if argList.generate:
-    gen_tests(argList.tests, argList.numqubits)
+    if root: gen_tests(argList.tests, argList.numqubits)
     quit()
 
 for test in testSets["essential"]:
@@ -70,7 +74,5 @@ for test in testsToRun:
             print("Function '{}' does not exist, are you sure you wrote it correctly?".format(test))
     else:
         testResults.run_cust_test(test)
-
-testResults.print_results()
 
 finalise_tests()

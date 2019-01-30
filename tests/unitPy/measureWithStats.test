@@ -18,7 +18,7 @@ def run_tests():
     for qubit in range(Qubits.numQubitsRepresented):
         result = measureWithStats(Qubits,qubit,prob)
         thisPass = testResults.compareReals(prob.value, expect[qubit])
-        if not thisPass: logFile.write("State {} does not match:\n {} {}\n".format(qubit, prob.value, expect[qubit]))
+        if not thisPass: testResults.log("State {} does not match:\n {} {}\n".format(qubit, prob.value, expect[qubit]))
         passed = passed and thisPass
         
     testResults.validate(passed, "Zero")
@@ -30,7 +30,7 @@ def run_tests():
     for qubit in range(Qubits.numQubitsRepresented):
         result = measureWithStats(Qubits,qubit,prob)
         thisPass = testResults.compareReals(prob.value, expect[qubit])
-        if not thisPass: logFile.write("State {} does not match:\n {} {}\n".format(qubit, prob.value, expect[qubit]))
+        if not thisPass: testResults.log("State {} does not match:\n {} {}\n".format(qubit, prob.value, expect[qubit]))
         passed = passed and thisPass
         
     testResults.validate(passed, "Plus")
@@ -42,7 +42,7 @@ def run_tests():
     for qubit in range(Qubits.numQubitsRepresented):
         result = measureWithStats(Qubits,qubit,prob)
         thisPass = testResults.compareReals(prob.value, expect[qubit])
-        if not thisPass: logFile.write("State {} does not match:\n {} {}\n".format(qubit, prob.value, expect[qubit]))
+        if not thisPass: testResults.log("State {} does not match:\n {} {}\n".format(qubit, prob.value, expect[qubit]))
         passed = passed and thisPass
 
     testResults.validate(passed, "Debug")
