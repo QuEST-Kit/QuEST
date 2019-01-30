@@ -12,6 +12,7 @@ def init_QuESTLib(QuESTPath = ""):
 
 # Declare several warnings which may occur
 argWarning  = 'Bad argument list in {0:s} expected {1:d}, recieved {2:d} \n'
+argWarningGen  = 'Bad argument list in {} expected {}, recieved {} \n'
 fileWarning = '{message} in {file} at line {line} \n'
 fnfWarning  = 'File {} not found \n'
 funWarning  = 'Function {} does not exist \n'

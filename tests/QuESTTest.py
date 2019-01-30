@@ -18,6 +18,7 @@ parser.add_argument('-Q','--questpath', help="Define alternative QuEST library l
 # Just parse -Q
 QuESTPath = parser.parse_known_args()
 
+# Load QuEST Library
 init_QuESTLib(QuESTPath[0].questpath)
 
 # Import remaining libraries
@@ -36,8 +37,10 @@ parser.add_argument('tests', nargs=argparse.REMAINDER, metavar="TESTS",
 
 argList = parser.parse_args()
 
+# Set default for the tests to run
 if not argList.tests: argList.tests = ["all"]
 
+# Now we manually handle the print with *all* potential arguments included
 if argList.help:
     if root: parser.print_help()
     quit()
@@ -50,6 +53,7 @@ if argList.generate:
     if root: gen_tests(argList.tests, argList.numqubits)
     quit()
 
+# Run all the essential tests
 for test in testSets["essential"]:
     if test in testSets or test in tests:
         try:
@@ -61,10 +65,12 @@ for test in testSets["essential"]:
 if testResults.fails > 0:
     raise ValueError("System failed essential qubit initalisation tests, impossible to continue!")
 
+# Build list of tests from short-hands
 testsToRun = []
 for test in argList.tests:
     testsToRun += testSets.get(test,[test])
 
+# Run corresponding tests
 for test in testsToRun:
     if test in testSets or test in tests:
         try:
@@ -74,4 +80,5 @@ for test in testsToRun:
     else:
         testResults.run_cust_test(test)
 
+# Print final answer
 finalise_tests()

@@ -1,7 +1,12 @@
 from QuESTBase import *
+
+if QuESTLib is None:
+    raise IOError('QuESTLib not initialised')
+
 import random
 import math
 
+# Set QuEST default floating point type
 QuESTPrecFunc = QuESTLib['getQuEST_PREC']
 QuESTPrecFunc.restype = c_int
 QuESTPrec = QuESTPrecFunc()
@@ -72,6 +77,8 @@ class QuESTEnv(Structure):
     _fields_ = [("rank",c_int),("numRanks",c_int)]
 
 def stringToList(a):
+    """ Turn a comma-separated string into a list of floats """
+    if not isinstance(a, str): raise TypeError(argWarningGen.format('stringToList',str.__name__,type(a).__name__))
     a = a.split(',')
     try :
         return list(map(float, a))
@@ -79,6 +86,8 @@ def stringToList(a):
         raise IOError('Bad array in input file')
 
 def stringToListInt(a):
+    """ Turn a comma-separated string into a list of ints """
+    if not isinstance(a, str): raise TypeError(argWarningGen.format('stringToList',str.__name__,type(a).__name__))
     a = a.split(',')
     try :
         return list(map(int, a))
@@ -86,8 +95,10 @@ def stringToListInt(a):
         raise IOError('Bad array in input file')
 
 def stringToComplex(a):
+    """ Turn a comma-separated, round-bracketed pair of values into Complex """
+    if not isinstance(a, str): raise TypeError(argWarningGen.format('stringToList',str.__name__,type(a).__name__))
     a=a.lstrip('(').rstrip(')')
-    return list(map(float,a.split(',')))
+    return Complex(* list(map(float,a.split(','))))
 
 def argVector(arg):
     return Vector(*stringToList(arg))
@@ -97,10 +108,12 @@ def argComplexMatrix2(arg):
     elements = []
     for i in range(0,len(vals),2):
         elements.append(Complex(vals[i],vals[i+1]))
+    if len(elements) != 4: raise TypeError(argWarningGen.format(
+            'argComplexMatrix2','4 arguments',len(elements)+" arguments"))
     return ComplexMatrix2(*elements)
 
 def argComplex(arg):
-    return Complex(*stringToComplex(arg))
+    return stringToComplex(arg)
 
 def argComplexArray(arg):
     vals = stringToList(arg)
@@ -111,7 +124,7 @@ def argComplexArray(arg):
 def argPointerQreal(arg):
     if isinstance(arg,str):
         arg = stringToList(arg)
-    
+
     if isinstance(arg,list):
         newArg = (qreal*len(arg))()
         for i in range(len(arg)):
@@ -138,16 +151,18 @@ def argPointerLongInt(arg):
     elif isinstance(arg, c_int):
         return arg
 
-    
+
 class QuESTTestee:
-    basicTypeConv = {"c_int":int, "c_long":int, "c_ulong":int, "c_longlong":int, "c_double":float,
+    """ Extract function from QuEST C API and set it up as a Python callable object with type checking """
+    _basicTypeConv = {"c_int":int, "c_long":int, "c_ulong":int, "c_longlong":int,
+                     "c_float":float, "c_double":float, "c_longdouble":float,
                      "Vector":argVector, "ComplexMatrix2":argComplexMatrix2, "ComplexArray":argComplexArray,
                      "Complex":argComplex, "LP_c_double":argPointerQreal, "LP_c_int":argPointerInt,
                      "LP_c_long":argPointerLongInt }
 
-    funcsList = []
-    funcsDict = {}
-    
+    _funcsList = []
+    _funcsDict = {}
+
     def __init__(self, funcname=None, retType=None, argType=[], defArg=[], denMat=False):
         self.funcname = funcname
         if not QuESTLib[funcname]:
@@ -155,8 +170,8 @@ class QuESTTestee:
         self.thisFunc = QuESTLib[funcname]
 
         if self.funcname not in list_funcnames():
-            QuESTTestee.funcsList.append(self)
-            QuESTTestee.funcsDict[self.funcname] = self
+            QuESTTestee._funcsList.append(self)
+            QuESTTestee._funcsDict[self.funcname] = self
         else:
             raise IOError(funcname+' already defined')
 
@@ -165,10 +180,10 @@ class QuESTTestee:
         self.nArgs = len(argType) or 0
         self.defArg = defArg
         self.denMat = denMat
-        
+
         if self.defArg is not None and len(self.defArg) != self.nArgs:
             raise IOError(argWarning.format(self.funcname, self.nArgs, len(self.defArg)))
-        
+
     def __call__(self,*argsList):
         # If packed as list, otherwise receive as variables
         if len(argsList) == 1 and isinstance(argsList[0],list):
@@ -196,20 +211,20 @@ class QuESTTestee:
             reqTypeName = self.thisFunc.argtypes[i].__name__
             if isinstance(args[i],reqType):
                 pass
-            elif reqTypeName in QuESTTestee.basicTypeConv:
-                args[i] = QuESTTestee.basicTypeConv[reqTypeName](args[i])
+            elif reqTypeName in QuESTTestee._basicTypeConv:
+                args[i] = QuESTTestee._basicTypeConv[reqTypeName](args[i])
             else:
                 print(args[i], reqTypeName)
                 raise IOError(typeWarning.format(reqTypeName, self.funcname))
 
 def dict_funcs():
-    return QuESTTestee.funcsDict
-    
+    return QuESTTestee._funcsDict
+
 def list_funcs():
-    return QuESTTestee.funcsList
+    return QuESTTestee._funcsList
 
 def list_funcnames():
-    return list(map(lambda x: x.funcname, QuESTTestee.funcsList))
+    return list(map(lambda x: x.funcname, QuESTTestee._funcsList))
 
 # Define some simple basic constants
 complex0 = Complex(0.,0.)

@@ -9,6 +9,7 @@ import importlib.machinery
 importlib.machinery.SOURCE_SUFFIXES += ['.test']
 
 def init_tests(unitTestPath, logFilePath, tolerance=None, quiet=False, fullLogging = False):
+    """ Initialise the testing environment """
     global unitPath
     global testResults
 
@@ -22,6 +23,7 @@ def init_tests(unitTestPath, logFilePath, tolerance=None, quiet=False, fullLoggi
     testResults.set_quiet(quiet)
 
 def finalise_tests():
+    """ Finalise the testing environment """
     global unitPath
     global Env
     global testResults
@@ -117,9 +119,11 @@ class TestResults:
         self._fullLog = fullLogging
 
     def _write_term(self, *out, **kwargs):
+        """ Wrapper for print with enforced flushing and silencing """
         if self._printToScreen and root: print(*out, **kwargs, flush=True)
 
     def open_log(self, logFile):
+        """ Open a new logFile associated with testResults """
         self.close_log()
         if Env.numRanks > 1 and self._fullLog:
             self._logFile = open(logFile+".{}".format(Env.rank), 'w')
@@ -128,26 +132,33 @@ class TestResults:
         self._logFilePath = logFile
 
     def close_log(self):
+        """ Close the logFile associated with testResults """
         if self._logFile is not None:
             self._logFile.close()
         self._logFile = None
 
-    def log(self, message = "\n"):
+    def log(self, message = "\n", end = "\n"):
+        """ Write a message to the log file (by default followed by new line """
         if self._fullLog:
-            self._logFile.write(message)
+            self._logFile.write(message+end)
         elif root:
-            self._logFile.write(message)
+            self._logFile.write(message+end)
 
     def set_fulllog(self, fullLog = False):
+        """ Set whether to log for each process of the test results """
         self._fullLog = fullLog
             
     def set_tol(self, tol = None):
+        """ Set the tolerance of the test results """
         self._tolerance = tol
 
     def set_quiet(self, quiet = True):
+        """ Set the quiet status of the test results """
         self._printToScreen = not quiet
 
     def compareStates(self, a, b, tol = None):
+        """ Check that all the elements of two state vectors are within tolerance of each other """
+
         if tol is None:
             tol = self._tolerance
 
@@ -175,24 +186,28 @@ class TestResults:
         return True
 
     def compareReals(self, a, b, tol = None):
+        """ Check that two real numbers are within tolerance of each other """
         if tol is None:
             tol = self._tolerance
         if abs(a - b) > tol: return False
         return True
 
     def compareComplex(self, a, b, tol = None):
+        """ Check that two complex numbers are within tolerance of each other """
         if tol is None:
             tol = self._tolerance
         if abs(a.real - b.real) > tol or abs(a.imag - b.imag) > tol: return False
         return True
 
     def pass_test(self, testName=""):
+        """ Force a pass to be logged """
         self._write_term('.',end='')
         self.log('{} Passed\n'.format(testName.strip()))
         self.numTests += 1
         self.passes += 1
 
     def fail_test(self, testName = "", message = ""):
+        """ Force a fail test to be logged """
         self._write_term('F',end='')
         if testName or message:
             self.log('Test {} failed: {}\n'.format(testName,message))
@@ -200,15 +215,19 @@ class TestResults:
         self.fails += 1
 
     def validate(self, arg, test = "", message = ""):
+        """ Call corresponding pass/fail function depending on value of arg """
         if arg:
             self.pass_test(test)
         else:
             self.fail_test(test, message)
 
     def print_results(self):
+        """ Print number of passes and fails """
         self._write_term('\nPassed {} of {} tests, {} failed.\n'.format(self.passes,self.numTests,self.fails))
 
     def _run_test(self, testFunc, testFile):
+        """ Read a test file and run corresponding test if in standard .test format """
+        
         qubitTypeNames = {"Z":"Zero ", "C":"Custom ", "B":"BitState ", "P":"Plus ", "D":"Debug "}
         for test in range(testFile.nTests):
             line, testComment = testFile.readline(True)
@@ -224,8 +243,6 @@ class TestResults:
                 Qubits = argQureg(nBits, qubitType, testFile, denMat = testFunc.denMat)
 
             args.insert(0,Qubits)
-
-
 
             retType = testFunc.thisFunc.restype
             if retType is None:
@@ -274,6 +291,7 @@ class TestResults:
         del testFile
 
     def run_std_test(self, testFuncsList,name=''):
+        """ Run set of tests in testsets.py """
         self._write_term('Running tests '+name+":", end=' ')
 
         for testFunc in testFuncsList:
@@ -301,6 +319,7 @@ class TestResults:
         self._write_term()
 
     def _run_python_test(self, testPath):
+        """ Internal funciton to import and run a Python style test """
         spec = importlib.util.spec_from_file_location("templib", testPath)
         templib = importlib.util.module_from_spec(spec)
         spec.loader.exec_module(templib)
@@ -308,7 +327,7 @@ class TestResults:
         del templib
 
     def run_cust_test(self, testFileName):
-
+        """ Run a test which is not listed in standard test sets """
         if os.path.isfile(testFileName):
             testPath = testFileName
         else:
@@ -345,6 +364,7 @@ class TestResults:
         self._write_term()
 
 def argQureg(nBits, qubitType, testFile=None, initBits = None, denMat = False):
+    """ Create a qubit register from a standard .test style input """
     nBits = int(nBits)
 
     #Upcase qubitType
@@ -358,22 +378,33 @@ def argQureg(nBits, qubitType, testFile=None, initBits = None, denMat = False):
     qubitTypes = {"Z":initZeroState,"P":initPlusState,"D":initDebugState,"C":setAmps,"B":setAmps}
 
     if qubitType not in qubitTypes:
-        raise IOError(fileWarning.format(message = 'Unrecognised qubit initialisation state "'+qubitType+'"',
-                                  file = testFile.name, line=testFile.nLine))
+        if testFile is not None:
+            raise IOError(fileWarning.format(message = 'Unrecognised qubit initialisation state "'+qubitType+'"',
+                                             file = testFile.name, line=testFile.nLine))
+        else:
+            raise IOError(fileWarning.format(message = 'Expected qubit state, received {}'.format(state),
+                                             file = "Unknown", line="Unknown"))
 
     elif qubitType == "B":
         try:
             state = int(initBits, 2)
         except TypeError:
-            raise IOError(fileWarning.format(message = 'Expected qubit state, received {}'.format(state),
-                                              file = testFile.name, line=testFile.nLine))
-
+            if testFile is not None:
+                raise IOError(fileWarning.format(message = 'Expected qubit state, received {}'.format(state),
+                                                 file = testFile.name, line=testFile.nLine))
+            else:
+                raise IOError(fileWarning.format(message = 'Expected qubit state, received {}'.format(state),
+                                                 file = "Unknown", line="Unknown"))
 
         nIn = len(initBits)
         if (nBits != nIn):
-            raise IOError(
-                fileWarning.format(message = 'Bad number of states expected {}, received {}'.format(nBits, nIn)),
-                file = testFile.name, line=testFile.nLine)
+            if testFile is not None:
+                raise IOError(
+                    fileWarning.format(message = 'Bad number of states expected {}, received {}'.format(nBits, nIn)),
+                    file = testFile.name, line=testFile.nLine)
+            else:
+                raise IOError(fileWarning.format(message = 'Expected qubit state, received {}'.format(state),
+                                                 file = "Unknown", line="Unknown"))
 
         initClassicalState(Qubits, state)
 
@@ -404,6 +435,8 @@ def argQureg(nBits, qubitType, testFile=None, initBits = None, denMat = False):
 
 
 def gen_test(testFunc, testFile, nQubits = 3):
+    """ Generate individual test for a given function """
+
     for i in range(1,testFunc.nArgs):
         if testFunc.defArg[i] is None:
             print('Unable to generate test for function {} invalid default arguments'.format(testFunc.funcname))
@@ -431,6 +464,7 @@ def gen_test(testFunc, testFile, nQubits = 3):
 
 
 def gen_tests(testsToGen=["all"], nQubits=None):
+    """ Generate sets of tests and skip if listed in don't_generate """
     from testset import tests
     for testSet in testsToGen:
 
