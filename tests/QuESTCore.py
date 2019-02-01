@@ -39,9 +39,11 @@ class QuESTTestFile:
 
     def __init__(self,filename):
         self.File = open(filename,'r')
-
         self.name = filename[filename.rfind('/')+1:] # Remove path
-        self.nLine= 0
+        self.nLine = 0
+        self.nTests = 0
+
+    def init_testfile(self):
         temp = ''
         try:
             temp = self.readline()
@@ -137,8 +139,8 @@ class TestResults:
             self._logFile.close()
         self._logFile = None
 
-    def log(self, message = "\n", end = "\n"):
-        """ Write a message to the log file (by default followed by new line """
+    def log(self, message = "", end = "\n"):
+        """ Write a message to the log file (by default followed by new line) """
         if self._fullLog:
             self._logFile.write(message+end)
         elif root:
@@ -147,7 +149,7 @@ class TestResults:
     def set_fulllog(self, fullLog = False):
         """ Set whether to log for each process of the test results """
         self._fullLog = fullLog
-            
+
     def set_tol(self, tol = None):
         """ Set the tolerance of the test results """
         self._tolerance = tol
@@ -227,7 +229,7 @@ class TestResults:
 
     def _run_test(self, testFunc, testFile):
         """ Read a test file and run corresponding test if in standard .test format """
-        
+
         qubitTypeNames = {"Z":"Zero ", "C":"Custom ", "B":"BitState ", "P":"Plus ", "D":"Debug "}
         for test in range(testFile.nTests):
             line, testComment = testFile.readline(True)
@@ -313,17 +315,18 @@ class TestResults:
                     self._run_python_test(testPath)
                     continue
             testFile = QuESTTestFile(testPath)
-
+            testFile.init_testfile()
             self._run_test(testFunc, testFile)
 
         self._write_term()
 
-    def _run_python_test(self, testPath):
-        """ Internal funciton to import and run a Python style test """
+    def _run_python_test(self, testPath, generate = False, nQubits = None):
+        """ Internal function to import and run a Python style test """
         spec = importlib.util.spec_from_file_location("templib", testPath)
         templib = importlib.util.module_from_spec(spec)
         spec.loader.exec_module(templib)
-        templib.run_tests()
+        if generate: templib.gen_tests(nQubits)
+        else: templib.run_tests()
         del templib
 
     def run_cust_test(self, testFileName):
@@ -352,6 +355,7 @@ class TestResults:
                     raise IOError(funWarning.format(testFunc.funcname))
             testFunc = tests[testFunc]
             testFile = QuESTTestFile(testPath)
+            testFile.init_testfile()
 
             self._run_test(*testFunc, testFile)
 
@@ -362,6 +366,94 @@ class TestResults:
             raise IOError('Unrecognised filetype in test run of file {}'.format(testPath))
 
         self._write_term()
+
+    def run_tests(self,testsToRun):
+        """ Run corresponding tests """
+        from testset import testSets, tests
+
+        for test in testsToRun:
+            if test in testSets or test in tests:
+                try:
+                    self.run_std_test(tests[test],test)
+                except KeyError:
+                    print("Function '{}' does not exist, are you sure you wrote it correctly?".format(test))
+            else:
+                self.run_cust_test(test)
+
+    def gen_std_test(self,testFunc, testFile, nQubits = 3):
+        """ Generate individual test for a given function """
+
+        for i in range(1,testFunc.nArgs):
+            if testFunc.defArg[i] is None:
+                print('Unable to generate test for function {} invalid default arguments'.format(testFunc.funcname))
+                return
+
+        with open(testFile,'w') as outputFile:
+
+            outputFile.write('# {}\n'.format(testFunc.funcname))
+            # Standard run 3 tests
+            outputFile.write('3\n')
+
+            for qubitType in "ZPD":
+                args = [argQureg(nQubits, qubitType,denMat=testFunc.denMat)]
+                argString = "{} {}".format(qubitType, nQubits)
+                for arg in range(1,testFunc.nArgs):
+                    args += [testFunc.defArg[arg]]
+                    argString += " "+str(testFunc.defArg[arg])
+                outputFile.write(argString+"\n")
+                result = testFunc(*args)
+                retType = testFunc.thisFunc.restype
+                if retType is None:
+                    for elem in args[0]._state_vec() : outputFile.write(str(elem))
+                else:
+                    outputFile.write(f"{result}\n")
+
+    def gen_cust_test(self, testFileName, nQubits = 3):
+        """ Generate a test which is not listed in standard test sets """
+
+        if os.path.isfile(testFileName):
+            testPath = testFileName
+        else:
+            for path in unitPath:
+                testPath = path+testFileName+'.test'
+                if os.path.isfile(testPath) : break
+            else:
+                self.log(fnfWarning.format(testPath))
+                return
+
+        if testPath.endswith('.test'): # Run standard formatted tests
+            with open(testPath,'r') as testFile:
+                testFunc = testFile.readline().lstrip('# ').strip()
+
+            if testFunc.capitalize() == "Python": # If file flagged as Python
+                self._run_python_test(testPath, generate = True, nQubits = nQubits)
+            else:
+                self.log('Cannot generate not python tests in this way')
+
+        elif testPath.endswith('.py'): # Run custom test scripts
+            self._run_python_test(testPath, generate = True)
+        else:
+            raise IOError('Unrecognised filetype in test run of file {}'.format(testPath))
+
+    def gen_tests(self, testsToGen=["all"], nQubits=None):
+        """ Generate sets of tests and skip if listed in don't_generate """
+
+        # Test if enough memory exists
+        temp = createQureg(nQubits,Env)
+        if not temp._size_warn():
+            destroyQureg(temp,Env)
+            return
+        destroyQureg(temp,Env)
+
+        from testset import tests
+        for testSet in testsToGen:
+            if testSet in tests:
+                for testFunc in tests[testSet] :
+                    if testFunc in tests["don't_generate"]: continue
+                    self.gen_std_test(testFunc, unitPath[0]+testFunc.funcname+".test", nQubits)
+            else:
+                self.gen_cust_test(testSet)
+
 
 def argQureg(nBits, qubitType, testFile=None, initBits = None, denMat = False):
     """ Create a qubit register from a standard .test style input """
@@ -379,10 +471,10 @@ def argQureg(nBits, qubitType, testFile=None, initBits = None, denMat = False):
 
     if qubitType not in qubitTypes:
         if testFile is not None:
-            raise IOError(fileWarning.format(message = 'Unrecognised qubit initialisation state "'+qubitType+'"',
+            raise IOError(fileWarning.format(message = 'Expected qubit state ({}), received {}'.format(",".join(qubitTypes.keys()), qubitType),
                                              file = testFile.name, line=testFile.nLine))
         else:
-            raise IOError(fileWarning.format(message = 'Expected qubit state, received {}'.format(state),
+            raise IOError(fileWarning.format(message = 'Expected qubit state ({}), received {}'.format(",".join(qubitTypes.keys()), qubitType),
                                              file = "Unknown", line="Unknown"))
 
     elif qubitType == "B":
@@ -433,49 +525,8 @@ def argQureg(nBits, qubitType, testFile=None, initBits = None, denMat = False):
 
     return Qubits
 
-
-def gen_test(testFunc, testFile, nQubits = 3):
-    """ Generate individual test for a given function """
-
-    for i in range(1,testFunc.nArgs):
-        if testFunc.defArg[i] is None:
-            print('Unable to generate test for function {} invalid default arguments'.format(testFunc.funcname))
-            return
-
-    with open(testFile,'w') as outputFile:
-
-        outputFile.write('# {}\n'.format(testFunc.funcname))
-        # Standard run 3 tests
-        outputFile.write('3\n')
-
-        for qubitType in "ZPD":
-            args = [argQureg(nQubits, qubitType,denMat=testFunc.denMat)]
-            argString = "{} {}".format(qubitType, nQubits)
-            for arg in range(1,testFunc.nArgs):
-                args += [testFunc.defArg[arg]]
-                argString += " "+str(testFunc.defArg[arg])
-            outputFile.write(argString+"\n")
-            result = testFunc(*args)
-            retType = testFunc.thisFunc.restype
-            if retType is None:
-                outputFile.write(str(args[0])+"\n")
-            else:
-                outputFile.write(str(result)+"\n")
-
-
-def gen_tests(testsToGen=["all"], nQubits=None):
-    """ Generate sets of tests and skip if listed in don't_generate """
-    from testset import tests
-    for testSet in testsToGen:
-
-        for testFunc in tests[testSet] :
-            if testFunc in tests["don't_generate"]: continue
-            gen_test(testFunc, unitPath[0]+testFunc.funcname+".test", nQubits)
-
-
 # Make Key variables publically accessible
 Env = createQuESTEnv()
 root = Env.rank == 0
 unitPath = None
 testResults = TestResults()
-

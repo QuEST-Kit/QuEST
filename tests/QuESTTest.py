@@ -50,18 +50,16 @@ init_tests(unitTestPath = argList.testpath, logFilePath = argList.logfile, toler
 
 # If our argument is generate
 if argList.generate:
-    if root: gen_tests(argList.tests, argList.numqubits)
+    from testset import testSets
+    testsToGen = []
+    for test in argList.tests:
+        testsToGen += testSets.get(test,[test])
+    testResults.set_quiet(True)
+    if root: testResults.gen_tests(testsToGen = testsToGen, nQubits = argList.numqubits)
     quit()
 
-# Run all the essential tests
-for test in testSets["essential"]:
-    if test in testSets or test in tests:
-        try:
-            testResults.run_std_test(tests[test],test)
-        except KeyError:
-            print("Function '{}' does not exist, are you sure you wrote it correctly?".format(test))
-    else:
-        testResults.run_cust_test(test)
+
+testResults.run_tests(["essential"])
 if testResults.fails > 0:
     raise ValueError("System failed essential qubit initalisation tests, impossible to continue!")
 
@@ -70,15 +68,7 @@ testsToRun = []
 for test in argList.tests:
     testsToRun += testSets.get(test,[test])
 
-# Run corresponding tests
-for test in testsToRun:
-    if test in testSets or test in tests:
-        try:
-            testResults.run_std_test(tests[test],test)
-        except KeyError:
-            print("Function '{}' does not exist, are you sure you wrote it correctly?".format(test))
-    else:
-        testResults.run_cust_test(test)
-
+testResults.run_tests(testsToRun)
+    
 # Print final answer
 finalise_tests()

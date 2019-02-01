@@ -18,7 +18,7 @@ tests["denm_operations"] = [ addDensityMatrix, getDensityAmp, calcPurity, applyO
         
 tests["math_operations"] = [ calcFidelity, calcInnerProduct, calcProbOfOutcome, calcTotalProb, getAmp, getNumAmps, getImagAmp, getProbAmp, getRealAmp, getNumQubits, measure, measureWithStats]
 
-tests["don't_generate"] = tests["essential"] + [ calcFidelity, calcInnerProduct, measure, measureWithStats, addDensityMatrix ]
+tests["don't_generate"] = tests["essential"] + [ destroyQuESTEnv, createQuESTEnv, calcFidelity, calcInnerProduct, measure, measureWithStats, addDensityMatrix ]
 
 testSets["essential"] = ["essential"]
 testSets["qubit_operations"] = ["stnd_operations","cont_operations", "mcon_operations"]

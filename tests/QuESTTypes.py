@@ -26,8 +26,19 @@ class ComplexArray(Structure):
     _fields_ = [("real", POINTER(qreal)),
                ("imag", POINTER(qreal))]
 
+    def __getitem__(self, key):
+        if isinstance(key, slice):
+            start = key.start or 0
+            stop  = key.stop
+            step  = key.step  or 1
+            return [Complex(self.real[i],self.imag[i]) for i in range(start, stop, step)]
+        if isinstance(key, int):
+            return Complex(self.real[key], self.imag[key])
+
 class Complex(Structure):
-    __str__ = lambda self:"({:15.13f},{:15.13f})".format(self.real,self.imag)
+    if qreal is c_float:          __repr__ = lambda self:"({:9.7f},{:9.7f})".format(self.real,self.imag)
+    elif qreal is c_double:       __repr__ = lambda self:"({:15.13f},{:15.13f})".format(self.real,self.imag)
+    elif qreal is c_longdouble:   __repr__ = lambda self:"({:20.18f},{:20.18f})".format(self.real,self.imag)
     __add__ = lambda self, b: Complex(self.real+b.real, self.imag+b.imag)
     __sub__ = lambda self, b: Complex(self.real-b.real, self.imag-b.imag)
     __mul__ = lambda self, b: Complex(self.real*b.real - self.imag*b.imag, self.real*b.imag + self.imag*b.real)
@@ -39,27 +50,69 @@ class Complex(Structure):
                 ("imag",qreal)]
 
 class ComplexMatrix2(Structure):
-    __str__ = lambda self:"[({:15.13f},{:15.13f}),({:15.13f},{:15.13f}),({:15.13f},{:15.13f}),({:15.13f},{:15.13f})]".format(
-        self.r0c0.real,self.r0c0.imag,
-        self.r0c1.real,self.r0c1.imag,
-        self.r1c0.real,self.r1c0.imag,
-        self.r1c1.real,self.r1c1.imag)
+    __repr__ = lambda self:f"[{self.r0c0},{self.r0c1},{self.r1c0},{self.r1c1})]"
     __abs__ = lambda self: abs(self.r0c0*self.r1c1 - self.r1c0*self.r0c1)
     _fields_ = [("r0c0",Complex),("r0c1",Complex),
                 ("r1c0",Complex),("r1c1",Complex)]
 
 class Vector(Structure):
-    __str__ = lambda self:"[{},{},{}]".format(self.x,self.y,self.z)
+    __str__ = lambda self:f"[{self.x},{self.y},{self.z}]"
     __add__ = lambda self, b: Vector(self.x+b.x, self.y+b.y, self.z+b.z)
     __sub__ = lambda self, b: Vector(self.x-b.x, self.y-b.y, self.z-b.z)
     _fields_ = [("x",qreal),("y",qreal),("z",qreal)]
 
 class Qureg(Structure):
     def __str__(self):
-        stateVec = []
+        if not self._size_warn(): return ""
+        retString = ""
         for state in range(self.numAmpsPerChunk):
-            stateVec+= [Complex(self.stateVec.real[state], self.stateVec.imag[state])]
-        return "\n".join(list(map(Complex.__str__, stateVec)))
+            retString += Complex(self.stateVec.real[state], self.stateVec.imag[state]).__str__()+"\n"
+        return retString.rstrip()
+
+    def _force_string(self):
+        retString = ""
+        for state in range(self.numAmpsPerChunk):
+            retString += Complex(self.stateVec.real[state], self.stateVec.imag[state]).__str__()+"\n"
+        return retString.rstrip()
+
+    def _state_vec(self):
+        for state in range(self.numAmpsPerChunk):
+            yield Complex(self.stateVec.real[state], self.stateVec.imag[state]).__str__()+"\n"
+    
+    def _size_warn(self, numElem = None):
+        if numElem is None:
+            numElem = self.numAmpsTotal
+        if numElem > 2**5:
+            print(nQubitsWarning.format(nStates = numElem, sizeEst = self._size_est(numElem)), flush=True)
+            while True:
+                user = input('Do you wish to continue? [y/N]')
+                if user is None or user in "Nn":
+                    return False
+                elif user in "Yy":
+                    return True
+                else:
+                    continue
+        return True
+
+    def __setitem__(self, a, b):
+        raise TypeError('Manipulating the state vector is not permitted')
+
+    def __set__(self, a, b):
+        raise TypeError('Manipulating the state vector is not permitted')
+
+    def __getitem__(self, key):
+        if isinstance(key, slice):
+            start = key.start or 0
+            stop  = key.stop
+            step  = key.step  or 1
+            if not self._size_warn((stop-start)//step): return None
+                    
+        return self.stateVec[key]
+    
+    def _size_est(self, numElem, unit = "MB"):
+        charsInStateVecLine = len(str(Complex(0.,0.)))
+        return (charsInStateVecLine*numElem)/(1024**2)
+
     _fields_ = [("isDensityMatrix", c_int),
                 ("numQubitsRepresented", c_int),
                 ("numQubitsInStateVec", c_int),
@@ -249,9 +302,7 @@ def rand_norm_comp_pair():
     return rand_norm_comp()*complexRSqr2, rand_norm_comp()*complexRSqr2
 
 def rand_unit_mat():
-    elems = []
-    elems += [complexRSqr2*rand_norm_comp()]
-    elems += [complexRSqr2*rand_norm_comp()]
+    elems = list(rand_norm_comp_pair())
     elems += [Complex(0,0)-elems[1].conj()]
     elems += [elems[0].conj()]
     newMat = ComplexMatrix2(*elems)
