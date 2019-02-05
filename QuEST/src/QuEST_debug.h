@@ -45,6 +45,13 @@ int compareStates(Qureg mq1, Qureg mq2, qreal precision);
  * */
 void reportNodeList(QuESTEnv env);
 
+/** Set elements in the underlying state vector represenation of a density matrix. Not exposed in the public
+ * API as this requires an understanding of how the state vector is used to represent a density matrix.
+ * Currently can only be used to set all amps. 
+ */
+void setDensityAmps(Qureg qureg, qreal* reals, qreal* imags);
+
+
 
 /** Return the precision of qreal for use in testing 
  * */

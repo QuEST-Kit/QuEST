@@ -145,6 +145,13 @@ void setAmps(Qureg qureg, long long int startInd, qreal* reals, qreal* imags, lo
     qasm_recordComment(qureg, "Here, some amplitudes in the statevector were manually edited.");
 }
 
+void setDensityAmps(Qureg qureg, qreal* reals, qreal* imags) {
+    long long int numAmps = qureg.numAmpsTotal; 
+    statevec_setAmps(qureg, 0, reals, imags, numAmps);
+    
+    qasm_recordComment(qureg, "Here, some amplitudes in the density matrix were manually edited.");
+}
+
 void cloneQureg(Qureg targetQureg, Qureg copyQureg) {
     validateMatchingQuregTypes(targetQureg, copyQureg, __func__);
     validateMatchingQuregDims(targetQureg, copyQureg, __func__);
