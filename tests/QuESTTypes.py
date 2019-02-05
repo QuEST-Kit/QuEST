@@ -21,7 +21,7 @@ class QASMLogger(Structure):
                ("bufferSize",c_int),
                ("bufferFill",c_int),
                ("isLogging",c_int)]
-
+    
 class ComplexArray(Structure):
     _fields_ = [("real", POINTER(qreal)),
                ("imag", POINTER(qreal))]
@@ -140,6 +140,7 @@ def stringToList(a):
 
 def stringToListInt(a):
     """ Turn a comma-separated string into a list of ints """
+    
     if not isinstance(a, str): raise TypeError(argWarningGen.format('stringToList',str.__name__,type(a).__name__))
     a = a.split(',')
     try :
@@ -154,10 +155,18 @@ def stringToComplex(a):
     return Complex(* list(map(float,a.split(','))))
 
 def argVector(arg):
-    return Vector(*stringToList(arg))
-
+    if   isinstance(arg, Vector): return arg
+    elif isinstance(arg, list): return Vector(*arg)
+    elif isinstance(arg, tuple): return Vector(*arg)
+    elif isinstance(arg, str):  return Vector(*stringToList(arg))
+    else : raise TypeError(argWarningGen.format('argVector','str, tuple or list',type(a).__name__))
+    
 def argComplexMatrix2(arg):
-    vals = stringToList(arg)
+    if   isinstance(arg, ComplexMatrix2): return arg
+    elif isinstance(arg, list): vals = arg
+    elif isinstance(arg, tuple): vals = arg
+    elif isinstance(arg, str):  vals = stringToList(arg)
+    else : raise TypeError(argWarningGen.format('argComplexMatrix2','str, tuple or list',type(a).__name__))
     elements = []
     for i in range(0,len(vals),2):
         elements.append(Complex(vals[i],vals[i+1]))
@@ -166,9 +175,19 @@ def argComplexMatrix2(arg):
     return ComplexMatrix2(*elements)
 
 def argComplex(arg):
-    return stringToComplex(arg)
+    if   isinstance(arg, Complex): return arg
+    elif isinstance(arg, list):  return Complex(*arg)
+    elif isinstance(arg, tuple): return Complex(*arg)
+    elif isinstance(arg, str):   return stringToComplex(arg)
+    else : raise TypeError(argWarningGen.format('argComplex','str, tuple or list',type(a).__name__))
 
 def argComplexArray(arg):
+    if   isinstance(arg, ComplexArray): return arg
+    elif isinstance(arg, list):  vals = arg
+    elif isinstance(arg, tuple): vals = arg
+    elif isinstance(arg, str):   vals = stringToList(arg)
+    else : raise TypeError(argWarningGen.format('argComplexArray','str, tuple or list',type(a).__name__))
+
     vals = stringToList(arg)
     real = vals[0::2]
     imag = vals[1::2]
@@ -177,14 +196,17 @@ def argComplexArray(arg):
 def argPointerQreal(arg):
     if isinstance(arg,str):
         arg = stringToList(arg)
-
-    if isinstance(arg,list):
+    if isinstance(arg, float):
+        arg = qreal(arg)
+        
+    if isinstance(arg,list) or isinstance(arg, tuple):
         newArg = (qreal*len(arg))()
         for i in range(len(arg)):
             newArg[i] = arg[i]
         return newArg
     elif isinstance(arg, qreal):
         return arg
+    else : raise TypeError(argWarningGen.format('argVector','str, float, tuple or list',type(a).__name__))
 
 def argPointerInt(arg):
     if isinstance(arg,str):
@@ -237,26 +259,21 @@ class QuESTTestee:
         if self.defArg is not None and len(self.defArg) != self.nArgs:
             raise IOError(argWarning.format(self.funcname, self.nArgs, len(self.defArg)))
 
-    def __call__(self,*argsList):
+    def __call__(self,*argsList, **kwargs):
         # If packed as list, otherwise receive as variables
         if len(argsList) == 1 and isinstance(argsList[0],list):
             specArg = argsList[0]
         else:
             specArg = list(argsList)
 
-        if (len(specArg) == 0 and self.nArgs != 0) or (self.nArgs == 0):
-            self._fix_types(specArg)
-            return self.thisFunc(*self.defArg)
-        elif isinstance(specArg,list) and len(specArg) == self.nArgs:
-            self._fix_types(specArg)
-            try:
-                return self.thisFunc(*specArg)
-            except ArgumentError:
-                print(specArg)
-                raise IOError('Bad arguments in function {}'.format(self.funcname))
-        else:
-            print(specArg)
-            raise IOError(argWarning.format(self.funcname, self.nArgs, len(specArg)))
+        # if (len(specArg) == 0 and self.nArgs != 0) or (self.nArgs == 0):
+        #     self._fix_types(self.defArg)
+        #     return self.thisFunc(*self.defArg)
+        # elif isinstance(specArg,list) and len(specArg) == self.nArgs:
+        if not kwargs.get('force',False) : self._fix_types(specArg)
+        return self.thisFunc(*specArg)
+        # else:
+        #     raise IOError(argWarning.format(self.funcname, self.nArgs, len(specArg)))
 
     def _fix_types(self,args):
         for i in range(self.nArgs):

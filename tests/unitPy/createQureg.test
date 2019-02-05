@@ -1,6 +1,4 @@
 # Python
-import sys
-sys.path.insert(0, '../')
 from QuESTFunc import *
 from QuESTCore import *
 import math

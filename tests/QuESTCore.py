@@ -145,6 +145,7 @@ class TestResults:
             self._logFile.write(message+end)
         elif root:
             self._logFile.write(message+end)
+        self._logFile.flush()
 
     def set_fulllog(self, fullLog = False):
         """ Set whether to log for each process of the test results """
@@ -170,6 +171,9 @@ class TestResults:
         if a.numQubitsRepresented != b.numQubitsRepresented:
             raise IndexError('A and B registers are not the same size')
 
+        syncState(a)
+        syncState(b)
+        
         # Compare final with expected states
         if a.isDensityMatrix and b.isDensityMatrix:
 
@@ -325,7 +329,7 @@ class TestResults:
         spec = importlib.util.spec_from_file_location("templib", testPath)
         templib = importlib.util.module_from_spec(spec)
         spec.loader.exec_module(templib)
-        if generate: templib.gen_tests(nQubits)
+        if generate and templib.gen_tests is not None: templib.gen_tests(nQubits)
         else: templib.run_tests()
         del templib
 
