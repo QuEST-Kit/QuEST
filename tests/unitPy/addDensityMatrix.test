@@ -1,9 +1,13 @@
 # Python
 from QuESTFunc import *
 from QuESTCore import *
+import os.path
 
 def run_tests():
-    ExpectFile = QuESTTestFile(f'{unitPath[0]}AddDenMattests')
+    ExpectFile = find_file('AddDenMattests')
+    if ExpectFile is None:
+        testResults.fail_test(message="Couldn't find file")
+        return
     nQubits = int(ExpectFile.readline())
     
     QubitsA = argQureg(nQubits,'Z',denMat=True)

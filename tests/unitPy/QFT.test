@@ -4,7 +4,10 @@ from QuESTCore import *
 import math
 
 def run_tests():
-    ExpectFile = QuESTTestFile(f'{unitPath[0]}QFTtests')
+    ExpectFile = find_file('QFTtests')
+    if ExpectFile is None:
+        testResults.fail_test(message="Couldn't find file")
+        return
     nQubits = int(ExpectFile.readline())
     Qubits = argQureg(nQubits,'Z')
     

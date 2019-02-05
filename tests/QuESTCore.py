@@ -102,6 +102,13 @@ class QuESTTestFile:
         del stateVec
         return QubitsOut
 
+def find_file(filename):
+    for path in unitPath:
+        if os.path.isfile(f'{path}{filename}'): return QuESTTestFile(f'{path}{filename}')
+    else:
+        testResults.log(fnfWarning.format(filename))
+        return None
+
 
 class TestResults:
     """ Main class regarding testing framework stores results and comparisons """
