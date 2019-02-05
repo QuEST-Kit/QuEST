@@ -456,7 +456,10 @@ class TestResults:
             if testSet in tests:
                 for testFunc in tests[testSet] :
                     if testFunc in tests["don't_generate"]: continue
-                    self.gen_std_test(testFunc, unitPath[0]+testFunc.funcname+".test", nQubits)
+                    if testFunc in tests["pyth_generate"]:
+                        self.gen_cust_test(testSet)
+                    else:
+                        self.gen_std_test(testFunc, unitPath[0]+testFunc.funcname+".test", nQubits)
             else:
                 self.gen_cust_test(testSet)
 
