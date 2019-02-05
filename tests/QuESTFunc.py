@@ -33,9 +33,11 @@ stopRecordingQASM       = QuESTTestee ("stopRecordingQASM", retType=None, argTyp
 writeRecordedQASMToFile = QuESTTestee ("writeRecordedQASMToFile", retType=None, argType=[Qureg,c_char_p], defArg=[None,None]) 
 
 if getattr(QuESTLib,"copyStateFromGPU", None) is not None :
-    syncState = QuESTTestee("copyStateFromGPU", retType = None, argType = [Qureg], defArg = [None])
+    syncStateFrom = QuESTTestee("copyStateFromGPU", retType = None, argType = [Qureg], defArg = [None])
+    syncStateTo   = QuESTTestee("copyStateToGPU", retType = None, argType = [Qureg], defArg = [None])
 else:
-    syncState = lambda x : x
+    syncStateFrom = lambda x : x
+    syncStateTo = lambda x : x
 
 # Parallel Operations
 syncQuESTEnv     = QuESTTestee ("syncQuESTEnv", retType=None, argType=[QuESTEnv], defArg=[None])

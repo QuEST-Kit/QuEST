@@ -105,7 +105,7 @@ class QuESTTestFile:
 
         for _ in range(QubitsOut.numAmpsPerChunk*(QubitsOut.numChunks - QubitsOut.chunkId - 1)): # Skip vals which aren't mine
             self.readline()
-
+        syncStateTo(QubitsOut)
         return QubitsOut
 
 
@@ -171,8 +171,8 @@ class TestResults:
         if a.numQubitsRepresented != b.numQubitsRepresented:
             raise IndexError('A and B registers are not the same size')
 
-        syncState(a)
-        syncState(b)
+        syncStateFrom(a)
+        syncStateFrom(b)
         
         # Compare final with expected states
         if a.isDensityMatrix and b.isDensityMatrix:
