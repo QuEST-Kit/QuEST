@@ -183,12 +183,15 @@ def argComplex(arg):
 
 def argComplexArray(arg):
     if   isinstance(arg, ComplexArray): return arg
-    elif isinstance(arg, list):  vals = arg
-    elif isinstance(arg, tuple): vals = arg
+    elif isinstance(arg, list) or isinstance(arg, tuple):
+        if all(map(lambda x: isinstance(x,Complex))):
+            vals = stringToList(",".join(arg))
+        elif all(map(lambda x: isinstance(x,float))):
+            vals = arg
+        else: raise TypeError(argWarningGen.format('argComplexArray','list of float/Complex',type(a).__name__))
     elif isinstance(arg, str):   vals = stringToList(arg)
     else : raise TypeError(argWarningGen.format('argComplexArray','str, tuple or list',type(a).__name__))
 
-    vals = stringToList(arg)
     real = vals[0::2]
     imag = vals[1::2]
     return ComplexArray(byref(real),byref(imag))
@@ -259,21 +262,21 @@ class QuESTTestee:
         if self.defArg is not None and len(self.defArg) != self.nArgs:
             raise IOError(argWarning.format(self.funcname, self.nArgs, len(self.defArg)))
 
-    def __call__(self,*argsList, **kwargs):
+    def __call__(self,*argsList):
         # If packed as list, otherwise receive as variables
         if len(argsList) == 1 and isinstance(argsList[0],list):
             specArg = argsList[0]
         else:
             specArg = list(argsList)
 
-        # if (len(specArg) == 0 and self.nArgs != 0) or (self.nArgs == 0):
-        #     self._fix_types(self.defArg)
-        #     return self.thisFunc(*self.defArg)
-        # elif isinstance(specArg,list) and len(specArg) == self.nArgs:
-        if not kwargs.get('force',False) : self._fix_types(specArg)
-        return self.thisFunc(*specArg)
-        # else:
-        #     raise IOError(argWarning.format(self.funcname, self.nArgs, len(specArg)))
+        if (len(specArg) == 0 and self.nArgs != 0) or (self.nArgs == 0):
+            self._fix_types(self.defArg)
+            return self.thisFunc(*self.defArg)
+        elif isinstance(specArg,list) and len(specArg) == self.nArgs:
+            self._fix_types(specArg)
+            return self.thisFunc(*specArg)
+        else:
+            raise IOError(argWarning.format(self.funcname, self.nArgs, len(specArg)))
 
     def _fix_types(self,args):
         for i in range(self.nArgs):

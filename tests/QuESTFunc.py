@@ -32,13 +32,6 @@ startRecordingQASM      = QuESTTestee ("startRecordingQASM", retType=None, argTy
 stopRecordingQASM       = QuESTTestee ("stopRecordingQASM", retType=None, argType=[Qureg], defArg=[None])
 writeRecordedQASMToFile = QuESTTestee ("writeRecordedQASMToFile", retType=None, argType=[Qureg,c_char_p], defArg=[None,None]) 
 
-if getattr(QuESTLib,"copyStateFromGPU", None) is not None :
-    syncStateFrom = QuESTTestee("copyStateFromGPU", retType = None, argType = [Qureg], defArg = [None])
-    syncStateTo   = QuESTTestee("copyStateToGPU", retType = None, argType = [Qureg], defArg = [None])
-else:
-    syncStateFrom = lambda x : x
-    syncStateTo = lambda x : x
-
 # Parallel Operations
 syncQuESTEnv     = QuESTTestee ("syncQuESTEnv", retType=None, argType=[QuESTEnv], defArg=[None])
 syncQuESTSuccess = QuESTTestee ("syncQuESTSuccess", retType=c_int, argType=[c_int], defArg=[None]) 
@@ -52,6 +45,7 @@ initStateFromAmps  = QuESTTestee ("initStateFromAmps",  retType=None, argType=[Q
 initStateDebug     = QuESTTestee ("initStateDebug",     retType=None, argType=[Qureg], defArg=[None])
 initDebugState     = initStateDebug  # Alias
 setAmps            = QuESTTestee ("setAmps",            retType=None, argType=[Qureg,_stateIndex,POINTER(qreal),POINTER(qreal),c_longlong], defArg=[None,None,None,None,None]) 
+setDensityAmps     = QuESTTestee ("setDensityAmps",     retType=None, argType=[Qureg,POINTER(qreal),POINTER(qreal)], defArg=[None,None,None]) 
 
 # Basic Operations
 hadamard         = QuESTTestee ("hadamard",         retType=None, argType=[Qureg,_targetQubit], defArg=[None,0])

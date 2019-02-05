@@ -86,26 +86,20 @@ class QuESTTestFile:
 
     def read_state_vec(self, numQubits = 0, denMat=False):
         """ Read the expected state vector into a qubit state """
-        if denMat:
-            QubitsOut = createDensityQureg(numQubits, Env)
-        else:
-            QubitsOut = createQureg(numQubits, Env)
 
-        for _ in range(QubitsOut.numAmpsPerChunk*QubitsOut.chunkId): # Skip vals which aren't mine
-            self.readline()
-
-        for state in range(QubitsOut.numAmpsPerChunk): # Compare final with expected states
+        stateVec = ""
+        if denMat: nStates = 2**(int(numQubits)*2)
+        else : nStates = 2**int(numQubits)
+        
+        for state in range(nStates): # Compare final with expected states
             try:
-                stateElem = argComplex(self.readline())
+                stateVec += self.readline()+","
             except ValueError:
                 raise IOError(fileWarning.format(message='Bad state line', file=self.name, line=self.nLine))
-            #setAmps(QubitsOut, state, qreal(stateElem.real), qreal(stateElem.imag), 1)
-            QubitsOut.stateVec.real[state] = stateElem.real
-            QubitsOut.stateVec.imag[state] = stateElem.imag
-
-        for _ in range(QubitsOut.numAmpsPerChunk*(QubitsOut.numChunks - QubitsOut.chunkId - 1)): # Skip vals which aren't mine
-            self.readline()
-        syncStateTo(QubitsOut)
+        stateVec = self._remove_brackets(stateVec).rstrip(',')
+        QubitsOut = argQureg(numQubits, 'C', testFile = self, initBits = stateVec, denMat = denMat)
+        
+        del stateVec
         return QubitsOut
 
 
@@ -171,9 +165,6 @@ class TestResults:
         if a.numQubitsRepresented != b.numQubitsRepresented:
             raise IndexError('A and B registers are not the same size')
 
-        syncStateFrom(a)
-        syncStateFrom(b)
-        
         # Compare final with expected states
         if a.isDensityMatrix and b.isDensityMatrix:
 
@@ -237,7 +228,6 @@ class TestResults:
         qubitTypeNames = {"Z":"Zero ", "C":"Custom ", "B":"BitState ", "P":"Plus ", "D":"Debug "}
         for test in range(testFile.nTests):
             line, testComment = testFile.readline(True)
-
             qubitType,nBits,*args = testFile.parse_args(line)
 
             bitString = ""
@@ -280,28 +270,38 @@ class TestResults:
                         Comm = "\n".join(testComment),
                         File = testFile.name))
                 else:
-                    self.log('Testing {Func} failed in {File}\n'.format(
-                        Func =testFunc.funcname,
-                        File =testFile.name))
+                    self.log('Testing {Func}:{Comm} failed in {File}\n'.format(
+                        Func = testFunc.funcname,
+                        Comm = qubitTypeNames[qubitType],
+                        File = testFile.name))
                 if retType is None:
-                    for state in range(getNumAmps(Qubits)):
-                        a = getAmp(Qubits, state)
-                        b = getAmp(expectState, state)
-                        self.log('{} {}\n'.format(a, b))
+                    if not Qubits.isDensityMatrix:
+                        self.log('Receieved                               Expected')
+                        for state in range(getNumAmps(Qubits)):
+                            a = getAmp(Qubits, state)
+                            b = getAmp(expectState, state)
+                            self.log('{} {}'.format(a, b))
+                    else:
+                        self.log('Receieved                               Expected')
+                        for row in range(Qubits.numQubitsRepresented):
+                            for col in range(Qubits.numQubitsRepresented):
+                                a = getDensityAmp(Qubits, row, col)
+                                b = getDensityAmp(expectState, row, col)
+                                self.log('{} {}'.format(a, b))
+                        
                 else:
-                    self.log('{} {}\n'.format( result, expect))
+                    self.log('{} {}'.format( result, expect))
                 self.fail_test()
 
             destroyQureg(Qubits,Env)
 
-        del testFile
+        del testFile 
 
     def run_std_test(self, testFuncsList,name=''):
         """ Run set of tests in testsets.py """
         self._write_term('Running tests '+name+":", end=' ')
 
         for testFunc in testFuncsList:
-
             self.log('\nRunning test {}\n'.format(testFunc.funcname))
 
             for path in unitPath:
@@ -343,7 +343,9 @@ class TestResults:
                 if os.path.isfile(testPath) : break
             else:
                 self.log(fnfWarning.format(testPath))
+                self._write_term('Running test '+testFileName+":", end=' ')
                 self.fail_test()
+                return
 
         self._write_term('Running test '+testPath+":", end=' ')
 
@@ -377,10 +379,10 @@ class TestResults:
 
         for test in testsToRun:
             if test in testSets or test in tests:
-                try:
-                    self.run_std_test(tests[test],test)
-                except KeyError:
-                    print("Function '{}' does not exist, are you sure you wrote it correctly?".format(test))
+                # try:
+                self.run_std_test(tests[test],test)
+                # except KeyError:
+                #     print("Function '{}' does not exist, are you sure you wrote it correctly?".format(test))
             else:
                 self.run_cust_test(test)
 
@@ -399,8 +401,8 @@ class TestResults:
             outputFile.write('3\n')
 
             for qubitType in "ZPD":
-                args = [argQureg(nQubits, qubitType,denMat=testFunc.denMat)]
-                argString = "{} {}".format(qubitType, nQubits)
+                args = [argQureg(nQubits, qubitType, denMat=testFunc.denMat)]
+                argString = f"{qubitType} {nQubits}"
                 for arg in range(1,testFunc.nArgs):
                     args += [testFunc.defArg[arg]]
                     argString += " "+str(testFunc.defArg[arg])
@@ -508,20 +510,18 @@ def argQureg(nBits, qubitType, testFile=None, initBits = None, denMat = False):
 
 
     elif qubitType == "C": # Handle custom initialisation
-        nStates = getNumAmps(Qubits)
+        nStates = Qubits.numAmpsTotal
         nReqStates = nStates*2 # Account for complexes
         initBits = stringToList(initBits)
         nInStates = len(initBits)
-
         if nReqStates != nInStates:
             raise IOError(
-                fileWarning.format(message = 'Bad number of states expected {}, received {}'.format(nStates, nIn)),
-                file = testFile.name, line=testFile.nLine)
+                fileWarning.format(message = 'Bad number of states expected {}, received {}'.format(nStates, nInStates),
+                file = testFile.name, line=testFile.nLine))
 
         qAmpsReal, qAmpsImag = initBits[0::2], initBits[1::2] # Split into real and imag
-
-        setAmps(Qubits, 0, qAmpsReal, qAmpsImag, nStates)
-
+        if not denMat: setAmps(Qubits, 0, qAmpsReal, qAmpsImag, nStates)
+        else: setDensityAmps(Qubits, qAmpsReal, qAmpsImag)
         del nStates, nReqStates, nInStates, qAmpsReal, qAmpsImag
 
     else:

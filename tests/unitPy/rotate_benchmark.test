@@ -4,7 +4,6 @@ from QuESTFunc import *
 import time
 from math import sin, cos, pi
 import statistics
-import pprofile
 
 def run_tests():
     nTrials = 20
@@ -35,24 +34,23 @@ def run_tests():
     
     testResults._write_term()
     testResults._write_term("Rotating")
-    prof = pprofile.Profile()
-    with prof():
-        for rotQubit in range(nQubits):
-            timing = []
-            testResults._write_term(f"Rotating {rotQubit}")
-            for trial in range(nTrials):
-                
-                time_start = time.perf_counter()
-    
-                compactUnitary(Qubits, rotQubit, alpha, beta)
-                time_end = time.perf_counter()
-                timing.append(time_end - time_start)
-    
-            maxTime = max(timing)
-            minTime = min(timing)
-            mean = statistics.mean(timing)
-            stdev = statistics.stdev(timing)
-            testResults.log(f"{rotQubit}, {mean}, {stdev}, {maxTime - mean}, {mean - minTime}")
+
+    for rotQubit in range(nQubits):
+        timing = []
+        testResults._write_term(f"Rotating {rotQubit}")
+        for trial in range(nTrials):
+            
+            time_start = time.perf_counter()
+
+            compactUnitary(Qubits, rotQubit, alpha, beta)
+            time_end = time.perf_counter()
+            timing.append(time_end - time_start)
+
+        maxTime = max(timing)
+        minTime = min(timing)
+        mean = statistics.mean(timing)
+        stdev = statistics.stdev(timing)
+        testResults.log(f"{rotQubit}, {mean}, {stdev}, {maxTime - mean}, {mean - minTime}")
             
     testResults._write_term("Done Rotating")
     testResults._write_term(f"Total probability conservation : {calcTotalProb(Qubits)}")
