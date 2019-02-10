@@ -283,7 +283,7 @@ void cloneQureg(Qureg targetQureg, Qureg copyQureg);
  * For angle \f$\theta\f$, applies
  * \f[
  * \begin{pmatrix}
- * 0 & 0 \\
+ * 1 & 0 \\
  * 0 & \exp(i \theta)
  * \end{pmatrix}
  * \f] 
