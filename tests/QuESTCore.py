@@ -4,7 +4,6 @@ from testset import tests
 import importlib.util
 import importlib.machinery
 
-
 # Add .test to valid python names
 importlib.machinery.SOURCE_SUFFIXES += ['.test']
 
@@ -235,8 +234,9 @@ class TestResults:
         qubitTypeNames = {"Z":"Zero ", "C":"Custom ", "B":"BitState ", "P":"Plus ", "D":"Debug "}
         for test in range(testFile.nTests):
             line, testComment = testFile.readline(True)
-            qubitType,nBits,*args = testFile.parse_args(line)
-
+            testString,nBits,*args = testFile.parse_args(line)
+            qubitType, *testType = testString.split('-') 
+            
             bitString = ""
             if qubitType in "CBcb":
                 bitString = args[0]
@@ -250,15 +250,60 @@ class TestResults:
             retType = testFunc.thisFunc.restype
             if retType is None:
                 testFunc(args)
-                expectState = testFile.read_state_vec(nBits,denMat = testFunc.denMat)
-                success = testResults.compareStates(Qubits, expectState)
-            else:
+                if not testType: testType = ["S"]
+                for test in testType[0]:
+                    if test in "Mm":
+                        expectState = [None]*Qubits.numQubitsRepresented
+                        success = True
+                        for qubit in range(Qubits.numQubitsRepresented):
+                            expectState[qubit] = list(map(float,testFile.readline().split()))
+                            success = (success and
+                                       testResults.compareReals(calcProbOfOutcome(Qubits, qubit, 0), expectState[qubit][0]) and
+                                       testResults.compareReals(calcProbOfOutcome(Qubits, qubit, 1), expectState[qubit][1]))
+                        testResults.validate(success,
+                                             f'{testFunc.funcname}:{qubitTypeNames[qubitType]}{bitString} Measure',
+                                             f'\nResult :                     Expected:')
+                        for qubit in range(Qubits.numQubitsRepresented):
+                            self.log(f'{[calcProbOfOutcome(Qubits, qubit, 0),calcProbOfOutcome(Qubits, qubit, 1)]} {expectState[qubit]}')
+                            
+                    elif test in "Ss":
+                        expectState = testFile.read_state_vec(nBits,denMat = testFunc.denMat)
+                        success = testResults.compareStates(Qubits, expectState)
+                        testResults.validate(success,
+                                             f"{testFunc.funcname}:{qubitTypeNames[qubitType]}{bitString}",
+                                             "\nResult :                         Expected:  ")
+                        if not success: # Print resultant state vectors
+                            if not Qubits.isDensityMatrix:
+                                for state in range(getNumAmps(Qubits)):
+                                    a = getAmp(Qubits, state)
+                                    b = getAmp(expectState, state)
+                                    self.log('{} {}'.format(a, b))
+                            else:
+                                for row in range(Qubits.numQubitsRepresented):
+                                    for col in range(Qubits.numQubitsRepresented):
+                                        a = getDensityAmp(Qubits, row, col)
+                                        b = getDensityAmp(expectState, row, col)
+                                        self.log('{} {}'.format(a, b))
+
+                    elif test in "Pp":
+                        expectState = float(testFile.readline())
+                        success = self.compareReals(calcTotalProb(Qubits),expectState)
+                        
+                        testResults.validate(success,
+                                             f"{testFunc.funcname}:{qubitTypeNames[qubitType]}{bitString} Total Probability",
+                                             f"Expected: {expectState}, Result: {calcTotalProb(Qubits)}")
+
+                    else:
+                        raise IOError('Unrecognised test type')
+                    del expectState
+                    
+            else: # Returning functions
                 result = testFunc(args)
 
                 if retType is Complex:
                     expect = argComplex(testFile.readline())
                     success = self.compareComplex(result,expect)
-                elif retType is c_double:
+                elif retType is qreal:
                     expect = float(testFile.readline())
                     success = self.compareReals(result,expect)
                 elif retType is c_int:
@@ -268,37 +313,10 @@ class TestResults:
                 else:
                     raise TypeError('Cannot test type {} currently'.format(retType.__name__))
 
-            if success:
-                self.pass_test("{}{}".format(qubitTypeNames[qubitType],bitString))
-            else:
-                if testComment:
-                    self.log('Test {Func}:{Comm} failed in {File}\n'.format(
-                        Func = testFunc.funcname,
-                        Comm = "\n".join(testComment),
-                        File = testFile.name))
-                else:
-                    self.log('Testing {Func}:{Comm} failed in {File}\n'.format(
-                        Func = testFunc.funcname,
-                        Comm = qubitTypeNames[qubitType],
-                        File = testFile.name))
-                if retType is None:
-                    if not Qubits.isDensityMatrix:
-                        self.log('Receieved                               Expected')
-                        for state in range(getNumAmps(Qubits)):
-                            a = getAmp(Qubits, state)
-                            b = getAmp(expectState, state)
-                            self.log('{} {}'.format(a, b))
-                    else:
-                        self.log('Receieved                               Expected')
-                        for row in range(Qubits.numQubitsRepresented):
-                            for col in range(Qubits.numQubitsRepresented):
-                                a = getDensityAmp(Qubits, row, col)
-                                b = getDensityAmp(expectState, row, col)
-                                self.log('{} {}'.format(a, b))
-                        
-                else:
-                    self.log('{} {}'.format( result, expect))
-                self.fail_test()
+                testResults.validate(success,
+                                     f"{testFunc.funcname}:{qubitTypeNames[qubitType]}{bitString}",
+                                     f"Expected: {expect}, Result: {result}")
+
 
             destroyQureg(Qubits,Env)
 
@@ -393,7 +411,7 @@ class TestResults:
             else:
                 self.run_cust_test(test)
 
-    def gen_std_test(self,testFunc, testFile, nQubits = 3):
+    def gen_std_test(self,testFunc, testFile, nQubits = 3, qubitGen = "ZPDN", testGen = "PMS"):
         """ Generate individual test for a given function """
 
         for i in range(1,testFunc.nArgs):
@@ -401,15 +419,21 @@ class TestResults:
                 print('Unable to generate test for function {} invalid default arguments'.format(testFunc.funcname))
                 return
 
+        niceNames = {"Z": "Zero State", "P": "Plus State", "D": "Debug State", "R": "Random State", "N": "Normalised Random State"}
+            
         with open(testFile,'w') as outputFile:
 
             outputFile.write('# {}\n'.format(testFunc.funcname))
-            # Standard run 3 tests
-            outputFile.write('3\n')
+            # Standard run 5 tests
+            outputFile.write(f'{len(qubitGen)}\n')
 
-            for qubitType in "ZPD":
+            for qubitType in qubitGen:
+                outputFile.write(f"# {niceNames[qubitType]}\n")
                 args = [argQureg(nQubits, qubitType, denMat=testFunc.denMat)]
-                argString = f"{qubitType} {nQubits}"
+
+                if qubitType in "RN":
+                    argString = f"C-{testGen} {nQubits} [" + ",".join(map(str,args[0][:args[0].numAmpsTotal])) +"] "
+                else: argString = f"{qubitType}-{testGen} {nQubits}"
                 for arg in range(1,testFunc.nArgs):
                     args += [testFunc.defArg[arg]]
                     argString += " "+str(testFunc.defArg[arg])
@@ -417,10 +441,20 @@ class TestResults:
                 result = testFunc(*args)
                 retType = testFunc.thisFunc.restype
                 if retType is None:
-                    for elem in args[0]._state_vec() : outputFile.write(str(elem))
+                    for test in testGen:
+                        if test in "Pp":
+                            outputFile.write(f"{calcTotalProb(args[0])}\n")
+                        elif test in "Ss":
+                            for elem in args[0]._state_vec() : outputFile.write(str(elem))
+                        elif test in "Mm":
+                            for qubit in range(args[0].numQubitsRepresented):
+                                outputFile.write(f"{calcProbOfOutcome(args[0], qubit, 0)} {calcProbOfOutcome(args[0], qubit, 1)}\n")
+                        else:
+                            raise IOError(f'Test type {test} not recognised')
                 else:
                     outputFile.write(f"{result}\n")
 
+                    
     def gen_cust_test(self, testFileName, nQubits = 3):
         """ Generate a test which is not listed in standard test sets """
 
@@ -441,14 +475,14 @@ class TestResults:
             if testFunc.capitalize() == "Python": # If file flagged as Python
                 self._run_python_test(testPath, generate = True, nQubits = nQubits)
             else:
-                self.log('Cannot generate not python tests in this way')
+                self.log('Cannot generate non-Python tests in this way')
 
         elif testPath.endswith('.py'): # Run custom test scripts
             self._run_python_test(testPath, generate = True)
         else:
             raise IOError('Unrecognised filetype in test run of file {}'.format(testPath))
 
-    def gen_tests(self, testsToGen=["all"], nQubits=None):
+    def gen_tests(self, testsToGen=["all"], nQubits=None, qubitGen = "ZPDN", testGen = "PMS"):
         """ Generate sets of tests and skip if listed in don't_generate """
 
         # Test if enough memory exists
@@ -466,7 +500,7 @@ class TestResults:
                     if testFunc in tests["pyth_generate"]:
                         self.gen_cust_test(testSet)
                     else:
-                        self.gen_std_test(testFunc, unitPath[0]+testFunc.funcname+".test", nQubits)
+                        self.gen_std_test(testFunc, unitPath[0]+testFunc.funcname+".test", nQubits, qubitGen, testGen)
             else:
                 self.gen_cust_test(testSet)
 
@@ -483,7 +517,7 @@ def argQureg(nBits, qubitType, testFile=None, initBits = None, denMat = False):
     else :
         Qubits = createQureg(nBits, Env)
 
-    qubitTypes = {"Z":initZeroState,"P":initPlusState,"D":initDebugState,"C":setAmps,"B":setAmps}
+    qubitTypes = {"Z":initZeroState,"P":initPlusState,"D":initDebugState,"C":setAmps,"B":setAmps,"R":setAmps,"N":setAmps}
 
     if qubitType not in qubitTypes:
         if testFile is not None:
@@ -518,7 +552,6 @@ def argQureg(nBits, qubitType, testFile=None, initBits = None, denMat = False):
 
         del nIn
 
-
     elif qubitType == "C": # Handle custom initialisation
         nStates = Qubits.numAmpsTotal
         nReqStates = nStates*2 # Account for complexes
@@ -533,6 +566,44 @@ def argQureg(nBits, qubitType, testFile=None, initBits = None, denMat = False):
         if not denMat: setAmps(Qubits, 0, qAmpsReal, qAmpsImag, nStates)
         else: setDensityAmps(Qubits, qAmpsReal, qAmpsImag)
         del nStates, nReqStates, nInStates, qAmpsReal, qAmpsImag
+
+    elif qubitType == "R":
+        # Random
+        nStates = Qubits.numAmpsTotal
+
+        qAmpsReal = []
+        qAmpsImag = []
+        for i in range(nStates):
+            qAmpsReal += [random.random()]
+            qAmpsImag += [random.random()]
+
+        if not denMat: setAmps(Qubits, 0, qAmpsReal, qAmpsImag, nStates)
+        else: setDensityAmps(Qubits, qAmpsReal, qAmpsImag)
+        del nStates, qAmpsReal, qAmpsImag
+
+    elif qubitType == "N":
+        # Normalised Random
+        nStates = Qubits.numAmpsTotal
+
+        qAmpsReal = []
+        qAmpsImag = []
+        for i in range(nStates):
+            qAmpsReal += [random.random()]
+            qAmpsImag += [random.random()]
+
+        tProb = 0
+        for i in range(nStates):
+            tProb += (qAmpsReal[i] ** 2) + (qAmpsImag[i] ** 2)
+            
+        if tProb < 0: tProb *= -1
+        tProb = math.sqrt(tProb)
+        for i in range(nStates):
+            qAmpsReal[i] /= tProb
+            qAmpsImag[i] /= tProb
+            
+        if not denMat: setAmps(Qubits, 0, qAmpsReal, qAmpsImag, nStates)
+        else: setDensityAmps(Qubits, qAmpsReal, qAmpsImag)
+        del nStates, qAmpsReal, qAmpsImag
 
     else:
         qubitTypes[qubitType](Qubits)

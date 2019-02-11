@@ -29,11 +29,14 @@ parser.add_argument('-q','--quiet', help='Do not print results to screen', actio
 parser.add_argument('-l','--logfile', help='Redirect log. DEFAULT=%(default)s', default='QuESTLog.log')
 parser.add_argument('-p','--testpath', help='Set test directory search path as colon-separated list. DEFAULT=%(default)s', default='unitPy/')
 parser.add_argument('-t','--tolerance', type=float, help='Set the test failure tolerance for float values. DEFAULT=%(default)s', default=1.e-10)
-parser.add_argument('-g','--generate', help='Generate a new set of benchmark tests for tests listed redirected to TESTPATH.', action='store_true')
-parser.add_argument('-n','--numqubits', type=int, help='Specify the number of qubits to generate on generation. DEFAULT=%(default)s', default=3)
 parser.add_argument('-f','--mpilog', help='Full MPI logging on a per-process basis, creates a new file for each process of "<LOGFILE>.<MPIRANK>" . Default=False', action='store_true')
 parser.add_argument('tests', nargs=argparse.REMAINDER, metavar="TESTS",
                     help='Set of tests one wishes to run, available default sets:'+", ".join(printSets)+", any custom test (see NOTE) or any exposed QuEST function. DEFAULT=all")
+genGroup = parser.add_argument_group('Generation', 'Arguments related to the generation of tests')
+genGroup.add_argument('-g','--generate', help='Generate a new set of benchmark tests for tests listed redirected to TESTPATH.', action='store_true')
+genGroup.add_argument('-n','--numqubits', type=int, help='Specify the number of qubits to generate on generation. DEFAULT=%(default)s', default=3)
+genGroup.add_argument('-T','--testtypes', help='Specify the checks to be generated. P: Total probability, M: Probability of each qubit being in 0 or 1 state, S: Full State Vector, as a single string. DEFAULT=%(default)s', default='PMS')
+genGroup.add_argument('-V','--quregtypes', help='Specify which types of Quregs are generated in the tests. Z: Zero state, P: Plus state, D: Debug state, R: Random state, N: Normalised random state. States can be multiply defined, e.g. \'RRR\' will generate 3 different random configurations. DEFAULT=%(default)s', default='ZPDN')
 
 argList = parser.parse_args()
 
@@ -55,7 +58,7 @@ if argList.generate:
     for test in argList.tests:
         testsToGen += testSets.get(test,[test])
     testResults.set_quiet(True)
-    if root: testResults.gen_tests(testsToGen = testsToGen, nQubits = argList.numqubits)
+    if root: testResults.gen_tests(testsToGen = testsToGen, nQubits = argList.numqubits, qubitGen = argList.quregtypes, testGen = argList.testtypes)
     quit()
 
 
