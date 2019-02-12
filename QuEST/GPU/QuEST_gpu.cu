@@ -1,11 +1,12 @@
 // Distributed under MIT licence. See https://github.com/aniabrown/QuEST_GPU/blob/master/LICENCE.txt for details
 
 /** @file
- * An implementation of the pure backend in ../QuEST_ops_pure.h for a GPU environment.
+ * An implementation of the backend in ../QuEST_internal.h for a GPU environment.
  */
 
 # include "../QuEST.h"
 # include "../QuEST_precision.h"
+# include "../QuEST_internal.h"    // purely to resolve getQuESTDefaultSeedKey
 # include "../mt19937ar.h"
 
 # include <stdlib.h>
