@@ -114,11 +114,11 @@ class TestResults:
 
     def __init__(self, tolerance = 1.e-6, printToScreen = True, fullLogging = False):
         self.passes, self.fails, self.numTests = [0]*3
-        self._tolerance = tolerance
-        self._printToScreen = printToScreen
+        self.set_tol(tolerance)
+        self.set_quiet(not printToScreen)
         self._logFilePath = None
         self._logFile = None
-        self._fullLog = fullLogging
+        self.set_fulllog(fullLogging)
 
     def _write_term(self, *out, **kwargs):
         """ Wrapper for print with enforced flushing and silencing """
@@ -154,7 +154,8 @@ class TestResults:
     def set_tol(self, tol = None):
         """ Set the tolerance of the test results """
         self._tolerance = tol
-
+        self._tolOrder = -int(math.log10(tol))
+        
     def set_quiet(self, quiet = True):
         """ Set the quiet status of the test results """
         self._printToScreen = not quiet
@@ -419,6 +420,19 @@ class TestResults:
                 print('Unable to generate test for function {} invalid default arguments'.format(testFunc.funcname))
                 return
 
+        # Expand out 
+        while qubitGen.find('*') > -1:
+            i = qubitGen.find('*')
+            dup = qubitGen[i-1]
+            mul = ""
+            j = 1
+            while i+j < len(qubitGen) and qubitGen[i+j].isdecimal():
+                mul += qubitGen[i+j]
+                j += 1
+            if j == 1: raise IOError('Repeater not followed by repeat value')
+            qubitGen = qubitGen.replace(qubitGen[i-1:i+j], dup*int(mul))
+            
+            
         niceNames = {"Z": "Zero State", "P": "Plus State", "D": "Debug State", "R": "Random State", "N": "Normalised Random State"}
             
         with open(testFile,'w') as outputFile:
@@ -428,7 +442,7 @@ class TestResults:
             outputFile.write(f'{len(qubitGen)}\n')
 
             for qubitType in qubitGen:
-                outputFile.write(f"# {niceNames[qubitType]}\n")
+                outputFile.write(f"\n# {niceNames[qubitType]}\n")
                 args = [argQureg(nQubits, qubitType, denMat=testFunc.denMat)]
 
                 if qubitType in "RN":
@@ -443,12 +457,12 @@ class TestResults:
                 if retType is None:
                     for test in testGen:
                         if test in "Pp":
-                            outputFile.write(f"{calcTotalProb(args[0])}\n")
+                            outputFile.write(f"{round(calcTotalProb(args[0]),self._tolOrder+2)}\n")
                         elif test in "Ss":
                             for elem in args[0]._state_vec() : outputFile.write(str(elem))
                         elif test in "Mm":
                             for qubit in range(args[0].numQubitsRepresented):
-                                outputFile.write(f"{calcProbOfOutcome(args[0], qubit, 0)} {calcProbOfOutcome(args[0], qubit, 1)}\n")
+                                outputFile.write(f"{round(calcProbOfOutcome(args[0], qubit, 0),self._tolOrder+2)} {round(calcProbOfOutcome(args[0], qubit, 1),self._tolOrder+2)}\n")
                         else:
                             raise IOError(f'Test type {test} not recognised')
                 else:
