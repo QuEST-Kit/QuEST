@@ -412,13 +412,32 @@ class TestResults:
             else:
                 self.run_cust_test(test)
 
-    def gen_std_test(self,testFunc, testFile, nQubits = 3, qubitGen = "ZPDN", testGen = "PMS"):
+    def _write_gen_results(self, outputFile, testGen, qubitOp, result = None, Qubits = None):
+        if qubitOp:
+            for test in testGen:
+                if test in "Pp":
+                    outputFile.write(f"{round(calcTotalProb(Qubits),self._tolOrder+2)}\n")
+                elif test in "Ss":
+                    for elem in Qubits._state_vec() : outputFile.write(str(elem))
+                elif test in "Mm":
+                    for qubit in range(Qubits.numQubitsRepresented):
+                        outputFile.write(f"{round(calcProbOfOutcome(Qubits, qubit, 0),self._tolOrder+2)} {round(calcProbOfOutcome(Qubits, qubit, 1),self._tolOrder+2)}\n")
+                else:
+                    raise IOError(f'Test type {test} not recognised')
+        elif result:
+            outputFile.write(f"{result}\n")
+        else:
+            raise IOError('Unknown return in write_gen_results')
+            
+    def gen_std_test(self,testFunc, testFile, nQubits = 3, qubitGen = "ZPDN", testGen = "PMS", argScan = "D"):
         """ Generate individual test for a given function """
 
         for i in range(1,testFunc.nArgs):
             if testFunc.defArg[i] is None:
                 print('Unable to generate test for function {} invalid default arguments'.format(testFunc.funcname))
                 return
+
+        qubitOp = testFunc.thisFunc.restype is None
 
         # Expand out 
         while qubitGen.find('*') > -1:
@@ -431,43 +450,49 @@ class TestResults:
                 j += 1
             if j == 1: raise IOError('Repeater not followed by repeat value')
             qubitGen = qubitGen.replace(qubitGen[i-1:i+j], dup*int(mul))
-            
-            
+
+
+        nTests = len(qubitGen)
+        if testFunc.target and "E" == argScan: nTests *= nQubits
+                    
         niceNames = {"Z": "Zero State", "P": "Plus State", "D": "Debug State", "R": "Random State", "N": "Normalised Random State"}
             
         with open(testFile,'w') as outputFile:
 
             outputFile.write('# {}\n'.format(testFunc.funcname))
-            # Standard run 5 tests
-            outputFile.write(f'{len(qubitGen)}\n')
+            # Number of tests to run
+            outputFile.write(f'{nTests}\n')
 
             for qubitType in qubitGen:
                 outputFile.write(f"\n# {niceNames[qubitType]}\n")
                 args = [argQureg(nQubits, qubitType, denMat=testFunc.denMat)]
-
+                
                 if qubitType in "RN":
-                    argString = f"C-{testGen} {nQubits} [" + ",".join(map(str,args[0][:args[0].numAmpsTotal])) +"] "
-                else: argString = f"{qubitType}-{testGen} {nQubits}"
+                    argStringBase = f"C-{testGen} {nQubits} [" + ",".join(map(str,args[0][:args[0].numAmpsTotal])) +"] "
+                else: argStringBase = f"{qubitType}-{testGen} {nQubits} "
                 for arg in range(1,testFunc.nArgs):
                     args += [testFunc.defArg[arg]]
-                    argString += " "+str(testFunc.defArg[arg])
-                outputFile.write(argString+"\n")
-                result = testFunc(*args)
-                retType = testFunc.thisFunc.restype
-                if retType is None:
-                    for test in testGen:
-                        if test in "Pp":
-                            outputFile.write(f"{round(calcTotalProb(args[0]),self._tolOrder+2)}\n")
-                        elif test in "Ss":
-                            for elem in args[0]._state_vec() : outputFile.write(str(elem))
-                        elif test in "Mm":
-                            for qubit in range(args[0].numQubitsRepresented):
-                                outputFile.write(f"{round(calcProbOfOutcome(args[0], qubit, 0),self._tolOrder+2)} {round(calcProbOfOutcome(args[0], qubit, 1),self._tolOrder+2)}\n")
-                        else:
-                            raise IOError(f'Test type {test} not recognised')
+                    
+                if "E" == argScan and qubitOp:
+                    if testFunc.targetType == "Qubit": elems = range(args[0].numQubitsRepresented)
+                    elif testFunc.targetType == "Index": elems = range(args[0].numAmpsTotal)
+                    backup = args[0][:args[0].numAmpsTotal]
+                    for elem in elems:
+                        setAmps(args[0], 0, [val.real for val in backup], [val.imag for val in backup], args[0].numAmpsTotal)
+                        args[testFunc.target] = elem
+                        argString = argStringBase + " ".join(map(str,args[1:]))
+                        outputFile.write(argString+"\n")
+                        result = testFunc(*args)
+                        self._write_gen_results(outputFile, testGen, qubitOp, result, args[0])
+                            
+                elif "D" == argScan or not qubitOp:
+                    argString = argStringBase + " ".join(map(str,args[1:]))
+                    outputFile.write(argString+"\n")
+                    result = testFunc(*args)
+                    self._write_gen_results(outputFile, testGen, qubitOp, result, args[0])
                 else:
-                    outputFile.write(f"{result}\n")
-
+                    raise IOError(argWarningGen.format('gen_std_test:argScan','E or D',argScan))
+                            
                     
     def gen_cust_test(self, testFileName, nQubits = 3):
         """ Generate a test which is not listed in standard test sets """
@@ -496,7 +521,7 @@ class TestResults:
         else:
             raise IOError('Unrecognised filetype in test run of file {}'.format(testPath))
 
-    def gen_tests(self, testsToGen=["all"], nQubits=None, qubitGen = "ZPDN", testGen = "PMS"):
+    def gen_tests(self, testsToGen=["all"], nQubits=None, qubitGen = "ZPDN", testGen = "PMS", argScan = "D"):
         """ Generate sets of tests and skip if listed in don't_generate """
 
         # Test if enough memory exists
@@ -514,7 +539,7 @@ class TestResults:
                     if testFunc in tests["pyth_generate"]:
                         self.gen_cust_test(testSet)
                     else:
-                        self.gen_std_test(testFunc, unitPath[0]+testFunc.funcname+".test", nQubits, qubitGen, testGen)
+                        self.gen_std_test(testFunc, unitPath[0]+testFunc.funcname+".test", nQubits, qubitGen, testGen, argScan)
             else:
                 self.gen_cust_test(testSet)
 

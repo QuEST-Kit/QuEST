@@ -4,7 +4,8 @@ from QuESTTypes import *
 _targetQubit = c_int
 _controlQubit = c_int
 _stateIndex = c_longlong
-
+_targetQubit.status = "targetQubit"
+_stateIndex.status = "targetIndex"
 
 # Data Operations
 createQuESTEnv     = QuESTTestee ('createQuESTEnv',QuESTEnv)

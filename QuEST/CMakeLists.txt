@@ -30,7 +30,7 @@ set(PRECISION 2 CACHE STRING
 
 option(GPUACCELERATED "Whether to program will run on GPU. Set to 1 to enable" 0)
 
-set(GPU_COMPUTE_CAPABILITY 52 CACHE STRING "GPU hardware dependent, lookup at https://developer.nvidia.com/cuda-gpus. Write without fullstop")
+set(GPU_COMPUTE_CAPABILITY 30 CACHE STRING "GPU hardware dependent, lookup at https://developer.nvidia.com/cuda-gpus. Write without fullstop")
 
 
 
