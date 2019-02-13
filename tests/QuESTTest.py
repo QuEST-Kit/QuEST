@@ -37,7 +37,7 @@ genGroup.add_argument('-g','--generate', help='Generate a new set of benchmark t
 genGroup.add_argument('-n','--numqubits', type=int, help='Specify the number of qubits to generate on generation. DEFAULT=%(default)s', default=3)
 genGroup.add_argument('-T','--testtypes', help='Specify the checks to be generated. P: Total probability, M: Probability of each qubit being in 0 or 1 state, S: Full State Vector, as a single string. DEFAULT=%(default)s', default='PMS')
 genGroup.add_argument('-V','--quregtypes', help='Specify which types of Quregs are generated in the tests. Z: Zero state, P: Plus state, D: Debug state, R: Random state, N: Normalised random state. States can be multiply defined, e.g. \'RRR\' will generate 3 different random configurations. DEFAULT=%(default)s', default='ZPDN')
-
+genGroup.add_argument('-G','--testqubits', help='Specify which qubits/states to apply function to when generating tests. D: Default only, E: Each qubit. Default=%(default)s', default='D')
 argList = parser.parse_args()
 
 # Set default for the tests to run
@@ -58,7 +58,7 @@ if argList.generate:
     for test in argList.tests:
         testsToGen += testSets.get(test,[test])
     testResults.set_quiet(True)
-    if root: testResults.gen_tests(testsToGen = testsToGen, nQubits = argList.numqubits, qubitGen = argList.quregtypes, testGen = argList.testtypes)
+    if root: testResults.gen_tests(testsToGen = testsToGen, nQubits = argList.numqubits, qubitGen = argList.quregtypes, testGen = argList.testtypes, argScan = argList.testqubits)
     quit()
 
 

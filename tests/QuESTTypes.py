@@ -255,6 +255,17 @@ class QuESTTestee:
 
         self.thisFunc.restype = retType
         self.thisFunc.argtypes = argType
+        self.target = None
+        self.targetType = None
+        for arg in argType:
+            if hasattr(arg,'status'):
+                if arg.status == "targetQubit":
+                    self.target=argType.index(arg)
+                    self.targetType = "Qubit"
+                elif arg.status == "targetIndex":
+                    self.target=argType.index(arg)
+                    self.targetType = "Index"
+                
         self.nArgs = len(argType) or 0
         self.defArg = defArg
         self.denMat = denMat
