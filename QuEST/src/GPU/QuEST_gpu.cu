@@ -4,10 +4,10 @@
  * An implementation of the backend in ../QuEST_internal.h for a GPU environment.
  */
 
-# include "../QuEST.h"
-# include "../QuEST_precision.h"
-# include "../QuEST_internal.h"    // purely to resolve getQuESTDefaultSeedKey
-# include "../mt19937ar.h"
+# include "QuEST.h"
+# include "QuEST_precision.h"
+# include "QuEST_internal.h"    // purely to resolve getQuESTDefaultSeedKey
+# include "mt19937ar.h"
 
 # include <stdlib.h>
 # include <stdio.h>
