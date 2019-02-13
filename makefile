@@ -40,8 +40,6 @@ SUPPRESS_WARNING = 0
 # whether to use single, double or quad floating point precision in the state-vector {1,2,4}
 PRECISION = 2
 
-
-
 #======================================================================#
 #                                                                      #
 #      Checking user settings                                          #
@@ -210,6 +208,12 @@ else ifeq ($(COMPILER_TYPE), INTEL)
     CPP_FLAGS = $(CPP_INTEL_FLAGS)
 endif
 
+ifeq ($(TEST), 1)
+	QUEST_LIB := libQuEST
+	LIB_EXT = .so
+	LIB_NAME = $(addsuffix $(LIB_EXT), $(QUEST_LIB))
+	C_FLAGS += -fPIC
+endif
 
 
 #
@@ -326,6 +330,8 @@ else
 
 endif
 
+test: $(OBJ)
+	$(COMPILER) $(C_FLAGS)  -shared -Wl,-soname,$(QUEST_LIB) $(QUEST_INCLUDE) -o $(LIB_NAME) $(OBJ) $(LIBS)
 
 
 #
