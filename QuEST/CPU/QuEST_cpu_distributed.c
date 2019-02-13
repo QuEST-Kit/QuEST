@@ -1279,6 +1279,6 @@ void seedQuESTDefault(){
     getQuESTDefaultSeedKey(key);
     // this seed will be used to generate the same random number on all procs,
     // therefore we want to make sure all procs receive the same key
-    MPI_Bcast(key, 3, MPI_LONG_INT, 0, MPI_COMM_WORLD);
+    MPI_Bcast(key, 3, MPI_UNSIGNED_LONG, 0, MPI_COMM_WORLD);
     init_by_array(key, 3);
 }
