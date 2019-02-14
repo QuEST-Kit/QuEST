@@ -337,6 +337,32 @@ void statevec_swapGate(Qureg qureg, int qb1, int qb2) {
     statevec_controlledNot(qureg, qb1, qb2);
 }
 
+void statevec_sqrtSwapGate(Qureg qureg, int qb1, int qb2) {
+    
+    ComplexMatrix2 u;
+    u.r0c0.real = .5; u.r0c0.imag = .5;
+    u.r0c1.real = .5; u.r0c1.imag =-.5;
+    u.r1c0.real = .5; u.r1c0.imag =-.5;
+    u.r1c1.real = .5; u.r1c1.imag = .5;
+    
+    statevec_controlledNot(qureg, qb1, qb2);
+    statevec_controlledUnitary(qureg, qb2, qb1, u);
+    statevec_controlledNot(qureg, qb1, qb2);
+}
+
+void statevec_sqrtSwapGateConj(Qureg qureg, int qb1, int qb2) {
+    
+    ComplexMatrix2 u;
+    u.r0c0.real = .5; u.r0c0.imag =-.5;
+    u.r0c1.real = .5; u.r0c1.imag = .5;
+    u.r1c0.real = .5; u.r1c0.imag = .5;
+    u.r1c1.real = .5; u.r1c1.imag =-.5;
+    
+    statevec_controlledNot(qureg, qb1, qb2);
+    statevec_controlledUnitary(qureg, qb2, qb1, u);
+    statevec_controlledNot(qureg, qb1, qb2);
+}
+
 
 #ifdef __cplusplus
 }

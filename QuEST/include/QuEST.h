@@ -1590,6 +1590,51 @@ qreal calcFidelity(Qureg qureg, Qureg pureState);
 void swapGate(Qureg qureg, int qubit1, int qubit2);
 
 
+/** Performs a sqrt SWAP gate between \p qubit1 and \p qubit2.
+ * This effects
+ * \f[
+ * \begin{pmatrix}
+ * 1 \\
+ * & \frac{1}{2}(1+i) & \frac{1}{2}(1-i) \\\
+ * & \frac{1}{2}(1-i) & \frac{1}{2}(1+i) \\
+ * & & & 1
+ * \end{pmatrix}
+ * \f]
+ * on the designated qubits, though is performed internally by three CNOT gates.
+ *
+   \f[
+   \setlength{\fboxrule}{0.01pt}
+   \fbox{
+               \begin{tikzpicture}[scale=.5]
+               \node[draw=none] at (-3.5, 2) {qubit1};
+               \node[draw=none] at (-3.5, 0) {qubit2};
+
+               \draw (-2, 2) -- (2, 2);
+               \draw (0, 2) -- (0, 0);
+               \draw (-2,0) -- (2, 0);
+
+               \draw (-.35,-.35) -- (.35,.35);
+               \draw (-.35,.35) -- (.35,-.35);
+
+               \draw (-.35,-.35 + 2) -- (.35,.35 + 2);
+               \draw (-.35,.35 + 2) -- (.35,-.35 + 2);
+               
+               \draw[fill=white] (0, 1) circle (.5);
+               \node[draw=none] at (0, 1) {1/2};
+
+               \end{tikzpicture}
+   }
+   \f]
+ *
+ * @param[in,out] qureg object representing the set of all qubits
+ * @param[in] qubit1 qubit to swap
+ * @param[in] qubit2 other qubit to swap
+ * @throws exitWithError
+ *      if either \p qubit1 or \p qubit2 are outside [0, \p qureg.numQubitsRepresented), or are equal.
+ */
+void sqrtSwapGate(Qureg qureg, int qb1, int qb2);
+
+
 #ifdef __cplusplus
 }
 #endif

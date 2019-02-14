@@ -492,6 +492,17 @@ void swapGate(Qureg qureg, int qb1, int qb2) {
     qasm_recordControlledGate(qureg, GATE_SWAP, qb1, qb2);
 }
 
+void sqrtSwapGate(Qureg qureg, int qb1, int qb2) {
+    validateControlTarget(qureg, qb1, qb2, __func__);
+
+    statevec_sqrtSwapGate(qureg, qb1, qb2);
+    if (qureg.isDensityMatrix) {
+        int shift = qureg.numQubitsRepresented;
+        statevec_sqrtSwapGateConj(qureg, qb1+shift, qb2+shift);
+    }
+
+    qasm_recordControlledGate(qureg, GATE_SQRT_SWAP, qb1, qb2);
+}
 
 /*
  * register attributes

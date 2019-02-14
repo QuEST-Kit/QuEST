@@ -187,6 +187,10 @@ int statevec_measureWithStats(Qureg qureg, int measureQubit, qreal *outcomeProb)
 
 void statevec_swapGate(Qureg qureg, int qb1, int qb2);
 
+void statevec_sqrtSwapGate(Qureg qureg, int qb1, int qb2);
+
+void statevec_sqrtSwapGateConj(Qureg qureg, int qb1, int qb2);
+
 # ifdef __cplusplus
 }
 # endif
