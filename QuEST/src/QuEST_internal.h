@@ -185,6 +185,7 @@ void statevec_collapseToKnownProbOutcome(Qureg qureg, const int measureQubit, in
 
 int statevec_measureWithStats(Qureg qureg, int measureQubit, qreal *outcomeProb);
 
+void statevec_swapGate(Qureg qureg, int qb1, int qb2);
 
 # ifdef __cplusplus
 }

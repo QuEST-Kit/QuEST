@@ -43,7 +43,8 @@ static const char* qasmGateLabels[] = {
     [GATE_ROTATE_Y] = "Ry",
     [GATE_ROTATE_Z] = "Rz",
     [GATE_UNITARY] = "U",     // needs phase fix when controlled
-    [GATE_PHASE_SHIFT] = "Rz" // needs phase fix when controlled
+    [GATE_PHASE_SHIFT] = "Rz",// needs phase fix when controlled
+    [GATE_SWAP] = "swap"      // needs decomp into cNOTs?
 };
 
 // @TODO make a proper internal error thing

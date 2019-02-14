@@ -480,6 +480,18 @@ void controlledRotateAroundAxis(Qureg qureg, const int controlQubit, const int t
     qasm_recordControlledAxisRotation(qureg, angle, axis, controlQubit, targetQubit);
 }
 
+void swapGate(Qureg qureg, int qb1, int qb2) {
+    validateControlTarget(qureg, qb1, qb2, __func__);
+
+    statevec_swapGate(qureg, qb1, qb2);
+    if (qureg.isDensityMatrix) {
+        int shift = qureg.numQubitsRepresented;
+        statevec_swapGate(qureg, qb1+shift, qb2+shift);
+    }
+
+    qasm_recordControlledGate(qureg, GATE_SWAP, qb1, qb2);
+}
+
 
 /*
  * register attributes
