@@ -678,6 +678,8 @@ void applyOneQubitDephaseError(Qureg qureg, const int targetQubit, qreal prob) {
     validateOneQubitDephaseProb(prob, __func__);
     
     densmatr_oneQubitDephase(qureg, targetQubit, 2*prob);
+    qasm_recordComment(qureg, 
+        "Here, a phase (Z) error occured on qubit %d with probability %g", targetQubit, prob);
 }
 
 void applyTwoQubitDephaseError(Qureg qureg, int qubit1, int qubit2, qreal prob) {
@@ -687,6 +689,9 @@ void applyTwoQubitDephaseError(Qureg qureg, int qubit1, int qubit2, qreal prob) 
 
     ensureIndsIncrease(&qubit1, &qubit2);
     densmatr_twoQubitDephase(qureg, qubit1, qubit2, (4*prob)/3.0);
+    qasm_recordComment(qureg,
+        "Here, a phase (Z) error occured on either or both of qubits "
+        "%d and %d with total probability %g", qubit1, qubit2, prob);
 }
 
 void applyOneQubitDepolariseError(Qureg qureg, const int targetQubit, qreal prob) {
@@ -695,6 +700,9 @@ void applyOneQubitDepolariseError(Qureg qureg, const int targetQubit, qreal prob
     validateOneQubitDepolProb(prob, __func__);
     
     densmatr_oneQubitDepolarise(qureg, targetQubit, (4*prob)/3.0);
+    qasm_recordComment(qureg,
+        "Here, a homogeneous depolarising error (X, Y, or Z) occured on "
+        "qubit %d with total probability %g", targetQubit, prob);
 }
 
 void applyTwoQubitDepolariseError(Qureg qureg, int qubit1, int qubit2, qreal prob) {
@@ -704,6 +712,9 @@ void applyTwoQubitDepolariseError(Qureg qureg, int qubit1, int qubit2, qreal pro
     
     ensureIndsIncrease(&qubit1, &qubit2);
     densmatr_twoQubitDepolarise(qureg, qubit1, qubit2, (16*prob)/15.0);
+    qasm_recordComment(qureg,
+        "Here, a homogeneous depolarising error occured on qubits %d and %d "
+        "with total probability %g", qubit1, qubit2, prob);
 }
 
 
