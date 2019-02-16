@@ -717,6 +717,17 @@ void applyTwoQubitDepolariseError(Qureg qureg, int qubit1, int qubit2, qreal pro
         "with total probability %g", qubit1, qubit2, prob);
 }
 
+void applyOneQubitPauliError(Qureg qureg, int qubit, qreal probX, qreal probY, qreal probZ) {
+    validateDensityMatrQureg(qureg, __func__);
+    validateTarget(qureg, qubit, __func__);
+    validateOneQubitPauliProbs(probX, probY, probZ, __func__);
+    
+    densmatr_oneQubitPauliError(qureg, qubit, probX, probY, probZ);
+    qasm_recordComment(qureg,
+        "Here, X, Y and Z errors occured on qubit %d with probabilities "
+        "%g, %g and %g respectively", qubit, probX, probY, probZ);
+}
+
 
 /*
  * debug

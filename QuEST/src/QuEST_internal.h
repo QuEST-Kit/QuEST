@@ -1,7 +1,8 @@
-// Distributed under MIT licence. See https://github.com/aniabrown/QuEST_GPU/blob/master/LICENCE.txt for details
+// Distributed under MIT licence. See github.com/QuEST-Kit/QuEST/blob/master/LICENCE.txt for details
 
 /** @file
- * Functions used internally, supplied by QuEST_common or by hardware-specific backends
+ * General functions used internally, supplied by QuEST_common or by hardware-specific backends.
+ * Note that some bespoke functions used only internally exist in QuEST_qasm.h and QuEST_validation.h
  */
 
 # ifndef QUEST_INTERNAL_H
@@ -69,6 +70,8 @@ void densmatr_twoQubitDephase(Qureg qureg, const int qubit1, const int qubit2, q
 void densmatr_oneQubitDepolarise(Qureg qureg, const int targetQubit, qreal depolLevel);
 
 void densmatr_twoQubitDepolarise(Qureg qureg, int qubit1, int qubit2, qreal depolLevel);
+
+void densmatr_oneQubitPauliError(Qureg qureg, int qubit, qreal pX, qreal pY, qreal pZ);
 
 void densmatr_addDensityMatrix(Qureg combineQureg, qreal otherProb, Qureg otherQureg);
     

@@ -63,6 +63,8 @@ void validateOneQubitDepolProb(qreal prob, const char* caller);
 
 void validateTwoQubitDepolProb(qreal prob, const char* caller);
 
+void validateOneQubitPauliProbs(qreal probX, qreal probY, qreal probZ, const char* caller);
+
 # ifdef __cplusplus
 }
 # endif

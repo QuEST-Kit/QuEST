@@ -1503,6 +1503,40 @@ void applyOneQubitDepolariseError(Qureg qureg, const int targetQubit, qreal prob
  */
 void applyTwoQubitDepolariseError(Qureg qureg, const int qubit1, const int qubit2, qreal prob);
 
+/** Mixes a density matrix \p qureg to induce general single-qubit Pauli noise.
+ * With probabilities \p probX, \p probY and \p probZ, applies Pauli X, Y, and Z
+ * respectively to \p targetQubit.
+ *
+ * This transforms \p qureg = \f$\rho\f$ into the mixed state
+ * \f[
+ * (1 - \text{probX} - \text{probY} - \text{probZ}) \, \rho + \;\;\;
+ *      (\text{probX})\; X_q \, \rho \, X_q + \;\;\;
+ *      (\text{probY})\; Y_q \, \rho \, Y_q + \;\;\;
+ *      (\text{probZ})\; Z_q \, \rho \, Z_q
+ * \f]
+ * where q = \p targetQubit.
+ * Each of \p probX, \p probY and \p probZ cannot exceed the chance of no error: 
+ * 1 - \p probX - \p probY - \p probZ
+ *
+ * Note that in lieu of direct evaluation like the homogenous depolarising and dephasing function,
+ * this function instead effects the Pauli channel by repeatedly performing dephasing (a total of 3 times)
+ * in different basis (requiring a total of 3 general unitaries), and so may be ~6x slower than the 
+ * other noise functions.
+ *
+ * @param[in,out] qureg a density matrix
+ * @param[in] targetQubit qubit to decohere
+ * @param[in] probX the probability of inducing an X error
+ * @param[in] probX the probability of inducing an Y error
+ * @param[in] probX the probability of inducing an Z error
+ * @throws exitWithError
+ *      if \p qureg is not a density matrix,
+ *      or if \p targetQubit is outside [0, \p qureg.numQubitsRepresented),
+ *      or if any of \p probX, \p probY or \p probZ are not in [0, 1],
+ *      or if any of p in {\p probX, \p probY or \p probZ} don't satisfy
+ *      p <= (1 - \p probX - \p probY - \p probZ)
+ */
+void applyOneQubitPauliError(Qureg qureg, int targetQubit, qreal probX, qreal probY, qreal probZ);
+
 /** Modifies combineQureg to become (1-prob)combineProb + prob otherQureg.
  * Both registers must be equal-dimension density matrices, and prob must be in [0, 1].
  *
@@ -1627,8 +1661,8 @@ void swapGate(Qureg qureg, int qubit1, int qubit2);
    \f]
  *
  * @param[in,out] qureg object representing the set of all qubits
- * @param[in] qubit1 qubit to swap
- * @param[in] qubit2 other qubit to swap
+ * @param[in] qubit1 qubit to sqrt swap
+ * @param[in] qubit2 other qubit to sqrt swap
  * @throws exitWithError
  *      if either \p qubit1 or \p qubit2 are outside [0, \p qureg.numQubitsRepresented), or are equal.
  */

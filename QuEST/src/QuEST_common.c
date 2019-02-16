@@ -1,7 +1,14 @@
 // Distributed under MIT licence. See https://github.com/aniabrown/QuEST_GPU/blob/master/LICENCE.txt for details
 
 /** @file
- * Internal and API functions which are hardware-agnostic
+ * Internal and API functions which are hardware-agnostic.
+ * These must never call a front-end function in QuEST.c, which would lead to 
+ * duplication of e.g. QASM logging and validation. Note that though many of
+ * these functions are prefixed with statevec_, they will be called multiple times
+ * to effect their equivalent operation on density matrices, so the passed Qureg
+ * can be assumed a statevector. Functions prefixed with densmatr_ may still
+ * explicitly call statevec_ functions, but will need to manually apply the
+ * conjugate qubit-shifted operations to satisfy the Choi–Jamiolkowski isomorphism
  */
 
 # include "QuEST.h"
@@ -162,12 +169,6 @@ void seedQuEST(unsigned long int *seedArray, int numSeeds){
     init_by_array(seedArray, numSeeds); 
 }
 
-qreal statevec_getProbAmp(Qureg qureg, long long int index){
-    qreal real = statevec_getRealAmp(qureg, index);
-    qreal imag = statevec_getImagAmp(qureg, index);
-    return real*real + imag*imag;
-}
-
 void reportState(Qureg qureg){
     FILE *state;
     char filename[100];
@@ -195,6 +196,12 @@ void reportQuregParams(Qureg qureg){
         printf("Number of amps is %lld.\n", numAmps);
         printf("Number of amps per rank is %lld.\n", numAmpsPerRank);
     }
+}
+
+qreal statevec_getProbAmp(Qureg qureg, long long int index){
+    qreal real = statevec_getRealAmp(qureg, index);
+    qreal imag = statevec_getImagAmp(qureg, index);
+    return real*real + imag*imag;
 }
 
 void statevec_phaseShift(Qureg qureg, const int targetQubit, qreal angle) {
@@ -361,6 +368,51 @@ void statevec_sqrtSwapGateConj(Qureg qureg, int qb1, int qb2) {
     statevec_controlledNot(qureg, qb1, qb2);
     statevec_controlledUnitary(qureg, qb2, qb1, u);
     statevec_controlledNot(qureg, qb1, qb2);
+}
+
+void densmatr_oneQubitPauliError(Qureg qureg, int qubit, qreal pX, qreal pY, qreal pZ) {
+    
+    // The accepted pX, pY, pZ do NOT need to be pre-scaled.
+    // The passed probabilities below are modified so that the final state produced is
+    // q + px X q X + py Y q Y + pz Z q Z
+    // The *2 are due to oneQubitDephase accepting 'dephaseLevel', not a probability
+    // The double statevec_compactUnitary calls are needed (with complex conjugates)
+    // since we're operating on a density matrix, not a statevector, and this function
+    // won't be called twice from the front-end
+    
+    Complex alpha, beta;
+    qreal fac = 1/sqrt(2);
+    int numQb = qureg.numQubitsRepresented;
+    
+    // add Z error
+    densmatr_oneQubitDephase(qureg, qubit, 2 * pZ/(1-pX-pY));
+    
+    // rotate basis via Rx(pi/2)
+    alpha.real = fac; alpha.imag = 0;
+    beta.real = 0;    beta.imag = -fac;
+    statevec_compactUnitary(qureg, qubit, alpha, beta);
+    alpha.imag *= -1; beta.imag *= -1;
+    statevec_compactUnitary(qureg, qubit + numQb, alpha, beta);
+    
+    // add Z -> Y Rx(pi/2) error 
+    densmatr_oneQubitDephase(qureg, qubit, 2 * pY/(1-pX));
+    
+    // rotate basis by Rx(-pi/2) then Ry(pi/2) 
+    alpha.real = .5; alpha.imag = -.5;
+    beta.real = .5;  beta.imag = .5;
+    statevec_compactUnitary(qureg, qubit, alpha, beta);
+    alpha.imag *= -1; beta.imag *= -1;
+    statevec_compactUnitary(qureg, qubit + numQb, alpha, beta);
+    
+    // add Z -> X Ry(pi/2) error
+    densmatr_oneQubitDephase(qureg, qubit, 2 * pX);
+    
+    // restore basis
+    alpha.real = fac; alpha.imag = 0;
+    beta.real = -fac; beta.imag = 0;
+    statevec_compactUnitary(qureg, qubit, alpha, beta);
+    alpha.imag *= -1; beta.imag *= -1;
+    statevec_compactUnitary(qureg, qubit + numQb, alpha, beta);
 }
 
 

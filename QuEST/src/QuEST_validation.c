@@ -45,7 +45,8 @@ typedef enum {
     E_INVALID_ONE_QUBIT_DEPHASE_PROB,
     E_INVALID_TWO_QUBIT_DEPHASE_PROB,
     E_INVALID_ONE_QUBIT_DEPOL_PROB,
-    E_INVALID_TWO_QUBIT_DEPOL_PROB
+    E_INVALID_TWO_QUBIT_DEPOL_PROB,
+    E_INVALID_ONE_QUBIT_PAULI_PROBS
 } ErrorCode;
 
 static const char* errorMessages[] = {
@@ -65,7 +66,7 @@ static const char* errorMessages[] = {
     [E_SYS_TOO_BIG_TO_PRINT] = "Invalid system size. Cannot print output for systems greater than 5 qubits.",
     [E_COLLAPSE_STATE_ZERO_PROB] = "Can't collapse to state with zero probability.",
     [E_INVALID_QUBIT_OUTCOME] = "Invalid measurement outcome -- must be either 0 or 1.",
-    [E_CANNOT_OPEN_FILE] = "Could not open file",
+    [E_CANNOT_OPEN_FILE] = "Could not open file.",
     [E_SECOND_ARG_MUST_BE_STATEVEC] = "Second argument must be a state-vector.",
     [E_MISMATCHING_QUREG_DIMENSIONS] = "Dimensions of the qubit registers don't match.",
     [E_MISMATCHING_QUREG_TYPES] = "Registers must both be state-vectors or both be density matrices.",
@@ -76,7 +77,8 @@ static const char* errorMessages[] = {
     [E_INVALID_ONE_QUBIT_DEPHASE_PROB] = "The probability of a single qubit dephase error cannot exceed 1/2, which maximally mixes.",
     [E_INVALID_TWO_QUBIT_DEPHASE_PROB] = "The probability of a two-qubit qubit dephase error cannot exceed 3/4, which maximally mixes.",
     [E_INVALID_ONE_QUBIT_DEPOL_PROB] = "The probability of a single qubit depolarising error cannot exceed 3/4, which maximally mixes.",
-    [E_INVALID_TWO_QUBIT_DEPOL_PROB] = "The probability of a two-qubit depolarising error cannot exceed 15/16, which maximally mixes."
+    [E_INVALID_TWO_QUBIT_DEPOL_PROB] = "The probability of a two-qubit depolarising error cannot exceed 15/16, which maximally mixes.",
+    [E_INVALID_ONE_QUBIT_PAULI_PROBS] = "The probability of any X, Y or Z error cannot exceed the probability of no error."
 };
 
 void exitWithError(ErrorCode code, const char* func){
@@ -257,6 +259,17 @@ void validateTwoQubitDepolProb(qreal prob, const char* caller) {
     QuESTAssert(prob <= 15/16.0, E_INVALID_TWO_QUBIT_DEPOL_PROB, caller);
 }
 
+void validateOneQubitPauliProbs(qreal probX, qreal probY, qreal probZ, const char* caller) {
+    validateProb(probX, caller);
+    validateProb(probY, caller);
+    validateProb(probZ, caller);
+    
+    qreal probNoError = 1 - probX - probY - probZ;
+    QuESTAssert(probX <= probNoError, E_INVALID_ONE_QUBIT_PAULI_PROBS, caller);
+    QuESTAssert(probY <= probNoError, E_INVALID_ONE_QUBIT_PAULI_PROBS, caller);
+    QuESTAssert(probZ <= probNoError, E_INVALID_ONE_QUBIT_PAULI_PROBS, caller);
+}
+    
 
 
 
