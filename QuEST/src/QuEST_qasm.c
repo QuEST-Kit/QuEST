@@ -19,6 +19,7 @@
 # include <math.h>
 # include <stdio.h>
 # include <stdlib.h>
+# include <stdarg.h>
 # include <string.h>
 
 # define QUREG_LABEL "q"        // QASM var-name for the quantum register
@@ -114,13 +115,21 @@ void addStringToQASM(Qureg qureg, char line[], int lineLen) {
     qureg.qasmLog->bufferFill += addedChars;
 }
 
-void qasm_recordComment(Qureg qureg, char* comment) {
+void qasm_recordComment(Qureg qureg, char* comment, ...) {
     
     if (!qureg.qasmLog->isLogging)
         return;
     
+    // write formatted comment to buff
+    va_list argp;
+    va_start(argp, comment);
+    char buff[MAX_LINE_LEN - 4];
+    vsnprintf(buff, MAX_LINE_LEN-5, comment, argp);
+    va_end(argp);
+    
+    // add chars to buff, write to QASM logger
     char line[MAX_LINE_LEN + 1]; // for trailing \0
-    int len = snprintf(line, MAX_LINE_LEN, "%s %s\n", COMMENT_PREF, comment);
+    int len = snprintf(line, MAX_LINE_LEN, "%s %s\n", COMMENT_PREF, buff);
     addStringToQASM(qureg, line, len);
 }
 

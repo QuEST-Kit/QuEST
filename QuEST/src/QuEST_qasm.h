@@ -77,7 +77,7 @@ void qasm_recordInitPlus(Qureg qureg);
 
 void qasm_recordInitClassical(Qureg qureg, long long int stateInd);
 
-void qasm_recordComment(Qureg qureg, char* comment);
+void qasm_recordComment(Qureg qureg, char* comment, ...);
 
 void qasm_clearRecorded(Qureg qureg);
 
