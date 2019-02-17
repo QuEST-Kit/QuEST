@@ -1668,6 +1668,58 @@ void swapGate(Qureg qureg, int qubit1, int qubit2);
  */
 void sqrtSwapGate(Qureg qureg, int qb1, int qb2);
 
+/** Apply a general multiple-control, conditioned on a specific bit sequence,
+ *  single-target unitary, which can include a global phase factor. 
+ * Any number of control qubits can be specified, along with which of their 
+ * states (0 or 1) to condition upon; when the specified controls are in the 
+ * specified state, the given unitary is applied to the target qubit.
+ * This is equivalent to NOTing the control bits which are conditioned on 0, 
+ * calling multiStateControlledUnitary then NOTing the same control bits.
+ *
+    \f[
+    \setlength{\fboxrule}{0.01pt}
+    \fbox{
+                \begin{tikzpicture}[scale=.5]
+                \node[draw=none] at (-3.5, 3) {controls};
+                \node[draw=none] at (-3.5, 0) {target};
+
+                \node[draw=none] at (0, 6) {$\vdots$};
+                \draw (0, 5) -- (0, 4);
+                
+                \draw (-2, 4) -- (2, 4);
+                \draw[fill=black] (0, 4) circle (.2);
+                \draw (0, 4) -- (0, 2);         
+                
+                \draw (-2, 2) -- (2, 2);
+                \draw[fill=white] (0, 2) circle (.2);
+                \draw (0, 2) -- (0, 1);
+                
+                \draw (-2,0) -- (-1, 0);
+                \draw (1, 0) -- (2, 0);
+                \draw (-1,-1)--(-1,1)--(1,1)--(1,-1)--cycle;
+                \node[draw=none] at (0, 0) {U};
+                \end{tikzpicture}
+    }
+    \f]
+ *                                                                
+ * @param[in,out] qureg object representing the set of all qubits
+ * @param[in] controlQubits the indices of the control qubits 
+ * @param[in] controlState the bit values (0 or 1) of each control qubit, upon which to condition
+ * @param[in] numControlQubits number of control qubits
+ * @param[in] targetQubit qubit to operate the unitary upon
+ * @param[in] u single-qubit unitary matrix to apply
+ * @throws exitWithError
+ *      if \p numControlQubits is outside [1, \p qureg.numQubitsRepresented]),
+ *      or if any qubit index (\p targetQubit or one in \p controlQubits) is outside
+ *      [0, \p qureg.numQubitsRepresented]), 
+ *      or if \p controlQubits contains \p targetQubit,
+ *      or if any element of controlState is not a bit (0 or 1),
+ *      or if \p u is not unitary.
+ */
+void multiStateControlledUnitary(
+    Qureg qureg, int* controlQubits, int* controlState, const int numControlQubits, 
+    const int targetQubit, ComplexMatrix2 u
+);
 
 #ifdef __cplusplus
 }

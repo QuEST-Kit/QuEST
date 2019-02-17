@@ -46,7 +46,8 @@ typedef enum {
     E_INVALID_TWO_QUBIT_DEPHASE_PROB,
     E_INVALID_ONE_QUBIT_DEPOL_PROB,
     E_INVALID_TWO_QUBIT_DEPOL_PROB,
-    E_INVALID_ONE_QUBIT_PAULI_PROBS
+    E_INVALID_ONE_QUBIT_PAULI_PROBS,
+    E_INVALID_CONTROLS_BIT_STATE
 } ErrorCode;
 
 static const char* errorMessages[] = {
@@ -78,7 +79,8 @@ static const char* errorMessages[] = {
     [E_INVALID_TWO_QUBIT_DEPHASE_PROB] = "The probability of a two-qubit qubit dephase error cannot exceed 3/4, which maximally mixes.",
     [E_INVALID_ONE_QUBIT_DEPOL_PROB] = "The probability of a single qubit depolarising error cannot exceed 3/4, which maximally mixes.",
     [E_INVALID_TWO_QUBIT_DEPOL_PROB] = "The probability of a two-qubit depolarising error cannot exceed 15/16, which maximally mixes.",
-    [E_INVALID_ONE_QUBIT_PAULI_PROBS] = "The probability of any X, Y or Z error cannot exceed the probability of no error."
+    [E_INVALID_ONE_QUBIT_PAULI_PROBS] = "The probability of any X, Y or Z error cannot exceed the probability of no error.",
+    [E_INVALID_CONTROLS_BIT_STATE] = "The state of the control qubits must be a bit sequence (0s and 1s)."
 };
 
 void exitWithError(ErrorCode code, const char* func){
@@ -183,6 +185,11 @@ void validateMultiControlsTarget(Qureg qureg, int* controlQubits, const int numC
         QuESTAssert(controlQubits[i] != targetQubit, E_TARGET_IN_CONTROLS, caller);
 }
 
+void validateControlState(int* controlState, const int numControlQubits, const char* caller) {
+    for (int i=0; i < numControlQubits; i++)
+        QuESTAssert(controlState[i] == 0 || controlState[i] == 1, E_INVALID_CONTROLS_BIT_STATE, caller);
+}
+
 void validateUnitaryMatrix(ComplexMatrix2 u, const char* caller) {
     QuESTAssert(isMatrixUnitary(u), E_NON_UNITARY_MATRIX, caller);
 }
@@ -269,8 +276,6 @@ void validateOneQubitPauliProbs(qreal probX, qreal probY, qreal probZ, const cha
     QuESTAssert(probY <= probNoError, E_INVALID_ONE_QUBIT_PAULI_PROBS, caller);
     QuESTAssert(probZ <= probNoError, E_INVALID_ONE_QUBIT_PAULI_PROBS, caller);
 }
-    
-
 
 
 #ifdef __cplusplus

@@ -27,6 +27,8 @@ void validateMultiControls(Qureg qureg, int* controlQubits, const int numControl
 
 void validateMultiControlsTarget(Qureg qureg, int* controlQubits, const int numControlQubits, const int targetQubit, const char* caller);
 
+void validateControlState(int* controlState, const int numControlQubits, const char* caller);
+
 void validateUnitaryMatrix(ComplexMatrix2 u, const char* caller);
 
 void validateUnitaryComplexPair(Complex alpha, Complex beta, const char* caller);

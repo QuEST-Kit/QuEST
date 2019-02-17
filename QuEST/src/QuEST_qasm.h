@@ -65,6 +65,8 @@ void qasm_recordMultiControlledParamGate(Qureg qureg, TargetGate gate, int* cont
 
 void qasm_recordMultiControlledUnitary(Qureg qureg, ComplexMatrix2 u, int* controlQubits, const int numControlQubits, const int targetQubit);
 
+void qasm_recordMultiStateControlledUnitary(Qureg qureg, ComplexMatrix2 u, int* controlQubits, int* controlState, const int numControlQubits, const int targetQubit);
+
 /* not actually used. D'oh!
 void qasm_recordMultiControlledAxisRotation(Qureg qureg, qreal angle, Vector axis, int* controlQubits, const int numControlQubits, const int targetQubit);\
 */

@@ -284,6 +284,21 @@ void multiControlledUnitary(Qureg qureg, int* controlQubits, const int numContro
     qasm_recordMultiControlledUnitary(qureg, u, controlQubits, numControlQubits, targetQubit);
 }
 
+void multiStateControlledUnitary(Qureg qureg, int* controlQubits, int* controlState, const int numControlQubits, const int targetQubit, ComplexMatrix2 u) {
+    validateMultiControlsTarget(qureg, controlQubits, numControlQubits, targetQubit, __func__);
+    validateUnitaryMatrix(u, __func__);
+    validateControlState(controlState, numControlQubits, __func__);
+
+    long long int ctrlQubitsMask = getControlBitMask(controlQubits, numControlQubits);
+    long long int ctrlFlipMask = getControlFlipMask(controlQubits, controlState, numControlQubits);
+    if (qureg.isDensityMatrix) {
+        int shift = qureg.numQubitsRepresented;
+        statevec_multiControlledUnitary(qureg, ctrlQubitsMask<<shift, ctrlFlipMask<<shift, targetQubit+shift, getConjugateMatrix(u));
+    }
+    
+    qasm_recordMultiStateControlledUnitary(qureg, u, controlQubits, controlState, numControlQubits, targetQubit);
+}
+
 void compactUnitary(Qureg qureg, const int targetQubit, Complex alpha, Complex beta) {
     validateTarget(qureg, targetQubit, __func__);
     validateUnitaryComplexPair(alpha, beta, __func__);

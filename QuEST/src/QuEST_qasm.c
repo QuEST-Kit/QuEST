@@ -352,8 +352,28 @@ void qasm_recordMultiControlledUnitary(Qureg qureg, ComplexMatrix2 u, int* contr
     addGateToQASM(qureg, GATE_UNITARY, controlQubits, numControlQubits, targetQubit, params, 3);
     
     // add Rz
+    qasm_recordComment(qureg, "Restoring the discarded global phase of the previous multicontrolled unitary");
     qreal phaseFix[1] = {globalPhase};
     addGateToQASM(qureg, GATE_ROTATE_Z, NULL, 0, targetQubit, phaseFix, 1);
+}
+
+void qasm_recordMultiStateControlledUnitary(
+    Qureg qureg, ComplexMatrix2 u, int* controlQubits, int* controlState, const int numControlQubits, const int targetQubit
+) {
+    if (!qureg.qasmLog->isLogging)
+        return;
+    
+    qasm_recordComment(qureg, "NOTing some gates so that the subsequent unitary is controlled-on-0");
+    for (int i=0; i < numControlQubits; i++)
+        if (controlState[i] == 0)
+            addGateToQASM(qureg, GATE_SIGMA_X, NULL, 0, controlQubits[i], NULL, 0);
+    
+    qasm_recordMultiControlledUnitary(qureg, u, controlQubits, numControlQubits, targetQubit);
+
+    qasm_recordComment(qureg, "Undoing the NOTing of the controlled-on-0 qubits of the previous unitary");
+    for (int i=0; i < numControlQubits; i++)
+        if (controlState[i] == 0)
+            addGateToQASM(qureg, GATE_SIGMA_X, NULL, 0, controlQubits[i], NULL, 0);
 }
 
 /* not actually used, D'Oh!
