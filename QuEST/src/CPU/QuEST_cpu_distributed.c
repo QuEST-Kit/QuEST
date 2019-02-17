@@ -945,10 +945,8 @@ void statevec_controlledUnitary(Qureg qureg, const int controlQubit, const int t
     }
 }
 
-void statevec_multiControlledUnitary(Qureg qureg, int* controlQubits, const int numControlQubits, const int targetQubit, ComplexMatrix2 u)
+void statevec_multiControlledUnitary(Qureg qureg, long long int ctrlQubitsMask, long long int ctrlFlipMask, const int targetQubit, ComplexMatrix2 u)
 {
-    long long int mask = getControlBitMask(controlQubits, numControlQubits);
-
     // flag to require memory exchange. 1: an entire block fits on one rank, 0: at most half a block fits on one rank
     int useLocalDataOnly = halfMatrixBlockFitsInChunk(qureg.numAmpsPerChunk, targetQubit);
     Complex rot1, rot2;
@@ -959,25 +957,25 @@ void statevec_multiControlledUnitary(Qureg qureg, int* controlQubits, const int 
 
     if (useLocalDataOnly){
         // all values required to update state vector lie in this rank
-        statevec_multiControlledUnitaryLocal(qureg, targetQubit, mask, u);
+        statevec_multiControlledUnitaryLocal(qureg, targetQubit, ctrlQubitsMask, ctrlFlipMask, u);
     } else {
         // need to get corresponding chunk of state vector from other rank
         rankIsUpper = chunkIsUpper(qureg.chunkId, qureg.numAmpsPerChunk, targetQubit);
         getRotAngleFromUnitaryMatrix(rankIsUpper, &rot1, &rot2, u);
         pairRank = getChunkPairId(rankIsUpper, qureg.chunkId, qureg.numAmpsPerChunk, targetQubit);
-        //printf("%d rank has pair rank: %d\n", qureg.rank, pairRank);
+
         // get corresponding values from my pair
         exchangeStateVectors(qureg, pairRank);
 
         // this rank's values are either in the upper of lower half of the block. send values to multiControlledUnitaryDistributed
         // in the correct order
         if (rankIsUpper){
-            statevec_multiControlledUnitaryDistributed(qureg,targetQubit,mask,rot1,rot2,
+            statevec_multiControlledUnitaryDistributed(qureg,targetQubit,ctrlQubitsMask,ctrlFlipMask,rot1,rot2,
                     qureg.stateVec, //upper
                     qureg.pairStateVec, //lower
                     qureg.stateVec); //output
         } else {
-            statevec_multiControlledUnitaryDistributed(qureg,targetQubit,mask,rot1,rot2,
+            statevec_multiControlledUnitaryDistributed(qureg,targetQubit,ctrlQubitsMask,ctrlFlipMask,rot1,rot2,
                     qureg.pairStateVec, //upper
                     qureg.stateVec, //lower
                     qureg.stateVec); //output

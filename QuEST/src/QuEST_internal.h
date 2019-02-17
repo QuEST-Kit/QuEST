@@ -22,6 +22,8 @@ extern "C" {
  
 long long int getControlBitMask(int* controlQubits, const int numControlQubits);
 
+long long int getControlFlipMask(int* controlQubits, int* controlState, const int numControlQubits);
+
 unsigned long int hashString(char *str);
 
 qreal getVectorMagnitude(Vector vec);
@@ -178,7 +180,7 @@ void statevec_controlledCompactUnitary(Qureg qureg, const int controlQubit, cons
 
 void statevec_controlledUnitary(Qureg qureg, const int controlQubit, const int targetQubit, ComplexMatrix2 u);
 
-void statevec_multiControlledUnitary(Qureg qureg, int* controlQubits, const int numControlQubits, const int targetQubit, ComplexMatrix2 u);
+void statevec_multiControlledUnitary(Qureg qureg, long long int ctrlQubitsMask, long long int ctrlFlipMask, const int targetQubit, ComplexMatrix2 u);
 
 void statevec_hadamard(Qureg qureg, const int targetQubit);
 

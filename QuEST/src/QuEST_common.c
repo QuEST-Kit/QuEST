@@ -35,8 +35,19 @@ long long int getControlBitMask(int* controlQubits, const int numControlQubits) 
     
     long long int mask=0; 
     for (int i=0; i<numControlQubits; i++)
-        mask = mask | (1LL<<controlQubits[i]);
+        mask = mask | (1LL << controlQubits[i]);
         
+    return mask;
+}
+
+/* builds a bit-string where 1 indicates control qubits conditioned on 0 ('flipped') */
+long long int getControlFlipMask(int* controlQubits, int* controlState, const int numControlQubits) {
+    
+    long long int mask=0;
+    for (int i=0; i<numControlQubits; i++)
+        if (controlState[i] == 0)
+            mask = mask | (1LL << controlQubits[i]);
+            
     return mask;
 }
 

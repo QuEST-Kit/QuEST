@@ -1720,8 +1720,14 @@ void statevec_controlledCompactUnitaryLocal (Qureg qureg, const int controlQubit
 
 } 
 
-void statevec_multiControlledUnitaryLocal(Qureg qureg, const int targetQubit, 
-        long long int mask, ComplexMatrix2 u)
+/* ctrlQubitsMask is a bit mask indicating which qubits are control Qubits
+ * ctrlFlipMask is a bit mask indicating which control qubits should be 'flipped'
+ * in the condition, i.e. they should have value 0 when the unitary is applied
+ */
+void statevec_multiControlledUnitaryLocal(
+    Qureg qureg, const int targetQubit, 
+    long long int ctrlQubitsMask, long long int ctrlFlipMask,
+    ComplexMatrix2 u)
 {
     long long int sizeBlock, sizeHalfBlock;
     long long int thisBlock, // current block
@@ -1744,8 +1750,8 @@ void statevec_multiControlledUnitaryLocal(Qureg qureg, const int targetQubit,
 # ifdef _OPENMP
 # pragma omp parallel \
     default  (none) \
-    shared   (sizeBlock,sizeHalfBlock, stateVecReal,stateVecImag, u, mask) \
-    private  (thisTask,thisBlock ,indexUp,indexLo, stateRealUp,stateImagUp,stateRealLo,stateImagLo) 
+    shared   (sizeBlock,sizeHalfBlock, stateVecReal,stateVecImag, u, ctrlQubitsMask,ctrlFlipMask) \
+    private  (thisTask,thisBlock, indexUp,indexLo, stateRealUp,stateImagUp,stateRealLo,stateImagLo) 
 # endif
     {
 # ifdef _OPENMP
@@ -1756,15 +1762,17 @@ void statevec_multiControlledUnitaryLocal(Qureg qureg, const int targetQubit,
             thisBlock   = thisTask / sizeHalfBlock;
             indexUp     = thisBlock*sizeBlock + thisTask%sizeHalfBlock;
             indexLo     = indexUp + sizeHalfBlock;
-
-            if (mask == (mask & (indexUp+chunkId*chunkSize)) ){
+            
+            
+            // take the basis index, flip the designated (XOR) 'control' bits, AND with the controls.
+            // if this equals the control mask, the control qubits have the desired values in the basis index
+            if (ctrlQubitsMask == (ctrlQubitsMask & ((indexUp+chunkId*chunkSize) ^ ctrlFlipMask))) {
                 // store current state vector values in temp variables
                 stateRealUp = stateVecReal[indexUp];
                 stateImagUp = stateVecImag[indexUp];
 
                 stateRealLo = stateVecReal[indexLo];
                 stateImagLo = stateVecImag[indexLo];
-
 
                 // state[indexUp] = u00 * state[indexUp] + u01 * state[indexLo]
                 stateVecReal[indexUp] = u.r0c0.real*stateRealUp - u.r0c0.imag*stateImagUp 
@@ -1982,16 +1990,19 @@ void statevec_controlledUnitaryDistributed (Qureg qureg, const int controlQubit,
  *                                                 
  *  @param[in,out] qureg object representing the set of qubits
  *  @param[in] targetQubit qubit to rotate
- *  @param[in] controlQubit qubit to determine whether or not to perform a rotation 
+ *  @param[in] ctrlQubitsMask a bit mask indicating whether each qubit is a control (1) or not (0)
+ *  @param[in] ctrlFlipMask a bit mask indicating whether each qubit (only controls are relevant)
+ *             should be flipped when checking the control condition
  *  @param[in] rot1 rotation angle
  *  @param[in] rot2 rotation angle
  *  @param[in] stateVecUp probability amplitudes in upper half of a block
  *  @param[in] stateVecLo probability amplitudes in lower half of a block
  *  @param[out] stateVecOut array section to update (will correspond to either the lower or upper half of a block)
  */
-void statevec_multiControlledUnitaryDistributed (Qureg qureg, 
+void statevec_multiControlledUnitaryDistributed (
+        Qureg qureg, 
         const int targetQubit, 
-        long long int mask,
+        long long int ctrlQubitsMask, long long int ctrlFlipMask,
         Complex rot1, Complex rot2,
         ComplexArray stateVecUp,
         ComplexArray stateVecLo,
@@ -2014,7 +2025,7 @@ void statevec_multiControlledUnitaryDistributed (Qureg qureg,
 # pragma omp parallel \
     default  (none) \
     shared   (stateVecRealUp,stateVecImagUp,stateVecRealLo,stateVecImagLo,stateVecRealOut,stateVecImagOut, \
-            rot1Real,rot1Imag, rot2Real,rot2Imag, mask) \
+            rot1Real,rot1Imag, rot2Real,rot2Imag, ctrlQubitsMask,ctrlFlipMask) \
     private  (thisTask,stateRealUp,stateImagUp,stateRealLo,stateImagLo)
 # endif
     {
@@ -2022,7 +2033,7 @@ void statevec_multiControlledUnitaryDistributed (Qureg qureg,
 # pragma omp for schedule (static)
 # endif
         for (thisTask=0; thisTask<numTasks; thisTask++) {
-            if (mask == (mask & (thisTask+chunkId*chunkSize)) ){
+            if (ctrlQubitsMask == (ctrlQubitsMask & ((thisTask+chunkId*chunkSize) ^ ctrlFlipMask))) {
                 // store current state vector values in temp variables
                 stateRealUp = stateVecRealUp[thisTask];
                 stateImagUp = stateVecImagUp[thisTask];

@@ -213,11 +213,9 @@ void statevec_controlledUnitary(Qureg qureg, const int controlQubit, const int t
     statevec_controlledUnitaryLocal(qureg, controlQubit, targetQubit, u);
 }
 
-void statevec_multiControlledUnitary(Qureg qureg, int* controlQubits, const int numControlQubits, const int targetQubit, ComplexMatrix2 u) 
+void statevec_multiControlledUnitary(Qureg qureg, long long int ctrlQubitsMask, long long int ctrlFlipMask, const int targetQubit, ComplexMatrix2 u) 
 {
-    long long int mask = getControlBitMask(controlQubits, numControlQubits);
-
-    statevec_multiControlledUnitaryLocal(qureg, targetQubit, mask, u);
+    statevec_multiControlledUnitaryLocal(qureg, targetQubit, ctrlQubitsMask, ctrlFlipMask, u);
 }
 
 void statevec_pauliX(Qureg qureg, const int targetQubit) 

@@ -785,7 +785,11 @@ void statevec_controlledUnitary(Qureg qureg, const int controlQubit, const int t
     statevec_controlledUnitaryKernel<<<CUDABlocks, threadsPerCUDABlock>>>(qureg, controlQubit, targetQubit, u);
 }
 
-__global__ void statevec_multiControlledUnitaryKernel(Qureg qureg, long long int mask, const int targetQubit, ComplexMatrix2 u){
+__global__ void statevec_multiControlledUnitaryKernel(
+    Qureg qureg, 
+    long long int ctrlQubitsMask, long long int ctrlFlipMask, 
+    const int targetQubit, ComplexMatrix2 u
+){
     // ----- sizes
     long long int sizeBlock,                                           // size of blocks
          sizeHalfBlock;                                       // size of blocks halved
@@ -819,7 +823,7 @@ __global__ void statevec_multiControlledUnitaryKernel(Qureg qureg, long long int
     indexUp     = thisBlock*sizeBlock + thisTask%sizeHalfBlock;
     indexLo     = indexUp + sizeHalfBlock;
 
-    if (mask == (mask & indexUp) ){
+    if (ctrlQubitsMask == (ctrlQubitsMask & (indexUp ^ ctrlFlipMask))) {
         // store current state vector values in temp variables
         stateRealUp = stateVecReal[indexUp];
         stateImagUp = stateVecImag[indexUp];
@@ -841,13 +845,15 @@ __global__ void statevec_multiControlledUnitaryKernel(Qureg qureg, long long int
     }
 }
 
-void statevec_multiControlledUnitary(Qureg qureg, int *controlQubits, int numControlQubits, const int targetQubit, ComplexMatrix2 u)
-{
-    int threadsPerCUDABlock, CUDABlocks;
-    long long int mask = getControlBitMask(controlQubits, numControlQubits);
-    threadsPerCUDABlock = 128;
-    CUDABlocks = ceil((qreal)(qureg.numAmpsPerChunk>>1)/threadsPerCUDABlock);
-    statevec_multiControlledUnitaryKernel<<<CUDABlocks, threadsPerCUDABlock>>>(qureg, mask, targetQubit, u);
+void statevec_multiControlledUnitary(
+    Qureg qureg, 
+    long long int ctrlQubitsMask, long long int ctrlFlipMask, 
+    const int targetQubit, ComplexMatrix2 u
+){
+    int threadsPerCUDABlock = 128;
+    int CUDABlocks = ceil((qreal)(qureg.numAmpsPerChunk>>1)/threadsPerCUDABlock);
+    statevec_multiControlledUnitaryKernel<<<CUDABlocks, threadsPerCUDABlock>>>(
+        qureg, ctrlQubitsMask, ctrlFlipMask, targetQubit, u);
 }
 
 __global__ void statevec_pauliXKernel(Qureg qureg, const int targetQubit){

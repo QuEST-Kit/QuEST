@@ -273,12 +273,12 @@ void multiControlledUnitary(Qureg qureg, int* controlQubits, const int numContro
     validateMultiControlsTarget(qureg, controlQubits, numControlQubits, targetQubit, __func__);
     validateUnitaryMatrix(u, __func__);
     
-    statevec_multiControlledUnitary(qureg, controlQubits, numControlQubits, targetQubit, u);
+    long long int ctrlQubitsMask = getControlBitMask(controlQubits, numControlQubits);
+    long long int ctrlFlipMask = 0;
+    statevec_multiControlledUnitary(qureg, ctrlQubitsMask, ctrlFlipMask, targetQubit, u);
     if (qureg.isDensityMatrix) {
         int shift = qureg.numQubitsRepresented;
-        shiftIndices(controlQubits, numControlQubits, shift);
-        statevec_multiControlledUnitary(qureg, controlQubits, numControlQubits, targetQubit+shift, getConjugateMatrix(u));
-        shiftIndices(controlQubits, numControlQubits, -shift);
+        statevec_multiControlledUnitary(qureg, ctrlQubitsMask<<shift, ctrlFlipMask<<shift, targetQubit+shift, getConjugateMatrix(u));
     }
     
     qasm_recordMultiControlledUnitary(qureg, u, controlQubits, numControlQubits, targetQubit);
