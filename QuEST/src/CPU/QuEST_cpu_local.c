@@ -215,9 +215,7 @@ void statevec_controlledUnitary(Qureg qureg, const int controlQubit, const int t
 
 void statevec_multiControlledUnitary(Qureg qureg, int* controlQubits, const int numControlQubits, const int targetQubit, ComplexMatrix2 u) 
 {
-    long long int mask=0; 
-    for (int i=0; i<numControlQubits; i++)
-        mask = mask | (1LL<<controlQubits[i]);
+    long long int mask = getControlBitMask(controlQubits, numControlQubits);
 
     statevec_multiControlledUnitaryLocal(qureg, targetQubit, mask, u);
 }

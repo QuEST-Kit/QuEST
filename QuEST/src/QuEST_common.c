@@ -30,6 +30,15 @@
 extern "C" {
 #endif
 
+/* builds a bit-string where 1 indicates a qubit is controlled upon */
+long long int getControlBitMask(int* controlQubits, const int numControlQubits) {
+    
+    long long int mask=0; 
+    for (int i=0; i<numControlQubits; i++)
+        mask = mask | (1LL<<controlQubits[i]);
+        
+    return mask;
+}
 
 void ensureIndsIncrease(int* ind1, int* ind2) {
     if (*ind1 > *ind2) {

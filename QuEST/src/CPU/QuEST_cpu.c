@@ -2606,9 +2606,7 @@ void statevec_multiControlledPhaseShift(Qureg qureg, int *controlQubits, int num
     const long long int chunkSize=qureg.numAmpsPerChunk;
     const long long int chunkId=qureg.chunkId;
 
-    long long int mask=0;
-    for (int i=0; i<numControlQubits; i++) 
-        mask = mask | (1LL<<controlQubits[i]);
+    long long int mask = getControlBitMask(controlQubits, numControlQubits);
 
     stateVecSize = qureg.numAmpsPerChunk;
     qreal *stateVecReal = qureg.stateVec.real;
@@ -2833,9 +2831,7 @@ void statevec_multiControlledPhaseFlip(Qureg qureg, int *controlQubits, int numC
     const long long int chunkSize=qureg.numAmpsPerChunk;
     const long long int chunkId=qureg.chunkId;
 
-    long long int mask=0;
-    for (int i=0; i<numControlQubits; i++)
-        mask = mask | (1LL<<controlQubits[i]);
+    long long int mask = getControlBitMask(controlQubits, numControlQubits);
 
     stateVecSize = qureg.numAmpsPerChunk;
     qreal *stateVecReal = qureg.stateVec.real;

@@ -19,6 +19,8 @@ extern "C" {
 /*
  * general functions
  */
+ 
+long long int getControlBitMask(int* controlQubits, const int numControlQubits);
 
 unsigned long int hashString(char *str);
 

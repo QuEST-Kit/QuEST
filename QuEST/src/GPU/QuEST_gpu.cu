@@ -844,8 +844,7 @@ __global__ void statevec_multiControlledUnitaryKernel(Qureg qureg, long long int
 void statevec_multiControlledUnitary(Qureg qureg, int *controlQubits, int numControlQubits, const int targetQubit, ComplexMatrix2 u)
 {
     int threadsPerCUDABlock, CUDABlocks;
-    long long int mask=0;
-    for (int i=0; i<numControlQubits; i++) mask = mask | (1LL<<controlQubits[i]);
+    long long int mask = getControlBitMask(controlQubits, numControlQubits);
     threadsPerCUDABlock = 128;
     CUDABlocks = ceil((qreal)(qureg.numAmpsPerChunk>>1)/threadsPerCUDABlock);
     statevec_multiControlledUnitaryKernel<<<CUDABlocks, threadsPerCUDABlock>>>(qureg, mask, targetQubit, u);
@@ -1098,9 +1097,7 @@ void statevec_multiControlledPhaseShift(Qureg qureg, int *controlQubits, int num
     qreal cosAngle = cos(angle);
     qreal sinAngle = sin(angle);
 
-    long long int mask=0;
-    for (int i=0; i<numControlQubits; i++) 
-        mask = mask | (1LL<<controlQubits[i]);
+    long long int mask = getControlBitMask(controlQubits, numControlQubits);
         
     int threadsPerCUDABlock, CUDABlocks;
     threadsPerCUDABlock = 128;
@@ -1213,8 +1210,7 @@ __global__ void statevec_multiControlledPhaseFlipKernel(Qureg qureg, long long i
 void statevec_multiControlledPhaseFlip(Qureg qureg, int *controlQubits, int numControlQubits)
 {
     int threadsPerCUDABlock, CUDABlocks;
-    long long int mask=0;
-    for (int i=0; i<numControlQubits; i++) mask = mask | (1LL<<controlQubits[i]);
+    long long int mask = getControlBitMask(controlQubits, numControlQubits);
     threadsPerCUDABlock = 128;
     CUDABlocks = ceil((qreal)(qureg.numAmpsPerChunk)/threadsPerCUDABlock);
     statevec_multiControlledPhaseFlipKernel<<<CUDABlocks, threadsPerCUDABlock>>>(qureg, mask);

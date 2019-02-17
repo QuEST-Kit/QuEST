@@ -947,8 +947,7 @@ void statevec_controlledUnitary(Qureg qureg, const int controlQubit, const int t
 
 void statevec_multiControlledUnitary(Qureg qureg, int* controlQubits, const int numControlQubits, const int targetQubit, ComplexMatrix2 u)
 {
-    long long int mask=0;
-    for (int i=0; i<numControlQubits; i++) mask = mask | (1LL<<controlQubits[i]);
+    long long int mask = getControlBitMask(controlQubits, numControlQubits);
 
     // flag to require memory exchange. 1: an entire block fits on one rank, 0: at most half a block fits on one rank
     int useLocalDataOnly = halfMatrixBlockFitsInChunk(qureg.numAmpsPerChunk, targetQubit);
