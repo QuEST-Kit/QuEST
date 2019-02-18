@@ -139,9 +139,9 @@ typedef struct QuESTEnv
 Qureg createQureg(int numQubits, QuESTEnv env);
 
 /** Create a Qureg for qubits which are represented by a density matrix, and can be in mixed states.
- * Allocate space for a density matrix of probability amplitudes, including space for temporary values to be copied from
+ * Allocates space for a density matrix of probability amplitudes, including space for temporary values to be copied from
  * one other chunk if running the distributed version. Define properties related to the size of the set of qubits.
- * initZeroState should be called after this to initialise the qubits to the zero pure state.
+ * initZeroState is automatically called allocation, so that the density qureg begins in the zero state |0><0|.
  *
  * @returns an object representing the set of qubits
  * @param[in] numQubits number of qubits in the system
