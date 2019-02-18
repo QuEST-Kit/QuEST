@@ -23,9 +23,11 @@ endif()
 # -----------------------------------------------------------------------------
 
 # Create user executable
+# Format: add_executable([name of executable] [space separated list of sources])
 add_executable(demo tutorial_example.c)
 
 # Link libraries to user executable, including QuEST library
+# Format: target_link_libraries([name of executable] [space separated list of libraries])
 target_link_libraries(demo QuEST m)
 
 
