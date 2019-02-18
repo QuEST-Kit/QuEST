@@ -38,7 +38,7 @@ Learn more about QuEST at [quest.qtechtheory.org](https://quest.qtechtheory.org)
 
 ## Getting started
 
-QuEST is contained entirely in the files in the `QuEST/` folder. To use QuEST, copy this folder to your computer and include `QuEST.h` in your `C` or `C++` code, and compile using the provided [makefile](makefile). See the [tutorial](/examples/README.md) for an introduction, and view the full API [here](https://quest-kit.github.io/QuEST/QuEST_8h.html).
+QuEST is contained entirely in the files in the `QuEST/` folder. To use QuEST, copy this folder to your computer and include `QuEST.h` in your `C` or `C++` code, and compile using cmake with the provided [CMakeLists.txt](CMakeLists.txt file). See the [tutorial](/examples/README.md) for an introduction, and view the full API [here](https://quest-kit.github.io/QuEST/QuEST_8h.html).
 
 We also include example [submission scripts](examples/submissionScripts/) for using QuEST with SLURM and PBS. 
 
@@ -51,7 +51,9 @@ cd QuEST
 ```
 at terminal. You can then compile the [example](examples/tutorial_example.c) using
 ```bash
-cp examples/tutorial_example.c .
+mkdir build
+cd build
+cmake ..
 make
 ```
 then run it with
@@ -61,9 +63,21 @@ then run it with
 and afterward, clean up with
 ```bash
 make clean
-rm tutorial_example.c
 ````
-The program will print information about your execution environment and some simple operations on a three qubit system. See the [tutorial](examples/README.md) for a better introduction. Additionally, run `cd tests` then `./runTests.sh` to test QuEST runs correctly in your environment, as specified in `makefile`.
+
+or, to remove the build directory entirely, from the root directory
+```bash
+rm -r build
+```
+
+The program will print information about your execution environment and some simple operations on a three qubit system. See the [tutorial](examples/README.md) for a better introduction. 
+
+Additionally, you can run unit tests to see if QuEST runs correctly in your environment, using
+```bash
+make tests
+```
+
+This requires Python 3.4+. 
 
 ## Documentation
 
