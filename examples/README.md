@@ -246,7 +246,7 @@ as normal!
 
 There are no special requirements for running QuEST through job submission systems. Just call `./myExecutable` as you would any other binary.
 
-For example, the [above code](tutorial_example.c) can be split over 4 MPI nodes (each with 8 cores) by setting `-DDISTRIBUTED=1` and writing a SLURM submission script
+For example, the [above code](tutorial_example.c) can be split over 4 MPI nodes (each with 8 cores) on a SLURM system using the following SLURM submission script
 ```bash
 #SBATCH --nodes=4
 #SBATCH --ntasks-per-node=1
@@ -256,7 +256,7 @@ module load mvapich2
 
 mkdir build
 cd build
-cmake ..
+cmake -DDISTRIBUTED=1 ..
 make
 
 export OMP_NUM_THREADS=8
@@ -286,7 +286,7 @@ module load cuda  ## name may vary
 
 mkdir build
 cd build
-cmake ..
+cmake -DGPUACCELERATED=1 ..
 make
 
 ./myExecutable
