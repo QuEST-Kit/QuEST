@@ -1454,6 +1454,28 @@ void applyTwoQubitDephaseError(Qureg qureg, const int qubit1, const int qubit2, 
  */
 void applyOneQubitDepolariseError(Qureg qureg, const int targetQubit, qreal prob);
 
+/** Mixes a density matrix \p qureg to induce single-qubit damping (decay to 0 state).
+ * With probability \p prob, applies damping (transition from 1 to 0 state).
+ *
+ * This transforms \p qureg = \f$\rho\f$ into the mixed state
+ * \f[
+ * (1 - \text{prob}) \, \rho + \text{prob} \; \left( 
+ *      \sigma^{-} \, \rho \, sigma^{+} 
+ * \right)
+ * \f]
+ * where q = \p targetQubit.
+ * \p prob cannot exceed 1, at which total damping/decay occurs.
+ *
+ * @param[in,out] qureg a density matrix
+ * @param[in] targetQubit qubit upon which to induce depolarising noise
+ * @param[in] prob the probability of the depolarising error occuring
+ * @throws exitWithError
+ *      if \p qureg is not a density matrix,
+ *      or if \p targetQubit is outside [0, \p qureg.numQubitsRepresented),
+ *      or if \p prob is not in [0, 1]
+ */
+void applyOneQubitDampingError(Qureg qureg, const int targetQubit, qreal prob);
+
 /** Mixes a density matrix \p qureg to induce two-qubit homogeneous depolarising noise.
  * With probability \p prob, applies to \p qubit1 and \p qubit2 any operator of the set
  * \f$\{ IX, IY, IZ, XI, YI, ZI, XX, XY, XZ, YX, YY, YZ, ZX, ZY, ZZ \}\f$.
