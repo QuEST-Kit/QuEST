@@ -700,6 +700,33 @@ void densmatr_oneQubitDepolarise(Qureg qureg, const int targetQubit, qreal depol
 
 }
 
+void densmatr_oneQubitDamping(Qureg qureg, const int targetQubit, qreal damping) {
+    if (damping == 0)
+        return;
+    
+    int rankIsUpper; // rank is in the upper half of an outer block
+    int pairRank; // rank of corresponding chunk
+
+    int useLocalDataOnly = densityMatrixBlockFitsInChunk(qureg.numAmpsPerChunk, 
+            qureg.numQubitsRepresented, targetQubit);
+
+    if (useLocalDataOnly){
+        densmatr_oneQubitDampingLocal(qureg, targetQubit, damping);
+    } else {
+        // pack data to send to my pair process into the first half of pairStateVec
+        compressPairVectorForSingleQubitDepolarise(qureg, targetQubit);
+
+        rankIsUpper = chunkIsUpperInOuterBlock(qureg.chunkId, qureg.numAmpsPerChunk, targetQubit, 
+                qureg.numQubitsRepresented);
+        pairRank = getChunkOuterBlockPairId(rankIsUpper, qureg.chunkId, qureg.numAmpsPerChunk, 
+                targetQubit, qureg.numQubitsRepresented);
+
+        exchangePairStateVectorHalves(qureg, pairRank);
+        densmatr_oneQubitDampingDistributed(qureg, targetQubit, damping);
+    }
+
+}
+
 void densmatr_twoQubitDepolarise(Qureg qureg, int qubit1, int qubit2, qreal depolLevel){
     if (depolLevel == 0)
         return;
