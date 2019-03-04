@@ -252,6 +252,11 @@ void validateOneQubitDepolProb(qreal prob, const char* caller) {
     QuESTAssert(prob <= 3/4.0, E_INVALID_ONE_QUBIT_DEPOL_PROB, caller);
 }
 
+void validateOneQubitDampingProb(qreal prob, const char* caller) {
+    validateProb(prob, caller);
+    QuESTAssert(prob <= 1.0, E_INVALID_ONE_QUBIT_DEPOL_PROB, caller);
+}
+
 void validateTwoQubitDepolProb(qreal prob, const char* caller) {
     validateProb(prob, caller);
     QuESTAssert(prob <= 15/16.0, E_INVALID_TWO_QUBIT_DEPOL_PROB, caller);
