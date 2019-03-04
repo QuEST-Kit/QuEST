@@ -30,6 +30,13 @@ void densmatr_oneQubitDepolarise(Qureg qureg, const int targetQubit, qreal depol
     densmatr_oneQubitDepolariseLocal(qureg, targetQubit, depolLevel);
 }
 
+void densmatr_oneQubitDamping(Qureg qureg, const int targetQubit, qreal damping) {
+    if (damping == 0)
+        return;
+
+    densmatr_oneQubitDampingLocal(qureg, targetQubit, damping);
+}
+
 void densmatr_twoQubitDepolarise(Qureg qureg, int qubit1, int qubit2, qreal depolLevel){
     if (depolLevel == 0)
         return;
