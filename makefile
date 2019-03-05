@@ -18,7 +18,8 @@ EXE = demo
 SOURCES = tutorial_example
 
 # path to QuEST library from root directory
-QUEST_DIR = QuEST
+QUEST_DIR = QuEST/src
+QUEST_INCLUDE_DIR = ${QUEST_DIR}/../include
 
 # compiler to use, which should support both C and C++, to be wrapped by GPU/MPI compilers
 COMPILER = gcc
@@ -145,7 +146,7 @@ ifeq ($(GPUACCELERATED), 1)
 else
     QUEST_INNER_DIR = $(QUEST_DIR)/CPU
 endif
-QUEST_INCLUDE = -I$(QUEST_INNER_DIR) -I$(QUEST_COMMON_DIR)
+QUEST_INCLUDE = -I${QUEST_INCLUDE_DIR} -I$(QUEST_INNER_DIR) -I$(QUEST_COMMON_DIR)
 
 
 
@@ -276,14 +277,14 @@ else ifeq ($(DISTRIBUTED), 1)
   %.o: %.c
 	$(MPI_WRAPPED_COMP) $(MPI_COMPILER) -x c $(C_FLAGS) $(QUEST_INCLUDE) -c $<
   %.o: $(QUEST_INNER_DIR)/%.c
-	$(MPI_WRAPPED_COMP) $(MPI_COMPILER) -x c $(C_FLAGS) -c $<
+	$(MPI_WRAPPED_COMP) $(MPI_COMPILER) -x c $(C_FLAGS) $(QUEST_INCLUDE) -c $<
   %.o: $(QUEST_COMMON_DIR)/%.c
-	$(MPI_WRAPPED_COMP) $(MPI_COMPILER) -x c $(C_FLAGS) -c $<
+	$(MPI_WRAPPED_COMP) $(MPI_COMPILER) -x c $(C_FLAGS) $(QUEST_INCLUDE) -c $<
 	
   %.o: %.cpp
 	$(MPI_WRAPPED_COMP) $(MPI_COMPILER) $(CPP_FLAGS) $(QUEST_INCLUDE) -c $<
   %.o: $(QUEST_INNER_DIR)/%.cpp
-	$(MPI_WRAPPED_COMP) $(MPI_COMPILER) $(CPP_FLAGS) -c $<
+	$(MPI_WRAPPED_COMP) $(MPI_COMPILER) $(CPP_FLAGS) $(QUEST_INCLUDE) -c $<
 
 # CPU
 else
@@ -291,14 +292,14 @@ else
   %.o: %.c
 	$(COMPILER) -x c $(C_FLAGS) $(QUEST_INCLUDE) -c $<
   %.o: $(QUEST_INNER_DIR)/%.c
-	$(COMPILER) -x c $(C_FLAGS) -c $<
+	$(COMPILER) -x c $(C_FLAGS) $(QUEST_INCLUDE) -c $<
   %.o: $(QUEST_COMMON_DIR)/%.c
-	$(COMPILER) -x c $(C_FLAGS) -c $<
+	$(COMPILER) -x c $(C_FLAGS) $(QUEST_INCLUDE) -c $<
 	
   %.o: %.cpp
 	$(COMPILER) $(CPP_FLAGS) $(QUEST_INCLUDE) -c $<
   %.o: $(QUEST_INNER_DIR)/%.cpp
-	$(COMPILER) $(CPP_FLAGS) -c $<
+	$(COMPILER) $(CPP_FLAGS)  -c $<
 
 endif
 
