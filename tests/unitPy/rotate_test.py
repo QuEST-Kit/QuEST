@@ -1,5 +1,5 @@
-from QuESTFunc import *
-from QuESTCore import *
+from QuESTPy.QuESTFunc import *
+from QuESTTest.QuESTCore import *
 import math
 
 def run_tests():

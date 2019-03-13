@@ -1,8 +1,8 @@
 # Python
 import sys
 sys.path.insert(0, '../')
-from QuESTFunc import *
-from QuESTCore import *
+from QuESTPy.QuESTFunc import *
+from QuESTTest.QuESTCore import *
 
 def run_tests():
     

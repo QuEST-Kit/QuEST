@@ -2,7 +2,11 @@
 
 # Import libraries needed for initialisation
 import argparse
-from QuESTBase import init_QuESTLib
+from QuESTPy.QuESTBase import init_QuESTLib
+
+from QuESTPy.QuESTLibDir import defaultQuESTDir
+# If set up
+QuESTPath = defaultQuESTDir or "../build/QuEST"
 
 parser = argparse.ArgumentParser(description='Python test suite for the Quantum Exact Simulation Toolkit (QuEST).',epilog='''NOTE: Tests can be specified as full filepaths or testnames, which will be searched for in the TESTPATH, with the earliest path taking priority. 
 
@@ -13,18 +17,26 @@ Custom .py files must be specified by a full filepath. ''', add_help=False)
 
 # Need to pull some trickery to allow QuESTLib redirection. Probably cleaner way to do this, but...
 parser.add_argument('-h','--help', help="Show this help message and exit", action='store_true')
-parser.add_argument('-Q','--questpath', help="Define alternative QuEST library location. The library must be named 'libQuEST.so' to be found. Default=%(default)s", default='../build/QuEST')
+parser.add_argument('-Q','--questpath', help="Define alternative QuEST library location. The library must be named 'libQuEST.so' to be found. Default=%(default)s", default=QuESTPath)
 
 # Just parse -Q
 QuESTPath = parser.parse_known_args()
 
-# Load QuEST Library
-init_QuESTLib(QuESTPath[0].questpath)
+# Dummy printsets
 
-# Import remaining libraries
-from QuESTCore import *
-from testset import *
+try:
+    # Load QuEST Library if not printing help
+    init_QuESTLib(QuESTPath[0].questpath)
 
+    # Import remaining libraries
+    from QuESTTest.QuESTCore import *
+    from QuESTTest.testset import *
+except FileNotFoundError:
+    print("Library not found, how to redirect QuESTTest to find library:\n\n")
+    parser.print_help()
+    print()
+    raise 
+    
 parser.add_argument('-q','--quiet', help='Do not print results to screen', action='store_true')
 parser.add_argument('-l','--logfile', help='Redirect log. DEFAULT=%(default)s', default='QuESTLog.log')
 parser.add_argument('-p','--testpath', help='Set test directory search path as colon-separated list. DEFAULT=%(default)s', default='unitPy/')
@@ -40,20 +52,21 @@ genGroup.add_argument('-V','--quregtypes', help='Specify which types of Quregs a
 
 argList = parser.parse_args()
 
-# Set default for the tests to run
-if not argList.tests: argList.tests = ["all"]
-
 # Now we manually handle the print with *all* potential arguments included
 if argList.help:
     if root: parser.print_help()
     quit()
+
+# Set default for the tests to run
+if not argList.tests: argList.tests = ["all"]
+
 
 # Set up Parallel environment and testing framework
 init_tests(unitTestPath = argList.testpath, logFilePath = argList.logfile, tolerance = argList.tolerance, quiet = argList.quiet, fullLogging=argList.mpilog)
 
 # If our argument is generate
 if argList.generate:
-    from testset import testSets
+
     testsToGen = []
     for test in argList.tests:
         testsToGen += testSets.get(test,[test])

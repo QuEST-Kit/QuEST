@@ -1,9 +1,9 @@
 # Python
 import sys
 sys.path.insert(0, '../')
-from QuESTFunc import *
-from QuESTCore import *
-from QuESTTypes import *
+from QuESTPy.QuESTFunc import *
+from QuESTTest.QuESTCore import *
+from QuESTPy.QuESTTypes import *
 import math
 
 def run_tests():

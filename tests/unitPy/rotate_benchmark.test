@@ -1,6 +1,6 @@
 # Python
-from QuESTCore import *
-from QuESTFunc import *
+from QuESTTest.QuESTCore import *
+from QuESTPy.QuESTFunc import *
 import time
 from math import sin, cos, pi
 import statistics

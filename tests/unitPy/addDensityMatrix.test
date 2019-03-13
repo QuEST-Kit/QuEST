@@ -1,6 +1,6 @@
 # Python
-from QuESTFunc import *
-from QuESTCore import *
+from QuESTPy.QuESTFunc import *
+from QuESTTest.QuESTCore import *
 import os.path
 
 def run_tests():

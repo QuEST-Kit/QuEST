@@ -1,6 +1,6 @@
 # Python
-from QuESTCore import *
-from QuESTFunc import *
+from QuESTTest.QuESTCore import *
+from QuESTPy.QuESTFunc import *
 
 def run_tests():
     testResults.validate(True)

@@ -10,7 +10,7 @@ def init_QuESTLib(QuESTPath = ""):
     global QuESTLib
     QuESTPath = QuESTPath.rstrip('/ ') + "/libQuEST.so"
     if not os.path.isfile(QuESTPath):
-        raise OSError(fnfWarning.format(QuESTPath))
+        raise FileNotFoundError(fnfWarning.format(QuESTPath))
     QuESTLib = CDLL(QuESTPath)
 
 #Autoinitialise if QuESTLibDir

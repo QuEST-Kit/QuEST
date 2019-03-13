@@ -1,1 +1,1 @@
-defaultQuESTDir = "../build/QuEST"
+defaultQuESTDir = ""
