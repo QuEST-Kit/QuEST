@@ -17,7 +17,7 @@ Custom .py files must be specified by a full filepath. ''', add_help=False)
 
 # Need to pull some trickery to allow QuESTLib redirection. Probably cleaner way to do this, but...
 parser.add_argument('-h','--help', help="Show this help message and exit", action='store_true')
-parser.add_argument('-Q','--questpath', help="Define alternative QuEST library location. The library must be named 'libQuEST.so' to be found. Default=%(default)s", default=QuESTPath)
+parser.add_argument('-Q','--questpath', help="Define alternative QuEST library location. The library must be named 'libQuEST.so' located in the specified directory to be found. Default=%(default)s", default=QuESTPath)
 
 # Just parse -Q
 QuESTPath = parser.parse_known_args()
@@ -32,7 +32,10 @@ try:
     from QuESTTest.QuESTCore import *
     from QuESTTest.testset import *
 except FileNotFoundError:
-    print("Library not found, how to redirect QuESTTest to find library:\n\n")
+    parser._actions[0].help = argparse.SUPPRESS
+    parser.epilog = ""
+    parser.description = ""
+    print("Library not found, here's how to redirect QuESTTest to find library:\n")
     parser.print_help()
     print()
     raise 
