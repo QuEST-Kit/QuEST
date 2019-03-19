@@ -776,12 +776,13 @@ qreal densmatr_calcFidelityLocal(Qureg qureg, Qureg pureState) {
      *
      * qureg is a density matrix, and pureState is a statevector.
      * Every node contains as many columns of qureg as amps by pureState.
+     * (each node contains an integer, exponent-of-2 number of whole columns of qureg)
      * Ergo, this node contains columns:
      * qureg.chunkID * pureState.numAmpsPerChunk  to
      * (qureg.chunkID + 1) * pureState.numAmpsPerChunk
      *
      * The first pureState.numAmpsTotal elements of qureg.pairStateVec are the
-     * full pure state-vector
+     * entire pureState state-vector
      */
     
     // unpack everything for OPENMP
