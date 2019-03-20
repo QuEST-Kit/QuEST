@@ -19,11 +19,12 @@ def run_tests():
     testResults.validate(testResults.compareStates(QubitsA, Expect), 'Add Debug-Zero States', 'Failed')
 
 def gen_tests(nQubits):
-    with open(f'{unitPath[0]}AddDenMattests','w') as results:
-        QubitsA = argQureg(nQubits,'Z', denMat=True)
-        QubitsB = argQureg(nQubits,'D', denMat=True)
-        results.write(f"\n{nQubits}\n")
-        addDensityMatrix(QubitsA, 0.5, QubitsB)
+    results = find_file('QFTtests',write=True)
+    QubitsA = argQureg(nQubits,'Z', denMat=True)
+    QubitsB = argQureg(nQubits,'D', denMat=True)
+    results.write(f"{nQubits}\n")
+    addDensityMatrix(QubitsA, 0.5, QubitsB)
 
-        for elem in QubitsA._state_vec():
-            results.write(elem)
+    for elem in QubitsA._state_vec():
+        results.write(elem)
+    results.close()

@@ -1,6 +1,7 @@
 import os.path
+import os
 from QuESTPy.QuESTFunc import *
-from .testset import tests
+#from .testset import tests
 import importlib.util
 import importlib.machinery
 
@@ -11,15 +12,65 @@ def init_tests(unitTestPath, logFilePath, tolerance=None, quiet=False, fullLoggi
     """ Initialise the testing environment """
     global unitPath
     global testResults
+    global tests
+    
+    currDir = os.path.dirname(__file__)
+    coreDirs = [f'{currDir}/{directory}' for directory in ['essential','algor','benchmarks','unit']]
 
-    unitPath = unitTestPath.split(':')
+    if unitTestPath: unitPath = unitTestPath.split(':') + coreDirs
+    else: unitPath = coreDirs
+
     for path in range(len(unitPath)):
-        unitPath[path] = unitPath[path].rstrip('/ ') + '/'
-
+        unitPath[path] = unitPath[path].rstrip('/ ')
+        
     testResults.set_fulllog(fullLogging)
     testResults.open_log(logFilePath)
     testResults.set_tol(tolerance)
     testResults.set_quiet(quiet)
+    tests = construct_test_list(unitPath)
+
+
+def construct_test_list(path):
+    tests = {}
+    tests["all"] = []
+    
+    def find_tests(direc):
+        currDir = os.path.basename(direc)
+        tests[currDir] = []
+        for obj in os.listdir(direc):
+            loc = os.path.join(direc,obj)
+            target = (direc, obj)
+            if obj.startswith('__') and obj.endswith('__'): continue # Skip dunders
+            elif os.path.isfile(loc):
+                filename, fileType = os.path.splitext(obj)
+                if fileType in [".test",".py"]:
+                    tests[currDir].append( target )
+                    tests[filename] = [ target ]
+                else:
+                    continue
+            elif os.path.isdir(loc):
+                inDir = os.path.basename(loc)
+                find_tests(loc)
+                tests[currDir] += tests[inDir]
+                
+    testSets = {}
+    for direc in path:
+        inDir = os.path.basename(direc)
+        find_tests(direc)
+        tests["all"] += tests[inDir]
+
+    return tests
+
+def find_file(filename, write=False):
+    for path in unitPath:
+        if write:
+            return open(os.path.join(path,filename), 'w')
+        for root, dirs, filenames in os.walk(path):
+            if filename in filenames:
+                return QuESTTestFile(os.path.join(root,filename), fullTest=False)
+    else:
+        testResults.log(fnfWarning.format(filename))
+        return None
 
 def finalise_tests():
     """ Finalise the testing environment """
@@ -36,12 +87,13 @@ def finalise_tests():
 class QuESTTestFile:
     """ Class containing test file information """
 
-    def __init__(self,filename):
+    def __init__(self,filename, fullTest=True):
         self.File = open(filename,'r')
-        self.name = filename[filename.rfind('/')+1:] # Remove path
+        self.name = os.path.basename(filename) #filename[filename.rfind('/')+1:] # Remove path
         self.nLine = 0
         self.nTests = 0
-
+        if fullTest: self.testType = self._file_type()
+        
     def init_testfile(self):
         temp = ''
         try:
@@ -101,13 +153,16 @@ class QuESTTestFile:
         del stateVec
         return QubitsOut
 
-def find_file(filename):
-    for path in unitPath:
-        if os.path.isfile(f'{path}{filename}'): return QuESTTestFile(f'{path}{filename}')
-    else:
-        testResults.log(fnfWarning.format(filename))
-        return None
+    def _file_type(self):
+        """ Determine testfile type """
 
+        if self.name.endswith(".py"):
+            return "Python"
+        # Read first non-blank line
+        line = self.File.readline().lstrip('# ').strip()
+        while(not line):
+            line = self.File.readline().lstrip('# ').strip()
+        return line
 
 class TestResults:
     """ Main class regarding testing framework stores results and comparisons """
@@ -323,43 +378,7 @@ class TestResults:
 
         del testFile 
 
-    def run_std_test(self, testFuncsList,name=''):
-        """ Run set of tests in testsets.py """
-        self._write_term('Running tests '+name+":", end=' ')
-
-        for testFunc in testFuncsList:
-            self.log('\nRunning test {}\n'.format(testFunc.funcname))
-
-            for path in unitPath:
-                testPath = path+testFunc.funcname+'.test'
-                if os.path.isfile(testPath) : break
-            else:
-                self.log(fnfWarning.format(testPath))
-                self.fail_test()
-                continue
-
-            with open(testPath,'r') as testFile:
-                testPyth = testFile.readline().lstrip('# ').strip()
-
-                if testPyth == "Python": # If file flagged as Python
-                    self._run_python_test(testPath)
-                    continue
-            testFile = QuESTTestFile(testPath)
-            testFile.init_testfile()
-            self._run_test(testFunc, testFile)
-
-        self._write_term()
-
-    def _run_python_test(self, testPath, generate = False, nQubits = None):
-        """ Internal function to import and run a Python style test """
-        spec = importlib.util.spec_from_file_location("templib", testPath)
-        templib = importlib.util.module_from_spec(spec)
-        spec.loader.exec_module(templib)
-        if generate and templib.gen_tests is not None: templib.gen_tests(nQubits)
-        else: templib.run_tests()
-        del templib
-
-    def run_cust_test(self, testFileName):
+    def run_test(self, testFileName, core=False):
         """ Run a test which is not listed in standard test sets """
         if os.path.isfile(testFileName):
             testPath = testFileName
@@ -373,44 +392,46 @@ class TestResults:
                 self.fail_test()
                 return
 
-        self._write_term('Running test '+testPath+":", end=' ')
+        if not core: self._write_term('Running test '+testPath+":", end=' ')
 
-        if testPath.endswith('.test'): # Run standard formatted tests
-            with open(testPath,'r') as testFile:
-                testFunc = testFile.readline().lstrip('# ').strip()
+        testFunc = QuESTTestFile(testPath).testType
 
-                if testFunc.capitalize() == "Python": # If file flagged as Python
-                    self._run_python_test(testPath)
-                    return
-
-                if testFunc not in list_funcnames():
-                    raise IOError(funWarning.format(testFunc.funcname))
-            testFunc = tests[testFunc]
-            testFile = QuESTTestFile(testPath)
-            testFile.init_testfile()
-
-            self._run_test(*testFunc, testFile)
-
-
-        elif testPath.endswith('.py'): # Run custom test scripts
+        if testFunc.capitalize() == "Python": # If file flagged as Python
             self._run_python_test(testPath)
-        else:
-            raise IOError('Unrecognised filetype in test run of file {}'.format(testPath))
+            return
 
-        self._write_term()
+        elif testFunc not in list_funcnames():
+            raise IOError(funWarning.format(testFunc))
+
+        testFunc = QuESTTestee.get_func(testFunc)
+        testFile = QuESTTestFile(testPath)
+        testFile.init_testfile()
+
+        self._run_test(testFunc, testFile)
+
+        if not core: self._write_term()
+
+    def _run_python_test(self, testPath, generate = False, nQubits = None):
+        """ Internal function to import and run a Python style test """
+        spec = importlib.util.spec_from_file_location("templib", testPath)
+        templib = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(templib)
+        if generate and templib.gen_tests is not None: templib.gen_tests(nQubits)
+        else: templib.run_tests()
+        del templib
+
 
     def run_tests(self,testsToRun):
         """ Run corresponding tests """
-        from .testset import testSets, tests
 
         for test in testsToRun:
-            if test in testSets or test in tests:
-                # try:
-                self.run_std_test(tests[test],test)
-                # except KeyError:
-                #     print("Function '{}' does not exist, are you sure you wrote it correctly?".format(test))
+            if test in tests:
+                self._write_term('Running test '+test+":", end=' ')
+                for testee in tests[test]:
+                    self.run_test( os.path.join(*testee), core = True )
+                self._write_term()
             else:
-                self.run_cust_test(test)
+                self.run_test(test)
 
     def gen_std_test(self,testFunc, testFile, nQubits = 3, qubitGen = "ZPDN", testGen = "PMS"):
         """ Generate individual test for a given function """
@@ -482,19 +503,14 @@ class TestResults:
                 self.log(fnfWarning.format(testPath))
                 return
 
-        if testPath.endswith('.test'): # Run standard formatted tests
-            with open(testPath,'r') as testFile:
-                testFunc = testFile.readline().lstrip('# ').strip()
+        testType = QuESTTestFile(testPath).testType
 
-            if testFunc.capitalize() == "Python": # If file flagged as Python
-                self._run_python_test(testPath, generate = True, nQubits = nQubits)
-            else:
-                self.log('Cannot generate non-Python tests in this way')
-
-        elif testPath.endswith('.py'): # Run custom test scripts
-            self._run_python_test(testPath, generate = True)
+        if testType.capitalize() == "Python": # If file flagged as Python
+            self._run_python_test(testPath, generate = True, nQubits = nQubits)
+        elif testType in list_funcnames():
+            self.log('Cannot generate non-Python tests in this way')
         else:
-            raise IOError('Unrecognised filetype in test run of file {}'.format(testPath))
+            raise IOError('Unrecognised filetype in generation of file {}'.format(testPath))
 
     def gen_tests(self, testsToGen=["all"], nQubits=None, qubitGen = "ZPDN", testGen = "PMS"):
         """ Generate sets of tests and skip if listed in don't_generate """
@@ -506,15 +522,26 @@ class TestResults:
             return
         destroyQureg(temp,Env)
 
-        from testset import tests
+        if __package__ in unitPath[0].split(os.sep):
+            self._write_term('Will not overwrite core tests, specify output directory with -p')
+            return
+
+        protected = ["essential", "destroyQuESTEnv", "createQuESTEnv", "calcFidelity",
+                  "calcInnerProduct", "measure", "measureWithStats"]
+        coreTests = []
+        for i in protected:
+            coreTests += [os.path.splitext(j[1])[0] for j in tests[i]] # Strip to function names
         for testSet in testsToGen:
             if testSet in tests:
-                for testFunc in tests[testSet] :
-                    if testFunc in tests["don't_generate"]: continue
-                    if testFunc in tests["pyth_generate"]:
-                        self.gen_cust_test(testSet)
+                for path, testFunc in tests[testSet]:
+                    toGen = os.path.splitext(testFunc)[0]
+                    fullPath = os.path.join(path, testFunc)
+                    if testFunc in coreTests: continue
+                    if QuESTTestFile(fullPath).testType == "Python":
+                        self.gen_cust_test(fullPath)
                     else:
-                        self.gen_std_test(testFunc, unitPath[0]+testFunc.funcname+".test", nQubits, qubitGen, testGen)
+                        toGen = QuESTTestee.get_func(toGen)
+                        self.gen_std_test(toGen, os.path.join(unitPath[0],toGen.funcname+".test"), nQubits, qubitGen, testGen)
             else:
                 self.gen_cust_test(testSet)
 
@@ -629,3 +656,4 @@ Env = createQuESTEnv()
 root = Env.rank == 0
 unitPath = None
 testResults = TestResults()
+tests = None

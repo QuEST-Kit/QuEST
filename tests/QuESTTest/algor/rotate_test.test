@@ -1,3 +1,5 @@
+# Python
+
 from QuESTPy.QuESTFunc import *
 from QuESTTest.QuESTCore import *
 import math
@@ -17,8 +19,8 @@ def testRot():
     beta  = Complex(math.sin(angs[0]) * math.cos(angs[2]),
                     math.sin(angs[0]) * math.sin(angs[2]) )
 
-    mq = createQureg(numQubits, env)
-    mqVerif = createQureg(numQubits, env)
+    mq = createQureg(numQubits, Env)
+    mqVerif = createQureg(numQubits, Env)
 
     initStateDebug(mq)
     initStateDebug(mqVerif)
@@ -44,15 +46,15 @@ def testRot():
 
     # unitaries are relatively imprecise (10* needed for single precision)
     testResults.validate( testResults.compareStates(mq, mqVerif,
-                                                    10*testResults.tolerance),
+                                                    10*testResults._tolerance),
                           'Check back rotation')
 
-    destroyQureg(mq, env)
-    destroyQureg(mqVerif, env)
+    destroyQureg(mq, Env)
+    destroyQureg(mqVerif, Env)
 
     # check for normalisation
     numQubits=25
-    mq = createQureg(numQubits, env)
+    mq = createQureg(numQubits, Env)
     
     initPlusState(mq)
     for i in range(numQubits):
@@ -62,7 +64,7 @@ def testRot():
     outcome = calcTotalProb(mq);    
     testResults.validate( testResults.compareReals(1.0, outcome),
                           'Check normalisation')
-    destroyQureg(mq, env)
+    destroyQureg(mq, Env)
 
 
     

@@ -1,6 +1,8 @@
 # Python
+
 from QuESTPy.QuESTFunc import *
 from QuESTTest.QuESTCore import *
+import os.path
 import math
 
 def run_tests():
@@ -20,18 +22,19 @@ def run_tests():
     testResults.validate(testResults.compareStates(Qubits, Expect), 'QFT Back-transform State', 'Backward Transform failed')
 
 def gen_tests(nQubits):
-    with open(f'{unitPath[0]}QFTtests','w') as results:
-        Qubits = argQureg(nQubits,'Z')
-        results.write(f"\n{nQubits}\n")
-        QFT(Qubits, nQubits)
+    results = find_file('QFTtests',write=True)
+    Qubits = argQureg(nQubits,'Z')
+    results.write(f"{nQubits}\n")
+    QFT(Qubits, nQubits)
 
-        for elem in Qubits._state_vec():
-            results.write(elem)
+    for elem in Qubits._state_vec():
+        results.write(elem)
 
-        QFT(Qubits, nQubits)
-        
-        for elem in Qubits._state_vec():
-            results.write(elem)
+    QFT(Qubits, nQubits)
+    
+    for elem in Qubits._state_vec():
+        results.write(elem)
+    results.close()
 
 def QFT(Qubits, nQubits):
     for qubit in range(nQubits):

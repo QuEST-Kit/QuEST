@@ -251,7 +251,7 @@ class QuESTTestee:
             QuESTTestee._funcsList.append(self)
             QuESTTestee._funcsDict[self.funcname] = self
         else:
-            raise IOError(funcname+' already defined')
+            return
 
         self.thisFunc.restype = retType
         self.thisFunc.argtypes = argType
@@ -290,6 +290,9 @@ class QuESTTestee:
                 print(args[i], reqTypeName)
                 raise IOError(typeWarning.format(reqTypeName, self.funcname))
 
+    def get_func(name):
+            return QuESTTestee._funcsDict[name]
+        
 def dict_funcs():
     return QuESTTestee._funcsDict
 
