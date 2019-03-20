@@ -13,6 +13,7 @@ def init_tests(unitTestPath, logFilePath, tolerance=None, quiet=False, fullLoggi
     global unitPath
     global testResults
     global tests
+    global testSets
     
     currDir = os.path.dirname(__file__)
     coreDirs = [f'{currDir}/{directory}' for directory in ['essential','algor','benchmarks','unit']]
@@ -27,16 +28,15 @@ def init_tests(unitTestPath, logFilePath, tolerance=None, quiet=False, fullLoggi
     testResults.open_log(logFilePath)
     testResults.set_tol(tolerance)
     testResults.set_quiet(quiet)
-    tests = construct_test_list(unitPath)
-
+    tests, testSets = construct_test_list(unitPath)
 
 def construct_test_list(path):
-    tests = {}
-    tests["all"] = []
-    
-    def find_tests(direc):
+    def find_tests(direc, depth):
         currDir = os.path.basename(direc)
+        depth += 1
+        testSets.add( (currDir, depth) )
         tests[currDir] = []
+        if depth not in tests: tests[depth] = []
         for obj in os.listdir(direc):
             loc = os.path.join(direc,obj)
             target = (direc, obj)
@@ -50,16 +50,25 @@ def construct_test_list(path):
                     continue
             elif os.path.isdir(loc):
                 inDir = os.path.basename(loc)
-                find_tests(loc)
+                find_tests(loc, depth)
                 tests[currDir] += tests[inDir]
                 
-    testSets = {}
+    depth = 0
+    tests = {}
+    testSets = set( [("all", 0)] )
+    tests["all"] = []
     for direc in path:
         inDir = os.path.basename(direc)
-        find_tests(direc)
+        find_tests(direc, depth)
         tests["all"] += tests[inDir]
 
-    return tests
+    return tests, testSets
+
+def list_test_sets():
+    return sorted(testSets, key=lambda x: x[1])
+
+def list_all_tests():
+    return (key for key in tests.keys() if not isinstance(key,int))
 
 def find_file(filename, write=False):
     for path in unitPath:
@@ -416,8 +425,11 @@ class TestResults:
         spec = importlib.util.spec_from_file_location("templib", testPath)
         templib = importlib.util.module_from_spec(spec)
         spec.loader.exec_module(templib)
-        if generate and templib.gen_tests is not None: templib.gen_tests(nQubits)
-        else: templib.run_tests()
+        if generate and hasattr(templib,'gen_tests'): templib.gen_tests(nQubits)
+        elif generate and not hasattr(templib,'gen_tests'):
+            print('Unable to generate test for Python test {} no gen_tests'.format(os.path.basename(testPath)))
+        elif not generate: templib.run_tests()
+        
         del templib
 
 
@@ -465,14 +477,19 @@ class TestResults:
             for qubitType in qubitGen:
                 outputFile.write(f"\n# {niceNames[qubitType]}\n")
                 args = [argQureg(nQubits, qubitType, denMat=testFunc.denMat)]
-
                 if qubitType in "RN":
-                    argString = f"C-{testGen} {nQubits} [" + ",".join(map(str,args[0][:args[0].numAmpsTotal])) +"] "
-                else: argString = f"{qubitType}-{testGen} {nQubits}"
+                    if not args[0]._size_warn():
+                        outputFile.write(f"C- 0\n")
+                        continue
+                    outputFile.write(f"C-{testGen} {nQubits} [")
+                    for state in range(args[0].numAmpsTotal-1):
+                        outputFile.write(str(args[0][state]) + ",")
+                    outputFile.write(str(args[0][args[0].numAmpsTotal-1])+"] ")
+                else: outputFile.write(f"{qubitType}-{testGen} {nQubits}")
                 for arg in range(1,testFunc.nArgs):
                     args += [testFunc.defArg[arg]]
-                    argString += " "+str(testFunc.defArg[arg])
-                outputFile.write(argString+"\n")
+                    outputFile.write(" "+str(testFunc.defArg[arg]))
+                outputFile.write("\n")
                 result = testFunc(*args)
                 retType = testFunc.thisFunc.restype
                 if retType is None:
@@ -657,3 +674,4 @@ root = Env.rank == 0
 unitPath = None
 testResults = TestResults()
 tests = None
+testSets = None

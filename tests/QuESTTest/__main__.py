@@ -16,8 +16,10 @@ Tests with a full filepath can have ".test" or ".py" extensions.
 Custom .test files can be found as TESTPATH/TESTS.test or by a full filepath. 
 Custom .py files must be specified by a full filepath. ''', add_help=False)
 
+mutExc = parser.add_mutually_exclusive_group()
+
 # Need to pull some trickery to allow QuESTLib redirection. Probably cleaner way to do this, but...
-parser.add_argument('-h','--help', help="Show this help message and exit", action='store_true')
+mutExc.add_argument('-h','--help', help="Show this help message and exit", action='store_true')
 parser.add_argument('-Q','--questpath', help="Define alternative QuEST library location. The library must be named 'libQuEST.so' located in the specified directory to be found. Default=%(default)s", default=QuESTPath)
 
 # Just parse -Q
@@ -40,14 +42,15 @@ except FileNotFoundError:
     print()
     raise 
 
-parser.add_argument('-L','--list-tests', help=argparse.SUPPRESS, action='store_true')
+mutExc.add_argument('-L','--list-tests', help="Print available test sets and exist", action='store_true')
+mutExc.add_argument('-A','--list-all-tests', help="Print available tests and exist", action='store_true')
 parser.add_argument('-q','--quiet', help='Do not print results to screen', action='store_true')
 parser.add_argument('-l','--logfile', help='Redirect log. DEFAULT=%(default)s', default='QuESTLog.log')
 parser.add_argument('-p','--testpath', help='Set test directory search path as colon-separated list. DEFAULT=essential:algor:benchmarks:unit', default = "")
 parser.add_argument('-t','--tolerance', type=float, help='Set the test failure tolerance for float values. DEFAULT=%(default)s', default=1.e-10)
 parser.add_argument('-f','--mpilog', help='Full MPI logging on a per-process basis, creates a new file for each process of "<LOGFILE>.<MPIRANK>" . Default=False', action='store_true')
-parser.add_argument('tests', nargs=argparse.REMAINDER, metavar="TESTS",
-                    help="Set of tests one wishes to run, this can be any test given by -L, any custom test (see NOTE) or any exposed QuEST function. DEFAULT=all")
+testArg = parser.add_argument('tests', nargs=argparse.REMAINDER, metavar="TESTS",
+                    help="Set of tests one wishes to run, this can be any, any custom test (see NOTE) or any exposed QuEST function. DEFAULT=all")
 genGroup = parser.add_argument_group('Generation', 'Arguments related to the generation of tests')
 genGroup.add_argument('-g','--generate', help='Generate a new set of benchmark tests for tests listed redirected to TESTPATH.', action='store_true')
 genGroup.add_argument('-n','--numqubits', type=int, help='Specify the number of qubits to generate on generation. DEFAULT=%(default)s', default=3)
@@ -56,31 +59,38 @@ genGroup.add_argument('-V','--quregtypes', help='Specify which types of Quregs a
 
 argList = parser.parse_args()
 
-if argList.list_tests:
-    for test in testSets.keys():
-        print(test)
-    quit()
-    
+# Set up Parallel environment and testing framework
+init_tests(unitTestPath = argList.testpath, logFilePath = argList.logfile, tolerance = argList.tolerance, quiet = argList.quiet, fullLogging=argList.mpilog)
+
 # Now we manually handle the print with *all* potential arguments included
-if argList.help:
-    if root: parser.print_help()
-    quit()
 
 # Set default for the tests to run
 if not argList.tests: argList.tests = ["all"]
 
-
-# Set up Parallel environment and testing framework
-init_tests(unitTestPath = argList.testpath, logFilePath = argList.logfile, tolerance = argList.tolerance, quiet = argList.quiet, fullLogging=argList.mpilog)
-
-# If our argument is generate
-if argList.generate:
-
-    testResults.set_quiet(True)
-    if root: testResults.gen_tests(testsToGen = argList.tests, nQubits = argList.numqubits, qubitGen = argList.quregtypes, testGen = argList.testtypes)
+if any( [argList.generate, argList.list_tests, argList.list_all_tests, argList.help] ):
+    if argList.help:
+        testList = ", ".join(map(lambda x: x[0], list_test_sets()))
+        testArg.help = "Set of tests one wishes to run, this can be any of: "+testList+", any custom test (see NOTE) or any exposed QuEST function. DEFAULT=all"
+        if root: parser.print_help()
+    
+    if argList.list_tests:
+        for test in list_test_sets():
+            print(test[0])
+    if argList.list_all_tests:
+        for test in list_all_tests():
+            print(test)
+    
+    # If our argument is generate
+    if argList.generate:
+        testResults.set_quiet(True)
+        if root:
+            testResults.gen_tests(testsToGen = argList.tests, nQubits = argList.numqubits,
+                                  qubitGen = argList.quregtypes, testGen = argList.testtypes)
     quit()
 
 
+
+    
 testResults.run_tests(["essential"])
 if testResults.fails > 0:
     finalise_tests()

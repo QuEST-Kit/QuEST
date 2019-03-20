@@ -79,11 +79,13 @@ class Qureg(Structure):
         for state in range(self.numAmpsPerChunk):
             yield Complex(self.stateVec.real[state], self.stateVec.imag[state]).__str__()+"\n"
     
-    def _size_warn(self, numElem = None):
+    def _size_warn(self, numElem = None, maxElem = 2**5):
         if numElem is None:
             numElem = self.numAmpsTotal
-        if numElem > 2**5:
-            print(nQubitsWarning.format(nStates = numElem, sizeEst = self._size_est(numElem)), flush=True)
+        if numElem > maxElem:
+            print(numElem)
+            size = self._size_est(numElem)
+            print(nQubitsWarning.format(nStates = numElem, sizeEst = size[0], unit = size[1]), flush=True)
             while True:
                 user = input('Do you wish to continue? [y/N]')
                 if user is None or user in "Nn":
@@ -111,7 +113,13 @@ class Qureg(Structure):
     
     def _size_est(self, numElem, unit = "MB"):
         charsInStateVecLine = len(str(Complex(0.,0.)))
-        return (charsInStateVecLine*numElem)/(1024**2)
+        sizes = ["YB","ZB","EB","PB","TB","GB","MB","kB","B"]
+        i = 0
+        size = [ (charsInStateVecLine*numElem), sizes.pop() ]
+
+        while (size[0] > 1024):
+            size = [ size[0] >> 10, sizes.pop() ]
+        return size
 
     _fields_ = [("isDensityMatrix", c_int),
                 ("numQubitsRepresented", c_int),
