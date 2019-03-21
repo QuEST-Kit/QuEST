@@ -83,7 +83,6 @@ class Qureg(Structure):
         if numElem is None:
             numElem = self.numAmpsTotal
         if numElem > maxElem:
-            print(numElem)
             size = self._size_est(numElem)
             print(nQubitsWarning.format(nStates = numElem, sizeEst = size[0], unit = size[1]), flush=True)
             while True:
@@ -140,7 +139,7 @@ class QuESTEnv(Structure):
 def stringToList(a):
     """ Turn a comma-separated string into a list of floats """
     if not isinstance(a, str): raise TypeError(argWarningGen.format('stringToList',str.__name__,type(a).__name__))
-    a = a.split(',')
+    a = a.strip(',').split(',')
     try :
         return list(map(float, a))
     except ValueError:

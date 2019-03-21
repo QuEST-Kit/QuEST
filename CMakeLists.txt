@@ -3,7 +3,7 @@ cmake_minimum_required(VERSION 3.1)
 
 # Project name
 project(QuEST_Project)
-
+message(${PROJECT_BINARY_DIR})
 # -----------------------------------------------------------------------------
 # ----- USER OPTIONS ----------------------------------------------------------
 # -----------------------------------------------------------------------------
@@ -48,7 +48,17 @@ target_link_libraries(${OUTPUT_EXE} QuEST m)
 # ----- TESTS -----------------------------------------------------------------
 # -----------------------------------------------------------------------------
 
+if (${TESTING})
+  set(Python_ADDITIONAL_VERSIONS 3.4;3.5;3.6;3.7;3.8)
+  find_package(PythonInterp)
+  if ((NOT PYTHONINTERP_FOUND) OR (PYTHON_VERSION_MAJOR LESS 3)  OR (PYTHON_VERSION_MINOR LESS 4))
+    set(TESTING OFF CACHE BOOL  "Enable test suite functionality -- requires test suite available" FORCE)
+    message(WARNING "Python 3 not found on system -- Disabling testing")
+  endif()
+endif()
+
 message(STATUS "Testing is ${TESTING}")
+
 if (${TESTING})
   enable_testing()
   add_subdirectory(${QuEST_TEST_DIR})
