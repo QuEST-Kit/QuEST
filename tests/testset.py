@@ -14,7 +14,7 @@ tests["cont_operations"] = [ controlledCompactUnitary, controlledNot, controlled
         
 tests["mcon_operations"] = [ multiControlledPhaseFlip, multiControlledPhaseShift, multiControlledUnitary ]
         
-tests["denm_operations"] = [ addDensityMatrix, getDensityAmp, calcPurity, applyOneQubitDephaseError, applyOneQubitDepolariseError, applyTwoQubitDephaseError, applyTwoQubitDepolariseError ]
+tests["denm_operations"] = [ addDensityMatrix, getDensityAmp, calcPurity, applyOneQubitDephaseError, applyOneQubitDepolariseError, applyOneQubitDampingError, applyTwoQubitDephaseError, applyTwoQubitDepolariseError ]
         
 tests["math_operations"] = [ calcFidelity, calcInnerProduct, calcProbOfOutcome, calcTotalProb, getAmp, getNumAmps, getImagAmp, getProbAmp, getRealAmp, getNumQubits, measure, measureWithStats]
 
