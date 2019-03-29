@@ -81,4 +81,8 @@ QuEST uses the [mt19937ar](http://www.math.sci.hiroshima-u.ac.jp/~m-mat/MT/MT200
 QuEST is released under a [MIT Licence](https://github.com/quest-kit/QuEST/blob/master/LICENCE.txt)
 
 
+## External repositories -- QuEST utilities and extensions
+
+* [PyQuEST-cffi](https://github.com/HQSquantumsimulations/PyQuEST-cffi): a python interface to QuEST based on cffi developed by HQS Quantum Simulations. Please note, PyQuEST-cffi is currently in the alpha stage and not an official QuEST project.
+
 
