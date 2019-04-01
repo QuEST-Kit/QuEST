@@ -20,8 +20,7 @@
 #   cmake -DDISTRIBUTED=1 ..
 
 
-set(MULTITHREADED 1 CACHE STRING 
-    "Switches on OpenMP Threading if an OpenMP implementation can be found. Set to 0 to disable.")
+option(MULTITHREADED "Switches on OpenMP Threading if an OpenMP implementation can be found. Set to 0 to disable." 1)
 
 option(DISTRIBUTED "Whether the program will be run in distributed mode using MPI. Set to 1 to enable" 0)
 
@@ -38,9 +37,10 @@ set(GPU_COMPUTE_CAPABILITY 52 CACHE STRING "GPU hardware dependent, lookup at ht
 # ***** NO CHANGES SHOULD BE REQUIRED FROM THE USER BEYOND THIS POINT *********
 # *****************************************************************************
 
-
-
-
+# Show the user their settings
+message(STATUS "GPU acceleration is ${GPUACCELERATED}")
+message(STATUS "OMP acceleration is ${MULTITHREADED}")
+message(STATUS "MPI distribution is ${DISTRIBUTED}")
 
 
 # -----------------------------------------------------------------------------
@@ -99,8 +99,8 @@ endif()
 # -----------------------------------------------------------------------------
 
 if (DISTRIBUTED)
-    find_package(MPI REQUIRED)
-    include_directories(${MPI_INCLUDE_PATH})
+  find_package(MPI REQUIRED)
+  include_directories(${MPI_INCLUDE_PATH})
 endif()
 
 if (GPUACCELERATED)

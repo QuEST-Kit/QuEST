@@ -541,7 +541,7 @@ class TestResults:
             self._write_term('Will not overwrite core tests, specify output directory with -p')
             return
 
-        protected = ["essential", "destroyQuESTEnv", "createQuESTEnv", "calcFidelity",
+        protected = ["essential", "calcFidelity", # , "destroyQuESTEnv", "createQuESTEnv"
                   "calcInnerProduct", "measure", "measureWithStats"]
         coreTests = []
         for i in protected:

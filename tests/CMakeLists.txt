@@ -25,13 +25,17 @@ set(TESTCOMMAND ${PYTHON_EXECUTABLE} -m QuESTTest)
 add_custom_target("benchmark"
   DEPENDS QuESTTest
   COMMAND mkdir -p ${TEST_DIR}
+  COMMENT "Writing benchmark to ${TEST_DIR}
+Test parameters: 
+Testing ${TEST_GENERATE} with ${TEST_NQUBITS} qubits
+Testing ${TEST_TYPES} on Quregs initialised in ${TEST_QUREG}"
   COMMAND ${TESTCOMMAND} -Q ${QuEST_LIB_PATH} ${INCLUDE_TESTS} -q -n ${TEST_NQUBITS} -T ${TEST_TYPES} -V ${TEST_QUREG} -p ${TEST_DIR} -g ${TEST_GENERATE}
   COMMAND ${CMAKE_COMMAND} -DBENCHMARKS_EXIST=ON ${QuEST_Project_SOURCE_DIR}
   WORKING_DIRECTORY ${UTIL_ROOT}
   )
 
 if (${DISTRIBUTED})
-  set(TESTCOMMAND ${MPI_EXECUTABLE} ${TESTCOMMAND})
+  set(TESTCOMMAND ${MPIEXEC_EXECUTABLE} ${MPIEXEC_NUMPROC_FLAG} ${MPIEXEC_MAX_NUMPROCS} ${TESTCOMMAND})
 endif()
 
 # Do benchmarks exist? If so include test_dir

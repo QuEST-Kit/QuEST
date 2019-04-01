@@ -36,6 +36,7 @@ endif()
 
 message(STATUS "Compiling ${USER_SOURCE} to executable ${OUTPUT_EXE}")
 
+
 # Create user executable
 add_executable(${OUTPUT_EXE} ${USER_SOURCE})
 
