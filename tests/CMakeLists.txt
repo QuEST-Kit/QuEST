@@ -30,6 +30,9 @@ add_custom_target("benchmark"
   WORKING_DIRECTORY ${UTIL_ROOT}
   )
 
+if (${DISTRIBUTED})
+  set(TESTCOMMAND ${MPI_EXECUTABLE} ${TESTCOMMAND})
+endif()
 
 # Do benchmarks exist? If so include test_dir
 if (${BENCHMARKS_EXIST})
