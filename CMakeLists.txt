@@ -12,10 +12,8 @@ set(USER_SOURCE  "tutorial_example.c"  CACHE STRING "Source to build with QuEST 
 set(OUTPUT_EXE   "demo"  CACHE STRING "Executable to compile to")
 
 option(TESTING "Enable test suite functionality -- requires test suite available" ON)
-set(QuEST_TEST_DIR "tests" CACHE STRING
+set(QuEST_TEST_DIR_NAME "tests" CACHE STRING
   "Name of the directory containing the QuEST library tests. It must be located in the same directory as the root CMakeLists.txt")
-
-set(UPDATE_QUEST_LIB_LOC OFF CACHE BOOL "Set default QuESTPy library location to this compilation")
 
 # -----------------------------------------------------------------------------
 # ----- QuEST LIBRARY ---------------------------------------------------------
@@ -45,6 +43,17 @@ add_executable(${OUTPUT_EXE} ${USER_SOURCE})
 target_link_libraries(${OUTPUT_EXE} QuEST m)
 
 # -----------------------------------------------------------------------------
+# ----- UTILS -----------------------------------------------------------------
+# -----------------------------------------------------------------------------
+
+set(QuEST_TEST_DIR "${QuEST_Project_SOURCE_DIR}/${QuEST_TEST_DIR_NAME}")
+# Set dummy UTIL_ROOT location -- Temporary while transitioning to External Project
+set(UTIL_ROOT ${QuEST_TEST_DIR})
+# Dummy targets for QuESTPy & QuESTTest due to later inclusion of Utils
+add_custom_target( QuESTTest DEPENDS QuEST)
+add_custom_target( QuESTPy DEPENDS QuEST)
+
+# -----------------------------------------------------------------------------
 # ----- TESTS -----------------------------------------------------------------
 # -----------------------------------------------------------------------------
 
@@ -68,9 +77,12 @@ endif()
 # ----- QuEST Python Interface ------------------------------------------------
 # -----------------------------------------------------------------------------
 
-if (${UPDATE_QUEST_LIB_LOC})
-  set(QUESTPY_LOC "${PROJECT_SOURCE_DIR}/${QuEST_TEST_DIR}/QuESTPy/QuESTLibDir.py")
-  message(STATUS "Updating default QuEST Python library (${QUESTPY_LOC}) to ${QuEST_LIB_EXACT}")
-  set(UPDATE_QUEST_LIB_LOC OFF CACHE BOOL "Set default QuESTPy library location to this compilation" FORCE)
-  configure_file(${PROJECT_SOURCE_DIR}/cmake/QuESTPy.in ${QUESTPY_LOC})
-endif()
+set(QuESTPy_PATH "${QuEST_TEST_DIR}/QuESTPy" CACHE STRING "Location of QuESTPy")
+
+
+add_custom_target( update_QuEST_lib_loc
+  # Set QuESTPy default dir to this build
+  DEPENDS QuESTPy
+  COMMAND ${CMAKE_COMMAND} -DQuEST_ROOT=${PROJECT_SOURCE_DIR} -DQuESTPy_PATH=${QuESTPy_PATH} -DQuEST_LIB_EXACT=${QuEST_LIB_EXACT} -DQuEST_LIB_PATH=${QuEST_LIB_PATH} -P ${PROJECT_SOURCE_DIR}/cmake/QuESTPyLib.cmake
+  )
+
