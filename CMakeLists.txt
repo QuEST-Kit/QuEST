@@ -64,7 +64,6 @@ if (${TESTING})
   if ((NOT PYTHONINTERP_FOUND) OR (PYTHON_VERSION_MAJOR LESS 3)  OR (PYTHON_VERSION_MINOR LESS 4))
     set(TESTING OFF CACHE BOOL  "Enable test suite functionality -- requires test suite available" FORCE)
     message(WARNING "Usable Python 3.4+ not found on system -- Disabling testing")
-    add_custom_target( test COMMENT "Usable Python 3.4+ not found on system -- Testing Disabled")
   endif()
 endif()
 
