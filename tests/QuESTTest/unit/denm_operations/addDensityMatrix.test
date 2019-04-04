@@ -22,7 +22,7 @@ def gen_tests(nQubits):
     results = find_file('QFTtests',write=True)
     QubitsA = argQureg(nQubits,'Z', denMat=True)
     QubitsB = argQureg(nQubits,'D', denMat=True)
-    results.write(f"{nQubits}\n")
+    results.write(str(nQubits)+"\n")
     addDensityMatrix(QubitsA, 0.5, QubitsB)
 
     for elem in QubitsA._state_vec():

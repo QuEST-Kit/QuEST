@@ -37,7 +37,7 @@ def run_tests():
 
     for rotQubit in range(nQubits):
         timing = []
-        testResults._write_term(f"Rotating {rotQubit}")
+        testResults._write_term("Rotating "+str(rotQubit))
         for trial in range(nTrials):
             
             time_start = time.perf_counter()
@@ -50,9 +50,9 @@ def run_tests():
         minTime = min(timing)
         mean = statistics.mean(timing)
         stdev = statistics.stdev(timing)
-        testResults.log(f"{rotQubit}, {mean}, {stdev}, {maxTime - mean}, {mean - minTime}")
+        testResults.log( ", ".join([rotQubit, mean, stdev, maxTime - mean, mean - minTime]) )
             
     testResults._write_term("Done Rotating")
-    testResults._write_term(f"Total probability conservation : {calcTotalProb(Qubits)}")
+    testResults._write_term("Total probability conservation : "+str(calcTotalProb(Qubits)))
     destroyQureg(Qubits, Env)
 
