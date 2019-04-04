@@ -711,6 +711,7 @@ def argQureg(nBits, qubitType, testFile=None, initBits = None, denMat = False):
 
 # Make Key variables publically accessible
 Env = createQuESTEnv()
+reportQuESTEnv(Env)
 root = Env.rank == 0
 unitPath = None
 testResults = TestResults()
