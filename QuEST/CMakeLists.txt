@@ -100,6 +100,10 @@ endif()
 
 if (DISTRIBUTED)
   find_package(MPI REQUIRED)
+  # Backwards compatibility
+  if (DEFINED MPIEXEC)
+    set (MPIEXEC_EXECUTABLE ${MPIEXEC} CACHE STRING "MPI Executable")
+  endif()
   include_directories(${MPI_INCLUDE_PATH})
 endif()
 
