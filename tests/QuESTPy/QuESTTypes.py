@@ -50,13 +50,13 @@ class Complex(Structure):
                 ("imag",qreal)]
 
 class ComplexMatrix2(Structure):
-    __repr__ = lambda self:f"[{self.r0c0},{self.r0c1},{self.r1c0},{self.r1c1})]"
+    __repr__ = lambda self:"[{},{},{},{})]".format(self.r0c0,self.r0c1,self.r1c0,self.r1c1)
     __abs__ = lambda self: abs(self.r0c0*self.r1c1 - self.r1c0*self.r0c1)
     _fields_ = [("r0c0",Complex),("r0c1",Complex),
                 ("r1c0",Complex),("r1c1",Complex)]
 
 class Vector(Structure):
-    __str__ = lambda self:f"[{self.x},{self.y},{self.z}]"
+    __str__ = lambda self:"[{},{},{}]".format(self.x, self.y, self.z)
     __add__ = lambda self, b: Vector(self.x+b.x, self.y+b.y, self.z+b.z)
     __sub__ = lambda self, b: Vector(self.x-b.x, self.y-b.y, self.z-b.z)
     _fields_ = [("x",qreal),("y",qreal),("z",qreal)]
@@ -262,6 +262,17 @@ class QuESTTestee:
 
         self.thisFunc.restype = retType
         self.thisFunc.argtypes = argType
+        self.target = None
+        self.targetType = None
+        for arg in argType:
+            if hasattr(arg,'status'):
+                if arg.status == "targetQubit":
+                    self.target=argType.index(arg)
+                    self.targetType = "Qubit"
+                elif arg.status == "targetIndex":
+                    self.target=argType.index(arg)
+                    self.targetType = "Index"
+                
         self.nArgs = len(argType) or 0
         self.defArg = defArg
         self.denMat = denMat

@@ -16,7 +16,7 @@ def init_tests(unitTestPath, logFilePath, tolerance=None, quiet=False, fullLoggi
     global testSets
     
     currDir = os.path.dirname(__file__)
-    coreDirs = [f'{currDir}/{directory}' for directory in ['essential','algor','benchmarks','unit']]
+    coreDirs = [os.path.join(currDir,directory) for directory in ['essential','algor','benchmarks','unit']]
 
     unitPath = [path for path in unitTestPath.split(':') if path]
     unitPath += coreDirs
@@ -178,6 +178,9 @@ class QuESTTestFile:
 class TestResults:
     """ Main class regarding testing framework stores results and comparisons """
 
+    testLog = '{name}:{qureg}{string} {testing}'
+    resultTab = '\nResult : {result}                    Expected: {expect}'
+
     def __init__(self, tolerance = 1.e-6, printToScreen = True, fullLogging = False):
         self.passes, self.fails, self.numTests = [0]*3
         self.set_tol(tolerance)
@@ -324,21 +327,29 @@ class TestResults:
                         for qubit in range(Qubits.numQubitsRepresented):
                             expectState[qubit] = list(map(float,testFile.readline().split()))
                             success = (success and
-                                       testResults.compareReals(calcProbOfOutcome(Qubits, qubit, 0), expectState[qubit][0]) and
-                                       testResults.compareReals(calcProbOfOutcome(Qubits, qubit, 1), expectState[qubit][1]))
-                        testResults.validate(success,
-                                             f'{testFunc.funcname}:{qubitTypeNames[qubitType]}{bitString} Measure',
-                                             f'\nResult :                     Expected:')
+                                       self.compareReals(calcProbOfOutcome(Qubits, qubit, 0), expectState[qubit][0]) and
+                                       self.compareReals(calcProbOfOutcome(Qubits, qubit, 1), expectState[qubit][1]))
+                        self.validate(success,
+                                      self.testLog.format(name = testFunc.funcname,
+                                                          qureg = qubitTypeNames[qubitType],
+                                                          string = bitString,
+                                                          testing = "Measure"),
+                                      self.resultTab.format(expect = "", result = "")
+                        )
                         if not success:
                             for qubit in range(Qubits.numQubitsRepresented):
-                                self.log(f'{[calcProbOfOutcome(Qubits, qubit, 0),calcProbOfOutcome(Qubits, qubit, 1)]} {expectState[qubit]}')
+                                self.log('{} {}'.format([calcProbOfOutcome(Qubits, qubit, 0),calcProbOfOutcome(Qubits, qubit, 1)],expectState[qubit]))
                             
                     elif test in "Ss":
                         expectState = testFile.read_state_vec(nBits,denMat = testFunc.denMat)
-                        success = testResults.compareStates(Qubits, expectState)
-                        testResults.validate(success,
-                                             f"{testFunc.funcname}:{qubitTypeNames[qubitType]}{bitString}",
-                                             "\nResult :                         Expected:  ")
+                        success = self.compareStates(Qubits, expectState)
+                        self.validate(success,
+                                      self.testLog.format(name = testFunc.funcname,
+                                                          qureg = qubitTypeNames[qubitType],
+                                                          string = bitString,
+                                                          testing = "State Vec"),
+                                      self.resultTab.format(expect = "", result = "")
+                        )
                         if not success: # Print resultant state vectors
                             if not Qubits.isDensityMatrix:
                                 for state in range(getNumAmps(Qubits)):
@@ -356,9 +367,13 @@ class TestResults:
                         expectState = float(testFile.readline())
                         success = self.compareReals(calcTotalProb(Qubits),expectState)
                         
-                        testResults.validate(success,
-                                             f"{testFunc.funcname}:{qubitTypeNames[qubitType]}{bitString} Total Probability",
-                                             f"Expected: {expectState}, Result: {calcTotalProb(Qubits)}")
+                        self.validate(success,
+                                      self.testLog.format(name = testFunc.funcname,
+                                                          qureg = qubitTypeNames[qubitType],
+                                                          string = bitString,
+                                                          testing = "Total Probability"),
+                                      self.resultTab.format( expect = expectState, result = calcTotalProb(Qubits) )
+                        )
 
                     else:
                         raise IOError('Unrecognised test type')
@@ -380,10 +395,13 @@ class TestResults:
                 else:
                     raise TypeError('Cannot test type {} currently'.format(retType.__name__))
 
-                testResults.validate(success,
-                                     f"{testFunc.funcname}:{qubitTypeNames[qubitType]}{bitString}",
-                                     f"Expected: {expect}, Result: {result}")
-
+                self.validate(success,
+                              self.testLog.format(name = testFunc.funcname,
+                                                  qureg = qubitTypeNames[qubitType],
+                                                  string = bitString,
+                                                  testing = "Return Val"),
+                              self.resultTab.format( result = result, expect = expect )
+                )
 
             destroyQureg(Qubits,Env)
 
@@ -447,13 +465,33 @@ class TestResults:
             else:
                 self.run_test(test)
 
-    def gen_std_test(self,testFunc, testFile, nQubits = 3, qubitGen = "ZPDN", testGen = "PMS"):
+    def _write_gen_results(self, outputFile, testGen, qubitOp, result = None, Qubits = None):
+        if qubitOp:
+            for test in testGen:
+                if test in "Pp":
+                    outputFile.write("{}\n".format(round(calcTotalProb(Qubits),self._tolOrder+2)))
+                elif test in "Ss":
+                    for elem in Qubits._state_vec() : outputFile.write(str(elem))
+                elif test in "Mm":
+                    for qubit in range(Qubits.numQubitsRepresented):
+                        outputFile.write("{} {}\n".format( round(calcProbOfOutcome(Qubits, qubit, 0),self._tolOrder+2),
+                                                           round(calcProbOfOutcome(Qubits, qubit, 1),self._tolOrder+2) ))
+                else:
+                    raise IOError('Test type {} not recognised'.format(test))
+        elif result:
+            outputFile.write("{}\n".format(result))
+        else:
+            raise IOError('Unknown return in write_gen_results')
+            
+    def gen_std_test(self,testFunc, testFile, nQubits = 3, qubitGen = "ZPDN", testGen = "PMS", argScan = "D"):
         """ Generate individual test for a given function """
 
         for i in range(1,testFunc.nArgs):
             if testFunc.defArg[i] is None:
                 self._write_term('Unable to generate test for function {} invalid default arguments'.format(testFunc.funcname))
                 return
+
+        qubitOp = testFunc.thisFunc.restype is None
 
         # Expand out 
         while qubitGen.find('*') > -1:
@@ -466,27 +504,30 @@ class TestResults:
                 j += 1
             if j == 1: raise IOError('Repeater not followed by repeat value')
             qubitGen = qubitGen.replace(qubitGen[i-1:i+j], dup*int(mul))
-            
-            
+
+
+        nTests = len(qubitGen)
+        if testFunc.target and "E" == argScan: nTests *= nQubits
+                    
         niceNames = {"Z": "Zero State", "P": "Plus State", "D": "Debug State", "R": "Random State", "N": "Normalised Random State"}
             
         with open(testFile,'w') as outputFile:
 
             outputFile.write('# {}\n'.format(testFunc.funcname))
-            # Standard run 5 tests
-            outputFile.write(f'{len(qubitGen)}\n')
+            # Number of tests to run
+            outputFile.write('{}\n'.format(nTests))
 
             for qubitType in qubitGen:
-                outputFile.write(f"\n# {niceNames[qubitType]}\n")
+                outputFile.write("\n# {}\n".format(niceNames[qubitType]))
                 args = [argQureg(nQubits, qubitType, denMat=testFunc.denMat)]
                 if qubitType in "RN":
                     if not args[0]._size_warn(maxElem=2**25):
-                        outputFile.write(f"C- 0\n")
+                        outputFile.write("C- 0\n")
                         continue
-                    outputFile.write(f"C-{testGen} {nQubits} [")
+                    outputFile.write("C-{} {} [".format(testGen,nQubits))
                     for elem in args[0]._state_vec() : outputFile.write(str(elem).rstrip()+",") 
                     outputFile.write("] ")
-                else: outputFile.write(f"{qubitType}-{testGen} {nQubits}")
+                else: outputFile.write("{}-{} {}".format(qubitType,testGen,nQubits))
                 for arg in range(1,testFunc.nArgs):
                     args += [testFunc.defArg[arg]]
                     outputFile.write(" "+str(testFunc.defArg[arg]))
@@ -496,17 +537,19 @@ class TestResults:
                 if retType is None:
                     for test in testGen:
                         if test in "Pp":
-                            outputFile.write(f"{round(calcTotalProb(args[0]),self._tolOrder+2)}\n")
+                            outputFile.write("{}\n".format(round(calcTotalProb(args[0]),self._tolOrder+2)))
                         elif test in "Ss":
                             for elem in args[0]._state_vec() : outputFile.write(str(elem))
                         elif test in "Mm":
                             for qubit in range(args[0].numQubitsRepresented):
-                                outputFile.write(f"{round(calcProbOfOutcome(args[0], qubit, 0),self._tolOrder+2)} {round(calcProbOfOutcome(args[0], qubit, 1),self._tolOrder+2)}\n")
+                                probOut0 = round(calcProbOfOutcome(args[0], qubit, 0),self._tolOrder+2)
+                                probOut1 = round(calcProbOfOutcome(args[0], qubit, 1),self._tolOrder+2)
+                                outputFile.write("{} {}\n".format(probOut0,probOut1))
                         else:
-                            raise IOError(f'Test type {test} not recognised')
+                            raise IOError('Test type {} not recognised'.format(test))
                 else:
-                    outputFile.write(f"{result}\n")
-
+                    raise IOError(argWarningGen.format('gen_std_test:argScan','E or D',argScan))
+                            
                     
     def gen_cust_test(self, testFileName, nQubits = 3):
         """ Generate a test which is not listed in standard test sets """
@@ -530,7 +573,7 @@ class TestResults:
         else:
             raise IOError('Unrecognised filetype in generation of file {}'.format(testPath))
 
-    def gen_tests(self, testsToGen=["all"], nQubits=None, qubitGen = "ZPDN", testGen = "PMS"):
+    def gen_tests(self, testsToGen=["all"], nQubits=None, qubitGen = "ZPDN", testGen = "PMS", argScan = "D"):
         """ Generate sets of tests and skip if listed in don't_generate """
 
         # # Test if enough memory exists
