@@ -1103,7 +1103,7 @@ void statevec_multiControlledPhaseShift(Qureg qureg, int *controlQubits, int num
     qreal cosAngle = cos(angle);
     qreal sinAngle = sin(angle);
 
-    long long int mask = getControlBitMask(controlQubits, numControlQubits);
+    long long int mask = getQubitBitMask(controlQubits, numControlQubits);
         
     int threadsPerCUDABlock, CUDABlocks;
     threadsPerCUDABlock = 128;
@@ -1216,7 +1216,7 @@ __global__ void statevec_multiControlledPhaseFlipKernel(Qureg qureg, long long i
 void statevec_multiControlledPhaseFlip(Qureg qureg, int *controlQubits, int numControlQubits)
 {
     int threadsPerCUDABlock, CUDABlocks;
-    long long int mask = getControlBitMask(controlQubits, numControlQubits);
+    long long int mask = getQubitBitMask(controlQubits, numControlQubits);
     threadsPerCUDABlock = 128;
     CUDABlocks = ceil((qreal)(qureg.numAmpsPerChunk)/threadsPerCUDABlock);
     statevec_multiControlledPhaseFlipKernel<<<CUDABlocks, threadsPerCUDABlock>>>(qureg, mask);
