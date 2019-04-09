@@ -1120,6 +1120,34 @@ void statevec_multiControlledPhaseShift(Qureg qureg, int *controlQubits, int num
     statevec_multiControlledPhaseShiftKernel<<<CUDABlocks, threadsPerCUDABlock>>>(qureg, mask, cosAngle, sinAngle);
 }
 
+__global__ void statevec_multiRotateZKernel(Qureg qureg, long long int mask, qreal cosAngle, qreal sinAngle) {
+    
+    long long int stateVecSize = qureg.numAmpsPerChunk;
+    long long int index = blockIdx.x*blockDim.x + threadIdx.x;
+    if (index>=stateVecSize) return;
+    
+    qreal *stateVecReal = qureg.deviceStateVec.real;
+    qreal *stateVecImag = qureg.deviceStateVec.imag;
+    
+    int fac = getBitMaskParity(mask & index)? -1 : 1;
+    qreal stateReal = stateVecReal[index];
+    qreal stateImag = stateVecImag[index];
+    
+    stateVecReal[index] = cosAngle*stateReal + fac * sinAngle*stateImag;
+    stateVecImag[index] = - fac * sinAngle*stateReal + cosAngle*stateImag;  
+}
+
+void statevec_multiRotateZ(Qureg qureg, int *qubits, int numQubits, qreal angle)
+{   
+    qreal cosAngle = cos(angle/2.0);
+    qreal sinAngle = sin(angle/2.0);
+    long long int mask = getQubitBitMask(qubits, numQubits);
+        
+    int threadsPerCUDABlock, CUDABlocks;
+    threadsPerCUDABlock = 128;
+    CUDABlocks = ceil((qreal)(qureg.numAmpsPerChunk)/threadsPerCUDABlock);
+    statevec_multiRotateZKernel<<<CUDABlocks, threadsPerCUDABlock>>>(qureg, mask, cosAngle, sinAngle);
+}
 qreal densmatr_calcTotalProb(Qureg qureg) {
     
     // computes the trace using Kahan summation
