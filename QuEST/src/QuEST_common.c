@@ -30,12 +30,21 @@
 extern "C" {
 #endif
 
-/* builds a bit-string where 1 indicates a qubit is controlled upon */
-long long int getQubitBitMask(int* controlQubits, const int numControlQubits) {
+
+int getBitMaskParity(long long int mask) {
+    int parity = 0;
+    while (mask) {
+        parity = !parity
+        mask = mask & (mask-1)
+    }
+}
+
+/* builds a bit-string where 1 indicates a qubit is present in this list */
+long long int getQubitBitMask(int* qubits, const int numQubits) {
     
     long long int mask=0; 
-    for (int i=0; i<numControlQubits; i++)
-        mask = mask | (1LL << controlQubits[i]);
+    for (int i=0; i<numQubits; i++)
+        mask = mask | (1LL << qubits[i]);
         
     return mask;
 }

@@ -20,6 +20,8 @@ extern "C" {
  * general functions
  */
  
+int getBitMaskParity(long long int mask);
+ 
 long long int getQubitBitMask(int* controlQubits, const int numControlQubits);
 
 long long int getControlFlipMask(int* controlQubits, int* controlState, const int numControlQubits);
