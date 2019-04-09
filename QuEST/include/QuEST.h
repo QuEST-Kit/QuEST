@@ -354,31 +354,29 @@ void controlledPhaseShift(Qureg qureg, const int idQubit1, const int idQubit2, q
 /** Introduce a phase factor \f$ \exp(i \theta) \f$ on state \f$ |1 \dots 1 \rangle \f$
  * of the passed qubits.
  *     
-    \f[
+   \f[
     \setlength{\fboxrule}{0.01pt}
     \fbox{
                 \begin{tikzpicture}[scale=.5]
-                \node[draw=none] at (-3.5, 3) {controls};
-                \node[draw=none] at (-3.5, 0) {target};
-
+                \node[draw=none] at (-3.5, 2) {controls};
+                \node[draw=none] at (1, .7) {$\theta$};
+                
                 \node[draw=none] at (0, 6) {$\vdots$};
                 \draw (0, 5) -- (0, 4);
                 
                 \draw (-2, 4) -- (2, 4);
                 \draw[fill=black] (0, 4) circle (.2);
-                \draw (0, 4) -- (0, 2);         
+                \draw (0, 4) -- (0, 2); 
                 
                 \draw (-2, 2) -- (2, 2);
                 \draw[fill=black] (0, 2) circle (.2);
-                \draw (0, 2) -- (0, 1);
+                \draw (0, 2) -- (0, 0);
                 
-                \draw (-2,0) -- (-1, 0);
-                \draw (1, 0) -- (2, 0);
-                \draw (-1,-1)--(-1,1)--(1,1)--(1,-1)--cycle;
-                \node[draw=none] at (0, 0) {$R_\theta$};
+                \draw (-2,0) -- (2, 0);
+                \draw[fill=black] (0, 0) circle (.2);
                 \end{tikzpicture}
     }
-    \f]
+   \f]
  * 
  * @param[in,out] qureg object representing the set of all qubits
  * @param[in] controlQubits array of qubits to phase shift
