@@ -22,6 +22,15 @@ static __device__ int extractBit (int locationOfBitFromRight, long long int theE
     return (theEncodedNumber & ( 1LL << locationOfBitFromRight )) >> locationOfBitFromRight;
 }
 
+static __device__ int getBitMaskParity(long long int mask) {
+    int parity = 0;
+    while (mask) {
+        parity = !parity;
+        mask = mask & (mask-1);
+    }
+    return parity;
+}
+
 #ifdef __cplusplus
 extern "C" {
 #endif

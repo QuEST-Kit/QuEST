@@ -2651,6 +2651,15 @@ void statevec_multiControlledPhaseShift(Qureg qureg, int *controlQubits, int num
     }
 }
 
+int getBitMaskParity(long long int mask) {
+    int parity = 0;
+    while (mask) {
+        parity = !parity;
+        mask = mask & (mask-1);
+    }
+    return parity;
+}
+
 void statevec_multiRotateZ(Qureg qureg, int *qubits, int numQubits, qreal angle)
 {
     long long int index;
