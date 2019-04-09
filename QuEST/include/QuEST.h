@@ -1719,6 +1719,27 @@ void multiStateControlledUnitary(
     const int targetQubit, ComplexMatrix2 u
 );
 
+/** Apply a multi-qubit Z rotation on a selected number of qubits. 
+ * This is the unitary 
+ * \f[ 
+    \exp \left( - i \theta/2 \bigotimes_{j} Z_j\right)
+ * \f]
+ * where the Pauli Z gates operate upon the passed list \f$j \in\f$ \p qubits, and cause 
+ * rotations of \f$\theta =\f$ \p angle.
+ * This has the effect of premultiplying every amplitude with 
+ * \f$\exp(\pm i \theta/2)\f$ where the sign is determined by the parity of
+ * the target qubits for that amplitude.
+ *
+ * @param[in,out] qureg object representing the set of all qubits
+ * @param[in] qubits a list of the indices of the target qubits 
+ * @param[in] numQubits number of target qubits
+ * @param[in] angle the angle by which the multi-qubit state is rotated around the Z axis
+ * @throws exitWithError
+ *      if \p numQubits is outside [1, \p qureg.numQubitsRepresented]),
+ *      or if any qubit in \p qubits is outside [0, \p qureg.numQubitsRepresented]).
+ */
+void multiRotateZ(Qureg qureg, int* qubits, int numQubits, qreal angle);
+
 #ifdef __cplusplus
 }
 #endif

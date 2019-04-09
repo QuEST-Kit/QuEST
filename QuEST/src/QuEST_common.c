@@ -34,9 +34,10 @@ extern "C" {
 int getBitMaskParity(long long int mask) {
     int parity = 0;
     while (mask) {
-        parity = !parity
-        mask = mask & (mask-1)
+        parity = !parity;
+        mask = mask & (mask-1);
     }
+    return parity;
 }
 
 /* builds a bit-string where 1 indicates a qubit is present in this list */

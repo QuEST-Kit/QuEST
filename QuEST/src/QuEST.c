@@ -519,6 +519,23 @@ void sqrtSwapGate(Qureg qureg, int qb1, int qb2) {
     qasm_recordControlledGate(qureg, GATE_SQRT_SWAP, qb1, qb2);
 }
 
+void multiRotateZ(Qureg qureg, int* qubits, int numQubits, qreal angle) {
+    validateMultiTargets(qureg, qubits, numQubits, __func__);
+    
+    statevec_multiRotateZ(qureg, qubits, numQubits, angle);
+    if (qureg.isDensityMatrix) {
+        int shift = qureg.numQubitsRepresented;
+        shiftIndices(qubits, numQubits, shift);
+        statevec_multiRotateZ(qureg, qubits, numQubits, -angle);
+        shiftIndices(qubits, numQubits, -shift);
+    }
+    
+    // @TODO: create QASM comment
+    qasm_recordComment(qureg, 
+        "Here a %d-qubit multiRotateZ of angle %g was performed (QASM not yet implemented)",
+        numQubits, angle);
+}
+
 /*
  * register attributes
  */

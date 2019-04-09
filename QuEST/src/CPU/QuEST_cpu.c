@@ -2618,7 +2618,7 @@ void statevec_multiControlledPhaseShift(Qureg qureg, int *controlQubits, int num
     const long long int chunkSize=qureg.numAmpsPerChunk;
     const long long int chunkId=qureg.chunkId;
 
-    long long int mask = getControlBitMask(controlQubits, numControlQubits);
+    long long int mask = getQubitBitMask(controlQubits, numControlQubits);
 
     stateVecSize = qureg.numAmpsPerChunk;
     qreal *stateVecReal = qureg.stateVec.real;
@@ -2651,6 +2651,49 @@ void statevec_multiControlledPhaseShift(Qureg qureg, int *controlQubits, int num
     }
 }
 
+void statevec_multiRotateZ(Qureg qureg, int *qubits, int numQubits, qreal angle)
+{
+    long long int index;
+    long long int stateVecSize;
+
+    const long long int chunkSize=qureg.numAmpsPerChunk;
+    const long long int chunkId=qureg.chunkId;
+
+    long long int mask = getQubitBitMask(qubits, numQubits);
+
+    stateVecSize = qureg.numAmpsPerChunk;
+    qreal *stateVecReal = qureg.stateVec.real;
+    qreal *stateVecImag = qureg.stateVec.imag;
+    
+    qreal stateReal, stateImag;
+    const qreal cosAngle = cos(angle/2.0);
+    const qreal sinAngle = sin(angle/2.0); 
+    
+    // = +-1, to flip sinAngle based on target qubit parity, to effect
+    // exp(-angle/2 i fac_j)|j>
+    int fac; 
+
+# ifdef _OPENMP
+# pragma omp parallel \
+    default  (none)              \
+    shared   (stateVecSize, stateVecReal, stateVecImag, mask) \
+    private  (index, fac, stateReal, stateImag)
+# endif
+    {
+# ifdef _OPENMP
+# pragma omp for schedule (static)
+# endif
+        for (index=0; index<stateVecSize; index++) {
+            stateReal = stateVecReal[index];
+            stateImag = stateVecImag[index];
+            
+            // odd-parity target qubits get fac_j = -1
+            fac = getBitMaskParity(mask & (index+chunkId*chunkSize))? -1 : 1;
+            stateVecReal[index] = cosAngle*stateReal + fac * sinAngle*stateImag;
+            stateVecImag[index] = - fac * sinAngle*stateReal + cosAngle*stateImag;  
+        }
+    }
+}
 
 qreal densmatr_findProbabilityOfZeroLocal(Qureg qureg, const int measureQubit) {
     
