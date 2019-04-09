@@ -23,6 +23,8 @@ void validateControlTarget(Qureg qureg, int controlQubit, int targetQubit, const
 
 void validateUniqueTargets(Qureg qureg, int qubit1, int qubit2, const char* caller);
 
+void validateMultiTargets(Qureg qurge, int* targetQubits, const int numTargetQubits, const char* caller);
+
 void validateMultiControls(Qureg qureg, int* controlQubits, const int numControlQubits, const char* caller);
 
 void validateMultiControlsTarget(Qureg qureg, int* controlQubits, const int numControlQubits, const int targetQubit, const char* caller);
