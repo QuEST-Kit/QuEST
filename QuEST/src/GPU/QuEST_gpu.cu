@@ -1137,11 +1137,10 @@ __global__ void statevec_multiRotateZKernel(Qureg qureg, long long int mask, qre
     stateVecImag[index] = - fac * sinAngle*stateReal + cosAngle*stateImag;  
 }
 
-void statevec_multiRotateZ(Qureg qureg, int *qubits, int numQubits, qreal angle)
+void statevec_multiRotateZ(Qureg qureg, long long int mask, qreal angle)
 {   
     qreal cosAngle = cos(angle/2.0);
     qreal sinAngle = sin(angle/2.0);
-    long long int mask = getQubitBitMask(qubits, numQubits);
         
     int threadsPerCUDABlock, CUDABlocks;
     threadsPerCUDABlock = 128;

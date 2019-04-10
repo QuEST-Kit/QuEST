@@ -522,12 +522,11 @@ void sqrtSwapGate(Qureg qureg, int qb1, int qb2) {
 void multiRotateZ(Qureg qureg, int* qubits, int numQubits, qreal angle) {
     validateMultiTargets(qureg, qubits, numQubits, __func__);
     
-    statevec_multiRotateZ(qureg, qubits, numQubits, angle);
+    long long int mask = getQubitBitMask(qubits, numQubits);
+    statevec_multiRotateZ(qureg, mask, angle);
     if (qureg.isDensityMatrix) {
         int shift = qureg.numQubitsRepresented;
-        shiftIndices(qubits, numQubits, shift);
-        statevec_multiRotateZ(qureg, qubits, numQubits, -angle);
-        shiftIndices(qubits, numQubits, -shift);
+        statevec_multiRotateZ(qureg, mask << shift, -angle);
     }
     
     // @TODO: create QASM comment

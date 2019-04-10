@@ -2660,15 +2660,13 @@ int getBitMaskParity(long long int mask) {
     return parity;
 }
 
-void statevec_multiRotateZ(Qureg qureg, int *qubits, int numQubits, qreal angle)
+void statevec_multiRotateZ(Qureg qureg, long long int mask, qreal angle)
 {
     long long int index;
     long long int stateVecSize;
 
     const long long int chunkSize=qureg.numAmpsPerChunk;
     const long long int chunkId=qureg.chunkId;
-
-    long long int mask = getQubitBitMask(qubits, numQubits);
 
     stateVecSize = qureg.numAmpsPerChunk;
     qreal *stateVecReal = qureg.stateVec.real;
