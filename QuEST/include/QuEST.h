@@ -385,7 +385,8 @@ void controlledPhaseShift(Qureg qureg, const int idQubit1, const int idQubit2, q
  * @throws exitWithError
  *      if \p numControlQubits is outside [1, \p qureg.numQubitsRepresented]),
  *      or if any qubit index in \p controlQubits is outside
- *      [0, \p qureg.numQubitsRepresented])
+ *      [0, \p qureg.numQubitsRepresented]), 
+ *      or if any qubit in \p controlQubits is repeated.
  */
 void multiControlledPhaseShift(Qureg qureg, int *controlQubits, int numControlQubits, qreal angle);
 
@@ -465,7 +466,9 @@ void controlledPhaseFlip (Qureg qureg, const int idQubit1, const int idQubit2);
  * @param[in] controlQubits array of input qubits
  * @param[in] numControlQubits number of input qubits
  * @throws exitWithError 
- *      if \p numControlQubits is outside [1, \p qureg.numQubitsRepresented) 
+ *      if \p numControlQubits is outside [1, \p qureg.numQubitsRepresented),
+ *      or if any qubit in \p controlQubits is outside [0, \p qureg.numQubitsRepresented),
+ *      or if any qubit in \p qubits is repeated.
  */
 void multiControlledPhaseFlip(Qureg qureg, int *controlQubits, int numControlQubits);
 
@@ -1069,6 +1072,7 @@ void controlledUnitary(Qureg qureg, const int controlQubit, const int targetQubi
  *      if \p numControlQubits is outside [1, \p qureg.numQubitsRepresented]),
  *      or if any qubit index (\p targetQubit or one in \p controlQubits) is outside
  *      [0, \p qureg.numQubitsRepresented]), 
+ *      or if any qubit in \p controlQubits is repeated,
  *      or if \p controlQubits contains \p targetQubit,
  *      or if \p u is not unitary.
  */
@@ -1710,6 +1714,7 @@ void sqrtSwapGate(Qureg qureg, int qb1, int qb2);
  *      if \p numControlQubits is outside [1, \p qureg.numQubitsRepresented]),
  *      or if any qubit index (\p targetQubit or one in \p controlQubits) is outside
  *      [0, \p qureg.numQubitsRepresented]), 
+ *      or if any qubit in \p controlQubits is repeated.,
  *      or if \p controlQubits contains \p targetQubit,
  *      or if any element of controlState is not a bit (0 or 1),
  *      or if \p u is not unitary.
@@ -1726,6 +1731,7 @@ void multiStateControlledUnitary(
  * \f]
  * where the Pauli Z gates operate upon the passed list \f$j \in\f$ \p qubits, and cause 
  * rotations of \f$\theta =\f$ \p angle.
+ * All qubits not appearing in \p qubits are assumed to receive the identity operator.
  * This has the effect of premultiplying every amplitude with 
  * \f$\exp(\pm i \theta/2)\f$ where the sign is determined by the parity of
  * the target qubits for that amplitude.
@@ -1736,7 +1742,8 @@ void multiStateControlledUnitary(
  * @param[in] angle the angle by which the multi-qubit state is rotated around the Z axis
  * @throws exitWithError
  *      if \p numQubits is outside [1, \p qureg.numQubitsRepresented]),
- *      or if any qubit in \p qubits is outside [0, \p qureg.numQubitsRepresented]).
+ *      or if any qubit in \p qubits is outside [0, \p qureg.numQubitsRepresented])
+ *      or if any qubit in \p qubits is repeated.
  */
 void multiRotateZ(Qureg qureg, int* qubits, int numQubits, qreal angle);
 
