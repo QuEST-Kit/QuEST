@@ -27,6 +27,7 @@ typedef enum {
     E_TARGET_IS_CONTROL,
     E_TARGET_IN_CONTROLS,
     E_TARGETS_NOT_UNIQUE,
+    E_CONTROLS_NOT_UNIQUE,
     E_INVALID_NUM_TARGETS,
     E_INVALID_NUM_CONTROLS,
     E_NON_UNITARY_MATRIX,
@@ -60,7 +61,8 @@ static const char* errorMessages[] = {
     [E_INVALID_OFFSET_NUM_AMPS] = "More amplitudes given than exist in the statevector from the given starting index.",
     [E_TARGET_IS_CONTROL] = "Control qubit cannot equal target qubit.",
     [E_TARGET_IN_CONTROLS] = "Control qubits cannot include target qubit.",
-    [E_TARGETS_NOT_UNIQUE] = "The two target qubits must be unique.",
+    [E_TARGETS_NOT_UNIQUE] = "The target qubits must be unique.",
+    [E_CONTROLS_NOT_UNIQUE] = "The control qubits should be unique.",
     [E_INVALID_NUM_TARGETS] = "Invalid number of target qubits. Must be >0 and <=numQubits.",
     [E_INVALID_NUM_CONTROLS] = "Invalid number of control qubits. Must be >0 and <numQubits.",
     [E_NON_UNITARY_MATRIX] = "Matrix is not unitary.",
@@ -133,6 +135,18 @@ int isMatrixUnitary(ComplexMatrix2 u) {
     return 1;
 }
 
+int areUniqueQubits(int* qubits, int numQubits) {
+    long long int mask = 0;
+    long long int bit;
+    for (int q=0; q < numQubits; q++) {
+        bit = 1LL << qubits[q];
+        if (mask & bit)
+            return 0;
+        mask |= bit;
+    }
+    return 1;
+}
+
 void validateCreateNumQubits(int numQubits, const char* caller) {
     QuESTAssert(numQubits>0, E_INVALID_NUM_QUBITS, caller);
 }
@@ -169,29 +183,27 @@ void validateUniqueTargets(Qureg qureg, int qubit1, int qubit2, const char* call
 }
 
 void validateNumTargets(Qureg qureg, const int numTargetQubits, const char* caller) {
-    // this could reject repeated qubits and cite "too many" but oh well
     QuESTAssert(numTargetQubits>0 && numTargetQubits<=qureg.numQubitsRepresented, E_INVALID_NUM_TARGETS, caller);
 }
 
 void validateNumControls(Qureg qureg, const int numControlQubits, const char* caller) {
-    // this could reject repeated qubits and cite "too many" but oh well
     QuESTAssert(numControlQubits>0 && numControlQubits<=qureg.numQubitsRepresented, E_INVALID_NUM_CONTROLS, caller);
 }
 
 void validateMultiTargets(Qureg qureg, int* targetQubits, const int numTargetQubits, const char* caller) {
-    // this harmlessly allows repetition of target qubits
     validateNumTargets(qureg, numTargetQubits, caller);
-    for (int i=0; i < numTargetQubits; i++) {
+    for (int i=0; i < numTargetQubits; i++) 
         validateTarget(qureg, targetQubits[i], caller);
-    }
+        
+    QuESTAssert(areUniqueQubits(targetQubits, numTargetQubits), E_TARGETS_NOT_UNIQUE, caller);
 }
 
 void validateMultiControls(Qureg qureg, int* controlQubits, const int numControlQubits, const char* caller) {
-    // this harmlessly allows repetition of control qubits
     validateNumControls(qureg, numControlQubits, caller);
-    for (int i=0; i < numControlQubits; i++) {
+    for (int i=0; i < numControlQubits; i++)
         validateControl(qureg, controlQubits[i], caller);
-    }
+        
+    QuESTAssert(areUniqueQubits(controlQubits, numControlQubits), E_CONTROLS_NOT_UNIQUE, caller);
 }
 
 void validateMultiControlsTarget(Qureg qureg, int* controlQubits, const int numControlQubits, const int targetQubit, const char* caller) {
