@@ -435,6 +435,43 @@ void densmatr_oneQubitPauliError(Qureg qureg, int qubit, qreal pX, qreal pY, qre
     statevec_compactUnitary(qureg, qubit + numQb, alpha, beta);
 }
 
+/** applyConj=1 will apply conjugate operation, else applyConj=0 */
+void statevec_multiRotatePauli(
+    Qureg qureg, int* targetQubits, int* targetPaulis, int numTargets, qreal angle,
+    int applyConj
+) {
+    qreal fac = 1/sqrt(2);
+    Complex uRxAlpha = {.real = fac, .imag = 0}; // Rx(pi/2)* rotates Z -> Y
+    Complex uRxBeta = {.real = 0, .imag = (applyConj)? fac : -fac};
+    Complex uRyAlpha = {.real = fac, .imag = 0}; // Ry(pi/2) rotates Z -> X
+    Complex uRyBeta = {.real = fac, .imag = 0};
+    
+    // mask may be modified to remove superfluous Identity ops
+    long long int mask = getQubitBitMask(targetQubits, numTargets);
+    
+    // rotate basis so that exp(Z) will effect exp(Y) and exp(X)
+    for (int t=0; t < numTargets; t++) {
+        if (targetPaulis[t] == 0)
+            mask -= 1LL << targetPaulis[t]; // remove target from mask
+        if (targetPaulis[t] == 1)
+            statevec_compactUnitary(qureg, targetQubits[t], uRyAlpha, uRyBeta);
+        if (targetPaulis[t] == 2)
+            statevec_compactUnitary(qureg, targetQubits[t], uRxAlpha, uRxBeta);
+        // (targetPaulis[t] == 3) is Z basis
+    }
+    
+    statevec_multiRotateZ(qureg, mask, (applyConj)? -angle : angle);
+    
+    // undo X and Y basis rotations
+    uRxBeta.imag *= -1;
+    uRyBeta.real *= -1;
+    for (int t=0; t < numTargets; t++) {
+        if (targetPaulis[t] == 1)
+            statevec_compactUnitary(qureg, targetQubits[t], uRyAlpha, uRyBeta);
+        if (targetPaulis[t] == 2)
+            statevec_compactUnitary(qureg, targetQubits[t], uRxAlpha, uRxBeta);
+    }
+}
 
 #ifdef __cplusplus
 }

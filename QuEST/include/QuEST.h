@@ -1747,6 +1747,44 @@ void multiStateControlledUnitary(
  */
 void multiRotateZ(Qureg qureg, int* qubits, int numQubits, qreal angle);
 
+/** Apply a multi-qubit multi-Pauli rotation on a selected number of qubits. 
+ * This is the unitary 
+ * \f[ 
+    \exp \left( - i \theta/2 \bigotimes_{j} \hat{\sigma}_j\right)
+ * \f]
+ * where \f$\hat{\sigma}_j \in \{1, X, Y, Z\}\f$ is a Pauli operator (indicated by
+ * codes 0, 1, 2, 3 respectively in \p targetPaulis) operating upon the qubit 
+ * \p targetQubits[j], and \f$\theta\f$ is the passed \p angle.
+ *  The operators specified in \p targetPaulis act on the corresponding qubit in \p targetQubits. 
+ * For example:
+ * 
+ *    multiRotatePauli(qureg, (int[]) {4,5,8,9}, (int[]) {0,1,2,3}, 4, .1)
+ *
+ * effects \f$ \exp \left( - i .1/2 X_5 Y_8 Z_9 \right) \f$ on \p qureg, 
+ * where unspecified qubits (along with those specified with Pauli code 0) are 
+ * assumed to receive the identity operator. Note that specifying the identity 
+ * Pauli (code=0) on a qubit is superfluous but allowed for convenience.
+ *
+ * This function effects this unitary by first rotating the qubits which are 
+ * nominated to receive X or Y Paulis into alternate basis, performing 
+ * multiRotateZ on all target qubits receiving X, Y or Z Paulis, then restoring 
+ * the original basis. In the worst case, this means that 1+2*\p numTargets
+ * primitive unitaries are performed on the statevector, and double this on 
+ * density matrices.
+ *
+ * @param[in,out] qureg object representing the set of all qubits
+ * @param[in] targetQubits a list of the indices of the target qubits 
+ * @param[in] targetPaulis a list of the Pauli codes (0=identity, 1=X, 2=Y, 3=Z) 
+ *      to apply to the corresponding qubits in \p targetQubits
+ * @param[in] numTargets number of target qubits, i.e. the length of \p targetQubits and \p targetPaulis
+ * @param[in] angle the angle by which the multi-qubit state is rotated
+ * @throws exitWithError
+ *      if \p numQubits is outside [1, \p qureg.numQubitsRepresented]),
+ *      or if any qubit in \p qubits is outside [0, \p qureg.numQubitsRepresented])
+ *      or if any qubit in \p qubits is repeated.
+ */
+void multiRotatePauli(Qureg qureg, int* targetQubits, int* targetPaulis, int numTargets, qreal angle);
+
 #ifdef __cplusplus
 }
 #endif

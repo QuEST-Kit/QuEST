@@ -200,6 +200,8 @@ void statevec_sqrtSwapGateConj(Qureg qureg, int qb1, int qb2);
 
 void statevec_multiRotateZ(Qureg qureg, long long int mask, qreal angle);
 
+void statevec_multiRotatePauli(Qureg qureg, int* targetQubits, int* targetPaulis, int numTargets, qreal angle, int applyConj);
+
 # ifdef __cplusplus
 }
 # endif

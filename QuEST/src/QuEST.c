@@ -412,7 +412,7 @@ void multiControlledPhaseShift(Qureg qureg, int *controlQubits, int numControlQu
     if (qureg.isDensityMatrix) {
         int shift = qureg.numQubitsRepresented;
         shiftIndices(controlQubits, numControlQubits, shift);
-        statevec_multiControlledPhaseShift(qureg, controlQubits, numControlQubits, angle);
+        statevec_multiControlledPhaseShift(qureg, controlQubits, numControlQubits, -angle);
         shiftIndices(controlQubits, numControlQubits, -shift);
     }
     
@@ -529,10 +529,30 @@ void multiRotateZ(Qureg qureg, int* qubits, int numQubits, qreal angle) {
         statevec_multiRotateZ(qureg, mask << shift, -angle);
     }
     
-    // @TODO: create QASM comment
+    // @TODO: create actual QASM
     qasm_recordComment(qureg, 
         "Here a %d-qubit multiRotateZ of angle %g was performed (QASM not yet implemented)",
         numQubits, angle);
+}
+
+void multiRotatePauli(Qureg qureg, int* targetQubits, int* targetPaulis, int numTargets, qreal angle) {
+    validateMultiTargets(qureg, targetQubits, numTargets, __func__);
+    validatePauliCodes(targetPaulis, numTargets, __func__);
+    
+    int conj=0;
+    statevec_multiRotatePauli(qureg, targetQubits, targetPaulis, numTargets, angle, conj);
+    if (qureg.isDensityMatrix) {
+        conj = 1;
+        int shift = qureg.numQubitsRepresented;
+        shiftIndices(targetQubits, numTargets, shift);
+        statevec_multiRotatePauli(qureg, targetQubits, targetPaulis, numTargets, angle, conj);
+        shiftIndices(targetQubits, numTargets, -shift);
+    }
+    
+    // @TODO: create actual QASM
+    qasm_recordComment(qureg, 
+        "Here a %d-qubit multiRotatePauli of angle %g was performed (QASM not yet implemented)",
+        numTargets, angle);
 }
 
 /*

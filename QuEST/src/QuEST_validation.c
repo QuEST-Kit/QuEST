@@ -49,7 +49,8 @@ typedef enum {
     E_INVALID_ONE_QUBIT_DEPOL_PROB,
     E_INVALID_TWO_QUBIT_DEPOL_PROB,
     E_INVALID_ONE_QUBIT_PAULI_PROBS,
-    E_INVALID_CONTROLS_BIT_STATE
+    E_INVALID_CONTROLS_BIT_STATE,
+    E_INVALID_PAULI_CODE
 } ErrorCode;
 
 static const char* errorMessages[] = {
@@ -84,7 +85,8 @@ static const char* errorMessages[] = {
     [E_INVALID_ONE_QUBIT_DEPOL_PROB] = "The probability of a single qubit depolarising error cannot exceed 3/4, which maximally mixes.",
     [E_INVALID_TWO_QUBIT_DEPOL_PROB] = "The probability of a two-qubit depolarising error cannot exceed 15/16, which maximally mixes.",
     [E_INVALID_ONE_QUBIT_PAULI_PROBS] = "The probability of any X, Y or Z error cannot exceed the probability of no error.",
-    [E_INVALID_CONTROLS_BIT_STATE] = "The state of the control qubits must be a bit sequence (0s and 1s)."
+    [E_INVALID_CONTROLS_BIT_STATE] = "The state of the control qubits must be a bit sequence (0s and 1s).",
+    [E_INVALID_PAULI_CODE] = "Invalid Pauli code. Codes must be 0, 1, 2 or 3 to indicate the identity, X, Y and Z gates respectively."
 };
 
 void exitWithError(ErrorCode code, const char* func){
@@ -305,6 +307,12 @@ void validateOneQubitPauliProbs(qreal probX, qreal probY, qreal probZ, const cha
     QuESTAssert(probZ <= probNoError, E_INVALID_ONE_QUBIT_PAULI_PROBS, caller);
 }
 
+void validatePauliCodes(int* pauliCodes, int numPauliCodes, const char* caller) {
+    for (int i=0; i < numPauliCodes; i++) {
+        int code = pauliCodes[i];
+        QuESTAssert(code==0 || code==1 || code==2 || code==3, E_INVALID_PAULI_CODE, caller);
+    }
+}
 
 #ifdef __cplusplus
 }
