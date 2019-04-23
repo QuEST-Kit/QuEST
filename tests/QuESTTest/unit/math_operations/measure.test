@@ -1,0 +1,45 @@
+# Python
+from QuESTPy.QuESTFunc import *
+from QuESTTest.QuESTCore import *
+
+def run_tests():
+    prob = qreal(0.)
+    Qubits = createQureg(3,Env) 
+    initZeroState(Qubits)
+
+    # Make random seed consistent
+    seedQuEST([1],1)
+
+    expect = [0,0,0]
+    passed = True
+    for qubit in range(Qubits.numQubitsRepresented):
+        result = measure(Qubits,qubit)
+        thisPass = expect[qubit] == result
+        if not thisPass: testResults.log("State {} does not match:\n Result:{} Expect:{}\n".format(qubit, result, expect[qubit]))
+        passed = passed and thisPass
+        
+    testResults.validate(passed, "Zero")
+
+    initPlusState(Qubits)
+
+    passed = True
+    expect = [0,1,1]
+    for qubit in range(Qubits.numQubitsRepresented):
+        result = measure(Qubits,qubit)
+        thisPass = expect[qubit] == result
+        if not thisPass: testResults.log("State {} does not match:\n Result:{} Expect:{}\n".format(qubit, result, expect[qubit]))
+        passed = passed and thisPass
+        
+    testResults.validate(passed, "Plus")
+
+    initDebugState(Qubits)
+
+    passed = True
+    expect = [0,1,1]
+    for qubit in range(Qubits.numQubitsRepresented):
+        result = measure(Qubits,qubit)
+        thisPass = expect[qubit] == result
+        if not thisPass: testResults.log("State {} does not match:\n Result:{} Expect:{}\n".format(qubit, result, expect[qubit]))
+        passed = passed and thisPass
+
+    testResults.validate(passed, "Debug")
