@@ -525,36 +525,7 @@ class TestResults:
                         outputFile.write("C- 0\n")
                         continue
                     outputFile.write("C-{} {} [".format(testGen,nQubits))
-                    for elem in args[0]._state_vec() : outputFile.write(str(elem).rstrip()+",") 
-                    outputFile.write("] ")
-                else: outputFile.write("{}-{} {}".format(qubitType,testGen,nQubits))
-                for arg in range(1,testFunc.nArgs):
-                    args += [testFunc.defArg[arg]]
-                    
-                if "E" == argScan and qubitOp:
-                    if testFunc.targetType == "Qubit": elems = range(args[0].numQubitsRepresented)
-                    elif testFunc.targetType == "Index": elems = range(args[0].numAmpsTotal)
-                    backup = args[0][:args[0].numAmpsTotal]
-                    for elem in elems:
-                        setAmps(args[0], 0, [val.real for val in backup], [val.imag for val in backup], args[0].numAmpsTotal)
-                        args[testFunc.target] = elem
-                        argString = argStringBase + " ".join(map(str,args[1:]))
-                        outputFile.write(argString+"\n")
-                        result = testFunc(*args)
-                        self._write_gen_results(outputFile, testGen, qubitOp, result, args[0])
-                            
-                elif "D" == argScan or not qubitOp:
-                    argString = argStringBase + " ".join(map(str,args[1:]))
-                    outputFile.write(argString+"\n")
-                    result = testFunc(*args)
-                    self._write_gen_results(outputFile, testGen, qubitOp, result, args[0])
-=======
-                if qubitType in "RN":
-                    if not args[0]._size_warn(maxElem=2**25):
-                        outputFile.write("C- 0\n")
-                        continue
-                    outputFile.write("C-{} {} [".format(testGen,nQubits))
-                    for elem in args[0]._state_vec() : outputFile.write(str(elem).rstrip()+",") 
+                    for elem in args[0]._state_vec() : outputFile.write(str(elem).rstrip()+",")
                     outputFile.write("] ")
                 else: outputFile.write("{}-{} {}".format(qubitType,testGen,nQubits))
                 for arg in range(1,testFunc.nArgs):
@@ -576,10 +547,9 @@ class TestResults:
                                 outputFile.write("{} {}\n".format(probOut0,probOut1))
                         else:
                             raise IOError('Test type {} not recognised'.format(test))
->>>>>>> PythonTesting:tests/QuESTTest/QuESTCore.py
                 else:
                     raise IOError(argWarningGen.format('gen_std_test:argScan','E or D',argScan))
-                            
+
                     
     def gen_cust_test(self, testFileName, nQubits = 3):
         """ Generate a test which is not listed in standard test sets """
