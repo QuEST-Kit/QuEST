@@ -1,0 +1,14 @@
+# calcProbOfOutcome
+3
+
+# Zero Density Matrix
+Z-PMS 3 0 1
+0.0
+
+# Plus Density Matrix
+P-PMS 3 0 1
+0.5
+
+# Debug Density Matrix
+D-PMS 3 0 1
+-20.6

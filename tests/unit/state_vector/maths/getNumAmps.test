@@ -1,0 +1,18 @@
+# getNumAmps
+4
+
+# Zero State Vector
+z-PMS 4
+16
+
+# Plus State Vector
+p-PMS 4
+16
+
+# Debug State Vector
+d-PMS 4
+16
+
+# Normalised Random State Vector
+n-PMS 4
+16

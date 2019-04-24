@@ -1,0 +1,18 @@
+# getAmp
+4
+
+# Zero State Vector
+z-PMS 4 0
+(1.0000000000000,0.0000000000000)
+
+# Plus State Vector
+p-PMS 4 0
+(0.2500000000000,0.0000000000000)
+
+# Debug State Vector
+d-PMS 4 0
+(0.0000000000000,0.1000000000000)
+
+# Normalised Random State Vector
+n-PMS 4 0
+(0.0070513101542,0.1788104156585)

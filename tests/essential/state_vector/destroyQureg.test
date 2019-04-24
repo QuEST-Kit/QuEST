@@ -1,0 +1,21 @@
+# Python
+from QuESTPy.QuESTFunc import *
+from QuESTTest.QuESTCore import *
+import math
+
+def run_tests():
+    numQubits = 3
+    Qubits = createQureg(numQubits, Env)
+
+    destroyQureg(Qubits, Env)
+    
+    passed = True
+    # To be enabled when Qureg properly destroyed. For now if we haven't crashed, this will suffice.
+    # passed = passed and not Qubits.isDensityMatrix
+    # passed = passed and Qubits.numAmpsTotal == 0
+    # passed = passed and Qubits.numQubitsInStateVec == 0
+    # passed = passed and Qubits.numQubitsRepresented == 0
+    # passed = passed and Qubits.stateVec.real is None
+    # passed = passed and Qubits.stateVec.imag is None
+
+    testResults.validate(passed, 'Destroy {} long Qureg'.format(numQubits))

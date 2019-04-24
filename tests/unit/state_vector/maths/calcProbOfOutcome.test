@@ -1,0 +1,18 @@
+# calcProbOfOutcome
+4
+
+# Zero State Vector
+z-PMS 4 0 1
+0.0
+
+# Plus State Vector
+p-PMS 4 0 1
+0.5
+
+# Debug State Vector
+d-PMS 4 0 1
+-46.12
+
+# Normalised Random State Vector
+n-PMS 4 0 1
+0.4344678318357177

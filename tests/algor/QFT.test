@@ -1,0 +1,45 @@
+# Python
+
+from QuESTPy.QuESTFunc import *
+from QuESTTest.QuESTCore import *
+import os.path
+import math
+
+def run_tests():
+    ExpectFile = find_file('QFTtests')
+    if ExpectFile is None:
+        testResults.fail_test(message="Couldn't find file")
+        return
+    nQubits = int(ExpectFile.readline())
+    Qubits = argQureg(nQubits,'Z')
+    
+    QFT(Qubits, nQubits)
+    Expect = ExpectFile.read_state_vec(nQubits)
+    testResults.validate(testResults.compareStates(Qubits, Expect), 'QFT Zero State', 'Forward Transform failed')
+    
+    QFT(Qubits, nQubits)
+    Expect = ExpectFile.read_state_vec(nQubits)
+    testResults.validate(testResults.compareStates(Qubits, Expect), 'QFT Back-transform State', 'Backward Transform failed')
+
+def gen_tests(nQubits):
+    results = find_file('QFTtests',write=True)
+    Qubits = argQureg(nQubits,'Z')
+    results.write(str(nQubits)+"\n")
+    QFT(Qubits, nQubits)
+
+    for elem in Qubits._state_vec():
+        results.write(elem)
+
+    QFT(Qubits, nQubits)
+    
+    for elem in Qubits._state_vec():
+        results.write(elem)
+    results.close()
+
+def QFT(Qubits, nQubits):
+    for qubit in range(nQubits):
+        hadamard(Qubits, qubit)
+        angle = math.pi
+        for actor in range(qubit+1, nQubits):
+            angle /= 2.
+            controlledPhaseShift(Qubits, actor, qubit, angle )

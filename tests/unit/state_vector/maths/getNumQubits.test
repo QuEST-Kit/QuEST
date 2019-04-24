@@ -1,0 +1,18 @@
+# getNumQubits
+4
+
+# Zero State Vector
+z-PMS 4
+4
+
+# Plus State Vector
+p-PMS 4
+4
+
+# Debug State Vector
+d-PMS 4
+4
+
+# Normalised Random State Vector
+n-PMS 4
+4
