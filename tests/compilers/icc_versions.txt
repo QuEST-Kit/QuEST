@@ -1,7 +1,0 @@
-intel-compilers/2011
-intel-compilers/2012
-intel-compilers/2013
-intel-compilers/2015
-intel-compilers/2016
-intel-compilers/2017
-intel-compilers/2018
