@@ -1339,8 +1339,8 @@ Complex calcInnerProduct(Qureg bra, Qureg ket);
 
 /** Seed the Mersenne Twister used for random number generation in the QuEST environment with an example
  * defualt seed.
- * This default seeding function uses the mt19937 init_by_array function with three keys -- 
- * time, pid and hostname. Subsequent calls to mt19937 genrand functions will use this seeding. 
+ * This default seeding function uses the mt19937 init_by_array function with two keys -- 
+ * time and pid. Subsequent calls to mt19937 genrand functions will use this seeding. 
  * For a multi process code, the same seed is given to all process, therefore this seeding is only
  * appropriate to use for functions such as measure where all processes require the same random value.
  *

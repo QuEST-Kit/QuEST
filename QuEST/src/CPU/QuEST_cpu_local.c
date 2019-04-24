@@ -181,10 +181,6 @@ void reportQuESTEnv(QuESTEnv env){
     printf("Precision: size of qreal is %ld bytes\n", sizeof(qreal));
 }
 
-void reportNodeList(QuESTEnv env){
-    printf("Hostname unknown: running locally\n");
-}
-
 qreal statevec_getRealAmp(Qureg qureg, long long int index){
     return qureg.stateVec.real[index];
 }
@@ -283,11 +279,11 @@ void statevec_collapseToKnownProbOutcome(Qureg qureg, const int measureQubit, in
 }
 
 void seedQuESTDefault(){
-    // init MT random number generator with three keys -- time, pid and a hash of hostname 
+    // init MT random number generator with three keys -- time and pid
     // for the MPI version, it is ok that all procs will get the same seed as random numbers will only be 
     // used by the master process
 
-    unsigned long int key[3];
+    unsigned long int key[2];
     getQuESTDefaultSeedKey(key);
-    init_by_array(key, 3);
+    init_by_array(key, 2);
 }
