@@ -143,6 +143,10 @@ if (GPUACCELERATED)
         set (CUDA_NVCC_FLAGS "${CUDA_NVCC_FLAGS} \
             -G -g -lineinfo"
         )
+    else()
+        set (CUDA_NVCC_FLAGS "${CUDA_NVCC_FLAGS} \
+            -O2"
+        )
     endif()
 endif()
 
@@ -153,6 +157,13 @@ endif()
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} \
     -std=c99"
 )
+
+# Use -O2 for all but debug mode by default 
+if (NOT("${CMAKE_BUILD_TYPE}" STREQUAL "Debug"))
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} \
+        -O2"
+    )
+endif()
 
 # Set c flags for release
 set(CMAKE_C_FLAGS_RELEASE 
@@ -191,6 +202,13 @@ endif()
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} \
     -std=c++98 -Wall"
 )
+
+# Use -O2 for all but debug mode by default 
+if (NOT("${CMAKE_BUILD_TYPE}" STREQUAL "Debug"))
+    set(CMAKE_CXX_FLAGS "${CMAKE_C_FLAGS} \
+        -O2"
+    )
+endif()
 
 # Set c++ flags for release
 set(CMAKE_CXX_FLAGS_RELEASE
