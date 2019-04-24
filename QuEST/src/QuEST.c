@@ -397,7 +397,7 @@ void multiControlledPhaseShift(Qureg qureg, int *controlQubits, int numControlQu
     if (qureg.isDensityMatrix) {
         int shift = qureg.numQubitsRepresented;
         shiftIndices(controlQubits, numControlQubits, shift);
-        statevec_multiControlledPhaseShift(qureg, controlQubits, numControlQubits, angle);
+        statevec_multiControlledPhaseShift(qureg, controlQubits, numControlQubits, -angle);
         shiftIndices(controlQubits, numControlQubits, -shift);
     }
     
