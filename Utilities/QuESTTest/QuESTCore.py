@@ -91,10 +91,8 @@ def construct_test_list(path):
                 
                 filename, fileType = os.path.splitext(obj)
                 if fileType in [".test",".py"]:
-                    testFile = os.path.join(direc, obj)
-                    tests.append( testFile )
-                    testSets.append( TestSet(filename, depth + 1, direc, [ testFile ]) )
-#                    tests[filename] = [ obj ]
+                    tests.append( loc )
+                    testSets.append( TestSet(filename, depth + 1, direc, [ loc ]) )
 
                 else: continue
                 
@@ -526,6 +524,8 @@ class TestResults:
 
     def run_tests(self,testsToRun):
         """ Run corresponding tests """
+        testSets.dump()
+        quit()
 
         for test in testsToRun:
             for testSet in testSets(test):
@@ -534,6 +534,7 @@ class TestResults:
                 path = testSet.path
                 core = testDir in path
                 for test in testSet.tests:
+                    print("\n" + test)
                     self.run_test( test, core=core)
                 self._write_term()
 
@@ -679,7 +680,6 @@ class TestResults:
         protected = ["essential", "calcFidelity", # , "destroyQuESTEnv", "createQuESTEnv"
                   "calcInnerProduct", "measure", "measureWithStats"]
         coreTests = []
-
         for test in testsToGen:
             self._write_term("Generating tests " + test + ": ", end="")
             for testSet in testSets(test):
