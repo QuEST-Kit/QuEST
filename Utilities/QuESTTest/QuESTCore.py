@@ -30,8 +30,9 @@ class TestSet:
     
 class SuperTestSet(list):
     def __call__(self, target):
-        path, name  = os.path.split(target)
-        return SuperTestSet([ testSet for testSet in self if testSet.name == name and (path is None or path in testSet.path) ])
+        *specs, name  = target.split(":")
+        if name == "all": return SuperTestSet([ testSet for testSet in self if testSet.depth == 1 ])
+        return SuperTestSet([ testSet for testSet in self if testSet.name == name and all( [path in testSet.path for path in specs] ) ])
 
     def names(self):
         for testSet in self:
@@ -524,8 +525,6 @@ class TestResults:
 
     def run_tests(self,testsToRun):
         """ Run corresponding tests """
-        testSets.dump()
-        quit()
 
         for test in testsToRun:
             for testSet in testSets(test):
@@ -534,8 +533,7 @@ class TestResults:
                 path = testSet.path
                 core = testDir in path
                 for test in testSet.tests:
-                    print("\n" + test)
-                    self.run_test( test, core=core)
+                    self.run_test(test, core=core)
                 self._write_term()
 
     def _write_gen_results(self, outputFile, testGen, qubitOp, result = None, Qubits = None):
