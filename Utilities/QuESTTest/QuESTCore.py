@@ -423,8 +423,8 @@ class TestResults:
                                     b = getAmp(expectState, state)
                                     self.log('{} {}'.format(a, b))
                             else:
-                                for row in range(Qubits.numQubitsRepresented):
-                                    for col in range(Qubits.numQubitsRepresented):
+                                for row in range(2**Qubits.numQubitsRepresented):
+                                    for col in range(2**Qubits.numQubitsRepresented):
                                         a = getDensityAmp(Qubits, row, col)
                                         b = getDensityAmp(expectState, row, col)
                                         self.log('{} {}'.format(a, b))
