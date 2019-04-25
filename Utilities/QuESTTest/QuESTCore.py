@@ -1,12 +1,57 @@
 import os.path
 import os
 from QuESTPy.QuESTFunc import *
+from functools import total_ordering
 import importlib.util
 import importlib.machinery
 
 # Add .test to valid python names
 importlib.machinery.SOURCE_SUFFIXES += ['.test']
 
+@total_ordering
+class TestSet:
+    def __init__(self, name, depth, path, tests):
+        self.name = name
+        self.depth = depth
+        self.path = path
+        self.tests = tests
+
+    def __eq__(self, other):
+        return self.depth == other.depth
+
+    def __lt__(self, other):
+        return self.depth < other.depth
+
+    def __repr__(self):
+        return str(( self.name, self.depth, self.path, self.tests ))
+
+    def names(self):
+        return ( os.path.basename(os.path.splitext(test)[0]) for test in self.tests)
+    
+class SuperTestSet(list):
+    def __call__(self, target):
+        path, name  = os.path.split(target)
+        return SuperTestSet([ testSet for testSet in self if testSet.name == name and (path is None or path in testSet.path) ])
+
+    def names(self):
+        for testSet in self:
+            yield testSet.name
+
+    def tests(self):
+        for testSet in self:
+            for test in testSet.tests:
+                yield test
+
+    def paths(self):
+        for testSet in self:
+            yield testSet.path
+
+    def dump(self):
+        for testSet in sorted(self):
+            print(testSet.name, testSet.depth, testSet.path)
+            for test in testSet.tests:
+                print("    -- ", os.path.relpath(test,testDir))
+    
 def init_tests(unitTestPath, logFilePath, tolerance=None, quiet=False, fullLogging = False):
     """ Initialise the testing environment """
     global unitPath
@@ -14,8 +59,6 @@ def init_tests(unitTestPath, logFilePath, tolerance=None, quiet=False, fullLoggi
     global tests
     global testSets
     
-
-
     unitPath = [path for path in unitTestPath.split(':') if path]
     unitPath += [testDir]
 
@@ -25,40 +68,53 @@ def init_tests(unitTestPath, logFilePath, tolerance=None, quiet=False, fullLoggi
     testResults.open_log(logFilePath)
     testResults.set_tol(tolerance)
     testResults.set_quiet(quiet)
-    tests, testSets = construct_test_list(unitPath)
+    testSets = construct_test_list(unitPath)
 
 def construct_test_list(path):
+    
+    testSets = SuperTestSet()
+
     def find_tests(direc, depth):
+        
         currDir = os.path.basename(direc)
         depth += 1
-        testSets.add( (currDir, depth) )
-        tests[currDir] = []
-        if depth not in tests: tests[depth] = []
+        tests = []
+
+        # Search directory
         for obj in os.listdir(direc):
-            loc = os.path.join(direc,obj)
+            
+            loc = os.path.join(direc,obj) # Absolute path to current target file obj
+            
             if obj.startswith('__') and obj.endswith('__'): continue # Skip dunders
+            
             elif os.path.isfile(loc):
+                
                 filename, fileType = os.path.splitext(obj)
                 if fileType in [".test",".py"]:
-                    tests[currDir].append( obj )
-                    tests[filename] = [ obj ]
-                else:
-                    continue
-            elif os.path.isdir(loc):
-                inDir = os.path.basename(loc)
-                find_tests(loc, depth)
-                tests[currDir] += tests[inDir]
+                    testFile = os.path.join(direc, obj)
+                    tests.append( testFile )
+                    testSets.append( TestSet(filename, depth + 1, direc, [ testFile ]) )
+#                    tests[filename] = [ obj ]
+
+                else: continue
                 
+            elif os.path.isdir(loc):
+                
+                inDir = os.path.basename(loc)
+                tests += find_tests(loc, depth).tests
+
+        testSet = TestSet( currDir, depth, direc, tests )
+        testSets.append( testSet )
+        
+        return testSet
+
     depth = 0
-    tests = {}
-    testSets = set( [("all", 0)] )
-    tests["all"] = []
+
     for direc in path:
         inDir = os.path.basename(direc)
         find_tests(direc, depth)
-        tests["all"] += tests[inDir]
 
-    return tests, testSets
+    return testSets
 
 def list_test_sets():
     return sorted(testSets, key=lambda x: x[1])
@@ -66,9 +122,11 @@ def list_test_sets():
 def list_all_tests():
     return (key for key in tests.keys() if not isinstance(key,int))
 
-def find_file(filename, returnPath=False, write=False, core=False):
-    if core: searchPath = testDir
+def find_file(filename, returnPath=False, write=False, core=False, searchPath = None):
+    if searchPath: pass
+    elif core: searchPath = testDir
     else: searchPath = unitPath
+
     for path in searchPath:
         if write:
             return open(os.path.join(path,filename), 'w')
@@ -308,18 +366,21 @@ class TestResults:
             "Z":"Zero ", "C":"Custom ", "B":"BitState ", "P":"Plus ", "D":"Debug ",
             "z":"Zero ", "c":"Custom ", "b":"BitState ", "p":"Plus ", "d":"Debug "
         }
+
         for test in range(testFile.nTests):
             line, testComment = testFile.readline(True)
             testString,nBits,*args = testFile.parse_args(line)
             qubitType, *testType = testString.split('-') 
+
+            denMat = qubitType.isupper()
             
             bitString = ""
             if qubitType in "CBcb":
                 bitString = args[0]
                 del args[0]
-                Qubits = argQureg(nBits, qubitType, testFile, initBits = bitString, denMat = testFunc.denMat)
+                Qubits = argQureg(nBits, qubitType, testFile, initBits = bitString, denMat = denMat)
             else:
-                Qubits = argQureg(nBits, qubitType, testFile, denMat = testFunc.denMat)
+                Qubits = argQureg(nBits, qubitType, testFile, denMat = denMat)
 
             args.insert(0,Qubits)
 
@@ -348,7 +409,7 @@ class TestResults:
                                 self.log('{} {}'.format([calcProbOfOutcome(Qubits, qubit, 0),calcProbOfOutcome(Qubits, qubit, 1)],expectState[qubit]))
                             
                     elif test in "Ss":
-                        expectState = testFile.read_state_vec(nBits,denMat = testFunc.denMat)
+                        expectState = testFile.read_state_vec(nBits,denMat = denMat)
                         success = self.compareStates(Qubits, expectState)
                         self.validate(success,
                                       self.testLog.format(name = testFunc.funcname,
@@ -424,7 +485,6 @@ class TestResults:
                 if os.path.isfile(testPath) : break
             else:
                 self.log(fnfWarning.format(testPath))
-                self._write_term('Running test '+testFileName+":", end=' ')
                 self.fail_test()
                 return
 
@@ -447,6 +507,7 @@ class TestResults:
 
         if not core: self._write_term()
 
+        
     def _run_python_test(self, testPath, generate = False, nQubits = None):
         """ Internal function to import and run a Python style test """
         spec = importlib.util.spec_from_file_location("templib", testPath)
@@ -467,13 +528,14 @@ class TestResults:
         """ Run corresponding tests """
 
         for test in testsToRun:
-            if test in tests:
-                self._write_term('Running test '+test+":", end=' ')
-                for testee in tests[test]:
-                    self.run_test( find_file(testee, returnPath=True), core = True )
+            for testSet in testSets(test):
+                if not testSet.tests: continue
+                self._write_term('Running tests '+testSet.name+":", end=' ')
+                path = testSet.path
+                core = testDir in path
+                for test in testSet.tests:
+                    self.run_test( test, core=core)
                 self._write_term()
-            else:
-                self.run_test(test)
 
     def _write_gen_results(self, outputFile, testGen, qubitOp, result = None, Qubits = None):
         if qubitOp:
@@ -492,7 +554,8 @@ class TestResults:
             outputFile.write("{}\n".format(result))
         else:
             raise IOError('Unknown return in write_gen_results')
-            
+
+        
     def gen_std_test(self,testFunc, testFile, nQubits = 3, qubitGen = "zpdnZPDR", testGen = "PMS", argScan = "D"):
         """ Generate individual test for a given function """
 
@@ -525,7 +588,7 @@ class TestResults:
             "Z": "Zero Density Matrix", "P": "Plus Density Matrix", "D": "Debug Density Matrix",
             "R": "Random Density Matrix"
         }
-            
+
         with open(testFile,'w') as outputFile:
 
             outputFile.write('# {}\n'.format(testFunc.funcname))
@@ -533,20 +596,26 @@ class TestResults:
             outputFile.write('{}\n'.format(nTests))
 
             for qubitType in qubitGen:
+                denMat = qubitType.isupper()
+        
                 outputFile.write("\n# {}\n".format(niceNames[qubitType]))
-                if (testFunc.denMat is False and qubitType.isupper() or
-                    testFunc.denMat is True and qubitType.islower()):
+                if (testFunc.denMat is False and denMat is True or
+                    testFunc.denMat is True  and denMat is False):
                     outputFile.write("# Not valid for this function \n")
                     outputFile.write("C- 0\n")
                     continue
                     
                 args = [argQureg(nQubits, qubitType, denMat=testFunc.denMat)]
                 
-                if qubitType in "RN":
+                if qubitType in "RNrn":
                     if not args[0]._size_warn(maxElem=2**25):
                         outputFile.write("C- 0\n")
                         continue
-                    outputFile.write("C-{} {} [".format(testGen,nQubits))
+
+                    if denMat:
+                        outputFile.write("C-{} {} [".format(testGen,nQubits))
+                    else:
+                        outputFile.write("c-{} {} [".format(testGen,nQubits))
                     for elem in args[0]._state_vec() : outputFile.write(str(elem).rstrip()+",")
                     outputFile.write("] ")
                 else: outputFile.write("{}-{} {}".format(qubitType,testGen,nQubits))
@@ -603,36 +672,27 @@ class TestResults:
         else:
             raise IOError('Unrecognised filetype in generation of file {}'.format(testPath))
 
-    def gen_tests(self, testsToGen=["all"], nQubits=None, qubitGen = "ZPDN", testGen = "PMS", argScan = "D"):
+        
+    def gen_tests(self, testsToGen=["all"], nQubits=None, qubitGen = None, testGen = "PMS", argScan = "D"):
         """ Generate sets of tests and skip if listed in don't_generate """
-
-        # # Test if enough memory exists
-        # temp = createQureg(nQubits,Env)
-        # destroyQureg(temp,Env)
 
         protected = ["essential", "calcFidelity", # , "destroyQuESTEnv", "createQuESTEnv"
                   "calcInnerProduct", "measure", "measureWithStats"]
         coreTests = []
 
-        
-        for i in protected:
-            coreTests += [os.path.splitext(j[1])[0] for j in tests[i]] # Strip to function names
-        for testSet in testsToGen:
-            self._write_term("Generating tests " + testSet + ": ", end="")
-            if testSet in tests:
-                for testFunc in tests[testSet]:
-                    toGen = os.path.splitext(testFunc)[0]
-                    fullPath = find_file(testFunc, returnPath=True, core=True)
-                    if testFunc in coreTests: continue
-                    if QuESTTestFile(fullPath).testType == "Python":
-                        self.gen_cust_test(fullPath)
-                    else:
-                        toGen = QuESTTestee.get_func(toGen)
+        for test in testsToGen:
+            self._write_term("Generating tests " + test + ": ", end="")
+            for testSet in testSets(test):
+                for testFunc in testSet.names():
+                    if testFunc in protected: continue
+                    elif testFunc in list_funcnames():
+                        toGen = QuESTTestee.get_func(testFunc)
                         self.gen_std_test(toGen, os.path.join(unitPath[0],toGen.funcname+".test"), nQubits, qubitGen, testGen)
-            else:
-                self.gen_cust_test(testSet)
+                    else:
+                        self.gen_cust_test(next(testSets(testFunc).tests()))
         self._write_term()
 
+        
 def argQureg(nBits, qubitType, testFile=None, initBits = None, denMat = None):
     """ Create a qubit register from a standard .test style input """
     nBits = int(nBits)
@@ -746,12 +806,12 @@ def argQureg(nBits, qubitType, testFile=None, initBits = None, denMat = None):
 
     return Qubits
 
+
 # Make Key variables publically accessible
 Env = createQuESTEnv()
 reportQuESTEnv(Env)
 root = Env.rank == 0
 unitPath = None
 testResults = TestResults()
-tests = None
 testSets = None
 testDir = os.path.normpath(os.path.join(os.path.dirname(__file__),"../../tests"))

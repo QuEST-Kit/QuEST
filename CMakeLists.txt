@@ -12,8 +12,6 @@ set(USER_SOURCE  "tutorial_example.c"  CACHE STRING "Source to build with QuEST 
 set(OUTPUT_EXE   "demo"  CACHE STRING "Executable to compile to")
 
 option(TESTING "Enable test suite functionality -- requires test suite available" ON)
-set(QuEST_TEST_DIR_NAME "tests" CACHE STRING
-  "Name of the directory containing the QuEST library tests.")
 set(QuEST_UTIL_DIR_NAME "Utilities" CACHE STRING
   "Name of the directory containing the QuEST Utilities.")
 
@@ -49,10 +47,9 @@ target_link_libraries(${OUTPUT_EXE} QuEST m)
 # ----- UTILS -----------------------------------------------------------------
 # -----------------------------------------------------------------------------
 
-set(QuEST_TEST_DIR "${QuEST_Project_SOURCE_DIR}/${QuEST_TEST_DIR_NAME}")
 set(QuEST_UTIL_DIR "${QuEST_Project_SOURCE_DIR}/${QuEST_UTIL_DIR_NAME}")
 # Set dummy UTIL_ROOT location -- Temporary while transitioning to External Project
-set(UTIL_ROOT ${QuEST_TEST_DIR})
+set(UTIL_ROOT ${QuEST_UTIL_DIR})
 # Dummy targets for QuESTPy & QuESTTest due to later inclusion of Utils
 add_custom_target( QuESTTest DEPENDS QuEST)
 add_custom_target( QuESTPy DEPENDS QuEST)

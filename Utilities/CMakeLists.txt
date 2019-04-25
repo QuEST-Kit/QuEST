@@ -18,6 +18,9 @@ set(TEST_GENERATE "unit" CACHE STRING "Tests to generate on generate benchmarks"
 # ----- Do not edit beyond here -----------------------------------------------
 # -----------------------------------------------------------------------------
 
+set(QuEST_TEST_DIR_NAME "tests" CACHE STRING
+  "Name of the directory containing the QuEST library tests.")
+set(QuEST_TEST_DIR "${QuEST_Project_SOURCE_DIR}/${QuEST_TEST_DIR_NAME}")
 
 set(TESTCOMMAND ${PYTHON_EXECUTABLE} -m QuESTTest)
 
