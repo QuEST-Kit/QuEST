@@ -260,18 +260,38 @@ class QuESTTestee:
         else:
             return
 
-        self.thisFunc.restype = retType
-        self.thisFunc.argtypes = argType
         self.target = None
         self.targetType = None
-        for arg in argType:
-            if hasattr(arg,'status'):
-                if arg.status == "targetQubit":
-                    self.target=argType.index(arg)
+        self.control = None
+        self.controlType = None
+        self.nControl = None
+        
+        # Handle shorthands
+        for i in range(len(argType)):
+            arg = argType[i]
+
+            if isinstance(arg, tuple):
+                arg, status = arg
+
+                if status == "targetQubit":
+                    self.target= i
                     self.targetType = "Qubit"
-                elif arg.status == "targetIndex":
-                    self.target=argType.index(arg)
+                elif status == "targetIndex":
+                    self.target= i
                     self.targetType = "Index"
+                elif status == "controlQubit":
+                    self.control= i
+                    self.controlType = "Single"
+                elif status == "controlQubits":
+                    self.control= i
+                    self.controlType = "Multi"
+                elif status == "numControlQubits":
+                    self.nControl = i
+
+            argType[i] = arg
+
+        self.thisFunc.restype = retType
+        self.thisFunc.argtypes = argType
                 
         self.nArgs = len(argType) or 0
         self.defArg = defArg
@@ -318,7 +338,7 @@ def list_funcs():
     return QuESTTestee._funcsList
 
 def list_funcnames():
-    return list(map(lambda x: x.funcname, QuESTTestee._funcsList))
+   return list(map(lambda x: x.funcname, QuESTTestee._funcsList))
 
 # Define some simple basic constants
 complex0 = Complex(0.,0.)
