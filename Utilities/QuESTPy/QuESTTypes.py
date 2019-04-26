@@ -287,7 +287,6 @@ class QuESTTestee:
                     self.controlType = "Multi"
                 elif status == "numControlQubits":
                     self.nControl = i
-
             argType[i] = arg
 
         self.thisFunc.restype = retType

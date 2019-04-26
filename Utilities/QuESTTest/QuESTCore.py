@@ -383,6 +383,9 @@ class TestResults:
             testString,nBits,*args = testFile.parse_args(line)
             qubitType, *testType = testString.split('-')
 
+            # Skip non-tests
+            if int(nBits) == 0: continue
+            
             denMat = qubitType.isupper()
 
             bitString = ""
@@ -545,7 +548,11 @@ class TestResults:
                 path = testSet.path
                 core = testDir in path
                 for test in testSet.tests:
+                    # try:
                     self.run_test(test, core=core)
+                    # except Exception as err:
+                    #     self.fail_test(testName = test, message = err)
+
                 self._write_term()
 
     def _write_gen_results(self, outputFile, testGen, qubitOp, result = None, Qubits = None):
@@ -732,13 +739,17 @@ class TestResults:
             self._write_term("Generating tests " + test + ": ", end="")
             for testSet in testSets(test):
                 for testFunc in testSet.names():
-                    if testFunc in protected: continue
-                    elif testFunc in list_funcnames():
-                        toGen = QuESTTestee.get_func(testFunc)
-                        self.gen_std_test(toGen, os.path.join(unitPath[0],toGen.funcname+".test"), nQubits,
-                                          qubitGen, testGen, targScan, contScan)
-                    else:
-                        self.gen_cust_test(next(testSets(testFunc).tests()))
+                    try:
+                        if testFunc in protected: continue
+                        elif testFunc in list_funcnames():
+                            toGen = QuESTTestee.get_func(testFunc)
+                            self.gen_std_test(toGen, os.path.join(unitPath[0],toGen.funcname+".test"), nQubits,
+                                              qubitGen, testGen, targScan, contScan)
+                        else:
+                            self.gen_cust_test(next(testSets(testFunc).tests()))
+                    except Exception as err:
+                        self._write_term("F", end = "")
+                        self.log("Error while generating {}: {}".format(testFunc, err))
         self._write_term()
 
 
