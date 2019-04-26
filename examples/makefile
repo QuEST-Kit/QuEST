@@ -27,9 +27,9 @@ COMPILER = gcc
 COMPILER_TYPE = GNU
 
 # hardwares to target: 1 means use, 0 means don't use
-MULTITHREADED = 0
+MULTITHREADED = 1
 DISTRIBUTED = 0
-GPUACCELERATED = 0
+GPUACCELERATED = 1
 
 # GPU hardware dependent, lookup at https://developer.nvidia.com/cuda-gpus, write without fullstop
 GPU_COMPUTE_CAPABILITY = 30
@@ -133,20 +133,28 @@ endif
 #                                                                      #
 #======================================================================#
 
+
 #
 # --- libraries
 #
 
 LIBS = -lm
 
-QUEST_COMMON_DIR = $(QUEST_DIR)
-ifeq ($(GPUACCELERATED), 1)
-    QUEST_INNER_DIR = $(QUEST_DIR)/GPU
-else
-    QUEST_INNER_DIR = $(QUEST_DIR)/CPU
-endif
-QUEST_INCLUDE = -I$(QUEST_INNER_DIR) -I$(QUEST_COMMON_DIR)
 
+#
+# --- source and include paths
+#
+
+QUEST_INCLUDE_DIR = ${QUEST_DIR}/include
+QUEST_SRC_DIR = ${QUEST_DIR}/src
+
+QUEST_COMMON_DIR = $(QUEST_SRC_DIR)
+ifeq ($(GPUACCELERATED), 1)
+    QUEST_INNER_DIR = $(QUEST_SRC_DIR)/GPU
+else
+    QUEST_INNER_DIR = $(QUEST_SRC_DIR)/CPU
+endif
+QUEST_INCLUDE = -I${QUEST_INCLUDE_DIR} -I$(QUEST_INNER_DIR) -I$(QUEST_COMMON_DIR)
 
 
 #
@@ -256,19 +264,19 @@ ifeq ($(GPUACCELERATED), 1)
   %.o: %.c
 	$(COMPILER) -x c $(C_FLAGS) $(QUEST_INCLUDE) -c $<
   %.o: $(QUEST_INNER_DIR)/%.c
-	$(COMPILER) -x c $(C_FLAGS) -c $<
+	$(COMPILER) -x c $(C_FLAGS) $(QUEST_INCLUDE) -c $<
   %.o: $(QUEST_COMMON_DIR)/%.c
-	$(COMPILER) -x c $(C_FLAGS) -c $<
+	$(COMPILER) -x c $(C_FLAGS) $(QUEST_INCLUDE) -c $<
 
   %.o: %.cu
 	$(CUDA_COMPILER) -dc $(CPP_CUDA_FLAGS) $(QUEST_INCLUDE) $<
   %.o: $(QUEST_INNER_DIR)/%.cu
-	$(CUDA_COMPILER) -dc $(CPP_CUDA_FLAGS) $<
+	$(CUDA_COMPILER) -dc $(CPP_CUDA_FLAGS) $(QUEST_INCLUDE) $<
 	
   %.o: %.cpp
 	$(CUDA_COMPILER) -dc $(CPP_CUDA_FLAGS) $(QUEST_INCLUDE) $<
   %.o: $(QUEST_INNER_DIR)/%.cpp
-	$(CUDA_COMPILER) -dc $(CPP_CUDA_FLAGS) $<
+	$(CUDA_COMPILER) -dc $(CPP_CUDA_FLAGS) $(QUEST_INCLUDE) $<
 
 # distributed
 else ifeq ($(DISTRIBUTED), 1)
@@ -276,14 +284,14 @@ else ifeq ($(DISTRIBUTED), 1)
   %.o: %.c
 	$(MPI_WRAPPED_COMP) $(MPI_COMPILER) -x c $(C_FLAGS) $(QUEST_INCLUDE) -c $<
   %.o: $(QUEST_INNER_DIR)/%.c
-	$(MPI_WRAPPED_COMP) $(MPI_COMPILER) -x c $(C_FLAGS) -c $<
+	$(MPI_WRAPPED_COMP) $(MPI_COMPILER) -x c $(C_FLAGS) $(QUEST_INCLUDE) -c $<
   %.o: $(QUEST_COMMON_DIR)/%.c
-	$(MPI_WRAPPED_COMP) $(MPI_COMPILER) -x c $(C_FLAGS) -c $<
+	$(MPI_WRAPPED_COMP) $(MPI_COMPILER) -x c $(C_FLAGS) $(QUEST_INCLUDE) -c $<
 	
   %.o: %.cpp
 	$(MPI_WRAPPED_COMP) $(MPI_COMPILER) $(CPP_FLAGS) $(QUEST_INCLUDE) -c $<
   %.o: $(QUEST_INNER_DIR)/%.cpp
-	$(MPI_WRAPPED_COMP) $(MPI_COMPILER) $(CPP_FLAGS) -c $<
+	$(MPI_WRAPPED_COMP) $(MPI_COMPILER) $(CPP_FLAGS) $(QUEST_INCLUDE) -c $<
 
 # CPU
 else
@@ -291,14 +299,14 @@ else
   %.o: %.c
 	$(COMPILER) -x c $(C_FLAGS) $(QUEST_INCLUDE) -c $<
   %.o: $(QUEST_INNER_DIR)/%.c
-	$(COMPILER) -x c $(C_FLAGS) -c $<
+	$(COMPILER) -x c $(C_FLAGS) $(QUEST_INCLUDE) -c $<
   %.o: $(QUEST_COMMON_DIR)/%.c
-	$(COMPILER) -x c $(C_FLAGS) -c $<
+	$(COMPILER) -x c $(C_FLAGS) $(QUEST_INCLUDE) -c $<
 	
   %.o: %.cpp
 	$(COMPILER) $(CPP_FLAGS) $(QUEST_INCLUDE) -c $<
   %.o: $(QUEST_INNER_DIR)/%.cpp
-	$(COMPILER) $(CPP_FLAGS) -c $<
+	$(COMPILER) $(CPP_FLAGS)  -c $<
 
 endif
 
@@ -355,5 +363,6 @@ print-%:
 
 getvalue-%:
 	@echo $($*)
+
 
 
