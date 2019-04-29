@@ -89,6 +89,7 @@ View the API [here](https://quest-kit.github.io/QuEST/QuEST_8h.html), and check 
 
 QuEST uses the [mt19937ar](http://www.math.sci.hiroshima-u.ac.jp/~m-mat/MT/MT2002/emt19937ar.html) Mersenne Twister algorithm for random number generation, under the BSD licence. QuEST optionally (by additionally importing `QuEST_complex.h`) integrates the [language agnostic complex type](http://collaboration.cmc.ec.gc.ca/science/rpn/biblio/ddj/Website/articles/CUJ/2003/0303/cuj0303meyers/index.htm) by Randy Meyers and Dr. Thomas Plum
 
+Thanks to [HQS Quantum simulations](https://quantumsimulations.de/) for contributing the applyOneQubitDampingError function.
 
 ## Licence
 
