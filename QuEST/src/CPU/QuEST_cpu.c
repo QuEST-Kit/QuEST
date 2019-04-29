@@ -33,16 +33,14 @@ static int extractBit (const int locationOfBitFromRight, const long long int the
     return (theEncodedNumber & ( 1LL << locationOfBitFromRight )) >> locationOfBitFromRight;
 }
 
-void densmatr_oneQubitDephase(Qureg qureg, const int targetQubit, qreal dephase) {
-        qreal retain=1-dephase;
-    
-        const long long int numTasks = qureg.numAmpsPerChunk;
-        long long int innerMask = 1LL << targetQubit;
-        long long int outerMask = 1LL << (targetQubit + (qureg.numQubitsRepresented));
-    
-        long long int thisTask;
-        long long int thisPattern;
-        long long int totMask = innerMask|outerMask;
+void densmatr_oneQubitDegradeOffDiagonal(Qureg qureg, const int targetQubit, qreal retain){
+    const long long int numTasks = qureg.numAmpsPerChunk;
+    long long int innerMask = 1LL << targetQubit;
+    long long int outerMask = 1LL << (targetQubit + (qureg.numQubitsRepresented));
+
+    long long int thisTask;
+    long long int thisPattern;
+    long long int totMask = innerMask|outerMask;
 
  # ifdef _OPENMP
 # pragma omp parallel \
@@ -64,6 +62,16 @@ void densmatr_oneQubitDephase(Qureg qureg, const int targetQubit, qreal dephase)
             } 
         }  
     }
+}
+
+void densmatr_oneQubitDephase(Qureg qureg, const int targetQubit, qreal dephase) {
+    qreal retain=1-dephase;
+    densmatr_oneQubitDegradeOffDiagonal(qureg, targetQubit, retain);
+}
+
+void densmatr_oneQubitDampingDephase(Qureg qureg, const int targetQubit, qreal dephase) {
+    qreal retain=sqrt(1-dephase);
+    densmatr_oneQubitDegradeOffDiagonal(qureg, targetQubit, retain);
 }
 
 void densmatr_twoQubitDephase(Qureg qureg, const int qubit1, const int qubit2, qreal dephase) {
@@ -288,7 +296,7 @@ void densmatr_oneQubitDampingDistributed(Qureg qureg, const int targetQubit, qre
     // TODO -- this might be more efficient to do at the same time as the depolarise if we move to
     // iterating over all elements in the state vector for the purpose of vectorisation
     // TODO -- if we keep this split, move this function to densmatr_oneQubitDepolarise()
-    densmatr_oneQubitDephase(qureg, targetQubit, dephase);
+    densmatr_oneQubitDampingDephase(qureg, targetQubit, dephase);
 
     long long int sizeInnerBlock, sizeInnerHalfBlock;
     long long int sizeOuterColumn, sizeOuterHalfColumn;

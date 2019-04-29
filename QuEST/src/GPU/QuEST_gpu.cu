@@ -2009,10 +2009,8 @@ __global__ void densmatr_oneQubitDephaseKernel(
     vecImag[ampInd + rowBit] *= fac;
 }
 
-void densmatr_oneQubitDephase(Qureg qureg, const int targetQubit, qreal dephase) {
-    
-    if (dephase == 0)
-        return;
+
+void densmatr_oneQubitDegradeOffDiagonal(Qureg qureg, const int targetQubit, qreal dephFac) {
     
     long long int numAmpsToVisit = qureg.numAmpsPerChunk/4;
     
@@ -2023,7 +2021,6 @@ void densmatr_oneQubitDephase(Qureg qureg, const int targetQubit, qreal dephase)
     long long int part1 = colBit - 1;
     long long int part2 = (rowBit >> 1) - colBit;
     long long int part3 = numAmpsToVisit - (rowBit >> 1);
-    qreal dephFac = 1 - dephase;
     
     int threadsPerCUDABlock, CUDABlocks;
     threadsPerCUDABlock = 128;
@@ -2031,6 +2028,15 @@ void densmatr_oneQubitDephase(Qureg qureg, const int targetQubit, qreal dephase)
     densmatr_oneQubitDephaseKernel<<<CUDABlocks, threadsPerCUDABlock>>>(
         dephFac, qureg.deviceStateVec.real, qureg.deviceStateVec.imag, numAmpsToVisit,
         part1, part2, part3, colBit, rowBit);
+}
+
+void densmatr_oneQubitDephase(Qureg qureg, const int targetQubit, qreal dephase) {
+    
+    if (dephase == 0)
+        return;
+    
+    qreal dephFac = 1 - dephase;
+    densmatr_oneQubitDegradeOffDiagonal(qureg, targetQubit, dephFac);
 }
 
 /** Called 12 times for every 16 amplitudes in density matrix 
@@ -2179,7 +2185,7 @@ void densmatr_oneQubitDamping(Qureg qureg, const int targetQubit, qreal damping)
         return;
     
     qreal dephase = sqrt(1-damping);
-    densmatr_oneQubitDephase(qureg, targetQubit, dephase);
+    densmatr_oneQubitDegradeOffDiagonal(qureg, targetQubit, dephase);
     
     long long int numAmpsToVisit = qureg.numAmpsPerChunk/4;
     int rowQubit = targetQubit + qureg.numQubitsRepresented;
