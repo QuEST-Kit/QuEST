@@ -2178,7 +2178,7 @@ void densmatr_oneQubitDamping(Qureg qureg, const int targetQubit, qreal damping)
     if (damping == 0)
         return;
     
-    dephase = sqrt(1-damping)
+    qreal dephase = sqrt(1-damping);
     densmatr_oneQubitDephase(qureg, targetQubit, dephase);
     
     long long int numAmpsToVisit = qureg.numAmpsPerChunk/4;

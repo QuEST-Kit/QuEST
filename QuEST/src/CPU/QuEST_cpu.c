@@ -169,7 +169,7 @@ void densmatr_oneQubitDampingLocal(Qureg qureg, const int targetQubit, qreal dam
     long long int partner;
     long long int thisPattern;
 
-    qreal realAv, imagAv;
+    //qreal realAv, imagAv;
         
 # ifdef _OPENMP
 # pragma omp parallel \
