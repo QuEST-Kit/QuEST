@@ -63,6 +63,9 @@ void validateOneQubitDepolProb(qreal prob, const char* caller);
 
 void validateTwoQubitDepolProb(qreal prob, const char* caller);
 
+void validateOneQubitDampingProb(qreal prob, const char* caller);
+
+
 # ifdef __cplusplus
 }
 # endif

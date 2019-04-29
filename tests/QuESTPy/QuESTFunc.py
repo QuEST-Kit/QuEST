@@ -84,6 +84,7 @@ multiControlledUnitary    = QuESTTestee ("multiControlledUnitary",    retType=No
 addDensityMatrix             = QuESTTestee ("addDensityMatrix",             retType=None, argType=[Qureg,qreal,Qureg], defArg=[None,50.,None], denMat=True)
 applyOneQubitDephaseError    = QuESTTestee ("applyOneQubitDephaseError",    retType=None, argType=[Qureg,_targetQubit,qreal], defArg=[None,0,0.25], denMat=True)
 applyOneQubitDepolariseError = QuESTTestee ("applyOneQubitDepolariseError", retType=None, argType=[Qureg,_targetQubit,qreal], defArg=[None,0,0.25], denMat=True)
+applyOneQubitDampingError    = QuESTTestee ("applyOneQubitDampingError",    retType=None, argType=[Qureg,_targetQubit,qreal], defArg=[None,0,0.25], denMat=True)
 applyTwoQubitDephaseError    = QuESTTestee ("applyTwoQubitDephaseError",    retType=None, argType=[Qureg,_targetQubit,c_int,qreal], defArg=[None,0,1,0.25], denMat=True)
 applyTwoQubitDepolariseError = QuESTTestee ("applyTwoQubitDepolariseError", retType=None, argType=[Qureg,_targetQubit,c_int,qreal], defArg=[None,0,1,0.25], denMat=True) 
 

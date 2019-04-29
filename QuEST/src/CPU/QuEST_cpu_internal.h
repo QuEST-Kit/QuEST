@@ -23,6 +23,10 @@ void densmatr_oneQubitDepolariseLocal(Qureg qureg, const int targetQubit, qreal 
 
 void densmatr_oneQubitDepolariseDistributed(Qureg qureg, const int targetQubit, qreal depolLevel);
 
+void densmatr_oneQubitDampingLocal(Qureg qureg, const int targetQubit, qreal damping);
+
+void densmatr_oneQubitDampingDistributed(Qureg qureg, const int targetQubit, qreal damping);
+
 void densmatr_twoQubitDepolariseLocal(Qureg qureg, int qubit1, int qubit2, qreal delta, qreal gamma);
 
 void densmatr_twoQubitDepolariseLocalPart1(Qureg qureg, int qubit1, int qubit2, qreal delta);

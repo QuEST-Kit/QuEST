@@ -674,6 +674,14 @@ void applyOneQubitDepolariseError(Qureg qureg, const int targetQubit, qreal prob
     densmatr_oneQubitDepolarise(qureg, targetQubit, (4*prob)/3.0);
 }
 
+void applyOneQubitDampingError(Qureg qureg, const int targetQubit, qreal prob) {
+    validateDensityMatrQureg(qureg, __func__);
+    validateTarget(qureg, targetQubit, __func__);
+    validateOneQubitDampingProb(prob, __func__);
+    
+    densmatr_oneQubitDamping(qureg, targetQubit, prob);
+}
+
 void applyTwoQubitDepolariseError(Qureg qureg, int qubit1, int qubit2, qreal prob) {
     validateDensityMatrQureg(qureg, __func__);
     validateUniqueTargets(qureg, qubit1, qubit2, __func__);
