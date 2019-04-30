@@ -27,9 +27,9 @@ COMPILER = gcc
 COMPILER_TYPE = GNU
 
 # hardwares to target: 1 means use, 0 means don't use
-MULTITHREADED = 1
+MULTITHREADED = 0
 DISTRIBUTED = 0
-GPUACCELERATED = 1
+GPUACCELERATED = 0
 
 # GPU hardware dependent, lookup at https://developer.nvidia.com/cuda-gpus, write without fullstop
 GPU_COMPUTE_CAPABILITY = 30
