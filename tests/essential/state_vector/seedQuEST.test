@@ -1,0 +1,17 @@
+# Python
+from QuESTPy.QuESTFunc import *
+from QuESTTest.QuESTCore import *
+from QuESTPy.QuESTTypes import *
+import math
+
+def run_tests():
+
+    seedQuEST([ (3*i)%64 for i in range(64)], 64)
+    QuESTRand = QuESTTestee._funcsDict.get('genrand_real1',QuESTTestee('genrand_real1',retType = qreal))
+    expect = [0.3388381249594591, 0.9577616744110737, 0.30208554964095485, 0.008018929047514434, 0.6887747446747438]
+    passed = True
+    for i in range(5):
+        passed = passed and testResults.compareReals(expect[i], QuESTRand())
+        
+    testResults.validate(passed, '5 Random numbers')
+    

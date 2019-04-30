@@ -1,0 +1,34 @@
+# Python
+from QuESTPy.QuESTFunc import *
+from QuESTTest.QuESTCore import *
+
+def run_tests():
+
+    
+    QubitRegs = [createQureg(3,Env),createQureg(3,Env)]
+
+    result = calcFidelity(*QubitRegs)
+    expect = 1.0
+    
+    testResults.validate(testResults.compareReals(result, expect), "Zero-Zero",
+                         "Result:{} Expected:{}".format(result, expect))
+
+    initPlusState(QubitRegs[0])
+
+    result = calcFidelity(*QubitRegs)
+    expect = 0.125
+    
+    testResults.validate(testResults.compareReals(result, expect), "Zero-Plus",
+                         "Result:{} Expected:{}".format(result, expect))
+
+    initDebugState(QubitRegs[0])
+
+    result = calcFidelity(*QubitRegs)
+    expect = 0.01
+
+    testResults.validate(testResults.compareReals(result, expect), "Zero-Debug",
+                         "Result:{} Expected:{}".format(result, expect))
+
+
+
+
