@@ -65,7 +65,7 @@ class SuperTestSet(list):
             for test in testSet.tests:
                 print("    -- ", os.path.relpath(test,testDir))
 
-def init_tests(unitTestPath, logFilePath, tolerance=None, quiet=False, fullLogging = False):
+def init_tests(unitTestPath, logFilePath, tolerance=None, quiet=False, mpiLog=False, fullLog = False):
     """ Initialise the testing environment """
     global unitPath
     global testResults
@@ -77,7 +77,8 @@ def init_tests(unitTestPath, logFilePath, tolerance=None, quiet=False, fullLoggi
 
     for path in range(len(unitPath)):
         unitPath[path] = unitPath[path].rstrip('/ ')
-    testResults.set_fulllog(fullLogging)
+    testResults.set_fulllog(fullLog)
+    testResults.set_mpilog(mpiLog)
     testResults.open_log(logFilePath)
     testResults.set_tol(tolerance)
     testResults.set_quiet(quiet)
@@ -254,13 +255,14 @@ class TestResults:
     testLog = '{name}:{qureg}{string} {testing}'
     resultTab = '\nResult : {result}                    Expected: {expect}'
 
-    def __init__(self, tolerance = 1.e-6, printToScreen = True, fullLogging = False):
+    def __init__(self, tolerance = 1.e-6, printToScreen = True, mpiLog=False, fullLog = False):
         self.passes, self.fails, self.numTests = [0]*3
         self.set_tol(tolerance)
         self.set_quiet(not printToScreen)
         self._logFilePath = None
         self._logFile = None
-        self.set_fulllog(fullLogging)
+        self.set_fulllog(fullLog)
+        self.set_mpilog(mpiLog)
 
     def _write_term(self, *out, **kwargs):
         """ Wrapper for print with enforced flushing and silencing """
@@ -269,7 +271,7 @@ class TestResults:
     def open_log(self, logFile):
         """ Open a new logFile associated with testResults """
         self.close_log()
-        if Env.numRanks > 1 and self._fullLog:
+        if Env.numRanks > 1 and self._mpiLog:
             self._logFile = open(logFile+".{}".format(Env.rank), 'w')
         else:
             self._logFile = open(logFile, 'w')
@@ -283,16 +285,20 @@ class TestResults:
 
     def log(self, message = "", end = "\n"):
         """ Write a message to the log file (by default followed by new line) """
-        if self._fullLog:
+        if self._mpiLog:
             self._logFile.write(message+end)
         elif root:
             self._logFile.write(message+end)
         self._logFile.flush()
 
-    def set_fulllog(self, fullLog = False):
-        """ Set whether to log for each process of the test results """
+    def set_fulllog(self, fullLog):
+        """ Set whether to log successes as well as failures """
         self._fullLog = fullLog
 
+    def set_mpilog(self, mpiLog):
+        """ Set whether to log for each process of the test results """
+        self._mpiLog = mpiLog
+                           
     def set_tol(self, tol = None):
         """ Set the tolerance of the test results """
         self._tolerance = tol
@@ -348,7 +354,7 @@ class TestResults:
     def pass_test(self, testName=""):
         """ Force a pass to be logged """
         self._write_term('.',end='')
-        self.log('{} Passed\n'.format(testName.strip()))
+        if self._fullLog: self.log('Test {} Passed\n'.format(testName.strip()))
         self.numTests += 1
         self.passes += 1
 
@@ -356,7 +362,7 @@ class TestResults:
         """ Force a fail test to be logged """
         self._write_term('F',end='')
         if testName or message:
-            self.log('Test {} failed: {}\n'.format(testName,message))
+            self.log('Test {} Failed: {}\n'.format(testName,message))
         self.numTests += 1
         self.fails += 1
 

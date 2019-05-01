@@ -49,6 +49,7 @@ parser.add_argument('-l','--logfile', help='Redirect log. DEFAULT=%(default)s', 
 parser.add_argument('-p','--testpath', help='Set test directory search path as colon-separated list. DEFAULT=essential:algor:benchmarks:unit', default = "")
 parser.add_argument('-t','--tolerance', type=float, help='Set the test failure tolerance for float values. DEFAULT=%(default)s', default=1.e-10)
 parser.add_argument('-f','--mpilog', help='Full MPI logging on a per-process basis, creates a new file for each process of "<LOGFILE>.<MPIRANK>" . Default=False', action='store_true')
+parser.add_argument('-F','--full-log', help='Log all passes as well as failures. Default=False', action='store_true')
 testArg = parser.add_argument('tests', nargs=argparse.REMAINDER, metavar="TESTS",
                     help="Set of tests one wishes to run, this can be any, any custom test (see NOTE) or any exposed QuEST function. DEFAULT=unit")
 genGroup = parser.add_argument_group('Generation', 'Arguments related to the generation of tests')
@@ -62,7 +63,7 @@ genGroup.add_argument('-C','--controls', help='Specify a comma-separated list of
 argList = parser.parse_args()
 
 # Set up Parallel environment and testing framework
-init_tests(unitTestPath = argList.testpath, logFilePath = argList.logfile, tolerance = argList.tolerance, quiet = argList.quiet, fullLogging=argList.mpilog)
+init_tests(unitTestPath = argList.testpath, logFilePath = argList.logfile, tolerance = argList.tolerance, quiet = argList.quiet, mpiLog=argList.mpilog, fullLog=argList.fullLog)
 
 # Now we manually handle the print with *all* potential arguments included
 
