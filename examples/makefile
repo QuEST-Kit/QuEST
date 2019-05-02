@@ -134,20 +134,28 @@ endif
 #                                                                      #
 #======================================================================#
 
+
 #
 # --- libraries
 #
 
 LIBS = -lm
 
-QUEST_COMMON_DIR = $(QUEST_DIR)
+
+#
+# --- source and include paths
+#
+
+QUEST_INCLUDE_DIR = ${QUEST_DIR}/include
+QUEST_SRC_DIR = ${QUEST_DIR}/src
+
+QUEST_COMMON_DIR = $(QUEST_SRC_DIR)
 ifeq ($(GPUACCELERATED), 1)
-    QUEST_INNER_DIR = $(QUEST_DIR)/GPU
+    QUEST_INNER_DIR = $(QUEST_SRC_DIR)/GPU
 else
-    QUEST_INNER_DIR = $(QUEST_DIR)/CPU
+    QUEST_INNER_DIR = $(QUEST_SRC_DIR)/CPU
 endif
 QUEST_INCLUDE = -I${QUEST_INCLUDE_DIR} -I$(QUEST_INNER_DIR) -I$(QUEST_COMMON_DIR)
-
 
 
 #
@@ -257,19 +265,19 @@ ifeq ($(GPUACCELERATED), 1)
   %.o: %.c
 	$(COMPILER) -x c $(C_FLAGS) $(QUEST_INCLUDE) -c $<
   %.o: $(QUEST_INNER_DIR)/%.c
-	$(COMPILER) -x c $(C_FLAGS) -c $<
+	$(COMPILER) -x c $(C_FLAGS) $(QUEST_INCLUDE) -c $<
   %.o: $(QUEST_COMMON_DIR)/%.c
-	$(COMPILER) -x c $(C_FLAGS) -c $<
+	$(COMPILER) -x c $(C_FLAGS) $(QUEST_INCLUDE) -c $<
 
   %.o: %.cu
 	$(CUDA_COMPILER) -dc $(CPP_CUDA_FLAGS) $(QUEST_INCLUDE) $<
   %.o: $(QUEST_INNER_DIR)/%.cu
-	$(CUDA_COMPILER) -dc $(CPP_CUDA_FLAGS) $<
+	$(CUDA_COMPILER) -dc $(CPP_CUDA_FLAGS) $(QUEST_INCLUDE) $<
 	
   %.o: %.cpp
 	$(CUDA_COMPILER) -dc $(CPP_CUDA_FLAGS) $(QUEST_INCLUDE) $<
   %.o: $(QUEST_INNER_DIR)/%.cpp
-	$(CUDA_COMPILER) -dc $(CPP_CUDA_FLAGS) $<
+	$(CUDA_COMPILER) -dc $(CPP_CUDA_FLAGS) $(QUEST_INCLUDE) $<
 
 # distributed
 else ifeq ($(DISTRIBUTED), 1)
@@ -356,5 +364,6 @@ print-%:
 
 getvalue-%:
 	@echo $($*)
+
 
 
