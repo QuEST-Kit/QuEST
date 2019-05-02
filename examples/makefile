@@ -18,8 +18,7 @@ EXE = demo
 SOURCES = tutorial_example
 
 # path to QuEST library from root directory
-QUEST_DIR = QuEST/src
-QUEST_INCLUDE_DIR = ${QUEST_DIR}/../include
+QUEST_DIR = QuEST
 
 # compiler to use, which should support both C and C++, to be wrapped by GPU/MPI compilers
 COMPILER = gcc
