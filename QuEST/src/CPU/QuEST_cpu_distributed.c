@@ -195,12 +195,6 @@ void reportQuESTEnv(QuESTEnv env){
     }
 }
 
-void reportNodeList(QuESTEnv env){
-    char hostName[256];
-    gethostname(hostName, 255);
-    printf("hostname on rank %d: %s\n", env.rank, hostName);
-}
-
 int getChunkIdFromIndex(Qureg qureg, long long int index){
     return index/qureg.numAmpsPerChunk; // this is numAmpsPerChunk
 }
@@ -1298,14 +1292,14 @@ void statevec_collapseToKnownProbOutcome(Qureg qureg, const int measureQubit, in
 }
 
 void seedQuESTDefault(){
-    // init MT random number generator with three keys -- time, pid and a hash of hostname 
+    // init MT random number generator with three keys -- time and pid
     // for the MPI version, it is ok that all procs will get the same seed as random numbers will only be 
     // used by the master process
 
-    unsigned long int key[3];
+    unsigned long int key[2];
     getQuESTDefaultSeedKey(key);
     // this seed will be used to generate the same random number on all procs,
     // therefore we want to make sure all procs receive the same key
-    MPI_Bcast(key, 3, MPI_UNSIGNED_LONG, 0, MPI_COMM_WORLD);
-    init_by_array(key, 3);
+    MPI_Bcast(key, 2, MPI_UNSIGNED_LONG, 0, MPI_COMM_WORLD);
+    init_by_array(key, 2);
 }

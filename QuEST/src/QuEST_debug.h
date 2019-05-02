@@ -39,12 +39,6 @@ void initStateFromSingleFile(Qureg *qureg, char filename[200], QuESTEnv env);
  */
 int compareStates(Qureg mq1, Qureg mq2, qreal precision);
 
-/** Report a list of CPU hostnames and the rank that is running on each if running with MPI enabled and an 
- * error message otherwise. For debugging purposes. 
- * @param[in] env object representing the execution environment. A single instance is used for each program
- * */
-void reportNodeList(QuESTEnv env);
-
 /** Set elements in the underlying state vector represenation of a density matrix. Not exposed in the public
  * API as this requires an understanding of how the state vector is used to represent a density matrix.
  * Currently can only be used to set all amps. 

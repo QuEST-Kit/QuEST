@@ -10,11 +10,9 @@
 # include "QuEST_validation.h"
 # include "mt19937ar.h"
 
-# define _BSD_SOURCE
 # include <unistd.h>
 # include <sys/types.h> 
 # include <sys/time.h>
-# include <sys/param.h>
 # include <stdio.h>
 # include <stdlib.h>
 
@@ -133,7 +131,7 @@ unsigned long int hashString(char *str){
 }
 
 void getQuESTDefaultSeedKey(unsigned long int *key){
-    // init MT random number generator with three keys -- time, pid and a hash of hostname 
+    // init MT random number generator with two keys -- time and pid
     // for the MPI version, it is ok that all procs will get the same seed as random numbers will only be 
     // used by the master process
 
@@ -145,11 +143,8 @@ void getQuESTDefaultSeedKey(unsigned long int *key){
 
     unsigned long int pid = getpid();
     unsigned long int msecs = (unsigned long int) time_in_mill;
-    char hostName[MAXHOSTNAMELEN+1];
-    gethostname(hostName, sizeof(hostName));
-    unsigned long int hostNameInt = hashString(hostName);
 
-    key[0] = msecs; key[1] = pid; key[2] = hostNameInt;
+    key[0] = msecs; key[1] = pid;
 }
 
 /** 
