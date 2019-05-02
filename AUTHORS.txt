@@ -1,15 +1,29 @@
-Primary contact: Anna Brown, anna.brown@oerc.ox.ac.uk
+Primary contacts: 
+    Anna Brown (anna.brown@oerc.ox.ac.uk)
+    Tyson Jones (tyson.jones@materials.ox.ac.uk)
 
 Current team:
-Prof Simon Benjamin: developed initial prototpye algorithms, consulting -- quantum computing, user requirements
-Anna Brown, developer: main area -- HPC
-Dr Ian Bush: consulting -- software development, HPC
-Tyson Jones, developer: main area -- density matrix functions
-Jacob Wilkins, developer: main area -- testing framework
+Ms Anna Brown [developer]
+    HPC
+    build
+    quantum ops
+Mr Tyson Jones [developer]
+    architecture
+    interface
+    quantum ops
+Mr Jacob Wilkins [developer]
+    testing
+Dr Ian Bush [consultant]
+    software development
+    HPC
+Prof Simon Benjamin [consultant]
+    user requirements
+    algorithm prototyping
 
 Past members:
-Dr Mihai Duta: author of original prototype code
+Dr Mihai Duta
+    original prototyping
 
 External contributors:
-Dr Nicolas Vogt on behalf of HQS Quantum Simulations: applyOneQubitDampingError function
-
+Dr Nicolas Vogt on behalf of HQS Quantum Simulations
+    implemented applyOneQubitDampingError
