@@ -1140,7 +1140,7 @@ void statevec_controlledPauliY(Qureg qureg, const int controlQubit, const int ta
             statevec_controlledPauliYDistributed(qureg,controlQubit,targetQubit,
                     qureg.pairStateVec, //in
                     qureg.stateVec,
-					conjFac); //out
+					-conjFac); //out
         }
     }
 }
@@ -1173,7 +1173,7 @@ void statevec_controlledPauliYConj(Qureg qureg, const int controlQubit, const in
             statevec_controlledPauliYDistributed(qureg,controlQubit,targetQubit,
                     qureg.pairStateVec, //in
                     qureg.stateVec,
-					conjFac); //out
+					-conjFac); //out
         }
     }
 }
