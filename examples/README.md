@@ -215,6 +215,30 @@ cmake -LAH ..
 
 ----------------------------
 
+# Running unit tests
+
+To confirm that QuEST has been compiled and is running correctly on your platform, unit tests can be run from the build folder with the command
+
+```bash
+make test
+```
+
+This will report whether the QuEST library has been built correctly and whether all unit tests have passed successfully. In case of failures, see Utilities/QuESTLog.log for a detailed report. 
+
+Tests will automatically run in distributed mode on four processes if -DDISTRIBUTED=1 is set at compile time, and on GPU if -DGPUACCELERATED=1 is set at compile time. 
+
+Note, the most common reason for unit tests failing on a new platform is running on a GPU with the incorrect GPU_COMPUTE_CAPABILITY. Remember to specify this at compile time for [your device](https://developer.nvidia.com/cuda-gpus). Eg, for a P100, use
+
+
+```bash
+mkdir build
+cd build
+cmake -DGPUACCELERATED=1 -DGPU_COMPUTE_CAPABILIty=60 ..
+make test
+```
+
+----------------------------
+
 # Running
 
 ## locally
@@ -266,7 +290,12 @@ or a PBS submission script like
 ```bash
 #PBS -l select=4:ncpus=8
 
-make clean
+module purge
+module load mvapich2
+
+mkdir build
+cd build
+cmake -DDISTRIBUTED=1 ..
 make
 
 export OMP_NUM_THREADS=8
@@ -286,7 +315,7 @@ module load cuda  ## name may vary
 
 mkdir build
 cd build
-cmake -DGPUACCELERATED=1 ..
+cmake -DGPUACCELERATED=1 -DGPU_COMPUTE_CAPABILITY=[Compute capability] ..
 make
 
 ./myExecutable
