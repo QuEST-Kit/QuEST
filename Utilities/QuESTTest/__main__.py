@@ -63,7 +63,7 @@ genGroup.add_argument('-C','--controls', help='Specify a comma-separated list of
 argList = parser.parse_args()
 
 # Set up Parallel environment and testing framework
-init_tests(unitTestPath = argList.testpath, logFilePath = argList.logfile, tolerance = argList.tolerance, quiet = argList.quiet, mpiLog=argList.mpilog, fullLog=argList.fullLog)
+init_tests(unitTestPath = argList.testpath, logFilePath = argList.logfile, tolerance = argList.tolerance, quiet = argList.quiet, mpiLog=argList.mpilog, fullLog=argList.full_log)
 
 # Now we manually handle the print with *all* potential arguments included
 
