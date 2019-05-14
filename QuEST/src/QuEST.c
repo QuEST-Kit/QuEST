@@ -1,4 +1,4 @@
-// Distributed under MIT licence. See https://github.com/aniabrown/QuEST_GPU/blob/master/LICENCE.txt for details
+// Distributed under MIT licence. See https://github.com/QuEST-Kit/QuEST/blob/master/LICENCE.txt for details
 
 /** @file
  * Implements the QuEST.h API (and some debugging functions) in a hardware-agnostic way, 

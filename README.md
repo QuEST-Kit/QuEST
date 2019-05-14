@@ -74,7 +74,7 @@ The program will print information about your execution environment and some sim
 
 Additionally, you can run unit tests to see if QuEST runs correctly in your environment, using
 ```bash
-make tests
+make test
 ```
 
 This requires Python 3.4+. 
