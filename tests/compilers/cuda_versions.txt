@@ -1,6 +1,0 @@
-gpu/cuda/6.0.37
-gpu/cuda/6.5.14
-gpu/cuda/7.0.28
-gpu/cuda/7.5.18
-gpu/cuda/8.0.44
-gpu/cuda/9.0.176

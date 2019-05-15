@@ -158,68 +158,83 @@ and after compiling (see section below), gives psuedo-random output
 > Qubit 2 collapsed to 1 with probability 0.499604
 > ```
 
-QuEST uses the [Mersenne Twister](http://www.math.sci.hiroshima-u.ac.jp/~m-mat/MT/MT2002/emt19937ar.html) algorithm to generate random numbers used for randomly collapsing the state-vector. The user can seed this RNG using `seedQuEST(arrayOfSeeds, arrayLength)`, otherwise QuEST will by default (through `seedQuESTDefault()`) create a seed from the current time, the process id, and the hostname.
+QuEST uses the [Mersenne Twister](http://www.math.sci.hiroshima-u.ac.jp/~m-mat/MT/MT2002/emt19937ar.html) algorithm to generate random numbers used for randomly collapsing the state-vector. The user can seed this RNG using `seedQuEST(arrayOfSeeds, arrayLength)`, otherwise QuEST will by default (through `seedQuESTDefault()`) create a seed from the current time and the process id.
 
 ----------------------------
 
 # Compiling
 
-To compile, copy the [makefile](../makefile) into the same folder as your circuit code. Adjust the *User Settings* section to configure compilation. You'll need to set
+QuEST uses CMake (3.1 or higher) as its build system.
+
+To compile, make sure your circuit code is in the root directory. Open the CMakeLists.txt file in this directory and update the user executable section to use your source files and desired executable name
 ```bash
-# name of the executable to create
-EXE = myExecutable
+# Create user executable
+# Format: add_executable([name of executable] [space separated list of sources])
+add_executable(myExecutable myCode1.c myCode2.c)
 
-# space-separated names (no file type) of all user source files (.c or .cpp) in the root directory
-SOURCES = myCode1 myCode2
-
-# path to QuEST library from root directory
-QUEST_DIR = path/to/QuEST
+# Link libraries to user executable, including QuEST library
+# Format: target_link_libraries([name of executable] [space separated list of libraries])
+target_link_libraries(myExecutable QuEST m)
 ```
 
-Next, indicate which compiler you wish to use. For example, to use the default compiler on OSX:
+In the root directory, build using
 ```bash
-# compiler to use, which should support both C and C++, to be wrapped by GPU/MPI compilers
-COMPILER = clang
-
-# type of above compiler, one of {GNU, INTEL, CLANG}, used for setting compiler flags
-COMPILER_TYPE = CLANG
+mkdir build
+cd build
+cmake ..
+make
 ```
 
-To compile your code to run on multicore/multi-CPU systems, and/or for distributed systems, or on GPUs, simply set the appropriate variables
-```bash
-# hardwares to target: 1 means use, 0 means don't use
-MULTITHREADED = 0
-DISTRIBUTED = 0
-GPUACCELERATED = 0
-```
-Note that using multithreading requires an OpenMP compatible compiler (e.g. [GCC 4.9](https://gcc.gnu.org/gcc-4.9/changes.html)), using distribution requires an MPI compiler (`mpicc`)is installed on your system, and GPU acceleration requires a CUDA compiler (`nvcc`). We've made a comprehensive list of compatible compilers which you can view [here](../tests/compilers/compatibility.md). This does not change your `COMPILER` setting - the makefile will choose the appropriate MPI and CUDA wrappers automatically.
+When using the cmake command as above, the -D[VAR=VALUE] option can be passed to cmake to further configure your build.
 
-> Note also that GPU users must additionally specify the the *Compute Capability* of their GPU, which can be looked up at the [NVIDIA website](https://developer.nvidia.com/cuda-gpus)
-> ```bash
-> GPU_COMPUTE_CAPABILITY = 30
-> ```
-> An incorrect *Compute Capability* will lead to drastically incorrect computations. You can check if you've set the right *Compute Capability* by running the unit tests via `cd tests` then `./runTests.sh`.
+To compile your code to run on multi-CPU systems use
+```bash
+cmake -DDISTRIBUTED=1 ..
+```
+
+To compile for GPU, use
+```bash
+cmake -DGPUACCELERATED=1 -DGPU_COMPUTE_CAPABILITY=[COMPUTE_CAPABILITY] ..
+```
+
+Where COMPUTE_CAPABILITY is the compute cabability of your GPU, written without a decimal point. This can can be looked up at the [NVIDIA website](https://developer.nvidia.com/cuda-gpus). The default value is 30.
+
+By default, QuEST will compile with OpenMP parallelism enabled if an OpenMP compatible compiler and OpenMP library can be found on your system (e.g. [GCC 4.9](https://gcc.gnu.org/gcc-4.9/changes.html)). Using distribution requires an MPI implementation is installed on your system, and GPU acceleration requires a CUDA compiler (`nvcc`). We've made a comprehensive list of compatible compilers which you can view [here](../tests/compilers/compatibility.md). This does not change your `COMPILER` setting - the makefile will choose the appropriate MPI and CUDA wrappers automatically.
 
 You can additionally customise the precision with which the state-vector is stored.
 ```bash
-# whether to use single, double or quad floating point precision in the state-vector {1,2,4}
-PRECISION = 2
+cmake -DPRECISION=2 ..
 ```
 Using greater precision means more precise computation but at the expense of additional memory requirements and runtime.
 Checking results are unchanged when altaring the precision can be a great test that your calculations are sufficiently precise.
 
-You're now ready to compile your code by entering
+For a full list of available configuration parameters, use
 ```bash
-make
+cmake -LAH ..
 ```
-at the terminal, in the directory of your code. For the above example, this performs
+
+----------------------------
+
+# Running unit tests
+
+To confirm that QuEST has been compiled and is running correctly on your platform, unit tests can be run from the build folder with the command
+
 ```bash
-gcc -O2 -std=c99 -mavx -Wall -fopenmp -c path/to/QuEST/CPU/QuEST.c
-gcc -O2 -std=c99 -mavx -Wall -fopenmp -c path/to/QuEST/mt19937ar.c
-gcc -O2 -std=c99 -mavx -Wall -fopenmp -c myCode1.c
-gcc -O2 -std=c99 -mavx -Wall -fopenmp -c myCode2.c
-gcc -O2 -std=c99 -mavx -Wall -fopenmp -c path/to/QuEST/CPU/QuEST_env_local.c
-gcc -O2 -std=c99 -mavx -Wall -fopenmp -o myExecutable QuEST.o mt19937ar.o myCode1.o myCode2.o QuEST_env_local.o -lm
+make test
+```
+
+This will report whether the QuEST library has been built correctly and whether all unit tests have passed successfully. In case of failures, see Utilities/QuESTLog.log for a detailed report. 
+
+Tests will automatically run in distributed mode on four processes if -DDISTRIBUTED=1 is set at compile time, and on GPU if -DGPUACCELERATED=1 is set at compile time. 
+
+Note, the most common reason for unit tests failing on a new platform is running on a GPU with the incorrect GPU_COMPUTE_CAPABILITY. Remember to specify this at compile time for [your device](https://developer.nvidia.com/cuda-gpus). Eg, for a P100, use
+
+
+```bash
+mkdir build
+cd build
+cmake -DGPUACCELERATED=1 -DGPU_COMPUTE_CAPABILIty=60 ..
+make test
 ```
 
 ----------------------------
@@ -228,11 +243,11 @@ gcc -O2 -std=c99 -mavx -Wall -fopenmp -o myExecutable QuEST.o mt19937ar.o myCode
 
 ## locally
 
-You can then call your code
+You can then call your code. From the build directory:
 ```bash
 ./myExecutable
 ```
-If you enabled multithreading when compiling, you can control how many threads your code uses by setting `OMP_NUM_THREADS`, ideally to the number of available cores on your machine
+If multithreading functionality was found when compiling, you can control how many threads your code uses by setting `OMP_NUM_THREADS`, ideally to the number of available cores on your machine
 ```bash
 export OMP_NUM_THREADS=8
 ./myExecutable
@@ -255,7 +270,7 @@ as normal!
 
 There are no special requirements for running QuEST through job submission systems. Just call `./myExecutable` as you would any other binary.
 
-For example, the [above code](tutorial_example.c) can be split over 4 MPI nodes (each with 8 cores) by setting `DISTRIBUTED = 1` (and `MULTITHREADED = 1`) in the makefile, and writing a SLURM submission script
+For example, the [above code](tutorial_example.c) can be split over 4 MPI nodes (each with 8 cores) on a SLURM system using the following SLURM submission script
 ```bash
 #SBATCH --nodes=4
 #SBATCH --ntasks-per-node=1
@@ -263,7 +278,9 @@ For example, the [above code](tutorial_example.c) can be split over 4 MPI nodes 
 module purge
 module load mvapich2
 
-make clean
+mkdir build
+cd build
+cmake -DDISTRIBUTED=1 ..
 make
 
 export OMP_NUM_THREADS=8
@@ -273,7 +290,12 @@ or a PBS submission script like
 ```bash
 #PBS -l select=4:ncpus=8
 
-make clean
+module purge
+module load mvapich2
+
+mkdir build
+cd build
+cmake -DDISTRIBUTED=1 ..
 make
 
 export OMP_NUM_THREADS=8
@@ -291,7 +313,9 @@ Running QuEST on a GPU partition is similarly easy in SLURM
 module purge
 module load cuda  ## name may vary
 
-make clean
+mkdir build
+cd build
+cmake -DGPUACCELERATED=1 -DGPU_COMPUTE_CAPABILITY=[Compute capability] ..
 make
 
 ./myExecutable
@@ -299,7 +323,7 @@ make
 
 On each platform, there is no change to our source code or our QuEST interface. We simply recompile, and QuEST will utilise the available hardware (a GPU, shared-memory or distributed CPUs) to speedup our code.
 
-Note that parallelising with MPI (`DISTRIBUTED = 1`) will mean all code in your source file will be repeated on every node. To execute some code (e.g. printing) only on one node, do
+Note that parallelising with MPI (`-DDISTRIBUTED=1`) will mean all code in your source file will be repeated on every node. To execute some code (e.g. printing) only on one node, do
 ```C
 if (env.rank == 0)
     printf("Only one node executes this print!");

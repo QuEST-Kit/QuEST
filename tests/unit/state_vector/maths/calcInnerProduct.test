@@ -1,0 +1,29 @@
+# Python
+
+from QuESTPy.QuESTFunc import *
+from QuESTTest.QuESTCore import *
+
+def run_tests():
+    
+    args = [createQureg(3,Env),createQureg(3,Env)]
+
+    
+    result = calcInnerProduct(*args)
+    expect = Complex(1.,0.)
+
+    testResults.validate(testResults.compareComplex(result,expect),
+                         "Zero-Zero", "Inner product does not match:\n {} {}".format(result, expect))
+
+    initPlusState(args[0])
+    result = calcInnerProduct(*args)
+    expect = Complex(0.3535533905933,0.)
+
+    testResults.validate(testResults.compareComplex(result,expect),
+                         "Zero-Plus", "Inner product does not match:\n {} {}".format(result, expect))
+
+    initDebugState(args[0])
+    result = calcInnerProduct(*args)
+    expect = Complex(0.,-0.1)
+
+    testResults.validate(testResults.compareComplex(result,expect),
+"Zero-Debug", "Inner product does not match:\n {} {}".format(result, expect))
