@@ -12,8 +12,8 @@ set(USER_SOURCE  "tutorial_example.c"  CACHE STRING "Source to build with QuEST 
 set(OUTPUT_EXE   "demo"  CACHE STRING "Executable to compile to")
 
 option(TESTING "Enable test suite functionality -- requires test suite available" ON)
-set(QuEST_UTIL_DIR_NAME "Utilities" CACHE STRING
-  "Name of the directory containing the QuEST Utilities.")
+set(QuEST_UTIL_DIR_NAME "utilities" CACHE STRING
+  "Name of the directory containing the QuEST utilities.")
 
 # -----------------------------------------------------------------------------
 # ----- QuEST LIBRARY ---------------------------------------------------------

@@ -58,7 +58,8 @@ add_test(NAME build
 macro(Testee name)
   add_test(
     NAME ${name}
-    COMMAND ${TESTCOMMAND} ${INC_CUST} -Q ${QuEST_LIB_PATH} ${name}
+    COMMAND ${TESTCOMMAND} ${INC_CUST} -Q ${QuEST_LIB_PATH} -l
+    ${QuEST_Project_BINARY_DIR}/QuESTLog.log ${name}
     WORKING_DIRECTORY ${UTIL_ROOT}
     )
   set_tests_properties(${name}
