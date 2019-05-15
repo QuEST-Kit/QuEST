@@ -232,7 +232,7 @@ This will report whether the QuEST library has been built correctly and whether 
 
 Tests will automatically run in distributed mode on four processes if -DDISTRIBUTED=1 is set at compile time, and on GPU if -DGPUACCELERATED=1 is set at compile time. In order to set the number of process on which the tests should be run, set:
 ```bash
-cmake -DMPIEXEC_MAX_NUMPROCS=4
+cmake -DMPIEXEC_MAX_NUMPROCS=4 ..
 ```
 
 Note, the most common reason for unit tests failing on a new platform is running on a GPU with the incorrect GPU_COMPUTE_CAPABILITY. Remember to specify this at compile time for [your device](https://developer.nvidia.com/cuda-gpus). Eg, for a P100, use
