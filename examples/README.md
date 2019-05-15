@@ -166,26 +166,22 @@ QuEST uses the [Mersenne Twister](http://www.math.sci.hiroshima-u.ac.jp/~m-mat/M
 
 QuEST uses CMake (3.1 or higher) as its build system.
 
-To compile, make sure your circuit code is in the root directory. Open the CMakeLists.txt file in this directory and update the user executable section to use your source files and desired executable name
-```bash
-# Create user executable
-# Format: add_executable([name of executable] [space separated list of sources])
-add_executable(myExecutable myCode1.c myCode2.c)
-
-# Link libraries to user executable, including QuEST library
-# Format: target_link_libraries([name of executable] [space separated list of libraries])
-target_link_libraries(myExecutable QuEST m)
-```
-
-In the root directory, build using
+To compile, make sure your circuit code is accessible from the root QuEST directory.
+In the root directory, initially build using
 ```bash
 mkdir build
 cd build
-cmake ..
+cmake -DUSER_SOURCE="myCode1.c;myCode2.c" ..
 make
 ```
+Paths to target sources are set as a semi-colon separated list of paths to said sources relative to the root QuEST directory.
 
-When using the cmake command as above, the -D[VAR=VALUE] option can be passed to cmake to further configure your build.
+If you wish your executable to be named something other than `demo`, you can set this too by using:
+```bash
+cmake -DOUTPUT_EXE="myExecutable" ..
+```
+
+When using the cmake command as above, the -D[VAR=VALUE] option can be passed other options to further configure your build.
 
 To compile your code to run on multi-CPU systems use
 ```bash
@@ -208,10 +204,19 @@ cmake -DPRECISION=2 ..
 Using greater precision means more precise computation but at the expense of additional memory requirements and runtime.
 Checking results are unchanged when altaring the precision can be a great test that your calculations are sufficiently precise.
 
+
+Please note that cmake caches these changes (per directory) so for any subsequent builds you should just type `make` from the build directory and the previously defined settings will be applied. If any parameters require changing, these can be redefined by:
+```
+cmake -D[VAR=VALUE] ..
+```
+as one would do in the initial configuration.
+
 For a full list of available configuration parameters, use
 ```bash
-cmake -LAH ..
+cmake -LH ..
 ```
+
+For manual configuration (not recommended) you can change the `CMakeLists.txt` in the root QuEST directory.
 
 ----------------------------
 
@@ -223,9 +228,12 @@ To confirm that QuEST has been compiled and is running correctly on your platfor
 make test
 ```
 
-This will report whether the QuEST library has been built correctly and whether all unit tests have passed successfully. In case of failures, see Utilities/QuESTLog.log for a detailed report. 
+This will report whether the QuEST library has been built correctly and whether all unit tests have passed successfully. In case of failures, see utilities/QuESTLog.log for a detailed report. 
 
-Tests will automatically run in distributed mode on four processes if -DDISTRIBUTED=1 is set at compile time, and on GPU if -DGPUACCELERATED=1 is set at compile time. 
+Tests will automatically run in distributed mode on four processes if -DDISTRIBUTED=1 is set at compile time, and on GPU if -DGPUACCELERATED=1 is set at compile time. In order to set the number of process on which the tests should be run, set:
+```bash
+cmake -DMPIEXEC_MAX_NUMPROCS=4
+```
 
 Note, the most common reason for unit tests failing on a new platform is running on a GPU with the incorrect GPU_COMPUTE_CAPABILITY. Remember to specify this at compile time for [your device](https://developer.nvidia.com/cuda-gpus). Eg, for a P100, use
 
