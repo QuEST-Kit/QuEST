@@ -2543,8 +2543,8 @@ void statevec_controlledPauliYDistributed (Qureg qureg, const int controlQubit, 
         for (thisTask=0; thisTask<numTasks; thisTask++) {
             controlBit = extractBit (controlQubit, thisTask+chunkId*chunkSize);
             if (controlBit){
-                stateVecRealOut[thisTask] = conjFac * stateVecRealIn[thisTask];
-                stateVecImagOut[thisTask] = conjFac * stateVecImagIn[thisTask];
+                stateVecRealOut[thisTask] = conjFac * stateVecImagIn[thisTask];
+                stateVecImagOut[thisTask] = conjFac * -stateVecRealIn[thisTask];
             }
         }
     }
