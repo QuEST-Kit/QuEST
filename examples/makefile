@@ -1,3 +1,9 @@
+# DEPRECATION WARNING!
+# QuEST has switched to using the cmake build system. 
+# See https://github.com/QuEST-Kit/QuEST/tree/master/examples#compiling
+# for more information.
+# This makefile is included as a backup in case of problems switching to the
+# new system but is less rigorously tested than the cmake system. Use at your own risk. 
 
 # This makefile builds the QuEST library and links/compiles user code
 # While attempting to accomodate as many platforms and compilers,

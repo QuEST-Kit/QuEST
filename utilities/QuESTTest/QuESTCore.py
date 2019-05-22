@@ -706,7 +706,7 @@ class TestResults:
                             else:
                                 raise IOError('Test type {} not recognised'.format(test))
                     else:
-                        outputFile.write(f"{result}\n")
+                        outputFile.write("{}\n".format(result))
 
         self._write_term(".", end="")
 

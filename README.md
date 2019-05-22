@@ -96,4 +96,8 @@ Thanks to [HQS Quantum simulations](https://quantumsimulations.de/) for contribu
 QuEST is released under a [MIT Licence](https://github.com/quest-kit/QuEST/blob/master/LICENCE.txt)
 
 
+## Related projects -- QuEST utilities and extensions
+
+* [PyQuEST-cffi](https://github.com/HQSquantumsimulations/PyQuEST-cffi): a python interface to QuEST based on cffi developed by HQS Quantum Simulations. Please note, PyQuEST-cffi is currently in the alpha stage and not an official QuEST project.
+
 
