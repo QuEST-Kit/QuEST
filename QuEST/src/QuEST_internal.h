@@ -1,7 +1,8 @@
 // Distributed under MIT licence. See https://github.com/QuEST-Kit/QuEST/blob/master/LICENCE.txt for details
 
 /** @file
- * Functions used internally, supplied by QuEST_common or by hardware-specific backends
+ * General functions used internally, supplied by QuEST_common or by hardware-specific backends.
+ * Note that some bespoke functions used only internally exist in QuEST_qasm.h and QuEST_validation.h
  */
 
 # ifndef QUEST_INTERNAL_H
@@ -18,6 +19,10 @@ extern "C" {
 /*
  * general functions
  */
+  
+long long int getQubitBitMask(int* controlQubits, const int numControlQubits);
+
+long long int getControlFlipMask(int* controlQubits, int* controlState, const int numControlQubits);
 
 unsigned long int hashString(char *str);
 
@@ -71,6 +76,8 @@ void densmatr_oneQubitDepolarise(Qureg qureg, const int targetQubit, qreal depol
 void densmatr_oneQubitDamping(Qureg qureg, const int targetQubit, qreal damping);
 
 void densmatr_twoQubitDepolarise(Qureg qureg, int qubit1, int qubit2, qreal depolLevel);
+
+void densmatr_oneQubitPauliError(Qureg qureg, int qubit, qreal pX, qreal pY, qreal pZ);
 
 void densmatr_addDensityMatrix(Qureg combineQureg, qreal otherProb, Qureg otherQureg);
     
@@ -175,7 +182,7 @@ void statevec_controlledCompactUnitary(Qureg qureg, const int controlQubit, cons
 
 void statevec_controlledUnitary(Qureg qureg, const int controlQubit, const int targetQubit, ComplexMatrix2 u);
 
-void statevec_multiControlledUnitary(Qureg qureg, int* controlQubits, const int numControlQubits, const int targetQubit, ComplexMatrix2 u);
+void statevec_multiControlledUnitary(Qureg qureg, long long int ctrlQubitsMask, long long int ctrlFlipMask, const int targetQubit, ComplexMatrix2 u);
 
 void statevec_hadamard(Qureg qureg, const int targetQubit);
 
@@ -187,6 +194,15 @@ void statevec_collapseToKnownProbOutcome(Qureg qureg, const int measureQubit, in
 
 int statevec_measureWithStats(Qureg qureg, int measureQubit, qreal *outcomeProb);
 
+void statevec_swapGate(Qureg qureg, int qb1, int qb2);
+
+void statevec_sqrtSwapGate(Qureg qureg, int qb1, int qb2);
+
+void statevec_sqrtSwapGateConj(Qureg qureg, int qb1, int qb2);
+
+void statevec_multiRotateZ(Qureg qureg, long long int mask, qreal angle);
+
+void statevec_multiRotatePauli(Qureg qureg, int* targetQubits, int* targetPaulis, int numTargets, qreal angle, int applyConj);
 
 # ifdef __cplusplus
 }

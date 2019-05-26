@@ -73,11 +73,11 @@ void statevec_controlledUnitaryDistributed (Qureg qureg, const int controlQubit,
         ComplexArray stateVecOut);
 
 void statevec_multiControlledUnitaryLocal(Qureg qureg, const int targetQubit,
-        long long int mask, ComplexMatrix2 u);
+        long long int ctrlQubitsMask, long long int ctrlFlipMask, ComplexMatrix2 u);
 
 void statevec_multiControlledUnitaryDistributed (Qureg qureg,
         const int targetQubit,
-        long long int mask,
+        long long int ctrlQubitsMask, long long int ctrlFlipMask,
         Complex rot1, Complex rot2,
         ComplexArray stateVecUp,
         ComplexArray stateVecLo,

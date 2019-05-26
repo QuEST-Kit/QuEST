@@ -1,7 +1,14 @@
 // Distributed under MIT licence. See https://github.com/QuEST-Kit/QuEST/blob/master/LICENCE.txt for details
 
 /** @file
- * Internal and API functions which are hardware-agnostic
+ * Internal and API functions which are hardware-agnostic.
+ * These must never call a front-end function in QuEST.c, which would lead to 
+ * duplication of e.g. QASM logging and validation. Note that though many of
+ * these functions are prefixed with statevec_, they will be called multiple times
+ * to effect their equivalent operation on density matrices, so the passed Qureg
+ * can be assumed a statevector. Functions prefixed with densmatr_ may still
+ * explicitly call statevec_ functions, but will need to manually apply the
+ * conjugate qubit-shifted operations to satisfy the Choi–Jamiolkowski isomorphism
  */
 
 # include "QuEST.h"
@@ -21,6 +28,26 @@
 extern "C" {
 #endif
 
+/* builds a bit-string where 1 indicates a qubit is present in this list */
+long long int getQubitBitMask(int* qubits, const int numQubits) {
+    
+    long long int mask=0; 
+    for (int i=0; i<numQubits; i++)
+        mask = mask | (1LL << qubits[i]);
+        
+    return mask;
+}
+
+/* builds a bit-string where 1 indicates control qubits conditioned on 0 ('flipped') */
+long long int getControlFlipMask(int* controlQubits, int* controlState, const int numControlQubits) {
+    
+    long long int mask=0;
+    for (int i=0; i<numControlQubits; i++)
+        if (controlState[i] == 0)
+            mask = mask | (1LL << controlQubits[i]);
+            
+    return mask;
+}
 
 void ensureIndsIncrease(int* ind1, int* ind2) {
     if (*ind1 > *ind2) {
@@ -157,12 +184,6 @@ void seedQuEST(unsigned long int *seedArray, int numSeeds){
     init_by_array(seedArray, numSeeds); 
 }
 
-qreal statevec_getProbAmp(Qureg qureg, long long int index){
-    qreal real = statevec_getRealAmp(qureg, index);
-    qreal imag = statevec_getImagAmp(qureg, index);
-    return real*real + imag*imag;
-}
-
 void reportState(Qureg qureg){
     FILE *state;
     char filename[100];
@@ -190,6 +211,12 @@ void reportQuregParams(Qureg qureg){
         printf("Number of amps is %lld.\n", numAmps);
         printf("Number of amps per rank is %lld.\n", numAmpsPerRank);
     }
+}
+
+qreal statevec_getProbAmp(Qureg qureg, long long int index){
+    qreal real = statevec_getRealAmp(qureg, index);
+    qreal imag = statevec_getImagAmp(qureg, index);
+    return real*real + imag*imag;
 }
 
 void statevec_phaseShift(Qureg qureg, const int targetQubit, qreal angle) {
@@ -325,8 +352,121 @@ qreal statevec_calcFidelity(Qureg qureg, Qureg pureState) {
     return innerProdMag;
 }
 
+void statevec_swapGate(Qureg qureg, int qb1, int qb2) {
 
+    statevec_controlledNot(qureg, qb1, qb2);
+    statevec_controlledNot(qureg, qb2, qb1);
+    statevec_controlledNot(qureg, qb1, qb2);
+}
 
+void statevec_sqrtSwapGate(Qureg qureg, int qb1, int qb2) {
+    
+    ComplexMatrix2 u;
+    u.r0c0.real = .5; u.r0c0.imag = .5;
+    u.r0c1.real = .5; u.r0c1.imag =-.5;
+    u.r1c0.real = .5; u.r1c0.imag =-.5;
+    u.r1c1.real = .5; u.r1c1.imag = .5;
+    
+    statevec_controlledNot(qureg, qb1, qb2);
+    statevec_controlledUnitary(qureg, qb2, qb1, u);
+    statevec_controlledNot(qureg, qb1, qb2);
+}
+
+void statevec_sqrtSwapGateConj(Qureg qureg, int qb1, int qb2) {
+    
+    ComplexMatrix2 u;
+    u.r0c0.real = .5; u.r0c0.imag =-.5;
+    u.r0c1.real = .5; u.r0c1.imag = .5;
+    u.r1c0.real = .5; u.r1c0.imag = .5;
+    u.r1c1.real = .5; u.r1c1.imag =-.5;
+    
+    statevec_controlledNot(qureg, qb1, qb2);
+    statevec_controlledUnitary(qureg, qb2, qb1, u);
+    statevec_controlledNot(qureg, qb1, qb2);
+}
+
+void densmatr_oneQubitPauliError(Qureg qureg, int qubit, qreal pX, qreal pY, qreal pZ) {
+    
+    // The accepted pX, pY, pZ do NOT need to be pre-scaled.
+    // The passed probabilities below are modified so that the final state produced is
+    // q + px X q X + py Y q Y + pz Z q Z
+    // The *2 are due to oneQubitDephase accepting 'dephaseLevel', not a probability
+    // The double statevec_compactUnitary calls are needed (with complex conjugates)
+    // since we're operating on a density matrix, not a statevector, and this function
+    // won't be called twice from the front-end
+    
+    Complex alpha, beta;
+    qreal fac = 1/sqrt(2);
+    int numQb = qureg.numQubitsRepresented;
+    
+    // add Z error
+    densmatr_oneQubitDephase(qureg, qubit, 2 * pZ/(1-pX-pY));
+    
+    // rotate basis via Rx(pi/2)
+    alpha.real = fac; alpha.imag = 0;
+    beta.real = 0;    beta.imag = -fac;
+    statevec_compactUnitary(qureg, qubit, alpha, beta);
+    alpha.imag *= -1; beta.imag *= -1;
+    statevec_compactUnitary(qureg, qubit + numQb, alpha, beta);
+    
+    // add Z -> Y Rx(pi/2) error 
+    densmatr_oneQubitDephase(qureg, qubit, 2 * pY/(1-pX));
+    
+    // rotate basis by Rx(-pi/2) then Ry(pi/2) 
+    alpha.real = .5; alpha.imag = -.5;
+    beta.real = .5;  beta.imag = .5;
+    statevec_compactUnitary(qureg, qubit, alpha, beta);
+    alpha.imag *= -1; beta.imag *= -1;
+    statevec_compactUnitary(qureg, qubit + numQb, alpha, beta);
+    
+    // add Z -> X Ry(pi/2) error
+    densmatr_oneQubitDephase(qureg, qubit, 2 * pX);
+    
+    // restore basis
+    alpha.real = fac; alpha.imag = 0;
+    beta.real = -fac; beta.imag = 0;
+    statevec_compactUnitary(qureg, qubit, alpha, beta);
+    alpha.imag *= -1; beta.imag *= -1;
+    statevec_compactUnitary(qureg, qubit + numQb, alpha, beta);
+}
+
+/** applyConj=1 will apply conjugate operation, else applyConj=0 */
+void statevec_multiRotatePauli(
+    Qureg qureg, int* targetQubits, int* targetPaulis, int numTargets, qreal angle,
+    int applyConj
+) {
+    qreal fac = 1/sqrt(2);
+    Complex uRxAlpha = {.real = fac, .imag = 0}; // Rx(pi/2)* rotates Z -> Y
+    Complex uRxBeta = {.real = 0, .imag = (applyConj)? fac : -fac};
+    Complex uRyAlpha = {.real = fac, .imag = 0}; // Ry(pi/2) rotates Z -> X
+    Complex uRyBeta = {.real = fac, .imag = 0};
+    
+    // mask may be modified to remove superfluous Identity ops
+    long long int mask = getQubitBitMask(targetQubits, numTargets);
+    
+    // rotate basis so that exp(Z) will effect exp(Y) and exp(X)
+    for (int t=0; t < numTargets; t++) {
+        if (targetPaulis[t] == 0)
+            mask -= 1LL << targetPaulis[t]; // remove target from mask
+        if (targetPaulis[t] == 1)
+            statevec_compactUnitary(qureg, targetQubits[t], uRyAlpha, uRyBeta);
+        if (targetPaulis[t] == 2)
+            statevec_compactUnitary(qureg, targetQubits[t], uRxAlpha, uRxBeta);
+        // (targetPaulis[t] == 3) is Z basis
+    }
+    
+    statevec_multiRotateZ(qureg, mask, (applyConj)? -angle : angle);
+    
+    // undo X and Y basis rotations
+    uRxBeta.imag *= -1;
+    uRyBeta.real *= -1;
+    for (int t=0; t < numTargets; t++) {
+        if (targetPaulis[t] == 1)
+            statevec_compactUnitary(qureg, targetQubits[t], uRyAlpha, uRyBeta);
+        if (targetPaulis[t] == 2)
+            statevec_compactUnitary(qureg, targetQubits[t], uRxAlpha, uRxBeta);
+    }
+}
 
 #ifdef __cplusplus
 }

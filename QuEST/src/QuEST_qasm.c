@@ -19,6 +19,7 @@
 # include <math.h>
 # include <stdio.h>
 # include <stdlib.h>
+# include <stdarg.h>
 # include <string.h>
 
 # define QUREG_LABEL "q"        // QASM var-name for the quantum register
@@ -43,7 +44,9 @@ static const char* qasmGateLabels[] = {
     [GATE_ROTATE_Y] = "Ry",
     [GATE_ROTATE_Z] = "Rz",
     [GATE_UNITARY] = "U",     // needs phase fix when controlled
-    [GATE_PHASE_SHIFT] = "Rz" // needs phase fix when controlled
+    [GATE_PHASE_SHIFT] = "Rz",// needs phase fix when controlled
+    [GATE_SWAP] = "swap",     // needs decomp into cNOTs?
+    [GATE_SQRT_SWAP] = "sqrtswap" // needs decomp into cNOTs and Rx(pi/2)?
 };
 
 // @TODO make a proper internal error thing
@@ -112,13 +115,21 @@ void addStringToQASM(Qureg qureg, char line[], int lineLen) {
     qureg.qasmLog->bufferFill += addedChars;
 }
 
-void qasm_recordComment(Qureg qureg, char* comment) {
+void qasm_recordComment(Qureg qureg, char* comment, ...) {
     
     if (!qureg.qasmLog->isLogging)
         return;
     
+    // write formatted comment to buff
+    va_list argp;
+    va_start(argp, comment);
+    char buff[MAX_LINE_LEN - 4];
+    vsnprintf(buff, MAX_LINE_LEN-5, comment, argp);
+    va_end(argp);
+    
+    // add chars to buff, write to QASM logger
     char line[MAX_LINE_LEN + 1]; // for trailing \0
-    int len = snprintf(line, MAX_LINE_LEN, "%s %s\n", COMMENT_PREF, comment);
+    int len = snprintf(line, MAX_LINE_LEN, "%s %s\n", COMMENT_PREF, buff);
     addStringToQASM(qureg, line, len);
 }
 
@@ -341,8 +352,28 @@ void qasm_recordMultiControlledUnitary(Qureg qureg, ComplexMatrix2 u, int* contr
     addGateToQASM(qureg, GATE_UNITARY, controlQubits, numControlQubits, targetQubit, params, 3);
     
     // add Rz
+    qasm_recordComment(qureg, "Restoring the discarded global phase of the previous multicontrolled unitary");
     qreal phaseFix[1] = {globalPhase};
     addGateToQASM(qureg, GATE_ROTATE_Z, NULL, 0, targetQubit, phaseFix, 1);
+}
+
+void qasm_recordMultiStateControlledUnitary(
+    Qureg qureg, ComplexMatrix2 u, int* controlQubits, int* controlState, const int numControlQubits, const int targetQubit
+) {
+    if (!qureg.qasmLog->isLogging)
+        return;
+    
+    qasm_recordComment(qureg, "NOTing some gates so that the subsequent unitary is controlled-on-0");
+    for (int i=0; i < numControlQubits; i++)
+        if (controlState[i] == 0)
+            addGateToQASM(qureg, GATE_SIGMA_X, NULL, 0, controlQubits[i], NULL, 0);
+    
+    qasm_recordMultiControlledUnitary(qureg, u, controlQubits, numControlQubits, targetQubit);
+
+    qasm_recordComment(qureg, "Undoing the NOTing of the controlled-on-0 qubits of the previous unitary");
+    for (int i=0; i < numControlQubits; i++)
+        if (controlState[i] == 0)
+            addGateToQASM(qureg, GATE_SIGMA_X, NULL, 0, controlQubits[i], NULL, 0);
 }
 
 /* not actually used, D'Oh!

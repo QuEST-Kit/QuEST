@@ -139,9 +139,9 @@ typedef struct QuESTEnv
 Qureg createQureg(int numQubits, QuESTEnv env);
 
 /** Create a Qureg for qubits which are represented by a density matrix, and can be in mixed states.
- * Allocate space for a density matrix of probability amplitudes, including space for temporary values to be copied from
+ * Allocates space for a density matrix of probability amplitudes, including space for temporary values to be copied from
  * one other chunk if running the distributed version. Define properties related to the size of the set of qubits.
- * initZeroState should be called after this to initialise the qubits to the zero pure state.
+ * initZeroState is automatically called allocation, so that the density qureg begins in the zero state |0><0|.
  *
  * @returns an object representing the set of qubits
  * @param[in] numQubits number of qubits in the system
@@ -354,31 +354,29 @@ void controlledPhaseShift(Qureg qureg, const int idQubit1, const int idQubit2, q
 /** Introduce a phase factor \f$ \exp(i \theta) \f$ on state \f$ |1 \dots 1 \rangle \f$
  * of the passed qubits.
  *     
-    \f[
+   \f[
     \setlength{\fboxrule}{0.01pt}
     \fbox{
                 \begin{tikzpicture}[scale=.5]
-                \node[draw=none] at (-3.5, 3) {controls};
-                \node[draw=none] at (-3.5, 0) {target};
-
+                \node[draw=none] at (-3.5, 2) {controls};
+                \node[draw=none] at (1, .7) {$\theta$};
+                
                 \node[draw=none] at (0, 6) {$\vdots$};
                 \draw (0, 5) -- (0, 4);
                 
                 \draw (-2, 4) -- (2, 4);
                 \draw[fill=black] (0, 4) circle (.2);
-                \draw (0, 4) -- (0, 2);         
+                \draw (0, 4) -- (0, 2); 
                 
                 \draw (-2, 2) -- (2, 2);
                 \draw[fill=black] (0, 2) circle (.2);
-                \draw (0, 2) -- (0, 1);
+                \draw (0, 2) -- (0, 0);
                 
-                \draw (-2,0) -- (-1, 0);
-                \draw (1, 0) -- (2, 0);
-                \draw (-1,-1)--(-1,1)--(1,1)--(1,-1)--cycle;
-                \node[draw=none] at (0, 0) {$R_\theta$};
+                \draw (-2,0) -- (2, 0);
+                \draw[fill=black] (0, 0) circle (.2);
                 \end{tikzpicture}
     }
-    \f]
+   \f]
  * 
  * @param[in,out] qureg object representing the set of all qubits
  * @param[in] controlQubits array of qubits to phase shift
@@ -387,7 +385,8 @@ void controlledPhaseShift(Qureg qureg, const int idQubit1, const int idQubit2, q
  * @throws exitWithError
  *      if \p numControlQubits is outside [1, \p qureg.numQubitsRepresented]),
  *      or if any qubit index in \p controlQubits is outside
- *      [0, \p qureg.numQubitsRepresented])
+ *      [0, \p qureg.numQubitsRepresented]), 
+ *      or if any qubit in \p controlQubits is repeated.
  */
 void multiControlledPhaseShift(Qureg qureg, int *controlQubits, int numControlQubits, qreal angle);
 
@@ -467,7 +466,9 @@ void controlledPhaseFlip (Qureg qureg, const int idQubit1, const int idQubit2);
  * @param[in] controlQubits array of input qubits
  * @param[in] numControlQubits number of input qubits
  * @throws exitWithError 
- *      if \p numControlQubits is outside [1, \p qureg.numQubitsRepresented) 
+ *      if \p numControlQubits is outside [1, \p qureg.numQubitsRepresented),
+ *      or if any qubit in \p controlQubits is outside [0, \p qureg.numQubitsRepresented),
+ *      or if any qubit in \p qubits is repeated.
  */
 void multiControlledPhaseFlip(Qureg qureg, int *controlQubits, int numControlQubits);
 
@@ -1071,6 +1072,7 @@ void controlledUnitary(Qureg qureg, const int controlQubit, const int targetQubi
  *      if \p numControlQubits is outside [1, \p qureg.numQubitsRepresented]),
  *      or if any qubit index (\p targetQubit or one in \p controlQubits) is outside
  *      [0, \p qureg.numQubitsRepresented]), 
+ *      or if any qubit in \p controlQubits is repeated,
  *      or if \p controlQubits contains \p targetQubit,
  *      or if \p u is not unitary.
  */
@@ -1525,6 +1527,40 @@ void applyOneQubitDampingError(Qureg qureg, const int targetQubit, qreal prob);
  */
 void applyTwoQubitDepolariseError(Qureg qureg, const int qubit1, const int qubit2, qreal prob);
 
+/** Mixes a density matrix \p qureg to induce general single-qubit Pauli noise.
+ * With probabilities \p probX, \p probY and \p probZ, applies Pauli X, Y, and Z
+ * respectively to \p targetQubit.
+ *
+ * This transforms \p qureg = \f$\rho\f$ into the mixed state
+ * \f[
+ * (1 - \text{probX} - \text{probY} - \text{probZ}) \, \rho + \;\;\;
+ *      (\text{probX})\; X_q \, \rho \, X_q + \;\;\;
+ *      (\text{probY})\; Y_q \, \rho \, Y_q + \;\;\;
+ *      (\text{probZ})\; Z_q \, \rho \, Z_q
+ * \f]
+ * where q = \p targetQubit.
+ * Each of \p probX, \p probY and \p probZ cannot exceed the chance of no error: 
+ * 1 - \p probX - \p probY - \p probZ
+ *
+ * Note that in lieu of direct evaluation like the homogenous depolarising and dephasing function,
+ * this function instead effects the Pauli channel by repeatedly performing dephasing (a total of 3 times)
+ * in different basis (requiring a total of 3 general unitaries), and so may be ~6x slower than the 
+ * other noise functions.
+ *
+ * @param[in,out] qureg a density matrix
+ * @param[in] targetQubit qubit to decohere
+ * @param[in] probX the probability of inducing an X error
+ * @param[in] probX the probability of inducing an Y error
+ * @param[in] probX the probability of inducing an Z error
+ * @throws exitWithError
+ *      if \p qureg is not a density matrix,
+ *      or if \p targetQubit is outside [0, \p qureg.numQubitsRepresented),
+ *      or if any of \p probX, \p probY or \p probZ are not in [0, 1],
+ *      or if any of p in {\p probX, \p probY or \p probZ} don't satisfy
+ *      p <= (1 - \p probX - \p probY - \p probZ)
+ */
+void applyOneQubitPauliError(Qureg qureg, int targetQubit, qreal probX, qreal probY, qreal probZ);
+
 /** Modifies combineQureg to become (1-prob)combineProb + prob otherQureg.
  * Both registers must be equal-dimension density matrices, and prob must be in [0, 1].
  *
@@ -1570,6 +1606,206 @@ qreal calcPurity(Qureg qureg);
  */
 qreal calcFidelity(Qureg qureg, Qureg pureState);
 
+/** Performs a SWAP gate between \p qubit1 and \p qubit2.
+ * This effects
+ * \f[
+ * \begin{pmatrix}
+ * 1 \\
+ * & & 1 \\\
+ * &  1 \\
+ * & & & 1
+ * \end{pmatrix}
+ * \f]
+ * on the designated qubits, though is performed internally by three CNOT gates.
+ *
+   \f[
+   \setlength{\fboxrule}{0.01pt}
+   \fbox{
+               \begin{tikzpicture}[scale=.5]
+               \node[draw=none] at (-3.5, 2) {qubit1};
+               \node[draw=none] at (-3.5, 0) {qubit2};
+
+               \draw (-2, 2) -- (2, 2);
+               \draw (0, 2) -- (0, 0);
+               \draw (-2,0) -- (2, 0);
+
+               \draw (-.35,-.35) -- (.35,.35);
+               \draw (-.35,.35) -- (.35,-.35);
+
+               \draw (-.35,-.35 + 2) -- (.35,.35 + 2);
+               \draw (-.35,.35 + 2) -- (.35,-.35 + 2);
+
+               \end{tikzpicture}
+   }
+   \f]
+ *
+ * @param[in,out] qureg object representing the set of all qubits
+ * @param[in] qubit1 qubit to swap
+ * @param[in] qubit2 other qubit to swap
+ * @throws exitWithError
+ *      if either \p qubit1 or \p qubit2 are outside [0, \p qureg.numQubitsRepresented), or are equal.
+ */
+void swapGate(Qureg qureg, int qubit1, int qubit2);
+
+
+/** Performs a sqrt SWAP gate between \p qubit1 and \p qubit2.
+ * This effects
+ * \f[
+ * \begin{pmatrix}
+ * 1 \\
+ * & \frac{1}{2}(1+i) & \frac{1}{2}(1-i) \\\
+ * & \frac{1}{2}(1-i) & \frac{1}{2}(1+i) \\
+ * & & & 1
+ * \end{pmatrix}
+ * \f]
+ * on the designated qubits, though is performed internally by three CNOT gates.
+ *
+   \f[
+   \setlength{\fboxrule}{0.01pt}
+   \fbox{
+               \begin{tikzpicture}[scale=.5]
+               \node[draw=none] at (-3.5, 2) {qubit1};
+               \node[draw=none] at (-3.5, 0) {qubit2};
+
+               \draw (-2, 2) -- (2, 2);
+               \draw (0, 2) -- (0, 0);
+               \draw (-2,0) -- (2, 0);
+
+               \draw (-.35,-.35) -- (.35,.35);
+               \draw (-.35,.35) -- (.35,-.35);
+
+               \draw (-.35,-.35 + 2) -- (.35,.35 + 2);
+               \draw (-.35,.35 + 2) -- (.35,-.35 + 2);
+               
+               \draw[fill=white] (0, 1) circle (.5);
+               \node[draw=none] at (0, 1) {1/2};
+
+               \end{tikzpicture}
+   }
+   \f]
+ *
+ * @param[in,out] qureg object representing the set of all qubits
+ * @param[in] qubit1 qubit to sqrt swap
+ * @param[in] qubit2 other qubit to sqrt swap
+ * @throws exitWithError
+ *      if either \p qubit1 or \p qubit2 are outside [0, \p qureg.numQubitsRepresented), or are equal.
+ */
+void sqrtSwapGate(Qureg qureg, int qb1, int qb2);
+
+/** Apply a general multiple-control, conditioned on a specific bit sequence,
+ *  single-target unitary, which can include a global phase factor. 
+ * Any number of control qubits can be specified, along with which of their 
+ * states (0 or 1) to condition upon; when the specified controls are in the 
+ * specified state, the given unitary is applied to the target qubit.
+ * This is equivalent to NOTing the control bits which are conditioned on 0, 
+ * calling multiStateControlledUnitary then NOTing the same control bits.
+ *
+    \f[
+    \setlength{\fboxrule}{0.01pt}
+    \fbox{
+                \begin{tikzpicture}[scale=.5]
+                \node[draw=none] at (-3.5, 3) {controls};
+                \node[draw=none] at (-3.5, 0) {target};
+
+                \node[draw=none] at (0, 6) {$\vdots$};
+                \draw (0, 5) -- (0, 4);
+                
+                \draw (-2, 4) -- (2, 4);
+                \draw[fill=black] (0, 4) circle (.2);
+                \draw (0, 4) -- (0, 2);         
+                
+                \draw (-2, 2) -- (2, 2);
+                \draw[fill=white] (0, 2) circle (.2);
+                \draw (0, 2) -- (0, 1);
+                
+                \draw (-2,0) -- (-1, 0);
+                \draw (1, 0) -- (2, 0);
+                \draw (-1,-1)--(-1,1)--(1,1)--(1,-1)--cycle;
+                \node[draw=none] at (0, 0) {U};
+                \end{tikzpicture}
+    }
+    \f]
+ *                                                                
+ * @param[in,out] qureg object representing the set of all qubits
+ * @param[in] controlQubits the indices of the control qubits 
+ * @param[in] controlState the bit values (0 or 1) of each control qubit, upon which to condition
+ * @param[in] numControlQubits number of control qubits
+ * @param[in] targetQubit qubit to operate the unitary upon
+ * @param[in] u single-qubit unitary matrix to apply
+ * @throws exitWithError
+ *      if \p numControlQubits is outside [1, \p qureg.numQubitsRepresented]),
+ *      or if any qubit index (\p targetQubit or one in \p controlQubits) is outside
+ *      [0, \p qureg.numQubitsRepresented]), 
+ *      or if any qubit in \p controlQubits is repeated.,
+ *      or if \p controlQubits contains \p targetQubit,
+ *      or if any element of controlState is not a bit (0 or 1),
+ *      or if \p u is not unitary.
+ */
+void multiStateControlledUnitary(
+    Qureg qureg, int* controlQubits, int* controlState, const int numControlQubits, 
+    const int targetQubit, ComplexMatrix2 u
+);
+
+/** Apply a multi-qubit Z rotation on a selected number of qubits. 
+ * This is the unitary 
+ * \f[ 
+    \exp \left( - i \theta/2 \bigotimes_{j} Z_j\right)
+ * \f]
+ * where the Pauli Z gates operate upon the passed list \f$j \in\f$ \p qubits, and cause 
+ * rotations of \f$\theta =\f$ \p angle.
+ * All qubits not appearing in \p qubits are assumed to receive the identity operator.
+ * This has the effect of premultiplying every amplitude with 
+ * \f$\exp(\pm i \theta/2)\f$ where the sign is determined by the parity of
+ * the target qubits for that amplitude.
+ *
+ * @param[in,out] qureg object representing the set of all qubits
+ * @param[in] qubits a list of the indices of the target qubits 
+ * @param[in] numQubits number of target qubits
+ * @param[in] angle the angle by which the multi-qubit state is rotated around the Z axis
+ * @throws exitWithError
+ *      if \p numQubits is outside [1, \p qureg.numQubitsRepresented]),
+ *      or if any qubit in \p qubits is outside [0, \p qureg.numQubitsRepresented])
+ *      or if any qubit in \p qubits is repeated.
+ */
+void multiRotateZ(Qureg qureg, int* qubits, int numQubits, qreal angle);
+
+/** Apply a multi-qubit multi-Pauli rotation on a selected number of qubits. 
+ * This is the unitary 
+ * \f[ 
+    \exp \left( - i \theta/2 \bigotimes_{j} \hat{\sigma}_j\right)
+ * \f]
+ * where \f$\hat{\sigma}_j \in \{1, X, Y, Z\}\f$ is a Pauli operator (indicated by
+ * codes 0, 1, 2, 3 respectively in \p targetPaulis) operating upon the qubit 
+ * \p targetQubits[j], and \f$\theta\f$ is the passed \p angle.
+ *  The operators specified in \p targetPaulis act on the corresponding qubit in \p targetQubits. 
+ * For example:
+ * 
+ *    multiRotatePauli(qureg, (int[]) {4,5,8,9}, (int[]) {0,1,2,3}, 4, .1)
+ *
+ * effects \f$ \exp \left( - i .1/2 X_5 Y_8 Z_9 \right) \f$ on \p qureg, 
+ * where unspecified qubits (along with those specified with Pauli code 0) are 
+ * assumed to receive the identity operator. Note that specifying the identity 
+ * Pauli (code=0) on a qubit is superfluous but allowed for convenience.
+ *
+ * This function effects this unitary by first rotating the qubits which are 
+ * nominated to receive X or Y Paulis into alternate basis, performing 
+ * multiRotateZ on all target qubits receiving X, Y or Z Paulis, then restoring 
+ * the original basis. In the worst case, this means that 1+2*\p numTargets
+ * primitive unitaries are performed on the statevector, and double this on 
+ * density matrices.
+ *
+ * @param[in,out] qureg object representing the set of all qubits
+ * @param[in] targetQubits a list of the indices of the target qubits 
+ * @param[in] targetPaulis a list of the Pauli codes (0=identity, 1=X, 2=Y, 3=Z) 
+ *      to apply to the corresponding qubits in \p targetQubits
+ * @param[in] numTargets number of target qubits, i.e. the length of \p targetQubits and \p targetPaulis
+ * @param[in] angle the angle by which the multi-qubit state is rotated
+ * @throws exitWithError
+ *      if \p numQubits is outside [1, \p qureg.numQubitsRepresented]),
+ *      or if any qubit in \p qubits is outside [0, \p qureg.numQubitsRepresented])
+ *      or if any qubit in \p qubits is repeated.
+ */
+void multiRotatePauli(Qureg qureg, int* targetQubits, int* targetPaulis, int numTargets, qreal angle);
 
 #ifdef __cplusplus
 }

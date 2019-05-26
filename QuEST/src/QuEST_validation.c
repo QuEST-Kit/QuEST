@@ -27,6 +27,8 @@ typedef enum {
     E_TARGET_IS_CONTROL,
     E_TARGET_IN_CONTROLS,
     E_TARGETS_NOT_UNIQUE,
+    E_CONTROLS_NOT_UNIQUE,
+    E_INVALID_NUM_TARGETS,
     E_INVALID_NUM_CONTROLS,
     E_NON_UNITARY_MATRIX,
     E_NON_UNITARY_COMPLEX_PAIR,
@@ -45,7 +47,10 @@ typedef enum {
     E_INVALID_ONE_QUBIT_DEPHASE_PROB,
     E_INVALID_TWO_QUBIT_DEPHASE_PROB,
     E_INVALID_ONE_QUBIT_DEPOL_PROB,
-    E_INVALID_TWO_QUBIT_DEPOL_PROB
+    E_INVALID_TWO_QUBIT_DEPOL_PROB,
+    E_INVALID_ONE_QUBIT_PAULI_PROBS,
+    E_INVALID_CONTROLS_BIT_STATE,
+    E_INVALID_PAULI_CODE
 } ErrorCode;
 
 static const char* errorMessages[] = {
@@ -57,7 +62,9 @@ static const char* errorMessages[] = {
     [E_INVALID_OFFSET_NUM_AMPS] = "More amplitudes given than exist in the statevector from the given starting index.",
     [E_TARGET_IS_CONTROL] = "Control qubit cannot equal target qubit.",
     [E_TARGET_IN_CONTROLS] = "Control qubits cannot include target qubit.",
-    [E_TARGETS_NOT_UNIQUE] = "The two target qubits must be unique.",
+    [E_TARGETS_NOT_UNIQUE] = "The target qubits must be unique.",
+    [E_CONTROLS_NOT_UNIQUE] = "The control qubits should be unique.",
+    [E_INVALID_NUM_TARGETS] = "Invalid number of target qubits. Must be >0 and <=numQubits.",
     [E_INVALID_NUM_CONTROLS] = "Invalid number of control qubits. Must be >0 and <numQubits.",
     [E_NON_UNITARY_MATRIX] = "Matrix is not unitary.",
     [E_NON_UNITARY_COMPLEX_PAIR] = "Compact matrix formed by given complex numbers is not unitary.",
@@ -65,7 +72,7 @@ static const char* errorMessages[] = {
     [E_SYS_TOO_BIG_TO_PRINT] = "Invalid system size. Cannot print output for systems greater than 5 qubits.",
     [E_COLLAPSE_STATE_ZERO_PROB] = "Can't collapse to state with zero probability.",
     [E_INVALID_QUBIT_OUTCOME] = "Invalid measurement outcome -- must be either 0 or 1.",
-    [E_CANNOT_OPEN_FILE] = "Could not open file",
+    [E_CANNOT_OPEN_FILE] = "Could not open file.",
     [E_SECOND_ARG_MUST_BE_STATEVEC] = "Second argument must be a state-vector.",
     [E_MISMATCHING_QUREG_DIMENSIONS] = "Dimensions of the qubit registers don't match.",
     [E_MISMATCHING_QUREG_TYPES] = "Registers must both be state-vectors or both be density matrices.",
@@ -76,7 +83,10 @@ static const char* errorMessages[] = {
     [E_INVALID_ONE_QUBIT_DEPHASE_PROB] = "The probability of a single qubit dephase error cannot exceed 1/2, which maximally mixes.",
     [E_INVALID_TWO_QUBIT_DEPHASE_PROB] = "The probability of a two-qubit qubit dephase error cannot exceed 3/4, which maximally mixes.",
     [E_INVALID_ONE_QUBIT_DEPOL_PROB] = "The probability of a single qubit depolarising error cannot exceed 3/4, which maximally mixes.",
-    [E_INVALID_TWO_QUBIT_DEPOL_PROB] = "The probability of a two-qubit depolarising error cannot exceed 15/16, which maximally mixes."
+    [E_INVALID_TWO_QUBIT_DEPOL_PROB] = "The probability of a two-qubit depolarising error cannot exceed 15/16, which maximally mixes.",
+    [E_INVALID_ONE_QUBIT_PAULI_PROBS] = "The probability of any X, Y or Z error cannot exceed the probability of no error.",
+    [E_INVALID_CONTROLS_BIT_STATE] = "The state of the control qubits must be a bit sequence (0s and 1s).",
+    [E_INVALID_PAULI_CODE] = "Invalid Pauli code. Codes must be 0, 1, 2 or 3 to indicate the identity, X, Y and Z gates respectively."
 };
 
 void exitWithError(ErrorCode code, const char* func){
@@ -127,6 +137,18 @@ int isMatrixUnitary(ComplexMatrix2 u) {
     return 1;
 }
 
+int areUniqueQubits(int* qubits, int numQubits) {
+    long long int mask = 0;
+    long long int bit;
+    for (int q=0; q < numQubits; q++) {
+        bit = 1LL << qubits[q];
+        if (mask & bit)
+            return 0;
+        mask |= bit;
+    }
+    return 1;
+}
+
 void validateCreateNumQubits(int numQubits, const char* caller) {
     QuESTAssert(numQubits>0, E_INVALID_NUM_QUBITS, caller);
 }
@@ -162,16 +184,28 @@ void validateUniqueTargets(Qureg qureg, int qubit1, int qubit2, const char* call
     QuESTAssert(qubit1 != qubit2, E_TARGETS_NOT_UNIQUE, caller);
 }
 
+void validateNumTargets(Qureg qureg, const int numTargetQubits, const char* caller) {
+    QuESTAssert(numTargetQubits>0 && numTargetQubits<=qureg.numQubitsRepresented, E_INVALID_NUM_TARGETS, caller);
+}
+
 void validateNumControls(Qureg qureg, const int numControlQubits, const char* caller) {
-    // this could reject repeated qubits and cite "too many" but oh well
     QuESTAssert(numControlQubits>0 && numControlQubits<=qureg.numQubitsRepresented, E_INVALID_NUM_CONTROLS, caller);
+}
+
+void validateMultiTargets(Qureg qureg, int* targetQubits, const int numTargetQubits, const char* caller) {
+    validateNumTargets(qureg, numTargetQubits, caller);
+    for (int i=0; i < numTargetQubits; i++) 
+        validateTarget(qureg, targetQubits[i], caller);
+        
+    QuESTAssert(areUniqueQubits(targetQubits, numTargetQubits), E_TARGETS_NOT_UNIQUE, caller);
 }
 
 void validateMultiControls(Qureg qureg, int* controlQubits, const int numControlQubits, const char* caller) {
     validateNumControls(qureg, numControlQubits, caller);
-    for (int i=0; i < numControlQubits; i++) {
+    for (int i=0; i < numControlQubits; i++)
         validateControl(qureg, controlQubits[i], caller);
-    }
+        
+    QuESTAssert(areUniqueQubits(controlQubits, numControlQubits), E_CONTROLS_NOT_UNIQUE, caller);
 }
 
 void validateMultiControlsTarget(Qureg qureg, int* controlQubits, const int numControlQubits, const int targetQubit, const char* caller) {
@@ -179,6 +213,11 @@ void validateMultiControlsTarget(Qureg qureg, int* controlQubits, const int numC
     validateMultiControls(qureg, controlQubits, numControlQubits, caller);
     for (int i=0; i < numControlQubits; i++)
         QuESTAssert(controlQubits[i] != targetQubit, E_TARGET_IN_CONTROLS, caller);
+}
+
+void validateControlState(int* controlState, const int numControlQubits, const char* caller) {
+    for (int i=0; i < numControlQubits; i++)
+        QuESTAssert(controlState[i] == 0 || controlState[i] == 1, E_INVALID_CONTROLS_BIT_STATE, caller);
 }
 
 void validateUnitaryMatrix(ComplexMatrix2 u, const char* caller) {
@@ -262,8 +301,23 @@ void validateTwoQubitDepolProb(qreal prob, const char* caller) {
     QuESTAssert(prob <= 15/16.0, E_INVALID_TWO_QUBIT_DEPOL_PROB, caller);
 }
 
+void validateOneQubitPauliProbs(qreal probX, qreal probY, qreal probZ, const char* caller) {
+    validateProb(probX, caller);
+    validateProb(probY, caller);
+    validateProb(probZ, caller);
+    
+    qreal probNoError = 1 - probX - probY - probZ;
+    QuESTAssert(probX <= probNoError, E_INVALID_ONE_QUBIT_PAULI_PROBS, caller);
+    QuESTAssert(probY <= probNoError, E_INVALID_ONE_QUBIT_PAULI_PROBS, caller);
+    QuESTAssert(probZ <= probNoError, E_INVALID_ONE_QUBIT_PAULI_PROBS, caller);
+}
 
-
+void validatePauliCodes(int* pauliCodes, int numPauliCodes, const char* caller) {
+    for (int i=0; i < numPauliCodes; i++) {
+        int code = pauliCodes[i];
+        QuESTAssert(code==0 || code==1 || code==2 || code==3, E_INVALID_PAULI_CODE, caller);
+    }
+}
 
 #ifdef __cplusplus
 }

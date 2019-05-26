@@ -370,13 +370,25 @@ static int densityMatrixBlockFitsInChunk(long long int chunkSize, int numQubits,
     else return 0;
 }
 
+/** This copies/clones vec (a statevector) into every node's matr pairState.
+ * (where matr is a density matrix or equal number of qubits as vec) */
 void copyVecIntoMatrixPairState(Qureg matr, Qureg vec) {
     
-    // copy this state's pure state section into this qureg's pairState
+    // Remember that for every amplitude that `vec` stores on the node,
+    // `matr` stores an entire column. Ergo there are always an integer
+    // number (in fact, a power of 2) number of  `matr`s columns on each node.
+    // Since the total size of `vec` (between all nodes) is one column
+    // and each node stores (possibly) multiple columns (vec.numAmpsPerChunk as many), 
+    // `vec` can be fit entirely inside a single node's matr.pairStateVec (with excess!)
+    
+    // copy this node's vec segment into this node's matr pairState (in the right spot)
     long long int numLocalAmps = vec.numAmpsPerChunk;
     long long int myOffset = vec.chunkId * numLocalAmps;
-    memcpy(&matr.pairStateVec.real[myOffset], vec.stateVec.real, numLocalAmps * sizeof(qreal) );
-    memcpy(&matr.pairStateVec.imag[myOffset], vec.stateVec.imag, numLocalAmps * sizeof(qreal) );
+    memcpy(&matr.pairStateVec.real[myOffset], vec.stateVec.real, numLocalAmps * sizeof(qreal));
+    memcpy(&matr.pairStateVec.imag[myOffset], vec.stateVec.imag, numLocalAmps * sizeof(qreal));
+    
+    // we now want to share this node's vec segment with other node, so that 
+    // vec is cloned in every node's matr.pairStateVec 
 
     // work out how many messages needed to send vec chunks (2GB limit)
     long long int maxMsgSize = MPI_MAX_AMPS_IN_MSG;
@@ -966,11 +978,8 @@ void statevec_controlledUnitary(Qureg qureg, const int controlQubit, const int t
     }
 }
 
-void statevec_multiControlledUnitary(Qureg qureg, int* controlQubits, const int numControlQubits, const int targetQubit, ComplexMatrix2 u)
+void statevec_multiControlledUnitary(Qureg qureg, long long int ctrlQubitsMask, long long int ctrlFlipMask, const int targetQubit, ComplexMatrix2 u)
 {
-    long long int mask=0;
-    for (int i=0; i<numControlQubits; i++) mask = mask | (1LL<<controlQubits[i]);
-
     // flag to require memory exchange. 1: an entire block fits on one rank, 0: at most half a block fits on one rank
     int useLocalDataOnly = halfMatrixBlockFitsInChunk(qureg.numAmpsPerChunk, targetQubit);
     Complex rot1, rot2;
@@ -981,25 +990,25 @@ void statevec_multiControlledUnitary(Qureg qureg, int* controlQubits, const int 
 
     if (useLocalDataOnly){
         // all values required to update state vector lie in this rank
-        statevec_multiControlledUnitaryLocal(qureg, targetQubit, mask, u);
+        statevec_multiControlledUnitaryLocal(qureg, targetQubit, ctrlQubitsMask, ctrlFlipMask, u);
     } else {
         // need to get corresponding chunk of state vector from other rank
         rankIsUpper = chunkIsUpper(qureg.chunkId, qureg.numAmpsPerChunk, targetQubit);
         getRotAngleFromUnitaryMatrix(rankIsUpper, &rot1, &rot2, u);
         pairRank = getChunkPairId(rankIsUpper, qureg.chunkId, qureg.numAmpsPerChunk, targetQubit);
-        //printf("%d rank has pair rank: %d\n", qureg.rank, pairRank);
+
         // get corresponding values from my pair
         exchangeStateVectors(qureg, pairRank);
 
         // this rank's values are either in the upper of lower half of the block. send values to multiControlledUnitaryDistributed
         // in the correct order
         if (rankIsUpper){
-            statevec_multiControlledUnitaryDistributed(qureg,targetQubit,mask,rot1,rot2,
+            statevec_multiControlledUnitaryDistributed(qureg,targetQubit,ctrlQubitsMask,ctrlFlipMask,rot1,rot2,
                     qureg.stateVec, //upper
                     qureg.pairStateVec, //lower
                     qureg.stateVec); //output
         } else {
-            statevec_multiControlledUnitaryDistributed(qureg,targetQubit,mask,rot1,rot2,
+            statevec_multiControlledUnitaryDistributed(qureg,targetQubit,ctrlQubitsMask,ctrlFlipMask,rot1,rot2,
                     qureg.pairStateVec, //upper
                     qureg.stateVec, //lower
                     qureg.stateVec); //output

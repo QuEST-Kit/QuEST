@@ -273,15 +273,30 @@ void multiControlledUnitary(Qureg qureg, int* controlQubits, const int numContro
     validateMultiControlsTarget(qureg, controlQubits, numControlQubits, targetQubit, __func__);
     validateUnitaryMatrix(u, __func__);
     
-    statevec_multiControlledUnitary(qureg, controlQubits, numControlQubits, targetQubit, u);
+    long long int ctrlQubitsMask = getQubitBitMask(controlQubits, numControlQubits);
+    long long int ctrlFlipMask = 0;
+    statevec_multiControlledUnitary(qureg, ctrlQubitsMask, ctrlFlipMask, targetQubit, u);
     if (qureg.isDensityMatrix) {
         int shift = qureg.numQubitsRepresented;
-        shiftIndices(controlQubits, numControlQubits, shift);
-        statevec_multiControlledUnitary(qureg, controlQubits, numControlQubits, targetQubit+shift, getConjugateMatrix(u));
-        shiftIndices(controlQubits, numControlQubits, -shift);
+        statevec_multiControlledUnitary(qureg, ctrlQubitsMask<<shift, ctrlFlipMask<<shift, targetQubit+shift, getConjugateMatrix(u));
     }
     
     qasm_recordMultiControlledUnitary(qureg, u, controlQubits, numControlQubits, targetQubit);
+}
+
+void multiStateControlledUnitary(Qureg qureg, int* controlQubits, int* controlState, const int numControlQubits, const int targetQubit, ComplexMatrix2 u) {
+    validateMultiControlsTarget(qureg, controlQubits, numControlQubits, targetQubit, __func__);
+    validateUnitaryMatrix(u, __func__);
+    validateControlState(controlState, numControlQubits, __func__);
+
+    long long int ctrlQubitsMask = getQubitBitMask(controlQubits, numControlQubits);
+    long long int ctrlFlipMask = getControlFlipMask(controlQubits, controlState, numControlQubits);
+    if (qureg.isDensityMatrix) {
+        int shift = qureg.numQubitsRepresented;
+        statevec_multiControlledUnitary(qureg, ctrlQubitsMask<<shift, ctrlFlipMask<<shift, targetQubit+shift, getConjugateMatrix(u));
+    }
+    
+    qasm_recordMultiStateControlledUnitary(qureg, u, controlQubits, controlState, numControlQubits, targetQubit);
 }
 
 void compactUnitary(Qureg qureg, const int targetQubit, Complex alpha, Complex beta) {
@@ -480,6 +495,65 @@ void controlledRotateAroundAxis(Qureg qureg, const int controlQubit, const int t
     qasm_recordControlledAxisRotation(qureg, angle, axis, controlQubit, targetQubit);
 }
 
+void swapGate(Qureg qureg, int qb1, int qb2) {
+    validateControlTarget(qureg, qb1, qb2, __func__);
+
+    statevec_swapGate(qureg, qb1, qb2);
+    if (qureg.isDensityMatrix) {
+        int shift = qureg.numQubitsRepresented;
+        statevec_swapGate(qureg, qb1+shift, qb2+shift);
+    }
+
+    qasm_recordControlledGate(qureg, GATE_SWAP, qb1, qb2);
+}
+
+void sqrtSwapGate(Qureg qureg, int qb1, int qb2) {
+    validateControlTarget(qureg, qb1, qb2, __func__);
+
+    statevec_sqrtSwapGate(qureg, qb1, qb2);
+    if (qureg.isDensityMatrix) {
+        int shift = qureg.numQubitsRepresented;
+        statevec_sqrtSwapGateConj(qureg, qb1+shift, qb2+shift);
+    }
+
+    qasm_recordControlledGate(qureg, GATE_SQRT_SWAP, qb1, qb2);
+}
+
+void multiRotateZ(Qureg qureg, int* qubits, int numQubits, qreal angle) {
+    validateMultiTargets(qureg, qubits, numQubits, __func__);
+    
+    long long int mask = getQubitBitMask(qubits, numQubits);
+    statevec_multiRotateZ(qureg, mask, angle);
+    if (qureg.isDensityMatrix) {
+        int shift = qureg.numQubitsRepresented;
+        statevec_multiRotateZ(qureg, mask << shift, -angle);
+    }
+    
+    // @TODO: create actual QASM
+    qasm_recordComment(qureg, 
+        "Here a %d-qubit multiRotateZ of angle %g was performed (QASM not yet implemented)",
+        numQubits, angle);
+}
+
+void multiRotatePauli(Qureg qureg, int* targetQubits, int* targetPaulis, int numTargets, qreal angle) {
+    validateMultiTargets(qureg, targetQubits, numTargets, __func__);
+    validatePauliCodes(targetPaulis, numTargets, __func__);
+    
+    int conj=0;
+    statevec_multiRotatePauli(qureg, targetQubits, targetPaulis, numTargets, angle, conj);
+    if (qureg.isDensityMatrix) {
+        conj = 1;
+        int shift = qureg.numQubitsRepresented;
+        shiftIndices(targetQubits, numTargets, shift);
+        statevec_multiRotatePauli(qureg, targetQubits, targetPaulis, numTargets, angle, conj);
+        shiftIndices(targetQubits, numTargets, -shift);
+    }
+    
+    // @TODO: create actual QASM
+    qasm_recordComment(qureg, 
+        "Here a %d-qubit multiRotatePauli of angle %g was performed (QASM not yet implemented)",
+        numTargets, angle);
+}
 
 /*
  * register attributes
@@ -655,6 +729,8 @@ void applyOneQubitDephaseError(Qureg qureg, const int targetQubit, qreal prob) {
     validateOneQubitDephaseProb(prob, __func__);
     
     densmatr_oneQubitDephase(qureg, targetQubit, 2*prob);
+    qasm_recordComment(qureg, 
+        "Here, a phase (Z) error occured on qubit %d with probability %g", targetQubit, prob);
 }
 
 void applyTwoQubitDephaseError(Qureg qureg, int qubit1, int qubit2, qreal prob) {
@@ -664,6 +740,9 @@ void applyTwoQubitDephaseError(Qureg qureg, int qubit1, int qubit2, qreal prob) 
 
     ensureIndsIncrease(&qubit1, &qubit2);
     densmatr_twoQubitDephase(qureg, qubit1, qubit2, (4*prob)/3.0);
+    qasm_recordComment(qureg,
+        "Here, a phase (Z) error occured on either or both of qubits "
+        "%d and %d with total probability %g", qubit1, qubit2, prob);
 }
 
 void applyOneQubitDepolariseError(Qureg qureg, const int targetQubit, qreal prob) {
@@ -672,6 +751,9 @@ void applyOneQubitDepolariseError(Qureg qureg, const int targetQubit, qreal prob
     validateOneQubitDepolProb(prob, __func__);
     
     densmatr_oneQubitDepolarise(qureg, targetQubit, (4*prob)/3.0);
+    qasm_recordComment(qureg,
+        "Here, a homogeneous depolarising error (X, Y, or Z) occured on "
+        "qubit %d with total probability %g", targetQubit, prob);
 }
 
 void applyOneQubitDampingError(Qureg qureg, const int targetQubit, qreal prob) {
@@ -689,6 +771,20 @@ void applyTwoQubitDepolariseError(Qureg qureg, int qubit1, int qubit2, qreal pro
     
     ensureIndsIncrease(&qubit1, &qubit2);
     densmatr_twoQubitDepolarise(qureg, qubit1, qubit2, (16*prob)/15.0);
+    qasm_recordComment(qureg,
+        "Here, a homogeneous depolarising error occured on qubits %d and %d "
+        "with total probability %g", qubit1, qubit2, prob);
+}
+
+void applyOneQubitPauliError(Qureg qureg, int qubit, qreal probX, qreal probY, qreal probZ) {
+    validateDensityMatrQureg(qureg, __func__);
+    validateTarget(qureg, qubit, __func__);
+    validateOneQubitPauliProbs(probX, probY, probZ, __func__);
+    
+    densmatr_oneQubitPauliError(qureg, qubit, probX, probY, probZ);
+    qasm_recordComment(qureg,
+        "Here, X, Y and Z errors occured on qubit %d with probabilities "
+        "%g, %g and %g respectively", qubit, probX, probY, probZ);
 }
 
 
