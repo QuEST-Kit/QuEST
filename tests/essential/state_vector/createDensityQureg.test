@@ -1,0 +1,25 @@
+# Python
+from QuESTPy.QuESTFunc import *
+from QuESTTest.QuESTCore import *
+import math
+
+def run_tests():
+    numQubits = 3
+    Qubits = createDensityQureg(numQubits, Env)
+
+    passed = True
+    passed = passed and Qubits.isDensityMatrix
+    passed = passed and Qubits.numAmpsTotal == 2**(2*numQubits)
+    passed = passed and Qubits.numQubitsInStateVec == 2*numQubits
+    passed = passed and Qubits.numQubitsRepresented == numQubits
+
+    testResults.validate(passed, 'Initialise {} long density matrix'.format(numQubits),
+'''
+isDenMatrix:{}  expected:{}
+numAmps:{}      expected:{}
+numSVQubits:{}  expected:{}
+numRepQubits:{} expected{}'''.format(Qubits.isDensityMatrix, 1,
+                                     Qubits.numAmpsTotal, 2**(2*numQubits),
+                                     Qubits.numQubitsInStateVec, 2*numQubits,
+                                     Qubits.numQubitsRepresented, numQubits)
+    )

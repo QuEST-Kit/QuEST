@@ -1,4 +1,4 @@
-// Distributed under MIT licence. See https://github.com/aniabrown/QuEST_GPU/blob/master/LICENCE.txt for details
+// Distributed under MIT licence. See https://github.com/QuEST-Kit/QuEST/blob/master/LICENCE.txt for details
 
 /** @file
  * An implementation of the backend in ../QuEST_internal.h for a GPU environment.
@@ -2047,10 +2047,8 @@ __global__ void densmatr_oneQubitDephaseKernel(
     vecImag[ampInd + rowBit] *= fac;
 }
 
-void densmatr_oneQubitDephase(Qureg qureg, const int targetQubit, qreal dephase) {
-    
-    if (dephase == 0)
-        return;
+
+void densmatr_oneQubitDegradeOffDiagonal(Qureg qureg, const int targetQubit, qreal dephFac) {
     
     long long int numAmpsToVisit = qureg.numAmpsPerChunk/4;
     
@@ -2061,7 +2059,6 @@ void densmatr_oneQubitDephase(Qureg qureg, const int targetQubit, qreal dephase)
     long long int part1 = colBit - 1;
     long long int part2 = (rowBit >> 1) - colBit;
     long long int part3 = numAmpsToVisit - (rowBit >> 1);
-    qreal dephFac = 1 - dephase;
     
     int threadsPerCUDABlock, CUDABlocks;
     threadsPerCUDABlock = 128;
@@ -2069,6 +2066,15 @@ void densmatr_oneQubitDephase(Qureg qureg, const int targetQubit, qreal dephase)
     densmatr_oneQubitDephaseKernel<<<CUDABlocks, threadsPerCUDABlock>>>(
         dephFac, qureg.deviceStateVec.real, qureg.deviceStateVec.imag, numAmpsToVisit,
         part1, part2, part3, colBit, rowBit);
+}
+
+void densmatr_oneQubitDephase(Qureg qureg, const int targetQubit, qreal dephase) {
+    
+    if (dephase == 0)
+        return;
+    
+    qreal dephFac = 1 - dephase;
+    densmatr_oneQubitDegradeOffDiagonal(qureg, targetQubit, dephFac);
 }
 
 /** Called 12 times for every 16 amplitudes in density matrix 
@@ -2163,6 +2169,28 @@ __global__ void densmatr_oneQubitDepolariseKernel(
     vecImag[targetInd] += imagAvDepol;
 }
 
+/** Works like oneQubitDephase but modifies every other element, and elements are averaged in pairs */
+__global__ void densmatr_oneQubitDampingKernel(
+    qreal damping, qreal* vecReal, qreal *vecImag, long long int numAmpsToVisit,
+    long long int part1, long long int part2, long long int part3, 
+    long long int bothBits)
+{
+    long long int scanInd = blockIdx.x*blockDim.x + threadIdx.x;
+    if (scanInd >= numAmpsToVisit) return;
+    
+    long long int baseInd = (scanInd&part1) + ((scanInd&part2)<<1) + ((scanInd&part3)<<2);
+    long long int targetInd = baseInd + bothBits;
+    
+    qreal realAvDepol = damping  * ( vecReal[targetInd]);
+    qreal imagAvDepol = damping  * ( vecImag[targetInd]);
+    
+    vecReal[targetInd] *= 1 - damping;
+    vecImag[targetInd] *= 1 - damping;
+    
+    vecReal[baseInd]   += realAvDepol;
+    vecImag[baseInd]   += imagAvDepol;
+}
+
 void densmatr_oneQubitDepolarise(Qureg qureg, const int targetQubit, qreal depolLevel) {
     
     if (depolLevel == 0)
@@ -2186,6 +2214,33 @@ void densmatr_oneQubitDepolarise(Qureg qureg, const int targetQubit, qreal depol
     CUDABlocks = ceil(numAmpsToVisit / (qreal) threadsPerCUDABlock);
     densmatr_oneQubitDepolariseKernel<<<CUDABlocks, threadsPerCUDABlock>>>(
         depolLevel, qureg.deviceStateVec.real, qureg.deviceStateVec.imag, numAmpsToVisit,
+        part1, part2, part3, bothBits);
+}
+
+void densmatr_oneQubitDamping(Qureg qureg, const int targetQubit, qreal damping) {
+    
+    if (damping == 0)
+        return;
+    
+    qreal dephase = sqrt(1-damping);
+    densmatr_oneQubitDegradeOffDiagonal(qureg, targetQubit, dephase);
+    
+    long long int numAmpsToVisit = qureg.numAmpsPerChunk/4;
+    int rowQubit = targetQubit + qureg.numQubitsRepresented;
+    
+    long long int colBit = 1LL << targetQubit;
+    long long int rowBit = 1LL << rowQubit;
+    long long int bothBits = colBit | rowBit;
+    
+    long long int part1 = colBit - 1;
+    long long int part2 = (rowBit >> 1) - colBit;
+    long long int part3 = numAmpsToVisit - (rowBit >> 1);
+    
+    int threadsPerCUDABlock, CUDABlocks;
+    threadsPerCUDABlock = 128;
+    CUDABlocks = ceil(numAmpsToVisit / (qreal) threadsPerCUDABlock);
+    densmatr_oneQubitDampingKernel<<<CUDABlocks, threadsPerCUDABlock>>>(
+        damping, qureg.deviceStateVec.real, qureg.deviceStateVec.imag, numAmpsToVisit,
         part1, part2, part3, bothBits);
 }
 
@@ -2258,13 +2313,13 @@ void densmatr_twoQubitDepolarise(Qureg qureg, int qubit1, int qubit2, qreal depo
 }
 
 void seedQuESTDefault(){
-    // init MT random number generator with three keys -- time, pid and a hash of hostname 
+    // init MT random number generator with three keys -- time and pid
     // for the MPI version, it is ok that all procs will get the same seed as random numbers will only be 
     // used by the master process
 
-    unsigned long int key[3];
+    unsigned long int key[2];
     getQuESTDefaultSeedKey(key); 
-    init_by_array(key, 3); 
+    init_by_array(key, 2); 
 }  
 
 

@@ -1,4 +1,4 @@
-// Distributed under MIT licence. See https://github.com/aniabrown/QuEST_GPU/blob/master/LICENCE.txt for details
+// Distributed under MIT licence. See https://github.com/QuEST-Kit/QuEST/blob/master/LICENCE.txt for details
 
 /** @file
  * Implements the QuEST.h API (and some debugging functions) in a hardware-agnostic way, 
@@ -754,6 +754,14 @@ void applyOneQubitDepolariseError(Qureg qureg, const int targetQubit, qreal prob
     qasm_recordComment(qureg,
         "Here, a homogeneous depolarising error (X, Y, or Z) occured on "
         "qubit %d with total probability %g", targetQubit, prob);
+}
+
+void applyOneQubitDampingError(Qureg qureg, const int targetQubit, qreal prob) {
+    validateDensityMatrQureg(qureg, __func__);
+    validateTarget(qureg, targetQubit, __func__);
+    validateOneQubitDampingProb(prob, __func__);
+    
+    densmatr_oneQubitDamping(qureg, targetQubit, prob);
 }
 
 void applyTwoQubitDepolariseError(Qureg qureg, int qubit1, int qubit2, qreal prob) {

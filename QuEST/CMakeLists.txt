@@ -20,8 +20,7 @@
 #   cmake -DDISTRIBUTED=1 ..
 
 
-set(MULTITHREADED 1 CACHE STRING 
-    "Switches on OpenMP Threading if an OpenMP implementation can be found. Set to 0 to disable.")
+option(MULTITHREADED "Switches on OpenMP Threading if an OpenMP implementation can be found. Set to 0 to disable." 1)
 
 option(DISTRIBUTED "Whether the program will be run in distributed mode using MPI. Set to 1 to enable" 0)
 
@@ -38,9 +37,10 @@ set(GPU_COMPUTE_CAPABILITY 30 CACHE STRING "GPU hardware dependent, lookup at ht
 # ***** NO CHANGES SHOULD BE REQUIRED FROM THE USER BEYOND THIS POINT *********
 # *****************************************************************************
 
-
-
-
+# Show the user their settings
+message(STATUS "GPU acceleration is ${GPUACCELERATED}")
+message(STATUS "OMP acceleration is ${MULTITHREADED}")
+message(STATUS "MPI distribution is ${DISTRIBUTED}")
 
 
 # -----------------------------------------------------------------------------
@@ -99,8 +99,12 @@ endif()
 # -----------------------------------------------------------------------------
 
 if (DISTRIBUTED)
-    find_package(MPI REQUIRED)
-    include_directories(${MPI_INCLUDE_PATH})
+  find_package(MPI REQUIRED)
+  # Backwards compatibility
+  if (DEFINED MPIEXEC)
+    set (MPIEXEC_EXECUTABLE ${MPIEXEC} CACHE STRING "MPI Executable")
+  endif()
+  include_directories(${MPI_INCLUDE_PATH})
 endif()
 
 if (GPUACCELERATED)
@@ -139,6 +143,10 @@ if (GPUACCELERATED)
         set (CUDA_NVCC_FLAGS "${CUDA_NVCC_FLAGS} \
             -G -g -lineinfo"
         )
+    else()
+        set (CUDA_NVCC_FLAGS "${CUDA_NVCC_FLAGS} \
+            -O2"
+        )
     endif()
 endif()
 
@@ -149,6 +157,13 @@ endif()
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} \
     -std=c99"
 )
+
+# Use -O2 for all but debug mode by default 
+if (NOT("${CMAKE_BUILD_TYPE}" STREQUAL "Debug"))
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} \
+        -O2"
+    )
+endif()
 
 # Set c flags for release
 set(CMAKE_C_FLAGS_RELEASE 
@@ -187,6 +202,13 @@ endif()
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} \
     -std=c++98 -Wall"
 )
+
+# Use -O2 for all but debug mode by default 
+if (NOT("${CMAKE_BUILD_TYPE}" STREQUAL "Debug"))
+    set(CMAKE_CXX_FLAGS "${CMAKE_C_FLAGS} \
+        -O2"
+    )
+endif()
 
 # Set c++ flags for release
 set(CMAKE_CXX_FLAGS_RELEASE

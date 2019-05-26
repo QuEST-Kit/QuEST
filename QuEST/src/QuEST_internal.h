@@ -1,4 +1,4 @@
-// Distributed under MIT licence. See github.com/QuEST-Kit/QuEST/blob/master/LICENCE.txt for details
+// Distributed under MIT licence. See https://github.com/QuEST-Kit/QuEST/blob/master/LICENCE.txt for details
 
 /** @file
  * General functions used internally, supplied by QuEST_common or by hardware-specific backends.
@@ -72,6 +72,8 @@ void densmatr_oneQubitDephase(Qureg qureg, const int targetQubit, qreal dephase)
 void densmatr_twoQubitDephase(Qureg qureg, const int qubit1, const int qubit2, qreal dephase);
 
 void densmatr_oneQubitDepolarise(Qureg qureg, const int targetQubit, qreal depolLevel);
+
+void densmatr_oneQubitDamping(Qureg qureg, const int targetQubit, qreal damping);
 
 void densmatr_twoQubitDepolarise(Qureg qureg, int qubit1, int qubit2, qreal depolLevel);
 

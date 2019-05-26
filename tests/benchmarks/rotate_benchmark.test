@@ -1,0 +1,58 @@
+# Python
+from QuESTTest.QuESTCore import *
+from QuESTPy.QuESTFunc import *
+import time
+from math import sin, cos, pi
+import statistics
+
+def run_tests():
+    nTrials = 20
+    nQubits = 29
+    angles = [
+		[ 1.2320,  0.4230, -0.6523],
+		[ 2.1213,  0.0000,  3.6520],
+		[-3.1213,  5.0230,  0.1230],
+		[ 5.2341, -3.1001, -1.2340],
+		[-0.1234, -0.9876,  4.1234]
+    ]
+    
+    
+    Qubits = argQureg(nQubits, 'Z')
+
+    ang = angles[0][:]
+
+    alpha = Complex(
+        cos(ang[0])*cos(ang[1]),
+        cos(ang[0])*sin(ang[1])
+        )
+    beta = Complex(
+        sin(ang[0])*cos(ang[2]),
+        sin(ang[0])*sin(ang[2])
+        )
+
+    reportQuESTEnv(Env)
+    
+    testResults._write_term()
+    testResults._write_term("Rotating")
+
+    for rotQubit in range(nQubits):
+        timing = []
+        testResults._write_term("Rotating "+str(rotQubit))
+        for trial in range(nTrials):
+            
+            time_start = time.perf_counter()
+
+            compactUnitary(Qubits, rotQubit, alpha, beta)
+            time_end = time.perf_counter()
+            timing.append(time_end - time_start)
+
+        maxTime = max(timing)
+        minTime = min(timing)
+        mean = statistics.mean(timing)
+        stdev = statistics.stdev(timing)
+        testResults.log( ", ".join([rotQubit, mean, stdev, maxTime - mean, mean - minTime]) )
+            
+    testResults._write_term("Done Rotating")
+    testResults._write_term("Total probability conservation : "+str(calcTotalProb(Qubits)))
+    destroyQureg(Qubits, Env)
+
