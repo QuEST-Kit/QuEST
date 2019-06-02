@@ -51,6 +51,9 @@ typedef struct ComplexArray
 /*
  * public structures
  */
+ 
+ // Codes for specifying Pauli operators 
+ enum pauliOpType {PAULI_IDENTITY=0, PAULI_X=1, PAULI_Y=2, PAULI_Z=3};
 
 /** Represents one complex number.
  */
