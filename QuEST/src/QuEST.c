@@ -555,6 +555,8 @@ void multiRotatePauli(Qureg qureg, int* targetQubits, int* targetPaulis, int num
         numTargets, angle);
 }
 
+
+
 /*
  * register attributes
  */
@@ -716,6 +718,16 @@ qreal calcFidelity(Qureg qureg, Qureg pureState) {
         return densmatr_calcFidelity(qureg, pureState);
     else
         return statevec_calcFidelity(qureg, pureState);
+}
+
+qreal calcExpectedValue(Qureg qureg, int* targetQubits, int* pauliCodes, int numTargets) {
+    validateMultiTargets(qureg, targetQubits, numTargets, __func__);
+    validatePauliCodes(targetPaulis, numTargets, __func__);
+    
+    if (qureg.isDensityMatrix)
+        return densmatr_calcExpectedValue(qureg, targetQubits, pauliCodes, numTargets);
+    else
+        return statevec_calcExpectedValue(qureg, targetQubits, pauliCodes, numTargets);
 }
 
 
