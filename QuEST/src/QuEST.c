@@ -35,7 +35,7 @@ Qureg createQureg(int numQubits, QuESTEnv env) {
     qureg.numQubitsInStateVec = numQubits;
     
     qasm_setup(&qureg);
-    initZeroState(qureg);
+    initZeroState(qureg); // safe call to public function
     return qureg;
 }
 
@@ -49,8 +49,21 @@ Qureg createDensityQureg(int numQubits, QuESTEnv env) {
     qureg.numQubitsInStateVec = 2*numQubits;
     
     qasm_setup(&qureg);
-    initZeroState(qureg);
+    initZeroState(qureg); // safe call to public function
     return qureg;
+}
+
+Qureg createCloneQureg(Qureg qureg, QuESTEnv env) {
+
+    Qureg newQureg;
+    statevec_createQureg(&newQureg, qureg.numQubitsInStateVec, env);
+    newQureg.isDensityMatrix = qureg.isDensityMatrix;
+    newQureg.numQubitsRepresented = qureg.numQubitsRepresented;
+    newQureg.numQubitsInStateVec = qureg.numQubitsInStateVec;
+    
+    qasm_setup(&qureg);
+    statevec_cloneQureg(newQureg, qureg);
+    return newQureg;
 }
 
 void destroyQureg(Qureg qureg, QuESTEnv env) {

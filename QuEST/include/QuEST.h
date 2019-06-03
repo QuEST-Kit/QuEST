@@ -153,6 +153,17 @@ Qureg createQureg(int numQubits, QuESTEnv env);
  */
 Qureg createDensityQureg(int numQubits, QuESTEnv env);
 
+/** Create a new Qureg which is an exact clone of the passed qureg, which can be
+ * either a statevector or a density matrix. That is, it will have the same 
+ * dimensions as the passed qureg and begin in an identical quantum state.
+ * This must be destroyed by the user later with destroyQureg
+ *
+ * @returns an object representing the set of qubits
+ * @param[in] qureg an existing qureg to be cloned
+ * @param[in] env object representing the execution environment (local, multinode etc)
+ */
+Qureg createCloneQureg(Qureg qureg, QuESTEnv env);
+
 /** Deallocate a Qureg object representing a set of qubits.
  * Free memory allocated to state vector of probability amplitudes, including temporary vector for
  * values copied from another chunk if running the distributed version.
