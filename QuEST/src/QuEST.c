@@ -548,7 +548,7 @@ void multiRotateZ(Qureg qureg, int* qubits, int numQubits, qreal angle) {
         numQubits, angle);
 }
 
-void multiRotatePauli(Qureg qureg, int* targetQubits, int* targetPaulis, int numTargets, qreal angle) {
+void multiRotatePauli(Qureg qureg, int* targetQubits, enum pauliOpType* targetPaulis, int numTargets, qreal angle) {
     validateMultiTargets(qureg, targetQubits, numTargets, __func__);
     validatePauliCodes(targetPaulis, numTargets, __func__);
     

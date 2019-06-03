@@ -432,7 +432,7 @@ void densmatr_oneQubitPauliError(Qureg qureg, int qubit, qreal pX, qreal pY, qre
 
 /** applyConj=1 will apply conjugate operation, else applyConj=0 */
 void statevec_multiRotatePauli(
-    Qureg qureg, int* targetQubits, int* targetPaulis, int numTargets, qreal angle,
+    Qureg qureg, int* targetQubits, enum pauliOpType* targetPaulis, int numTargets, qreal angle,
     int applyConj
 ) {
     qreal fac = 1/sqrt(2);

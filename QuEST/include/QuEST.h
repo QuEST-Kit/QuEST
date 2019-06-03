@@ -1789,7 +1789,8 @@ void multiRotateZ(Qureg qureg, int* qubits, int numQubits, qreal angle);
     \exp \left( - i \theta/2 \bigotimes_{j} \hat{\sigma}_j\right)
  * \f]
  * where \f$\hat{\sigma}_j \in \{1, X, Y, Z\}\f$ is a Pauli operator (indicated by
- * codes 0, 1, 2, 3 respectively in \p targetPaulis) operating upon the qubit 
+ * codes 0, 1, 2, 3 respectively in \p targetPaulis, or by enums PAULI_IDENTITY,
+ * PAULI_X, PAULI_Y and PAULI_Z) operating upon the qubit 
  * \p targetQubits[j], and \f$\theta\f$ is the passed \p angle.
  *  The operators specified in \p targetPaulis act on the corresponding qubit in \p targetQubits. 
  * For example:
@@ -1810,7 +1811,7 @@ void multiRotateZ(Qureg qureg, int* qubits, int numQubits, qreal angle);
  *
  * @param[in,out] qureg object representing the set of all qubits
  * @param[in] targetQubits a list of the indices of the target qubits 
- * @param[in] targetPaulis a list of the Pauli codes (0=identity, 1=X, 2=Y, 3=Z) 
+ * @param[in] targetPaulis a list of the Pauli codes (0=PAULI_IDENTITY, 1=PAULI_X, 2=PAULI_Y, 3=PAULI_Z) 
  *      to apply to the corresponding qubits in \p targetQubits
  * @param[in] numTargets number of target qubits, i.e. the length of \p targetQubits and \p targetPaulis
  * @param[in] angle the angle by which the multi-qubit state is rotated
@@ -1819,7 +1820,7 @@ void multiRotateZ(Qureg qureg, int* qubits, int numQubits, qreal angle);
  *      or if any qubit in \p qubits is outside [0, \p qureg.numQubitsRepresented])
  *      or if any qubit in \p qubits is repeated.
  */
-void multiRotatePauli(Qureg qureg, int* targetQubits, int* targetPaulis, int numTargets, qreal angle);
+void multiRotatePauli(Qureg qureg, int* targetQubits, enum pauliOpType* targetPaulis, int numTargets, qreal angle);
 
 #ifdef __cplusplus
 }

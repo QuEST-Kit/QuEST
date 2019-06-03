@@ -71,7 +71,7 @@ void validateOneQubitDampingProb(qreal prob, const char* caller);
 
 void validateOneQubitPauliProbs(qreal probX, qreal probY, qreal probZ, const char* caller);
 
-void validatePauliCodes(int* pauliCodes, int numPauliCodes, const char* caller);
+void validatePauliCodes(enum pauliOpType* pauliCodes, int numPauliCodes, const char* caller);
 
 # ifdef __cplusplus
 }
