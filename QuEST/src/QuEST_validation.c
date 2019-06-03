@@ -50,7 +50,8 @@ typedef enum {
     E_INVALID_TWO_QUBIT_DEPOL_PROB,
     E_INVALID_ONE_QUBIT_PAULI_PROBS,
     E_INVALID_CONTROLS_BIT_STATE,
-    E_INVALID_PAULI_CODE
+    E_INVALID_PAULI_CODE,
+    E_INVALID_NUM_SUM_TERMS
 } ErrorCode;
 
 static const char* errorMessages[] = {
@@ -321,6 +322,11 @@ void validatePauliCodes(enum pauliOpType* pauliCodes, int numPauliCodes, const c
             E_INVALID_PAULI_CODE, caller);
     }
 }
+
+void validateNumSumTerms(int numTerms, const char* caller) {
+    QuESTAssert(numTerms > 0, E_INVALID_NUM_SUM_TERMS, caller);
+}
+
 
 #ifdef __cplusplus
 }

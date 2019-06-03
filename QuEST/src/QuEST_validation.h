@@ -73,6 +73,8 @@ void validateOneQubitPauliProbs(qreal probX, qreal probY, qreal probZ, const cha
 
 void validatePauliCodes(enum pauliOpType* pauliCodes, int numPauliCodes, const char* caller);
 
+void validateNumSumTerms(int numTerms, const char* caller);
+
 # ifdef __cplusplus
 }
 # endif

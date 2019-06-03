@@ -741,6 +741,14 @@ qreal calcExpecValProd(Qureg qureg, int* targetQubits, enum pauliOpType* pauliCo
     
     return statevec_calcExpecValProd(qureg, targetQubits, pauliCodes, numTargets, workspace);
 }
+
+qreal calcExpecValSum(Qureg qureg, enum pauliOpType* allPauliCodes, qreal* termCoeffs, int numSumTerms, Qureg workspace) {
+    validateNumSumTerms(numSumTerms, __func__);
+    validatePauliCodes(allPauliCodes, numSumTerms*qureg.numQubitsRepresented, __func__);
+    validateMatchingQuregTypes(qureg, workspace, __func__);
+    validateMatchingQuregDims(qureg, workspace, __func__);
+    
+    return statevec_calcExpecValSum(qureg, allPauliCodes, termCoeffs, numSumTerms, workspace);
 }
 
 

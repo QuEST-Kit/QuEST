@@ -1865,6 +1865,54 @@ void multiRotatePauli(Qureg qureg, int* targetQubits, enum pauliOpType* targetPa
  *      or if \p workspace is not of the same type and dimensions as \p qureg
  */
 qreal calcExpecValProd(Qureg qureg, int* targetQubits, enum pauliOpType* pauliCodes, int numTargets, Qureg workspace);
+
+/** Computes the expected value of a sum of products of Pauli operators.
+ * Letting \f$ \alpha = \sum_i c_i \otimes_j^{N} \hat{\sigma}_{i,j} \f$ be 
+ * the operators indicated by \p allPauliCodes (where \f$ c_i \in \f$ \p termCoeffs and \f$ N = \f$ \p qureg.numQubitsRepresented), 
+ * this function computes \f$ \langle \psi | \alpha | \psi \rangle \f$ 
+ * if \p qureg = \f$ \psi \f$ is a statevector, and computes \f$ \text{Trace}(\alpha \rho) \f$ 
+ * if \p qureg = \f$ \rho \f$ is a density matrix.
+ *
+ * \p allPauliCodes is an array of length \p numSumTerms*\p qureg.numQubitsRepresented
+ * which specifies which Pauli operators to apply, where 0 = \p PAULI_I, 1 = \p PAULI_X, 
+ * 2 = \p PAULI_Y, 3 = \p PAULI_Z. For each sum term, a Pauli operator must be specified for 
+ * EVERY qubit in \p qureg; each set of \p numSumTerms operators will be grouped into a product.
+ * \p termCoeffs is an arrray of length \p numSumTerms containing the term coefficients.
+ * For example, on a 3-qubit statevector,
+ *
+ *     int paulis[6] = {PAULI_X, PAULI_I, PAULI_I,  PAULI_X, PAULI_Y, PAULI_Z};
+ *     qreal coeffs[2] = {1.5, -3.6};
+ *     calcExpecValSum(qureg, paulis, coeffs, 2, workspace);
+ *
+ * will compute \f$ \langle \psi | (1.5 X I I - 3.6 X Y Z) | \psi \rangle \f$ (where in this notation, the left-most operator
+ * applies to the least-significant qubit, i.e. that with index 0).
+ * 
+ * \p workspace must be a register with the same type (statevector vs density matrix) and dimensions 
+ * (numQubitsRepresented) as \p qureg, and is used as working space. When this function returns, \p qureg 
+ * will be unchanged and \p workspace will be set to \p qureg pre-multiplied with the final Pauli product.
+ * NOTE that if \p qureg is a density matrix, \p workspace will become \f$ \hat{\sigma} \rho \f$ 
+ * which is itself not a density matrix (it is distinct from \f$ \hat{\sigma}^\dagger \rho \hat{\sigma} \f$).
+ *
+ * This function works by cloning the \p qureg state into \p workspace, applying each of the specified
+ * Pauli products to \p workspace (one Pauli operation at a time), then computing its inner product with \p qureg (for statevectors)
+ * or its trace (for density matrices) multiplied with the corresponding coefficient, and summing these contributions. 
+ * It therefore should scale linearly in time with the total number of non-identity specified Pauli operators.
+ *
+ * @param[in] qureg the register of which to find the expected value, which is unchanged by this function
+ * @param[in] allPauliCodes a list of the Pauli codes (0=PAULI_I, 1=PAULI_X, 2=PAULI_Y, 3=PAULI_Z) 
+ *      of all Paulis involved in the products of terms. A Pauli must be specified for each qubit 
+ *      in the register, in every term of the sum.
+ * @param[in] termCoeffs The coefficients of each term in the sum of Pauli products
+ * @param[in] numSumTerms The total number of Pauli products specified
+ * @param[in,out] workspace a working-space qureg with the same dimensions as \p qureg, which is modified 
+ *      to be the result of multiplying the state with the final specified Pauli product
+ * @throws exitWithError
+ *      if any code in \p allPauliCodes is not in {0,1,2,3},
+ *      or if numSumTerms <= 0,
+ *      or if \p workspace is not of the same type and dimensions as \p qureg
+ */
+qreal calcExpecValSum(Qureg qureg, enum pauliOpType* allPauliCodes, qreal* termCoeffs, int numSumTerms, Qureg workspace);
+
 #ifdef __cplusplus
 }
 #endif

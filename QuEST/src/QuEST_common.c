@@ -494,8 +494,18 @@ qreal statevec_calcExpecValProd(Qureg qureg, int* targetQubits, enum pauliOpType
     return value;
 }
 
-qreal statevec_calcExpecValSum() {
+qreal statevec_calcExpecValSum(Qureg qureg, enum pauliOpType* allCodes, qreal* termCoeffs, int numSumTerms, Qureg workspace) {
     
+    int numQb = qureg.numQubitsRepresented;
+    int targs[numQb];
+    for (int q=0; q < numQb; q++)
+        targs[q] = q;
+        
+    qreal value = 0;
+    for (int t=0; t < numSumTerms; t++)
+        value += termCoeffs[t] * statevec_calcExpecValProd(qureg, targs, &allCodes[t*numQb], numQb, workspace);
+        
+    return value;
 }
 
 #ifdef __cplusplus

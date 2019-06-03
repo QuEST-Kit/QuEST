@@ -156,6 +156,8 @@ Complex statevec_calcInnerProduct(Qureg bra, Qureg ket);
 
 qreal statevec_calcExpecValProd(Qureg qureg, int* targetQubits, enum pauliOpType* pauliCodes, int numTargets, Qureg workspace);
 
+qreal statevec_calcExpecValSum(Qureg qureg, enum pauliOpType* allCodes, qreal* termCoeffs, int numSumTerms, Qureg workspace);
+
 void statevec_compactUnitary(Qureg qureg, const int targetQubit, Complex alpha, Complex beta);
 
 void statevec_unitary(Qureg qureg, const int targetQubit, ComplexMatrix2 u);
