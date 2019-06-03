@@ -469,37 +469,28 @@ void statevec_multiRotatePauli(
 }
 
 // <pauli> = <qureg|pauli|qureg> = qureg . pauli(qureg)
-qreal statevec_calcExpecValProd(Qureg qureg, int* targetQubits, int* pauliCodes, int numTargets) {
-
-    // create a backup 
-    Qureg backup;
-    statevec_createQureg(&backup, qureg.numQubitsInStateVec, env);
-    backup.isDensityMatrix = qureg.isDensityMatrix;
-    backup.numQubitsRepresented = qureg.numQubitsRepresented;
-    backup.numQubitsInStateVec = qureg.numQubitsInStateVec;
-    statevec_cloneQureg(backup, qureg);
+qreal statevec_calcExpecValProd(Qureg qureg, int* targetQubits, enum pauliOpType* pauliCodes, int numTargets, Qureg workspace) {
+    
+    statevec_cloneQureg(workspace, qureg);
     
     // produces both pauli|qureg> or pauli * qureg (as a density matrix)
     for (int i=0; i < numTargets; i++) {
-        // (pauliCodes[i] == PAULI_IDENTITY) applies no operation
+        // (pauliCodes[i] == PAULI_I) applies no operation
         if (pauliCodes[i] == PAULI_X)
-            statevec_pauliX(qureg, targetQubits[i]);
+            statevec_pauliX(workspace, targetQubits[i]);
         if (pauliCodes[i] == PAULI_Y)
-            statevec_pauliY(qureg, targetQubits[i]);
+            statevec_pauliY(workspace, targetQubits[i]);
         if (pauliCodes[i] == PAULI_Z)
-            statevec_pauliZ(qureg, targetQubits[i]);
+            statevec_pauliZ(workspace, targetQubits[i]);
     }
     
     // compute the expected value
     qreal value;
     if (qureg.isDensityMatrix)
-        value = densmatr_calcTotalProb(qureg); // Trace(ops qureg)
+        value = densmatr_calcTotalProb(workspace); // Trace(ops qureg)
     else
-        value = statevec_calcInnerProduct(backup, qureg).real; // <qureg|ops|qureg>
-        
-    // restore the original state (via backup)
-    statevec_cloneQureg(qureg, backup);
-    statevec_destroyQureg(backup, env);
+        value = statevec_calcInnerProduct(workspace, qureg).real; // <qureg|ops|qureg>
+                
     return value;
 }
 

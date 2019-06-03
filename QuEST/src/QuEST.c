@@ -733,14 +733,14 @@ qreal calcFidelity(Qureg qureg, Qureg pureState) {
         return statevec_calcFidelity(qureg, pureState);
 }
 
-qreal calcExpectedValue(Qureg qureg, int* targetQubits, int* pauliCodes, int numTargets) {
+qreal calcExpecValProd(Qureg qureg, int* targetQubits, enum pauliOpType* pauliCodes, int numTargets, Qureg workspace) {
     validateMultiTargets(qureg, targetQubits, numTargets, __func__);
-    validatePauliCodes(targetPaulis, numTargets, __func__);
+    validatePauliCodes(pauliCodes, numTargets, __func__);
+    validateMatchingQuregTypes(qureg, workspace, __func__);
+    validateMatchingQuregDims(qureg, workspace, __func__);
     
-    if (qureg.isDensityMatrix)
-        return densmatr_calcExpectedValue(qureg, targetQubits, pauliCodes, numTargets);
-    else
-        return statevec_calcExpectedValue(qureg, targetQubits, pauliCodes, numTargets);
+    return statevec_calcExpecValProd(qureg, targetQubits, pauliCodes, numTargets, workspace);
+}
 }
 
 
