@@ -50,7 +50,8 @@ typedef enum {
     E_INVALID_TWO_QUBIT_DEPOL_PROB,
     E_INVALID_ONE_QUBIT_PAULI_PROBS,
     E_INVALID_CONTROLS_BIT_STATE,
-    E_INVALID_PAULI_CODE
+    E_INVALID_PAULI_CODE,
+    E_INVALID_NUM_SUM_TERMS
 } ErrorCode;
 
 static const char* errorMessages[] = {
@@ -86,7 +87,8 @@ static const char* errorMessages[] = {
     [E_INVALID_TWO_QUBIT_DEPOL_PROB] = "The probability of a two-qubit depolarising error cannot exceed 15/16, which maximally mixes.",
     [E_INVALID_ONE_QUBIT_PAULI_PROBS] = "The probability of any X, Y or Z error cannot exceed the probability of no error.",
     [E_INVALID_CONTROLS_BIT_STATE] = "The state of the control qubits must be a bit sequence (0s and 1s).",
-    [E_INVALID_PAULI_CODE] = "Invalid Pauli code. Codes must be 0, 1, 2 or 3 to indicate the identity, X, Y and Z gates respectively."
+    [E_INVALID_PAULI_CODE] = "Invalid Pauli code. Codes must be 0 (or PAULI_IDENTITY), 1 (PAULI_X), 2 (PAULI_Y) or 3 (PAULI_Z) to indicate the identity, X, Y and Z gates respectively.",
+    [E_INVALID_NUM_SUM_TERMS] = "Invalid number of terms in the Pauli sum. The number of terms must be >0."
 };
 
 void exitWithError(ErrorCode code, const char* func){
@@ -312,12 +314,19 @@ void validateOneQubitPauliProbs(qreal probX, qreal probY, qreal probZ, const cha
     QuESTAssert(probZ <= probNoError, E_INVALID_ONE_QUBIT_PAULI_PROBS, caller);
 }
 
-void validatePauliCodes(int* pauliCodes, int numPauliCodes, const char* caller) {
+void validatePauliCodes(enum pauliOpType* pauliCodes, int numPauliCodes, const char* caller) {
     for (int i=0; i < numPauliCodes; i++) {
         int code = pauliCodes[i];
-        QuESTAssert(code==0 || code==1 || code==2 || code==3, E_INVALID_PAULI_CODE, caller);
+        QuESTAssert(
+            code==PAULI_IDENTITY || code==PAULI_X || code==PAULI_Y || code==PAULI_Z, 
+            E_INVALID_PAULI_CODE, caller);
     }
 }
+
+void validateNumSumTerms(int numTerms, const char* caller) {
+    QuESTAssert(numTerms > 0, E_INVALID_NUM_SUM_TERMS, caller);
+}
+
 
 #ifdef __cplusplus
 }

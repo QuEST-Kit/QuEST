@@ -35,7 +35,7 @@ Qureg createQureg(int numQubits, QuESTEnv env) {
     qureg.numQubitsInStateVec = numQubits;
     
     qasm_setup(&qureg);
-    initZeroState(qureg);
+    initZeroState(qureg); // safe call to public function
     return qureg;
 }
 
@@ -49,8 +49,21 @@ Qureg createDensityQureg(int numQubits, QuESTEnv env) {
     qureg.numQubitsInStateVec = 2*numQubits;
     
     qasm_setup(&qureg);
-    initZeroState(qureg);
+    initZeroState(qureg); // safe call to public function
     return qureg;
+}
+
+Qureg createCloneQureg(Qureg qureg, QuESTEnv env) {
+
+    Qureg newQureg;
+    statevec_createQureg(&newQureg, qureg.numQubitsInStateVec, env);
+    newQureg.isDensityMatrix = qureg.isDensityMatrix;
+    newQureg.numQubitsRepresented = qureg.numQubitsRepresented;
+    newQureg.numQubitsInStateVec = qureg.numQubitsInStateVec;
+    
+    qasm_setup(&qureg);
+    statevec_cloneQureg(newQureg, qureg);
+    return newQureg;
 }
 
 void destroyQureg(Qureg qureg, QuESTEnv env) {
@@ -535,7 +548,7 @@ void multiRotateZ(Qureg qureg, int* qubits, int numQubits, qreal angle) {
         numQubits, angle);
 }
 
-void multiRotatePauli(Qureg qureg, int* targetQubits, int* targetPaulis, int numTargets, qreal angle) {
+void multiRotatePauli(Qureg qureg, int* targetQubits, enum pauliOpType* targetPaulis, int numTargets, qreal angle) {
     validateMultiTargets(qureg, targetQubits, numTargets, __func__);
     validatePauliCodes(targetPaulis, numTargets, __func__);
     
@@ -554,6 +567,8 @@ void multiRotatePauli(Qureg qureg, int* targetQubits, int* targetPaulis, int num
         "Here a %d-qubit multiRotatePauli of angle %g was performed (QASM not yet implemented)",
         numTargets, angle);
 }
+
+
 
 /*
  * register attributes
@@ -716,6 +731,24 @@ qreal calcFidelity(Qureg qureg, Qureg pureState) {
         return densmatr_calcFidelity(qureg, pureState);
     else
         return statevec_calcFidelity(qureg, pureState);
+}
+
+qreal calcExpecValProd(Qureg qureg, int* targetQubits, enum pauliOpType* pauliCodes, int numTargets, Qureg workspace) {
+    validateMultiTargets(qureg, targetQubits, numTargets, __func__);
+    validatePauliCodes(pauliCodes, numTargets, __func__);
+    validateMatchingQuregTypes(qureg, workspace, __func__);
+    validateMatchingQuregDims(qureg, workspace, __func__);
+    
+    return statevec_calcExpecValProd(qureg, targetQubits, pauliCodes, numTargets, workspace);
+}
+
+qreal calcExpecValSum(Qureg qureg, enum pauliOpType* allPauliCodes, qreal* termCoeffs, int numSumTerms, Qureg workspace) {
+    validateNumSumTerms(numSumTerms, __func__);
+    validatePauliCodes(allPauliCodes, numSumTerms*qureg.numQubitsRepresented, __func__);
+    validateMatchingQuregTypes(qureg, workspace, __func__);
+    validateMatchingQuregDims(qureg, workspace, __func__);
+    
+    return statevec_calcExpecValSum(qureg, allPauliCodes, termCoeffs, numSumTerms, workspace);
 }
 
 

@@ -53,7 +53,7 @@ typedef struct ComplexArray
  */
  
  // Codes for specifying Pauli operators 
- enum pauliOpType {PAULI_IDENTITY=0, PAULI_X=1, PAULI_Y=2, PAULI_Z=3};
+ enum pauliOpType {PAULI_I=0, PAULI_X=1, PAULI_Y=2, PAULI_Z=3};
 
 /** Represents one complex number.
  */
@@ -152,6 +152,17 @@ Qureg createQureg(int numQubits, QuESTEnv env);
  * @throws exitWithError if \p numQubits <= 0
  */
 Qureg createDensityQureg(int numQubits, QuESTEnv env);
+
+/** Create a new Qureg which is an exact clone of the passed qureg, which can be
+ * either a statevector or a density matrix. That is, it will have the same 
+ * dimensions as the passed qureg and begin in an identical quantum state.
+ * This must be destroyed by the user later with destroyQureg
+ *
+ * @returns an object representing the set of qubits
+ * @param[in] qureg an existing qureg to be cloned
+ * @param[in] env object representing the execution environment (local, multinode etc)
+ */
+Qureg createCloneQureg(Qureg qureg, QuESTEnv env);
 
 /** Deallocate a Qureg object representing a set of qubits.
  * Free memory allocated to state vector of probability amplitudes, including temporary vector for
@@ -1778,12 +1789,13 @@ void multiRotateZ(Qureg qureg, int* qubits, int numQubits, qreal angle);
     \exp \left( - i \theta/2 \bigotimes_{j} \hat{\sigma}_j\right)
  * \f]
  * where \f$\hat{\sigma}_j \in \{1, X, Y, Z\}\f$ is a Pauli operator (indicated by
- * codes 0, 1, 2, 3 respectively in \p targetPaulis) operating upon the qubit 
+ * codes 0, 1, 2, 3 respectively in \p targetPaulis, or by enums PAULI_I,
+ * PAULI_X, PAULI_Y and PAULI_Z) operating upon the qubit 
  * \p targetQubits[j], and \f$\theta\f$ is the passed \p angle.
  *  The operators specified in \p targetPaulis act on the corresponding qubit in \p targetQubits. 
  * For example:
  * 
- *    multiRotatePauli(qureg, (int[]) {4,5,8,9}, (int[]) {0,1,2,3}, 4, .1)
+ *     multiRotatePauli(qureg, (int[]) {4,5,8,9}, (int[]) {0,1,2,3}, 4, .1)
  *
  * effects \f$ \exp \left( - i .1/2 X_5 Y_8 Z_9 \right) \f$ on \p qureg, 
  * where unspecified qubits (along with those specified with Pauli code 0) are 
@@ -1799,16 +1811,107 @@ void multiRotateZ(Qureg qureg, int* qubits, int numQubits, qreal angle);
  *
  * @param[in,out] qureg object representing the set of all qubits
  * @param[in] targetQubits a list of the indices of the target qubits 
- * @param[in] targetPaulis a list of the Pauli codes (0=identity, 1=X, 2=Y, 3=Z) 
+ * @param[in] targetPaulis a list of the Pauli codes (0=PAULI_I, 1=PAULI_X, 2=PAULI_Y, 3=PAULI_Z) 
  *      to apply to the corresponding qubits in \p targetQubits
  * @param[in] numTargets number of target qubits, i.e. the length of \p targetQubits and \p targetPaulis
  * @param[in] angle the angle by which the multi-qubit state is rotated
  * @throws exitWithError
  *      if \p numQubits is outside [1, \p qureg.numQubitsRepresented]),
- *      or if any qubit in \p qubits is outside [0, \p qureg.numQubitsRepresented])
+ *      or if any qubit in \p qubits is outside [0, \p qureg.numQubitsRepresented))
  *      or if any qubit in \p qubits is repeated.
  */
-void multiRotatePauli(Qureg qureg, int* targetQubits, int* targetPaulis, int numTargets, qreal angle);
+void multiRotatePauli(Qureg qureg, int* targetQubits, enum pauliOpType* targetPaulis, int numTargets, qreal angle);
+
+/** Computes the expected value of a product of Pauli operators.
+ * Letting \f$ \sigma = \otimes_j \hat{\sigma}_j \f$ be the operators indicated by \p pauliCodes 
+ * and acting on qubits \p targetQubits, this function computes \f$ \langle \psi | \sigma | \psi \rangle \f$ 
+ * if \p qureg = \f$ \psi \f$ is a statevector, and computes \f$ \text{Trace}(\sigma \rho) \f$ 
+ * if \p qureg = \f$ \rho \f$ is a density matrix.
+ * 
+ * \p pauliCodes is an array of length \p numTargets which specifies which Pauli operators to 
+ * enact on the corresponding qubits in \p targetQubits, where 0 = \p PAULI_I, 1 = \p PAULI_X, 
+ * 2 = \p PAULI_Y, 3 = \p PAULI_Z. The target qubits must be unique, and at most \p qureg.numQubitsRepresented
+ * may be specified. For example, on a 7-qubit statevector,
+ * 
+ *     calcExpecValProd(qureg, {4,5,6}, {PAULI_X, PAULI_I, PAULI_Z}, 3, workspace);
+ *
+ * will compute \f$ \langle \psi | I I I I X I Z | \psi \rangle \f$ (where in this notation, the left-most operator
+ * applies to the least-significant qubit, i.e. that with index 0).
+ *
+ * \p workspace must be a register with the same type (statevector vs density matrix) and dimensions 
+ * (numQubitsRepresented) as \p qureg, and is used as working space. When this function returns, \p qureg 
+ * will be unchanged and \p workspace will be set to \f$ \sigma | \psi \rangle \f$ (if \p qureg is a statevector)
+ * or \f$ \sigma \rho \f$ (if \p qureg is a density matrix). NOTE that this last quantity is NOT the result of applying 
+ * the paulis as unitaries, \f$ \sigma^\dagger \rho \sigma \f$, but is instead the result of their direct 
+ * multiplication with the density matrix. It is therefore itself not a valid density matrix.
+ *
+ * This function works by cloning the \p qureg state into \p workspace, applying the specified 
+ * Pauli operators to \p workspace then computing its inner product with \p qureg (for statevectors)
+ * or its trace (for density matrices). It therefore should scale linearly in time with the number of 
+ * specified non-identity Pauli operators, which is bounded by the number of represented qubits.
+ *
+ * @param[in] qureg the register of which to find the expected value, which is unchanged by this function
+ * @param[in] targetQubits a list of the indices of the target qubits 
+ * @param[in] pauliCodes a list of the Pauli codes (0=PAULI_I, 1=PAULI_X, 2=PAULI_Y, 3=PAULI_Z) 
+ *      to apply to the corresponding qubits in \p targetQubits
+ * @param[in] numTargets number of target qubits, i.e. the length of \p targetQubits and \p pauliCodes
+ * @param[in,out] workspace a working-space qureg with the same dimensions as \p qureg, which is modified 
+ *      to be the result of multiplying the state with the pauli operators
+ * @throws exitWithError
+ *      if \p numTargets is outside [1, \p qureg.numQubitsRepresented]),
+ *      or if any qubit in \p targetQubits is outside [0, \p qureg.numQubitsRepresented))
+ *      or if any qubit in \p targetQubits is repeated,
+ *      or if any code in \p pauliCodes is not in {0,1,2,3},
+ *      or if \p workspace is not of the same type and dimensions as \p qureg
+ */
+qreal calcExpecValProd(Qureg qureg, int* targetQubits, enum pauliOpType* pauliCodes, int numTargets, Qureg workspace);
+
+/** Computes the expected value of a sum of products of Pauli operators.
+ * Letting \f$ \alpha = \sum_i c_i \otimes_j^{N} \hat{\sigma}_{i,j} \f$ be 
+ * the operators indicated by \p allPauliCodes (where \f$ c_i \in \f$ \p termCoeffs and \f$ N = \f$ \p qureg.numQubitsRepresented), 
+ * this function computes \f$ \langle \psi | \alpha | \psi \rangle \f$ 
+ * if \p qureg = \f$ \psi \f$ is a statevector, and computes \f$ \text{Trace}(\alpha \rho) \f$ 
+ * if \p qureg = \f$ \rho \f$ is a density matrix.
+ *
+ * \p allPauliCodes is an array of length \p numSumTerms*\p qureg.numQubitsRepresented
+ * which specifies which Pauli operators to apply, where 0 = \p PAULI_I, 1 = \p PAULI_X, 
+ * 2 = \p PAULI_Y, 3 = \p PAULI_Z. For each sum term, a Pauli operator must be specified for 
+ * EVERY qubit in \p qureg; each set of \p numSumTerms operators will be grouped into a product.
+ * \p termCoeffs is an arrray of length \p numSumTerms containing the term coefficients.
+ * For example, on a 3-qubit statevector,
+ *
+ *     int paulis[6] = {PAULI_X, PAULI_I, PAULI_I,  PAULI_X, PAULI_Y, PAULI_Z};
+ *     qreal coeffs[2] = {1.5, -3.6};
+ *     calcExpecValSum(qureg, paulis, coeffs, 2, workspace);
+ *
+ * will compute \f$ \langle \psi | (1.5 X I I - 3.6 X Y Z) | \psi \rangle \f$ (where in this notation, the left-most operator
+ * applies to the least-significant qubit, i.e. that with index 0).
+ * 
+ * \p workspace must be a register with the same type (statevector vs density matrix) and dimensions 
+ * (numQubitsRepresented) as \p qureg, and is used as working space. When this function returns, \p qureg 
+ * will be unchanged and \p workspace will be set to \p qureg pre-multiplied with the final Pauli product.
+ * NOTE that if \p qureg is a density matrix, \p workspace will become \f$ \hat{\sigma} \rho \f$ 
+ * which is itself not a density matrix (it is distinct from \f$ \hat{\sigma}^\dagger \rho \hat{\sigma} \f$).
+ *
+ * This function works by cloning the \p qureg state into \p workspace, applying each of the specified
+ * Pauli products to \p workspace (one Pauli operation at a time), then computing its inner product with \p qureg (for statevectors)
+ * or its trace (for density matrices) multiplied with the corresponding coefficient, and summing these contributions. 
+ * It therefore should scale linearly in time with the total number of non-identity specified Pauli operators.
+ *
+ * @param[in] qureg the register of which to find the expected value, which is unchanged by this function
+ * @param[in] allPauliCodes a list of the Pauli codes (0=PAULI_I, 1=PAULI_X, 2=PAULI_Y, 3=PAULI_Z) 
+ *      of all Paulis involved in the products of terms. A Pauli must be specified for each qubit 
+ *      in the register, in every term of the sum.
+ * @param[in] termCoeffs The coefficients of each term in the sum of Pauli products
+ * @param[in] numSumTerms The total number of Pauli products specified
+ * @param[in,out] workspace a working-space qureg with the same dimensions as \p qureg, which is modified 
+ *      to be the result of multiplying the state with the final specified Pauli product
+ * @throws exitWithError
+ *      if any code in \p allPauliCodes is not in {0,1,2,3},
+ *      or if numSumTerms <= 0,
+ *      or if \p workspace is not of the same type and dimensions as \p qureg
+ */
+qreal calcExpecValSum(Qureg qureg, enum pauliOpType* allPauliCodes, qreal* termCoeffs, int numSumTerms, Qureg workspace);
 
 #ifdef __cplusplus
 }

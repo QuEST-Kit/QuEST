@@ -154,6 +154,10 @@ qreal statevec_calcFidelity(Qureg qureg, Qureg pureState);
 
 Complex statevec_calcInnerProduct(Qureg bra, Qureg ket);
 
+qreal statevec_calcExpecValProd(Qureg qureg, int* targetQubits, enum pauliOpType* pauliCodes, int numTargets, Qureg workspace);
+
+qreal statevec_calcExpecValSum(Qureg qureg, enum pauliOpType* allCodes, qreal* termCoeffs, int numSumTerms, Qureg workspace);
+
 void statevec_compactUnitary(Qureg qureg, const int targetQubit, Complex alpha, Complex beta);
 
 void statevec_unitary(Qureg qureg, const int targetQubit, ComplexMatrix2 u);
@@ -202,7 +206,7 @@ void statevec_sqrtSwapGateConj(Qureg qureg, int qb1, int qb2);
 
 void statevec_multiRotateZ(Qureg qureg, long long int mask, qreal angle);
 
-void statevec_multiRotatePauli(Qureg qureg, int* targetQubits, int* targetPaulis, int numTargets, qreal angle, int applyConj);
+void statevec_multiRotatePauli(Qureg qureg, int* targetQubits, enum pauliOpType* targetPaulis, int numTargets, qreal angle, int applyConj);
 
 # ifdef __cplusplus
 }

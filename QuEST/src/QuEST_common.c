@@ -432,7 +432,7 @@ void densmatr_oneQubitPauliError(Qureg qureg, int qubit, qreal pX, qreal pY, qre
 
 /** applyConj=1 will apply conjugate operation, else applyConj=0 */
 void statevec_multiRotatePauli(
-    Qureg qureg, int* targetQubits, int* targetPaulis, int numTargets, qreal angle,
+    Qureg qureg, int* targetQubits, enum pauliOpType* targetPaulis, int numTargets, qreal angle,
     int applyConj
 ) {
     qreal fac = 1/sqrt(2);
@@ -446,7 +446,7 @@ void statevec_multiRotatePauli(
     
     // rotate basis so that exp(Z) will effect exp(Y) and exp(X)
     for (int t=0; t < numTargets; t++) {
-        if (targetPaulis[t] == PAULI_IDENTITY)
+        if (targetPaulis[t] == PAULI_I)
             mask -= 1LL << targetPaulis[t]; // remove target from mask
         if (targetPaulis[t] == PAULI_X)
             statevec_compactUnitary(qureg, targetQubits[t], uRyAlpha, uRyBeta);
@@ -466,6 +466,46 @@ void statevec_multiRotatePauli(
         if (targetPaulis[t] == PAULI_Y)
             statevec_compactUnitary(qureg, targetQubits[t], uRxAlpha, uRxBeta);
     }
+}
+
+// <pauli> = <qureg|pauli|qureg> = qureg . pauli(qureg)
+qreal statevec_calcExpecValProd(Qureg qureg, int* targetQubits, enum pauliOpType* pauliCodes, int numTargets, Qureg workspace) {
+    
+    statevec_cloneQureg(workspace, qureg);
+    
+    // produces both pauli|qureg> or pauli * qureg (as a density matrix)
+    for (int i=0; i < numTargets; i++) {
+        // (pauliCodes[i] == PAULI_I) applies no operation
+        if (pauliCodes[i] == PAULI_X)
+            statevec_pauliX(workspace, targetQubits[i]);
+        if (pauliCodes[i] == PAULI_Y)
+            statevec_pauliY(workspace, targetQubits[i]);
+        if (pauliCodes[i] == PAULI_Z)
+            statevec_pauliZ(workspace, targetQubits[i]);
+    }
+    
+    // compute the expected value
+    qreal value;
+    if (qureg.isDensityMatrix)
+        value = densmatr_calcTotalProb(workspace); // Trace(ops qureg)
+    else
+        value = statevec_calcInnerProduct(workspace, qureg).real; // <qureg|ops|qureg>
+                
+    return value;
+}
+
+qreal statevec_calcExpecValSum(Qureg qureg, enum pauliOpType* allCodes, qreal* termCoeffs, int numSumTerms, Qureg workspace) {
+    
+    int numQb = qureg.numQubitsRepresented;
+    int targs[numQb];
+    for (int q=0; q < numQb; q++)
+        targs[q] = q;
+        
+    qreal value = 0;
+    for (int t=0; t < numSumTerms; t++)
+        value += termCoeffs[t] * statevec_calcExpecValProd(qureg, targs, &allCodes[t*numQb], numQb, workspace);
+        
+    return value;
 }
 
 #ifdef __cplusplus
