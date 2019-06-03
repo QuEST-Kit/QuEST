@@ -53,7 +53,7 @@ typedef struct ComplexArray
  */
  
  // Codes for specifying Pauli operators 
- enum pauliOpType {PAULI_IDENTITY=0, PAULI_X=1, PAULI_Y=2, PAULI_Z=3};
+ enum pauliOpType {PAULI_I=0, PAULI_X=1, PAULI_Y=2, PAULI_Z=3};
 
 /** Represents one complex number.
  */
@@ -1789,7 +1789,7 @@ void multiRotateZ(Qureg qureg, int* qubits, int numQubits, qreal angle);
     \exp \left( - i \theta/2 \bigotimes_{j} \hat{\sigma}_j\right)
  * \f]
  * where \f$\hat{\sigma}_j \in \{1, X, Y, Z\}\f$ is a Pauli operator (indicated by
- * codes 0, 1, 2, 3 respectively in \p targetPaulis, or by enums PAULI_IDENTITY,
+ * codes 0, 1, 2, 3 respectively in \p targetPaulis, or by enums PAULI_I,
  * PAULI_X, PAULI_Y and PAULI_Z) operating upon the qubit 
  * \p targetQubits[j], and \f$\theta\f$ is the passed \p angle.
  *  The operators specified in \p targetPaulis act on the corresponding qubit in \p targetQubits. 
@@ -1811,7 +1811,7 @@ void multiRotateZ(Qureg qureg, int* qubits, int numQubits, qreal angle);
  *
  * @param[in,out] qureg object representing the set of all qubits
  * @param[in] targetQubits a list of the indices of the target qubits 
- * @param[in] targetPaulis a list of the Pauli codes (0=PAULI_IDENTITY, 1=PAULI_X, 2=PAULI_Y, 3=PAULI_Z) 
+ * @param[in] targetPaulis a list of the Pauli codes (0=PAULI_I, 1=PAULI_X, 2=PAULI_Y, 3=PAULI_Z) 
  *      to apply to the corresponding qubits in \p targetQubits
  * @param[in] numTargets number of target qubits, i.e. the length of \p targetQubits and \p targetPaulis
  * @param[in] angle the angle by which the multi-qubit state is rotated
