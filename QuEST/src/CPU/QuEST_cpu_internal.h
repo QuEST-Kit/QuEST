@@ -125,6 +125,7 @@ void statevec_collapseToKnownProbOutcomeDistributedRenorm (Qureg qureg, const in
 
 void statevec_collapseToOutcomeDistributedSetZero(Qureg qureg);
 
+void statevec_twoQubitUnitaryLocal(Qureg qureg, const int q1, const int q2, ComplexMatrix4 u);
 
 
 

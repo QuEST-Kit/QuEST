@@ -1627,6 +1627,101 @@ void statevec_compactUnitaryLocal (Qureg qureg, const int targetQubit, Complex a
 
 } 
 
+void statevec_twoQubitUnitaryLocal(Qureg qureg, const int q1, const int q2, ComplexMatrix4 u) {
+
+    // can't use qureg.stateVec as a private OMP var
+    qreal *reVec = qureg.stateVec.real;
+    qreal *imVec = qureg.stateVec.imag;
+    
+    long long int numTasks = qureg.numAmpsPerChunk >> 2; // each iteration updates 4 amplitudes
+    long long int thisTask;
+    long long int leftBits, rightBits;
+    long long int ind00, ind01, ind10, ind11;
+    qreal re00, re01, re10, re11;
+    qreal im00, im01, im10, im11;
+    
+# ifdef _OPENMP
+# pragma omp parallel \
+    default  (none) \
+    shared   (reVec,imVec,numTasks,u) \
+    private  (thisTask,leftBits,rightBits, ind00,ind01,ind10,ind11, re00,re01,re10,re11, im00,im01,im10,im11) 
+# endif
+    {
+# ifdef _OPENMP
+# pragma omp for schedule (static)
+# endif
+        for (thisTask=0; thisTask<numTasks; thisTask++) {
+            
+            // determine ind00 of |..0..0..>
+            // insert 0 bit at q1  
+            leftBits = (thisTask >> q1) << q1;
+            rightBits = thisTask - leftBits;
+            ind00 = (leftBits << 1) ^ rightBits;
+            // insert 0 bit at q2
+            leftBits = (ind00 >> q2) << q2;
+            rightBits = ind00 - leftBits;
+            ind00 = (leftBits << 1) ^ rightBits;
+            
+            // inds of |..0..1..>, |..1..0..> and |..1..1..>
+            ind01 = ind00 ^ (1LL << q1);
+            ind10 = ind00 ^ (1LL << q2);
+            ind11 = ind01 ^ (1LL << q2);
+
+            // extract statevec amplitudes 
+            re00 = reVec[ind00]; im00 = imVec[ind00];
+            re01 = reVec[ind01]; im01 = imVec[ind01];
+            re10 = reVec[ind10]; im10 = imVec[ind10];
+            re11 = reVec[ind11]; im11 = imVec[ind11];
+
+            // apply u * {amp00, amp01, amp10, amp11}
+            reVec[ind00] = 
+                u.r0c0.real*re00 - u.r0c0.imag*im00 +
+                u.r0c1.real*re01 - u.r0c1.imag*im01 +
+                u.r0c2.real*re10 - u.r0c2.imag*im10 +
+                u.r0c3.real*re11 - u.r0c3.imag*im11;
+            imVec[ind00] =
+                u.r0c0.imag*re00 + u.r0c0.real*im00 +
+                u.r0c1.imag*re01 + u.r0c1.real*im01 +
+                u.r0c2.imag*re10 + u.r0c2.real*im10 +
+                u.r0c3.imag*re11 + u.r0c3.real*im11;
+                
+            reVec[ind01] = 
+                u.r1c0.real*re00 - u.r1c0.imag*im00 +
+                u.r1c1.real*re01 - u.r1c1.imag*im01 +
+                u.r1c2.real*re10 - u.r1c2.imag*im10 +
+                u.r1c3.real*re11 - u.r1c3.imag*im11;
+            imVec[ind01] =
+                u.r1c0.imag*re00 + u.r1c0.real*im00 +
+                u.r1c1.imag*re01 + u.r1c1.real*im01 +
+                u.r1c2.imag*re10 + u.r1c2.real*im10 +
+                u.r1c3.imag*re11 + u.r1c3.real*im11;
+                
+            reVec[ind10] = 
+                u.r2c0.real*re00 - u.r2c0.imag*im00 +
+                u.r2c1.real*re01 - u.r2c1.imag*im01 +
+                u.r2c2.real*re10 - u.r2c2.imag*im10 +
+                u.r2c3.real*re11 - u.r2c3.imag*im11;
+            imVec[ind10] =
+                u.r2c0.imag*re00 + u.r2c0.real*im00 +
+                u.r2c1.imag*re01 + u.r2c1.real*im01 +
+                u.r2c2.imag*re10 + u.r2c2.real*im10 +
+                u.r2c3.imag*re11 + u.r2c3.real*im11;    
+                
+            reVec[ind11] = 
+                u.r3c0.real*re00 - u.r3c0.imag*im00 +
+                u.r3c1.real*re01 - u.r3c1.imag*im01 +
+                u.r3c2.real*re10 - u.r3c2.imag*im10 +
+                u.r3c3.real*re11 - u.r3c3.imag*im11;
+            imVec[ind11] =
+                u.r3c0.imag*re00 + u.r3c0.real*im00 +
+                u.r3c1.imag*re01 + u.r3c1.real*im01 +
+                u.r3c2.imag*re10 + u.r3c2.real*im10 +
+                u.r3c3.imag*re11 + u.r3c3.real*im11;    
+        }
+    }
+}
+
+
 void statevec_unitaryLocal(Qureg qureg, const int targetQubit, ComplexMatrix2 u)
 {
     long long int sizeBlock, sizeHalfBlock;

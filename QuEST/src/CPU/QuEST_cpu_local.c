@@ -290,3 +290,8 @@ void seedQuESTDefault(){
     getQuESTDefaultSeedKey(key);
     init_by_array(key, 2);
 }
+
+void statevec_twoQubitUnitary(Qureg qureg, const int q1, const int q2, ComplexMatrix4 u)
+{
+    statevec_twoQubitUnitaryLocal(qureg, q1, q2,u);
+}
