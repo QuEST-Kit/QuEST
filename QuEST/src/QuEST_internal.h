@@ -32,6 +32,8 @@ Complex getConjugateScalar(Complex scalar);
 
 ComplexMatrix2 getConjugateMatrix2(ComplexMatrix2 matr);
 
+ComplexMatrix4 getConjugateMatrix4(ComplexMatrix4 matr);
+
 void ensureIndsIncrease(int* ind1, int* ind2);
 
 void getComplexPairFromRotation(qreal angle, Vector axis, Complex* alpha, Complex* beta);
@@ -161,6 +163,8 @@ qreal statevec_calcExpecValSum(Qureg qureg, enum pauliOpType* allCodes, qreal* t
 void statevec_compactUnitary(Qureg qureg, const int targetQubit, Complex alpha, Complex beta);
 
 void statevec_unitary(Qureg qureg, const int targetQubit, ComplexMatrix2 u);
+
+void statevec_twoQubitUnitary(Qureg qureg, const int q1, const int q2, ComplexMatrix4 u);
 
 void statevec_rotateX(Qureg qureg, const int rotQubit, qreal angle);
 

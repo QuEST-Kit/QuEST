@@ -86,6 +86,15 @@ ComplexMatrix2 getConjugateMatrix2(ComplexMatrix2 matrix) {
     return conjMatrix;
 }
 
+ComplexMatrix4 getConjugateMatrix4(ComplexMatrix4 u) {
+    ComplexMatrix4 c = u;
+    c.r0c0.imag *= -1; c.r0c1.imag *= -1; c.r0c2.imag *= -1; c.r0c3.imag *= -1;
+    c.r1c0.imag *= -1; c.r1c1.imag *= -1; c.r1c2.imag *= -1; c.r1c3.imag *= -1;
+    c.r2c0.imag *= -1; c.r2c1.imag *= -1; c.r2c2.imag *= -1; c.r2c3.imag *= -1;
+    c.r3c0.imag *= -1; c.r3c1.imag *= -1; c.r3c2.imag *= -1; c.r3c3.imag *= -1;
+    return c;
+}
+
 void getComplexPairFromRotation(qreal angle, Vector axis, Complex* alpha, Complex* beta) {
     
     Vector unitAxis = getUnitVector(axis);

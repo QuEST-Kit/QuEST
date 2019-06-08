@@ -71,6 +71,16 @@ typedef struct ComplexMatrix2
     Complex r1c0, r1c1;
 } ComplexMatrix2;
 
+/** Represents a 4x4 matrix of complex numbers
+ */
+ typedef struct ComplexMatrix4
+ {
+     Complex r0c0, r0c1, r0c2, r0c3;
+     Complex r1c0, r1c1, r1c2, r1c3;
+     Complex r2c0, r2c1, r2c2, r2c3;
+     Complex r3c0, r3c1, r3c2, r3c3;
+ } ComplexMatrix4;
+
 /** Represents a 3-vector of real numbers
  */
 typedef struct Vector
