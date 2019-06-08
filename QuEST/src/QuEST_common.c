@@ -76,7 +76,7 @@ Complex getConjugateScalar(Complex scalar) {
     return conjScalar;
 }
 
-ComplexMatrix2 getConjugateMatrix(ComplexMatrix2 matrix) {
+ComplexMatrix2 getConjugateMatrix2(ComplexMatrix2 matrix) {
     
     ComplexMatrix2 conjMatrix;
     conjMatrix.r0c0 = getConjugateScalar(matrix.r0c0);

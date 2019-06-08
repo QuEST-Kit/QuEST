@@ -30,7 +30,7 @@ qreal getVectorMagnitude(Vector vec);
 
 Complex getConjugateScalar(Complex scalar);
 
-ComplexMatrix2 getConjugateMatrix(ComplexMatrix2 matr);
+ComplexMatrix2 getConjugateMatrix2(ComplexMatrix2 matr);
 
 void ensureIndsIncrease(int* ind1, int* ind2);
 

@@ -87,7 +87,7 @@ static const char* errorMessages[] = {
     [E_INVALID_TWO_QUBIT_DEPOL_PROB] = "The probability of a two-qubit depolarising error cannot exceed 15/16, which maximally mixes.",
     [E_INVALID_ONE_QUBIT_PAULI_PROBS] = "The probability of any X, Y or Z error cannot exceed the probability of no error.",
     [E_INVALID_CONTROLS_BIT_STATE] = "The state of the control qubits must be a bit sequence (0s and 1s).",
-    [E_INVALID_PAULI_CODE] = "Invalid Pauli code. Codes must be 0 (or PAULI_IDENTITY), 1 (PAULI_X), 2 (PAULI_Y) or 3 (PAULI_Z) to indicate the identity, X, Y and Z gates respectively.",
+    [E_INVALID_PAULI_CODE] = "Invalid Pauli code. Codes must be 0 (or PAULI_I), 1 (PAULI_X), 2 (PAULI_Y) or 3 (PAULI_Z) to indicate the identity, X, Y and Z gates respectively.",
     [E_INVALID_NUM_SUM_TERMS] = "Invalid number of terms in the Pauli sum. The number of terms must be >0."
 };
 
@@ -119,7 +119,7 @@ int isComplexPairUnitary(Complex alpha, Complex beta) {
                 + beta.imag*beta.imag) < REAL_EPS );
 }
 
-int isMatrixUnitary(ComplexMatrix2 u) {
+int isMatrix2Unitary(ComplexMatrix2 u) {
     if ( absReal( u.r0c0.real*u.r0c0.real 
                 + u.r0c0.imag*u.r0c0.imag
                 + u.r1c0.real*u.r1c0.real
@@ -222,8 +222,9 @@ void validateControlState(int* controlState, const int numControlQubits, const c
         QuESTAssert(controlState[i] == 0 || controlState[i] == 1, E_INVALID_CONTROLS_BIT_STATE, caller);
 }
 
-void validateUnitaryMatrix(ComplexMatrix2 u, const char* caller) {
-    QuESTAssert(isMatrixUnitary(u), E_NON_UNITARY_MATRIX, caller);
+void validateOneQubitUnitaryMatrix(ComplexMatrix2 u, const char* caller) {
+    QuESTAssert(isMatrix2Unitary(u), E_NON_UNITARY_MATRIX, caller);
+}
 }
 
 void validateUnitaryComplexPair(Complex alpha, Complex beta, const char* caller) {
@@ -318,7 +319,7 @@ void validatePauliCodes(enum pauliOpType* pauliCodes, int numPauliCodes, const c
     for (int i=0; i < numPauliCodes; i++) {
         int code = pauliCodes[i];
         QuESTAssert(
-            code==PAULI_IDENTITY || code==PAULI_X || code==PAULI_Y || code==PAULI_Z, 
+            code==PAULI_I || code==PAULI_X || code==PAULI_Y || code==PAULI_Z, 
             E_INVALID_PAULI_CODE, caller);
     }
 }
