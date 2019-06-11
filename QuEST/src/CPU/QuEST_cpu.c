@@ -33,6 +33,14 @@ static int extractBit (const int locationOfBitFromRight, const long long int the
     return (theEncodedNumber & ( 1LL << locationOfBitFromRight )) >> locationOfBitFromRight;
 }
 
+/** Insert a zero bit at the specified position into a bit sequence */
+static long long int insertZeroBit(long long int number, int index) {
+    long long int left, right;
+    left = (number >> index) << index;
+    right = number - left;
+    return (left << 1) ^ right;
+}
+
 void densmatr_oneQubitDegradeOffDiagonal(Qureg qureg, const int targetQubit, qreal retain){
     const long long int numTasks = qureg.numAmpsPerChunk;
     long long int innerMask = 1LL << targetQubit;
@@ -3323,4 +3331,100 @@ void statevec_collapseToOutcomeDistributedSetZero(Qureg qureg)
     }
 }
 
+/** It is ensured that all amplitudes needing to be swapped are on this node.
+ * This means that amplitudes for |a 0..0..> to |a 1..1..> all exist on this node 
+ * and each node has a different bit-string prefix "a". The prefix 'a' (and ergo,
+ * the chunkID) don't enter the calculations for the offset of |a 0..1..> and 
+ * |a 1..0..> from |a 0..0..> and ergo are not featured below.
+ */
+void statevec_swapQubitAmpsLocal(Qureg qureg, int qb1, int qb2) {
+
+    // can't use qureg.stateVec as a private OMP var
+    qreal *reVec = qureg.stateVec.real;
+    qreal *imVec = qureg.stateVec.imag;
+    
+    long long int numTasks = qureg.numAmpsPerChunk >> 2; // each iteration updates 2 amps and skips 2 amps
+    long long int thisTask;
+    long long int ind00, ind01, ind10;
+    qreal re01, re10;
+    qreal im01, im10;
+    
+# ifdef _OPENMP
+# pragma omp parallel \
+    default  (none) \
+    shared   (reVec,imVec,numTasks,qb1,qb2) \
+    private  (thisTask, ind00,ind01,ind10, re01,re10, im01,im10) 
+# endif
+    {
+# ifdef _OPENMP
+# pragma omp for schedule (static)
+# endif
+        for (thisTask=0; thisTask<numTasks; thisTask++) {    
+            // determine ind00 of |..0..0..>, |..0..1..> and |..1..0..>
+            ind00 = insertZeroBit(insertZeroBit(thisTask, qb1), qb2);
+            ind01 = ind00 ^ (1LL << qb1);
+            ind10 = ind00 ^ (1LL << qb2);
+
+            // extract statevec amplitudes 
+            re01 = reVec[ind01]; im01 = imVec[ind01];
+            re10 = reVec[ind10]; im10 = imVec[ind10];
+
+            // swap 01 and 10 amps
+            reVec[ind01] = re10; reVec[ind10] = re01;
+            imVec[ind01] = im10; imVec[ind10] = im01;
+        }
+    }
+}
+
+int isOddParity(long long int number, int qb1, int qb2) {
+    return extractBit(qb1, number) != extractBit(qb2, number);
+}
+
+static long long int flipBit(long long int number, int bitInd) {
+    return (number ^ (1LL << bitInd));
+}
+
+/** qureg.pairStateVec contains the entire set of amplitudes of the paired node
+ * which includes the set of all amplitudes which need to be swapped between
+ * |..0..1..> and |..1..0..>
+ */
+void statevec_swapQubitAmpsDistributed(Qureg qureg, int pairRank, int qb1, int qb2) {
+    
+    // can't use qureg.stateVec as a private OMP var
+    qreal *reVec = qureg.stateVec.real;
+    qreal *imVec = qureg.stateVec.imag;
+    qreal *rePairVec = qureg.pairStateVec.real;
+    qreal *imPairVec = qureg.pairStateVec.real;
+    
+    long long int numLocalAmps = qureg.numAmpsPerChunk;
+    long long int globalStartInd = qureg.chunkId * numLocalAmps;
+    long long int pairGlobalStartInd = pairRank * numLocalAmps;
+
+    long long int localInd, globalInd;
+    long long int pairLocalInd, pairGlobalInd;
+
+# ifdef _OPENMP
+# pragma omp parallel \
+    default  (none) \
+    shared   (reVec,imVec,rePairVec,imPairVec,numLocalAmps,globalStartInd,pairGlobalStartInd,qb1,qb2) \
+    private  (localInd,globalInd, pairLocalInd,pairGlobalInd) 
+# endif
+    {
+# ifdef _OPENMP
+# pragma omp for schedule (static)
+# endif
+        for (localInd=0; localInd < numLocalAmps; localInd++) { 
+            
+            globalInd = globalStartInd + localInd;
+            if (isOddParity(globalInd, qb1, qb2)) {
+                
+                pairGlobalInd = flipBit(flipBit(globalInd, qb1), qb2);
+                pairLocalInd = pairGlobalInd - pairGlobalStartInd;
+                
+                reVec[localInd] = rePairVec[pairLocalInd];
+                imVec[localInd] = imPairVec[pairLocalInd];
+            }
+        }
+    }
+}
 

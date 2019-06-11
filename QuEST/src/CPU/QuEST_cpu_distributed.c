@@ -27,12 +27,12 @@
 # endif
 
 /** Get the value of the bit at a particular index in a number.
-  SCB edit: new definition of extractBit is much faster ***
+ * This needs to be static (scoped in this file), since the GPU backend 
+ * needs a device-specific redefinition to be callable from GPU kernels.
  * @param[in] locationOfBitFromRight location of bit in theEncodedNumber
  * @param[in] theEncodedNumber number to search
  * @return the value of the bit in theEncodedNumber
  */
-// TODO -- This should not also be multiply defined in QuEST_cpu.c -- move to a helper functions file
 static int extractBit (const int locationOfBitFromRight, const long long int theEncodedNumber)
 {
     return (theEncodedNumber & ( 1LL << locationOfBitFromRight )) >> locationOfBitFromRight;
@@ -1313,17 +1313,50 @@ void seedQuESTDefault(){
     init_by_array(key, 2);
 }
 
+static long long int flipBit(long long int number, int bitInd) {
+    return (number ^ (1LL << bitInd));
+}
+
+/** returns -1 if this node contains no amplitudes where qb1 and qb2 
+ * have opposite parity, otherwise returns the global index of one
+ * of such contained amplitudes (not necessarily the first)
+ */
+long long int getGlobalIndOfOddParityInChunk(Qureg qureg, int qb1, int qb2) {
+    long long int chunkStartInd = qureg.numAmpsPerChunk * qureg.chunkId;
+    long long int chunkEndInd = chunkStartInd + qureg.numAmpsPerChunk; // exclusive
+    long long int oddParityInd;
+    
+    if (extractBit(qb1, chunkStartInd) != extractBit(qb2, chunkStartInd))
+        return chunkStartInd;
+    
+    oddParityInd = flipBit(chunkStartInd, qb1);
+    if (oddParityInd >= chunkStartInd && oddParityInd < chunkEndInd)
+        return oddParityInd;
+        
+    oddParityInd = flipBit(chunkStartInd, qb2);
+    if (oddParityInd >= chunkStartInd && oddParityInd < chunkEndInd)
+        return oddParityInd;
+    
+    return -1;
+}
 
 
-
-
-// @TODO: this should be done with direct MPI communication 
-void statevec_swapQubits_FIXTHIS(Qureg qureg, int qb1, int qb2) {
-
-    // this is just swapGate defined in common
-    statevec_controlledNot(qureg, qb1, qb2);
-    statevec_controlledNot(qureg, qb2, qb1);
-    statevec_controlledNot(qureg, qb1, qb2);
+void statevec_swapQubitAmps(Qureg qureg, int qb1, int qb2) {
+    
+    // perform locally if possible 
+    int qbBig = (qb1 > qb2)? qb1 : qb2;
+    if (halfMatrixBlockFitsInChunk(qureg.numAmpsPerChunk, qbBig))
+        return statevec_swapQubitAmpsLocal(qureg, qb1, qb2);
+        
+    // do nothing if this node contains no amplitudes to swap
+    long long int oddParityGlobalInd = getGlobalIndOfOddParityInChunk(qureg, qb1, qb2);
+    if (oddParityGlobalInd == -1)
+        return;
+        
+    // determine and swap amps with pair node
+    int pairRank = flipBit(flipBit(oddParityGlobalInd, qb1), qb2) / qureg.numAmpsPerChunk;
+    exchangeStateVectors(qureg, pairRank);
+    statevec_swapQubitAmpsDistributed(qureg, pairRank, qb1, qb2);
 }
 
 // @TODO: refactor so that swap-backs aren't actually performed; the qureg's qubit locs are updated
@@ -1343,31 +1376,29 @@ void statevec_twoQubitUnitary(Qureg qureg, const int q1, const int q2, ComplexMa
         printf("q2 doesn't fit!\n");
         
         int qSwap = (q1 > 0)? q1-1 : q1+1;
-        statevec_swapQubits_FIXTHIS(qureg, q2, qSwap);
+        statevec_swapQubitAmps(qureg, q2, qSwap);
         statevec_twoQubitUnitaryLocal(qureg, q1, qSwap, u);
-        statevec_swapQubits_FIXTHIS(qureg, q2, qSwap);
+        statevec_swapQubitAmps(qureg, q2, qSwap);
 
     } else if (halfMatrixBlockFitsInChunk(qureg.numAmpsPerChunk, q2)) {
         
         printf("q1 doesn't fit!\n");
 
         int qSwap = (q2 > 0)? q2-1 : q2+1;
-        statevec_swapQubits_FIXTHIS(qureg, q1, qSwap);
+        statevec_swapQubitAmps(qureg, q1, qSwap);
         statevec_twoQubitUnitaryLocal(qureg, qSwap, q2, u);
-        statevec_swapQubits_FIXTHIS(qureg, q1, qSwap);
+        statevec_swapQubitAmps(qureg, q1, qSwap);
         
     } else {
         
         printf("neither fit!\n");
         
-        //
-        
         int swap1 = 0;
         int swap2 = 1;
-        statevec_swapQubits_FIXTHIS(qureg, q1, swap1);
-        statevec_swapQubits_FIXTHIS(qureg, q2, swap2);
+        statevec_swapQubitAmps(qureg, q1, swap1);
+        statevec_swapQubitAmps(qureg, q2, swap2);
         statevec_twoQubitUnitaryLocal(qureg, swap1, swap2, u);
-        statevec_swapQubits_FIXTHIS(qureg, q1, swap1);
-        statevec_swapQubits_FIXTHIS(qureg, q2, swap2);
+        statevec_swapQubitAmps(qureg, q1, swap1);
+        statevec_swapQubitAmps(qureg, q2, swap2);
     }
 }

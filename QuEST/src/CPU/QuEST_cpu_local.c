@@ -295,3 +295,8 @@ void statevec_twoQubitUnitary(Qureg qureg, const int q1, const int q2, ComplexMa
 {
     statevec_twoQubitUnitaryLocal(qureg, q1, q2,u);
 }
+
+void statevec_swapQubitAmps(Qureg qureg, int qb1, int qb2) 
+{
+    statevec_swapQubitAmpsLocal(qureg, qb1, qb2);
+}
