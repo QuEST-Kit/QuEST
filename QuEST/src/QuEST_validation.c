@@ -51,7 +51,8 @@ typedef enum {
     E_INVALID_ONE_QUBIT_PAULI_PROBS,
     E_INVALID_CONTROLS_BIT_STATE,
     E_INVALID_PAULI_CODE,
-    E_INVALID_NUM_SUM_TERMS
+    E_INVALID_NUM_SUM_TERMS,
+    E_CANNOT_FIT_MULTI_QUBIT_UNITARY
 } ErrorCode;
 
 static const char* errorMessages[] = {
@@ -88,7 +89,8 @@ static const char* errorMessages[] = {
     [E_INVALID_ONE_QUBIT_PAULI_PROBS] = "The probability of any X, Y or Z error cannot exceed the probability of no error.",
     [E_INVALID_CONTROLS_BIT_STATE] = "The state of the control qubits must be a bit sequence (0s and 1s).",
     [E_INVALID_PAULI_CODE] = "Invalid Pauli code. Codes must be 0 (or PAULI_I), 1 (PAULI_X), 2 (PAULI_Y) or 3 (PAULI_Z) to indicate the identity, X, Y and Z gates respectively.",
-    [E_INVALID_NUM_SUM_TERMS] = "Invalid number of terms in the Pauli sum. The number of terms must be >0."
+    [E_INVALID_NUM_SUM_TERMS] = "Invalid number of terms in the Pauli sum. The number of terms must be >0.",
+    [E_CANNOT_FIT_MULTI_QUBIT_UNITARY] = "The specified unitary targets too many qubits; the batches of amplitudes to modify cannot all fit in a single distributed node's memory allocation."
 };
 
 void exitWithError(ErrorCode code, const char* func){
@@ -430,6 +432,12 @@ void validatePauliCodes(enum pauliOpType* pauliCodes, int numPauliCodes, const c
 void validateNumSumTerms(int numTerms, const char* caller) {
     QuESTAssert(numTerms > 0, E_INVALID_NUM_SUM_TERMS, caller);
 }
+
+void validateMultiQubitUnitaryFits(Qureg qureg, int numTargetQubits, const char* caller) {
+    long long int numAmpsNeeded = 1LL << numTargetQubits;
+    QuESTAssert(qureg.numAmpsPerChunk >= numAmpsNeeded, E_CANNOT_FIT_MULTI_QUBIT_UNITARY, caller);
+}
+
 
 
 #ifdef __cplusplus

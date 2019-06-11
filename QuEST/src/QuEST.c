@@ -260,6 +260,7 @@ void controlledRotateZ(Qureg qureg, const int controlQubit, const int targetQubi
 void twoQubitUnitary(Qureg qureg, const int targetQubit1, const int targetQubit2, ComplexMatrix4 u) {
     validateMultiTargets(qureg, (int []) {targetQubit1, targetQubit2}, 2, __func__);
     validateTwoQubitUnitaryMatrix(u, __func__);
+    validateMultiQubitUnitaryFits(qureg, 2, __func__);
     
     statevec_twoQubitUnitary(qureg, targetQubit1, targetQubit2, u);
     if (qureg.isDensityMatrix) {

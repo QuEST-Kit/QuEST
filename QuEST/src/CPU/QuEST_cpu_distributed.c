@@ -1317,7 +1317,6 @@ void seedQuESTDefault(){
 
 
 
-
 // @TODO: this should be done with direct MPI communication 
 void statevec_swapQubits_FIXTHIS(Qureg qureg, int qb1, int qb2) {
 
@@ -1329,13 +1328,6 @@ void statevec_swapQubits_FIXTHIS(Qureg qureg, int qb1, int qb2) {
 
 // @TODO: refactor so that swap-backs aren't actually performed; the qureg's qubit locs are updated
 void statevec_twoQubitUnitary(Qureg qureg, const int q1, const int q2, ComplexMatrix4 u) {
-    
-    // @TODO: this method requires that the chunks of the first two qubits (0 and 1) fit into a single node.
-    //        Ergo, below fails for 4 qubits between 8 nodes; it needs at least 4 amps per node
-    if (qureg.numAmpsPerChunk < 4) {
-        // CANNOT DO UNITARY VIA SWAPPING!!
-        printf("CANNOT ENACT 2 QUBIT UNITARY; there are less than 4 amps on each node\n");
-    }
     
     // it's important that qubit 1 vs 2 order is preserved in the ultimate call to twoQubitUnitary
     
@@ -1350,7 +1342,7 @@ void statevec_twoQubitUnitary(Qureg qureg, const int q1, const int q2, ComplexMa
         
         printf("q2 doesn't fit!\n");
         
-        int qSwap = (q1 > 0)? q1-1 : q1+1; // @TODO this seems VERY dangerous, though q1+1=2 isn't likely to be q2 if they don't both fit in-chunk
+        int qSwap = (q1 > 0)? q1-1 : q1+1;
         statevec_swapQubits_FIXTHIS(qureg, q2, qSwap);
         statevec_twoQubitUnitaryLocal(qureg, q1, qSwap, u);
         statevec_swapQubits_FIXTHIS(qureg, q2, qSwap);
@@ -1359,7 +1351,7 @@ void statevec_twoQubitUnitary(Qureg qureg, const int q1, const int q2, ComplexMa
         
         printf("q1 doesn't fit!\n");
 
-        int qSwap = (q2 > 0)? q2-1 : q2+2; // @TODO this seems VERY dangerous, though q2+1=2 isn't likely to be q1 if they don't both fit in-chunk
+        int qSwap = (q2 > 0)? q2-1 : q2+1;
         statevec_swapQubits_FIXTHIS(qureg, q1, qSwap);
         statevec_twoQubitUnitaryLocal(qureg, qSwap, q2, u);
         statevec_swapQubits_FIXTHIS(qureg, q1, qSwap);
@@ -1371,7 +1363,7 @@ void statevec_twoQubitUnitary(Qureg qureg, const int q1, const int q2, ComplexMa
         //
         
         int swap1 = 0;
-        int swap2 = 1; //@TODO: this assumes that both 0 and 1 can simultaneously fit (fairly of course)
+        int swap2 = 1;
         statevec_swapQubits_FIXTHIS(qureg, q1, swap1);
         statevec_swapQubits_FIXTHIS(qureg, q2, swap2);
         statevec_twoQubitUnitaryLocal(qureg, swap1, swap2, u);

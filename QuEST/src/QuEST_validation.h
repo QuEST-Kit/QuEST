@@ -77,6 +77,8 @@ void validatePauliCodes(enum pauliOpType* pauliCodes, int numPauliCodes, const c
 
 void validateNumSumTerms(int numTerms, const char* caller);
 
+void validateMultiQubitUnitaryFits(Qureg qureg, int numTargetQubits, const char* caller);
+
 # ifdef __cplusplus
 }
 # endif
