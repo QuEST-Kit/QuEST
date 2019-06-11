@@ -1359,40 +1359,35 @@ void statevec_swapQubitAmps(Qureg qureg, int qb1, int qb2) {
     statevec_swapQubitAmpsDistributed(qureg, pairRank, qb1, qb2);
 }
 
-// @TODO: refactor so that swap-backs aren't actually performed; the qureg's qubit locs are updated
+/** This calls swapQubitAmps only when it would involve a distributed communication;
+ * if the qubit chunks already fit in the node, it operates the unitary direct.
+ * Note the order of q1 and q2 in the call to twoQubitUnitaryLocal is important.
+ * 
+ * @TODO: refactor so that the 'swap back' isn't performed; instead the qubit locations 
+ * are updated.
+ * @TODO: the double swap (q1,q2 to 0,1) may be possible simultaneously by a bespoke 
+ * swap routine.
+ */
 void statevec_twoQubitUnitary(Qureg qureg, const int q1, const int q2, ComplexMatrix4 u) {
+    int q1FitsInNode = halfMatrixBlockFitsInChunk(qureg.numAmpsPerChunk, q1);
+    int q2FitsInNode = halfMatrixBlockFitsInChunk(qureg.numAmpsPerChunk, q2);
     
-    // it's important that qubit 1 vs 2 order is preserved in the ultimate call to twoQubitUnitary
-    
-    long long int chunkSize = qureg.numAmpsPerChunk;
-    
-    if (halfMatrixBlockFitsInChunk(chunkSize, q1) && halfMatrixBlockFitsInChunk(chunkSize, q2)) {
-        
-        printf("both fit!\n");
+    if (q1FitsInNode && q2FitsInNode) {
         statevec_twoQubitUnitaryLocal(qureg, q1, q2, u);
         
-    } else if (halfMatrixBlockFitsInChunk(qureg.numAmpsPerChunk, q1)) {
-        
-        printf("q2 doesn't fit!\n");
-        
+    } else if (q1FitsInNode) {
         int qSwap = (q1 > 0)? q1-1 : q1+1;
         statevec_swapQubitAmps(qureg, q2, qSwap);
         statevec_twoQubitUnitaryLocal(qureg, q1, qSwap, u);
         statevec_swapQubitAmps(qureg, q2, qSwap);
 
-    } else if (halfMatrixBlockFitsInChunk(qureg.numAmpsPerChunk, q2)) {
-        
-        printf("q1 doesn't fit!\n");
-
+    } else if (q2FitsInNode) {
         int qSwap = (q2 > 0)? q2-1 : q2+1;
         statevec_swapQubitAmps(qureg, q1, qSwap);
         statevec_twoQubitUnitaryLocal(qureg, qSwap, q2, u);
         statevec_swapQubitAmps(qureg, q1, qSwap);
         
     } else {
-        
-        printf("neither fit!\n");
-        
         int swap1 = 0;
         int swap2 = 1;
         statevec_swapQubitAmps(qureg, q1, swap1);

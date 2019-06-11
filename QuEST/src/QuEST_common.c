@@ -361,13 +361,6 @@ qreal statevec_calcFidelity(Qureg qureg, Qureg pureState) {
     return innerProdMag;
 }
 
-void statevec_swapGate(Qureg qureg, int qb1, int qb2) {
-
-    statevec_controlledNot(qureg, qb1, qb2);
-    statevec_controlledNot(qureg, qb2, qb1);
-    statevec_controlledNot(qureg, qb1, qb2);
-}
-
 void statevec_sqrtSwapGate(Qureg qureg, int qb1, int qb2) {
     
     ComplexMatrix2 u;

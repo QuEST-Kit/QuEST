@@ -28,9 +28,16 @@
  * @param[in] theEncodedNumber number to search
  * @return the value of the bit in theEncodedNumber
  */
-static int extractBit (const int locationOfBitFromRight, const long long int theEncodedNumber)
-{
+static int extractBit (const int locationOfBitFromRight, const long long int theEncodedNumber) {
     return (theEncodedNumber & ( 1LL << locationOfBitFromRight )) >> locationOfBitFromRight;
+}
+
+static int isOddParity(long long int number, int qb1, int qb2) {
+    return extractBit(qb1, number) != extractBit(qb2, number);
+}
+
+static long long int flipBit(long long int number, int bitInd) {
+    return (number ^ (1LL << bitInd));
 }
 
 /** Insert a zero bit at the specified position into a bit sequence */
@@ -3362,8 +3369,8 @@ void statevec_swapQubitAmpsLocal(Qureg qureg, int qb1, int qb2) {
         for (thisTask=0; thisTask<numTasks; thisTask++) {    
             // determine ind00 of |..0..0..>, |..0..1..> and |..1..0..>
             ind00 = insertZeroBit(insertZeroBit(thisTask, qb1), qb2);
-            ind01 = ind00 ^ (1LL << qb1);
-            ind10 = ind00 ^ (1LL << qb2);
+            ind01 = flipBit(ind00, qb1);
+            ind10 = flipBit(ind00, qb2);
 
             // extract statevec amplitudes 
             re01 = reVec[ind01]; im01 = imVec[ind01];
@@ -3374,14 +3381,6 @@ void statevec_swapQubitAmpsLocal(Qureg qureg, int qb1, int qb2) {
             imVec[ind01] = im10; imVec[ind10] = im01;
         }
     }
-}
-
-int isOddParity(long long int number, int qb1, int qb2) {
-    return extractBit(qb1, number) != extractBit(qb2, number);
-}
-
-static long long int flipBit(long long int number, int bitInd) {
-    return (number ^ (1LL << bitInd));
 }
 
 /** qureg.pairStateVec contains the entire set of amplitudes of the paired node

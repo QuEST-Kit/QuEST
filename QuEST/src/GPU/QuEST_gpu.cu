@@ -17,8 +17,7 @@
 # define DEBUG 0
 
 
-__forceinline__ __device__ int extractBit (int locationOfBitFromRight, long long int theEncodedNumber)
-{
+__forceinline__ __device__ int extractBit (int locationOfBitFromRight, long long int theEncodedNumber) {
     return (theEncodedNumber & ( 1LL << locationOfBitFromRight )) >> locationOfBitFromRight;
 }
 
@@ -31,13 +30,21 @@ __forceinline__ __device__ int getBitMaskParity(long long int mask) {
     return parity;
 }
 
+__forceinline__ __device__ long long int flipBit(long long int number, int bitInd) {
+    return (number ^ (1LL << bitInd));
+}
+
+__forceinline__ __device__ long long int insertZeroBit(long long int number, int index) {
+    long long int left, right;
+    left = (number >> index) << index;
+    right = number - left;
+    return (left << 1) ^ right;
+}
+
+
 #ifdef __cplusplus
 extern "C" {
 #endif
-    
-
-
-
 
 
 void statevec_setAmps(Qureg qureg, long long int startInd, qreal* reals, qreal* imags, long long int numAmps) {
@@ -1344,6 +1351,39 @@ void statevec_multiControlledPhaseFlip(Qureg qureg, int *controlQubits, int numC
     statevec_multiControlledPhaseFlipKernel<<<CUDABlocks, threadsPerCUDABlock>>>(qureg, mask);
 }
 
+void statevec_swapQubitAmpsKernel(Qureg qureg, int qb1, int qb2) {
+
+    qreal *reVec = qureg.stateVec.real;
+    qreal *imVec = qureg.stateVec.imag;
+    
+    long long int numTasks = qureg.numAmpsPerChunk >> 2; // each iteration updates 2 amps and skips 2 amps
+    long long int thisTask = blockIdx.x*blockDim.x + threadIdx.x;
+    if (thisTask>=numTasks) return;
+    
+    long long int ind00, ind01, ind10;
+    qreal re01, re10, im01, im10;
+  
+    // determine ind00 of |..0..0..>, |..0..1..> and |..1..0..>
+    ind00 = insertZeroBit(insertZeroBit(thisTask, qb1), qb2);
+    ind01 = flipBit(ind00, qb1);
+    ind10 = flipBit(ind00, qb2);
+
+    // extract statevec amplitudes 
+    re01 = reVec[ind01]; im01 = imVec[ind01];
+    re10 = reVec[ind10]; im10 = imVec[ind10];
+
+    // swap 01 and 10 amps
+    reVec[ind01] = re10; reVec[ind10] = re01;
+    imVec[ind01] = im10; imVec[ind10] = im01;
+}
+
+void statevec_swapQubitAmps(Qureg qureg, int qb1, int qb2) 
+{
+    int threadsPerCUDABlock, CUDABlocks;
+    threadsPerCUDABlock = 128;
+    CUDABlocks = ceil((qreal)(qureg.numAmpsPerChunk>>2)/threadsPerCUDABlock);
+    state_swapQubitAmpsKernel<<<CUDABlocks, threadsPerCUDABlock>>>(qureg, targetQubit);
+}
 
 __global__ void statevec_hadamardKernel (Qureg qureg, const int targetQubit){
     // ----- sizes
@@ -2407,6 +2447,8 @@ void seedQuESTDefault(){
     getQuESTDefaultSeedKey(key); 
     init_by_array(key, 2); 
 }  
+
+
 
 
 #ifdef __cplusplus
