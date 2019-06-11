@@ -30,7 +30,9 @@ qreal getVectorMagnitude(Vector vec);
 
 Complex getConjugateScalar(Complex scalar);
 
-ComplexMatrix2 getConjugateMatrix(ComplexMatrix2 matr);
+ComplexMatrix2 getConjugateMatrix2(ComplexMatrix2 matr);
+
+ComplexMatrix4 getConjugateMatrix4(ComplexMatrix4 matr);
 
 void ensureIndsIncrease(int* ind1, int* ind2);
 
@@ -162,6 +164,8 @@ void statevec_compactUnitary(Qureg qureg, const int targetQubit, Complex alpha, 
 
 void statevec_unitary(Qureg qureg, const int targetQubit, ComplexMatrix2 u);
 
+void statevec_twoQubitUnitary(Qureg qureg, const int q1, const int q2, ComplexMatrix4 u);
+
 void statevec_rotateX(Qureg qureg, const int rotQubit, qreal angle);
 
 void statevec_rotateY(Qureg qureg, const int rotQubit, qreal angle);
@@ -198,7 +202,7 @@ void statevec_collapseToKnownProbOutcome(Qureg qureg, const int measureQubit, in
 
 int statevec_measureWithStats(Qureg qureg, int measureQubit, qreal *outcomeProb);
 
-void statevec_swapGate(Qureg qureg, int qb1, int qb2);
+void statevec_swapQubitAmps(Qureg qureg, int qb1, int qb2);
 
 void statevec_sqrtSwapGate(Qureg qureg, int qb1, int qb2);
 

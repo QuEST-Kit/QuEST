@@ -51,7 +51,8 @@ typedef enum {
     E_INVALID_ONE_QUBIT_PAULI_PROBS,
     E_INVALID_CONTROLS_BIT_STATE,
     E_INVALID_PAULI_CODE,
-    E_INVALID_NUM_SUM_TERMS
+    E_INVALID_NUM_SUM_TERMS,
+    E_CANNOT_FIT_MULTI_QUBIT_UNITARY
 } ErrorCode;
 
 static const char* errorMessages[] = {
@@ -87,8 +88,9 @@ static const char* errorMessages[] = {
     [E_INVALID_TWO_QUBIT_DEPOL_PROB] = "The probability of a two-qubit depolarising error cannot exceed 15/16, which maximally mixes.",
     [E_INVALID_ONE_QUBIT_PAULI_PROBS] = "The probability of any X, Y or Z error cannot exceed the probability of no error.",
     [E_INVALID_CONTROLS_BIT_STATE] = "The state of the control qubits must be a bit sequence (0s and 1s).",
-    [E_INVALID_PAULI_CODE] = "Invalid Pauli code. Codes must be 0 (or PAULI_IDENTITY), 1 (PAULI_X), 2 (PAULI_Y) or 3 (PAULI_Z) to indicate the identity, X, Y and Z gates respectively.",
-    [E_INVALID_NUM_SUM_TERMS] = "Invalid number of terms in the Pauli sum. The number of terms must be >0."
+    [E_INVALID_PAULI_CODE] = "Invalid Pauli code. Codes must be 0 (or PAULI_I), 1 (PAULI_X), 2 (PAULI_Y) or 3 (PAULI_Z) to indicate the identity, X, Y and Z gates respectively.",
+    [E_INVALID_NUM_SUM_TERMS] = "Invalid number of terms in the Pauli sum. The number of terms must be >0.",
+    [E_CANNOT_FIT_MULTI_QUBIT_UNITARY] = "The specified unitary targets too many qubits; the batches of amplitudes to modify cannot all fit in a single distributed node's memory allocation."
 };
 
 void exitWithError(ErrorCode code, const char* func){
@@ -119,7 +121,7 @@ int isComplexPairUnitary(Complex alpha, Complex beta) {
                 + beta.imag*beta.imag) < REAL_EPS );
 }
 
-int isMatrixUnitary(ComplexMatrix2 u) {
+int isMatrix2Unitary(ComplexMatrix2 u) {
     if ( absReal( u.r0c0.real*u.r0c0.real 
                 + u.r0c0.imag*u.r0c0.imag
                 + u.r1c0.real*u.r1c0.real
@@ -136,6 +138,106 @@ int isMatrixUnitary(ComplexMatrix2 u) {
                 - u.r0c0.real*u.r0c1.imag
                 + u.r1c1.real*u.r1c0.imag
                 - u.r1c0.real*u.r1c1.imag) > REAL_EPS ) return 0;
+    return 1;
+}
+
+Complex getMatrixProductElement(Complex* row, Complex* col, int dim) {
+    Complex elem = {.real = 0, .imag = 0};
+    for (int i=0; i < dim; i++) {
+        elem.real += row[i].real*col[i].real - row[i].imag*col[i].imag;
+        elem.imag += row[i].imag*col[i].real + row[i].real*col[i].imag;
+    }
+    return elem;
+}
+
+ComplexMatrix4 getMatrix4Product(ComplexMatrix4 a, ComplexMatrix4 b) {
+    ComplexMatrix4 prod;
+    Complex r0[4] = {a.r0c0,a.r0c1,a.r0c2,a.r0c3};
+    Complex r1[4] = {a.r1c0,a.r1c1,a.r1c2,a.r1c3};
+    Complex r2[4] = {a.r2c0,a.r2c1,a.r2c2,a.r2c3};
+    Complex r3[4] = {a.r3c0,a.r3c1,a.r3c2,a.r3c3};
+    Complex c0[4] = {b.r0c0,b.r1c0,b.r2c0,b.r3c0};
+    Complex c1[4] = {b.r0c1,b.r1c1,b.r2c1,b.r3c1};
+    Complex c2[4] = {b.r0c2,b.r1c2,b.r2c2,b.r3c2};
+    Complex c3[4] = {b.r0c3,b.r1c3,b.r2c3,b.r3c3};
+    
+    prod.r0c0 = getMatrixProductElement(r0,c0,4);
+    prod.r0c1 = getMatrixProductElement(r0,c1,4);
+    prod.r0c2 = getMatrixProductElement(r0,c2,4);
+    prod.r0c3 = getMatrixProductElement(r0,c3,4);
+    
+    prod.r1c0 = getMatrixProductElement(r1,c0,4);
+    prod.r1c1 = getMatrixProductElement(r1,c1,4);
+    prod.r1c2 = getMatrixProductElement(r1,c2,4);
+    prod.r1c3 = getMatrixProductElement(r1,c3,4);
+    
+    prod.r2c0 = getMatrixProductElement(r2,c0,4);
+    prod.r2c1 = getMatrixProductElement(r2,c1,4);
+    prod.r2c2 = getMatrixProductElement(r2,c2,4);
+    prod.r2c3 = getMatrixProductElement(r2,c3,4);
+    
+    prod.r3c0 = getMatrixProductElement(r3,c0,4);
+    prod.r3c1 = getMatrixProductElement(r3,c1,4);
+    prod.r3c2 = getMatrixProductElement(r3,c2,4);
+    prod.r3c3 = getMatrixProductElement(r3,c3,4);
+    
+    return prod;
+}
+
+ComplexMatrix4 getConjugateTransposeMatrix4(ComplexMatrix4 u) {
+    ComplexMatrix4 c = getConjugateMatrix4(u);
+    ComplexMatrix4 t;
+    t.r0c0=c.r0c0;  t.r0c1=c.r1c0;  t.r0c2=c.r2c0;  t.r0c3=c.r3c0;
+    t.r1c0=c.r0c1;  t.r1c1=c.r1c1;  t.r1c2=c.r2c1;  t.r1c3=c.r3c1;
+    t.r2c0=c.r0c2;  t.r2c1=c.r1c2;  t.r2c2=c.r2c2;  t.r2c3=c.r3c2;
+    t.r3c0=c.r0c3;  t.r3c1=c.r1c3;  t.r3c2=c.r2c3;  t.r3c3=c.r3c3;
+    return t;
+}
+
+int isMatrix4Unitary(ComplexMatrix4 u) {
+    
+    // make I = U U^dagger
+    ComplexMatrix4 identity = getMatrix4Product(u, getConjugateTransposeMatrix4(u));
+
+    // diagonals must be 1 (real)
+    if (absReal(identity.r0c0.real - 1) > REAL_EPS) return 0;
+    if (absReal(identity.r0c0.imag    ) > REAL_EPS) return 0;
+    if (absReal(identity.r1c1.real - 1) > REAL_EPS) return 0;
+    if (absReal(identity.r1c1.imag    ) > REAL_EPS) return 0;
+    if (absReal(identity.r2c2.real - 1) > REAL_EPS) return 0;
+    if (absReal(identity.r2c2.imag    ) > REAL_EPS) return 0;
+    if (absReal(identity.r3c3.real - 1) > REAL_EPS) return 0;
+    if (absReal(identity.r3c3.imag    ) > REAL_EPS) return 0;
+    
+    // off diagonals must be 0
+    if (absReal(identity.r0c1.real) > REAL_EPS) return 0;
+    if (absReal(identity.r0c1.imag) > REAL_EPS) return 0;
+    if (absReal(identity.r0c2.real) > REAL_EPS) return 0;
+    if (absReal(identity.r0c2.imag) > REAL_EPS) return 0;
+    if (absReal(identity.r0c3.real) > REAL_EPS) return 0;
+    if (absReal(identity.r0c3.imag) > REAL_EPS) return 0;
+    
+    if (absReal(identity.r1c0.real) > REAL_EPS) return 0;
+    if (absReal(identity.r1c0.imag) > REAL_EPS) return 0;
+    if (absReal(identity.r1c2.real) > REAL_EPS) return 0;
+    if (absReal(identity.r1c2.imag) > REAL_EPS) return 0;
+    if (absReal(identity.r1c3.real) > REAL_EPS) return 0;
+    if (absReal(identity.r1c3.imag) > REAL_EPS) return 0;
+    
+    if (absReal(identity.r2c0.real) > REAL_EPS) return 0;
+    if (absReal(identity.r2c0.imag) > REAL_EPS) return 0;
+    if (absReal(identity.r2c1.real) > REAL_EPS) return 0;
+    if (absReal(identity.r2c1.imag) > REAL_EPS) return 0;
+    if (absReal(identity.r2c3.real) > REAL_EPS) return 0;
+    if (absReal(identity.r2c3.imag) > REAL_EPS) return 0;
+    
+    if (absReal(identity.r3c0.real) > REAL_EPS) return 0;
+    if (absReal(identity.r3c0.imag) > REAL_EPS) return 0;
+    if (absReal(identity.r3c1.real) > REAL_EPS) return 0;
+    if (absReal(identity.r3c1.imag) > REAL_EPS) return 0;
+    if (absReal(identity.r3c2.real) > REAL_EPS) return 0;
+    if (absReal(identity.r3c2.imag) > REAL_EPS) return 0;
+    
     return 1;
 }
 
@@ -222,8 +324,12 @@ void validateControlState(int* controlState, const int numControlQubits, const c
         QuESTAssert(controlState[i] == 0 || controlState[i] == 1, E_INVALID_CONTROLS_BIT_STATE, caller);
 }
 
-void validateUnitaryMatrix(ComplexMatrix2 u, const char* caller) {
-    QuESTAssert(isMatrixUnitary(u), E_NON_UNITARY_MATRIX, caller);
+void validateOneQubitUnitaryMatrix(ComplexMatrix2 u, const char* caller) {
+    QuESTAssert(isMatrix2Unitary(u), E_NON_UNITARY_MATRIX, caller);
+}
+
+void validateTwoQubitUnitaryMatrix(ComplexMatrix4 u, const char* caller) {
+    QuESTAssert(isMatrix4Unitary(u), E_NON_UNITARY_MATRIX, caller);
 }
 
 void validateUnitaryComplexPair(Complex alpha, Complex beta, const char* caller) {
@@ -318,7 +424,7 @@ void validatePauliCodes(enum pauliOpType* pauliCodes, int numPauliCodes, const c
     for (int i=0; i < numPauliCodes; i++) {
         int code = pauliCodes[i];
         QuESTAssert(
-            code==PAULI_IDENTITY || code==PAULI_X || code==PAULI_Y || code==PAULI_Z, 
+            code==PAULI_I || code==PAULI_X || code==PAULI_Y || code==PAULI_Z, 
             E_INVALID_PAULI_CODE, caller);
     }
 }
@@ -326,6 +432,12 @@ void validatePauliCodes(enum pauliOpType* pauliCodes, int numPauliCodes, const c
 void validateNumSumTerms(int numTerms, const char* caller) {
     QuESTAssert(numTerms > 0, E_INVALID_NUM_SUM_TERMS, caller);
 }
+
+void validateMultiQubitUnitaryFits(Qureg qureg, int numTargetQubits, const char* caller) {
+    long long int numAmpsNeeded = 1LL << numTargetQubits;
+    QuESTAssert(qureg.numAmpsPerChunk >= numAmpsNeeded, E_CANNOT_FIT_MULTI_QUBIT_UNITARY, caller);
+}
+
 
 
 #ifdef __cplusplus

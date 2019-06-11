@@ -76,7 +76,7 @@ Complex getConjugateScalar(Complex scalar) {
     return conjScalar;
 }
 
-ComplexMatrix2 getConjugateMatrix(ComplexMatrix2 matrix) {
+ComplexMatrix2 getConjugateMatrix2(ComplexMatrix2 matrix) {
     
     ComplexMatrix2 conjMatrix;
     conjMatrix.r0c0 = getConjugateScalar(matrix.r0c0);
@@ -84,6 +84,15 @@ ComplexMatrix2 getConjugateMatrix(ComplexMatrix2 matrix) {
     conjMatrix.r1c0 = getConjugateScalar(matrix.r1c0);
     conjMatrix.r1c1 = getConjugateScalar(matrix.r1c1);
     return conjMatrix;
+}
+
+ComplexMatrix4 getConjugateMatrix4(ComplexMatrix4 u) {
+    ComplexMatrix4 c = u;
+    c.r0c0.imag *= -1; c.r0c1.imag *= -1; c.r0c2.imag *= -1; c.r0c3.imag *= -1;
+    c.r1c0.imag *= -1; c.r1c1.imag *= -1; c.r1c2.imag *= -1; c.r1c3.imag *= -1;
+    c.r2c0.imag *= -1; c.r2c1.imag *= -1; c.r2c2.imag *= -1; c.r2c3.imag *= -1;
+    c.r3c0.imag *= -1; c.r3c1.imag *= -1; c.r3c2.imag *= -1; c.r3c3.imag *= -1;
+    return c;
 }
 
 void getComplexPairFromRotation(qreal angle, Vector axis, Complex* alpha, Complex* beta) {
@@ -350,13 +359,6 @@ qreal statevec_calcFidelity(Qureg qureg, Qureg pureState) {
     Complex innerProd = statevec_calcInnerProduct(qureg, pureState);
     qreal innerProdMag = innerProd.real*innerProd.real + innerProd.imag*innerProd.imag;
     return innerProdMag;
-}
-
-void statevec_swapGate(Qureg qureg, int qb1, int qb2) {
-
-    statevec_controlledNot(qureg, qb1, qb2);
-    statevec_controlledNot(qureg, qb2, qb1);
-    statevec_controlledNot(qureg, qb1, qb2);
 }
 
 void statevec_sqrtSwapGate(Qureg qureg, int qb1, int qb2) {

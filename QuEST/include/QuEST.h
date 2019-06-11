@@ -71,6 +71,16 @@ typedef struct ComplexMatrix2
     Complex r1c0, r1c1;
 } ComplexMatrix2;
 
+/** Represents a 4x4 matrix of complex numbers
+ */
+ typedef struct ComplexMatrix4
+ {
+     Complex r0c0, r0c1, r0c2, r0c3;
+     Complex r1c0, r1c1, r1c2, r1c3;
+     Complex r2c0, r2c1, r2c2, r2c3;
+     Complex r3c0, r3c1, r3c2, r3c3;
+ } ComplexMatrix4;
+
 /** Represents a 3-vector of real numbers
  */
 typedef struct Vector
@@ -1912,6 +1922,37 @@ qreal calcExpecValProd(Qureg qureg, int* targetQubits, enum pauliOpType* pauliCo
  *      or if \p workspace is not of the same type and dimensions as \p qureg
  */
 qreal calcExpecValSum(Qureg qureg, enum pauliOpType* allPauliCodes, qreal* termCoeffs, int numSumTerms, Qureg workspace);
+
+/** Apply a general two-qubit unitary (including a global phase factor).
+ * The passed 4x4 ComplexMatrix must be unitary, otherwise an error is thrown.
+ *
+    \f[
+    \setlength{\fboxrule}{0.01pt}
+    \fbox{
+                \begin{tikzpicture}[scale=.5]
+                \node[draw=none] at (-3.5, 0) {target1};
+                \node[draw=none] at (-3.5, 2) {target2};
+
+                \draw (-2,0) -- (-1, 0);
+                \draw (1, 0) -- (2, 0);
+                \draw (-2,2) -- (-1, 2);
+                \draw (1, 2) -- (2, 2);
+                \draw (-1,-1)--(-1,3)--(1,3)--(1,-1)--cycle;
+                \node[draw=none] at (0, 1) {U};
+                \end{tikzpicture}
+    }
+    \f]
+ *                                                                    
+ * @param[in,out] qureg object representing the set of all qubits
+ * @param[in] targetQubit1 first qubit to operate on, treated as least significant in \p u
+ * @param[in] targetQubit2 second qubit to operate on, treated as most significant in \p u
+ * @param[in] u unitary matrix to apply
+ * @throws exitWithError
+ *      if \p targetQubit1 or \p targetQubit2 are outside [0, \p qureg.numQubitsRepresented),
+ *      or if \p targetQubit1 equals \p targetQubit2,
+ *      or matrix \p u is not unitary.
+ */
+void twoQubitUnitary(Qureg qureg, const int targetQubit1, const int targetQubit2, ComplexMatrix4 u);
 
 #ifdef __cplusplus
 }

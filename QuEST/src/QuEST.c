@@ -257,13 +257,27 @@ void controlledRotateZ(Qureg qureg, const int controlQubit, const int targetQubi
     qasm_recordControlledParamGate(qureg, GATE_ROTATE_Z, controlQubit, targetQubit, angle);
 }
 
+void twoQubitUnitary(Qureg qureg, const int targetQubit1, const int targetQubit2, ComplexMatrix4 u) {
+    validateMultiTargets(qureg, (int []) {targetQubit1, targetQubit2}, 2, __func__);
+    validateTwoQubitUnitaryMatrix(u, __func__);
+    validateMultiQubitUnitaryFits(qureg, 2, __func__);
+    
+    statevec_twoQubitUnitary(qureg, targetQubit1, targetQubit2, u);
+    if (qureg.isDensityMatrix) {
+        int shift = qureg.numQubitsRepresented;
+        statevec_twoQubitUnitary(qureg, targetQubit1+shift, targetQubit2+shift, getConjugateMatrix4(u));
+    }
+    
+    qasm_recordComment(qureg, "Here, an undisclosed 2-qubit unitary was applied.");
+}
+
 void unitary(Qureg qureg, const int targetQubit, ComplexMatrix2 u) {
     validateTarget(qureg, targetQubit, __func__);
-    validateUnitaryMatrix(u, __func__);
+    validateOneQubitUnitaryMatrix(u, __func__);
     
     statevec_unitary(qureg, targetQubit, u);
     if (qureg.isDensityMatrix) {
-        statevec_unitary(qureg, targetQubit+qureg.numQubitsRepresented, getConjugateMatrix(u));
+        statevec_unitary(qureg, targetQubit+qureg.numQubitsRepresented, getConjugateMatrix2(u));
     }
     
     qasm_recordUnitary(qureg, u, targetQubit);
@@ -271,12 +285,12 @@ void unitary(Qureg qureg, const int targetQubit, ComplexMatrix2 u) {
 
 void controlledUnitary(Qureg qureg, const int controlQubit, const int targetQubit, ComplexMatrix2 u) {
     validateControlTarget(qureg, controlQubit, targetQubit, __func__);
-    validateUnitaryMatrix(u, __func__);
+    validateOneQubitUnitaryMatrix(u, __func__);
     
     statevec_controlledUnitary(qureg, controlQubit, targetQubit, u);
     if (qureg.isDensityMatrix) {
         int shift = qureg.numQubitsRepresented;
-        statevec_controlledUnitary(qureg, controlQubit+shift, targetQubit+shift, getConjugateMatrix(u));
+        statevec_controlledUnitary(qureg, controlQubit+shift, targetQubit+shift, getConjugateMatrix2(u));
     }
     
     qasm_recordControlledUnitary(qureg, u, controlQubit, targetQubit);
@@ -284,14 +298,14 @@ void controlledUnitary(Qureg qureg, const int controlQubit, const int targetQubi
 
 void multiControlledUnitary(Qureg qureg, int* controlQubits, const int numControlQubits, const int targetQubit, ComplexMatrix2 u) {
     validateMultiControlsTarget(qureg, controlQubits, numControlQubits, targetQubit, __func__);
-    validateUnitaryMatrix(u, __func__);
+    validateOneQubitUnitaryMatrix(u, __func__);
     
     long long int ctrlQubitsMask = getQubitBitMask(controlQubits, numControlQubits);
     long long int ctrlFlipMask = 0;
     statevec_multiControlledUnitary(qureg, ctrlQubitsMask, ctrlFlipMask, targetQubit, u);
     if (qureg.isDensityMatrix) {
         int shift = qureg.numQubitsRepresented;
-        statevec_multiControlledUnitary(qureg, ctrlQubitsMask<<shift, ctrlFlipMask<<shift, targetQubit+shift, getConjugateMatrix(u));
+        statevec_multiControlledUnitary(qureg, ctrlQubitsMask<<shift, ctrlFlipMask<<shift, targetQubit+shift, getConjugateMatrix2(u));
     }
     
     qasm_recordMultiControlledUnitary(qureg, u, controlQubits, numControlQubits, targetQubit);
@@ -299,14 +313,14 @@ void multiControlledUnitary(Qureg qureg, int* controlQubits, const int numContro
 
 void multiStateControlledUnitary(Qureg qureg, int* controlQubits, int* controlState, const int numControlQubits, const int targetQubit, ComplexMatrix2 u) {
     validateMultiControlsTarget(qureg, controlQubits, numControlQubits, targetQubit, __func__);
-    validateUnitaryMatrix(u, __func__);
+    validateOneQubitUnitaryMatrix(u, __func__);
     validateControlState(controlState, numControlQubits, __func__);
 
     long long int ctrlQubitsMask = getQubitBitMask(controlQubits, numControlQubits);
     long long int ctrlFlipMask = getControlFlipMask(controlQubits, controlState, numControlQubits);
     if (qureg.isDensityMatrix) {
         int shift = qureg.numQubitsRepresented;
-        statevec_multiControlledUnitary(qureg, ctrlQubitsMask<<shift, ctrlFlipMask<<shift, targetQubit+shift, getConjugateMatrix(u));
+        statevec_multiControlledUnitary(qureg, ctrlQubitsMask<<shift, ctrlFlipMask<<shift, targetQubit+shift, getConjugateMatrix2(u));
     }
     
     qasm_recordMultiStateControlledUnitary(qureg, u, controlQubits, controlState, numControlQubits, targetQubit);
@@ -511,10 +525,10 @@ void controlledRotateAroundAxis(Qureg qureg, const int controlQubit, const int t
 void swapGate(Qureg qureg, int qb1, int qb2) {
     validateControlTarget(qureg, qb1, qb2, __func__);
 
-    statevec_swapGate(qureg, qb1, qb2);
+    statevec_swapQubitAmps(qureg, qb1, qb2);
     if (qureg.isDensityMatrix) {
         int shift = qureg.numQubitsRepresented;
-        statevec_swapGate(qureg, qb1+shift, qb2+shift);
+        statevec_swapQubitAmps(qureg, qb1+shift, qb2+shift);
     }
 
     qasm_recordControlledGate(qureg, GATE_SWAP, qb1, qb2);
