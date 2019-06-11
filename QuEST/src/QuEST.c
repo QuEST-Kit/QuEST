@@ -15,6 +15,7 @@
 # include "QuEST_internal.h"
 # include "QuEST_validation.h"
 # include "QuEST_qasm.h"
+# include <stdlib.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -834,6 +835,31 @@ void applyOneQubitPauliError(Qureg qureg, int qubit, qreal probX, qreal probY, q
         "%g, %g and %g respectively", qubit, probX, probY, probZ);
 }
 
+
+/*
+ * other data structures 
+ */
+ 
+ ComplexMatrixN createComplexMatrix(int numQubits) {
+     ComplexMatrixN matr;
+     matr.numQubits = numQubits;
+     matr.numRows = 1LL << numQubits;
+     matr.elems = malloc(matr.numRows * sizeof *matr.elems);
+     for (long long int r=0; r < matr.numRows; r++) {
+        matr.elems[r] = malloc(matr.numRows * sizeof **matr.elems);
+        for (long long int c=0; c < matr.numRows; c++) {
+            matr.elems[r][c] = (Complex) {.real=0, .imag=0};
+        }
+    }
+    return matr;
+ }
+ 
+ void destroyComplexMatrix(ComplexMatrixN matr) {
+     for (long long int r=0; r < matr.numRows; r++)
+        free(matr.elems[r]);
+    free(matr.elems);
+ }
+ 
 
 /*
  * debug

@@ -80,6 +80,18 @@ typedef struct ComplexMatrix2
      Complex r2c0, r2c1, r2c2, r2c3;
      Complex r3c0, r3c1, r3c2, r3c3;
  } ComplexMatrix4;
+ 
+ /** Represents a general 2^n by 2^n matrix of complex numbers.
+  * ComplexMatrixN is a 2-dimensional pointer of Complex elements, 
+  * accessed as .elems[row][col], which needs to be created and freed 
+  * using createComplexMatrix and destroyComplexMatrix
+  */
+typedef struct ComplexMatrixN
+{
+    int numQubits;
+    long long int numRows;
+    Complex** elems;
+} ComplexMatrixN;
 
 /** Represents a 3-vector of real numbers
  */
@@ -182,6 +194,16 @@ Qureg createCloneQureg(Qureg qureg, QuESTEnv env);
  * @param[in] env object representing the execution environment (local, multinode etc)
  */
 void destroyQureg(Qureg qureg, QuESTEnv env);
+
+/** Create a square complex matrix which can be passed to the multi-qubit general unitary functions.
+ * The matrix will have dimensions (2^numQubits) by (2^numQubits).
+ * The elements of the matrix are Complex structs, accessed and set via ComplexMatrixN.elems[row][column].
+ * The ComplexMatrixN should eventually be freed using destroyComplexMatrix.
+ */
+ComplexMatrixN createComplexMatrix(int numQubits);
+
+/** Destroy a general complex matrix */
+void destroyComplexMatrix(ComplexMatrixN matr);
 
 /** Print the current state vector of probability amplitudes for a set of qubits to file.
  * File format:
