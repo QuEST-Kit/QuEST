@@ -272,6 +272,35 @@ void twoQubitUnitary(Qureg qureg, const int targetQubit1, const int targetQubit2
     qasm_recordComment(qureg, "Here, an undisclosed 2-qubit unitary was applied.");
 }
 
+void controlledTwoQubitUnitary(Qureg qureg, const int controlQubit, const int targetQubit1, const int targetQubit2, ComplexMatrix4 u) {
+    validateMultiControlsMultiTargets(qureg, (int[]) {controlQubit}, 1, (int[]) {targetQubit1, targetQubit2}, 2, __func__);
+    validateTwoQubitUnitaryMatrix(u, __func__);
+    validateMultiQubitUnitaryFits(qureg, 2, __func__);
+    
+    statevec_controlledTwoQubitUnitary(qureg, controlQubit, targetQubit1, targetQubit2, u);
+    if (qureg.isDensityMatrix) {
+        int shift = qureg.numQubitsRepresented;
+        statevec_controlledTwoQubitUnitary(qureg, controlQubit+shift, targetQubit1+shift, targetQubit2+shift, getConjugateMatrix4(u));
+    }
+
+    qasm_recordComment(qureg, "Here, an undisclosed controlled 2-qubit unitary was applied.");
+}
+
+void multiControlledTwoQubitUnitary(Qureg qureg, int* controlQubits, const int numControlQubits, const int targetQubit1, const int targetQubit2, ComplexMatrix4 u) {
+    validateMultiControlsMultiTargets(qureg, controlQubits, numControlQubits, (int[]) {targetQubit1, targetQubit2}, 2, __func__);
+    validateTwoQubitUnitaryMatrix(u, __func__);
+    validateMultiQubitUnitaryFits(qureg, 2, __func__);
+    
+    long long int ctrlQubitsMask = getQubitBitMask(controlQubits, numControlQubits);
+    statevec_multiControlledTwoQubitUnitary(qureg, ctrlQubitsMask, targetQubit1, targetQubit2, u);
+    if (qureg.isDensityMatrix) {
+        int shift = qureg.numQubitsRepresented;
+        statevec_multiControlledTwoQubitUnitary(qureg, ctrlQubitsMask<<shift, targetQubit1+shift, targetQubit2+shift, getConjugateMatrix4(u));
+    }
+    
+    qasm_recordComment(qureg, "Here, an undisclosed multi-controlled 2-qubit unitary was applied.");
+}
+
 void unitary(Qureg qureg, const int targetQubit, ComplexMatrix2 u) {
     validateTarget(qureg, targetQubit, __func__);
     validateOneQubitUnitaryMatrix(u, __func__);

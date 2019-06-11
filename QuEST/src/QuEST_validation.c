@@ -319,6 +319,15 @@ void validateMultiControlsTarget(Qureg qureg, int* controlQubits, const int numC
         QuESTAssert(controlQubits[i] != targetQubit, E_TARGET_IN_CONTROLS, caller);
 }
 
+void validateMultiControlsMultiTargets(Qureg qureg, int* controlQubits, const int numControlQubits, int* targetQubits, const int numTargetQubits, const char* caller) {
+    validateMultiControls(qureg, controlQubits, numControlQubits, caller);
+    validateMultiTargets(qureg, targetQubits, numTargetQubits, caller);
+    long long int ctrlMask = getQubitBitMask(controlQubits, numControlQubits);
+    long long int targMask = getQubitBitMask(targetQubits, numTargetQubits);
+    int overlap = ctrlMask & targMask;
+    QuESTAssert(!overlap, E_TARGET_IN_CONTROLS, caller);
+}
+
 void validateControlState(int* controlState, const int numControlQubits, const char* caller) {
     for (int i=0; i < numControlQubits; i++)
         QuESTAssert(controlState[i] == 0 || controlState[i] == 1, E_INVALID_CONTROLS_BIT_STATE, caller);

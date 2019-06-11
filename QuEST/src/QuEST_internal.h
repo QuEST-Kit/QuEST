@@ -164,7 +164,11 @@ void statevec_compactUnitary(Qureg qureg, const int targetQubit, Complex alpha, 
 
 void statevec_unitary(Qureg qureg, const int targetQubit, ComplexMatrix2 u);
 
-void statevec_twoQubitUnitary(Qureg qureg, const int q1, const int q2, ComplexMatrix4 u);
+void statevec_twoQubitUnitary(Qureg qureg, const int targetQubit1, const int targetQubit2, ComplexMatrix4 u);
+
+void statevec_controlledTwoQubitUnitary(Qureg qureg, const int controlQubit, const int targetQubit1, const int targetQubit2, ComplexMatrix4 u);
+
+void statevec_multiControlledTwoQubitUnitary(Qureg qureg, long long int ctrlMask, const int targetQubit1, const int targetQubit2, ComplexMatrix4 u);
 
 void statevec_rotateX(Qureg qureg, const int rotQubit, qreal angle);
 

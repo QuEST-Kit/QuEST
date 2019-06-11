@@ -735,14 +735,7 @@ void statevec_unitary(Qureg qureg, const int targetQubit, ComplexMatrix2 u)
     statevec_unitaryKernel<<<CUDABlocks, threadsPerCUDABlock>>>(qureg, targetQubit, u);
 }
 
-__forceinline__ __device__ long long int insertZeroBit(long long int number, int index) {
-    long long int left, right;
-    left = (number >> index) << index;
-    right = number - left;
-    return (left << 1) ^ right;
-}
-
-__global__ void statevec_twoQubitUnitaryKernel(Qureg qureg, const int q1, const int q2, ComplexMatrix4 u){
+__global__ void statevec__multiControlledTwoQubitUnitaryKernel(Qureg qureg, long long int ctrlMask, const int q1, const int q2, ComplexMatrix4 u){
     
     // decide the 4 amplitudes this thread will modify
     long long int thisTask = blockIdx.x*blockDim.x + threadIdx.x;                        
@@ -755,9 +748,14 @@ __global__ void statevec_twoQubitUnitaryKernel(Qureg qureg, const int q1, const 
     // find indices of amplitudes to modify (treat q1 as the least significant bit)
     long long int ind00 ,ind01, ind10, ind11;
     ind00 = insertZeroBit(insertZeroBit(thisTask, q1), q2);
-    ind01 = ind00 ^ (1LL << q1);
-    ind10 = ind00 ^ (1LL << q2);
-    ind11 = ind01 ^ (1LL << q2);
+    
+    // modify only if control qubits are 1 for this state
+    if (ctrlMask&ind00 != ctrlMask)
+        return;
+    
+    ind01 = flipBit(ind00, q1);
+    ind10 = flipBit(ind00, q2);
+    ind11 = flipBit(ind01, q2);
     
     // extract statevec amplitudes 
     qreal re00, re01, re10, re11;
@@ -813,12 +811,12 @@ __global__ void statevec_twoQubitUnitaryKernel(Qureg qureg, const int q1, const 
         u.r3c3.imag*re11 + u.r3c3.real*im11;    
 }
 
-void statevec_twoQubitUnitary(Qureg qureg, const int q1, const int q2, ComplexMatrix4 u)
+void statevec_multiControlledTwoQubitUnitary(Qureg qureg, long long int ctrlMask, const int q1, const int q2, ComplexMatrix4 u)
 {
-    int threadsPerCUDABlock, CUDABlocks;
-    threadsPerCUDABlock = 128;
-    CUDABlocks = ceil((qreal)(qureg.numAmpsPerChunk>>2)/threadsPerCUDABlock); // one kernel eval for every 4 amplitudes
-    statevec_twoQubitUnitaryKernel<<<CUDABlocks, threadsPerCUDABlock>>>(qureg, q1, q2, u);
+    long long int ctrlMask = 0LL;
+    int threadsPerCUDABlock = 128;
+    int CUDABlocks = ceil((qreal)(qureg.numAmpsPerChunk>>2)/threadsPerCUDABlock); // one kernel eval for every 4 amplitudes
+    statevec_multiControlledTwoQubitUnitaryKernel<<<CUDABlocks, threadsPerCUDABlock>>>(qureg, ctrlMask, q1, q2, u);
 }
 
 __global__ void statevec_controlledUnitaryKernel(Qureg qureg, const int controlQubit, const int targetQubit, ComplexMatrix2 u){

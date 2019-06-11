@@ -510,6 +510,18 @@ qreal statevec_calcExpecValSum(Qureg qureg, enum pauliOpType* allCodes, qreal* t
     return value;
 }
 
+void statevec_twoQubitUnitary(Qureg qureg, const int targetQubit1, const int targetQubit2, ComplexMatrix4 u) {
+    
+    long long int ctrlMask = 0;
+    statevec_multiControlledTwoQubitUnitary(qureg, ctrlMask, targetQubit1, targetQubit2, u);
+}
+
+void statevec_controlledTwoQubitUnitary(Qureg qureg, const int controlQubit, const int targetQubit1, const int targetQubit2, ComplexMatrix4 u) {
+    
+    long long int ctrlMask = 1LL << controlQubit;
+    statevec_multiControlledTwoQubitUnitary(qureg, ctrlMask, targetQubit1, targetQubit2, u);
+}
+
 #ifdef __cplusplus
 }
 #endif

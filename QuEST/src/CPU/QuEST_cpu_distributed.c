@@ -1368,23 +1368,23 @@ void statevec_swapQubitAmps(Qureg qureg, int qb1, int qb2) {
  * @TODO: the double swap (q1,q2 to 0,1) may be possible simultaneously by a bespoke 
  * swap routine.
  */
-void statevec_twoQubitUnitary(Qureg qureg, const int q1, const int q2, ComplexMatrix4 u) {
+void statevec_multiControlledTwoQubitUnitary(Qureg qureg, long long int ctrlMask, const int q1, const int q2, ComplexMatrix4 u) {
     int q1FitsInNode = halfMatrixBlockFitsInChunk(qureg.numAmpsPerChunk, q1);
     int q2FitsInNode = halfMatrixBlockFitsInChunk(qureg.numAmpsPerChunk, q2);
     
     if (q1FitsInNode && q2FitsInNode) {
-        statevec_twoQubitUnitaryLocal(qureg, q1, q2, u);
+        statevec_multiControlledTwoQubitUnitaryLocal(qureg, ctrlMask, q1, q2, u);
         
     } else if (q1FitsInNode) {
         int qSwap = (q1 > 0)? q1-1 : q1+1;
         statevec_swapQubitAmps(qureg, q2, qSwap);
-        statevec_twoQubitUnitaryLocal(qureg, q1, qSwap, u);
+        statevec_multiControlledTwoQubitUnitaryLocal(qureg, ctrlMask, q1, qSwap, u);
         statevec_swapQubitAmps(qureg, q2, qSwap);
 
     } else if (q2FitsInNode) {
         int qSwap = (q2 > 0)? q2-1 : q2+1;
         statevec_swapQubitAmps(qureg, q1, qSwap);
-        statevec_twoQubitUnitaryLocal(qureg, qSwap, q2, u);
+        statevec_multiControlledTwoQubitUnitaryLocal(qureg, ctrlMask, qSwap, q2, u);
         statevec_swapQubitAmps(qureg, q1, qSwap);
         
     } else {
@@ -1392,7 +1392,7 @@ void statevec_twoQubitUnitary(Qureg qureg, const int q1, const int q2, ComplexMa
         int swap2 = 1;
         statevec_swapQubitAmps(qureg, q1, swap1);
         statevec_swapQubitAmps(qureg, q2, swap2);
-        statevec_twoQubitUnitaryLocal(qureg, swap1, swap2, u);
+        statevec_multiControlledTwoQubitUnitaryLocal(qureg, ctrlMask, swap1, swap2, u);
         statevec_swapQubitAmps(qureg, q1, swap1);
         statevec_swapQubitAmps(qureg, q2, swap2);
     }
