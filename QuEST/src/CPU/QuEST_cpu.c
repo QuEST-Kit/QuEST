@@ -1642,7 +1642,7 @@ void statevec_compactUnitaryLocal (Qureg qureg, const int targetQubit, Complex a
 
 } 
 
-void statevec_twoQubitUnitaryLocal(Qureg qureg, const int q1, const int q2, ComplexMatrix4 u) {
+void statevec_multiControlledTwoQubitUnitaryLocal(Qureg qureg, long long int ctrlMask, const int q1, const int q2, ComplexMatrix4 u) {
 
     // can't use qureg.stateVec as a private OMP var
     qreal *reVec = qureg.stateVec.real;
@@ -1650,7 +1650,6 @@ void statevec_twoQubitUnitaryLocal(Qureg qureg, const int q1, const int q2, Comp
     
     long long int numTasks = qureg.numAmpsPerChunk >> 2; // each iteration updates 4 amplitudes
     long long int thisTask;
-    long long int leftBits, rightBits;
     long long int ind00, ind01, ind10, ind11;
     qreal re00, re01, re10, re11;
     qreal im00, im01, im10, im11;
@@ -1658,8 +1657,8 @@ void statevec_twoQubitUnitaryLocal(Qureg qureg, const int q1, const int q2, Comp
 # ifdef _OPENMP
 # pragma omp parallel \
     default  (none) \
-    shared   (reVec,imVec,numTasks,u) \
-    private  (thisTask,leftBits,rightBits, ind00,ind01,ind10,ind11, re00,re01,re10,re11, im00,im01,im10,im11) 
+    shared   (reVec,imVec,numTasks,ctrlMask,u) \
+    private  (thisTask, ind00,ind01,ind10,ind11, re00,re01,re10,re11, im00,im01,im10,im11) 
 # endif
     {
 # ifdef _OPENMP
@@ -1668,19 +1667,16 @@ void statevec_twoQubitUnitaryLocal(Qureg qureg, const int q1, const int q2, Comp
         for (thisTask=0; thisTask<numTasks; thisTask++) {
             
             // determine ind00 of |..0..0..>
-            // insert 0 bit at q1  
-            leftBits = (thisTask >> q1) << q1;
-            rightBits = thisTask - leftBits;
-            ind00 = (leftBits << 1) ^ rightBits;
-            // insert 0 bit at q2
-            leftBits = (ind00 >> q2) << q2;
-            rightBits = ind00 - leftBits;
-            ind00 = (leftBits << 1) ^ rightBits;
+            ind00 = insertZeroBit(insertZeroBit(thisTask, q1), q2);
+            
+            // skip amplitude if controls aren't in 1 state (overloaded for speed)
+            if (ctrlMask && ((ctrlMask&ind00) != ctrlMask))
+                continue;
             
             // inds of |..0..1..>, |..1..0..> and |..1..1..>
-            ind01 = ind00 ^ (1LL << q1);
-            ind10 = ind00 ^ (1LL << q2);
-            ind11 = ind01 ^ (1LL << q2);
+            ind01 = flipBit(ind00, q1);
+            ind10 = flipBit(ind00, q2);
+            ind11 = flipBit(ind01, q2);
 
             // extract statevec amplitudes 
             re00 = reVec[ind00]; im00 = imVec[ind00];
