@@ -2047,6 +2047,7 @@ void controlledTwoQubitUnitary(Qureg qureg, const int controlQubit, const int ta
  * \f]
  * on the control and target qubits.
  * The smaller of targetQubit1 and targetQubit2 is treated as the least significant bit 
+ * in the passed unitary matrix, such that their order doesn't matter.
  * The passed 4x4 ComplexMatrix must be unitary, otherwise an error is thrown.
  *
     \f[
@@ -2093,6 +2094,69 @@ void controlledTwoQubitUnitary(Qureg qureg, const int controlQubit, const int ta
  *      or if matrix \p u is not unitary.
  */
 void multiControlledTwoQubitUnitary(Qureg qureg, int* controlQubits, const int numControlQubits, const int targetQubit1, const int targetQubit2, ComplexMatrix4 u);
+
+/** Apply a general multi-controlled multi-qubit unitary (including a global phase factor).
+ * Any number of control and target qubits can be specified.
+ * This effects the many-qubit unitary
+ * \f[
+ * \begin{pmatrix}
+ * 1 \\
+ * & 1 \\\
+ * & & \ddots \\
+ * & & & u_{00} & u_{01} & \dots  \\
+ * & & & u_{10} & u_{11} & \dots \\
+ * & & & \vdots & \vdots & \ddots
+ * \end{pmatrix}
+ * \f]
+ * on the control and target qubits, where the target qubit order does not matter; 
+ * \p u will be effected in such a way that the smallest target qubit index will correspond 
+ * to the least significant bit in \p u.
+ *
+ * The passed ComplexMatrix must be unitary and be a compatible size with the specified number of
+ * target qubits, otherwise an error is thrown.
+ *
+    \f[
+    \setlength{\fboxrule}{0.01pt}
+    \fbox{
+                \begin{tikzpicture}[scale=.5]
+                \node[draw=none] at (-3.5, 1) {targets};
+                \node[draw=none] at (-3.5, 5) {controls};
+                
+                \node[draw=none] at (0, 8) {$\vdots$};
+                \draw (0, 7) -- (0, 6);
+                
+                \draw (-2, 6) -- (2, 6);
+                \draw[fill=black] (0, 6) circle (.2);
+                \draw (0, 6) -- (0, 4);         
+                
+                \draw (-2, 4) -- (2, 4);
+                \draw[fill=black] (0, 4) circle (.2);
+                \draw(0, 4) -- (0, 3);
+
+                \draw (-2,0) -- (-1, 0);
+                \draw (1, 0) -- (2, 0);
+                \draw (-2,2) -- (-1, 2);
+                \draw (1, 2) -- (2, 2);
+                \draw (-1,-1)--(-1,3)--(1,3)--(1,-1);
+                \node[draw=none] at (0, 1) {U};
+                \node[draw=none] at (0, -1) {$\vdots$};
+                
+                \end{tikzpicture}
+    }
+    \f]
+ *                                                                    
+ * @param[in,out] qureg object representing the set of all qubits
+ * @param[in] ctrls a list of the control qubits
+ * @param[in] numCtrls the number of control qubits
+ * @param[in] targs a list of the target qubits (order is not respected)
+ * @param[in] numTargs the number of target qubits
+ * @param[in] u unitary matrix to apply
+ * @throws exitWithError
+ *      if any index in \p ctrls and \p targs is outside of [0, \p qureg.numQubitsRepresented),
+ *      or if \p ctrls and \p targs are not unique,
+ *      or if matrix \p u is not unitary.
+ */
+void multiControlledMultiQubitUnitary(Qureg qureg, int* ctrls, const int numCtrls, int* targs, const int numTargs, ComplexMatrixN u);
 
 #ifdef __cplusplus
 }

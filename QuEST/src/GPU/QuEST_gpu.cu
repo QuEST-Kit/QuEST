@@ -735,6 +735,83 @@ void statevec_unitary(Qureg qureg, const int targetQubit, ComplexMatrix2 u)
     statevec_unitaryKernel<<<CUDABlocks, threadsPerCUDABlock>>>(qureg, targetQubit, u);
 }
 
+__global__ void statevec_multiControlledMultiQubitUnitaryKernel(Qureg qureg, long long int ctrlMask, int* targs, const int numTargs, ComplexMatrixN u, int threadMemBytes) {
+
+    // decide the 4 amplitudes this thread will modify
+    long long int thisTask = blockIdx.x*blockDim.x + threadIdx.x;                        
+    long long int numTasks = qureg.numAmpsPerChunk >> numTargs; // kernel called on every 1 in 2^numTargs amplitudes
+    if (thisTask>=numTasks) return;
+    
+    qreal *reVec = qureg.deviceStateVec.real;
+    qreal *imVec = qureg.deviceStateVec.imag;
+    
+    // find this task's start index (where all targs are 0)
+    long long int ind00 = thisTask;
+    for (int t=0; t < numTargs; t++)
+        ind00 = insertZeroBit(ind00, targs[t]);
+    
+    // this task only modifies amplitudes if control qubits are 1 for this state
+    if (ctrlMask&ind00 != ctrlMask)
+        return;
+        
+    long long int numAmps = 1LL << numTargs;
+    
+    // delimit shared memory space into thread sub-arrays
+    extern __shared__ char sharedMem[];
+    char *thisMem = &sharedMem[threadMemBytes*threadIdx.x];
+    long long int *ampInds = (long long int *) &thisMem;
+    qreal *reAmps = (qreal*) &ampInds[numAmps];
+    qreal *imAmps = (qreal*) &reAmps[numAmps];
+    /*
+    this creates:
+    long long int ampInds[numAmps];
+    qreal reAmps[numAmps];
+    qreal imAmps[numAmps];
+    */
+    
+    // determine the indices of the target amplitudes
+    long long int ind;
+    for (int i=0; i < numAmps; i++) {
+        
+        // get global index of current target qubit assignment
+        ind = ind00;
+        for (int t=0; t < numTargs; t++)
+            if (extractBit(targs[t], i))
+                ind = flipBit(ind, targs[t]);
+        
+        ampInds[i] = ind;
+    }
+    
+    // record the current amplitudes
+    for (int i=0; i < numAmps; i++) {
+        ind = ampInds[i];
+        reAmps[i] = reVec[ind];
+        imAmps[i] = imVec[ind];
+    }
+    
+    // update the amplitudes
+    for (int r=0; r < numAmps; r++) {
+        ind = ampInds[r];
+        reVec[ind] = 0;
+        imVec[ind] = 0;
+        for (int c=0; c < numAmps; c++) {
+            Complex elem = u.elems[r][c];
+            reVec[ind] += reAmps[c]*elem.real - imAmps[c]*elem.imag;
+            imVec[ind] += reAmps[c]*elem.imag + imAmps[c]*elem.real;
+        }
+    }
+}
+
+void statevec_multiControlledMultiQubitUnitary(Qureg qureg, long long int ctrlMask, int* targs, const int numTargs, ComplexMatrixN u)
+{
+    int threadsPerCUDABlock = 128;
+    int CUDABlocks = ceil((qreal)(qureg.numAmpsPerChunk>>numTargs)/threadsPerCUDABlock);
+    // each thread needs space for 2*(1LL<<numTargs) qreals and (1LL<<numTargs) long long ints
+    int sharedThreadMemSize = (1LL<<numTargs) * (2*sizeof(qreal) + 1*sizeof(long long int));
+    int sharedBlockMemSize = threadsPerCUDABlock * sharedThreadMemSize;
+    statevec_multiControlledMultiQubitUnitaryKernel<<<CUDABlocks,threadsPerCUDABlock,sharedBlockMemSize>>>(qureg, ctrlMask, targs, numTargs, u, sharedThreadMemSize);
+}
+
 __global__ void statevec_multiControlledTwoQubitUnitaryKernel(Qureg qureg, long long int ctrlMask, const int q1, const int q2, ComplexMatrix4 u){
     
     // decide the 4 amplitudes this thread will modify

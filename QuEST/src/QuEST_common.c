@@ -136,6 +136,12 @@ void shiftIndices(int* indices, int numIndices, int shift) {
         indices[j] += shift;
 }
 
+void conjugateMatrixN(ComplexMatrixN u) {
+    for (long long int r=0; r < u.numRows; r++)
+        for (long long int c=0; c < u.numRows; c++)
+            u.elems[r][c].imag *= -1;
+}
+
 int generateMeasurementOutcome(qreal zeroProb, qreal *outcomeProb) {
     
     // randomly choose outcome

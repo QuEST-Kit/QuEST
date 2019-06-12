@@ -301,6 +301,26 @@ void multiControlledTwoQubitUnitary(Qureg qureg, int* controlQubits, const int n
     qasm_recordComment(qureg, "Here, an undisclosed multi-controlled 2-qubit unitary was applied.");
 }
 
+void multiControlledMultiQubitUnitary(Qureg qureg, int* ctrls, const int numCtrls, int* targs, const int numTargs, ComplexMatrixN u) {
+    validateMultiControlsMultiTargets(qureg, ctrls, numCtrls, targs, numTargs, __func__);
+    validateMultiQubitUnitaryMatrix(u, numTargs, __func__);
+    validateMultiQubitUnitaryFits(qureg, numTargs, __func__);
+    
+    long long int ctrlMask = getQubitBitMask(ctrls, numCtrls);
+    statevec_multiControlledMultiQubitUnitary(qureg, ctrlMask, targs, numTargs, u);
+    if (qureg.isDensityMatrix) {
+        int shift = qureg.numQubitsRepresented;
+        shiftIndices(targs, numTargs, shift);
+        conjugateMatrixN(u);
+        statevec_multiControlledMultiQubitUnitary(qureg, ctrlMask<<shift, targs, numTargs, u);
+        shiftIndices(targs, numTargs, -shift);
+        conjugateMatrixN(u);
+    }
+    
+    qasm_recordComment(qureg, "Here, an undisclosed multi-controlled multi-qubit unitary was applied.");
+}
+
+
 void unitary(Qureg qureg, const int targetQubit, ComplexMatrix2 u) {
     validateTarget(qureg, targetQubit, __func__);
     validateOneQubitUnitaryMatrix(u, __func__);
