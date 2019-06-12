@@ -37,6 +37,8 @@ void validateOneQubitUnitaryMatrix(ComplexMatrix2 u, const char* caller);
 
 void validateTwoQubitUnitaryMatrix(ComplexMatrix4 u, const char* caller);
 
+void validateMultiQubitUnitaryMatrix(ComplexMatrixN u, int numTargs, const char* caller);
+
 void validateUnitaryComplexPair(Complex alpha, Complex beta, const char* caller);
 
 void validateVector(Vector vector, const char* caller);

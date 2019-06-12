@@ -52,7 +52,8 @@ typedef enum {
     E_INVALID_CONTROLS_BIT_STATE,
     E_INVALID_PAULI_CODE,
     E_INVALID_NUM_SUM_TERMS,
-    E_CANNOT_FIT_MULTI_QUBIT_UNITARY
+    E_CANNOT_FIT_MULTI_QUBIT_UNITARY,
+    E_INVALID_UNITARY_SIZE
 } ErrorCode;
 
 static const char* errorMessages[] = {
@@ -90,7 +91,8 @@ static const char* errorMessages[] = {
     [E_INVALID_CONTROLS_BIT_STATE] = "The state of the control qubits must be a bit sequence (0s and 1s).",
     [E_INVALID_PAULI_CODE] = "Invalid Pauli code. Codes must be 0 (or PAULI_I), 1 (PAULI_X), 2 (PAULI_Y) or 3 (PAULI_Z) to indicate the identity, X, Y and Z gates respectively.",
     [E_INVALID_NUM_SUM_TERMS] = "Invalid number of terms in the Pauli sum. The number of terms must be >0.",
-    [E_CANNOT_FIT_MULTI_QUBIT_UNITARY] = "The specified unitary targets too many qubits; the batches of amplitudes to modify cannot all fit in a single distributed node's memory allocation."
+    [E_CANNOT_FIT_MULTI_QUBIT_UNITARY] = "The specified unitary targets too many qubits; the batches of amplitudes to modify cannot all fit in a single distributed node's memory allocation.",
+    [E_INVALID_UNITARY_SIZE] = "The matrix size does not match the number of target qubits."
 };
 
 void exitWithError(ErrorCode code, const char* func){
@@ -241,6 +243,35 @@ int isMatrix4Unitary(ComplexMatrix4 u) {
     return 1;
 }
 
+int isMatrixNUnitary(ComplexMatrixN u) {
+    long long int r, c, i, dim;
+    dim = u.numRows;
+    
+    // check u * ConjTrans(u) = Identity
+    for (r=0; r < dim; r++) {
+        for (c=0; c < dim; c++) {
+            
+            // u[r][...] * ConjTrans(u)[...][c]
+            qreal elemRe = 0;
+            qreal elemIm = 0;
+            for (i=0; i < dim; i++) {
+                // u.elems[r][i] * conj(u.elems[c][i])
+                elemRe += u.elems[r][i].real*u.elems[c][i].real + u.elems[r][i].imag*u.elems[c][i].imag;
+                elemIm += u.elems[r][i].imag*u.elems[c][i].real - u.elems[r][i].real*u.elems[c][i].imag;
+            }
+            
+            if (absReal(elemIm) > REAL_EPS)
+                return 0;
+            if (r == c && absReal(elemRe - 1) > REAL_EPS)
+                return 0;
+            if (r != c && absReal(elemRe    ) > REAL_EPS)
+                return 0;
+        }
+    }
+    
+    return 1;
+}
+
 int areUniqueQubits(int* qubits, int numQubits) {
     long long int mask = 0;
     long long int bit;
@@ -339,6 +370,11 @@ void validateOneQubitUnitaryMatrix(ComplexMatrix2 u, const char* caller) {
 
 void validateTwoQubitUnitaryMatrix(ComplexMatrix4 u, const char* caller) {
     QuESTAssert(isMatrix4Unitary(u), E_NON_UNITARY_MATRIX, caller);
+}
+
+void validateMultiQubitUnitaryMatrix(ComplexMatrixN u, int numTargs, const char* caller) { 
+    QuESTAssert(numTargs == u.numQubits, E_INVALID_UNITARY_SIZE, caller);
+    QuESTAssert(isMatrixNUnitary(u), E_NON_UNITARY_MATRIX, caller);
 }
 
 void validateUnitaryComplexPair(Complex alpha, Complex beta, const char* caller) {
