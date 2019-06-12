@@ -196,7 +196,7 @@ Qureg createCloneQureg(Qureg qureg, QuESTEnv env);
 void destroyQureg(Qureg qureg, QuESTEnv env);
 
 /** Create a square complex matrix which can be passed to the multi-qubit general unitary functions.
- * The matrix will have dimensions (2^numQubits) by (2^numQubits).
+ * The matrix will have dimensions (2^numQubits) by (2^numQubits), and all elements are initialised to zero.
  * The elements of the matrix are Complex structs, accessed and set via ComplexMatrixN.elems[row][column].
  * The ComplexMatrixN should eventually be freed using destroyComplexMatrix.
  */
@@ -1964,7 +1964,9 @@ qreal calcExpecValSum(Qureg qureg, enum pauliOpType* allPauliCodes, qreal* termC
                 \end{tikzpicture}
     }
     \f]
- *                                                                    
+ *                 
+ * Note that in distributed mode, this routine requires that each node contains at least 4 amplitudes.
+ *                                                   
  * @param[in,out] qureg object representing the set of all qubits
  * @param[in] targetQubit1 first qubit to operate on, treated as least significant in \p u
  * @param[in] targetQubit2 second qubit to operate on, treated as most significant in \p u
@@ -2044,6 +2046,7 @@ void controlledTwoQubitUnitary(Qureg qureg, const int controlQubit, const int ta
  * \end{pmatrix}
  * \f]
  * on the control and target qubits.
+ * The smaller of targetQubit1 and targetQubit2 is treated as the least significant bit 
  * The passed 4x4 ComplexMatrix must be unitary, otherwise an error is thrown.
  *
     \f[
@@ -2052,7 +2055,7 @@ void controlledTwoQubitUnitary(Qureg qureg, const int controlQubit, const int ta
                 \begin{tikzpicture}[scale=.5]
                 \node[draw=none] at (-3.5, 0) {target1};
                 \node[draw=none] at (-3.5, 2) {target2};
-                \node[draw=none] at (-3.5, 4) {controls};
+                \node[draw=none] at (-3.5, 5) {controls};
                 
                 \node[draw=none] at (0, 8) {$\vdots$};
                 \draw (0, 7) -- (0, 6);
@@ -2078,8 +2081,8 @@ void controlledTwoQubitUnitary(Qureg qureg, const int controlQubit, const int ta
  * @param[in,out] qureg object representing the set of all qubits
  * @param[in] controlQubits the control qubits which all must be in state 1 to effect the given unitary
  * @param[in] numControlQubits the number of control qubits
- * @param[in] targetQubit1 first qubit to operate on, treated as least significant in \p u
- * @param[in] targetQubit2 second qubit to operate on, treated as most significant in \p u
+ * @param[in] targetQubit1 first qubit to operate on (order is not respected)
+ * @param[in] targetQubit2 second qubit to operate on (order is not respected)
  * @param[in] u unitary matrix to apply
  * @throws exitWithError
  *      if \p targetQubit1 or \p targetQubit2 are outside [0, \p qureg.numQubitsRepresented),
@@ -2087,7 +2090,7 @@ void controlledTwoQubitUnitary(Qureg qureg, const int controlQubit, const int ta
  *      or if any qubit in \p controlQubits is outside [0, \p qureg.numQubitsRepresented),
  *      or if \p controlQubits are not unique, or if either \p targetQubit1 and \p targetQubit2
  *      are in \p controlQubits,
- *      or matrix \p u is not unitary.
+ *      or if matrix \p u is not unitary.
  */
 void multiControlledTwoQubitUnitary(Qureg qureg, int* controlQubits, const int numControlQubits, const int targetQubit1, const int targetQubit2, ComplexMatrix4 u);
 

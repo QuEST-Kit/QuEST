@@ -735,7 +735,7 @@ void statevec_unitary(Qureg qureg, const int targetQubit, ComplexMatrix2 u)
     statevec_unitaryKernel<<<CUDABlocks, threadsPerCUDABlock>>>(qureg, targetQubit, u);
 }
 
-__global__ void statevec__multiControlledTwoQubitUnitaryKernel(Qureg qureg, long long int ctrlMask, const int q1, const int q2, ComplexMatrix4 u){
+__global__ void statevec_multiControlledTwoQubitUnitaryKernel(Qureg qureg, long long int ctrlMask, const int q1, const int q2, ComplexMatrix4 u){
     
     // decide the 4 amplitudes this thread will modify
     long long int thisTask = blockIdx.x*blockDim.x + threadIdx.x;                        
@@ -813,7 +813,6 @@ __global__ void statevec__multiControlledTwoQubitUnitaryKernel(Qureg qureg, long
 
 void statevec_multiControlledTwoQubitUnitary(Qureg qureg, long long int ctrlMask, const int q1, const int q2, ComplexMatrix4 u)
 {
-    long long int ctrlMask = 0LL;
     int threadsPerCUDABlock = 128;
     int CUDABlocks = ceil((qreal)(qureg.numAmpsPerChunk>>2)/threadsPerCUDABlock); // one kernel eval for every 4 amplitudes
     statevec_multiControlledTwoQubitUnitaryKernel<<<CUDABlocks, threadsPerCUDABlock>>>(qureg, ctrlMask, q1, q2, u);
@@ -1349,7 +1348,7 @@ void statevec_multiControlledPhaseFlip(Qureg qureg, int *controlQubits, int numC
     statevec_multiControlledPhaseFlipKernel<<<CUDABlocks, threadsPerCUDABlock>>>(qureg, mask);
 }
 
-void statevec_swapQubitAmpsKernel(Qureg qureg, int qb1, int qb2) {
+__global__ void statevec_swapQubitAmpsKernel(Qureg qureg, int qb1, int qb2) {
 
     qreal *reVec = qureg.stateVec.real;
     qreal *imVec = qureg.stateVec.imag;
@@ -1380,7 +1379,7 @@ void statevec_swapQubitAmps(Qureg qureg, int qb1, int qb2)
     int threadsPerCUDABlock, CUDABlocks;
     threadsPerCUDABlock = 128;
     CUDABlocks = ceil((qreal)(qureg.numAmpsPerChunk>>2)/threadsPerCUDABlock);
-    state_swapQubitAmpsKernel<<<CUDABlocks, threadsPerCUDABlock>>>(qureg, targetQubit);
+    statevec_swapQubitAmpsKernel<<<CUDABlocks, threadsPerCUDABlock>>>(qureg, qb1, qb2);
 }
 
 __global__ void statevec_hadamardKernel (Qureg qureg, const int targetQubit){
