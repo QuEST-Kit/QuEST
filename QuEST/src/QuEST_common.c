@@ -528,6 +528,18 @@ void statevec_controlledTwoQubitUnitary(Qureg qureg, const int controlQubit, con
     statevec_multiControlledTwoQubitUnitary(qureg, ctrlMask, targetQubit1, targetQubit2, u);
 }
 
+void statevec_multiQubitUnitary(Qureg qureg, int* targets, const int numTargets, ComplexMatrixN u) {
+    
+    long long int ctrlMask = 0;
+    statevec_multiControlledMultiQubitUnitary(qureg, ctrlMask, targets, numTargets, u);
+}
+
+void statevec_controlledMultiQubitUnitary(Qureg qureg, int ctrl, int* targets, const int numTargets, ComplexMatrixN u) {
+    
+    long long int ctrlMask = 1LL << ctrl;
+    statevec_multiControlledMultiQubitUnitary(qureg, ctrlMask, targets, numTargets, u);
+}
+
 #ifdef __cplusplus
 }
 #endif

@@ -298,6 +298,40 @@ void multiControlledTwoQubitUnitary(Qureg qureg, int* controlQubits, const int n
     qasm_recordComment(qureg, "Here, an undisclosed multi-controlled 2-qubit unitary was applied.");
 }
 
+void multiQubitUnitary(Qureg qureg, int* targs, const int numTargs, ComplexMatrixN u) {
+    validateMultiTargets(qureg, targs, numTargs, __func__);
+    validateMultiQubitUnitaryMatrix(qureg, u, numTargs, __func__);
+    
+    statevec_multiQubitUnitary(qureg, targs, numTargs, u);
+    if (qureg.isDensityMatrix) {
+        int shift = qureg.numQubitsRepresented;
+        shiftIndices(targs, numTargs, shift);
+        conjugateMatrixN(u);
+        statevec_multiQubitUnitary(qureg, targs, numTargs, u);
+        shiftIndices(targs, numTargs, -shift);
+        conjugateMatrixN(u);
+    }
+    
+    qasm_recordComment(qureg, "Here, an undisclosed multi-qubit unitary was applied.");
+}
+
+void controlledMultiQubitUnitary(Qureg qureg, int ctrl, int* targs, const int numTargs, ComplexMatrixN u) {
+    validateMultiControlsMultiTargets(qureg, (int[]) {ctrl}, 1, targs, numTargs, __func__);
+    validateMultiQubitUnitaryMatrix(qureg, u, numTargs, __func__);
+    
+    statevec_controlledMultiQubitUnitary(qureg, ctrl, targs, numTargs, u);
+    if (qureg.isDensityMatrix) {
+        int shift = qureg.numQubitsRepresented;
+        shiftIndices(targs, numTargs, shift);
+        conjugateMatrixN(u);
+        statevec_controlledMultiQubitUnitary(qureg, ctrl+shift, targs, numTargs, u);
+        shiftIndices(targs, numTargs, -shift);
+        conjugateMatrixN(u);
+    }
+    
+    qasm_recordComment(qureg, "Here, an undisclosed controlled multi-qubit unitary was applied.");
+}
+
 void multiControlledMultiQubitUnitary(Qureg qureg, int* ctrls, const int numCtrls, int* targs, const int numTargs, ComplexMatrixN u) {
     validateMultiControlsMultiTargets(qureg, ctrls, numCtrls, targs, numTargs, __func__);
     validateMultiQubitUnitaryMatrix(qureg, u, numTargs, __func__);
@@ -889,11 +923,11 @@ void applyOneQubitPauliError(Qureg qureg, int qubit, qreal probX, qreal probY, q
     
      ComplexMatrixN matr;
      matr.numQubits = numQubits;
-     matr.numRows = 1LL << numQubits;
+     matr.numRows = 1 << numQubits;
      matr.elems = malloc(matr.numRows * sizeof *matr.elems);
-     for (long long int r=0; r < matr.numRows; r++) {
+     for (int r=0; r < matr.numRows; r++) {
         matr.elems[r] = malloc(matr.numRows * sizeof **matr.elems);
-        for (long long int c=0; c < matr.numRows; c++) {
+        for (int c=0; c < matr.numRows; c++) {
             matr.elems[r][c] = (Complex) {.real=0, .imag=0};
         }
     }
