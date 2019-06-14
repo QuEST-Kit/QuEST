@@ -3463,7 +3463,7 @@ void statevec_swapQubitAmpsDistributed(Qureg qureg, int pairRank, int qb1, int q
     qreal *reVec = qureg.stateVec.real;
     qreal *imVec = qureg.stateVec.imag;
     qreal *rePairVec = qureg.pairStateVec.real;
-    qreal *imPairVec = qureg.pairStateVec.real;
+    qreal *imPairVec = qureg.pairStateVec.imag;
     
     long long int numLocalAmps = qureg.numAmpsPerChunk;
     long long int globalStartInd = qureg.chunkId * numLocalAmps;
