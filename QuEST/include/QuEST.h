@@ -89,7 +89,7 @@ typedef struct ComplexMatrix2
 typedef struct ComplexMatrixN
 {
     int numQubits;
-    long long int numRows;
+    int numRows;
     Complex** elems;
 } ComplexMatrixN;
 

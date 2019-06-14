@@ -735,15 +735,15 @@ void statevec_unitary(Qureg qureg, const int targetQubit, ComplexMatrix2 u)
     statevec_unitaryKernel<<<CUDABlocks, threadsPerCUDABlock>>>(qureg, targetQubit, u);
 }
 
-__global__ void statevec_multiControlledMultiQubitUnitaryKernel(Qureg qureg, long long int ctrlMask, int* targs, const int numTargs, ComplexMatrixN u, int threadMemBytes) {
-
-    // decide the 4 amplitudes this thread will modify
+__global__ void statevec_multiControlledMultiQubitUnitaryKernel(
+    Qureg qureg, long long int ctrlMask, int* targs, int numTargs, 
+    Complex* uElemsFlat, long long int* ampInds, qreal* reAmps, qreal* imAmps, long long int numTargAmps)
+{
+    
+    // decide the amplitudes this thread will modify
     long long int thisTask = blockIdx.x*blockDim.x + threadIdx.x;                        
     long long int numTasks = qureg.numAmpsPerChunk >> numTargs; // kernel called on every 1 in 2^numTargs amplitudes
     if (thisTask>=numTasks) return;
-    
-    qreal *reVec = qureg.deviceStateVec.real;
-    qreal *imVec = qureg.deviceStateVec.imag;
     
     // find this task's start index (where all targs are 0)
     long long int ind00 = thisTask;
@@ -754,50 +754,43 @@ __global__ void statevec_multiControlledMultiQubitUnitaryKernel(Qureg qureg, lon
     if (ctrlMask&ind00 != ctrlMask)
         return;
         
-    long long int numAmps = 1LL << numTargs;
+    qreal *reVec = qureg.deviceStateVec.real;
+    qreal *imVec = qureg.deviceStateVec.imag;
     
-    // delimit shared memory space into thread sub-arrays
-    extern __shared__ char sharedMem[];
-    char *thisMem = &sharedMem[threadMemBytes*threadIdx.x];
-    long long int *ampInds = (long long int *) &thisMem;
-    qreal *reAmps = (qreal*) &ampInds[numAmps];
-    qreal *imAmps = (qreal*) &reAmps[numAmps];
     /*
-    this creates:
-    long long int ampInds[numAmps];
-    qreal reAmps[numAmps];
-    qreal imAmps[numAmps];
+    each thread needs:
+        long long int ampInds[numAmps];
+        qreal reAmps[numAmps];
+        qreal imAmps[numAmps];
+    but instead has access to shared arrays, with below stride and offset
     */
+    size_t stride = gridDim.x*blockDim.x;
+    size_t offset = blockIdx.x*blockDim.x + threadIdx.x;
     
-    // determine the indices of the target amplitudes
+    // determine the indices and record values of target amps
     long long int ind;
-    for (int i=0; i < numAmps; i++) {
+    for (int i=0; i < numTargAmps; i++) {
         
         // get global index of current target qubit assignment
         ind = ind00;
         for (int t=0; t < numTargs; t++)
-            if (extractBit(targs[t], i))
+            if (extractBit(t, i))
                 ind = flipBit(ind, targs[t]);
         
-        ampInds[i] = ind;
-    }
-    
-    // record the current amplitudes
-    for (int i=0; i < numAmps; i++) {
-        ind = ampInds[i];
-        reAmps[i] = reVec[ind];
-        imAmps[i] = imVec[ind];
+        ampInds[i*stride+offset] = ind;
+        reAmps [i*stride+offset] = reVec[ind];
+        imAmps [i*stride+offset] = imVec[ind];
     }
     
     // update the amplitudes
-    for (int r=0; r < numAmps; r++) {
-        ind = ampInds[r];
+    for (int r=0; r < numTargAmps; r++) {
+        ind = ampInds[r*stride+offset];
         reVec[ind] = 0;
         imVec[ind] = 0;
-        for (int c=0; c < numAmps; c++) {
-            Complex elem = u.elems[r][c];
-            reVec[ind] += reAmps[c]*elem.real - imAmps[c]*elem.imag;
-            imVec[ind] += reAmps[c]*elem.imag + imAmps[c]*elem.real;
+        for (int c=0; c < numTargAmps; c++) {
+            Complex elem = uElemsFlat[c + r*numTargAmps];
+            reVec[ind] += reAmps[c*stride+offset]*elem.real - imAmps[c*stride+offset]*elem.imag;
+            imVec[ind] += reAmps[c*stride+offset]*elem.imag + imAmps[c*stride+offset]*elem.real;
         }
     }
 }
@@ -806,10 +799,47 @@ void statevec_multiControlledMultiQubitUnitary(Qureg qureg, long long int ctrlMa
 {
     int threadsPerCUDABlock = 128;
     int CUDABlocks = ceil((qreal)(qureg.numAmpsPerChunk>>numTargs)/threadsPerCUDABlock);
-    // each thread needs space for 2*(1LL<<numTargs) qreals and (1LL<<numTargs) long long ints
-    int sharedThreadMemSize = (1LL<<numTargs) * (2*sizeof(qreal) + 1*sizeof(long long int));
-    int sharedBlockMemSize = threadsPerCUDABlock * sharedThreadMemSize;
-    statevec_multiControlledMultiQubitUnitaryKernel<<<CUDABlocks,threadsPerCUDABlock,sharedBlockMemSize>>>(qureg, ctrlMask, targs, numTargs, u, sharedThreadMemSize);
+    
+    // allocate device space for global {targs} (length: numTargs) and populate
+    int *d_targs;
+    size_t targMemSize = numTargs*sizeof *d_targs;
+    cudaMalloc(&d_targs, targMemSize);
+    cudaMemcpy(d_targs, targs, targMemSize, cudaMemcpyHostToDevice);
+    
+    // flatten out the u.elems matrix
+    Complex* uFlat = (Complex*) malloc(u.numRows * u.numRows * sizeof *uFlat);
+    long long int i = 0;
+    for (int r=0; r < u.numRows; r++)
+        for (int c=0; c < u.numRows; c++)
+            uFlat[i++] = u.elems[r][c];
+    
+    // allocate device space for global u.elems (flattten by concatenating rows) and populate
+    Complex* d_uElems;
+    size_t uElemsMemSize = u.numRows*u.numRows*sizeof *d_uElems;
+    cudaMalloc(&d_uElems, uElemsMemSize);
+    cudaMemcpy(d_uElems, uFlat, uElemsMemSize, cudaMemcpyHostToDevice);
+    
+    // allocate device Wspace for thread-local {ampInds}, {reAmps}, {imAmps} (length: 1<<numTargs)
+    long long int *d_ampInds;
+    qreal *d_reAmps;
+    qreal *d_imAmps;
+    size_t gridSize = (size_t) threadsPerCUDABlock * CUDABlocks;
+    long long int numTargAmps = u.numRows;
+    cudaMalloc(&d_ampInds, numTargAmps*gridSize*sizeof *d_ampInds);
+    cudaMalloc(&d_reAmps,  numTargAmps*gridSize*sizeof *d_reAmps);
+    cudaMalloc(&d_imAmps,  numTargAmps*gridSize*sizeof *d_imAmps);
+    
+    // call kernel
+    statevec_multiControlledMultiQubitUnitaryKernel<<<CUDABlocks,threadsPerCUDABlock>>>(
+        qureg, ctrlMask, d_targs, numTargs, d_uElems, d_ampInds, d_reAmps, d_imAmps, numTargAmps);
+        
+    // free kernel memory
+    free(uFlat);
+    cudaFree(d_targs);
+    cudaFree(d_uElems);
+    cudaFree(d_ampInds);
+    cudaFree(d_reAmps);
+    cudaFree(d_imAmps);
 }
 
 __global__ void statevec_multiControlledTwoQubitUnitaryKernel(Qureg qureg, long long int ctrlMask, const int q1, const int q2, ComplexMatrix4 u){
