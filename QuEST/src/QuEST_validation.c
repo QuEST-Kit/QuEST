@@ -53,7 +53,8 @@ typedef enum {
     E_INVALID_PAULI_CODE,
     E_INVALID_NUM_SUM_TERMS,
     E_CANNOT_FIT_MULTI_QUBIT_UNITARY,
-    E_INVALID_UNITARY_SIZE
+    E_INVALID_UNITARY_SIZE,
+    E_COMPLEX_MATRIX_NOT_INIT
 } ErrorCode;
 
 static const char* errorMessages[] = {
@@ -92,7 +93,8 @@ static const char* errorMessages[] = {
     [E_INVALID_PAULI_CODE] = "Invalid Pauli code. Codes must be 0 (or PAULI_I), 1 (PAULI_X), 2 (PAULI_Y) or 3 (PAULI_Z) to indicate the identity, X, Y and Z gates respectively.",
     [E_INVALID_NUM_SUM_TERMS] = "Invalid number of terms in the Pauli sum. The number of terms must be >0.",
     [E_CANNOT_FIT_MULTI_QUBIT_UNITARY] = "The specified unitary targets too many qubits; the batches of amplitudes to modify cannot all fit in a single distributed node's memory allocation.",
-    [E_INVALID_UNITARY_SIZE] = "The matrix size does not match the number of target qubits."
+    [E_INVALID_UNITARY_SIZE] = "The matrix size does not match the number of target qubits.",
+    [E_COMPLEX_MATRIX_NOT_INIT] = "The ComplexMatrixN wasn't initialised with createComplexMatrix()."
 };
 
 void exitWithError(ErrorCode code, const char* func){
@@ -364,15 +366,21 @@ void validateControlState(int* controlState, const int numControlQubits, const c
         QuESTAssert(controlState[i] == 0 || controlState[i] == 1, E_INVALID_CONTROLS_BIT_STATE, caller);
 }
 
+void validateMultiQubitMatrixFitsInNode(Qureg qureg, int numTargets, const char* caller) {
+    QuESTAssert(qureg.numAmpsPerChunk >= (1LL << numTargets), E_CANNOT_FIT_MULTI_QUBIT_UNITARY, caller);
+}
+
 void validateOneQubitUnitaryMatrix(ComplexMatrix2 u, const char* caller) {
     QuESTAssert(isMatrix2Unitary(u), E_NON_UNITARY_MATRIX, caller);
 }
 
-void validateTwoQubitUnitaryMatrix(ComplexMatrix4 u, const char* caller) {
+void validateTwoQubitUnitaryMatrix(Qureg qureg, ComplexMatrix4 u, const char* caller) {
+    validateMultiQubitMatrixFitsInNode(qureg, 2, caller);
     QuESTAssert(isMatrix4Unitary(u), E_NON_UNITARY_MATRIX, caller);
 }
 
-void validateMultiQubitUnitaryMatrix(ComplexMatrixN u, int numTargs, const char* caller) { 
+void validateMultiQubitUnitaryMatrix(Qureg qureg, ComplexMatrixN u, int numTargs, const char* caller) { 
+    validateMultiQubitMatrixFitsInNode(qureg, numTargs, caller);
     QuESTAssert(numTargs == u.numQubits, E_INVALID_UNITARY_SIZE, caller);
     QuESTAssert(isMatrixNUnitary(u), E_NON_UNITARY_MATRIX, caller);
 }
@@ -478,9 +486,8 @@ void validateNumSumTerms(int numTerms, const char* caller) {
     QuESTAssert(numTerms > 0, E_INVALID_NUM_SUM_TERMS, caller);
 }
 
-void validateMultiQubitUnitaryFits(Qureg qureg, int numTargetQubits, const char* caller) {
-    long long int numAmpsNeeded = 1LL << numTargetQubits;
-    QuESTAssert(qureg.numAmpsPerChunk >= numAmpsNeeded, E_CANNOT_FIT_MULTI_QUBIT_UNITARY, caller);
+void validateMatrixInit(ComplexMatrixN matr, const char* caller) {
+    QuESTAssert(matr.elems != NULL, E_COMPLEX_MATRIX_NOT_INIT, caller);
 }
 
 
