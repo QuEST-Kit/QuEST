@@ -1744,7 +1744,7 @@ void sqrtSwapGate(Qureg qureg, int qb1, int qb2);
  * states (0 or 1) to condition upon; when the specified controls are in the 
  * specified state, the given unitary is applied to the target qubit.
  * This is equivalent to NOTing the control bits which are conditioned on 0, 
- * calling multiStateControlledUnitary then NOTing the same control bits.
+ * calling multiControlledUnitary then NOTing the same control bits.
  *
     \f[
     \setlength{\fboxrule}{0.01pt}
@@ -1762,7 +1762,7 @@ void sqrtSwapGate(Qureg qureg, int qb1, int qb2);
                 
                 \draw (-2, 2) -- (2, 2);
                 \draw[fill=white] (0, 2) circle (.2);
-                \draw (0, 2) -- (0, 1);
+                \draw (0, 2-.2) -- (0, 1);
                 
                 \draw (-2,0) -- (-1, 0);
                 \draw (1, 0) -- (2, 0);
@@ -1946,14 +1946,13 @@ qreal calcExpecValProd(Qureg qureg, int* targetQubits, enum pauliOpType* pauliCo
 qreal calcExpecValSum(Qureg qureg, enum pauliOpType* allPauliCodes, qreal* termCoeffs, int numSumTerms, Qureg workspace);
 
 /** Apply a general two-qubit unitary (including a global phase factor).
- * The passed 4x4 ComplexMatrix must be unitary, otherwise an error is thrown.
  *
     \f[
     \setlength{\fboxrule}{0.01pt}
     \fbox{
                 \begin{tikzpicture}[scale=.5]
-                \node[draw=none] at (-3.5, 0) {target1};
-                \node[draw=none] at (-3.5, 2) {target2};
+                \node[draw=none] at (-3.5, 0) {target2};
+                \node[draw=none] at (-3.5, 2) {target1};
 
                 \draw (-2,0) -- (-1, 0);
                 \draw (1, 0) -- (2, 0);
@@ -1964,8 +1963,36 @@ qreal calcExpecValSum(Qureg qureg, enum pauliOpType* allPauliCodes, qreal* termC
                 \end{tikzpicture}
     }
     \f]
+ *
+ * \p targetQubit1 is treated as the \p least significant qubit in \p u, such that 
+ * a row in \p u is dotted with the vector
+ * \f$ |\text{targetQubit2} \;\; \text{targetQubit1}\rangle : \{ |00\rangle, |01\rangle, |10\rangle, |11\rangle \} \f$
+ *
+ * For example, 
+
+ *     twoQubitUnitary(qureg, a, b, u);
+ *
+ * will invoke multiplication
+ * \f[
+ * \begin{pmatrix}
+ * u_{00} & u_{01} & u_{02} & u_{03} \\
+ * u_{10} & u_{11} & u_{12} & u_{13} \\
+ * u_{20} & u_{21} & u_{22} & u_{23} \\
+ * u_{30} & u_{31} & u_{32} & u_{33}
+ * \end{pmatrix}
+ * \begin{pmatrix}
+ * |ba\rangle> = |00\rangle \\
+ * |ba\rangle> = |01\rangle \\
+ * |ba\rangle> = |10\rangle \\
+ * |ba\rangle> = |11\rangle 
+ * \end{pmatrix}
+ * \f]
+ *
+ * The passed 4x4 ComplexMatrix must be unitary, otherwise an error is thrown.
  *                 
  * Note that in distributed mode, this routine requires that each node contains at least 4 amplitudes.
+ * This means an q-qubit register (state vector or density matrix) can be distributed 
+ * by at most 2^q/4 nodes.
  *                                                   
  * @param[in,out] qureg object representing the set of all qubits
  * @param[in] targetQubit1 first qubit to operate on, treated as least significant in \p u
@@ -1974,7 +2001,8 @@ qreal calcExpecValSum(Qureg qureg, enum pauliOpType* allPauliCodes, qreal* termC
  * @throws exitWithError
  *      if \p targetQubit1 or \p targetQubit2 are outside [0, \p qureg.numQubitsRepresented),
  *      or if \p targetQubit1 equals \p targetQubit2,
- *      or matrix \p u is not unitary.
+ *      or matrix \p u is not unitary, 
+ *      or if each node cannot fit 4 amplitudes in distributed mode.
  */
 void twoQubitUnitary(Qureg qureg, const int targetQubit1, const int targetQubit2, ComplexMatrix4 u);
 
@@ -1994,6 +2022,11 @@ void twoQubitUnitary(Qureg qureg, const int targetQubit1, const int targetQubit2
  * \end{pmatrix}
  * \f]
  * on the control and target qubits.
+ *
+ * \p targetQubit1 is treated as the \p least significant qubit in \p u, such that 
+ * a row in \p u is dotted with the vector
+ * \f$ |\text{targetQubit2} \;\; \text{targetQubit1}\rangle : \{ |00\rangle, |01\rangle, |10\rangle, |11\rangle \} \f$
+ *
  * The passed 4x4 ComplexMatrix must be unitary, otherwise an error is thrown.
  *
     \f[
@@ -2017,6 +2050,10 @@ void twoQubitUnitary(Qureg qureg, const int targetQubit1, const int targetQubit2
                 \end{tikzpicture}
     }
     \f]
+ *
+ * Note that in distributed mode, this routine requires that each node contains at least 4 amplitudes.
+ * This means an q-qubit register (state vector or density matrix) can be distributed 
+ * by at most 2^q/4 nodes.
  *                                                                    
  * @param[in,out] qureg object representing the set of all qubits
  * @param[in] controlQubit the control qubit which must be in state 1 to effect the given unitary
@@ -2026,7 +2063,8 @@ void twoQubitUnitary(Qureg qureg, const int targetQubit1, const int targetQubit2
  * @throws exitWithError
  *      if \p controlQubit, \p targetQubit1 or \p targetQubit2 are outside [0, \p qureg.numQubitsRepresented),
  *      or if any of \p controlQubit, \p targetQubit1 and \p targetQubit2 are equal,
- *      or matrix \p u is not unitary.
+ *      or matrix \p u is not unitary, 
+  *     or if each node cannot fit 4 amplitudes in distributed mode.
  */
 void controlledTwoQubitUnitary(Qureg qureg, const int controlQubit, const int targetQubit1, const int targetQubit2, ComplexMatrix4 u);
 
@@ -2046,8 +2084,11 @@ void controlledTwoQubitUnitary(Qureg qureg, const int controlQubit, const int ta
  * \end{pmatrix}
  * \f]
  * on the control and target qubits.
- * The smaller of targetQubit1 and targetQubit2 is treated as the least significant bit 
- * in the passed unitary matrix, such that their order doesn't matter.
+ 
+ * \p targetQubit1 is treated as the \p least significant qubit in \p u, such that 
+ * a row in \p u is dotted with the vector
+ * \f$ |\text{targetQubit2} \;\; \text{targetQubit1}\rangle : \{ |00\rangle, |01\rangle, |10\rangle, |11\rangle \} \f$
+ * 
  * The passed 4x4 ComplexMatrix must be unitary, otherwise an error is thrown.
  *
     \f[
@@ -2078,12 +2119,16 @@ void controlledTwoQubitUnitary(Qureg qureg, const int controlQubit, const int ta
                 \end{tikzpicture}
     }
     \f]
+ *
+ * Note that in distributed mode, this routine requires that each node contains at least 4 amplitudes.
+ * This means an q-qubit register (state vector or density matrix) can be distributed 
+ * by at most 2^q/4 nodes.
  *                                                                    
  * @param[in,out] qureg object representing the set of all qubits
  * @param[in] controlQubits the control qubits which all must be in state 1 to effect the given unitary
  * @param[in] numControlQubits the number of control qubits
- * @param[in] targetQubit1 first qubit to operate on (order is not respected)
- * @param[in] targetQubit2 second qubit to operate on (order is not respected)
+ * @param[in] targetQubit1 first target qubit, treated as least significant in \p u
+ * @param[in] targetQubit2 second target qubit, treated as most significant in \p u
  * @param[in] u unitary matrix to apply
  * @throws exitWithError
  *      if \p targetQubit1 or \p targetQubit2 are outside [0, \p qureg.numQubitsRepresented),
@@ -2091,7 +2136,8 @@ void controlledTwoQubitUnitary(Qureg qureg, const int controlQubit, const int ta
  *      or if any qubit in \p controlQubits is outside [0, \p qureg.numQubitsRepresented),
  *      or if \p controlQubits are not unique, or if either \p targetQubit1 and \p targetQubit2
  *      are in \p controlQubits,
- *      or if matrix \p u is not unitary.
+ *      or if matrix \p u is not unitary,
+ *      or if each node cannot fit 4 amplitudes in distributed mode.
  */
 void multiControlledTwoQubitUnitary(Qureg qureg, int* controlQubits, const int numControlQubits, const int targetQubit1, const int targetQubit2, ComplexMatrix4 u);
 
@@ -2108,9 +2154,10 @@ void multiControlledTwoQubitUnitary(Qureg qureg, int* controlQubits, const int n
  * & & & \vdots & \vdots & \ddots
  * \end{pmatrix}
  * \f]
- * on the control and target qubits, where the target qubit order does not matter; 
- * \p u will be effected in such a way that the smallest target qubit index will correspond 
- * to the least significant bit in \p u.
+ * on the control and target qubits.
+ *
+ * The target qubits in \p targs are treated as ordered least sigifnicant 
+ * to most significant in \p u.
  *
  * The passed ComplexMatrix must be unitary and be a compatible size with the specified number of
  * target qubits, otherwise an error is thrown.
@@ -2144,17 +2191,22 @@ void multiControlledTwoQubitUnitary(Qureg qureg, int* controlQubits, const int n
                 \end{tikzpicture}
     }
     \f]
+ *
+ * Note that in distributed mode, this routine requires that each node contains at least 2^\p numTargs amplitudes.
+ * This means an q-qubit register (state vector or density matrix) can be distributed 
+ * by at most 2^q / 2^\p numTargs nodes.
  *                                                                    
  * @param[in,out] qureg object representing the set of all qubits
  * @param[in] ctrls a list of the control qubits
  * @param[in] numCtrls the number of control qubits
- * @param[in] targs a list of the target qubits (order is not respected)
+ * @param[in] targs a list of the target qubits, ordered least to most significant
  * @param[in] numTargs the number of target qubits
  * @param[in] u unitary matrix to apply
  * @throws exitWithError
  *      if any index in \p ctrls and \p targs is outside of [0, \p qureg.numQubitsRepresented),
  *      or if \p ctrls and \p targs are not unique,
- *      or if matrix \p u is not unitary.
+ *      or if matrix \p u is not unitary,
+ *      or if a node cannot fit the required number of target amplitudes in distributed mode.
  */
 void multiControlledMultiQubitUnitary(Qureg qureg, int* ctrls, const int numCtrls, int* targs, const int numTargs, ComplexMatrixN u);
 
