@@ -1397,3 +1397,54 @@ void statevec_multiControlledTwoQubitUnitary(Qureg qureg, long long int ctrlMask
         statevec_swapQubitAmps(qureg, q2, swap2);
     }
 }
+
+static int maskContainsBit(long long int mask, int bitInd) {
+    return mask & (1LL << bitInd);
+}
+
+/** This calls swapQubitAmps only when it would involve a distributed communication;
+ * if the qubit chunks already fit in the node, it operates the unitary direct.
+ * It is already gauranteed here that all target qubits can fit on each node (this is
+ * validated in the front-end)
+ * 
+ * @TODO: refactor so that the 'swap back' isn't performed; instead the qubit locations 
+ * are updated.
+ */
+void statevec_multiControlledMultiQubitUnitary(Qureg qureg, long long int ctrlMask, int* targs, const int numTargs, ComplexMatrixN u) {
+
+    // bit mask of target qubits (for quick collision checking)
+    long long int mask = 0LL;
+    for (int t=0; t<numTargs; t++)
+        mask = mask | (1LL << targs[t]);
+    
+    // find lowest qubit available for swapping (isn't in targs)
+    int freeQb = 0;
+    while (maskContainsBit(mask, freeQb))
+        freeQb++;
+        
+    // assign indices of where each target will be swapped to (else itself)
+    int swapTargs[numTargs];
+    for (int t=0; t<numTargs; t++) {
+        if (halfMatrixBlockFitsInChunk(qureg.numAmpsPerChunk, targs[t]))
+            swapTargs[t] = targs[t];
+        else {
+            swapTargs[t] = freeQb++;
+            while (maskContainsBit(mask, freeQb))
+                freeQb++;
+        }        
+    }
+    
+    
+    // perform swaps as necessary 
+    for (int t=0; t<numTargs; t++)
+        if (swapTargs[t] != targs[t])
+            statevec_swapQubitAmps(qureg, targs[t], swapTargs[t]);
+            
+    // all target qubits have now been swapped into local memory
+    statevec_multiControlledMultiQubitUnitaryLocal(qureg, ctrlMask, swapTargs, numTargs, u);
+    
+    // undo swaps 
+    for (int t=0; t<numTargs; t++)
+        if (swapTargs[t] != targs[t])
+            statevec_swapQubitAmps(qureg, targs[t], swapTargs[t]);
+}
