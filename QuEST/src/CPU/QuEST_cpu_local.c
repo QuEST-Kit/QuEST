@@ -293,7 +293,12 @@ void seedQuESTDefault(){
 
 void statevec_multiControlledTwoQubitUnitary(Qureg qureg, long long int ctrlMask, const int q1, const int q2, ComplexMatrix4 u)
 {
-    statevec_multiControlledTwoQubitUnitaryLocal(qureg, ctrlMask, q1, q2,u);
+    statevec_multiControlledTwoQubitUnitaryLocal(qureg, ctrlMask, q1, q2, u);
+}
+
+void statevec_multiControlledMultiQubitUnitary(Qureg qureg, long long int ctrlMask, int* targs, const int numTargs, ComplexMatrixN u)
+{
+    statevec_multiControlledMultiQubitUnitaryLocal(qureg, ctrlMask, targs, numTargs, u);
 }
 
 void statevec_swapQubitAmps(Qureg qureg, int qb1, int qb2) 
