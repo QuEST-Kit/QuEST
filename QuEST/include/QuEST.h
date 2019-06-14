@@ -1981,10 +1981,10 @@ qreal calcExpecValSum(Qureg qureg, enum pauliOpType* allPauliCodes, qreal* termC
  * u_{30} & u_{31} & u_{32} & u_{33}
  * \end{pmatrix}
  * \begin{pmatrix}
- * |ba\rangle> = |00\rangle \\
- * |ba\rangle> = |01\rangle \\
- * |ba\rangle> = |10\rangle \\
- * |ba\rangle> = |11\rangle 
+ * |ba\rangle = |00\rangle \\
+ * |ba\rangle = |01\rangle \\
+ * |ba\rangle = |10\rangle \\
+ * |ba\rangle = |11\rangle 
  * \end{pmatrix}
  * \f]
  *
@@ -2161,14 +2161,14 @@ void multiControlledTwoQubitUnitary(Qureg qureg, int* controlQubits, const int n
  * u_{70} & u_{71} & u_{72} & u_{73} & u_{74} & u_{75} & u_{76} & u_{77} \\
  * \end{pmatrix}
  * \begin{pmatrix}
- * |cba\rangle> = |000\rangle \\
- * |cba\rangle> = |001\rangle \\
- * |cba\rangle> = |010\rangle \\
- * |cba\rangle> = |011\rangle \\
- * |cba\rangle> = |100\rangle \\
- * |cba\rangle> = |101\rangle \\
- * |cba\rangle> = |110\rangle \\
- * |cba\rangle> = |111\rangle 
+ * |cba\rangle = |000\rangle \\
+ * |cba\rangle = |001\rangle \\
+ * |cba\rangle = |010\rangle \\
+ * |cba\rangle = |011\rangle \\
+ * |cba\rangle = |100\rangle \\
+ * |cba\rangle = |101\rangle \\
+ * |cba\rangle = |110\rangle \\
+ * |cba\rangle = |111\rangle 
  * \end{pmatrix}
  * \f]
  * 
