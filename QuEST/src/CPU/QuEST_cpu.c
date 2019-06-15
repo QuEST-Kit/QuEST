@@ -1740,8 +1740,13 @@ void statevec_multiControlledMultiQubitUnitaryLocal(Qureg qureg, long long int c
     
     long long int numTasks = qureg.numAmpsPerChunk >> numTargs;  // kernel called on every 1 in 2^numTargs amplitudes
     long long int numTargAmps = u.numRows;  // num amps to be modified by each task
+    
+    // the global (between all nodes) index of this node's start index
+    long long int globalIndStart = qureg.chunkId*qureg.numAmpsPerChunk; 
+    
     long long int thisTask;
     long long int thisInd00; // this thread's index of |..0..0..> (target qubits = 0) 
+    long long int thisGlobalInd00; // the global (between all nodes) index of this thread's |..0..0..> state
     long long int ind;   // each thread's iteration of amplitudes to modify
     int i, t, r, c, g;  // each thread's iteration of amps and targets 
     qreal reElem, imElem;  // each thread's iteration of u elements
@@ -1756,8 +1761,8 @@ void statevec_multiControlledMultiQubitUnitaryLocal(Qureg qureg, long long int c
 # ifdef _OPENMP
 # pragma omp parallel \
     default  (none) \
-    shared   (reVec,imVec, numTasks,numTargAmps, ctrlMask,targs,u, ampInds,reAmps,imAmps) \
-    private  (thisTask,thisInd00,ind,i,t,r,c,g,reElem,imElem) 
+    shared   (reVec,imVec, numTasks,numTargAmps,globalIndStart, ctrlMask,targs,u, ampInds,reAmps,imAmps) \
+    private  (thisTask,thisInd00,thisGlobalInd00,ind,i,t,r,c,g,reElem,imElem) 
 # endif
     {
 # ifdef _OPENMP
@@ -1771,7 +1776,8 @@ void statevec_multiControlledMultiQubitUnitaryLocal(Qureg qureg, long long int c
                 thisInd00 = insertZeroBit(thisInd00, targs[t]);
                 
             // this task only modifies amplitudes if control qubits are 1 for this state
-            if (ctrlMask && ((ctrlMask&thisInd00) != ctrlMask))
+            thisGlobalInd00 = thisInd00 + globalIndStart;
+            if ((ctrlMask & thisGlobalInd00) != ctrlMask)
                 continue;
                 
             // determine the indices and record values of this tasks's target amps
@@ -3471,7 +3477,7 @@ void statevec_swapQubitAmpsDistributed(Qureg qureg, int pairRank, int qb1, int q
 
     long long int localInd, globalInd;
     long long int pairLocalInd, pairGlobalInd;
-
+    
 # ifdef _OPENMP
 # pragma omp parallel \
     default  (none) \

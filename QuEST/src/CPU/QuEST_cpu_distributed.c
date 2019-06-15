@@ -38,6 +38,17 @@ static int extractBit (const int locationOfBitFromRight, const long long int the
     return (theEncodedNumber & ( 1LL << locationOfBitFromRight )) >> locationOfBitFromRight;
 }
 
+static long long int flipBit(long long int number, int bitInd) {
+    return (number ^ (1LL << bitInd));
+}
+
+static int maskContainsBit(long long int mask, int bitInd) {
+    return mask & (1LL << bitInd);
+}
+
+
+
+
 Complex statevec_calcInnerProduct(Qureg bra, Qureg ket) {
     
     Complex localInnerProd = statevec_calcInnerProductLocal(bra, ket);
@@ -128,7 +139,7 @@ static int chunkIsUpper(int chunkId, long long int chunkSize, int targetQubit);
 static int chunkIsUpperInOuterBlock(int chunkId, long long int chunkSize, int targetQubit, int numQubits);
 static void getRotAngle(int chunkIsUpper, Complex *rot1, Complex *rot2, Complex alpha, Complex beta);
 static int getChunkPairId(int chunkIsUpper, int chunkId, long long int chunkSize, int targetQubit);
-static int getChunkOuterBlockPairId(int chunkIsUpper, int chunkId, long long int chunkSize, int targetQubit,        int numQubits);
+static int getChunkOuterBlockPairId(int chunkIsUpper, int chunkId, long long int chunkSize, int targetQubit, int numQubits);
 static int halfMatrixBlockFitsInChunk(long long int chunkSize, int targetQubit);
 static int getChunkIdFromIndex(Qureg qureg, long long int index);
 
@@ -1313,10 +1324,6 @@ void seedQuESTDefault(){
     init_by_array(key, 2);
 }
 
-static long long int flipBit(long long int number, int bitInd) {
-    return (number ^ (1LL << bitInd));
-}
-
 /** returns -1 if this node contains no amplitudes where qb1 and qb2 
  * have opposite parity, otherwise returns the global index of one
  * of such contained amplitudes (not necessarily the first)
@@ -1352,7 +1359,7 @@ void statevec_swapQubitAmps(Qureg qureg, int qb1, int qb2) {
     long long int oddParityGlobalInd = getGlobalIndOfOddParityInChunk(qureg, qb1, qb2);
     if (oddParityGlobalInd == -1)
         return;
-        
+
     // determine and swap amps with pair node
     int pairRank = flipBit(flipBit(oddParityGlobalInd, qb1), qb2) / qureg.numAmpsPerChunk;
     exchangeStateVectors(qureg, pairRank);
@@ -1398,8 +1405,9 @@ void statevec_multiControlledTwoQubitUnitary(Qureg qureg, long long int ctrlMask
     }
 }
 
-static int maskContainsBit(long long int mask, int bitInd) {
-    return mask & (1LL << bitInd);
+static void printBitMask(long long int mask, int len) {
+        for (int i=0; i < len; i++)
+            printf("%d", extractBit(len-i-1,mask));
 }
 
 /** This calls swapQubitAmps only when it would involve a distributed communication;
@@ -1413,13 +1421,11 @@ static int maskContainsBit(long long int mask, int bitInd) {
 void statevec_multiControlledMultiQubitUnitary(Qureg qureg, long long int ctrlMask, int* targs, const int numTargs, ComplexMatrixN u) {
 
     // bit mask of target qubits (for quick collision checking)
-    long long int mask = 0LL;
-    for (int t=0; t<numTargs; t++)
-        mask = mask | (1LL << targs[t]);
+    long long int targMask = getQubitBitMask(targs, numTargs);
     
     // find lowest qubit available for swapping (isn't in targs)
-    int freeQb = 0;
-    while (maskContainsBit(mask, freeQb))
+    int freeQb=0;
+    while (maskContainsBit(targMask, freeQb))
         freeQb++;
         
     // assign indices of where each target will be swapped to (else itself)
@@ -1428,18 +1434,25 @@ void statevec_multiControlledMultiQubitUnitary(Qureg qureg, long long int ctrlMa
         if (halfMatrixBlockFitsInChunk(qureg.numAmpsPerChunk, targs[t]))
             swapTargs[t] = targs[t];
         else {
-            swapTargs[t] = freeQb++;
-            while (maskContainsBit(mask, freeQb))
+            // mark swap
+            swapTargs[t] = freeQb;
+            
+            // update ctrlMask if swapped-out qubit was a control
+            if (maskContainsBit(ctrlMask, swapTargs[t]))
+                ctrlMask = flipBit(flipBit(ctrlMask, swapTargs[t]), targs[t]); // swap targ and ctrl
+            
+            // locate next available on-chunk qubit
+            freeQb++;
+            while (maskContainsBit(targMask, freeQb))
                 freeQb++;
-        }        
+        }
     }
-    
     
     // perform swaps as necessary 
     for (int t=0; t<numTargs; t++)
         if (swapTargs[t] != targs[t])
             statevec_swapQubitAmps(qureg, targs[t], swapTargs[t]);
-            
+    
     // all target qubits have now been swapped into local memory
     statevec_multiControlledMultiQubitUnitaryLocal(qureg, ctrlMask, swapTargs, numTargs, u);
     
