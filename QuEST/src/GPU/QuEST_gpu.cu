@@ -17,6 +17,10 @@
 # define DEBUG 0
 
 
+/*
+ * in-kernel bit twiddling functions
+ */
+
 __forceinline__ __device__ int extractBit (int locationOfBitFromRight, long long int theEncodedNumber) {
     return (theEncodedNumber & ( 1LL << locationOfBitFromRight )) >> locationOfBitFromRight;
 }
@@ -41,6 +45,10 @@ __forceinline__ __device__ long long int insertZeroBit(long long int number, int
     return (left << 1) ^ right;
 }
 
+
+/*
+ * state vector and density matrix operations 
+ */
 
 #ifdef __cplusplus
 extern "C" {

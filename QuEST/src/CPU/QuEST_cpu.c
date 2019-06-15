@@ -22,31 +22,10 @@
 # include <omp.h>
 # endif
 
-/** Get the value of the bit at a particular index in a number.
-  SCB edit: new definition of extractBit is much faster ***
- * @param[in] locationOfBitFromRight location of bit in theEncodedNumber
- * @param[in] theEncodedNumber number to search
- * @return the value of the bit in theEncodedNumber
+
+/*
+ * state vector and density matrix operations
  */
-static int extractBit (const int locationOfBitFromRight, const long long int theEncodedNumber) {
-    return (theEncodedNumber & ( 1LL << locationOfBitFromRight )) >> locationOfBitFromRight;
-}
-
-static int isOddParity(long long int number, int qb1, int qb2) {
-    return extractBit(qb1, number) != extractBit(qb2, number);
-}
-
-static long long int flipBit(long long int number, int bitInd) {
-    return (number ^ (1LL << bitInd));
-}
-
-/** Insert a zero bit at the specified position into a bit sequence */
-static long long int insertZeroBit(long long int number, int index) {
-    long long int left, right;
-    left = (number >> index) << index;
-    right = number - left;
-    return (left << 1) ^ right;
-}
 
 void densmatr_oneQubitDegradeOffDiagonal(Qureg qureg, const int targetQubit, qreal retain){
     const long long int numTasks = qureg.numAmpsPerChunk;
@@ -1777,7 +1756,7 @@ void statevec_multiControlledMultiQubitUnitaryLocal(Qureg qureg, long long int c
                 
             // this task only modifies amplitudes if control qubits are 1 for this state
             thisGlobalInd00 = thisInd00 + globalIndStart;
-            if ((ctrlMask & thisGlobalInd00) != ctrlMask)
+            if (ctrlMask && ((ctrlMask & thisGlobalInd00) != ctrlMask))
                 continue;
                 
             // determine the indices and record values of this tasks's target amps

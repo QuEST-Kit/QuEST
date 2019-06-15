@@ -26,28 +26,6 @@
 # include <omp.h>
 # endif
 
-/** Get the value of the bit at a particular index in a number.
- * This needs to be static (scoped in this file), since the GPU backend 
- * needs a device-specific redefinition to be callable from GPU kernels.
- * @param[in] locationOfBitFromRight location of bit in theEncodedNumber
- * @param[in] theEncodedNumber number to search
- * @return the value of the bit in theEncodedNumber
- */
-static int extractBit (const int locationOfBitFromRight, const long long int theEncodedNumber)
-{
-    return (theEncodedNumber & ( 1LL << locationOfBitFromRight )) >> locationOfBitFromRight;
-}
-
-static long long int flipBit(long long int number, int bitInd) {
-    return (number ^ (1LL << bitInd));
-}
-
-static int maskContainsBit(long long int mask, int bitInd) {
-    return mask & (1LL << bitInd);
-}
-
-
-
 
 Complex statevec_calcInnerProduct(Qureg bra, Qureg ket) {
     
@@ -1403,11 +1381,6 @@ void statevec_multiControlledTwoQubitUnitary(Qureg qureg, long long int ctrlMask
         statevec_swapQubitAmps(qureg, q1, swap1);
         statevec_swapQubitAmps(qureg, q2, swap2);
     }
-}
-
-static void printBitMask(long long int mask, int len) {
-        for (int i=0; i < len; i++)
-            printf("%d", extractBit(len-i-1,mask));
 }
 
 /** This calls swapQubitAmps only when it would involve a distributed communication;
