@@ -35,7 +35,9 @@ void validateControlState(int* controlState, const int numControlQubits, const c
 
 void validateOneQubitUnitaryMatrix(ComplexMatrix2 u, const char* caller);
 
-void validateTwoQubitUnitaryMatrix(ComplexMatrix4 u, const char* caller);
+void validateTwoQubitUnitaryMatrix(Qureg qureg, ComplexMatrix4 u, const char* caller);
+
+void validateMultiQubitUnitaryMatrix(Qureg qureg, ComplexMatrixN u, int numTargs, const char* caller);
 
 void validateUnitaryComplexPair(Complex alpha, Complex beta, const char* caller);
 
@@ -79,7 +81,7 @@ void validatePauliCodes(enum pauliOpType* pauliCodes, int numPauliCodes, const c
 
 void validateNumSumTerms(int numTerms, const char* caller);
 
-void validateMultiQubitUnitaryFits(Qureg qureg, int numTargetQubits, const char* caller);
+void validateMatrixInit(ComplexMatrixN matr, const char* caller);
 
 # ifdef __cplusplus
 }

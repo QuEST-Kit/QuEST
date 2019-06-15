@@ -11,6 +11,42 @@
 
 # include "QuEST_precision.h"
 
+
+/*
+* Bit twiddling functions are defined seperately here in the CPU backend, 
+* since the GPU backend  needs a device-specific redefinition to be callable 
+* from GPU kernels. These are called in both QuEST_cpu and QuEST_cpu_distributed 
+* and defined in here since public inline methods in C must go in the header
+*/
+
+inline int extractBit (const int locationOfBitFromRight, const long long int theEncodedNumber) {
+    return (theEncodedNumber & ( 1LL << locationOfBitFromRight )) >> locationOfBitFromRight;
+}
+
+inline long long int flipBit(long long int number, int bitInd) {
+    return (number ^ (1LL << bitInd));
+}
+
+inline int maskContainsBit(long long int mask, int bitInd) {
+    return mask & (1LL << bitInd);
+}
+
+inline int isOddParity(long long int number, int qb1, int qb2) {
+    return extractBit(qb1, number) != extractBit(qb2, number);
+}
+
+inline long long int insertZeroBit(long long int number, int index) {
+    long long int left, right;
+    left = (number >> index) << index;
+    right = number - left;
+    return (left << 1) ^ right;
+}
+
+
+/*
+ * density matrix operations
+ */
+
 qreal densmatr_calcPurityLocal(Qureg qureg);
 
 void densmatr_initPureStateLocal(Qureg targetQureg, Qureg copyQureg);
@@ -36,6 +72,11 @@ void densmatr_twoQubitDepolariseDistributed(Qureg qureg, const int targetQubit,
 
 void densmatr_twoQubitDepolariseQ1LocalQ2DistributedPart3(Qureg qureg, const int targetQubit,
                 const int qubit2, qreal delta, qreal gamma);
+
+
+/*
+ * state vector operations
+ */
 
 Complex statevec_calcInnerProductLocal(Qureg bra, Qureg ket);
 
@@ -130,6 +171,8 @@ void statevec_swapQubitAmpsLocal(Qureg qureg, int qb1, int qb2);
 void statevec_swapQubitAmpsDistributed(Qureg qureg, int pairRank, int qb1, int qb2);
 
 void statevec_multiControlledTwoQubitUnitaryLocal(Qureg qureg, long long int ctrlMask, const int q1, const int q2, ComplexMatrix4 u);
+
+void statevec_multiControlledMultiQubitUnitaryLocal(Qureg qureg, long long int ctrlMask, int* targs, const int numTargs, ComplexMatrixN u);
 
 
 # endif // QUEST_CPU_INTERNAL_H

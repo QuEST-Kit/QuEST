@@ -44,6 +44,8 @@ void getComplexPairAndPhaseFromUnitary(ComplexMatrix2 u, Complex* alpha, Complex
 
 void shiftIndices(int* indices, int numIndices, int shift);
 
+void conjugateMatrixN(ComplexMatrixN u);
+
 void getQuESTDefaultSeedKey(unsigned long int *key);
 
 
@@ -169,6 +171,12 @@ void statevec_twoQubitUnitary(Qureg qureg, const int targetQubit1, const int tar
 void statevec_controlledTwoQubitUnitary(Qureg qureg, const int controlQubit, const int targetQubit1, const int targetQubit2, ComplexMatrix4 u);
 
 void statevec_multiControlledTwoQubitUnitary(Qureg qureg, long long int ctrlMask, const int targetQubit1, const int targetQubit2, ComplexMatrix4 u);
+
+void statevec_multiQubitUnitary(Qureg qureg, int* targets, const int numTargets, ComplexMatrixN u);
+
+void statevec_controlledMultiQubitUnitary(Qureg qureg, int ctrl, int* targets, const int numTargets, ComplexMatrixN u);
+
+void statevec_multiControlledMultiQubitUnitary(Qureg qureg, long long int ctrlMask, int* targs, const int numTargs, ComplexMatrixN u);
 
 void statevec_rotateX(Qureg qureg, const int rotQubit, qreal angle);
 

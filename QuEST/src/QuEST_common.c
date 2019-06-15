@@ -136,6 +136,12 @@ void shiftIndices(int* indices, int numIndices, int shift) {
         indices[j] += shift;
 }
 
+void conjugateMatrixN(ComplexMatrixN u) {
+    for (long long int r=0; r < u.numRows; r++)
+        for (long long int c=0; c < u.numRows; c++)
+            u.elems[r][c].imag *= -1;
+}
+
 int generateMeasurementOutcome(qreal zeroProb, qreal *outcomeProb) {
     
     // randomly choose outcome
@@ -520,6 +526,18 @@ void statevec_controlledTwoQubitUnitary(Qureg qureg, const int controlQubit, con
     
     long long int ctrlMask = 1LL << controlQubit;
     statevec_multiControlledTwoQubitUnitary(qureg, ctrlMask, targetQubit1, targetQubit2, u);
+}
+
+void statevec_multiQubitUnitary(Qureg qureg, int* targets, const int numTargets, ComplexMatrixN u) {
+    
+    long long int ctrlMask = 0;
+    statevec_multiControlledMultiQubitUnitary(qureg, ctrlMask, targets, numTargets, u);
+}
+
+void statevec_controlledMultiQubitUnitary(Qureg qureg, int ctrl, int* targets, const int numTargets, ComplexMatrixN u) {
+    
+    long long int ctrlMask = 1LL << ctrl;
+    statevec_multiControlledMultiQubitUnitary(qureg, ctrlMask, targets, numTargets, u);
 }
 
 #ifdef __cplusplus
