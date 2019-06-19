@@ -38,7 +38,7 @@ Learn more about QuEST at [quest.qtechtheory.org](https://quest.qtechtheory.org)
 
 ## Getting started
 
-QuEST is contained entirely in the files in the `QuEST/` folder. To use QuEST, copy this folder to your computer and include `QuEST.h` in your `C` or `C++` code, and compile using cmake with the provided [CMakeLists.txt file](CMakeLists.txt). See the [tutorial](/examples/README.md) for an introduction, and view the full API [here](https://quest-kit.github.io/QuEST/QuEST_8h.html).
+QuEST is contained entirely in the files in the `QuEST/` folder. To use QuEST, copy this folder to your computer and include `QuEST.h` in your `C` or `C++` code, and compile using cmake with the provided [CMakeLists.txt file](/CMakeLists.txt). See the [tutorial](/examples/README.md) for an introduction, and view the full API [here](https://quest-kit.github.io/QuEST/QuEST_8h.html).
 
 We also include example [submission scripts](examples/submissionScripts/) for using QuEST with SLURM and PBS. 
 
@@ -84,6 +84,10 @@ This requires Python 3.4+.
 View the API [here](https://quest-kit.github.io/QuEST/QuEST_8h.html), and check compatible compiler versions [here](tests/compilers/compatibility.md).
 
 > For developers: To recreate the full documentation after making changes to the code, run doxygen doxyconf in the root directory. This will generate documentation in Doxygen_doc/html, and can be accessed through index.html in that folder. 
+
+## Contact
+
+To file a bug report or feature request, [raise a github issue](https://github.com/QuEST-Kit/QuEST/issues). For additional support, email quest@materials.ox.ac.uk.
 
 ## Acknowledgements
 
