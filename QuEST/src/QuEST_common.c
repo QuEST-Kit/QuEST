@@ -10,9 +10,16 @@
 # include "QuEST_validation.h"
 # include "mt19937ar.h"
 
-# include <unistd.h>
+#ifdef _WIN32
+  #include <Windows.h>
+  #include <io.h>
+  #include <process.h>
+#else
+  #include <unistd.h>
+  #include <sys/time.h>
+#endif
+
 # include <sys/types.h> 
-# include <sys/time.h>
 # include <stdio.h>
 # include <stdlib.h>
 
@@ -134,7 +141,13 @@ void getQuESTDefaultSeedKey(unsigned long int *key){
     // init MT random number generator with two keys -- time and pid
     // for the MPI version, it is ok that all procs will get the same seed as random numbers will only be 
     // used by the master process
+#ifdef _WIN32
+  
+    unsigned long int pid = (unsigned long int) _getpid();
+    unsigned long int msecs = (unsigned long int) GetTickCount64();
 
+    key[0] = msecs; key[1] = pid;
+#else
     struct timeval  tv;
     gettimeofday(&tv, NULL);
 
@@ -145,6 +158,7 @@ void getQuESTDefaultSeedKey(unsigned long int *key){
     unsigned long int msecs = (unsigned long int) time_in_mill;
 
     key[0] = msecs; key[1] = pid;
+#endif 
 }
 
 /** 
