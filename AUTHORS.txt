@@ -1,6 +1,4 @@
-Primary contacts: 
-    Anna Brown (anna.brown@oerc.ox.ac.uk)
-    Tyson Jones (tyson.jones@materials.ox.ac.uk)
+Contact: quest@materials.ox.ac.uk
 
 Current team:
 Ms Anna Brown [developer]
