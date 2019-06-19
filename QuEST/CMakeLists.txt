@@ -37,10 +37,6 @@ set(GPU_COMPUTE_CAPABILITY 30 CACHE STRING "GPU hardware dependent, lookup at ht
 # ***** NO CHANGES SHOULD BE REQUIRED FROM THE USER BEYOND THIS POINT *********
 # *****************************************************************************
 
-if (WIN32)
-    set(MULTITHREADED OFF)
-endif()
-
 # Show the user their settings
 message(STATUS "GPU acceleration is ${GPUACCELERATED}")
 message(STATUS "OMP acceleration is ${MULTITHREADED}")

@@ -725,21 +725,21 @@ void densmatr_twoQubitDepolariseQ1LocalQ2DistributedPart3(Qureg qureg, const int
 
 /* Without nested parallelisation, only the outer most loops which call below are parallelised */
 void zeroSomeAmps(Qureg qureg, long long int startInd, long long int numAmps) {
-    
+    long long int i;
 # ifdef _OPENMP
 # pragma omp parallel for schedule (static)
 # endif
-    for (long long int i=startInd; i < startInd+numAmps; i++) {
+    for (i=startInd; i < startInd+numAmps; i++) {
         qureg.stateVec.real[i] = 0;
         qureg.stateVec.imag[i] = 0;
     }
 }
 void normaliseSomeAmps(Qureg qureg, qreal norm, long long int startInd, long long int numAmps) {
-    
+    long long int i;
 # ifdef _OPENMP
 # pragma omp parallel for schedule (static)
 # endif
-    for (long long int i=startInd; i < startInd+numAmps; i++) {
+    for (i=startInd; i < startInd+numAmps; i++) {
         qureg.stateVec.real[i] /= norm;
         qureg.stateVec.imag[i] /= norm;
     }
@@ -752,21 +752,21 @@ void alternateNormZeroingSomeAmpBlocks(
     long long int blockStartInd;
     
     if (normFirst) {
-        
+        long long int dubBlockInd;
 # ifdef _OPENMP
 # pragma omp parallel for schedule (static) private (blockStartInd)
 # endif 
-        for (long long int dubBlockInd=0; dubBlockInd < numDubBlocks; dubBlockInd++) {
+        for (dubBlockInd=0; dubBlockInd < numDubBlocks; dubBlockInd++) {
             blockStartInd = startAmpInd + dubBlockInd*2*blockSize;
             normaliseSomeAmps(qureg, norm, blockStartInd,             blockSize); // |0><0|
             zeroSomeAmps(     qureg,       blockStartInd + blockSize, blockSize);
         }
     } else {
-        
+        long long int dubBlockInd;
 # ifdef _OPENMP
 # pragma omp parallel for schedule (static) private (blockStartInd)
 # endif 
-        for (long long int dubBlockInd=0; dubBlockInd < numDubBlocks; dubBlockInd++) {
+        for (dubBlockInd=0; dubBlockInd < numDubBlocks; dubBlockInd++) {
             blockStartInd = startAmpInd + dubBlockInd*2*blockSize;
             zeroSomeAmps(     qureg,       blockStartInd,             blockSize);
             normaliseSomeAmps(qureg, norm, blockStartInd + blockSize, blockSize); // |1><1|
