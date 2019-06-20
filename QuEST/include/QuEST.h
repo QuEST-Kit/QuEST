@@ -1588,10 +1588,8 @@ void applyTwoQubitDepolariseError(Qureg qureg, const int qubit1, const int qubit
  * Each of \p probX, \p probY and \p probZ cannot exceed the chance of no error: 
  * 1 - \p probX - \p probY - \p probZ
  *
- * Note that in lieu of direct evaluation like the homogenous depolarising and dephasing function,
- * this function instead effects the Pauli channel by repeatedly performing dephasing (a total of 3 times)
- * in different basis (requiring a total of 3 general unitaries), and so may be ~6x slower than the 
- * other noise functions.
+ * This function operates by first converting the given Pauli probabilities into 
+ * a single-qubit Kraus map (four 2x2 operators).
  *
  * @param[in,out] qureg a density matrix
  * @param[in] targetQubit qubit to decohere
@@ -2341,10 +2339,64 @@ void controlledMultiQubitUnitary(Qureg qureg, int ctrl, int* targs, const int nu
  */
 void multiControlledMultiQubitUnitary(Qureg qureg, int* ctrls, const int numCtrls, int* targs, const int numTargs, ComplexMatrixN u);
 
-/** @TODO: doc */
+/** Apply a general single-qubit Kraus map to a density matrix, as specified by at most 
+ * four Kraus operators. A Kraus map is also referred to as a "operator-sum representation"
+ * of a quantum channel. This allows one to simulate a general single-qubit noise process.
+ *
+ * The Kraus map must be completely positive and trace preserving, which constrains each 
+ * \f$ K_i \f$ in \p ops by
+ * \f[
+    \sum \limits_i^{\text{numOps}} K_i^\dagger K_i = I
+ * \f]
+ * where \f$ I \f$ is the identity matrix.
+ *
+ * Note that in distributed mode, this routine requires that each node contains at least 4 amplitudes.
+ * This means an q-qubit register (state vector or density matrix) can be distributed 
+ * by at most 2^(q-2) numTargs nodes.
+ *
+ * @param[in,out] qureg the density matrix to which to apply the map
+ * @param[in] target the target qubit of the map
+ * @param[in] ops an array of at most 4 Kraus operators
+ * @param[in] numOps the number of operators in \p ops which must be >0 and <= 4.
+ * @throws exitWithError
+ *      if \p qureg is not a density matrix, 
+ *      or if \p target is outside of [0, \p qureg.numQubitsRepresented),
+ *      or if \p numOps is outside [1, 4],
+ *      or if \p ops do not create a completely positive, trace preserving map,
+ *      or if a node cannot fit 4 amplitudes in distributed mode.
+ */
 void applyOneQubitKrausMap(Qureg qureg, int target, ComplexMatrix2 *ops, int numOps);
 
-/** @TODO: doc */
+/** Apply a general two-qubit Kraus map to a density matrix, as specified by at most 
+ * sixteen Kraus operators. A Kraus map is also referred to as a "operator-sum representation"
+ * of a quantum channel. This allows one to simulate a general two-qubit noise process.
+ *
+ * The Kraus map must be completely positive and trace preserving, which constrains each 
+ * \f$ K_i \f$ in \p ops by
+ * \f[
+    \sum \limits_i^{\text{numOps}} K_i^\dagger K_i = I
+ * \f]
+ * where \f$ I \f$ is the identity matrix.
+ *
+ * \p targetQubit1 is treated as the \p least significant qubit in each op in \p ops.
+ *
+ * Note that in distributed mode, this routine requires that each node contains at least 16 amplitudes.
+ * This means an q-qubit register (state vector or density matrix) can be distributed 
+ * by at most 2^(q-4) numTargs nodes.
+ *
+ * @param[in,out] qureg the density matrix to which to apply the map
+ * @param[in] target1 the least significant target qubit in \p ops
+ * @param[in] target2 the most significant target qubit in \p ops
+ * @param[in] ops an array of at most 16 Kraus operators
+ * @param[in] numOps the number of operators in \p ops which must be >0 and <= 16.
+ * @throws exitWithError
+ *      if \p qureg is not a density matrix, 
+ *      or if either \p target1 or \p target2 is outside of [0, \p qureg.numQubitsRepresented),
+ *      or if \p target1 = \p target2,
+ *      or if \p numOps is outside [1, 16],
+ *      or if \p ops do not create a completely positive, trace preserving map,
+ *      or if a node cannot fit 16 amplitudes in distributed mode.
+ */
 void applyTwoQubitKrausMap(Qureg qureg, int target1, int target2, ComplexMatrix4 *ops, int numOps);
 
 
