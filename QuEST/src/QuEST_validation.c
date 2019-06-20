@@ -234,6 +234,24 @@ void addToMatrix2(ComplexMatrix2* dest, ComplexMatrix2 add) {
     dest->r1c1.real += add.r1c1.real; dest->r1c1.imag += add.r1c1.imag;
 }
 
+void addToMatrix4(ComplexMatrix4* dest, ComplexMatrix4 add) {
+    dest->r0c0.real += add.r0c0.real; dest->r0c0.imag += add.r0c0.imag;
+    dest->r0c1.real += add.r0c1.real; dest->r0c1.imag += add.r0c1.imag;
+    dest->r0c2.real += add.r0c2.real; dest->r0c2.imag += add.r0c2.imag;
+    dest->r0c3.real += add.r0c3.real; dest->r0c3.imag += add.r0c3.imag;
+    dest->r1c0.real += add.r1c0.real; dest->r1c0.imag += add.r1c0.imag;
+    dest->r1c1.real += add.r1c1.real; dest->r1c1.imag += add.r1c1.imag;
+    dest->r1c2.real += add.r1c2.real; dest->r1c2.imag += add.r1c2.imag;
+    dest->r1c3.real += add.r1c3.real; dest->r1c3.imag += add.r1c3.imag;
+    dest->r2c0.real += add.r2c0.real; dest->r2c0.imag += add.r2c0.imag;
+    dest->r2c1.real += add.r2c1.real; dest->r2c1.imag += add.r2c1.imag;
+    dest->r2c2.real += add.r2c2.real; dest->r2c2.imag += add.r2c2.imag;
+    dest->r2c3.real += add.r2c3.real; dest->r2c3.imag += add.r2c3.imag;
+    dest->r3c0.real += add.r3c0.real; dest->r3c0.imag += add.r3c0.imag;
+    dest->r3c1.real += add.r3c1.real; dest->r3c1.imag += add.r3c1.imag;
+    dest->r3c2.real += add.r3c2.real; dest->r3c2.imag += add.r3c2.imag;
+    dest->r3c3.real += add.r3c3.real; dest->r3c3.imag += add.r3c3.imag;
+}
 
 /* returns |a - b|^2 */ 
 qreal getComplexDist(Complex a, Complex b) {
@@ -252,6 +270,30 @@ qreal getHilbertSchmidtDistFromIdentity2(ComplexMatrix2 a) {
         getComplexDist(a.r0c1, iden.r0c1) +
         getComplexDist(a.r1c0, iden.r1c0) +
         getComplexDist(a.r1c1, iden.r1c1);
+    return dist;
+}
+
+qreal getHilbertSchmidtDistFromIdentity4(ComplexMatrix4 a) {
+    ComplexMatrix4 iden = {0};
+    iden.r0c0.real=1; iden.r1c1.real=1; iden.r2c2.real=1; iden.r3c3.real=1;
+    
+    qreal dist = 
+        getComplexDist(a.r0c0, iden.r0c0) + 
+        getComplexDist(a.r0c1, iden.r0c1) + 
+        getComplexDist(a.r0c2, iden.r0c2) + 
+        getComplexDist(a.r0c3, iden.r0c3) + 
+        getComplexDist(a.r1c0, iden.r1c0) + 
+        getComplexDist(a.r1c1, iden.r1c1) + 
+        getComplexDist(a.r1c2, iden.r1c2) + 
+        getComplexDist(a.r1c3, iden.r1c3) + 
+        getComplexDist(a.r2c0, iden.r2c0) + 
+        getComplexDist(a.r2c1, iden.r2c1) + 
+        getComplexDist(a.r2c2, iden.r2c2) + 
+        getComplexDist(a.r2c3, iden.r2c3) + 
+        getComplexDist(a.r3c0, iden.r3c0) + 
+        getComplexDist(a.r3c1, iden.r3c1) + 
+        getComplexDist(a.r3c2, iden.r3c2) + 
+        getComplexDist(a.r3c3, iden.r3c3);
     return dist;
 }
 
@@ -560,6 +602,17 @@ void validateOneQubitKrausMap(ComplexMatrix2* ops, int numOps, const char* calle
     QuESTAssert(idenDist < REAL_EPS, E_INVALID_KRAUS_OPS, caller);
 }
 
+void validateTwoQubitKrausMap(ComplexMatrix4* ops, int numOps, const char* caller) {
+    QuESTAssert(numOps > 0 && numOps < 16, E_INVALID_NUM_TWO_QUBIT_KRAUS_OPS, caller);
+    
+    // sum of conjTrans(op) * op
+    ComplexMatrix4 sumConjProd = {0};
+    for (int n=0; n < numOps; n++)
+        addToMatrix4(&sumConjProd, getMatrix4Product(getConjugateTransposeMatrix4(ops[n]), ops[n]));
+        
+    qreal idenDist = getHilbertSchmidtDistFromIdentity4(sumConjProd);
+    QuESTAssert(idenDist < REAL_EPS, E_INVALID_KRAUS_OPS, caller);
+}
 
 
 #ifdef __cplusplus

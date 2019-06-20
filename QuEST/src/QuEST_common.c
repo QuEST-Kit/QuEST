@@ -592,16 +592,69 @@ ComplexMatrix4 getOneQubitKrausSuperoperator(ComplexMatrix2* ops, int numOps) {
 
     return superOp; 
 }
+
+void populateTwoQubitKrausSuperoperator(ComplexMatrixN superOp, ComplexMatrix4* ops, int numOps) {
+    
+    for (int n=0; n < numOps; n++) {
+        
+        // unpack the Kraus map for convenience
+        ComplexMatrix4 op = ops[n];
+        Complex opArr[4][4] = {
+            {op.r0c0, op.r0c1, op.r0c2, op.r0c3},
+            {op.r1c0, op.r1c1, op.r1c2, op.r1c3},
+            {op.r2c0, op.r2c1, op.r2c2, op.r2c3},
+            {op.r3c0, op.r3c1, op.r3c2, op.r3c3}
+        };
+        
+        // add conj(op) (x) op to the superoperator
+        int opDim = 4;
+        for (int i=0; i < opDim; i++)
+            for (int j=0; j < opDim; j++)
+                for (int k=0; k < opDim; k++)
+                    for (int l=0; l < opDim; l++)
+                        addConjComplexProd(&superOp.elems[i*opDim + k][j*opDim + l], opArr[i][j], opArr[k][l]);
+    }
+}
+
 void densmatr_applyKrausSuperoperator(Qureg qureg, int target, ComplexMatrix4 s) {
         
     long long int ctrlMask = 0;
     statevec_multiControlledTwoQubitUnitary(qureg, ctrlMask, target, target + qureg.numQubitsRepresented, s);
 }
 
+void densmatr_applyTwoQubitKrausSuperoperator(Qureg qureg, int target1, int target2, ComplexMatrixN s) {
+
+    long long int ctrlMask = 0;
+    int numQb = qureg.numQubitsRepresented;
+    int targets[4] = {target1, target2, target1+numQb, target2+numQb};
+    statevec_multiControlledMultiQubitUnitary(qureg, ctrlMask, targets, 4, s);
+}
+
 void densmatr_applyKrausMap(Qureg qureg, int target, ComplexMatrix2 *ops, int numOps) {
         
     ComplexMatrix4 superOp = getOneQubitKrausSuperoperator(ops, numOps);
     densmatr_applyKrausSuperoperator(qureg, target, superOp);
+}
+
+void densmatr_applyTwoQubitKrausMap(Qureg qureg, int target1, int target2, ComplexMatrix4 *ops, int numOps) {
+        
+    // create non-dynamic ComplexMatrixN instance
+    ComplexMatrixN superOp;
+    superOp.numQubits = 4;
+    superOp.numRows = 1 << superOp.numQubits;
+    
+    // initialise to zero matrix
+    Complex* matr[superOp.numRows];
+    for (int r=0; r < superOp.numRows; r++) {
+        Complex row[superOp.numRows];
+        for (int c=0; c < superOp.numRows; c++)
+            row[c] = (Complex) {.real=0, .imag=0};
+        matr[r] = row;
+    }
+    superOp.elems = matr;
+
+    populateTwoQubitKrausSuperoperator(superOp, ops, numOps);
+    densmatr_applyTwoQubitKrausSuperoperator(qureg, target1, target2, superOp);
 }
 
 #ifdef __cplusplus
