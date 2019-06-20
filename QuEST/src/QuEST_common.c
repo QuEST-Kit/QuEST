@@ -598,9 +598,9 @@ void densmatr_applyTwoQubitKrausMap(Qureg qureg, int target1, int target2, Compl
     superOp.numRows = 1 << superOp.numQubits;
     
     // initialise to zero matrix
-    Complex* matr[superOp.numRows];
+    Complex* matr[16];
     for (int r=0; r < superOp.numRows; r++) {
-        Complex row[superOp.numRows];
+        Complex row[16];
         for (int c=0; c < superOp.numRows; c++)
             row[c] = (Complex) {.real=0, .imag=0};
         matr[r] = row;
