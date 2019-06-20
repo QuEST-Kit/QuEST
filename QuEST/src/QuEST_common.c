@@ -393,51 +393,6 @@ void statevec_sqrtSwapGateConj(Qureg qureg, int qb1, int qb2) {
     statevec_controlledNot(qureg, qb1, qb2);
 }
 
-void densmatr_oneQubitPauliError(Qureg qureg, int qubit, qreal pX, qreal pY, qreal pZ) {
-    
-    // The accepted pX, pY, pZ do NOT need to be pre-scaled.
-    // The passed probabilities below are modified so that the final state produced is
-    // q + px X q X + py Y q Y + pz Z q Z
-    // The *2 are due to oneQubitDephase accepting 'dephaseLevel', not a probability
-    // The double statevec_compactUnitary calls are needed (with complex conjugates)
-    // since we're operating on a density matrix, not a statevector, and this function
-    // won't be called twice from the front-end
-    
-    Complex alpha, beta;
-    qreal fac = 1/sqrt(2);
-    int numQb = qureg.numQubitsRepresented;
-    
-    // add Z error
-    densmatr_oneQubitDephase(qureg, qubit, 2 * pZ/(1-pX-pY));
-    
-    // rotate basis via Rx(pi/2)
-    alpha.real = fac; alpha.imag = 0;
-    beta.real = 0;    beta.imag = -fac;
-    statevec_compactUnitary(qureg, qubit, alpha, beta);
-    alpha.imag *= -1; beta.imag *= -1;
-    statevec_compactUnitary(qureg, qubit + numQb, alpha, beta);
-    
-    // add Z -> Y Rx(pi/2) error 
-    densmatr_oneQubitDephase(qureg, qubit, 2 * pY/(1-pX));
-    
-    // rotate basis by Rx(-pi/2) then Ry(pi/2) 
-    alpha.real = .5; alpha.imag = -.5;
-    beta.real = .5;  beta.imag = .5;
-    statevec_compactUnitary(qureg, qubit, alpha, beta);
-    alpha.imag *= -1; beta.imag *= -1;
-    statevec_compactUnitary(qureg, qubit + numQb, alpha, beta);
-    
-    // add Z -> X Ry(pi/2) error
-    densmatr_oneQubitDephase(qureg, qubit, 2 * pX);
-    
-    // restore basis
-    alpha.real = fac; alpha.imag = 0;
-    beta.real = -fac; beta.imag = 0;
-    statevec_compactUnitary(qureg, qubit, alpha, beta);
-    alpha.imag *= -1; beta.imag *= -1;
-    statevec_compactUnitary(qureg, qubit + numQb, alpha, beta);
-}
-
 /** applyConj=1 will apply conjugate operation, else applyConj=0 */
 void statevec_multiRotatePauli(
     Qureg qureg, int* targetQubits, enum pauliOpType* targetPaulis, int numTargets, qreal angle,
@@ -655,6 +610,27 @@ void densmatr_applyTwoQubitKrausMap(Qureg qureg, int target1, int target2, Compl
 
     populateTwoQubitKrausSuperoperator(superOp, ops, numOps);
     densmatr_applyTwoQubitKrausSuperoperator(qureg, target1, target2, superOp);
+}
+
+void densmatr_oneQubitPauliError(Qureg qureg, int qubit, qreal probX, qreal probY, qreal probZ) {
+    
+    // convert pauli probabilities into Kraus map
+    ComplexMatrix2 ops[4];
+    for (int n=0; n < 4; n++)
+        ops[n] = (ComplexMatrix2) {0};
+    
+    qreal facs[4] = {
+		sqrt(1-(probX + probY + probZ)),
+		sqrt(probX),
+		sqrt(probY),
+		sqrt(probZ)
+	};
+    ops[0].r0c0.real =  facs[0]; ops[0].r1c1.real =  facs[0];
+    ops[1].r0c1.real =  facs[1]; ops[1].r1c0.real =  facs[1];
+    ops[2].r0c1.imag = -facs[2]; ops[2].r1c0.imag =  facs[2];
+    ops[3].r0c0.real =  facs[3]; ops[3].r1c1.real = -facs[3];
+    
+    densmatr_applyKrausMap(qureg, qubit, ops, 4);
 }
 
 #ifdef __cplusplus

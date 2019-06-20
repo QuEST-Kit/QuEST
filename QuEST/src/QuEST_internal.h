@@ -89,7 +89,7 @@ void densmatr_applyKrausMap(Qureg qureg, int target, ComplexMatrix2 *ops, int nu
 
 void densmatr_applyTwoQubitKrausMap(Qureg qureg, int target1, int target2, ComplexMatrix4 *ops, int numOps);    
     
-    
+
 /* 
  * operations upon state vectors
  */
