@@ -913,6 +913,15 @@ void applyOneQubitPauliError(Qureg qureg, int qubit, qreal probX, qreal probY, q
         "%g, %g and %g respectively", qubit, probX, probY, probZ);
 }
 
+void applyOneQubitKrausMap(Qureg qureg, int target, ComplexMatrix2 *ops, int numOps) {
+    validateDensityMatrQureg(qureg, __func__);
+    validateTarget(qureg, target, __func__);
+    validateOneQubitKrausMap(ops, numOps, __func__);
+    
+    densmatr_applyKrausMap(qureg, target, ops, numOps);
+    qasm_recordComment(qureg, 
+        "Here, an undisclosed Kraus map was effected on qubit %d", target);
+}
 
 /*
  * other data structures 

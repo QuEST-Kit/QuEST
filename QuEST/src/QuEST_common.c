@@ -540,6 +540,70 @@ void statevec_controlledMultiQubitUnitary(Qureg qureg, int ctrl, int* targets, c
     statevec_multiControlledMultiQubitUnitary(qureg, ctrlMask, targets, numTargets, u);
 }
 
+/* returns conj(a) * b */
+Complex getConjComplexProd(Complex a, Complex b) {
+    
+    Complex prod;
+    prod.real = a.real*b.real + a.imag*b.imag;
+    prod.imag = a.real*b.imag - a.imag*b.real;
+    return prod;
+}
+
+/* adds conj(a)*b to dest */
+void addConjComplexProd(Complex* dest, Complex a, Complex b) {
+    
+    Complex prod = getConjComplexProd(a, b);
+    dest->real += prod.real;
+    dest->imag += prod.imag;
+}
+
+ComplexMatrix4 getOneQubitKrausSuperoperator(ComplexMatrix2* ops, int numOps) {
+    
+    const int dim = 4;
+    ComplexMatrix4 superOp = {0};
+
+    for (int n=0; n < numOps; n++) {
+        ComplexMatrix2 op = ops[n];
+        
+        // upper left 4x4 block
+        addConjComplexProd(&superOp.r0c0, op.r0c0, op.r0c0);
+        addConjComplexProd(&superOp.r0c1, op.r0c0, op.r0c1);
+        addConjComplexProd(&superOp.r1c0, op.r0c0, op.r1c0);
+        addConjComplexProd(&superOp.r1c1, op.r0c0, op.r1c1);
+        
+        // upper right 4x4 block
+        addConjComplexProd(&superOp.r0c2, op.r0c1, op.r0c0);
+        addConjComplexProd(&superOp.r0c3, op.r0c1, op.r0c1);
+        addConjComplexProd(&superOp.r1c2, op.r0c1, op.r1c0);
+        addConjComplexProd(&superOp.r1c3, op.r0c1, op.r1c1);
+        
+        // lower left 4x4 block
+        addConjComplexProd(&superOp.r2c0, op.r1c0, op.r0c0);
+        addConjComplexProd(&superOp.r2c1, op.r1c0, op.r0c1);
+        addConjComplexProd(&superOp.r3c0, op.r1c0, op.r1c0);
+        addConjComplexProd(&superOp.r3c1, op.r1c0, op.r1c1);
+        
+        // lower right 4x4 block
+        addConjComplexProd(&superOp.r2c2, op.r1c1, op.r0c0);
+        addConjComplexProd(&superOp.r2c3, op.r1c1, op.r0c1);
+        addConjComplexProd(&superOp.r3c2, op.r1c1, op.r1c0);
+        addConjComplexProd(&superOp.r3c3, op.r1c1, op.r1c1);
+    }
+
+    return superOp; 
+}
+void densmatr_applyKrausSuperoperator(Qureg qureg, int target, ComplexMatrix4 s) {
+        
+    long long int ctrlMask = 0;
+    statevec_multiControlledTwoQubitUnitary(qureg, ctrlMask, target, target + qureg.numQubitsRepresented, s);
+}
+
+void densmatr_applyKrausMap(Qureg qureg, int target, ComplexMatrix2 *ops, int numOps) {
+        
+    ComplexMatrix4 superOp = getOneQubitKrausSuperoperator(ops, numOps);
+    densmatr_applyKrausSuperoperator(qureg, target, superOp);
+}
+
 #ifdef __cplusplus
 }
 #endif

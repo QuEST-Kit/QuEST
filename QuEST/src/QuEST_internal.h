@@ -84,6 +84,8 @@ void densmatr_twoQubitDepolarise(Qureg qureg, int qubit1, int qubit2, qreal depo
 void densmatr_oneQubitPauliError(Qureg qureg, int qubit, qreal pX, qreal pY, qreal pZ);
 
 void densmatr_addDensityMatrix(Qureg combineQureg, qreal otherProb, Qureg otherQureg);
+
+void densmatr_applyKrausMap(Qureg qureg, int target, ComplexMatrix2 *ops, int numOps);
     
     
 /* 

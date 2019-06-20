@@ -83,6 +83,8 @@ void validateNumSumTerms(int numTerms, const char* caller);
 
 void validateMatrixInit(ComplexMatrixN matr, const char* caller);
 
+void validateOneQubitKrausMap(ComplexMatrix2* ops, int numOps, const char* caller);
+
 # ifdef __cplusplus
 }
 # endif

@@ -2341,6 +2341,9 @@ void controlledMultiQubitUnitary(Qureg qureg, int ctrl, int* targs, const int nu
  */
 void multiControlledMultiQubitUnitary(Qureg qureg, int* ctrls, const int numCtrls, int* targs, const int numTargs, ComplexMatrixN u);
 
+/** @TODO: doc */
+void applyOneQubitKrausMap(Qureg qureg, int target, ComplexMatrix2 *ops, int numOps);
+
 #ifdef __cplusplus
 }
 #endif

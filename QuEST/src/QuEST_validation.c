@@ -54,7 +54,10 @@ typedef enum {
     E_INVALID_NUM_SUM_TERMS,
     E_CANNOT_FIT_MULTI_QUBIT_UNITARY,
     E_INVALID_UNITARY_SIZE,
-    E_COMPLEX_MATRIX_NOT_INIT
+    E_COMPLEX_MATRIX_NOT_INIT,
+    E_INVALID_NUM_ONE_QUBIT_KRAUS_OPS,
+    E_INVALID_NUM_TWO_QUBIT_KRAUS_OPS,
+    E_INVALID_KRAUS_OPS
 } ErrorCode;
 
 static const char* errorMessages[] = {
@@ -94,7 +97,10 @@ static const char* errorMessages[] = {
     [E_INVALID_NUM_SUM_TERMS] = "Invalid number of terms in the Pauli sum. The number of terms must be >0.",
     [E_CANNOT_FIT_MULTI_QUBIT_UNITARY] = "The specified unitary targets too many qubits; the batches of amplitudes to modify cannot all fit in a single distributed node's memory allocation.",
     [E_INVALID_UNITARY_SIZE] = "The matrix size does not match the number of target qubits.",
-    [E_COMPLEX_MATRIX_NOT_INIT] = "The ComplexMatrixN wasn't initialised with createComplexMatrix()."
+    [E_COMPLEX_MATRIX_NOT_INIT] = "The ComplexMatrixN wasn't initialised with createComplexMatrix().",
+    [E_INVALID_NUM_ONE_QUBIT_KRAUS_OPS] = "At least 1 and at most 4 single qubit Kraus operators may be specified.",
+    [E_INVALID_NUM_TWO_QUBIT_KRAUS_OPS] = "At least 1 and at most 16 two-qubit Kraus operators may be specified.",
+    [E_INVALID_KRAUS_OPS] = "The specified Kraus map is not a completely positive, trace preserving map."
 };
 
 void exitWithError(ErrorCode code, const char* func){
@@ -154,6 +160,21 @@ Complex getMatrixProductElement(Complex* row, Complex* col, int dim) {
     return elem;
 }
 
+ComplexMatrix2 getMatrix2Product(ComplexMatrix2 a, ComplexMatrix2 b) {
+    ComplexMatrix2 prod;
+    Complex r0[2] = {a.r0c0,a.r0c1};
+    Complex r1[2] = {a.r1c0,a.r1c1};
+    Complex c0[2] = {b.r0c0,b.r1c0};
+    Complex c1[2] = {b.r0c1,b.r1c1};
+    
+    prod.r0c0 = getMatrixProductElement(r0,c0,2);
+    prod.r0c1 = getMatrixProductElement(r0,c1,2);
+    prod.r1c0 = getMatrixProductElement(r1,c0,2);
+    prod.r1c1 = getMatrixProductElement(r1,c1,2);
+    
+    return prod;
+}
+
 ComplexMatrix4 getMatrix4Product(ComplexMatrix4 a, ComplexMatrix4 b) {
     ComplexMatrix4 prod;
     Complex r0[4] = {a.r0c0,a.r0c1,a.r0c2,a.r0c3};
@@ -188,6 +209,14 @@ ComplexMatrix4 getMatrix4Product(ComplexMatrix4 a, ComplexMatrix4 b) {
     return prod;
 }
 
+ComplexMatrix2 getConjugateTransposeMatrix2(ComplexMatrix2 u) {
+    ComplexMatrix2 c = getConjugateMatrix2(u);
+    ComplexMatrix2 t;
+    t.r0c0=c.r0c0;  t.r0c1=c.r1c0;
+    t.r1c0=c.r0c1;  t.r1c1=c.r1c1;
+    return t;
+}
+
 ComplexMatrix4 getConjugateTransposeMatrix4(ComplexMatrix4 u) {
     ComplexMatrix4 c = getConjugateMatrix4(u);
     ComplexMatrix4 t;
@@ -196,6 +225,34 @@ ComplexMatrix4 getConjugateTransposeMatrix4(ComplexMatrix4 u) {
     t.r2c0=c.r0c2;  t.r2c1=c.r1c2;  t.r2c2=c.r2c2;  t.r2c3=c.r3c2;
     t.r3c0=c.r0c3;  t.r3c1=c.r1c3;  t.r3c2=c.r2c3;  t.r3c3=c.r3c3;
     return t;
+}
+
+void addToMatrix2(ComplexMatrix2* dest, ComplexMatrix2 add) {
+    dest->r0c0.real += add.r0c0.real; dest->r0c0.imag += add.r0c0.imag;
+    dest->r0c1.real += add.r0c1.real; dest->r0c1.imag += add.r0c1.imag;
+    dest->r1c0.real += add.r1c0.real; dest->r1c0.imag += add.r1c0.imag;
+    dest->r1c1.real += add.r1c1.real; dest->r1c1.imag += add.r1c1.imag;
+}
+
+
+/* returns |a - b|^2 */ 
+qreal getComplexDist(Complex a, Complex b) {
+    qreal reDif = absReal(a.real - b.real);
+    qreal imDif = absReal(a.imag - b.imag);
+    
+    return reDif*reDif + imDif*imDif;
+}
+
+qreal getHilbertSchmidtDistFromIdentity2(ComplexMatrix2 a) {
+    ComplexMatrix2 iden = {0};
+    iden.r0c0.real=1; iden.r1c1.real=1;
+
+    qreal dist = 
+        getComplexDist(a.r0c0, iden.r0c0) +
+        getComplexDist(a.r0c1, iden.r0c1) +
+        getComplexDist(a.r1c0, iden.r1c0) +
+        getComplexDist(a.r1c1, iden.r1c1);
+    return dist;
 }
 
 int isMatrix4Unitary(ComplexMatrix4 u) {
@@ -379,7 +436,12 @@ void validateTwoQubitUnitaryMatrix(Qureg qureg, ComplexMatrix4 u, const char* ca
     QuESTAssert(isMatrix4Unitary(u), E_NON_UNITARY_MATRIX, caller);
 }
 
+void validateMatrixInit(ComplexMatrixN matr, const char* caller) {
+    QuESTAssert(matr.elems != NULL, E_COMPLEX_MATRIX_NOT_INIT, caller);
+}
+
 void validateMultiQubitUnitaryMatrix(Qureg qureg, ComplexMatrixN u, int numTargs, const char* caller) { 
+    validateMatrixInit(u, caller);
     validateMultiQubitMatrixFitsInNode(qureg, numTargs, caller);
     QuESTAssert(numTargs == u.numQubits, E_INVALID_UNITARY_SIZE, caller);
     QuESTAssert(isMatrixNUnitary(u), E_NON_UNITARY_MATRIX, caller);
@@ -486,8 +548,16 @@ void validateNumSumTerms(int numTerms, const char* caller) {
     QuESTAssert(numTerms > 0, E_INVALID_NUM_SUM_TERMS, caller);
 }
 
-void validateMatrixInit(ComplexMatrixN matr, const char* caller) {
-    QuESTAssert(matr.elems != NULL, E_COMPLEX_MATRIX_NOT_INIT, caller);
+void validateOneQubitKrausMap(ComplexMatrix2* ops, int numOps, const char* caller) {
+    QuESTAssert(numOps > 0 && numOps < 4, E_INVALID_NUM_ONE_QUBIT_KRAUS_OPS, caller);
+    
+    // sum of conjTrans(op) * op
+    ComplexMatrix2 sumConjProd = {0};
+    for (int n=0; n < numOps; n++)
+        addToMatrix2(&sumConjProd, getMatrix2Product(getConjugateTransposeMatrix2(ops[n]), ops[n]));
+    
+    qreal idenDist = getHilbertSchmidtDistFromIdentity2(sumConjProd);
+    QuESTAssert(idenDist < REAL_EPS, E_INVALID_KRAUS_OPS, caller);
 }
 
 
