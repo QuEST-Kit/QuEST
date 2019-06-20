@@ -916,7 +916,7 @@ void applyOneQubitPauliError(Qureg qureg, int qubit, qreal probX, qreal probY, q
 void applyOneQubitKrausMap(Qureg qureg, int target, ComplexMatrix2 *ops, int numOps) {
     validateDensityMatrQureg(qureg, __func__);
     validateTarget(qureg, target, __func__);
-    validateOneQubitKrausMap(ops, numOps, __func__);
+    validateOneQubitKrausMap(qureg, ops, numOps, __func__);
     
     densmatr_applyKrausMap(qureg, target, ops, numOps);
     qasm_recordComment(qureg, 
@@ -926,7 +926,7 @@ void applyOneQubitKrausMap(Qureg qureg, int target, ComplexMatrix2 *ops, int num
 void applyTwoQubitKrausMap(Qureg qureg, int target1, int target2, ComplexMatrix4 *ops, int numOps) {
     validateDensityMatrQureg(qureg, __func__);
     validateMultiTargets(qureg, (int[]) {target1,target2}, 2, __func__);
-    validateTwoQubitKrausMap(ops, numOps, __func__);
+    validateTwoQubitKrausMap(qureg, ops, numOps, __func__);
     
     densmatr_applyTwoQubitKrausMap(qureg, target1, target2, ops, numOps);
     qasm_recordComment(qureg, 

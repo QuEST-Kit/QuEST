@@ -52,7 +52,7 @@ typedef enum {
     E_INVALID_CONTROLS_BIT_STATE,
     E_INVALID_PAULI_CODE,
     E_INVALID_NUM_SUM_TERMS,
-    E_CANNOT_FIT_MULTI_QUBIT_UNITARY,
+    E_CANNOT_FIT_MULTI_QUBIT_MATRIX,
     E_INVALID_UNITARY_SIZE,
     E_COMPLEX_MATRIX_NOT_INIT,
     E_INVALID_NUM_ONE_QUBIT_KRAUS_OPS,
@@ -95,7 +95,7 @@ static const char* errorMessages[] = {
     [E_INVALID_CONTROLS_BIT_STATE] = "The state of the control qubits must be a bit sequence (0s and 1s).",
     [E_INVALID_PAULI_CODE] = "Invalid Pauli code. Codes must be 0 (or PAULI_I), 1 (PAULI_X), 2 (PAULI_Y) or 3 (PAULI_Z) to indicate the identity, X, Y and Z gates respectively.",
     [E_INVALID_NUM_SUM_TERMS] = "Invalid number of terms in the Pauli sum. The number of terms must be >0.",
-    [E_CANNOT_FIT_MULTI_QUBIT_UNITARY] = "The specified unitary targets too many qubits; the batches of amplitudes to modify cannot all fit in a single distributed node's memory allocation.",
+    [E_CANNOT_FIT_MULTI_QUBIT_MATRIX] = "The specified matrix targets too many qubits; the batches of amplitudes to modify cannot all fit in a single distributed node's memory allocation.",
     [E_INVALID_UNITARY_SIZE] = "The matrix size does not match the number of target qubits.",
     [E_COMPLEX_MATRIX_NOT_INIT] = "The ComplexMatrixN wasn't initialised with createComplexMatrix().",
     [E_INVALID_NUM_ONE_QUBIT_KRAUS_OPS] = "At least 1 and at most 4 single qubit Kraus operators may be specified.",
@@ -466,7 +466,7 @@ void validateControlState(int* controlState, const int numControlQubits, const c
 }
 
 void validateMultiQubitMatrixFitsInNode(Qureg qureg, int numTargets, const char* caller) {
-    QuESTAssert(qureg.numAmpsPerChunk >= (1LL << numTargets), E_CANNOT_FIT_MULTI_QUBIT_UNITARY, caller);
+    QuESTAssert(qureg.numAmpsPerChunk >= (1LL << numTargets), E_CANNOT_FIT_MULTI_QUBIT_MATRIX, caller);
 }
 
 void validateOneQubitUnitaryMatrix(ComplexMatrix2 u, const char* caller) {
@@ -590,7 +590,8 @@ void validateNumSumTerms(int numTerms, const char* caller) {
     QuESTAssert(numTerms > 0, E_INVALID_NUM_SUM_TERMS, caller);
 }
 
-void validateOneQubitKrausMap(ComplexMatrix2* ops, int numOps, const char* caller) {
+void validateOneQubitKrausMap(Qureg qureg, ComplexMatrix2* ops, int numOps, const char* caller) {
+    validateMultiQubitMatrixFitsInNode(qureg, 2, caller);
     QuESTAssert(numOps > 0 && numOps < 4, E_INVALID_NUM_ONE_QUBIT_KRAUS_OPS, caller);
     
     // sum of conjTrans(op) * op
@@ -602,7 +603,8 @@ void validateOneQubitKrausMap(ComplexMatrix2* ops, int numOps, const char* calle
     QuESTAssert(idenDist < REAL_EPS, E_INVALID_KRAUS_OPS, caller);
 }
 
-void validateTwoQubitKrausMap(ComplexMatrix4* ops, int numOps, const char* caller) {
+void validateTwoQubitKrausMap(Qureg qureg, ComplexMatrix4* ops, int numOps, const char* caller) {
+    validateMultiQubitMatrixFitsInNode(qureg, 4, caller);
     QuESTAssert(numOps > 0 && numOps < 16, E_INVALID_NUM_TWO_QUBIT_KRAUS_OPS, caller);
     
     // sum of conjTrans(op) * op

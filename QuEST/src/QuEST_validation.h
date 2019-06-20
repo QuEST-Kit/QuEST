@@ -83,9 +83,9 @@ void validateNumSumTerms(int numTerms, const char* caller);
 
 void validateMatrixInit(ComplexMatrixN matr, const char* caller);
 
-void validateOneQubitKrausMap(ComplexMatrix2* ops, int numOps, const char* caller);
+void validateOneQubitKrausMap(Qureg qureg, ComplexMatrix2* ops, int numOps, const char* caller);
 
-void validateTwoQubitKrausMap(ComplexMatrix4* ops, int numOps, const char* caller);
+void validateTwoQubitKrausMap(Qureg qureg, ComplexMatrix4* ops, int numOps, const char* caller);
 
 # ifdef __cplusplus
 }
