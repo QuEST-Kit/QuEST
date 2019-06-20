@@ -50,9 +50,15 @@ void densmatr_twoQubitDepolarise(Qureg qureg, int qubit1, int qubit2, qreal depo
     densmatr_twoQubitDepolariseLocal(qureg, qubit1, qubit2, delta, gamma);
 }
 
-
 qreal densmatr_calcPurity(Qureg qureg) {
     return densmatr_calcPurityLocal(qureg);
+}
+
+qreal densmatr_calcHilbertSchmidtDistance(Qureg a, Qureg b) {
+    
+    qreal distSquared = densmatr_calcHilbertSchmidtDistanceSquaredLocal(a, b);
+    qreal dist = sqrt(distSquared);
+    return dist;
 }
 
 qreal densmatr_calcFidelity(Qureg qureg, Qureg pureState) {

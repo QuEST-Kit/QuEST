@@ -514,7 +514,6 @@ void addConjComplexProd(Complex* dest, Complex a, Complex b) {
 
 ComplexMatrix4 getOneQubitKrausSuperoperator(ComplexMatrix2* ops, int numOps) {
     
-    const int dim = 4;
     ComplexMatrix4 superOp = {0};
 
     for (int n=0; n < numOps; n++) {

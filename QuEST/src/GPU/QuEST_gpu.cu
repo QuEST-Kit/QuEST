@@ -2000,7 +2000,6 @@ __global__ void densmatr_calcFidelityKernel(Qureg dens, Qureg vec, long long int
         reduceBlock(tempReductionArray, reducedArray, blockDim.x);
 }
 
-// @TODO implement
 qreal densmatr_calcFidelity(Qureg qureg, Qureg pureState) {
     
     // we're summing the square of every term in the density matrix
@@ -2051,6 +2050,81 @@ qreal densmatr_calcFidelity(Qureg qureg, Qureg pureState) {
     return fidelity;
 }
 
+__global__ void densmatr_calcHilbertSchmidtDistanceSquaredKernel(
+    qreal* aRe, qreal* aIm, qreal* bRe, qreal* bIm, 
+    long long int numAmpsToSum, qreal *reducedArray
+) {
+    // figure out which density matrix term this thread is assigned
+    long long int index = blockIdx.x*blockDim.x + threadIdx.x;
+    if (index >= numAmpsToSum) return;
+    
+    // compute this thread's sum term
+    qreal difRe = aRe[index] - bRe[index];
+    qreal difIm = aIm[index] - bIm[index];
+    qreal term = difRe*difRe + difIm*difIm;
+    
+    // array of each thread's collected term, to be summed
+    extern __shared__ qreal tempReductionArray[];
+    tempReductionArray[threadIdx.x] = term;
+    __syncthreads();
+    
+    // every second thread reduces
+    if (threadIdx.x<blockDim.x/2)
+        reduceBlock(tempReductionArray, reducedArray, blockDim.x);
+}
+
+/* computes sqrt(Tr( (a-b) conjTrans(a-b) ) = sqrt( sum of abs vals of (a-b)) */
+qreal densmatr_calcHilbertSchmidtDistance(Qureg a, Qureg b) {
+    
+    // we're summing the square of every term in (a-b)
+    long long int numValuesToReduce = a.numAmpsPerChunk;
+    
+    int valuesPerCUDABlock, numCUDABlocks, sharedMemSize;
+    int maxReducedPerLevel = REDUCE_SHARED_SIZE;
+    int firstTime = 1;
+    
+    while (numValuesToReduce > 1) {
+        
+        // need less than one CUDA-BLOCK to reduce
+        if (numValuesToReduce < maxReducedPerLevel) {
+            valuesPerCUDABlock = numValuesToReduce;
+            numCUDABlocks = 1;
+        }
+        // otherwise use only full CUDA-BLOCKS
+        else {
+            valuesPerCUDABlock = maxReducedPerLevel; // constrained by shared memory
+            numCUDABlocks = ceil((qreal)numValuesToReduce/valuesPerCUDABlock);
+        }
+        // dictates size of reduction array
+        sharedMemSize = valuesPerCUDABlock*sizeof(qreal);
+        
+        // spawn threads to sum the probs in each block (store reduction temp values in a's reduction array)
+        if (firstTime) {
+             densmatr_calcHilbertSchmidtDistanceSquaredKernel<<<numCUDABlocks, valuesPerCUDABlock, sharedMemSize>>>(
+                 a.deviceStateVec.real, a.deviceStateVec.imag, 
+                 b.deviceStateVec.real, b.deviceStateVec.imag, 
+                 numValuesToReduce, a.firstLevelReduction);
+            firstTime = 0;
+            
+        // sum the block probs
+        } else {
+            cudaDeviceSynchronize();    
+            copySharedReduceBlock<<<numCUDABlocks, valuesPerCUDABlock/2, sharedMemSize>>>(
+                    a.firstLevelReduction, 
+                    a.secondLevelReduction, valuesPerCUDABlock); 
+            cudaDeviceSynchronize();    
+            swapDouble(&(a.firstLevelReduction), &(a.secondLevelReduction));
+        }
+        
+        numValuesToReduce = numValuesToReduce/maxReducedPerLevel;
+    }
+    
+    qreal trace;
+    cudaMemcpy(&trace, a.firstLevelReduction, sizeof(qreal), cudaMemcpyDeviceToHost);
+    
+    qreal sqrtTrace = sqrt(trace);
+    return sqrtTrace;
+}
 
 __global__ void densmatr_calcPurityKernel(qreal* vecReal, qreal* vecImag, long long int numAmpsToSum, qreal *reducedArray) {
     

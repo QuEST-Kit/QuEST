@@ -906,6 +906,41 @@ void densmatr_addDensityMatrix(Qureg combineQureg, qreal otherProb, Qureg otherQ
     }
 }
 
+/** computes Tr((a-b) conjTrans(a-b)) = sum of abs values of (a-b) */
+qreal densmatr_calcHilbertSchmidtDistanceSquaredLocal(Qureg a, Qureg b) {
+    
+    long long int index;
+    long long int numAmps = a.numAmpsPerChunk;
+        
+    qreal *aRe = a.stateVec.real;
+    qreal *aIm = b.stateVec.imag;
+    qreal *bRe = a.stateVec.real;
+    qreal *bIm = b.stateVec.imag;
+    
+    qreal trace = 0;
+    qreal difRe, difIm;
+    
+# ifdef _OPENMP
+# pragma omp parallel \
+    shared    (aRe,aIm, bRe,bIm, numAmps) \
+    private   (index,difRe,difIm) \
+    reduction ( +:trace )
+# endif 
+    {
+# ifdef _OPENMP
+# pragma omp for schedule  (static)
+# endif
+        for (index=0LL; index<numAmps; index++) {
+                        
+            difRe = aRe[index] - bRe[index];
+            difIm = aIm[index] - bIm[index];
+            trace += difRe*difRe + difIm*difIm;
+        }
+    }
+    
+    return trace;
+}
+
 /** computes a few dens-columns-worth of (vec^*T) dens * vec */
 qreal densmatr_calcFidelityLocal(Qureg qureg, Qureg pureState) {
         

@@ -2399,6 +2399,26 @@ void applyOneQubitKrausMap(Qureg qureg, int target, ComplexMatrix2 *ops, int num
  */
 void applyTwoQubitKrausMap(Qureg qureg, int target1, int target2, ComplexMatrix4 *ops, int numOps);
 
+/** Computes the Hilbert Schmidt distance between two density matrices \p a and \p b, 
+ * defined as the Frobenius norm of the difference between them.
+ * That is, we define the Hilbert Schmidt distance
+ * \f[
+    D(a, b) = \| a - b \|_F = \sqrt{  \text{Tr}[ (a-b)(a-b)^\dagger ]   }
+ * \f]
+ * This is equivalent to the square-root of the sum of the absolute value squared of the 
+ * element-differences of the matrices, i.e.
+ * \f[
+    D(a, b) = \sqrt{ \sum\limits_i \sum\limits_j | a_{ij} - b_{ij} |^2 }
+ * \f]
+ * We caution this may differ by some definitions of the Hilbert Schmidt distance 
+ * by a square-root.
+ *
+ * @throws exitWithError
+ *      if either \p a or \p b are not density matrices,
+ *      or if \p a and \p have mismatching dimensions.
+ */
+qreal calcHilbertSchmidtDistance(Qureg a, Qureg b);
+
 
 #ifdef __cplusplus
 }

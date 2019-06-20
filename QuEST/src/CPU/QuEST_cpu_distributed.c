@@ -420,6 +420,17 @@ qreal densmatr_calcFidelity(Qureg qureg, Qureg pureState) {
     return globalSum;
 }
 
+qreal densmatr_calcHilbertSchmidtDistance(Qureg a, Qureg b) {
+    
+    qreal localSum = densmatr_calcHilbertSchmidtDistanceSquaredLocal(a, b);
+    
+    qreal globalSum;
+    MPI_Allreduce(&localSum, &globalSum, 1, MPI_QuEST_REAL, MPI_SUM, MPI_COMM_WORLD);
+    
+    qreal dist = sqrt(globalSum);
+    return dist;
+}
+
 void densmatr_initPureState(Qureg targetQureg, Qureg copyQureg) {
 
     if (targetQureg.numChunks==1){

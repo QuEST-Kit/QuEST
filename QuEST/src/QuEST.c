@@ -844,6 +844,14 @@ qreal calcExpecValSum(Qureg qureg, enum pauliOpType* allPauliCodes, qreal* termC
     return statevec_calcExpecValSum(qureg, allPauliCodes, termCoeffs, numSumTerms, workspace);
 }
 
+qreal calcHilbertSchmidtDistance(Qureg a, Qureg b) {
+    validateDensityMatrQureg(a, __func__);
+    validateDensityMatrQureg(b, __func__);
+    validateMatchingQuregDims(a, b, __func__);
+    
+    return densmatr_calcHilbertSchmidtDistance(a, b);
+}
+
 
 /*
  * decoherence
