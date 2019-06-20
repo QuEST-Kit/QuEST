@@ -1637,8 +1637,14 @@ qreal calcPurity(Qureg qureg);
 
 /** Calculates the fidelity of qureg (a statevector or density matrix) against 
  * a reference pure state (necessarily a statevector).
- * For two pure states, this is |<qureg|pureState>|^2.
- * For a mixed and pure state, this is <pureState|qureg|pureState>.
+ * For two pure states, this computes 
+ * \f[ 
+    |\langle \text{qureg} | \text{pureState} \rangle|^2
+ * \f]
+ * For a mixed and pure state, this computes 
+ * \f[ 
+    \langle \text{pureState} | \text{qureg} | \text{pureState} \rangle
+ * \f]
  * In either case, the fidelity lies in [0, 1].
  * The number of qubits represented in \p qureg and \p pureState must match.
  * 
@@ -1646,7 +1652,8 @@ qreal calcPurity(Qureg qureg);
  * @param[in] pureState a state vector
  * @return the fidelity between the input registers
  * @throws exitWithError
- *      if the dimensions \p qureg and \p pureState do not match
+ *      if the second argument (\p pureState) is not a statevector, 
+ *      or if the number of qubits in \p qureg and \p pureState do not match
  */
 qreal calcFidelity(Qureg qureg, Qureg pureState);
 
