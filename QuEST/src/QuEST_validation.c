@@ -592,7 +592,7 @@ void validateNumSumTerms(int numTerms, const char* caller) {
 
 void validateOneQubitKrausMap(Qureg qureg, ComplexMatrix2* ops, int numOps, const char* caller) {
     validateMultiQubitMatrixFitsInNode(qureg, 2, caller);
-    QuESTAssert(numOps > 0 && numOps < 4, E_INVALID_NUM_ONE_QUBIT_KRAUS_OPS, caller);
+    QuESTAssert(numOps > 0 && numOps <= 4, E_INVALID_NUM_ONE_QUBIT_KRAUS_OPS, caller);
     
     // sum of conjTrans(op) * op
     ComplexMatrix2 sumConjProd = {0};
@@ -605,7 +605,7 @@ void validateOneQubitKrausMap(Qureg qureg, ComplexMatrix2* ops, int numOps, cons
 
 void validateTwoQubitKrausMap(Qureg qureg, ComplexMatrix4* ops, int numOps, const char* caller) {
     validateMultiQubitMatrixFitsInNode(qureg, 4, caller);
-    QuESTAssert(numOps > 0 && numOps < 16, E_INVALID_NUM_TWO_QUBIT_KRAUS_OPS, caller);
+    QuESTAssert(numOps > 0 && numOps <= 16, E_INVALID_NUM_TWO_QUBIT_KRAUS_OPS, caller);
     
     // sum of conjTrans(op) * op
     ComplexMatrix4 sumConjProd = {0};
