@@ -598,14 +598,10 @@ void densmatr_applyTwoQubitKrausMap(Qureg qureg, int target1, int target2, Compl
     superOp.numRows = 1 << superOp.numQubits;
     
     // initialise to zero matrix
-    Complex* matr[16];
+    superOp.elems = (Complex **) malloc(sizeof(Complex *) * superOp.numRows);;
     for (int r=0; r < superOp.numRows; r++) {
-        Complex row[16];
-        for (int c=0; c < superOp.numRows; c++)
-            row[c] = (Complex) {.real=0, .imag=0};
-        matr[r] = row;
+        superOp.elems[r] = calloc(superOp.numRows, sizeof(Complex));
     }
-    superOp.elems = matr;
 
     populateTwoQubitKrausSuperoperator(superOp, ops, numOps);
     densmatr_applyTwoQubitKrausSuperoperator(qureg, target1, target2, superOp);
