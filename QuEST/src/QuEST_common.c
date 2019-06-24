@@ -514,6 +514,7 @@ void addConjComplexProd(Complex* dest, Complex a, Complex b) {
 
 ComplexMatrix4 getOneQubitKrausSuperoperator(ComplexMatrix2* ops, int numOps) {
     
+    // clear the superop
     ComplexMatrix4 superOp = {0};
 
     for (int n=0; n < numOps; n++) {
@@ -548,6 +549,12 @@ ComplexMatrix4 getOneQubitKrausSuperoperator(ComplexMatrix2* ops, int numOps) {
 }
 
 void populateTwoQubitKrausSuperoperator(ComplexMatrixN superOp, ComplexMatrix4* ops, int numOps) {
+    
+    // clear the superop
+    int opLen = 16; 
+    for (int r=0; r < opLen; r++)
+        for (int c=0; c < opLen; c++)
+            superOp.elems[r][c] = (Complex) {.real=0, .imag=0};
     
     for (int n=0; n < numOps; n++) {
         
@@ -597,11 +604,12 @@ void densmatr_applyTwoQubitKrausMap(Qureg qureg, int target1, int target2, Compl
     superOp.numQubits = 4;
     superOp.numRows = 1 << superOp.numQubits;
     
-    // initialise to zero matrix
-    superOp.elems = (Complex **) malloc(sizeof(Complex *) * superOp.numRows);;
-    for (int r=0; r < superOp.numRows; r++) {
-        superOp.elems[r] = calloc(superOp.numRows, sizeof(Complex));
-    }
+    // keep superOp.elems in stack
+    Complex* matr[16];
+    Complex flat[16][16];
+    for (int r=0; r < superOp.numRows; r++)
+        matr[r] = flat[r];
+    superOp.elems = matr;
 
     populateTwoQubitKrausSuperoperator(superOp, ops, numOps);
     densmatr_applyTwoQubitKrausSuperoperator(qureg, target1, target2, superOp);
