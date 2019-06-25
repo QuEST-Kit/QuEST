@@ -45,6 +45,35 @@ __forceinline__ __device__ long long int insertZeroBit(long long int number, int
     return (left << 1) ^ right;
 }
 
+__forceinline__ __device__ long long int insertTwoZeroBits(long long int number, int bit1, int bit2) {
+    int small = (bit1 < bit2)? bit1 : bit2;
+    int big = (bit1 < bit2)? bit2 : bit1;
+    return insertZeroBit(insertZeroBit(number, small), big);
+}
+
+__forceinline__ __device__ long long int insertZeroBits(long long int number, int* inds, int numInds) {
+    /* inserted bit inds must strictly increase, so that their final indices are correct.
+     * in-lieu of sorting (avoided since no C++ variable-size arrays, and since we're already 
+     * memory bottle-necked so overhead eats this slowdown), we find the next-smallest index each 
+     * at each insert. recall every element of inds (a positive or zero number) is unique.
+     * This function won't appear in the CPU code, which can use C99 variable-size arrays and 
+     * ought to make a sorted array before threading
+     */
+     int curMin = inds[0];
+     int prevMin = -1;
+     for (int n=0; n < numInds; n++) {
+         
+         // find next min
+         for (int t=0; t < numInds; t++)
+            if (inds[t]>prevMin && inds[t]<curMin)
+                curMin = inds[t];
+        
+        number = insertZeroBit(number, curMin);
+        prevMin = curMin;
+     }
+     return number;
+}
+
 
 /*
  * state vector and density matrix operations 
@@ -754,9 +783,7 @@ __global__ void statevec_multiControlledMultiQubitUnitaryKernel(
     if (thisTask>=numTasks) return;
     
     // find this task's start index (where all targs are 0)
-    long long int ind00 = thisTask;
-    for (int t=0; t < numTargs; t++)
-        ind00 = insertZeroBit(ind00, targs[t]);
+    long long int ind00 = insertZeroBits(thisTask, targs, numTargs);
     
     // this task only modifies amplitudes if control qubits are 1 for this state
     if (ctrlMask&ind00 != ctrlMask)
@@ -861,8 +888,8 @@ __global__ void statevec_multiControlledTwoQubitUnitaryKernel(Qureg qureg, long 
     qreal *imVec = qureg.deviceStateVec.imag;
     
     // find indices of amplitudes to modify (treat q1 as the least significant bit)
-    long long int ind00 ,ind01, ind10, ind11;
-    ind00 = insertZeroBit(insertZeroBit(thisTask, q1), q2);
+    long long int ind00, ind01, ind10, ind11;
+    ind00 = insertTwoZeroBits(thisTask, q1, q2);
     
     // modify only if control qubits are 1 for this state
     if (ctrlMask&ind00 != ctrlMask)
@@ -1476,7 +1503,7 @@ __global__ void statevec_swapQubitAmpsKernel(Qureg qureg, int qb1, int qb2) {
     qreal re01, re10, im01, im10;
   
     // determine ind00 of |..0..0..>, |..0..1..> and |..1..0..>
-    ind00 = insertZeroBit(insertZeroBit(thisTask, qb1), qb2);
+    ind00 = insertTwoZeroBits(thisTask, qb1, qb2);
     ind01 = flipBit(ind00, qb1);
     ind10 = flipBit(ind00, qb2);
 

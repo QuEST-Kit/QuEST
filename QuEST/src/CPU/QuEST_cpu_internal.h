@@ -42,6 +42,12 @@ inline long long int insertZeroBit(long long int number, int index) {
     return (left << 1) ^ right;
 }
 
+inline long long int insertTwoZeroBits(long long int number, int bit1, int bit2) {
+    int small = (bit1 < bit2)? bit1 : bit2;
+    int big = (bit1 < bit2)? bit2 : bit1;
+    return insertZeroBit(insertZeroBit(number, small), big);
+}
+
 
 /*
  * density matrix operations

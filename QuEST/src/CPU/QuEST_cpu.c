@@ -1685,7 +1685,7 @@ void statevec_multiControlledTwoQubitUnitaryLocal(Qureg qureg, long long int ctr
         for (thisTask=0; thisTask<numTasks; thisTask++) {
             
             // determine ind00 of |..0..0..>
-            ind00 = insertZeroBit(insertZeroBit(thisTask, q1), q2);
+            ind00 = insertTwoZeroBits(thisTask, q1, q2);
             
             // skip amplitude if controls aren't in 1 state (overloaded for speed)
             thisGlobalInd00 = ind00 + globalIndStart;
@@ -1777,10 +1777,17 @@ void statevec_multiControlledMultiQubitUnitaryLocal(Qureg qureg, long long int c
     qreal reAmps[qureg.numAmpsPerChunk];
     qreal imAmps[qureg.numAmpsPerChunk];
     
+    // we need a sorted targets list to find thisInd00 for each task.
+    // we can't modify targets, because the user-ordering of targets matters in u
+    int sortedTargs[numTargs]; 
+    for (int t=0; t < numTargs; t++) sortedTargs[t] = targs[t];
+    int comp(const void *a, const void *b) { return *(int*)a - *(int*)b; };
+    qsort(sortedTargs, numTargs, sizeof(int), comp);
+    
 # ifdef _OPENMP
 # pragma omp parallel \
     default  (none) \
-    shared   (reVec,imVec, numTasks,numTargAmps,globalIndStart, ctrlMask,targs,u, ampInds,reAmps,imAmps) \
+    shared   (reVec,imVec, numTasks,numTargAmps,globalIndStart, ctrlMask,targs,sortedTargs,u, ampInds,reAmps,imAmps) \
     private  (thisTask,thisInd00,thisGlobalInd00,ind,i,t,r,c,g,reElem,imElem) 
 # endif
     {
@@ -1792,7 +1799,7 @@ void statevec_multiControlledMultiQubitUnitaryLocal(Qureg qureg, long long int c
             // find this task's start index (where all targs are 0)
             thisInd00 = thisTask;
             for (t=0; t < numTargs; t++)
-                thisInd00 = insertZeroBit(thisInd00, targs[t]);
+                thisInd00 = insertZeroBit(thisInd00, sortedTargs[t]);
                 
             // this task only modifies amplitudes if control qubits are 1 for this state
             thisGlobalInd00 = thisInd00 + globalIndStart;
@@ -3463,7 +3470,7 @@ void statevec_swapQubitAmpsLocal(Qureg qureg, int qb1, int qb2) {
 # endif
         for (thisTask=0; thisTask<numTasks; thisTask++) {    
             // determine ind00 of |..0..0..>, |..0..1..> and |..1..0..>
-            ind00 = insertZeroBit(insertZeroBit(thisTask, qb1), qb2);
+            ind00 = insertTwoZeroBits(thisTask, qb1, qb2);
             ind01 = flipBit(ind00, qb1);
             ind10 = flipBit(ind00, qb2);
 
