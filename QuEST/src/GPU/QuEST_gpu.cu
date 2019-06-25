@@ -1465,8 +1465,8 @@ void statevec_multiControlledPhaseFlip(Qureg qureg, int *controlQubits, int numC
 
 __global__ void statevec_swapQubitAmpsKernel(Qureg qureg, int qb1, int qb2) {
 
-    qreal *reVec = qureg.stateVec.real;
-    qreal *imVec = qureg.stateVec.imag;
+    qreal *reVec = qureg.deviceStateVec.real;
+    qreal *imVec = qureg.deviceStateVec.imag;
     
     long long int numTasks = qureg.numAmpsPerChunk >> 2; // each iteration updates 2 amps and skips 2 amps
     long long int thisTask = blockIdx.x*blockDim.x + threadIdx.x;
