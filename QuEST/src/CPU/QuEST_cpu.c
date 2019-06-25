@@ -1662,8 +1662,12 @@ void statevec_multiControlledTwoQubitUnitaryLocal(Qureg qureg, long long int ctr
     qreal *reVec = qureg.stateVec.real;
     qreal *imVec = qureg.stateVec.imag;
     
+    // the global (between all nodes) index of this node's start index
+    long long int globalIndStart = qureg.chunkId*qureg.numAmpsPerChunk; 
+    
     long long int numTasks = qureg.numAmpsPerChunk >> 2; // each iteration updates 4 amplitudes
     long long int thisTask;
+    long long int thisGlobalInd00;
     long long int ind00, ind01, ind10, ind11;
     qreal re00, re01, re10, re11;
     qreal im00, im01, im10, im11;
@@ -1671,8 +1675,8 @@ void statevec_multiControlledTwoQubitUnitaryLocal(Qureg qureg, long long int ctr
 # ifdef _OPENMP
 # pragma omp parallel \
     default  (none) \
-    shared   (reVec,imVec,numTasks,ctrlMask,u) \
-    private  (thisTask, ind00,ind01,ind10,ind11, re00,re01,re10,re11, im00,im01,im10,im11) 
+    shared   (reVec,imVec,globalIndStart,numTasks,ctrlMask,u) \
+    private  (thisTask, thisGlobalInd00, ind00,ind01,ind10,ind11, re00,re01,re10,re11, im00,im01,im10,im11) 
 # endif
     {
 # ifdef _OPENMP
@@ -1684,7 +1688,8 @@ void statevec_multiControlledTwoQubitUnitaryLocal(Qureg qureg, long long int ctr
             ind00 = insertZeroBit(insertZeroBit(thisTask, q1), q2);
             
             // skip amplitude if controls aren't in 1 state (overloaded for speed)
-            if (ctrlMask && ((ctrlMask&ind00) != ctrlMask))
+            thisGlobalInd00 = ind00 + globalIndStart;
+            if (ctrlMask && ((ctrlMask & thisGlobalInd00) != ctrlMask))
                 continue;
             
             // inds of |..0..1..>, |..1..0..> and |..1..1..>
