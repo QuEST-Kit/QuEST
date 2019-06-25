@@ -1382,7 +1382,19 @@ int measure(Qureg qureg, int measureQubit);
  */
 int measureWithStats(Qureg qureg, int measureQubit, qreal *outcomeProb);
 
-/** Computes <bra|ket> */
+/** Computes the inner product \f$ \langle \text{bra} | \text{ket} \rangle \f$ of two 
+ * equal-size state vectors. The same \p qureg may be passed as both \p bra and \p ket, 
+ * though we recommend users check state-vector normalisation with \p calcTotalProb which 
+ * employs Kahan summation for greater accuracy.
+ * Neither state-vector is modified.
+ *
+ * @param[in] bra qureg to be the 'bra' (i.e. have its values conjugate transposed) in the inner product 
+ * @param[in] ket qureg to be the 'ket' in the inner product 
+ * @return the complex inner product of \p bra and \p ket 
+ * @throws exitWithError
+ *      if either \p bra or \p ket are not state-vectors, 
+ *      or if \p bra and \p ket do not have equal dimensions.
+ */
 Complex calcInnerProduct(Qureg bra, Qureg ket);
 
 /** Seed the Mersenne Twister used for random number generation in the QuEST environment with an example
