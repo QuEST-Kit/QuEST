@@ -39,6 +39,8 @@ void validateTwoQubitUnitaryMatrix(Qureg qureg, ComplexMatrix4 u, const char* ca
 
 void validateMultiQubitUnitaryMatrix(Qureg qureg, ComplexMatrixN u, int numTargs, const char* caller);
 
+void validateMultiQubitMatrixFitsInNode(Qureg qureg, int numTargets, const char* caller);
+
 void validateUnitaryComplexPair(Complex alpha, Complex beta, const char* caller);
 
 void validateVector(Vector vector, const char* caller);

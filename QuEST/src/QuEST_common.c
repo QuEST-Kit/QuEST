@@ -374,28 +374,28 @@ qreal statevec_calcFidelity(Qureg qureg, Qureg pureState) {
 
 void statevec_sqrtSwapGate(Qureg qureg, int qb1, int qb2) {
     
-    ComplexMatrix2 u;
-    u.r0c0.real = .5; u.r0c0.imag = .5;
-    u.r0c1.real = .5; u.r0c1.imag =-.5;
-    u.r1c0.real = .5; u.r1c0.imag =-.5;
+    ComplexMatrix4 u = {0};
+    u.r0c0.real=1;
+    u.r3c3.real=1;
     u.r1c1.real = .5; u.r1c1.imag = .5;
+    u.r1c2.real = .5; u.r1c2.imag =-.5;
+    u.r2c1.real = .5; u.r2c1.imag =-.5;
+    u.r2c2.real = .5; u.r2c2.imag = .5;
     
-    statevec_controlledNot(qureg, qb1, qb2);
-    statevec_controlledUnitary(qureg, qb2, qb1, u);
-    statevec_controlledNot(qureg, qb1, qb2);
+    statevec_controlledTwoQubitUnitary(qureg, qb1, qb2, u);
 }
 
 void statevec_sqrtSwapGateConj(Qureg qureg, int qb1, int qb2) {
     
-    ComplexMatrix2 u;
-    u.r0c0.real = .5; u.r0c0.imag =-.5;
-    u.r0c1.real = .5; u.r0c1.imag = .5;
-    u.r1c0.real = .5; u.r1c0.imag = .5;
+    ComplexMatrix4 u = {0};
+    u.r0c0.real=1;
+    u.r3c3.real=1;
     u.r1c1.real = .5; u.r1c1.imag =-.5;
+    u.r1c2.real = .5; u.r1c2.imag = .5;
+    u.r2c1.real = .5; u.r2c1.imag = .5;
+    u.r2c2.real = .5; u.r2c2.imag =-.5;
     
-    statevec_controlledNot(qureg, qb1, qb2);
-    statevec_controlledUnitary(qureg, qb2, qb1, u);
-    statevec_controlledNot(qureg, qb1, qb2);
+    statevec_controlledTwoQubitUnitary(qureg, qb1, qb2, u);
 }
 
 /** applyConj=1 will apply conjugate operation, else applyConj=0 */
