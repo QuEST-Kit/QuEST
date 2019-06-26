@@ -1,4 +1,4 @@
-// Distributed under MIT licence. See https://github.com/aniabrown/QuEST/blob/master/LICENCE.txt for details
+// Distributed under MIT licence. See https://github.com/QuEST-Kit/QuEST/blob/master/LICENCE.txt for details
 
 /** @file
  * Specifies a precision-agnostic type qcomp, which resolves to a complex<T> in C++ and a

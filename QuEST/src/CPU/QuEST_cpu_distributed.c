@@ -1,4 +1,4 @@
-// Distributed under MIT licence. See https://github.com/aniabrown/QuEST/blob/master/LICENCE.txt for details 
+// Distributed under MIT licence. See https://github.com/QuEST-Kit/QuEST/blob/master/LICENCE.txt for details 
 
 /** @file
  * An implementation of the backend in ../QuEST_ops.h for an MPI environment.
@@ -182,12 +182,6 @@ void reportQuESTEnv(QuESTEnv env){
 # endif 
         printf("Precision: size of qreal is %ld bytes\n", sizeof(qreal) );
     }
-}
-
-void reportNodeList(QuESTEnv env){
-    char hostName[256];
-    gethostname(hostName, 255);
-    printf("hostname on rank %d: %s\n", env.rank, hostName);
 }
 
 int getChunkIdFromIndex(Qureg qureg, long long int index){
@@ -712,6 +706,33 @@ void densmatr_oneQubitDepolarise(Qureg qureg, const int targetQubit, qreal depol
 
 }
 
+void densmatr_oneQubitDamping(Qureg qureg, const int targetQubit, qreal damping) {
+    if (damping == 0)
+        return;
+    
+    int rankIsUpper; // rank is in the upper half of an outer block
+    int pairRank; // rank of corresponding chunk
+
+    int useLocalDataOnly = densityMatrixBlockFitsInChunk(qureg.numAmpsPerChunk, 
+            qureg.numQubitsRepresented, targetQubit);
+
+    if (useLocalDataOnly){
+        densmatr_oneQubitDampingLocal(qureg, targetQubit, damping);
+    } else {
+        // pack data to send to my pair process into the first half of pairStateVec
+        compressPairVectorForSingleQubitDepolarise(qureg, targetQubit);
+
+        rankIsUpper = chunkIsUpperInOuterBlock(qureg.chunkId, qureg.numAmpsPerChunk, targetQubit, 
+                qureg.numQubitsRepresented);
+        pairRank = getChunkOuterBlockPairId(rankIsUpper, qureg.chunkId, qureg.numAmpsPerChunk, 
+                targetQubit, qureg.numQubitsRepresented);
+
+        exchangePairStateVectorHalves(qureg, pairRank);
+        densmatr_oneQubitDampingDistributed(qureg, targetQubit, damping);
+    }
+
+}
+
 void densmatr_twoQubitDepolarise(Qureg qureg, int qubit1, int qubit2, qreal depolLevel){
     if (depolLevel == 0)
         return;
@@ -1128,7 +1149,7 @@ void statevec_controlledPauliY(Qureg qureg, const int controlQubit, const int ta
             statevec_controlledPauliYDistributed(qureg,controlQubit,targetQubit,
                     qureg.pairStateVec, //in
                     qureg.stateVec,
-					conjFac); //out
+					-conjFac); //out
         }
     }
 }
@@ -1161,7 +1182,7 @@ void statevec_controlledPauliYConj(Qureg qureg, const int controlQubit, const in
             statevec_controlledPauliYDistributed(qureg,controlQubit,targetQubit,
                     qureg.pairStateVec, //in
                     qureg.stateVec,
-					conjFac); //out
+					-conjFac); //out
         }
     }
 }
@@ -1280,16 +1301,16 @@ void statevec_collapseToKnownProbOutcome(Qureg qureg, const int measureQubit, in
 }
 
 void seedQuESTDefault(){
-    // init MT random number generator with three keys -- time, pid and a hash of hostname 
+    // init MT random number generator with three keys -- time and pid
     // for the MPI version, it is ok that all procs will get the same seed as random numbers will only be 
     // used by the master process
 
-    unsigned long int key[3];
+    unsigned long int key[2];
     getQuESTDefaultSeedKey(key);
     // this seed will be used to generate the same random number on all procs,
     // therefore we want to make sure all procs receive the same key
-    MPI_Bcast(key, 3, MPI_UNSIGNED_LONG, 0, MPI_COMM_WORLD);
-    init_by_array(key, 3);
+    MPI_Bcast(key, 2, MPI_UNSIGNED_LONG, 0, MPI_COMM_WORLD);
+    init_by_array(key, 2);
 }
 
 /** returns -1 if this node contains no amplitudes where qb1 and qb2 

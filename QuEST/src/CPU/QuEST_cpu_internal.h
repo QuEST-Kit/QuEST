@@ -1,4 +1,4 @@
-// Distributed under MIT licence. See https://github.com/aniabrown/QuEST/blob/master/LICENCE.txt for details 
+// Distributed under MIT licence. See https://github.com/QuEST-Kit/QuEST/blob/master/LICENCE.txt for details 
 
 /** @file
  * Internal functions used to implement the pure backend in ../QuEST_ops_pure.h. Do not call these functions
@@ -66,6 +66,10 @@ qreal densmatr_findProbabilityOfZeroLocal(Qureg qureg, const int measureQubit);
 void densmatr_oneQubitDepolariseLocal(Qureg qureg, const int targetQubit, qreal depolLevel);
 
 void densmatr_oneQubitDepolariseDistributed(Qureg qureg, const int targetQubit, qreal depolLevel);
+
+void densmatr_oneQubitDampingLocal(Qureg qureg, const int targetQubit, qreal damping);
+
+void densmatr_oneQubitDampingDistributed(Qureg qureg, const int targetQubit, qreal damping);
 
 void densmatr_twoQubitDepolariseLocal(Qureg qureg, int qubit1, int qubit2, qreal delta, qreal gamma);
 
