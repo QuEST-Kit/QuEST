@@ -1,4 +1,4 @@
-// Distributed under MIT licence. See https://github.com/aniabrown/QuEST_GPU/blob/master/LICENCE.txt for details
+// Distributed under MIT licence. See https://github.com/QuEST-Kit/QuEST/blob/master/LICENCE.txt for details
 
 /** @file
  * Provides validation defined in QuEST_validation.c which is used exclusively by QuEST.c
@@ -86,6 +86,8 @@ void validateMatrixInit(ComplexMatrixN matr, const char* caller);
 void validateOneQubitKrausMap(Qureg qureg, ComplexMatrix2* ops, int numOps, const char* caller);
 
 void validateTwoQubitKrausMap(Qureg qureg, ComplexMatrix4* ops, int numOps, const char* caller);
+
+void validateOneQubitDampingProb(qreal prob, const char* caller);
 
 # ifdef __cplusplus
 }

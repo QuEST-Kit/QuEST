@@ -1,4 +1,4 @@
-// Distributed under MIT licence. See https://github.com/aniabrown/QuEST_GPU/blob/master/LICENCE.txt for details
+// Distributed under MIT licence. See https://github.com/QuEST-Kit/QuEST/blob/master/LICENCE.txt for details
 
 /** @file
  * Developer functions used for unit testing and debugging, which are not part of the public API. 
@@ -38,12 +38,6 @@ void initStateFromSingleFile(Qureg *qureg, char filename[200], QuESTEnv env);
  * Global phase included in equivalence check. For debugging purposes.
  */
 int compareStates(Qureg mq1, Qureg mq2, qreal precision);
-
-/** Report a list of CPU hostnames and the rank that is running on each if running with MPI enabled and an 
- * error message otherwise. For debugging purposes. 
- * @param[in] env object representing the execution environment. A single instance is used for each program
- * */
-void reportNodeList(QuESTEnv env);
 
 /** Set elements in the underlying state vector represenation of a density matrix. Not exposed in the public
  * API as this requires an understanding of how the state vector is used to represent a density matrix.

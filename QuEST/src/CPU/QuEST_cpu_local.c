@@ -1,4 +1,4 @@
-// Distributed under MIT licence. See https://github.com/aniabrown/QuEST/blob/master/LICENCE.txt for details 
+// Distributed under MIT licence. See https://github.com/QuEST-Kit/QuEST/blob/master/LICENCE.txt for details 
 
 /** @file
  * An implementation of the pure backend in ../QuEST_ops_pure.h for a local (non-MPI, non-GPU) environment.
@@ -28,6 +28,13 @@ void densmatr_oneQubitDepolarise(Qureg qureg, const int targetQubit, qreal depol
         return;
 
     densmatr_oneQubitDepolariseLocal(qureg, targetQubit, depolLevel);
+}
+
+void densmatr_oneQubitDamping(Qureg qureg, const int targetQubit, qreal damping) {
+    if (damping == 0)
+        return;
+
+    densmatr_oneQubitDampingLocal(qureg, targetQubit, damping);
 }
 
 void densmatr_twoQubitDepolarise(Qureg qureg, int qubit1, int qubit2, qreal depolLevel){
@@ -187,10 +194,6 @@ void reportQuESTEnv(QuESTEnv env){
     printf("Precision: size of qreal is %ld bytes\n", sizeof(qreal));
 }
 
-void reportNodeList(QuESTEnv env){
-    printf("Hostname unknown: running locally\n");
-}
-
 qreal statevec_getRealAmp(Qureg qureg, long long int index){
     return qureg.stateVec.real[index];
 }
@@ -285,13 +288,13 @@ void statevec_collapseToKnownProbOutcome(Qureg qureg, const int measureQubit, in
 }
 
 void seedQuESTDefault(){
-    // init MT random number generator with three keys -- time, pid and a hash of hostname 
+    // init MT random number generator with three keys -- time and pid
     // for the MPI version, it is ok that all procs will get the same seed as random numbers will only be 
     // used by the master process
 
-    unsigned long int key[3];
+    unsigned long int key[2];
     getQuESTDefaultSeedKey(key);
-    init_by_array(key, 3);
+    init_by_array(key, 2);
 }
 
 void statevec_multiControlledTwoQubitUnitary(Qureg qureg, long long int ctrlMask, const int q1, const int q2, ComplexMatrix4 u)
