@@ -1860,7 +1860,7 @@ void multiRotatePauli(Qureg qureg, int* targetQubits, enum pauliOpType* targetPa
  * 2 = \p PAULI_Y, 3 = \p PAULI_Z. The target qubits must be unique, and at most \p qureg.numQubitsRepresented
  * may be specified. For example, on a 7-qubit statevector,
  * 
- *     calcExpecValProd(qureg, {4,5,6}, {PAULI_X, PAULI_I, PAULI_Z}, 3, workspace);
+ *     calcExpecPauliProd(qureg, {4,5,6}, {PAULI_X, PAULI_I, PAULI_Z}, 3, workspace);
  *
  * will compute \f$ \langle \psi | I I I I X I Z | \psi \rangle \f$ (where in this notation, the left-most operator
  * applies to the least-significant qubit, i.e. that with index 0).
@@ -1891,7 +1891,7 @@ void multiRotatePauli(Qureg qureg, int* targetQubits, enum pauliOpType* targetPa
  *      or if any code in \p pauliCodes is not in {0,1,2,3},
  *      or if \p workspace is not of the same type and dimensions as \p qureg
  */
-qreal calcExpecValProd(Qureg qureg, int* targetQubits, enum pauliOpType* pauliCodes, int numTargets, Qureg workspace);
+qreal calcExpecPauliProd(Qureg qureg, int* targetQubits, enum pauliOpType* pauliCodes, int numTargets, Qureg workspace);
 
 /** Computes the expected value of a sum of products of Pauli operators.
  * Letting \f$ \alpha = \sum_i c_i \otimes_j^{N} \hat{\sigma}_{i,j} \f$ be 
@@ -1909,7 +1909,7 @@ qreal calcExpecValProd(Qureg qureg, int* targetQubits, enum pauliOpType* pauliCo
  *
  *     int paulis[6] = {PAULI_X, PAULI_I, PAULI_I,  PAULI_X, PAULI_Y, PAULI_Z};
  *     qreal coeffs[2] = {1.5, -3.6};
- *     calcExpecValSum(qureg, paulis, coeffs, 2, workspace);
+ *     calcExpecPauliSum(qureg, paulis, coeffs, 2, workspace);
  *
  * will compute \f$ \langle \psi | (1.5 X I I - 3.6 X Y Z) | \psi \rangle \f$ (where in this notation, the left-most operator
  * applies to the least-significant qubit, i.e. that with index 0).
@@ -1938,7 +1938,7 @@ qreal calcExpecValProd(Qureg qureg, int* targetQubits, enum pauliOpType* pauliCo
  *      or if numSumTerms <= 0,
  *      or if \p workspace is not of the same type and dimensions as \p qureg
  */
-qreal calcExpecValSum(Qureg qureg, enum pauliOpType* allPauliCodes, qreal* termCoeffs, int numSumTerms, Qureg workspace);
+qreal calcExpecPauliSum(Qureg qureg, enum pauliOpType* allPauliCodes, qreal* termCoeffs, int numSumTerms, Qureg workspace);
 
 /** Apply a general two-qubit unitary (including a global phase factor).
  *

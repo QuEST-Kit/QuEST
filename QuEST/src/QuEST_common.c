@@ -437,7 +437,7 @@ void statevec_multiRotatePauli(
 }
 
 // <pauli> = <qureg|pauli|qureg> = qureg . pauli(qureg)
-qreal statevec_calcExpecValProd(Qureg qureg, int* targetQubits, enum pauliOpType* pauliCodes, int numTargets, Qureg workspace) {
+qreal statevec_calcExpecPauliProd(Qureg qureg, int* targetQubits, enum pauliOpType* pauliCodes, int numTargets, Qureg workspace) {
     
     statevec_cloneQureg(workspace, qureg);
     
@@ -462,7 +462,7 @@ qreal statevec_calcExpecValProd(Qureg qureg, int* targetQubits, enum pauliOpType
     return value;
 }
 
-qreal statevec_calcExpecValSum(Qureg qureg, enum pauliOpType* allCodes, qreal* termCoeffs, int numSumTerms, Qureg workspace) {
+qreal statevec_calcExpecPauliSum(Qureg qureg, enum pauliOpType* allCodes, qreal* termCoeffs, int numSumTerms, Qureg workspace) {
     
     int numQb = qureg.numQubitsRepresented;
     int targs[numQb];
@@ -471,7 +471,7 @@ qreal statevec_calcExpecValSum(Qureg qureg, enum pauliOpType* allCodes, qreal* t
         
     qreal value = 0;
     for (int t=0; t < numSumTerms; t++)
-        value += termCoeffs[t] * statevec_calcExpecValProd(qureg, targs, &allCodes[t*numQb], numQb, workspace);
+        value += termCoeffs[t] * statevec_calcExpecPauliProd(qureg, targs, &allCodes[t*numQb], numQb, workspace);
         
     return value;
 }
