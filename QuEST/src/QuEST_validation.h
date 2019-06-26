@@ -1,4 +1,4 @@
-// Distributed under MIT licence. See https://github.com/QuEST-Kit/QuEST/blob/master/LICENCE.txt for details
+// Distributed under MIT licence. See https://github.com/aniabrown/QuEST_GPU/blob/master/LICENCE.txt for details
 
 /** @file
  * Provides validation defined in QuEST_validation.c which is used exclusively by QuEST.c
@@ -72,8 +72,6 @@ void validateTwoQubitDephaseProb(qreal prob, const char* caller);
 void validateOneQubitDepolProb(qreal prob, const char* caller);
 
 void validateTwoQubitDepolProb(qreal prob, const char* caller);
-
-void validateOneQubitDampingProb(qreal prob, const char* caller);
 
 void validateOneQubitPauliProbs(qreal probX, qreal probY, qreal probZ, const char* caller);
 

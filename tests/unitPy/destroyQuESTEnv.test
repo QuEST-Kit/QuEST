@@ -1,0 +1,11 @@
+# Python
+import sys
+sys.path.insert(0, '../')
+from QuESTFunc import *
+from QuESTCore import *
+
+def run_tests():
+    destroyQuESTEnv(Env)
+
+    # If we reached here, we hope we've destroyed it!
+    testResults.validate(True)

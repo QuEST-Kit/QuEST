@@ -1,0 +1,29 @@
+# Python
+from QuESTFunc import *
+from QuESTCore import *
+import os.path
+
+def run_tests():
+    ExpectFile = find_file('AddDenMattests')
+    if ExpectFile is None:
+        testResults.fail_test(message="Couldn't find file")
+        return
+    nQubits = int(ExpectFile.readline())
+    
+    QubitsA = argQureg(nQubits,'Z',denMat=True)
+    QubitsB = argQureg(nQubits,'D',denMat=True)
+
+    addDensityMatrix(QubitsA,0.5,QubitsB)
+
+    Expect = ExpectFile.read_state_vec(nQubits, denMat = True)
+    testResults.validate(testResults.compareStates(QubitsA, Expect), 'Add Debug-Zero States', 'Failed')
+
+def gen_tests(nQubits):
+    with open(f'{unitPath[0]}AddDenMattests','w') as results:
+        QubitsA = argQureg(nQubits,'Z', denMat=True)
+        QubitsB = argQureg(nQubits,'D', denMat=True)
+        results.write(f"\n{nQubits}\n")
+        addDensityMatrix(QubitsA, 0.5, QubitsB)
+
+        for elem in QubitsA._state_vec():
+            results.write(elem)

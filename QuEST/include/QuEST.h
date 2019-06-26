@@ -1,4 +1,4 @@
-// Distributed under MIT licence. See https://github.com/QuEST-Kit/QuEST/blob/master/LICENCE.txt for details 
+// Distributed under MIT licence. See https://github.com/aniabrown/QuEST/blob/master/LICENCE.txt for details 
 
 /** @file
  * The QuEST API.
@@ -1399,8 +1399,8 @@ Complex calcInnerProduct(Qureg bra, Qureg ket);
 
 /** Seed the Mersenne Twister used for random number generation in the QuEST environment with an example
  * defualt seed.
- * This default seeding function uses the mt19937 init_by_array function with two keys -- 
- * time and pid. Subsequent calls to mt19937 genrand functions will use this seeding. 
+ * This default seeding function uses the mt19937 init_by_array function with three keys -- 
+ * time, pid and hostname. Subsequent calls to mt19937 genrand functions will use this seeding. 
  * For a multi process code, the same seed is given to all process, therefore this seeding is only
  * appropriate to use for functions such as measure where all processes require the same random value.
  *
@@ -1513,28 +1513,6 @@ void applyTwoQubitDephaseError(Qureg qureg, const int qubit1, const int qubit2, 
  *      or if \p prob is not in [0, 3/4]
  */
 void applyOneQubitDepolariseError(Qureg qureg, const int targetQubit, qreal prob);
-
-/** Mixes a density matrix \p qureg to induce single-qubit damping (decay to 0 state).
- * With probability \p prob, applies damping (transition from 1 to 0 state).
- *
- * This transforms \p qureg = \f$\rho\f$ into the mixed state
- * \f[
- * (1 - \text{prob}) \, \rho + \text{prob} \; \left( 
- *      \sigma^{-} \, \rho \, sigma^{+} 
- * \right)
- * \f]
- * where q = \p targetQubit.
- * \p prob cannot exceed 1, at which total damping/decay occurs.
- *
- * @param[in,out] qureg a density matrix
- * @param[in] targetQubit qubit upon which to induce depolarising noise
- * @param[in] prob the probability of the depolarising error occuring
- * @throws exitWithError
- *      if \p qureg is not a density matrix,
- *      or if \p targetQubit is outside [0, \p qureg.numQubitsRepresented),
- *      or if \p prob is not in [0, 1]
- */
-void applyOneQubitDampingError(Qureg qureg, const int targetQubit, qreal prob);
 
 /** Mixes a density matrix \p qureg to induce two-qubit homogeneous depolarising noise.
  * With probability \p prob, applies to \p qubit1 and \p qubit2 any operator of the set

@@ -1,4 +1,4 @@
-// Distributed under MIT licence. See https://github.com/QuEST-Kit/QuEST/blob/master/LICENCE.txt for details
+// Distributed under MIT licence. See https://github.com/aniabrown/QuEST_GPU/blob/master/LICENCE.txt for details
 
 /** @file
  * Provides validation of user input
@@ -554,11 +554,6 @@ void validateTwoQubitDephaseProb(qreal prob, const char* caller) {
 void validateOneQubitDepolProb(qreal prob, const char* caller) {
     validateProb(prob, caller);
     QuESTAssert(prob <= 3/4.0, E_INVALID_ONE_QUBIT_DEPOL_PROB, caller);
-}
-
-void validateOneQubitDampingProb(qreal prob, const char* caller) {
-    validateProb(prob, caller);
-    QuESTAssert(prob <= 1.0, E_INVALID_ONE_QUBIT_DEPOL_PROB, caller);
 }
 
 void validateTwoQubitDepolProb(qreal prob, const char* caller) {
