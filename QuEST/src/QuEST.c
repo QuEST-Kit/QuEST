@@ -837,7 +837,7 @@ qreal calcExpecPauliProd(Qureg qureg, int* targetQubits, enum pauliOpType* pauli
 }
 
 qreal calcExpecPauliSum(Qureg qureg, enum pauliOpType* allPauliCodes, qreal* termCoeffs, int numSumTerms, Qureg workspace) {
-    validateNumSumTerms(numSumTerms, __func__);
+    validateNumPauliSumTerms(numSumTerms, __func__);
     validatePauliCodes(allPauliCodes, numSumTerms*qureg.numQubitsRepresented, __func__);
     validateMatchingQuregTypes(qureg, workspace, __func__);
     validateMatchingQuregDims(qureg, workspace, __func__);

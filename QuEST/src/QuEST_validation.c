@@ -581,7 +581,7 @@ void validatePauliCodes(enum pauliOpType* pauliCodes, int numPauliCodes, const c
     }
 }
 
-void validateNumSumTerms(int numTerms, const char* caller) {
+void validateNumPauliSumTerms(int numTerms, const char* caller) {
     QuESTAssert(numTerms > 0, E_INVALID_NUM_SUM_TERMS, caller);
 }
 
