@@ -1751,6 +1751,10 @@ void statevec_multiControlledTwoQubitUnitaryLocal(Qureg qureg, long long int ctr
     }
 }
 
+int qsortComp(const void *a, const void *b) {
+    return *(int*)a - *(int*)b; 
+}
+
 void statevec_multiControlledMultiQubitUnitaryLocal(Qureg qureg, long long int ctrlMask, int* targs, const int numTargs, ComplexMatrixN u)
 {
     // can't use qureg.stateVec as a private OMP var
@@ -1780,9 +1784,9 @@ void statevec_multiControlledMultiQubitUnitaryLocal(Qureg qureg, long long int c
     // we need a sorted targets list to find thisInd00 for each task.
     // we can't modify targets, because the user-ordering of targets matters in u
     int sortedTargs[numTargs]; 
-    for (int t=0; t < numTargs; t++) sortedTargs[t] = targs[t];
-    int comp(const void *a, const void *b) { return *(int*)a - *(int*)b; };
-    qsort(sortedTargs, numTargs, sizeof(int), comp);
+    for (int t=0; t < numTargs; t++) 
+        sortedTargs[t] = targs[t];
+    qsort(sortedTargs, numTargs, sizeof(int), qsortComp);
     
 # ifdef _OPENMP
 # pragma omp parallel \
