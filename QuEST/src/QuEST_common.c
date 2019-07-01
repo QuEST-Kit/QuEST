@@ -377,7 +377,7 @@ void statevec_sqrtSwapGate(Qureg qureg, int qb1, int qb2) {
     u.r2c1.real = .5; u.r2c1.imag =-.5;
     u.r2c2.real = .5; u.r2c2.imag = .5;
     
-    statevec_controlledTwoQubitUnitary(qureg, qb1, qb2, u);
+    statevec_twoQubitUnitary(qureg, qb1, qb2, u);
 }
 
 void statevec_sqrtSwapGateConj(Qureg qureg, int qb1, int qb2) {
@@ -390,7 +390,7 @@ void statevec_sqrtSwapGateConj(Qureg qureg, int qb1, int qb2) {
     u.r2c1.real = .5; u.r2c1.imag = .5;
     u.r2c2.real = .5; u.r2c2.imag =-.5;
     
-    statevec_controlledTwoQubitUnitary(qureg, qb1, qb2, u);
+    statevec_twoQubitUnitary(qureg, qb1, qb2, u);
 }
 
 /** applyConj=1 will apply conjugate operation, else applyConj=0 */
