@@ -3533,3 +3533,45 @@ void statevec_swapQubitAmpsDistributed(Qureg qureg, int pairRank, int qb1, int q
     }
 }
 
+void statevec_setWeightedQureg(Complex fac1, Qureg qureg1, Complex fac2, Qureg qureg2, Complex facOut, Qureg out) {
+
+    long long int numAmps = qureg1.numAmpsPerChunk;
+
+    qreal *vecRe1 = qureg1.stateVec.real;
+    qreal *vecIm1 = qureg1.stateVec.imag;
+    qreal *vecRe2 = qureg2.stateVec.real;
+    qreal *vecIm2 = qureg2.stateVec.imag;
+    qreal *vecReOut = out.stateVec.real;
+    qreal *vecImOut = out.stateVec.imag;
+
+    qreal facRe1 = fac1.real; 
+    qreal facIm1 = fac1.imag;
+    qreal facRe2 = fac2.real;
+    qreal facIm2 = fac2.imag;
+    qreal facReOut = facOut.real;
+    qreal facImOut = facOut.imag;
+
+    qreal re1,im1, re2,im2, reOut,imOut;
+    long long int index;
+
+# ifdef _OPENMP
+# pragma omp parallel \
+    shared    (vecRe1,vecIm1, vecRe2,vecIm2, vecReOut,vecImOut, facRe1,facIm1,facRe2,facIm2, numAmps) \
+    private   (index, re1,im1, re2,im2, reOut,imOut)
+# endif 
+    {
+# ifdef _OPENMP
+# pragma omp for schedule  (static)
+# endif
+        for (index=0LL; index<numAmps; index++) {
+            re1 = vecRe1[index]; im1 = vecIm1[index];
+            re2 = vecRe2[index]; im2 = vecIm2[index];
+            reOut = vecReOut[index];
+            imOut = vecImOut[index];
+
+            vecReOut[index] = (facReOut*reOut - facImOut*imOut) + (facRe1*re1 - facIm1*im1) + (facRe2*re2 - facIm2*im2);
+            vecImOut[index] = (facReOut*imOut + facImOut*reOut) + (facRe1*im1 + facIm1*re1) + (facRe2*im2 + facIm2*re2);
+        }
+    }
+}
+

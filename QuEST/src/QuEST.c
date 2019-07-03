@@ -150,22 +150,6 @@ void initStateFromAmps(Qureg qureg, qreal* reals, qreal* imags) {
     qasm_recordComment(qureg, "Here, the register was initialised to an undisclosed given pure state.");
 }
 
-void setAmps(Qureg qureg, long long int startInd, qreal* reals, qreal* imags, long long int numAmps) {
-    validateStateVecQureg(qureg, __func__);
-    validateNumAmps(qureg, startInd, numAmps, __func__);
-    
-    statevec_setAmps(qureg, startInd, reals, imags, numAmps);
-    
-    qasm_recordComment(qureg, "Here, some amplitudes in the statevector were manually edited.");
-}
-
-void setDensityAmps(Qureg qureg, qreal* reals, qreal* imags) {
-    long long int numAmps = qureg.numAmpsTotal; 
-    statevec_setAmps(qureg, 0, reals, imags, numAmps);
-    
-    qasm_recordComment(qureg, "Here, some amplitudes in the density matrix were manually edited.");
-}
-
 void cloneQureg(Qureg targetQureg, Qureg copyQureg) {
     validateMatchingQuregTypes(targetQureg, copyQureg, __func__);
     validateMatchingQuregDims(targetQureg, copyQureg, __func__);
@@ -780,6 +764,33 @@ void addDensityMatrix(Qureg combineQureg, qreal otherProb, Qureg otherQureg) {
     
     densmatr_addDensityMatrix(combineQureg, otherProb, otherQureg);
 }
+
+void setAmps(Qureg qureg, long long int startInd, qreal* reals, qreal* imags, long long int numAmps) {
+    validateStateVecQureg(qureg, __func__);
+    validateNumAmps(qureg, startInd, numAmps, __func__);
+    
+    statevec_setAmps(qureg, startInd, reals, imags, numAmps);
+    
+    qasm_recordComment(qureg, "Here, some amplitudes in the statevector were manually edited.");
+}
+
+void setDensityAmps(Qureg qureg, qreal* reals, qreal* imags) {
+    long long int numAmps = qureg.numAmpsTotal; 
+    statevec_setAmps(qureg, 0, reals, imags, numAmps);
+    
+    qasm_recordComment(qureg, "Here, some amplitudes in the density matrix were manually edited.");
+}
+
+void setWeightedQureg(Complex fac1, Qureg qureg1, Complex fac2, Qureg qureg2, Complex facOut, Qureg out) {
+    validateMatchingQuregTypes(qureg1, qureg2, __func__);
+    validateMatchingQuregTypes(qureg1, out, __func__);
+    validateMatchingQuregDims(qureg1, qureg2,  __func__);
+    validateMatchingQuregDims(qureg1, out, __func__);
+
+    statevec_setWeightedQureg(fac1, qureg1, fac2, qureg2, facOut, out);
+
+    qasm_recordComment(out, "Here, the register was modified to an undisclosed and possibly unphysical state.");
+} 
 
 
 /*

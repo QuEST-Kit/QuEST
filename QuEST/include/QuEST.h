@@ -2432,11 +2432,36 @@ void applyTwoQubitKrausMap(Qureg qureg, int target1, int target2, ComplexMatrix4
  * We caution this may differ by some definitions of the Hilbert Schmidt distance 
  * by a square-root.
  *
+ * @param[in] a a density matrix
+ * @param[in] b an equally-sized density matrix
  * @throws exitWithError
  *      if either \p a or \p b are not density matrices,
  *      or if \p a and \p have mismatching dimensions.
  */
 qreal calcHilbertSchmidtDistance(Qureg a, Qureg b);
+
+/** Modifies qureg \p out to the result of (\p facOut \p out + \p fac1 \p qureg1 + \p fac2 \p qureg2), 
+ * imposing no constraints on normalisation. Works for both statevectors and density matrices.
+ * Note that afterward, \p out may not longer be normalised and ergo no longer a valid 
+ * statevector or density matrix. Users must therefore be careful passing \p out to
+ * other QuEST functions which assume normalisation in order to function correctly.
+ *
+ * \p qureg1, \p qureg2 and \p out must be all state-vectors, or all density matrices,
+ * of equal dimensions.
+ *
+ * @param[in] fac1 the complex number by which to scale \p qureg1 in the output state 
+ * @param[in] qureg1 the first qureg to add to \p out, which is itself unmodified
+ * @param[in] fac2 the complex number by which to scale \p qureg2 in the output state 
+ * @param[in] qureg2 the second qureg to add to \p out, which is itself unmodified
+ * @param[in] facOut the complex factor by which to multiply the current elements of \p out.
+ *      \p out is completely overwritten if \p facOut is set to (Complex) {.real=0,.imag=0}
+ * @param[in,out] out the qureg to be modified, to be scaled by \p facOut then have \p fac1 \p qureg1 and
+ *      \p fac2 \p qureg2 added to it.
+ * @throws exitWithError
+ *      if \p qureg1, \p qureg2 and \p aren't all state-vectors or all density matrices,
+ *      or if the dimensions of \p qureg1, \p qureg2 and \p aren't equal
+ */
+void setWeightedQureg(Complex fac1, Qureg qureg1, Complex fac2, Qureg qureg2, Complex facOut, Qureg out);
 
 
 #ifdef __cplusplus
