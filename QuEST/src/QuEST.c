@@ -795,8 +795,19 @@ void setWeightedQureg(Complex fac1, Qureg qureg1, Complex fac2, Qureg qureg2, Co
 
     statevec_setWeightedQureg(fac1, qureg1, fac2, qureg2, facOut, out);
 
-    qasm_recordComment(out, "Here, the register was modified to an undisclosed and possibly unphysical state.");
+    qasm_recordComment(out, "Here, the register was modified to an undisclosed and possibly unphysical state (setWeightedQureg).");
 } 
+
+void applyPauliSum(Qureg inQureg, enum pauliOpType* allPauliCodes, qreal* termCoeffs, int numSumTerms, Qureg outQureg) {
+    validateMatchingQuregTypes(inQureg, outQureg, __func__);
+    validateMatchingQuregDims(inQureg, outQureg, __func__);
+    validateNumPauliSumTerms(numSumTerms, __func__);
+    validatePauliCodes(allPauliCodes, numSumTerms*inQureg.numQubitsRepresented, __func__);
+    
+    statevec_applyPauliSum(inQureg, allPauliCodes, termCoeffs, numSumTerms, outQureg);
+    
+    qasm_recordComment(outQureg, "Here, the register was modified to an undisclosed and possibly unphysical state (applyPauliSum).");
+}
 
 
 /*

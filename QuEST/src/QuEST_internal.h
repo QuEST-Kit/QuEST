@@ -234,6 +234,8 @@ void statevec_multiRotatePauli(Qureg qureg, int* targetQubits, enum pauliOpType*
 
 void statevec_setWeightedQureg(Complex fac1, Qureg qureg1, Complex fac2, Qureg qureg2, Complex facOut, Qureg out);
 
+void statevec_applyPauliSum(Qureg inQureg, enum pauliOpType* allCodes, qreal* termCoeffs, int numSumTerms, Qureg outQureg);
+
 # ifdef __cplusplus
 }
 # endif

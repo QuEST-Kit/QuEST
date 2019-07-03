@@ -431,10 +431,7 @@ void statevec_multiRotatePauli(
     }
 }
 
-// <pauli> = <qureg|pauli|qureg> = qureg . pauli(qureg)
-qreal statevec_calcExpecPauliProd(Qureg qureg, int* targetQubits, enum pauliOpType* pauliCodes, int numTargets, Qureg workspace) {
-    
-    statevec_cloneQureg(workspace, qureg);
+void applyPauliProd(Qureg workspace, int* targetQubits, enum pauliOpType* pauliCodes, int numTargets) {
     
     // produces both pauli|qureg> or pauli * qureg (as a density matrix)
     for (int i=0; i < numTargets; i++) {
@@ -446,6 +443,13 @@ qreal statevec_calcExpecPauliProd(Qureg qureg, int* targetQubits, enum pauliOpTy
         if (pauliCodes[i] == PAULI_Z)
             statevec_pauliZ(workspace, targetQubits[i]);
     }
+}
+
+// <pauli> = <qureg|pauli|qureg> = qureg . pauli(qureg)
+qreal statevec_calcExpecPauliProd(Qureg qureg, int* targetQubits, enum pauliOpType* pauliCodes, int numTargets, Qureg workspace) {
+    
+    statevec_cloneQureg(workspace, qureg);
+    applyPauliProd(workspace, targetQubits, pauliCodes, numTargets);
     
     // compute the expected value
     qreal value;
@@ -469,6 +473,29 @@ qreal statevec_calcExpecPauliSum(Qureg qureg, enum pauliOpType* allCodes, qreal*
         value += termCoeffs[t] * statevec_calcExpecPauliProd(qureg, targs, &allCodes[t*numQb], numQb, workspace);
         
     return value;
+}
+
+void statevec_applyPauliSum(Qureg inQureg, enum pauliOpType* allCodes, qreal* termCoeffs, int numSumTerms, Qureg outQureg) {
+    
+    int numQb = inQureg.numQubitsRepresented;
+    int targs[numQb];
+    for (int q=0; q < numQb; q++)
+        targs[q] = q;
+        
+    statevec_initBlankState(outQureg);
+    
+    for (int t=0; t < numSumTerms; t++) {
+        Complex coef = (Complex) {.real=termCoeffs[t], .imag=0};
+        Complex iden = (Complex) {.real=1, .imag=0};
+        Complex zero = (Complex) {.real=0, .imag=0};
+        
+        // outQureg += coef paulis(inQureg)
+        applyPauliProd(inQureg, targs, &allCodes[t*numQb], numQb);
+        setWeightedQureg(coef, inQureg, iden, outQureg, zero, outQureg); 
+        
+        // undero paulis(inQureg), exploiting XX=YY=ZZ=I
+        applyPauliProd(inQureg, targs, &allCodes[t*numQb], numQb);
+    }
 }
 
 void statevec_twoQubitUnitary(Qureg qureg, const int targetQubit1, const int targetQubit2, ComplexMatrix4 u) {

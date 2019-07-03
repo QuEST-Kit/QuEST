@@ -2470,6 +2470,59 @@ qreal calcHilbertSchmidtDistance(Qureg a, Qureg b);
  */
 void setWeightedQureg(Complex fac1, Qureg qureg1, Complex fac2, Qureg qureg2, Complex facOut, Qureg out);
 
+/** Modifies \p outQureg to be the result of applying the weighted sum of Pauli products (a Hermitian but not 
+ * necessarily unitary operator) to \p inQureg. Note that afterward, \p outQureg may not longer be normalised and ergo not a
+ * statevector or density matrix. Users must therefore be careful passing \p outQureg to
+ * other QuEST functions which assume normalisation in order to function correctly.
+
+ * Letting \f$ \alpha = \sum_i c_i \otimes_j^{N} \hat{\sigma}_{i,j} \f$ be 
+ * the operators indicated by \p allPauliCodes (where \f$ c_i \in \f$ \p termCoeffs and \f$ N = \f$ \p qureg.numQubitsRepresented), 
+ * this function effects \f$ \alpha | \psi \rangle \f$ on statevector \f$ |\psi\rangle \f$
+ * and $\alpha \rho$ (matrix multiplication) on density matrix \f$ \rho \f$.
+ *
+ * \p allPauliCodes is an array of length \p numSumTerms*\p qureg.numQubitsRepresented
+ * which specifies which Pauli operators to apply, where 0 = \p PAULI_I, 1 = \p PAULI_X, 
+ * 2 = \p PAULI_Y, 3 = \p PAULI_Z. For each sum term, a Pauli operator must be specified for 
+ * EVERY qubit in \p qureg; each set of \p numSumTerms operators will be grouped into a product.
+ * \p termCoeffs is an arrray of length \p numSumTerms containing the term coefficients.
+ * For example, on a 3-qubit statevector,
+ *
+ *     int paulis[6] = {PAULI_X, PAULI_I, PAULI_I,  PAULI_X, PAULI_Y, PAULI_Z};
+ *     qreal coeffs[2] = {1.5, -3.6};
+ *     applyPauliSum(inQureg, paulis, coeffs, 2, outQureg);
+ *
+ * will apply Hermitian operation \f$ (1.5 X I I - 3.6 X Y Z) \f$ 
+ * (where in this notation, the left-most operator applies to the least-significant qubit, i.e. that with index 0).
+ *
+ * In theory, \p inQureg is unchanged though its state is temporarily 
+ * modified and is reverted by re-applying Paulis (XX=YY=ZZ=I), so may see a change by small numerical errors.
+ * The initial state in \p outQureg is not used.
+ *
+ * \p inQureg and \p outQureg must both be state-vectors, or both density matrices,
+ * of equal dimensions. \p inQureg cannot be \p outQureg.
+ *
+ * This function works by applying each Pauli product to \p inQureg in turn, 
+ * and adding the resulting state (weighted by a coefficient in \p termCoeffs)
+ * to the initially-blanked \p outQureg. Ergo it should scale with the total number 
+ * of Pauli operators specified (excluding identities), and the qureg dimension. 
+ *
+ * @param[in] inQureg the register containing the state which \p outQureg will be set to, under
+ *      the action of the Hermitiain operator specified by the Pauli codes. \p inQureg should be 
+ *      unchanged, though may vary slightly due to numerical error.
+ * @param[in] allPauliCodes a list of the Pauli codes (0=PAULI_I, 1=PAULI_X, 2=PAULI_Y, 3=PAULI_Z) 
+ *      of all Paulis involved in the products of terms. A Pauli must be specified for each qubit 
+ *      in the register, in every term of the sum.
+ * @param[in] termCoeffs The coefficients of each term in the sum of Pauli products
+ * @param[in] numSumTerms The total number of Pauli products specified
+ * @param[out] outQureg the qureg to modify to be the result of applyling the weighted Pauli sum operator 
+ *      to the state in \p inQureg
+ * @throws exitWithError
+ *      if any code in \p allPauliCodes is not in {0,1,2,3},
+ *      or if numSumTerms <= 0,
+ *      or if \p inQureg is not of the same type and dimensions as \p outQureg
+ */
+void applyPauliSum(Qureg inQureg, enum pauliOpType* allPauliCodes, qreal* termCoeffs, int numSumTerms, Qureg outQureg);
+
 
 #ifdef __cplusplus
 }
