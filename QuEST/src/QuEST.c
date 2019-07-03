@@ -109,6 +109,12 @@ void initZeroState(Qureg qureg) {
     qasm_recordInitZero(qureg);
 }
 
+void initBlankState(Qureg qureg) {
+    statevec_initBlankState(qureg);
+    
+    qasm_recordComment(qureg, "Here, the register was initialised to an unphysical all-zero-amplitudes 'state'.");
+}
+
 void initPlusState(Qureg qureg) {
     if (qureg.isDensityMatrix)
         densmatr_initPlusState(qureg);

@@ -396,6 +396,27 @@ qreal statevec_getImagAmp(Qureg qureg, long long int index){
     return el;
 }
 
+__global__ void statevec_initBlankStateKernel(long long int stateVecSize, qreal *stateVecReal, qreal *stateVecImag){
+    long long int index;
+
+    // initialise the statevector to be all-zeros
+    index = blockIdx.x*blockDim.x + threadIdx.x;
+    if (index>=stateVecSize) return;
+    stateVecReal[index] = 0.0;
+    stateVecImag[index] = 0.0;
+}
+
+void statevec_initBlankState(Qureg qureg)
+{
+    int threadsPerCUDABlock, CUDABlocks;
+    threadsPerCUDABlock = 128;
+    CUDABlocks = ceil((qreal)(qureg.numAmpsPerChunk)/threadsPerCUDABlock);
+    statevec_initBlankStateKernel<<<CUDABlocks, threadsPerCUDABlock>>>(
+        qureg.numAmpsPerChunk, 
+        qureg.deviceStateVec.real, 
+        qureg.deviceStateVec.imag);
+}
+
 __global__ void statevec_initZeroStateKernel(long long int stateVecSize, qreal *stateVecReal, qreal *stateVecImag){
     long long int index;
 

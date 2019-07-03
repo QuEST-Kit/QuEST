@@ -248,8 +248,15 @@ int getNumQubits(Qureg qureg);
  */
 int getNumAmps(Qureg qureg);
 
-/**
- * Initialise a set of \f$ N \f$ qubits to the classical zero state 
+/** Initialises a qureg to have all-zero-amplitudes. This is an unphysical state 
+ * useful for iteratively building a state with e.g. \p setWeightedQureg,
+ * and should not be confused with the zero state |0...0>
+ *
+ * @param[in,out] qureg the object representing the set of all qubits to initialise
+ */
+void initBlankState(Qureg qureg);
+
+/** Initialise a set of \f$ N \f$ qubits to the classical zero state 
  * \f$ {| 0 \rangle}^{\otimes N} \f$.
  *
  * @param[in,out] qureg the object representing the set of all qubits to initialise
@@ -2447,7 +2454,7 @@ qreal calcHilbertSchmidtDistance(Qureg a, Qureg b);
  * other QuEST functions which assume normalisation in order to function correctly.
  *
  * \p qureg1, \p qureg2 and \p out must be all state-vectors, or all density matrices,
- * of equal dimensions.
+ * of equal dimensions. \p out can be one (or both) of \p qureg1 and \p qureg2.
  *
  * @param[in] fac1 the complex number by which to scale \p qureg1 in the output state 
  * @param[in] qureg1 the first qureg to add to \p out, which is itself unmodified

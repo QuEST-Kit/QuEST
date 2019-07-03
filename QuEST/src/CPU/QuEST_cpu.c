@@ -1311,7 +1311,7 @@ void statevec_getEnvironmentString(QuESTEnv env, Qureg qureg, char str[200]){
     sprintf(str, "%dqubits_CPU_%dranksx%dthreads", qureg.numQubitsInStateVec, env.numRanks, numThreads);
 }
 
-void statevec_initZeroState (Qureg qureg)
+void statevec_initBlankState (Qureg qureg)
 {
     long long int stateVecSize;
     long long int index;
@@ -1339,11 +1339,15 @@ void statevec_initZeroState (Qureg qureg)
             stateVecImag[index] = 0.0;
         }
     }
+}
 
+void statevec_initZeroState (Qureg qureg)
+{
+    statevec_initBlankState(qureg);
     if (qureg.chunkId==0){
         // zero state |0000..0000> has probability 1
-        stateVecReal[0] = 1.0;
-        stateVecImag[0] = 0.0;
+        qureg.stateVec.real[0] = 1.0;
+        qureg.stateVec.imag[0] = 0.0;
     }
 }
 
