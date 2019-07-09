@@ -270,6 +270,10 @@ if (GPUACCELERATED)
     cuda_add_library(QuEST SHARED
         ${QuEST_SRC}
     )
+elseif (WIN32)
+    add_library(QuEST STATIC
+        ${QuEST_SRC}
+    )
 else ()
     add_library(QuEST SHARED
         ${QuEST_SRC}
