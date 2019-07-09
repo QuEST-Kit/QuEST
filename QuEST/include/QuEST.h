@@ -246,7 +246,7 @@ int getNumQubits(Qureg qureg);
 
 /** Get the number of probability amplitudes in a qureg object, given by 2^numQubits
  */
-int getNumAmps(Qureg qureg);
+long long int getNumAmps(Qureg qureg);
 
 /** Initialises a qureg to have all-zero-amplitudes. This is an unphysical state 
  * useful for iteratively building a state with e.g. \p setWeightedQureg,
@@ -1495,7 +1495,7 @@ void applyOneQubitDephaseError(Qureg qureg, const int targetQubit, qreal prob);
  *      or if \p qubit1 = \p qubit2,
  *      or if \p prob is not in [0, 3/4]
  */
-void applyTwoQubitDephaseError(Qureg qureg, const int qubit1, const int qubit2, qreal prob);
+void applyTwoQubitDephaseError(Qureg qureg, int qubit1, int qubit2, qreal prob);
 
 /** Mixes a density matrix \p qureg to induce single-qubit homogeneous depolarising noise.
  * With probability \p prob, applies (uniformly) either Pauli X, Y, or Z to \p targetQubit.
@@ -1590,7 +1590,7 @@ void applyOneQubitDampingError(Qureg qureg, const int targetQubit, qreal prob);
  *      or if \p qubit1 = \p qubit2,
  *      or if \p prob is not in [0, 15/16]
  */
-void applyTwoQubitDepolariseError(Qureg qureg, const int qubit1, const int qubit2, qreal prob);
+void applyTwoQubitDepolariseError(Qureg qureg, int qubit1, int qubit2, qreal prob);
 
 /** Mixes a density matrix \p qureg to induce general single-qubit Pauli noise.
  * With probabilities \p probX, \p probY and \p probZ, applies Pauli X, Y, and Z

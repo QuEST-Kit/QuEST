@@ -16,6 +16,7 @@
 # include <math.h>  
 # include <stdio.h>
 # include <stdlib.h>
+# include <stdint.h>
 # include <assert.h>
 
 # ifdef _OPENMP
@@ -719,21 +720,21 @@ void densmatr_twoQubitDepolariseQ1LocalQ2DistributedPart3(Qureg qureg, const int
 
 /* Without nested parallelisation, only the outer most loops which call below are parallelised */
 void zeroSomeAmps(Qureg qureg, long long int startInd, long long int numAmps) {
-    
+    long long int i;
 # ifdef _OPENMP
 # pragma omp parallel for schedule (static)
 # endif
-    for (long long int i=startInd; i < startInd+numAmps; i++) {
+    for (i=startInd; i < startInd+numAmps; i++) {
         qureg.stateVec.real[i] = 0;
         qureg.stateVec.imag[i] = 0;
     }
 }
 void normaliseSomeAmps(Qureg qureg, qreal norm, long long int startInd, long long int numAmps) {
-    
+    long long int i;
 # ifdef _OPENMP
 # pragma omp parallel for schedule (static)
 # endif
-    for (long long int i=startInd; i < startInd+numAmps; i++) {
+    for (i=startInd; i < startInd+numAmps; i++) {
         qureg.stateVec.real[i] /= norm;
         qureg.stateVec.imag[i] /= norm;
     }
@@ -746,21 +747,21 @@ void alternateNormZeroingSomeAmpBlocks(
     long long int blockStartInd;
     
     if (normFirst) {
-        
+        long long int dubBlockInd;
 # ifdef _OPENMP
 # pragma omp parallel for schedule (static) private (blockStartInd)
 # endif 
-        for (long long int dubBlockInd=0; dubBlockInd < numDubBlocks; dubBlockInd++) {
+        for (dubBlockInd=0; dubBlockInd < numDubBlocks; dubBlockInd++) {
             blockStartInd = startAmpInd + dubBlockInd*2*blockSize;
             normaliseSomeAmps(qureg, norm, blockStartInd,             blockSize); // |0><0|
             zeroSomeAmps(     qureg,       blockStartInd + blockSize, blockSize);
         }
     } else {
-        
+        long long int dubBlockInd;
 # ifdef _OPENMP
 # pragma omp parallel for schedule (static) private (blockStartInd)
 # endif 
-        for (long long int dubBlockInd=0; dubBlockInd < numDubBlocks; dubBlockInd++) {
+        for (dubBlockInd=0; dubBlockInd < numDubBlocks; dubBlockInd++) {
             blockStartInd = startAmpInd + dubBlockInd*2*blockSize;
             zeroSomeAmps(     qureg,       blockStartInd,             blockSize);
             normaliseSomeAmps(qureg, norm, blockStartInd + blockSize, blockSize); // |1><1|
@@ -965,16 +966,18 @@ qreal densmatr_calcFidelityLocal(Qureg qureg, Qureg pureState) {
     qreal* densIm = qureg.stateVec.imag;
     
     int row, col;
-    int dim = pureState.numAmpsTotal;
-    int colsPerNode = pureState.numAmpsPerChunk;
+    int dim = (int) pureState.numAmpsTotal; 
+    int colsPerNode = (int) pureState.numAmpsPerChunk;
+    // using only int, because density matrix has squared as many amps so its 
+    // iteration would be impossible if the pureStates numAmpsTotal didn't fit into int
+    
+    // starting GLOBAL column index of the qureg columns on this node
+    int startCol = (int) (qureg.chunkId * pureState.numAmpsPerChunk);
     
     qreal densElemRe, densElemIm;
     qreal prefacRe, prefacIm;
     qreal rowSumRe, rowSumIm;
     qreal vecElemRe, vecElemIm;
-    
-    // starting GLOBAL column index of the qureg columns on this node
-    int startCol = qureg.chunkId * pureState.numAmpsPerChunk;
     
     // quantity computed by this node
     qreal globalSumRe = 0;   // imag-component is assumed zero
@@ -1231,14 +1234,20 @@ void statevec_setAmps(Qureg qureg, long long int startInd, qreal* reals, qreal* 
 
 void statevec_createQureg(Qureg *qureg, int numQubits, QuESTEnv env)
 {
-    long long int numAmps = 1L << numQubits;
+    long long int numAmps = 1LL << numQubits;
     long long int numAmpsPerRank = numAmps/env.numRanks;
+    
+    if (numAmpsPerRank > SIZE_MAX) {
+        printf("Could not allocate memory (cannot fit numAmps into size_t)!");
+        exit (EXIT_FAILURE);
+    }
 
-    qureg->stateVec.real = malloc(numAmpsPerRank * sizeof(*(qureg->stateVec.real)));
-    qureg->stateVec.imag = malloc(numAmpsPerRank * sizeof(*(qureg->stateVec.imag)));
+    size_t arrSize = (size_t) (numAmpsPerRank * sizeof(*(qureg->stateVec.real)));
+    qureg->stateVec.real = malloc(arrSize);
+    qureg->stateVec.imag = malloc(arrSize);
     if (env.numRanks>1){
-        qureg->pairStateVec.real = malloc(numAmpsPerRank * sizeof(*(qureg->pairStateVec.real)));
-        qureg->pairStateVec.imag = malloc(numAmpsPerRank * sizeof(*(qureg->pairStateVec.imag)));
+        qureg->pairStateVec.real = malloc(arrSize);
+        qureg->pairStateVec.imag = malloc(arrSize);
     }
 
     if ( (!(qureg->stateVec.real) || !(qureg->stateVec.imag))
@@ -1562,7 +1571,7 @@ int statevec_initStateFromSingleFile(Qureg *qureg, char filename[200], QuESTEnv 
             indexInChunk = 0; totalIndex = 0;
             while (fgets(line, sizeof(char)*200, fp) != NULL && totalIndex<stateVecSize){
                 if (line[0]!='#'){
-                    int chunkId = totalIndex/chunkSize;
+                    int chunkId = (int) (totalIndex/chunkSize);
                     if (chunkId==qureg->chunkId){
                         # if QuEST_PREC==1
                         sscanf(line, "%f, %f", &(stateVecReal[indexInChunk]), 
@@ -1590,9 +1599,9 @@ int statevec_initStateFromSingleFile(Qureg *qureg, char filename[200], QuESTEnv 
 
 int statevec_compareStates(Qureg mq1, Qureg mq2, qreal precision){
     qreal diff;
-    int chunkSize = mq1.numAmpsPerChunk;
+    long long int chunkSize = mq1.numAmpsPerChunk;
     
-    for (int i=0; i<chunkSize; i++){
+    for (long long int i=0; i<chunkSize; i++){
         diff = absReal(mq1.stateVec.real[i] - mq2.stateVec.real[i]);
         if (diff>precision) return 0;
         diff = absReal(mq1.stateVec.imag[i] - mq2.stateVec.imag[i]);
@@ -1910,14 +1919,13 @@ void statevec_unitaryLocal(Qureg qureg, const int targetQubit, ComplexMatrix2 u)
  * and a subset of the state vector with upper and lower block values stored seperately.
  *                                                                       
  *  @param[in,out] qureg object representing the set of qubits
- *  @param[in] targetQubit qubit to rotate
  *  @param[in] rot1 rotation angle
  *  @param[in] rot2 rotation angle
  *  @param[in] stateVecUp probability amplitudes in upper half of a block
  *  @param[in] stateVecLo probability amplitudes in lower half of a block
  *  @param[out] stateVecOut array section to update (will correspond to either the lower or upper half of a block)
  */
-void statevec_compactUnitaryDistributed (Qureg qureg, const int targetQubit,
+void statevec_compactUnitaryDistributed (Qureg qureg,
         Complex rot1, Complex rot2,
         ComplexArray stateVecUp,
         ComplexArray stateVecLo,
@@ -1967,13 +1975,12 @@ void statevec_compactUnitaryDistributed (Qureg qureg, const int targetQubit,
  *  @remarks Qubits are zero-based and the first qubit is the rightmost                  
  *                                                                        
  *  @param[in,out] qureg object representing the set of qubits
- *  @param[in] targetQubit qubit to rotate
  *  @param[in] u unitary matrix to apply
  *  @param[in] stateVecUp probability amplitudes in upper half of a block
  *  @param[in] stateVecLo probability amplitudes in lower half of a block
  *  @param[out] stateVecOut array section to update (will correspond to either the lower or upper half of a block)
  */
-void statevec_unitaryDistributed (Qureg qureg, const int targetQubit,
+void statevec_unitaryDistributed (Qureg qureg,
         Complex rot1, Complex rot2,
         ComplexArray stateVecUp,
         ComplexArray stateVecLo,
@@ -2227,7 +2234,6 @@ void statevec_controlledUnitaryLocal(Qureg qureg, const int controlQubit, const 
  * stored seperately. Only perform the rotation where the control qubit is one.
  *                                               
  *  @param[in,out] qureg object representing the set of qubits
- *  @param[in] targetQubit qubit to rotate
  *  @param[in] controlQubit qubit to determine whether or not to perform a rotation 
  *  @param[in] rot1 rotation angle
  *  @param[in] rot2 rotation angle
@@ -2235,7 +2241,7 @@ void statevec_controlledUnitaryLocal(Qureg qureg, const int controlQubit, const 
  *  @param[in] stateVecLo probability amplitudes in lower half of a block
  *  @param[out] stateVecOut array section to update (will correspond to either the lower or upper half of a block)
  */
-void statevec_controlledCompactUnitaryDistributed (Qureg qureg, const int controlQubit, const int targetQubit,
+void statevec_controlledCompactUnitaryDistributed (Qureg qureg, const int controlQubit,
         Complex rot1, Complex rot2,
         ComplexArray stateVecUp,
         ComplexArray stateVecLo,
@@ -2290,7 +2296,6 @@ void statevec_controlledCompactUnitaryDistributed (Qureg qureg, const int contro
  *  stored seperately. Only perform the rotation where the control qubit is one.
  *                                                 
  *  @param[in,out] qureg object representing the set of qubits
- *  @param[in] targetQubit qubit to rotate
  *  @param[in] controlQubit qubit to determine whether or not to perform a rotation 
  *  @param[in] rot1 rotation angle
  *  @param[in] rot2 rotation angle
@@ -2298,7 +2303,7 @@ void statevec_controlledCompactUnitaryDistributed (Qureg qureg, const int contro
  *  @param[in] stateVecLo probability amplitudes in lower half of a block
  *  @param[out] stateVecOut array section to update (will correspond to either the lower or upper half of a block)
  */
-void statevec_controlledUnitaryDistributed (Qureg qureg, const int controlQubit, const int targetQubit,
+void statevec_controlledUnitaryDistributed (Qureg qureg, const int controlQubit,
         Complex rot1, Complex rot2,
         ComplexArray stateVecUp,
         ComplexArray stateVecLo,
@@ -2470,11 +2475,10 @@ void statevec_pauliXLocal(Qureg qureg, const int targetQubit)
  *  the first qubit is the rightmost                  
  *                                                                        
  *  @param[in,out] qureg object representing the set of qubits
- *  @param[in] targetQubit qubit to rotate
  *  @param[in] stateVecIn probability amplitudes in lower or upper half of a block depending on chunkId
  *  @param[out] stateVecOut array section to update (will correspond to either the lower or upper half of a block)
  */
-void statevec_pauliXDistributed (Qureg qureg, const int targetQubit,
+void statevec_pauliXDistributed (Qureg qureg,
         ComplexArray stateVecIn,
         ComplexArray stateVecOut)
 {
@@ -2561,11 +2565,10 @@ void statevec_controlledNotLocal(Qureg qureg, const int controlQubit, const int 
  *  for elements where controlQubit is one.
  *                                          
  *  @param[in,out] qureg object representing the set of qubits
- *  @param[in] targetQubit qubit to rotate
  *  @param[in] stateVecIn probability amplitudes in lower or upper half of a block depending on chunkId
  *  @param[out] stateVecOut array section to update (will correspond to either the lower or upper half of a block)
  */
-void statevec_controlledNotDistributed (Qureg qureg, const int controlQubit, const int targetQubit,
+void statevec_controlledNotDistributed (Qureg qureg, const int controlQubit,
         ComplexArray stateVecIn,
         ComplexArray stateVecOut)
 {
@@ -2653,12 +2656,11 @@ void statevec_pauliYLocal(Qureg qureg, const int targetQubit, const int conjFac)
  *  the first qubit is the rightmost                  
  *                                                                        
  *  @param[in,out] qureg object representing the set of qubits
- *  @param[in] targetQubit qubit to rotate
  *  @param[in] stateVecIn probability amplitudes in lower or upper half of a block depending on chunkId
  *  @param[in] updateUpper flag, 1: updating upper values, 0: updating lower values in block
  *  @param[out] stateVecOut array section to update (will correspond to either the lower or upper half of a block)
  */
-void statevec_pauliYDistributed(Qureg qureg, const int targetQubit,
+void statevec_pauliYDistributed(Qureg qureg,
         ComplexArray stateVecIn,
         ComplexArray stateVecOut, 
         int updateUpper, const int conjFac)
@@ -2747,7 +2749,7 @@ void statevec_controlledPauliYLocal(Qureg qureg, const int controlQubit, const i
 }
 
 
-void statevec_controlledPauliYDistributed (Qureg qureg, const int controlQubit, const int targetQubit,
+void statevec_controlledPauliYDistributed (Qureg qureg, const int controlQubit,
         ComplexArray stateVecIn,
         ComplexArray stateVecOut, const int conjFac)
 {
@@ -2844,12 +2846,11 @@ void statevec_hadamardLocal(Qureg qureg, const int targetQubit)
  *  stateVecIn must already be the correct section for this chunk
  *                                          
  *  @param[in,out] qureg object representing the set of qubits
- *  @param[in] targetQubit qubit to rotate
  *  @param[in] stateVecIn probability amplitudes in lower or upper half of a block depending on chunkId
  *  @param[in] updateUpper flag, 1: updating upper values, 0: updating lower values in block
  *  @param[out] stateVecOut array section to update (will correspond to either the lower or upper half of a block)
  */
-void statevec_hadamardDistributed(Qureg qureg, const int targetQubit,
+void statevec_hadamardDistributed(Qureg qureg,
         ComplexArray stateVecUp,
         ComplexArray stateVecLo,
         ComplexArray stateVecOut,
@@ -3175,12 +3176,9 @@ qreal statevec_findProbabilityOfZeroLocal (Qureg qureg,
  * The results are communicated and aggregated by the caller
  *  
  *  @param[in] qureg object representing the set of qubits
- *  @param[in] measureQubit qubit to measure
  *  @return probability of qubit measureQubit being zero
  */
-qreal statevec_findProbabilityOfZeroDistributed (Qureg qureg,
-        const int measureQubit)
-{
+qreal statevec_findProbabilityOfZeroDistributed (Qureg qureg) {
     // ----- measured probability
     qreal   totalProbability;                                  // probability (returned) value
     // ----- temp variables

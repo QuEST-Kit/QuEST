@@ -287,7 +287,7 @@ void statevec_collapseToKnownProbOutcome(Qureg qureg, const int measureQubit, in
     statevec_collapseToKnownProbOutcomeLocal(qureg, measureQubit, outcome, stateProb);
 }
 
-void seedQuESTDefault(){
+void seedQuESTDefault(void){
     // init MT random number generator with three keys -- time and pid
     // for the MPI version, it is ok that all procs will get the same seed as random numbers will only be 
     // used by the master process

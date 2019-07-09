@@ -849,12 +849,12 @@ void statevec_compactUnitary(Qureg qureg, const int targetQubit, Complex alpha, 
         // this rank's values are either in the upper of lower half of the block. 
         // send values to compactUnitaryDistributed in the correct order
         if (rankIsUpper){
-            statevec_compactUnitaryDistributed(qureg,targetQubit,rot1,rot2,
+            statevec_compactUnitaryDistributed(qureg,rot1,rot2,
                     qureg.stateVec, //upper
                     qureg.pairStateVec, //lower
                     qureg.stateVec); //output
         } else {
-            statevec_compactUnitaryDistributed(qureg,targetQubit,rot1,rot2,
+            statevec_compactUnitaryDistributed(qureg,rot1,rot2,
                     qureg.pairStateVec, //upper
                     qureg.stateVec, //lower
                     qureg.stateVec); //output
@@ -886,12 +886,12 @@ void statevec_unitary(Qureg qureg, const int targetQubit, ComplexMatrix2 u)
         // this rank's values are either in the upper of lower half of the block. 
         // send values to compactUnitaryDistributed in the correct order
         if (rankIsUpper){
-            statevec_unitaryDistributed(qureg,targetQubit,rot1,rot2,
+            statevec_unitaryDistributed(qureg,rot1,rot2,
                     qureg.stateVec, //upper
                     qureg.pairStateVec, //lower
                     qureg.stateVec); //output
         } else {
-            statevec_unitaryDistributed(qureg,targetQubit,rot1,rot2,
+            statevec_unitaryDistributed(qureg,rot1,rot2,
                     qureg.pairStateVec, //upper
                     qureg.stateVec, //lower
                     qureg.stateVec); //output
@@ -926,12 +926,12 @@ void statevec_controlledCompactUnitary(Qureg qureg, const int controlQubit, cons
         // this rank's values are either in the upper of lower half of the block. send values to controlledCompactUnitaryDistributed
         // in the correct order
         if (rankIsUpper){
-            statevec_controlledCompactUnitaryDistributed(qureg,controlQubit,targetQubit,rot1,rot2,
+            statevec_controlledCompactUnitaryDistributed(qureg,controlQubit,rot1,rot2,
                     qureg.stateVec, //upper
                     qureg.pairStateVec, //lower
                     qureg.stateVec); //output
         } else {
-            statevec_controlledCompactUnitaryDistributed(qureg,controlQubit,targetQubit,rot1,rot2,
+            statevec_controlledCompactUnitaryDistributed(qureg,controlQubit,rot1,rot2,
                     qureg.pairStateVec, //upper
                     qureg.stateVec, //lower
                     qureg.stateVec); //output
@@ -965,12 +965,12 @@ void statevec_controlledUnitary(Qureg qureg, const int controlQubit, const int t
         // this rank's values are either in the upper of lower half of the block. send values to controlledUnitaryDistributed
         // in the correct order
         if (rankIsUpper){
-            statevec_controlledUnitaryDistributed(qureg,controlQubit,targetQubit,rot1,rot2,
+            statevec_controlledUnitaryDistributed(qureg,controlQubit,rot1,rot2,
                     qureg.stateVec, //upper
                     qureg.pairStateVec, //lower
                     qureg.stateVec); //output
         } else {
-            statevec_controlledUnitaryDistributed(qureg,controlQubit,targetQubit,rot1,rot2,
+            statevec_controlledUnitaryDistributed(qureg,controlQubit,rot1,rot2,
                     qureg.pairStateVec, //upper
                     qureg.stateVec, //lower
                     qureg.stateVec); //output
@@ -1036,7 +1036,7 @@ void statevec_pauliX(Qureg qureg, const int targetQubit)
         exchangeStateVectors(qureg, pairRank);
         // this rank's values are either in the upper of lower half of the block. pauliX just replaces
         // this rank's values with pair values
-        statevec_pauliXDistributed(qureg, targetQubit,
+        statevec_pauliXDistributed(qureg,
                 qureg.pairStateVec, // in
                 qureg.stateVec); // out
     }
@@ -1060,11 +1060,11 @@ void statevec_controlledNot(Qureg qureg, const int controlQubit, const int targe
         exchangeStateVectors(qureg, pairRank);
         // this rank's values are either in the upper of lower half of the block
         if (rankIsUpper){
-            statevec_controlledNotDistributed(qureg,controlQubit,targetQubit,
+            statevec_controlledNotDistributed(qureg,controlQubit,
                     qureg.pairStateVec, //in
                     qureg.stateVec); //out
         } else {
-            statevec_controlledNotDistributed(qureg,controlQubit,targetQubit,
+            statevec_controlledNotDistributed(qureg,controlQubit,
                     qureg.pairStateVec, //in
                     qureg.stateVec); //out
         }
@@ -1089,7 +1089,7 @@ void statevec_pauliY(Qureg qureg, const int targetQubit)
         // get corresponding values from my pair
         exchangeStateVectors(qureg, pairRank);
         // this rank's values are either in the upper of lower half of the block
-        statevec_pauliYDistributed(qureg,targetQubit,
+        statevec_pauliYDistributed(qureg,
                 qureg.pairStateVec, // in
                 qureg.stateVec, // out
                 rankIsUpper, conjFac);
@@ -1114,7 +1114,7 @@ void statevec_pauliYConj(Qureg qureg, const int targetQubit)
         // get corresponding values from my pair
         exchangeStateVectors(qureg, pairRank);
         // this rank's values are either in the upper of lower half of the block
-        statevec_pauliYDistributed(qureg,targetQubit,
+        statevec_pauliYDistributed(qureg,
                 qureg.pairStateVec, // in
                 qureg.stateVec, // out
                 rankIsUpper, conjFac);
@@ -1141,12 +1141,12 @@ void statevec_controlledPauliY(Qureg qureg, const int controlQubit, const int ta
         exchangeStateVectors(qureg, pairRank);
         // this rank's values are either in the upper of lower half of the block
         if (rankIsUpper){
-            statevec_controlledPauliYDistributed(qureg,controlQubit,targetQubit,
+            statevec_controlledPauliYDistributed(qureg,controlQubit,
                     qureg.pairStateVec, //in
                     qureg.stateVec,
 					conjFac); //out
         } else {
-            statevec_controlledPauliYDistributed(qureg,controlQubit,targetQubit,
+            statevec_controlledPauliYDistributed(qureg,controlQubit,
                     qureg.pairStateVec, //in
                     qureg.stateVec,
 					-conjFac); //out
@@ -1174,12 +1174,12 @@ void statevec_controlledPauliYConj(Qureg qureg, const int controlQubit, const in
         exchangeStateVectors(qureg, pairRank);
         // this rank's values are either in the upper of lower half of the block
         if (rankIsUpper){
-            statevec_controlledPauliYDistributed(qureg,controlQubit,targetQubit,
+            statevec_controlledPauliYDistributed(qureg,controlQubit,
                     qureg.pairStateVec, //in
                     qureg.stateVec,
 					conjFac); //out
         } else {
-            statevec_controlledPauliYDistributed(qureg,controlQubit,targetQubit,
+            statevec_controlledPauliYDistributed(qureg,controlQubit,
                     qureg.pairStateVec, //in
                     qureg.stateVec,
 					-conjFac); //out
@@ -1209,12 +1209,12 @@ void statevec_hadamard(Qureg qureg, const int targetQubit)
         // this rank's values are either in the upper of lower half of the block. send values to hadamardDistributed
         // in the correct order
         if (rankIsUpper){
-            statevec_hadamardDistributed(qureg,targetQubit,
+            statevec_hadamardDistributed(qureg,
                     qureg.stateVec, //upper
                     qureg.pairStateVec, //lower
                     qureg.stateVec, rankIsUpper); //output
         } else {
-            statevec_hadamardDistributed(qureg,targetQubit,
+            statevec_hadamardDistributed(qureg,
                     qureg.pairStateVec, //upper
                     qureg.stateVec, //lower
                     qureg.stateVec, rankIsUpper); //output
@@ -1250,7 +1250,7 @@ qreal statevec_calcProbOfOutcome(Qureg qureg, const int measureQubit, int outcom
         stateProb = statevec_findProbabilityOfZeroLocal(qureg, measureQubit);
     } else {
         if (!isChunkToSkipInFindPZero(qureg.chunkId, qureg.numAmpsPerChunk, measureQubit)){
-            stateProb = statevec_findProbabilityOfZeroDistributed(qureg, measureQubit);
+            stateProb = statevec_findProbabilityOfZeroDistributed(qureg);
         } else stateProb = 0;
     }
     MPI_Allreduce(&stateProb, &totalStateProb, 1, MPI_QuEST_REAL, MPI_SUM, MPI_COMM_WORLD);
