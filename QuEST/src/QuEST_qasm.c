@@ -47,7 +47,7 @@ static const char* qasmGateLabels[] = {
 };
 
 // @TODO make a proper internal error thing
-void bufferOverflow() {
+void bufferOverflow(void) {
     printf("!!!\nINTERNAL ERROR: QASM line buffer filled!\n!!!");
     exit(1);
 }

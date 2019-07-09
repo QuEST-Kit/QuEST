@@ -200,7 +200,7 @@ int getNumQubits(Qureg qureg);
 
 /** Get the number of probability amplitudes in a qureg object, given by 2^numQubits
  */
-int getNumAmps(Qureg qureg);
+long long int getNumAmps(Qureg qureg);
 
 /**
  * Initialise a set of \f$ N \f$ qubits to the classical zero state 
@@ -1428,7 +1428,7 @@ void applyOneQubitDephaseError(Qureg qureg, const int targetQubit, qreal prob);
  *      or if \p qubit1 = \p qubit2,
  *      or if \p prob is not in [0, 3/4]
  */
-void applyTwoQubitDephaseError(Qureg qureg, const int qubit1, const int qubit2, qreal prob);
+void applyTwoQubitDephaseError(Qureg qureg, int qubit1, int qubit2, qreal prob);
 
 /** Mixes a density matrix \p qureg to induce single-qubit homogeneous depolarising noise.
  * With probability \p prob, applies (uniformly) either Pauli X, Y, or Z to \p targetQubit.
@@ -1523,7 +1523,7 @@ void applyOneQubitDampingError(Qureg qureg, const int targetQubit, qreal prob);
  *      or if \p qubit1 = \p qubit2,
  *      or if \p prob is not in [0, 15/16]
  */
-void applyTwoQubitDepolariseError(Qureg qureg, const int qubit1, const int qubit2, qreal prob);
+void applyTwoQubitDepolariseError(Qureg qureg, int qubit1, int qubit2, qreal prob);
 
 /** Modifies combineQureg to become (1-prob)combineProb + prob otherQureg.
  * Both registers must be equal-dimension density matrices, and prob must be in [0, 1].

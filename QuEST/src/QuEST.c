@@ -489,7 +489,7 @@ int getNumQubits(Qureg qureg) {
     return qureg.numQubitsRepresented;
 }
 
-int getNumAmps(Qureg qureg) {
+long long int getNumAmps(Qureg qureg) {
     validateStateVecQureg(qureg, __func__);
     
     return qureg.numAmpsTotal;
@@ -714,7 +714,7 @@ void initStateOfSingleQubit(Qureg *qureg, int qubitId, int outcome) {
     validateStateVecQureg(*qureg, __func__);
     validateTarget(*qureg, qubitId, __func__);
     validateOutcome(outcome, __func__);
-    return statevec_initStateOfSingleQubit(qureg, qubitId, outcome);
+    statevec_initStateOfSingleQubit(qureg, qubitId, outcome);
 }
 
 void reportStateToScreen(Qureg qureg, QuESTEnv env, int reportRank)  {

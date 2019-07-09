@@ -119,11 +119,8 @@ int generateMeasurementOutcome(qreal zeroProb, qreal *outcomeProb) {
         outcome = (genrand_real1() > zeroProb);
     
     // set probability of outcome
-    if (outcome == 0)
-        *outcomeProb = zeroProb;
-    else
-        *outcomeProb = 1 - zeroProb;
-    
+    *outcomeProb = (outcome==0)? zeroProb : 1-zeroProb;
+
     return outcome;
 }
 
@@ -196,7 +193,7 @@ void reportState(Qureg qureg){
 }
 
 void reportQuregParams(Qureg qureg){
-    long long int numAmps = 1L << qureg.numQubitsInStateVec;
+    long long int numAmps = 1LL << qureg.numQubitsInStateVec;
     long long int numAmpsPerRank = numAmps/qureg.numChunks;
     if (qureg.chunkId==0){
         printf("QUBITS:\n");
