@@ -50,9 +50,15 @@ void densmatr_twoQubitDepolarise(Qureg qureg, int qubit1, int qubit2, qreal depo
     densmatr_twoQubitDepolariseLocal(qureg, qubit1, qubit2, delta, gamma);
 }
 
-
 qreal densmatr_calcPurity(Qureg qureg) {
     return densmatr_calcPurityLocal(qureg);
+}
+
+qreal densmatr_calcHilbertSchmidtDistance(Qureg a, Qureg b) {
+    
+    qreal distSquared = densmatr_calcHilbertSchmidtDistanceSquaredLocal(a, b);
+    qreal dist = sqrt(distSquared);
+    return dist;
 }
 
 qreal densmatr_calcFidelity(Qureg qureg, Qureg pureState) {
@@ -216,13 +222,9 @@ void statevec_controlledUnitary(Qureg qureg, const int controlQubit, const int t
     statevec_controlledUnitaryLocal(qureg, controlQubit, targetQubit, u);
 }
 
-void statevec_multiControlledUnitary(Qureg qureg, int* controlQubits, const int numControlQubits, const int targetQubit, ComplexMatrix2 u) 
+void statevec_multiControlledUnitary(Qureg qureg, long long int ctrlQubitsMask, long long int ctrlFlipMask, const int targetQubit, ComplexMatrix2 u) 
 {
-    long long int mask=0; 
-    for (int i=0; i<numControlQubits; i++)
-        mask = mask | (1LL<<controlQubits[i]);
-
-    statevec_multiControlledUnitaryLocal(qureg, targetQubit, mask, u);
+    statevec_multiControlledUnitaryLocal(qureg, targetQubit, ctrlQubitsMask, ctrlFlipMask, u);
 }
 
 void statevec_pauliX(Qureg qureg, const int targetQubit) 
@@ -293,4 +295,19 @@ void seedQuESTDefault(void){
     unsigned long int key[2];
     getQuESTDefaultSeedKey(key);
     init_by_array(key, 2);
+}
+
+void statevec_multiControlledTwoQubitUnitary(Qureg qureg, long long int ctrlMask, const int q1, const int q2, ComplexMatrix4 u)
+{
+    statevec_multiControlledTwoQubitUnitaryLocal(qureg, ctrlMask, q1, q2, u);
+}
+
+void statevec_multiControlledMultiQubitUnitary(Qureg qureg, long long int ctrlMask, int* targs, const int numTargs, ComplexMatrixN u)
+{
+    statevec_multiControlledMultiQubitUnitaryLocal(qureg, ctrlMask, targs, numTargs, u);
+}
+
+void statevec_swapQubitAmps(Qureg qureg, int qb1, int qb2) 
+{
+    statevec_swapQubitAmpsLocal(qureg, qb1, qb2);
 }
