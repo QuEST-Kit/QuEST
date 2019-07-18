@@ -17,7 +17,7 @@
 # include "QuEST_validation.h"
 # include "mt19937ar.h"
 
-#ifdef _WIN32
+#if defined(_WIN32) && ! defined(__MINGW32__)
   #include <Windows.h>
   #include <io.h>
   #include <process.h>
@@ -180,7 +180,7 @@ void getQuESTDefaultSeedKey(unsigned long int *key){
     // init MT random number generator with two keys -- time and pid
     // for the MPI version, it is ok that all procs will get the same seed as random numbers will only be 
     // used by the master process
-#ifdef _WIN32
+#if defined(_WIN32) && ! defined(__MINGW32__)
   
     unsigned long int pid = (unsigned long int) _getpid();
     unsigned long int msecs = (unsigned long int) GetTickCount64();
