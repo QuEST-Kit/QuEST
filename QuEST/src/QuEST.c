@@ -62,7 +62,7 @@ Qureg createCloneQureg(Qureg qureg, QuESTEnv env) {
     newQureg.numQubitsRepresented = qureg.numQubitsRepresented;
     newQureg.numQubitsInStateVec = qureg.numQubitsInStateVec;
     
-    qasm_setup(&qureg);
+    qasm_setup(&newQureg);
     statevec_cloneQureg(newQureg, qureg);
     return newQureg;
 }
