@@ -412,8 +412,8 @@ void statevec_multiRotatePauli(
     qreal fac = 1/sqrt(2);
     Complex uRxAlpha = {.real = fac, .imag = 0}; // Rx(pi/2)* rotates Z -> Y
     Complex uRxBeta = {.real = 0, .imag = (applyConj)? fac : -fac};
-    Complex uRyAlpha = {.real = fac, .imag = 0}; // Ry(pi/2) rotates Z -> X
-    Complex uRyBeta = {.real = fac, .imag = 0};
+    Complex uRyAlpha = {.real = fac, .imag = 0}; // Ry(-pi/2) rotates Z -> X
+    Complex uRyBeta = {.real = -fac, .imag = 0};
     
     // mask may be modified to remove superfluous Identity ops
     long long int mask = getQubitBitMask(targetQubits, numTargets);
