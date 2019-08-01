@@ -1178,13 +1178,13 @@ void densmatr_initPureStateLocal(Qureg targetQureg, Qureg copyQureg) {
                 // get pure state amps
                 ketRe = vecRe[row];
                 ketIm = vecIm[row];
-                braRe = vecRe[col + colOffset];
-                braIm = vecIm[col + colOffset];
+                braRe =   vecRe[col + colOffset];
+                braIm = - vecIm[col + colOffset]; // minus for conjugation
             
                 // update density matrix
                 index = row + col*rowsPerNode; // local ind
                 densRe[index] = ketRe*braRe - ketIm*braIm;
-                densIm[index] = ketRe*braIm - ketIm*braRe;
+                densIm[index] = ketRe*braIm + ketIm*braRe;
             }
         }
     }
