@@ -7,9 +7,8 @@
 
 # This makefile builds the QuEST library and links/compiles user code
 # While attempting to accomodate as many platforms and compilers,
-# unforeseen problems are inevitable: please email anna.brown@oerc.ox.ac.uk
-# or tyson.jones@materials.ox.ac.uk about any errors or complications, or 
-# raise an issue on Github
+# unforeseen problems are inevitable: please email quest@materials.ox.ac.uk
+# about any errors or complications, or raise an issue on Github
 
 #======================================================================#
 #                                                                      #
