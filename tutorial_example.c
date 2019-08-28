@@ -39,11 +39,11 @@ int main (int narg, char *varg[]) {
 
     multiControlledPhaseFlip(qubits, (int []){0, 1, 2}, 3);
 
-    ComplexMatrix2 u;
-    u.r0c0 = (Complex) {.real=.5, .imag= .5};
-    u.r0c1 = (Complex) {.real=.5, .imag=-.5}; 
-    u.r1c0 = (Complex) {.real=.5, .imag=-.5};
-    u.r1c1 = (Complex) {.real=.5, .imag= .5};
+
+    ComplexMatrix2 u = {
+        .real={{.5,.5},{.5,.5}},
+        .imag={{.5,-.5},{-.5,.5}}
+    };
     unitary(qubits, 0, u);
 
     Complex a, b;

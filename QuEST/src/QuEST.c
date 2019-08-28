@@ -346,7 +346,8 @@ void unitary(Qureg qureg, const int targetQubit, ComplexMatrix2 u) {
     
     statevec_unitary(qureg, targetQubit, u);
     if (qureg.isDensityMatrix) {
-        statevec_unitary(qureg, targetQubit+qureg.numQubitsRepresented, getConjugateMatrix2(u));
+        ComplexMatrix2 uConj; setConjugateMatrix2(&uConj, u);
+        statevec_unitary(qureg, targetQubit+qureg.numQubitsRepresented, uConj);
     }
     
     qasm_recordUnitary(qureg, u, targetQubit);
@@ -359,7 +360,8 @@ void controlledUnitary(Qureg qureg, const int controlQubit, const int targetQubi
     statevec_controlledUnitary(qureg, controlQubit, targetQubit, u);
     if (qureg.isDensityMatrix) {
         int shift = qureg.numQubitsRepresented;
-        statevec_controlledUnitary(qureg, controlQubit+shift, targetQubit+shift, getConjugateMatrix2(u));
+        ComplexMatrix2 uConj; setConjugateMatrix2(&uConj, u);
+        statevec_controlledUnitary(qureg, controlQubit+shift, targetQubit+shift, uConj);
     }
     
     qasm_recordControlledUnitary(qureg, u, controlQubit, targetQubit);
@@ -374,7 +376,8 @@ void multiControlledUnitary(Qureg qureg, int* controlQubits, const int numContro
     statevec_multiControlledUnitary(qureg, ctrlQubitsMask, ctrlFlipMask, targetQubit, u);
     if (qureg.isDensityMatrix) {
         int shift = qureg.numQubitsRepresented;
-        statevec_multiControlledUnitary(qureg, ctrlQubitsMask<<shift, ctrlFlipMask<<shift, targetQubit+shift, getConjugateMatrix2(u));
+        ComplexMatrix2 uConj; setConjugateMatrix2(&uConj, u);
+        statevec_multiControlledUnitary(qureg, ctrlQubitsMask<<shift, ctrlFlipMask<<shift, targetQubit+shift, uConj);
     }
     
     qasm_recordMultiControlledUnitary(qureg, u, controlQubits, numControlQubits, targetQubit);
@@ -389,7 +392,8 @@ void multiStateControlledUnitary(Qureg qureg, int* controlQubits, int* controlSt
     long long int ctrlFlipMask = getControlFlipMask(controlQubits, controlState, numControlQubits);
     if (qureg.isDensityMatrix) {
         int shift = qureg.numQubitsRepresented;
-        statevec_multiControlledUnitary(qureg, ctrlQubitsMask<<shift, ctrlFlipMask<<shift, targetQubit+shift, getConjugateMatrix2(u));
+        ComplexMatrix2 uConj; setConjugateMatrix2(&uConj, u);
+        statevec_multiControlledUnitary(qureg, ctrlQubitsMask<<shift, ctrlFlipMask<<shift, targetQubit+shift, uConj);
     }
     
     qasm_recordMultiStateControlledUnitary(qureg, u, controlQubits, controlState, numControlQubits, targetQubit);

@@ -17,6 +17,27 @@
 # define DEBUG 0
 
 
+
+/*
+ * struct types for concisely passing unitaries to kernels
+ */
+ 
+ typedef struct ArgMatrix2 {
+     Complex r0c0, r0c1;
+     Complex r1c0, r1c1;
+ } ArgMatrix2;
+ 
+ArgMatrix2 argifyMatrix2(ComplexMatrix2 m) {    
+    ArgMatrix2 a;
+    a.r0c0.real=m.real[0][0]; a.r0c0.imag=m.imag[0][0];
+    a.r0c1.real=m.real[0][1]; a.r0c1.imag=m.imag[0][1];
+    a.r1c0.real=m.real[1][0]; a.r1c0.imag=m.imag[1][0];
+    a.r1c1.real=m.real[1][1]; a.r1c1.imag=m.imag[1][1];
+    return a;
+ }
+
+
+
 /*
  * in-kernel bit twiddling functions
  */
@@ -73,6 +94,7 @@ __forceinline__ __device__ long long int insertZeroBits(long long int number, in
      }
      return number;
 }
+
 
 
 /*
@@ -732,7 +754,7 @@ void statevec_controlledCompactUnitary(Qureg qureg, const int controlQubit, cons
     statevec_controlledCompactUnitaryKernel<<<CUDABlocks, threadsPerCUDABlock>>>(qureg, controlQubit, targetQubit, alpha, beta);
 }
 
-__global__ void statevec_unitaryKernel(Qureg qureg, const int targetQubit, ComplexMatrix2 u){
+__global__ void statevec_unitaryKernel(Qureg qureg, const int targetQubit, ArgMatrix2 u){
     // ----- sizes
     long long int sizeBlock,                                           // size of blocks
          sizeHalfBlock;                                       // size of blocks halved
@@ -790,7 +812,7 @@ void statevec_unitary(Qureg qureg, const int targetQubit, ComplexMatrix2 u)
     int threadsPerCUDABlock, CUDABlocks;
     threadsPerCUDABlock = 128;
     CUDABlocks = ceil((qreal)(qureg.numAmpsPerChunk>>1)/threadsPerCUDABlock);
-    statevec_unitaryKernel<<<CUDABlocks, threadsPerCUDABlock>>>(qureg, targetQubit, u);
+    statevec_unitaryKernel<<<CUDABlocks, threadsPerCUDABlock>>>(qureg, targetQubit, argifyMatrix2(u));
 }
 
 __global__ void statevec_multiControlledMultiQubitUnitaryKernel(
@@ -981,7 +1003,7 @@ void statevec_multiControlledTwoQubitUnitary(Qureg qureg, long long int ctrlMask
     statevec_multiControlledTwoQubitUnitaryKernel<<<CUDABlocks, threadsPerCUDABlock>>>(qureg, ctrlMask, q1, q2, u);
 }
 
-__global__ void statevec_controlledUnitaryKernel(Qureg qureg, const int controlQubit, const int targetQubit, ComplexMatrix2 u){
+__global__ void statevec_controlledUnitaryKernel(Qureg qureg, const int controlQubit, const int targetQubit, ArgMatrix2 u){
     // ----- sizes
     long long int sizeBlock,                                           // size of blocks
          sizeHalfBlock;                                       // size of blocks halved
@@ -1044,13 +1066,13 @@ void statevec_controlledUnitary(Qureg qureg, const int controlQubit, const int t
     int threadsPerCUDABlock, CUDABlocks;
     threadsPerCUDABlock = 128;
     CUDABlocks = ceil((qreal)(qureg.numAmpsPerChunk>>1)/threadsPerCUDABlock);
-    statevec_controlledUnitaryKernel<<<CUDABlocks, threadsPerCUDABlock>>>(qureg, controlQubit, targetQubit, u);
+    statevec_controlledUnitaryKernel<<<CUDABlocks, threadsPerCUDABlock>>>(qureg, controlQubit, targetQubit, argifyMatrix2(u));
 }
 
 __global__ void statevec_multiControlledUnitaryKernel(
     Qureg qureg, 
     long long int ctrlQubitsMask, long long int ctrlFlipMask, 
-    const int targetQubit, ComplexMatrix2 u
+    const int targetQubit, ArgMatrix2 u
 ){
     // ----- sizes
     long long int sizeBlock,                                           // size of blocks
@@ -1115,7 +1137,7 @@ void statevec_multiControlledUnitary(
     int threadsPerCUDABlock = 128;
     int CUDABlocks = ceil((qreal)(qureg.numAmpsPerChunk>>1)/threadsPerCUDABlock);
     statevec_multiControlledUnitaryKernel<<<CUDABlocks, threadsPerCUDABlock>>>(
-        qureg, ctrlQubitsMask, ctrlFlipMask, targetQubit, u);
+        qureg, ctrlQubitsMask, ctrlFlipMask, targetQubit, argifyMatrix2(u));
 }
 
 __global__ void statevec_pauliXKernel(Qureg qureg, const int targetQubit){

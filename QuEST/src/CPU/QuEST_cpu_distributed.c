@@ -276,11 +276,11 @@ static void getRotAngle(int chunkIsUpper, Complex *rot1, Complex *rot2, Complex 
 static void getRotAngleFromUnitaryMatrix(int chunkIsUpper, Complex *rot1, Complex *rot2, ComplexMatrix2 u)
 {
     if (chunkIsUpper){
-        *rot1=u.r0c0;
-        *rot2=u.r0c1;
+        *rot1=(Complex) {.real=u.real[0][0], .imag=u.imag[0][0]};
+        *rot2=(Complex) {.real=u.real[0][1], .imag=u.imag[0][1]};
     } else {
-        *rot1=u.r1c0;
-        *rot2=u.r1c1;
+        *rot1=(Complex) {.real=u.real[1][0], .imag=u.imag[1][0]};
+        *rot2=(Complex) {.real=u.real[1][1], .imag=u.imag[1][1]};
     }
 }
 

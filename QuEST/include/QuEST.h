@@ -67,8 +67,8 @@ typedef struct Complex
  */
 typedef struct ComplexMatrix2
 {
-    Complex r0c0, r0c1;
-    Complex r1c0, r1c1;
+    qreal real[2][2];
+    qreal imag[2][2];
 } ComplexMatrix2;
 
 /** Represents a 4x4 matrix of complex numbers

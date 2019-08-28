@@ -132,25 +132,26 @@ int isComplexPairUnitary(Complex alpha, Complex beta) {
 }
 
 int isMatrix2Unitary(ComplexMatrix2 u) {
-    if ( absReal( u.r0c0.real*u.r0c0.real 
-                + u.r0c0.imag*u.r0c0.imag
-                + u.r1c0.real*u.r1c0.real
-                + u.r1c0.imag*u.r1c0.imag - 1) > REAL_EPS ) return 0;
-    if ( absReal( u.r0c1.real*u.r0c1.real 
-                + u.r0c1.imag*u.r0c1.imag
-                + u.r1c1.real*u.r1c1.real
-                + u.r1c1.imag*u.r1c1.imag - 1) > REAL_EPS ) return 0;
-    if ( absReal( u.r0c0.real*u.r0c1.real 
-                + u.r0c0.imag*u.r0c1.imag
-                + u.r1c0.real*u.r1c1.real
-                + u.r1c0.imag*u.r1c1.imag) > REAL_EPS ) return 0;
-    if ( absReal( u.r0c1.real*u.r0c0.imag
-                - u.r0c0.real*u.r0c1.imag
-                + u.r1c1.real*u.r1c0.imag
-                - u.r1c0.real*u.r1c1.imag) > REAL_EPS ) return 0;
+    if ( absReal( u.real[0][0]*u.real[0][0] 
+                + u.imag[0][0]*u.imag[0][0]
+                + u.real[1][0]*u.real[1][0]
+                + u.imag[1][0]*u.imag[1][0] - 1) > REAL_EPS ) return 0;
+    if ( absReal( u.real[0][1]*u.real[0][1] 
+                + u.imag[0][1]*u.imag[0][1]
+                + u.real[1][1]*u.real[1][1]
+                + u.imag[1][1]*u.imag[1][1] - 1) > REAL_EPS ) return 0;
+    if ( absReal( u.real[0][0]*u.real[0][1] 
+                + u.imag[0][0]*u.imag[0][1]
+                + u.real[1][0]*u.real[1][1]
+                + u.imag[1][0]*u.imag[1][1]) > REAL_EPS ) return 0;
+    if ( absReal( u.real[0][1]*u.imag[0][0]
+                - u.real[0][0]*u.imag[0][1]
+                + u.real[1][1]*u.imag[1][0]
+                - u.real[1][0]*u.imag[1][1]) > REAL_EPS ) return 0;
     return 1;
 }
 
+// @ TO BE DEPRECATED
 Complex getMatrixProductElement(Complex* row, Complex* col, int dim) {
     Complex elem = {.real = 0, .imag = 0};
     for (int i=0; i < dim; i++) {
@@ -160,19 +161,37 @@ Complex getMatrixProductElement(Complex* row, Complex* col, int dim) {
     return elem;
 }
 
-ComplexMatrix2 getMatrix2Product(ComplexMatrix2 a, ComplexMatrix2 b) {
-    ComplexMatrix2 prod;
-    Complex r0[2] = {a.r0c0,a.r0c1};
-    Complex r1[2] = {a.r1c0,a.r1c1};
-    Complex c0[2] = {b.r0c0,b.r1c0};
-    Complex c1[2] = {b.r0c1,b.r1c1};
+/** sets dest to a b. dest must not be either a or b, but a can be b */
+void setProductMatrix2(ComplexMatrix2* dest, ComplexMatrix2 a, ComplexMatrix2 b) {
+    for (int i=0; i<2; i++) {
+        for (int j=0; j<2; j++) {
+            (dest->real)[i][j] = 0;
+            (dest->imag)[i][j] = 0;
+            for (int n=0; n<2; n++) {
+                (dest->real)[i][j] += a.real[i][n]*b.real[n][j] - a.imag[i][n]*b.imag[n][j];
+                (dest->imag)[i][j] += a.real[i][n]*b.imag[n][j] + a.imag[i][n]*b.real[n][j];
+            }
+        }
+    }
+}
+
+void transposeMatrix2(ComplexMatrix2 m) {
+    qreal bRe = m.real[0][1];
+    qreal bIm = m.imag[0][1];
     
-    prod.r0c0 = getMatrixProductElement(r0,c0,2);
-    prod.r0c1 = getMatrixProductElement(r0,c1,2);
-    prod.r1c0 = getMatrixProductElement(r1,c0,2);
-    prod.r1c1 = getMatrixProductElement(r1,c1,2);
-    
-    return prod;
+    m.real[0][1] = m.real[1][0];
+    m.imag[0][1] = m.imag[1][0];
+    m.real[1][0] = bRe;
+    m.imag[1][0] = bIm;
+}
+
+void addMatrix2(ComplexMatrix2 dest, ComplexMatrix2 a) {
+    for (int i=0; i<2; i++) {
+        for (int j=0; j<2; j++) {
+            dest.real[i][j] += a.real[i][j];
+            dest.imag[i][j] += a.imag[i][j];
+        }
+    }
 }
 
 ComplexMatrix4 getMatrix4Product(ComplexMatrix4 a, ComplexMatrix4 b) {
@@ -209,14 +228,6 @@ ComplexMatrix4 getMatrix4Product(ComplexMatrix4 a, ComplexMatrix4 b) {
     return prod;
 }
 
-ComplexMatrix2 getConjugateTransposeMatrix2(ComplexMatrix2 u) {
-    ComplexMatrix2 c = getConjugateMatrix2(u);
-    ComplexMatrix2 t;
-    t.r0c0=c.r0c0;  t.r0c1=c.r1c0;
-    t.r1c0=c.r0c1;  t.r1c1=c.r1c1;
-    return t;
-}
-
 ComplexMatrix4 getConjugateTransposeMatrix4(ComplexMatrix4 u) {
     ComplexMatrix4 c = getConjugateMatrix4(u);
     ComplexMatrix4 t;
@@ -225,13 +236,6 @@ ComplexMatrix4 getConjugateTransposeMatrix4(ComplexMatrix4 u) {
     t.r2c0=c.r0c2;  t.r2c1=c.r1c2;  t.r2c2=c.r2c2;  t.r2c3=c.r3c2;
     t.r3c0=c.r0c3;  t.r3c1=c.r1c3;  t.r3c2=c.r2c3;  t.r3c3=c.r3c3;
     return t;
-}
-
-void addToMatrix2(ComplexMatrix2* dest, ComplexMatrix2 add) {
-    dest->r0c0.real += add.r0c0.real; dest->r0c0.imag += add.r0c0.imag;
-    dest->r0c1.real += add.r0c1.real; dest->r0c1.imag += add.r0c1.imag;
-    dest->r1c0.real += add.r1c0.real; dest->r1c0.imag += add.r1c0.imag;
-    dest->r1c1.real += add.r1c1.real; dest->r1c1.imag += add.r1c1.imag;
 }
 
 void addToMatrix4(ComplexMatrix4* dest, ComplexMatrix4 add) {
@@ -254,22 +258,28 @@ void addToMatrix4(ComplexMatrix4* dest, ComplexMatrix4 add) {
 }
 
 /* returns |a - b|^2 */ 
+// @TODO: to be deprecated after ComplexMatrix4 refator
 qreal getComplexDist(Complex a, Complex b) {
     qreal reDif = absReal(a.real - b.real);
-    qreal imDif = absReal(a.imag - b.imag);
+    qreal imDif = absReal(a.imag - b.imag); // absReal not necessary; impending squaring!
     
     return reDif*reDif + imDif*imDif;
 }
 
 qreal getHilbertSchmidtDistFromIdentity2(ComplexMatrix2 a) {
-    ComplexMatrix2 iden = {0};
-    iden.r0c0.real=1; iden.r1c1.real=1;
-
-    qreal dist = 
-        getComplexDist(a.r0c0, iden.r0c0) +
-        getComplexDist(a.r0c1, iden.r0c1) +
-        getComplexDist(a.r1c0, iden.r1c0) +
-        getComplexDist(a.r1c1, iden.r1c1);
+    ComplexMatrix2 iden = (ComplexMatrix2) {.real={{1,0},{0,1}}, .imag={{0}}};
+    
+    qreal dif;
+    qreal dist = 0;
+    for (int i=0; i<2; i++) {
+        for (int j=0; j<2; j++) {
+            dif = a.real[i][j] - iden.real[i][j];
+            dist += dif*dif;
+            dif = a.imag[i][j] - iden.imag[i][j];
+            dist += dif*dif;
+        }
+    }
+    
     return dist;
 }
 
@@ -348,11 +358,11 @@ int isMatrixNUnitary(ComplexMatrixN u) {
     long long int r, c, i, dim;
     dim = u.numRows;
     
-    // check u * ConjTrans(u) = Identity
+    // check u * ConjugateTranspose(u) = Identity
     for (r=0; r < dim; r++) {
         for (c=0; c < dim; c++) {
             
-            // u[r][...] * ConjTrans(u)[...][c]
+            // u[r][...] * ConjugateTranspose(u)[...][c]
             qreal elemRe = 0;
             qreal elemIm = 0;
             for (i=0; i < dim; i++) {
@@ -594,12 +604,19 @@ void validateOneQubitKrausMap(Qureg qureg, ComplexMatrix2* ops, int numOps, cons
     validateMultiQubitMatrixFitsInNode(qureg, 2, caller);
     QuESTAssert(numOps > 0 && numOps <= 4, E_INVALID_NUM_ONE_QUBIT_KRAUS_OPS, caller);
     
-    // sum of conjTrans(op) * op
-    ComplexMatrix2 sumConjProd = {0};
-    for (int n=0; n < numOps; n++)
-        addToMatrix2(&sumConjProd, getMatrix2Product(getConjugateTransposeMatrix2(ops[n]), ops[n]));
+    // sum of ConjugateTranspose(op) * op
+    ComplexMatrix2 sum = (ComplexMatrix2) {.real={{0}}, .imag={{0}}};
+    for (int n=0; n < numOps; n++) {
+        ComplexMatrix2 conj;
+        setConjugateMatrix2(&conj, ops[n]);
+        transposeMatrix2(conj);
+        
+        ComplexMatrix2 prod;
+        setProductMatrix2(&prod, conj, ops[n]);
+        addMatrix2(sum, prod);
+    }
     
-    qreal idenDist = getHilbertSchmidtDistFromIdentity2(sumConjProd);
+    qreal idenDist = getHilbertSchmidtDistFromIdentity2(sum);
     QuESTAssert(idenDist < REAL_EPS, E_INVALID_KRAUS_OPS, caller);
 }
 
@@ -607,7 +624,7 @@ void validateTwoQubitKrausMap(Qureg qureg, ComplexMatrix4* ops, int numOps, cons
     validateMultiQubitMatrixFitsInNode(qureg, 4, caller);
     QuESTAssert(numOps > 0 && numOps <= 16, E_INVALID_NUM_TWO_QUBIT_KRAUS_OPS, caller);
     
-    // sum of conjTrans(op) * op
+    // sum of ConjugateTranspose(op) * op
     ComplexMatrix4 sumConjProd = {0};
     for (int n=0; n < numOps; n++)
         addToMatrix4(&sumConjProd, getMatrix4Product(getConjugateTransposeMatrix4(ops[n]), ops[n]));

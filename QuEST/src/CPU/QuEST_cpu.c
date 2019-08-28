@@ -1899,16 +1899,16 @@ void statevec_unitaryLocal(Qureg qureg, const int targetQubit, ComplexMatrix2 u)
 
 
             // state[indexUp] = u00 * state[indexUp] + u01 * state[indexLo]
-            stateVecReal[indexUp] = u.r0c0.real*stateRealUp - u.r0c0.imag*stateImagUp 
-                + u.r0c1.real*stateRealLo - u.r0c1.imag*stateImagLo;
-            stateVecImag[indexUp] = u.r0c0.real*stateImagUp + u.r0c0.imag*stateRealUp 
-                + u.r0c1.real*stateImagLo + u.r0c1.imag*stateRealLo;
+            stateVecReal[indexUp] = u.real[0][0]*stateRealUp - u.imag[0][0]*stateImagUp 
+                + u.real[0][1]*stateRealLo - u.imag[0][1]*stateImagLo;
+            stateVecImag[indexUp] = u.real[0][0]*stateImagUp + u.imag[0][0]*stateRealUp 
+                + u.real[0][1]*stateImagLo + u.imag[0][1]*stateRealLo;
 
             // state[indexLo] = u10  * state[indexUp] + u11 * state[indexLo]
-            stateVecReal[indexLo] = u.r1c0.real*stateRealUp  - u.r1c0.imag*stateImagUp 
-                + u.r1c1.real*stateRealLo  -  u.r1c1.imag*stateImagLo;
-            stateVecImag[indexLo] = u.r1c0.real*stateImagUp + u.r1c0.imag*stateRealUp 
-                + u.r1c1.real*stateImagLo + u.r1c1.imag*stateRealLo;
+            stateVecReal[indexLo] = u.real[1][0]*stateRealUp  - u.imag[1][0]*stateImagUp 
+                + u.real[1][1]*stateRealLo  -  u.imag[1][1]*stateImagLo;
+            stateVecImag[indexLo] = u.real[1][0]*stateImagUp + u.imag[1][0]*stateRealUp 
+                + u.real[1][1]*stateImagLo + u.imag[1][1]*stateRealLo;
 
         } 
     }
@@ -2147,16 +2147,16 @@ void statevec_multiControlledUnitaryLocal(
                 stateImagLo = stateVecImag[indexLo];
 
                 // state[indexUp] = u00 * state[indexUp] + u01 * state[indexLo]
-                stateVecReal[indexUp] = u.r0c0.real*stateRealUp - u.r0c0.imag*stateImagUp 
-                    + u.r0c1.real*stateRealLo - u.r0c1.imag*stateImagLo;
-                stateVecImag[indexUp] = u.r0c0.real*stateImagUp + u.r0c0.imag*stateRealUp 
-                    + u.r0c1.real*stateImagLo + u.r0c1.imag*stateRealLo;
+                stateVecReal[indexUp] = u.real[0][0]*stateRealUp - u.imag[0][0]*stateImagUp 
+                    + u.real[0][1]*stateRealLo - u.imag[0][1]*stateImagLo;
+                stateVecImag[indexUp] = u.real[0][0]*stateImagUp + u.imag[0][0]*stateRealUp 
+                    + u.real[0][1]*stateImagLo + u.imag[0][1]*stateRealLo;
 
                 // state[indexLo] = u10  * state[indexUp] + u11 * state[indexLo]
-                stateVecReal[indexLo] = u.r1c0.real*stateRealUp  - u.r1c0.imag*stateImagUp 
-                    + u.r1c1.real*stateRealLo  -  u.r1c1.imag*stateImagLo;
-                stateVecImag[indexLo] = u.r1c0.real*stateImagUp + u.r1c0.imag*stateRealUp 
-                    + u.r1c1.real*stateImagLo + u.r1c1.imag*stateRealLo;
+                stateVecReal[indexLo] = u.real[1][0]*stateRealUp  - u.imag[1][0]*stateImagUp 
+                    + u.real[1][1]*stateRealLo  -  u.imag[1][1]*stateImagLo;
+                stateVecImag[indexLo] = u.real[1][0]*stateImagUp + u.imag[1][0]*stateRealUp 
+                    + u.real[1][1]*stateImagLo + u.imag[1][1]*stateRealLo;
             }
         } 
     }
@@ -2213,16 +2213,16 @@ void statevec_controlledUnitaryLocal(Qureg qureg, const int controlQubit, const 
 
 
                 // state[indexUp] = u00 * state[indexUp] + u01 * state[indexLo]
-                stateVecReal[indexUp] = u.r0c0.real*stateRealUp - u.r0c0.imag*stateImagUp 
-                    + u.r0c1.real*stateRealLo - u.r0c1.imag*stateImagLo;
-                stateVecImag[indexUp] = u.r0c0.real*stateImagUp + u.r0c0.imag*stateRealUp 
-                    + u.r0c1.real*stateImagLo + u.r0c1.imag*stateRealLo;
+                stateVecReal[indexUp] = u.real[0][0]*stateRealUp - u.imag[0][0]*stateImagUp 
+                    + u.real[0][1]*stateRealLo - u.imag[0][1]*stateImagLo;
+                stateVecImag[indexUp] = u.real[0][0]*stateImagUp + u.imag[0][0]*stateRealUp 
+                    + u.real[0][1]*stateImagLo + u.imag[0][1]*stateRealLo;
 
                 // state[indexLo] = u10  * state[indexUp] + u11 * state[indexLo]
-                stateVecReal[indexLo] = u.r1c0.real*stateRealUp  - u.r1c0.imag*stateImagUp 
-                    + u.r1c1.real*stateRealLo  -  u.r1c1.imag*stateImagLo;
-                stateVecImag[indexLo] = u.r1c0.real*stateImagUp + u.r1c0.imag*stateRealUp 
-                    + u.r1c1.real*stateImagLo + u.r1c1.imag*stateRealLo;
+                stateVecReal[indexLo] = u.real[1][0]*stateRealUp  - u.imag[1][0]*stateImagUp 
+                    + u.real[1][1]*stateRealLo  -  u.imag[1][1]*stateImagLo;
+                stateVecImag[indexLo] = u.real[1][0]*stateImagUp + u.imag[1][0]*stateRealUp 
+                    + u.real[1][1]*stateImagLo + u.imag[1][1]*stateRealLo;
             }
         } 
     }
