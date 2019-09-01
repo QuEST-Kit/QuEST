@@ -83,24 +83,22 @@ Complex getConjugateScalar(Complex scalar) {
     return conjScalar;
 }
 
-/* sets dest to be the complex conjugate of src */
-void setConjugateMatrix2(ComplexMatrix2* dest, ComplexMatrix2 src) {
-    
-    for (int i=0; i<2; i++) {
-        for (int j=0; j<2; j++) {
-            (dest->real)[i][j] =   src.real[i][j];
-            (dest->imag)[i][j] = - src.imag[i][j]; // negative for conjugate
-        }
-    }
+#define macro_setConjugateMatrix(dest, src, dim) ( { \
+    for (int i=0; i<dim; i++) \
+        for (int j=0; j<dim; j++) { \
+            dest.real[i][j] =   src.real[i][j]; \
+            dest.imag[i][j] = - src.imag[i][j]; /* negative for conjugate */ \
+        } \
+} )
+ComplexMatrix2 getConjugateMatrix2(ComplexMatrix2 src) {
+    ComplexMatrix2 conj;
+    macro_setConjugateMatrix(conj, src, 2);
+    return conj;
 }
-
-ComplexMatrix4 getConjugateMatrix4(ComplexMatrix4 u) {
-    ComplexMatrix4 c = u;
-    c.r0c0.imag *= -1; c.r0c1.imag *= -1; c.r0c2.imag *= -1; c.r0c3.imag *= -1;
-    c.r1c0.imag *= -1; c.r1c1.imag *= -1; c.r1c2.imag *= -1; c.r1c3.imag *= -1;
-    c.r2c0.imag *= -1; c.r2c1.imag *= -1; c.r2c2.imag *= -1; c.r2c3.imag *= -1;
-    c.r3c0.imag *= -1; c.r3c1.imag *= -1; c.r3c2.imag *= -1; c.r3c3.imag *= -1;
-    return c;
+ComplexMatrix4 getConjugateMatrix4(ComplexMatrix4 src) {
+    ComplexMatrix4 conj;
+    macro_setConjugateMatrix(conj, src, 4);
+    return conj;
 }
 
 void getComplexPairFromRotation(qreal angle, Vector axis, Complex* alpha, Complex* beta) {
@@ -381,26 +379,26 @@ qreal statevec_calcFidelity(Qureg qureg, Qureg pureState) {
 
 void statevec_sqrtSwapGate(Qureg qureg, int qb1, int qb2) {
     
-    ComplexMatrix4 u = {0};
-    u.r0c0.real=1;
-    u.r3c3.real=1;
-    u.r1c1.real = .5; u.r1c1.imag = .5;
-    u.r1c2.real = .5; u.r1c2.imag =-.5;
-    u.r2c1.real = .5; u.r2c1.imag =-.5;
-    u.r2c2.real = .5; u.r2c2.imag = .5;
+    ComplexMatrix4 u = (ComplexMatrix4) {.real={{0}}, .imag={{0}}};
+    u.real[0][0]=1;
+    u.real[3][3]=1;
+    u.real[1][1] = .5; u.imag[1][1] = .5;
+    u.real[1][2] = .5; u.imag[1][2] =-.5;
+    u.real[2][1] = .5; u.imag[2][1] =-.5;
+    u.real[2][2] = .5; u.imag[2][2] = .5;
     
     statevec_twoQubitUnitary(qureg, qb1, qb2, u);
 }
 
 void statevec_sqrtSwapGateConj(Qureg qureg, int qb1, int qb2) {
     
-    ComplexMatrix4 u = {0};
-    u.r0c0.real=1;
-    u.r3c3.real=1;
-    u.r1c1.real = .5; u.r1c1.imag =-.5;
-    u.r1c2.real = .5; u.r1c2.imag = .5;
-    u.r2c1.real = .5; u.r2c1.imag = .5;
-    u.r2c2.real = .5; u.r2c2.imag =-.5;
+    ComplexMatrix4 u = (ComplexMatrix4) {.real={{0}}, .imag={{0}}};
+    u.real[0][0]=1;
+    u.real[3][3]=1;
+    u.real[1][1] = .5; u.imag[1][1] =-.5;
+    u.real[1][2] = .5; u.imag[1][2] = .5;
+    u.real[2][1] = .5; u.imag[2][1] = .5;
+    u.real[2][2] = .5; u.imag[2][2] =-.5;
     
     statevec_twoQubitUnitary(qureg, qb1, qb2, u);
 }
@@ -534,109 +532,55 @@ void statevec_controlledMultiQubitUnitary(Qureg qureg, int ctrl, int* targets, c
     statevec_multiControlledMultiQubitUnitary(qureg, ctrlMask, targets, numTargets, u);
 }
 
-/* returns conj(a) * b */
-Complex getConjComplexProd(Complex a, Complex b) {
-    
-    Complex prod;
-    prod.real = a.real*b.real + a.imag*b.imag;
-    prod.imag = a.real*b.imag - a.imag*b.real;
-    return prod;
+#define macro_populateKrausOperator(superOp, ops, numOps, opDim) ( { \
+    /* clear the superop */ \
+    for (int r=0; r < (opDim)*(opDim); r++) \
+        for (int c=0; c < (opDim)*(opDim); c++) { \
+            superOp->real[r][c] = 0; \
+            superOp->imag[r][c] = 0; \
+        } \
+    /* add each op's contribution to the superop */ \
+    for (int n=0; n<(numOps); n++) \
+        /* superop += conjugate(op) (x) op, where (x) is a tensor product */ \
+        for (int i = 0; i < (opDim); i++) \
+            for (int j = 0; j < (opDim); j++) \
+    			for (int k = 0; k < (opDim); k++) \
+                    for (int l = 0; l < (opDim); l++) { \
+                        superOp->real[i*(opDim) + k][j*(opDim) + l] += \
+                            ops[n].real[i][j]*ops[n].real[k][l] + \
+                            ops[n].imag[i][j]*ops[n].imag[k][l];  \
+    					superOp->imag[i*(opDim) + k][j*(opDim) + l] += \
+                            ops[n].real[i][j]*ops[n].imag[k][l] - \
+                            ops[n].imag[i][j]*ops[n].real[k][l];  \
+                    } \
+} )
+void populateKrausSuperOperator2(ComplexMatrix4* superOp, ComplexMatrix2* ops, int numOps) {
+    int opDim = 2;
+    macro_populateKrausOperator(superOp, ops, numOps, opDim);
 }
-
-/* adds conj(a)*b to dest */
-void addConjComplexProd(Complex* dest, Complex a, Complex b) {
-    
-    Complex prod = getConjComplexProd(a, b);
-    dest->real += prod.real;
-    dest->imag += prod.imag;
+void populateKrausSuperOperator4(ComplexMatrixN* superOp, ComplexMatrix4* ops, int numOps) {
+    int opDim = 4;
+    macro_populateKrausOperator(superOp, ops, numOps, opDim);
 }
-
-/* sets the superOp pointer to be the super-operator of the list of ops */
-void populateOneQubitKrausSuperoperator(ComplexMatrix4* superOp, ComplexMatrix2* ops, int numOps)
-{
-    const int opDim = 2;
-    
-    // clear the superop
-    int opLen = opDim*opDim; 
-    for (int r=0; r < opLen; r++) {
-        for (int c=0; c < opLen; c++) {
-            (superOp->real)[r][c] = 0;
-            (superOp->imag)[r][c] = 0;
-        }
-    }
-    
-    for (int n=0; n<numOps; n++) {
-        ComplexMatrix2 op = ops[n];
-	
-        // superop += conjugate(op) (x) op, where (x) is a tensor product
-        qreal aRe, aIm, bRe, bIm;
-        for (int i = 0; i < opDim; i++) {
-            for (int j = 0; j < opDim; j++) { 
-    			for (int k = 0; k < opDim; k++) { 
-                    for (int l = 0; l < opDim; l++) { 
-    					aRe = op.real[i][j];
-    					aIm = -op.imag[i][j]; // minus -- conjugate of A
-    					bRe = op.real[k][l];
-    					bIm = op.imag[k][l];
-                        
-                        // @TODO: this won't compile until ComplexMatrix4 is refactored
-                        (superOp->real)[i*opDim + k][j*opDim + l] +=  aRe*bRe - aIm*bIm;
-    					(superOp->imag)[i*opDim + k][j*opDim + l] +=  aIm*bRe + aRe*bIm;
-                    } 
-                } 
-            } 
-        } 
-    }
-}
-
-/* sets the dest pointer to be the super-operator of the list of ops */
-void populateTwoQubitKrausSuperoperator(ComplexMatrixN* superOp, ComplexMatrix4* ops, int numOps) {
-    
-    // clear the superop
-    int opLen = 16; 
-    for (int r=0; r < opLen; r++)
-        for (int c=0; c < opLen; c++)
-            (superOp->elems)[r][c] = (Complex) {.real=0, .imag=0};
-    
-    for (int n=0; n < numOps; n++) {
-        
-        // unpack the Kraus map for convenience
-        ComplexMatrix4 op = ops[n];
-        Complex opArr[4][4] = {
-            {op.r0c0, op.r0c1, op.r0c2, op.r0c3},
-            {op.r1c0, op.r1c1, op.r1c2, op.r1c3},
-            {op.r2c0, op.r2c1, op.r2c2, op.r2c3},
-            {op.r3c0, op.r3c1, op.r3c2, op.r3c3}
-        };
-        
-        // add conj(op) (x) op to the superoperator
-        int opDim = 4;
-        for (int i=0; i < opDim; i++)
-            for (int j=0; j < opDim; j++)
-                for (int k=0; k < opDim; k++)
-                    for (int l=0; l < opDim; l++)
-                        addConjComplexProd(&((superOp->elems)[i*opDim + k][j*opDim + l]), opArr[i][j], opArr[k][l]);
-    }
-}
-
-void densmatr_applyKrausSuperoperator(Qureg qureg, int target, ComplexMatrix4 s) {
         
     long long int ctrlMask = 0;
-    statevec_multiControlledTwoQubitUnitary(qureg, ctrlMask, target, target + qureg.numQubitsRepresented, s);
+    statevec_multiControlledTwoQubitUnitary(qureg, ctrlMask, target, target + qureg.numQubitsRepresented, superOp);
 }
 
-void densmatr_applyTwoQubitKrausSuperoperator(Qureg qureg, int target1, int target2, ComplexMatrixN s) {
+void densmatr_applyTwoQubitKrausSuperoperator(Qureg qureg, int target1, int target2, ComplexMatrixN superOp) {
 
     long long int ctrlMask = 0;
     int numQb = qureg.numQubitsRepresented;
-    int targets[4] = {target1, target2, target1+numQb, target2+numQb};
-    statevec_multiControlledMultiQubitUnitary(qureg, ctrlMask, targets, 4, s);
+    int allTargets[4] = {target1, target2, target1+numQb, target2+numQb};
+    statevec_multiControlledMultiQubitUnitary(qureg, ctrlMask, allTargets, 4, superOp);
+}
+
 }
 
 void densmatr_applyKrausMap(Qureg qureg, int target, ComplexMatrix2 *ops, int numOps) {
         
     ComplexMatrix4 superOp; 
-    populateOneQubitKrausSuperoperator(&superOp, ops, numOps);
+    populateKrausSuperOperator2(&superOp, ops, numOps);
     densmatr_applyKrausSuperoperator(qureg, target, superOp);
 }
 
@@ -661,11 +605,12 @@ void densmatr_applyTwoQubitKrausMap(Qureg qureg, int target1, int target2, Compl
 void densmatr_oneQubitPauliError(Qureg qureg, int qubit, qreal probX, qreal probY, qreal probZ) {
     
     // convert pauli probabilities into Kraus map
-    ComplexMatrix2 ops[4];
-    for (int n=0; n < 4; n++)
+    const int numOps = 4;
+    ComplexMatrix2 ops[numOps];
+    for (int n=0; n < numOps; n++)
         ops[n] = (ComplexMatrix2) {.real={{0}}, .imag={{0}}};
     
-    qreal facs[4] = {
+    qreal facs[4] = { // literal numOps=4 for valid initialisation
 		sqrt(1-(probX + probY + probZ)),
 		sqrt(probX),
 		sqrt(probY),
@@ -676,7 +621,7 @@ void densmatr_oneQubitPauliError(Qureg qureg, int qubit, qreal probX, qreal prob
     ops[2].imag[0][1] = -facs[2]; ops[2].imag[1][0] =  facs[2];
     ops[3].real[0][0] =  facs[3]; ops[3].real[1][1] = -facs[3];
     
-    densmatr_applyKrausMap(qureg, qubit, ops, 4);
+    densmatr_applyKrausMap(qureg, qubit, ops, numOps);
 }
 
 #ifdef __cplusplus

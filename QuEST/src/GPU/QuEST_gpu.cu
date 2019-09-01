@@ -27,12 +27,41 @@
      Complex r1c0, r1c1;
  } ArgMatrix2;
  
+ typedef struct ArgMatrix4
+ {
+     Complex r0c0, r0c1, r0c2, r0c3;
+     Complex r1c0, r1c1, r1c2, r1c3;
+     Complex r2c0, r2c1, r2c2, r2c3;
+     Complex r3c0, r3c1, r3c2, r3c3;
+ } ArgMatrix4;
+ 
 ArgMatrix2 argifyMatrix2(ComplexMatrix2 m) {    
     ArgMatrix2 a;
     a.r0c0.real=m.real[0][0]; a.r0c0.imag=m.imag[0][0];
     a.r0c1.real=m.real[0][1]; a.r0c1.imag=m.imag[0][1];
     a.r1c0.real=m.real[1][0]; a.r1c0.imag=m.imag[1][0];
     a.r1c1.real=m.real[1][1]; a.r1c1.imag=m.imag[1][1];
+    return a;
+ }
+
+ArgMatrix4 argifyMatrix4(ComplexMatrix4 m) {     
+    ArgMatrix4 a;
+    a.r0c0.real=m.real[0][0]; a.r0c0.imag=m.imag[0][0];
+    a.r0c1.real=m.real[0][1]; a.r0c1.imag=m.imag[0][1];
+    a.r0c2.real=m.real[0][2]; a.r0c2.imag=m.imag[0][2];
+    a.r0c3.real=m.real[0][3]; a.r0c3.imag=m.imag[0][3];
+    a.r1c0.real=m.real[1][0]; a.r1c0.imag=m.imag[1][0];
+    a.r1c1.real=m.real[1][1]; a.r1c1.imag=m.imag[1][1];
+    a.r1c2.real=m.real[1][2]; a.r1c2.imag=m.imag[1][2];
+    a.r1c3.real=m.real[1][3]; a.r1c3.imag=m.imag[1][3];
+    a.r2c0.real=m.real[2][0]; a.r2c0.imag=m.imag[2][0];
+    a.r2c1.real=m.real[2][1]; a.r2c1.imag=m.imag[2][1];
+    a.r2c2.real=m.real[2][2]; a.r2c2.imag=m.imag[2][2];
+    a.r2c3.real=m.real[2][3]; a.r2c3.imag=m.imag[2][3];
+    a.r3c0.real=m.real[3][0]; a.r3c0.imag=m.imag[3][0];
+    a.r3c1.real=m.real[3][1]; a.r3c1.imag=m.imag[3][1];
+    a.r3c2.real=m.real[3][2]; a.r3c2.imag=m.imag[3][2];
+    a.r3c3.real=m.real[3][3]; a.r3c3.imag=m.imag[3][3];
     return a;
  }
 
@@ -920,7 +949,7 @@ void statevec_multiControlledMultiQubitUnitary(Qureg qureg, long long int ctrlMa
     cudaFree(d_imAmps);
 }
 
-__global__ void statevec_multiControlledTwoQubitUnitaryKernel(Qureg qureg, long long int ctrlMask, const int q1, const int q2, ComplexMatrix4 u){
+__global__ void statevec_multiControlledTwoQubitUnitaryKernel(Qureg qureg, long long int ctrlMask, const int q1, const int q2, ArgMatrix4 u){
     
     // decide the 4 amplitudes this thread will modify
     long long int thisTask = blockIdx.x*blockDim.x + threadIdx.x;                        
@@ -1000,7 +1029,7 @@ void statevec_multiControlledTwoQubitUnitary(Qureg qureg, long long int ctrlMask
 {
     int threadsPerCUDABlock = 128;
     int CUDABlocks = ceil((qreal)(qureg.numAmpsPerChunk>>2)/threadsPerCUDABlock); // one kernel eval for every 4 amplitudes
-    statevec_multiControlledTwoQubitUnitaryKernel<<<CUDABlocks, threadsPerCUDABlock>>>(qureg, ctrlMask, q1, q2, u);
+    statevec_multiControlledTwoQubitUnitaryKernel<<<CUDABlocks, threadsPerCUDABlock>>>(qureg, ctrlMask, q1, q2, argifyMatrix4(u));
 }
 
 __global__ void statevec_controlledUnitaryKernel(Qureg qureg, const int controlQubit, const int targetQubit, ArgMatrix2 u){

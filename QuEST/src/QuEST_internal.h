@@ -30,9 +30,10 @@ qreal getVectorMagnitude(Vector vec);
 
 Complex getConjugateScalar(Complex scalar);
 
-void setConjugateMatrix2(ComplexMatrix2* dest, ComplexMatrix2 src);
+ComplexMatrix2 getConjugateMatrix2(ComplexMatrix2 src);
 
-ComplexMatrix4 getConjugateMatrix4(ComplexMatrix4 matr);
+ComplexMatrix4 getConjugateMatrix4(ComplexMatrix4 src);
+
 
 void ensureIndsIncrease(int* ind1, int* ind2);
 

@@ -1718,48 +1718,48 @@ void statevec_multiControlledTwoQubitUnitaryLocal(Qureg qureg, long long int ctr
 
             // apply u * {amp00, amp01, amp10, amp11}
             reVec[ind00] = 
-                u.r0c0.real*re00 - u.r0c0.imag*im00 +
-                u.r0c1.real*re01 - u.r0c1.imag*im01 +
-                u.r0c2.real*re10 - u.r0c2.imag*im10 +
-                u.r0c3.real*re11 - u.r0c3.imag*im11;
+                u.real[0][0]*re00 - u.imag[0][0]*im00 +
+                u.real[0][1]*re01 - u.imag[0][1]*im01 +
+                u.real[0][2]*re10 - u.imag[0][2]*im10 +
+                u.real[0][3]*re11 - u.imag[0][3]*im11;
             imVec[ind00] =
-                u.r0c0.imag*re00 + u.r0c0.real*im00 +
-                u.r0c1.imag*re01 + u.r0c1.real*im01 +
-                u.r0c2.imag*re10 + u.r0c2.real*im10 +
-                u.r0c3.imag*re11 + u.r0c3.real*im11;
+                u.imag[0][0]*re00 + u.real[0][0]*im00 +
+                u.imag[0][1]*re01 + u.real[0][1]*im01 +
+                u.imag[0][2]*re10 + u.real[0][2]*im10 +
+                u.imag[0][3]*re11 + u.real[0][3]*im11;
                 
             reVec[ind01] = 
-                u.r1c0.real*re00 - u.r1c0.imag*im00 +
-                u.r1c1.real*re01 - u.r1c1.imag*im01 +
-                u.r1c2.real*re10 - u.r1c2.imag*im10 +
-                u.r1c3.real*re11 - u.r1c3.imag*im11;
+                u.real[1][0]*re00 - u.imag[1][0]*im00 +
+                u.real[1][1]*re01 - u.imag[1][1]*im01 +
+                u.real[1][2]*re10 - u.imag[1][2]*im10 +
+                u.real[1][3]*re11 - u.imag[1][3]*im11;
             imVec[ind01] =
-                u.r1c0.imag*re00 + u.r1c0.real*im00 +
-                u.r1c1.imag*re01 + u.r1c1.real*im01 +
-                u.r1c2.imag*re10 + u.r1c2.real*im10 +
-                u.r1c3.imag*re11 + u.r1c3.real*im11;
+                u.imag[1][0]*re00 + u.real[1][0]*im00 +
+                u.imag[1][1]*re01 + u.real[1][1]*im01 +
+                u.imag[1][2]*re10 + u.real[1][2]*im10 +
+                u.imag[1][3]*re11 + u.real[1][3]*im11;
                 
             reVec[ind10] = 
-                u.r2c0.real*re00 - u.r2c0.imag*im00 +
-                u.r2c1.real*re01 - u.r2c1.imag*im01 +
-                u.r2c2.real*re10 - u.r2c2.imag*im10 +
-                u.r2c3.real*re11 - u.r2c3.imag*im11;
+                u.real[2][0]*re00 - u.imag[2][0]*im00 +
+                u.real[2][1]*re01 - u.imag[2][1]*im01 +
+                u.real[2][2]*re10 - u.imag[2][2]*im10 +
+                u.real[2][3]*re11 - u.imag[2][3]*im11;
             imVec[ind10] =
-                u.r2c0.imag*re00 + u.r2c0.real*im00 +
-                u.r2c1.imag*re01 + u.r2c1.real*im01 +
-                u.r2c2.imag*re10 + u.r2c2.real*im10 +
-                u.r2c3.imag*re11 + u.r2c3.real*im11;    
+                u.imag[2][0]*re00 + u.real[2][0]*im00 +
+                u.imag[2][1]*re01 + u.real[2][1]*im01 +
+                u.imag[2][2]*re10 + u.real[2][2]*im10 +
+                u.imag[2][3]*re11 + u.real[2][3]*im11;    
                 
             reVec[ind11] = 
-                u.r3c0.real*re00 - u.r3c0.imag*im00 +
-                u.r3c1.real*re01 - u.r3c1.imag*im01 +
-                u.r3c2.real*re10 - u.r3c2.imag*im10 +
-                u.r3c3.real*re11 - u.r3c3.imag*im11;
+                u.real[3][0]*re00 - u.imag[3][0]*im00 +
+                u.real[3][1]*re01 - u.imag[3][1]*im01 +
+                u.real[3][2]*re10 - u.imag[3][2]*im10 +
+                u.real[3][3]*re11 - u.imag[3][3]*im11;
             imVec[ind11] =
-                u.r3c0.imag*re00 + u.r3c0.real*im00 +
-                u.r3c1.imag*re01 + u.r3c1.real*im01 +
-                u.r3c2.imag*re10 + u.r3c2.real*im10 +
-                u.r3c3.imag*re11 + u.r3c3.real*im11;    
+                u.imag[3][0]*re00 + u.real[3][0]*im00 +
+                u.imag[3][1]*re01 + u.real[3][1]*im01 +
+                u.imag[3][2]*re10 + u.real[3][2]*im10 +
+                u.imag[3][3]*re11 + u.real[3][3]*im11;    
         }
     }
 }
