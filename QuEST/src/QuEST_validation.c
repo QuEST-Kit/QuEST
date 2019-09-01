@@ -170,34 +170,13 @@ int isMatrix4Unitary(ComplexMatrix4 u) {
     macro_isMatrixUnitary(u, dim, retVal);
     return retVal;
 }
-
 int isMatrixNUnitary(ComplexMatrixN u) {
-    long long int r, c, i, dim;
-    dim = u.numRows;
-    
-    // check u * ConjugateTranspose(u) = Identity
-    for (r=0; r < dim; r++) {
-        for (c=0; c < dim; c++) {
-            
-            // u[r][...] * ConjugateTranspose(u)[...][c]
-            qreal elemRe = 0;
-            qreal elemIm = 0;
-            for (i=0; i < dim; i++) {
-                // u.elems[r][i] * conj(u.elems[c][i])
-                elemRe += u.elems[r][i].real*u.elems[c][i].real + u.elems[r][i].imag*u.elems[c][i].imag;
-                elemIm += u.elems[r][i].imag*u.elems[c][i].real - u.elems[r][i].real*u.elems[c][i].imag;
-            }
-            
-            if (absReal(elemIm) > REAL_EPS)
-                return 0;
-            if (r == c && absReal(elemRe - 1) > REAL_EPS)
-                return 0;
-            if (r != c && absReal(elemRe    ) > REAL_EPS)
-                return 0;
-        }
-    }
-    
-    return 1;
+    int dim = 1 << u.numQubits;
+    int retVal;
+    macro_isMatrixUnitary(u, dim, retVal);
+    return retVal;
+}
+
 #define macro_isCompletelyPositiveMap(ops, numOps, opDim, retVal) ( { \
     /* dist_, elemRe_, elemIm_ and difRe_ must not exist in caller scope */ \
     qreal dist_ = 0; \

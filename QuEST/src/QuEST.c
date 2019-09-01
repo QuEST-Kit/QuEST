@@ -296,10 +296,10 @@ void multiQubitUnitary(Qureg qureg, int* targs, const int numTargs, ComplexMatri
     if (qureg.isDensityMatrix) {
         int shift = qureg.numQubitsRepresented;
         shiftIndices(targs, numTargs, shift);
-        conjugateMatrixN(u);
+        setConjugateMatrixN(u);
         statevec_multiQubitUnitary(qureg, targs, numTargs, u);
         shiftIndices(targs, numTargs, -shift);
-        conjugateMatrixN(u);
+        setConjugateMatrixN(u);
     }
     
     qasm_recordComment(qureg, "Here, an undisclosed multi-qubit unitary was applied.");
@@ -313,10 +313,10 @@ void controlledMultiQubitUnitary(Qureg qureg, int ctrl, int* targs, const int nu
     if (qureg.isDensityMatrix) {
         int shift = qureg.numQubitsRepresented;
         shiftIndices(targs, numTargs, shift);
-        conjugateMatrixN(u);
+        setConjugateMatrixN(u);
         statevec_controlledMultiQubitUnitary(qureg, ctrl+shift, targs, numTargs, u);
         shiftIndices(targs, numTargs, -shift);
-        conjugateMatrixN(u);
+        setConjugateMatrixN(u);
     }
     
     qasm_recordComment(qureg, "Here, an undisclosed controlled multi-qubit unitary was applied.");
@@ -331,10 +331,10 @@ void multiControlledMultiQubitUnitary(Qureg qureg, int* ctrls, const int numCtrl
     if (qureg.isDensityMatrix) {
         int shift = qureg.numQubitsRepresented;
         shiftIndices(targs, numTargs, shift);
-        conjugateMatrixN(u);
+        setConjugateMatrixN(u);
         statevec_multiControlledMultiQubitUnitary(qureg, ctrlMask<<shift, targs, numTargs, u);
         shiftIndices(targs, numTargs, -shift);
-        conjugateMatrixN(u);
+        setConjugateMatrixN(u);
     }
     
     qasm_recordComment(qureg, "Here, an undisclosed multi-controlled multi-qubit unitary was applied.");
@@ -974,29 +974,34 @@ void applyTwoQubitKrausMap(Qureg qureg, int target1, int target2, ComplexMatrix4
  * other data structures 
  */
  
- ComplexMatrixN createComplexMatrix(int numQubits) {
+ ComplexMatrixN createComplexMatrixN(int numQubits) {
      validateCreateNumQubits(numQubits, __func__);
-    
-     ComplexMatrixN matr;
-     matr.numQubits = numQubits;
-     matr.numRows = 1 << numQubits;
-     matr.elems = malloc(matr.numRows * sizeof *matr.elems);
-     for (int r=0; r < matr.numRows; r++) {
-        matr.elems[r] = malloc(matr.numRows * sizeof **matr.elems);
-        for (int c=0; c < matr.numRows; c++) {
-            matr.elems[r][c] = (Complex) {.real=0, .imag=0};
-        }
-    }
-    return matr;
+
+     int numRows = 1 << numQubits;
+
+     ComplexMatrixN m = {
+         .numQubits = numQubits,
+         .real = malloc(numRows * sizeof *m.real),
+         .imag = malloc(numRows * sizeof *m.imag)};
+
+     for (int n=0; n < 1<<numQubits; n++) {
+         m.real[n] = calloc(numRows, sizeof **m.real);
+         m.imag[n] = calloc(numRows, sizeof **m.imag);
+     }
+     return m;
  }
  
- void destroyComplexMatrix(ComplexMatrixN matr) {
-     validateMatrixInit(matr, __func__);
-     
-     for (int r=0; r < matr.numRows; r++)
-        free(matr.elems[r]);
-    free(matr.elems);
- }
+void destroyComplexMatrixN(ComplexMatrixN m) {
+    validateMatrixInit(m, __func__);
+    
+    int numRows = 1 << m.numQubits;
+    for (int r=0; r < numRows; r++) {
+        free(m.real[r]);
+        free(m.imag[r]);
+    }
+    free(m.real);
+    free(m.imag);
+}
  
 
 /*

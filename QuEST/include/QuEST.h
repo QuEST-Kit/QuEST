@@ -79,16 +79,13 @@ typedef struct ComplexMatrix4
     qreal imag[4][4];
 } ComplexMatrix4;
  
- /** Represents a general 2^n by 2^n matrix of complex numbers.
-  * ComplexMatrixN is a 2-dimensional pointer of Complex elements, 
-  * accessed as .elems[row][col], which needs to be created and freed 
-  * using createComplexMatrix and destroyComplexMatrix
+ /** Represents a general 2^N by 2^N matrix of complex numbers.
   */
 typedef struct ComplexMatrixN
 {
-    int numQubits;
-    int numRows;
-    Complex** elems;
+  int numQubits;
+  qreal **real;
+  qreal **imag;
 } ComplexMatrixN;
 
 /** Represents a 3-vector of real numbers

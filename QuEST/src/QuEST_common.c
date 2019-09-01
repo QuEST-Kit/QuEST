@@ -57,6 +57,7 @@ long long int getControlFlipMask(int* controlQubits, int* controlState, const in
 }
 
 void ensureIndsIncrease(int* ind1, int* ind2) {
+    
     if (*ind1 > *ind2) {
         int copy = *ind1;
         *ind1 = *ind2;
@@ -65,6 +66,7 @@ void ensureIndsIncrease(int* ind1, int* ind2) {
 }
 
 qreal getVectorMagnitude(Vector vec) {
+    
     return sqrt(vec.x*vec.x + vec.y*vec.y + vec.z*vec.z);
 }
 
@@ -99,6 +101,10 @@ ComplexMatrix4 getConjugateMatrix4(ComplexMatrix4 src) {
     ComplexMatrix4 conj;
     macro_setConjugateMatrix(conj, src, 4);
     return conj;
+}
+void setConjugateMatrixN(ComplexMatrixN m) {
+    int len = 1 << m.numQubits;
+    macro_setConjugateMatrix(m, m, len);
 }
 
 void getComplexPairFromRotation(qreal angle, Vector axis, Complex* alpha, Complex* beta) {
@@ -140,12 +146,6 @@ void getComplexPairAndPhaseFromUnitary(ComplexMatrix2 u, Complex* alpha, Complex
 void shiftIndices(int* indices, int numIndices, int shift) {
     for (int j=0; j < numIndices; j++)
         indices[j] += shift;
-}
-
-void conjugateMatrixN(ComplexMatrixN u) {
-    for (long long int r=0; r < u.numRows; r++)
-        for (long long int c=0; c < u.numRows; c++)
-            u.elems[r][c].imag *= -1;
 }
 
 int generateMeasurementOutcome(qreal zeroProb, qreal *outcomeProb) {
@@ -562,6 +562,7 @@ void populateKrausSuperOperator4(ComplexMatrixN* superOp, ComplexMatrix4* ops, i
     int opDim = 4;
     macro_populateKrausOperator(superOp, ops, numOps, opDim);
 }
+void densmatr_applyKrausSuperoperator(Qureg qureg, int target, ComplexMatrix4 superOp) {
         
     long long int ctrlMask = 0;
     statevec_multiControlledTwoQubitUnitary(qureg, ctrlMask, target, target + qureg.numQubitsRepresented, superOp);
@@ -584,21 +585,31 @@ void densmatr_applyKrausMap(Qureg qureg, int target, ComplexMatrix2 *ops, int nu
     densmatr_applyKrausSuperoperator(qureg, target, superOp);
 }
 
-void densmatr_applyTwoQubitKrausMap(Qureg qureg, int target1, int target2, ComplexMatrix4 *ops, int numOps) {
-        
-    // create non-dynamic ComplexMatrixN instance
-    ComplexMatrixN superOp;
-    superOp.numQubits = 4;
-    superOp.numRows = 1 << superOp.numQubits;
-    
-    // keep superOp.elems in stack
-    Complex* matr[16];
-    Complex flat[16][16];
-    for (int r=0; r < superOp.numRows; r++)
-        matr[r] = flat[r];
-    superOp.elems = matr;
+#define macro_createStackComplexMatrixN(superOp, numOpQubits) ( { \
+    /* superOpDim_, re_, im_, rePtr_, imPtr_ must not exist in caller scope */ \
+    superOp.numQubits = (numOpQubits); \
+    int superOpDim_ = 1 << (numOpQubits); \
+    /* actual stack space of superOp elements */ \
+    qreal re_[superOpDim_][superOpDim_]; \
+    qreal im_[superOpDim_][superOpDim_]; \
+    /* arrays of pointers to actual stack-space */ \
+    qreal *rePtr_[superOpDim_]; \
+    qreal *imPtr_[superOpDim_]; \
+    /* populate pointer-array with stack-space "sub-arrays" */ \
+    for (int i=0; i<superOpDim_; i++) { \
+        rePtr_[i] = re_[i]; \
+        imPtr_[i] = im_[i]; \
+    } \
+    /* point superOp.real and superOp.imag to stack-space */ \
+    superOp.real = rePtr_; \
+    superOp.imag = imPtr_; \
+} )
 
-    populateTwoQubitKrausSuperoperator(&superOp, ops, numOps);
+void densmatr_applyTwoQubitKrausMap(Qureg qureg, int target1, int target2, ComplexMatrix4 *ops, int numOps) {
+    
+    ComplexMatrixN superOp;
+    macro_createStackComplexMatrixN(superOp, 4);
+    populateKrausSuperOperator4(&superOp, ops, numOps);
     densmatr_applyTwoQubitKrausSuperoperator(qureg, target1, target2, superOp);
 }
 

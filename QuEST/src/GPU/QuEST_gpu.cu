@@ -846,7 +846,7 @@ void statevec_unitary(Qureg qureg, const int targetQubit, ComplexMatrix2 u)
 
 __global__ void statevec_multiControlledMultiQubitUnitaryKernel(
     Qureg qureg, long long int ctrlMask, int* targs, int numTargs, 
-    Complex* uElemsFlat, long long int* ampInds, qreal* reAmps, qreal* imAmps, long long int numTargAmps)
+    qreal* uRe, qreal* uIm, long long int* ampInds, qreal* reAmps, qreal* imAmps, long long int numTargAmps)
 {
     
     // decide the amplitudes this thread will modify
@@ -895,9 +895,10 @@ __global__ void statevec_multiControlledMultiQubitUnitaryKernel(
         reVec[ind] = 0;
         imVec[ind] = 0;
         for (int c=0; c < numTargAmps; c++) {
-            Complex elem = uElemsFlat[c + r*numTargAmps];
-            reVec[ind] += reAmps[c*stride+offset]*elem.real - imAmps[c*stride+offset]*elem.imag;
-            imVec[ind] += reAmps[c*stride+offset]*elem.imag + imAmps[c*stride+offset]*elem.real;
+            qreal uReElem = uRe[c + r*numTargAmps];
+            qreal uImElem = uIm[c + r*numTargAmps];
+            reVec[ind] += reAmps[c*stride+offset]*uReElem - imAmps[c*stride+offset]*uImElem;
+            imVec[ind] += reAmps[c*stride+offset]*uImElem + imAmps[c*stride+offset]*uReElem;
         }
     }
 }
@@ -909,41 +910,51 @@ void statevec_multiControlledMultiQubitUnitary(Qureg qureg, long long int ctrlMa
     
     // allocate device space for global {targs} (length: numTargs) and populate
     int *d_targs;
-    size_t targMemSize = numTargs*sizeof *d_targs;
+    size_t targMemSize = numTargs * sizeof *d_targs;
     cudaMalloc(&d_targs, targMemSize);
     cudaMemcpy(d_targs, targs, targMemSize, cudaMemcpyHostToDevice);
     
-    // flatten out the u.elems matrix
-    Complex* uFlat = (Complex*) malloc(u.numRows * u.numRows * sizeof *uFlat);
+    // flatten out the u.real and u.imag lists
+    int uNumRows = (1 << u.numQubits);
+    qreal* uReFlat = (qreal*) malloc(uNumRows*uNumRows * sizeof *uReFlat);
+    qreal* uImFlat = (qreal*) malloc(uNumRows*uNumRows * sizeof *uImFlat);
     long long int i = 0;
-    for (int r=0; r < u.numRows; r++)
-        for (int c=0; c < u.numRows; c++)
-            uFlat[i++] = u.elems[r][c];
+    for (int r=0; r < uNumRows; r++)
+        for (int c=0; c < uNumRows; c++) {
+            uReFlat[i] = u.real[r][c];
+            uImFlat[i] = u.imag[r][c];
+            i++;
+        }
     
-    // allocate device space for global u.elems (flattten by concatenating rows) and populate
-    Complex* d_uElems;
-    size_t uElemsMemSize = u.numRows*u.numRows*sizeof *d_uElems;
-    cudaMalloc(&d_uElems, uElemsMemSize);
-    cudaMemcpy(d_uElems, uFlat, uElemsMemSize, cudaMemcpyHostToDevice);
+    // allocate device space for global u.real and u.imag (flatten by concatenating rows) and populate
+    qreal* d_uRe;
+    qreal* d_uIm;
+    size_t uMemSize = uNumRows*uNumRows * sizeof *d_uRe; // size of each of d_uRe and d_uIm
+    cudaMalloc(&d_uRe, uMemSize);
+    cudaMalloc(&d_uIm, uMemSize);
+    cudaMemcpy(d_uRe, uReFlat, uMemSize, cudaMemcpyHostToDevice);
+    cudaMemcpy(d_uIm, uImFlat, uMemSize, cudaMemcpyHostToDevice);
     
     // allocate device Wspace for thread-local {ampInds}, {reAmps}, {imAmps} (length: 1<<numTargs)
     long long int *d_ampInds;
     qreal *d_reAmps;
     qreal *d_imAmps;
     size_t gridSize = (size_t) threadsPerCUDABlock * CUDABlocks;
-    long long int numTargAmps = u.numRows;
-    cudaMalloc(&d_ampInds, numTargAmps*gridSize*sizeof *d_ampInds);
-    cudaMalloc(&d_reAmps,  numTargAmps*gridSize*sizeof *d_reAmps);
-    cudaMalloc(&d_imAmps,  numTargAmps*gridSize*sizeof *d_imAmps);
+    int numTargAmps = uNumRows;
+    cudaMalloc(&d_ampInds, numTargAmps*gridSize * sizeof *d_ampInds);
+    cudaMalloc(&d_reAmps,  numTargAmps*gridSize * sizeof *d_reAmps);
+    cudaMalloc(&d_imAmps,  numTargAmps*gridSize * sizeof *d_imAmps);
     
     // call kernel
     statevec_multiControlledMultiQubitUnitaryKernel<<<CUDABlocks,threadsPerCUDABlock>>>(
-        qureg, ctrlMask, d_targs, numTargs, d_uElems, d_ampInds, d_reAmps, d_imAmps, numTargAmps);
+        qureg, ctrlMask, d_targs, numTargs, d_uRe, d_uIm, d_ampInds, d_reAmps, d_imAmps, numTargAmps);
         
     // free kernel memory
-    free(uFlat);
+    free(uReFlat);
+    free(uImFlat);
     cudaFree(d_targs);
-    cudaFree(d_uElems);
+    cudaFree(d_uRe);
+    cudaFree(d_uIm);
     cudaFree(d_ampInds);
     cudaFree(d_reAmps);
     cudaFree(d_imAmps);

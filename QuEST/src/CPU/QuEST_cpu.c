@@ -1775,7 +1775,7 @@ void statevec_multiControlledMultiQubitUnitaryLocal(Qureg qureg, long long int c
     qreal *imVec = qureg.stateVec.imag;
     
     long long int numTasks = qureg.numAmpsPerChunk >> numTargs;  // kernel called on every 1 in 2^numTargs amplitudes
-    long long int numTargAmps = u.numRows;  // num amps to be modified by each task
+    long long int numTargAmps = 1 << u.numQubits;  // num amps to be modified by each task
     
     // the global (between all nodes) index of this node's start index
     long long int globalIndStart = qureg.chunkId*qureg.numAmpsPerChunk; 
@@ -1846,8 +1846,8 @@ void statevec_multiControlledMultiQubitUnitaryLocal(Qureg qureg, long long int c
                 imVec[ind] = 0;
                 for (c=0; c < numTargAmps; c++) {
                     g = thisTask*numTargAmps + c;
-                    reElem = u.elems[r][c].real;
-                    imElem = u.elems[r][c].imag;
+                    reElem = u.real[r][c];
+                    imElem = u.imag[r][c];
                     reVec[ind] += reAmps[g]*reElem - imAmps[g]*imElem;
                     imVec[ind] += reAmps[g]*imElem + imAmps[g]*reElem;
                 }

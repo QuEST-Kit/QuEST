@@ -34,6 +34,7 @@ ComplexMatrix2 getConjugateMatrix2(ComplexMatrix2 src);
 
 ComplexMatrix4 getConjugateMatrix4(ComplexMatrix4 src);
 
+void setConjugateMatrixN(ComplexMatrixN m);
 
 void ensureIndsIncrease(int* ind1, int* ind2);
 
