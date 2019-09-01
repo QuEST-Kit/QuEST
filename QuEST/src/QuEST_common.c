@@ -562,6 +562,11 @@ void populateKrausSuperOperator4(ComplexMatrixN* superOp, ComplexMatrix4* ops, i
     int opDim = 4;
     macro_populateKrausOperator(superOp, ops, numOps, opDim);
 }
+void populateKrausSuperOperatorN(ComplexMatrixN* superOp, ComplexMatrixN* ops, int numOps) {
+    int opDim = 1 << ops[0].numQubits;
+    macro_populateKrausOperator(superOp, ops, numOps, opDim);
+}
+
 void densmatr_applyKrausSuperoperator(Qureg qureg, int target, ComplexMatrix4 superOp) {
         
     long long int ctrlMask = 0;
@@ -576,6 +581,14 @@ void densmatr_applyTwoQubitKrausSuperoperator(Qureg qureg, int target1, int targ
     statevec_multiControlledMultiQubitUnitary(qureg, ctrlMask, allTargets, 4, superOp);
 }
 
+void densmatr_applyMultiQubitKrausSuperoperator(Qureg qureg, int *targets, int numTargets, ComplexMatrixN superOp) {
+    long long int ctrlMask = 0;
+    int allTargets[2*numTargets];
+    for (int t=0; t < numTargets; t++) {
+        allTargets[t] = targets[t];
+        allTargets[t+numTargets] = targets[t] + qureg.numQubitsRepresented;
+    }
+    statevec_multiControlledMultiQubitUnitary(qureg, ctrlMask, allTargets, 2*numTargets, superOp);
 }
 
 void densmatr_applyKrausMap(Qureg qureg, int target, ComplexMatrix2 *ops, int numOps) {
@@ -611,6 +624,14 @@ void densmatr_applyTwoQubitKrausMap(Qureg qureg, int target1, int target2, Compl
     macro_createStackComplexMatrixN(superOp, 4);
     populateKrausSuperOperator4(&superOp, ops, numOps);
     densmatr_applyTwoQubitKrausSuperoperator(qureg, target1, target2, superOp);
+}
+
+void densmatr_applyMultiQubitKrausMap(Qureg qureg, int* targets, int numTargets, ComplexMatrixN* ops, int numOps) {
+
+    ComplexMatrixN superOp;
+    macro_createStackComplexMatrixN(superOp, 2*numTargets);
+    populateKrausSuperOperatorN(&superOp, ops, numOps);
+    densmatr_applyMultiQubitKrausSuperoperator(qureg, targets, numTargets, superOp);
 }
 
 void densmatr_oneQubitPauliError(Qureg qureg, int qubit, qreal probX, qreal probY, qreal probZ) {

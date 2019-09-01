@@ -57,7 +57,9 @@ typedef enum {
     E_COMPLEX_MATRIX_NOT_INIT,
     E_INVALID_NUM_ONE_QUBIT_KRAUS_OPS,
     E_INVALID_NUM_TWO_QUBIT_KRAUS_OPS,
-    E_INVALID_KRAUS_OPS
+    E_INVALID_NUM_N_QUBIT_KRAUS_OPS,
+    E_INVALID_KRAUS_OPS,
+    E_MISMATCHING_NUM_TARGS_KRAUS_SIZE
 } ErrorCode;
 
 static const char* errorMessages[] = {
@@ -100,7 +102,9 @@ static const char* errorMessages[] = {
     [E_COMPLEX_MATRIX_NOT_INIT] = "The ComplexMatrixN wasn't initialised with createComplexMatrix().",
     [E_INVALID_NUM_ONE_QUBIT_KRAUS_OPS] = "At least 1 and at most 4 single qubit Kraus operators may be specified.",
     [E_INVALID_NUM_TWO_QUBIT_KRAUS_OPS] = "At least 1 and at most 16 two-qubit Kraus operators may be specified.",
-    [E_INVALID_KRAUS_OPS] = "The specified Kraus map is not a completely positive, trace preserving map."
+    [E_INVALID_NUM_N_QUBIT_KRAUS_OPS] = "At least 1 and at most 4*N^2 of N-qubit Kraus operators may be specified.",
+    [E_INVALID_KRAUS_OPS] = "The specified Kraus map is not a completely positive, trace preserving map.",
+    [E_MISMATCHING_NUM_TARGS_KRAUS_SIZE] = "Every Kraus operator must be of the same number of qubits as the number of targets."
 };
 
 void exitWithError(ErrorCode code, const char* func){
@@ -210,6 +214,11 @@ int isCompletelyPositiveMap4(ComplexMatrix4 *ops, int numOps) {
     macro_isCompletelyPositiveMap(ops, numOps, dim, retVal);
     return retVal;
 }
+int isCompletelyPositiveMapN(ComplexMatrixN *ops, int numOps) {
+    int dim = 1 << ops[0].numQubits;
+    int retVal;
+    macro_isCompletelyPositiveMap(ops, numOps, dim, retVal);
+    return retVal;
 }
 
 int areUniqueQubits(int* qubits, int numQubits) {
@@ -453,6 +462,22 @@ void validateTwoQubitKrausMap(Qureg qureg, ComplexMatrix4* ops, int numOps, cons
     QuESTAssert(isPos, E_INVALID_KRAUS_OPS, caller);
 }
 
+void validateMultiQubitKrausMap(Qureg qureg, int numTargs, ComplexMatrixN* ops, int numOps, const char* caller) {
+    for (int n=0; n<numOps; n++) {
+        validateMatrixInit(ops[n], __func__);
+        QuESTAssert(ops[n].numQubits == numTargs, E_MISMATCHING_NUM_TARGS_KRAUS_SIZE, caller);    
+    }
+        
+    int opNumQubits = numTargs;
+    int superOpNumQubits = 2*opNumQubits;
+    validateMultiQubitMatrixFitsInNode(qureg, superOpNumQubits, caller);
+    
+    int maxNumOps = superOpNumQubits*superOpNumQubits;
+    QuESTAssert(numOps>0 && numOps <= maxNumOps, E_INVALID_NUM_N_QUBIT_KRAUS_OPS, caller);
+    
+    int isPos = isCompletelyPositiveMapN(ops, numOps);
+    QuESTAssert(isPos, E_INVALID_KRAUS_OPS, caller);
+}
 
 #ifdef __cplusplus
 }

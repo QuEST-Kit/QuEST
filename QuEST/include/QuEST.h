@@ -2372,8 +2372,7 @@ void multiControlledMultiQubitUnitary(Qureg qureg, int* ctrls, const int numCtrl
  * where \f$ I \f$ is the identity matrix.
  *
  * Note that in distributed mode, this routine requires that each node contains at least 4 amplitudes.
- * This means an q-qubit register (state vector or density matrix) can be distributed 
- * by at most 2^(q-2) numTargs nodes.
+ * This means an q-qubit register can be distributed by at most 2^(q-2) numTargs nodes.
  *
  * @param[in,out] qureg the density matrix to which to apply the map
  * @param[in] target the target qubit of the map
@@ -2402,8 +2401,7 @@ void applyOneQubitKrausMap(Qureg qureg, int target, ComplexMatrix2 *ops, int num
  * \p targetQubit1 is treated as the \p least significant qubit in each op in \p ops.
  *
  * Note that in distributed mode, this routine requires that each node contains at least 16 amplitudes.
- * This means an q-qubit register (state vector or density matrix) can be distributed 
- * by at most 2^(q-4) numTargs nodes.
+ * This means an q-qubit register can be distributed by at most 2^(q-4) numTargs nodes.
  *
  * @param[in,out] qureg the density matrix to which to apply the map
  * @param[in] target1 the least significant target qubit in \p ops
@@ -2419,6 +2417,38 @@ void applyOneQubitKrausMap(Qureg qureg, int target, ComplexMatrix2 *ops, int num
  *      or if a node cannot fit 16 amplitudes in distributed mode.
  */
 void applyTwoQubitKrausMap(Qureg qureg, int target1, int target2, ComplexMatrix4 *ops, int numOps);
+
+/** Apply a general N-qubit Kraus map to a density matrix, as specified by at most (2N)^2
+ * Kraus operators. A Kraus map is also referred to as a "operator-sum representation"
+ * of a quantum channel. This allows one to simulate a general two-qubit noise process.
+ *
+ * The Kraus map must be completely positive and trace preserving, which constrains each 
+ * \f$ K_i \f$ in \p ops by
+ * \f[
+    \sum \limits_i^{\text{numOps}} K_i^\dagger K_i = I
+ * \f]
+ * where \f$ I \f$ is the identity matrix.
+ *
+ * The first qubit in \p targets is treated as the \p least significant qubit in each op in \p ops.
+ *
+ * Note that in distributed mode, this routine requires that each node contains at least (2N)^2 amplitudes.
+ * This means an q-qubit register can be distributed by at most 2^(q-2)/N^2 nodes.
+ *
+ * @param[in,out] qureg the density matrix to which to apply the map
+ * @param[in] targets a list of target qubit indices, the first of which is treated as least significant in each op in \p ops
+ * @param[in] numTargets the length of \p targets
+ * @param[in] ops an array of at most (2N)^2 Kraus operators
+ * @param[in] numOps the number of operators in \p ops which must be >0 and <= (2N)^2.
+ * @throws exitWithError
+ *      if \p qureg is not a density matrix, 
+ *      or if any target in \p targets is outside of [0, \p qureg.numQubitsRepresented),
+ *      or if any qubit in \p targets is repeated,
+ *      or if \p numOps is outside [1, (2 \p numTargets)^2],
+ *      or if any ComplexMatrixN in \ops does not have op.numQubits == \p numTargets,
+ *      or if \p ops do not create a completely positive, trace preserving map,
+ *      or if a node cannot fit (2N)^2 amplitudes in distributed mode.
+ */
+void applyMultiQubitKrausMap(Qureg qureg, int* targets, int numTargets, ComplexMatrixN* ops, int numOps);
 
 /** Computes the Hilbert Schmidt distance between two density matrices \p a and \p b, 
  * defined as the Frobenius norm of the difference between them.

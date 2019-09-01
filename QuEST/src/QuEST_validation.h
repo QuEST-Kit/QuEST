@@ -87,6 +87,8 @@ void validateOneQubitKrausMap(Qureg qureg, ComplexMatrix2* ops, int numOps, cons
 
 void validateTwoQubitKrausMap(Qureg qureg, ComplexMatrix4* ops, int numOps, const char* caller);
 
+void validateMultiQubitKrausMap(Qureg qureg, int numTargs, ComplexMatrixN* ops, int numOps, const char* caller);
+
 void validateOneQubitDampingProb(qreal prob, const char* caller);
 
 # ifdef __cplusplus

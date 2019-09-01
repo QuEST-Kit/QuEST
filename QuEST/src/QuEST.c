@@ -970,6 +970,16 @@ void applyTwoQubitKrausMap(Qureg qureg, int target1, int target2, ComplexMatrix4
         "Here, an undisclosed two-qubit Kraus map was effected on qubits %d and %d", target1, target2);
 }
 
+void applyMultiQubitKrausMap(Qureg qureg, int* targets, int numTargets, ComplexMatrixN* ops, int numOps) {
+    validateDensityMatrQureg(qureg, __func__);
+    validateMultiTargets(qureg, targets, numTargets, __func__);
+    validateMultiQubitKrausMap(qureg, numTargets, ops, numOps, __func__);
+    
+    densmatr_applyMultiQubitKrausMap(qureg, targets, numTargets, ops, numOps);
+    qasm_recordComment(qureg,
+        "Here, an undisclosed %d-qubit Kraus map was applied to undisclosed qubits", numTargets);
+}
+
 /*
  * other data structures 
  */
