@@ -2584,6 +2584,49 @@ ComplexMatrixN bindArraysToStackComplexMatrixN(
     int numQubits, qreal (*re)[], qreal (*im)[], 
     qreal** reStorage, qreal** imStorage);
 
+#define UNPACK_ARR(...) __VA_ARGS__
+
+/** Creates a ComplexMatrixN struct which lives in the stack and so does not 
+ * need freeing, but cannot be returned beyond the calling scope. That is, 
+ * the .real and .imag arrays of the returned ComplexMatrixN live in the stack
+ * as opposed to that returned by createComplexMatrixN() (which live in the heap).
+ * Note the real and imag components must be wrapped in paranthesis, e.g.
+ *
+ *     ComplexMatrixN u = getStaticComplexMatrixN(1, ({{1,2},{3,4}}), ({{0}}));
+ *
+ * Here is an example of an incorrect usage, since a 'local' ComplexMatrixN cannot
+ * leave the calling scope (otherwise inducing dangling pointers):
+ *
+ *     ComplexMatrixN getMyMatrix(void) {
+ *         return getStaticComplexMatrixN(1, ({{1,2},{3,4}}), ({{0}}));
+ *     }
+ * 
+ * This function is actually a single-line anonymous macro, so can be safely 
+ * invoked within arguments to other functions, e.g.
+ *
+ *      multiQubitUnitary(
+ *          qureg, (int[]) {0}, 1, 
+ *          getStaticComplexMatrixN(1, ({{1,0},{0,1}}), ({{0}}))
+ *      );
+ *
+ * The returned ComplexMatrixN can be accessed and modified in the same way as
+ * that returned by createComplexMatrixN(), e.g.
+ *
+ *      ComplexMatrixN u = getStaticComplexMatrixN(3, ({{0}}), ({{0}}));
+ *      for (int i=0; i<8; i++)
+ *          for (int j=0; j<8; j++)
+ *              u.real[i][j] = .1;
+ *
+ * Note that the first argument \p numQubits must be a literal.
+ */
+#define getStaticComplexMatrixN(numQubits, re, im) \
+    bindArraysToStackComplexMatrixN( \
+        numQubits, \
+        (qreal[1<<numQubits][1<<numQubits]) UNPACK_ARR re, \
+        (qreal[1<<numQubits][1<<numQubits]) UNPACK_ARR im, \
+        (double*[1<<numQubits]) {NULL}, (double*[1<<numQubits]) {NULL} \
+    )
+
 
 #ifdef __cplusplus
 }
