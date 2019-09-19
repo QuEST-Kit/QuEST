@@ -2547,6 +2547,42 @@ void setWeightedQureg(Complex fac1, Qureg qureg1, Complex fac2, Qureg qureg2, Co
  *      or if \p inQureg is not of the same type and dimensions as \p outQureg
  */
 void applyPauliSum(Qureg inQureg, enum pauliOpType* allPauliCodes, qreal* termCoeffs, int numSumTerms, Qureg outQureg);
+/** Creates a ComplexMatrixN struct with .real and .imag arrays kept entirely 
+ * in the stack. 
+ * This function should not be directly called by the user; instead, users should 
+ * call the macro getStaticComplexMatrixN.
+ *
+ * The passed 'reStorage' and 'imStorage' must be arrays with 
+ * length (1<<numQubits) and are populated with pointers to rows of the 2D 
+ * arrays 're' and 'im', and then attached to the returned ComplexMatrixN instance.
+ * For example:
+ *
+ *     ComplexMatrixN m = bindArraysToStackComplexMatrixN(
+ *         1, 
+ *         (qreal[][2]) {{1,0},{0,1}}, (qreal[][2]) {{0}}, 
+ *         (qreal*[2]) {0}, (qreal*[2]) {0}
+ *     );
+ *
+ * Note that this ComplexMatrixN instance, since kept in the stack, cannot be *returned*
+ * beyond the calling scope which would result in a dangling pointer.
+ * This is unlike a ComplexMatrixN instance created with createComplexMatrixN, which 
+ * is dynamic (lives in heap) and can be returned, through needs explicit freeing 
+ * with destroyComplexMatrixN.
+ *
+ * @param[in] numQubits the number of qubits that the ComplexMatrixN corresponds to.
+ *  note the .real and .imag arrays of the returned ComplexMatrixN will have 
+ *  2^numQubits rows and columns.
+ * @param[in] re a 2D array (2^numQubits by 2^numQubits) of the real components
+ * @param[in] im a 2D array (2^numQubits by 2^numQubits) of the imag components
+ * @param[in] reStorage a 1D array of length 2^numQubits
+ * @param[in] imStorage a 1D array of length 2^numQubits
+ * @returns a ComplexMatrixN struct with stack-stored .real and .imag arrays,
+ *  which are actually the passed \p reStorage and \p imStorage arrays, populated 
+ *  with pointers to the rows of \p re and \p im
+ */
+ComplexMatrixN bindArraysToStackComplexMatrixN(
+    int numQubits, qreal (*re)[], qreal (*im)[], 
+    qreal** reStorage, qreal** imStorage);
 
 
 #ifdef __cplusplus
