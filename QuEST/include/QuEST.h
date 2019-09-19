@@ -10,6 +10,7 @@
 
 # include "QuEST_precision.h"
 
+// prevent C++ name mangling
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -216,6 +217,7 @@ ComplexMatrixN createComplexMatrixN(int numQubits);
  */
 void destroyComplexMatrixN(ComplexMatrixN matr);
 
+#ifndef __cplusplus
 /** Initialises a ComplexMatrixN instance to have the passed
  * \p real and \p imag values. This allows succint population of any-sized
  * ComplexMatrixN, e.g. through 2D arrays:
@@ -227,12 +229,16 @@ void destroyComplexMatrixN(ComplexMatrixN matr);
  *
  * \p m can be created by either createComplexMatrixN() or getStaticComplexMatrixN().
  *
+ * This function is only callable in C, since C++ signatures cannot
+ * contain variable-length 2D arrays 
+ *
  * @param[in] m the matrix to initialise
  * @param[in] real matrix of real values; can be 2D array of array of pointers
  * @param[in] imag matrix of imaginary values; can be 2D array of array of pointers
  * @throws exitWithError if \p m has not been allocated (e.g. with createComplexMatrixN())
  */
-void initComplexMatrixN(ComplexMatrixN m, qreal (*real)[], qreal (*imag)[]);
+void initComplexMatrixN(ComplexMatrixN m, qreal real[][1<<m.numQubits], qreal imag[][1<<m.numQubits]);
+#endif 
 
 /** Print the current state vector of probability amplitudes for a set of qubits to file.
  * File format:
@@ -2582,9 +2588,9 @@ void setWeightedQureg(Complex fac1, Qureg qureg1, Complex fac2, Qureg qureg2, Co
  */
 void applyPauliSum(Qureg inQureg, enum pauliOpType* allPauliCodes, qreal* termCoeffs, int numSumTerms, Qureg outQureg);
  
-// hide these from doxygen
-/// \cond HIDDEN_SYMBOLS    
- 
+#ifndef __cplusplus
+ // hide this function from doxygen
+ /// \cond HIDDEN_SYMBOLS
 /** Creates a ComplexMatrixN struct with .real and .imag arrays kept entirely 
  * in the stack. 
  * This function should not be directly called by the user; instead, users should 
@@ -2607,6 +2613,9 @@ void applyPauliSum(Qureg inQureg, enum pauliOpType* allPauliCodes, qreal* termCo
  * is dynamic (lives in heap) and can be returned, through needs explicit freeing 
  * with destroyComplexMatrixN.
  *
+ * This function is only callable in C, since C++ signatures cannot contain 
+ * variable-length 2D arrays.
+ *
  * @param[in] numQubits the number of qubits that the ComplexMatrixN corresponds to.
  *  note the .real and .imag arrays of the returned ComplexMatrixN will have 
  *  2^numQubits rows and columns.
@@ -2619,13 +2628,17 @@ void applyPauliSum(Qureg inQureg, enum pauliOpType* allPauliCodes, qreal* termCo
  *  with pointers to the rows of \p re and \p im
  */
 ComplexMatrixN bindArraysToStackComplexMatrixN(
-    int numQubits, qreal (*re)[], qreal (*im)[], 
+    int numQubits, qreal re[][1<<numQubits], qreal im[][1<<numQubits], 
     qreal** reStorage, qreal** imStorage);
-
-#define UNPACK_ARR(...) __VA_ARGS__
-
+#endif
 /// \endcond
 
+// hide this function from doxygen
+/// \cond HIDDEN_SYMBOLS
+#define UNPACK_ARR(...) __VA_ARGS__
+/// \endcond
+
+#ifndef __cplusplus
 /** Creates a ComplexMatrixN struct which lives in the stack and so does not 
  * need freeing, but cannot be returned beyond the calling scope. That is, 
  * the .real and .imag arrays of the returned ComplexMatrixN live in the stack
@@ -2658,6 +2671,9 @@ ComplexMatrixN bindArraysToStackComplexMatrixN(
  *              u.real[i][j] = .1;
  *
  * Note that the first argument \p numQubits must be a literal.
+ *
+ * This macro is only callable in C, since it invokes the function 
+ * bindArraysToStackComplexMatrixN() which is only callable in C.
  */
 #define getStaticComplexMatrixN(numQubits, re, im) \
     bindArraysToStackComplexMatrixN( \
@@ -2666,8 +2682,10 @@ ComplexMatrixN bindArraysToStackComplexMatrixN(
         (qreal[1<<numQubits][1<<numQubits]) UNPACK_ARR im, \
         (double*[1<<numQubits]) {NULL}, (double*[1<<numQubits]) {NULL} \
     )
+#endif
 
 
+// end prevention of C++ name mangling
 #ifdef __cplusplus
 }
 #endif
