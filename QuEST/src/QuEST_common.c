@@ -85,13 +85,13 @@ Complex getConjugateScalar(Complex scalar) {
     return conjScalar;
 }
 
-#define macro_setConjugateMatrix(dest, src, dim) ( { \
+#define macro_setConjugateMatrix(dest, src, dim) { \
     for (int i=0; i<dim; i++) \
         for (int j=0; j<dim; j++) { \
             dest.real[i][j] =   src.real[i][j]; \
             dest.imag[i][j] = - src.imag[i][j]; /* negative for conjugate */ \
         } \
-} )
+}
 ComplexMatrix2 getConjugateMatrix2(ComplexMatrix2 src) {
     ComplexMatrix2 conj;
     macro_setConjugateMatrix(conj, src, 2);
@@ -532,7 +532,7 @@ void statevec_controlledMultiQubitUnitary(Qureg qureg, int ctrl, int* targets, c
     statevec_multiControlledMultiQubitUnitary(qureg, ctrlMask, targets, numTargets, u);
 }
 
-#define macro_populateKrausOperator(superOp, ops, numOps, opDim) ( { \
+#define macro_populateKrausOperator(superOp, ops, numOps, opDim) { \
     /* clear the superop */ \
     for (int r=0; r < (opDim)*(opDim); r++) \
         for (int c=0; c < (opDim)*(opDim); c++) { \
@@ -553,7 +553,7 @@ void statevec_controlledMultiQubitUnitary(Qureg qureg, int ctrl, int* targets, c
                             ops[n].real[i][j]*ops[n].imag[k][l] - \
                             ops[n].imag[i][j]*ops[n].real[k][l];  \
                     } \
-} )
+}
 void populateKrausSuperOperator2(ComplexMatrix4* superOp, ComplexMatrix2* ops, int numOps) {
     int opDim = 2;
     macro_populateKrausOperator(superOp, ops, numOps, opDim);
@@ -598,7 +598,7 @@ void densmatr_applyKrausMap(Qureg qureg, int target, ComplexMatrix2 *ops, int nu
     densmatr_applyKrausSuperoperator(qureg, target, superOp);
 }
 
-#define macro_createStackComplexMatrixN(superOp, numOpQubits) ( { \
+#define macro_createStackComplexMatrixN(superOp, numOpQubits) { \
     /* superOpDim_, re_, im_, rePtr_, imPtr_ must not exist in caller scope */ \
     superOp.numQubits = (numOpQubits); \
     int superOpDim_ = 1 << (numOpQubits); \
@@ -616,7 +616,7 @@ void densmatr_applyKrausMap(Qureg qureg, int target, ComplexMatrix2 *ops, int nu
     /* point superOp.real and superOp.imag to stack-space */ \
     superOp.real = rePtr_; \
     superOp.imag = imPtr_; \
-} )
+}
 
 void densmatr_applyTwoQubitKrausMap(Qureg qureg, int target1, int target2, ComplexMatrix4 *ops, int numOps) {
     

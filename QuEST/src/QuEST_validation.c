@@ -135,7 +135,7 @@ int isComplexPairUnitary(Complex alpha, Complex beta) {
                 + beta.imag*beta.imag) < REAL_EPS );
 }
 
-#define macro_isMatrixUnitary(m, dim, retVal) ( { \
+#define macro_isMatrixUnitary(m, dim, retVal) { \
     /* elemRe_ and elemIm_ must not exist in caller scope */ \
     qreal elemRe_, elemIm_; \
     retVal = 1; \
@@ -161,7 +161,7 @@ int isComplexPairUnitary(Complex alpha, Complex beta) {
         if (retVal == 0) \
             break; \
     } \
-} )
+}
 int isMatrix2Unitary(ComplexMatrix2 u) {
     int dim = 2;
     int retVal;
@@ -181,7 +181,7 @@ int isMatrixNUnitary(ComplexMatrixN u) {
     return retVal;
 }
 
-#define macro_isCompletelyPositiveMap(ops, numOps, opDim, retVal) ( { \
+#define macro_isCompletelyPositiveMap(ops, numOps, opDim, retVal) { \
     /* dist_, elemRe_, elemIm_ and difRe_ must not exist in caller scope */ \
     qreal dist_ = 0; \
     qreal elemRe_, elemIm_, difRe_; \
@@ -201,7 +201,7 @@ int isMatrixNUnitary(ComplexMatrixN u) {
                 dist_ += difRe_*difRe_ + elemIm_*elemIm_; \
             } \
     retVal = (dist_ < REAL_EPS); \
-} )
+}
 int isCompletelyPositiveMap2(ComplexMatrix2 *ops, int numOps) {
     int dim = 2;
     int retVal;
