@@ -190,14 +190,30 @@ Qureg createCloneQureg(Qureg qureg, QuESTEnv env);
  */
 void destroyQureg(Qureg qureg, QuESTEnv env);
 
-/** Create a square complex matrix which can be passed to the multi-qubit general unitary functions.
- * The matrix will have dimensions (2^numQubits) by (2^numQubits), and all elements are initialised to zero.
- * The elements of the matrix are Complex structs, accessed and set via ComplexMatrixN.elems[row][column].
- * The ComplexMatrixN should eventually be freed using destroyComplexMatrix.
+/** Create (dynamically) a square complex matrix which can be passed to the multi-qubit general unitary functions.
+ * The matrix will have dimensions (2^\p numQubits) by (2^\p numQubits), and all elements
+ * of .real and .imag are initialised to zero.
+ * The ComplexMatrixN must eventually be freed using destroyComplexMatrixN().
+ * Like ComplexMatrix2 and ComplexMatrix4, the returned ComplexMatrixN is safe to 
+ * return from functions.
+ * 
+ * One can instead use getStaticComplexMatrixN() to create a ComplexMatrixN struct 
+ * in the stack (which doesn't need to be explicitly freed).
+ *
+ * @param[in] numQubits the number of qubits of which the returned ComplexMatrixN will correspond
+ * @returns a dynamic ComplexMatrixN struct, that is one where the .real and .imag
+ *  fields are arrays kept in the heap and must be freed.
  */
 ComplexMatrixN createComplexMatrixN(int numQubits);
 
-/** Destroy a general complex matrix */
+/** Destroy a ComplexMatrixN instance created with createComplexMatrixN()
+ *
+ * It is invalid to attempt to destroy a matrix created with getStaticComplexMatrixN().
+ *
+ * @param[in] matr the dynamic matrix (created with createComplexMatrixN()) to deallocate
+ * @throws exitWithError if \p matr was not yet allocated.
+ * @throws malloc_error if \p matr was static (created with getStaticComplexMatrixN())
+ */
 void destroyComplexMatrixN(ComplexMatrixN matr);
 
 /** Print the current state vector of probability amplitudes for a set of qubits to file.
@@ -2547,6 +2563,10 @@ void setWeightedQureg(Complex fac1, Qureg qureg1, Complex fac2, Qureg qureg2, Co
  *      or if \p inQureg is not of the same type and dimensions as \p outQureg
  */
 void applyPauliSum(Qureg inQureg, enum pauliOpType* allPauliCodes, qreal* termCoeffs, int numSumTerms, Qureg outQureg);
+ 
+// hide these from doxygen
+/// \cond HIDDEN_SYMBOLS    
+ 
 /** Creates a ComplexMatrixN struct with .real and .imag arrays kept entirely 
  * in the stack. 
  * This function should not be directly called by the user; instead, users should 
@@ -2585,6 +2605,8 @@ ComplexMatrixN bindArraysToStackComplexMatrixN(
     qreal** reStorage, qreal** imStorage);
 
 #define UNPACK_ARR(...) __VA_ARGS__
+
+/// \endcond
 
 /** Creates a ComplexMatrixN struct which lives in the stack and so does not 
  * need freeing, but cannot be returned beyond the calling scope. That is, 

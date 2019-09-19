@@ -22,6 +22,9 @@
  * struct types for concisely passing unitaries to kernels
  */
  
+ // hide these from doxygen
+ /// \cond HIDDEN_SYMBOLS  
+ 
  typedef struct ArgMatrix2 {
      Complex r0c0, r0c1;
      Complex r1c0, r1c1;
@@ -64,6 +67,8 @@ ArgMatrix4 argifyMatrix4(ComplexMatrix4 m) {
     a.r3c3.real=m.real[3][3]; a.r3c3.imag=m.imag[3][3];
     return a;
  }
+ 
+ /// \endcond
 
 
 
