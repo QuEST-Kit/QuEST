@@ -216,6 +216,24 @@ ComplexMatrixN createComplexMatrixN(int numQubits);
  */
 void destroyComplexMatrixN(ComplexMatrixN matr);
 
+/** Initialises a ComplexMatrixN instance to have the passed
+ * \p real and \p imag values. This allows succint population of any-sized
+ * ComplexMatrixN, e.g. through 2D arrays:
+ *
+ *     ComplexMatrixN m = createComplexMatrixN(3);
+ *     initComplexMatrixN(m, 
+ *         (qreal[8][8]) {{1,2,3,4,5,6,7,8}, {0}},
+ *         (qreal[8][8]) {{0}});
+ *
+ * \p m can be created by either createComplexMatrixN() or getStaticComplexMatrixN().
+ *
+ * @param[in] m the matrix to initialise
+ * @param[in] real matrix of real values; can be 2D array of array of pointers
+ * @param[in] imag matrix of imaginary values; can be 2D array of array of pointers
+ * @throws exitWithError if \p m has not been allocated (e.g. with createComplexMatrixN())
+ */
+void initComplexMatrixN(ComplexMatrixN m, qreal (*real)[], qreal (*imag)[]);
+
 /** Print the current state vector of probability amplitudes for a set of qubits to file.
  * File format:
  * @verbatim

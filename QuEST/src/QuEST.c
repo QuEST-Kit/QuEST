@@ -1012,7 +1012,17 @@ void destroyComplexMatrixN(ComplexMatrixN m) {
     free(m.real);
     free(m.imag);
 }
- 
+
+void initComplexMatrixN(ComplexMatrixN m, qreal re[][1<<m.numQubits], qreal im[][1<<m.numQubits]) {
+    validateMatrixInit(m, __func__);
+    
+    int dim = 1 << m.numQubits;
+    for (int i=0; i<dim; i++)
+        for (int j=0; j<dim; j++) {
+            m.real[i][j] = re[i][j];
+            m.imag[i][j] = im[i][j];
+        }
+}
 
 /*
  * debug
