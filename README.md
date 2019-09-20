@@ -21,14 +21,12 @@ rotateAroundAxis(qubits, 0, 3.14/2, v);
 and powerful
 ```C
 // sqrt(X) with pi/4 global phase
-ComplexMatrix2 u;
-u.r0c0 = (Complex) {.real=.5, .imag= .5};
-u.r0c1 = (Complex) {.real=.5, .imag=-.5}; 
-u.r1c0 = (Complex) {.real=.5, .imag=-.5};
-u.r1c1 = (Complex) {.real=.5, .imag= .5};
+ComplexMatrix2 u = {
+    .real = {{.5, .5}, { .5,.5}},
+    .imag = {{.5,-.5}, {-.5,.5}}};
 unitary(qubits, 0, u);
 
-int[] controls = {1, 2, 3, 4, 5};
+int controls[] = {1, 2, 3, 4, 5};
 multiControlledUnitary(qureg, controls, 5, 0, u);
 ```
 
@@ -51,6 +49,7 @@ cd QuEST
 ```
 at terminal. You can then compile the [example](examples/tutorial_example.c) using
 ```bash
+cp examples/tutorial_example .
 mkdir build
 cd build
 cmake ..
