@@ -2430,7 +2430,7 @@ void densmatr_collapseToKnownProbOutcome(Qureg qureg, const int measureQubit, in
         part1, part2, part3, rowBit, colBit, desired, undesired);
 }
 
-__global__ void densmatr_addDensityMatrixKernel(Qureg combineQureg, qreal otherProb, Qureg otherQureg, long long int numAmpsToVisit) {
+__global__ void densmatr_mixDensityMatrixKernel(Qureg combineQureg, qreal otherProb, Qureg otherQureg, long long int numAmpsToVisit) {
     
     long long int ampInd = blockIdx.x*blockDim.x + threadIdx.x;
     if (ampInd >= numAmpsToVisit) return;
@@ -2449,7 +2449,7 @@ void densmatr_mixDensityMatrix(Qureg combineQureg, qreal otherProb, Qureg otherQ
     int threadsPerCUDABlock, CUDABlocks;
     threadsPerCUDABlock = 128;
     CUDABlocks = ceil(numAmpsToVisit / (qreal) threadsPerCUDABlock);
-    densmatr_addDensityMatrixKernel<<<CUDABlocks, threadsPerCUDABlock>>>(
+    densmatr_mixDensityMatrixKernel<<<CUDABlocks, threadsPerCUDABlock>>>(
         combineQureg, otherProb, otherQureg, numAmpsToVisit
     );
 }
@@ -2459,7 +2459,7 @@ void densmatr_mixDensityMatrix(Qureg combineQureg, qreal otherProb, Qureg otherQ
  * visiting |..1..><..0..| and |..0..><..1..|. Labels |part1 X pa><rt2 NOT(X) part3|
  * From the brain of Simon Benjamin
  */
-__global__ void densmatr_oneQubitDephaseKernel(
+__global__ void densmatr_mixDephasingKernel(
     qreal fac, qreal* vecReal, qreal *vecImag, long long int numAmpsToVisit,
     long long int part1, long long int part2, long long int part3, 
     long long int colBit, long long int rowBit)
@@ -2490,12 +2490,12 @@ void densmatr_oneQubitDegradeOffDiagonal(Qureg qureg, const int targetQubit, qre
     int threadsPerCUDABlock, CUDABlocks;
     threadsPerCUDABlock = 128;
     CUDABlocks = ceil(numAmpsToVisit / (qreal) threadsPerCUDABlock);
-    densmatr_oneQubitDephaseKernel<<<CUDABlocks, threadsPerCUDABlock>>>(
+    densmatr_mixDephasingKernel<<<CUDABlocks, threadsPerCUDABlock>>>(
         dephFac, qureg.deviceStateVec.real, qureg.deviceStateVec.imag, numAmpsToVisit,
         part1, part2, part3, colBit, rowBit);
 }
 
-void densmatr_oneQubitDephase(Qureg qureg, const int targetQubit, qreal dephase) {
+void densmatr_mixDephasing(Qureg qureg, const int targetQubit, qreal dephase) {
     
     if (dephase == 0)
         return;
@@ -2510,7 +2510,7 @@ void densmatr_oneQubitDephase(Qureg qureg, const int targetQubit, qreal dephase)
  * etc and so on to |..1..1..><..1..0|. Labels |part1 0 part2 0 par><t3 0 part4 0 part5|.
  * From the brain of Simon Benjamin
  */
-__global__ void densmatr_twoQubitDephaseKernel(
+__global__ void densmatr_mixTwoQubitDephasingKernel(
     qreal fac, qreal* vecReal, qreal *vecImag, long long int numBackgroundStates, long long int numAmpsToVisit,
     long long int part1, long long int part2, long long int part3, long long int part4, long long int part5,
     long long int colBit1, long long int rowBit1, long long int colBit2, long long int rowBit2) 
@@ -2534,7 +2534,7 @@ __global__ void densmatr_twoQubitDephaseKernel(
 }
 
 // @TODO is separating these 12 amplitudes really faster than letting every 16th base modify 12 elems?
-void densmatr_twoQubitDephase(Qureg qureg, int qubit1, int qubit2, qreal dephase) {
+void densmatr_mixTwoQubitDephasing(Qureg qureg, int qubit1, int qubit2, qreal dephase) {
     
     if (dephase == 0)
         return;
@@ -2565,13 +2565,13 @@ void densmatr_twoQubitDephase(Qureg qureg, int qubit1, int qubit2, qreal dephase
     int threadsPerCUDABlock, CUDABlocks;
     threadsPerCUDABlock = 128;
     CUDABlocks = ceil(numAmpsToVisit / (qreal) threadsPerCUDABlock);
-    densmatr_twoQubitDephaseKernel<<<CUDABlocks, threadsPerCUDABlock>>>(
+    densmatr_mixTwoQubitDephasingKernel<<<CUDABlocks, threadsPerCUDABlock>>>(
         dephFac, qureg.deviceStateVec.real, qureg.deviceStateVec.imag, numBackgroundStates, numAmpsToVisit,
         part1, part2, part3, part4, part5, colBit1, rowBit1, colBit2, rowBit2);
 }
 
-/** Works like oneQubitDephase but modifies every other element, and elements are averaged in pairs */
-__global__ void densmatr_oneQubitDepolariseKernel(
+/** Works like mixDephasing but modifies every other element, and elements are averaged in pairs */
+__global__ void densmatr_mixDepolarisingKernel(
     qreal depolLevel, qreal* vecReal, qreal *vecImag, long long int numAmpsToVisit,
     long long int part1, long long int part2, long long int part3, 
     long long int bothBits)
@@ -2596,8 +2596,8 @@ __global__ void densmatr_oneQubitDepolariseKernel(
     vecImag[targetInd] += imagAvDepol;
 }
 
-/** Works like oneQubitDephase but modifies every other element, and elements are averaged in pairs */
-__global__ void densmatr_oneQubitDampingKernel(
+/** Works like mixDephasing but modifies every other element, and elements are averaged in pairs */
+__global__ void densmatr_mixDampingKernel(
     qreal damping, qreal* vecReal, qreal *vecImag, long long int numAmpsToVisit,
     long long int part1, long long int part2, long long int part3, 
     long long int bothBits)
@@ -2618,12 +2618,12 @@ __global__ void densmatr_oneQubitDampingKernel(
     vecImag[baseInd]   += imagAvDepol;
 }
 
-void densmatr_oneQubitDepolarise(Qureg qureg, const int targetQubit, qreal depolLevel) {
+void densmatr_mixDepolarising(Qureg qureg, const int targetQubit, qreal depolLevel) {
     
     if (depolLevel == 0)
         return;
     
-    densmatr_oneQubitDephase(qureg, targetQubit, depolLevel);
+    densmatr_mixDephasing(qureg, targetQubit, depolLevel);
     
     long long int numAmpsToVisit = qureg.numAmpsPerChunk/4;
     int rowQubit = targetQubit + qureg.numQubitsRepresented;
@@ -2639,12 +2639,12 @@ void densmatr_oneQubitDepolarise(Qureg qureg, const int targetQubit, qreal depol
     int threadsPerCUDABlock, CUDABlocks;
     threadsPerCUDABlock = 128;
     CUDABlocks = ceil(numAmpsToVisit / (qreal) threadsPerCUDABlock);
-    densmatr_oneQubitDepolariseKernel<<<CUDABlocks, threadsPerCUDABlock>>>(
+    densmatr_mixDepolarisingKernel<<<CUDABlocks, threadsPerCUDABlock>>>(
         depolLevel, qureg.deviceStateVec.real, qureg.deviceStateVec.imag, numAmpsToVisit,
         part1, part2, part3, bothBits);
 }
 
-void densmatr_oneQubitDamping(Qureg qureg, const int targetQubit, qreal damping) {
+void densmatr_mixDamping(Qureg qureg, const int targetQubit, qreal damping) {
     
     if (damping == 0)
         return;
@@ -2666,13 +2666,13 @@ void densmatr_oneQubitDamping(Qureg qureg, const int targetQubit, qreal damping)
     int threadsPerCUDABlock, CUDABlocks;
     threadsPerCUDABlock = 128;
     CUDABlocks = ceil(numAmpsToVisit / (qreal) threadsPerCUDABlock);
-    densmatr_oneQubitDampingKernel<<<CUDABlocks, threadsPerCUDABlock>>>(
+    densmatr_mixDampingKernel<<<CUDABlocks, threadsPerCUDABlock>>>(
         damping, qureg.deviceStateVec.real, qureg.deviceStateVec.imag, numAmpsToVisit,
         part1, part2, part3, bothBits);
 }
 
 /** Called once for every 16 amplitudes */
-__global__ void densmatr_twoQubitDepolariseKernel(
+__global__ void densmatr_mixTwoQubitDepolarisingKernel(
     qreal depolLevel, qreal* vecReal, qreal *vecImag, long long int numAmpsToVisit,
     long long int part1, long long int part2, long long int part3, 
     long long int part4, long long int part5,
@@ -2704,14 +2704,14 @@ __global__ void densmatr_twoQubitDepolariseKernel(
     vecReal[ind11] += realAvDepol; vecImag[ind11] += imagAvDepol;
 }
 
-void densmatr_twoQubitDepolarise(Qureg qureg, int qubit1, int qubit2, qreal depolLevel) {
+void densmatr_mixTwoQubitDepolarising(Qureg qureg, int qubit1, int qubit2, qreal depolLevel) {
     
     if (depolLevel == 0)
         return;
     
     // assumes qubit2 > qubit1
     
-    densmatr_twoQubitDephase(qureg, qubit1, qubit2, depolLevel);
+    densmatr_mixTwoQubitDephasing(qureg, qubit1, qubit2, depolLevel);
     
     int rowQubit1 = qubit1 + qureg.numQubitsRepresented;
     int rowQubit2 = qubit2 + qureg.numQubitsRepresented;
@@ -2734,7 +2734,7 @@ void densmatr_twoQubitDepolarise(Qureg qureg, int qubit1, int qubit2, qreal depo
     int threadsPerCUDABlock, CUDABlocks;
     threadsPerCUDABlock = 128;
     CUDABlocks = ceil(numAmpsToVisit / (qreal) threadsPerCUDABlock);
-    densmatr_twoQubitDepolariseKernel<<<CUDABlocks, threadsPerCUDABlock>>>(
+    densmatr_mixTwoQubitDepolarisingKernel<<<CUDABlocks, threadsPerCUDABlock>>>(
         depolLevel, qureg.deviceStateVec.real, qureg.deviceStateVec.imag, numAmpsToVisit,
         part1, part2, part3, part4, part5, rowCol1, rowCol2);
 }

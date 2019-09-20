@@ -591,7 +591,7 @@ void densmatr_applyMultiQubitKrausSuperoperator(Qureg qureg, int *targets, int n
     statevec_multiControlledMultiQubitUnitary(qureg, ctrlMask, allTargets, 2*numTargets, superOp);
 }
 
-void densmatr_applyKrausMap(Qureg qureg, int target, ComplexMatrix2 *ops, int numOps) {
+void densmatr_mixKrausMap(Qureg qureg, int target, ComplexMatrix2 *ops, int numOps) {
         
     ComplexMatrix4 superOp; 
     populateKrausSuperOperator2(&superOp, ops, numOps);
@@ -627,7 +627,7 @@ ComplexMatrixN bindArraysToStackComplexMatrixN(
     macro_initialiseStackComplexMatrixN(matrix, (numQubits), reArr_, imArr_); \
 }
 
-void densmatr_applyTwoQubitKrausMap(Qureg qureg, int target1, int target2, ComplexMatrix4 *ops, int numOps) {
+void densmatr_mixTwoQubitKrausMap(Qureg qureg, int target1, int target2, ComplexMatrix4 *ops, int numOps) {
     
     ComplexMatrixN superOp;
     macro_allocStackComplexMatrixN(superOp, 4);
@@ -635,7 +635,7 @@ void densmatr_applyTwoQubitKrausMap(Qureg qureg, int target1, int target2, Compl
     densmatr_applyTwoQubitKrausSuperoperator(qureg, target1, target2, superOp);
 }
 
-void densmatr_applyMultiQubitKrausMap(Qureg qureg, int* targets, int numTargets, ComplexMatrixN* ops, int numOps) {
+void densmatr_mixMultiQubitKrausMap(Qureg qureg, int* targets, int numTargets, ComplexMatrixN* ops, int numOps) {
 
     ComplexMatrixN superOp;
     macro_allocStackComplexMatrixN(superOp, 2*numTargets);
@@ -643,7 +643,7 @@ void densmatr_applyMultiQubitKrausMap(Qureg qureg, int* targets, int numTargets,
     densmatr_applyMultiQubitKrausSuperoperator(qureg, targets, numTargets, superOp);
 }
 
-void densmatr_oneQubitPauliError(Qureg qureg, int qubit, qreal probX, qreal probY, qreal probZ) {
+void densmatr_mixPauli(Qureg qureg, int qubit, qreal probX, qreal probY, qreal probZ) {
     
     // convert pauli probabilities into Kraus map
     const int numOps = 4;
@@ -662,7 +662,7 @@ void densmatr_oneQubitPauliError(Qureg qureg, int qubit, qreal probX, qreal prob
     ops[2].imag[0][1] = -facs[2]; ops[2].imag[1][0] =  facs[2];
     ops[3].real[0][0] =  facs[3]; ops[3].real[1][1] = -facs[3];
     
-    densmatr_applyKrausMap(qureg, qubit, ops, numOps);
+    densmatr_mixKrausMap(qureg, qubit, ops, numOps);
 }
 
 #ifdef __cplusplus
