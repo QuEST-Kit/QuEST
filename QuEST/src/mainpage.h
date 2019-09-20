@@ -71,14 +71,14 @@ This page is currently a mere grouping of the full API doc available at QuEST.h
 
 \section sec_noise Noise
 
-- \ref applyOneQubitDephaseError
-- \ref applyTwoQubitDephaseError
-- \ref applyOneQubitDepolariseError
-- \ref applyTwoQubitDepolariseError
+- \ref mixDephasing
+- \ref mixTwoQubitDephasing
+- \ref mixDepolarising
+- \ref mixTwoQubitDepolarising
 
 \section sec_othermods Modifications
 
-- \ref addDensityMatrix
+- \ref mixDensityMatrix
 - \ref cloneQureg
 - \ref collapseToOutcome
 - \ref setAmps

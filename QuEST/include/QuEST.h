@@ -1504,7 +1504,7 @@ void writeRecordedQASMToFile(Qureg qureg, char* filename);
  *      or if \p targetQubit is outside [0, \p qureg.numQubitsRepresented),
  *      or if \p prob is not in [0, 1/2]
  */
-void applyOneQubitDephaseError(Qureg qureg, const int targetQubit, qreal prob);
+void mixDephasing(Qureg qureg, const int targetQubit, qreal prob);
 
 /** Mixes a density matrix \p qureg to induce two-qubit dephasing noise.
  * With probability \p prob, applies Pauli Z to either or both qubits.
@@ -1530,7 +1530,7 @@ void applyOneQubitDephaseError(Qureg qureg, const int targetQubit, qreal prob);
  *      or if \p qubit1 = \p qubit2,
  *      or if \p prob is not in [0, 3/4]
  */
-void applyTwoQubitDephaseError(Qureg qureg, int qubit1, int qubit2, qreal prob);
+void mixTwoQubitDephasing(Qureg qureg, int qubit1, int qubit2, qreal prob);
 
 /** Mixes a density matrix \p qureg to induce single-qubit homogeneous depolarising noise.
  * With probability \p prob, applies (uniformly) either Pauli X, Y, or Z to \p targetQubit.
@@ -1554,7 +1554,7 @@ void applyTwoQubitDephaseError(Qureg qureg, int qubit1, int qubit2, qreal prob);
  *      or if \p targetQubit is outside [0, \p qureg.numQubitsRepresented),
  *      or if \p prob is not in [0, 3/4]
  */
-void applyOneQubitDepolariseError(Qureg qureg, const int targetQubit, qreal prob);
+void mixDepolarising(Qureg qureg, const int targetQubit, qreal prob);
 
 /** Mixes a density matrix \p qureg to induce single-qubit damping (decay to 0 state).
  * With probability \p prob, applies damping (transition from 1 to 0 state).
@@ -1576,7 +1576,7 @@ void applyOneQubitDepolariseError(Qureg qureg, const int targetQubit, qreal prob
  *      or if \p targetQubit is outside [0, \p qureg.numQubitsRepresented),
  *      or if \p prob is not in [0, 1]
  */
-void applyOneQubitDampingError(Qureg qureg, const int targetQubit, qreal prob);
+void mixDamping(Qureg qureg, const int targetQubit, qreal prob);
 
 /** Mixes a density matrix \p qureg to induce two-qubit homogeneous depolarising noise.
  * With probability \p prob, applies to \p qubit1 and \p qubit2 any operator of the set
@@ -1625,7 +1625,7 @@ void applyOneQubitDampingError(Qureg qureg, const int targetQubit, qreal prob);
  *      or if \p qubit1 = \p qubit2,
  *      or if \p prob is not in [0, 15/16]
  */
-void applyTwoQubitDepolariseError(Qureg qureg, int qubit1, int qubit2, qreal prob);
+void mixTwoQubitDepolarising(Qureg qureg, int qubit1, int qubit2, qreal prob);
 
 /** Mixes a density matrix \p qureg to induce general single-qubit Pauli noise.
  * With probabilities \p probX, \p probY and \p probZ, applies Pauli X, Y, and Z
@@ -1657,7 +1657,7 @@ void applyTwoQubitDepolariseError(Qureg qureg, int qubit1, int qubit2, qreal pro
  *      or if any of p in {\p probX, \p probY or \p probZ} don't satisfy
  *      p <= (1 - \p probX - \p probY - \p probZ)
  */
-void applyOneQubitPauliError(Qureg qureg, int targetQubit, qreal probX, qreal probY, qreal probZ);
+void mixPauli(Qureg qureg, int targetQubit, qreal probX, qreal probY, qreal probZ);
 
 /** Modifies combineQureg to become (1-prob)combineProb + prob otherQureg.
  * Both registers must be equal-dimension density matrices, and prob must be in [0, 1].
@@ -1670,7 +1670,7 @@ void applyOneQubitPauliError(Qureg qureg, int targetQubit, qreal probX, qreal pr
  *      or if the dimensions of \p combineQureg and \p otherQureg do not match,
  *      or if \p prob is not in [0, 1]
  */
-void addDensityMatrix(Qureg combineQureg, qreal prob, Qureg otherQureg);
+void mixDensityMatrix(Qureg combineQureg, qreal prob, Qureg otherQureg);
 
 /** Calculates the purity of a density matrix, by the trace of the density matrix squared.
  * Returns \f$\text{Tr}(\rho^2)\f$.
@@ -2425,7 +2425,7 @@ void multiControlledMultiQubitUnitary(Qureg qureg, int* ctrls, const int numCtrl
  *      or if \p ops do not create a completely positive, trace preserving map,
  *      or if a node cannot fit 4 amplitudes in distributed mode.
  */
-void applyOneQubitKrausMap(Qureg qureg, int target, ComplexMatrix2 *ops, int numOps);
+void mixKrausMap(Qureg qureg, int target, ComplexMatrix2 *ops, int numOps);
 
 /** Apply a general two-qubit Kraus map to a density matrix, as specified by at most 
  * sixteen Kraus operators. A Kraus map is also referred to as a "operator-sum representation"
@@ -2456,7 +2456,7 @@ void applyOneQubitKrausMap(Qureg qureg, int target, ComplexMatrix2 *ops, int num
  *      or if \p ops do not create a completely positive, trace preserving map,
  *      or if a node cannot fit 16 amplitudes in distributed mode.
  */
-void applyTwoQubitKrausMap(Qureg qureg, int target1, int target2, ComplexMatrix4 *ops, int numOps);
+void mixTwoQubitKrausMap(Qureg qureg, int target1, int target2, ComplexMatrix4 *ops, int numOps);
 
 /** Apply a general N-qubit Kraus map to a density matrix, as specified by at most (2N)^2
  * Kraus operators. A Kraus map is also referred to as a "operator-sum representation"
@@ -2488,7 +2488,7 @@ void applyTwoQubitKrausMap(Qureg qureg, int target1, int target2, ComplexMatrix4
  *      or if \p ops do not create a completely positive, trace preserving map,
  *      or if a node cannot fit (2N)^2 amplitudes in distributed mode.
  */
-void applyMultiQubitKrausMap(Qureg qureg, int* targets, int numTargets, ComplexMatrixN* ops, int numOps);
+void mixMultiQubitKrausMap(Qureg qureg, int* targets, int numTargets, ComplexMatrixN* ops, int numOps);
 
 /** Computes the Hilbert Schmidt distance between two density matrices \p a and \p b, 
  * defined as the Frobenius norm of the difference between them.

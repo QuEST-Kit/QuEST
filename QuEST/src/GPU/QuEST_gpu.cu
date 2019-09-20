@@ -2442,7 +2442,7 @@ __global__ void densmatr_addDensityMatrixKernel(Qureg combineQureg, qreal otherP
     combineQureg.deviceStateVec.imag[ampInd] += otherProb*otherQureg.deviceStateVec.imag[ampInd];
 }
 
-void densmatr_addDensityMatrix(Qureg combineQureg, qreal otherProb, Qureg otherQureg) {
+void densmatr_mixDensityMatrix(Qureg combineQureg, qreal otherProb, Qureg otherQureg) {
     
     long long int numAmpsToVisit = combineQureg.numAmpsPerChunk;
     
