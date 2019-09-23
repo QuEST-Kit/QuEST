@@ -69,8 +69,7 @@ int main (int narg, char *varg[]) {
     toff.real[6][7] = 1;
     toff.real[7][6] = 1;
     for (int i=0; i<6; i++)
-        for (int j=0; j<6; j++)
-            toff.real[i][j] = 1;
+        toff.real[i][i] = 1;
     multiQubitUnitary(qubits, targs, 3, toff);
     
     /*
