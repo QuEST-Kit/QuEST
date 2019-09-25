@@ -63,22 +63,22 @@ qreal densmatr_calcHilbertSchmidtDistanceSquaredLocal(Qureg a, Qureg b);
 
 qreal densmatr_findProbabilityOfZeroLocal(Qureg qureg, const int measureQubit);
 
-void densmatr_oneQubitDepolariseLocal(Qureg qureg, const int targetQubit, qreal depolLevel);
+void densmatr_mixDepolarisingLocal(Qureg qureg, const int targetQubit, qreal depolLevel);
 
-void densmatr_oneQubitDepolariseDistributed(Qureg qureg, const int targetQubit, qreal depolLevel);
+void densmatr_mixDepolarisingDistributed(Qureg qureg, const int targetQubit, qreal depolLevel);
 
-void densmatr_oneQubitDampingLocal(Qureg qureg, const int targetQubit, qreal damping);
+void densmatr_mixDampingLocal(Qureg qureg, const int targetQubit, qreal damping);
 
-void densmatr_oneQubitDampingDistributed(Qureg qureg, const int targetQubit, qreal damping);
+void densmatr_mixDampingDistributed(Qureg qureg, const int targetQubit, qreal damping);
 
-void densmatr_twoQubitDepolariseLocal(Qureg qureg, int qubit1, int qubit2, qreal delta, qreal gamma);
+void densmatr_mixTwoQubitDepolarisingLocal(Qureg qureg, int qubit1, int qubit2, qreal delta, qreal gamma);
 
-void densmatr_twoQubitDepolariseLocalPart1(Qureg qureg, int qubit1, int qubit2, qreal delta);
+void densmatr_mixTwoQubitDepolarisingLocalPart1(Qureg qureg, int qubit1, int qubit2, qreal delta);
 
-void densmatr_twoQubitDepolariseDistributed(Qureg qureg, const int targetQubit,
+void densmatr_mixTwoQubitDepolarisingDistributed(Qureg qureg, const int targetQubit,
                 const int qubit2, qreal delta, qreal gamma);
 
-void densmatr_twoQubitDepolariseQ1LocalQ2DistributedPart3(Qureg qureg, const int targetQubit,
+void densmatr_mixTwoQubitDepolarisingQ1LocalQ2DistributedPart3(Qureg qureg, const int targetQubit,
                 const int qubit2, qreal delta, qreal gamma);
 
 

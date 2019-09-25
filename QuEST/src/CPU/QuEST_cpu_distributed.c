@@ -679,7 +679,7 @@ void compressPairVectorForTwoQubitDepolarise(Qureg qureg, const int targetQubit,
 }
 
 
-void densmatr_oneQubitDepolarise(Qureg qureg, const int targetQubit, qreal depolLevel) {
+void densmatr_mixDepolarising(Qureg qureg, const int targetQubit, qreal depolLevel) {
     if (depolLevel == 0)
         return;
     
@@ -690,7 +690,7 @@ void densmatr_oneQubitDepolarise(Qureg qureg, const int targetQubit, qreal depol
             qureg.numQubitsRepresented, targetQubit);
 
     if (useLocalDataOnly){
-        densmatr_oneQubitDepolariseLocal(qureg, targetQubit, depolLevel);
+        densmatr_mixDepolarisingLocal(qureg, targetQubit, depolLevel);
     } else {
         // pack data to send to my pair process into the first half of pairStateVec
         compressPairVectorForSingleQubitDepolarise(qureg, targetQubit);
@@ -701,12 +701,12 @@ void densmatr_oneQubitDepolarise(Qureg qureg, const int targetQubit, qreal depol
                 targetQubit, qureg.numQubitsRepresented);
 
         exchangePairStateVectorHalves(qureg, pairRank);
-        densmatr_oneQubitDepolariseDistributed(qureg, targetQubit, depolLevel);
+        densmatr_mixDepolarisingDistributed(qureg, targetQubit, depolLevel);
     }
 
 }
 
-void densmatr_oneQubitDamping(Qureg qureg, const int targetQubit, qreal damping) {
+void densmatr_mixDamping(Qureg qureg, const int targetQubit, qreal damping) {
     if (damping == 0)
         return;
     
@@ -717,7 +717,7 @@ void densmatr_oneQubitDamping(Qureg qureg, const int targetQubit, qreal damping)
             qureg.numQubitsRepresented, targetQubit);
 
     if (useLocalDataOnly){
-        densmatr_oneQubitDampingLocal(qureg, targetQubit, damping);
+        densmatr_mixDampingLocal(qureg, targetQubit, damping);
     } else {
         // pack data to send to my pair process into the first half of pairStateVec
         compressPairVectorForSingleQubitDepolarise(qureg, targetQubit);
@@ -728,19 +728,19 @@ void densmatr_oneQubitDamping(Qureg qureg, const int targetQubit, qreal damping)
                 targetQubit, qureg.numQubitsRepresented);
 
         exchangePairStateVectorHalves(qureg, pairRank);
-        densmatr_oneQubitDampingDistributed(qureg, targetQubit, damping);
+        densmatr_mixDampingDistributed(qureg, targetQubit, damping);
     }
 
 }
 
-void densmatr_twoQubitDepolarise(Qureg qureg, int qubit1, int qubit2, qreal depolLevel){
+void densmatr_mixTwoQubitDepolarising(Qureg qureg, int qubit1, int qubit2, qreal depolLevel){
     if (depolLevel == 0)
         return;
     int rankIsUpperBiggerQubit, rankIsUpperSmallerQubit;
     int pairRank; // rank of corresponding chunk
     int biggerQubit, smallerQubit;
 
-    densmatr_twoQubitDephase(qureg, qubit1, qubit2, depolLevel);
+    densmatr_mixTwoQubitDephasing(qureg, qubit1, qubit2, depolLevel);
     
     qreal eta = 2/depolLevel;
     qreal delta = eta - 1 - sqrt( (eta-1)*(eta-1) - 1 ); 
@@ -763,13 +763,13 @@ void densmatr_twoQubitDepolarise(Qureg qureg, int qubit1, int qubit2, qreal depo
         qureg.numQubitsRepresented, biggerQubit);
     if (useLocalDataOnlyBigQubit){
         // does parts 1, 2 and 3 locally in one go
-        densmatr_twoQubitDepolariseLocal(qureg, qubit1, qubit2, delta, gamma);
+        densmatr_mixTwoQubitDepolarisingLocal(qureg, qubit1, qubit2, delta, gamma);
     } else {
         useLocalDataOnlySmallQubit = densityMatrixBlockFitsInChunk(qureg.numAmpsPerChunk, 
             qureg.numQubitsRepresented, smallerQubit);
         if (useLocalDataOnlySmallQubit){
             // do part 1 locally
-            densmatr_twoQubitDepolariseLocalPart1(qureg, smallerQubit, biggerQubit, delta);
+            densmatr_mixTwoQubitDepolarisingLocalPart1(qureg, smallerQubit, biggerQubit, delta);
             
             // do parts 2 and 3 distributed (if part 2 is distributed part 3 is also distributed)
             // part 2 will be distributed and the value of the small qubit won't matter
@@ -780,7 +780,7 @@ void densmatr_twoQubitDepolarise(Qureg qureg, int qubit1, int qubit2, qreal depo
                     biggerQubit, qureg.numQubitsRepresented);
 
             exchangePairStateVectorHalves(qureg, pairRank);
-            densmatr_twoQubitDepolariseDistributed(qureg, smallerQubit, biggerQubit, delta, GAMMA_PARTS_1_OR_2);
+            densmatr_mixTwoQubitDepolarisingDistributed(qureg, smallerQubit, biggerQubit, delta, GAMMA_PARTS_1_OR_2);
             
             // part 3 will be distributed but involve rearranging for the smaller qubit
             compressPairVectorForTwoQubitDepolarise(qureg, smallerQubit, biggerQubit);
@@ -790,7 +790,7 @@ void densmatr_twoQubitDepolarise(Qureg qureg, int qubit1, int qubit2, qreal depo
                     biggerQubit, qureg.numQubitsRepresented);
 
             exchangePairStateVectorHalves(qureg, pairRank);
-            densmatr_twoQubitDepolariseQ1LocalQ2DistributedPart3(qureg, smallerQubit, biggerQubit, delta, gamma);
+            densmatr_mixTwoQubitDepolarisingQ1LocalQ2DistributedPart3(qureg, smallerQubit, biggerQubit, delta, gamma);
         } else {
             // do part 1, 2 and 3 distributed
             // part 1
@@ -801,7 +801,7 @@ void densmatr_twoQubitDepolarise(Qureg qureg, int qubit1, int qubit2, qreal depo
                     smallerQubit, qureg.numQubitsRepresented);
 
             exchangePairStateVectorHalves(qureg, pairRank);
-            densmatr_twoQubitDepolariseDistributed(qureg, smallerQubit, biggerQubit, delta, GAMMA_PARTS_1_OR_2);
+            densmatr_mixTwoQubitDepolarisingDistributed(qureg, smallerQubit, biggerQubit, delta, GAMMA_PARTS_1_OR_2);
 
             // part 2
             compressPairVectorForTwoQubitDepolarise(qureg, smallerQubit, biggerQubit);
@@ -811,14 +811,14 @@ void densmatr_twoQubitDepolarise(Qureg qureg, int qubit1, int qubit2, qreal depo
                     biggerQubit, qureg.numQubitsRepresented);
 
             exchangePairStateVectorHalves(qureg, pairRank);
-            densmatr_twoQubitDepolariseDistributed(qureg, smallerQubit, biggerQubit, delta, GAMMA_PARTS_1_OR_2);
+            densmatr_mixTwoQubitDepolarisingDistributed(qureg, smallerQubit, biggerQubit, delta, GAMMA_PARTS_1_OR_2);
 
             // part 3
             compressPairVectorForTwoQubitDepolarise(qureg, smallerQubit, biggerQubit);
             pairRank = getChunkOuterBlockPairIdForPart3(rankIsUpperSmallerQubit, rankIsUpperBiggerQubit, 
                     qureg.chunkId, qureg.numAmpsPerChunk, smallerQubit, biggerQubit, qureg.numQubitsRepresented);
             exchangePairStateVectorHalves(qureg, pairRank);
-            densmatr_twoQubitDepolariseDistributed(qureg, smallerQubit, biggerQubit, delta, gamma);
+            densmatr_mixTwoQubitDepolarisingDistributed(qureg, smallerQubit, biggerQubit, delta, gamma);
 
         }
     }

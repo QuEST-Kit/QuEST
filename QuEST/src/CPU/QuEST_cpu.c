@@ -59,17 +59,17 @@ void densmatr_oneQubitDegradeOffDiagonal(Qureg qureg, const int targetQubit, qre
     }
 }
 
-void densmatr_oneQubitDephase(Qureg qureg, const int targetQubit, qreal dephase) {
+void densmatr_mixDephasing(Qureg qureg, const int targetQubit, qreal dephase) {
     qreal retain=1-dephase;
     densmatr_oneQubitDegradeOffDiagonal(qureg, targetQubit, retain);
 }
 
-void densmatr_oneQubitDampingDephase(Qureg qureg, const int targetQubit, qreal dephase) {
+void densmatr_mixDampingDephase(Qureg qureg, const int targetQubit, qreal dephase) {
     qreal retain=sqrt(1-dephase);
     densmatr_oneQubitDegradeOffDiagonal(qureg, targetQubit, retain);
 }
 
-void densmatr_twoQubitDephase(Qureg qureg, const int qubit1, const int qubit2, qreal dephase) {
+void densmatr_mixTwoQubitDephasing(Qureg qureg, const int qubit1, const int qubit2, qreal dephase) {
     qreal retain=1-dephase;
 
     const long long int numTasks = qureg.numAmpsPerChunk;
@@ -110,7 +110,7 @@ void densmatr_twoQubitDephase(Qureg qureg, const int qubit1, const int qubit2, q
     }
 }
 
-void densmatr_oneQubitDepolariseLocal(Qureg qureg, const int targetQubit, qreal depolLevel) {
+void densmatr_mixDepolarisingLocal(Qureg qureg, const int targetQubit, qreal depolLevel) {
     qreal retain=1-depolLevel;
 
     const long long int numTasks = qureg.numAmpsPerChunk;
@@ -159,7 +159,7 @@ void densmatr_oneQubitDepolariseLocal(Qureg qureg, const int targetQubit, qreal 
     }
 }
 
-void densmatr_oneQubitDampingLocal(Qureg qureg, const int targetQubit, qreal damping) {
+void densmatr_mixDampingLocal(Qureg qureg, const int targetQubit, qreal damping) {
     qreal retain=1-damping;
     qreal dephase=sqrt(retain);
 
@@ -209,13 +209,13 @@ void densmatr_oneQubitDampingLocal(Qureg qureg, const int targetQubit, qreal dam
     }
 }
 
-void densmatr_oneQubitDepolariseDistributed(Qureg qureg, const int targetQubit, qreal depolLevel) {
+void densmatr_mixDepolarisingDistributed(Qureg qureg, const int targetQubit, qreal depolLevel) {
 
     // first do dephase part. 
     // TODO -- this might be more efficient to do at the same time as the depolarise if we move to
     // iterating over all elements in the state vector for the purpose of vectorisation
-    // TODO -- if we keep this split, move this function to densmatr_oneQubitDepolarise()
-    densmatr_oneQubitDephase(qureg, targetQubit, depolLevel);
+    // TODO -- if we keep this split, move this function to densmatr_mixDepolarising()
+    densmatr_mixDephasing(qureg, targetQubit, depolLevel);
 
     long long int sizeInnerBlock, sizeInnerHalfBlock;
     long long int sizeOuterColumn, sizeOuterHalfColumn;
@@ -284,14 +284,14 @@ void densmatr_oneQubitDepolariseDistributed(Qureg qureg, const int targetQubit, 
     }    
 }
 
-void densmatr_oneQubitDampingDistributed(Qureg qureg, const int targetQubit, qreal damping) {
+void densmatr_mixDampingDistributed(Qureg qureg, const int targetQubit, qreal damping) {
     qreal retain=1-damping;
     qreal dephase=sqrt(1-damping);
     // first do dephase part. 
     // TODO -- this might be more efficient to do at the same time as the depolarise if we move to
     // iterating over all elements in the state vector for the purpose of vectorisation
-    // TODO -- if we keep this split, move this function to densmatr_oneQubitDepolarise()
-    densmatr_oneQubitDampingDephase(qureg, targetQubit, dephase);
+    // TODO -- if we keep this split, move this function to densmatr_mixDepolarising()
+    densmatr_mixDampingDephase(qureg, targetQubit, dephase);
 
     long long int sizeInnerBlock, sizeInnerHalfBlock;
     long long int sizeOuterColumn, sizeOuterHalfColumn;
@@ -371,7 +371,7 @@ void densmatr_oneQubitDampingDistributed(Qureg qureg, const int targetQubit, qre
 }
 
 // @TODO
-void densmatr_twoQubitDepolariseLocal(Qureg qureg, int qubit1, int qubit2, qreal delta, qreal gamma) {
+void densmatr_mixTwoQubitDepolarisingLocal(Qureg qureg, int qubit1, int qubit2, qreal delta, qreal gamma) {
     const long long int numTasks = qureg.numAmpsPerChunk;
     long long int innerMaskQubit1 = 1LL << qubit1;
     long long int outerMaskQubit1= 1LL << (qubit1 + qureg.numQubitsRepresented);
@@ -473,7 +473,7 @@ void densmatr_twoQubitDepolariseLocal(Qureg qureg, int qubit1, int qubit2, qreal
     }
 }
 
-void densmatr_twoQubitDepolariseLocalPart1(Qureg qureg, int qubit1, int qubit2, qreal delta) {
+void densmatr_mixTwoQubitDepolarisingLocalPart1(Qureg qureg, int qubit1, int qubit2, qreal delta) {
     const long long int numTasks = qureg.numAmpsPerChunk;
     long long int innerMaskQubit1 = 1LL << qubit1;
     long long int outerMaskQubit1= 1LL << (qubit1 + qureg.numQubitsRepresented);
@@ -526,7 +526,7 @@ void densmatr_twoQubitDepolariseLocalPart1(Qureg qureg, int qubit1, int qubit2, 
     }
 }
 
-void densmatr_twoQubitDepolariseDistributed(Qureg qureg, const int targetQubit, 
+void densmatr_mixTwoQubitDepolarisingDistributed(Qureg qureg, const int targetQubit, 
         const int qubit2, qreal delta, qreal gamma) {
 
     long long int sizeInnerBlockQ1, sizeInnerHalfBlockQ1;
@@ -617,7 +617,7 @@ void densmatr_twoQubitDepolariseDistributed(Qureg qureg, const int targetQubit,
     }    
 }
 
-void densmatr_twoQubitDepolariseQ1LocalQ2DistributedPart3(Qureg qureg, const int targetQubit, 
+void densmatr_mixTwoQubitDepolarisingQ1LocalQ2DistributedPart3(Qureg qureg, const int targetQubit, 
         const int qubit2, qreal delta, qreal gamma) {
 
     long long int sizeInnerBlockQ1, sizeInnerHalfBlockQ1;
@@ -875,7 +875,7 @@ qreal densmatr_calcPurityLocal(Qureg qureg) {
     return trace;
 }
 
-void densmatr_addDensityMatrix(Qureg combineQureg, qreal otherProb, Qureg otherQureg) {
+void densmatr_mixDensityMatrix(Qureg combineQureg, qreal otherProb, Qureg otherQureg) {
     
     /* corresponding amplitudes live on the same node (same dimensions) */
     

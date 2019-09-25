@@ -23,21 +23,21 @@
 # endif
 
 
-void densmatr_oneQubitDepolarise(Qureg qureg, const int targetQubit, qreal depolLevel) {
+void densmatr_mixDepolarising(Qureg qureg, const int targetQubit, qreal depolLevel) {
     if (depolLevel == 0)
         return;
 
-    densmatr_oneQubitDepolariseLocal(qureg, targetQubit, depolLevel);
+    densmatr_mixDepolarisingLocal(qureg, targetQubit, depolLevel);
 }
 
-void densmatr_oneQubitDamping(Qureg qureg, const int targetQubit, qreal damping) {
+void densmatr_mixDamping(Qureg qureg, const int targetQubit, qreal damping) {
     if (damping == 0)
         return;
 
-    densmatr_oneQubitDampingLocal(qureg, targetQubit, damping);
+    densmatr_mixDampingLocal(qureg, targetQubit, damping);
 }
 
-void densmatr_twoQubitDepolarise(Qureg qureg, int qubit1, int qubit2, qreal depolLevel){
+void densmatr_mixTwoQubitDepolarising(Qureg qureg, int qubit1, int qubit2, qreal depolLevel){
     if (depolLevel == 0)
         return;
     qreal eta = 2/depolLevel;
@@ -46,8 +46,8 @@ void densmatr_twoQubitDepolarise(Qureg qureg, int qubit1, int qubit2, qreal depo
     // TODO -- test delta too small
 
     gamma = 1/(gamma*gamma*gamma);
-    densmatr_twoQubitDephase(qureg, qubit1, qubit2, depolLevel);
-    densmatr_twoQubitDepolariseLocal(qureg, qubit1, qubit2, delta, gamma);
+    densmatr_mixTwoQubitDephasing(qureg, qubit1, qubit2, depolLevel);
+    densmatr_mixTwoQubitDepolarisingLocal(qureg, qubit1, qubit2, delta, gamma);
 }
 
 qreal densmatr_calcPurity(Qureg qureg) {
