@@ -91,7 +91,9 @@ typedef long double complex long_double_complex;
  * creating doc
  */
 
-/** \def qcomp
+/** @def qcomp
+ * @ingroup type
+ *
  * A precision-agnostic operator-overloaded complex number type.  
  * This is a complex analog of \ref qreal and is of single, double or quad
  * precision depending on the value of \ref QuEST_PREC.
@@ -117,11 +119,15 @@ typedef long double complex long_double_complex;
  * interface, using \ref toComplex and \ref fromComplex.
  */
 
-/** \def toComplex(qcomp)
+/** @def toComplex(qcomp)
+ * @ingroup type
+ *
  * Creates a Complex struct, which can be passed to the QuEST API, from a qcomp
  */
 
-/** \def fromComplex(Complex)
+/** @def fromComplex(Complex)
+ * @ingroup type
+ *
  * Converts a Complex struct to a qcomp native type
  */
 

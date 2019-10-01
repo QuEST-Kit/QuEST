@@ -62,7 +62,9 @@
 # endif
 
 
-/** \def QuEST_PREC 
+/** @def QuEST_PREC 
+ * @ingroup type
+ *
  * Sets the precision of \ref qreal and \ref qcomp, and generally that of the state-vectors stored
  * by QuEST. \p QuEST_PREC can be 1, 2 or 4 for single, double and quad precision - requires
  * 4, 8 and 16 bytes per real & imag component per amplitude of the statevector respectively.
@@ -71,7 +73,9 @@
  * Note that quad precision is not compatible with most GPUs.
  */
 
-/** \def qreal
+/** @def qreal
+ * @ingroup type
+ *
  * A precision-agnostic floating point number, as determined by \ref QuEST_PREC.
  * Is a single, double or quad precision float when \ref QuEST_PREC is 1, 2 or 4 respectively.
  */
