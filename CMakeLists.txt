@@ -1,3 +1,7 @@
+# author: Ania Brown 
+# author: Jacob Wilkins
+# author: Balint Koczor (Windows compatibility)
+
 # CMake initialisation.
 cmake_minimum_required(VERSION 3.1)
 

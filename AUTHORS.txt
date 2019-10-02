@@ -9,6 +9,9 @@ Mr Tyson Jones [developer]
     architecture
     interface
     quantum ops
+Dr Balint Koczor [developer]
+    Kraus maps
+    debugging
 Mr Jacob Wilkins [developer]
     testing
 Dr Ian Bush [consultant]
