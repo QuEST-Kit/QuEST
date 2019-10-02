@@ -2,6 +2,10 @@
 
 /** @file
  * Provides validation defined in QuEST_validation.c which is used exclusively by QuEST.c
+ *
+ * @author Tyson Jones
+ * @author Ania Brown (original testing of qubit indices, unitarity, valid collapse probability)
+ * @author Balint Koczor (Kraus maps)
  */
  
 # ifndef QUEST_VALIDATION_H

@@ -2,6 +2,9 @@
 
 /** @file
  * An implementation of the backend in ../QuEST_internal.h for a GPU environment.
+ *
+ * @author Ania Brown 
+ * @author Tyson Jones
  */
 
 # include "QuEST.h"

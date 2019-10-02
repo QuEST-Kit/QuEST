@@ -11,6 +11,9 @@
 # about any errors or complications, or 
 # raise an issue on Github
 
+# author: Tyson Jones, based on...
+# author: Ania Brown's individual makefiles
+
 #======================================================================#
 #                                                                      #
 #      User settings                                                   #

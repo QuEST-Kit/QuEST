@@ -3,6 +3,9 @@
 /** @file
  * General functions used internally, supplied by QuEST_common or by hardware-specific backends.
  * Note that some bespoke functions used only internally exist in QuEST_qasm.h and QuEST_validation.h
+ *
+ * @author Ania Brown (statevecs, original architecture)
+ * @author Tyson Jones (re-architecture, statevecs, density matrices)
  */
 
 # ifndef QUEST_INTERNAL_H

@@ -9,6 +9,10 @@
  * can be assumed a statevector. Functions prefixed with densmatr_ may still
  * explicitly call statevec_ functions, but will need to manually apply the
  * conjugate qubit-shifted operations to satisfy the Choi–Jamiolkowski isomorphism
+ *
+ * @author Tyson Jones
+ * @author Ania Brown (seeding, reporting)
+ * @author Balint Koczor (Kraus maps, mixPauli, Windows compatibility)
  */
 
 # include "QuEST.h"

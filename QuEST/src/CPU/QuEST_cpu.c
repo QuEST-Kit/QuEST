@@ -4,6 +4,9 @@
  * The core of the CPU backend functionality. The CPU/MPI implementations of the pure state functions in
  * ../QuEST_ops_pure.h are in QuEST_cpu_local.c and QuEST_cpu_distributed.c which mostly wrap the core
  * functions defined here. Some additional hardware-agnostic functions are defined here
+ *
+ * @author Ania Brown
+ * @author Tyson Jones
  */
 
 # include "QuEST.h"
