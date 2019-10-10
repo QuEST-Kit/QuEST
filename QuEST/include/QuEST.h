@@ -2447,6 +2447,25 @@ void applyTwoQubitKrausMap(Qureg qureg, int target1, int target2, ComplexMatrix4
  */
 qreal calcHilbertSchmidtDistance(Qureg a, Qureg b);
 
+/** Computes the Hilbert-Schmidt scalar product between two density matrices \p a and \p b, 
+ * equialent to the Frobenius inner product of matrices.
+ * That is, we define the Hilbert-Schmidt scalar product
+ * \f[
+    ((a, b))_HS = (( a, b ))_F = \text{Tr}[ a^\dagger b ] 
+ * \f]
+ * This is equivalent to the sum of products of matrix elemets, i.e.
+ * \f[
+    ((a, b))_HS = \sum\limits_i \sum\limits_j  conj(a_{ij}) b_{ij}
+ * \f]
+ *
+ * @param[in] a a density matrix
+ * @param[in] b an equally-sized density matrix
+ * @throws exitWithError
+ *      if either \p a or \p b are not density matrices,
+ *      or if \p a and \p have mismatching dimensions.
+ */
+qreal calcHilbertSchmidtScalarProduct(Qureg a, Qureg b);
+
 /** Modifies qureg \p out to the result of (\p facOut \p out + \p fac1 \p qureg1 + \p fac2 \p qureg2), 
  * imposing no constraints on normalisation. Works for both statevectors and density matrices.
  * Note that afterward, \p out may not longer be normalised and ergo no longer a valid 

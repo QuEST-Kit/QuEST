@@ -881,6 +881,14 @@ qreal calcHilbertSchmidtDistance(Qureg a, Qureg b) {
     return densmatr_calcHilbertSchmidtDistance(a, b);
 }
 
+qreal calcHilbertSchmidtScalarProduct(Qureg a, Qureg b) {
+    validateDensityMatrQureg(a, __func__);
+    validateDensityMatrQureg(b, __func__);
+    validateMatchingQuregDims(a, b, __func__);
+    
+    return densmatr_calcHilbertSchmidtScalarProduct(a, b);
+}
+
 
 /*
  * decoherence

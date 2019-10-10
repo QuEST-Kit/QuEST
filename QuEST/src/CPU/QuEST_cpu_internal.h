@@ -61,6 +61,8 @@ qreal densmatr_calcFidelityLocal(Qureg qureg, Qureg pureState);
 
 qreal densmatr_calcHilbertSchmidtDistanceSquaredLocal(Qureg a, Qureg b);
 
+qreal densmatr_calcHilbertSchmidtScalarProductLocal(Qureg a, Qureg b);
+
 qreal densmatr_findProbabilityOfZeroLocal(Qureg qureg, const int measureQubit);
 
 void densmatr_oneQubitDepolariseLocal(Qureg qureg, const int targetQubit, qreal depolLevel);

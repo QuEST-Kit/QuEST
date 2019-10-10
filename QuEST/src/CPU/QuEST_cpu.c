@@ -942,6 +942,40 @@ qreal densmatr_calcHilbertSchmidtDistanceSquaredLocal(Qureg a, Qureg b) {
     return trace;
 }
 
+/** computes Tr(conjTrans(a) b) = sum of (a^* b) */
+qreal densmatr_calcHilbertSchmidtScalarProductLocal(Qureg a, Qureg b) {
+    
+    long long int index;
+    long long int numAmps = a.numAmpsPerChunk;
+        
+    qreal *aRe = a.stateVec.real;
+    qreal *aIm = a.stateVec.imag;
+    qreal *bRe = b.stateVec.real;
+    qreal *bIm = b.stateVec.imag;
+    
+    qreal trace = 0, traceIm = 0;
+    
+# ifdef _OPENMP
+# pragma omp parallel \
+    shared    (aRe,aIm, bRe,bIm, numAmps) \
+    private   (index, traceIm) \
+    reduction ( +:trace )
+# endif 
+    {
+# ifdef _OPENMP
+# pragma omp for schedule  (static)
+# endif
+        for (index=0LL; index<numAmps; index++) {
+            trace += aRe[index]*bRe[index] + aIm[index]*bIm[index];
+            traceIm += aRe[index]*bIm[index] - aIm[index]*bRe[index];
+        }
+    }
+    
+    if(abs(traceIm) > REAL_EPS) printf("ERROR: too large imag. part of calcHilbertSchmidtScalarProduct");
+    return trace;
+}
+
+
 /** computes a few dens-columns-worth of (vec^*T) dens * vec */
 qreal densmatr_calcFidelityLocal(Qureg qureg, Qureg pureState) {
         
