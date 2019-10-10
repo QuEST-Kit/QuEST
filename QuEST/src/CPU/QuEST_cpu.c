@@ -914,8 +914,8 @@ qreal densmatr_calcHilbertSchmidtDistanceSquaredLocal(Qureg a, Qureg b) {
     long long int numAmps = a.numAmpsPerChunk;
         
     qreal *aRe = a.stateVec.real;
-    qreal *aIm = b.stateVec.imag;
-    qreal *bRe = a.stateVec.real;
+    qreal *aIm = a.stateVec.imag;
+    qreal *bRe = b.stateVec.real;
     qreal *bIm = b.stateVec.imag;
     
     qreal trace = 0;
