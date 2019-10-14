@@ -953,12 +953,12 @@ qreal densmatr_calcHilbertSchmidtScalarProductLocal(Qureg a, Qureg b) {
     qreal *bRe = b.stateVec.real;
     qreal *bIm = b.stateVec.imag;
     
-    qreal trace = 0, traceIm = 0;
+    qreal trace = 0;
     
 # ifdef _OPENMP
 # pragma omp parallel \
     shared    (aRe,aIm, bRe,bIm, numAmps) \
-    private   (index, traceIm) \
+    private   (index) \
     reduction ( +:trace )
 # endif 
     {
@@ -967,11 +967,9 @@ qreal densmatr_calcHilbertSchmidtScalarProductLocal(Qureg a, Qureg b) {
 # endif
         for (index=0LL; index<numAmps; index++) {
             trace += aRe[index]*bRe[index] + aIm[index]*bIm[index];
-            traceIm += aRe[index]*bIm[index] - aIm[index]*bRe[index];
         }
     }
     
-    if(abs(traceIm) > REAL_EPS) printf("ERROR: too large imag. part of calcHilbertSchmidtScalarProduct");
     return trace;
 }
 
