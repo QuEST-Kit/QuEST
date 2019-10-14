@@ -17,6 +17,61 @@
 # define DEBUG 0
 
 
+
+/*
+ * struct types for concisely passing unitaries to kernels
+ */
+ 
+ // hide these from doxygen
+ /// \cond HIDDEN_SYMBOLS  
+ 
+ typedef struct ArgMatrix2 {
+     Complex r0c0, r0c1;
+     Complex r1c0, r1c1;
+ } ArgMatrix2;
+ 
+ typedef struct ArgMatrix4
+ {
+     Complex r0c0, r0c1, r0c2, r0c3;
+     Complex r1c0, r1c1, r1c2, r1c3;
+     Complex r2c0, r2c1, r2c2, r2c3;
+     Complex r3c0, r3c1, r3c2, r3c3;
+ } ArgMatrix4;
+ 
+ArgMatrix2 argifyMatrix2(ComplexMatrix2 m) {    
+    ArgMatrix2 a;
+    a.r0c0.real=m.real[0][0]; a.r0c0.imag=m.imag[0][0];
+    a.r0c1.real=m.real[0][1]; a.r0c1.imag=m.imag[0][1];
+    a.r1c0.real=m.real[1][0]; a.r1c0.imag=m.imag[1][0];
+    a.r1c1.real=m.real[1][1]; a.r1c1.imag=m.imag[1][1];
+    return a;
+ }
+
+ArgMatrix4 argifyMatrix4(ComplexMatrix4 m) {     
+    ArgMatrix4 a;
+    a.r0c0.real=m.real[0][0]; a.r0c0.imag=m.imag[0][0];
+    a.r0c1.real=m.real[0][1]; a.r0c1.imag=m.imag[0][1];
+    a.r0c2.real=m.real[0][2]; a.r0c2.imag=m.imag[0][2];
+    a.r0c3.real=m.real[0][3]; a.r0c3.imag=m.imag[0][3];
+    a.r1c0.real=m.real[1][0]; a.r1c0.imag=m.imag[1][0];
+    a.r1c1.real=m.real[1][1]; a.r1c1.imag=m.imag[1][1];
+    a.r1c2.real=m.real[1][2]; a.r1c2.imag=m.imag[1][2];
+    a.r1c3.real=m.real[1][3]; a.r1c3.imag=m.imag[1][3];
+    a.r2c0.real=m.real[2][0]; a.r2c0.imag=m.imag[2][0];
+    a.r2c1.real=m.real[2][1]; a.r2c1.imag=m.imag[2][1];
+    a.r2c2.real=m.real[2][2]; a.r2c2.imag=m.imag[2][2];
+    a.r2c3.real=m.real[2][3]; a.r2c3.imag=m.imag[2][3];
+    a.r3c0.real=m.real[3][0]; a.r3c0.imag=m.imag[3][0];
+    a.r3c1.real=m.real[3][1]; a.r3c1.imag=m.imag[3][1];
+    a.r3c2.real=m.real[3][2]; a.r3c2.imag=m.imag[3][2];
+    a.r3c3.real=m.real[3][3]; a.r3c3.imag=m.imag[3][3];
+    return a;
+ }
+ 
+ /// \endcond
+
+
+
 /*
  * in-kernel bit twiddling functions
  */
@@ -73,6 +128,7 @@ __forceinline__ __device__ long long int insertZeroBits(long long int number, in
      }
      return number;
 }
+
 
 
 /*
@@ -732,7 +788,7 @@ void statevec_controlledCompactUnitary(Qureg qureg, const int controlQubit, cons
     statevec_controlledCompactUnitaryKernel<<<CUDABlocks, threadsPerCUDABlock>>>(qureg, controlQubit, targetQubit, alpha, beta);
 }
 
-__global__ void statevec_unitaryKernel(Qureg qureg, const int targetQubit, ComplexMatrix2 u){
+__global__ void statevec_unitaryKernel(Qureg qureg, const int targetQubit, ArgMatrix2 u){
     // ----- sizes
     long long int sizeBlock,                                           // size of blocks
          sizeHalfBlock;                                       // size of blocks halved
@@ -790,12 +846,12 @@ void statevec_unitary(Qureg qureg, const int targetQubit, ComplexMatrix2 u)
     int threadsPerCUDABlock, CUDABlocks;
     threadsPerCUDABlock = 128;
     CUDABlocks = ceil((qreal)(qureg.numAmpsPerChunk>>1)/threadsPerCUDABlock);
-    statevec_unitaryKernel<<<CUDABlocks, threadsPerCUDABlock>>>(qureg, targetQubit, u);
+    statevec_unitaryKernel<<<CUDABlocks, threadsPerCUDABlock>>>(qureg, targetQubit, argifyMatrix2(u));
 }
 
 __global__ void statevec_multiControlledMultiQubitUnitaryKernel(
     Qureg qureg, long long int ctrlMask, int* targs, int numTargs, 
-    Complex* uElemsFlat, long long int* ampInds, qreal* reAmps, qreal* imAmps, long long int numTargAmps)
+    qreal* uRe, qreal* uIm, long long int* ampInds, qreal* reAmps, qreal* imAmps, long long int numTargAmps)
 {
     
     // decide the amplitudes this thread will modify
@@ -844,9 +900,10 @@ __global__ void statevec_multiControlledMultiQubitUnitaryKernel(
         reVec[ind] = 0;
         imVec[ind] = 0;
         for (int c=0; c < numTargAmps; c++) {
-            Complex elem = uElemsFlat[c + r*numTargAmps];
-            reVec[ind] += reAmps[c*stride+offset]*elem.real - imAmps[c*stride+offset]*elem.imag;
-            imVec[ind] += reAmps[c*stride+offset]*elem.imag + imAmps[c*stride+offset]*elem.real;
+            qreal uReElem = uRe[c + r*numTargAmps];
+            qreal uImElem = uIm[c + r*numTargAmps];
+            reVec[ind] += reAmps[c*stride+offset]*uReElem - imAmps[c*stride+offset]*uImElem;
+            imVec[ind] += reAmps[c*stride+offset]*uImElem + imAmps[c*stride+offset]*uReElem;
         }
     }
 }
@@ -858,47 +915,57 @@ void statevec_multiControlledMultiQubitUnitary(Qureg qureg, long long int ctrlMa
     
     // allocate device space for global {targs} (length: numTargs) and populate
     int *d_targs;
-    size_t targMemSize = numTargs*sizeof *d_targs;
+    size_t targMemSize = numTargs * sizeof *d_targs;
     cudaMalloc(&d_targs, targMemSize);
     cudaMemcpy(d_targs, targs, targMemSize, cudaMemcpyHostToDevice);
     
-    // flatten out the u.elems matrix
-    Complex* uFlat = (Complex*) malloc(u.numRows * u.numRows * sizeof *uFlat);
+    // flatten out the u.real and u.imag lists
+    int uNumRows = (1 << u.numQubits);
+    qreal* uReFlat = (qreal*) malloc(uNumRows*uNumRows * sizeof *uReFlat);
+    qreal* uImFlat = (qreal*) malloc(uNumRows*uNumRows * sizeof *uImFlat);
     long long int i = 0;
-    for (int r=0; r < u.numRows; r++)
-        for (int c=0; c < u.numRows; c++)
-            uFlat[i++] = u.elems[r][c];
+    for (int r=0; r < uNumRows; r++)
+        for (int c=0; c < uNumRows; c++) {
+            uReFlat[i] = u.real[r][c];
+            uImFlat[i] = u.imag[r][c];
+            i++;
+        }
     
-    // allocate device space for global u.elems (flattten by concatenating rows) and populate
-    Complex* d_uElems;
-    size_t uElemsMemSize = u.numRows*u.numRows*sizeof *d_uElems;
-    cudaMalloc(&d_uElems, uElemsMemSize);
-    cudaMemcpy(d_uElems, uFlat, uElemsMemSize, cudaMemcpyHostToDevice);
+    // allocate device space for global u.real and u.imag (flatten by concatenating rows) and populate
+    qreal* d_uRe;
+    qreal* d_uIm;
+    size_t uMemSize = uNumRows*uNumRows * sizeof *d_uRe; // size of each of d_uRe and d_uIm
+    cudaMalloc(&d_uRe, uMemSize);
+    cudaMalloc(&d_uIm, uMemSize);
+    cudaMemcpy(d_uRe, uReFlat, uMemSize, cudaMemcpyHostToDevice);
+    cudaMemcpy(d_uIm, uImFlat, uMemSize, cudaMemcpyHostToDevice);
     
     // allocate device Wspace for thread-local {ampInds}, {reAmps}, {imAmps} (length: 1<<numTargs)
     long long int *d_ampInds;
     qreal *d_reAmps;
     qreal *d_imAmps;
     size_t gridSize = (size_t) threadsPerCUDABlock * CUDABlocks;
-    long long int numTargAmps = u.numRows;
-    cudaMalloc(&d_ampInds, numTargAmps*gridSize*sizeof *d_ampInds);
-    cudaMalloc(&d_reAmps,  numTargAmps*gridSize*sizeof *d_reAmps);
-    cudaMalloc(&d_imAmps,  numTargAmps*gridSize*sizeof *d_imAmps);
+    int numTargAmps = uNumRows;
+    cudaMalloc(&d_ampInds, numTargAmps*gridSize * sizeof *d_ampInds);
+    cudaMalloc(&d_reAmps,  numTargAmps*gridSize * sizeof *d_reAmps);
+    cudaMalloc(&d_imAmps,  numTargAmps*gridSize * sizeof *d_imAmps);
     
     // call kernel
     statevec_multiControlledMultiQubitUnitaryKernel<<<CUDABlocks,threadsPerCUDABlock>>>(
-        qureg, ctrlMask, d_targs, numTargs, d_uElems, d_ampInds, d_reAmps, d_imAmps, numTargAmps);
+        qureg, ctrlMask, d_targs, numTargs, d_uRe, d_uIm, d_ampInds, d_reAmps, d_imAmps, numTargAmps);
         
     // free kernel memory
-    free(uFlat);
+    free(uReFlat);
+    free(uImFlat);
     cudaFree(d_targs);
-    cudaFree(d_uElems);
+    cudaFree(d_uRe);
+    cudaFree(d_uIm);
     cudaFree(d_ampInds);
     cudaFree(d_reAmps);
     cudaFree(d_imAmps);
 }
 
-__global__ void statevec_multiControlledTwoQubitUnitaryKernel(Qureg qureg, long long int ctrlMask, const int q1, const int q2, ComplexMatrix4 u){
+__global__ void statevec_multiControlledTwoQubitUnitaryKernel(Qureg qureg, long long int ctrlMask, const int q1, const int q2, ArgMatrix4 u){
     
     // decide the 4 amplitudes this thread will modify
     long long int thisTask = blockIdx.x*blockDim.x + threadIdx.x;                        
@@ -978,10 +1045,10 @@ void statevec_multiControlledTwoQubitUnitary(Qureg qureg, long long int ctrlMask
 {
     int threadsPerCUDABlock = 128;
     int CUDABlocks = ceil((qreal)(qureg.numAmpsPerChunk>>2)/threadsPerCUDABlock); // one kernel eval for every 4 amplitudes
-    statevec_multiControlledTwoQubitUnitaryKernel<<<CUDABlocks, threadsPerCUDABlock>>>(qureg, ctrlMask, q1, q2, u);
+    statevec_multiControlledTwoQubitUnitaryKernel<<<CUDABlocks, threadsPerCUDABlock>>>(qureg, ctrlMask, q1, q2, argifyMatrix4(u));
 }
 
-__global__ void statevec_controlledUnitaryKernel(Qureg qureg, const int controlQubit, const int targetQubit, ComplexMatrix2 u){
+__global__ void statevec_controlledUnitaryKernel(Qureg qureg, const int controlQubit, const int targetQubit, ArgMatrix2 u){
     // ----- sizes
     long long int sizeBlock,                                           // size of blocks
          sizeHalfBlock;                                       // size of blocks halved
@@ -1044,13 +1111,13 @@ void statevec_controlledUnitary(Qureg qureg, const int controlQubit, const int t
     int threadsPerCUDABlock, CUDABlocks;
     threadsPerCUDABlock = 128;
     CUDABlocks = ceil((qreal)(qureg.numAmpsPerChunk>>1)/threadsPerCUDABlock);
-    statevec_controlledUnitaryKernel<<<CUDABlocks, threadsPerCUDABlock>>>(qureg, controlQubit, targetQubit, u);
+    statevec_controlledUnitaryKernel<<<CUDABlocks, threadsPerCUDABlock>>>(qureg, controlQubit, targetQubit, argifyMatrix2(u));
 }
 
 __global__ void statevec_multiControlledUnitaryKernel(
     Qureg qureg, 
     long long int ctrlQubitsMask, long long int ctrlFlipMask, 
-    const int targetQubit, ComplexMatrix2 u
+    const int targetQubit, ArgMatrix2 u
 ){
     // ----- sizes
     long long int sizeBlock,                                           // size of blocks
@@ -1115,7 +1182,7 @@ void statevec_multiControlledUnitary(
     int threadsPerCUDABlock = 128;
     int CUDABlocks = ceil((qreal)(qureg.numAmpsPerChunk>>1)/threadsPerCUDABlock);
     statevec_multiControlledUnitaryKernel<<<CUDABlocks, threadsPerCUDABlock>>>(
-        qureg, ctrlQubitsMask, ctrlFlipMask, targetQubit, u);
+        qureg, ctrlQubitsMask, ctrlFlipMask, targetQubit, argifyMatrix2(u));
 }
 
 __global__ void statevec_pauliXKernel(Qureg qureg, const int targetQubit){
@@ -2363,7 +2430,7 @@ void densmatr_collapseToKnownProbOutcome(Qureg qureg, const int measureQubit, in
         part1, part2, part3, rowBit, colBit, desired, undesired);
 }
 
-__global__ void densmatr_addDensityMatrixKernel(Qureg combineQureg, qreal otherProb, Qureg otherQureg, long long int numAmpsToVisit) {
+__global__ void densmatr_mixDensityMatrixKernel(Qureg combineQureg, qreal otherProb, Qureg otherQureg, long long int numAmpsToVisit) {
     
     long long int ampInd = blockIdx.x*blockDim.x + threadIdx.x;
     if (ampInd >= numAmpsToVisit) return;
@@ -2375,14 +2442,14 @@ __global__ void densmatr_addDensityMatrixKernel(Qureg combineQureg, qreal otherP
     combineQureg.deviceStateVec.imag[ampInd] += otherProb*otherQureg.deviceStateVec.imag[ampInd];
 }
 
-void densmatr_addDensityMatrix(Qureg combineQureg, qreal otherProb, Qureg otherQureg) {
+void densmatr_mixDensityMatrix(Qureg combineQureg, qreal otherProb, Qureg otherQureg) {
     
     long long int numAmpsToVisit = combineQureg.numAmpsPerChunk;
     
     int threadsPerCUDABlock, CUDABlocks;
     threadsPerCUDABlock = 128;
     CUDABlocks = ceil(numAmpsToVisit / (qreal) threadsPerCUDABlock);
-    densmatr_addDensityMatrixKernel<<<CUDABlocks, threadsPerCUDABlock>>>(
+    densmatr_mixDensityMatrixKernel<<<CUDABlocks, threadsPerCUDABlock>>>(
         combineQureg, otherProb, otherQureg, numAmpsToVisit
     );
 }
@@ -2392,7 +2459,7 @@ void densmatr_addDensityMatrix(Qureg combineQureg, qreal otherProb, Qureg otherQ
  * visiting |..1..><..0..| and |..0..><..1..|. Labels |part1 X pa><rt2 NOT(X) part3|
  * From the brain of Simon Benjamin
  */
-__global__ void densmatr_oneQubitDephaseKernel(
+__global__ void densmatr_mixDephasingKernel(
     qreal fac, qreal* vecReal, qreal *vecImag, long long int numAmpsToVisit,
     long long int part1, long long int part2, long long int part3, 
     long long int colBit, long long int rowBit)
@@ -2423,12 +2490,12 @@ void densmatr_oneQubitDegradeOffDiagonal(Qureg qureg, const int targetQubit, qre
     int threadsPerCUDABlock, CUDABlocks;
     threadsPerCUDABlock = 128;
     CUDABlocks = ceil(numAmpsToVisit / (qreal) threadsPerCUDABlock);
-    densmatr_oneQubitDephaseKernel<<<CUDABlocks, threadsPerCUDABlock>>>(
+    densmatr_mixDephasingKernel<<<CUDABlocks, threadsPerCUDABlock>>>(
         dephFac, qureg.deviceStateVec.real, qureg.deviceStateVec.imag, numAmpsToVisit,
         part1, part2, part3, colBit, rowBit);
 }
 
-void densmatr_oneQubitDephase(Qureg qureg, const int targetQubit, qreal dephase) {
+void densmatr_mixDephasing(Qureg qureg, const int targetQubit, qreal dephase) {
     
     if (dephase == 0)
         return;
@@ -2443,7 +2510,7 @@ void densmatr_oneQubitDephase(Qureg qureg, const int targetQubit, qreal dephase)
  * etc and so on to |..1..1..><..1..0|. Labels |part1 0 part2 0 par><t3 0 part4 0 part5|.
  * From the brain of Simon Benjamin
  */
-__global__ void densmatr_twoQubitDephaseKernel(
+__global__ void densmatr_mixTwoQubitDephasingKernel(
     qreal fac, qreal* vecReal, qreal *vecImag, long long int numBackgroundStates, long long int numAmpsToVisit,
     long long int part1, long long int part2, long long int part3, long long int part4, long long int part5,
     long long int colBit1, long long int rowBit1, long long int colBit2, long long int rowBit2) 
@@ -2467,7 +2534,7 @@ __global__ void densmatr_twoQubitDephaseKernel(
 }
 
 // @TODO is separating these 12 amplitudes really faster than letting every 16th base modify 12 elems?
-void densmatr_twoQubitDephase(Qureg qureg, int qubit1, int qubit2, qreal dephase) {
+void densmatr_mixTwoQubitDephasing(Qureg qureg, int qubit1, int qubit2, qreal dephase) {
     
     if (dephase == 0)
         return;
@@ -2498,13 +2565,13 @@ void densmatr_twoQubitDephase(Qureg qureg, int qubit1, int qubit2, qreal dephase
     int threadsPerCUDABlock, CUDABlocks;
     threadsPerCUDABlock = 128;
     CUDABlocks = ceil(numAmpsToVisit / (qreal) threadsPerCUDABlock);
-    densmatr_twoQubitDephaseKernel<<<CUDABlocks, threadsPerCUDABlock>>>(
+    densmatr_mixTwoQubitDephasingKernel<<<CUDABlocks, threadsPerCUDABlock>>>(
         dephFac, qureg.deviceStateVec.real, qureg.deviceStateVec.imag, numBackgroundStates, numAmpsToVisit,
         part1, part2, part3, part4, part5, colBit1, rowBit1, colBit2, rowBit2);
 }
 
-/** Works like oneQubitDephase but modifies every other element, and elements are averaged in pairs */
-__global__ void densmatr_oneQubitDepolariseKernel(
+/** Works like mixDephasing but modifies every other element, and elements are averaged in pairs */
+__global__ void densmatr_mixDepolarisingKernel(
     qreal depolLevel, qreal* vecReal, qreal *vecImag, long long int numAmpsToVisit,
     long long int part1, long long int part2, long long int part3, 
     long long int bothBits)
@@ -2529,8 +2596,8 @@ __global__ void densmatr_oneQubitDepolariseKernel(
     vecImag[targetInd] += imagAvDepol;
 }
 
-/** Works like oneQubitDephase but modifies every other element, and elements are averaged in pairs */
-__global__ void densmatr_oneQubitDampingKernel(
+/** Works like mixDephasing but modifies every other element, and elements are averaged in pairs */
+__global__ void densmatr_mixDampingKernel(
     qreal damping, qreal* vecReal, qreal *vecImag, long long int numAmpsToVisit,
     long long int part1, long long int part2, long long int part3, 
     long long int bothBits)
@@ -2551,12 +2618,12 @@ __global__ void densmatr_oneQubitDampingKernel(
     vecImag[baseInd]   += imagAvDepol;
 }
 
-void densmatr_oneQubitDepolarise(Qureg qureg, const int targetQubit, qreal depolLevel) {
+void densmatr_mixDepolarising(Qureg qureg, const int targetQubit, qreal depolLevel) {
     
     if (depolLevel == 0)
         return;
     
-    densmatr_oneQubitDephase(qureg, targetQubit, depolLevel);
+    densmatr_mixDephasing(qureg, targetQubit, depolLevel);
     
     long long int numAmpsToVisit = qureg.numAmpsPerChunk/4;
     int rowQubit = targetQubit + qureg.numQubitsRepresented;
@@ -2572,12 +2639,12 @@ void densmatr_oneQubitDepolarise(Qureg qureg, const int targetQubit, qreal depol
     int threadsPerCUDABlock, CUDABlocks;
     threadsPerCUDABlock = 128;
     CUDABlocks = ceil(numAmpsToVisit / (qreal) threadsPerCUDABlock);
-    densmatr_oneQubitDepolariseKernel<<<CUDABlocks, threadsPerCUDABlock>>>(
+    densmatr_mixDepolarisingKernel<<<CUDABlocks, threadsPerCUDABlock>>>(
         depolLevel, qureg.deviceStateVec.real, qureg.deviceStateVec.imag, numAmpsToVisit,
         part1, part2, part3, bothBits);
 }
 
-void densmatr_oneQubitDamping(Qureg qureg, const int targetQubit, qreal damping) {
+void densmatr_mixDamping(Qureg qureg, const int targetQubit, qreal damping) {
     
     if (damping == 0)
         return;
@@ -2599,13 +2666,13 @@ void densmatr_oneQubitDamping(Qureg qureg, const int targetQubit, qreal damping)
     int threadsPerCUDABlock, CUDABlocks;
     threadsPerCUDABlock = 128;
     CUDABlocks = ceil(numAmpsToVisit / (qreal) threadsPerCUDABlock);
-    densmatr_oneQubitDampingKernel<<<CUDABlocks, threadsPerCUDABlock>>>(
+    densmatr_mixDampingKernel<<<CUDABlocks, threadsPerCUDABlock>>>(
         damping, qureg.deviceStateVec.real, qureg.deviceStateVec.imag, numAmpsToVisit,
         part1, part2, part3, bothBits);
 }
 
 /** Called once for every 16 amplitudes */
-__global__ void densmatr_twoQubitDepolariseKernel(
+__global__ void densmatr_mixTwoQubitDepolarisingKernel(
     qreal depolLevel, qreal* vecReal, qreal *vecImag, long long int numAmpsToVisit,
     long long int part1, long long int part2, long long int part3, 
     long long int part4, long long int part5,
@@ -2637,14 +2704,14 @@ __global__ void densmatr_twoQubitDepolariseKernel(
     vecReal[ind11] += realAvDepol; vecImag[ind11] += imagAvDepol;
 }
 
-void densmatr_twoQubitDepolarise(Qureg qureg, int qubit1, int qubit2, qreal depolLevel) {
+void densmatr_mixTwoQubitDepolarising(Qureg qureg, int qubit1, int qubit2, qreal depolLevel) {
     
     if (depolLevel == 0)
         return;
     
     // assumes qubit2 > qubit1
     
-    densmatr_twoQubitDephase(qureg, qubit1, qubit2, depolLevel);
+    densmatr_mixTwoQubitDephasing(qureg, qubit1, qubit2, depolLevel);
     
     int rowQubit1 = qubit1 + qureg.numQubitsRepresented;
     int rowQubit2 = qubit2 + qureg.numQubitsRepresented;
@@ -2667,7 +2734,7 @@ void densmatr_twoQubitDepolarise(Qureg qureg, int qubit1, int qubit2, qreal depo
     int threadsPerCUDABlock, CUDABlocks;
     threadsPerCUDABlock = 128;
     CUDABlocks = ceil(numAmpsToVisit / (qreal) threadsPerCUDABlock);
-    densmatr_twoQubitDepolariseKernel<<<CUDABlocks, threadsPerCUDABlock>>>(
+    densmatr_mixTwoQubitDepolarisingKernel<<<CUDABlocks, threadsPerCUDABlock>>>(
         depolLevel, qureg.deviceStateVec.real, qureg.deviceStateVec.imag, numAmpsToVisit,
         part1, part2, part3, part4, part5, rowCol1, rowCol2);
 }

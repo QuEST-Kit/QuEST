@@ -59,17 +59,17 @@ void densmatr_oneQubitDegradeOffDiagonal(Qureg qureg, const int targetQubit, qre
     }
 }
 
-void densmatr_oneQubitDephase(Qureg qureg, const int targetQubit, qreal dephase) {
+void densmatr_mixDephasing(Qureg qureg, const int targetQubit, qreal dephase) {
     qreal retain=1-dephase;
     densmatr_oneQubitDegradeOffDiagonal(qureg, targetQubit, retain);
 }
 
-void densmatr_oneQubitDampingDephase(Qureg qureg, const int targetQubit, qreal dephase) {
+void densmatr_mixDampingDephase(Qureg qureg, const int targetQubit, qreal dephase) {
     qreal retain=sqrt(1-dephase);
     densmatr_oneQubitDegradeOffDiagonal(qureg, targetQubit, retain);
 }
 
-void densmatr_twoQubitDephase(Qureg qureg, const int qubit1, const int qubit2, qreal dephase) {
+void densmatr_mixTwoQubitDephasing(Qureg qureg, const int qubit1, const int qubit2, qreal dephase) {
     qreal retain=1-dephase;
 
     const long long int numTasks = qureg.numAmpsPerChunk;
@@ -110,7 +110,7 @@ void densmatr_twoQubitDephase(Qureg qureg, const int qubit1, const int qubit2, q
     }
 }
 
-void densmatr_oneQubitDepolariseLocal(Qureg qureg, const int targetQubit, qreal depolLevel) {
+void densmatr_mixDepolarisingLocal(Qureg qureg, const int targetQubit, qreal depolLevel) {
     qreal retain=1-depolLevel;
 
     const long long int numTasks = qureg.numAmpsPerChunk;
@@ -159,7 +159,7 @@ void densmatr_oneQubitDepolariseLocal(Qureg qureg, const int targetQubit, qreal 
     }
 }
 
-void densmatr_oneQubitDampingLocal(Qureg qureg, const int targetQubit, qreal damping) {
+void densmatr_mixDampingLocal(Qureg qureg, const int targetQubit, qreal damping) {
     qreal retain=1-damping;
     qreal dephase=sqrt(retain);
 
@@ -209,13 +209,13 @@ void densmatr_oneQubitDampingLocal(Qureg qureg, const int targetQubit, qreal dam
     }
 }
 
-void densmatr_oneQubitDepolariseDistributed(Qureg qureg, const int targetQubit, qreal depolLevel) {
+void densmatr_mixDepolarisingDistributed(Qureg qureg, const int targetQubit, qreal depolLevel) {
 
     // first do dephase part. 
     // TODO -- this might be more efficient to do at the same time as the depolarise if we move to
     // iterating over all elements in the state vector for the purpose of vectorisation
-    // TODO -- if we keep this split, move this function to densmatr_oneQubitDepolarise()
-    densmatr_oneQubitDephase(qureg, targetQubit, depolLevel);
+    // TODO -- if we keep this split, move this function to densmatr_mixDepolarising()
+    densmatr_mixDephasing(qureg, targetQubit, depolLevel);
 
     long long int sizeInnerBlock, sizeInnerHalfBlock;
     long long int sizeOuterColumn, sizeOuterHalfColumn;
@@ -284,14 +284,14 @@ void densmatr_oneQubitDepolariseDistributed(Qureg qureg, const int targetQubit, 
     }    
 }
 
-void densmatr_oneQubitDampingDistributed(Qureg qureg, const int targetQubit, qreal damping) {
+void densmatr_mixDampingDistributed(Qureg qureg, const int targetQubit, qreal damping) {
     qreal retain=1-damping;
     qreal dephase=sqrt(1-damping);
     // first do dephase part. 
     // TODO -- this might be more efficient to do at the same time as the depolarise if we move to
     // iterating over all elements in the state vector for the purpose of vectorisation
-    // TODO -- if we keep this split, move this function to densmatr_oneQubitDepolarise()
-    densmatr_oneQubitDampingDephase(qureg, targetQubit, dephase);
+    // TODO -- if we keep this split, move this function to densmatr_mixDepolarising()
+    densmatr_mixDampingDephase(qureg, targetQubit, dephase);
 
     long long int sizeInnerBlock, sizeInnerHalfBlock;
     long long int sizeOuterColumn, sizeOuterHalfColumn;
@@ -371,7 +371,7 @@ void densmatr_oneQubitDampingDistributed(Qureg qureg, const int targetQubit, qre
 }
 
 // @TODO
-void densmatr_twoQubitDepolariseLocal(Qureg qureg, int qubit1, int qubit2, qreal delta, qreal gamma) {
+void densmatr_mixTwoQubitDepolarisingLocal(Qureg qureg, int qubit1, int qubit2, qreal delta, qreal gamma) {
     const long long int numTasks = qureg.numAmpsPerChunk;
     long long int innerMaskQubit1 = 1LL << qubit1;
     long long int outerMaskQubit1= 1LL << (qubit1 + qureg.numQubitsRepresented);
@@ -473,7 +473,7 @@ void densmatr_twoQubitDepolariseLocal(Qureg qureg, int qubit1, int qubit2, qreal
     }
 }
 
-void densmatr_twoQubitDepolariseLocalPart1(Qureg qureg, int qubit1, int qubit2, qreal delta) {
+void densmatr_mixTwoQubitDepolarisingLocalPart1(Qureg qureg, int qubit1, int qubit2, qreal delta) {
     const long long int numTasks = qureg.numAmpsPerChunk;
     long long int innerMaskQubit1 = 1LL << qubit1;
     long long int outerMaskQubit1= 1LL << (qubit1 + qureg.numQubitsRepresented);
@@ -526,7 +526,7 @@ void densmatr_twoQubitDepolariseLocalPart1(Qureg qureg, int qubit1, int qubit2, 
     }
 }
 
-void densmatr_twoQubitDepolariseDistributed(Qureg qureg, const int targetQubit, 
+void densmatr_mixTwoQubitDepolarisingDistributed(Qureg qureg, const int targetQubit, 
         const int qubit2, qreal delta, qreal gamma) {
 
     long long int sizeInnerBlockQ1, sizeInnerHalfBlockQ1;
@@ -617,7 +617,7 @@ void densmatr_twoQubitDepolariseDistributed(Qureg qureg, const int targetQubit,
     }    
 }
 
-void densmatr_twoQubitDepolariseQ1LocalQ2DistributedPart3(Qureg qureg, const int targetQubit, 
+void densmatr_mixTwoQubitDepolarisingQ1LocalQ2DistributedPart3(Qureg qureg, const int targetQubit, 
         const int qubit2, qreal delta, qreal gamma) {
 
     long long int sizeInnerBlockQ1, sizeInnerHalfBlockQ1;
@@ -875,7 +875,7 @@ qreal densmatr_calcPurityLocal(Qureg qureg) {
     return trace;
 }
 
-void densmatr_addDensityMatrix(Qureg combineQureg, qreal otherProb, Qureg otherQureg) {
+void densmatr_mixDensityMatrix(Qureg combineQureg, qreal otherProb, Qureg otherQureg) {
     
     /* corresponding amplitudes live on the same node (same dimensions) */
     
@@ -1718,48 +1718,48 @@ void statevec_multiControlledTwoQubitUnitaryLocal(Qureg qureg, long long int ctr
 
             // apply u * {amp00, amp01, amp10, amp11}
             reVec[ind00] = 
-                u.r0c0.real*re00 - u.r0c0.imag*im00 +
-                u.r0c1.real*re01 - u.r0c1.imag*im01 +
-                u.r0c2.real*re10 - u.r0c2.imag*im10 +
-                u.r0c3.real*re11 - u.r0c3.imag*im11;
+                u.real[0][0]*re00 - u.imag[0][0]*im00 +
+                u.real[0][1]*re01 - u.imag[0][1]*im01 +
+                u.real[0][2]*re10 - u.imag[0][2]*im10 +
+                u.real[0][3]*re11 - u.imag[0][3]*im11;
             imVec[ind00] =
-                u.r0c0.imag*re00 + u.r0c0.real*im00 +
-                u.r0c1.imag*re01 + u.r0c1.real*im01 +
-                u.r0c2.imag*re10 + u.r0c2.real*im10 +
-                u.r0c3.imag*re11 + u.r0c3.real*im11;
+                u.imag[0][0]*re00 + u.real[0][0]*im00 +
+                u.imag[0][1]*re01 + u.real[0][1]*im01 +
+                u.imag[0][2]*re10 + u.real[0][2]*im10 +
+                u.imag[0][3]*re11 + u.real[0][3]*im11;
                 
             reVec[ind01] = 
-                u.r1c0.real*re00 - u.r1c0.imag*im00 +
-                u.r1c1.real*re01 - u.r1c1.imag*im01 +
-                u.r1c2.real*re10 - u.r1c2.imag*im10 +
-                u.r1c3.real*re11 - u.r1c3.imag*im11;
+                u.real[1][0]*re00 - u.imag[1][0]*im00 +
+                u.real[1][1]*re01 - u.imag[1][1]*im01 +
+                u.real[1][2]*re10 - u.imag[1][2]*im10 +
+                u.real[1][3]*re11 - u.imag[1][3]*im11;
             imVec[ind01] =
-                u.r1c0.imag*re00 + u.r1c0.real*im00 +
-                u.r1c1.imag*re01 + u.r1c1.real*im01 +
-                u.r1c2.imag*re10 + u.r1c2.real*im10 +
-                u.r1c3.imag*re11 + u.r1c3.real*im11;
+                u.imag[1][0]*re00 + u.real[1][0]*im00 +
+                u.imag[1][1]*re01 + u.real[1][1]*im01 +
+                u.imag[1][2]*re10 + u.real[1][2]*im10 +
+                u.imag[1][3]*re11 + u.real[1][3]*im11;
                 
             reVec[ind10] = 
-                u.r2c0.real*re00 - u.r2c0.imag*im00 +
-                u.r2c1.real*re01 - u.r2c1.imag*im01 +
-                u.r2c2.real*re10 - u.r2c2.imag*im10 +
-                u.r2c3.real*re11 - u.r2c3.imag*im11;
+                u.real[2][0]*re00 - u.imag[2][0]*im00 +
+                u.real[2][1]*re01 - u.imag[2][1]*im01 +
+                u.real[2][2]*re10 - u.imag[2][2]*im10 +
+                u.real[2][3]*re11 - u.imag[2][3]*im11;
             imVec[ind10] =
-                u.r2c0.imag*re00 + u.r2c0.real*im00 +
-                u.r2c1.imag*re01 + u.r2c1.real*im01 +
-                u.r2c2.imag*re10 + u.r2c2.real*im10 +
-                u.r2c3.imag*re11 + u.r2c3.real*im11;    
+                u.imag[2][0]*re00 + u.real[2][0]*im00 +
+                u.imag[2][1]*re01 + u.real[2][1]*im01 +
+                u.imag[2][2]*re10 + u.real[2][2]*im10 +
+                u.imag[2][3]*re11 + u.real[2][3]*im11;    
                 
             reVec[ind11] = 
-                u.r3c0.real*re00 - u.r3c0.imag*im00 +
-                u.r3c1.real*re01 - u.r3c1.imag*im01 +
-                u.r3c2.real*re10 - u.r3c2.imag*im10 +
-                u.r3c3.real*re11 - u.r3c3.imag*im11;
+                u.real[3][0]*re00 - u.imag[3][0]*im00 +
+                u.real[3][1]*re01 - u.imag[3][1]*im01 +
+                u.real[3][2]*re10 - u.imag[3][2]*im10 +
+                u.real[3][3]*re11 - u.imag[3][3]*im11;
             imVec[ind11] =
-                u.r3c0.imag*re00 + u.r3c0.real*im00 +
-                u.r3c1.imag*re01 + u.r3c1.real*im01 +
-                u.r3c2.imag*re10 + u.r3c2.real*im10 +
-                u.r3c3.imag*re11 + u.r3c3.real*im11;    
+                u.imag[3][0]*re00 + u.real[3][0]*im00 +
+                u.imag[3][1]*re01 + u.real[3][1]*im01 +
+                u.imag[3][2]*re10 + u.real[3][2]*im10 +
+                u.imag[3][3]*re11 + u.real[3][3]*im11;    
         }
     }
 }
@@ -1775,7 +1775,7 @@ void statevec_multiControlledMultiQubitUnitaryLocal(Qureg qureg, long long int c
     qreal *imVec = qureg.stateVec.imag;
     
     long long int numTasks = qureg.numAmpsPerChunk >> numTargs;  // kernel called on every 1 in 2^numTargs amplitudes
-    long long int numTargAmps = u.numRows;  // num amps to be modified by each task
+    long long int numTargAmps = 1 << u.numQubits;  // num amps to be modified by each task
     
     // the global (between all nodes) index of this node's start index
     long long int globalIndStart = qureg.chunkId*qureg.numAmpsPerChunk; 
@@ -1846,8 +1846,8 @@ void statevec_multiControlledMultiQubitUnitaryLocal(Qureg qureg, long long int c
                 imVec[ind] = 0;
                 for (c=0; c < numTargAmps; c++) {
                     g = thisTask*numTargAmps + c;
-                    reElem = u.elems[r][c].real;
-                    imElem = u.elems[r][c].imag;
+                    reElem = u.real[r][c];
+                    imElem = u.imag[r][c];
                     reVec[ind] += reAmps[g]*reElem - imAmps[g]*imElem;
                     imVec[ind] += reAmps[g]*imElem + imAmps[g]*reElem;
                 }
@@ -1899,16 +1899,16 @@ void statevec_unitaryLocal(Qureg qureg, const int targetQubit, ComplexMatrix2 u)
 
 
             // state[indexUp] = u00 * state[indexUp] + u01 * state[indexLo]
-            stateVecReal[indexUp] = u.r0c0.real*stateRealUp - u.r0c0.imag*stateImagUp 
-                + u.r0c1.real*stateRealLo - u.r0c1.imag*stateImagLo;
-            stateVecImag[indexUp] = u.r0c0.real*stateImagUp + u.r0c0.imag*stateRealUp 
-                + u.r0c1.real*stateImagLo + u.r0c1.imag*stateRealLo;
+            stateVecReal[indexUp] = u.real[0][0]*stateRealUp - u.imag[0][0]*stateImagUp 
+                + u.real[0][1]*stateRealLo - u.imag[0][1]*stateImagLo;
+            stateVecImag[indexUp] = u.real[0][0]*stateImagUp + u.imag[0][0]*stateRealUp 
+                + u.real[0][1]*stateImagLo + u.imag[0][1]*stateRealLo;
 
             // state[indexLo] = u10  * state[indexUp] + u11 * state[indexLo]
-            stateVecReal[indexLo] = u.r1c0.real*stateRealUp  - u.r1c0.imag*stateImagUp 
-                + u.r1c1.real*stateRealLo  -  u.r1c1.imag*stateImagLo;
-            stateVecImag[indexLo] = u.r1c0.real*stateImagUp + u.r1c0.imag*stateRealUp 
-                + u.r1c1.real*stateImagLo + u.r1c1.imag*stateRealLo;
+            stateVecReal[indexLo] = u.real[1][0]*stateRealUp  - u.imag[1][0]*stateImagUp 
+                + u.real[1][1]*stateRealLo  -  u.imag[1][1]*stateImagLo;
+            stateVecImag[indexLo] = u.real[1][0]*stateImagUp + u.imag[1][0]*stateRealUp 
+                + u.real[1][1]*stateImagLo + u.imag[1][1]*stateRealLo;
 
         } 
     }
@@ -2147,16 +2147,16 @@ void statevec_multiControlledUnitaryLocal(
                 stateImagLo = stateVecImag[indexLo];
 
                 // state[indexUp] = u00 * state[indexUp] + u01 * state[indexLo]
-                stateVecReal[indexUp] = u.r0c0.real*stateRealUp - u.r0c0.imag*stateImagUp 
-                    + u.r0c1.real*stateRealLo - u.r0c1.imag*stateImagLo;
-                stateVecImag[indexUp] = u.r0c0.real*stateImagUp + u.r0c0.imag*stateRealUp 
-                    + u.r0c1.real*stateImagLo + u.r0c1.imag*stateRealLo;
+                stateVecReal[indexUp] = u.real[0][0]*stateRealUp - u.imag[0][0]*stateImagUp 
+                    + u.real[0][1]*stateRealLo - u.imag[0][1]*stateImagLo;
+                stateVecImag[indexUp] = u.real[0][0]*stateImagUp + u.imag[0][0]*stateRealUp 
+                    + u.real[0][1]*stateImagLo + u.imag[0][1]*stateRealLo;
 
                 // state[indexLo] = u10  * state[indexUp] + u11 * state[indexLo]
-                stateVecReal[indexLo] = u.r1c0.real*stateRealUp  - u.r1c0.imag*stateImagUp 
-                    + u.r1c1.real*stateRealLo  -  u.r1c1.imag*stateImagLo;
-                stateVecImag[indexLo] = u.r1c0.real*stateImagUp + u.r1c0.imag*stateRealUp 
-                    + u.r1c1.real*stateImagLo + u.r1c1.imag*stateRealLo;
+                stateVecReal[indexLo] = u.real[1][0]*stateRealUp  - u.imag[1][0]*stateImagUp 
+                    + u.real[1][1]*stateRealLo  -  u.imag[1][1]*stateImagLo;
+                stateVecImag[indexLo] = u.real[1][0]*stateImagUp + u.imag[1][0]*stateRealUp 
+                    + u.real[1][1]*stateImagLo + u.imag[1][1]*stateRealLo;
             }
         } 
     }
@@ -2213,16 +2213,16 @@ void statevec_controlledUnitaryLocal(Qureg qureg, const int controlQubit, const 
 
 
                 // state[indexUp] = u00 * state[indexUp] + u01 * state[indexLo]
-                stateVecReal[indexUp] = u.r0c0.real*stateRealUp - u.r0c0.imag*stateImagUp 
-                    + u.r0c1.real*stateRealLo - u.r0c1.imag*stateImagLo;
-                stateVecImag[indexUp] = u.r0c0.real*stateImagUp + u.r0c0.imag*stateRealUp 
-                    + u.r0c1.real*stateImagLo + u.r0c1.imag*stateRealLo;
+                stateVecReal[indexUp] = u.real[0][0]*stateRealUp - u.imag[0][0]*stateImagUp 
+                    + u.real[0][1]*stateRealLo - u.imag[0][1]*stateImagLo;
+                stateVecImag[indexUp] = u.real[0][0]*stateImagUp + u.imag[0][0]*stateRealUp 
+                    + u.real[0][1]*stateImagLo + u.imag[0][1]*stateRealLo;
 
                 // state[indexLo] = u10  * state[indexUp] + u11 * state[indexLo]
-                stateVecReal[indexLo] = u.r1c0.real*stateRealUp  - u.r1c0.imag*stateImagUp 
-                    + u.r1c1.real*stateRealLo  -  u.r1c1.imag*stateImagLo;
-                stateVecImag[indexLo] = u.r1c0.real*stateImagUp + u.r1c0.imag*stateRealUp 
-                    + u.r1c1.real*stateImagLo + u.r1c1.imag*stateRealLo;
+                stateVecReal[indexLo] = u.real[1][0]*stateRealUp  - u.imag[1][0]*stateImagUp 
+                    + u.real[1][1]*stateRealLo  -  u.imag[1][1]*stateImagLo;
+                stateVecImag[indexLo] = u.real[1][0]*stateImagUp + u.imag[1][0]*stateRealUp 
+                    + u.real[1][1]*stateImagLo + u.imag[1][1]*stateRealLo;
             }
         } 
     }

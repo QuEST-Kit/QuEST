@@ -10,6 +10,7 @@
 
 # include "QuEST_precision.h"
 
+// prevent C++ name mangling
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -67,30 +68,25 @@ typedef struct Complex
  */
 typedef struct ComplexMatrix2
 {
-    Complex r0c0, r0c1;
-    Complex r1c0, r1c1;
+    qreal real[2][2];
+    qreal imag[2][2];
 } ComplexMatrix2;
 
 /** Represents a 4x4 matrix of complex numbers
  */
- typedef struct ComplexMatrix4
- {
-     Complex r0c0, r0c1, r0c2, r0c3;
-     Complex r1c0, r1c1, r1c2, r1c3;
-     Complex r2c0, r2c1, r2c2, r2c3;
-     Complex r3c0, r3c1, r3c2, r3c3;
- } ComplexMatrix4;
+typedef struct ComplexMatrix4
+{
+    qreal real[4][4];
+    qreal imag[4][4];
+} ComplexMatrix4;
  
- /** Represents a general 2^n by 2^n matrix of complex numbers.
-  * ComplexMatrixN is a 2-dimensional pointer of Complex elements, 
-  * accessed as .elems[row][col], which needs to be created and freed 
-  * using createComplexMatrix and destroyComplexMatrix
+ /** Represents a general 2^N by 2^N matrix of complex numbers.
   */
 typedef struct ComplexMatrixN
 {
-    int numQubits;
-    int numRows;
-    Complex** elems;
+  int numQubits;
+  qreal **real;
+  qreal **imag;
 } ComplexMatrixN;
 
 /** Represents a 3-vector of real numbers
@@ -195,15 +191,54 @@ Qureg createCloneQureg(Qureg qureg, QuESTEnv env);
  */
 void destroyQureg(Qureg qureg, QuESTEnv env);
 
-/** Create a square complex matrix which can be passed to the multi-qubit general unitary functions.
- * The matrix will have dimensions (2^numQubits) by (2^numQubits), and all elements are initialised to zero.
- * The elements of the matrix are Complex structs, accessed and set via ComplexMatrixN.elems[row][column].
- * The ComplexMatrixN should eventually be freed using destroyComplexMatrix.
+/** Create (dynamically) a square complex matrix which can be passed to the multi-qubit general unitary functions.
+ * The matrix will have dimensions (2^\p numQubits) by (2^\p numQubits), and all elements
+ * of .real and .imag are initialised to zero.
+ * The ComplexMatrixN must eventually be freed using destroyComplexMatrixN().
+ * Like ComplexMatrix2 and ComplexMatrix4, the returned ComplexMatrixN is safe to 
+ * return from functions.
+ * 
+ * One can instead use getStaticComplexMatrixN() to create a ComplexMatrixN struct 
+ * in the stack (which doesn't need to be explicitly freed).
+ *
+ * @param[in] numQubits the number of qubits of which the returned ComplexMatrixN will correspond
+ * @returns a dynamic ComplexMatrixN struct, that is one where the .real and .imag
+ *  fields are arrays kept in the heap and must be freed.
  */
-ComplexMatrixN createComplexMatrix(int numQubits);
+ComplexMatrixN createComplexMatrixN(int numQubits);
 
-/** Destroy a general complex matrix */
-void destroyComplexMatrix(ComplexMatrixN matr);
+/** Destroy a ComplexMatrixN instance created with createComplexMatrixN()
+ *
+ * It is invalid to attempt to destroy a matrix created with getStaticComplexMatrixN().
+ *
+ * @param[in] matr the dynamic matrix (created with createComplexMatrixN()) to deallocate
+ * @throws exitWithError if \p matr was not yet allocated.
+ * @throws malloc_error if \p matr was static (created with getStaticComplexMatrixN())
+ */
+void destroyComplexMatrixN(ComplexMatrixN matr);
+
+#ifndef __cplusplus
+/** Initialises a ComplexMatrixN instance to have the passed
+ * \p real and \p imag values. This allows succint population of any-sized
+ * ComplexMatrixN, e.g. through 2D arrays:
+ *
+ *     ComplexMatrixN m = createComplexMatrixN(3);
+ *     initComplexMatrixN(m, 
+ *         (qreal[8][8]) {{1,2,3,4,5,6,7,8}, {0}},
+ *         (qreal[8][8]) {{0}});
+ *
+ * \p m can be created by either createComplexMatrixN() or getStaticComplexMatrixN().
+ *
+ * This function is only callable in C, since C++ signatures cannot
+ * contain variable-length 2D arrays 
+ *
+ * @param[in] m the matrix to initialise
+ * @param[in] real matrix of real values; can be 2D array of array of pointers
+ * @param[in] imag matrix of imaginary values; can be 2D array of array of pointers
+ * @throws exitWithError if \p m has not been allocated (e.g. with createComplexMatrixN())
+ */
+void initComplexMatrixN(ComplexMatrixN m, qreal real[][1<<m.numQubits], qreal imag[][1<<m.numQubits]);
+#endif 
 
 /** Print the current state vector of probability amplitudes for a set of qubits to file.
  * File format:
@@ -1469,7 +1504,7 @@ void writeRecordedQASMToFile(Qureg qureg, char* filename);
  *      or if \p targetQubit is outside [0, \p qureg.numQubitsRepresented),
  *      or if \p prob is not in [0, 1/2]
  */
-void applyOneQubitDephaseError(Qureg qureg, const int targetQubit, qreal prob);
+void mixDephasing(Qureg qureg, const int targetQubit, qreal prob);
 
 /** Mixes a density matrix \p qureg to induce two-qubit dephasing noise.
  * With probability \p prob, applies Pauli Z to either or both qubits.
@@ -1495,7 +1530,7 @@ void applyOneQubitDephaseError(Qureg qureg, const int targetQubit, qreal prob);
  *      or if \p qubit1 = \p qubit2,
  *      or if \p prob is not in [0, 3/4]
  */
-void applyTwoQubitDephaseError(Qureg qureg, int qubit1, int qubit2, qreal prob);
+void mixTwoQubitDephasing(Qureg qureg, int qubit1, int qubit2, qreal prob);
 
 /** Mixes a density matrix \p qureg to induce single-qubit homogeneous depolarising noise.
  * With probability \p prob, applies (uniformly) either Pauli X, Y, or Z to \p targetQubit.
@@ -1519,7 +1554,7 @@ void applyTwoQubitDephaseError(Qureg qureg, int qubit1, int qubit2, qreal prob);
  *      or if \p targetQubit is outside [0, \p qureg.numQubitsRepresented),
  *      or if \p prob is not in [0, 3/4]
  */
-void applyOneQubitDepolariseError(Qureg qureg, const int targetQubit, qreal prob);
+void mixDepolarising(Qureg qureg, const int targetQubit, qreal prob);
 
 /** Mixes a density matrix \p qureg to induce single-qubit damping (decay to 0 state).
  * With probability \p prob, applies damping (transition from 1 to 0 state).
@@ -1541,7 +1576,7 @@ void applyOneQubitDepolariseError(Qureg qureg, const int targetQubit, qreal prob
  *      or if \p targetQubit is outside [0, \p qureg.numQubitsRepresented),
  *      or if \p prob is not in [0, 1]
  */
-void applyOneQubitDampingError(Qureg qureg, const int targetQubit, qreal prob);
+void mixDamping(Qureg qureg, const int targetQubit, qreal prob);
 
 /** Mixes a density matrix \p qureg to induce two-qubit homogeneous depolarising noise.
  * With probability \p prob, applies to \p qubit1 and \p qubit2 any operator of the set
@@ -1590,7 +1625,7 @@ void applyOneQubitDampingError(Qureg qureg, const int targetQubit, qreal prob);
  *      or if \p qubit1 = \p qubit2,
  *      or if \p prob is not in [0, 15/16]
  */
-void applyTwoQubitDepolariseError(Qureg qureg, int qubit1, int qubit2, qreal prob);
+void mixTwoQubitDepolarising(Qureg qureg, int qubit1, int qubit2, qreal prob);
 
 /** Mixes a density matrix \p qureg to induce general single-qubit Pauli noise.
  * With probabilities \p probX, \p probY and \p probZ, applies Pauli X, Y, and Z
@@ -1622,7 +1657,7 @@ void applyTwoQubitDepolariseError(Qureg qureg, int qubit1, int qubit2, qreal pro
  *      or if any of p in {\p probX, \p probY or \p probZ} don't satisfy
  *      p <= (1 - \p probX - \p probY - \p probZ)
  */
-void applyOneQubitPauliError(Qureg qureg, int targetQubit, qreal probX, qreal probY, qreal probZ);
+void mixPauli(Qureg qureg, int targetQubit, qreal probX, qreal probY, qreal probZ);
 
 /** Modifies combineQureg to become (1-prob)combineProb + prob otherQureg.
  * Both registers must be equal-dimension density matrices, and prob must be in [0, 1].
@@ -1635,7 +1670,7 @@ void applyOneQubitPauliError(Qureg qureg, int targetQubit, qreal probX, qreal pr
  *      or if the dimensions of \p combineQureg and \p otherQureg do not match,
  *      or if \p prob is not in [0, 1]
  */
-void addDensityMatrix(Qureg combineQureg, qreal prob, Qureg otherQureg);
+void mixDensityMatrix(Qureg combineQureg, qreal prob, Qureg otherQureg);
 
 /** Calculates the purity of a density matrix, by the trace of the density matrix squared.
  * Returns \f$\text{Tr}(\rho^2)\f$.
@@ -2377,8 +2412,7 @@ void multiControlledMultiQubitUnitary(Qureg qureg, int* ctrls, const int numCtrl
  * where \f$ I \f$ is the identity matrix.
  *
  * Note that in distributed mode, this routine requires that each node contains at least 4 amplitudes.
- * This means an q-qubit register (state vector or density matrix) can be distributed 
- * by at most 2^(q-2) numTargs nodes.
+ * This means an q-qubit register can be distributed by at most 2^(q-2) numTargs nodes.
  *
  * @param[in,out] qureg the density matrix to which to apply the map
  * @param[in] target the target qubit of the map
@@ -2391,7 +2425,7 @@ void multiControlledMultiQubitUnitary(Qureg qureg, int* ctrls, const int numCtrl
  *      or if \p ops do not create a completely positive, trace preserving map,
  *      or if a node cannot fit 4 amplitudes in distributed mode.
  */
-void applyOneQubitKrausMap(Qureg qureg, int target, ComplexMatrix2 *ops, int numOps);
+void mixKrausMap(Qureg qureg, int target, ComplexMatrix2 *ops, int numOps);
 
 /** Apply a general two-qubit Kraus map to a density matrix, as specified by at most 
  * sixteen Kraus operators. A Kraus map is also referred to as a "operator-sum representation"
@@ -2407,8 +2441,7 @@ void applyOneQubitKrausMap(Qureg qureg, int target, ComplexMatrix2 *ops, int num
  * \p targetQubit1 is treated as the \p least significant qubit in each op in \p ops.
  *
  * Note that in distributed mode, this routine requires that each node contains at least 16 amplitudes.
- * This means an q-qubit register (state vector or density matrix) can be distributed 
- * by at most 2^(q-4) numTargs nodes.
+ * This means an q-qubit register can be distributed by at most 2^(q-4) numTargs nodes.
  *
  * @param[in,out] qureg the density matrix to which to apply the map
  * @param[in] target1 the least significant target qubit in \p ops
@@ -2423,7 +2456,39 @@ void applyOneQubitKrausMap(Qureg qureg, int target, ComplexMatrix2 *ops, int num
  *      or if \p ops do not create a completely positive, trace preserving map,
  *      or if a node cannot fit 16 amplitudes in distributed mode.
  */
-void applyTwoQubitKrausMap(Qureg qureg, int target1, int target2, ComplexMatrix4 *ops, int numOps);
+void mixTwoQubitKrausMap(Qureg qureg, int target1, int target2, ComplexMatrix4 *ops, int numOps);
+
+/** Apply a general N-qubit Kraus map to a density matrix, as specified by at most (2N)^2
+ * Kraus operators. A Kraus map is also referred to as a "operator-sum representation"
+ * of a quantum channel. This allows one to simulate a general two-qubit noise process.
+ *
+ * The Kraus map must be completely positive and trace preserving, which constrains each 
+ * \f$ K_i \f$ in \p ops by
+ * \f[
+    \sum \limits_i^{\text{numOps}} K_i^\dagger K_i = I
+ * \f]
+ * where \f$ I \f$ is the identity matrix.
+ *
+ * The first qubit in \p targets is treated as the \p least significant qubit in each op in \p ops.
+ *
+ * Note that in distributed mode, this routine requires that each node contains at least (2N)^2 amplitudes.
+ * This means an q-qubit register can be distributed by at most 2^(q-2)/N^2 nodes.
+ *
+ * @param[in,out] qureg the density matrix to which to apply the map
+ * @param[in] targets a list of target qubit indices, the first of which is treated as least significant in each op in \p ops
+ * @param[in] numTargets the length of \p targets
+ * @param[in] ops an array of at most (2N)^2 Kraus operators
+ * @param[in] numOps the number of operators in \p ops which must be >0 and <= (2N)^2.
+ * @throws exitWithError
+ *      if \p qureg is not a density matrix, 
+ *      or if any target in \p targets is outside of [0, \p qureg.numQubitsRepresented),
+ *      or if any qubit in \p targets is repeated,
+ *      or if \p numOps is outside [1, (2 \p numTargets)^2],
+ *      or if any ComplexMatrixN in \ops does not have op.numQubits == \p numTargets,
+ *      or if \p ops do not create a completely positive, trace preserving map,
+ *      or if a node cannot fit (2N)^2 amplitudes in distributed mode.
+ */
+void mixMultiQubitKrausMap(Qureg qureg, int* targets, int numTargets, ComplexMatrixN* ops, int numOps);
 
 /** Computes the Hilbert Schmidt distance between two density matrices \p a and \p b, 
  * defined as the Frobenius norm of the difference between them.
@@ -2522,8 +2587,105 @@ void setWeightedQureg(Complex fac1, Qureg qureg1, Complex fac2, Qureg qureg2, Co
  *      or if \p inQureg is not of the same type and dimensions as \p outQureg
  */
 void applyPauliSum(Qureg inQureg, enum pauliOpType* allPauliCodes, qreal* termCoeffs, int numSumTerms, Qureg outQureg);
+ 
+#ifndef __cplusplus
+ // hide this function from doxygen
+ /// \cond HIDDEN_SYMBOLS
+/** Creates a ComplexMatrixN struct with .real and .imag arrays kept entirely 
+ * in the stack. 
+ * This function should not be directly called by the user; instead, users should 
+ * call the macro getStaticComplexMatrixN.
+ *
+ * The passed 'reStorage' and 'imStorage' must be arrays with 
+ * length (1<<numQubits) and are populated with pointers to rows of the 2D 
+ * arrays 're' and 'im', and then attached to the returned ComplexMatrixN instance.
+ * For example:
+ *
+ *     ComplexMatrixN m = bindArraysToStackComplexMatrixN(
+ *         1, 
+ *         (qreal[][2]) {{1,0},{0,1}}, (qreal[][2]) {{0}}, 
+ *         (qreal*[2]) {0}, (qreal*[2]) {0}
+ *     );
+ *
+ * Note that this ComplexMatrixN instance, since kept in the stack, cannot be *returned*
+ * beyond the calling scope which would result in a dangling pointer.
+ * This is unlike a ComplexMatrixN instance created with createComplexMatrixN, which 
+ * is dynamic (lives in heap) and can be returned, through needs explicit freeing 
+ * with destroyComplexMatrixN.
+ *
+ * This function is only callable in C, since C++ signatures cannot contain 
+ * variable-length 2D arrays.
+ *
+ * @param[in] numQubits the number of qubits that the ComplexMatrixN corresponds to.
+ *  note the .real and .imag arrays of the returned ComplexMatrixN will have 
+ *  2^numQubits rows and columns.
+ * @param[in] re a 2D array (2^numQubits by 2^numQubits) of the real components
+ * @param[in] im a 2D array (2^numQubits by 2^numQubits) of the imag components
+ * @param[in] reStorage a 1D array of length 2^numQubits
+ * @param[in] imStorage a 1D array of length 2^numQubits
+ * @returns a ComplexMatrixN struct with stack-stored .real and .imag arrays,
+ *  which are actually the passed \p reStorage and \p imStorage arrays, populated 
+ *  with pointers to the rows of \p re and \p im
+ */
+ComplexMatrixN bindArraysToStackComplexMatrixN(
+    int numQubits, qreal re[][1<<numQubits], qreal im[][1<<numQubits], 
+    qreal** reStorage, qreal** imStorage);
+#endif
+/// \endcond
+
+// hide this function from doxygen
+/// \cond HIDDEN_SYMBOLS
+#define UNPACK_ARR(...) __VA_ARGS__
+/// \endcond
+
+#ifndef __cplusplus
+/** Creates a ComplexMatrixN struct which lives in the stack and so does not 
+ * need freeing, but cannot be returned beyond the calling scope. That is, 
+ * the .real and .imag arrays of the returned ComplexMatrixN live in the stack
+ * as opposed to that returned by createComplexMatrixN() (which live in the heap).
+ * Note the real and imag components must be wrapped in paranthesis, e.g.
+ *
+ *     ComplexMatrixN u = getStaticComplexMatrixN(1, ({{1,2},{3,4}}), ({{0}}));
+ *
+ * Here is an example of an incorrect usage, since a 'local' ComplexMatrixN cannot
+ * leave the calling scope (otherwise inducing dangling pointers):
+ *
+ *     ComplexMatrixN getMyMatrix(void) {
+ *         return getStaticComplexMatrixN(1, ({{1,2},{3,4}}), ({{0}}));
+ *     }
+ * 
+ * This function is actually a single-line anonymous macro, so can be safely 
+ * invoked within arguments to other functions, e.g.
+ *
+ *      multiQubitUnitary(
+ *          qureg, (int[]) {0}, 1, 
+ *          getStaticComplexMatrixN(1, ({{1,0},{0,1}}), ({{0}}))
+ *      );
+ *
+ * The returned ComplexMatrixN can be accessed and modified in the same way as
+ * that returned by createComplexMatrixN(), e.g.
+ *
+ *      ComplexMatrixN u = getStaticComplexMatrixN(3, ({{0}}), ({{0}}));
+ *      for (int i=0; i<8; i++)
+ *          for (int j=0; j<8; j++)
+ *              u.real[i][j] = .1;
+ *
+ * Note that the first argument \p numQubits must be a literal.
+ *
+ * This macro is only callable in C, since it invokes the function 
+ * bindArraysToStackComplexMatrixN() which is only callable in C.
+ */
+#define getStaticComplexMatrixN(numQubits, re, im) \
+    bindArraysToStackComplexMatrixN( \
+        numQubits, \
+        (qreal[1<<numQubits][1<<numQubits]) UNPACK_ARR re, \
+        (qreal[1<<numQubits][1<<numQubits]) UNPACK_ARR im, \
+        (double*[1<<numQubits]) {NULL}, (double*[1<<numQubits]) {NULL} \
+    )
+#endif
 
 
+// end prevention of C++ name mangling
 #ifdef __cplusplus
 }
 #endif

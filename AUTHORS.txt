@@ -24,4 +24,4 @@ Dr Mihai Duta
 
 External contributors:
 Dr Nicolas Vogt on behalf of HQS Quantum Simulations
-    implemented applyOneQubitDampingError
+    implemented mixDamping

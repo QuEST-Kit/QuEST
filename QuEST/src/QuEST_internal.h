@@ -30,9 +30,11 @@ qreal getVectorMagnitude(Vector vec);
 
 Complex getConjugateScalar(Complex scalar);
 
-ComplexMatrix2 getConjugateMatrix2(ComplexMatrix2 matr);
+ComplexMatrix2 getConjugateMatrix2(ComplexMatrix2 src);
 
-ComplexMatrix4 getConjugateMatrix4(ComplexMatrix4 matr);
+ComplexMatrix4 getConjugateMatrix4(ComplexMatrix4 src);
+
+void setConjugateMatrixN(ComplexMatrixN m);
 
 void ensureIndsIncrease(int* ind1, int* ind2);
 
@@ -73,23 +75,25 @@ void densmatr_collapseToKnownProbOutcome(Qureg qureg, const int measureQubit, in
     
 int densmatr_measureWithStats(Qureg qureg, int measureQubit, qreal *outcomeProb);
 
-void densmatr_oneQubitDephase(Qureg qureg, const int targetQubit, qreal dephase);
+void densmatr_mixDephasing(Qureg qureg, const int targetQubit, qreal dephase);
 
-void densmatr_twoQubitDephase(Qureg qureg, const int qubit1, const int qubit2, qreal dephase);
+void densmatr_mixTwoQubitDephasing(Qureg qureg, const int qubit1, const int qubit2, qreal dephase);
 
-void densmatr_oneQubitDepolarise(Qureg qureg, const int targetQubit, qreal depolLevel);
+void densmatr_mixDepolarising(Qureg qureg, const int targetQubit, qreal depolLevel);
 
-void densmatr_oneQubitDamping(Qureg qureg, const int targetQubit, qreal damping);
+void densmatr_mixDamping(Qureg qureg, const int targetQubit, qreal damping);
 
-void densmatr_twoQubitDepolarise(Qureg qureg, int qubit1, int qubit2, qreal depolLevel);
+void densmatr_mixTwoQubitDepolarising(Qureg qureg, int qubit1, int qubit2, qreal depolLevel);
 
-void densmatr_oneQubitPauliError(Qureg qureg, int qubit, qreal pX, qreal pY, qreal pZ);
+void densmatr_mixPauli(Qureg qureg, int qubit, qreal pX, qreal pY, qreal pZ);
 
-void densmatr_addDensityMatrix(Qureg combineQureg, qreal otherProb, Qureg otherQureg);
+void densmatr_mixDensityMatrix(Qureg combineQureg, qreal otherProb, Qureg otherQureg);
 
-void densmatr_applyKrausMap(Qureg qureg, int target, ComplexMatrix2 *ops, int numOps);
+void densmatr_mixKrausMap(Qureg qureg, int target, ComplexMatrix2 *ops, int numOps);
 
-void densmatr_applyTwoQubitKrausMap(Qureg qureg, int target1, int target2, ComplexMatrix4 *ops, int numOps);    
+void densmatr_mixTwoQubitKrausMap(Qureg qureg, int target1, int target2, ComplexMatrix4 *ops, int numOps);
+
+void densmatr_mixMultiQubitKrausMap(Qureg qureg, int* targets, int numTargets, ComplexMatrixN* ops, int numOps);
     
 
 /* 

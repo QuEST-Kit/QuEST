@@ -83,12 +83,12 @@ multiControlledPhaseShift = QuESTTestee ("multiControlledPhaseShift", retType=No
 multiControlledUnitary    = QuESTTestee ("multiControlledUnitary",    retType=None, argType=[Qureg,_controlQubits,_numControlQubits,_targetQubit,ComplexMatrix2], defArg=[None,[1],1,0,rand_unit_mat()]) 
 
 # Density Matrix Operations
-addDensityMatrix             = QuESTTestee ("addDensityMatrix",             retType=None, argType=[Qureg,qreal,Qureg], defArg=[None,50.,None], denMat=True)
-applyOneQubitDephaseError    = QuESTTestee ("applyOneQubitDephaseError",    retType=None, argType=[Qureg,_targetQubit,qreal], defArg=[None,0,0.25], denMat=True)
-applyOneQubitDepolariseError = QuESTTestee ("applyOneQubitDepolariseError", retType=None, argType=[Qureg,_targetQubit,qreal], defArg=[None,0,0.25], denMat=True)
-applyOneQubitDampingError    = QuESTTestee ("applyOneQubitDampingError",    retType=None, argType=[Qureg,_targetQubit,qreal], defArg=[None,0,0.25], denMat=True)
-applyTwoQubitDephaseError    = QuESTTestee ("applyTwoQubitDephaseError",    retType=None, argType=[Qureg,_targetQubit,_controlQubit,qreal], defArg=[None,0,1,0.25], denMat=True)
-applyTwoQubitDepolariseError = QuESTTestee ("applyTwoQubitDepolariseError", retType=None, argType=[Qureg,_targetQubit,_controlQubit,qreal], defArg=[None,0,1,0.25], denMat=True) 
+mixDensityMatrix             = QuESTTestee ("mixDensityMatrix",             retType=None, argType=[Qureg,qreal,Qureg], defArg=[None,50.,None], denMat=True)
+mixDephasing    = QuESTTestee ("mixDephasing",    retType=None, argType=[Qureg,_targetQubit,qreal], defArg=[None,0,0.25], denMat=True)
+mixDepolarising = QuESTTestee ("mixDepolarising", retType=None, argType=[Qureg,_targetQubit,qreal], defArg=[None,0,0.25], denMat=True)
+mixDamping    = QuESTTestee ("mixDamping",    retType=None, argType=[Qureg,_targetQubit,qreal], defArg=[None,0,0.25], denMat=True)
+mixTwoQubitDephasing    = QuESTTestee ("mixTwoQubitDephasing",    retType=None, argType=[Qureg,_targetQubit,_controlQubit,qreal], defArg=[None,0,1,0.25], denMat=True)
+mixTwoQubitDepolarising = QuESTTestee ("mixTwoQubitDepolarising", retType=None, argType=[Qureg,_targetQubit,_controlQubit,qreal], defArg=[None,0,1,0.25], denMat=True) 
 
 # Examination and Mathematical Operations
 calcFidelity      = QuESTTestee ("calcFidelity",      retType=qreal, argType=[Qureg,Qureg], defArg=[None,None])

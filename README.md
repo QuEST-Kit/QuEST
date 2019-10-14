@@ -21,14 +21,12 @@ rotateAroundAxis(qubits, 0, 3.14/2, v);
 and powerful
 ```C
 // sqrt(X) with pi/4 global phase
-ComplexMatrix2 u;
-u.r0c0 = (Complex) {.real=.5, .imag= .5};
-u.r0c1 = (Complex) {.real=.5, .imag=-.5}; 
-u.r1c0 = (Complex) {.real=.5, .imag=-.5};
-u.r1c1 = (Complex) {.real=.5, .imag= .5};
+ComplexMatrix2 u = {
+    .real = {{.5, .5}, { .5,.5}},
+    .imag = {{.5,-.5}, {-.5,.5}}};
 unitary(qubits, 0, u);
 
-int[] controls = {1, 2, 3, 4, 5};
+int controls[] = {1, 2, 3, 4, 5};
 multiControlledUnitary(qureg, controls, 5, 0, u);
 ```
 
@@ -51,6 +49,7 @@ cd QuEST
 ```
 at terminal. You can then compile the [example](examples/tutorial_example.c) using
 ```bash
+cp examples/tutorial_example .
 mkdir build
 cd build
 cmake ..
@@ -93,7 +92,7 @@ To file a bug report or feature request, [raise a github issue](https://github.c
 
 QuEST uses the [mt19937ar](http://www.math.sci.hiroshima-u.ac.jp/~m-mat/MT/MT2002/emt19937ar.html) Mersenne Twister algorithm for random number generation, under the BSD licence. QuEST optionally (by additionally importing `QuEST_complex.h`) integrates the [language agnostic complex type](http://collaboration.cmc.ec.gc.ca/science/rpn/biblio/ddj/Website/articles/CUJ/2003/0303/cuj0303meyers/index.htm) by Randy Meyers and Dr. Thomas Plum
 
-Thanks to [HQS Quantum simulations](https://quantumsimulations.de/) for contributing the applyOneQubitDampingError function.
+Thanks to [HQS Quantum simulations](https://quantumsimulations.de/) for contributing the mixDamping function.
 
 ## Licence
 

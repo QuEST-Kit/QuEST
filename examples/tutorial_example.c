@@ -14,12 +14,15 @@ int main (int narg, char *varg[]) {
     printf("Running QuEST tutorial:\n\t Basic circuit involving a system of 3 qubits.\n");
     printf("-------------------------------------------------------\n");
 
+
+
     /*
      * PREPARE QUBIT SYSTEM
      */
 
     Qureg qubits = createQureg(3, env);
     initZeroState(qubits);
+
 
 
     /*
@@ -29,6 +32,8 @@ int main (int narg, char *varg[]) {
     reportQuregParams(qubits);
     reportQuESTEnv(env);
 
+
+
     /*
      * APPLY CIRCUIT
      */
@@ -37,13 +42,13 @@ int main (int narg, char *varg[]) {
     controlledNot(qubits, 0, 1);
     rotateY(qubits, 2, .1);
 
-    multiControlledPhaseFlip(qubits, (int []){0, 1, 2}, 3);
+    int targs[] = {0,1,2};
+    multiControlledPhaseFlip(qubits, targs, 3);
 
-    ComplexMatrix2 u;
-    u.r0c0 = (Complex) {.real=.5, .imag= .5};
-    u.r0c1 = (Complex) {.real=.5, .imag=-.5}; 
-    u.r1c0 = (Complex) {.real=.5, .imag=-.5};
-    u.r1c1 = (Complex) {.real=.5, .imag= .5};
+    ComplexMatrix2 u = {
+        .real={{.5,.5},{.5,.5}},
+        .imag={{.5,-.5},{-.5,.5}}
+    };
     unitary(qubits, 0, u);
 
     Complex a, b;
@@ -57,7 +62,19 @@ int main (int narg, char *varg[]) {
 
     controlledCompactUnitary(qubits, 0, 1, a, b);
 
-    multiControlledUnitary(qubits, (int []){0, 1}, 2, 2, u);
+    int ctrls[] = {0,1};
+    multiControlledUnitary(qubits, ctrls, 2, 2, u);
+    
+    ComplexMatrixN toff = createComplexMatrixN(3);
+    toff.real[6][7] = 1;
+    toff.real[7][6] = 1;
+    for (int i=0; i<6; i++)
+        toff.real[i][i] = 1;
+    multiQubitUnitary(qubits, targs, 3, toff);
+    
+    /*
+     * STUDY QUANTUM STATE
+     */
 
     printf("\nCircuit output:\n");
 
@@ -75,11 +92,13 @@ int main (int narg, char *varg[]) {
     printf("Qubit 2 collapsed to %d with probability %f\n", outcome, prob);
 
 
+
     /*
      * FREE MEMORY
      */
 
     destroyQureg(qubits, env); 
+    destroyComplexMatrixN(toff);
 
 
     /*

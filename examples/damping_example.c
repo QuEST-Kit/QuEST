@@ -36,7 +36,7 @@ int main(int narg, char *varg[])
     int counter;
     for (counter = 0; counter < 10; counter++)
     {
-        applyOneQubitDampingError(qubits, 0, 0.1);
+        mixDamping(qubits, 0, 0.1);
         printf("\n Qubit state after applying damping %d times:\n", counter+1);
         reportStateToScreen(qubits, env, 0);
     }
