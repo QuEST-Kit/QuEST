@@ -2460,6 +2460,9 @@ qreal calcHilbertSchmidtDistance(Qureg a, Qureg b);
  *
  * @param[in] a a density matrix
  * @param[in] b an equally-sized density matrix
+ * @returns Hilbert schmidt scalar product of \p a and \p b
+ * @ingroup calc
+ * @author Balint Koczor
  * @throws exitWithError
  *      if either \p a or \p b are not density matrices,
  *      or if \p a and \p have mismatching dimensions.
