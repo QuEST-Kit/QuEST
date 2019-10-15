@@ -67,7 +67,7 @@ qreal densmatr_calcFidelity(Qureg qureg, Qureg pureState);
 
 qreal densmatr_calcHilbertSchmidtDistance(Qureg a, Qureg b);
 
-qreal densmatr_calcHilbertSchmidtScalarProduct(Qureg a, Qureg b);
+qreal densmatr_calcInnerProduct(Qureg a, Qureg b);
 
 qreal densmatr_calcProbOfOutcome(Qureg qureg, const int measureQubit, int outcome);
 

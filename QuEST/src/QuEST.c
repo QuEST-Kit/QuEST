@@ -827,7 +827,7 @@ Complex calcInnerProduct(Qureg bra, Qureg ket) {
     if (bra.isDensityMatrix&&ket.isDensityMatrix) { 
       validateMatchingQuregDims(bra, ket, __func__);
       Complex result; result.imag = 0.;
-      result.real = densmatr_calcHilbertSchmidtScalarProduct(bra, ket);
+      result.real = densmatr_calcInnerProduct(bra, ket);
       return result;
     } 
         

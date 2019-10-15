@@ -942,8 +942,8 @@ qreal densmatr_calcHilbertSchmidtDistanceSquaredLocal(Qureg a, Qureg b) {
     return trace;
 }
 
-/** computes Tr(conjTrans(a) b) = sum of (a^* b) */
-qreal densmatr_calcHilbertSchmidtScalarProductLocal(Qureg a, Qureg b) {
+/** computes Tr(conjTrans(a) b) = sum of (a_ij^* b_ij) */
+qreal densmatr_calcInnerProductLocal(Qureg a, Qureg b) {
     
     long long int index;
     long long int numAmps = a.numAmpsPerChunk;

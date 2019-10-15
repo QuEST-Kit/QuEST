@@ -61,9 +61,9 @@ qreal densmatr_calcHilbertSchmidtDistance(Qureg a, Qureg b) {
     return dist;
 }
 
-qreal densmatr_calcHilbertSchmidtScalarProduct(Qureg a, Qureg b) {
+qreal densmatr_calcInnerProduct(Qureg a, Qureg b) {
     
-    qreal scalar = densmatr_calcHilbertSchmidtScalarProductLocal(a, b);
+    qreal scalar = densmatr_calcInnerProductLocal(a, b);
     return scalar;
 }
 

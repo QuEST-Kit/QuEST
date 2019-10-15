@@ -431,9 +431,9 @@ qreal densmatr_calcHilbertSchmidtDistance(Qureg a, Qureg b) {
     return dist;
 }
 
-qreal densmatr_calcHilbertSchmidtScalarProduct(Qureg a, Qureg b) {
+qreal densmatr_calcInnerProduct(Qureg a, Qureg b) {
     
-    qreal localSum = densmatr_calcHilbertSchmidtScalarProductLocal(a, b);
+    qreal localSum = densmatr_calcInnerProductLocal(a, b);
     
     qreal globalSum;
     MPI_Allreduce(&localSum, &globalSum, 1, MPI_QuEST_REAL, MPI_SUM, MPI_COMM_WORLD);
