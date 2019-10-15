@@ -1,1 +1,0 @@
-/usr/bin/cc   -rdynamic CMakeFiles/demo.dir/tutorial_example.c.o  -o demo -Wl,-rpath,/home/izemize/postdoc/2019/quEST/build/QuEST QuEST/libQuEST.so -lm 
