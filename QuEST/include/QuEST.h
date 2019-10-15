@@ -1390,17 +1390,41 @@ int measure(Qureg qureg, int measureQubit);
 int measureWithStats(Qureg qureg, int measureQubit, qreal *outcomeProb);
 
 /** Computes the inner product \f$ \langle \text{bra} | \text{ket} \rangle \f$ of two 
- * equal-size state vectors. The same \p qureg may be passed as both \p bra and \p ket, 
+ * equal-size state vectors as
+ * \f[
+    \langle \text{bra} | \text{ket} \rangle = \sum\limits_i  conj(bra_{i}) ket_{i}
+ * \f]
+ * The same \p qureg may be passed as both \p bra and \p ket, 
  * though we recommend users check state-vector normalisation with \p calcTotalProb which 
  * employs Kahan summation for greater accuracy.
  * Neither state-vector is modified.
+ * If both input states \p a and \p b are density matrices
+ * then computes the Hilbert-Schmidt scalar product between \p a and \p b, 
+ * which is equialent to the Frobenius inner product of matrices.
+ * That is, we define the Hilbert-Schmidt scalar product
+ * \f[
+    ((a, b))_HS = (( a, b ))_F = \text{Tr}[ a^\dagger b ] 
+ * \f]
+ * This is equivalent to the sum of products of matrix elemets, i.e.
+ * \f[
+    ((a, b))_HS = \sum\limits_i \sum\limits_j  conj(a_{ij}) b_{ij}
+ * \f]
+ * Note that if both \p a and \p b are density matrices of pure states
+ * \p bra and \p ket, then the equality holds
+ * \f[
+    ((a, b))_HS = |\langle \text{bra} | \text{ket} \rangle|^2
+ * \f]
  *
- * @param[in] bra qureg to be the 'bra' (i.e. have its values conjugate transposed) in the inner product 
- * @param[in] ket qureg to be the 'ket' in the inner product 
- * @return the complex inner product of \p bra and \p ket 
+ * @ingroup calc
+ * @param[in] bra qureg to be the 'bra' or 'a' (i.e. have its values conjugate transposed) in the inner product 
+ * @param[in] ket qureg to be the 'ket' or 'b' in the inner product 
+ * @returns the complex inner product of state vectors \p bra and \p ket 
+            or the real Hilbert-Schmidt scalar product of density matrices
+            \p a and \p b 
  * @throws exitWithError
- *      if either \p bra or \p ket are not state-vectors, 
- *      or if \p bra and \p ket do not have equal dimensions.
+ *      if \p bra and \p ket or \p a and \p b have mismatching dimensions
+ *      or mismatching qureg types.
+ * @author Balint Koczor
  */
 Complex calcInnerProduct(Qureg bra, Qureg ket);
 
@@ -2446,28 +2470,6 @@ void applyTwoQubitKrausMap(Qureg qureg, int target1, int target2, ComplexMatrix4
  *      or if \p a and \p have mismatching dimensions.
  */
 qreal calcHilbertSchmidtDistance(Qureg a, Qureg b);
-
-/** Computes the Hilbert-Schmidt scalar product between two density matrices \p a and \p b, 
- * equialent to the Frobenius inner product of matrices.
- * That is, we define the Hilbert-Schmidt scalar product
- * \f[
-    ((a, b))_HS = (( a, b ))_F = \text{Tr}[ a^\dagger b ] 
- * \f]
- * This is equivalent to the sum of products of matrix elemets, i.e.
- * \f[
-    ((a, b))_HS = \sum\limits_i \sum\limits_j  conj(a_{ij}) b_{ij}
- * \f]
- *
- * @ingroup calc
- * @param[in] a a density matrix
- * @param[in] b an equally-sized density matrix
- * @throws exitWithError
- *      if either \p a or \p b are not density matrices,
- *      or if \p a and \p have mismatching dimensions.
- * @returns Hilbert schmidt scalar product of \p a and \p b
- * @author Balint Koczor
- */
-qreal calcHilbertSchmidtScalarProduct(Qureg a, Qureg b);
 
 /** Modifies qureg \p out to the result of (\p facOut \p out + \p fac1 \p qureg1 + \p fac2 \p qureg2), 
  * imposing no constraints on normalisation. Works for both statevectors and density matrices.

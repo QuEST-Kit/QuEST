@@ -822,11 +822,19 @@ qreal calcTotalProb(Qureg qureg) {
 }
 
 Complex calcInnerProduct(Qureg bra, Qureg ket) {
-    validateStateVecQureg(bra, __func__);
-    validateStateVecQureg(ket, __func__);
-    validateMatchingQuregDims(bra, ket,  __func__);
+    validateMatchingQuregTypes(bra, ket,  __func__);
     
-    return statevec_calcInnerProduct(bra, ket);
+    if (bra.isDensityMatrix&&ket.isDensityMatrix) { 
+      validateMatchingQuregDims(bra, ket, __func__);
+      Complex result; result.imag = 0.;
+      result.real = densmatr_calcHilbertSchmidtScalarProduct(bra, ket);
+      return result;
+    } 
+        
+    else { 
+      validateMatchingQuregDims(bra, ket,  __func__);
+      return statevec_calcInnerProduct(bra, ket);
+    }
 }
 
 qreal calcProbOfOutcome(Qureg qureg, const int measureQubit, int outcome) {
@@ -879,14 +887,6 @@ qreal calcHilbertSchmidtDistance(Qureg a, Qureg b) {
     validateMatchingQuregDims(a, b, __func__);
     
     return densmatr_calcHilbertSchmidtDistance(a, b);
-}
-
-qreal calcHilbertSchmidtScalarProduct(Qureg a, Qureg b) {
-    validateDensityMatrQureg(a, __func__);
-    validateDensityMatrQureg(b, __func__);
-    validateMatchingQuregDims(a, b, __func__);
-    
-    return densmatr_calcHilbertSchmidtScalarProduct(a, b);
 }
 
 
