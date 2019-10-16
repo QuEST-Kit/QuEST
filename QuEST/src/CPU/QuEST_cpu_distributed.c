@@ -3,6 +3,9 @@
 /** @file
  * An implementation of the backend in ../QuEST_ops.h for an MPI environment.
  * Mostly pure-state wrappers for the local/distributed functions implemented in QuEST_cpu
+ *
+ * @author Ania Brown
+ * @author Tyson Jones
  */
 
 # include "QuEST.h"

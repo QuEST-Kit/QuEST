@@ -1,3 +1,10 @@
+/** @file 
+ * Demonstrates use of single-qubit damping
+ *
+ * @author Nicolas Vogt of HQS
+ * @author Ania Brown (example template)
+ */
+
 #include <stdio.h>
 #include "QuEST.h"
 

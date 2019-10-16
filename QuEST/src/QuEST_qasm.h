@@ -2,6 +2,8 @@
 
 /** @file
  * Functions for generating QASM output from QuEST circuits
+ *
+ * @author Tyson Jones
  */
 
 # ifndef QUEST_QASM_H

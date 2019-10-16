@@ -5,6 +5,9 @@
  * state-vector precision. Using single, double or quad floating point precision
  * has consequences for operation precision, total memory requirements,
  * network bandwidth and ultimately runtime.
+ *
+ * @author Ania Brown
+ * @author Tyson Jones (doc)
  */
 
 # include <math.h>
@@ -62,18 +65,28 @@
 # endif
 
 
-/** \def QuEST_PREC 
+/** @def QuEST_PREC 
+ *
  * Sets the precision of \ref qreal and \ref qcomp, and generally that of the state-vectors stored
  * by QuEST. \p QuEST_PREC can be 1, 2 or 4 for single, double and quad precision - requires
  * 4, 8 and 16 bytes per real & imag component per amplitude of the statevector respectively.
  * This should be passed as a macro to the preprocessor during compilation, which overwrites the
  * value explicitly defined in \ref QuEST_precision.h.
  * Note that quad precision is not compatible with most GPUs.
+ *
+ * @ingroup type
+ * @author Ania Brown
+ * @author Tyson Jones (doc)
  */
 
-/** \def qreal
+/** @def qreal
+ *
  * A precision-agnostic floating point number, as determined by \ref QuEST_PREC.
  * Is a single, double or quad precision float when \ref QuEST_PREC is 1, 2 or 4 respectively.
+ *
+ * @ingroup type
+ * @author Ania Brown
+ * @author Tyson Jones (doc)
  */
 
 # endif // QUEST_PRECISION_H

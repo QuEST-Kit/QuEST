@@ -4,6 +4,9 @@
  * Internal functions used to implement the pure backend in ../QuEST_ops_pure.h. Do not call these functions
  * directly. In general, qubits_cpu_local.c and qubits_cpu_mpi.c will implement the pure backend by choosing
  * the correct function or combination of functions to use from those included here, which are defined in QuEST_cpu.c
+ *
+ * @author Ania Brown
+ * @author Tyson Jones
  */
 
 # ifndef QUEST_CPU_INTERNAL_H
