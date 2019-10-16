@@ -347,8 +347,7 @@ else
 
 endif
 
-test: $(OBJ)
-	$(COMPILER) $(C_FLAGS)  -shared -Wl,-soname,$(QUEST_LIB) $(QUEST_INCLUDE) -o $(LIB_NAME) $(OBJ) $(LIBS)
+
 
 
 #
