@@ -1646,15 +1646,23 @@ int measure(Qureg qureg, int measureQubit);
 int measureWithStats(Qureg qureg, int measureQubit, qreal *outcomeProb);
 
 /** Computes the inner product \f$ \langle \text{bra} | \text{ket} \rangle \f$ of two 
- * equal-size state vectors as
- * \f[
-    \langle \text{bra} | \text{ket} \rangle = \sum\limits_i  conj(bra_{i}) ket_{i}
- * \f]
- * The same \p qureg may be passed as both \p bra and \p ket, 
+ * equal-size state vectors. The same \p qureg may be passed as both \p bra and \p ket, 
  * though we recommend users check state-vector normalisation with \p calcTotalProb which 
  * employs Kahan summation for greater accuracy.
  * Neither state-vector is modified.
- * If both input states \p a and \p b are density matrices
+ *
+ * @ingroup calc
+ * @param[in] bra qureg to be the 'bra' (i.e. have its values conjugate transposed) in the inner product 
+ * @param[in] ket qureg to be the 'ket' in the inner product 
+ * @return the complex inner product of \p bra and \p ket 
+ * @throws exitWithError
+ *      if either \p bra or \p ket are not state-vectors, 
+ *      or if \p bra and \p ket do not have equal dimensions.
+ * @author Tyson Jones
+ */
+Complex calcInnerProduct(Qureg bra, Qureg ket);
+
+/** If both input states \p a and \p b are equal-size density matrices
  * then computes the Hilbert-Schmidt scalar product between \p a and \p b, 
  * which is equialent to the Frobenius inner product of matrices.
  * That is, we define the Hilbert-Schmidt scalar product
@@ -1670,17 +1678,26 @@ int measureWithStats(Qureg qureg, int measureQubit, qreal *outcomeProb);
  * \f[
     ((a, b))_HS = |\langle \text{bra} | \text{ket} \rangle|^2
  * \f]
+ * If both inputs are  equal-size state vectors then computes the inner product
+ * square \f$ |\langle \text{bra} | \text{ket} \rangle |^2\f$ via
+ * the usual inner product
+ * \f[
+    \langle \text{bra} | \text{ket} \rangle = \sum\limits_i  conj(bra_{i}) ket_{i}
+ * \f]
  *
  * @ingroup calc
- * @param[in] bra qureg to be the 'bra' (i.e. have its values conjugate transposed) in the inner product 
- * @param[in] ket qureg to be the 'ket' in the inner product 
- * @return the complex inner product of \p bra and \p ket 
+ * @param[in] bra qureg to be the 'bra' or 'a' (i.e. have its values conjugate transposed)
+ * in the inner product 
+ * @param[in] ket qureg to be the 'ket' or 'b' in the inner product 
+ * @returns the complex inner product of state vectors \p bra and \p ket 
+            or the real Hilbert-Schmidt scalar product of density matrices
+            \p a and \p b 
  * @throws exitWithError
- *      if either \p bra or \p ket are not state-vectors, 
- *      or if \p bra and \p ket do not have equal dimensions.
- * @author Tyson Jones
+ *      if \p bra and \p ket or \p a and \p b have mismatching dimensions
+ *      or mismatching qureg types.
+ * @author Balint Koczor
  */
-Complex calcInnerProduct(Qureg bra, Qureg ket);
+Complex calcDensityInnerProduct(Qureg bra, Qureg ket);
 
 /** Seed the Mersenne Twister used for random number generation in the QuEST environment with an example
  * defualt seed.
