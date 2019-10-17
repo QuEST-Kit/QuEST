@@ -1697,7 +1697,7 @@ Complex calcInnerProduct(Qureg bra, Qureg ket);
  *      or mismatching qureg types.
  * @author Balint Koczor
  */
-Complex calcDensityInnerProduct(Qureg bra, Qureg ket);
+qreal calcDensityInnerProduct(Qureg bra, Qureg ket);
 
 /** Seed the Mersenne Twister used for random number generation in the QuEST environment with an example
  * defualt seed.

@@ -834,13 +834,16 @@ Complex calcInnerProduct(Qureg bra, Qureg ket) {
     return statevec_calcInnerProduct(bra, ket);
 }
 
-Complex calcDensityInnerProduct(Qureg bra, Qureg ket) {
+qreal calcDensityInnerProduct(Qureg bra, Qureg ket) {
     validateMatchingQuregTypes(bra, ket,  __func__);
     validateMatchingQuregDims(bra, ket, __func__);
     
-    if (bra.isDensityMatrix&&ket.isDensityMatrix) return densmatr_calcInnerProduct(bra, ket);
-        
-    else return statevec_calcInnerProduct(bra, ket);
+    if (bra.isDensityMatrix&&ket.isDensityMatrix)
+        return densmatr_calcInnerProduct(bra, ket);
+    else {
+        Complex innp = statevec_calcInnerProduct(bra, ket);
+        return(innp.real*innp.real + innp.imag*innp.imag);
+    }
 }
 
 qreal calcProbOfOutcome(Qureg qureg, const int measureQubit, int outcome) {
