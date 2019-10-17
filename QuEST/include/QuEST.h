@@ -1667,7 +1667,7 @@ Complex calcInnerProduct(Qureg bra, Qureg ket);
  * which is equialent to the Frobenius inner product of matrices.
  * That is, we define the Hilbert-Schmidt scalar product
  * \f[
-    ((a, b))_HS = (( a, b ))_F = \text{Tr}[ a^\dagger b ] 
+    (( a, b ))_F = ((a, b))_HS := \text{Tr}[ a^\dagger b ] 
  * \f]
  * This is equivalent to the sum of products of matrix elemets, i.e.
  * \f[
@@ -1689,9 +1689,9 @@ Complex calcInnerProduct(Qureg bra, Qureg ket);
  * @param[in] bra qureg to be the 'bra' or 'a' (i.e. have its values conjugate transposed)
  * in the inner product 
  * @param[in] ket qureg to be the 'ket' or 'b' in the inner product 
- * @returns the complex inner product of state vectors \p bra and \p ket 
-            or the real Hilbert-Schmidt scalar product of density matrices
-            \p a and \p b 
+ * @returns the real Hilbert-Schmidt scalar product of density matrices
+            \p a and \p b or the absolute square of the inner product
+            between state vectors \p bra and \p ket 
  * @throws exitWithError
  *      if \p bra and \p ket or \p a and \p b have mismatching dimensions
  *      or mismatching qureg types.
