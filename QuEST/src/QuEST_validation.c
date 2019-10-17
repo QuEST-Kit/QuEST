@@ -2,6 +2,11 @@
 
 /** @file
  * Provides validation of user input
+ *
+ * @author Tyson Jones
+ * @author Ania Brown (exitWithError(), QuESTAssert(), original testing of qubit indices, unitarity, valid collapse probability)
+ * @author Balint Koczor (Kraus maps)
+ * @author Nicolas Vogt of HQS (one-qubit damping)
  */
 
 #ifdef __cplusplus
@@ -57,7 +62,9 @@ typedef enum {
     E_COMPLEX_MATRIX_NOT_INIT,
     E_INVALID_NUM_ONE_QUBIT_KRAUS_OPS,
     E_INVALID_NUM_TWO_QUBIT_KRAUS_OPS,
-    E_INVALID_KRAUS_OPS
+    E_INVALID_NUM_N_QUBIT_KRAUS_OPS,
+    E_INVALID_KRAUS_OPS,
+    E_MISMATCHING_NUM_TARGS_KRAUS_SIZE
 } ErrorCode;
 
 static const char* errorMessages[] = {
@@ -100,7 +107,9 @@ static const char* errorMessages[] = {
     [E_COMPLEX_MATRIX_NOT_INIT] = "The ComplexMatrixN wasn't initialised with createComplexMatrix().",
     [E_INVALID_NUM_ONE_QUBIT_KRAUS_OPS] = "At least 1 and at most 4 single qubit Kraus operators may be specified.",
     [E_INVALID_NUM_TWO_QUBIT_KRAUS_OPS] = "At least 1 and at most 16 two-qubit Kraus operators may be specified.",
-    [E_INVALID_KRAUS_OPS] = "The specified Kraus map is not a completely positive, trace preserving map."
+    [E_INVALID_NUM_N_QUBIT_KRAUS_OPS] = "At least 1 and at most 4*N^2 of N-qubit Kraus operators may be specified.",
+    [E_INVALID_KRAUS_OPS] = "The specified Kraus map is not a completely positive, trace preserving map.",
+    [E_MISMATCHING_NUM_TARGS_KRAUS_SIZE] = "Every Kraus operator must be of the same number of qubits as the number of targets."
 };
 
 void exitWithError(ErrorCode code, const char* func){
@@ -131,246 +140,90 @@ int isComplexPairUnitary(Complex alpha, Complex beta) {
                 + beta.imag*beta.imag) < REAL_EPS );
 }
 
+#define macro_isMatrixUnitary(m, dim, retVal) { \
+    /* elemRe_ and elemIm_ must not exist in caller scope */ \
+    qreal elemRe_, elemIm_; \
+    retVal = 1; \
+    /* check m * ConjugateTranspose(m) == Identity */ \
+    for (int r=0; r < (dim); r++) { \
+        for (int c=0; c < (dim); c++) { \
+            /* m[r][...] * ConjugateTranspose(m)[...][c] */ \
+            elemRe_ = 0; \
+            elemIm_ = 0; \
+            for (int i=0; i < (dim); i++) { \
+                /* m[r][i] * conj(m[c][i]) */ \
+                elemRe_ += m.real[r][i]*m.real[c][i] + m.imag[r][i]*m.imag[c][i]; \
+                elemIm_ += m.imag[r][i]*m.real[c][i] - m.real[r][i]*m.imag[c][i]; \
+            } \
+            /* check distance from identity */ \
+            if ((absReal(elemIm_) > REAL_EPS) || \
+                (r == c && absReal(elemRe_ - 1) > REAL_EPS) || \
+                (r != c && absReal(elemRe_    ) > REAL_EPS)) { \
+                retVal = 0; \
+                break; \
+            } \
+        } \
+        if (retVal == 0) \
+            break; \
+    } \
+}
 int isMatrix2Unitary(ComplexMatrix2 u) {
-    if ( absReal( u.r0c0.real*u.r0c0.real 
-                + u.r0c0.imag*u.r0c0.imag
-                + u.r1c0.real*u.r1c0.real
-                + u.r1c0.imag*u.r1c0.imag - 1) > REAL_EPS ) return 0;
-    if ( absReal( u.r0c1.real*u.r0c1.real 
-                + u.r0c1.imag*u.r0c1.imag
-                + u.r1c1.real*u.r1c1.real
-                + u.r1c1.imag*u.r1c1.imag - 1) > REAL_EPS ) return 0;
-    if ( absReal( u.r0c0.real*u.r0c1.real 
-                + u.r0c0.imag*u.r0c1.imag
-                + u.r1c0.real*u.r1c1.real
-                + u.r1c0.imag*u.r1c1.imag) > REAL_EPS ) return 0;
-    if ( absReal( u.r0c1.real*u.r0c0.imag
-                - u.r0c0.real*u.r0c1.imag
-                + u.r1c1.real*u.r1c0.imag
-                - u.r1c0.real*u.r1c1.imag) > REAL_EPS ) return 0;
-    return 1;
+    int dim = 2;
+    int retVal;
+    macro_isMatrixUnitary(u, dim, retVal);
+    return retVal;
 }
-
-Complex getMatrixProductElement(Complex* row, Complex* col, int dim) {
-    Complex elem = {.real = 0, .imag = 0};
-    for (int i=0; i < dim; i++) {
-        elem.real += row[i].real*col[i].real - row[i].imag*col[i].imag;
-        elem.imag += row[i].imag*col[i].real + row[i].real*col[i].imag;
-    }
-    return elem;
-}
-
-ComplexMatrix2 getMatrix2Product(ComplexMatrix2 a, ComplexMatrix2 b) {
-    ComplexMatrix2 prod;
-    Complex r0[2] = {a.r0c0,a.r0c1};
-    Complex r1[2] = {a.r1c0,a.r1c1};
-    Complex c0[2] = {b.r0c0,b.r1c0};
-    Complex c1[2] = {b.r0c1,b.r1c1};
-    
-    prod.r0c0 = getMatrixProductElement(r0,c0,2);
-    prod.r0c1 = getMatrixProductElement(r0,c1,2);
-    prod.r1c0 = getMatrixProductElement(r1,c0,2);
-    prod.r1c1 = getMatrixProductElement(r1,c1,2);
-    
-    return prod;
-}
-
-ComplexMatrix4 getMatrix4Product(ComplexMatrix4 a, ComplexMatrix4 b) {
-    ComplexMatrix4 prod;
-    Complex r0[4] = {a.r0c0,a.r0c1,a.r0c2,a.r0c3};
-    Complex r1[4] = {a.r1c0,a.r1c1,a.r1c2,a.r1c3};
-    Complex r2[4] = {a.r2c0,a.r2c1,a.r2c2,a.r2c3};
-    Complex r3[4] = {a.r3c0,a.r3c1,a.r3c2,a.r3c3};
-    Complex c0[4] = {b.r0c0,b.r1c0,b.r2c0,b.r3c0};
-    Complex c1[4] = {b.r0c1,b.r1c1,b.r2c1,b.r3c1};
-    Complex c2[4] = {b.r0c2,b.r1c2,b.r2c2,b.r3c2};
-    Complex c3[4] = {b.r0c3,b.r1c3,b.r2c3,b.r3c3};
-    
-    prod.r0c0 = getMatrixProductElement(r0,c0,4);
-    prod.r0c1 = getMatrixProductElement(r0,c1,4);
-    prod.r0c2 = getMatrixProductElement(r0,c2,4);
-    prod.r0c3 = getMatrixProductElement(r0,c3,4);
-    
-    prod.r1c0 = getMatrixProductElement(r1,c0,4);
-    prod.r1c1 = getMatrixProductElement(r1,c1,4);
-    prod.r1c2 = getMatrixProductElement(r1,c2,4);
-    prod.r1c3 = getMatrixProductElement(r1,c3,4);
-    
-    prod.r2c0 = getMatrixProductElement(r2,c0,4);
-    prod.r2c1 = getMatrixProductElement(r2,c1,4);
-    prod.r2c2 = getMatrixProductElement(r2,c2,4);
-    prod.r2c3 = getMatrixProductElement(r2,c3,4);
-    
-    prod.r3c0 = getMatrixProductElement(r3,c0,4);
-    prod.r3c1 = getMatrixProductElement(r3,c1,4);
-    prod.r3c2 = getMatrixProductElement(r3,c2,4);
-    prod.r3c3 = getMatrixProductElement(r3,c3,4);
-    
-    return prod;
-}
-
-ComplexMatrix2 getConjugateTransposeMatrix2(ComplexMatrix2 u) {
-    ComplexMatrix2 c = getConjugateMatrix2(u);
-    ComplexMatrix2 t;
-    t.r0c0=c.r0c0;  t.r0c1=c.r1c0;
-    t.r1c0=c.r0c1;  t.r1c1=c.r1c1;
-    return t;
-}
-
-ComplexMatrix4 getConjugateTransposeMatrix4(ComplexMatrix4 u) {
-    ComplexMatrix4 c = getConjugateMatrix4(u);
-    ComplexMatrix4 t;
-    t.r0c0=c.r0c0;  t.r0c1=c.r1c0;  t.r0c2=c.r2c0;  t.r0c3=c.r3c0;
-    t.r1c0=c.r0c1;  t.r1c1=c.r1c1;  t.r1c2=c.r2c1;  t.r1c3=c.r3c1;
-    t.r2c0=c.r0c2;  t.r2c1=c.r1c2;  t.r2c2=c.r2c2;  t.r2c3=c.r3c2;
-    t.r3c0=c.r0c3;  t.r3c1=c.r1c3;  t.r3c2=c.r2c3;  t.r3c3=c.r3c3;
-    return t;
-}
-
-void addToMatrix2(ComplexMatrix2* dest, ComplexMatrix2 add) {
-    dest->r0c0.real += add.r0c0.real; dest->r0c0.imag += add.r0c0.imag;
-    dest->r0c1.real += add.r0c1.real; dest->r0c1.imag += add.r0c1.imag;
-    dest->r1c0.real += add.r1c0.real; dest->r1c0.imag += add.r1c0.imag;
-    dest->r1c1.real += add.r1c1.real; dest->r1c1.imag += add.r1c1.imag;
-}
-
-void addToMatrix4(ComplexMatrix4* dest, ComplexMatrix4 add) {
-    dest->r0c0.real += add.r0c0.real; dest->r0c0.imag += add.r0c0.imag;
-    dest->r0c1.real += add.r0c1.real; dest->r0c1.imag += add.r0c1.imag;
-    dest->r0c2.real += add.r0c2.real; dest->r0c2.imag += add.r0c2.imag;
-    dest->r0c3.real += add.r0c3.real; dest->r0c3.imag += add.r0c3.imag;
-    dest->r1c0.real += add.r1c0.real; dest->r1c0.imag += add.r1c0.imag;
-    dest->r1c1.real += add.r1c1.real; dest->r1c1.imag += add.r1c1.imag;
-    dest->r1c2.real += add.r1c2.real; dest->r1c2.imag += add.r1c2.imag;
-    dest->r1c3.real += add.r1c3.real; dest->r1c3.imag += add.r1c3.imag;
-    dest->r2c0.real += add.r2c0.real; dest->r2c0.imag += add.r2c0.imag;
-    dest->r2c1.real += add.r2c1.real; dest->r2c1.imag += add.r2c1.imag;
-    dest->r2c2.real += add.r2c2.real; dest->r2c2.imag += add.r2c2.imag;
-    dest->r2c3.real += add.r2c3.real; dest->r2c3.imag += add.r2c3.imag;
-    dest->r3c0.real += add.r3c0.real; dest->r3c0.imag += add.r3c0.imag;
-    dest->r3c1.real += add.r3c1.real; dest->r3c1.imag += add.r3c1.imag;
-    dest->r3c2.real += add.r3c2.real; dest->r3c2.imag += add.r3c2.imag;
-    dest->r3c3.real += add.r3c3.real; dest->r3c3.imag += add.r3c3.imag;
-}
-
-/* returns |a - b|^2 */ 
-qreal getComplexDist(Complex a, Complex b) {
-    qreal reDif = absReal(a.real - b.real);
-    qreal imDif = absReal(a.imag - b.imag);
-    
-    return reDif*reDif + imDif*imDif;
-}
-
-qreal getHilbertSchmidtDistFromIdentity2(ComplexMatrix2 a) {
-    ComplexMatrix2 iden = {0};
-    iden.r0c0.real=1; iden.r1c1.real=1;
-
-    qreal dist = 
-        getComplexDist(a.r0c0, iden.r0c0) +
-        getComplexDist(a.r0c1, iden.r0c1) +
-        getComplexDist(a.r1c0, iden.r1c0) +
-        getComplexDist(a.r1c1, iden.r1c1);
-    return dist;
-}
-
-qreal getHilbertSchmidtDistFromIdentity4(ComplexMatrix4 a) {
-    ComplexMatrix4 iden = {0};
-    iden.r0c0.real=1; iden.r1c1.real=1; iden.r2c2.real=1; iden.r3c3.real=1;
-    
-    qreal dist = 
-        getComplexDist(a.r0c0, iden.r0c0) + 
-        getComplexDist(a.r0c1, iden.r0c1) + 
-        getComplexDist(a.r0c2, iden.r0c2) + 
-        getComplexDist(a.r0c3, iden.r0c3) + 
-        getComplexDist(a.r1c0, iden.r1c0) + 
-        getComplexDist(a.r1c1, iden.r1c1) + 
-        getComplexDist(a.r1c2, iden.r1c2) + 
-        getComplexDist(a.r1c3, iden.r1c3) + 
-        getComplexDist(a.r2c0, iden.r2c0) + 
-        getComplexDist(a.r2c1, iden.r2c1) + 
-        getComplexDist(a.r2c2, iden.r2c2) + 
-        getComplexDist(a.r2c3, iden.r2c3) + 
-        getComplexDist(a.r3c0, iden.r3c0) + 
-        getComplexDist(a.r3c1, iden.r3c1) + 
-        getComplexDist(a.r3c2, iden.r3c2) + 
-        getComplexDist(a.r3c3, iden.r3c3);
-    return dist;
-}
-
 int isMatrix4Unitary(ComplexMatrix4 u) {
-    
-    // make I = U U^dagger
-    ComplexMatrix4 identity = getMatrix4Product(u, getConjugateTransposeMatrix4(u));
-
-    // diagonals must be 1 (real)
-    if (absReal(identity.r0c0.real - 1) > REAL_EPS) return 0;
-    if (absReal(identity.r0c0.imag    ) > REAL_EPS) return 0;
-    if (absReal(identity.r1c1.real - 1) > REAL_EPS) return 0;
-    if (absReal(identity.r1c1.imag    ) > REAL_EPS) return 0;
-    if (absReal(identity.r2c2.real - 1) > REAL_EPS) return 0;
-    if (absReal(identity.r2c2.imag    ) > REAL_EPS) return 0;
-    if (absReal(identity.r3c3.real - 1) > REAL_EPS) return 0;
-    if (absReal(identity.r3c3.imag    ) > REAL_EPS) return 0;
-    
-    // off diagonals must be 0
-    if (absReal(identity.r0c1.real) > REAL_EPS) return 0;
-    if (absReal(identity.r0c1.imag) > REAL_EPS) return 0;
-    if (absReal(identity.r0c2.real) > REAL_EPS) return 0;
-    if (absReal(identity.r0c2.imag) > REAL_EPS) return 0;
-    if (absReal(identity.r0c3.real) > REAL_EPS) return 0;
-    if (absReal(identity.r0c3.imag) > REAL_EPS) return 0;
-    
-    if (absReal(identity.r1c0.real) > REAL_EPS) return 0;
-    if (absReal(identity.r1c0.imag) > REAL_EPS) return 0;
-    if (absReal(identity.r1c2.real) > REAL_EPS) return 0;
-    if (absReal(identity.r1c2.imag) > REAL_EPS) return 0;
-    if (absReal(identity.r1c3.real) > REAL_EPS) return 0;
-    if (absReal(identity.r1c3.imag) > REAL_EPS) return 0;
-    
-    if (absReal(identity.r2c0.real) > REAL_EPS) return 0;
-    if (absReal(identity.r2c0.imag) > REAL_EPS) return 0;
-    if (absReal(identity.r2c1.real) > REAL_EPS) return 0;
-    if (absReal(identity.r2c1.imag) > REAL_EPS) return 0;
-    if (absReal(identity.r2c3.real) > REAL_EPS) return 0;
-    if (absReal(identity.r2c3.imag) > REAL_EPS) return 0;
-    
-    if (absReal(identity.r3c0.real) > REAL_EPS) return 0;
-    if (absReal(identity.r3c0.imag) > REAL_EPS) return 0;
-    if (absReal(identity.r3c1.real) > REAL_EPS) return 0;
-    if (absReal(identity.r3c1.imag) > REAL_EPS) return 0;
-    if (absReal(identity.r3c2.real) > REAL_EPS) return 0;
-    if (absReal(identity.r3c2.imag) > REAL_EPS) return 0;
-    
-    return 1;
+    int dim = 4;
+    int retVal;
+    macro_isMatrixUnitary(u, dim, retVal);
+    return retVal;
+}
+int isMatrixNUnitary(ComplexMatrixN u) {
+    int dim = 1 << u.numQubits;
+    int retVal;
+    macro_isMatrixUnitary(u, dim, retVal);
+    return retVal;
 }
 
-int isMatrixNUnitary(ComplexMatrixN u) {
-    long long int r, c, i, dim;
-    dim = u.numRows;
-    
-    // check u * ConjTrans(u) = Identity
-    for (r=0; r < dim; r++) {
-        for (c=0; c < dim; c++) {
-            
-            // u[r][...] * ConjTrans(u)[...][c]
-            qreal elemRe = 0;
-            qreal elemIm = 0;
-            for (i=0; i < dim; i++) {
-                // u.elems[r][i] * conj(u.elems[c][i])
-                elemRe += u.elems[r][i].real*u.elems[c][i].real + u.elems[r][i].imag*u.elems[c][i].imag;
-                elemIm += u.elems[r][i].imag*u.elems[c][i].real - u.elems[r][i].real*u.elems[c][i].imag;
-            }
-            
-            if (absReal(elemIm) > REAL_EPS)
-                return 0;
-            if (r == c && absReal(elemRe - 1) > REAL_EPS)
-                return 0;
-            if (r != c && absReal(elemRe    ) > REAL_EPS)
-                return 0;
-        }
-    }
-    
-    return 1;
+#define macro_isCompletelyPositiveMap(ops, numOps, opDim, retVal) { \
+    /* dist_, elemRe_, elemIm_ and difRe_ must not exist in caller scope */ \
+    qreal dist_ = 0; \
+    qreal elemRe_, elemIm_, difRe_; \
+    for (int n=0; n<(numOps); n++) \
+        /* calculate Hilbert schmidt distance of ConjugateTranspose(op)*op to Identity matrix */ \
+        for (int r=0; r<(opDim); r++) \
+            for (int c=0; c<(opDim); c++) { \
+                /* elem = ConjugateTranspose(op)[r][...] (dot) op[...][c] */ \
+                elemRe_ = 0; \
+                elemIm_ = 0; \
+                for (int i=0; i<(opDim); i++) { \
+                    elemRe_ += ops[n].real[i][r]*ops[n].real[i][c] + ops[n].imag[i][r]*ops[n].imag[i][c]; \
+                    elemIm_ += ops[n].real[i][r]*ops[n].imag[i][c] - ops[n].imag[i][r]*ops[n].real[i][c]; \
+                } \
+                /* Hilbert schmidt distance of element to that of identity matrix */ \
+                difRe_ = elemRe_ - ((r==c)? 1:0); \
+                dist_ += difRe_*difRe_ + elemIm_*elemIm_; \
+            } \
+    retVal = (dist_ < REAL_EPS); \
+}
+int isCompletelyPositiveMap2(ComplexMatrix2 *ops, int numOps) {
+    int dim = 2;
+    int retVal;
+    macro_isCompletelyPositiveMap(ops, numOps, dim, retVal);
+    return retVal;
+}
+int isCompletelyPositiveMap4(ComplexMatrix4 *ops, int numOps) {
+    int dim = 4;
+    int retVal;
+    macro_isCompletelyPositiveMap(ops, numOps, dim, retVal);
+    return retVal;
+}
+int isCompletelyPositiveMapN(ComplexMatrixN *ops, int numOps) {
+    int dim = 1 << ops[0].numQubits;
+    int retVal;
+    macro_isCompletelyPositiveMap(ops, numOps, dim, retVal);
+    return retVal;
 }
 
 int areUniqueQubits(int* qubits, int numQubits) {
@@ -479,7 +332,7 @@ void validateTwoQubitUnitaryMatrix(Qureg qureg, ComplexMatrix4 u, const char* ca
 }
 
 void validateMatrixInit(ComplexMatrixN matr, const char* caller) {
-    QuESTAssert(matr.elems != NULL, E_COMPLEX_MATRIX_NOT_INIT, caller);
+    QuESTAssert(matr.real != NULL && matr.imag != NULL, E_COMPLEX_MATRIX_NOT_INIT, caller);
 }
 
 void validateMultiQubitUnitaryMatrix(Qureg qureg, ComplexMatrixN u, int numTargs, const char* caller) { 
@@ -591,31 +444,45 @@ void validateNumPauliSumTerms(int numTerms, const char* caller) {
 }
 
 void validateOneQubitKrausMap(Qureg qureg, ComplexMatrix2* ops, int numOps, const char* caller) {
-    validateMultiQubitMatrixFitsInNode(qureg, 2, caller);
-    QuESTAssert(numOps > 0 && numOps <= 4, E_INVALID_NUM_ONE_QUBIT_KRAUS_OPS, caller);
+    int opNumQubits = 1;
+    int superOpNumQubits = 2*opNumQubits;
+    validateMultiQubitMatrixFitsInNode(qureg, superOpNumQubits, caller);
     
-    // sum of conjTrans(op) * op
-    ComplexMatrix2 sumConjProd = {0};
-    for (int n=0; n < numOps; n++)
-        addToMatrix2(&sumConjProd, getMatrix2Product(getConjugateTransposeMatrix2(ops[n]), ops[n]));
-    
-    qreal idenDist = getHilbertSchmidtDistFromIdentity2(sumConjProd);
-    QuESTAssert(idenDist < REAL_EPS, E_INVALID_KRAUS_OPS, caller);
+    int maxNumOps = superOpNumQubits*superOpNumQubits;
+    QuESTAssert(numOps > 0 && numOps <= maxNumOps, E_INVALID_NUM_ONE_QUBIT_KRAUS_OPS, caller);
+
+    int isPos = isCompletelyPositiveMap2(ops, numOps);
+    QuESTAssert(isPos, E_INVALID_KRAUS_OPS, caller);
 }
 
 void validateTwoQubitKrausMap(Qureg qureg, ComplexMatrix4* ops, int numOps, const char* caller) {
-    validateMultiQubitMatrixFitsInNode(qureg, 4, caller);
-    QuESTAssert(numOps > 0 && numOps <= 16, E_INVALID_NUM_TWO_QUBIT_KRAUS_OPS, caller);
+    int opNumQubits = 2;
+    int superOpNumQubits = 2*opNumQubits;
+    validateMultiQubitMatrixFitsInNode(qureg, superOpNumQubits, caller);
     
-    // sum of conjTrans(op) * op
-    ComplexMatrix4 sumConjProd = {0};
-    for (int n=0; n < numOps; n++)
-        addToMatrix4(&sumConjProd, getMatrix4Product(getConjugateTransposeMatrix4(ops[n]), ops[n]));
-        
-    qreal idenDist = getHilbertSchmidtDistFromIdentity4(sumConjProd);
-    QuESTAssert(idenDist < REAL_EPS, E_INVALID_KRAUS_OPS, caller);
+    int maxNumOps = superOpNumQubits*superOpNumQubits;
+    QuESTAssert(numOps > 0 && numOps <= maxNumOps, E_INVALID_NUM_TWO_QUBIT_KRAUS_OPS, caller);
+
+    int isPos = isCompletelyPositiveMap4(ops, numOps);
+    QuESTAssert(isPos, E_INVALID_KRAUS_OPS, caller);
 }
 
+void validateMultiQubitKrausMap(Qureg qureg, int numTargs, ComplexMatrixN* ops, int numOps, const char* caller) {
+    for (int n=0; n<numOps; n++) {
+        validateMatrixInit(ops[n], __func__);
+        QuESTAssert(ops[n].numQubits == numTargs, E_MISMATCHING_NUM_TARGS_KRAUS_SIZE, caller);    
+    }
+        
+    int opNumQubits = numTargs;
+    int superOpNumQubits = 2*opNumQubits;
+    validateMultiQubitMatrixFitsInNode(qureg, superOpNumQubits, caller);
+    
+    int maxNumOps = superOpNumQubits*superOpNumQubits;
+    QuESTAssert(numOps>0 && numOps <= maxNumOps, E_INVALID_NUM_N_QUBIT_KRAUS_OPS, caller);
+    
+    int isPos = isCompletelyPositiveMapN(ops, numOps);
+    QuESTAssert(isPos, E_INVALID_KRAUS_OPS, caller);
+}
 
 #ifdef __cplusplus
 }

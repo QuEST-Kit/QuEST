@@ -1,4 +1,6 @@
 # Python
+# author: Jacob Wilkins
+
 from QuESTTest.QuESTCore import *
 from QuESTPy.QuESTFunc import *
 import time

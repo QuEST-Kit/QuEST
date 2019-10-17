@@ -1,4 +1,5 @@
 # Python
+# author: Jacob Wilkins
 
 from QuESTPy.QuESTFunc import *
 from QuESTTest.QuESTCore import *

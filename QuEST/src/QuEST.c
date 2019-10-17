@@ -8,6 +8,11 @@
  * Density matrices rho of N qubits are flattened to appear as state-vectors |s> of 2N qubits.
  * Operations U rho U^dag are implemented as U^* U |s> and make use of the pure state backend,
  * and often don't need to explicitly compute U^*.
+ *
+ * @author Tyson Jones (architecture, validation, qasm, density matrices)
+ * @author Ania Brown (setDensityAmps())
+ * @author Balint Koczor (Kraus maps)
+ * @author Nicolas Vogt of HQS (one-qubit damping)
  */
 
 # include "QuEST.h"
@@ -296,10 +301,10 @@ void multiQubitUnitary(Qureg qureg, int* targs, const int numTargs, ComplexMatri
     if (qureg.isDensityMatrix) {
         int shift = qureg.numQubitsRepresented;
         shiftIndices(targs, numTargs, shift);
-        conjugateMatrixN(u);
+        setConjugateMatrixN(u);
         statevec_multiQubitUnitary(qureg, targs, numTargs, u);
         shiftIndices(targs, numTargs, -shift);
-        conjugateMatrixN(u);
+        setConjugateMatrixN(u);
     }
     
     qasm_recordComment(qureg, "Here, an undisclosed multi-qubit unitary was applied.");
@@ -313,10 +318,10 @@ void controlledMultiQubitUnitary(Qureg qureg, int ctrl, int* targs, const int nu
     if (qureg.isDensityMatrix) {
         int shift = qureg.numQubitsRepresented;
         shiftIndices(targs, numTargs, shift);
-        conjugateMatrixN(u);
+        setConjugateMatrixN(u);
         statevec_controlledMultiQubitUnitary(qureg, ctrl+shift, targs, numTargs, u);
         shiftIndices(targs, numTargs, -shift);
-        conjugateMatrixN(u);
+        setConjugateMatrixN(u);
     }
     
     qasm_recordComment(qureg, "Here, an undisclosed controlled multi-qubit unitary was applied.");
@@ -331,10 +336,10 @@ void multiControlledMultiQubitUnitary(Qureg qureg, int* ctrls, const int numCtrl
     if (qureg.isDensityMatrix) {
         int shift = qureg.numQubitsRepresented;
         shiftIndices(targs, numTargs, shift);
-        conjugateMatrixN(u);
+        setConjugateMatrixN(u);
         statevec_multiControlledMultiQubitUnitary(qureg, ctrlMask<<shift, targs, numTargs, u);
         shiftIndices(targs, numTargs, -shift);
-        conjugateMatrixN(u);
+        setConjugateMatrixN(u);
     }
     
     qasm_recordComment(qureg, "Here, an undisclosed multi-controlled multi-qubit unitary was applied.");
@@ -762,13 +767,13 @@ int measure(Qureg qureg, int measureQubit) {
     return outcome;
 }
 
-void addDensityMatrix(Qureg combineQureg, qreal otherProb, Qureg otherQureg) {
+void mixDensityMatrix(Qureg combineQureg, qreal otherProb, Qureg otherQureg) {
     validateDensityMatrQureg(combineQureg, __func__);
     validateDensityMatrQureg(otherQureg, __func__);
     validateMatchingQuregDims(combineQureg, otherQureg, __func__);
     validateProb(otherProb, __func__);
     
-    densmatr_addDensityMatrix(combineQureg, otherProb, otherQureg);
+    densmatr_mixDensityMatrix(combineQureg, otherProb, otherQureg);
 }
 
 void setAmps(Qureg qureg, long long int startInd, qreal* reals, qreal* imags, long long int numAmps) {
@@ -891,118 +896,143 @@ qreal calcHilbertSchmidtDistance(Qureg a, Qureg b) {
  * decoherence
  */
 
-void applyOneQubitDephaseError(Qureg qureg, const int targetQubit, qreal prob) {
+void mixDephasing(Qureg qureg, const int targetQubit, qreal prob) {
     validateDensityMatrQureg(qureg, __func__);
     validateTarget(qureg, targetQubit, __func__);
     validateOneQubitDephaseProb(prob, __func__);
     
-    densmatr_oneQubitDephase(qureg, targetQubit, 2*prob);
+    densmatr_mixDephasing(qureg, targetQubit, 2*prob);
     qasm_recordComment(qureg, 
         "Here, a phase (Z) error occured on qubit %d with probability %g", targetQubit, prob);
 }
 
-void applyTwoQubitDephaseError(Qureg qureg, int qubit1, int qubit2, qreal prob) {
+void mixTwoQubitDephasing(Qureg qureg, int qubit1, int qubit2, qreal prob) {
     validateDensityMatrQureg(qureg, __func__);
     validateUniqueTargets(qureg, qubit1, qubit2, __func__);
     validateTwoQubitDephaseProb(prob, __func__);
 
     ensureIndsIncrease(&qubit1, &qubit2);
-    densmatr_twoQubitDephase(qureg, qubit1, qubit2, (4*prob)/3.0);
+    densmatr_mixTwoQubitDephasing(qureg, qubit1, qubit2, (4*prob)/3.0);
     qasm_recordComment(qureg,
         "Here, a phase (Z) error occured on either or both of qubits "
         "%d and %d with total probability %g", qubit1, qubit2, prob);
 }
 
-void applyOneQubitDepolariseError(Qureg qureg, const int targetQubit, qreal prob) {
+void mixDepolarising(Qureg qureg, const int targetQubit, qreal prob) {
     validateDensityMatrQureg(qureg, __func__);
     validateTarget(qureg, targetQubit, __func__);
     validateOneQubitDepolProb(prob, __func__);
     
-    densmatr_oneQubitDepolarise(qureg, targetQubit, (4*prob)/3.0);
+    densmatr_mixDepolarising(qureg, targetQubit, (4*prob)/3.0);
     qasm_recordComment(qureg,
         "Here, a homogeneous depolarising error (X, Y, or Z) occured on "
         "qubit %d with total probability %g", targetQubit, prob);
 }
 
-void applyOneQubitDampingError(Qureg qureg, const int targetQubit, qreal prob) {
+void mixDamping(Qureg qureg, const int targetQubit, qreal prob) {
     validateDensityMatrQureg(qureg, __func__);
     validateTarget(qureg, targetQubit, __func__);
     validateOneQubitDampingProb(prob, __func__);
     
-    densmatr_oneQubitDamping(qureg, targetQubit, prob);
+    densmatr_mixDamping(qureg, targetQubit, prob);
 }
 
-void applyTwoQubitDepolariseError(Qureg qureg, int qubit1, int qubit2, qreal prob) {
+void mixTwoQubitDepolarising(Qureg qureg, int qubit1, int qubit2, qreal prob) {
     validateDensityMatrQureg(qureg, __func__);
     validateUniqueTargets(qureg, qubit1, qubit2, __func__);
     validateTwoQubitDepolProb(prob, __func__);
     
     ensureIndsIncrease(&qubit1, &qubit2);
-    densmatr_twoQubitDepolarise(qureg, qubit1, qubit2, (16*prob)/15.0);
+    densmatr_mixTwoQubitDepolarising(qureg, qubit1, qubit2, (16*prob)/15.0);
     qasm_recordComment(qureg,
         "Here, a homogeneous depolarising error occured on qubits %d and %d "
         "with total probability %g", qubit1, qubit2, prob);
 }
 
-void applyOneQubitPauliError(Qureg qureg, int qubit, qreal probX, qreal probY, qreal probZ) {
+void mixPauli(Qureg qureg, int qubit, qreal probX, qreal probY, qreal probZ) {
     validateDensityMatrQureg(qureg, __func__);
     validateTarget(qureg, qubit, __func__);
     validateOneQubitPauliProbs(probX, probY, probZ, __func__);
     
-    densmatr_oneQubitPauliError(qureg, qubit, probX, probY, probZ);
+    densmatr_mixPauli(qureg, qubit, probX, probY, probZ);
     qasm_recordComment(qureg,
         "Here, X, Y and Z errors occured on qubit %d with probabilities "
         "%g, %g and %g respectively", qubit, probX, probY, probZ);
 }
 
-void applyOneQubitKrausMap(Qureg qureg, int target, ComplexMatrix2 *ops, int numOps) {
+void mixKrausMap(Qureg qureg, int target, ComplexMatrix2 *ops, int numOps) {
     validateDensityMatrQureg(qureg, __func__);
     validateTarget(qureg, target, __func__);
     validateOneQubitKrausMap(qureg, ops, numOps, __func__);
     
-    densmatr_applyKrausMap(qureg, target, ops, numOps);
+    densmatr_mixKrausMap(qureg, target, ops, numOps);
     qasm_recordComment(qureg, 
         "Here, an undisclosed Kraus map was effected on qubit %d", target);
 }
 
-void applyTwoQubitKrausMap(Qureg qureg, int target1, int target2, ComplexMatrix4 *ops, int numOps) {
+void mixTwoQubitKrausMap(Qureg qureg, int target1, int target2, ComplexMatrix4 *ops, int numOps) {
     validateDensityMatrQureg(qureg, __func__);
     validateMultiTargets(qureg, (int[]) {target1,target2}, 2, __func__);
     validateTwoQubitKrausMap(qureg, ops, numOps, __func__);
     
-    densmatr_applyTwoQubitKrausMap(qureg, target1, target2, ops, numOps);
+    densmatr_mixTwoQubitKrausMap(qureg, target1, target2, ops, numOps);
     qasm_recordComment(qureg, 
         "Here, an undisclosed two-qubit Kraus map was effected on qubits %d and %d", target1, target2);
+}
+
+void mixMultiQubitKrausMap(Qureg qureg, int* targets, int numTargets, ComplexMatrixN* ops, int numOps) {
+    validateDensityMatrQureg(qureg, __func__);
+    validateMultiTargets(qureg, targets, numTargets, __func__);
+    validateMultiQubitKrausMap(qureg, numTargets, ops, numOps, __func__);
+    
+    densmatr_mixMultiQubitKrausMap(qureg, targets, numTargets, ops, numOps);
+    qasm_recordComment(qureg,
+        "Here, an undisclosed %d-qubit Kraus map was applied to undisclosed qubits", numTargets);
 }
 
 /*
  * other data structures 
  */
  
- ComplexMatrixN createComplexMatrix(int numQubits) {
+ ComplexMatrixN createComplexMatrixN(int numQubits) {
      validateCreateNumQubits(numQubits, __func__);
+
+     int numRows = 1 << numQubits;
+
+     ComplexMatrixN m = {
+         .numQubits = numQubits,
+         .real = malloc(numRows * sizeof *m.real),
+         .imag = malloc(numRows * sizeof *m.imag)};
+
+     for (int n=0; n < 1<<numQubits; n++) {
+         m.real[n] = calloc(numRows, sizeof **m.real);
+         m.imag[n] = calloc(numRows, sizeof **m.imag);
+     }
+     return m;
+ }
+ 
+void destroyComplexMatrixN(ComplexMatrixN m) {
+    validateMatrixInit(m, __func__);
     
-     ComplexMatrixN matr;
-     matr.numQubits = numQubits;
-     matr.numRows = 1 << numQubits;
-     matr.elems = malloc(matr.numRows * sizeof *matr.elems);
-     for (int r=0; r < matr.numRows; r++) {
-        matr.elems[r] = malloc(matr.numRows * sizeof **matr.elems);
-        for (int c=0; c < matr.numRows; c++) {
-            matr.elems[r][c] = (Complex) {.real=0, .imag=0};
-        }
+    int numRows = 1 << m.numQubits;
+    for (int r=0; r < numRows; r++) {
+        free(m.real[r]);
+        free(m.imag[r]);
     }
-    return matr;
- }
- 
- void destroyComplexMatrix(ComplexMatrixN matr) {
-     validateMatrixInit(matr, __func__);
-     
-     for (int r=0; r < matr.numRows; r++)
-        free(matr.elems[r]);
-    free(matr.elems);
- }
- 
+    free(m.real);
+    free(m.imag);
+}
+
+void initComplexMatrixN(ComplexMatrixN m, qreal re[][1<<m.numQubits], qreal im[][1<<m.numQubits]) {
+    validateMatrixInit(m, __func__);
+    
+    int dim = 1 << m.numQubits;
+    for (int i=0; i<dim; i++)
+        for (int j=0; j<dim; j++) {
+            m.real[i][j] = re[i][j];
+            m.imag[i][j] = im[i][j];
+        }
+}
 
 /*
  * debug

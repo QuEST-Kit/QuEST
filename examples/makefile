@@ -11,6 +11,9 @@
 # about any errors or complications, or 
 # raise an issue on Github
 
+# author: Tyson Jones, based on...
+# author: Ania Brown's individual makefiles
+
 #======================================================================#
 #                                                                      #
 #      User settings                                                   #
@@ -344,8 +347,7 @@ else
 
 endif
 
-test: $(OBJ)
-	$(COMPILER) $(C_FLAGS)  -shared -Wl,-soname,$(QUEST_LIB) $(QUEST_INCLUDE) -o $(LIB_NAME) $(OBJ) $(LIBS)
+
 
 
 #

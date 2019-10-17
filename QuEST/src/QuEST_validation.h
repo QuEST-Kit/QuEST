@@ -2,6 +2,10 @@
 
 /** @file
  * Provides validation defined in QuEST_validation.c which is used exclusively by QuEST.c
+ *
+ * @author Tyson Jones
+ * @author Ania Brown (original testing of qubit indices, unitarity, valid collapse probability)
+ * @author Balint Koczor (Kraus maps)
  */
  
 # ifndef QUEST_VALIDATION_H
@@ -86,6 +90,8 @@ void validateMatrixInit(ComplexMatrixN matr, const char* caller);
 void validateOneQubitKrausMap(Qureg qureg, ComplexMatrix2* ops, int numOps, const char* caller);
 
 void validateTwoQubitKrausMap(Qureg qureg, ComplexMatrix4* ops, int numOps, const char* caller);
+
+void validateMultiQubitKrausMap(Qureg qureg, int numTargs, ComplexMatrixN* ops, int numOps, const char* caller);
 
 void validateOneQubitDampingProb(qreal prob, const char* caller);
 

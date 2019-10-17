@@ -2,9 +2,11 @@
 
 /** @file
  * Functions for generating QASM output from QuEST circuits
+ *
+ * @author Tyson Jones
  */
 
-/** @TODO
+/** TODO
  * - allow user-set decimal precision (useful for when QASM is passed to a plotter)
  * - sort out fixing global phase in controlledPhaseShift to controlledRotateZ plug
  * - add functions to directly add comments to QASM by user
