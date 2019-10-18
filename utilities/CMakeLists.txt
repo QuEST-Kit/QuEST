@@ -32,7 +32,7 @@ add_custom_target("benchmark"
 Test parameters: 
 Testing ${TEST_GENERATE} with ${TEST_NQUBITS} qubits
 Testing ${TEST_TYPES} on Quregs initialised in ${TEST_QUREG}"
-  COMMAND ${TESTCOMMAND} -Q ${QuEST_LIB_PATH} ${INCLUDE_TESTS} -q -n ${TEST_NQUBITS} -T ${TEST_TYPES} -V ${TEST_QUREG} -p ${TEST_DIR} -g ${TEST_GENERATE}
+  COMMAND ${TESTCOMMAND} -Q ${QuEST_LIB_EXACT} ${INCLUDE_TESTS} -q -n ${TEST_NQUBITS} -T ${TEST_TYPES} -V ${TEST_QUREG} -p ${TEST_DIR} -g ${TEST_GENERATE}
   COMMAND ${CMAKE_COMMAND} -DBENCHMARKS_EXIST=ON ${QuEST_Project_SOURCE_DIR}
   WORKING_DIRECTORY ${UTIL_ROOT}
   )
@@ -58,7 +58,7 @@ add_test(NAME build
 macro(Testee name)
   add_test(
     NAME ${name}
-    COMMAND ${TESTCOMMAND} ${INC_CUST} -Q ${QuEST_LIB_PATH} -l
+    COMMAND ${TESTCOMMAND} ${INC_CUST} -Q ${QuEST_LIB_EXACT} -l
     ${QuEST_Project_BINARY_DIR}/QuESTLog.log ${name}
     WORKING_DIRECTORY ${UTIL_ROOT}
     )
@@ -78,7 +78,7 @@ endmacro(Testee)
 if(${ENABLE_ADVANCED_TEST})
   # Get list of test sets
   execute_process(
-    COMMAND ${TESTCOMMAND} -Q ${QuEST_LIB_PATH} -L
+    COMMAND ${TESTCOMMAND} -Q ${QuEST_LIB_EXACT} -L
     OUTPUT_VARIABLE AVAILABLE_TESTS
     WORKING_DIRECTORY ${UTIL_ROOT}
     )
