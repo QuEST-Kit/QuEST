@@ -27,6 +27,19 @@
 # endif
 
 
+
+/*
+ * overloads for consistent API with GPU 
+ */
+
+void copyStateToGPU(Qureg qureg) {
+}
+
+void copyStateFromGPU(Qureg qureg) {
+}
+
+
+
 /*
  * state vector and density matrix operations
  */

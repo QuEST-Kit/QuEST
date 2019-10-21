@@ -799,6 +799,52 @@ void reportQuESTEnv(QuESTEnv env);
  */
 void getEnvironmentString(QuESTEnv env, Qureg qureg, char str[200]);
 
+/** In GPU mode, this copies the state-vector (or density matrix) from RAM 
+ * (qureg.stateVec) to VRAM / GPU-memory (qureg.deviceStateVec), which is the version 
+ * operated upon by other calls to the API. 
+ * In CPU mode, this function has no effect.
+ * In conjunction with copyStateFromGPU() (which should be called first), this allows 
+ * a user to directly modify the state-vector in a harware agnostic way.
+ * Note though that users should instead use setAmps() if possible.
+ *
+ * For example, to set the first real element to 1, one could do:
+ * 
+ *     copyStateFromGPU(qureg);
+ *     qureg.stateVec.real[0] = 1;
+ *     copyStateToGPU(qureg);
+ *
+ * Note users should never access qureg.deviceStateVec directly.
+ *
+ * @ingroup debug
+ * @param[in, out] qureg the qureg of which to copy .stateVec to .deviceStateVec in GPU mode
+ * @author Ania Brown 
+ * @author Tyson Jones (doc)
+ */
+void copyStateToGPU(Qureg qureg);
+
+/** In GPU mode, this copies the state-vector (or density matrix) from GPU memory 
+ * (qureg.deviceStateVec) to RAM (qureg.stateVec), where it can be accessed/modified 
+ * by the user.
+ * In CPU mode, this function has no effect.
+ * In conjunction with copyStateToGPU(), this allows a user to directly modify the 
+ * state-vector in a harware agnostic way.
+ * Note though that users should instead use setAmps() if possible.
+ *
+ * For example, to set the first real element to 1, one could do:
+ * 
+ *     copyStateFromGPU(qureg);
+ *     qureg.stateVec.real[0] = 1;
+ *     copyStateToGPU(qureg);
+ *
+ * Note users should never access qureg.deviceStateVec directly.
+ *
+ * @ingroup debug
+ * @param[in, out] qureg the qureg of which to copy .deviceStateVec to .stateVec in GPU mode
+ * @author Ania Brown 
+ * @author Tyson Jones (doc)
+ */
+void copyStateFromGPU(Qureg qureg);
+
 /** Get the complex amplitude at a given index in the state vector.
  *
  * @ingroup calc

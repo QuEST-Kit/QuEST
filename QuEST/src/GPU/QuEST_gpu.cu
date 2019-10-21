@@ -392,10 +392,6 @@ void copyStateToGPU(Qureg qureg)
     if (DEBUG) printf("Copying data to GPU\n");
     cudaMemcpy(qureg.deviceStateVec.real, qureg.stateVec.real, 
             qureg.numAmpsPerChunk*sizeof(*(qureg.deviceStateVec.real)), cudaMemcpyHostToDevice);
-    cudaMemcpy(qureg.deviceStateVec.real, qureg.stateVec.real, 
-            qureg.numAmpsPerChunk*sizeof(*(qureg.deviceStateVec.real)), cudaMemcpyHostToDevice);
-    cudaMemcpy(qureg.deviceStateVec.imag, qureg.stateVec.imag, 
-            qureg.numAmpsPerChunk*sizeof(*(qureg.deviceStateVec.imag)), cudaMemcpyHostToDevice);
     cudaMemcpy(qureg.deviceStateVec.imag, qureg.stateVec.imag, 
             qureg.numAmpsPerChunk*sizeof(*(qureg.deviceStateVec.imag)), cudaMemcpyHostToDevice);
     if (DEBUG) printf("Finished copying data to GPU\n");
