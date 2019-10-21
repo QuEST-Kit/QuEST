@@ -49,7 +49,6 @@ cd QuEST
 ```
 at terminal. You can then compile the [example](examples/tutorial_example.c) using
 ```bash
-cp examples/tutorial_example .
 mkdir build
 cd build
 cmake ..

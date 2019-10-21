@@ -834,6 +834,14 @@ Complex calcInnerProduct(Qureg bra, Qureg ket) {
     return statevec_calcInnerProduct(bra, ket);
 }
 
+qreal calcDensityInnerProduct(Qureg rho1, Qureg rho2) {
+    validateDensityMatrQureg(rho1, __func__);
+    validateDensityMatrQureg(rho2, __func__);
+    validateMatchingQuregDims(rho1, rho2, __func__);
+    
+    return densmatr_calcInnerProduct(rho1, rho2);
+}
+
 qreal calcProbOfOutcome(Qureg qureg, const int measureQubit, int outcome) {
     validateTarget(qureg, measureQubit, __func__);
     validateOutcome(outcome, __func__);
