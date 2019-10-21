@@ -1663,7 +1663,7 @@ int measureWithStats(Qureg qureg, int measureQubit, qreal *outcomeProb);
 Complex calcInnerProduct(Qureg bra, Qureg ket);
 
 /** Computes the Hilbert-Schmidt scalar product
- * (which is equialent to the Frobenius inner product of matrices) 
+ * (which is equivalent to the Frobenius inner product of matrices) 
  * of two density matrices \p \rho_1 and \p \rho_2 of equivalent size.
  * That is, we define the Hilbert-Schmidt scalar product
  * \f[
