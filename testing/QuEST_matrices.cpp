@@ -174,7 +174,7 @@ void updateIndices(int oldEl, int newEl, int* list1, int len1, int* list2, int l
  * matrix where op is controlled on the given ctrls qubits. The union of {ctrls}
  * and {targs} must be unique, and every element must be 0 or positive. 
  * The passed {ctrls} and {targs} arrays are unmodified.
- * This funciton works by first swapping {ctrls} and {targs} (via swap unitaries) 
+ * This funciton works by first swapping {targs} and {ctrls} (via swap unitaries) 
  * to be strictly increasing {0,1,...}, building controlled(op), tensoring it to 
  * the full Hilbert space, and then 'unswapping'. The returned matrix has form:
  * swap1 ... swapN . c(op) . swapN ... swap1
@@ -196,31 +196,31 @@ QMatrix getFullOperatorMatrix(
     QMatrix unswaps = getIdentityMatrix(1 << numQubits);
     QMatrix matr;
     
-    // swap ctrls to {0, ..., numCtrls-1}
-    for (int i=0; i<numCtrls; i++) {
-        if (i != ctrls[i]) {
-            matr = getSwapMatrix(i, ctrls[i], numQubits);
+    // swap targs to {0, ..., numTargs-1}
+    for (int i=0; i<numTargs; i++) {
+        if (i != targs[i]) {
+            matr = getSwapMatrix(i, targs[i], numQubits);
             swaps = getMatrixProduct(matr, swaps);
             unswaps = getMatrixProduct(unswaps, matr);
             
-            // even if this is the last ctrl, targs might still need updating
+            // even if this is the last targ, ctrls might still need updating
             updateIndices(
-                i, ctrls[i], (i < numCtrls-1)? &ctrls[i+1] : NULL, 
-                numCtrls-i-1, targs, numTargs);
+                i, targs[i], (i < numTargs-1)? &targs[i+1] : NULL, 
+                numTargs-i-1, ctrls, numCtrls);
         }
     }
 
-    // swap targs to {numCtrls, ..., numCtrls+numTargs-1}
-    for (int i=0; i<numTargs; i++) {
-        int newInd = numCtrls+i;
-        if (newInd != targs[i]) {
-            matr = getSwapMatrix(newInd, targs[i], numQubits);
+    // swap ctrls to {numTargs, ..., numTargs+numCtrls-1}
+    for (int i=0; i<numCtrls; i++) {
+        int newInd = numTargs+i;
+        if (newInd != ctrls[i]) {
+            matr = getSwapMatrix(newInd, ctrls[i], numQubits);
             swaps = getMatrixProduct(matr, swaps);
             unswaps = getMatrixProduct(unswaps, matr);
             
-            // update remaining targs (if any exist)
-            if (i < numTargs-1)
-                updateIndices(newInd, targs[i], NULL, 0, &targs[i+1], numTargs-i-1);
+            // update remaining ctrls (if any exist)
+            if (i < numCtrls-1)
+                updateIndices(newInd, ctrls[i], NULL, 0, &ctrls[i+1], numCtrls-i-1);
         }
     }
     
