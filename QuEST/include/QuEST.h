@@ -1662,42 +1662,40 @@ int measureWithStats(Qureg qureg, int measureQubit, qreal *outcomeProb);
  */
 Complex calcInnerProduct(Qureg bra, Qureg ket);
 
-/** If both input states \p a and \p b are equal-size density matrices
- * then computes the Hilbert-Schmidt scalar product between \p a and \p b, 
- * which is equialent to the Frobenius inner product of matrices.
+/** Computes the Hilbert-Schmidt scalar product
+ * (which is equialent to the Frobenius inner product of matrices) 
+ * of two density matrices \p \rho_1 and \p \rho_2 of equivalent size.
  * That is, we define the Hilbert-Schmidt scalar product
  * \f[
-    (( a, b ))_F = ((a, b))_HS := \text{Tr}[ a^\dagger b ] 
+    ((\rho_1, \rho_2))_{HS} := \text{Tr}[ \rho_1^\dagger \rho_2 ],
  * \f]
- * This is equivalent to the sum of products of matrix elemets, i.e.
+ * which is equivalent to the sum of products of matrix elemets, i.e.,
  * \f[
-    ((a, b))_HS = \sum\limits_i \sum\limits_j  conj(a_{ij}) b_{ij}
+    ((\rho_1, \rho_2))_{HS} = \sum\limits_i \sum\limits_j  (\rho_1)_{ij}^* (\rho_2)_{ij}
  * \f]
- * Note that if both \p a and \p b are density matrices of pure states
+ * Assuming that both density matrices are Hermitian,
+ * the resulting scalar product is real and invariant under
+ * reordering its arguments as 
+ * \f[
+    ((\rho_1, \rho_2))_{HS} = ((\rho_2, \rho_1))_{HS}
+ * \f]
+ * Also note that if both \p \rho_1 and \p \rho_2 are density matrices of pure states
  * \p bra and \p ket, then the equality holds
  * \f[
-    ((a, b))_HS = |\langle \text{bra} | \text{ket} \rangle|^2
- * \f]
- * If both inputs are  equal-size state vectors then computes the inner product
- * square \f$ |\langle \text{bra} | \text{ket} \rangle |^2\f$ via
- * the usual inner product
- * \f[
-    \langle \text{bra} | \text{ket} \rangle = \sum\limits_i  conj(bra_{i}) ket_{i}
+    ((\rho_1, \rho_2))_{HS} = |\langle \text{bra} | \text{ket} \rangle|^2.
  * \f]
  *
  * @ingroup calc
- * @param[in] bra qureg to be the 'bra' or 'a' (i.e. have its values conjugate transposed)
- * in the inner product 
- * @param[in] ket qureg to be the 'ket' or 'b' in the inner product 
+ * @param[in] \p \rho_1 qureg as a density matrix (to have its values conjugate transposed)
+ * @param[in] \p \rho_2 qureg as a density matrix
  * @returns the real Hilbert-Schmidt scalar product of density matrices
-            \p a and \p b or the absolute square of the inner product
-            between state vectors \p bra and \p ket 
+            \p \rho_1 and \p \rho_2 (assuming Hermiticity)
  * @throws exitWithError
- *      if \p bra and \p ket or \p a and \p b have mismatching dimensions
- *      or mismatching qureg types.
- * @author Balint Koczor
+ *      if \p \rho_1 and \p \rho_2 are not density matrices or
+ *      have mismatching dimensions.
+ * @author Balint Koczor (CPU)
  */
-qreal calcDensityInnerProduct(Qureg bra, Qureg ket);
+qreal calcDensityInnerProduct(Qureg rho1, Qureg rho2);
 
 /** Seed the Mersenne Twister used for random number generation in the QuEST environment with an example
  * defualt seed.
