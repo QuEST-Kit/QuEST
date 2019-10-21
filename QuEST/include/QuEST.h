@@ -1664,7 +1664,7 @@ Complex calcInnerProduct(Qureg bra, Qureg ket);
 
 /** Computes the Hilbert-Schmidt scalar product
  * (which is equivalent to the Frobenius inner product of matrices) 
- * of two density matrices \p \rho_1 and \p \rho_2 of equivalent size.
+ * of two density matrices \p rho1 and \p rho2 of equivalent size.
  * That is, we define the Hilbert-Schmidt scalar product
  * \f[
     ((\rho_1, \rho_2))_{HS} := \text{Tr}[ \rho_1^\dagger \rho_2 ],
@@ -1679,19 +1679,19 @@ Complex calcInnerProduct(Qureg bra, Qureg ket);
  * \f[
     ((\rho_1, \rho_2))_{HS} = ((\rho_2, \rho_1))_{HS}
  * \f]
- * Also note that if both \p \rho_1 and \p \rho_2 are density matrices of pure states
+ * Also note that if both \p rho1 and \p rho2 are density matrices of pure states
  * \p bra and \p ket, then the equality holds
  * \f[
     ((\rho_1, \rho_2))_{HS} = |\langle \text{bra} | \text{ket} \rangle|^2.
  * \f]
  *
  * @ingroup calc
- * @param[in] \p \rho_1 qureg as a density matrix (to have its values conjugate transposed)
- * @param[in] \p \rho_2 qureg as a density matrix
+ * @param[in] rho1 qureg as a density matrix (to have its values conjugate transposed)
+ * @param[in] rho2 qureg as a density matrix
  * @returns the real Hilbert-Schmidt scalar product of density matrices
-            \p \rho_1 and \p \rho_2 (assuming Hermiticity)
+            \p rho1 and \p rho2 (assuming Hermiticity)
  * @throws exitWithError
- *      if \p \rho_1 and \p \rho_2 are not density matrices or
+ *      if \p rho1 and \p rho2 are not density matrices or
  *      have mismatching dimensions.
  * @author Balint Koczor (CPU)
  */
