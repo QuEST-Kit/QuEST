@@ -23,8 +23,8 @@ def testRot():
     mq = createQureg(numQubits, Env)
     mqVerif = createQureg(numQubits, Env)
 
-    initStateDebug(mq)
-    initStateDebug(mqVerif)
+    initDebugState(mq)
+    initDebugState(mqVerif)
     for i in range(numQubits):
         rotQubit=i
         compactUnitary(mq, rotQubit, alpha, beta)

@@ -1561,7 +1561,7 @@ void statevec_initStateOfSingleQubit(Qureg *qureg, int qubitId, int outcome)
  * each component of each probability amplitude a unique floating point value. For debugging processes
  * @param[in,out] qureg object representing the set of qubits to be initialised
  */
-void statevec_initStateDebug (Qureg qureg)
+void statevec_initDebugState (Qureg qureg)
 {
     long long int chunkSize;
     long long int index;
