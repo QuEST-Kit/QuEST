@@ -429,6 +429,17 @@ void initClassicalState(Qureg qureg, long long int stateInd);
  */
 void initPureState(Qureg qureg, Qureg pure);
 
+/** Initialises \p qureg to be in the un-normalised, non-physical state with 
+ * with n-th complex amplitude (2n/10 + i(2n+1)/10). This is used internally for 
+ * debugging and testing.
+ * 
+ * @ingroup debug
+ * @param[in,out] qureg the register to have its amplitudes overwritten
+ * @author Ania Brown
+ * @author Tyson Jones (doc)
+ */
+void initDebugState(Qureg qureg);
+
 /** Initialise qureg by specifying the complete statevector.
  * The real and imaginary components of the amplitudes are passed in separate arrays,
  * each of which must have length \p qureg.numAmpsTotal.
