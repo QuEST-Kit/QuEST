@@ -118,9 +118,9 @@ QMatrix getSwapMatrix(int qb1, int qb2, int numQb) {
     
     // pad swap with outer identities
     if (qb1 > 0)
-        swap = getKroneckerProduct(getIdentityMatrix(1<<qb1), swap);
+        swap = getKroneckerProduct(swap, getIdentityMatrix(1<<qb1));
     if (qb2 < numQb-1)
-        swap = getKroneckerProduct(swap, getIdentityMatrix(1<<(numQb-qb2-1)));
+        swap = getKroneckerProduct(getIdentityMatrix(1<<(numQb-qb2-1)), swap);
         
     return swap;
 }
