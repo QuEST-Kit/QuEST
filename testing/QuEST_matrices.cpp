@@ -5,29 +5,8 @@
  */
 
 #include "QuEST.h"
-#include "QuEST_complex.h"
 #include "QuEST_matrices.hpp"
 #include "catch.hpp"
-
-// matrix ops I need:
-// [X] complex matrices
-// [X] complex vectors
-// [X] multiply square matrices
-// [X] populate square sub-matrices from other matrices
-// [X] tensor product matrices
-// [X] generate identity matrices
-// [X] conjugate-transpose transpose matrices 
-// [X] generate SWAP gate
-// [X] multiply matrix onto vector
-// [ ] compare vectors
-// [ ] compare matrices
-
-// unitary ops I need:
-// [X] convert {ctrls, targs, matr, numQubits} to full-state matrix
-
-// internal ops:
-// [ ] convert/load statevec to complex vector 
-// [ ] convert/load density matrix to complex matrix
 
 /** produces a dim-by-dim square complex matrix, initialised to zero 
  */
@@ -180,8 +159,8 @@ void updateIndices(int oldEl, int newEl, int* list1, int len1, int* list2, int l
  * swap1 ... swapN . c(op) . swapN ... swap1
  */
 QMatrix getFullOperatorMatrix(
-    int* ctrls, int numCtrls, int *targs, int numTargs, QMatrix op, int numQubits)
-{        
+    int* ctrls, int numCtrls, int *targs, int numTargs, QMatrix op, int numQubits
+) {        
     REQUIRE( numCtrls >= 0 );
     REQUIRE( numTargs >= 0 );
     REQUIRE( numQubits >= (numCtrls+numTargs) );
@@ -259,24 +238,217 @@ QVector getMatrixVectorProduct(QMatrix m, QVector v) {
     return prod;
 }
 
+/** overwrites state to be the result of applying the unitary matrix op (with the
+ * specified control and target qubits) to statevector state, i.e. fullOp(op) * |state>
+ */
+void applyQUnitary(
+    QVector &state, int* ctrls, int numCtrls, int *targs, int numTargs, QMatrix op, int numQubits
+) {
+    REQUIRE( state.size() == (1<<numQubits) );
+    QMatrix fullOp = getFullOperatorMatrix(ctrls, numCtrls, targs, numTargs, op, numQubits);
+    state = getMatrixVectorProduct(fullOp, state);
+}
+
+/** overwrites state to be the result of applying the unitary matrix op (with the
+ * specified control and target qubits) to density matrix state, i.e. 
+ *  fullOp(op) * state * fullOp(op)^dagger
+ */
+void applyQUnitary(
+    QMatrix &state, int* ctrls, int numCtrls, int *targs, int numTargs, QMatrix op, int numQubits
+) {
+    REQUIRE( state.size() == (1<<numQubits) );
+    QMatrix leftOp = getFullOperatorMatrix(ctrls, numCtrls, targs, numTargs, op, numQubits);
+    QMatrix rightOp = getConjugateTranspose(leftOp);
+    state = getMatrixProduct(getMatrixProduct(leftOp, state), rightOp);
+}
+
+/** hardware-agnostic comparison of the given vector and pure qureg, to within 
+ * the QuEST_PREC-specific REAL_EPS (defined in QuEST_precision) precision.
+ * In GPU mode, this involves a GPU to CPU memory copy overhead.
+ * In distributed mode, this involves a all-to-all single-int broadcast
+ */
+bool areEqual(QVector vec, Qureg qureg) {
+    REQUIRE( !qureg.isDensityMatrix );
+    REQUIRE( vec.size() == qureg.numAmpsTotal );
+    
+    copyStateFromGPU(qureg);
+    
+    // the starting index in vec of this node's qureg partition.
+    long long int startInd = qureg.chunkId * qureg.numAmpsPerChunk;
+    
+    // loop terminates when areEqual = 0
+    int areEqual = 1;
+    for (long long int i=0; areEqual && i<qureg.numAmpsPerChunk; i++)
+        areEqual = (
+               absReal(qureg.stateVec.real[i] - real(vec[startInd+i])) < REAL_EPS
+            && absReal(qureg.stateVec.imag[i] - imag(vec[startInd+i])) < REAL_EPS);
+    
+    // if one node's partition wasn't equal, all-nodes must report not-equal
+    int allAreEqual = areEqual;
+#ifdef MPI_VERSION
+    if (qureg.numChunks > 1)
+        MPI_Allreduce(&areEqual, &allAreEqual, 1, MPI_INTEGER, MPI_LAND, MPI_COMM_WORLD);
+#endif
+        
+    return allAreEqual;
+}
+
+/** hardware-agnostic comparison of the given matrix and mixed qureg, to within 
+ * the QuEST_PREC-specific REAL_EPS (defined in QuEST_precision) precision.
+ * In GPU mode, this involves a GPU to CPU memory copy overhead.
+ * In distributed mode, this involves a all-to-all single-int broadcast
+ */
+bool areEqual(QMatrix matr, Qureg qureg) {
+    REQUIRE( qureg.isDensityMatrix );
+    REQUIRE( matr.size()*matr.size() == qureg.numAmpsTotal );
+    
+    // ensure local qureg.stateVec is up to date
+    copyStateFromGPU(qureg);
+    
+    // the starting index in vec of this node's qureg partition.
+    long long int startInd = qureg.chunkId * qureg.numAmpsPerChunk;
+    long long int globalInd, row, col;
+    
+    // loop terminates when areEqual = 0
+    int areEqual = 1;
+    for (long long int i=0; areEqual && i<qureg.numAmpsPerChunk; i++) {
+        globalInd = startInd + i;
+        row = globalInd % matr.size();
+        col = globalInd / matr.size();
+        areEqual = (
+               absReal(qureg.stateVec.real[i] - real(matr[row][col])) < REAL_EPS
+            && absReal(qureg.stateVec.imag[i] - imag(matr[row][col])) < REAL_EPS);
+    }
+    
+    // if one node's partition wasn't equal, all-nodes must report not-equal
+    int allAreEqual = areEqual;
+#ifdef MPI_VERSION
+    if (qureg.numChunks > 1)
+        MPI_Allreduce(&areEqual, &allAreEqual, 1, MPI_INTEGER, MPI_LAND, MPI_COMM_WORLD);
+#endif
+        
+    return allAreEqual;
+}
+
+/** Copies ComplexMatrix structures into a QMatrix */
 #define macro_copyComplexMatrix(dest, src) { \
     for (size_t i=0; i<dest.size(); i++) \
         for (size_t j=0; j<dest.size(); j++) \
             dest[i][j] = qcomp(src.real[i][j], src.imag[i][j]); \
 }
-QMatrix toMatrix(ComplexMatrix2 src) {
+QMatrix toQMatrix(ComplexMatrix2 src) {
     QMatrix dest = getZeroMatrix(2);
     macro_copyComplexMatrix(dest, src);
     return dest;
 }
-QMatrix toMatrix(ComplexMatrix4 src) {
+QMatrix toQMatrix(ComplexMatrix4 src) {
     QMatrix dest = getZeroMatrix(4);
     macro_copyComplexMatrix(dest, src);
     return dest;
 }
-QMatrix toMatrix(ComplexMatrixN src) {
+QMatrix toQMatrix(ComplexMatrixN src) {
+    REQUIRE( src.real != NULL );
+    REQUIRE( src.imag != NULL );
     QMatrix dest = getZeroMatrix(1 << src.numQubits);
     macro_copyComplexMatrix(dest, src);
     return dest;
+}
+
+/** Encodes a Complex pair into the matrix (a=alpha, b=beta)
+ * {{a, -conj(b)}},
+ * {{b,  conj(a)}}
+ */
+QMatrix toQMatrix(Complex alpha, Complex beta) {
+    qcomp a = qcomp(alpha.real, alpha.imag);
+    qcomp b = qcomp(beta.real, beta.imag);
+    QMatrix matr{
+        {a, -conj(b)},
+        {b,  conj(a)}};
+    return matr;
+}
+
+/** Encodes a density-matrix qureg into a QMatrix.
+ * In GPU mode, this involves a GPU to CPU memory copy overhead.
+ * In distributed mode, this involves a all-to-all full-statevector broadcast
+ */
+QMatrix toQMatrix(Qureg qureg) {
+    REQUIRE( qureg.isDensityMatrix );
+    REQUIRE( qureg.numAmpsTotal < MPI_MAX_AMPS_IN_MSG );
+    
+    // ensure local qureg.stateVec is up to date
+    copyStateFromGPU(qureg);
+    
+    qreal* fullRe;
+    qreal* fullIm;
+    
+    // in distributed mode, give every node the full state vector
+#ifdef MPI_VERSION
+    fullRe = malloc(qureg.numAmpsTotal * sizeof *fullRe);
+    fullIm = malloc(qureg.numAmpsTotal * sizeof *fullIm);
+    MPI_Allgather(
+        qureg.stateVec.real, qureg.numAmpsPerChunk, MPI_QuEST_REAL,
+        fullRe, qureg.numAmpsPerChunk, MPI_QuEST_REAL, MPI_COMM_WORLD);
+    MPI_Allgather(
+        qureg.stateVec.imag, qureg.numAmpsPerChunk, MPI_QuEST_REAL,
+        fullIm, qureg.numAmpsPerChunk, MPI_QuEST_REAL, MPI_COMM_WORLD);
+#else
+    fullRe = qureg.stateVec.real;
+    fullIm = qureg.stateVec.imag;
+#endif
+        
+    // copy full state vector into a QVector
+    long long int dim = (1 << qureg.numQubitsRepresented);
+    QMatrix matr = getZeroMatrix(dim);
+    for (long long int n=0; n<qureg.numAmpsTotal; n++)
+        matr[n%dim][n/dim] = qcomp(fullRe[n], fullIm[n]);
+    
+    // clean up
+#ifdef MPI_VERSION
+    free(fullRe);
+    free(fullIm);
+#endif
+    return matr;
+}
+
+/** Encodes a state-vector qureg into a QVector.
+ * In GPU mode, this involves a GPU to CPU memory copy overhead.
+ * In distributed mode, this involves a all-to-all full-statevector broadcast
+ */
+QVector toQVector(Qureg qureg) {
+    REQUIRE( !qureg.isDensityMatrix );
+    REQUIRE( qureg.numAmpsTotal < MPI_MAX_AMPS_IN_MSG );
+    
+    // ensure local qureg.stateVec is up to date
+    copyStateFromGPU(qureg);
+    
+    qreal* fullRe;
+    qreal* fullIm;
+    
+    // in distributed mode, give every node the full state vector
+#ifdef MPI_VERSION
+    fullRe = malloc(qureg.numAmpsTotal * sizeof *fullRe);
+    fullIm = malloc(qureg.numAmpsTotal * sizeof *fullIm);
+    MPI_Allgather(
+        qureg.stateVec.real, qureg.numAmpsPerChunk, MPI_QuEST_REAL,
+        fullRe, qureg.numAmpsPerChunk, MPI_QuEST_REAL, MPI_COMM_WORLD);
+    MPI_Allgather(
+        qureg.stateVec.imag, qureg.numAmpsPerChunk, MPI_QuEST_REAL,
+        fullIm, qureg.numAmpsPerChunk, MPI_QuEST_REAL, MPI_COMM_WORLD);
+#else
+    fullRe = qureg.stateVec.real;
+    fullIm = qureg.stateVec.imag;
+#endif
+        
+    // copy full state vector into a QVector
+    QVector vec = QVector(qureg.numAmpsTotal);
+    for (long long int i=0; i<qureg.numAmpsTotal; i++)
+        vec[i] = qcomp(fullRe[i], fullIm[i]);
+    
+    // clean up
+#ifdef MPI_VERSION
+    free(fullRe);
+    free(fullIm);
+#endif
+    return vec;
 }
 
