@@ -5,7 +5,7 @@
  */
 
 #include "QuEST.h"
-#include "QuEST_matrices.hpp"
+#include "QuEST_test_utils.hpp"
 #include "catch.hpp"
 
 /** produces a dim-by-dim square complex matrix, initialised to zero 
@@ -248,6 +248,24 @@ void applyQUnitary(
     QMatrix fullOp = getFullOperatorMatrix(ctrls, numCtrls, targs, numTargs, op, numQubits);
     state = getMatrixVectorProduct(fullOp, state);
 }
+void applyQUnitary(
+    QVector &state, int *targs, int numTargs, QMatrix op, int numQubits
+) {
+    applyQUnitary(state, NULL, 0, targs, numTargs, op, numQubits);
+}
+void applyQUnitary(
+    QVector &state, int ctrl, int targ, QMatrix op, int numQubits
+) {
+    int ctrls[1] = {ctrl};
+    int targs[1] = {targ};
+    applyQUnitary(state, ctrls, 1, targs, 1, op, numQubits);
+}
+void applyQUnitary(
+    QVector &state, int targ, QMatrix op, int numQubits
+) {
+    int targs[1] = {targ};
+    applyQUnitary(state, NULL, 0, targs, 1, op, numQubits);
+}
 
 /** overwrites state to be the result of applying the unitary matrix op (with the
  * specified control and target qubits) to density matrix state, i.e. 
@@ -261,6 +279,26 @@ void applyQUnitary(
     QMatrix rightOp = getConjugateTranspose(leftOp);
     state = getMatrixProduct(getMatrixProduct(leftOp, state), rightOp);
 }
+void applyQUnitary(
+    QMatrix &state, int *targs, int numTargs, QMatrix op, int numQubits
+) {
+    applyQUnitary(state, NULL, 0, targs, numTargs, op, numQubits);
+}
+void applyQUnitary(
+    QMatrix &state, int ctrl, int targ, QMatrix op, int numQubits
+) {
+    int ctrls[1] = {ctrl};
+    int targs[1] = {targ};
+    applyQUnitary(state, ctrls, 1, targs, 1, op, numQubits);
+}
+void applyQUnitary(
+    QMatrix &state, int targ, QMatrix op, int numQubits
+) {
+    int targs[1] = {targ};
+    applyQUnitary(state, NULL, 0, targs, 1, op, numQubits);
+}
+
+
 
 /** hardware-agnostic comparison of the given vector and pure qureg, to within 
  * the QuEST_PREC-specific REAL_EPS (defined in QuEST_precision) precision.
