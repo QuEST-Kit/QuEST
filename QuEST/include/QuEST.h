@@ -1751,6 +1751,7 @@ Complex calcInnerProduct(Qureg bra, Qureg ket);
  *      if \p rho1 and \p rho2 are not density matrices or
  *      have mismatching dimensions.
  * @author Balint Koczor (CPU)
+ * @author Tyson Jones (GPU)
  */
 qreal calcDensityInnerProduct(Qureg rho1, Qureg rho2);
 
