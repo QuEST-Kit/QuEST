@@ -123,7 +123,7 @@ void statevec_initZeroState(Qureg qureg);
 
 void statevec_initPlusState(Qureg qureg);
 
-void statevec_initStateDebug(Qureg qureg);
+void statevec_initDebugState(Qureg qureg);
 
 void statevec_initClassicalState(Qureg qureg, long long int stateInd);
 
