@@ -45,8 +45,8 @@ initPlusState      = QuESTTestee ("initPlusState",      retType=None, argType=[Q
 initClassicalState = QuESTTestee ("initClassicalState", retType=None, argType=[Qureg,c_longlong], defArg=[None,None])
 initPureState      = QuESTTestee ("initPureState",      retType=None, argType=[Qureg,Qureg], defArg=[None,None])
 initStateFromAmps  = QuESTTestee ("initStateFromAmps",  retType=None, argType=[Qureg,POINTER(qreal),POINTER(qreal)], defArg=[None,None,None], denMat = False)
-initStateDebug     = QuESTTestee ("initStateDebug",     retType=None, argType=[Qureg], defArg=[None])
-initDebugState     = initStateDebug  # Alias
+initDebugState     = QuESTTestee ("initDebugState",     retType=None, argType=[Qureg], defArg=[None])
+initDebugState     = initDebugState  # Alias
 setAmps            = QuESTTestee ("setAmps",            retType=None, argType=[Qureg,_stateIndex,POINTER(qreal),POINTER(qreal),c_longlong], defArg=[None,None,None,None,None], denMat = False) 
 setDensityAmps     = QuESTTestee ("setDensityAmps",     retType=None, argType=[Qureg,POINTER(qreal),POINTER(qreal)], defArg=[None,None,None], denMat = True) 
 

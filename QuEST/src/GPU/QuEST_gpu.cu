@@ -392,10 +392,6 @@ void copyStateToGPU(Qureg qureg)
     if (DEBUG) printf("Copying data to GPU\n");
     cudaMemcpy(qureg.deviceStateVec.real, qureg.stateVec.real, 
             qureg.numAmpsPerChunk*sizeof(*(qureg.deviceStateVec.real)), cudaMemcpyHostToDevice);
-    cudaMemcpy(qureg.deviceStateVec.real, qureg.stateVec.real, 
-            qureg.numAmpsPerChunk*sizeof(*(qureg.deviceStateVec.real)), cudaMemcpyHostToDevice);
-    cudaMemcpy(qureg.deviceStateVec.imag, qureg.stateVec.imag, 
-            qureg.numAmpsPerChunk*sizeof(*(qureg.deviceStateVec.imag)), cudaMemcpyHostToDevice);
     cudaMemcpy(qureg.deviceStateVec.imag, qureg.stateVec.imag, 
             qureg.numAmpsPerChunk*sizeof(*(qureg.deviceStateVec.imag)), cudaMemcpyHostToDevice);
     if (DEBUG) printf("Finished copying data to GPU\n");
@@ -551,7 +547,7 @@ void statevec_initClassicalState(Qureg qureg, long long int stateInd)
         qureg.deviceStateVec.imag, stateInd);
 }
 
-__global__ void statevec_initStateDebugKernel(long long int stateVecSize, qreal *stateVecReal, qreal *stateVecImag){
+__global__ void statevec_initDebugStateKernel(long long int stateVecSize, qreal *stateVecReal, qreal *stateVecImag){
     long long int index;
 
     index = blockIdx.x*blockDim.x + threadIdx.x;
@@ -561,12 +557,12 @@ __global__ void statevec_initStateDebugKernel(long long int stateVecSize, qreal 
     stateVecImag[index] = (index*2.0+1.0)/10.0;
 }
 
-void statevec_initStateDebug(Qureg qureg)
+void statevec_initDebugState(Qureg qureg)
 {
     int threadsPerCUDABlock, CUDABlocks;
     threadsPerCUDABlock = 128;
     CUDABlocks = ceil((qreal)(qureg.numAmpsPerChunk)/threadsPerCUDABlock);
-    statevec_initStateDebugKernel<<<CUDABlocks, threadsPerCUDABlock>>>(
+    statevec_initDebugStateKernel<<<CUDABlocks, threadsPerCUDABlock>>>(
         qureg.numAmpsPerChunk,
         qureg.deviceStateVec.real, 
         qureg.deviceStateVec.imag);

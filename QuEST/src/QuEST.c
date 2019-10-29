@@ -1046,8 +1046,8 @@ int compareStates(Qureg qureg1, Qureg qureg2, qreal precision) {
     return statevec_compareStates(qureg1, qureg2, precision);
 }
 
-void initStateDebug(Qureg qureg) {
-    statevec_initStateDebug(qureg);
+void initDebugState(Qureg qureg) {
+    statevec_initDebugState(qureg);
 }
 
 void initStateFromSingleFile(Qureg *qureg, char filename[200], QuESTEnv env) {
