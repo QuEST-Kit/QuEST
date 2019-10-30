@@ -1956,6 +1956,76 @@ qreal densmatr_calcProbOfOutcome(Qureg qureg, const int measureQubit, int outcom
     return outcomeProb;
 }
 
+/** computes Tr(conjTrans(a) b) = sum of (a_ij^* b_ij), which is a real number */
+__global__ void densmatr_calcInnerProductKernel(
+    Qureg a, Qureg b, long long int numTermsToSum, qreal* reducedArray
+) {    
+    long long int index = blockIdx.x*blockDim.x + threadIdx.x;
+    if (index >= numTermsToSum) return;
+    
+    // Re{ conj(a) b } = Re{ (aRe - i aIm)(bRe + i bIm) } = aRe bRe + aIm bIm
+    qreal prod = (
+          a.deviceStateVec.real[index]*b.deviceStateVec.real[index] 
+        + a.deviceStateVec.imag[index]*b.deviceStateVec.imag[index]);
+    
+    // array of each thread's collected sum term, to be summed
+    extern __shared__ qreal tempReductionArray[];
+    tempReductionArray[threadIdx.x] = prod;
+    __syncthreads();
+    
+    // every second thread reduces
+    if (threadIdx.x<blockDim.x/2)
+        reduceBlock(tempReductionArray, reducedArray, blockDim.x);
+}
+
+qreal densmatr_calcInnerProduct(Qureg a, Qureg b) {
+    
+    // we're summing the square of every term in the density matrix
+    long long int numValuesToReduce = a.numAmpsTotal;
+    
+    int valuesPerCUDABlock, numCUDABlocks, sharedMemSize;
+    int maxReducedPerLevel = REDUCE_SHARED_SIZE;
+    int firstTime = 1;
+    
+    while (numValuesToReduce > 1) {
+        
+        // need less than one CUDA-BLOCK to reduce
+        if (numValuesToReduce < maxReducedPerLevel) {
+            valuesPerCUDABlock = numValuesToReduce;
+            numCUDABlocks = 1;
+        }
+        // otherwise use only full CUDA-BLOCKS
+        else {
+            valuesPerCUDABlock = maxReducedPerLevel; // constrained by shared memory
+            numCUDABlocks = ceil((qreal)numValuesToReduce/valuesPerCUDABlock);
+        }
+        // dictates size of reduction array
+        sharedMemSize = valuesPerCUDABlock*sizeof(qreal);
+        
+        // spawn threads to sum the terms in each block
+        // arbitrarily store the reduction in the b qureg's array
+        if (firstTime) {
+             densmatr_calcInnerProductKernel<<<numCUDABlocks, valuesPerCUDABlock, sharedMemSize>>>(
+                 a, b, a.numAmpsTotal, b.firstLevelReduction);
+            firstTime = 0;
+        }    
+        // sum the block terms
+        else {
+            cudaDeviceSynchronize();    
+            copySharedReduceBlock<<<numCUDABlocks, valuesPerCUDABlock/2, sharedMemSize>>>(
+                    b.firstLevelReduction, 
+                    b.secondLevelReduction, valuesPerCUDABlock); 
+            cudaDeviceSynchronize();    
+            swapDouble(&(b.firstLevelReduction), &(b.secondLevelReduction));
+        }
+        
+        numValuesToReduce = numValuesToReduce/maxReducedPerLevel;
+    }
+    
+    qreal innerprod;
+    cudaMemcpy(&innerprod, b.firstLevelReduction, sizeof(qreal), cudaMemcpyDeviceToHost);
+    return innerprod;
+}
 
 /** computes either a real or imag term in the inner product */
 __global__ void statevec_calcInnerProductKernel(
@@ -1973,7 +2043,7 @@ __global__ void statevec_calcInnerProductKernel(
     else
         innerProdTerm = vecReal1[index]*vecImag2[index] - vecImag1[index]*vecReal2[index];
     
-    // array of each thread's collected probability, to be summed
+    // array of each thread's collected sum term, to be summed
     extern __shared__ qreal tempReductionArray[];
     tempReductionArray[threadIdx.x] = innerProdTerm;
     __syncthreads();
