@@ -2949,14 +2949,14 @@ qreal calcHilbertSchmidtDistance(Qureg a, Qureg b);
 void setWeightedQureg(Complex fac1, Qureg qureg1, Complex fac2, Qureg qureg2, Complex facOut, Qureg out);
 
 /** Modifies \p outQureg to be the result of applying the weighted sum of Pauli products (a Hermitian but not 
- * necessarily unitary operator) to \p inQureg. Note that afterward, \p outQureg may not longer be normalised and ergo not a
+ * necessarily unitary operator) to \p inQureg. Note that afterward, \p outQureg may no longer be normalised and ergo not a
  * statevector or density matrix. Users must therefore be careful passing \p outQureg to
  * other QuEST functions which assume normalisation in order to function correctly.
-
+ *
  * Letting \f$ \alpha = \sum_i c_i \otimes_j^{N} \hat{\sigma}_{i,j} \f$ be 
  * the operators indicated by \p allPauliCodes (where \f$ c_i \in \f$ \p termCoeffs and \f$ N = \f$ \p qureg.numQubitsRepresented), 
  * this function effects \f$ \alpha | \psi \rangle \f$ on statevector \f$ |\psi\rangle \f$
- * and $\alpha \rho$ (matrix multiplication) on density matrix \f$ \rho \f$.
+ * and \f$\alpha \rho\f$ (left matrix multiplication) on density matrix \f$ \rho \f$.
  *
  * \p allPauliCodes is an array of length \p numSumTerms*\p qureg.numQubitsRepresented
  * which specifies which Pauli operators to apply, where 0 = \p PAULI_I, 1 = \p PAULI_X, 
