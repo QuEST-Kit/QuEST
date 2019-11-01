@@ -1734,14 +1734,27 @@ Complex calcInnerProduct(Qureg bra, Qureg ket);
  * the resulting scalar product is real and invariant under
  * reordering its arguments as 
  * \f[
-    ((\rho_1, \rho_2))_{HS} = ((\rho_2, \rho_1))_{HS}
+    ((\rho_1, \rho_2))_{HS} = ((\rho_2, \rho_1))_{HS} = \text{Tr}[\rho_1 \rho_2]
  * \f]
- * Also note that if both \p rho1 and \p rho2 are density matrices of pure states
+ * If both \p rho1 and \p rho2 are density matrices of pure states
  * \p bra and \p ket, then the equality holds
  * \f[
     ((\rho_1, \rho_2))_{HS} = |\langle \text{bra} | \text{ket} \rangle|^2.
  * \f]
- *
+ * If either or both of \p rho1 and \p rho2 are non Hermitian (i.e. invalid density 
+ * matrices), then this function returns the real component of the scalar product, 
+ * and discards the imaginary component. That is, it returns 
+ * \f[
+     \text{Re}\{ \text{Tr}[ \rho_1^\dagger \rho_2 ] \} = \text{Re}\{ \text{Tr}[ \rho_2^\dagger \rho_1 ] \}.
+ * \f]
+ * This is still sometimes useful, e.g. in calculating the inner product with an 
+ * anti-commutator, e.g. (for Hermitian \f$ \sigma \f$, \f$ \rho \f$, \f$ H \f$)
+ * \f[
+ *      ((\sigma, H \rho + \rho H))_{HS} = 2 \; \text{Re} \{ ((\sigma, H \rho))_{HS} \} 
+ * \f]
+ * where \f$ H \rho \f$ could be a weighted sum of Pauli products applied to \f$ \rho \f$ 
+ * through applyPauliSum().
+ * 
  * @ingroup calc
  * @param[in] rho1 qureg as a density matrix (to have its values conjugate transposed)
  * @param[in] rho2 qureg as a density matrix
@@ -2343,10 +2356,11 @@ void multiRotatePauli(Qureg qureg, int* targetQubits, enum pauliOpType* targetPa
 qreal calcExpecPauliProd(Qureg qureg, int* targetQubits, enum pauliOpType* pauliCodes, int numTargets, Qureg workspace);
 
 /** Computes the expected value of a sum of products of Pauli operators.
- * Letting \f$ \alpha = \sum_i c_i \otimes_j^{N} \hat{\sigma}_{i,j} \f$ be 
- * the operators indicated by \p allPauliCodes (where \f$ c_i \in \f$ \p termCoeffs and \f$ N = \f$ \p qureg.numQubitsRepresented), 
- * this function computes \f$ \langle \psi | \alpha | \psi \rangle \f$ 
- * if \p qureg = \f$ \psi \f$ is a statevector, and computes \f$ \text{Trace}(\alpha \rho) \f$ 
+ * Let \f$ H = \sum_i c_i \otimes_j^{N} \hat{\sigma}_{i,j} \f$ be 
+ * the operators indicated by \p allPauliCodes (where \f$ c_i \in \f$ \p termCoeffs 
+ * and \f$ N = \f$ \p qureg.numQubitsRepresented).
+ * This function computes \f$ \langle \psi | H | \psi \rangle \f$ 
+ * if \p qureg = \f$ \psi \f$ is a statevector, and computes \f$ \text{Trace}(H \rho) =\text{Trace}(\rho H) \f$ 
  * if \p qureg = \f$ \rho \f$ is a density matrix.
  *
  * \p allPauliCodes is an array of length \p numSumTerms*\p qureg.numQubitsRepresented
