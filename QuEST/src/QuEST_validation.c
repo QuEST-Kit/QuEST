@@ -112,16 +112,21 @@ static const char* errorMessages[] = {
     [E_MISMATCHING_NUM_TARGS_KRAUS_SIZE] = "Every Kraus operator must be of the same number of qubits as the number of targets."
 };
 
-void exitWithError(ErrorCode code, const char* func){
+void exitWithError(const char* msg, const char* func) {
     printf("!!!\n");
-    printf("QuEST Error in function %s: %s\n", func, errorMessages[code]);
+    printf("QuEST Error in function %s: %s\n", func, msg);
     printf("!!!\n");
     printf("exiting..\n");
-    exit(code);
+    exit(1);
+}
+
+#pragma weak invalidQuESTInputError
+void invalidQuESTInputError(const char* errMsg, const char* errFunc) {
+    exitWithError(errMsg, errFunc);
 }
 
 void QuESTAssert(int isValid, ErrorCode code, const char* func){
-    if (!isValid) exitWithError(code, func);
+    if (!isValid) invalidQuESTInputError(errorMessages[code], func);
 }
 
 int isComplexUnit(Complex alpha) {

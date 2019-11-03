@@ -3002,6 +3002,46 @@ void setWeightedQureg(Complex fac1, Qureg qureg1, Complex fac2, Qureg qureg2, Co
  * @author Tyson Jones
  */
 void applyPauliSum(Qureg inQureg, enum pauliOpType* allPauliCodes, qreal* termCoeffs, int numSumTerms, Qureg outQureg);
+
+/** An internal function called when invalid arguments are passed to a QuEST API
+ * call, which the user can optionally override by redefining. This function is 
+ * a weak symbol, so that users can choose how input errors are handled, by 
+ * redefining it in their own code. Users must ensure that the triggered API 
+ * call does not continue (e.g. the user exits or throws an exception), else 
+ * QuEST will continue with the valid input and likely trigger a seg-fault.
+ * This function is triggered before any internal state-change, hence it is 
+ * safe to interrupt with exceptions.
+ *
+ * E.g. in C
+ * @code
+void invalidQuESTInputError(const char* errMsg, const char* errFunc) {
+ 
+     // log to file
+     printf("ERROR! Writing to file...\n");
+     FILE *fp = fopen("errorlog.txt", "w");
+     fprintf(fp, "incorrect usage of function '%s': %s", errFunc, errMsg);
+     fclose(fp);
+     
+     // exit
+     exit(1);
+} @endcode
+ * 
+ * This function is compatible with C++ exceptions, though note the user of 
+ * extern "C":
+ * @code
+extern "C" void invalidQuESTInputError(const char* errMsg, const char* errFunc) {
+
+    string err = "in function " + string(errFunc) + ": " + string(errMsg);
+    throw std::invalid_argument(err);
+} @endcode
+ *
+ * @ingroup debug
+ * @param[in] errMsg a string describing the nature of the argument error
+ * @param[in] errFunc the name of the invalidly-called API function
+ * @throws exitWithError unless overriden by the user
+ * @author Tyson Jones
+ */
+void invalidQuESTInputError(const char* errMsg, const char* errFunc);
  
 #ifndef __cplusplus
  // hide this function from doxygen
