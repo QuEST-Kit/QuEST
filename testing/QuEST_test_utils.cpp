@@ -238,64 +238,72 @@ QVector getMatrixVectorProduct(QMatrix m, QVector v) {
     return prod;
 }
 
+/** returns log2 of numbers which must be gauranteed to be 2^n */
+unsigned int calcLog2(unsigned int res) {
+    unsigned int n = 0;
+    while (res >>= 1)
+        n++;
+    return n;
+}
+
 /** overwrites state to be the result of applying the unitary matrix op (with the
  * specified control and target qubits) to statevector state, i.e. fullOp(op) * |state>
  */
-void applyQUnitary(
-    QVector &state, int* ctrls, int numCtrls, int *targs, int numTargs, QMatrix op, int numQubits
+void applyUnitaryOp(
+    QVector &state, int* ctrls, int numCtrls, int *targs, int numTargs, QMatrix op
 ) {
-    REQUIRE( state.size() == (1<<numQubits) );
+    int numQubits = calcLog2(state.size());
     QMatrix fullOp = getFullOperatorMatrix(ctrls, numCtrls, targs, numTargs, op, numQubits);
     state = getMatrixVectorProduct(fullOp, state);
 }
-void applyQUnitary(
-    QVector &state, int *targs, int numTargs, QMatrix op, int numQubits
+void applyUnitaryOp(
+    QVector &state, int *targs, int numTargs, QMatrix op
 ) {
-    applyQUnitary(state, NULL, 0, targs, numTargs, op, numQubits);
+    applyUnitaryOp(state, NULL, 0, targs, numTargs, op);
 }
-void applyQUnitary(
-    QVector &state, int ctrl, int targ, QMatrix op, int numQubits
+void applyUnitaryOp(
+    QVector &state, int ctrl, int targ, QMatrix op
 ) {
     int ctrls[1] = {ctrl};
     int targs[1] = {targ};
-    applyQUnitary(state, ctrls, 1, targs, 1, op, numQubits);
+    applyUnitaryOp(state, ctrls, 1, targs, 1, op);
 }
-void applyQUnitary(
-    QVector &state, int targ, QMatrix op, int numQubits
+void applyUnitaryOp(
+    QVector &state, int targ, QMatrix op
 ) {
     int targs[1] = {targ};
-    applyQUnitary(state, NULL, 0, targs, 1, op, numQubits);
+    applyUnitaryOp(state, NULL, 0, targs, 1, op);
 }
 
 /** overwrites state to be the result of applying the unitary matrix op (with the
  * specified control and target qubits) to density matrix state, i.e. 
  *  fullOp(op) * state * fullOp(op)^dagger
  */
-void applyQUnitary(
-    QMatrix &state, int* ctrls, int numCtrls, int *targs, int numTargs, QMatrix op, int numQubits
+void applyUnitaryOp(
+    QMatrix &state, int* ctrls, int numCtrls, int *targs, int numTargs, QMatrix op
 ) {
-    REQUIRE( state.size() == (1<<numQubits) );
+    int numQubits = calcLog2(state.size());
     QMatrix leftOp = getFullOperatorMatrix(ctrls, numCtrls, targs, numTargs, op, numQubits);
     QMatrix rightOp = getConjugateTranspose(leftOp);
     state = getMatrixProduct(getMatrixProduct(leftOp, state), rightOp);
 }
-void applyQUnitary(
-    QMatrix &state, int *targs, int numTargs, QMatrix op, int numQubits
+void applyUnitaryOp(
+    QMatrix &state, int *targs, int numTargs, QMatrix op
 ) {
-    applyQUnitary(state, NULL, 0, targs, numTargs, op, numQubits);
+    applyUnitaryOp(state, NULL, 0, targs, numTargs, op);
 }
-void applyQUnitary(
-    QMatrix &state, int ctrl, int targ, QMatrix op, int numQubits
+void applyUnitaryOp(
+    QMatrix &state, int ctrl, int targ, QMatrix op
 ) {
     int ctrls[1] = {ctrl};
     int targs[1] = {targ};
-    applyQUnitary(state, ctrls, 1, targs, 1, op, numQubits);
+    applyUnitaryOp(state, ctrls, 1, targs, 1, op);
 }
-void applyQUnitary(
-    QMatrix &state, int targ, QMatrix op, int numQubits
+void applyUnitaryOp(
+    QMatrix &state, int targ, QMatrix op
 ) {
     int targs[1] = {targ};
-    applyQUnitary(state, NULL, 0, targs, 1, op, numQubits);
+    applyUnitaryOp(state, NULL, 0, targs, 1, op);
 }
 
 
@@ -305,7 +313,7 @@ void applyQUnitary(
  * In GPU mode, this involves a GPU to CPU memory copy overhead.
  * In distributed mode, this involves a all-to-all single-int broadcast
  */
-bool areEqual(QVector vec, Qureg qureg) {
+bool areEqual(Qureg qureg, QVector vec) {
     REQUIRE( !qureg.isDensityMatrix );
     REQUIRE( vec.size() == qureg.numAmpsTotal );
     
@@ -332,11 +340,14 @@ bool areEqual(QVector vec, Qureg qureg) {
 }
 
 /** hardware-agnostic comparison of the given matrix and mixed qureg, to within 
- * the QuEST_PREC-specific REAL_EPS (defined in QuEST_precision) precision.
+ * the QuEST_PREC-specific 1E4*REAL_EPS (defined in QuEST_precision) precision.
+ * We check against 1E4*REAL_EPS, since effecting operations on unitaries involve 
+ * twice as many operations are on a statevector, and the state is stored in square
+ * as many elements.
  * In GPU mode, this involves a GPU to CPU memory copy overhead.
  * In distributed mode, this involves a all-to-all single-int broadcast
  */
-bool areEqual(QMatrix matr, Qureg qureg) {
+bool areEqual(Qureg qureg, QMatrix matr) {
     REQUIRE( qureg.isDensityMatrix );
     REQUIRE( matr.size()*matr.size() == qureg.numAmpsTotal );
     
@@ -345,27 +356,41 @@ bool areEqual(QMatrix matr, Qureg qureg) {
     
     // the starting index in vec of this node's qureg partition.
     long long int startInd = qureg.chunkId * qureg.numAmpsPerChunk;
-    long long int globalInd, row, col;
+    long long int globalInd, row, col, i;
+    int ampsAgree;
     
-    // loop terminates when areEqual = 0
-    int areEqual = 1;
-    for (long long int i=0; areEqual && i<qureg.numAmpsPerChunk; i++) {
+    // compare each of this node's amplitude to the corresponding matr sub-matrix
+    for (i=0; i<qureg.numAmpsPerChunk; i++) {
         globalInd = startInd + i;
         row = globalInd % matr.size();
         col = globalInd / matr.size();
-        areEqual = (
-               absReal(qureg.stateVec.real[i] - real(matr[row][col])) < REAL_EPS
-            && absReal(qureg.stateVec.imag[i] - imag(matr[row][col])) < REAL_EPS);
+        qreal realDif = absReal(qureg.stateVec.real[i] - real(matr[row][col]));
+        qreal imagDif = absReal(qureg.stateVec.imag[i] - imag(matr[row][col]));
+        ampsAgree = (realDif < 1E4*REAL_EPS && imagDif < 1E4*REAL_EPS);
+
+        // break loop as soon as amplitudes disagree
+        if (!ampsAgree)
+            break;
+            
+        /* TODO:
+         * of the nodes which disagree, the lowest-rank should send its 
+         * disagreeing (i, row, col, stateVec[i]) to rank 0 which should 
+         * report it immediately (before the impending REQUIRE failure)
+         * using FAIL_CHECK, so users can determine nature of disagreement 
+         * (e.g. numerical precision).
+         * Note FAIL_CHECK accepts << like cout, e.g.
+         * FAIL_CHECK( "Amp at (" << row << ", " << col ") disagreed" );
+         */
     }
     
     // if one node's partition wasn't equal, all-nodes must report not-equal
-    int allAreEqual = areEqual;
+    int allAmpsAgree = ampsAgree;
 #ifdef MPI_VERSION
     if (qureg.numChunks > 1)
-        MPI_Allreduce(&areEqual, &allAreEqual, 1, MPI_INTEGER, MPI_LAND, MPI_COMM_WORLD);
+        MPI_Allreduce(&ampsAgree, &allAmpsAgree, 1, MPI_INTEGER, MPI_LAND, MPI_COMM_WORLD);
 #endif
         
-    return allAreEqual;
+    return allAmpsAgree;
 }
 
 /** Copies ComplexMatrix structures into a QMatrix */

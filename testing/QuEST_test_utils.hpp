@@ -20,33 +20,46 @@ QMatrix toQMatrix(Complex alpha, Complex beta);
 
 QMatrix toQMatrix(Qureg qureg);
 
-void applyQUnitary(
-    QMatrix &state, int* ctrls, int numCtrls, int *targs, int numTargs, QMatrix op, int numQubits
+void applyUnitaryOp(
+    QMatrix &state, int* ctrls, int numCtrls, int *targs, int numTargs, QMatrix op
 );
-void applyQUnitary(
-    QMatrix &state, int *targs, int numTargs, QMatrix op, int numQubits
+void applyUnitaryOp(
+    QMatrix &state, int *targs, int numTargs, QMatrix op
 );
-void applyQUnitary(
-    QMatrix &state, int ctrl, int targ, QMatrix op, int numQubits
+void applyUnitaryOp(
+    QMatrix &state, int ctrl, int targ, QMatrix op
 );
-void applyQUnitary(
-    QMatrix &state, int targ, QMatrix op, int numQubits
+void applyUnitaryOp(
+    QMatrix &state, int targ, QMatrix op
 );
-void applyQUnitary(
-    QVector &state, int* ctrls, int numCtrls, int *targs, int numTargs, QMatrix op, int numQubits
+void applyUnitaryOp(
+    QVector &state, int* ctrls, int numCtrls, int *targs, int numTargs, QMatrix op
 );
-void applyQUnitary(
-    QVector &state, int *targs, int numTargs, QMatrix op, int numQubits
+void applyUnitaryOp(
+    QVector &state, int *targs, int numTargs, QMatrix op
 );
-void applyQUnitary(
-    QVector &state, int ctrl, int targ, QMatrix op, int numQubits
+void applyUnitaryOp(
+    QVector &state, int ctrl, int targ, QMatrix op
 );
-void applyQUnitary(
-    QVector &state, int targ, QMatrix op, int numQubits
+void applyUnitaryOp(
+    QVector &state, int targ, QMatrix op
 );
 
-bool areEqual(QVector vec, Qureg qureg);
+bool areEqual(Qureg qureg, QVector vec);
 
-bool areEqual(QMatrix matr, Qureg qureg);
+bool areEqual(Qureg qureg, QMatrix matr);
+
+
+
+
+
+// DEBUG: DO NOT COMMIT 
+void printMatrix(QMatrix a);
+void printVector(QVector a);
+void printQureg(Qureg q);
+void printDif(QMatrix a, Qureg q);
+
+
+
 
 #endif // QUEST_MATRICES_H
