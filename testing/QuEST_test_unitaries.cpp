@@ -17,6 +17,8 @@
 #include "QuEST.h"
 #include "QuEST_test_utils.hpp"
 
+using Catch::Matchers::Contains;
+
 /** The default number of qubits in the registers created for unit testing 
  * (both statevectors and density matrices). Creation of non-NUM_QUBITS sized 
  * Quregs should be justified in a comment. 
@@ -28,14 +30,14 @@
  */
 #define NUM_QUBITS 5
 
-/** Redefinition of QuEST_validation's exitWithError function, called when a 
+/** Redefinition of QuEST_validation's invalidQuESTInputError function, called when a 
  * user passes an incorrect parameter (e.g. an negative qubit index). This is 
  * redefined here to, in lieu of printing and exiting, throw a C++ exception
  * which can be caught (and hence unit tested for) by Catch2
  */
-extern "C" void exitWithError(int errorcode, const char* func) {
-    throw 1;
-}
+ extern "C" void invalidQuESTInputError(const char* errMsg, const char* errFunc) {
+     throw errMsg;
+ } 
 
 /** Prepares the needed data structures for unit testing. This creates 
  * the QuEST environment, a statevector and density matrix of the size 'numQb',
@@ -85,8 +87,8 @@ TEST_CASE( "pauliX", "[unitaries]" ) {
                 
         SECTION( "qubit indices" ) {
             
-            REQUIRE_THROWS( pauliX(quregVec, -1) );
-            REQUIRE_THROWS( pauliX(quregVec, NUM_QUBITS) );
+            REQUIRE_THROWS_WITH( pauliX(quregVec, -1), Contains("Invalid target") );
+            REQUIRE_THROWS_WITH( pauliX(quregVec, NUM_QUBITS), Contains("Invalid target") );
         }
     }
     
@@ -125,8 +127,8 @@ TEST_CASE( "compactUnitary", "[unitaries]" ) {
         
         SECTION( "qubit indices" ) {
             
-            REQUIRE_THROWS( compactUnitary(quregVec, -1, alpha, beta) );
-            REQUIRE_THROWS( compactUnitary(quregVec, NUM_QUBITS, alpha, beta) );
+            REQUIRE_THROWS_WITH( compactUnitary(quregVec, -1, alpha, beta), Contains("Invalid target") );
+            REQUIRE_THROWS_WITH( compactUnitary(quregVec, NUM_QUBITS, alpha, beta), Contains("Invalid target") );
         }
         
         SECTION( "unitarity" ) {
@@ -134,7 +136,7 @@ TEST_CASE( "compactUnitary", "[unitaries]" ) {
             // unitary when |a|^2 + |b^2 = 1
             alpha = {.real=1, .imag=2};
             beta = {.real=3, .imag=4};
-            REQUIRE_THROWS( compactUnitary(quregVec, 0, alpha, beta) );
+            REQUIRE_THROWS_WITH( compactUnitary(quregVec, 0, alpha, beta), Contains("unitary") );
         }
     }
         
@@ -175,14 +177,14 @@ TEST_CASE( "controlledCompactUnitary", "[unitaries]" ) {
         
         SECTION( "control and target collision" ) {
             
-            REQUIRE_THROWS( controlledCompactUnitary(quregVec, 0, 0, alpha, beta) );
+            REQUIRE_THROWS_WITH( controlledCompactUnitary(quregVec, 0, 0, alpha, beta), Contains("Control") && Contains("target") );
         }
         
         SECTION( "qubit indices" ) {
             
             int qb = GENERATE_COPY( -1, NUM_QUBITS );
-            REQUIRE_THROWS( controlledCompactUnitary(quregVec, qb, 0, alpha, beta) );
-            REQUIRE_THROWS( controlledCompactUnitary(quregVec, 0, qb, alpha, beta) );
+            REQUIRE_THROWS_WITH( controlledCompactUnitary(quregVec, qb, 0, alpha, beta), Contains("Invalid control") );
+            REQUIRE_THROWS_WITH( controlledCompactUnitary(quregVec, 0, qb, alpha, beta), Contains("Invalid target") );
         }
         
         SECTION( "unitarity" ) {
@@ -190,7 +192,7 @@ TEST_CASE( "controlledCompactUnitary", "[unitaries]" ) {
             // unitary when |a|^2 + |b^2 = 1
             alpha = {.real=1, .imag=2};
             beta = {.real=3, .imag=4};
-            REQUIRE_THROWS( controlledCompactUnitary(quregVec, 0, 1, alpha, beta) );
+            REQUIRE_THROWS_WITH( controlledCompactUnitary(quregVec, 0, 1, alpha, beta), Contains("unitary") );
         }
     }
         
