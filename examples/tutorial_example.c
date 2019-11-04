@@ -1,7 +1,16 @@
+/** @file 
+ * A demo of QuEST
+ *
+ * @author Ania Brown
+ * @author Tyson Jones
+ */
+
 #include <stdio.h>
 #include "QuEST.h"
 
 int main (int narg, char *varg[]) {
+
+
 
     /*
      * PREPARE QuEST environment
@@ -72,6 +81,8 @@ int main (int narg, char *varg[]) {
         toff.real[i][i] = 1;
     multiQubitUnitary(qubits, targs, 3, toff);
     
+    
+    
     /*
      * STUDY QUANTUM STATE
      */
@@ -99,6 +110,7 @@ int main (int narg, char *varg[]) {
 
     destroyQureg(qubits, env); 
     destroyComplexMatrixN(toff);
+
 
 
     /*

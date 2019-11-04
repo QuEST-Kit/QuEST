@@ -4,6 +4,9 @@
  * The core of the CPU backend functionality. The CPU/MPI implementations of the pure state functions in
  * ../QuEST_ops_pure.h are in QuEST_cpu_local.c and QuEST_cpu_distributed.c which mostly wrap the core
  * functions defined here. Some additional hardware-agnostic functions are defined here
+ *
+ * @author Ania Brown
+ * @author Tyson Jones
  */
 
 # include "QuEST.h"
@@ -22,6 +25,19 @@
 # ifdef _OPENMP
 # include <omp.h>
 # endif
+
+
+
+/*
+ * overloads for consistent API with GPU 
+ */
+
+void copyStateToGPU(Qureg qureg) {
+}
+
+void copyStateFromGPU(Qureg qureg) {
+}
+
 
 
 /*
@@ -942,6 +958,38 @@ qreal densmatr_calcHilbertSchmidtDistanceSquaredLocal(Qureg a, Qureg b) {
     return trace;
 }
 
+/** computes Tr(conjTrans(a) b) = sum of (a_ij^* b_ij) */
+qreal densmatr_calcInnerProductLocal(Qureg a, Qureg b) {
+    
+    long long int index;
+    long long int numAmps = a.numAmpsPerChunk;
+        
+    qreal *aRe = a.stateVec.real;
+    qreal *aIm = a.stateVec.imag;
+    qreal *bRe = b.stateVec.real;
+    qreal *bIm = b.stateVec.imag;
+    
+    qreal trace = 0;
+    
+# ifdef _OPENMP
+# pragma omp parallel \
+    shared    (aRe,aIm, bRe,bIm, numAmps) \
+    private   (index) \
+    reduction ( +:trace )
+# endif 
+    {
+# ifdef _OPENMP
+# pragma omp for schedule  (static)
+# endif
+        for (index=0LL; index<numAmps; index++) {
+            trace += aRe[index]*bRe[index] + aIm[index]*bIm[index];
+        }
+    }
+    
+    return trace;
+}
+
+
 /** computes a few dens-columns-worth of (vec^*T) dens * vec */
 qreal densmatr_calcFidelityLocal(Qureg qureg, Qureg pureState) {
         
@@ -1513,7 +1561,7 @@ void statevec_initStateOfSingleQubit(Qureg *qureg, int qubitId, int outcome)
  * each component of each probability amplitude a unique floating point value. For debugging processes
  * @param[in,out] qureg object representing the set of qubits to be initialised
  */
-void statevec_initStateDebug (Qureg qureg)
+void statevec_initDebugState (Qureg qureg)
 {
     long long int chunkSize;
     long long int index;

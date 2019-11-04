@@ -3,6 +3,9 @@
 /** @file
  * An implementation of the pure backend in ../QuEST_ops_pure.h for a local (non-MPI, non-GPU) environment.
  * Mostly pure-state wrappers for the local/distributed functions implemented in QuEST_cpu
+ *
+ * @author Ania Brown
+ * @author Tyson Jones
  */
 
 # include "QuEST.h"
@@ -59,6 +62,12 @@ qreal densmatr_calcHilbertSchmidtDistance(Qureg a, Qureg b) {
     qreal distSquared = densmatr_calcHilbertSchmidtDistanceSquaredLocal(a, b);
     qreal dist = sqrt(distSquared);
     return dist;
+}
+
+qreal densmatr_calcInnerProduct(Qureg a, Qureg b) {
+    
+    qreal scalar = densmatr_calcInnerProductLocal(a, b);
+    return scalar;
 }
 
 qreal densmatr_calcFidelity(Qureg qureg, Qureg pureState) {

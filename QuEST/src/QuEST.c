@@ -8,6 +8,11 @@
  * Density matrices rho of N qubits are flattened to appear as state-vectors |s> of 2N qubits.
  * Operations U rho U^dag are implemented as U^* U |s> and make use of the pure state backend,
  * and often don't need to explicitly compute U^*.
+ *
+ * @author Tyson Jones (architecture, validation, qasm, density matrices)
+ * @author Ania Brown (setDensityAmps())
+ * @author Balint Koczor (Kraus maps)
+ * @author Nicolas Vogt of HQS (one-qubit damping)
  */
 
 # include "QuEST.h"
@@ -829,6 +834,14 @@ Complex calcInnerProduct(Qureg bra, Qureg ket) {
     return statevec_calcInnerProduct(bra, ket);
 }
 
+qreal calcDensityInnerProduct(Qureg rho1, Qureg rho2) {
+    validateDensityMatrQureg(rho1, __func__);
+    validateDensityMatrQureg(rho2, __func__);
+    validateMatchingQuregDims(rho1, rho2, __func__);
+    
+    return densmatr_calcInnerProduct(rho1, rho2);
+}
+
 qreal calcProbOfOutcome(Qureg qureg, const int measureQubit, int outcome) {
     validateTarget(qureg, measureQubit, __func__);
     validateOutcome(outcome, __func__);
@@ -1033,8 +1046,8 @@ int compareStates(Qureg qureg1, Qureg qureg2, qreal precision) {
     return statevec_compareStates(qureg1, qureg2, precision);
 }
 
-void initStateDebug(Qureg qureg) {
-    statevec_initStateDebug(qureg);
+void initDebugState(Qureg qureg) {
+    statevec_initDebugState(qureg);
 }
 
 void initStateFromSingleFile(Qureg *qureg, char filename[200], QuESTEnv env) {

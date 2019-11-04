@@ -3,6 +3,9 @@
 /** @file
  * An implementation of the backend in ../QuEST_ops.h for an MPI environment.
  * Mostly pure-state wrappers for the local/distributed functions implemented in QuEST_cpu
+ *
+ * @author Ania Brown
+ * @author Tyson Jones
  */
 
 # include "QuEST.h"
@@ -428,6 +431,17 @@ qreal densmatr_calcHilbertSchmidtDistance(Qureg a, Qureg b) {
     MPI_Allreduce(&localSum, &globalSum, 1, MPI_QuEST_REAL, MPI_SUM, MPI_COMM_WORLD);
     
     qreal dist = sqrt(globalSum);
+    return dist;
+}
+
+qreal densmatr_calcInnerProduct(Qureg a, Qureg b) {
+    
+    qreal localSum = densmatr_calcInnerProductLocal(a, b);
+    
+    qreal globalSum;
+    MPI_Allreduce(&localSum, &globalSum, 1, MPI_QuEST_REAL, MPI_SUM, MPI_COMM_WORLD);
+    
+    qreal dist = globalSum;
     return dist;
 }
 

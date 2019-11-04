@@ -1,5 +1,7 @@
 /** @file 
  * Implements the Bernstien--Vazirani circuit
+ *
+ * @author Tyson Jones
  */
 
 # include <stdio.h>

@@ -3,6 +3,9 @@
 /** @file
  * General functions used internally, supplied by QuEST_common or by hardware-specific backends.
  * Note that some bespoke functions used only internally exist in QuEST_qasm.h and QuEST_validation.h
+ *
+ * @author Ania Brown (statevecs, original architecture)
+ * @author Tyson Jones (re-architecture, statevecs, density matrices)
  */
 
 # ifndef QUEST_INTERNAL_H
@@ -69,6 +72,8 @@ qreal densmatr_calcFidelity(Qureg qureg, Qureg pureState);
 
 qreal densmatr_calcHilbertSchmidtDistance(Qureg a, Qureg b);
 
+qreal densmatr_calcInnerProduct(Qureg a, Qureg b);
+
 qreal densmatr_calcProbOfOutcome(Qureg qureg, const int measureQubit, int outcome);
 
 void densmatr_collapseToKnownProbOutcome(Qureg qureg, const int measureQubit, int outcome, qreal outcomeProb);
@@ -118,7 +123,7 @@ void statevec_initZeroState(Qureg qureg);
 
 void statevec_initPlusState(Qureg qureg);
 
-void statevec_initStateDebug(Qureg qureg);
+void statevec_initDebugState(Qureg qureg);
 
 void statevec_initClassicalState(Qureg qureg, long long int stateInd);
 

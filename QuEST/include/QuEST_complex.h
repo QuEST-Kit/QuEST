@@ -13,6 +13,9 @@
  * ANSI C++ programs to allow complex arithmetic to be written in a common subset. Note that C 
  * overloads for both the real and complex math functions are available after this header has been
  * included.
+ *
+ * @authors Randy Meyers and Dr. Thomas Plum
+ * @author Tyson Jones
  */
 
 #ifndef QUEST_COMPLEX_H
@@ -91,7 +94,8 @@ typedef long double complex long_double_complex;
  * creating doc
  */
 
-/** \def qcomp
+/** @def qcomp
+ *
  * A precision-agnostic operator-overloaded complex number type.  
  * This is a complex analog of \ref qreal and is of single, double or quad
  * precision depending on the value of \ref QuEST_PREC.
@@ -115,14 +119,24 @@ typedef long double complex long_double_complex;
  *
  * Can be converted to/from \ref Complex, the struct accepted by the QuEST
  * interface, using \ref toComplex and \ref fromComplex.
+ *
+ * @ingroup type
+ * @authors Randy Meyers and Dr. Thomas Plum (created C & C++ agnosticism)
+ * @author Tyson Jones (created precision agnosticism)
  */
 
-/** \def toComplex(qcomp)
+/** @def toComplex(qcomp)
+ *
  * Creates a Complex struct, which can be passed to the QuEST API, from a qcomp
+ * @ingroup type
+ * @author Tyson Jones
  */
 
-/** \def fromComplex(Complex)
+/** @def fromComplex(Complex)
+ *
  * Converts a Complex struct to a qcomp native type
+ * @ingroup type
+ * @author Tyson Jones
  */
 
 
