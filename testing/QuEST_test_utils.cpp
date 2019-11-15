@@ -1,5 +1,5 @@
 /** @file
- * Simple implementations of matrix operations used by QuEST_unit_tests
+ * Unoptimised, analytic implementations of matrix operations used by QuEST_unit_tests
  *
  * @author Tyson Jones
  */
@@ -7,6 +7,10 @@
 #include "QuEST.h"
 #include "QuEST_test_utils.hpp"
 #include "catch.hpp"
+#include <random>
+#include <algorithm>
+
+
 
 /** produces a dim-by-dim square complex matrix, initialised to zero 
  */
@@ -257,6 +261,12 @@ void applyUnitaryOp(
     state = getMatrixVectorProduct(fullOp, state);
 }
 void applyUnitaryOp(
+    QVector &state, int* ctrls, int numCtrls, int target, QMatrix op
+) {
+    int targs[1] = {target};
+    applyUnitaryOp(state, ctrls, numCtrls, targs, 1, op);
+}
+void applyUnitaryOp(
     QVector &state, int *targs, int numTargs, QMatrix op
 ) {
     applyUnitaryOp(state, NULL, 0, targs, numTargs, op);
@@ -288,6 +298,12 @@ void applyUnitaryOp(
     state = getMatrixProduct(getMatrixProduct(leftOp, state), rightOp);
 }
 void applyUnitaryOp(
+    QMatrix &state, int* ctrls, int numCtrls, int target, QMatrix op
+) {
+    int targs[1] = {target};
+    applyUnitaryOp(state, ctrls, numCtrls, targs, 1, op);
+}
+void applyUnitaryOp(
     QMatrix &state, int *targs, int numTargs, QMatrix op
 ) {
     applyUnitaryOp(state, NULL, 0, targs, numTargs, op);
@@ -305,8 +321,6 @@ void applyUnitaryOp(
     int targs[1] = {targ};
     applyUnitaryOp(state, NULL, 0, targs, 1, op);
 }
-
-
 
 /** hardware-agnostic comparison of the given vector and pure qureg, to within 
  * the QuEST_PREC-specific REAL_EPS (defined in QuEST_precision) precision.
@@ -391,6 +405,32 @@ bool areEqual(Qureg qureg, QMatrix matr) {
 #endif
         
     return allAmpsAgree;
+}
+
+/* Copies QMatrix into a CompelxMAtrix struct */
+#define macro_copyQMatrix(dest, src) { \
+    for (size_t i=0; i<src.size(); i++) { \
+        for (size_t j=0; j<src.size(); j++) { \
+            dest.real[i][j] = real(src[i][j]); \
+            dest.imag[i][j] = imag(src[i][j]); \
+        } \
+    } \
+}
+ComplexMatrix2 toComplexMatrix2(QMatrix qm) {
+    REQUIRE( qm.size() == 2 );
+    ComplexMatrix2 cm;
+    macro_copyQMatrix(cm, qm);
+    return cm;
+}
+ComplexMatrix4 toComplexMatrix4(QMatrix qm) {
+    REQUIRE( qm.size() == 4 );
+    ComplexMatrix4 cm;
+    macro_copyQMatrix(cm, qm);
+    return cm;
+}
+void toComplexMatrixN(QMatrix qm, ComplexMatrixN cm) {
+    REQUIRE( qm.size() == (1<<cm.numQubits) );
+    macro_copyQMatrix(cm, qm);
 }
 
 /** Copies ComplexMatrix structures into a QMatrix */
@@ -515,3 +555,134 @@ QVector toQVector(Qureg qureg) {
     return vec;
 }
 
+/** Generates every fixed-length sublist of the constructor-given list, in increasing 
+ * lexographic order. That is, generates every combination of the given list 
+ * and every permutation of each. If the sublist length is the full list length, 
+ * this generator produces every permutation correctly. Note that the (same) pointer 
+ * returned by get()must not be modified between invocations of next(). QuEST's 
+ * internal functions will indeed modify but restore the qubit index lists given 
+ * to them, which is ok. Assumes the constructor-given list contains no duplicate, 
+ * otherwise the generated sublists may be duplicated.
+ */
+class SubListGenerator : public Catch::Generators::IGenerator<int*> {
+    int* list;
+    int* sublist;
+    int len;
+    int sublen;
+    vector<bool> featured;
+private:
+    void createSublist() {
+        
+        // sublist to send to the user
+        sublist = (int*) malloc(sublen * sizeof *sublist);
+        
+        // indicates which list members are currently in sublist
+        featured = vector<bool>(len);
+        fill(featured.end() - sublen, featured.end(), true);   
+    }
+    
+    void prepareSublist() {
+        
+        // choose the next combination
+        int j=0;
+        for (int i=0; i<len; i++)
+            if (featured[i])
+                sublist[j++] = list[i];
+                
+        // prepare for permuting
+        std::sort(sublist, sublist+sublen);
+    }
+public:
+    SubListGenerator(int* elems, int numElems, int numSamps) {
+        
+        REQUIRE( numSamps <= numElems );
+                
+        // make a record of all elements
+        len = numElems;
+        list = (int*) malloc(len * sizeof *list);
+        for (int i=0; i<len; i++)
+            list[i] = elems[i];
+        
+        // prepare sublist
+        sublen = numSamps;
+        createSublist();
+        prepareSublist();  
+    }
+    
+    SubListGenerator(
+        Catch::Generators::GeneratorWrapper<int>&& gen, 
+        int numSamps, int* exclude, int numExclude
+    ) {    
+        // extract all generator elems
+        vector<int> elems = vector<int>();
+        do { elems.push_back(gen.get()); } while (gen.next());
+        
+        // make (int*) of non-excluded elems
+        len = 0;
+        list = (int*) malloc(elems.size() * sizeof *list);
+        for (size_t i=0; i<elems.size(); i++) {
+            int elem = elems[i];
+            bool present = false;
+            for (int j=0; j<numExclude; j++)
+                if (elem == exclude[j]) {
+                    present = true;
+                    break;
+                }
+            if (!present)
+                list[len++] = elem;
+        }
+        
+        REQUIRE( numSamps <= len );
+
+        // prepare sublist
+        sublen = numSamps;
+        createSublist();
+        prepareSublist();
+    }
+    
+    int* const& get() const {
+        return sublist;
+    }
+    
+    bool next() override {
+        
+        // offer next permutation of the current combination
+        if (next_permutation(sublist, sublist+sublen))
+            return true;
+
+        // else generate the next combination
+        if (next_permutation(featured.begin(), featured.end())) {
+            prepareSublist();
+            return true;
+        }
+        
+        return false;
+    }
+    
+    ~SubListGenerator() {
+        free(list);
+        free(sublist);
+    }
+};
+Catch::Generators::GeneratorWrapper<int*> sublists(
+    int* list, int len, int sublen
+) {    
+    return Catch::Generators::GeneratorWrapper<int*>(
+        std::unique_ptr<Catch::Generators::IGenerator<int*>>(
+            new SubListGenerator(list, len, sublen)));
+}
+Catch::Generators::GeneratorWrapper<int*> sublists(
+    Catch::Generators::GeneratorWrapper<int>&& gen, int numSamps, int* exclude, int numExclude
+) {    
+    return Catch::Generators::GeneratorWrapper<int*>(
+        std::unique_ptr<Catch::Generators::IGenerator<int*>>(
+            new SubListGenerator(std::move(gen), numSamps, exclude, numExclude)));
+}
+Catch::Generators::GeneratorWrapper<int*> sublists(
+    Catch::Generators::GeneratorWrapper<int>&& gen, int numSamps, int excluded
+) {
+    int exclude[] = {excluded};  
+    return Catch::Generators::GeneratorWrapper<int*>(
+        std::unique_ptr<Catch::Generators::IGenerator<int*>>(
+            new SubListGenerator(std::move(gen), numSamps, exclude, 1)));
+}
