@@ -220,5 +220,81 @@ TEST_CASE( "controlledCompactUnitary", "[unitaries]" ) {
         }
     }
         
-    CLEANUP_TEST(env, quregVec, quregMatr);
+    CLEANUP_TEST( env, quregVec, quregMatr );
+}
+
+
+
+TEST_CASE( "multiControlledUnitary", "[unitaries]" ) {
+
+    PREPARE_TEST( env, quregVec, quregMatr, refVec, refMatr, NUM_QUBITS );
+    QMatrix op{{-0.3095399023467975 + 0.3679772552855423i, -0.8286018326148595 + 0.28669982810415173i},
+               {-0.8767549249094734 - 0.008865105449885374i, 0.4103334769815634 + 0.25069632869383424i}};
+    ComplexMatrix2 matr = toComplexMatrix2(op); 
+ 
+    SECTION( "state-vector correctness" ) {
+        
+        // generate ALL valid qubit arrangements
+        int target = GENERATE( range(0,NUM_QUBITS) );
+        int numCtrls = GENERATE( range(1,NUM_QUBITS-1) );
+        int* ctrls = GENERATE_COPY( sublists(range(0,NUM_QUBITS), numCtrls, target) );
+        
+        multiControlledUnitary(quregVec, ctrls, numCtrls, target, matr);
+        applyUnitaryOp(refVec, ctrls, numCtrls, target, op);
+        REQUIRE( areEqual(quregVec, refVec) );
+    }
+    
+    SECTION( "density-matrix correctness" ) {
+    
+        // generate ALL valid qubit arrangements
+        int target = GENERATE( range(0,NUM_QUBITS) );
+        int numCtrls = GENERATE( range(1,NUM_QUBITS-1) );
+        int* ctrls = GENERATE_COPY( sublists(range(0,NUM_QUBITS), numCtrls, target) );
+        
+        multiControlledUnitary(quregMatr, ctrls, numCtrls, target, matr);
+        applyUnitaryOp(refMatr, ctrls, numCtrls, target, op);
+        REQUIRE( areEqual(quregMatr, refMatr) );
+    }
+    
+    SECTION( "input validation" ) {
+        
+        SECTION( "number of controls" ) {
+            
+            int numCtrls = GENERATE( -1, 0, NUM_QUBITS, NUM_QUBITS+1 );
+            int ctrls[numCtrls]; // avoids seg-fault if validation not triggered
+            REQUIRE_THROWS_WITH( multiControlledUnitary(quregVec, ctrls, numCtrls, 0, matr), Contains("Invalid number of control"));
+        }
+        
+        SECTION( "repetition of controls" ) {
+            
+            int ctrls[] = {0,1,1};
+            REQUIRE_THROWS_WITH( multiControlledUnitary(quregVec, ctrls, 3, 2, matr), Contains("control") && Contains("unique"));
+        }
+        
+        SECTION( "control and target collision" ) {
+            
+            int ctrls[] = {0,1,2};
+            int targ = ctrls[GENERATE( range(0,3) )];
+            REQUIRE_THROWS_WITH( multiControlledUnitary(quregVec, ctrls, 3, targ, matr), Contains("Control") && Contains("target") );
+        }
+        
+        SECTION( "qubit indices" ) {
+            
+            int ctrls[] = { 1, 2, GENERATE( -1, NUM_QUBITS ) };
+            REQUIRE_THROWS_WITH( multiControlledUnitary(quregVec, ctrls, 3, 0, matr), Contains("Invalid control") );
+            
+            ctrls[2] = 3; // make ctrls valid 
+            int targ = GENERATE( -1, NUM_QUBITS );
+            REQUIRE_THROWS_WITH( multiControlledUnitary(quregVec, ctrls, 3, targ, matr), Contains("Invalid target") );
+        }
+        
+        SECTION( "unitarity" ) {
+
+            matr.real[0][0] = 0; // break matr unitarity
+            int ctrls[] = {0};
+            REQUIRE_THROWS_WITH( multiControlledUnitary(quregVec, ctrls, 1, 1, matr), Contains("unitary") );
+        }
+    }
+    
+    CLEANUP_TEST( env, quregVec, quregMatr );
 }
