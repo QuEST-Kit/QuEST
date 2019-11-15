@@ -6,6 +6,7 @@
  *
  * @author Ania Brown
  * @author Tyson Jones
+ * @author Balint Koczor
  */
 
 # include "QuEST.h"

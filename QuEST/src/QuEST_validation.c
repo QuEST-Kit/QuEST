@@ -4,7 +4,8 @@
  * Provides validation of user input
  *
  * @author Tyson Jones
- * @author Ania Brown (exitWithError(), QuESTAssert(), original testing of qubit indices, unitarity, valid collapse probability)
+ * @author Ania Brown (exitWithError(), QuESTAssert(), original testing of:
+ *        qubit indices, unitarity, valid collapse probability)
  * @author Balint Koczor (Kraus maps)
  * @author Nicolas Vogt of HQS (one-qubit damping)
  */

@@ -11,7 +11,7 @@
  *
  * @author Tyson Jones (architecture, validation, qasm, density matrices)
  * @author Ania Brown (setDensityAmps())
- * @author Balint Koczor (Kraus maps)
+ * @author Balint Koczor (Kraus maps, calcDensityInnerProduct())
  * @author Nicolas Vogt of HQS (one-qubit damping)
  */
 

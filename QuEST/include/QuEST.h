@@ -26,7 +26,7 @@
  *
  * @author Ania Brown
  * @author Tyson Jones
- * @author Balint Koczor (Kraus maps)
+ * @author Balint Koczor
  * @author Nicolas Vogt of HQS (one-qubit damping)
  */
 

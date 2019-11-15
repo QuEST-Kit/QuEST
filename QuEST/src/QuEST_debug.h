@@ -5,7 +5,6 @@
  * May contain functions that are incomplete or untested.
  *
  * @author Ania Brown
- * @author Tyson Jones (architecture)
  */
 
 # ifndef QUEST_DEBUG_H
