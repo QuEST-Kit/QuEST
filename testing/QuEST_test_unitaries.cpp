@@ -9,6 +9,29 @@
  *
  * QuEST's user validation handling is unit tested by redefining exitWithError 
  * (a weak C symbol) to throw a C++ exception, caught by the Catch2 library.
+ * 
+ * Unit tests follow the template:
+
+TEST_CASE( "OP", "[unitaries]" ) {
+
+    PREPARE_TEST( env, quregVec, quregMatr, refVec, refMatr, NUM_QUBITS );
+    QMatrix op;
+ 
+    SECTION( "state-vector correctness" ) {
+    
+    }
+    
+    SECTION( "density-matrix correctness" ) {
+    
+    }
+    
+    SECTION( "input validation" ) {
+    
+    }
+    
+    CLEANUP_TEST( env, quregVec, quregMatr );
+}
+
  *
  * @author Tyson Jones
  */
@@ -17,6 +40,7 @@
 #include "QuEST.h"
 #include "QuEST_test_utils.hpp"
 
+/* allows concise use of Contains in catch's REQUIRE_THROWS_WITH */
 using Catch::Matchers::Contains;
 
 /** The default number of qubits in the registers created for unit testing 
@@ -63,13 +87,13 @@ using Catch::Matchers::Contains;
     
 TEST_CASE( "pauliX", "[unitaries]" ) {
     
-    PREPARE_TEST(env, quregVec, quregMatr, refVec, refMatr, NUM_QUBITS);
+    PREPARE_TEST( env, quregVec, quregMatr, refVec, refMatr, NUM_QUBITS );
 
     QMatrix op{{0,1},{1,0}};
     
     SECTION( "state-vector correctness" ) {
 
-        int target = GENERATE_COPY( range(0,NUM_QUBITS) );
+        int target = GENERATE( range(0,NUM_QUBITS) );
         pauliX(quregVec, target);
         applyUnitaryOp(refVec, target, op);
         REQUIRE( areEqual(quregVec, refVec) );
@@ -77,7 +101,7 @@ TEST_CASE( "pauliX", "[unitaries]" ) {
     
     SECTION( "density-matrix correctness" ) {
         
-        int target = GENERATE_COPY( range(0,NUM_QUBITS) );
+        int target = GENERATE( range(0,NUM_QUBITS) );
         pauliX(quregMatr, target);
         applyUnitaryOp(refMatr, target, op);
         REQUIRE( areEqual(quregMatr, refMatr) );
@@ -92,14 +116,14 @@ TEST_CASE( "pauliX", "[unitaries]" ) {
         }
     }
     
-    CLEANUP_TEST(env, quregVec, quregMatr);
+    CLEANUP_TEST( env, quregVec, quregMatr );
 }
 
 
 
 TEST_CASE( "compactUnitary", "[unitaries]" ) {
     
-    PREPARE_TEST(env, quregVec, quregMatr, refVec, refMatr, NUM_QUBITS);
+    PREPARE_TEST( env, quregVec, quregMatr, refVec, refMatr, NUM_QUBITS );
     
     qcomp a = .3 * exp(2i);
     qcomp b = sqrt(1-abs(a)*abs(a)) * exp(-3i);
@@ -109,7 +133,7 @@ TEST_CASE( "compactUnitary", "[unitaries]" ) {
     
     SECTION( "state-vector correctness" ) {
         
-        int target = GENERATE_COPY( range(0,NUM_QUBITS) );
+        int target = GENERATE( range(0,NUM_QUBITS) );
         compactUnitary(quregVec, target, alpha, beta);
         applyUnitaryOp(refVec, target, op);    
         REQUIRE( areEqual(quregVec, refVec) );
@@ -117,7 +141,7 @@ TEST_CASE( "compactUnitary", "[unitaries]" ) {
     
     SECTION( "density-matrix correctness" ) {
         
-        int target = GENERATE_COPY( range(0,NUM_QUBITS) );
+        int target = GENERATE( range(0,NUM_QUBITS) );
         compactUnitary(quregMatr, target, alpha, beta);
         applyUnitaryOp(refMatr, target, op);    
         REQUIRE( areEqual(quregMatr, refMatr) );
@@ -140,14 +164,14 @@ TEST_CASE( "compactUnitary", "[unitaries]" ) {
         }
     }
         
-    CLEANUP_TEST(env, quregVec, quregMatr);
+    CLEANUP_TEST( env, quregVec, quregMatr );
 }
 
 
 
 TEST_CASE( "controlledCompactUnitary", "[unitaries]" ) {
     
-    PREPARE_TEST(env, quregVec, quregMatr, refVec, refMatr, NUM_QUBITS);
+    PREPARE_TEST( env, quregVec, quregMatr, refVec, refMatr, NUM_QUBITS );
     
     qcomp a = .8 * exp(-1.5i);
     qcomp b = sqrt(1-abs(a)*abs(a)) * exp(.3i);
@@ -157,7 +181,7 @@ TEST_CASE( "controlledCompactUnitary", "[unitaries]" ) {
     
     SECTION( "state-vector correctness" ) {
         
-        int target = GENERATE_COPY( range(0,NUM_QUBITS) );
+        int target = GENERATE( range(0,NUM_QUBITS) );
         int control = GENERATE_COPY( filter([=](int c){ return c!=target; }, range(0,NUM_QUBITS)) );
         controlledCompactUnitary(quregVec, control, target, alpha, beta);
         applyUnitaryOp(refVec, control, target, op);    
@@ -166,7 +190,7 @@ TEST_CASE( "controlledCompactUnitary", "[unitaries]" ) {
     
     SECTION( "density-matrix correctness" ) {
         
-        int target = GENERATE_COPY( range(0,NUM_QUBITS) );
+        int target = GENERATE( range(0,NUM_QUBITS) );
         int control = GENERATE_COPY( filter([=](int c){ return c!=target; }, range(0,NUM_QUBITS)) );
         controlledCompactUnitary(quregMatr, control, target, alpha, beta);
         applyUnitaryOp(refMatr, control, target, op);    
@@ -182,7 +206,7 @@ TEST_CASE( "controlledCompactUnitary", "[unitaries]" ) {
         
         SECTION( "qubit indices" ) {
             
-            int qb = GENERATE_COPY( -1, NUM_QUBITS );
+            int qb = GENERATE( -1, NUM_QUBITS );
             REQUIRE_THROWS_WITH( controlledCompactUnitary(quregVec, qb, 0, alpha, beta), Contains("Invalid control") );
             REQUIRE_THROWS_WITH( controlledCompactUnitary(quregVec, 0, qb, alpha, beta), Contains("Invalid target") );
         }
