@@ -228,8 +228,9 @@ TEST_CASE( "controlledCompactUnitary", "[unitaries]" ) {
 TEST_CASE( "multiControlledUnitary", "[unitaries]" ) {
 
     PREPARE_TEST( env, quregVec, quregMatr, refVec, refMatr, NUM_QUBITS );
-    QMatrix op{{-0.3095399023467975 + 0.3679772552855423i, -0.8286018326148595 + 0.28669982810415173i},
-               {-0.8767549249094734 - 0.008865105449885374i, 0.4103334769815634 + 0.25069632869383424i}};
+
+    // every test will use a unique random matrix
+    QMatrix op = getRandomUnitary(1);
     ComplexMatrix2 matr = toComplexMatrix2(op); 
  
     SECTION( "state-vector correctness" ) {

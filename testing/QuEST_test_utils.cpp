@@ -250,6 +250,74 @@ unsigned int calcLog2(unsigned int res) {
     return n;
 }
 
+/** returns a square complex matrix, where the real and imaginary value of 
+ * each element are independently random, under the standard normal distribution 
+ * (mean 0, standard deviation 1).
+ */
+QMatrix getRandomMatrix(int dim) {
+    REQUIRE( dim > 1 );
+    
+    QMatrix matr = getZeroMatrix(dim);
+    for (int i=0; i<dim; i++) {
+        for (int j=0; j<dim; j++) {
+            
+            // generate 2 normally-distributed random numbers via Box-Muller
+            qreal a = rand()/(qreal) RAND_MAX;
+            qreal b = rand()/(qreal) RAND_MAX;
+            qreal r1 = sqrt(-2 * log(a)) * cos(2 * 3.14159265 * b);
+            qreal r2 = sqrt(-2 * log(a)) * sin(2 * 3.14159265 * b);
+            
+            matr[i][j] = r1 + r2*1i;
+        }
+    }
+    return matr;
+}
+
+/** returns a randomly distributed random unitary matrix. 
+ * This works by first generating a complex matrix where each element is 
+ * independently random; the real and imaginary component thereof are 
+ * independent standard normally-distributed (mean 0, standard-dev 1).
+ * Then, the matrix is orthonormalised via the Gram Schmidt algorithm. 
+ * The resulting unitary matrix MAY be uniformly distributed under the Haar 
+ * measure, but we make no assurance. 
+ * TODO: this function would be much simpler and readable using operator overloads.
+ */
+QMatrix getRandomUnitary(int numQb) {
+    REQUIRE( numQb >= 1 );
+
+    QMatrix matr = getRandomMatrix(1 << numQb);
+
+    for (size_t i=0; i<matr.size(); i++) {
+        QVector row = matr[i];
+        
+        // compute new orthogonal row by subtracting proj row onto prevs
+        for (int k=i-1; k>=0; k--) {
+
+            // compute row . prev = sum_n row_n conj(prev_n)
+            qcomp prod = 0;
+            for (size_t n=0; n<row.size(); n++)
+                prod += row[n] * conj(matr[k][n]);
+                            
+            // subtract (proj row onto prev) = (prod * prev) from final row
+            for (size_t n=0; n<row.size(); n++)
+                matr[i][n] -= prod * matr[k][n];
+        }
+    
+        // compute row magnitude 
+        qreal mag = 0;
+        for (size_t j=0; j<row.size(); j++)
+            mag += pow(abs(matr[i][j]), 2);
+        mag = sqrt(mag);
+        
+        // normalise row
+        for (size_t j=0; j<row.size(); j++)
+            matr[i][j] /= mag;
+    }
+    
+    // return the new orthonormal matrix
+    return matr;
+}
+
 /** overwrites state to be the result of applying the unitary matrix op (with the
  * specified control and target qubits) to statevector state, i.e. fullOp(op) * |state>
  */

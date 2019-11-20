@@ -39,6 +39,9 @@ void applyUnitaryOp(QVector &state, int targ, QMatrix op);
 bool areEqual(Qureg qureg, QVector vec);
 bool areEqual(Qureg qureg, QMatrix matr);
 
+/* generating random inputs */
+QMatrix getRandomUnitary(int numQb);
+
 /* generating qubit lists */
 template<class T> using CatchGen = Catch::Generators::GeneratorWrapper<T>;
 CatchGen<int*> sublists(int* list, int len, int sublen);
