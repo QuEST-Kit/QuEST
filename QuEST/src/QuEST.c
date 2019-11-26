@@ -11,7 +11,7 @@
  *
  * @author Tyson Jones (architecture, validation, qasm, density matrices)
  * @author Ania Brown (setDensityAmps())
- * @author Balint Koczor (Kraus maps)
+ * @author Balint Koczor (Kraus maps, calcDensityInnerProduct())
  * @author Nicolas Vogt of HQS (one-qubit damping)
  */
 
@@ -392,6 +392,7 @@ void multiStateControlledUnitary(Qureg qureg, int* controlQubits, int* controlSt
 
     long long int ctrlQubitsMask = getQubitBitMask(controlQubits, numControlQubits);
     long long int ctrlFlipMask = getControlFlipMask(controlQubits, controlState, numControlQubits);
+    statevec_multiControlledUnitary(qureg, ctrlQubitsMask, ctrlFlipMask, targetQubit, u);
     if (qureg.isDensityMatrix) {
         int shift = qureg.numQubitsRepresented;
         statevec_multiControlledUnitary(qureg, ctrlQubitsMask<<shift, ctrlFlipMask<<shift, targetQubit+shift, getConjugateMatrix2(u));
@@ -597,7 +598,7 @@ void controlledRotateAroundAxis(Qureg qureg, const int controlQubit, const int t
 }
 
 void swapGate(Qureg qureg, int qb1, int qb2) {
-    validateControlTarget(qureg, qb1, qb2, __func__);
+    validateUniqueTargets(qureg, qb1, qb2, __func__);
 
     statevec_swapQubitAmps(qureg, qb1, qb2);
     if (qureg.isDensityMatrix) {
@@ -609,7 +610,7 @@ void swapGate(Qureg qureg, int qb1, int qb2) {
 }
 
 void sqrtSwapGate(Qureg qureg, int qb1, int qb2) {
-    validateControlTarget(qureg, qb1, qb2, __func__);
+    validateUniqueTargets(qureg, qb1, qb2, __func__);
     validateMultiQubitMatrixFitsInNode(qureg, 2, __func__); // uses 2qb unitary in QuEST_common
 
     statevec_sqrtSwapGate(qureg, qb1, qb2);

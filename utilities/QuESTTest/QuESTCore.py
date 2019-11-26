@@ -266,7 +266,7 @@ class TestResults:
 
     def _write_term(self, *out, **kwargs):
         """ Wrapper for print with enforced flushing and silencing """
-        if self._printToScreen and root: print(*out, **kwargs, flush=True)
+        if self._printToScreen and root: print(*out, flush=True, **kwargs)
 
     def open_log(self, logFile):
         """ Open a new logFile associated with testResults """

@@ -26,7 +26,7 @@
  *
  * @author Ania Brown
  * @author Tyson Jones
- * @author Balint Koczor (Kraus maps)
+ * @author Balint Koczor
  * @author Nicolas Vogt of HQS (one-qubit damping)
  */
 
@@ -1106,7 +1106,8 @@ void rotateY(Qureg qureg, const int rotQubit, qreal angle);
 void rotateZ(Qureg qureg, const int rotQubit, qreal angle);
 
 /** Rotate a single qubit by a given angle around a given \ref Vector on the Bloch-sphere.      
- * The vector must not be zero (else an error is thrown), but needn't be unit magnitude.
+ * The vector must not be zero (else an error is thrown), but needn't be unit magnitude, since 
+ * it will be normalised by QuEST.
  *
  * For angle \f$\theta\f$ and axis vector \f$\vec{n}\f$, applies \f$R_{\hat{n}} = \exp \left(- i \frac{\theta}{2} \hat{n} \cdot \vec{\sigma} \right) \f$
  * where \f$\vec{\sigma}\f$ is the vector of Pauli matrices.
@@ -1734,14 +1735,27 @@ Complex calcInnerProduct(Qureg bra, Qureg ket);
  * the resulting scalar product is real and invariant under
  * reordering its arguments as 
  * \f[
-    ((\rho_1, \rho_2))_{HS} = ((\rho_2, \rho_1))_{HS}
+    ((\rho_1, \rho_2))_{HS} = ((\rho_2, \rho_1))_{HS} = \text{Tr}[\rho_1 \rho_2]
  * \f]
- * Also note that if both \p rho1 and \p rho2 are density matrices of pure states
+ * If both \p rho1 and \p rho2 are density matrices of pure states
  * \p bra and \p ket, then the equality holds
  * \f[
     ((\rho_1, \rho_2))_{HS} = |\langle \text{bra} | \text{ket} \rangle|^2.
  * \f]
- *
+ * If either or both of \p rho1 and \p rho2 are non Hermitian (i.e. invalid density 
+ * matrices), then this function returns the real component of the scalar product, 
+ * and discards the imaginary component. That is, it returns 
+ * \f[
+     \text{Re}\{ \text{Tr}[ \rho_1^\dagger \rho_2 ] \} = \text{Re}\{ \text{Tr}[ \rho_2^\dagger \rho_1 ] \}.
+ * \f]
+ * This is still sometimes useful, e.g. in calculating the inner product with an 
+ * anti-commutator, e.g. (for Hermitian \f$ \sigma \f$, \f$ \rho \f$, \f$ H \f$)
+ * \f[
+ *      ((\sigma, H \rho + \rho H))_{HS} = 2 \; \text{Re} \{ ((\sigma, H \rho))_{HS} \} 
+ * \f]
+ * where \f$ H \rho \f$ could be a weighted sum of Pauli products applied to \f$ \rho \f$ 
+ * through applyPauliSum().
+ * 
  * @ingroup calc
  * @param[in] rho1 qureg as a density matrix (to have its values conjugate transposed)
  * @param[in] rho2 qureg as a density matrix
@@ -1914,28 +1928,34 @@ void mixTwoQubitDephasing(Qureg qureg, int qubit1, int qubit2, qreal prob);
  */
 void mixDepolarising(Qureg qureg, const int targetQubit, qreal prob);
 
-/** Mixes a density matrix \p qureg to induce single-qubit damping (decay to 0 state).
+/** Mixes a density matrix \p qureg to induce single-qubit amplitude damping (decay to 0 state).
  * With probability \p prob, applies damping (transition from 1 to 0 state).
  *
  * This transforms \p qureg = \f$\rho\f$ into the mixed state
  * \f[
- * (1 - \text{prob}) \, \rho + \text{prob} \; \left( 
- *      \sigma^{-} \, \rho \, sigma^{+} 
- * \right)
+    K_0 \rho K_0^\dagger + K_1 \rho K_1^\dagger
  * \f]
- * where q = \p targetQubit.
- * \p prob cannot exceed 1, at which total damping/decay occurs.
+ * where q = \p targetQubit and \f$K_0\f$ and \f$K_1\f$ are Kraus operators
+ * \f[
+        K_0 = \begin{pmatrix} 1 & 0 \\ 0 & \sqrt{1-\text{prob}} \end{pmatrix}, \;\;
+        K_1 = \begin{pmatrix} 0 & \sqrt{\text{prob}} \\ 0 & 0 \end{pmatrix}.
+ * \f]
+ * \p prob cannot exceed 1, at which total damping/decay occurs. Note that unlike
+ * mixDephasing() and mixDepolarising(), this function can increase the purity of a 
+ * mixed state (by, as \p prob becomes 1, gaining certainty that the qubit is in
+ * the 0 state).
  *
  * @ingroup decoherence
  * @param[in,out] qureg a density matrix
- * @param[in] targetQubit qubit upon which to induce depolarising noise
- * @param[in] prob the probability of the depolarising error occuring
+ * @param[in] targetQubit qubit upon which to induce amplitude damping
+ * @param[in] prob the probability of the damping
  * @throws exitWithError
  *      if \p qureg is not a density matrix,
  *      or if \p targetQubit is outside [0, \p qureg.numQubitsRepresented),
  *      or if \p prob is not in [0, 1]
- * @author Nicolas Vogt (HQS)
+ * @author Nicolas Vogt of HQS
  * @author Ania Brown (patched)
+ * @author Tyson Jones (doc)
  */
 void mixDamping(Qureg qureg, const int targetQubit, qreal prob);
 
@@ -2343,10 +2363,11 @@ void multiRotatePauli(Qureg qureg, int* targetQubits, enum pauliOpType* targetPa
 qreal calcExpecPauliProd(Qureg qureg, int* targetQubits, enum pauliOpType* pauliCodes, int numTargets, Qureg workspace);
 
 /** Computes the expected value of a sum of products of Pauli operators.
- * Letting \f$ \alpha = \sum_i c_i \otimes_j^{N} \hat{\sigma}_{i,j} \f$ be 
- * the operators indicated by \p allPauliCodes (where \f$ c_i \in \f$ \p termCoeffs and \f$ N = \f$ \p qureg.numQubitsRepresented), 
- * this function computes \f$ \langle \psi | \alpha | \psi \rangle \f$ 
- * if \p qureg = \f$ \psi \f$ is a statevector, and computes \f$ \text{Trace}(\alpha \rho) \f$ 
+ * Let \f$ H = \sum_i c_i \otimes_j^{N} \hat{\sigma}_{i,j} \f$ be 
+ * the operators indicated by \p allPauliCodes (where \f$ c_i \in \f$ \p termCoeffs 
+ * and \f$ N = \f$ \p qureg.numQubitsRepresented).
+ * This function computes \f$ \langle \psi | H | \psi \rangle \f$ 
+ * if \p qureg = \f$ \psi \f$ is a statevector, and computes \f$ \text{Trace}(H \rho) =\text{Trace}(\rho H) \f$ 
  * if \p qureg = \f$ \rho \f$ is a density matrix.
  *
  * \p allPauliCodes is an array of length \p numSumTerms*\p qureg.numQubitsRepresented
@@ -2949,14 +2970,14 @@ qreal calcHilbertSchmidtDistance(Qureg a, Qureg b);
 void setWeightedQureg(Complex fac1, Qureg qureg1, Complex fac2, Qureg qureg2, Complex facOut, Qureg out);
 
 /** Modifies \p outQureg to be the result of applying the weighted sum of Pauli products (a Hermitian but not 
- * necessarily unitary operator) to \p inQureg. Note that afterward, \p outQureg may not longer be normalised and ergo not a
+ * necessarily unitary operator) to \p inQureg. Note that afterward, \p outQureg may no longer be normalised and ergo not a
  * statevector or density matrix. Users must therefore be careful passing \p outQureg to
  * other QuEST functions which assume normalisation in order to function correctly.
-
+ *
  * Letting \f$ \alpha = \sum_i c_i \otimes_j^{N} \hat{\sigma}_{i,j} \f$ be 
  * the operators indicated by \p allPauliCodes (where \f$ c_i \in \f$ \p termCoeffs and \f$ N = \f$ \p qureg.numQubitsRepresented), 
  * this function effects \f$ \alpha | \psi \rangle \f$ on statevector \f$ |\psi\rangle \f$
- * and $\alpha \rho$ (matrix multiplication) on density matrix \f$ \rho \f$.
+ * and \f$\alpha \rho\f$ (left matrix multiplication) on density matrix \f$ \rho \f$.
  *
  * \p allPauliCodes is an array of length \p numSumTerms*\p qureg.numQubitsRepresented
  * which specifies which Pauli operators to apply, where 0 = \p PAULI_I, 1 = \p PAULI_X, 

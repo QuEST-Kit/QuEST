@@ -7,6 +7,7 @@
  *
  * @author Ania Brown
  * @author Tyson Jones
+ * @author Balint Koczor
  */
 
 # ifndef QUEST_CPU_INTERNAL_H
