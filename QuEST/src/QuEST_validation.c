@@ -18,7 +18,7 @@ extern "C" {
 # include "QuEST_precision.h"
 # include "QuEST_internal.h"
 # include "QuEST_validation.h"
-
+ 
 # include <stdio.h>
 # include <stdlib.h>
 
@@ -32,6 +32,7 @@ typedef enum {
     E_INVALID_OFFSET_NUM_AMPS,
     E_TARGET_IS_CONTROL,
     E_TARGET_IN_CONTROLS,
+    E_CONTROL_TARGET_COLLISION,
     E_TARGETS_NOT_UNIQUE,
     E_CONTROLS_NOT_UNIQUE,
     E_INVALID_NUM_TARGETS,
@@ -77,6 +78,7 @@ static const char* errorMessages[] = {
     [E_INVALID_OFFSET_NUM_AMPS] = "More amplitudes given than exist in the statevector from the given starting index.",
     [E_TARGET_IS_CONTROL] = "Control qubit cannot equal target qubit.",
     [E_TARGET_IN_CONTROLS] = "Control qubits cannot include target qubit.",
+    [E_CONTROL_TARGET_COLLISION] = "Control and target qubits must be disjoint.",
     [E_TARGETS_NOT_UNIQUE] = "The target qubits must be unique.",
     [E_CONTROLS_NOT_UNIQUE] = "The control qubits should be unique.",
     [E_INVALID_NUM_TARGETS] = "Invalid number of target qubits. Must be >0 and <=numQubits.",
@@ -284,7 +286,7 @@ void validateNumTargets(Qureg qureg, const int numTargetQubits, const char* call
 }
 
 void validateNumControls(Qureg qureg, const int numControlQubits, const char* caller) {
-    QuESTAssert(numControlQubits>0 && numControlQubits<=qureg.numQubitsRepresented, E_INVALID_NUM_CONTROLS, caller);
+    QuESTAssert(numControlQubits>0 && numControlQubits<qureg.numQubitsRepresented, E_INVALID_NUM_CONTROLS, caller);
 }
 
 void validateMultiTargets(Qureg qureg, int* targetQubits, const int numTargetQubits, const char* caller) {
@@ -316,7 +318,7 @@ void validateMultiControlsMultiTargets(Qureg qureg, int* controlQubits, const in
     long long int ctrlMask = getQubitBitMask(controlQubits, numControlQubits);
     long long int targMask = getQubitBitMask(targetQubits, numTargetQubits);
     int overlap = ctrlMask & targMask;
-    QuESTAssert(!overlap, E_TARGET_IN_CONTROLS, caller);
+    QuESTAssert(!overlap, E_CONTROL_TARGET_COLLISION, caller);
 }
 
 void validateControlState(int* controlState, const int numControlQubits, const char* caller) {
