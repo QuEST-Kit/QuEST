@@ -598,7 +598,7 @@ void controlledRotateAroundAxis(Qureg qureg, const int controlQubit, const int t
 }
 
 void swapGate(Qureg qureg, int qb1, int qb2) {
-    validateControlTarget(qureg, qb1, qb2, __func__);
+    validateUniqueTargets(qureg, qb1, qb2, __func__);
 
     statevec_swapQubitAmps(qureg, qb1, qb2);
     if (qureg.isDensityMatrix) {
@@ -610,7 +610,7 @@ void swapGate(Qureg qureg, int qb1, int qb2) {
 }
 
 void sqrtSwapGate(Qureg qureg, int qb1, int qb2) {
-    validateControlTarget(qureg, qb1, qb2, __func__);
+    validateUniqueTargets(qureg, qb1, qb2, __func__);
     validateMultiQubitMatrixFitsInNode(qureg, 2, __func__); // uses 2qb unitary in QuEST_common
 
     statevec_sqrtSwapGate(qureg, qb1, qb2);
