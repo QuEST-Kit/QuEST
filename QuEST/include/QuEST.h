@@ -1106,7 +1106,8 @@ void rotateY(Qureg qureg, const int rotQubit, qreal angle);
 void rotateZ(Qureg qureg, const int rotQubit, qreal angle);
 
 /** Rotate a single qubit by a given angle around a given \ref Vector on the Bloch-sphere.      
- * The vector must not be zero (else an error is thrown), but needn't be unit magnitude.
+ * The vector must not be zero (else an error is thrown), but needn't be unit magnitude, since 
+ * it will be normalised by QuEST.
  *
  * For angle \f$\theta\f$ and axis vector \f$\vec{n}\f$, applies \f$R_{\hat{n}} = \exp \left(- i \frac{\theta}{2} \hat{n} \cdot \vec{\sigma} \right) \f$
  * where \f$\vec{\sigma}\f$ is the vector of Pauli matrices.
@@ -1927,28 +1928,34 @@ void mixTwoQubitDephasing(Qureg qureg, int qubit1, int qubit2, qreal prob);
  */
 void mixDepolarising(Qureg qureg, const int targetQubit, qreal prob);
 
-/** Mixes a density matrix \p qureg to induce single-qubit damping (decay to 0 state).
+/** Mixes a density matrix \p qureg to induce single-qubit amplitude damping (decay to 0 state).
  * With probability \p prob, applies damping (transition from 1 to 0 state).
  *
  * This transforms \p qureg = \f$\rho\f$ into the mixed state
  * \f[
- * (1 - \text{prob}) \, \rho + \text{prob} \; \left( 
- *      \sigma^{-} \, \rho \, sigma^{+} 
- * \right)
+    K_0 \rho K_0^\dagger + K_1 \rho K_1^\dagger
  * \f]
- * where q = \p targetQubit.
- * \p prob cannot exceed 1, at which total damping/decay occurs.
+ * where q = \p targetQubit and \f$K_0\f$ and \f$K_1\f$ are Kraus operators
+ * \f[
+        K_0 = \begin{pmatrix} 1 & 0 \\ 0 & \sqrt{1-\text{prob}} \end{pmatrix}, \;\;
+        K_1 = \begin{pmatrix} 0 & \sqrt{\text{prob}} \\ 0 & 0 \end{pmatrix}.
+ * \f]
+ * \p prob cannot exceed 1, at which total damping/decay occurs. Note that unlike
+ * mixDephasing() and mixDepolarising(), this function can increase the purity of a 
+ * mixed state (by, as \p prob becomes 1, gaining certainty that the qubit is in
+ * the 0 state).
  *
  * @ingroup decoherence
  * @param[in,out] qureg a density matrix
- * @param[in] targetQubit qubit upon which to induce depolarising noise
- * @param[in] prob the probability of the depolarising error occuring
+ * @param[in] targetQubit qubit upon which to induce amplitude damping
+ * @param[in] prob the probability of the damping
  * @throws exitWithError
  *      if \p qureg is not a density matrix,
  *      or if \p targetQubit is outside [0, \p qureg.numQubitsRepresented),
  *      or if \p prob is not in [0, 1]
- * @author Nicolas Vogt (HQS)
+ * @author Nicolas Vogt of HQS
  * @author Ania Brown (patched)
+ * @author Tyson Jones (doc)
  */
 void mixDamping(Qureg qureg, const int targetQubit, qreal prob);
 
