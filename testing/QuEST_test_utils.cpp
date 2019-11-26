@@ -9,6 +9,7 @@
 #include "catch.hpp"
 #include <random>
 #include <algorithm>
+#include <bitset>
 
 
 
@@ -44,6 +45,15 @@ QMatrix getKroneckerProduct(QMatrix a, QMatrix b) {
     return prod;
 }
 
+QMatrix getMatrixSum(QMatrix a, QMatrix b) {
+    REQUIRE( a.size() == b.size() );
+    QMatrix s = a;
+    for (size_t r=0; r<b.size(); r++)
+        for (size_t c=0; c<b.size(); c++)
+            s[r][c] += b[r][c];
+    return s;
+}
+
 /** returns a square matrix, the product of a and b 
  */
 QMatrix getMatrixProduct(QMatrix a, QMatrix b) {
@@ -56,6 +66,14 @@ QMatrix getMatrixProduct(QMatrix a, QMatrix b) {
     return prod;
 }
 
+QMatrix getScalarMatrixProduct(qcomp scalar, QMatrix matr) {
+    QMatrix prod = matr;
+    for (size_t r=0; r<matr.size(); r++)
+        for (size_t c=0; c<matr.size(); c++)
+            prod[r][c] *= scalar;
+    return prod;
+}
+
 /** returns the conjugate transpose of the complex square matrix a 
  */
 QMatrix getConjugateTranspose(QMatrix a) {
@@ -64,6 +82,26 @@ QMatrix getConjugateTranspose(QMatrix a) {
         for (size_t c=0; c<a.size(); c++)
             b[r][c] = conj(a[c][r]);
     return b;
+}
+
+/** returns the matrix exponential of a diagonal, square, complex matrix 
+ */
+QMatrix getExponentialDiagonalMatrix(QMatrix a) {
+    
+    // ensure diagonal
+    for (size_t r=0; r<a.size(); r++) {
+        for (size_t c=0; c<a.size(); c++) {
+            if (r == c)
+                continue;
+            REQUIRE( a[r][c] == 0. );
+        }
+    }
+    // exp(diagonal) = diagonal(exp)
+    QMatrix diag = a;
+    for (size_t i=0; i<a.size(); i++)
+        diag[i][i] = exp(diag[i][i]);
+        
+    return diag;
 }
 
 /** modifies dest by overwriting its submatrix (from top-left corner 
@@ -235,6 +273,7 @@ QMatrix getFullOperatorMatrix(
  */
 QVector getMatrixVectorProduct(QMatrix m, QVector v) {
     REQUIRE( m.size() == v.size() );
+    
     QVector prod = QVector(v.size());
     for (size_t r=0; r<v.size(); r++)
         for (size_t c=0; c<v.size(); c++)
@@ -271,6 +310,28 @@ QMatrix getRandomMatrix(int dim) {
         }
     }
     return matr;
+}
+
+bool areEqual(QMatrix a, QMatrix b) {
+    REQUIRE( a.size() == b.size() );
+    
+    for (size_t i=0; i<a.size(); i++)
+        for (size_t j=0; j<b.size(); j++)
+            if (abs(a[i][j] - b[i][j]) > 1E2 * REAL_EPS)
+                return false;
+    return true;
+}
+
+qreal getRandomReal(qreal min, qreal max) {
+    REQUIRE( min <= max );
+    qreal r = min + (max - min) * (rand() / (qreal) RAND_MAX); 
+    REQUIRE( r >= min );
+    REQUIRE( r <= max );
+    return r;
+}
+
+int getRandomInt(int min, int max) {
+    return round(getRandomReal(min, max-1));
 }
 
 /** returns a randomly distributed random unitary matrix. 
@@ -314,6 +375,11 @@ QMatrix getRandomUnitary(int numQb) {
             matr[i][j] /= mag;
     }
     
+    // ensure matrix is indeed unitary 
+    QMatrix conjprod = getMatrixProduct(matr, getConjugateTranspose(matr));
+    QMatrix iden = getIdentityMatrix(1 << numQb);
+    REQUIRE( areEqual(conjprod, iden) );
+    
     // return the new orthonormal matrix
     return matr;
 }
@@ -321,43 +387,62 @@ QMatrix getRandomUnitary(int numQb) {
 /** overwrites state to be the result of applying the unitary matrix op (with the
  * specified control and target qubits) to statevector state, i.e. fullOp(op) * |state>
  */
-void applyUnitaryOp(
+void applyReferenceOp(
     QVector &state, int* ctrls, int numCtrls, int *targs, int numTargs, QMatrix op
 ) {
     int numQubits = calcLog2(state.size());
     QMatrix fullOp = getFullOperatorMatrix(ctrls, numCtrls, targs, numTargs, op, numQubits);
     state = getMatrixVectorProduct(fullOp, state);
 }
-void applyUnitaryOp(
+void applyReferenceOp(
+    QMatrix &state, int* ctrls, int numCtrls, int targ1, int targ2, QMatrix op
+) {
+    int targs[2] = {targ1, targ2};
+    applyReferenceOp(state, ctrls, numCtrls, targs, 2, op);
+}
+void applyReferenceOp(
     QVector &state, int* ctrls, int numCtrls, int target, QMatrix op
 ) {
     int targs[1] = {target};
-    applyUnitaryOp(state, ctrls, numCtrls, targs, 1, op);
+    applyReferenceOp(state, ctrls, numCtrls, targs, 1, op);
 }
-void applyUnitaryOp(
+void applyReferenceOp(
     QVector &state, int *targs, int numTargs, QMatrix op
 ) {
-    applyUnitaryOp(state, NULL, 0, targs, numTargs, op);
+    applyReferenceOp(state, NULL, 0, targs, numTargs, op);
 }
-void applyUnitaryOp(
+void applyReferenceOp(
     QVector &state, int ctrl, int targ, QMatrix op
 ) {
     int ctrls[1] = {ctrl};
     int targs[1] = {targ};
-    applyUnitaryOp(state, ctrls, 1, targs, 1, op);
+    applyReferenceOp(state, ctrls, 1, targs, 1, op);
 }
-void applyUnitaryOp(
+void applyReferenceOp(
+    QVector &state, int ctrl, int* targs, int numTargs, QMatrix op
+) {
+    int ctrls[1] = {ctrl};
+    applyReferenceOp(state, ctrls, 1, targs, numTargs, op);
+}
+void applyReferenceOp(
+    QVector &state, int ctrl, int targ1, int targ2, QMatrix op
+) {
+    int ctrls[1] = {ctrl};
+    int targs[2] = {targ1, targ2};
+    applyReferenceOp(state, ctrls, 1, targs, 2, op);
+}
+void applyReferenceOp(
     QVector &state, int targ, QMatrix op
 ) {
     int targs[1] = {targ};
-    applyUnitaryOp(state, NULL, 0, targs, 1, op);
+    applyReferenceOp(state, NULL, 0, targs, 1, op);
 }
 
 /** overwrites state to be the result of applying the unitary matrix op (with the
  * specified control and target qubits) to density matrix state, i.e. 
  *  fullOp(op) * state * fullOp(op)^dagger
  */
-void applyUnitaryOp(
+void applyReferenceOp(
     QMatrix &state, int* ctrls, int numCtrls, int *targs, int numTargs, QMatrix op
 ) {
     int numQubits = calcLog2(state.size());
@@ -365,29 +450,48 @@ void applyUnitaryOp(
     QMatrix rightOp = getConjugateTranspose(leftOp);
     state = getMatrixProduct(getMatrixProduct(leftOp, state), rightOp);
 }
-void applyUnitaryOp(
+void applyReferenceOp(
+    QVector &state, int* ctrls, int numCtrls, int targ1, int targ2, QMatrix op
+) {
+    int targs[2] = {targ1, targ2};
+    applyReferenceOp(state, ctrls, numCtrls, targs, 2, op);
+}
+void applyReferenceOp(
     QMatrix &state, int* ctrls, int numCtrls, int target, QMatrix op
 ) {
     int targs[1] = {target};
-    applyUnitaryOp(state, ctrls, numCtrls, targs, 1, op);
+    applyReferenceOp(state, ctrls, numCtrls, targs, 1, op);
 }
-void applyUnitaryOp(
+void applyReferenceOp(
     QMatrix &state, int *targs, int numTargs, QMatrix op
 ) {
-    applyUnitaryOp(state, NULL, 0, targs, numTargs, op);
+    applyReferenceOp(state, NULL, 0, targs, numTargs, op);
 }
-void applyUnitaryOp(
+void applyReferenceOp(
     QMatrix &state, int ctrl, int targ, QMatrix op
 ) {
     int ctrls[1] = {ctrl};
     int targs[1] = {targ};
-    applyUnitaryOp(state, ctrls, 1, targs, 1, op);
+    applyReferenceOp(state, ctrls, 1, targs, 1, op);
 }
-void applyUnitaryOp(
+void applyReferenceOp(
+    QMatrix &state, int ctrl, int* targs, int numTargs, QMatrix op
+) {
+    int ctrls[1] = {ctrl};
+    applyReferenceOp(state, ctrls, 1, targs, numTargs, op);
+}
+void applyReferenceOp(
+    QMatrix &state, int ctrl, int targ1, int targ2, QMatrix op
+) {
+    int ctrls[1] = {ctrl};
+    int targs[2] = {targ1, targ2};
+    applyReferenceOp(state, ctrls, 1, targs, 2, op);
+}
+void applyReferenceOp(
     QMatrix &state, int targ, QMatrix op
 ) {
     int targs[1] = {targ};
-    applyUnitaryOp(state, NULL, 0, targs, 1, op);
+    applyReferenceOp(state, NULL, 0, targs, 1, op);
 }
 
 /** hardware-agnostic comparison of the given vector and pure qureg, to within 
@@ -410,7 +514,7 @@ bool areEqual(Qureg qureg, QVector vec) {
         areEqual = (
                absReal(qureg.stateVec.real[i] - real(vec[startInd+i])) < REAL_EPS
             && absReal(qureg.stateVec.imag[i] - imag(vec[startInd+i])) < REAL_EPS);
-    
+            
     // if one node's partition wasn't equal, all-nodes must report not-equal
     int allAreEqual = areEqual;
 #ifdef MPI_VERSION
@@ -627,7 +731,7 @@ QVector toQVector(Qureg qureg) {
  * lexographic order. That is, generates every combination of the given list 
  * and every permutation of each. If the sublist length is the full list length, 
  * this generator produces every permutation correctly. Note that the (same) pointer 
- * returned by get()must not be modified between invocations of next(). QuEST's 
+ * returned by get() must not be modified between invocations of next(). QuEST's 
  * internal functions will indeed modify but restore the qubit index lists given 
  * to them, which is ok. Assumes the constructor-given list contains no duplicate, 
  * otherwise the generated sublists may be duplicated.
@@ -679,7 +783,7 @@ public:
     
     SubListGenerator(
         Catch::Generators::GeneratorWrapper<int>&& gen, 
-        int numSamps, int* exclude, int numExclude
+        int numSamps, const int* exclude, int numExclude
     ) {    
         // extract all generator elems
         vector<int> elems = vector<int>();
@@ -740,7 +844,7 @@ Catch::Generators::GeneratorWrapper<int*> sublists(
             new SubListGenerator(list, len, sublen)));
 }
 Catch::Generators::GeneratorWrapper<int*> sublists(
-    Catch::Generators::GeneratorWrapper<int>&& gen, int numSamps, int* exclude, int numExclude
+    Catch::Generators::GeneratorWrapper<int>&& gen, int numSamps, const int* exclude, int numExclude
 ) {    
     return Catch::Generators::GeneratorWrapper<int*>(
         std::unique_ptr<Catch::Generators::IGenerator<int*>>(
@@ -753,4 +857,73 @@ Catch::Generators::GeneratorWrapper<int*> sublists(
     return Catch::Generators::GeneratorWrapper<int*>(
         std::unique_ptr<Catch::Generators::IGenerator<int*>>(
             new SubListGenerator(std::move(gen), numSamps, exclude, 1)));
+}
+Catch::Generators::GeneratorWrapper<int*> sublists(
+    Catch::Generators::GeneratorWrapper<int>&& gen, int numSamps
+) {
+    int exclude[] = {};  
+    return Catch::Generators::GeneratorWrapper<int*>(
+        std::unique_ptr<Catch::Generators::IGenerator<int*>>(
+            new SubListGenerator(std::move(gen), numSamps, exclude, 0)));
+}
+
+/** Generates every fixed-length sequence, in increasing lexographic order,
+ * where left-most (zero index) bit is treated as LEAST significant (opposite 
+ * typical convention). Note that the (same) pointer returned by get() must not 
+ * be modified between invocations of next(). Given maxDigit=2, numDigits=2,
+ * this generator produces sequences: {0,0}, {1,0}, {2,0}, {0,1}, {1,1}, {2,1},
+ * {0,2}, {1,2}, {2,2}. Given maxDigit=1, it produces bit sequences.
+ */
+template <typename T>
+class SequenceGenerator : public Catch::Generators::IGenerator<T*> {
+    T* digits;
+    int len;
+    T maxDigit;
+    int ind;
+    int seqLen;
+public:
+    SequenceGenerator(T maxDigit_, int numDigits) {
+        ind = 0;
+        len = numDigits;
+        maxDigit = maxDigit_;
+        seqLen = (int) pow(1 + (int) maxDigit, len);
+        digits = (T*) malloc(numDigits * sizeof *digits);
+        for (int i=0; i<numDigits; i++)
+            digits[i] = (T) 0;
+        ind++;
+    }
+
+    T* const& get() const {
+        return digits;
+    }
+    
+    bool next() override {
+        bool isNext = (ind++) < seqLen;
+        if (isNext) {
+            int i=0;
+            while (digits[i] == maxDigit)
+                digits[i++] = (T) 0;
+            digits[i] = (T) ((int) digits[i] + 1);
+        }
+        return isNext;
+    }
+    
+    ~SequenceGenerator() {
+        free(digits);
+    }
+};
+Catch::Generators::GeneratorWrapper<int*> bitsets(int numBits) {    
+    return Catch::Generators::GeneratorWrapper<int*>(
+        std::unique_ptr<Catch::Generators::IGenerator<int*>>(
+            new SequenceGenerator<int>(1, numBits)));
+}
+Catch::Generators::GeneratorWrapper<int*> sequences(int base, int numDigits) {    
+    return Catch::Generators::GeneratorWrapper<int*>(
+        std::unique_ptr<Catch::Generators::IGenerator<int*>>(
+            new SequenceGenerator<int>(base-1, numDigits)));
+}
+Catch::Generators::GeneratorWrapper<pauliOpType*> pauliseqs(int numPaulis) {    
+    return Catch::Generators::GeneratorWrapper<pauliOpType*>(
+        std::unique_ptr<Catch::Generators::IGenerator<pauliOpType*>>(
+            new SequenceGenerator<pauliOpType>(PAULI_Z, numPaulis)));
 }
