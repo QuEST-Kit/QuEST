@@ -392,6 +392,7 @@ void multiStateControlledUnitary(Qureg qureg, int* controlQubits, int* controlSt
 
     long long int ctrlQubitsMask = getQubitBitMask(controlQubits, numControlQubits);
     long long int ctrlFlipMask = getControlFlipMask(controlQubits, controlState, numControlQubits);
+    statevec_multiControlledUnitary(qureg, ctrlQubitsMask, ctrlFlipMask, targetQubit, u);
     if (qureg.isDensityMatrix) {
         int shift = qureg.numQubitsRepresented;
         statevec_multiControlledUnitary(qureg, ctrlQubitsMask<<shift, ctrlFlipMask<<shift, targetQubit+shift, getConjugateMatrix2(u));
