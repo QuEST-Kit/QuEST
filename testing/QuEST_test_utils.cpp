@@ -104,6 +104,17 @@ QMatrix getExponentialDiagonalMatrix(QMatrix a) {
     return diag;
 }
 
+/** returns the matrix exponential of a kronecker product of pauli matrices 
+ * (or of any involutory matrices), with factor (-i angle / 2).
+ */
+QMatrix getExponentialPauliMatrix(qreal angle, QMatrix a) {
+    QMatrix iden = getIdentityMatrix(a.size());
+    QMatrix expo = getMatrixSum(
+        getScalarMatrixProduct( cos(angle/2), iden),
+        getScalarMatrixProduct( -1i * sin(angle/2), a));
+    return expo;
+}
+
 /** modifies dest by overwriting its submatrix (from top-left corner 
  * (r, c) to bottom-right corner (r+dest.size(), c+dest.size()) with the 
  * complete elements of sub 

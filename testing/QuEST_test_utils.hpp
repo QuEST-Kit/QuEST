@@ -30,6 +30,7 @@ void toComplexMatrixN(QMatrix qm, ComplexMatrixN cm);
 QMatrix getMatrixSum(QMatrix a, QMatrix b);
 QMatrix getScalarMatrixProduct(qcomp scalar, QMatrix matr);
 QMatrix getExponentialDiagonalMatrix(QMatrix a);
+QMatrix getExponentialPauliMatrix(qreal angle, QMatrix a);
 QMatrix getKroneckerProduct(QMatrix a, QMatrix b);
 QMatrix getFullOperatorMatrix(int* ctrls, int numCtrls, int *targs, int numTargs, QMatrix op, int numQubits); 
 
@@ -61,7 +62,7 @@ bool areEqual(Qureg qureg, QMatrix matr);
 /* generating random inputs */
 QMatrix getRandomUnitary(int numQb);
 qreal getRandomReal(qreal min, qreal max);
-int getRandomInt(int min, int max);
+int getRandomInt(int min, int max); //  exclusive max
 
 /** returns log2 of numbers which must be gauranteed to be 2^n */
 unsigned int calcLog2(unsigned int res);
