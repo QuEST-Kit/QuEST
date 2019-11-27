@@ -1329,10 +1329,7 @@ TEST_CASE( "multiQubitUnitary", "[unitaries]" ) {
 
 
 TEST_CASE( "multiRotatePauli", "[unitaries]" ) {
-    
-    REQUIRE( false );
-    
-    /*
+        
     PREPARE_TEST( env, quregVec, quregMatr, refVec, refMatr, NUM_QUBITS );
     qreal param = getRandomReal(-4*M_PI, 4*M_PI);
         
@@ -1341,49 +1338,55 @@ TEST_CASE( "multiRotatePauli", "[unitaries]" ) {
         int numTargs = GENERATE( range(1,NUM_QUBITS+1) );
         int* targs = GENERATE_COPY( sublists(range(0,NUM_QUBITS), numTargs) );
         
-        // it may be TOO expensive to try ALL pauli sequences!
-        pauliOpType* paulis = GENERATE_COPY( pauliseqs(numTargs) );
-        
-        // debug 
-        printf("numPaulis: %d\n", numTargs);
-        printf("pauliCodes: ");
+        /* it's too expensive to try ALL Pauli sequences, via 
+         *      pauliOpType* paulis = GENERATE_COPY( pauliseqs(numTargs) );.
+         * Furthermore, take(10, pauliseqs(numTargs)) will try the same pauli codes.
+         * Hence, we instead opt to repeatedlyrandomly generate pauliseqs
+         */
+        GENERATE( range(0,10) ); // gen 10 random pauli-codes for every targs
+        pauliOpType paulis[numTargs];
         for (int i=0; i<numTargs; i++)
-            printf("%d ", (int) paulis[i]);
-        printf("\n\n");
-        
-        
-    }
+            paulis[i] = (pauliOpType) getRandomInt(0,4);
 
-        // build correct reference matrix by diagonal-matrix exponentiation...
+        // exclude identities from reference matrix exp (they apply unwanted global phase)
+        int refTargs[numTargs];
+        int numRefTargs = 0;
+
+        QMatrix xMatr{{0,1},{1,0}};
+        QMatrix yMatr{{0,-1i},{1i,0}};
         QMatrix zMatr{{1,0},{0,-1}};
-        QMatrix zProd = zMatr;
-        for (int t=0; t<numTargs-1; t++)
-            zProd = getKroneckerProduct(zMatr, zProd); // Z . Z ... Z
-    
-        // (-i param/2) Z . I . Z ...
-        QMatrix expArg = getScalarMatrixProduct(
-            -1i * param / 2.,
-            getFullOperatorMatrix(NULL, 0, targs, numTargs, zProd, NUM_QUBITS));
-            
-        // exp( -i param/2 Z . I . Z ...)
-        QMatrix op = getExponentialDiagonalMatrix(expArg);
         
-        // all qubits to specify full operator matrix on reference structures
-        int allQubits[NUM_QUBITS];
-        for (int i=0; i<NUM_QUBITS; i++)
-            allQubits[i] = i;
+        // build correct reference matrix by pauli-matrix exponentiation...
+        QMatrix pauliProd{{1}};
+        for (int i=0; i<numTargs; i++) {
+            QMatrix fac;
+            if (paulis[i] == PAULI_I) continue; // exclude I-targets from ref list
+            if (paulis[i] == PAULI_X) fac = xMatr;
+            if (paulis[i] == PAULI_Y) fac = yMatr;
+            if (paulis[i] == PAULI_Z) fac = zMatr;
+            pauliProd = getKroneckerProduct(fac, pauliProd);
+            
+            // include this target in ref list
+            refTargs[numRefTargs++] = targs[i];
+        }
+
+        // produces exp(-i param/2 pauliProd), unless pauliProd = I
+        QMatrix op;
+        if (numRefTargs > 0)
+            op = getExponentialPauliMatrix(param, pauliProd);
         
         SECTION( "state-vector" ) {
             
-            multiRotatePauli(quregVec, targs, numTargs, param);
-            applyReferenceOp(refVec, allQubits, NUM_QUBITS, op);
+            multiRotatePauli(quregVec, targs, paulis, numTargs, param);
+            if (numRefTargs > 0)
+                applyReferenceOp(refVec, refTargs, numRefTargs, op);
             REQUIRE( areEqual(quregVec, refVec) );
-            
         }
         SECTION( "density-matrix" ) {
             
-            multiRotatePauli(quregMatr, targs, numTargs, param);
-            applyReferenceOp(refMatr, allQubits, NUM_QUBITS, op);
+            multiRotatePauli(quregMatr, targs, paulis, numTargs, param);
+            if (numRefTargs > 0)
+                applyReferenceOp(refMatr, refTargs, numRefTargs, op);
             REQUIRE( areEqual(quregMatr, refMatr) );
         }
     }
@@ -1393,28 +1396,34 @@ TEST_CASE( "multiRotatePauli", "[unitaries]" ) {
             
             int numTargs = GENERATE( -1, 0, NUM_QUBITS+1 );
             int targs[NUM_QUBITS+1]; // prevent seg-fault if validation isn't triggered
-            REQUIRE_THROWS_WITH( multiRotatePauli(quregVec, targs, numTargs, param), Contains("Invalid number of target"));
+            pauliOpType paulis[NUM_QUBITS+1] = {PAULI_I};
+            REQUIRE_THROWS_WITH( multiRotatePauli(quregVec, targs, paulis, numTargs, param), Contains("Invalid number of target"));
             
         }
         SECTION( "repetition of targets" ) {
             
             int numTargs = 3;
             int targs[3] = {0, 1, 1};
-            REQUIRE_THROWS_WITH( multiRotatePauli(quregVec, targs, numTargs, param), Contains("target") && Contains("unique"));
+            pauliOpType paulis[3] = {PAULI_I};
+            REQUIRE_THROWS_WITH( multiRotatePauli(quregVec, targs, paulis, numTargs, param), Contains("target") && Contains("unique"));
         }
         SECTION( "qubit indices" ) {
             
             int numTargs = 3;
             int targs[3] = {0, 1, 2};
             targs[GENERATE_COPY(range(0,numTargs))] = GENERATE( -1, NUM_QUBITS );
-            REQUIRE_THROWS_WITH( multiRotatePauli(quregVec, targs, numTargs, param), Contains("Invalid target"));
+            pauliOpType paulis[3] = {PAULI_I};
+            REQUIRE_THROWS_WITH( multiRotatePauli(quregVec, targs, paulis, numTargs, param), Contains("Invalid target"));
         }
         SECTION( "pauli codes" ) {
-            REQUIRE(false);
+            int numTargs = 3;
+            int targs[3] = {0, 1, 2};
+            pauliOpType paulis[3] = {PAULI_I, PAULI_I, PAULI_I};
+            paulis[GENERATE_COPY(range(0,numTargs))] = (pauliOpType) GENERATE( -1, 4 );
+            REQUIRE_THROWS_WITH( multiRotatePauli(quregVec, targs, paulis, numTargs, param), Contains("Invalid Pauli code"));
         }
     }
     CLEANUP_TEST( env, quregVec, quregMatr );
-    */
 }
 
 TEST_CASE( "multiRotateZ", "[unitaries]" ) {
