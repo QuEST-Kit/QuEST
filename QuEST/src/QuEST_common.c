@@ -424,7 +424,7 @@ void statevec_multiRotatePauli(
     // rotate basis so that exp(Z) will effect exp(Y) and exp(X)
     for (int t=0; t < numTargets; t++) {
         if (targetPaulis[t] == PAULI_I)
-            mask -= 1LL << targetPaulis[t]; // remove target from mask
+            mask -= 1LL << targetQubits[t]; // remove target from mask
         if (targetPaulis[t] == PAULI_X)
             statevec_compactUnitary(qureg, targetQubits[t], uRyAlpha, uRyBeta);
         if (targetPaulis[t] == PAULI_Y)
@@ -432,7 +432,9 @@ void statevec_multiRotatePauli(
         // (targetPaulis[t] == 3) is Z basis
     }
     
-    statevec_multiRotateZ(qureg, mask, (applyConj)? -angle : angle);
+    // does nothing if there are no qubits to 'rotate'
+    if (mask != 0)
+        statevec_multiRotateZ(qureg, mask, (applyConj)? -angle : angle);
     
     // undo X and Y basis rotations
     uRxBeta.imag *= -1;
