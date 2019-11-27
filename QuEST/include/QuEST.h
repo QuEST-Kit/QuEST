@@ -2280,8 +2280,8 @@ void multiRotateZ(Qureg qureg, int* qubits, int numQubits, qreal angle);
  * \f[ 
     \exp \left( - i \theta/2 \bigotimes_{j} \hat{\sigma}_j\right)
  * \f]
- * where \f$\hat{\sigma}_j \in \{1, X, Y, Z\}\f$ is a Pauli operator (indicated by
- * codes 0, 1, 2, 3 respectively in \p targetPaulis, or by enums PAULI_I,
+ * where \f$\hat{\sigma}_j \in \{X, Y, Z\}\f$ is a Pauli operator (indicated by
+ * codes 1, 2, 3 respectively in \p targetPaulis, or by enums 
  * PAULI_X, PAULI_Y and PAULI_Z) operating upon the qubit 
  * \p targetQubits[j], and \f$\theta\f$ is the passed \p angle.
  *  The operators specified in \p targetPaulis act on the corresponding qubit in \p targetQubits. 
@@ -2289,10 +2289,17 @@ void multiRotateZ(Qureg qureg, int* qubits, int numQubits, qreal angle);
  * 
  *     multiRotatePauli(qureg, (int[]) {4,5,8,9}, (int[]) {0,1,2,3}, 4, .1)
  *
- * effects \f$ \exp \left( - i .1/2 X_5 Y_8 Z_9 \right) \f$ on \p qureg, 
+ * effects 
+ * \f[
+  \exp \left( - i .1/2 X_5 Y_8 Z_9 \right) 
+ * \f] on \p qureg, 
  * where unspecified qubits (along with those specified with Pauli code 0) are 
- * assumed to receive the identity operator. Note that specifying the identity 
- * Pauli (code=0) on a qubit is superfluous but allowed for convenience.
+ * assumed to receive the identity operator (excluded from exponentiation). 
+ * Note that specifying the identity 
+ * Pauli (code=0 or PAULI_I) on a qubit is superfluous but allowed for convenience.
+ * This is means a global phase factor of \f$ exp(-i \theta/2) \f$ is NOT induced 
+ * by supplying 0 pauli-codes. Hence, if all \p targetPaulis are identity, then 
+ * this function does nothing to \p qureg.
  *
  * This function effects this unitary by first rotating the qubits which are 
  * nominated to receive X or Y Paulis into alternate basis, performing 
