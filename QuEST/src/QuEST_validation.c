@@ -194,44 +194,34 @@ int isMatrixNUnitary(ComplexMatrixN u) {
     return retVal;
 }
 
-#define macro_isCompletelyPositiveMap(ops, numOps, opDim, retVal) { \
-    /* dist_, elemRe_, elemIm_ and difRe_ must not exist in caller scope */ \
-    qreal dist_ = 0; \
-    qreal elemRe_, elemIm_, difRe_; \
-    for (int n=0; n<(numOps); n++) \
-        /* calculate Hilbert schmidt distance of ConjugateTranspose(op)*op to Identity matrix */ \
-        for (int r=0; r<(opDim); r++) \
-            for (int c=0; c<(opDim); c++) { \
-                /* elem = ConjugateTranspose(op)[r][...] (dot) op[...][c] */ \
-                elemRe_ = 0; \
-                elemIm_ = 0; \
-                for (int i=0; i<(opDim); i++) { \
-                    elemRe_ += ops[n].real[i][r]*ops[n].real[i][c] + ops[n].imag[i][r]*ops[n].imag[i][c]; \
-                    elemIm_ += ops[n].real[i][r]*ops[n].imag[i][c] - ops[n].imag[i][r]*ops[n].real[i][c]; \
+
+#define macro_isCompletelyPositiveMap(ops, numOps, opDim) { \
+    for (int r=0; r<(opDim); r++) { \
+        for (int c=0; c<(opDim); c++) { \
+            qreal elemRe_ = 0; \
+            qreal elemIm_ = 0; \
+            for (int n=0; n<(numOps); n++) { \
+                for (int k=0; k<(opDim); k++) { \
+                    elemRe_ += ops[n].real[k][r]*ops[n].real[k][c] + ops[n].imag[k][r]*ops[n].imag[k][c]; \
+                    elemIm_ += ops[n].real[k][r]*ops[n].imag[k][c] - ops[n].imag[k][r]*ops[n].real[k][c]; \
                 } \
-                /* Hilbert schmidt distance of element to that of identity matrix */ \
-                difRe_ = elemRe_ - ((r==c)? 1:0); \
-                dist_ += difRe_*difRe_ + elemIm_*elemIm_; \
             } \
-    retVal = (dist_ < REAL_EPS); \
+            qreal dist_ = absReal(elemIm_) + absReal(elemRe_ - ((r==c)? 1:0)); \
+            if (dist_ > REAL_EPS) \
+                return 0; \
+        } \
+    } \
+    return 1; \
 }
 int isCompletelyPositiveMap2(ComplexMatrix2 *ops, int numOps) {
-    int dim = 2;
-    int retVal;
-    macro_isCompletelyPositiveMap(ops, numOps, dim, retVal);
-    return retVal;
+    macro_isCompletelyPositiveMap(ops, numOps, 2);    
 }
 int isCompletelyPositiveMap4(ComplexMatrix4 *ops, int numOps) {
-    int dim = 4;
-    int retVal;
-    macro_isCompletelyPositiveMap(ops, numOps, dim, retVal);
-    return retVal;
+    macro_isCompletelyPositiveMap(ops, numOps, 4);
 }
 int isCompletelyPositiveMapN(ComplexMatrixN *ops, int numOps) {
-    int dim = 1 << ops[0].numQubits;
-    int retVal;
-    macro_isCompletelyPositiveMap(ops, numOps, dim, retVal);
-    return retVal;
+    int opDim = 1 << ops[0].numQubits;
+    macro_isCompletelyPositiveMap(ops, numOps, opDim);
 }
 
 int areUniqueQubits(int* qubits, int numQubits) {
