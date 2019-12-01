@@ -1902,7 +1902,8 @@ void mixDephasing(Qureg qureg, const int targetQubit, qreal prob);
 void mixTwoQubitDephasing(Qureg qureg, int qubit1, int qubit2, qreal prob);
 
 /** Mixes a density matrix \p qureg to induce single-qubit homogeneous depolarising noise.
- * With probability \p prob, applies (uniformly) either Pauli X, Y, or Z to \p targetQubit.
+ * This is equivalent to, with probability \p prob, uniformly randomly applying 
+ * either Pauli X, Y, or Z to \p targetQubit.
  *
  * This transforms \p qureg = \f$\rho\f$ into the mixed state
  * \f[
@@ -1914,6 +1915,13 @@ void mixTwoQubitDephasing(Qureg qureg, int qubit1, int qubit2, qreal prob);
  * \f]
  * where q = \p targetQubit.
  * \p prob cannot exceed 3/4, at which maximal mixing occurs.
+ * The produced state is equivalently expressed as
+ * \f[
+ *      \left( 1 - \frac{4}{3} \text{prob} \right) \rho +
+ *      \left( \frac{4}{3} \text{prob} \right) \frac{\vec{\bf{1}}}{2}
+ * \f]
+ * where \f$ \frac{\vec{\bf{1}}}{2} \f$ is the maximally mixed state of the target 
+ * qubit.
  *
  * @ingroup decoherence
  * @param[in,out] qureg a density matrix
@@ -1976,25 +1984,37 @@ void mixDamping(Qureg qureg, const int targetQubit, qreal prob);
  * or verbosely
  * \f[
  * (1 - \text{prob}) \, \rho + \frac{\text{prob}}{15} \; \left( 
- *      X_a \, \rho \, X_a + 
+ * \begin{aligned}
+ *      &X_a \, \rho \, X_a + 
  *      X_b \, \rho \, X_b + 
  *      Y_a \, \rho \, Y_a + 
  *      Y_b \, \rho \, Y_b + 
  *      Z_a \, \rho \, Z_a + 
- *      Z_b \, \rho \, Z_b + 
- *      X_a X_b \, \rho \, X_a X_b +
+ *      Z_b \, \rho \, Z_b 
+ *   \\
+ *    + &X_a X_b \, \rho \, X_a X_b +
  *      X_a Y_b \, \rho \, X_a Y_b +
  *      X_a Z_b \, \rho \, X_a Z_b +
- *      Y_a X_b \, \rho \, Y_a X_b +
- *      Y_a Y_b \, \rho \, Y_a Y_b +
+ *      Y_a X_b \, \rho \, Y_a X_b
+ * \\
+ *   + &Y_a Y_b \, \rho \, Y_a Y_b +
  *      Y_a Z_b \, \rho \, Y_a Z_b +
  *      Z_a X_b \, \rho \, Z_a X_b + 
  *      Z_a Y_b \, \rho \, Z_a Y_b + 
  *      Z_a Z_b \, \rho \, Z_a Z_b
+ * \end{aligned}
  * \right)
  * \f]
  * where a = \p qubit1, b = \p qubit2.
+ *
  * \p prob cannot exceed 15/16, at which maximal mixing occurs.
+ *
+ * The produced state is equivalently expressed as
+ * \f[ 
+ *      \left( 1 - \frac{16}{15} \text{prob} \right) \rho + \left( \frac{16}{15} \text{prob} \right) \frac{\vec{\bf{1}}}{2}
+ * \f]
+ * where \f$ \frac{\vec{\bf{1}}}{2} \f$ is the maximally mixed state of the two
+ * target qubits.
  *
  * @ingroup decoherence
  * @param[in,out] qureg a density matrix
@@ -2828,8 +2848,13 @@ void controlledMultiQubitUnitary(Qureg qureg, int ctrl, int* targs, const int nu
 void multiControlledMultiQubitUnitary(Qureg qureg, int* ctrls, const int numCtrls, int* targs, const int numTargs, ComplexMatrixN u);
 
 /** Apply a general single-qubit Kraus map to a density matrix, as specified by at most 
- * four Kraus operators. A Kraus map is also referred to as a "operator-sum representation"
- * of a quantum channel. This allows one to simulate a general single-qubit noise process.
+ * four Kraus operators, \f$K_i\f$ (\p ops). A Kraus map is also referred to as 
+ * a "operator-sum representation" of a quantum channel, and enables the simulation of 
+ * general single-qubit noise process,
+ * by effecting 
+ * \f[
+    \rho \to \sum\limits_i^{\text{numOps}} K_i \rho K_i^\dagger
+ * \f]
  *
  * The Kraus map must be completely positive and trace preserving, which constrains each 
  * \f$ K_i \f$ in \p ops by
