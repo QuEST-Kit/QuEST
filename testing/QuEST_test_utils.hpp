@@ -18,6 +18,30 @@
 typedef std::vector<std::vector<qcomp>> QMatrix;
 typedef std::vector<qcomp> QVector;
 
+/* modifying data-types */
+QVector operator + (const QVector& v1, const QVector& v2);
+QVector operator - (const QVector& v1, const QVector& v2);
+QVector operator * (const qcomp& a, const QVector& v);
+QVector operator * (const QVector& v, const qcomp& a);
+QVector operator / (const QVector& v, const qcomp& a);
+qcomp operator * (const QVector &v1, const QVector& v2);
+void operator += (QVector& v1, const QVector& v2);
+void operator -= (QVector& v1, const QVector& v2);
+void operator *= (QVector& v1, const qcomp& a);
+void operator /= (QVector& v1, const qcomp& a);
+QMatrix operator + (const QMatrix& m1, const QMatrix& m2);
+QMatrix operator - (const QMatrix& m1, const QMatrix& m2);
+QMatrix operator * (const qcomp& a, const QMatrix& m);
+QMatrix operator * (const QMatrix& m, const qcomp& a);
+QMatrix operator / (const QMatrix& m, const qcomp& a);
+QMatrix operator * (const QMatrix& m1, const QMatrix& m2);
+void operator += (QMatrix& m1, const QMatrix& m2);
+void operator -= (QMatrix& m1, const QMatrix& m2);
+void operator *= (QMatrix& m1, const qreal& a);
+void operator /= (QMatrix& m1, const qreal& a);
+void operator *= (QMatrix& m1, const QMatrix& m2);
+QVector operator * (const QMatrix& m, const QVector& v);
+
 /* converting data-types */
 QVector toQVector(Qureg qureg);
 QMatrix toQMatrix(Complex alpha, Complex beta);
@@ -28,8 +52,6 @@ void toComplexMatrixN(QMatrix qm, ComplexMatrixN cm);
 
 /* building unitary matrices */
 QMatrix getZeroMatrix(size_t dim);
-QMatrix getMatrixSum(QMatrix a, QMatrix b);
-QMatrix getScalarMatrixProduct(qcomp scalar, QMatrix matr);
 QMatrix getExponentialDiagonalMatrix(QMatrix a);
 QMatrix getExponentialPauliMatrix(qreal angle, QMatrix a);
 QMatrix getKroneckerProduct(QMatrix a, QMatrix b);

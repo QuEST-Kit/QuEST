@@ -1443,9 +1443,8 @@ TEST_CASE( "multiRotateZ", "[unitaries]" ) {
             zProd = getKroneckerProduct(zMatr, zProd); // Z . Z ... Z
     
         // (-i param/2) Z . I . Z ...
-        QMatrix expArg = getScalarMatrixProduct(
-            -1i * param / 2.,
-            getFullOperatorMatrix(NULL, 0, targs, numTargs, zProd, NUM_QUBITS));
+        QMatrix expArg = (-1i * param / 2.) *
+            getFullOperatorMatrix(NULL, 0, targs, numTargs, zProd, NUM_QUBITS);
             
         // exp( -i param/2 Z . I . Z ...)
         QMatrix op = getExponentialDiagonalMatrix(expArg);

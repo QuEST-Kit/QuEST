@@ -53,7 +53,7 @@ TEST_CASE( "mixDamping", "[decoherence]" ) {
         QMatrix kraus1{{0,sqrt(prob)},{0,0}};
         QMatrix rho1 = ref;
         applyReferenceOp(rho1, target, kraus1);
-        ref = getMatrixSum(rho0, rho1);
+        ref = rho0 + rho1;
         
         REQUIRE( areEqual(qureg, ref) );
     }
@@ -95,9 +95,7 @@ TEST_CASE( "mixDephasing", "[decoherence]" ) {
         // ref -> (1 - prob) ref + prob Z ref Z
         QMatrix phaseRef = ref;
         applyReferenceOp(phaseRef, target, QMatrix{{1,0},{0,-1}}); // Z ref Z
-        ref = getMatrixSum(
-            getScalarMatrixProduct(1 - prob, ref),
-            getScalarMatrixProduct(prob, phaseRef));
+        ref = ((1 - prob) * ref) + (prob * phaseRef);
         
         REQUIRE( areEqual(qureg, ref) );
     }
@@ -142,12 +140,7 @@ TEST_CASE( "mixDepolarising", "[decoherence]" ) {
         applyReferenceOp(yRef, target, QMatrix{{0,-1i},{1i,0}}); // Y ref Y
         QMatrix zRef = ref;
         applyReferenceOp(zRef, target, QMatrix{{1,0},{0,-1}}); // Z ref Z
-        
-        // ref -> (1 - prob) ref + prob/3 (X ref X + Y ref Y + Z ref Z)
-        ref = getMatrixSum(
-            getScalarMatrixProduct(1 - prob, ref),
-            getScalarMatrixProduct(prob/3., 
-                getMatrixSum(xRef, getMatrixSum(yRef, zRef))));
+        ref = ((1 - prob) * ref) + ((prob/3.) * ( xRef + yRef + zRef));
         
         REQUIRE( areEqual(qureg, ref) );
     }
@@ -208,16 +201,8 @@ TEST_CASE( "mixPauli", "[decoherence]") {
         applyReferenceOp(yRef, target, QMatrix{{0,-1i},{1i,0}}); // Y ref Y
         QMatrix zRef = ref;
         applyReferenceOp(zRef, target, QMatrix{{1,0},{0,-1}}); // Z ref Z
-        
-        // ref -> (1 - probX - probY - probZ) ref + probX (X ref X) 
-        //        + probY (Y ref Y) + probZ (Z ref Z)
-        ref = getMatrixSum(
-            getScalarMatrixProduct(1 - probX - probY - probZ, ref),
-            getMatrixSum(
-                getScalarMatrixProduct(probX, xRef),
-                getMatrixSum(
-                    getScalarMatrixProduct(probY, yRef),
-                    getScalarMatrixProduct(probZ, zRef))));
+        ref = ((1 - probX - probY - probZ) * ref) +
+              (probX * xRef) + (probY * yRef) + (probZ * zRef);
         
         REQUIRE( areEqual(qureg, ref) );
     }
@@ -281,7 +266,7 @@ TEST_CASE( "mixKrausMap" ) {
         }
         ref = getZeroMatrix(ref.size());
         for (int i=0; i<numOps; i++)
-            ref = getMatrixSum(ref, matrRefs[i]);
+            ref += matrRefs[i];
         
         REQUIRE( areEqual(qureg, ref) );
         
@@ -322,8 +307,7 @@ TEST_CASE( "mixKrausMap" ) {
             
             qureg.numAmpsPerChunk = 3; // min 4
             REQUIRE_THROWS_WITH( mixKrausMap(qureg, 0, NULL, 1), Contains("targets too many qubits") );
-        }
-        
+        }        
     }
     CLEANUP_TEST(env, qureg);
 }

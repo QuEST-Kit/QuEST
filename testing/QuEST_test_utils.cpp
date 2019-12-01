@@ -11,7 +11,133 @@
 #include <algorithm>
 #include <bitset>
 
-
+/* 
+ * Define QVector and QMatrix operator overloads.
+ * Note that QMatrix overloads don't simply use QVector 
+ * overloads, since the complex vector dot product involves 
+ * conjugation, which doesn't occur in complex matrix multiplication.
+ * Note too we also avoid defining operators in terms of other operators
+ * (e.g. minus is plus(negative times)) since compiler optimisations 
+ * may change the order of operations and confuse the overloads invoked.
+ * Definition of division using multiplication can furthermore 
+ * heighten numerical errors.
+ */
+QVector operator + (const QVector& v1, const QVector& v2) {
+    REQUIRE( v1.size() == v2.size() );
+    QVector out = v1;
+    for (size_t i=0; i<v2.size(); i++)
+        out[i] += v2[i];
+    return out;
+}
+QVector operator - (const QVector& v1, const QVector& v2) {
+    REQUIRE( v1.size() == v2.size() );
+    QVector out = v1;
+    for (size_t i=0; i<v2.size(); i++)
+        out[i] -= v2[i];
+    return out;
+}
+QVector operator * (const qcomp& a, const QVector& v) {
+    QVector out = v;
+    for (size_t i=0; i<v.size(); i++)
+        out[i] *= a;
+    return out;
+}
+QVector operator * (const QVector& v, const qcomp& a) {
+    return a * v;
+}
+QVector operator / (const QVector& v, const qcomp& a) {
+    REQUIRE( abs(a) != 0 );
+    QVector out = v;
+    for (size_t i=0; i<v.size(); i++)
+        out[i] /= a;
+    return out;
+}
+qcomp operator * (const QVector &v1, const QVector& v2) {
+    // this is sum_i v1_i conj(v2_i)
+    REQUIRE( v1.size() == v2.size() );
+    qcomp out = 0;
+    for (size_t i=0; i<v1.size(); i++)
+        out += v1[i] * conj(v2[i]);
+    return out;
+}
+void operator += (QVector& v1, const QVector& v2) { // these violate += returns (fine)
+    v1 = v1 + v2;
+}
+void operator -= (QVector& v1, const QVector& v2) {
+    v1 = v1 - v2;
+}
+void operator *= (QVector& v1, const qcomp& a) {
+    v1 = v1 * a;
+}
+void operator /= (QVector& v1, const qcomp& a) {
+    v1 = v1 / a;
+}
+QMatrix operator + (const QMatrix& m1, const QMatrix& m2) {
+    REQUIRE( m1.size() == m2.size() );
+    QMatrix out = m1;
+    for (size_t r=0; r<m1.size(); r++)
+        for (size_t c=0; c<m1.size(); c++)
+            out[r][c] += m2[r][c];
+    return out;
+}
+QMatrix operator - (const QMatrix& m1, const QMatrix& m2) {
+    REQUIRE( m1.size() == m2.size() );
+    QMatrix out = m1;
+    for (size_t r=0; r<m1.size(); r++)
+        for (size_t c=0; c<m1.size(); c++)
+            out[r][c] -= m2[r][c];
+    return out;
+}
+QMatrix operator * (const qcomp& a, const QMatrix& m) {
+    QMatrix out = m;
+    for (size_t r=0; r<m.size(); r++)
+        for (size_t c=0; c<m.size(); c++)
+            out[r][c] *= a;
+    return out;
+}
+QMatrix operator * (const QMatrix& m, const qcomp& a) {
+    return a * m;
+}
+QMatrix operator / (const QMatrix& m, const qcomp& a) {
+    QMatrix out = m;
+    for (size_t r=0; r<m.size(); r++)
+        for (size_t c=0; c<m.size(); c++)
+            out[r][c] /= a;
+    return out;
+}
+QMatrix operator * (const QMatrix& m1, const QMatrix& m2) {
+    QMatrix prod = m1; // will be completely overwritten
+    for (size_t r=0; r<m1.size(); r++)
+        for (size_t c=0; c<m1.size(); c++) {
+            prod[r][c] = 0;
+            for (size_t k=0; k<m1.size(); k++)
+                prod[r][c] += m1[r][k] * m2[k][c];
+        }
+    return prod;
+}
+void operator += (QMatrix& m1, const QMatrix& m2) {
+    m1 = m1 + m2;
+}
+void operator -= (QMatrix& m1, const QMatrix& m2) {
+    m1 = m1 - m2;
+}
+void operator *= (QMatrix& m1, const qreal& a) {
+    m1 = m1 * a;
+}
+void operator /= (QMatrix& m1, const qreal& a) {
+    m1 = m1 / a;
+}
+void operator *= (QMatrix& m1, const QMatrix& m2) {
+    m1 = m1 * m2;
+}
+QVector operator * (const QMatrix& m, const QVector& v) {
+    REQUIRE( m.size() == v.size() );
+    QVector prod = QVector(v.size());
+    for (size_t r=0; r<v.size(); r++)
+        for (size_t c=0; c<v.size(); c++)
+            prod[r] += m[r][c] * v[c];
+    return prod;
+}
 
 /** produces a dim-by-dim square complex matrix, initialised to zero 
  */
@@ -45,35 +171,6 @@ QMatrix getKroneckerProduct(QMatrix a, QMatrix b) {
     return prod;
 }
 
-QMatrix getMatrixSum(QMatrix a, QMatrix b) {
-    REQUIRE( a.size() == b.size() );
-    QMatrix s = a;
-    for (size_t r=0; r<b.size(); r++)
-        for (size_t c=0; c<b.size(); c++)
-            s[r][c] += b[r][c];
-    return s;
-}
-
-/** returns a square matrix, the product of a and b 
- */
-QMatrix getMatrixProduct(QMatrix a, QMatrix b) {
-    REQUIRE( a.size() == b.size() );
-    QMatrix prod = getZeroMatrix(a.size());
-    for (size_t r=0; r<a.size(); r++)
-        for (size_t c=0; c<a.size(); c++)
-            for (size_t k=0; k<a.size(); k++)
-                prod[r][c] += a[r][k] * b[k][c];
-    return prod;
-}
-
-QMatrix getScalarMatrixProduct(qcomp scalar, QMatrix matr) {
-    QMatrix prod = matr;
-    for (size_t r=0; r<matr.size(); r++)
-        for (size_t c=0; c<matr.size(); c++)
-            prod[r][c] *= scalar;
-    return prod;
-}
-
 /** returns the conjugate transpose of the complex square matrix a 
  */
 QMatrix getConjugateTranspose(QMatrix a) {
@@ -89,13 +186,13 @@ QMatrix getConjugateTranspose(QMatrix a) {
 QMatrix getExponentialDiagonalMatrix(QMatrix a) {
     
     // ensure diagonal
-    for (size_t r=0; r<a.size(); r++) {
+    for (size_t r=0; r<a.size(); r++)
         for (size_t c=0; c<a.size(); c++) {
             if (r == c)
                 continue;
             REQUIRE( a[r][c] == 0. );
         }
-    }
+
     // exp(diagonal) = diagonal(exp)
     QMatrix diag = a;
     for (size_t i=0; i<a.size(); i++)
@@ -109,9 +206,7 @@ QMatrix getExponentialDiagonalMatrix(QMatrix a) {
  */
 QMatrix getExponentialPauliMatrix(qreal angle, QMatrix a) {
     QMatrix iden = getIdentityMatrix(a.size());
-    QMatrix expo = getMatrixSum(
-        getScalarMatrixProduct( cos(angle/2), iden),
-        getScalarMatrixProduct( -1i * sin(angle/2), a));
+    QMatrix expo = (cos(angle/2) * iden) + (-1i * sin(angle/2) * a);
     return expo;
 }
 
@@ -232,8 +327,8 @@ QMatrix getFullOperatorMatrix(
     for (int i=0; i<numTargs; i++) {
         if (i != targs[i]) {
             matr = getSwapMatrix(i, targs[i], numQubits);
-            swaps = getMatrixProduct(matr, swaps);
-            unswaps = getMatrixProduct(unswaps, matr);
+            swaps = matr * swaps;
+            unswaps = unswaps * matr;
             
             // even if this is the last targ, ctrls might still need updating
             updateIndices(
@@ -247,8 +342,8 @@ QMatrix getFullOperatorMatrix(
         int newInd = numTargs+i;
         if (newInd != ctrls[i]) {
             matr = getSwapMatrix(newInd, ctrls[i], numQubits);
-            swaps = getMatrixProduct(matr, swaps);
-            unswaps = getMatrixProduct(unswaps, matr);
+            swaps = matr * swaps;
+            unswaps = unswaps * matr;
             
             // update remaining ctrls (if any exist)
             if (i < numCtrls-1)
@@ -268,8 +363,7 @@ QMatrix getFullOperatorMatrix(
     }
     
     // apply swap to either side (to swap qubits back and forth)
-    fullOp = getMatrixProduct(fullOp, swaps);
-    fullOp = getMatrixProduct(unswaps, fullOp);
+    fullOp = unswaps * fullOp * swaps;
     
     // restore {ctrls and targs}
     for (int i=0; i<numCtrls; i++)
@@ -278,18 +372,6 @@ QMatrix getFullOperatorMatrix(
         targs[i] = targsCopy[i];
 
     return fullOp;
-}
-
-/** returns the product of complex matrix m onto complex vector v 
- */
-QVector getMatrixVectorProduct(QMatrix m, QVector v) {
-    REQUIRE( m.size() == v.size() );
-    
-    QVector prod = QVector(v.size());
-    for (size_t r=0; r<v.size(); r++)
-        for (size_t c=0; c<v.size(); c++)
-            prod[r] += m[r][c] * v[c];
-    return prod;
 }
 
 /** returns log2 of numbers which must be gauranteed to be 2^n */
@@ -335,7 +417,9 @@ bool areEqual(QMatrix a, QMatrix b) {
 
 qreal getRandomReal(qreal min, qreal max) {
     REQUIRE( min <= max );
-    qreal r = min + (max - min) * (rand() / (qreal) RAND_MAX); 
+    qreal r = min + (max - min) * (rand() / (qreal) RAND_MAX);
+    
+    // check bounds satisfied 
     REQUIRE( r >= min );
     REQUIRE( r <= max );
     return r;
@@ -386,7 +470,7 @@ QMatrix getRandomUnitary(int numQb) {
     }
     
     // ensure matrix is indeed unitary 
-    QMatrix conjprod = getMatrixProduct(matr, getConjugateTranspose(matr));
+    QMatrix conjprod = matr * getConjugateTranspose(matr);
     QMatrix iden = getIdentityMatrix(1 << numQb);
     
     // generating big unitary matrices is hard; if we fail, default to identity
@@ -429,13 +513,13 @@ std::vector<QMatrix> getRandomKrausMap(int numQb, int numOps) {
         
     // normalise ops
     for (int i=0; i<numOps; i++)
-        ops[i] = getScalarMatrixProduct(weights[i], ops[i]);
+        ops[i] *= weights[i];
         
     // check what we produced was a valid Kraus map
     QMatrix iden = getIdentityMatrix(1 << numQb);
     QMatrix prodSum = getZeroMatrix(1 << numQb);
     for (int i=0; i<numOps; i++)
-        prodSum = getMatrixSum(prodSum, getMatrixProduct(getConjugateTranspose(ops[i]), ops[i]));
+        prodSum += getConjugateTranspose(ops[i]) * ops[i];
     REQUIRE( areEqual(prodSum, iden) );
         
     return ops;
@@ -449,7 +533,7 @@ void applyReferenceOp(
 ) {
     int numQubits = calcLog2(state.size());
     QMatrix fullOp = getFullOperatorMatrix(ctrls, numCtrls, targs, numTargs, op, numQubits);
-    state = getMatrixVectorProduct(fullOp, state);
+    state = fullOp * state;
 }
 void applyReferenceOp(
     QMatrix &state, int* ctrls, int numCtrls, int targ1, int targ2, QMatrix op
@@ -505,7 +589,7 @@ void applyReferenceOp(
     int numQubits = calcLog2(state.size());
     QMatrix leftOp = getFullOperatorMatrix(ctrls, numCtrls, targs, numTargs, op, numQubits);
     QMatrix rightOp = getConjugateTranspose(leftOp);
-    state = getMatrixProduct(getMatrixProduct(leftOp, state), rightOp);
+    state = leftOp * state * rightOp;
 }
 void applyReferenceOp(
     QVector &state, int* ctrls, int numCtrls, int targ1, int targ2, QMatrix op
