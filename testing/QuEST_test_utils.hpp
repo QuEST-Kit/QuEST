@@ -27,12 +27,19 @@ ComplexMatrix4 toComplexMatrix4(QMatrix qm);
 void toComplexMatrixN(QMatrix qm, ComplexMatrixN cm);
 
 /* building unitary matrices */
+QMatrix getZeroMatrix(size_t dim);
 QMatrix getMatrixSum(QMatrix a, QMatrix b);
 QMatrix getScalarMatrixProduct(qcomp scalar, QMatrix matr);
 QMatrix getExponentialDiagonalMatrix(QMatrix a);
 QMatrix getExponentialPauliMatrix(qreal angle, QMatrix a);
 QMatrix getKroneckerProduct(QMatrix a, QMatrix b);
 QMatrix getFullOperatorMatrix(int* ctrls, int numCtrls, int *targs, int numTargs, QMatrix op, int numQubits); 
+
+/* generating random inputs */
+int getRandomInt(int min, int max); //  exclusive max
+qreal getRandomReal(qreal min, qreal max);
+QMatrix getRandomUnitary(int numQb);
+std::vector<QMatrix> getRandomKrausMap(int numQb, int numOps);
 
 /* applying operations to reference state-vectors and density matrices. 
  * These can be non-unitary, but will still be applied as U rho U^dagger to density 
@@ -58,11 +65,6 @@ void applyReferenceOp(QVector &state, int targ, QMatrix op);
 /* comparing quregs to reference data-types */
 bool areEqual(Qureg qureg, QVector vec);
 bool areEqual(Qureg qureg, QMatrix matr);
-
-/* generating random inputs */
-QMatrix getRandomUnitary(int numQb);
-qreal getRandomReal(qreal min, qreal max);
-int getRandomInt(int min, int max); //  exclusive max
 
 /** returns log2 of numbers which must be gauranteed to be 2^n */
 unsigned int calcLog2(unsigned int res);

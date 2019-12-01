@@ -146,11 +146,8 @@ TEST_CASE( "mixDepolarising", "[decoherence]" ) {
         // ref -> (1 - prob) ref + prob/3 (X ref X + Y ref Y + Z ref Z)
         ref = getMatrixSum(
             getScalarMatrixProduct(1 - prob, ref),
-            getMatrixSum(
-                getScalarMatrixProduct(prob/3, xRef),
-                getMatrixSum(
-                    getScalarMatrixProduct(prob/3, yRef),
-                    getScalarMatrixProduct(prob/3, zRef))));
+            getScalarMatrixProduct(prob/3., 
+                getMatrixSum(xRef, getMatrixSum(yRef, zRef))));
         
         REQUIRE( areEqual(qureg, ref) );
     }
@@ -255,6 +252,78 @@ TEST_CASE( "mixPauli", "[decoherence]") {
             REQUIRE_THROWS_WITH( mixPauli(vec, 0, 0, 0, 0), Contains("density matrices") );
             destroyQureg(vec, env);
         }
+    }
+    CLEANUP_TEST(env, qureg);
+}
+
+
+
+TEST_CASE( "mixKrausMap" ) {
+    
+    PREPARE_TEST(env, qureg, ref, NUM_QUBITS);
+    
+    SECTION( "correctness" ) {
+        
+        int target = GENERATE( range(0,NUM_QUBITS) );
+        int numOps = GENERATE( range(1,4) );
+        std::vector<QMatrix> matrs = getRandomKrausMap(1, numOps);
+        
+        ComplexMatrix2 ops[numOps];
+        for (int i=0; i<numOps; i++)
+            ops[i] = toComplexMatrix2(matrs[i]);
+        mixKrausMap(qureg, target, ops, numOps);
+        
+        // set ref -> K_i ref K_i^dagger
+        QMatrix matrRefs[numOps];
+        for (int i=0; i<numOps; i++) {
+            matrRefs[i] = ref;
+            applyReferenceOp(matrRefs[i], target, matrs[i]);
+        }
+        ref = getZeroMatrix(ref.size());
+        for (int i=0; i<numOps; i++)
+            ref = getMatrixSum(ref, matrRefs[i]);
+        
+        REQUIRE( areEqual(qureg, ref) );
+        
+    }
+    SECTION( "validation" ) {
+        
+        SECTION( "number of operators" ) {
+            
+            int numOps = GENERATE( 0, 5 );
+            REQUIRE_THROWS_WITH( mixKrausMap(qureg, 0, NULL, numOps), Contains("operators") );
+        }
+        SECTION( "trace preserving" ) {
+            
+            // valid Kraus map
+            int numOps = GENERATE( range(1,4) );
+            std::vector<QMatrix> matrs = getRandomKrausMap(1, numOps);
+            ComplexMatrix2 ops[numOps];
+            for (int i=0; i<numOps; i++)
+                ops[i] = toComplexMatrix2(matrs[i]);
+                
+            // make invalid
+            ops[GENERATE_REF( range(0,numOps) )].real[0][0] = 0;
+            REQUIRE_THROWS_WITH( mixKrausMap(qureg, 0, ops, numOps), Contains("trace preserving") );
+            
+        }
+        SECTION( "qubit index" ) {
+            
+            int target = GENERATE( -1, NUM_QUBITS );
+            REQUIRE_THROWS_WITH( mixKrausMap(qureg, target, NULL, 1), Contains("Invalid target qubit") );
+        }
+        SECTION( "density-matrix" ) {
+            
+            Qureg vec = createQureg(NUM_QUBITS, env);
+            REQUIRE_THROWS_WITH( mixKrausMap(vec, 0, NULL, 1), Contains("density matrices") );
+            destroyQureg(vec, env);
+        }
+        SECTION( "operators fit in node" ) {
+            
+            qureg.numAmpsPerChunk = 3; // min 4
+            REQUIRE_THROWS_WITH( mixKrausMap(qureg, 0, NULL, 1), Contains("targets too many qubits") );
+        }
+        
     }
     CLEANUP_TEST(env, qureg);
 }

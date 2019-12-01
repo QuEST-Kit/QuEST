@@ -401,6 +401,46 @@ QMatrix getRandomUnitary(int numQb) {
     return matr;
 }
 
+/** Generate a random Kraus map, with an undisclosed distribution.
+ * This method is very simple and possibly does not generate all possible 
+ * Kraus maps. It works by generating numOps unitary matrices, and randomly 
+ * re-normalising them, such that the sum of ops[j]^dagger ops[j] = 1
+ */
+std::vector<QMatrix> getRandomKrausMap(int numQb, int numOps) {
+    REQUIRE( numOps >= 1 );
+    REQUIRE( numOps <= 4*numQb*numQb );
+
+    // generate random unitaries
+    std::vector<QMatrix> ops;
+    for (int i=0; i<numOps; i++)
+        ops.push_back(getRandomUnitary(numQb));
+        
+    // generate random weights
+    qreal weights[numOps];
+    for (int i=0; i<numOps; i++)
+        weights[i] = getRandomReal(0, 1);
+        
+    // normalise random weights
+    qreal weightSum = 0;
+    for (int i=0; i<numOps; i++)
+        weightSum += weights[i];
+    for (int i=0; i<numOps; i++)
+        weights[i] = sqrt(weights[i]/weightSum);
+        
+    // normalise ops
+    for (int i=0; i<numOps; i++)
+        ops[i] = getScalarMatrixProduct(weights[i], ops[i]);
+        
+    // check what we produced was a valid Kraus map
+    QMatrix iden = getIdentityMatrix(1 << numQb);
+    QMatrix prodSum = getZeroMatrix(1 << numQb);
+    for (int i=0; i<numOps; i++)
+        prodSum = getMatrixSum(prodSum, getMatrixProduct(getConjugateTranspose(ops[i]), ops[i]));
+    REQUIRE( areEqual(prodSum, iden) );
+        
+    return ops;
+}
+
 /** overwrites state to be the result of applying the unitary matrix op (with the
  * specified control and target qubits) to statevector state, i.e. fullOp(op) * |state>
  */
