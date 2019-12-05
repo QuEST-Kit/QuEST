@@ -250,7 +250,7 @@ TEST_CASE( "mixKrausMap" ) {
     SECTION( "correctness" ) {
         
         int target = GENERATE( range(0,NUM_QUBITS) );
-        int numOps = GENERATE( range(1,4) );
+        int numOps = GENERATE( range(1,5) ); // max 4 inclusive
         std::vector<QMatrix> matrs = getRandomKrausMap(1, numOps);
         
         ComplexMatrix2 ops[numOps];
@@ -281,7 +281,7 @@ TEST_CASE( "mixKrausMap" ) {
         SECTION( "trace preserving" ) {
             
             // valid Kraus map
-            int numOps = GENERATE( range(1,4) );
+            int numOps = GENERATE( range(1,5) ); // max 4 inclusive
             std::vector<QMatrix> matrs = getRandomKrausMap(1, numOps);
             ComplexMatrix2 ops[numOps];
             for (int i=0; i<numOps; i++)
