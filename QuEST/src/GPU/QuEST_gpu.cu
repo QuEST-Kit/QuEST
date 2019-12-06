@@ -127,7 +127,14 @@ __forceinline__ __device__ long long int insertZeroBits(long long int number, in
                 curMin = inds[t];
         
         number = insertZeroBit(number, curMin);
+        
+        // set curMin to an arbitrary non-visited elem
         prevMin = curMin;
+        for (int t=0; t < numInds; t++)
+            if (inds[t] > curMin) {
+                curMin = inds[t];
+                break;
+            }
      }
      return number;
 }
@@ -862,7 +869,7 @@ __global__ void statevec_multiControlledMultiQubitUnitaryKernel(
     long long int ind00 = insertZeroBits(thisTask, targs, numTargs);
     
     // this task only modifies amplitudes if control qubits are 1 for this state
-    if (ctrlMask&ind00 != ctrlMask)
+    if (ctrlMask && (ctrlMask&ind00) != ctrlMask)
         return;
         
     qreal *reVec = qureg.deviceStateVec.real;
@@ -979,7 +986,7 @@ __global__ void statevec_multiControlledTwoQubitUnitaryKernel(Qureg qureg, long 
     ind00 = insertTwoZeroBits(thisTask, q1, q2);
     
     // modify only if control qubits are 1 for this state
-    if (ctrlMask&ind00 != ctrlMask)
+    if (ctrlMask && (ctrlMask&ind00) != ctrlMask)
         return;
     
     ind01 = flipBit(ind00, q1);
@@ -1402,7 +1409,7 @@ void statevec_controlledPhaseShift(Qureg qureg, const int idQubit1, const int id
     
     int threadsPerCUDABlock, CUDABlocks;
     threadsPerCUDABlock = 128;
-    CUDABlocks = ceil((qreal)(qureg.numAmpsPerChunk>>1)/threadsPerCUDABlock);
+    CUDABlocks = ceil((qreal)(qureg.numAmpsPerChunk)/threadsPerCUDABlock);
     statevec_controlledPhaseShiftKernel<<<CUDABlocks, threadsPerCUDABlock>>>(qureg, idQubit1, idQubit2, cosAngle, sinAngle);
 }
 
