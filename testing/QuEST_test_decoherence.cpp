@@ -169,7 +169,7 @@ TEST_CASE( "mixDepolarising", "[decoherence]" ) {
 
 
 
-TEST_CASE( "mixPauli", "[decoherence]") {
+TEST_CASE( "mixPauli", "[decoherence]" ) {
     
     PREPARE_TEST(env, qureg, ref, NUM_QUBITS);
 
@@ -243,7 +243,7 @@ TEST_CASE( "mixPauli", "[decoherence]") {
 
 
 
-TEST_CASE( "mixKrausMap" ) {
+TEST_CASE( "mixKrausMap", "[decoherence]" ) {
     
     PREPARE_TEST(env, qureg, ref, NUM_QUBITS);
     
