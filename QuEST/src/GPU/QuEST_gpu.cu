@@ -127,7 +127,14 @@ __forceinline__ __device__ long long int insertZeroBits(long long int number, in
                 curMin = inds[t];
         
         number = insertZeroBit(number, curMin);
+        
+        // set curMin to an arbitrary non-visited elem
         prevMin = curMin;
+        for (int t=0; t < numInds; t++)
+            if (inds[t] > curMin) {
+                curMin = inds[t];
+                break;
+            }
      }
      return number;
 }
@@ -862,7 +869,7 @@ __global__ void statevec_multiControlledMultiQubitUnitaryKernel(
     long long int ind00 = insertZeroBits(thisTask, targs, numTargs);
     
     // this task only modifies amplitudes if control qubits are 1 for this state
-    if (ctrlMask&ind00 != ctrlMask)
+    if (ctrlMask && (ctrlMask&ind00) != ctrlMask)
         return;
         
     qreal *reVec = qureg.deviceStateVec.real;
