@@ -979,7 +979,7 @@ __global__ void statevec_multiControlledTwoQubitUnitaryKernel(Qureg qureg, long 
     ind00 = insertTwoZeroBits(thisTask, q1, q2);
     
     // modify only if control qubits are 1 for this state
-    if (ctrlMask&ind00 != ctrlMask)
+    if (ctrlMask && (ctrlMask&ind00) != ctrlMask)
         return;
     
     ind01 = flipBit(ind00, q1);
