@@ -1853,7 +1853,7 @@ void statevec_multiControlledMultiQubitUnitaryLocal(Qureg qureg, long long int c
 # pragma omp parallel \
     default  (none) \
     shared   (reVec,imVec, numTasks,numTargAmps,globalIndStart, ctrlMask,targs,sortedTargs,u) \
-    private  (thisTask,thisInd00,thisGlobalInd00,ind,i,t,r,c,g,reElem,imElem,  ampInds,reAmps,imAmps) 
+    private  (thisTask,thisInd00,thisGlobalInd00,ind,i,t,r,c,reElem,imElem,  ampInds,reAmps,imAmps) 
 # endif
     {
 # ifdef _OPENMP
