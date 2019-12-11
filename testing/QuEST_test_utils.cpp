@@ -11,8 +11,13 @@
 #include <algorithm>
 #include <bitset>
 
-/* 
- * Define QVector and QMatrix operator overloads.
+/* preconditions to the internal unit testing functions are checked using 
+ * DEMAND rather than Catch2's REQUIRE, so that they are not counted in the 
+ * total unit testing statistics (e.g. number of checks passed).
+ */
+#define DEMAND( cond ) if (!(cond)) FAIL( ); 
+
+/* Define QVector and QMatrix operator overloads.
  * Note that QMatrix overloads don't simply use QVector 
  * overloads, since the complex vector dot product involves 
  * conjugation, which doesn't occur in complex matrix multiplication.
@@ -23,14 +28,14 @@
  * heighten numerical errors.
  */
 QVector operator + (const QVector& v1, const QVector& v2) {
-    REQUIRE( v1.size() == v2.size() );
+    DEMAND( v1.size() == v2.size() );
     QVector out = v1;
     for (size_t i=0; i<v2.size(); i++)
         out[i] += v2[i];
     return out;
 }
 QVector operator - (const QVector& v1, const QVector& v2) {
-    REQUIRE( v1.size() == v2.size() );
+    DEMAND( v1.size() == v2.size() );
     QVector out = v1;
     for (size_t i=0; i<v2.size(); i++)
         out[i] -= v2[i];
@@ -46,7 +51,7 @@ QVector operator * (const QVector& v, const qcomp& a) {
     return a * v;
 }
 QVector operator / (const QVector& v, const qcomp& a) {
-    REQUIRE( abs(a) != 0 );
+    DEMAND( abs(a) != 0 );
     QVector out = v;
     for (size_t i=0; i<v.size(); i++)
         out[i] /= a;
@@ -54,7 +59,7 @@ QVector operator / (const QVector& v, const qcomp& a) {
 }
 qcomp operator * (const QVector &v1, const QVector& v2) {
     // this is sum_i v1_i conj(v2_i)
-    REQUIRE( v1.size() == v2.size() );
+    DEMAND( v1.size() == v2.size() );
     qcomp out = 0;
     for (size_t i=0; i<v1.size(); i++)
         out += v1[i] * conj(v2[i]);
@@ -73,7 +78,7 @@ void operator /= (QVector& v1, const qcomp& a) {
     v1 = v1 / a;
 }
 QMatrix operator + (const QMatrix& m1, const QMatrix& m2) {
-    REQUIRE( m1.size() == m2.size() );
+    DEMAND( m1.size() == m2.size() );
     QMatrix out = m1;
     for (size_t r=0; r<m1.size(); r++)
         for (size_t c=0; c<m1.size(); c++)
@@ -81,7 +86,7 @@ QMatrix operator + (const QMatrix& m1, const QMatrix& m2) {
     return out;
 }
 QMatrix operator - (const QMatrix& m1, const QMatrix& m2) {
-    REQUIRE( m1.size() == m2.size() );
+    DEMAND( m1.size() == m2.size() );
     QMatrix out = m1;
     for (size_t r=0; r<m1.size(); r++)
         for (size_t c=0; c<m1.size(); c++)
@@ -131,7 +136,7 @@ void operator *= (QMatrix& m1, const QMatrix& m2) {
     m1 = m1 * m2;
 }
 QVector operator * (const QMatrix& m, const QVector& v) {
-    REQUIRE( m.size() == v.size() );
+    DEMAND( m.size() == v.size() );
     QVector prod = QVector(v.size());
     for (size_t r=0; r<v.size(); r++)
         for (size_t c=0; c<v.size(); c++)
@@ -142,7 +147,7 @@ QVector operator * (const QMatrix& m, const QVector& v) {
 /** produces a dim-by-dim square complex matrix, initialised to zero 
  */
 QMatrix getZeroMatrix(size_t dim) {
-    REQUIRE( dim > 1 );
+    DEMAND( dim > 1 );
     QMatrix matr = QMatrix(dim);
     for (size_t i=0; i<dim; i++)
         matr[i].resize(dim);
@@ -152,7 +157,7 @@ QMatrix getZeroMatrix(size_t dim) {
 /** produces a dim-by-dim identity matrix 
  */
 QMatrix getIdentityMatrix(size_t dim) {
-    REQUIRE( dim > 1 );
+    DEMAND( dim > 1 );
     QMatrix matr = getZeroMatrix(dim);
     for (size_t i=0; i<dim; i++)
         matr[i][i] = 1;
@@ -190,7 +195,7 @@ QMatrix getExponentialDiagonalMatrix(QMatrix a) {
         for (size_t c=0; c<a.size(); c++) {
             if (r == c)
                 continue;
-            REQUIRE( a[r][c] == 0. );
+            DEMAND( a[r][c] == 0. );
         }
 
     // exp(diagonal) = diagonal(exp)
@@ -215,8 +220,8 @@ QMatrix getExponentialPauliMatrix(qreal angle, QMatrix a) {
  * complete elements of sub 
  */
 void setSubMatrix(QMatrix &dest, QMatrix sub, size_t r, size_t c) {
-    REQUIRE( sub.size() + r <= dest.size() );
-    REQUIRE( sub.size() + c <= dest.size() );
+    DEMAND( sub.size() + r <= dest.size() );
+    DEMAND( sub.size() + c <= dest.size() );
     for (size_t i=0; i<sub.size(); i++)
         for (size_t j=0; j<sub.size(); j++)
             dest[r+i][c+j] = sub[i][j];
@@ -226,9 +231,9 @@ void setSubMatrix(QMatrix &dest, QMatrix sub, size_t r, size_t c) {
  * If qb1==qb2, returns the identity matrix.
  */
 QMatrix getSwapMatrix(int qb1, int qb2, int numQb) {
-    REQUIRE( numQb > 1 );
-    REQUIRE( (qb1 >= 0 && qb1 < numQb) );
-    REQUIRE( (qb2 >= 0 && qb2 < numQb) );
+    DEMAND( numQb > 1 );
+    DEMAND( (qb1 >= 0 && qb1 < numQb) );
+    DEMAND( (qb2 >= 0 && qb2 < numQb) );
     
     if (qb1 > qb2)
         std::swap(qb1, qb2);
@@ -309,10 +314,10 @@ void updateIndices(int oldEl, int newEl, int* list1, int len1, int* list2, int l
 QMatrix getFullOperatorMatrix(
     int* ctrls, int numCtrls, int *targs, int numTargs, QMatrix op, int numQubits
 ) {        
-    REQUIRE( numCtrls >= 0 );
-    REQUIRE( numTargs >= 0 );
-    REQUIRE( numQubits >= (numCtrls+numTargs) );
-    REQUIRE( op.size() == (1 << numTargs) );
+    DEMAND( numCtrls >= 0 );
+    DEMAND( numTargs >= 0 );
+    DEMAND( numQubits >= (numCtrls+numTargs) );
+    DEMAND( op.size() == (1u << numTargs) );
     
     // copy {ctrls} and {targs}to restore at end
     std::vector<int> ctrlsCopy(ctrls, ctrls+numCtrls);
@@ -387,7 +392,7 @@ unsigned int calcLog2(unsigned int res) {
  * (mean 0, standard deviation 1).
  */
 QMatrix getRandomMatrix(int dim) {
-    REQUIRE( dim > 1 );
+    DEMAND( dim > 1 );
     
     QMatrix matr = getZeroMatrix(dim);
     for (int i=0; i<dim; i++) {
@@ -406,7 +411,7 @@ QMatrix getRandomMatrix(int dim) {
 }
 
 bool areEqual(QMatrix a, QMatrix b) {
-    REQUIRE( a.size() == b.size() );
+    DEMAND( a.size() == b.size() );
     
     for (size_t i=0; i<a.size(); i++)
         for (size_t j=0; j<b.size(); j++)
@@ -416,12 +421,12 @@ bool areEqual(QMatrix a, QMatrix b) {
 }
 
 qreal getRandomReal(qreal min, qreal max) {
-    REQUIRE( min <= max );
+    DEMAND( min <= max );
     qreal r = min + (max - min) * (rand() / (qreal) RAND_MAX);
     
     // check bounds satisfied 
-    REQUIRE( r >= min );
-    REQUIRE( r <= max );
+    DEMAND( r >= min );
+    DEMAND( r <= max );
     return r;
 }
 
@@ -438,7 +443,7 @@ int getRandomInt(int min, int max) {
  * measure, but we make no assurance. 
  */
 QMatrix getRandomUnitary(int numQb) {
-    REQUIRE( numQb >= 1 );
+    DEMAND( numQb >= 1 );
 
     QMatrix matr = getRandomMatrix(1 << numQb);
 
@@ -479,7 +484,7 @@ QMatrix getRandomUnitary(int numQb) {
         matr = getIdentityMatrix(1 << numQb);
         conjprod = matr;
     }
-    REQUIRE( areEqual(conjprod, iden) );
+    DEMAND( areEqual(conjprod, iden) );
     
     // return the new orthonormal matrix
     return matr;
@@ -491,8 +496,8 @@ QMatrix getRandomUnitary(int numQb) {
  * re-normalising them, such that the sum of ops[j]^dagger ops[j] = 1
  */
 std::vector<QMatrix> getRandomKrausMap(int numQb, int numOps) {
-    REQUIRE( numOps >= 1 );
-    REQUIRE( numOps <= 4*numQb*numQb );
+    DEMAND( numOps >= 1 );
+    DEMAND( numOps <= 4*numQb*numQb );
 
     // generate random unitaries
     std::vector<QMatrix> ops;
@@ -520,7 +525,7 @@ std::vector<QMatrix> getRandomKrausMap(int numQb, int numOps) {
     QMatrix prodSum = getZeroMatrix(1 << numQb);
     for (int i=0; i<numOps; i++)
         prodSum += getConjugateTranspose(ops[i]) * ops[i];
-    REQUIRE( areEqual(prodSum, iden) );
+    DEMAND( areEqual(prodSum, iden) );
         
     return ops;
 }
@@ -641,8 +646,8 @@ void applyReferenceOp(
  * In distributed mode, this involves a all-to-all single-int broadcast
  */
 bool areEqual(Qureg qureg, QVector vec) {
-    REQUIRE( !qureg.isDensityMatrix );
-    REQUIRE( vec.size() == qureg.numAmpsTotal );
+    DEMAND( !qureg.isDensityMatrix );
+    DEMAND( (int) vec.size() == qureg.numAmpsTotal );
     
     copyStateFromGPU(qureg);
     
@@ -675,8 +680,8 @@ bool areEqual(Qureg qureg, QVector vec) {
  * In distributed mode, this involves a all-to-all single-int broadcast
  */
 bool areEqual(Qureg qureg, QMatrix matr) {
-    REQUIRE( qureg.isDensityMatrix );
-    REQUIRE( matr.size()*matr.size() == qureg.numAmpsTotal );
+    DEMAND( qureg.isDensityMatrix );
+    DEMAND( (int) (matr.size()*matr.size()) == qureg.numAmpsTotal );
     
     // ensure local qureg.stateVec is up to date
     copyStateFromGPU(qureg);
@@ -702,7 +707,7 @@ bool areEqual(Qureg qureg, QMatrix matr) {
         /* TODO:
          * of the nodes which disagree, the lowest-rank should send its 
          * disagreeing (i, row, col, stateVec[i]) to rank 0 which should 
-         * report it immediately (before the impending REQUIRE failure)
+         * report it immediately (before the impending DEMAND failure)
          * using FAIL_CHECK, so users can determine nature of disagreement 
          * (e.g. numerical precision).
          * Note FAIL_CHECK accepts << like cout, e.g.
@@ -730,19 +735,19 @@ bool areEqual(Qureg qureg, QMatrix matr) {
     } \
 }
 ComplexMatrix2 toComplexMatrix2(QMatrix qm) {
-    REQUIRE( qm.size() == 2 );
+    DEMAND( qm.size() == 2 );
     ComplexMatrix2 cm;
     macro_copyQMatrix(cm, qm);
     return cm;
 }
 ComplexMatrix4 toComplexMatrix4(QMatrix qm) {
-    REQUIRE( qm.size() == 4 );
+    DEMAND( qm.size() == 4 );
     ComplexMatrix4 cm;
     macro_copyQMatrix(cm, qm);
     return cm;
 }
 void toComplexMatrixN(QMatrix qm, ComplexMatrixN cm) {
-    REQUIRE( qm.size() == (1<<cm.numQubits) );
+    DEMAND( qm.size() == (1u<<cm.numQubits) );
     macro_copyQMatrix(cm, qm);
 }
 
@@ -763,8 +768,8 @@ QMatrix toQMatrix(ComplexMatrix4 src) {
     return dest;
 }
 QMatrix toQMatrix(ComplexMatrixN src) {
-    REQUIRE( src.real != NULL );
-    REQUIRE( src.imag != NULL );
+    DEMAND( src.real != NULL );
+    DEMAND( src.imag != NULL );
     QMatrix dest = getZeroMatrix(1 << src.numQubits);
     macro_copyComplexMatrix(dest, src);
     return dest;
@@ -788,8 +793,8 @@ QMatrix toQMatrix(Complex alpha, Complex beta) {
  * In distributed mode, this involves a all-to-all full-statevector broadcast
  */
 QMatrix toQMatrix(Qureg qureg) {
-    REQUIRE( qureg.isDensityMatrix );
-    REQUIRE( qureg.numAmpsTotal < MPI_MAX_AMPS_IN_MSG );
+    DEMAND( qureg.isDensityMatrix );
+    DEMAND( qureg.numAmpsTotal < MPI_MAX_AMPS_IN_MSG );
     
     // ensure local qureg.stateVec is up to date
     copyStateFromGPU(qureg);
@@ -831,8 +836,8 @@ QMatrix toQMatrix(Qureg qureg) {
  * In distributed mode, this involves a all-to-all full-statevector broadcast
  */
 QVector toQVector(Qureg qureg) {
-    REQUIRE( !qureg.isDensityMatrix );
-    REQUIRE( qureg.numAmpsTotal < MPI_MAX_AMPS_IN_MSG );
+    DEMAND( !qureg.isDensityMatrix );
+    DEMAND( qureg.numAmpsTotal < MPI_MAX_AMPS_IN_MSG );
     
     // ensure local qureg.stateVec is up to date
     copyStateFromGPU(qureg);
@@ -908,7 +913,7 @@ private:
 public:
     SubListGenerator(int* elems, int numElems, int numSamps) {
         
-        REQUIRE( numSamps <= numElems );
+        DEMAND( numSamps <= numElems );
                 
         // make a record of all elements
         len = numElems;
@@ -945,7 +950,7 @@ public:
                 list[len++] = elem;
         }
         
-        REQUIRE( numSamps <= len );
+        DEMAND( numSamps <= len );
 
         // prepare sublist
         sublen = numSamps;
