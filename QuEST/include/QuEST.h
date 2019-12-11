@@ -2950,6 +2950,16 @@ void mixTwoQubitKrausMap(Qureg qureg, int target1, int target2, ComplexMatrix4 *
  * Note that in distributed mode, this routine requires that each node contains at least (2N)^2 amplitudes.
  * This means an q-qubit register can be distributed by at most 2^(q-2)/N^2 nodes.
  *
+ * Note too that this routine internally creates a 'superoperator'; a complex matrix of dimensions
+ * 2^(2*numTargets) by 2^(2*numTargets). Therefore, invoking this function incurs, 
+ * for numTargs={1,2,3,4,5, ...}, an additional memory overhead of (at double-precision)
+ * {0.25 KiB, 4 KiB, 64 KiB, 1 MiB, 16 MiB, ...} (respectively).
+ * At quad precision (usually 10 B per number, but possibly 16 B due to alignment),
+ * this costs at most double the amount of memory. 
+ * Hence for numTargets < 4, this superoperator will be created in the runtime 
+ * stack. If numTargs >= 4, the superoperator will be allocated in the heap and 
+ * therefore this routine may suffer an anomalous slowdown.
+ *
  * @ingroup decoherence
  * @param[in,out] qureg the density matrix to which to apply the map
  * @param[in] targets a list of target qubit indices, the first of which is treated as least significant in each op in \p ops
