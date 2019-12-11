@@ -1237,11 +1237,9 @@ TEST_CASE( "multiQubitUnitary", "[unitaries]" ) {
         
         // figure out max-num (inclusive) targs allowed by hardware backend
         int maxNumTargs = calcLog2(quregVec.numAmpsPerChunk);
-        if (maxNumTargs == NUM_QUBITS)
-            maxNumTargs -= 1; // make space for control qubit
-            
+        
         // generate all possible qubit arrangements
-        int numTargs = GENERATE_COPY( range(1,maxNumTargs+1) );
+        int numTargs = GENERATE_COPY( range(1,maxNumTargs+1) ); // inclusive upper bound
         int* targs = GENERATE_COPY( sublists(range(0,NUM_QUBITS), numTargs) );
         
         // for each qubit arrangement, use a new random unitary
