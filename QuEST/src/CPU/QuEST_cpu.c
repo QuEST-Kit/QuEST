@@ -1833,7 +1833,7 @@ void statevec_multiControlledMultiQubitUnitaryLocal(Qureg qureg, long long int c
     long long int thisInd00; // this thread's index of |..0..0..> (target qubits = 0) 
     long long int thisGlobalInd00; // the global (between all nodes) index of this thread's |..0..0..> state
     long long int ind;   // each thread's iteration of amplitudes to modify
-    int i, t, r, c, g;  // each thread's iteration of amps and targets 
+    int i, t, r, c;  // each thread's iteration of amps and targets 
     qreal reElem, imElem;  // each thread's iteration of u elements
     
     // each thread/task will record and modify numTargAmps amplitudes, privately
@@ -1853,7 +1853,7 @@ void statevec_multiControlledMultiQubitUnitaryLocal(Qureg qureg, long long int c
 # pragma omp parallel \
     default  (none) \
     shared   (reVec,imVec, numTasks,numTargAmps,globalIndStart, ctrlMask,targs,sortedTargs,u) \
-    private  (thisTask,thisInd00,thisGlobalInd00,ind,i,t,r,c,g,reElem,imElem,  ampInds,reAmps,imAmps) 
+    private  (thisTask,thisInd00,thisGlobalInd00,ind,i,t,r,c,reElem,imElem,  ampInds,reAmps,imAmps) 
 # endif
     {
 # ifdef _OPENMP

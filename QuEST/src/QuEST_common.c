@@ -89,13 +89,12 @@ Complex getConjugateScalar(Complex scalar) {
     return conjScalar;
 }
 
-#define macro_setConjugateMatrix(dest, src, dim) { \
+#define macro_setConjugateMatrix(dest, src, dim) \
     for (int i=0; i<dim; i++) \
         for (int j=0; j<dim; j++) { \
             dest.real[i][j] =   src.real[i][j]; \
             dest.imag[i][j] = - src.imag[i][j]; /* negative for conjugate */ \
-        } \
-}
+        } 
 ComplexMatrix2 getConjugateMatrix2(ComplexMatrix2 src) {
     ComplexMatrix2 conj;
     macro_setConjugateMatrix(conj, src, 2);
@@ -538,7 +537,7 @@ void statevec_controlledMultiQubitUnitary(Qureg qureg, int ctrl, int* targets, c
     statevec_multiControlledMultiQubitUnitary(qureg, ctrlMask, targets, numTargets, u);
 }
 
-#define macro_populateKrausOperator(superOp, ops, numOps, opDim) { \
+#define macro_populateKrausOperator(superOp, ops, numOps, opDim) \
     /* clear the superop */ \
     for (int r=0; r < (opDim)*(opDim); r++) \
         for (int c=0; c < (opDim)*(opDim); c++) { \
@@ -558,8 +557,8 @@ void statevec_controlledMultiQubitUnitary(Qureg qureg, int ctrl, int* targets, c
     					superOp->imag[i*(opDim) + k][j*(opDim) + l] += \
                             ops[n].real[i][j]*ops[n].imag[k][l] - \
                             ops[n].imag[i][j]*ops[n].real[k][l];  \
-                    } \
-}
+                    } 
+
 void populateKrausSuperOperator2(ComplexMatrix4* superOp, ComplexMatrix2* ops, int numOps) {
     int opDim = 2;
     macro_populateKrausOperator(superOp, ops, numOps, opDim);
@@ -606,8 +605,8 @@ void densmatr_mixKrausMap(Qureg qureg, int target, ComplexMatrix2 *ops, int numO
 
 ComplexMatrixN bindArraysToStackComplexMatrixN(
     int numQubits, qreal re[][1<<numQubits], qreal im[][1<<numQubits], 
-    qreal** reStorage, qreal** imStorage)
-{
+    qreal** reStorage, qreal** imStorage
+) {
     ComplexMatrixN m;
     m.numQubits = numQubits;
     m.real = reStorage;
@@ -620,18 +619,17 @@ ComplexMatrixN bindArraysToStackComplexMatrixN(
     }
     return m;
 }
-#define macro_initialiseStackComplexMatrixN(matrix, numQubits, real, imag) { \
+#define macro_initialiseStackComplexMatrixN(matrix, numQubits, real, imag) \
     /* reStorage_ and imStorage_ must not exist in calling scope */ \
     qreal* reStorage_[1<<(numQubits)]; \
     qreal* imStorage_[1<<(numQubits)]; \
-    matrix = bindArraysToStackComplexMatrixN((numQubits), real, imag, reStorage_, imStorage_); \
-}
-#define macro_allocStackComplexMatrixN(matrix, numQubits) { \
+    matrix = bindArraysToStackComplexMatrixN((numQubits), real, imag, reStorage_, imStorage_);
+
+#define macro_allocStackComplexMatrixN(matrix, numQubits) \
     /* reArr_, imArr_, reStorage_, and imStorage_ must not exist in calling scope */ \
     qreal reArr_[1<<(numQubits)][1<<(numQubits)]; \
     qreal imArr_[1<<(numQubits)][1<<(numQubits)]; \
-    macro_initialiseStackComplexMatrixN(matrix, (numQubits), reArr_, imArr_); \
-}
+    macro_initialiseStackComplexMatrixN(matrix, (numQubits), reArr_, imArr_);
 
 void densmatr_mixTwoQubitKrausMap(Qureg qureg, int target1, int target2, ComplexMatrix4 *ops, int numOps) {
     
