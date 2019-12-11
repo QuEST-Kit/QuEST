@@ -311,3 +311,77 @@ TEST_CASE( "mixKrausMap", "[decoherence]" ) {
     }
     CLEANUP_TEST(env, qureg);
 }
+
+
+
+TEST_CASE( "mixTwoQubitKrausMap" ) {
+    
+    PREPARE_TEST(env, qureg, ref, NUM_QUBITS);
+    
+    SECTION( "correctness" ) {
+        
+        int targ1 = GENERATE( range(0,NUM_QUBITS) );
+        int targ2 = GENERATE_COPY( filter([=](int t){ return t!=targ1; }, range(0,NUM_QUBITS)) );
+        int numOps = GENERATE( range(1,17) ); // max 16 inclusive
+        std::vector<QMatrix> matrs = getRandomKrausMap(2, numOps);
+        
+        ComplexMatrix4 ops[numOps];
+        for (int i=0; i<numOps; i++)
+            ops[i] = toComplexMatrix4(matrs[i]);
+        mixTwoQubitKrausMap(qureg, targ1, targ2, ops, numOps);
+        
+        // set ref -> K_i ref K_i^dagger
+        int targs[2] = {targ1, targ2};
+        QMatrix matrRefs[numOps];
+        for (int i=0; i<numOps; i++) {
+            matrRefs[i] = ref;
+            applyReferenceOp(matrRefs[i], targs, 2, matrs[i]);
+        }
+        ref = getZeroMatrix(ref.size());
+        for (int i=0; i<numOps; i++)
+            ref += matrRefs[i];
+        
+        REQUIRE( areEqual(qureg, ref) );
+        
+    }
+    SECTION( "validation" ) {
+        
+        SECTION( "number of operators" ) {
+            
+            int numOps = GENERATE( 0, 17 );
+            REQUIRE_THROWS_WITH( mixTwoQubitKrausMap(qureg, 0,1, NULL, numOps), Contains("operators") );
+        }
+        SECTION( "trace preserving" ) {
+            
+            // valid Kraus map
+            int numOps = GENERATE( range(1,16) );
+            std::vector<QMatrix> matrs = getRandomKrausMap(2, numOps);
+            ComplexMatrix4 ops[numOps];
+            for (int i=0; i<numOps; i++)
+                ops[i] = toComplexMatrix4(matrs[i]);
+                
+            // make only one of the ops at a time invalid
+            ops[GENERATE_REF( range(0,numOps) )].real[0][0] = 0;
+            REQUIRE_THROWS_WITH( mixTwoQubitKrausMap(qureg, 0,1, ops, numOps), Contains("trace preserving") );
+        }
+        SECTION( "qubit index" ) {
+            
+            int target = GENERATE( -1, NUM_QUBITS );
+            REQUIRE_THROWS_WITH( mixTwoQubitKrausMap(qureg, 0,target, NULL, 1), Contains("Invalid target qubit") );
+            REQUIRE_THROWS_WITH( mixTwoQubitKrausMap(qureg, target,0, NULL, 1), Contains("Invalid target qubit") );
+        }
+        SECTION( "density-matrix" ) {
+            
+            Qureg vec = createQureg(NUM_QUBITS, env);
+            REQUIRE_THROWS_WITH( mixTwoQubitKrausMap(vec, 0,1, NULL, 1), Contains("density matrices") );
+            destroyQureg(vec, env);
+        }
+        SECTION( "operators fit in node" ) {
+            
+            qureg.numAmpsPerChunk = 15; // min 16
+            REQUIRE_THROWS_WITH( mixTwoQubitKrausMap(qureg, 0,1, NULL, 1), Contains("targets too many qubits") );
+        }        
+    }
+    CLEANUP_TEST(env, qureg);
+}
+
