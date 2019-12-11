@@ -82,6 +82,65 @@ TEST_CASE( "mixDamping", "[decoherence]" ) {
 
 
 
+TEST_CASE( "mixDensityMatrix", "[decoherence]" ) {
+    
+    QuESTEnv env = createQuESTEnv();
+    Qureg qureg1 = createDensityQureg(NUM_QUBITS, env);
+    Qureg qureg2 = createDensityQureg(NUM_QUBITS, env);
+    initDebugState(qureg1);
+    initDebugState(qureg2);
+    QMatrix ref1 = toQMatrix(qureg1);
+    QMatrix ref2 = toQMatrix(qureg2);
+    
+    SECTION( "correctness" ) {
+        
+        // test p in {0, 1} and 10 random values in (0,1)
+        qreal prob = GENERATE( 0., 1., take(10, random(0.,1.)) );
+        mixDensityMatrix(qureg1, prob, qureg2);
+        
+        // ensure target qureg modified correctly
+        ref1 = (1-prob)*ref1 + (prob)*ref2;
+        REQUIRE( areEqual(qureg1, ref1) );
+        
+        // enure other qureg was not modified
+        REQUIRE( areEqual(qureg2, ref2) );
+    }
+    SECTION( "validation" ) {
+        
+        SECTION( "probabilities") {
+            
+            qreal prob = GENERATE( -0.1, 1.1 );
+            REQUIRE_THROWS_WITH( mixDensityMatrix(qureg1, prob, qureg2), Contains("Probabilities") );
+        }
+        SECTION( "density matrices" ) {
+            
+            // one is statevec 
+            Qureg state1 = createQureg(qureg1.numQubitsRepresented, env);
+            REQUIRE_THROWS_WITH( mixDensityMatrix(qureg1, 0, state1), Contains("density matrices") );
+            REQUIRE_THROWS_WITH( mixDensityMatrix(state1, 0, qureg1), Contains("density matrices") );
+            
+            // both are statevec
+            Qureg state2 = createQureg(qureg1.numQubitsRepresented, env);
+            REQUIRE_THROWS_WITH( mixDensityMatrix(state1, 0, state2), Contains("density matrices") );
+            
+            destroyQureg(state1, env);
+            destroyQureg(state2, env);
+        }
+        SECTION( "matching dimensions" ) {
+            
+            Qureg qureg3 = createDensityQureg(1 + qureg1.numQubitsRepresented, env);
+            REQUIRE_THROWS_WITH( mixDensityMatrix(qureg1, 0, qureg3), Contains("Dimensions") );
+            REQUIRE_THROWS_WITH( mixDensityMatrix(qureg3, 0, qureg1), Contains("Dimensions") );
+            destroyQureg(qureg3, env);
+        }
+    }
+    destroyQureg(qureg1, env);
+    destroyQureg(qureg2, env);
+    destroyQuESTEnv(env);
+}
+
+
+
 TEST_CASE( "mixDephasing", "[decoherence]" ) {
     
     PREPARE_TEST(env, qureg, ref, NUM_QUBITS);
