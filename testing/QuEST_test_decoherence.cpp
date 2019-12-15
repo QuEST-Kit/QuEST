@@ -695,7 +695,7 @@ TEST_CASE( "mixTwoQubitDepolarising", "[decoherence]" ) {
 
 
 
-TEST_CASE( "mixTwoQubitKrausMap" ) {
+TEST_CASE( "mixTwoQubitKrausMap", "[decoherence]" ) {
     
     PREPARE_TEST(env, qureg, ref, NUM_QUBITS);
     
