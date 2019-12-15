@@ -576,6 +576,124 @@ TEST_CASE( "mixKrausMap", "[decoherence]" ) {
 
 
 
+TEST_CASE( "mixTwoQubitDephasing", "[decoherence]" ) {
+    
+    PREPARE_TEST(env, qureg, ref, NUM_QUBITS);
+    
+    SECTION( "correctness" ) {
+        
+        int targ1 = GENERATE( range(0,NUM_QUBITS) );
+        int targ2 = GENERATE_COPY( filter([=](int t){ return t!=targ1; }, range(0,NUM_QUBITS)) );
+        qreal prob = getRandomReal(0, 3/4.);
+        
+        mixTwoQubitDephasing(qureg, targ1, targ2, prob);
+        
+        // ref -> (1 - prob) ref + prob/3 (Z1 ref Z1 + Z2 ref Z2 + Z1 Z2 ref Z1 Z2)
+        QMatrix zMatr{{1,0},{0,-1}};
+        QMatrix z1Ref = ref;
+        applyReferenceOp(z1Ref, targ1, zMatr); // Z1 ref Z1
+        QMatrix z2Ref = ref;
+        applyReferenceOp(z2Ref, targ2, zMatr); // Z2 ref Z2
+        QMatrix z1z2Ref = ref;
+        applyReferenceOp(z1z2Ref, targ1, zMatr);
+        applyReferenceOp(z1z2Ref, targ2, zMatr); // Z1 Z2 ref Z1 Z2
+        ref = ((1 - prob) * ref) + (prob/3.) * (z1Ref + z2Ref + z1z2Ref);
+        
+        REQUIRE( areEqual(qureg, ref) );
+    }
+    SECTION( "input validation" ) {
+        
+        SECTION( "qubit indices" ) {
+            
+            int targ = GENERATE( -1, NUM_QUBITS );
+            REQUIRE_THROWS_WITH( mixTwoQubitDephasing(qureg, 0, targ, 0), Contains("Invalid target") );
+            REQUIRE_THROWS_WITH( mixTwoQubitDephasing(qureg, targ, 0, 0), Contains("Invalid target") );
+        }
+        SECTION( "target collision" ) {
+            
+            int targ = GENERATE( range(0,NUM_QUBITS) );
+            REQUIRE_THROWS_WITH( mixTwoQubitDephasing(qureg, targ, targ, 0), Contains("target") && Contains("unique") );
+        }
+        SECTION( "probability" ) {
+            
+            REQUIRE_THROWS_WITH( mixTwoQubitDephasing(qureg, 0, 1, -.1), Contains("Probabilities") );
+            REQUIRE_THROWS_WITH( mixTwoQubitDephasing(qureg, 0, 1, 3/4. + .01), Contains("probability") && Contains("cannot exceed 3/4") );
+        }
+        SECTION( "density-matrix" ) {
+            
+            Qureg vec = createQureg(NUM_QUBITS, env);
+            REQUIRE_THROWS_WITH( mixTwoQubitDephasing(vec, 0, 1, 0), Contains("density matrices") );
+            destroyQureg(vec, env);
+        }
+    }
+    CLEANUP_TEST(env, qureg);
+}
+
+
+
+TEST_CASE( "mixTwoQubitDepolarising", "[decoherence]" ) {
+    
+    PREPARE_TEST(env, qureg, ref, NUM_QUBITS);
+    
+    SECTION( "correctness" ) {
+        
+        int targ1 = GENERATE( range(0,NUM_QUBITS) );
+        int targ2 = GENERATE_COPY( filter([=](int t){ return t!=targ1; }, range(0,NUM_QUBITS)) );
+        qreal prob = getRandomReal(0, 15/16.);
+        
+        mixTwoQubitDepolarising(qureg, targ1, targ2, prob);
+        
+        QMatrix paulis[4] = {
+            QMatrix{{1,0},{0,1}},       // I 
+            QMatrix{{0,1},{1,0}},       // X
+            QMatrix{{0,-1i},{1i,0}},    // Y
+            QMatrix{{1,0},{0,-1}}       // Z
+        };
+        
+        int targs[2] = {targ1, targ2};
+        QMatrix refInit = ref;
+        ref = (1 - (16/15.)*prob) * ref;
+        for (int i=0; i<4; i++) {
+            for (int j=0; j<4; j++) {
+                QMatrix term = refInit;
+                applyReferenceOp(term, targs, 2,
+                    getKroneckerProduct(paulis[i], paulis[j]));
+                ref += (prob/15.) * term;
+            }
+        }
+        
+        REQUIRE( areEqual(qureg, ref) );
+    }
+    SECTION( "input validation" ) {
+        
+        SECTION( "qubit indices" ) {
+            
+            int targ = GENERATE( -1, NUM_QUBITS );
+            REQUIRE_THROWS_WITH( mixTwoQubitDepolarising(qureg, 0, targ, 0), Contains("Invalid target") );
+            REQUIRE_THROWS_WITH( mixTwoQubitDepolarising(qureg, targ, 0, 0), Contains("Invalid target") );
+        }
+        SECTION( "target collision" ) {
+            
+            int targ = GENERATE( range(0,NUM_QUBITS) );
+            REQUIRE_THROWS_WITH( mixTwoQubitDepolarising(qureg, targ, targ, 0), Contains("target") && Contains("unique") );
+        }
+        SECTION( "probability" ) {
+            
+            REQUIRE_THROWS_WITH( mixTwoQubitDepolarising(qureg, 0, 1, -.1), Contains("Probabilities") );
+            REQUIRE_THROWS_WITH( mixTwoQubitDepolarising(qureg, 0, 1, 15/16. + .01), Contains("probability") && Contains("cannot exceed 15/16") );
+        }
+        SECTION( "density-matrix" ) {
+            
+            Qureg vec = createQureg(NUM_QUBITS, env);
+            REQUIRE_THROWS_WITH( mixTwoQubitDepolarising(vec, 0, 1, 0), Contains("density matrices") );
+            destroyQureg(vec, env);
+        }
+    }
+    CLEANUP_TEST(env, qureg);
+}
+
+
+
 TEST_CASE( "mixTwoQubitKrausMap" ) {
     
     PREPARE_TEST(env, qureg, ref, NUM_QUBITS);
