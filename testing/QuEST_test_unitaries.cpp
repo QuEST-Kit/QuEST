@@ -272,6 +272,21 @@ TEST_CASE( "controlledMultiQubitUnitary", "[unitaries]" ) {
             REQUIRE_THROWS_WITH( controlledMultiQubitUnitary(quregVec, ctrl, targs, numTargs, matr), Contains("unitary") );
             destroyComplexMatrixN(matr);
         }
+        SECTION( "unitary creation" ) {
+            
+            int numTargs = 3;
+            int targs[] = {1,2,3};
+            
+            /* compilers don't auto-initialise to NULL; the below circumstance 
+             * only really occurs when 'malloc' returns NULL in createComplexMatrixN, 
+             * which actually triggers its own validation. Hence this test is useless 
+             * currently.
+             */
+            ComplexMatrixN matr;
+            matr.real = NULL;
+            matr.imag = NULL; 
+            REQUIRE_THROWS_WITH( controlledMultiQubitUnitary(quregVec, 0, targs, numTargs, matr), Contains("created") );
+        }
         SECTION( "unitary dimensions" ) {
             
             int ctrl = 0;
@@ -910,7 +925,7 @@ TEST_CASE( "multiControlledMultiQubitUnitary", "[unitaries]" ) {
             // valid inds
             int numQb = 2;
             int qb1[2] = {0,1};
-            int qb2[3] = {2,3};
+            int qb2[2] = {2,3};
             ComplexMatrixN matr = createComplexMatrixN(numQb);
             toComplexMatrixN(getRandomUnitary(numQb), matr); // ensure unitary
             
@@ -924,12 +939,27 @@ TEST_CASE( "multiControlledMultiQubitUnitary", "[unitaries]" ) {
         }
         SECTION( "unitarity" ) {
             
-            int ctrls[3] = {0};
+            int ctrls[1] = {0};
             int targs[3] = {1,2,3};
             ComplexMatrixN matr = createComplexMatrixN(3); // initially zero, hence not-unitary
             
             REQUIRE_THROWS_WITH( multiControlledMultiQubitUnitary(quregVec, ctrls, 1, targs, 3, matr), Contains("unitary") );
             destroyComplexMatrixN(matr);
+        }
+        SECTION( "unitary creation" ) {
+            
+            int ctrls[1] = {0};
+            int targs[3] = {1,2,3};
+            
+            /* compilers don't auto-initialise to NULL; the below circumstance 
+             * only really occurs when 'malloc' returns NULL in createComplexMatrixN, 
+             * which actually triggers its own validation. Hence this test is useless 
+             * currently.
+             */
+            ComplexMatrixN matr;
+            matr.real = NULL;
+            matr.imag = NULL; 
+            REQUIRE_THROWS_WITH( multiControlledMultiQubitUnitary(quregVec, ctrls, 1, targs, 3, matr), Contains("created") );
         }
         SECTION( "unitary dimensions" ) {
             
@@ -1303,6 +1333,21 @@ TEST_CASE( "multiQubitUnitary", "[unitaries]" ) {
             REQUIRE_THROWS_WITH( multiQubitUnitary(quregVec, targs, numTargs, matr), Contains("unitary") );
             destroyComplexMatrixN(matr);
         }
+        SECTION( "unitary creation" ) {
+            
+            int numTargs = 3;
+            int targs[] = {1,2,3};
+            
+            /* compilers don't auto-initialise to NULL; the below circumstance 
+             * only really occurs when 'malloc' returns NULL in createComplexMatrixN, 
+             * which actually triggers its own validation. Hence this test is useless 
+             * currently.
+             */
+            ComplexMatrixN matr;
+            matr.real = NULL;
+            matr.imag = NULL; 
+            REQUIRE_THROWS_WITH( multiQubitUnitary(quregVec, targs, numTargs, matr), Contains("created") );
+        }
         SECTION( "unitary dimensions" ) {
             
             int targs[2] = {1,2};
@@ -1388,7 +1433,7 @@ TEST_CASE( "multiRotatePauli", "[unitaries]" ) {
             REQUIRE( areEqual(quregMatr, refMatr) );
         }
     }
-    SECTION( "validation" ) {
+    SECTION( "input validation" ) {
         
         SECTION( "number of targets" ) {
             
@@ -1466,7 +1511,7 @@ TEST_CASE( "multiRotateZ", "[unitaries]" ) {
             REQUIRE( areEqual(quregMatr, refMatr) );
         }
     }
-    SECTION( "validation" ) {
+    SECTION( "input validation" ) {
         
         SECTION( "number of targets" ) {
             

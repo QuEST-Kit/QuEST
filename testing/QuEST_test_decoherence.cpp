@@ -105,7 +105,7 @@ TEST_CASE( "mixDensityMatrix", "[decoherence]" ) {
         // enure other qureg was not modified
         REQUIRE( areEqual(qureg2, ref2) );
     }
-    SECTION( "validation" ) {
+    SECTION( "input validation" ) {
         
         SECTION( "probabilities") {
             
@@ -265,7 +265,7 @@ TEST_CASE( "mixPauli", "[decoherence]" ) {
         
         REQUIRE( areEqual(qureg, ref) );
     }
-    SECTION( "validation" ) {
+    SECTION( "input validation" ) {
         
         SECTION( "qubit index" ) {
             
@@ -328,9 +328,8 @@ TEST_CASE( "mixKrausMap", "[decoherence]" ) {
             ref += matrRefs[i];
         
         REQUIRE( areEqual(qureg, ref) );
-        
     }
-    SECTION( "validation" ) {
+    SECTION( "input validation" ) {
         
         SECTION( "number of operators" ) {
             
@@ -403,7 +402,7 @@ TEST_CASE( "mixTwoQubitKrausMap" ) {
         REQUIRE( areEqual(qureg, ref) );
         
     }
-    SECTION( "validation" ) {
+    SECTION( "input validation" ) {
         
         SECTION( "number of operators" ) {
             
@@ -422,6 +421,11 @@ TEST_CASE( "mixTwoQubitKrausMap" ) {
             // make only one of the ops at a time invalid
             ops[GENERATE_REF( range(0,numOps) )].real[0][0] = 0;
             REQUIRE_THROWS_WITH( mixTwoQubitKrausMap(qureg, 0,1, ops, numOps), Contains("trace preserving") );
+        }
+        SECTION( "target collision" ) {
+            
+            int target = GENERATE( range(0,NUM_QUBITS) );
+            REQUIRE_THROWS_WITH( mixTwoQubitKrausMap(qureg, target, target, NULL, 1), Contains("target qubits") && Contains("unique") );
         }
         SECTION( "qubit index" ) {
             
