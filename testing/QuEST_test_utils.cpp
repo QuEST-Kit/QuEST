@@ -479,7 +479,7 @@ QMatrix getRandomUnitary(int numQb) {
     QMatrix iden = getIdentityMatrix(1 << numQb);
     
     // generating big unitary matrices is hard; if we fail, default to identity
-    if ( numQb >= 4 && !areEqual(conjprod, iden) ) {
+    if ( numQb >= 3 && !areEqual(conjprod, iden) ) {
         
         matr = getIdentityMatrix(1 << numQb);
         conjprod = matr;

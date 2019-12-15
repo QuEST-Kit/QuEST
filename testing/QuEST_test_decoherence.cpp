@@ -228,6 +228,210 @@ TEST_CASE( "mixDepolarising", "[decoherence]" ) {
 
 
 
+TEST_CASE( "mixMultiQubitKrausMap", "[decoherence]" ) {
+    
+    PREPARE_TEST(env, qureg, ref, NUM_QUBITS);
+    
+    SECTION( "correctness" ) {
+        
+        /* note that this function incurs a stack overhead when numTargs < 4,
+         * and a heap overhead when numTargs >= 4
+         */
+        
+        // figure out max-num (inclusive) targs allowed by hardware backend
+        // (each node must contain as 2^(2*numTargs) amps)
+        int maxNumTargs = calcLog2(qureg.numAmpsPerChunk) / 2;
+        int numTargs = GENERATE_COPY( range(1,maxNumTargs+1) ); // inclusive upper bound
+        
+        // note this is very expensive to try every arrangement (2 min runtime for numTargs=5 alone)
+        int* targs = GENERATE_COPY( sublists(range(0,NUM_QUBITS), numTargs) );
+        
+        // try the min and max number of operators, and 2 random numbers 
+        // (there are way too many to try all!)
+        int maxNumOps = (2*numTargs)*(2*numTargs);
+        int numOps = GENERATE_COPY( 1, maxNumOps, take(2,random(1,maxNumOps)) );
+        
+        // use a new random map
+        std::vector<QMatrix> matrs = getRandomKrausMap(numTargs, numOps);
+                
+        // create map in QuEST datatypes
+        ComplexMatrixN ops[numOps];
+        for (int i=0; i<numOps; i++) {
+            ops[i] = createComplexMatrixN(numTargs);
+            toComplexMatrixN(matrs[i], ops[i]);
+        }
+                
+        mixMultiQubitKrausMap(qureg, targs, numTargs, ops, numOps);
+                
+        // set ref -> K_i ref K_i^dagger
+        QMatrix matrRefs[numOps];
+        for (int i=0; i<numOps; i++) {
+            matrRefs[i] = ref;
+            applyReferenceOp(matrRefs[i], targs, numTargs, matrs[i]);
+        }
+        ref = getZeroMatrix(ref.size());
+        for (int i=0; i<numOps; i++)
+            ref += matrRefs[i];
+        
+        REQUIRE( areEqual(qureg, ref) );
+        
+        // cleanup QuEST datatypes
+        for (int i=0; i<numOps; i++)
+            destroyComplexMatrixN(ops[i]);
+    }
+    SECTION( "input validation" ) {
+        
+        SECTION( "repetition of target" ) {
+            
+            // make valid targets
+            int targs[NUM_QUBITS];
+            for (int i=0; i<NUM_QUBITS; i++)
+                targs[i] = i;
+                
+            // duplicate one
+            int badInd = GENERATE( range(0,NUM_QUBITS) );
+            int copyInd = GENERATE_COPY( filter([=](int i){ return i!=badInd; }, range(0,NUM_QUBITS)) );
+            targs[badInd] = targs[copyInd];
+            
+            REQUIRE_THROWS_WITH( mixMultiQubitKrausMap(qureg, targs, NUM_QUBITS, NULL, 1), Contains("target qubits") && Contains("unique") );
+        }
+        SECTION( "qubit indices" ) { 
+            
+            // make valid targets
+            int targs[NUM_QUBITS];
+            for (int i=0; i<NUM_QUBITS; i++)
+                targs[i] = i;
+            
+            // make one invalid 
+            targs[GENERATE( range(0,NUM_QUBITS) )] = GENERATE( -1, NUM_QUBITS );
+            
+            REQUIRE_THROWS_WITH( mixMultiQubitKrausMap(qureg, targs, NUM_QUBITS, NULL, 1), Contains("Invalid target qubit") );
+        }
+        SECTION( "number of operators" ) {
+            
+            int numTargs = GENERATE( range(1,NUM_QUBITS+1) );
+            int maxNumOps = (2*numTargs)*(2*numTargs);
+            int numOps = GENERATE_REF( -1, 0, maxNumOps + 1 );
+                        
+            // make valid targets to avoid triggering target validation
+            int targs[numTargs];
+            for (int i=0; i<numTargs; i++)
+                targs[i] = i;
+            REQUIRE_THROWS_WITH( mixMultiQubitKrausMap(qureg, targs, numTargs, NULL, numOps), Contains("operators may be specified") );
+        }
+        SECTION( "initialisation of operators" ) {
+            
+            /* compilers don't auto-initialise to NULL; the below circumstance 
+             * only really occurs when 'malloc' returns NULL in createComplexMatrixN, 
+             * which actually triggers its own validation. Hence this test is useless 
+             * currently.
+             */
+             
+            int numTargs = NUM_QUBITS;
+            int numOps = (2*numTargs)*(2*numTargs);
+            
+            // make one of the max-ops explicitly NULL
+            ComplexMatrixN ops[numOps];
+            ops[GENERATE_COPY( range(0,numTargs) )].real = NULL;
+             
+            // make valid targets to avoid triggering target validation
+            int targs[numTargs];
+            for (int i=0; i<numTargs; i++)
+                targs[i] = i;
+               
+            REQUIRE_THROWS_WITH( mixMultiQubitKrausMap(qureg, targs, numTargs, ops, numOps), Contains("ComplexMatrixN") && Contains("created") );
+        }
+        SECTION( "dimension of operators" ) {
+        
+            // make valid (dimension-wise) max-qubits Kraus map
+            int numTargs = NUM_QUBITS;
+            int numOps = (2*numTargs)*(2*numTargs);
+            ComplexMatrixN ops[numOps];
+            for (int i=0; i<numOps; i++)
+                ops[i] = createComplexMatrixN(numTargs);
+            
+            // make one have wrong-dimensions 
+            int badInd = GENERATE_COPY( range(0,numTargs) );
+            destroyComplexMatrixN(ops[badInd]);
+            ops[badInd] = createComplexMatrixN(numTargs - 1);
+            
+            // make valid targets to avoid triggering target validation
+            int targs[numTargs];
+            for (int i=0; i<numTargs; i++)
+                targs[i] = i;
+                
+            REQUIRE_THROWS_WITH( mixMultiQubitKrausMap(qureg, targs, numTargs, ops, numOps), Contains("same number of qubits") );
+            
+            for (int i=0; i<numOps; i++)
+                destroyComplexMatrixN(ops[i]);
+        }
+        SECTION( "trace preserving" ) {
+            
+            int numTargs = GENERATE( range(1,NUM_QUBITS+1) );
+            int maxNumOps = (2*numTargs) * (2*numTargs);
+            int numOps = GENERATE_COPY( 1, 2, maxNumOps );
+            
+            // generate a valid map
+            std::vector<QMatrix> matrs = getRandomKrausMap(numTargs, numOps);
+            ComplexMatrixN ops[numOps];
+            for (int i=0; i<numOps; i++) {
+                ops[i] = createComplexMatrixN(numTargs);
+                toComplexMatrixN(matrs[i], ops[i]);
+            }
+            
+            // make only one invalid
+            ops[GENERATE_REF( range(0,numOps) )].real[0][0] = 0;
+            
+            // make valid targets to avoid triggering target validation
+            int targs[numTargs];
+            for (int i=0; i<numTargs; i++)
+                targs[i] = i;
+            
+            REQUIRE_THROWS_WITH( mixMultiQubitKrausMap(qureg, targs, numTargs, ops, numOps), Contains("trace preserving") );
+
+            for (int i=0; i<numOps; i++)
+                destroyComplexMatrixN(ops[i]);
+        }
+        SECTION( "density-matrix" ) {
+            
+            Qureg statevec = createQureg(NUM_QUBITS, env);
+            
+            // make valid targets to avoid triggering target validation
+            int targs[NUM_QUBITS];
+            for (int i=0; i<NUM_QUBITS; i++)
+                targs[i] = i;
+                
+            REQUIRE_THROWS_WITH( mixMultiQubitKrausMap(statevec, targs, NUM_QUBITS, NULL, 1), Contains("valid only for density matrices") );
+            destroyQureg(statevec, env);
+            
+        }
+        SECTION( "operator fits in node" ) {
+            
+            // each node requires (2 numTargs)^2 amplitudes
+            int minAmps = (2*NUM_QUBITS) * (2*NUM_QUBITS);
+            
+            // make valid targets to avoid triggering target validation
+            int targs[NUM_QUBITS];
+            for (int i=0; i<NUM_QUBITS; i++)
+                targs[i] = i;
+            
+            // make a simple Identity map    
+            ComplexMatrixN ops[] = {createComplexMatrixN(NUM_QUBITS)};
+            for (int i=0; i<(1<<NUM_QUBITS); i++)
+                ops[0].real[i][i] = 1;
+            
+            // fake a smaller qureg 
+            qureg.numAmpsPerChunk = minAmps - 1;
+            REQUIRE_THROWS_WITH( mixMultiQubitKrausMap(qureg, targs, NUM_QUBITS, ops, 1), Contains("targets too many qubits") && Contains("cannot all fit") );
+            
+            destroyComplexMatrixN(ops[0]);
+        }
+    }
+    CLEANUP_TEST(env, qureg);
+}
+
+
+
 TEST_CASE( "mixPauli", "[decoherence]" ) {
     
     PREPARE_TEST(env, qureg, ref, NUM_QUBITS);
