@@ -642,9 +642,34 @@ void densmatr_mixTwoQubitKrausMap(Qureg qureg, int target1, int target2, Complex
 void densmatr_mixMultiQubitKrausMap(Qureg qureg, int* targets, int numTargets, ComplexMatrixN* ops, int numOps) {
 
     ComplexMatrixN superOp;
-    macro_allocStackComplexMatrixN(superOp, 2*numTargets);
-    populateKrausSuperOperatorN(&superOp, ops, numOps);
-    densmatr_applyMultiQubitKrausSuperoperator(qureg, targets, numTargets, superOp);
+    
+    /* superOp will contain 2^(4 numTargets) complex numbers.
+     * At double precision, superOp will cost additional memory:
+     * numTargs=1   ->   0.25 KiB
+     * numTargs=2   ->   4 KiB 
+     * numTargs=3   ->   64 KiB
+     * numTargs=4   ->   1 MiB
+     * numTargs=5   ->   16 MiB.
+     * At quad precision (usually 10 B per number, but possibly 16 B due to alignment),
+     * this costs at most double.
+     *
+     * Hence, if superOp is kept in the stack, numTargs >= 4 would exceed Windows' 1 MB 
+     * maximum stack-space allocation (numTargs >= 5 exceeding Linux' 8 MB). Therefore, 
+     * for numTargets < 4, superOp will be kept in the stack, else in the heap
+     */
+     
+    if (numTargets < 4) {
+        // everything must live in 'if' since this macro declares local vars
+        macro_allocStackComplexMatrixN(superOp, 2*numTargets);
+        populateKrausSuperOperatorN(&superOp, ops, numOps);
+        densmatr_applyMultiQubitKrausSuperoperator(qureg, targets, numTargets, superOp);
+    }
+    else {
+        superOp = createComplexMatrixN(2*numTargets);
+        populateKrausSuperOperatorN(&superOp, ops, numOps);
+        densmatr_applyMultiQubitKrausSuperoperator(qureg, targets, numTargets, superOp);
+        destroyComplexMatrixN(superOp);
+    }
 }
 
 void densmatr_mixPauli(Qureg qureg, int qubit, qreal probX, qreal probY, qreal probZ) {

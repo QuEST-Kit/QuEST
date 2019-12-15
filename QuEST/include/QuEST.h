@@ -2935,8 +2935,7 @@ void mixKrausMap(Qureg qureg, int target, ComplexMatrix2 *ops, int numOps);
 void mixTwoQubitKrausMap(Qureg qureg, int target1, int target2, ComplexMatrix4 *ops, int numOps);
 
 /** Apply a general N-qubit Kraus map to a density matrix, as specified by at most (2N)^2
- * Kraus operators. A Kraus map is also referred to as a "operator-sum representation"
- * of a quantum channel. This allows one to simulate a general two-qubit noise process.
+ * Kraus operators. This allows one to simulate a general noise process.
  *
  * The Kraus map must be completely positive and trace preserving, which constrains each 
  * \f$ K_i \f$ in \p ops by
@@ -2949,6 +2948,16 @@ void mixTwoQubitKrausMap(Qureg qureg, int target1, int target2, ComplexMatrix4 *
  *
  * Note that in distributed mode, this routine requires that each node contains at least (2N)^2 amplitudes.
  * This means an q-qubit register can be distributed by at most 2^(q-2)/N^2 nodes.
+ *
+ * Note too that this routine internally creates a 'superoperator'; a complex matrix of dimensions
+ * 2^(2*numTargets) by 2^(2*numTargets). Therefore, invoking this function incurs, 
+ * for numTargs={1,2,3,4,5, ...}, an additional memory overhead of (at double-precision)
+ * {0.25 KiB, 4 KiB, 64 KiB, 1 MiB, 16 MiB, ...} (respectively).
+ * At quad precision (usually 10 B per number, but possibly 16 B due to alignment),
+ * this costs at most double the amount of memory. 
+ * For numTargets < 4, this superoperator will be created in the runtime 
+ * stack. For numTargs >= 4, the superoperator will be allocated in the heap and 
+ * therefore this routine may suffer an anomalous slowdown.
  *
  * @ingroup decoherence
  * @param[in,out] qureg the density matrix to which to apply the map

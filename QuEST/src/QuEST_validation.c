@@ -107,7 +107,7 @@ static const char* errorMessages[] = {
     [E_INVALID_NUM_SUM_TERMS] = "Invalid number of terms in the Pauli sum. The number of terms must be >0.",
     [E_CANNOT_FIT_MULTI_QUBIT_MATRIX] = "The specified matrix targets too many qubits; the batches of amplitudes to modify cannot all fit in a single distributed node's memory allocation.",
     [E_INVALID_UNITARY_SIZE] = "The matrix size does not match the number of target qubits.",
-    [E_COMPLEX_MATRIX_NOT_INIT] = "The ComplexMatrixN wasn't initialised with createComplexMatrix().",
+    [E_COMPLEX_MATRIX_NOT_INIT] = "The ComplexMatrixN was not successfully created (possibly insufficient memory available).",
     [E_INVALID_NUM_ONE_QUBIT_KRAUS_OPS] = "At least 1 and at most 4 single qubit Kraus operators may be specified.",
     [E_INVALID_NUM_TWO_QUBIT_KRAUS_OPS] = "At least 1 and at most 16 two-qubit Kraus operators may be specified.",
     [E_INVALID_NUM_N_QUBIT_KRAUS_OPS] = "At least 1 and at most 4*N^2 of N-qubit Kraus operators may be specified.",
@@ -330,6 +330,12 @@ void validateTwoQubitUnitaryMatrix(Qureg qureg, ComplexMatrix4 u, const char* ca
 }
 
 void validateMatrixInit(ComplexMatrixN matr, const char* caller) {
+    
+    /* note that for (most) compilers which don't automatically initialise 
+     * pointers to NULL, this can only be used to check the mallocs in createComplexMatrixN
+     * succeeded. It can not be used to differentiate whether a user actually attempted 
+     * to initialise or create their ComplexMatrixN instance.
+     */
     QuESTAssert(matr.real != NULL && matr.imag != NULL, E_COMPLEX_MATRIX_NOT_INIT, caller);
 }
 
@@ -444,11 +450,11 @@ void validateNumPauliSumTerms(int numTerms, const char* caller) {
 void validateOneQubitKrausMap(Qureg qureg, ComplexMatrix2* ops, int numOps, const char* caller) {
     int opNumQubits = 1;
     int superOpNumQubits = 2*opNumQubits;
-    validateMultiQubitMatrixFitsInNode(qureg, superOpNumQubits, caller);
-    
     int maxNumOps = superOpNumQubits*superOpNumQubits;
     QuESTAssert(numOps > 0 && numOps <= maxNumOps, E_INVALID_NUM_ONE_QUBIT_KRAUS_OPS, caller);
-
+    
+    validateMultiQubitMatrixFitsInNode(qureg, superOpNumQubits, caller);
+    
     int isPos = isCompletelyPositiveMap2(ops, numOps);
     QuESTAssert(isPos, E_INVALID_KRAUS_OPS, caller);
 }
@@ -456,27 +462,27 @@ void validateOneQubitKrausMap(Qureg qureg, ComplexMatrix2* ops, int numOps, cons
 void validateTwoQubitKrausMap(Qureg qureg, ComplexMatrix4* ops, int numOps, const char* caller) {
     int opNumQubits = 2;
     int superOpNumQubits = 2*opNumQubits;
-    validateMultiQubitMatrixFitsInNode(qureg, superOpNumQubits, caller);
-    
     int maxNumOps = superOpNumQubits*superOpNumQubits;
     QuESTAssert(numOps > 0 && numOps <= maxNumOps, E_INVALID_NUM_TWO_QUBIT_KRAUS_OPS, caller);
+    
+    validateMultiQubitMatrixFitsInNode(qureg, superOpNumQubits, caller);
 
     int isPos = isCompletelyPositiveMap4(ops, numOps);
     QuESTAssert(isPos, E_INVALID_KRAUS_OPS, caller);
 }
 
 void validateMultiQubitKrausMap(Qureg qureg, int numTargs, ComplexMatrixN* ops, int numOps, const char* caller) {
+    int opNumQubits = numTargs;
+    int superOpNumQubits = 2*opNumQubits;
+    int maxNumOps = superOpNumQubits*superOpNumQubits;
+    QuESTAssert(numOps>0 && numOps <= maxNumOps, E_INVALID_NUM_N_QUBIT_KRAUS_OPS, caller);
+        
     for (int n=0; n<numOps; n++) {
         validateMatrixInit(ops[n], __func__);
         QuESTAssert(ops[n].numQubits == numTargs, E_MISMATCHING_NUM_TARGS_KRAUS_SIZE, caller);    
     }
-        
-    int opNumQubits = numTargs;
-    int superOpNumQubits = 2*opNumQubits;
-    validateMultiQubitMatrixFitsInNode(qureg, superOpNumQubits, caller);
     
-    int maxNumOps = superOpNumQubits*superOpNumQubits;
-    QuESTAssert(numOps>0 && numOps <= maxNumOps, E_INVALID_NUM_N_QUBIT_KRAUS_OPS, caller);
+    validateMultiQubitMatrixFitsInNode(qureg, superOpNumQubits, caller);
     
     int isPos = isCompletelyPositiveMapN(ops, numOps);
     QuESTAssert(isPos, E_INVALID_KRAUS_OPS, caller);
