@@ -39,11 +39,11 @@ using Catch::Matchers::Contains;
 TEST_CASE( "mixDamping", "[decoherence]" ) {
     
     PREPARE_TEST(env, qureg, ref, NUM_QUBITS);
-    qreal prob = getRandomReal(0, 1);
 
     SECTION( "correctness " ) {
         
         int target = GENERATE( range(0,NUM_QUBITS) );
+        qreal prob = getRandomReal(0, 1);
         mixDamping(qureg, target, prob);
         
         // ref -> kraus0 ref kraus0^dagger + kraus1 ref kraus1^dagger
@@ -62,7 +62,7 @@ TEST_CASE( "mixDamping", "[decoherence]" ) {
         SECTION( "qubit index" ) {
             
             int target = GENERATE( -1, NUM_QUBITS );
-            REQUIRE_THROWS_WITH( mixDamping(qureg, target, prob), Contains("Invalid target") );
+            REQUIRE_THROWS_WITH( mixDamping(qureg, target, 0), Contains("Invalid target") );
             
         }
         SECTION( "probability" ) {
@@ -144,11 +144,11 @@ TEST_CASE( "mixDensityMatrix", "[decoherence]" ) {
 TEST_CASE( "mixDephasing", "[decoherence]" ) {
     
     PREPARE_TEST(env, qureg, ref, NUM_QUBITS);
-    qreal prob = getRandomReal(0, 1/2.);
 
     SECTION( "correctness " ) {
         
         int target = GENERATE( range(0,NUM_QUBITS) );
+        qreal prob = getRandomReal(0, 1/2.);
         mixDephasing(qureg, target, prob);
         
         // ref -> (1 - prob) ref + prob Z ref Z
@@ -163,7 +163,7 @@ TEST_CASE( "mixDephasing", "[decoherence]" ) {
         SECTION( "qubit index" ) {
             
             int target = GENERATE( -1, NUM_QUBITS );
-            REQUIRE_THROWS_WITH( mixDephasing(qureg, target, prob), Contains("Invalid target") );
+            REQUIRE_THROWS_WITH( mixDephasing(qureg, target, 0), Contains("Invalid target") );
             
         }
         SECTION( "probability" ) {
@@ -186,11 +186,11 @@ TEST_CASE( "mixDephasing", "[decoherence]" ) {
 TEST_CASE( "mixDepolarising", "[decoherence]" ) {
     
     PREPARE_TEST(env, qureg, ref, NUM_QUBITS);
-    qreal prob = getRandomReal(0, 3/4.);
 
     SECTION( "correctness " ) {
         
         int target = GENERATE( range(0,NUM_QUBITS) );
+        qreal prob = getRandomReal(0, 3/4.);
         mixDepolarising(qureg, target, prob);
         
         QMatrix xRef = ref;
@@ -208,7 +208,7 @@ TEST_CASE( "mixDepolarising", "[decoherence]" ) {
         SECTION( "qubit index" ) {
             
             int target = GENERATE( -1, NUM_QUBITS );
-            REQUIRE_THROWS_WITH( mixDepolarising(qureg, target, prob), Contains("Invalid target") );
+            REQUIRE_THROWS_WITH( mixDepolarising(qureg, target, 0), Contains("Invalid target") );
             
         }
         SECTION( "probability" ) {
@@ -435,19 +435,19 @@ TEST_CASE( "mixMultiQubitKrausMap", "[decoherence]" ) {
 TEST_CASE( "mixPauli", "[decoherence]" ) {
     
     PREPARE_TEST(env, qureg, ref, NUM_QUBITS);
-
-    // randomly generate valid pauli-error probabilities
-    qreal probs[3];
-    qreal max0 = 1/2.;                 // satisfies p1 < 1 - py
-    probs[0] = getRandomReal(0, max0);
-    qreal max1 = (max0 - probs[0])/2.; // p2 can use half of p1's "unused space"
-    probs[1] = getRandomReal(0, max1);
-    qreal max2 = (max1 - probs[1])/2.; // p3 can use half of p2's "unused space"
-    probs[2] = getRandomReal(0, max2);
         
     SECTION( "correctness" ) {
         
         int target = GENERATE( range(0,NUM_QUBITS) );
+        
+        // randomly generate valid pauli-error probabilities
+        qreal probs[3];
+        qreal max0 = 1/2.;                 // satisfies p1 < 1 - py
+        probs[0] = getRandomReal(0, max0);
+        qreal max1 = (max0 - probs[0])/2.; // p2 can use half of p1's "unused space"
+        probs[1] = getRandomReal(0, max1);
+        qreal max2 = (max1 - probs[1])/2.; // p3 can use half of p2's "unused space"
+        probs[2] = getRandomReal(0, max2);
         
         // uniformly randomly assign probs (bound to target)
         int inds[3] = {0,1,2};
@@ -532,6 +532,7 @@ TEST_CASE( "mixKrausMap", "[decoherence]" ) {
             ref += matrRefs[i];
         
         REQUIRE( areEqual(qureg, ref) );
+        
     }
     SECTION( "input validation" ) {
         
@@ -722,7 +723,6 @@ TEST_CASE( "mixTwoQubitKrausMap" ) {
             ref += matrRefs[i];
         
         REQUIRE( areEqual(qureg, ref) );
-        
     }
     SECTION( "input validation" ) {
         
