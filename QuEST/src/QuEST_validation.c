@@ -444,11 +444,11 @@ void validateNumPauliSumTerms(int numTerms, const char* caller) {
 void validateOneQubitKrausMap(Qureg qureg, ComplexMatrix2* ops, int numOps, const char* caller) {
     int opNumQubits = 1;
     int superOpNumQubits = 2*opNumQubits;
-    validateMultiQubitMatrixFitsInNode(qureg, superOpNumQubits, caller);
-    
     int maxNumOps = superOpNumQubits*superOpNumQubits;
     QuESTAssert(numOps > 0 && numOps <= maxNumOps, E_INVALID_NUM_ONE_QUBIT_KRAUS_OPS, caller);
-
+    
+    validateMultiQubitMatrixFitsInNode(qureg, superOpNumQubits, caller);
+    
     int isPos = isCompletelyPositiveMap2(ops, numOps);
     QuESTAssert(isPos, E_INVALID_KRAUS_OPS, caller);
 }
@@ -456,27 +456,27 @@ void validateOneQubitKrausMap(Qureg qureg, ComplexMatrix2* ops, int numOps, cons
 void validateTwoQubitKrausMap(Qureg qureg, ComplexMatrix4* ops, int numOps, const char* caller) {
     int opNumQubits = 2;
     int superOpNumQubits = 2*opNumQubits;
-    validateMultiQubitMatrixFitsInNode(qureg, superOpNumQubits, caller);
-    
     int maxNumOps = superOpNumQubits*superOpNumQubits;
     QuESTAssert(numOps > 0 && numOps <= maxNumOps, E_INVALID_NUM_TWO_QUBIT_KRAUS_OPS, caller);
+    
+    validateMultiQubitMatrixFitsInNode(qureg, superOpNumQubits, caller);
 
     int isPos = isCompletelyPositiveMap4(ops, numOps);
     QuESTAssert(isPos, E_INVALID_KRAUS_OPS, caller);
 }
 
 void validateMultiQubitKrausMap(Qureg qureg, int numTargs, ComplexMatrixN* ops, int numOps, const char* caller) {
+    int opNumQubits = numTargs;
+    int superOpNumQubits = 2*opNumQubits;
+    int maxNumOps = superOpNumQubits*superOpNumQubits;
+    QuESTAssert(numOps>0 && numOps <= maxNumOps, E_INVALID_NUM_N_QUBIT_KRAUS_OPS, caller);
+        
     for (int n=0; n<numOps; n++) {
         validateMatrixInit(ops[n], __func__);
         QuESTAssert(ops[n].numQubits == numTargs, E_MISMATCHING_NUM_TARGS_KRAUS_SIZE, caller);    
     }
-        
-    int opNumQubits = numTargs;
-    int superOpNumQubits = 2*opNumQubits;
-    validateMultiQubitMatrixFitsInNode(qureg, superOpNumQubits, caller);
     
-    int maxNumOps = superOpNumQubits*superOpNumQubits;
-    QuESTAssert(numOps>0 && numOps <= maxNumOps, E_INVALID_NUM_N_QUBIT_KRAUS_OPS, caller);
+    validateMultiQubitMatrixFitsInNode(qureg, superOpNumQubits, caller);
     
     int isPos = isCompletelyPositiveMapN(ops, numOps);
     QuESTAssert(isPos, E_INVALID_KRAUS_OPS, caller);
