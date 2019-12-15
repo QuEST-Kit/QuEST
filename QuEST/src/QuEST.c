@@ -1012,10 +1012,18 @@ void mixMultiQubitKrausMap(Qureg qureg, int* targets, int numTargets, ComplexMat
          m.real[n] = calloc(numRows, sizeof **m.real);
          m.imag[n] = calloc(numRows, sizeof **m.imag);
      }
+     
+     // error if the ComplexMatrixN was not successfully malloc'ds
+     validateMatrixInit(m, __func__);
+     
      return m;
  }
  
 void destroyComplexMatrixN(ComplexMatrixN m) {
+    /* this checks m.real/imag != NULL, which is only ever set when the mallocs 
+     * in createComplexMatrixN fail, which already prompts an error. Hence 
+     * this check if useless 
+     */
     validateMatrixInit(m, __func__);
     
     int numRows = 1 << m.numQubits;
