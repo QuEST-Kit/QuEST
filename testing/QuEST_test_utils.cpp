@@ -640,6 +640,38 @@ void applyReferenceOp(
     applyReferenceOp(state, NULL, 0, targs, 1, op);
 }
 
+/** hardware-agnostic comparison of the given quregs, to within 
+ * the QuEST_PREC-specific REAL_EPS (defined in QuEST_precision) precision.
+ * In GPU mode, this involves a GPU to CPU memory copy overhead.
+ * In distributed mode, this involves a all-to-all single-int broadcast
+ */
+bool areEqual(Qureg qureg1, Qureg qureg2, qreal precision) {
+    DEMAND( qureg1.isDensityMatrix == qureg2.isDensityMatrix );
+    DEMAND( qureg1.numAmpsTotal == qureg2.numAmpsTotal );
+        
+    copyStateFromGPU(qureg1);
+    copyStateFromGPU(qureg2);
+    
+    // loop terminates when areEqual = 0
+    int areEqual = 1;
+    for (long long int i=0; areEqual && i<qureg1.numAmpsPerChunk; i++)
+        areEqual = (
+               absReal(qureg1.stateVec.real[i] - qureg2.stateVec.real[i]) < precision
+            && absReal(qureg1.stateVec.imag[i] - qureg2.stateVec.imag[i]) < precision);
+            
+    // if one node's partition wasn't equal, all-nodes must report not-equal
+    int allAreEqual = areEqual;
+#ifdef MPI_VERSION
+    if (qureg.numChunks > 1)
+        MPI_Allreduce(&areEqual, &allAreEqual, 1, MPI_INTEGER, MPI_LAND, MPI_COMM_WORLD);
+#endif
+
+    return allAreEqual;
+}
+bool areEqual(Qureg qureg1, Qureg qureg2) {
+    return areEqual(qureg1, qureg2, REAL_EPS);
+}
+
 /** hardware-agnostic comparison of the given vector and pure qureg, to within 
  * the QuEST_PREC-specific REAL_EPS (defined in QuEST_precision) precision.
  * In GPU mode, this involves a GPU to CPU memory copy overhead.

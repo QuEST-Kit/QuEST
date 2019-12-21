@@ -85,6 +85,7 @@ void applyReferenceOp(QVector &state, int ctrl, int targ1, int targ2, QMatrix op
 void applyReferenceOp(QVector &state, int targ, QMatrix op);
 
 /* comparing quregs to reference data-types */
+bool areEqual(Qureg qureg1, Qureg qureg2);
 bool areEqual(Qureg qureg, QVector vec);
 bool areEqual(Qureg qureg, QMatrix matr);
 bool areEqual(Qureg qureg1, Qureg qureg2, qreal precision);
