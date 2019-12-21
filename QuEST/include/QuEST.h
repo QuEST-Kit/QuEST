@@ -393,9 +393,11 @@ void initBlankState(Qureg qureg);
 void initZeroState(Qureg qureg);
 
 /** Initialise a set of \f$ N \f$ qubits to the plus state
- * \f$ {| + \rangle}^{\otimes N} = \frac{1}{\sqrt{2^N}} (| 0 \rangle + | 1 \rangle)^{\otimes N} \f$.
+ * \f$ {| + \rangle}^{\otimes N} = \frac{1}{\sqrt{2^N}} (| 0 \rangle + | 1 \rangle)^{\otimes N} \f$
+ * (and similarly \f$ |+\rangle \langle+| \f$ for density matrices).
  * This is the product state of \f$N\f$ qubits where every classical state is uniformly 
- * populated with real coefficient \f$\frac{1}{\sqrt{2^N}}\f$.
+ * populated (with real coefficient \f$\frac{1}{\sqrt{2^N}}\f$ in the state-vector 
+ * and \f$\frac{1}{{2^N}}\f$ in the density-matrix).
  * This is equivalent to applying a Hadamard to every qubit in the zero state: 
  * \f$ \hat{H}^{\otimes N} {|0\rangle}^{\otimes N} \f$
  *
@@ -406,14 +408,28 @@ void initZeroState(Qureg qureg);
  */
 void initPlusState(Qureg qureg);
 
-/** Initialise a set of \f$ N \f$ qubits to the classical state with index \p stateInd.
- * Note \f$ | 00 \dots 00 \rangle \f$ has \p stateInd 0, \f$ | 00 \dots 01 \rangle \f$ has \p stateInd 1, 
- * \f$ | 11 \dots 11 \rangle \f$ has \p stateInd \f$ 2^N - 1 \f$, etc.
- * Subsequent calls to getProbAmp will yield 0 for all indices except \p stateInd.
+/** Initialise a set of \f$ N \f$ qubits to the classical state (also known as a 
+ * "computational basis state") with index \p stateInd. State-vectors will be 
+ * initialised to \f$ | \text{stateInd} \rangle \f$, and density-matrices to
+ * \f$ | \text{stateInd} \rangle \langle \text{stateInd} | \f$
+ *
+ * Classical states are indexed from zero, so that \p stateInd = 0 produces
+ * \f$ | 00 \dots 00 \rangle \f$,
+ * and  \p stateInd = 1 produces \f$ | 00 \dots 01 \rangle \f$, and 
+ * \p stateInd = \f$ 2^N - 1 \f$ produces 
+ * \f$ | 11 \dots 11 \rangle \f$.
+ * Subsequent calls to getProbAmp will yield 0 for all indices except \p stateInd,
+ * and the phase of \p stateInd's amplitude will be 1 (real).
+ *
+ * This function can be used to initialise a \p Qureg in a specific binary state
+ * (e.g. \p 11001) using a binary literal (supported by only some compilers):
+ *
+ *      initClassicalState(qureg, 0b11001);
  *
  * @ingroup init
  * @param[in,out] qureg the object representing the set of qubits to be initialised
  * @param[in] stateInd the index (0 to the number of amplitudes, exclusive) of the state to give probability 1
+ * @throws exitWithError if \p stateInd is outside [0, 2^N-1].
  * @author Tyson Jones
  */
 void initClassicalState(Qureg qureg, long long int stateInd);
@@ -425,6 +441,8 @@ void initClassicalState(Qureg qureg, long long int stateInd);
  * @ingroup init
  * @param[in,out] qureg the object representing the set of qubits to be initialised
  * @param[in] pure the pure state to be copied or to give probability 1 in qureg
+ * @throws exitWithError if \p qureg and \p pure have mismatching dimensions, or if 
+ *  \p pure is a density matrix.
  * @author Tyson Jones
  */
 void initPureState(Qureg qureg, Qureg pure);
@@ -455,7 +473,7 @@ void initDebugState(Qureg qureg);
  */
 void initStateFromAmps(Qureg qureg, qreal* reals, qreal* imags);
 
-/** Edit qureg to adopt the subset of amplitudes passed in \p reals and \p imags.
+/** Overwrites a subset of the amplitudes in \p qureg, with those passed in \p reals and \p imags.
  * Only amplitudes with indices in [\p startInd, \p startInd + \p numAmps] will be changed, which means
  * the new state may not be L2 normalised. This allows the user to initialise a custom state by 
  * setting batches of amplitudes.
@@ -467,7 +485,10 @@ void initStateFromAmps(Qureg qureg, qreal* reals, qreal* imags);
  * @param[in] imags array of the imaginary components of the new amplitudes
  * @param[in] numAmps the length of each of the reals and imags arrays.
  * @throws exitWithError
- *      if \p qureg is not a statevector (i.e. is a density matrix)
+ *      if \p qureg is not a statevector (i.e. is a density matrix),
+ *      or if \p startInd is outside [0, \p qureg.numAmpsTotal],
+ *      or if \p numAmps is outside [0, \p qureg.numAmpsTotal],
+ *      or if \p numAmps + \p startInd is >= qureg.numAmpsTotal.
  * @author Tyson Jones
  */
 void setAmps(Qureg qureg, long long int startInd, qreal* reals, qreal* imags, long long int numAmps);
