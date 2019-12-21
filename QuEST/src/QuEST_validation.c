@@ -28,6 +28,7 @@ typedef enum {
     E_INVALID_TARGET_QUBIT,
     E_INVALID_CONTROL_QUBIT,
     E_INVALID_STATE_INDEX,
+    E_INVALID_AMP_INDEX,
     E_INVALID_NUM_AMPS,
     E_INVALID_OFFSET_NUM_AMPS,
     E_TARGET_IS_CONTROL,
@@ -74,6 +75,7 @@ static const char* errorMessages[] = {
     [E_INVALID_TARGET_QUBIT] = "Invalid target qubit. Note qubits are zero indexed.",
     [E_INVALID_CONTROL_QUBIT] = "Invalid control qubit. Note qubits are zero indexed.",
     [E_INVALID_STATE_INDEX] = "Invalid state index. Must be >=0 and <2^numQubits.",
+    [E_INVALID_AMP_INDEX] = "Invalid amplitude index. Must be >=0 and <2^numQubits.",
     [E_INVALID_NUM_AMPS] = "Invalid number of amplitudes. Must be >=0 and <=2^numQubits.",
     [E_INVALID_OFFSET_NUM_AMPS] = "More amplitudes given than exist in the statevector from the given starting index.",
     [E_TARGET_IS_CONTROL] = "Control qubit cannot equal target qubit.",
@@ -245,8 +247,13 @@ void validateStateIndex(Qureg qureg, long long int stateInd, const char* caller)
     QuESTAssert(stateInd>=0 && stateInd<stateMax, E_INVALID_STATE_INDEX, caller);
 }
 
+void validateAmpIndex(Qureg qureg, long long int ampInd, const char* caller) {
+    long long int indMax = 1LL << qureg.numQubitsRepresented;
+    QuESTAssert(ampInd>=0 && ampInd<indMax, E_INVALID_AMP_INDEX, caller);
+}
+
 void validateNumAmps(Qureg qureg, long long int startInd, long long int numAmps, const char* caller) {
-    validateStateIndex(qureg, startInd, caller);
+    validateAmpIndex(qureg, startInd, caller);
     QuESTAssert(numAmps >= 0 && numAmps <= qureg.numAmpsTotal, E_INVALID_NUM_AMPS, caller);
     QuESTAssert(numAmps + startInd <= qureg.numAmpsTotal, E_INVALID_OFFSET_NUM_AMPS, caller);
 }
