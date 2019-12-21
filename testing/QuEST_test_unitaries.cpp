@@ -101,7 +101,7 @@ TEST_CASE( "compactUnitary", "[unitaries]" ) {
 
             compactUnitary(quregMatr, target, alpha, beta);
             applyReferenceOp(refMatr, target, op);    
-            REQUIRE( areEqual(quregMatr, refMatr) );
+            REQUIRE( areEqual(quregMatr, refMatr, 10*REAL_EPS) );
         }
     }
     SECTION( "input validation" ) {
@@ -149,7 +149,7 @@ TEST_CASE( "controlledCompactUnitary", "[unitaries]" ) {
 
             controlledCompactUnitary(quregMatr, control, target, alpha, beta);
             applyReferenceOp(refMatr, control, target, op);    
-            REQUIRE( areEqual(quregMatr, refMatr) );
+            REQUIRE( areEqual(quregMatr, refMatr, 10*REAL_EPS) );
         }
     }
     SECTION( "input validation" ) {
@@ -209,7 +209,7 @@ TEST_CASE( "controlledMultiQubitUnitary", "[unitaries]" ) {
 
             controlledMultiQubitUnitary(quregMatr, ctrl, targs, numTargs, matr);
             applyReferenceOp(refMatr, ctrl, targs, numTargs, op);
-            REQUIRE( areEqual(quregMatr, refMatr) );
+            REQUIRE( areEqual(quregMatr, refMatr, 10*REAL_EPS) );
         }
         destroyComplexMatrixN(matr);
     }
@@ -511,7 +511,7 @@ TEST_CASE( "controlledRotateAroundAxis", "[unitaries]" ) {
         
             controlledRotateAroundAxis(quregMatr, control, target, param, vec);
             applyReferenceOp(refMatr, control, target, op);    
-            REQUIRE( areEqual(quregMatr, refMatr) );
+            REQUIRE( areEqual(quregMatr, refMatr, 10*REAL_EPS) );
         }
     }
     SECTION( "input validation" ) {
@@ -694,7 +694,7 @@ TEST_CASE( "controlledTwoQubitUnitary", "[unitaries]" ) {
         
             controlledTwoQubitUnitary(quregMatr, control, targ1, targ2, matr);
             applyReferenceOp(refMatr, control, targ1, targ2, op);    
-            REQUIRE( areEqual(quregMatr, refMatr) );
+            REQUIRE( areEqual(quregMatr, refMatr, 10*REAL_EPS) );
         }
     }
     SECTION( "input validation" ) {
@@ -761,7 +761,7 @@ TEST_CASE( "controlledUnitary", "[unitaries]" ) {
         
             controlledUnitary(quregMatr, control, target, matr);
             applyReferenceOp(refMatr, control, target, op);    
-            REQUIRE( areEqual(quregMatr, refMatr) );
+            REQUIRE( areEqual(quregMatr, refMatr, 10*REAL_EPS) );
         }
     }
     SECTION( "input validation" ) {
@@ -808,7 +808,7 @@ TEST_CASE( "hadamard", "[unitaries]" ) {
 
             hadamard(quregMatr, target);
             applyReferenceOp(refMatr, target, op);
-            REQUIRE( areEqual(quregMatr, refMatr) );
+            REQUIRE( areEqual(quregMatr, refMatr, 10*REAL_EPS) );
         }
     }
     SECTION( "input validation" ) {
@@ -859,7 +859,7 @@ TEST_CASE( "multiControlledMultiQubitUnitary", "[unitaries]" ) {
 
             multiControlledMultiQubitUnitary(quregMatr, ctrls, numCtrls, targs, numTargs, matr);
             applyReferenceOp(refMatr, ctrls, numCtrls, targs, numTargs, op);
-            REQUIRE( areEqual(quregMatr, refMatr) );
+            REQUIRE( areEqual(quregMatr, refMatr, 10*REAL_EPS) );
         }
         destroyComplexMatrixN(matr);
     }
@@ -1122,7 +1122,7 @@ TEST_CASE( "multiControlledTwoQubitUnitary", "[unitaries]" ) {
 
             multiControlledTwoQubitUnitary(quregMatr, ctrls, numCtrls, targ1, targ2, matr);
             applyReferenceOp(refMatr, ctrls, numCtrls, targ1, targ2, op);
-            REQUIRE( areEqual(quregMatr, refMatr) );
+            REQUIRE( areEqual(quregMatr, refMatr, 10*REAL_EPS) );
         }
     }
     SECTION( "input validation" ) {
@@ -1216,7 +1216,7 @@ TEST_CASE( "multiControlledUnitary", "[unitaries]" ) {
 
             multiControlledUnitary(quregMatr, ctrls, numCtrls, target, matr);
             applyReferenceOp(refMatr, ctrls, numCtrls, target, op);
-            REQUIRE( areEqual(quregMatr, refMatr) );
+            REQUIRE( areEqual(quregMatr, refMatr, 10*REAL_EPS) );
         }
     }
     SECTION( "input validation" ) {
@@ -1287,7 +1287,7 @@ TEST_CASE( "multiQubitUnitary", "[unitaries]" ) {
 
             multiQubitUnitary(quregMatr, targs, numTargs, matr);
             applyReferenceOp(refMatr, targs, numTargs, op);
-            REQUIRE( areEqual(quregMatr, refMatr) );
+            REQUIRE( areEqual(quregMatr, refMatr, 10*REAL_EPS) );
         }
         destroyComplexMatrixN(matr);
     }
@@ -1430,7 +1430,7 @@ TEST_CASE( "multiRotatePauli", "[unitaries]" ) {
             multiRotatePauli(quregMatr, targs, paulis, numTargs, param);
             if (numRefTargs > 0)
                 applyReferenceOp(refMatr, refTargs, numRefTargs, op);
-            REQUIRE( areEqual(quregMatr, refMatr) );
+            REQUIRE( areEqual(quregMatr, refMatr, 10*REAL_EPS) );
         }
     }
     SECTION( "input validation" ) {
@@ -1585,7 +1585,7 @@ TEST_CASE( "multiStateControlledUnitary", "[unitaries]" ) {
                 if (ctrlState[i] == 0)
                     applyReferenceOp(refMatr, ctrls[i], notOp);
             
-            REQUIRE( areEqual(quregMatr, refMatr) );
+            REQUIRE( areEqual(quregMatr, refMatr, 10*REAL_EPS) );
         }
     }
     SECTION( "input validation" ) {
@@ -1815,7 +1815,7 @@ TEST_CASE( "rotateAroundAxis", "[unitaries]" ) {
 
             rotateAroundAxis(quregMatr, target, param, vec);
             applyReferenceOp(refMatr, target, op);
-            REQUIRE( areEqual(quregMatr, refMatr) );
+            REQUIRE( areEqual(quregMatr, refMatr, 10*REAL_EPS) );
         }
     }
     SECTION( "input validation" ) {
@@ -2132,7 +2132,7 @@ TEST_CASE( "twoQubitUnitary", "[unitaries]" ) {
 
             twoQubitUnitary(quregMatr, targ1, targ2, matr);
             applyReferenceOp(refMatr, targs, 2, op);
-            REQUIRE( areEqual(quregMatr, refMatr) );
+            REQUIRE( areEqual(quregMatr, refMatr, 10*REAL_EPS) );
         }
     }
     SECTION( "input validation" ) {
@@ -2188,7 +2188,7 @@ TEST_CASE( "unitary", "[unitaries]" ) {
         
             unitary(quregMatr, target, matr);
             applyReferenceOp(refMatr, target, op);
-            REQUIRE( areEqual(quregMatr, refMatr) );
+            REQUIRE( areEqual(quregMatr, refMatr, 10*REAL_EPS) );
         }
     }
     SECTION( "input validation" ) {

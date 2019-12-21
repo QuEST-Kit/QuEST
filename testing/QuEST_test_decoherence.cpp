@@ -1,5 +1,4 @@
 
-
 #include "catch.hpp"
 #include "QuEST.h"
 #include "QuEST_test_utils.hpp"
@@ -273,7 +272,7 @@ TEST_CASE( "mixMultiQubitKrausMap", "[decoherence]" ) {
         for (int i=0; i<numOps; i++)
             ref += matrRefs[i];
         
-        REQUIRE( areEqual(qureg, ref) );
+        REQUIRE( areEqual(qureg, ref, 1E2*REAL_EPS) );
         
         // cleanup QuEST datatypes
         for (int i=0; i<numOps; i++)
@@ -531,8 +530,7 @@ TEST_CASE( "mixKrausMap", "[decoherence]" ) {
         for (int i=0; i<numOps; i++)
             ref += matrRefs[i];
         
-        REQUIRE( areEqual(qureg, ref) );
-        
+        REQUIRE( areEqual(qureg, ref, 10*REAL_EPS) );
     }
     SECTION( "input validation" ) {
         
@@ -663,7 +661,7 @@ TEST_CASE( "mixTwoQubitDepolarising", "[decoherence]" ) {
             }
         }
         
-        REQUIRE( areEqual(qureg, ref) );
+        REQUIRE( areEqual(qureg, ref, 1E4*REAL_EPS) );
     }
     SECTION( "input validation" ) {
         
@@ -722,7 +720,7 @@ TEST_CASE( "mixTwoQubitKrausMap", "[decoherence]" ) {
         for (int i=0; i<numOps; i++)
             ref += matrRefs[i];
         
-        REQUIRE( areEqual(qureg, ref) );
+        REQUIRE( areEqual(qureg, ref, 10*REAL_EPS) );
     }
     SECTION( "input validation" ) {
         

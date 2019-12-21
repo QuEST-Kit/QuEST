@@ -645,7 +645,7 @@ void applyReferenceOp(
  * In GPU mode, this involves a GPU to CPU memory copy overhead.
  * In distributed mode, this involves a all-to-all single-int broadcast
  */
-bool areEqual(Qureg qureg, QVector vec) {
+bool areEqual(Qureg qureg, QVector vec, qreal precision) {
     DEMAND( !qureg.isDensityMatrix );
     DEMAND( (int) vec.size() == qureg.numAmpsTotal );
     
@@ -658,8 +658,8 @@ bool areEqual(Qureg qureg, QVector vec) {
     int areEqual = 1;
     for (long long int i=0; areEqual && i<qureg.numAmpsPerChunk; i++)
         areEqual = (
-               absReal(qureg.stateVec.real[i] - real(vec[startInd+i])) < REAL_EPS
-            && absReal(qureg.stateVec.imag[i] - imag(vec[startInd+i])) < REAL_EPS);
+               absReal(qureg.stateVec.real[i] - real(vec[startInd+i])) < precision
+            && absReal(qureg.stateVec.imag[i] - imag(vec[startInd+i])) < precision);
             
     // if one node's partition wasn't equal, all-nodes must report not-equal
     int allAreEqual = areEqual;
@@ -670,6 +670,9 @@ bool areEqual(Qureg qureg, QVector vec) {
         
     return allAreEqual;
 }
+bool areEqual(Qureg qureg, QVector vec) {
+    return areEqual(qureg, vec, REAL_EPS);
+}
 
 /** hardware-agnostic comparison of the given matrix and mixed qureg, to within 
  * the QuEST_PREC-specific 1E4*REAL_EPS (defined in QuEST_precision) precision.
@@ -679,7 +682,7 @@ bool areEqual(Qureg qureg, QVector vec) {
  * In GPU mode, this involves a GPU to CPU memory copy overhead.
  * In distributed mode, this involves a all-to-all single-int broadcast
  */
-bool areEqual(Qureg qureg, QMatrix matr) {
+bool areEqual(Qureg qureg, QMatrix matr, qreal precision) {
     DEMAND( qureg.isDensityMatrix );
     DEMAND( (int) (matr.size()*matr.size()) == qureg.numAmpsTotal );
     
@@ -698,7 +701,7 @@ bool areEqual(Qureg qureg, QMatrix matr) {
         col = globalInd / matr.size();
         qreal realDif = absReal(qureg.stateVec.real[i] - real(matr[row][col]));
         qreal imagDif = absReal(qureg.stateVec.imag[i] - imag(matr[row][col]));
-        ampsAgree = (realDif < 1E4*REAL_EPS && imagDif < 1E4*REAL_EPS);
+        ampsAgree = (realDif < precision && imagDif < precision);
 
         // break loop as soon as amplitudes disagree
         if (!ampsAgree)
@@ -723,6 +726,9 @@ bool areEqual(Qureg qureg, QMatrix matr) {
 #endif
         
     return allAmpsAgree;
+}
+bool areEqual(Qureg qureg, QMatrix matr) {
+    return areEqual(qureg, matr, REAL_EPS);
 }
 
 /* Copies QMatrix into a CompelxMAtrix struct */

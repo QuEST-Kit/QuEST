@@ -87,6 +87,9 @@ void applyReferenceOp(QVector &state, int targ, QMatrix op);
 /* comparing quregs to reference data-types */
 bool areEqual(Qureg qureg, QVector vec);
 bool areEqual(Qureg qureg, QMatrix matr);
+bool areEqual(Qureg qureg1, Qureg qureg2, qreal precision);
+bool areEqual(Qureg qureg, QVector vec, qreal precision);
+bool areEqual(Qureg qureg, QMatrix matr, qreal precision);
 
 /** returns log2 of numbers which must be gauranteed to be 2^n */
 unsigned int calcLog2(unsigned int res);
