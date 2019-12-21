@@ -21,7 +21,7 @@
 EXE = test
 
 # space-separated names (no file type) of all user source files (.c or .cpp) in the root directory
-SOURCES = catch_main QuEST_test_utils QuEST_test_unitaries QuEST_test_decoherence QuEST_test_benchmarks
+SOURCES = catch_main QuEST_test_utils QuEST_test_unitaries QuEST_test_decoherence QuEST_test_benchmarks QuEST_test_state_initialisations
 
 # path to QuEST library from root directory
 QUEST_DIR = ../QuEST
@@ -33,7 +33,7 @@ COMPILER = g++-8
 COMPILER_TYPE = GNU
 
 # hardwares to target: 1 means use, 0 means don't use
-MULTITHREADED = 0
+MULTITHREADED = 1
 DISTRIBUTED = 0
 GPUACCELERATED = 0
 
