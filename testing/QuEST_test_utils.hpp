@@ -49,17 +49,23 @@ QMatrix toQMatrix(Qureg qureg);
 ComplexMatrix2 toComplexMatrix2(QMatrix qm);
 ComplexMatrix4 toComplexMatrix4(QMatrix qm);
 void toComplexMatrixN(QMatrix qm, ComplexMatrixN cm);
+void toQureg(Qureg qureg, QVector vec);
+void toQureg(Qureg qureg, QMatrix mat);
 
 /* building unitary matrices */
 QMatrix getZeroMatrix(size_t dim);
 QMatrix getExponentialDiagonalMatrix(QMatrix a);
 QMatrix getExponentialPauliMatrix(qreal angle, QMatrix a);
 QMatrix getKroneckerProduct(QMatrix a, QMatrix b);
-QMatrix getFullOperatorMatrix(int* ctrls, int numCtrls, int *targs, int numTargs, QMatrix op, int numQubits); 
+QMatrix getFullOperatorMatrix(int* ctrls, int numCtrls, int *targs, int numTargs, QMatrix op, int numQubits);
+QVector getNormalised(QVector vec);
+QMatrix getKetBra(QVector ket, QVector bra);
 
 /* generating random inputs */
 int getRandomInt(int min, int max); //  exclusive max
 qreal getRandomReal(qreal min, qreal max);
+QVector getRandomQVector(int dim);
+QMatrix getRandomQMatrix(int dim);
 QMatrix getRandomUnitary(int numQb);
 std::vector<QMatrix> getRandomKrausMap(int numQb, int numOps);
 

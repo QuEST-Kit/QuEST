@@ -164,6 +164,21 @@ QMatrix getIdentityMatrix(size_t dim) {
     return matr;
 }
 
+/** produces the matrix |ket><bra|, with ith-jth element ket(i) conj(bra(j)), since
+ * |ket><bra| = sum_i a_i|i> sum_j b_j* <j| = sum_{ij} a_i b_j* |i><j|.
+ * The dimensions of bra and ket must agree, and the returned square complex matrix 
+ * has dimensions size(bra) x size(bra).
+ */
+QMatrix getKetBra(QVector ket, QVector bra) {
+    DEMAND( ket.size() == bra.size() );
+    QMatrix mat = getZeroMatrix(ket.size());
+    
+    for (size_t r=0; r<ket.size(); r++)
+        for (size_t c=0; c<ket.size(); c++)
+            mat[r][c] = ket[r] * conj(bra[c]);
+    return mat;
+}
+
 /** returns a (otimes) b, where a and b are square but possibly different-sized 
  */
 QMatrix getKroneckerProduct(QMatrix a, QMatrix b) {
@@ -428,6 +443,61 @@ qreal getRandomReal(qreal min, qreal max) {
     DEMAND( r >= min );
     DEMAND( r <= max );
     return r;
+}
+
+/** generates a dim-length vector with random complex amplitudes in the 
+ * square joining {-1-i, 1+i}, of an undisclosed distirbution. The resulting 
+ * vector is NOT L2-normalised.
+ */
+QVector getRandomQVector(int dim) { 
+    QVector vec = QVector(dim);
+    for (int i=0; i<dim; i++)
+        vec[i] = getRandomReal(-1,1) + 1i*getRandomReal(-1,1);
+        
+    // check we didn't get the impossibly-unlikely zero-amplitude outcome 
+    DEMAND( real(vec[0]) != 0 );
+        
+    return vec;
+}
+
+/** generates a dim-by-dim matrix with random complex amplitudes in the 
+ * square joining {-1-i, 1+i}, of an undisclosed distirbution. The resulting 
+ * matrix is NOT Hermitian.
+ */
+QMatrix getRandomQMatrix(int dim) { 
+    QMatrix mat = getZeroMatrix(dim);
+    for (int r=0; r<dim; r++)
+        for (int c=0; c<dim; c++)
+            mat[r][c] = getRandomReal(-1,1) + 1i*getRandomReal(-1,1);
+            
+    // check we didn't get the impossibly-unlikely zero-amplitude outcome 
+    DEMAND( real(mat[0][0]) != 0 );
+    
+    return mat;
+}
+
+/** L2-normalises a complex vector, using Kahan summation for improved accuracy
+ */
+QVector getNormalised(QVector vec) {
+    qreal norm = 0;
+    qreal y, t, c;
+    c = 0;
+    
+    for (size_t i=0; i<vec.size(); i++) {
+        y = real(vec[i])*real(vec[i]) - c;
+        t = norm + y;
+        c = ( t - norm ) - y;
+        norm = t;
+        
+        y = imag(vec[i])*imag(vec[i]) - c;
+        t = norm + y;
+        c = ( t - norm ) - y;
+        norm = t;
+    }
+    
+    for (size_t i=0; i<vec.size(); i++)
+        vec[i] /= sqrt(norm);
+    return vec;
 }
 
 int getRandomInt(int min, int max) {
@@ -909,6 +979,33 @@ QVector toQVector(Qureg qureg) {
     free(fullIm);
 #endif
     return vec;
+}
+
+/** Initialises a (possibly distributed, or GPU-stored) qureg with a given 
+ * QVector or QMatrix 
+ */
+void toQureg(Qureg qureg, QVector vec) {
+    DEMAND( !qureg.isDensityMatrix );
+    DEMAND( qureg.numAmpsTotal == (int) vec.size() );
+    
+    for (int i=0; i<qureg.numAmpsPerChunk; i++) {
+        int ind = qureg.chunkId*qureg.numAmpsPerChunk + i;
+        qureg.stateVec.real[i] = real(vec[ind]);
+        qureg.stateVec.imag[i] = imag(vec[ind]);
+    }
+    copyStateToGPU(qureg);
+}
+void toQureg(Qureg qureg, QMatrix mat) {
+    DEMAND( qureg.isDensityMatrix );
+    DEMAND( (1 << qureg.numQubitsRepresented) == (int) mat.size() );
+    
+    int len = (1 << qureg.numQubitsRepresented);
+    for (int i=0; i<qureg.numAmpsPerChunk; i++) {
+        int ind = qureg.chunkId*qureg.numAmpsPerChunk + i;
+        qureg.stateVec.real[i] = real(mat[ind%len][ind/len]);
+        qureg.stateVec.imag[i] = imag(mat[ind%len][ind/len]);
+    }
+    copyStateToGPU(qureg);
 }
 
 /** Generates every fixed-length sublist of the constructor-given list, in increasing 
