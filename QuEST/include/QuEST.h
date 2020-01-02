@@ -943,15 +943,28 @@ qreal getProbAmp(Qureg qureg, long long int index);
  */
 Complex getDensityAmp(Qureg qureg, long long int row, long long int col);
 
-/** A debugging function which calculates the probability of being in any state, which should always be 1.
- * For pure states, this is the norm of the entire state vector and for mixed states, is the trace of
- * the density matrix.
- * Note this calculation utilises Kahan summation for greaster accuracy, but is
+/** A debugging function which calculates the probability of the qubits in \p qureg 
+ * being in any state, which should always be 1 for correctly normalised states 
+ * (hence returning a real number).
+ * For state-vectors \f$ \psi \f$, this is the norm of the entire state-vector 
+ * (the sum of the absolute-value-squared of every amplitude):
+ * \f[
+ *      \sum\limits_i |\psi_i|^2
+ * \f]
+ * and for density matrices \f$ \rho \f$, it is the trace:
+ * \f[
+ *      \text{Trace}(\rho) = \sum\limits_i \rho_{i,i} \;
+ * \f]
+ *
+ * For un-normalised density matrices (those directly modified or initialised by the user), 
+ * this function returns the real component of the trace.
+ *
+ * Note this calculation utilises Kahan summation for greater accuracy, and hence is
  * not parallelised and so will be slower than other functions.
  *
  * @ingroup calc
  * @param[in] qureg object representing a set of qubits
- * @return total probability
+ * @return the total probability of the qubits in \p qureg being in any state
  * @author Ania Brown (state-vector)
  * @author Tyson Jones (density matrix, doc)
  */
@@ -2109,6 +2122,10 @@ void mixDensityMatrix(Qureg combineQureg, qreal prob, Qureg otherQureg);
  * n is the number of qubits. The minimum purity is achieved for the maximally mixed state identity/2^n.
  *
  * This function does not accept state-vectors, which clearly have purity 1.
+ * 
+ * Note this function will give incorrect results for non-Hermitian Quregs (i.e. 
+ * invalid density matrices), which will disagree with \f$\text{Tr}(\rho^2)\f$.
+ * Instead, this function returns \f$\sum_{ij} |\rho_{ij}|^2 \f$.
  *
  * @ingroup calc
  * @param[in] qureg a density matrix of which to measure the purity
@@ -2121,17 +2138,21 @@ void mixDensityMatrix(Qureg combineQureg, qreal prob, Qureg otherQureg);
  */
 qreal calcPurity(Qureg qureg);
 
-/** Calculates the fidelity of qureg (a statevector or density matrix) against 
+/** Calculates the fidelity of \p qureg (a statevector or density matrix) against 
  * a reference pure state (necessarily a statevector).
- * For two pure states, this computes 
+ * If \p qureg is a state-vector, this function computes 
  * \f[ 
     |\langle \text{qureg} | \text{pureState} \rangle|^2
  * \f]
- * For a mixed and pure state, this computes 
+ * If \p qureg is a density matrix, this function computes 
  * \f[ 
     \langle \text{pureState} | \text{qureg} | \text{pureState} \rangle
  * \f]
- * In either case, the fidelity lies in [0, 1].
+ * In either case, the returned fidelity lies in [0, 1] (assuming both input 
+ * states have valid normalisation). If any of the input \p Quregs are not 
+ * normalised, this function will return the real component of the correct 
+ * linear algebra calculation.
+ *
  * The number of qubits represented in \p qureg and \p pureState must match.
  * 
  * @ingroup calc
