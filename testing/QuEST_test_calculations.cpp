@@ -56,17 +56,175 @@ TEST_CASE( "calcExpecPauliSum", "[calculations]" ) {
 
 TEST_CASE( "calcFidelity", "[calculations]" ) {
     
-    FAIL();
+    QuESTEnv env = createQuESTEnv();
+    Qureg vec = createQureg(NUM_QUBITS, env);
+    Qureg mat = createDensityQureg(NUM_QUBITS, env);
+    Qureg pure = createQureg(NUM_QUBITS, env);
     
     SECTION( "correctness" ) {
         
+        // repeat the below random tests 10 times 
+        GENERATE( range(0,10) );
+        
         SECTION( "state-vector" ) {
             
+            /* calcFidelity computes |<vec|pure>|^2 */
+             
+            SECTION( "normalised" ) {
+                 
+                // random L2 vectors
+                QVector vecRef = getNormalised(getRandomQVector(1<<NUM_QUBITS));
+                QVector pureRef = getNormalised(getRandomQVector(1<<NUM_QUBITS));
+                toQureg(vec, vecRef);
+                toQureg(pure, pureRef);
+                
+                // |<vec|vec>|^2 = |1|^2 = 1
+                REQUIRE( calcFidelity(vec,vec) == Approx(1) );
+                
+                // |<vec|pure>|^2 = |sum_j conj(vec_j) * pure_j|^2
+                qcomp dotProd = 0;
+                for (size_t i=0; i<vecRef.size(); i++)
+                    dotProd += conj(vecRef[i]) * pureRef[i];
+                qreal refFid = pow(abs(dotProd), 2);
+                
+                REQUIRE( calcFidelity(vec,pure) == Approx(refFid) );
+            }
+            SECTION( "unnormalised" ) {
+            
+                // random unnormalised vectors
+                QVector vecRef = getRandomQVector(1<<NUM_QUBITS);
+                QVector pureRef = getRandomQVector(1<<NUM_QUBITS);
+                toQureg(vec, vecRef);
+                toQureg(pure, pureRef);
+                
+                // Let nv be magnitude of vec, hence |unit-vec> = 1/sqrt(nv)|vec>
+                qreal nv = 0;
+                for (size_t i=0; i<vecRef.size(); i++)
+                    nv += pow(abs(vecRef[i]), 2);
+                // then <vec|vec> = sqrt(nv)*sqrt(nv) <unit-vec|unit-vec> = nv,
+                // hence |<vec|vec>|^2 = nv*nv
+                REQUIRE( calcFidelity(vec,vec) == Approx( nv*nv ) );
+                
+                qcomp dotProd = 0;
+                for (size_t i=0; i<vecRef.size(); i++)
+                    dotProd += conj(vecRef[i]) * pureRef[i];
+                qreal refFid = pow(abs(dotProd), 2);
+                
+                REQUIRE( calcFidelity(vec,pure) == Approx(refFid) ); 
+            }
         }
         SECTION( "density-matrix" ) {
             
+            /* calcFidelity computes <pure|mat|pure> */
+            
+            SECTION( "pure" ) {
+                
+                QVector pureRef = getNormalised(getRandomQVector(1<<NUM_QUBITS));
+                toQureg(pure, pureRef);
+                
+                // test when density matrix is the same pure state 
+                QMatrix matRef = getKetBra(pureRef, pureRef);
+                toQureg(mat, matRef);
+                REQUIRE( calcFidelity(mat,pure) == Approx(1) ); 
+                
+                // test when density matrix is a random pure state
+                QVector r1 = getNormalised(getRandomQVector(1<<NUM_QUBITS));
+                matRef = getKetBra(r1, r1); // actually pure |r1><r1|
+                toQureg(mat, matRef);
+                
+                // <pure|r1><r1|pure> = |<r1|pure>|^2 = |sum_j conj(r1_j) * pure_j|^2
+                qcomp dotProd = 0;
+                for (size_t i=0; i<r1.size(); i++)
+                    dotProd += conj(r1[i]) * pureRef[i];
+                qreal refFid = pow(abs(dotProd), 2);
+                
+                REQUIRE( calcFidelity(mat,pure) == Approx(refFid) ); 
+            }
+            SECTION( "mixed" ) {
+                
+                QVector pureRef = getNormalised(getRandomQVector(1<<NUM_QUBITS));
+                toQureg(pure, pureRef);
+            
+                // test when density matrix is mixed 
+                QVector r1 = getNormalised(getRandomQVector(1<<NUM_QUBITS));
+                QVector r2 = getNormalised(getRandomQVector(1<<NUM_QUBITS));
+                QMatrix matRef = .3*getKetBra(r1, r1) + .7*getKetBra(r2, r2); // .3|r1><r1| + .7|r2><r2|
+                toQureg(mat, matRef);
+                
+                // <pure|mat|pure> = <pure| (Mat|pure>)
+                QVector rhs = matRef * pureRef;
+                qcomp dotProd = 0;
+                for (size_t i=0; i<rhs.size(); i++)
+                    dotProd += conj(pureRef[i]) * rhs[i];
+
+                REQUIRE( imag(dotProd) == Approx(0).margin(REAL_EPS) );
+                REQUIRE( calcFidelity(mat,pure) == Approx(real(dotProd)) );
+            }
+            SECTION( "unnormalised" ) {
+                
+                // test when both density matrix and pure state are unnormalised
+                QVector pureRef = getRandomQVector(1<<NUM_QUBITS);
+                QMatrix matRef = getRandomQMatrix(1<<NUM_QUBITS);
+                toQureg(pure, pureRef);
+                toQureg(mat, matRef);
+                
+                // real[ <pure|mat|pure> ] = real[ <pure| (Mat|pure>) ]
+                QVector rhs = matRef * pureRef;
+                qcomp dotProd = 0;
+                for (size_t i=0; i<rhs.size(); i++)
+                    dotProd += conj(pureRef[i]) * rhs[i];
+                
+                REQUIRE( calcFidelity(mat,pure) == Approx(real(dotProd)) );
+            }
         }
     }
+    SECTION( "validation" ) {
+        
+        SECTION( "dimensions" ) {
+            
+            // two state-vectors
+            Qureg vec2 = createQureg(vec.numQubitsRepresented + 1, env);
+            REQUIRE_THROWS_WITH( calcFidelity(vec2,vec), Contains("Dimensions") && Contains("don't match") );
+            destroyQureg(vec2, env);
+        
+            // density-matrix and state-vector
+            Qureg mat2 = createDensityQureg(vec.numQubitsRepresented + 1, env);
+            REQUIRE_THROWS_WITH( calcFidelity(mat2,vec), Contains("Dimensions") && Contains("don't match") );
+            destroyQureg(mat2, env);
+        }
+        SECTION( "density-matrices" ) {
+            
+            // two mixed statess
+            REQUIRE_THROWS_WITH( calcFidelity(mat,mat), Contains("Second argument must be a state-vector") );
+        }
+    }
+    destroyQureg(vec, env);
+    destroyQureg(mat, env);
+    destroyQureg(pure, env);
+    destroyQuESTEnv(env);
+}
+
+
+
+TEST_CASE( "calcHilbertSchmidtDistance", "[calculations]" ) {
+    
+    FAIL();
+    
+}
+
+
+
+TEST_CASE( "calcInnerProduct", "[calculations]" ) {
+    
+    FAIL();
+    
+}
+
+
+
+TEST_CASE( "calcProbOfOutcome", "[calculations]" ) {
+    
+    FAIL();
     
 }
 
@@ -97,7 +255,7 @@ TEST_CASE( "calcPurity", "[calculations]" ) {
             // mixed states have 0 < purity < 1, given by Tr(rho^2)
             QVector r2 = getNormalised(getRandomQVector(1<<NUM_QUBITS));
             QMatrix m2 = getKetBra(r2, r2);
-            toQureg(mat, .5*m1 + .5*m2); // mix: .5|r1><r1| + .5|r2><r2|
+            toQureg(mat, .3*m1 + .7*m2); // mix: .3|r1><r1| + .7|r2><r2|
             qreal purity = calcPurity(mat);
             REQUIRE( purity < 1 );
             REQUIRE( purity >= 1/pow(2.,NUM_QUBITS) );
