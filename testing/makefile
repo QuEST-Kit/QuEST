@@ -21,7 +21,15 @@
 EXE = test
 
 # space-separated names (no file type) of all user source files (.c or .cpp) in the root directory
-SOURCES = catch_main QuEST_test_utils QuEST_test_unitaries QuEST_test_decoherence QuEST_test_benchmarks QuEST_test_state_initialisations
+SOURCES = catch_main \
+	QuEST_test_utils \
+	QuEST_test_benchmarks \
+    QuEST_test_unitaries \
+	QuEST_test_decoherence \
+	QuEST_test_state_initialisations \
+	QuEST_test_calculations \
+	QuEST_test_gates \
+	QuEST_test_data_structures
 
 # path to QuEST library from root directory
 QUEST_DIR = ../QuEST
