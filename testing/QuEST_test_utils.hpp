@@ -58,15 +58,16 @@ QMatrix getExponentialDiagonalMatrix(QMatrix a);
 QMatrix getExponentialPauliMatrix(qreal angle, QMatrix a);
 QMatrix getKroneckerProduct(QMatrix a, QMatrix b);
 QMatrix getFullOperatorMatrix(int* ctrls, int numCtrls, int *targs, int numTargs, QMatrix op, int numQubits);
-QVector getNormalised(QVector vec);
 QMatrix getKetBra(QVector ket, QVector bra);
 
-/* generating random inputs */
+/* generating random inputs and states */
 int getRandomInt(int min, int max); //  exclusive max
 qreal getRandomReal(qreal min, qreal max);
 QVector getRandomQVector(int dim);
 QMatrix getRandomQMatrix(int dim);
 QMatrix getRandomUnitary(int numQb);
+QVector getRandomStateVector(int numQb);
+QMatrix getRandomDensityMatrix(int numQb);
 std::vector<QMatrix> getRandomKrausMap(int numQb, int numOps);
 
 /* applying operations to reference state-vectors and density matrices. 

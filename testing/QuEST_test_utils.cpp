@@ -406,7 +406,7 @@ unsigned int calcLog2(unsigned int res) {
  * each element are independently random, under the standard normal distribution 
  * (mean 0, standard deviation 1).
  */
-QMatrix getRandomMatrix(int dim) {
+QMatrix getRandomQMatrix(int dim) {
     DEMAND( dim > 1 );
     
     QMatrix matr = getZeroMatrix(dim);
@@ -460,22 +460,6 @@ QVector getRandomQVector(int dim) {
     return vec;
 }
 
-/** generates a dim-by-dim matrix with random complex amplitudes in the 
- * square joining {-1-i, 1+i}, of an undisclosed distirbution. The resulting 
- * matrix is NOT Hermitian.
- */
-QMatrix getRandomQMatrix(int dim) { 
-    QMatrix mat = getZeroMatrix(dim);
-    for (int r=0; r<dim; r++)
-        for (int c=0; c<dim; c++)
-            mat[r][c] = getRandomReal(-1,1) + 1i*getRandomReal(-1,1);
-            
-    // check we didn't get the impossibly-unlikely zero-amplitude outcome 
-    DEMAND( real(mat[0][0]) != 0 );
-    
-    return mat;
-}
-
 /** L2-normalises a complex vector, using Kahan summation for improved accuracy
  */
 QVector getNormalised(QVector vec) {
@@ -500,6 +484,34 @@ QVector getNormalised(QVector vec) {
     return vec;
 }
 
+QVector getRandomStateVector(int numQb) {
+    return getNormalised(getRandomQVector(1<<numQb));
+}
+
+QMatrix getRandomDensityMatrix(int numQb) {
+    DEMAND( numQb > 0 );
+    
+    // generate random probabilities to weight random pure states
+    int dim = 1<<numQb;
+    qreal probs[dim];
+    qreal probNorm = 0;
+    for (int i=0; i<dim; i++) {
+        probs[i] = getRandomReal(0, 1);
+        probNorm += probs[i];
+    }
+    for (int i=0; i<dim; i++)
+        probs[i] /= probNorm;
+    
+    // add random pure states
+    QMatrix dens = getZeroMatrix(dim);
+    for (int i=0; i<dim; i++) {
+        QVector pure = getRandomStateVector(numQb);
+        dens += probs[i] * getKetBra(pure, pure);
+    }
+    
+    return dens;
+}
+
 int getRandomInt(int min, int max) {
     return round(getRandomReal(min, max-1));
 }
@@ -515,7 +527,7 @@ int getRandomInt(int min, int max) {
 QMatrix getRandomUnitary(int numQb) {
     DEMAND( numQb >= 1 );
 
-    QMatrix matr = getRandomMatrix(1 << numQb);
+    QMatrix matr = getRandomQMatrix(1 << numQb);
 
     for (size_t i=0; i<matr.size(); i++) {
         QVector row = matr[i];
