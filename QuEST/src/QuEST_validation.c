@@ -24,7 +24,8 @@ extern "C" {
 
 typedef enum {
     E_SUCCESS=0,
-    E_INVALID_NUM_QUBITS,
+    E_INVALID_NUM_CREATE_QUBITS,
+    E_INVALID_QUBIT_INDEX,
     E_INVALID_TARGET_QUBIT,
     E_INVALID_CONTROL_QUBIT,
     E_INVALID_STATE_INDEX,
@@ -34,8 +35,10 @@ typedef enum {
     E_TARGET_IS_CONTROL,
     E_TARGET_IN_CONTROLS,
     E_CONTROL_TARGET_COLLISION,
+    E_QUBITS_NOT_UNIQUE,
     E_TARGETS_NOT_UNIQUE,
     E_CONTROLS_NOT_UNIQUE,
+    E_INVALID_NUM_QUBITS,
     E_INVALID_NUM_TARGETS,
     E_INVALID_NUM_CONTROLS,
     E_NON_UNITARY_MATRIX,
@@ -71,9 +74,10 @@ typedef enum {
 } ErrorCode;
 
 static const char* errorMessages[] = {
-    [E_INVALID_NUM_QUBITS] = "Invalid number of qubits. Must create >0.",
-    [E_INVALID_TARGET_QUBIT] = "Invalid target qubit. Note qubits are zero indexed.",
-    [E_INVALID_CONTROL_QUBIT] = "Invalid control qubit. Note qubits are zero indexed.",
+    [E_INVALID_NUM_CREATE_QUBITS] = "Invalid number of qubits. Must create >0.",
+    [E_INVALID_QUBIT_INDEX] = "Invalid qubit index. Must be >=0 and <numQubits.",
+    [E_INVALID_TARGET_QUBIT] = "Invalid target qubit. Must be >=0 and <numQubits.",
+    [E_INVALID_CONTROL_QUBIT] = "Invalid control qubit. Must be >=0 and <numQubits.",
     [E_INVALID_STATE_INDEX] = "Invalid state index. Must be >=0 and <2^numQubits.",
     [E_INVALID_AMP_INDEX] = "Invalid amplitude index. Must be >=0 and <2^numQubits.",
     [E_INVALID_NUM_AMPS] = "Invalid number of amplitudes. Must be >=0 and <=2^numQubits.",
@@ -81,8 +85,10 @@ static const char* errorMessages[] = {
     [E_TARGET_IS_CONTROL] = "Control qubit cannot equal target qubit.",
     [E_TARGET_IN_CONTROLS] = "Control qubits cannot include target qubit.",
     [E_CONTROL_TARGET_COLLISION] = "Control and target qubits must be disjoint.",
+    [E_QUBITS_NOT_UNIQUE] = "The qubits must be unique.",
     [E_TARGETS_NOT_UNIQUE] = "The target qubits must be unique.",
     [E_CONTROLS_NOT_UNIQUE] = "The control qubits should be unique.",
+    [E_INVALID_NUM_QUBITS] = "Invalid number of qubits. Must be >0 and <=numQubits.",
     [E_INVALID_NUM_TARGETS] = "Invalid number of target qubits. Must be >0 and <=numQubits.",
     [E_INVALID_NUM_CONTROLS] = "Invalid number of control qubits. Must be >0 and <numQubits.",
     [E_NON_UNITARY_MATRIX] = "Matrix is not unitary.",
@@ -239,7 +245,7 @@ int areUniqueQubits(int* qubits, int numQubits) {
 }
 
 void validateCreateNumQubits(int numQubits, const char* caller) {
-    QuESTAssert(numQubits>0, E_INVALID_NUM_QUBITS, caller);
+    QuESTAssert(numQubits>0, E_INVALID_NUM_CREATE_QUBITS, caller);
 }
 
 void validateStateIndex(Qureg qureg, long long int stateInd, const char* caller) {
@@ -300,6 +306,14 @@ void validateMultiControls(Qureg qureg, int* controlQubits, const int numControl
         validateControl(qureg, controlQubits[i], caller);
         
     QuESTAssert(areUniqueQubits(controlQubits, numControlQubits), E_CONTROLS_NOT_UNIQUE, caller);
+}
+
+void validateMultiQubits(Qureg qureg, int* qubits, const int numQubits, const char* caller) {
+    QuESTAssert(numQubits>0 && numQubits<=qureg.numQubitsRepresented, E_INVALID_NUM_QUBITS, caller);
+    for (int i=0; i < numQubits; i++)
+        QuESTAssert(qubits[i]>=0 && qubits[i]<qureg.numQubitsRepresented, E_INVALID_QUBIT_INDEX, caller);
+        
+    QuESTAssert(areUniqueQubits(qubits, numQubits), E_QUBITS_NOT_UNIQUE, caller);
 }
 
 void validateMultiControlsTarget(Qureg qureg, int* controlQubits, const int numControlQubits, const int targetQubit, const char* caller) {

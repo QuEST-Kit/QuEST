@@ -507,7 +507,7 @@ void controlledPhaseShift(Qureg qureg, const int idQubit1, const int idQubit2, q
 }
 
 void multiControlledPhaseShift(Qureg qureg, int *controlQubits, int numControlQubits, qreal angle) {
-    validateMultiControls(qureg, controlQubits, numControlQubits, __func__);
+    validateMultiQubits(qureg, controlQubits, numControlQubits, __func__);
     
     statevec_multiControlledPhaseShift(qureg, controlQubits, numControlQubits, angle);
     if (qureg.isDensityMatrix) {
@@ -557,7 +557,7 @@ void controlledPhaseFlip(Qureg qureg, const int idQubit1, const int idQubit2) {
 }
 
 void multiControlledPhaseFlip(Qureg qureg, int *controlQubits, int numControlQubits) {
-    validateMultiControls(qureg, controlQubits, numControlQubits, __func__);
+    validateMultiQubits(qureg, controlQubits, numControlQubits, __func__);
     
     statevec_multiControlledPhaseFlip(qureg, controlQubits, numControlQubits);
     if (qureg.isDensityMatrix) {
