@@ -29,7 +29,8 @@ SOURCES = catch_main \
 	QuEST_test_state_initialisations \
 	QuEST_test_calculations \
 	QuEST_test_gates \
-	QuEST_test_data_structures
+	QuEST_test_data_structures \
+	QuEST_test_operators
 
 # path to QuEST library from root directory
 QUEST_DIR = ../QuEST

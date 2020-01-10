@@ -283,8 +283,7 @@ TEST_CASE( "calcExpecPauliSum", "[calculations]" ) {
     
     SECTION( "correctness" ) {
         
-        // try 1 to 5 sums of pauli products
-        int numSumTerms = GENERATE( range(1,5+1) );
+        int numSumTerms = GENERATE( 1, 2, 10, 15 );
         
         /* it's too expensive to try every possible Pauli configuration, so
          * we'll try 10 random codes, and for each, random coefficients
