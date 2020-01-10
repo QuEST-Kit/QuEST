@@ -1,4 +1,5 @@
 # Doxyfile 1.8.7
+# authors: Ania Brown, Tyson Jones
 
 # This file describes the settings to be used by the documentation system
 # doxygen (www.doxygen.org) for a project.
@@ -756,7 +757,7 @@ WARN_LOGFILE           =
 # spaces.
 # Note: If this tag is empty the current directory is searched.
 
-INPUT                  = . ./QuEST README.md ./QuEST/CPU ./QuEST/GPU
+INPUT                  = . README.md ./QuEST/src ./QuEST/src/CPU ./QuEST/src/GPU ./QuEST/include
 
 # This tag can be used to specify the character encoding of the source files
 # that doxygen parses. Internally doxygen uses the UTF-8 encoding. Doxygen uses
@@ -894,7 +895,7 @@ FILTER_SOURCE_PATTERNS =
 # (index.html). This can be useful if you have a project on for instance GitHub
 # and want to reuse the introduction page also for the doxygen output.
 
-USE_MDFILE_AS_MAINPAGE = 
+USE_MDFILE_AS_MAINPAGE = README.md
 
 #---------------------------------------------------------------------------
 # Configuration options related to source browsing
@@ -1611,7 +1612,7 @@ PAPER_TYPE             = a4wide
 # If left blank no extra packages will be included.
 # This tag requires that the tag GENERATE_LATEX is set to YES.
 
-EXTRA_PACKAGES         = times, amsmath, tikz
+EXTRA_PACKAGES         = times, amsmath, xr, amsfonts, tikz
 
 # The LATEX_HEADER tag can be used to specify a personal LaTeX header for the
 # generated LaTeX document. The header should contain everything until the first

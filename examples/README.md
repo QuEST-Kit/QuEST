@@ -14,13 +14,13 @@ QuEST can be used in your C or C++ code, simply by including
 #include <QuEST.h>
 ```
 
-Independent of which platform you'll run your simulation on (multicore CPUS, a GPU, or over a network), your QuEST code will look the same, compile with the same [makefile](https://github.com/quest-kit/QuEST/blob/master/makefile), and use the same [API](https://quest-kit.github.io/QuEST/QuEST_8h.html).
+Independent of which platform you'll run your simulation on (multicore CPUs, a GPU, or over a network), your QuEST code will look the same, compile with the same [makefile](https://github.com/quest-kit/QuEST/blob/master/makefile), and use the same [API](https://quest-kit.github.io/QuEST/QuEST_8h.html).
 
 Here's a simulation of a very simple circuit which measures  ![equation](https://latex.codecogs.com/gif.latex?C_0%28X_1%29%20H_0%20%7C00%5Crangle).
 ```C
 #include <QuEST.h>
 
-int main(int narg, char *varg[]) {
+int main() {
 
   // load QuEST
   QuESTEnv env = createQuESTEnv();
@@ -72,30 +72,26 @@ rotateY(qubits, 2, .1);
 
 Some gates allow us to specify a general number of control qubits
 ```C
-multiControlledPhaseGate(qubits, (int []){0, 1, 2}, 3);
+multiControlledPhaseGate(qubits, (int[]) {0, 1, 2}, 3);
 ```
 
 We can specify general single-qubit unitary operations as 2x2 matrices
 ```C
 // sqrt(X) with a pi/4 global phase
-ComplexMatrix2 u;
-u.r0c0 = (Complex) {.real=.5, .imag= .5};
-u.r0c1 = (Complex) {.real=.5, .imag=-.5}; 
-u.r1c0 = (Complex) {.real=.5, .imag=-.5};
-u.r1c1 = (Complex) {.real=.5, .imag= .5};
+ComplexMatrix2 u = {
+    .real = {{.5, .5}, { .5,.5}},
+    .imag = {{.5,-.5}, {-.5,.5}}};
 unitary(qubits, 0, u);
 ```
 or more compactly, foregoing the global phase factor,
 ```C
-Complex a, b;
-a.real = .5; a.imag =  .5;
-b.real = .5; b.imag = -.5;
+Complex a = {.real = .5, .imag = .5};
+Complex b = {.real = .5, .imag =-.5};
 compactUnitary(qubits, 1, a, b);
 ```
 or even more compactly, as a rotation around an arbitrary axis on the Bloch-sphere
 ```C
-Vector v;
-v.x = 1; v.y = 0; v.z = 0;
+Vector v = {.x=1, .y=0, .z=0};
 rotateAroundAxis(qubits, 2, 3.14/2, v);
 ```
 
@@ -105,7 +101,7 @@ controlledCompactUnitary(qubits, 0, 1, a, b);
 ```
 even with multiple control qubits!
 ```C
-multiControlledUnitary(qubits, (int []){0, 1}, 2, 2, u);
+multiControlledUnitary(qubits, (int[]) {0, 1}, 2, 2, u);
 ```
 
 What has this done to the probability of the basis state |111> = |7>?
@@ -140,7 +136,7 @@ destroyQuESTEnv(env);
 
 The effect of the [code above](tutorial_example.c) is to simulate the below circuit
 
-<img src="https://qtechtheory.org/wp-content/uploads/2018/02/github_circuit.png" alt="A quantum circuit" width=400px >
+![the tutorial circuit](tutorial_circuit.png)
 
 and after compiling (see section below), gives psuedo-random output
 

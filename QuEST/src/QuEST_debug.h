@@ -3,6 +3,8 @@
 /** @file
  * Developer functions used for unit testing and debugging, which are not part of the public API. 
  * May contain functions that are incomplete or untested.
+ *
+ * @author Ania Brown
  */
 
 # ifndef QUEST_DEBUG_H

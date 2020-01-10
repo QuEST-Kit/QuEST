@@ -3,6 +3,10 @@
 /** @file
  * An implementation of the pure backend in ../QuEST_ops_pure.h for a local (non-MPI, non-GPU) environment.
  * Mostly pure-state wrappers for the local/distributed functions implemented in QuEST_cpu
+ *
+ * @author Ania Brown
+ * @author Tyson Jones
+ * @author Balint Koczor
  */
 
 # include "QuEST.h"
@@ -23,21 +27,21 @@
 # endif
 
 
-void densmatr_oneQubitDepolarise(Qureg qureg, const int targetQubit, qreal depolLevel) {
+void densmatr_mixDepolarising(Qureg qureg, const int targetQubit, qreal depolLevel) {
     if (depolLevel == 0)
         return;
 
-    densmatr_oneQubitDepolariseLocal(qureg, targetQubit, depolLevel);
+    densmatr_mixDepolarisingLocal(qureg, targetQubit, depolLevel);
 }
 
-void densmatr_oneQubitDamping(Qureg qureg, const int targetQubit, qreal damping) {
+void densmatr_mixDamping(Qureg qureg, const int targetQubit, qreal damping) {
     if (damping == 0)
         return;
 
-    densmatr_oneQubitDampingLocal(qureg, targetQubit, damping);
+    densmatr_mixDampingLocal(qureg, targetQubit, damping);
 }
 
-void densmatr_twoQubitDepolarise(Qureg qureg, int qubit1, int qubit2, qreal depolLevel){
+void densmatr_mixTwoQubitDepolarising(Qureg qureg, int qubit1, int qubit2, qreal depolLevel){
     if (depolLevel == 0)
         return;
     qreal eta = 2/depolLevel;
@@ -46,13 +50,25 @@ void densmatr_twoQubitDepolarise(Qureg qureg, int qubit1, int qubit2, qreal depo
     // TODO -- test delta too small
 
     gamma = 1/(gamma*gamma*gamma);
-    densmatr_twoQubitDephase(qureg, qubit1, qubit2, depolLevel);
-    densmatr_twoQubitDepolariseLocal(qureg, qubit1, qubit2, delta, gamma);
+    densmatr_mixTwoQubitDephasing(qureg, qubit1, qubit2, depolLevel);
+    densmatr_mixTwoQubitDepolarisingLocal(qureg, qubit1, qubit2, delta, gamma);
 }
-
 
 qreal densmatr_calcPurity(Qureg qureg) {
     return densmatr_calcPurityLocal(qureg);
+}
+
+qreal densmatr_calcHilbertSchmidtDistance(Qureg a, Qureg b) {
+    
+    qreal distSquared = densmatr_calcHilbertSchmidtDistanceSquaredLocal(a, b);
+    qreal dist = sqrt(distSquared);
+    return dist;
+}
+
+qreal densmatr_calcInnerProduct(Qureg a, Qureg b) {
+    
+    qreal scalar = densmatr_calcInnerProductLocal(a, b);
+    return scalar;
 }
 
 qreal densmatr_calcFidelity(Qureg qureg, Qureg pureState) {
@@ -115,8 +131,8 @@ qreal densmatr_calcTotalProb(Qureg qureg) {
         pTotal = t;
     }
     
-    // @TODO should maybe do a cheap test that imaginary components are ~0
-    
+    // does not check imaginary component, by design
+        
     return pTotal;
 }
 
@@ -216,13 +232,9 @@ void statevec_controlledUnitary(Qureg qureg, const int controlQubit, const int t
     statevec_controlledUnitaryLocal(qureg, controlQubit, targetQubit, u);
 }
 
-void statevec_multiControlledUnitary(Qureg qureg, int* controlQubits, const int numControlQubits, const int targetQubit, ComplexMatrix2 u) 
+void statevec_multiControlledUnitary(Qureg qureg, long long int ctrlQubitsMask, long long int ctrlFlipMask, const int targetQubit, ComplexMatrix2 u) 
 {
-    long long int mask=0; 
-    for (int i=0; i<numControlQubits; i++)
-        mask = mask | (1LL<<controlQubits[i]);
-
-    statevec_multiControlledUnitaryLocal(qureg, targetQubit, mask, u);
+    statevec_multiControlledUnitaryLocal(qureg, targetQubit, ctrlQubitsMask, ctrlFlipMask, u);
 }
 
 void statevec_pauliX(Qureg qureg, const int targetQubit) 
@@ -285,7 +297,7 @@ void statevec_collapseToKnownProbOutcome(Qureg qureg, const int measureQubit, in
     statevec_collapseToKnownProbOutcomeLocal(qureg, measureQubit, outcome, stateProb);
 }
 
-void seedQuESTDefault(){
+void seedQuESTDefault(void){
     // init MT random number generator with three keys -- time and pid
     // for the MPI version, it is ok that all procs will get the same seed as random numbers will only be 
     // used by the master process
@@ -293,4 +305,19 @@ void seedQuESTDefault(){
     unsigned long int key[2];
     getQuESTDefaultSeedKey(key);
     init_by_array(key, 2);
+}
+
+void statevec_multiControlledTwoQubitUnitary(Qureg qureg, long long int ctrlMask, const int q1, const int q2, ComplexMatrix4 u)
+{
+    statevec_multiControlledTwoQubitUnitaryLocal(qureg, ctrlMask, q1, q2, u);
+}
+
+void statevec_multiControlledMultiQubitUnitary(Qureg qureg, long long int ctrlMask, int* targs, const int numTargs, ComplexMatrixN u)
+{
+    statevec_multiControlledMultiQubitUnitaryLocal(qureg, ctrlMask, targs, numTargs, u);
+}
+
+void statevec_swapQubitAmps(Qureg qureg, int qb1, int qb2) 
+{
+    statevec_swapQubitAmpsLocal(qureg, qb1, qb2);
 }

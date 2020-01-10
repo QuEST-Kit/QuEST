@@ -2,6 +2,8 @@
 
 /** @file
  * Functions for generating QASM output from QuEST circuits
+ *
+ * @author Tyson Jones
  */
 
 # ifndef QUEST_QASM_H
@@ -27,7 +29,9 @@ typedef enum {
     GATE_ROTATE_Z,
     GATE_ROTATE_AROUND_AXIS,
     GATE_UNITARY,
-    GATE_PHASE_SHIFT
+    GATE_PHASE_SHIFT,
+    GATE_SWAP,
+    GATE_SQRT_SWAP
 } TargetGate;
 
 void qasm_setup(Qureg* qureg);
@@ -63,6 +67,8 @@ void qasm_recordMultiControlledParamGate(Qureg qureg, TargetGate gate, int* cont
 
 void qasm_recordMultiControlledUnitary(Qureg qureg, ComplexMatrix2 u, int* controlQubits, const int numControlQubits, const int targetQubit);
 
+void qasm_recordMultiStateControlledUnitary(Qureg qureg, ComplexMatrix2 u, int* controlQubits, int* controlState, const int numControlQubits, const int targetQubit);
+
 /* not actually used. D'oh!
 void qasm_recordMultiControlledAxisRotation(Qureg qureg, qreal angle, Vector axis, int* controlQubits, const int numControlQubits, const int targetQubit);\
 */
@@ -75,7 +81,7 @@ void qasm_recordInitPlus(Qureg qureg);
 
 void qasm_recordInitClassical(Qureg qureg, long long int stateInd);
 
-void qasm_recordComment(Qureg qureg, char* comment);
+void qasm_recordComment(Qureg qureg, char* comment, ...);
 
 void qasm_clearRecorded(Qureg qureg);
 
