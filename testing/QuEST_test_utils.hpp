@@ -46,6 +46,9 @@ QVector operator * (const QMatrix& m, const QVector& v);
 QVector toQVector(Qureg qureg);
 QMatrix toQMatrix(Complex alpha, Complex beta);
 QMatrix toQMatrix(Qureg qureg);
+QMatrix toQMatrix(ComplexMatrix2 src);
+QMatrix toQMatrix(ComplexMatrix4 src);
+QMatrix toQMatrix(ComplexMatrixN src);
 ComplexMatrix2 toComplexMatrix2(QMatrix qm);
 ComplexMatrix4 toComplexMatrix4(QMatrix qm);
 void toComplexMatrixN(QMatrix qm, ComplexMatrixN cm);
@@ -98,9 +101,10 @@ bool areEqual(Qureg qureg, QMatrix matr);
 bool areEqual(Qureg qureg1, Qureg qureg2, qreal precision);
 bool areEqual(Qureg qureg, QVector vec, qreal precision);
 bool areEqual(Qureg qureg, QMatrix matr, qreal precision);
+bool areEqual(QMatrix a, QMatrix b);
 
 /** returns log2 of numbers which must be gauranteed to be 2^n */
-unsigned int calcLog2(unsigned int res);
+unsigned int calcLog2(long unsigned int res);
 
 /* generating qubit lists */
 template<class T> using CatchGen = Catch::Generators::GeneratorWrapper<T>;

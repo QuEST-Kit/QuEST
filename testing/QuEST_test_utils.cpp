@@ -395,7 +395,7 @@ QMatrix getFullOperatorMatrix(
 }
 
 /** returns log2 of numbers which must be gauranteed to be 2^n */
-unsigned int calcLog2(unsigned int res) {
+unsigned int calcLog2(long unsigned int res) {
     unsigned int n = 0;
     while (res >>= 1)
         n++;
