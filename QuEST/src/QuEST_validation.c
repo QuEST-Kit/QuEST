@@ -71,7 +71,9 @@ typedef enum {
     E_INVALID_NUM_TWO_QUBIT_KRAUS_OPS,
     E_INVALID_NUM_N_QUBIT_KRAUS_OPS,
     E_INVALID_KRAUS_OPS,
-    E_MISMATCHING_NUM_TARGS_KRAUS_SIZE
+    E_MISMATCHING_NUM_TARGS_KRAUS_SIZE,
+    E_DISTRIB_QUREG_TOO_SMALL,
+    E_NUM_AMPS_EXCEED_TYPE
 } ErrorCode;
 
 static const char* errorMessages[] = {
@@ -122,7 +124,9 @@ static const char* errorMessages[] = {
     [E_INVALID_NUM_TWO_QUBIT_KRAUS_OPS] = "At least 1 and at most 16 two-qubit Kraus operators may be specified.",
     [E_INVALID_NUM_N_QUBIT_KRAUS_OPS] = "At least 1 and at most 4*N^2 of N-qubit Kraus operators may be specified.",
     [E_INVALID_KRAUS_OPS] = "The specified Kraus map is not a completely positive, trace preserving map.",
-    [E_MISMATCHING_NUM_TARGS_KRAUS_SIZE] = "Every Kraus operator must be of the same number of qubits as the number of targets."
+    [E_MISMATCHING_NUM_TARGS_KRAUS_SIZE] = "Every Kraus operator must be of the same number of qubits as the number of targets.",
+    [E_DISTRIB_QUREG_TOO_SMALL] = "Too few qubits. The created qureg must have at least one amplitude per node used in distributed simulation.",
+    [E_NUM_AMPS_EXCEED_TYPE] = "Too many qubits (max of log2(SIZE_MAX)). Cannot store the number of amplitudes per-node in the size_t type."
 };
 
 void exitWithError(const char* msg, const char* func) {
@@ -269,6 +273,14 @@ void validateNumRanks(int numRanks, const char* caller) {
 
 void validateNumQubitsInQureg(int numQubits, int numRanks, const char* caller) {
     QuESTAssert(numQubits>0, E_INVALID_NUM_CREATE_QUBITS, caller);
+    
+    // mustn't be more amplitudes than can fit in the type
+    unsigned int maxQubits = calcLog2(SIZE_MAX);
+    QuESTAssert( numQubits <= maxQubits, E_NUM_AMPS_EXCEED_TYPE, caller);
+    
+    // must be at least one amplitude per node
+    long unsigned int numAmps = (1<<numQubits);
+    QuESTAssert(numAmps >= numRanks, E_DISTRIB_QUREG_TOO_SMALL, caller);
 }
  
 void validateNumQubitsInMatrix(int numQubits, const char* caller) {
