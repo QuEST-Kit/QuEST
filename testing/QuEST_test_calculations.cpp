@@ -34,6 +34,7 @@
 using Catch::Matchers::Contains;
 
 
+
 TEST_CASE( "calcDensityInnerProduct", "[calculations]" ) {
 
     QuESTEnv env = createQuESTEnv();

@@ -9,30 +9,6 @@
  *
  * QuEST's user validation handling is unit tested by redefining exitWithError 
  * (a weak C symbol) to throw a C++ exception, caught by the Catch2 library.
- * 
- * All unitary unit tests follow the master template:
-
-TEST_CASE( "OP", "[unitaries]" ) {
-    
-    PREPARE_TEST( env, quregVec, quregMatr, refVec, refMatr, NUM_QUBITS );
- 
-    SECTION( "state-vector correctness" ) {
-    
-    }
-    
-    SECTION( "density-matrix correctness" ) {
-    
-    }
-    
-    SECTION( "input validation" ) {
-    
-    }
-    CLEANUP_TEST( env, quregVec, quregMatr );
-}
-    
-    CLEANUP_TEST( env, quregVec, quregMatr );
-}
-
  *
  * @author Tyson Jones
  */
@@ -1416,7 +1392,7 @@ TEST_CASE( "multiRotatePauli", "[unitaries]" ) {
         // produces exp(-i param/2 pauliProd), unless pauliProd = I
         QMatrix op;
         if (numRefTargs > 0)
-            op = getExponentialPauliMatrix(param, pauliProd);
+            op = getExponentialOfPauliMatrix(param, pauliProd);
         
         SECTION( "state-vector" ) {
             
@@ -1490,7 +1466,7 @@ TEST_CASE( "multiRotateZ", "[unitaries]" ) {
             getFullOperatorMatrix(NULL, 0, targs, numTargs, zProd, NUM_QUBITS);
             
         // exp( -i param/2 Z . I . Z ...)
-        QMatrix op = getExponentialDiagonalMatrix(expArg);
+        QMatrix op = getExponentialOfDiagonalMatrix(expArg);
         
         // all qubits to specify full operator matrix on reference structures
         int allQubits[NUM_QUBITS];

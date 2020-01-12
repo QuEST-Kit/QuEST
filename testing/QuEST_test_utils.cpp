@@ -11,22 +11,14 @@
 #include <algorithm>
 #include <bitset>
 
-/* preconditions to the internal unit testing functions are checked using 
+/* (don't generate doxygen doc) 
+ *
+ * preconditions to the internal unit testing functions are checked using 
  * DEMAND rather than Catch2's REQUIRE, so that they are not counted in the 
  * total unit testing statistics (e.g. number of checks passed).
  */
 #define DEMAND( cond ) if (!(cond)) FAIL( ); 
 
-/* Define QVector and QMatrix operator overloads.
- * Note that QMatrix overloads don't simply use QVector 
- * overloads, since the complex vector dot product involves 
- * conjugation, which doesn't occur in complex matrix multiplication.
- * Note too we also avoid defining operators in terms of other operators
- * (e.g. minus is plus(negative times)) since compiler optimisations 
- * may change the order of operations and confuse the overloads invoked.
- * Definition of division using multiplication can furthermore 
- * heighten numerical errors.
- */
 QVector operator + (const QVector& v1, const QVector& v2) {
     DEMAND( v1.size() == v2.size() );
     QVector out = v1;
@@ -144,8 +136,6 @@ QVector operator * (const QMatrix& m, const QVector& v) {
     return prod;
 }
 
-/** produces a dim-by-dim square complex matrix, initialised to zero 
- */
 QMatrix getZeroMatrix(size_t dim) {
     DEMAND( dim > 1 );
     QMatrix matr = QMatrix(dim);
@@ -154,8 +144,6 @@ QMatrix getZeroMatrix(size_t dim) {
     return matr;
 }
 
-/** produces a dim-by-dim identity matrix 
- */
 QMatrix getIdentityMatrix(size_t dim) {
     DEMAND( dim > 1 );
     QMatrix matr = getZeroMatrix(dim);
@@ -164,11 +152,6 @@ QMatrix getIdentityMatrix(size_t dim) {
     return matr;
 }
 
-/** produces the matrix |ket><bra|, with ith-jth element ket(i) conj(bra(j)), since
- * |ket><bra| = sum_i a_i|i> sum_j b_j* <j| = sum_{ij} a_i b_j* |i><j|.
- * The dimensions of bra and ket must agree, and the returned square complex matrix 
- * has dimensions size(bra) x size(bra).
- */
 QMatrix getKetBra(QVector ket, QVector bra) {
     DEMAND( ket.size() == bra.size() );
     QMatrix mat = getZeroMatrix(ket.size());
@@ -179,8 +162,6 @@ QMatrix getKetBra(QVector ket, QVector bra) {
     return mat;
 }
 
-/** returns a (otimes) b, where a and b are square but possibly different-sized 
- */
 QMatrix getKroneckerProduct(QMatrix a, QMatrix b) {
     QMatrix prod = getZeroMatrix(a.size() * b.size());
     for (size_t r=0; r<b.size(); r++)
@@ -191,8 +172,6 @@ QMatrix getKroneckerProduct(QMatrix a, QMatrix b) {
     return prod;
 }
 
-/** returns the conjugate transpose of the complex square matrix a 
- */
 QMatrix getConjugateTranspose(QMatrix a) {
     QMatrix b = a;
     for (size_t r=0; r<a.size(); r++)
@@ -201,9 +180,7 @@ QMatrix getConjugateTranspose(QMatrix a) {
     return b;
 }
 
-/** returns the matrix exponential of a diagonal, square, complex matrix 
- */
-QMatrix getExponentialDiagonalMatrix(QMatrix a) {
+QMatrix getExponentialOfDiagonalMatrix(QMatrix a) {
     
     // ensure diagonal
     for (size_t r=0; r<a.size(); r++)
@@ -221,19 +198,12 @@ QMatrix getExponentialDiagonalMatrix(QMatrix a) {
     return diag;
 }
 
-/** returns the matrix exponential of a kronecker product of pauli matrices 
- * (or of any involutory matrices), with factor (-i angle / 2).
- */
-QMatrix getExponentialPauliMatrix(qreal angle, QMatrix a) {
+QMatrix getExponentialOfPauliMatrix(qreal angle, QMatrix a) {
     QMatrix iden = getIdentityMatrix(a.size());
     QMatrix expo = (cos(angle/2) * iden) + (-1i * sin(angle/2) * a);
     return expo;
 }
 
-/** modifies dest by overwriting its submatrix (from top-left corner 
- * (r, c) to bottom-right corner (r+dest.size(), c+dest.size()) with the 
- * complete elements of sub 
- */
 void setSubMatrix(QMatrix &dest, QMatrix sub, size_t r, size_t c) {
     DEMAND( sub.size() + r <= dest.size() );
     DEMAND( sub.size() + c <= dest.size() );
@@ -242,9 +212,6 @@ void setSubMatrix(QMatrix &dest, QMatrix sub, size_t r, size_t c) {
             dest[r+i][c+j] = sub[i][j];
 }
 
-/** returns the 2^numQb-by-2^numQb unitary matrix which swaps qubits qb1 and qb2.
- * If qb1==qb2, returns the identity matrix.
- */
 QMatrix getSwapMatrix(int qb1, int qb2, int numQb) {
     DEMAND( numQb > 1 );
     DEMAND( (qb1 >= 0 && qb1 < numQb) );
@@ -293,7 +260,9 @@ QMatrix getSwapMatrix(int qb1, int qb2, int numQb) {
     return swap;
 }
 
-/** iterates list1 (of length len1) and replaces element oldEl with newEl, which is 
+/* (don't generate doxygen doc)
+ *
+ * iterates list1 (of length len1) and replaces element oldEl with newEl, which is 
  * gauranteed to be present at most once (between list1 AND list2), though may 
  * not be present at all. If oldEl isn't present in list1, does the same for list2. 
  * list1 is skipped if == NULL. This is used by getFullOperatorMatrix() to ensure
@@ -317,15 +286,6 @@ void updateIndices(int oldEl, int newEl, int* list1, int len1, int* list2, int l
     }
 }
 
-/** takes a 2^numTargs-by-2^numTargs matrix op and a returns a 2^numQubits-by-2^numQubits
- * matrix where op is controlled on the given ctrls qubits. The union of {ctrls}
- * and {targs} must be unique, and every element must be 0 or positive. 
- * The passed {ctrls} and {targs} arrays are unmodified.
- * This funciton works by first swapping {targs} and {ctrls} (via swap unitaries) 
- * to be strictly increasing {0,1,...}, building controlled(op), tensoring it to 
- * the full Hilbert space, and then 'unswapping'. The returned matrix has form:
- * swap1 ... swapN . c(op) . swapN ... swap1
- */
 QMatrix getFullOperatorMatrix(
     int* ctrls, int numCtrls, int *targs, int numTargs, QMatrix op, int numQubits
 ) {        
@@ -394,7 +354,6 @@ QMatrix getFullOperatorMatrix(
     return fullOp;
 }
 
-/** returns log2 of numbers which must be gauranteed to be 2^n */
 unsigned int calcLog2(long unsigned int res) {
     unsigned int n = 0;
     while (res >>= 1)
@@ -402,10 +361,6 @@ unsigned int calcLog2(long unsigned int res) {
     return n;
 }
 
-/** returns a square complex matrix, where the real and imaginary value of 
- * each element are independently random, under the standard normal distribution 
- * (mean 0, standard deviation 1).
- */
 QMatrix getRandomQMatrix(int dim) {
     DEMAND( dim > 1 );
     
@@ -423,6 +378,15 @@ QMatrix getRandomQMatrix(int dim) {
         }
     }
     return matr;
+}
+
+bool areEqual(QVector a, QVector b) {
+    DEMAND( a.size() == b.size() );
+    
+    for (size_t i=0; i<a.size(); i++)
+        if (abs(a[i] - b[i]) > REAL_EPS)
+            return false;
+    return true;
 }
 
 bool areEqual(QMatrix a, QMatrix b) {
@@ -445,10 +409,6 @@ qreal getRandomReal(qreal min, qreal max) {
     return r;
 }
 
-/** generates a dim-length vector with random complex amplitudes in the 
- * square joining {-1-i, 1+i}, of an undisclosed distirbution. The resulting 
- * vector is NOT L2-normalised.
- */
 QVector getRandomQVector(int dim) { 
     QVector vec = QVector(dim);
     for (int i=0; i<dim; i++)
@@ -460,8 +420,6 @@ QVector getRandomQVector(int dim) {
     return vec;
 }
 
-/** L2-normalises a complex vector, using Kahan summation for improved accuracy
- */
 QVector getNormalised(QVector vec) {
     qreal norm = 0;
     qreal y, t, c;
@@ -516,14 +474,6 @@ int getRandomInt(int min, int max) {
     return round(getRandomReal(min, max-1));
 }
 
-/** returns a randomly distributed random unitary matrix. 
- * This works by first generating a complex matrix where each element is 
- * independently random; the real and imaginary component thereof are 
- * independent standard normally-distributed (mean 0, standard-dev 1).
- * Then, the matrix is orthonormalised via the Gram Schmidt algorithm. 
- * The resulting unitary matrix MAY be uniformly distributed under the Haar 
- * measure, but we make no assurance. 
- */
 QMatrix getRandomUnitary(int numQb) {
     DEMAND( numQb >= 1 );
 
@@ -572,11 +522,6 @@ QMatrix getRandomUnitary(int numQb) {
     return matr;
 }
 
-/** Generate a random Kraus map, with an undisclosed distribution.
- * This method is very simple and possibly does not generate all possible 
- * Kraus maps. It works by generating numOps unitary matrices, and randomly 
- * re-normalising them, such that the sum of ops[j]^dagger ops[j] = 1
- */
 std::vector<QMatrix> getRandomKrausMap(int numQb, int numOps) {
     DEMAND( numOps >= 1 );
     DEMAND( numOps <= 4*numQb*numQb );
@@ -612,8 +557,10 @@ std::vector<QMatrix> getRandomKrausMap(int numQb, int numOps) {
     return ops;
 }
 
-/** overwrites state to be the result of applying the unitary matrix op (with the
- * specified control and target qubits) to statevector state, i.e. fullOp(op) * |state>
+/* (do not generate doxygen doc)
+ *
+ * Overloads for applyReferenceOp, to conveniently specify all families of 
+ * unitary operations on state-vectors.
  */
 void applyReferenceOp(
     QVector &state, int* ctrls, int numCtrls, int *targs, int numTargs, QMatrix op
@@ -666,9 +613,10 @@ void applyReferenceOp(
     applyReferenceOp(state, NULL, 0, targs, 1, op);
 }
 
-/** overwrites state to be the result of applying the unitary matrix op (with the
- * specified control and target qubits) to density matrix state, i.e. 
- *  fullOp(op) * state * fullOp(op)^dagger
+/* (do not generate doxygen doc)
+ *
+ * Overloads for applyReferenceOp, to conveniently specify all families of 
+ * unitary operations on state-vectors.
  */
 void applyReferenceOp(
     QMatrix &state, int* ctrls, int numCtrls, int *targs, int numTargs, QMatrix op
@@ -722,11 +670,6 @@ void applyReferenceOp(
     applyReferenceOp(state, NULL, 0, targs, 1, op);
 }
 
-/** hardware-agnostic comparison of the given quregs, to within 
- * the QuEST_PREC-specific REAL_EPS (defined in QuEST_precision) precision.
- * In GPU mode, this involves a GPU to CPU memory copy overhead.
- * In distributed mode, this involves a all-to-all single-int broadcast
- */
 bool areEqual(Qureg qureg1, Qureg qureg2, qreal precision) {
     DEMAND( qureg1.isDensityMatrix == qureg2.isDensityMatrix );
     DEMAND( qureg1.numAmpsTotal == qureg2.numAmpsTotal );
@@ -754,11 +697,6 @@ bool areEqual(Qureg qureg1, Qureg qureg2) {
     return areEqual(qureg1, qureg2, REAL_EPS);
 }
 
-/** hardware-agnostic comparison of the given vector and pure qureg, to within 
- * the QuEST_PREC-specific REAL_EPS (defined in QuEST_precision) precision.
- * In GPU mode, this involves a GPU to CPU memory copy overhead.
- * In distributed mode, this involves a all-to-all single-int broadcast
- */
 bool areEqual(Qureg qureg, QVector vec, qreal precision) {
     DEMAND( !qureg.isDensityMatrix );
     DEMAND( (int) vec.size() == qureg.numAmpsTotal );
@@ -788,14 +726,6 @@ bool areEqual(Qureg qureg, QVector vec) {
     return areEqual(qureg, vec, REAL_EPS);
 }
 
-/** hardware-agnostic comparison of the given matrix and mixed qureg, to within 
- * the QuEST_PREC-specific 1E4*REAL_EPS (defined in QuEST_precision) precision.
- * We check against 1E4*REAL_EPS, since effecting operations on unitaries involve 
- * twice as many operations are on a statevector, and the state is stored in square
- * as many elements.
- * In GPU mode, this involves a GPU to CPU memory copy overhead.
- * In distributed mode, this involves a all-to-all single-int broadcast
- */
 bool areEqual(Qureg qureg, QMatrix matr, qreal precision) {
     DEMAND( qureg.isDensityMatrix );
     DEMAND( (int) (matr.size()*matr.size()) == qureg.numAmpsTotal );
@@ -895,10 +825,6 @@ QMatrix toQMatrix(ComplexMatrixN src) {
     return dest;
 }
 
-/** Encodes a Complex pair into the matrix (a=alpha, b=beta)
- * {{a, -conj(b)}},
- * {{b,  conj(a)}}
- */
 QMatrix toQMatrix(Complex alpha, Complex beta) {
     qcomp a = qcomp(alpha.real, alpha.imag);
     qcomp b = qcomp(beta.real, beta.imag);
@@ -908,10 +834,6 @@ QMatrix toQMatrix(Complex alpha, Complex beta) {
     return matr;
 }
 
-/** Encodes a density-matrix qureg into a QMatrix.
- * In GPU mode, this involves a GPU to CPU memory copy overhead.
- * In distributed mode, this involves a all-to-all full-statevector broadcast
- */
 QMatrix toQMatrix(Qureg qureg) {
     DEMAND( qureg.isDensityMatrix );
     DEMAND( qureg.numAmpsTotal < MPI_MAX_AMPS_IN_MSG );
@@ -951,10 +873,6 @@ QMatrix toQMatrix(Qureg qureg) {
     return matr;
 }
 
-/** Encodes a state-vector qureg into a QVector.
- * In GPU mode, this involves a GPU to CPU memory copy overhead.
- * In distributed mode, this involves a all-to-all full-statevector broadcast
- */
 QVector toQVector(Qureg qureg) {
     DEMAND( !qureg.isDensityMatrix );
     DEMAND( qureg.numAmpsTotal < MPI_MAX_AMPS_IN_MSG );
@@ -993,9 +911,6 @@ QVector toQVector(Qureg qureg) {
     return vec;
 }
 
-/** Initialises a (possibly distributed, or GPU-stored) qureg with a given 
- * QVector or QMatrix 
- */
 void toQureg(Qureg qureg, QVector vec) {
     DEMAND( !qureg.isDensityMatrix );
     DEMAND( qureg.numAmpsTotal == (int) vec.size() );
@@ -1020,15 +935,6 @@ void toQureg(Qureg qureg, QMatrix mat) {
     copyStateToGPU(qureg);
 }
 
-/** Generates every fixed-length sublist of the constructor-given list, in increasing 
- * lexographic order. That is, generates every combination of the given list 
- * and every permutation of each. If the sublist length is the full list length, 
- * this generator produces every permutation correctly. Note that the (same) pointer 
- * returned by get() must not be modified between invocations of next(). QuEST's 
- * internal functions will indeed modify but restore the qubit index lists given 
- * to them, which is ok. Assumes the constructor-given list contains no duplicate, 
- * otherwise the generated sublists may be duplicated.
- */
 class SubListGenerator : public Catch::Generators::IGenerator<int*> {
     int* list;
     int* sublist;
@@ -1160,13 +1066,6 @@ Catch::Generators::GeneratorWrapper<int*> sublists(
             new SubListGenerator(std::move(gen), numSamps, exclude, 0)));
 }
 
-/** Generates every fixed-length sequence, in increasing lexographic order,
- * where left-most (zero index) bit is treated as LEAST significant (opposite 
- * typical convention). Note that the (same) pointer returned by get() must not 
- * be modified between invocations of next(). Given maxDigit=2, numDigits=2,
- * this generator produces sequences: {0,0}, {1,0}, {2,0}, {0,1}, {1,1}, {2,1},
- * {0,2}, {1,2}, {2,2}. Given maxDigit=1, it produces bit sequences.
- */
 template <typename T>
 class SequenceGenerator : public Catch::Generators::IGenerator<T*> {
     T* digits;
