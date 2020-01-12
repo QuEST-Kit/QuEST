@@ -18,6 +18,8 @@ extern "C" {
 # endif
 
 void validateCreateNumQubits(int numQubits, const char* caller);
+void validateNumRanks(int numRanks, const char* caller);
+
 
 void validateAmpIndex(Qureg qureg, long long int ampInd, const char* caller);
 

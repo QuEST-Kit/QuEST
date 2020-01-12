@@ -24,6 +24,7 @@ extern "C" {
 
 typedef enum {
     E_SUCCESS=0,
+    E_INVALID_NUM_RANKS,
     E_INVALID_NUM_CREATE_QUBITS,
     E_INVALID_QUBIT_INDEX,
     E_INVALID_TARGET_QUBIT,
@@ -74,6 +75,7 @@ typedef enum {
 } ErrorCode;
 
 static const char* errorMessages[] = {
+    [E_INVALID_NUM_RANKS] = "Invalid number of nodes. Distributed simulation can only make use of a power-of-2 number of node.",
     [E_INVALID_NUM_CREATE_QUBITS] = "Invalid number of qubits. Must create >0.",
     [E_INVALID_QUBIT_INDEX] = "Invalid qubit index. Must be >=0 and <numQubits.",
     [E_INVALID_TARGET_QUBIT] = "Invalid target qubit. Must be >=0 and <numQubits.",
@@ -245,6 +247,28 @@ int areUniqueQubits(int* qubits, int numQubits) {
 }
 
 void validateCreateNumQubits(int numQubits, const char* caller) {
+/** returns log2 of numbers which must be gauranteed to be 2^n */
+unsigned int calcLog2(long unsigned int num) {
+    unsigned int l = 0;
+    while (num >>= 1)
+        l++;
+    return l;
+}
+
+void validateNumRanks(int numRanks, const char* caller) {
+
+    /* silly but robust way to determine if numRanks is a power of 2, 
+     * in lieu of bit-twiddling (e.g. AND with all-ones) which may be 
+     * system / precsision dependent 
+     */
+    int isValid = 0;
+    for (int exp2 = 1; exp2 <= numRanks; exp2 *= 2)
+        if (exp2 == numRanks)
+            isValid = 1;
+    
+    QuESTAssert(isValid, E_INVALID_NUM_RANKS, caller);
+}
+
     QuESTAssert(numQubits>0, E_INVALID_NUM_CREATE_QUBITS, caller);
 }
 
