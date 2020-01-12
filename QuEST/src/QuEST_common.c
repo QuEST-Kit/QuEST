@@ -446,9 +446,9 @@ void statevec_multiRotatePauli(
     }
 }
 
-void applyPauliProd(Qureg workspace, int* targetQubits, enum pauliOpType* pauliCodes, int numTargets) {
+/* produces both pauli|qureg> or pauli * qureg (as a density matrix) */
+void statevec_applyPauliProd(Qureg workspace, int* targetQubits, enum pauliOpType* pauliCodes, int numTargets) {
     
-    // produces both pauli|qureg> or pauli * qureg (as a density matrix)
     for (int i=0; i < numTargets; i++) {
         // (pauliCodes[i] == PAULI_I) applies no operation
         if (pauliCodes[i] == PAULI_X)
@@ -464,7 +464,7 @@ void applyPauliProd(Qureg workspace, int* targetQubits, enum pauliOpType* pauliC
 qreal statevec_calcExpecPauliProd(Qureg qureg, int* targetQubits, enum pauliOpType* pauliCodes, int numTargets, Qureg workspace) {
     
     statevec_cloneQureg(workspace, qureg);
-    applyPauliProd(workspace, targetQubits, pauliCodes, numTargets);
+    statevec_applyPauliProd(workspace, targetQubits, pauliCodes, numTargets);
     
     // compute the expected value
     qreal value;
@@ -505,11 +505,11 @@ void statevec_applyPauliSum(Qureg inQureg, enum pauliOpType* allCodes, qreal* te
         Complex zero = (Complex) {.real=0, .imag=0};
         
         // outQureg += coef paulis(inQureg)
-        applyPauliProd(inQureg, targs, &allCodes[t*numQb], numQb);
-        setWeightedQureg(coef, inQureg, iden, outQureg, zero, outQureg); 
+        statevec_applyPauliProd(inQureg, targs, &allCodes[t*numQb], numQb);
+        statevec_setWeightedQureg(coef, inQureg, iden, outQureg, zero, outQureg); 
         
         // undero paulis(inQureg), exploiting XX=YY=ZZ=I
-        applyPauliProd(inQureg, targs, &allCodes[t*numQb], numQb);
+        statevec_applyPauliProd(inQureg, targs, &allCodes[t*numQb], numQb);
     }
 }
 

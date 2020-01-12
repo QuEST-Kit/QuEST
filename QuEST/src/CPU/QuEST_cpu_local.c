@@ -131,8 +131,8 @@ qreal densmatr_calcTotalProb(Qureg qureg) {
         pTotal = t;
     }
     
-    // @TODO should maybe do a cheap test that imaginary components are ~0
-    
+    // does not check imaginary component, by design
+        
     return pTotal;
 }
 
