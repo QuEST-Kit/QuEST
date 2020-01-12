@@ -32,7 +32,7 @@ extern "C" {
  */
 
 Qureg createQureg(int numQubits, QuESTEnv env) {
-    validateCreateNumQubits(numQubits, __func__);
+    validateNumQubitsInQureg(numQubits, env.numRanks, __func__);
     
     Qureg qureg;
     statevec_createQureg(&qureg, numQubits, env);
@@ -46,7 +46,7 @@ Qureg createQureg(int numQubits, QuESTEnv env) {
 }
 
 Qureg createDensityQureg(int numQubits, QuESTEnv env) {
-    validateCreateNumQubits(numQubits, __func__);
+    validateNumQubitsInQureg(2*numQubits, env.numRanks, __func__);
     
     Qureg qureg;
     statevec_createQureg(&qureg, 2*numQubits, env);
@@ -998,7 +998,7 @@ void mixMultiQubitKrausMap(Qureg qureg, int* targets, int numTargets, ComplexMat
  */
  
  ComplexMatrixN createComplexMatrixN(int numQubits) {
-     validateCreateNumQubits(numQubits, __func__);
+     validateNumQubitsInMatrix(numQubits, __func__);
 
      int numRows = 1 << numQubits;
 

@@ -204,7 +204,6 @@ int isMatrixNUnitary(ComplexMatrixN u) {
     return retVal;
 }
 
-
 #define macro_isCompletelyPositiveMap(ops, numOps, opDim) { \
     for (int r=0; r<(opDim); r++) { \
         for (int c=0; c<(opDim); c++) { \
@@ -246,7 +245,6 @@ int areUniqueQubits(int* qubits, int numQubits) {
     return 1;
 }
 
-void validateCreateNumQubits(int numQubits, const char* caller) {
 /** returns log2 of numbers which must be gauranteed to be 2^n */
 unsigned int calcLog2(long unsigned int num) {
     unsigned int l = 0;
@@ -269,7 +267,12 @@ void validateNumRanks(int numRanks, const char* caller) {
     QuESTAssert(isValid, E_INVALID_NUM_RANKS, caller);
 }
 
+void validateNumQubitsInQureg(int numQubits, int numRanks, const char* caller) {
     QuESTAssert(numQubits>0, E_INVALID_NUM_CREATE_QUBITS, caller);
+}
+ 
+void validateNumQubitsInMatrix(int numQubits, const char* caller) {
+    QuESTAssert(numQubits>0, E_INVALID_NUM_QUBITS, caller);
 }
 
 void validateStateIndex(Qureg qureg, long long int stateInd, const char* caller) {
