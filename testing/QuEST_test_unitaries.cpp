@@ -997,19 +997,19 @@ TEST_CASE( "multiControlledPhaseFlip", "[unitaries]" ) {
             
             int numCtrls = GENERATE( -1, 0, NUM_QUBITS+1 );
             int ctrls[NUM_QUBITS+1]; // avoids seg-fault if validation not triggered
-            REQUIRE_THROWS_WITH( multiControlledPhaseFlip(quregVec, ctrls, numCtrls), Contains("Invalid number of control"));
+            REQUIRE_THROWS_WITH( multiControlledPhaseFlip(quregVec, ctrls, numCtrls), Contains("Invalid number of qubits"));
         }
         SECTION( "repetition of controls" ) {
             
             int numCtrls = 3;
             int ctrls[] = {0,1,1};
-            REQUIRE_THROWS_WITH( multiControlledPhaseFlip(quregVec, ctrls, numCtrls), Contains("control") && Contains("unique"));
+            REQUIRE_THROWS_WITH( multiControlledPhaseFlip(quregVec, ctrls, numCtrls), Contains("qubits must be unique"));
         }
         SECTION( "qubit indices" ) {
             
             int numCtrls = 3;
             int ctrls[] = { 1, 2, GENERATE( -1, NUM_QUBITS ) };
-            REQUIRE_THROWS_WITH( multiControlledPhaseFlip(quregVec, ctrls, numCtrls), Contains("Invalid control") );
+            REQUIRE_THROWS_WITH( multiControlledPhaseFlip(quregVec, ctrls, numCtrls), Contains("Invalid qubit") );
         }
     }
     CLEANUP_TEST( env, quregVec, quregMatr );
