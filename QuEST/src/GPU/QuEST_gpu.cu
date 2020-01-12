@@ -351,7 +351,7 @@ int GPUExists(void){
 }
 
 QuESTEnv createQuESTEnv(void) {
-    // init MPI environment
+    
     if (!GPUExists()){
         printf("Trying to run GPU code with no GPU available\n");
         exit(EXIT_FAILURE);
