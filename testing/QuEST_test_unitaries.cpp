@@ -17,25 +17,22 @@
 #include "QuEST.h"
 #include "QuEST_test_utils.hpp"
 
-/** Prepares the needed data structures for unit testing. This creates 
- * the QuEST environment, a statevector and density matrix of the size 'numQb',
+/** Prepares the needed data structures for unit testing unitaries. 
+ * This creates a statevector and density matrix of the size NUM_QUBITS,
  * and corresponding QVector and QMatrix instances for analytic comparison.
- * numQb should be NUM_QUBITS unless motivated otherwise.
  */
-#define PREPARE_TEST(env, quregVec, quregMatr, refVec, refMatr, numQb) \
-    QuESTEnv env = createQuESTEnv(); \
-    Qureg quregVec = createQureg(numQb, env); \
-    Qureg quregMatr = createDensityQureg(numQb, env); \
+#define PREPARE_TEST(quregVec, quregMatr, refVec, refMatr) \
+    Qureg quregVec = createQureg(NUM_QUBITS, QUEST_ENV); \
+    Qureg quregMatr = createDensityQureg(NUM_QUBITS, QUEST_ENV); \
     initDebugState(quregVec); \
     initDebugState(quregMatr); \
     QVector refVec = toQVector(quregVec); \
     QMatrix refMatr = toQMatrix(quregMatr);
 
 /** Destroys the data structures made by PREPARE_TEST */
-#define CLEANUP_TEST(env, quregVec, quregMatr) \
-    destroyQureg(quregVec, env); \
-    destroyQureg(quregMatr, env); \
-    destroyQuESTEnv(env);
+#define CLEANUP_TEST(quregVec, quregMatr) \
+    destroyQureg(quregVec, QUEST_ENV); \
+    destroyQureg(quregMatr, QUEST_ENV);
 
 /* allows concise use of Contains in catch's REQUIRE_THROWS_WITH */
 using Catch::Matchers::Contains;
@@ -44,7 +41,7 @@ using Catch::Matchers::Contains;
 
 TEST_CASE( "compactUnitary", "[unitaries]" ) {
     
-    PREPARE_TEST( env, quregVec, quregMatr, refVec, refMatr, NUM_QUBITS );
+    PREPARE_TEST( quregVec, quregMatr, refVec, refMatr );
     
     qcomp a = getRandomReal(-1,1) * exp(1i * getRandomReal(0,2*M_PI));
     qcomp b = sqrt(1-abs(a)*abs(a)) * exp(1i * getRandomReal(0,2*M_PI));
@@ -84,14 +81,14 @@ TEST_CASE( "compactUnitary", "[unitaries]" ) {
             REQUIRE_THROWS_WITH( compactUnitary(quregVec, 0, alpha, beta), Contains("unitary") );
         }
     }
-    CLEANUP_TEST( env, quregVec, quregMatr );
+    CLEANUP_TEST( quregVec, quregMatr );
 }
 
 
 
 TEST_CASE( "controlledCompactUnitary", "[unitaries]" ) {
     
-    PREPARE_TEST( env, quregVec, quregMatr, refVec, refMatr, NUM_QUBITS );
+    PREPARE_TEST( quregVec, quregMatr, refVec, refMatr );
     
     qcomp a = getRandomReal(-1,1) * exp(1i * getRandomReal(0,2*M_PI));
     qcomp b = sqrt(1-abs(a)*abs(a)) * exp(1i * getRandomReal(0,2*M_PI));
@@ -138,14 +135,14 @@ TEST_CASE( "controlledCompactUnitary", "[unitaries]" ) {
             REQUIRE_THROWS_WITH( controlledCompactUnitary(quregVec, 0, 1, alpha, beta), Contains("unitary") );
         }
     }
-    CLEANUP_TEST( env, quregVec, quregMatr );
+    CLEANUP_TEST( quregVec, quregMatr );
 }
 
 
 
 TEST_CASE( "controlledMultiQubitUnitary", "[unitaries]" ) {
     
-    PREPARE_TEST( env, quregVec, quregMatr, refVec, refMatr, NUM_QUBITS );
+    PREPARE_TEST( quregVec, quregMatr, refVec, refMatr );
     
     SECTION( "correctness" ) {
         
@@ -271,14 +268,14 @@ TEST_CASE( "controlledMultiQubitUnitary", "[unitaries]" ) {
             destroyComplexMatrixN(matr);
         }
     }
-    CLEANUP_TEST( env, quregVec, quregMatr );
+    CLEANUP_TEST( quregVec, quregMatr );
 }
 
 
 
 TEST_CASE(  "controlledNot", "[unitaries]" ) {
     
-    PREPARE_TEST( env, quregVec, quregMatr, refVec, refMatr, NUM_QUBITS );
+    PREPARE_TEST( quregVec, quregMatr, refVec, refMatr );
     QMatrix op{{0,1},{1,0}};
     
     SECTION( "correctness" ) {
@@ -313,14 +310,14 @@ TEST_CASE(  "controlledNot", "[unitaries]" ) {
             REQUIRE_THROWS_WITH( controlledNot(quregVec, 0, qb), Contains("Invalid target") );
         }
     }
-    CLEANUP_TEST( env, quregVec, quregMatr );
+    CLEANUP_TEST( quregVec, quregMatr );
 }
 
 
 
 TEST_CASE(  "controlledPauliY", "[unitaries]" ) {
     
-    PREPARE_TEST( env, quregVec, quregMatr, refVec, refMatr, NUM_QUBITS );
+    PREPARE_TEST( quregVec, quregMatr, refVec, refMatr );
     QMatrix op{{0,-1i},{1i,0}};
     
     SECTION( "correctness" ) {
@@ -355,14 +352,14 @@ TEST_CASE(  "controlledPauliY", "[unitaries]" ) {
             REQUIRE_THROWS_WITH( controlledPauliY(quregVec, 0, qb), Contains("Invalid target") );
         }
     }
-    CLEANUP_TEST( env, quregVec, quregMatr );
+    CLEANUP_TEST( quregVec, quregMatr );
 }
 
 
 
 TEST_CASE( "controlledPhaseFlip", "[unitaries]" ) {
     
-    PREPARE_TEST( env, quregVec, quregMatr, refVec, refMatr, NUM_QUBITS );
+    PREPARE_TEST( quregVec, quregMatr, refVec, refMatr );
     QMatrix op{{1,0},{0,-1}};
     
     SECTION( "correctness" ) {
@@ -397,14 +394,14 @@ TEST_CASE( "controlledPhaseFlip", "[unitaries]" ) {
             REQUIRE_THROWS_WITH( controlledPhaseFlip(quregVec, 0, qb), Contains("Invalid target") );
         }
     }
-    CLEANUP_TEST( env, quregVec, quregMatr );
+    CLEANUP_TEST( quregVec, quregMatr );
 }
 
 
 
 TEST_CASE( "controlledPhaseShift", "[unitaries]" ) {
     
-    PREPARE_TEST( env, quregVec, quregMatr, refVec, refMatr, NUM_QUBITS );
+    PREPARE_TEST( quregVec, quregMatr, refVec, refMatr );
     qreal param = getRandomReal(-2*M_PI, 2*M_PI);
     QMatrix op{{1,0},{0,exp(1i * param)}};
     
@@ -440,14 +437,14 @@ TEST_CASE( "controlledPhaseShift", "[unitaries]" ) {
             REQUIRE_THROWS_WITH( controlledPhaseShift(quregVec, 0, qb, param), Contains("Invalid target") );
         }
     }
-    CLEANUP_TEST( env, quregVec, quregMatr );
+    CLEANUP_TEST( quregVec, quregMatr );
 }
 
 
 
 TEST_CASE( "controlledRotateAroundAxis", "[unitaries]" ) {
     
-    PREPARE_TEST( env, quregVec, quregMatr, refVec, refMatr, NUM_QUBITS );
+    PREPARE_TEST( quregVec, quregMatr, refVec, refMatr );
     
     // each test will use a random parameter and axis vector    
     qreal param = getRandomReal(-4*M_PI, 4*M_PI);
@@ -498,14 +495,14 @@ TEST_CASE( "controlledRotateAroundAxis", "[unitaries]" ) {
             REQUIRE_THROWS_WITH( controlledRotateAroundAxis(quregVec, 0, 1, param, vec), Contains("Invalid axis") && Contains("zero") );
         }
     }
-    CLEANUP_TEST( env, quregVec, quregMatr );
+    CLEANUP_TEST( quregVec, quregMatr );
 }
 
 
 
 TEST_CASE( "controlledRotateX", "[unitaries]" ) {
     
-    PREPARE_TEST( env, quregVec, quregMatr, refVec, refMatr, NUM_QUBITS );
+    PREPARE_TEST( quregVec, quregMatr, refVec, refMatr );
     qreal param = getRandomReal(-4*M_PI, 4*M_PI);
     QMatrix op{{cos(param/2), -1i*sin(param/2)}, {-1i*sin(param/2), cos(param/2)}};
     
@@ -541,14 +538,14 @@ TEST_CASE( "controlledRotateX", "[unitaries]" ) {
             REQUIRE_THROWS_WITH( controlledRotateX(quregVec, 0, qb, param), Contains("Invalid target") );
         }
     }
-    CLEANUP_TEST( env, quregVec, quregMatr );
+    CLEANUP_TEST( quregVec, quregMatr );
 }
 
 
 
 TEST_CASE( "controlledRotateY", "[unitaries]" ) {
     
-    PREPARE_TEST( env, quregVec, quregMatr, refVec, refMatr, NUM_QUBITS );
+    PREPARE_TEST( quregVec, quregMatr, refVec, refMatr );
     qreal param = getRandomReal(-4*M_PI, 4*M_PI);
     QMatrix op{{cos(param/2), -sin(param/2)},{sin(param/2), cos(param/2)}};
     
@@ -584,14 +581,14 @@ TEST_CASE( "controlledRotateY", "[unitaries]" ) {
             REQUIRE_THROWS_WITH( controlledRotateY(quregVec, 0, qb, param), Contains("Invalid target") );
         }
     }
-    CLEANUP_TEST( env, quregVec, quregMatr );
+    CLEANUP_TEST( quregVec, quregMatr );
 }
 
 
 
 TEST_CASE( "controlledRotateZ", "[unitaries]" ) {
     
-    PREPARE_TEST( env, quregVec, quregMatr, refVec, refMatr, NUM_QUBITS );
+    PREPARE_TEST( quregVec, quregMatr, refVec, refMatr );
     qreal param = getRandomReal(-4*M_PI, 4*M_PI);
     QMatrix op{{exp(-1i*param/2.),0},{0,exp(1i*param/2.)}};
     
@@ -627,14 +624,14 @@ TEST_CASE( "controlledRotateZ", "[unitaries]" ) {
             REQUIRE_THROWS_WITH( controlledRotateZ(quregVec, 0, qb, param), Contains("Invalid target") );
         }
     }
-    CLEANUP_TEST( env, quregVec, quregMatr );
+    CLEANUP_TEST( quregVec, quregMatr );
 }
 
 
 
 TEST_CASE( "controlledTwoQubitUnitary", "[unitaries]" ) {
     
-    PREPARE_TEST( env, quregVec, quregMatr, refVec, refMatr, NUM_QUBITS );
+    PREPARE_TEST( quregVec, quregMatr, refVec, refMatr );
     
     // in distributed mode, each node must be able to fit all amps modified by unitary 
     REQUIRE( quregVec.numAmpsPerChunk >= 4 );
@@ -700,14 +697,14 @@ TEST_CASE( "controlledTwoQubitUnitary", "[unitaries]" ) {
             REQUIRE_THROWS_WITH( controlledTwoQubitUnitary(quregVec, 0, 1, 2, matr), Contains("targets too many qubits"));
         }
     }
-    CLEANUP_TEST( env, quregVec, quregMatr );
+    CLEANUP_TEST( quregVec, quregMatr );
 }
 
 
 
 TEST_CASE( "controlledUnitary", "[unitaries]" ) {
     
-    PREPARE_TEST( env, quregVec, quregMatr, refVec, refMatr, NUM_QUBITS );
+    PREPARE_TEST( quregVec, quregMatr, refVec, refMatr );
     QMatrix op = getRandomUnitary(1);
     ComplexMatrix2 matr = toComplexMatrix2(op);
     
@@ -748,14 +745,14 @@ TEST_CASE( "controlledUnitary", "[unitaries]" ) {
             REQUIRE_THROWS_WITH( controlledUnitary(quregVec, 0, 1, matr), Contains("unitary") );
         }
     }
-    CLEANUP_TEST( env, quregVec, quregMatr );
+    CLEANUP_TEST( quregVec, quregMatr );
 }
 
 
 
 TEST_CASE( "hadamard", "[unitaries]" ) {
 
-    PREPARE_TEST( env, quregVec, quregMatr, refVec, refMatr, NUM_QUBITS );
+    PREPARE_TEST( quregVec, quregMatr, refVec, refMatr );
     qreal a = 1/sqrt(2);
     QMatrix op{{a,a},{a,-a}};
 
@@ -784,14 +781,14 @@ TEST_CASE( "hadamard", "[unitaries]" ) {
             REQUIRE_THROWS_WITH( hadamard(quregVec, target), Contains("Invalid target") );
         }
     }
-    CLEANUP_TEST( env, quregVec, quregMatr );
+    CLEANUP_TEST( quregVec, quregMatr );
 }
 
 
 
 TEST_CASE( "multiControlledMultiQubitUnitary", "[unitaries]" ) {
     
-    PREPARE_TEST( env, quregVec, quregMatr, refVec, refMatr, NUM_QUBITS );
+    PREPARE_TEST( quregVec, quregMatr, refVec, refMatr );
     
     SECTION( "correctness" ) {
         
@@ -949,14 +946,14 @@ TEST_CASE( "multiControlledMultiQubitUnitary", "[unitaries]" ) {
             destroyComplexMatrixN(matr);
         }
     }
-    CLEANUP_TEST( env, quregVec, quregMatr );
+    CLEANUP_TEST( quregVec, quregMatr );
 }
 
 
 
 TEST_CASE( "multiControlledPhaseFlip", "[unitaries]" ) {
 
-    PREPARE_TEST( env, quregVec, quregMatr, refVec, refMatr, NUM_QUBITS );
+    PREPARE_TEST( quregVec, quregMatr, refVec, refMatr );
     
     // acts on the final control qubit
     QMatrix op{{1,0},{0,-1}};
@@ -1001,14 +998,14 @@ TEST_CASE( "multiControlledPhaseFlip", "[unitaries]" ) {
             REQUIRE_THROWS_WITH( multiControlledPhaseFlip(quregVec, ctrls, numCtrls), Contains("Invalid qubit") );
         }
     }
-    CLEANUP_TEST( env, quregVec, quregMatr );
+    CLEANUP_TEST( quregVec, quregMatr );
 }
 
 
 
 TEST_CASE( "multiControlledPhaseShift", "[unitaries]" ) {
 
-    PREPARE_TEST( env, quregVec, quregMatr, refVec, refMatr, NUM_QUBITS );
+    PREPARE_TEST( quregVec, quregMatr, refVec, refMatr );
     qreal param = getRandomReal(-2*M_PI, 2*M_PI);
     QMatrix op{{1,0},{0,exp(1i*param)}};
  
@@ -1052,14 +1049,14 @@ TEST_CASE( "multiControlledPhaseShift", "[unitaries]" ) {
             REQUIRE_THROWS_WITH( multiControlledPhaseShift(quregVec, ctrls, numCtrls, param), Contains("Invalid qubit") );
         }
     }
-    CLEANUP_TEST( env, quregVec, quregMatr );
+    CLEANUP_TEST( quregVec, quregMatr );
 }
 
 
 
 TEST_CASE( "multiControlledTwoQubitUnitary", "[unitaries]" ) {
 
-    PREPARE_TEST( env, quregVec, quregMatr, refVec, refMatr, NUM_QUBITS );
+    PREPARE_TEST( quregVec, quregMatr, refVec, refMatr );
 
     // in distributed mode, each node must be able to fit all amps modified by unitary 
     REQUIRE( quregVec.numAmpsPerChunk >= 4 );
@@ -1152,14 +1149,14 @@ TEST_CASE( "multiControlledTwoQubitUnitary", "[unitaries]" ) {
             REQUIRE_THROWS_WITH( multiControlledTwoQubitUnitary(quregVec, ctrls, 1, 1, 2, matr), Contains("targets too many qubits"));
         }
     }
-    CLEANUP_TEST( env, quregVec, quregMatr );
+    CLEANUP_TEST( quregVec, quregMatr );
 }
 
 
 
 TEST_CASE( "multiControlledUnitary", "[unitaries]" ) {
 
-    PREPARE_TEST( env, quregVec, quregMatr, refVec, refMatr, NUM_QUBITS );
+    PREPARE_TEST( quregVec, quregMatr, refVec, refMatr );
 
     // every test will use a unique random matrix
     QMatrix op = getRandomUnitary(1);
@@ -1219,14 +1216,14 @@ TEST_CASE( "multiControlledUnitary", "[unitaries]" ) {
             REQUIRE_THROWS_WITH( multiControlledUnitary(quregVec, ctrls, 1, 1, matr), Contains("unitary") );
         }
     }
-    CLEANUP_TEST( env, quregVec, quregMatr );
+    CLEANUP_TEST( quregVec, quregMatr );
 }
 
 
 
 TEST_CASE( "multiQubitUnitary", "[unitaries]" ) {
     
-    PREPARE_TEST( env, quregVec, quregMatr, refVec, refMatr, NUM_QUBITS );
+    PREPARE_TEST( quregVec, quregMatr, refVec, refMatr );
     
     SECTION( "correctness" ) {
         
@@ -1331,14 +1328,14 @@ TEST_CASE( "multiQubitUnitary", "[unitaries]" ) {
             destroyComplexMatrixN(matr);
         }
     }
-    CLEANUP_TEST( env, quregVec, quregMatr );
+    CLEANUP_TEST( quregVec, quregMatr );
 }
 
 
 
 TEST_CASE( "multiRotatePauli", "[unitaries]" ) {
         
-    PREPARE_TEST( env, quregVec, quregMatr, refVec, refMatr, NUM_QUBITS );
+    PREPARE_TEST( quregVec, quregMatr, refVec, refMatr );
     qreal param = getRandomReal(-4*M_PI, 4*M_PI);
         
     SECTION( "correctness" ) {
@@ -1431,12 +1428,12 @@ TEST_CASE( "multiRotatePauli", "[unitaries]" ) {
             REQUIRE_THROWS_WITH( multiRotatePauli(quregVec, targs, paulis, numTargs, param), Contains("Invalid Pauli code"));
         }
     }
-    CLEANUP_TEST( env, quregVec, quregMatr );
+    CLEANUP_TEST( quregVec, quregMatr );
 }
 
 TEST_CASE( "multiRotateZ", "[unitaries]" ) {
     
-    PREPARE_TEST( env, quregVec, quregMatr, refVec, refMatr, NUM_QUBITS );
+    PREPARE_TEST( quregVec, quregMatr, refVec, refMatr );
     qreal param = getRandomReal(-4*M_PI, 4*M_PI);
         
     SECTION( "correctness" ) {
@@ -1499,14 +1496,14 @@ TEST_CASE( "multiRotateZ", "[unitaries]" ) {
             REQUIRE_THROWS_WITH( multiRotateZ(quregVec, targs, numTargs, param), Contains("Invalid target"));
         }
     }
-    CLEANUP_TEST( env, quregVec, quregMatr );
+    CLEANUP_TEST( quregVec, quregMatr );
 }
 
 
 
 TEST_CASE( "multiStateControlledUnitary", "[unitaries]" ) {
 
-    PREPARE_TEST( env, quregVec, quregMatr, refVec, refMatr, NUM_QUBITS );
+    PREPARE_TEST( quregVec, quregMatr, refVec, refMatr );
 
     // every test will use a unique random matrix
     QMatrix op = getRandomUnitary(1);
@@ -1604,14 +1601,14 @@ TEST_CASE( "multiStateControlledUnitary", "[unitaries]" ) {
             REQUIRE_THROWS_WITH( multiStateControlledUnitary(quregVec, ctrls, ctrlState, 3, targ, matr), Contains("state") );
         }
     }
-    CLEANUP_TEST( env, quregVec, quregMatr );
+    CLEANUP_TEST( quregVec, quregMatr );
 }
 
 
 
 TEST_CASE( "pauliX", "[unitaries]" ) {
     
-    PREPARE_TEST( env, quregVec, quregMatr, refVec, refMatr, NUM_QUBITS );
+    PREPARE_TEST( quregVec, quregMatr, refVec, refMatr );
     QMatrix op{{0,1},{1,0}};
     
     SECTION( "correctness" ) {
@@ -1639,14 +1636,14 @@ TEST_CASE( "pauliX", "[unitaries]" ) {
             REQUIRE_THROWS_WITH( pauliX(quregVec, target), Contains("Invalid target") );
         }
     }
-    CLEANUP_TEST( env, quregVec, quregMatr );
+    CLEANUP_TEST( quregVec, quregMatr );
 }
 
 
 
 TEST_CASE( "pauliY", "[unitaries]" ) {
     
-    PREPARE_TEST( env, quregVec, quregMatr, refVec, refMatr, NUM_QUBITS );
+    PREPARE_TEST( quregVec, quregMatr, refVec, refMatr );
     QMatrix op{{0,-1i},{1i,0}};
     
     SECTION( "correctness" ) {
@@ -1674,14 +1671,14 @@ TEST_CASE( "pauliY", "[unitaries]" ) {
             REQUIRE_THROWS_WITH( pauliY(quregVec, target), Contains("Invalid target") );
         }
     }
-    CLEANUP_TEST( env, quregVec, quregMatr );
+    CLEANUP_TEST( quregVec, quregMatr );
 }
 
 
 
 TEST_CASE( "pauliZ", "[unitaries]" ) {
     
-    PREPARE_TEST( env, quregVec, quregMatr, refVec, refMatr, NUM_QUBITS );
+    PREPARE_TEST( quregVec, quregMatr, refVec, refMatr );
     QMatrix op{{1,0},{0,-1}};
     
     SECTION( "correctness" ) {
@@ -1709,14 +1706,14 @@ TEST_CASE( "pauliZ", "[unitaries]" ) {
             REQUIRE_THROWS_WITH( pauliZ(quregVec, target), Contains("Invalid target") );
         }
     }
-    CLEANUP_TEST( env, quregVec, quregMatr );
+    CLEANUP_TEST( quregVec, quregMatr );
 }
 
 
 
 TEST_CASE( "phaseShift", "[unitaries]" ) {
 
-    PREPARE_TEST( env, quregVec, quregMatr, refVec, refMatr, NUM_QUBITS );
+    PREPARE_TEST( quregVec, quregMatr, refVec, refMatr );
     qreal param = getRandomReal(-2*M_PI, 2*M_PI);
     QMatrix op{{1,0},{0,exp(1i*param)}};
 
@@ -1745,14 +1742,14 @@ TEST_CASE( "phaseShift", "[unitaries]" ) {
             REQUIRE_THROWS_WITH( phaseShift(quregVec, target, param), Contains("Invalid target") );
         }
     }
-    CLEANUP_TEST( env, quregVec, quregMatr );
+    CLEANUP_TEST( quregVec, quregMatr );
 }
 
 
 
 TEST_CASE( "rotateAroundAxis", "[unitaries]" ) {
 
-    PREPARE_TEST( env, quregVec, quregMatr, refVec, refMatr, NUM_QUBITS );
+    PREPARE_TEST( quregVec, quregMatr, refVec, refMatr );
     
     // each test will use a random parameter and axis vector    
     qreal param = getRandomReal(-4*M_PI, 4*M_PI);
@@ -1797,14 +1794,14 @@ TEST_CASE( "rotateAroundAxis", "[unitaries]" ) {
             REQUIRE_THROWS_WITH( rotateAroundAxis(quregVec, target, param, vec), Contains("Invalid axis") && Contains("zero") );
         }
     }
-    CLEANUP_TEST( env, quregVec, quregMatr );
+    CLEANUP_TEST( quregVec, quregMatr );
 }
 
 
 
 TEST_CASE( "rotateX", "[unitaries]" ) {
 
-    PREPARE_TEST( env, quregVec, quregMatr, refVec, refMatr, NUM_QUBITS );
+    PREPARE_TEST( quregVec, quregMatr, refVec, refMatr );
     qreal param = getRandomReal(-4*M_PI, 4*M_PI);
     QMatrix op{{cos(param/2), -1i*sin(param/2)}, {-1i*sin(param/2), cos(param/2)}};
 
@@ -1833,14 +1830,14 @@ TEST_CASE( "rotateX", "[unitaries]" ) {
             REQUIRE_THROWS_WITH( rotateX(quregVec, target, param), Contains("Invalid target") );
         }
     }
-    CLEANUP_TEST( env, quregVec, quregMatr );
+    CLEANUP_TEST( quregVec, quregMatr );
 }
 
 
 
 TEST_CASE( "rotateY", "[unitaries]" ) {
 
-    PREPARE_TEST( env, quregVec, quregMatr, refVec, refMatr, NUM_QUBITS );
+    PREPARE_TEST( quregVec, quregMatr, refVec, refMatr );
     qreal param = getRandomReal(-4*M_PI, 4*M_PI);
     QMatrix op{{cos(param/2), -sin(param/2)},{sin(param/2), cos(param/2)}};
 
@@ -1869,14 +1866,14 @@ TEST_CASE( "rotateY", "[unitaries]" ) {
             REQUIRE_THROWS_WITH( rotateY(quregVec, target, param), Contains("Invalid target") );
         }
     }
-    CLEANUP_TEST( env, quregVec, quregMatr );
+    CLEANUP_TEST( quregVec, quregMatr );
 }
 
 
 
 TEST_CASE( "rotateZ", "[unitaries]" ) {
 
-    PREPARE_TEST( env, quregVec, quregMatr, refVec, refMatr, NUM_QUBITS );
+    PREPARE_TEST( quregVec, quregMatr, refVec, refMatr );
     qreal param = getRandomReal(-4*M_PI, 4*M_PI);
     QMatrix op{{exp(-1i*param/2.),0},{0,exp(1i*param/2.)}};
 
@@ -1905,14 +1902,14 @@ TEST_CASE( "rotateZ", "[unitaries]" ) {
             REQUIRE_THROWS_WITH( rotateZ(quregVec, target, param), Contains("Invalid target") );
         }
     }
-    CLEANUP_TEST( env, quregVec, quregMatr );
+    CLEANUP_TEST( quregVec, quregMatr );
 }
 
 
 
 TEST_CASE( "sGate", "[unitaries]" ) {
 
-    PREPARE_TEST( env, quregVec, quregMatr, refVec, refMatr, NUM_QUBITS );
+    PREPARE_TEST( quregVec, quregMatr, refVec, refMatr );
     QMatrix op{{1,0},{0,1i}};
 
     SECTION( "correctness" ) {
@@ -1940,14 +1937,14 @@ TEST_CASE( "sGate", "[unitaries]" ) {
             REQUIRE_THROWS_WITH( sGate(quregVec, target), Contains("Invalid target") );
         }
     }
-    CLEANUP_TEST( env, quregVec, quregMatr );
+    CLEANUP_TEST( quregVec, quregMatr );
 }
 
 
 
 TEST_CASE( "sqrtSwapGate", "[unitaries]" ) {
         
-    PREPARE_TEST( env, quregVec, quregMatr, refVec, refMatr, NUM_QUBITS );
+    PREPARE_TEST( quregVec, quregMatr, refVec, refMatr );
     qcomp a = (1. + 1i)/2.;
     qcomp b = (1. - 1i)/2.;
     QMatrix op{{1,0,0,0},{0,a,b,0},{0,b,a,0},{0,0,0,1}};
@@ -1986,14 +1983,14 @@ TEST_CASE( "sqrtSwapGate", "[unitaries]" ) {
             REQUIRE_THROWS_WITH( sqrtSwapGate(quregVec, qb, qb), Contains("target") && Contains("unique") );
         }
     }
-    CLEANUP_TEST( env, quregVec, quregMatr );
+    CLEANUP_TEST( quregVec, quregMatr );
 }
 
 
 
 TEST_CASE( "swapGate", "[unitaries]" ) {
         
-    PREPARE_TEST( env, quregVec, quregMatr, refVec, refMatr, NUM_QUBITS );
+    PREPARE_TEST( quregVec, quregMatr, refVec, refMatr );
     QMatrix op{{1,0,0,0},{0,0,1,0},{0,1,0,0},{0,0,0,1}};
 
     SECTION( "correctness" ) {
@@ -2030,14 +2027,14 @@ TEST_CASE( "swapGate", "[unitaries]" ) {
             REQUIRE_THROWS_WITH( swapGate(quregVec, qb, qb), Contains("target") && Contains("unique") );
         }
     }
-    CLEANUP_TEST( env, quregVec, quregMatr );
+    CLEANUP_TEST( quregVec, quregMatr );
 }
 
 
 
 TEST_CASE( "tGate", "[unitaries]" ) {
 
-    PREPARE_TEST( env, quregVec, quregMatr, refVec, refMatr, NUM_QUBITS );
+    PREPARE_TEST( quregVec, quregMatr, refVec, refMatr );
     QMatrix op{{1,0},{0,exp(1i*M_PI/4.)}};
 
     SECTION( "correctness" ) {
@@ -2065,14 +2062,14 @@ TEST_CASE( "tGate", "[unitaries]" ) {
             REQUIRE_THROWS_WITH( tGate(quregVec, target), Contains("Invalid target") );
         }
     }
-    CLEANUP_TEST( env, quregVec, quregMatr );
+    CLEANUP_TEST( quregVec, quregMatr );
 }
 
 
 
 TEST_CASE( "twoQubitUnitary", "[unitaries]" ) {
     
-    PREPARE_TEST( env, quregVec, quregMatr, refVec, refMatr, NUM_QUBITS );
+    PREPARE_TEST( quregVec, quregMatr, refVec, refMatr );
     
     // in distributed mode, each node must be able to fit all amps modified by unitary 
     REQUIRE( quregVec.numAmpsPerChunk >= 4 );
@@ -2126,14 +2123,14 @@ TEST_CASE( "twoQubitUnitary", "[unitaries]" ) {
             REQUIRE_THROWS_WITH( twoQubitUnitary(quregVec, 0, 1, matr), Contains("targets too many qubits"));
         }
     }
-    CLEANUP_TEST( env, quregVec, quregMatr );
+    CLEANUP_TEST( quregVec, quregMatr );
 }
 
 
 
 TEST_CASE( "unitary", "[unitaries]" ) {
         
-    PREPARE_TEST( env, quregVec, quregMatr, refVec, refMatr, NUM_QUBITS );
+    PREPARE_TEST( quregVec, quregMatr, refVec, refMatr );
     
     // every test will use a unique random matrix
     QMatrix op = getRandomUnitary(1);
@@ -2169,5 +2166,5 @@ TEST_CASE( "unitary", "[unitaries]" ) {
             REQUIRE_THROWS_WITH( unitary(quregVec, 0, matr), Contains("unitary") );
         }
     }
-    CLEANUP_TEST( env, quregVec, quregMatr );
+    CLEANUP_TEST( quregVec, quregMatr );
 }

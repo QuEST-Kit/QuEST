@@ -18,6 +18,11 @@
 #include "catch.hpp"
 #include <vector>
 
+/** The single QuESTEnv environment created before the Catch tests begin, 
+ * and destroyed thereafter.
+ */
+extern QuESTEnv QUEST_ENV;
+
 /** The default number of qubits in the registers created for unit testing 
  * (both statevectors and density matrices). Creation of non-NUM_QUBITS sized 
  * Quregs should be justified in a comment. 

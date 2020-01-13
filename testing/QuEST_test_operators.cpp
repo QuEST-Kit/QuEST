@@ -10,11 +10,10 @@ using Catch::Matchers::Contains;
 
 TEST_CASE( "applyPauliSum", "[operators]" ) {
     
-    QuESTEnv env = createQuESTEnv();
-    Qureg vecIn = createQureg(NUM_QUBITS, env);
-    Qureg vecOut = createQureg(NUM_QUBITS, env);
-    Qureg matIn = createDensityQureg(NUM_QUBITS, env);
-    Qureg matOut = createDensityQureg(NUM_QUBITS, env);
+    Qureg vecIn = createQureg(NUM_QUBITS, QUEST_ENV);
+    Qureg vecOut = createQureg(NUM_QUBITS, QUEST_ENV);
+    Qureg matIn = createDensityQureg(NUM_QUBITS, QUEST_ENV);
+    Qureg matOut = createDensityQureg(NUM_QUBITS, QUEST_ENV);
     
     initDebugState(vecIn);
     initDebugState(matIn);
@@ -107,10 +106,10 @@ TEST_CASE( "applyPauliSum", "[operators]" ) {
         }
         SECTION( "qureg dimensions" ) {
             
-            Qureg badVec = createQureg(NUM_QUBITS+1, env);
+            Qureg badVec = createQureg(NUM_QUBITS+1, QUEST_ENV);
             pauliOpType paulis[NUM_QUBITS];
             REQUIRE_THROWS_WITH( applyPauliSum(vecIn, paulis, NULL, 1, badVec), Contains("Dimensions of the qubit registers don't match") );
-            destroyQureg(badVec, env);
+            destroyQureg(badVec, QUEST_ENV);
         }
         SECTION( "qureg types" ) {
             
@@ -118,9 +117,8 @@ TEST_CASE( "applyPauliSum", "[operators]" ) {
             REQUIRE_THROWS_WITH( applyPauliSum(vecIn, paulis, NULL, 1, matOut), Contains("Registers must both be state-vectors or both be density matrices") );
         }
     }
-    destroyQureg(vecIn, env);
-    destroyQureg(vecOut, env);
-    destroyQureg(matIn, env);
-    destroyQureg(matOut, env);
-    destroyQuESTEnv(env);
+    destroyQureg(vecIn, QUEST_ENV);
+    destroyQureg(vecOut, QUEST_ENV);
+    destroyQureg(matIn, QUEST_ENV);
+    destroyQureg(matOut, QUEST_ENV);
 }

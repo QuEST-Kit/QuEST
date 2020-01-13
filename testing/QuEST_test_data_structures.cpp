@@ -39,13 +39,11 @@ TEST_CASE( "toComplex", "[data_structures]" ) {
 
 
 TEST_CASE( "createCloneQureg", "[data_structures]" ) {
-    
-    QuESTEnv env = createQuESTEnv();
-    
+        
     SECTION( "state-vector" ) {
         
-        Qureg a = createQureg(NUM_QUBITS, env);    
-        Qureg b = createCloneQureg(a, env);
+        Qureg a = createQureg(NUM_QUBITS, QUEST_ENV);    
+        Qureg b = createCloneQureg(a, QUEST_ENV);
         
         // check properties are the same
         REQUIRE( b.isDensityMatrix == a.isDensityMatrix );
@@ -57,13 +55,13 @@ TEST_CASE( "createCloneQureg", "[data_structures]" ) {
         // check state-vector is the same (works for GPU and distributed)
         REQUIRE( areEqual(a, b) );  
         
-        destroyQureg(a, env);
-        destroyQureg(b, env);
+        destroyQureg(a, QUEST_ENV);
+        destroyQureg(b, QUEST_ENV);
     }
     SECTION( "density-matrix" ) {
         
-        Qureg a = createDensityQureg(NUM_QUBITS, env);
-        Qureg b = createCloneQureg(a, env);
+        Qureg a = createDensityQureg(NUM_QUBITS, QUEST_ENV);
+        Qureg b = createCloneQureg(a, QUEST_ENV);
         
         // check properties are the same
         REQUIRE( b.isDensityMatrix == a.isDensityMatrix );
@@ -75,10 +73,9 @@ TEST_CASE( "createCloneQureg", "[data_structures]" ) {
         // check state-vector is the same (works for GPU and distributed)
         REQUIRE( areEqual(a, b) );  
         
-        destroyQureg(a, env);
-        destroyQureg(b, env);
+        destroyQureg(a, QUEST_ENV);
+        destroyQureg(b, QUEST_ENV);
     }
-    destroyQuESTEnv(env);
 }
 
 
@@ -108,11 +105,9 @@ TEST_CASE( "createComplexMatrixN", "[data_structures]" ) {
 
 
 TEST_CASE( "createDensityQureg", "[data_structures]" ) {
-    
-    QuESTEnv env = createQuESTEnv();
-    
+        
     // must be at least one amplitude per node
-    int minNumQb = calcLog2(env.numRanks) - 1; // density matrix has 2*numQb in state-vec
+    int minNumQb = calcLog2(QUEST_ENV.numRanks) - 1; // density matrix has 2*numQb in state-vec
     if (minNumQb <= 0)
         minNumQb = 1;
     
@@ -120,23 +115,26 @@ TEST_CASE( "createDensityQureg", "[data_structures]" ) {
         
         // try 10 valid number of qubits
         int numQb = GENERATE_COPY( range(minNumQb, minNumQb+10) );
-        Qureg reg = createDensityQureg(numQb, env);
+        Qureg reg = createDensityQureg(numQb, QUEST_ENV);
         
         // ensure elems (CPU and/or GPU) are created, and reg begins in |0><0|
         QMatrix ref = getZeroMatrix(1<<numQb);
         ref[0][0] = 1; // |0><0|
         REQUIRE( areEqual(reg, ref) );
         
-        destroyQureg(reg, env);
+        destroyQureg(reg, QUEST_ENV);
     }
     SECTION( "input validation") {
         
         SECTION( "number of qubits" ) {
             
             int numQb = GENERATE( -1, 0 );
-            REQUIRE_THROWS_WITH( createDensityQureg(numQb, env), Contains("Invalid number of qubits") );
+            REQUIRE_THROWS_WITH( createDensityQureg(numQb, QUEST_ENV), Contains("Invalid number of qubits") );
         }
         SECTION( "number of amplitudes" ) {
+            
+            // use local QuESTEnv to safely modify
+            QuESTEnv env = QUEST_ENV;
             
             // too many amplitudes to store in type
             int maxQb = (int) calcLog2(SIZE_MAX) - 1;
@@ -157,7 +155,6 @@ TEST_CASE( "createDensityQureg", "[data_structures]" ) {
             SUCCEED( );
         }
     }
-    destroyQuESTEnv(env);
 }
 
 
@@ -171,11 +168,9 @@ TEST_CASE( "createQuESTEnv", "[data_structures]" ) {
 
 
 TEST_CASE( "createQureg", "[data_structures]" ) {
-    
-    QuESTEnv env = createQuESTEnv();
-    
+        
     // must be at least one amplitude per node
-    int minNumQb = calcLog2(env.numRanks);
+    int minNumQb = calcLog2(QUEST_ENV.numRanks);
     if (minNumQb == 0)
         minNumQb = 1;
     
@@ -183,24 +178,27 @@ TEST_CASE( "createQureg", "[data_structures]" ) {
         
         // try 10 valid number of qubits
         int numQb = GENERATE_COPY( range(minNumQb, minNumQb+10) );
-        Qureg reg = createQureg(numQb, env);
+        Qureg reg = createQureg(numQb, QUEST_ENV);
         
         // ensure elems (CPU and/or GPU) are created, and reg begins in |0>
         QVector ref = QVector(1<<numQb);
         ref[0] = 1; // |0>
         REQUIRE( areEqual(reg, ref) );
         
-        destroyQureg(reg, env);
+        destroyQureg(reg, QUEST_ENV);
     }
     SECTION( "input validation") {
         
         SECTION( "number of qubits" ) {
             
             int numQb = GENERATE( -1, 0 );
-            REQUIRE_THROWS_WITH( createQureg(numQb, env), Contains("Invalid number of qubits") );
+            REQUIRE_THROWS_WITH( createQureg(numQb, QUEST_ENV), Contains("Invalid number of qubits") );
         }
         SECTION( "number of amplitudes" ) {
-
+            
+            // use local QuESTEnv to safely modify
+            QuESTEnv env = QUEST_ENV;
+            
             // too many amplitudes to store in type
             int maxQb = (int) calcLog2(SIZE_MAX);
             REQUIRE_THROWS_WITH( createQureg(maxQb+1, env), Contains("Too many qubits") && Contains("size_t type") );
@@ -218,7 +216,6 @@ TEST_CASE( "createQureg", "[data_structures]" ) {
             SUCCEED( );
         }
     }
-    destroyQuESTEnv(env);
 }
 
 

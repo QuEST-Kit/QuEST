@@ -3,22 +3,6 @@
 #include "QuEST.h"
 #include "QuEST_test_utils.hpp"
 
-/** Prepares the needed data structures for unit testing. This creates 
- * the QuEST environment, and a state-vector and density matrix of the size 'numQb',
- * both of which are (automatically) initialised to the zero state.
- * numQb should be NUM_QUBITS unless motivated otherwise.
- */
-#define PREPARE_TEST(env, vec, mat, numQb) \
-    QuESTEnv env = createQuESTEnv(); \
-    Qureg vec = createQureg(numQb, env); \
-    Qureg mat = createDensityQureg(numQb, env);
-
-/** Destroys the data structures made by PREPARE_TEST */
-#define CLEANUP_TEST(env, vec, mat) \
-    destroyQureg(vec, env); \
-    destroyQureg(mat, env); \
-    destroyQuESTEnv(env);
-
 /* allows concise use of Contains in catch's REQUIRE_THROWS_WITH */
 using Catch::Matchers::Contains;
 
@@ -26,9 +10,8 @@ using Catch::Matchers::Contains;
 
 TEST_CASE( "calcDensityInnerProduct", "[calculations]" ) {
 
-    QuESTEnv env = createQuESTEnv();
-    Qureg mat1 = createDensityQureg(NUM_QUBITS, env);
-    Qureg mat2 = createDensityQureg(NUM_QUBITS, env);
+    Qureg mat1 = createDensityQureg(NUM_QUBITS, QUEST_ENV);
+    Qureg mat2 = createDensityQureg(NUM_QUBITS, QUEST_ENV);
     
     SECTION( "correctness" ) {
         
@@ -96,40 +79,38 @@ TEST_CASE( "calcDensityInnerProduct", "[calculations]" ) {
         
         SECTION( "dimensions" ) {
             
-            Qureg mat3 = createDensityQureg(NUM_QUBITS + 1, env);
+            Qureg mat3 = createDensityQureg(NUM_QUBITS + 1, QUEST_ENV);
             REQUIRE_THROWS_WITH( calcDensityInnerProduct(mat1,mat3), Contains("Dimensions") && Contains("don't match") );
-            destroyQureg(mat3, env);
+            destroyQureg(mat3, QUEST_ENV);
         }
         SECTION( "state-vectors" ) {
             
-            Qureg vec = createQureg(NUM_QUBITS, env);
+            Qureg vec = createQureg(NUM_QUBITS, QUEST_ENV);
             
             REQUIRE_THROWS_WITH( calcDensityInnerProduct(mat1,vec), Contains("valid only for density matrices") );
             REQUIRE_THROWS_WITH( calcDensityInnerProduct(vec,mat1), Contains("valid only for density matrices") );
             REQUIRE_THROWS_WITH( calcDensityInnerProduct(vec,vec),  Contains("valid only for density matrices") );        
             
-            destroyQureg(vec, env);
+            destroyQureg(vec, QUEST_ENV);
         }
     }
-    destroyQureg(mat1, env);
-    destroyQureg(mat2, env);
-    destroyQuESTEnv(env);
+    destroyQureg(mat1, QUEST_ENV);
+    destroyQureg(mat2, QUEST_ENV);
 }
 
 
 
 TEST_CASE( "calcExpecPauliProd", "[calculations]" ) {
     
-    QuESTEnv env = createQuESTEnv();
-    Qureg vec = createQureg(NUM_QUBITS, env);
-    Qureg mat = createDensityQureg(NUM_QUBITS, env);
+    Qureg vec = createQureg(NUM_QUBITS, QUEST_ENV);
+    Qureg mat = createDensityQureg(NUM_QUBITS, QUEST_ENV);
     initDebugState(vec);
     initDebugState(mat);
     QVector vecRef = toQVector(vec);
     QMatrix matRef = toQMatrix(mat);
     
-    Qureg vecWork = createQureg(NUM_QUBITS, env);
-    Qureg matWork = createDensityQureg(NUM_QUBITS, env);
+    Qureg vecWork = createQureg(NUM_QUBITS, QUEST_ENV);
+    Qureg matWork = createDensityQureg(NUM_QUBITS, QUEST_ENV);
     
     SECTION( "correctness" ) {
         
@@ -240,36 +221,34 @@ TEST_CASE( "calcExpecPauliProd", "[calculations]" ) {
             int targs[1] = {0};
             pauliOpType codes[1] = {PAULI_I};
     
-            Qureg vec2 = createQureg(NUM_QUBITS + 1, env);
+            Qureg vec2 = createQureg(NUM_QUBITS + 1, QUEST_ENV);
             REQUIRE_THROWS_WITH( calcExpecPauliProd(vec, targs, codes, numTargs, vec2), Contains("Dimensions") && Contains("don't match") );
-            destroyQureg(vec2, env);
+            destroyQureg(vec2, QUEST_ENV);
             
-            Qureg mat2 = createDensityQureg(NUM_QUBITS + 1, env);
+            Qureg mat2 = createDensityQureg(NUM_QUBITS + 1, QUEST_ENV);
             REQUIRE_THROWS_WITH( calcExpecPauliProd(mat, targs, codes, numTargs, mat2), Contains("Dimensions") && Contains("don't match") );
-            destroyQureg(mat2, env);
+            destroyQureg(mat2, QUEST_ENV);
         }
     }
-    destroyQureg(vec, env);
-    destroyQureg(mat, env);
-    destroyQureg(vecWork, env);
-    destroyQureg(matWork, env);
-    destroyQuESTEnv(env);
+    destroyQureg(vec, QUEST_ENV);
+    destroyQureg(mat, QUEST_ENV);
+    destroyQureg(vecWork, QUEST_ENV);
+    destroyQureg(matWork, QUEST_ENV);
 }
 
 
 
 TEST_CASE( "calcExpecPauliSum", "[calculations]" ) {
     
-    QuESTEnv env = createQuESTEnv();
-    Qureg vec = createQureg(NUM_QUBITS, env);
-    Qureg mat = createDensityQureg(NUM_QUBITS, env);
+    Qureg vec = createQureg(NUM_QUBITS, QUEST_ENV);
+    Qureg mat = createDensityQureg(NUM_QUBITS, QUEST_ENV);
     initDebugState(vec);
     initDebugState(mat);
     QVector vecRef = toQVector(vec);
     QMatrix matRef = toQMatrix(mat);
     
-    Qureg vecWork = createQureg(NUM_QUBITS, env);
-    Qureg matWork = createDensityQureg(NUM_QUBITS, env);
+    Qureg vecWork = createQureg(NUM_QUBITS, QUEST_ENV);
+    Qureg matWork = createDensityQureg(NUM_QUBITS, QUEST_ENV);
     
     SECTION( "correctness" ) {
         
@@ -311,7 +290,6 @@ TEST_CASE( "calcExpecPauliSum", "[calculations]" ) {
             }
             pauliSum += coeffs[t] * pauliProd;
         }
-        
         SECTION( "state-vector" ) {
 
             /* calcExpecPauliSum calculates <qureg|pauliSum|qureg> */
@@ -379,28 +357,28 @@ TEST_CASE( "calcExpecPauliSum", "[calculations]" ) {
             for (int i=0; i<NUM_QUBITS; i++)
                 codes[i] = PAULI_I;
     
-            Qureg vec2 = createQureg(NUM_QUBITS + 1, env);
+            Qureg vec2 = createQureg(NUM_QUBITS + 1, QUEST_ENV);
             REQUIRE_THROWS_WITH( calcExpecPauliSum(vec, codes, coeffs, numSumTerms, vec2), Contains("Dimensions") && Contains("don't match") );
-            destroyQureg(vec2, env);
+            destroyQureg(vec2, QUEST_ENV);
             
-            Qureg mat2 = createDensityQureg(NUM_QUBITS + 1, env);
+            Qureg mat2 = createDensityQureg(NUM_QUBITS + 1, QUEST_ENV);
             REQUIRE_THROWS_WITH( calcExpecPauliSum(mat, codes, coeffs, numSumTerms, mat2), Contains("Dimensions") && Contains("don't match") );
-            destroyQureg(mat2, env);
+            destroyQureg(mat2, QUEST_ENV);
         }
     }
-    destroyQureg(vec, env);
-    destroyQureg(mat, env);
-    destroyQureg(vecWork, env);
-    destroyQureg(matWork, env);
-    destroyQuESTEnv(env);
+    destroyQureg(vec, QUEST_ENV);
+    destroyQureg(mat, QUEST_ENV);
+    destroyQureg(vecWork, QUEST_ENV);
+    destroyQureg(matWork, QUEST_ENV);
 }
 
 
 
 TEST_CASE( "calcFidelity", "[calculations]" ) {
     
-    PREPARE_TEST(env, vec, mat, NUM_QUBITS);
-    Qureg pure = createQureg(NUM_QUBITS, env);
+    Qureg vec = createQureg(NUM_QUBITS, QUEST_ENV);
+    Qureg mat = createDensityQureg(NUM_QUBITS, QUEST_ENV);
+    Qureg pure = createQureg(NUM_QUBITS, QUEST_ENV);
     
     SECTION( "correctness" ) {
         
@@ -522,14 +500,14 @@ TEST_CASE( "calcFidelity", "[calculations]" ) {
         SECTION( "dimensions" ) {
             
             // two state-vectors
-            Qureg vec2 = createQureg(vec.numQubitsRepresented + 1, env);
+            Qureg vec2 = createQureg(vec.numQubitsRepresented + 1, QUEST_ENV);
             REQUIRE_THROWS_WITH( calcFidelity(vec2,vec), Contains("Dimensions") && Contains("don't match") );
-            destroyQureg(vec2, env);
+            destroyQureg(vec2, QUEST_ENV);
         
             // density-matrix and state-vector
-            Qureg mat2 = createDensityQureg(vec.numQubitsRepresented + 1, env);
+            Qureg mat2 = createDensityQureg(vec.numQubitsRepresented + 1, QUEST_ENV);
             REQUIRE_THROWS_WITH( calcFidelity(mat2,vec), Contains("Dimensions") && Contains("don't match") );
-            destroyQureg(mat2, env);
+            destroyQureg(mat2, QUEST_ENV);
         }
         SECTION( "density-matrices" ) {
             
@@ -537,17 +515,17 @@ TEST_CASE( "calcFidelity", "[calculations]" ) {
             REQUIRE_THROWS_WITH( calcFidelity(mat,mat), Contains("Second argument must be a state-vector") );
         }
     }
-    destroyQureg(pure, env);
-    CLEANUP_TEST(env, vec, mat);
+    destroyQureg(vec, QUEST_ENV);
+    destroyQureg(mat, QUEST_ENV);
+    destroyQureg(pure, QUEST_ENV);
 }
 
 
 
 TEST_CASE( "calcHilbertSchmidtDistance", "[calculations]" ) {
     
-    QuESTEnv env = createQuESTEnv();
-    Qureg mat1 = createDensityQureg(NUM_QUBITS, env);
-    Qureg mat2 = createDensityQureg(NUM_QUBITS, env);
+    Qureg mat1 = createDensityQureg(NUM_QUBITS, QUEST_ENV);
+    Qureg mat2 = createDensityQureg(NUM_QUBITS, QUEST_ENV);
     
     SECTION( "correctness" ) {
         
@@ -615,33 +593,31 @@ TEST_CASE( "calcHilbertSchmidtDistance", "[calculations]" ) {
         
         SECTION( "dimensions" ) {
             
-            Qureg mat3 = createDensityQureg(NUM_QUBITS + 1, env);
+            Qureg mat3 = createDensityQureg(NUM_QUBITS + 1, QUEST_ENV);
             REQUIRE_THROWS_WITH( calcHilbertSchmidtDistance(mat1,mat3), Contains("Dimensions") && Contains("don't match") );
-            destroyQureg(mat3, env);
+            destroyQureg(mat3, QUEST_ENV);
         }
         SECTION( "state-vector" ) {
             
-            Qureg vec = createQureg(NUM_QUBITS, env);
+            Qureg vec = createQureg(NUM_QUBITS, QUEST_ENV);
             
             REQUIRE_THROWS_WITH( calcHilbertSchmidtDistance(vec,mat1), Contains("valid only for density matrices") );
             REQUIRE_THROWS_WITH( calcHilbertSchmidtDistance(mat1,vec), Contains("valid only for density matrices") );
             REQUIRE_THROWS_WITH( calcHilbertSchmidtDistance(vec,vec), Contains("valid only for density matrices") );
             
-            destroyQureg(vec, env);
+            destroyQureg(vec, QUEST_ENV);
         }
     }
-    destroyQureg(mat1, env);
-    destroyQureg(mat2, env);
-    destroyQuESTEnv(env);
+    destroyQureg(mat1, QUEST_ENV);
+    destroyQureg(mat2, QUEST_ENV);
 }
 
 
 
 TEST_CASE( "calcInnerProduct", "[calculations]" ) {
     
-    QuESTEnv env = createQuESTEnv();
-    Qureg vec1 = createQureg(NUM_QUBITS, env);
-    Qureg vec2 = createQureg(NUM_QUBITS, env);
+    Qureg vec1 = createQureg(NUM_QUBITS, QUEST_ENV);
+    Qureg vec2 = createQureg(NUM_QUBITS, QUEST_ENV);
     
     SECTION( "correctness" ) {
         
@@ -688,32 +664,32 @@ TEST_CASE( "calcInnerProduct", "[calculations]" ) {
         
         SECTION( "dimensions" ) {
             
-            Qureg vec3 = createQureg(NUM_QUBITS + 1, env);
+            Qureg vec3 = createQureg(NUM_QUBITS + 1, QUEST_ENV);
             REQUIRE_THROWS_WITH( calcInnerProduct(vec1,vec3), Contains("Dimensions") && Contains("don't match") );
-            destroyQureg(vec3, env);
+            destroyQureg(vec3, QUEST_ENV);
         }
         SECTION( "density-matrix" ) {
             
-            Qureg mat = createDensityQureg(NUM_QUBITS, env);
+            Qureg mat = createDensityQureg(NUM_QUBITS, QUEST_ENV);
             
             REQUIRE_THROWS_WITH( calcInnerProduct(vec1,mat), Contains("valid only for state-vectors") );
             REQUIRE_THROWS_WITH( calcInnerProduct(mat,vec1), Contains("valid only for state-vectors") );
             REQUIRE_THROWS_WITH( calcInnerProduct(mat,mat), Contains("valid only for state-vectors") );
             
-            destroyQureg(mat, env);
+            destroyQureg(mat, QUEST_ENV);
         }
     }
-    destroyQureg(vec1, env);
-    destroyQureg(vec2, env);
-    destroyQuESTEnv(env);
+    destroyQureg(vec1, QUEST_ENV);
+    destroyQureg(vec2, QUEST_ENV);
 }
 
 
 
 TEST_CASE( "calcProbOfOutcome", "[calculations]" ) {
     
-    PREPARE_TEST(env, vec, mat, NUM_QUBITS);
-
+    Qureg vec = createQureg(NUM_QUBITS, QUEST_ENV);
+    Qureg mat = createDensityQureg(NUM_QUBITS, QUEST_ENV);
+    
     SECTION( "correctness" ) {
         
         int target = GENERATE( range(0,NUM_QUBITS) );
@@ -822,15 +798,15 @@ TEST_CASE( "calcProbOfOutcome", "[calculations]" ) {
             REQUIRE_THROWS_WITH( calcProbOfOutcome(vec, 0, outcome), Contains("Invalid measurement outcome") );
         }
     }
-    CLEANUP_TEST(env, vec, mat);
+    destroyQureg(vec, QUEST_ENV);
+    destroyQureg(mat, QUEST_ENV);
 }
 
 
 
 TEST_CASE( "calcPurity", "[calculations]" ) {
     
-    QuESTEnv env = createQuESTEnv();
-    Qureg mat = createDensityQureg(NUM_QUBITS, env);
+    Qureg mat = createDensityQureg(NUM_QUBITS, QUEST_ENV);
     
     SECTION( "correctness" ) {
         
@@ -886,21 +862,21 @@ TEST_CASE( "calcPurity", "[calculations]" ) {
         
         SECTION( "state-vector" ) {
             
-            Qureg vec = createQureg(NUM_QUBITS, env);
+            Qureg vec = createQureg(NUM_QUBITS, QUEST_ENV);
             REQUIRE_THROWS_WITH( calcPurity(vec), Contains("valid only for density matrices") );
-            destroyQureg(vec, env);
+            destroyQureg(vec, QUEST_ENV);
         }
     }
-    destroyQureg(mat, env);
-    destroyQuESTEnv(env);
+    destroyQureg(mat, QUEST_ENV);
 }
 
 
 
 TEST_CASE( "calcTotalProb", "[calculations]" ) {
     
-    PREPARE_TEST(env, vec, mat, NUM_QUBITS);
-    
+    Qureg vec = createQureg(NUM_QUBITS, QUEST_ENV);
+    Qureg mat = createDensityQureg(NUM_QUBITS, QUEST_ENV);
+        
     SECTION( "correctness" ) {
         
         SECTION( "state-vector" ) {
@@ -953,15 +929,15 @@ TEST_CASE( "calcTotalProb", "[calculations]" ) {
         // no validation 
         SUCCEED();
     }
-    CLEANUP_TEST(env, vec, mat);
+    destroyQureg(vec, QUEST_ENV);
+    destroyQureg(mat, QUEST_ENV);
 }
 
 
 
 TEST_CASE( "getAmp", "[calculations]" ) {
     
-    QuESTEnv env = createQuESTEnv();
-    Qureg vec = createQureg(NUM_QUBITS, env);
+    Qureg vec = createQureg(NUM_QUBITS, QUEST_ENV);
     
     SECTION( "correctness" ) {
         
@@ -984,21 +960,19 @@ TEST_CASE( "getAmp", "[calculations]" ) {
         }
         SECTION( "density-matrix" ) {
             
-            Qureg mat = createDensityQureg(NUM_QUBITS, env);
+            Qureg mat = createDensityQureg(NUM_QUBITS, QUEST_ENV);
             REQUIRE_THROWS_WITH( getAmp(mat,0), Contains("valid only for state-vectors") );
-            destroyQureg(mat, env);
+            destroyQureg(mat, QUEST_ENV);
         }
     }
-    destroyQureg(vec, env);
-    destroyQuESTEnv(env);
+    destroyQureg(vec, QUEST_ENV);
 }
 
 
 
 TEST_CASE( "getDensityAmp", "[calculations]" ) {
     
-    QuESTEnv env = createQuESTEnv();
-    Qureg mat = createDensityQureg(NUM_QUBITS, env);
+    Qureg mat = createDensityQureg(NUM_QUBITS, QUEST_ENV);
     
     SECTION( "correctness" ) {
         
@@ -1025,21 +999,19 @@ TEST_CASE( "getDensityAmp", "[calculations]" ) {
         }
         SECTION( "state-vector" ) {
             
-            Qureg vec = createQureg(NUM_QUBITS, env);
+            Qureg vec = createQureg(NUM_QUBITS, QUEST_ENV);
             REQUIRE_THROWS_WITH( getDensityAmp(vec,0,0), Contains("valid only for density matrices") );
-            destroyQureg(vec, env);
+            destroyQureg(vec, QUEST_ENV);
         }
     }
-    destroyQureg(mat, env);
-    destroyQuESTEnv(env);
+    destroyQureg(mat, QUEST_ENV);
 }
 
 
 
 TEST_CASE( "getImagAmp", "[calculations]" ) {
     
-    QuESTEnv env = createQuESTEnv();
-    Qureg vec = createQureg(NUM_QUBITS, env);
+    Qureg vec = createQureg(NUM_QUBITS, QUEST_ENV);
     
     SECTION( "correctness" ) {
         
@@ -1061,21 +1033,18 @@ TEST_CASE( "getImagAmp", "[calculations]" ) {
         }
         SECTION( "density-matrix" ) {
             
-            Qureg mat = createDensityQureg(NUM_QUBITS, env);
+            Qureg mat = createDensityQureg(NUM_QUBITS, QUEST_ENV);
             REQUIRE_THROWS_WITH( getImagAmp(mat,0), Contains("valid only for state-vectors") );
-            destroyQureg(mat, env);
+            destroyQureg(mat, QUEST_ENV);
         }
     }
-    destroyQureg(vec, env);
-    destroyQuESTEnv(env);
+    destroyQureg(vec, QUEST_ENV);
 }
 
 
 
 TEST_CASE( "getNumAmps", "[calculations]" ) {
-    
-    QuESTEnv env = createQuESTEnv();
-    
+        
     SECTION( "correctness" ) {
         
         // test >= NUM_QUBITS so as not to limit distribution size
@@ -1083,28 +1052,25 @@ TEST_CASE( "getNumAmps", "[calculations]" ) {
         
         SECTION( "state-vector" ) {
             
-            Qureg vec = createQureg(numQb, env);
+            Qureg vec = createQureg(numQb, QUEST_ENV);
             REQUIRE( getNumAmps(vec) == (1<<numQb) );
-            destroyQureg(vec, env);
+            destroyQureg(vec, QUEST_ENV);
         }
     }
     SECTION( "input validation" ) {
         
         SECTION( "density-matrix" ) {
-            Qureg mat = createDensityQureg(NUM_QUBITS, env);
+            Qureg mat = createDensityQureg(NUM_QUBITS, QUEST_ENV);
             REQUIRE_THROWS_WITH( getNumAmps(mat), Contains("valid only for state-vectors") );
-            destroyQureg(mat, env);
+            destroyQureg(mat, QUEST_ENV);
         }
     }
-    destroyQuESTEnv(env);
 }
 
 
 
 TEST_CASE( "getNumQubits", "[calculations]" ) {
-    
-    QuESTEnv env = createQuESTEnv();
-    
+        
     SECTION( "correctness" ) {
         
         // test >= NUM_QUBITS so as not to limit distribution size
@@ -1112,15 +1078,15 @@ TEST_CASE( "getNumQubits", "[calculations]" ) {
         
         SECTION( "state-vector" ) {
             
-            Qureg vec = createQureg(numQb, env);
+            Qureg vec = createQureg(numQb, QUEST_ENV);
             REQUIRE( getNumQubits(vec) == numQb );
-            destroyQureg(vec, env);
+            destroyQureg(vec, QUEST_ENV);
         }
         SECTION( "density-matrix" ) {
             
-            Qureg mat = createDensityQureg(numQb, env);
+            Qureg mat = createDensityQureg(numQb, QUEST_ENV);
             REQUIRE( getNumQubits(mat) == numQb );
-            destroyQureg(mat, env);
+            destroyQureg(mat, QUEST_ENV);
         }
     }
     SECTION( "input validation" ) {
@@ -1128,15 +1094,13 @@ TEST_CASE( "getNumQubits", "[calculations]" ) {
         // no validation
         SUCCEED();
     }
-    destroyQuESTEnv(env);
 }
 
 
 
 TEST_CASE( "getProbAmp", "[calculations]" ) {
     
-    QuESTEnv env = createQuESTEnv();
-    Qureg vec = createQureg(NUM_QUBITS, env);
+    Qureg vec = createQureg(NUM_QUBITS, QUEST_ENV);
     
     SECTION( "correctness" ) {
         
@@ -1159,21 +1123,19 @@ TEST_CASE( "getProbAmp", "[calculations]" ) {
         }
         SECTION( "density-matrix" ) {
             
-            Qureg mat = createDensityQureg(NUM_QUBITS, env);
+            Qureg mat = createDensityQureg(NUM_QUBITS, QUEST_ENV);
             REQUIRE_THROWS_WITH( getProbAmp(mat,0), Contains("valid only for state-vectors") );
-            destroyQureg(mat, env);
+            destroyQureg(mat, QUEST_ENV);
         }
     }
-    destroyQureg(vec, env);
-    destroyQuESTEnv(env);
+    destroyQureg(vec, QUEST_ENV);
 }
 
 
 
 TEST_CASE( "getRealAmp", "[calculations]" ) {
     
-    QuESTEnv env = createQuESTEnv();
-    Qureg vec = createQureg(NUM_QUBITS, env);
+    Qureg vec = createQureg(NUM_QUBITS, QUEST_ENV);
     
     SECTION( "correctness" ) {
         
@@ -1195,13 +1157,12 @@ TEST_CASE( "getRealAmp", "[calculations]" ) {
         }
         SECTION( "density-matrix" ) {
             
-            Qureg mat = createDensityQureg(NUM_QUBITS, env);
+            Qureg mat = createDensityQureg(NUM_QUBITS, QUEST_ENV);
             REQUIRE_THROWS_WITH( getRealAmp(mat,0), Contains("valid only for state-vectors") );
-            destroyQureg(mat, env);
+            destroyQureg(mat, QUEST_ENV);
         }
     }
-    destroyQureg(vec, env);
-    destroyQuESTEnv(env);
+    destroyQureg(vec, QUEST_ENV);
 }
 
 

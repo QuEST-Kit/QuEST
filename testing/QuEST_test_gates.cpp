@@ -3,22 +3,6 @@
 #include "QuEST.h"
 #include "QuEST_test_utils.hpp"
 
-/** Prepares the needed data structures for unit testing. This creates 
- * the QuEST environment, and a state-vector and density matrix of the size 'numQb',
- * both of which are (automatically) initialised to the zero state.
- * numQb should be NUM_QUBITS unless motivated otherwise.
- */
-#define PREPARE_TEST(env, vec, mat, numQb) \
-    QuESTEnv env = createQuESTEnv(); \
-    Qureg vec = createQureg(numQb, env); \
-    Qureg mat = createDensityQureg(numQb, env);
-
-/** Destroys the data structures made by PREPARE_TEST */
-#define CLEANUP_TEST(env, vec, mat) \
-    destroyQureg(vec, env); \
-    destroyQureg(mat, env); \
-    destroyQuESTEnv(env);
-
 /* allows concise use of Contains in catch's REQUIRE_THROWS_WITH */
 using Catch::Matchers::Contains;
 
@@ -26,7 +10,8 @@ using Catch::Matchers::Contains;
 
 TEST_CASE( "collapseToOutcome", "[gates]" ) {
     
-    PREPARE_TEST(env, vec, mat, NUM_QUBITS);
+    Qureg vec = createQureg(NUM_QUBITS, QUEST_ENV);
+    Qureg mat = createDensityQureg(NUM_QUBITS, QUEST_ENV);
     
     SECTION( "correctness" ) {
         
@@ -119,15 +104,17 @@ TEST_CASE( "collapseToOutcome", "[gates]" ) {
             REQUIRE_THROWS_WITH( collapseToOutcome(vec, 0, 0), Contains("Can't collapse to state with zero probability") );
         }
     }
-    CLEANUP_TEST(env, vec, mat);
+    destroyQureg(vec, QUEST_ENV);
+    destroyQureg(mat, QUEST_ENV);
 }
 
 
 
 TEST_CASE( "measure", "[gates]" ) {
     
-    PREPARE_TEST(env, vec, mat, NUM_QUBITS);
-    
+    Qureg vec = createQureg(NUM_QUBITS, QUEST_ENV);
+    Qureg mat = createDensityQureg(NUM_QUBITS, QUEST_ENV);
+        
     SECTION( "correctness" ) {
         
         int qubit = GENERATE( range(0,NUM_QUBITS) );
@@ -205,15 +192,17 @@ TEST_CASE( "measure", "[gates]" ) {
             REQUIRE_THROWS_WITH( measure(vec, qubit), Contains("Invalid target qubit") );
         }
     }
-    CLEANUP_TEST(env, vec, mat);
+    destroyQureg(vec, QUEST_ENV);
+    destroyQureg(mat, QUEST_ENV);
 }
 
 
 
 TEST_CASE( "measureWithStats", "[gates]" ) {
     
-    PREPARE_TEST(env, vec, mat, NUM_QUBITS);
-    
+    Qureg vec = createQureg(NUM_QUBITS, QUEST_ENV);
+    Qureg mat = createDensityQureg(NUM_QUBITS, QUEST_ENV);
+        
     SECTION( "correctness" ) {
         
         int qubit = GENERATE( range(0,NUM_QUBITS) );
@@ -294,5 +283,6 @@ TEST_CASE( "measureWithStats", "[gates]" ) {
             REQUIRE_THROWS_WITH( measureWithStats(vec, qubit, &res), Contains("Invalid target qubit") );
         }
     }
-    CLEANUP_TEST(env, vec, mat);
+    destroyQureg(vec, QUEST_ENV);
+    destroyQureg(mat, QUEST_ENV);
 }

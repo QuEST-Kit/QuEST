@@ -2,22 +2,6 @@
 #include "catch.hpp"
 #include "QuEST.h"
 #include "QuEST_test_utils.hpp"
-
-/** Prepares the needed data structures for unit testing. This creates 
- * the QuEST environment, a statevector and density matrix of the size 'numQb'.
- * numQb should be NUM_QUBITS unless motivated otherwise. The Quregs are 
- * initialised in the zero state.
- */
-#define PREPARE_TEST(env, vec, mat, numQb) \
-    QuESTEnv env = createQuESTEnv(); \
-    Qureg vec = createQureg(numQb, env); \
-    Qureg mat = createDensityQureg(numQb, env);
-
-/** Destroys the data structures made by PREPARE_TEST */
-#define CLEANUP_TEST(env, vec, mat) \
-    destroyQureg(vec, env); \
-    destroyQureg(mat, env); \
-    destroyQuESTEnv(env);
     
 /* allows concise use of Contains in catch's REQUIRE_THROWS_WITH */
 using Catch::Matchers::Contains;
@@ -26,13 +10,14 @@ using Catch::Matchers::Contains;
 
 TEST_CASE( "cloneQureg", "[state_initialisations]" ) {
     
-    PREPARE_TEST(env, vec1, mat1, NUM_QUBITS);
+    Qureg vec1 = createQureg(NUM_QUBITS, QUEST_ENV);
+    Qureg mat1 = createDensityQureg(NUM_QUBITS, QUEST_ENV);
     
     SECTION( "correctness" ) {
         
         SECTION( "state-vector" ) {
             
-            Qureg vec2 = createQureg(NUM_QUBITS, env);
+            Qureg vec2 = createQureg(NUM_QUBITS, QUEST_ENV);
             
             // make sure states start differently
             initDebugState(vec1);    
@@ -47,11 +32,11 @@ TEST_CASE( "cloneQureg", "[state_initialisations]" ) {
             // make sure vec1 unaffected
             REQUIRE( areEqual(vec1, copy1) );
             
-            destroyQureg(vec2, env);
+            destroyQureg(vec2, QUEST_ENV);
         }
         SECTION( "density-matrix" ) {
             
-            Qureg mat2 = createDensityQureg(NUM_QUBITS, env);
+            Qureg mat2 = createDensityQureg(NUM_QUBITS, QUEST_ENV);
 
             // make sure states start differently
             initDebugState(mat1);
@@ -66,7 +51,7 @@ TEST_CASE( "cloneQureg", "[state_initialisations]" ) {
             // make sure vec1 unaffected
             REQUIRE( areEqual(mat1, copy1) );
             
-            destroyQureg(mat2, env);
+            destroyQureg(mat2, QUEST_ENV);
         }
     }
     SECTION( "input validation" ) {
@@ -78,25 +63,27 @@ TEST_CASE( "cloneQureg", "[state_initialisations]" ) {
         }
         SECTION( "qureg dimensions" ) {
             
-            Qureg vec3 = createQureg(vec1.numQubitsRepresented + 1, env);
-            Qureg mat3 = createDensityQureg(mat1.numQubitsRepresented + 1, env);
+            Qureg vec3 = createQureg(vec1.numQubitsRepresented + 1, QUEST_ENV);
+            Qureg mat3 = createDensityQureg(mat1.numQubitsRepresented + 1, QUEST_ENV);
             
             REQUIRE_THROWS_WITH( cloneQureg(vec1, vec3), Contains("Dimensions") && Contains("don't match") );
             REQUIRE_THROWS_WITH( cloneQureg(mat1, mat3), Contains("Dimensions") && Contains("don't match") );
             
-            destroyQureg(vec3, env);
-            destroyQureg(mat3, env);
+            destroyQureg(vec3, QUEST_ENV);
+            destroyQureg(mat3, QUEST_ENV);
         }
     }
-    CLEANUP_TEST(env, vec1, mat1);
+    destroyQureg(vec1, QUEST_ENV);
+    destroyQureg(mat1, QUEST_ENV);
 }
 
 
 
 TEST_CASE( "initBlankState", "[state_initialisations]" ) {
     
-    PREPARE_TEST(env, vec, mat, NUM_QUBITS);
-    
+    Qureg vec = createQureg(NUM_QUBITS, QUEST_ENV);
+    Qureg mat = createDensityQureg(NUM_QUBITS, QUEST_ENV);
+        
     SECTION( "correctness" ) {
         
         SECTION( "state-vector" ) {
@@ -115,14 +102,16 @@ TEST_CASE( "initBlankState", "[state_initialisations]" ) {
         // no user validation
         SUCCEED( );
     }
-    CLEANUP_TEST(env, vec, mat);
+    destroyQureg(vec, QUEST_ENV);
+    destroyQureg(mat, QUEST_ENV);
 }
 
 
 
 TEST_CASE( "initClassicalState", "[state_initialisations]" ) {
     
-    PREPARE_TEST(env, vec, mat, NUM_QUBITS);
+    Qureg vec = createQureg(NUM_QUBITS, QUEST_ENV);
+    Qureg mat = createDensityQureg(NUM_QUBITS, QUEST_ENV);
     
     SECTION( "correctness" ) {
         
@@ -152,14 +141,16 @@ TEST_CASE( "initClassicalState", "[state_initialisations]" ) {
             REQUIRE_THROWS_WITH( initClassicalState(vec, ind), Contains("Invalid state index") );
         }
     }
-    CLEANUP_TEST(env, vec, mat);
+    destroyQureg(vec, QUEST_ENV);
+    destroyQureg(mat, QUEST_ENV);
 }
 
 
 
 TEST_CASE( "initPlusState", "[state_initialisations]" ) {
     
-    PREPARE_TEST(env, vec, mat, NUM_QUBITS);
+    Qureg vec = createQureg(NUM_QUBITS, QUEST_ENV);
+    Qureg mat = createDensityQureg(NUM_QUBITS, QUEST_ENV);
     
     SECTION( "correctness" ) {
         
@@ -191,22 +182,24 @@ TEST_CASE( "initPlusState", "[state_initialisations]" ) {
         // no user validation
         SUCCEED( );
     }
-    CLEANUP_TEST(env, vec, mat);
+    destroyQureg(vec, QUEST_ENV);
+    destroyQureg(mat, QUEST_ENV);
 }
 
 
 
 TEST_CASE( "initPureState", "[state_initialisations]" ) {
     
-    PREPARE_TEST(env, vec1, mat1, NUM_QUBITS);
-    
+    Qureg vec1 = createQureg(NUM_QUBITS, QUEST_ENV);
+    Qureg mat1 = createDensityQureg(NUM_QUBITS, QUEST_ENV);
+        
     SECTION( "correctness" ) {
         
         SECTION( "state-vector" ) {
             
             /* state-vector version just performs cloneQureg */
             
-            Qureg vec2 = createQureg(NUM_QUBITS, env);
+            Qureg vec2 = createQureg(NUM_QUBITS, QUEST_ENV);
             
             // make sure states start differently
             initDebugState(vec1);    
@@ -221,7 +214,7 @@ TEST_CASE( "initPureState", "[state_initialisations]" ) {
             // make sure vec1 was not modified 
             REQUIRE( areEqual(vec1, copy1) );
             
-            destroyQureg(vec2, env);
+            destroyQureg(vec2, QUEST_ENV);
         }
         SECTION( "density-matrix" ) {
             
@@ -254,21 +247,21 @@ TEST_CASE( "initPureState", "[state_initialisations]" ) {
         }
         SECTION( "qureg dimensions" ) {
             
-            Qureg vec2 = createQureg(NUM_QUBITS + 1, env);
+            Qureg vec2 = createQureg(NUM_QUBITS + 1, QUEST_ENV);
             REQUIRE_THROWS_WITH( initPureState(vec1, vec2), Contains("Dimensions") && Contains("don't match") );
             REQUIRE_THROWS_WITH( initPureState(mat1, vec2), Contains("Dimensions") && Contains("don't match") );
-            destroyQureg(vec2, env);
+            destroyQureg(vec2, QUEST_ENV);
         }
     }
-    CLEANUP_TEST(env, vec1, mat1);
+    destroyQureg(vec1, QUEST_ENV);
+    destroyQureg(mat1, QUEST_ENV);
 }
 
 
 
 TEST_CASE( "initStateFromAmps", "[state_initialisations]" ) {
     
-    QuESTEnv env = createQuESTEnv();
-    Qureg vec = createQureg(NUM_QUBITS, env);
+    Qureg vec = createQureg(NUM_QUBITS, QUEST_ENV);
     
     SECTION( "correctness" ) {
         
@@ -293,20 +286,20 @@ TEST_CASE( "initStateFromAmps", "[state_initialisations]" ) {
         
         SECTION( "density-matrix" ) {
             
-            Qureg mat = createDensityQureg(NUM_QUBITS, env);
+            Qureg mat = createDensityQureg(NUM_QUBITS, QUEST_ENV);
             REQUIRE_THROWS_WITH( initStateFromAmps(mat, NULL, NULL), Contains("valid only for state-vectors") );
-            destroyQureg(mat, env);
+            destroyQureg(mat, QUEST_ENV);
         }
     }
-    destroyQureg(vec, env);
-    destroyQuESTEnv(env);
+    destroyQureg(vec, QUEST_ENV);
 }
 
 
 
 TEST_CASE( "initZeroState", "[state_initialisations]" ) {
 
-    PREPARE_TEST(env, vec, mat, NUM_QUBITS);
+    Qureg vec = createQureg(NUM_QUBITS, QUEST_ENV);
+    Qureg mat = createDensityQureg(NUM_QUBITS, QUEST_ENV);
     
     SECTION( "correctness" ) {
         
@@ -334,15 +327,15 @@ TEST_CASE( "initZeroState", "[state_initialisations]" ) {
         // no input validation 
         SUCCEED( );
     }
-    CLEANUP_TEST(env, vec, mat);
+    destroyQureg(vec, QUEST_ENV);
+    destroyQureg(mat, QUEST_ENV);
 }
 
 
 
 TEST_CASE( "setAmps", "[state_initialisations]" ) {
     
-    QuESTEnv env = createQuESTEnv();
-    Qureg vec = createQureg(NUM_QUBITS, env);
+    Qureg vec = createQureg(NUM_QUBITS, QUEST_ENV);
     
     int maxInd = vec.numAmpsTotal;
     qreal reals[maxInd];
@@ -396,21 +389,18 @@ TEST_CASE( "setAmps", "[state_initialisations]" ) {
         }
         SECTION( "density-matrix" ) {
             
-            Qureg mat = createDensityQureg(NUM_QUBITS, env);
+            Qureg mat = createDensityQureg(NUM_QUBITS, QUEST_ENV);
             REQUIRE_THROWS_WITH( setAmps(mat, 0, reals, imags, 0), Contains("valid only for state-vectors") );
-            destroyQureg(mat, env);
+            destroyQureg(mat, QUEST_ENV);
         }
     }
-    destroyQureg(vec, env);
-    destroyQuESTEnv(env);
+    destroyQureg(vec, QUEST_ENV);
 }
 
 
 
 TEST_CASE( "setWeightedQureg", "[state_initialisations]" ) {
-    
-    QuESTEnv env = createQuESTEnv();
-    
+        
     SECTION( "correctness" ) {
         
         // repeat each test below 10 times 
@@ -423,9 +413,9 @@ TEST_CASE( "setWeightedQureg", "[state_initialisations]" ) {
         SECTION( "state-vector" ) {
             
             // make three random vectors
-            Qureg vecA = createQureg(NUM_QUBITS, env);
-            Qureg vecB = createQureg(NUM_QUBITS, env);
-            Qureg vecC = createQureg(NUM_QUBITS, env);
+            Qureg vecA = createQureg(NUM_QUBITS, QUEST_ENV);
+            Qureg vecB = createQureg(NUM_QUBITS, QUEST_ENV);
+            Qureg vecC = createQureg(NUM_QUBITS, QUEST_ENV);
             for (int j=0; j<vecA.numAmpsPerChunk; j++) {
                 vecA.stateVec.real[j] = getRandomReal(-5,5); vecA.stateVec.imag[j] = getRandomReal(-5,5);
                 vecB.stateVec.real[j] = getRandomReal(-5,5); vecB.stateVec.imag[j] = getRandomReal(-5,5);
@@ -479,16 +469,16 @@ TEST_CASE( "setWeightedQureg", "[state_initialisations]" ) {
             REQUIRE( areEqual(vecC, refOut, 1E2*REAL_EPS) );
         
             // cleanup
-            destroyQureg(vecA, env);
-            destroyQureg(vecB, env);
-            destroyQureg(vecC, env);
+            destroyQureg(vecA, QUEST_ENV);
+            destroyQureg(vecB, QUEST_ENV);
+            destroyQureg(vecC, QUEST_ENV);
         }
         SECTION( "density-matrix" ) {
             
             // make three random matrices
-            Qureg matA = createDensityQureg(NUM_QUBITS, env);
-            Qureg matB = createDensityQureg(NUM_QUBITS, env);
-            Qureg matC = createDensityQureg(NUM_QUBITS, env);
+            Qureg matA = createDensityQureg(NUM_QUBITS, QUEST_ENV);
+            Qureg matB = createDensityQureg(NUM_QUBITS, QUEST_ENV);
+            Qureg matC = createDensityQureg(NUM_QUBITS, QUEST_ENV);
             for (int j=0; j<matA.numAmpsPerChunk; j++) {
                 matA.stateVec.real[j] = getRandomReal(-5,5); matA.stateVec.imag[j] = getRandomReal(-5,5);
                 matB.stateVec.real[j] = getRandomReal(-5,5); matB.stateVec.imag[j] = getRandomReal(-5,5);
@@ -542,17 +532,17 @@ TEST_CASE( "setWeightedQureg", "[state_initialisations]" ) {
             REQUIRE( areEqual(matC, refOut, 1E3*REAL_EPS) );
         
             // cleanup
-            destroyQureg(matA, env);
-            destroyQureg(matB, env);
-            destroyQureg(matC, env);
+            destroyQureg(matA, QUEST_ENV);
+            destroyQureg(matB, QUEST_ENV);
+            destroyQureg(matC, QUEST_ENV);
         }
     }
     SECTION( "input validation" ) {
         
         SECTION( "qureg types" ) {
             
-            Qureg vec = createQureg(NUM_QUBITS, env);
-            Qureg mat = createDensityQureg(NUM_QUBITS, env);
+            Qureg vec = createQureg(NUM_QUBITS, QUEST_ENV);
+            Qureg mat = createDensityQureg(NUM_QUBITS, QUEST_ENV);
             Complex f = {.real=0, .imag=0};
             
             // two state-vecs, one density-matrix
@@ -565,15 +555,15 @@ TEST_CASE( "setWeightedQureg", "[state_initialisations]" ) {
             REQUIRE_THROWS_WITH( setWeightedQureg(f, mat, f, vec, f, mat), Contains("state-vectors or") && Contains("density matrices") );
             REQUIRE_THROWS_WITH( setWeightedQureg(f, mat, f, mat, f, vec), Contains("state-vectors or") && Contains("density matrices") );
         
-            destroyQureg(vec, env);
-            destroyQureg(mat, env);
+            destroyQureg(vec, QUEST_ENV);
+            destroyQureg(mat, QUEST_ENV);
         } 
         SECTION( "qureg dimensions" ) {
             
-            Qureg vecA = createQureg(NUM_QUBITS, env);
-            Qureg vecB = createQureg(NUM_QUBITS + 1, env);
-            Qureg matA = createDensityQureg(NUM_QUBITS, env);
-            Qureg matB = createDensityQureg(NUM_QUBITS + 1, env);
+            Qureg vecA = createQureg(NUM_QUBITS, QUEST_ENV);
+            Qureg vecB = createQureg(NUM_QUBITS + 1, QUEST_ENV);
+            Qureg matA = createDensityQureg(NUM_QUBITS, QUEST_ENV);
+            Qureg matB = createDensityQureg(NUM_QUBITS + 1, QUEST_ENV);
             Complex f = {.real=0, .imag=0};
             
             // state-vecs
@@ -586,12 +576,11 @@ TEST_CASE( "setWeightedQureg", "[state_initialisations]" ) {
             REQUIRE_THROWS_WITH( setWeightedQureg(f, matB, f, matA, f, matB), Contains("Dimensions") );
             REQUIRE_THROWS_WITH( setWeightedQureg(f, matB, f, matB, f, matA), Contains("Dimensions") );
             
-            destroyQureg(vecA, env);
-            destroyQureg(vecB, env);
-            destroyQureg(matA, env);
-            destroyQureg(matB, env);
+            destroyQureg(vecA, QUEST_ENV);
+            destroyQureg(vecB, QUEST_ENV);
+            destroyQureg(matA, QUEST_ENV);
+            destroyQureg(matB, QUEST_ENV);
         }
     }
-    destroyQuESTEnv(env);
 }
 

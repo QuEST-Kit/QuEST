@@ -4,21 +4,12 @@
 #include "QuEST_test_utils.hpp"
 #include <random>
 
-/** Prepares the needed data structures for unit testing. This creates 
- * the QuEST environment, a density matrix of the size 'numQb',
- * and corresponding QQMatrix instance for analytic comparison.
- * numQb should be NUM_QUBITS unless motivated otherwise.
+/** Prepares a density matrix in the debug state, and the reference QMatrix 
  */
-#define PREPARE_TEST(env, qureg, ref, numQb) \
-    QuESTEnv env = createQuESTEnv(); \
-    Qureg qureg = createDensityQureg(numQb, env); \
+#define PREPARE_TEST(qureg, ref) \
+    Qureg qureg = createDensityQureg(NUM_QUBITS, QUEST_ENV); \
     initDebugState(qureg); \
     QMatrix ref = toQMatrix(qureg);
-
-/** Destroys the data structures made by PREPARE_TEST */
-#define CLEANUP_TEST(env, qureg) \
-    destroyQureg(qureg, env); \
-    destroyQuESTEnv(env);
 
 /* allows concise use of Contains in catch's REQUIRE_THROWS_WITH */
 using Catch::Matchers::Contains;
@@ -27,7 +18,7 @@ using Catch::Matchers::Contains;
 
 TEST_CASE( "mixDamping", "[decoherence]" ) {
     
-    PREPARE_TEST(env, qureg, ref, NUM_QUBITS);
+    PREPARE_TEST(qureg, ref);
 
     SECTION( "correctness " ) {
         
@@ -61,21 +52,20 @@ TEST_CASE( "mixDamping", "[decoherence]" ) {
         }
         SECTION( "density-matrix" ) {
             
-            Qureg vec = createQureg(NUM_QUBITS, env);
+            Qureg vec = createQureg(NUM_QUBITS, QUEST_ENV);
             REQUIRE_THROWS_WITH( mixDamping(vec, 0, 0), Contains("density matrices") );
-            destroyQureg(vec, env);
+            destroyQureg(vec, QUEST_ENV);
         }
     }
-    CLEANUP_TEST(env, qureg);
+    destroyQureg(qureg, QUEST_ENV);
 }
 
 
 
 TEST_CASE( "mixDensityMatrix", "[decoherence]" ) {
     
-    QuESTEnv env = createQuESTEnv();
-    Qureg qureg1 = createDensityQureg(NUM_QUBITS, env);
-    Qureg qureg2 = createDensityQureg(NUM_QUBITS, env);
+    Qureg qureg1 = createDensityQureg(NUM_QUBITS, QUEST_ENV);
+    Qureg qureg2 = createDensityQureg(NUM_QUBITS, QUEST_ENV);
     initDebugState(qureg1);
     initDebugState(qureg2);
     QMatrix ref1 = toQMatrix(qureg1);
@@ -104,35 +94,34 @@ TEST_CASE( "mixDensityMatrix", "[decoherence]" ) {
         SECTION( "density matrices" ) {
             
             // one is statevec 
-            Qureg state1 = createQureg(qureg1.numQubitsRepresented, env);
+            Qureg state1 = createQureg(qureg1.numQubitsRepresented, QUEST_ENV);
             REQUIRE_THROWS_WITH( mixDensityMatrix(qureg1, 0, state1), Contains("density matrices") );
             REQUIRE_THROWS_WITH( mixDensityMatrix(state1, 0, qureg1), Contains("density matrices") );
             
             // both are statevec
-            Qureg state2 = createQureg(qureg1.numQubitsRepresented, env);
+            Qureg state2 = createQureg(qureg1.numQubitsRepresented, QUEST_ENV);
             REQUIRE_THROWS_WITH( mixDensityMatrix(state1, 0, state2), Contains("density matrices") );
             
-            destroyQureg(state1, env);
-            destroyQureg(state2, env);
+            destroyQureg(state1, QUEST_ENV);
+            destroyQureg(state2, QUEST_ENV);
         }
         SECTION( "matching dimensions" ) {
             
-            Qureg qureg3 = createDensityQureg(1 + qureg1.numQubitsRepresented, env);
+            Qureg qureg3 = createDensityQureg(1 + qureg1.numQubitsRepresented, QUEST_ENV);
             REQUIRE_THROWS_WITH( mixDensityMatrix(qureg1, 0, qureg3), Contains("Dimensions") );
             REQUIRE_THROWS_WITH( mixDensityMatrix(qureg3, 0, qureg1), Contains("Dimensions") );
-            destroyQureg(qureg3, env);
+            destroyQureg(qureg3, QUEST_ENV);
         }
     }
-    destroyQureg(qureg1, env);
-    destroyQureg(qureg2, env);
-    destroyQuESTEnv(env);
+    destroyQureg(qureg1, QUEST_ENV);
+    destroyQureg(qureg2, QUEST_ENV);
 }
 
 
 
 TEST_CASE( "mixDephasing", "[decoherence]" ) {
     
-    PREPARE_TEST(env, qureg, ref, NUM_QUBITS);
+    PREPARE_TEST(qureg, ref);
 
     SECTION( "correctness " ) {
         
@@ -162,19 +151,19 @@ TEST_CASE( "mixDephasing", "[decoherence]" ) {
         }
         SECTION( "density-matrix" ) {
             
-            Qureg vec = createQureg(NUM_QUBITS, env);
+            Qureg vec = createQureg(NUM_QUBITS, QUEST_ENV);
             REQUIRE_THROWS_WITH( mixDephasing(vec, 0, 0), Contains("density matrices") );
-            destroyQureg(vec, env);
+            destroyQureg(vec, QUEST_ENV);
         }
     }
-    CLEANUP_TEST(env, qureg);
+    destroyQureg(qureg, QUEST_ENV);
 }
 
 
 
 TEST_CASE( "mixDepolarising", "[decoherence]" ) {
     
-    PREPARE_TEST(env, qureg, ref, NUM_QUBITS);
+    PREPARE_TEST(qureg, ref);
 
     SECTION( "correctness " ) {
         
@@ -207,19 +196,19 @@ TEST_CASE( "mixDepolarising", "[decoherence]" ) {
         }
         SECTION( "density-matrix" ) {
             
-            Qureg vec = createQureg(NUM_QUBITS, env);
+            Qureg vec = createQureg(NUM_QUBITS, QUEST_ENV);
             REQUIRE_THROWS_WITH( mixDepolarising(vec, 0, 0), Contains("density matrices") );
-            destroyQureg(vec, env);
+            destroyQureg(vec, QUEST_ENV);
         }
     }
-    CLEANUP_TEST(env, qureg);
+    destroyQureg(qureg, QUEST_ENV);
 }
 
 
 
 TEST_CASE( "mixMultiQubitKrausMap", "[decoherence]" ) {
     
-    PREPARE_TEST(env, qureg, ref, NUM_QUBITS);
+    PREPARE_TEST(qureg, ref);
     
     SECTION( "correctness" ) {
         
@@ -383,7 +372,7 @@ TEST_CASE( "mixMultiQubitKrausMap", "[decoherence]" ) {
         }
         SECTION( "density-matrix" ) {
             
-            Qureg statevec = createQureg(NUM_QUBITS, env);
+            Qureg statevec = createQureg(NUM_QUBITS, QUEST_ENV);
             
             // make valid targets to avoid triggering target validation
             int targs[NUM_QUBITS];
@@ -391,7 +380,7 @@ TEST_CASE( "mixMultiQubitKrausMap", "[decoherence]" ) {
                 targs[i] = i;
                 
             REQUIRE_THROWS_WITH( mixMultiQubitKrausMap(statevec, targs, NUM_QUBITS, NULL, 1), Contains("valid only for density matrices") );
-            destroyQureg(statevec, env);
+            destroyQureg(statevec, QUEST_ENV);
             
         }
         SECTION( "operator fits in node" ) {
@@ -416,14 +405,14 @@ TEST_CASE( "mixMultiQubitKrausMap", "[decoherence]" ) {
             destroyComplexMatrixN(ops[0]);
         }
     }
-    CLEANUP_TEST(env, qureg);
+    destroyQureg(qureg, QUEST_ENV);
 }
 
 
 
 TEST_CASE( "mixPauli", "[decoherence]" ) {
     
-    PREPARE_TEST(env, qureg, ref, NUM_QUBITS);
+    PREPARE_TEST(qureg, ref);
         
     SECTION( "correctness" ) {
         
@@ -485,19 +474,19 @@ TEST_CASE( "mixPauli", "[decoherence]" ) {
         }
         SECTION( "density-matrix" ) {
             
-            Qureg vec = createQureg(NUM_QUBITS, env);
+            Qureg vec = createQureg(NUM_QUBITS, QUEST_ENV);
             REQUIRE_THROWS_WITH( mixPauli(vec, 0, 0, 0, 0), Contains("density matrices") );
-            destroyQureg(vec, env);
+            destroyQureg(vec, QUEST_ENV);
         }
     }
-    CLEANUP_TEST(env, qureg);
+    destroyQureg(qureg, QUEST_ENV);
 }
 
 
 
 TEST_CASE( "mixKrausMap", "[decoherence]" ) {
     
-    PREPARE_TEST(env, qureg, ref, NUM_QUBITS);
+    PREPARE_TEST(qureg, ref);
     
     SECTION( "correctness" ) {
         
@@ -550,9 +539,9 @@ TEST_CASE( "mixKrausMap", "[decoherence]" ) {
         }
         SECTION( "density-matrix" ) {
             
-            Qureg vec = createQureg(NUM_QUBITS, env);
+            Qureg vec = createQureg(NUM_QUBITS, QUEST_ENV);
             REQUIRE_THROWS_WITH( mixKrausMap(vec, 0, NULL, 1), Contains("density matrices") );
-            destroyQureg(vec, env);
+            destroyQureg(vec, QUEST_ENV);
         }
         SECTION( "operators fit in node" ) {
             
@@ -560,14 +549,14 @@ TEST_CASE( "mixKrausMap", "[decoherence]" ) {
             REQUIRE_THROWS_WITH( mixKrausMap(qureg, 0, NULL, 1), Contains("targets too many qubits") );
         }        
     }
-    CLEANUP_TEST(env, qureg);
+    destroyQureg(qureg, QUEST_ENV);
 }
 
 
 
 TEST_CASE( "mixTwoQubitDephasing", "[decoherence]" ) {
     
-    PREPARE_TEST(env, qureg, ref, NUM_QUBITS);
+    PREPARE_TEST(qureg, ref);
     
     SECTION( "correctness" ) {
         
@@ -610,19 +599,19 @@ TEST_CASE( "mixTwoQubitDephasing", "[decoherence]" ) {
         }
         SECTION( "density-matrix" ) {
             
-            Qureg vec = createQureg(NUM_QUBITS, env);
+            Qureg vec = createQureg(NUM_QUBITS, QUEST_ENV);
             REQUIRE_THROWS_WITH( mixTwoQubitDephasing(vec, 0, 1, 0), Contains("density matrices") );
-            destroyQureg(vec, env);
+            destroyQureg(vec, QUEST_ENV);
         }
     }
-    CLEANUP_TEST(env, qureg);
+    destroyQureg(qureg, QUEST_ENV);
 }
 
 
 
 TEST_CASE( "mixTwoQubitDepolarising", "[decoherence]" ) {
     
-    PREPARE_TEST(env, qureg, ref, NUM_QUBITS);
+    PREPARE_TEST(qureg, ref);
     
     SECTION( "correctness" ) {
         
@@ -673,19 +662,19 @@ TEST_CASE( "mixTwoQubitDepolarising", "[decoherence]" ) {
         }
         SECTION( "density-matrix" ) {
             
-            Qureg vec = createQureg(NUM_QUBITS, env);
+            Qureg vec = createQureg(NUM_QUBITS, QUEST_ENV);
             REQUIRE_THROWS_WITH( mixTwoQubitDepolarising(vec, 0, 1, 0), Contains("density matrices") );
-            destroyQureg(vec, env);
+            destroyQureg(vec, QUEST_ENV);
         }
     }
-    CLEANUP_TEST(env, qureg);
+    destroyQureg(qureg, QUEST_ENV);
 }
 
 
 
 TEST_CASE( "mixTwoQubitKrausMap", "[decoherence]" ) {
     
-    PREPARE_TEST(env, qureg, ref, NUM_QUBITS);
+    PREPARE_TEST(qureg, ref);
     
     SECTION( "correctness" ) {
         
@@ -745,9 +734,9 @@ TEST_CASE( "mixTwoQubitKrausMap", "[decoherence]" ) {
         }
         SECTION( "density-matrix" ) {
             
-            Qureg vec = createQureg(NUM_QUBITS, env);
+            Qureg vec = createQureg(NUM_QUBITS, QUEST_ENV);
             REQUIRE_THROWS_WITH( mixTwoQubitKrausMap(vec, 0,1, NULL, 1), Contains("density matrices") );
-            destroyQureg(vec, env);
+            destroyQureg(vec, QUEST_ENV);
         }
         SECTION( "operators fit in node" ) {
             
@@ -755,6 +744,6 @@ TEST_CASE( "mixTwoQubitKrausMap", "[decoherence]" ) {
             REQUIRE_THROWS_WITH( mixTwoQubitKrausMap(qureg, 0,1, NULL, 1), Contains("targets too many qubits") );
         }        
     }
-    CLEANUP_TEST(env, qureg);
+    destroyQureg(qureg, QUEST_ENV);
 }
 
