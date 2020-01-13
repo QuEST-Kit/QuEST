@@ -70,6 +70,7 @@ typedef enum {
     E_INVALID_NUM_TWO_QUBIT_KRAUS_OPS,
     E_INVALID_NUM_N_QUBIT_KRAUS_OPS,
     E_INVALID_KRAUS_OPS,
+    E_INVALID_REAL_OR_IMAG_FLAG,
     E_MISMATCHING_NUM_TARGS_KRAUS_SIZE
 } ErrorCode;
 
@@ -120,6 +121,7 @@ static const char* errorMessages[] = {
     [E_INVALID_NUM_TWO_QUBIT_KRAUS_OPS] = "At least 1 and at most 16 two-qubit Kraus operators may be specified.",
     [E_INVALID_NUM_N_QUBIT_KRAUS_OPS] = "At least 1 and at most 4*N^2 of N-qubit Kraus operators may be specified.",
     [E_INVALID_KRAUS_OPS] = "The specified Kraus map is not a completely positive, trace preserving map.",
+    [E_INVALID_REAL_OR_IMAG_FLAG] = "The flag argument must be either 0 or 1 (to indicate summing of the real or imaginary values respectively).",
     [E_MISMATCHING_NUM_TARGS_KRAUS_SIZE] = "Every Kraus operator must be of the same number of qubits as the number of targets."
 };
 
@@ -507,6 +509,10 @@ void validateMultiQubitKrausMap(Qureg qureg, int numTargs, ComplexMatrixN* ops, 
     
     int isPos = isCompletelyPositiveMapN(ops, numOps);
     QuESTAssert(isPos, E_INVALID_KRAUS_OPS, caller);
+}
+
+void validateRealOrImagFlag(int flag, const char* caller) {
+    QuESTAssert(flag == 0 || flag == 1, E_INVALID_REAL_OR_IMAG_FLAG, caller);
 }
 
 #ifdef __cplusplus

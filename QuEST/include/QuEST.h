@@ -3291,6 +3291,17 @@ ComplexMatrixN bindArraysToStackComplexMatrixN(
     )
 #endif
 
+/** Returns the sum of either the real or imaginary values of every amplitude in 
+ * the given \p qureg, regardless of whether \p qureg is a state-vector or density matrix.
+ *
+ * @ingroup calc 
+ * @param[in] qureg the qureg of which to compute the sum of amplitudes
+ * @param[in] flag 0 indicates to sum the real values, and 1 indicates to sum the imaginary values
+ * @return the sum of the real (or imaginary) values of every amplitude in \p qureg
+ * @throws invalidQuESTInputError if \p val is not 0 or 1
+ * @author Tyson Jones
+ */
+qreal calcAmpSum(Qureg qureg, int flag);
 
 // end prevention of C++ name mangling
 #ifdef __cplusplus

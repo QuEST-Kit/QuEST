@@ -99,6 +99,8 @@ void validateMultiQubitKrausMap(Qureg qureg, int numTargs, ComplexMatrixN* ops, 
 
 void validateOneQubitDampingProb(qreal prob, const char* caller);
 
+void validateRealOrImagFlag(int flag, const char* caller);
+
 # ifdef __cplusplus
 }
 # endif

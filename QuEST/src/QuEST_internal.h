@@ -245,6 +245,8 @@ void statevec_setWeightedQureg(Complex fac1, Qureg qureg1, Complex fac2, Qureg q
 
 void statevec_applyPauliSum(Qureg inQureg, enum pauliOpType* allCodes, qreal* termCoeffs, int numSumTerms, Qureg outQureg);
 
+qreal statevec_calcAmpSum(Qureg qureg, int flag);
+
 # ifdef __cplusplus
 }
 # endif

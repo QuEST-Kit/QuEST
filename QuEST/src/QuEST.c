@@ -818,6 +818,13 @@ void applyPauliSum(Qureg inQureg, enum pauliOpType* allPauliCodes, qreal* termCo
 /*
  * calculations
  */
+ 
+qreal calcAmpSum(Qureg qureg, int flag) {
+    validateRealOrImagFlag(flag, __func__);
+    
+    // valid also for density-matrices
+    return statevec_calcAmpSum(qureg, flag);
+}
 
 qreal calcTotalProb(Qureg qureg) {
     if (qureg.isDensityMatrix)  
