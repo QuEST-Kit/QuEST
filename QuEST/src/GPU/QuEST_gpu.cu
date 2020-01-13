@@ -2869,8 +2869,77 @@ void seedQuESTDefault(){
     init_by_array(key, 2); 
 }  
 
+__global__ void statevec_calcAmpSumKernel(Qureg qureg, int flag, int numAmpsToSum, qreal *reducedArray) {
+    
+    // figure out which index this thread is assigned
+    long long int index = blockIdx.x*blockDim.x + threadIdx.x;
+    if (index >= numAmpsToSum) return;
+    
+    // get this thread's amp
+    qreal amp;
+    if (flag == 0)
+        amp = qureg.deviceStateVec.real[index];
+    else
+        amp = qureg.deviceStateVec.imag[index];
+        
+    // save amp in this thread's allocation in the to-be-reduced array
+    extern __shared__ qreal tempReductionArray[];
+    tempReductionArray[threadIdx.x] = amp;
+    __syncthreads();
+    
+    // every second thread reduces
+    if (threadIdx.x<blockDim.x/2)
+        reduceBlock(tempReductionArray, reducedArray, blockDim.x);
+}
 
-
+qreal statevec_calcAmpSum(Qureg qureg, int flag) {
+    
+    // we'll sum every term in the qureg
+    long long int numValuesToReduce = qureg.numAmpsPerChunk;
+    
+    int valuesPerCUDABlock, numCUDABlocks, sharedMemSize;
+    int maxReducedPerLevel = REDUCE_SHARED_SIZE;
+    int firstTime = 1;
+    
+    while (numValuesToReduce > 1) {
+        
+        // need less than one CUDA-BLOCK to reduce
+        if (numValuesToReduce < maxReducedPerLevel) {
+            valuesPerCUDABlock = numValuesToReduce;
+            numCUDABlocks = 1;
+        }
+        // otherwise use only full CUDA-BLOCKS
+        else {
+            valuesPerCUDABlock = maxReducedPerLevel; // constrained by shared memory
+            numCUDABlocks = ceil((qreal)numValuesToReduce/valuesPerCUDABlock);
+        }
+        // dictates size of reduction array
+        sharedMemSize = valuesPerCUDABlock*sizeof(qreal);
+        
+        // spawn threads to sum the amps in each block
+        if (firstTime) {
+             statevec_calcAmpSumKernel<<<numCUDABlocks, valuesPerCUDABlock, sharedMemSize>>>(
+                 qureg, flag, numValuesToReduce, qureg.firstLevelReduction);
+            firstTime = 0;
+            
+        // sum the block amps
+        } else {
+            cudaDeviceSynchronize();    
+            copySharedReduceBlock<<<numCUDABlocks, valuesPerCUDABlock/2, sharedMemSize>>>(
+                    qureg.firstLevelReduction, 
+                    qureg.secondLevelReduction, valuesPerCUDABlock); 
+            cudaDeviceSynchronize();    
+            swapDouble(&(qureg.firstLevelReduction), &(qureg.secondLevelReduction));
+        }
+        
+        // calculate the remaining number of values to sum
+        numValuesToReduce = numValuesToReduce/maxReducedPerLevel;
+    }
+    
+    qreal ampSum;
+    cudaMemcpy(&ampSum, qureg.firstLevelReduction, sizeof(qreal), cudaMemcpyDeviceToHost);
+    return ampSum;
+}
 
 #ifdef __cplusplus
 }
