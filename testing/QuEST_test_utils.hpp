@@ -18,6 +18,17 @@
 #include "catch.hpp"
 #include <vector>
 
+/** The default number of qubits in the registers created for unit testing 
+ * (both statevectors and density matrices). Creation of non-NUM_QUBITS sized 
+ * Quregs should be justified in a comment. 
+ * Note that the smaller this number is, the fewer nodes can be employed in 
+ * distribution testing, since each node must contain at least one amplitude.
+ * Furthermore, the larger this number is, the greater the deviation of correct 
+ * results from their expected value, due to numerical error; this is especially 
+ * apparent for density matrices.
+ */
+#define NUM_QUBITS 5
+
 /** A complex square matrix. 
  * Should be initialised with getZeroMatrix().
  * These have all the natural linear-algebra operator overloads, including 

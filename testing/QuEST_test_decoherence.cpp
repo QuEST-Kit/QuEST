@@ -4,16 +4,6 @@
 #include "QuEST_test_utils.hpp"
 #include <random>
 
-/** The default number of qubits in the density matrices created for unit testing.
- * Creation of non-NUM_QUBITS sized Quregs should be justified in a comment. 
- * Note that the smaller this number is, the fewer nodes can be employed in 
- * distribution testing, since each node must contain at least one amplitude.
- * Furthermore, the larger this number is, the greater the deviation of correct 
- * results from their expected value, due to numerical error; this is especially 
- * apparent for density matrices.
- */
-#define NUM_QUBITS 5
-
 /** Prepares the needed data structures for unit testing. This creates 
  * the QuEST environment, a density matrix of the size 'numQb',
  * and corresponding QQMatrix instance for analytic comparison.
