@@ -188,5 +188,7 @@ void statevec_multiControlledTwoQubitUnitaryLocal(Qureg qureg, long long int ctr
 
 void statevec_multiControlledMultiQubitUnitaryLocal(Qureg qureg, long long int ctrlMask, int* targs, const int numTargs, ComplexMatrixN u);
 
+qreal statevec_calcAmpSumLocal(Qureg qureg, int flag);
+
 
 # endif // QUEST_CPU_INTERNAL_H

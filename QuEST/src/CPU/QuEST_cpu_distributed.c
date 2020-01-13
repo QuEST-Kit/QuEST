@@ -1460,3 +1460,14 @@ void statevec_multiControlledMultiQubitUnitary(Qureg qureg, long long int ctrlMa
         if (swapTargs[t] != targs[t])
             statevec_swapQubitAmps(qureg, targs[t], swapTargs[t]);
 }
+
+qreal statevec_calcAmpSum(Qureg qureg, int flag) {
+    
+    qreal localSum = statevec_calcAmpSumLocal(qureg, flag);
+    qreal globalSum;
+    
+    int numVals = 1;
+    MPI_Allreduce(&localSum, &globalSum, numVals, MPI_QuEST_REAL, MPI_SUM, MPI_COMM_WORLD);
+    
+    return globalSum;
+}

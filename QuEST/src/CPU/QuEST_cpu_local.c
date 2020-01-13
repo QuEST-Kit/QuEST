@@ -321,3 +321,8 @@ void statevec_swapQubitAmps(Qureg qureg, int qb1, int qb2)
 {
     statevec_swapQubitAmpsLocal(qureg, qb1, qb2);
 }
+
+qreal statevec_calcAmpSum(Qureg qureg, int flag) {
+    
+    return statevec_calcAmpSumLocal(qureg, flag);
+}

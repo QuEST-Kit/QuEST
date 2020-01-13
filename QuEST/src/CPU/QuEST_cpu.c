@@ -3624,3 +3624,35 @@ void statevec_setWeightedQureg(Complex fac1, Qureg qureg1, Complex fac2, Qureg q
     }
 }
 
+qreal statevec_calcAmpSumLocal(Qureg qureg, int flag) {
+
+    long long int numAmps = qureg.numAmpsPerChunk;
+    qreal *reVec = qureg.stateVec.real;
+    qreal *imVec = qureg.stateVec.imag; 
+    
+    qreal ampSum = 0;
+    long long int index;
+    
+# ifdef _OPENMP
+# pragma omp parallel \
+    shared    (numAmps, reVec,imVec) \
+    private   (index) \
+    reduction ( +:ampSum )
+# endif 
+    {
+# ifdef _OPENMP
+# pragma omp for schedule  (static)
+# endif
+        for (index=0; index<numAmps; index++) {
+            
+            // obviously this should be actually decided outside of the loop
+            if (flag == 0)
+                ampSum += reVec[index];
+            else
+                ampSum += imVec[index];
+        }
+    }
+    
+    return ampSum;
+}
+
