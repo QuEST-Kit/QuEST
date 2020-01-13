@@ -12,6 +12,7 @@
 # include "QuEST.h"
 # include "QuEST_internal.h"
 # include "QuEST_precision.h"
+# include "QuEST_validation.h"
 # include "mt19937ar.h"
 
 # include "QuEST_cpu_internal.h"
