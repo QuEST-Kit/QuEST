@@ -578,7 +578,7 @@ TEST_CASE( "controlledRotateY", "[unitaries]" ) {
         
             controlledRotateY(quregMatr, control, target, param);
             applyReferenceOp(refMatr, control, target, op);    
-            REQUIRE( areEqual(quregMatr, refMatr) );
+            REQUIRE( areEqual(quregMatr, refMatr, 2*REAL_EPS) );
         }
     }
     SECTION( "input validation" ) {
@@ -1484,7 +1484,7 @@ TEST_CASE( "multiRotateZ", "[unitaries]" ) {
             
             multiRotateZ(quregMatr, targs, numTargs, param);
             applyReferenceOp(refMatr, allQubits, NUM_QUBITS, op);
-            REQUIRE( areEqual(quregMatr, refMatr) );
+            REQUIRE( areEqual(quregMatr, refMatr, 2*REAL_EPS) );
         }
     }
     SECTION( "input validation" ) {
@@ -1869,7 +1869,7 @@ TEST_CASE( "rotateY", "[unitaries]" ) {
 
             rotateY(quregMatr, target, param);
             applyReferenceOp(refMatr, target, op);
-            REQUIRE( areEqual(quregMatr, refMatr) );
+            REQUIRE( areEqual(quregMatr, refMatr, 2*REAL_EPS) );
         }
     }
     SECTION( "input validation" ) {
