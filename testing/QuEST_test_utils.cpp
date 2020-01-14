@@ -676,6 +676,7 @@ bool areEqual(Qureg qureg1, Qureg qureg2, qreal precision) {
         
     copyStateFromGPU(qureg1);
     copyStateFromGPU(qureg2);
+    syncQuESTEnv(QUEST_ENV);
     
     // loop terminates when areEqual = 0
     int areEqual = 1;
@@ -702,6 +703,7 @@ bool areEqual(Qureg qureg, QVector vec, qreal precision) {
     DEMAND( (int) vec.size() == qureg.numAmpsTotal );
     
     copyStateFromGPU(qureg);
+    syncQuESTEnv(QUEST_ENV);
     
     // the starting index in vec of this node's qureg partition.
     long long int startInd = qureg.chunkId * qureg.numAmpsPerChunk;
@@ -732,6 +734,7 @@ bool areEqual(Qureg qureg, QMatrix matr, qreal precision) {
     
     // ensure local qureg.stateVec is up to date
     copyStateFromGPU(qureg);
+    syncQuESTEnv(QUEST_ENV);
     
     // the starting index in vec of this node's qureg partition.
     long long int startInd = qureg.chunkId * qureg.numAmpsPerChunk;
@@ -840,6 +843,7 @@ QMatrix toQMatrix(Qureg qureg) {
     
     // ensure local qureg.stateVec is up to date
     copyStateFromGPU(qureg);
+    syncQuESTEnv(QUEST_ENV);
     
     qreal* fullRe;
     qreal* fullIm;
@@ -879,6 +883,7 @@ QVector toQVector(Qureg qureg) {
     
     // ensure local qureg.stateVec is up to date
     copyStateFromGPU(qureg);
+    syncQuESTEnv(QUEST_ENV);
     
     qreal* fullRe;
     qreal* fullIm;
@@ -915,6 +920,8 @@ void toQureg(Qureg qureg, QVector vec) {
     DEMAND( !qureg.isDensityMatrix );
     DEMAND( qureg.numAmpsTotal == (int) vec.size() );
     
+    syncQuESTEnv(QUEST_ENV);
+    
     for (int i=0; i<qureg.numAmpsPerChunk; i++) {
         int ind = qureg.chunkId*qureg.numAmpsPerChunk + i;
         qureg.stateVec.real[i] = real(vec[ind]);
@@ -925,6 +932,8 @@ void toQureg(Qureg qureg, QVector vec) {
 void toQureg(Qureg qureg, QMatrix mat) {
     DEMAND( qureg.isDensityMatrix );
     DEMAND( (1 << qureg.numQubitsRepresented) == (int) mat.size() );
+    
+    syncQuESTEnv(QUEST_ENV);
     
     int len = (1 << qureg.numQubitsRepresented);
     for (int i=0; i<qureg.numAmpsPerChunk; i++) {
