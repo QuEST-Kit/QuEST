@@ -1,7 +1,8 @@
 /** @file
  * Unoptimised, analytic implementations of matrix operations used by QuEST_unit_tests
  *
- * @defgroup testing Unit testing
+ * @defgroup unittest Unit tests
+ *      Unit tests of the QuEST API, using Catch2 in C++14.
  * @defgroup testutilities Unit test utilities
  *      Functions used in the unit testing. These are mostly unoptimised, analytic implementations
  *      of the complex linear algebra that QuEST ultimately effects on quantum states.

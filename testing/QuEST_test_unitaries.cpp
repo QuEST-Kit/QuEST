@@ -39,6 +39,10 @@ using Catch::Matchers::Contains;
 
 
 
+/** @sa compactUnitary
+ * @ingroup unittest 
+ * @author Tyson Jones 
+ */
 TEST_CASE( "compactUnitary", "[unitaries]" ) {
     
     PREPARE_TEST( quregVec, quregMatr, refVec, refMatr );
@@ -86,6 +90,10 @@ TEST_CASE( "compactUnitary", "[unitaries]" ) {
 
 
 
+/** @sa controlledCompactUnitary
+ * @ingroup unittest 
+ * @author Tyson Jones 
+ */
 TEST_CASE( "controlledCompactUnitary", "[unitaries]" ) {
     
     PREPARE_TEST( quregVec, quregMatr, refVec, refMatr );
@@ -140,6 +148,10 @@ TEST_CASE( "controlledCompactUnitary", "[unitaries]" ) {
 
 
 
+/** @sa controlledMultiQubitUnitary
+ * @ingroup unittest 
+ * @author Tyson Jones 
+ */
 TEST_CASE( "controlledMultiQubitUnitary", "[unitaries]" ) {
     
     PREPARE_TEST( quregVec, quregMatr, refVec, refMatr );
@@ -273,6 +285,10 @@ TEST_CASE( "controlledMultiQubitUnitary", "[unitaries]" ) {
 
 
 
+/** @sa controlledNot
+ * @ingroup unittest 
+ * @author Tyson Jones 
+ */
 TEST_CASE(  "controlledNot", "[unitaries]" ) {
     
     PREPARE_TEST( quregVec, quregMatr, refVec, refMatr );
@@ -315,6 +331,10 @@ TEST_CASE(  "controlledNot", "[unitaries]" ) {
 
 
 
+/** @sa controlledPauliY
+ * @ingroup unittest 
+ * @author Tyson Jones 
+ */
 TEST_CASE(  "controlledPauliY", "[unitaries]" ) {
     
     PREPARE_TEST( quregVec, quregMatr, refVec, refMatr );
@@ -357,6 +377,10 @@ TEST_CASE(  "controlledPauliY", "[unitaries]" ) {
 
 
 
+/** @sa controlledPhaseFlip
+ * @ingroup unittest 
+ * @author Tyson Jones 
+ */
 TEST_CASE( "controlledPhaseFlip", "[unitaries]" ) {
     
     PREPARE_TEST( quregVec, quregMatr, refVec, refMatr );
@@ -399,6 +423,10 @@ TEST_CASE( "controlledPhaseFlip", "[unitaries]" ) {
 
 
 
+/** @sa controlledPhaseShift
+ * @ingroup unittest 
+ * @author Tyson Jones 
+ */
 TEST_CASE( "controlledPhaseShift", "[unitaries]" ) {
     
     PREPARE_TEST( quregVec, quregMatr, refVec, refMatr );
@@ -442,6 +470,10 @@ TEST_CASE( "controlledPhaseShift", "[unitaries]" ) {
 
 
 
+/** @sa controlledRotateAroundAxis
+ * @ingroup unittest 
+ * @author Tyson Jones 
+ */
 TEST_CASE( "controlledRotateAroundAxis", "[unitaries]" ) {
     
     PREPARE_TEST( quregVec, quregMatr, refVec, refMatr );
@@ -500,6 +532,10 @@ TEST_CASE( "controlledRotateAroundAxis", "[unitaries]" ) {
 
 
 
+/** @sa controlledRotateX
+ * @ingroup unittest 
+ * @author Tyson Jones 
+ */
 TEST_CASE( "controlledRotateX", "[unitaries]" ) {
     
     PREPARE_TEST( quregVec, quregMatr, refVec, refMatr );
@@ -543,6 +579,10 @@ TEST_CASE( "controlledRotateX", "[unitaries]" ) {
 
 
 
+/** @sa controlledRotateY
+ * @ingroup unittest 
+ * @author Tyson Jones 
+ */
 TEST_CASE( "controlledRotateY", "[unitaries]" ) {
     
     PREPARE_TEST( quregVec, quregMatr, refVec, refMatr );
@@ -586,6 +626,10 @@ TEST_CASE( "controlledRotateY", "[unitaries]" ) {
 
 
 
+/** @sa controlledRotateZ
+ * @ingroup unittest 
+ * @author Tyson Jones 
+ */
 TEST_CASE( "controlledRotateZ", "[unitaries]" ) {
     
     PREPARE_TEST( quregVec, quregMatr, refVec, refMatr );
@@ -629,6 +673,10 @@ TEST_CASE( "controlledRotateZ", "[unitaries]" ) {
 
 
 
+/** @sa controlledTwoQubitUnitary
+ * @ingroup unittest 
+ * @author Tyson Jones 
+ */
 TEST_CASE( "controlledTwoQubitUnitary", "[unitaries]" ) {
     
     PREPARE_TEST( quregVec, quregMatr, refVec, refMatr );
@@ -702,6 +750,10 @@ TEST_CASE( "controlledTwoQubitUnitary", "[unitaries]" ) {
 
 
 
+/** @sa controlledUnitary
+ * @ingroup unittest 
+ * @author Tyson Jones 
+ */
 TEST_CASE( "controlledUnitary", "[unitaries]" ) {
     
     PREPARE_TEST( quregVec, quregMatr, refVec, refMatr );
@@ -750,6 +802,10 @@ TEST_CASE( "controlledUnitary", "[unitaries]" ) {
 
 
 
+/** @sa hadamard
+ * @ingroup unittest 
+ * @author Tyson Jones 
+ */
 TEST_CASE( "hadamard", "[unitaries]" ) {
 
     PREPARE_TEST( quregVec, quregMatr, refVec, refMatr );
@@ -786,6 +842,10 @@ TEST_CASE( "hadamard", "[unitaries]" ) {
 
 
 
+/** @sa multiControlledMultiQubitUnitary
+ * @ingroup unittest 
+ * @author Tyson Jones 
+ */
 TEST_CASE( "multiControlledMultiQubitUnitary", "[unitaries]" ) {
     
     PREPARE_TEST( quregVec, quregMatr, refVec, refMatr );
@@ -951,6 +1011,10 @@ TEST_CASE( "multiControlledMultiQubitUnitary", "[unitaries]" ) {
 
 
 
+/** @sa multiControlledPhaseFlip
+ * @ingroup unittest 
+ * @author Tyson Jones 
+ */
 TEST_CASE( "multiControlledPhaseFlip", "[unitaries]" ) {
 
     PREPARE_TEST( quregVec, quregMatr, refVec, refMatr );
@@ -1003,6 +1067,10 @@ TEST_CASE( "multiControlledPhaseFlip", "[unitaries]" ) {
 
 
 
+/** @sa multiControlledPhaseShift
+ * @ingroup unittest 
+ * @author Tyson Jones 
+ */
 TEST_CASE( "multiControlledPhaseShift", "[unitaries]" ) {
 
     PREPARE_TEST( quregVec, quregMatr, refVec, refMatr );
@@ -1054,6 +1122,10 @@ TEST_CASE( "multiControlledPhaseShift", "[unitaries]" ) {
 
 
 
+/** @sa multiControlledTwoQubitUnitary
+ * @ingroup unittest 
+ * @author Tyson Jones 
+ */
 TEST_CASE( "multiControlledTwoQubitUnitary", "[unitaries]" ) {
 
     PREPARE_TEST( quregVec, quregMatr, refVec, refMatr );
@@ -1154,6 +1226,10 @@ TEST_CASE( "multiControlledTwoQubitUnitary", "[unitaries]" ) {
 
 
 
+/** @sa multiControlledUnitary
+ * @ingroup unittest 
+ * @author Tyson Jones 
+ */
 TEST_CASE( "multiControlledUnitary", "[unitaries]" ) {
 
     PREPARE_TEST( quregVec, quregMatr, refVec, refMatr );
@@ -1221,6 +1297,10 @@ TEST_CASE( "multiControlledUnitary", "[unitaries]" ) {
 
 
 
+/** @sa multiQubitUnitary
+ * @ingroup unittest 
+ * @author Tyson Jones 
+ */
 TEST_CASE( "multiQubitUnitary", "[unitaries]" ) {
     
     PREPARE_TEST( quregVec, quregMatr, refVec, refMatr );
@@ -1333,6 +1413,10 @@ TEST_CASE( "multiQubitUnitary", "[unitaries]" ) {
 
 
 
+/** @sa multiRotatePauli
+ * @ingroup unittest 
+ * @author Tyson Jones 
+ */
 TEST_CASE( "multiRotatePauli", "[unitaries]" ) {
         
     PREPARE_TEST( quregVec, quregMatr, refVec, refMatr );
@@ -1431,6 +1515,12 @@ TEST_CASE( "multiRotatePauli", "[unitaries]" ) {
     CLEANUP_TEST( quregVec, quregMatr );
 }
 
+
+
+/** @sa multiRotateZ
+ * @ingroup unittest 
+ * @author Tyson Jones 
+ */
 TEST_CASE( "multiRotateZ", "[unitaries]" ) {
     
     PREPARE_TEST( quregVec, quregMatr, refVec, refMatr );
@@ -1501,6 +1591,10 @@ TEST_CASE( "multiRotateZ", "[unitaries]" ) {
 
 
 
+/** @sa multiStateControlledUnitary
+ * @ingroup unittest 
+ * @author Tyson Jones 
+ */
 TEST_CASE( "multiStateControlledUnitary", "[unitaries]" ) {
 
     PREPARE_TEST( quregVec, quregMatr, refVec, refMatr );
@@ -1606,6 +1700,10 @@ TEST_CASE( "multiStateControlledUnitary", "[unitaries]" ) {
 
 
 
+/** @sa pauliX
+ * @ingroup unittest 
+ * @author Tyson Jones 
+ */
 TEST_CASE( "pauliX", "[unitaries]" ) {
     
     PREPARE_TEST( quregVec, quregMatr, refVec, refMatr );
@@ -1641,6 +1739,10 @@ TEST_CASE( "pauliX", "[unitaries]" ) {
 
 
 
+/** @sa pauliY
+ * @ingroup unittest 
+ * @author Tyson Jones 
+ */
 TEST_CASE( "pauliY", "[unitaries]" ) {
     
     PREPARE_TEST( quregVec, quregMatr, refVec, refMatr );
@@ -1676,6 +1778,10 @@ TEST_CASE( "pauliY", "[unitaries]" ) {
 
 
 
+/** @sa pauliZ
+ * @ingroup unittest 
+ * @author Tyson Jones 
+ */
 TEST_CASE( "pauliZ", "[unitaries]" ) {
     
     PREPARE_TEST( quregVec, quregMatr, refVec, refMatr );
@@ -1711,6 +1817,10 @@ TEST_CASE( "pauliZ", "[unitaries]" ) {
 
 
 
+/** @sa phaseShift
+ * @ingroup unittest 
+ * @author Tyson Jones 
+ */
 TEST_CASE( "phaseShift", "[unitaries]" ) {
 
     PREPARE_TEST( quregVec, quregMatr, refVec, refMatr );
@@ -1747,6 +1857,10 @@ TEST_CASE( "phaseShift", "[unitaries]" ) {
 
 
 
+/** @sa rotateAroundAxis
+ * @ingroup unittest 
+ * @author Tyson Jones 
+ */
 TEST_CASE( "rotateAroundAxis", "[unitaries]" ) {
 
     PREPARE_TEST( quregVec, quregMatr, refVec, refMatr );
@@ -1799,6 +1913,10 @@ TEST_CASE( "rotateAroundAxis", "[unitaries]" ) {
 
 
 
+/** @sa rotateX
+ * @ingroup unittest 
+ * @author Tyson Jones 
+ */
 TEST_CASE( "rotateX", "[unitaries]" ) {
 
     PREPARE_TEST( quregVec, quregMatr, refVec, refMatr );
@@ -1835,6 +1953,10 @@ TEST_CASE( "rotateX", "[unitaries]" ) {
 
 
 
+/** @sa rotateY
+ * @ingroup unittest 
+ * @author Tyson Jones 
+ */
 TEST_CASE( "rotateY", "[unitaries]" ) {
 
     PREPARE_TEST( quregVec, quregMatr, refVec, refMatr );
@@ -1871,6 +1993,10 @@ TEST_CASE( "rotateY", "[unitaries]" ) {
 
 
 
+/** @sa rotateZ
+ * @ingroup unittest 
+ * @author Tyson Jones 
+ */
 TEST_CASE( "rotateZ", "[unitaries]" ) {
 
     PREPARE_TEST( quregVec, quregMatr, refVec, refMatr );
@@ -1907,6 +2033,10 @@ TEST_CASE( "rotateZ", "[unitaries]" ) {
 
 
 
+/** @sa sGate
+ * @ingroup unittest 
+ * @author Tyson Jones 
+ */
 TEST_CASE( "sGate", "[unitaries]" ) {
 
     PREPARE_TEST( quregVec, quregMatr, refVec, refMatr );
@@ -1942,6 +2072,10 @@ TEST_CASE( "sGate", "[unitaries]" ) {
 
 
 
+/** @sa sqrtSwapGate
+ * @ingroup unittest 
+ * @author Tyson Jones 
+ */
 TEST_CASE( "sqrtSwapGate", "[unitaries]" ) {
         
     PREPARE_TEST( quregVec, quregMatr, refVec, refMatr );
@@ -1988,6 +2122,10 @@ TEST_CASE( "sqrtSwapGate", "[unitaries]" ) {
 
 
 
+/** @sa swapGate
+ * @ingroup unittest 
+ * @author Tyson Jones 
+ */
 TEST_CASE( "swapGate", "[unitaries]" ) {
         
     PREPARE_TEST( quregVec, quregMatr, refVec, refMatr );
@@ -2032,6 +2170,10 @@ TEST_CASE( "swapGate", "[unitaries]" ) {
 
 
 
+/** @sa tGate
+ * @ingroup unittest 
+ * @author Tyson Jones 
+ */
 TEST_CASE( "tGate", "[unitaries]" ) {
 
     PREPARE_TEST( quregVec, quregMatr, refVec, refMatr );
@@ -2067,6 +2209,10 @@ TEST_CASE( "tGate", "[unitaries]" ) {
 
 
 
+/** @sa twoQubitUnitary
+ * @ingroup unittest 
+ * @author Tyson Jones 
+ */
 TEST_CASE( "twoQubitUnitary", "[unitaries]" ) {
     
     PREPARE_TEST( quregVec, quregMatr, refVec, refMatr );
@@ -2128,6 +2274,10 @@ TEST_CASE( "twoQubitUnitary", "[unitaries]" ) {
 
 
 
+/** @sa unitary
+ * @ingroup unittest 
+ * @author Tyson Jones 
+ */
 TEST_CASE( "unitary", "[unitaries]" ) {
         
     PREPARE_TEST( quregVec, quregMatr, refVec, refMatr );

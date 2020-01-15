@@ -8,6 +8,10 @@ using Catch::Matchers::Contains;
 
 
 
+/** @sa calcDensityInnerProduct
+ * @ingroup unittest 
+ * @author Tyson Jones 
+ */
 TEST_CASE( "calcDensityInnerProduct", "[calculations]" ) {
 
     Qureg mat1 = createDensityQureg(NUM_QUBITS, QUEST_ENV);
@@ -100,6 +104,10 @@ TEST_CASE( "calcDensityInnerProduct", "[calculations]" ) {
 
 
 
+/** @sa calcExpecPauliProd
+ * @ingroup unittest 
+ * @author Tyson Jones 
+ */
 TEST_CASE( "calcExpecPauliProd", "[calculations]" ) {
     
     Qureg vec = createQureg(NUM_QUBITS, QUEST_ENV);
@@ -238,6 +246,10 @@ TEST_CASE( "calcExpecPauliProd", "[calculations]" ) {
 
 
 
+/** @sa calcExpecPauliSum
+ * @ingroup unittest 
+ * @author Tyson Jones 
+ */
 TEST_CASE( "calcExpecPauliSum", "[calculations]" ) {
     
     Qureg vec = createQureg(NUM_QUBITS, QUEST_ENV);
@@ -374,6 +386,10 @@ TEST_CASE( "calcExpecPauliSum", "[calculations]" ) {
 
 
 
+/** @sa calcFidelity
+ * @ingroup unittest 
+ * @author Tyson Jones 
+ */
 TEST_CASE( "calcFidelity", "[calculations]" ) {
     
     Qureg vec = createQureg(NUM_QUBITS, QUEST_ENV);
@@ -522,6 +538,10 @@ TEST_CASE( "calcFidelity", "[calculations]" ) {
 
 
 
+/** @sa calcHilbertSchmidtDistance
+ * @ingroup unittest 
+ * @author Tyson Jones 
+ */
 TEST_CASE( "calcHilbertSchmidtDistance", "[calculations]" ) {
     
     Qureg mat1 = createDensityQureg(NUM_QUBITS, QUEST_ENV);
@@ -614,6 +634,10 @@ TEST_CASE( "calcHilbertSchmidtDistance", "[calculations]" ) {
 
 
 
+/** @sa calcInnerProduct
+ * @ingroup unittest 
+ * @author Tyson Jones 
+ */
 TEST_CASE( "calcInnerProduct", "[calculations]" ) {
     
     Qureg vec1 = createQureg(NUM_QUBITS, QUEST_ENV);
@@ -685,6 +709,10 @@ TEST_CASE( "calcInnerProduct", "[calculations]" ) {
 
 
 
+/** @sa calcProbOfOutcome
+ * @ingroup unittest 
+ * @author Tyson Jones 
+ */
 TEST_CASE( "calcProbOfOutcome", "[calculations]" ) {
     
     Qureg vec = createQureg(NUM_QUBITS, QUEST_ENV);
@@ -804,6 +832,10 @@ TEST_CASE( "calcProbOfOutcome", "[calculations]" ) {
 
 
 
+/** @sa calcPurity
+ * @ingroup unittest 
+ * @author Tyson Jones 
+ */
 TEST_CASE( "calcPurity", "[calculations]" ) {
     
     Qureg mat = createDensityQureg(NUM_QUBITS, QUEST_ENV);
@@ -872,6 +904,10 @@ TEST_CASE( "calcPurity", "[calculations]" ) {
 
 
 
+/** @sa calcTotalProb
+ * @ingroup unittest 
+ * @author Tyson Jones 
+ */
 TEST_CASE( "calcTotalProb", "[calculations]" ) {
     
     Qureg vec = createQureg(NUM_QUBITS, QUEST_ENV);
@@ -935,6 +971,10 @@ TEST_CASE( "calcTotalProb", "[calculations]" ) {
 
 
 
+/** @sa getAmp
+ * @ingroup unittest 
+ * @author Tyson Jones 
+ */
 TEST_CASE( "getAmp", "[calculations]" ) {
     
     Qureg vec = createQureg(NUM_QUBITS, QUEST_ENV);
@@ -970,6 +1010,10 @@ TEST_CASE( "getAmp", "[calculations]" ) {
 
 
 
+/** @sa getDensityAmp
+ * @ingroup unittest 
+ * @author Tyson Jones 
+ */
 TEST_CASE( "getDensityAmp", "[calculations]" ) {
     
     Qureg mat = createDensityQureg(NUM_QUBITS, QUEST_ENV);
@@ -1009,6 +1053,10 @@ TEST_CASE( "getDensityAmp", "[calculations]" ) {
 
 
 
+/** @sa getImagAmp
+ * @ingroup unittest 
+ * @author Tyson Jones 
+ */
 TEST_CASE( "getImagAmp", "[calculations]" ) {
     
     Qureg vec = createQureg(NUM_QUBITS, QUEST_ENV);
@@ -1043,6 +1091,10 @@ TEST_CASE( "getImagAmp", "[calculations]" ) {
 
 
 
+/** @sa getNumAmps
+ * @ingroup unittest 
+ * @author Tyson Jones 
+ */
 TEST_CASE( "getNumAmps", "[calculations]" ) {
         
     SECTION( "correctness" ) {
@@ -1069,6 +1121,10 @@ TEST_CASE( "getNumAmps", "[calculations]" ) {
 
 
 
+/** @sa getNumQubits
+ * @ingroup unittest 
+ * @author Tyson Jones 
+ */
 TEST_CASE( "getNumQubits", "[calculations]" ) {
         
     SECTION( "correctness" ) {
@@ -1098,6 +1154,10 @@ TEST_CASE( "getNumQubits", "[calculations]" ) {
 
 
 
+/** @sa getProbAmp
+ * @ingroup unittest 
+ * @author Tyson Jones 
+ */
 TEST_CASE( "getProbAmp", "[calculations]" ) {
     
     Qureg vec = createQureg(NUM_QUBITS, QUEST_ENV);
@@ -1133,6 +1193,10 @@ TEST_CASE( "getProbAmp", "[calculations]" ) {
 
 
 
+/** @sa getRealAmp
+ * @ingroup unittest 
+ * @author Tyson Jones 
+ */
 TEST_CASE( "getRealAmp", "[calculations]" ) {
     
     Qureg vec = createQureg(NUM_QUBITS, QUEST_ENV);

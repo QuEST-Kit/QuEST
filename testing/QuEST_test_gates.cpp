@@ -8,6 +8,10 @@ using Catch::Matchers::Contains;
 
 
 
+/** @sa collapseToOutcome
+ * @ingroup unittest 
+ * @author Tyson Jones 
+ */
 TEST_CASE( "collapseToOutcome", "[gates]" ) {
     
     Qureg vec = createQureg(NUM_QUBITS, QUEST_ENV);
@@ -110,6 +114,10 @@ TEST_CASE( "collapseToOutcome", "[gates]" ) {
 
 
 
+/** @sa measure
+ * @ingroup unittest 
+ * @author Tyson Jones 
+ */
 TEST_CASE( "measure", "[gates]" ) {
     
     Qureg vec = createQureg(NUM_QUBITS, QUEST_ENV);
@@ -198,6 +206,10 @@ TEST_CASE( "measure", "[gates]" ) {
 
 
 
+/** @sa measureWithStats
+ * @ingroup unittest 
+ * @author Tyson Jones 
+ */
 TEST_CASE( "measureWithStats", "[gates]" ) {
     
     Qureg vec = createQureg(NUM_QUBITS, QUEST_ENV);

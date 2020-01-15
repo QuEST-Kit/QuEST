@@ -8,6 +8,10 @@ using Catch::Matchers::Contains;
     
     
 
+/** @sa cloneQureg
+ * @ingroup unittest 
+ * @author Tyson Jones 
+ */
 TEST_CASE( "cloneQureg", "[state_initialisations]" ) {
     
     Qureg vec1 = createQureg(NUM_QUBITS, QUEST_ENV);
@@ -79,6 +83,10 @@ TEST_CASE( "cloneQureg", "[state_initialisations]" ) {
 
 
 
+/** @sa initBlankState
+ * @ingroup unittest 
+ * @author Tyson Jones 
+ */
 TEST_CASE( "initBlankState", "[state_initialisations]" ) {
     
     Qureg vec = createQureg(NUM_QUBITS, QUEST_ENV);
@@ -108,6 +116,10 @@ TEST_CASE( "initBlankState", "[state_initialisations]" ) {
 
 
 
+/** @sa initClassicalState
+ * @ingroup unittest 
+ * @author Tyson Jones 
+ */
 TEST_CASE( "initClassicalState", "[state_initialisations]" ) {
     
     Qureg vec = createQureg(NUM_QUBITS, QUEST_ENV);
@@ -147,6 +159,10 @@ TEST_CASE( "initClassicalState", "[state_initialisations]" ) {
 
 
 
+/** @sa initPlusState
+ * @ingroup unittest 
+ * @author Tyson Jones 
+ */
 TEST_CASE( "initPlusState", "[state_initialisations]" ) {
     
     Qureg vec = createQureg(NUM_QUBITS, QUEST_ENV);
@@ -188,6 +204,10 @@ TEST_CASE( "initPlusState", "[state_initialisations]" ) {
 
 
 
+/** @sa initPureState
+ * @ingroup unittest 
+ * @author Tyson Jones 
+ */
 TEST_CASE( "initPureState", "[state_initialisations]" ) {
     
     Qureg vec1 = createQureg(NUM_QUBITS, QUEST_ENV);
@@ -259,6 +279,10 @@ TEST_CASE( "initPureState", "[state_initialisations]" ) {
 
 
 
+/** @sa initStateFromAmps
+ * @ingroup unittest 
+ * @author Tyson Jones 
+ */
 TEST_CASE( "initStateFromAmps", "[state_initialisations]" ) {
     
     Qureg vec = createQureg(NUM_QUBITS, QUEST_ENV);
@@ -296,6 +320,10 @@ TEST_CASE( "initStateFromAmps", "[state_initialisations]" ) {
 
 
 
+/** @sa initZeroState
+ * @ingroup unittest 
+ * @author Tyson Jones 
+ */
 TEST_CASE( "initZeroState", "[state_initialisations]" ) {
 
     Qureg vec = createQureg(NUM_QUBITS, QUEST_ENV);
@@ -333,6 +361,10 @@ TEST_CASE( "initZeroState", "[state_initialisations]" ) {
 
 
 
+/** @sa setAmps
+ * @ingroup unittest 
+ * @author Tyson Jones 
+ */
 TEST_CASE( "setAmps", "[state_initialisations]" ) {
     
     Qureg vec = createQureg(NUM_QUBITS, QUEST_ENV);
@@ -399,6 +431,10 @@ TEST_CASE( "setAmps", "[state_initialisations]" ) {
 
 
 
+/** @sa setWeightedQureg
+ * @ingroup unittest 
+ * @author Tyson Jones 
+ */
 TEST_CASE( "setWeightedQureg", "[state_initialisations]" ) {
         
     SECTION( "correctness" ) {

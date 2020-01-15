@@ -8,6 +8,10 @@ using Catch::Matchers::Contains;
 
 
 
+/** @sa applyPauliSum
+ * @ingroup unittest 
+ * @author Tyson Jones 
+ */
 TEST_CASE( "applyPauliSum", "[operators]" ) {
     
     Qureg vecIn = createQureg(NUM_QUBITS, QUEST_ENV);

@@ -8,6 +8,10 @@ using Catch::Matchers::Contains;
 
 
 
+/** @sa fromComplex
+ * @ingroup unittest 
+ * @author Tyson Jones 
+ */
 TEST_CASE( "fromComplex", "[data_structures]" ) {
     
     Complex a = {.real=.5, .imag=-.2};
@@ -19,6 +23,10 @@ TEST_CASE( "fromComplex", "[data_structures]" ) {
 
 
 
+/** @sa getStaticComplexMatrixN
+ * @ingroup unittest 
+ * @author Tyson Jones 
+ */
 TEST_CASE( "getStaticComplexMatrixN", "[data_structures]" ) {
     
     /* use of this function is illegal in C++ */
@@ -27,6 +35,10 @@ TEST_CASE( "getStaticComplexMatrixN", "[data_structures]" ) {
 
 
 
+/** @sa toComplex
+ * @ingroup unittest 
+ * @author Tyson Jones 
+ */
 TEST_CASE( "toComplex", "[data_structures]" ) {
     
     qcomp a = .5 - .2i;
@@ -38,6 +50,10 @@ TEST_CASE( "toComplex", "[data_structures]" ) {
 
 
 
+/** @sa createCloneQureg
+ * @ingroup unittest 
+ * @author Tyson Jones 
+ */
 TEST_CASE( "createCloneQureg", "[data_structures]" ) {
         
     SECTION( "state-vector" ) {
@@ -80,6 +96,10 @@ TEST_CASE( "createCloneQureg", "[data_structures]" ) {
 
 
 
+/** @sa createComplexMatrixN
+ * @ingroup unittest 
+ * @author Tyson Jones 
+ */
 TEST_CASE( "createComplexMatrixN", "[data_structures]" ) {
     
     SECTION( "correctness" ) {
@@ -104,6 +124,10 @@ TEST_CASE( "createComplexMatrixN", "[data_structures]" ) {
 
 
 
+/** @sa createDensityQureg
+ * @ingroup unittest 
+ * @author Tyson Jones 
+ */
 TEST_CASE( "createDensityQureg", "[data_structures]" ) {
         
     // must be at least one amplitude per node
@@ -159,6 +183,10 @@ TEST_CASE( "createDensityQureg", "[data_structures]" ) {
 
 
 
+/** @sa createQuESTEnv
+ * @ingroup unittest 
+ * @author Tyson Jones 
+ */
 TEST_CASE( "createQuESTEnv", "[data_structures]" ) {
     
     /* there is no meaningful way to test this */
@@ -167,6 +195,10 @@ TEST_CASE( "createQuESTEnv", "[data_structures]" ) {
 
 
 
+/** @sa createQureg
+ * @ingroup unittest 
+ * @author Tyson Jones 
+ */
 TEST_CASE( "createQureg", "[data_structures]" ) {
         
     // must be at least one amplitude per node
@@ -220,6 +252,10 @@ TEST_CASE( "createQureg", "[data_structures]" ) {
 
 
 
+/** @sa destroyComplexMatrixN
+ * @ingroup unittest 
+ * @author Tyson Jones 
+ */
 TEST_CASE( "destroyComplexMatrixN", "[data_structures]" ) {
     
     SECTION( "correctness" ) {
@@ -247,6 +283,10 @@ TEST_CASE( "destroyComplexMatrixN", "[data_structures]" ) {
 
 
 
+/** @sa destroyQuESTEnv
+ * @ingroup unittest 
+ * @author Tyson Jones 
+ */
 TEST_CASE( "destroyQuESTEnv", "[data_structures]" ) {
 
     /* there is no meaningful way to test this */
@@ -255,6 +295,10 @@ TEST_CASE( "destroyQuESTEnv", "[data_structures]" ) {
 
 
 
+/** @sa destroyQureg
+ * @ingroup unittest 
+ * @author Tyson Jones 
+ */
 TEST_CASE( "destroyQureg", "[data_structures]" ) {
     
     /* there is no meaningful way to test this.
@@ -268,6 +312,10 @@ TEST_CASE( "destroyQureg", "[data_structures]" ) {
 
 
 
+/** @sa initComplexMatrixN
+ * @ingroup unittest 
+ * @author Tyson Jones 
+ */
 TEST_CASE( "initComplexMatrixN", "[data_structures]" ) {
     
     /* use of this function is illegal in C++ */

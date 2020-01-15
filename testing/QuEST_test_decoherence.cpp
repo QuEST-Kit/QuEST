@@ -16,6 +16,10 @@ using Catch::Matchers::Contains;
 
 
 
+/** @sa mixDamping
+ * @ingroup unittest 
+ * @author Tyson Jones 
+ */
 TEST_CASE( "mixDamping", "[decoherence]" ) {
     
     PREPARE_TEST(qureg, ref);
@@ -62,6 +66,10 @@ TEST_CASE( "mixDamping", "[decoherence]" ) {
 
 
 
+/** @sa mixDensityMatrix
+ * @ingroup unittest 
+ * @author Tyson Jones 
+ */
 TEST_CASE( "mixDensityMatrix", "[decoherence]" ) {
     
     Qureg qureg1 = createDensityQureg(NUM_QUBITS, QUEST_ENV);
@@ -119,6 +127,10 @@ TEST_CASE( "mixDensityMatrix", "[decoherence]" ) {
 
 
 
+/** @sa mixDephasing
+ * @ingroup unittest 
+ * @author Tyson Jones 
+ */
 TEST_CASE( "mixDephasing", "[decoherence]" ) {
     
     PREPARE_TEST(qureg, ref);
@@ -161,6 +173,10 @@ TEST_CASE( "mixDephasing", "[decoherence]" ) {
 
 
 
+/** @sa mixDepolarising
+ * @ingroup unittest 
+ * @author Tyson Jones 
+ */
 TEST_CASE( "mixDepolarising", "[decoherence]" ) {
     
     PREPARE_TEST(qureg, ref);
@@ -206,6 +222,10 @@ TEST_CASE( "mixDepolarising", "[decoherence]" ) {
 
 
 
+/** @sa mixMultiQubitKrausMap
+ * @ingroup unittest 
+ * @author Tyson Jones 
+ */
 TEST_CASE( "mixMultiQubitKrausMap", "[decoherence]" ) {
     
     PREPARE_TEST(qureg, ref);
@@ -410,6 +430,10 @@ TEST_CASE( "mixMultiQubitKrausMap", "[decoherence]" ) {
 
 
 
+/** @sa mixPauli
+ * @ingroup unittest 
+ * @author Tyson Jones 
+ */
 TEST_CASE( "mixPauli", "[decoherence]" ) {
     
     PREPARE_TEST(qureg, ref);
@@ -484,6 +508,10 @@ TEST_CASE( "mixPauli", "[decoherence]" ) {
 
 
 
+/** @sa mixKrausMap
+ * @ingroup unittest 
+ * @author Tyson Jones 
+ */
 TEST_CASE( "mixKrausMap", "[decoherence]" ) {
     
     PREPARE_TEST(qureg, ref);
@@ -554,6 +582,10 @@ TEST_CASE( "mixKrausMap", "[decoherence]" ) {
 
 
 
+/** @sa mixTwoQubitDephasing
+ * @ingroup unittest 
+ * @author Tyson Jones 
+ */
 TEST_CASE( "mixTwoQubitDephasing", "[decoherence]" ) {
     
     PREPARE_TEST(qureg, ref);
@@ -609,6 +641,10 @@ TEST_CASE( "mixTwoQubitDephasing", "[decoherence]" ) {
 
 
 
+/** @sa mixTwoQubitDepolarising
+ * @ingroup unittest 
+ * @author Tyson Jones 
+ */
 TEST_CASE( "mixTwoQubitDepolarising", "[decoherence]" ) {
     
     PREPARE_TEST(qureg, ref);
@@ -672,6 +708,10 @@ TEST_CASE( "mixTwoQubitDepolarising", "[decoherence]" ) {
 
 
 
+/** @sa mixTwoQubitKrausMap
+ * @ingroup unittest 
+ * @author Tyson Jones 
+ */
 TEST_CASE( "mixTwoQubitKrausMap", "[decoherence]" ) {
     
     PREPARE_TEST(qureg, ref);
