@@ -2,10 +2,10 @@
  * Unoptimised, analytic implementations of matrix operations used by QuEST_unit_tests
  *
  * @defgroup testing Unit testing
+ * @defgroup testutilities Unit test utilities
  *      Functions used in the unit testing. These are mostly unoptimised, analytic implementations
  *      of the complex linear algebra that QuEST ultimately effects on quantum states.
- *      These are not part of the QuEST API and require C++14, though can be accessed 
- *      via #include "QuEST_test_utils.hpp"
+ *      These are not part of the QuEST API, and require C++14.
  *
  * @author Tyson Jones
  */
@@ -42,7 +42,7 @@ extern QuESTEnv QUEST_ENV;
  * This data-structure is not partitioned between nodes in distributed mode.
  * That is, every node has a complete copy, allowing for safe comparisons.
  *
- * @ingroup testing
+ * @ingroup testutilities
  * @author Tyson Jones
  */
 typedef std::vector<std::vector<qcomp>> QMatrix;
@@ -53,7 +53,7 @@ typedef std::vector<std::vector<qcomp>> QMatrix;
  * This data-structure is not partitioned between nodes in distributed mode.
  * That is, every node has a complete copy, allowing for safe comparisons.
  *
- * @ingroup testing
+ * @ingroup testutilities
  * @author Tyson Jones
  */
 typedef std::vector<qcomp> QVector;
@@ -70,7 +70,7 @@ typedef std::vector<qcomp> QVector;
  * Definition of division using multiplication can furthermore 
  * heighten numerical errors.
  *
- * @ingroup testing
+ * @ingroup testutilities
  * @author Tyson Jones
  */
 QVector operator + (const QVector& v1, const QVector& v2);
@@ -100,7 +100,7 @@ QVector operator * (const QMatrix& m, const QVector& v);
  * In GPU mode, this function involves a copy of \p qureg from GPU memory to RAM.
  * In distributed mode, this involves an all-to-all broadcast of \p qureg.
  * 
- * @ingroup testing
+ * @ingroup testutilities
  * @author Tyson Jones
  */
 QVector toQVector(Qureg qureg);
@@ -109,7 +109,7 @@ QVector toQVector(Qureg qureg);
  * In GPU mode, this function involves a copy of \p qureg from GPU memory to RAM.
  * In distributed mode, this involves an all-to-all broadcast of \p qureg.
  * 
- * @ingroup testing
+ * @ingroup testutilities
  * @author Tyson Jones
  */
 QMatrix toQMatrix(Qureg qureg);
@@ -117,28 +117,28 @@ QMatrix toQMatrix(Qureg qureg);
 /** Returns the matrix (where a=\p alpha, b=\p beta)
  * {{a, -conj(b)}, {b,  conj(a)}} using the \p qcomp complex type.
  *
- * @ingroup testing
+ * @ingroup testutilities
  * @author Tyson Jones
  */
 QMatrix toQMatrix(Complex alpha, Complex beta);
 
 /** Returns a copy of the given 2-by-2 matrix.
  *
- * @ingroup testing
+ * @ingroup testutilities
  * @author Tyson Jones
  */
 QMatrix toQMatrix(ComplexMatrix2 src);
 
 /** Returns a copy of the given 4-by-4 matrix.
  *
- * @ingroup testing
+ * @ingroup testutilities
  * @author Tyson Jones
  */
 QMatrix toQMatrix(ComplexMatrix4 src);
 
 /** Returns a copy of the given 2^\p N-by-2^\p n matrix 
  *
- * @ingroup testing
+ * @ingroup testutilities
  * @author Tyson Jones
  */
 QMatrix toQMatrix(ComplexMatrixN src);
@@ -146,7 +146,7 @@ QMatrix toQMatrix(ComplexMatrixN src);
 /** Returns a \p ComplexMatrix2 copy of QMatix \p qm.
  * Demands that \p qm is a 2-by-2 matrix.
  *
- * @ingroup testing
+ * @ingroup testutilities
  * @author Tyson Jones
  */
 ComplexMatrix2 toComplexMatrix2(QMatrix qm);
@@ -154,7 +154,7 @@ ComplexMatrix2 toComplexMatrix2(QMatrix qm);
 /** Returns a \p ComplexMatrix4 copy of QMatix \p qm.
  * Demands that \p qm is a 4-by-4 matrix.
  *
- * @ingroup testing
+ * @ingroup testutilities
  * @author Tyson Jones
  */
 ComplexMatrix4 toComplexMatrix4(QMatrix qm);
@@ -163,7 +163,7 @@ ComplexMatrix4 toComplexMatrix4(QMatrix qm);
  * Demands that \p cm is a previously created ComplexMatrixN instance, with 
  * the same dimensions as \p qm.
  *
- * @ingroup testing
+ * @ingroup testutilities
  * @author Tyson Jones
  */
 void toComplexMatrixN(QMatrix qm, ComplexMatrixN cm);
@@ -173,7 +173,7 @@ void toComplexMatrixN(QMatrix qm, ComplexMatrixN cm);
  * In GPU mode, this function involves a copy from RAM to GPU memory.
  * This function has no communication cost in distributed mode.
  *
- * @ingroup testing
+ * @ingroup testutilities
  * @author Tyson Jones
  */
 void toQureg(Qureg qureg, QVector vec);
@@ -183,21 +183,21 @@ void toQureg(Qureg qureg, QVector vec);
  * In GPU mode, this function involves a copy from RAM to GPU memory.
  * This function has no communication cost in distributed mode.
  *
- * @ingroup testing
+ * @ingroup testutilities
  * @author Tyson Jones
  */
 void toQureg(Qureg qureg, QMatrix mat);
 
 /** Returns a dim-by-dim square complex matrix, initialised to all zeroes.
  * 
- * @ingroup testing
+ * @ingroup testutilities
  * @author Tyson Jones
  */
 QMatrix getZeroMatrix(size_t dim);
 
 /** Returns a dim-by-dim identity matrix
  *
- * @ingroup testing 
+ * @ingroup testutilities 
  * @author Tyson Jones
  */
 QMatrix getIdentityMatrix(size_t dim);
@@ -205,7 +205,7 @@ QMatrix getIdentityMatrix(size_t dim);
 /** Returns the matrix exponential of a diagonal, square, complex matrix.
  * This method explicitly checks that the passed matrix \p a is diagonal.
  * 
- * @ingroup testing 
+ * @ingroup testutilities 
  * @author Tyson Jones
  */
 QMatrix getExponentialOfDiagonalMatrix(QMatrix a);
@@ -216,7 +216,7 @@ QMatrix getExponentialOfDiagonalMatrix(QMatrix a);
  * kronecker product of involutory matrices, but will otherwise return an 
  * incorrect exponential.
  * 
- * @ingroup testing
+ * @ingroup testutilities
  * @author Tyson Jones
  */
 QMatrix getExponentialOfPauliMatrix(qreal angle, QMatrix a);
@@ -224,7 +224,7 @@ QMatrix getExponentialOfPauliMatrix(qreal angle, QMatrix a);
 /** Returns the kronecker product of \p a and \p b, where \p a and \p b are 
  * square but possibly differently-sized complex matrices.
  *
- * @ingroup testing 
+ * @ingroup testutilities 
  * @author Tyson Jones
  */
 QMatrix getKroneckerProduct(QMatrix a, QMatrix b);
@@ -233,7 +233,7 @@ QMatrix getKroneckerProduct(QMatrix a, QMatrix b);
  * \p qb1 and \p qb2; the SWAP gate of not-necessarily-adjacent qubits.
  * If \p qb1 == \p qb2, returns the identity matrix.
  *
- * @ingroup testing 
+ * @ingroup testutilities 
  * @author Tyson Jones
  */
 QMatrix getSwapMatrix(int qb1, int qb2, int numQb);
@@ -249,7 +249,7 @@ QMatrix getSwapMatrix(int qb1, int qb2, int numQb);
  * the full Hilbert space, and then 'unswapping'. The returned matrix has form:
  * swap1 ... swapN . controlled(\p op) . swapN ... swap1
  *
- * @ingroup testing
+ * @ingroup testutilities
  * @author Tyson Jones
  */
 QMatrix getFullOperatorMatrix(int* ctrls, int numCtrls, int *targs, int numTargs, QMatrix op, int numQubits);
@@ -259,14 +259,14 @@ QMatrix getFullOperatorMatrix(int* ctrls, int numCtrls, int *targs, int numTargs
  * The dimensions of bra and ket must agree, and the returned square complex matrix 
  * has dimensions size(bra) x size(bra).
  *
- * @ingroup testing 
+ * @ingroup testutilities 
  * @author Tyson Jones
  */
 QMatrix getKetBra(QVector ket, QVector bra);
 
 /** Returns the conjugate transpose of the complex square matrix \p a
  *
- * @ingroup testing 
+ * @ingroup testutilities 
  * @author Tyson Jones
  */
 QMatrix getConjugateTranspose(QMatrix a);
@@ -275,7 +275,7 @@ QMatrix getConjugateTranspose(QMatrix a);
  * from the uniform distribution.
  * Demands that \p max > \p min.
  *
- * @ingroup testing 
+ * @ingroup testutilities 
  * @author Tyson Jones
  */
 int getRandomInt(int min, int max);
@@ -284,7 +284,7 @@ int getRandomInt(int min, int max);
  * from the uniform distribution.
  * Demands that \p max > \p min.
  *
- * @ingroup testing 
+ * @ingroup testutilities 
  * @author Tyson Jones
  */
 qreal getRandomReal(qreal min, qreal max);
@@ -293,7 +293,7 @@ qreal getRandomReal(qreal min, qreal max);
  * square joining {-1-i, 1+i}, of an undisclosed distribution. The resulting 
  * vector is NOT L2-normalised.
  *
- * @ingroup testing 
+ * @ingroup testutilities 
  * @author Tyson Jones
  */
 QVector getRandomQVector(int dim);
@@ -302,7 +302,7 @@ QVector getRandomQVector(int dim);
  * each element are independently random, under the standard normal distribution 
  * (mean 0, standard deviation 1).
  *
- * @ingroup testing 
+ * @ingroup testutilities 
  * @author Tyson Jones
  */
 QMatrix getRandomQMatrix(int dim);
@@ -317,7 +317,7 @@ QMatrix getRandomQMatrix(int dim);
  * This routine may return an identity matrix if it was unable to sufficiently 
  * precisely produce a unitary of the given size.
  *
- * @ingroup testing 
+ * @ingroup testutilities 
  * @author Tyson Jones
  */
 QMatrix getRandomUnitary(int numQb);
@@ -326,7 +326,7 @@ QMatrix getRandomUnitary(int numQb);
  * undisclosed distribution. This function works by randomly generating each 
  * complex amplitude, then L2-normalising.
  *
- * @ingroup testing 
+ * @ingroup testutilities 
  * @author Tyson Jones
  */
 QVector getRandomStateVector(int numQb);
@@ -335,7 +335,7 @@ QVector getRandomStateVector(int numQb);
  * distribution, in a very mixed state. This function works by generating 
  * 2^\p numQb random pure states, and mixing them with random probabilities.
  *
- * @ingroup testing 
+ * @ingroup testutilities 
  * @author Tyson Jones
  */
 QMatrix getRandomDensityMatrix(int numQb);
@@ -346,14 +346,14 @@ QMatrix getRandomDensityMatrix(int numQb);
  * It works by generating \p numOps random unitary matrices, and randomly 
  * re-normalising them, such that the sum of ops[j]^dagger ops[j] = 1
  *
- * @ingroup testing 
+ * @ingroup testutilities 
  * @author Tyson Jones
  */
 std::vector<QMatrix> getRandomKrausMap(int numQb, int numOps);
 
 /** Returns an L2-normalised copy of \p vec, using Kahan summation for improved accuracy.
  *
- * @ingroup testing 
+ * @ingroup testutilities 
  * @author Tyson Jones
  */
 QVector getNormalised(QVector vec);
@@ -363,7 +363,7 @@ QVector getNormalised(QVector vec);
  * with the complete elements of sub.
  * This demands that dest.size() >= sub.size() + max(r,c).
  *
- * @ingroup testing 
+ * @ingroup testutilities 
  * @author Tyson Jones
  */
 void setSubMatrix(QMatrix &dest, QMatrix sub, size_t r, size_t c);
@@ -384,7 +384,7 @@ void setSubMatrix(QMatrix &dest, QMatrix sub, size_t r, size_t c);
   * arguments, and left-multipling it to \p state, then right-multiplying its 
   * conjugate transpose onto the result.
   *
-  * @ingroup testing 
+  * @ingroup testutilities 
   * @author Tyson Jones
   */
 void applyReferenceOp(QMatrix &state, int* ctrls, int numCtrls, int *targs, int numTargs, QMatrix op);
@@ -405,7 +405,7 @@ void applyReferenceOp(QMatrix &state, int* ctrls, int numCtrls, int *targs, int 
  * arguments, and left-multipling it to \p state, then right-multiplying its 
  * conjugate transpose onto the result.
  *
- * @ingroup testing 
+ * @ingroup testutilities 
  * @author Tyson Jones
  */
 void applyReferenceOp(QMatrix &state, int* ctrls, int numCtrls, int targ1, int targ2, QMatrix op);
@@ -425,7 +425,7 @@ void applyReferenceOp(QMatrix &state, int* ctrls, int numCtrls, int targ1, int t
  * arguments, and left-multipling it to \p state, then right-multiplying its 
  * conjugate transpose onto the result.
  *
- * @ingroup testing 
+ * @ingroup testutilities 
  * @author Tyson Jones
  */
 void applyReferenceOp(QMatrix &state, int* ctrls, int numCtrls, int target, QMatrix op);
@@ -445,7 +445,7 @@ void applyReferenceOp(QMatrix &state, int* ctrls, int numCtrls, int target, QMat
  * arguments, and left-multipling it to \p state, then right-multiplying its 
  * conjugate transpose onto the result.
  *
- * @ingroup testing 
+ * @ingroup testutilities 
  * @author Tyson Jones
  */
 void applyReferenceOp(QMatrix &state, int *targs, int numTargs, QMatrix op);
@@ -464,7 +464,7 @@ void applyReferenceOp(QMatrix &state, int *targs, int numTargs, QMatrix op);
  * arguments, and left-multipling it to \p state, then right-multiplying its 
  * conjugate transpose onto the result.
  *
- * @ingroup testing 
+ * @ingroup testutilities 
  * @author Tyson Jones
  */
 void applyReferenceOp(QMatrix &state, int ctrl, int targ, QMatrix op);
@@ -484,7 +484,7 @@ void applyReferenceOp(QMatrix &state, int ctrl, int targ, QMatrix op);
  * arguments, and left-multipling it to \p state, then right-multiplying its 
  * conjugate transpose onto the result.
  *
- * @ingroup testing 
+ * @ingroup testutilities 
  * @author Tyson Jones
  */
 void applyReferenceOp(QMatrix &state, int ctrl, int* targs, int numTargs, QMatrix op);
@@ -503,7 +503,7 @@ void applyReferenceOp(QMatrix &state, int ctrl, int* targs, int numTargs, QMatri
  * arguments, and left-multipling it to \p state, then right-multiplying its 
  * conjugate transpose onto the result.
  *
- * @ingroup testing 
+ * @ingroup testutilities 
  * @author Tyson Jones
  */
 void applyReferenceOp(QMatrix &state, int ctrl, int targ1, int targ2, QMatrix op);
@@ -522,7 +522,7 @@ void applyReferenceOp(QMatrix &state, int ctrl, int targ1, int targ2, QMatrix op
  * arguments, and left-multipling it to \p state, then right-multiplying its 
  * conjugate transpose onto the result.
  *
- * @ingroup testing 
+ * @ingroup testutilities 
  * @author Tyson Jones
  */
 void applyReferenceOp(QMatrix &state, int targ, QMatrix op);
@@ -542,7 +542,7 @@ void applyReferenceOp(QMatrix &state, int targ, QMatrix op);
  * This function works by computing getFullOperatorMatrix() from the given 
  * arguments, and left-multiplying it onto \p state.
  *
- * @ingroup testing 
+ * @ingroup testutilities 
  * @author Tyson Jones
  */
 void applyReferenceOp(QVector &state, int* ctrls, int numCtrls, int *targs, int numTargs, QMatrix op);
@@ -560,7 +560,7 @@ void applyReferenceOp(QVector &state, int* ctrls, int numCtrls, int *targs, int 
  * This function works by computing getFullOperatorMatrix() from the given 
  * arguments, and left-multiplying it onto \p state.
  *
- * @ingroup testing 
+ * @ingroup testutilities 
  * @author Tyson Jones
  */
 void applyReferenceOp(QVector &state, int* ctrls, int numCtrls, int targ1, int targ2, QMatrix op);
@@ -578,7 +578,7 @@ void applyReferenceOp(QVector &state, int* ctrls, int numCtrls, int targ1, int t
  * This function works by computing getFullOperatorMatrix() from the given 
  * arguments, and left-multiplying it onto \p state.
  *
- * @ingroup testing 
+ * @ingroup testutilities 
  * @author Tyson Jones
  */
 void applyReferenceOp(QVector &state, int* ctrls, int numCtrls, int target, QMatrix op);
@@ -595,7 +595,7 @@ void applyReferenceOp(QVector &state, int* ctrls, int numCtrls, int target, QMat
  * This function works by computing getFullOperatorMatrix() from the given 
  * arguments, and left-multiplying it onto \p state.
  *
- * @ingroup testing 
+ * @ingroup testutilities 
  * @author Tyson Jones
  */
 void applyReferenceOp(QVector &state, int *targs, int numTargs, QMatrix op);
@@ -612,7 +612,7 @@ void applyReferenceOp(QVector &state, int *targs, int numTargs, QMatrix op);
  * This function works by computing getFullOperatorMatrix() from the given 
  * arguments, and left-multiplying it onto \p state.
  *
- * @ingroup testing 
+ * @ingroup testutilities 
  * @author Tyson Jones
  */
 void applyReferenceOp(QVector &state, int ctrl, int targ, QMatrix op);
@@ -630,7 +630,7 @@ void applyReferenceOp(QVector &state, int ctrl, int targ, QMatrix op);
  * This function works by computing getFullOperatorMatrix() from the given 
  * arguments, and left-multiplying it onto \p state.
  *
- * @ingroup testing 
+ * @ingroup testutilities 
  * @author Tyson Jones
  */
 void applyReferenceOp(QVector &state, int ctrl, int* targs, int numTargs, QMatrix op);
@@ -648,7 +648,7 @@ void applyReferenceOp(QVector &state, int ctrl, int* targs, int numTargs, QMatri
  * This function works by computing getFullOperatorMatrix() from the given 
  * arguments, and left-multiplying it onto \p state.
  *
- * @ingroup testing 
+ * @ingroup testutilities 
  * @author Tyson Jones
  */
 void applyReferenceOp(QVector &state, int ctrl, int targ1, int targ2, QMatrix op);
@@ -665,7 +665,7 @@ void applyReferenceOp(QVector &state, int ctrl, int targ1, int targ2, QMatrix op
  * This function works by computing getFullOperatorMatrix() from the given 
  * arguments, and left-multiplying it onto \p state.
  *
- * @ingroup testing 
+ * @ingroup testutilities 
  * @author Tyson Jones
  */
 void applyReferenceOp(QVector &state, int targ, QMatrix op);
@@ -680,7 +680,7 @@ void applyReferenceOp(QVector &state, int targ, QMatrix op);
  * In GPU mode, this function involves a GPU to CPU memory copy overhead.
  * In distributed mode, it involves a all-to-all single-int broadcast.
  *
- * @ingroup testing 
+ * @ingroup testutilities 
  * @author Tyson Jones
  */
 bool areEqual(Qureg qureg1, Qureg qureg2);
@@ -694,7 +694,7 @@ bool areEqual(Qureg qureg1, Qureg qureg2);
  * In GPU mode, this function involves a GPU to CPU memory copy overhead.
  * In distributed mode, it involves a all-to-all single-int broadcast.
  *
- * @ingroup testing 
+ * @ingroup testutilities 
  * @author Tyson Jones
  */
 bool areEqual(Qureg qureg, QVector vec);
@@ -708,7 +708,7 @@ bool areEqual(Qureg qureg, QVector vec);
  * In GPU mode, this function involves a GPU to CPU memory copy overhead.
  * In distributed mode, it involves a all-to-all single-int broadcast.
  *
- * @ingroup testing 
+ * @ingroup testutilities 
  * @author Tyson Jones
  */
 bool areEqual(Qureg qureg, QMatrix matr);
@@ -723,7 +723,7 @@ bool areEqual(Qureg qureg, QMatrix matr);
  * In GPU mode, this function involves a GPU to CPU memory copy overhead.
  * In distributed mode, it involves a all-to-all single-int broadcast.
  *
- * @ingroup testing 
+ * @ingroup testutilities 
  * @author Tyson Jones
  */
 bool areEqual(Qureg qureg1, Qureg qureg2, qreal precision);
@@ -737,7 +737,7 @@ bool areEqual(Qureg qureg1, Qureg qureg2, qreal precision);
  * In GPU mode, this function involves a GPU to CPU memory copy overhead.
  * In distributed mode, it involves a all-to-all single-int broadcast.
  *
- * @ingroup testing 
+ * @ingroup testutilities 
  * @author Tyson Jones
  */
 bool areEqual(Qureg qureg, QVector vec, qreal precision);
@@ -751,7 +751,7 @@ bool areEqual(Qureg qureg, QVector vec, qreal precision);
  * In GPU mode, this function involves a GPU to CPU memory copy overhead.
  * In distributed mode, it involves a all-to-all single-int broadcast.
  *
- * @ingroup testing 
+ * @ingroup testutilities 
  * @author Tyson Jones
  */
 bool areEqual(Qureg qureg, QMatrix matr, qreal precision);
@@ -759,7 +759,7 @@ bool areEqual(Qureg qureg, QMatrix matr, qreal precision);
 /** Returns true if the absolute value of the difference between every amplitude in 
  * vectors \p a and \p b is less than \p REAL_EPS.
  *
- * @ingroup testing 
+ * @ingroup testutilities 
  * @author Tyson Jones
  */
 bool areEqual(QVector a, QVector b);
@@ -767,14 +767,14 @@ bool areEqual(QVector a, QVector b);
 /** Returns true if the absolute value of the difference between every amplitude in 
  * matrices \p a and \p b is less than \p REAL_EPS.
  *
- * @ingroup testing 
+ * @ingroup testutilities 
  * @author Tyson Jones
  */
 bool areEqual(QMatrix a, QMatrix b);
 
 /** Returns log2 of numbers which must be gauranteed to be 2^n 
  *
- * @ingroup testing 
+ * @ingroup testutilities 
  * @author Tyson Jones
  */
 unsigned int calcLog2(long unsigned int res);
@@ -801,7 +801,7 @@ template<class T> using CatchGen = Catch::Generators::GeneratorWrapper<T>;
   * to generate {1,2}, {1,3}, {1,4}, {2,1}, {2,3}, {2,4}, {3,1}, {3,2}, {3, 4},
   * {4,1}, {4,2}, {4, 3}.
   *
-  * @ingroup testing 
+  * @ingroup testutilities 
   * @author Tyson Jones
   */
 CatchGen<int*> sublists(int* list, int len, int sublen);
@@ -828,7 +828,7 @@ CatchGen<int*> sublists(int* list, int len, int sublen);
  *
  * to generate {1,2}, {1,5}, {2,1}, {2,5}, {5,1}, {5,2}
  *
- * @ingroup testing 
+ * @ingroup testutilities 
  * @author Tyson Jones
  */
 CatchGen<int*> sublists(CatchGen<int>&& gen, int numSamps, const int* exclude, int numExclude);
@@ -855,7 +855,7 @@ CatchGen<int*> sublists(CatchGen<int>&& gen, int numSamps, const int* exclude, i
  *
  * to generate {2,3}, {3,2}.
  *
- * @ingroup testing 
+ * @ingroup testutilities 
  * @author Tyson Jones
  */
 CatchGen<int*> sublists(CatchGen<int>&& gen, int numSamps, int excluded);
@@ -877,7 +877,7 @@ CatchGen<int*> sublists(CatchGen<int>&& gen, int numSamps, int excluded);
  * to generate {1,2}, {1,3}, {1,4}, {2,1}, {2,3}, {2,4}, {3,1}, {3,2}, {3, 4},
  * {4,1}, {4,2}, {4, 3}.
  *
- * @ingroup testing 
+ * @ingroup testutilities 
  * @author Tyson Jones
  */
 CatchGen<int*> sublists(CatchGen<int>&& gen, int sublen);
@@ -893,7 +893,7 @@ CatchGen<int*> sublists(CatchGen<int>&& gen, int sublen);
  *
  * to produce {0,0,0}, {1,0,0}, {0,1,0}, {1,1,0}, {0,0,1}, {1,0,1}, {0,1,1}, {1,1,1}.
  *
- * @ingroup testing 
+ * @ingroup testutilities 
  * @author Tyson Jones
  */
 CatchGen<int*> bitsets(int numBits);
@@ -911,7 +911,7 @@ CatchGen<int*> bitsets(int numBits);
  *
  * to produce {0,0}, {1,0}, {2,0}, {0,1}, {1,1}, {2,1}, {0,2}, {1,2}, {2,2}.
  *
- * @ingroup testing 
+ * @ingroup testutilities 
  * @author Tyson Jones
  */
 CatchGen<int*> sequences(int base, int numDigits);
@@ -929,7 +929,7 @@ CatchGen<int*> sequences(int base, int numDigits);
  * to produce {I,I}, {X,I}, {Y,I}, {Z,I}, {I,X}, {X,X}, {Y,X}, {Z,X}, {I,Y},
  * {X,Y}, {Y,Y}, {Z,Y}, {I,Z}, {X,Z}, {Y,Z}, {Z,Z}/
  *
- * @ingroup testing 
+ * @ingroup testutilities 
  * @author Tyson Jones
  */
 CatchGen<pauliOpType*> pauliseqs(int numPaulis);
