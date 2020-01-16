@@ -15915,7 +15915,18 @@ ConsoleReporter::ConsoleReporter(ReporterConfig const& config)
                 { "estimated    high mean  high std dev", 14, ColumnInfo::Right }
             };
         }
-    }())) {}
+    }())) {
+        
+        /* code injection to silence non-root nodes when running Catch2 in
+         * a distributed execution, for distributed QuEST unit-testing.
+         */    
+        int rank;
+        MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+        
+        // put non-root streams in a fail state, so they silently discard output
+        if (rank != 0)
+            stream.setstate(std::ios_base::failbit);    
+    }
 ConsoleReporter::~ConsoleReporter() = default;
 
 std::string ConsoleReporter::getDescription() {
