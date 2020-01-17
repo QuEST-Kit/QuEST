@@ -24,7 +24,7 @@ TEST_CASE( "mixDamping", "[decoherence]" ) {
     
     PREPARE_TEST(qureg, ref);
 
-    SECTION( "correctness " ) {
+    SECTION( "correctness" ) {
         
         int target = GENERATE( range(0,NUM_QUBITS) );
         qreal prob = getRandomReal(0, 1);

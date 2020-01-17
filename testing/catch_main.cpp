@@ -1,13 +1,17 @@
 /** @file
- * This file is left empty so that catch doesn't need 
+ * This file is left mostly empty so that catch doesn't need 
  * slow (~16s) recompilation each time unit tests are edited
  *
  * @author Tyson Jones
  */
 
-#define CATCH_CONFIG_ENABLE_BENCHMARKING
-#define CATCH_CONFIG_MAIN
+/** Use our modified Catch in custom-main mode (main defined below).
+ * catch.hpp was modified to, in distributed mode, output only once.
+ */
+#define CATCH_CONFIG_RUNNER
 #include "catch.hpp"
+
+#include "QuEST.h"
 
 /** The global QuESTEnv instance, to be created and destroyed once in this 
  * main(), so that the MPI environment is correctly created once when running 
