@@ -109,6 +109,10 @@ endif()
 
 if (GPUACCELERATED)
     find_package(CUDA REQUIRED)
+    # Stop nvcc sending c compile flags through using -Xcompiler and breaking
+    # on compilation of a cpp file receiving -std=c99. In long term should figure 
+    # out why CMAKE_C_FLAGS and not CMAKE_CXX_FLAGS are being sent through to a cpp file
+    set(CUDA_PROPAGATE_HOST_FLAGS FALSE)
 endif()
 
 

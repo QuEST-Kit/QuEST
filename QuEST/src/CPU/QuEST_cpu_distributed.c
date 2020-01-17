@@ -1385,18 +1385,28 @@ void statevec_swapQubitAmps(Qureg qureg, int qb1, int qb2) {
 void statevec_multiControlledTwoQubitUnitary(Qureg qureg, long long int ctrlMask, const int q1, const int q2, ComplexMatrix4 u) {
     int q1FitsInNode = halfMatrixBlockFitsInChunk(qureg.numAmpsPerChunk, q1);
     int q2FitsInNode = halfMatrixBlockFitsInChunk(qureg.numAmpsPerChunk, q2);
-    
-    if (q1FitsInNode && q2FitsInNode) {
+        
+    if (q1FitsInNode && q2FitsInNode) {    
         statevec_multiControlledTwoQubitUnitaryLocal(qureg, ctrlMask, q1, q2, u);
         
     } else if (q1FitsInNode) {
         int qSwap = (q1 > 0)? q1-1 : q1+1;
+
+        // ensure ctrl == qSwap, ensure ctrlMask updates under the swap
+        if (maskContainsBit(ctrlMask, qSwap))
+            ctrlMask = flipBit(flipBit(ctrlMask, q2), qSwap);
+
         statevec_swapQubitAmps(qureg, q2, qSwap);
         statevec_multiControlledTwoQubitUnitaryLocal(qureg, ctrlMask, q1, qSwap, u);
         statevec_swapQubitAmps(qureg, q2, qSwap);
 
     } else if (q2FitsInNode) {
         int qSwap = (q2 > 0)? q2-1 : q2+1;
+        
+        // ensure ctrl == qSwap, ensure ctrlMask updates under the swap
+        if (maskContainsBit(ctrlMask, qSwap))
+            ctrlMask = flipBit(flipBit(ctrlMask, q1), qSwap);
+        
         statevec_swapQubitAmps(qureg, q1, qSwap);
         statevec_multiControlledTwoQubitUnitaryLocal(qureg, ctrlMask, qSwap, q2, u);
         statevec_swapQubitAmps(qureg, q1, qSwap);
@@ -1404,6 +1414,13 @@ void statevec_multiControlledTwoQubitUnitary(Qureg qureg, long long int ctrlMask
     } else {
         int swap1 = 0;
         int swap2 = 1;
+        
+        // ensure ctrl == swap1 or swap2, ensure ctrlMask updates under the swap
+        if (maskContainsBit(ctrlMask, swap1))
+            ctrlMask = flipBit(flipBit(ctrlMask, swap1), q1);
+        else if (maskContainsBit(ctrlMask, swap2))
+            ctrlMask = flipBit(flipBit(ctrlMask, swap2), q2);
+        
         statevec_swapQubitAmps(qureg, q1, swap1);
         statevec_swapQubitAmps(qureg, q2, swap2);
         statevec_multiControlledTwoQubitUnitaryLocal(qureg, ctrlMask, swap1, swap2, u);
