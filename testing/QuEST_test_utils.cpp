@@ -7,10 +7,13 @@
 #include "QuEST.h"
 #include "QuEST_test_utils.hpp"
 #include "catch.hpp"
-#include <mpi.h>
 #include <random>
 #include <algorithm>
 #include <bitset>
+
+#ifdef DISTRIBUTED_MODE 
+#include <mpi.h>
+#endif
 
 /* (don't generate doxygen doc) 
  *
@@ -688,8 +691,9 @@ bool areEqual(Qureg qureg1, Qureg qureg2, qreal precision) {
             
     // if one node's partition wasn't equal, all-nodes must report not-equal
     int allAmpsAgree = ampsAgree;
-    if (qureg1.numChunks > 1)
-        MPI_Allreduce(&ampsAgree, &allAmpsAgree, 1, MPI_INT, MPI_LAND, MPI_COMM_WORLD);
+#ifdef DISTRIBUTED_MODE
+    MPI_Allreduce(&ampsAgree, &allAmpsAgree, 1, MPI_INT, MPI_LAND, MPI_COMM_WORLD);
+#endif
 
     return allAmpsAgree;
 }
@@ -726,8 +730,9 @@ bool areEqual(Qureg qureg, QVector vec, qreal precision) {
             
     // if one node's partition wasn't equal, all-nodes must report not-equal
     int allAmpsAgree = ampsAgree;
-    if (qureg.numChunks > 1)
-        MPI_Allreduce(&ampsAgree, &allAmpsAgree, 1, MPI_INT, MPI_LAND, MPI_COMM_WORLD);
+#ifdef DISTRIBUTED_MODE
+    MPI_Allreduce(&ampsAgree, &allAmpsAgree, 1, MPI_INT, MPI_LAND, MPI_COMM_WORLD);
+#endif
     
     return allAmpsAgree;
 }
@@ -781,8 +786,9 @@ bool areEqual(Qureg qureg, QMatrix matr, qreal precision) {
     
     // if one node's partition wasn't equal, all-nodes must report not-equal
     int allAmpsAgree = ampsAgree;
-    if (qureg.numChunks > 1)
-        MPI_Allreduce(&ampsAgree, &allAmpsAgree, 1, MPI_INT, MPI_LAND, MPI_COMM_WORLD);
+#ifdef DISTRIBUTED_MODE
+    MPI_Allreduce(&ampsAgree, &allAmpsAgree, 1, MPI_INT, MPI_LAND, MPI_COMM_WORLD);
+#endif
         
     return allAmpsAgree;
 }
@@ -851,7 +857,9 @@ QMatrix toQMatrix(Complex alpha, Complex beta) {
 
 QMatrix toQMatrix(Qureg qureg) {
     DEMAND( qureg.isDensityMatrix );
+#ifdef DISTRIBUTED_MODE
     DEMAND( qureg.numAmpsTotal < MPI_MAX_AMPS_IN_MSG );
+#endif
     
     // ensure local qureg.stateVec is up to date
     copyStateFromGPU(qureg);
@@ -861,19 +869,19 @@ QMatrix toQMatrix(Qureg qureg) {
     qreal* fullIm;
     
     // in distributed mode, give every node the full state vector
-    if (qureg.numChunks > 1) {
-        fullRe = (qreal*) malloc(qureg.numAmpsTotal * sizeof *fullRe);
-        fullIm = (qreal*) malloc(qureg.numAmpsTotal * sizeof *fullIm);
-        MPI_Allgather(
-            qureg.stateVec.real, qureg.numAmpsPerChunk, MPI_QuEST_REAL,
-            fullRe, qureg.numAmpsPerChunk, MPI_QuEST_REAL, MPI_COMM_WORLD);
-        MPI_Allgather(
-            qureg.stateVec.imag, qureg.numAmpsPerChunk, MPI_QuEST_REAL,
-            fullIm, qureg.numAmpsPerChunk, MPI_QuEST_REAL, MPI_COMM_WORLD);
-    } else {
-        fullRe = qureg.stateVec.real;
-        fullIm = qureg.stateVec.imag;
-    }
+#ifdef DISTRIBUTED_MODE
+    fullRe = (qreal*) malloc(qureg.numAmpsTotal * sizeof *fullRe);
+    fullIm = (qreal*) malloc(qureg.numAmpsTotal * sizeof *fullIm);
+    MPI_Allgather(
+        qureg.stateVec.real, qureg.numAmpsPerChunk, MPI_QuEST_REAL,
+        fullRe, qureg.numAmpsPerChunk, MPI_QuEST_REAL, MPI_COMM_WORLD);
+    MPI_Allgather(
+        qureg.stateVec.imag, qureg.numAmpsPerChunk, MPI_QuEST_REAL,
+        fullIm, qureg.numAmpsPerChunk, MPI_QuEST_REAL, MPI_COMM_WORLD);
+#else
+    fullRe = qureg.stateVec.real;
+    fullIm = qureg.stateVec.imag;
+#endif
         
     // copy full state vector into a QVector
     long long int dim = (1 << qureg.numQubitsRepresented);
@@ -882,16 +890,18 @@ QMatrix toQMatrix(Qureg qureg) {
         matr[n%dim][n/dim] = qcomp(fullRe[n], fullIm[n]);
     
     // clean up if we malloc'd the distributed array
-    if (qureg.numChunks > 1) {
-        free(fullRe);
-        free(fullIm);
-    }
+#ifdef DISTRIBUTED_MODE
+    free(fullRe);
+    free(fullIm);
+#endif
     return matr;
 }
 
 QVector toQVector(Qureg qureg) {
     DEMAND( !qureg.isDensityMatrix );
+#ifdef DISTRIBUTED_MODE
     DEMAND( qureg.numAmpsTotal < MPI_MAX_AMPS_IN_MSG );
+#endif
     
     // ensure local qureg.stateVec is up to date
     copyStateFromGPU(qureg);
@@ -901,21 +911,20 @@ QVector toQVector(Qureg qureg) {
     qreal* fullIm;
     
     // in distributed mode, give every node the full state vector
-    if (qureg.numChunks > 1) {
-        fullRe = (qreal*) malloc(qureg.numAmpsTotal * sizeof *fullRe);
-        fullIm = (qreal*) malloc(qureg.numAmpsTotal * sizeof *fullIm);
-                
-        MPI_Allgather(
-            qureg.stateVec.real, qureg.numAmpsPerChunk, MPI_QuEST_REAL,
-            fullRe, qureg.numAmpsPerChunk, MPI_QuEST_REAL, MPI_COMM_WORLD);
-        MPI_Allgather(
-            qureg.stateVec.imag, qureg.numAmpsPerChunk, MPI_QuEST_REAL,
-            fullIm, qureg.numAmpsPerChunk, MPI_QuEST_REAL, MPI_COMM_WORLD);
-        
-    } else {
-        fullRe = qureg.stateVec.real;
-        fullIm = qureg.stateVec.imag;
-    }
+#ifdef DISTRIBUTED_MODE
+    fullRe = (qreal*) malloc(qureg.numAmpsTotal * sizeof *fullRe);
+    fullIm = (qreal*) malloc(qureg.numAmpsTotal * sizeof *fullIm);
+            
+    MPI_Allgather(
+        qureg.stateVec.real, qureg.numAmpsPerChunk, MPI_QuEST_REAL,
+        fullRe, qureg.numAmpsPerChunk, MPI_QuEST_REAL, MPI_COMM_WORLD);
+    MPI_Allgather(
+        qureg.stateVec.imag, qureg.numAmpsPerChunk, MPI_QuEST_REAL,
+        fullIm, qureg.numAmpsPerChunk, MPI_QuEST_REAL, MPI_COMM_WORLD);
+#else
+    fullRe = qureg.stateVec.real;
+    fullIm = qureg.stateVec.imag;
+#endif
     
     // copy full state vector into a QVector
     QVector vec = QVector(qureg.numAmpsTotal);
@@ -923,10 +932,10 @@ QVector toQVector(Qureg qureg) {
         vec[i] = qcomp(fullRe[i], fullIm[i]);
             
     // clean up if we malloc'd distrib array
-    if (qureg.numChunks > 1) {
-        free(fullRe);
-        free(fullIm);
-    }
+#ifdef DISTRIBUTED_MODE
+    free(fullRe);
+    free(fullIm);
+#endif
     return vec;
 }
 

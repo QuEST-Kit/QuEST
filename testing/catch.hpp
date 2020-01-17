@@ -12,6 +12,12 @@
 #define TWOBLUECUBES_SINGLE_INCLUDE_CATCH_HPP_INCLUDED
 // start catch.hpp
 
+/* code injection for the silencing of distributed testing 
+ * modified by Tyson Jones, 17th Jan 2020
+ */
+#ifdef DISTRIBUTED_MODE
+#include <mpi.h>
+#endif
 
 #define CATCH_VERSION_MAJOR 2
 #define CATCH_VERSION_MINOR 10
@@ -15919,13 +15925,16 @@ ConsoleReporter::ConsoleReporter(ReporterConfig const& config)
         
         /* code injection to silence non-root nodes when running Catch2 in
          * a distributed execution, for distributed QuEST unit-testing.
-         */    
+         * modified by Tyson Jones, 17th Jan 2020
+         */
+#ifdef DISTRIBUTED_MODE
         int rank;
         MPI_Comm_rank(MPI_COMM_WORLD, &rank);
         
         // put non-root streams in a fail state, so they silently discard output
         if (rank != 0)
-            stream.setstate(std::ios_base::failbit);    
+            stream.setstate(std::ios_base::failbit);
+#endif
     }
 ConsoleReporter::~ConsoleReporter() = default;
 
