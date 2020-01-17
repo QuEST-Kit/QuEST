@@ -269,12 +269,12 @@ void destroyQureg(Qureg qureg, QuESTEnv env);
  * return from functions.
  * 
  * One can instead use getStaticComplexMatrixN() to create a ComplexMatrixN struct 
- * in the stack (which doesn't need to be explicitly freed).
+ * in the stack (which doesn't need to be later destroyed).
  *
  * @ingroup type
  * @param[in] numQubits the number of qubits of which the returned ComplexMatrixN will correspond
  * @returns a dynamic ComplexMatrixN struct, that is one where the .real and .imag
- *  fields are arrays kept in the heap and must be freed.
+ *  fields are arrays kept in the heap and must be later destroyed.
  * @author Tyson Jones
  */
 ComplexMatrixN createComplexMatrixN(int numQubits);
@@ -2017,9 +2017,9 @@ void mixDepolarising(Qureg qureg, const int targetQubit, qreal prob);
  *      if \p qureg is not a density matrix,
  *      or if \p targetQubit is outside [0, \p qureg.numQubitsRepresented),
  *      or if \p prob is not in [0, 1]
- * @author Nicolas Vogt of HQS
- * @author Ania Brown (patched)
- * @author Tyson Jones (doc)
+ * @author Nicolas Vogt of HQS (local CPU)
+ * @author Ania Brown (GPU, patched local CPU)
+ * @author Tyson Jones (distributed, doc)
  */
 void mixDamping(Qureg qureg, const int targetQubit, qreal prob);
 
