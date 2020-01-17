@@ -81,11 +81,6 @@ void densmatr_mixDephasing(Qureg qureg, const int targetQubit, qreal dephase) {
     densmatr_oneQubitDegradeOffDiagonal(qureg, targetQubit, retain);
 }
 
-void densmatr_mixDampingDephase(Qureg qureg, const int targetQubit, qreal dephase) {
-    qreal retain=sqrt(1-dephase);
-    densmatr_oneQubitDegradeOffDiagonal(qureg, targetQubit, retain);
-}
-
 void densmatr_mixTwoQubitDephasing(Qureg qureg, const int qubit1, const int qubit2, qreal dephase) {
     qreal retain=1-dephase;
 
@@ -304,11 +299,11 @@ void densmatr_mixDepolarisingDistributed(Qureg qureg, const int targetQubit, qre
 void densmatr_mixDampingDistributed(Qureg qureg, const int targetQubit, qreal damping) {
     qreal retain=1-damping;
     qreal dephase=sqrt(1-damping);
-    // first do dephase part. 
-    // TODO -- this might be more efficient to do at the same time as the depolarise if we move to
-    // iterating over all elements in the state vector for the purpose of vectorisation
-    // TODO -- if we keep this split, move this function to densmatr_mixDepolarising()
-    densmatr_mixDampingDephase(qureg, targetQubit, dephase);
+
+    // multiply the off-diagonal (|0><1| and |1><0|) terms by sqrt(1-damping)
+    densmatr_oneQubitDegradeOffDiagonal(qureg, targetQubit, dephase);
+    
+    // below, we modify the diagonals terms which require |1><1| to |0><0| communication
 
     long long int sizeInnerBlock, sizeInnerHalfBlock;
     long long int sizeOuterColumn, sizeOuterHalfColumn;
@@ -387,7 +382,6 @@ void densmatr_mixDampingDistributed(Qureg qureg, const int targetQubit, qreal da
     }    
 }
 
-// @TODO
 void densmatr_mixTwoQubitDepolarisingLocal(Qureg qureg, int qubit1, int qubit2, qreal delta, qreal gamma) {
     const long long int numTasks = qureg.numAmpsPerChunk;
     long long int innerMaskQubit1 = 1LL << qubit1;
