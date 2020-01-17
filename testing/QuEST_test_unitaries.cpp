@@ -156,13 +156,13 @@ TEST_CASE( "controlledMultiQubitUnitary", "[unitaries]" ) {
     
     PREPARE_TEST( quregVec, quregMatr, refVec, refMatr );
     
-    SECTION( "correctness" ) {
+    // figure out max-num targs (inclusive) allowed by hardware backend
+    int maxNumTargs = calcLog2(quregVec.numAmpsPerChunk);
+    if (maxNumTargs >= NUM_QUBITS)
+        maxNumTargs = NUM_QUBITS - 1; // make space for control qubit
         
-        // figure out max-num targs (inclusive) allowed by hardware backend
-        int maxNumTargs = calcLog2(quregVec.numAmpsPerChunk);
-        if (maxNumTargs == NUM_QUBITS)
-            maxNumTargs -= 1; // make space for control qubit
-            
+    SECTION( "correctness" ) {
+    
         // generate all possible qubit arrangements
         int ctrl = GENERATE( range(0,NUM_QUBITS) );
         int numTargs = GENERATE_COPY( range(1,maxNumTargs+1) );
@@ -239,9 +239,12 @@ TEST_CASE( "controlledMultiQubitUnitary", "[unitaries]" ) {
         SECTION( "unitarity" ) {
             
             int ctrl = 0;
-            int numTargs = 3;
-            int targs[] = {1,2,3};
+            int numTargs = GENERATE_COPY( range(1,maxNumTargs+1) );
             ComplexMatrixN matr = createComplexMatrixN(numTargs); // initially zero, hence not-unitary
+            
+            int targs[numTargs];
+            for (int i=0; i<numTargs; i++)
+                targs[i] = i+1;
             
             REQUIRE_THROWS_WITH( controlledMultiQubitUnitary(quregVec, ctrl, targs, numTargs, matr), Contains("unitary") );
             destroyComplexMatrixN(matr);
@@ -850,12 +853,12 @@ TEST_CASE( "multiControlledMultiQubitUnitary", "[unitaries]" ) {
     
     PREPARE_TEST( quregVec, quregMatr, refVec, refMatr );
     
-    SECTION( "correctness" ) {
+    // figure out max-num targs (inclusive) allowed by hardware backend
+    int maxNumTargs = calcLog2(quregVec.numAmpsPerChunk);
+    if (maxNumTargs >= NUM_QUBITS)
+        maxNumTargs = NUM_QUBITS - 1; // leave room for min-number of control qubits
         
-        // figure out max-num targs (inclusive) allowed by hardware backend
-        int maxNumTargs = calcLog2(quregVec.numAmpsPerChunk);
-        if (maxNumTargs == NUM_QUBITS)
-            maxNumTargs--; // leave room for min-number of control qubits
+    SECTION( "correctness" ) {
         
         // try all possible numbers of targets and controls
         int numTargs = GENERATE_COPY( range(1,maxNumTargs+1) );
@@ -962,10 +965,13 @@ TEST_CASE( "multiControlledMultiQubitUnitary", "[unitaries]" ) {
         SECTION( "unitarity" ) {
             
             int ctrls[1] = {0};
-            int targs[3] = {1,2,3};
-            ComplexMatrixN matr = createComplexMatrixN(3); // initially zero, hence not-unitary
+            int numTargs = GENERATE_COPY( range(1,maxNumTargs+1) );
+            int targs[numTargs];
+            for (int i=0; i<numTargs; i++)
+                targs[i] = i+1;
             
-            REQUIRE_THROWS_WITH( multiControlledMultiQubitUnitary(quregVec, ctrls, 1, targs, 3, matr), Contains("unitary") );
+            ComplexMatrixN matr = createComplexMatrixN(numTargs); // initially zero, hence not-unitary
+            REQUIRE_THROWS_WITH( multiControlledMultiQubitUnitary(quregVec, ctrls, 1, targs, numTargs, matr), Contains("unitary") );
             destroyComplexMatrixN(matr);
         }
         SECTION( "unitary creation" ) {
@@ -1305,10 +1311,10 @@ TEST_CASE( "multiQubitUnitary", "[unitaries]" ) {
     
     PREPARE_TEST( quregVec, quregMatr, refVec, refMatr );
     
+    // figure out max-num (inclusive) targs allowed by hardware backend
+    int maxNumTargs = calcLog2(quregVec.numAmpsPerChunk);
+    
     SECTION( "correctness" ) {
-        
-        // figure out max-num (inclusive) targs allowed by hardware backend
-        int maxNumTargs = calcLog2(quregVec.numAmpsPerChunk);
         
         // generate all possible qubit arrangements
         int numTargs = GENERATE_COPY( range(1,maxNumTargs+1) ); // inclusive upper bound
@@ -1368,8 +1374,11 @@ TEST_CASE( "multiQubitUnitary", "[unitaries]" ) {
         }
         SECTION( "unitarity" ) {
             
-            int numTargs = 3;
-            int targs[] = {1,2,3};
+            int numTargs = GENERATE_COPY( range(1,maxNumTargs) );
+            int targs[numTargs];
+            for (int i=0; i<numTargs; i++)
+                targs[i] = i+1;
+            
             ComplexMatrixN matr = createComplexMatrixN(numTargs); // initially zero, hence not-unitary
             
             REQUIRE_THROWS_WITH( multiQubitUnitary(quregVec, targs, numTargs, matr), Contains("unitary") );
