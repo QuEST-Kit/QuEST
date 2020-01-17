@@ -1409,13 +1409,14 @@ void statevec_multiControlledTwoQubitUnitary(Qureg qureg, long long int ctrlMask
         statevec_swapQubitAmps(qureg, q1, qSwap);
         
     } else {
+        // we know with certainty that both q1 and q2 >= 2
         int swap1 = 0;
         int swap2 = 1;
         
-        // ensure ctrl == swap1 or swap2, ensure ctrlMask updates under the swap
+        // if ctrl == swap1 or swap2, ensure ctrlMask updates under the swap
         if (maskContainsBit(ctrlMask, swap1))
             ctrlMask = flipBit(flipBit(ctrlMask, swap1), q1);
-        else if (maskContainsBit(ctrlMask, swap2))
+        if (maskContainsBit(ctrlMask, swap2))
             ctrlMask = flipBit(flipBit(ctrlMask, swap2), q2);
         
         statevec_swapQubitAmps(qureg, q1, swap1);
