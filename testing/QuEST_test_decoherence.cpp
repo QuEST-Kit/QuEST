@@ -230,15 +230,16 @@ TEST_CASE( "mixMultiQubitKrausMap", "[decoherence]" ) {
     
     PREPARE_TEST(qureg, ref);
     
+    // figure out max-num (inclusive) targs allowed by hardware backend
+    // (each node must contain as 2^(2*numTargs) amps)
+    int maxNumTargs = calcLog2(qureg.numAmpsPerChunk) / 2;
+    
     SECTION( "correctness" ) {
         
         /* note that this function incurs a stack overhead when numTargs < 4,
          * and a heap overhead when numTargs >= 4
          */
-        
-        // figure out max-num (inclusive) targs allowed by hardware backend
-        // (each node must contain as 2^(2*numTargs) amps)
-        int maxNumTargs = calcLog2(qureg.numAmpsPerChunk) / 2;
+         
         int numTargs = GENERATE_COPY( range(1,maxNumTargs+1) ); // inclusive upper bound
         
         // note this is very expensive to try every arrangement (2 min runtime for numTargs=5 alone)
@@ -307,7 +308,7 @@ TEST_CASE( "mixMultiQubitKrausMap", "[decoherence]" ) {
         }
         SECTION( "number of operators" ) {
             
-            int numTargs = GENERATE( range(1,NUM_QUBITS+1) );
+            int numTargs = GENERATE_COPY( range(1,maxNumTargs+1) );
             int maxNumOps = (2*numTargs)*(2*numTargs);
             int numOps = GENERATE_REF( -1, 0, maxNumOps + 1 );
                         
@@ -365,7 +366,7 @@ TEST_CASE( "mixMultiQubitKrausMap", "[decoherence]" ) {
         }
         SECTION( "trace preserving" ) {
             
-            int numTargs = GENERATE( range(1,NUM_QUBITS+1) );
+            int numTargs = GENERATE_COPY( range(1,maxNumTargs+1) );
             int maxNumOps = (2*numTargs) * (2*numTargs);
             int numOps = GENERATE_COPY( 1, 2, maxNumOps );
             
