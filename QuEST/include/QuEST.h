@@ -2,9 +2,8 @@
 
 /** @file
  * The QuEST API.
- * This file contains the comments used by doxygen for generating API doc
+ * This file contains the comments used by doxygen for generating API doc.
  *
- * The API is split into categories
  * @defgroup unitary Unitaries
  *      Unitary gates
  * @defgroup normgate Gates
