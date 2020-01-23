@@ -17,7 +17,11 @@
 extern "C" {
 # endif
 
-void validateCreateNumQubits(int numQubits, const char* caller);
+void validateNumRanks(int numRanks, const char* caller);
+
+void validateNumQubitsInQureg(int numQubits, int numRanks, const char* caller);
+
+void validateNumQubitsInMatrix(int numQubits, const char* caller);
 
 void validateAmpIndex(Qureg qureg, long long int ampInd, const char* caller);
 

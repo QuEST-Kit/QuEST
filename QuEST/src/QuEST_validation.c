@@ -21,9 +21,11 @@ extern "C" {
  
 # include <stdio.h>
 # include <stdlib.h>
+# include <stdint.h>
 
 typedef enum {
     E_SUCCESS=0,
+    E_INVALID_NUM_RANKS,
     E_INVALID_NUM_CREATE_QUBITS,
     E_INVALID_QUBIT_INDEX,
     E_INVALID_TARGET_QUBIT,
@@ -70,10 +72,13 @@ typedef enum {
     E_INVALID_NUM_TWO_QUBIT_KRAUS_OPS,
     E_INVALID_NUM_N_QUBIT_KRAUS_OPS,
     E_INVALID_KRAUS_OPS,
-    E_MISMATCHING_NUM_TARGS_KRAUS_SIZE
+    E_MISMATCHING_NUM_TARGS_KRAUS_SIZE,
+    E_DISTRIB_QUREG_TOO_SMALL,
+    E_NUM_AMPS_EXCEED_TYPE
 } ErrorCode;
 
 static const char* errorMessages[] = {
+    [E_INVALID_NUM_RANKS] = "Invalid number of nodes. Distributed simulation can only make use of a power-of-2 number of node.",
     [E_INVALID_NUM_CREATE_QUBITS] = "Invalid number of qubits. Must create >0.",
     [E_INVALID_QUBIT_INDEX] = "Invalid qubit index. Must be >=0 and <numQubits.",
     [E_INVALID_TARGET_QUBIT] = "Invalid target qubit. Must be >=0 and <numQubits.",
@@ -120,7 +125,9 @@ static const char* errorMessages[] = {
     [E_INVALID_NUM_TWO_QUBIT_KRAUS_OPS] = "At least 1 and at most 16 two-qubit Kraus operators may be specified.",
     [E_INVALID_NUM_N_QUBIT_KRAUS_OPS] = "At least 1 and at most 4*N^2 of N-qubit Kraus operators may be specified.",
     [E_INVALID_KRAUS_OPS] = "The specified Kraus map is not a completely positive, trace preserving map.",
-    [E_MISMATCHING_NUM_TARGS_KRAUS_SIZE] = "Every Kraus operator must be of the same number of qubits as the number of targets."
+    [E_MISMATCHING_NUM_TARGS_KRAUS_SIZE] = "Every Kraus operator must be of the same number of qubits as the number of targets.",
+    [E_DISTRIB_QUREG_TOO_SMALL] = "Too few qubits. The created qureg must have at least one amplitude per node used in distributed simulation.",
+    [E_NUM_AMPS_EXCEED_TYPE] = "Too many qubits (max of log2(SIZE_MAX)). Cannot store the number of amplitudes per-node in the size_t type."
 };
 
 void exitWithError(const char* msg, const char* func) {
@@ -202,7 +209,6 @@ int isMatrixNUnitary(ComplexMatrixN u) {
     return retVal;
 }
 
-
 #define macro_isCompletelyPositiveMap(ops, numOps, opDim) { \
     for (int r=0; r<(opDim); r++) { \
         for (int c=0; c<(opDim); c++) { \
@@ -244,8 +250,42 @@ int areUniqueQubits(int* qubits, int numQubits) {
     return 1;
 }
 
-void validateCreateNumQubits(int numQubits, const char* caller) {
+/** returns log2 of numbers which must be gauranteed to be 2^n */
+unsigned int calcLog2(long unsigned int num) {
+    unsigned int l = 0;
+    while (num >>= 1)
+        l++;
+    return l;
+}
+
+void validateNumRanks(int numRanks, const char* caller) {
+
+    /* silly but robust way to determine if numRanks is a power of 2, 
+     * in lieu of bit-twiddling (e.g. AND with all-ones) which may be 
+     * system / precsision dependent 
+     */
+    int isValid = 0;
+    for (int exp2 = 1; exp2 <= numRanks; exp2 *= 2)
+        if (exp2 == numRanks)
+            isValid = 1;
+    
+    QuESTAssert(isValid, E_INVALID_NUM_RANKS, caller);
+}
+
+void validateNumQubitsInQureg(int numQubits, int numRanks, const char* caller) {
     QuESTAssert(numQubits>0, E_INVALID_NUM_CREATE_QUBITS, caller);
+    
+    // mustn't be more amplitudes than can fit in the type
+    unsigned int maxQubits = calcLog2(SIZE_MAX);
+    QuESTAssert( numQubits <= maxQubits, E_NUM_AMPS_EXCEED_TYPE, caller);
+    
+    // must be at least one amplitude per node
+    long unsigned int numAmps = (1<<numQubits);
+    QuESTAssert(numAmps >= numRanks, E_DISTRIB_QUREG_TOO_SMALL, caller);
+}
+ 
+void validateNumQubitsInMatrix(int numQubits, const char* caller) {
+    QuESTAssert(numQubits>0, E_INVALID_NUM_QUBITS, caller);
 }
 
 void validateStateIndex(Qureg qureg, long long int stateInd, const char* caller) {
