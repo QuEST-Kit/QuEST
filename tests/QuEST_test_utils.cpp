@@ -1043,7 +1043,7 @@ public:
         prepareSublist();
     }
     
-    int* const& get() const {
+    int* const& get() const override {
         return sublist;
     }
     
@@ -1117,7 +1117,7 @@ public:
         ind++;
     }
 
-    T* const& get() const {
+    T* const& get() const override {
         return digits;
     }
     
