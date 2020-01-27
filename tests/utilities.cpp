@@ -403,6 +403,10 @@ bool areEqual(QMatrix a, QMatrix b) {
     return true;
 }
 
+qcomp expI(qreal phase) {
+    return cos(phase) + 1i*sin(phase);
+}
+
 qreal getRandomReal(qreal min, qreal max) {
     DEMAND( min <= max );
     qreal r = min + (max - min) * (rand() / (qreal) RAND_MAX);

@@ -47,8 +47,8 @@ TEST_CASE( "compactUnitary", "[unitaries]" ) {
     
     PREPARE_TEST( quregVec, quregMatr, refVec, refMatr );
     
-    qcomp a = getRandomReal(-1,1) * exp(1i * getRandomReal(0,2*M_PI));
-    qcomp b = sqrt(1-abs(a)*abs(a)) * exp(1i * getRandomReal(0,2*M_PI));
+    qcomp a = getRandomReal(-1,1) * expI(getRandomReal(0,2*M_PI));
+    qcomp b = sqrt(1-abs(a)*abs(a)) * expI(getRandomReal(0,2*M_PI));
     Complex alpha = toComplex( a );
     Complex beta = toComplex( b );
     QMatrix op = toQMatrix(alpha, beta);
@@ -98,8 +98,8 @@ TEST_CASE( "controlledCompactUnitary", "[unitaries]" ) {
     
     PREPARE_TEST( quregVec, quregMatr, refVec, refMatr );
     
-    qcomp a = getRandomReal(-1,1) * exp(1i * getRandomReal(0,2*M_PI));
-    qcomp b = sqrt(1-abs(a)*abs(a)) * exp(1i * getRandomReal(0,2*M_PI));
+    qcomp a = getRandomReal(-1,1) * expI(getRandomReal(0,2*M_PI));
+    qcomp b = sqrt(1-abs(a)*abs(a)) * expI(getRandomReal(0,2*M_PI));
     Complex alpha = toComplex( a );
     Complex beta = toComplex( b );
     QMatrix op = toQMatrix(alpha, beta);
@@ -434,7 +434,7 @@ TEST_CASE( "controlledPhaseShift", "[unitaries]" ) {
     
     PREPARE_TEST( quregVec, quregMatr, refVec, refMatr );
     qreal param = getRandomReal(-2*M_PI, 2*M_PI);
-    QMatrix op{{1,0},{0,exp(1i * param)}};
+    QMatrix op{{1,0},{0,expI(param)}};
     
     SECTION( "correctness" ) {
     
@@ -637,7 +637,7 @@ TEST_CASE( "controlledRotateZ", "[unitaries]" ) {
     
     PREPARE_TEST( quregVec, quregMatr, refVec, refMatr );
     qreal param = getRandomReal(-4*M_PI, 4*M_PI);
-    QMatrix op{{exp(-1i*param/2.),0},{0,exp(1i*param/2.)}};
+    QMatrix op{{expI(-param/2.),0},{0,expI(param/2.)}};
     
     SECTION( "correctness" ) {
     
@@ -1081,7 +1081,7 @@ TEST_CASE( "multiControlledPhaseShift", "[unitaries]" ) {
 
     PREPARE_TEST( quregVec, quregMatr, refVec, refMatr );
     qreal param = getRandomReal(-2*M_PI, 2*M_PI);
-    QMatrix op{{1,0},{0,exp(1i*param)}};
+    QMatrix op{{1,0},{0,expI(param)}};
  
     SECTION( "correctness" ) {
     
@@ -1834,7 +1834,7 @@ TEST_CASE( "phaseShift", "[unitaries]" ) {
 
     PREPARE_TEST( quregVec, quregMatr, refVec, refMatr );
     qreal param = getRandomReal(-2*M_PI, 2*M_PI);
-    QMatrix op{{1,0},{0,exp(1i*param)}};
+    QMatrix op{{1,0},{0,expI(param)}};
 
     SECTION( "correctness" ) {
     
@@ -2010,7 +2010,7 @@ TEST_CASE( "rotateZ", "[unitaries]" ) {
 
     PREPARE_TEST( quregVec, quregMatr, refVec, refMatr );
     qreal param = getRandomReal(-4*M_PI, 4*M_PI);
-    QMatrix op{{exp(-1i*param/2.),0},{0,exp(1i*param/2.)}};
+    QMatrix op{{expI(-param/2.),0},{0,expI(param/2.)}};
 
     SECTION( "correctness" ) {
     
@@ -2186,7 +2186,7 @@ TEST_CASE( "swapGate", "[unitaries]" ) {
 TEST_CASE( "tGate", "[unitaries]" ) {
 
     PREPARE_TEST( quregVec, quregMatr, refVec, refMatr );
-    QMatrix op{{1,0},{0,exp(1i*M_PI/4.)}};
+    QMatrix op{{1,0},{0,expI(M_PI/4.)}};
 
     SECTION( "correctness" ) {
     

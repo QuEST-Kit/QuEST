@@ -773,6 +773,12 @@ bool areEqual(QVector a, QVector b);
  */
 bool areEqual(QMatrix a, QMatrix b);
 
+/** Returns the unit-norm complex number exp(i*\p phase). This function uses the 
+ * Euler formula, and avoids problems with calling exp(__complex__) in a platform 
+ * agnostic way 
+ */
+qcomp expI(qreal phase);
+
 /** Returns log2 of numbers which must be gauranteed to be 2^n 
  *
  * @ingroup testutilities 
