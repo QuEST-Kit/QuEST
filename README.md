@@ -106,11 +106,15 @@ demo.exe
 
 
 #### Tests
-Additionally, you can run some tests to see if QuEST runs correctly in your environment, using
+Additionally, you can run QuEST's rigorous unit tests in your own environment, 
+which should take no longer than ten minutes.
 ```bash
+mkdir build
+cd build
+cmake .. -DTESTING=ON
+make 
 make test
 ```
-though this requires Python 3.4+. 
 
 ---------------------------------
 
