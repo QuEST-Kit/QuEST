@@ -1,5 +1,5 @@
 /** @file
- * Unoptimised, analytic implementations of matrix operations used by QuEST_unit_tests
+ * Unoptimised, analytic implementations of matrix operations used by QuEST's unit tests
  *
  * @defgroup unittest Unit tests
  *      Unit tests of the QuEST API, using Catch2 in C++14.

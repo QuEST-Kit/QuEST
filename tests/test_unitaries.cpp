@@ -15,7 +15,7 @@
  
 #include "catch.hpp"
 #include "QuEST.h"
-#include "QuEST_test_utils.hpp"
+#include "utilities.hpp"
 
 /** Prepares the needed data structures for unit testing unitaries. 
  * This creates a statevector and density matrix of the size NUM_QUBITS,

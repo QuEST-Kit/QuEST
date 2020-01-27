@@ -1,7 +1,7 @@
 
 #include "catch.hpp"
 #include "QuEST.h"
-#include "QuEST_test_utils.hpp"
+#include "utilities.hpp"
 #include <random>
 
 /** Prepares a density matrix in the debug state, and the reference QMatrix 

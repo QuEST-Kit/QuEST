@@ -5,15 +5,15 @@ include_directories(catch)
 
 # compile Catch2 unit tests in C++14
 add_executable(tests
-    catch_main.cpp
-    QuEST_test_utils.cpp
-    QuEST_test_calculations.cpp
-    QuEST_test_data_structures.cpp
-    QuEST_test_decoherence.cpp
-    QuEST_test_gates.cpp
-    QuEST_test_operators.cpp
-    QuEST_test_state_initialisations.cpp
-    QuEST_test_unitaries.cpp
+    main.cpp
+    utilities.cpp
+    test_calculations.cpp
+    test_data_structures.cpp
+    test_decoherence.cpp
+    test_gates.cpp
+    test_operators.cpp
+    test_state_initialisations.cpp
+    test_unitaries.cpp
 )
 set_property(TARGET tests PROPERTY CXX_STANDARD 14)
 if (WIN32)

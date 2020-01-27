@@ -5,7 +5,7 @@
  */
 
 #include "QuEST.h"
-#include "QuEST_test_utils.hpp"
+#include "utilities.hpp"
 #include "catch.hpp"
 #include <random>
 #include <algorithm>

@@ -1,7 +1,7 @@
 
 #include "catch.hpp"
 #include "QuEST.h"
-#include "QuEST_test_utils.hpp"
+#include "utilities.hpp"
 
 /* allows concise use of Contains in catch's REQUIRE_THROWS_WITH */
 using Catch::Matchers::Contains;
