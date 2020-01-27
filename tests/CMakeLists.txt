@@ -22,6 +22,13 @@ else ()
     target_link_libraries(tests QuEST m)
 endif ()
 
+# distributed unit tests must supply an MPI-clue to (modified) catch
+if (${DISTRIBUTED})
+    add_definitions(-DDISTRIBUTED_MODE)
+    find_package(MPI REQUIRED)
+    include_directories(${MPI_C_INCLUDE_PATH})
+endif ()
+
 # locate Catch2 scripts for CMake
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/catch)
 include(CTest)
