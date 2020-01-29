@@ -1,3 +1,5 @@
+<img align="left" src="doxyconfig/logo.png" alt="The QuEST logo">
+
 # [QuEST](https://quest.qtechtheory.org)
 
 ## Introduction
