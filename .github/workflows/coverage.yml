@@ -39,7 +39,6 @@ jobs:
       - name: upload coverage results
         run: |
           lcov --directory . --capture --output-file coverage.info
-#          lcov --remove coverage.info '/usr/*' '*/TESTS/*' --output-file coverage.info
           lcov --list coverage.info
           bash <(curl https://codecov.io/bash) -f coverage.info -t 4f2a3b14-8095-447e-a58d-863c2538b35b
         working-directory: build_dir
