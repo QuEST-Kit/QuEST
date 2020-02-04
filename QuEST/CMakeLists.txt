@@ -126,12 +126,25 @@ endif()
 # ----- OPENMP ----------------------------------------------------------------
 
 if (${MULTITHREADED} AND NOT ${GPUACCELERATED})
-    find_package(OpenMP)
-    if (OPENMP_FOUND)
-        set (CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${OpenMP_C_FLAGS}")
-        set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
-    endif()
-endif()
+  find_package(OpenMP)
+
+  # If found, we must also check the version
+  if (OPENMP_FOUND)
+    # Version number is not cached, and we need to test for old versions
+    set(OpenMP_C_VERSION ${OpenMP_C_VERSION} CACHE STRING "OpenMP C version")
+
+    # MSVC, for instance, only implements OpenMP 2.0 (as of 2019)
+    if (OpenMP_C_VERSION VERSION_LESS "4.0")  # todo find the real minimum required
+      set(MULTITHREADED 0)
+      message(WARNING "Found OpenMP ${OpenMP_C_VERSION} but this is too \
+             old. Turning OpenMP support OFF.")
+    else ()
+      set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${OpenMP_C_FLAGS}")
+      set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
+    endif ()
+  endif ()
+
+endif ()
 
 # ----- CUDA FLAGS ------------------------------------------------------------
 
