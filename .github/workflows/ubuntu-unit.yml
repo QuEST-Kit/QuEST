@@ -16,7 +16,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        float-precision: [1, 2, 4]
+        float-precision: [2]
 
     steps:
       - uses: actions/checkout@v1
