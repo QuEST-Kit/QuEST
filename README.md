@@ -1,3 +1,6 @@
+[![Ubuntu unit](https://github.com/QuEST-Kit/QuEST/workflows/Ubuntu%20unit/badge.svg?branch=develop)](https://github.com/QuEST-Kit/QuEST/actions)
+[![macOS unit](https://github.com/QuEST-Kit/QuEST/workflows/macOS%20unit/badge.svg)](https://github.com/QuEST-Kit/QuEST/actions)
+
 <img align="left" src="doxyconfig/logo.png" alt="The QuEST logo">
 
 # [QuEST](https://quest.qtechtheory.org)
