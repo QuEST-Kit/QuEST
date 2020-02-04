@@ -23,30 +23,30 @@
 * and defined in here since public inline methods in C must go in the header
 */
 
-inline int extractBit (const int locationOfBitFromRight, const long long int theEncodedNumber) {
+static inline int extractBit (const int locationOfBitFromRight, const long long int theEncodedNumber) {
     return (theEncodedNumber & ( 1LL << locationOfBitFromRight )) >> locationOfBitFromRight;
 }
 
-inline long long int flipBit(long long int number, int bitInd) {
+static inline long long int flipBit(long long int number, int bitInd) {
     return (number ^ (1LL << bitInd));
 }
 
-inline int maskContainsBit(long long int mask, int bitInd) {
+static inline int maskContainsBit(long long int mask, int bitInd) {
     return mask & (1LL << bitInd);
 }
 
-inline int isOddParity(long long int number, int qb1, int qb2) {
+static inline int isOddParity(long long int number, int qb1, int qb2) {
     return extractBit(qb1, number) != extractBit(qb2, number);
 }
 
-inline long long int insertZeroBit(long long int number, int index) {
+static inline long long int insertZeroBit(long long int number, int index) {
     long long int left, right;
     left = (number >> index) << index;
     right = number - left;
     return (left << 1) ^ right;
 }
 
-inline long long int insertTwoZeroBits(long long int number, int bit1, int bit2) {
+static inline long long int insertTwoZeroBits(long long int number, int bit1, int bit2) {
     int small = (bit1 < bit2)? bit1 : bit2;
     int big = (bit1 < bit2)? bit2 : bit1;
     return insertZeroBit(insertZeroBit(number, small), big);

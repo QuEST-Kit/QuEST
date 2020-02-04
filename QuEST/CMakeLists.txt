@@ -326,4 +326,14 @@ target_link_libraries(QuEST ${MPI_C_LIBRARIES})
 target_link_libraries(QuEST ${CUDA_LIBRARIES})
 
 
-
+# ----- Coverage testing with GCC or Clang ------------------------------------
+option(QUEST_ENABLE_COVERAGE "Enable coverage reporting for GCC or Clang" FALSE)
+if (QUEST_ENABLE_COVERAGE)
+  if (${CMAKE_CXX_COMPILER_ID} STREQUAL "GNU" OR ${CMAKE_CXX_COMPILER_ID} STREQUAL "Clang")
+    message(STATUS "Configuring with coverage")
+    target_compile_options(QuEST PUBLIC --coverage -O0)
+    target_link_libraries(QuEST PUBLIC --coverage)
+  else()
+    message(FATAL_ERROR "GCC or Clang required with QUEST_ENABLE_COVERAGE: found ${CMAKE_CXX_COMPILER_ID}")
+  endif()
+endif()
