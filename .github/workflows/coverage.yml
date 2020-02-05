@@ -33,7 +33,7 @@ jobs:
         working-directory: build_dir
 
       - name: cmake test
-        run: ctest -j2 --output-on-failure --test-timeout 5000
+        run: ctest -j2 --output-on-failure --timeout 5000
         working-directory: build_dir
 
       - name: upload coverage results
