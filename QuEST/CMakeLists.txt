@@ -337,3 +337,19 @@ if (QUEST_ENABLE_COVERAGE)
     message(FATAL_ERROR "GCC or Clang required with QUEST_ENABLE_COVERAGE: found ${CMAKE_CXX_COMPILER_ID}")
   endif()
 endif()
+
+# ----- Memory testing with LLVM Clang ----------------------------------------
+option(QUEST_MEMCHECK "Use LLVM AddressSanitizer to detecting memory errors" OFF)
+if (QUEST_MEMCHECK)
+  if (CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+    message(STATUS "Configuring with LLVM AddressSanitizer")
+    set(QUEST_MEMCHECK_FLAGS -fno-optimize-sibling-calls
+        -fsanitize=address
+        -fsanitize-address-use-after-scope
+        )
+    target_compile_options(QuEST PUBLIC -O1 -g -fno-omit-frame-pointer ${QUEST_MEMCHECK_FLAGS})
+    target_link_libraries(QuEST PUBLIC -g ${QUEST_MEMCHECK_FLAGS})
+  else()
+    message(FATAL_ERROR "clang compiler required with QUEST_MEMCHECK: found ${CMAKE_CXX_COMPILER_ID}")
+  endif()
+endif()
