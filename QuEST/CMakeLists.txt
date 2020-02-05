@@ -134,7 +134,7 @@ if (${MULTITHREADED} AND NOT ${GPUACCELERATED})
     set(OpenMP_C_VERSION ${OpenMP_C_VERSION} CACHE STRING "OpenMP C version")
 
     # MSVC, for instance, only implements OpenMP 2.0 (as of 2019)
-    if (OpenMP_C_VERSION VERSION_LESS "4.0")  # todo find the real minimum required
+    if (OpenMP_C_VERSION VERSION_LESS "3.1")  # todo find the real minimum required
       set(MULTITHREADED 0)
       message(WARNING "Found OpenMP ${OpenMP_C_VERSION} but this is too \
              old. Turning OpenMP support OFF.")
