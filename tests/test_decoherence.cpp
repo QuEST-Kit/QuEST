@@ -329,8 +329,12 @@ TEST_CASE( "mixMultiQubitKrausMap", "[decoherence]" ) {
             int numTargs = NUM_QUBITS;
             int numOps = (2*numTargs)*(2*numTargs);
             
-            // make one of the max-ops explicitly NULL
+            // no need to initialise ops, but set their attribs correct to avoid triggering other validation
             ComplexMatrixN ops[numOps];
+            for (int i=0; i<numOps; i++)
+                ops[i].numQubits = numTargs;
+            
+            // make one of the max-ops explicitly NULL
             ops[GENERATE_COPY( range(0,numTargs) )].real = NULL;
              
             // make valid targets to avoid triggering target validation
