@@ -1,4 +1,16 @@
+<img align="left" src="doxyconfig/logo.png" alt="The QuEST logo">
+
 # [QuEST](https://quest.qtechtheory.org)
+
+[![Ubuntu unit](https://github.com/QuEST-Kit/QuEST/workflows/Ubuntu%20unit/badge.svg?branch=develop)](https://github.com/QuEST-Kit/QuEST/actions)
+[![macOS unit](https://github.com/QuEST-Kit/QuEST/workflows/macOS%20unit/badge.svg)](https://github.com/QuEST-Kit/QuEST/actions)
+[![LLVM](https://github.com/QuEST-Kit/QuEST/workflows/LLVM%20asan/badge.svg)](https://github.com/QuEST-Kit/QuEST/actions)
+
+<!--- 
+temporarily hiding incorrect coverage statistics 
+(currently only considers serial CPU; needs also GPU and distributed test contributions)
+[![codecov](https://codecov.io/gh/QuEST-Kit/QuEST/branch/develop/graph/badge.svg)](https://codecov.io/gh/QuEST-Kit/QuEST)
+--->
 
 ## Introduction
 
@@ -57,7 +69,7 @@ Sci Rep 9, 10736 (2019) doi:10.1038/s41598-019-47174-9
 
 Full documentation is available at [quest.qtechtheory.org/docs](https://quest.qtechtheory.org/docs/), and the API is available [here](https://quest-kit.github.io/QuEST/modules.html) (all functions listed [here](https://quest-kit.github.io/QuEST/QuEST_8h.html)). See also the [tutorial](/examples/README.md).
 
-> **For developers**: To regenerate the API doc after making changes to the code, run `doxygen doxyconf` in the root directory. This will generate documentation in `Doxygen_doc/html`, the contents of which should be copied into [`docs/`](/docs/)) 
+> **For developers**: To regenerate the API doc after making changes to the code, run `doxygen doxyconfig/config` in the root directory. This will generate documentation in `Doxygen_doc/html`, the contents of which should be copied into [`docs/`](/docs/)) 
 
 ---------------------------------
 
@@ -106,11 +118,15 @@ demo.exe
 
 
 #### Tests
-Additionally, you can run some tests to see if QuEST runs correctly in your environment, using
+Additionally, you can run QuEST's rigorous unit tests in your own environment, 
+which should take no longer than ten minutes.
 ```bash
+mkdir build
+cd build
+cmake .. -DTESTING=ON
+make 
 make test
 ```
-though this requires Python 3.4+. 
 
 ---------------------------------
 

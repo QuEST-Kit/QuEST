@@ -12,11 +12,12 @@
 # include "QuEST.h"
 # include "QuEST_internal.h"
 # include "QuEST_precision.h"
+# include "QuEST_validation.h"
 # include "mt19937ar.h"
 
 # include "QuEST_cpu_internal.h"
 
-#define _BSD_SOURCE
+# define _BSD_SOURCE
 # include <unistd.h>
 # include <mpi.h>
 # include <stdlib.h>
@@ -150,6 +151,8 @@ QuESTEnv createQuESTEnv(void) {
         env.rank=rank;
         env.numRanks=numRanks;
 	}
+    
+    validateNumRanks(env.numRanks, __func__);
     
 	seedQuESTDefault();
     

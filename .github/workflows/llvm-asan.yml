@@ -1,0 +1,40 @@
+name: LLVM asan
+
+on:
+  push:
+    branches:
+      - master
+      - develop
+  pull_request:
+    branches:
+      - '**'
+
+jobs:
+
+  build-and-test:
+    name: Unit tests with LLVM address sanitizer on Ubuntu 18.04
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v1
+
+      - name: install dependencies
+        run: sudo apt install clang-8 llvm-8-tools
+
+      - name: make build directory
+        run: mkdir build_dir
+
+      - name: cmake configure
+        run: cmake .. -DTESTING:BOOL=ON -DPRECISION:STRING=2 -DQUEST_MEMCHECK:BOOL=TRUE -DCMAKE_BUILD_TYPE:STRING=Debug
+        working-directory: build_dir
+        env:
+          CC: clang-8
+          CXX: clang++-8
+
+      - name: cmake build
+        run: cmake --build . --parallel 2 --target tests
+        working-directory: build_dir
+
+      - name: cmake test
+        run: ctest -j2 --output-on-failure --timeout 5000
+        working-directory: build_dir
