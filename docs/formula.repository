@@ -164,3 +164,5 @@
 \_form#163:$ |\psi\rangle $
 \_form#164:$\alpha \rho$
 \_form#165:$ (1.5 X I I - 3.6 X Y Z) $
+\_form#166:\[ \text{state} \to \text{op} \, \text{state} \, \text{op}^\dagger \]
+\_form#167:\[ \text{state} \to \text{op} \, \text{state} \]
