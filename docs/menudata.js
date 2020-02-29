@@ -21,6 +21,5 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 for the JavaScript code in this file
 */
 var menudata={children:[
-{text:"Main",url:"index.html"},
 {text:"API",url:"modules.html"},
 {text:"Files",url:"files.html"}]}
