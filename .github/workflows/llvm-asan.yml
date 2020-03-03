@@ -18,9 +18,6 @@ jobs:
     steps:
       - uses: actions/checkout@v1
 
-      - name: install dependencies
-        run: sudo apt install clang-8 llvm-8-tools
-
       - name: make build directory
         run: mkdir build_dir
 
@@ -28,8 +25,8 @@ jobs:
         run: cmake .. -DTESTING:BOOL=ON -DPRECISION:STRING=2 -DQUEST_MEMCHECK:BOOL=TRUE -DCMAKE_BUILD_TYPE:STRING=Debug
         working-directory: build_dir
         env:
-          CC: clang-8
-          CXX: clang++-8
+          CC: clang-9
+          CXX: clang++-9
 
       - name: cmake build
         run: cmake --build . --parallel 2 --target tests
