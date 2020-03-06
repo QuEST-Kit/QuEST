@@ -167,7 +167,7 @@ TEST_CASE( "createDensityQureg", "[data_structures]" ) {
             /* n-qubit density matrix contains 2^(2n) amplitudes 
              * so can be spread between at most 2^(2n) ranks
              */
-            int minQb = GENERATE( range(3,10) );
+            int minQb = GENERATE( range(3,32) );
             env.numRanks = (int) pow(2, 2*minQb);
             int numQb = GENERATE_COPY( range(1,minQb) );
             REQUIRE_THROWS_WITH( createDensityQureg(numQb, env), Contains("Too few qubits") );
@@ -236,7 +236,7 @@ TEST_CASE( "createQureg", "[data_structures]" ) {
             REQUIRE_THROWS_WITH( createQureg(maxQb+1, env), Contains("Too many qubits") && Contains("size_t type") );
             
             // too few amplitudes to distribute
-            int minQb = GENERATE( range(2,10) );
+            int minQb = GENERATE( range(2,64) );
             env.numRanks = (int) pow(2, minQb);
             int numQb = GENERATE_COPY( range(1,minQb) );
             REQUIRE_THROWS_WITH( createQureg(numQb, env), Contains("Too few qubits") );
