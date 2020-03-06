@@ -280,7 +280,7 @@ void validateNumQubitsInQureg(int numQubits, int numRanks, const char* caller) {
     QuESTAssert( numQubits <= maxQubits, E_NUM_AMPS_EXCEED_TYPE, caller);
     
     // must be at least one amplitude per node
-    long unsigned int numAmps = (1<<numQubits);
+    long unsigned int numAmps = (1UL<<numQubits);
     QuESTAssert(numAmps >= numRanks, E_DISTRIB_QUREG_TOO_SMALL, caller);
 }
  
