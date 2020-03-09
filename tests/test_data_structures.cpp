@@ -161,7 +161,7 @@ TEST_CASE( "createDensityQureg", "[data_structures]" ) {
             QuESTEnv env = QUEST_ENV;
             
             // too many amplitudes to store in type
-            int maxQb = (int) calcLog2(SIZE_MAX) - 1;
+            int maxQb = (int) calcLog2(SIZE_MAX) / 2;
             REQUIRE_THROWS_WITH( createDensityQureg(maxQb+1, env), Contains("Too many qubits") && Contains("size_t type") );
             
             /* n-qubit density matrix contains 2^(2n) amplitudes 
