@@ -9,6 +9,7 @@ Mr Tyson Jones [developer]
     architecture
     interface
     quantum ops
+    testing
 Dr Balint Koczor [developer]
     Kraus maps
     debugging
@@ -20,6 +21,8 @@ Dr Ian Bush [consultant]
 Prof Simon Benjamin [consultant]
     user requirements
     algorithm prototyping
+Dr Fergus Cooper [developer]
+    continuous integration
 
 Past members:
 Dr Mihai Duta
@@ -28,3 +31,5 @@ Dr Mihai Duta
 External contributors:
 Dr Nicolas Vogt on behalf of HQS Quantum Simulations
     implemented mixDamping
+Kshitij Chhabra
+    patched validateNumQubitsInQureg
