@@ -309,7 +309,7 @@ target_include_directories(QuEST
 # ----- Definitions -----------------------------------------------------------
 
 target_compile_definitions(QuEST
-    PRIVATE
+    PUBLIC
     QuEST_PREC=${PRECISION}
 )
 
