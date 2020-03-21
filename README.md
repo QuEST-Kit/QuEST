@@ -140,7 +140,7 @@ To file a bug report or feature request, [raise a github issue](https://github.c
 
 QuEST uses the [mt19937ar](http://www.math.sci.hiroshima-u.ac.jp/~m-mat/MT/MT2002/emt19937ar.html) Mersenne Twister algorithm for random number generation, under the BSD licence. QuEST optionally (by additionally importing `QuEST_complex.h`) integrates the [language agnostic complex type](http://collaboration.cmc.ec.gc.ca/science/rpn/biblio/ddj/Website/articles/CUJ/2003/0303/cuj0303meyers/index.htm) by Randy Meyers and Dr. Thomas Plum
 
-Thanks to [HQS Quantum simulations](https://quantumsimulations.de/) for contributing the `mixDamping` function.
+We thank [HQS Quantum simulations](https://quantumsimulations.de/) for contributing `mixDamping` on CPU, and [Kshitij Chhabra](https://github.com/kshitijc) for patching some validation bugs.
 
 ---------------------------------
 
@@ -152,5 +152,5 @@ QuEST is released under a [MIT Licence](LICENCE.txt)
 
 ## Related projects -- QuEST utilities and extensions
 
-* [PyQuEST-cffi](https://github.com/HQSquantumsimulations/PyQuEST-cffi): a python interface to QuEST based on cffi developed by HQS Quantum Simulations. Please note, PyQuEST-cffi is currently in the alpha stage and not an official QuEST project.
 * [QuESTlink](https://questlink.qtechtheory.org): a Mathematica package allowing symbolic circuit manipulation and high performance simulation with remote accelerated hardware.
+* [PyQuEST-cffi](https://github.com/HQSquantumsimulations/PyQuEST-cffi): a python interface to QuEST based on cffi developed by HQS Quantum Simulations. Please note, PyQuEST-cffi is currently in the alpha stage and not an official QuEST project.
