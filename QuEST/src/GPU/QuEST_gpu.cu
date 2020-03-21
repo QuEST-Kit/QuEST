@@ -331,6 +331,8 @@ void statevec_destroyQureg(Qureg qureg, QuESTEnv env)
     // Free GPU memory
     cudaFree(qureg.deviceStateVec.real);
     cudaFree(qureg.deviceStateVec.imag);
+    cudaFree(qureg.firstLevelReduction);
+    cudaFree(qureg.secondLevelReduction);
 }
 
 int GPUExists(void){
