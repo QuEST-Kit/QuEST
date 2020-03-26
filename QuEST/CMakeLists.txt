@@ -319,7 +319,9 @@ target_compile_definitions(QuEST
 
 # ----- OMP -------------------------------------------------------------------
 
-target_link_libraries(QuEST PUBLIC OpenMP::OpenMP_C)
+if (OPENMP_FOUND)
+  target_link_libraries(QuEST PUBLIC OpenMP::OpenMP_C)
+endif ()
 
 # ----- MPI -------------------------------------------------------------------
 
