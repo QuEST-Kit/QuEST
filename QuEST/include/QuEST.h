@@ -361,6 +361,36 @@ PauliHamil createPauliHamil(int numQubits, int numSumTerms);
  */
 void destroyPauliHamil(PauliHamil hamil);
 
+/** Create a \p PauliHamil instance, a real-weighted sum of products of Pauli operators,
+ * populated with the data in filename \p fn.
+ * Each line in the plaintext file is interpreted as a separate product of Pauli operators 
+ * in the sum, and is a space-separated list with format
+ *
+ *     c p1 p2 p3 ... pN
+ *
+ * where \p c is the real coefficient of the term, and \p p1 ... \p pN are 
+ * numbers \p 0, \p 1, \p 2, \p 3 to indicate identity, pauliX, pauliY and pauliZ 
+ * operators respectively, acting on qubits \p 0 through \p N-1 (all qubits).
+ * For example, the file containing
+ *
+ *     0.31 1 0 1 2
+ *     -0.2 3 2 0 0
+ *
+ * encodes a two-term four-qubit Hamiltonian \f$ 0.31 X_0 X_2 Y_3 -0.2 Z_0 Y_1 \f$.
+ *
+ * The number of qubits and terms are inferred from the file.
+ * The created Hamiltonian can be used just like one created via createPauliHamil().
+ * 
+ * The returned dynamic \p PauliHamil instance must later be freed via destroyPauliHamil().
+ *
+ * @ingroup type
+ * @param[in] fn filename of the plaintext file specifying the pauli operators and coefficients
+ * @returns a dynamic \p PauliHamil struct, with fields \p pauliCodes and \p termCoeffs stored in the heap
+ * @throws exitWithError if the file cannot be read, or is not correctly formatted
+ * @author Tyson Jones
+ */
+PauliHamil createPauliHamilFromFile(char* fn);
+
 /** Print the current state vector of probability amplitudes for a set of qubits to file.
  * File format:
  * @verbatim

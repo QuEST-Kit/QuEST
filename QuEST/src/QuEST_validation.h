@@ -12,6 +12,7 @@
 # define QUEST_VALIDATION_H
 
 # include "QuEST.h"
+# include <stdio.h>
 
 # ifdef __cplusplus
 extern "C" {
@@ -104,6 +105,16 @@ void validateMultiQubitKrausMap(Qureg qureg, int numTargs, ComplexMatrixN* ops, 
 void validateOneQubitDampingProb(qreal prob, const char* caller);
 
 void validateHamilParams(int numQubits, int numTerms, const char* caller);
+
+void validatePauliHamil(PauliHamil hamil, const char* caller);
+
+void validateHamilFileParams(int numQubits, int numTerms, FILE* file, char* fn, const char* caller);
+
+void validateHamilFileCoeffParsed(int parsed, PauliHamil h, FILE* file, char* fn, const char* caller);
+
+void validateHamilFilePauliParsed(int parsed, PauliHamil h, FILE* file, char* fn, const char* caller);
+
+void validateHamilFilePauliCode(enum pauliOpType code, PauliHamil h, FILE* file, char* fn, const char* caller);
 
 # ifdef __cplusplus
 }

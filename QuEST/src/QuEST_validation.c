@@ -74,7 +74,12 @@ typedef enum {
     E_INVALID_KRAUS_OPS,
     E_MISMATCHING_NUM_TARGS_KRAUS_SIZE,
     E_DISTRIB_QUREG_TOO_SMALL,
-    E_NUM_AMPS_EXCEED_TYPE
+    E_NUM_AMPS_EXCEED_TYPE,
+    E_INVALID_PAULI_HAMIL_PARAMS,
+    E_INVALID_PAULI_HAMIL_FILE_PARAMS,
+    E_CANNOT_PARSE_PAULI_HAMIL_FILE_COEFF,
+    E_CANNOT_PARSE_PAULI_HAMIL_FILE_PAULI,
+    E_INVALID_PAULI_HAMIL_FILE_PAULI_CODE,
 } ErrorCode;
 
 static const char* errorMessages[] = {
@@ -127,7 +132,12 @@ static const char* errorMessages[] = {
     [E_INVALID_KRAUS_OPS] = "The specified Kraus map is not a completely positive, trace preserving map.",
     [E_MISMATCHING_NUM_TARGS_KRAUS_SIZE] = "Every Kraus operator must be of the same number of qubits as the number of targets.",
     [E_DISTRIB_QUREG_TOO_SMALL] = "Too few qubits. The created qureg must have at least one amplitude per node used in distributed simulation.",
-    [E_NUM_AMPS_EXCEED_TYPE] = "Too many qubits (max of log2(SIZE_MAX)). Cannot store the number of amplitudes per-node in the size_t type."
+    [E_NUM_AMPS_EXCEED_TYPE] = "Too many qubits (max of log2(SIZE_MAX)). Cannot store the number of amplitudes per-node in the size_t type.",
+    [E_INVALID_PAULI_HAMIL_PARAMS] = "The number of qubits and terms in the PauliHamil must be strictly positive.",
+    [E_INVALID_PAULI_HAMIL_FILE_PARAMS] = "The number of qubits and terms in the PauliHamil file (%s) must be strictly positive.",
+    [E_CANNOT_PARSE_PAULI_HAMIL_FILE_COEFF] = "Failed to parse the next expected term coefficient in PauliHamil file (%s).",
+    [E_CANNOT_PARSE_PAULI_HAMIL_FILE_PAULI] = "Failed to parse the next expected Pauli code in PauliHamil file (%s).",
+    [E_INVALID_PAULI_HAMIL_FILE_PAULI_CODE] = "The PauliHamil file (%s) contained an invalid pauli code (%d). Codes must be 0 (or PAULI_I), 1 (PAULI_X), 2 (PAULI_Y) or 3 (PAULI_Z) to indicate the identity, X, Y and Z operators respectively.",
 };
 
 void exitWithError(const char* msg, const char* func) {
@@ -236,6 +246,10 @@ int isCompletelyPositiveMap4(ComplexMatrix4 *ops, int numOps) {
 int isCompletelyPositiveMapN(ComplexMatrixN *ops, int numOps) {
     int opDim = 1 << ops[0].numQubits;
     macro_isCompletelyPositiveMap(ops, numOps, opDim);
+}
+
+int isValidPauliCode(enum pauliOpType code) {
+    return (code==PAULI_I || code==PAULI_X || code==PAULI_Y || code==PAULI_Z);
 }
 
 int areUniqueQubits(int* qubits, int numQubits) {
@@ -501,10 +515,8 @@ void validateOneQubitPauliProbs(qreal probX, qreal probY, qreal probZ, const cha
 
 void validatePauliCodes(enum pauliOpType* pauliCodes, int numPauliCodes, const char* caller) {
     for (int i=0; i < numPauliCodes; i++) {
-        int code = pauliCodes[i];
-        QuESTAssert(
-            code==PAULI_I || code==PAULI_X || code==PAULI_Y || code==PAULI_Z, 
-            E_INVALID_PAULI_CODE, caller);
+        enum pauliOpType code = pauliCodes[i];
+        QuESTAssert(isValidPauliCode(code), E_INVALID_PAULI_CODE, caller);
     }
 }
 
@@ -555,6 +567,54 @@ void validateMultiQubitKrausMap(Qureg qureg, int numTargs, ComplexMatrixN* ops, 
 
 void validateHamilParams(int numQubits, int numTerms, const char* caller) {
     QuESTAssert(numQubits > 0 && numTerms > 0, E_INVALID_PAULI_HAMIL_PARAMS, caller);
+}
+
+void validatePauliHamil(PauliHamil hamil, const char* caller) {
+    validateHamilParams(hamil.numQubits, hamil.numSumTerms, caller);
+    validatePauliCodes(hamil.pauliCodes, hamil.numSumTerms*hamil.numQubits, caller);
+}
+
+void validateHamilFileParams(int numQubits, int numTerms, FILE* file, char* fn, const char* caller) {
+    if (!(numQubits > 0 && numTerms > 0)) {
+        fclose(file);
+        
+        char errMsg[1024];
+        sprintf(errMsg, errorMessages[E_INVALID_PAULI_HAMIL_FILE_PARAMS], fn);
+        invalidQuESTInputError(errMsg, caller);
+    }
+}
+
+void validateHamilFileCoeffParsed(int parsed, PauliHamil h, FILE* file, char* fn, const char* caller) {
+    if (!parsed) {
+        destroyPauliHamil(h);
+        fclose(file);
+        
+        char errMsg[1024];
+        sprintf(errMsg, errorMessages[E_CANNOT_PARSE_PAULI_HAMIL_FILE_COEFF], fn);
+        invalidQuESTInputError(errMsg, caller);
+    }
+}
+
+void validateHamilFilePauliParsed(int parsed, PauliHamil h, FILE* file, char* fn, const char* caller) {
+    if (!parsed) {
+        destroyPauliHamil(h);
+        fclose(file);
+        
+        char errMsg[1024];
+        sprintf(errMsg, errorMessages[E_CANNOT_PARSE_PAULI_HAMIL_FILE_PAULI], fn);
+        invalidQuESTInputError(errMsg, caller);
+    }
+}
+
+void validateHamilFilePauliCode(enum pauliOpType code, PauliHamil h, FILE* file, char* fn, const char* caller) {
+    if (!isValidPauliCode(code)) {
+        destroyPauliHamil(h);
+        fclose(file);
+        
+        char errMsg[1024];
+        sprintf(errMsg, errorMessages[E_INVALID_PAULI_HAMIL_FILE_PAULI_CODE], fn, code);
+        invalidQuESTInputError(errMsg, caller);
+    }
 }
 
 #ifdef __cplusplus

@@ -20,7 +20,9 @@
 # include "QuEST_internal.h"
 # include "QuEST_validation.h"
 # include "QuEST_qasm.h"
+
 # include <stdlib.h>
+# include <string.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -1065,6 +1067,69 @@ void destroyPauliHamil(PauliHamil h) {
     
     free(h.termCoeffs);
     free(h.pauliCodes);
+}
+
+PauliHamil createPauliHamilFromFile(char* fn) {
+    
+    /* The validation in this function must close the file handle and free 
+     * allocated memory before raising an error (whether that's a C exit, or
+     * an overriden C++ exception).
+     */
+    
+	FILE* file = fopen(fn, "r");
+    int success = (file != NULL);
+    validateFileOpened(success, fn, __func__);
+    
+    /* file format: coeff {term} \n where {term} is #numQubits values of 
+	 * 0 1 2 3 signifying I X Y Z acting on that qubit index
+	 */
+	
+	// count the number of qubits
+	int numQubits = -1;
+	char ch;
+	while ((ch=getc(file)) != '\n')
+		if (ch == ' ')
+			numQubits++;
+	
+	// count the number of terms
+	rewind(file);
+	int numTerms = 1;
+	while ((ch=getc(file)) != EOF)
+		if (ch == '\n')
+			numTerms++; 
+
+    // validate the inferred number of terms and qubits (closes file if error)
+    validateHamilFileParams(numQubits, numTerms, file, fn, __func__);
+    
+    // allocate space for PauliHamil data
+    PauliHamil h = createPauliHamil(numQubits, numTerms);
+     
+    // specifier for a qreal number then a space 
+    char strSpec[50];
+    strcpy(strSpec, REAL_SPECIFIER);
+    strcat(strSpec, " ");
+    
+    // collect coefficients and terms
+	rewind(file);
+	for (int t=0; t<numTerms; t++) {
+		
+		// record coefficient, and validate (closes file and frees h if error)
+        success = fscanf(file, strSpec, &(h.termCoeffs[t])) == 1;
+        validateHamilFileCoeffParsed(success, h, file, fn, __func__);
+
+		// record Pauli operations, and validate (closes file and frees h if error)
+        for (int q=0; q<numQubits; q++) {
+            int i = t*numQubits + q;
+            success = fscanf(file, "%d ", &(h.pauliCodes[i])) == 1;
+            validateHamilFilePauliParsed(success, h, file, fn, __func__);
+            validateHamilFilePauliCode(h.pauliCodes[i], h, file, fn, __func__);
+		}
+
+		// the trailing newline is magically eaten
+	}
+
+    fclose(file);
+	return h;
 }
 
 /*
