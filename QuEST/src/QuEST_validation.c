@@ -549,6 +549,10 @@ void validateMultiQubitKrausMap(Qureg qureg, int numTargs, ComplexMatrixN* ops, 
     QuESTAssert(isPos, E_INVALID_KRAUS_OPS, caller);
 }
 
+void validateHamilParams(int numQubits, int numTerms, const char* caller) {
+    QuESTAssert(numQubits > 0 && numTerms > 0, E_INVALID_PAULI_HAMIL_PARAMS, caller);
+}
+
 #ifdef __cplusplus
 }
 #endif

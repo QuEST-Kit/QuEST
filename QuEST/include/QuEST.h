@@ -150,6 +150,24 @@ typedef struct Vector
     qreal x, y, z;
 } Vector;
 
+/** Represents a weighted sum of pauli products.
+ *
+ * @ingroup type 
+ * @author Tyson Jones
+ */
+typedef struct PauliHamil 
+{
+    //! The Pauli operators acting on each qubit, flattened over every operator.
+    //! This is a length \p numSumTerms*numQubits array
+    enum pauliOpType* pauliCodes;
+    //! The coefficient of each Pauli product. This is a length \p numSumTerms array
+    qreal* termCoeffs;
+    //! The number of terms in the weighted sum, or the number of Pauli products.
+    int numSumTerms;
+    //! The number of qubits for which this Hamiltonian is defined.
+    int numQubits;
+} PauliHamil;
+
 /** Represents a system of qubits.
  * Qubits are zero-based
  *
@@ -314,6 +332,34 @@ void destroyComplexMatrixN(ComplexMatrixN matr);
  */
 void initComplexMatrixN(ComplexMatrixN m, qreal real[][1<<m.numQubits], qreal imag[][1<<m.numQubits]);
 #endif 
+
+/** Create a \p PauliHamil instance, which is a Hamiltonian expressed as a real-weighted 
+ * sum of products of Pauli operators. This is merely an encapsulation of the multiple 
+ * parameters of functions like applyPauliSum().
+ *
+ * The Pauli operators (\p PauliHamil.pauliCodes) are all initialised to identity 
+ * (\p PAULI_I), but the coefficients (\p PauliHamil.termCoeffs) are not initialised.
+ * The Hamiltonian can be used (e.g. in applyPauliHamil() and applyTrotterCircuit())
+ * with \p Qureg instances of the same number of qubits.
+ * 
+ * The returned dynamic \p PauliHamil instance must later be freed via destroyPauliHamil().
+ *
+ * @ingroup type
+ * @param[in] numQubits the number of qubits on which this Hamiltonian acts 
+ * @param[in] numSumTerms the number of weighted terms in the sum, or the number of Pauli products
+ * @returns a dynamic \p PauliHamil struct, with fields \p pauliCodes and \p termCoeffs stored in the heap
+ * @throws exitWithError if \p numQubits <= 0, or \p numSumTerms <= 0.
+ * @author Tyson Jones
+ */
+PauliHamil createPauliHamil(int numQubits, int numSumTerms);
+
+/** Destroy a \p PauliHamil instance, created with either createPauliHamil() or createPauliHamilFromFile().
+ *
+ * @ingroup type 
+ * @param[in] hamil a dynamic \p PauliHamil instantiation
+ * @author Tyson Jones
+ */
+void destroyPauliHamil(PauliHamil hamil);
 
 /** Print the current state vector of probability amplitudes for a set of qubits to file.
  * File format:

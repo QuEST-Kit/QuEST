@@ -1045,6 +1045,28 @@ void initComplexMatrixN(ComplexMatrixN m, qreal re[][1<<m.numQubits], qreal im[]
         }
 }
 
+PauliHamil createPauliHamil(int numQubits, int numSumTerms) {
+    validateHamilParams(numQubits, numSumTerms, __func__);
+    
+    PauliHamil h;
+    h.numQubits = numQubits;
+    h.numSumTerms = numSumTerms;
+    h.termCoeffs = malloc(numSumTerms * sizeof *h.termCoeffs);
+    h.pauliCodes = malloc(numQubits*numSumTerms * sizeof *h.pauliCodes);
+    
+    // initialise pauli codes to identity 
+    for (int i=0; i<numQubits*numSumTerms; i++)
+        h.pauliCodes[i] = PAULI_I;
+    
+    return h;
+}
+
+void destroyPauliHamil(PauliHamil h) {
+    
+    free(h.termCoeffs);
+    free(h.pauliCodes);
+}
+
 /*
  * debug
  */
