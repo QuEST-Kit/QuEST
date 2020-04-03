@@ -433,6 +433,25 @@ void reportStateToScreen(Qureg qureg, QuESTEnv env, int reportRank);
  */
 void reportQuregParams(Qureg qureg);
 
+/** Print the \p PauliHamil to screen. 
+ * The output features a new line for each term, each with format 
+ *
+ *     c p1 p2 p3 ... pN
+ *
+ * where \p c is the real coefficient of the term, and \p p1 ... \p pN are 
+ * numbers \p 0, \p 1, \p 2, \p 3 to indicate identity, pauliX, pauliY and pauliZ 
+ * operators respectively, acting on qubits \p 0 through \p N-1 (all qubits).
+ * A tab character separates c and p1, but single spaces separate the Pauli operators.
+ *
+ * @ingroup debug 
+ * @param[in] hamil an instantiated PauliHamil
+ * @throws exitWithError if the parameters of \p hamil are invalid, i.e. 
+ *      if \p numQubits <= 0, or if \p numSumTerms <= 0, or if \p pauliCodes 
+ *      contains an invalid Pauli code.
+ * @author Tyson Jones
+ */ 
+void reportPauliHamil(PauliHamil hamil);
+
 /** Get the number of qubits in a qureg object
  *
  * @ingroup calc
