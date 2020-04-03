@@ -816,6 +816,17 @@ void applyPauliSum(Qureg inQureg, enum pauliOpType* allPauliCodes, qreal* termCo
     qasm_recordComment(outQureg, "Here, the register was modified to an undisclosed and possibly unphysical state (applyPauliSum).");
 }
 
+void applyPauliHamil(Qureg inQureg, PauliHamil hamil, Qureg outQureg) {
+    validateMatchingQuregTypes(inQureg, outQureg, __func__);
+    validateMatchingQuregDims(inQureg, outQureg, __func__);
+    validatePauliHamil(hamil, __func__);
+    validateMatchingQuregPauliHamilDims(inQureg, hamil, __func__);
+    
+    statevec_applyPauliSum(inQureg, hamil.pauliCodes, hamil.termCoeffs, hamil.numSumTerms, outQureg);
+    
+    qasm_recordComment(outQureg, "Here, the register was modified to an undisclosed and possibly unphysical state (applyPauliHamil).");
+}
+
 
 /*
  * calculations

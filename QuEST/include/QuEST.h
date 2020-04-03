@@ -3279,6 +3279,44 @@ void setWeightedQureg(Complex fac1, Qureg qureg1, Complex fac2, Qureg qureg2, Co
  */
 void applyPauliSum(Qureg inQureg, enum pauliOpType* allPauliCodes, qreal* termCoeffs, int numSumTerms, Qureg outQureg);
 
+/** Modifies \p outQureg to be the result of applying \p PauliHamil (a Hermitian but not 
+ * necessarily unitary operator) to \p inQureg. Note that afterward, \p outQureg may no longer be normalised and ergo not a
+ * statevector or density matrix. Users must therefore be careful passing \p outQureg to
+ * other QuEST functions which assume normalisation in order to function correctly.
+ *
+ * This is merely an encapsulation of applyPauliSum(), which can refer to for elaborated doc.
+ *
+ * Letting \p hamil be expressed as \f$ \alpha = \sum_i c_i \otimes_j^{N} \hat{\sigma}_{i,j} \f$ 
+ * (where \f$ c_i \in \f$ \p hamil.termCoeffs and \f$ N = \f$ \p hamil.numQubits), 
+ * this function effects \f$ \alpha | \psi \rangle \f$ on statevector \f$ |\psi\rangle \f$
+ * and \f$\alpha \rho\f$ (left matrix multiplication) on density matrix \f$ \rho \f$.
+ *
+ * In theory, \p inQureg is unchanged though its state is temporarily 
+ * modified and is reverted by re-applying Paulis (XX=YY=ZZ=I), so may see a change by small numerical errors.
+ * The initial state in \p outQureg is not used.
+ *
+ * \p inQureg and \p outQureg must both be state-vectors, or both density matrices,
+ * of equal dimensions to \p hamil.
+ * \p inQureg cannot be \p outQureg.
+ *
+ * This function works by applying each Pauli product in \p hamil to \p inQureg in turn, 
+ * and adding the resulting state (weighted by a coefficient in \p termCoeffs)
+ * to the initially-blanked \p outQureg. Ergo it should scale with the total number 
+ * of Pauli operators specified (excluding identities), and the qureg dimension. 
+ *
+ * @ingroup operator
+ * @param[in] inQureg the register containing the state which \p outQureg will be set to, under
+ *      the action of \p hamil. \p inQureg should be unchanged, though may vary slightly due to numerical error.
+ * @param[in] hamil a weighted sum of products of pauli operators
+ * @param[out] outQureg the qureg to modify to be the result of applyling \p hamil to the state in \p inQureg
+ * @throws exitWithError
+ *      if any code in \p hamil.pauliCodes is not a valid Pauli code,
+ *      or if \p numSumTerms <= 0,
+ *      or if \p inQureg is not of the same type and dimensions as \p outQureg and \p hamil
+ * @author Tyson Jones
+ */
+void applyPauliHamil(Qureg inQureg, PauliHamil hamil, Qureg outQureg);
+
 /** An internal function called when invalid arguments are passed to a QuEST API
  * call, which the user can optionally override by redefining. This function is 
  * a weak symbol, so that users can choose how input errors are handled, by 
