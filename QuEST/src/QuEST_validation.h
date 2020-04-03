@@ -118,6 +118,8 @@ void validateHamilFilePauliParsed(int parsed, PauliHamil h, FILE* file, char* fn
 
 void validateHamilFilePauliCode(enum pauliOpType code, PauliHamil h, FILE* file, char* fn, const char* caller);
 
+void validateTrotterParams(int order, int reps, const char* caller);
+
 # ifdef __cplusplus
 }
 # endif

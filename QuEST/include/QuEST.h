@@ -3317,6 +3317,65 @@ void applyPauliSum(Qureg inQureg, enum pauliOpType* allPauliCodes, qreal* termCo
  */
 void applyPauliHamil(Qureg inQureg, PauliHamil hamil, Qureg outQureg);
 
+/** Applies a trotterisation of unitary evolution \f$ \exp(-i \, \text{hamil} \, \text{time}) \f$
+ * to \p qureg. This is a sequence of unitary operators, effected by multiRotatePauli(),
+ * which together approximate the action of full unitary-time evolution under the given Hamiltonian.
+ *
+ * Notate \f$ \text{hamil} = \sum_j^N c_j \, \hat \sigma_j \f$ where \f$c_j\f$ is a real 
+ * coefficient in \p hamil, \f$\hat \sigma_j\f$ is the corresponding product of Pauli operators,
+ * of which there are a total \f$N\f$.
+ * Then, \p order=1 performs first-order Trotterisation, whereby
+ * \f[
+ *   \exp(-i \, \text{hamil} \, \text{time})
+ *      \approx 
+ *    \prod\limits^{\text{reps}} \prod\limits_{j=1}^{N} \exp(-i \, c_j \, \text{time} \, \hat\sigma_j / \text{reps})
+ * \f]
+ * \p order=2 performs the lowest order "symmetrized" Suzuki decomposition, whereby 
+ * \f[
+ *   \exp(-i \, \text{hamil} \, \text{time})
+ *      \approx 
+ *    \prod\limits^{\text{reps}} \left[
+ *         \prod\limits_{j=1}^{N} \exp(-i \, c_j \, \text{time} \, \hat\sigma_j / (2 \, \text{reps}))
+ *          \prod\limits_{j=N}^{1} \exp(-i \, c_j \, \text{time} \, \hat\sigma_j / (2 \, \text{reps}))
+ *     \right]
+ * \f]
+ * Greater even values of \p order specify higher-order symmetrized decompositions 
+ * \f$ S[\text{time}, \text{order}, \text{reps}] \f$ which satisfy 
+ * \f[
+ *      S[\text{time}, \text{order}, 1] = 
+ *          \left( \prod\limits^2 S[p \, \text{time}, \text{order}-2, 1] \right)
+ *          S[ (1-4p)\,\text{time}, \text{order}-2, 1]
+ *          \left( \prod\limits^2 S[p \, \text{time}, \text{order}-2, 1] \right)
+ * \f]
+ * and 
+ * \f[
+ *      S[\text{time}, \text{order}, \text{reps}] = 
+ *          \prod\limits^{\text{reps}} S[\text{time}/\text{reps}, \text{order}, 1]
+ * \f]
+ * where \f$ p = \left( 4 - 4^{1/(\text{order}-1)} \right)^{-1} \f$.
+ * 
+ * These formulations are taken from 'Finding Exponential Product Formulas
+ * of Higher Orders', Naomichi Hatano and Masuo Suzuki (2005) (<a href="https://arxiv.org/abs/math-ph/0506007">arXiv</a>).
+ *
+ * Note that the applied Trotter circuit is captured by QASM, if QASM logging is enabled
+ * on \p qureg.
+ *
+ * @ingroup operator
+ * @param[in,out] qureg the register to modify under the approximate unitary-time evolution
+ * @param[in] hamil the hamiltonian under which to approxiamte unitary-time evolution
+ * @param[in] time the target evolution time, which is permitted to be both positive and negative.
+ * @param[in] order the order of Trotter-Suzuki decomposition to use. Higher orders (necessarily even)
+ *      are more accurate but prescribe an exponentially increasing number of gates.
+ * @param[in] reps the number of repetitions of the decomposition of the given order. This 
+ *      improves the accuracy but prescribes a linearly increasing number of gates.
+ * @throws exitWithError if \p qureg.numQubitsRepresented != \p hamil.numQubits, 
+  *     or \p hamil contains invalid parameters or Pauli codes, 
+  *     or if \p order is not in {1, 2, 4, 6, ...}
+  *     or if \p reps <= 0.
+ * @author Tyson Jones
+ */
+void applyTrotterCircuit(Qureg qureg, PauliHamil hamil, qreal time, int order, int reps);
+
 /** An internal function called when invalid arguments are passed to a QuEST API
  * call, which the user can optionally override by redefining. This function is 
  * a weak symbol, so that users can choose how input errors are handled, by 

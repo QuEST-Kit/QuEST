@@ -81,6 +81,8 @@ typedef enum {
     E_CANNOT_PARSE_PAULI_HAMIL_FILE_PAULI,
     E_INVALID_PAULI_HAMIL_FILE_PAULI_CODE,
     E_MISMATCHING_PAULI_HAMIL_QUREG_NUM_QUBITS,
+    E_INVALID_TROTTER_ORDER,
+    E_INVALID_TROTTER_REPS
 } ErrorCode;
 
 static const char* errorMessages[] = {
@@ -140,6 +142,8 @@ static const char* errorMessages[] = {
     [E_CANNOT_PARSE_PAULI_HAMIL_FILE_PAULI] = "Failed to parse the next expected Pauli code in PauliHamil file (%s).",
     [E_INVALID_PAULI_HAMIL_FILE_PAULI_CODE] = "The PauliHamil file (%s) contained an invalid pauli code (%d). Codes must be 0 (or PAULI_I), 1 (PAULI_X), 2 (PAULI_Y) or 3 (PAULI_Z) to indicate the identity, X, Y and Z operators respectively.",
     [E_MISMATCHING_PAULI_HAMIL_QUREG_NUM_QUBITS] = "The PauliHamil must act on the same number of qubits as exist in the Qureg.",
+    [E_INVALID_TROTTER_ORDER] = "The Trotterisation order must be 1, or an even number (for higher-order Suzuki symmetrized expansions).",
+    [E_INVALID_TROTTER_REPS] = "The number of Trotter repetitions must be >=1."
 };
 
 void exitWithError(const char* msg, const char* func) {
@@ -621,6 +625,12 @@ void validateHamilFilePauliCode(enum pauliOpType code, PauliHamil h, FILE* file,
         sprintf(errMsg, errorMessages[E_INVALID_PAULI_HAMIL_FILE_PAULI_CODE], fn, code);
         invalidQuESTInputError(errMsg, caller);
     }
+}
+
+void validateTrotterParams(int order, int reps, const char* caller) {
+    int isEven = (order % 2) == 0;
+    QuESTAssert(order > 0 && (isEven || order==1), E_INVALID_TROTTER_ORDER, caller);
+    QuESTAssert(reps > 0, E_INVALID_TROTTER_REPS, caller);
 }
 
 #ifdef __cplusplus

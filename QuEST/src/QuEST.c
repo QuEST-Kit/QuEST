@@ -827,6 +827,20 @@ void applyPauliHamil(Qureg inQureg, PauliHamil hamil, Qureg outQureg) {
     qasm_recordComment(outQureg, "Here, the register was modified to an undisclosed and possibly unphysical state (applyPauliHamil).");
 }
 
+void applyTrotterCircuit(Qureg qureg, PauliHamil hamil, qreal time, int order, int reps) {
+    validateTrotterParams(order, reps, __func__);
+    validatePauliHamil(hamil, __func__);
+    validateMatchingQuregPauliHamilDims(qureg, hamil, __func__);
+    
+    qasm_recordComment(qureg, 
+        "Beginning of Trotter circuit (time %g, order %d, %d repetitions).",
+        time, order, reps);
+        
+    agnostic_applyTrotterCircuit(qureg, hamil, time, order, reps);
+
+    qasm_recordComment(qureg, "End of Trotter circuit");
+}
+
 
 /*
  * calculations
