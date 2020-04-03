@@ -2597,6 +2597,41 @@ qreal calcExpecPauliProd(Qureg qureg, int* targetQubits, enum pauliOpType* pauli
  */
 qreal calcExpecPauliSum(Qureg qureg, enum pauliOpType* allPauliCodes, qreal* termCoeffs, int numSumTerms, Qureg workspace);
 
+/** Computes the expected value of \p qureg under Hermitian operator \p hamil.
+ * Represent \p hamil as \f$ H = \sum_i c_i \otimes_j^{N} \hat{\sigma}_{i,j} \f$
+ *  (where \f$ c_i \in \f$ \p hamil.termCoeffs and \f$ N = \f$ \p hamil.numQubits).
+ * This function computes \f$ \langle \psi | H | \psi \rangle \f$ 
+ * if \p qureg = \f$ \psi \f$ is a statevector, and computes \f$ \text{Trace}(H \rho) =\text{Trace}(\rho H) \f$ 
+ * if \p qureg = \f$ \rho \f$ is a density matrix.
+ *
+ * This function is merely an encapsulation of calcExpecPauliSum() - refer to the doc 
+ * there for an elaboration.
+ * 
+ * \p workspace must be a register with the same type (statevector vs density matrix) and dimensions 
+ * (number of represented qubits) as \p qureg and \p hamil, and is used as working space. 
+ * When this function returns, \p qureg  will be unchanged and \p workspace will be set to
+ * \p qureg pre-multiplied with the final Pauli product in \p hamil.
+ * NOTE that if \p qureg is a density matrix, \p workspace will become \f$ \hat{\sigma} \rho \f$ 
+ * which is itself not a density matrix (it is distinct from \f$ \hat{\sigma}^\dagger \rho \hat{\sigma} \f$).
+ *
+ * This function works by cloning the \p qureg state into \p workspace, applying each of the specified
+ * Pauli products in \p hamil to \p workspace (one Pauli operation at a time), then computing its inner product with \p qureg (for statevectors)
+ * or its trace (for density matrices) multiplied with the corresponding coefficient, and summing these contributions. 
+ * It therefore should scale linearly in time with the total number of non-identity specified Pauli operators.
+ *
+ * @ingroup calc
+ * @param[in] qureg the register of which to find the expected value, which is unchanged by this function
+ * @param[in] hamil a \p PauliHamil created with createPauliHamil() or createPauliHamilFromFile()
+ * @param[in,out] workspace a working-space qureg with the same dimensions as \p qureg, which is modified 
+ *      to be the result of multiplying the state with the final specified Pauli product
+ * @throws exitWithError
+ *      if any code in \p hamil.pauliCodes is not a valid Pauli code,
+ *      or if \p hamil.numSumTerms <= 0,
+ *      or if \p workspace is not of the same type and dimensions as \p qureg and \p hamil
+ * @author Tyson Jones
+ */
+qreal calcExpecPauliHamil(Qureg qureg, PauliHamil hamil, Qureg workspace);
+
 /** Apply a general two-qubit unitary (including a global phase factor).
  *
     \f[
@@ -3200,7 +3235,7 @@ void setWeightedQureg(Complex fac1, Qureg qureg1, Complex fac2, Qureg qureg2, Co
  * and \f$\alpha \rho\f$ (left matrix multiplication) on density matrix \f$ \rho \f$.
  *
  * \p allPauliCodes is an array of length \p numSumTerms*\p qureg.numQubitsRepresented
- * which specifies which Pauli operators to apply, where 0 = \p PAULI_I, 1 = \p PAULI_X, 
+ *  which specifies which Pauli operators to apply, where 0 = \p PAULI_I, 1 = \p PAULI_X, 
  * 2 = \p PAULI_Y, 3 = \p PAULI_Z. For each sum term, a Pauli operator must be specified for 
  * EVERY qubit in \p qureg; each set of \p numSumTerms operators will be grouped into a product.
  * \p termCoeffs is an arrray of length \p numSumTerms containing the term coefficients.

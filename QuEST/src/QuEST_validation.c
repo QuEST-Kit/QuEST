@@ -80,6 +80,7 @@ typedef enum {
     E_CANNOT_PARSE_PAULI_HAMIL_FILE_COEFF,
     E_CANNOT_PARSE_PAULI_HAMIL_FILE_PAULI,
     E_INVALID_PAULI_HAMIL_FILE_PAULI_CODE,
+    E_MISMATCHING_PAULI_HAMIL_QUREG_NUM_QUBITS,
 } ErrorCode;
 
 static const char* errorMessages[] = {
@@ -138,6 +139,7 @@ static const char* errorMessages[] = {
     [E_CANNOT_PARSE_PAULI_HAMIL_FILE_COEFF] = "Failed to parse the next expected term coefficient in PauliHamil file (%s).",
     [E_CANNOT_PARSE_PAULI_HAMIL_FILE_PAULI] = "Failed to parse the next expected Pauli code in PauliHamil file (%s).",
     [E_INVALID_PAULI_HAMIL_FILE_PAULI_CODE] = "The PauliHamil file (%s) contained an invalid pauli code (%d). Codes must be 0 (or PAULI_I), 1 (PAULI_X), 2 (PAULI_Y) or 3 (PAULI_Z) to indicate the identity, X, Y and Z operators respectively.",
+    [E_MISMATCHING_PAULI_HAMIL_QUREG_NUM_QUBITS] = "The PauliHamil must act on the same number of qubits as exist in the Qureg.",
 };
 
 void exitWithError(const char* msg, const char* func) {
@@ -572,6 +574,10 @@ void validateHamilParams(int numQubits, int numTerms, const char* caller) {
 void validatePauliHamil(PauliHamil hamil, const char* caller) {
     validateHamilParams(hamil.numQubits, hamil.numSumTerms, caller);
     validatePauliCodes(hamil.pauliCodes, hamil.numSumTerms*hamil.numQubits, caller);
+}
+
+void validateMatchingQuregPauliHamilDims(Qureg qureg, PauliHamil hamil, const char* caller) {
+    QuESTAssert(hamil.numQubits == qureg.numQubitsRepresented, E_MISMATCHING_PAULI_HAMIL_QUREG_NUM_QUBITS, caller);
 }
 
 void validateHamilFileParams(int numQubits, int numTerms, FILE* file, char* fn, const char* caller) {

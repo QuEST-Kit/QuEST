@@ -108,6 +108,8 @@ void validateHamilParams(int numQubits, int numTerms, const char* caller);
 
 void validatePauliHamil(PauliHamil hamil, const char* caller);
 
+void validateMatchingQuregPauliHamilDims(Qureg qureg, PauliHamil hamil, const char* caller);
+
 void validateHamilFileParams(int numQubits, int numTerms, FILE* file, char* fn, const char* caller);
 
 void validateHamilFileCoeffParsed(int parsed, PauliHamil h, FILE* file, char* fn, const char* caller);
