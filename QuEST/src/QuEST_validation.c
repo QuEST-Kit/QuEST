@@ -102,7 +102,7 @@ static const char* errorMessages[] = {
     [E_SYS_TOO_BIG_TO_PRINT] = "Invalid system size. Cannot print output for systems greater than 5 qubits.",
     [E_COLLAPSE_STATE_ZERO_PROB] = "Can't collapse to state with zero probability.",
     [E_INVALID_QUBIT_OUTCOME] = "Invalid measurement outcome -- must be either 0 or 1.",
-    [E_CANNOT_OPEN_FILE] = "Could not open file.",
+    [E_CANNOT_OPEN_FILE] = "Could not open file (%s).",
     [E_SECOND_ARG_MUST_BE_STATEVEC] = "Second argument must be a state-vector.",
     [E_MISMATCHING_QUREG_DIMENSIONS] = "Dimensions of the qubit registers don't match.",
     [E_MISMATCHING_QUREG_TYPES] = "Registers must both be state-vectors or both be density matrices.",
@@ -116,7 +116,7 @@ static const char* errorMessages[] = {
     [E_INVALID_TWO_QUBIT_DEPOL_PROB] = "The probability of a two-qubit depolarising error cannot exceed 15/16, which maximally mixes.",
     [E_INVALID_ONE_QUBIT_PAULI_PROBS] = "The probability of any X, Y or Z error cannot exceed the probability of no error.",
     [E_INVALID_CONTROLS_BIT_STATE] = "The state of the control qubits must be a bit sequence (0s and 1s).",
-    [E_INVALID_PAULI_CODE] = "Invalid Pauli code. Codes must be 0 (or PAULI_I), 1 (PAULI_X), 2 (PAULI_Y) or 3 (PAULI_Z) to indicate the identity, X, Y and Z gates respectively.",
+    [E_INVALID_PAULI_CODE] = "Invalid Pauli code. Codes must be 0 (or PAULI_I), 1 (PAULI_X), 2 (PAULI_Y) or 3 (PAULI_Z) to indicate the identity, X, Y and Z operators respectively.",
     [E_INVALID_NUM_SUM_TERMS] = "Invalid number of terms in the Pauli sum. The number of terms must be >0.",
     [E_CANNOT_FIT_MULTI_QUBIT_MATRIX] = "The specified matrix targets too many qubits; the batches of amplitudes to modify cannot all fit in a single distributed node's memory allocation.",
     [E_INVALID_UNITARY_SIZE] = "The matrix size does not match the number of target qubits.",
@@ -443,8 +443,12 @@ void validateSecondQuregStateVec(Qureg qureg2, const char *caller) {
     QuESTAssert( ! qureg2.isDensityMatrix, E_SECOND_ARG_MUST_BE_STATEVEC, caller);
 }
 
-void validateFileOpened(int found, const char* caller) {
-    QuESTAssert(found, E_CANNOT_OPEN_FILE, caller);
+void validateFileOpened(int opened, char* fn, const char* caller) {
+    if (!opened) {
+        char errMsg[1024];
+        sprintf(errMsg, errorMessages[E_CANNOT_OPEN_FILE], fn);
+        invalidQuESTInputError(errMsg, caller);
+    }
 }
 
 void validateProb(qreal prob, const char* caller) {

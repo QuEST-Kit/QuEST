@@ -100,7 +100,7 @@ void printRecordedQASM(Qureg qureg) {
 
 void writeRecordedQASMToFile(Qureg qureg, char* filename) {
     int success = qasm_writeRecordedToFile(qureg, filename);
-    validateFileOpened(success, __func__);
+    validateFileOpened(success, filename, __func__);
 }
 
 
@@ -1082,7 +1082,7 @@ void initDebugState(Qureg qureg) {
 
 void initStateFromSingleFile(Qureg *qureg, char filename[200], QuESTEnv env) {
     int success = statevec_initStateFromSingleFile(qureg, filename, env);
-    validateFileOpened(success, __func__);
+    validateFileOpened(success, filename, __func__);
 }
 
 void initStateOfSingleQubit(Qureg *qureg, int qubitId, int outcome) {
