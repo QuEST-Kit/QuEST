@@ -198,12 +198,12 @@ set(CMAKE_C_FLAGS_DEBUG
 if ("${CMAKE_C_COMPILER_ID}" STREQUAL "Clang")
   # using Clang
   set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} \
-    -mavx -Wall"
+    -Wall"
   )
 elseif ("${CMAKE_C_COMPILER_ID}" STREQUAL "GNU")
   # using GCC
   set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} \
-    -mavx -Wall"
+    -Wall"
   )
 elseif ("${CMAKE_C_COMPILER_ID}" STREQUAL "Intel")
   # using Intel
@@ -242,12 +242,12 @@ set(CMAKE_CXX_FLAGS_DEBUG
 if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
   # using Clang
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} \
-    -mavx"
+    "
   )
 elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
   # using GCC
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} \
-    -mavx"
+    "
   )
 elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Intel")
   # using Intel
