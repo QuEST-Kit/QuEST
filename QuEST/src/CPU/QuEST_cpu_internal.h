@@ -1,4 +1,4 @@
-// Distributed under MIT licence. See https://github.com/QuEST-Kit/QuEST/blob/master/LICENCE.txt for details 
+// Distributed under MIT licence. See https://github.com/QuEST-Kit/QuEST/blob/master/LICENCE.txt for details
 
 /** @file
  * Internal functions used to implement the pure backend in ../QuEST_ops_pure.h. Do not call these functions
@@ -17,9 +17,9 @@
 
 
 /*
-* Bit twiddling functions are defined seperately here in the CPU backend, 
-* since the GPU backend  needs a device-specific redefinition to be callable 
-* from GPU kernels. These are called in both QuEST_cpu and QuEST_cpu_distributed 
+* Bit twiddling functions are defined seperately here in the CPU backend,
+* since the GPU backend  needs a device-specific redefinition to be callable
+* from GPU kernels. These are called in both QuEST_cpu and QuEST_cpu_distributed
 * and defined in here since public inline methods in C must go in the header
 */
 
@@ -156,7 +156,7 @@ void statevec_controlledPauliYLocal(Qureg qureg, const int controlQubit, const i
 void statevec_controlledPauliYDistributed(Qureg qureg, const int controlQubit,
         ComplexArray stateVecIn,
         ComplexArray stateVecOut, const int conjFactor);
-        
+
 void statevec_hadamardLocal (Qureg qureg, const int targetQubit);
 
 void statevec_hadamardDistributed (Qureg qureg,

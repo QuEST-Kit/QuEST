@@ -13,12 +13,12 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
-    
+
 # include "QuEST.h"
 # include "QuEST_precision.h"
 # include "QuEST_internal.h"
 # include "QuEST_validation.h"
- 
+
 # include <stdio.h>
 # include <stdlib.h>
 # include <stdint.h>
@@ -148,7 +148,7 @@ void QuESTAssert(int isValid, ErrorCode code, const char* func){
 }
 
 int isComplexUnit(Complex alpha) {
-    return (absReal(1 - sqrt(alpha.real*alpha.real + alpha.imag*alpha.imag)) < REAL_EPS); 
+    return (absReal(1 - sqrt(alpha.real*alpha.real + alpha.imag*alpha.imag)) < REAL_EPS);
 }
 
 int isVectorUnit(qreal ux, qreal uy, qreal uz) {
@@ -157,9 +157,9 @@ int isVectorUnit(qreal ux, qreal uy, qreal uz) {
 
 int isComplexPairUnitary(Complex alpha, Complex beta) {
     return ( absReal( -1
-                + alpha.real*alpha.real 
+                + alpha.real*alpha.real
                 + alpha.imag*alpha.imag
-                + beta.real*beta.real 
+                + beta.real*beta.real
                 + beta.imag*beta.imag) < REAL_EPS );
 }
 
@@ -228,7 +228,7 @@ int isMatrixNUnitary(ComplexMatrixN u) {
     return 1; \
 }
 int isCompletelyPositiveMap2(ComplexMatrix2 *ops, int numOps) {
-    macro_isCompletelyPositiveMap(ops, numOps, 2);    
+    macro_isCompletelyPositiveMap(ops, numOps, 2);
 }
 int isCompletelyPositiveMap4(ComplexMatrix4 *ops, int numOps) {
     macro_isCompletelyPositiveMap(ops, numOps, 4);
@@ -260,30 +260,30 @@ unsigned int calcLog2(long unsigned int num) {
 
 void validateNumRanks(int numRanks, const char* caller) {
 
-    /* silly but robust way to determine if numRanks is a power of 2, 
-     * in lieu of bit-twiddling (e.g. AND with all-ones) which may be 
-     * system / precsision dependent 
+    /* silly but robust way to determine if numRanks is a power of 2,
+     * in lieu of bit-twiddling (e.g. AND with all-ones) which may be
+     * system / precsision dependent
      */
     int isValid = 0;
     for (int exp2 = 1; exp2 <= numRanks; exp2 *= 2)
         if (exp2 == numRanks)
             isValid = 1;
-    
+
     QuESTAssert(isValid, E_INVALID_NUM_RANKS, caller);
 }
 
 void validateNumQubitsInQureg(int numQubits, int numRanks, const char* caller) {
     QuESTAssert(numQubits>0, E_INVALID_NUM_CREATE_QUBITS, caller);
-    
+
     // mustn't be more amplitudes than can fit in the type
     unsigned int maxQubits = calcLog2(SIZE_MAX);
     QuESTAssert( numQubits <= maxQubits, E_NUM_AMPS_EXCEED_TYPE, caller);
-    
+
     // must be at least one amplitude per node
     long unsigned int numAmps = (1UL<<numQubits);
     QuESTAssert(numAmps >= numRanks, E_DISTRIB_QUREG_TOO_SMALL, caller);
 }
- 
+
 void validateNumQubitsInMatrix(int numQubits, const char* caller) {
     QuESTAssert(numQubits>0, E_INVALID_NUM_QUBITS, caller);
 }
@@ -334,9 +334,9 @@ void validateNumControls(Qureg qureg, const int numControlQubits, const char* ca
 
 void validateMultiTargets(Qureg qureg, int* targetQubits, const int numTargetQubits, const char* caller) {
     validateNumTargets(qureg, numTargetQubits, caller);
-    for (int i=0; i < numTargetQubits; i++) 
+    for (int i=0; i < numTargetQubits; i++)
         validateTarget(qureg, targetQubits[i], caller);
-        
+
     QuESTAssert(areUniqueQubits(targetQubits, numTargetQubits), E_TARGETS_NOT_UNIQUE, caller);
 }
 
@@ -344,7 +344,7 @@ void validateMultiControls(Qureg qureg, int* controlQubits, const int numControl
     validateNumControls(qureg, numControlQubits, caller);
     for (int i=0; i < numControlQubits; i++)
         validateControl(qureg, controlQubits[i], caller);
-        
+
     QuESTAssert(areUniqueQubits(controlQubits, numControlQubits), E_CONTROLS_NOT_UNIQUE, caller);
 }
 
@@ -352,7 +352,7 @@ void validateMultiQubits(Qureg qureg, int* qubits, const int numQubits, const ch
     QuESTAssert(numQubits>0 && numQubits<=qureg.numQubitsRepresented, E_INVALID_NUM_QUBITS, caller);
     for (int i=0; i < numQubits; i++)
         QuESTAssert(qubits[i]>=0 && qubits[i]<qureg.numQubitsRepresented, E_INVALID_QUBIT_INDEX, caller);
-        
+
     QuESTAssert(areUniqueQubits(qubits, numQubits), E_QUBITS_NOT_UNIQUE, caller);
 }
 
@@ -391,16 +391,16 @@ void validateTwoQubitUnitaryMatrix(Qureg qureg, ComplexMatrix4 u, const char* ca
 }
 
 void validateMatrixInit(ComplexMatrixN matr, const char* caller) {
-    
-    /* note that for (most) compilers which don't automatically initialise 
+
+    /* note that for (most) compilers which don't automatically initialise
      * pointers to NULL, this can only be used to check the mallocs in createComplexMatrixN
-     * succeeded. It can not be used to differentiate whether a user actually attempted 
+     * succeeded. It can not be used to differentiate whether a user actually attempted
      * to initialise or create their ComplexMatrixN instance.
      */
     QuESTAssert(matr.real != NULL && matr.imag != NULL, E_COMPLEX_MATRIX_NOT_INIT, caller);
 }
 
-void validateMultiQubitUnitaryMatrix(Qureg qureg, ComplexMatrixN u, int numTargs, const char* caller) { 
+void validateMultiQubitUnitaryMatrix(Qureg qureg, ComplexMatrixN u, int numTargs, const char* caller) {
     validateMatrixInit(u, caller);
     validateMultiQubitMatrixFitsInNode(qureg, numTargs, caller);
     QuESTAssert(numTargs == u.numQubits, E_INVALID_UNITARY_SIZE, caller);
@@ -454,7 +454,7 @@ void validateProb(qreal prob, const char* caller) {
 void validateNormProbs(qreal prob1, qreal prob2, const char* caller) {
     validateProb(prob1, caller);
     validateProb(prob2, caller);
-    
+
     qreal sum = prob1 + prob2;
     QuESTAssert(absReal(1 - sum) < REAL_EPS, E_UNNORM_PROBS, caller);
 }
@@ -488,7 +488,7 @@ void validateOneQubitPauliProbs(qreal probX, qreal probY, qreal probZ, const cha
     validateProb(probX, caller);
     validateProb(probY, caller);
     validateProb(probZ, caller);
-    
+
     qreal probNoError = 1 - probX - probY - probZ;
     QuESTAssert(probX <= probNoError, E_INVALID_ONE_QUBIT_PAULI_PROBS, caller);
     QuESTAssert(probY <= probNoError, E_INVALID_ONE_QUBIT_PAULI_PROBS, caller);
@@ -499,7 +499,7 @@ void validatePauliCodes(enum pauliOpType* pauliCodes, int numPauliCodes, const c
     for (int i=0; i < numPauliCodes; i++) {
         int code = pauliCodes[i];
         QuESTAssert(
-            code==PAULI_I || code==PAULI_X || code==PAULI_Y || code==PAULI_Z, 
+            code==PAULI_I || code==PAULI_X || code==PAULI_Y || code==PAULI_Z,
             E_INVALID_PAULI_CODE, caller);
     }
 }
@@ -513,9 +513,9 @@ void validateOneQubitKrausMap(Qureg qureg, ComplexMatrix2* ops, int numOps, cons
     int superOpNumQubits = 2*opNumQubits;
     int maxNumOps = superOpNumQubits*superOpNumQubits;
     QuESTAssert(numOps > 0 && numOps <= maxNumOps, E_INVALID_NUM_ONE_QUBIT_KRAUS_OPS, caller);
-    
+
     validateMultiQubitMatrixFitsInNode(qureg, superOpNumQubits, caller);
-    
+
     int isPos = isCompletelyPositiveMap2(ops, numOps);
     QuESTAssert(isPos, E_INVALID_KRAUS_OPS, caller);
 }
@@ -525,7 +525,7 @@ void validateTwoQubitKrausMap(Qureg qureg, ComplexMatrix4* ops, int numOps, cons
     int superOpNumQubits = 2*opNumQubits;
     int maxNumOps = superOpNumQubits*superOpNumQubits;
     QuESTAssert(numOps > 0 && numOps <= maxNumOps, E_INVALID_NUM_TWO_QUBIT_KRAUS_OPS, caller);
-    
+
     validateMultiQubitMatrixFitsInNode(qureg, superOpNumQubits, caller);
 
     int isPos = isCompletelyPositiveMap4(ops, numOps);
@@ -537,14 +537,14 @@ void validateMultiQubitKrausMap(Qureg qureg, int numTargs, ComplexMatrixN* ops, 
     int superOpNumQubits = 2*opNumQubits;
     int maxNumOps = superOpNumQubits*superOpNumQubits;
     QuESTAssert(numOps>0 && numOps <= maxNumOps, E_INVALID_NUM_N_QUBIT_KRAUS_OPS, caller);
-        
+
     for (int n=0; n<numOps; n++) {
         validateMatrixInit(ops[n], __func__);
-        QuESTAssert(ops[n].numQubits == numTargs, E_MISMATCHING_NUM_TARGS_KRAUS_SIZE, caller);    
+        QuESTAssert(ops[n].numQubits == numTargs, E_MISMATCHING_NUM_TARGS_KRAUS_SIZE, caller);
     }
-    
+
     validateMultiQubitMatrixFitsInNode(qureg, superOpNumQubits, caller);
-    
+
     int isPos = isCompletelyPositiveMapN(ops, numOps);
     QuESTAssert(isPos, E_INVALID_KRAUS_OPS, caller);
 }

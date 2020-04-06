@@ -18,11 +18,11 @@
 extern "C" {
 # endif
 
-    
+
 /*
  * general functions
  */
-  
+
 long long int getQubitBitMask(int* controlQubits, const int numControlQubits);
 
 long long int getControlFlipMask(int* controlQubits, int* controlState, const int numControlQubits);
@@ -55,7 +55,7 @@ void getQuESTDefaultSeedKey(unsigned long int *key);
 
 
 /*
- * operations upon density matrices 
+ * operations upon density matrices
  */
 
 void densmatr_initPlusState(Qureg targetQureg);
@@ -77,7 +77,7 @@ qreal densmatr_calcInnerProduct(Qureg a, Qureg b);
 qreal densmatr_calcProbOfOutcome(Qureg qureg, const int measureQubit, int outcome);
 
 void densmatr_collapseToKnownProbOutcome(Qureg qureg, const int measureQubit, int outcome, qreal outcomeProb);
-    
+
 int densmatr_measureWithStats(Qureg qureg, int measureQubit, qreal *outcomeProb);
 
 void densmatr_mixDephasing(Qureg qureg, const int targetQubit, qreal dephase);
@@ -99,12 +99,12 @@ void densmatr_mixKrausMap(Qureg qureg, int target, ComplexMatrix2 *ops, int numO
 void densmatr_mixTwoQubitKrausMap(Qureg qureg, int target1, int target2, ComplexMatrix4 *ops, int numOps);
 
 void densmatr_mixMultiQubitKrausMap(Qureg qureg, int* targets, int numTargets, ComplexMatrixN* ops, int numOps);
-    
 
-/* 
+
+/*
  * operations upon state vectors
  */
-    
+
 void statevec_reportStateToScreen(Qureg qureg, QuESTEnv env, int reportRank);
 
 int statevec_compareStates(Qureg mq1, Qureg mq2, qreal precision);
@@ -139,7 +139,7 @@ void statevec_phaseShift(Qureg qureg, const int targetQubit, qreal angle);
 
 void statevec_phaseShiftByTerm(Qureg qureg, const int targetQubit, Complex term);
 
-void statevec_controlledPhaseShift(Qureg qureg, const int idQubit1, const int idQubit2, qreal angle); 
+void statevec_controlledPhaseShift(Qureg qureg, const int idQubit1, const int idQubit2, qreal angle);
 
 void statevec_multiControlledPhaseShift(Qureg qureg, int *controlQubits, int numControlQubits, qreal angle);
 

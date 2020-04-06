@@ -2,7 +2,7 @@
 
 /** @file
  * Internal and API functions which are hardware-agnostic.
- * These must never call a front-end function in QuEST.c, which would lead to 
+ * These must never call a front-end function in QuEST.c, which would lead to
  * duplication of e.g. QASM logging and validation. Note that though many of
  * these functions are prefixed with statevec_, they will be called multiple times
  * to effect their equivalent operation on density matrices, so the passed Qureg
@@ -30,7 +30,7 @@
   #include <sys/time.h>
 #endif
 
-# include <sys/types.h> 
+# include <sys/types.h>
 # include <stdio.h>
 # include <stdlib.h>
 
@@ -41,27 +41,27 @@ extern "C" {
 
 /* builds a bit-string where 1 indicates a qubit is present in this list */
 long long int getQubitBitMask(int* qubits, const int numQubits) {
-    
-    long long int mask=0; 
+
+    long long int mask=0;
     for (int i=0; i<numQubits; i++)
         mask = mask | (1LL << qubits[i]);
-        
+
     return mask;
 }
 
 /* builds a bit-string where 1 indicates control qubits conditioned on 0 ('flipped') */
 long long int getControlFlipMask(int* controlQubits, int* controlState, const int numControlQubits) {
-    
+
     long long int mask=0;
     for (int i=0; i<numControlQubits; i++)
         if (controlState[i] == 0)
             mask = mask | (1LL << controlQubits[i]);
-            
+
     return mask;
 }
 
 void ensureIndsIncrease(int* ind1, int* ind2) {
-    
+
     if (*ind1 > *ind2) {
         int copy = *ind1;
         *ind1 = *ind2;
@@ -70,19 +70,19 @@ void ensureIndsIncrease(int* ind1, int* ind2) {
 }
 
 qreal getVectorMagnitude(Vector vec) {
-    
+
     return sqrt(vec.x*vec.x + vec.y*vec.y + vec.z*vec.z);
 }
 
 Vector getUnitVector(Vector vec) {
-    
+
     qreal mag = getVectorMagnitude(vec);
     Vector unitVec = (Vector) {.x=vec.x/mag, .y=vec.y/mag, .z=vec.z/mag};
     return unitVec;
 }
 
 Complex getConjugateScalar(Complex scalar) {
-    
+
     Complex conjScalar;
     conjScalar.real =   scalar.real;
     conjScalar.imag = - scalar.imag;
@@ -94,7 +94,7 @@ Complex getConjugateScalar(Complex scalar) {
         for (int j=0; j<dim; j++) { \
             dest.real[i][j] =   src.real[i][j]; \
             dest.imag[i][j] = - src.imag[i][j]; /* negative for conjugate */ \
-        } 
+        }
 ComplexMatrix2 getConjugateMatrix2(ComplexMatrix2 src) {
     ComplexMatrix2 conj;
     macro_setConjugateMatrix(conj, src, 2);
@@ -111,20 +111,20 @@ void setConjugateMatrixN(ComplexMatrixN m) {
 }
 
 void getComplexPairFromRotation(qreal angle, Vector axis, Complex* alpha, Complex* beta) {
-    
+
     Vector unitAxis = getUnitVector(axis);
     alpha->real =   cos(angle/2.0);
-    alpha->imag = - sin(angle/2.0)*unitAxis.z;  
+    alpha->imag = - sin(angle/2.0)*unitAxis.z;
     beta->real  =   sin(angle/2.0)*unitAxis.y;
     beta->imag  = - sin(angle/2.0)*unitAxis.x;
 }
 
 /** maps U(alpha, beta) to Rz(rz2) Ry(ry) Rz(rz1) */
 void getZYZRotAnglesFromComplexPair(Complex alpha, Complex beta, qreal* rz2, qreal* ry, qreal* rz1) {
-    
+
     qreal alphaMag = sqrt(alpha.real*alpha.real + alpha.imag*alpha.imag);
     *ry = 2.0 * acos(alphaMag);
-    
+
     qreal alphaPhase = atan2(alpha.imag, alpha.real);
     qreal betaPhase  = atan2(beta.imag,  beta.real);
     *rz2 = - alphaPhase + betaPhase;
@@ -133,11 +133,11 @@ void getZYZRotAnglesFromComplexPair(Complex alpha, Complex beta, qreal* rz2, qre
 
 /** maps U(r0c0, r0c1, r1c0, r1c1) to exp(i globalPhase) U(alpha, beta) */
 void getComplexPairAndPhaseFromUnitary(ComplexMatrix2 u, Complex* alpha, Complex* beta, qreal* globalPhase) {
-    
+
     qreal r0c0Phase = atan2(u.imag[0][0], u.real[0][0]);
     qreal r1c1Phase = atan2(u.imag[1][1], u.real[1][1]);
     *globalPhase = (r0c0Phase + r1c1Phase)/2.0;
-    
+
     qreal cosPhase = cos(*globalPhase);
     qreal sinPhase = sin(*globalPhase);
     alpha->real = u.real[0][0]*cosPhase + u.imag[0][0]*sinPhase;
@@ -152,16 +152,16 @@ void shiftIndices(int* indices, int numIndices, int shift) {
 }
 
 int generateMeasurementOutcome(qreal zeroProb, qreal *outcomeProb) {
-    
+
     // randomly choose outcome
     int outcome;
-    if (zeroProb < REAL_EPS) 
+    if (zeroProb < REAL_EPS)
         outcome = 1;
-    else if (1-zeroProb < REAL_EPS) 
+    else if (1-zeroProb < REAL_EPS)
         outcome = 0;
     else
         outcome = (genrand_real1() > zeroProb);
-    
+
     // set probability of outcome
     *outcomeProb = (outcome==0)? zeroProb : 1-zeroProb;
 
@@ -175,15 +175,15 @@ unsigned long int hashString(char *str){
     while ((c = *str++))
         hash = ((hash << 5) + hash) + c; /* hash * 33 + c */
 
-    return hash;    
+    return hash;
 }
 
 void getQuESTDefaultSeedKey(unsigned long int *key){
     // init MT random number generator with two keys -- time and pid
-    // for the MPI version, it is ok that all procs will get the same seed as random numbers will only be 
+    // for the MPI version, it is ok that all procs will get the same seed as random numbers will only be
     // used by the master process
 #if defined(_WIN32) && ! defined(__MINGW32__)
-  
+
     unsigned long int pid = (unsigned long int) _getpid();
     unsigned long int msecs = (unsigned long int) GetTickCount64();
 
@@ -199,17 +199,17 @@ void getQuESTDefaultSeedKey(unsigned long int *key){
     unsigned long int msecs = (unsigned long int) time_in_mill;
 
     key[0] = msecs; key[1] = pid;
-#endif 
+#endif
 }
 
-/** 
+/**
  * numSeeds <= 64
  */
 void seedQuEST(unsigned long int *seedArray, int numSeeds){
     // init MT random number generator with user defined list of seeds
-    // for the MPI version, it is ok that all procs will get the same seed as random numbers will only be 
+    // for the MPI version, it is ok that all procs will get the same seed as random numbers will only be
     // used by the master process
-    init_by_array(seedArray, numSeeds); 
+    init_by_array(seedArray, numSeeds);
 }
 
 void reportState(Qureg qureg){
@@ -248,42 +248,42 @@ qreal statevec_getProbAmp(Qureg qureg, long long int index){
 }
 
 void statevec_phaseShift(Qureg qureg, const int targetQubit, qreal angle) {
-    Complex term; 
-    term.real = cos(angle); 
+    Complex term;
+    term.real = cos(angle);
     term.imag = sin(angle);
     statevec_phaseShiftByTerm(qureg, targetQubit, term);
 }
 
 void statevec_pauliZ(Qureg qureg, const int targetQubit) {
-    Complex term; 
+    Complex term;
     term.real = -1;
     term.imag =  0;
     statevec_phaseShiftByTerm(qureg, targetQubit, term);
 }
 
 void statevec_sGate(Qureg qureg, const int targetQubit) {
-    Complex term; 
+    Complex term;
     term.real = 0;
     term.imag = 1;
     statevec_phaseShiftByTerm(qureg, targetQubit, term);
-} 
+}
 
 void statevec_tGate(Qureg qureg, const int targetQubit) {
-    Complex term; 
+    Complex term;
     term.real = 1/sqrt(2);
     term.imag = 1/sqrt(2);
     statevec_phaseShiftByTerm(qureg, targetQubit, term);
 }
 
 void statevec_sGateConj(Qureg qureg, const int targetQubit) {
-    Complex term; 
+    Complex term;
     term.real =  0;
     term.imag = -1;
     statevec_phaseShiftByTerm(qureg, targetQubit, term);
-} 
+}
 
 void statevec_tGateConj(Qureg qureg, const int targetQubit) {
-    Complex term; 
+    Complex term;
     term.real =  1/sqrt(2);
     term.imag = -1/sqrt(2);
     statevec_phaseShiftByTerm(qureg, targetQubit, term);
@@ -318,7 +318,7 @@ void statevec_rotateAroundAxisConj(Qureg qureg, const int rotQubit, qreal angle,
 
     Complex alpha, beta;
     getComplexPairFromRotation(angle, axis, &alpha, &beta);
-    alpha.imag *= -1; 
+    alpha.imag *= -1;
     beta.imag *= -1;
     statevec_compactUnitary(qureg, rotQubit, alpha, beta);
 }
@@ -334,7 +334,7 @@ void statevec_controlledRotateAroundAxisConj(Qureg qureg, const int controlQubit
 
     Complex alpha, beta;
     getComplexPairFromRotation(angle, axis, &alpha, &beta);
-    alpha.imag *= -1; 
+    alpha.imag *= -1;
     beta.imag *= -1;
     statevec_controlledCompactUnitary(qureg, controlQubit, targetQubit, alpha, beta);
 }
@@ -358,7 +358,7 @@ void statevec_controlledRotateZ(Qureg qureg, const int controlQubit, const int t
 }
 
 int statevec_measureWithStats(Qureg qureg, int measureQubit, qreal *outcomeProb) {
-    
+
     qreal zeroProb = statevec_calcProbOfOutcome(qureg, measureQubit, 0);
     int outcome = generateMeasurementOutcome(zeroProb, outcomeProb);
     statevec_collapseToKnownProbOutcome(qureg, measureQubit, outcome, *outcomeProb);
@@ -366,7 +366,7 @@ int statevec_measureWithStats(Qureg qureg, int measureQubit, qreal *outcomeProb)
 }
 
 int densmatr_measureWithStats(Qureg qureg, int measureQubit, qreal *outcomeProb) {
-    
+
     qreal zeroProb = densmatr_calcProbOfOutcome(qureg, measureQubit, 0);
     int outcome = generateMeasurementOutcome(zeroProb, outcomeProb);
     densmatr_collapseToKnownProbOutcome(qureg, measureQubit, outcome, *outcomeProb);
@@ -374,14 +374,14 @@ int densmatr_measureWithStats(Qureg qureg, int measureQubit, qreal *outcomeProb)
 }
 
 qreal statevec_calcFidelity(Qureg qureg, Qureg pureState) {
-    
+
     Complex innerProd = statevec_calcInnerProduct(qureg, pureState);
     qreal innerProdMag = innerProd.real*innerProd.real + innerProd.imag*innerProd.imag;
     return innerProdMag;
 }
 
 void statevec_sqrtSwapGate(Qureg qureg, int qb1, int qb2) {
-    
+
     ComplexMatrix4 u = (ComplexMatrix4) {.real={{0}}, .imag={{0}}};
     u.real[0][0]=1;
     u.real[3][3]=1;
@@ -389,12 +389,12 @@ void statevec_sqrtSwapGate(Qureg qureg, int qb1, int qb2) {
     u.real[1][2] = .5; u.imag[1][2] =-.5;
     u.real[2][1] = .5; u.imag[2][1] =-.5;
     u.real[2][2] = .5; u.imag[2][2] = .5;
-    
+
     statevec_twoQubitUnitary(qureg, qb1, qb2, u);
 }
 
 void statevec_sqrtSwapGateConj(Qureg qureg, int qb1, int qb2) {
-    
+
     ComplexMatrix4 u = (ComplexMatrix4) {.real={{0}}, .imag={{0}}};
     u.real[0][0]=1;
     u.real[3][3]=1;
@@ -402,7 +402,7 @@ void statevec_sqrtSwapGateConj(Qureg qureg, int qb1, int qb2) {
     u.real[1][2] = .5; u.imag[1][2] = .5;
     u.real[2][1] = .5; u.imag[2][1] = .5;
     u.real[2][2] = .5; u.imag[2][2] =-.5;
-    
+
     statevec_twoQubitUnitary(qureg, qb1, qb2, u);
 }
 
@@ -416,10 +416,10 @@ void statevec_multiRotatePauli(
     Complex uRxBeta = {.real = 0, .imag = (applyConj)? fac : -fac};
     Complex uRyAlpha = {.real = fac, .imag = 0}; // Ry(-pi/2) rotates Z -> X
     Complex uRyBeta = {.real = -fac, .imag = 0};
-    
+
     // mask may be modified to remove superfluous Identity ops
     long long int mask = getQubitBitMask(targetQubits, numTargets);
-    
+
     // rotate basis so that exp(Z) will effect exp(Y) and exp(X)
     for (int t=0; t < numTargets; t++) {
         if (targetPaulis[t] == PAULI_I)
@@ -430,11 +430,11 @@ void statevec_multiRotatePauli(
             statevec_compactUnitary(qureg, targetQubits[t], uRxAlpha, uRxBeta);
         // (targetPaulis[t] == 3) is Z basis
     }
-    
+
     // does nothing if there are no qubits to 'rotate'
     if (mask != 0)
         statevec_multiRotateZ(qureg, mask, (applyConj)? -angle : angle);
-    
+
     // undo X and Y basis rotations
     uRxBeta.imag *= -1;
     uRyBeta.real *= -1;
@@ -448,7 +448,7 @@ void statevec_multiRotatePauli(
 
 /* produces both pauli|qureg> or pauli * qureg (as a density matrix) */
 void statevec_applyPauliProd(Qureg workspace, int* targetQubits, enum pauliOpType* pauliCodes, int numTargets) {
-    
+
     for (int i=0; i < numTargets; i++) {
         // (pauliCodes[i] == PAULI_I) applies no operation
         if (pauliCodes[i] == PAULI_X)
@@ -462,77 +462,77 @@ void statevec_applyPauliProd(Qureg workspace, int* targetQubits, enum pauliOpTyp
 
 // <pauli> = <qureg|pauli|qureg> = qureg . pauli(qureg)
 qreal statevec_calcExpecPauliProd(Qureg qureg, int* targetQubits, enum pauliOpType* pauliCodes, int numTargets, Qureg workspace) {
-    
+
     statevec_cloneQureg(workspace, qureg);
     statevec_applyPauliProd(workspace, targetQubits, pauliCodes, numTargets);
-    
+
     // compute the expected value
     qreal value;
     if (qureg.isDensityMatrix)
         value = densmatr_calcTotalProb(workspace); // Trace(ops qureg)
     else
         value = statevec_calcInnerProduct(workspace, qureg).real; // <qureg|ops|qureg>
-                
+
     return value;
 }
 
 qreal statevec_calcExpecPauliSum(Qureg qureg, enum pauliOpType* allCodes, qreal* termCoeffs, int numSumTerms, Qureg workspace) {
-    
+
     int numQb = qureg.numQubitsRepresented;
     int targs[numQb];
     for (int q=0; q < numQb; q++)
         targs[q] = q;
-        
+
     qreal value = 0;
     for (int t=0; t < numSumTerms; t++)
         value += termCoeffs[t] * statevec_calcExpecPauliProd(qureg, targs, &allCodes[t*numQb], numQb, workspace);
-        
+
     return value;
 }
 
 void statevec_applyPauliSum(Qureg inQureg, enum pauliOpType* allCodes, qreal* termCoeffs, int numSumTerms, Qureg outQureg) {
-    
+
     int numQb = inQureg.numQubitsRepresented;
     int targs[numQb];
     for (int q=0; q < numQb; q++)
         targs[q] = q;
-        
+
     statevec_initBlankState(outQureg);
-    
+
     for (int t=0; t < numSumTerms; t++) {
         Complex coef = (Complex) {.real=termCoeffs[t], .imag=0};
         Complex iden = (Complex) {.real=1, .imag=0};
         Complex zero = (Complex) {.real=0, .imag=0};
-        
+
         // outQureg += coef paulis(inQureg)
         statevec_applyPauliProd(inQureg, targs, &allCodes[t*numQb], numQb);
-        statevec_setWeightedQureg(coef, inQureg, iden, outQureg, zero, outQureg); 
-        
+        statevec_setWeightedQureg(coef, inQureg, iden, outQureg, zero, outQureg);
+
         // undero paulis(inQureg), exploiting XX=YY=ZZ=I
         statevec_applyPauliProd(inQureg, targs, &allCodes[t*numQb], numQb);
     }
 }
 
 void statevec_twoQubitUnitary(Qureg qureg, const int targetQubit1, const int targetQubit2, ComplexMatrix4 u) {
-    
+
     long long int ctrlMask = 0;
     statevec_multiControlledTwoQubitUnitary(qureg, ctrlMask, targetQubit1, targetQubit2, u);
 }
 
 void statevec_controlledTwoQubitUnitary(Qureg qureg, const int controlQubit, const int targetQubit1, const int targetQubit2, ComplexMatrix4 u) {
-    
+
     long long int ctrlMask = 1LL << controlQubit;
     statevec_multiControlledTwoQubitUnitary(qureg, ctrlMask, targetQubit1, targetQubit2, u);
 }
 
 void statevec_multiQubitUnitary(Qureg qureg, int* targets, const int numTargets, ComplexMatrixN u) {
-    
+
     long long int ctrlMask = 0;
     statevec_multiControlledMultiQubitUnitary(qureg, ctrlMask, targets, numTargets, u);
 }
 
 void statevec_controlledMultiQubitUnitary(Qureg qureg, int ctrl, int* targets, const int numTargets, ComplexMatrixN u) {
-    
+
     long long int ctrlMask = 1LL << ctrl;
     statevec_multiControlledMultiQubitUnitary(qureg, ctrlMask, targets, numTargets, u);
 }
@@ -557,7 +557,7 @@ void statevec_controlledMultiQubitUnitary(Qureg qureg, int ctrl, int* targets, c
     					superOp->imag[i*(opDim) + k][j*(opDim) + l] += \
                             ops[n].real[i][j]*ops[n].imag[k][l] - \
                             ops[n].imag[i][j]*ops[n].real[k][l];  \
-                    } 
+                    }
 
 void populateKrausSuperOperator2(ComplexMatrix4* superOp, ComplexMatrix2* ops, int numOps) {
     int opDim = 2;
@@ -573,7 +573,7 @@ void populateKrausSuperOperatorN(ComplexMatrixN* superOp, ComplexMatrixN* ops, i
 }
 
 void densmatr_applyKrausSuperoperator(Qureg qureg, int target, ComplexMatrix4 superOp) {
-        
+
     long long int ctrlMask = 0;
     statevec_multiControlledTwoQubitUnitary(qureg, ctrlMask, target, target + qureg.numQubitsRepresented, superOp);
 }
@@ -597,21 +597,21 @@ void densmatr_applyMultiQubitKrausSuperoperator(Qureg qureg, int *targets, int n
 }
 
 void densmatr_mixKrausMap(Qureg qureg, int target, ComplexMatrix2 *ops, int numOps) {
-        
-    ComplexMatrix4 superOp; 
+
+    ComplexMatrix4 superOp;
     populateKrausSuperOperator2(&superOp, ops, numOps);
     densmatr_applyKrausSuperoperator(qureg, target, superOp);
 }
 
 ComplexMatrixN bindArraysToStackComplexMatrixN(
-    int numQubits, qreal re[][1<<numQubits], qreal im[][1<<numQubits], 
+    int numQubits, qreal re[][1<<numQubits], qreal im[][1<<numQubits],
     qreal** reStorage, qreal** imStorage
 ) {
     ComplexMatrixN m;
     m.numQubits = numQubits;
     m.real = reStorage;
     m.imag = imStorage;
-    
+
     int len = 1<<numQubits;
     for (int i=0; i<len; i++) {
         m.real[i] = re[i];
@@ -632,7 +632,7 @@ ComplexMatrixN bindArraysToStackComplexMatrixN(
     macro_initialiseStackComplexMatrixN(matrix, (numQubits), reArr_, imArr_);
 
 void densmatr_mixTwoQubitKrausMap(Qureg qureg, int target1, int target2, ComplexMatrix4 *ops, int numOps) {
-    
+
     ComplexMatrixN superOp;
     macro_allocStackComplexMatrixN(superOp, 4);
     populateKrausSuperOperator4(&superOp, ops, numOps);
@@ -642,22 +642,22 @@ void densmatr_mixTwoQubitKrausMap(Qureg qureg, int target1, int target2, Complex
 void densmatr_mixMultiQubitKrausMap(Qureg qureg, int* targets, int numTargets, ComplexMatrixN* ops, int numOps) {
 
     ComplexMatrixN superOp;
-    
+
     /* superOp will contain 2^(4 numTargets) complex numbers.
      * At double precision, superOp will cost additional memory:
      * numTargs=1   ->   0.25 KiB
-     * numTargs=2   ->   4 KiB 
+     * numTargs=2   ->   4 KiB
      * numTargs=3   ->   64 KiB
      * numTargs=4   ->   1 MiB
      * numTargs=5   ->   16 MiB.
      * At quad precision (usually 10 B per number, but possibly 16 B due to alignment),
      * this costs at most double.
      *
-     * Hence, if superOp is kept in the stack, numTargs >= 4 would exceed Windows' 1 MB 
-     * maximum stack-space allocation (numTargs >= 5 exceeding Linux' 8 MB). Therefore, 
+     * Hence, if superOp is kept in the stack, numTargs >= 4 would exceed Windows' 1 MB
+     * maximum stack-space allocation (numTargs >= 5 exceeding Linux' 8 MB). Therefore,
      * for numTargets < 4, superOp will be kept in the stack, else in the heap
      */
-     
+
     if (numTargets < 4) {
         // everything must live in 'if' since this macro declares local vars
         macro_allocStackComplexMatrixN(superOp, 2*numTargets);
@@ -673,13 +673,13 @@ void densmatr_mixMultiQubitKrausMap(Qureg qureg, int* targets, int numTargets, C
 }
 
 void densmatr_mixPauli(Qureg qureg, int qubit, qreal probX, qreal probY, qreal probZ) {
-    
+
     // convert pauli probabilities into Kraus map
     const int numOps = 4;
     ComplexMatrix2 ops[numOps];
     for (int n=0; n < numOps; n++)
         ops[n] = (ComplexMatrix2) {.real={{0}}, .imag={{0}}};
-    
+
     qreal facs[4] = { // literal numOps=4 for valid initialisation
 		sqrt(1-(probX + probY + probZ)),
 		sqrt(probX),
@@ -690,7 +690,7 @@ void densmatr_mixPauli(Qureg qureg, int qubit, qreal probX, qreal probY, qreal p
     ops[1].real[0][1] =  facs[1]; ops[1].real[1][0] =  facs[1];
     ops[2].imag[0][1] = -facs[2]; ops[2].imag[1][0] =  facs[2];
     ops[3].real[0][0] =  facs[3]; ops[3].real[1][1] = -facs[3];
-    
+
     densmatr_mixKrausMap(qureg, qubit, ops, numOps);
 }
 

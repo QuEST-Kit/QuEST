@@ -27,7 +27,7 @@
  */
 # if QuEST_PREC==1
     # define qreal float
-    // \cond HIDDEN_SYMBOLS   
+    // \cond HIDDEN_SYMBOLS
     # define MPI_QuEST_REAL MPI_FLOAT
     # define MPI_MAX_AMPS_IN_MSG (1LL<<29) // must be 2^int
     # define REAL_STRING_FORMAT "%.8f"
@@ -40,7 +40,7 @@
  */
 # elif QuEST_PREC==2
     # define qreal double
-    // \cond HIDDEN_SYMBOLS   
+    // \cond HIDDEN_SYMBOLS
     # define MPI_QuEST_REAL MPI_DOUBLE
     # define MPI_MAX_AMPS_IN_MSG (1LL<<28) // must be 2^int
     # define REAL_STRING_FORMAT "%.14f"
@@ -54,7 +54,7 @@
  */
 # elif QuEST_PREC==4
     # define qreal long double
-    // \cond HIDDEN_SYMBOLS   
+    // \cond HIDDEN_SYMBOLS
     # define MPI_QuEST_REAL MPI_LONG_DOUBLE
     # define MPI_MAX_AMPS_IN_MSG (1LL<<27) // must be 2^int
     # define REAL_STRING_FORMAT "%.17Lf"
@@ -65,7 +65,7 @@
 # endif
 
 
-/** @def QuEST_PREC 
+/** @def QuEST_PREC
  *
  * Sets the precision of \ref qreal and \ref qcomp, and generally that of the state-vectors stored
  * by QuEST. \p QuEST_PREC can be 1, 2 or 4 for single, double and quad precision - requires

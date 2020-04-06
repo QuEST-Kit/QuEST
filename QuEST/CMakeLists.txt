@@ -11,7 +11,7 @@
 # ----- LIBRARY USER SETTINGS -------------------------------------------------
 # -----------------------------------------------------------------------------
 
-# These variables are cached across multiple calls to cmake. Use cmake -LH for 
+# These variables are cached across multiple calls to cmake. Use cmake -LH for
 # current cache values
 
 # To override, use:
@@ -57,14 +57,14 @@ if (${DISTRIBUTED} AND ${GPUACCELERATED})
 endif()
 
 if ( NOT(${PRECISION} EQUAL 1) AND
-     NOT(${PRECISION} EQUAL 2) AND 
+     NOT(${PRECISION} EQUAL 2) AND
      NOT(${PRECISION} EQUAL 4) )
     message(FATAL_ERROR "PRECISION=${PRECISION} set but valid options for \
         precision are only 1 for single precision, 2 for double precision \
         or 4 for quad precision. Aborting")
 endif()
 
-if ( (${PRECISION} EQUAL 4) AND 
+if ( (${PRECISION} EQUAL 4) AND
         ${GPUACCELERATED} )
     message(FATAL_ERROR "PRECISION=${PRECISION} but quad precision is not \
         supported on GPU. Aborting")
@@ -79,14 +79,14 @@ if (${GPUACCELERATED} AND ${MULTITHREADED})
 endif()
 
 #TODO Add other supported Clang versions if found
-if ( ("${CMAKE_C_COMPILER_ID}" STREQUAL "Clang") AND 
+if ( ("${CMAKE_C_COMPILER_ID}" STREQUAL "Clang") AND
         ${GPUACCELERATED} AND
         NOT("${CMAKE_C_COMPILER_VERSION}" STREQUAL "3.7.0") )
     message(WARNING "Some versions of Clang are not NVIDIA-GPU compatible. \
         If compilation fails, try Clang 3.7.")
 endif()
 
-if ( ${GPUACCELERATED} AND 
+if ( ${GPUACCELERATED} AND
     ("${CMAKE_C_COMPILER_ID}" STREQUAL "GNU") AND
     ("${CMAKE_SYSTEM_NAME}" STREQUAL "DARWIN") ) # DARWIN means Mac OS X
     message(WARNING "On some platforms (e.g. OSX), NVIDIA-GPUs are not \
@@ -111,7 +111,7 @@ endif()
 if (GPUACCELERATED)
     find_package(CUDA REQUIRED)
     # Stop nvcc sending c compile flags through using -Xcompiler and breaking
-    # on compilation of a cpp file receiving -std=c99. In long term should figure 
+    # on compilation of a cpp file receiving -std=c99. In long term should figure
     # out why CMAKE_C_FLAGS and not CMAKE_CXX_FLAGS are being sent through to a cpp file
     set(CUDA_PROPAGATE_HOST_FLAGS FALSE)
 endif()
@@ -176,7 +176,7 @@ set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} \
     -std=c99"
 )
 
-# Use -O2 for all but debug mode by default 
+# Use -O2 for all but debug mode by default
 if (NOT("${CMAKE_BUILD_TYPE}" STREQUAL "Debug"))
     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} \
         -O2"
@@ -184,12 +184,12 @@ if (NOT("${CMAKE_BUILD_TYPE}" STREQUAL "Debug"))
 endif()
 
 # Set c flags for release
-set(CMAKE_C_FLAGS_RELEASE 
+set(CMAKE_C_FLAGS_RELEASE
     "-O2"
 )
 
 # Set c flags to use in debug mode
-set(CMAKE_C_FLAGS_DEBUG 
+set(CMAKE_C_FLAGS_DEBUG
     "-g"
 )
 
@@ -221,7 +221,7 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} \
     -std=c++98 -Wall"
 )
 
-# Use -O2 for all but debug mode by default 
+# Use -O2 for all but debug mode by default
 if (NOT("${CMAKE_BUILD_TYPE}" STREQUAL "Debug"))
     set(CMAKE_CXX_FLAGS "${CMAKE_C_FLAGS} \
         -O2"
@@ -234,7 +234,7 @@ set(CMAKE_CXX_FLAGS_RELEASE
 )
 
 # Set c++ flags to use in debug mode
-set(CMAKE_CXX_FLAGS_DEBUG 
+set(CMAKE_CXX_FLAGS_DEBUG
     "-g"
 )
 
@@ -300,7 +300,7 @@ endif()
 
 # ----- Location of header files ----------------------------------------------
 
-target_include_directories(QuEST 
+target_include_directories(QuEST
     PRIVATE src
     PUBLIC include
 )

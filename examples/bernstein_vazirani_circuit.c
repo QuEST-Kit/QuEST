@@ -1,4 +1,4 @@
-/** @file 
+/** @file
  * Implements the Bernstien--Vazirani circuit
  *
  * @author Tyson Jones
@@ -7,13 +7,13 @@
 # include <stdio.h>
 # include <math.h>
 
-# include "QuEST.h" 
+# include "QuEST.h"
 
 
 int main (int narg, char** varg) {
 
 
-    /* 	
+    /*
      * PREPARE QuEST
      */
 
@@ -29,7 +29,7 @@ int main (int narg, char** varg) {
     initZeroState(qureg);
 
 
-    /* 	
+    /*
      * APPLY ALGORITHM
      */
 
@@ -47,7 +47,7 @@ int main (int narg, char** varg) {
     }
 
 
-    /* 	
+    /*
      * VERIFY FINAL STATE
      */
 
@@ -69,7 +69,7 @@ int main (int narg, char** varg) {
      * FREE MEMORY
      */
 
-    destroyQureg(qureg, env); 
+    destroyQureg(qureg, env);
     destroyQuESTEnv(env);
     return 0;
 }

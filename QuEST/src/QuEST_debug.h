@@ -1,7 +1,7 @@
 // Distributed under MIT licence. See https://github.com/QuEST-Kit/QuEST/blob/master/LICENCE.txt for details
 
 /** @file
- * Developer functions used for unit testing and debugging, which are not part of the public API. 
+ * Developer functions used for unit testing and debugging, which are not part of the public API.
  * May contain functions that are incomplete or untested.
  *
  * @author Ania Brown
@@ -32,7 +32,7 @@ void initStateOfSingleQubit(Qureg *qureg, int qubitId, int outcome);
 void initStateDebug(Qureg qureg);
 
 /** Initialises the wavefunction amplitudes according to those specified in a file.
- * For debugging purpsoses 
+ * For debugging purpsoses
  */
 void initStateFromSingleFile(Qureg *qureg, char filename[200], QuESTEnv env);
 
@@ -43,17 +43,17 @@ int compareStates(Qureg mq1, Qureg mq2, qreal precision);
 
 /** Set elements in the underlying state vector represenation of a density matrix. Not exposed in the public
  * API as this requires an understanding of how the state vector is used to represent a density matrix.
- * Currently can only be used to set all amps. 
+ * Currently can only be used to set all amps.
  */
 void setDensityAmps(Qureg qureg, qreal* reals, qreal* imags);
 
 
 
-/** Return the precision of qreal for use in testing 
+/** Return the precision of qreal for use in testing
  * */
-  
+
 int QuESTPrecision(void);
-  
+
 #ifdef __cplusplus
 }
 #endif

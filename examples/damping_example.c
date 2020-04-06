@@ -1,4 +1,4 @@
-/** @file 
+/** @file
  * Demonstrates use of single-qubit damping
  *
  * @author Nicolas Vogt of HQS

@@ -27,7 +27,7 @@ endif ()
 if (${DISTRIBUTED})
     # distributed unit tests must supply an MPI-clue to (modified) catch
     add_definitions(-DDISTRIBUTED_MODE)
-    
+
     # compile and link C++ MPI
     find_package(MPI REQUIRED)
     include_directories(${MPI_CXX_INCLUDE_PATH})

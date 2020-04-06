@@ -12,8 +12,8 @@
 #define TWOBLUECUBES_SINGLE_INCLUDE_CATCH_HPP_INCLUDED
 // start catch.hpp
 
-/* code injection for the silencing of distributed testing. Requires that when 
- * running tests in distributed mode, a compiler constant DISTRIBUTED_MODE must 
+/* code injection for the silencing of distributed testing. Requires that when
+ * running tests in distributed mode, a compiler constant DISTRIBUTED_MODE must
  * be supplied when processing this file.
  * modified by Tyson Jones, 17th Jan 2020
  */
@@ -15924,7 +15924,7 @@ ConsoleReporter::ConsoleReporter(ReporterConfig const& config)
             };
         }
     }())) {
-        
+
         /* code injection to silence non-root nodes when running Catch2 in
          * a distributed execution, for distributed QuEST unit-testing.
          * modified by Tyson Jones, 17th Jan 2020
@@ -15932,7 +15932,7 @@ ConsoleReporter::ConsoleReporter(ReporterConfig const& config)
 #ifdef DISTRIBUTED_MODE
         int rank;
         MPI_Comm_rank(MPI_COMM_WORLD, &rank);
-        
+
         // put non-root streams in a fail state, so they silently discard output
         if (rank != 0)
             stream.setstate(std::ios_base::failbit);

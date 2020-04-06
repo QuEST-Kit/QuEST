@@ -3,14 +3,14 @@
 /** @file
  * Specifies a precision-agnostic type qcomp, which resolves to a complex<T> in C++ and a
  * complex T in C (that provided by complex.h), and which supports operator overloading
- * for easy complex algebra. This allows users to calculate with a natural complex type before 
+ * for easy complex algebra. This allows users to calculate with a natural complex type before
  * passinfg instances to the QuEST API as a \ref Complex through \ref toComplex and \ref fromComplex
  *
  * Adapted from the header originally written by Randy Meyers and Dr. Thomas Plum, accessed at
  * http://collaboration.cmc.ec.gc.ca/science/rpn/biblio/ddj/Website/articles/CUJ/2003/0303/cuj0303meyers/index.htm
  * Original header doc:
- * Compatibility file for C99 and C++ complex.  This header can be included by either C99 or 
- * ANSI C++ programs to allow complex arithmetic to be written in a common subset. Note that C 
+ * Compatibility file for C99 and C++ complex.  This header can be included by either C99 or
+ * ANSI C++ programs to allow complex arithmetic to be written in a common subset. Note that C
  * overloads for both the real and complex math functions are available after this header has been
  * included.
  *
@@ -27,7 +27,7 @@
  */
 
 // hide these from doxygen
-// \cond HIDDEN_SYMBOLS   
+// \cond HIDDEN_SYMBOLS
 
 // C++ uses complex<T>
 #ifdef __cplusplus
@@ -36,7 +36,7 @@
 #include <complex>
 
 using namespace std;
- 
+
 typedef complex<float> float_complex;
 typedef complex<double> double_complex;
 typedef complex<long double> long_double_complex;
@@ -96,25 +96,25 @@ typedef long double complex long_double_complex;
 
 /** @def qcomp
  *
- * A precision-agnostic operator-overloaded complex number type.  
+ * A precision-agnostic operator-overloaded complex number type.
  * This is a complex analog of \ref qreal and is of single, double or quad
  * precision depending on the value of \ref QuEST_PREC.
- * It resolves to the native complex type provided by <complex.h> 
+ * It resolves to the native complex type provided by <complex.h>
  * for both C99 and C++11, so can be used with operators.
  * It can be constructed with \p qcomp(real, imag).
- * 
- * For example, in C, 
- * \code 
+ *
+ * For example, in C,
+ * \code
  * qcomp x = 2 + 3i;
- * x -= 3.2*x; 
+ * x -= 3.2*x;
  * \endcode
  * and in C++,
- * \code 
+ * \code
  * qcomp x = qcomp(2, 3);
- * x -= 3*x; 
+ * x -= 3*x;
  * \endcode
  *
- * Assuming \p QuEST_PREC=4, qcomp will be 'complex long double' in C and 
+ * Assuming \p QuEST_PREC=4, qcomp will be 'complex long double' in C and
  * 'complex<long double>' in C++.
  *
  * Can be converted to/from \ref Complex, the struct accepted by the QuEST

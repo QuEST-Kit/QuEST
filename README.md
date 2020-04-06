@@ -6,8 +6,8 @@
 [![macOS unit](https://github.com/QuEST-Kit/QuEST/workflows/macOS%20unit/badge.svg)](https://github.com/QuEST-Kit/QuEST/actions)
 [![LLVM](https://github.com/QuEST-Kit/QuEST/workflows/LLVM%20asan/badge.svg)](https://github.com/QuEST-Kit/QuEST/actions)
 
-<!--- 
-temporarily hiding incorrect coverage statistics 
+<!---
+temporarily hiding incorrect coverage statistics
 (currently only considers serial CPU; needs also GPU and distributed test contributions)
 [![codecov](https://codecov.io/gh/QuEST-Kit/QuEST/branch/develop/graph/badge.svg)](https://codecov.io/gh/QuEST-Kit/QuEST)
 --->
@@ -46,8 +46,8 @@ QuEST can simulate decoherence on mixed states, output [QASM](https://arxiv.org/
 
 Learn more about QuEST at [quest.qtechtheory.org](https://quest.qtechtheory.org), or read the [whitepaper](https://www.nature.com/articles/s41598-019-47174-9). If you find QuEST useful, feel free to cite
 ```
-Jones, T., Brown, A., Bush, I. et al. 
-QuEST and High Performance Simulation of Quantum Computers. 
+Jones, T., Brown, A., Bush, I. et al.
+QuEST and High Performance Simulation of Quantum Computers.
 Sci Rep 9, 10736 (2019) doi:10.1038/s41598-019-47174-9
 ```
 ```
@@ -75,7 +75,7 @@ Full documentation is available at [quest.qtechtheory.org/docs](https://quest.qt
 
 ## Getting started
 
-QuEST is contained entirely in the files in the `QuEST/` folder. To use QuEST, copy this folder to your computer and include `QuEST.h` in your `C` or `C++` code, and compile using cmake with the provided [CMakeLists.txt file](/CMakeLists.txt). See the [tutorial](/examples/README.md) for an introduction. We also include example [submission scripts](examples/submissionScripts/) for using QuEST with SLURM and PBS. 
+QuEST is contained entirely in the files in the `QuEST/` folder. To use QuEST, copy this folder to your computer and include `QuEST.h` in your `C` or `C++` code, and compile using cmake with the provided [CMakeLists.txt file](/CMakeLists.txt). See the [tutorial](/examples/README.md) for an introduction. We also include example [submission scripts](examples/submissionScripts/) for using QuEST with SLURM and PBS.
 
 ### Quick Start
 
@@ -98,9 +98,9 @@ then run it with
 ./demo
 ```
 
-#### Windows 
+#### Windows
 
-Windows users should install [Build Tools](https://visualstudio.microsoft.com/downloads/#build-tools-for-visual-studio-2019) for Visual Studio, [CMake](https://cmake.org/download/) and [MinGW-w64](https://sourceforge.net/projects/mingw-w64/). 
+Windows users should install [Build Tools](https://visualstudio.microsoft.com/downloads/#build-tools-for-visual-studio-2019) for Visual Studio, [CMake](https://cmake.org/download/) and [MinGW-w64](https://sourceforge.net/projects/mingw-w64/).
 Then, in a *Developer Command Prompt for VS*, run
 ```bash
 git clone "https://github.com/quest-kit/QuEST.git"
@@ -118,13 +118,13 @@ demo.exe
 
 
 #### Tests
-Additionally, you can run QuEST's rigorous unit tests in your own environment, 
+Additionally, you can run QuEST's rigorous unit tests in your own environment,
 which should take no longer than ten minutes.
 ```bash
 mkdir build
 cd build
 cmake .. -DTESTING=ON
-make 
+make
 make test
 ```
 

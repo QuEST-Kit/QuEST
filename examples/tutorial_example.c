@@ -1,4 +1,4 @@
-/** @file 
+/** @file
  * A demo of QuEST
  *
  * @author Ania Brown
@@ -73,16 +73,16 @@ int main (int narg, char *varg[]) {
 
     int ctrls[] = {0,1};
     multiControlledUnitary(qubits, ctrls, 2, 2, u);
-    
+
     ComplexMatrixN toff = createComplexMatrixN(3);
     toff.real[6][7] = 1;
     toff.real[7][6] = 1;
     for (int i=0; i<6; i++)
         toff.real[i][i] = 1;
     multiQubitUnitary(qubits, targs, 3, toff);
-    
-    
-    
+
+
+
     /*
      * STUDY QUANTUM STATE
      */
@@ -108,7 +108,7 @@ int main (int narg, char *varg[]) {
      * FREE MEMORY
      */
 
-    destroyQureg(qubits, env); 
+    destroyQureg(qubits, env);
     destroyComplexMatrixN(toff);
 
 

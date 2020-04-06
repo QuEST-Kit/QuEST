@@ -7,7 +7,7 @@
  * @author Ania Brown (original testing of qubit indices, unitarity, valid collapse probability)
  * @author Balint Koczor (Kraus maps)
  */
- 
+
 # ifndef QUEST_VALIDATION_H
 # define QUEST_VALIDATION_H
 

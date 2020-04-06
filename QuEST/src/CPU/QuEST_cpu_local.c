@@ -1,4 +1,4 @@
-// Distributed under MIT licence. See https://github.com/QuEST-Kit/QuEST/blob/master/LICENCE.txt for details 
+// Distributed under MIT licence. See https://github.com/QuEST-Kit/QuEST/blob/master/LICENCE.txt for details
 
 /** @file
  * An implementation of the pure backend in ../QuEST_ops_pure.h for a local (non-MPI, non-GPU) environment.
@@ -59,51 +59,51 @@ qreal densmatr_calcPurity(Qureg qureg) {
 }
 
 qreal densmatr_calcHilbertSchmidtDistance(Qureg a, Qureg b) {
-    
+
     qreal distSquared = densmatr_calcHilbertSchmidtDistanceSquaredLocal(a, b);
     qreal dist = sqrt(distSquared);
     return dist;
 }
 
 qreal densmatr_calcInnerProduct(Qureg a, Qureg b) {
-    
+
     qreal scalar = densmatr_calcInnerProductLocal(a, b);
     return scalar;
 }
 
 qreal densmatr_calcFidelity(Qureg qureg, Qureg pureState) {
-    
+
     // save pointers to qureg's pair state
     qreal* quregPairRePtr = qureg.pairStateVec.real;
     qreal* quregPairImPtr = qureg.pairStateVec.imag;
-    
+
     // populate qureg pair state with pure state (by repointing)
     qureg.pairStateVec.real = pureState.stateVec.real;
     qureg.pairStateVec.imag = pureState.stateVec.imag;
-    
+
     // calculate fidelity using pairState
     qreal fid = densmatr_calcFidelityLocal(qureg, pureState);
-    
+
     // restore pointers
     qureg.pairStateVec.real = quregPairRePtr;
     qureg.pairStateVec.imag = quregPairImPtr;
-    
+
     return fid;
 }
 
 void densmatr_initPureState(Qureg qureg, Qureg pureState) {
-    
+
     // save pointers to qureg's pair state
     qreal* quregPairRePtr = qureg.pairStateVec.real;
     qreal* quregPairImPtr = qureg.pairStateVec.imag;
-    
+
     // populate qureg pair state with pure state (by repointing)
     qureg.pairStateVec.real = pureState.stateVec.real;
     qureg.pairStateVec.imag = pureState.stateVec.imag;
 
     // populate density matrix via it's pairState
     densmatr_initPureStateLocal(qureg, pureState);
-    
+
     // restore pointers
     qureg.pairStateVec.real = quregPairRePtr;
     qureg.pairStateVec.imag = quregPairImPtr;
@@ -114,15 +114,15 @@ Complex statevec_calcInnerProduct(Qureg bra, Qureg ket) {
 }
 
 qreal densmatr_calcTotalProb(Qureg qureg) {
-    
+
     // computes the trace using Kahan summation
     qreal pTotal=0;
     qreal y, t, c;
     c = 0;
-    
+
     long long int numCols = 1LL << qureg.numQubitsRepresented;
     long long diagIndex;
-    
+
     for (int col=0; col< numCols; col++) {
         diagIndex = col*(numCols + 1);
         y = qureg.stateVec.real[diagIndex] - c;
@@ -130,21 +130,21 @@ qreal densmatr_calcTotalProb(Qureg qureg) {
         c = ( t - pTotal ) - y; // brackets are important
         pTotal = t;
     }
-    
+
     // does not check imaginary component, by design
-        
+
     return pTotal;
 }
 
 qreal statevec_calcTotalProb(Qureg qureg){
     // implemented using Kahan summation for greater accuracy at a slight floating
     // point operation overhead. For more details see https://en.wikipedia.org/wiki/Kahan_summation_algorithm
-    qreal pTotal=0; 
+    qreal pTotal=0;
     qreal y, t, c;
     long long int index;
     long long int numAmpsPerRank = qureg.numAmpsPerChunk;
     c = 0.0;
-    for (index=0; index<numAmpsPerRank; index++){ 
+    for (index=0; index<numAmpsPerRank; index++){
         // Perform pTotal+=qureg.stateVec.real[index]*qureg.stateVec.real[index]; by Kahan
 
         y = qureg.stateVec.real[index]*qureg.stateVec.real[index] - c;
@@ -162,26 +162,26 @@ qreal statevec_calcTotalProb(Qureg qureg){
         pTotal = t;
 
 
-    } 
+    }
     return pTotal;
 }
 
 
 QuESTEnv createQuESTEnv(void) {
     // init MPI environment
-    
+
     QuESTEnv env;
     env.rank=0;
     env.numRanks=1;
-    
+
     seedQuESTDefault();
-    
+
     return env;
 }
 
 void syncQuESTEnv(QuESTEnv env){
-    // MPI Barrier goes here in MPI version. 
-} 
+    // MPI Barrier goes here in MPI version.
+}
 
 int syncQuESTSuccess(int successCode){
     return successCode;
@@ -212,43 +212,43 @@ qreal statevec_getImagAmp(Qureg qureg, long long int index){
     return qureg.stateVec.imag[index];
 }
 
-void statevec_compactUnitary(Qureg qureg, const int targetQubit, Complex alpha, Complex beta) 
+void statevec_compactUnitary(Qureg qureg, const int targetQubit, Complex alpha, Complex beta)
 {
     statevec_compactUnitaryLocal(qureg, targetQubit, alpha, beta);
 }
 
-void statevec_unitary(Qureg qureg, const int targetQubit, ComplexMatrix2 u) 
+void statevec_unitary(Qureg qureg, const int targetQubit, ComplexMatrix2 u)
 {
     statevec_unitaryLocal(qureg, targetQubit, u);
 }
 
-void statevec_controlledCompactUnitary(Qureg qureg, const int controlQubit, const int targetQubit, Complex alpha, Complex beta) 
+void statevec_controlledCompactUnitary(Qureg qureg, const int controlQubit, const int targetQubit, Complex alpha, Complex beta)
 {
     statevec_controlledCompactUnitaryLocal(qureg, controlQubit, targetQubit, alpha, beta);
 }
 
-void statevec_controlledUnitary(Qureg qureg, const int controlQubit, const int targetQubit, ComplexMatrix2 u) 
+void statevec_controlledUnitary(Qureg qureg, const int controlQubit, const int targetQubit, ComplexMatrix2 u)
 {
     statevec_controlledUnitaryLocal(qureg, controlQubit, targetQubit, u);
 }
 
-void statevec_multiControlledUnitary(Qureg qureg, long long int ctrlQubitsMask, long long int ctrlFlipMask, const int targetQubit, ComplexMatrix2 u) 
+void statevec_multiControlledUnitary(Qureg qureg, long long int ctrlQubitsMask, long long int ctrlFlipMask, const int targetQubit, ComplexMatrix2 u)
 {
     statevec_multiControlledUnitaryLocal(qureg, targetQubit, ctrlQubitsMask, ctrlFlipMask, u);
 }
 
-void statevec_pauliX(Qureg qureg, const int targetQubit) 
+void statevec_pauliX(Qureg qureg, const int targetQubit)
 {
     statevec_pauliXLocal(qureg, targetQubit);
 }
 
-void statevec_pauliY(Qureg qureg, const int targetQubit) 
+void statevec_pauliY(Qureg qureg, const int targetQubit)
 {
     int conjFac = 1;
     statevec_pauliYLocal(qureg, targetQubit, conjFac);
 }
 
-void statevec_pauliYConj(Qureg qureg, const int targetQubit) 
+void statevec_pauliYConj(Qureg qureg, const int targetQubit)
 {
     int conjFac = -1;
     statevec_pauliYLocal(qureg, targetQubit, conjFac);
@@ -266,12 +266,12 @@ void statevec_controlledPauliYConj(Qureg qureg, const int controlQubit, const in
     statevec_controlledPauliYLocal(qureg, controlQubit, targetQubit, conjFac);
 }
 
-void statevec_hadamard(Qureg qureg, const int targetQubit) 
+void statevec_hadamard(Qureg qureg, const int targetQubit)
 {
     statevec_hadamardLocal(qureg, targetQubit);
 }
 
-void statevec_controlledNot(Qureg qureg, const int controlQubit, const int targetQubit) 
+void statevec_controlledNot(Qureg qureg, const int controlQubit, const int targetQubit)
 {
     statevec_controlledNotLocal(qureg, controlQubit, targetQubit);
 }
@@ -285,7 +285,7 @@ qreal statevec_calcProbOfOutcome(Qureg qureg, const int measureQubit, int outcom
 }
 
 qreal densmatr_calcProbOfOutcome(Qureg qureg, const int measureQubit, int outcome) {
-    
+
     qreal outcomeProb = densmatr_findProbabilityOfZeroLocal(qureg, measureQubit);
     if (outcome == 1)
         outcomeProb = 1.0 - outcomeProb;
@@ -299,7 +299,7 @@ void statevec_collapseToKnownProbOutcome(Qureg qureg, const int measureQubit, in
 
 void seedQuESTDefault(void){
     // init MT random number generator with three keys -- time and pid
-    // for the MPI version, it is ok that all procs will get the same seed as random numbers will only be 
+    // for the MPI version, it is ok that all procs will get the same seed as random numbers will only be
     // used by the master process
 
     unsigned long int key[2];
@@ -317,7 +317,7 @@ void statevec_multiControlledMultiQubitUnitary(Qureg qureg, long long int ctrlMa
     statevec_multiControlledMultiQubitUnitaryLocal(qureg, ctrlMask, targs, numTargs, u);
 }
 
-void statevec_swapQubitAmps(Qureg qureg, int qb1, int qb2) 
+void statevec_swapQubitAmps(Qureg qureg, int qb1, int qb2)
 {
     statevec_swapQubitAmpsLocal(qureg, qb1, qb2);
 }
