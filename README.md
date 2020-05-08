@@ -138,9 +138,13 @@ To file a bug report or feature request, [raise a github issue](https://github.c
 
 ## Acknowledgements
 
-QuEST uses the [mt19937ar](http://www.math.sci.hiroshima-u.ac.jp/~m-mat/MT/MT2002/emt19937ar.html) Mersenne Twister algorithm for random number generation, under the BSD licence. QuEST optionally (by additionally importing `QuEST_complex.h`) integrates the [language agnostic complex type](http://collaboration.cmc.ec.gc.ca/science/rpn/biblio/ddj/Website/articles/CUJ/2003/0303/cuj0303meyers/index.htm) by Randy Meyers and Dr. Thomas Plum
+We sincerely thank the following external contributors to QuEST.
 
-We thank [HQS Quantum simulations](https://quantumsimulations.de/) for contributing `mixDamping` on CPU, and [Kshitij Chhabra](https://github.com/kshitijc) for patching some validation bugs.
+- [HQS Quantum simulations](https://quantumsimulations.de/) for contributing `mixDamping` on CPU.
+- [Kshitij Chhabra](https://github.com/kshitijc) for patching some validation bugs.
+- [Drew Silcock](https://github.com/drewsilcock) for patching the multithreaded build on MacOS.
+
+QuEST uses the [mt19937ar](http://www.math.sci.hiroshima-u.ac.jp/~m-mat/MT/MT2002/emt19937ar.html) Mersenne Twister algorithm for random number generation, under the BSD licence. QuEST optionally (by additionally importing `QuEST_complex.h`) integrates the [language agnostic complex type](http://collaboration.cmc.ec.gc.ca/science/rpn/biblio/ddj/Website/articles/CUJ/2003/0303/cuj0303meyers/index.htm) by Randy Meyers and Dr. Thomas Plum
 
 ---------------------------------
 
