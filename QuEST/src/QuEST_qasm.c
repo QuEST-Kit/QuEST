@@ -31,8 +31,8 @@
 # define INIT_ZERO_CMD "reset"  // QASM cmd for setting state 0
 # define COMMENT_PREF "//"     // QASM syntax for a comment ;)
 
-# define MAX_LINE_LEN 200       // maximum length (#chars) of a single QASM instruction
-# define BUF_INIT_SIZE 1000     // initial size of the QASM buffer (#chars)
+# define MAX_LINE_LEN 1024       // maximum length (#chars) of a single QASM instruction
+# define BUF_INIT_SIZE 1024     // initial size of the QASM buffer (#chars)
 # define BUF_GROW_FAC 2         // growth factor when buffer dynamically resizes
 
 static const char* qasmGateLabels[] = {

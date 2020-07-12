@@ -1024,6 +1024,9 @@ void compactUnitary(Qureg qureg, const int targetQubit, Complex alpha, Complex b
                 \end{tikzpicture}
     }
     \f]
+ * 
+ * If \p qureg is a state-vector, then the resulting state is \f$ u \, |\text{qureg}\rangle \f$.
+ * If \p qureg is a density-matrix \f$ \rho \f$, then the resulting state is \f$ u \, \rho \, u^\dagger \f$.
  *
  * @ingroup unitary                                                              
  * @param[in,out] qureg object representing the set of all qubits
@@ -2706,7 +2709,7 @@ void multiControlledTwoQubitUnitary(Qureg qureg, int* controlQubits, const int n
 
 /** Apply a general multi-qubit unitary (including a global phase factor) with any number of target qubits.
  *
- * The first target qubit in \p targs is treated as \b least sigifnicant in \p u.
+ * The first target qubit in \p targs is treated as \b least significant in \p u.
  * For example, 
 
  *     multiQubitUnitary(qureg, (int []) {a, b, c}, 3, u);
@@ -2775,6 +2778,7 @@ void multiControlledTwoQubitUnitary(Qureg qureg, int* controlQubits, const int n
  *      if any index in \p targs is outside of [0, \p qureg.numQubitsRepresented),
  *      or if \p targs are not unique,
  *      or if matrix \p u is not unitary,
+ *      or if \p u is not of a compatible size with \p numTargs,
  *      or if a node cannot fit the required number of target amplitudes in distributed mode.
  * @author Tyson Jones
  */
@@ -2796,7 +2800,7 @@ void multiQubitUnitary(Qureg qureg, int* targs, const int numTargs, ComplexMatri
  * \f]
  * on the control and target qubits.
  *
- * The target qubits in \p targs are treated as ordered least sigifnicant 
+ * The target qubits in \p targs are treated as ordered least significant 
  * to most significant in \p u.
  *
  * The passed ComplexMatrix must be unitary and be a compatible size with the specified number of
@@ -2866,7 +2870,7 @@ void controlledMultiQubitUnitary(Qureg qureg, int ctrl, int* targs, const int nu
  * \f]
  * on the control and target qubits.
  *
- * The target qubits in \p targs are treated as ordered least sigifnicant 
+ * The target qubits in \p targs are treated as ordered least significant 
  * to most significant in \p u.
  *
  * The passed ComplexMatrix must be unitary and be a compatible size with the specified number of
