@@ -823,6 +823,16 @@ void applyMatrix2(Qureg qureg, const int targetQubit, ComplexMatrix2 u) {
     qasm_recordComment(qureg, "Here, an undisclosed 2-by-2 matrix (possibly non-unitary) was multiplied onto qubit %d", targetQubit);
 }
 
+void applyMatrix4(Qureg qureg, const int targetQubit1, const int targetQubit2, ComplexMatrix4 u) {
+    validateMultiTargets(qureg, (int []) {targetQubit1, targetQubit2}, 2, __func__);
+    validateMultiQubitMatrixFitsInNode(qureg, 2, __func__);
+    
+    // actually just left-multiplies any complex matrix
+    statevec_twoQubitUnitary(qureg, targetQubit1, targetQubit2, u);
+
+    qasm_recordComment(qureg, "Here, an undisclosed 4-by-4 matrix (possibly non-unitary) was multiplied onto qubits %d and %d", targetQubit1, targetQubit2);
+}
+
 
 /*
  * calculations

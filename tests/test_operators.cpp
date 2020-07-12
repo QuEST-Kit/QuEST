@@ -75,6 +75,71 @@ TEST_CASE( "applyMatrix2", "[operators]" ) {
 
 
 
+/** @sa applyMatrix4
+ * @ingroup unittest 
+ * @author Tyson Jones 
+ */
+TEST_CASE( "applyMatrix4", "[operators]" ) {
+    
+    PREPARE_TEST( quregVec, quregMatr, refVec, refMatr );
+    
+    // in distributed mode, each node must be able to fit all amps modified by matrix 
+    REQUIRE( quregVec.numAmpsPerChunk >= 4 );
+    
+    // every test will use a unique random matrix
+    QMatrix op = getRandomQMatrix(4); // 4-by-4
+    ComplexMatrix4 matr = toComplexMatrix4(op); 
+
+    SECTION( "correctness" ) {
+        
+        int targ1 = GENERATE( range(0,NUM_QUBITS) );
+        int targ2 = GENERATE_COPY( filter([=](int t){ return t!=targ1; }, range(0,NUM_QUBITS)) );
+        
+        // reference boilerplate
+        int* ctrls = NULL;
+        int numCtrls = 0;
+        int targs[] = {targ1, targ2};
+        int numTargs = 2;
+        
+        SECTION( "state-vector" ) {
+        
+            applyMatrix4(quregVec, targ1, targ2, matr);
+            applyReferenceMatrix(refVec, ctrls, numCtrls, targs, numTargs, op);
+            REQUIRE( areEqual(quregVec, refVec) );
+        }
+        SECTION( "density-matrix" ) {
+
+            applyMatrix4(quregMatr, targ1, targ2, matr);
+            applyReferenceMatrix(refMatr, ctrls, numCtrls, targs, numTargs, op);
+            REQUIRE( areEqual(quregMatr, refMatr, 10*REAL_EPS) );
+        }
+    }
+    SECTION( "input validation" ) {
+        
+        SECTION( "qubit indices" ) {
+            
+            int targ1 = GENERATE( -1, NUM_QUBITS );
+            int targ2 = 0;
+            REQUIRE_THROWS_WITH( applyMatrix4(quregVec, targ1, targ2, matr), Contains("Invalid target") );
+            REQUIRE_THROWS_WITH( applyMatrix4(quregVec, targ2, targ1, matr), Contains("Invalid target") );
+        }
+        SECTION( "repetition of targets" ) {
+            
+            int qb = 0;
+            REQUIRE_THROWS_WITH( applyMatrix4(quregVec, qb, qb, matr), Contains("target") && Contains("unique") );
+        }
+        SECTION( "matrix fits in node" ) {
+                
+            // pretend we have a very limited distributed memory
+            quregVec.numAmpsPerChunk = 1;
+            REQUIRE_THROWS_WITH( applyMatrix4(quregVec, 0, 1, matr), Contains("targets too many qubits"));
+        }
+    }
+    CLEANUP_TEST( quregVec, quregMatr );
+}
+
+
+
 /** @sa applyPauliSum
  * @ingroup unittest 
  * @author Tyson Jones 

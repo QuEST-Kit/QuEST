@@ -3170,6 +3170,54 @@ void applyPauliSum(Qureg inQureg, enum pauliOpType* allPauliCodes, qreal* termCo
  */
 void applyMatrix2(Qureg qureg, const int targetQubit, ComplexMatrix2 u);
 
+/** Apply a general 4-by-4 matrix, which may be non-unitary. The matrix is 
+ * left-multiplied onto the state, for both state-vectors and density matrices.
+ * Hence, this function differs from twoQubitUnitary() by more than just permitting a non-unitary 
+ * matrix.
+
+ * \p targetQubit1 is treated as the \p least significant qubit in \p u, such that 
+ * a row in \p u is dotted with the vector
+ * \f$ |\text{targetQubit2} \;\; \text{targetQubit1}\rangle : \{ |00\rangle, |01\rangle, |10\rangle, |11\rangle \} \f$
+ *
+ * For example, 
+
+ *     applyMatrix4(qureg, a, b, u);
+ *
+ * will invoke multiplication
+ * \f[
+ * \begin{pmatrix}
+ * u_{00} & u_{01} & u_{02} & u_{03} \\
+ * u_{10} & u_{11} & u_{12} & u_{13} \\
+ * u_{20} & u_{21} & u_{22} & u_{23} \\
+ * u_{30} & u_{31} & u_{32} & u_{33}
+ * \end{pmatrix}
+ * \begin{pmatrix}
+ * |ba\rangle = |00\rangle \\
+ * |ba\rangle = |01\rangle \\
+ * |ba\rangle = |10\rangle \\
+ * |ba\rangle = |11\rangle 
+ * \end{pmatrix}
+ * \f]
+ *
+ * This function may leave \p qureg is an unnormalised state.
+ *                 
+ * Note that in distributed mode, this routine requires that each node contains at least 4 amplitudes.
+ * This means an q-qubit register (state vector or density matrix) can be distributed 
+ * by at most 2^q/4 nodes.
+ * 
+ * @ingroup operator                                            
+ * @param[in,out] qureg object representing the set of all qubits
+ * @param[in] targetQubit1 first qubit to operate on, treated as least significant in \p u
+ * @param[in] targetQubit2 second qubit to operate on, treated as most significant in \p u
+ * @param[in] u matrix to apply
+ * @throws exitWithError
+ *      if \p targetQubit1 or \p targetQubit2 are outside [0, \p qureg.numQubitsRepresented),
+ *      or if \p targetQubit1 equals \p targetQubit2,
+ *      or if each node cannot fit 4 amplitudes in distributed mode.
+ * @author Tyson Jones
+ */
+void applyMatrix4(Qureg qureg, const int targetQubit1, const int targetQubit2, ComplexMatrix4 u);
+
 /** An internal function called when invalid arguments are passed to a QuEST API
  * call, which the user can optionally override by redefining. This function is 
  * a weak symbol, so that users can choose how input errors are handled, by 
