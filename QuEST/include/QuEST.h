@@ -3281,6 +3281,60 @@ void applyMatrix4(Qureg qureg, const int targetQubit1, const int targetQubit2, C
  */
 void applyMatrixN(Qureg qureg, int* targs, const int numTargs, ComplexMatrixN u);
 
+/** Apply a general N-by-N matrix, which may be non-unitary, with additional controlled qubits.
+ * The matrix is left-multiplied onto the state, for both state-vectors and density matrices.
+ * Hence, this function differs from multiControlledMultiQubitUnitary() by more than just permitting a non-unitary 
+ * matrix.
+ *
+ * This function may leave \p qureg is an unnormalised state.
+*
+ * Any number of control and target qubits can be specified.
+ * This effects the many-qubit matrix
+ * \f[
+ * \begin{pmatrix}
+ * 1 \\
+ * & 1 \\\
+ * & & \ddots \\
+ * & & & u_{00} & u_{01} & \dots  \\
+ * & & & u_{10} & u_{11} & \dots \\
+ * & & & \vdots & \vdots & \ddots
+ * \end{pmatrix}
+ * \f]
+ * on the control and target qubits.
+ *
+ * The target qubits in \p targs are treated as ordered least significant 
+ * to most significant in \p u.
+ *
+ * The passed ComplexMatrix must be a compatible size with the specified number of
+ * target qubits, otherwise an error is thrown.
+ *
+ * Note that in multithreaded mode, each thread will clone 2^\p numTargs amplitudes,
+ * and store these in the runtime stack.
+ * Using t threads, the total memory overhead of this function is t*2^\p numTargs.
+ * For many targets (e.g. 16 qubits), this may cause a stack-overflow / seg-fault 
+ * (e.g. on a 1 MiB stack).
+ *
+ * Note that in distributed mode, this routine requires that each node contains at least 2^\p numTargs amplitudes.
+ * This means an q-qubit register (state vector or density matrix) can be distributed 
+ * by at most 2^q / 2^\p numTargs nodes.
+ *
+ * @ingroup operator
+ * @param[in,out] qureg object representing the set of all qubits
+ * @param[in] ctrls a list of the control qubits
+ * @param[in] numCtrls the number of control qubits
+ * @param[in] targs a list of the target qubits, ordered least to most significant
+ * @param[in] numTargs the number of target qubits
+ * @param[in] u matrix to apply
+ * @throws exitWithError
+ *      if any index in \p ctrls and \p targs is outside of [0, \p qureg.numQubitsRepresented),
+ *      or if \p ctrls and \p targs are not unique,
+ *      or if matrix \p u is not a compatible size with \p numTargs,
+ *      or if a node cannot fit the required number of target amplitudes in distributed mode.
+ * @author Tyson Jones
+ */
+void applyMultiControlledMatrixN(Qureg qureg, int* ctrls, const int numCtrls, int* targs, const int numTargs, ComplexMatrixN u);
+
+
 /** An internal function called when invalid arguments are passed to a QuEST API
  * call, which the user can optionally override by redefining. This function is 
  * a weak symbol, so that users can choose how input errors are handled, by 

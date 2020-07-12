@@ -788,7 +788,7 @@ bool areEqual(Qureg qureg, QMatrix matr, qreal precision) {
         
         // DEBUG
         if (!ampsAgree) {
-            printf("node %d has a disagreement at (global) index %lldd of (%g) + i(%g)\n", 
+            printf("[msg from utilities.cpp] node %d has a disagreement at (global) index %lld of (%g) + i(%g)\n", 
                 qureg.chunkId, globalInd, realDif, imagDif
             );
         }
