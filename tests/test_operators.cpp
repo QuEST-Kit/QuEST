@@ -3,8 +3,411 @@
 #include "QuEST.h"
 #include "utilities.hpp"
 
+/** Prepares the needed data structures for unit testing some operators.
+ * This creates a statevector and density matrix of the size NUM_QUBITS,
+ * and corresponding QVector and QMatrix instances for analytic comparison.
+ */
+#define PREPARE_TEST(quregVec, quregMatr, refVec, refMatr) \
+    Qureg quregVec = createQureg(NUM_QUBITS, QUEST_ENV); \
+    Qureg quregMatr = createDensityQureg(NUM_QUBITS, QUEST_ENV); \
+    initDebugState(quregVec); \
+    initDebugState(quregMatr); \
+    QVector refVec = toQVector(quregVec); \
+    QMatrix refMatr = toQMatrix(quregMatr);
+
+/** Destroys the data structures made by PREPARE_TEST */
+#define CLEANUP_TEST(quregVec, quregMatr) \
+    destroyQureg(quregVec, QUEST_ENV); \
+    destroyQureg(quregMatr, QUEST_ENV);
+
 /* allows concise use of Contains in catch's REQUIRE_THROWS_WITH */
 using Catch::Matchers::Contains;
+
+
+
+/** @sa applyMatrix2
+ * @ingroup unittest 
+ * @author Tyson Jones 
+ */
+TEST_CASE( "applyMatrix2", "[operators]" ) {
+        
+    PREPARE_TEST( quregVec, quregMatr, refVec, refMatr );
+    
+    // every test will use a unique random matrix
+    QMatrix op = getRandomQMatrix(2); // 2-by-2
+    ComplexMatrix2 matr = toComplexMatrix2(op); 
+
+    SECTION( "correctness" ) {
+        
+        int target = GENERATE( range(0,NUM_QUBITS) );
+        
+        // reference boilerplate
+        int* ctrls = NULL;
+        int numCtrls = 0;
+        int targs[] = {target};
+        int numTargs = 1;
+        
+        SECTION( "state-vector" ) {
+        
+            applyMatrix2(quregVec, target, matr);
+            applyReferenceMatrix(refVec, ctrls, numCtrls, targs, numTargs, op);
+
+            REQUIRE( areEqual(quregVec, refVec) );
+        }
+        SECTION( "density-matrix" ) {
+        
+            applyMatrix2(quregMatr, target, matr);
+            applyReferenceMatrix(refMatr, ctrls, numCtrls, targs, numTargs, op);
+            
+            REQUIRE( areEqual(quregMatr, refMatr, 10*REAL_EPS) );
+        }
+    }
+    SECTION( "input validation" ) {
+        
+        SECTION( "qubit indices" ) {
+            
+            int target = GENERATE( -1, NUM_QUBITS );
+            REQUIRE_THROWS_WITH( applyMatrix2(quregVec, target, matr), Contains("Invalid target") );
+        }
+    }
+    CLEANUP_TEST( quregVec, quregMatr );
+}
+
+
+
+/** @sa applyMatrix4
+ * @ingroup unittest 
+ * @author Tyson Jones 
+ */
+TEST_CASE( "applyMatrix4", "[operators]" ) {
+    
+    PREPARE_TEST( quregVec, quregMatr, refVec, refMatr );
+    
+    // in distributed mode, each node must be able to fit all amps modified by matrix 
+    REQUIRE( quregVec.numAmpsPerChunk >= 4 );
+    
+    // every test will use a unique random matrix
+    QMatrix op = getRandomQMatrix(4); // 4-by-4
+    ComplexMatrix4 matr = toComplexMatrix4(op); 
+
+    SECTION( "correctness" ) {
+        
+        int targ1 = GENERATE( range(0,NUM_QUBITS) );
+        int targ2 = GENERATE_COPY( filter([=](int t){ return t!=targ1; }, range(0,NUM_QUBITS)) );
+        
+        // reference boilerplate
+        int* ctrls = NULL;
+        int numCtrls = 0;
+        int targs[] = {targ1, targ2};
+        int numTargs = 2;
+        
+        SECTION( "state-vector" ) {
+        
+            applyMatrix4(quregVec, targ1, targ2, matr);
+            applyReferenceMatrix(refVec, ctrls, numCtrls, targs, numTargs, op);
+            REQUIRE( areEqual(quregVec, refVec) );
+        }
+        SECTION( "density-matrix" ) {
+
+            applyMatrix4(quregMatr, targ1, targ2, matr);
+            applyReferenceMatrix(refMatr, ctrls, numCtrls, targs, numTargs, op);
+            REQUIRE( areEqual(quregMatr, refMatr, 10*REAL_EPS) );
+        }
+    }
+    SECTION( "input validation" ) {
+        
+        SECTION( "qubit indices" ) {
+            
+            int targ1 = GENERATE( -1, NUM_QUBITS );
+            int targ2 = 0;
+            REQUIRE_THROWS_WITH( applyMatrix4(quregVec, targ1, targ2, matr), Contains("Invalid target") );
+            REQUIRE_THROWS_WITH( applyMatrix4(quregVec, targ2, targ1, matr), Contains("Invalid target") );
+        }
+        SECTION( "repetition of targets" ) {
+            
+            int qb = 0;
+            REQUIRE_THROWS_WITH( applyMatrix4(quregVec, qb, qb, matr), Contains("target") && Contains("unique") );
+        }
+        SECTION( "matrix fits in node" ) {
+                
+            // pretend we have a very limited distributed memory
+            quregVec.numAmpsPerChunk = 1;
+            REQUIRE_THROWS_WITH( applyMatrix4(quregVec, 0, 1, matr), Contains("targets too many qubits"));
+        }
+    }
+    CLEANUP_TEST( quregVec, quregMatr );
+}
+
+
+
+/** @sa applyMatrixN
+ * @ingroup unittest 
+ * @author Tyson Jones 
+ */
+TEST_CASE( "applyMatrixN", "[operators]" ) {
+    
+    PREPARE_TEST( quregVec, quregMatr, refVec, refMatr );
+    
+    // figure out max-num (inclusive) targs allowed by hardware backend
+    int maxNumTargs = calcLog2(quregVec.numAmpsPerChunk);
+    
+    SECTION( "correctness" ) {
+        
+        // generate all possible qubit arrangements
+        int numTargs = GENERATE_COPY( range(1,maxNumTargs+1) ); // inclusive upper bound
+        int* targs = GENERATE_COPY( sublists(range(0,NUM_QUBITS), numTargs) );
+        
+        // for each qubit arrangement, use a new random matrix
+        QMatrix op = getRandomQMatrix(1 << numTargs);
+        ComplexMatrixN matr = createComplexMatrixN(numTargs);
+        toComplexMatrixN(op, matr);
+        
+        // reference boilerplate
+        int* ctrls = NULL;
+        int numCtrls = 0;
+    
+        SECTION( "state-vector" ) {
+            
+            applyMatrixN(quregVec, targs, numTargs, matr);
+            applyReferenceMatrix(refVec, ctrls, numCtrls, targs, numTargs, op);
+            REQUIRE( areEqual(quregVec, refVec) );
+        }
+        SECTION( "density-matrix" ) {
+
+            applyMatrixN(quregMatr, targs, numTargs, matr);
+            applyReferenceMatrix(refMatr, ctrls, numCtrls, targs, numTargs, op);
+            REQUIRE( areEqual(quregMatr, refMatr, 100*REAL_EPS) );
+        }
+        destroyComplexMatrixN(matr);
+    }
+    SECTION( "input validation" ) {
+        
+        SECTION( "number of targets" ) {
+            
+            // there cannot be more targets than qubits in register
+            int numTargs = GENERATE( -1, 0, NUM_QUBITS+1 );
+            int targs[NUM_QUBITS+1]; // prevents seg-fault if validation doesn't trigger
+            ComplexMatrixN matr = createComplexMatrixN(NUM_QUBITS+1); // prevent seg-fault
+            
+            REQUIRE_THROWS_WITH( applyMatrixN(quregVec, targs, numTargs, matr), Contains("Invalid number of target"));
+            destroyComplexMatrixN(matr);
+        }
+        SECTION( "repetition in targets" ) {
+            
+            int numTargs = 3;
+            int targs[] = {1,2,2};
+            ComplexMatrixN matr = createComplexMatrixN(numTargs); // prevents seg-fault if validation doesn't trigger
+            
+            REQUIRE_THROWS_WITH( applyMatrixN(quregVec, targs, numTargs, matr), Contains("target") && Contains("unique"));
+            destroyComplexMatrixN(matr);
+        }
+        SECTION( "qubit indices" ) {
+            
+            int numTargs = 3;
+            int targs[] = {1,2,3};
+            ComplexMatrixN matr = createComplexMatrixN(numTargs); // prevents seg-fault if validation doesn't trigger
+            
+            int inv = GENERATE( -1, NUM_QUBITS );
+            targs[GENERATE_COPY( range(0,numTargs) )] = inv; // make invalid target
+            REQUIRE_THROWS_WITH( applyMatrixN(quregVec, targs, numTargs, matr), Contains("Invalid target") );
+            
+            destroyComplexMatrixN(matr);
+        }
+        SECTION( "matrix creation" ) {
+            
+            int numTargs = 3;
+            int targs[] = {1,2,3};
+            
+            /* compilers don't auto-initialise to NULL; the below circumstance 
+             * only really occurs when 'malloc' returns NULL in createComplexMatrixN, 
+             * which actually triggers its own validation. Hence this test is useless 
+             * currently.
+             */
+            ComplexMatrixN matr;
+            matr.real = NULL;
+            matr.imag = NULL; 
+            REQUIRE_THROWS_WITH( applyMatrixN(quregVec, targs, numTargs, matr), Contains("created") );
+        }
+        SECTION( "matrix dimensions" ) {
+            
+            int targs[2] = {1,2};
+            ComplexMatrixN matr = createComplexMatrixN(3); // intentionally wrong size
+            
+            REQUIRE_THROWS_WITH( applyMatrixN(quregVec, targs, 2, matr), Contains("matrix size"));
+            destroyComplexMatrixN(matr);
+        }
+        SECTION( "matrix fits in node" ) {
+                
+            // pretend we have a very limited distributed memory (judged by matr size)
+            quregVec.numAmpsPerChunk = 1;
+            int qb[] = {1,2};
+            ComplexMatrixN matr = createComplexMatrixN(2); // prevents seg-fault if validation doesn't trigger
+            REQUIRE_THROWS_WITH( applyMatrixN(quregVec, qb, 2, matr), Contains("targets too many qubits"));
+            destroyComplexMatrixN(matr);
+        }
+    }
+    CLEANUP_TEST( quregVec, quregMatr );
+}
+
+
+
+/** @sa applyMultiControlledMatrixN
+ * @ingroup unittest 
+ * @author Tyson Jones 
+ */
+TEST_CASE( "applyMultiControlledMatrixN", "[operators]" ) {
+    
+    PREPARE_TEST( quregVec, quregMatr, refVec, refMatr );
+    
+    // figure out max-num targs (inclusive) allowed by hardware backend
+    int maxNumTargs = calcLog2(quregVec.numAmpsPerChunk);
+    if (maxNumTargs >= NUM_QUBITS)
+        maxNumTargs = NUM_QUBITS - 1; // leave room for min-number of control qubits
+        
+    SECTION( "correctness" ) {
+        
+        // try all possible numbers of targets and controls
+        int numTargs = GENERATE_COPY( range(1,maxNumTargs+1) );
+        int maxNumCtrls = NUM_QUBITS - numTargs;
+        int numCtrls = GENERATE_COPY( range(1,maxNumCtrls+1) );
+        
+        // generate all possible valid qubit arrangements
+        int* targs = GENERATE_COPY( sublists(range(0,NUM_QUBITS), numTargs) );
+        int* ctrls = GENERATE_COPY( sublists(range(0,NUM_QUBITS), numCtrls, targs, numTargs) );
+        
+        // for each qubit arrangement, use a new random unitary
+        QMatrix op = getRandomQMatrix(1 << numTargs);
+        ComplexMatrixN matr = createComplexMatrixN(numTargs);
+        toComplexMatrixN(op, matr);
+    
+        SECTION( "state-vector" ) {
+            
+            applyMultiControlledMatrixN(quregVec, ctrls, numCtrls, targs, numTargs, matr);
+            applyReferenceMatrix(refVec, ctrls, numCtrls, targs, numTargs, op);
+            REQUIRE( areEqual(quregVec, refVec) );
+        }
+        SECTION( "density-matrix" ) {
+
+            applyMultiControlledMatrixN(quregMatr, ctrls, numCtrls, targs, numTargs, matr);
+            applyReferenceMatrix(refMatr, ctrls, numCtrls, targs, numTargs, op);
+            REQUIRE( areEqual(quregMatr, refMatr, 100*REAL_EPS) );
+        }
+        destroyComplexMatrixN(matr);
+    }
+    SECTION( "input validation" ) {
+        
+        SECTION( "number of targets" ) {
+            
+            // there cannot be more targets than qubits in register
+            // (numTargs=NUM_QUBITS is caught elsewhere, because that implies ctrls are invalid)
+            int numTargs = GENERATE( -1, 0, NUM_QUBITS+1 );
+            int targs[NUM_QUBITS+1]; // prevents seg-fault if validation doesn't trigger
+            int ctrls[] = {0};
+            ComplexMatrixN matr = createComplexMatrixN(NUM_QUBITS+1); // prevent seg-fault
+            toComplexMatrixN(getRandomQMatrix( 1 << (NUM_QUBITS+1)), matr);
+            
+            REQUIRE_THROWS_WITH( applyMultiControlledMatrixN(quregVec, ctrls, 1, targs, numTargs, matr), Contains("Invalid number of target"));
+            destroyComplexMatrixN(matr);
+        }
+        SECTION( "repetition in targets" ) {
+            
+            int ctrls[] = {0};
+            int numTargs = 3;
+            int targs[] = {1,2,2};
+            ComplexMatrixN matr = createComplexMatrixN(numTargs); // prevents seg-fault if validation doesn't trigger
+            toComplexMatrixN(getRandomQMatrix(1 << numTargs), matr);
+            
+            REQUIRE_THROWS_WITH( applyMultiControlledMatrixN(quregVec, ctrls, 1, targs, numTargs, matr), Contains("target") && Contains("unique"));
+            destroyComplexMatrixN(matr);
+        }
+        SECTION( "number of controls" ) {
+            
+            int numCtrls = GENERATE( -1, 0, NUM_QUBITS, NUM_QUBITS+1 );
+            int ctrls[NUM_QUBITS+1]; // avoids seg-fault if validation not triggered
+            int targs[1] = {0};
+            ComplexMatrixN matr = createComplexMatrixN(1);
+            toComplexMatrixN(getRandomQMatrix(1 << 1), matr);
+            
+            REQUIRE_THROWS_WITH( applyMultiControlledMatrixN(quregVec, ctrls, numCtrls, targs, 1, matr), Contains("Invalid number of control"));
+            destroyComplexMatrixN(matr);
+        }
+        SECTION( "repetition in controls" ) {
+            
+            int ctrls[] = {0,1,1};
+            int targs[] = {3};
+            ComplexMatrixN matr = createComplexMatrixN(1);
+            toComplexMatrixN(getRandomQMatrix(1 << 1), matr);
+            
+            REQUIRE_THROWS_WITH( applyMultiControlledMatrixN(quregVec, ctrls, 3, targs, 1, matr), Contains("control") && Contains("unique"));
+            destroyComplexMatrixN(matr);
+        }
+        SECTION( "control and target collision" ) {
+            
+            int ctrls[] = {0,1,2};
+            int targs[] = {3,1,4};
+            ComplexMatrixN matr = createComplexMatrixN(3);
+            toComplexMatrixN(getRandomQMatrix(1 << 3), matr);
+            
+            REQUIRE_THROWS_WITH( applyMultiControlledMatrixN(quregVec, ctrls, 3, targs, 3, matr), Contains("Control") && Contains("target") && Contains("disjoint"));
+            destroyComplexMatrixN(matr);
+        }
+        SECTION( "qubit indices" ) {
+            
+            // valid inds
+            int numQb = 2;
+            int qb1[2] = {0,1};
+            int qb2[2] = {2,3};
+            ComplexMatrixN matr = createComplexMatrixN(numQb);
+            toComplexMatrixN(getRandomQMatrix(1 << numQb), matr);
+            
+            // make qb1 invalid
+            int inv = GENERATE( -1, NUM_QUBITS );
+            qb1[GENERATE_COPY(range(0,numQb))] = inv;
+            
+            REQUIRE_THROWS_WITH( applyMultiControlledMatrixN(quregVec, qb1, numQb, qb2, numQb, matr), Contains("Invalid control") );
+            REQUIRE_THROWS_WITH( applyMultiControlledMatrixN(quregVec, qb2, numQb, qb1, numQb, matr), Contains("Invalid target") );
+            destroyComplexMatrixN(matr);
+        }
+        SECTION( "matrix creation" ) {
+            
+            int ctrls[1] = {0};
+            int targs[3] = {1,2,3};
+            
+            /* compilers don't auto-initialise to NULL; the below circumstance 
+             * only really occurs when 'malloc' returns NULL in createComplexMatrixN, 
+             * which actually triggers its own validation. Hence this test is useless 
+             * currently.
+             */
+            ComplexMatrixN matr;
+            matr.real = NULL;
+            matr.imag = NULL; 
+            REQUIRE_THROWS_WITH( applyMultiControlledMatrixN(quregVec, ctrls, 1, targs, 3, matr), Contains("created") );
+        }
+        SECTION( "matrix dimensions" ) {
+            
+            int ctrls[1] = {0};
+            int targs[2] = {1,2};
+            ComplexMatrixN matr = createComplexMatrixN(3); // intentionally wrong size
+            toComplexMatrixN(getRandomQMatrix(1 << 3), matr);
+            
+            REQUIRE_THROWS_WITH( applyMultiControlledMatrixN(quregVec, ctrls, 1, targs, 2, matr), Contains("matrix size"));
+            destroyComplexMatrixN(matr);
+        }
+        SECTION( "matrix fits in node" ) {
+                
+            // pretend we have a very limited distributed memory (judged by matr size)
+            quregVec.numAmpsPerChunk = 1;
+            int ctrls[1] = {0};
+            int targs[2] = {1,2};
+            ComplexMatrixN matr = createComplexMatrixN(2);
+            toComplexMatrixN(getRandomQMatrix(1 << 2), matr);
+            
+            REQUIRE_THROWS_WITH( applyMultiControlledMatrixN(quregVec, ctrls, 1, targs, 2, matr), Contains("targets too many qubits"));
+            destroyComplexMatrixN(matr);
+        }
+    }
+    CLEANUP_TEST( quregVec, quregMatr );
+}
 
 
 
