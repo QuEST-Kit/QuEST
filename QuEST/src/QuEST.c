@@ -814,6 +814,15 @@ void applyPauliSum(Qureg inQureg, enum pauliOpType* allPauliCodes, qreal* termCo
     qasm_recordComment(outQureg, "Here, the register was modified to an undisclosed and possibly unphysical state (applyPauliSum).");
 }
 
+void applyMatrix2(Qureg qureg, const int targetQubit, ComplexMatrix2 u) {
+    validateTarget(qureg, targetQubit, __func__);
+    
+    // actually just left-multiplies any complex matrix
+    statevec_unitary(qureg, targetQubit, u);
+
+    qasm_recordComment(qureg, "Here, an undisclosed 2-by-2 matrix (possibly non-unitary) was multiplied onto qubit %d", targetQubit);
+}
+
 
 /*
  * calculations

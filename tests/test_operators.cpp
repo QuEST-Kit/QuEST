@@ -3,8 +3,75 @@
 #include "QuEST.h"
 #include "utilities.hpp"
 
+/** Prepares the needed data structures for unit testing some operators.
+ * This creates a statevector and density matrix of the size NUM_QUBITS,
+ * and corresponding QVector and QMatrix instances for analytic comparison.
+ */
+#define PREPARE_TEST(quregVec, quregMatr, refVec, refMatr) \
+    Qureg quregVec = createQureg(NUM_QUBITS, QUEST_ENV); \
+    Qureg quregMatr = createDensityQureg(NUM_QUBITS, QUEST_ENV); \
+    initDebugState(quregVec); \
+    initDebugState(quregMatr); \
+    QVector refVec = toQVector(quregVec); \
+    QMatrix refMatr = toQMatrix(quregMatr);
+
+/** Destroys the data structures made by PREPARE_TEST */
+#define CLEANUP_TEST(quregVec, quregMatr) \
+    destroyQureg(quregVec, QUEST_ENV); \
+    destroyQureg(quregMatr, QUEST_ENV);
+
 /* allows concise use of Contains in catch's REQUIRE_THROWS_WITH */
 using Catch::Matchers::Contains;
+
+
+
+/** @sa applyMatrix2
+ * @ingroup unittest 
+ * @author Tyson Jones 
+ */
+TEST_CASE( "applyMatrix2", "[operators]" ) {
+        
+    PREPARE_TEST( quregVec, quregMatr, refVec, refMatr );
+    
+    // every test will use a unique random matrix
+    QMatrix op = getRandomQMatrix(2); // 2-by-2
+    ComplexMatrix2 matr = toComplexMatrix2(op); 
+
+    SECTION( "correctness" ) {
+        
+        int target = GENERATE( range(0,NUM_QUBITS) );
+        
+        // reference boilerplate
+        int* ctrls = NULL;
+        int numCtrls = 0;
+        int targs[] = {target};
+        int numTargs = 1;
+        
+        SECTION( "state-vector" ) {
+        
+            applyMatrix2(quregVec, target, matr);
+            applyReferenceMatrix(refVec, ctrls, numCtrls, targs, numTargs, op);
+
+            REQUIRE( areEqual(quregVec, refVec) );
+        }
+        SECTION( "density-matrix" ) {
+        
+            applyMatrix2(quregMatr, target, matr);
+            applyReferenceMatrix(refMatr, ctrls, numCtrls, targs, numTargs, op);
+            
+            REQUIRE( areEqual(quregMatr, refMatr, 10*REAL_EPS) );
+        }
+    }
+    SECTION( "input validation" ) {
+        
+        SECTION( "qubit indices" ) {
+            
+            int target = GENERATE( -1, NUM_QUBITS );
+            REQUIRE_THROWS_WITH( applyMatrix2(quregVec, target, matr), Contains("Invalid target") );
+        }
+    }
+    CLEANUP_TEST( quregVec, quregMatr );
+}
 
 
 

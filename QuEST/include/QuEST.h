@@ -3153,6 +3153,23 @@ void setWeightedQureg(Complex fac1, Qureg qureg1, Complex fac2, Qureg qureg2, Co
  */
 void applyPauliSum(Qureg inQureg, enum pauliOpType* allPauliCodes, qreal* termCoeffs, int numSumTerms, Qureg outQureg);
 
+/** Apply a general 2-by-2 matrix, which may be non-unitary. The matrix is 
+ * left-multiplied onto the state, for both state-vectors and density matrices.
+ * Hence, this function differs from unitary() by more than just permitting a non-unitary 
+ * matrix. 
+ * 
+ * This function may leave \p qureg is an unnormalised state.
+ *
+ * @ingroup operator                                                              
+ * @param[in,out] qureg object representing the set of all qubits
+ * @param[in] targetQubit qubit to operate \p u upon
+ * @param[in] u matrix to apply
+ * @throws exitWithError
+ *      if \p targetQubit is outside [0, \p qureg.numQubitsRepresented).
+ * @author Tyson Jones
+ */
+void applyMatrix2(Qureg qureg, const int targetQubit, ComplexMatrix2 u);
+
 /** An internal function called when invalid arguments are passed to a QuEST API
  * call, which the user can optionally override by redefining. This function is 
  * a weak symbol, so that users can choose how input errors are handled, by 
