@@ -1118,19 +1118,36 @@ PauliHamil createPauliHamilFromFile(char* fn) {
 	 * 0 1 2 3 signifying I X Y Z acting on that qubit index
 	 */
 	
-	// count the number of qubits
-	int numQubits = -1;
-	char ch;
-	while ((ch=getc(file)) != '\n')
-		if (ch == ' ')
+	// count the number of qubits (ignore trailing whitespace)
+	int numQubits = -1; // to exclude coeff at start
+	char ch = getc(file);
+    char prev = '0'; // anything not space
+	while (ch != '\n' && ch != EOF) {
+		if (ch == ' ' && prev != ' ') // skip multiple spaces
 			numQubits++;
+        prev = ch;
+        ch = getc(file);
+    }
+    // edge-case: if we hit EOF/newline without a space
+    if (prev != ' ')
+        numQubits++;
+
+    /* TODO:
+     * The below code may break on Windows where newlines are multiple characters
+     */
 	
-	// count the number of terms
-	rewind(file);
-	int numTerms = 1;
-	while ((ch=getc(file)) != EOF)
-		if (ch == '\n')
-			numTerms++; 
+	// count the number of terms (being cautious of trailing newlines)
+    int numTerms = 0;
+    prev = '\n';
+    rewind(file);
+	while ((ch=getc(file)) != EOF) {
+		if (ch == '\n' && prev != '\n')
+			numTerms++;
+        prev = ch;
+    }
+    // edge-case: if we hit EOF without a newline, count that line
+    if (prev != '\n')
+        numTerms++;
 
     // validate the inferred number of terms and qubits (closes file if error)
     validateHamilFileParams(numQubits, numTerms, file, fn, __func__);
