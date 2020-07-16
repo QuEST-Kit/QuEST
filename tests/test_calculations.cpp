@@ -104,6 +104,119 @@ TEST_CASE( "calcDensityInnerProduct", "[calculations]" ) {
 
 
 
+/** @sa calcExpecPauliHamil
+ * @ingroup unittest 
+ * @author Tyson Jones 
+ */
+TEST_CASE( "calcExpecPauliHamil", "[calculations]" ) {
+    
+    Qureg vec = createQureg(NUM_QUBITS, QUEST_ENV);
+    Qureg mat = createDensityQureg(NUM_QUBITS, QUEST_ENV);
+    initDebugState(vec);
+    initDebugState(mat);
+    QVector vecRef = toQVector(vec);
+    QMatrix matRef = toQMatrix(mat);
+    
+    Qureg vecWork = createQureg(NUM_QUBITS, QUEST_ENV);
+    Qureg matWork = createDensityQureg(NUM_QUBITS, QUEST_ENV);
+    
+    SECTION( "correctness" ) {
+        
+        /* it's too expensive to try every possible Pauli configuration, so
+         * we'll try 10 random codes, and for each, random coefficients
+         */
+        GENERATE( range(0,10) );
+                 
+        int numTerms = GENERATE( 1, 2, 10, 15 );
+        PauliHamil hamil = createPauliHamil(NUM_QUBITS, numTerms);
+        setRandomPauliSum(hamil);
+        QMatrix refHamil = toQMatrix(hamil);
+        
+        SECTION( "state-vector" ) {
+
+            /* calcExpecPauliHamil calculates <qureg|pauliHum|qureg> */
+            
+            QVector sumRef = refHamil * vecRef;
+            qcomp prod = 0;
+            for (size_t i=0; i<vecRef.size(); i++)
+                prod += conj(vecRef[i]) * sumRef[i];
+            REQUIRE( imag(prod) == Approx(0).margin(10*REAL_EPS) );
+            
+            qreal res = calcExpecPauliHamil(vec, hamil, vecWork);
+            REQUIRE( res == Approx(real(prod)).margin(10*REAL_EPS) );
+        } 
+        SECTION( "density matrix" ) {
+            
+            /* calcExpecPauliHamil calculates Trace( pauliHamil * qureg ) */
+            matRef = refHamil * matRef;            
+            qreal tr = 0;
+            for (size_t i=0; i<matRef.size(); i++)
+                tr += real(matRef[i][i]);
+            // (get real, since we start in a non-Hermitian state, hence diagonal isn't real)
+            
+            qreal res = calcExpecPauliHamil(mat, hamil, matWork);
+            REQUIRE( res == Approx(tr).margin(1E2*REAL_EPS) );
+        }
+        
+        destroyPauliHamil(hamil);
+    }
+    SECTION( "validation" ) {
+        
+        SECTION( "pauli codes" ) {
+            
+            int numTerms = 3;
+            PauliHamil hamil = createPauliHamil(NUM_QUBITS, numTerms);
+
+            // make one pauli code wrong
+            hamil.pauliCodes[GENERATE_COPY( range(0,numTerms*NUM_QUBITS) )] = (pauliOpType) GENERATE( -1, 4 );
+            REQUIRE_THROWS_WITH( calcExpecPauliHamil(vec, hamil, vecWork), Contains("Invalid Pauli code") );
+            
+            destroyPauliHamil(hamil);
+        }
+        SECTION( "workspace type" ) {
+            
+            int numTerms = 1;
+            PauliHamil hamil = createPauliHamil(NUM_QUBITS, numTerms);
+            
+            REQUIRE_THROWS_WITH( calcExpecPauliHamil(vec, hamil, mat), Contains("Registers must both be state-vectors or both be density matrices") );
+            REQUIRE_THROWS_WITH( calcExpecPauliHamil(mat, hamil, vec), Contains("Registers must both be state-vectors or both be density matrices") );
+            
+            destroyPauliHamil(hamil);
+        }
+        SECTION( "workspace dimensions" ) {
+                
+            int numTerms = 1;
+            PauliHamil hamil = createPauliHamil(NUM_QUBITS, numTerms);
+    
+            Qureg vec2 = createQureg(NUM_QUBITS + 1, QUEST_ENV);
+            REQUIRE_THROWS_WITH( calcExpecPauliHamil(vec, hamil, vec2), Contains("Dimensions") && Contains("don't match") );
+            destroyQureg(vec2, QUEST_ENV);
+            
+            Qureg mat2 = createDensityQureg(NUM_QUBITS + 1, QUEST_ENV);
+            REQUIRE_THROWS_WITH( calcExpecPauliHamil(mat, hamil, mat2), Contains("Dimensions") && Contains("don't match") );
+            destroyQureg(mat2, QUEST_ENV);
+            
+            destroyPauliHamil(hamil);
+        }
+        SECTION( "matching hamiltonian qubits" ) {
+            
+            int numTerms = 1;
+            PauliHamil hamil = createPauliHamil(NUM_QUBITS + 1, numTerms);
+            
+            REQUIRE_THROWS_WITH( calcExpecPauliHamil(vec, hamil, vecWork), Contains("same number of qubits") );
+            REQUIRE_THROWS_WITH( calcExpecPauliHamil(mat, hamil, matWork), Contains("same number of qubits") );
+            
+            destroyPauliHamil(hamil);
+        }
+    }
+    destroyQureg(vec, QUEST_ENV);
+    destroyQureg(mat, QUEST_ENV);
+    destroyQureg(vecWork, QUEST_ENV);
+    destroyQureg(matWork, QUEST_ENV);
+}
+
+
+
 /** @sa calcExpecPauliProd
  * @ingroup unittest 
  * @author Tyson Jones 
