@@ -272,36 +272,12 @@ TEST_CASE( "calcExpecPauliSum", "[calculations]" ) {
         GENERATE( range(0,10) );
         int totNumCodes = numSumTerms*NUM_QUBITS;
         pauliOpType paulis[totNumCodes];
-        for (int i=0; i<totNumCodes; i++)
-            paulis[i] = (pauliOpType) getRandomInt(0,4);
-            
-        // for every above param configuration, try random coefficients
         qreal coeffs[numSumTerms];
-        for (int i=0; i<numSumTerms; i++)
-            coeffs[i] = getRandomReal(-5, 5);
-            
-        // produce a numTargs-big matrix 'pauliSum' by pauli-matrix tensoring and summing
-        QMatrix iMatr{{1,0},{0,1}};
-        QMatrix xMatr{{0,1},{1,0}};
-        QMatrix yMatr{{0,-1i},{1i,0}};
-        QMatrix zMatr{{1,0},{0,-1}};
-        QMatrix pauliSum = getZeroMatrix(1<<NUM_QUBITS);
+        setRandomPauliSum(coeffs, paulis, NUM_QUBITS, numSumTerms);
         
-        for (int t=0; t<numSumTerms; t++) {
-            QMatrix pauliProd = QMatrix{{1}};
-            
-            for (int q=0; q<NUM_QUBITS; q++) {
-                int i = q + t*NUM_QUBITS;
-                
-                QMatrix fac;
-                if (paulis[i] == PAULI_I) fac = iMatr;
-                if (paulis[i] == PAULI_X) fac = xMatr;
-                if (paulis[i] == PAULI_Y) fac = yMatr;
-                if (paulis[i] == PAULI_Z) fac = zMatr;
-                pauliProd = getKroneckerProduct(fac, pauliProd);
-            }
-            pauliSum += coeffs[t] * pauliProd;
-        }
+        // produce a numTargs-big matrix 'pauliSum' by pauli-matrix tensoring and summing
+        QMatrix pauliSum = toQMatrix(coeffs, paulis, NUM_QUBITS, numSumTerms);
+        
         SECTION( "state-vector" ) {
 
             /* calcExpecPauliSum calculates <qureg|pauliSum|qureg> */

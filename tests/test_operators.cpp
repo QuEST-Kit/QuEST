@@ -24,46 +24,21 @@ TEST_CASE( "applyPauliSum", "[operators]" ) {
 
     SECTION( "correctness" ) {
         
-        int numTerms = GENERATE( 1, 2, 10, 15);
-        int numPaulis = numTerms * NUM_QUBITS;
-        
-        // each test will use random coefficients
-        qreal coeffs[numTerms];
-        for (int i=0; i<numTerms; i++)
-            coeffs[i] = getRandomReal(-5, 5);
-            
         /* it's too expensive to try ALL Pauli sequences, via 
          *      pauliOpType* paulis = GENERATE_COPY( pauliseqs(numPaulis) );.
          * Furthermore, take(10, pauliseqs(numTargs)) will try the same pauli codes.
          * Hence, we instead opt to repeatedly randomly generate pauliseqs
          */
         GENERATE( range(0,10) ); // gen 10 random pauli-codes
-        pauliOpType paulis[numPaulis];
-        for (int i=0; i<numPaulis; i++)
-            paulis[i] = (pauliOpType) getRandomInt(0,4);
-            
-        // build the resulting Pauli sum; sum_j coeffs[j] * paulis[n*j : (n+1)j]
-        QMatrix iMatr{{1,0},{0,1}};
-        QMatrix xMatr{{0,1},{1,0}};
-        QMatrix yMatr{{0,-1i},{1i,0}};
-        QMatrix zMatr{{1,0},{0,-1}};
-        QMatrix pauliSum = getZeroMatrix(1<<NUM_QUBITS);
         
-        for (int t=0; t<numTerms; t++) {
-            QMatrix pauliProd = QMatrix{{1}};
-            
-            for (int q=0; q<NUM_QUBITS; q++) {
-                int i = q + t*NUM_QUBITS;
-                
-                QMatrix fac;
-                if (paulis[i] == PAULI_I) fac = iMatr;
-                if (paulis[i] == PAULI_X) fac = xMatr;
-                if (paulis[i] == PAULI_Y) fac = yMatr;
-                if (paulis[i] == PAULI_Z) fac = zMatr;
-                pauliProd = getKroneckerProduct(fac, pauliProd);
-            }
-            pauliSum += coeffs[t] * pauliProd;
-        }
+        int numTerms = GENERATE( 1, 2, 10, 15);
+        int numPaulis = numTerms * NUM_QUBITS;
+        
+        // each test will use random coefficients
+        qreal coeffs[numTerms];
+        pauliOpType paulis[numPaulis];
+        setRandomPauliSum(coeffs, paulis, NUM_QUBITS, numTerms);
+        QMatrix pauliSum = toQMatrix(coeffs, paulis, NUM_QUBITS, numTerms);
         
         SECTION( "state-vector" ) {
             
