@@ -839,6 +839,7 @@ void applyTrotterCircuit(Qureg qureg, PauliHamil hamil, qreal time, int order, i
     agnostic_applyTrotterCircuit(qureg, hamil, time, order, reps);
 
     qasm_recordComment(qureg, "End of Trotter circuit");
+}
 
 void applyMatrix2(Qureg qureg, const int targetQubit, ComplexMatrix2 u) {
     validateTarget(qureg, targetQubit, __func__);
