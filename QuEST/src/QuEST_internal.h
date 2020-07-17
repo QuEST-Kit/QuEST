@@ -245,6 +245,14 @@ void statevec_setWeightedQureg(Complex fac1, Qureg qureg1, Complex fac2, Qureg q
 
 void statevec_applyPauliSum(Qureg inQureg, enum pauliOpType* allCodes, qreal* termCoeffs, int numSumTerms, Qureg outQureg);
 
+
+/* 
+ * operations which differentiate between state-vectors and density matrices internally 
+ */
+ 
+void agnostic_applyTrotterCircuit(Qureg qureg, PauliHamil hamil, qreal time, int order, int reps);
+
+
 # ifdef __cplusplus
 }
 # endif

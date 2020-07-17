@@ -23,6 +23,12 @@ extern "C" {
 # include <stdlib.h>
 # include <stdint.h>
 
+/* buffer for an error message which contains formatters. This must be global, 
+ * since if a function writes to a local buffer then throws an error, the 
+ * local buffer may be cleared and dangle before the error catcher can process it.
+ */
+char errMsgBuffer[1024];
+
 typedef enum {
     E_SUCCESS=0,
     E_INVALID_NUM_RANKS,
@@ -74,7 +80,15 @@ typedef enum {
     E_INVALID_KRAUS_OPS,
     E_MISMATCHING_NUM_TARGS_KRAUS_SIZE,
     E_DISTRIB_QUREG_TOO_SMALL,
-    E_NUM_AMPS_EXCEED_TYPE
+    E_NUM_AMPS_EXCEED_TYPE,
+    E_INVALID_PAULI_HAMIL_PARAMS,
+    E_INVALID_PAULI_HAMIL_FILE_PARAMS,
+    E_CANNOT_PARSE_PAULI_HAMIL_FILE_COEFF,
+    E_CANNOT_PARSE_PAULI_HAMIL_FILE_PAULI,
+    E_INVALID_PAULI_HAMIL_FILE_PAULI_CODE,
+    E_MISMATCHING_PAULI_HAMIL_QUREG_NUM_QUBITS,
+    E_INVALID_TROTTER_ORDER,
+    E_INVALID_TROTTER_REPS
 } ErrorCode;
 
 static const char* errorMessages[] = {
@@ -102,7 +116,7 @@ static const char* errorMessages[] = {
     [E_SYS_TOO_BIG_TO_PRINT] = "Invalid system size. Cannot print output for systems greater than 5 qubits.",
     [E_COLLAPSE_STATE_ZERO_PROB] = "Can't collapse to state with zero probability.",
     [E_INVALID_QUBIT_OUTCOME] = "Invalid measurement outcome -- must be either 0 or 1.",
-    [E_CANNOT_OPEN_FILE] = "Could not open file.",
+    [E_CANNOT_OPEN_FILE] = "Could not open file (%s).",
     [E_SECOND_ARG_MUST_BE_STATEVEC] = "Second argument must be a state-vector.",
     [E_MISMATCHING_QUREG_DIMENSIONS] = "Dimensions of the qubit registers don't match.",
     [E_MISMATCHING_QUREG_TYPES] = "Registers must both be state-vectors or both be density matrices.",
@@ -116,7 +130,7 @@ static const char* errorMessages[] = {
     [E_INVALID_TWO_QUBIT_DEPOL_PROB] = "The probability of a two-qubit depolarising error cannot exceed 15/16, which maximally mixes.",
     [E_INVALID_ONE_QUBIT_PAULI_PROBS] = "The probability of any X, Y or Z error cannot exceed the probability of no error.",
     [E_INVALID_CONTROLS_BIT_STATE] = "The state of the control qubits must be a bit sequence (0s and 1s).",
-    [E_INVALID_PAULI_CODE] = "Invalid Pauli code. Codes must be 0 (or PAULI_I), 1 (PAULI_X), 2 (PAULI_Y) or 3 (PAULI_Z) to indicate the identity, X, Y and Z gates respectively.",
+    [E_INVALID_PAULI_CODE] = "Invalid Pauli code. Codes must be 0 (or PAULI_I), 1 (PAULI_X), 2 (PAULI_Y) or 3 (PAULI_Z) to indicate the identity, X, Y and Z operators respectively.",
     [E_INVALID_NUM_SUM_TERMS] = "Invalid number of terms in the Pauli sum. The number of terms must be >0.",
     [E_CANNOT_FIT_MULTI_QUBIT_MATRIX] = "The specified matrix targets too many qubits; the batches of amplitudes to modify cannot all fit in a single distributed node's memory allocation.",
     [E_INVALID_UNITARY_SIZE] = "The matrix size does not match the number of target qubits.",
@@ -127,7 +141,15 @@ static const char* errorMessages[] = {
     [E_INVALID_KRAUS_OPS] = "The specified Kraus map is not a completely positive, trace preserving map.",
     [E_MISMATCHING_NUM_TARGS_KRAUS_SIZE] = "Every Kraus operator must be of the same number of qubits as the number of targets.",
     [E_DISTRIB_QUREG_TOO_SMALL] = "Too few qubits. The created qureg must have at least one amplitude per node used in distributed simulation.",
-    [E_NUM_AMPS_EXCEED_TYPE] = "Too many qubits (max of log2(SIZE_MAX)). Cannot store the number of amplitudes per-node in the size_t type."
+    [E_NUM_AMPS_EXCEED_TYPE] = "Too many qubits (max of log2(SIZE_MAX)). Cannot store the number of amplitudes per-node in the size_t type.",
+    [E_INVALID_PAULI_HAMIL_PARAMS] = "The number of qubits and terms in the PauliHamil must be strictly positive.",
+    [E_INVALID_PAULI_HAMIL_FILE_PARAMS] = "The number of qubits and terms in the PauliHamil file (%s) must be strictly positive.",
+    [E_CANNOT_PARSE_PAULI_HAMIL_FILE_COEFF] = "Failed to parse the next expected term coefficient in PauliHamil file (%s).",
+    [E_CANNOT_PARSE_PAULI_HAMIL_FILE_PAULI] = "Failed to parse the next expected Pauli code in PauliHamil file (%s).",
+    [E_INVALID_PAULI_HAMIL_FILE_PAULI_CODE] = "The PauliHamil file (%s) contained an invalid pauli code (%d). Codes must be 0 (or PAULI_I), 1 (PAULI_X), 2 (PAULI_Y) or 3 (PAULI_Z) to indicate the identity, X, Y and Z operators respectively.",
+    [E_MISMATCHING_PAULI_HAMIL_QUREG_NUM_QUBITS] = "The PauliHamil must act on the same number of qubits as exist in the Qureg.",
+    [E_INVALID_TROTTER_ORDER] = "The Trotterisation order must be 1, or an even number (for higher-order Suzuki symmetrized expansions).",
+    [E_INVALID_TROTTER_REPS] = "The number of Trotter repetitions must be >=1."
 };
 
 void exitWithError(const char* msg, const char* func) {
@@ -236,6 +258,10 @@ int isCompletelyPositiveMap4(ComplexMatrix4 *ops, int numOps) {
 int isCompletelyPositiveMapN(ComplexMatrixN *ops, int numOps) {
     int opDim = 1 << ops[0].numQubits;
     macro_isCompletelyPositiveMap(ops, numOps, opDim);
+}
+
+int isValidPauliCode(enum pauliOpType code) {
+    return (code==PAULI_I || code==PAULI_X || code==PAULI_Y || code==PAULI_Z);
 }
 
 int areUniqueQubits(int* qubits, int numQubits) {
@@ -447,8 +473,12 @@ void validateSecondQuregStateVec(Qureg qureg2, const char *caller) {
     QuESTAssert( ! qureg2.isDensityMatrix, E_SECOND_ARG_MUST_BE_STATEVEC, caller);
 }
 
-void validateFileOpened(int found, const char* caller) {
-    QuESTAssert(found, E_CANNOT_OPEN_FILE, caller);
+void validateFileOpened(int opened, char* fn, const char* caller) {
+    if (!opened) {
+        
+        sprintf(errMsgBuffer, errorMessages[E_CANNOT_OPEN_FILE], fn);
+        invalidQuESTInputError(errMsgBuffer, caller);
+    }
 }
 
 void validateProb(qreal prob, const char* caller) {
@@ -501,10 +531,8 @@ void validateOneQubitPauliProbs(qreal probX, qreal probY, qreal probZ, const cha
 
 void validatePauliCodes(enum pauliOpType* pauliCodes, int numPauliCodes, const char* caller) {
     for (int i=0; i < numPauliCodes; i++) {
-        int code = pauliCodes[i];
-        QuESTAssert(
-            code==PAULI_I || code==PAULI_X || code==PAULI_Y || code==PAULI_Z, 
-            E_INVALID_PAULI_CODE, caller);
+        enum pauliOpType code = pauliCodes[i];
+        QuESTAssert(isValidPauliCode(code), E_INVALID_PAULI_CODE, caller);
     }
 }
 
@@ -551,6 +579,64 @@ void validateMultiQubitKrausMap(Qureg qureg, int numTargs, ComplexMatrixN* ops, 
     
     int isPos = isCompletelyPositiveMapN(ops, numOps);
     QuESTAssert(isPos, E_INVALID_KRAUS_OPS, caller);
+}
+
+void validateHamilParams(int numQubits, int numTerms, const char* caller) {
+    QuESTAssert(numQubits > 0 && numTerms > 0, E_INVALID_PAULI_HAMIL_PARAMS, caller);
+}
+
+void validatePauliHamil(PauliHamil hamil, const char* caller) {
+    validateHamilParams(hamil.numQubits, hamil.numSumTerms, caller);
+    validatePauliCodes(hamil.pauliCodes, hamil.numSumTerms*hamil.numQubits, caller);
+}
+
+void validateMatchingQuregPauliHamilDims(Qureg qureg, PauliHamil hamil, const char* caller) {
+    QuESTAssert(hamil.numQubits == qureg.numQubitsRepresented, E_MISMATCHING_PAULI_HAMIL_QUREG_NUM_QUBITS, caller);
+}
+
+void validateHamilFileParams(int numQubits, int numTerms, FILE* file, char* fn, const char* caller) {
+    if (!(numQubits > 0 && numTerms > 0)) {
+        fclose(file);
+
+        sprintf(errMsgBuffer, errorMessages[E_INVALID_PAULI_HAMIL_FILE_PARAMS], fn);
+        invalidQuESTInputError(errMsgBuffer, caller);
+    }
+}
+
+void validateHamilFileCoeffParsed(int parsed, PauliHamil h, FILE* file, char* fn, const char* caller) {
+    if (!parsed) {
+        destroyPauliHamil(h);
+        fclose(file);
+        
+        sprintf(errMsgBuffer, errorMessages[E_CANNOT_PARSE_PAULI_HAMIL_FILE_COEFF], fn);
+        invalidQuESTInputError(errMsgBuffer, caller);
+    }
+}
+
+void validateHamilFilePauliParsed(int parsed, PauliHamil h, FILE* file, char* fn, const char* caller) {
+    if (!parsed) {
+        destroyPauliHamil(h);
+        fclose(file);
+        
+        sprintf(errMsgBuffer, errorMessages[E_CANNOT_PARSE_PAULI_HAMIL_FILE_PAULI], fn);
+        invalidQuESTInputError(errMsgBuffer, caller);
+    }
+}
+
+void validateHamilFilePauliCode(enum pauliOpType code, PauliHamil h, FILE* file, char* fn, const char* caller) {
+    if (!isValidPauliCode(code)) {
+        destroyPauliHamil(h);
+        fclose(file);
+        
+        sprintf(errMsgBuffer, errorMessages[E_INVALID_PAULI_HAMIL_FILE_PAULI_CODE], fn, code);
+        invalidQuESTInputError(errMsgBuffer, caller);
+    }
+}
+
+void validateTrotterParams(int order, int reps, const char* caller) {
+    int isEven = (order % 2) == 0;
+    QuESTAssert(order > 0 && (isEven || order==1), E_INVALID_TROTTER_ORDER, caller);
+    QuESTAssert(reps > 0, E_INVALID_TROTTER_REPS, caller);
 }
 
 #ifdef __cplusplus

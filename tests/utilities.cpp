@@ -991,6 +991,51 @@ void toQureg(Qureg qureg, QMatrix mat) {
     copyStateToGPU(qureg);
 }
 
+void setRandomPauliSum(qreal* coeffs, pauliOpType* codes, int numQubits, int numTerms) {
+    int i=0;
+    for (int n=0; n<numTerms; n++) {
+        coeffs[n] = getRandomReal(-5, 5);
+        for (int q=0; q<numQubits; q++)
+            codes[i++] = (pauliOpType) getRandomInt(0,4);
+    }
+}
+void setRandomPauliSum(PauliHamil hamil) {
+    setRandomPauliSum(hamil.termCoeffs, hamil.pauliCodes, hamil.numQubits, hamil.numSumTerms);
+}
+
+QMatrix toQMatrix(qreal* coeffs, pauliOpType* paulis, int numQubits, int numTerms) {
+    
+    // produce a numTargs-big matrix 'pauliSum' by pauli-matrix tensoring and summing
+    QMatrix iMatr{{1,0},{0,1}};
+    QMatrix xMatr{{0,1},{1,0}};
+    QMatrix yMatr{{0,-1i},{1i,0}};
+    QMatrix zMatr{{1,0},{0,-1}};
+    QMatrix pauliSum = getZeroMatrix(1<<NUM_QUBITS);
+    
+    for (int t=0; t<numTerms; t++) {
+        QMatrix pauliProd = QMatrix{{1}};
+        
+        for (int q=0; q<numQubits; q++) {
+            int i = q + t*numQubits;
+            
+            QMatrix fac;
+            pauliOpType code = paulis[i];
+            if (code == PAULI_I) fac = iMatr;
+            if (code == PAULI_X) fac = xMatr;
+            if (code == PAULI_Y) fac = yMatr;
+            if (code == PAULI_Z) fac = zMatr;
+            pauliProd = getKroneckerProduct(fac, pauliProd);
+        }
+        pauliSum += coeffs[t] * pauliProd;
+    }
+    
+    // a now 2^numQubits by 2^numQubits Hermitian matrix
+    return pauliSum;
+}
+QMatrix toQMatrix(PauliHamil hamil) {
+    return toQMatrix(hamil.termCoeffs, hamil.pauliCodes, hamil.numQubits, hamil.numSumTerms);
+}
+
 class SubListGenerator : public Catch::Generators::IGenerator<int*> {
     int* list;
     int* sublist;

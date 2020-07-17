@@ -150,6 +150,24 @@ typedef struct Vector
     qreal x, y, z;
 } Vector;
 
+/** Represents a weighted sum of pauli products.
+ *
+ * @ingroup type 
+ * @author Tyson Jones
+ */
+typedef struct PauliHamil 
+{
+    //! The Pauli operators acting on each qubit, flattened over every operator.
+    //! This is a length \p numSumTerms*numQubits array
+    enum pauliOpType* pauliCodes;
+    //! The coefficient of each Pauli product. This is a length \p numSumTerms array
+    qreal* termCoeffs;
+    //! The number of terms in the weighted sum, or the number of Pauli products.
+    int numSumTerms;
+    //! The number of qubits for which this Hamiltonian is defined.
+    int numQubits;
+} PauliHamil;
+
 /** Represents a system of qubits.
  * Qubits are zero-based
  *
@@ -315,6 +333,82 @@ void destroyComplexMatrixN(ComplexMatrixN matr);
 void initComplexMatrixN(ComplexMatrixN m, qreal real[][1<<m.numQubits], qreal imag[][1<<m.numQubits]);
 #endif 
 
+/** Create a \p PauliHamil instance, which is a Hamiltonian expressed as a real-weighted 
+ * sum of products of Pauli operators. This is merely an encapsulation of the multiple 
+ * parameters of functions like applyPauliSum().
+ *
+ * The Pauli operators (\p PauliHamil.pauliCodes) are all initialised to identity 
+ * (\p PAULI_I), but the coefficients (\p PauliHamil.termCoeffs) are not initialised.
+ * The Hamiltonian can be used (e.g. in applyPauliHamil() and applyTrotterCircuit())
+ * with \p Qureg instances of the same number of qubits.
+ * 
+ * The returned dynamic \p PauliHamil instance must later be freed via destroyPauliHamil().
+ *
+ * @ingroup type
+ * @param[in] numQubits the number of qubits on which this Hamiltonian acts 
+ * @param[in] numSumTerms the number of weighted terms in the sum, or the number of Pauli products
+ * @returns a dynamic \p PauliHamil struct, with fields \p pauliCodes and \p termCoeffs stored in the heap
+ * @throws exitWithError if \p numQubits <= 0, or \p numSumTerms <= 0.
+ * @author Tyson Jones
+ */
+PauliHamil createPauliHamil(int numQubits, int numSumTerms);
+
+/** Destroy a \p PauliHamil instance, created with either createPauliHamil() or createPauliHamilFromFile().
+ *
+ * @ingroup type 
+ * @param[in] hamil a dynamic \p PauliHamil instantiation
+ * @author Tyson Jones
+ */
+void destroyPauliHamil(PauliHamil hamil);
+
+/** Create a \p PauliHamil instance, a real-weighted sum of products of Pauli operators,
+ * populated with the data in filename \p fn.
+ * Each line in the plaintext file is interpreted as a separate product of Pauli operators 
+ * in the sum, and is a space-separated list with format
+ *
+ *     c p1 p2 p3 ... pN
+ *
+ * where \p c is the real coefficient of the term, and \p p1 ... \p pN are 
+ * numbers \p 0, \p 1, \p 2, \p 3 to indicate identity, pauliX, pauliY and pauliZ 
+ * operators respectively, acting on qubits \p 0 through \p N-1 (all qubits).
+ * For example, the file containing
+ *
+ *     0.31 1 0 1 2
+ *     -0.2 3 2 0 0
+ *
+ * encodes a two-term four-qubit Hamiltonian \f$ 0.31 X_0 X_2 Y_3 -0.2 Z_0 Y_1 \f$.
+ *
+ * The number of qubits and terms are inferred from the file.
+ * The created Hamiltonian can be used just like one created via createPauliHamil().
+ * 
+ * The returned dynamic \p PauliHamil instance must later be freed via destroyPauliHamil().
+ *
+ * @ingroup type
+ * @param[in] fn filename of the plaintext file specifying the pauli operators and coefficients
+ * @returns a dynamic \p PauliHamil struct, with fields \p pauliCodes and \p termCoeffs stored in the heap
+ * @throws exitWithError if the file cannot be read, or is not correctly formatted
+ * @author Tyson Jones
+ */
+PauliHamil createPauliHamilFromFile(char* fn);
+
+/** Initialise a \p PauliHamil instance with the given term coefficients and 
+ * Pauli codes (one for every qubit in every term).
+ *
+ * \p coeffs and \p codes encode a weighted sum of Pauli operators, with the same 
+ * format as other QuEST functions (like calcExpecPauliSum()).
+ * 
+ * \p hamil must be already created with createPauliHamil(), or createPauliHamilFromFile())
+ * 
+ * @ingroup type
+ * @param[in, out] hamil an already created PauliHamil instance to be modified
+ * @param[in] coeffs a length-hamil.numSumTerms array of coefficients
+ * @param[in] codes a length-hamil.numSumTerms*hamil.numQubits array of Pauli codes
+ * @throws exitWithError if \p hamil has invalid parameters (\p numQubits <= 0, \p numSumTerms <= 0),
+ *      or if any code in \p codes is not a valid Pauli code.
+ * @author Tyson Jones
+ */
+void initPauliHamil(PauliHamil hamil, qreal* coeffs, enum pauliOpType* codes);
+
 /** Print the current state vector of probability amplitudes for a set of qubits to file.
  * File format:
  * @verbatim
@@ -356,6 +450,25 @@ void reportStateToScreen(Qureg qureg, QuESTEnv env, int reportRank);
  * @author Ania Brown
  */
 void reportQuregParams(Qureg qureg);
+
+/** Print the \p PauliHamil to screen. 
+ * The output features a new line for each term, each with format 
+ *
+ *     c p1 p2 p3 ... pN
+ *
+ * where \p c is the real coefficient of the term, and \p p1 ... \p pN are 
+ * numbers \p 0, \p 1, \p 2, \p 3 to indicate identity, pauliX, pauliY and pauliZ 
+ * operators respectively, acting on qubits \p 0 through \p N-1 (all qubits).
+ * A tab character separates c and p1, but single spaces separate the Pauli operators.
+ *
+ * @ingroup debug 
+ * @param[in] hamil an instantiated PauliHamil
+ * @throws exitWithError if the parameters of \p hamil are invalid, i.e. 
+ *      if \p numQubits <= 0, or if \p numSumTerms <= 0, or if \p pauliCodes 
+ *      contains an invalid Pauli code.
+ * @author Tyson Jones
+ */ 
+void reportPauliHamil(PauliHamil hamil);
 
 /** Get the number of qubits in a qureg object
  *
@@ -2505,6 +2618,41 @@ qreal calcExpecPauliProd(Qureg qureg, int* targetQubits, enum pauliOpType* pauli
  */
 qreal calcExpecPauliSum(Qureg qureg, enum pauliOpType* allPauliCodes, qreal* termCoeffs, int numSumTerms, Qureg workspace);
 
+/** Computes the expected value of \p qureg under Hermitian operator \p hamil.
+ * Represent \p hamil as \f$ H = \sum_i c_i \otimes_j^{N} \hat{\sigma}_{i,j} \f$
+ *  (where \f$ c_i \in \f$ \p hamil.termCoeffs and \f$ N = \f$ \p hamil.numQubits).
+ * This function computes \f$ \langle \psi | H | \psi \rangle \f$ 
+ * if \p qureg = \f$ \psi \f$ is a statevector, and computes \f$ \text{Trace}(H \rho) =\text{Trace}(\rho H) \f$ 
+ * if \p qureg = \f$ \rho \f$ is a density matrix.
+ *
+ * This function is merely an encapsulation of calcExpecPauliSum() - refer to the doc 
+ * there for an elaboration.
+ * 
+ * \p workspace must be a register with the same type (statevector vs density matrix) and dimensions 
+ * (number of represented qubits) as \p qureg and \p hamil, and is used as working space. 
+ * When this function returns, \p qureg  will be unchanged and \p workspace will be set to
+ * \p qureg pre-multiplied with the final Pauli product in \p hamil.
+ * NOTE that if \p qureg is a density matrix, \p workspace will become \f$ \hat{\sigma} \rho \f$ 
+ * which is itself not a density matrix (it is distinct from \f$ \hat{\sigma}^\dagger \rho \hat{\sigma} \f$).
+ *
+ * This function works by cloning the \p qureg state into \p workspace, applying each of the specified
+ * Pauli products in \p hamil to \p workspace (one Pauli operation at a time), then computing its inner product with \p qureg (for statevectors)
+ * or its trace (for density matrices) multiplied with the corresponding coefficient, and summing these contributions. 
+ * It therefore should scale linearly in time with the total number of non-identity specified Pauli operators.
+ *
+ * @ingroup calc
+ * @param[in] qureg the register of which to find the expected value, which is unchanged by this function
+ * @param[in] hamil a \p PauliHamil created with createPauliHamil() or createPauliHamilFromFile()
+ * @param[in,out] workspace a working-space qureg with the same dimensions as \p qureg, which is modified 
+ *      to be the result of multiplying the state with the final specified Pauli product
+ * @throws exitWithError
+ *      if any code in \p hamil.pauliCodes is not a valid Pauli code,
+ *      or if \p hamil.numSumTerms <= 0,
+ *      or if \p workspace is not of the same type and dimensions as \p qureg and \p hamil
+ * @author Tyson Jones
+ */
+qreal calcExpecPauliHamil(Qureg qureg, PauliHamil hamil, Qureg workspace);
+
 /** Apply a general two-qubit unitary (including a global phase factor).
  *
     \f[
@@ -3109,7 +3257,7 @@ void setWeightedQureg(Complex fac1, Qureg qureg1, Complex fac2, Qureg qureg2, Co
  * and \f$\alpha \rho\f$ (left matrix multiplication) on density matrix \f$ \rho \f$.
  *
  * \p allPauliCodes is an array of length \p numSumTerms*\p qureg.numQubitsRepresented
- * which specifies which Pauli operators to apply, where 0 = \p PAULI_I, 1 = \p PAULI_X, 
+ *  which specifies which Pauli operators to apply, where 0 = \p PAULI_I, 1 = \p PAULI_X, 
  * 2 = \p PAULI_Y, 3 = \p PAULI_Z. For each sum term, a Pauli operator must be specified for 
  * EVERY qubit in \p qureg; each set of \p numSumTerms operators will be grouped into a product.
  * \p termCoeffs is an arrray of length \p numSumTerms containing the term coefficients.
@@ -3152,6 +3300,103 @@ void setWeightedQureg(Complex fac1, Qureg qureg1, Complex fac2, Qureg qureg2, Co
  * @author Tyson Jones
  */
 void applyPauliSum(Qureg inQureg, enum pauliOpType* allPauliCodes, qreal* termCoeffs, int numSumTerms, Qureg outQureg);
+
+/** Modifies \p outQureg to be the result of applying \p PauliHamil (a Hermitian but not 
+ * necessarily unitary operator) to \p inQureg. Note that afterward, \p outQureg may no longer be normalised and ergo not a
+ * statevector or density matrix. Users must therefore be careful passing \p outQureg to
+ * other QuEST functions which assume normalisation in order to function correctly.
+ *
+ * This is merely an encapsulation of applyPauliSum(), which can refer to for elaborated doc.
+ *
+ * Letting \p hamil be expressed as \f$ \alpha = \sum_i c_i \otimes_j^{N} \hat{\sigma}_{i,j} \f$ 
+ * (where \f$ c_i \in \f$ \p hamil.termCoeffs and \f$ N = \f$ \p hamil.numQubits), 
+ * this function effects \f$ \alpha | \psi \rangle \f$ on statevector \f$ |\psi\rangle \f$
+ * and \f$\alpha \rho\f$ (left matrix multiplication) on density matrix \f$ \rho \f$.
+ *
+ * In theory, \p inQureg is unchanged though its state is temporarily 
+ * modified and is reverted by re-applying Paulis (XX=YY=ZZ=I), so may see a change by small numerical errors.
+ * The initial state in \p outQureg is not used.
+ *
+ * \p inQureg and \p outQureg must both be state-vectors, or both density matrices,
+ * of equal dimensions to \p hamil.
+ * \p inQureg cannot be \p outQureg.
+ *
+ * This function works by applying each Pauli product in \p hamil to \p inQureg in turn, 
+ * and adding the resulting state (weighted by a coefficient in \p termCoeffs)
+ * to the initially-blanked \p outQureg. Ergo it should scale with the total number 
+ * of Pauli operators specified (excluding identities), and the qureg dimension. 
+ *
+ * @ingroup operator
+ * @param[in] inQureg the register containing the state which \p outQureg will be set to, under
+ *      the action of \p hamil. \p inQureg should be unchanged, though may vary slightly due to numerical error.
+ * @param[in] hamil a weighted sum of products of pauli operators
+ * @param[out] outQureg the qureg to modify to be the result of applyling \p hamil to the state in \p inQureg
+ * @throws exitWithError
+ *      if any code in \p hamil.pauliCodes is not a valid Pauli code,
+ *      or if \p numSumTerms <= 0,
+ *      or if \p inQureg is not of the same type and dimensions as \p outQureg and \p hamil
+ * @author Tyson Jones
+ */
+void applyPauliHamil(Qureg inQureg, PauliHamil hamil, Qureg outQureg);
+
+/** Applies a trotterisation of unitary evolution \f$ \exp(-i \, \text{hamil} \, \text{time}) \f$
+ * to \p qureg. This is a sequence of unitary operators, effected by multiRotatePauli(),
+ * which together approximate the action of full unitary-time evolution under the given Hamiltonian.
+ *
+ * Notate \f$ \text{hamil} = \sum_j^N c_j \, \hat \sigma_j \f$ where \f$c_j\f$ is a real 
+ * coefficient in \p hamil, \f$\hat \sigma_j\f$ is the corresponding product of Pauli operators,
+ * of which there are a total \f$N\f$.
+ * Then, \p order=1 performs first-order Trotterisation, whereby
+ * \f[
+ *   \exp(-i \, \text{hamil} \, \text{time})
+ *      \approx 
+ *    \prod\limits^{\text{reps}} \prod\limits_{j=1}^{N} \exp(-i \, c_j \, \text{time} \, \hat\sigma_j / \text{reps})
+ * \f]
+ * \p order=2 performs the lowest order "symmetrized" Suzuki decomposition, whereby 
+ * \f[
+ *   \exp(-i \, \text{hamil} \, \text{time})
+ *      \approx 
+ *    \prod\limits^{\text{reps}} \left[
+ *         \prod\limits_{j=1}^{N} \exp(-i \, c_j \, \text{time} \, \hat\sigma_j / (2 \, \text{reps}))
+ *          \prod\limits_{j=N}^{1} \exp(-i \, c_j \, \text{time} \, \hat\sigma_j / (2 \, \text{reps}))
+ *     \right]
+ * \f]
+ * Greater even values of \p order specify higher-order symmetrized decompositions 
+ * \f$ S[\text{time}, \text{order}, \text{reps}] \f$ which satisfy 
+ * \f[
+ *      S[\text{time}, \text{order}, 1] = 
+ *          \left( \prod\limits^2 S[p \, \text{time}, \text{order}-2, 1] \right)
+ *          S[ (1-4p)\,\text{time}, \text{order}-2, 1]
+ *          \left( \prod\limits^2 S[p \, \text{time}, \text{order}-2, 1] \right)
+ * \f]
+ * and 
+ * \f[
+ *      S[\text{time}, \text{order}, \text{reps}] = 
+ *          \prod\limits^{\text{reps}} S[\text{time}/\text{reps}, \text{order}, 1]
+ * \f]
+ * where \f$ p = \left( 4 - 4^{1/(\text{order}-1)} \right)^{-1} \f$.
+ * 
+ * These formulations are taken from 'Finding Exponential Product Formulas
+ * of Higher Orders', Naomichi Hatano and Masuo Suzuki (2005) (<a href="https://arxiv.org/abs/math-ph/0506007">arXiv</a>).
+ *
+ * Note that the applied Trotter circuit is captured by QASM, if QASM logging is enabled
+ * on \p qureg.
+ *
+ * @ingroup operator
+ * @param[in,out] qureg the register to modify under the approximate unitary-time evolution
+ * @param[in] hamil the hamiltonian under which to approxiamte unitary-time evolution
+ * @param[in] time the target evolution time, which is permitted to be both positive and negative.
+ * @param[in] order the order of Trotter-Suzuki decomposition to use. Higher orders (necessarily even)
+ *      are more accurate but prescribe an exponentially increasing number of gates.
+ * @param[in] reps the number of repetitions of the decomposition of the given order. This 
+ *      improves the accuracy but prescribes a linearly increasing number of gates.
+ * @throws exitWithError if \p qureg.numQubitsRepresented != \p hamil.numQubits, 
+  *     or \p hamil contains invalid parameters or Pauli codes, 
+  *     or if \p order is not in {1, 2, 4, 6, ...}
+  *     or if \p reps <= 0.
+ * @author Tyson Jones
+ */
+void applyTrotterCircuit(Qureg qureg, PauliHamil hamil, qreal time, int order, int reps);
 
 /** Apply a general 2-by-2 matrix, which may be non-unitary. The matrix is 
  * left-multiplied onto the state, for both state-vectors and density matrices.
@@ -3333,7 +3578,6 @@ void applyMatrixN(Qureg qureg, int* targs, const int numTargs, ComplexMatrixN u)
  * @author Tyson Jones
  */
 void applyMultiControlledMatrixN(Qureg qureg, int* ctrls, const int numCtrls, int* targs, const int numTargs, ComplexMatrixN u);
-
 
 /** An internal function called when invalid arguments are passed to a QuEST API
  * call, which the user can optionally override by redefining. This function is 

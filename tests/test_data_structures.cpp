@@ -183,6 +183,182 @@ TEST_CASE( "createDensityQureg", "[data_structures]" ) {
 
 
 
+/** @sa createPauliHamil
+ * @ingroup unittest 
+ * @author Tyson Jones 
+ */
+TEST_CASE( "createPauliHamil", "[data_structures]" ) {
+
+    SECTION( "correctness" ) {
+
+        int numQb = GENERATE( range(1,5) );
+        int numTerms = GENERATE( range(1,5) );
+        PauliHamil hamil = createPauliHamil(numQb, numTerms);
+        
+        // check fields are correct
+        REQUIRE( hamil.numQubits == numQb );
+        REQUIRE( hamil.numSumTerms == numTerms );
+        
+        // check all Pauli codes are identity
+        int numPaulis = numQb * numTerms;
+        for (int i=0; i<numPaulis; i++) {
+            REQUIRE( hamil.pauliCodes[i] == PAULI_I );
+        }
+            
+        // check all term coefficients can be written to (no seg fault)
+        for (int j=0; j<numTerms; j++) {
+            hamil.termCoeffs[j] = 1;
+            REQUIRE( hamil.termCoeffs[j] == 1 );
+        }
+        
+        destroyPauliHamil(hamil);
+    }
+    SECTION( "input validation") {
+
+        SECTION( "number of qubits" ) {
+
+            int numQb = GENERATE( -1, 0 );
+            REQUIRE_THROWS_WITH( createPauliHamil(numQb, 1), Contains("The number of qubits and terms in the PauliHamil must be strictly positive.") );
+        }
+        SECTION( "number of terms" ) {
+
+            int numTerms = GENERATE( -1, 0 );
+            REQUIRE_THROWS_WITH( createPauliHamil(1, numTerms), Contains("The number of qubits and terms in the PauliHamil must be strictly positive.") );
+        }
+    }
+}
+
+
+
+/** @sa createPauliHamilFromFile
+ * @ingroup unittest 
+ * @author Tyson Jones 
+ */
+TEST_CASE( "createPauliHamilFromFile", "[data_structures]" ) {
+
+    // a file created & populated during the test, and deleted afterward
+    char fn[] = "temp_test_output_file.txt";
+
+    SECTION( "correctness" ) {
+        
+        SECTION( "general" ) {
+            
+            // for several sizes...
+            int numQb = GENERATE( range(1,6) );
+            int numTerms = GENERATE( range(1,6) );
+            int numPaulis = numQb*numTerms;
+            
+            // create a PauliHamil with random elements
+            qreal coeffs[numTerms];
+            enum pauliOpType paulis[numPaulis];
+            setRandomPauliSum(coeffs, paulis, numQb, numTerms);
+            
+            // write the Hamiltonian to file (with trailing whitespace, and trailing newline)
+            FILE* file = fopen(fn, "w");
+            int i=0;
+            for (int n=0; n<numTerms; n++) {
+                fprintf(file, "%.20f ", coeffs[n]);
+                for (int q=0; q<numQb; q++)
+                    fprintf(file, "%d ", (int) paulis[i++]);
+                fprintf(file, "\n");
+            }
+            fprintf(file, "\n");
+            fclose(file);
+            
+            // load the file as a PauliHamil
+            PauliHamil hamil = createPauliHamilFromFile(fn);
+
+            // check fields agree
+            REQUIRE( hamil.numQubits == numQb );
+            REQUIRE( hamil.numSumTerms == numTerms );
+            
+            // check elements agree
+            i=0;
+            for (int n=0; n<numTerms; n++) {
+                REQUIRE( hamil.termCoeffs[n] == coeffs[n] );
+                for (int q=0; q<numQb; q++) {
+                    REQUIRE( hamil.pauliCodes[i] == paulis[i] );
+                    i++;
+                }
+            }
+            
+            destroyPauliHamil(hamil);
+        }
+        SECTION( "edge cases" ) {
+            
+            SECTION( "no trailing newline or space" ) {
+                
+                FILE* file = fopen(fn, "w");
+                fprintf(file, ".1 1 0 1");
+                fclose(file);
+                PauliHamil hamil = createPauliHamilFromFile(fn);
+                
+                REQUIRE( hamil.numSumTerms == 1 );
+                REQUIRE( hamil.numQubits == 3 );
+                destroyPauliHamil(hamil); 
+            }
+            SECTION( "trailing newlines" ) {
+                
+                FILE* file = fopen(fn, "w");
+                fprintf(file, ".1 1 0 1\n\n\n");
+                fclose(file);
+                PauliHamil hamil = createPauliHamilFromFile(fn);
+                
+                REQUIRE( hamil.numSumTerms == 1 );
+                REQUIRE( hamil.numQubits == 3 );
+                destroyPauliHamil(hamil); 
+            }
+            SECTION( "trailing spaces" ) {
+                
+                FILE* file = fopen(fn, "w");
+                fprintf(file, ".1 1 0 1    ");
+                fclose(file);
+                PauliHamil hamil = createPauliHamilFromFile(fn);
+                
+                REQUIRE( hamil.numSumTerms == 1 );
+                REQUIRE( hamil.numQubits == 3 );
+                destroyPauliHamil(hamil); 
+            }
+        }
+    }
+    SECTION( "input validation") {
+
+        SECTION( "number of qubits" ) {
+
+            FILE* file = fopen(fn, "w");
+            fprintf(file, ".1 ");
+            fclose(file);
+            REQUIRE_THROWS_WITH( createPauliHamilFromFile(fn), Contains("The number of qubits") && Contains("strictly positive"));
+        }
+        SECTION( "coefficient type" ) {
+
+            FILE* file = fopen(fn, "w");
+            fprintf(file, "notanumber 1 2 3");
+            fclose(file);
+            REQUIRE_THROWS_WITH( createPauliHamilFromFile(fn), Contains("Failed to parse") && Contains("coefficient"));
+        }
+        SECTION( "pauli code" ) {
+
+            // invalid int
+            FILE* file = fopen(fn, "w");
+            fprintf(file, ".1 1 2 4");
+            fclose(file);
+            REQUIRE_THROWS_WITH( createPauliHamilFromFile(fn), Contains("invalid pauli code"));
+            
+            // invalid type
+            file = fopen(fn, "w");
+            fprintf(file, ".1 1 2 notanumber");
+            fclose(file);
+            REQUIRE_THROWS_WITH( createPauliHamilFromFile(fn), Contains("Failed to parse the next expected Pauli code"));
+        }
+    }
+    
+    // delete the test file
+    remove(fn);
+}
+
+
+
 /** @sa createQuESTEnv
  * @ingroup unittest 
  * @author Tyson Jones 
@@ -283,6 +459,23 @@ TEST_CASE( "destroyComplexMatrixN", "[data_structures]" ) {
 
 
 
+/** @sa destroyPauliHamil
+ * @ingroup unittest 
+ * @author Tyson Jones 
+ */
+TEST_CASE( "destroyPauliHamil", "[data_structures]" ) {
+    
+    /* there is no meaningful way to test this.
+     * We e.g. cannot check that the pointers are NULL because 
+     * they are not updated; this function passes the struct by value,
+     * not by reference. We also cannot reliably monitor the 
+     * memory used in the heap at runtime.
+     */
+    SUCCEED( );
+}
+
+
+
 /** @sa destroyQuESTEnv
  * @ingroup unittest 
  * @author Tyson Jones 
@@ -320,4 +513,70 @@ TEST_CASE( "initComplexMatrixN", "[data_structures]" ) {
     
     /* use of this function is illegal in C++ */
     SUCCEED( );
+}
+
+
+
+/** @sa initPauliHamil
+ * @ingroup unittest 
+ * @author Tyson Jones 
+ */
+TEST_CASE( "initPauliHamil", "[data_structures]" ) {
+    
+    SECTION( "correctness" ) {
+        
+        PauliHamil hamil = createPauliHamil(3, 2);
+        
+        qreal coeffs[] = {-5, 5};
+        enum pauliOpType codes[] = {
+            PAULI_X, PAULI_Y, PAULI_Z,
+            PAULI_Z, PAULI_Y, PAULI_X};
+        initPauliHamil(hamil, coeffs, codes);
+        
+        // check everything written correctly
+        for (int t=0; t<2; t++) {
+            REQUIRE( coeffs[t] == hamil.termCoeffs[t] );
+            for (int q=0; q<3; q++) {
+                int ind = 3*t+q;
+                REQUIRE( codes[ind] == hamil.pauliCodes[ind] );
+            }
+        }
+            
+        destroyPauliHamil(hamil);
+    }
+    SECTION( "input validation" ) {
+        
+        SECTION( "parameters" ) {
+            
+            // parameters checked before codes, so safe to leave un-initialised
+            qreal coeffs[1];
+            enum pauliOpType codes[1];
+            PauliHamil hamil;
+            
+            hamil.numQubits = GENERATE( -1, 0 );
+            hamil.numSumTerms = 1;
+            REQUIRE_THROWS_WITH( initPauliHamil(hamil, coeffs, codes), Contains("number of qubits") && Contains("strictly positive") );
+            
+            hamil.numQubits = 1;
+            hamil.numSumTerms = GENERATE( -1, 0 );
+            REQUIRE_THROWS_WITH( initPauliHamil(hamil, coeffs, codes), Contains("terms") && Contains("strictly positive") );
+        }
+        SECTION( "Pauli codes" ) {
+        
+            int numQb = 3;
+            int numTerms = 2;
+            int numCodes = numQb * numTerms;
+            qreal coeffs[numTerms];
+            enum pauliOpType codes[numCodes];
+            
+            // make only one code invalid
+            for (int i=0; i<numCodes; i++)
+                codes[i] = PAULI_I;
+            codes[GENERATE_COPY( range(0,numCodes) )] = (pauliOpType) GENERATE( -1, 4 );
+            
+            PauliHamil hamil = createPauliHamil(numQb, numTerms);
+            REQUIRE_THROWS_WITH( initPauliHamil(hamil, coeffs, codes), Contains("Invalid Pauli code") );
+            destroyPauliHamil(hamil);
+        }
+    }
 }

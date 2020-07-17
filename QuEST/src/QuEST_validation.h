@@ -12,6 +12,7 @@
 # define QUEST_VALIDATION_H
 
 # include "QuEST.h"
+# include <stdio.h>
 
 # ifdef __cplusplus
 extern "C" {
@@ -75,7 +76,7 @@ void validateSecondQuregStateVec(Qureg qureg2, const char *caller);
 
 void validateNumAmps(Qureg qureg, long long int startInd, long long int numAmps, const char* caller);
 
-void validateFileOpened(int opened, const char* caller);
+void validateFileOpened(int opened, char* fn, const char* caller);
 
 void validateProb(qreal prob, const char* caller);
 
@@ -104,6 +105,22 @@ void validateTwoQubitKrausMap(Qureg qureg, ComplexMatrix4* ops, int numOps, cons
 void validateMultiQubitKrausMap(Qureg qureg, int numTargs, ComplexMatrixN* ops, int numOps, const char* caller);
 
 void validateOneQubitDampingProb(qreal prob, const char* caller);
+
+void validateHamilParams(int numQubits, int numTerms, const char* caller);
+
+void validatePauliHamil(PauliHamil hamil, const char* caller);
+
+void validateMatchingQuregPauliHamilDims(Qureg qureg, PauliHamil hamil, const char* caller);
+
+void validateHamilFileParams(int numQubits, int numTerms, FILE* file, char* fn, const char* caller);
+
+void validateHamilFileCoeffParsed(int parsed, PauliHamil h, FILE* file, char* fn, const char* caller);
+
+void validateHamilFilePauliParsed(int parsed, PauliHamil h, FILE* file, char* fn, const char* caller);
+
+void validateHamilFilePauliCode(enum pauliOpType code, PauliHamil h, FILE* file, char* fn, const char* caller);
+
+void validateTrotterParams(int order, int reps, const char* caller);
 
 # ifdef __cplusplus
 }

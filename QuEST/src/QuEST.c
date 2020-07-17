@@ -20,7 +20,9 @@
 # include "QuEST_internal.h"
 # include "QuEST_validation.h"
 # include "QuEST_qasm.h"
+
 # include <stdlib.h>
+# include <string.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -100,7 +102,7 @@ void printRecordedQASM(Qureg qureg) {
 
 void writeRecordedQASMToFile(Qureg qureg, char* filename) {
     int success = qasm_writeRecordedToFile(qureg, filename);
-    validateFileOpened(success, __func__);
+    validateFileOpened(success, filename, __func__);
 }
 
 
@@ -814,6 +816,31 @@ void applyPauliSum(Qureg inQureg, enum pauliOpType* allPauliCodes, qreal* termCo
     qasm_recordComment(outQureg, "Here, the register was modified to an undisclosed and possibly unphysical state (applyPauliSum).");
 }
 
+void applyPauliHamil(Qureg inQureg, PauliHamil hamil, Qureg outQureg) {
+    validateMatchingQuregTypes(inQureg, outQureg, __func__);
+    validateMatchingQuregDims(inQureg, outQureg, __func__);
+    validatePauliHamil(hamil, __func__);
+    validateMatchingQuregPauliHamilDims(inQureg, hamil, __func__);
+    
+    statevec_applyPauliSum(inQureg, hamil.pauliCodes, hamil.termCoeffs, hamil.numSumTerms, outQureg);
+    
+    qasm_recordComment(outQureg, "Here, the register was modified to an undisclosed and possibly unphysical state (applyPauliHamil).");
+}
+
+void applyTrotterCircuit(Qureg qureg, PauliHamil hamil, qreal time, int order, int reps) {
+    validateTrotterParams(order, reps, __func__);
+    validatePauliHamil(hamil, __func__);
+    validateMatchingQuregPauliHamilDims(qureg, hamil, __func__);
+    
+    qasm_recordComment(qureg, 
+        "Beginning of Trotter circuit (time %g, order %d, %d repetitions).",
+        time, order, reps);
+        
+    agnostic_applyTrotterCircuit(qureg, hamil, time, order, reps);
+
+    qasm_recordComment(qureg, "End of Trotter circuit");
+}
+
 void applyMatrix2(Qureg qureg, const int targetQubit, ComplexMatrix2 u) {
     validateTarget(qureg, targetQubit, __func__);
     
@@ -927,6 +954,15 @@ qreal calcExpecPauliSum(Qureg qureg, enum pauliOpType* allPauliCodes, qreal* ter
     validateMatchingQuregDims(qureg, workspace, __func__);
     
     return statevec_calcExpecPauliSum(qureg, allPauliCodes, termCoeffs, numSumTerms, workspace);
+}
+
+qreal calcExpecPauliHamil(Qureg qureg, PauliHamil hamil, Qureg workspace) {
+    validateMatchingQuregTypes(qureg, workspace, __func__);
+    validateMatchingQuregDims(qureg, workspace, __func__);
+    validatePauliHamil(hamil, __func__);
+    validateMatchingQuregPauliHamilDims(qureg, hamil, __func__);
+    
+    return statevec_calcExpecPauliSum(qureg, hamil.pauliCodes, hamil.termCoeffs, hamil.numSumTerms, workspace);
 }
 
 qreal calcHilbertSchmidtDistance(Qureg a, Qureg b) {
@@ -1088,6 +1124,126 @@ void initComplexMatrixN(ComplexMatrixN m, qreal re[][1<<m.numQubits], qreal im[]
         }
 }
 
+PauliHamil createPauliHamil(int numQubits, int numSumTerms) {
+    validateHamilParams(numQubits, numSumTerms, __func__);
+    
+    PauliHamil h;
+    h.numQubits = numQubits;
+    h.numSumTerms = numSumTerms;
+    h.termCoeffs = malloc(numSumTerms * sizeof *h.termCoeffs);
+    h.pauliCodes = malloc(numQubits*numSumTerms * sizeof *h.pauliCodes);
+    
+    // initialise pauli codes to identity 
+    for (int i=0; i<numQubits*numSumTerms; i++)
+        h.pauliCodes[i] = PAULI_I;
+    
+    return h;
+}
+
+void destroyPauliHamil(PauliHamil h) {
+    
+    free(h.termCoeffs);
+    free(h.pauliCodes);
+}
+
+PauliHamil createPauliHamilFromFile(char* fn) {
+    
+    /* The validation in this function must close the file handle and free 
+     * allocated memory before raising an error (whether that's a C exit, or
+     * an overriden C++ exception).
+     */
+    
+	FILE* file = fopen(fn, "r");
+    int success = (file != NULL);
+    validateFileOpened(success, fn, __func__);
+    
+    /* file format: coeff {term} \n where {term} is #numQubits values of 
+	 * 0 1 2 3 signifying I X Y Z acting on that qubit index
+	 */
+	
+	// count the number of qubits (ignore trailing whitespace)
+	int numQubits = -1; // to exclude coeff at start
+	char ch = getc(file);
+    char prev = '0'; // anything not space
+	while (ch != '\n' && ch != EOF) {
+		if (ch == ' ' && prev != ' ') // skip multiple spaces
+			numQubits++;
+        prev = ch;
+        ch = getc(file);
+    }
+    // edge-case: if we hit EOF/newline without a space
+    if (prev != ' ')
+        numQubits++;
+
+    /* TODO:
+     * The below code may break on Windows where newlines are multiple characters
+     */
+	
+	// count the number of terms (being cautious of trailing newlines)
+    int numTerms = 0;
+    prev = '\n';
+    rewind(file);
+	while ((ch=getc(file)) != EOF) {
+		if (ch == '\n' && prev != '\n')
+			numTerms++;
+        prev = ch;
+    }
+    // edge-case: if we hit EOF without a newline, count that line
+    if (prev != '\n')
+        numTerms++;
+
+    // validate the inferred number of terms and qubits (closes file if error)
+    validateHamilFileParams(numQubits, numTerms, file, fn, __func__);
+    
+    // allocate space for PauliHamil data
+    PauliHamil h = createPauliHamil(numQubits, numTerms);
+     
+    // specifier for a qreal number then a space 
+    char strSpec[50];
+    strcpy(strSpec, REAL_SPECIFIER);
+    strcat(strSpec, " ");
+    
+    // collect coefficients and terms
+	rewind(file);
+	for (int t=0; t<numTerms; t++) {
+		
+		// record coefficient, and validate (closes file and frees h if error)
+        success = fscanf(file, strSpec, &(h.termCoeffs[t])) == 1;
+        validateHamilFileCoeffParsed(success, h, file, fn, __func__);
+
+		// record Pauli operations, and validate (closes file and frees h if error)
+        for (int q=0; q<numQubits; q++) {
+            int i = t*numQubits + q;
+            
+            // verbose, to avoid type warnings
+            int code;
+            success = fscanf(file, "%d ", &code) == 1;
+            h.pauliCodes[i] = (enum pauliOpType) code;
+            validateHamilFilePauliParsed(success, h, file, fn, __func__);
+            validateHamilFilePauliCode(h.pauliCodes[i], h, file, fn, __func__);
+		}
+
+		// the trailing newline is magically eaten
+	}
+
+    fclose(file);
+	return h;
+}
+
+void initPauliHamil(PauliHamil hamil, qreal* coeffs, enum pauliOpType* codes) {
+    validateHamilParams(hamil.numQubits, hamil.numSumTerms, __func__);
+    validatePauliCodes(codes, hamil.numSumTerms*hamil.numQubits, __func__);
+    
+    int i=0;
+    for (int t=0; t<hamil.numSumTerms; t++) {
+        hamil.termCoeffs[t] = coeffs[t];
+        for (int q=0; q<hamil.numQubits; q++) {
+            hamil.pauliCodes[i] = codes[i];
+            i++;
+        }
+    }
+}
+
 /*
  * debug
  */
@@ -1103,7 +1259,7 @@ void initDebugState(Qureg qureg) {
 
 void initStateFromSingleFile(Qureg *qureg, char filename[200], QuESTEnv env) {
     int success = statevec_initStateFromSingleFile(qureg, filename, env);
-    validateFileOpened(success, __func__);
+    validateFileOpened(success, filename, __func__);
 }
 
 void initStateOfSingleQubit(Qureg *qureg, int qubitId, int outcome) {
@@ -1115,6 +1271,17 @@ void initStateOfSingleQubit(Qureg *qureg, int qubitId, int outcome) {
 
 void reportStateToScreen(Qureg qureg, QuESTEnv env, int reportRank)  {
     statevec_reportStateToScreen(qureg, env, reportRank);
+}
+
+void reportPauliHamil(PauliHamil hamil) {
+    validatePauliHamil(hamil, __func__);
+    
+    for (int t=0; t<hamil.numSumTerms; t++) {
+        printf("%g\t", hamil.termCoeffs[t]);
+        for (int q=0; q<hamil.numQubits; q++)
+            printf("%d ", (int) hamil.pauliCodes[q+t*hamil.numQubits]);
+        printf("\n");
+    }
 }
 
 int  getQuEST_PREC(void) {

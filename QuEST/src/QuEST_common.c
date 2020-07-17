@@ -19,6 +19,7 @@
 # include "QuEST_internal.h"
 # include "QuEST_precision.h"
 # include "QuEST_validation.h"
+# include "QuEST_qasm.h"
 # include "mt19937ar.h"
 
 #if defined(_WIN32) && ! defined(__MINGW32__)
@@ -692,6 +693,90 @@ void densmatr_mixPauli(Qureg qureg, int qubit, qreal probX, qreal probY, qreal p
     ops[3].real[0][0] =  facs[3]; ops[3].real[1][1] = -facs[3];
     
     densmatr_mixKrausMap(qureg, qubit, ops, numOps);
+}
+
+void applyExponentiatedPauliHamil(Qureg qureg, PauliHamil hamil, qreal fac, int reverse) {
+    
+    /* applies a first-order one-repetition approximation of exp(-i fac H)
+     * to qureg. Letting H = sum_j c_j h_j, it does this via 
+     * exp(-i fac H) ~ prod_j exp(-i fac c_j h_j), where each inner exp 
+     * is performed with multiRotatePauli (with pre-factor 2).
+     */
+     
+    // prepare targets for multiRotatePauli 
+    // (all qubits; actual targets are determined by Pauli codes)
+    int vecTargs[hamil.numQubits];
+    int densTargs[hamil.numQubits];
+    for (int q=0; q<hamil.numQubits; q++) {
+        vecTargs[q] = q;
+        densTargs[q] = q + hamil.numQubits;
+    }
+
+    for (int i=0; i<hamil.numSumTerms; i++) {
+        
+        int t=i;
+        if (reverse)
+            t=hamil.numSumTerms-1-i;
+            
+        qreal angle = 2*fac*hamil.termCoeffs[t];
+        
+        statevec_multiRotatePauli(
+            qureg, vecTargs, &(hamil.pauliCodes[t*hamil.numQubits]), 
+            hamil.numQubits, angle, 0);
+        
+        if (qureg.isDensityMatrix)
+            statevec_multiRotatePauli(
+                qureg, densTargs, &(hamil.pauliCodes[t*hamil.numQubits]), 
+                hamil.numQubits, angle, 1);
+        
+        // record qasm      
+        char buff[1024];
+        int b=0;
+        for (int q=0; q<hamil.numQubits; q++) {
+            enum pauliOpType op = hamil.pauliCodes[q + t*hamil.numQubits];
+            
+            char p = 'I';
+            if (op == PAULI_X) p = 'X';
+            if (op == PAULI_Y) p = 'Y';
+            if (op == PAULI_Z) p = 'Z';
+            buff[b++] = p;
+            buff[b++] = ' ';
+        }
+        buff[b] = '\0';
+        
+        qasm_recordComment(qureg, 
+            "Here, a multiRotatePauli with angle %g and paulis %s was applied.",
+            angle, buff);
+    }
+}
+
+void applySymmetrizedTrotterCircuit(Qureg qureg, PauliHamil hamil, qreal time, int order) {
+    
+    if (order == 1) {
+        applyExponentiatedPauliHamil(qureg, hamil, time, 0);
+    }
+    else if (order == 2) {
+        applyExponentiatedPauliHamil(qureg, hamil, time/2., 0);
+        applyExponentiatedPauliHamil(qureg, hamil, time/2., 1);
+    }
+    else {
+        qreal p = 1. / (4 - pow(4, 1./(order-1)));
+        int lower = order-2;
+        applySymmetrizedTrotterCircuit(qureg, hamil, p*time, lower);
+        applySymmetrizedTrotterCircuit(qureg, hamil, p*time, lower);
+        applySymmetrizedTrotterCircuit(qureg, hamil, (1-4*p)*time, lower);
+        applySymmetrizedTrotterCircuit(qureg, hamil, p*time, lower);
+        applySymmetrizedTrotterCircuit(qureg, hamil, p*time, lower);
+    }
+}
+
+void agnostic_applyTrotterCircuit(Qureg qureg, PauliHamil hamil, qreal time, int order, int reps) {
+    
+    if (time == 0)
+        return;
+    
+    for (int r=0; r<reps; r++)
+        applySymmetrizedTrotterCircuit(qureg, hamil, time/reps, order);
 }
 
 #ifdef __cplusplus
