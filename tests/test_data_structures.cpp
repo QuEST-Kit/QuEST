@@ -514,3 +514,69 @@ TEST_CASE( "initComplexMatrixN", "[data_structures]" ) {
     /* use of this function is illegal in C++ */
     SUCCEED( );
 }
+
+
+
+/** @sa initPauliHamil
+ * @ingroup unittest 
+ * @author Tyson Jones 
+ */
+TEST_CASE( "initPauliHamil", "[data_structures]" ) {
+    
+    SECTION( "correctness" ) {
+        
+        PauliHamil hamil = createPauliHamil(3, 2);
+        
+        qreal coeffs[] = {-5, 5};
+        enum pauliOpType codes[] = {
+            PAULI_X, PAULI_Y, PAULI_Z,
+            PAULI_Z, PAULI_Y, PAULI_X};
+        initPauliHamil(hamil, coeffs, codes);
+        
+        // check everything written correctly
+        for (int t=0; t<2; t++) {
+            REQUIRE( coeffs[t] == hamil.termCoeffs[t] );
+            for (int q=0; q<3; q++) {
+                int ind = 3*t+q;
+                REQUIRE( codes[ind] == hamil.pauliCodes[ind] );
+            }
+        }
+            
+        destroyPauliHamil(hamil);
+    }
+    SECTION( "input validation" ) {
+        
+        SECTION( "parameters" ) {
+            
+            // parameters checked before codes, so safe to leave un-initialised
+            qreal coeffs[1];
+            enum pauliOpType codes[1];
+            PauliHamil hamil;
+            
+            hamil.numQubits = GENERATE( -1, 0 );
+            hamil.numSumTerms = 1;
+            REQUIRE_THROWS_WITH( initPauliHamil(hamil, coeffs, codes), Contains("number of qubits") && Contains("strictly positive") );
+            
+            hamil.numQubits = 1;
+            hamil.numSumTerms = GENERATE( -1, 0 );
+            REQUIRE_THROWS_WITH( initPauliHamil(hamil, coeffs, codes), Contains("terms") && Contains("strictly positive") );
+        }
+        SECTION( "Pauli codes" ) {
+        
+            int numQb = 3;
+            int numTerms = 2;
+            int numCodes = numQb * numTerms;
+            qreal coeffs[numTerms];
+            enum pauliOpType codes[numCodes];
+            
+            // make only one code invalid
+            for (int i=0; i<numCodes; i++)
+                codes[i] = PAULI_I;
+            codes[GENERATE_COPY( range(0,numCodes) )] = (pauliOpType) GENERATE( -1, 4 );
+            
+            PauliHamil hamil = createPauliHamil(numQb, numTerms);
+            REQUIRE_THROWS_WITH( initPauliHamil(hamil, coeffs, codes), Contains("Invalid Pauli code") );
+            destroyPauliHamil(hamil);
+        }
+    }
+}

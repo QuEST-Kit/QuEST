@@ -1183,6 +1183,20 @@ PauliHamil createPauliHamilFromFile(char* fn) {
 	return h;
 }
 
+void initPauliHamil(PauliHamil hamil, qreal* coeffs, enum pauliOpType* codes) {
+    validateHamilParams(hamil.numQubits, hamil.numSumTerms, __func__);
+    validatePauliCodes(codes, hamil.numSumTerms*hamil.numQubits, __func__);
+    
+    int i=0;
+    for (int t=0; t<hamil.numSumTerms; t++) {
+        hamil.termCoeffs[t] = coeffs[t];
+        for (int q=0; q<hamil.numQubits; q++) {
+            hamil.pauliCodes[i] = codes[i];
+            i++;
+        }
+    }
+}
+
 /*
  * debug
  */

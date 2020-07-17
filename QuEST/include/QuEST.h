@@ -391,6 +391,24 @@ void destroyPauliHamil(PauliHamil hamil);
  */
 PauliHamil createPauliHamilFromFile(char* fn);
 
+/** Initialise a \p PauliHamil instance with the given term coefficients and 
+ * Pauli codes (one for every qubit in every term).
+ *
+ * \p coeffs and \p codes encode a weighted sum of Pauli operators, with the same 
+ * format as other QuEST functions (like calcExpecPauliSum()).
+ * 
+ * \p hamil must be already created with createPauliHamil(), or createPauliHamilFromFile())
+ * 
+ * @ingroup type
+ * @param[in, out] hamil an already created PauliHamil instance to be modified
+ * @param[in] coeffs a length-hamil.numSumTerms array of coefficients
+ * @param[in] codes a length-hamil.numSumTerms*hamil.numQubits array of Pauli codes
+ * @throws exitWithError if \p hamil has invalid parameters (\p numQubits <= 0, \p numSumTerms <= 0),
+ *      or if any code in \p codes is not a valid Pauli code.
+ * @author Tyson Jones
+ */
+void initPauliHamil(PauliHamil hamil, qreal* coeffs, enum pauliOpType* codes);
+
 /** Print the current state vector of probability amplitudes for a set of qubits to file.
  * File format:
  * @verbatim
