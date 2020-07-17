@@ -726,14 +726,14 @@ TEST_CASE( "applyTrotterCircuit", "[operators]" ) {
             // hardcoded 5 qubits here in the Pauli codes
             REQUIRE( NUM_QUBITS == 5 );
             
+            // (verbose for C++ compatibility)
             PauliHamil hamil = createPauliHamil(NUM_QUBITS, 3);
-            initPauliHamil(hamil, 
-                (qreal[]) {
-                    M_PI * sqrt(2.0), M_PI, M_PI},
-                (pauliOpType[]) {
-                    PAULI_X, PAULI_Y, PAULI_Z, PAULI_X, PAULI_Y,
-                    PAULI_Y, PAULI_Z, PAULI_X, PAULI_Y, PAULI_Z,
-                    PAULI_Z, PAULI_X, PAULI_Y, PAULI_Z, PAULI_X});
+            qreal coeffs[] = {M_PI * sqrt(2.0), M_PI, M_PI};
+            enum pauliOpType codes[] = {
+                PAULI_X, PAULI_Y, PAULI_Z, PAULI_X, PAULI_Y,
+                PAULI_Y, PAULI_Z, PAULI_X, PAULI_Y, PAULI_Z,
+                PAULI_Z, PAULI_X, PAULI_Y, PAULI_Z, PAULI_X};
+            initPauliHamil(hamil, coeffs, codes);
                     
             // evolving to t=1 should leave the input state unchanged
             qreal time = 1;

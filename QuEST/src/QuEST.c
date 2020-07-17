@@ -1214,7 +1214,11 @@ PauliHamil createPauliHamilFromFile(char* fn) {
 		// record Pauli operations, and validate (closes file and frees h if error)
         for (int q=0; q<numQubits; q++) {
             int i = t*numQubits + q;
-            success = fscanf(file, "%d ", &(h.pauliCodes[i])) == 1;
+            
+            // verbose, to avoid type warnings
+            int code;
+            success = fscanf(file, "%d ", &code) == 1;
+            h.pauliCodes[i] = (enum pauliOpType) code;
             validateHamilFilePauliParsed(success, h, file, fn, __func__);
             validateHamilFilePauliCode(h.pauliCodes[i], h, file, fn, __func__);
 		}
