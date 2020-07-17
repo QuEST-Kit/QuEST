@@ -426,10 +426,14 @@ void validateMatrixInit(ComplexMatrixN matr, const char* caller) {
     QuESTAssert(matr.real != NULL && matr.imag != NULL, E_COMPLEX_MATRIX_NOT_INIT, caller);
 }
 
-void validateMultiQubitUnitaryMatrix(Qureg qureg, ComplexMatrixN u, int numTargs, const char* caller) { 
+void validateMultiQubitMatrix(Qureg qureg, ComplexMatrixN u, int numTargs, const char* caller) { 
     validateMatrixInit(u, caller);
     validateMultiQubitMatrixFitsInNode(qureg, numTargs, caller);
     QuESTAssert(numTargs == u.numQubits, E_INVALID_UNITARY_SIZE, caller);
+}
+
+void validateMultiQubitUnitaryMatrix(Qureg qureg, ComplexMatrixN u, int numTargs, const char* caller) { 
+    validateMultiQubitMatrix(qureg, u, numTargs, caller);
     QuESTAssert(isMatrixNUnitary(u), E_NON_UNITARY_MATRIX, caller);
 }
 

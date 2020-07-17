@@ -686,6 +686,26 @@ void applyReferenceOp(QVector &state, int ctrl, int targ1, int targ2, QMatrix op
  */
 void applyReferenceOp(QVector &state, int targ, QMatrix op);
 
+/** Modifies the state-vector \p state to be the result of left-multiplying the multi-target operator 
+ * matrix \p op, with the specified control and target qubits (in \p ctrls and \p targs 
+ * respectively). This is an alias of applyReferenceOp(), since operators are always 
+ * left-multiplied as matrices onto state-vectors.
+ *
+ * @ingroup testutilities 
+ * @author Tyson Jones
+ */
+void applyReferenceMatrix(QVector &state, int* ctrls, int numCtrls, int *targs, int numTargs, QMatrix op);
+
+/** Modifies the density matrix \p state to be the result of left-multiplying the multi-target operator 
+ * matrix \p op, with the specified control and target qubits (in \p ctrls and \p targs 
+ * respectively). Here, \p op is treated like a simple matrix and is hence left-multiplied 
+ * onto the state once.
+ *
+ * @ingroup testutilities 
+ * @author Tyson Jones
+ */
+void applyReferenceMatrix(QMatrix &state, int* ctrls, int numCtrls, int *targs, int numTargs, QMatrix op);
+
 /** Performs a hardware-agnostic comparison of the given quregs, checking 
  * whether the difference between the real and imaginary components of every amplitude
  * is smaller than the QuEST_PREC-specific REAL_EPS (defined in QuEST_precision) precision.

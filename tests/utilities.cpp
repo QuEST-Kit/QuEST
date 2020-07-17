@@ -578,7 +578,7 @@ void applyReferenceOp(
     state = fullOp * state;
 }
 void applyReferenceOp(
-    QMatrix &state, int* ctrls, int numCtrls, int targ1, int targ2, QMatrix op
+    QVector &state, int* ctrls, int numCtrls, int targ1, int targ2, QMatrix op
 ) {
     int targs[2] = {targ1, targ2};
     applyReferenceOp(state, ctrls, numCtrls, targs, 2, op);
@@ -635,7 +635,7 @@ void applyReferenceOp(
     state = leftOp * state * rightOp;
 }
 void applyReferenceOp(
-    QVector &state, int* ctrls, int numCtrls, int targ1, int targ2, QMatrix op
+    QMatrix &state, int* ctrls, int numCtrls, int targ1, int targ2, QMatrix op
 ) {
     int targs[2] = {targ1, targ2};
     applyReferenceOp(state, ctrls, numCtrls, targs, 2, op);
@@ -676,6 +676,26 @@ void applyReferenceOp(
 ) {
     int targs[1] = {targ};
     applyReferenceOp(state, NULL, 0, targs, 1, op);
+}
+
+/* (do not generate doxygen doc)
+ *
+ * Overloads for applyReferenceMatrix, to simply left-multiply a matrix (possibly
+ * with additional control qubits) onto a state.
+ */
+void applyReferenceMatrix(
+    QVector &state, int* ctrls, int numCtrls, int *targs, int numTargs, QMatrix op
+) {
+    // for state-vectors, the op is always just left-multiplied
+    applyReferenceOp(state, ctrls, numCtrls, targs, numTargs, op);
+}
+void applyReferenceMatrix(
+    QMatrix &state, int* ctrls, int numCtrls, int *targs, int numTargs, QMatrix op
+) {
+    // for density matrices, op is left-multiplied only
+    int numQubits = calcLog2(state.size());
+    QMatrix leftOp = getFullOperatorMatrix(ctrls, numCtrls, targs, numTargs, op, numQubits);
+    state = leftOp * state;
 }
 
 bool areEqual(Qureg qureg1, Qureg qureg2, qreal precision) {
@@ -768,7 +788,7 @@ bool areEqual(Qureg qureg, QMatrix matr, qreal precision) {
         
         // DEBUG
         if (!ampsAgree) {
-            printf("node %d has a disagreement at (global) index %lldd of (%g) + i(%g)\n", 
+            printf("[msg from utilities.cpp] node %d has a disagreement at (global) index %lld of (%g) + i(%g)\n", 
                 qureg.chunkId, globalInd, realDif, imagDif
             );
         }

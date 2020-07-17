@@ -50,6 +50,8 @@ void validateOneQubitUnitaryMatrix(ComplexMatrix2 u, const char* caller);
 
 void validateTwoQubitUnitaryMatrix(Qureg qureg, ComplexMatrix4 u, const char* caller);
 
+void validateMultiQubitMatrix(Qureg qureg, ComplexMatrixN u, int numTargs, const char* caller);
+
 void validateMultiQubitUnitaryMatrix(Qureg qureg, ComplexMatrixN u, int numTargs, const char* caller);
 
 void validateMultiQubitMatrixFitsInNode(Qureg qureg, int numTargets, const char* caller);

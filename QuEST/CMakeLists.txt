@@ -317,13 +317,19 @@ target_compile_definitions(QuEST
 # ----- LINK LIBRARY ---------------------------------------------------------
 # -----------------------------------------------------------------------------
 
+# ----- OMP -------------------------------------------------------------------
+
+if (OPENMP_FOUND)
+  target_link_libraries(QuEST PUBLIC OpenMP::OpenMP_C)
+endif ()
+
 # ----- MPI -------------------------------------------------------------------
 
-target_link_libraries(QuEST ${MPI_C_LIBRARIES})
+target_link_libraries(QuEST PUBLIC ${MPI_C_LIBRARIES})
 
 # ----- GPU -------------------------------------------------------------------
 
-target_link_libraries(QuEST ${CUDA_LIBRARIES})
+target_link_libraries(QuEST PUBLIC ${CUDA_LIBRARIES})
 
 
 # ----- Coverage testing with GCC or Clang ------------------------------------
