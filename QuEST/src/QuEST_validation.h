@@ -24,6 +24,8 @@ void validateNumQubitsInQureg(int numQubits, int numRanks, const char* caller);
 
 void validateNumQubitsInMatrix(int numQubits, const char* caller);
 
+void validateNumQubitsInDiagOp(int numQubits, int numRanks, const char* caller);
+
 void validateAmpIndex(Qureg qureg, long long int ampInd, const char* caller);
 
 void validateStateIndex(Qureg qureg, long long int stateInd, const char* caller);
@@ -121,6 +123,8 @@ void validateHamilFilePauliParsed(int parsed, PauliHamil h, FILE* file, char* fn
 void validateHamilFilePauliCode(enum pauliOpType code, PauliHamil h, FILE* file, char* fn, const char* caller);
 
 void validateTrotterParams(int order, int reps, const char* caller);
+
+void validateDiagOpInit(DiagonalOp, const char* caller);
 
 # ifdef __cplusplus
 }

@@ -252,6 +252,10 @@ void statevec_applyPauliSum(Qureg inQureg, enum pauliOpType* allCodes, qreal* te
  
 void agnostic_applyTrotterCircuit(Qureg qureg, PauliHamil hamil, qreal time, int order, int reps);
 
+DiagonalOp agnostic_createDiagonalOp(int numQubits, QuESTEnv env);
+
+void agnostic_destroyDiagonalOp(DiagonalOp op);
+
 
 # ifdef __cplusplus
 }

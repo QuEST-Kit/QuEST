@@ -168,6 +168,31 @@ typedef struct PauliHamil
     int numQubits;
 } PauliHamil;
 
+/** Represents a diagonal complex operator on the full Hilbert state of a \p Qureg.
+ * The operator need not be unitary nor Hermitian (which would constrain it to
+ * real values)
+ *
+ * @ingroup type
+ * @author Tyson Jones 
+ */
+typedef struct DiagonalOp
+{
+    //! The number of qubits this operator can act on (informing its size)
+    int numQubits;
+    //! The number of the 2^numQubits amplitudes stored on each distributed node
+    long long int numElemsPerChunk;
+    //! The number of nodes between which the elements of this operator are split
+    int numChunks;
+    //! The position of the chunk of the operator held by this process in the full operator
+    int chunkId;
+    //! The real values of the 2^numQubits complex elements
+    qreal *real;
+    //! The imaginary values of the 2^numQubits complex elements
+    qreal *imag;
+    //! A copy of the elements stored persistently on the GPU
+    ComplexArray deviceOperator;
+} DiagonalOp;
+
 /** Represents a system of qubits.
  * Qubits are zero-based
  *
@@ -408,6 +433,58 @@ PauliHamil createPauliHamilFromFile(char* fn);
  * @author Tyson Jones
  */
 void initPauliHamil(PauliHamil hamil, qreal* coeffs, enum pauliOpType* codes);
+
+/** Creates a DiagonalOp representing a diagonal operator on the 
+ * full Hilbert space of a Qureg. This can only be applied to state-vectors or
+ * density matrices of an equal number of qubits, using applyDiagonalOp(). 
+ * There is no requirement that the operator is unitary or Hermitian - 
+ * any complex operator is allowed.
+ *
+ * This function allocates space for 2^n complex amplitudes, which are initially zero.
+ * This is the same cost as a state-vector of equal size.
+ * The elements should be modified with setDiagonalOpElems().
+ * This memory must later be freed with destroyDiagonalOp().
+ *
+ * In GPU mode, this function also creates persistent memory on the GPU.
+ * Hence, if not using setDiagonalOpElems() and instead modifying operator.real and .imag
+ * directly, the user must call thereafter call syncDiagonalOp() to modify the 
+ * operator stored in the GPU.
+ * 
+ * In distributed mode, the memory for the diagonal operator is spread evenly 
+ * between the available nodes, such that each node contains only
+ * operator.numElemsPerChunk complex values. Users must therefore exercise care 
+ * in modifying .real and .imag directly, and should instead use initDiagonalOp().
+  * E.g. the following is valid code when when distributed between TWO nodes:
+ *
+ *     // create {1,2,3,4,5,6,7,8, 9,10,11,12,13,14,15,16}
+ *     DiagonalOp op = createDiagonalOp(4, env); // 16 amplitudes total
+ *     for (int i=0; i<8; i++) {
+ *         if (env.rank == 0)
+ *             op.real[i] = (i+1);
+ *         if (env.rank == 1)
+ *             op.real[i] = (i+1+8);
+ *     }
+ *
+ * @ingroup type
+ * @returns a DiagonalOp instance, with 2^n-length .real and .imag arrays
+ * @param[in] numQubits number of qubit, informing the dimension of the operator.
+ * @param[in] env object representing the execution environment (local, multinode etc)
+ * @throws exitWithError if \p numQubits <= 0, or if \p numQubits is so large that 
+ *      the number of elements cannot fit in a long long int type, 
+ *      or if in distributed mode, there are more nodes than elements in the operator
+ * @author Tyson Jones
+ */
+DiagonalOp createDiagonalOp(int numQubits, QuESTEnv env);
+
+/** Destroys a DiagonalOp created with createDiagonalOp(), freeing its memory.
+ *
+ * @ingroup type
+ * @param[in] op the diagonal operator to destroy
+ * @param[in] env object representing the execution environment (local, multinode etc)
+ * @throws exitWithError if \p op was not created
+ * @author Tyson Jones
+ */
+void destroyDiagonalOp(DiagonalOp op, QuESTEnv env);
 
 /** Print the current state vector of probability amplitudes for a set of qubits to file.
  * File format:

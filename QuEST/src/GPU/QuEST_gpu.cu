@@ -335,6 +335,50 @@ void statevec_destroyQureg(Qureg qureg, QuESTEnv env)
     cudaFree(qureg.secondLevelReduction);
 }
 
+DiagonalOp agnostic_createDiagonalOp(int numQubits, QuESTEnv env) {
+
+    DiagonalOp op;
+    op.numQubits = numQubits;
+    op.numElemsPerChunk = (1LL << numQubits) / env.numRanks;
+    op.chunkId = env.rank;
+    op.numChunks = env.numRanks;
+
+    // allocate CPU memory (initialised to zero)
+    op.real = (qreal*) calloc(op.numElemsPerChunk, sizeof(qreal));
+    op.imag = (qreal*) calloc(op.numElemsPerChunk, sizeof(qreal));
+    // @TODO no handling of rank>1 allocation (no distributed GPU)
+
+    // check cpu memory allocation was successful
+    if ( !op.real || !op.imag ) {
+        printf("Could not allocate memory!\n");
+        exit(EXIT_FAILURE);
+    }
+
+    // allocate GPU memory
+    size_t arrSize = op.numElemsPerChunk * sizeof(qreal);
+    cudaMalloc(&(op.deviceOperator.real), arrSize);
+    cudaMalloc(&(op.deviceOperator.imag), arrSize);
+
+    // check gpu memory allocation was successful
+    if (!op.deviceOperator.real || !op.deviceOperator.imag) {
+        printf("Could not allocate memory on GPU!\n");
+        exit(EXIT_FAILURE);
+    }
+
+    // initialise GPU memory to zero
+    cudaMemset(op.deviceOperator.real, 0, arrSize);
+    cudaMemset(op.deviceOperator.imag, 0, arrSize);
+
+    return op;
+}
+
+void agnostic_destroyDiagonalOp(DiagonalOp op) {
+    free(op.real);
+    free(op.imag);
+    cudaFree(op.deviceOperator.real);
+    cudaFree(op.deviceOperator.imag);
+}
+
 int GPUExists(void){
     int deviceCount, device;
     int gpuDeviceCount = 0;

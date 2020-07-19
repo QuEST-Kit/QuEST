@@ -1244,6 +1244,19 @@ void initPauliHamil(PauliHamil hamil, qreal* coeffs, enum pauliOpType* codes) {
     }
 }
 
+DiagonalOp createDiagonalOp(int numQubits, QuESTEnv env) {
+    validateNumQubitsInDiagOp(numQubits, env.numRanks, __func__);
+    
+    return agnostic_createDiagonalOp(numQubits, env);
+}
+
+void destroyDiagonalOp(DiagonalOp op, QuESTEnv env) {
+    // env accepted for API consistency
+    validateDiagOpInit(op, __func__);
+    
+    agnostic_destroyDiagonalOp(op);
+}
+
 /*
  * debug
  */

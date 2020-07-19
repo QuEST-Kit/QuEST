@@ -80,6 +80,7 @@ typedef enum {
     E_INVALID_KRAUS_OPS,
     E_MISMATCHING_NUM_TARGS_KRAUS_SIZE,
     E_DISTRIB_QUREG_TOO_SMALL,
+    E_DISTRIB_DIAG_OP_TOO_SMALL,
     E_NUM_AMPS_EXCEED_TYPE,
     E_INVALID_PAULI_HAMIL_PARAMS,
     E_INVALID_PAULI_HAMIL_FILE_PARAMS,
@@ -89,6 +90,7 @@ typedef enum {
     E_MISMATCHING_PAULI_HAMIL_QUREG_NUM_QUBITS,
     E_INVALID_TROTTER_ORDER,
     E_INVALID_TROTTER_REPS
+    E_DIAGONAL_OP_NOT_INITIALISED
 } ErrorCode;
 
 static const char* errorMessages[] = {
@@ -141,6 +143,7 @@ static const char* errorMessages[] = {
     [E_INVALID_KRAUS_OPS] = "The specified Kraus map is not a completely positive, trace preserving map.",
     [E_MISMATCHING_NUM_TARGS_KRAUS_SIZE] = "Every Kraus operator must be of the same number of qubits as the number of targets.",
     [E_DISTRIB_QUREG_TOO_SMALL] = "Too few qubits. The created qureg must have at least one amplitude per node used in distributed simulation.",
+    [E_DISTRIB_DIAG_OP_TOO_SMALL] = "Too few qubits. The created DiagonalOp must contain at least one element per node used in distributed simulation.",
     [E_NUM_AMPS_EXCEED_TYPE] = "Too many qubits (max of log2(SIZE_MAX)). Cannot store the number of amplitudes per-node in the size_t type.",
     [E_INVALID_PAULI_HAMIL_PARAMS] = "The number of qubits and terms in the PauliHamil must be strictly positive.",
     [E_INVALID_PAULI_HAMIL_FILE_PARAMS] = "The number of qubits and terms in the PauliHamil file (%s) must be strictly positive.",
@@ -150,6 +153,7 @@ static const char* errorMessages[] = {
     [E_MISMATCHING_PAULI_HAMIL_QUREG_NUM_QUBITS] = "The PauliHamil must act on the same number of qubits as exist in the Qureg.",
     [E_INVALID_TROTTER_ORDER] = "The Trotterisation order must be 1, or an even number (for higher-order Suzuki symmetrized expansions).",
     [E_INVALID_TROTTER_REPS] = "The number of Trotter repetitions must be >=1."
+    [E_DIAGONAL_OP_NOT_INITIALISED] = "The diagonal operator has not been initialised through createDiagonalOperator()."
 };
 
 void exitWithError(const char* msg, const char* func) {
@@ -312,6 +316,18 @@ void validateNumQubitsInQureg(int numQubits, int numRanks, const char* caller) {
  
 void validateNumQubitsInMatrix(int numQubits, const char* caller) {
     QuESTAssert(numQubits>0, E_INVALID_NUM_QUBITS, caller);
+}
+
+void validateNumQubitsInDiagOp(int numQubits, int numRanks, const char* caller) {
+    QuESTAssert(numQubits>0, E_INVALID_NUM_CREATE_QUBITS, caller);
+    
+    // mustn't be more amplitudes than can fit in the type
+    unsigned int maxQubits = calcLog2(SIZE_MAX);
+    QuESTAssert( numQubits <= maxQubits, E_NUM_AMPS_EXCEED_TYPE, caller);
+    
+    // must be at least one amplitude per node
+    long unsigned int numAmps = (1UL<<numQubits);
+    QuESTAssert(numAmps >= numRanks, E_DISTRIB_DIAG_OP_TOO_SMALL, caller);
 }
 
 void validateStateIndex(Qureg qureg, long long int stateInd, const char* caller) {
@@ -637,6 +653,10 @@ void validateTrotterParams(int order, int reps, const char* caller) {
     int isEven = (order % 2) == 0;
     QuESTAssert(order > 0 && (isEven || order==1), E_INVALID_TROTTER_ORDER, caller);
     QuESTAssert(reps > 0, E_INVALID_TROTTER_REPS, caller);
+}
+
+void validateDiagOpInit(DiagonalOp op, const char* caller) {
+    QuESTAssert(op.real != NULL && op.imag != NULL, E_DIAGONAL_OP_NOT_INITIALISED, caller);
 }
 
 #ifdef __cplusplus

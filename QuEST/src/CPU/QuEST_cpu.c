@@ -1331,6 +1331,33 @@ void statevec_destroyQureg(Qureg qureg, QuESTEnv env){
     qureg.pairStateVec.imag = NULL;
 }
 
+DiagonalOp agnostic_createDiagonalOp(int numQubits, QuESTEnv env) {
+
+    // the 2^numQubits values will be evenly split between the env.numRanks nodes
+    DiagonalOp op;
+    op.numQubits = numQubits;
+    op.numElemsPerChunk = (1LL << numQubits) / env.numRanks;
+    op.chunkId = env.rank;
+    op.numChunks = env.numRanks;
+
+    // allocate CPU memory (initialised to zero)
+    op.real = (qreal*) calloc(op.numElemsPerChunk, sizeof(qreal));
+    op.imag = (qreal*) calloc(op.numElemsPerChunk, sizeof(qreal));
+
+    // check cpu memory allocation was successful
+    if ( !op.real || !op.imag ) {
+        printf("Could not allocate memory!\n");
+        exit(EXIT_FAILURE);
+    }
+
+    return op;
+}
+
+void agnostic_destroyDiagonalOp(DiagonalOp op) {
+    free(op.real);
+    free(op.imag);
+}
+
 void statevec_reportStateToScreen(Qureg qureg, QuESTEnv env, int reportRank){
     long long int index;
     int rank;
