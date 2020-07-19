@@ -99,7 +99,9 @@ void densmatr_mixKrausMap(Qureg qureg, int target, ComplexMatrix2 *ops, int numO
 void densmatr_mixTwoQubitKrausMap(Qureg qureg, int target1, int target2, ComplexMatrix4 *ops, int numOps);
 
 void densmatr_mixMultiQubitKrausMap(Qureg qureg, int* targets, int numTargets, ComplexMatrixN* ops, int numOps);
-    
+
+void densmatr_applyDiagonalOp(Qureg qureg, DiagonalOp op);
+
 
 /* 
  * operations upon state vectors
@@ -244,6 +246,8 @@ void statevec_multiRotatePauli(Qureg qureg, int* targetQubits, enum pauliOpType*
 void statevec_setWeightedQureg(Complex fac1, Qureg qureg1, Complex fac2, Qureg qureg2, Complex facOut, Qureg out);
 
 void statevec_applyPauliSum(Qureg inQureg, enum pauliOpType* allCodes, qreal* termCoeffs, int numSumTerms, Qureg outQureg);
+
+void statevec_applyDiagonalOp(Qureg qureg, DiagonalOp op);
 
 
 /* 

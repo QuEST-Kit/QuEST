@@ -2913,6 +2913,67 @@ void statevec_setWeightedQureg(Complex fac1, Qureg qureg1, Complex fac2, Qureg q
     );
 }
 
+__global__ void statevec_applyDiagonalOpKernel(Qureg qureg, DiagonalOp op) {
+
+    // each thread modifies one value; a wasteful and inefficient strategy
+    long long int numTasks = qureg.numAmpsPerChunk;
+    long long int thisTask = blockIdx.x*blockDim.x + threadIdx.x;
+    if (thisTask >= numTasks) return;
+
+    qreal* stateRe = qureg.deviceStateVec.real;
+    qreal* stateIm = qureg.deviceStateVec.imag;
+    qreal* opRe = op.deviceOperator.real;
+    qreal* opIm = op.deviceOperator.imag;
+
+    qreal a = stateRe[thisTask];
+    qreal b = stateIm[thisTask];
+    qreal c = opRe[thisTask];
+    qreal d = opIm[thisTask];
+
+    // (a + b i)(c + d i) = (a c - b d) + i (a d + b c)
+    stateRe[thisTask] = a*c - b*d;
+    stateIm[thisTask] = a*d + b*c;
+}
+
+void statevec_applyDiagonalOp(Qureg qureg, DiagonalOp op) 
+{
+    int threadsPerCUDABlock, CUDABlocks;
+    threadsPerCUDABlock = 128;
+    CUDABlocks = ceil((qreal)(qureg.numAmpsPerChunk)/threadsPerCUDABlock);
+    statevec_applyDiagonalOpKernel<<<CUDABlocks, threadsPerCUDABlock>>>(qureg, op);
+}
+
+__global__ void densmatr_applyDiagonalOpKernel(Qureg qureg, DiagonalOp op) {
+
+    // each thread modifies one value; a wasteful and inefficient strategy
+    long long int numTasks = qureg.numAmpsPerChunk;
+    long long int thisTask = blockIdx.x*blockDim.x + threadIdx.x;
+    if (thisTask >= numTasks) return;
+
+    qreal* stateRe = qureg.deviceStateVec.real;
+    qreal* stateIm = qureg.deviceStateVec.imag;
+    qreal* opRe = op.deviceOperator.real;
+    qreal* opIm = op.deviceOperator.imag;
+
+    int opDim = (1 << op.numQubits);
+    qreal a = stateRe[thisTask];
+    qreal b = stateIm[thisTask];
+    qreal c = opRe[thisTask % opDim];
+    qreal d = opIm[thisTask % opDim];
+
+    // (a + b i)(c + d i) = (a c - b d) + i (a d + b c)
+    stateRe[thisTask] = a*c - b*d;
+    stateIm[thisTask] = a*d + b*c;
+}
+
+void densmatr_applyDiagonalOp(Qureg qureg, DiagonalOp op) {
+    
+    int threadsPerCUDABlock, CUDABlocks;
+    threadsPerCUDABlock = 128;
+    CUDABlocks = ceil((qreal)(qureg.numAmpsPerChunk)/threadsPerCUDABlock);
+    densmatr_applyDiagonalOpKernel<<<CUDABlocks, threadsPerCUDABlock>>>(qureg, op);
+}
+
 void agnostic_setDiagonalOpElems(DiagonalOp op, long long int startInd, qreal* real, qreal* imag, long long int numElems) {
 
     // update both RAM and VRAM, for consistency

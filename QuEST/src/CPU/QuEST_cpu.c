@@ -3649,6 +3649,83 @@ void statevec_setWeightedQureg(Complex fac1, Qureg qureg1, Complex fac2, Qureg q
     }
 }
 
+void statevec_applyDiagonalOp(Qureg qureg, DiagonalOp op) {
+
+    // each node/chunk modifies only its values in an embarrassingly parallelisable way
+    long long int numAmps = qureg.numAmpsPerChunk;
+
+    qreal* stateRe = qureg.stateVec.real;
+    qreal* stateIm = qureg.stateVec.imag;
+    qreal* opRe = op.real;
+    qreal* opIm = op.imag;
+
+    qreal a,b,c,d;
+    long long int index;
+
+# ifdef _OPENMP
+# pragma omp parallel \
+    shared    (stateRe,stateIm, opRe,opIm, numAmps) \
+    private   (index, a,b,c,d)
+# endif 
+    {
+# ifdef _OPENMP
+# pragma omp for schedule  (static)
+# endif
+        for (index=0LL; index<numAmps; index++) {
+            a = stateRe[index];
+            b = stateIm[index];
+            c = opRe[index];
+            d = opIm[index];
+
+            // (a + b i)(c + d i) = (a c - b d) + i (a d + b c)
+            stateRe[index] = a*c - b*d;
+            stateIm[index] = a*d + b*c;
+        }
+    }
+}
+
+void densmatr_applyDiagonalOpLocal(Qureg qureg, DiagonalOp op) {
+    
+    /* ALL values of op are pre-loaded into qureg.pairStateVector (on every node).
+     * Furthermore, since it's gauranteed each node contains an integer number of 
+     * columns of qureg (because op upperlimits the number of nodes; 1 per element),
+     * then we know iteration below begins at the 'top' of a column, and there is 
+     * no offset for op (pairStateVector)
+     */
+
+    long long int numAmps = qureg.numAmpsPerChunk;
+    int opDim = (1 << op.numQubits);
+
+    qreal* stateRe = qureg.stateVec.real;
+    qreal* stateIm = qureg.stateVec.imag;
+    qreal* opRe = qureg.pairStateVec.real;
+    qreal* opIm = qureg.pairStateVec.imag;
+    
+    qreal a,b,c,d;
+    long long int index;
+
+# ifdef _OPENMP
+# pragma omp parallel \
+    shared    (stateRe,stateIm, opRe,opIm, numAmps,opDim) \
+    private   (index, a,b,c,d)
+# endif 
+    {
+# ifdef _OPENMP
+# pragma omp for schedule  (static)
+# endif
+        for (index=0LL; index<numAmps; index++) {
+            a = stateRe[index];
+            b = stateIm[index];
+            c = opRe[index % opDim];
+            d = opIm[index % opDim];
+
+            // (a + b i)(c + d i) = (a c - b d) + i (a d + b c)
+            stateRe[index] = a*c - b*d;
+            stateIm[index] = a*d + b*c;
+        }
+    }
+}
+
 void agnostic_setDiagonalOpElems(DiagonalOp op, long long int startInd, qreal* real, qreal* imag, long long int numElems) {
     
     // local start/end indices of the given amplitudes, assuming they fit in this chunk

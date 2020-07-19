@@ -558,6 +558,18 @@ void initDiagonalOp(DiagonalOp op, qreal* real, qreal* imag);
  */
 void setDiagonalOpElems(DiagonalOp op, long long int startInd, qreal* real, qreal* imag, long long int numElems);
 
+/** Apply a diagonal complex operator, which is possibly non-unitary and non-Hermitian,
+ * on the entire \p qureg,  
+ *
+ * @ingroup operator
+ * @param[in,out] qureg the state to operate the diagonal operator upon
+ * @param[in] op the diagonal operator to apply
+ * @throws exitWithError if \p op was not created, 
+ *      or if \p op acts on a different number of qubits than \p qureg represents
+ * @author Tyson Jones
+ */
+void applyDiagonalOp(Qureg qureg, DiagonalOp op);
+
 /** Print the current state vector of probability amplitudes for a set of qubits to file.
  * File format:
  * @verbatim

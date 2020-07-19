@@ -884,6 +884,17 @@ void applyMultiControlledMatrixN(Qureg qureg, int* ctrls, const int numCtrls, in
     qasm_recordComment(qureg, "Here, an undisclosed %d-by-%d matrix (possibly non-unitary, and including %d controlled qubits) was multiplied onto %d undisclosed qubits", dim, dim, numCtrls, numTot);
 }
 
+void applyDiagonalOp(Qureg qureg, DiagonalOp op) {
+    validateDiagonalOp(qureg, op, __func__);
+
+    if (qureg.isDensityMatrix)
+        densmatr_applyDiagonalOp(qureg, op);
+    else
+        statevec_applyDiagonalOp(qureg, op);
+
+    qasm_recordComment(qureg, "Here, the register was modified to an undisclosed and possibly unphysical state (via applyDiagonalOp).");
+}
+
 
 /*
  * calculations

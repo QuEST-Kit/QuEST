@@ -86,6 +86,8 @@ void densmatr_mixTwoQubitDepolarisingDistributed(Qureg qureg, const int targetQu
 
 void densmatr_mixTwoQubitDepolarisingQ1LocalQ2DistributedPart3(Qureg qureg, const int targetQubit,
                 const int qubit2, qreal delta, qreal gamma);
+                
+void densmatr_applyDiagonalOpLocal(Qureg qureg, DiagonalOp op);
 
 
 /*
