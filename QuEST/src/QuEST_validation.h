@@ -126,6 +126,8 @@ void validateTrotterParams(int order, int reps, const char* caller);
 
 void validateDiagOpInit(DiagonalOp, const char* caller);
 
+void validateNumElems(DiagonalOp op, long long int startInd, long long int numElems, const char* caller);
+
 # ifdef __cplusplus
 }
 # endif

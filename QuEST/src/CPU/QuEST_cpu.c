@@ -1358,6 +1358,10 @@ void agnostic_destroyDiagonalOp(DiagonalOp op) {
     free(op.imag);
 }
 
+void agnostic_syncDiagonalOp(DiagonalOp op) {
+    // nothing to do on CPU
+}
+
 void statevec_reportStateToScreen(Qureg qureg, QuESTEnv env, int reportRank){
     long long int index;
     int rank;
@@ -3645,3 +3649,42 @@ void statevec_setWeightedQureg(Complex fac1, Qureg qureg1, Complex fac2, Qureg q
     }
 }
 
+void agnostic_setDiagonalOpElems(DiagonalOp op, long long int startInd, qreal* real, qreal* imag, long long int numElems) {
+    
+    // local start/end indices of the given amplitudes, assuming they fit in this chunk
+    // these may be negative or above qureg.numAmpsPerChunk
+    long long int localStartInd = startInd - op.chunkId*op.numElemsPerChunk;
+    long long int localEndInd = localStartInd + numElems; // exclusive
+    
+    // add this to a local index to get corresponding elem in reals & imags
+    long long int offset = op.chunkId*op.numElemsPerChunk - startInd;
+    
+    // restrict these indices to fit into this chunk
+    if (localStartInd < 0)
+        localStartInd = 0;
+    if (localEndInd > op.numElemsPerChunk)
+        localEndInd = op.numElemsPerChunk;
+    // they may now be out of order = no iterations
+    
+    // unpacking OpenMP vars
+    long long int index;
+    qreal* vecRe = op.real;
+    qreal* vecIm = op.imag;
+    
+# ifdef _OPENMP
+# pragma omp parallel \
+    default  (none) \
+    shared   (localStartInd,localEndInd, vecRe,vecIm, reals,imags, offset) \
+    private  (index) 
+# endif
+    {
+# ifdef _OPENMP
+# pragma omp for schedule (static)
+# endif
+        // iterate these local inds - this might involve no iterations
+        for (index=localStartInd; index < localEndInd; index++) {
+            vecRe[index] = reals[index + offset];
+            vecIm[index] = imags[index + offset];
+        }
+    }
+}

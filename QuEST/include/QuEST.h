@@ -486,6 +486,78 @@ DiagonalOp createDiagonalOp(int numQubits, QuESTEnv env);
  */
 void destroyDiagonalOp(DiagonalOp op, QuESTEnv env);
 
+/** Copy the elements in DiagonalOp \p op.real and \p op.imag to the persisent GPU memory.
+ * This updates the GPU memory for \p op with any manual changes made to 
+ * \p op.real and \p op.imag. 
+ *
+ * Note if users just modify the diagonal operator to values known a priori, they 
+ * should instead use initDiagonalOp() or setDiagonalOpElems()
+ *
+ * This function has no effect in other modes besides GPU mode.
+ *
+ * @ingroup type
+ * @param[in,out] op the diagonal operator to synch to GPU
+ * @throws exitWithError if \p op was not created
+ * @author Tyson Jones
+ */
+void syncDiagonalOp(DiagonalOp op);
+
+/** Updates the entire DiagonalOp \p op with the given elements, of which there must 
+ * be 2^\p op.numQubits.
+ *
+ * In GPU mode, this updates both the persistent GPU memory, and the arrays 
+ * \p op.real and \p op.imag 
+ *
+ * In distributed mode, this function assumes \p real and \p imag exist fully on every 
+ * node.
+ *
+ * @ingroup type
+ * @param[in,out] op the diagonal operator to modify
+ * @param[in] real the real components of the full set of new elements
+ * @param[in] imag the imaginary components of the full set of new elements
+ * @throws exitWithError if \p op was not created
+ * @author Tyson Jones
+ */
+void initDiagonalOp(DiagonalOp op, qreal* real, qreal* imag);
+
+/** Modifies a subset (starting at index \p startInd) of the elements in DiagonalOp \p op 
+ * with the given elements, of which there are \p numElems.
+ *
+ * In GPU mode, this updates both the persistent GPU memory, and the arrays 
+ * \p op.real and \p op.imag 
+ *
+ * In distributed mode, this function assumes the subset \p real and \p imag exist
+ * (at least) on the node containing the ultimately updated elements.
+ * For example, below is the correct way to modify the full 8 elements of \p op 
+ * when split between 2 nodes.
+ *
+ *     DiagonalOp op = createDiagonalOp(3, env);
+ *     
+ *     qreal re[] = {1,2,3,4};
+ *     qreal im[] = {1,2,3,4};
+ *     setDiagonalOpElems(op, 0, re, im, 4);
+ *     
+ *     // modify re and im to the next set of elements 
+ *     
+ *     setDiagonalOpElems(op, 4, re, im, 4);
+ *
+ * In this way, one can avoid a single node containing all new elements which might 
+ * not fit. If more elements are passed than exist on an individual node, each 
+ * node merely ignores the additional elements.
+ *
+ * @ingroup type
+ * @param[in,out] op the diagonal operator to modify the elements of
+ * @param[in] startInd the starting index (globally) of the subset of elements to modify
+ * @param[in] real  the real components of the new elements
+ * @param[in] imag  the imaginary components of the new elements
+ * @param[in] numElems the number of new elements (the length of \p real and \p imag)
+ * @throws exitWithError if \p op was not created, or if \p startInd is an invalid index,
+ *      or if \p numElems is an invalid number of elements, or if there less than \p numElems 
+ *      elements in the operator after \p startInd.
+ * @author Tyson Jones
+ */
+void setDiagonalOpElems(DiagonalOp op, long long int startInd, qreal* real, qreal* imag, long long int numElems);
+
 /** Print the current state vector of probability amplitudes for a set of qubits to file.
  * File format:
  * @verbatim

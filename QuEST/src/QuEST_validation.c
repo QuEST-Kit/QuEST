@@ -38,8 +38,11 @@ typedef enum {
     E_INVALID_CONTROL_QUBIT,
     E_INVALID_STATE_INDEX,
     E_INVALID_AMP_INDEX,
+    E_INVALID_ELEM_INDEX,
     E_INVALID_NUM_AMPS,
-    E_INVALID_OFFSET_NUM_AMPS,
+    E_INVALID_NUM_ELEMS,
+    E_INVALID_OFFSET_NUM_AMPS_QUREG,
+    E_INVALID_OFFSET_NUM_ELEMS_DIAG,
     E_TARGET_IS_CONTROL,
     E_TARGET_IN_CONTROLS,
     E_CONTROL_TARGET_COLLISION,
@@ -101,8 +104,11 @@ static const char* errorMessages[] = {
     [E_INVALID_CONTROL_QUBIT] = "Invalid control qubit. Must be >=0 and <numQubits.",
     [E_INVALID_STATE_INDEX] = "Invalid state index. Must be >=0 and <2^numQubits.",
     [E_INVALID_AMP_INDEX] = "Invalid amplitude index. Must be >=0 and <2^numQubits.",
+    [E_INVALID_ELEM_INDEX] = "Invalid element index. Must be >=0 and <2^numQubits.",
     [E_INVALID_NUM_AMPS] = "Invalid number of amplitudes. Must be >=0 and <=2^numQubits.",
-    [E_INVALID_OFFSET_NUM_AMPS] = "More amplitudes given than exist in the statevector from the given starting index.",
+    [E_INVALID_NUM_ELEMS] = "Invalid number of elements. Must be >=0 and <=2^numQubits.",
+    [E_INVALID_OFFSET_NUM_AMPS_QUREG] = "More amplitudes given than exist in the statevector from the given starting index.",
+    [E_INVALID_OFFSET_NUM_ELEMS_DIAG] = "More elements given than exist in the diagonal operator from the given starting index.",
     [E_TARGET_IS_CONTROL] = "Control qubit cannot equal target qubit.",
     [E_TARGET_IN_CONTROLS] = "Control qubits cannot include target qubit.",
     [E_CONTROL_TARGET_COLLISION] = "Control and target qubits must be disjoint.",
@@ -343,7 +349,14 @@ void validateAmpIndex(Qureg qureg, long long int ampInd, const char* caller) {
 void validateNumAmps(Qureg qureg, long long int startInd, long long int numAmps, const char* caller) {
     validateAmpIndex(qureg, startInd, caller);
     QuESTAssert(numAmps >= 0 && numAmps <= qureg.numAmpsTotal, E_INVALID_NUM_AMPS, caller);
-    QuESTAssert(numAmps + startInd <= qureg.numAmpsTotal, E_INVALID_OFFSET_NUM_AMPS, caller);
+    QuESTAssert(numAmps + startInd <= qureg.numAmpsTotal, E_INVALID_OFFSET_NUM_AMPS_QUREG, caller);
+}
+
+void validateNumElems(DiagonalOp op, long long int startInd, long long int numElems, const char* caller) {
+    long long int indMax = 1LL << op.numQubits;
+    QuESTAssert(startInd >= 0 && startInd < indMax, E_INVALID_ELEM_INDEX, caller);
+    QuESTAssert(numElems >= 0 && numElems <= indMax, E_INVALID_NUM_ELEMS, caller);
+    QuESTAssert(numElems + startInd <= indMax, E_INVALID_OFFSET_NUM_ELEMS_DIAG, caller);
 }
 
 void validateTarget(Qureg qureg, int targetQubit, const char* caller) {

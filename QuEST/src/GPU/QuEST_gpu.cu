@@ -379,6 +379,14 @@ void agnostic_destroyDiagonalOp(DiagonalOp op) {
     cudaFree(op.deviceOperator.imag);
 }
 
+void agnostic_syncDiagonalOp(DiagonalOp op) {
+
+    size_t arrSize = (1LL << op.numQubits) * sizeof(qreal);
+    cudaDeviceSynchronize();
+    cudaMemcpy(op.deviceOperator.real, op.real, arrSize, cudaMemcpyHostToDevice);
+    cudaMemcpy(op.deviceOperator.imag, op.imag, arrSize, cudaMemcpyHostToDevice);
+}
+
 int GPUExists(void){
     int deviceCount, device;
     int gpuDeviceCount = 0;
@@ -2903,6 +2911,25 @@ void statevec_setWeightedQureg(Complex fac1, Qureg qureg1, Complex fac2, Qureg q
     statevec_setWeightedQuregKernel<<<CUDABlocks, threadsPerCUDABlock>>>(
         fac1, qureg1, fac2, qureg2, facOut, out
     );
+}
+
+void agnostic_setDiagonalOpElems(DiagonalOp op, long long int startInd, qreal* real, qreal* imag, long long int numElems) {
+
+    // update both RAM and VRAM, for consistency
+    memcpy(&op.real[startInd], real, numElems * sizeof(qreal));
+    memcpy(&op.imag[startInd], imag, numElems * sizeof(qreal));
+
+    cudaDeviceSynchronize();
+    cudaMemcpy(
+        op.deviceOperator.real + startInd, 
+        real,
+        numElems * sizeof(*(op.deviceOperator.real)), 
+        cudaMemcpyHostToDevice);
+    cudaMemcpy(
+        op.deviceOperator.imag + startInd,
+        imag,
+        numElems * sizeof(*(op.deviceOperator.imag)), 
+        cudaMemcpyHostToDevice);
 }
 
 void seedQuESTDefault(){

@@ -1257,6 +1257,25 @@ void destroyDiagonalOp(DiagonalOp op, QuESTEnv env) {
     agnostic_destroyDiagonalOp(op);
 }
 
+void syncDiagonalOp(DiagonalOp op) {
+    validateDiagOpInit(op, __func__);
+    
+    agnostic_syncDiagonalOp(op);
+}
+
+void initDiagonalOp(DiagonalOp op, qreal* real, qreal* imag) {
+    validateDiagOpInit(op, __func__);
+    
+    agnostic_setDiagonalOpElems(op, 0, real, imag, 1LL << op.numQubits);
+}
+
+void setDiagonalOpElems(DiagonalOp op, long long int startInd, qreal* real, qreal* imag, long long int numElems) {
+    validateDiagOpInit(op, __func__);
+    validateNumElems(op, startInd, numElems, __func__);
+    
+    agnostic_setDiagonalOpElems(op, startInd, real, imag, numElems);
+}
+
 /*
  * debug
  */

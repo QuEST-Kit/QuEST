@@ -256,6 +256,9 @@ DiagonalOp agnostic_createDiagonalOp(int numQubits, QuESTEnv env);
 
 void agnostic_destroyDiagonalOp(DiagonalOp op);
 
+void agnostic_syncDiagonalOp(DiagonalOp op);
+
+void agnostic_setDiagonalOpElems(DiagonalOp op, long long int startInd, qreal* real, qreal* imag, long long int numElems);
 
 # ifdef __cplusplus
 }
