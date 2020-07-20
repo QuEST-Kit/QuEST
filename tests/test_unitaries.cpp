@@ -654,7 +654,7 @@ TEST_CASE( "controlledRotateZ", "[unitaries]" ) {
         
             controlledRotateZ(quregMatr, control, target, param);
             applyReferenceOp(refMatr, control, target, op);    
-            REQUIRE( areEqual(quregMatr, refMatr) );
+            REQUIRE( areEqual(quregMatr, refMatr, 10*REAL_EPS) );
         }
     }
     SECTION( "input validation" ) {

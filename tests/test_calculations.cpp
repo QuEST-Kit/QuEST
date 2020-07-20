@@ -128,6 +128,7 @@ TEST_CASE( "calcExpecDiagonalOp", "[calculations]" ) {
             op.real[i] = getRandomReal(-5, 5);
             op.imag[i] = getRandomReal(-5, 5);
         }
+        syncDiagonalOp(op);
         
         SECTION( "state-vector" ) {
 
@@ -151,8 +152,8 @@ TEST_CASE( "calcExpecDiagonalOp", "[calculations]" ) {
                 tr += matRef[i][i];
 
             Complex res = calcExpecDiagonalOp(mat, op);
-            REQUIRE( res.real == Approx(real(tr)).margin(REAL_EPS) );
-            REQUIRE( res.imag == Approx(imag(tr)).margin(REAL_EPS) );
+            REQUIRE( res.real == Approx(real(tr)).margin(100*REAL_EPS) );
+            REQUIRE( res.imag == Approx(imag(tr)).margin(100*REAL_EPS) );
         }
     }
     SECTION( "input validation" ) {
@@ -214,7 +215,7 @@ TEST_CASE( "calcExpecPauliHamil", "[calculations]" ) {
             qreal res = calcExpecPauliHamil(vec, hamil, vecWork);
             REQUIRE( res == Approx(real(prod)).margin(10*REAL_EPS) );
         } 
-        SECTION( "density matrix" ) {
+        SECTION( "density-matrix" ) {
             
             /* calcExpecPauliHamil calculates Trace( pauliHamil * qureg ) */
             matRef = refHamil * matRef;            
@@ -346,7 +347,7 @@ TEST_CASE( "calcExpecPauliProd", "[calculations]" ) {
             qreal res = calcExpecPauliProd(vec, targs, paulis, numTargs, vecWork);
             REQUIRE( res == Approx(real(prod)).margin(REAL_EPS) );
         }
-        SECTION( "density matrix" ) {
+        SECTION( "density-matrix" ) {
             
             /* calcExpecPauliProd calculates Trace( pauliProd * qureg ) */
 
@@ -473,7 +474,7 @@ TEST_CASE( "calcExpecPauliSum", "[calculations]" ) {
             qreal res = calcExpecPauliSum(vec, paulis, coeffs, numSumTerms, vecWork);
             REQUIRE( res == Approx(real(prod)).margin(10*REAL_EPS) );
         } 
-        SECTION( "density matrix" ) {
+        SECTION( "density-matrix" ) {
             
             /* calcExpecPauliSum calculates Trace( pauliSum * qureg ) */
             matRef = pauliSum * matRef;            

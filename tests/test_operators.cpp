@@ -44,6 +44,7 @@ TEST_CASE( "applyDiagonalOp", "[operators]" ) {
             op.real[i] = getRandomReal(-5, 5);
             op.imag[i] = getRandomReal(-5, 5);
         }
+        syncDiagonalOp(op);
         
         SECTION( "state-vector" ) {
             
@@ -55,7 +56,7 @@ TEST_CASE( "applyDiagonalOp", "[operators]" ) {
             
             QMatrix ref = toQMatrix(op) * refMatr;
             applyDiagonalOp(quregMatr, op);
-            REQUIRE( areEqual(quregMatr, ref) );
+            REQUIRE( areEqual(quregMatr, ref, 100*REAL_EPS) );
         }
         
         destroyDiagonalOp(op, QUEST_ENV);
@@ -704,7 +705,7 @@ TEST_CASE( "applyTrotterCircuit", "[operators]" ) {
                 
                 applyTrotterCircuit(vec, hamil, time, order, reps);
                 multiRotatePauli(vecRef, targs, codes, numTargs, 2*time*coeff);
-                REQUIRE( areEqual(vec, vecRef) );
+                REQUIRE( areEqual(vec, vecRef, 10*REAL_EPS) );
             }
             SECTION( "density-matrix" ) {
                 

@@ -444,7 +444,9 @@ void initPauliHamil(PauliHamil hamil, qreal* coeffs, enum pauliOpType* codes);
  * There is no requirement that the operator is unitary or Hermitian - 
  * any complex operator is allowed.
  *
- * This function allocates space for 2^n complex amplitudes, which are initially zero.
+ * The operator is initialised to all zero.
+ *
+ * This function allocates space for 2^\p numQubits complex amplitudes, which are initially zero.
  * This is the same cost as a state-vector of equal size.
  * The elements should be modified with setDiagonalOpElems().
  * This memory must later be freed with destroyDiagonalOp().
@@ -460,17 +462,17 @@ void initPauliHamil(PauliHamil hamil, qreal* coeffs, enum pauliOpType* codes);
  * in modifying .real and .imag directly, and should instead use initDiagonalOp().
   * E.g. the following is valid code when when distributed between TWO nodes:
  *
- *     // create {1,2,3,4,5,6,7,8, 9,10,11,12,13,14,15,16}
- *     DiagonalOp op = createDiagonalOp(4, env); // 16 amplitudes total
- *     for (int i=0; i<8; i++) {
- *         if (env.rank == 0)
- *             op.real[i] = (i+1);
- *         if (env.rank == 1)
- *             op.real[i] = (i+1+8);
- *     }
+ *      // create {1,2,3,4,5,6,7,8, 9,10,11,12,13,14,15,16}
+ *      DiagonalOp op = createDiagonalOp(4, env); // 16 amplitudes total
+ *      for (int i=0; i<8; i++) {
+ *          if (env.rank == 0)
+ *              op.real[i] = (i+1);
+ *          if (env.rank == 1)
+ *              op.real[i] = (i+1+8);
+ *      }
  *
  * @ingroup type
- * @returns a DiagonalOp instance, with 2^n-length .real and .imag arrays
+ * @returns a DiagonalOp instance, with 2^n-length .real and .imag arrays, initialised to zero
  * @param[in] numQubits number of qubit, informing the dimension of the operator.
  * @param[in] env object representing the execution environment (local, multinode etc)
  * @throws exitWithError if \p numQubits <= 0, or if \p numQubits is so large that 

@@ -3097,7 +3097,7 @@ Complex statevec_calcExpecDiagonalOp(Qureg qureg, DiagonalOp op) {
 __global__ void densmatr_calcExpecDiagonalOpKernel(
     int getRealComp,
     qreal* matReal, qreal* matImag, qreal* opReal, qreal* opImag, 
-    int numQubits, qreal* reducedArray) 
+    int numQubits, long long int numTermsToSum, qreal* reducedArray) 
 {
     /** if the thread represents a diagonal op, then it computes either a 
      *  real or imag term of matr_{ii} op_i. Otherwise, it writes a 0 to the 
@@ -3106,8 +3106,7 @@ __global__ void densmatr_calcExpecDiagonalOpKernel(
     
     // index will identy one of the 2^Q diagonals to be summed
     long long int matInd = blockIdx.x*blockDim.x + threadIdx.x;
-    long long int numAmpsTotal = (1LL << (2*numQubits));
-    if (matInd >= numAmpsTotal) return;
+    if (matInd >= numTermsToSum) return;
     
     long long int diagSpacing = (1LL << numQubits) + 1LL;
     int isDiag = ((matInd % diagSpacing) == 0);
@@ -3174,7 +3173,7 @@ Complex densmatr_calcExpecDiagonalOp(Qureg qureg, DiagonalOp op) {
                 getRealComp,
                 qureg.deviceStateVec.real, qureg.deviceStateVec.imag, 
                 op.deviceOperator.real, op.deviceOperator.imag, 
-                numValuesToReduce, 
+                op.numQubits, numValuesToReduce, 
                 qureg.firstLevelReduction);
             firstTime = 0;
         } else {
@@ -3209,7 +3208,7 @@ Complex densmatr_calcExpecDiagonalOp(Qureg qureg, DiagonalOp op) {
                 getRealComp,
                 qureg.deviceStateVec.real, qureg.deviceStateVec.imag, 
                 op.deviceOperator.real, op.deviceOperator.imag, 
-                numValuesToReduce, 
+                op.numQubits, numValuesToReduce, 
                 qureg.firstLevelReduction);
             firstTime = 0;
         } else {
