@@ -1331,6 +1331,37 @@ void statevec_destroyQureg(Qureg qureg, QuESTEnv env){
     qureg.pairStateVec.imag = NULL;
 }
 
+DiagonalOp agnostic_createDiagonalOp(int numQubits, QuESTEnv env) {
+
+    // the 2^numQubits values will be evenly split between the env.numRanks nodes
+    DiagonalOp op;
+    op.numQubits = numQubits;
+    op.numElemsPerChunk = (1LL << numQubits) / env.numRanks;
+    op.chunkId = env.rank;
+    op.numChunks = env.numRanks;
+
+    // allocate CPU memory (initialised to zero)
+    op.real = (qreal*) calloc(op.numElemsPerChunk, sizeof(qreal));
+    op.imag = (qreal*) calloc(op.numElemsPerChunk, sizeof(qreal));
+
+    // check cpu memory allocation was successful
+    if ( !op.real || !op.imag ) {
+        printf("Could not allocate memory!\n");
+        exit(EXIT_FAILURE);
+    }
+
+    return op;
+}
+
+void agnostic_destroyDiagonalOp(DiagonalOp op) {
+    free(op.real);
+    free(op.imag);
+}
+
+void agnostic_syncDiagonalOp(DiagonalOp op) {
+    // nothing to do on CPU
+}
+
 void statevec_reportStateToScreen(Qureg qureg, QuESTEnv env, int reportRank){
     long long int index;
     int rank;
@@ -3618,3 +3649,223 @@ void statevec_setWeightedQureg(Complex fac1, Qureg qureg1, Complex fac2, Qureg q
     }
 }
 
+void statevec_applyDiagonalOp(Qureg qureg, DiagonalOp op) {
+
+    // each node/chunk modifies only its values in an embarrassingly parallelisable way
+    long long int numAmps = qureg.numAmpsPerChunk;
+
+    qreal* stateRe = qureg.stateVec.real;
+    qreal* stateIm = qureg.stateVec.imag;
+    qreal* opRe = op.real;
+    qreal* opIm = op.imag;
+
+    qreal a,b,c,d;
+    long long int index;
+
+# ifdef _OPENMP
+# pragma omp parallel \
+    shared    (stateRe,stateIm, opRe,opIm, numAmps) \
+    private   (index, a,b,c,d)
+# endif 
+    {
+# ifdef _OPENMP
+# pragma omp for schedule  (static)
+# endif
+        for (index=0LL; index<numAmps; index++) {
+            a = stateRe[index];
+            b = stateIm[index];
+            c = opRe[index];
+            d = opIm[index];
+
+            // (a + b i)(c + d i) = (a c - b d) + i (a d + b c)
+            stateRe[index] = a*c - b*d;
+            stateIm[index] = a*d + b*c;
+        }
+    }
+}
+
+void densmatr_applyDiagonalOpLocal(Qureg qureg, DiagonalOp op) {
+    
+    /* ALL values of op are pre-loaded into qureg.pairStateVector (on every node).
+     * Furthermore, since it's gauranteed each node contains an integer number of 
+     * columns of qureg (because op upperlimits the number of nodes; 1 per element),
+     * then we know iteration below begins at the 'top' of a column, and there is 
+     * no offset for op (pairStateVector)
+     */
+
+    long long int numAmps = qureg.numAmpsPerChunk;
+    int opDim = (1 << op.numQubits);
+
+    qreal* stateRe = qureg.stateVec.real;
+    qreal* stateIm = qureg.stateVec.imag;
+    qreal* opRe = qureg.pairStateVec.real;
+    qreal* opIm = qureg.pairStateVec.imag;
+    
+    qreal a,b,c,d;
+    long long int index;
+
+# ifdef _OPENMP
+# pragma omp parallel \
+    shared    (stateRe,stateIm, opRe,opIm, numAmps,opDim) \
+    private   (index, a,b,c,d)
+# endif 
+    {
+# ifdef _OPENMP
+# pragma omp for schedule  (static)
+# endif
+        for (index=0LL; index<numAmps; index++) {
+            a = stateRe[index];
+            b = stateIm[index];
+            c = opRe[index % opDim];
+            d = opIm[index % opDim];
+
+            // (a + b i)(c + d i) = (a c - b d) + i (a d + b c)
+            stateRe[index] = a*c - b*d;
+            stateIm[index] = a*d + b*c;
+        }
+    }
+}
+
+Complex statevec_calcExpecDiagonalOpLocal(Qureg qureg, DiagonalOp op) {
+    
+    qreal expecRe = 0;
+    qreal expecIm = 0;
+    
+    long long int index;
+    long long int numAmps = qureg.numAmpsPerChunk;
+    qreal *stateReal = qureg.stateVec.real;
+    qreal *stateImag = qureg.stateVec.imag;
+    qreal *opReal = op.real;
+    qreal *opImag = op.imag;
+    
+    qreal vecRe,vecIm,vecAbs, opRe, opIm;
+    
+# ifdef _OPENMP
+# pragma omp parallel \
+    shared    (stateReal, stateImag, opReal, opImag, numAmps) \
+    private   (index, vecRe,vecIm,vecAbs, opRe,opIm) \
+    reduction ( +:expecRe, expecIm )
+# endif 
+    {
+# ifdef _OPENMP
+# pragma omp for schedule  (static)
+# endif
+        for (index=0; index < numAmps; index++) {
+            vecRe = stateReal[index];
+            vecIm = stateImag[index];
+            opRe = opReal[index];
+            opIm = opImag[index];
+            
+            // abs(vec)^2 op
+            vecAbs = vecRe*vecRe + vecIm*vecIm;
+            expecRe += vecAbs*opRe;
+            expecIm += vecAbs*opIm;
+        }
+    }
+    
+    Complex innerProd;
+    innerProd.real = expecRe;
+    innerProd.imag = expecIm;
+    return innerProd;
+}
+
+Complex densmatr_calcExpecDiagonalOpLocal(Qureg qureg, DiagonalOp op) {
+    
+    /* since for every 1 element in \p op, there exists a column in \p qureg, 
+     * we know that the elements in \p op live on the same node as the 
+     * corresponding diagonal elements of \p qureg. This means, the problem is 
+     * embarrassingly parallelisable, and the code below works for both 
+     * serial and distributed modes.
+     */
+    
+    // computes first local index containing a diagonal element
+    long long int diagSpacing = 1LL + (1LL << qureg.numQubitsRepresented);
+    long long int numPrevDiags = (qureg.chunkId>0)? 1+(qureg.chunkId*qureg.numAmpsPerChunk)/diagSpacing : 0;
+    long long int globalIndNextDiag = diagSpacing * numPrevDiags;
+    long long int localIndNextDiag = globalIndNextDiag % qureg.numAmpsPerChunk;
+    long long int numAmps = qureg.numAmpsPerChunk;
+    
+    qreal* stateReal = qureg.stateVec.real;
+    qreal* stateImag = qureg.stateVec.imag;
+    qreal* opReal = op.real;
+    qreal* opImag = op.imag;
+    
+    qreal expecRe = 0;
+    qreal expecIm = 0;
+    
+    long long int stateInd;
+    long long int opInd;
+    qreal matRe, matIm, opRe, opIm;
+    
+    // visits every diagonal element with global index (2^n + 1)i for i in [0, 2^n-1]
+    
+# ifdef _OPENMP
+# pragma omp parallel \
+    shared    (stateReal,stateImag, opReal,opImag, localIndNextDiag,diagSpacing,numAmps) \
+    private   (stateInd,opInd, matRe,matIm, opRe,opIm) \
+    reduction ( +:expecRe, expecIm )
+# endif 
+    {
+# ifdef _OPENMP
+# pragma omp for schedule  (static)
+# endif
+        for (stateInd=localIndNextDiag; stateInd < numAmps; stateInd += diagSpacing) {
+            
+            matRe = stateReal[stateInd];
+            matIm = stateImag[stateInd];
+            opInd = (stateInd - localIndNextDiag) / diagSpacing;
+            opRe = opReal[opInd];
+            opIm = opImag[opInd];
+            
+            // (matRe + matIm i)(opRe + opIm i) = 
+            //      (matRe opRe - matIm opIm) + i (matRe opIm + matIm opRe)
+            expecRe += matRe * opRe - matIm * opIm;
+            expecIm += matRe * opIm + matIm * opRe;
+        }
+    }
+    
+    Complex expecVal;
+    expecVal.real = expecRe;
+    expecVal.imag = expecIm;
+    return expecVal;
+}
+
+void agnostic_setDiagonalOpElems(DiagonalOp op, long long int startInd, qreal* real, qreal* imag, long long int numElems) {
+    
+    // local start/end indices of the given amplitudes, assuming they fit in this chunk
+    // these may be negative or above qureg.numAmpsPerChunk
+    long long int localStartInd = startInd - op.chunkId*op.numElemsPerChunk;
+    long long int localEndInd = localStartInd + numElems; // exclusive
+    
+    // add this to a local index to get corresponding elem in reals & imags
+    long long int offset = op.chunkId*op.numElemsPerChunk - startInd;
+    
+    // restrict these indices to fit into this chunk
+    if (localStartInd < 0)
+        localStartInd = 0;
+    if (localEndInd > op.numElemsPerChunk)
+        localEndInd = op.numElemsPerChunk;
+    // they may now be out of order = no iterations
+    
+    // unpacking OpenMP vars
+    long long int index;
+    qreal* vecRe = op.real;
+    qreal* vecIm = op.imag;
+    
+# ifdef _OPENMP
+# pragma omp parallel \
+    default  (none) \
+    shared   (localStartInd,localEndInd, vecRe,vecIm, real,imag, offset) \
+    private  (index) 
+# endif
+    {
+# ifdef _OPENMP
+# pragma omp for schedule (static)
+# endif
+        // iterate these local inds - this might involve no iterations
+        for (index=localStartInd; index < localEndInd; index++) {
+            vecRe[index] = real[index + offset];
+            vecIm[index] = imag[index + offset];
+        }
+    }
+}

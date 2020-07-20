@@ -104,6 +104,78 @@ TEST_CASE( "calcDensityInnerProduct", "[calculations]" ) {
 
 
 
+/** @sa calcExpecDiagonalOp
+ * @ingroup unittest 
+ * @author Tyson Jones 
+ */
+TEST_CASE( "calcExpecDiagonalOp", "[calculations]" ) {
+    
+    Qureg vec = createQureg(NUM_QUBITS, QUEST_ENV);
+    Qureg mat = createDensityQureg(NUM_QUBITS, QUEST_ENV);
+    initDebugState(vec);
+    initDebugState(mat);
+    QVector vecRef = toQVector(vec);
+    QMatrix matRef = toQMatrix(mat);
+    
+    SECTION( "correctness" ) {
+        
+        // try 10 random operators 
+        GENERATE( range(0,10) );
+        
+        // make a totally random (non-Hermitian) diagonal oeprator
+        DiagonalOp op = createDiagonalOp(NUM_QUBITS, QUEST_ENV);
+        for (long long int i=0; i<op.numElemsPerChunk; i++) {
+            op.real[i] = getRandomReal(-5, 5);
+            op.imag[i] = getRandomReal(-5, 5);
+        }
+        syncDiagonalOp(op);
+        
+        SECTION( "state-vector" ) {
+
+            /* calcExpecDiagOp calculates <qureg|diag|qureg> */
+            
+            QVector sumRef = toQMatrix(op) * vecRef;
+            qcomp prod = 0;
+            for (size_t i=0; i<vecRef.size(); i++)
+                prod += conj(vecRef[i]) * sumRef[i];
+            
+            Complex res = calcExpecDiagonalOp(vec, op);
+            REQUIRE( res.real == Approx(real(prod)).margin(REAL_EPS) );
+            REQUIRE( res.imag == Approx(imag(prod)).margin(REAL_EPS) );
+        } 
+        SECTION( "density-matrix" ) {
+            
+            /* calcExpecDiagOp calculates Trace( diag * qureg ) */
+            matRef = toQMatrix(op) * matRef;            
+            qcomp tr = 0;
+            for (size_t i=0; i<matRef.size(); i++)
+                tr += matRef[i][i];
+
+            Complex res = calcExpecDiagonalOp(mat, op);
+            REQUIRE( res.real == Approx(real(tr)).margin(100*REAL_EPS) );
+            REQUIRE( res.imag == Approx(imag(tr)).margin(100*REAL_EPS) );
+        }
+        
+        destroyDiagonalOp(op, QUEST_ENV);
+    }
+    SECTION( "input validation" ) {
+        
+        SECTION( "mismatching size" ) {
+            
+            DiagonalOp op = createDiagonalOp(NUM_QUBITS + 1, QUEST_ENV);
+            
+            REQUIRE_THROWS_WITH( calcExpecDiagonalOp(vec, op), Contains("equal number of qubits"));
+            REQUIRE_THROWS_WITH( calcExpecDiagonalOp(mat, op), Contains("equal number of qubits"));
+            
+            destroyDiagonalOp(op, QUEST_ENV);
+        }
+    }
+    destroyQureg(vec, QUEST_ENV);
+    destroyQureg(mat, QUEST_ENV);
+}
+
+
+
 /** @sa calcExpecPauliHamil
  * @ingroup unittest 
  * @author Tyson Jones 
@@ -145,7 +217,7 @@ TEST_CASE( "calcExpecPauliHamil", "[calculations]" ) {
             qreal res = calcExpecPauliHamil(vec, hamil, vecWork);
             REQUIRE( res == Approx(real(prod)).margin(10*REAL_EPS) );
         } 
-        SECTION( "density matrix" ) {
+        SECTION( "density-matrix" ) {
             
             /* calcExpecPauliHamil calculates Trace( pauliHamil * qureg ) */
             matRef = refHamil * matRef;            
@@ -277,7 +349,7 @@ TEST_CASE( "calcExpecPauliProd", "[calculations]" ) {
             qreal res = calcExpecPauliProd(vec, targs, paulis, numTargs, vecWork);
             REQUIRE( res == Approx(real(prod)).margin(REAL_EPS) );
         }
-        SECTION( "density matrix" ) {
+        SECTION( "density-matrix" ) {
             
             /* calcExpecPauliProd calculates Trace( pauliProd * qureg ) */
 
@@ -404,7 +476,7 @@ TEST_CASE( "calcExpecPauliSum", "[calculations]" ) {
             qreal res = calcExpecPauliSum(vec, paulis, coeffs, numSumTerms, vecWork);
             REQUIRE( res == Approx(real(prod)).margin(10*REAL_EPS) );
         } 
-        SECTION( "density matrix" ) {
+        SECTION( "density-matrix" ) {
             
             /* calcExpecPauliSum calculates Trace( pauliSum * qureg ) */
             matRef = pauliSum * matRef;            

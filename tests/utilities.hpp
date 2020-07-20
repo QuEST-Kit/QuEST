@@ -106,6 +106,15 @@ QVector operator * (const QMatrix& m, const QVector& v);
  */
 QVector toQVector(Qureg qureg);
 
+/** Returns a vector with the same of the full diagonal operator,
+ * populated with \p op's elements.
+ * In distributed mode, this involves an all-to-all broadcast of \p op.
+ *
+ * @ingroup testutilities
+ * @author Tyson Jones
+ */
+QVector toQVector(DiagonalOp op);
+
 /** Returns an equal-size copy of the given density matrix \p qureg.
  * In GPU mode, this function involves a copy of \p qureg from GPU memory to RAM.
  * In distributed mode, this involves an all-to-all broadcast of \p qureg.
@@ -158,6 +167,13 @@ QMatrix toQMatrix(qreal* coeffs, pauliOpType* paulis, int numQubits, int numTerm
  * @author Tyson Jones
  */
 QMatrix toQMatrix(PauliHamil hamil);
+
+/** Returns a 2^\p N-by-2^\p N complex diagonal matrix form of the DiagonalOp
+ *
+ * @ingroup testutilities
+ * @author Tyson Jones
+ */
+QMatrix toQMatrix(DiagonalOp op);
 
 /** Returns a \p ComplexMatrix2 copy of QMatix \p qm.
  * Demands that \p qm is a 2-by-2 matrix.
@@ -807,6 +823,14 @@ bool areEqual(QVector a, QVector b);
  * @author Tyson Jones
  */
 bool areEqual(QMatrix a, QMatrix b);
+
+/** Returns true if the absolute value of the difference between every element in 
+ * \p vec and those implied by \p reals and \p imags, is less than \p REAL_EPS.
+ *
+ * @ingroup testutilities 
+ * @author Tyson Jones
+ */
+bool areEqual(QVector vec, qreal* reals, qreal* imags);
 
 /** Returns the unit-norm complex number exp(i*\p phase). This function uses the 
  * Euler formula, and avoids problems with calling exp(__complex__) in a platform 

@@ -25,6 +25,59 @@ using Catch::Matchers::Contains;
 
 
 
+/** @sa applyDiagonalOp
+ * @ingroup unittest 
+ * @author Tyson Jones 
+ */
+TEST_CASE( "applyDiagonalOp", "[operators]" ) {
+    
+    PREPARE_TEST( quregVec, quregMatr, refVec, refMatr );
+    
+    SECTION( "correctness" ) {
+        
+        // try 10 random operators 
+        GENERATE( range(0,10) );
+        
+        // make a totally random (non-Hermitian) diagonal oeprator
+        DiagonalOp op = createDiagonalOp(NUM_QUBITS, QUEST_ENV);
+        for (long long int i=0; i<op.numElemsPerChunk; i++) {
+            op.real[i] = getRandomReal(-5, 5);
+            op.imag[i] = getRandomReal(-5, 5);
+        }
+        syncDiagonalOp(op);
+        
+        SECTION( "state-vector" ) {
+            
+            QVector ref = toQMatrix(op) * refVec;
+            applyDiagonalOp(quregVec, op);
+            REQUIRE( areEqual(quregVec, ref) );
+        }
+        SECTION( "density-matrix" ) {
+            
+            QMatrix ref = toQMatrix(op) * refMatr;
+            applyDiagonalOp(quregMatr, op);
+            REQUIRE( areEqual(quregMatr, ref, 100*REAL_EPS) );
+        }
+        
+        destroyDiagonalOp(op, QUEST_ENV);
+    }
+    SECTION( "input validation" ) {
+        
+        SECTION( "mismatching size" ) {
+            
+            DiagonalOp op = createDiagonalOp(NUM_QUBITS + 1, QUEST_ENV);
+            
+            REQUIRE_THROWS_WITH( applyDiagonalOp(quregVec, op), Contains("equal number of qubits"));
+            REQUIRE_THROWS_WITH( applyDiagonalOp(quregMatr, op), Contains("equal number of qubits"));
+            
+            destroyDiagonalOp(op, QUEST_ENV);
+        }
+    }
+    CLEANUP_TEST( quregVec, quregMatr );
+}
+
+
+
 /** @sa applyMatrix2
  * @ingroup unittest 
  * @author Tyson Jones 
@@ -652,7 +705,7 @@ TEST_CASE( "applyTrotterCircuit", "[operators]" ) {
                 
                 applyTrotterCircuit(vec, hamil, time, order, reps);
                 multiRotatePauli(vecRef, targs, codes, numTargs, 2*time*coeff);
-                REQUIRE( areEqual(vec, vecRef) );
+                REQUIRE( areEqual(vec, vecRef, 10*REAL_EPS) );
             }
             SECTION( "density-matrix" ) {
                 

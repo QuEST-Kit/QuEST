@@ -99,7 +99,11 @@ void densmatr_mixKrausMap(Qureg qureg, int target, ComplexMatrix2 *ops, int numO
 void densmatr_mixTwoQubitKrausMap(Qureg qureg, int target1, int target2, ComplexMatrix4 *ops, int numOps);
 
 void densmatr_mixMultiQubitKrausMap(Qureg qureg, int* targets, int numTargets, ComplexMatrixN* ops, int numOps);
-    
+
+void densmatr_applyDiagonalOp(Qureg qureg, DiagonalOp op);
+
+Complex densmatr_calcExpecDiagonalOp(Qureg qureg, DiagonalOp op);
+
 
 /* 
  * operations upon state vectors
@@ -245,6 +249,10 @@ void statevec_setWeightedQureg(Complex fac1, Qureg qureg1, Complex fac2, Qureg q
 
 void statevec_applyPauliSum(Qureg inQureg, enum pauliOpType* allCodes, qreal* termCoeffs, int numSumTerms, Qureg outQureg);
 
+void statevec_applyDiagonalOp(Qureg qureg, DiagonalOp op);
+
+Complex statevec_calcExpecDiagonalOp(Qureg qureg, DiagonalOp op);
+
 
 /* 
  * operations which differentiate between state-vectors and density matrices internally 
@@ -252,6 +260,13 @@ void statevec_applyPauliSum(Qureg inQureg, enum pauliOpType* allCodes, qreal* te
  
 void agnostic_applyTrotterCircuit(Qureg qureg, PauliHamil hamil, qreal time, int order, int reps);
 
+DiagonalOp agnostic_createDiagonalOp(int numQubits, QuESTEnv env);
+
+void agnostic_destroyDiagonalOp(DiagonalOp op);
+
+void agnostic_syncDiagonalOp(DiagonalOp op);
+
+void agnostic_setDiagonalOpElems(DiagonalOp op, long long int startInd, qreal* real, qreal* imag, long long int numElems);
 
 # ifdef __cplusplus
 }

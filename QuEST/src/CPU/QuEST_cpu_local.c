@@ -55,6 +55,7 @@ void densmatr_mixTwoQubitDepolarising(Qureg qureg, int qubit1, int qubit2, qreal
 }
 
 qreal densmatr_calcPurity(Qureg qureg) {
+    
     return densmatr_calcPurityLocal(qureg);
 }
 
@@ -110,6 +111,7 @@ void densmatr_initPureState(Qureg qureg, Qureg pureState) {
 }
 
 Complex statevec_calcInnerProduct(Qureg bra, Qureg ket) {
+    
     return statevec_calcInnerProductLocal(bra, ket);
 }
 
@@ -160,8 +162,6 @@ qreal statevec_calcTotalProb(Qureg qureg){
         // Don't change the bracketing on the following line
         c = ( t - pTotal ) - y;
         pTotal = t;
-
-
     } 
     return pTotal;
 }
@@ -320,4 +320,29 @@ void statevec_multiControlledMultiQubitUnitary(Qureg qureg, long long int ctrlMa
 void statevec_swapQubitAmps(Qureg qureg, int qb1, int qb2) 
 {
     statevec_swapQubitAmpsLocal(qureg, qb1, qb2);
+}
+
+void densmatr_applyDiagonalOp(Qureg qureg, DiagonalOp op) {
+
+    // we must preload qureg.pairStateVec with the elements of op.
+    // instead of needless cloning, we'll just temporarily swap the pointers
+    qreal* rePtr = qureg.pairStateVec.real;
+    qreal* imPtr = qureg.pairStateVec.imag;
+    qureg.pairStateVec.real = op.real;
+    qureg.pairStateVec.imag = op.imag;
+    
+    densmatr_applyDiagonalOpLocal(qureg, op);
+    
+    qureg.pairStateVec.real = rePtr;
+    qureg.pairStateVec.imag = imPtr;
+}
+
+Complex statevec_calcExpecDiagonalOp(Qureg qureg, DiagonalOp op) {
+
+    return statevec_calcExpecDiagonalOpLocal(qureg, op);
+}
+
+Complex densmatr_calcExpecDiagonalOp(Qureg qureg, DiagonalOp op) {
+    
+    return densmatr_calcExpecDiagonalOpLocal(qureg, op);
 }

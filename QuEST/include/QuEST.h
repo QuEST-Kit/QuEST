@@ -168,6 +168,31 @@ typedef struct PauliHamil
     int numQubits;
 } PauliHamil;
 
+/** Represents a diagonal complex operator on the full Hilbert state of a \p Qureg.
+ * The operator need not be unitary nor Hermitian (which would constrain it to
+ * real values)
+ *
+ * @ingroup type
+ * @author Tyson Jones 
+ */
+typedef struct DiagonalOp
+{
+    //! The number of qubits this operator can act on (informing its size)
+    int numQubits;
+    //! The number of the 2^numQubits amplitudes stored on each distributed node
+    long long int numElemsPerChunk;
+    //! The number of nodes between which the elements of this operator are split
+    int numChunks;
+    //! The position of the chunk of the operator held by this process in the full operator
+    int chunkId;
+    //! The real values of the 2^numQubits complex elements
+    qreal *real;
+    //! The imaginary values of the 2^numQubits complex elements
+    qreal *imag;
+    //! A copy of the elements stored persistently on the GPU
+    ComplexArray deviceOperator;
+} DiagonalOp;
+
 /** Represents a system of qubits.
  * Qubits are zero-based
  *
@@ -235,7 +260,9 @@ typedef struct QuESTEnv
  * @returns an object representing the set of qubits
  * @param[in] numQubits number of qubits in the system
  * @param[in] env object representing the execution environment (local, multinode etc)
- * @throws exitWithError if \p numQubits <= 0
+ * @throws exitWithError if \p numQubits <= 0, or if \p numQubits is so large that 
+ *      the number of amplitudes cannot fit in a long long int type, 
+ *      or if in distributed mode, there are more nodes than elements in the would-be state-vector
  * @author Ania Brown
  */
 Qureg createQureg(int numQubits, QuESTEnv env);
@@ -249,7 +276,9 @@ Qureg createQureg(int numQubits, QuESTEnv env);
  * @returns an object representing the set of qubits
  * @param[in] numQubits number of qubits in the system
  * @param[in] env object representing the execution environment (local, multinode etc)
- * @throws exitWithError if \p numQubits <= 0
+ * @throws exitWithError if \p numQubits <= 0, or if \p numQubits is so large that 
+ *      the number of amplitudes cannot fit in a long long int type, 
+ *      or if in distributed mode, there are more nodes than elements in the would-be density-matrix
  * @author Tyson Jones
  */
 Qureg createDensityQureg(int numQubits, QuESTEnv env);
@@ -408,6 +437,168 @@ PauliHamil createPauliHamilFromFile(char* fn);
  * @author Tyson Jones
  */
 void initPauliHamil(PauliHamil hamil, qreal* coeffs, enum pauliOpType* codes);
+
+/** Creates a DiagonalOp representing a diagonal operator on the 
+ * full Hilbert space of a Qureg. This can only be applied to state-vectors or
+ * density matrices of an equal number of qubits, using applyDiagonalOp(). 
+ * There is no requirement that the operator is unitary or Hermitian - 
+ * any complex operator is allowed.
+ *
+ * The operator is initialised to all zero.
+ *
+ * This function allocates space for 2^\p numQubits complex amplitudes, which are initially zero.
+ * This is the same cost as a state-vector of equal size.
+ * The elements should be modified with setDiagonalOpElems().
+ * This memory must later be freed with destroyDiagonalOp().
+ *
+ * In GPU mode, this function also creates persistent memory on the GPU.
+ * Hence, if not using setDiagonalOpElems() and instead modifying operator.real and .imag
+ * directly, the user must call thereafter call syncDiagonalOp() to modify the 
+ * operator stored in the GPU.
+ * 
+ * In distributed mode, the memory for the diagonal operator is spread evenly 
+ * between the available nodes, such that each node contains only
+ * operator.numElemsPerChunk complex values. Users must therefore exercise care 
+ * in modifying .real and .imag directly, and should instead use initDiagonalOp().
+  * E.g. the following is valid code when when distributed between TWO nodes:
+ *
+ *      // create {1,2,3,4,5,6,7,8, 9,10,11,12,13,14,15,16}
+ *      DiagonalOp op = createDiagonalOp(4, env); // 16 amplitudes total
+ *      for (int i=0; i<8; i++) {
+ *          if (env.rank == 0)
+ *              op.real[i] = (i+1);
+ *          if (env.rank == 1)
+ *              op.real[i] = (i+1+8);
+ *      }
+ *
+ * @ingroup type
+ * @returns a DiagonalOp instance, with 2^n-length .real and .imag arrays, initialised to zero
+ * @param[in] numQubits number of qubit, informing the dimension of the operator.
+ * @param[in] env object representing the execution environment (local, multinode etc)
+ * @throws exitWithError if \p numQubits <= 0, or if \p numQubits is so large that 
+ *      the number of elements cannot fit in a long long int type, 
+ *      or if in distributed mode, there are more nodes than elements in the operator
+ * @author Tyson Jones
+ */
+DiagonalOp createDiagonalOp(int numQubits, QuESTEnv env);
+
+/** Destroys a DiagonalOp created with createDiagonalOp(), freeing its memory.
+ *
+ * @ingroup type
+ * @param[in] op the diagonal operator to destroy
+ * @param[in] env object representing the execution environment (local, multinode etc)
+ * @throws exitWithError if \p op was not created
+ * @author Tyson Jones
+ */
+void destroyDiagonalOp(DiagonalOp op, QuESTEnv env);
+
+/** Copy the elements in DiagonalOp \p op.real and \p op.imag to the persisent GPU memory.
+ * This updates the GPU memory for \p op with any manual changes made to 
+ * \p op.real and \p op.imag. 
+ *
+ * Note if users just modify the diagonal operator to values known a priori, they 
+ * should instead use initDiagonalOp() or setDiagonalOpElems()
+ *
+ * This function has no effect in other modes besides GPU mode.
+ *
+ * @ingroup type
+ * @param[in,out] op the diagonal operator to synch to GPU
+ * @throws exitWithError if \p op was not created
+ * @author Tyson Jones
+ */
+void syncDiagonalOp(DiagonalOp op);
+
+/** Updates the entire DiagonalOp \p op with the given elements, of which there must 
+ * be 2^\p op.numQubits.
+ *
+ * In GPU mode, this updates both the persistent GPU memory, and the arrays 
+ * \p op.real and \p op.imag 
+ *
+ * In distributed mode, this function assumes \p real and \p imag exist fully on every 
+ * node.
+ *
+ * @ingroup type
+ * @param[in,out] op the diagonal operator to modify
+ * @param[in] real the real components of the full set of new elements
+ * @param[in] imag the imaginary components of the full set of new elements
+ * @throws exitWithError if \p op was not created
+ * @author Tyson Jones
+ */
+void initDiagonalOp(DiagonalOp op, qreal* real, qreal* imag);
+
+/** Modifies a subset (starting at index \p startInd) of the elements in DiagonalOp \p op 
+ * with the given elements, of which there are \p numElems.
+ *
+ * In GPU mode, this updates both the persistent GPU memory, and the arrays 
+ * \p op.real and \p op.imag 
+ *
+ * In distributed mode, this function assumes the subset \p real and \p imag exist
+ * (at least) on the node containing the ultimately updated elements.
+ * For example, below is the correct way to modify the full 8 elements of \p op 
+ * when split between 2 nodes.
+ *
+ *     DiagonalOp op = createDiagonalOp(3, env);
+ *     
+ *     qreal re[] = {1,2,3,4};
+ *     qreal im[] = {1,2,3,4};
+ *     setDiagonalOpElems(op, 0, re, im, 4);
+ *     
+ *     // modify re and im to the next set of elements 
+ *     
+ *     setDiagonalOpElems(op, 4, re, im, 4);
+ *
+ * In this way, one can avoid a single node containing all new elements which might 
+ * not fit. If more elements are passed than exist on an individual node, each 
+ * node merely ignores the additional elements.
+ *
+ * @ingroup type
+ * @param[in,out] op the diagonal operator to modify the elements of
+ * @param[in] startInd the starting index (globally) of the subset of elements to modify
+ * @param[in] real  the real components of the new elements
+ * @param[in] imag  the imaginary components of the new elements
+ * @param[in] numElems the number of new elements (the length of \p real and \p imag)
+ * @throws exitWithError if \p op was not created, or if \p startInd is an invalid index,
+ *      or if \p numElems is an invalid number of elements, or if there less than \p numElems 
+ *      elements in the operator after \p startInd.
+ * @author Tyson Jones
+ */
+void setDiagonalOpElems(DiagonalOp op, long long int startInd, qreal* real, qreal* imag, long long int numElems);
+
+/** Apply a diagonal complex operator, which is possibly non-unitary and non-Hermitian,
+ * on the entire \p qureg,  
+ *
+ * @ingroup operator
+ * @param[in,out] qureg the state to operate the diagonal operator upon
+ * @param[in] op the diagonal operator to apply
+ * @throws exitWithError if \p op was not created, 
+ *      or if \p op acts on a different number of qubits than \p qureg represents
+ * @author Tyson Jones
+ */
+void applyDiagonalOp(Qureg qureg, DiagonalOp op);
+
+/** Computes the expected value of the diagonal operator \p op for state \p qureg. 
+ * Since \p op is not necessarily Hermitian, the expected value may be a complex 
+ * number.
+ *
+ * Let \f$ D \f$ be the diagonal operator \p op, with diagonal elements \f$ d_i \f$.
+ * Then if \p qureg is a state-vector \f$|\psi\rangle \f$, this function computes
+ * \f[
+    \langle \psi | D | \psi \rangle = \sum_i |\psi_i|^2 \, d_i
+ * \f]
+ * If \p qureg is a density matrix \f$ \rho \f$, this function computes 
+ * \f[ 
+    \text{Trace}( D \rho ) = \sum_i \rho_{ii} \, d_i
+ * \f]
+ *
+ * @ingroup calc
+ * @param[in] qureg a state-vector or density matrix
+ * @param[in] op    the diagonal operator to compute the expected value of
+ * @return the expected vaulue of the operator
+ * @throws exitWithError if \p op was not created,
+ *      or if \p op acts on a different number of qubits than \p qureg represents.
+ * @author Tyson Jones
+ */
+Complex calcExpecDiagonalOp(Qureg qureg, DiagonalOp op);
 
 /** Print the current state vector of probability amplitudes for a set of qubits to file.
  * File format:
@@ -573,7 +764,12 @@ void initDebugState(Qureg qureg);
 /** Initialise qureg by specifying the complete statevector.
  * The real and imaginary components of the amplitudes are passed in separate arrays,
  * each of which must have length \p qureg.numAmpsTotal.
- * There is no automatic checking that the passed arrays are L2 normalised.
+ * There is no automatic checking that the passed arrays are L2 normalised, so this 
+ * can be used to prepare \p qureg in a non-physical state.
+ *
+ * In distributed mode, this would require the complete statevector to fit in 
+ * every node. To manually prepare a statevector which cannot fit in every node,
+ * use setAmps()
  *
  * @ingroup init
  * @param[in,out] qureg the object representing the set of qubits to be initialised
@@ -2594,7 +2790,7 @@ qreal calcExpecPauliProd(Qureg qureg, int* targetQubits, enum pauliOpType* pauli
  * (number of represented qubits) as \p qureg, and is used as working space. When this function returns, \p qureg 
  * will be unchanged and \p workspace will be set to \p qureg pre-multiplied with the final Pauli product.
  * NOTE that if \p qureg is a density matrix, \p workspace will become \f$ \hat{\sigma} \rho \f$ 
- * which is itself not a density matrix (it is distinct from \f$ \hat{\sigma}^\dagger \rho \hat{\sigma} \f$).
+ * which is itself not a density matrix (it is distinct from \f$ \hat{\sigma} \rho \hat{\sigma}^\dagger \f$).
  *
  * This function works by cloning the \p qureg state into \p workspace, applying each of the specified
  * Pauli products to \p workspace (one Pauli operation at a time), then computing its inner product with \p qureg (for statevectors)
@@ -2633,7 +2829,7 @@ qreal calcExpecPauliSum(Qureg qureg, enum pauliOpType* allPauliCodes, qreal* ter
  * When this function returns, \p qureg  will be unchanged and \p workspace will be set to
  * \p qureg pre-multiplied with the final Pauli product in \p hamil.
  * NOTE that if \p qureg is a density matrix, \p workspace will become \f$ \hat{\sigma} \rho \f$ 
- * which is itself not a density matrix (it is distinct from \f$ \hat{\sigma}^\dagger \rho \hat{\sigma} \f$).
+ * which is itself not a density matrix (it is distinct from \f$ \hat{\sigma} \rho \hat{\sigma}^\dagger \f$).
  *
  * This function works by cloning the \p qureg state into \p workspace, applying each of the specified
  * Pauli products in \p hamil to \p workspace (one Pauli operation at a time), then computing its inner product with \p qureg (for statevectors)

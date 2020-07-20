@@ -38,8 +38,11 @@ typedef enum {
     E_INVALID_CONTROL_QUBIT,
     E_INVALID_STATE_INDEX,
     E_INVALID_AMP_INDEX,
+    E_INVALID_ELEM_INDEX,
     E_INVALID_NUM_AMPS,
-    E_INVALID_OFFSET_NUM_AMPS,
+    E_INVALID_NUM_ELEMS,
+    E_INVALID_OFFSET_NUM_AMPS_QUREG,
+    E_INVALID_OFFSET_NUM_ELEMS_DIAG,
     E_TARGET_IS_CONTROL,
     E_TARGET_IN_CONTROLS,
     E_CONTROL_TARGET_COLLISION,
@@ -80,6 +83,7 @@ typedef enum {
     E_INVALID_KRAUS_OPS,
     E_MISMATCHING_NUM_TARGS_KRAUS_SIZE,
     E_DISTRIB_QUREG_TOO_SMALL,
+    E_DISTRIB_DIAG_OP_TOO_SMALL,
     E_NUM_AMPS_EXCEED_TYPE,
     E_INVALID_PAULI_HAMIL_PARAMS,
     E_INVALID_PAULI_HAMIL_FILE_PARAMS,
@@ -88,7 +92,9 @@ typedef enum {
     E_INVALID_PAULI_HAMIL_FILE_PAULI_CODE,
     E_MISMATCHING_PAULI_HAMIL_QUREG_NUM_QUBITS,
     E_INVALID_TROTTER_ORDER,
-    E_INVALID_TROTTER_REPS
+    E_INVALID_TROTTER_REPS,
+    E_MISMATCHING_QUREG_DIAGONAL_OP_SIZE,
+    E_DIAGONAL_OP_NOT_INITIALISED
 } ErrorCode;
 
 static const char* errorMessages[] = {
@@ -99,8 +105,11 @@ static const char* errorMessages[] = {
     [E_INVALID_CONTROL_QUBIT] = "Invalid control qubit. Must be >=0 and <numQubits.",
     [E_INVALID_STATE_INDEX] = "Invalid state index. Must be >=0 and <2^numQubits.",
     [E_INVALID_AMP_INDEX] = "Invalid amplitude index. Must be >=0 and <2^numQubits.",
+    [E_INVALID_ELEM_INDEX] = "Invalid element index. Must be >=0 and <2^numQubits.",
     [E_INVALID_NUM_AMPS] = "Invalid number of amplitudes. Must be >=0 and <=2^numQubits.",
-    [E_INVALID_OFFSET_NUM_AMPS] = "More amplitudes given than exist in the statevector from the given starting index.",
+    [E_INVALID_NUM_ELEMS] = "Invalid number of elements. Must be >=0 and <=2^numQubits.",
+    [E_INVALID_OFFSET_NUM_AMPS_QUREG] = "More amplitudes given than exist in the statevector from the given starting index.",
+    [E_INVALID_OFFSET_NUM_ELEMS_DIAG] = "More elements given than exist in the diagonal operator from the given starting index.",
     [E_TARGET_IS_CONTROL] = "Control qubit cannot equal target qubit.",
     [E_TARGET_IN_CONTROLS] = "Control qubits cannot include target qubit.",
     [E_CONTROL_TARGET_COLLISION] = "Control and target qubits must be disjoint.",
@@ -141,6 +150,7 @@ static const char* errorMessages[] = {
     [E_INVALID_KRAUS_OPS] = "The specified Kraus map is not a completely positive, trace preserving map.",
     [E_MISMATCHING_NUM_TARGS_KRAUS_SIZE] = "Every Kraus operator must be of the same number of qubits as the number of targets.",
     [E_DISTRIB_QUREG_TOO_SMALL] = "Too few qubits. The created qureg must have at least one amplitude per node used in distributed simulation.",
+    [E_DISTRIB_DIAG_OP_TOO_SMALL] = "Too few qubits. The created DiagonalOp must contain at least one element per node used in distributed simulation.",
     [E_NUM_AMPS_EXCEED_TYPE] = "Too many qubits (max of log2(SIZE_MAX)). Cannot store the number of amplitudes per-node in the size_t type.",
     [E_INVALID_PAULI_HAMIL_PARAMS] = "The number of qubits and terms in the PauliHamil must be strictly positive.",
     [E_INVALID_PAULI_HAMIL_FILE_PARAMS] = "The number of qubits and terms in the PauliHamil file (%s) must be strictly positive.",
@@ -149,7 +159,9 @@ static const char* errorMessages[] = {
     [E_INVALID_PAULI_HAMIL_FILE_PAULI_CODE] = "The PauliHamil file (%s) contained an invalid pauli code (%d). Codes must be 0 (or PAULI_I), 1 (PAULI_X), 2 (PAULI_Y) or 3 (PAULI_Z) to indicate the identity, X, Y and Z operators respectively.",
     [E_MISMATCHING_PAULI_HAMIL_QUREG_NUM_QUBITS] = "The PauliHamil must act on the same number of qubits as exist in the Qureg.",
     [E_INVALID_TROTTER_ORDER] = "The Trotterisation order must be 1, or an even number (for higher-order Suzuki symmetrized expansions).",
-    [E_INVALID_TROTTER_REPS] = "The number of Trotter repetitions must be >=1."
+    [E_INVALID_TROTTER_REPS] = "The number of Trotter repetitions must be >=1.",
+    [E_MISMATCHING_QUREG_DIAGONAL_OP_SIZE] = "The qureg must represent an equal number of qubits as that in the applied diagonal operator.",
+    [E_DIAGONAL_OP_NOT_INITIALISED] = "The diagonal operator has not been initialised through createDiagonalOperator()."
 };
 
 void exitWithError(const char* msg, const char* func) {
@@ -314,6 +326,18 @@ void validateNumQubitsInMatrix(int numQubits, const char* caller) {
     QuESTAssert(numQubits>0, E_INVALID_NUM_QUBITS, caller);
 }
 
+void validateNumQubitsInDiagOp(int numQubits, int numRanks, const char* caller) {
+    QuESTAssert(numQubits>0, E_INVALID_NUM_CREATE_QUBITS, caller);
+    
+    // mustn't be more amplitudes than can fit in the type
+    unsigned int maxQubits = calcLog2(SIZE_MAX);
+    QuESTAssert( numQubits <= maxQubits, E_NUM_AMPS_EXCEED_TYPE, caller);
+    
+    // must be at least one amplitude per node
+    long unsigned int numAmps = (1UL<<numQubits);
+    QuESTAssert(numAmps >= numRanks, E_DISTRIB_DIAG_OP_TOO_SMALL, caller);
+}
+
 void validateStateIndex(Qureg qureg, long long int stateInd, const char* caller) {
     long long int stateMax = 1LL << qureg.numQubitsRepresented;
     QuESTAssert(stateInd>=0 && stateInd<stateMax, E_INVALID_STATE_INDEX, caller);
@@ -327,7 +351,14 @@ void validateAmpIndex(Qureg qureg, long long int ampInd, const char* caller) {
 void validateNumAmps(Qureg qureg, long long int startInd, long long int numAmps, const char* caller) {
     validateAmpIndex(qureg, startInd, caller);
     QuESTAssert(numAmps >= 0 && numAmps <= qureg.numAmpsTotal, E_INVALID_NUM_AMPS, caller);
-    QuESTAssert(numAmps + startInd <= qureg.numAmpsTotal, E_INVALID_OFFSET_NUM_AMPS, caller);
+    QuESTAssert(numAmps + startInd <= qureg.numAmpsTotal, E_INVALID_OFFSET_NUM_AMPS_QUREG, caller);
+}
+
+void validateNumElems(DiagonalOp op, long long int startInd, long long int numElems, const char* caller) {
+    long long int indMax = 1LL << op.numQubits;
+    QuESTAssert(startInd >= 0 && startInd < indMax, E_INVALID_ELEM_INDEX, caller);
+    QuESTAssert(numElems >= 0 && numElems <= indMax, E_INVALID_NUM_ELEMS, caller);
+    QuESTAssert(numElems + startInd <= indMax, E_INVALID_OFFSET_NUM_ELEMS_DIAG, caller);
 }
 
 void validateTarget(Qureg qureg, int targetQubit, const char* caller) {
@@ -637,6 +668,15 @@ void validateTrotterParams(int order, int reps, const char* caller) {
     int isEven = (order % 2) == 0;
     QuESTAssert(order > 0 && (isEven || order==1), E_INVALID_TROTTER_ORDER, caller);
     QuESTAssert(reps > 0, E_INVALID_TROTTER_REPS, caller);
+}
+
+void validateDiagOpInit(DiagonalOp op, const char* caller) {
+    QuESTAssert(op.real != NULL && op.imag != NULL, E_DIAGONAL_OP_NOT_INITIALISED, caller);
+}
+
+void validateDiagonalOp(Qureg qureg, DiagonalOp op, const char* caller) {
+    validateDiagOpInit(op, caller);
+    QuESTAssert(qureg.numQubitsRepresented == op.numQubits, E_MISMATCHING_QUREG_DIAGONAL_OP_SIZE, caller);
 }
 
 #ifdef __cplusplus

@@ -884,6 +884,17 @@ void applyMultiControlledMatrixN(Qureg qureg, int* ctrls, const int numCtrls, in
     qasm_recordComment(qureg, "Here, an undisclosed %d-by-%d matrix (possibly non-unitary, and including %d controlled qubits) was multiplied onto %d undisclosed qubits", dim, dim, numCtrls, numTot);
 }
 
+void applyDiagonalOp(Qureg qureg, DiagonalOp op) {
+    validateDiagonalOp(qureg, op, __func__);
+
+    if (qureg.isDensityMatrix)
+        densmatr_applyDiagonalOp(qureg, op);
+    else
+        statevec_applyDiagonalOp(qureg, op);
+
+    qasm_recordComment(qureg, "Here, the register was modified to an undisclosed and possibly unphysical state (via applyDiagonalOp).");
+}
+
 
 /*
  * calculations
@@ -963,6 +974,15 @@ qreal calcExpecPauliHamil(Qureg qureg, PauliHamil hamil, Qureg workspace) {
     validateMatchingQuregPauliHamilDims(qureg, hamil, __func__);
     
     return statevec_calcExpecPauliSum(qureg, hamil.pauliCodes, hamil.termCoeffs, hamil.numSumTerms, workspace);
+}
+
+Complex calcExpecDiagonalOp(Qureg qureg, DiagonalOp op) {
+    validateDiagonalOp(qureg, op, __func__);
+    
+    if (qureg.isDensityMatrix)
+        return densmatr_calcExpecDiagonalOp(qureg, op);
+    else
+        return statevec_calcExpecDiagonalOp(qureg, op);
 }
 
 qreal calcHilbertSchmidtDistance(Qureg a, Qureg b) {
@@ -1242,6 +1262,38 @@ void initPauliHamil(PauliHamil hamil, qreal* coeffs, enum pauliOpType* codes) {
             i++;
         }
     }
+}
+
+DiagonalOp createDiagonalOp(int numQubits, QuESTEnv env) {
+    validateNumQubitsInDiagOp(numQubits, env.numRanks, __func__);
+    
+    return agnostic_createDiagonalOp(numQubits, env);
+}
+
+void destroyDiagonalOp(DiagonalOp op, QuESTEnv env) {
+    // env accepted for API consistency
+    validateDiagOpInit(op, __func__);
+    
+    agnostic_destroyDiagonalOp(op);
+}
+
+void syncDiagonalOp(DiagonalOp op) {
+    validateDiagOpInit(op, __func__);
+    
+    agnostic_syncDiagonalOp(op);
+}
+
+void initDiagonalOp(DiagonalOp op, qreal* real, qreal* imag) {
+    validateDiagOpInit(op, __func__);
+    
+    agnostic_setDiagonalOpElems(op, 0, real, imag, 1LL << op.numQubits);
+}
+
+void setDiagonalOpElems(DiagonalOp op, long long int startInd, qreal* real, qreal* imag, long long int numElems) {
+    validateDiagOpInit(op, __func__);
+    validateNumElems(op, startInd, numElems, __func__);
+    
+    agnostic_setDiagonalOpElems(op, startInd, real, imag, numElems);
 }
 
 /*
