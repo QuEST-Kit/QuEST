@@ -55,6 +55,7 @@ void densmatr_mixTwoQubitDepolarising(Qureg qureg, int qubit1, int qubit2, qreal
 }
 
 qreal densmatr_calcPurity(Qureg qureg) {
+    
     return densmatr_calcPurityLocal(qureg);
 }
 
@@ -110,6 +111,7 @@ void densmatr_initPureState(Qureg qureg, Qureg pureState) {
 }
 
 Complex statevec_calcInnerProduct(Qureg bra, Qureg ket) {
+    
     return statevec_calcInnerProductLocal(bra, ket);
 }
 
@@ -160,8 +162,6 @@ qreal statevec_calcTotalProb(Qureg qureg){
         // Don't change the bracketing on the following line
         c = ( t - pTotal ) - y;
         pTotal = t;
-
-
     } 
     return pTotal;
 }

@@ -260,7 +260,9 @@ typedef struct QuESTEnv
  * @returns an object representing the set of qubits
  * @param[in] numQubits number of qubits in the system
  * @param[in] env object representing the execution environment (local, multinode etc)
- * @throws exitWithError if \p numQubits <= 0
+ * @throws exitWithError if \p numQubits <= 0, or if \p numQubits is so large that 
+ *      the number of amplitudes cannot fit in a long long int type, 
+ *      or if in distributed mode, there are more nodes than elements in the would-be state-vector
  * @author Ania Brown
  */
 Qureg createQureg(int numQubits, QuESTEnv env);
@@ -274,7 +276,9 @@ Qureg createQureg(int numQubits, QuESTEnv env);
  * @returns an object representing the set of qubits
  * @param[in] numQubits number of qubits in the system
  * @param[in] env object representing the execution environment (local, multinode etc)
- * @throws exitWithError if \p numQubits <= 0
+ * @throws exitWithError if \p numQubits <= 0, or if \p numQubits is so large that 
+ *      the number of amplitudes cannot fit in a long long int type, 
+ *      or if in distributed mode, there are more nodes than elements in the would-be density-matrix
  * @author Tyson Jones
  */
 Qureg createDensityQureg(int numQubits, QuESTEnv env);
@@ -758,7 +762,12 @@ void initDebugState(Qureg qureg);
 /** Initialise qureg by specifying the complete statevector.
  * The real and imaginary components of the amplitudes are passed in separate arrays,
  * each of which must have length \p qureg.numAmpsTotal.
- * There is no automatic checking that the passed arrays are L2 normalised.
+ * There is no automatic checking that the passed arrays are L2 normalised, so this 
+ * can be used to prepare \p qureg in a non-physical state.
+ *
+ * In distributed mode, this would require the complete statevector to fit in 
+ * every node. To manually prepare a statevector which cannot fit in every node,
+ * use setAmps()
  *
  * @ingroup init
  * @param[in,out] qureg the object representing the set of qubits to be initialised
@@ -2779,7 +2788,7 @@ qreal calcExpecPauliProd(Qureg qureg, int* targetQubits, enum pauliOpType* pauli
  * (number of represented qubits) as \p qureg, and is used as working space. When this function returns, \p qureg 
  * will be unchanged and \p workspace will be set to \p qureg pre-multiplied with the final Pauli product.
  * NOTE that if \p qureg is a density matrix, \p workspace will become \f$ \hat{\sigma} \rho \f$ 
- * which is itself not a density matrix (it is distinct from \f$ \hat{\sigma}^\dagger \rho \hat{\sigma} \f$).
+ * which is itself not a density matrix (it is distinct from \f$ \hat{\sigma} \rho \hat{\sigma}^\dagger \f$).
  *
  * This function works by cloning the \p qureg state into \p workspace, applying each of the specified
  * Pauli products to \p workspace (one Pauli operation at a time), then computing its inner product with \p qureg (for statevectors)
@@ -2818,7 +2827,7 @@ qreal calcExpecPauliSum(Qureg qureg, enum pauliOpType* allPauliCodes, qreal* ter
  * When this function returns, \p qureg  will be unchanged and \p workspace will be set to
  * \p qureg pre-multiplied with the final Pauli product in \p hamil.
  * NOTE that if \p qureg is a density matrix, \p workspace will become \f$ \hat{\sigma} \rho \f$ 
- * which is itself not a density matrix (it is distinct from \f$ \hat{\sigma}^\dagger \rho \hat{\sigma} \f$).
+ * which is itself not a density matrix (it is distinct from \f$ \hat{\sigma} \rho \hat{\sigma}^\dagger \f$).
  *
  * This function works by cloning the \p qureg state into \p workspace, applying each of the specified
  * Pauli products in \p hamil to \p workspace (one Pauli operation at a time), then computing its inner product with \p qureg (for statevectors)

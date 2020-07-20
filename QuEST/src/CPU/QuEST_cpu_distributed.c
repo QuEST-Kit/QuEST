@@ -476,8 +476,6 @@ void densmatr_initPureState(Qureg targetQureg, Qureg copyQureg) {
     }
 }
 
-
-
 void exchangeStateVectors(Qureg qureg, int pairRank){
     // MPI send/receive vars
     int TAG=100;
@@ -1240,7 +1238,6 @@ void statevec_hadamard(Qureg qureg, const int targetQubit)
     }
 }
 
-
 /** Find chunks to skip when calculating probability of qubit being zero.
  * When calculating probability of a bit q being zero,
  * sum up 2^q values, then skip 2^q values, etc. This function finds if an entire chunk
@@ -1353,7 +1350,6 @@ long long int getGlobalIndOfOddParityInChunk(Qureg qureg, int qb1, int qb2) {
     
     return -1;
 }
-
 
 void statevec_swapQubitAmps(Qureg qureg, int qb1, int qb2) {
     

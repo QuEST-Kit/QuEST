@@ -3855,7 +3855,7 @@ void agnostic_setDiagonalOpElems(DiagonalOp op, long long int startInd, qreal* r
 # ifdef _OPENMP
 # pragma omp parallel \
     default  (none) \
-    shared   (localStartInd,localEndInd, vecRe,vecIm, reals,imags, offset) \
+    shared   (localStartInd,localEndInd, vecRe,vecIm, real,imag, offset) \
     private  (index) 
 # endif
     {
@@ -3864,8 +3864,8 @@ void agnostic_setDiagonalOpElems(DiagonalOp op, long long int startInd, qreal* r
 # endif
         // iterate these local inds - this might involve no iterations
         for (index=localStartInd; index < localEndInd; index++) {
-            vecRe[index] = reals[index + offset];
-            vecIm[index] = imags[index + offset];
+            vecRe[index] = real[index + offset];
+            vecIm[index] = imag[index + offset];
         }
     }
 }

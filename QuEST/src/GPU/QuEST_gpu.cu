@@ -161,7 +161,7 @@ void statevec_setAmps(Qureg qureg, long long int startInd, qreal* reals, qreal* 
     cudaMemcpy(
         qureg.deviceStateVec.imag + startInd,
         imags,
-        numAmps * sizeof(*(qureg.deviceStateVec.real)), 
+        numAmps * sizeof(*(qureg.deviceStateVec.imag)), 
         cudaMemcpyHostToDevice);
 }
 
@@ -1527,6 +1527,7 @@ void statevec_multiRotateZ(Qureg qureg, long long int mask, qreal angle)
     CUDABlocks = ceil((qreal)(qureg.numAmpsPerChunk)/threadsPerCUDABlock);
     statevec_multiRotateZKernel<<<CUDABlocks, threadsPerCUDABlock>>>(qureg, mask, cosAngle, sinAngle);
 }
+
 qreal densmatr_calcTotalProb(Qureg qureg) {
     
     // computes the trace using Kahan summation
