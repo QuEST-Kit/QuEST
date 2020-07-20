@@ -2974,6 +2974,262 @@ void densmatr_applyDiagonalOp(Qureg qureg, DiagonalOp op) {
     densmatr_applyDiagonalOpKernel<<<CUDABlocks, threadsPerCUDABlock>>>(qureg, op);
 }
 
+/** computes either a real or imag term of |vec_i|^2 op_i */
+__global__ void statevec_calcExpecDiagonalOpKernel(
+    int getRealComp,
+    qreal* vecReal, qreal* vecImag, qreal* opReal, qreal* opImag, 
+    long long int numTermsToSum, qreal* reducedArray) 
+{
+    long long int index = blockIdx.x*blockDim.x + threadIdx.x;
+    if (index >= numTermsToSum) return;
+    
+    qreal vecAbs = vecReal[index]*vecReal[index] + vecImag[index]*vecImag[index];
+    
+    // choose whether to calculate the real or imaginary term of the expec term
+    qreal expecVal;
+    if (getRealComp)
+        expecVal = vecAbs * opReal[index];
+    else
+        expecVal = vecAbs * opImag[index];
+    
+    // array of each thread's collected sum term, to be summed
+    extern __shared__ qreal tempReductionArray[];
+    tempReductionArray[threadIdx.x] = expecVal;
+    __syncthreads();
+    
+    // every second thread reduces
+    if (threadIdx.x<blockDim.x/2)
+        reduceBlock(tempReductionArray, reducedArray, blockDim.x);
+}
+
+Complex statevec_calcExpecDiagonalOp(Qureg qureg, DiagonalOp op) {
+    
+    /* @TODO: remove all this reduction boilerplate from QuEST GPU 
+     * (e.g. a func which accepts a pointer to do every-value reduction?)
+     */
+
+    qreal expecReal, expecImag;
+    
+    int getRealComp;
+    long long int numValuesToReduce;
+    int valuesPerCUDABlock, numCUDABlocks, sharedMemSize;
+    int maxReducedPerLevel;
+    int firstTime;
+    
+    // compute real component of inner product
+    getRealComp = 1;
+    numValuesToReduce = qureg.numAmpsPerChunk;
+    maxReducedPerLevel = REDUCE_SHARED_SIZE;
+    firstTime = 1;
+    while (numValuesToReduce > 1) {
+        if (numValuesToReduce < maxReducedPerLevel) {
+            valuesPerCUDABlock = numValuesToReduce;
+            numCUDABlocks = 1;
+        }
+        else {
+            valuesPerCUDABlock = maxReducedPerLevel;
+            numCUDABlocks = ceil((qreal)numValuesToReduce/valuesPerCUDABlock);
+        }
+        sharedMemSize = valuesPerCUDABlock*sizeof(qreal);
+        if (firstTime) {
+            statevec_calcExpecDiagonalOpKernel<<<numCUDABlocks, valuesPerCUDABlock, sharedMemSize>>>(
+                getRealComp,
+                qureg.deviceStateVec.real, qureg.deviceStateVec.imag, 
+                op.deviceOperator.real, op.deviceOperator.imag, 
+                numValuesToReduce, 
+                qureg.firstLevelReduction);
+            firstTime = 0;
+        } else {
+            cudaDeviceSynchronize();    
+            copySharedReduceBlock<<<numCUDABlocks, valuesPerCUDABlock/2, sharedMemSize>>>(
+                    qureg.firstLevelReduction, 
+                    qureg.secondLevelReduction, valuesPerCUDABlock); 
+            cudaDeviceSynchronize();    
+            swapDouble(&(qureg.firstLevelReduction), &(qureg.secondLevelReduction));
+        }
+        numValuesToReduce = numValuesToReduce/maxReducedPerLevel;
+    }
+    cudaMemcpy(&expecReal, qureg.firstLevelReduction, sizeof(qreal), cudaMemcpyDeviceToHost);
+    
+    // compute imag component of inner product
+    getRealComp = 0;
+    numValuesToReduce = qureg.numAmpsPerChunk;
+    maxReducedPerLevel = REDUCE_SHARED_SIZE;
+    firstTime = 1;
+    while (numValuesToReduce > 1) {
+        if (numValuesToReduce < maxReducedPerLevel) {
+            valuesPerCUDABlock = numValuesToReduce;
+            numCUDABlocks = 1;
+        }
+        else {
+            valuesPerCUDABlock = maxReducedPerLevel;
+            numCUDABlocks = ceil((qreal)numValuesToReduce/valuesPerCUDABlock);
+        }
+        sharedMemSize = valuesPerCUDABlock*sizeof(qreal);
+        if (firstTime) {
+            statevec_calcExpecDiagonalOpKernel<<<numCUDABlocks, valuesPerCUDABlock, sharedMemSize>>>(
+                getRealComp,
+                qureg.deviceStateVec.real, qureg.deviceStateVec.imag, 
+                op.deviceOperator.real, op.deviceOperator.imag, 
+                numValuesToReduce, 
+                qureg.firstLevelReduction);
+            firstTime = 0;
+        } else {
+            cudaDeviceSynchronize();    
+            copySharedReduceBlock<<<numCUDABlocks, valuesPerCUDABlock/2, sharedMemSize>>>(
+                    qureg.firstLevelReduction, 
+                    qureg.secondLevelReduction, valuesPerCUDABlock); 
+            cudaDeviceSynchronize();    
+            swapDouble(&(qureg.firstLevelReduction), &(qureg.secondLevelReduction));
+        }
+        numValuesToReduce = numValuesToReduce/maxReducedPerLevel;
+    }
+    cudaMemcpy(&expecImag, qureg.firstLevelReduction, sizeof(qreal), cudaMemcpyDeviceToHost);
+    
+    // return complex
+    Complex expecVal;
+    expecVal.real = expecReal;
+    expecVal.imag = expecImag;
+    return expecVal;
+}
+
+__global__ void densmatr_calcExpecDiagonalOpKernel(
+    int getRealComp,
+    qreal* matReal, qreal* matImag, qreal* opReal, qreal* opImag, 
+    int numQubits, qreal* reducedArray) 
+{
+    /** if the thread represents a diagonal op, then it computes either a 
+     *  real or imag term of matr_{ii} op_i. Otherwise, it writes a 0 to the 
+     * reduction array
+     */
+    
+    // index will identy one of the 2^Q diagonals to be summed
+    long long int matInd = blockIdx.x*blockDim.x + threadIdx.x;
+    long long int numAmpsTotal = (1LL << (2*numQubits));
+    if (matInd >= numAmpsTotal) return;
+    
+    long long int diagSpacing = (1LL << numQubits) + 1LL;
+    int isDiag = ((matInd % diagSpacing) == 0);
+    
+    long long int opInd = matInd / diagSpacing;
+    
+    qreal val = 0;
+    if (isDiag) {
+        
+        qreal matRe = matReal[matInd];
+        qreal matIm = matImag[matInd];
+        qreal opRe = opReal[opInd];
+        qreal opIm = opImag[opInd];
+        
+        // (matRe + matIm i)(opRe + opIm i) = 
+        //      (matRe opRe - matIm opIm) + i (matRe opIm + matIm opRe)
+        if (getRealComp)
+            val = matRe * opRe - matIm * opIm;
+        else 
+            val = matRe * opIm + matIm * opRe;
+    }
+    
+    // array of each thread's collected sum term, to be summed
+    extern __shared__ qreal tempReductionArray[];
+    tempReductionArray[threadIdx.x] = val;
+    __syncthreads();
+    
+    // every second thread reduces
+    if (threadIdx.x<blockDim.x/2)
+        reduceBlock(tempReductionArray, reducedArray, blockDim.x);
+}
+
+Complex densmatr_calcExpecDiagonalOp(Qureg qureg, DiagonalOp op) {
+    
+    /* @TODO: remove all this reduction boilerplate from QuEST GPU 
+     * (e.g. a func which accepts a pointer to do every-value reduction?)
+     */
+
+    qreal expecReal, expecImag;
+    
+    int getRealComp;
+    long long int numValuesToReduce;
+    int valuesPerCUDABlock, numCUDABlocks, sharedMemSize;
+    int maxReducedPerLevel;
+    int firstTime;
+    
+    // compute real component of inner product
+    getRealComp = 1;
+    numValuesToReduce = qureg.numAmpsPerChunk;
+    maxReducedPerLevel = REDUCE_SHARED_SIZE;
+    firstTime = 1;
+    while (numValuesToReduce > 1) {
+        if (numValuesToReduce < maxReducedPerLevel) {
+            valuesPerCUDABlock = numValuesToReduce;
+            numCUDABlocks = 1;
+        }
+        else {
+            valuesPerCUDABlock = maxReducedPerLevel;
+            numCUDABlocks = ceil((qreal)numValuesToReduce/valuesPerCUDABlock);
+        }
+        sharedMemSize = valuesPerCUDABlock*sizeof(qreal);
+        if (firstTime) {
+            densmatr_calcExpecDiagonalOpKernel<<<numCUDABlocks, valuesPerCUDABlock, sharedMemSize>>>(
+                getRealComp,
+                qureg.deviceStateVec.real, qureg.deviceStateVec.imag, 
+                op.deviceOperator.real, op.deviceOperator.imag, 
+                numValuesToReduce, 
+                qureg.firstLevelReduction);
+            firstTime = 0;
+        } else {
+            cudaDeviceSynchronize();    
+            copySharedReduceBlock<<<numCUDABlocks, valuesPerCUDABlock/2, sharedMemSize>>>(
+                    qureg.firstLevelReduction, 
+                    qureg.secondLevelReduction, valuesPerCUDABlock); 
+            cudaDeviceSynchronize();    
+            swapDouble(&(qureg.firstLevelReduction), &(qureg.secondLevelReduction));
+        }
+        numValuesToReduce = numValuesToReduce/maxReducedPerLevel;
+    }
+    cudaMemcpy(&expecReal, qureg.firstLevelReduction, sizeof(qreal), cudaMemcpyDeviceToHost);
+    
+    // compute imag component of inner product
+    getRealComp = 0;
+    numValuesToReduce = qureg.numAmpsPerChunk;
+    maxReducedPerLevel = REDUCE_SHARED_SIZE;
+    firstTime = 1;
+    while (numValuesToReduce > 1) {
+        if (numValuesToReduce < maxReducedPerLevel) {
+            valuesPerCUDABlock = numValuesToReduce;
+            numCUDABlocks = 1;
+        }
+        else {
+            valuesPerCUDABlock = maxReducedPerLevel;
+            numCUDABlocks = ceil((qreal)numValuesToReduce/valuesPerCUDABlock);
+        }
+        sharedMemSize = valuesPerCUDABlock*sizeof(qreal);
+        if (firstTime) {
+            densmatr_calcExpecDiagonalOpKernel<<<numCUDABlocks, valuesPerCUDABlock, sharedMemSize>>>(
+                getRealComp,
+                qureg.deviceStateVec.real, qureg.deviceStateVec.imag, 
+                op.deviceOperator.real, op.deviceOperator.imag, 
+                numValuesToReduce, 
+                qureg.firstLevelReduction);
+            firstTime = 0;
+        } else {
+            cudaDeviceSynchronize();    
+            copySharedReduceBlock<<<numCUDABlocks, valuesPerCUDABlock/2, sharedMemSize>>>(
+                    qureg.firstLevelReduction, 
+                    qureg.secondLevelReduction, valuesPerCUDABlock); 
+            cudaDeviceSynchronize();    
+            swapDouble(&(qureg.firstLevelReduction), &(qureg.secondLevelReduction));
+        }
+        numValuesToReduce = numValuesToReduce/maxReducedPerLevel;
+    }
+    cudaMemcpy(&expecImag, qureg.firstLevelReduction, sizeof(qreal), cudaMemcpyDeviceToHost);
+    
+    // return complex
+    Complex expecVal;
+    expecVal.real = expecReal;
+    expecVal.imag = expecImag;
+    return expecVal;
+}
+
 void agnostic_setDiagonalOpElems(DiagonalOp op, long long int startInd, qreal* real, qreal* imag, long long int numElems) {
 
     // update both RAM and VRAM, for consistency

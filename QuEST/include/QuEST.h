@@ -570,6 +570,30 @@ void setDiagonalOpElems(DiagonalOp op, long long int startInd, qreal* real, qrea
  */
 void applyDiagonalOp(Qureg qureg, DiagonalOp op);
 
+/** Computes the expected value of the diagonal operator \p op for state \p qureg. 
+ * Since \p op is not necessarily Hermitian, the expected value may be a complex 
+ * number.
+ *
+ * Let \f$ D \f$ be the diagonal operator \p op, with diagonal elements \f$ d_i \f$.
+ * Then if \p qureg is a state-vector \f$|\psi\rangle \f$, this function computes
+ * \f[
+    \langle \psi | D | \psi \rangle = \sum_i |\psi_i|^2 \, d_i
+ * \f]
+ * If \p qureg is a density matrix \f$ \rho \f$, this function computes 
+ * \f[ 
+    \text{Trace}( D \rho ) = \sum_i \rho_{ii} \, d_i
+ * \f]
+ *
+ * @ingroup calc
+ * @param[in] qureg a state-vector or density matrix
+ * @param[in] op    the diagonal operator to compute the expected value of
+ * @return the expected vaulue of the operator
+ * @throws exitWithError if \p op was not created,
+ *      or if \p op acts on a different number of qubits than \p qureg represents.
+ * @author Tyson Jones
+ */
+Complex calcExpecDiagonalOp(Qureg qureg, DiagonalOp op);
+
 /** Print the current state vector of probability amplitudes for a set of qubits to file.
  * File format:
  * @verbatim

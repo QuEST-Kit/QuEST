@@ -3726,6 +3726,110 @@ void densmatr_applyDiagonalOpLocal(Qureg qureg, DiagonalOp op) {
     }
 }
 
+Complex statevec_calcExpecDiagonalOpLocal(Qureg qureg, DiagonalOp op) {
+    
+    qreal expecRe = 0;
+    qreal expecIm = 0;
+    
+    long long int index;
+    long long int numAmps = qureg.numAmpsPerChunk;
+    qreal *stateReal = qureg.stateVec.real;
+    qreal *stateImag = qureg.stateVec.imag;
+    qreal *opReal = op.real;
+    qreal *opImag = op.imag;
+    
+    qreal vecRe,vecIm,vecAbs, opRe, opIm;
+    
+# ifdef _OPENMP
+# pragma omp parallel \
+    shared    (stateReal, stateImag, opReal, opImag, numAmps) \
+    private   (index, vecRe,vecIm,vecAbs, opRe,opIm) \
+    reduction ( +:expecRe, expecIm )
+# endif 
+    {
+# ifdef _OPENMP
+# pragma omp for schedule  (static)
+# endif
+        for (index=0; index < numAmps; index++) {
+            vecRe = stateReal[index];
+            vecIm = stateImag[index];
+            opRe = opReal[index];
+            opIm = opImag[index];
+            
+            // abs(vec)^2 op
+            vecAbs = vecRe*vecRe + vecIm*vecIm;
+            expecRe += vecAbs*opRe;
+            expecIm += vecAbs*opIm;
+        }
+    }
+    
+    Complex innerProd;
+    innerProd.real = expecRe;
+    innerProd.imag = expecIm;
+    return innerProd;
+}
+
+Complex densmatr_calcExpecDiagonalOpLocal(Qureg qureg, DiagonalOp op) {
+    
+    /* since for every 1 element in \p op, there exists a column in \p qureg, 
+     * we know that the elements in \p op live on the same node as the 
+     * corresponding diagonal elements of \p qureg. This means, the problem is 
+     * embarrassingly parallelisable, and the code below works for both 
+     * serial and distributed modes.
+     */
+    
+    // computes first local index containing a diagonal element
+    long long int diagSpacing = 1LL + (1LL << qureg.numQubitsRepresented);
+    long long int numPrevDiags = (qureg.chunkId>0)? 1+(qureg.chunkId*qureg.numAmpsPerChunk)/diagSpacing : 0;
+    long long int globalIndNextDiag = diagSpacing * numPrevDiags;
+    long long int localIndNextDiag = globalIndNextDiag % qureg.numAmpsPerChunk;
+    long long int numAmps = qureg.numAmpsPerChunk;
+    
+    qreal* stateReal = qureg.stateVec.real;
+    qreal* stateImag = qureg.stateVec.imag;
+    qreal* opReal = op.real;
+    qreal* opImag = op.imag;
+    
+    qreal expecRe = 0;
+    qreal expecIm = 0;
+    
+    long long int stateInd;
+    long long int opInd;
+    qreal matRe, matIm, opRe, opIm;
+    
+    // visits every diagonal element with global index (2^n + 1)i for i in [0, 2^n-1]
+    
+# ifdef _OPENMP
+# pragma omp parallel \
+    shared    (stateReal,stateImag, opReal,opImag, localIndNextDiag,diagSpacing,numAmps) \
+    private   (stateInd,opInd, matRe,matIm, opRe,opIm) \
+    reduction ( +:expecRe, expecIm )
+# endif 
+    {
+# ifdef _OPENMP
+# pragma omp for schedule  (static)
+# endif
+        for (stateInd=localIndNextDiag; stateInd < numAmps; stateInd += diagSpacing) {
+            
+            matRe = stateReal[stateInd];
+            matIm = stateImag[stateInd];
+            opInd = (stateInd - localIndNextDiag) / diagSpacing;
+            opRe = opReal[opInd];
+            opIm = opImag[opInd];
+            
+            // (matRe + matIm i)(opRe + opIm i) = 
+            //      (matRe opRe - matIm opIm) + i (matRe opIm + matIm opRe)
+            expecRe += matRe * opRe - matIm * opIm;
+            expecIm += matRe * opIm + matIm * opRe;
+        }
+    }
+    
+    Complex expecVal;
+    expecVal.real = expecRe;
+    expecVal.imag = expecIm;
+    return expecVal;
+}
+
 void agnostic_setDiagonalOpElems(DiagonalOp op, long long int startInd, qreal* real, qreal* imag, long long int numElems) {
     
     // local start/end indices of the given amplitudes, assuming they fit in this chunk

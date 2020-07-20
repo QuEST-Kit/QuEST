@@ -337,3 +337,12 @@ void densmatr_applyDiagonalOp(Qureg qureg, DiagonalOp op) {
     qureg.pairStateVec.imag = imPtr;
 }
 
+Complex statevec_calcExpecDiagonalOp(Qureg qureg, DiagonalOp op) {
+
+    return statevec_calcExpecDiagonalOpLocal(qureg, op);
+}
+
+Complex densmatr_calcExpecDiagonalOp(Qureg qureg, DiagonalOp op) {
+    
+    return densmatr_calcExpecDiagonalOp(qureg, op);
+}

@@ -89,6 +89,8 @@ void densmatr_mixTwoQubitDepolarisingQ1LocalQ2DistributedPart3(Qureg qureg, cons
                 
 void densmatr_applyDiagonalOpLocal(Qureg qureg, DiagonalOp op);
 
+Complex densmatr_calcExpecDiagonalOpLocal(Qureg qureg, DiagonalOp op);
+
 
 /*
  * state vector operations
@@ -189,6 +191,8 @@ void statevec_swapQubitAmpsDistributed(Qureg qureg, int pairRank, int qb1, int q
 void statevec_multiControlledTwoQubitUnitaryLocal(Qureg qureg, long long int ctrlMask, const int q1, const int q2, ComplexMatrix4 u);
 
 void statevec_multiControlledMultiQubitUnitaryLocal(Qureg qureg, long long int ctrlMask, int* targs, const int numTargs, ComplexMatrixN u);
+
+Complex statevec_calcExpecDiagonalOpLocal(Qureg qureg, DiagonalOp op);
 
 
 # endif // QUEST_CPU_INTERNAL_H

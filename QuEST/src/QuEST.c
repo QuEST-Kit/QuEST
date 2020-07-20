@@ -976,6 +976,15 @@ qreal calcExpecPauliHamil(Qureg qureg, PauliHamil hamil, Qureg workspace) {
     return statevec_calcExpecPauliSum(qureg, hamil.pauliCodes, hamil.termCoeffs, hamil.numSumTerms, workspace);
 }
 
+Complex calcExpecDiagonalOp(Qureg qureg, DiagonalOp op) {
+    validateDiagonalOp(qureg, op, __func__);
+    
+    if (qureg.isDensityMatrix)
+        return densmatr_calcExpecDiagonalOp(qureg, op);
+    else
+        return statevec_calcExpecDiagonalOp(qureg, op);
+}
+
 qreal calcHilbertSchmidtDistance(Qureg a, Qureg b) {
     validateDensityMatrQureg(a, __func__);
     validateDensityMatrQureg(b, __func__);

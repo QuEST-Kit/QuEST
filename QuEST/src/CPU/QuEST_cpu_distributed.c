@@ -1523,3 +1523,40 @@ void densmatr_applyDiagonalOp(Qureg qureg, DiagonalOp op) {
     copyDiagOpIntoMatrixPairState(qureg, op);
     densmatr_applyDiagonalOpLocal(qureg, op);
 }
+
+Complex statevec_calcExpecDiagonalOp(Qureg qureg, DiagonalOp op) {
+
+    Complex localExpec = statevec_calcExpecDiagonalOpLocal(qureg, op);
+    if (qureg.numChunks == 1)
+        return localExpec;
+        
+    qreal localReal = localExpec.real;
+    qreal localImag = localExpec.imag;
+    qreal globalReal, globalImag;
+    MPI_Allreduce(&localReal, &globalReal, 1, MPI_QuEST_REAL, MPI_SUM, MPI_COMM_WORLD);
+    MPI_Allreduce(&localImag, &globalImag, 1, MPI_QuEST_REAL, MPI_SUM, MPI_COMM_WORLD);
+    
+    Complex globalExpec;
+    globalExpec.real = globalReal;
+    globalExpec.imag = globalImag;
+    return globalExpec;
+}
+
+Complex densmatr_calcExpecDiagonalOp(Qureg qureg, DiagonalOp op) {
+    
+    Complex localVal = densmatr_calcExpecDiagonalOpLocal(qureg, op);
+    if (qureg.numChunks == 1)
+        return localVal;
+    
+    qreal localRe = localVal.real;
+    qreal localIm = localVal.imag;
+    qreal globalRe, globalIm;
+    
+    MPI_Allreduce(&localRe, &globalRe, 1, MPI_QuEST_REAL, MPI_SUM, MPI_COMM_WORLD);
+    MPI_Allreduce(&localIm, &globalIm, 1, MPI_QuEST_REAL, MPI_SUM, MPI_COMM_WORLD);
+    
+    Complex globalVal;
+    globalVal.real = globalRe;
+    globalVal.imag = globalIm;
+    return globalVal;
+}
