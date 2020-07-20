@@ -329,7 +329,7 @@ target_link_libraries(QuEST PUBLIC ${MPI_C_LIBRARIES})
 
 # ----- GPU -------------------------------------------------------------------
 
-target_link_libraries(QuEST PUBLIC ${CUDA_LIBRARIES})
+target_link_libraries(QuEST ${CUDA_LIBRARIES})
 
 
 # ----- Coverage testing with GCC or Clang ------------------------------------
