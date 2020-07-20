@@ -155,6 +155,8 @@ TEST_CASE( "calcExpecDiagonalOp", "[calculations]" ) {
             REQUIRE( res.real == Approx(real(tr)).margin(100*REAL_EPS) );
             REQUIRE( res.imag == Approx(imag(tr)).margin(100*REAL_EPS) );
         }
+        
+        destroyDiagonalOp(op, QUEST_ENV);
     }
     SECTION( "input validation" ) {
         
