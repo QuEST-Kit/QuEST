@@ -820,6 +820,20 @@ bool areEqual(Qureg qureg, QMatrix matr) {
     return areEqual(qureg, matr, REAL_EPS);
 }
 
+bool areEqual(QVector vec, qreal* reals, qreal* imags) {
+    
+    qreal dif;
+    for (size_t i=0; i<vec.size(); i++) {
+        dif = abs(real(vec[i]) - reals[i]);
+        if (dif > REAL_EPS)
+            return false;
+        dif = abs(imag(vec[i]) - imags[i]);
+        if (dif > REAL_EPS)
+            return false;
+    }
+    return true;
+}
+
 /* Copies QMatrix into a CompelxMAtrix struct */
 #define macro_copyQMatrix(dest, src) { \
     for (size_t i=0; i<src.size(); i++) { \
@@ -961,6 +975,52 @@ QVector toQVector(Qureg qureg) {
     free(fullIm);
 #endif
     return vec;
+}
+
+QVector toQVector(DiagonalOp op) {
+    long long int totalElems = (1LL << op.numQubits);
+#ifdef DISTRIBUTED_MODE
+    DEMAND( totalElems < MPI_MAX_AMPS_IN_MSG );
+#endif
+    
+    qreal* fullRe;
+    qreal* fullIm;
+    
+    // in distributed mode, give every node the full diagonal operator
+#ifdef DISTRIBUTED_MODE
+    fullRe = (qreal*) malloc(totalElems * sizeof *fullRe);
+    fullIm = (qreal*) malloc(totalElems * sizeof *fullIm);
+            
+    MPI_Allgather(
+        op.real, op.numElemsPerChunk, MPI_QuEST_REAL,
+        fullRe, op.numElemsPerChunk, MPI_QuEST_REAL, MPI_COMM_WORLD);
+    MPI_Allgather(
+        op.imag, op.numElemsPerChunk, MPI_QuEST_REAL,
+        fullIm, op.numElemsPerChunk, MPI_QuEST_REAL, MPI_COMM_WORLD);
+#else
+    fullRe = op.real;
+    fullIm = op.imag;
+#endif
+    
+    // copy full state vector into a QVector
+    QVector vec = QVector(totalElems);
+    for (long long int i=0; i<totalElems; i++)
+        vec[i] = qcomp(fullRe[i], fullIm[i]);
+            
+    // clean up if we malloc'd distrib array
+#ifdef DISTRIBUTED_MODE
+    free(fullRe);
+    free(fullIm);
+#endif
+    return vec;
+}
+
+QMatrix toQMatrix(DiagonalOp op) {
+    QVector vec = toQVector(op);
+    QMatrix mat = getZeroMatrix(1LL << op.numQubits);
+    for (size_t i=0; i<mat.size(); i++)
+        mat[i][i] = vec[i];
+    return mat;
 }
 
 void toQureg(Qureg qureg, QVector vec) {

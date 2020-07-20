@@ -344,5 +344,5 @@ Complex statevec_calcExpecDiagonalOp(Qureg qureg, DiagonalOp op) {
 
 Complex densmatr_calcExpecDiagonalOp(Qureg qureg, DiagonalOp op) {
     
-    return densmatr_calcExpecDiagonalOp(qureg, op);
+    return densmatr_calcExpecDiagonalOpLocal(qureg, op);
 }

@@ -183,6 +183,71 @@ TEST_CASE( "createDensityQureg", "[data_structures]" ) {
 
 
 
+/** @sa createDiagonalOp
+ * @ingroup unittest 
+ * @author Tyson Jones 
+ */
+TEST_CASE( "createDiagonalOp", "[data_structures]" ) {
+    
+    // must be at least one amplitude per node
+    int minNumQb = calcLog2(QUEST_ENV.numRanks);
+    if (minNumQb == 0)
+        minNumQb = 1;
+        
+    SECTION( "correctness" ) {
+        
+        // try 10 valid number of qubits
+        int numQb = GENERATE_COPY( range(minNumQb, minNumQb+10) );
+        DiagonalOp op = createDiagonalOp(numQb, QUEST_ENV);
+        
+        // check properties are correct
+        REQUIRE( op.numQubits == numQb );
+        REQUIRE( op.chunkId == QUEST_ENV.rank );
+        REQUIRE( op.numChunks == QUEST_ENV.numRanks );
+        REQUIRE( op.numElemsPerChunk == (1LL << numQb) / QUEST_ENV.numRanks );
+        REQUIRE( op.real != NULL );
+        REQUIRE( op.imag != NULL );
+        
+        // check all elements in CPU are zero 
+        REQUIRE( areEqual(toQVector(op), QVector(1LL << numQb)) );
+        
+        // (no concise way to check this for GPU)
+        
+        destroyDiagonalOp(op, QUEST_ENV);
+    }
+    SECTION( "input validation" ) {
+        
+        SECTION( "number of qubits" ) {
+            
+            int numQb = GENERATE( -1, 0 );
+            REQUIRE_THROWS_WITH( createDiagonalOp(numQb, QUEST_ENV), Contains("Invalid number of qubits") );
+        }
+        SECTION( "number of amplitudes" ) {
+            
+            // use local QuESTEnv to safely modify
+            QuESTEnv env = QUEST_ENV;
+            
+            // too many amplitudes to store in type
+            int maxQb = (int) calcLog2(SIZE_MAX);
+            REQUIRE_THROWS_WITH( createDiagonalOp(maxQb+1, env), Contains("Too many qubits") && Contains("size_t type") );
+            
+            // too few amplitudes to distribute
+            int minQb = GENERATE_COPY( range(2,maxQb) );
+            env.numRanks = (int) pow(2, minQb);
+            int numQb = GENERATE_COPY( range(1,minQb) );
+            REQUIRE_THROWS_WITH( createDiagonalOp(numQb, env), Contains("Too few qubits") );
+        }
+        SECTION( "available memory" ) {
+            
+            /* there is no reliable way to force the malloc statements to
+             * fail, and hence trigger the diagonalOpInit validation */
+            SUCCEED( );
+        }
+    }
+}
+
+
+
 /** @sa createPauliHamil
  * @ingroup unittest 
  * @author Tyson Jones 
@@ -459,6 +524,18 @@ TEST_CASE( "destroyComplexMatrixN", "[data_structures]" ) {
 
 
 
+/** @sa destroyDiagonalOp
+ * @ingroup unittest 
+ * @author Tyson Jones 
+ */
+TEST_CASE( "destroyDiagonalOp", "[data_structures]" ) {
+
+    /* there is no meaningful way to test this */
+    SUCCEED( );
+}
+
+
+
 /** @sa destroyPauliHamil
  * @ingroup unittest 
  * @author Tyson Jones 
@@ -513,6 +590,60 @@ TEST_CASE( "initComplexMatrixN", "[data_structures]" ) {
     
     /* use of this function is illegal in C++ */
     SUCCEED( );
+}
+
+
+
+/** @sa initDiagonalOp
+ * @ingroup unittest 
+ * @author Tyson Jones 
+ */
+TEST_CASE( "initDiagonalOp", "[data_structures]" ) {
+    
+    // must be at least one amplitude per node
+    int minNumQb = calcLog2(QUEST_ENV.numRanks);
+    if (minNumQb == 0)
+        minNumQb = 1;
+    
+    SECTION( "correctness" ) {
+        
+        // try 10 valid number of qubits
+        int numQb = GENERATE_COPY( range(minNumQb, minNumQb+10) );
+        DiagonalOp op = createDiagonalOp(numQb, QUEST_ENV);
+        
+        long long int len = (1LL << numQb);
+        qreal reals[len];
+        qreal imags[len];
+        long long int n;
+        for (n=0; n<len; n++) {
+            reals[n] = (qreal)    n;
+            imags[n] = (qreal) -2*n; // (n - 2n i)
+        }
+        initDiagonalOp(op, reals, imags);
+        
+        // check that op.real and op.imag were modified...
+        REQUIRE( areEqual(toQVector(op), reals, imags) );
+        
+        // and also that GPU real and imag were modified
+        // via if it modifies an all-unity state-vec correctly 
+        Qureg qureg = createQureg(numQb, QUEST_ENV);
+        for (long long int i=0; i<qureg.numAmpsPerChunk; i++) {
+            qureg.stateVec.real[i] = 1;
+            qureg.stateVec.imag[i] = 1;
+        }
+        copyStateToGPU(qureg);
+        
+        QVector prodRef = toQMatrix(op) * toQVector(qureg);
+        
+        // (n - 2n i) * (1 + 1i) = 3n - n*i
+        applyDiagonalOp(qureg, op);
+        copyStateFromGPU(qureg);
+        QVector result = toQVector(qureg);    
+        REQUIRE( areEqual(prodRef, result) );
+        
+        destroyQureg(qureg, QUEST_ENV);
+        destroyDiagonalOp(op, QUEST_ENV);
+    }
 }
 
 
@@ -578,5 +709,121 @@ TEST_CASE( "initPauliHamil", "[data_structures]" ) {
             REQUIRE_THROWS_WITH( initPauliHamil(hamil, coeffs, codes), Contains("Invalid Pauli code") );
             destroyPauliHamil(hamil);
         }
+    }
+}
+
+
+
+/** @sa setDiagonalOpElems
+ * @ingroup unittest 
+ * @author Tyson Jones 
+ */
+TEST_CASE( "setDiagonalOpElems", "[data_structures]" ) {
+    
+    // must be at least one amplitude per node
+    int minNumQb = calcLog2(QUEST_ENV.numRanks);
+    if (minNumQb == 0)
+        minNumQb = 1;
+    
+    // try 10 valid number of qubits (even for validation)
+    int numQb = GENERATE_COPY( range(minNumQb, minNumQb+10) );
+    DiagonalOp op = createDiagonalOp(numQb, QUEST_ENV);
+    
+    SECTION( "correctness" ) {
+    
+        // make entire array on every node
+        long long int len = (1LL << numQb);
+        qreal reals[len];
+        qreal imags[len];
+        long long int n;
+        for (n=0; n<len; n++) {
+            reals[n] = (qreal)    n;
+            imags[n] = (qreal) -2*n; // (n - 2n i)
+        }
+        
+        // set one value at a time (only relevant nodes will update)
+        for (n=0; n<len; n++)
+            setDiagonalOpElems(op, n, &reals[n], &imags[n], 1);
+        
+        // check op.real and op.imag updated correctly 
+        REQUIRE( areEqual(toQVector(op), reals, imags) );
+        
+        // no check that GPU values updated (occurs in initDiagonalOp)
+    }
+    SECTION( "input validation" ) {
+        
+        long long int maxInd = (1LL << numQb);
+        qreal *reals;
+        qreal *imags;
+        
+        SECTION( "start index" ) {
+            
+            int startInd = GENERATE_COPY( -1, maxInd );
+            int numAmps = 1;
+            REQUIRE_THROWS_WITH( setDiagonalOpElems(op, startInd, reals, imags, numAmps), Contains("Invalid element index") );
+        }
+        
+        SECTION( "number of amplitudes" ) {
+            
+            // independent
+            int startInd = 0;
+            int numAmps = GENERATE_COPY( -1, maxInd+1 );
+            REQUIRE_THROWS_WITH( setDiagonalOpElems(op, startInd, reals, imags, numAmps), Contains("Invalid number of elements") );
+
+            // invalid considering start-index
+            startInd = maxInd - 1;
+            numAmps = 2;
+            REQUIRE_THROWS_WITH( setDiagonalOpElems(op, startInd, reals, imags, numAmps), Contains("More elements given than exist") );
+        }
+    }
+    
+    destroyDiagonalOp(op, QUEST_ENV);
+}
+
+
+
+/** @sa syncDiagonalOp
+ * @ingroup unittest 
+ * @author Tyson Jones 
+ */
+TEST_CASE( "syncDiagonalOp", "[data_structures]" ) {
+    
+    // must be at least one amplitude per node
+    int minNumQb = calcLog2(QUEST_ENV.numRanks);
+    if (minNumQb == 0)
+        minNumQb = 1;
+        
+    SECTION( "correctness" ) {
+        
+        // try 10 valid number of qubits
+        int numQb = GENERATE_COPY( range(minNumQb, minNumQb+10) );
+        DiagonalOp op = createDiagonalOp(numQb, QUEST_ENV);
+        
+        // check that changes get sync'd to the GPU...
+        long long int n;
+        for (n=0; n<op.numElemsPerChunk; n++) {
+            op.real[n] = (qreal)    n;
+            op.imag[n] = (qreal) -2*n; // (n - 2n i)
+        }
+        syncDiagonalOp(op);
+        
+        // via if it modifies an all-unity state-vec correctly 
+        Qureg qureg = createQureg(numQb, QUEST_ENV);
+        for (long long int i=0; i<qureg.numAmpsPerChunk; i++) {
+            qureg.stateVec.real[i] = 1;
+            qureg.stateVec.imag[i] = 1;
+        }
+        copyStateToGPU(qureg);
+        
+        // (n - 2n i) * (1 + 1i) = 3n - n*i
+        applyDiagonalOp(qureg, op);
+        copyStateFromGPU(qureg);
+        for (n=0; n<qureg.numAmpsPerChunk; n++) {
+            REQUIRE( qureg.stateVec.real[n] == 3*n );
+            REQUIRE( qureg.stateVec.imag[n] == -n );
+        }
+        
+        destroyQureg(qureg, QUEST_ENV);
+        destroyDiagonalOp(op, QUEST_ENV);
     }
 }
