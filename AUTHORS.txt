@@ -35,3 +35,5 @@ Kshitij Chhabra
     patched validateNumQubitsInQureg
 Drew Silcock
     patched MacOS OpenMP CMake flags
+Zach van Rijn
+    patched OpenMP on GCC-9
