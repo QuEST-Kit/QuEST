@@ -54,12 +54,11 @@ void densmatr_oneQubitDegradeOffDiagonal(Qureg qureg, const int targetQubit, qre
     long long int thisPattern;
     long long int totMask = innerMask|outerMask;
 
- # ifdef _OPENMP
+# ifdef _OPENMP
 # pragma omp parallel \
     default  (none) \
-    shared   (innerMask,outerMask,totMask,qureg,retain) \
-    private  (thisTask,thisPattern) \
-    firstprivate (numTasks)
+    shared   (innerMask,outerMask,totMask,qureg,retain,numTasks, targetQubit) \
+    private  (thisTask,thisPattern)
 # endif
     {
 # ifdef _OPENMP
@@ -100,9 +99,8 @@ void densmatr_mixTwoQubitDephasing(Qureg qureg, const int qubit1, const int qubi
 # pragma omp parallel \
     default  (none) \
     shared   (innerMaskQubit1,outerMaskQubit1,totMaskQubit1,innerMaskQubit2,outerMaskQubit2, \
-                totMaskQubit2,qureg,retain) \
-    private  (thisTask,thisPatternQubit1,thisPatternQubit2) \
-    firstprivate (numTasks)
+                totMaskQubit2,qureg,retain,numTasks) \
+    private  (thisTask,thisPatternQubit1,thisPatternQubit2)
 # endif
     {
 # ifdef _OPENMP
@@ -141,9 +139,8 @@ void densmatr_mixDepolarisingLocal(Qureg qureg, const int targetQubit, qreal dep
 # ifdef _OPENMP
 # pragma omp parallel \
     default  (none) \
-    shared   (innerMask,outerMask,totMask,qureg,retain,depolLevel) \
-    private  (thisTask,partner,thisPattern,realAv,imagAv) \
-    firstprivate (numTasks)
+    shared   (innerMask,outerMask,totMask,qureg,retain,depolLevel,numTasks) \
+    private  (thisTask,partner,thisPattern,realAv,imagAv)
 # endif
     {
 # ifdef _OPENMP
@@ -192,9 +189,8 @@ void densmatr_mixDampingLocal(Qureg qureg, const int targetQubit, qreal damping)
 # ifdef _OPENMP
 # pragma omp parallel \
     default  (none) \
-    shared   (innerMask,outerMask,totMask,qureg,retain,damping,dephase) \
-    private  (thisTask,partner,thisPattern) \
-    firstprivate (numTasks)
+    shared   (innerMask,outerMask,totMask,qureg,retain,damping,dephase,numTasks) \
+    private  (thisTask,partner,thisPattern)
 # endif
     {
 # ifdef _OPENMP
@@ -254,10 +250,10 @@ void densmatr_mixDepolarisingDistributed(Qureg qureg, const int targetQubit, qre
 # ifdef _OPENMP
 # pragma omp parallel \
     default  (none) \
-    shared   (sizeInnerBlock,sizeInnerHalfBlock,sizeOuterColumn,sizeOuterHalfColumn,qureg,depolLevel) \
+    shared   (sizeInnerBlock,sizeInnerHalfBlock,sizeOuterColumn,sizeOuterHalfColumn, \
+                qureg,depolLevel,numTasks,targetQubit) \
     private  (thisTask,thisInnerBlock,thisOuterColumn,thisIndex,thisIndexInOuterColumn, \
-                thisIndexInInnerBlock,outerBit) \
-    firstprivate (numTasks,targetQubit)
+                thisIndexInInnerBlock,outerBit)
 # endif
     {
 # ifdef _OPENMP
@@ -332,10 +328,10 @@ void densmatr_mixDampingDistributed(Qureg qureg, const int targetQubit, qreal da
 # ifdef _OPENMP
 # pragma omp parallel \
     default  (none) \
-    shared   (sizeInnerBlock,sizeInnerHalfBlock,sizeOuterColumn,sizeOuterHalfColumn,qureg,damping, retain, dephase) \
+    shared   (sizeInnerBlock,sizeInnerHalfBlock,sizeOuterColumn,sizeOuterHalfColumn, \
+                qureg,damping, retain, dephase, numTasks,targetQubit) \
     private  (thisTask,thisInnerBlock,thisOuterColumn,thisIndex,thisIndexInOuterColumn, \
-                thisIndexInInnerBlock,outerBit, stateBit) \
-    firstprivate (numTasks,targetQubit)
+                thisIndexInInnerBlock,outerBit, stateBit)
 # endif
     {
 # ifdef _OPENMP
@@ -406,12 +402,10 @@ void densmatr_mixTwoQubitDepolarisingLocal(Qureg qureg, int qubit1, int qubit2, 
 # ifdef _OPENMP
 # pragma omp parallel \
     default  (none) \
-    shared   (totMaskQubit1,totMaskQubit2,qureg,delta,gamma) \
-    private  (thisTask,partner,thisPatternQubit1,thisPatternQubit2,real00,imag00) \
-    firstprivate (numTasks)
+    shared   (totMaskQubit1,totMaskQubit2,qureg,delta,gamma,numTasks) \
+    private  (thisTask,partner,thisPatternQubit1,thisPatternQubit2,real00,imag00)
 # endif
     {
-
 # ifdef _OPENMP
 # pragma omp for schedule (static)
 # endif
@@ -512,9 +506,8 @@ void densmatr_mixTwoQubitDepolarisingLocalPart1(Qureg qureg, int qubit1, int qub
 # ifdef _OPENMP
 # pragma omp parallel \
     default  (none) \
-    shared   (totMaskQubit1,totMaskQubit2,qureg,delta) \
-    private  (thisTask,partner,thisPatternQubit1,thisPatternQubit2,real00,imag00) \
-    firstprivate (numTasks)
+    shared   (totMaskQubit1,totMaskQubit2,qureg,delta,numTasks) \
+    private  (thisTask,partner,thisPatternQubit1,thisPatternQubit2,real00,imag00)
 # endif
     {
 
@@ -576,11 +569,10 @@ void densmatr_mixTwoQubitDepolarisingDistributed(Qureg qureg, const int targetQu
 # pragma omp parallel \
     default  (none) \
     shared   (sizeInnerBlockQ1,sizeInnerHalfBlockQ1,sizeInnerBlockQ2,sizeInnerHalfBlockQ2,sizeInnerQuarterBlockQ2,\
-                sizeOuterColumn,sizeOuterQuarterColumn,qureg,delta,gamma) \
+                sizeOuterColumn,sizeOuterQuarterColumn,qureg,delta,gamma,numTasks,targetQubit,qubit2) \
     private  (thisTask,thisInnerBlockQ2,thisInnerBlockQ1InInnerBlockQ2, \
                 thisOuterColumn,thisIndex,thisIndexInOuterColumn, \
-                thisIndexInInnerBlockQ1,thisIndexInInnerBlockQ2,outerBitQ1,outerBitQ2) \
-    firstprivate (numTasks,targetQubit,qubit2)
+                thisIndexInInnerBlockQ1,thisIndexInInnerBlockQ2,outerBitQ1,outerBitQ2)
 # endif
     {
 # ifdef _OPENMP
@@ -670,11 +662,10 @@ void densmatr_mixTwoQubitDepolarisingQ1LocalQ2DistributedPart3(Qureg qureg, cons
 # pragma omp parallel \
     default  (none) \
     shared   (sizeInnerBlockQ1,sizeInnerHalfBlockQ1,sizeInnerBlockQ2,sizeInnerHalfBlockQ2,sizeInnerQuarterBlockQ2,\
-                sizeOuterColumn,sizeOuterQuarterColumn,qureg,delta,gamma) \
+                sizeOuterColumn,sizeOuterQuarterColumn,qureg,delta,gamma, numTasks,targetQubit,qubit2) \
     private  (thisTask,thisInnerBlockQ2,thisInnerBlockQ1InInnerBlockQ2, \
                 thisOuterColumn,thisIndex,thisIndexInPairVector,thisIndexInOuterColumn, \
-                thisIndexInInnerBlockQ1,thisIndexInInnerBlockQ2,outerBitQ1,outerBitQ2) \
-    firstprivate (numTasks,targetQubit,qubit2)
+                thisIndexInInnerBlockQ1,thisIndexInInnerBlockQ2,outerBitQ1,outerBitQ2)
 # endif
     {
 # ifdef _OPENMP
@@ -1571,9 +1562,8 @@ void statevec_initStateOfSingleQubit(Qureg *qureg, int qubitId, int outcome)
 # ifdef _OPENMP
 # pragma omp parallel \
     default  (none) \
-    shared   (chunkSize, stateVecReal, stateVecImag, normFactor, qubitId, outcome) \
-    private  (index, bit) \
-    firstprivate (chunkId)
+    shared   (chunkSize, stateVecReal, stateVecImag, normFactor, qubitId, outcome, chunkId) \
+    private  (index, bit)
 # endif
     {
 # ifdef _OPENMP
@@ -1718,9 +1708,8 @@ void statevec_compactUnitaryLocal (Qureg qureg, const int targetQubit, Complex a
 # ifdef _OPENMP
 # pragma omp parallel \
     default  (none) \
-    shared   (sizeBlock,sizeHalfBlock, stateVecReal,stateVecImag, alphaReal,alphaImag, betaReal,betaImag) \
-    private  (thisTask,thisBlock ,indexUp,indexLo, stateRealUp,stateImagUp,stateRealLo,stateImagLo) \
-    firstprivate (numTasks)
+    shared   (sizeBlock,sizeHalfBlock, stateVecReal,stateVecImag, alphaReal,alphaImag, betaReal,betaImag, numTasks) \
+    private  (thisTask,thisBlock ,indexUp,indexLo, stateRealUp,stateImagUp,stateRealLo,stateImagLo)
 # endif
     {
 # ifdef _OPENMP
@@ -1774,9 +1763,8 @@ void statevec_multiControlledTwoQubitUnitaryLocal(Qureg qureg, long long int ctr
 # ifdef _OPENMP
 # pragma omp parallel \
     default  (none) \
-    shared   (reVec,imVec,globalIndStart,numTasks,ctrlMask,u) \
-    private  (thisTask, thisGlobalInd00, ind00,ind01,ind10,ind11, re00,re01,re10,re11, im00,im01,im10,im11) \
-    firstprivate (q2,q1)
+    shared   (reVec,imVec,globalIndStart,numTasks,ctrlMask,u,q2,q1) \
+    private  (thisTask, thisGlobalInd00, ind00,ind01,ind10,ind11, re00,re01,re10,re11, im00,im01,im10,im11)
 # endif
     {
 # ifdef _OPENMP
@@ -1890,9 +1878,8 @@ void statevec_multiControlledMultiQubitUnitaryLocal(Qureg qureg, long long int c
 # ifdef _OPENMP
 # pragma omp parallel \
     default  (none) \
-    shared   (reVec,imVec, numTasks,numTargAmps,globalIndStart, ctrlMask,targs,sortedTargs,u) \
-    private  (thisTask,thisInd00,thisGlobalInd00,ind,i,t,r,c,reElem,imElem,  ampInds,reAmps,imAmps) \
-    firstprivate (numTargs)
+    shared   (reVec,imVec, numTasks,numTargAmps,globalIndStart, ctrlMask,targs,sortedTargs,u,numTargs) \
+    private  (thisTask,thisInd00,thisGlobalInd00,ind,i,t,r,c,reElem,imElem,  ampInds,reAmps,imAmps)
 # endif
     {
 # ifdef _OPENMP
@@ -1963,9 +1950,8 @@ void statevec_unitaryLocal(Qureg qureg, const int targetQubit, ComplexMatrix2 u)
 # ifdef _OPENMP
 # pragma omp parallel \
     default  (none) \
-    shared   (sizeBlock,sizeHalfBlock, stateVecReal,stateVecImag, u) \
-    private  (thisTask,thisBlock ,indexUp,indexLo, stateRealUp,stateImagUp,stateRealLo,stateImagLo) \
-    firstprivate (numTasks)
+    shared   (sizeBlock,sizeHalfBlock, stateVecReal,stateVecImag, u,numTasks) \
+    private  (thisTask,thisBlock ,indexUp,indexLo, stateRealUp,stateImagUp,stateRealLo,stateImagLo)
 # endif
     {
 # ifdef _OPENMP
@@ -2033,9 +2019,8 @@ void statevec_compactUnitaryDistributed (Qureg qureg,
 # pragma omp parallel \
     default  (none) \
     shared   (stateVecRealUp,stateVecImagUp,stateVecRealLo,stateVecImagLo,stateVecRealOut,stateVecImagOut, \
-            rot1Real,rot1Imag, rot2Real,rot2Imag) \
-    private  (thisTask,stateRealUp,stateImagUp,stateRealLo,stateImagLo) \
-    firstprivate (numTasks)
+            rot1Real,rot1Imag, rot2Real,rot2Imag,numTasks) \
+    private  (thisTask,stateRealUp,stateImagUp,stateRealLo,stateImagLo)
 # endif
     {
 # ifdef _OPENMP
@@ -2090,9 +2075,8 @@ void statevec_unitaryDistributed (Qureg qureg,
 # pragma omp parallel \
     default  (none) \
     shared   (stateVecRealUp,stateVecImagUp,stateVecRealLo,stateVecImagLo,stateVecRealOut,stateVecImagOut, \
-            rot1Real, rot1Imag, rot2Real, rot2Imag) \
-    private  (thisTask,stateRealUp,stateImagUp,stateRealLo,stateImagLo) \
-    firstprivate (numTasks)
+            rot1Real, rot1Imag, rot2Real, rot2Imag,numTasks) \
+    private  (thisTask,stateRealUp,stateImagUp,stateRealLo,stateImagLo)
 # endif
     {
 # ifdef _OPENMP
@@ -2142,9 +2126,9 @@ void statevec_controlledCompactUnitaryLocal (Qureg qureg, const int controlQubit
 # ifdef _OPENMP
 # pragma omp parallel \
     default  (none) \
-    shared   (sizeBlock,sizeHalfBlock, stateVecReal,stateVecImag, alphaReal,alphaImag, betaReal,betaImag) \
-    private  (thisTask,thisBlock ,indexUp,indexLo, stateRealUp,stateImagUp,stateRealLo,stateImagLo,controlBit) \
-    firstprivate (numTasks,chunkId,chunkSize,controlQubit)
+    shared   (sizeBlock,sizeHalfBlock, stateVecReal,stateVecImag, alphaReal,alphaImag, betaReal,betaImag, \
+                numTasks,chunkId,chunkSize,controlQubit) \
+    private  (thisTask,thisBlock ,indexUp,indexLo, stateRealUp,stateImagUp,stateRealLo,stateImagLo,controlBit)
 # endif
     {
 # ifdef _OPENMP
@@ -2212,9 +2196,9 @@ void statevec_multiControlledUnitaryLocal(
 # ifdef _OPENMP
 # pragma omp parallel \
     default  (none) \
-    shared   (sizeBlock,sizeHalfBlock, stateVecReal,stateVecImag, u, ctrlQubitsMask,ctrlFlipMask) \
-    private  (thisTask,thisBlock, indexUp,indexLo, stateRealUp,stateImagUp,stateRealLo,stateImagLo) \
-    firstprivate (numTasks,chunkId,chunkSize)
+    shared   (sizeBlock,sizeHalfBlock, stateVecReal,stateVecImag, u, ctrlQubitsMask,ctrlFlipMask, \
+                numTasks,chunkId,chunkSize) \
+    private  (thisTask,thisBlock, indexUp,indexLo, stateRealUp,stateImagUp,stateRealLo,stateImagLo)
 # endif
     {
 # ifdef _OPENMP
@@ -2280,9 +2264,8 @@ void statevec_controlledUnitaryLocal(Qureg qureg, const int controlQubit, const 
 # ifdef _OPENMP
 # pragma omp parallel \
     default  (none) \
-    shared   (sizeBlock,sizeHalfBlock, stateVecReal,stateVecImag, u) \
-    private  (thisTask,thisBlock ,indexUp,indexLo, stateRealUp,stateImagUp,stateRealLo,stateImagLo,controlBit) \
-    firstprivate (numTasks,chunkId,chunkSize,controlQubit)
+    shared   (sizeBlock,sizeHalfBlock, stateVecReal,stateVecImag, u,numTasks,chunkId,chunkSize,controlQubit) \
+    private  (thisTask,thisBlock ,indexUp,indexLo, stateRealUp,stateImagUp,stateRealLo,stateImagLo,controlBit)
 # endif
     {
 # ifdef _OPENMP
@@ -2358,9 +2341,8 @@ void statevec_controlledCompactUnitaryDistributed (Qureg qureg, const int contro
 # pragma omp parallel \
     default  (none) \
     shared   (stateVecRealUp,stateVecImagUp,stateVecRealLo,stateVecImagLo,stateVecRealOut,stateVecImagOut, \
-            rot1Real,rot1Imag, rot2Real,rot2Imag) \
-    private  (thisTask,stateRealUp,stateImagUp,stateRealLo,stateImagLo,controlBit) \
-    firstprivate (numTasks,chunkId,chunkSize,controlQubit)
+            rot1Real,rot1Imag, rot2Real,rot2Imag,numTasks,chunkId,chunkSize,controlQubit) \
+    private  (thisTask,stateRealUp,stateImagUp,stateRealLo,stateImagLo,controlBit)
 # endif
     {
 # ifdef _OPENMP
@@ -2421,9 +2403,8 @@ void statevec_controlledUnitaryDistributed (Qureg qureg, const int controlQubit,
 # pragma omp parallel \
     default  (none) \
     shared   (stateVecRealUp,stateVecImagUp,stateVecRealLo,stateVecImagLo,stateVecRealOut,stateVecImagOut, \
-            rot1Real,rot1Imag, rot2Real,rot2Imag) \
-    private  (thisTask,stateRealUp,stateImagUp,stateRealLo,stateImagLo,controlBit) \
-    firstprivate (numTasks,chunkId,chunkSize,controlQubit)
+            rot1Real,rot1Imag, rot2Real,rot2Imag, numTasks,chunkId,chunkSize,controlQubit) \
+    private  (thisTask,stateRealUp,stateImagUp,stateRealLo,stateImagLo,controlBit)
 # endif
     {
 # ifdef _OPENMP
@@ -2489,9 +2470,8 @@ void statevec_multiControlledUnitaryDistributed (
 # pragma omp parallel \
     default  (none) \
     shared   (stateVecRealUp,stateVecImagUp,stateVecRealLo,stateVecImagLo,stateVecRealOut,stateVecImagOut, \
-            rot1Real,rot1Imag, rot2Real,rot2Imag, ctrlQubitsMask,ctrlFlipMask) \
-    private  (thisTask,stateRealUp,stateImagUp,stateRealLo,stateImagLo) \
-    firstprivate (numTasks,chunkId,chunkSize)
+            rot1Real,rot1Imag, rot2Real,rot2Imag, ctrlQubitsMask,ctrlFlipMask, numTasks,chunkId,chunkSize) \
+    private  (thisTask,stateRealUp,stateImagUp,stateRealLo,stateImagLo)
 # endif
     {
 # ifdef _OPENMP
@@ -2536,9 +2516,8 @@ void statevec_pauliXLocal(Qureg qureg, const int targetQubit)
 # ifdef _OPENMP
 # pragma omp parallel \
     default  (none) \
-    shared   (sizeBlock,sizeHalfBlock, stateVecReal,stateVecImag) \
-    private  (thisTask,thisBlock ,indexUp,indexLo, stateRealUp,stateImagUp) \
-    firstprivate (numTasks)
+    shared   (sizeBlock,sizeHalfBlock, stateVecReal,stateVecImag, numTasks) \
+    private  (thisTask,thisBlock ,indexUp,indexLo, stateRealUp,stateImagUp)
 # endif
     {
 # ifdef _OPENMP
@@ -2588,9 +2567,8 @@ void statevec_pauliXDistributed (Qureg qureg,
 # ifdef _OPENMP
 # pragma omp parallel \
     default  (none) \
-    shared   (stateVecRealIn,stateVecImagIn,stateVecRealOut,stateVecImagOut) \
-    private  (thisTask) \
-    firstprivate (numTasks)
+    shared   (stateVecRealIn,stateVecImagIn,stateVecRealOut,stateVecImagOut,numTasks) \
+    private  (thisTask)
 # endif
     {
 # ifdef _OPENMP
@@ -2628,9 +2606,8 @@ void statevec_controlledNotLocal(Qureg qureg, const int controlQubit, const int 
 # ifdef _OPENMP
 # pragma omp parallel \
     default  (none) \
-    shared   (sizeBlock,sizeHalfBlock, stateVecReal,stateVecImag) \
-    private  (thisTask,thisBlock ,indexUp,indexLo, stateRealUp,stateImagUp,controlBit) \
-    firstprivate (numTasks,chunkId,chunkSize,controlQubit)
+    shared   (sizeBlock,sizeHalfBlock, stateVecReal,stateVecImag,numTasks,chunkId,chunkSize,controlQubit) \
+    private  (thisTask,thisBlock ,indexUp,indexLo, stateRealUp,stateImagUp,controlBit)
 # endif
     {
 # ifdef _OPENMP
@@ -2684,9 +2661,9 @@ void statevec_controlledNotDistributed (Qureg qureg, const int controlQubit,
 # ifdef _OPENMP
 # pragma omp parallel \
     default  (none) \
-    shared   (stateVecRealIn,stateVecImagIn,stateVecRealOut,stateVecImagOut) \
-    private  (thisTask,controlBit) \
-    firstprivate (numTasks,chunkId,chunkSize,controlQubit)
+    shared   (stateVecRealIn,stateVecImagIn,stateVecRealOut,stateVecImagOut, \
+                numTasks,chunkId,chunkSize,controlQubit) \
+    private  (thisTask,controlBit)
 # endif
     {
 # ifdef _OPENMP
@@ -2723,9 +2700,8 @@ void statevec_pauliYLocal(Qureg qureg, const int targetQubit, const int conjFac)
 # ifdef _OPENMP
 # pragma omp parallel \
     default  (none) \
-    shared   (sizeBlock,sizeHalfBlock, stateVecReal,stateVecImag) \
-    private  (thisTask,thisBlock ,indexUp,indexLo, stateRealUp,stateImagUp) \
-    firstprivate (numTasks,conjFac)
+    shared   (sizeBlock,sizeHalfBlock, stateVecReal,stateVecImag, numTasks,conjFac) \
+    private  (thisTask,thisBlock ,indexUp,indexLo, stateRealUp,stateImagUp)
 # endif
     {
 # ifdef _OPENMP
@@ -2779,9 +2755,9 @@ void statevec_pauliYDistributed(Qureg qureg,
 # ifdef _OPENMP
 # pragma omp parallel \
     default  (none) \
-    shared   (stateVecRealIn,stateVecImagIn,stateVecRealOut,stateVecImagOut,realSign,imagSign) \
-    private  (thisTask) \
-    firstprivate (numTasks,conjFac)
+    shared   (stateVecRealIn,stateVecImagIn,stateVecRealOut,stateVecImagOut, \
+                realSign,imagSign, numTasks,conjFac) \
+    private  (thisTask)
 # endif
     {
 # ifdef _OPENMP
@@ -2822,9 +2798,9 @@ void statevec_controlledPauliYLocal(Qureg qureg, const int controlQubit, const i
 # ifdef _OPENMP
 # pragma omp parallel \
     default  (none) \
-    shared   (sizeBlock,sizeHalfBlock, stateVecReal,stateVecImag) \
-    private  (thisTask,thisBlock ,indexUp,indexLo, stateRealUp,stateImagUp,controlBit) \
-    firstprivate (numTasks,chunkId,chunkSize,controlQubit,conjFac)
+    shared   (sizeBlock,sizeHalfBlock, stateVecReal,stateVecImag, numTasks,chunkId, \
+                chunkSize,controlQubit,conjFac) \
+    private  (thisTask,thisBlock ,indexUp,indexLo, stateRealUp,stateImagUp,controlBit)
 # endif
     {
 # ifdef _OPENMP
@@ -2869,9 +2845,9 @@ void statevec_controlledPauliYDistributed (Qureg qureg, const int controlQubit,
 # ifdef _OPENMP
 # pragma omp parallel \
     default  (none) \
-    shared   (stateVecRealIn,stateVecImagIn,stateVecRealOut,stateVecImagOut) \
-    private  (thisTask,controlBit) \
-    firstprivate (numTasks,chunkId,chunkSize,controlQubit,conjFac)
+    shared   (stateVecRealIn,stateVecImagIn,stateVecRealOut,stateVecImagOut, \
+                numTasks,chunkId,chunkSize,controlQubit,conjFac) \
+    private  (thisTask,controlBit)
 # endif
     {
 # ifdef _OPENMP
@@ -2916,9 +2892,8 @@ void statevec_hadamardLocal(Qureg qureg, const int targetQubit)
 # ifdef _OPENMP
 # pragma omp parallel \
     default  (none) \
-    shared   (sizeBlock,sizeHalfBlock, stateVecReal,stateVecImag, recRoot2) \
-    private  (thisTask,thisBlock ,indexUp,indexLo, stateRealUp,stateImagUp,stateRealLo,stateImagLo) \
-    firstprivate (numTasks)
+    shared   (sizeBlock,sizeHalfBlock, stateVecReal,stateVecImag, recRoot2, numTasks) \
+    private  (thisTask,thisBlock ,indexUp,indexLo, stateRealUp,stateImagUp,stateRealLo,stateImagLo)
 # endif
     {
 # ifdef _OPENMP
@@ -2979,9 +2954,8 @@ void statevec_hadamardDistributed(Qureg qureg,
 # pragma omp parallel \
     default  (none) \
     shared   (stateVecRealUp,stateVecImagUp,stateVecRealLo,stateVecImagLo,stateVecRealOut,stateVecImagOut, \
-            recRoot2, sign) \
-    private  (thisTask,stateRealUp,stateImagUp,stateRealLo,stateImagLo) \
-    firstprivate (numTasks)
+            recRoot2, sign, numTasks) \
+    private  (thisTask,stateRealUp,stateImagUp,stateRealLo,stateImagLo)
 # endif
     {
 # ifdef _OPENMP
@@ -3021,10 +2995,10 @@ void statevec_phaseShiftByTerm (Qureg qureg, const int targetQubit, Complex term
 
 # ifdef _OPENMP
 # pragma omp parallel for \
-    default  (none)              \
-    shared   (stateVecSize, stateVecReal,stateVecImag ) \
-    private  (index,targetBit,stateRealLo,stateImagLo)             \
-    firstprivate (chunkId,chunkSize,targetQubit,cosAngle,sinAngle) \
+    default  (none) \
+    shared   (stateVecSize, stateVecReal,stateVecImag, cosAngle,sinAngle, \
+                chunkId,chunkSize,targetQubit) \
+    private  (index,targetBit,stateRealLo,stateImagLo) \
     schedule (static)
 # endif
     for (index=0; index<stateVecSize; index++) {
@@ -3063,9 +3037,9 @@ void statevec_controlledPhaseShift (Qureg qureg, const int idQubit1, const int i
 # ifdef _OPENMP
 # pragma omp parallel for \
     default  (none)              \
-    shared   (stateVecSize, stateVecReal,stateVecImag ) \
-    private  (index,bit1,bit2,stateRealLo,stateImagLo)             \
-    firstprivate (chunkId,chunkSize,idQubit1,idQubit2,cosAngle,sinAngle) \
+    shared   (stateVecSize, stateVecReal,stateVecImag, chunkId,chunkSize, \
+                idQubit1,idQubit2,cosAngle,sinAngle ) \
+    private  (index,bit1,bit2,stateRealLo,stateImagLo) \
     schedule (static)
 # endif
     for (index=0; index<stateVecSize; index++) {
@@ -3103,9 +3077,8 @@ void statevec_multiControlledPhaseShift(Qureg qureg, int *controlQubits, int num
 # ifdef _OPENMP
 # pragma omp parallel \
     default  (none)              \
-    shared   (stateVecSize, stateVecReal, stateVecImag, mask) \
-    private  (index, stateRealLo, stateImagLo) \
-    firstprivate (chunkId,chunkSize,cosAngle,sinAngle)
+    shared   (stateVecSize, stateVecReal, stateVecImag, mask, chunkId,chunkSize,cosAngle,sinAngle) \
+    private  (index, stateRealLo, stateImagLo)
 # endif
     {
 # ifdef _OPENMP
@@ -3156,9 +3129,8 @@ void statevec_multiRotateZ(Qureg qureg, long long int mask, qreal angle)
 # ifdef _OPENMP
 # pragma omp parallel \
     default  (none)              \
-    shared   (stateVecSize, stateVecReal, stateVecImag, mask) \
-    private  (index, fac, stateReal, stateImag) \
-    firstprivate (chunkId,chunkSize,cosAngle,sinAngle)
+    shared   (stateVecSize, stateVecReal, stateVecImag, mask, chunkId,chunkSize,cosAngle,sinAngle) \
+    private  (index, fac, stateReal, stateImag)
 # endif
     {
 # ifdef _OPENMP
@@ -3341,10 +3313,9 @@ void statevec_controlledPhaseFlip (Qureg qureg, const int idQubit1, const int id
 
 # ifdef _OPENMP
 # pragma omp parallel for \
-    default  (none)              \
-    shared   (stateVecSize, stateVecReal,stateVecImag ) \
-    private  (index,bit1,bit2)             \
-    firstprivate (chunkId,chunkSize,idQubit1,idQubit2) \
+    default  (none) \
+    shared   (stateVecSize, stateVecReal,stateVecImag, chunkId,chunkSize,idQubit1,idQubit2 ) \
+    private  (index,bit1,bit2) \
     schedule (static)
 # endif
     for (index=0; index<stateVecSize; index++) {
@@ -3374,8 +3345,7 @@ void statevec_multiControlledPhaseFlip(Qureg qureg, int *controlQubits, int numC
 # ifdef _OPENMP
 # pragma omp parallel \
     default  (none)              \
-    shared   (stateVecSize, stateVecReal,stateVecImag, mask ) \
-    firstprivate (chunkId,chunkSize) \
+    shared   (stateVecSize, stateVecReal,stateVecImag, mask, chunkId,chunkSize ) \
     private  (index)
 # endif
     {
