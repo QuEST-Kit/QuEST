@@ -106,6 +106,15 @@ QVector operator * (const QMatrix& m, const QVector& v);
  */
 QVector toQVector(Qureg qureg);
 
+/** Returns a vector with the same of the full diagonal operator,
+ * populated with \p op's elements.
+ * In distributed mode, this involves an all-to-all broadcast of \p op.
+ *
+ * @ingroup testutilities
+ * @author Tyson Jones
+ */
+QVector toQVector(DiagonalOp op);
+
 /** Returns an equal-size copy of the given density matrix \p qureg.
  * In GPU mode, this function involves a copy of \p qureg from GPU memory to RAM.
  * In distributed mode, this involves an all-to-all broadcast of \p qureg.
@@ -137,12 +146,34 @@ QMatrix toQMatrix(ComplexMatrix2 src);
  */
 QMatrix toQMatrix(ComplexMatrix4 src);
 
-/** Returns a copy of the given 2^\p N-by-2^\p n matrix 
+/** Returns a copy of the given 2^\p N-by-2^\p N matrix 
  *
  * @ingroup testutilities
  * @author Tyson Jones
  */
 QMatrix toQMatrix(ComplexMatrixN src);
+
+/** Returns a 2^\p N-by-2^\p N Hermitian matrix form of the specified 
+ * weighted sum of Pauli products
+ *
+ * @ingroup testutilities
+ * @author Tyson Jones
+ */
+QMatrix toQMatrix(qreal* coeffs, pauliOpType* paulis, int numQubits, int numTerms);
+
+/** Returns a 2^\p N-by-2^\p N Hermitian matrix form of the PauliHamil
+ *
+ * @ingroup testutilities
+ * @author Tyson Jones
+ */
+QMatrix toQMatrix(PauliHamil hamil);
+
+/** Returns a 2^\p N-by-2^\p N complex diagonal matrix form of the DiagonalOp
+ *
+ * @ingroup testutilities
+ * @author Tyson Jones
+ */
+QMatrix toQMatrix(DiagonalOp op);
 
 /** Returns a \p ComplexMatrix2 copy of QMatix \p qm.
  * Demands that \p qm is a 2-by-2 matrix.
@@ -671,6 +702,26 @@ void applyReferenceOp(QVector &state, int ctrl, int targ1, int targ2, QMatrix op
  */
 void applyReferenceOp(QVector &state, int targ, QMatrix op);
 
+/** Modifies the state-vector \p state to be the result of left-multiplying the multi-target operator 
+ * matrix \p op, with the specified control and target qubits (in \p ctrls and \p targs 
+ * respectively). This is an alias of applyReferenceOp(), since operators are always 
+ * left-multiplied as matrices onto state-vectors.
+ *
+ * @ingroup testutilities 
+ * @author Tyson Jones
+ */
+void applyReferenceMatrix(QVector &state, int* ctrls, int numCtrls, int *targs, int numTargs, QMatrix op);
+
+/** Modifies the density matrix \p state to be the result of left-multiplying the multi-target operator 
+ * matrix \p op, with the specified control and target qubits (in \p ctrls and \p targs 
+ * respectively). Here, \p op is treated like a simple matrix and is hence left-multiplied 
+ * onto the state once.
+ *
+ * @ingroup testutilities 
+ * @author Tyson Jones
+ */
+void applyReferenceMatrix(QMatrix &state, int* ctrls, int numCtrls, int *targs, int numTargs, QMatrix op);
+
 /** Performs a hardware-agnostic comparison of the given quregs, checking 
  * whether the difference between the real and imaginary components of every amplitude
  * is smaller than the QuEST_PREC-specific REAL_EPS (defined in QuEST_precision) precision.
@@ -773,6 +824,14 @@ bool areEqual(QVector a, QVector b);
  */
 bool areEqual(QMatrix a, QMatrix b);
 
+/** Returns true if the absolute value of the difference between every element in 
+ * \p vec and those implied by \p reals and \p imags, is less than \p REAL_EPS.
+ *
+ * @ingroup testutilities 
+ * @author Tyson Jones
+ */
+bool areEqual(QVector vec, qreal* reals, qreal* imags);
+
 /** Returns the unit-norm complex number exp(i*\p phase). This function uses the 
  * Euler formula, and avoids problems with calling exp(__complex__) in a platform 
  * agnostic way 
@@ -785,6 +844,21 @@ qcomp expI(qreal phase);
  * @author Tyson Jones
  */
 unsigned int calcLog2(long unsigned int res);
+
+/** Populates the \p coeffs array with random qreals in (-5, 5), and 
+ * populates \p codes with random Pauli codes
+ *
+ * @ingroup testutilities 
+ * @author Tyson Jones
+ */
+void setRandomPauliSum(qreal* coeffs, pauliOpType* codes, int numQubits, int numTerms);
+
+/** Populates \p hamil with random coefficients and pauli codes
+ *
+ * @ingroup testutilities 
+ * @author Tyson Jones
+ */
+void setRandomPauliSum(PauliHamil hamil);
 
 // makes below signatures more concise
 template<class T> using CatchGen = Catch::Generators::GeneratorWrapper<T>;

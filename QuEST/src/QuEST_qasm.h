@@ -48,7 +48,7 @@ void qasm_recordCompactUnitary(Qureg qureg, Complex alpha, Complex beta, int tar
 
 void qasm_recordUnitary(Qureg qureg, ComplexMatrix2 u, int targetQubit);
 
-void qasm_recordAxisRotation(Qureg qureg, qreal angle, Vector axis, const int targetQubit);
+void qasm_recordAxisRotation(Qureg qureg, qreal angle, Vector axis, int targetQubit);
 
 void qasm_recordControlledGate(Qureg qureg, TargetGate gate, int controlQubit, int targetQubit);
 
@@ -61,19 +61,19 @@ void qasm_recordControlledUnitary(Qureg qureg, ComplexMatrix2 u, int controlQubi
 void qasm_recordControlledAxisRotation(Qureg qureg, qreal angle, Vector axis, int controlQubit, int targetQubit);
 
 void qasm_recordMultiControlledGate(Qureg qureg,
-TargetGate gate, int* controlQubits, const int numControlQubits, const int targetQubit);
+TargetGate gate, int* controlQubits, int numControlQubits, int targetQubit);
 
-void qasm_recordMultiControlledParamGate(Qureg qureg, TargetGate gate, int* controlQubits, const int numControlQubits, const int targetQubit, qreal param);
+void qasm_recordMultiControlledParamGate(Qureg qureg, TargetGate gate, int* controlQubits, int numControlQubits, int targetQubit, qreal param);
 
-void qasm_recordMultiControlledUnitary(Qureg qureg, ComplexMatrix2 u, int* controlQubits, const int numControlQubits, const int targetQubit);
+void qasm_recordMultiControlledUnitary(Qureg qureg, ComplexMatrix2 u, int* controlQubits, int numControlQubits, int targetQubit);
 
-void qasm_recordMultiStateControlledUnitary(Qureg qureg, ComplexMatrix2 u, int* controlQubits, int* controlState, const int numControlQubits, const int targetQubit);
+void qasm_recordMultiStateControlledUnitary(Qureg qureg, ComplexMatrix2 u, int* controlQubits, int* controlState, int numControlQubits, int targetQubit);
 
 /* not actually used. D'oh!
-void qasm_recordMultiControlledAxisRotation(Qureg qureg, qreal angle, Vector axis, int* controlQubits, const int numControlQubits, const int targetQubit);\
+void qasm_recordMultiControlledAxisRotation(Qureg qureg, qreal angle, Vector axis, int* controlQubits, int numControlQubits, int targetQubit);\
 */
 
-void qasm_recordMeasurement(Qureg qureg, const int measureQubit);
+void qasm_recordMeasurement(Qureg qureg, int measureQubit);
 
 void qasm_recordInitZero(Qureg qureg);
 

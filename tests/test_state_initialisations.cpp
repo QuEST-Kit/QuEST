@@ -502,7 +502,7 @@ TEST_CASE( "setWeightedQureg", "[state_initialisations]" ) {
             refC = toQVector(vecC);
             setWeightedQureg(facA, vecC, facB, vecC, facC, vecC);
             refOut = numA*refC + numB*refC + numC*refC;
-            REQUIRE( areEqual(vecC, refOut, 1E2*REAL_EPS) );
+            REQUIRE( areEqual(vecC, refOut, 1E3*REAL_EPS) );
         
             // cleanup
             destroyQureg(vecA, QUEST_ENV);

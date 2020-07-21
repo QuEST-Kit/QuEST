@@ -23,9 +23,9 @@ extern "C" {
  * general functions
  */
   
-long long int getQubitBitMask(int* controlQubits, const int numControlQubits);
+long long int getQubitBitMask(int* controlQubits, int numControlQubits);
 
-long long int getControlFlipMask(int* controlQubits, int* controlState, const int numControlQubits);
+long long int getControlFlipMask(int* controlQubits, int* controlState, int numControlQubits);
 
 unsigned long int hashString(char *str);
 
@@ -74,19 +74,19 @@ qreal densmatr_calcHilbertSchmidtDistance(Qureg a, Qureg b);
 
 qreal densmatr_calcInnerProduct(Qureg a, Qureg b);
 
-qreal densmatr_calcProbOfOutcome(Qureg qureg, const int measureQubit, int outcome);
+qreal densmatr_calcProbOfOutcome(Qureg qureg, int measureQubit, int outcome);
 
-void densmatr_collapseToKnownProbOutcome(Qureg qureg, const int measureQubit, int outcome, qreal outcomeProb);
+void densmatr_collapseToKnownProbOutcome(Qureg qureg, int measureQubit, int outcome, qreal outcomeProb);
     
 int densmatr_measureWithStats(Qureg qureg, int measureQubit, qreal *outcomeProb);
 
-void densmatr_mixDephasing(Qureg qureg, const int targetQubit, qreal dephase);
+void densmatr_mixDephasing(Qureg qureg, int targetQubit, qreal dephase);
 
-void densmatr_mixTwoQubitDephasing(Qureg qureg, const int qubit1, const int qubit2, qreal dephase);
+void densmatr_mixTwoQubitDephasing(Qureg qureg, int qubit1, int qubit2, qreal dephase);
 
-void densmatr_mixDepolarising(Qureg qureg, const int targetQubit, qreal depolLevel);
+void densmatr_mixDepolarising(Qureg qureg, int targetQubit, qreal depolLevel);
 
-void densmatr_mixDamping(Qureg qureg, const int targetQubit, qreal damping);
+void densmatr_mixDamping(Qureg qureg, int targetQubit, qreal damping);
 
 void densmatr_mixTwoQubitDepolarising(Qureg qureg, int qubit1, int qubit2, qreal depolLevel);
 
@@ -99,7 +99,11 @@ void densmatr_mixKrausMap(Qureg qureg, int target, ComplexMatrix2 *ops, int numO
 void densmatr_mixTwoQubitKrausMap(Qureg qureg, int target1, int target2, ComplexMatrix4 *ops, int numOps);
 
 void densmatr_mixMultiQubitKrausMap(Qureg qureg, int* targets, int numTargets, ComplexMatrixN* ops, int numOps);
-    
+
+void densmatr_applyDiagonalOp(Qureg qureg, DiagonalOp op);
+
+Complex densmatr_calcExpecDiagonalOp(Qureg qureg, DiagonalOp op);
+
 
 /* 
  * operations upon state vectors
@@ -133,35 +137,35 @@ void statevec_cloneQureg(Qureg targetQureg, Qureg copyQureg);
 
 void statevec_multiControlledPhaseFlip(Qureg qureg, int *controlQubits, int numControlQubits);
 
-void statevec_controlledPhaseFlip(Qureg qureg, const int idQubit1, const int idQubit2);
+void statevec_controlledPhaseFlip(Qureg qureg, int idQubit1, int idQubit2);
 
-void statevec_phaseShift(Qureg qureg, const int targetQubit, qreal angle);
+void statevec_phaseShift(Qureg qureg, int targetQubit, qreal angle);
 
-void statevec_phaseShiftByTerm(Qureg qureg, const int targetQubit, Complex term);
+void statevec_phaseShiftByTerm(Qureg qureg, int targetQubit, Complex term);
 
-void statevec_controlledPhaseShift(Qureg qureg, const int idQubit1, const int idQubit2, qreal angle); 
+void statevec_controlledPhaseShift(Qureg qureg, int idQubit1, int idQubit2, qreal angle); 
 
 void statevec_multiControlledPhaseShift(Qureg qureg, int *controlQubits, int numControlQubits, qreal angle);
 
-void statevec_sGate(Qureg qureg, const int targetQubit);
+void statevec_sGate(Qureg qureg, int targetQubit);
 
-void statevec_tGate(Qureg qureg, const int targetQubit);
+void statevec_tGate(Qureg qureg, int targetQubit);
 
-void statevec_sGateConj(Qureg qureg, const int targetQubit);
+void statevec_sGateConj(Qureg qureg, int targetQubit);
 
-void statevec_tGateConj(Qureg qureg, const int targetQubit);
+void statevec_tGateConj(Qureg qureg, int targetQubit);
 
-void statevec_pauliX(Qureg qureg, const int targetQubit);
+void statevec_pauliX(Qureg qureg, int targetQubit);
 
-void statevec_pauliY(Qureg qureg, const int targetQubit);
+void statevec_pauliY(Qureg qureg, int targetQubit);
 
-void statevec_pauliYConj(Qureg qureg, const int targetQubit);
+void statevec_pauliYConj(Qureg qureg, int targetQubit);
 
-void statevec_pauliZ(Qureg qureg, const int targetQubit);
+void statevec_pauliZ(Qureg qureg, int targetQubit);
 
-void statevec_controlledPauliY(Qureg qureg, const int controlQubit, const int targetQubit);
+void statevec_controlledPauliY(Qureg qureg, int controlQubit, int targetQubit);
 
-void statevec_controlledPauliYConj(Qureg qureg, const int controlQubit, const int targetQubit);
+void statevec_controlledPauliYConj(Qureg qureg, int controlQubit, int targetQubit);
 
 qreal statevec_getRealAmp(Qureg qureg, long long int index);
 
@@ -179,55 +183,55 @@ qreal statevec_calcExpecPauliProd(Qureg qureg, int* targetQubits, enum pauliOpTy
 
 qreal statevec_calcExpecPauliSum(Qureg qureg, enum pauliOpType* allCodes, qreal* termCoeffs, int numSumTerms, Qureg workspace);
 
-void statevec_compactUnitary(Qureg qureg, const int targetQubit, Complex alpha, Complex beta);
+void statevec_compactUnitary(Qureg qureg, int targetQubit, Complex alpha, Complex beta);
 
-void statevec_unitary(Qureg qureg, const int targetQubit, ComplexMatrix2 u);
+void statevec_unitary(Qureg qureg, int targetQubit, ComplexMatrix2 u);
 
-void statevec_twoQubitUnitary(Qureg qureg, const int targetQubit1, const int targetQubit2, ComplexMatrix4 u);
+void statevec_twoQubitUnitary(Qureg qureg, int targetQubit1, int targetQubit2, ComplexMatrix4 u);
 
-void statevec_controlledTwoQubitUnitary(Qureg qureg, const int controlQubit, const int targetQubit1, const int targetQubit2, ComplexMatrix4 u);
+void statevec_controlledTwoQubitUnitary(Qureg qureg, int controlQubit, int targetQubit1, int targetQubit2, ComplexMatrix4 u);
 
-void statevec_multiControlledTwoQubitUnitary(Qureg qureg, long long int ctrlMask, const int targetQubit1, const int targetQubit2, ComplexMatrix4 u);
+void statevec_multiControlledTwoQubitUnitary(Qureg qureg, long long int ctrlMask, int targetQubit1, int targetQubit2, ComplexMatrix4 u);
 
-void statevec_multiQubitUnitary(Qureg qureg, int* targets, const int numTargets, ComplexMatrixN u);
+void statevec_multiQubitUnitary(Qureg qureg, int* targets, int numTargets, ComplexMatrixN u);
 
-void statevec_controlledMultiQubitUnitary(Qureg qureg, int ctrl, int* targets, const int numTargets, ComplexMatrixN u);
+void statevec_controlledMultiQubitUnitary(Qureg qureg, int ctrl, int* targets, int numTargets, ComplexMatrixN u);
 
-void statevec_multiControlledMultiQubitUnitary(Qureg qureg, long long int ctrlMask, int* targs, const int numTargs, ComplexMatrixN u);
+void statevec_multiControlledMultiQubitUnitary(Qureg qureg, long long int ctrlMask, int* targs, int numTargs, ComplexMatrixN u);
 
-void statevec_rotateX(Qureg qureg, const int rotQubit, qreal angle);
+void statevec_rotateX(Qureg qureg, int rotQubit, qreal angle);
 
-void statevec_rotateY(Qureg qureg, const int rotQubit, qreal angle);
+void statevec_rotateY(Qureg qureg, int rotQubit, qreal angle);
 
-void statevec_rotateZ(Qureg qureg, const int rotQubit, qreal angle);
+void statevec_rotateZ(Qureg qureg, int rotQubit, qreal angle);
 
-void statevec_rotateAroundAxis(Qureg qureg, const int rotQubit, qreal angle, Vector axis);
+void statevec_rotateAroundAxis(Qureg qureg, int rotQubit, qreal angle, Vector axis);
 
-void statevec_rotateAroundAxisConj(Qureg qureg, const int rotQubit, qreal angle, Vector axis);
+void statevec_rotateAroundAxisConj(Qureg qureg, int rotQubit, qreal angle, Vector axis);
 
-void statevec_controlledRotateX(Qureg qureg, const int controlQubit, const int targetQubit, qreal angle);
+void statevec_controlledRotateX(Qureg qureg, int controlQubit, int targetQubit, qreal angle);
 
-void statevec_controlledRotateY(Qureg qureg, const int controlQubit, const int targetQubit, qreal angle);
+void statevec_controlledRotateY(Qureg qureg, int controlQubit, int targetQubit, qreal angle);
 
-void statevec_controlledRotateZ(Qureg qureg, const int controlQubit, const int targetQubit, qreal angle);
+void statevec_controlledRotateZ(Qureg qureg, int controlQubit, int targetQubit, qreal angle);
 
-void statevec_controlledRotateAroundAxis(Qureg qureg, const int controlQubit, const int targetQubit, qreal angle, Vector axis);
+void statevec_controlledRotateAroundAxis(Qureg qureg, int controlQubit, int targetQubit, qreal angle, Vector axis);
 
-void statevec_controlledRotateAroundAxisConj(Qureg qureg, const int controlQubit, const int targetQubit, qreal angle, Vector axis);
+void statevec_controlledRotateAroundAxisConj(Qureg qureg, int controlQubit, int targetQubit, qreal angle, Vector axis);
 
-void statevec_controlledCompactUnitary(Qureg qureg, const int controlQubit, const int targetQubit, Complex alpha, Complex beta);
+void statevec_controlledCompactUnitary(Qureg qureg, int controlQubit, int targetQubit, Complex alpha, Complex beta);
 
-void statevec_controlledUnitary(Qureg qureg, const int controlQubit, const int targetQubit, ComplexMatrix2 u);
+void statevec_controlledUnitary(Qureg qureg, int controlQubit, int targetQubit, ComplexMatrix2 u);
 
-void statevec_multiControlledUnitary(Qureg qureg, long long int ctrlQubitsMask, long long int ctrlFlipMask, const int targetQubit, ComplexMatrix2 u);
+void statevec_multiControlledUnitary(Qureg qureg, long long int ctrlQubitsMask, long long int ctrlFlipMask, int targetQubit, ComplexMatrix2 u);
 
-void statevec_hadamard(Qureg qureg, const int targetQubit);
+void statevec_hadamard(Qureg qureg, int targetQubit);
 
-void statevec_controlledNot(Qureg qureg, const int controlQubit, const int targetQubit);
+void statevec_controlledNot(Qureg qureg, int controlQubit, int targetQubit);
 
-qreal statevec_calcProbOfOutcome(Qureg qureg, const int measureQubit, int outcome);
+qreal statevec_calcProbOfOutcome(Qureg qureg, int measureQubit, int outcome);
 
-void statevec_collapseToKnownProbOutcome(Qureg qureg, const int measureQubit, int outcome, qreal outcomeProb);
+void statevec_collapseToKnownProbOutcome(Qureg qureg, int measureQubit, int outcome, qreal outcomeProb);
 
 int statevec_measureWithStats(Qureg qureg, int measureQubit, qreal *outcomeProb);
 
@@ -244,6 +248,25 @@ void statevec_multiRotatePauli(Qureg qureg, int* targetQubits, enum pauliOpType*
 void statevec_setWeightedQureg(Complex fac1, Qureg qureg1, Complex fac2, Qureg qureg2, Complex facOut, Qureg out);
 
 void statevec_applyPauliSum(Qureg inQureg, enum pauliOpType* allCodes, qreal* termCoeffs, int numSumTerms, Qureg outQureg);
+
+void statevec_applyDiagonalOp(Qureg qureg, DiagonalOp op);
+
+Complex statevec_calcExpecDiagonalOp(Qureg qureg, DiagonalOp op);
+
+
+/* 
+ * operations which differentiate between state-vectors and density matrices internally 
+ */
+ 
+void agnostic_applyTrotterCircuit(Qureg qureg, PauliHamil hamil, qreal time, int order, int reps);
+
+DiagonalOp agnostic_createDiagonalOp(int numQubits, QuESTEnv env);
+
+void agnostic_destroyDiagonalOp(DiagonalOp op);
+
+void agnostic_syncDiagonalOp(DiagonalOp op);
+
+void agnostic_setDiagonalOpElems(DiagonalOp op, long long int startInd, qreal* real, qreal* imag, long long int numElems);
 
 # ifdef __cplusplus
 }

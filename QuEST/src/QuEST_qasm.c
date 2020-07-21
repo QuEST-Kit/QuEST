@@ -31,8 +31,8 @@
 # define INIT_ZERO_CMD "reset"  // QASM cmd for setting state 0
 # define COMMENT_PREF "//"     // QASM syntax for a comment ;)
 
-# define MAX_LINE_LEN 200       // maximum length (#chars) of a single QASM instruction
-# define BUF_INIT_SIZE 1000     // initial size of the QASM buffer (#chars)
+# define MAX_LINE_LEN 1024       // maximum length (#chars) of a single QASM instruction
+# define BUF_INIT_SIZE 1024     // initial size of the QASM buffer (#chars)
 # define BUF_GROW_FAC 2         // growth factor when buffer dynamically resizes
 
 static const char* qasmGateLabels[] = {
@@ -220,7 +220,7 @@ void qasm_recordUnitary(Qureg qureg, ComplexMatrix2 u, int targetQubit) {
     addGateToQASM(qureg, GATE_UNITARY, NULL, 0, targetQubit, params, 3);
 }
 
-void qasm_recordAxisRotation(Qureg qureg, qreal angle, Vector axis, const int targetQubit) {
+void qasm_recordAxisRotation(Qureg qureg, qreal angle, Vector axis, int targetQubit) {
     
     if (!qureg.qasmLog->isLogging)
         return;
@@ -313,7 +313,7 @@ void qasm_recordControlledAxisRotation(Qureg qureg, qreal angle, Vector axis, in
     addGateToQASM(qureg, GATE_UNITARY, controls, 1, targetQubit, params, 3);
 }
 
-void qasm_recordMultiControlledGate(Qureg qureg, TargetGate gate, int* controlQubits, const int numControlQubits, const int targetQubit) {
+void qasm_recordMultiControlledGate(Qureg qureg, TargetGate gate, int* controlQubits, int numControlQubits, int targetQubit) {
 
     if (!qureg.qasmLog->isLogging)
         return;
@@ -321,7 +321,7 @@ void qasm_recordMultiControlledGate(Qureg qureg, TargetGate gate, int* controlQu
     addGateToQASM(qureg, gate, controlQubits, numControlQubits, targetQubit, NULL, 0);
 }
 
-void qasm_recordMultiControlledParamGate(Qureg qureg, TargetGate gate, int* controlQubits, const int numControlQubits, const int targetQubit, qreal param) {
+void qasm_recordMultiControlledParamGate(Qureg qureg, TargetGate gate, int* controlQubits, int numControlQubits, int targetQubit, qreal param) {
     
     if (!qureg.qasmLog->isLogging)
         return;
@@ -338,7 +338,7 @@ void qasm_recordMultiControlledParamGate(Qureg qureg, TargetGate gate, int* cont
 }
 
 /** additionally performs Rz on target to restore the global phase lost from u in QASM U(a,b,c) */
-void qasm_recordMultiControlledUnitary(Qureg qureg, ComplexMatrix2 u, int* controlQubits, const int numControlQubits, const int targetQubit) {
+void qasm_recordMultiControlledUnitary(Qureg qureg, ComplexMatrix2 u, int* controlQubits, int numControlQubits, int targetQubit) {
     
     if (!qureg.qasmLog->isLogging)
         return;
@@ -360,7 +360,7 @@ void qasm_recordMultiControlledUnitary(Qureg qureg, ComplexMatrix2 u, int* contr
 }
 
 void qasm_recordMultiStateControlledUnitary(
-    Qureg qureg, ComplexMatrix2 u, int* controlQubits, int* controlState, const int numControlQubits, const int targetQubit
+    Qureg qureg, ComplexMatrix2 u, int* controlQubits, int* controlState, int numControlQubits, int targetQubit
 ) {
     if (!qureg.qasmLog->isLogging)
         return;
@@ -379,7 +379,7 @@ void qasm_recordMultiStateControlledUnitary(
 }
 
 /* not actually used, D'Oh!
-void qasm_recordMultiControlledAxisRotation(Qureg qureg, qreal angle, Vector axis, int* controlQubits, const int numControlQubits, const int targetQubit) {
+void qasm_recordMultiControlledAxisRotation(Qureg qureg, qreal angle, Vector axis, int* controlQubits, int numControlQubits, int targetQubit) {
     
     if (!qureg.qasmLog->isLogging)
         return;
@@ -395,7 +395,7 @@ void qasm_recordMultiControlledAxisRotation(Qureg qureg, qreal angle, Vector axi
 }
 */
 
-void qasm_recordMeasurement(Qureg qureg, const int measureQubit) {
+void qasm_recordMeasurement(Qureg qureg, int measureQubit) {
 
     if (!qureg.qasmLog->isLogging)
         return;

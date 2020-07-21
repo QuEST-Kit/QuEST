@@ -30,6 +30,12 @@ Dr Mihai Duta
 
 External contributors:
 Dr Nicolas Vogt on behalf of HQS Quantum Simulations
-    implemented mixDamping
+    implemented mixDamping (CPU)
 Kshitij Chhabra
     patched validateNumQubitsInQureg
+Drew Silcock
+    patched MacOS OpenMP CMake flags
+Zach van Rijn
+    patched OpenMP on GCC-9
+@SachinCompton
+    patched GPU Cmake Release build

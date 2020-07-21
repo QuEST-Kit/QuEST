@@ -578,7 +578,7 @@ void applyReferenceOp(
     state = fullOp * state;
 }
 void applyReferenceOp(
-    QMatrix &state, int* ctrls, int numCtrls, int targ1, int targ2, QMatrix op
+    QVector &state, int* ctrls, int numCtrls, int targ1, int targ2, QMatrix op
 ) {
     int targs[2] = {targ1, targ2};
     applyReferenceOp(state, ctrls, numCtrls, targs, 2, op);
@@ -635,7 +635,7 @@ void applyReferenceOp(
     state = leftOp * state * rightOp;
 }
 void applyReferenceOp(
-    QVector &state, int* ctrls, int numCtrls, int targ1, int targ2, QMatrix op
+    QMatrix &state, int* ctrls, int numCtrls, int targ1, int targ2, QMatrix op
 ) {
     int targs[2] = {targ1, targ2};
     applyReferenceOp(state, ctrls, numCtrls, targs, 2, op);
@@ -676,6 +676,26 @@ void applyReferenceOp(
 ) {
     int targs[1] = {targ};
     applyReferenceOp(state, NULL, 0, targs, 1, op);
+}
+
+/* (do not generate doxygen doc)
+ *
+ * Overloads for applyReferenceMatrix, to simply left-multiply a matrix (possibly
+ * with additional control qubits) onto a state.
+ */
+void applyReferenceMatrix(
+    QVector &state, int* ctrls, int numCtrls, int *targs, int numTargs, QMatrix op
+) {
+    // for state-vectors, the op is always just left-multiplied
+    applyReferenceOp(state, ctrls, numCtrls, targs, numTargs, op);
+}
+void applyReferenceMatrix(
+    QMatrix &state, int* ctrls, int numCtrls, int *targs, int numTargs, QMatrix op
+) {
+    // for density matrices, op is left-multiplied only
+    int numQubits = calcLog2(state.size());
+    QMatrix leftOp = getFullOperatorMatrix(ctrls, numCtrls, targs, numTargs, op, numQubits);
+    state = leftOp * state;
 }
 
 bool areEqual(Qureg qureg1, Qureg qureg2, qreal precision) {
@@ -768,7 +788,7 @@ bool areEqual(Qureg qureg, QMatrix matr, qreal precision) {
         
         // DEBUG
         if (!ampsAgree) {
-            printf("node %d has a disagreement at (global) index %lldd of (%g) + i(%g)\n", 
+            printf("[msg from utilities.cpp] node %d has a disagreement at (global) index %lld of (%g) + i(%g)\n", 
                 qureg.chunkId, globalInd, realDif, imagDif
             );
         }
@@ -798,6 +818,20 @@ bool areEqual(Qureg qureg, QMatrix matr, qreal precision) {
 }
 bool areEqual(Qureg qureg, QMatrix matr) {
     return areEqual(qureg, matr, REAL_EPS);
+}
+
+bool areEqual(QVector vec, qreal* reals, qreal* imags) {
+    
+    qreal dif;
+    for (size_t i=0; i<vec.size(); i++) {
+        dif = abs(real(vec[i]) - reals[i]);
+        if (dif > REAL_EPS)
+            return false;
+        dif = abs(imag(vec[i]) - imags[i]);
+        if (dif > REAL_EPS)
+            return false;
+    }
+    return true;
 }
 
 /* Copies QMatrix into a CompelxMAtrix struct */
@@ -943,6 +977,52 @@ QVector toQVector(Qureg qureg) {
     return vec;
 }
 
+QVector toQVector(DiagonalOp op) {
+    long long int totalElems = (1LL << op.numQubits);
+#ifdef DISTRIBUTED_MODE
+    DEMAND( totalElems < MPI_MAX_AMPS_IN_MSG );
+#endif
+    
+    qreal* fullRe;
+    qreal* fullIm;
+    
+    // in distributed mode, give every node the full diagonal operator
+#ifdef DISTRIBUTED_MODE
+    fullRe = (qreal*) malloc(totalElems * sizeof *fullRe);
+    fullIm = (qreal*) malloc(totalElems * sizeof *fullIm);
+            
+    MPI_Allgather(
+        op.real, op.numElemsPerChunk, MPI_QuEST_REAL,
+        fullRe, op.numElemsPerChunk, MPI_QuEST_REAL, MPI_COMM_WORLD);
+    MPI_Allgather(
+        op.imag, op.numElemsPerChunk, MPI_QuEST_REAL,
+        fullIm, op.numElemsPerChunk, MPI_QuEST_REAL, MPI_COMM_WORLD);
+#else
+    fullRe = op.real;
+    fullIm = op.imag;
+#endif
+    
+    // copy full state vector into a QVector
+    QVector vec = QVector(totalElems);
+    for (long long int i=0; i<totalElems; i++)
+        vec[i] = qcomp(fullRe[i], fullIm[i]);
+            
+    // clean up if we malloc'd distrib array
+#ifdef DISTRIBUTED_MODE
+    free(fullRe);
+    free(fullIm);
+#endif
+    return vec;
+}
+
+QMatrix toQMatrix(DiagonalOp op) {
+    QVector vec = toQVector(op);
+    QMatrix mat = getZeroMatrix(1LL << op.numQubits);
+    for (size_t i=0; i<mat.size(); i++)
+        mat[i][i] = vec[i];
+    return mat;
+}
+
 void toQureg(Qureg qureg, QVector vec) {
     DEMAND( !qureg.isDensityMatrix );
     DEMAND( qureg.numAmpsTotal == (int) vec.size() );
@@ -969,6 +1049,51 @@ void toQureg(Qureg qureg, QMatrix mat) {
         qureg.stateVec.imag[i] = imag(mat[ind%len][ind/len]);
     }
     copyStateToGPU(qureg);
+}
+
+void setRandomPauliSum(qreal* coeffs, pauliOpType* codes, int numQubits, int numTerms) {
+    int i=0;
+    for (int n=0; n<numTerms; n++) {
+        coeffs[n] = getRandomReal(-5, 5);
+        for (int q=0; q<numQubits; q++)
+            codes[i++] = (pauliOpType) getRandomInt(0,4);
+    }
+}
+void setRandomPauliSum(PauliHamil hamil) {
+    setRandomPauliSum(hamil.termCoeffs, hamil.pauliCodes, hamil.numQubits, hamil.numSumTerms);
+}
+
+QMatrix toQMatrix(qreal* coeffs, pauliOpType* paulis, int numQubits, int numTerms) {
+    
+    // produce a numTargs-big matrix 'pauliSum' by pauli-matrix tensoring and summing
+    QMatrix iMatr{{1,0},{0,1}};
+    QMatrix xMatr{{0,1},{1,0}};
+    QMatrix yMatr{{0,-1i},{1i,0}};
+    QMatrix zMatr{{1,0},{0,-1}};
+    QMatrix pauliSum = getZeroMatrix(1<<NUM_QUBITS);
+    
+    for (int t=0; t<numTerms; t++) {
+        QMatrix pauliProd = QMatrix{{1}};
+        
+        for (int q=0; q<numQubits; q++) {
+            int i = q + t*numQubits;
+            
+            QMatrix fac;
+            pauliOpType code = paulis[i];
+            if (code == PAULI_I) fac = iMatr;
+            if (code == PAULI_X) fac = xMatr;
+            if (code == PAULI_Y) fac = yMatr;
+            if (code == PAULI_Z) fac = zMatr;
+            pauliProd = getKroneckerProduct(fac, pauliProd);
+        }
+        pauliSum += coeffs[t] * pauliProd;
+    }
+    
+    // a now 2^numQubits by 2^numQubits Hermitian matrix
+    return pauliSum;
+}
+QMatrix toQMatrix(PauliHamil hamil) {
+    return toQMatrix(hamil.termCoeffs, hamil.pauliCodes, hamil.numQubits, hamil.numSumTerms);
 }
 
 class SubListGenerator : public Catch::Generators::IGenerator<int*> {

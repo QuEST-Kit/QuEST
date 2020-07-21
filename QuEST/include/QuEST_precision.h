@@ -33,6 +33,7 @@
     # define REAL_STRING_FORMAT "%.8f"
     # define REAL_QASM_FORMAT "%.8g"
     # define REAL_EPS 1e-5
+    # define REAL_SPECIFIER "%f"
     # define absReal(X) fabs(X) // not fabsf(X) - better to return doubles where possible
     // \endcond
 /*
@@ -46,6 +47,7 @@
     # define REAL_STRING_FORMAT "%.14f"
     # define REAL_QASM_FORMAT "%.14g"
     # define REAL_EPS 1e-13
+    # define REAL_SPECIFIER "%lf"
     # define absReal(X) fabs(X)
     // \endcond
 /*
@@ -60,6 +62,7 @@
     # define REAL_STRING_FORMAT "%.17Lf"
     # define REAL_QASM_FORMAT "%.17Lg"
     # define REAL_EPS 1e-14
+    # define REAL_SPECIFIER "%llf"
     # define absReal(X) fabsl(X)
     // \endcond
 # endif

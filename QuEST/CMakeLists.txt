@@ -156,8 +156,7 @@ if (GPUACCELERATED)
         set (CUDA_NVCC_FLAGS "${CUDA_NVCC_FLAGS} \
             -O2"
         )
-    endif()
-    if ("${CMAKE_BUILD_TYPE}" STREQUAL "Debug")
+    elseif ("${CMAKE_BUILD_TYPE}" STREQUAL "Debug")
         set (CUDA_NVCC_FLAGS "${CUDA_NVCC_FLAGS} \
             -G -g -lineinfo"
         )
@@ -317,9 +316,15 @@ target_compile_definitions(QuEST
 # ----- LINK LIBRARY ---------------------------------------------------------
 # -----------------------------------------------------------------------------
 
+# ----- OMP -------------------------------------------------------------------
+
+if (OPENMP_FOUND)
+  target_link_libraries(QuEST PUBLIC OpenMP::OpenMP_C)
+endif ()
+
 # ----- MPI -------------------------------------------------------------------
 
-target_link_libraries(QuEST ${MPI_C_LIBRARIES})
+target_link_libraries(QuEST PUBLIC ${MPI_C_LIBRARIES})
 
 # ----- GPU -------------------------------------------------------------------
 
