@@ -845,7 +845,7 @@ void cloneQureg(Qureg targetQureg, Qureg copyQureg);
  *      if \p targetQubit is outside [0, \p qureg.numQubitsRepresented).
  * @author Tyson Jones
  */
-void phaseShift(Qureg qureg, const int targetQubit, qreal angle);
+void phaseShift(Qureg qureg, int targetQubit, qreal angle);
 
 /** Introduce a phase factor \f$ \exp(i \theta) \f$ on state \f$ |11\rangle \f$ of qubits
  * \p idQubit1 and \p idQubit2.
@@ -888,7 +888,7 @@ void phaseShift(Qureg qureg, const int targetQubit, qreal angle);
  *  if \p idQubit1 or \p idQubit2 are outside [0, \p qureg.numQubitsRepresented), or are equal
  * @author Tyson Jones
  */
-void controlledPhaseShift(Qureg qureg, const int idQubit1, const int idQubit2, qreal angle);
+void controlledPhaseShift(Qureg qureg, int idQubit1, int idQubit2, qreal angle);
 
 /** Introduce a phase factor \f$ \exp(i \theta) \f$ on state \f$ |1 \dots 1 \rangle \f$
  * of the passed qubits.
@@ -966,7 +966,7 @@ void multiControlledPhaseShift(Qureg qureg, int *controlQubits, int numControlQu
  *  if \p idQubit1 or \p idQubit2 are outside [0, \p qureg.numQubitsRepresented), or are equal
  * @author Tyson Jones
  */
-void controlledPhaseFlip (Qureg qureg, const int idQubit1, const int idQubit2);
+void controlledPhaseFlip (Qureg qureg, int idQubit1, int idQubit2);
 
 /** Apply the multiple-qubit controlled phase flip gate, also known as the multiple-qubit controlled pauliZ gate.
  * For each state, if all control qubits have value one, multiply the amplitude of that state by -1. This applies the many-qubit unitary:
@@ -1046,7 +1046,7 @@ void multiControlledPhaseFlip(Qureg qureg, int *controlQubits, int numControlQub
  * @author Ania Brown (state-vector)
  * @author Tyson Jones (density matrix, doc)
  */
-void sGate(Qureg qureg, const int targetQubit);
+void sGate(Qureg qureg, int targetQubit);
 
 /** Apply the single-qubit T gate.
  * This is a rotation of \f$\pi/4\f$ around the Z-axis on the Bloch sphere, or the unitary:
@@ -1078,7 +1078,7 @@ void sGate(Qureg qureg, const int targetQubit);
  * @author Ania Brown (state-vector)
  * @author Tyson Jones (density matrix, doc)
  */
-void tGate(Qureg qureg, const int targetQubit);
+void tGate(Qureg qureg, int targetQubit);
 
 /** Create the QuEST execution environment.
  * This should be called only once, and the environment should be freed with destroyQuESTEnv at the end
@@ -1315,7 +1315,7 @@ qreal calcTotalProb(Qureg qureg);
  * @author Ania Brown (state-vector)
  * @author Tyson Jones (density matrix, doc)
  */
-void compactUnitary(Qureg qureg, const int targetQubit, Complex alpha, Complex beta);
+void compactUnitary(Qureg qureg, int targetQubit, Complex alpha, Complex beta);
 
 /** Apply a general single-qubit unitary (including a global phase factor).
  * The passed 2x2 ComplexMatrix must be unitary, otherwise an error is thrown.
@@ -1347,7 +1347,7 @@ void compactUnitary(Qureg qureg, const int targetQubit, Complex alpha, Complex b
  * @author Ania Brown (state-vector)
  * @author Tyson Jones (density matrix, doc)
  */
-void unitary(Qureg qureg, const int targetQubit, ComplexMatrix2 u);
+void unitary(Qureg qureg, int targetQubit, ComplexMatrix2 u);
 
 /** Rotate a single qubit by a given angle around the X-axis of the Bloch-sphere. For angle \f$\theta\f$, applies
  * \f[
@@ -1380,7 +1380,7 @@ void unitary(Qureg qureg, const int targetQubit, ComplexMatrix2 u);
  * @author Ania Brown (state-vector)
  * @author Tyson Jones (density matrix, doc)
  */
-void rotateX(Qureg qureg, const int rotQubit, qreal angle);
+void rotateX(Qureg qureg, int rotQubit, qreal angle);
 
 /** Rotate a single qubit by a given angle around the Y-axis of the Bloch-sphere. 
  * For angle \f$\theta\f$, applies
@@ -1414,7 +1414,7 @@ void rotateX(Qureg qureg, const int rotQubit, qreal angle);
  * @author Ania Brown (state-vector)
  * @author Tyson Jones (density matrix, doc, debug)
  */
-void rotateY(Qureg qureg, const int rotQubit, qreal angle);
+void rotateY(Qureg qureg, int rotQubit, qreal angle);
 
 /** Rotate a single qubit by a given angle around the Z-axis of the Bloch-sphere (also known as a phase shift gate).   
  * For angle \f$\theta\f$, applies
@@ -1448,7 +1448,7 @@ void rotateY(Qureg qureg, const int rotQubit, qreal angle);
  * @author Ania Brown (state-vector)
  * @author Tyson Jones (density matrix, doc)
  */
-void rotateZ(Qureg qureg, const int rotQubit, qreal angle);
+void rotateZ(Qureg qureg, int rotQubit, qreal angle);
 
 /** Rotate a single qubit by a given angle around a given \ref Vector on the Bloch-sphere.      
  * The vector must not be zero (else an error is thrown), but needn't be unit magnitude, since 
@@ -1468,7 +1468,7 @@ void rotateZ(Qureg qureg, const int rotQubit, qreal angle);
  * @author Ania Brown (state-vector)
  * @author Tyson Jones (density matrix, doc)
  */
-void rotateAroundAxis(Qureg qureg, const int rotQubit, qreal angle, Vector axis);
+void rotateAroundAxis(Qureg qureg, int rotQubit, qreal angle, Vector axis);
 
 
 /** Applies a controlled rotation by a given angle around the X-axis of the Bloch-sphere. 
@@ -1502,7 +1502,7 @@ void rotateAroundAxis(Qureg qureg, const int rotQubit, qreal angle, Vector axis)
  *      if either \p controlQubit or \p targetQubit are outside [0, \p qureg.numQubitsRepresented) or are equal.
  * @author Tyson Jones
  */
-void controlledRotateX(Qureg qureg, const int controlQubit, const int targetQubit, qreal angle);
+void controlledRotateX(Qureg qureg, int controlQubit, int targetQubit, qreal angle);
 
 /** Applies a controlled rotation by a given angle around the Y-axis of the Bloch-sphere. 
  * The target qubit is rotated in states where the control qubit has value 1.
@@ -1535,7 +1535,7 @@ void controlledRotateX(Qureg qureg, const int controlQubit, const int targetQubi
  *      if either \p controlQubit or \p targetQubit are outside [0, \p qureg.numQubitsRepresented) or are equal.
  * @author Tyson Jones
  */
-void controlledRotateY(Qureg qureg, const int controlQubit, const int targetQubit, qreal angle);
+void controlledRotateY(Qureg qureg, int controlQubit, int targetQubit, qreal angle);
 
 /** Applies a controlled rotation by a given angle around the Z-axis of the Bloch-sphere. 
  * The target qubit is rotated in states where the control qubit has value 1.
@@ -1568,7 +1568,7 @@ void controlledRotateY(Qureg qureg, const int controlQubit, const int targetQubi
  *      if either \p controlQubit or \p targetQubit are outside [0, \p qureg.numQubitsRepresented) or are equal.
  * @author Tyson Jones
  */
-void controlledRotateZ(Qureg qureg, const int controlQubit, const int targetQubit, qreal angle);
+void controlledRotateZ(Qureg qureg, int controlQubit, int targetQubit, qreal angle);
 
 /** Applies a controlled rotation by a given angle around a given vector on the Bloch-sphere.      
  * The vector must not be zero (else an error is thrown), but needn't be unit magnitude.
@@ -1606,7 +1606,7 @@ void controlledRotateZ(Qureg qureg, const int controlQubit, const int targetQubi
  *      or if \p axis is the zero vector
  * @author Tyson Jones
  */
-void controlledRotateAroundAxis(Qureg qureg, const int controlQubit, const int targetQubit, qreal angle, Vector axis);
+void controlledRotateAroundAxis(Qureg qureg, int controlQubit, int targetQubit, qreal angle, Vector axis);
 
 /** Apply a controlled unitary (single control, single target) parameterised by two given complex scalars.
  * Given valid complex numbers \f$\alpha\f$ and \f$\beta\f$, applies the two-qubit unitary
@@ -1653,7 +1653,7 @@ void controlledRotateAroundAxis(Qureg qureg, const int controlQubit, const int t
  * @author Ania Brown (state-vector)
  * @author Tyson Jones (density matrix, doc)
  */
-void controlledCompactUnitary(Qureg qureg, const int controlQubit, const int targetQubit, Complex alpha, Complex beta);
+void controlledCompactUnitary(Qureg qureg, int controlQubit, int targetQubit, Complex alpha, Complex beta);
 
 /** Apply a general controlled unitary (single control, single target), which can include a global phase factor.
  * The given unitary is applied to the target qubit if the control qubit has value 1,
@@ -1698,7 +1698,7 @@ void controlledCompactUnitary(Qureg qureg, const int controlQubit, const int tar
  * @author Ania Brown (state-vector)
  * @author Tyson Jones (density matrix, doc)
  */
-void controlledUnitary(Qureg qureg, const int controlQubit, const int targetQubit, ComplexMatrix2 u);
+void controlledUnitary(Qureg qureg, int controlQubit, int targetQubit, ComplexMatrix2 u);
 
 /** Apply a general multiple-control single-target unitary, which can include
  * a global phase factor. Any number of control qubits can be specified,
@@ -1758,7 +1758,7 @@ void controlledUnitary(Qureg qureg, const int controlQubit, const int targetQubi
  * @author Ania Brown (state-vector)
  * @author Tyson Jones (density matrix, doc)
  */
-void multiControlledUnitary(Qureg qureg, int* controlQubits, const int numControlQubits, const int targetQubit, ComplexMatrix2 u);
+void multiControlledUnitary(Qureg qureg, int* controlQubits, int numControlQubits, int targetQubit, ComplexMatrix2 u);
 
 /** Apply the single-qubit Pauli-X (also known as the X, sigma-X, NOT or bit-flip) gate.
  * This is a rotation of \f$\pi\f$ around the x-axis on the Bloch sphere. I.e. 
@@ -1790,7 +1790,7 @@ void multiControlledUnitary(Qureg qureg, int* controlQubits, const int numContro
  * @author Ania Brown (state-vector)
  * @author Tyson Jones (density matrix, doc)
  */
-void pauliX(Qureg qureg, const int targetQubit);
+void pauliX(Qureg qureg, int targetQubit);
 
 /** Apply the single-qubit Pauli-Y (also known as the Y or sigma-Y) gate.
  * This is a rotation of \f$\pi\f$ around the Y-axis on the Bloch sphere. I.e. 
@@ -1823,7 +1823,7 @@ void pauliX(Qureg qureg, const int targetQubit);
  * @author Ania Brown (state-vector)
  * @author Tyson Jones (density matrix, doc)
  */
-void pauliY(Qureg qureg, const int targetQubit);
+void pauliY(Qureg qureg, int targetQubit);
 
 /** Apply the single-qubit Pauli-Z (also known as the Z, sigma-Z or phase-flip) gate.
  * This is a rotation of \f$\pi\f$ around the Z-axis (a phase shift) on the Bloch sphere. I.e. 
@@ -1856,7 +1856,7 @@ void pauliY(Qureg qureg, const int targetQubit);
  * @author Ania Brown (state-vector)
  * @author Tyson Jones (density matrix, doc)
  */
-void pauliZ(Qureg qureg, const int targetQubit);
+void pauliZ(Qureg qureg, int targetQubit);
 
 /** Apply the single-qubit Hadamard gate.
  * This takes \f$|0\rangle\f$ to \f$|+\rangle\f$ and \f$|1\rangle\f$ to \f$|-\rangle\f$, and is equivalent to a rotation of
@@ -1891,7 +1891,7 @@ void pauliZ(Qureg qureg, const int targetQubit);
  * @author Ania Brown (state-vector)
  * @author Tyson Jones (density matrix, doc)
  */
-void hadamard(Qureg qureg, const int targetQubit);
+void hadamard(Qureg qureg, int targetQubit);
 
 /** Apply the controlled not (single control, single target) gate, also
  * known as the c-X, c-sigma-X, c-Pauli-X and c-bit-flip gate.
@@ -1933,7 +1933,7 @@ void hadamard(Qureg qureg, const int targetQubit);
  * @author Ania Brown (state-vector)
  * @author Tyson Jones (density matrix, doc)
  */
-void controlledNot(Qureg qureg, const int controlQubit, const int targetQubit);
+void controlledNot(Qureg qureg, int controlQubit, int targetQubit);
 
 /** Apply the controlled pauliY (single control, single target) gate, also
  * known as the c-Y and c-sigma-Y gate.
@@ -1977,7 +1977,7 @@ void controlledNot(Qureg qureg, const int controlQubit, const int targetQubit);
  * @author Tyson Jones
  * @author Ania Brown (debug)
  */
-void controlledPauliY(Qureg qureg, const int controlQubit, const int targetQubit);
+void controlledPauliY(Qureg qureg, int controlQubit, int targetQubit);
 
 /** Gives the probability of a specified qubit being measured in the given outcome (0 or 1).
  * This performs no actual measurement and does not change the state of the qubits.
@@ -2002,7 +2002,7 @@ void controlledPauliY(Qureg qureg, const int controlQubit, const int targetQubit
  * @author Ania Brown (state-vector)
  * @author Tyson Jones (density matrix)
  */
-qreal calcProbOfOutcome(Qureg qureg, const int measureQubit, int outcome);
+qreal calcProbOfOutcome(Qureg qureg, int measureQubit, int outcome);
 
 /** Updates \p qureg to be consistent with measuring \p measureQubit in the given 
  * \p outcome (0 or 1), and returns the probability of such a measurement outcome. 
@@ -2029,7 +2029,7 @@ qreal calcProbOfOutcome(Qureg qureg, const int measureQubit, int outcome);
  * @author Ania Brown (state-vector)
  * @author Tyson Jones (density matrix)
  */
-qreal collapseToOutcome(Qureg qureg, const int measureQubit, int outcome);
+qreal collapseToOutcome(Qureg qureg, int measureQubit, int outcome);
 
 /** Measures a single qubit, collapsing it randomly to 0 or 1.
  * Outcome probabilities are weighted by the state vector, which is irreversibly
@@ -2237,7 +2237,7 @@ void writeRecordedQASMToFile(Qureg qureg, char* filename);
  * @author Tyson Jones (GPU, doc)
  * @author Ania Brown (CPU, distributed)
  */
-void mixDephasing(Qureg qureg, const int targetQubit, qreal prob);
+void mixDephasing(Qureg qureg, int targetQubit, qreal prob);
 
 /** Mixes a density matrix \p qureg to induce two-qubit dephasing noise.
  * With probability \p prob, applies Pauli Z to either or both qubits.
@@ -2301,7 +2301,7 @@ void mixTwoQubitDephasing(Qureg qureg, int qubit1, int qubit2, qreal prob);
  * @author Tyson Jones (GPU, doc)
  * @author Ania Brown (CPU, distributed)
  */
-void mixDepolarising(Qureg qureg, const int targetQubit, qreal prob);
+void mixDepolarising(Qureg qureg, int targetQubit, qreal prob);
 
 /** Mixes a density matrix \p qureg to induce single-qubit amplitude damping (decay to 0 state).
  * With probability \p prob, applies damping (transition from 1 to 0 state).
@@ -2332,7 +2332,7 @@ void mixDepolarising(Qureg qureg, const int targetQubit, qreal prob);
  * @author Ania Brown (GPU, patched local CPU)
  * @author Tyson Jones (distributed, doc)
  */
-void mixDamping(Qureg qureg, const int targetQubit, qreal prob);
+void mixDamping(Qureg qureg, int targetQubit, qreal prob);
 
 /** Mixes a density matrix \p qureg to induce two-qubit homogeneous depolarising noise.
  * With probability \p prob, applies to \p qubit1 and \p qubit2 any operator of the set
@@ -2641,8 +2641,8 @@ void sqrtSwapGate(Qureg qureg, int qb1, int qb2);
  * @author Tyson Jones
  */
 void multiStateControlledUnitary(
-    Qureg qureg, int* controlQubits, int* controlState, const int numControlQubits, 
-    const int targetQubit, ComplexMatrix2 u
+    Qureg qureg, int* controlQubits, int* controlState, int numControlQubits, 
+    int targetQubit, ComplexMatrix2 u
 );
 
 /** Apply a multi-qubit Z rotation on a selected number of qubits. 
@@ -2910,7 +2910,7 @@ qreal calcExpecPauliHamil(Qureg qureg, PauliHamil hamil, Qureg workspace);
  *      or if each node cannot fit 4 amplitudes in distributed mode.
  * @author Tyson Jones
  */
-void twoQubitUnitary(Qureg qureg, const int targetQubit1, const int targetQubit2, ComplexMatrix4 u);
+void twoQubitUnitary(Qureg qureg, int targetQubit1, int targetQubit2, ComplexMatrix4 u);
 
 /** Apply a general controlled two-qubit unitary (including a global phase factor).
  * The given unitary is applied to the target amplitudes where the control qubit has value 1.
@@ -2974,7 +2974,7 @@ void twoQubitUnitary(Qureg qureg, const int targetQubit1, const int targetQubit2
  *     or if each node cannot fit 4 amplitudes in distributed mode.
  * @author Tyson Jones
  */
-void controlledTwoQubitUnitary(Qureg qureg, const int controlQubit, const int targetQubit1, const int targetQubit2, ComplexMatrix4 u);
+void controlledTwoQubitUnitary(Qureg qureg, int controlQubit, int targetQubit1, int targetQubit2, ComplexMatrix4 u);
 
 /** Apply a general multi-controlled two-qubit unitary (including a global phase factor).
  * Any number of control qubits can be specified, and if all have value 1, 
@@ -3049,7 +3049,7 @@ void controlledTwoQubitUnitary(Qureg qureg, const int controlQubit, const int ta
  *      or if each node cannot fit 4 amplitudes in distributed mode.
  * @author Tyson Jones
  */
-void multiControlledTwoQubitUnitary(Qureg qureg, int* controlQubits, const int numControlQubits, const int targetQubit1, const int targetQubit2, ComplexMatrix4 u);
+void multiControlledTwoQubitUnitary(Qureg qureg, int* controlQubits, int numControlQubits, int targetQubit1, int targetQubit2, ComplexMatrix4 u);
 
 /** Apply a general multi-qubit unitary (including a global phase factor) with any number of target qubits.
  *
@@ -3126,7 +3126,7 @@ void multiControlledTwoQubitUnitary(Qureg qureg, int* controlQubits, const int n
  *      or if a node cannot fit the required number of target amplitudes in distributed mode.
  * @author Tyson Jones
  */
-void multiQubitUnitary(Qureg qureg, int* targs, const int numTargs, ComplexMatrixN u);
+void multiQubitUnitary(Qureg qureg, int* targs, int numTargs, ComplexMatrixN u);
 
 /** Apply a general controlled multi-qubit unitary (including a global phase factor).
  * One control and any number of target qubits can be specified.
@@ -3197,7 +3197,7 @@ void multiQubitUnitary(Qureg qureg, int* targs, const int numTargs, ComplexMatri
  *      or if a node cannot fit the required number of target amplitudes in distributed mode.
  * @author Tyson Jones
  */
-void controlledMultiQubitUnitary(Qureg qureg, int ctrl, int* targs, const int numTargs, ComplexMatrixN u);
+void controlledMultiQubitUnitary(Qureg qureg, int ctrl, int* targs, int numTargs, ComplexMatrixN u);
 
 /** Apply a general multi-controlled multi-qubit unitary (including a global phase factor).
  * Any number of control and target qubits can be specified.
@@ -3274,7 +3274,7 @@ void controlledMultiQubitUnitary(Qureg qureg, int ctrl, int* targs, const int nu
  *      or if a node cannot fit the required number of target amplitudes in distributed mode.
  * @author Tyson Jones
  */
-void multiControlledMultiQubitUnitary(Qureg qureg, int* ctrls, const int numCtrls, int* targs, const int numTargs, ComplexMatrixN u);
+void multiControlledMultiQubitUnitary(Qureg qureg, int* ctrls, int numCtrls, int* targs, int numTargs, ComplexMatrixN u);
 
 /** Apply a general single-qubit Kraus map to a density matrix, as specified by at most 
  * four Kraus operators, \f$K_i\f$ (\p ops). A Kraus map is also referred to as 
@@ -3609,7 +3609,7 @@ void applyTrotterCircuit(Qureg qureg, PauliHamil hamil, qreal time, int order, i
  *      if \p targetQubit is outside [0, \p qureg.numQubitsRepresented).
  * @author Tyson Jones
  */
-void applyMatrix2(Qureg qureg, const int targetQubit, ComplexMatrix2 u);
+void applyMatrix2(Qureg qureg, int targetQubit, ComplexMatrix2 u);
 
 /** Apply a general 4-by-4 matrix, which may be non-unitary. The matrix is 
  * left-multiplied onto the state, for both state-vectors and density matrices.
@@ -3657,7 +3657,7 @@ void applyMatrix2(Qureg qureg, const int targetQubit, ComplexMatrix2 u);
  *      or if each node cannot fit 4 amplitudes in distributed mode.
  * @author Tyson Jones
  */
-void applyMatrix4(Qureg qureg, const int targetQubit1, const int targetQubit2, ComplexMatrix4 u);
+void applyMatrix4(Qureg qureg, int targetQubit1, int targetQubit2, ComplexMatrix4 u);
 
 /** Apply a general N-by-N matrix, which may be non-unitary, on any number of target qubits.
  * The matrix is left-multiplied onto the state, for both state-vectors and density matrices.
@@ -3720,7 +3720,7 @@ void applyMatrix4(Qureg qureg, const int targetQubit1, const int targetQubit2, C
  *      or if a node cannot fit the required number of target amplitudes in distributed mode.
  * @author Tyson Jones
  */
-void applyMatrixN(Qureg qureg, int* targs, const int numTargs, ComplexMatrixN u);
+void applyMatrixN(Qureg qureg, int* targs, int numTargs, ComplexMatrixN u);
 
 /** Apply a general N-by-N matrix, which may be non-unitary, with additional controlled qubits.
  * The matrix is left-multiplied onto the state, for both state-vectors and density matrices.
@@ -3773,7 +3773,7 @@ void applyMatrixN(Qureg qureg, int* targs, const int numTargs, ComplexMatrixN u)
  *      or if a node cannot fit the required number of target amplitudes in distributed mode.
  * @author Tyson Jones
  */
-void applyMultiControlledMatrixN(Qureg qureg, int* ctrls, const int numCtrls, int* targs, const int numTargs, ComplexMatrixN u);
+void applyMultiControlledMatrixN(Qureg qureg, int* ctrls, int numCtrls, int* targs, int numTargs, ComplexMatrixN u);
 
 /** An internal function called when invalid arguments are passed to a QuEST API
  * call, which the user can optionally override by redefining. This function is 

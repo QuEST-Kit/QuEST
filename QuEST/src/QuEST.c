@@ -174,7 +174,7 @@ void cloneQureg(Qureg targetQureg, Qureg copyQureg) {
  * unitary gates
  */
 
-void hadamard(Qureg qureg, const int targetQubit) {
+void hadamard(Qureg qureg, int targetQubit) {
     validateTarget(qureg, targetQubit, __func__);
     
     statevec_hadamard(qureg, targetQubit);
@@ -185,7 +185,7 @@ void hadamard(Qureg qureg, const int targetQubit) {
     qasm_recordGate(qureg, GATE_HADAMARD, targetQubit);
 }
 
-void rotateX(Qureg qureg, const int targetQubit, qreal angle) {
+void rotateX(Qureg qureg, int targetQubit, qreal angle) {
     validateTarget(qureg, targetQubit, __func__);
     
     statevec_rotateX(qureg, targetQubit, angle);
@@ -196,7 +196,7 @@ void rotateX(Qureg qureg, const int targetQubit, qreal angle) {
     qasm_recordParamGate(qureg, GATE_ROTATE_X, targetQubit, angle);
 }
 
-void rotateY(Qureg qureg, const int targetQubit, qreal angle) {
+void rotateY(Qureg qureg, int targetQubit, qreal angle) {
     validateTarget(qureg, targetQubit, __func__);
     
     statevec_rotateY(qureg, targetQubit, angle);
@@ -207,7 +207,7 @@ void rotateY(Qureg qureg, const int targetQubit, qreal angle) {
     qasm_recordParamGate(qureg, GATE_ROTATE_Y, targetQubit, angle);
 }
 
-void rotateZ(Qureg qureg, const int targetQubit, qreal angle) {
+void rotateZ(Qureg qureg, int targetQubit, qreal angle) {
     validateTarget(qureg, targetQubit, __func__);
     
     statevec_rotateZ(qureg, targetQubit, angle);
@@ -218,7 +218,7 @@ void rotateZ(Qureg qureg, const int targetQubit, qreal angle) {
     qasm_recordParamGate(qureg, GATE_ROTATE_Z, targetQubit, angle);
 }
 
-void controlledRotateX(Qureg qureg, const int controlQubit, const int targetQubit, qreal angle) {
+void controlledRotateX(Qureg qureg, int controlQubit, int targetQubit, qreal angle) {
     validateControlTarget(qureg, controlQubit, targetQubit, __func__);
     
     statevec_controlledRotateX(qureg, controlQubit, targetQubit, angle);
@@ -230,7 +230,7 @@ void controlledRotateX(Qureg qureg, const int controlQubit, const int targetQubi
     qasm_recordControlledParamGate(qureg, GATE_ROTATE_X, controlQubit, targetQubit, angle);
 }
 
-void controlledRotateY(Qureg qureg, const int controlQubit, const int targetQubit, qreal angle) {
+void controlledRotateY(Qureg qureg, int controlQubit, int targetQubit, qreal angle) {
     validateControlTarget(qureg, controlQubit, targetQubit, __func__);
     
     statevec_controlledRotateY(qureg, controlQubit, targetQubit, angle);
@@ -242,7 +242,7 @@ void controlledRotateY(Qureg qureg, const int controlQubit, const int targetQubi
     qasm_recordControlledParamGate(qureg, GATE_ROTATE_Y, controlQubit, targetQubit, angle);
 }
 
-void controlledRotateZ(Qureg qureg, const int controlQubit, const int targetQubit, qreal angle) {
+void controlledRotateZ(Qureg qureg, int controlQubit, int targetQubit, qreal angle) {
     validateControlTarget(qureg, controlQubit, targetQubit, __func__);
     
     statevec_controlledRotateZ(qureg, controlQubit, targetQubit, angle);
@@ -254,7 +254,7 @@ void controlledRotateZ(Qureg qureg, const int controlQubit, const int targetQubi
     qasm_recordControlledParamGate(qureg, GATE_ROTATE_Z, controlQubit, targetQubit, angle);
 }
 
-void twoQubitUnitary(Qureg qureg, const int targetQubit1, const int targetQubit2, ComplexMatrix4 u) {
+void twoQubitUnitary(Qureg qureg, int targetQubit1, int targetQubit2, ComplexMatrix4 u) {
     validateMultiTargets(qureg, (int []) {targetQubit1, targetQubit2}, 2, __func__);
     validateTwoQubitUnitaryMatrix(qureg, u, __func__);
     
@@ -267,7 +267,7 @@ void twoQubitUnitary(Qureg qureg, const int targetQubit1, const int targetQubit2
     qasm_recordComment(qureg, "Here, an undisclosed 2-qubit unitary was applied.");
 }
 
-void controlledTwoQubitUnitary(Qureg qureg, const int controlQubit, const int targetQubit1, const int targetQubit2, ComplexMatrix4 u) {
+void controlledTwoQubitUnitary(Qureg qureg, int controlQubit, int targetQubit1, int targetQubit2, ComplexMatrix4 u) {
     validateMultiControlsMultiTargets(qureg, (int[]) {controlQubit}, 1, (int[]) {targetQubit1, targetQubit2}, 2, __func__);
     validateTwoQubitUnitaryMatrix(qureg, u, __func__);
     
@@ -280,7 +280,7 @@ void controlledTwoQubitUnitary(Qureg qureg, const int controlQubit, const int ta
     qasm_recordComment(qureg, "Here, an undisclosed controlled 2-qubit unitary was applied.");
 }
 
-void multiControlledTwoQubitUnitary(Qureg qureg, int* controlQubits, const int numControlQubits, const int targetQubit1, const int targetQubit2, ComplexMatrix4 u) {
+void multiControlledTwoQubitUnitary(Qureg qureg, int* controlQubits, int numControlQubits, int targetQubit1, int targetQubit2, ComplexMatrix4 u) {
     validateMultiControlsMultiTargets(qureg, controlQubits, numControlQubits, (int[]) {targetQubit1, targetQubit2}, 2, __func__);
     validateTwoQubitUnitaryMatrix(qureg, u, __func__);
     
@@ -294,7 +294,7 @@ void multiControlledTwoQubitUnitary(Qureg qureg, int* controlQubits, const int n
     qasm_recordComment(qureg, "Here, an undisclosed multi-controlled 2-qubit unitary was applied.");
 }
 
-void multiQubitUnitary(Qureg qureg, int* targs, const int numTargs, ComplexMatrixN u) {
+void multiQubitUnitary(Qureg qureg, int* targs, int numTargs, ComplexMatrixN u) {
     validateMultiTargets(qureg, targs, numTargs, __func__);
     validateMultiQubitUnitaryMatrix(qureg, u, numTargs, __func__);
     
@@ -311,7 +311,7 @@ void multiQubitUnitary(Qureg qureg, int* targs, const int numTargs, ComplexMatri
     qasm_recordComment(qureg, "Here, an undisclosed multi-qubit unitary was applied.");
 }
 
-void controlledMultiQubitUnitary(Qureg qureg, int ctrl, int* targs, const int numTargs, ComplexMatrixN u) {
+void controlledMultiQubitUnitary(Qureg qureg, int ctrl, int* targs, int numTargs, ComplexMatrixN u) {
     validateMultiControlsMultiTargets(qureg, (int[]) {ctrl}, 1, targs, numTargs, __func__);
     validateMultiQubitUnitaryMatrix(qureg, u, numTargs, __func__);
     
@@ -328,7 +328,7 @@ void controlledMultiQubitUnitary(Qureg qureg, int ctrl, int* targs, const int nu
     qasm_recordComment(qureg, "Here, an undisclosed controlled multi-qubit unitary was applied.");
 }
 
-void multiControlledMultiQubitUnitary(Qureg qureg, int* ctrls, const int numCtrls, int* targs, const int numTargs, ComplexMatrixN u) {
+void multiControlledMultiQubitUnitary(Qureg qureg, int* ctrls, int numCtrls, int* targs, int numTargs, ComplexMatrixN u) {
     validateMultiControlsMultiTargets(qureg, ctrls, numCtrls, targs, numTargs, __func__);
     validateMultiQubitUnitaryMatrix(qureg, u, numTargs, __func__);
     
@@ -346,7 +346,7 @@ void multiControlledMultiQubitUnitary(Qureg qureg, int* ctrls, const int numCtrl
     qasm_recordComment(qureg, "Here, an undisclosed multi-controlled multi-qubit unitary was applied.");
 }
 
-void unitary(Qureg qureg, const int targetQubit, ComplexMatrix2 u) {
+void unitary(Qureg qureg, int targetQubit, ComplexMatrix2 u) {
     validateTarget(qureg, targetQubit, __func__);
     validateOneQubitUnitaryMatrix(u, __func__);
     
@@ -358,7 +358,7 @@ void unitary(Qureg qureg, const int targetQubit, ComplexMatrix2 u) {
     qasm_recordUnitary(qureg, u, targetQubit);
 }
 
-void controlledUnitary(Qureg qureg, const int controlQubit, const int targetQubit, ComplexMatrix2 u) {
+void controlledUnitary(Qureg qureg, int controlQubit, int targetQubit, ComplexMatrix2 u) {
     validateControlTarget(qureg, controlQubit, targetQubit, __func__);
     validateOneQubitUnitaryMatrix(u, __func__);
     
@@ -371,7 +371,7 @@ void controlledUnitary(Qureg qureg, const int controlQubit, const int targetQubi
     qasm_recordControlledUnitary(qureg, u, controlQubit, targetQubit);
 }
 
-void multiControlledUnitary(Qureg qureg, int* controlQubits, const int numControlQubits, const int targetQubit, ComplexMatrix2 u) {
+void multiControlledUnitary(Qureg qureg, int* controlQubits, int numControlQubits, int targetQubit, ComplexMatrix2 u) {
     validateMultiControlsTarget(qureg, controlQubits, numControlQubits, targetQubit, __func__);
     validateOneQubitUnitaryMatrix(u, __func__);
     
@@ -386,7 +386,7 @@ void multiControlledUnitary(Qureg qureg, int* controlQubits, const int numContro
     qasm_recordMultiControlledUnitary(qureg, u, controlQubits, numControlQubits, targetQubit);
 }
 
-void multiStateControlledUnitary(Qureg qureg, int* controlQubits, int* controlState, const int numControlQubits, const int targetQubit, ComplexMatrix2 u) {
+void multiStateControlledUnitary(Qureg qureg, int* controlQubits, int* controlState, int numControlQubits, int targetQubit, ComplexMatrix2 u) {
     validateMultiControlsTarget(qureg, controlQubits, numControlQubits, targetQubit, __func__);
     validateOneQubitUnitaryMatrix(u, __func__);
     validateControlState(controlState, numControlQubits, __func__);
@@ -402,7 +402,7 @@ void multiStateControlledUnitary(Qureg qureg, int* controlQubits, int* controlSt
     qasm_recordMultiStateControlledUnitary(qureg, u, controlQubits, controlState, numControlQubits, targetQubit);
 }
 
-void compactUnitary(Qureg qureg, const int targetQubit, Complex alpha, Complex beta) {
+void compactUnitary(Qureg qureg, int targetQubit, Complex alpha, Complex beta) {
     validateTarget(qureg, targetQubit, __func__);
     validateUnitaryComplexPair(alpha, beta, __func__);
     
@@ -415,7 +415,7 @@ void compactUnitary(Qureg qureg, const int targetQubit, Complex alpha, Complex b
     qasm_recordCompactUnitary(qureg, alpha, beta, targetQubit);
 }
 
-void controlledCompactUnitary(Qureg qureg, const int controlQubit, const int targetQubit, Complex alpha, Complex beta) {
+void controlledCompactUnitary(Qureg qureg, int controlQubit, int targetQubit, Complex alpha, Complex beta) {
     validateControlTarget(qureg, controlQubit, targetQubit, __func__);
     validateUnitaryComplexPair(alpha, beta, __func__);
     
@@ -430,7 +430,7 @@ void controlledCompactUnitary(Qureg qureg, const int controlQubit, const int tar
     qasm_recordControlledCompactUnitary(qureg, alpha, beta, controlQubit, targetQubit);
 }
 
-void pauliX(Qureg qureg, const int targetQubit) {
+void pauliX(Qureg qureg, int targetQubit) {
     validateTarget(qureg, targetQubit, __func__);
     
     statevec_pauliX(qureg, targetQubit);
@@ -441,7 +441,7 @@ void pauliX(Qureg qureg, const int targetQubit) {
     qasm_recordGate(qureg, GATE_SIGMA_X, targetQubit);
 }
 
-void pauliY(Qureg qureg, const int targetQubit) {
+void pauliY(Qureg qureg, int targetQubit) {
     validateTarget(qureg, targetQubit, __func__);
     
     statevec_pauliY(qureg, targetQubit);
@@ -452,7 +452,7 @@ void pauliY(Qureg qureg, const int targetQubit) {
     qasm_recordGate(qureg, GATE_SIGMA_Y, targetQubit);
 }
 
-void pauliZ(Qureg qureg, const int targetQubit) {
+void pauliZ(Qureg qureg, int targetQubit) {
     validateTarget(qureg, targetQubit, __func__);
     
     statevec_pauliZ(qureg, targetQubit);
@@ -463,7 +463,7 @@ void pauliZ(Qureg qureg, const int targetQubit) {
     qasm_recordGate(qureg, GATE_SIGMA_Z, targetQubit);
 }
 
-void sGate(Qureg qureg, const int targetQubit) {
+void sGate(Qureg qureg, int targetQubit) {
     validateTarget(qureg, targetQubit, __func__);
     
     statevec_sGate(qureg, targetQubit);
@@ -474,7 +474,7 @@ void sGate(Qureg qureg, const int targetQubit) {
     qasm_recordGate(qureg, GATE_S, targetQubit);
 }
 
-void tGate(Qureg qureg, const int targetQubit) {
+void tGate(Qureg qureg, int targetQubit) {
     validateTarget(qureg, targetQubit, __func__);
     
     statevec_tGate(qureg, targetQubit);
@@ -485,7 +485,7 @@ void tGate(Qureg qureg, const int targetQubit) {
     qasm_recordGate(qureg, GATE_T, targetQubit);
 }
 
-void phaseShift(Qureg qureg, const int targetQubit, qreal angle) {
+void phaseShift(Qureg qureg, int targetQubit, qreal angle) {
     validateTarget(qureg, targetQubit, __func__);
     
     statevec_phaseShift(qureg, targetQubit, angle);
@@ -496,7 +496,7 @@ void phaseShift(Qureg qureg, const int targetQubit, qreal angle) {
     qasm_recordParamGate(qureg, GATE_PHASE_SHIFT, targetQubit, angle);
 }
 
-void controlledPhaseShift(Qureg qureg, const int idQubit1, const int idQubit2, qreal angle) {
+void controlledPhaseShift(Qureg qureg, int idQubit1, int idQubit2, qreal angle) {
     validateControlTarget(qureg, idQubit1, idQubit2, __func__);
     
     statevec_controlledPhaseShift(qureg, idQubit1, idQubit2, angle);
@@ -522,7 +522,7 @@ void multiControlledPhaseShift(Qureg qureg, int *controlQubits, int numControlQu
     qasm_recordMultiControlledParamGate(qureg, GATE_PHASE_SHIFT, controlQubits, numControlQubits-1, controlQubits[numControlQubits-1], angle);
 }
 
-void controlledNot(Qureg qureg, const int controlQubit, const int targetQubit) {
+void controlledNot(Qureg qureg, int controlQubit, int targetQubit) {
     validateControlTarget(qureg, controlQubit, targetQubit, __func__);
     
     statevec_controlledNot(qureg, controlQubit, targetQubit);
@@ -534,7 +534,7 @@ void controlledNot(Qureg qureg, const int controlQubit, const int targetQubit) {
     qasm_recordControlledGate(qureg, GATE_SIGMA_X, controlQubit, targetQubit);
 }
 
-void controlledPauliY(Qureg qureg, const int controlQubit, const int targetQubit) {
+void controlledPauliY(Qureg qureg, int controlQubit, int targetQubit) {
     validateControlTarget(qureg, controlQubit, targetQubit, __func__);
     
     statevec_controlledPauliY(qureg, controlQubit, targetQubit);
@@ -546,7 +546,7 @@ void controlledPauliY(Qureg qureg, const int controlQubit, const int targetQubit
     qasm_recordControlledGate(qureg, GATE_SIGMA_Y, controlQubit, targetQubit);
 }
 
-void controlledPhaseFlip(Qureg qureg, const int idQubit1, const int idQubit2) {
+void controlledPhaseFlip(Qureg qureg, int idQubit1, int idQubit2) {
     validateControlTarget(qureg, idQubit1, idQubit2, __func__);
     
     statevec_controlledPhaseFlip(qureg, idQubit1, idQubit2);
@@ -572,7 +572,7 @@ void multiControlledPhaseFlip(Qureg qureg, int *controlQubits, int numControlQub
     qasm_recordMultiControlledGate(qureg, GATE_SIGMA_Z, controlQubits, numControlQubits-1, controlQubits[numControlQubits-1]);
 }
 
-void rotateAroundAxis(Qureg qureg, const int rotQubit, qreal angle, Vector axis) {
+void rotateAroundAxis(Qureg qureg, int rotQubit, qreal angle, Vector axis) {
     validateTarget(qureg, rotQubit, __func__);
     validateVector(axis, __func__);
     
@@ -585,7 +585,7 @@ void rotateAroundAxis(Qureg qureg, const int rotQubit, qreal angle, Vector axis)
     qasm_recordAxisRotation(qureg, angle, axis, rotQubit);
 }
 
-void controlledRotateAroundAxis(Qureg qureg, const int controlQubit, const int targetQubit, qreal angle, Vector axis) {
+void controlledRotateAroundAxis(Qureg qureg, int controlQubit, int targetQubit, qreal angle, Vector axis) {
     validateControlTarget(qureg, controlQubit, targetQubit, __func__);
     validateVector(axis, __func__);
     
@@ -723,7 +723,7 @@ Complex getDensityAmp(Qureg qureg, long long int row, long long int col) {
  * non-unitary actions
  */
 
-qreal collapseToOutcome(Qureg qureg, const int measureQubit, int outcome) {
+qreal collapseToOutcome(Qureg qureg, int measureQubit, int outcome) {
     validateTarget(qureg, measureQubit, __func__);
     validateOutcome(outcome, __func__);
     
@@ -841,7 +841,7 @@ void applyTrotterCircuit(Qureg qureg, PauliHamil hamil, qreal time, int order, i
     qasm_recordComment(qureg, "End of Trotter circuit");
 }
 
-void applyMatrix2(Qureg qureg, const int targetQubit, ComplexMatrix2 u) {
+void applyMatrix2(Qureg qureg, int targetQubit, ComplexMatrix2 u) {
     validateTarget(qureg, targetQubit, __func__);
     
     // actually just left-multiplies any complex matrix
@@ -850,7 +850,7 @@ void applyMatrix2(Qureg qureg, const int targetQubit, ComplexMatrix2 u) {
     qasm_recordComment(qureg, "Here, an undisclosed 2-by-2 matrix (possibly non-unitary) was multiplied onto qubit %d", targetQubit);
 }
 
-void applyMatrix4(Qureg qureg, const int targetQubit1, const int targetQubit2, ComplexMatrix4 u) {
+void applyMatrix4(Qureg qureg, int targetQubit1, int targetQubit2, ComplexMatrix4 u) {
     validateMultiTargets(qureg, (int []) {targetQubit1, targetQubit2}, 2, __func__);
     validateMultiQubitMatrixFitsInNode(qureg, 2, __func__);
     
@@ -860,7 +860,7 @@ void applyMatrix4(Qureg qureg, const int targetQubit1, const int targetQubit2, C
     qasm_recordComment(qureg, "Here, an undisclosed 4-by-4 matrix (possibly non-unitary) was multiplied onto qubits %d and %d", targetQubit1, targetQubit2);
 }
 
-void applyMatrixN(Qureg qureg, int* targs, const int numTargs, ComplexMatrixN u) {
+void applyMatrixN(Qureg qureg, int* targs, int numTargs, ComplexMatrixN u) {
     validateMultiTargets(qureg, targs, numTargs, __func__);
     validateMultiQubitMatrix(qureg, u, numTargs, __func__);
     
@@ -871,7 +871,7 @@ void applyMatrixN(Qureg qureg, int* targs, const int numTargs, ComplexMatrixN u)
     qasm_recordComment(qureg, "Here, an undisclosed %d-by-%d matrix (possibly non-unitary) was multiplied onto %d undisclosed qubits", dim, dim, numTargs);
 }
 
-void applyMultiControlledMatrixN(Qureg qureg, int* ctrls, const int numCtrls, int* targs, const int numTargs, ComplexMatrixN u) {
+void applyMultiControlledMatrixN(Qureg qureg, int* ctrls, int numCtrls, int* targs, int numTargs, ComplexMatrixN u) {
     validateMultiControlsMultiTargets(qureg, ctrls, numCtrls, targs, numTargs, __func__);
     validateMultiQubitMatrix(qureg, u, numTargs, __func__);
     
@@ -923,7 +923,7 @@ qreal calcDensityInnerProduct(Qureg rho1, Qureg rho2) {
     return densmatr_calcInnerProduct(rho1, rho2);
 }
 
-qreal calcProbOfOutcome(Qureg qureg, const int measureQubit, int outcome) {
+qreal calcProbOfOutcome(Qureg qureg, int measureQubit, int outcome) {
     validateTarget(qureg, measureQubit, __func__);
     validateOutcome(outcome, __func__);
     
@@ -998,7 +998,7 @@ qreal calcHilbertSchmidtDistance(Qureg a, Qureg b) {
  * decoherence
  */
 
-void mixDephasing(Qureg qureg, const int targetQubit, qreal prob) {
+void mixDephasing(Qureg qureg, int targetQubit, qreal prob) {
     validateDensityMatrQureg(qureg, __func__);
     validateTarget(qureg, targetQubit, __func__);
     validateOneQubitDephaseProb(prob, __func__);
@@ -1020,7 +1020,7 @@ void mixTwoQubitDephasing(Qureg qureg, int qubit1, int qubit2, qreal prob) {
         "%d and %d with total probability %g", qubit1, qubit2, prob);
 }
 
-void mixDepolarising(Qureg qureg, const int targetQubit, qreal prob) {
+void mixDepolarising(Qureg qureg, int targetQubit, qreal prob) {
     validateDensityMatrQureg(qureg, __func__);
     validateTarget(qureg, targetQubit, __func__);
     validateOneQubitDepolProb(prob, __func__);
@@ -1031,7 +1031,7 @@ void mixDepolarising(Qureg qureg, const int targetQubit, qreal prob) {
         "qubit %d with total probability %g", targetQubit, prob);
 }
 
-void mixDamping(Qureg qureg, const int targetQubit, qreal prob) {
+void mixDamping(Qureg qureg, int targetQubit, qreal prob) {
     validateDensityMatrQureg(qureg, __func__);
     validateTarget(qureg, targetQubit, __func__);
     validateOneQubitDampingProb(prob, __func__);

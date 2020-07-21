@@ -381,15 +381,15 @@ void validateUniqueTargets(Qureg qureg, int qubit1, int qubit2, const char* call
     QuESTAssert(qubit1 != qubit2, E_TARGETS_NOT_UNIQUE, caller);
 }
 
-void validateNumTargets(Qureg qureg, const int numTargetQubits, const char* caller) {
+void validateNumTargets(Qureg qureg, int numTargetQubits, const char* caller) {
     QuESTAssert(numTargetQubits>0 && numTargetQubits<=qureg.numQubitsRepresented, E_INVALID_NUM_TARGETS, caller);
 }
 
-void validateNumControls(Qureg qureg, const int numControlQubits, const char* caller) {
+void validateNumControls(Qureg qureg, int numControlQubits, const char* caller) {
     QuESTAssert(numControlQubits>0 && numControlQubits<qureg.numQubitsRepresented, E_INVALID_NUM_CONTROLS, caller);
 }
 
-void validateMultiTargets(Qureg qureg, int* targetQubits, const int numTargetQubits, const char* caller) {
+void validateMultiTargets(Qureg qureg, int* targetQubits, int numTargetQubits, const char* caller) {
     validateNumTargets(qureg, numTargetQubits, caller);
     for (int i=0; i < numTargetQubits; i++) 
         validateTarget(qureg, targetQubits[i], caller);
@@ -397,7 +397,7 @@ void validateMultiTargets(Qureg qureg, int* targetQubits, const int numTargetQub
     QuESTAssert(areUniqueQubits(targetQubits, numTargetQubits), E_TARGETS_NOT_UNIQUE, caller);
 }
 
-void validateMultiControls(Qureg qureg, int* controlQubits, const int numControlQubits, const char* caller) {
+void validateMultiControls(Qureg qureg, int* controlQubits, int numControlQubits, const char* caller) {
     validateNumControls(qureg, numControlQubits, caller);
     for (int i=0; i < numControlQubits; i++)
         validateControl(qureg, controlQubits[i], caller);
@@ -405,7 +405,7 @@ void validateMultiControls(Qureg qureg, int* controlQubits, const int numControl
     QuESTAssert(areUniqueQubits(controlQubits, numControlQubits), E_CONTROLS_NOT_UNIQUE, caller);
 }
 
-void validateMultiQubits(Qureg qureg, int* qubits, const int numQubits, const char* caller) {
+void validateMultiQubits(Qureg qureg, int* qubits, int numQubits, const char* caller) {
     QuESTAssert(numQubits>0 && numQubits<=qureg.numQubitsRepresented, E_INVALID_NUM_QUBITS, caller);
     for (int i=0; i < numQubits; i++)
         QuESTAssert(qubits[i]>=0 && qubits[i]<qureg.numQubitsRepresented, E_INVALID_QUBIT_INDEX, caller);
@@ -413,14 +413,14 @@ void validateMultiQubits(Qureg qureg, int* qubits, const int numQubits, const ch
     QuESTAssert(areUniqueQubits(qubits, numQubits), E_QUBITS_NOT_UNIQUE, caller);
 }
 
-void validateMultiControlsTarget(Qureg qureg, int* controlQubits, const int numControlQubits, const int targetQubit, const char* caller) {
+void validateMultiControlsTarget(Qureg qureg, int* controlQubits, int numControlQubits, int targetQubit, const char* caller) {
     validateTarget(qureg, targetQubit, caller);
     validateMultiControls(qureg, controlQubits, numControlQubits, caller);
     for (int i=0; i < numControlQubits; i++)
         QuESTAssert(controlQubits[i] != targetQubit, E_TARGET_IN_CONTROLS, caller);
 }
 
-void validateMultiControlsMultiTargets(Qureg qureg, int* controlQubits, const int numControlQubits, int* targetQubits, const int numTargetQubits, const char* caller) {
+void validateMultiControlsMultiTargets(Qureg qureg, int* controlQubits, int numControlQubits, int* targetQubits, int numTargetQubits, const char* caller) {
     validateMultiControls(qureg, controlQubits, numControlQubits, caller);
     validateMultiTargets(qureg, targetQubits, numTargetQubits, caller);
     long long int ctrlMask = getQubitBitMask(controlQubits, numControlQubits);
@@ -429,7 +429,7 @@ void validateMultiControlsMultiTargets(Qureg qureg, int* controlQubits, const in
     QuESTAssert(!overlap, E_CONTROL_TARGET_COLLISION, caller);
 }
 
-void validateControlState(int* controlState, const int numControlQubits, const char* caller) {
+void validateControlState(int* controlState, int numControlQubits, const char* caller) {
     for (int i=0; i < numControlQubits; i++)
         QuESTAssert(controlState[i] == 0 || controlState[i] == 1, E_INVALID_CONTROLS_BIT_STATE, caller);
 }

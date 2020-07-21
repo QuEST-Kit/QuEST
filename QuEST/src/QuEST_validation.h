@@ -36,17 +36,17 @@ void validateControlTarget(Qureg qureg, int controlQubit, int targetQubit, const
 
 void validateUniqueTargets(Qureg qureg, int qubit1, int qubit2, const char* caller);
 
-void validateMultiQubits(Qureg qureg, int* qubits, const int numQubits, const char* caller);
+void validateMultiQubits(Qureg qureg, int* qubits, int numQubits, const char* caller);
 
-void validateMultiTargets(Qureg qurge, int* targetQubits, const int numTargetQubits, const char* caller);
+void validateMultiTargets(Qureg qurge, int* targetQubits, int numTargetQubits, const char* caller);
 
-void validateMultiControls(Qureg qureg, int* controlQubits, const int numControlQubits, const char* caller);
+void validateMultiControls(Qureg qureg, int* controlQubits, int numControlQubits, const char* caller);
 
-void validateMultiControlsTarget(Qureg qureg, int* controlQubits, const int numControlQubits, const int targetQubit, const char* caller);
+void validateMultiControlsTarget(Qureg qureg, int* controlQubits, int numControlQubits, int targetQubit, const char* caller);
 
-void validateMultiControlsMultiTargets(Qureg qureg, int* controlQubits, const int numControlQubits, int* targetQubits, const int numTargetQubits, const char* caller);
+void validateMultiControlsMultiTargets(Qureg qureg, int* controlQubits, int numControlQubits, int* targetQubits, int numTargetQubits, const char* caller);
 
-void validateControlState(int* controlState, const int numControlQubits, const char* caller);
+void validateControlState(int* controlState, int numControlQubits, const char* caller);
 
 void validateOneQubitUnitaryMatrix(ComplexMatrix2 u, const char* caller);
 

@@ -27,14 +27,14 @@
 # endif
 
 
-void densmatr_mixDepolarising(Qureg qureg, const int targetQubit, qreal depolLevel) {
+void densmatr_mixDepolarising(Qureg qureg, int targetQubit, qreal depolLevel) {
     if (depolLevel == 0)
         return;
 
     densmatr_mixDepolarisingLocal(qureg, targetQubit, depolLevel);
 }
 
-void densmatr_mixDamping(Qureg qureg, const int targetQubit, qreal damping) {
+void densmatr_mixDamping(Qureg qureg, int targetQubit, qreal damping) {
     if (damping == 0)
         return;
 
@@ -212,71 +212,71 @@ qreal statevec_getImagAmp(Qureg qureg, long long int index){
     return qureg.stateVec.imag[index];
 }
 
-void statevec_compactUnitary(Qureg qureg, const int targetQubit, Complex alpha, Complex beta) 
+void statevec_compactUnitary(Qureg qureg, int targetQubit, Complex alpha, Complex beta) 
 {
     statevec_compactUnitaryLocal(qureg, targetQubit, alpha, beta);
 }
 
-void statevec_unitary(Qureg qureg, const int targetQubit, ComplexMatrix2 u) 
+void statevec_unitary(Qureg qureg, int targetQubit, ComplexMatrix2 u) 
 {
     statevec_unitaryLocal(qureg, targetQubit, u);
 }
 
-void statevec_controlledCompactUnitary(Qureg qureg, const int controlQubit, const int targetQubit, Complex alpha, Complex beta) 
+void statevec_controlledCompactUnitary(Qureg qureg, int controlQubit, int targetQubit, Complex alpha, Complex beta) 
 {
     statevec_controlledCompactUnitaryLocal(qureg, controlQubit, targetQubit, alpha, beta);
 }
 
-void statevec_controlledUnitary(Qureg qureg, const int controlQubit, const int targetQubit, ComplexMatrix2 u) 
+void statevec_controlledUnitary(Qureg qureg, int controlQubit, int targetQubit, ComplexMatrix2 u) 
 {
     statevec_controlledUnitaryLocal(qureg, controlQubit, targetQubit, u);
 }
 
-void statevec_multiControlledUnitary(Qureg qureg, long long int ctrlQubitsMask, long long int ctrlFlipMask, const int targetQubit, ComplexMatrix2 u) 
+void statevec_multiControlledUnitary(Qureg qureg, long long int ctrlQubitsMask, long long int ctrlFlipMask, int targetQubit, ComplexMatrix2 u) 
 {
     statevec_multiControlledUnitaryLocal(qureg, targetQubit, ctrlQubitsMask, ctrlFlipMask, u);
 }
 
-void statevec_pauliX(Qureg qureg, const int targetQubit) 
+void statevec_pauliX(Qureg qureg, int targetQubit) 
 {
     statevec_pauliXLocal(qureg, targetQubit);
 }
 
-void statevec_pauliY(Qureg qureg, const int targetQubit) 
+void statevec_pauliY(Qureg qureg, int targetQubit) 
 {
     int conjFac = 1;
     statevec_pauliYLocal(qureg, targetQubit, conjFac);
 }
 
-void statevec_pauliYConj(Qureg qureg, const int targetQubit) 
+void statevec_pauliYConj(Qureg qureg, int targetQubit) 
 {
     int conjFac = -1;
     statevec_pauliYLocal(qureg, targetQubit, conjFac);
 }
 
-void statevec_controlledPauliY(Qureg qureg, const int controlQubit, const int targetQubit)
+void statevec_controlledPauliY(Qureg qureg, int controlQubit, int targetQubit)
 {
     int conjFac = 1;
     statevec_controlledPauliYLocal(qureg, controlQubit, targetQubit, conjFac);
 }
 
-void statevec_controlledPauliYConj(Qureg qureg, const int controlQubit, const int targetQubit)
+void statevec_controlledPauliYConj(Qureg qureg, int controlQubit, int targetQubit)
 {
     int conjFac = -1;
     statevec_controlledPauliYLocal(qureg, controlQubit, targetQubit, conjFac);
 }
 
-void statevec_hadamard(Qureg qureg, const int targetQubit) 
+void statevec_hadamard(Qureg qureg, int targetQubit) 
 {
     statevec_hadamardLocal(qureg, targetQubit);
 }
 
-void statevec_controlledNot(Qureg qureg, const int controlQubit, const int targetQubit) 
+void statevec_controlledNot(Qureg qureg, int controlQubit, int targetQubit) 
 {
     statevec_controlledNotLocal(qureg, controlQubit, targetQubit);
 }
 
-qreal statevec_calcProbOfOutcome(Qureg qureg, const int measureQubit, int outcome)
+qreal statevec_calcProbOfOutcome(Qureg qureg, int measureQubit, int outcome)
 {
     qreal stateProb=0;
     stateProb = statevec_findProbabilityOfZeroLocal(qureg, measureQubit);
@@ -284,7 +284,7 @@ qreal statevec_calcProbOfOutcome(Qureg qureg, const int measureQubit, int outcom
     return stateProb;
 }
 
-qreal densmatr_calcProbOfOutcome(Qureg qureg, const int measureQubit, int outcome) {
+qreal densmatr_calcProbOfOutcome(Qureg qureg, int measureQubit, int outcome) {
     
     qreal outcomeProb = densmatr_findProbabilityOfZeroLocal(qureg, measureQubit);
     if (outcome == 1)
@@ -292,7 +292,7 @@ qreal densmatr_calcProbOfOutcome(Qureg qureg, const int measureQubit, int outcom
     return outcomeProb;
 }
 
-void statevec_collapseToKnownProbOutcome(Qureg qureg, const int measureQubit, int outcome, qreal stateProb)
+void statevec_collapseToKnownProbOutcome(Qureg qureg, int measureQubit, int outcome, qreal stateProb)
 {
     statevec_collapseToKnownProbOutcomeLocal(qureg, measureQubit, outcome, stateProb);
 }
@@ -307,12 +307,12 @@ void seedQuESTDefault(void){
     init_by_array(key, 2);
 }
 
-void statevec_multiControlledTwoQubitUnitary(Qureg qureg, long long int ctrlMask, const int q1, const int q2, ComplexMatrix4 u)
+void statevec_multiControlledTwoQubitUnitary(Qureg qureg, long long int ctrlMask, int q1, int q2, ComplexMatrix4 u)
 {
     statevec_multiControlledTwoQubitUnitaryLocal(qureg, ctrlMask, q1, q2, u);
 }
 
-void statevec_multiControlledMultiQubitUnitary(Qureg qureg, long long int ctrlMask, int* targs, const int numTargs, ComplexMatrixN u)
+void statevec_multiControlledMultiQubitUnitary(Qureg qureg, long long int ctrlMask, int* targs, int numTargs, ComplexMatrixN u)
 {
     statevec_multiControlledMultiQubitUnitaryLocal(qureg, ctrlMask, targs, numTargs, u);
 }

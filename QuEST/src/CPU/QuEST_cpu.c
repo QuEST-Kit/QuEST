@@ -45,8 +45,8 @@ void copyStateFromGPU(Qureg qureg) {
  * state vector and density matrix operations
  */
 
-void densmatr_oneQubitDegradeOffDiagonal(Qureg qureg, const int targetQubit, qreal retain){
-    const long long int numTasks = qureg.numAmpsPerChunk;
+void densmatr_oneQubitDegradeOffDiagonal(Qureg qureg, int targetQubit, qreal retain){
+    long long int numTasks = qureg.numAmpsPerChunk;
     long long int innerMask = 1LL << targetQubit;
     long long int outerMask = 1LL << (targetQubit + (qureg.numQubitsRepresented));
 
@@ -76,15 +76,15 @@ void densmatr_oneQubitDegradeOffDiagonal(Qureg qureg, const int targetQubit, qre
     }
 }
 
-void densmatr_mixDephasing(Qureg qureg, const int targetQubit, qreal dephase) {
+void densmatr_mixDephasing(Qureg qureg, int targetQubit, qreal dephase) {
     qreal retain=1-dephase;
     densmatr_oneQubitDegradeOffDiagonal(qureg, targetQubit, retain);
 }
 
-void densmatr_mixTwoQubitDephasing(Qureg qureg, const int qubit1, const int qubit2, qreal dephase) {
+void densmatr_mixTwoQubitDephasing(Qureg qureg, int qubit1, int qubit2, qreal dephase) {
     qreal retain=1-dephase;
 
-    const long long int numTasks = qureg.numAmpsPerChunk;
+    long long int numTasks = qureg.numAmpsPerChunk;
     long long int innerMaskQubit1 = 1LL << qubit1;
     long long int outerMaskQubit1 = 1LL << (qubit1 + (qureg.numQubitsRepresented));
     long long int innerMaskQubit2 = 1LL << qubit2;
@@ -122,10 +122,10 @@ void densmatr_mixTwoQubitDephasing(Qureg qureg, const int qubit1, const int qubi
     }
 }
 
-void densmatr_mixDepolarisingLocal(Qureg qureg, const int targetQubit, qreal depolLevel) {
+void densmatr_mixDepolarisingLocal(Qureg qureg, int targetQubit, qreal depolLevel) {
     qreal retain=1-depolLevel;
 
-    const long long int numTasks = qureg.numAmpsPerChunk;
+    long long int numTasks = qureg.numAmpsPerChunk;
     long long int innerMask = 1LL << targetQubit;
     long long int outerMask = 1LL << (targetQubit + (qureg.numQubitsRepresented));
     long long int totMask = innerMask|outerMask;
@@ -171,11 +171,11 @@ void densmatr_mixDepolarisingLocal(Qureg qureg, const int targetQubit, qreal dep
     }
 }
 
-void densmatr_mixDampingLocal(Qureg qureg, const int targetQubit, qreal damping) {
+void densmatr_mixDampingLocal(Qureg qureg, int targetQubit, qreal damping) {
     qreal retain=1-damping;
     qreal dephase=sqrt(retain);
 
-    const long long int numTasks = qureg.numAmpsPerChunk;
+    long long int numTasks = qureg.numAmpsPerChunk;
     long long int innerMask = 1LL << targetQubit;
     long long int outerMask = 1LL << (targetQubit + (qureg.numQubitsRepresented));
     long long int totMask = innerMask|outerMask;
@@ -221,7 +221,7 @@ void densmatr_mixDampingLocal(Qureg qureg, const int targetQubit, qreal damping)
     }
 }
 
-void densmatr_mixDepolarisingDistributed(Qureg qureg, const int targetQubit, qreal depolLevel) {
+void densmatr_mixDepolarisingDistributed(Qureg qureg, int targetQubit, qreal depolLevel) {
 
     // first do dephase part. 
     // TODO -- this might be more efficient to do at the same time as the depolarise if we move to
@@ -239,7 +239,7 @@ void densmatr_mixDepolarisingDistributed(Qureg qureg, const int targetQubit, qre
     int outerBit; 
 
     long long int thisTask;         
-    const long long int numTasks=qureg.numAmpsPerChunk>>1;
+    long long int numTasks=qureg.numAmpsPerChunk>>1;
 
     // set dimensions
     sizeInnerHalfBlock = 1LL << targetQubit;  
@@ -297,7 +297,7 @@ void densmatr_mixDepolarisingDistributed(Qureg qureg, const int targetQubit, qre
     }    
 }
 
-void densmatr_mixDampingDistributed(Qureg qureg, const int targetQubit, qreal damping) {
+void densmatr_mixDampingDistributed(Qureg qureg, int targetQubit, qreal damping) {
     qreal retain=1-damping;
     qreal dephase=sqrt(1-damping);
 
@@ -317,7 +317,7 @@ void densmatr_mixDampingDistributed(Qureg qureg, const int targetQubit, qreal da
     int stateBit;
 
     long long int thisTask;         
-    const long long int numTasks=qureg.numAmpsPerChunk>>1;
+    long long int numTasks=qureg.numAmpsPerChunk>>1;
 
     // set dimensions
     sizeInnerHalfBlock = 1LL << targetQubit;  
@@ -385,7 +385,7 @@ void densmatr_mixDampingDistributed(Qureg qureg, const int targetQubit, qreal da
 }
 
 void densmatr_mixTwoQubitDepolarisingLocal(Qureg qureg, int qubit1, int qubit2, qreal delta, qreal gamma) {
-    const long long int numTasks = qureg.numAmpsPerChunk;
+    long long int numTasks = qureg.numAmpsPerChunk;
     long long int innerMaskQubit1 = 1LL << qubit1;
     long long int outerMaskQubit1= 1LL << (qubit1 + qureg.numQubitsRepresented);
     long long int totMaskQubit1 = innerMaskQubit1 | outerMaskQubit1;
@@ -486,7 +486,7 @@ void densmatr_mixTwoQubitDepolarisingLocal(Qureg qureg, int qubit1, int qubit2, 
 }
 
 void densmatr_mixTwoQubitDepolarisingLocalPart1(Qureg qureg, int qubit1, int qubit2, qreal delta) {
-    const long long int numTasks = qureg.numAmpsPerChunk;
+    long long int numTasks = qureg.numAmpsPerChunk;
     long long int innerMaskQubit1 = 1LL << qubit1;
     long long int outerMaskQubit1= 1LL << (qubit1 + qureg.numQubitsRepresented);
     long long int totMaskQubit1 = innerMaskQubit1 | outerMaskQubit1;
@@ -538,8 +538,8 @@ void densmatr_mixTwoQubitDepolarisingLocalPart1(Qureg qureg, int qubit1, int qub
     }
 }
 
-void densmatr_mixTwoQubitDepolarisingDistributed(Qureg qureg, const int targetQubit, 
-        const int qubit2, qreal delta, qreal gamma) {
+void densmatr_mixTwoQubitDepolarisingDistributed(Qureg qureg, int targetQubit, 
+        int qubit2, qreal delta, qreal gamma) {
 
     long long int sizeInnerBlockQ1, sizeInnerHalfBlockQ1;
     long long int sizeInnerBlockQ2, sizeInnerHalfBlockQ2, sizeInnerQuarterBlockQ2;
@@ -554,7 +554,7 @@ void densmatr_mixTwoQubitDepolarisingDistributed(Qureg qureg, const int targetQu
     int outerBitQ1, outerBitQ2; 
 
     long long int thisTask;         
-    const long long int numTasks=qureg.numAmpsPerChunk>>2;
+    long long int numTasks=qureg.numAmpsPerChunk>>2;
 
     // set dimensions
     sizeInnerHalfBlockQ1 = 1LL << targetQubit;  
@@ -629,8 +629,8 @@ void densmatr_mixTwoQubitDepolarisingDistributed(Qureg qureg, const int targetQu
     }    
 }
 
-void densmatr_mixTwoQubitDepolarisingQ1LocalQ2DistributedPart3(Qureg qureg, const int targetQubit, 
-        const int qubit2, qreal delta, qreal gamma) {
+void densmatr_mixTwoQubitDepolarisingQ1LocalQ2DistributedPart3(Qureg qureg, int targetQubit, 
+        int qubit2, qreal delta, qreal gamma) {
 
     long long int sizeInnerBlockQ1, sizeInnerHalfBlockQ1;
     long long int sizeInnerBlockQ2, sizeInnerHalfBlockQ2, sizeInnerQuarterBlockQ2;
@@ -646,7 +646,7 @@ void densmatr_mixTwoQubitDepolarisingQ1LocalQ2DistributedPart3(Qureg qureg, cons
     int outerBitQ1, outerBitQ2; 
 
     long long int thisTask;         
-    const long long int numTasks=qureg.numAmpsPerChunk>>2;
+    long long int numTasks=qureg.numAmpsPerChunk>>2;
 
     // set dimensions
     sizeInnerHalfBlockQ1 = 1LL << targetQubit;  
@@ -782,7 +782,7 @@ void alternateNormZeroingSomeAmpBlocks(
 }
 
 /** Renorms (/prob) every | * outcome * >< * outcome * | state, setting all others to zero */
-void densmatr_collapseToKnownProbOutcome(Qureg qureg, const int measureQubit, int outcome, qreal totalStateProb) {
+void densmatr_collapseToKnownProbOutcome(Qureg qureg, int measureQubit, int outcome, qreal totalStateProb) {
 
 	// only (global) indices (as bit sequence): '* outcome *(n+q) outcome *q are spared
     // where n = measureQubit, q = qureg.numQubitsRepresented.
@@ -1547,7 +1547,7 @@ void statevec_initStateOfSingleQubit(Qureg *qureg, int qubitId, int outcome)
     long long int chunkSize, stateVecSize;
     long long int index;
     int bit;
-    const long long int chunkId=qureg->chunkId;
+    long long int chunkId=qureg->chunkId;
 
     // dimension of the state vector
     chunkSize = qureg->numAmpsPerChunk;
@@ -1685,7 +1685,7 @@ int statevec_compareStates(Qureg mq1, Qureg mq2, qreal precision){
     return 1;
 }
 
-void statevec_compactUnitaryLocal (Qureg qureg, const int targetQubit, Complex alpha, Complex beta)
+void statevec_compactUnitaryLocal (Qureg qureg, int targetQubit, Complex alpha, Complex beta)
 {
     long long int sizeBlock, sizeHalfBlock;
     long long int thisBlock, // current block
@@ -1693,7 +1693,7 @@ void statevec_compactUnitaryLocal (Qureg qureg, const int targetQubit, Complex a
 
     qreal stateRealUp,stateRealLo,stateImagUp,stateImagLo;
     long long int thisTask;         
-    const long long int numTasks=qureg.numAmpsPerChunk>>1;
+    long long int numTasks=qureg.numAmpsPerChunk>>1;
 
     // set dimensions
     sizeHalfBlock = 1LL << targetQubit;  
@@ -1744,7 +1744,7 @@ void statevec_compactUnitaryLocal (Qureg qureg, const int targetQubit, Complex a
 
 } 
 
-void statevec_multiControlledTwoQubitUnitaryLocal(Qureg qureg, long long int ctrlMask, const int q1, const int q2, ComplexMatrix4 u) {
+void statevec_multiControlledTwoQubitUnitaryLocal(Qureg qureg, long long int ctrlMask, int q1, int q2, ComplexMatrix4 u) {
 
     // can't use qureg.stateVec as a private OMP var
     qreal *reVec = qureg.stateVec.real;
@@ -1843,7 +1843,7 @@ int qsortComp(const void *a, const void *b) {
     return *(int*)a - *(int*)b; 
 }
 
-void statevec_multiControlledMultiQubitUnitaryLocal(Qureg qureg, long long int ctrlMask, int* targs, const int numTargs, ComplexMatrixN u)
+void statevec_multiControlledMultiQubitUnitaryLocal(Qureg qureg, long long int ctrlMask, int* targs, int numTargs, ComplexMatrixN u)
 {
     // can't use qureg.stateVec as a private OMP var
     qreal *reVec = qureg.stateVec.real;
@@ -1929,7 +1929,7 @@ void statevec_multiControlledMultiQubitUnitaryLocal(Qureg qureg, long long int c
     }
 }
 
-void statevec_unitaryLocal(Qureg qureg, const int targetQubit, ComplexMatrix2 u)
+void statevec_unitaryLocal(Qureg qureg, int targetQubit, ComplexMatrix2 u)
 {
     long long int sizeBlock, sizeHalfBlock;
     long long int thisBlock, // current block
@@ -1937,7 +1937,7 @@ void statevec_unitaryLocal(Qureg qureg, const int targetQubit, ComplexMatrix2 u)
 
     qreal stateRealUp,stateRealLo,stateImagUp,stateImagLo;
     long long int thisTask;         
-    const long long int numTasks=qureg.numAmpsPerChunk>>1;
+    long long int numTasks=qureg.numAmpsPerChunk>>1;
 
     // set dimensions
     sizeHalfBlock = 1LL << targetQubit;  
@@ -2007,7 +2007,7 @@ void statevec_compactUnitaryDistributed (Qureg qureg,
 
     qreal   stateRealUp,stateRealLo,stateImagUp,stateImagLo;
     long long int thisTask;  
-    const long long int numTasks=qureg.numAmpsPerChunk;
+    long long int numTasks=qureg.numAmpsPerChunk;
 
     qreal rot1Real=rot1.real, rot1Imag=rot1.imag;
     qreal rot2Real=rot2.real, rot2Imag=rot2.imag;
@@ -2062,7 +2062,7 @@ void statevec_unitaryDistributed (Qureg qureg,
 
     qreal   stateRealUp,stateRealLo,stateImagUp,stateImagLo;
     long long int thisTask;  
-    const long long int numTasks=qureg.numAmpsPerChunk;
+    long long int numTasks=qureg.numAmpsPerChunk;
 
     qreal rot1Real=rot1.real, rot1Imag=rot1.imag;
     qreal rot2Real=rot2.real, rot2Imag=rot2.imag;
@@ -2098,7 +2098,7 @@ void statevec_unitaryDistributed (Qureg qureg,
     }
 }
 
-void statevec_controlledCompactUnitaryLocal (Qureg qureg, const int controlQubit, const int targetQubit, 
+void statevec_controlledCompactUnitaryLocal (Qureg qureg, int controlQubit, int targetQubit, 
         Complex alpha, Complex beta)
 {
     long long int sizeBlock, sizeHalfBlock;
@@ -2107,9 +2107,9 @@ void statevec_controlledCompactUnitaryLocal (Qureg qureg, const int controlQubit
 
     qreal stateRealUp,stateRealLo,stateImagUp,stateImagLo;
     long long int thisTask;         
-    const long long int numTasks=qureg.numAmpsPerChunk>>1;
-    const long long int chunkSize=qureg.numAmpsPerChunk;
-    const long long int chunkId=qureg.chunkId;
+    long long int numTasks=qureg.numAmpsPerChunk>>1;
+    long long int chunkSize=qureg.numAmpsPerChunk;
+    long long int chunkId=qureg.chunkId;
 
     int controlBit;
 
@@ -2171,7 +2171,7 @@ void statevec_controlledCompactUnitaryLocal (Qureg qureg, const int controlQubit
  * in the condition, i.e. they should have value 0 when the unitary is applied
  */
 void statevec_multiControlledUnitaryLocal(
-    Qureg qureg, const int targetQubit, 
+    Qureg qureg, int targetQubit, 
     long long int ctrlQubitsMask, long long int ctrlFlipMask,
     ComplexMatrix2 u)
 {
@@ -2181,9 +2181,9 @@ void statevec_multiControlledUnitaryLocal(
 
     qreal stateRealUp,stateRealLo,stateImagUp,stateImagLo;
     long long int thisTask;         
-    const long long int numTasks=qureg.numAmpsPerChunk>>1;
-    const long long int chunkSize=qureg.numAmpsPerChunk;
-    const long long int chunkId=qureg.chunkId;
+    long long int numTasks=qureg.numAmpsPerChunk>>1;
+    long long int chunkSize=qureg.numAmpsPerChunk;
+    long long int chunkId=qureg.chunkId;
 
     // set dimensions
     sizeHalfBlock = 1LL << targetQubit;  
@@ -2238,7 +2238,7 @@ void statevec_multiControlledUnitaryLocal(
 
 }
 
-void statevec_controlledUnitaryLocal(Qureg qureg, const int controlQubit, const int targetQubit, 
+void statevec_controlledUnitaryLocal(Qureg qureg, int controlQubit, int targetQubit, 
         ComplexMatrix2 u)
 {
     long long int sizeBlock, sizeHalfBlock;
@@ -2247,9 +2247,9 @@ void statevec_controlledUnitaryLocal(Qureg qureg, const int controlQubit, const 
 
     qreal stateRealUp,stateRealLo,stateImagUp,stateImagLo;
     long long int thisTask;         
-    const long long int numTasks=qureg.numAmpsPerChunk>>1;
-    const long long int chunkSize=qureg.numAmpsPerChunk;
-    const long long int chunkId=qureg.chunkId;
+    long long int numTasks=qureg.numAmpsPerChunk>>1;
+    long long int chunkSize=qureg.numAmpsPerChunk;
+    long long int chunkId=qureg.chunkId;
 
     int controlBit;
 
@@ -2316,7 +2316,7 @@ void statevec_controlledUnitaryLocal(Qureg qureg, const int controlQubit, const 
  *  @param[in] stateVecLo probability amplitudes in lower half of a block
  *  @param[out] stateVecOut array section to update (will correspond to either the lower or upper half of a block)
  */
-void statevec_controlledCompactUnitaryDistributed (Qureg qureg, const int controlQubit,
+void statevec_controlledCompactUnitaryDistributed (Qureg qureg, int controlQubit,
         Complex rot1, Complex rot2,
         ComplexArray stateVecUp,
         ComplexArray stateVecLo,
@@ -2325,9 +2325,9 @@ void statevec_controlledCompactUnitaryDistributed (Qureg qureg, const int contro
 
     qreal   stateRealUp,stateRealLo,stateImagUp,stateImagLo;
     long long int thisTask;  
-    const long long int numTasks=qureg.numAmpsPerChunk;
-    const long long int chunkSize=qureg.numAmpsPerChunk;
-    const long long int chunkId=qureg.chunkId;
+    long long int numTasks=qureg.numAmpsPerChunk;
+    long long int chunkSize=qureg.numAmpsPerChunk;
+    long long int chunkId=qureg.chunkId;
 
     int controlBit;
 
@@ -2378,7 +2378,7 @@ void statevec_controlledCompactUnitaryDistributed (Qureg qureg, const int contro
  *  @param[in] stateVecLo probability amplitudes in lower half of a block
  *  @param[out] stateVecOut array section to update (will correspond to either the lower or upper half of a block)
  */
-void statevec_controlledUnitaryDistributed (Qureg qureg, const int controlQubit,
+void statevec_controlledUnitaryDistributed (Qureg qureg, int controlQubit,
         Complex rot1, Complex rot2,
         ComplexArray stateVecUp,
         ComplexArray stateVecLo,
@@ -2387,9 +2387,9 @@ void statevec_controlledUnitaryDistributed (Qureg qureg, const int controlQubit,
 
     qreal   stateRealUp,stateRealLo,stateImagUp,stateImagLo;
     long long int thisTask;  
-    const long long int numTasks=qureg.numAmpsPerChunk;
-    const long long int chunkSize=qureg.numAmpsPerChunk;
-    const long long int chunkId=qureg.chunkId;
+    long long int numTasks=qureg.numAmpsPerChunk;
+    long long int chunkSize=qureg.numAmpsPerChunk;
+    long long int chunkId=qureg.chunkId;
 
     int controlBit;
 
@@ -2446,7 +2446,7 @@ void statevec_controlledUnitaryDistributed (Qureg qureg, const int controlQubit,
  */
 void statevec_multiControlledUnitaryDistributed (
         Qureg qureg, 
-        const int targetQubit, 
+        int targetQubit, 
         long long int ctrlQubitsMask, long long int ctrlFlipMask,
         Complex rot1, Complex rot2,
         ComplexArray stateVecUp,
@@ -2456,9 +2456,9 @@ void statevec_multiControlledUnitaryDistributed (
 
     qreal   stateRealUp,stateRealLo,stateImagUp,stateImagLo;
     long long int thisTask;  
-    const long long int numTasks=qureg.numAmpsPerChunk;
-    const long long int chunkSize=qureg.numAmpsPerChunk;
-    const long long int chunkId=qureg.chunkId;
+    long long int numTasks=qureg.numAmpsPerChunk;
+    long long int chunkSize=qureg.numAmpsPerChunk;
+    long long int chunkId=qureg.chunkId;
 
     qreal rot1Real=rot1.real, rot1Imag=rot1.imag;
     qreal rot2Real=rot2.real, rot2Imag=rot2.imag;
@@ -2495,7 +2495,7 @@ void statevec_multiControlledUnitaryDistributed (
     }
 }
 
-void statevec_pauliXLocal(Qureg qureg, const int targetQubit)
+void statevec_pauliXLocal(Qureg qureg, int targetQubit)
 {
     long long int sizeBlock, sizeHalfBlock;
     long long int thisBlock, // current block
@@ -2503,7 +2503,7 @@ void statevec_pauliXLocal(Qureg qureg, const int targetQubit)
 
     qreal stateRealUp,stateImagUp;
     long long int thisTask;         
-    const long long int numTasks=qureg.numAmpsPerChunk>>1;
+    long long int numTasks=qureg.numAmpsPerChunk>>1;
 
     // set dimensions
     sizeHalfBlock = 1LL << targetQubit;  
@@ -2559,7 +2559,7 @@ void statevec_pauliXDistributed (Qureg qureg,
 {
 
     long long int thisTask;  
-    const long long int numTasks=qureg.numAmpsPerChunk;
+    long long int numTasks=qureg.numAmpsPerChunk;
 
     qreal *stateVecRealIn=stateVecIn.real, *stateVecImagIn=stateVecIn.imag;
     qreal *stateVecRealOut=stateVecOut.real, *stateVecImagOut=stateVecOut.imag;
@@ -2581,7 +2581,7 @@ void statevec_pauliXDistributed (Qureg qureg,
     }
 } 
 
-void statevec_controlledNotLocal(Qureg qureg, const int controlQubit, const int targetQubit)
+void statevec_controlledNotLocal(Qureg qureg, int controlQubit, int targetQubit)
 {
     long long int sizeBlock, sizeHalfBlock;
     long long int thisBlock, // current block
@@ -2589,9 +2589,9 @@ void statevec_controlledNotLocal(Qureg qureg, const int controlQubit, const int 
 
     qreal stateRealUp,stateImagUp;
     long long int thisTask;         
-    const long long int numTasks=qureg.numAmpsPerChunk>>1;
-    const long long int chunkSize=qureg.numAmpsPerChunk;
-    const long long int chunkId=qureg.chunkId;
+    long long int numTasks=qureg.numAmpsPerChunk>>1;
+    long long int chunkSize=qureg.numAmpsPerChunk;
+    long long int chunkId=qureg.chunkId;
 
     int controlBit;
 
@@ -2643,15 +2643,15 @@ void statevec_controlledNotLocal(Qureg qureg, const int controlQubit, const int 
  *  @param[in] stateVecIn probability amplitudes in lower or upper half of a block depending on chunkId
  *  @param[out] stateVecOut array section to update (will correspond to either the lower or upper half of a block)
  */
-void statevec_controlledNotDistributed (Qureg qureg, const int controlQubit,
+void statevec_controlledNotDistributed (Qureg qureg, int controlQubit,
         ComplexArray stateVecIn,
         ComplexArray stateVecOut)
 {
 
     long long int thisTask;  
-    const long long int numTasks=qureg.numAmpsPerChunk;
-    const long long int chunkSize=qureg.numAmpsPerChunk;
-    const long long int chunkId=qureg.chunkId;
+    long long int numTasks=qureg.numAmpsPerChunk;
+    long long int chunkSize=qureg.numAmpsPerChunk;
+    long long int chunkId=qureg.chunkId;
 
     int controlBit;
 
@@ -2679,7 +2679,7 @@ void statevec_controlledNotDistributed (Qureg qureg, const int controlQubit,
     }
 } 
 
-void statevec_pauliYLocal(Qureg qureg, const int targetQubit, const int conjFac)
+void statevec_pauliYLocal(Qureg qureg, int targetQubit, int conjFac)
 {
     long long int sizeBlock, sizeHalfBlock;
     long long int thisBlock, // current block
@@ -2687,7 +2687,7 @@ void statevec_pauliYLocal(Qureg qureg, const int targetQubit, const int conjFac)
 
     qreal stateRealUp,stateImagUp;
     long long int thisTask;         
-    const long long int numTasks=qureg.numAmpsPerChunk>>1;
+    long long int numTasks=qureg.numAmpsPerChunk>>1;
 
     // set dimensions
     sizeHalfBlock = 1LL << targetQubit;  
@@ -2739,11 +2739,11 @@ void statevec_pauliYLocal(Qureg qureg, const int targetQubit, const int conjFac)
 void statevec_pauliYDistributed(Qureg qureg,
         ComplexArray stateVecIn,
         ComplexArray stateVecOut, 
-        int updateUpper, const int conjFac)
+        int updateUpper, int conjFac)
 {
 
     long long int thisTask;  
-    const long long int numTasks=qureg.numAmpsPerChunk;
+    long long int numTasks=qureg.numAmpsPerChunk;
 
     qreal *stateVecRealIn=stateVecIn.real, *stateVecImagIn=stateVecIn.imag;
     qreal *stateVecRealOut=stateVecOut.real, *stateVecImagOut=stateVecOut.imag;
@@ -2773,7 +2773,7 @@ void statevec_pauliYDistributed(Qureg qureg,
 
 
 
-void statevec_controlledPauliYLocal(Qureg qureg, const int controlQubit, const int targetQubit, const int conjFac)
+void statevec_controlledPauliYLocal(Qureg qureg, int controlQubit, int targetQubit, int conjFac)
 {
     long long int sizeBlock, sizeHalfBlock;
     long long int thisBlock, // current block
@@ -2781,9 +2781,9 @@ void statevec_controlledPauliYLocal(Qureg qureg, const int controlQubit, const i
 
     qreal stateRealUp,stateImagUp;
     long long int thisTask;         
-    const long long int numTasks=qureg.numAmpsPerChunk>>1;
-    const long long int chunkSize=qureg.numAmpsPerChunk;
-    const long long int chunkId=qureg.chunkId;
+    long long int numTasks=qureg.numAmpsPerChunk>>1;
+    long long int chunkSize=qureg.numAmpsPerChunk;
+    long long int chunkId=qureg.chunkId;
 
     int controlBit;
 
@@ -2827,15 +2827,15 @@ void statevec_controlledPauliYLocal(Qureg qureg, const int controlQubit, const i
 }
 
 
-void statevec_controlledPauliYDistributed (Qureg qureg, const int controlQubit,
+void statevec_controlledPauliYDistributed (Qureg qureg, int controlQubit,
         ComplexArray stateVecIn,
-        ComplexArray stateVecOut, const int conjFac)
+        ComplexArray stateVecOut, int conjFac)
 {
 
     long long int thisTask;  
-    const long long int numTasks=qureg.numAmpsPerChunk;
-    const long long int chunkSize=qureg.numAmpsPerChunk;
-    const long long int chunkId=qureg.chunkId;
+    long long int numTasks=qureg.numAmpsPerChunk;
+    long long int chunkSize=qureg.numAmpsPerChunk;
+    long long int chunkId=qureg.chunkId;
 
     int controlBit;
 
@@ -2869,7 +2869,7 @@ void statevec_controlledPauliYDistributed (Qureg qureg, const int controlQubit,
 
 
 
-void statevec_hadamardLocal(Qureg qureg, const int targetQubit)
+void statevec_hadamardLocal(Qureg qureg, int targetQubit)
 {
     long long int sizeBlock, sizeHalfBlock;
     long long int thisBlock, // current block
@@ -2877,7 +2877,7 @@ void statevec_hadamardLocal(Qureg qureg, const int targetQubit)
 
     qreal stateRealUp,stateRealLo,stateImagUp,stateImagLo;
     long long int thisTask;         
-    const long long int numTasks=qureg.numAmpsPerChunk>>1;
+    long long int numTasks=qureg.numAmpsPerChunk>>1;
 
     // set dimensions
     sizeHalfBlock = 1LL << targetQubit;  
@@ -2938,7 +2938,7 @@ void statevec_hadamardDistributed(Qureg qureg,
 
     qreal   stateRealUp,stateRealLo,stateImagUp,stateImagLo;
     long long int thisTask;  
-    const long long int numTasks=qureg.numAmpsPerChunk;
+    long long int numTasks=qureg.numAmpsPerChunk;
 
     int sign;
     if (updateUpper) sign=1;
@@ -2975,14 +2975,14 @@ void statevec_hadamardDistributed(Qureg qureg,
     }
 }
 
-void statevec_phaseShiftByTerm (Qureg qureg, const int targetQubit, Complex term)
+void statevec_phaseShiftByTerm (Qureg qureg, int targetQubit, Complex term)
 {       
     long long int index;
     long long int stateVecSize;
     int targetBit;
     
-    const long long int chunkSize=qureg.numAmpsPerChunk;
-    const long long int chunkId=qureg.chunkId;
+    long long int chunkSize=qureg.numAmpsPerChunk;
+    long long int chunkId=qureg.chunkId;
 
     // dimension of the state vector
     stateVecSize = qureg.numAmpsPerChunk;
@@ -2990,8 +2990,8 @@ void statevec_phaseShiftByTerm (Qureg qureg, const int targetQubit, Complex term
     qreal *stateVecImag = qureg.stateVec.imag;
     
     qreal stateRealLo, stateImagLo;
-    const qreal cosAngle = term.real;
-    const qreal sinAngle = term.imag;
+    qreal cosAngle = term.real;
+    qreal sinAngle = term.imag;
 
 # ifdef _OPENMP
 # pragma omp parallel for \
@@ -3016,14 +3016,14 @@ void statevec_phaseShiftByTerm (Qureg qureg, const int targetQubit, Complex term
     }
 }
 
-void statevec_controlledPhaseShift (Qureg qureg, const int idQubit1, const int idQubit2, qreal angle)
+void statevec_controlledPhaseShift (Qureg qureg, int idQubit1, int idQubit2, qreal angle)
 {
     long long int index;
     long long int stateVecSize;
     int bit1, bit2;
     
-    const long long int chunkSize=qureg.numAmpsPerChunk;
-    const long long int chunkId=qureg.chunkId;
+    long long int chunkSize=qureg.numAmpsPerChunk;
+    long long int chunkId=qureg.chunkId;
 
     // dimension of the state vector
     stateVecSize = qureg.numAmpsPerChunk;
@@ -3031,8 +3031,8 @@ void statevec_controlledPhaseShift (Qureg qureg, const int idQubit1, const int i
     qreal *stateVecImag = qureg.stateVec.imag;
     
     qreal stateRealLo, stateImagLo;
-    const qreal cosAngle = cos(angle);
-    const qreal sinAngle = sin(angle);
+    qreal cosAngle = cos(angle);
+    qreal sinAngle = sin(angle);
 
 # ifdef _OPENMP
 # pragma omp parallel for \
@@ -3061,8 +3061,8 @@ void statevec_multiControlledPhaseShift(Qureg qureg, int *controlQubits, int num
     long long int index;
     long long int stateVecSize;
 
-    const long long int chunkSize=qureg.numAmpsPerChunk;
-    const long long int chunkId=qureg.chunkId;
+    long long int chunkSize=qureg.numAmpsPerChunk;
+    long long int chunkId=qureg.chunkId;
 
     long long int mask = getQubitBitMask(controlQubits, numControlQubits);
 
@@ -3071,8 +3071,8 @@ void statevec_multiControlledPhaseShift(Qureg qureg, int *controlQubits, int num
     qreal *stateVecImag = qureg.stateVec.imag;
     
     qreal stateRealLo, stateImagLo;
-    const qreal cosAngle = cos(angle);
-    const qreal sinAngle = sin(angle);
+    qreal cosAngle = cos(angle);
+    qreal sinAngle = sin(angle);
 
 # ifdef _OPENMP
 # pragma omp parallel \
@@ -3111,16 +3111,16 @@ void statevec_multiRotateZ(Qureg qureg, long long int mask, qreal angle)
     long long int index;
     long long int stateVecSize;
 
-    const long long int chunkSize=qureg.numAmpsPerChunk;
-    const long long int chunkId=qureg.chunkId;
+    long long int chunkSize=qureg.numAmpsPerChunk;
+    long long int chunkId=qureg.chunkId;
 
     stateVecSize = qureg.numAmpsPerChunk;
     qreal *stateVecReal = qureg.stateVec.real;
     qreal *stateVecImag = qureg.stateVec.imag;
     
     qreal stateReal, stateImag;
-    const qreal cosAngle = cos(angle/2.0);
-    const qreal sinAngle = sin(angle/2.0); 
+    qreal cosAngle = cos(angle/2.0);
+    qreal sinAngle = sin(angle/2.0); 
     
     // = +-1, to flip sinAngle based on target qubit parity, to effect
     // exp(-angle/2 i fac_j)|j>
@@ -3148,7 +3148,7 @@ void statevec_multiRotateZ(Qureg qureg, long long int mask, qreal angle)
     }
 }
 
-qreal densmatr_findProbabilityOfZeroLocal(Qureg qureg, const int measureQubit) {
+qreal densmatr_findProbabilityOfZeroLocal(Qureg qureg, int measureQubit) {
     
     // computes first local index containing a diagonal element
     long long int localNumAmps = qureg.numAmpsPerChunk;
@@ -3204,7 +3204,7 @@ qreal densmatr_findProbabilityOfZeroLocal(Qureg qureg, const int measureQubit) {
  *  @return probability of qubit measureQubit being zero
  */
 qreal statevec_findProbabilityOfZeroLocal (Qureg qureg,
-        const int measureQubit)
+        int measureQubit)
 {
     // ----- sizes
     long long int sizeBlock,                                  // size of blocks
@@ -3297,14 +3297,14 @@ qreal statevec_findProbabilityOfZeroDistributed (Qureg qureg) {
 
 
 
-void statevec_controlledPhaseFlip (Qureg qureg, const int idQubit1, const int idQubit2)
+void statevec_controlledPhaseFlip (Qureg qureg, int idQubit1, int idQubit2)
 {
     long long int index;
     long long int stateVecSize;
     int bit1, bit2;
 
-    const long long int chunkSize=qureg.numAmpsPerChunk;
-    const long long int chunkId=qureg.chunkId;
+    long long int chunkSize=qureg.numAmpsPerChunk;
+    long long int chunkId=qureg.chunkId;
     
     // dimension of the state vector
     stateVecSize = qureg.numAmpsPerChunk;
@@ -3333,8 +3333,8 @@ void statevec_multiControlledPhaseFlip(Qureg qureg, int *controlQubits, int numC
     long long int index;
     long long int stateVecSize;
 
-    const long long int chunkSize=qureg.numAmpsPerChunk;
-    const long long int chunkId=qureg.chunkId;
+    long long int chunkSize=qureg.numAmpsPerChunk;
+    long long int chunkId=qureg.chunkId;
 
     long long int mask = getQubitBitMask(controlQubits, numControlQubits);
 
@@ -3459,7 +3459,7 @@ void statevec_collapseToKnownProbOutcomeLocal(Qureg qureg, int measureQubit, int
  *  @param[in] measureQubit qubit to measure
  *  @param[in] totalProbability probability of qubit measureQubit being zero
  */
-void statevec_collapseToKnownProbOutcomeDistributedRenorm (Qureg qureg, const int measureQubit, const qreal totalProbability)
+void statevec_collapseToKnownProbOutcomeDistributedRenorm (Qureg qureg, int measureQubit, qreal totalProbability)
 {
     // ----- temp variables
     long long int thisTask;                                   
