@@ -27,7 +27,7 @@
             <div class="container">
                 <div class="navbar-header">
                     <a class="navbar-brand"><img alt="Logo" src="logo.png"/></a>
-                    <a class="navbar-brand"><b>QuEST</b> v3.1.0<br>The Quantum Exact Simulation Toolkit</a>
+                    <a class="navbar-brand"><b>QuEST</b> v3.2.0<br>The Quantum Exact Simulation Toolkit</a>
                 </div>
             </div>
         </nav>
@@ -90,6 +90,12 @@ Macros</h2></td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="func-members"></a>
 Functions</h2></td></tr>
+<tr class="memitem:gacd00096ffcc67d460c204cb833388b0f"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__testutilities.html#gacd00096ffcc67d460c204cb833388b0f">applyReferenceMatrix</a> (<a class="el" href="group__testutilities.html#gabbc686f5f40eff22e08a2b2012ac4e41">QMatrix</a> &amp;state, int *ctrls, int numCtrls, int *targs, int numTargs, <a class="el" href="group__testutilities.html#gabbc686f5f40eff22e08a2b2012ac4e41">QMatrix</a> op)</td></tr>
+<tr class="memdesc:gacd00096ffcc67d460c204cb833388b0f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Modifies the density matrix <code>state</code> to be the result of left-multiplying the multi-target operator matrix <code>op</code>, with the specified control and target qubits (in <code>ctrls</code> and <code>targs</code> respectively).  <a href="group__testutilities.html#gacd00096ffcc67d460c204cb833388b0f">More...</a><br /></td></tr>
+<tr class="separator:gacd00096ffcc67d460c204cb833388b0f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga059fea2ee0415bf25929601ba0788164"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__testutilities.html#ga059fea2ee0415bf25929601ba0788164">applyReferenceMatrix</a> (<a class="el" href="group__testutilities.html#gac9263a65c96a458b810b20baa81c5b94">QVector</a> &amp;state, int *ctrls, int numCtrls, int *targs, int numTargs, <a class="el" href="group__testutilities.html#gabbc686f5f40eff22e08a2b2012ac4e41">QMatrix</a> op)</td></tr>
+<tr class="memdesc:ga059fea2ee0415bf25929601ba0788164"><td class="mdescLeft">&#160;</td><td class="mdescRight">Modifies the state-vector <code>state</code> to be the result of left-multiplying the multi-target operator matrix <code>op</code>, with the specified control and target qubits (in <code>ctrls</code> and <code>targs</code> respectively).  <a href="group__testutilities.html#ga059fea2ee0415bf25929601ba0788164">More...</a><br /></td></tr>
+<tr class="separator:ga059fea2ee0415bf25929601ba0788164"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ga2b197ca736a01f05bf18fbc5c5a9bee6"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__testutilities.html#ga2b197ca736a01f05bf18fbc5c5a9bee6">applyReferenceOp</a> (<a class="el" href="group__testutilities.html#gabbc686f5f40eff22e08a2b2012ac4e41">QMatrix</a> &amp;state, int *ctrls, int numCtrls, int *targs, int numTargs, <a class="el" href="group__testutilities.html#gabbc686f5f40eff22e08a2b2012ac4e41">QMatrix</a> op)</td></tr>
 <tr class="memdesc:ga2b197ca736a01f05bf18fbc5c5a9bee6"><td class="mdescLeft">&#160;</td><td class="mdescRight">Modifies the density matrix <code>state</code> to be the result of applying the multi-target operator matrix <code>op</code>, with the specified control and target qubits (in <code>ctrls</code> and <code>targs</code> respectively).  <a href="group__testutilities.html#ga2b197ca736a01f05bf18fbc5c5a9bee6">More...</a><br /></td></tr>
 <tr class="separator:ga2b197ca736a01f05bf18fbc5c5a9bee6"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -162,6 +168,9 @@ Functions</h2></td></tr>
 <tr class="memitem:ga45cc399adad2e2a67b0124851189fae5"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__testutilities.html#ga45cc399adad2e2a67b0124851189fae5">areEqual</a> (<a class="el" href="group__testutilities.html#gac9263a65c96a458b810b20baa81c5b94">QVector</a> a, <a class="el" href="group__testutilities.html#gac9263a65c96a458b810b20baa81c5b94">QVector</a> b)</td></tr>
 <tr class="memdesc:ga45cc399adad2e2a67b0124851189fae5"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns true if the absolute value of the difference between every amplitude in vectors <code>a</code> and <code>b</code> is less than <code>REAL_EPS</code>.  <a href="group__testutilities.html#ga45cc399adad2e2a67b0124851189fae5">More...</a><br /></td></tr>
 <tr class="separator:ga45cc399adad2e2a67b0124851189fae5"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga7753296a935e1dc1b6dfb98607cd2afa"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__testutilities.html#ga7753296a935e1dc1b6dfb98607cd2afa">areEqual</a> (<a class="el" href="group__testutilities.html#gac9263a65c96a458b810b20baa81c5b94">QVector</a> vec, <a class="el" href="group__type.html#ga7740e349b4f8bae6451547680f0ce2d6">qreal</a> *reals, <a class="el" href="group__type.html#ga7740e349b4f8bae6451547680f0ce2d6">qreal</a> *imags)</td></tr>
+<tr class="memdesc:ga7753296a935e1dc1b6dfb98607cd2afa"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns true if the absolute value of the difference between every element in <code>vec</code> and those implied by <code>reals</code> and <code>imags</code>, is less than <code>REAL_EPS</code>.  <a href="group__testutilities.html#ga7753296a935e1dc1b6dfb98607cd2afa">More...</a><br /></td></tr>
+<tr class="separator:ga7753296a935e1dc1b6dfb98607cd2afa"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ga2e09685323c6b2312a64daf8c74b12b5"><td class="memItemLeft" align="right" valign="top">Catch::Generators::GeneratorWrapper&lt; int * &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__testutilities.html#ga2e09685323c6b2312a64daf8c74b12b5">bitsets</a> (int numBits)</td></tr>
 <tr class="memdesc:ga2e09685323c6b2312a64daf8c74b12b5"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns a Catch2 generator of every <code>numBits-length</code> bit-set, in increasing lexographic order, where left-most (zero index) bit is treated as LEAST significant (opposite typical convention).  <a href="group__testutilities.html#ga2e09685323c6b2312a64daf8c74b12b5">More...</a><br /></td></tr>
 <tr class="separator:ga2e09685323c6b2312a64daf8c74b12b5"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -275,6 +284,12 @@ Functions</h2></td></tr>
 <tr class="memitem:ga181366c4cdc7786bcc066e8ac8342c1d"><td class="memItemLeft" align="right" valign="top">Catch::Generators::GeneratorWrapper&lt; int * &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__testutilities.html#ga181366c4cdc7786bcc066e8ac8342c1d">sequences</a> (int base, int numDigits)</td></tr>
 <tr class="memdesc:ga181366c4cdc7786bcc066e8ac8342c1d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns a Catch2 generator of every <code>numDigits-length</code> sequence in the given <code>base</code>, in increasing lexographic order, where left-most (zero index) bit is treated as LEAST significant (opposite typical convention).  <a href="group__testutilities.html#ga181366c4cdc7786bcc066e8ac8342c1d">More...</a><br /></td></tr>
 <tr class="separator:ga181366c4cdc7786bcc066e8ac8342c1d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gafaecff2462bd0b490edff484911d831e"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__testutilities.html#gafaecff2462bd0b490edff484911d831e">setRandomPauliSum</a> (<a class="el" href="structPauliHamil.html">PauliHamil</a> hamil)</td></tr>
+<tr class="memdesc:gafaecff2462bd0b490edff484911d831e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Populates <code>hamil</code> with random coefficients and pauli codes.  <a href="group__testutilities.html#gafaecff2462bd0b490edff484911d831e">More...</a><br /></td></tr>
+<tr class="separator:gafaecff2462bd0b490edff484911d831e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga11c465ce1a5c238946a9e09d61c94c58"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__testutilities.html#ga11c465ce1a5c238946a9e09d61c94c58">setRandomPauliSum</a> (<a class="el" href="group__type.html#ga7740e349b4f8bae6451547680f0ce2d6">qreal</a> *coeffs, <a class="el" href="group__type.html#ga1c703cf89629e4e9c7023cd402d67028">pauliOpType</a> *codes, int numQubits, int numTerms)</td></tr>
+<tr class="memdesc:ga11c465ce1a5c238946a9e09d61c94c58"><td class="mdescLeft">&#160;</td><td class="mdescRight">Populates the <code>coeffs</code> array with random qreals in (-5, 5), and populates <code>codes</code> with random Pauli codes.  <a href="group__testutilities.html#ga11c465ce1a5c238946a9e09d61c94c58">More...</a><br /></td></tr>
+<tr class="separator:ga11c465ce1a5c238946a9e09d61c94c58"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ga75966a02c618790c1de5f0102ab8398f"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__testutilities.html#ga75966a02c618790c1de5f0102ab8398f">setSubMatrix</a> (<a class="el" href="group__testutilities.html#gabbc686f5f40eff22e08a2b2012ac4e41">QMatrix</a> &amp;dest, <a class="el" href="group__testutilities.html#gabbc686f5f40eff22e08a2b2012ac4e41">QMatrix</a> sub, size_t r, size_t c)</td></tr>
 <tr class="memdesc:ga75966a02c618790c1de5f0102ab8398f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Modifies <code>dest</code> by overwriting its submatrix (from top-left corner (<code>r</code>, <code>c</code>) to bottom-right corner (<code>r</code> + <code>dest.size()</code>, <code>c</code> + <code>dest.size()</code>) with the complete elements of sub.  <a href="group__testutilities.html#ga75966a02c618790c1de5f0102ab8398f">More...</a><br /></td></tr>
 <tr class="separator:ga75966a02c618790c1de5f0102ab8398f"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -306,8 +321,17 @@ Functions</h2></td></tr>
 <tr class="memdesc:ga3dbd53326151e3c6c5e0de579f6554a7"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns a copy of the given 4-by-4 matrix.  <a href="group__testutilities.html#ga3dbd53326151e3c6c5e0de579f6554a7">More...</a><br /></td></tr>
 <tr class="separator:ga3dbd53326151e3c6c5e0de579f6554a7"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:gadbcd76cb251c802e7f81803bdd23064b"><td class="memItemLeft" align="right" valign="top"><a class="el" href="group__testutilities.html#gabbc686f5f40eff22e08a2b2012ac4e41">QMatrix</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__testutilities.html#gadbcd76cb251c802e7f81803bdd23064b">toQMatrix</a> (<a class="el" href="structComplexMatrixN.html">ComplexMatrixN</a> src)</td></tr>
-<tr class="memdesc:gadbcd76cb251c802e7f81803bdd23064b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns a copy of the given 2^<code>N-by-2^<code>n</code> matrix</code>.  <a href="group__testutilities.html#gadbcd76cb251c802e7f81803bdd23064b">More...</a><br /></td></tr>
+<tr class="memdesc:gadbcd76cb251c802e7f81803bdd23064b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns a copy of the given 2^<code>N-by-2^<code>N</code> matrix</code>.  <a href="group__testutilities.html#gadbcd76cb251c802e7f81803bdd23064b">More...</a><br /></td></tr>
 <tr class="separator:gadbcd76cb251c802e7f81803bdd23064b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga95a4a8d36ad12018f5ffe92f39f4cfb8"><td class="memItemLeft" align="right" valign="top"><a class="el" href="group__testutilities.html#gabbc686f5f40eff22e08a2b2012ac4e41">QMatrix</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__testutilities.html#ga95a4a8d36ad12018f5ffe92f39f4cfb8">toQMatrix</a> (<a class="el" href="structDiagonalOp.html">DiagonalOp</a> op)</td></tr>
+<tr class="memdesc:ga95a4a8d36ad12018f5ffe92f39f4cfb8"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns a 2^<code>N-by-2^<code>N</code> complex</code> diagonal matrix form of the <a class="el" href="structDiagonalOp.html" title="Represents a diagonal complex operator on the full Hilbert state of a Qureg.">DiagonalOp</a>.  <a href="group__testutilities.html#ga95a4a8d36ad12018f5ffe92f39f4cfb8">More...</a><br /></td></tr>
+<tr class="separator:ga95a4a8d36ad12018f5ffe92f39f4cfb8"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gae1131c2c5e1a36b5b6e2b614c6d7cdc8"><td class="memItemLeft" align="right" valign="top"><a class="el" href="group__testutilities.html#gabbc686f5f40eff22e08a2b2012ac4e41">QMatrix</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__testutilities.html#gae1131c2c5e1a36b5b6e2b614c6d7cdc8">toQMatrix</a> (<a class="el" href="structPauliHamil.html">PauliHamil</a> hamil)</td></tr>
+<tr class="memdesc:gae1131c2c5e1a36b5b6e2b614c6d7cdc8"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns a 2^<code>N-by-2^<code>N</code> Hermitian</code> matrix form of the <a class="el" href="structPauliHamil.html" title="Represents a weighted sum of pauli products.">PauliHamil</a>.  <a href="group__testutilities.html#gae1131c2c5e1a36b5b6e2b614c6d7cdc8">More...</a><br /></td></tr>
+<tr class="separator:gae1131c2c5e1a36b5b6e2b614c6d7cdc8"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga29dd7da2b0f2104a90c88fb081e67a0e"><td class="memItemLeft" align="right" valign="top"><a class="el" href="group__testutilities.html#gabbc686f5f40eff22e08a2b2012ac4e41">QMatrix</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__testutilities.html#ga29dd7da2b0f2104a90c88fb081e67a0e">toQMatrix</a> (<a class="el" href="group__type.html#ga7740e349b4f8bae6451547680f0ce2d6">qreal</a> *coeffs, <a class="el" href="group__type.html#ga1c703cf89629e4e9c7023cd402d67028">pauliOpType</a> *paulis, int numQubits, int numTerms)</td></tr>
+<tr class="memdesc:ga29dd7da2b0f2104a90c88fb081e67a0e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns a 2^<code>N-by-2^<code>N</code> Hermitian</code> matrix form of the specified weighted sum of Pauli products.  <a href="group__testutilities.html#ga29dd7da2b0f2104a90c88fb081e67a0e">More...</a><br /></td></tr>
+<tr class="separator:ga29dd7da2b0f2104a90c88fb081e67a0e"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ga4c4ce1767ee2ef420c0078ea5991aeb0"><td class="memItemLeft" align="right" valign="top"><a class="el" href="group__testutilities.html#gabbc686f5f40eff22e08a2b2012ac4e41">QMatrix</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__testutilities.html#ga4c4ce1767ee2ef420c0078ea5991aeb0">toQMatrix</a> (<a class="el" href="structQureg.html">Qureg</a> qureg)</td></tr>
 <tr class="memdesc:ga4c4ce1767ee2ef420c0078ea5991aeb0"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns an equal-size copy of the given density matrix <code>qureg</code>.  <a href="group__testutilities.html#ga4c4ce1767ee2ef420c0078ea5991aeb0">More...</a><br /></td></tr>
 <tr class="separator:ga4c4ce1767ee2ef420c0078ea5991aeb0"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -317,6 +341,9 @@ Functions</h2></td></tr>
 <tr class="memitem:gaf5a18d4c00dfe0523972be3bfc666362"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__testutilities.html#gaf5a18d4c00dfe0523972be3bfc666362">toQureg</a> (<a class="el" href="structQureg.html">Qureg</a> qureg, <a class="el" href="group__testutilities.html#gac9263a65c96a458b810b20baa81c5b94">QVector</a> vec)</td></tr>
 <tr class="memdesc:gaf5a18d4c00dfe0523972be3bfc666362"><td class="mdescLeft">&#160;</td><td class="mdescRight">Initialises the state-vector <code>qureg</code> to have the same amplitudes as <code>vec</code>.  <a href="group__testutilities.html#gaf5a18d4c00dfe0523972be3bfc666362">More...</a><br /></td></tr>
 <tr class="separator:gaf5a18d4c00dfe0523972be3bfc666362"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga09f18ab46d2b17ad13185c0b4c06b400"><td class="memItemLeft" align="right" valign="top"><a class="el" href="group__testutilities.html#gac9263a65c96a458b810b20baa81c5b94">QVector</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__testutilities.html#ga09f18ab46d2b17ad13185c0b4c06b400">toQVector</a> (<a class="el" href="structDiagonalOp.html">DiagonalOp</a> op)</td></tr>
+<tr class="memdesc:ga09f18ab46d2b17ad13185c0b4c06b400"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns a vector with the same of the full diagonal operator, populated with <code>op's</code> elements.  <a href="group__testutilities.html#ga09f18ab46d2b17ad13185c0b4c06b400">More...</a><br /></td></tr>
+<tr class="separator:ga09f18ab46d2b17ad13185c0b4c06b400"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:gade0e7c37811a69f1c21c88c11943a19f"><td class="memItemLeft" align="right" valign="top"><a class="el" href="group__testutilities.html#gac9263a65c96a458b810b20baa81c5b94">QVector</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__testutilities.html#gade0e7c37811a69f1c21c88c11943a19f">toQVector</a> (<a class="el" href="structQureg.html">Qureg</a> qureg)</td></tr>
 <tr class="memdesc:gade0e7c37811a69f1c21c88c11943a19f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns an equal-size copy of the given state-vector <code>qureg</code>.  <a href="group__testutilities.html#gade0e7c37811a69f1c21c88c11943a19f">More...</a><br /></td></tr>
 <tr class="separator:gade0e7c37811a69f1c21c88c11943a19f"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -382,7 +409,7 @@ Functions</h2></td></tr>
 </div><!-- fragment -->
 <p>Copies ComplexMatrix structures into a QMatrix. </p>
 
-<p class="definition">Definition at line <a class="el" href="utilities_8cpp_source.html#l00830">830</a> of file <a class="el" href="utilities_8cpp_source.html">utilities.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="utilities_8cpp_source.html#l00864">864</a> of file <a class="el" href="utilities_8cpp_source.html">utilities.cpp</a>.</p>
 
 </div>
 </div>
@@ -420,7 +447,7 @@ Functions</h2></td></tr>
 <div class="line">    } \</div>
 <div class="line">}</div>
 </div><!-- fragment -->
-<p class="definition">Definition at line <a class="el" href="utilities_8cpp_source.html#l00804">804</a> of file <a class="el" href="utilities_8cpp_source.html">utilities.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="utilities_8cpp_source.html#l00838">838</a> of file <a class="el" href="utilities_8cpp_source.html">utilities.cpp</a>.</p>
 
 </div>
 </div>
@@ -1269,13 +1296,13 @@ Functions</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="utilities_8cpp_source.html#l01096">1096</a> of file <a class="el" href="utilities_8cpp_source.html">utilities.cpp</a>.</p>
-<div class="fragment"><div class="line"><a name="l01098"></a><span class="lineno"> 1098</span>&#160;  {</div>
-<div class="line"><a name="l01099"></a><span class="lineno"> 1099</span>&#160;    <span class="keywordtype">int</span> exclude[] = {};  </div>
-<div class="line"><a name="l01100"></a><span class="lineno"> 1100</span>&#160;    <span class="keywordflow">return</span> Catch::Generators::GeneratorWrapper&lt;int*&gt;(</div>
-<div class="line"><a name="l01101"></a><span class="lineno"> 1101</span>&#160;        std::unique_ptr&lt;Catch::Generators::IGenerator&lt;int*&gt;&gt;(</div>
-<div class="line"><a name="l01102"></a><span class="lineno"> 1102</span>&#160;            <span class="keyword">new</span> <a class="code" href="classSubListGenerator.html">SubListGenerator</a>(std::move(gen), numSamps, exclude, 0)));</div>
-<div class="line"><a name="l01103"></a><span class="lineno"> 1103</span>&#160;}</div>
+<p class="definition">Definition at line <a class="el" href="utilities_8cpp_source.html#l01221">1221</a> of file <a class="el" href="utilities_8cpp_source.html">utilities.cpp</a>.</p>
+<div class="fragment"><div class="line"><a name="l01223"></a><span class="lineno"> 1223</span>&#160;  {</div>
+<div class="line"><a name="l01224"></a><span class="lineno"> 1224</span>&#160;    <span class="keywordtype">int</span> exclude[] = {};  </div>
+<div class="line"><a name="l01225"></a><span class="lineno"> 1225</span>&#160;    <span class="keywordflow">return</span> Catch::Generators::GeneratorWrapper&lt;int*&gt;(</div>
+<div class="line"><a name="l01226"></a><span class="lineno"> 1226</span>&#160;        std::unique_ptr&lt;Catch::Generators::IGenerator&lt;int*&gt;&gt;(</div>
+<div class="line"><a name="l01227"></a><span class="lineno"> 1227</span>&#160;            <span class="keyword">new</span> <a class="code" href="classSubListGenerator.html">SubListGenerator</a>(std::move(gen), numSamps, exclude, 0)));</div>
+<div class="line"><a name="l01228"></a><span class="lineno"> 1228</span>&#160;}</div>
 </div><!-- fragment -->
 </div>
 </div>
@@ -1317,12 +1344,12 @@ Functions</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="utilities_8cpp_source.html#l01081">1081</a> of file <a class="el" href="utilities_8cpp_source.html">utilities.cpp</a>.</p>
-<div class="fragment"><div class="line"><a name="l01083"></a><span class="lineno"> 1083</span>&#160;  {    </div>
-<div class="line"><a name="l01084"></a><span class="lineno"> 1084</span>&#160;    <span class="keywordflow">return</span> Catch::Generators::GeneratorWrapper&lt;int*&gt;(</div>
-<div class="line"><a name="l01085"></a><span class="lineno"> 1085</span>&#160;        std::unique_ptr&lt;Catch::Generators::IGenerator&lt;int*&gt;&gt;(</div>
-<div class="line"><a name="l01086"></a><span class="lineno"> 1086</span>&#160;            <span class="keyword">new</span> <a class="code" href="classSubListGenerator.html">SubListGenerator</a>(std::move(gen), numSamps, exclude, numExclude)));</div>
-<div class="line"><a name="l01087"></a><span class="lineno"> 1087</span>&#160;}</div>
+<p class="definition">Definition at line <a class="el" href="utilities_8cpp_source.html#l01206">1206</a> of file <a class="el" href="utilities_8cpp_source.html">utilities.cpp</a>.</p>
+<div class="fragment"><div class="line"><a name="l01208"></a><span class="lineno"> 1208</span>&#160;  {    </div>
+<div class="line"><a name="l01209"></a><span class="lineno"> 1209</span>&#160;    <span class="keywordflow">return</span> Catch::Generators::GeneratorWrapper&lt;int*&gt;(</div>
+<div class="line"><a name="l01210"></a><span class="lineno"> 1210</span>&#160;        std::unique_ptr&lt;Catch::Generators::IGenerator&lt;int*&gt;&gt;(</div>
+<div class="line"><a name="l01211"></a><span class="lineno"> 1211</span>&#160;            <span class="keyword">new</span> <a class="code" href="classSubListGenerator.html">SubListGenerator</a>(std::move(gen), numSamps, exclude, numExclude)));</div>
+<div class="line"><a name="l01212"></a><span class="lineno"> 1212</span>&#160;}</div>
 </div><!-- fragment -->
 </div>
 </div>
@@ -1358,13 +1385,13 @@ Functions</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="utilities_8cpp_source.html#l01088">1088</a> of file <a class="el" href="utilities_8cpp_source.html">utilities.cpp</a>.</p>
-<div class="fragment"><div class="line"><a name="l01090"></a><span class="lineno"> 1090</span>&#160;  {</div>
-<div class="line"><a name="l01091"></a><span class="lineno"> 1091</span>&#160;    <span class="keywordtype">int</span> exclude[] = {excluded};  </div>
-<div class="line"><a name="l01092"></a><span class="lineno"> 1092</span>&#160;    <span class="keywordflow">return</span> Catch::Generators::GeneratorWrapper&lt;int*&gt;(</div>
-<div class="line"><a name="l01093"></a><span class="lineno"> 1093</span>&#160;        std::unique_ptr&lt;Catch::Generators::IGenerator&lt;int*&gt;&gt;(</div>
-<div class="line"><a name="l01094"></a><span class="lineno"> 1094</span>&#160;            <span class="keyword">new</span> <a class="code" href="classSubListGenerator.html">SubListGenerator</a>(std::move(gen), numSamps, exclude, 1)));</div>
-<div class="line"><a name="l01095"></a><span class="lineno"> 1095</span>&#160;}</div>
+<p class="definition">Definition at line <a class="el" href="utilities_8cpp_source.html#l01213">1213</a> of file <a class="el" href="utilities_8cpp_source.html">utilities.cpp</a>.</p>
+<div class="fragment"><div class="line"><a name="l01215"></a><span class="lineno"> 1215</span>&#160;  {</div>
+<div class="line"><a name="l01216"></a><span class="lineno"> 1216</span>&#160;    <span class="keywordtype">int</span> exclude[] = {excluded};  </div>
+<div class="line"><a name="l01217"></a><span class="lineno"> 1217</span>&#160;    <span class="keywordflow">return</span> Catch::Generators::GeneratorWrapper&lt;int*&gt;(</div>
+<div class="line"><a name="l01218"></a><span class="lineno"> 1218</span>&#160;        std::unique_ptr&lt;Catch::Generators::IGenerator&lt;int*&gt;&gt;(</div>
+<div class="line"><a name="l01219"></a><span class="lineno"> 1219</span>&#160;            <span class="keyword">new</span> <a class="code" href="classSubListGenerator.html">SubListGenerator</a>(std::move(gen), numSamps, exclude, 1)));</div>
+<div class="line"><a name="l01220"></a><span class="lineno"> 1220</span>&#160;}</div>
 </div><!-- fragment -->
 </div>
 </div>
@@ -1441,7 +1468,7 @@ Functions</h2></td></tr>
 </div>
 </div>
 </div><!-- contents -->
-<div class="ttc" id="aclassSubListGenerator_html"><div class="ttname"><a href="classSubListGenerator.html">SubListGenerator</a></div><div class="ttdef"><b>Definition:</b> <a href="utilities_8cpp_source.html#l00974">utilities.cpp:974</a></div></div>
+<div class="ttc" id="aclassSubListGenerator_html"><div class="ttname"><a href="classSubListGenerator.html">SubListGenerator</a></div><div class="ttdef"><b>Definition:</b> <a href="utilities_8cpp_source.html#l01099">utilities.cpp:1099</a></div></div>
 <div class="ttc" id="agroup__testutilities_html_gac9263a65c96a458b810b20baa81c5b94"><div class="ttname"><a href="group__testutilities.html#gac9263a65c96a458b810b20baa81c5b94">QVector</a></div><div class="ttdeci">std::vector&lt; qcomp &gt; QVector</div><div class="ttdoc">A complex vector, which can be zero-initialised with QVector(numAmps).</div><div class="ttdef"><b>Definition:</b> <a href="utilities_8hpp_source.html#l00060">utilities.hpp:60</a></div></div>
 <div class="ttc" id="agroup__type_html_gad863c5878a01051a2726ce94bf365428"><div class="ttname"><a href="group__type.html#gad863c5878a01051a2726ce94bf365428">qcomp</a></div><div class="ttdeci">#define qcomp</div></div>
 <div class="ttc" id="agroup__testutilities_html_gabbc686f5f40eff22e08a2b2012ac4e41"><div class="ttname"><a href="group__testutilities.html#gabbc686f5f40eff22e08a2b2012ac4e41">QMatrix</a></div><div class="ttdeci">std::vector&lt; std::vector&lt; qcomp &gt; &gt; QMatrix</div><div class="ttdoc">A complex square matrix.</div><div class="ttdef"><b>Definition:</b> <a href="utilities_8hpp_source.html#l00049">utilities.hpp:49</a></div></div>

@@ -27,7 +27,7 @@
             <div class="container">
                 <div class="navbar-header">
                     <a class="navbar-brand"><img alt="Logo" src="logo.png"/></a>
-                    <a class="navbar-brand"><b>QuEST</b> v3.1.0<br>The Quantum Exact Simulation Toolkit</a>
+                    <a class="navbar-brand"><b>QuEST</b> v3.2.0<br>The Quantum Exact Simulation Toolkit</a>
                 </div>
             </div>
         </nav>
@@ -130,15 +130,15 @@ Functions</h2></td></tr>
 </dl>
 <dl class="section author"><dt>Author</dt><dd>Tyson Jones </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="QuEST_8c_source.html#l00163">163</a> of file <a class="el" href="QuEST_8c_source.html">QuEST.c</a>.</p>
-<div class="fragment"><div class="line"><a name="l00163"></a><span class="lineno">  163</span>&#160;                                                    {</div>
-<div class="line"><a name="l00164"></a><span class="lineno">  164</span>&#160;    <a class="code" href="QuEST__validation_8c.html#a031812e1cf2c98d72d795cea7bbe73a5">validateMatchingQuregTypes</a>(targetQureg, copyQureg, __func__);</div>
-<div class="line"><a name="l00165"></a><span class="lineno">  165</span>&#160;    <a class="code" href="QuEST__validation_8c.html#a87d22240ccfd81827a2a34b8d569d347">validateMatchingQuregDims</a>(targetQureg, copyQureg, __func__);</div>
-<div class="line"><a name="l00166"></a><span class="lineno">  166</span>&#160;    </div>
-<div class="line"><a name="l00167"></a><span class="lineno">  167</span>&#160;    <a class="code" href="QuEST__internal_8h.html#aa4b77089145184d990848cd66993aa8b">statevec_cloneQureg</a>(targetQureg, copyQureg);</div>
-<div class="line"><a name="l00168"></a><span class="lineno">  168</span>&#160;}</div>
+<p class="definition">Definition at line <a class="el" href="QuEST_8c_source.html#l00165">165</a> of file <a class="el" href="QuEST_8c_source.html">QuEST.c</a>.</p>
+<div class="fragment"><div class="line"><a name="l00165"></a><span class="lineno">  165</span>&#160;                                                    {</div>
+<div class="line"><a name="l00166"></a><span class="lineno">  166</span>&#160;    <a class="code" href="QuEST__validation_8c.html#a031812e1cf2c98d72d795cea7bbe73a5">validateMatchingQuregTypes</a>(targetQureg, copyQureg, __func__);</div>
+<div class="line"><a name="l00167"></a><span class="lineno">  167</span>&#160;    <a class="code" href="QuEST__validation_8c.html#a87d22240ccfd81827a2a34b8d569d347">validateMatchingQuregDims</a>(targetQureg, copyQureg, __func__);</div>
+<div class="line"><a name="l00168"></a><span class="lineno">  168</span>&#160;    </div>
+<div class="line"><a name="l00169"></a><span class="lineno">  169</span>&#160;    <a class="code" href="QuEST__internal_8h.html#aa4b77089145184d990848cd66993aa8b">statevec_cloneQureg</a>(targetQureg, copyQureg);</div>
+<div class="line"><a name="l00170"></a><span class="lineno">  170</span>&#160;}</div>
 </div><!-- fragment -->
-<p class="reference">References <a class="el" href="QuEST__cpu_8c_source.html#l01474">statevec_cloneQureg()</a>, <a class="el" href="QuEST__validation_8c_source.html#l00434">validateMatchingQuregDims()</a>, and <a class="el" href="QuEST__validation_8c_source.html#l00438">validateMatchingQuregTypes()</a>.</p>
+<p class="reference">References <a class="el" href="QuEST__cpu_8c_source.html#l01506">statevec_cloneQureg()</a>, <a class="el" href="QuEST__validation_8c_source.html#l00495">validateMatchingQuregDims()</a>, and <a class="el" href="QuEST__validation_8c_source.html#l00499">validateMatchingQuregTypes()</a>.</p>
 
 <p class="reference">Referenced by <a class="el" href="test__state__initialisations_8cpp_source.html#l00015">TEST_CASE()</a>.</p>
 
@@ -170,16 +170,16 @@ Functions</h2></td></tr>
 </dl>
 <dl class="section author"><dt>Author</dt><dd>Tyson Jones </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="QuEST_8c_source.html#l00117">117</a> of file <a class="el" href="QuEST_8c_source.html">QuEST.c</a>.</p>
-<div class="fragment"><div class="line"><a name="l00117"></a><span class="lineno">  117</span>&#160;                                 {</div>
-<div class="line"><a name="l00118"></a><span class="lineno">  118</span>&#160;    <a class="code" href="QuEST__internal_8h.html#a758bad4237ff0bf3b4ff5be626a982ae">statevec_initBlankState</a>(qureg);</div>
-<div class="line"><a name="l00119"></a><span class="lineno">  119</span>&#160;    </div>
-<div class="line"><a name="l00120"></a><span class="lineno">  120</span>&#160;    <a class="code" href="QuEST__qasm_8c.html#a9a385fde708958617bbeb599064b8dcb">qasm_recordComment</a>(qureg, <span class="stringliteral">&quot;Here, the register was initialised to an unphysical all-zero-amplitudes &#39;state&#39;.&quot;</span>);</div>
-<div class="line"><a name="l00121"></a><span class="lineno">  121</span>&#160;}</div>
+<p class="definition">Definition at line <a class="el" href="QuEST_8c_source.html#l00119">119</a> of file <a class="el" href="QuEST_8c_source.html">QuEST.c</a>.</p>
+<div class="fragment"><div class="line"><a name="l00119"></a><span class="lineno">  119</span>&#160;                                 {</div>
+<div class="line"><a name="l00120"></a><span class="lineno">  120</span>&#160;    <a class="code" href="QuEST__internal_8h.html#a758bad4237ff0bf3b4ff5be626a982ae">statevec_initBlankState</a>(qureg);</div>
+<div class="line"><a name="l00121"></a><span class="lineno">  121</span>&#160;    </div>
+<div class="line"><a name="l00122"></a><span class="lineno">  122</span>&#160;    <a class="code" href="QuEST__qasm_8c.html#a9a385fde708958617bbeb599064b8dcb">qasm_recordComment</a>(qureg, <span class="stringliteral">&quot;Here, the register was initialised to an unphysical all-zero-amplitudes &#39;state&#39;.&quot;</span>);</div>
+<div class="line"><a name="l00123"></a><span class="lineno">  123</span>&#160;}</div>
 </div><!-- fragment -->
-<p class="reference">References <a class="el" href="QuEST__qasm_8c_source.html#l00120">qasm_recordComment()</a>, and <a class="el" href="QuEST__cpu_8c_source.html#l01366">statevec_initBlankState()</a>.</p>
+<p class="reference">References <a class="el" href="QuEST__qasm_8c_source.html#l00120">qasm_recordComment()</a>, and <a class="el" href="QuEST__cpu_8c_source.html#l01398">statevec_initBlankState()</a>.</p>
 
-<p class="reference">Referenced by <a class="el" href="test__calculations_8cpp_source.html#l00911">TEST_CASE()</a>.</p>
+<p class="reference">Referenced by <a class="el" href="test__calculations_8cpp_source.html#l01072">TEST_CASE()</a>.</p>
 
 </div>
 </div>
@@ -222,25 +222,25 @@ Functions</h2></td></tr>
 </dl>
 <dl class="exception"><dt>Exceptions</dt><dd>
   <table class="exception">
-    <tr><td class="paramname">exitWithError</td><td>if <code>stateInd</code> is outside [0, 2^N-1]. </td></tr>
+    <tr><td class="paramname">invalidQuESTInputError</td><td>if <code>stateInd</code> is outside [0, 2^N-1]. </td></tr>
   </table>
   </dd>
 </dl>
 <dl class="section author"><dt>Author</dt><dd>Tyson Jones </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="QuEST_8c_source.html#l00132">132</a> of file <a class="el" href="QuEST_8c_source.html">QuEST.c</a>.</p>
-<div class="fragment"><div class="line"><a name="l00132"></a><span class="lineno">  132</span>&#160;                                                             {</div>
-<div class="line"><a name="l00133"></a><span class="lineno">  133</span>&#160;    <a class="code" href="QuEST__validation_8c.html#a57dc69bb7a2217aafca676b0923d5e27">validateStateIndex</a>(qureg, stateInd, __func__);</div>
-<div class="line"><a name="l00134"></a><span class="lineno">  134</span>&#160;    </div>
-<div class="line"><a name="l00135"></a><span class="lineno">  135</span>&#160;    <span class="keywordflow">if</span> (qureg.<a class="code" href="structQureg.html#acf78445e9435d09f44f0cc832c6aee79">isDensityMatrix</a>)</div>
-<div class="line"><a name="l00136"></a><span class="lineno">  136</span>&#160;        <a class="code" href="QuEST__internal_8h.html#a20a155f53efc45c16803d7539c2c199d">densmatr_initClassicalState</a>(qureg, stateInd);</div>
-<div class="line"><a name="l00137"></a><span class="lineno">  137</span>&#160;    <span class="keywordflow">else</span></div>
-<div class="line"><a name="l00138"></a><span class="lineno">  138</span>&#160;        <a class="code" href="QuEST__internal_8h.html#a288dc4b46bdacd69cbf4a6fd070d26a7">statevec_initClassicalState</a>(qureg, stateInd);</div>
-<div class="line"><a name="l00139"></a><span class="lineno">  139</span>&#160;    </div>
-<div class="line"><a name="l00140"></a><span class="lineno">  140</span>&#160;    <a class="code" href="QuEST__qasm_8c.html#a55d0f243437a0bb3b7609a1090323aa3">qasm_recordInitClassical</a>(qureg, stateInd);</div>
-<div class="line"><a name="l00141"></a><span class="lineno">  141</span>&#160;}</div>
+<p class="definition">Definition at line <a class="el" href="QuEST_8c_source.html#l00134">134</a> of file <a class="el" href="QuEST_8c_source.html">QuEST.c</a>.</p>
+<div class="fragment"><div class="line"><a name="l00134"></a><span class="lineno">  134</span>&#160;                                                             {</div>
+<div class="line"><a name="l00135"></a><span class="lineno">  135</span>&#160;    <a class="code" href="QuEST__validation_8c.html#a57dc69bb7a2217aafca676b0923d5e27">validateStateIndex</a>(qureg, stateInd, __func__);</div>
+<div class="line"><a name="l00136"></a><span class="lineno">  136</span>&#160;    </div>
+<div class="line"><a name="l00137"></a><span class="lineno">  137</span>&#160;    <span class="keywordflow">if</span> (qureg.<a class="code" href="structQureg.html#acf78445e9435d09f44f0cc832c6aee79">isDensityMatrix</a>)</div>
+<div class="line"><a name="l00138"></a><span class="lineno">  138</span>&#160;        <a class="code" href="QuEST__internal_8h.html#a20a155f53efc45c16803d7539c2c199d">densmatr_initClassicalState</a>(qureg, stateInd);</div>
+<div class="line"><a name="l00139"></a><span class="lineno">  139</span>&#160;    <span class="keywordflow">else</span></div>
+<div class="line"><a name="l00140"></a><span class="lineno">  140</span>&#160;        <a class="code" href="QuEST__internal_8h.html#a288dc4b46bdacd69cbf4a6fd070d26a7">statevec_initClassicalState</a>(qureg, stateInd);</div>
+<div class="line"><a name="l00141"></a><span class="lineno">  141</span>&#160;    </div>
+<div class="line"><a name="l00142"></a><span class="lineno">  142</span>&#160;    <a class="code" href="QuEST__qasm_8c.html#a55d0f243437a0bb3b7609a1090323aa3">qasm_recordInitClassical</a>(qureg, stateInd);</div>
+<div class="line"><a name="l00143"></a><span class="lineno">  143</span>&#160;}</div>
 </div><!-- fragment -->
-<p class="reference">References <a class="el" href="QuEST__cpu_8c_source.html#l01114">densmatr_initClassicalState()</a>, <a class="el" href="QuEST_8h_source.html#l00163">Qureg::isDensityMatrix</a>, <a class="el" href="QuEST__qasm_8c_source.html#l00458">qasm_recordInitClassical()</a>, <a class="el" href="QuEST__cpu_8c_source.html#l01438">statevec_initClassicalState()</a>, and <a class="el" href="QuEST__validation_8c_source.html#l00291">validateStateIndex()</a>.</p>
+<p class="reference">References <a class="el" href="QuEST__cpu_8c_source.html#l01115">densmatr_initClassicalState()</a>, <a class="el" href="QuEST_8h_source.html#l00206">Qureg::isDensityMatrix</a>, <a class="el" href="QuEST__qasm_8c_source.html#l00458">qasm_recordInitClassical()</a>, <a class="el" href="QuEST__cpu_8c_source.html#l01470">statevec_initClassicalState()</a>, and <a class="el" href="QuEST__validation_8c_source.html#l00341">validateStateIndex()</a>.</p>
 
 <p class="reference">Referenced by <a class="el" href="test__gates_8cpp_source.html#l00015">TEST_CASE()</a>.</p>
 
@@ -274,19 +274,19 @@ Functions</h2></td></tr>
 <dd>
 Tyson Jones (density matrix, doc) </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="QuEST_8c_source.html#l00123">123</a> of file <a class="el" href="QuEST_8c_source.html">QuEST.c</a>.</p>
-<div class="fragment"><div class="line"><a name="l00123"></a><span class="lineno">  123</span>&#160;                                {</div>
-<div class="line"><a name="l00124"></a><span class="lineno">  124</span>&#160;    <span class="keywordflow">if</span> (qureg.<a class="code" href="structQureg.html#acf78445e9435d09f44f0cc832c6aee79">isDensityMatrix</a>)</div>
-<div class="line"><a name="l00125"></a><span class="lineno">  125</span>&#160;        <a class="code" href="QuEST__internal_8h.html#a2418bd9a6b9e6a0acf11faf5982d5d29">densmatr_initPlusState</a>(qureg);</div>
-<div class="line"><a name="l00126"></a><span class="lineno">  126</span>&#160;    <span class="keywordflow">else</span></div>
-<div class="line"><a name="l00127"></a><span class="lineno">  127</span>&#160;        <a class="code" href="QuEST__internal_8h.html#a482fc361fd5f08075404c72e536316a0">statevec_initPlusState</a>(qureg);</div>
-<div class="line"><a name="l00128"></a><span class="lineno">  128</span>&#160;    </div>
-<div class="line"><a name="l00129"></a><span class="lineno">  129</span>&#160;    <a class="code" href="QuEST__qasm_8c.html#a627b0be7667c5a61a06b3b038fcc8b1b">qasm_recordInitPlus</a>(qureg);</div>
-<div class="line"><a name="l00130"></a><span class="lineno">  130</span>&#160;}</div>
+<p class="definition">Definition at line <a class="el" href="QuEST_8c_source.html#l00125">125</a> of file <a class="el" href="QuEST_8c_source.html">QuEST.c</a>.</p>
+<div class="fragment"><div class="line"><a name="l00125"></a><span class="lineno">  125</span>&#160;                                {</div>
+<div class="line"><a name="l00126"></a><span class="lineno">  126</span>&#160;    <span class="keywordflow">if</span> (qureg.<a class="code" href="structQureg.html#acf78445e9435d09f44f0cc832c6aee79">isDensityMatrix</a>)</div>
+<div class="line"><a name="l00127"></a><span class="lineno">  127</span>&#160;        <a class="code" href="QuEST__internal_8h.html#a2418bd9a6b9e6a0acf11faf5982d5d29">densmatr_initPlusState</a>(qureg);</div>
+<div class="line"><a name="l00128"></a><span class="lineno">  128</span>&#160;    <span class="keywordflow">else</span></div>
+<div class="line"><a name="l00129"></a><span class="lineno">  129</span>&#160;        <a class="code" href="QuEST__internal_8h.html#a482fc361fd5f08075404c72e536316a0">statevec_initPlusState</a>(qureg);</div>
+<div class="line"><a name="l00130"></a><span class="lineno">  130</span>&#160;    </div>
+<div class="line"><a name="l00131"></a><span class="lineno">  131</span>&#160;    <a class="code" href="QuEST__qasm_8c.html#a627b0be7667c5a61a06b3b038fcc8b1b">qasm_recordInitPlus</a>(qureg);</div>
+<div class="line"><a name="l00132"></a><span class="lineno">  132</span>&#160;}</div>
 </div><!-- fragment -->
-<p class="reference">References <a class="el" href="QuEST__cpu_8c_source.html#l01153">densmatr_initPlusState()</a>, <a class="el" href="QuEST_8h_source.html#l00163">Qureg::isDensityMatrix</a>, <a class="el" href="QuEST__qasm_8c_source.html#l00430">qasm_recordInitPlus()</a>, and <a class="el" href="QuEST__cpu_8c_source.html#l01406">statevec_initPlusState()</a>.</p>
+<p class="reference">References <a class="el" href="QuEST__cpu_8c_source.html#l01154">densmatr_initPlusState()</a>, <a class="el" href="QuEST_8h_source.html#l00206">Qureg::isDensityMatrix</a>, <a class="el" href="QuEST__qasm_8c_source.html#l00430">qasm_recordInitPlus()</a>, and <a class="el" href="QuEST__cpu_8c_source.html#l01438">statevec_initPlusState()</a>.</p>
 
-<p class="reference">Referenced by <a class="el" href="test__calculations_8cpp_source.html#l00911">TEST_CASE()</a>.</p>
+<p class="reference">Referenced by <a class="el" href="test__calculations_8cpp_source.html#l01072">TEST_CASE()</a>.</p>
 
 </div>
 </div>
@@ -327,26 +327,26 @@ Tyson Jones (density matrix, doc) </dd></dl>
 </dl>
 <dl class="exception"><dt>Exceptions</dt><dd>
   <table class="exception">
-    <tr><td class="paramname">exitWithError</td><td>if <code>qureg</code> and <code>pure</code> have mismatching dimensions, or if <code>pure</code> is a density matrix. </td></tr>
+    <tr><td class="paramname">invalidQuESTInputError</td><td>if <code>qureg</code> and <code>pure</code> have mismatching dimensions, or if <code>pure</code> is a density matrix. </td></tr>
   </table>
   </dd>
 </dl>
 <dl class="section author"><dt>Author</dt><dd>Tyson Jones </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="QuEST_8c_source.html#l00143">143</a> of file <a class="el" href="QuEST_8c_source.html">QuEST.c</a>.</p>
-<div class="fragment"><div class="line"><a name="l00143"></a><span class="lineno">  143</span>&#160;                                            {</div>
-<div class="line"><a name="l00144"></a><span class="lineno">  144</span>&#160;    <a class="code" href="QuEST__validation_8c.html#a7adc86571f1154558676d95daf0cbd1f">validateSecondQuregStateVec</a>(pure, __func__);</div>
-<div class="line"><a name="l00145"></a><span class="lineno">  145</span>&#160;    <a class="code" href="QuEST__validation_8c.html#a87d22240ccfd81827a2a34b8d569d347">validateMatchingQuregDims</a>(qureg, pure, __func__);</div>
-<div class="line"><a name="l00146"></a><span class="lineno">  146</span>&#160; </div>
-<div class="line"><a name="l00147"></a><span class="lineno">  147</span>&#160;    <span class="keywordflow">if</span> (qureg.<a class="code" href="structQureg.html#acf78445e9435d09f44f0cc832c6aee79">isDensityMatrix</a>)</div>
-<div class="line"><a name="l00148"></a><span class="lineno">  148</span>&#160;        <a class="code" href="QuEST__internal_8h.html#ae5ad68d054875913d0f7ec654840a9ec">densmatr_initPureState</a>(qureg, pure);</div>
-<div class="line"><a name="l00149"></a><span class="lineno">  149</span>&#160;    <span class="keywordflow">else</span></div>
-<div class="line"><a name="l00150"></a><span class="lineno">  150</span>&#160;        <a class="code" href="QuEST__internal_8h.html#aa4b77089145184d990848cd66993aa8b">statevec_cloneQureg</a>(qureg, pure);</div>
-<div class="line"><a name="l00151"></a><span class="lineno">  151</span>&#160;    </div>
-<div class="line"><a name="l00152"></a><span class="lineno">  152</span>&#160;    <a class="code" href="QuEST__qasm_8c.html#a9a385fde708958617bbeb599064b8dcb">qasm_recordComment</a>(qureg, <span class="stringliteral">&quot;Here, the register was initialised to an undisclosed given pure state.&quot;</span>);</div>
-<div class="line"><a name="l00153"></a><span class="lineno">  153</span>&#160;}</div>
+<p class="definition">Definition at line <a class="el" href="QuEST_8c_source.html#l00145">145</a> of file <a class="el" href="QuEST_8c_source.html">QuEST.c</a>.</p>
+<div class="fragment"><div class="line"><a name="l00145"></a><span class="lineno">  145</span>&#160;                                            {</div>
+<div class="line"><a name="l00146"></a><span class="lineno">  146</span>&#160;    <a class="code" href="QuEST__validation_8c.html#a7adc86571f1154558676d95daf0cbd1f">validateSecondQuregStateVec</a>(pure, __func__);</div>
+<div class="line"><a name="l00147"></a><span class="lineno">  147</span>&#160;    <a class="code" href="QuEST__validation_8c.html#a87d22240ccfd81827a2a34b8d569d347">validateMatchingQuregDims</a>(qureg, pure, __func__);</div>
+<div class="line"><a name="l00148"></a><span class="lineno">  148</span>&#160; </div>
+<div class="line"><a name="l00149"></a><span class="lineno">  149</span>&#160;    <span class="keywordflow">if</span> (qureg.<a class="code" href="structQureg.html#acf78445e9435d09f44f0cc832c6aee79">isDensityMatrix</a>)</div>
+<div class="line"><a name="l00150"></a><span class="lineno">  150</span>&#160;        <a class="code" href="QuEST__internal_8h.html#ae5ad68d054875913d0f7ec654840a9ec">densmatr_initPureState</a>(qureg, pure);</div>
+<div class="line"><a name="l00151"></a><span class="lineno">  151</span>&#160;    <span class="keywordflow">else</span></div>
+<div class="line"><a name="l00152"></a><span class="lineno">  152</span>&#160;        <a class="code" href="QuEST__internal_8h.html#aa4b77089145184d990848cd66993aa8b">statevec_cloneQureg</a>(qureg, pure);</div>
+<div class="line"><a name="l00153"></a><span class="lineno">  153</span>&#160;    </div>
+<div class="line"><a name="l00154"></a><span class="lineno">  154</span>&#160;    <a class="code" href="QuEST__qasm_8c.html#a9a385fde708958617bbeb599064b8dcb">qasm_recordComment</a>(qureg, <span class="stringliteral">&quot;Here, the register was initialised to an undisclosed given pure state.&quot;</span>);</div>
+<div class="line"><a name="l00155"></a><span class="lineno">  155</span>&#160;}</div>
 </div><!-- fragment -->
-<p class="reference">References <a class="el" href="QuEST__cpu__distributed_8c_source.html#l00452">densmatr_initPureState()</a>, <a class="el" href="QuEST_8h_source.html#l00163">Qureg::isDensityMatrix</a>, <a class="el" href="QuEST__qasm_8c_source.html#l00120">qasm_recordComment()</a>, <a class="el" href="QuEST__cpu_8c_source.html#l01474">statevec_cloneQureg()</a>, <a class="el" href="QuEST__validation_8c_source.html#l00434">validateMatchingQuregDims()</a>, and <a class="el" href="QuEST__validation_8c_source.html#l00442">validateSecondQuregStateVec()</a>.</p>
+<p class="reference">References <a class="el" href="QuEST__cpu__distributed_8c_source.html#l00452">densmatr_initPureState()</a>, <a class="el" href="QuEST_8h_source.html#l00206">Qureg::isDensityMatrix</a>, <a class="el" href="QuEST__qasm_8c_source.html#l00120">qasm_recordComment()</a>, <a class="el" href="QuEST__cpu_8c_source.html#l01506">statevec_cloneQureg()</a>, <a class="el" href="QuEST__validation_8c_source.html#l00495">validateMatchingQuregDims()</a>, and <a class="el" href="QuEST__validation_8c_source.html#l00503">validateSecondQuregStateVec()</a>.</p>
 
 <p class="reference">Referenced by <a class="el" href="test__state__initialisations_8cpp_source.html#l00211">TEST_CASE()</a>.</p>
 
@@ -385,7 +385,8 @@ Tyson Jones (density matrix, doc) </dd></dl>
 </div><div class="memdoc">
 
 <p>Initialise qureg by specifying the complete statevector. </p>
-<p>The real and imaginary components of the amplitudes are passed in separate arrays, each of which must have length <code>qureg.numAmpsTotal</code>. There is no automatic checking that the passed arrays are L2 normalised.</p>
+<p>The real and imaginary components of the amplitudes are passed in separate arrays, each of which must have length <code>qureg.numAmpsTotal</code>. There is no automatic checking that the passed arrays are L2 normalised, so this can be used to prepare <code>qureg</code> in a non-physical state.</p>
+<p>In distributed mode, this would require the complete statevector to fit in every node. To manually prepare a statevector which cannot fit in every node, use <a class="el" href="group__init.html#gabc0c64f8adf307d2a44184dc0f8ca66e" title="Overwrites a subset of the amplitudes in qureg, with those passed in reals and imags.">setAmps()</a></p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in,out]</td><td class="paramname">qureg</td><td>the object representing the set of qubits to be initialised </td></tr>
@@ -396,22 +397,22 @@ Tyson Jones (density matrix, doc) </dd></dl>
 </dl>
 <dl class="exception"><dt>Exceptions</dt><dd>
   <table class="exception">
-    <tr><td class="paramname">exitWithError</td><td>if <code>qureg</code> is not a statevector (i.e. is a density matrix) </td></tr>
+    <tr><td class="paramname">invalidQuESTInputError</td><td>if <code>qureg</code> is not a statevector (i.e. is a density matrix) </td></tr>
   </table>
   </dd>
 </dl>
 <dl class="section author"><dt>Author</dt><dd>Tyson Jones </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="QuEST_8c_source.html#l00155">155</a> of file <a class="el" href="QuEST_8c_source.html">QuEST.c</a>.</p>
-<div class="fragment"><div class="line"><a name="l00155"></a><span class="lineno">  155</span>&#160;                                                                {</div>
-<div class="line"><a name="l00156"></a><span class="lineno">  156</span>&#160;    <a class="code" href="QuEST__validation_8c.html#a72feec2aaa05f98aed7f3c3fee141251">validateStateVecQureg</a>(qureg, __func__);</div>
-<div class="line"><a name="l00157"></a><span class="lineno">  157</span>&#160;    </div>
-<div class="line"><a name="l00158"></a><span class="lineno">  158</span>&#160;    <a class="code" href="QuEST__internal_8h.html#aa121d55f2ca09c06a96ddcd433c60b0f">statevec_setAmps</a>(qureg, 0, reals, imags, qureg.<a class="code" href="structQureg.html#adef4935cac95763c29164cf99b144ed4">numAmpsTotal</a>);</div>
+<p class="definition">Definition at line <a class="el" href="QuEST_8c_source.html#l00157">157</a> of file <a class="el" href="QuEST_8c_source.html">QuEST.c</a>.</p>
+<div class="fragment"><div class="line"><a name="l00157"></a><span class="lineno">  157</span>&#160;                                                                {</div>
+<div class="line"><a name="l00158"></a><span class="lineno">  158</span>&#160;    <a class="code" href="QuEST__validation_8c.html#a72feec2aaa05f98aed7f3c3fee141251">validateStateVecQureg</a>(qureg, __func__);</div>
 <div class="line"><a name="l00159"></a><span class="lineno">  159</span>&#160;    </div>
-<div class="line"><a name="l00160"></a><span class="lineno">  160</span>&#160;    <a class="code" href="QuEST__qasm_8c.html#a9a385fde708958617bbeb599064b8dcb">qasm_recordComment</a>(qureg, <span class="stringliteral">&quot;Here, the register was initialised to an undisclosed given pure state.&quot;</span>);</div>
-<div class="line"><a name="l00161"></a><span class="lineno">  161</span>&#160;}</div>
+<div class="line"><a name="l00160"></a><span class="lineno">  160</span>&#160;    <a class="code" href="QuEST__internal_8h.html#aa121d55f2ca09c06a96ddcd433c60b0f">statevec_setAmps</a>(qureg, 0, reals, imags, qureg.<a class="code" href="structQureg.html#adef4935cac95763c29164cf99b144ed4">numAmpsTotal</a>);</div>
+<div class="line"><a name="l00161"></a><span class="lineno">  161</span>&#160;    </div>
+<div class="line"><a name="l00162"></a><span class="lineno">  162</span>&#160;    <a class="code" href="QuEST__qasm_8c.html#a9a385fde708958617bbeb599064b8dcb">qasm_recordComment</a>(qureg, <span class="stringliteral">&quot;Here, the register was initialised to an undisclosed given pure state.&quot;</span>);</div>
+<div class="line"><a name="l00163"></a><span class="lineno">  163</span>&#160;}</div>
 </div><!-- fragment -->
-<p class="reference">References <a class="el" href="QuEST_8h_source.html#l00172">Qureg::numAmpsTotal</a>, <a class="el" href="QuEST__qasm_8c_source.html#l00120">qasm_recordComment()</a>, <a class="el" href="QuEST__cpu_8c_source.html#l01236">statevec_setAmps()</a>, and <a class="el" href="QuEST__validation_8c_source.html#l00418">validateStateVecQureg()</a>.</p>
+<p class="reference">References <a class="el" href="QuEST_8h_source.html#l00215">Qureg::numAmpsTotal</a>, <a class="el" href="QuEST__qasm_8c_source.html#l00120">qasm_recordComment()</a>, <a class="el" href="QuEST__cpu_8c_source.html#l01237">statevec_setAmps()</a>, and <a class="el" href="QuEST__validation_8c_source.html#l00479">validateStateVecQureg()</a>.</p>
 
 <p class="reference">Referenced by <a class="el" href="test__state__initialisations_8cpp_source.html#l00286">TEST_CASE()</a>.</p>
 
@@ -444,16 +445,16 @@ Tyson Jones (density matrix, doc) </dd></dl>
 <dd>
 Tyson Jones (density matrix, doc) </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="QuEST_8c_source.html#l00111">111</a> of file <a class="el" href="QuEST_8c_source.html">QuEST.c</a>.</p>
-<div class="fragment"><div class="line"><a name="l00111"></a><span class="lineno">  111</span>&#160;                                {</div>
-<div class="line"><a name="l00112"></a><span class="lineno">  112</span>&#160;    <a class="code" href="QuEST__internal_8h.html#a2ca0c6ba07ab2b4b437321bf17efc966">statevec_initZeroState</a>(qureg); <span class="comment">// valid for both statevec and density matrices</span></div>
-<div class="line"><a name="l00113"></a><span class="lineno">  113</span>&#160;    </div>
-<div class="line"><a name="l00114"></a><span class="lineno">  114</span>&#160;    <a class="code" href="QuEST__qasm_8c.html#a4e21adca1f0ca03303bc2e57aaba4ce2">qasm_recordInitZero</a>(qureg);</div>
-<div class="line"><a name="l00115"></a><span class="lineno">  115</span>&#160;}</div>
+<p class="definition">Definition at line <a class="el" href="QuEST_8c_source.html#l00113">113</a> of file <a class="el" href="QuEST_8c_source.html">QuEST.c</a>.</p>
+<div class="fragment"><div class="line"><a name="l00113"></a><span class="lineno">  113</span>&#160;                                {</div>
+<div class="line"><a name="l00114"></a><span class="lineno">  114</span>&#160;    <a class="code" href="QuEST__internal_8h.html#a2ca0c6ba07ab2b4b437321bf17efc966">statevec_initZeroState</a>(qureg); <span class="comment">// valid for both statevec and density matrices</span></div>
+<div class="line"><a name="l00115"></a><span class="lineno">  115</span>&#160;    </div>
+<div class="line"><a name="l00116"></a><span class="lineno">  116</span>&#160;    <a class="code" href="QuEST__qasm_8c.html#a4e21adca1f0ca03303bc2e57aaba4ce2">qasm_recordInitZero</a>(qureg);</div>
+<div class="line"><a name="l00117"></a><span class="lineno">  117</span>&#160;}</div>
 </div><!-- fragment -->
-<p class="reference">References <a class="el" href="QuEST__qasm_8c_source.html#l00415">qasm_recordInitZero()</a>, and <a class="el" href="QuEST__cpu_8c_source.html#l01396">statevec_initZeroState()</a>.</p>
+<p class="reference">References <a class="el" href="QuEST__qasm_8c_source.html#l00415">qasm_recordInitZero()</a>, and <a class="el" href="QuEST__cpu_8c_source.html#l01428">statevec_initZeroState()</a>.</p>
 
-<p class="reference">Referenced by <a class="el" href="QuEST_8c_source.html#l00048">createDensityQureg()</a>, <a class="el" href="QuEST_8c_source.html#l00034">createQureg()</a>, and <a class="el" href="test__calculations_8cpp_source.html#l00839">TEST_CASE()</a>.</p>
+<p class="reference">Referenced by <a class="el" href="QuEST_8c_source.html#l00050">createDensityQureg()</a>, <a class="el" href="QuEST_8c_source.html#l00036">createQureg()</a>, and <a class="el" href="test__calculations_8cpp_source.html#l01000">TEST_CASE()</a>.</p>
 
 </div>
 </div>
@@ -515,23 +516,23 @@ Tyson Jones (density matrix, doc) </dd></dl>
 </dl>
 <dl class="exception"><dt>Exceptions</dt><dd>
   <table class="exception">
-    <tr><td class="paramname">exitWithError</td><td>if <code>qureg</code> is not a statevector (i.e. is a density matrix), or if <code>startInd</code> is outside [0, <code>qureg.numAmpsTotal</code>], or if <code>numAmps</code> is outside [0, <code>qureg.numAmpsTotal</code>], or if <code>numAmps</code> + <code>startInd</code> is &gt;= qureg.numAmpsTotal. </td></tr>
+    <tr><td class="paramname">invalidQuESTInputError</td><td>if <code>qureg</code> is not a statevector (i.e. is a density matrix), or if <code>startInd</code> is outside [0, <code>qureg.numAmpsTotal</code>], or if <code>numAmps</code> is outside [0, <code>qureg.numAmpsTotal</code>], or if <code>numAmps</code> + <code>startInd</code> is &gt;= qureg.numAmpsTotal. </td></tr>
   </table>
   </dd>
 </dl>
 <dl class="section author"><dt>Author</dt><dd>Tyson Jones </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="QuEST_8c_source.html#l00779">779</a> of file <a class="el" href="QuEST_8c_source.html">QuEST.c</a>.</p>
-<div class="fragment"><div class="line"><a name="l00779"></a><span class="lineno">  779</span>&#160;                                                                                                     {</div>
-<div class="line"><a name="l00780"></a><span class="lineno">  780</span>&#160;    <a class="code" href="QuEST__validation_8c.html#a72feec2aaa05f98aed7f3c3fee141251">validateStateVecQureg</a>(qureg, __func__);</div>
-<div class="line"><a name="l00781"></a><span class="lineno">  781</span>&#160;    <a class="code" href="QuEST__validation_8c.html#a6904359f35d0b61b2c8fcecfac836033">validateNumAmps</a>(qureg, startInd, numAmps, __func__);</div>
-<div class="line"><a name="l00782"></a><span class="lineno">  782</span>&#160;    </div>
-<div class="line"><a name="l00783"></a><span class="lineno">  783</span>&#160;    <a class="code" href="QuEST__internal_8h.html#aa121d55f2ca09c06a96ddcd433c60b0f">statevec_setAmps</a>(qureg, startInd, reals, imags, numAmps);</div>
+<p class="definition">Definition at line <a class="el" href="QuEST_8c_source.html#l00781">781</a> of file <a class="el" href="QuEST_8c_source.html">QuEST.c</a>.</p>
+<div class="fragment"><div class="line"><a name="l00781"></a><span class="lineno">  781</span>&#160;                                                                                                     {</div>
+<div class="line"><a name="l00782"></a><span class="lineno">  782</span>&#160;    <a class="code" href="QuEST__validation_8c.html#a72feec2aaa05f98aed7f3c3fee141251">validateStateVecQureg</a>(qureg, __func__);</div>
+<div class="line"><a name="l00783"></a><span class="lineno">  783</span>&#160;    <a class="code" href="QuEST__validation_8c.html#a6904359f35d0b61b2c8fcecfac836033">validateNumAmps</a>(qureg, startInd, numAmps, __func__);</div>
 <div class="line"><a name="l00784"></a><span class="lineno">  784</span>&#160;    </div>
-<div class="line"><a name="l00785"></a><span class="lineno">  785</span>&#160;    <a class="code" href="QuEST__qasm_8c.html#a9a385fde708958617bbeb599064b8dcb">qasm_recordComment</a>(qureg, <span class="stringliteral">&quot;Here, some amplitudes in the statevector were manually edited.&quot;</span>);</div>
-<div class="line"><a name="l00786"></a><span class="lineno">  786</span>&#160;}</div>
+<div class="line"><a name="l00785"></a><span class="lineno">  785</span>&#160;    <a class="code" href="QuEST__internal_8h.html#aa121d55f2ca09c06a96ddcd433c60b0f">statevec_setAmps</a>(qureg, startInd, reals, imags, numAmps);</div>
+<div class="line"><a name="l00786"></a><span class="lineno">  786</span>&#160;    </div>
+<div class="line"><a name="l00787"></a><span class="lineno">  787</span>&#160;    <a class="code" href="QuEST__qasm_8c.html#a9a385fde708958617bbeb599064b8dcb">qasm_recordComment</a>(qureg, <span class="stringliteral">&quot;Here, some amplitudes in the statevector were manually edited.&quot;</span>);</div>
+<div class="line"><a name="l00788"></a><span class="lineno">  788</span>&#160;}</div>
 </div><!-- fragment -->
-<p class="reference">References <a class="el" href="QuEST__qasm_8c_source.html#l00120">qasm_recordComment()</a>, <a class="el" href="QuEST__cpu_8c_source.html#l01236">statevec_setAmps()</a>, <a class="el" href="QuEST__validation_8c_source.html#l00301">validateNumAmps()</a>, and <a class="el" href="QuEST__validation_8c_source.html#l00418">validateStateVecQureg()</a>.</p>
+<p class="reference">References <a class="el" href="QuEST__qasm_8c_source.html#l00120">qasm_recordComment()</a>, <a class="el" href="QuEST__cpu_8c_source.html#l01237">statevec_setAmps()</a>, <a class="el" href="QuEST__validation_8c_source.html#l00351">validateNumAmps()</a>, and <a class="el" href="QuEST__validation_8c_source.html#l00479">validateStateVecQureg()</a>.</p>
 
 <p class="reference">Referenced by <a class="el" href="test__state__initialisations_8cpp_source.html#l00368">TEST_CASE()</a>.</p>
 
@@ -603,52 +604,52 @@ Tyson Jones (density matrix, doc) </dd></dl>
 </dl>
 <dl class="exception"><dt>Exceptions</dt><dd>
   <table class="exception">
-    <tr><td class="paramname">exitWithError</td><td>if <code>qureg1</code>, <code>qureg2</code> and <code>aren't</code> all state-vectors or all density matrices, or if the dimensions of <code>qureg1</code>, <code>qureg2</code> and <code>aren't</code> equal </td></tr>
+    <tr><td class="paramname">invalidQuESTInputError</td><td>if <code>qureg1</code>, <code>qureg2</code> and <code>aren't</code> all state-vectors or all density matrices, or if the dimensions of <code>qureg1</code>, <code>qureg2</code> and <code>aren't</code> equal </td></tr>
   </table>
   </dd>
 </dl>
 <dl class="section author"><dt>Author</dt><dd>Tyson Jones </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="QuEST_8c_source.html#l00795">795</a> of file <a class="el" href="QuEST_8c_source.html">QuEST.c</a>.</p>
-<div class="fragment"><div class="line"><a name="l00795"></a><span class="lineno">  795</span>&#160;                                                                                                         {</div>
-<div class="line"><a name="l00796"></a><span class="lineno">  796</span>&#160;    <a class="code" href="QuEST__validation_8c.html#a031812e1cf2c98d72d795cea7bbe73a5">validateMatchingQuregTypes</a>(qureg1, qureg2, __func__);</div>
-<div class="line"><a name="l00797"></a><span class="lineno">  797</span>&#160;    <a class="code" href="QuEST__validation_8c.html#a031812e1cf2c98d72d795cea7bbe73a5">validateMatchingQuregTypes</a>(qureg1, out, __func__);</div>
-<div class="line"><a name="l00798"></a><span class="lineno">  798</span>&#160;    <a class="code" href="QuEST__validation_8c.html#a87d22240ccfd81827a2a34b8d569d347">validateMatchingQuregDims</a>(qureg1, qureg2,  __func__);</div>
-<div class="line"><a name="l00799"></a><span class="lineno">  799</span>&#160;    <a class="code" href="QuEST__validation_8c.html#a87d22240ccfd81827a2a34b8d569d347">validateMatchingQuregDims</a>(qureg1, out, __func__);</div>
-<div class="line"><a name="l00800"></a><span class="lineno">  800</span>&#160; </div>
-<div class="line"><a name="l00801"></a><span class="lineno">  801</span>&#160;    <a class="code" href="QuEST__internal_8h.html#ad64a23933361fafc1b6b1787759c2663">statevec_setWeightedQureg</a>(fac1, qureg1, fac2, qureg2, facOut, out);</div>
+<p class="definition">Definition at line <a class="el" href="QuEST_8c_source.html#l00797">797</a> of file <a class="el" href="QuEST_8c_source.html">QuEST.c</a>.</p>
+<div class="fragment"><div class="line"><a name="l00797"></a><span class="lineno">  797</span>&#160;                                                                                                         {</div>
+<div class="line"><a name="l00798"></a><span class="lineno">  798</span>&#160;    <a class="code" href="QuEST__validation_8c.html#a031812e1cf2c98d72d795cea7bbe73a5">validateMatchingQuregTypes</a>(qureg1, qureg2, __func__);</div>
+<div class="line"><a name="l00799"></a><span class="lineno">  799</span>&#160;    <a class="code" href="QuEST__validation_8c.html#a031812e1cf2c98d72d795cea7bbe73a5">validateMatchingQuregTypes</a>(qureg1, out, __func__);</div>
+<div class="line"><a name="l00800"></a><span class="lineno">  800</span>&#160;    <a class="code" href="QuEST__validation_8c.html#a87d22240ccfd81827a2a34b8d569d347">validateMatchingQuregDims</a>(qureg1, qureg2,  __func__);</div>
+<div class="line"><a name="l00801"></a><span class="lineno">  801</span>&#160;    <a class="code" href="QuEST__validation_8c.html#a87d22240ccfd81827a2a34b8d569d347">validateMatchingQuregDims</a>(qureg1, out, __func__);</div>
 <div class="line"><a name="l00802"></a><span class="lineno">  802</span>&#160; </div>
-<div class="line"><a name="l00803"></a><span class="lineno">  803</span>&#160;    <a class="code" href="QuEST__qasm_8c.html#a9a385fde708958617bbeb599064b8dcb">qasm_recordComment</a>(out, <span class="stringliteral">&quot;Here, the register was modified to an undisclosed and possibly unphysical state (setWeightedQureg).&quot;</span>);</div>
-<div class="line"><a name="l00804"></a><span class="lineno">  804</span>&#160;} </div>
+<div class="line"><a name="l00803"></a><span class="lineno">  803</span>&#160;    <a class="code" href="QuEST__internal_8h.html#ad64a23933361fafc1b6b1787759c2663">statevec_setWeightedQureg</a>(fac1, qureg1, fac2, qureg2, facOut, out);</div>
+<div class="line"><a name="l00804"></a><span class="lineno">  804</span>&#160; </div>
+<div class="line"><a name="l00805"></a><span class="lineno">  805</span>&#160;    <a class="code" href="QuEST__qasm_8c.html#a9a385fde708958617bbeb599064b8dcb">qasm_recordComment</a>(out, <span class="stringliteral">&quot;Here, the register was modified to an undisclosed and possibly unphysical state (setWeightedQureg).&quot;</span>);</div>
+<div class="line"><a name="l00806"></a><span class="lineno">  806</span>&#160;} </div>
 </div><!-- fragment -->
-<p class="reference">References <a class="el" href="QuEST__qasm_8c_source.html#l00120">qasm_recordComment()</a>, <a class="el" href="QuEST__cpu_8c_source.html#l03579">statevec_setWeightedQureg()</a>, <a class="el" href="QuEST__validation_8c_source.html#l00434">validateMatchingQuregDims()</a>, and <a class="el" href="QuEST__validation_8c_source.html#l00438">validateMatchingQuregTypes()</a>.</p>
+<p class="reference">References <a class="el" href="QuEST__qasm_8c_source.html#l00120">qasm_recordComment()</a>, <a class="el" href="QuEST__cpu_8c_source.html#l03619">statevec_setWeightedQureg()</a>, <a class="el" href="QuEST__validation_8c_source.html#l00495">validateMatchingQuregDims()</a>, and <a class="el" href="QuEST__validation_8c_source.html#l00499">validateMatchingQuregTypes()</a>.</p>
 
 <p class="reference">Referenced by <a class="el" href="test__state__initialisations_8cpp_source.html#l00438">TEST_CASE()</a>.</p>
 
 </div>
 </div>
 </div><!-- contents -->
-<div class="ttc" id="aQuEST__validation_8c_html_a57dc69bb7a2217aafca676b0923d5e27"><div class="ttname"><a href="QuEST__validation_8c.html#a57dc69bb7a2217aafca676b0923d5e27">validateStateIndex</a></div><div class="ttdeci">void validateStateIndex(Qureg qureg, long long int stateInd, const char *caller)</div><div class="ttdef"><b>Definition:</b> <a href="QuEST__validation_8c_source.html#l00291">QuEST_validation.c:291</a></div></div>
-<div class="ttc" id="aQuEST__internal_8h_html_a2418bd9a6b9e6a0acf11faf5982d5d29"><div class="ttname"><a href="QuEST__internal_8h.html#a2418bd9a6b9e6a0acf11faf5982d5d29">densmatr_initPlusState</a></div><div class="ttdeci">void densmatr_initPlusState(Qureg targetQureg)</div><div class="ttdef"><b>Definition:</b> <a href="QuEST__cpu_8c_source.html#l01153">QuEST_cpu.c:1153</a></div></div>
-<div class="ttc" id="aQuEST__validation_8c_html_a72feec2aaa05f98aed7f3c3fee141251"><div class="ttname"><a href="QuEST__validation_8c.html#a72feec2aaa05f98aed7f3c3fee141251">validateStateVecQureg</a></div><div class="ttdeci">void validateStateVecQureg(Qureg qureg, const char *caller)</div><div class="ttdef"><b>Definition:</b> <a href="QuEST__validation_8c_source.html#l00418">QuEST_validation.c:418</a></div></div>
+<div class="ttc" id="aQuEST__validation_8c_html_a57dc69bb7a2217aafca676b0923d5e27"><div class="ttname"><a href="QuEST__validation_8c.html#a57dc69bb7a2217aafca676b0923d5e27">validateStateIndex</a></div><div class="ttdeci">void validateStateIndex(Qureg qureg, long long int stateInd, const char *caller)</div><div class="ttdef"><b>Definition:</b> <a href="QuEST__validation_8c_source.html#l00341">QuEST_validation.c:341</a></div></div>
+<div class="ttc" id="aQuEST__internal_8h_html_a2418bd9a6b9e6a0acf11faf5982d5d29"><div class="ttname"><a href="QuEST__internal_8h.html#a2418bd9a6b9e6a0acf11faf5982d5d29">densmatr_initPlusState</a></div><div class="ttdeci">void densmatr_initPlusState(Qureg targetQureg)</div><div class="ttdef"><b>Definition:</b> <a href="QuEST__cpu_8c_source.html#l01154">QuEST_cpu.c:1154</a></div></div>
+<div class="ttc" id="aQuEST__validation_8c_html_a72feec2aaa05f98aed7f3c3fee141251"><div class="ttname"><a href="QuEST__validation_8c.html#a72feec2aaa05f98aed7f3c3fee141251">validateStateVecQureg</a></div><div class="ttdeci">void validateStateVecQureg(Qureg qureg, const char *caller)</div><div class="ttdef"><b>Definition:</b> <a href="QuEST__validation_8c_source.html#l00479">QuEST_validation.c:479</a></div></div>
 <div class="ttc" id="aQuEST__qasm_8c_html_a4e21adca1f0ca03303bc2e57aaba4ce2"><div class="ttname"><a href="QuEST__qasm_8c.html#a4e21adca1f0ca03303bc2e57aaba4ce2">qasm_recordInitZero</a></div><div class="ttdeci">void qasm_recordInitZero(Qureg qureg)</div><div class="ttdef"><b>Definition:</b> <a href="QuEST__qasm_8c_source.html#l00415">QuEST_qasm.c:415</a></div></div>
-<div class="ttc" id="aQuEST__validation_8c_html_a6904359f35d0b61b2c8fcecfac836033"><div class="ttname"><a href="QuEST__validation_8c.html#a6904359f35d0b61b2c8fcecfac836033">validateNumAmps</a></div><div class="ttdeci">void validateNumAmps(Qureg qureg, long long int startInd, long long int numAmps, const char *caller)</div><div class="ttdef"><b>Definition:</b> <a href="QuEST__validation_8c_source.html#l00301">QuEST_validation.c:301</a></div></div>
+<div class="ttc" id="aQuEST__validation_8c_html_a6904359f35d0b61b2c8fcecfac836033"><div class="ttname"><a href="QuEST__validation_8c.html#a6904359f35d0b61b2c8fcecfac836033">validateNumAmps</a></div><div class="ttdeci">void validateNumAmps(Qureg qureg, long long int startInd, long long int numAmps, const char *caller)</div><div class="ttdef"><b>Definition:</b> <a href="QuEST__validation_8c_source.html#l00351">QuEST_validation.c:351</a></div></div>
 <div class="ttc" id="aQuEST__qasm_8c_html_a627b0be7667c5a61a06b3b038fcc8b1b"><div class="ttname"><a href="QuEST__qasm_8c.html#a627b0be7667c5a61a06b3b038fcc8b1b">qasm_recordInitPlus</a></div><div class="ttdeci">void qasm_recordInitPlus(Qureg qureg)</div><div class="ttdef"><b>Definition:</b> <a href="QuEST__qasm_8c_source.html#l00430">QuEST_qasm.c:430</a></div></div>
-<div class="ttc" id="aQuEST__internal_8h_html_a20a155f53efc45c16803d7539c2c199d"><div class="ttname"><a href="QuEST__internal_8h.html#a20a155f53efc45c16803d7539c2c199d">densmatr_initClassicalState</a></div><div class="ttdeci">void densmatr_initClassicalState(Qureg qureg, long long int stateInd)</div><div class="ttdef"><b>Definition:</b> <a href="QuEST__cpu_8c_source.html#l01114">QuEST_cpu.c:1114</a></div></div>
-<div class="ttc" id="aQuEST__internal_8h_html_a2ca0c6ba07ab2b4b437321bf17efc966"><div class="ttname"><a href="QuEST__internal_8h.html#a2ca0c6ba07ab2b4b437321bf17efc966">statevec_initZeroState</a></div><div class="ttdeci">void statevec_initZeroState(Qureg qureg)</div><div class="ttdef"><b>Definition:</b> <a href="QuEST__cpu_8c_source.html#l01396">QuEST_cpu.c:1396</a></div></div>
-<div class="ttc" id="aQuEST__internal_8h_html_a758bad4237ff0bf3b4ff5be626a982ae"><div class="ttname"><a href="QuEST__internal_8h.html#a758bad4237ff0bf3b4ff5be626a982ae">statevec_initBlankState</a></div><div class="ttdeci">void statevec_initBlankState(Qureg qureg)</div><div class="ttdef"><b>Definition:</b> <a href="QuEST__cpu_8c_source.html#l01366">QuEST_cpu.c:1366</a></div></div>
+<div class="ttc" id="aQuEST__internal_8h_html_a20a155f53efc45c16803d7539c2c199d"><div class="ttname"><a href="QuEST__internal_8h.html#a20a155f53efc45c16803d7539c2c199d">densmatr_initClassicalState</a></div><div class="ttdeci">void densmatr_initClassicalState(Qureg qureg, long long int stateInd)</div><div class="ttdef"><b>Definition:</b> <a href="QuEST__cpu_8c_source.html#l01115">QuEST_cpu.c:1115</a></div></div>
+<div class="ttc" id="aQuEST__internal_8h_html_a2ca0c6ba07ab2b4b437321bf17efc966"><div class="ttname"><a href="QuEST__internal_8h.html#a2ca0c6ba07ab2b4b437321bf17efc966">statevec_initZeroState</a></div><div class="ttdeci">void statevec_initZeroState(Qureg qureg)</div><div class="ttdef"><b>Definition:</b> <a href="QuEST__cpu_8c_source.html#l01428">QuEST_cpu.c:1428</a></div></div>
+<div class="ttc" id="aQuEST__internal_8h_html_a758bad4237ff0bf3b4ff5be626a982ae"><div class="ttname"><a href="QuEST__internal_8h.html#a758bad4237ff0bf3b4ff5be626a982ae">statevec_initBlankState</a></div><div class="ttdeci">void statevec_initBlankState(Qureg qureg)</div><div class="ttdef"><b>Definition:</b> <a href="QuEST__cpu_8c_source.html#l01398">QuEST_cpu.c:1398</a></div></div>
 <div class="ttc" id="aQuEST__qasm_8c_html_a55d0f243437a0bb3b7609a1090323aa3"><div class="ttname"><a href="QuEST__qasm_8c.html#a55d0f243437a0bb3b7609a1090323aa3">qasm_recordInitClassical</a></div><div class="ttdeci">void qasm_recordInitClassical(Qureg qureg, long long int stateInd)</div><div class="ttdef"><b>Definition:</b> <a href="QuEST__qasm_8c_source.html#l00458">QuEST_qasm.c:458</a></div></div>
-<div class="ttc" id="aQuEST__internal_8h_html_aa121d55f2ca09c06a96ddcd433c60b0f"><div class="ttname"><a href="QuEST__internal_8h.html#aa121d55f2ca09c06a96ddcd433c60b0f">statevec_setAmps</a></div><div class="ttdeci">void statevec_setAmps(Qureg qureg, long long int startInd, qreal *reals, qreal *imags, long long int numAmps)</div><div class="ttdef"><b>Definition:</b> <a href="QuEST__cpu_8c_source.html#l01236">QuEST_cpu.c:1236</a></div></div>
-<div class="ttc" id="aQuEST__internal_8h_html_aa4b77089145184d990848cd66993aa8b"><div class="ttname"><a href="QuEST__internal_8h.html#aa4b77089145184d990848cd66993aa8b">statevec_cloneQureg</a></div><div class="ttdeci">void statevec_cloneQureg(Qureg targetQureg, Qureg copyQureg)</div><div class="ttdoc">works for both statevectors and density matrices</div><div class="ttdef"><b>Definition:</b> <a href="QuEST__cpu_8c_source.html#l01474">QuEST_cpu.c:1474</a></div></div>
-<div class="ttc" id="aQuEST__validation_8c_html_a87d22240ccfd81827a2a34b8d569d347"><div class="ttname"><a href="QuEST__validation_8c.html#a87d22240ccfd81827a2a34b8d569d347">validateMatchingQuregDims</a></div><div class="ttdeci">void validateMatchingQuregDims(Qureg qureg1, Qureg qureg2, const char *caller)</div><div class="ttdef"><b>Definition:</b> <a href="QuEST__validation_8c_source.html#l00434">QuEST_validation.c:434</a></div></div>
-<div class="ttc" id="aQuEST__internal_8h_html_a482fc361fd5f08075404c72e536316a0"><div class="ttname"><a href="QuEST__internal_8h.html#a482fc361fd5f08075404c72e536316a0">statevec_initPlusState</a></div><div class="ttdeci">void statevec_initPlusState(Qureg qureg)</div><div class="ttdef"><b>Definition:</b> <a href="QuEST__cpu_8c_source.html#l01406">QuEST_cpu.c:1406</a></div></div>
+<div class="ttc" id="aQuEST__internal_8h_html_aa121d55f2ca09c06a96ddcd433c60b0f"><div class="ttname"><a href="QuEST__internal_8h.html#aa121d55f2ca09c06a96ddcd433c60b0f">statevec_setAmps</a></div><div class="ttdeci">void statevec_setAmps(Qureg qureg, long long int startInd, qreal *reals, qreal *imags, long long int numAmps)</div><div class="ttdef"><b>Definition:</b> <a href="QuEST__cpu_8c_source.html#l01237">QuEST_cpu.c:1237</a></div></div>
+<div class="ttc" id="aQuEST__internal_8h_html_aa4b77089145184d990848cd66993aa8b"><div class="ttname"><a href="QuEST__internal_8h.html#aa4b77089145184d990848cd66993aa8b">statevec_cloneQureg</a></div><div class="ttdeci">void statevec_cloneQureg(Qureg targetQureg, Qureg copyQureg)</div><div class="ttdoc">works for both statevectors and density matrices</div><div class="ttdef"><b>Definition:</b> <a href="QuEST__cpu_8c_source.html#l01506">QuEST_cpu.c:1506</a></div></div>
+<div class="ttc" id="aQuEST__validation_8c_html_a87d22240ccfd81827a2a34b8d569d347"><div class="ttname"><a href="QuEST__validation_8c.html#a87d22240ccfd81827a2a34b8d569d347">validateMatchingQuregDims</a></div><div class="ttdeci">void validateMatchingQuregDims(Qureg qureg1, Qureg qureg2, const char *caller)</div><div class="ttdef"><b>Definition:</b> <a href="QuEST__validation_8c_source.html#l00495">QuEST_validation.c:495</a></div></div>
+<div class="ttc" id="aQuEST__internal_8h_html_a482fc361fd5f08075404c72e536316a0"><div class="ttname"><a href="QuEST__internal_8h.html#a482fc361fd5f08075404c72e536316a0">statevec_initPlusState</a></div><div class="ttdeci">void statevec_initPlusState(Qureg qureg)</div><div class="ttdef"><b>Definition:</b> <a href="QuEST__cpu_8c_source.html#l01438">QuEST_cpu.c:1438</a></div></div>
 <div class="ttc" id="aQuEST__qasm_8c_html_a9a385fde708958617bbeb599064b8dcb"><div class="ttname"><a href="QuEST__qasm_8c.html#a9a385fde708958617bbeb599064b8dcb">qasm_recordComment</a></div><div class="ttdeci">void qasm_recordComment(Qureg qureg, char *comment,...)</div><div class="ttdef"><b>Definition:</b> <a href="QuEST__qasm_8c_source.html#l00120">QuEST_qasm.c:120</a></div></div>
-<div class="ttc" id="aQuEST__internal_8h_html_ad64a23933361fafc1b6b1787759c2663"><div class="ttname"><a href="QuEST__internal_8h.html#ad64a23933361fafc1b6b1787759c2663">statevec_setWeightedQureg</a></div><div class="ttdeci">void statevec_setWeightedQureg(Complex fac1, Qureg qureg1, Complex fac2, Qureg qureg2, Complex facOut, Qureg out)</div><div class="ttdef"><b>Definition:</b> <a href="QuEST__cpu_8c_source.html#l03579">QuEST_cpu.c:3579</a></div></div>
-<div class="ttc" id="aQuEST__internal_8h_html_a288dc4b46bdacd69cbf4a6fd070d26a7"><div class="ttname"><a href="QuEST__internal_8h.html#a288dc4b46bdacd69cbf4a6fd070d26a7">statevec_initClassicalState</a></div><div class="ttdeci">void statevec_initClassicalState(Qureg qureg, long long int stateInd)</div><div class="ttdef"><b>Definition:</b> <a href="QuEST__cpu_8c_source.html#l01438">QuEST_cpu.c:1438</a></div></div>
-<div class="ttc" id="astructQureg_html_acf78445e9435d09f44f0cc832c6aee79"><div class="ttname"><a href="structQureg.html#acf78445e9435d09f44f0cc832c6aee79">Qureg::isDensityMatrix</a></div><div class="ttdeci">int isDensityMatrix</div><div class="ttdoc">Whether this instance is a density-state representation.</div><div class="ttdef"><b>Definition:</b> <a href="QuEST_8h_source.html#l00163">QuEST.h:163</a></div></div>
-<div class="ttc" id="aQuEST__validation_8c_html_a031812e1cf2c98d72d795cea7bbe73a5"><div class="ttname"><a href="QuEST__validation_8c.html#a031812e1cf2c98d72d795cea7bbe73a5">validateMatchingQuregTypes</a></div><div class="ttdeci">void validateMatchingQuregTypes(Qureg qureg1, Qureg qureg2, const char *caller)</div><div class="ttdef"><b>Definition:</b> <a href="QuEST__validation_8c_source.html#l00438">QuEST_validation.c:438</a></div></div>
-<div class="ttc" id="aQuEST__validation_8c_html_a7adc86571f1154558676d95daf0cbd1f"><div class="ttname"><a href="QuEST__validation_8c.html#a7adc86571f1154558676d95daf0cbd1f">validateSecondQuregStateVec</a></div><div class="ttdeci">void validateSecondQuregStateVec(Qureg qureg2, const char *caller)</div><div class="ttdef"><b>Definition:</b> <a href="QuEST__validation_8c_source.html#l00442">QuEST_validation.c:442</a></div></div>
-<div class="ttc" id="astructQureg_html_adef4935cac95763c29164cf99b144ed4"><div class="ttname"><a href="structQureg.html#adef4935cac95763c29164cf99b144ed4">Qureg::numAmpsTotal</a></div><div class="ttdeci">long long int numAmpsTotal</div><div class="ttdoc">Total number of amplitudes, which are possibly distributed among machines.</div><div class="ttdef"><b>Definition:</b> <a href="QuEST_8h_source.html#l00172">QuEST.h:172</a></div></div>
+<div class="ttc" id="aQuEST__internal_8h_html_ad64a23933361fafc1b6b1787759c2663"><div class="ttname"><a href="QuEST__internal_8h.html#ad64a23933361fafc1b6b1787759c2663">statevec_setWeightedQureg</a></div><div class="ttdeci">void statevec_setWeightedQureg(Complex fac1, Qureg qureg1, Complex fac2, Qureg qureg2, Complex facOut, Qureg out)</div><div class="ttdef"><b>Definition:</b> <a href="QuEST__cpu_8c_source.html#l03619">QuEST_cpu.c:3619</a></div></div>
+<div class="ttc" id="aQuEST__internal_8h_html_a288dc4b46bdacd69cbf4a6fd070d26a7"><div class="ttname"><a href="QuEST__internal_8h.html#a288dc4b46bdacd69cbf4a6fd070d26a7">statevec_initClassicalState</a></div><div class="ttdeci">void statevec_initClassicalState(Qureg qureg, long long int stateInd)</div><div class="ttdef"><b>Definition:</b> <a href="QuEST__cpu_8c_source.html#l01470">QuEST_cpu.c:1470</a></div></div>
+<div class="ttc" id="astructQureg_html_acf78445e9435d09f44f0cc832c6aee79"><div class="ttname"><a href="structQureg.html#acf78445e9435d09f44f0cc832c6aee79">Qureg::isDensityMatrix</a></div><div class="ttdeci">int isDensityMatrix</div><div class="ttdoc">Whether this instance is a density-state representation.</div><div class="ttdef"><b>Definition:</b> <a href="QuEST_8h_source.html#l00206">QuEST.h:206</a></div></div>
+<div class="ttc" id="aQuEST__validation_8c_html_a031812e1cf2c98d72d795cea7bbe73a5"><div class="ttname"><a href="QuEST__validation_8c.html#a031812e1cf2c98d72d795cea7bbe73a5">validateMatchingQuregTypes</a></div><div class="ttdeci">void validateMatchingQuregTypes(Qureg qureg1, Qureg qureg2, const char *caller)</div><div class="ttdef"><b>Definition:</b> <a href="QuEST__validation_8c_source.html#l00499">QuEST_validation.c:499</a></div></div>
+<div class="ttc" id="aQuEST__validation_8c_html_a7adc86571f1154558676d95daf0cbd1f"><div class="ttname"><a href="QuEST__validation_8c.html#a7adc86571f1154558676d95daf0cbd1f">validateSecondQuregStateVec</a></div><div class="ttdeci">void validateSecondQuregStateVec(Qureg qureg2, const char *caller)</div><div class="ttdef"><b>Definition:</b> <a href="QuEST__validation_8c_source.html#l00503">QuEST_validation.c:503</a></div></div>
+<div class="ttc" id="astructQureg_html_adef4935cac95763c29164cf99b144ed4"><div class="ttname"><a href="structQureg.html#adef4935cac95763c29164cf99b144ed4">Qureg::numAmpsTotal</a></div><div class="ttdeci">long long int numAmpsTotal</div><div class="ttdoc">Total number of amplitudes, which are possibly distributed among machines.</div><div class="ttdef"><b>Definition:</b> <a href="QuEST_8h_source.html#l00215">QuEST.h:215</a></div></div>
 <div class="ttc" id="aQuEST__internal_8h_html_ae5ad68d054875913d0f7ec654840a9ec"><div class="ttname"><a href="QuEST__internal_8h.html#ae5ad68d054875913d0f7ec654840a9ec">densmatr_initPureState</a></div><div class="ttdeci">void densmatr_initPureState(Qureg targetQureg, Qureg copyQureg)</div><div class="ttdef"><b>Definition:</b> <a href="QuEST__cpu__distributed_8c_source.html#l00452">QuEST_cpu_distributed.c:452</a></div></div>
 <!-- HTML footer for doxygen 1.8.8-->
 <!-- start footer part -->

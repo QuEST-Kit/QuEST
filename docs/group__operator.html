@@ -27,7 +27,7 @@
             <div class="container">
                 <div class="navbar-header">
                     <a class="navbar-brand"><img alt="Logo" src="logo.png"/></a>
-                    <a class="navbar-brand"><b>QuEST</b> v3.1.0<br>The Quantum Exact Simulation Toolkit</a>
+                    <a class="navbar-brand"><b>QuEST</b> v3.2.0<br>The Quantum Exact Simulation Toolkit</a>
                 </div>
             </div>
         </nav>
@@ -62,13 +62,500 @@ $(function() {
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="func-members"></a>
 Functions</h2></td></tr>
+<tr class="memitem:gad2e953390342cd361cfb4064d47715e6"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__operator.html#gad2e953390342cd361cfb4064d47715e6">applyDiagonalOp</a> (<a class="el" href="structQureg.html">Qureg</a> qureg, <a class="el" href="structDiagonalOp.html">DiagonalOp</a> op)</td></tr>
+<tr class="memdesc:gad2e953390342cd361cfb4064d47715e6"><td class="mdescLeft">&#160;</td><td class="mdescRight">Apply a diagonal complex operator, which is possibly non-unitary and non-Hermitian, on the entire quantum register.  <a href="group__operator.html#gad2e953390342cd361cfb4064d47715e6">More...</a><br /></td></tr>
+<tr class="separator:gad2e953390342cd361cfb4064d47715e6"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gadfb5c1d99a22ce666fc715a8da2e0950"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__operator.html#gadfb5c1d99a22ce666fc715a8da2e0950">applyMatrix2</a> (<a class="el" href="structQureg.html">Qureg</a> qureg, int targetQubit, <a class="el" href="structComplexMatrix2.html">ComplexMatrix2</a> u)</td></tr>
+<tr class="memdesc:gadfb5c1d99a22ce666fc715a8da2e0950"><td class="mdescLeft">&#160;</td><td class="mdescRight">Apply a general 2-by-2 matrix, which may be non-unitary.  <a href="group__operator.html#gadfb5c1d99a22ce666fc715a8da2e0950">More...</a><br /></td></tr>
+<tr class="separator:gadfb5c1d99a22ce666fc715a8da2e0950"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga74a955ec4bce606d89317bcfc528387f"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__operator.html#ga74a955ec4bce606d89317bcfc528387f">applyMatrix4</a> (<a class="el" href="structQureg.html">Qureg</a> qureg, int targetQubit1, int targetQubit2, <a class="el" href="structComplexMatrix4.html">ComplexMatrix4</a> u)</td></tr>
+<tr class="memdesc:ga74a955ec4bce606d89317bcfc528387f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Apply a general 4-by-4 matrix, which may be non-unitary.  <a href="group__operator.html#ga74a955ec4bce606d89317bcfc528387f">More...</a><br /></td></tr>
+<tr class="separator:ga74a955ec4bce606d89317bcfc528387f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga358e7094a98851afa86d27f0147e32a1"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__operator.html#ga358e7094a98851afa86d27f0147e32a1">applyMatrixN</a> (<a class="el" href="structQureg.html">Qureg</a> qureg, int *targs, int numTargs, <a class="el" href="structComplexMatrixN.html">ComplexMatrixN</a> u)</td></tr>
+<tr class="memdesc:ga358e7094a98851afa86d27f0147e32a1"><td class="mdescLeft">&#160;</td><td class="mdescRight">Apply a general N-by-N matrix, which may be non-unitary, on any number of target qubits.  <a href="group__operator.html#ga358e7094a98851afa86d27f0147e32a1">More...</a><br /></td></tr>
+<tr class="separator:ga358e7094a98851afa86d27f0147e32a1"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gab52b6315c5520b7d311b0458785eed8e"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__operator.html#gab52b6315c5520b7d311b0458785eed8e">applyMultiControlledMatrixN</a> (<a class="el" href="structQureg.html">Qureg</a> qureg, int *ctrls, int numCtrls, int *targs, int numTargs, <a class="el" href="structComplexMatrixN.html">ComplexMatrixN</a> u)</td></tr>
+<tr class="memdesc:gab52b6315c5520b7d311b0458785eed8e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Apply a general N-by-N matrix, which may be non-unitary, with additional controlled qubits.  <a href="group__operator.html#gab52b6315c5520b7d311b0458785eed8e">More...</a><br /></td></tr>
+<tr class="separator:gab52b6315c5520b7d311b0458785eed8e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga54d4e589468002bdc998200ae45e7312"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__operator.html#ga54d4e589468002bdc998200ae45e7312">applyPauliHamil</a> (<a class="el" href="structQureg.html">Qureg</a> inQureg, <a class="el" href="structPauliHamil.html">PauliHamil</a> hamil, <a class="el" href="structQureg.html">Qureg</a> outQureg)</td></tr>
+<tr class="memdesc:ga54d4e589468002bdc998200ae45e7312"><td class="mdescLeft">&#160;</td><td class="mdescRight">Modifies <code>outQureg</code> to be the result of applying <code><a class="el" href="structPauliHamil.html" title="Represents a weighted sum of pauli products.">PauliHamil</a></code> (a Hermitian but not necessarily unitary operator) to <code>inQureg</code>.  <a href="group__operator.html#ga54d4e589468002bdc998200ae45e7312">More...</a><br /></td></tr>
+<tr class="separator:ga54d4e589468002bdc998200ae45e7312"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ga6fc26cf857db070e12959e59ecfed8a6"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__operator.html#ga6fc26cf857db070e12959e59ecfed8a6">applyPauliSum</a> (<a class="el" href="structQureg.html">Qureg</a> inQureg, enum <a class="el" href="group__type.html#ga1c703cf89629e4e9c7023cd402d67028">pauliOpType</a> *allPauliCodes, <a class="el" href="group__type.html#ga7740e349b4f8bae6451547680f0ce2d6">qreal</a> *termCoeffs, int numSumTerms, <a class="el" href="structQureg.html">Qureg</a> outQureg)</td></tr>
 <tr class="memdesc:ga6fc26cf857db070e12959e59ecfed8a6"><td class="mdescLeft">&#160;</td><td class="mdescRight">Modifies <code>outQureg</code> to be the result of applying the weighted sum of Pauli products (a Hermitian but not necessarily unitary operator) to <code>inQureg</code>.  <a href="group__operator.html#ga6fc26cf857db070e12959e59ecfed8a6">More...</a><br /></td></tr>
 <tr class="separator:ga6fc26cf857db070e12959e59ecfed8a6"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga35b6321c578a8c69470132b5ee95f930"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__operator.html#ga35b6321c578a8c69470132b5ee95f930">applyTrotterCircuit</a> (<a class="el" href="structQureg.html">Qureg</a> qureg, <a class="el" href="structPauliHamil.html">PauliHamil</a> hamil, <a class="el" href="group__type.html#ga7740e349b4f8bae6451547680f0ce2d6">qreal</a> time, int order, int reps)</td></tr>
+<tr class="memdesc:ga35b6321c578a8c69470132b5ee95f930"><td class="mdescLeft">&#160;</td><td class="mdescRight">Applies a trotterisation of unitary evolution <img class="formulaInl" alt="$ \exp(-i \, \text{hamil} \, \text{time}) $" src="form_171.png"/> to <code>qureg</code>.  <a href="group__operator.html#ga35b6321c578a8c69470132b5ee95f930">More...</a><br /></td></tr>
+<tr class="separator:ga35b6321c578a8c69470132b5ee95f930"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <p>Non-physical operators which may be non-unitary, non-norm-preserving, even non-Hermitian. </p>
 <h2 class="groupheader">Function Documentation</h2>
+<a id="gad2e953390342cd361cfb4064d47715e6"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#gad2e953390342cd361cfb4064d47715e6">&#9670;&nbsp;</a></span>applyDiagonalOp()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void applyDiagonalOp </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="structQureg.html">Qureg</a>&#160;</td>
+          <td class="paramname"><em>qureg</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="structDiagonalOp.html">DiagonalOp</a>&#160;</td>
+          <td class="paramname"><em>op</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Apply a diagonal complex operator, which is possibly non-unitary and non-Hermitian, on the entire quantum register. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in,out]</td><td class="paramname">qureg</td><td>the state to operate the diagonal operator upon </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">op</td><td>the diagonal operator to apply </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="exception"><dt>Exceptions</dt><dd>
+  <table class="exception">
+    <tr><td class="paramname">invalidQuESTInputError</td><td>if <code>op</code> was not created, or if <code>op</code> acts on a different number of qubits than <code>qureg</code> represents </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section author"><dt>Author</dt><dd>Tyson Jones </dd></dl>
+
+<p class="definition">Definition at line <a class="el" href="QuEST_8c_source.html#l00887">887</a> of file <a class="el" href="QuEST_8c_source.html">QuEST.c</a>.</p>
+<div class="fragment"><div class="line"><a name="l00887"></a><span class="lineno">  887</span>&#160;                                                 {</div>
+<div class="line"><a name="l00888"></a><span class="lineno">  888</span>&#160;    <a class="code" href="QuEST__validation_8c.html#a8a656a83bf0b44447188d06c2f8114cb">validateDiagonalOp</a>(qureg, op, __func__);</div>
+<div class="line"><a name="l00889"></a><span class="lineno">  889</span>&#160; </div>
+<div class="line"><a name="l00890"></a><span class="lineno">  890</span>&#160;    <span class="keywordflow">if</span> (qureg.<a class="code" href="structQureg.html#acf78445e9435d09f44f0cc832c6aee79">isDensityMatrix</a>)</div>
+<div class="line"><a name="l00891"></a><span class="lineno">  891</span>&#160;        <a class="code" href="QuEST__internal_8h.html#aedd7ecccf2f09dd2f1c5d191950b51e6">densmatr_applyDiagonalOp</a>(qureg, op);</div>
+<div class="line"><a name="l00892"></a><span class="lineno">  892</span>&#160;    <span class="keywordflow">else</span></div>
+<div class="line"><a name="l00893"></a><span class="lineno">  893</span>&#160;        <a class="code" href="QuEST__internal_8h.html#a27294e3065ebe42a65b3b9e0f85551dd">statevec_applyDiagonalOp</a>(qureg, op);</div>
+<div class="line"><a name="l00894"></a><span class="lineno">  894</span>&#160; </div>
+<div class="line"><a name="l00895"></a><span class="lineno">  895</span>&#160;    <a class="code" href="QuEST__qasm_8c.html#a9a385fde708958617bbeb599064b8dcb">qasm_recordComment</a>(qureg, <span class="stringliteral">&quot;Here, the register was modified to an undisclosed and possibly unphysical state (via applyDiagonalOp).&quot;</span>);</div>
+<div class="line"><a name="l00896"></a><span class="lineno">  896</span>&#160;}</div>
+</div><!-- fragment -->
+<p class="reference">References <a class="el" href="QuEST__cpu__distributed_8c_source.html#l01517">densmatr_applyDiagonalOp()</a>, <a class="el" href="QuEST_8h_source.html#l00206">Qureg::isDensityMatrix</a>, <a class="el" href="QuEST__qasm_8c_source.html#l00120">qasm_recordComment()</a>, <a class="el" href="QuEST__cpu_8c_source.html#l03661">statevec_applyDiagonalOp()</a>, and <a class="el" href="QuEST__validation_8c_source.html#l00677">validateDiagonalOp()</a>.</p>
+
+<p class="reference">Referenced by <a class="el" href="test__data__structures_8cpp_source.html#l00601">TEST_CASE()</a>.</p>
+
+</div>
+</div>
+<a id="gadfb5c1d99a22ce666fc715a8da2e0950"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#gadfb5c1d99a22ce666fc715a8da2e0950">&#9670;&nbsp;</a></span>applyMatrix2()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void applyMatrix2 </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="structQureg.html">Qureg</a>&#160;</td>
+          <td class="paramname"><em>qureg</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>targetQubit</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="structComplexMatrix2.html">ComplexMatrix2</a>&#160;</td>
+          <td class="paramname"><em>u</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Apply a general 2-by-2 matrix, which may be non-unitary. </p>
+<p>The matrix is left-multiplied onto the state, for both state-vectors and density matrices. Hence, this function differs from <a class="el" href="group__unitary.html#ga78b814256f851cac70fdf3cbf9cfc206" title="Apply a general single-qubit unitary (including a global phase factor).">unitary()</a> by more than just permitting a non-unitary matrix.</p>
+<p>This function may leave <code>qureg</code> is an unnormalised state.</p>
+<p><br  />
+ </p><dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in,out]</td><td class="paramname">qureg</td><td>object representing the set of all qubits </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">targetQubit</td><td>qubit to operate <code>u</code> upon </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">u</td><td>matrix to apply </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="exception"><dt>Exceptions</dt><dd>
+  <table class="exception">
+    <tr><td class="paramname">invalidQuESTInputError</td><td>if <code>targetQubit</code> is outside [0, <code>qureg.numQubitsRepresented</code>). </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section author"><dt>Author</dt><dd>Tyson Jones </dd></dl>
+
+<p class="definition">Definition at line <a class="el" href="QuEST_8c_source.html#l00844">844</a> of file <a class="el" href="QuEST_8c_source.html">QuEST.c</a>.</p>
+<div class="fragment"><div class="line"><a name="l00844"></a><span class="lineno">  844</span>&#160;                                                                  {</div>
+<div class="line"><a name="l00845"></a><span class="lineno">  845</span>&#160;    <a class="code" href="QuEST__validation_8c.html#ac31c45c5a31c523be0eb26abba6cf598">validateTarget</a>(qureg, targetQubit, __func__);</div>
+<div class="line"><a name="l00846"></a><span class="lineno">  846</span>&#160;    </div>
+<div class="line"><a name="l00847"></a><span class="lineno">  847</span>&#160;    <span class="comment">// actually just left-multiplies any complex matrix</span></div>
+<div class="line"><a name="l00848"></a><span class="lineno">  848</span>&#160;    <a class="code" href="QuEST__internal_8h.html#ac3735bd959600e57b2ee3a105666cddf">statevec_unitary</a>(qureg, targetQubit, u);</div>
+<div class="line"><a name="l00849"></a><span class="lineno">  849</span>&#160; </div>
+<div class="line"><a name="l00850"></a><span class="lineno">  850</span>&#160;    <a class="code" href="QuEST__qasm_8c.html#a9a385fde708958617bbeb599064b8dcb">qasm_recordComment</a>(qureg, <span class="stringliteral">&quot;Here, an undisclosed 2-by-2 matrix (possibly non-unitary) was multiplied onto qubit %d&quot;</span>, targetQubit);</div>
+<div class="line"><a name="l00851"></a><span class="lineno">  851</span>&#160;}</div>
+</div><!-- fragment -->
+<p class="reference">References <a class="el" href="QuEST__qasm_8c_source.html#l00120">qasm_recordComment()</a>, <a class="el" href="QuEST__cpu__distributed_8c_source.html#l00881">statevec_unitary()</a>, and <a class="el" href="QuEST__validation_8c_source.html#l00364">validateTarget()</a>.</p>
+
+<p class="reference">Referenced by <a class="el" href="test__operators_8cpp_source.html#l00085">TEST_CASE()</a>.</p>
+
+</div>
+</div>
+<a id="ga74a955ec4bce606d89317bcfc528387f"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga74a955ec4bce606d89317bcfc528387f">&#9670;&nbsp;</a></span>applyMatrix4()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void applyMatrix4 </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="structQureg.html">Qureg</a>&#160;</td>
+          <td class="paramname"><em>qureg</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>targetQubit1</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>targetQubit2</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="structComplexMatrix4.html">ComplexMatrix4</a>&#160;</td>
+          <td class="paramname"><em>u</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Apply a general 4-by-4 matrix, which may be non-unitary. </p>
+<p>The matrix is left-multiplied onto the state, for both state-vectors and density matrices. Hence, this function differs from <a class="el" href="group__unitary.html#gab525a42d63233f61afeb6be97d89dd36" title="Apply a general two-qubit unitary (including a global phase factor).">twoQubitUnitary()</a> by more than just permitting a non-unitary matrix.</p>
+<p><code>targetQubit1</code> is treated as the <code>least</code> significant qubit in <code>u</code>, such that a row in <code>u</code> is dotted with the vector <img class="formulaInl" alt="$ |\text{targetQubit2} \;\; \text{targetQubit1}\rangle : \{ |00\rangle, |01\rangle, |10\rangle, |11\rangle \} $" src="form_144.png"/></p>
+<p>For example, </p><pre class="fragment">applyMatrix4(qureg, a, b, u);
+</pre><p>will invoke multiplication </p><p class="formulaDsp">
+<img class="formulaDsp" alt="\[ \begin{pmatrix} u_{00} &amp; u_{01} &amp; u_{02} &amp; u_{03} \\ u_{10} &amp; u_{11} &amp; u_{12} &amp; u_{13} \\ u_{20} &amp; u_{21} &amp; u_{22} &amp; u_{23} \\ u_{30} &amp; u_{31} &amp; u_{32} &amp; u_{33} \end{pmatrix} \begin{pmatrix} |ba\rangle = |00\rangle \\ |ba\rangle = |01\rangle \\ |ba\rangle = |10\rangle \\ |ba\rangle = |11\rangle \end{pmatrix} \]" src="form_145.png"/>
+</p>
+<p>This function may leave <code>qureg</code> is an unnormalised state.</p>
+<p>Note that in distributed mode, this routine requires that each node contains at least 4 amplitudes. This means an q-qubit register (state vector or density matrix) can be distributed by at most 2^q/4 nodes.</p>
+<p><br  />
+ </p><dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in,out]</td><td class="paramname">qureg</td><td>object representing the set of all qubits </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">targetQubit1</td><td>first qubit to operate on, treated as least significant in <code>u</code> </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">targetQubit2</td><td>second qubit to operate on, treated as most significant in <code>u</code> </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">u</td><td>matrix to apply </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="exception"><dt>Exceptions</dt><dd>
+  <table class="exception">
+    <tr><td class="paramname">invalidQuESTInputError</td><td>if <code>targetQubit1</code> or <code>targetQubit2</code> are outside [0, <code>qureg.numQubitsRepresented</code>), or if <code>targetQubit1</code> equals <code>targetQubit2</code>, or if each node cannot fit 4 amplitudes in distributed mode. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section author"><dt>Author</dt><dd>Tyson Jones </dd></dl>
+
+<p class="definition">Definition at line <a class="el" href="QuEST_8c_source.html#l00853">853</a> of file <a class="el" href="QuEST_8c_source.html">QuEST.c</a>.</p>
+<div class="fragment"><div class="line"><a name="l00853"></a><span class="lineno">  853</span>&#160;                                                                                     {</div>
+<div class="line"><a name="l00854"></a><span class="lineno">  854</span>&#160;    <a class="code" href="QuEST__validation_8c.html#a6776217a5f7ba38b56175cf6db0f96e0">validateMultiTargets</a>(qureg, (<span class="keywordtype">int</span> []) {targetQubit1, targetQubit2}, 2, __func__);</div>
+<div class="line"><a name="l00855"></a><span class="lineno">  855</span>&#160;    <a class="code" href="QuEST__validation_8c.html#aa28b7d9c0c3cf9c4be0e324fb9d6bf76">validateMultiQubitMatrixFitsInNode</a>(qureg, 2, __func__);</div>
+<div class="line"><a name="l00856"></a><span class="lineno">  856</span>&#160;    </div>
+<div class="line"><a name="l00857"></a><span class="lineno">  857</span>&#160;    <span class="comment">// actually just left-multiplies any complex matrix</span></div>
+<div class="line"><a name="l00858"></a><span class="lineno">  858</span>&#160;    <a class="code" href="QuEST__common_8c.html#a95abbe0cedf45b1ff2f070dba219fd7f">statevec_twoQubitUnitary</a>(qureg, targetQubit1, targetQubit2, u);</div>
+<div class="line"><a name="l00859"></a><span class="lineno">  859</span>&#160; </div>
+<div class="line"><a name="l00860"></a><span class="lineno">  860</span>&#160;    <a class="code" href="QuEST__qasm_8c.html#a9a385fde708958617bbeb599064b8dcb">qasm_recordComment</a>(qureg, <span class="stringliteral">&quot;Here, an undisclosed 4-by-4 matrix (possibly non-unitary) was multiplied onto qubits %d and %d&quot;</span>, targetQubit1, targetQubit2);</div>
+<div class="line"><a name="l00861"></a><span class="lineno">  861</span>&#160;}</div>
+</div><!-- fragment -->
+<p class="reference">References <a class="el" href="QuEST__qasm_8c_source.html#l00120">qasm_recordComment()</a>, <a class="el" href="QuEST__common_8c_source.html#l00517">statevec_twoQubitUnitary()</a>, <a class="el" href="QuEST__validation_8c_source.html#l00437">validateMultiQubitMatrixFitsInNode()</a>, and <a class="el" href="QuEST__validation_8c_source.html#l00392">validateMultiTargets()</a>.</p>
+
+<p class="reference">Referenced by <a class="el" href="test__operators_8cpp_source.html#l00135">TEST_CASE()</a>.</p>
+
+</div>
+</div>
+<a id="ga358e7094a98851afa86d27f0147e32a1"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga358e7094a98851afa86d27f0147e32a1">&#9670;&nbsp;</a></span>applyMatrixN()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void applyMatrixN </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="structQureg.html">Qureg</a>&#160;</td>
+          <td class="paramname"><em>qureg</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int *&#160;</td>
+          <td class="paramname"><em>targs</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>numTargs</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="structComplexMatrixN.html">ComplexMatrixN</a>&#160;</td>
+          <td class="paramname"><em>u</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Apply a general N-by-N matrix, which may be non-unitary, on any number of target qubits. </p>
+<p>The matrix is left-multiplied onto the state, for both state-vectors and density matrices. Hence, this function differs from <a class="el" href="group__unitary.html#ga20bf9b8a71b8a3ee4651e9497e6d1f4f" title="Apply a general multi-qubit unitary (including a global phase factor) with any number of target qubit...">multiQubitUnitary()</a> by more than just permitting a non-unitary matrix.</p>
+<p>The first target qubit in <code>targs</code> is treated as <b>least</b> significant in <code>u</code>. For example, </p><pre class="fragment">applyMatrixN(qureg, (int []) {a, b, c}, 3, u);
+</pre><p>will invoke multiplication </p><p class="formulaDsp">
+<img class="formulaDsp" alt="\[ \begin{pmatrix} u_{00} &amp; u_{01} &amp; u_{02} &amp; u_{03} &amp; u_{04} &amp; u_{05} &amp; u_{06} &amp; u_{07} \\ u_{10} &amp; u_{11} &amp; u_{12} &amp; u_{13} &amp; u_{14} &amp; u_{15} &amp; u_{16} &amp; u_{17} \\ u_{20} &amp; u_{21} &amp; u_{22} &amp; u_{23} &amp; u_{24} &amp; u_{25} &amp; u_{26} &amp; u_{27} \\ u_{30} &amp; u_{31} &amp; u_{32} &amp; u_{33} &amp; u_{34} &amp; u_{35} &amp; u_{36} &amp; u_{37} \\ u_{40} &amp; u_{41} &amp; u_{42} &amp; u_{43} &amp; u_{44} &amp; u_{45} &amp; u_{46} &amp; u_{47} \\ u_{50} &amp; u_{51} &amp; u_{52} &amp; u_{53} &amp; u_{54} &amp; u_{55} &amp; u_{56} &amp; u_{57} \\ u_{60} &amp; u_{61} &amp; u_{62} &amp; u_{63} &amp; u_{64} &amp; u_{65} &amp; u_{66} &amp; u_{67} \\ u_{70} &amp; u_{71} &amp; u_{72} &amp; u_{73} &amp; u_{74} &amp; u_{75} &amp; u_{76} &amp; u_{77} \\ \end{pmatrix} \begin{pmatrix} |cba\rangle = |000\rangle \\ |cba\rangle = |001\rangle \\ |cba\rangle = |010\rangle \\ |cba\rangle = |011\rangle \\ |cba\rangle = |100\rangle \\ |cba\rangle = |101\rangle \\ |cba\rangle = |110\rangle \\ |cba\rangle = |111\rangle \end{pmatrix} \]" src="form_150.png"/>
+</p>
+<p>This function may leave <code>qureg</code> is an unnormalised state.</p>
+<p>The passed ComplexMatrix must be a compatible size with the specified number of target qubits, otherwise an error is thrown.</p>
+<p>Note that in multithreaded mode, each thread will clone 2^<code>numTargs</code> amplitudes, and store these in the runtime stack. Using t threads, the total memory overhead of this function is t*2^<code>numTargs</code>. For many targets (e.g. 16 qubits), this may cause a stack-overflow / seg-fault (e.g. on a 1 MiB stack).</p>
+<p>Note too that in distributed mode, this routine requires that each node contains at least 2^<code>numTargs</code> amplitudes in the register. This means an q-qubit register (state vector or density matrix) can be distributed by at most 2^q / 2^<code>numTargs</code> nodes.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in,out]</td><td class="paramname">qureg</td><td>object representing the set of all qubits </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">targs</td><td>a list of the target qubits, ordered least significant to most in <code>u</code> </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">numTargs</td><td>the number of target qubits </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">u</td><td>matrix to apply </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="exception"><dt>Exceptions</dt><dd>
+  <table class="exception">
+    <tr><td class="paramname">invalidQuESTInputError</td><td>if any index in <code>targs</code> is outside of [0, <code>qureg.numQubitsRepresented</code>), or if <code>targs</code> are not unique, or if <code>u</code> is not of a compatible size with <code>numTargs</code>, or if a node cannot fit the required number of target amplitudes in distributed mode. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section author"><dt>Author</dt><dd>Tyson Jones </dd></dl>
+
+<p class="definition">Definition at line <a class="el" href="QuEST_8c_source.html#l00863">863</a> of file <a class="el" href="QuEST_8c_source.html">QuEST.c</a>.</p>
+<div class="fragment"><div class="line"><a name="l00863"></a><span class="lineno">  863</span>&#160;                                                                           {</div>
+<div class="line"><a name="l00864"></a><span class="lineno">  864</span>&#160;    <a class="code" href="QuEST__validation_8c.html#a6776217a5f7ba38b56175cf6db0f96e0">validateMultiTargets</a>(qureg, targs, numTargs, __func__);</div>
+<div class="line"><a name="l00865"></a><span class="lineno">  865</span>&#160;    <a class="code" href="QuEST__validation_8c.html#a576519ac36b7cb25bab78d05b5d1975f">validateMultiQubitMatrix</a>(qureg, u, numTargs, __func__);</div>
+<div class="line"><a name="l00866"></a><span class="lineno">  866</span>&#160;    </div>
+<div class="line"><a name="l00867"></a><span class="lineno">  867</span>&#160;    <span class="comment">// actually just left-multiplies any complex matrix</span></div>
+<div class="line"><a name="l00868"></a><span class="lineno">  868</span>&#160;    <a class="code" href="QuEST__common_8c.html#a7a76950824f17e821415070a4bfdad5b">statevec_multiQubitUnitary</a>(qureg, targs, numTargs, u);</div>
+<div class="line"><a name="l00869"></a><span class="lineno">  869</span>&#160;    </div>
+<div class="line"><a name="l00870"></a><span class="lineno">  870</span>&#160;    <span class="keywordtype">int</span> dim = (1 &lt;&lt; numTargs);</div>
+<div class="line"><a name="l00871"></a><span class="lineno">  871</span>&#160;    <a class="code" href="QuEST__qasm_8c.html#a9a385fde708958617bbeb599064b8dcb">qasm_recordComment</a>(qureg, <span class="stringliteral">&quot;Here, an undisclosed %d-by-%d matrix (possibly non-unitary) was multiplied onto %d undisclosed qubits&quot;</span>, dim, dim, numTargs);</div>
+<div class="line"><a name="l00872"></a><span class="lineno">  872</span>&#160;}</div>
+</div><!-- fragment -->
+<p class="reference">References <a class="el" href="QuEST__qasm_8c_source.html#l00120">qasm_recordComment()</a>, <a class="el" href="QuEST__common_8c_source.html#l00529">statevec_multiQubitUnitary()</a>, <a class="el" href="QuEST__validation_8c_source.html#l00460">validateMultiQubitMatrix()</a>, and <a class="el" href="QuEST__validation_8c_source.html#l00392">validateMultiTargets()</a>.</p>
+
+<p class="reference">Referenced by <a class="el" href="test__operators_8cpp_source.html#l00200">TEST_CASE()</a>.</p>
+
+</div>
+</div>
+<a id="gab52b6315c5520b7d311b0458785eed8e"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#gab52b6315c5520b7d311b0458785eed8e">&#9670;&nbsp;</a></span>applyMultiControlledMatrixN()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void applyMultiControlledMatrixN </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="structQureg.html">Qureg</a>&#160;</td>
+          <td class="paramname"><em>qureg</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int *&#160;</td>
+          <td class="paramname"><em>ctrls</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>numCtrls</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int *&#160;</td>
+          <td class="paramname"><em>targs</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>numTargs</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="structComplexMatrixN.html">ComplexMatrixN</a>&#160;</td>
+          <td class="paramname"><em>u</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Apply a general N-by-N matrix, which may be non-unitary, with additional controlled qubits. </p>
+<p>The matrix is left-multiplied onto the state, for both state-vectors and density matrices. Hence, this function differs from <a class="el" href="group__unitary.html#ga3ad6c477edcdbc845fc1143e860fda08" title="Apply a general multi-controlled multi-qubit unitary (including a global phase factor).">multiControlledMultiQubitUnitary()</a> by more than just permitting a non-unitary matrix.</p>
+<p>This function may leave <code>qureg</code> is an unnormalised state.</p>
+<p>Any number of control and target qubits can be specified. This effects the many-qubit matrix </p><p class="formulaDsp">
+<img class="formulaDsp" alt="\[ \begin{pmatrix} 1 \\ &amp; 1 \\\ &amp; &amp; \ddots \\ &amp; &amp; &amp; u_{00} &amp; u_{01} &amp; \dots \\ &amp; &amp; &amp; u_{10} &amp; u_{11} &amp; \dots \\ &amp; &amp; &amp; \vdots &amp; \vdots &amp; \ddots \end{pmatrix} \]" src="form_154.png"/>
+</p>
+<p> on the control and target qubits.</p>
+<p>The target qubits in <code>targs</code> are treated as ordered least significant to most significant in <code>u</code>.</p>
+<p>The passed ComplexMatrix must be a compatible size with the specified number of target qubits, otherwise an error is thrown.</p>
+<p>Note that in multithreaded mode, each thread will clone 2^<code>numTargs</code> amplitudes, and store these in the runtime stack. Using t threads, the total memory overhead of this function is t*2^<code>numTargs</code>. For many targets (e.g. 16 qubits), this may cause a stack-overflow / seg-fault (e.g. on a 1 MiB stack).</p>
+<p>Note that in distributed mode, this routine requires that each node contains at least 2^<code>numTargs</code> amplitudes. This means an q-qubit register (state vector or density matrix) can be distributed by at most 2^q / 2^<code>numTargs</code> nodes.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in,out]</td><td class="paramname">qureg</td><td>object representing the set of all qubits </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">ctrls</td><td>a list of the control qubits </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">numCtrls</td><td>the number of control qubits </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">targs</td><td>a list of the target qubits, ordered least to most significant </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">numTargs</td><td>the number of target qubits </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">u</td><td>matrix to apply </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="exception"><dt>Exceptions</dt><dd>
+  <table class="exception">
+    <tr><td class="paramname">invalidQuESTInputError</td><td>if any index in <code>ctrls</code> and <code>targs</code> is outside of [0, <code>qureg.numQubitsRepresented</code>), or if <code>ctrls</code> and <code>targs</code> are not unique, or if matrix <code>u</code> is not a compatible size with <code>numTargs</code>, or if a node cannot fit the required number of target amplitudes in distributed mode. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section author"><dt>Author</dt><dd>Tyson Jones </dd></dl>
+
+<p class="definition">Definition at line <a class="el" href="QuEST_8c_source.html#l00874">874</a> of file <a class="el" href="QuEST_8c_source.html">QuEST.c</a>.</p>
+<div class="fragment"><div class="line"><a name="l00874"></a><span class="lineno">  874</span>&#160;                                                                                                                    {</div>
+<div class="line"><a name="l00875"></a><span class="lineno">  875</span>&#160;    <a class="code" href="QuEST__validation_8c.html#a5b0392701c555a898403f80ef4a32f62">validateMultiControlsMultiTargets</a>(qureg, ctrls, numCtrls, targs, numTargs, __func__);</div>
+<div class="line"><a name="l00876"></a><span class="lineno">  876</span>&#160;    <a class="code" href="QuEST__validation_8c.html#a576519ac36b7cb25bab78d05b5d1975f">validateMultiQubitMatrix</a>(qureg, u, numTargs, __func__);</div>
+<div class="line"><a name="l00877"></a><span class="lineno">  877</span>&#160;    </div>
+<div class="line"><a name="l00878"></a><span class="lineno">  878</span>&#160;    <span class="comment">// actually just left-multiplies any complex matrix</span></div>
+<div class="line"><a name="l00879"></a><span class="lineno">  879</span>&#160;    <span class="keywordtype">long</span> <span class="keywordtype">long</span> <span class="keywordtype">int</span> ctrlMask = <a class="code" href="QuEST__common_8c.html#acc45bb8300922ea5933e294921e25ea2">getQubitBitMask</a>(ctrls, numCtrls);</div>
+<div class="line"><a name="l00880"></a><span class="lineno">  880</span>&#160;    <a class="code" href="QuEST__internal_8h.html#a0acfe30083d0bc2a84da196378a36122">statevec_multiControlledMultiQubitUnitary</a>(qureg, ctrlMask, targs, numTargs, u);</div>
+<div class="line"><a name="l00881"></a><span class="lineno">  881</span>&#160;    </div>
+<div class="line"><a name="l00882"></a><span class="lineno">  882</span>&#160;    <span class="keywordtype">int</span> numTot = numTargs + numCtrls;</div>
+<div class="line"><a name="l00883"></a><span class="lineno">  883</span>&#160;    <span class="keywordtype">int</span> dim = (1 &lt;&lt; numTot );</div>
+<div class="line"><a name="l00884"></a><span class="lineno">  884</span>&#160;    <a class="code" href="QuEST__qasm_8c.html#a9a385fde708958617bbeb599064b8dcb">qasm_recordComment</a>(qureg, <span class="stringliteral">&quot;Here, an undisclosed %d-by-%d matrix (possibly non-unitary, and including %d controlled qubits) was multiplied onto %d undisclosed qubits&quot;</span>, dim, dim, numCtrls, numTot);</div>
+<div class="line"><a name="l00885"></a><span class="lineno">  885</span>&#160;}</div>
+</div><!-- fragment -->
+<p class="reference">References <a class="el" href="QuEST__common_8c_source.html#l00044">getQubitBitMask()</a>, <a class="el" href="QuEST__qasm_8c_source.html#l00120">qasm_recordComment()</a>, <a class="el" href="QuEST__cpu__distributed_8c_source.html#l01437">statevec_multiControlledMultiQubitUnitary()</a>, <a class="el" href="QuEST__validation_8c_source.html#l00423">validateMultiControlsMultiTargets()</a>, and <a class="el" href="QuEST__validation_8c_source.html#l00460">validateMultiQubitMatrix()</a>.</p>
+
+<p class="reference">Referenced by <a class="el" href="test__operators_8cpp_source.html#l00311">TEST_CASE()</a>.</p>
+
+</div>
+</div>
+<a id="ga54d4e589468002bdc998200ae45e7312"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga54d4e589468002bdc998200ae45e7312">&#9670;&nbsp;</a></span>applyPauliHamil()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void applyPauliHamil </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="structQureg.html">Qureg</a>&#160;</td>
+          <td class="paramname"><em>inQureg</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="structPauliHamil.html">PauliHamil</a>&#160;</td>
+          <td class="paramname"><em>hamil</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="structQureg.html">Qureg</a>&#160;</td>
+          <td class="paramname"><em>outQureg</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Modifies <code>outQureg</code> to be the result of applying <code><a class="el" href="structPauliHamil.html" title="Represents a weighted sum of pauli products.">PauliHamil</a></code> (a Hermitian but not necessarily unitary operator) to <code>inQureg</code>. </p>
+<p>Note that afterward, <code>outQureg</code> may no longer be normalised and ergo not a statevector or density matrix. Users must therefore be careful passing <code>outQureg</code> to other QuEST functions which assume normalisation in order to function correctly.</p>
+<p>This is merely an encapsulation of <a class="el" href="group__operator.html#ga6fc26cf857db070e12959e59ecfed8a6" title="Modifies outQureg to be the result of applying the weighted sum of Pauli products (a Hermitian but no...">applyPauliSum()</a>, which can refer to for elaborated doc.</p>
+<p>Letting <code>hamil</code> be expressed as <img class="formulaInl" alt="$ \alpha = \sum_i c_i \otimes_j^{N} \hat{\sigma}_{i,j} $" src="form_163.png"/> (where <img class="formulaInl" alt="$ c_i \in $" src="form_136.png"/> <code>hamil.termCoeffs</code> and <img class="formulaInl" alt="$ N = $" src="form_137.png"/> <code>hamil.numQubits</code>), this function effects <img class="formulaInl" alt="$ \alpha | \psi \rangle $" src="form_164.png"/> on statevector <img class="formulaInl" alt="$ |\psi\rangle $" src="form_165.png"/> and <img class="formulaInl" alt="$\alpha \rho$" src="form_166.png"/> (left matrix multiplication) on density matrix <img class="formulaInl" alt="$ \rho $" src="form_39.png"/>.</p>
+<p>In theory, <code>inQureg</code> is unchanged though its state is temporarily modified and is reverted by re-applying Paulis (XX=YY=ZZ=I), so may see a change by small numerical errors. The initial state in <code>outQureg</code> is not used.</p>
+<p><code>inQureg</code> and <code>outQureg</code> must both be state-vectors, or both density matrices, of equal dimensions to <code>hamil</code>. <code>inQureg</code> cannot be <code>outQureg</code>.</p>
+<p>This function works by applying each Pauli product in <code>hamil</code> to <code>inQureg</code> in turn, and adding the resulting state (weighted by a coefficient in <code>termCoeffs</code>) to the initially-blanked <code>outQureg</code>. Ergo it should scale with the total number of Pauli operators specified (excluding identities), and the qureg dimension.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">inQureg</td><td>the register containing the state which <code>outQureg</code> will be set to, under the action of <code>hamil</code>. <code>inQureg</code> should be unchanged, though may vary slightly due to numerical error. </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">hamil</td><td>a weighted sum of products of pauli operators </td></tr>
+    <tr><td class="paramdir">[out]</td><td class="paramname">outQureg</td><td>the qureg to modify to be the result of applyling <code>hamil</code> to the state in <code>inQureg</code> </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="exception"><dt>Exceptions</dt><dd>
+  <table class="exception">
+    <tr><td class="paramname">invalidQuESTInputError</td><td>if any code in <code>hamil.pauliCodes</code> is not a valid Pauli code, or if <code>numSumTerms</code> &lt;= 0, or if <code>inQureg</code> is not of the same type and dimensions as <code>outQureg</code> and <code>hamil</code> </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section author"><dt>Author</dt><dd>Tyson Jones </dd></dl>
+
+<p class="definition">Definition at line <a class="el" href="QuEST_8c_source.html#l00819">819</a> of file <a class="el" href="QuEST_8c_source.html">QuEST.c</a>.</p>
+<div class="fragment"><div class="line"><a name="l00819"></a><span class="lineno">  819</span>&#160;                                                                      {</div>
+<div class="line"><a name="l00820"></a><span class="lineno">  820</span>&#160;    <a class="code" href="QuEST__validation_8c.html#a031812e1cf2c98d72d795cea7bbe73a5">validateMatchingQuregTypes</a>(inQureg, outQureg, __func__);</div>
+<div class="line"><a name="l00821"></a><span class="lineno">  821</span>&#160;    <a class="code" href="QuEST__validation_8c.html#a87d22240ccfd81827a2a34b8d569d347">validateMatchingQuregDims</a>(inQureg, outQureg, __func__);</div>
+<div class="line"><a name="l00822"></a><span class="lineno">  822</span>&#160;    <a class="code" href="QuEST__validation_8c.html#a066b0c4d0b02a0f3b9be7e5c68d9de6a">validatePauliHamil</a>(hamil, __func__);</div>
+<div class="line"><a name="l00823"></a><span class="lineno">  823</span>&#160;    <a class="code" href="QuEST__validation_8c.html#a2b88b068a8242ee28da42c7324cdd078">validateMatchingQuregPauliHamilDims</a>(inQureg, hamil, __func__);</div>
+<div class="line"><a name="l00824"></a><span class="lineno">  824</span>&#160;    </div>
+<div class="line"><a name="l00825"></a><span class="lineno">  825</span>&#160;    <a class="code" href="QuEST__common_8c.html#af71c2470694795a8d639be8ff9c34ed5">statevec_applyPauliSum</a>(inQureg, hamil.<a class="code" href="structPauliHamil.html#a4b8d38c403553c07ceddcd40c46ce6c8">pauliCodes</a>, hamil.<a class="code" href="structPauliHamil.html#ac1c6c9f6299cf83bbba88123216c3cac">termCoeffs</a>, hamil.<a class="code" href="structPauliHamil.html#a737e46b40ef8990cf004d22eb9dbe2e4">numSumTerms</a>, outQureg);</div>
+<div class="line"><a name="l00826"></a><span class="lineno">  826</span>&#160;    </div>
+<div class="line"><a name="l00827"></a><span class="lineno">  827</span>&#160;    <a class="code" href="QuEST__qasm_8c.html#a9a385fde708958617bbeb599064b8dcb">qasm_recordComment</a>(outQureg, <span class="stringliteral">&quot;Here, the register was modified to an undisclosed and possibly unphysical state (applyPauliHamil).&quot;</span>);</div>
+<div class="line"><a name="l00828"></a><span class="lineno">  828</span>&#160;}</div>
+</div><!-- fragment -->
+<p class="reference">References <a class="el" href="QuEST_8h_source.html#l00166">PauliHamil::numSumTerms</a>, <a class="el" href="QuEST_8h_source.html#l00162">PauliHamil::pauliCodes</a>, <a class="el" href="QuEST__qasm_8c_source.html#l00120">qasm_recordComment()</a>, <a class="el" href="QuEST__common_8c_source.html#l00494">statevec_applyPauliSum()</a>, <a class="el" href="QuEST_8h_source.html#l00164">PauliHamil::termCoeffs</a>, <a class="el" href="QuEST__validation_8c_source.html#l00495">validateMatchingQuregDims()</a>, <a class="el" href="QuEST__validation_8c_source.html#l00624">validateMatchingQuregPauliHamilDims()</a>, <a class="el" href="QuEST__validation_8c_source.html#l00499">validateMatchingQuregTypes()</a>, and <a class="el" href="QuEST__validation_8c_source.html#l00619">validatePauliHamil()</a>.</p>
+
+<p class="reference">Referenced by <a class="el" href="test__operators_8cpp_source.html#l00471">TEST_CASE()</a>.</p>
+
+</div>
+</div>
 <a id="ga6fc26cf857db070e12959e59ecfed8a6"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#ga6fc26cf857db070e12959e59ecfed8a6">&#9670;&nbsp;</a></span>applyPauliSum()</h2>
 
@@ -115,11 +602,11 @@ Functions</h2></td></tr>
 
 <p>Modifies <code>outQureg</code> to be the result of applying the weighted sum of Pauli products (a Hermitian but not necessarily unitary operator) to <code>inQureg</code>. </p>
 <p>Note that afterward, <code>outQureg</code> may no longer be normalised and ergo not a statevector or density matrix. Users must therefore be careful passing <code>outQureg</code> to other QuEST functions which assume normalisation in order to function correctly.</p>
-<p>Letting <img class="formulaInl" alt="$ \alpha = \sum_i c_i \otimes_j^{N} \hat{\sigma}_{i,j} $" src="form_161.png"/> be the operators indicated by <code>allPauliCodes</code> (where <img class="formulaInl" alt="$ c_i \in $" src="form_134.png"/> <code>termCoeffs</code> and <img class="formulaInl" alt="$ N = $" src="form_135.png"/> <code>qureg.numQubitsRepresented</code>), this function effects <img class="formulaInl" alt="$ \alpha | \psi \rangle $" src="form_162.png"/> on statevector <img class="formulaInl" alt="$ |\psi\rangle $" src="form_163.png"/> and <img class="formulaInl" alt="$\alpha \rho$" src="form_164.png"/> (left matrix multiplication) on density matrix <img class="formulaInl" alt="$ \rho $" src="form_39.png"/>.</p>
+<p>Letting <img class="formulaInl" alt="$ \alpha = \sum_i c_i \otimes_j^{N} \hat{\sigma}_{i,j} $" src="form_163.png"/> be the operators indicated by <code>allPauliCodes</code> (where <img class="formulaInl" alt="$ c_i \in $" src="form_136.png"/> <code>termCoeffs</code> and <img class="formulaInl" alt="$ N = $" src="form_137.png"/> <code>qureg.numQubitsRepresented</code>), this function effects <img class="formulaInl" alt="$ \alpha | \psi \rangle $" src="form_164.png"/> on statevector <img class="formulaInl" alt="$ |\psi\rangle $" src="form_165.png"/> and <img class="formulaInl" alt="$\alpha \rho$" src="form_166.png"/> (left matrix multiplication) on density matrix <img class="formulaInl" alt="$ \rho $" src="form_39.png"/>.</p>
 <p><code>allPauliCodes</code> is an array of length <code>numSumTerms*<code>qureg.numQubitsRepresented</code> which</code> specifies which Pauli operators to apply, where 0 = <code>PAULI_I</code>, 1 = <code>PAULI_X</code>, 2 = <code>PAULI_Y</code>, 3 = <code>PAULI_Z</code>. For each sum term, a Pauli operator must be specified for EVERY qubit in <code>qureg</code>; each set of <code>numSumTerms</code> operators will be grouped into a product. <code>termCoeffs</code> is an arrray of length <code>numSumTerms</code> containing the term coefficients. For example, on a 3-qubit statevector, </p><pre class="fragment">int paulis[6] = {PAULI_X, PAULI_I, PAULI_I,  PAULI_X, PAULI_Y, PAULI_Z};
 qreal coeffs[2] = {1.5, -3.6};
 applyPauliSum(inQureg, paulis, coeffs, 2, outQureg);
-</pre><p>will apply Hermitian operation <img class="formulaInl" alt="$ (1.5 X I I - 3.6 X Y Z) $" src="form_165.png"/> (where in this notation, the left-most operator applies to the least-significant qubit, i.e. that with index 0).</p>
+</pre><p>will apply Hermitian operation <img class="formulaInl" alt="$ (1.5 X I I - 3.6 X Y Z) $" src="form_167.png"/> (where in this notation, the left-most operator applies to the least-significant qubit, i.e. that with index 0).</p>
 <p>In theory, <code>inQureg</code> is unchanged though its state is temporarily modified and is reverted by re-applying Paulis (XX=YY=ZZ=I), so may see a change by small numerical errors. The initial state in <code>outQureg</code> is not used.</p>
 <p><code>inQureg</code> and <code>outQureg</code> must both be state-vectors, or both density matrices, of equal dimensions. <code>inQureg</code> cannot be <code>outQureg</code>.</p>
 <p>This function works by applying each Pauli product to <code>inQureg</code> in turn, and adding the resulting state (weighted by a coefficient in <code>termCoeffs</code>) to the initially-blanked <code>outQureg</code>. Ergo it should scale with the total number of Pauli operators specified (excluding identities), and the qureg dimension.</p>
@@ -135,38 +622,159 @@ applyPauliSum(inQureg, paulis, coeffs, 2, outQureg);
 </dl>
 <dl class="exception"><dt>Exceptions</dt><dd>
   <table class="exception">
-    <tr><td class="paramname">exitWithError</td><td>if any code in <code>allPauliCodes</code> is not in {0,1,2,3}, or if numSumTerms &lt;= 0, or if <code>inQureg</code> is not of the same type and dimensions as <code>outQureg</code> </td></tr>
+    <tr><td class="paramname">invalidQuESTInputError</td><td>if any code in <code>allPauliCodes</code> is not in {0,1,2,3}, or if numSumTerms &lt;= 0, or if <code>inQureg</code> is not of the same type and dimensions as <code>outQureg</code> </td></tr>
   </table>
   </dd>
 </dl>
 <dl class="section author"><dt>Author</dt><dd>Tyson Jones </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="QuEST_8c_source.html#l00806">806</a> of file <a class="el" href="QuEST_8c_source.html">QuEST.c</a>.</p>
-<div class="fragment"><div class="line"><a name="l00806"></a><span class="lineno">  806</span>&#160;                                                                                                                       {</div>
-<div class="line"><a name="l00807"></a><span class="lineno">  807</span>&#160;    <a class="code" href="QuEST__validation_8c.html#a031812e1cf2c98d72d795cea7bbe73a5">validateMatchingQuregTypes</a>(inQureg, outQureg, __func__);</div>
-<div class="line"><a name="l00808"></a><span class="lineno">  808</span>&#160;    <a class="code" href="QuEST__validation_8c.html#a87d22240ccfd81827a2a34b8d569d347">validateMatchingQuregDims</a>(inQureg, outQureg, __func__);</div>
-<div class="line"><a name="l00809"></a><span class="lineno">  809</span>&#160;    <a class="code" href="QuEST__validation_8c.html#a5be128290a7bba9a7f12d32cabe2276b">validateNumPauliSumTerms</a>(numSumTerms, __func__);</div>
-<div class="line"><a name="l00810"></a><span class="lineno">  810</span>&#160;    <a class="code" href="QuEST__validation_8c.html#aa194ba5f5c6e19c6caa4c715b3dbefcc">validatePauliCodes</a>(allPauliCodes, numSumTerms*inQureg.<a class="code" href="structQureg.html#ad08dff5316b8937f4b2a1417591543dc">numQubitsRepresented</a>, __func__);</div>
-<div class="line"><a name="l00811"></a><span class="lineno">  811</span>&#160;    </div>
-<div class="line"><a name="l00812"></a><span class="lineno">  812</span>&#160;    <a class="code" href="QuEST__common_8c.html#af71c2470694795a8d639be8ff9c34ed5">statevec_applyPauliSum</a>(inQureg, allPauliCodes, termCoeffs, numSumTerms, outQureg);</div>
+<p class="definition">Definition at line <a class="el" href="QuEST_8c_source.html#l00808">808</a> of file <a class="el" href="QuEST_8c_source.html">QuEST.c</a>.</p>
+<div class="fragment"><div class="line"><a name="l00808"></a><span class="lineno">  808</span>&#160;                                                                                                                       {</div>
+<div class="line"><a name="l00809"></a><span class="lineno">  809</span>&#160;    <a class="code" href="QuEST__validation_8c.html#a031812e1cf2c98d72d795cea7bbe73a5">validateMatchingQuregTypes</a>(inQureg, outQureg, __func__);</div>
+<div class="line"><a name="l00810"></a><span class="lineno">  810</span>&#160;    <a class="code" href="QuEST__validation_8c.html#a87d22240ccfd81827a2a34b8d569d347">validateMatchingQuregDims</a>(inQureg, outQureg, __func__);</div>
+<div class="line"><a name="l00811"></a><span class="lineno">  811</span>&#160;    <a class="code" href="QuEST__validation_8c.html#a5be128290a7bba9a7f12d32cabe2276b">validateNumPauliSumTerms</a>(numSumTerms, __func__);</div>
+<div class="line"><a name="l00812"></a><span class="lineno">  812</span>&#160;    <a class="code" href="QuEST__validation_8c.html#aa194ba5f5c6e19c6caa4c715b3dbefcc">validatePauliCodes</a>(allPauliCodes, numSumTerms*inQureg.<a class="code" href="structQureg.html#ad08dff5316b8937f4b2a1417591543dc">numQubitsRepresented</a>, __func__);</div>
 <div class="line"><a name="l00813"></a><span class="lineno">  813</span>&#160;    </div>
-<div class="line"><a name="l00814"></a><span class="lineno">  814</span>&#160;    <a class="code" href="QuEST__qasm_8c.html#a9a385fde708958617bbeb599064b8dcb">qasm_recordComment</a>(outQureg, <span class="stringliteral">&quot;Here, the register was modified to an undisclosed and possibly unphysical state (applyPauliSum).&quot;</span>);</div>
-<div class="line"><a name="l00815"></a><span class="lineno">  815</span>&#160;}</div>
+<div class="line"><a name="l00814"></a><span class="lineno">  814</span>&#160;    <a class="code" href="QuEST__common_8c.html#af71c2470694795a8d639be8ff9c34ed5">statevec_applyPauliSum</a>(inQureg, allPauliCodes, termCoeffs, numSumTerms, outQureg);</div>
+<div class="line"><a name="l00815"></a><span class="lineno">  815</span>&#160;    </div>
+<div class="line"><a name="l00816"></a><span class="lineno">  816</span>&#160;    <a class="code" href="QuEST__qasm_8c.html#a9a385fde708958617bbeb599064b8dcb">qasm_recordComment</a>(outQureg, <span class="stringliteral">&quot;Here, the register was modified to an undisclosed and possibly unphysical state (applyPauliSum).&quot;</span>);</div>
+<div class="line"><a name="l00817"></a><span class="lineno">  817</span>&#160;}</div>
 </div><!-- fragment -->
-<p class="reference">References <a class="el" href="QuEST_8h_source.html#l00165">Qureg::numQubitsRepresented</a>, <a class="el" href="QuEST__qasm_8c_source.html#l00120">qasm_recordComment()</a>, <a class="el" href="QuEST__common_8c_source.html#l00493">statevec_applyPauliSum()</a>, <a class="el" href="QuEST__validation_8c_source.html#l00434">validateMatchingQuregDims()</a>, <a class="el" href="QuEST__validation_8c_source.html#l00438">validateMatchingQuregTypes()</a>, <a class="el" href="QuEST__validation_8c_source.html#l00507">validateNumPauliSumTerms()</a>, and <a class="el" href="QuEST__validation_8c_source.html#l00498">validatePauliCodes()</a>.</p>
+<p class="reference">References <a class="el" href="QuEST_8h_source.html#l00208">Qureg::numQubitsRepresented</a>, <a class="el" href="QuEST__qasm_8c_source.html#l00120">qasm_recordComment()</a>, <a class="el" href="QuEST__common_8c_source.html#l00494">statevec_applyPauliSum()</a>, <a class="el" href="QuEST__validation_8c_source.html#l00495">validateMatchingQuregDims()</a>, <a class="el" href="QuEST__validation_8c_source.html#l00499">validateMatchingQuregTypes()</a>, <a class="el" href="QuEST__validation_8c_source.html#l00570">validateNumPauliSumTerms()</a>, and <a class="el" href="QuEST__validation_8c_source.html#l00563">validatePauliCodes()</a>.</p>
 
-<p class="reference">Referenced by <a class="el" href="test__operators_8cpp_source.html#l00015">TEST_CASE()</a>.</p>
+<p class="reference">Referenced by <a class="el" href="test__operators_8cpp_source.html#l00571">TEST_CASE()</a>.</p>
+
+</div>
+</div>
+<a id="ga35b6321c578a8c69470132b5ee95f930"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga35b6321c578a8c69470132b5ee95f930">&#9670;&nbsp;</a></span>applyTrotterCircuit()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void applyTrotterCircuit </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="structQureg.html">Qureg</a>&#160;</td>
+          <td class="paramname"><em>qureg</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="structPauliHamil.html">PauliHamil</a>&#160;</td>
+          <td class="paramname"><em>hamil</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="group__type.html#ga7740e349b4f8bae6451547680f0ce2d6">qreal</a>&#160;</td>
+          <td class="paramname"><em>time</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>order</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>reps</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Applies a trotterisation of unitary evolution <img class="formulaInl" alt="$ \exp(-i \, \text{hamil} \, \text{time}) $" src="form_171.png"/> to <code>qureg</code>. </p>
+<p>This is a sequence of unitary operators, effected by <a class="el" href="group__unitary.html#ga34aa4865c92f9aa5d898c91286c9eca5" title="Apply a multi-qubit multi-Pauli rotation on a selected number of qubits.">multiRotatePauli()</a>, which together approximate the action of full unitary-time evolution under the given Hamiltonian.</p>
+<p>Notate <img class="formulaInl" alt="$ \text{hamil} = \sum_j^N c_j \, \hat \sigma_j $" src="form_172.png"/> where <img class="formulaInl" alt="$c_j$" src="form_173.png"/> is a real coefficient in <code>hamil</code>, <img class="formulaInl" alt="$\hat \sigma_j$" src="form_174.png"/> is the corresponding product of Pauli operators, of which there are a total <img class="formulaInl" alt="$N$" src="form_4.png"/>. Then, <code>order=1</code> performs first-order Trotterisation, whereby </p><p class="formulaDsp">
+<img class="formulaDsp" alt="\[ \exp(-i \, \text{hamil} \, \text{time}) \approx \prod\limits^{\text{reps}} \prod\limits_{j=1}^{N} \exp(-i \, c_j \, \text{time} \, \hat\sigma_j / \text{reps}) \]" src="form_175.png"/>
+</p>
+<p> <code>order=2</code> performs the lowest order "symmetrized" Suzuki decomposition, whereby </p><p class="formulaDsp">
+<img class="formulaDsp" alt="\[ \exp(-i \, \text{hamil} \, \text{time}) \approx \prod\limits^{\text{reps}} \left[ \prod\limits_{j=1}^{N} \exp(-i \, c_j \, \text{time} \, \hat\sigma_j / (2 \, \text{reps})) \prod\limits_{j=N}^{1} \exp(-i \, c_j \, \text{time} \, \hat\sigma_j / (2 \, \text{reps})) \right] \]" src="form_176.png"/>
+</p>
+<p> Greater even values of <code>order</code> specify higher-order symmetrized decompositions <img class="formulaInl" alt="$ S[\text{time}, \text{order}, \text{reps}] $" src="form_177.png"/> which satisfy </p><p class="formulaDsp">
+<img class="formulaDsp" alt="\[ S[\text{time}, \text{order}, 1] = \left( \prod\limits^2 S[p \, \text{time}, \text{order}-2, 1] \right) S[ (1-4p)\,\text{time}, \text{order}-2, 1] \left( \prod\limits^2 S[p \, \text{time}, \text{order}-2, 1] \right) \]" src="form_178.png"/>
+</p>
+<p> and </p><p class="formulaDsp">
+<img class="formulaDsp" alt="\[ S[\text{time}, \text{order}, \text{reps}] = \prod\limits^{\text{reps}} S[\text{time}/\text{reps}, \text{order}, 1] \]" src="form_179.png"/>
+</p>
+<p> where <img class="formulaInl" alt="$ p = \left( 4 - 4^{1/(\text{order}-1)} \right)^{-1} $" src="form_180.png"/>.</p>
+<p>These formulations are taken from 'Finding Exponential Product Formulas of Higher Orders', Naomichi Hatano and Masuo Suzuki (2005) (<a href="https://arxiv.org/abs/math-ph/0506007">arXiv</a>).</p>
+<p>Note that the applied Trotter circuit is captured by QASM, if QASM logging is enabled on <code>qureg</code>.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in,out]</td><td class="paramname">qureg</td><td>the register to modify under the approximate unitary-time evolution </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">hamil</td><td>the hamiltonian under which to approxiamte unitary-time evolution </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">time</td><td>the target evolution time, which is permitted to be both positive and negative. </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">order</td><td>the order of Trotter-Suzuki decomposition to use. Higher orders (necessarily even) are more accurate but prescribe an exponentially increasing number of gates. </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">reps</td><td>the number of repetitions of the decomposition of the given order. This improves the accuracy but prescribes a linearly increasing number of gates. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="exception"><dt>Exceptions</dt><dd>
+  <table class="exception">
+    <tr><td class="paramname">invalidQuESTInputError</td><td>if <code>qureg.numQubitsRepresented</code> != <code>hamil.numQubits</code>, or <code>hamil</code> contains invalid parameters or Pauli codes, or if <code>order</code> is not in {1, 2, 4, 6, ...} or if <code>reps</code> &lt;= 0. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section author"><dt>Author</dt><dd>Tyson Jones </dd></dl>
+
+<p class="definition">Definition at line <a class="el" href="QuEST_8c_source.html#l00830">830</a> of file <a class="el" href="QuEST_8c_source.html">QuEST.c</a>.</p>
+<div class="fragment"><div class="line"><a name="l00830"></a><span class="lineno">  830</span>&#160;                                                                                         {</div>
+<div class="line"><a name="l00831"></a><span class="lineno">  831</span>&#160;    <a class="code" href="QuEST__validation_8c.html#a82b142fe77ba20c87142274f32e57689">validateTrotterParams</a>(order, reps, __func__);</div>
+<div class="line"><a name="l00832"></a><span class="lineno">  832</span>&#160;    <a class="code" href="QuEST__validation_8c.html#a066b0c4d0b02a0f3b9be7e5c68d9de6a">validatePauliHamil</a>(hamil, __func__);</div>
+<div class="line"><a name="l00833"></a><span class="lineno">  833</span>&#160;    <a class="code" href="QuEST__validation_8c.html#a2b88b068a8242ee28da42c7324cdd078">validateMatchingQuregPauliHamilDims</a>(qureg, hamil, __func__);</div>
+<div class="line"><a name="l00834"></a><span class="lineno">  834</span>&#160;    </div>
+<div class="line"><a name="l00835"></a><span class="lineno">  835</span>&#160;    <a class="code" href="QuEST__qasm_8c.html#a9a385fde708958617bbeb599064b8dcb">qasm_recordComment</a>(qureg, </div>
+<div class="line"><a name="l00836"></a><span class="lineno">  836</span>&#160;        <span class="stringliteral">&quot;Beginning of Trotter circuit (time %g, order %d, %d repetitions).&quot;</span>,</div>
+<div class="line"><a name="l00837"></a><span class="lineno">  837</span>&#160;        time, order, reps);</div>
+<div class="line"><a name="l00838"></a><span class="lineno">  838</span>&#160;        </div>
+<div class="line"><a name="l00839"></a><span class="lineno">  839</span>&#160;    <a class="code" href="QuEST__common_8c.html#a8a8e789585651f90fcc587042d4cdfb8">agnostic_applyTrotterCircuit</a>(qureg, hamil, time, order, reps);</div>
+<div class="line"><a name="l00840"></a><span class="lineno">  840</span>&#160; </div>
+<div class="line"><a name="l00841"></a><span class="lineno">  841</span>&#160;    <a class="code" href="QuEST__qasm_8c.html#a9a385fde708958617bbeb599064b8dcb">qasm_recordComment</a>(qureg, <span class="stringliteral">&quot;End of Trotter circuit&quot;</span>);</div>
+<div class="line"><a name="l00842"></a><span class="lineno">  842</span>&#160;}</div>
+</div><!-- fragment -->
+<p class="reference">References <a class="el" href="QuEST__common_8c_source.html#l00773">agnostic_applyTrotterCircuit()</a>, <a class="el" href="QuEST__qasm_8c_source.html#l00120">qasm_recordComment()</a>, <a class="el" href="QuEST__validation_8c_source.html#l00624">validateMatchingQuregPauliHamilDims()</a>, <a class="el" href="QuEST__validation_8c_source.html#l00619">validatePauliHamil()</a>, and <a class="el" href="QuEST__validation_8c_source.html#l00667">validateTrotterParams()</a>.</p>
+
+<p class="reference">Referenced by <a class="el" href="test__operators_8cpp_source.html#l00667">TEST_CASE()</a>.</p>
 
 </div>
 </div>
 </div><!-- contents -->
-<div class="ttc" id="aQuEST__validation_8c_html_a5be128290a7bba9a7f12d32cabe2276b"><div class="ttname"><a href="QuEST__validation_8c.html#a5be128290a7bba9a7f12d32cabe2276b">validateNumPauliSumTerms</a></div><div class="ttdeci">void validateNumPauliSumTerms(int numTerms, const char *caller)</div><div class="ttdef"><b>Definition:</b> <a href="QuEST__validation_8c_source.html#l00507">QuEST_validation.c:507</a></div></div>
-<div class="ttc" id="aQuEST__validation_8c_html_a87d22240ccfd81827a2a34b8d569d347"><div class="ttname"><a href="QuEST__validation_8c.html#a87d22240ccfd81827a2a34b8d569d347">validateMatchingQuregDims</a></div><div class="ttdeci">void validateMatchingQuregDims(Qureg qureg1, Qureg qureg2, const char *caller)</div><div class="ttdef"><b>Definition:</b> <a href="QuEST__validation_8c_source.html#l00434">QuEST_validation.c:434</a></div></div>
+<div class="ttc" id="aQuEST__validation_8c_html_ac31c45c5a31c523be0eb26abba6cf598"><div class="ttname"><a href="QuEST__validation_8c.html#ac31c45c5a31c523be0eb26abba6cf598">validateTarget</a></div><div class="ttdeci">void validateTarget(Qureg qureg, int targetQubit, const char *caller)</div><div class="ttdef"><b>Definition:</b> <a href="QuEST__validation_8c_source.html#l00364">QuEST_validation.c:364</a></div></div>
+<div class="ttc" id="aQuEST__validation_8c_html_aa28b7d9c0c3cf9c4be0e324fb9d6bf76"><div class="ttname"><a href="QuEST__validation_8c.html#aa28b7d9c0c3cf9c4be0e324fb9d6bf76">validateMultiQubitMatrixFitsInNode</a></div><div class="ttdeci">void validateMultiQubitMatrixFitsInNode(Qureg qureg, int numTargets, const char *caller)</div><div class="ttdef"><b>Definition:</b> <a href="QuEST__validation_8c_source.html#l00437">QuEST_validation.c:437</a></div></div>
+<div class="ttc" id="aQuEST__common_8c_html_a95abbe0cedf45b1ff2f070dba219fd7f"><div class="ttname"><a href="QuEST__common_8c.html#a95abbe0cedf45b1ff2f070dba219fd7f">statevec_twoQubitUnitary</a></div><div class="ttdeci">void statevec_twoQubitUnitary(Qureg qureg, int targetQubit1, int targetQubit2, ComplexMatrix4 u)</div><div class="ttdef"><b>Definition:</b> <a href="QuEST__common_8c_source.html#l00517">QuEST_common.c:517</a></div></div>
+<div class="ttc" id="aQuEST__internal_8h_html_ac3735bd959600e57b2ee3a105666cddf"><div class="ttname"><a href="QuEST__internal_8h.html#ac3735bd959600e57b2ee3a105666cddf">statevec_unitary</a></div><div class="ttdeci">void statevec_unitary(Qureg qureg, int targetQubit, ComplexMatrix2 u)</div><div class="ttdef"><b>Definition:</b> <a href="QuEST__cpu__distributed_8c_source.html#l00881">QuEST_cpu_distributed.c:881</a></div></div>
+<div class="ttc" id="aQuEST__internal_8h_html_a0acfe30083d0bc2a84da196378a36122"><div class="ttname"><a href="QuEST__internal_8h.html#a0acfe30083d0bc2a84da196378a36122">statevec_multiControlledMultiQubitUnitary</a></div><div class="ttdeci">void statevec_multiControlledMultiQubitUnitary(Qureg qureg, long long int ctrlMask, int *targs, int numTargs, ComplexMatrixN u)</div><div class="ttdoc">This calls swapQubitAmps only when it would involve a distributed communication; if the qubit chunks ...</div><div class="ttdef"><b>Definition:</b> <a href="QuEST__cpu__distributed_8c_source.html#l01437">QuEST_cpu_distributed.c:1437</a></div></div>
+<div class="ttc" id="aQuEST__validation_8c_html_a5be128290a7bba9a7f12d32cabe2276b"><div class="ttname"><a href="QuEST__validation_8c.html#a5be128290a7bba9a7f12d32cabe2276b">validateNumPauliSumTerms</a></div><div class="ttdeci">void validateNumPauliSumTerms(int numTerms, const char *caller)</div><div class="ttdef"><b>Definition:</b> <a href="QuEST__validation_8c_source.html#l00570">QuEST_validation.c:570</a></div></div>
+<div class="ttc" id="aQuEST__validation_8c_html_a8a656a83bf0b44447188d06c2f8114cb"><div class="ttname"><a href="QuEST__validation_8c.html#a8a656a83bf0b44447188d06c2f8114cb">validateDiagonalOp</a></div><div class="ttdeci">void validateDiagonalOp(Qureg qureg, DiagonalOp op, const char *caller)</div><div class="ttdef"><b>Definition:</b> <a href="QuEST__validation_8c_source.html#l00677">QuEST_validation.c:677</a></div></div>
+<div class="ttc" id="astructPauliHamil_html_ac1c6c9f6299cf83bbba88123216c3cac"><div class="ttname"><a href="structPauliHamil.html#ac1c6c9f6299cf83bbba88123216c3cac">PauliHamil::termCoeffs</a></div><div class="ttdeci">qreal * termCoeffs</div><div class="ttdoc">The coefficient of each Pauli product. This is a length numSumTerms array.</div><div class="ttdef"><b>Definition:</b> <a href="QuEST_8h_source.html#l00164">QuEST.h:164</a></div></div>
+<div class="ttc" id="aQuEST__common_8c_html_a8a8e789585651f90fcc587042d4cdfb8"><div class="ttname"><a href="QuEST__common_8c.html#a8a8e789585651f90fcc587042d4cdfb8">agnostic_applyTrotterCircuit</a></div><div class="ttdeci">void agnostic_applyTrotterCircuit(Qureg qureg, PauliHamil hamil, qreal time, int order, int reps)</div><div class="ttdef"><b>Definition:</b> <a href="QuEST__common_8c_source.html#l00773">QuEST_common.c:773</a></div></div>
+<div class="ttc" id="astructPauliHamil_html_a4b8d38c403553c07ceddcd40c46ce6c8"><div class="ttname"><a href="structPauliHamil.html#a4b8d38c403553c07ceddcd40c46ce6c8">PauliHamil::pauliCodes</a></div><div class="ttdeci">enum pauliOpType * pauliCodes</div><div class="ttdoc">The Pauli operators acting on each qubit, flattened over every operator.</div><div class="ttdef"><b>Definition:</b> <a href="QuEST_8h_source.html#l00162">QuEST.h:162</a></div></div>
+<div class="ttc" id="aQuEST__internal_8h_html_a27294e3065ebe42a65b3b9e0f85551dd"><div class="ttname"><a href="QuEST__internal_8h.html#a27294e3065ebe42a65b3b9e0f85551dd">statevec_applyDiagonalOp</a></div><div class="ttdeci">void statevec_applyDiagonalOp(Qureg qureg, DiagonalOp op)</div><div class="ttdef"><b>Definition:</b> <a href="QuEST__cpu_8c_source.html#l03661">QuEST_cpu.c:3661</a></div></div>
+<div class="ttc" id="aQuEST__validation_8c_html_a6776217a5f7ba38b56175cf6db0f96e0"><div class="ttname"><a href="QuEST__validation_8c.html#a6776217a5f7ba38b56175cf6db0f96e0">validateMultiTargets</a></div><div class="ttdeci">void validateMultiTargets(Qureg qureg, int *targetQubits, int numTargetQubits, const char *caller)</div><div class="ttdef"><b>Definition:</b> <a href="QuEST__validation_8c_source.html#l00392">QuEST_validation.c:392</a></div></div>
+<div class="ttc" id="aQuEST__validation_8c_html_a87d22240ccfd81827a2a34b8d569d347"><div class="ttname"><a href="QuEST__validation_8c.html#a87d22240ccfd81827a2a34b8d569d347">validateMatchingQuregDims</a></div><div class="ttdeci">void validateMatchingQuregDims(Qureg qureg1, Qureg qureg2, const char *caller)</div><div class="ttdef"><b>Definition:</b> <a href="QuEST__validation_8c_source.html#l00495">QuEST_validation.c:495</a></div></div>
+<div class="ttc" id="astructPauliHamil_html_a737e46b40ef8990cf004d22eb9dbe2e4"><div class="ttname"><a href="structPauliHamil.html#a737e46b40ef8990cf004d22eb9dbe2e4">PauliHamil::numSumTerms</a></div><div class="ttdeci">int numSumTerms</div><div class="ttdoc">The number of terms in the weighted sum, or the number of Pauli products.</div><div class="ttdef"><b>Definition:</b> <a href="QuEST_8h_source.html#l00166">QuEST.h:166</a></div></div>
+<div class="ttc" id="aQuEST__common_8c_html_acc45bb8300922ea5933e294921e25ea2"><div class="ttname"><a href="QuEST__common_8c.html#acc45bb8300922ea5933e294921e25ea2">getQubitBitMask</a></div><div class="ttdeci">long long int getQubitBitMask(int *qubits, int numQubits)</div><div class="ttdef"><b>Definition:</b> <a href="QuEST__common_8c_source.html#l00044">QuEST_common.c:44</a></div></div>
 <div class="ttc" id="aQuEST__qasm_8c_html_a9a385fde708958617bbeb599064b8dcb"><div class="ttname"><a href="QuEST__qasm_8c.html#a9a385fde708958617bbeb599064b8dcb">qasm_recordComment</a></div><div class="ttdeci">void qasm_recordComment(Qureg qureg, char *comment,...)</div><div class="ttdef"><b>Definition:</b> <a href="QuEST__qasm_8c_source.html#l00120">QuEST_qasm.c:120</a></div></div>
-<div class="ttc" id="aQuEST__common_8c_html_af71c2470694795a8d639be8ff9c34ed5"><div class="ttname"><a href="QuEST__common_8c.html#af71c2470694795a8d639be8ff9c34ed5">statevec_applyPauliSum</a></div><div class="ttdeci">void statevec_applyPauliSum(Qureg inQureg, enum pauliOpType *allCodes, qreal *termCoeffs, int numSumTerms, Qureg outQureg)</div><div class="ttdef"><b>Definition:</b> <a href="QuEST__common_8c_source.html#l00493">QuEST_common.c:493</a></div></div>
-<div class="ttc" id="aQuEST__validation_8c_html_a031812e1cf2c98d72d795cea7bbe73a5"><div class="ttname"><a href="QuEST__validation_8c.html#a031812e1cf2c98d72d795cea7bbe73a5">validateMatchingQuregTypes</a></div><div class="ttdeci">void validateMatchingQuregTypes(Qureg qureg1, Qureg qureg2, const char *caller)</div><div class="ttdef"><b>Definition:</b> <a href="QuEST__validation_8c_source.html#l00438">QuEST_validation.c:438</a></div></div>
-<div class="ttc" id="astructQureg_html_ad08dff5316b8937f4b2a1417591543dc"><div class="ttname"><a href="structQureg.html#ad08dff5316b8937f4b2a1417591543dc">Qureg::numQubitsRepresented</a></div><div class="ttdeci">int numQubitsRepresented</div><div class="ttdoc">The number of qubits represented in either the state-vector or density matrix.</div><div class="ttdef"><b>Definition:</b> <a href="QuEST_8h_source.html#l00165">QuEST.h:165</a></div></div>
-<div class="ttc" id="aQuEST__validation_8c_html_aa194ba5f5c6e19c6caa4c715b3dbefcc"><div class="ttname"><a href="QuEST__validation_8c.html#aa194ba5f5c6e19c6caa4c715b3dbefcc">validatePauliCodes</a></div><div class="ttdeci">void validatePauliCodes(enum pauliOpType *pauliCodes, int numPauliCodes, const char *caller)</div><div class="ttdef"><b>Definition:</b> <a href="QuEST__validation_8c_source.html#l00498">QuEST_validation.c:498</a></div></div>
+<div class="ttc" id="aQuEST__common_8c_html_a7a76950824f17e821415070a4bfdad5b"><div class="ttname"><a href="QuEST__common_8c.html#a7a76950824f17e821415070a4bfdad5b">statevec_multiQubitUnitary</a></div><div class="ttdeci">void statevec_multiQubitUnitary(Qureg qureg, int *targets, int numTargets, ComplexMatrixN u)</div><div class="ttdef"><b>Definition:</b> <a href="QuEST__common_8c_source.html#l00529">QuEST_common.c:529</a></div></div>
+<div class="ttc" id="aQuEST__common_8c_html_af71c2470694795a8d639be8ff9c34ed5"><div class="ttname"><a href="QuEST__common_8c.html#af71c2470694795a8d639be8ff9c34ed5">statevec_applyPauliSum</a></div><div class="ttdeci">void statevec_applyPauliSum(Qureg inQureg, enum pauliOpType *allCodes, qreal *termCoeffs, int numSumTerms, Qureg outQureg)</div><div class="ttdef"><b>Definition:</b> <a href="QuEST__common_8c_source.html#l00494">QuEST_common.c:494</a></div></div>
+<div class="ttc" id="aQuEST__validation_8c_html_a066b0c4d0b02a0f3b9be7e5c68d9de6a"><div class="ttname"><a href="QuEST__validation_8c.html#a066b0c4d0b02a0f3b9be7e5c68d9de6a">validatePauliHamil</a></div><div class="ttdeci">void validatePauliHamil(PauliHamil hamil, const char *caller)</div><div class="ttdef"><b>Definition:</b> <a href="QuEST__validation_8c_source.html#l00619">QuEST_validation.c:619</a></div></div>
+<div class="ttc" id="aQuEST__validation_8c_html_a2b88b068a8242ee28da42c7324cdd078"><div class="ttname"><a href="QuEST__validation_8c.html#a2b88b068a8242ee28da42c7324cdd078">validateMatchingQuregPauliHamilDims</a></div><div class="ttdeci">void validateMatchingQuregPauliHamilDims(Qureg qureg, PauliHamil hamil, const char *caller)</div><div class="ttdef"><b>Definition:</b> <a href="QuEST__validation_8c_source.html#l00624">QuEST_validation.c:624</a></div></div>
+<div class="ttc" id="astructQureg_html_acf78445e9435d09f44f0cc832c6aee79"><div class="ttname"><a href="structQureg.html#acf78445e9435d09f44f0cc832c6aee79">Qureg::isDensityMatrix</a></div><div class="ttdeci">int isDensityMatrix</div><div class="ttdoc">Whether this instance is a density-state representation.</div><div class="ttdef"><b>Definition:</b> <a href="QuEST_8h_source.html#l00206">QuEST.h:206</a></div></div>
+<div class="ttc" id="aQuEST__validation_8c_html_a031812e1cf2c98d72d795cea7bbe73a5"><div class="ttname"><a href="QuEST__validation_8c.html#a031812e1cf2c98d72d795cea7bbe73a5">validateMatchingQuregTypes</a></div><div class="ttdeci">void validateMatchingQuregTypes(Qureg qureg1, Qureg qureg2, const char *caller)</div><div class="ttdef"><b>Definition:</b> <a href="QuEST__validation_8c_source.html#l00499">QuEST_validation.c:499</a></div></div>
+<div class="ttc" id="astructQureg_html_ad08dff5316b8937f4b2a1417591543dc"><div class="ttname"><a href="structQureg.html#ad08dff5316b8937f4b2a1417591543dc">Qureg::numQubitsRepresented</a></div><div class="ttdeci">int numQubitsRepresented</div><div class="ttdoc">The number of qubits represented in either the state-vector or density matrix.</div><div class="ttdef"><b>Definition:</b> <a href="QuEST_8h_source.html#l00208">QuEST.h:208</a></div></div>
+<div class="ttc" id="aQuEST__validation_8c_html_a5b0392701c555a898403f80ef4a32f62"><div class="ttname"><a href="QuEST__validation_8c.html#a5b0392701c555a898403f80ef4a32f62">validateMultiControlsMultiTargets</a></div><div class="ttdeci">void validateMultiControlsMultiTargets(Qureg qureg, int *controlQubits, int numControlQubits, int *targetQubits, int numTargetQubits, const char *caller)</div><div class="ttdef"><b>Definition:</b> <a href="QuEST__validation_8c_source.html#l00423">QuEST_validation.c:423</a></div></div>
+<div class="ttc" id="aQuEST__validation_8c_html_a576519ac36b7cb25bab78d05b5d1975f"><div class="ttname"><a href="QuEST__validation_8c.html#a576519ac36b7cb25bab78d05b5d1975f">validateMultiQubitMatrix</a></div><div class="ttdeci">void validateMultiQubitMatrix(Qureg qureg, ComplexMatrixN u, int numTargs, const char *caller)</div><div class="ttdef"><b>Definition:</b> <a href="QuEST__validation_8c_source.html#l00460">QuEST_validation.c:460</a></div></div>
+<div class="ttc" id="aQuEST__validation_8c_html_a82b142fe77ba20c87142274f32e57689"><div class="ttname"><a href="QuEST__validation_8c.html#a82b142fe77ba20c87142274f32e57689">validateTrotterParams</a></div><div class="ttdeci">void validateTrotterParams(int order, int reps, const char *caller)</div><div class="ttdef"><b>Definition:</b> <a href="QuEST__validation_8c_source.html#l00667">QuEST_validation.c:667</a></div></div>
+<div class="ttc" id="aQuEST__validation_8c_html_aa194ba5f5c6e19c6caa4c715b3dbefcc"><div class="ttname"><a href="QuEST__validation_8c.html#aa194ba5f5c6e19c6caa4c715b3dbefcc">validatePauliCodes</a></div><div class="ttdeci">void validatePauliCodes(enum pauliOpType *pauliCodes, int numPauliCodes, const char *caller)</div><div class="ttdef"><b>Definition:</b> <a href="QuEST__validation_8c_source.html#l00563">QuEST_validation.c:563</a></div></div>
+<div class="ttc" id="aQuEST__internal_8h_html_aedd7ecccf2f09dd2f1c5d191950b51e6"><div class="ttname"><a href="QuEST__internal_8h.html#aedd7ecccf2f09dd2f1c5d191950b51e6">densmatr_applyDiagonalOp</a></div><div class="ttdeci">void densmatr_applyDiagonalOp(Qureg qureg, DiagonalOp op)</div><div class="ttdef"><b>Definition:</b> <a href="QuEST__cpu__distributed_8c_source.html#l01517">QuEST_cpu_distributed.c:1517</a></div></div>
 <!-- HTML footer for doxygen 1.8.8-->
 <!-- start footer part -->
 </div>

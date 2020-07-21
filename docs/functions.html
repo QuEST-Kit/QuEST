@@ -27,7 +27,7 @@
             <div class="container">
                 <div class="navbar-header">
                     <a class="navbar-brand"><img alt="Logo" src="logo.png"/></a>
-                    <a class="navbar-brand"><b>QuEST</b> v3.1.0<br>The Quantum Exact Simulation Toolkit</a>
+                    <a class="navbar-brand"><b>QuEST</b> v3.2.0<br>The Quantum Exact Simulation Toolkit</a>
                 </div>
             </div>
         </nav>
@@ -54,7 +54,8 @@ $(function() {
 
 <h3><a id="index_c"></a>- c -</h3><ul>
 <li>chunkId
-: <a class="el" href="structQureg.html#ac2929e681d3d95591c18cf168dbbe4f0">Qureg</a>
+: <a class="el" href="structDiagonalOp.html#aa91713a22c95a383bba55e56c4a4e37a">DiagonalOp</a>
+, <a class="el" href="structQureg.html#ac2929e681d3d95591c18cf168dbbe4f0">Qureg</a>
 </li>
 <li>createSublist()
 : <a class="el" href="classSubListGenerator.html#a1d6f502f5fb36c1eba4654553d3f014f">SubListGenerator</a>
@@ -63,6 +64,9 @@ $(function() {
 
 
 <h3><a id="index_d"></a>- d -</h3><ul>
+<li>deviceOperator
+: <a class="el" href="structDiagonalOp.html#aebb8af156861c4bc0dd4f35f6982570a">DiagonalOp</a>
+</li>
 <li>deviceStateVec
 : <a class="el" href="structQureg.html#ac181d7b3b94fff179dc74d7935ecd9e1">Qureg</a>
 </li>
@@ -96,6 +100,7 @@ $(function() {
 , <a class="el" href="structComplexMatrix2.html#a3a2b60a9e00ccef054a6de3b9307c1be">ComplexMatrix2</a>
 , <a class="el" href="structComplexMatrix4.html#a1f6bb840b5a9e6252980cab7a14f1a35">ComplexMatrix4</a>
 , <a class="el" href="structComplexMatrixN.html#afde13e469a3b4f179f45e53d1ec0a7cf">ComplexMatrixN</a>
+, <a class="el" href="structDiagonalOp.html#a85c3f52533efe831bbe40b9a48602388">DiagonalOp</a>
 </li>
 <li>ind
 : <a class="el" href="classSequenceGenerator.html#aeb2c19e6ac47327f8b50727ab5587da7">SequenceGenerator&lt; T &gt;</a>
@@ -136,10 +141,16 @@ $(function() {
 : <a class="el" href="structQureg.html#adef4935cac95763c29164cf99b144ed4">Qureg</a>
 </li>
 <li>numChunks
-: <a class="el" href="structQureg.html#aa3deb7163aab90a61e755a1f200f5413">Qureg</a>
+: <a class="el" href="structDiagonalOp.html#ada3bffa8e414f883e415dd74e46cd879">DiagonalOp</a>
+, <a class="el" href="structQureg.html#aa3deb7163aab90a61e755a1f200f5413">Qureg</a>
+</li>
+<li>numElemsPerChunk
+: <a class="el" href="structDiagonalOp.html#a2c6eab631ef48b4978db026c98180eee">DiagonalOp</a>
 </li>
 <li>numQubits
 : <a class="el" href="structComplexMatrixN.html#a606f7afbc3f65a596bdca21cb43be6a8">ComplexMatrixN</a>
+, <a class="el" href="structDiagonalOp.html#a5131eeb67aafb4c19ac98270c3266742">DiagonalOp</a>
+, <a class="el" href="structPauliHamil.html#acb49fff0e3160ea1904c9ca34408b4e1">PauliHamil</a>
 </li>
 <li>numQubitsInStateVec
 : <a class="el" href="structQureg.html#a0a86e8a50ea8c998b4a0a6640c5a1218">Qureg</a>
@@ -150,12 +161,18 @@ $(function() {
 <li>numRanks
 : <a class="el" href="structQuESTEnv.html#af22aacd7c9905accae28484785c193b4">QuESTEnv</a>
 </li>
+<li>numSumTerms
+: <a class="el" href="structPauliHamil.html#a737e46b40ef8990cf004d22eb9dbe2e4">PauliHamil</a>
+</li>
 </ul>
 
 
 <h3><a id="index_p"></a>- p -</h3><ul>
 <li>pairStateVec
 : <a class="el" href="structQureg.html#aba97773694870ef35e378c036f486bb7">Qureg</a>
+</li>
+<li>pauliCodes
+: <a class="el" href="structPauliHamil.html#a4b8d38c403553c07ceddcd40c46ce6c8">PauliHamil</a>
 </li>
 <li>prepareSublist()
 : <a class="el" href="classSubListGenerator.html#a55d93b6da9e96013873a4b65daabcfa1">SubListGenerator</a>
@@ -179,6 +196,7 @@ $(function() {
 , <a class="el" href="structComplexMatrix2.html#a3ea98d545b67a190ee6abe936c72076f">ComplexMatrix2</a>
 , <a class="el" href="structComplexMatrix4.html#aeadc9893e1b16cdd585dac523e73926c">ComplexMatrix4</a>
 , <a class="el" href="structComplexMatrixN.html#a446e8a077597e4f76049d547df0c9738">ComplexMatrixN</a>
+, <a class="el" href="structDiagonalOp.html#a1d66088bed235d524cd452b107694d5c">DiagonalOp</a>
 </li>
 </ul>
 
@@ -203,7 +221,14 @@ $(function() {
 : <a class="el" href="classSubListGenerator.html#a02b6d786dfbbce60471fd7a55e23ea75">SubListGenerator</a>
 </li>
 <li>SubListGenerator()
-: <a class="el" href="classSubListGenerator.html#ac330be89ad66eb53684ea724bc320274">SubListGenerator</a>
+: <a class="el" href="classSubListGenerator.html#abed6025a9c0b87bcf3b19b3548787ec5">SubListGenerator</a>
+</li>
+</ul>
+
+
+<h3><a id="index_t"></a>- t -</h3><ul>
+<li>termCoeffs
+: <a class="el" href="structPauliHamil.html#ac1c6c9f6299cf83bbba88123216c3cac">PauliHamil</a>
 </li>
 </ul>
 
