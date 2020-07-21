@@ -156,8 +156,7 @@ if (GPUACCELERATED)
         set (CUDA_NVCC_FLAGS "${CUDA_NVCC_FLAGS} \
             -O2"
         )
-    endif()
-    if ("${CMAKE_BUILD_TYPE}" STREQUAL "Debug")
+    elseif ("${CMAKE_BUILD_TYPE}" STREQUAL "Debug")
         set (CUDA_NVCC_FLAGS "${CUDA_NVCC_FLAGS} \
             -G -g -lineinfo"
         )

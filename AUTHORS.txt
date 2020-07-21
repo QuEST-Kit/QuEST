@@ -37,3 +37,5 @@ Drew Silcock
     patched MacOS OpenMP CMake flags
 Zach van Rijn
     patched OpenMP on GCC-9
+@SachinCompton
+    patched GPU Cmake Release build
