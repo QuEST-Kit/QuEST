@@ -485,6 +485,28 @@ void tGate(Qureg qureg, int targetQubit) {
     qasm_recordGate(qureg, GATE_T, targetQubit);
 }
 
+void sdgGate(Qureg qureg, const int targetQubit) {
+    validateTarget(qureg, targetQubit, __func__);
+
+    statevec_sGateConj(qureg, targetQubit);
+    if (qureg.isDensityMatrix) {
+        statevec_sGate(qureg, targetQubit+qureg.numQubitsRepresented);
+    }
+
+    qasm_recordGate(qureg, GATE_S_DAG, targetQubit);
+}
+
+void tdgGate(Qureg qureg, const int targetQubit) {
+    validateTarget(qureg, targetQubit, __func__);
+
+    statevec_tGateConj(qureg, targetQubit);
+    if (qureg.isDensityMatrix) {
+        statevec_tGate(qureg, targetQubit+qureg.numQubitsRepresented);
+    }
+
+    qasm_recordGate(qureg, GATE_T_DAG, targetQubit);
+}
+
 void phaseShift(Qureg qureg, int targetQubit, qreal angle) {
     validateTarget(qureg, targetQubit, __func__);
     

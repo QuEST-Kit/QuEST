@@ -695,6 +695,14 @@ void initBlankState(Qureg qureg);
  */
 void initZeroState(Qureg qureg);
 
+/**
+ * Initialise a set of \f$ qubitId \f$ qubit to the classical zero state
+ * \f$ {| 0 \rangle}^{\otimes N} \f$.
+ *
+ * @param[in,out] qureg the object representing the set of the indexed qubit to initialise
+ */
+void initStateOfSingleQubit(Qureg *qureg, int qubitId, int outcome);
+
 /** Initialise a set of \f$ N \f$ qubits to the plus state
  * \f$ {| + \rangle}^{\otimes N} = \frac{1}{\sqrt{2^N}} (| 0 \rangle + | 1 \rangle)^{\otimes N} \f$
  * (and similarly \f$ |+\rangle \langle+| \f$ for density matrices).
@@ -1048,6 +1056,16 @@ void multiControlledPhaseFlip(Qureg qureg, int *controlQubits, int numControlQub
  */
 void sGate(Qureg qureg, int targetQubit);
 
+/** Apply the single-qubit S^{dagger} gate.
+ * This is a rotation of \f$-\pi/2\f$ around the Z-axis on the Bloch sphere, or the unitary:
+ *
+ * @ingroup unitary
+ * @param[in,out] qureg object representing the set of all qubits
+ * @param[in] targetQubit qubit to operate upon
+ * @throws invalidQuESTInputError if \p targetQubit is outside [0, \p qureg.numQubitsRepresented)
+ */
+void stgGate(Qureg qureg, int targetQubit);
+
 /** Apply the single-qubit T gate.
  * This is a rotation of \f$\pi/4\f$ around the Z-axis on the Bloch sphere, or the unitary:
  * \f[
@@ -1079,6 +1097,16 @@ void sGate(Qureg qureg, int targetQubit);
  * @author Tyson Jones (density matrix, doc)
  */
 void tGate(Qureg qureg, int targetQubit);
+
+/** Apply the single-qubit T^{dagger} gate.
+ * This is a rotation of \f$-\pi/4\f$ around the Z-axis on the Bloch sphere, or the unitary:
+ *
+ * @ingroup unitary
+ * @param[in,out] qureg object representing the set of all qubits
+ * @param[in] targetQubit qubit to operate upon
+ * @throws invalidQuESTInputError if \p targetQubit is outside [0, \p qureg.numQubitsRepresented)
+ */
+void tdgGate(Qureg qureg, int targetQubit);
 
 /** Create the QuEST execution environment.
  * This should be called only once, and the environment should be freed with destroyQuESTEnv at the end

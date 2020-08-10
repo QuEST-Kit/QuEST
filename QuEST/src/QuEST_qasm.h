@@ -31,7 +31,9 @@ typedef enum {
     GATE_UNITARY,
     GATE_PHASE_SHIFT,
     GATE_SWAP,
-    GATE_SQRT_SWAP
+    GATE_SQRT_SWAP,
+    GATE_T_DAG,
+    GATE_S_DAG
 } TargetGate;
 
 void qasm_setup(Qureg* qureg);
