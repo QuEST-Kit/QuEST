@@ -1064,7 +1064,7 @@ void sGate(Qureg qureg, int targetQubit);
  * @param[in] targetQubit qubit to operate upon
  * @throws invalidQuESTInputError if \p targetQubit is outside [0, \p qureg.numQubitsRepresented)
  */
-void stgGate(Qureg qureg, int targetQubit);
+void sdgGate(Qureg qureg, int targetQubit);
 
 /** Apply the single-qubit T gate.
  * This is a rotation of \f$\pi/4\f$ around the Z-axis on the Bloch sphere, or the unitary:
