@@ -443,9 +443,19 @@ void reportQuESTEnv(QuESTEnv env){
     printf("OpenMP disabled\n");
 # endif
 }
-
-void getEnvironmentString(QuESTEnv env, Qureg qureg, char str[200]){
-    sprintf(str, "%dqubits_GPU_noMpi_noOMP", qureg.numQubitsInStateVec);    
+	
+void getEnvironmentString(QuESTEnv env, char str[200]){
+	
+    // OpenMP can be hybridised with GPU in future, so this check is safe and worthwhile
+    int ompStatus=0;
+    int numThreads=1;
+# ifdef _OPENMP
+    ompStatus=1;
+    numThreads=omp_get_max_threads(); 
+# endif
+	
+    // there is no reporting of CUDA cores/threads/blocks currently (since non-trivial)
+    sprintf(str, "CUDA=1 OpenMP=%d MPI=0 threads=%d ranks=1", ompStatus, numThreads);
 }
 
 void copyStateToGPU(Qureg qureg)
