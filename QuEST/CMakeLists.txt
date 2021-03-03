@@ -19,6 +19,8 @@
 # eg
 #   cmake -DDISTRIBUTED=1 ..
 
+cmake_minimum_required(VERSION 3.7)
+project(QuEST_Library)
 
 option(MULTITHREADED "Switches on OpenMP Threading if an OpenMP implementation can be found. Set to 0 to disable." 1)
 
