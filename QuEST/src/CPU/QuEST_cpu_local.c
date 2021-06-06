@@ -204,6 +204,16 @@ void reportQuESTEnv(QuESTEnv env){
     printf("Precision: size of qreal is %ld bytes\n", sizeof(qreal));
 }
 
+void getEnvironmentString(QuESTEnv env, char str[200]){
+    int ompStatus=0;
+    int numThreads=1;
+# ifdef _OPENMP
+    ompStatus=1;
+    numThreads=omp_get_max_threads(); 
+# endif
+    sprintf(str, "CUDA=0 OpenMP=%d MPI=0 threads=%d ranks=1", ompStatus, numThreads);
+}
+
 qreal statevec_getRealAmp(Qureg qureg, long long int index){
     return qureg.stateVec.real[index];
 }

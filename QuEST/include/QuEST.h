@@ -1128,16 +1128,24 @@ int syncQuESTSuccess(int successCode);
  */
 void reportQuESTEnv(QuESTEnv env);
 
-/** Sets \p str to a string containing the number of qubits in \p qureg, and the 
- * hardware facilities used (e.g. GPU, MPI and/or OMP).
+/** Sets \p str to a string containing information about the runtime environment, 
+ * including whether simulation is using CUDA (for GPU), OpenMP (for multithreading)
+ * and/or MPI (for distribution). The number of CPU threads and distributed ranks is
+ * also reported. Note there is currently no reporting of the number of GPU cores used.
+ *
+ * The string format is:
+ *
+ *        "CUDA=b OpenMP=b MPI=b threads=n ranks=n"
  * 
+ * where b is 0 or 1, and n are integers.
+ *
  * @ingroup debug 
  * @param[in] env object representing the execution environment. A single instance is used for each program
- * @param[in] qureg the qureg of which to query the simulating hardware
  * @param[out] str to be populated with the output string
  * @author Ania Brown
+ * @author Tyson Jones
  */
-void getEnvironmentString(QuESTEnv env, Qureg qureg, char str[200]);
+void getEnvironmentString(QuESTEnv env, char str[200]);
 
 /** In GPU mode, this copies the state-vector (or density matrix) from RAM 
  * (qureg.stateVec) to VRAM / GPU-memory (qureg.deviceStateVec), which is the version 

@@ -1387,13 +1387,6 @@ void statevec_reportStateToScreen(Qureg qureg, QuESTEnv env, int reportRank){
         }
     } else printf("Error: reportStateToScreen will not print output for systems of more than 5 qubits.\n");
 }
-void statevec_getEnvironmentString(QuESTEnv env, Qureg qureg, char str[200]){
-    int numThreads=1;
-# ifdef _OPENMP
-    numThreads=omp_get_max_threads(); 
-# endif
-    sprintf(str, "%dqubits_CPU_%dranksx%dthreads", qureg.numQubitsInStateVec, env.numRanks, numThreads);
-}
 
 void statevec_initBlankState (Qureg qureg)
 {
