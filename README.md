@@ -144,7 +144,8 @@ We sincerely thank the following external contributors to QuEST.
 - [Kshitij Chhabra](https://github.com/kshitijc) for patching some validation bugs.
 - [Drew Silcock](https://github.com/drewsilcock) for patching the multithreaded build on MacOS.
 - [Zach van Rijn](https://github.com/zv-io) for patching the multithreading code for GCC-9 OpenMP-5 compatibility
-- @SachinCompton for patching the GPU CMake Release build
+- @SachinCompton for patching the GPU CMake Release build.
+- [Christopher J. Anders](https://github.com/chr5tphr) for patching the multithreading (when default off) and GPU builds (revising min cmake)
 
 QuEST uses the [mt19937ar](http://www.math.sci.hiroshima-u.ac.jp/~m-mat/MT/MT2002/emt19937ar.html) Mersenne Twister algorithm for random number generation, under the BSD licence. QuEST optionally (by additionally importing `QuEST_complex.h`) integrates the [language agnostic complex type](http://collaboration.cmc.ec.gc.ca/science/rpn/biblio/ddj/Website/articles/CUJ/2003/0303/cuj0303meyers/index.htm) by Randy Meyers and Dr. Thomas Plum
 

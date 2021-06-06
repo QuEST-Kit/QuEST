@@ -191,6 +191,16 @@ void reportQuESTEnv(QuESTEnv env){
     }
 }
 
+void getEnvironmentString(QuESTEnv env, char str[200]){
+    int ompStatus=0;
+    int numThreads=1;
+# ifdef _OPENMP
+    ompStatus=1;
+    numThreads=omp_get_max_threads(); 
+# endif
+    sprintf(str, "CUDA=0 OpenMP=%d MPI=1 threads=%d ranks=%d", ompStatus, numThreads, env.numRanks);
+}
+
 int getChunkIdFromIndex(Qureg qureg, long long int index){
     return index/qureg.numAmpsPerChunk; // this is numAmpsPerChunk
 }

@@ -39,3 +39,6 @@ Zach van Rijn
     patched OpenMP on GCC-9
 @SachinCompton
     patched GPU Cmake Release build
+Christopher J. Anders
+    patched Cmake build when multhithreading defaults off
+    revsied Cmake min version for GPU build

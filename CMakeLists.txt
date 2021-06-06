@@ -4,7 +4,7 @@
 # author: Tyson Jones (testing)
 
 # CMake initialisation.
-cmake_minimum_required(VERSION 3.1)
+cmake_minimum_required(VERSION 3.7)
 
 message(STATUS "CMake version: ${CMAKE_VERSION}")
 message(STATUS "CMake build type: ${CMAKE_BUILD_TYPE}")

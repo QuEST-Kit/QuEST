@@ -12,7 +12,7 @@ on:
 jobs:
 
   build-and-test:
-    name: Unit tests with LLVM address sanitizer on Ubuntu 18.04
+    name: Unit tests with LLVM address sanitizer on Ubuntu 20.04
     runs-on: ubuntu-latest
 
     steps:
@@ -25,8 +25,8 @@ jobs:
         run: cmake .. -DTESTING:BOOL=ON -DPRECISION:STRING=2 -DQUEST_MEMCHECK:BOOL=TRUE -DCMAKE_BUILD_TYPE:STRING=Debug
         working-directory: build_dir
         env:
-          CC: clang-9
-          CXX: clang++-9
+          CC: clang
+          CXX: clang++
 
       - name: cmake build
         run: cmake --build . --parallel 2 --target tests
