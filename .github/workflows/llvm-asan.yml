@@ -25,8 +25,8 @@ jobs:
         run: cmake .. -DTESTING:BOOL=ON -DPRECISION:STRING=2 -DQUEST_MEMCHECK:BOOL=TRUE -DCMAKE_BUILD_TYPE:STRING=Debug
         working-directory: build_dir
         env:
-          CC: gcc
-          CXX: g++
+          CC: clang
+          CXX: clang++
 
       - name: cmake build
         run: cmake --build . --parallel 2 --target tests
