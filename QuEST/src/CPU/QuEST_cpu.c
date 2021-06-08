@@ -3871,3 +3871,315 @@ void agnostic_setDiagonalOpElems(DiagonalOp op, long long int startInd, qreal* r
         }
     }
 }
+
+void statevec_applyPhaseFuncOverrides(
+    Qureg qureg, int* qubits, int numQubits, enum bitEncoding encoding,
+    qreal* coeffs, qreal* exponents, int numTerms, 
+    long long int* overrideInds, qreal* overridePhases, int numOverrides)
+{
+    // each node/chunk modifies only local values in an embarrassingly parallel way 
+
+    // thread shared vars
+    int chunkId = qureg.chunkId;
+    long long int numAmps = qureg.numAmpsPerChunk;
+    qreal* stateRe = qureg.stateVec.real;
+    qreal* stateIm = qureg.stateVec.imag;
+
+    // thread private vars
+    long long int index, globalAmpInd, phaseInd;
+    int i, t, q;
+    qreal phase, c, s, re, im;
+
+# ifdef _OPENMP
+# pragma omp parallel \
+    default  (none) \
+    shared   (chunkId,numAmps, stateRe,stateIm, qubits,numQubits,encoding, coeffs,exponents,numTerms, overrideInds,overridePhases,numOverrides) \
+    private  (index, globalAmpInd, phaseInd, i,t,q, phase, c,s,re,im) 
+# endif
+    {
+# ifdef _OPENMP
+# pragma omp for schedule (static)
+# endif
+        for (index=0LL; index<numAmps; index++) {
+
+            // determine global amplitude index 
+            globalAmpInd = chunkId * numAmps + index;
+
+            // determine phase index of {qubits}
+            phaseInd = 0LL;
+            if (encoding == UNSIGNED) {
+                for (q=0; q<numQubits; q++) // use significance order specified by {qubits}
+                    phaseInd += (1LL << q) * extractBit(qubits[q], globalAmpInd);
+            } 
+            else if (encoding == TWOS_COMPLEMENT) {
+                for (q=0; q<numQubits-1; q++) // use final qubit to indicate sign 
+                    phaseInd += (1LL << q) * extractBit(qubits[q], globalAmpInd);
+                if (extractBit(qubits[numQubits-1], globalAmpInd) == 1)
+                    phaseInd -= (1LL << (numQubits-1));
+            }
+
+            // determine if this phase index has an overriden value (i < numOverrides)
+            for (i=0; i<numOverrides; i++)
+                if (phaseInd == overrideInds[i])
+                    break;
+
+            // determine phase from {coeffs}, {exponents} (unless overriden)
+            phase = 0;
+            if (i < numOverrides)
+                phase = overridePhases[i];
+            else
+                for (t=0; t<numTerms; t++)
+                    phase += coeffs[t] * pow(phaseInd, exponents[t]);
+
+            // modify amp to amp * exp(i phase) 
+            c = cos(phase);
+            s = sin(phase);
+            re = stateRe[index];
+            im = stateIm[index];
+
+            // = {re[amp] cos(phase) - im[amp] sin(phase)} + i {re[amp] sin(phase) + im[amp] cos(phase)}
+            stateRe[index] = re*c - im*s;
+            stateIm[index] = re*s + im*c;
+        }
+    }
+}
+
+void statevec_applyMultiVarPhaseFuncOverrides(
+    Qureg qureg, int* qubits, int* numQubitsPerReg, int numRegs, enum bitEncoding encoding,
+    qreal* coeffs, qreal* exponents, int* numTermsPerReg, 
+    long long int* overrideInds, qreal* overridePhases, int numOverrides) 
+{
+    // each node/chunk modifies only local values in an embarrassingly parallel way 
+
+    // note partitions of qubits, coeffs, exponents and overrideInds are stored flat
+
+    // thread-shared vaes
+    int chunkId = qureg.chunkId;
+    long long int numAmps = qureg.numAmpsPerChunk;
+    qreal* stateRe = qureg.stateVec.real;
+    qreal* stateIm = qureg.stateVec.imag;
+
+    // thread-private vars
+    long long int index, globalAmpInd;
+    int r, q, i, t, found, flatInd;
+    qreal phase, c, s, re, im;
+
+    // each thread has a private static array of length >= numRegs (private var-length is illegal)
+    long long int phaseInds[MAX_NUM_REGS_APPLY_ARBITRARY_PHASE];
+
+# ifdef _OPENMP
+# pragma omp parallel \
+    default  (none) \
+    shared   (chunkId,numAmps, stateRe,stateIm, qubits,numQubitsPerReg,numRegs,encoding, coeffs,exponents,numTermsPerReg, overrideInds,overridePhases,numOverrides) \
+    private  (index,globalAmpInd, r,q,i,t,flatInd, found, phaseInds,phase, c,s,re,im) 
+# endif
+    {
+# ifdef _OPENMP
+# pragma omp for schedule (static)
+# endif
+        for (index=0LL; index<numAmps; index++) {
+
+            // determine global amplitude index 
+            globalAmpInd = chunkId * numAmps + index;
+
+            // determine phase indices
+            flatInd = 0;
+            for (r=0; r<numRegs; r++) {
+                phaseInds[r] = 0LL;
+
+                if (encoding == UNSIGNED) {
+                    for (q=0; q<numQubitsPerReg[r]; q++)
+                        phaseInds[r] += (1LL << q) * extractBit(qubits[flatInd++], globalAmpInd);   // qubits[flatInd] ~ qubits[r][q]
+                }
+                else if (encoding == TWOS_COMPLEMENT) {
+                    for (q=0; q<numQubitsPerReg[r]-1; q++)  
+                        phaseInds[r] += (1LL << q) * extractBit(qubits[flatInd++], globalAmpInd);
+                    // use final qubit to indicate sign
+                    if (extractBit(qubits[flatInd++], globalAmpInd) == 1)
+                        phaseInds[r] -= (1LL << (numQubitsPerReg[r]-1));
+                }
+            }
+
+            // determine if this phase index has an overriden value (i < numOverrides)
+            for (i=0; i<numOverrides; i++) {
+                found = 1;
+                for (r=0; r<numRegs; r++) {
+                    if (phaseInds[r] != overrideInds[i*numRegs+r]) {
+                        found = 0;
+                        break;
+                    }
+                }
+                if (found)
+                    break;
+            }
+
+            // compute the phase (unless overriden)
+            phase = 0;
+            if (i < numOverrides)
+                phase = overridePhases[i];
+            else {
+                flatInd = 0;
+                for (r=0; r<numRegs; r++) {
+                    for (t=0; t<numTermsPerReg[r]; t++) {
+                        phase += coeffs[flatInd] * pow(phaseInds[r], exponents[flatInd]);
+                        flatInd++;
+                    }
+                }
+            }
+
+            // modify amp to amp * exp(i phase) 
+            c = cos(phase);
+            s = sin(phase);
+            re = stateRe[index];
+            im = stateIm[index];
+
+            // = {re[amp] cos(phase) - im[amp] sin(phase)} + i {re[amp] sin(phase) + im[amp] cos(phase)}
+            stateRe[index] = re*c - im*s;
+            stateIm[index] = re*s + im*c;
+        }
+    }
+}
+
+void statevec_applyParamNamedPhaseFuncOverrides(
+    Qureg qureg, int* qubits, int* numQubitsPerReg, int numRegs, enum bitEncoding encoding,
+    enum phaseFunc phaseFuncName,
+    qreal* params, int numParams,
+    long long int* overrideInds, qreal* overridePhases, int numOverrides) 
+{
+    // each node/chunk modifies only local values in an embarrassingly parallel way 
+
+    // note partitions of qubits, overrideInds are stored flat
+
+    // thread-shared vaes
+    int chunkId = qureg.chunkId;
+    long long int numAmps = qureg.numAmpsPerChunk;
+    qreal* stateRe = qureg.stateVec.real;
+    qreal* stateIm = qureg.stateVec.imag;
+
+    // thread-private vars
+    long long int index, globalAmpInd;
+    int r, q, i, found, flatInd;
+    qreal phase, norm, prod, dist, c, s, re, im;
+
+    // each thread has a private static array of length >= numRegs (private var-length is illegal)
+    long long int phaseInds[MAX_NUM_REGS_APPLY_ARBITRARY_PHASE];
+
+# ifdef _OPENMP
+# pragma omp parallel \
+    default  (none) \
+    shared   (chunkId,numAmps, stateRe,stateIm, qubits,numQubitsPerReg,numRegs,encoding, phaseFuncName,params,numParams, overrideInds,overridePhases,numOverrides) \
+    private  (index,globalAmpInd, r,q,i,flatInd, found, phaseInds,phase,norm,prod,dist, c,s,re,im) 
+# endif
+    {
+# ifdef _OPENMP
+# pragma omp for schedule (static)
+# endif
+        for (index=0LL; index<numAmps; index++) {
+
+            // determine global amplitude index 
+            globalAmpInd = chunkId * numAmps + index;
+
+            // determine phase indices
+            flatInd = 0;
+            for (r=0; r<numRegs; r++) {
+                phaseInds[r] = 0LL;
+
+                if (encoding == UNSIGNED) {
+                    for (q=0; q<numQubitsPerReg[r]; q++)
+                        phaseInds[r] += (1LL << q) * extractBit(qubits[flatInd++], globalAmpInd);   // qubits[flatInd] ~ qubits[r][q]
+                }
+                else if (encoding == TWOS_COMPLEMENT) {
+                    for (q=0; q<numQubitsPerReg[r]-1; q++)  
+                        phaseInds[r] += (1LL << q) * extractBit(qubits[flatInd++], globalAmpInd);
+                    // use final qubit to indicate sign
+                    if (extractBit(qubits[flatInd++], globalAmpInd) == 1)
+                        phaseInds[r] -= (1LL << (numQubitsPerReg[r]-1));
+                }
+            }
+
+            // determine if this phase index has an overriden value (i < numOverrides)
+            for (i=0; i<numOverrides; i++) {
+                found = 1;
+                for (r=0; r<numRegs; r++) {
+                    if (phaseInds[r] != overrideInds[i*numRegs+r]) {
+                        found = 0;
+                        break;
+                    }
+                }
+                if (found)
+                    break;
+            }
+
+            // compute the phase (unless overriden)
+            phase = 0;
+            if (i < numOverrides)
+                phase = overridePhases[i];
+            else {
+                // compute norm related phases
+                if (phaseFuncName == NORM || phaseFuncName == INVERSE_NORM ||
+                    phaseFuncName == SCALED_NORM || phaseFuncName == SCALED_INVERSE_NORM) {
+
+                    norm = 0;
+                    for (r=0; r<numRegs; r++)
+                        norm += phaseInds[r]*phaseInds[r];
+                    norm = sqrt(norm);
+
+                    if (phaseFuncName == NORM)
+                        phase = norm;
+                    else if (phaseFuncName == INVERSE_NORM)
+                        phase = 1/norm;
+                    else if (phaseFuncName == SCALED_NORM)  // no need to actually consult the number of parameters
+                        phase = params[0] * norm;
+                    else if (phaseFuncName == SCALED_INVERSE_NORM)
+                        phase = params[0] / norm;
+                }
+                // compute product related phases
+                else if (phaseFuncName == PRODUCT || phaseFuncName == INVERSE_PRODUCT ||
+                         phaseFuncName == SCALED_PRODUCT || phaseFuncName == SCALED_INVERSE_PRODUCT) {
+
+                    prod = 1;
+                    for (r=0; r<numRegs; r++)
+                        prod *= phaseInds[r];
+
+                    if (phaseFuncName == PRODUCT)
+                        phase = prod;
+                    else if (phaseFuncName == INVERSE_PRODUCT)
+                        phase = 1/prod;
+                    else if (phaseFuncName == SCALED_PRODUCT)
+                        phase = params[0] * prod;
+                    else if (phaseFuncName == SCALED_INVERSE_PRODUCT)
+                        phase = params[0] / prod;
+                }
+                // compute Euclidean distance related phases 
+                else if (phaseFuncName == DISTANCE || phaseFuncName == INVERSE_DISTANCE ||
+                         phaseFuncName == SCALED_DISTANCE || phaseFuncName == SCALED_INVERSE_DISTANCE) {
+
+                    dist = 0;
+                    for (r=0; r<numRegs; r+=2)
+                        dist += (phaseInds[r+1] - phaseInds[r])*(phaseInds[r+1] - phaseInds[r]);
+                    dist = sqrt(dist);
+
+                    if (phaseFuncName == DISTANCE)
+                        phase = dist;
+                    else if (phaseFuncName == INVERSE_DISTANCE)
+                        phase = 1/dist;
+                    else if (phaseFuncName == SCALED_DISTANCE)
+                        phase = params[0] * dist;
+                    else if (phaseFuncName == SCALED_INVERSE_DISTANCE)
+                        phase = params[0] / dist;
+                }
+            }
+
+            // modify amp to amp * exp(i phase) 
+            c = cos(phase);
+            s = sin(phase);
+            re = stateRe[index];
+            im = stateIm[index];
+
+            // = {re[amp] cos(phase) - im[amp] sin(phase)} + i {re[amp] sin(phase) + im[amp] cos(phase)}
+            stateRe[index] = re*c - im*s;
+            stateIm[index] = re*s + im*c;
+        }
+    }
+}
+

@@ -68,6 +68,10 @@
 # endif
 
 
+// the maximum number of qubit registers which can be passed to functions like applyMultiArbitraryPhaseOverrides()
+# define MAX_NUM_REGS_APPLY_ARBITRARY_PHASE 100
+
+
 /** @def QuEST_PREC 
  *
  * Sets the precision of \ref qreal and \ref qcomp, and generally that of the state-vectors stored

@@ -130,6 +130,22 @@ void validateDiagonalOp(Qureg qureg, DiagonalOp op, const char* caller);
 
 void validateNumElems(DiagonalOp op, long long int startInd, long long int numElems, const char* caller);
 
+void validateQubitSubregs(Qureg qureg, int* qubits, int* numQubitsPerReg, const int numReg, const char* caller);
+
+void validatePhaseFuncOverrides(const int numQubits, enum bitEncoding encoding, long long int* overrideInds, int numOverrides, const char* caller);
+
+void validateMultiVarPhaseFuncOverrides(int* numQubitsPerReg, const int numRegs, enum bitEncoding encoding, long long int* overrideInds, int numOverrides, const char* caller);
+
+void validateNumPhaseFuncTerms(const int numTerms, const char* caller);
+
+void validateNumMultiVarPhaseFuncTerms(int* numTermsPerReg, const int numRegs, const char* caller);
+
+void validatePhaseFuncName(enum phaseFunc funcCode, int numParams, const char* caller);
+
+void validateBitEncoding(int numQubits, enum bitEncoding encoding, const char* caller);
+
+void validateMultiRegBitEncoding(int* numQubitsPerReg, int numRegs, enum bitEncoding encoding, const char* caller);
+
 # ifdef __cplusplus
 }
 # endif
