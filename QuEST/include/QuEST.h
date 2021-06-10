@@ -150,6 +150,71 @@ typedef struct Vector
     qreal x, y, z;
 } Vector;
 
+/** Flags for specifying named phase functions.
+ * These can be passed to functions applyNamedPhaseFunc(), applyNamedPhaseFuncOverrides(), 
+ * applyParamNamedPhaseFunc(), and applyParamNamedPhaseFuncOverrides().
+ *
+ * Norm based phase functions:
+ *    - \p NORM maps state \f$|x\rangle|y\rangle\dots\f$ to \f$\sqrt{x^2 + y^2 + \dots}\f$
+ *    - \p SCALED_NORM maps state \f$|x\rangle|y\rangle\dots\f$ to \f$\text{coeff} \sqrt{x^2 + y^2 + \dots}\f$
+ *    - \p INVERSE_NORM maps state \f$|x\rangle|y\rangle\dots\f$ to \f$1/\sqrt{x^2 + y^2 + \dots}\f$
+ *    - \p SCALED_INVERSE_NORM maps state \f$|x\rangle|y\rangle\dots\f$ to \f$\text{coeff}/\sqrt{x^2 + y^2 + \dots}\f$
+ *
+ * Product based phase functions:
+ *    - \p PRODUCT maps state \f$|x\rangle|y\rangle|z\rangle\dots\f$ to \f$x \; y \; z \dots\f$
+ *    - \p SCALED_PRODUCT maps state \f$|x\rangle|y\rangle|z\rangle\dots\f$ to \f$\text{coeff} \; x \; y \; z \dots\f$
+ *    - \p INVERSE_PRODUCT maps state \f$|x\rangle|y\rangle|z\rangle\dots\f$ to \f$1/(x \; y \; z \dots)\f$
+ *    - \p SCALED_INVERSE_PRODUCT maps state \f$|x\rangle|y\rangle|z\rangle\dots\f$ to \f$\text{coeff}/(x \; y \; z \dots)\f$
+ *
+ * Euclidean distance based phase functions:
+ *    - \p DISTANCE maps state \f$|x_1\rangle|x_2\rangle|y_1\rangle|y_2\rangle\dots\f$ to \f$\sqrt{(x_1-x_2)^2 + (y_1-y_2)^2 + \dots}\f$
+ *    - \p SCALED_DISTANCE maps state \f$|x_1\rangle|x_2\rangle|y_1\rangle|y_2\rangle\dots\f$ to \f$\text{coeff}\sqrt{(x_1-x_2)^2 + (y_1-y_2)^2 + \dots}\f$
+ *    - \p INVERSE_DISTANCE maps state \f$|x_1\rangle|x_2\rangle|y_1\rangle|y_2\rangle\dots\f$ to \f$1/\sqrt{(x_1-x_2)^2 + (y_1-y_2)^2 + \dots}\f$
+ *    - \p SCALED_INVERSE_DISTANCE maps state \f$|x_1\rangle|x_2\rangle|y_1\rangle|y_2\rangle\dots\f$ to \f$\text{coeff}/\sqrt{(x_1-x_2)^2 + (y_1-y_2)^2 + \dots}\f$
+ *
+ * @ingroup type 
+ * @author Tyson Jones
+ */
+enum phaseFunc {
+    NORM=0,     SCALED_NORM=1,      INVERSE_NORM=2,         SCALED_INVERSE_NORM=3, 
+    PRODUCT=4,  SCALED_PRODUCT=5,   INVERSE_PRODUCT=6,      SCALED_INVERSE_PRODUCT=7, 
+    DISTANCE=8, SCALED_DISTANCE=9,  INVERSE_DISTANCE=10,    SCALED_INVERSE_DISTANCE=11};
+    
+/** Flags for specifying how the bits in sub-register computational basis states 
+ * are mapped to indices in functions like applyPhaseFunc().
+ *
+ *    - \p UNSIGNED means the bits encode an unsigned integer, hence
+ * \f[ 
+ * \begin{aligned}
+ *     |00\rangle & \rightarrow \, 0 \\
+ *     |01\rangle & \rightarrow \, 1 \\
+ *     |10\rangle & \rightarrow \, 2 \\
+ *     |11\rangle & \rightarrow \, 3
+ * \end{aligned}
+ * \f]
+ *    - \p TWOS_COMPLEMENT means the bits encode a signed integer through 
+ *      [two's complement](https://en.wikipedia.org/wiki/Two%27s_complement), such that
+ * \f[ 
+ * \begin{aligned}
+ *     |000\rangle & \rightarrow \, 0 \\
+ *     |001\rangle & \rightarrow \, 1 \\
+ *     |010\rangle & \rightarrow \, 2 \\
+ *     |011\rangle & \rightarrow \, 3 \\
+ *     |100\rangle & \rightarrow \,-4 \\
+ *     |101\rangle & \rightarrow \,-3 \\
+ *     |110\rangle & \rightarrow \,-2 \\
+ *     |111\rangle & \rightarrow \,-1
+ * \end{aligned}
+ * \f]
+ * > Remember that the qubits specified within a sub-register, and their ordering (least to most 
+ * > significant) determine the bits of a computational basis state, before intrepretation 
+ * > as an encoding of an integer.
+ * 
+ * @ingroup type 
+ * @author Tyson Jones
+ */
+enum bitEncoding {UNSIGNED=0, TWOS_COMPLEMENT=1};
+
 /** Represents a weighted sum of pauli products.
  *
  * @ingroup type 
@@ -3924,19 +3989,738 @@ ComplexMatrixN bindArraysToStackComplexMatrixN(
     )
 #endif
 
-// TODO: write doc 
-enum phaseFunc {NORM=0, SCALED_NORM=1, INVERSE_NORM=2, SCALED_INVERSE_NORM=3, PRODUCT=4, SCALED_PRODUCT=5, INVERSE_PRODUCT=6, SCALED_INVERSE_PRODUCT=7, DISTANCE=8, SCALED_DISTANCE=9, INVERSE_DISTANCE=10, SCALED_INVERSE_DISTANCE=11};
-enum bitEncoding {UNSIGNED=0, TWOS_COMPLEMENT=1};
+/** Induces a phase change upon each amplitude of state-vector \p qureg, determined by the passed 
+ * exponential polynomial "phase function". This effects a diagonal unitary of unit complex scalars.
+ *
+ * - Arguments \p coeffs and \p exponents together specify a real exponential polynomial \f$f(r)\f$ 
+ *   with \p numTerms terms, of the form
+ *   \f[ 
+ *    f(r) = \sum\limits_{i}^{\text{numTerms}} \text{coeffs}[i] \; r^{\, \text{exponents}[i]}\,,
+ *   \f] 
+ *   where both \p coeffs and \p exponents can be negative, positive and fractional. 
+ *   For example,
+ *   ```
+ *      qreal coeffs[] = {1, -3.14};
+ *      qreal exponents[] = {2, -5.5};
+ *      int numTerms = 2;
+ *   ```
+ *   constitutes the function 
+ *   \f[
+ *       f(r) =  1 \, r^2 - 3.14 \, r^{-5.5}.
+ *   \f] \n
+ * > If your function \f$f(r) \f$diverges at one or more \f$r\f$ values, you should instead 
+ * > use applyPhaseFuncOverrides() and specify explicit phase changes for these values.
+ * > Otherwise, the corresponding amplitudes of the state-vector will become indeterminate (like `NaN`).
+ * > Note that use of any negative exponent (with non-zero coefficient) will result in 
+ * > divergences at \f$r=0\f$.
+ *
+ * - The function \f$f(r)\f$ specifies the phase change to induce upon amplitude \f$\alpha\f$ 
+ *   of computational basis state with index \f$r\f$, such that
+ *   \f[
+ *    \alpha \, |r\rangle \rightarrow \, \exp(i f(r)) \; \alpha \, |r\rangle.
+ *   \f]
+ *   The index \f$r\f$ associated with each computational basis state is determined by 
+ *   the binary value of the specified \p qubits (ordered least to most significant), 
+ *   interpreted under the given ::bitEncoding \p encoding. \n\n
+ *   For example, under \p encoding <b>=</b> \p UNSIGNED and \p qubits <b>= {0,1}</b>,
+ *   \f[ 
+ *   \begin{aligned}
+ *     |0\mathbf{00}\rangle & \rightarrow \, e^{i f(0)}\,|0\mathbf{00}\rangle \\
+ *     |0\mathbf{01}\rangle & \rightarrow \, e^{i f(1)}\,|0\mathbf{01}\rangle \\
+ *     |0\mathbf{10}\rangle & \rightarrow \, e^{i f(2)}\,|0\mathbf{10}\rangle \\
+ *     |0\mathbf{11}\rangle & \rightarrow \, e^{i f(3)}\,|0\mathbf{11}\rangle \\
+ *     |1\mathbf{00}\rangle & \rightarrow \, e^{i f(0)}\,|1\mathbf{00}\rangle \\
+ *     |1\mathbf{01}\rangle & \rightarrow \, e^{i f(1)}\,|1\mathbf{01}\rangle \\
+ *     |1\mathbf{10}\rangle & \rightarrow \, e^{i f(2)}\,|1\mathbf{10}\rangle \\
+ *     |1\mathbf{11}\rangle & \rightarrow \, e^{i f(3)}\,|1\mathbf{11}\rangle
+ *   \end{aligned}
+ *   \f]
+ *
+ * - The interpreted phase function can be previewed in the QASM log, as a comment. \n
+ *   For example:
+ *   ```
+ *   startRecordingQASM(qureg);
+ *   applyPhaseFunc(qureg, ...);
+ *   printRecordedQASM(qureg);
+ *   ```
+ *   may show 
+ *   ```
+ *   // Here, applyPhaseFunc() multiplied a complex scalar of the form
+ *   //     exp(i (1 x^3))
+ *   //   upon every substate |x>, informed by qubits (under an unsigned binary encoding)
+ *   //     {4, 1, 2, 0}
+ *   ``` 
+ * \n
+ *
+ *
+ * @see 
+ * - applyPhaseFuncOverrides() to override the phase function for specific states.
+ * - applyMultiVarPhaseFunc() for multi-variable exponential polynomial phase functions.
+ * - applyNamedPhaseFunc() for a set of specific phase functions.
+ *
+ * @ingroup operator
+ * @param[in,out] qureg the state-vector to be modified
+ * @param[in] qubits a list of the indices of the qubits which will inform \f$r\f$ for each amplitude in \p qureg
+ * @param[in] numQubits the length of list \p qubits
+ * @param[in] encoding the ::bitEncoding under which to infer the binary value \f$r\f$ from the bits of \p qubits in each basis state of \p qureg
+ * @param[in] coeffs the coefficients of the exponential polynomial phase function \f$f(r)\f$
+ * @param[in] exponents the exponents of the exponential polynomial phase function \f$f(r)\f$
+ * @param[in] numTerms the length of list \p coeffs, which must be the same as that of \p exponents
+ * @exception invalidQuESTInputError
+ * - if \p qureg is a density matrix
+ * - if any qubit in \p qubits has an invalid index (i.e. does not satisfy 0 <= qubit < `qureg.numQubitsRepresented`)
+ * - if the elements of \p qubits are not unique
+ * - if \p numQubits < 0 or \p numQubits >= `qureg.numQubitsRepresented` 
+ * - if \p encoding is not a valid ::bitEncoding
+ * - if \p encoding is not compatible with \p numQubits (e.g. \p TWOS_COMPLEMENT with only 1 qubit)
+ * - if \p numTerms <= 0
+ * @author Tyson Jones
+ */
 void applyPhaseFunc(Qureg qureg, int* qubits, int numQubits, enum bitEncoding encoding, qreal* coeffs, qreal* exponents, int numTerms);
+
+/** Induces a phase change upon each amplitude of state-vector \p qureg, determined by the passed 
+ * exponential polynomial "phase function", and an explicit set of 'overriding' values at specific 
+ * state indices.
+ *
+ * See applyPhaseFunc() first for a full description.
+ *
+ * - As in applyPhaseFunc(), the arguments \p coeffs and \p exponents specify a phase 
+ *   function \f$f(r)\f$, where \f$r\f$ is determined by \p qubits and \p encoding for 
+ *   each basis state of \p qureg.\n\n
+ * - Additionally, \p overrideInds is a list of length \p numOverrides which specifies 
+ *   the values of \f$r\f$ for which to explicitly set the induced phase change.\n
+ *   The overriding phase changes are specified in the corresponding elements of \p overridePhases.\n\n
+ *   For example, 
+ *   ```
+ *      int qubits[] = {0,1};
+ *      enum bitEncoding encoding = UNSIGNED;
+ *
+ *      long long int overrideInds[] = {2};
+ *      qreal overridePhases[] = {M_PI};
+ *
+ *      applyPhaseFuncOverrides(...);
+ *   ```
+ *   would effect the same diagonal unitary of applyPhaseFunc(), <em>except</em> that all 
+ *   instance of \f$f(r=2)\f$ are overriden with phase \f$\pi\f$. \n I.e.
+ *   \f[ 
+ *   \begin{aligned}
+ *     |0\mathbf{00}\rangle & \rightarrow \, e^{i f(0)}\,|0\mathbf{00}\rangle \\
+ *     |0\mathbf{01}\rangle & \rightarrow \, e^{i f(1)}\,|0\mathbf{01}\rangle \\
+ *     |0\mathbf{10}\rangle & \rightarrow \, e^{i \pi} \hspace{12pt} |0\mathbf{10}\rangle \\
+ *     |0\mathbf{11}\rangle & \rightarrow \, e^{i f(3)}\,|0\mathbf{11}\rangle \\
+ *     |1\mathbf{00}\rangle & \rightarrow \, e^{i f(0)}\,|1\mathbf{00}\rangle \\
+ *     |1\mathbf{01}\rangle & \rightarrow \, e^{i f(1)}\,|1\mathbf{01}\rangle \\
+ *     |1\mathbf{10}\rangle & \rightarrow \, e^{i \pi} \hspace{12pt} |1\mathbf{10}\rangle \\
+ *     |1\mathbf{11}\rangle & \rightarrow \, e^{i f(3)}\,|1\mathbf{11}\rangle
+ *   \end{aligned}
+ *   \f]
+ *
+ * > Overriding phases are checked at each computational basis state of \p qureg <em>before</em>
+ * > evaluating the phase function \f$f(r)\f$, and hence are useful for avoiding 
+ * > singularities or errors at diverging values of \f$r\f$.
+ *
+ * - The interpreted phase function and list of overrides can be previewed in the QASM log, as a comment. \n
+ *   For example:
+ *   ```
+ *   startRecordingQASM(qureg);
+ *   applyPhaseFunc(qureg, ...);
+ *   printRecordedQASM(qureg);
+ *   ```
+ *   may show 
+ *   ```
+ *   // Here, applyPhaseFunc() multiplied a complex scalar of the form
+ *   //     exp(i (0.3 x^(-5) + 4 x^1 + 1 x^3))
+ *   //   upon every substate |x>, informed by qubits (under a two's complement binary encoding)
+ *   //     {4, 1, 2, 0}
+ *   //   though with overrides
+ *   //     |0> -> exp(i 3.14159)
+ *   //     |1> -> exp(i (-3.14159))
+ *   //     |2> -> exp(i 0)
+ *   ```
+ * \n
+ *
+ *
+ * @see 
+ * - applyPhaseFunc() for full doc on how \f$f(r)\f$ is evaluated.
+ * - applyMultiVarPhaseFunc() for multi-variable exponential polynomial phase functions.
+ * - applyNamedPhaseFunc() for a set of specific phase functions.
+ * 
+ * @ingroup operator
+ * @param[in,out] qureg the state-vector to be modified
+ * @param[in] qubits a list of the indices of the qubits which will inform \f$r\f$ for each amplitude in \p qureg
+ * @param[in] numQubits the length of list \p qubits
+ * @param[in] encoding the ::bitEncoding under which to infer the binary value \f$r\f$ from the bits of \p qubits in each basis state of \p qureg
+ * @param[in] coeffs the coefficients of the exponential polynomial phase function \f$f(r)\f$
+ * @param[in] exponents the exponents of the exponential polynomial phase function \f$f(r)\f$
+ * @param[in] numTerms the length of list \p coeffs, which must be the same as that of \p exponents
+ * @param[in] overrideInds a list of sub-state indices (values of \f$r\f$) of which to explicit set the phase change
+ * @param[in] overridePhases a list of replacement phase changes, for the corresponding \f$r\f$ values in \p overrideInds (one to one)
+ * @param[in] numOverrides the lengths of lists \p overrideInds and \p overridePhases
+ * @exception invalidQuESTInputError
+ * - if \p qureg is a density matrix
+ * - if any qubit in \p qubits has an invalid index (i.e. does not satisfy 0 <= qubit < `qureg.numQubitsRepresented`)
+ * - if the elements of \p qubits are not unique
+ * - if \p numQubits < 0 or \p numQubits >= `qureg.numQubitsRepresented` 
+ * - if \p encoding is not a valid ::bitEncoding
+ * - if \p encoding is not compatible with \p numQubits (i.e. \p TWOS_COMPLEMENT with 1 qubit)
+ * - if \p numTerms <= 0
+ * - if any value in \p overrideInds is not producible by \p qubits under the given \p encoding (e.g. 2 unsigned qubits cannot represent index 9)
+ * - if \p numOverrides < 0
+ * @author Tyson Jones
+ */
 void applyPhaseFuncOverrides(Qureg qureg, int* qubits, int numQubits, enum bitEncoding encoding, qreal* coeffs, qreal* exponents, int numTerms, long long int* overrideInds, qreal* overridePhases, int numOverrides);
+
+/** Induces a phase change upon each amplitude of state-vector \p qureg, determined by a
+ * multi-variable exponential polynomial "phase function". 
+ *
+ * This is a multi-variable extension of applyPhaseFunc(), whereby multiple sub-registers inform 
+ * separate variables in the exponential polynomial function, and effects a diagonal unitary 
+ * operator.
+ *
+ * - Arguments \p coeffs, \p exponents and \p numTermsPerReg together specify a real 
+ *   exponential polynomial \f$f(\vec{r})\f$ of the form
+ *   \f[ 
+ *    f(r_1, \; \dots, \; r_{\text{numRegs}}) = \sum\limits_j^{\text{numRegs}} \; \sum\limits_{i}^{\text{numTermsPerReg}[j]} \; c_{i,j} \; {r_j}^{\; p_{i,j}}\,,
+ *   \f] 
+ *   where both coefficients \f$c_{i,j}\f$ and exponents \f$p_{i,j}\f$ can be negative and fractional.\n\n
+ *   While \p coeffs and \p exponents are flat lists, they should be considered grouped into 
+ *   `#numRegs` sublists with lengths given by \p numTermsPerReg (which itself has length \p numRegs). \n\n
+ *   For example,
+ *   ```
+ *      int numRegs = 3;
+ *      qreal coeffs[] =        {1,  2, 4,  -3.14};
+ *      qreal exponents[] =     {2,  1,-1,   0.5 };
+ *      int numTermsPerReg[] =  {1,  2,      1   };
+ *   ```
+ *   constitutes the function
+ *   \f[
+ *      f(\vec{r}) =  1 \, {r_1}^2 + 2 \, {r_2} + 4 \, {r_2}^{-1} - 3.14 \, {r_3}^{0.5}.
+ *   \f] \n
+ *   > This means lists \p coeffs and \p exponents should both be of length equal to the sum of \p numTermsPerReg.
+ 
+ * > If your function \f$f(\vec{r})\f$ diverges at one or more \f$\vec{r}\f$ values, you should instead 
+ * > use applyMultiVarPhaseFuncOverrides() and specify explicit phase changes for these coordinates.
+ * > Otherwise, the corresponding amplitudes of the state-vector will become indeterminate (like `NaN`).
+ * > Note that use of any negative exponent (with non-zero coefficient) will result in 
+ * > divergences at \f$r_j=0\f$.
+ *
+ * - Lists \p qubits and \p numQubitsPerReg together describe `#numRegs` sub-registers of \p qureg,
+ *   which can each contain a different number of qubits. \n
+ *   Although \p qubits is a flat list of unique qubit indices, it should be imagined grouped into `#numRegs` sub-lists, 
+ *   of lengths given by \p numQubitsPerReg. \n\n
+ *   For example,
+ *   ```
+ *      int qubits[] =          {0,1,  3,4,5,  7}
+ *      int numQubitsPerReg[] = {2,    3,      1};
+ *      int numRegs = 3;
+ *   ```
+ *   describes three sub-registers, which are bolded below in an eight-qubit zero-state.
+ *   \f[
+ *      |r_3\rangle \; |0\rangle \; |r_2\rangle \; |0\rangle \; |r_1\rangle = 
+ *      |\mathbf{0}\rangle \; |0\rangle \; |\mathbf{000}\rangle \; |0\rangle \; |\mathbf{00}\rangle
+ *   \f]
+ *   Note that the qubits need not be ordered increasing, and qubits within each sub-register 
+ *   are assumed ordered least to most significant in that sub-register.\n\n
+ *   > List \p qubits should have length equal to the sum of elements in \p numQubitsPerReg.
+ *
+ * - Each sub-register is associated with a variable \f$r_j\f$ in phase function \f$f(\vec{r})\f$. \n
+ *   For a given computational basis state of \p qureg, the value of each variable is determined 
+ *   by the binary value in the corresponding sub-register, when intepreted with ::bitEncoding \p encoding. \n
+ *   See ::bitEncoding for more information.\n\n
+ *
+ * - The function \f$f(\vec{r})\f$ specifies the phase change to induce upon amplitude \f$\alpha\f$ 
+ *   of computational basis state with the nominated sub-registers encoding values \f$r_1, \; \dots\f$.
+ *   \f[
+ *    \alpha \, |r_{\text{numRegs}}, \; \dots, \; r_2, \; r_1 \rangle \rightarrow \, \exp(i f(\vec{r}\,)) \; \alpha \, |r_{\text{numRegs}}, \; \dots, \; r_2, \; r_1 \rangle.
+ *   \f]
+ *   For example, using the sub-registers in the previous example and \p encoding <b>=</b> \p UNSIGNED, the 
+ *   following states receive amplitude factors:
+ *   \f[ 
+ *   \begin{aligned}
+ *     |\mathbf{0}\rangle \; |0\rangle \; |\mathbf{000}\rangle \; |0\rangle \; |\mathbf{00}\rangle & 
+ *        \rightarrow \, 
+ *            e^{i f(r_3=0,r_2=0,r_1=0)} \\
+ *     |\mathbf{0}\rangle \; |0\rangle \; |\mathbf{000}\rangle \; |0\rangle \; |\mathbf{01}\rangle & 
+ *        \rightarrow \, 
+ *            e^{i f(r_3=0,r_2=0,r_1=1)} \\
+ *     |\mathbf{0}\rangle \; |0\rangle \; |\mathbf{000}\rangle \; |0\rangle \; |\mathbf{10}\rangle & 
+ *        \rightarrow \, 
+ *            e^{i f(r_3=0,r_2=0,r_1=2)} \\
+ *     |\mathbf{0}\rangle \; |0\rangle \; |\mathbf{000}\rangle \; |0\rangle \; |\mathbf{11}\rangle & 
+ *        \rightarrow \, 
+ *            e^{i f(r_3=0,r_2=0,r_1=3)} \\
+ *     |\mathbf{0}\rangle \; |0\rangle \; |\mathbf{000}\rangle \; |1\rangle \; |\mathbf{00}\rangle & 
+ *        \rightarrow \, 
+ *            e^{i f(r_3=0,r_2=0,r_1=0)} \\
+ *   & \;\;\;\vdots \\
+ *     |\mathbf{0}\rangle \; |0\rangle \; |\mathbf{111}\rangle \; |0\rangle \; |\mathbf{01}\rangle & 
+ *        \rightarrow \, 
+ *            e^{i f(r_3=0,r_2=7,r_1=1)} \\
+ *   & \;\;\;\vdots \\
+ *     |\mathbf{1}\rangle \; |0\rangle \; |\mathbf{111}\rangle \; |0\rangle \; |\mathbf{11}\rangle & 
+ *        \rightarrow \, 
+ *            e^{i f(r_3=1,r_2=7,r_1=3)}
+ *   \end{aligned}
+ *   \f]
+ *
+ * - The interpreted phase function can be previewed in the QASM log, as a comment. \n
+ *   For example:
+ *   ```
+ *   startRecordingQASM(qureg);
+ *   applyMultiVarPhaseFunc(qureg, ...);
+ *   printRecordedQASM(qureg);
+ *   ```
+ *   would show, for the above example,
+ *   ```
+ *   // Here, applyMultiVarPhaseFunc() multiplied a complex scalar of the form
+ *   //     exp(i (
+ *   //          + 1 x^2
+ *   //          + 2 y + 4 y^(-1)
+ *   //          - 3.14 z^0.5 ))
+ *   //   upon substates informed by qubits (under an unsigned binary encoding)
+ *   //     |x> = {0, 1}
+ *   //     |y> = {3, 4, 5}
+ *   //     |z> = {7}
+ *   ```
+ * \n
+ *
+ *
+ * @see 
+ * - applyMultiVarPhaseFuncOverrides() to additionally specify explicit phases for specific sub-register values.
+ * - applyNamedPhaseFunc() for a set of specific and potentially multi-variable phase functions.
+ * - applyPhaseFunc() for a single-variable polynomial exponential phase function, which is approximately twice as fast.
+ *
+ * @ingroup operator
+ * @param[in,out] qureg the state-vector to be modified
+ * @param[in] qubits a list of all the qubit indices contained in each sub-register
+ * @param[in] numQubitsPerReg a list of the lengths of each sub-list in \p qubits
+ * @param[in] numRegs the number of sub-registers, which is the length of both \p numQubitsPerReg and \p numTermsPerReg
+ * @param[in] encoding the ::bitEncoding under which to infer the binary value \f$r_j\f$ from the bits of a sub-register
+ * @param[in] coeffs the coefficients of all terms of the exponential polynomial phase function \f$f(\vec{r})\f$
+ * @param[in] exponents the exponents of all terms of the exponential polynomial phase function \f$f(\vec{r})\f$
+ * @param[in] numTermsPerReg a list of the number of \p coeff and \p exponent terms supplied for each variable/sub-register
+ * @exception invalidQuESTInputError
+ * - if \p qureg is a density matrix
+ * - if any qubit in \p qubits has an invalid index (i.e. does not satisfy 0 <= qubit < `qureg.numQubitsRepresented`)
+ * - if the elements of \p qubits are not unique (including if sub-registers overlap)
+ * - if \p numRegs <= 0 or \p numRegs > 100 (constrained by `MAX_NUM_REGS_APPLY_ARBITRARY_PHASE` in QuEST_precision.h)
+ * - if \p encoding is not a valid ::bitEncoding
+ * - if the size of any sub-register is incompatible with \p encoding (e.g. contains fewer than two qubits in \p encoding <b>=</b> \p TWOS_COMPLEMENT)
+ * - if any element of \p numTermsPerReg is < 1
+ * @author Tyson Jones
+ */
 void applyMultiVarPhaseFunc(Qureg qureg, int* qubits, int* numQubitsPerReg, int numRegs, enum bitEncoding encoding, qreal* coeffs, qreal* exponents, int* numTermsPerReg);
+
+/** Induces a phase change upon each amplitude of state-vector \p qureg, determined by a
+ * multi-variable exponential polynomial "phase function", and an explicit set of 'overriding' 
+ * values at specific state indices.
+ 
+ * See applyMultiVarPhaseFunc() first for a full description.
+ *
+ * - As in applyMultiVarPhaseFunc(), the arguments \p coeffs and \p exponents specify a 
+ *   multi-variable phase function \f$f(\vec{r})\f$, where \f$\vec{r}\f$ is determined by 
+ *   the sub-registers in \p qubits, and ::bitEncoding \p encoding for each basis state of \p qureg.\n\n
+ * 
+ * - Additionally, \p overrideInds is a list of length \p numOverrides which specifies 
+ *   the values of \f$\vec{r}\f$ for which to explicitly set the induced phase change.\n
+ *   While flat, \p overrideInds should be imagined grouped into sub-lists of length
+ *   \p numRegs, which specify the full \f$\{r_1,\; \dots \;r_{\text{numRegs}} \} \f$ coordinate to override. \n
+ *   Each sublist corresponds to a single element of \p overridePhases. \n
+ *   For example,
+ *   ```
+ *   int numRegs = 3;
+ *   int numOverrides = 2;
+ *   long long int overrideInds[] = { 0,0,0,   1,2,3  };
+ *   qreal overridePhases[]       = { M_PI,   - M_PI };
+ *   ```
+ *   denotes that any basis state of \p qureg with sub-register values \f$\{r_3,r_2,r_1\} = \{0, 0, 0\}\f$
+ *   (or \f$\{r_3,r_2,r_1\} = \{1,2,3\}\f$) should receive phase change \f$\pi\f$ (or \f$-\pi\f$)
+ *   in lieu of \f$\exp(i f(r_3=0,r_2=0,r_1=0))\f$.\n\n
+ *
+ * - The interpreted overrides can be previewed in the QASM log, as a comment. \n
+ *   For example:
+ *   ```
+ *   startRecordingQASM(qureg);
+ *   applyMultiVarPhaseFuncOverrides(qureg, ...);
+ *   printRecordedQASM(qureg);
+ *   ```
+ *   may show
+ *   ```
+ *   // Here, applyMultiVarPhaseFunc() multiplied ...
+ *   //   though with overrides
+ *   //     |x=0, y=0, z=0> -> exp(i 3.14159)
+ *   //     |x=1, y=2, z=3> -> exp(i (-3.14159))
+ *   ```
+ * \n
+ *
+ *
+ * @see 
+ * - applyNamedPhaseFunc() for a set of specific and potentially multi-variable phase functions.
+ *
+ * @ingroup operator
+ * @param[in,out] qureg the state-vector to be modified
+ * @param[in] qubits a list of all the qubit indices contained in each sub-register
+ * @param[in] numQubitsPerReg a list of the lengths of each sub-list in \p qubits
+ * @param[in] numRegs the number of sub-registers, which is the length of both \p numQubitsPerReg and \p numTermsPerReg
+ * @param[in] encoding the ::bitEncoding under which to infer the binary value \f$r_j\f$ from the bits of a sub-register
+ * @param[in] coeffs the coefficients of all terms of the exponential polynomial phase function \f$f(\vec{r})\f$
+ * @param[in] exponents the exponents of all terms of the exponential polynomial phase function \f$f(\vec{r})\f$
+ * @param[in] numTermsPerReg a list of the number of \p coeff and \p exponent terms supplied for each variable/sub-register
+ * @param[in] overrideInds a flattened list of sub-register coordinates (values of \f$\vec{r}\f$) of which to explicit set the phase change
+ * @param[in] overridePhases a list of replacement phase changes, for the corresponding \f$\vec{r}\f$ values in \p overrideInds
+ * @param[in] numOverrides the lengths of list \p overridePhases (but not necessarily of \p overrideInds)
+ * @exception invalidQuESTInputError
+ * - if \p qureg is a density matrix
+ * - if any qubit in \p qubits has an invalid index (i.e. does not satisfy 0 <= qubit < `qureg.numQubitsRepresented`)
+ * - if the elements of \p qubits are not unique (including if sub-registers overlap)
+ * - if \p numRegs <= 0 or \p numRegs > 100 (constrained by `MAX_NUM_REGS_APPLY_ARBITRARY_PHASE` in QuEST_precision.h)
+ * - if \p encoding is not a valid ::bitEncoding
+ * - if the size of any sub-register is incompatible with \p encoding (e.g. contains fewer than two qubits in \p encoding <b>=</b> \p TWOS_COMPLEMENT)
+ * - if any element of \p numTermsPerReg is < 1
+ * - if any value in \p overrideInds is not producible by its corresponding sub-register under the given \p encoding (e.g. 2 unsigned qubits cannot represent index 9)
+ * - if \p numOverrides < 0
+ * @author Tyson Jones
+ */
 void applyMultiVarPhaseFuncOverrides(Qureg qureg, int* qubits, int* numQubitsPerReg, int numRegs, enum bitEncoding encoding, qreal* coeffs, qreal* exponents, int* numTermsPerReg, long long int* overrideInds, qreal* overridePhases, int numOverrides);
+
+/** Induces a phase change upon each amplitude of state-vector \p qureg, determined by a
+ * named (and potentially multi-variable) phase function.
+ *
+ * This effects a diagonal unitary operator, with a phase function \f$f(\vec{r})\f$ which may not be 
+ * simply expressible as an exponential polynomial in functions applyPhaseFunc() and applyMultiVarPhaseFunc().
+ *
+ * Arguments \p qubits and \p numQubitsPerReg encode sub-registers of \p qureg in the same 
+ * manner as in applyMultiVarPhaseFunc():
+ * - Lists \p qubits and \p numQubitsPerReg together describe `#numRegs` sub-registers of \p qureg,
+ *   which can each contain a different number of qubits. \n
+ *   Although \p qubits is a flat list of unique qubit indices, it should be imagined grouped into `#numRegs` sub-lists, 
+ *   of lengths given by \p numQubitsPerReg. \n\n
+ *   For example,
+ *   ```
+ *      int qubits[] =          {0,1,  3,4,5,  7}
+ *      int numQubitsPerReg[] = {2,    3,      1};
+ *      int numRegs = 3;
+ *   ```
+ *   describes three sub-registers, which are bolded below in an eight-qubit zero-state.
+ *   \f[
+ *      |r_3\rangle \; |0\rangle \; |r_2\rangle \; |0\rangle \; |r_1\rangle = 
+ *      |\mathbf{0}\rangle \; |0\rangle \; |\mathbf{000}\rangle \; |0\rangle \; |\mathbf{00}\rangle
+ *   \f]
+ *   Note that the qubits need not be ordered increasing, and qubits within each sub-register 
+ *   are assumed ordered least to most significant in that sub-register.\n\n
+ *   > List \p qubits should have length equal to the sum of elements in \p numQubitsPerReg.
+ *
+ * - Each sub-register is associated with a variable \f$r_j\f$ in phase function \f$f(\vec{r})\f$. \n
+ *   For a given computational basis state of \p qureg, the value of each variable is determined 
+ *   by the binary value in the corresponding sub-register, when intepreted with ::bitEncoding \p encoding. \n
+ *   See ::bitEncoding for more information.\n\n
+ *
+ * - Argument \p functionNameCode determines the phase function \f$f(\vec{r})\f$.\n
+ *   For example, 
+ *   ```
+ *   int numRegs = 3;
+ *   enum phaseFunc functionNameCode = NORM;
+ *   ```
+ *   describes phase function 
+ *   \f[
+ *      f(\vec{r}) = \sqrt{ {r_1}^2 + {r_2}^2 + {r_3} ^2 }.
+ *   \f]
+ *   See ::phaseFunc for a list and description of all named phase functions. \n
+ *   Some phase functions, like \p SCALED_NORM, require passing additional parameters, through 
+ *   the function applyParamNamedPhaseFunc().\n\n
+ *   > If the phase function \f$f(\vec{r})\f$ diverges at one or more \f$\vec{r}\f$ values, you should instead 
+ *   > use applyNamedPhaseFuncOverrides() and specify explicit phase changes for these coordinates.
+ *   > Otherwise, the corresponding amplitudes of the state-vector will become indeterminate (like `NaN`). \n
+ *
+ * - The function \f$f(\vec{r})\f$ specifies the phase change to induce upon amplitude \f$\alpha\f$ 
+ *   of computational basis state with the nominated sub-registers encoding values \f$r_1, \; \dots\f$.
+ *   \f[
+ *    \alpha \, |r_{\text{numRegs}}, \; \dots, \; r_2, \; r_1 \rangle \rightarrow \, \exp(i f(\vec{r}\,)) \; \alpha \, |r_{\text{numRegs}}, \; \dots, \; r_2, \; r_1 \rangle.
+ *   \f]
+ *   For example, using the sub-registers in the above example and \p encoding <b>=</b> \p UNSIGNED, the 
+ *   following states receive amplitude factors:
+ *   \f[ 
+ *   \begin{aligned}
+ *     |\mathbf{0}\rangle \; |0\rangle \; |\mathbf{000}\rangle \; |0\rangle \; |\mathbf{00}\rangle & 
+ *        \rightarrow \, 
+ *            e^{i f(r_3=0,r_2=0,r_1=0)} \\
+ *     |\mathbf{0}\rangle \; |0\rangle \; |\mathbf{000}\rangle \; |0\rangle \; |\mathbf{01}\rangle & 
+ *        \rightarrow \, 
+ *            e^{i f(r_3=0,r_2=0,r_1=1)} \\
+ *     |\mathbf{0}\rangle \; |0\rangle \; |\mathbf{000}\rangle \; |0\rangle \; |\mathbf{10}\rangle & 
+ *        \rightarrow \, 
+ *            e^{i f(r_3=0,r_2=0,r_1=2)} \\
+ *     |\mathbf{0}\rangle \; |0\rangle \; |\mathbf{000}\rangle \; |0\rangle \; |\mathbf{11}\rangle & 
+ *        \rightarrow \, 
+ *            e^{i f(r_3=0,r_2=0,r_1=3)} \\
+ *     |\mathbf{0}\rangle \; |0\rangle \; |\mathbf{000}\rangle \; |1\rangle \; |\mathbf{00}\rangle & 
+ *        \rightarrow \, 
+ *            e^{i f(r_3=0,r_2=0,r_1=0)} \\
+ *   & \;\;\;\vdots \\
+ *     |\mathbf{0}\rangle \; |0\rangle \; |\mathbf{111}\rangle \; |0\rangle \; |\mathbf{01}\rangle & 
+ *        \rightarrow \, 
+ *            e^{i f(r_3=0,r_2=7,r_1=1)} \\
+ *   & \;\;\;\vdots \\
+ *     |\mathbf{1}\rangle \; |0\rangle \; |\mathbf{111}\rangle \; |0\rangle \; |\mathbf{11}\rangle & 
+ *        \rightarrow \, 
+ *            e^{i f(r_3=1,r_2=7,r_1=3)}
+ *   \end{aligned}
+ *   \f]\n
+ *
+ * - The interpreted phase function can be previewed in the QASM log, as a comment. \n
+ *   For example:
+ *   ```
+ *   startRecordingQASM(qureg);
+ *   applyNamedPhaseFunc(qureg, ..., INVERSE_DISTANCE, ... );
+ *   printRecordedQASM(qureg);
+ *   ```
+ *   may show
+ *   ```
+ *   // Here, applyNamedPhaseFunc() multiplied a complex scalar of form
+ *   //     exp(i 1 / sqrt((x-y)^2 + (z-t)^2))
+ *   ```
+ * \n
+ *
+ *
+ * @see 
+ * - applyNamedPhaseFuncOverrides() to additionally specify phase values for specific sub-register indices.
+ * - applyParamNamedPhaseFunc() to specify named phase functions which require additional parameters.
+ * - applyPhaseFunc() to specify a general single-variable exponential polynomial phase function.
+ * - applyMultiVarPhaseFunc() to specify a general multi-variable exponential polynomial phase function.
+ * 
+ * @ingroup operator
+ * @param[in,out] qureg the state-vector to be modified
+ * @param[in] qubits a list of all the qubit indices contained in each sub-register
+ * @param[in] numQubitsPerReg a list of the lengths of each sub-list in \p qubits
+ * @param[in] numRegs the number of sub-registers, which is the length of both \p numQubitsPerReg and \p numTermsPerReg
+ * @param[in] encoding the ::bitEncoding under which to infer the binary value \f$r_j\f$ from the bits of a sub-register
+ * @param[in] functionNameCode the ::phaseFunc \f$f(\vec{r})\f$
+ * @exception invalidQuESTInputError
+ * - if \p qureg is a density matrix
+ * - if any qubit in \p qubits has an invalid index (i.e. does not satisfy 0 <= qubit < `qureg.numQubitsRepresented`)
+ * - if the elements of \p qubits are not unique (including if sub-registers overlap)
+ * - if \p numRegs <= 0 or \p numRegs > 100 (constrained by `MAX_NUM_REGS_APPLY_ARBITRARY_PHASE` in QuEST_precision.h)
+ * - if \p encoding is not a valid ::bitEncoding
+ * - if the size of any sub-register is incompatible with \p encoding (e.g. contains fewer than two qubits in \p encoding <b>=</b> \p TWOS_COMPLEMENT)
+ * - if \p functionNameCode is not a valid ::phaseFunc
+ * - if \p functionNameCode requires additional parameters, which must instead be passed with applyParamNamedPhaseFunc()
+ * @author Tyson Jones
+ */
 void applyNamedPhaseFunc(Qureg qureg, int* qubits, int* numQubitsPerReg, int numRegs, enum bitEncoding encoding, enum phaseFunc functionNameCode);
+
+/** Induces a phase change upon each amplitude of state-vector \p qureg, determined by a
+ * named (and potentially multi-variable) phase function, and an explicit set of 'overriding' 
+ * values at specific state indices.
+ *
+ * See applyNamedPhaseFunc() first for a full description.
+ *
+ * - As in applyNamedPhaseFunc(), \p functionNameCode specifies a
+ *   multi-variable phase function \f$f(\vec{r})\f$, where \f$\vec{r}\f$ is determined by 
+ *   the sub-registers in \p qubits, and ::bitEncoding \p encoding for each basis state of \p qureg.\n\n
+ * 
+ * - Additionally, \p overrideInds is a list of length \p numOverrides which specifies 
+ *   the values of \f$\vec{r}\f$ for which to explicitly set the induced phase change.\n
+ *   While flat, \p overrideInds should be imagined grouped into sub-lists of length
+ *   \p numRegs, which specify the full \f$\{r_1,\; \dots \;r_{\text{numRegs}} \} \f$ coordinate to override. \n
+ *   Each sublist corresponds to a single element of \p overridePhases. \n
+ *   For example,
+ *   ```
+ *   int numRegs = 3;
+ *   int numOverrides = 2;
+ *   long long int overrideInds[] = { 0,0,0,   1,2,3  };
+ *   qreal overridePhases[]       = { M_PI,   - M_PI };
+ *   ```
+ *   denotes that any basis state of \p qureg with sub-register values \f$\{r_3,r_2,r_1\} = \{0, 0, 0\}\f$
+ *   (or \f$\{r_3,r_2,r_1\} = \{1,2,3\}\f$) should receive phase change \f$\pi\f$ (or \f$-\pi\f$)
+ *   in lieu of \f$\exp(i f(r_3=0,r_2=0,r_1=0))\f$.\n\n
+ *
+ * - The interpreted overrides can be previewed in the QASM log, as a comment. \n
+ *   For example:
+ *   ```
+ *   startRecordingQASM(qureg);
+ *   applyNamedPhaseFuncOverrides(qureg, ...);
+ *   printRecordedQASM(qureg);
+ *   ```
+ *   may show
+ *   ```
+ *   // Here, applyNamedPhaseFunc() multiplied ...
+ *   //   though with overrides
+ *   //     |x=0, y=0, z=0> -> exp(i 3.14159)
+ *   //     |x=1, y=2, z=3> -> exp(i (-3.14159))
+ *   ```
+ * \n
+ *
+ *
+ * @see 
+ * - applyParamNamedPhaseFuncOverrides() to specify <em>parameterised</em> named phase functions, with phase overrides.
+ * - applyPhaseFunc() to specify a general single-variable exponential polynomial phase function.
+ * - applyMultiVarPhaseFunc() to specify a general multi-variable exponential polynomial phase function.
+ * 
+ * @ingroup operator
+ * @param[in,out] qureg the state-vector to be modified
+ * @param[in] qubits a list of all the qubit indices contained in each sub-register
+ * @param[in] numQubitsPerReg a list of the lengths of each sub-list in \p qubits
+ * @param[in] numRegs the number of sub-registers, which is the length of both \p numQubitsPerReg and \p numTermsPerReg
+ * @param[in] encoding the ::bitEncoding under which to infer the binary value \f$r_j\f$ from the bits of a sub-register
+ * @param[in] functionNameCode the ::phaseFunc \f$f(\vec{r})\f$
+ * @param[in] overrideInds a flattened list of sub-register coordinates (values of \f$\vec{r}\f$) of which to explicit set the phase change
+ * @param[in] overridePhases a list of replacement phase changes, for the corresponding \f$\vec{r}\f$ values in \p overrideInds
+ * @param[in] numOverrides the lengths of list \p overridePhases (but not necessarily of \p overrideInds)
+ * @exception invalidQuESTInputError
+ * - if \p qureg is a density matrix
+ * - if any qubit in \p qubits has an invalid index (i.e. does not satisfy 0 <= qubit < `qureg.numQubitsRepresented`)
+ * - if the elements of \p qubits are not unique (including if sub-registers overlap)
+ * - if \p numRegs <= 0 or \p numRegs > 100 (constrained by `MAX_NUM_REGS_APPLY_ARBITRARY_PHASE` in QuEST_precision.h)
+ * - if \p encoding is not a valid ::bitEncoding
+ * - if the size of any sub-register is incompatible with \p encoding (e.g. contains fewer than two qubits in \p encoding <b>=</b> \p TWOS_COMPLEMENT)
+ * - if \p functionNameCode is not a valid ::phaseFunc
+ * - if \p functionNameCode requires additional parameters, which must instead be passed with applyParamNamedPhaseFunc()
+ * - if any value in \p overrideInds is not producible by its corresponding sub-register under the given \p encoding (e.g. 2 unsigned qubits cannot represent index 9)
+ * - if \p numOverrides < 0
+ * @author Tyson Jones
+ */
 void applyNamedPhaseFuncOverrides(Qureg qureg, int* qubits, int* numQubitsPerReg, int numRegs, enum bitEncoding encoding, enum phaseFunc functionNameCode, long long int* overrideInds, qreal* overridePhases, int numOverrides);
+
+/** Induces a phase change upon each amplitude of state-vector \p qureg, determined by a
+ * named, paramaterized (and potentially multi-variable) phase function.
+ *
+ * See applyNamedPhaseFunc() for full documentation. \n
+ * This function merely accepts additional ::phaseFunc names which accept one (or more) parameters.
+ *
+ * - Argument \p functionNameCode, which determines the phase function \f$f(\vec{r}, \vec{\theta})\f$,
+ *   can include parameterised ::phaseFunc names like \p SCALED_NORM, which require additional 
+ *   parameters \f$\vec{\theta}\f$ passed via list \p params.\n
+ *   For example, 
+ *   ```
+ *   enum phaseFunc functionNameCode = SCALED_PRODUCT;
+ *   qreal params[] = {-0.5};
+ *   int numParams = 1;
+ *   applyParamNamedPhaseFunc(..., functionNameCode, params, numParams);
+ *   ```
+ *   invokes phase function 
+ *   \f[
+ *      f(\vec{r}, \theta)|_{\theta=-0.5} \; = \; -0.5 \prod_j^{\text{numRegs}} \; r_j\,.
+ *   \f] 
+ *   See ::phaseFunc for all named phased functions.\n\n
+ *   > If the chosen phase function \f$f(\vec{r}, \vec{\theta})\f$ diverges at one or more \f$\vec{r}\f$ values, you should instead 
+ *   > use applyParamNamedPhaseFuncOverrides() and specify explicit phase changes for these coordinates.
+ *   > Otherwise, the corresponding amplitudes of the state-vector will become indeterminate (like `NaN`). \n
+ *
+ * - The interpreted parameterised phase function can be previewed in the QASM log, as a comment. \n
+ *   For example:
+ *   ```
+ *   startRecordingQASM(qureg);
+ *   applyParamNamedPhaseFunc(...);
+ *   printRecordedQASM(qureg);
+ *   ```
+ *   may show
+ *   ```
+ *   // Here, applyNamedPhaseFunc() multiplied a complex scalar of form
+ *   //     exp(i (-0.5) / (x y z))
+ *   ```
+ * \n
+ *
+ *
+ * @see 
+ * - applyParamNamedPhaseFuncOverrides() to additionally specify phase values for specific sub-register indices.
+ * - applyPhaseFunc() to specify a general single-variable exponential polynomial phase function.
+ * - applyMultiVarPhaseFunc() to specify a general multi-variable exponential polynomial phase function.
+ * 
+ * @ingroup operator
+ * @param[in,out] qureg the state-vector to be modified
+ * @param[in] qubits a list of all the qubit indices contained in each sub-register
+ * @param[in] numQubitsPerReg a list of the lengths of each sub-list in \p qubits
+ * @param[in] numRegs the number of sub-registers, which is the length of both \p numQubitsPerReg and \p numTermsPerReg
+ * @param[in] encoding the ::bitEncoding under which to infer the binary value \f$r_j\f$ from the bits of a sub-register
+ * @param[in] functionNameCode the ::phaseFunc \f$f(\vec{r}, \vec{\theta})\f$
+ * @param[in] params a list of any additional parameters needed by the ::phaseFunc \p functionNameCode
+ * @param[in] numParams the length of list \p params
+ * @exception invalidQuESTInputError
+ * - if \p qureg is a density matrix
+ * - if any qubit in \p qubits has an invalid index (i.e. does not satisfy 0 <= qubit < `qureg.numQubitsRepresented`)
+ * - if the elements of \p qubits are not unique (including if sub-registers overlap)
+ * - if \p numRegs <= 0 or \p numRegs > 100 (constrained by `MAX_NUM_REGS_APPLY_ARBITRARY_PHASE` in QuEST_precision.h)
+ * - if \p encoding is not a valid ::bitEncoding
+ * - if the size of any sub-register is incompatible with \p encoding (e.g. contains fewer than two qubits in \p encoding <b>=</b> \p TWOS_COMPLEMENT)
+ * - if \p functionNameCode is not a valid ::phaseFunc
+ * - if \p numParams is incompatible with \p functionNameCode (for example, no parameters were passed to \p SCALED_PRODUCT)
+ */
 void applyParamNamedPhaseFunc(Qureg qureg, int* qubits, int* numQubitsPerReg, int numRegs, enum bitEncoding encoding, enum phaseFunc functionNameCode, qreal* params, int numParams);
+
+/** Induces a phase change upon each amplitude of state-vector \p qureg, determined by a
+ * named, parameterised (and potentially multi-variable) phase function, and an explicit set of 'overriding' 
+ * values at specific state indices.
+ *
+ * See applyParamNamedPhaseFunc() and applyNamedPhaseFunc() first for a full description.
+ *
+ * - As in applyParamNamedPhaseFunc(), \p functionNameCode specifies a parameterised
+ *   multi-variable phase function \f$f(\vec{r}, \vec{\theta})\f$, where $\vec{\theta}$ is
+ *   passed in list \p params, and \f$\vec{r}\f$ is determined both by 
+ *   the sub-registers in \p qubits, and ::bitEncoding \p encoding for each basis state of \p qureg.\n\n
+ * 
+ * - Additionally, \p overrideInds is a list of length \p numOverrides which specifies 
+ *   the values of \f$\vec{r}\f$ for which to explicitly set the induced phase change.\n
+ *   While flat, \p overrideInds should be imagined grouped into sub-lists of length
+ *   \p numRegs, which specify the full \f$\{r_1,\; \dots \;r_{\text{numRegs}} \} \f$ coordinate to override. \n
+ *   Each sublist corresponds to a single element of \p overridePhases. \n
+ *   For example,
+ *   ```
+ *   int numRegs = 3;
+ *   int numOverrides = 2;
+ *   long long int overrideInds[] = { 0,0,0,   1,2,3  };
+ *   qreal overridePhases[]       = { M_PI,   - M_PI };
+ *   ```
+ *   denotes that any basis state of \p qureg with sub-register values \f$\{r_3,r_2,r_1\} = \{0, 0, 0\}\f$
+ *   (or \f$\{r_3,r_2,r_1\} = \{1,2,3\}\f$) should receive phase change \f$\pi\f$ (or \f$-\pi\f$)
+ *   in lieu of \f$\exp(i f(r_3=0,r_2=0,r_1=0, \vec{\theta}))\f$.\n\n
+ *
+ * - The interpreted overrides can be previewed in the QASM log, as a comment. \n
+ *   For example:
+ *   ```
+ *   startRecordingQASM(qureg);
+ *   applyParamNamedPhaseFuncOverrides(qureg, ...);
+ *   printRecordedQASM(qureg);
+ *   ```
+ *   may show
+ *   ```
+ *   // Here, applyParamNamedPhaseFunc() multiplied ...
+ *   //   though with overrides
+ *   //     |x=0, y=0, z=0> -> exp(i 3.14159)
+ *   //     |x=1, y=2, z=3> -> exp(i (-3.14159))
+ *   ```
+ * \n
+ *
+ *
+ * @see 
+ * - applyPhaseFunc() to specify a general single-variable exponential polynomial phase function.
+ * - applyMultiVarPhaseFunc() to specify a general multi-variable exponential polynomial phase function.
+ * 
+ * @ingroup operator
+ * @param[in,out] qureg the state-vector to be modified
+ * @param[in] qubits a list of all the qubit indices contained in each sub-register
+ * @param[in] numQubitsPerReg a list of the lengths of each sub-list in \p qubits
+ * @param[in] numRegs the number of sub-registers, which is the length of both \p numQubitsPerReg and \p numTermsPerReg
+ * @param[in] encoding the ::bitEncoding under which to infer the binary value \f$r_j\f$ from the bits of a sub-register
+ * @param[in] functionNameCode the ::phaseFunc \f$f(\vec{r}, \vec{\theta})\f$
+ * @param[in] params a list of any additional parameters \f$\vec{\theta}\f$ needed by the ::phaseFunc \p functionNameCode
+ * @param[in] numParams the length of list \p params
+ * @param[in] overrideInds a flattened list of sub-register coordinates (values of \f$\vec{r}\f$) of which to explicit set the phase change
+ * @param[in] overridePhases a list of replacement phase changes, for the corresponding \f$\vec{r}\f$ values in \p overrideInds
+ * @param[in] numOverrides the lengths of list \p overridePhases (but not necessarily of \p overrideInds)
+ * @exception invalidQuESTInputError
+ * - if \p qureg is a density matrix
+ * - if any qubit in \p qubits has an invalid index (i.e. does not satisfy 0 <= qubit < `qureg.numQubitsRepresented`)
+ * - if the elements of \p qubits are not unique (including if sub-registers overlap)
+ * - if \p numRegs <= 0 or \p numRegs > 100 (constrained by `MAX_NUM_REGS_APPLY_ARBITRARY_PHASE` in QuEST_precision.h)
+ * - if \p encoding is not a valid ::bitEncoding
+ * - if the size of any sub-register is incompatible with \p encoding (e.g. contains fewer than two qubits in \p encoding <b>=</b> \p TWOS_COMPLEMENT)
+ * - if \p functionNameCode is not a valid ::phaseFunc
+ * - if \p numParams is incompatible with \p functionNameCode (for example, no parameters were passed to \p SCALED_PRODUCT)
+ * - if any value in \p overrideInds is not producible by its corresponding sub-register under the given \p encoding (e.g. 2 unsigned qubits cannot represent index 9)
+ * - if \p numOverrides < 0
+ * @author Tyson Jones
+ */
 void applyParamNamedPhaseFuncOverrides(Qureg qureg, int* qubits, int* numQubitsPerReg, int numRegs, enum bitEncoding encoding, enum phaseFunc functionNameCode, qreal* params, int numParams, long long int* overrideInds, qreal* overridePhases, int numOverrides);
-
-
 
 // end prevention of C++ name mangling
 #ifdef __cplusplus

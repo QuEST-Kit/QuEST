@@ -110,7 +110,9 @@ font-size: 1.15em !important;
  border: 0px solid #222 !important;
 }
 table{
-    white-space:pre-wrap !important;
+    /* removed since caused spacing issue in lists inside @throws tag.
+     * see https://stackoverflow.com/questions/67912807/doxygen-lists-within-exception-tags-render-incorrectly */
+    /* white-space:pre-wrap !important; */
 }
 /*
  ===========================

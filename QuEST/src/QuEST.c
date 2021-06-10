@@ -686,7 +686,6 @@ void applyMultiVarPhaseFunc(Qureg qureg, int* qubits, int* numQubitsPerReg, int 
     validateStateVecQureg(qureg, __func__);
     validateQubitSubregs(qureg, qubits, numQubitsPerReg, numRegs, __func__);
     validateMultiRegBitEncoding(numQubitsPerReg, numRegs, encoding, __func__);
-
     validateNumMultiVarPhaseFuncTerms(numTermsPerReg, numRegs, __func__);
 
     statevec_applyMultiVarPhaseFuncOverrides(qureg, qubits, numQubitsPerReg, numRegs, encoding, coeffs, exponents, numTermsPerReg, NULL, NULL, 0);
