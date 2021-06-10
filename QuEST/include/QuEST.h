@@ -4644,6 +4644,7 @@ void applyNamedPhaseFuncOverrides(Qureg qureg, int* qubits, int* numQubitsPerReg
  * - if the size of any sub-register is incompatible with \p encoding (e.g. contains fewer than two qubits in \p encoding <b>=</b> \p TWOS_COMPLEMENT)
  * - if \p functionNameCode is not a valid ::phaseFunc
  * - if \p numParams is incompatible with \p functionNameCode (for example, no parameters were passed to \p SCALED_PRODUCT)
+ * @author Tyson Jones
  */
 void applyParamNamedPhaseFunc(Qureg qureg, int* qubits, int* numQubitsPerReg, int numRegs, enum bitEncoding encoding, enum phaseFunc functionNameCode, qreal* params, int numParams);
 
