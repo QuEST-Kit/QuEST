@@ -2128,7 +2128,7 @@ __global__ void statevec_calcInnerProductKernel(
 /** Terrible code which unnecessarily individually computes and sums the real and imaginary components of the
  * inner product, so as to not have to worry about keeping the sums separated during reduction.
  * Truly disgusting, probably doubles runtime, please fix.
- * @TODO could even do the kernel twice, storing real in bra.reduc and imag in ket.reduc?
+ * @todo could even do the kernel twice, storing real in bra.reduc and imag in ket.reduc?
  */
 Complex statevec_calcInnerProduct(Qureg bra, Qureg ket) {
     

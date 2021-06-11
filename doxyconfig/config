@@ -775,9 +775,9 @@ INPUT_ENCODING         = UTF-8
 # *.md, *.mm, *.dox, *.py, *.f90, *.f, *.for, *.tcl, *.vhd, *.vhdl, *.ucf,
 # *.qsf, *.as and *.js.
 
-EXTENSION_MAPPING      = cu=c++ cpp=c++ c=c h=c md=markdown
+EXTENSION_MAPPING      = cu=c++ cpp=c++ c=c h=c
 
-FILE_PATTERNS          = *.cu *.c *.cpp *.h *.hpp *.md
+FILE_PATTERNS          = *.cu *.c *.cpp *.h *.hpp
 
 # The RECURSIVE tag can be used to specify whether or not subdirectories should
 # be searched for input files as well.
@@ -1947,8 +1947,11 @@ INCLUDE_FILE_PATTERNS  =
 # is assumed. To prevent a macro definition from being undefined via #undef or
 # recursively expanded use the := operator instead of the = operator.
 # This tag requires that the tag ENABLE_PREPROCESSING is set to YES.
+#
+# @TysonJones removed QuEST_PREC from PREDEFINED, since QuEST_PREC is set 
+# and documented in QuEST_precision.h, which otherwise goes undocumented
 
-PREDEFINED             = QuEST_PREC
+PREDEFINED             = 
 
 # If the MACRO_EXPANSION and EXPAND_ONLY_PREDEF tags are set to YES then this
 # tag can be used to specify a list of macro names that should be expanded. The
@@ -2299,4 +2302,3 @@ GENERATE_LEGEND        = YES
 # This tag requires that the tag HAVE_DOT is set to YES.
 
 DOT_CLEANUP            = YES
-BOOK_OUTPUT         = docbook

@@ -1533,7 +1533,7 @@ void statevec_cloneQureg(Qureg targetQureg, Qureg copyQureg) {
  * Initialise the state vector of probability amplitudes such that one qubit is set to 'outcome' and all other qubits are in an equal superposition of zero and one.
  * @param[in,out] qureg object representing the set of qubits to be initialised
  * @param[in] qubitId id of qubit to set to state 'outcome'
- * @param[in] value of qubit 'qubitId'
+ * @param[in] outcome of qubit 'qubitId'
  */
 void statevec_initStateOfSingleQubit(Qureg *qureg, int qubitId, int outcome)
 {
@@ -2041,7 +2041,8 @@ void statevec_compactUnitaryDistributed (Qureg qureg,
  *  @remarks Qubits are zero-based and the first qubit is the rightmost                  
  *                                                                        
  *  @param[in,out] qureg object representing the set of qubits
- *  @param[in] u unitary matrix to apply
+ *  @param[in] rot1 
+ *  @param[in] rot2
  *  @param[in] stateVecUp probability amplitudes in upper half of a block
  *  @param[in] stateVecLo probability amplitudes in lower half of a block
  *  @param[out] stateVecOut array section to update (will correspond to either the lower or upper half of a block)
@@ -2633,6 +2634,7 @@ void statevec_controlledNotLocal(Qureg qureg, int controlQubit, int targetQubit)
  *  for elements where controlQubit is one.
  *                                          
  *  @param[in,out] qureg object representing the set of qubits
+ *  @param[in] controlQubit the control qubit
  *  @param[in] stateVecIn probability amplitudes in lower or upper half of a block depending on chunkId
  *  @param[out] stateVecOut array section to update (will correspond to either the lower or upper half of a block)
  */
@@ -2726,8 +2728,9 @@ void statevec_pauliYLocal(Qureg qureg, int targetQubit, int conjFac)
  *                                                                        
  *  @param[in,out] qureg object representing the set of qubits
  *  @param[in] stateVecIn probability amplitudes in lower or upper half of a block depending on chunkId
- *  @param[in] updateUpper flag, 1: updating upper values, 0: updating lower values in block
  *  @param[out] stateVecOut array section to update (will correspond to either the lower or upper half of a block)
+ *  @param[in] updateUpper flag, 1: updating upper values, 0: updating lower values in block
+ * @param[in] conjFac 1: apply conj(pauliY), 0: apply pauliY
  */
 void statevec_pauliYDistributed(Qureg qureg,
         ComplexArray stateVecIn,
@@ -2918,9 +2921,10 @@ void statevec_hadamardLocal(Qureg qureg, int targetQubit)
  *  stateVecIn must already be the correct section for this chunk
  *                                          
  *  @param[in,out] qureg object representing the set of qubits
- *  @param[in] stateVecIn probability amplitudes in lower or upper half of a block depending on chunkId
- *  @param[in] updateUpper flag, 1: updating upper values, 0: updating lower values in block
+ *  @param[in] stateVecUp probability amplitudes in upper half of a block depending on chunkId
+ *  @param[in] stateVecLo probability amplitudes in lower half of a block depending on chunkId
  *  @param[out] stateVecOut array section to update (will correspond to either the lower or upper half of a block)
+ *  @param[in] updateUpper flag, 1: updating upper values, 0: updating lower values in block
  */
 void statevec_hadamardDistributed(Qureg qureg,
         ComplexArray stateVecUp,
@@ -3479,7 +3483,7 @@ void statevec_collapseToKnownProbOutcomeDistributedRenorm (Qureg qureg, int meas
     }
 }
 
-/** Set all amplitudes in one chunk to 0. 
+/* Set all amplitudes in one chunk to 0. 
  *  Measure in Zero performs an irreversible change to the state vector: it updates the vector according
  *  to the event that a zero have been measured on the qubit indicated by measureQubit (where 
  *  this label starts from 0, of course). It achieves this by setting all inconsistent amplitudes to 0 and 
@@ -3487,9 +3491,8 @@ void statevec_collapseToKnownProbOutcomeDistributedRenorm (Qureg qureg, int meas
  *  In the distributed version, one block (with measureQubit=0 in the first half of the block and
  *  measureQubit=1 in the second half of the block) is spread over multiple chunks, meaning that each chunks performs
  *  only renormalisation or only setting amplitudes to 0. This function handles setting amplitudes to 0.
- *  
+ *
  *  @param[in,out] qureg object representing the set of qubits
- *  @param[in] measureQubit qubit to measure
  */
 void statevec_collapseToOutcomeDistributedSetZero(Qureg qureg)
 {

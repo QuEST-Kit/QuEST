@@ -372,7 +372,7 @@ QVector getRandomStateVector(int numQb);
  */
 QMatrix getRandomDensityMatrix(int numQb);
 
-/** Returns a random Kraus map of \p #numOps 2^\p numQb-by-2^\p numQb operators, 
+/** Returns a random Kraus map of #`numOps` 2^\p numQb-by-2^\p numQb operators, 
  * from an undisclosed distribution.
  * Note this method is very simple and cannot generate all possible Kraus maps. 
  * It works by generating \p numOps random unitary matrices, and randomly 
