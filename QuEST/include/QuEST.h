@@ -5045,7 +5045,8 @@ ComplexMatrixN bindArraysToStackComplexMatrixN(
 #endif
 
 /** Induces a phase change upon each amplitude of state-vector \p qureg, determined by the passed 
- * exponential polynomial "phase function". This effects a diagonal unitary of unit complex scalars.
+ * exponential polynomial "phase function". This effects a diagonal unitary of unit complex scalars,
+ * targeting the nominated \p qubits.
  *
  * - Arguments \p coeffs and \p exponents together specify a real exponential polynomial \f$f(r)\f$ 
  *   with \p numTerms terms, of the form
@@ -5062,12 +5063,14 @@ ComplexMatrixN bindArraysToStackComplexMatrixN(
  *   constitutes the function 
  *   \f[
  *       f(r) =  1 \, r^2 - 3.14 \, r^{-5.5}.
- *   \f] \n
- * > If your function \f$f(r)\f$ diverges at one or more \f$r\f$ values, you should instead 
+ *   \f]
+ *   Note you cannot use fractional exponents with \p encoding <b>=</b> ::TWOS_COMPLEMENT, 
+ *   since the negative indices would generate (illegal) complex phases, and must 
+ *   be overriden with applyPhaseFuncOverrides(). \n
+ * > If your function \f$f(r)\f$ diverges at one or more \f$r\f$ values, you must instead 
  * > use applyPhaseFuncOverrides() and specify explicit phase changes for these values.
  * > Otherwise, the corresponding amplitudes of the state-vector will become indeterminate (like `NaN`).
- * > Note that use of any negative exponent (with non-zero coefficient) will result in 
- * > divergences at \f$r=0\f$.
+ * > Note that use of any negative exponent will result in divergences at \f$r=0\f$.
  *
  * - The function \f$f(r)\f$ specifies the phase change to induce upon amplitude \f$\alpha\f$ 
  *   of computational basis state with index \f$r\f$, such that
@@ -5105,8 +5108,9 @@ ComplexMatrixN bindArraysToStackComplexMatrixN(
  *   //   upon every substate |x>, informed by qubits (under an unsigned binary encoding)
  *   //     {4, 1, 2, 0}
  *   ``` 
- * \n
  *
+ * > This function may become numerically imprecise for quickly growing phase functions 
+ * > which admit very large phases, for example of 10^10. 
  *
  * @see 
  * - applyPhaseFuncOverrides() to override the phase function for specific states.
@@ -5129,6 +5133,8 @@ ComplexMatrixN bindArraysToStackComplexMatrixN(
  * - if \p numQubits < 0 or \p numQubits >= `qureg.numQubitsRepresented` 
  * - if \p encoding is not a valid ::bitEncoding
  * - if \p encoding is not compatible with \p numQubits (e.g. \p TWOS_COMPLEMENT with only 1 qubit)
+ * - if \p exponents contains a fractional number despite \p encoding <b>=</b> ::TWOS_COMPLEMENT (you must instead use applyPhaseFuncOverrides() and override all negative indices)
+ * - if \p exponents contains a negative power (you must instead use applyPhaseFuncOverrides() and override the zero index)
  * - if \p numTerms <= 0
  * @author Tyson Jones
  */
@@ -5170,7 +5176,12 @@ void applyPhaseFunc(Qureg qureg, int* qubits, int numQubits, enum bitEncoding en
  *     |1\mathbf{11}\rangle & \rightarrow \, e^{i f(3)}\,|1\mathbf{11}\rangle
  *   \end{aligned}
  *   \f]
- *
+ *   Note that if \p encoding <b>=</b> ::TWOS_COMPLEMENT, \a and \f$f(r)\f$ features a 
+ *   fractional exponent, then every negative phase index must be overriden. This 
+ *   is checked and enforced by QuEST's validation, \a unless there are more than 
+ *   16 targeted qubits, in which case valid input is assumed (due to an otherwise 
+ *   prohibitive performance overhead).
+ *   \n
  * > Overriding phases are checked at each computational basis state of \p qureg <em>before</em>
  * > evaluating the phase function \f$f(r)\f$, and hence are useful for avoiding 
  * > singularities or errors at diverging values of \f$r\f$.
@@ -5223,6 +5234,8 @@ void applyPhaseFunc(Qureg qureg, int* qubits, int numQubits, enum bitEncoding en
  * - if \p numTerms <= 0
  * - if any value in \p overrideInds is not producible by \p qubits under the given \p encoding (e.g. 2 unsigned qubits cannot represent index 9)
  * - if \p numOverrides < 0
+ * - if \p exponents contains a negative power and the (consequently diverging) zero index is not contained in \p overrideInds 
+ * - if \p encoding is ::TWOS_COMPLEMENT, and \p exponents contains a fractional number, but \p overrideInds does not contain every possible negative index (checked only up to 16 targeted qubits)
  * @author Tyson Jones
  */
 void applyPhaseFuncOverrides(Qureg qureg, int* qubits, int numQubits, enum bitEncoding encoding, qreal* coeffs, qreal* exponents, int numTerms, long long int* overrideInds, qreal* overridePhases, int numOverrides);
@@ -5239,28 +5252,39 @@ void applyPhaseFuncOverrides(Qureg qureg, int* qubits, int numQubits, enum bitEn
  *   \f[ 
  *    f(r_1, \; \dots, \; r_{\text{numRegs}}) = \sum\limits_j^{\text{numRegs}} \; \sum\limits_{i}^{\text{numTermsPerReg}[j]} \; c_{i,j} \; {r_j}^{\; p_{i,j}}\,,
  *   \f] 
- *   where both coefficients \f$c_{i,j}\f$ and exponents \f$p_{i,j}\f$ can be negative and fractional.\n\n
+ *   where both coefficients \f$c_{i,j}\f$ and exponents \f$p_{i,j}\f$ can be any real number, subject to constraints described below.
+ *   \n\n
  *   While \p coeffs and \p exponents are flat lists, they should be considered grouped into 
  *   #`numRegs` sublists with lengths given by \p numTermsPerReg (which itself has length \p numRegs). \n\n
  *   For example,
  *   ```
  *      int numRegs = 3;
  *      qreal coeffs[] =        {1,  2, 4,  -3.14};
- *      qreal exponents[] =     {2,  1,-1,   0.5 };
+ *      qreal exponents[] =     {2,  1, 5,   0.5 };
  *      int numTermsPerReg[] =  {1,  2,      1   };
  *   ```
  *   constitutes the function
  *   \f[
- *      f(\vec{r}) =  1 \, {r_1}^2 + 2 \, {r_2} + 4 \, {r_2}^{-1} - 3.14 \, {r_3}^{0.5}.
+ *      f(\vec{r}) =  1 \, {r_1}^2 + 2 \, {r_2} + 4 \, {r_2}^{5} - 3.14 \, {r_3}^{0.5}.
  *   \f] \n
  *   > This means lists \p coeffs and \p exponents should both be of length equal to the sum of \p numTermsPerReg.
- 
- * > If your function \f$f(\vec{r})\f$ diverges at one or more \f$\vec{r}\f$ values, you should instead 
- * > use applyMultiVarPhaseFuncOverrides() and specify explicit phase changes for these coordinates.
- * > Otherwise, the corresponding amplitudes of the state-vector will become indeterminate (like `NaN`).
- * > Note that use of any negative exponent (with non-zero coefficient) will result in 
- * > divergences at \f$r_j=0\f$.
- *
+ *   Unlike applyPhaseFunc(), applyMultiVarPhaseFunc() places additional constraints on the 
+ *   exponents in \f$f(\vec{r})\f$, due to the exponentially growing costs of overriding 
+ *   diverging indices. Namely:\n
+ *   -# \p exponents must not contain a negative number, since this would result in a divergence 
+ *         when that register is zero, which would need to be overriden for every other register 
+ *         basis state. If \f$f(\vec{r})\f$ must contain a negative exponent, you should instead 
+ *         call applyPhaseFuncOverrides() once for each register/variable, and override the 
+ *         zero index for the relevant variable. This works, because 
+ *         \f[  \exp( i \sum_j f_j(r_j) ) = \prod_j \exp(i f_j(r_j) ). \f]
+ *   -# \p exponents must not contain a fractional number if \p endoding <b>=</b> ::TWOS_COMPLEMENT, 
+ *         because such a term would produce illegal complex values at negative register indices.
+ *         Similar to the problem above, each negative register index would require overriding at 
+ *         every index of the other registers, and hence require an exponential number of overrides.
+ *         Therefore, if \f$f(\vec{r})\f$ must contain a negative exponent, you should instead 
+ *         call applyPhaseFuncOverrides() once for each register/variable, and override every 
+ *         negative index of each register in turn.
+ * \n\n
  * - Lists \p qubits and \p numQubitsPerReg together describe #`numRegs` sub-registers of \p qureg,
  *   which can each contain a different number of qubits. \n
  *   Although \p qubits is a flat list of unique qubit indices, it should be imagined grouped into #`numRegs` sub-lists, 
@@ -5365,6 +5389,8 @@ void applyPhaseFuncOverrides(Qureg qureg, int* qubits, int numQubits, enum bitEn
  * - if \p encoding is not a valid ::bitEncoding
  * - if the size of any sub-register is incompatible with \p encoding (e.g. contains fewer than two qubits in \p encoding <b>=</b> \p TWOS_COMPLEMENT)
  * - if any element of \p numTermsPerReg is < 1
+ * - if \p exponents contains a negative number 
+ * - if \p exponents contains a fractional number despite \p encoding <b>=</b> ::TWOS_COMPLEMENT
  * @author Tyson Jones
  */
 void applyMultiVarPhaseFunc(Qureg qureg, int* qubits, int* numQubitsPerReg, int numRegs, enum bitEncoding encoding, qreal* coeffs, qreal* exponents, int* numTermsPerReg);
@@ -5394,6 +5420,14 @@ void applyMultiVarPhaseFunc(Qureg qureg, int* qubits, int* numQubitsPerReg, int 
  *   denotes that any basis state of \p qureg with sub-register values \f$\{r_3,r_2,r_1\} = \{0, 0, 0\}\f$
  *   (or \f$\{r_3,r_2,r_1\} = \{1,2,3\}\f$) should receive phase change \f$\pi\f$ (or \f$-\pi\f$)
  *   in lieu of \f$\exp(i f(r_3=0,r_2=0,r_1=0))\f$.\n\n
+ *   > Note that you cannot use applyMultiVarPhaseFuncOverrides() to override divergences 
+ *   > in \f$f(\vec{r})\f$, since each diverging value \f$r_j\f$ would need to be overriden 
+ *   > as an \f$\vec{r}\f$ coordinate for every basis state of the other registers; the number 
+ *   > of overrides grows exponentially. Ergo, if \p exponents contains a negative number 
+ *   > (diverging at \f$r_j=0\f$), or \p exponents contains a fractional number despite 
+ *   > \p encoding <b>=</b> ::TWOS_COMPLEMENT (producing complex phases at negative indices),
+ *   > you must instead call applyPhaseFuncOverrides() for each variable in turn and 
+ *   > override the diverging \f$r_j\f$ (each independently of the other registers).
  *
  * - The interpreted overrides can be previewed in the QASM log, as a comment. \n
  *   For example:
@@ -5436,6 +5470,8 @@ void applyMultiVarPhaseFunc(Qureg qureg, int* qubits, int* numQubitsPerReg, int 
  * - if \p encoding is not a valid ::bitEncoding
  * - if the size of any sub-register is incompatible with \p encoding (e.g. contains fewer than two qubits in \p encoding <b>=</b> \p TWOS_COMPLEMENT)
  * - if any element of \p numTermsPerReg is < 1
+ * - if \p exponents contains a negative number 
+ * - if \p exponents contains a fractional number despite \p encoding <b>=</b> ::TWOS_COMPLEMENT
  * - if any value in \p overrideInds is not producible by its corresponding sub-register under the given \p encoding (e.g. 2 unsigned qubits cannot represent index 9)
  * - if \p numOverrides < 0
  * @author Tyson Jones
@@ -5654,18 +5690,31 @@ void applyNamedPhaseFuncOverrides(Qureg qureg, int* qubits, int* numQubitsPerReg
  *   For example, 
  *   ```
  *   enum phaseFunc functionNameCode = SCALED_PRODUCT;
- *   qreal params[] = {-0.5};
+ *   qreal params[] = {0.5};
  *   int numParams = 1;
  *   applyParamNamedPhaseFunc(..., functionNameCode, params, numParams);
  *   ```
  *   invokes phase function 
  *   \f[
- *      f(\vec{r}, \theta)|_{\theta=-0.5} \; = \; -0.5 \prod_j^{\text{numRegs}} \; r_j\,.
+ *      f(\vec{r}, \theta)|_{\theta=0.5} \; = \; 0.5 \prod_j^{\text{numRegs}} \; r_j\,.
  *   \f] 
- *   See ::phaseFunc for all named phased functions.\n\n
- *   > If the chosen phase function \f$f(\vec{r}, \vec{\theta})\f$ diverges at one or more \f$\vec{r}\f$ values, you should instead 
- *   > use applyParamNamedPhaseFuncOverrides() and specify explicit phase changes for these coordinates.
- *   > Otherwise, the corresponding amplitudes of the state-vector will become indeterminate (like `NaN`). \n
+ *   See ::phaseFunc for all named phased functions.
+ *
+ * - Functions with divergences, like \p INVERSE_NORM and \p SCALED_INVERSE_DISTANCE, must accompany 
+ *   an extra parameter to specify an overriding phase at the divergence. For example,
+ *   ```
+ *   enum phaseFunc functionNameCode = SCALED_INVERSE_NORM;
+ *   qreal params[] = {0.5, M_PI};
+ *   int numParams = 2;
+ *   applyParamNamedPhaseFunc(..., functionNameCode, params, numParams);
+ *   ```
+ *   invokes phase function 
+ *   \f[
+ *      f(\vec{r}, \theta)|_{\theta=0.5} \; = \; \begin{cases} \pi & \;\;\; \vec{r}=\vec{0} \\ \displaystyle 0.5 \sqrt{ \sum_j^{\text{numRegs}} {r_j}^2 } & \;\;\;\text{otherwise} \end{cases}.
+ *   \f] 
+ * 
+ *   > You can further override \f$f(\vec{r}, \vec{\theta})\f$ at one or more \f$\vec{r}\f$ values
+ *   > via applyParamNamedPhaseFuncOverrides().
  *
  * - The interpreted parameterised phase function can be previewed in the QASM log, as a comment. \n
  *   For example:

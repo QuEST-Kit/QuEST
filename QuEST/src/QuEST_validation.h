@@ -136,11 +136,11 @@ void validatePhaseFuncOverrides(const int numQubits, enum bitEncoding encoding, 
 
 void validateMultiVarPhaseFuncOverrides(int* numQubitsPerReg, const int numRegs, enum bitEncoding encoding, long long int* overrideInds, int numOverrides, const char* caller);
 
-void validateNumPhaseFuncTerms(const int numTerms, const char* caller);
+void validatePhaseFuncTerms(int numQubits, enum bitEncoding encoding, qreal* coeffs, qreal* exponents, int numTerms, long long int* overrideInds, int numOverrides, const char* caller);
 
-void validateNumMultiVarPhaseFuncTerms(int* numTermsPerReg, const int numRegs, const char* caller);
+void validateMultiVarPhaseFuncTerms(int* numQubitsPerReg, int numRegs, enum bitEncoding encoding, qreal* exponents, int* numTermsPerReg, const char* caller);
 
-void validatePhaseFuncName(enum phaseFunc funcCode, int numParams, const char* caller);
+void validatePhaseFuncName(enum phaseFunc funcCode, int numRegs, int numParams, const char* caller);
 
 void validateBitEncoding(int numQubits, enum bitEncoding encoding, const char* caller);
 

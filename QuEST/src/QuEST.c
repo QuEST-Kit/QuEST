@@ -662,8 +662,8 @@ void multiRotatePauli(Qureg qureg, int* targetQubits, enum pauliOpType* targetPa
 void applyPhaseFunc(Qureg qureg, int* qubits, int numQubits, enum bitEncoding encoding, qreal* coeffs, qreal* exponents, int numTerms) {
     validateStateVecQureg(qureg, __func__);
     validateMultiQubits(qureg, qubits, numQubits, __func__);
-    validateNumPhaseFuncTerms(numTerms, __func__);
     validateBitEncoding(numQubits, encoding, __func__);
+    validatePhaseFuncTerms(numQubits, encoding, coeffs, exponents, numTerms, NULL, 0, __func__);
 
     statevec_applyPhaseFuncOverrides(qureg, qubits, numQubits, encoding, coeffs, exponents, numTerms, NULL, NULL, 0);
 
@@ -674,8 +674,8 @@ void applyPhaseFuncOverrides(Qureg qureg, int* qubits, int numQubits, enum bitEn
     validateStateVecQureg(qureg, __func__);
     validateMultiQubits(qureg, qubits, numQubits, __func__);
     validateBitEncoding(numQubits, encoding, __func__);
-    validateNumPhaseFuncTerms(numTerms, __func__);
     validatePhaseFuncOverrides(numQubits, encoding, overrideInds, numOverrides, __func__);
+    validatePhaseFuncTerms(numQubits, encoding, coeffs, exponents, numTerms, overrideInds, numOverrides, __func__);
 
     statevec_applyPhaseFuncOverrides(qureg, qubits, numQubits, encoding, coeffs, exponents, numTerms, overrideInds, overridePhases, numOverrides);
 
@@ -686,7 +686,7 @@ void applyMultiVarPhaseFunc(Qureg qureg, int* qubits, int* numQubitsPerReg, int 
     validateStateVecQureg(qureg, __func__);
     validateQubitSubregs(qureg, qubits, numQubitsPerReg, numRegs, __func__);
     validateMultiRegBitEncoding(numQubitsPerReg, numRegs, encoding, __func__);
-    validateNumMultiVarPhaseFuncTerms(numTermsPerReg, numRegs, __func__);
+    validateMultiVarPhaseFuncTerms(numQubitsPerReg, numRegs, encoding, exponents, numTermsPerReg, __func__);
 
     statevec_applyMultiVarPhaseFuncOverrides(qureg, qubits, numQubitsPerReg, numRegs, encoding, coeffs, exponents, numTermsPerReg, NULL, NULL, 0);
 
@@ -697,7 +697,7 @@ void applyMultiVarPhaseFuncOverrides(Qureg qureg, int* qubits, int* numQubitsPer
     validateStateVecQureg(qureg, __func__);
     validateQubitSubregs(qureg, qubits, numQubitsPerReg, numRegs, __func__);
     validateMultiRegBitEncoding(numQubitsPerReg, numRegs, encoding, __func__);
-    validateNumMultiVarPhaseFuncTerms(numTermsPerReg, numRegs, __func__);
+    validateMultiVarPhaseFuncTerms(numQubitsPerReg, numRegs, encoding, exponents, numTermsPerReg, __func__);
     validateMultiVarPhaseFuncOverrides(numQubitsPerReg, numRegs, encoding, overrideInds, numOverrides, __func__);
 
     statevec_applyMultiVarPhaseFuncOverrides(qureg, qubits, numQubitsPerReg, numRegs, encoding, coeffs, exponents, numTermsPerReg, overrideInds, overridePhases, numOverrides);
@@ -709,7 +709,7 @@ void applyNamedPhaseFunc(Qureg qureg, int* qubits, int* numQubitsPerReg, int num
     validateStateVecQureg(qureg, __func__);
     validateQubitSubregs(qureg, qubits, numQubitsPerReg, numRegs, __func__);
     validateMultiRegBitEncoding(numQubitsPerReg, numRegs, encoding, __func__);
-    validatePhaseFuncName(functionNameCode, 0, __func__);
+    validatePhaseFuncName(functionNameCode, numRegs, 0, __func__);
 
     statevec_applyParamNamedPhaseFuncOverrides(qureg, qubits, numQubitsPerReg, numRegs, encoding, functionNameCode, NULL, 0, NULL, NULL, 0);
 
@@ -720,7 +720,7 @@ void applyNamedPhaseFuncOverrides(Qureg qureg, int* qubits, int* numQubitsPerReg
     validateStateVecQureg(qureg, __func__);
     validateQubitSubregs(qureg, qubits, numQubitsPerReg, numRegs, __func__);
     validateMultiRegBitEncoding(numQubitsPerReg, numRegs, encoding, __func__);
-    validatePhaseFuncName(functionNameCode, 0, __func__);
+    validatePhaseFuncName(functionNameCode, numRegs, 0, __func__);
     validateMultiVarPhaseFuncOverrides(numQubitsPerReg, numRegs, encoding, overrideInds, numOverrides, __func__);
 
     statevec_applyParamNamedPhaseFuncOverrides(qureg, qubits, numQubitsPerReg, numRegs, encoding, functionNameCode, NULL, 0, overrideInds, overridePhases, numOverrides);
@@ -732,7 +732,7 @@ void applyParamNamedPhaseFunc(Qureg qureg, int* qubits, int* numQubitsPerReg, in
     validateStateVecQureg(qureg, __func__);
     validateQubitSubregs(qureg, qubits, numQubitsPerReg, numRegs, __func__);
     validateMultiRegBitEncoding(numQubitsPerReg, numRegs, encoding, __func__);
-    validatePhaseFuncName(functionNameCode, numParams, __func__);
+    validatePhaseFuncName(functionNameCode, numRegs, numParams, __func__);
 
     statevec_applyParamNamedPhaseFuncOverrides(qureg, qubits, numQubitsPerReg, numRegs, encoding, functionNameCode, params, numParams, NULL, NULL, 0);
 
@@ -743,7 +743,7 @@ void applyParamNamedPhaseFuncOverrides(Qureg qureg, int* qubits, int* numQubitsP
     validateStateVecQureg(qureg, __func__);
     validateQubitSubregs(qureg, qubits, numQubitsPerReg, numRegs, __func__);
     validateMultiRegBitEncoding(numQubitsPerReg, numRegs, encoding, __func__);
-    validatePhaseFuncName(functionNameCode, numParams, __func__);
+    validatePhaseFuncName(functionNameCode, numRegs, numParams, __func__);
     validateMultiVarPhaseFuncOverrides(numQubitsPerReg, numRegs, encoding, overrideInds, numOverrides, __func__);
 
     statevec_applyParamNamedPhaseFuncOverrides(qureg, qubits, numQubitsPerReg, numRegs, encoding, functionNameCode, params, numParams, overrideInds, overridePhases, numOverrides);
