@@ -41,7 +41,7 @@ TEST_CASE( "getStaticComplexMatrixN", "[data_structures]" ) {
  */
 TEST_CASE( "toComplex", "[data_structures]" ) {
     
-    qcomp a = .5 - .2i;
+    qcomp a = qcomp(.5,-.2);
     Complex b = toComplex(a);
     
     REQUIRE( real(a) == b.real );
@@ -322,7 +322,9 @@ TEST_CASE( "createPauliHamilFromFile", "[data_structures]" ) {
             FILE* file = fopen(fn, "w");
             int i=0;
             for (int n=0; n<numTerms; n++) {
-                fprintf(file, "%.20f ", coeffs[n]);
+                
+                fprintf(file, REAL_STRING_FORMAT, coeffs[n]);
+                fprintf(file, " ");
                 for (int q=0; q<numQb; q++)
                     fprintf(file, "%d ", (int) paulis[i++]);
                 fprintf(file, "\n");
@@ -340,7 +342,7 @@ TEST_CASE( "createPauliHamilFromFile", "[data_structures]" ) {
             // check elements agree
             i=0;
             for (int n=0; n<numTerms; n++) {
-                REQUIRE( hamil.termCoeffs[n] == coeffs[n] );
+                REQUIRE( absReal(hamil.termCoeffs[n] - coeffs[n]) <= REAL_EPS );
                 for (int q=0; q<numQb; q++) {
                     REQUIRE( hamil.pauliCodes[i] == paulis[i] );
                     i++;

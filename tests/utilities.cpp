@@ -191,7 +191,8 @@ QMatrix getExponentialOfDiagonalMatrix(QMatrix a) {
         for (size_t c=0; c<a.size(); c++) {
             if (r == c)
                 continue;
-            DEMAND( a[r][c] == 0. );
+            DEMAND( real(a[r][c]) == 0. );
+            DEMAND( imag(a[r][c]) == 0. );
         }
 
     // exp(diagonal) = diagonal(exp)
@@ -204,7 +205,7 @@ QMatrix getExponentialOfDiagonalMatrix(QMatrix a) {
 
 QMatrix getExponentialOfPauliMatrix(qreal angle, QMatrix a) {
     QMatrix iden = getIdentityMatrix(a.size());
-    QMatrix expo = (cos(angle/2) * iden) + (-1i * sin(angle/2) * a);
+    QMatrix expo = (cos(angle/2) * iden) + ((qcomp) -1i * sin(angle/2) * a);
     return expo;
 }
 
@@ -378,7 +379,7 @@ QMatrix getRandomQMatrix(int dim) {
             qreal r1 = sqrt(-2 * log(a)) * cos(2 * 3.14159265 * b);
             qreal r2 = sqrt(-2 * log(a)) * sin(2 * 3.14159265 * b);
             
-            matr[i][j] = r1 + r2*1i;
+            matr[i][j] = r1 + r2 * (qcomp) 1i;
         }
     }
     return matr;
@@ -404,7 +405,7 @@ bool areEqual(QMatrix a, QMatrix b) {
 }
 
 qcomp expI(qreal phase) {
-    return cos(phase) + 1i*sin(phase);
+    return qcomp(cos(phase), sin(phase));
 }
 
 qreal getRandomReal(qreal min, qreal max) {
@@ -420,7 +421,7 @@ qreal getRandomReal(qreal min, qreal max) {
 QVector getRandomQVector(int dim) { 
     QVector vec = QVector(dim);
     for (int i=0; i<dim; i++)
-        vec[i] = getRandomReal(-1,1) + 1i*getRandomReal(-1,1);
+        vec[i] = getRandomReal(-1,1) + getRandomReal(-1,1) * (qcomp) 1i;
         
     // check we didn't get the impossibly-unlikely zero-amplitude outcome 
     DEMAND( real(vec[0]) != 0 );
@@ -744,8 +745,14 @@ bool areEqual(Qureg qureg, QVector vec, qreal precision) {
             ampsAgree = 0;
             
             // debug
-            printf("Disagreement at %lld: %g + i(%g) VS %g + i(%g)\n",
-                startInd+i, qureg.stateVec.real[i], qureg.stateVec.imag[i],
+            char buff[200];
+            sprintf(buff, "Disagreement at %lld of (%s) + i(%s):\n\t%s + i(%s) VS %s + i(%s)\n",
+                startInd+i,
+                REAL_STRING_FORMAT, REAL_STRING_FORMAT, REAL_STRING_FORMAT, 
+                REAL_STRING_FORMAT, REAL_STRING_FORMAT, REAL_STRING_FORMAT);
+            printf(buff,
+                realDif, imagDif,
+                qureg.stateVec.real[i], qureg.stateVec.imag[i],
                 real(vec[startInd+i]), imag(vec[startInd+i]));
             
             break;
@@ -766,7 +773,7 @@ bool areEqual(Qureg qureg, QVector vec) {
 
 bool areEqual(Qureg qureg, QMatrix matr, qreal precision) {
     DEMAND( qureg.isDensityMatrix );
-    DEMAND( (int) (matr.size()*matr.size()) == qureg.numAmpsTotal );
+    DEMAND( (long long int) (matr.size()*matr.size()) == qureg.numAmpsTotal );
     
     // ensure local qureg.stateVec is up to date
     copyStateFromGPU(qureg);
@@ -788,9 +795,12 @@ bool areEqual(Qureg qureg, QMatrix matr, qreal precision) {
         
         // DEBUG
         if (!ampsAgree) {
-            printf("[msg from utilities.cpp] node %d has a disagreement at (global) index %lld of (%g) + i(%g)\n", 
-                qureg.chunkId, globalInd, realDif, imagDif
-            );
+            
+            // debug
+            char buff[200];
+            sprintf(buff, "[msg from utilities.cpp] node %d has a disagreement at (global) index %lld of (%s) + i(%s)\n",
+                qureg.chunkId, globalInd, REAL_STRING_FORMAT, REAL_STRING_FORMAT);
+            printf(buff, realDif, imagDif);
         }
 
         // break loop as soon as amplitudes disagree
@@ -824,10 +834,10 @@ bool areEqual(QVector vec, qreal* reals, qreal* imags) {
     
     qreal dif;
     for (size_t i=0; i<vec.size(); i++) {
-        dif = abs(real(vec[i]) - reals[i]);
+        dif = absReal(real(vec[i]) - reals[i]);
         if (dif > REAL_EPS)
             return false;
-        dif = abs(imag(vec[i]) - imags[i]);
+        dif = absReal(imag(vec[i]) - imags[i]);
         if (dif > REAL_EPS)
             return false;
     }
@@ -1068,7 +1078,7 @@ QMatrix toQMatrix(qreal* coeffs, pauliOpType* paulis, int numQubits, int numTerm
     // produce a numTargs-big matrix 'pauliSum' by pauli-matrix tensoring and summing
     QMatrix iMatr{{1,0},{0,1}};
     QMatrix xMatr{{0,1},{1,0}};
-    QMatrix yMatr{{0,-1i},{1i,0}};
+    QMatrix yMatr{{0,-qcomp(0,1)},{qcomp(0,1),0}};
     QMatrix zMatr{{1,0},{0,-1}};
     QMatrix pauliSum = getZeroMatrix(1<<NUM_QUBITS);
     

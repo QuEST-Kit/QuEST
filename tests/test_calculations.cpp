@@ -323,7 +323,7 @@ TEST_CASE( "calcExpecPauliProd", "[calculations]" ) {
         // produce a numTargs-big matrix 'pauliProd' by pauli-matrix tensoring
         QMatrix iMatr{{1,0},{0,1}};
         QMatrix xMatr{{0,1},{1,0}};
-        QMatrix yMatr{{0,-1i},{1i,0}};
+        QMatrix yMatr{{0,-qcomp(0,1)},{qcomp(0,1),0}};
         QMatrix zMatr{{1,0},{0,-1}};
         QMatrix pauliProd{{1}};
         for (int i=0; i<numTargs; i++) {

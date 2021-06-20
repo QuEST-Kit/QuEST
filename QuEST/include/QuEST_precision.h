@@ -62,7 +62,7 @@
     # define REAL_STRING_FORMAT "%.17Lf"
     # define REAL_QASM_FORMAT "%.17Lg"
     # define REAL_EPS 1e-14
-    # define REAL_SPECIFIER "%llf"
+    # define REAL_SPECIFIER "%Lf"
     # define absReal(X) fabsl(X)
     // \endcond
 # endif

@@ -1421,7 +1421,8 @@ void reportPauliHamil(PauliHamil hamil) {
     validatePauliHamil(hamil, __func__);
     
     for (int t=0; t<hamil.numSumTerms; t++) {
-        printf("%g\t", hamil.termCoeffs[t]);
+        printf(REAL_QASM_FORMAT, hamil.termCoeffs[t]);
+        printf("\t");
         for (int q=0; q<hamil.numQubits; q++)
             printf("%d ", (int) hamil.pauliCodes[q+t*hamil.numQubits]);
         printf("\n");

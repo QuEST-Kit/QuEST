@@ -341,7 +341,7 @@ TEST_CASE(  "controlledNot", "[unitaries]" ) {
 TEST_CASE(  "controlledPauliY", "[unitaries]" ) {
     
     PREPARE_TEST( quregVec, quregMatr, refVec, refMatr );
-    QMatrix op{{0,-1i},{1i,0}};
+    QMatrix op{{0,-qcomp(0,1)},{qcomp(0,1),0}};
     
     SECTION( "correctness" ) {
     
@@ -490,8 +490,8 @@ TEST_CASE( "controlledRotateAroundAxis", "[unitaries]" ) {
     qreal c = cos(param/2);
     qreal s = sin(param/2);
     qreal m = sqrt(vec.x*vec.x + vec.y*vec.y + vec.z*vec.z);
-    QMatrix op{{c - 1i*vec.z*s/m, -(vec.y + 1i*vec.x)*s/m}, 
-               {(vec.y - 1i*vec.x)*s/m, c + 1i*vec.z*s/m}};
+    QMatrix op{{c - qcomp(0,1)*vec.z*s/m, -(vec.y + qcomp(0,1)*vec.x)*s/m}, 
+               {(vec.y - qcomp(0,1)*vec.x)*s/m, c + qcomp(0,1)*vec.z*s/m}};
     
     SECTION( "correctness" ) {
     
@@ -543,7 +543,9 @@ TEST_CASE( "controlledRotateX", "[unitaries]" ) {
     
     PREPARE_TEST( quregVec, quregMatr, refVec, refMatr );
     qreal param = getRandomReal(-4*M_PI, 4*M_PI);
-    QMatrix op{{cos(param/2), -1i*sin(param/2)}, {-1i*sin(param/2), cos(param/2)}};
+    QMatrix op{
+        {cos(param/2), -sin(param/2)*qcomp(0,1)}, 
+        {-sin(param/2)*qcomp(0,1), cos(param/2)}};
     
     SECTION( "correctness" ) {
     
@@ -1451,7 +1453,7 @@ TEST_CASE( "multiRotatePauli", "[unitaries]" ) {
         int numRefTargs = 0;
 
         QMatrix xMatr{{0,1},{1,0}};
-        QMatrix yMatr{{0,-1i},{1i,0}};
+        QMatrix yMatr{{0,-qcomp(0,1)},{qcomp(0,1),0}};
         QMatrix zMatr{{1,0},{0,-1}};
         
         // build correct reference matrix by pauli-matrix exponentiation...
@@ -1547,7 +1549,7 @@ TEST_CASE( "multiRotateZ", "[unitaries]" ) {
             zProd = getKroneckerProduct(zMatr, zProd); // Z . Z ... Z
     
         // (-i param/2) Z . I . Z ...
-        QMatrix expArg = (-1i * param / 2.) *
+        QMatrix expArg = qcomp(0, -param/2) *
             getFullOperatorMatrix(NULL, 0, targs, numTargs, zProd, NUM_QUBITS);
             
         // exp( -i param/2 Z . I . Z ...)
@@ -1755,7 +1757,7 @@ TEST_CASE( "pauliX", "[unitaries]" ) {
 TEST_CASE( "pauliY", "[unitaries]" ) {
     
     PREPARE_TEST( quregVec, quregMatr, refVec, refMatr );
-    QMatrix op{{0,-1i},{1i,0}};
+    QMatrix op{{0,-qcomp(0,1)},{qcomp(0,1),0}};
     
     SECTION( "correctness" ) {
         
@@ -1883,8 +1885,8 @@ TEST_CASE( "rotateAroundAxis", "[unitaries]" ) {
     qreal c = cos(param/2);
     qreal s = sin(param/2);
     qreal m = sqrt(vec.x*vec.x + vec.y*vec.y + vec.z*vec.z);
-    QMatrix op{{c - 1i*vec.z*s/m, -(vec.y + 1i*vec.x)*s/m}, 
-               {(vec.y - 1i*vec.x)*s/m, c + 1i*vec.z*s/m}};
+    QMatrix op{{c - qcomp(0,1)*vec.z*s/m, -(vec.y + qcomp(0,1)*vec.x)*s/m}, 
+               {(vec.y - qcomp(0,1)*vec.x)*s/m, c + qcomp(0,1)*vec.z*s/m}};
 
     SECTION( "correctness" ) {
     
@@ -1930,7 +1932,9 @@ TEST_CASE( "rotateX", "[unitaries]" ) {
 
     PREPARE_TEST( quregVec, quregMatr, refVec, refMatr );
     qreal param = getRandomReal(-4*M_PI, 4*M_PI);
-    QMatrix op{{cos(param/2), -1i*sin(param/2)}, {-1i*sin(param/2), cos(param/2)}};
+    QMatrix op{
+        {cos(param/2), - sin(param/2)*qcomp(0,1)}, 
+        {- sin(param/2)*qcomp(0,1), cos(param/2)}};
 
     SECTION( "correctness" ) {
     
@@ -2049,7 +2053,7 @@ TEST_CASE( "rotateZ", "[unitaries]" ) {
 TEST_CASE( "sGate", "[unitaries]" ) {
 
     PREPARE_TEST( quregVec, quregMatr, refVec, refMatr );
-    QMatrix op{{1,0},{0,1i}};
+    QMatrix op{{1,0},{0,qcomp(0,1)}};
 
     SECTION( "correctness" ) {
     
@@ -2088,8 +2092,8 @@ TEST_CASE( "sGate", "[unitaries]" ) {
 TEST_CASE( "sqrtSwapGate", "[unitaries]" ) {
         
     PREPARE_TEST( quregVec, quregMatr, refVec, refMatr );
-    qcomp a = (1. + 1i)/2.;
-    qcomp b = (1. - 1i)/2.;
+    qcomp a = qcomp(.5, .5);
+    qcomp b = qcomp(.5, -.5);
     QMatrix op{{1,0,0,0},{0,a,b,0},{0,b,a,0},{0,0,0,1}};
 
     SECTION( "correctness" ) {
