@@ -1106,6 +1106,69 @@ QMatrix toQMatrix(PauliHamil hamil) {
     return toQMatrix(hamil.termCoeffs, hamil.pauliCodes, hamil.numQubits, hamil.numSumTerms);
 }
 
+long long int getTwosComplement(long long int decimal, int numBits) {
+    DEMAND( decimal >= 0 );
+    DEMAND( numBits >= 2 );
+    DEMAND( decimal < (1LL << numBits) );
+    
+    long long int maxMag = 1LL << (numBits-1);
+    if (decimal >= maxMag)
+        return -maxMag + (decimal - maxMag);
+    else
+        return decimal;
+}
+
+long long int getUnsigned(long long int twosComp, int numBits) {
+    DEMAND( numBits >= 2 );
+    DEMAND( twosComp < (1LL << (numBits-1)) );
+    DEMAND( twosComp >= - (1LL << (numBits-1)) );
+    
+    if (twosComp >= 0)
+        return twosComp;
+    else
+        return (1<<numBits) + twosComp;
+}
+
+void setDiagMatrixOverrides(QMatrix &matr, int* numQubitsPerReg, int numRegs, enum bitEncoding encoding, long long int* overrideInds, qreal* overridePhases, int numOverrides) {
+    DEMAND( (encoding == UNSIGNED || encoding == TWOS_COMPLEMENT) );
+    DEMAND( numRegs > 0 );
+    DEMAND( numOverrides >= 0 );
+    
+    int totalQb = 0;
+    for (int r=0; r<numRegs; r++) {
+        DEMAND( numQubitsPerReg[r] > 0 );
+        totalQb += numQubitsPerReg[r];
+    }
+    DEMAND( matr.size() == (1 << totalQb) );
+    
+    // record whether a diagonal index has been already overriden
+    int hasBeenOverriden[1 << totalQb];
+    for (int i=0; i<(1 << totalQb); i++)
+        hasBeenOverriden[i] = 0;
+    
+    int flatInd = 0;
+    for (int v=0; v<numOverrides; v++) {
+        int matrInd = 0;
+        int numQubitsLeft = 0;
+        
+        for (int r=0; r<numRegs; r++) {
+            
+            if (encoding == UNSIGNED)
+                matrInd += overrideInds[flatInd] * (1 << numQubitsLeft);
+            else if (encoding == TWOS_COMPLEMENT)
+                matrInd += getUnsigned(overrideInds[flatInd], numQubitsPerReg[r]) * (1 << numQubitsLeft);
+                
+            numQubitsLeft += numQubitsPerReg[r];
+            flatInd += 1;
+        }
+        
+        if (!hasBeenOverriden[matrInd]) {
+            matr[matrInd][matrInd] = expI(overridePhases[v]);
+            hasBeenOverriden[matrInd] = 1;
+        }
+    }
+}
+
 class SubListGenerator : public Catch::Generators::IGenerator<int*> {
     int* list;
     int* sublist;
