@@ -1998,6 +1998,9 @@ void controlledPauliY(Qureg qureg, int controlQubit, int targetQubit);
  *
  * For density matrices, this function sums the diagonal values (should be real)
  * corresponding to \p measureQubit \p = \p 0 (returning 1 minus this if \p outcome \p = \p 1).
+ *
+ * @see 
+ * - calcProbOfAllOutcomes()
  * 
  * @ingroup calc
  * @param[in] qureg object representing the set of all qubits
@@ -2011,6 +2014,15 @@ void controlledPauliY(Qureg qureg, int controlQubit, int targetQubit);
  * @author Tyson Jones (density matrix)
  */
 qreal calcProbOfOutcome(Qureg qureg, int measureQubit, int outcome);
+
+/** TODO 
+ *
+ * @see 
+ * - calcProbOfOutcome()
+ *
+ * @ingroup calc
+ */
+void calcProbOfAllOutcomes(qreal* retProbs, Qureg qureg, int* qubits, int numQubits);
 
 /** Updates \p qureg to be consistent with measuring \p measureQubit in the given 
  * \p outcome (0 or 1), and returns the probability of such a measurement outcome. 

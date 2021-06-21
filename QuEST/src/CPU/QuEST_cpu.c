@@ -3871,3 +3871,38 @@ void agnostic_setDiagonalOpElems(DiagonalOp op, long long int startInd, qreal* r
         }
     }
 }
+
+void statevec_calcProbOfAllOutcomes(qreal* retProbs, Qureg qureg, int* qubits, int numQubits) {
+    
+    long long int numTasks = qureg.numAmpsPerChunk;
+    long long int offset = qureg.chunkId*qureg.numAmpsPerChunk;
+    qreal* stateRe = qureg.stateVec.real;
+    qreal* stateIm = qureg.stateVec.imag;
+    
+    long long int i;
+    long long int outcomeInd;
+    int q;
+    
+    // OpenMP 4.5 reduction of array
+# ifdef _OPENMP
+# pragma omp parallel \
+    shared    (numTasks,offset, qubits,numQubits, stateRe,stateIm) \
+    private   (i, q, outcomeInd) \
+    reduction ( +:retProbs )
+# endif 
+    {
+# ifdef _OPENMP
+# pragma omp for schedule  (static)
+# endif
+        // every amplitude contributes to a single element of retProbs
+        for (i=0; i<numTasks; i++) {
+            
+            // determine index informed by qubits outcome
+            outcomeInd = 0;
+            for (q=0; q<numQubits; q++)
+                outcomeInd += extractBit(qubits[q], i + offset) * (1LL << q);
+            
+            retProbs[outcomeInd] += stateRe[i]*stateRe[i] + stateIm[i]*stateIm[i];
+        }
+    }
+}
