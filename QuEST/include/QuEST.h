@@ -2103,6 +2103,7 @@ qreal calcProbOfOutcome(Qureg qureg, int measureQubit, int outcome);
 void calcProbOfAllOutcomes(qreal* destProbs, Qureg qureg, int* qubits, int numQubits);
 // DEBUG
 void calcProbOfAllOutcomes_LOCKS(qreal* retProbs, Qureg qureg, int* qubits, int numQubits);
+void calcProbOfAllOutcomes_ATOMIC(qreal* outcomeProbs, Qureg qureg, int* qubits, int numQubits);
 
 /** Updates \p qureg to be consistent with measuring \p measureQubit in the given 
  * \p outcome (0 or 1), and returns the probability of such a measurement outcome. 

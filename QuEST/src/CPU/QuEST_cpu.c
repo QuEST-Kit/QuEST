@@ -3289,6 +3289,65 @@ qreal statevec_findProbabilityOfZeroDistributed (Qureg qureg) {
 }
 
 /* DOES NOT require explicit OpenMP version 
+ * - This iterates & threads EVERY AMPLITUDE, infers its outcome, and atomics the 
+ *   updating.
+ * - Does this lock all updates to outcomeProbs, or just at the same index??
+ */
+void statevec_calcProbOfAllOutcomes_ATOMIC(qreal* outcomeProbs, Qureg qureg, int* qubits, int numQubits) {
+
+    long long int numOutcomeProbs = (1 << numQubits);
+    long long int j;
+    
+# ifdef _OPENMP
+# pragma omp parallel \
+    default (none) \
+    shared    (numOutcomeProbs,outcomeProbs) \
+    private   (j)
+# endif 
+    {
+# ifdef _OPENMP
+# pragma omp for schedule  (static)
+# endif
+        for (j=0; j<numOutcomeProbs; j++)
+            outcomeProbs[j] = 0;
+    }   
+    
+    long long int numTasks = qureg.numAmpsPerChunk;
+    long long int offset = qureg.chunkId*qureg.numAmpsPerChunk;
+    qreal* stateRe = qureg.stateVec.real;
+    qreal* stateIm = qureg.stateVec.imag;
+    
+    long long int i;
+    long long int outcomeInd;
+    int q;
+    qreal prob;
+    
+# ifdef _OPENMP
+# pragma omp parallel \
+    shared    (numTasks,offset, qubits,numQubits, stateRe,stateIm, outcomeProbs) \
+    private   (i, q, outcomeInd, prob)
+# endif 
+    {
+# ifdef _OPENMP
+# pragma omp for schedule  (static)
+# endif
+        // every amplitude contributes to a single element of retProbs
+        for (i=0; i<numTasks; i++) {
+            
+            // determine index informed by qubits outcome
+            outcomeInd = 0;
+            for (q=0; q<numQubits; q++)
+                outcomeInd += extractBit(qubits[q], i + offset) * (1LL << q);
+            
+            prob = stateRe[i]*stateRe[i] + stateIm[i]*stateIm[i];
+            
+            # pragma omp atomic update
+            outcomeProbs[outcomeInd] += prob;
+        }
+    }
+}
+
+/* DOES NOT require explicit OpenMP version 
  * - This iterates & threads EVERY AMPLITUDE, infers its outcome, LOCKS the array 
  *   element, sums into it, then UNLOCKS
  */

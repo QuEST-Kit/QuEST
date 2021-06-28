@@ -949,7 +949,6 @@ long double dur1 = endTime - startTime;
 printf("OpenMP 4.5 reduce time: %Lf (s)\n", dur1);
 
         
-        
         REQUIRE( areEqual(refProbs, probs) );
         
         for (int i=0; i<numOutcomes; i++)
@@ -967,6 +966,24 @@ endTime = (timeInst.tv_sec + (long double) timeInst.tv_usec/pow(10,6));
 long double dur2 = endTime - startTime;
 printf("lock time: %Lf (s)\n", dur2);
 printf("lock/reduce slowdown: %Lf\n", dur2/dur1);
+        
+        REQUIRE( areEqual(refProbs, probs) );
+        
+        for (int i=0; i<numOutcomes; i++)
+            probs[i] = 0;
+            
+// start timing        
+gettimeofday(&timeInst, NULL);
+startTime = (timeInst.tv_sec + (long double) timeInst.tv_usec/pow(10,6));
+        
+        calcProbOfAllOutcomes_ATOMIC(probs, vec, qubits, numQubits);
+        
+// stop timing
+gettimeofday(&timeInst, NULL);
+endTime = (timeInst.tv_sec + (long double) timeInst.tv_usec/pow(10,6));
+long double dur3 = endTime - startTime;
+printf("atomic time: %Lf (s)\n", dur3);
+printf("atomic/reduce slowdown: %Lf\n", dur3/dur1);
         
         REQUIRE( areEqual(refProbs, probs) );
         
