@@ -1295,6 +1295,24 @@ qreal densmatr_calcProbOfOutcome(Qureg qureg, int measureQubit, int outcome) {
 	return outcomeProb;
 }
 
+void statevec_calcProbOfAllOutcomes(qreal* retProbs, Qureg qureg, int* qubits, int numQubits) {
+    
+    // each node populates retProbs with contributions from the subset of amps in each
+    statevec_calcProbOfAllOutcomesLocal(retProbs, qureg, qubits, numQubits);
+
+    // then, retProbs are summed element-wise
+    MPI_Allreduce(MPI_IN_PLACE, retProbs, 1LL<<numQubits, MPI_QuEST_REAL, MPI_SUM, MPI_COMM_WORLD);
+}
+
+void densmatr_calcProbOfAllOutcomes(qreal* retProbs, Qureg qureg, int* qubits, int numQubits) {
+    
+    // each node populates retProbs with contributions from the subset of amps in each
+    densmatr_calcProbOfAllOutcomesLocal(retProbs, qureg, qubits, numQubits);
+
+    // then, retProbs are summed element-wise
+    MPI_Allreduce(MPI_IN_PLACE, retProbs, 1LL<<numQubits, MPI_QuEST_REAL, MPI_SUM, MPI_COMM_WORLD);
+}
+
 qreal densmatr_calcPurity(Qureg qureg) {
     
     qreal localPurity = densmatr_calcPurityLocal(qureg);

@@ -8,6 +8,12 @@ using Catch::Matchers::Contains;
 
 
 
+
+// DEBUG 
+#include <sys/time.h>
+
+
+
 /** @sa calcDensityInnerProduct
  * @ingroup unittest 
  * @author Tyson Jones 
@@ -867,6 +873,167 @@ TEST_CASE( "calcInnerProduct", "[calculations]" ) {
     destroyQureg(vec1, QUEST_ENV);
     destroyQureg(vec2, QUEST_ENV);
 }
+
+
+
+/** @sa calcProbOfAllOutcomes
+ * @ingroup unittest 
+ * @author Tyson Jones 
+ */
+TEST_CASE( "calcProbOfAllOutcomes", "[calculations]" ) {
+    
+    // [X] distributed (confirm additional per-node memory is necessary??)
+    // [ ] GPU
+    // [ ] multithreaded (confirm use of OpenMP 4.5!!! seems risky)
+    // [X] multithreaded (confirm no page size violations)
+    
+    // [ ] density matrix for all above
+    
+    SECTION( "debug" ) {
+        
+        
+        int STATE_NUM_QUBITS = 20;
+        Qureg vec = createQureg(STATE_NUM_QUBITS, QUEST_ENV);
+        QVector ref = getRandomStateVector(STATE_NUM_QUBITS);
+        toQureg(vec, ref);
+        
+        
+        int numQubits = GENERATE_COPY( 3, 10, 15 );
+        int qubits[numQubits];
+        for (int q=0; q<numQubits; q++)
+            qubits[q] = q;
+            
+            
+        printf("\n\ntargeting %d qubits (of %d in state):\n{", numQubits, STATE_NUM_QUBITS);
+        for (int q=0; q<numQubits; q++)
+            printf("%d  ", q);
+        printf("}\n");
+        
+        int numOutcomes = 1<<numQubits;
+        
+        //qreal probs[numOutcomes];
+        qreal* probs = (qreal*) malloc(numOutcomes * sizeof *probs);
+    
+        
+        QVector refProbs = QVector(numOutcomes);
+        
+
+
+        
+
+        // prob is sum of |amp|^2 of basis states which encode outcome
+        for (long long int i=0; i<ref.size(); i++) {
+            int outcome = 0;
+            for (int q=0; q<numQubits; q++) {
+                int bit = (i >> qubits[q]) & 1;
+                outcome += bit * (1 << q);
+            }
+            refProbs[outcome] += pow(abs(ref[i]), 2);
+        }
+
+        
+        
+// start timing
+struct timeval timeInst;
+gettimeofday(&timeInst, NULL);
+long double startTime = (
+timeInst.tv_sec + (long double) timeInst.tv_usec/ (long double) 1E6);
+
+        calcProbOfAllOutcomes(probs, vec, qubits, numQubits);
+        
+// stop timing
+gettimeofday(&timeInst, NULL);
+long double endTime = (
+    timeInst.tv_sec + (long double) timeInst.tv_usec/(long double) 1E6);
+long double dur1 = endTime - startTime;
+printf("OpenMP 4.5 reduce time: %Lf (s)\n", dur1);
+
+        
+        
+        REQUIRE( areEqual(refProbs, probs) );
+        
+        for (int i=0; i<numOutcomes; i++)
+            probs[i] = 0;
+    
+// start timing        
+gettimeofday(&timeInst, NULL);
+startTime = (timeInst.tv_sec + (long double) timeInst.tv_usec/pow(10,6));
+            
+        calcProbOfAllOutcomes_LOCKS(probs, vec, qubits, numQubits);
+        
+// stop timing
+gettimeofday(&timeInst, NULL);
+endTime = (timeInst.tv_sec + (long double) timeInst.tv_usec/pow(10,6));
+long double dur2 = endTime - startTime;
+printf("lock time: %Lf (s)\n", dur2);
+printf("lock/reduce slowdown: %Lf\n", dur2/dur1);
+        
+        REQUIRE( areEqual(refProbs, probs) );
+        
+        free(probs);
+        
+    }
+    
+    
+    
+    SECTION( "correctness" ) {
+        
+        Qureg vec = createQureg(NUM_QUBITS, QUEST_ENV);
+        Qureg mat = createDensityQureg(NUM_QUBITS, QUEST_ENV);
+        
+        
+        // generate all possible qubit arrangements
+        int numQubits = GENERATE_COPY( range(1,NUM_QUBITS+1) );
+        int* qubits = GENERATE_COPY( sublists(range(0,NUM_QUBITS), numQubits) );
+        
+        int numOutcomes = 1<<numQubits;
+        qreal probs[numOutcomes];
+        QVector refProbs = QVector(numOutcomes);
+            
+        SECTION( "state-vector" ) {
+            
+            SECTION( "normalised" ) {
+                
+                QVector ref = getRandomStateVector(NUM_QUBITS);
+                toQureg(vec, ref);
+
+                // prob is sum of |amp|^2 of basis states which encode outcome
+                for (size_t i=0; i<ref.size(); i++) {
+                    int outcome = 0;
+                    for (int q=0; q<numQubits; q++) {
+                        int bit = (i >> qubits[q]) & 1;
+                        outcome += bit * (1 << q);
+                    }
+                    refProbs[outcome] += pow(abs(ref[i]), 2);
+                }
+
+                calcProbOfAllOutcomes(probs, vec, qubits, numQubits);
+                REQUIRE( areEqual(refProbs, probs) );
+            }
+            SECTION( "unnormalised" ) {
+                
+                QVector ref = getRandomQVector(1<<NUM_QUBITS);
+                toQureg(vec, ref);
+                
+                // prob is sum of |amp|^2 of basis states which encode outcome
+                for (size_t i=0; i<ref.size(); i++) {
+                    int outcome = 0;
+                    for (int q=0; q<numQubits; q++) {
+                        int bit = (i >> qubits[q]) & 1;
+                        outcome += bit * (1 << q);
+                    }
+                    refProbs[outcome] += pow(abs(ref[i]), 2);
+                }
+
+                calcProbOfAllOutcomes(probs, vec, qubits, numQubits);
+                REQUIRE( areEqual(refProbs, probs) );
+            }
+        }
+        destroyQureg(vec, QUEST_ENV);
+        destroyQureg(mat, QUEST_ENV);    
+    }
+}
+        
 
 
 

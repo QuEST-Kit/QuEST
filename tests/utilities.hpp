@@ -832,6 +832,15 @@ bool areEqual(QMatrix a, QMatrix b);
  */
 bool areEqual(QVector vec, qreal* reals, qreal* imags);
 
+/** Returns true if the absolute value of the difference between every element in 
+ * \p vec (which must be strictly real) and those implied by \p reals, is less 
+ * than \p REAL_EPS.
+ *
+ * @ingroup testutilities 
+ * @author Tyson Jones
+ */
+bool areEqual(QVector vec, qreal* reals);
+
 /** Returns the unit-norm complex number exp(i*\p phase). This function uses the 
  * Euler formula, and avoids problems with calling exp(__complex__) in a platform 
  * agnostic way 

@@ -934,15 +934,20 @@ qreal calcProbOfOutcome(Qureg qureg, int measureQubit, int outcome) {
 }
 
 void calcProbOfAllOutcomes(qreal* retProbs, Qureg qureg, int* qubits, int numQubits) {
-    // validate qubits
-    
-    /*
+    validateMultiTargets(qureg, qubits, numQubits, __func__);
+
     if (qureg.isDensityMatrix)
         densmatr_calcProbOfAllOutcomes(retProbs, qureg, qubits, numQubits);
     else
-    */
         statevec_calcProbOfAllOutcomes(retProbs, qureg, qubits, numQubits);
 }
+// DEBUG
+void calcProbOfAllOutcomes_LOCKS(qreal* retProbs, Qureg qureg, int* qubits, int numQubits) {
+    validateMultiTargets(qureg, qubits, numQubits, __func__);
+
+    statevec_calcProbOfAllOutcomes_LOCKS(retProbs, qureg, qubits, numQubits);
+}
+
 
 qreal calcPurity(Qureg qureg) {
     validateDensityMatrQureg(qureg, __func__);

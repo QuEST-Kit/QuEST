@@ -834,6 +834,17 @@ bool areEqual(QVector vec, qreal* reals, qreal* imags) {
     return true;
 }
 
+bool areEqual(QVector vec, qreal* reals) {
+    for (size_t i=0; i<vec.size(); i++) {
+        DEMAND( imag(vec[i]) == 0. );
+        
+        qreal dif = abs(real(vec[i]) - reals[i]);
+        if (dif > REAL_EPS)
+            return false;
+    }
+    return true;
+}
+
 /* Copies QMatrix into a CompelxMAtrix struct */
 #define macro_copyQMatrix(dest, src) { \
     for (size_t i=0; i<src.size(); i++) { \
