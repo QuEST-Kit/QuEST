@@ -2028,6 +2028,101 @@ qreal densmatr_calcProbOfOutcome(Qureg qureg, int measureQubit, int outcome)
     return outcomeProb;
 }
 
+__global__ void statevec_calcProbOfAllOutcomesPerBlockKernel(
+    qreal* allBlockOutcomeProbs, Qureg qureg, int* qubits, int numQubits
+) {
+    // each thread handles one amplitude (all amplitudes are involved)
+    long long int ampInd = blockIdx.x*blockDim.x + threadIdx.x;
+    if (ampInd >= qureg.numAmpsTotal) return;
+    
+    qreal prob = (
+        qureg.deviceStateVec.real[ampInd]*qureg.deviceStateVec.real[ampInd] + 
+        qureg.deviceStateVec.imag[ampInd]*qureg.deviceStateVec.imag[ampInd]);
+        
+    // each amplitude contributes to one outcome
+    long long int outcomeInd = 0;
+    for (int q=0; q<numQubits; q++)
+        outcomeInd += extractBit(qubits[q], ampInd) * (1LL << q);
+        
+    // each block has its own local outcomeProbs[] sub-array
+    long long int numOutcomes = (1LL << numQubits);
+    int blockOffset = blockDim.x * numOutcomes;
+    int allBlockInd = blockOffset + outcomeInd;
+    
+    // threads must atomically contribute to their block's sub-array
+    atomicAdd(&allBlockOutcomeProbs[allBlockInd], prob);
+}
+
+__global__ void statevec_calcProbOfAllOutcomesReduceBlocksKernel(
+    qreal* outcomeProbs, qreal* allSubArrOutcomeProbs, int numQubits, int numSubArrs
+) {
+    // each thread handles one outcome
+    long long int numOutcomes = (1LL << numQubits);
+    long long int outcomeInd = blockIdx.x*blockDim.x + threadIdx.x;
+    if (outcomeInd >= numOutcomes) return;
+    
+    // total outcome prob combines those in all sub arrays
+    qreal totalProb = 0;
+    for (int s=0; s<numSubArrs; s++)
+        totalProb += allSubArrOutcomeProbs[outcomeInd + s*numOutcomes];
+    outcomeProbs[outcomeInd] = totalProb;
+    
+    // we avoided language of 'blocks', because the roles of blocks in this 
+    // kernel differ from those in *PerBlockKernel()
+}
+
+qreal statevec_calcProbOfAllOutcomes(qreal* outcomeProbs, Qureg qureg, int* qubits, int numQubits) {
+    
+    // TODO: 
+    // - copy qubits into shared memory and have coalesced acess
+    // - (benchmark first)
+    // TODO:
+    //  - do this for applyPhaseFunc args too
+    
+    // copy qubits to GPU memory
+    qreal* d_qubits;
+    size_t mem_qubits = numQubits * sizeof *d_qubits;
+    cudaMalloc(&d_qubits, mem_qubits);
+    cudaMemcpy(d_qubits, qubits, mem_qubits, cudaMemcpyHostToDevice);
+    
+    // create global array, with per-block subarrays
+    int numThreadsPerBlock = 128;
+    int numBlocks = ceil(qureg.numAmpsPerChunk / (qreal) numThreadsPerBlock);
+    long long int numOutcomes = (1LL << numQubits);
+    qreal* d_allBlockOutcomeProbs;
+    size_t mem_allBlockOutcomeProbs = numOutcomes * numBlocks * sizeof *d_allBlockOutcomeProbs;
+    cudaMalloc(&d_allBlockOutcomeProbs, mem_allBlockOutcomeProbs);
+    cudaMemset(d_allBlockOutcomeProbs, 0, mem_allBlockOutcomeProbs);
+    
+    // populate per-block subarrays
+    statevec_calcProbOfAllOutcomesPerBlockKernel<<<numBlocks, numThreadsPerBlock>>>(
+        d_allBlockOutcomeProbs, qureg, d_qubits, numQubits);
+        
+    // create global GPU array for outcomeProbs
+    qreal d_outcomeProbs;
+    size_t mem_outcomeProbs = numOutcomes * sizeof *d_outcomeProbs;
+    cudaMalloc(&d_outcomeProbs, mem_outcomeProbs);
+    
+    // reduce per-block (by previous block size) subarrays 
+    int numReduceBlocks = ceil(numOutcomes / (qreal) numThreadsPerBlock);
+    statevec_calcProbOfAllOutcomesReduceBlocksKernel<<<numReduceBlocks, numThreadsPerBlock>>>(
+        d_outcomeProbs, d_allBlockOutcomeProbs, numQubits, numBlocks);
+        
+    // copy outcomeProbs from GPU memory
+    cudaMemcpy(outcomeProbs, d_outcomeProbs, mem_outcomeProbs, cudaMemcpyDeviceToHost);
+    
+    // free GPU memory
+    cudaFree(d_qubits);
+    cudaFree(d_allBlockOutcomeProbs);
+    cudaFree(d_outcomeProbs);
+}
+
+qreal densmatr_calcProbOfAllOutcomes(qreal* outcomeProbs, Qureg qureg, int* qubits, int numQubits) {
+
+    // DO NOTHING presently
+    // 
+}
+
 /** computes Tr(conjTrans(a) b) = sum of (a_ij^* b_ij), which is a real number */
 __global__ void densmatr_calcInnerProductKernel(
     Qureg a, Qureg b, long long int numTermsToSum, qreal* reducedArray
