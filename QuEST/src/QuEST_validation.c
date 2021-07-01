@@ -83,6 +83,7 @@ typedef enum {
     E_INVALID_KRAUS_OPS,
     E_MISMATCHING_NUM_TARGS_KRAUS_SIZE,
     E_DISTRIB_QUREG_TOO_SMALL,
+    E_DISTRIB_HERMITIAN_DIAG_OP_TOO_SMALL,
     E_DISTRIB_DIAG_OP_TOO_SMALL,
     E_NUM_AMPS_EXCEED_TYPE,
     E_INVALID_PAULI_HAMIL_PARAMS,
@@ -94,6 +95,7 @@ typedef enum {
     E_INVALID_TROTTER_ORDER,
     E_INVALID_TROTTER_REPS,
     E_MISMATCHING_QUREG_DIAGONAL_OP_SIZE,
+    E_HERMITIAN_DIAG_OP_NOT_INITIALISED,
     E_DIAGONAL_OP_NOT_INITIALISED
 } ErrorCode;
 
@@ -151,6 +153,7 @@ static const char* errorMessages[] = {
     [E_MISMATCHING_NUM_TARGS_KRAUS_SIZE] = "Every Kraus operator must be of the same number of qubits as the number of targets.",
     [E_DISTRIB_QUREG_TOO_SMALL] = "Too few qubits. The created qureg must have at least one amplitude per node used in distributed simulation.",
     [E_DISTRIB_DIAG_OP_TOO_SMALL] = "Too few qubits. The created DiagonalOp must contain at least one element per node used in distributed simulation.",
+    [E_DISTRIB_HERMITIAN_DIAG_OP_TOO_SMALL] = "Too few qubits. The created HermitianDiagOp must contain at least one element per node used in distributed simulation.",
     [E_NUM_AMPS_EXCEED_TYPE] = "Too many qubits (max of log2(SIZE_MAX)). Cannot store the number of amplitudes per-node in the size_t type.",
     [E_INVALID_PAULI_HAMIL_PARAMS] = "The number of qubits and terms in the PauliHamil must be strictly positive.",
     [E_INVALID_PAULI_HAMIL_FILE_PARAMS] = "The number of qubits and terms in the PauliHamil file (%s) must be strictly positive.",
@@ -161,7 +164,8 @@ static const char* errorMessages[] = {
     [E_INVALID_TROTTER_ORDER] = "The Trotterisation order must be 1, or an even number (for higher-order Suzuki symmetrized expansions).",
     [E_INVALID_TROTTER_REPS] = "The number of Trotter repetitions must be >=1.",
     [E_MISMATCHING_QUREG_DIAGONAL_OP_SIZE] = "The qureg must represent an equal number of qubits as that in the applied diagonal operator.",
-    [E_DIAGONAL_OP_NOT_INITIALISED] = "The diagonal operator has not been initialised through createDiagonalOperator()."
+    [E_DIAGONAL_OP_NOT_INITIALISED] = "The diagonal operator has not been initialised through createDiagonalOperator().",
+    [E_HERMITIAN_DIAG_OP_NOT_INITIALISED] = "The diagonal operator has not been initialised through createHermitianDiagOperator()."
 };
 
 void exitWithError(const char* msg, const char* func) {
@@ -360,6 +364,14 @@ void validateNumElems(DiagonalOp op, long long int startInd, long long int numEl
     QuESTAssert(numElems >= 0 && numElems <= indMax, E_INVALID_NUM_ELEMS, caller);
     QuESTAssert(numElems + startInd <= indMax, E_INVALID_OFFSET_NUM_ELEMS_DIAG, caller);
 }
+
+void validateNumElemsHermitianDiagOp(HermitianDiagOp op, long long int startInd, long long int numElems, const char* caller) {
+    long long int indMax = 1LL << op.numQubits;
+    QuESTAssert(startInd >= 0 && startInd < indMax, E_INVALID_ELEM_INDEX, caller);
+    QuESTAssert(numElems >= 0 && numElems <= indMax, E_INVALID_NUM_ELEMS, caller);
+    QuESTAssert(numElems + startInd <= indMax, E_INVALID_OFFSET_NUM_ELEMS_DIAG, caller);
+}
+
 
 void validateTarget(Qureg qureg, int targetQubit, const char* caller) {
     QuESTAssert(targetQubit>=0 && targetQubit<qureg.numQubitsRepresented, E_INVALID_TARGET_QUBIT, caller);
@@ -674,8 +686,17 @@ void validateDiagOpInit(DiagonalOp op, const char* caller) {
     QuESTAssert(op.real != NULL && op.imag != NULL, E_DIAGONAL_OP_NOT_INITIALISED, caller);
 }
 
+void validateHermitianDiagOpInit(HermitianDiagOp op, const char* caller) {
+    QuESTAssert(op.diag != NULL, E_HERMITIAN_DIAG_OP_NOT_INITIALISED, caller);
+}
+
 void validateDiagonalOp(Qureg qureg, DiagonalOp op, const char* caller) {
     validateDiagOpInit(op, caller);
+    QuESTAssert(qureg.numQubitsRepresented == op.numQubits, E_MISMATCHING_QUREG_DIAGONAL_OP_SIZE, caller);
+}
+
+void validateHermitianDiagOp(Qureg qureg, HermitianDiagOp op, const char* caller) {
+    validateHermitianDiagOpInit(op, caller);
     QuESTAssert(qureg.numQubitsRepresented == op.numQubits, E_MISMATCHING_QUREG_DIAGONAL_OP_SIZE, caller);
 }
 

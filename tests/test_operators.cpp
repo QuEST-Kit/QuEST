@@ -76,6 +76,55 @@ TEST_CASE( "applyDiagonalOp", "[operators]" ) {
     CLEANUP_TEST( quregVec, quregMatr );
 }
 
+/** @sa applyHermitianDiagOp
+ * @ingroup unittest 
+ * @author Tyson Jones 
+ */
+TEST_CASE( "applyHermitianDiagOp", "[operators]" ) {
+    
+    PREPARE_TEST( quregVec, quregMatr, refVec, refMatr );
+    
+    SECTION( "correctness" ) {
+        
+        // try 10 random operators 
+        GENERATE( range(0,10) );
+        
+        // make a totally random (non-Hermitian) diagonal oeprator
+        HermitianDiagOp op = createHermitianDiagOp(NUM_QUBITS, QUEST_ENV);
+        for (long long int i=0; i<op.numElemsPerChunk; i++) {
+            op.diag[i] = getRandomReal(-5, 5);
+        }
+        syncHermitianDiagOp(op);
+        
+        SECTION( "state-vector" ) {
+            
+            QVector ref = toQMatrix(op) * refVec;
+            applyHermitianDiagOp(quregVec, op);
+            REQUIRE( areEqual(quregVec, ref) );
+        }
+        SECTION( "density-matrix" ) {
+            
+            QMatrix ref = toQMatrix(op) * refMatr;
+            applyHermitianDiagOp(quregMatr, op);
+            REQUIRE( areEqual(quregMatr, ref, 100*REAL_EPS) );
+        }
+        
+        destroyHermitianDiagOp(op, QUEST_ENV);
+    }
+    SECTION( "input validation" ) {
+        
+        SECTION( "mismatching size" ) {
+            
+            HermitianDiagOp op = createHermitianDiagOp(NUM_QUBITS + 1, QUEST_ENV);
+            
+            REQUIRE_THROWS_WITH( applyHermitianDiagOp(quregVec, op), Contains("equal number of qubits"));
+            REQUIRE_THROWS_WITH( applyHermitianDiagOp(quregMatr, op), Contains("equal number of qubits"));
+            
+            destroyHermitianDiagOp(op, QUEST_ENV);
+        }
+    }
+    CLEANUP_TEST( quregVec, quregMatr );
+}
 
 
 /** @sa applyMatrix2

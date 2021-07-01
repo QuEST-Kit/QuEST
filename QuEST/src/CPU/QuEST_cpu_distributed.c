@@ -1524,10 +1524,47 @@ void copyDiagOpIntoMatrixPairState(Qureg qureg, DiagonalOp op) {
     }
 }
 
+void copyHermDiagOpIntoMatrixPairState(Qureg qureg, HermitianDiagOp op) {
+
+    /* since, for every elem in 2^N op, there is a column in 2^N x 2^N qureg,
+     * we know immediately (by each node containing at least 1 element of op)
+     * that every node contains at least 1 column. Hence, we know that pairStateVec
+     * of qureg can fit the entirety of op.
+     */
+
+    // load up our local contribution
+    long long int localOffset = qureg.chunkId * op.numElemsPerChunk;
+    memcpy(&qureg.pairStateVec.real[localOffset], op.diag, op.numElemsPerChunk * sizeof(qreal));
+
+    // work out how many messages are needed to send op chunks (2GB limit)
+    long long int maxMsgSize = MPI_MAX_AMPS_IN_MSG;
+    if (op.numElemsPerChunk < maxMsgSize)
+        maxMsgSize = op.numElemsPerChunk;
+    int numMsgs = op.numElemsPerChunk / maxMsgSize; // since MPI_MAX... = 2^n, division is exact
+
+    // each node has a turn at broadcasting its contribution of op
+    for (int broadcaster=0; broadcaster < qureg.numChunks; broadcaster++) {
+        long long int broadOffset = broadcaster * op.numElemsPerChunk;
+
+        // (while keeping each message smaller than MPI max)
+        for (int i=0; i<numMsgs; i++) {
+            MPI_Bcast(
+                &qureg.pairStateVec.real[broadOffset + i*maxMsgSize],
+                maxMsgSize,  MPI_QuEST_REAL, broadcaster, MPI_COMM_WORLD);
+        }
+    }
+}
+
 void densmatr_applyDiagonalOp(Qureg qureg, DiagonalOp op) {
     
     copyDiagOpIntoMatrixPairState(qureg, op);
     densmatr_applyDiagonalOpLocal(qureg, op);
+}
+
+void densmatr_applyHermitianDiagOp(Qureg qureg, HermitianDiagOp op) {
+
+	copyHermDiagOpIntoMatrixPairState(qureg, op);
+    densmatr_applyHermitianDiagOpLocal(qureg, op);
 }
 
 Complex statevec_calcExpecDiagonalOp(Qureg qureg, DiagonalOp op) {
@@ -1548,6 +1585,18 @@ Complex statevec_calcExpecDiagonalOp(Qureg qureg, DiagonalOp op) {
     return globalExpec;
 }
 
+qreal statevec_calcExpecHermitianDiagOp(Qureg qureg, HermitianDiagOp op) {
+
+    qreal localExpec = statevec_calcExpecHermitianDiagOpLocal(qureg, op);
+    if (qureg.numChunks == 1)
+        return localExpec;
+
+    qreal globalReal;
+    MPI_Allreduce(&localExpec, &globalReal, 1, MPI_QuEST_REAL, MPI_SUM, MPI_COMM_WORLD);
+
+    return globalReal;
+}
+
 Complex densmatr_calcExpecDiagonalOp(Qureg qureg, DiagonalOp op) {
     
     Complex localVal = densmatr_calcExpecDiagonalOpLocal(qureg, op);
@@ -1565,4 +1614,17 @@ Complex densmatr_calcExpecDiagonalOp(Qureg qureg, DiagonalOp op) {
     globalVal.real = globalRe;
     globalVal.imag = globalIm;
     return globalVal;
+}
+
+qreal densmatr_calcExpecHermitianDiagOp(Qureg qureg, HermitianDiagOp op) {
+
+    qreal localVal = densmatr_calcExpecHermitianDiagOpLocal(qureg, op);
+    if (qureg.numChunks == 1)
+        return localVal;
+
+    qreal globalRe;
+
+    MPI_Allreduce(&localVal, &globalRe, 1, MPI_QuEST_REAL, MPI_SUM, MPI_COMM_WORLD);
+
+    return globalRe;
 }

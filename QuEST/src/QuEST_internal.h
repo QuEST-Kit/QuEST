@@ -104,6 +104,9 @@ void densmatr_applyDiagonalOp(Qureg qureg, DiagonalOp op);
 
 Complex densmatr_calcExpecDiagonalOp(Qureg qureg, DiagonalOp op);
 
+void densmatr_applyHermitianDiagOp(Qureg qureg, HermitianDiagOp op);
+
+qreal densmatr_calcExpecHermitianDiagOp(Qureg qureg, HermitianDiagOp op);
 
 /* 
  * operations upon state vectors
@@ -253,6 +256,9 @@ void statevec_applyDiagonalOp(Qureg qureg, DiagonalOp op);
 
 Complex statevec_calcExpecDiagonalOp(Qureg qureg, DiagonalOp op);
 
+void statevec_applyHermitianDiagOp(Qureg qureg, HermitianDiagOp op);
+
+qreal statevec_calcExpecHermitianDiagOp(Qureg qureg, HermitianDiagOp op);
 
 /* 
  * operations which differentiate between state-vectors and density matrices internally 
@@ -262,11 +268,21 @@ void agnostic_applyTrotterCircuit(Qureg qureg, PauliHamil hamil, qreal time, int
 
 DiagonalOp agnostic_createDiagonalOp(int numQubits, QuESTEnv env);
 
+HermitianDiagOp agnostic_createHermitianDiagOp(int numQubits, QuESTEnv env);
+
 void agnostic_destroyDiagonalOp(DiagonalOp op);
+
+void agnostic_destroyHermitianDiagOp(HermitianDiagOp op);
 
 void agnostic_syncDiagonalOp(DiagonalOp op);
 
+void agnostic_syncHermitianDiagOp(HermitianDiagOp op);
+
 void agnostic_setDiagonalOpElems(DiagonalOp op, long long int startInd, qreal* real, qreal* imag, long long int numElems);
+
+void agnostic_setHermitianDiagOpElems(HermitianDiagOp op, long long int startInd, qreal* diag, long long int numElems);
+
+void agnostic_setHermitianDiagOpElemsFromIsingHamiltonian(HermitianDiagOp op, PauliHamil isingHam);
 
 # ifdef __cplusplus
 }

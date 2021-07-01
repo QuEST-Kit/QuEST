@@ -347,12 +347,34 @@ void densmatr_applyDiagonalOp(Qureg qureg, DiagonalOp op) {
     qureg.pairStateVec.imag = imPtr;
 }
 
+void densmatr_applyHermitianDiagOp(Qureg qureg, HermitianDiagOp op) {
+
+    // we must preload qureg.pairStateVec with the elements of op.
+    // instead of needless cloning, we'll just temporarily swap the pointers
+    qreal* rePtr = qureg.pairStateVec.real;
+    qureg.pairStateVec.real = op.diag;
+    
+    densmatr_applyHermitianDiagOpLocal(qureg, op);
+
+    qureg.pairStateVec.real = rePtr;
+}
+
 Complex statevec_calcExpecDiagonalOp(Qureg qureg, DiagonalOp op) {
 
     return statevec_calcExpecDiagonalOpLocal(qureg, op);
 }
 
+qreal statevec_calcExpecHermitianDiagOp(Qureg qureg, HermitianDiagOp op) {
+
+    return statevec_calcExpecHermitianDiagOpLocal(qureg, op);
+}
+
 Complex densmatr_calcExpecDiagonalOp(Qureg qureg, DiagonalOp op) {
     
     return densmatr_calcExpecDiagonalOpLocal(qureg, op);
+}
+
+qreal densmatr_calcExpecHermitianDiagOp(Qureg qureg, HermitianDiagOp op) {
+    
+    return densmatr_calcExpecHermitianDiagOpLocal(qureg, op);
 }

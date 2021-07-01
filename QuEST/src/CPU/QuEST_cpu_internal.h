@@ -89,7 +89,11 @@ void densmatr_mixTwoQubitDepolarisingQ1LocalQ2DistributedPart3(Qureg qureg, int 
                 
 void densmatr_applyDiagonalOpLocal(Qureg qureg, DiagonalOp op);
 
+void densmatr_applyHermitianDiagOpLocal(Qureg qureg, HermitianDiagOp op);
+
 Complex densmatr_calcExpecDiagonalOpLocal(Qureg qureg, DiagonalOp op);
+
+qreal densmatr_calcExpecHermitianDiagOpLocal(Qureg qureg, HermitianDiagOp op);
 
 
 /*
@@ -194,5 +198,6 @@ void statevec_multiControlledMultiQubitUnitaryLocal(Qureg qureg, long long int c
 
 Complex statevec_calcExpecDiagonalOpLocal(Qureg qureg, DiagonalOp op);
 
+qreal statevec_calcExpecHermitianDiagOpLocal(Qureg qureg, HermitianDiagOp op);
 
 # endif // QUEST_CPU_INTERNAL_H

@@ -128,7 +128,14 @@ void validateDiagOpInit(DiagonalOp, const char* caller);
 
 void validateDiagonalOp(Qureg qureg, DiagonalOp op, const char* caller);
 
+void validateHermitianDiagOpInit(HermitianDiagOp, const char* caller);
+
+void validateHermitianDiagOp(Qureg qureg, HermitianDiagOp op, const char* caller);
+
 void validateNumElems(DiagonalOp op, long long int startInd, long long int numElems, const char* caller);
+
+void validateNumElemsHermitianDiagOp(HermitianDiagOp op, long long int startInd, long long int numElems, const char* caller);
+
 
 # ifdef __cplusplus
 }

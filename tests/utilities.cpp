@@ -1015,7 +1015,47 @@ QVector toQVector(DiagonalOp op) {
     return vec;
 }
 
+QVector toQVector(HermitianDiagOp op) {
+    long long int totalElems = (1LL << op.numQubits);
+#ifdef DISTRIBUTED_MODE
+    DEMAND( totalElems < MPI_MAX_AMPS_IN_MSG );
+#endif
+    
+    qreal* fullRe;
+    
+    // in distributed mode, give every node the full diagonal operator
+#ifdef DISTRIBUTED_MODE
+    fullRe = (qreal*) malloc(totalElems * sizeof *fullRe);
+            
+    MPI_Allgather(
+        op.real, op.numElemsPerChunk, MPI_QuEST_REAL,
+        fullRe, op.numElemsPerChunk, MPI_QuEST_REAL, MPI_COMM_WORLD);
+#else
+    fullRe = op.diag;
+#endif
+    
+    // copy full state vector into a QVector
+    QVector vec = QVector(totalElems);
+    for (long long int i=0; i<totalElems; i++)
+        vec[i] = qcomp(fullRe[i]);
+            
+    // clean up if we malloc'd distrib array
+#ifdef DISTRIBUTED_MODE
+    free(fullRe);
+#endif
+    return vec;
+}
+
+
 QMatrix toQMatrix(DiagonalOp op) {
+    QVector vec = toQVector(op);
+    QMatrix mat = getZeroMatrix(1LL << op.numQubits);
+    for (size_t i=0; i<mat.size(); i++)
+        mat[i][i] = vec[i];
+    return mat;
+}
+
+QMatrix toQMatrix(HermitianDiagOp op) {
     QVector vec = toQVector(op);
     QMatrix mat = getZeroMatrix(1LL << op.numQubits);
     for (size_t i=0; i<mat.size(); i++)

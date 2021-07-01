@@ -1363,6 +1363,36 @@ void agnostic_syncDiagonalOp(DiagonalOp op) {
     // nothing to do on CPU
 }
 
+HermitianDiagOp agnostic_createHermitianDiagOp(int numQubits, QuESTEnv env) {
+
+    // the 2^numQubits values will be evenly split between the env.numRanks nodes
+	HermitianDiagOp op;
+    op.numQubits = numQubits;
+    op.numQubitsRepresented = numQubits / env.numRanks;
+    op.numElemsPerChunk = (1LL << numQubits) / env.numRanks;
+    op.chunkId = env.rank;
+    op.numChunks = env.numRanks;
+
+    // allocate CPU memory (initialised to zero)
+    op.diag = (qreal*) calloc(op.numElemsPerChunk, sizeof(qreal));
+
+    // check cpu memory allocation was successful
+    if ( !op.diag ) {
+        printf("Could not allocate memory!\n");
+        exit(EXIT_FAILURE);
+    }
+
+    return op;
+}
+
+void agnostic_destroyHermitianDiagOp(HermitianDiagOp op) {
+    free(op.diag);
+}
+
+void agnostic_syncHermitianDiagOp(HermitianDiagOp op) {
+    // nothing to do on CPU
+}
+
 void statevec_reportStateToScreen(Qureg qureg, QuESTEnv env, int reportRank){
     long long int index;
     int rank;
@@ -3868,6 +3898,251 @@ void agnostic_setDiagonalOpElems(DiagonalOp op, long long int startInd, qreal* r
         for (index=localStartInd; index < localEndInd; index++) {
             vecRe[index] = real[index + offset];
             vecIm[index] = imag[index + offset];
+        }
+    }
+}
+
+void statevec_applyHermitianDiagOp(Qureg qureg, HermitianDiagOp op) {
+
+    // each node/chunk modifies only its values in an embarrassingly parallelisable way
+    long long int numAmps = qureg.numAmpsPerChunk;
+
+    qreal* stateRe = qureg.stateVec.real;
+    qreal* stateIm = qureg.stateVec.imag;
+    qreal* opDiag = op.diag;
+
+    qreal a,b,c;
+    long long int index;
+
+# ifdef _OPENMP
+# pragma omp parallel \
+    shared    (stateRe,stateIm, opDiag, numAmps) \
+    private   (index, a,b,c)
+# endif
+    {
+# ifdef _OPENMP
+# pragma omp for schedule  (static)
+# endif
+        for (index=0LL; index<numAmps; index++) {
+            a = stateRe[index];
+            b = stateIm[index];
+            c = opDiag[index];
+
+            stateRe[index] = a*c;
+            stateIm[index] = b*c;
+        }
+    }
+}
+
+void densmatr_applyHermitianDiagOpLocal(Qureg qureg, HermitianDiagOp op) {
+
+    /* ALL values of op are pre-loaded into qureg.pairStateVector (on every node).
+     * Furthermore, since it's gauranteed each node contains an integer number of
+     * columns of qureg (because op upperlimits the number of nodes; 1 per element),
+     * then we know iteration below begins at the 'top' of a column, and there is
+     * no offset for op (pairStateVector)
+     */
+
+    long long int numAmps = qureg.numAmpsPerChunk;
+    int opDim = (1 << op.numQubits);
+
+    qreal* stateRe = qureg.stateVec.real;
+    qreal* stateIm = qureg.stateVec.imag;
+    qreal* opDiag = qureg.pairStateVec.real;
+
+    qreal a,b,c;
+    long long int index;
+
+# ifdef _OPENMP
+# pragma omp parallel \
+    shared    (stateRe,stateIm,opDiag,numAmps,opDim) \
+    private   (index, a,b,c)
+# endif
+    {
+# ifdef _OPENMP
+# pragma omp for schedule  (static)
+# endif
+        for (index=0LL; index<numAmps; index++) {
+            a = stateRe[index];
+            b = stateIm[index];
+            c = opDiag[index % opDim];
+
+            stateRe[index] = a*c;
+            stateIm[index] = b*c;
+        }
+    }
+}
+
+qreal statevec_calcExpecHermitianDiagOpLocal(Qureg qureg, HermitianDiagOp op) {
+
+    qreal expecRe = 0;
+
+    long long int index;
+    long long int numAmps = qureg.numAmpsPerChunk;
+    qreal *stateReal = qureg.stateVec.real;
+    qreal *stateImag = qureg.stateVec.imag;
+    qreal *opReal = op.diag;
+
+    qreal vecRe,vecIm,vecAbs,opRe;
+
+# ifdef _OPENMP
+# pragma omp parallel \
+    shared    (stateReal, stateImag, opReal, numAmps) \
+    private   (index, vecRe,vecIm,vecAbs,opRe) \
+    reduction ( +:expecRe )
+# endif
+    {
+# ifdef _OPENMP
+# pragma omp for schedule  (static)
+# endif
+        for (index=0; index < numAmps; index++) {
+            vecRe = stateReal[index];
+            vecIm = stateImag[index];
+            opRe = opReal[index];
+
+            // abs(vec)^2 op
+            vecAbs = vecRe*vecRe + vecIm*vecIm;
+            expecRe += vecAbs*opRe;
+        }
+    }
+
+    return expecRe;
+}
+
+qreal densmatr_calcExpecHermitianDiagOpLocal(Qureg qureg, HermitianDiagOp op) {
+
+    /* since for every 1 element in \p op, there exists a column in \p qureg,
+     * we know that the elements in \p op live on the same node as the
+     * corresponding diagonal elements of \p qureg. This means, the problem is
+     * embarrassingly parallelisable, and the code below works for both
+     * serial and distributed modes.
+     */
+
+    // computes first local index containing a diagonal element
+    long long int diagSpacing = 1LL + (1LL << qureg.numQubitsRepresented);
+    long long int numPrevDiags = (qureg.chunkId>0)? 1+(qureg.chunkId*qureg.numAmpsPerChunk)/diagSpacing : 0;
+    long long int globalIndNextDiag = diagSpacing * numPrevDiags;
+    long long int localIndNextDiag = globalIndNextDiag % qureg.numAmpsPerChunk;
+    long long int numAmps = qureg.numAmpsPerChunk;
+
+    qreal* stateReal = qureg.stateVec.real;
+    qreal* stateImag = qureg.stateVec.imag;
+    qreal* opReal = op.diag;
+
+    qreal expecRe = 0;
+
+    long long int stateInd;
+    long long int opInd;
+    qreal matRe, matIm, opRe;
+
+    // visits every diagonal element with global index (2^n + 1)i for i in [0, 2^n-1]
+
+# ifdef _OPENMP
+# pragma omp parallel \
+    shared    (stateReal,stateImag, opReal,localIndNextDiag,diagSpacing,numAmps) \
+    private   (stateInd,opInd, matRe, matIm, opRe) \
+    reduction ( +:expecRe )
+# endif
+    {
+# ifdef _OPENMP
+# pragma omp for schedule  (static)
+# endif
+        for (stateInd=localIndNextDiag; stateInd < numAmps; stateInd += diagSpacing) {
+
+            matRe = stateReal[stateInd];
+            matIm = stateImag[stateInd];
+            opInd = (stateInd - localIndNextDiag) / diagSpacing;
+            opRe = opReal[opInd];
+
+            expecRe += (matRe*matRe + matIm*matIm) * opRe;
+        }
+    }
+
+    return expecRe;
+}
+
+int hasEvenParity(long long x, int* in_qubitIndices, int qs){
+
+	size_t count = 0;
+	for (int i = 0; i < qs; ++i) {
+		int bitIdx = in_qubitIndices[i];
+		if (x & (1ULL << bitIdx))
+			count++;
+	}
+	return (count % 2) == 0;
+};
+
+void agnostic_setHermitianDiagOpElemsFromIsingHamiltonian(HermitianDiagOp op, PauliHamil isingHam){
+
+	int numQubits = isingHam.numQubits;
+
+	int z_index[2];
+	qreal* diag = op.diag;
+
+	for(int term_i = 0; term_i < isingHam.numSumTerms; ++term_i){
+
+		qreal coeff = isingHam.termCoeffs[term_i];
+
+		int num_zs = 0;
+
+		for(int qbit_i = op.chunkId*op.numQubitsRepresented; qbit_i < (op.chunkId+1)*op.numQubitsRepresented; ++qbit_i){
+
+			if(isingHam.pauliCodes[term_i*numQubits + qbit_i] == 3)
+				z_index[num_zs++] = qbit_i;
+			else if(isingHam.pauliCodes[term_i*numQubits + qbit_i] != 0){
+				printf("Not a valid Ising hamiltonian");
+				exit(1);
+			}
+		}
+
+		if(num_zs == 0)
+			continue;
+		else if(num_zs > 2){
+			printf("Not a valid Ising hamiltonian");
+			exit(1);
+		}
+
+		for(uint64_t i = 0; i < op.numElemsPerChunk; ++i){
+			diag[i] += coeff * (hasEvenParity(op.chunkId*op.numElemsPerChunk + i, z_index, num_zs) ? 1.0 : -1.0);
+		}
+
+	}
+}
+
+void agnostic_setHermitianDiagOpElems(HermitianDiagOp op, long long int startInd, qreal* diag, long long int numElems) {
+
+    // local start/end indices of the given amplitudes, assuming they fit in this chunk
+    // these may be negative or above qureg.numAmpsPerChunk
+    long long int localStartInd = startInd - op.chunkId*op.numElemsPerChunk;
+    long long int localEndInd = localStartInd + numElems; // exclusive
+
+    // add this to a local index to get corresponding elem in reals & imags
+    long long int offset = op.chunkId*op.numElemsPerChunk - startInd;
+
+    // restrict these indices to fit into this chunk
+    if (localStartInd < 0)
+        localStartInd = 0;
+    if (localEndInd > op.numElemsPerChunk)
+        localEndInd = op.numElemsPerChunk;
+    // they may now be out of order = no iterations
+
+    // unpacking OpenMP vars
+    long long int index;
+    qreal* vecRe = op.diag;
+
+# ifdef _OPENMP
+# pragma omp parallel \
+    default  (none) \
+    shared   (localStartInd,localEndInd, vecRe, diag,offset) \
+    private  (index)
+# endif
+    {
+# ifdef _OPENMP
+# pragma omp for schedule (static)
+# endif
+        // iterate these local inds - this might involve no iterations
+        for (index=localStartInd; index < localEndInd; index++) {
+            vecRe[index] = diag[index + offset];
         }
     }
 }

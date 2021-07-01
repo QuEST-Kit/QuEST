@@ -193,6 +193,30 @@ typedef struct DiagonalOp
     ComplexArray deviceOperator;
 } DiagonalOp;
 
+/** Represents a diagonal hermitian operator on the full Hilbert state of a \p Qureg.
+ *  The diagonal is constrained to be real.
+ *
+ * @ingroup type
+ * @author Tyson Jones
+ */
+typedef struct HermitianDiagOp
+{
+    //! The number of qubits this operator can act on (informing its size)
+    int numQubits;
+    //! The number of qubits stored on each distributed node
+    int numQubitsRepresented;
+    //! The number of the 2^numQubits amplitudes stored on each distributed node
+    long long int numElemsPerChunk;
+    //! The number of nodes between which the elements of this operator are split
+    int numChunks;
+    //! The position of the chunk of the operator held by this process in the full operator
+    int chunkId;
+    //! The real values of the 2^numQubits complex elements
+    qreal *diag;
+    //! A copy of the elements stored persistently on the GPU
+    ComplexArray deviceOperator;
+} HermitianDiagOp;
+
 /** Represents a system of qubits.
  * Qubits are zero-based
  *
@@ -625,6 +649,179 @@ real, imag
  */
 void reportState(Qureg qureg);
 
+/** Creates a HermitianDiagOp representing a diagonal operator on the
+ * full Hilbert space of a Qureg. This can only be applied to state-vectors or
+ * density matrices of an equal number of qubits, using applyHermitianDiagOp().
+ * The diagonal is real.
+ *
+ * The operator is initialised to all zero.
+ *
+ * This function allocates space for 2^\p numQubits real amplitudes, which are initially zero.
+ * This is the same cost as a state-vector of equal size.
+ * The elements should be modified with setHermitianDiagOpElems().
+ * This memory must later be freed with destroyHermitianDiagOp().
+ *
+ * In GPU mode, this function also creates persistent memory on the GPU.
+ * Hence, if not using setDHermitianDiagOp() and instead modifying operator.diag
+ * directly, the user must call thereafter call syncHermitianDiagOp() to modify the
+ * operator stored in the GPU.
+ *
+ * In distributed mode, the memory for the diagonal operator is spread evenly
+ * between the available nodes, such that each node contains only
+ * operator.numElemsPerChunk complex values. Users must therefore exercise care
+ * in modifying .real directly, and should instead use initHermitianDiagOp().
+ *
+ * @ingroup type
+ * @returns a HermitianDiagOp instance, with 2^n-length .diag array, initialised to zero
+ * @param[in] numQubits number of qubit, informing the dimension of the operator.
+ * @param[in] env object representing the execution environment (local, multinode etc)
+ * @throws invalidQuESTInputError if \p numQubits <= 0, or if \p numQubits is so large that
+ *      the number of elements cannot fit in a long long int type,
+ *      or if in distributed mode, there are more nodes than elements in the operator
+ * @author Tyson Jones
+ * @author Milos Prokop
+ */
+HermitianDiagOp createHermitianDiagOp(int numQubits, QuESTEnv env);
+
+/** Destroys a HermitianDiagOp created with createHermitianDiagOp(), freeing its memory.
+ *
+ * @ingroup type
+ * @param[in] op the diagonal operator to destroy
+ * @param[in] env object representing the execution environment (local, multinode etc)
+ * @throws invalidQuESTInputError if \p op was not created
+ * @author Tyson Jones
+ * @author Milos Prokop
+ */
+void destroyHermitianDiagOp(HermitianDiagOp op, QuESTEnv env);
+
+/** Copy the elements in HermitianDiagoOp to the persisent GPU memory.
+ * This updates the GPU memory for \p op with any manual changes made to \p op.real.
+ *
+ * Note if users just modify the diagonal operator to values known a priori, they
+ * should instead use initHermitianDiagOp() or setHermitianDiagOpElems()
+ *
+ * This function has no effect in other modes besides GPU mode.
+ *
+ * @ingroup type
+ * @param[in,out] op the diagonal operator to synch to GPU
+ * @throws invalidQuESTInputError if \p op was not created
+ * @author Tyson Jones
+ * @author Milos Prokop
+ */
+void syncHermitianDiagOp(HermitianDiagOp op);
+
+/** Updates the entire HermitianDiagOp \p op with the given elements, of which there must
+ * be 2^\p op.numQubits.
+ *
+ * In GPU mode, this updates both the persistent GPU memory, and the arrays
+ * \p op.real and \p op.imag
+ *
+ * In distributed mode, this function assumes \p diag exist fully on every
+ * node.
+ *
+ * @ingroup type
+ * @param[in,out] op the diagonal operator to modify
+ * @param[in] real the real components of the full set of new elements
+ * @param[in] imag the imaginary components of the full set of new elements
+ * @throws invalidQuESTInputError if \p op was not created
+ * @author Tyson Jones
+ * @author Milos Prokop
+ *
+ */
+void initHermitianDiagOp(HermitianDiagOp op, qreal* diag);
+
+/** Modifies a subset (starting at index \p startInd) of the elements in HermitianDiagOp \p op
+ * with the given elements, of which there are \p numElems.
+ *
+ * In GPU mode, this updates both the persistent GPU memory, and \p op.real
+ *
+ * In distributed mode, this function assumes the subset \p diag exist
+ * (at least) on the node containing the ultimately updated elements.
+ * For example, below is the correct way to modify the full 8 elements of \p op
+ * when split between 2 nodes.
+ *
+ *     HermitianDiagOp op = createHermitianDiagOp(3, env);
+ *
+ *     qreal re[] = {1,2,3,4};
+ *     qreal im[] = {1,2,3,4};
+ *     setHermitianDiagOpElems(op, 0, re, im, 4);
+ *
+ *     // modify re and im to the next set of elements
+ *
+ *     setHermitianDiagOpElems(op, 4, re, im, 4);
+ *
+ * In this way, one can avoid a single node containing all new elements which might
+ * not fit. If more elements are passed than exist on an individual node, each
+ * node merely ignores the additional elements.
+ *
+ * @ingroup type
+ * @param[in,out] op the diagonal operator to modify the elements of
+ * @param[in] startInd the starting index (globally) of the subset of elements to modify
+ * @param[in] real  the real components of the new elements
+ * @param[in] imag  the imaginary components of the new elements
+ * @param[in] numElems the number of new elements (the length of \p real and \p imag)
+ * @throws invalidQuESTInputError if \p op was not created, or if \p startInd is an invalid index,
+ *      or if \p numElems is an invalid number of elements, or if there less than \p numElems
+ *      elements in the operator after \p startInd.
+ * @author Tyson Jones
+ * @author Milos Prokop
+ *
+ */
+void setHermitianDiagOpElems(HermitianDiagOp op, long long int startInd, qreal* diag, long long int numElems);
+
+/**Modifies a subset (starting at index \p startInd) of the elements in HermitianDiagOp \p op
+ * with the diagonal elements calculated from Ising spin Hamiltonian, provided as a \p PauliHamil
+ *
+ * @ingroup type
+ * @param[in,out] op the diagonal operator to modify the elements of
+ * @param[in] startInd the starting index (globally) of the subset of elements to modify
+ * @param[in] real  the real components of the new elements
+ * @param[in] imag  the imaginary components of the new elements
+ * @param[in] numElems the number of new elements (the length of \p real and \p imag)
+ * @throws invalidQuESTInputError if \p op was not created, or if \p startInd is an invalid index,
+ *      or if \p numElems is an invalid number of elements, or if there less than \p numElems 
+ *      elements in the operator after \p startInd, or if \p isingHam is not an Ising spin Hamiltonian type
+ * @author Milos Prokop
+ */
+void setHermitianDiagOpElemsFromIsingHamiltonian(HermitianDiagOp op, PauliHamil isingHam);
+
+/** Apply a diagonal real operator on the entire \p qureg,
+ *
+ * @ingroup operator
+ * @param[in,out] qureg the state to operate the diagonal operator upon
+ * @param[in] op the diagonal operator to apply
+ * @throws invalidQuESTInputError if \p op was not created,
+ *      or if \p op acts on a different number of qubits than \p qureg represents
+ * @author Tyson Jones
+ * @author Milos Prokop
+ *
+ */
+void applyHermitianDiagOp(Qureg qureg, HermitianDiagOp op);
+
+/** Computes the expected value of the diagonal operator \p op for state \p qureg.
+ * Since \p op is Hermitian, the expected value is real.
+ *
+ * Let \f$ D \f$ be the diagonal operator \p op, with diagonal elements \f$ d_i \f$.
+ * Then if \p qureg is a state-vector \f$|\psi\rangle \f$, this function computes
+ * \f[
+    \langle \psi | D | \psi \rangle = \sum_i |\psi_i|^2 \, d_i
+ * \f]
+ * If \p qureg is a density matrix \f$ \rho \f$, this function computes
+ * \f[
+    \text{Trace}( D \rho ) = \sum_i \rho_{ii} \, d_i
+ * \f]
+ *
+ * @ingroup calc
+ * @param[in] qureg a state-vector or density matrix
+ * @param[in] op    the diagonal operator to compute the expected value of
+ * @return the expected vaulue of the operator
+ * @throws invalidQuESTInputError if \p op was not created,
+ *      or if \p op acts on a different number of qubits than \p qureg represents.
+ * @author Tyson Jones
+ * @author Milos Prokop
+ *
+ */
+qreal calcExpecHermitianDiagOp(Qureg qureg, HermitianDiagOp op);
 /** Print the current state vector of probability amplitudes for a set of qubits to standard out. 
  * For debugging purposes. Each rank should print output serially. 
  * Only print output for systems <= 5 qubits

@@ -895,6 +895,17 @@ void applyDiagonalOp(Qureg qureg, DiagonalOp op) {
     qasm_recordComment(qureg, "Here, the register was modified to an undisclosed and possibly unphysical state (via applyDiagonalOp).");
 }
 
+void applyHermitianDiagOp(Qureg qureg, HermitianDiagOp op) {
+    validateHermitianDiagOp(qureg, op, __func__);
+
+    if (qureg.isDensityMatrix)
+        densmatr_applyHermitianDiagOp(qureg, op);
+    else
+        statevec_applyHermitianDiagOp(qureg, op);
+
+    qasm_recordComment(qureg, "Here, the register was modified to an undisclosed and possibly unphysical state (via applyHermitianDiagOp).");
+}
+
 
 /*
  * calculations
@@ -983,6 +994,15 @@ Complex calcExpecDiagonalOp(Qureg qureg, DiagonalOp op) {
         return densmatr_calcExpecDiagonalOp(qureg, op);
     else
         return statevec_calcExpecDiagonalOp(qureg, op);
+}
+
+qreal calcExpecHermitianDiagOp(Qureg qureg, HermitianDiagOp op) {
+    validateHermitianDiagOp(qureg, op, __func__);
+
+    if (qureg.isDensityMatrix)
+    	return densmatr_calcExpecHermitianDiagOp(qureg, op);
+    else
+        return statevec_calcExpecHermitianDiagOp(qureg, op);
 }
 
 qreal calcHilbertSchmidtDistance(Qureg a, Qureg b) {
@@ -1294,6 +1314,45 @@ void setDiagonalOpElems(DiagonalOp op, long long int startInd, qreal* real, qrea
     validateNumElems(op, startInd, numElems, __func__);
     
     agnostic_setDiagonalOpElems(op, startInd, real, imag, numElems);
+}
+
+HermitianDiagOp createHermitianDiagOp(int numQubits, QuESTEnv env) {
+    validateNumQubitsInDiagOp(numQubits, env.numRanks, __func__);
+
+    return agnostic_createHermitianDiagOp(numQubits, env);
+}
+
+void destroyHermitianDiagOp(HermitianDiagOp op, QuESTEnv env) {
+    // env accepted for API consistency
+    validateHermitianDiagOpInit(op, __func__);
+
+    agnostic_destroyHermitianDiagOp(op);
+}
+
+void syncHermitianDiagOp(HermitianDiagOp op) {
+    validateHermitianDiagOpInit(op, __func__);
+
+    agnostic_syncHermitianDiagOp(op);
+}
+
+void initHermitianDiagOp(HermitianDiagOp op, qreal* diag) {
+    validateHermitianDiagOpInit(op, __func__);
+
+    agnostic_setHermitianDiagOpElems(op, 0, diag, 1LL << op.numQubits);
+}
+
+void setHermitianDiagOpElemsFromIsingHamiltonian(HermitianDiagOp op, PauliHamil isingHam){
+    validateHermitianDiagOpInit(op, __func__);
+
+    agnostic_setHermitianDiagOpElemsFromIsingHamiltonian(op, isingHam);
+
+}
+
+void setHermitianDiagOpElems(HermitianDiagOp op, long long int startInd, qreal* diag, long long int numElems) {
+    validateHermitianDiagOpInit(op, __func__);
+    validateNumElemsHermitianDiagOp(op, startInd, numElems, __func__);
+
+    agnostic_setHermitianDiagOpElems(op, startInd, diag, numElems);
 }
 
 /*
