@@ -3288,16 +3288,20 @@ qreal statevec_findProbabilityOfZeroDistributed (Qureg qureg) {
     return totalProbability;
 }
 
-/* DOES NOT require explicit OpenMP version 
- * - This iterates & threads EVERY AMPLITUDE, infers its outcome, and atomics the 
- *   updating.
- * - Does this lock all updates to outcomeProbs, or just at the same index??
- */
-void statevec_calcProbOfAllOutcomes_ATOMIC(qreal* outcomeProbs, Qureg qureg, int* qubits, int numQubits) {
+void statevec_calcProbOfAllOutcomesLocal(qreal* outcomeProbs, Qureg qureg, int* qubits, int numQubits) {
+    
+    /* Below, we manually reduce amplitudes into outcomeProbs by using atomic update.
+     * This maintains OpenMP 3.1 compatibility. An alternative is to use array reduction 
+     * (requires OpenMP 4.5, limits #qubits since outcomeProbs must be a local stack array)
+     * or a dynamic list of omp locks (duplicates memory cost of outcomeProbs).
+     * Using locks was always slower than the method below. Using reduction was only 
+     * faster for very few threads, or very few outcomeProbs.
+     */
 
     long long int numOutcomeProbs = (1 << numQubits);
     long long int j;
     
+    // clear outcomeProbs (in parallel, in case it's large)
 # ifdef _OPENMP
 # pragma omp parallel \
     default (none) \
@@ -3341,111 +3345,19 @@ void statevec_calcProbOfAllOutcomes_ATOMIC(qreal* outcomeProbs, Qureg qureg, int
             
             prob = stateRe[i]*stateRe[i] + stateIm[i]*stateIm[i];
             
+            // atomicly update corresponding outcome array element
             # pragma omp atomic update
             outcomeProbs[outcomeInd] += prob;
         }
     }
 }
 
-/* DOES NOT require explicit OpenMP version 
- * - This iterates & threads EVERY AMPLITUDE, infers its outcome, LOCKS the array 
- *   element, sums into it, then UNLOCKS
- */
-void statevec_calcProbOfAllOutcomes_LOCKS(qreal* outcomeProbs, Qureg qureg, int* qubits, int numQubits) {
+void densmatr_calcProbOfAllOutcomesLocal(qreal* outcomeProbs, Qureg qureg, int* qubits, int numQubits) {
     
+    // clear outcomeProbs (in parallel, in case it's large)
     long long int numOutcomeProbs = (1 << numQubits);
     long long int j;
     
-# ifdef _OPENMP
-    
-        // NEED TO MALLOC LOCKS if qubits > 16
-    omp_lock_t locks[numOutcomeProbs];
-# pragma omp parallel \
-    default (none) \
-    shared    (numOutcomeProbs,outcomeProbs,locks) \
-    private   (j)
-# endif 
-    {
-# ifdef _OPENMP
-# pragma omp for schedule  (static)
-# endif
-        for (j=0; j<numOutcomeProbs; j++) {
-            outcomeProbs[j] = 0;
-#ifdef _OPENMP 
-            omp_init_lock(&locks[j]);
-#endif
-        }
-    }
-    
-    long long int numTasks = qureg.numAmpsPerChunk;
-    long long int offset = qureg.chunkId*qureg.numAmpsPerChunk;
-    qreal* stateRe = qureg.stateVec.real;
-    qreal* stateIm = qureg.stateVec.imag;
-    
-    long long int i;
-    long long int outcomeInd;
-    int q;
-    qreal prob;
-    
-# ifdef _OPENMP
-# pragma omp parallel \
-    shared    (numTasks,offset, qubits,numQubits, stateRe,stateIm, outcomeProbs, locks) \
-    private   (i, q, outcomeInd, prob)
-# endif 
-    {
-# ifdef _OPENMP
-# pragma omp for schedule  (static)
-# endif
-        // every amplitude contributes to a single element of retProbs
-        for (i=0; i<numTasks; i++) {
-            
-            // determine index informed by qubits outcome
-            outcomeInd = 0;
-            for (q=0; q<numQubits; q++)
-                outcomeInd += extractBit(qubits[q], i + offset) * (1LL << q);
-            
-            prob = stateRe[i]*stateRe[i] + stateIm[i]*stateIm[i];
-            
-# ifdef _OPENMP
-            omp_set_lock(&locks[outcomeInd]);
-            outcomeProbs[outcomeInd] += prob;
-            omp_unset_lock(&locks[outcomeInd]);
-# else 
-            outcomeProbs[outcomeInd] += prob;
-# endif
-        }
-    }
-    
-
-# ifdef _OPENMP
-# pragma omp parallel \
-    default (none) \
-    shared    (locks, numOutcomeProbs) \
-    private   (j)
-    {
-# pragma omp for schedule  (static)
-        for (j=0; j<numOutcomeProbs; j++)
-            omp_destroy_lock(&locks[j]);
-    }
-#endif
-}
-
-/* REQUIRES OpenMP 4.5
- * This iterates & threads EVERY AMPLITUDE, infers its outcome, and SUMS into output array.
- * - if numQubits = qureg.numQubits, this is OPTIMAL (1 thread -> 1 amp -> 1 outcome)
- * - if numQubits < qureg.numQubits, thread reduction collision may cause slowdown
- * - thread collision is MINIMUM when qubits are CONTIGUOUS starting from ZERO (because then
- *   neighbouring amplitudes corresponding to different outcomes)
- * - this iterates contiguous amps for good cache-lining, since numAmps >> numProbs
- */
-void statevec_calcProbOfAllOutcomesLocal(qreal* retProbs, Qureg qureg, int* qubits, int numQubits) {
-    
-    // prepare local array outcomeProbs for OpenMP4.5 array reduction
-    
-    long long int numOutcomeProbs = (1 << numQubits);
-    qreal outcomeProbs[numOutcomeProbs];
-    long long int j;
-
 # ifdef _OPENMP
 # pragma omp parallel \
     default (none) \
@@ -3458,64 +3370,55 @@ void statevec_calcProbOfAllOutcomesLocal(qreal* retProbs, Qureg qureg, int* qubi
 # endif
         for (j=0; j<numOutcomeProbs; j++)
             outcomeProbs[j] = 0;
-    }
+    }  
     
-    // reduce every amplitude probability into local array outcomeProbs
+    // compute first local index containing a diagonal element
+    long long int localNumAmps = qureg.numAmpsPerChunk;
+    long long int densityDim = (1LL << qureg.numQubitsRepresented);
+    long long int diagSpacing = 1LL + densityDim;
+    long long int maxNumDiagsPerChunk = 1 + localNumAmps / diagSpacing;
+    long long int numPrevDiags = (qureg.chunkId>0)? 1+(qureg.chunkId*localNumAmps)/diagSpacing : 0;
+    long long int globalIndNextDiag = diagSpacing * numPrevDiags;
+    long long int localIndNextDiag = globalIndNextDiag % localNumAmps;
     
-    long long int numTasks = qureg.numAmpsPerChunk;
-    long long int offset = qureg.chunkId*qureg.numAmpsPerChunk;
-    qreal* stateRe = qureg.stateVec.real;
-    qreal* stateIm = qureg.stateVec.imag;
+    // computes how many diagonals are contained in this chunk
+    long long int numDiagsInThisChunk = maxNumDiagsPerChunk;
+    if (localIndNextDiag + (numDiagsInThisChunk-1)*diagSpacing >= localNumAmps)
+        numDiagsInThisChunk -= 1;
+        
+    long long int visitedDiags;     // number of visited diagonals in this chunk so far
+    long long int basisStateInd;    // current diagonal index being considered
+    long long int index;            // index in the local chunk
     
-    long long int i;
-    long long int outcomeInd;
     int q;
+    long long int outcomeInd;
+    qreal *stateRe = qureg.stateVec.real;
     
 # ifdef _OPENMP
 # pragma omp parallel \
-    shared    (numTasks,offset, qubits,numQubits, stateRe,stateIm) \
-    private   (i, q, outcomeInd) \
-    reduction ( +:outcomeProbs )
+    shared    (localIndNextDiag, numPrevDiags, diagSpacing, stateRe, numDiagsInThisChunk, qubits,numQubits, outcomeProbs) \
+    private   (visitedDiags, basisStateInd, index, q,outcomeInd)
 # endif 
     {
 # ifdef _OPENMP
 # pragma omp for schedule  (static)
 # endif
-        // every amplitude contributes to a single element of retProbs
-        for (i=0; i<numTasks; i++) {
+        // sums the diagonal elems of the density matrix where measureQubit=0
+        for (visitedDiags = 0; visitedDiags < numDiagsInThisChunk; visitedDiags++) {
             
-            // determine index informed by qubits outcome
+            basisStateInd = numPrevDiags + visitedDiags;
+            index = localIndNextDiag + diagSpacing * visitedDiags;
+            
+            // determine outcome implied by basisStateInd
             outcomeInd = 0;
             for (q=0; q<numQubits; q++)
-                outcomeInd += extractBit(qubits[q], i + offset) * (1LL << q);
-            
-            outcomeProbs[outcomeInd] += stateRe[i]*stateRe[i] + stateIm[i]*stateIm[i];
+                outcomeInd += extractBit(qubits[q], basisStateInd) * (1LL << q);
+    
+            // atomicly update corresponding outcome array element
+            # pragma omp atomic update
+            outcomeProbs[outcomeInd] += stateRe[index];
         }
     }
-    
-    // update output retProbs with local array
-    
-# ifdef _OPENMP
-# pragma omp parallel \
-    default (none) \
-    shared    (retProbs, numOutcomeProbs,outcomeProbs) \
-    private   (j)
-# endif 
-    {
-# ifdef _OPENMP
-# pragma omp for schedule  (static)
-# endif
-        for (j=0; j<numOutcomeProbs; j++)
-            retProbs[j] = outcomeProbs[j];
-    }
-}
-
-
-
-void densmatr_calcProbOfAllOutcomesLocal(qreal* retProbs, Qureg qureg, int* qubits, int numQubits) {
-    
-    // WAIT I shouldn't do this until I'm sure about the OpenMP4.5 requirement 
-    // above is absolutely necessary
 }
 
 /*
