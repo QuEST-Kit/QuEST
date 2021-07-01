@@ -887,7 +887,7 @@ TEST_CASE( "calcProbOfAllOutcomes", "[calculations]" ) {
     
     SECTION( "GPUtest" ) {
         
-        int NUMQ = GENERATE(5, 10, 15, 20);
+        int NUMQ = GENERATE(5, 10, 15, 20, 25);
         Qureg qureg = createQureg(NUMQ, QUEST_ENV);
         
         int qubits[] = {0,4,3,1,2,  6,7,8,5,9,  14,13,12,11,10,  16,15,19,17,18,  20,21,22,24,23};
@@ -926,15 +926,15 @@ gettimeofday(&timeInst, NULL);
 long double startTime = (
     timeInst.tv_sec + (long double) timeInst.tv_usec/ (long double) 1E6);
         
-        calcProbOfAllOutcomes(probs, qureg, qubits, numQubits);
+        TEST_calcProbOfAllOutcomes(probs, qureg, qubits, numQubits);
         
 
 // stop timing
 gettimeofday(&timeInst, NULL);
 long double endTime = (
     timeInst.tv_sec + (long double) timeInst.tv_usec/(long double) 1E6);
-long double dur1 = endTime - startTime;
-printf("GPU per block: %Lf (s)\n", dur1);
+long double durB = endTime - startTime;
+printf("B (global atom): %Lf (s)\n", durB);
        
 /*
         for (int i=0; i<refProbs.size(); i++) 
@@ -947,23 +947,23 @@ printf("GPU per block: %Lf (s)\n", dur1);
             probs[i] = -1;
         
 // start timing        
-long double dur2;
+long double durA;
 if (numQubits < 20) {
 gettimeofday(&timeInst, NULL);
 startTime = (timeInst.tv_sec + (long double) timeInst.tv_usec/pow(10,6));
 
-        TEST_calcProbOfAllOutcomes(probs, qureg, qubits, numQubits);
+        calcProbOfAllOutcomes(probs, qureg, qubits, numQubits);
         
 // stop timing
 gettimeofday(&timeInst, NULL);
 endTime = (timeInst.tv_sec + (long double) timeInst.tv_usec/pow(10,6));
-dur2 = endTime - startTime;
-printf("GPU global: %Lf (s)\n", dur2);
-printf("block/global: %Lf\n", dur1/dur2);
+durA = endTime - startTime;
+printf("A (global partition): %Lf (s)\n", durA);
+printf("A/B: %Lf\n", durA/durB);
         
         REQUIRE( areEqual(refProbs, probs) );
-} else {
-    printf("BLOCK SKIPPED (too many qubits)\n");
+}  else {
+    printf("A SKIPPED (too many qubits)\n");
 }        
 
 
@@ -983,10 +983,10 @@ startTime = (timeInst.tv_sec + (long double) timeInst.tv_usec/pow(10,6));
 // stop timing
 gettimeofday(&timeInst, NULL);
 endTime = (timeInst.tv_sec + (long double) timeInst.tv_usec/pow(10,6));
-long double dur3 = endTime - startTime;
-printf("GPU shared: %Lf (s)\n", dur3);
-printf("block/shared: %Lf\n", dur1/dur3);
-printf("\nglobal/shared: %Lf\n", dur2/dur3);
+long double durC = endTime - startTime;
+printf("C (shared): %Lf (s)\n", durC);
+printf("C/A: %Lf\n", durC/durA);
+printf("C/B: %Lf\n", durC/durB);
 
 /*
         for (int i=0; i<refProbs.size(); i++)
@@ -995,7 +995,7 @@ printf("\nglobal/shared: %Lf\n", dur2/dur3);
 
         REQUIRE( areEqual(refProbs, probs) );
 } else {
-    printf("SHARED SKIPPED (too many qubits)\n");
+    printf("C SKIPPED (too many qubits)\n");
 }
 
         destroyQureg(qureg, QUEST_ENV);
