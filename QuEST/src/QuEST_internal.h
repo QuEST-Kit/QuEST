@@ -234,6 +234,9 @@ void statevec_controlledNot(Qureg qureg, int controlQubit, int targetQubit);
 qreal statevec_calcProbOfOutcome(Qureg qureg, int measureQubit, int outcome);
 
 void statevec_calcProbOfAllOutcomes(qreal* retProbs, Qureg qureg, int* qubits, int numQubits);
+// DEBUG 
+void TEST_statevec_calcProbOfAllOutcomes(qreal* outcomeProbs, Qureg qureg, int* qubits, int numQubits);
+void SHARED_statevec_calcProbOfAllOutcomes(qreal* outcomeProbs, Qureg qureg, int* qubits, int numQubits);
 
 void statevec_collapseToKnownProbOutcome(Qureg qureg, int measureQubit, int outcome, qreal outcomeProb);
 

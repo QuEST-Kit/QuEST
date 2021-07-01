@@ -1036,7 +1036,7 @@ QMatrix toQMatrix(DiagonalOp op) {
 
 void toQureg(Qureg qureg, QVector vec) {
     DEMAND( !qureg.isDensityMatrix );
-    DEMAND( qureg.numAmpsTotal == (int) vec.size() );
+    DEMAND( qureg.numAmpsTotal == (long long int) vec.size() );
     
     syncQuESTEnv(QUEST_ENV);
     
@@ -1049,7 +1049,7 @@ void toQureg(Qureg qureg, QVector vec) {
 }
 void toQureg(Qureg qureg, QMatrix mat) {
     DEMAND( qureg.isDensityMatrix );
-    DEMAND( (1 << qureg.numQubitsRepresented) == (int) mat.size() );
+    DEMAND( (1 << qureg.numQubitsRepresented) == (long long int) mat.size() );
     
     syncQuESTEnv(QUEST_ENV);
     

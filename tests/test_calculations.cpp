@@ -885,6 +885,105 @@ TEST_CASE( "calcProbOfAllOutcomes", "[calculations]" ) {
     Qureg vec = createQureg(NUM_QUBITS, QUEST_ENV);
     Qureg mat = createDensityQureg(NUM_QUBITS, QUEST_ENV);
     
+    SECTION( "GPUtest" ) {
+        
+        int NUMQ = GENERATE(5, 10, 15, 20);
+        Qureg qureg = createQureg(NUMQ, QUEST_ENV);
+        
+        int qubits[] = {0,4,3,1,2,  6,7,8,5,9,  14,13,12,11,10,  16,15,19,17,18,  20,21,22,24,23};
+        int numQubits = GENERATE_COPY( range(5,NUMQ+1,5) );
+        
+        printf("\n\n-----------------\n");
+        printf("qureg[%d], targets[%d]\n", NUMQ, numQubits);
+        
+        
+        
+        long long int numOutcomes = 1LL<<numQubits;
+        qreal* probs = (qreal*) malloc(numOutcomes * sizeof *probs);
+        QVector refProbs = QVector(numOutcomes);
+        
+        QVector ref = getRandomStateVector(NUMQ);
+        toQureg(qureg, ref);
+
+        // prob is sum of |amp|^2 of basis states which encode outcome
+        for (size_t i=0; i<ref.size(); i++) {
+            int outcome = 0;
+            for (int q=0; q<numQubits; q++) {
+                int bit = (i >> qubits[q]) & 1;
+                outcome += bit * (1 << q);
+            }
+            refProbs[outcome] += pow(abs(ref[i]), 2);
+        }
+        
+        
+
+        
+       
+        
+// start timing
+struct timeval timeInst;
+gettimeofday(&timeInst, NULL);
+long double startTime = (
+    timeInst.tv_sec + (long double) timeInst.tv_usec/ (long double) 1E6);
+        
+        calcProbOfAllOutcomes(probs, qureg, qubits, numQubits);
+        
+
+// stop timing
+gettimeofday(&timeInst, NULL);
+long double endTime = (
+    timeInst.tv_sec + (long double) timeInst.tv_usec/(long double) 1E6);
+long double dur1 = endTime - startTime;
+printf("GPU per block: %Lf (s)\n", dur1);
+       
+/*
+        for (int i=0; i<refProbs.size(); i++) 
+            printf("probs[%d]=%g, refProbs[%d]=%g\n", i, probs[i], i, real(refProbs[i]));
+ */
+        
+        REQUIRE( areEqual(refProbs, probs) );
+        
+        for (int i=0; i<numOutcomes; i++)
+            probs[i] = -1;
+        
+// start timing        
+gettimeofday(&timeInst, NULL);
+startTime = (timeInst.tv_sec + (long double) timeInst.tv_usec/pow(10,6));
+
+        TEST_calcProbOfAllOutcomes(probs, qureg, qubits, numQubits);
+        
+// stop timing
+gettimeofday(&timeInst, NULL);
+endTime = (timeInst.tv_sec + (long double) timeInst.tv_usec/pow(10,6));
+long double dur2 = endTime - startTime;
+printf("GPU global: %Lf (s)\n", dur2);
+printf("block/global: %Lf\n", dur1/dur2);
+        
+        REQUIRE( areEqual(refProbs, probs) );
+        
+        for (int i=0; i<numOutcomes; i++)
+            probs[i] = -1;
+
+             
+// start timing
+gettimeofday(&timeInst, NULL);
+startTime = (timeInst.tv_sec + (long double) timeInst.tv_usec/pow(10,6));
+        
+
+        SHARED_calcProbOfAllOutcomes(probs, qureg, qubits, numQubits);
+
+// stop timing
+gettimeofday(&timeInst, NULL);
+endTime = (timeInst.tv_sec + (long double) timeInst.tv_usec/pow(10,6));
+long double dur3 = endTime - startTime;
+printf("GPU shared: %Lf (s)\n", dur3);
+printf("block/shared: %Lf\n", dur1/dur3);
+printf("\nglobal/shared: %Lf\n", dur2/dur3);
+
+        destroyQureg(qureg, QUEST_ENV);
+        free(probs);
+    }
+    
     SECTION( "correctness" ) {
     
         // generate all possible qubit arrangements
