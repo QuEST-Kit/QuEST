@@ -2055,8 +2055,16 @@ __global__ void SHARED_statevec_calcProbOfAllOutcomesKernel(
 ) {
     // each thread handles one amplitude (all amplitudes are involved)
     long long int ampInd = blockIdx.x*blockDim.x + threadIdx.x;
-    if (ampInd >= qureg.numAmpsTotal) return;
-    
+    if (ampInd >= qureg.numAmpsTotal) return;    
+
+    // each block has a private outcomeProbs register, which threads contribute to atomically
+    extern __shared__ qreal blockProbs[];
+
+    // initialise blockProbs efficiently to zero
+    long long int numOutcomeProbs = (1LL << numQubits);
+    for (int i=threadIdx.x; i<numOutcomeProbs; i+=blockDim.x)
+        blockProbs[i] = 0;
+
     qreal prob = (
         qureg.deviceStateVec.real[ampInd]*qureg.deviceStateVec.real[ampInd] + 
         qureg.deviceStateVec.imag[ampInd]*qureg.deviceStateVec.imag[ampInd]);
@@ -2066,15 +2074,16 @@ __global__ void SHARED_statevec_calcProbOfAllOutcomesKernel(
     for (int q=0; q<numQubits; q++)
         outcomeInd += extractBit(qubits[q], ampInd) * (1LL << q);
     
-    // each block has a private outcomeProbs register, which threads contribute to atomically
-    extern __shared__ qreal blockProbs[];
+    // ensure initialisation has completed 
+    __syncthreads();
+
+    // contribute this thread's probability to it's block
     atomicAdd(&blockProbs[outcomeInd], prob);
     
-    // threads not needed for subsequent reduction can stop early
-    long long int numOutcomeProbs = (1LL << numQubits);
+    // threads in each block not needed for subsequent reduction can stop early
     if (threadIdx.x >= numOutcomeProbs) return;
     
-    // once all remaining threads have contributed...
+    // once all remaining threads have contributed to their block memory...
     __syncthreads();
     
     // they atomically contribute to the global output

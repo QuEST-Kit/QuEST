@@ -980,6 +980,13 @@ printf("GPU shared: %Lf (s)\n", dur3);
 printf("block/shared: %Lf\n", dur1/dur3);
 printf("\nglobal/shared: %Lf\n", dur2/dur3);
 
+/*
+        for (int i=0; i<refProbs.size(); i++)
+            printf("probs[%d]=%g vs %g\n", i, probs[i], real(refProbs[i]));
+*/
+
+        REQUIRE( areEqual(refProbs, probs) );
+
         destroyQureg(qureg, QUEST_ENV);
         free(probs);
     }
