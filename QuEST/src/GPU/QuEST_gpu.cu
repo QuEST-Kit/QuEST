@@ -2060,7 +2060,7 @@ __global__ void SHARED_statevec_calcProbOfAllOutcomesKernel(
     // each block has a private outcomeProbs register, which threads contribute to atomically
     extern __shared__ qreal blockProbs[];
 
-    // initialise blockProbs efficiently to zero
+    // initialise blockProbs efficiently to zero (looping, in case fewer treads in block than outcomes)
     long long int numOutcomeProbs = (1LL << numQubits);
     for (int i=threadIdx.x; i<numOutcomeProbs; i+=blockDim.x)
         blockProbs[i] = 0;
@@ -2086,8 +2086,9 @@ __global__ void SHARED_statevec_calcProbOfAllOutcomesKernel(
     // once all remaining threads have contributed to their block memory...
     __syncthreads();
     
-    // they atomically contribute to the global output
-    atomicAdd(&outcomeProbs[outcomeInd], blockProbs[outcomeInd]);
+    // they atomically contribute to the global output (looping, in case fewer block threads than outcomes)
+    for (int i=threadIdx.x; i<numOutcomeProbs; i+=blockDim.x)
+        atomicAdd(&outcomeProbs[i], blockProbs[i]);
 }
 
 void SHARED_statevec_calcProbOfAllOutcomes(qreal* outcomeProbs, Qureg qureg, int* qubits, int numQubits) {
