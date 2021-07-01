@@ -947,6 +947,8 @@ printf("GPU per block: %Lf (s)\n", dur1);
             probs[i] = -1;
         
 // start timing        
+long double dur2;
+if (numQubits < 20) {
 gettimeofday(&timeInst, NULL);
 startTime = (timeInst.tv_sec + (long double) timeInst.tv_usec/pow(10,6));
 
@@ -955,16 +957,22 @@ startTime = (timeInst.tv_sec + (long double) timeInst.tv_usec/pow(10,6));
 // stop timing
 gettimeofday(&timeInst, NULL);
 endTime = (timeInst.tv_sec + (long double) timeInst.tv_usec/pow(10,6));
-long double dur2 = endTime - startTime;
+dur2 = endTime - startTime;
 printf("GPU global: %Lf (s)\n", dur2);
 printf("block/global: %Lf\n", dur1/dur2);
         
         REQUIRE( areEqual(refProbs, probs) );
-        
+} else {
+    printf("BLOCK SKIPPED (too many qubits)\n");
+}        
+
+
+
         for (int i=0; i<numOutcomes; i++)
             probs[i] = -1;
 
-             
+
+if (numQubits <= 12) {             
 // start timing
 gettimeofday(&timeInst, NULL);
 startTime = (timeInst.tv_sec + (long double) timeInst.tv_usec/pow(10,6));
@@ -986,6 +994,9 @@ printf("\nglobal/shared: %Lf\n", dur2/dur3);
 */
 
         REQUIRE( areEqual(refProbs, probs) );
+} else {
+    printf("SHARED SKIPPED (too many qubits)\n");
+}
 
         destroyQureg(qureg, QUEST_ENV);
         free(probs);
