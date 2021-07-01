@@ -2124,8 +2124,6 @@ void SHARED_statevec_calcProbOfAllOutcomes(qreal* outcomeProbs, Qureg qureg, int
     size_t blockMem = numOutcomes * sizeof(qreal);
     SHARED_statevec_calcProbOfAllOutcomesKernel<<<numBlocks, numThreadsPerBlock, blockMem>>>(
         d_outcomeProbs, qureg, d_qubits, numQubits);
-
-    cudaDeviceSynchronize();
         
     // copy outcomeProbs from GPU memory
     cudaMemcpy(outcomeProbs, d_outcomeProbs, mem_outcomeProbs, cudaMemcpyDeviceToHost);
@@ -2183,8 +2181,6 @@ void TEST_statevec_calcProbOfAllOutcomes(qreal* outcomeProbs, Qureg qureg, int* 
     // populate per-block subarrays
     TEST_statevec_calcProbOfAllOutcomesKernel<<<numBlocks, numThreadsPerBlock>>>(
         d_outcomeProbs, qureg, d_qubits, numQubits);
-
-    cudaDeviceSynchronize();
         
     // copy outcomeProbs from GPU memory
     cudaMemcpy(outcomeProbs, d_outcomeProbs, mem_outcomeProbs, cudaMemcpyDeviceToHost);
@@ -2273,14 +2269,10 @@ void statevec_calcProbOfAllOutcomes(qreal* outcomeProbs, Qureg qureg, int* qubit
     size_t mem_outcomeProbs = numOutcomes * sizeof *d_outcomeProbs;
     cudaMalloc(&d_outcomeProbs, mem_outcomeProbs);
     
-    cudaDeviceSynchronize();
-    
     // reduce per-block (by previous block size) subarrays 
     int numReduceBlocks = ceil(numOutcomes / (qreal) numThreadsPerBlock);
     statevec_calcProbOfAllOutcomesReduceBlocksKernel<<<numReduceBlocks, numThreadsPerBlock>>>(
         d_outcomeProbs, d_allBlockOutcomeProbs, numQubits, numBlocks);
-    
-    cudaDeviceSynchronize();
         
     // copy outcomeProbs from GPU memory
     cudaMemcpy(outcomeProbs, d_outcomeProbs, mem_outcomeProbs, cudaMemcpyDeviceToHost);
