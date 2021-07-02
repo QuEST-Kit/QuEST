@@ -91,6 +91,8 @@ void densmatr_applyDiagonalOpLocal(Qureg qureg, DiagonalOp op);
 
 Complex densmatr_calcExpecDiagonalOpLocal(Qureg qureg, DiagonalOp op);
 
+void densmatr_calcProbOfAllOutcomesLocal(qreal* retProbs, Qureg qureg, int* qubits, int numQubits);
+
 
 /*
  * state vector operations
@@ -193,6 +195,8 @@ void statevec_multiControlledTwoQubitUnitaryLocal(Qureg qureg, long long int ctr
 void statevec_multiControlledMultiQubitUnitaryLocal(Qureg qureg, long long int ctrlMask, int* targs, int numTargs, ComplexMatrixN u);
 
 Complex statevec_calcExpecDiagonalOpLocal(Qureg qureg, DiagonalOp op);
+
+void statevec_calcProbOfAllOutcomesLocal(qreal* retProbs, Qureg qureg, int* qubits, int numQubits);
 
 
 # endif // QUEST_CPU_INTERNAL_H

@@ -76,6 +76,8 @@ qreal densmatr_calcInnerProduct(Qureg a, Qureg b);
 
 qreal densmatr_calcProbOfOutcome(Qureg qureg, int measureQubit, int outcome);
 
+void densmatr_calcProbOfAllOutcomes(qreal* retProbs, Qureg qureg, int* qubits, int numQubits);
+
 void densmatr_collapseToKnownProbOutcome(Qureg qureg, int measureQubit, int outcome, qreal outcomeProb);
     
 int densmatr_measureWithStats(Qureg qureg, int measureQubit, qreal *outcomeProb);
@@ -230,6 +232,8 @@ void statevec_hadamard(Qureg qureg, int targetQubit);
 void statevec_controlledNot(Qureg qureg, int controlQubit, int targetQubit);
 
 qreal statevec_calcProbOfOutcome(Qureg qureg, int measureQubit, int outcome);
+
+void statevec_calcProbOfAllOutcomes(qreal* retProbs, Qureg qureg, int* qubits, int numQubits);
 
 void statevec_collapseToKnownProbOutcome(Qureg qureg, int measureQubit, int outcome, qreal outcomeProb);
 

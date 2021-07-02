@@ -3292,6 +3292,188 @@ qreal statevec_findProbabilityOfZeroDistributed (Qureg qureg) {
     return totalProbability;
 }
 
+void statevec_calcProbOfAllOutcomesLocal(qreal* outcomeProbs, Qureg qureg, int* qubits, int numQubits) {
+    
+    /* Below, we manually reduce amplitudes into outcomeProbs by using atomic update.
+     * This maintains OpenMP 3.1 compatibility. An alternative is to use array reduction 
+     * (requires OpenMP 4.5, limits #qubits since outcomeProbs must be a local stack array)
+     * or a dynamic list of omp locks (duplicates memory cost of outcomeProbs).
+     * Using locks was always slower than the method below. Using reduction was only 
+     * faster for very few threads, or very few outcomeProbs.
+     */
+
+    long long int numOutcomeProbs = (1 << numQubits);
+    long long int j;
+    
+    // clear outcomeProbs (in parallel, in case it's large)
+# ifdef _OPENMP
+# pragma omp parallel \
+    default (none) \
+    shared    (numOutcomeProbs,outcomeProbs) \
+    private   (j)
+# endif 
+    {
+# ifdef _OPENMP
+# pragma omp for schedule  (static)
+# endif
+        for (j=0; j<numOutcomeProbs; j++)
+            outcomeProbs[j] = 0;
+    }   
+    
+    long long int numTasks = qureg.numAmpsPerChunk;
+    long long int offset = qureg.chunkId*qureg.numAmpsPerChunk;
+    qreal* stateRe = qureg.stateVec.real;
+    qreal* stateIm = qureg.stateVec.imag;
+    
+    long long int i;
+    long long int outcomeInd;
+    int q;
+    qreal prob;
+    
+# ifdef _OPENMP
+# pragma omp parallel \
+    shared    (numTasks,offset, qubits,numQubits, stateRe,stateIm, outcomeProbs) \
+    private   (i, q, outcomeInd, prob)
+# endif 
+    {
+# ifdef _OPENMP
+# pragma omp for schedule  (static)
+# endif
+        // every amplitude contributes to a single element of retProbs
+        for (i=0; i<numTasks; i++) {
+            
+            // determine index informed by qubits outcome
+            outcomeInd = 0;
+            for (q=0; q<numQubits; q++)
+                outcomeInd += extractBit(qubits[q], i + offset) * (1LL << q);
+            
+            prob = stateRe[i]*stateRe[i] + stateIm[i]*stateIm[i];
+            
+            // atomicly update corresponding outcome array element
+            # pragma omp atomic update
+            outcomeProbs[outcomeInd] += prob;
+        }
+    }
+}
+
+void densmatr_calcProbOfAllOutcomesLocal(qreal* outcomeProbs, Qureg qureg, int* qubits, int numQubits) {
+    
+    // clear outcomeProbs (in parallel, in case it's large)
+    long long int numOutcomeProbs = (1 << numQubits);
+    long long int j;
+    
+# ifdef _OPENMP
+# pragma omp parallel \
+    default (none) \
+    shared    (numOutcomeProbs,outcomeProbs) \
+    private   (j)
+# endif 
+    {
+# ifdef _OPENMP
+# pragma omp for schedule  (static)
+# endif
+        for (j=0; j<numOutcomeProbs; j++)
+            outcomeProbs[j] = 0;
+    }  
+    
+    // compute first local index containing a diagonal element
+    long long int localNumAmps = qureg.numAmpsPerChunk;
+    long long int densityDim = (1LL << qureg.numQubitsRepresented);
+    long long int diagSpacing = 1LL + densityDim;
+    long long int maxNumDiagsPerChunk = 1 + localNumAmps / diagSpacing;
+    long long int numPrevDiags = (qureg.chunkId>0)? 1+(qureg.chunkId*localNumAmps)/diagSpacing : 0;
+    long long int globalIndNextDiag = diagSpacing * numPrevDiags;
+    long long int localIndNextDiag = globalIndNextDiag % localNumAmps;
+    
+    // computes how many diagonals are contained in this chunk
+    long long int numDiagsInThisChunk = maxNumDiagsPerChunk;
+    if (localIndNextDiag + (numDiagsInThisChunk-1)*diagSpacing >= localNumAmps)
+        numDiagsInThisChunk -= 1;
+        
+    long long int visitedDiags;     // number of visited diagonals in this chunk so far
+    long long int basisStateInd;    // current diagonal index being considered
+    long long int index;            // index in the local chunk
+    
+    int q;
+    long long int outcomeInd;
+    qreal *stateRe = qureg.stateVec.real;
+    
+# ifdef _OPENMP
+# pragma omp parallel \
+    shared    (localIndNextDiag, numPrevDiags, diagSpacing, stateRe, numDiagsInThisChunk, qubits,numQubits, outcomeProbs) \
+    private   (visitedDiags, basisStateInd, index, q,outcomeInd)
+# endif 
+    {
+# ifdef _OPENMP
+# pragma omp for schedule  (static)
+# endif
+        // sums the diagonal elems of the density matrix where measureQubit=0
+        for (visitedDiags = 0; visitedDiags < numDiagsInThisChunk; visitedDiags++) {
+            
+            basisStateInd = numPrevDiags + visitedDiags;
+            index = localIndNextDiag + diagSpacing * visitedDiags;
+            
+            // determine outcome implied by basisStateInd
+            outcomeInd = 0;
+            for (q=0; q<numQubits; q++)
+                outcomeInd += extractBit(qubits[q], basisStateInd) * (1LL << q);
+    
+            // atomicly update corresponding outcome array element
+            # pragma omp atomic update
+            outcomeProbs[outcomeInd] += stateRe[index];
+        }
+    }
+}
+
+/*
+qreal densmatr_findProbabilityOfZeroLocal(Qureg qureg, int measureQubit) {
+    
+    // computes first local index containing a diagonal element
+    long long int localNumAmps = qureg.numAmpsPerChunk;
+    long long int densityDim = (1LL << qureg.numQubitsRepresented);
+    long long int diagSpacing = 1LL + densityDim;
+    long long int maxNumDiagsPerChunk = 1 + localNumAmps / diagSpacing;
+    long long int numPrevDiags = (qureg.chunkId>0)? 1+(qureg.chunkId*localNumAmps)/diagSpacing : 0;
+    long long int globalIndNextDiag = diagSpacing * numPrevDiags;
+    long long int localIndNextDiag = globalIndNextDiag % localNumAmps;
+    
+    // computes how many diagonals are contained in this chunk
+    long long int numDiagsInThisChunk = maxNumDiagsPerChunk;
+    if (localIndNextDiag + (numDiagsInThisChunk-1)*diagSpacing >= localNumAmps)
+        numDiagsInThisChunk -= 1;
+    
+    long long int visitedDiags;     // number of visited diagonals in this chunk so far
+    long long int basisStateInd;    // current diagonal index being considered
+    long long int index;            // index in the local chunk
+    
+    qreal zeroProb = 0;
+    qreal *stateVecReal = qureg.stateVec.real;
+    
+# ifdef _OPENMP
+# pragma omp parallel \
+    shared    (localIndNextDiag, numPrevDiags, diagSpacing, stateVecReal, numDiagsInThisChunk) \
+    private   (visitedDiags, basisStateInd, index) \
+    reduction ( +:zeroProb )
+# endif 
+    {
+# ifdef _OPENMP
+# pragma omp for schedule  (static)
+# endif
+        // sums the diagonal elems of the density matrix where measureQubit=0
+        for (visitedDiags = 0; visitedDiags < numDiagsInThisChunk; visitedDiags++) {
+            
+            basisStateInd = numPrevDiags + visitedDiags;
+            index = localIndNextDiag + diagSpacing * visitedDiags;
+    
+            if (extractBit(measureQubit, basisStateInd) == 0)
+                zeroProb += stateVecReal[index]; // assume imag[diagonls] ~ 0
+
+        }
+    }
+    
+    return zeroProb;
+}
+*/
 
 
 void statevec_controlledPhaseFlip (Qureg qureg, int idQubit1, int idQubit2)

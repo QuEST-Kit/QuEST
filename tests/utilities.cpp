@@ -844,6 +844,17 @@ bool areEqual(QVector vec, qreal* reals, qreal* imags) {
     return true;
 }
 
+bool areEqual(QVector vec, qreal* reals) {
+    for (size_t i=0; i<vec.size(); i++) {
+        DEMAND( imag(vec[i]) == 0. );
+        
+        qreal dif = abs(real(vec[i]) - reals[i]);
+        if (dif > REAL_EPS)
+            return false;
+    }
+    return true;
+}
+
 /* Copies QMatrix into a CompelxMAtrix struct */
 #define macro_copyQMatrix(dest, src) { \
     for (size_t i=0; i<src.size(); i++) { \
@@ -1035,7 +1046,7 @@ QMatrix toQMatrix(DiagonalOp op) {
 
 void toQureg(Qureg qureg, QVector vec) {
     DEMAND( !qureg.isDensityMatrix );
-    DEMAND( qureg.numAmpsTotal == (int) vec.size() );
+    DEMAND( qureg.numAmpsTotal == (long long int) vec.size() );
     
     syncQuESTEnv(QUEST_ENV);
     
@@ -1048,7 +1059,7 @@ void toQureg(Qureg qureg, QVector vec) {
 }
 void toQureg(Qureg qureg, QMatrix mat) {
     DEMAND( qureg.isDensityMatrix );
-    DEMAND( (1 << qureg.numQubitsRepresented) == (int) mat.size() );
+    DEMAND( (1 << qureg.numQubitsRepresented) == (long long int) mat.size() );
     
     syncQuESTEnv(QUEST_ENV);
     

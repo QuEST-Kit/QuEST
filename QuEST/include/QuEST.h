@@ -2857,6 +2857,9 @@ void controlledPauliY(Qureg qureg, int controlQubit, int targetQubit);
  *
  * For density matrices, this function sums the diagonal values (should be real)
  * corresponding to \p measureQubit \p = \p 0 (returning 1 minus this if \p outcome \p = \p 1).
+ *
+ * @see 
+ * - calcProbOfAllOutcomes()
  * 
  * @see
  * - measure()
@@ -2876,6 +2879,98 @@ void controlledPauliY(Qureg qureg, int controlQubit, int targetQubit);
  * @author Tyson Jones (density matrix)
  */
 qreal calcProbOfOutcome(Qureg qureg, int measureQubit, int outcome);
+
+/** Populates \p outcomeProbs with the probabilities of every outcome of the sub-register
+ * contained in \p qubits. 
+ *
+ * > This performs no actual measurement and does not modify \p qureg.
+ *
+ * - For \p qubits <b>= {a, b, c, ...}</b>, \p outcomeProbs
+ *   is populated to
+ *   \f[
+ *     \text{outcomeProbs} = \{ \; |\alpha_0|^2, \; |\alpha_1|^2, \; |\alpha_2|^2, \; |\alpha_3|^2, \; ... \; \},
+ *   \f]
+ *   where \f$|\alpha_j|^2\f$ are the probabilities of the respective outcome states (interpreting
+ *   \p qubits as ordered least to most significant)
+ *   \f[
+ *      |\dots\textbf{c\,b\,a}\rangle_i \; \; = \;\; |000\rangle,  \;\; |001\rangle \;\; |010\rangle \;\; |011\rangle, \;\; \dots
+ *   \f]
+ *   understood in a state-vector \p qureg \f$|\psi\rangle\f$ as
+ *   \f[
+ *      |\psi\rangle = \sum\limits_i^{\text{numQubits}} \alpha_i \; |\dots\textbf{c\,b\,a}\rangle_i 
+ *        \; \otimes \; |\phi\rangle_i,
+ *   \f]
+ *   or in a density matrix \p qureg \f$\rho\f$ as
+ *   \f[
+ *      \begin{aligned}
+ *      \rho &= \sum\limits_{i,j}^{\text{numQubits}} \; \beta_{ij} \; |\dots\textbf{c\,b\,a}\rangle_i\,\langle\dots\textbf{c\,b\,a}|_j 
+ *            \; \otimes \; \mu_{ij} \\
+ *           &= \sum\limits_i^{\text{numQubits}} \; |\alpha_i|^2 \;  |\dots\textbf{c\,b\,a}\rangle\langle\dots\textbf{c\,b\,a}|_i  \;\; + \, 
+ *            \sum\limits_{i \ne j}^{\text{numQubits}} \; \beta_{ij} \; |\dots\textbf{c\,b\,a}\rangle_i\,\langle\dots\textbf{c\,b\,a}|_j 
+ *            \; \otimes \; \mu_{ij},
+ *       \end{aligned}
+ *   \f]
+ *   where \f$|\phi\rangle_i\f$ and \f$\mu_{ij}\f$ are understood to be the separated states of the remaining qubits.
+ *   
+ * > \p outcomeProbs must be a pre-allocated array of length \f$2^{\text{numQubits}}\f$,
+ * > which is equivalent to <b>1<<</b>\p numQubits. In distributed mode, every node receives 
+ * > the full list of outcome probabilities.
+ *
+ * - Note that the indices in \p qubits need not be adjacent nor ordered. The order of
+ *   \p qubits determines the order of \p outcomeProbs, whereby \p qubits are treated
+ *   as <em>increasing</em> significance.
+ *   \n\n
+ *
+ * - For example, given a \p qureg initialised into state-vector
+ *   \f[
+ *      |\psi\rangle = 
+ *          \alpha_0 |000\rangle \;+\; \alpha_1 |001\rangle \;+\; 
+ *          \alpha_2 |010\rangle \;+\; \alpha_3 |011\rangle \;+\;
+ *          \alpha_4 |100\rangle \;+\; \alpha_5 |101\rangle \;+\; 
+ *          \alpha_6 |110\rangle \;+\; \alpha_7 |111\rangle,
+ *   \f]
+ *   then executing
+ *   ```
+ *   int qubits[] = {2, 0};
+ *   int numQubits = 2;
+ *
+ *   qreal outcomeProbs[1<<numQubits];
+ *   calcProbOfAllOutcomes(outcomeProbs, qureg, qubits, numQubits);
+ *   ```
+ *   would populate \p outcomeProbs with
+ *   \f[
+ *      \text{outcomeProbs} = \{ \;\; |\alpha_0|^2+|\alpha_2|^2, \;\; |\alpha_4|^2+|\alpha_6|^2, \;\;
+ *                                 |\alpha_1|^2+|\alpha_3|^2, \;\; |\alpha_5|^2+|\alpha_7|^2  \;\; \}.
+ *   \f]
+ *
+ * > Since all probability amplitudes of a state-vector are ultimately involved in 
+ * > the output probabilities, calcProbOfAllOutcomes() works as expected for 
+ * > un-normalised states. This is similarly true for density matrices, where all
+ * > diagonal elements are involved, although only the real values of the diagonal elements 
+ * > will be consulted.
+ *
+ * @see 
+ * - calcProbOfOutcome()
+ *
+ * @ingroup calc
+ * @param[out] outcomeProbs a pre-allocated array of length <b>1<<</b>\p numQubits, 
+ *      which will be modified to contain all outcome probabilities
+ * @param[in] qureg a state-vector or density matrix to study
+ * @param[in] qubits a list of qubits to study
+ * @param[in] numQubits the length of list \p qubits
+ * @throws invalidQuESTInputError()
+ * - if \p numQubits <= 0
+ * - if any index in \p qubits is invalid, i.e. outside <b>[0,</b> \p qureg.numQubitsRepresented <b>)</b>
+ * - if \p qubits contains any repetitions
+ * @throws segmentation-fault
+ * - if \p outcomeProbs is not pre-allocated
+ * - if \p outcomeProbs contains space for fewer than <b>1<<</b>\p numQubits elements
+ * @author Tyson Jones
+ */
+void calcProbOfAllOutcomes(qreal* outcomeProbs, Qureg qureg, int* qubits, int numQubits);
+// DEBUG
+void TEST_calcProbOfAllOutcomes(qreal* retProbs, Qureg qureg, int* qubits, int numQubits);
+void SHARED_calcProbOfAllOutcomes(qreal* outcomeProbs, Qureg qureg, int* qubits, int numQubits);
 
 /** Updates \p qureg to be consistent with measuring \p measureQubit in the given 
  * \p outcome (0 or 1), and returns the probability of such a measurement outcome. 

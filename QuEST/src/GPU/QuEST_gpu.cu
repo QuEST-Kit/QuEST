@@ -2028,6 +2028,132 @@ qreal densmatr_calcProbOfOutcome(Qureg qureg, int measureQubit, int outcome)
     return outcomeProb;
 }
 
+// atomicAdd on floats/doubles isn't available on <6 CC devices, so we add it ourselves
+#if !defined(__CUDA_ARCH__) || __CUDA_ARCH__ >= 600
+#else
+static __inline__ __device__ double atomicAdd(double* address, double val)
+{
+    unsigned long long int* address_as_ull = (unsigned long long int*) address;
+    unsigned long long int old = *address_as_ull, assumed;
+
+    do {
+        assumed = old;
+        old = atomicCAS(address_as_ull, assumed,
+            __double_as_longlong(val + __longlong_as_double(assumed)));
+
+    // Note: uses integer comparison to avoid hang in case of NaN (since NaN != NaN)
+    } while (assumed != old);
+
+    return __longlong_as_double(old);
+}
+#endif
+
+__global__ void statevec_calcProbOfAllOutcomesKernel(
+    qreal* outcomeProbs, Qureg qureg, int* qubits, int numQubits
+) {
+    // each thread handles one amplitude (all amplitudes are involved)
+    long long int ampInd = blockIdx.x*blockDim.x + threadIdx.x;
+    if (ampInd >= qureg.numAmpsTotal) return;
+    
+    qreal prob = (
+        qureg.deviceStateVec.real[ampInd]*qureg.deviceStateVec.real[ampInd] + 
+        qureg.deviceStateVec.imag[ampInd]*qureg.deviceStateVec.imag[ampInd]);
+    
+    // each amplitude contributes to one outcome
+    long long int outcomeInd = 0;
+    for (int q=0; q<numQubits; q++)
+        outcomeInd += extractBit(qubits[q], ampInd) * (1LL << q);
+    
+    // each thread atomically writes directly to the global output.
+    // this beat block-heirarchal atomic reductions in both global and shared memory!
+    atomicAdd(&outcomeProbs[outcomeInd], prob);
+}
+
+void statevec_calcProbOfAllOutcomes(qreal* outcomeProbs, Qureg qureg, int* qubits, int numQubits) {
+
+    // copy qubits to GPU memory
+    int* d_qubits;
+    size_t mem_qubits = numQubits * sizeof *d_qubits;
+    cudaMalloc(&d_qubits, mem_qubits);
+    cudaMemcpy(d_qubits, qubits, mem_qubits, cudaMemcpyHostToDevice);
+
+    // create one thread for every amplitude
+    int numThreadsPerBlock = 128;
+    int numBlocks = ceil(qureg.numAmpsPerChunk / (qreal) numThreadsPerBlock);
+    
+    
+    // create global GPU array for outcomeProbs
+    qreal* d_outcomeProbs;
+    long long int numOutcomes = (1LL << numQubits);
+    size_t mem_outcomeProbs = numOutcomes * sizeof *d_outcomeProbs;
+    cudaMalloc(&d_outcomeProbs, mem_outcomeProbs);
+    cudaMemset(d_outcomeProbs, 0, mem_outcomeProbs);
+    
+    // populate per-block subarrays
+    statevec_calcProbOfAllOutcomesKernel<<<numBlocks, numThreadsPerBlock>>>(
+        d_outcomeProbs, qureg, d_qubits, numQubits);
+        
+    // copy outcomeProbs from GPU memory
+    cudaMemcpy(outcomeProbs, d_outcomeProbs, mem_outcomeProbs, cudaMemcpyDeviceToHost);
+    
+    // free GPU memory
+    cudaFree(d_qubits);
+    cudaFree(d_outcomeProbs);
+}
+
+__global__ void densmatr_calcProbOfAllOutcomesKernel(
+    qreal* outcomeProbs, Qureg qureg, int* qubits, int numQubits
+) {
+    // each thread handles one diagonal amplitude
+    long long int diagInd = blockIdx.x*blockDim.x + threadIdx.x;
+    long long int numDiags = (1LL << qureg.numQubitsRepresented);
+    if (diagInd >= numDiags) return;
+    
+    long long int flatInd = (1 + numDiags)*diagInd;
+    qreal prob = qureg.deviceStateVec.real[flatInd];   // im[flatInd] assumed ~ 0
+    
+    // each diagonal amplitude contributes to one outcome
+    long long int outcomeInd = 0;
+    for (int q=0; q<numQubits; q++)
+        outcomeInd += extractBit(qubits[q], diagInd) * (1LL << q);
+    
+    // each thread atomically writes directly to the global output.
+    // this beat block-heirarchal atomic reductions in both global and shared memory!
+    atomicAdd(&outcomeProbs[outcomeInd], prob);
+}
+
+void densmatr_calcProbOfAllOutcomes(qreal* outcomeProbs, Qureg qureg, int* qubits, int numQubits) {
+
+    // copy qubits to GPU memory
+    int* d_qubits;
+    size_t mem_qubits = numQubits * sizeof *d_qubits;
+    cudaMalloc(&d_qubits, mem_qubits);
+    cudaMemcpy(d_qubits, qubits, mem_qubits, cudaMemcpyHostToDevice);
+    
+    // create global array, with per-block subarrays
+    int numThreadsPerBlock = 128;
+    int numDiags = (1LL << qureg.numQubitsRepresented);
+    int numBlocks = ceil(numDiags / (qreal) numThreadsPerBlock);
+        
+    // create global GPU array for outcomeProbs
+    qreal* d_outcomeProbs;
+    long long int numOutcomes = (1LL << numQubits);
+    size_t mem_outcomeProbs = numOutcomes * sizeof *d_outcomeProbs;
+    cudaMalloc(&d_outcomeProbs, mem_outcomeProbs);
+    cudaMemset(d_outcomeProbs, 0, mem_outcomeProbs);
+    
+    // populate per-block subarrays
+    densmatr_calcProbOfAllOutcomesKernel<<<numBlocks, numThreadsPerBlock>>>(
+        d_outcomeProbs, qureg, d_qubits, numQubits);
+        
+    // copy outcomeProbs from GPU memory
+    cudaMemcpy(outcomeProbs, d_outcomeProbs, mem_outcomeProbs, cudaMemcpyDeviceToHost);
+    
+    // free GPU memory
+    cudaFree(d_qubits);
+    cudaFree(d_outcomeProbs);
+}
+
 /** computes Tr(conjTrans(a) b) = sum of (a_ij^* b_ij), which is a real number */
 __global__ void densmatr_calcInnerProductKernel(
     Qureg a, Qureg b, long long int numTermsToSum, qreal* reducedArray
