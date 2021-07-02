@@ -941,15 +941,6 @@ void calcProbOfAllOutcomes(qreal* retProbs, Qureg qureg, int* qubits, int numQub
     else
         statevec_calcProbOfAllOutcomes(retProbs, qureg, qubits, numQubits);
 }
-// DEBUG
-void TEST_calcProbOfAllOutcomes(qreal* retProbs, Qureg qureg, int* qubits, int numQubits) {
-    validateMultiTargets(qureg, qubits, numQubits, __func__);
-    TEST_statevec_calcProbOfAllOutcomes(retProbs, qureg, qubits, numQubits);
-}
-void SHARED_calcProbOfAllOutcomes(qreal* retProbs, Qureg qureg, int* qubits, int numQubits) {
-    validateMultiTargets(qureg, qubits, numQubits, __func__);
-    SHARED_statevec_calcProbOfAllOutcomes(retProbs, qureg, qubits, numQubits);
-}
 
 qreal calcPurity(Qureg qureg) {
     validateDensityMatrQureg(qureg, __func__);

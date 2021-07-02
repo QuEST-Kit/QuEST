@@ -2048,94 +2048,7 @@ static __inline__ __device__ double atomicAdd(double* address, double val)
 }
 #endif
 
-
-
-__global__ void SHARED_statevec_calcProbOfAllOutcomesKernel(
-    qreal* outcomeProbs, Qureg qureg, int* qubits, int numQubits
-) {
-    // each thread handles one amplitude (all amplitudes are involved)
-    long long int ampInd = blockIdx.x*blockDim.x + threadIdx.x;
-    if (ampInd >= qureg.numAmpsTotal) return;    
-
-    // each block has a private outcomeProbs register, which threads contribute to atomically
-    extern __shared__ qreal blockProbs[];
-
-    // initialise blockProbs efficiently to zero (looping, in case fewer treads in block than outcomes)
-    long long int numOutcomeProbs = (1LL << numQubits);
-    for (int i=threadIdx.x; i<numOutcomeProbs; i+=blockDim.x)
-        blockProbs[i] = 0;
-
-    qreal prob = (
-        qureg.deviceStateVec.real[ampInd]*qureg.deviceStateVec.real[ampInd] + 
-        qureg.deviceStateVec.imag[ampInd]*qureg.deviceStateVec.imag[ampInd]);
-    
-    // each amplitude contributes to one outcome
-    long long int outcomeInd = 0;
-    for (int q=0; q<numQubits; q++)
-        outcomeInd += extractBit(qubits[q], ampInd) * (1LL << q);
-    
-    // ensure initialisation has completed 
-    __syncthreads();
-
-    // contribute this thread's probability to it's block
-    atomicAdd(&blockProbs[outcomeInd], prob);
-    
-    // threads in each block not needed for subsequent reduction can stop early
-    if (threadIdx.x >= numOutcomeProbs) return;
-    
-    // once all remaining threads have contributed to their block memory...
-    __syncthreads();
-    
-    // they atomically contribute to the global output (looping, in case fewer block threads than outcomes)
-    for (int i=threadIdx.x; i<numOutcomeProbs; i+=blockDim.x)
-        atomicAdd(&outcomeProbs[i], blockProbs[i]);
-}
-
-void SHARED_statevec_calcProbOfAllOutcomes(qreal* outcomeProbs, Qureg qureg, int* qubits, int numQubits) {
-    
-    if (numQubits > 12) {
-        printf("ERR: TOO MANY QUBITS\n");
-        return;
-    }
-    
-    // TODO:  
-    // - copy qubits into shared memory and have coalesced acess
-    // - (benchmark first)
-    // TODO:
-    //  - do this for applyPhaseFunc args too
-    
-    // copy qubits to GPU memory
-    int* d_qubits;
-    size_t mem_qubits = numQubits * sizeof *d_qubits;
-    cudaMalloc(&d_qubits, mem_qubits);
-    cudaMemcpy(d_qubits, qubits, mem_qubits, cudaMemcpyHostToDevice);
-    
-    // create global array, with per-block subarrays
-    int numThreadsPerBlock = 128;
-    int numBlocks = ceil(qureg.numAmpsPerChunk / (qreal) numThreadsPerBlock);
-    long long int numOutcomes = (1LL << numQubits);
-    
-    // create global GPU array for outcomeProbs
-    qreal* d_outcomeProbs;
-    size_t mem_outcomeProbs = numOutcomes * sizeof *d_outcomeProbs;
-    cudaMalloc(&d_outcomeProbs, mem_outcomeProbs);
-    cudaMemset(d_outcomeProbs, 0, mem_outcomeProbs);
-    
-    // populate per-block outcomeProbs arrays
-    size_t blockMem = numOutcomes * sizeof(qreal);
-    SHARED_statevec_calcProbOfAllOutcomesKernel<<<numBlocks, numThreadsPerBlock, blockMem>>>(
-        d_outcomeProbs, qureg, d_qubits, numQubits);
-        
-    // copy outcomeProbs from GPU memory
-    cudaMemcpy(outcomeProbs, d_outcomeProbs, mem_outcomeProbs, cudaMemcpyDeviceToHost);
-    
-    // free GPU memory
-    cudaFree(d_qubits);
-    cudaFree(d_outcomeProbs);
-}
-
-
-__global__ void TEST_statevec_calcProbOfAllOutcomesKernel(
+__global__ void statevec_calcProbOfAllOutcomesKernel(
     qreal* outcomeProbs, Qureg qureg, int* qubits, int numQubits
 ) {
     // each thread handles one amplitude (all amplitudes are involved)
@@ -2154,13 +2067,11 @@ __global__ void TEST_statevec_calcProbOfAllOutcomesKernel(
     atomicAdd(&outcomeProbs[outcomeInd], prob);
 }
 
-void TEST_statevec_calcProbOfAllOutcomes(qreal* outcomeProbs, Qureg qureg, int* qubits, int numQubits) {
+void statevec_calcProbOfAllOutcomes(qreal* outcomeProbs, Qureg qureg, int* qubits, int numQubits) {
     
-    // TODO:  
-    // - copy qubits into shared memory and have coalesced acess
-    // - (benchmark first)
-    // TODO:
-    //  - do this for applyPhaseFunc args too
+    // TODO: 
+    // [ ] move quregs into shared??
+    // do this for applyPhaseFunc args too
     
     // copy qubits to GPU memory
     int* d_qubits;
@@ -2188,99 +2099,6 @@ void TEST_statevec_calcProbOfAllOutcomes(qreal* outcomeProbs, Qureg qureg, int* 
     
     // free GPU memory
     cudaFree(d_qubits);
-    cudaFree(d_outcomeProbs);
-}
-
-
-
-
-__global__ void statevec_calcProbOfAllOutcomesPerBlockKernel(
-    qreal* allBlockOutcomeProbs, Qureg qureg, int* qubits, int numQubits
-) {
-    // each thread handles one amplitude (all amplitudes are involved)
-    long long int ampInd = blockIdx.x*blockDim.x + threadIdx.x;
-    if (ampInd >= qureg.numAmpsTotal) return;
-    
-    qreal prob = (
-        qureg.deviceStateVec.real[ampInd]*qureg.deviceStateVec.real[ampInd] + 
-        qureg.deviceStateVec.imag[ampInd]*qureg.deviceStateVec.imag[ampInd]);
-        
-    // each amplitude contributes to one outcome
-    long long int outcomeInd = 0;
-    for (int q=0; q<numQubits; q++)
-        outcomeInd += extractBit(qubits[q], ampInd) * (1LL << q);
-        
-    // each block has its own local outcomeProbs[] sub-array
-    long long int numOutcomes = (1LL << numQubits);
-    long long int blockOffset = blockIdx.x * numOutcomes;
-    long long int allBlockInd = blockOffset + outcomeInd;
-    
-    // threads must atomically contribute to their block's sub-array
-    atomicAdd(&allBlockOutcomeProbs[allBlockInd], prob);
-}
-
-__global__ void statevec_calcProbOfAllOutcomesReduceBlocksKernel(
-    qreal* outcomeProbs, qreal* allSubArrOutcomeProbs, int numQubits, int numSubArrs
-) {
-    // each thread handles one outcome
-    long long int numOutcomes = (1LL << numQubits);
-    long long int outcomeInd = blockIdx.x*blockDim.x + threadIdx.x;
-    if (outcomeInd >= numOutcomes) return;
-    
-    // total outcome prob combines those in all sub arrays
-    qreal totalProb = 0;
-    for (int s=0; s<numSubArrs; s++)
-        totalProb += allSubArrOutcomeProbs[outcomeInd + s*numOutcomes];
-     
-    outcomeProbs[outcomeInd] = totalProb;
-
-    // we avoided language of 'blocks', because the roles of blocks in this 
-    // kernel differ from those in *PerBlockKernel()
-}
-
-void statevec_calcProbOfAllOutcomes(qreal* outcomeProbs, Qureg qureg, int* qubits, int numQubits) {
-    
-    // TODO:  
-    // - copy qubits into shared memory and have coalesced acess
-    // - (benchmark first)
-    // TODO:
-    //  - do this for applyPhaseFunc args too
-    
-    // copy qubits to GPU memory
-    int* d_qubits;
-    size_t mem_qubits = numQubits * sizeof *d_qubits;
-    cudaMalloc(&d_qubits, mem_qubits);
-    cudaMemcpy(d_qubits, qubits, mem_qubits, cudaMemcpyHostToDevice);
-    
-    // create global array, with per-block subarrays
-    int numThreadsPerBlock = 128;
-    int numBlocks = ceil(qureg.numAmpsPerChunk / (qreal) numThreadsPerBlock);
-    long long int numOutcomes = (1LL << numQubits);
-    qreal* d_allBlockOutcomeProbs;
-    size_t mem_allBlockOutcomeProbs = numOutcomes * numBlocks * sizeof *d_allBlockOutcomeProbs;
-    cudaMalloc(&d_allBlockOutcomeProbs, mem_allBlockOutcomeProbs);
-    cudaMemset(d_allBlockOutcomeProbs, 0, mem_allBlockOutcomeProbs);
-    
-    // populate per-block subarrays
-    statevec_calcProbOfAllOutcomesPerBlockKernel<<<numBlocks, numThreadsPerBlock>>>(
-        d_allBlockOutcomeProbs, qureg, d_qubits, numQubits);
-        
-    // create global GPU array for outcomeProbs
-    qreal* d_outcomeProbs;
-    size_t mem_outcomeProbs = numOutcomes * sizeof *d_outcomeProbs;
-    cudaMalloc(&d_outcomeProbs, mem_outcomeProbs);
-    
-    // reduce per-block (by previous block size) subarrays 
-    int numReduceBlocks = ceil(numOutcomes / (qreal) numThreadsPerBlock);
-    statevec_calcProbOfAllOutcomesReduceBlocksKernel<<<numReduceBlocks, numThreadsPerBlock>>>(
-        d_outcomeProbs, d_allBlockOutcomeProbs, numQubits, numBlocks);
-        
-    // copy outcomeProbs from GPU memory
-    cudaMemcpy(outcomeProbs, d_outcomeProbs, mem_outcomeProbs, cudaMemcpyDeviceToHost);
-    
-    // free GPU memory
-    cudaFree(d_qubits);
-    cudaFree(d_allBlockOutcomeProbs);
     cudaFree(d_outcomeProbs);
 }
 
