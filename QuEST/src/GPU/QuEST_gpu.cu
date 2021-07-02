@@ -2064,34 +2064,33 @@ __global__ void statevec_calcProbOfAllOutcomesKernel(
     for (int q=0; q<numQubits; q++)
         outcomeInd += extractBit(qubits[q], ampInd) * (1LL << q);
     
+    // each thread atomically writes directly to the global output.
+    // this beat block-heirarchal atomic reductions in both global and shared memory!
     atomicAdd(&outcomeProbs[outcomeInd], prob);
 }
 
 void statevec_calcProbOfAllOutcomes(qreal* outcomeProbs, Qureg qureg, int* qubits, int numQubits) {
-    
-    // TODO: 
-    // [ ] move quregs into shared??
-    // do this for applyPhaseFunc args too
-    
+
     // copy qubits to GPU memory
     int* d_qubits;
     size_t mem_qubits = numQubits * sizeof *d_qubits;
     cudaMalloc(&d_qubits, mem_qubits);
     cudaMemcpy(d_qubits, qubits, mem_qubits, cudaMemcpyHostToDevice);
-    
-    // create global array, with per-block subarrays
+
+    // create one thread for every amplitude
     int numThreadsPerBlock = 128;
     int numBlocks = ceil(qureg.numAmpsPerChunk / (qreal) numThreadsPerBlock);
-    long long int numOutcomes = (1LL << numQubits);
+    
     
     // create global GPU array for outcomeProbs
     qreal* d_outcomeProbs;
+    long long int numOutcomes = (1LL << numQubits);
     size_t mem_outcomeProbs = numOutcomes * sizeof *d_outcomeProbs;
     cudaMalloc(&d_outcomeProbs, mem_outcomeProbs);
     cudaMemset(d_outcomeProbs, 0, mem_outcomeProbs);
     
     // populate per-block subarrays
-    TEST_statevec_calcProbOfAllOutcomesKernel<<<numBlocks, numThreadsPerBlock>>>(
+    statevec_calcProbOfAllOutcomesKernel<<<numBlocks, numThreadsPerBlock>>>(
         d_outcomeProbs, qureg, d_qubits, numQubits);
         
     // copy outcomeProbs from GPU memory
@@ -2102,10 +2101,57 @@ void statevec_calcProbOfAllOutcomes(qreal* outcomeProbs, Qureg qureg, int* qubit
     cudaFree(d_outcomeProbs);
 }
 
+__global__ void densmatr_calcProbOfAllOutcomesKernel(
+    qreal* outcomeProbs, Qureg qureg, int* qubits, int numQubits
+) {
+    // each thread handles one diagonal amplitude
+    long long int diagInd = blockIdx.x*blockDim.x + threadIdx.x;
+    long long int numDiags = (1LL << qureg.numQubitsRepresented);
+    if (diagInd >= numDiags) return;
+    
+    long long int flatInd = (1 + numDiags)*diagInd;
+    qreal prob = qureg.deviceStateVec.real[flatInd];   // im[flatInd] assumed ~ 0
+    
+    // each diagonal amplitude contributes to one outcome
+    long long int outcomeInd = 0;
+    for (int q=0; q<numQubits; q++)
+        outcomeInd += extractBit(qubits[q], ampInd) * (1LL << q);
+    
+    // each thread atomically writes directly to the global output.
+    // this beat block-heirarchal atomic reductions in both global and shared memory!
+    atomicAdd(&outcomeProbs[outcomeInd], prob);
+}
+
 void densmatr_calcProbOfAllOutcomes(qreal* outcomeProbs, Qureg qureg, int* qubits, int numQubits) {
 
-    // DO NOTHING presently
-    // 
+    // copy qubits to GPU memory
+    int* d_qubits;
+    size_t mem_qubits = numQubits * sizeof *d_qubits;
+    cudaMalloc(&d_qubits, mem_qubits);
+    cudaMemcpy(d_qubits, qubits, mem_qubits, cudaMemcpyHostToDevice);
+    
+    // create global array, with per-block subarrays
+    int numThreadsPerBlock = 128;
+    int numDiags = (1LL << qureg.numQubitsRepresented);
+    int numBlocks = ceil(numDiags / (qreal) numThreadsPerBlock);
+        
+    // create global GPU array for outcomeProbs
+    qreal* d_outcomeProbs;
+    long long int numOutcomes = (1LL << numQubits);
+    size_t mem_outcomeProbs = numOutcomes * sizeof *d_outcomeProbs;
+    cudaMalloc(&d_outcomeProbs, mem_outcomeProbs);
+    cudaMemset(d_outcomeProbs, 0, mem_outcomeProbs);
+    
+    // populate per-block subarrays
+    densmatr_calcProbOfAllOutcomesKernel<<<numBlocks, numThreadsPerBlock>>>(
+        d_outcomeProbs, qureg, d_qubits, numQubits);
+        
+    // copy outcomeProbs from GPU memory
+    cudaMemcpy(outcomeProbs, d_outcomeProbs, mem_outcomeProbs, cudaMemcpyDeviceToHost);
+    
+    // free GPU memory
+    cudaFree(d_qubits);
+    cudaFree(d_outcomeProbs);
 }
 
 /** computes Tr(conjTrans(a) b) = sum of (a_ij^* b_ij), which is a real number */
