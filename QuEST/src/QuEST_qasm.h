@@ -81,6 +81,12 @@ void qasm_recordInitPlus(Qureg qureg);
 
 void qasm_recordInitClassical(Qureg qureg, long long int stateInd);
 
+void qasm_recordPhaseFunc(Qureg qureg, int* qubits, int numQubits, enum bitEncoding encoding, qreal* coeffs, qreal* exponents, int numTerms, long long int* overrideInds, qreal* overridePhases, int numOverrides);
+
+void qasm_recordMultiVarPhaseFunc(Qureg qureg, int* qubits, int* numQubitsPerReg, int numRegs, enum bitEncoding encoding, qreal* coeffs, qreal* exponents, int* numTermsPerReg, long long int* overrideInds, qreal* overridePhases, int numOverrides);
+
+void qasm_recordNamedPhaseFunc(Qureg qureg, int* qubits, int* numQubitsPerReg, int numRegs, enum bitEncoding encoding, enum phaseFunc functionNameCode, qreal* params, int numParams, long long int* overrideInds, qreal* overridePhases, int numOverrides);
+
 void qasm_recordComment(Qureg qureg, char* comment, ...);
 
 void qasm_clearRecorded(Qureg qureg);

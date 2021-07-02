@@ -1,4 +1,8 @@
-<img align="left" src="doxyconfig/logo.png" alt="The QuEST logo">
+
+<!-- We avoid a relative path of 'doxyconfig/logo.png' here, because this README
+     will also serve as Doxygen's mainpage in the doc, where the root directory 
+     will differ -->
+<img align="left" src="https://github.com/QuEST-Kit/QuEST/blob/master/doxyconfig/logo.png?raw=true" alt="The QuEST logo">
 
 # [QuEST](https://quest.qtechtheory.org)
 

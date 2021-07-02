@@ -549,7 +549,7 @@ void exchangePairStateVectorHalves(Qureg qureg, int pairRank){
     }
 }
 
-//TODO -- decide where this function should go. It is a preparation for MPI data transfer function
+// @todo decide where this function should go. It is a preparation for MPI data transfer function
 void compressPairVectorForSingleQubitDepolarise(Qureg qureg, int targetQubit){
     long long int sizeInnerBlock, sizeInnerHalfBlock;
     long long int sizeOuterColumn, sizeOuterHalfColumn;
@@ -1255,7 +1255,7 @@ void statevec_hadamard(Qureg qureg, int targetQubit)
  * 
  * @param[in] chunkId id of chunk in state vector
  * @param[in] chunkSize number of amps in chunk
- * @param[in] measureQubi qubit being measured
+ * @param[in] measureQubit qubit being measured
  * @return int -- 1: skip, 0: don't skip
  */
 static int isChunkToSkipInFindPZero(int chunkId, long long int chunkSize, int measureQubit)
@@ -1383,9 +1383,9 @@ void statevec_swapQubitAmps(Qureg qureg, int qb1, int qb2) {
  * if the qubit chunks already fit in the node, it operates the unitary direct.
  * Note the order of q1 and q2 in the call to twoQubitUnitaryLocal is important.
  * 
- * @TODO: refactor so that the 'swap back' isn't performed; instead the qubit locations 
+ * @todo refactor so that the 'swap back' isn't performed; instead the qubit locations 
  * are updated.
- * @TODO: the double swap (q1,q2 to 0,1) may be possible simultaneously by a bespoke 
+ * @todo the double swap (q1,q2 to 0,1) may be possible simultaneously by a bespoke 
  * swap routine.
  */
 void statevec_multiControlledTwoQubitUnitary(Qureg qureg, long long int ctrlMask, int q1, int q2, ComplexMatrix4 u) {
@@ -1441,7 +1441,7 @@ void statevec_multiControlledTwoQubitUnitary(Qureg qureg, long long int ctrlMask
  * It is already gauranteed here that all target qubits can fit on each node (this is
  * validated in the front-end)
  * 
- * @TODO: refactor so that the 'swap back' isn't performed; instead the qubit locations 
+ * @todo refactor so that the 'swap back' isn't performed; instead the qubit locations 
  * are updated.
  */
 void statevec_multiControlledMultiQubitUnitary(Qureg qureg, long long int ctrlMask, int* targs, int numTargs, ComplexMatrixN u) {

@@ -177,9 +177,11 @@ $( document ).ready(function() {
     );
   $('#search-results-window .panel-body').append(results_iframe);
 
+  /*
   searchBox.DOMPopupSearchResultsWindow = function() {
     return document.getElementById("search-results-window");
   }
+  */
 
   function update_search_results_window() {
     $('#search-results-window').removeClass('panel-default panel-success panel-warning panel-danger')

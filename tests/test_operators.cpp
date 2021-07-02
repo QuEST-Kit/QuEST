@@ -464,6 +464,1712 @@ TEST_CASE( "applyMultiControlledMatrixN", "[operators]" ) {
 
 
 
+/** @sa applyMultiVarPhaseFunc
+ * @ingroup unittest 
+ * @author Tyson Jones 
+ */
+TEST_CASE( "applyMultiVarPhaseFunc", "[operators]" ) {
+    
+    Qureg quregVec = createQureg(NUM_QUBITS, QUEST_ENV);
+    initDebugState(quregVec);
+    QVector refVec = toQVector(quregVec);
+
+    SECTION( "correctness" ) {
+        
+        // try every kind of binary encodings
+        enum bitEncoding encoding = GENERATE( UNSIGNED,TWOS_COMPLEMENT );
+        
+        // try every possible number of registers 
+        // (between #qubits containing 1, and 1 containing #qubits)
+        int numRegs;
+        int maxNumRegs = 0;
+        if (encoding == UNSIGNED)
+            maxNumRegs = NUM_QUBITS;
+        if (encoding == TWOS_COMPLEMENT)
+            maxNumRegs = NUM_QUBITS/2;  // floors
+        numRegs = GENERATE_COPY( range(1, maxNumRegs+1) );
+        
+        // try every possible total number of involed qubits
+        int totalNumQubits;
+        int minTotalQubits = 0;
+        if (encoding == UNSIGNED)
+            // each register must contain at least 1 qubit
+            minTotalQubits = numRegs;
+        if (encoding == TWOS_COMPLEMENT)
+            // each register must contain at least 2 qubits
+            minTotalQubits = 2*numRegs;
+        totalNumQubits = GENERATE_COPY( range(minTotalQubits,NUM_QUBITS+1) );
+                        
+        // try every qubits subset and ordering 
+        int* regs = GENERATE_COPY( sublists(range(0,NUM_QUBITS), totalNumQubits) );
+        
+        // assign each sub-reg its minimum length
+        int unallocQubits = totalNumQubits;
+        int numQubitsPerReg[numRegs];
+        for (int i=0; i<numRegs; i++) 
+            if (encoding == UNSIGNED) {
+                numQubitsPerReg[i] = 1;
+                unallocQubits -= 1;
+            }
+            else if (encoding == TWOS_COMPLEMENT) {
+                numQubitsPerReg[i] = 2;
+                unallocQubits -= 2;
+            }
+        // and randomly allocate the remaining qubits between the registers
+        while (unallocQubits > 0) {
+            numQubitsPerReg[getRandomInt(0,numRegs)] += 1;
+            unallocQubits--;
+        }
+        
+
+        // each register gets a random number of terms in the full phase function
+        int numTermsPerReg[numRegs];
+        int numTermsTotal = 0;
+        for (int r=0; r<numRegs; r++) {
+            int numTerms = getRandomInt(1,5);
+            numTermsPerReg[r] = numTerms;
+            numTermsTotal += numTerms;
+        }
+            
+        // populate the multi-var phase function with random but POSITIVE-power terms,
+        // which must further be integers in two's complement
+        int flatInd = 0;
+        qreal coeffs[numTermsTotal];
+        qreal expons[numTermsTotal];
+        for (int r=0; r<numRegs; r++) {
+            for (int t=0; t<numTermsPerReg[r]; t++) {
+                coeffs[flatInd] = getRandomReal(-10,10);
+                if (encoding == TWOS_COMPLEMENT)
+                    expons[flatInd] = getRandomInt(0, 3+1);
+                else if (encoding == UNSIGNED)
+                    expons[flatInd] = getRandomReal(0, 3);
+                    
+                flatInd++;
+            }
+        }
+        
+        SECTION( "state-vector" ) {
+            
+            /* To perform this calculation more distinctly from the QuEST 
+             * core method, we can exploit that 
+             * exp(i (f1[x1] + f2[x2]))|x2>|x1> = exp(i f2[x2])|x2> (x) exp(i f1[x1])|x1> 
+             * and so compute a separate diagonal matrix for each sub-register with 
+             * phases determined only by its own variable, and Kronecker multiply 
+             * them together. The target qubits of the Kronecker product is then 
+             * just the full register, stored in *regs. 
+             */
+            QMatrix allRegMatr{{1}};
+            int startInd = 0;
+            for (int r=0; r<numRegs; r++) {
+                
+                QMatrix singleRegMatr = getZeroMatrix( 1 << numQubitsPerReg[r] );
+                
+                for (size_t i=0; i<singleRegMatr.size(); i++) {
+                    
+                    long long int ind = 0;
+                    if (encoding == UNSIGNED)
+                        ind = i;
+                    if (encoding == TWOS_COMPLEMENT)
+                        ind = getTwosComplement(i, numQubitsPerReg[r]);
+                    
+                    qreal phase = 0;
+                    for (int t=0; t<numTermsPerReg[r]; t++)
+                        phase += coeffs[t+startInd] * pow(ind, expons[t+startInd]);
+                        
+                    singleRegMatr[i][i] = expI(phase);
+                }                
+                allRegMatr = getKroneckerProduct(singleRegMatr, allRegMatr);
+                startInd += numTermsPerReg[r];
+            }
+                    
+            applyMultiVarPhaseFunc(quregVec, regs, numQubitsPerReg, numRegs, encoding, coeffs, expons, numTermsPerReg);
+            applyReferenceOp(refVec, regs, totalNumQubits, allRegMatr);
+            REQUIRE( areEqual(quregVec, refVec, 1E4*REAL_EPS) );
+        }
+    }
+    SECTION( "input validation" ) {
+        
+        int numRegs = 2;
+        int numQubitsPerReg[] = {2,3};
+        int qubits[] = {0,1,2,3,4};
+        
+        SECTION( "density matrix" ) {
+    
+            Qureg dens = quregVec;
+            dens.isDensityMatrix = 1;
+            REQUIRE_THROWS_WITH( applyMultiVarPhaseFunc(dens, qubits, numQubitsPerReg, numRegs, UNSIGNED, NULL, NULL, NULL), Contains("Operation valid only for state-vectors") );
+        }
+        SECTION( "number of registers" ) {
+            
+            numRegs = GENERATE_COPY( -1, 0, 1+MAX_NUM_REGS_APPLY_ARBITRARY_PHASE );
+            REQUIRE_THROWS_WITH( applyMultiVarPhaseFunc(quregVec, qubits, numQubitsPerReg, numRegs, UNSIGNED, NULL, NULL, NULL), Contains("Invalid number of qubit subregisters") );
+        }
+        SECTION( "number of qubits" ) {
+            
+            numQubitsPerReg[GENERATE_COPY(range(0,numRegs))] = GENERATE( -1, 0, 1+NUM_QUBITS );
+            REQUIRE_THROWS_WITH( applyMultiVarPhaseFunc(quregVec, qubits, numQubitsPerReg, numRegs, UNSIGNED, NULL, NULL, NULL), Contains("Invalid number of qubits") );
+        }
+        SECTION( "repetition of qubits" ) {
+            
+            qubits[GENERATE(2,3,4)] = qubits[1];
+            REQUIRE_THROWS_WITH( applyMultiVarPhaseFunc(quregVec, qubits, numQubitsPerReg, numRegs, UNSIGNED, NULL, NULL, NULL), Contains("The qubits must be unique") );
+        }
+        SECTION( "qubit indices" ) {
+            
+            qubits[GENERATE(range(0,NUM_QUBITS))] = GENERATE( -1, NUM_QUBITS );
+            REQUIRE_THROWS_WITH( applyMultiVarPhaseFunc(quregVec, qubits, numQubitsPerReg, numRegs, UNSIGNED, NULL, NULL, NULL), Contains("Invalid qubit index") );
+        }
+        SECTION( "number of terms" ) {
+
+            int numTermsPerReg[] = {3, 3};
+            
+            numTermsPerReg[GENERATE_COPY(range(0,numRegs))] = GENERATE( -1, 0 );
+            REQUIRE_THROWS_WITH( applyMultiVarPhaseFunc(quregVec, qubits, numQubitsPerReg, numRegs, UNSIGNED, NULL, NULL, numTermsPerReg), Contains("Invalid number of terms in the phase function") );
+        }
+        SECTION( "bit encoding name" ) {
+            
+            enum bitEncoding enc = (enum bitEncoding) GENERATE( -1, 2 );
+            REQUIRE_THROWS_WITH( applyMultiVarPhaseFunc(quregVec, qubits, numQubitsPerReg, numRegs, enc, NULL, NULL, NULL), Contains("Invalid bit encoding") );
+        }
+        SECTION( "two's complement register" ) {
+            
+            numQubitsPerReg[GENERATE_COPY(range(0,numRegs))] = 1;
+            REQUIRE_THROWS_WITH( applyMultiVarPhaseFunc(quregVec, qubits, numQubitsPerReg, numRegs, TWOS_COMPLEMENT, NULL, NULL, NULL), Contains("A sub-register contained too few qubits to employ TWOS_COMPLEMENT encoding") );
+        }
+        SECTION( "fractional exponent" ) {
+            
+            int numTermsPerReg[] = {3, 3};
+            qreal coeffs[] = {0,0,0,  0,0,0};
+            qreal expos[] =  {1,2,3,  1,2,3};
+            
+            expos[GENERATE(range(0,6))] = GENERATE( 0.5, 1.999, 5.0001 );
+            REQUIRE_THROWS_WITH( applyMultiVarPhaseFunc(quregVec, qubits, numQubitsPerReg, numRegs, TWOS_COMPLEMENT, coeffs, expos, numTermsPerReg), Contains("The phase function contained a fractional exponent, which is illegal in TWOS_COMPLEMENT") );
+            
+            // ensure fractional exponents are valid in unsigned mode however
+            REQUIRE_NOTHROW( applyMultiVarPhaseFunc(quregVec, qubits, numQubitsPerReg, numRegs, UNSIGNED, coeffs, expos, numTermsPerReg) );
+
+        }
+        SECTION( "negative exponent" ) {
+
+            int numTermsPerReg[] = {3, 3};
+            qreal coeffs[] = {0,0,0,  0,0,0};
+            qreal expos[] =  {1,2,3,  1,2,3};
+            
+            expos[GENERATE(range(0,6))] = GENERATE( -1, -2, -2.5 );
+            enum bitEncoding enc = GENERATE( UNSIGNED, TWOS_COMPLEMENT );
+    
+            REQUIRE_THROWS_WITH( applyMultiVarPhaseFunc(quregVec, qubits, numQubitsPerReg, numRegs, enc, coeffs, expos, numTermsPerReg), Contains("The phase function contained an illegal negative exponent") );
+        }
+    }
+    destroyQureg(quregVec, QUEST_ENV);
+}
+
+
+
+/** @sa applyMultiVarPhaseFuncOverrides
+ * @ingroup unittest 
+ * @author Tyson Jones 
+ */
+TEST_CASE( "applyMultiVarPhaseFuncOverrides", "[operators]" ) {
+    
+    Qureg quregVec = createQureg(NUM_QUBITS, QUEST_ENV);
+    initDebugState(quregVec);
+    QVector refVec = toQVector(quregVec);
+
+    SECTION( "correctness" ) {
+        
+        // try every kind of binary encodings
+        enum bitEncoding encoding = GENERATE( UNSIGNED,TWOS_COMPLEMENT );
+        
+        // try every possible number of registers 
+        // (between #qubits containing 1, and 1 containing #qubits)
+        int numRegs;
+        int maxNumRegs = 0;
+        if (encoding == UNSIGNED)
+            maxNumRegs = NUM_QUBITS;
+        if (encoding == TWOS_COMPLEMENT)
+            maxNumRegs = NUM_QUBITS/2;  // floors
+        numRegs = GENERATE_COPY( range(1, maxNumRegs+1) );
+        
+        // try every possible total number of involed qubits
+        int totalNumQubits;
+        int minTotalQubits = 0;
+        if (encoding == UNSIGNED)
+            // each register must contain at least 1 qubit
+            minTotalQubits = numRegs;
+        if (encoding == TWOS_COMPLEMENT)
+            // each register must contain at least 2 qubits
+            minTotalQubits = 2*numRegs;
+        totalNumQubits = GENERATE_COPY( range(minTotalQubits,NUM_QUBITS+1) );
+                        
+        // try every qubits subset and ordering 
+        int* regs = GENERATE_COPY( sublists(range(0,NUM_QUBITS), totalNumQubits) );
+        
+        // assign each sub-reg its minimum length
+        int unallocQubits = totalNumQubits;
+        int numQubitsPerReg[numRegs];
+        for (int i=0; i<numRegs; i++) 
+            if (encoding == UNSIGNED) {
+                numQubitsPerReg[i] = 1;
+                unallocQubits -= 1;
+            }
+            else if (encoding == TWOS_COMPLEMENT) {
+                numQubitsPerReg[i] = 2;
+                unallocQubits -= 2;
+            }
+        // and randomly allocate the remaining qubits between the registers
+        while (unallocQubits > 0) {
+            numQubitsPerReg[getRandomInt(0,numRegs)] += 1;
+            unallocQubits--;
+        }
+        
+
+        // each register gets a random number of terms in the full phase function
+        int numTermsPerReg[numRegs];
+        int numTermsTotal = 0;
+        for (int r=0; r<numRegs; r++) {
+            int numTerms = getRandomInt(1,5);
+            numTermsPerReg[r] = numTerms;
+            numTermsTotal += numTerms;
+        }
+            
+        // populate the multi-var phase function with random but POSITIVE-power terms,
+        // which must further be integers in two's complement
+        int flatInd = 0;
+        qreal coeffs[numTermsTotal];
+        qreal expons[numTermsTotal];
+        for (int r=0; r<numRegs; r++) {
+            for (int t=0; t<numTermsPerReg[r]; t++) {
+                coeffs[flatInd] = getRandomReal(-10,10);
+                if (encoding == TWOS_COMPLEMENT)
+                    expons[flatInd] = getRandomInt(0, 3+1);
+                else if (encoding == UNSIGNED)
+                    expons[flatInd] = getRandomReal(0, 3);
+                    
+                flatInd++;
+            }
+        }
+        
+        
+        // choose a random number of overrides (even overriding every amplitude)
+        int numOverrides = getRandomInt(0, (1<<totalNumQubits) + 1);
+        
+        // randomise each override index (uniqueness isn't checked)
+        long long int overrideInds[numOverrides*numRegs];
+        flatInd = 0;
+        for (int v=0; v<numOverrides; v++) {
+            for (int r=0; r<numRegs; r++) {
+                if (encoding == UNSIGNED)
+                    overrideInds[flatInd] = getRandomInt(0, 1<<numQubitsPerReg[r]);
+                else if (encoding == TWOS_COMPLEMENT) 
+                    overrideInds[flatInd] = getRandomInt(-(1<<(numQubitsPerReg[r]-1)), (1<<(numQubitsPerReg[r]-1))-1);
+                flatInd++;
+            }
+        }
+
+        // override to a random phase
+        qreal overridePhases[numOverrides];
+        for (int v=0; v<numOverrides; v++)
+            overridePhases[v] = getRandomReal(-4, 4); // periodic in [-pi, pi]
+        
+        SECTION( "state-vector" ) {
+            
+            /* To perform this calculation more distinctly from the QuEST 
+             * core method, we can exploit that 
+             * exp(i (f1[x1] + f2[x2]))|x2>|x1> = exp(i f2[x2])|x2> (x) exp(i f1[x1])|x1> 
+             * and so compute a separate diagonal matrix for each sub-register with 
+             * phases determined only by its own variable, and Kronecker multiply 
+             * them together. The target qubits of the Kronecker product is then 
+             * just the full register, stored in *regs. We do this, then iterate 
+             * the list of overrides directly to overwrite the ultimate diagonal 
+             * entries
+             */
+            QMatrix allRegMatr{{1}};
+            int startInd = 0;
+            for (int r=0; r<numRegs; r++) {
+                
+                QMatrix singleRegMatr = getZeroMatrix( 1 << numQubitsPerReg[r] );
+                
+                for (size_t i=0; i<singleRegMatr.size(); i++) {
+                    
+                    long long int ind = 0;
+                    if (encoding == UNSIGNED)
+                        ind = i;
+                    if (encoding == TWOS_COMPLEMENT)
+                        ind = getTwosComplement(i, numQubitsPerReg[r]);
+                    
+                    qreal phase = 0;
+                    for (int t=0; t<numTermsPerReg[r]; t++)
+                        phase += coeffs[t+startInd] * pow(ind, expons[t+startInd]);
+                        
+                    singleRegMatr[i][i] = expI(phase);
+                }
+                allRegMatr = getKroneckerProduct(singleRegMatr, allRegMatr);
+                startInd += numTermsPerReg[r];
+            }    
+            
+            setDiagMatrixOverrides(allRegMatr, numQubitsPerReg, numRegs, encoding, overrideInds, overridePhases, numOverrides);
+                    
+            applyMultiVarPhaseFuncOverrides(quregVec, regs, numQubitsPerReg, numRegs, encoding, coeffs, expons, numTermsPerReg, overrideInds, overridePhases, numOverrides);
+            applyReferenceOp(refVec, regs, totalNumQubits, allRegMatr);
+            REQUIRE( areEqual(quregVec, refVec, 1E4*REAL_EPS) );
+        }
+    }
+    SECTION( "input validation" ) {
+        
+        int numRegs = 2;
+        int numQubitsPerReg[] = {2,3};
+        int qubits[] = {0,1,2,3,4};
+        
+        SECTION( "density matrix" ) {
+                        
+            Qureg dens = quregVec;
+            dens.isDensityMatrix = 1;
+            REQUIRE_THROWS_WITH( applyMultiVarPhaseFuncOverrides(dens, qubits, numQubitsPerReg, numRegs, UNSIGNED, NULL, NULL, NULL, NULL, NULL, 0), Contains("Operation valid only for state-vectors") );
+        }
+        SECTION( "number of registers" ) {
+            
+            numRegs = GENERATE_COPY( -1, 0, 1+MAX_NUM_REGS_APPLY_ARBITRARY_PHASE );
+            REQUIRE_THROWS_WITH( applyMultiVarPhaseFuncOverrides(quregVec, qubits, numQubitsPerReg, numRegs, UNSIGNED, NULL, NULL, NULL, NULL, NULL, 0), Contains("Invalid number of qubit subregisters") );
+        }
+        SECTION( "number of qubits" ) {
+            
+            numQubitsPerReg[GENERATE_COPY(range(0,numRegs))] = GENERATE( -1, 0, 1+NUM_QUBITS );
+            REQUIRE_THROWS_WITH( applyMultiVarPhaseFuncOverrides(quregVec, qubits, numQubitsPerReg, numRegs, UNSIGNED, NULL, NULL, NULL, NULL, NULL, 0), Contains("Invalid number of qubits") );
+        }
+        SECTION( "repetition of qubits" ) {
+            
+            qubits[GENERATE(2,3,4)] = qubits[1];
+            REQUIRE_THROWS_WITH( applyMultiVarPhaseFuncOverrides(quregVec, qubits, numQubitsPerReg, numRegs, UNSIGNED, NULL, NULL, NULL, NULL, NULL, 0), Contains("The qubits must be unique") );
+        }
+        SECTION( "qubit indices" ) {
+            
+            qubits[GENERATE(range(0,NUM_QUBITS))] = GENERATE( -1, NUM_QUBITS );
+            REQUIRE_THROWS_WITH( applyMultiVarPhaseFuncOverrides(quregVec, qubits, numQubitsPerReg, numRegs, UNSIGNED, NULL, NULL, NULL, NULL, NULL, 0), Contains("Invalid qubit index") );
+        }
+        SECTION( "number of terms" ) {
+
+            int numTermsPerReg[] = {3, 3};
+            
+            numTermsPerReg[GENERATE_COPY(range(0,numRegs))] = GENERATE( -1, 0 );
+            REQUIRE_THROWS_WITH( applyMultiVarPhaseFuncOverrides(quregVec, qubits, numQubitsPerReg, numRegs, UNSIGNED, NULL, NULL, numTermsPerReg, NULL, NULL, 0), Contains("Invalid number of terms in the phase function") );
+        }
+        SECTION( "bit encoding name" ) {
+            
+            enum bitEncoding enc = (enum bitEncoding) GENERATE( -1, 2 );
+            REQUIRE_THROWS_WITH( applyMultiVarPhaseFuncOverrides(quregVec, qubits, numQubitsPerReg, numRegs, enc, NULL, NULL, NULL, NULL, NULL, 0), Contains("Invalid bit encoding") );
+        }
+        SECTION( "two's complement register" ) {
+            
+            numQubitsPerReg[GENERATE_COPY(range(0,numRegs))] = 1;
+            REQUIRE_THROWS_WITH( applyMultiVarPhaseFuncOverrides(quregVec, qubits, numQubitsPerReg, numRegs, TWOS_COMPLEMENT, NULL, NULL, NULL, NULL, NULL, 0), Contains("A sub-register contained too few qubits to employ TWOS_COMPLEMENT encoding") );
+        }
+        SECTION( "fractional exponent" ) {
+            
+            int numTermsPerReg[] = {3, 3};
+            qreal coeffs[] = {0,0,0,  0,0,0};
+            qreal expos[] =  {1,2,3,  1,2,3};
+            
+            expos[GENERATE(range(0,6))] = GENERATE( 0.5, 1.999, 5.0001 );
+            REQUIRE_THROWS_WITH( applyMultiVarPhaseFuncOverrides(quregVec, qubits, numQubitsPerReg, numRegs, TWOS_COMPLEMENT, coeffs, expos, numTermsPerReg, NULL, NULL, 0), Contains("The phase function contained a fractional exponent, which is illegal in TWOS_COMPLEMENT") );
+            
+            // ensure fractional exponents are valid in unsigned mode however
+            REQUIRE_NOTHROW( applyMultiVarPhaseFuncOverrides(quregVec, qubits, numQubitsPerReg, numRegs, UNSIGNED, coeffs, expos, numTermsPerReg, NULL, NULL, 0) );
+        }
+        SECTION( "negative exponent" ) {
+
+            int numTermsPerReg[] = {3, 3};
+            qreal coeffs[] = {0,0,0,  0,0,0};
+            qreal expos[] =  {1,2,3,  1,2,3};
+            
+            expos[GENERATE(range(0,6))] = GENERATE( -1, -2, -2.5 );
+            enum bitEncoding enc = GENERATE( UNSIGNED, TWOS_COMPLEMENT );
+    
+            REQUIRE_THROWS_WITH( applyMultiVarPhaseFuncOverrides(quregVec, qubits, numQubitsPerReg, numRegs, enc, coeffs, expos, numTermsPerReg, NULL, NULL, 0), Contains("The phase function contained an illegal negative exponent") );
+        }
+        SECTION( "number of overrides" ) {
+            
+            int numTermsPerReg[] = {3, 3};
+            qreal coeffs[] = {0,0,0,  0,0,0};
+            qreal expos[] =  {1,2,3,  1,2,3};
+   
+            int numOverrides = -1;
+            REQUIRE_THROWS_WITH( applyMultiVarPhaseFuncOverrides(quregVec, qubits, numQubitsPerReg, numRegs, UNSIGNED, coeffs, expos, numTermsPerReg, NULL, NULL, numOverrides), Contains("Invalid number of phase function overrides specified") );
+        }
+        SECTION( "override indices" ) {
+            
+            int numTermsPerReg[] = {3, 3};
+            qreal coeffs[] = {0,0,0,  0,0,0};
+            qreal expos[] =  {1,2,3,  1,2,3};
+            
+            // numQubitsPerReg = {2, 3}
+            int numOverrides = 3;
+            long long int overrideInds[] = {0,0, 0,0, 0,0}; // repetition not checked
+            qreal overridePhases[]       = {.1,  .1,  .1};
+            
+            // first element of overrideInds coordinate is a 2 qubit register
+            enum bitEncoding enc = UNSIGNED;
+            int badInd = GENERATE(0, 2, 4);
+            overrideInds[badInd] = GENERATE( -1, (1<<2) );
+            REQUIRE_THROWS_WITH( applyMultiVarPhaseFuncOverrides(quregVec, qubits, numQubitsPerReg, numRegs, enc, coeffs, expos, numTermsPerReg, overrideInds, overridePhases, numOverrides), Contains("Invalid phase function override index, in the UNSIGNED encoding") );
+            overrideInds[badInd] = 0;
+            
+            // second element of overrideInds coordinate is a 3 qubit register
+            badInd += 1;
+            overrideInds[badInd] = GENERATE( -1, (1<<3) );
+            REQUIRE_THROWS_WITH( applyMultiVarPhaseFuncOverrides(quregVec, qubits, numQubitsPerReg, numRegs, enc, coeffs, expos, numTermsPerReg, overrideInds, overridePhases, numOverrides), Contains("Invalid phase function override index, in the UNSIGNED encoding") );
+            overrideInds[badInd] = 0;
+            badInd -= 1;
+            
+            enc = TWOS_COMPLEMENT;
+            int minInd = -(1<<(numQubitsPerReg[0]-1));
+            int maxInd = (1<<(numQubitsPerReg[0]-1)) - 1;
+            overrideInds[badInd] = GENERATE_COPY( minInd-1, maxInd+1 );
+            REQUIRE_THROWS_WITH( applyMultiVarPhaseFuncOverrides(quregVec, qubits, numQubitsPerReg, numRegs, enc, coeffs, expos, numTermsPerReg, overrideInds, overridePhases, numOverrides), Contains("Invalid phase function override index, in the TWOS_COMPLEMENT encoding") );
+            overrideInds[badInd] = 0;
+            
+            badInd++;
+            minInd = -(1<<(numQubitsPerReg[1]-1));
+            maxInd = (1<<(numQubitsPerReg[1]-1)) -1;
+            overrideInds[badInd] = GENERATE_COPY( minInd-1, maxInd+1 );
+            REQUIRE_THROWS_WITH( applyMultiVarPhaseFuncOverrides(quregVec, qubits, numQubitsPerReg, numRegs, enc, coeffs, expos, numTermsPerReg, overrideInds, overridePhases, numOverrides), Contains("Invalid phase function override index, in the TWOS_COMPLEMENT encoding") );
+        }
+    }
+    destroyQureg(quregVec, QUEST_ENV);
+}
+
+
+
+/** @sa applyNamedPhaseFunc
+ * @ingroup unittest 
+ * @author Tyson Jones 
+ */
+TEST_CASE( "applyNamedPhaseFunc", "[operators]" ) {
+    
+    Qureg quregVec = createQureg(NUM_QUBITS, QUEST_ENV);
+    initDebugState(quregVec);
+    QVector refVec = toQVector(quregVec);
+
+    SECTION( "correctness" ) {
+        
+        // try every kind of binary encoding
+        enum bitEncoding encoding = GENERATE( UNSIGNED,TWOS_COMPLEMENT );
+        
+        // try every possible number of registers 
+        // (between #qubits containing 1, and 1 containing #qubits)
+        int numRegs;
+        int maxNumRegs = 0;
+        if (encoding == UNSIGNED)
+            maxNumRegs = NUM_QUBITS;
+        if (encoding == TWOS_COMPLEMENT)
+            maxNumRegs = NUM_QUBITS/2;  // floors
+        numRegs = GENERATE_COPY( range(1, maxNumRegs+1) );
+        
+        // try every possible total number of involved qubits
+        int totalNumQubits;
+        int minTotalQubits = 0;
+        if (encoding == UNSIGNED)
+            // each register must contain at least 1 qubit
+            minTotalQubits = numRegs;
+        if (encoding == TWOS_COMPLEMENT)
+            // each register must contain at least 2 qubits
+            minTotalQubits = 2*numRegs;
+        totalNumQubits = GENERATE_COPY( range(minTotalQubits,NUM_QUBITS+1) );
+                        
+        // try every qubits subset and ordering 
+        int* regs = GENERATE_COPY( sublists(range(0,NUM_QUBITS), totalNumQubits) );
+        
+        // assign each sub-reg its minimum length
+        int unallocQubits = totalNumQubits;
+        int numQubitsPerReg[numRegs];
+        for (int i=0; i<numRegs; i++) 
+            if (encoding == UNSIGNED) {
+                numQubitsPerReg[i] = 1;
+                unallocQubits -= 1;
+            }
+            else if (encoding == TWOS_COMPLEMENT) {
+                numQubitsPerReg[i] = 2;
+                unallocQubits -= 2;
+            }
+        // and randomly allocate the remaining qubits between the registers
+        while (unallocQubits > 0) {
+            numQubitsPerReg[getRandomInt(0,numRegs)] += 1;
+            unallocQubits--;
+        }
+
+        SECTION( "state-vector" ) {
+            
+            /* produce a reference diagonal matrix which assumes the qubits are
+             * contiguous and strictly increasing between the registers, and hence 
+             * only depends on the number of qubits in each register.
+             */
+            QMatrix diagMatr = getZeroMatrix(1 << totalNumQubits);
+            
+            // determine the values corresponding to each register for all basis states
+            qreal regVals[1<<totalNumQubits][numRegs];
+            for (long long int i=0; i<(1<<totalNumQubits); i++) {
+                
+                long long int bits = i;
+                for (int r=0; r<numRegs; r++) {            
+                    regVals[i][r] = bits % (1 << numQubitsPerReg[r]);
+                    bits = bits >> numQubitsPerReg[r];
+                    
+                    if (encoding == TWOS_COMPLEMENT)
+                        regVals[i][r] = getTwosComplement(regVals[i][r], numQubitsPerReg[r]);
+                }
+            }
+            
+            SECTION( "NORM" ) {
+                
+                for (size_t i=0; i<diagMatr.size(); i++) {
+                    qreal phase = 0;
+                    for (int r=0; r<numRegs; r++)
+                        phase += pow(regVals[i][r], 2);
+                    phase = sqrt(phase);
+                    diagMatr[i][i] = expI(phase);
+                }
+                
+                applyNamedPhaseFunc(quregVec, regs, numQubitsPerReg, numRegs, encoding, NORM);
+                applyReferenceOp(refVec, regs, totalNumQubits, diagMatr);
+                REQUIRE( areEqual(quregVec, refVec, 1E2*REAL_EPS) );
+            }
+            SECTION( "PRODUCT" ) {
+                
+                for (size_t i=0; i<diagMatr.size(); i++) {
+                    qreal phase = 1;
+                    for (int r=0; r<numRegs; r++)
+                        phase *= regVals[i][r];
+                    diagMatr[i][i] = expI(phase);
+                }
+                
+                applyNamedPhaseFunc(quregVec, regs, numQubitsPerReg, numRegs, encoding, PRODUCT);
+                applyReferenceOp(refVec, regs, totalNumQubits, diagMatr);
+                REQUIRE( areEqual(quregVec, refVec, 1E2*REAL_EPS) );
+            }
+            SECTION( "DISTANCE" ) {
+                
+                // test only if there are an even number of registers
+                if (numRegs%2 == 0) {
+                    
+                    for (size_t i=0; i<diagMatr.size(); i++) {
+                        qreal phase = 0;
+                        for (int r=0; r<numRegs; r+=2)
+                            phase += pow(regVals[i][r+1]-regVals[i][r], 2);
+                        phase = sqrt(phase);
+                        diagMatr[i][i] = expI(phase);
+                    }
+                    
+                    applyNamedPhaseFunc(quregVec, regs, numQubitsPerReg, numRegs, encoding, DISTANCE);
+                    applyReferenceOp(refVec, regs, totalNumQubits, diagMatr);
+                    REQUIRE( areEqual(quregVec, refVec, 1E2*REAL_EPS) );
+                }
+            }
+        }
+    }
+    SECTION( "input validation" ) {
+        
+        int numRegs = 2;
+        int numQubitsPerReg[] = {2,3};
+        int regs[] = {0,1,2,3,4};
+        
+        SECTION( "density matrix" ) {
+                        
+            Qureg dens = quregVec;
+            dens.isDensityMatrix = 1;
+            REQUIRE_THROWS_WITH( applyNamedPhaseFunc(dens, regs, numQubitsPerReg, numRegs, UNSIGNED, NORM), Contains("Operation valid only for state-vectors") );
+        }
+        SECTION( "number of registers" ) {
+            
+            numRegs = GENERATE_COPY( -1, 0, 1+MAX_NUM_REGS_APPLY_ARBITRARY_PHASE );
+            REQUIRE_THROWS_WITH( applyNamedPhaseFunc(quregVec, regs, numQubitsPerReg, numRegs, UNSIGNED, NORM), Contains("Invalid number of qubit subregisters") );
+        }
+        SECTION( "number of qubits" ) {
+            
+            numQubitsPerReg[GENERATE_COPY(range(0,numRegs))] = GENERATE( -1, 0, 1+NUM_QUBITS );
+            REQUIRE_THROWS_WITH( applyNamedPhaseFunc(quregVec, regs, numQubitsPerReg, numRegs, UNSIGNED, NORM), Contains("Invalid number of qubits") );
+        }
+        SECTION( "repetition of qubits" ) {
+            
+            regs[GENERATE(2,3,4)] = regs[1];
+            REQUIRE_THROWS_WITH( applyNamedPhaseFunc(quregVec, regs, numQubitsPerReg, numRegs, UNSIGNED, NORM), Contains("The qubits must be unique") );
+        }
+        SECTION( "qubit indices" ) {
+
+            regs[GENERATE(range(0,NUM_QUBITS))] = GENERATE( -1, NUM_QUBITS );
+            REQUIRE_THROWS_WITH( applyNamedPhaseFunc(quregVec, regs, numQubitsPerReg, numRegs, UNSIGNED, NORM), Contains("Invalid qubit index") );
+        }
+        SECTION( "bit encoding name" ) {
+            
+            enum bitEncoding enc = (enum bitEncoding) GENERATE( -1, 2 );
+            REQUIRE_THROWS_WITH( applyNamedPhaseFunc(quregVec, regs, numQubitsPerReg, numRegs, enc, NORM), Contains("Invalid bit encoding") );
+        }
+        SECTION( "two's complement register" ) {
+            
+            numQubitsPerReg[GENERATE_COPY(range(0,numRegs))] = 1;
+            REQUIRE_THROWS_WITH( applyNamedPhaseFunc(quregVec, regs, numQubitsPerReg, numRegs, TWOS_COMPLEMENT, NORM), Contains("A sub-register contained too few qubits to employ TWOS_COMPLEMENT encoding") );
+        }
+        SECTION( "phase function name" ) {
+            
+            enum phaseFunc func = (enum phaseFunc) GENERATE( -1, 12 );
+            REQUIRE_THROWS_WITH( applyNamedPhaseFunc(quregVec, regs, numQubitsPerReg, numRegs, UNSIGNED, func), Contains("Invalid named phase function") );
+        }
+        SECTION( "phase function parameters" ) {
+
+            enum phaseFunc func = GENERATE( SCALED_NORM, INVERSE_NORM, SCALED_INVERSE_NORM, SCALED_PRODUCT, INVERSE_PRODUCT, SCALED_INVERSE_PRODUCT, SCALED_DISTANCE, INVERSE_DISTANCE, SCALED_INVERSE_DISTANCE );
+            REQUIRE_THROWS_WITH( applyNamedPhaseFunc(quregVec, regs, numQubitsPerReg, numRegs, UNSIGNED, func), Contains("Invalid number of parameters") );
+        }
+        SECTION( "distance pair registers" ) {
+            
+            int numQb[] = {1,1,1,1,1};
+            int qb[] = {0,1,2,3,4};
+            
+            numRegs = GENERATE( 1, 3, 5 );
+            REQUIRE_THROWS_WITH( applyNamedPhaseFunc(quregVec, qb, numQb, numRegs, UNSIGNED, DISTANCE), Contains("Phase functions DISTANCE") && Contains("even number of sub-registers") );
+        }
+    }
+    destroyQureg(quregVec, QUEST_ENV);
+}
+
+
+
+/** @sa applyNamedPhaseFuncOverrides
+ * @ingroup unittest 
+ * @author Tyson Jones 
+ */
+TEST_CASE( "applyNamedPhaseFuncOverrides", "[operators]" ) {
+    
+    Qureg quregVec = createQureg(NUM_QUBITS, QUEST_ENV);
+    initDebugState(quregVec);
+    QVector refVec = toQVector(quregVec);
+
+    SECTION( "correctness" ) {
+        
+        // try every kind of binary encoding
+        enum bitEncoding encoding = GENERATE( UNSIGNED,TWOS_COMPLEMENT );
+        
+        // try every possible number of registers 
+        // (between #qubits containing 1, and 1 containing #qubits)
+        int numRegs;
+        int maxNumRegs = 0;
+        if (encoding == UNSIGNED)
+            maxNumRegs = NUM_QUBITS;
+        if (encoding == TWOS_COMPLEMENT)
+            maxNumRegs = NUM_QUBITS/2;  // floors
+        numRegs = GENERATE_COPY( range(1, maxNumRegs+1) );
+        
+        // try every possible total number of involved qubits
+        int totalNumQubits;
+        int minTotalQubits = 0;
+        if (encoding == UNSIGNED)
+            // each register must contain at least 1 qubit
+            minTotalQubits = numRegs;
+        if (encoding == TWOS_COMPLEMENT)
+            // each register must contain at least 2 qubits
+            minTotalQubits = 2*numRegs;
+        totalNumQubits = GENERATE_COPY( range(minTotalQubits,NUM_QUBITS+1) );
+                        
+        // try every qubits subset and ordering 
+        int* regs = GENERATE_COPY( sublists(range(0,NUM_QUBITS), totalNumQubits) );
+        
+        // assign each sub-reg its minimum length
+        int unallocQubits = totalNumQubits;
+        int numQubitsPerReg[numRegs];
+        for (int i=0; i<numRegs; i++) 
+            if (encoding == UNSIGNED) {
+                numQubitsPerReg[i] = 1;
+                unallocQubits -= 1;
+            }
+            else if (encoding == TWOS_COMPLEMENT) {
+                numQubitsPerReg[i] = 2;
+                unallocQubits -= 2;
+            }
+        // and randomly allocate the remaining qubits between the registers
+        while (unallocQubits > 0) {
+            numQubitsPerReg[getRandomInt(0,numRegs)] += 1;
+            unallocQubits--;
+        }
+        
+        
+        // choose a random number of overrides (even overriding every amplitude)
+        int numOverrides = getRandomInt(0, (1<<totalNumQubits) + 1);
+        
+        // randomise each override index (uniqueness isn't checked)
+        long long int overrideInds[numOverrides*numRegs];
+        int flatInd = 0;
+        for (int v=0; v<numOverrides; v++) {
+            for (int r=0; r<numRegs; r++) {
+                if (encoding == UNSIGNED)
+                    overrideInds[flatInd] = getRandomInt(0, 1<<numQubitsPerReg[r]);
+                else if (encoding == TWOS_COMPLEMENT) 
+                    overrideInds[flatInd] = getRandomInt(-(1<<(numQubitsPerReg[r]-1)), (1<<(numQubitsPerReg[r]-1))-1);
+                flatInd++;
+            }
+        }
+
+        // override to a random phase
+        qreal overridePhases[numOverrides];
+        for (int v=0; v<numOverrides; v++)
+            overridePhases[v] = getRandomReal(-4, 4); // periodic in [-pi, pi]
+
+        SECTION( "state-vector" ) {
+            
+            /* produce a reference diagonal matrix which assumes the qubits are
+             * contiguous and strictly increasing between the registers, and hence 
+             * only depends on the number of qubits in each register.
+             */
+            QMatrix diagMatr = getZeroMatrix(1 << totalNumQubits);
+            
+            // determine the values corresponding to each register for all basis states
+            qreal regVals[1<<totalNumQubits][numRegs];
+            for (long long int i=0; i<(1<<totalNumQubits); i++) {
+                
+                long long int bits = i;
+                for (int r=0; r<numRegs; r++) {            
+                    regVals[i][r] = bits % (1 << numQubitsPerReg[r]);
+                    bits = bits >> numQubitsPerReg[r];
+                    
+                    if (encoding == TWOS_COMPLEMENT)
+                        regVals[i][r] = getTwosComplement(regVals[i][r], numQubitsPerReg[r]);
+                }
+            }
+            
+            SECTION( "NORM" ) {
+                
+                for (size_t i=0; i<diagMatr.size(); i++) {
+                    qreal phase = 0;
+                    for (int r=0; r<numRegs; r++)
+                        phase += pow(regVals[i][r], 2);
+                    phase = sqrt(phase);
+                    diagMatr[i][i] = expI(phase);
+                }
+                
+                setDiagMatrixOverrides(diagMatr, numQubitsPerReg, numRegs, encoding, overrideInds, overridePhases, numOverrides);
+                
+                applyNamedPhaseFuncOverrides(quregVec, regs, numQubitsPerReg, numRegs, encoding, NORM, overrideInds, overridePhases, numOverrides);
+                applyReferenceOp(refVec, regs, totalNumQubits, diagMatr);
+                REQUIRE( areEqual(quregVec, refVec, 1E2*REAL_EPS) );
+            }
+            SECTION( "PRODUCT" ) {
+                
+                for (size_t i=0; i<diagMatr.size(); i++) {
+                    qreal phase = 1;
+                    for (int r=0; r<numRegs; r++)
+                        phase *= regVals[i][r];
+                    diagMatr[i][i] = expI(phase);
+                }
+                
+                setDiagMatrixOverrides(diagMatr, numQubitsPerReg, numRegs, encoding, overrideInds, overridePhases, numOverrides);
+                
+                applyNamedPhaseFuncOverrides(quregVec, regs, numQubitsPerReg, numRegs, encoding, PRODUCT, overrideInds, overridePhases, numOverrides);
+                applyReferenceOp(refVec, regs, totalNumQubits, diagMatr);
+                REQUIRE( areEqual(quregVec, refVec, 1E2*REAL_EPS) );
+            }
+            SECTION( "DISTANCE" ) {
+                
+                // test only if there are an even number of registers
+                if (numRegs%2 == 0) {
+                    
+                    for (size_t i=0; i<diagMatr.size(); i++) {
+                        qreal phase = 0;
+                        for (int r=0; r<numRegs; r+=2)
+                            phase += pow(regVals[i][r+1]-regVals[i][r], 2);
+                        phase = sqrt(phase);
+                        diagMatr[i][i] = expI(phase);
+                    }
+                    
+                    setDiagMatrixOverrides(diagMatr, numQubitsPerReg, numRegs, encoding, overrideInds, overridePhases, numOverrides);
+                    
+                    applyNamedPhaseFuncOverrides(quregVec, regs, numQubitsPerReg, numRegs, encoding, DISTANCE, overrideInds, overridePhases, numOverrides);
+                    applyReferenceOp(refVec, regs, totalNumQubits, diagMatr);
+                    REQUIRE( areEqual(quregVec, refVec, 1E2*REAL_EPS) );
+                }
+            }
+        }
+    }
+    SECTION( "input validation" ) {
+        
+        int numRegs = 2;
+        int numQubitsPerReg[] = {2,3};
+        int regs[] = {0,1,2,3,4};
+        
+        SECTION( "density matrix" ) {
+                        
+            Qureg dens = quregVec;
+            dens.isDensityMatrix = 1;
+            REQUIRE_THROWS_WITH( applyNamedPhaseFuncOverrides(dens, regs, numQubitsPerReg, numRegs, UNSIGNED, NORM, NULL, NULL, 0), Contains("Operation valid only for state-vectors") );
+        }
+        SECTION( "number of registers" ) {
+            
+            numRegs = GENERATE_COPY( -1, 0, 1+MAX_NUM_REGS_APPLY_ARBITRARY_PHASE );
+            REQUIRE_THROWS_WITH( applyNamedPhaseFuncOverrides(quregVec, regs, numQubitsPerReg, numRegs, UNSIGNED, NORM, NULL, NULL, 0), Contains("Invalid number of qubit subregisters") );
+        }
+        SECTION( "number of qubits" ) {
+            
+            numQubitsPerReg[GENERATE_COPY(range(0,numRegs))] = GENERATE( -1, 0, 1+NUM_QUBITS );
+            REQUIRE_THROWS_WITH( applyNamedPhaseFuncOverrides(quregVec, regs, numQubitsPerReg, numRegs, UNSIGNED, NORM, NULL, NULL, 0), Contains("Invalid number of qubits") );
+        }
+        SECTION( "repetition of qubits" ) {
+            
+            regs[GENERATE(2,3,4)] = regs[1];
+            REQUIRE_THROWS_WITH( applyNamedPhaseFuncOverrides(quregVec, regs, numQubitsPerReg, numRegs, UNSIGNED, NORM, NULL, NULL, 0), Contains("The qubits must be unique") );
+        }
+        SECTION( "qubit indices" ) {
+
+            regs[GENERATE(range(0,NUM_QUBITS))] = GENERATE( -1, NUM_QUBITS );
+            REQUIRE_THROWS_WITH( applyNamedPhaseFuncOverrides(quregVec, regs, numQubitsPerReg, numRegs, UNSIGNED, NORM, NULL, NULL, 0), Contains("Invalid qubit index") );
+        }
+        SECTION( "bit encoding name" ) {
+            
+            enum bitEncoding enc = (enum bitEncoding) GENERATE( -1, 2 );
+            REQUIRE_THROWS_WITH( applyNamedPhaseFuncOverrides(quregVec, regs, numQubitsPerReg, numRegs, enc, NORM, NULL, NULL, 0), Contains("Invalid bit encoding") );
+        }
+        SECTION( "two's complement register" ) {
+            
+            numQubitsPerReg[GENERATE_COPY(range(0,numRegs))] = 1;
+            REQUIRE_THROWS_WITH( applyNamedPhaseFuncOverrides(quregVec, regs, numQubitsPerReg, numRegs, TWOS_COMPLEMENT, NORM, NULL, NULL, 0), Contains("A sub-register contained too few qubits to employ TWOS_COMPLEMENT encoding") );
+        }
+        SECTION( "phase function name" ) {
+            
+            enum phaseFunc func = (enum phaseFunc) GENERATE( -1, 12 );
+            REQUIRE_THROWS_WITH( applyNamedPhaseFuncOverrides(quregVec, regs, numQubitsPerReg, numRegs, UNSIGNED, func, NULL, NULL, 0), Contains("Invalid named phase function") );
+        }
+        SECTION( "phase function parameters" ) {
+
+            enum phaseFunc func = GENERATE( SCALED_NORM, INVERSE_NORM, SCALED_INVERSE_NORM, SCALED_PRODUCT, INVERSE_PRODUCT, SCALED_INVERSE_PRODUCT, SCALED_DISTANCE, INVERSE_DISTANCE, SCALED_INVERSE_DISTANCE );
+            REQUIRE_THROWS_WITH( applyNamedPhaseFuncOverrides(quregVec, regs, numQubitsPerReg, numRegs, UNSIGNED, func, NULL, NULL, 0), Contains("Invalid number of parameters") );
+        }
+        SECTION( "distance pair registers" ) {
+            
+            int numQb[] = {1,1,1,1,1};
+            int qb[] = {0,1,2,3,4};
+            
+            numRegs = GENERATE( 1, 3, 5 );
+            REQUIRE_THROWS_WITH( applyNamedPhaseFuncOverrides(quregVec, qb, numQb, numRegs, UNSIGNED, DISTANCE, NULL, NULL, 0), Contains("Phase functions DISTANCE") && Contains("even number of sub-registers") );
+        }
+        SECTION( "number of overrides" ) {
+   
+            int numOverrides = -1;
+            REQUIRE_THROWS_WITH( applyNamedPhaseFuncOverrides(quregVec, regs, numQubitsPerReg, numRegs, UNSIGNED, NORM, NULL, NULL, numOverrides), Contains("Invalid number of phase function overrides specified") );
+        }
+        SECTION( "override indices" ) {
+            
+            // numQubitsPerReg = {2, 3}
+            int numOverrides = 3;
+            long long int overrideInds[] = {0,0, 0,0, 0,0}; // repetition not checked
+            qreal overridePhases[]       = {.1,  .1,  .1};
+            
+            // first element of overrideInds coordinate is a 2 qubit register
+            enum bitEncoding enc = UNSIGNED;
+            int badInd = GENERATE(0, 2, 4);
+            overrideInds[badInd] = GENERATE( -1, (1<<2) );
+            REQUIRE_THROWS_WITH( applyNamedPhaseFuncOverrides(quregVec, regs, numQubitsPerReg, numRegs, enc, NORM, overrideInds, overridePhases, numOverrides), Contains("Invalid phase function override index, in the UNSIGNED encoding") );
+            overrideInds[badInd] = 0;
+            
+            // second element of overrideInds coordinate is a 3 qubit register
+            badInd += 1;
+            overrideInds[badInd] = GENERATE( -1, (1<<3) );
+            REQUIRE_THROWS_WITH( applyNamedPhaseFuncOverrides(quregVec, regs, numQubitsPerReg, numRegs, enc, NORM, overrideInds, overridePhases, numOverrides), Contains("Invalid phase function override index, in the UNSIGNED encoding") );
+            overrideInds[badInd] = 0;
+            badInd -= 1;
+            
+            enc = TWOS_COMPLEMENT;
+            int minInd = -(1<<(numQubitsPerReg[0]-1));
+            int maxInd = (1<<(numQubitsPerReg[0]-1)) - 1;
+            overrideInds[badInd] = GENERATE_COPY( minInd-1, maxInd+1 );
+            REQUIRE_THROWS_WITH( applyNamedPhaseFuncOverrides(quregVec, regs, numQubitsPerReg, numRegs, enc, NORM, overrideInds, overridePhases, numOverrides), Contains("Invalid phase function override index, in the TWOS_COMPLEMENT encoding") );
+            overrideInds[badInd] = 0;
+            
+            badInd++;
+            minInd = -(1<<(numQubitsPerReg[1]-1));
+            maxInd = (1<<(numQubitsPerReg[1]-1)) -1;
+            overrideInds[badInd] = GENERATE_COPY( minInd-1, maxInd+1 );
+            REQUIRE_THROWS_WITH( applyNamedPhaseFuncOverrides(quregVec, regs, numQubitsPerReg, numRegs, enc, NORM, overrideInds, overridePhases, numOverrides), Contains("Invalid phase function override index, in the TWOS_COMPLEMENT encoding") );
+        }
+    }
+    destroyQureg(quregVec, QUEST_ENV);
+}
+
+
+
+/** @sa applyParamNamedPhaseFunc
+ * @ingroup unittest 
+ * @author Tyson Jones 
+ */
+TEST_CASE( "applyParamNamedPhaseFunc", "[operators]" ) {
+    
+    Qureg quregVec = createQureg(NUM_QUBITS, QUEST_ENV);
+    initDebugState(quregVec);
+    QVector refVec = toQVector(quregVec);
+
+    SECTION( "correctness" ) {
+        
+        // try every kind of binary encoding
+        enum bitEncoding encoding = GENERATE( UNSIGNED,TWOS_COMPLEMENT );
+        
+        // try every possible number of registers 
+        // (between #qubits containing 1, and 1 containing #qubits)
+        int numRegs;
+        int maxNumRegs = 0;
+        if (encoding == UNSIGNED)
+            maxNumRegs = NUM_QUBITS;
+        if (encoding == TWOS_COMPLEMENT)
+            maxNumRegs = NUM_QUBITS/2;  // floors
+        numRegs = GENERATE_COPY( range(1, maxNumRegs+1) );
+        
+        // try every possible total number of involved qubits
+        int totalNumQubits;
+        int minTotalQubits = 0;
+        if (encoding == UNSIGNED)
+            // each register must contain at least 1 qubit
+            minTotalQubits = numRegs;
+        if (encoding == TWOS_COMPLEMENT)
+            // each register must contain at least 2 qubits
+            minTotalQubits = 2*numRegs;
+        totalNumQubits = GENERATE_COPY( range(minTotalQubits,NUM_QUBITS+1) );
+                        
+        // try every qubits subset and ordering 
+        int* regs = GENERATE_COPY( sublists(range(0,NUM_QUBITS), totalNumQubits) );
+        
+        // assign each sub-reg its minimum length
+        int unallocQubits = totalNumQubits;
+        int numQubitsPerReg[numRegs];
+        for (int i=0; i<numRegs; i++) 
+            if (encoding == UNSIGNED) {
+                numQubitsPerReg[i] = 1;
+                unallocQubits -= 1;
+            }
+            else if (encoding == TWOS_COMPLEMENT) {
+                numQubitsPerReg[i] = 2;
+                unallocQubits -= 2;
+            }
+        // and randomly allocate the remaining qubits between the registers
+        while (unallocQubits > 0) {
+            numQubitsPerReg[getRandomInt(0,numRegs)] += 1;
+            unallocQubits--;
+        }
+
+        SECTION( "state-vector" ) {
+            
+            /* produce a reference diagonal matrix which assumes the qubits are
+             * contiguous and strictly increasing between the registers, and hence 
+             * only depends on the number of qubits in each register.
+             */
+            QMatrix diagMatr = getZeroMatrix(1 << totalNumQubits);
+            
+            // determine the values corresponding to each register for all basis states
+            qreal regVals[1<<totalNumQubits][numRegs];
+            for (long long int i=0; i<(1<<totalNumQubits); i++) {
+                
+                long long int bits = i;
+                for (int r=0; r<numRegs; r++) {            
+                    regVals[i][r] = bits % (1 << numQubitsPerReg[r]);
+                    bits = bits >> numQubitsPerReg[r];
+                    
+                    if (encoding == TWOS_COMPLEMENT)
+                        regVals[i][r] = getTwosComplement(regVals[i][r], numQubitsPerReg[r]);
+                }
+            }
+            
+            SECTION( "INVERSE_NORM" ) {
+                
+                enum phaseFunc func = INVERSE_NORM;
+                qreal divPhase = getRandomReal(-4, 4);
+                
+                for (size_t i=0; i<diagMatr.size(); i++) {
+                    qreal phase = 0;
+                    for (int r=0; r<numRegs; r++)
+                        phase += pow(regVals[i][r], 2);
+                    phase = (phase == 0.)? divPhase : 1/sqrt(phase);
+                    diagMatr[i][i] = expI(phase);
+                }
+                                
+                qreal params[] = {divPhase};
+                int numParams = 1;
+                applyParamNamedPhaseFunc(quregVec, regs, numQubitsPerReg, numRegs, encoding, func, params, numParams);
+                applyReferenceOp(refVec, regs, totalNumQubits, diagMatr);
+                REQUIRE( areEqual(quregVec, refVec, 1E2*REAL_EPS) );
+            }
+            SECTION( "SCALED_NORM" ) {
+                
+                enum phaseFunc func = SCALED_NORM;
+                qreal coeff = getRandomReal(-10, 10);
+                
+                for (size_t i=0; i<diagMatr.size(); i++) {
+                    qreal phase = 0;
+                    for (int r=0; r<numRegs; r++)
+                        phase += pow(regVals[i][r], 2);
+                    phase = coeff * sqrt(phase);
+                    diagMatr[i][i] = expI(phase);
+                }
+                                
+                qreal params[] = {coeff};
+                int numParams = 1;
+                applyParamNamedPhaseFunc(quregVec, regs, numQubitsPerReg, numRegs, encoding, func, params, numParams);
+                applyReferenceOp(refVec, regs, totalNumQubits, diagMatr);
+                REQUIRE( areEqual(quregVec, refVec, 1E2*REAL_EPS) );
+            }
+            SECTION( "SCALED_INVERSE_NORM" ) {
+                
+                enum phaseFunc func = SCALED_INVERSE_NORM;
+                qreal coeff = getRandomReal(-10, 10);
+                qreal divPhase = getRandomReal(-4, 4);
+                
+                for (size_t i=0; i<diagMatr.size(); i++) {
+                    qreal phase = 0;
+                    for (int r=0; r<numRegs; r++)
+                        phase += pow(regVals[i][r], 2);
+                    phase = (phase == 0.)? divPhase : coeff/sqrt(phase);
+                    diagMatr[i][i] = expI(phase);
+                }
+                                
+                qreal params[] = {coeff, divPhase};
+                int numParams = 2;
+                applyParamNamedPhaseFunc(quregVec, regs, numQubitsPerReg, numRegs, encoding, func, params, numParams);
+                applyReferenceOp(refVec, regs, totalNumQubits, diagMatr);
+                REQUIRE( areEqual(quregVec, refVec, 1E2*REAL_EPS) );
+            }
+            SECTION( "INVERSE_PRODUCT" ) {
+                
+                enum phaseFunc func = INVERSE_PRODUCT;
+                qreal divPhase = getRandomReal(-4, 4);
+                
+                for (size_t i=0; i<diagMatr.size(); i++) {
+                    qreal phase = 1;
+                    for (int r=0; r<numRegs; r++)
+                        phase *= regVals[i][r];
+                    phase = (phase == 0.)? divPhase : 1. / phase;
+                    diagMatr[i][i] = expI(phase);
+                }
+                                
+                qreal params[] = {divPhase};
+                int numParams = 1;
+                applyParamNamedPhaseFunc(quregVec, regs, numQubitsPerReg, numRegs, encoding, func, params, numParams);
+                applyReferenceOp(refVec, regs, totalNumQubits, diagMatr);
+                REQUIRE( areEqual(quregVec, refVec, 1E2*REAL_EPS) );
+            }
+            SECTION( "SCALED_PRODUCT" ) {
+                
+                enum phaseFunc func = SCALED_PRODUCT;
+                qreal coeff = getRandomReal(-10, 10);
+                
+                for (size_t i=0; i<diagMatr.size(); i++) {
+                    qreal phase = 1;
+                    for (int r=0; r<numRegs; r++)
+                        phase *= regVals[i][r];
+                    diagMatr[i][i] = expI(coeff * phase);
+                }
+                                
+                qreal params[] = {coeff};
+                int numParams = 1;
+                applyParamNamedPhaseFunc(quregVec, regs, numQubitsPerReg, numRegs, encoding, func, params, numParams);
+                applyReferenceOp(refVec, regs, totalNumQubits, diagMatr);
+                REQUIRE( areEqual(quregVec, refVec, 1E2*REAL_EPS) );
+            }
+            SECTION( "SCALED_INVERSE_PRODUCT" ) {
+                
+                enum phaseFunc func = SCALED_INVERSE_PRODUCT;
+                qreal coeff = getRandomReal(-10, 10);
+                qreal divPhase = getRandomReal(-4, 4);
+                
+                for (size_t i=0; i<diagMatr.size(); i++) {
+                    qreal phase = 1;
+                    for (int r=0; r<numRegs; r++)
+                        phase *= regVals[i][r];
+                    phase = (phase == 0)? divPhase : coeff / phase;
+                    diagMatr[i][i] = expI(phase);
+                }
+                                
+                qreal params[] = {coeff, divPhase};
+                int numParams = 2;
+                applyParamNamedPhaseFunc(quregVec, regs, numQubitsPerReg, numRegs, encoding, func, params, numParams);
+                applyReferenceOp(refVec, regs, totalNumQubits, diagMatr);
+                REQUIRE( areEqual(quregVec, refVec, 1E2*REAL_EPS) );
+            }
+            SECTION( "INVERSE_DISTANCE" ) {
+                
+                enum phaseFunc func = INVERSE_DISTANCE;
+                qreal divPhase = getRandomReal( -4, 4 );
+                
+                // test only if there are an even number of registers
+                if (numRegs%2 == 0) {
+                    
+                    for (size_t i=0; i<diagMatr.size(); i++) {
+                        qreal phase = 0;
+                        for (int r=0; r<numRegs; r+=2)
+                            phase += pow(regVals[i][r+1]-regVals[i][r], 2);
+                        phase = (phase == 0.)? divPhase : 1./sqrt(phase);
+                        diagMatr[i][i] = expI(phase);
+                    }
+                                        
+                    qreal params[] = {divPhase};
+                    int numParams = 1;
+                    applyParamNamedPhaseFunc(quregVec, regs, numQubitsPerReg, numRegs, encoding, func, params, numParams);
+                    applyReferenceOp(refVec, regs, totalNumQubits, diagMatr);
+                    REQUIRE( areEqual(quregVec, refVec, 1E2*REAL_EPS) );
+                }
+            }
+            SECTION( "SCALED_DISTANCE" ) {
+                
+                enum phaseFunc func = SCALED_DISTANCE;
+                qreal coeff = getRandomReal( -10, 10 );
+                
+                // test only if there are an even number of registers
+                if (numRegs%2 == 0) {
+                    
+                    for (size_t i=0; i<diagMatr.size(); i++) {
+                        qreal phase = 0;
+                        for (int r=0; r<numRegs; r+=2)
+                            phase += pow(regVals[i][r+1]-regVals[i][r], 2);
+                        phase = coeff * sqrt(phase);
+                        diagMatr[i][i] = expI(phase);
+                    }
+                                        
+                    qreal params[] = {coeff};
+                    int numParams = 1;
+                    applyParamNamedPhaseFunc(quregVec, regs, numQubitsPerReg, numRegs, encoding, func, params, numParams);
+                    applyReferenceOp(refVec, regs, totalNumQubits, diagMatr);
+                    REQUIRE( areEqual(quregVec, refVec, 1E2*REAL_EPS) );
+                }
+            }
+            SECTION( "SCALED_INVERSE_DISTANCE" ) {
+                
+                enum phaseFunc func = SCALED_INVERSE_DISTANCE;
+                qreal coeff = getRandomReal( -10, 10 );
+                qreal divPhase = getRandomReal( -4, 4 );
+                
+                // test only if there are an even number of registers
+                if (numRegs%2 == 0) {
+                    
+                    for (size_t i=0; i<diagMatr.size(); i++) {
+                        qreal phase = 0;
+                        for (int r=0; r<numRegs; r+=2)
+                            phase += pow(regVals[i][r+1]-regVals[i][r], 2);
+                        phase = (phase == 0.)? divPhase : coeff/sqrt(phase);
+                        diagMatr[i][i] = expI(phase);
+                    }
+                                        
+                    qreal params[] = {coeff, divPhase};
+                    int numParams = 2;
+                    applyParamNamedPhaseFunc(quregVec, regs, numQubitsPerReg, numRegs, encoding, func, params, numParams);
+                    applyReferenceOp(refVec, regs, totalNumQubits, diagMatr);
+                    REQUIRE( areEqual(quregVec, refVec, 1E2*REAL_EPS) );
+                }
+            }
+        }
+    }
+    SECTION( "input validation" ) {
+        
+        int numRegs = 2;
+        int numQubitsPerReg[] = {2,3};
+        int regs[] = {0,1,2,3,4};
+        
+        SECTION( "density matrix" ) {
+                        
+            Qureg dens = quregVec;
+            dens.isDensityMatrix = 1;
+            REQUIRE_THROWS_WITH( applyParamNamedPhaseFunc(dens, regs, numQubitsPerReg, numRegs, UNSIGNED, NORM, NULL, 0), Contains("Operation valid only for state-vectors") );
+        }
+        SECTION( "number of registers" ) {
+            
+            numRegs = GENERATE_COPY( -1, 0, 1+MAX_NUM_REGS_APPLY_ARBITRARY_PHASE );
+            REQUIRE_THROWS_WITH( applyParamNamedPhaseFunc(quregVec, regs, numQubitsPerReg, numRegs, UNSIGNED, NORM, NULL, 0), Contains("Invalid number of qubit subregisters") );
+        }
+        SECTION( "number of qubits" ) {
+            
+            numQubitsPerReg[GENERATE_COPY(range(0,numRegs))] = GENERATE( -1, 0, 1+NUM_QUBITS );
+            REQUIRE_THROWS_WITH( applyParamNamedPhaseFunc(quregVec, regs, numQubitsPerReg, numRegs, UNSIGNED, NORM, NULL, 0), Contains("Invalid number of qubits") );
+        }
+        SECTION( "repetition of qubits" ) {
+            
+            regs[GENERATE(2,3,4)] = regs[1];
+            REQUIRE_THROWS_WITH( applyParamNamedPhaseFunc(quregVec, regs, numQubitsPerReg, numRegs, UNSIGNED, NORM, NULL, 0), Contains("The qubits must be unique") );
+        }
+        SECTION( "qubit indices" ) {
+
+            regs[GENERATE(range(0,NUM_QUBITS))] = GENERATE( -1, NUM_QUBITS );
+            REQUIRE_THROWS_WITH( applyParamNamedPhaseFunc(quregVec, regs, numQubitsPerReg, numRegs, UNSIGNED, NORM, NULL, 0), Contains("Invalid qubit index") );
+        }
+        SECTION( "bit encoding name" ) {
+            
+            enum bitEncoding enc = (enum bitEncoding) GENERATE( -1, 2 );
+            REQUIRE_THROWS_WITH( applyParamNamedPhaseFunc(quregVec, regs, numQubitsPerReg, numRegs, enc, NORM, NULL, 0), Contains("Invalid bit encoding") );
+        }
+        SECTION( "two's complement register" ) {
+            
+            numQubitsPerReg[GENERATE_COPY(range(0,numRegs))] = 1;
+            REQUIRE_THROWS_WITH( applyParamNamedPhaseFunc(quregVec, regs, numQubitsPerReg, numRegs, TWOS_COMPLEMENT, NORM, NULL, 0), Contains("A sub-register contained too few qubits to employ TWOS_COMPLEMENT encoding") );
+        }
+        SECTION( "phase function name" ) {
+            
+            enum phaseFunc func = (enum phaseFunc) GENERATE( -1, 12 );
+            REQUIRE_THROWS_WITH( applyParamNamedPhaseFunc(quregVec, regs, numQubitsPerReg, numRegs, UNSIGNED, func, NULL, 0), Contains("Invalid named phase function") );
+        }
+        SECTION( "phase function parameters" ) {
+            
+            qreal params[] = {0, 0};
+            
+            SECTION( "no parameter functions" ) {
+                
+                enum phaseFunc func = GENERATE( NORM, PRODUCT, DISTANCE  );
+                int numParams = GENERATE( -1, 1, 2 );
+                REQUIRE_THROWS_WITH( applyParamNamedPhaseFunc(quregVec, regs, numQubitsPerReg, numRegs, UNSIGNED, func, params, numParams), Contains("Invalid number of parameters") );
+            }
+            SECTION( "single parameter functions" ) {
+                
+                enum phaseFunc func = GENERATE( SCALED_NORM, INVERSE_NORM, SCALED_PRODUCT, INVERSE_PRODUCT, SCALED_DISTANCE, INVERSE_DISTANCE );
+                int numParams = GENERATE( -1, 0, 2 );
+                REQUIRE_THROWS_WITH( applyParamNamedPhaseFunc(quregVec, regs, numQubitsPerReg, numRegs, UNSIGNED, func, params, numParams), Contains("Invalid number of parameters") );
+            }
+            SECTION( "two parameter functions" ) {    
+                
+                enum phaseFunc func = GENERATE( SCALED_INVERSE_NORM, SCALED_INVERSE_PRODUCT, SCALED_INVERSE_DISTANCE );
+                int numParams = GENERATE( 0, 1, 3 );
+                REQUIRE_THROWS_WITH( applyParamNamedPhaseFunc(quregVec, regs, numQubitsPerReg, numRegs, UNSIGNED, func, params, numParams), Contains("Invalid number of parameters") );
+            }
+        }
+        SECTION( "distance pair registers" ) {
+            
+            int numQb[] = {1,1,1,1,1};
+            int qb[] = {0,1,2,3,4};
+            
+            numRegs = GENERATE( 1, 3, 5 );
+            REQUIRE_THROWS_WITH( applyParamNamedPhaseFunc(quregVec, qb, numQb, numRegs, UNSIGNED, DISTANCE, NULL, 0), Contains("Phase functions DISTANCE") && Contains("even number of sub-registers") );
+        }
+    }
+    destroyQureg(quregVec, QUEST_ENV);
+}
+
+
+
+/** @sa applyParamNamedPhaseFuncOverrides
+ * @ingroup unittest 
+ * @author Tyson Jones 
+ */
+TEST_CASE( "applyParamNamedPhaseFuncOverrides", "[operators]" ) {
+    
+    Qureg quregVec = createQureg(NUM_QUBITS, QUEST_ENV);
+    initDebugState(quregVec);
+    QVector refVec = toQVector(quregVec);
+
+    SECTION( "correctness" ) {
+        
+        // try every kind of binary encoding
+        enum bitEncoding encoding = GENERATE( UNSIGNED,TWOS_COMPLEMENT );
+        
+        // try every possible number of registers 
+        // (between #qubits containing 1, and 1 containing #qubits)
+        int numRegs;
+        int maxNumRegs = 0;
+        if (encoding == UNSIGNED)
+            maxNumRegs = NUM_QUBITS;
+        if (encoding == TWOS_COMPLEMENT)
+            maxNumRegs = NUM_QUBITS/2;  // floors
+        numRegs = GENERATE_COPY( range(1, maxNumRegs+1) );
+        
+        // try every possible total number of involved qubits
+        int totalNumQubits;
+        int minTotalQubits = 0;
+        if (encoding == UNSIGNED)
+            // each register must contain at least 1 qubit
+            minTotalQubits = numRegs;
+        if (encoding == TWOS_COMPLEMENT)
+            // each register must contain at least 2 qubits
+            minTotalQubits = 2*numRegs;
+        totalNumQubits = GENERATE_COPY( range(minTotalQubits,NUM_QUBITS+1) );
+                        
+        // try every qubits subset and ordering 
+        int* regs = GENERATE_COPY( sublists(range(0,NUM_QUBITS), totalNumQubits) );
+        
+        // assign each sub-reg its minimum length
+        int unallocQubits = totalNumQubits;
+        int numQubitsPerReg[numRegs];
+        for (int i=0; i<numRegs; i++) 
+            if (encoding == UNSIGNED) {
+                numQubitsPerReg[i] = 1;
+                unallocQubits -= 1;
+            }
+            else if (encoding == TWOS_COMPLEMENT) {
+                numQubitsPerReg[i] = 2;
+                unallocQubits -= 2;
+            }
+        // and randomly allocate the remaining qubits between the registers
+        while (unallocQubits > 0) {
+            numQubitsPerReg[getRandomInt(0,numRegs)] += 1;
+            unallocQubits--;
+        }
+        
+        
+        // choose a random number of overrides (even overriding every amplitude)
+        int numOverrides = getRandomInt(0, (1<<totalNumQubits) + 1);
+        
+        // randomise each override index (uniqueness isn't checked)
+        long long int overrideInds[numOverrides*numRegs];
+        int flatInd = 0;
+        for (int v=0; v<numOverrides; v++) {
+            for (int r=0; r<numRegs; r++) {
+                if (encoding == UNSIGNED)
+                    overrideInds[flatInd] = getRandomInt(0, 1<<numQubitsPerReg[r]);
+                else if (encoding == TWOS_COMPLEMENT) 
+                    overrideInds[flatInd] = getRandomInt(-(1<<(numQubitsPerReg[r]-1)), (1<<(numQubitsPerReg[r]-1))-1);
+                flatInd++;
+            }
+        }
+
+        // override to a random phase
+        qreal overridePhases[numOverrides];
+        for (int v=0; v<numOverrides; v++)
+            overridePhases[v] = getRandomReal(-4, 4); // periodic in [-pi, pi]
+
+        SECTION( "state-vector" ) {
+            
+            /* produce a reference diagonal matrix which assumes the qubits are
+             * contiguous and strictly increasing between the registers, and hence 
+             * only depends on the number of qubits in each register.
+             */
+            QMatrix diagMatr = getZeroMatrix(1 << totalNumQubits);
+            
+            // determine the values corresponding to each register for all basis states
+            qreal regVals[1<<totalNumQubits][numRegs];
+            for (long long int i=0; i<(1<<totalNumQubits); i++) {
+                
+                long long int bits = i;
+                for (int r=0; r<numRegs; r++) {            
+                    regVals[i][r] = bits % (1 << numQubitsPerReg[r]);
+                    bits = bits >> numQubitsPerReg[r];
+                    
+                    if (encoding == TWOS_COMPLEMENT)
+                        regVals[i][r] = getTwosComplement(regVals[i][r], numQubitsPerReg[r]);
+                }
+            }
+            
+            SECTION( "INVERSE_NORM" ) {
+                
+                enum phaseFunc func = INVERSE_NORM;
+                qreal divPhase = getRandomReal(-4, 4);
+                
+                for (size_t i=0; i<diagMatr.size(); i++) {
+                    qreal phase = 0;
+                    for (int r=0; r<numRegs; r++)
+                        phase += pow(regVals[i][r], 2);
+                    phase = (phase == 0.)? divPhase : 1/sqrt(phase);
+                    diagMatr[i][i] = expI(phase);
+                }
+                
+                setDiagMatrixOverrides(diagMatr, numQubitsPerReg, numRegs, encoding, overrideInds, overridePhases, numOverrides);
+                
+                qreal params[] = {divPhase};
+                int numParams = 1;
+                applyParamNamedPhaseFuncOverrides(quregVec, regs, numQubitsPerReg, numRegs, encoding, func, params, numParams, overrideInds, overridePhases, numOverrides);
+                applyReferenceOp(refVec, regs, totalNumQubits, diagMatr);
+                REQUIRE( areEqual(quregVec, refVec, 1E2*REAL_EPS) );
+            }
+            SECTION( "SCALED_NORM" ) {
+                
+                enum phaseFunc func = SCALED_NORM;
+                qreal coeff = getRandomReal(-10, 10);
+                
+                for (size_t i=0; i<diagMatr.size(); i++) {
+                    qreal phase = 0;
+                    for (int r=0; r<numRegs; r++)
+                        phase += pow(regVals[i][r], 2);
+                    phase = coeff * sqrt(phase);
+                    diagMatr[i][i] = expI(phase);
+                }
+                
+                setDiagMatrixOverrides(diagMatr, numQubitsPerReg, numRegs, encoding, overrideInds, overridePhases, numOverrides);
+                
+                qreal params[] = {coeff};
+                int numParams = 1;
+                applyParamNamedPhaseFuncOverrides(quregVec, regs, numQubitsPerReg, numRegs, encoding, func, params, numParams, overrideInds, overridePhases, numOverrides);
+                applyReferenceOp(refVec, regs, totalNumQubits, diagMatr);
+                REQUIRE( areEqual(quregVec, refVec, 1E2*REAL_EPS) );
+            }
+            SECTION( "SCALED_INVERSE_NORM" ) {
+                
+                enum phaseFunc func = SCALED_INVERSE_NORM;
+                qreal coeff = getRandomReal(-10, 10);
+                qreal divPhase = getRandomReal(-4, 4);
+                
+                for (size_t i=0; i<diagMatr.size(); i++) {
+                    qreal phase = 0;
+                    for (int r=0; r<numRegs; r++)
+                        phase += pow(regVals[i][r], 2);
+                    phase = (phase == 0.)? divPhase : coeff/sqrt(phase);
+                    diagMatr[i][i] = expI(phase);
+                }
+                
+                setDiagMatrixOverrides(diagMatr, numQubitsPerReg, numRegs, encoding, overrideInds, overridePhases, numOverrides);
+                
+                qreal params[] = {coeff, divPhase};
+                int numParams = 2;
+                applyParamNamedPhaseFuncOverrides(quregVec, regs, numQubitsPerReg, numRegs, encoding, func, params, numParams, overrideInds, overridePhases, numOverrides);
+                applyReferenceOp(refVec, regs, totalNumQubits, diagMatr);
+                REQUIRE( areEqual(quregVec, refVec, 1E2*REAL_EPS) );
+            }
+            SECTION( "INVERSE_PRODUCT" ) {
+                
+                enum phaseFunc func = INVERSE_PRODUCT;
+                qreal divPhase = getRandomReal(-4, 4);
+                
+                for (size_t i=0; i<diagMatr.size(); i++) {
+                    qreal phase = 1;
+                    for (int r=0; r<numRegs; r++)
+                        phase *= regVals[i][r];
+                    phase = (phase == 0.)? divPhase : 1. / phase;
+                    diagMatr[i][i] = expI(phase);
+                }
+                
+                setDiagMatrixOverrides(diagMatr, numQubitsPerReg, numRegs, encoding, overrideInds, overridePhases, numOverrides);
+                
+                qreal params[] = {divPhase};
+                int numParams = 1;
+                applyParamNamedPhaseFuncOverrides(quregVec, regs, numQubitsPerReg, numRegs, encoding, func, params, numParams, overrideInds, overridePhases, numOverrides);
+                applyReferenceOp(refVec, regs, totalNumQubits, diagMatr);
+                REQUIRE( areEqual(quregVec, refVec, 1E2*REAL_EPS) );
+            }
+            SECTION( "SCALED_PRODUCT" ) {
+                
+                enum phaseFunc func = SCALED_PRODUCT;
+                qreal coeff = getRandomReal(-10, 10);
+                
+                for (size_t i=0; i<diagMatr.size(); i++) {
+                    qreal phase = 1;
+                    for (int r=0; r<numRegs; r++)
+                        phase *= regVals[i][r];
+                    diagMatr[i][i] = expI(coeff * phase);
+                }
+                
+                setDiagMatrixOverrides(diagMatr, numQubitsPerReg, numRegs, encoding, overrideInds, overridePhases, numOverrides);
+                
+                qreal params[] = {coeff};
+                int numParams = 1;
+                applyParamNamedPhaseFuncOverrides(quregVec, regs, numQubitsPerReg, numRegs, encoding, func, params, numParams, overrideInds, overridePhases, numOverrides);
+                applyReferenceOp(refVec, regs, totalNumQubits, diagMatr);
+                REQUIRE( areEqual(quregVec, refVec, 1E2*REAL_EPS) );
+            }
+            SECTION( "SCALED_INVERSE_PRODUCT" ) {
+                
+                enum phaseFunc func = SCALED_INVERSE_PRODUCT;
+                qreal coeff = getRandomReal(-10, 10);
+                qreal divPhase = getRandomReal(-4, 4);
+                
+                for (size_t i=0; i<diagMatr.size(); i++) {
+                    qreal phase = 1;
+                    for (int r=0; r<numRegs; r++)
+                        phase *= regVals[i][r];
+                    phase = (phase == 0)? divPhase : coeff / phase;
+                    diagMatr[i][i] = expI(phase);
+                }
+                
+                setDiagMatrixOverrides(diagMatr, numQubitsPerReg, numRegs, encoding, overrideInds, overridePhases, numOverrides);
+                
+                qreal params[] = {coeff, divPhase};
+                int numParams = 2;
+                applyParamNamedPhaseFuncOverrides(quregVec, regs, numQubitsPerReg, numRegs, encoding, func, params, numParams, overrideInds, overridePhases, numOverrides);
+                applyReferenceOp(refVec, regs, totalNumQubits, diagMatr);
+                REQUIRE( areEqual(quregVec, refVec, 1E2*REAL_EPS) );
+            }
+            SECTION( "INVERSE_DISTANCE" ) {
+                
+                enum phaseFunc func = INVERSE_DISTANCE;
+                qreal divPhase = getRandomReal( -4, 4 );
+                
+                // test only if there are an even number of registers
+                if (numRegs%2 == 0) {
+                    
+                    for (size_t i=0; i<diagMatr.size(); i++) {
+                        qreal phase = 0;
+                        for (int r=0; r<numRegs; r+=2)
+                            phase += pow(regVals[i][r+1]-regVals[i][r], 2);
+                        phase = (phase == 0.)? divPhase : 1./sqrt(phase);
+                        diagMatr[i][i] = expI(phase);
+                    }
+                    
+                    setDiagMatrixOverrides(diagMatr, numQubitsPerReg, numRegs, encoding, overrideInds, overridePhases, numOverrides);
+                    
+                    qreal params[] = {divPhase};
+                    int numParams = 1;
+                    applyParamNamedPhaseFuncOverrides(quregVec, regs, numQubitsPerReg, numRegs, encoding, func, params, numParams, overrideInds, overridePhases, numOverrides);
+                    applyReferenceOp(refVec, regs, totalNumQubits, diagMatr);
+                    REQUIRE( areEqual(quregVec, refVec, 1E2*REAL_EPS) );
+                }
+            }
+            SECTION( "SCALED_DISTANCE" ) {
+                
+                enum phaseFunc func = SCALED_DISTANCE;
+                qreal coeff = getRandomReal( -10, 10 );
+                
+                // test only if there are an even number of registers
+                if (numRegs%2 == 0) {
+                    
+                    for (size_t i=0; i<diagMatr.size(); i++) {
+                        qreal phase = 0;
+                        for (int r=0; r<numRegs; r+=2)
+                            phase += pow(regVals[i][r+1]-regVals[i][r], 2);
+                        phase = coeff * sqrt(phase);
+                        diagMatr[i][i] = expI(phase);
+                    }
+                    
+                    setDiagMatrixOverrides(diagMatr, numQubitsPerReg, numRegs, encoding, overrideInds, overridePhases, numOverrides);
+                    
+                    qreal params[] = {coeff};
+                    int numParams = 1;
+                    applyParamNamedPhaseFuncOverrides(quregVec, regs, numQubitsPerReg, numRegs, encoding, func, params, numParams, overrideInds, overridePhases, numOverrides);
+                    applyReferenceOp(refVec, regs, totalNumQubits, diagMatr);
+                    REQUIRE( areEqual(quregVec, refVec, 1E2*REAL_EPS) );
+                }
+            }
+            SECTION( "SCALED_INVERSE_DISTANCE" ) {
+                
+                enum phaseFunc func = SCALED_INVERSE_DISTANCE;
+                qreal coeff = getRandomReal( -10, 10 );
+                qreal divPhase = getRandomReal( -4, 4 );
+                
+                // test only if there are an even number of registers
+                if (numRegs%2 == 0) {
+                    
+                    for (size_t i=0; i<diagMatr.size(); i++) {
+                        qreal phase = 0;
+                        for (int r=0; r<numRegs; r+=2)
+                            phase += pow(regVals[i][r+1]-regVals[i][r], 2);
+                        phase = (phase == 0.)? divPhase : coeff/sqrt(phase);
+                        diagMatr[i][i] = expI(phase);
+                    }
+                    
+                    setDiagMatrixOverrides(diagMatr, numQubitsPerReg, numRegs, encoding, overrideInds, overridePhases, numOverrides);
+                    
+                    qreal params[] = {coeff, divPhase};
+                    int numParams = 2;
+                    applyParamNamedPhaseFuncOverrides(quregVec, regs, numQubitsPerReg, numRegs, encoding, func, params, numParams, overrideInds, overridePhases, numOverrides);
+                    applyReferenceOp(refVec, regs, totalNumQubits, diagMatr);
+                    REQUIRE( areEqual(quregVec, refVec, 1E2*REAL_EPS) );
+                }
+            }
+        }
+    }
+    SECTION( "input validation" ) {
+        
+        int numRegs = 2;
+        int numQubitsPerReg[] = {2,3};
+        int regs[] = {0,1,2,3,4};
+        
+        SECTION( "density matrix" ) {
+                        
+            Qureg dens = quregVec;
+            dens.isDensityMatrix = 1;
+            REQUIRE_THROWS_WITH( applyParamNamedPhaseFuncOverrides(dens, regs, numQubitsPerReg, numRegs, UNSIGNED, NORM, NULL, 0, NULL, NULL, 0), Contains("Operation valid only for state-vectors") );
+        }
+        SECTION( "number of registers" ) {
+            
+            numRegs = GENERATE_COPY( -1, 0, 1+MAX_NUM_REGS_APPLY_ARBITRARY_PHASE );
+            REQUIRE_THROWS_WITH( applyParamNamedPhaseFuncOverrides(quregVec, regs, numQubitsPerReg, numRegs, UNSIGNED, NORM, NULL, 0, NULL, NULL, 0), Contains("Invalid number of qubit subregisters") );
+        }
+        SECTION( "number of qubits" ) {
+            
+            numQubitsPerReg[GENERATE_COPY(range(0,numRegs))] = GENERATE( -1, 0, 1+NUM_QUBITS );
+            REQUIRE_THROWS_WITH( applyParamNamedPhaseFuncOverrides(quregVec, regs, numQubitsPerReg, numRegs, UNSIGNED, NORM, NULL, 0, NULL, NULL, 0), Contains("Invalid number of qubits") );
+        }
+        SECTION( "repetition of qubits" ) {
+            
+            regs[GENERATE(2,3,4)] = regs[1];
+            REQUIRE_THROWS_WITH( applyParamNamedPhaseFuncOverrides(quregVec, regs, numQubitsPerReg, numRegs, UNSIGNED, NORM, NULL, 0, NULL, NULL, 0), Contains("The qubits must be unique") );
+        }
+        SECTION( "qubit indices" ) {
+
+            regs[GENERATE(range(0,NUM_QUBITS))] = GENERATE( -1, NUM_QUBITS );
+            REQUIRE_THROWS_WITH( applyParamNamedPhaseFuncOverrides(quregVec, regs, numQubitsPerReg, numRegs, UNSIGNED, NORM, NULL, 0, NULL, NULL, 0), Contains("Invalid qubit index") );
+        }
+        SECTION( "bit encoding name" ) {
+            
+            enum bitEncoding enc = (enum bitEncoding) GENERATE( -1, 2 );
+            REQUIRE_THROWS_WITH( applyParamNamedPhaseFuncOverrides(quregVec, regs, numQubitsPerReg, numRegs, enc, NORM, NULL, 0, NULL, NULL, 0), Contains("Invalid bit encoding") );
+        }
+        SECTION( "two's complement register" ) {
+            
+            numQubitsPerReg[GENERATE_COPY(range(0,numRegs))] = 1;
+            REQUIRE_THROWS_WITH( applyParamNamedPhaseFuncOverrides(quregVec, regs, numQubitsPerReg, numRegs, TWOS_COMPLEMENT, NORM, NULL, 0, NULL, NULL, 0), Contains("A sub-register contained too few qubits to employ TWOS_COMPLEMENT encoding") );
+        }
+        SECTION( "phase function name" ) {
+            
+            enum phaseFunc func = (enum phaseFunc) GENERATE( -1, 12 );
+            REQUIRE_THROWS_WITH( applyParamNamedPhaseFuncOverrides(quregVec, regs, numQubitsPerReg, numRegs, UNSIGNED, func, NULL, 0, NULL, NULL, 0), Contains("Invalid named phase function") );
+        }
+        SECTION( "phase function parameters" ) {
+            
+            qreal params[] = {0, 0};
+            
+            SECTION( "no parameter functions" ) {
+                
+                enum phaseFunc func = GENERATE( NORM, PRODUCT, DISTANCE  );
+                int numParams = GENERATE( -1, 1, 2 );
+                REQUIRE_THROWS_WITH( applyParamNamedPhaseFuncOverrides(quregVec, regs, numQubitsPerReg, numRegs, UNSIGNED, func, params, numParams, NULL, NULL, 0), Contains("Invalid number of parameters") );
+            }
+            SECTION( "single parameter functions" ) {
+                
+                enum phaseFunc func = GENERATE( SCALED_NORM, INVERSE_NORM, SCALED_PRODUCT, INVERSE_PRODUCT, SCALED_DISTANCE, INVERSE_DISTANCE );
+                int numParams = GENERATE( -1, 0, 2 );
+                REQUIRE_THROWS_WITH( applyParamNamedPhaseFuncOverrides(quregVec, regs, numQubitsPerReg, numRegs, UNSIGNED, func, params, numParams, NULL, NULL, 0), Contains("Invalid number of parameters") );
+            }
+            SECTION( "two parameter functions" ) {    
+                
+                enum phaseFunc func = GENERATE( SCALED_INVERSE_NORM, SCALED_INVERSE_PRODUCT, SCALED_INVERSE_DISTANCE );
+                int numParams = GENERATE( 0, 1, 3 );
+                REQUIRE_THROWS_WITH( applyParamNamedPhaseFuncOverrides(quregVec, regs, numQubitsPerReg, numRegs, UNSIGNED, func, params, numParams, NULL, NULL, 0), Contains("Invalid number of parameters") );
+            }
+        }
+        SECTION( "distance pair registers" ) {
+            
+            int numQb[] = {1,1,1,1,1};
+            int qb[] = {0,1,2,3,4};
+            
+            numRegs = GENERATE( 1, 3, 5 );
+            REQUIRE_THROWS_WITH( applyParamNamedPhaseFuncOverrides(quregVec, qb, numQb, numRegs, UNSIGNED, DISTANCE, NULL, 0, NULL, NULL, 0), Contains("Phase functions DISTANCE") && Contains("even number of sub-registers") );
+        }
+        SECTION( "number of overrides" ) {
+   
+            int numOverrides = -1;
+            REQUIRE_THROWS_WITH( applyParamNamedPhaseFuncOverrides(quregVec, regs, numQubitsPerReg, numRegs, UNSIGNED, NORM, NULL, 0, NULL, NULL, numOverrides), Contains("Invalid number of phase function overrides specified") );
+        }
+        SECTION( "override indices" ) {
+            
+            // numQubitsPerReg = {2, 3}
+            int numOverrides = 3;
+            long long int overrideInds[] = {0,0, 0,0, 0,0}; // repetition not checked
+            qreal overridePhases[]       = {.1,  .1,  .1};
+            
+            // first element of overrideInds coordinate is a 2 qubit register
+            enum bitEncoding enc = UNSIGNED;
+            int badInd = GENERATE(0, 2, 4);
+            overrideInds[badInd] = GENERATE( -1, (1<<2) );
+            REQUIRE_THROWS_WITH( applyParamNamedPhaseFuncOverrides(quregVec, regs, numQubitsPerReg, numRegs, enc, NORM, NULL, 0, overrideInds, overridePhases, numOverrides), Contains("Invalid phase function override index, in the UNSIGNED encoding") );
+            overrideInds[badInd] = 0;
+            
+            // second element of overrideInds coordinate is a 3 qubit register
+            badInd += 1;
+            overrideInds[badInd] = GENERATE( -1, (1<<3) );
+            REQUIRE_THROWS_WITH( applyParamNamedPhaseFuncOverrides(quregVec, regs, numQubitsPerReg, numRegs, enc, NORM, NULL, 0, overrideInds, overridePhases, numOverrides), Contains("Invalid phase function override index, in the UNSIGNED encoding") );
+            overrideInds[badInd] = 0;
+            badInd -= 1;
+            
+            enc = TWOS_COMPLEMENT;
+            int minInd = -(1<<(numQubitsPerReg[0]-1));
+            int maxInd = (1<<(numQubitsPerReg[0]-1)) - 1;
+            overrideInds[badInd] = GENERATE_COPY( minInd-1, maxInd+1 );
+            REQUIRE_THROWS_WITH( applyParamNamedPhaseFuncOverrides(quregVec, regs, numQubitsPerReg, numRegs, enc, NORM, NULL, 0, overrideInds, overridePhases, numOverrides), Contains("Invalid phase function override index, in the TWOS_COMPLEMENT encoding") );
+            overrideInds[badInd] = 0;
+            
+            badInd++;
+            minInd = -(1<<(numQubitsPerReg[1]-1));
+            maxInd = (1<<(numQubitsPerReg[1]-1)) -1;
+            overrideInds[badInd] = GENERATE_COPY( minInd-1, maxInd+1 );
+            REQUIRE_THROWS_WITH( applyParamNamedPhaseFuncOverrides(quregVec, regs, numQubitsPerReg, numRegs, enc, NORM, NULL, 0, overrideInds, overridePhases, numOverrides), Contains("Invalid phase function override index, in the TWOS_COMPLEMENT encoding") );
+        }
+    }
+    destroyQureg(quregVec, QUEST_ENV);
+}
+
+
+
 /** @sa applyPauliHamil
  * @ingroup unittest 
  * @author Tyson Jones 
@@ -660,6 +2366,352 @@ TEST_CASE( "applyPauliSum", "[operators]" ) {
 
 
 
+/** @sa applyPhaseFunc
+ * @ingroup unittest 
+ * @author Tyson Jones 
+ */
+TEST_CASE( "applyPhaseFunc", "[operators]" ) {
+    
+    Qureg quregVec = createQureg(NUM_QUBITS, QUEST_ENV);
+    initDebugState(quregVec);
+    QVector refVec = toQVector(quregVec);
+
+    SECTION( "correctness" ) {
+        
+        // try every kind of binary encodings
+        enum bitEncoding encoding = GENERATE( UNSIGNED,TWOS_COMPLEMENT );
+        
+        // try every sub-register size
+        int numQubits = GENERATE_COPY( range(1,NUM_QUBITS+1) );
+        
+        // force at least 2 qubits in two's compement though
+        if (encoding == TWOS_COMPLEMENT && numQubits == 1)
+            numQubits++;
+        
+        // try every possible sub-register
+        int* qubits = GENERATE_COPY( sublists(range(0,NUM_QUBITS), numQubits) );
+        
+        // choose a random number of terms in the phase function
+        int numTerms = getRandomInt(1, 5);
+        
+        // populate the phase function with random but POSITIVE-power terms,
+        // and in two's complement mode, strictly integer powers
+        qreal coeffs[numTerms];
+        qreal expons[numTerms];
+        for (int t=0; t<numTerms; t++) {
+            coeffs[t] = getRandomReal(-10,10);
+            if (encoding == TWOS_COMPLEMENT)
+                expons[t] = getRandomInt(0, 3+1);  // repetition of power is ok
+            else 
+                expons[t] = getRandomReal(0, 3);
+        }
+        
+        SECTION( "state-vector" ) {
+            
+            // build a reference diagonal matrix, on the reduced Hilbert space
+            QMatrix matr = getZeroMatrix( 1 << numQubits );
+            for (size_t i=0; i<matr.size(); i++) {
+                
+                long long int ind = 0;
+                if (encoding == UNSIGNED)
+                    ind = i;
+                if (encoding == TWOS_COMPLEMENT)
+                    ind = getTwosComplement(i, numQubits);
+                
+                qreal phase = 0;
+                for (int t=0; t<numTerms; t++)
+                    phase += coeffs[t] * pow(ind, expons[t]);
+                    
+                matr[i][i] = expI(phase);
+            }
+            
+            applyPhaseFunc(quregVec, qubits, numQubits, encoding, coeffs, expons, numTerms);
+            applyReferenceOp(refVec, qubits, numQubits, matr);
+            REQUIRE( areEqual(quregVec, refVec) );
+        }
+    }
+    SECTION( "input validation" ) {
+        
+        int numQubits = 3;
+        int qubits[] = {0,1,2};
+        
+        SECTION( "density matrix" ) {
+            
+            Qureg dens = quregVec;
+            dens.isDensityMatrix = 1;
+            REQUIRE_THROWS_WITH( applyPhaseFunc(dens, NULL, 0, UNSIGNED, NULL, NULL, 1), Contains("Operation valid only for state-vectors") );
+        }
+        SECTION( "number of qubits" ) {
+            
+            numQubits = GENERATE_COPY( -1, 0, NUM_QUBITS+1 );
+            REQUIRE_THROWS_WITH( applyPhaseFunc(quregVec, NULL, numQubits, UNSIGNED, NULL, NULL, 1), Contains("Invalid number of qubits") );
+        }
+        SECTION( "repetition of qubits" ) {
+            
+            qubits[GENERATE(1,2)] = qubits[0];
+            REQUIRE_THROWS_WITH( applyPhaseFunc(quregVec, qubits, numQubits, UNSIGNED, NULL, NULL, 1), Contains("The qubits must be unique") );
+        }
+        SECTION( "qubit indices" ) {
+            
+            int inv = GENERATE( -1, NUM_QUBITS );
+            qubits[ GENERATE_COPY( range(0,numQubits) )] = inv;
+            REQUIRE_THROWS_WITH( applyPhaseFunc(quregVec, qubits, numQubits, UNSIGNED, NULL, NULL, 1), Contains("Invalid qubit index") );
+        }
+        SECTION( "number of terms" ) {
+            
+            int numTerms = GENERATE( -1, 0 );
+            REQUIRE_THROWS_WITH( applyPhaseFunc(quregVec, qubits, numQubits, UNSIGNED, NULL, NULL, numTerms), Contains("Invalid number of terms in the phase function") );
+        }
+        SECTION( "bit encoding name" ) {
+            
+            enum bitEncoding enc = (enum bitEncoding) GENERATE( -1,2 );
+            REQUIRE_THROWS_WITH( applyPhaseFunc(quregVec, qubits, numQubits, enc, NULL, NULL, 1), Contains("Invalid bit encoding") );
+        }
+        SECTION( "two's complement register" ) {
+            
+            numQubits = 1;
+            REQUIRE_THROWS_WITH( applyPhaseFunc(quregVec, qubits, numQubits, TWOS_COMPLEMENT, NULL, NULL, 1), Contains("too few qubits to employ TWOS_COMPLEMENT") );
+        }
+        SECTION( "fractional exponent" ) {
+            
+            int numTerms = 3;
+            qreal coeffs[] = {0,0,0};
+            qreal expos[] = {1,2,3};
+            expos[GENERATE_COPY( range(0,numTerms) )] = GENERATE( 0.5, 1.999, 5.0001 );
+            
+            REQUIRE_THROWS_WITH( applyPhaseFunc(quregVec, qubits, numQubits, TWOS_COMPLEMENT, coeffs, expos, numTerms), Contains("fractional exponent") && Contains("TWOS_COMPLEMENT") && Contains("negative indices were not overriden") );
+        }
+        SECTION( "negative exponent" ) {
+
+            int numTerms = 3;
+            qreal coeffs[] = {0,0,0};
+            qreal expos[] = {1,2,3};
+            expos[GENERATE_COPY( range(0,numTerms) )] = GENERATE( -1, -2, -1.5 );
+            
+            enum bitEncoding encoding = GENERATE( UNSIGNED, TWOS_COMPLEMENT );
+    
+            REQUIRE_THROWS_WITH( applyPhaseFunc(quregVec, qubits, numQubits, encoding, coeffs, expos, numTerms), Contains("The phase function contained a negative exponent which would diverge at zero, but the zero index was not overriden") );
+        }
+    }
+    destroyQureg(quregVec, QUEST_ENV);
+}
+
+
+
+/** @sa applyPhaseFuncOverrides
+ * @ingroup unittest 
+ * @author Tyson Jones 
+ */
+TEST_CASE( "applyPhaseFuncOverrides", "[operators]" ) {
+    
+    Qureg quregVec = createQureg(NUM_QUBITS, QUEST_ENV);
+    initDebugState(quregVec);
+    QVector refVec = toQVector(quregVec);
+
+    SECTION( "correctness" ) {
+        
+        // try every kind of binary encodings
+        enum bitEncoding encoding = GENERATE( UNSIGNED,TWOS_COMPLEMENT );
+        
+        // try every sub-register size
+        int numQubits = GENERATE_COPY( range(1,NUM_QUBITS+1) );
+        
+        // force at least 2 qubits in two's compement though
+        if (encoding == TWOS_COMPLEMENT && numQubits == 1)
+            numQubits++;
+        
+        // try every possible sub-register
+        int* qubits = GENERATE_COPY( sublists(range(0,NUM_QUBITS), numQubits) );
+        
+        // choose a random number of terms in the phase function
+        int numTerms = getRandomInt(1, 21);
+        
+        // populate the phase function with random powers.
+        // this includes negative powers, so we must always override 0.
+        // in two's complement, we must use only integer powers
+        qreal coeffs[numTerms];
+        qreal expons[numTerms];
+        for (int t=0; t<numTerms; t++) {
+            coeffs[t] = getRandomReal(-10,10);
+            if (encoding == TWOS_COMPLEMENT)
+                expons[t] = getRandomInt(-3, 3+1); // note we COULD do getRandomReal(), and override all negatives
+            else
+                expons[t] = getRandomReal(-3, 3);
+        }
+        
+        // choose a random number of overrides (even overriding every amplitude)
+        int numOverrides = getRandomInt(1, (1<<numQubits) + 1);
+        
+        // randomise each override index (uniqueness isn't checked)
+        long long int overrideInds[numOverrides];
+        overrideInds[0] = 0LL;
+        for (int i=1; i<numOverrides; i++)
+            if (encoding == UNSIGNED)
+                overrideInds[i] = getRandomInt(0, 1<<numQubits);
+            else if (encoding == TWOS_COMPLEMENT)
+                overrideInds[i] = getRandomInt(-(1<<(numQubits-1)), (1<<(numQubits-1))-1);
+            
+        // override to a random phase
+        qreal overridePhases[numOverrides];
+        for (int i=0; i<numOverrides; i++)
+            overridePhases[i] = getRandomReal(-4, 4); // periodic in [-pi, pi]
+        
+        SECTION( "state-vector" ) {
+            
+            // build a reference diagonal matrix, on the reduced Hilbert space
+            QMatrix matr = getZeroMatrix( 1 << numQubits );
+            for (size_t i=0; i<matr.size(); i++) {
+                
+                long long int ind = 0;
+                if (encoding == UNSIGNED)
+                    ind = i;
+                if (encoding == TWOS_COMPLEMENT)
+                    ind = getTwosComplement(i, numQubits);
+                    
+                qreal phase;
+                bool overriden = false;
+                for (int v=0; v<numOverrides; v++) {
+                    if (ind == overrideInds[v]) {
+                        phase = overridePhases[v];
+                        overriden = true;
+                        break;
+                    }
+                }
+                
+                if (!overriden) {
+                    phase = 0;
+                    for (int t=0; t<numTerms; t++)
+                        phase += coeffs[t] * pow(ind, expons[t]);
+                }
+                    
+                matr[i][i] = expI(phase);
+            }            
+            
+            applyPhaseFuncOverrides(quregVec, qubits, numQubits, encoding, coeffs, expons, numTerms, overrideInds, overridePhases, numOverrides);
+            applyReferenceOp(refVec, qubits, numQubits, matr);
+            REQUIRE( areEqual(quregVec, refVec) );
+        }
+    }
+    SECTION( "input validation" ) {
+        
+        int numQubits = 3;
+        int qubits[] = {0,1,2};
+        
+        SECTION( "density matrix" ) {
+            
+            Qureg dens = quregVec;
+            dens.isDensityMatrix = 1;
+            REQUIRE_THROWS_WITH( applyPhaseFuncOverrides(dens, NULL, 0, UNSIGNED, NULL, NULL, 1, NULL, NULL, 0), Contains("Operation valid only for state-vectors") );
+        }
+        SECTION( "number of qubits" ) {
+            
+            int numQubits = GENERATE_COPY( -1, 0, NUM_QUBITS+1 );
+            REQUIRE_THROWS_WITH( applyPhaseFuncOverrides(quregVec, NULL, numQubits, UNSIGNED, NULL, NULL, 1, NULL, NULL, 0), Contains("Invalid number of qubits") );
+        }
+        SECTION( "repetition qubits" ) {
+            
+            qubits[GENERATE(1,2)] = qubits[0];
+            REQUIRE_THROWS_WITH( applyPhaseFuncOverrides(quregVec, qubits, numQubits, UNSIGNED, NULL, NULL, 1, NULL, NULL, 0), Contains("The qubits must be unique") );
+        }
+        SECTION( "qubit indices" ) {
+            
+            int inv = GENERATE( -1, NUM_QUBITS );
+            qubits[ GENERATE_COPY( range(0,numQubits) )] = inv;
+            REQUIRE_THROWS_WITH( applyPhaseFuncOverrides(quregVec, qubits, numQubits, UNSIGNED, NULL, NULL, 1, NULL, NULL, 0), Contains("Invalid qubit index") );
+        }
+        SECTION( "number of terms" ) {
+            
+            int numTerms = GENERATE( -1, 0 );
+            REQUIRE_THROWS_WITH( applyPhaseFuncOverrides(quregVec, qubits, numQubits, UNSIGNED, NULL, NULL, numTerms, NULL, NULL, 0), Contains("Invalid number of terms in the phase function") );
+        }
+        SECTION( "bit encoding name" ) {
+
+            enum bitEncoding enc = (enum bitEncoding) GENERATE( -1,2 );
+            REQUIRE_THROWS_WITH( applyPhaseFuncOverrides(quregVec, qubits, numQubits, enc, NULL, NULL, 1, NULL, NULL, 0), Contains("Invalid bit encoding") );
+        }
+        SECTION( "two's complement register" ) {
+            
+            numQubits = 1;
+            REQUIRE_THROWS_WITH( applyPhaseFuncOverrides(quregVec, qubits, numQubits, TWOS_COMPLEMENT, NULL, NULL, 1, NULL, NULL, 0), Contains("too few qubits to employ TWOS_COMPLEMENT") );
+        }
+        SECTION( "number of overrides" ) {
+
+            qreal dummyTerms[] = {0};
+            
+            int numOverrides = GENERATE_COPY( -1, 1 + (1<<numQubits) );
+            REQUIRE_THROWS_WITH( applyPhaseFuncOverrides(quregVec, qubits, numQubits, UNSIGNED, dummyTerms, dummyTerms, 1, NULL, NULL, numOverrides), Contains("Invalid number of phase function overrides") );
+        }
+        SECTION( "override indices" ) {
+            
+            int numOverrides = 3;
+            long long int overrideInds[] = {0,1,2};
+            qreal overridePhases[] = {.1,.1,.1};
+            qreal dummyTerms[] = {0};
+            
+            enum bitEncoding encoding = UNSIGNED;
+            overrideInds[GENERATE(0,1,2)] = GENERATE_COPY( -1, (1<<numQubits) );
+            REQUIRE_THROWS_WITH( applyPhaseFuncOverrides(quregVec, qubits, numQubits, encoding, dummyTerms, dummyTerms, 1, overrideInds, overridePhases, numOverrides), Contains("Invalid phase function override index, in the UNSIGNED encoding") );
+            
+            encoding = TWOS_COMPLEMENT;
+            long long int newInds[] = {0,1,2};
+            int minInd = -(1<<(numQubits-1));
+            int maxInd = (1<<(numQubits-1)) -1;
+            newInds[GENERATE(0,1,2)] = GENERATE_COPY( minInd-1, maxInd+1 );
+            REQUIRE_THROWS_WITH( applyPhaseFuncOverrides(quregVec, qubits, numQubits, encoding, dummyTerms, dummyTerms, 1, newInds, overridePhases, numOverrides), Contains("Invalid phase function override index, in the TWOS_COMPLEMENT encoding") );
+        }
+        SECTION( "fractional exponent" ) {
+            
+            int numTerms = 3;
+            qreal coeffs[] = {0,0,0};
+            qreal expos[] = {1,2,3};
+            
+            // make one exponent fractional, thereby requiring negative overrides
+            expos[GENERATE_COPY( range(0,numTerms) )] = GENERATE( 0.5, 1.999, 5.0001 );
+            
+            // catch when no negative indices are overridden
+            REQUIRE_THROWS_WITH( applyPhaseFuncOverrides(quregVec, qubits, numQubits, TWOS_COMPLEMENT, coeffs, expos, numTerms, NULL, NULL, 0), Contains("fractional exponent") && Contains("TWOS_COMPLEMENT") && Contains("negative indices were not overriden") );
+            
+            int numNegs = 1 << (numQubits-1);
+            long long int overrideInds[numNegs];
+            qreal overridePhases[numNegs];
+            for (int i=0; i<numNegs; i++) {
+                overrideInds[i] = -(i+1);
+                overridePhases[i] = 0;
+            }
+            
+            // ensure no throw when all are overriden
+            REQUIRE_NOTHROW( applyPhaseFuncOverrides(quregVec, qubits, numQubits, TWOS_COMPLEMENT, coeffs, expos, numTerms, overrideInds, overridePhases, numNegs) );
+
+            // catch when at least one isn't overriden
+            overrideInds[GENERATE_COPY( range(0,numNegs) )] = 0; // override a non-negative
+            REQUIRE_THROWS_WITH( applyPhaseFuncOverrides(quregVec, qubits, numQubits, TWOS_COMPLEMENT, coeffs, expos, numTerms, overrideInds, overridePhases, numNegs), Contains("fractional exponent") && Contains("TWOS_COMPLEMENT") && Contains("negative indices were not overriden") );
+        }
+        SECTION( "negative exponent" ) {
+            
+            int numTerms = 3;
+            qreal coeffs[] = {0,0,0};
+            qreal expos[] = {1,2,3};
+            expos[GENERATE_COPY( range(0,numTerms) )] = GENERATE( -1, -2 );
+            
+            enum bitEncoding encoding = GENERATE( UNSIGNED, TWOS_COMPLEMENT );
+            
+            // test both when giving no overrides, and giving all non-zero overrides
+            int numOverrides = GENERATE( 0, 3 ); 
+            long long int overrideInds[] = {1,2,3};
+            qreal overridePhases[] = {0,0,0};
+            REQUIRE_THROWS_WITH( applyPhaseFuncOverrides(quregVec, qubits, numQubits, encoding, coeffs, expos, numTerms, overrideInds, overridePhases, numOverrides), Contains("The phase function contained a negative exponent which would diverge at zero, but the zero index was not overriden") );
+            
+            // but ensure that when the zero IS overriden (anywhere), there's no error 
+            numOverrides = 3;
+            overrideInds[GENERATE_COPY(range(0,numOverrides))] = 0;
+            REQUIRE_NOTHROW( applyPhaseFuncOverrides(quregVec, qubits, numQubits, encoding, coeffs, expos, numTerms, overrideInds, overridePhases, numOverrides) );
+        }
+    }
+    destroyQureg(quregVec, QUEST_ENV);
+}
+
+
+
 /** @sa applyTrotterCircuit
  * @ingroup unittest 
  * @author Tyson Jones 
@@ -779,9 +2831,8 @@ TEST_CASE( "applyTrotterCircuit", "[operators]" ) {
             // hardcoded 5 qubits here in the Pauli codes
             REQUIRE( NUM_QUBITS == 5 );
             
-            // (verbose for C++ compatibility)
             PauliHamil hamil = createPauliHamil(NUM_QUBITS, 3);
-            qreal coeffs[] = {M_PI * sqrt(2.0), M_PI, M_PI};
+            qreal coeffs[] = {(qreal) (M_PI * sqrt(2.0)), M_PI, M_PI};
             enum pauliOpType codes[] = {
                 PAULI_X, PAULI_Y, PAULI_Z, PAULI_X, PAULI_Y,
                 PAULI_Y, PAULI_Z, PAULI_X, PAULI_Y, PAULI_Z,

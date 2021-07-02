@@ -1533,7 +1533,7 @@ void statevec_cloneQureg(Qureg targetQureg, Qureg copyQureg) {
  * Initialise the state vector of probability amplitudes such that one qubit is set to 'outcome' and all other qubits are in an equal superposition of zero and one.
  * @param[in,out] qureg object representing the set of qubits to be initialised
  * @param[in] qubitId id of qubit to set to state 'outcome'
- * @param[in] value of qubit 'qubitId'
+ * @param[in] outcome of qubit 'qubitId'
  */
 void statevec_initStateOfSingleQubit(Qureg *qureg, int qubitId, int outcome)
 {
@@ -2041,7 +2041,8 @@ void statevec_compactUnitaryDistributed (Qureg qureg,
  *  @remarks Qubits are zero-based and the first qubit is the rightmost                  
  *                                                                        
  *  @param[in,out] qureg object representing the set of qubits
- *  @param[in] u unitary matrix to apply
+ *  @param[in] rot1 
+ *  @param[in] rot2
  *  @param[in] stateVecUp probability amplitudes in upper half of a block
  *  @param[in] stateVecLo probability amplitudes in lower half of a block
  *  @param[out] stateVecOut array section to update (will correspond to either the lower or upper half of a block)
@@ -2633,6 +2634,7 @@ void statevec_controlledNotLocal(Qureg qureg, int controlQubit, int targetQubit)
  *  for elements where controlQubit is one.
  *                                          
  *  @param[in,out] qureg object representing the set of qubits
+ *  @param[in] controlQubit the control qubit
  *  @param[in] stateVecIn probability amplitudes in lower or upper half of a block depending on chunkId
  *  @param[out] stateVecOut array section to update (will correspond to either the lower or upper half of a block)
  */
@@ -2726,8 +2728,9 @@ void statevec_pauliYLocal(Qureg qureg, int targetQubit, int conjFac)
  *                                                                        
  *  @param[in,out] qureg object representing the set of qubits
  *  @param[in] stateVecIn probability amplitudes in lower or upper half of a block depending on chunkId
- *  @param[in] updateUpper flag, 1: updating upper values, 0: updating lower values in block
  *  @param[out] stateVecOut array section to update (will correspond to either the lower or upper half of a block)
+ *  @param[in] updateUpper flag, 1: updating upper values, 0: updating lower values in block
+ * @param[in] conjFac 1: apply conj(pauliY), 0: apply pauliY
  */
 void statevec_pauliYDistributed(Qureg qureg,
         ComplexArray stateVecIn,
@@ -2918,9 +2921,10 @@ void statevec_hadamardLocal(Qureg qureg, int targetQubit)
  *  stateVecIn must already be the correct section for this chunk
  *                                          
  *  @param[in,out] qureg object representing the set of qubits
- *  @param[in] stateVecIn probability amplitudes in lower or upper half of a block depending on chunkId
- *  @param[in] updateUpper flag, 1: updating upper values, 0: updating lower values in block
+ *  @param[in] stateVecUp probability amplitudes in upper half of a block depending on chunkId
+ *  @param[in] stateVecLo probability amplitudes in lower half of a block depending on chunkId
  *  @param[out] stateVecOut array section to update (will correspond to either the lower or upper half of a block)
+ *  @param[in] updateUpper flag, 1: updating upper values, 0: updating lower values in block
  */
 void statevec_hadamardDistributed(Qureg qureg,
         ComplexArray stateVecUp,
@@ -3479,7 +3483,7 @@ void statevec_collapseToKnownProbOutcomeDistributedRenorm (Qureg qureg, int meas
     }
 }
 
-/** Set all amplitudes in one chunk to 0. 
+/* Set all amplitudes in one chunk to 0. 
  *  Measure in Zero performs an irreversible change to the state vector: it updates the vector according
  *  to the event that a zero have been measured on the qubit indicated by measureQubit (where 
  *  this label starts from 0, of course). It achieves this by setting all inconsistent amplitudes to 0 and 
@@ -3487,9 +3491,8 @@ void statevec_collapseToKnownProbOutcomeDistributedRenorm (Qureg qureg, int meas
  *  In the distributed version, one block (with measureQubit=0 in the first half of the block and
  *  measureQubit=1 in the second half of the block) is spread over multiple chunks, meaning that each chunks performs
  *  only renormalisation or only setting amplitudes to 0. This function handles setting amplitudes to 0.
- *  
+ *
  *  @param[in,out] qureg object representing the set of qubits
- *  @param[in] measureQubit qubit to measure
  */
 void statevec_collapseToOutcomeDistributedSetZero(Qureg qureg)
 {
@@ -3871,3 +3874,315 @@ void agnostic_setDiagonalOpElems(DiagonalOp op, long long int startInd, qreal* r
         }
     }
 }
+
+void statevec_applyPhaseFuncOverrides(
+    Qureg qureg, int* qubits, int numQubits, enum bitEncoding encoding,
+    qreal* coeffs, qreal* exponents, int numTerms, 
+    long long int* overrideInds, qreal* overridePhases, int numOverrides)
+{
+    // each node/chunk modifies only local values in an embarrassingly parallel way 
+
+    // thread shared vars
+    int chunkId = qureg.chunkId;
+    long long int numAmps = qureg.numAmpsPerChunk;
+    qreal* stateRe = qureg.stateVec.real;
+    qreal* stateIm = qureg.stateVec.imag;
+
+    // thread private vars
+    long long int index, globalAmpInd, phaseInd;
+    int i, t, q;
+    qreal phase, c, s, re, im;
+
+# ifdef _OPENMP
+# pragma omp parallel \
+    default  (none) \
+    shared   (chunkId,numAmps, stateRe,stateIm, qubits,numQubits,encoding, coeffs,exponents,numTerms, overrideInds,overridePhases,numOverrides) \
+    private  (index, globalAmpInd, phaseInd, i,t,q, phase, c,s,re,im) 
+# endif
+    {
+# ifdef _OPENMP
+# pragma omp for schedule (static)
+# endif
+        for (index=0LL; index<numAmps; index++) {
+
+            // determine global amplitude index 
+            globalAmpInd = chunkId * numAmps + index;
+
+            // determine phase index of {qubits}
+            phaseInd = 0LL;
+            if (encoding == UNSIGNED) {
+                for (q=0; q<numQubits; q++) // use significance order specified by {qubits}
+                    phaseInd += (1LL << q) * extractBit(qubits[q], globalAmpInd);
+            } 
+            else if (encoding == TWOS_COMPLEMENT) {
+                for (q=0; q<numQubits-1; q++) // use final qubit to indicate sign 
+                    phaseInd += (1LL << q) * extractBit(qubits[q], globalAmpInd);
+                if (extractBit(qubits[numQubits-1], globalAmpInd) == 1)
+                    phaseInd -= (1LL << (numQubits-1));
+            }
+
+            // determine if this phase index has an overriden value (i < numOverrides)
+            for (i=0; i<numOverrides; i++)
+                if (phaseInd == overrideInds[i])
+                    break;
+
+            // determine phase from {coeffs}, {exponents} (unless overriden)
+            phase = 0;
+            if (i < numOverrides)
+                phase = overridePhases[i];
+            else
+                for (t=0; t<numTerms; t++)
+                    phase += coeffs[t] * pow(phaseInd, exponents[t]);
+
+            // modify amp to amp * exp(i phase) 
+            c = cos(phase);
+            s = sin(phase);
+            re = stateRe[index];
+            im = stateIm[index];
+
+            // = {re[amp] cos(phase) - im[amp] sin(phase)} + i {re[amp] sin(phase) + im[amp] cos(phase)}
+            stateRe[index] = re*c - im*s;
+            stateIm[index] = re*s + im*c;
+        }
+    }
+}
+
+void statevec_applyMultiVarPhaseFuncOverrides(
+    Qureg qureg, int* qubits, int* numQubitsPerReg, int numRegs, enum bitEncoding encoding,
+    qreal* coeffs, qreal* exponents, int* numTermsPerReg, 
+    long long int* overrideInds, qreal* overridePhases, int numOverrides) 
+{
+    // each node/chunk modifies only local values in an embarrassingly parallel way 
+
+    // note partitions of qubits, coeffs, exponents and overrideInds are stored flat
+
+    // thread-shared vaes
+    int chunkId = qureg.chunkId;
+    long long int numAmps = qureg.numAmpsPerChunk;
+    qreal* stateRe = qureg.stateVec.real;
+    qreal* stateIm = qureg.stateVec.imag;
+
+    // thread-private vars
+    long long int index, globalAmpInd;
+    int r, q, i, t, found, flatInd;
+    qreal phase, c, s, re, im;
+
+    // each thread has a private static array of length >= numRegs (private var-length is illegal)
+    long long int phaseInds[MAX_NUM_REGS_APPLY_ARBITRARY_PHASE];
+
+# ifdef _OPENMP
+# pragma omp parallel \
+    default  (none) \
+    shared   (chunkId,numAmps, stateRe,stateIm, qubits,numQubitsPerReg,numRegs,encoding, coeffs,exponents,numTermsPerReg, overrideInds,overridePhases,numOverrides) \
+    private  (index,globalAmpInd, r,q,i,t,flatInd, found, phaseInds,phase, c,s,re,im) 
+# endif
+    {
+# ifdef _OPENMP
+# pragma omp for schedule (static)
+# endif
+        for (index=0LL; index<numAmps; index++) {
+
+            // determine global amplitude index 
+            globalAmpInd = chunkId * numAmps + index;
+
+            // determine phase indices
+            flatInd = 0;
+            for (r=0; r<numRegs; r++) {
+                phaseInds[r] = 0LL;
+
+                if (encoding == UNSIGNED) {
+                    for (q=0; q<numQubitsPerReg[r]; q++)
+                        phaseInds[r] += (1LL << q) * extractBit(qubits[flatInd++], globalAmpInd);   // qubits[flatInd] ~ qubits[r][q]
+                }
+                else if (encoding == TWOS_COMPLEMENT) {
+                    for (q=0; q<numQubitsPerReg[r]-1; q++)  
+                        phaseInds[r] += (1LL << q) * extractBit(qubits[flatInd++], globalAmpInd);
+                    // use final qubit to indicate sign
+                    if (extractBit(qubits[flatInd++], globalAmpInd) == 1)
+                        phaseInds[r] -= (1LL << (numQubitsPerReg[r]-1));
+                }
+            }
+
+            // determine if this phase index has an overriden value (i < numOverrides)
+            for (i=0; i<numOverrides; i++) {
+                found = 1;
+                for (r=0; r<numRegs; r++) {
+                    if (phaseInds[r] != overrideInds[i*numRegs+r]) {
+                        found = 0;
+                        break;
+                    }
+                }
+                if (found)
+                    break;
+            }
+
+            // compute the phase (unless overriden)
+            phase = 0;
+            if (i < numOverrides)
+                phase = overridePhases[i];
+            else {
+                flatInd = 0;
+                for (r=0; r<numRegs; r++) {
+                    for (t=0; t<numTermsPerReg[r]; t++) {
+                        phase += coeffs[flatInd] * pow(phaseInds[r], exponents[flatInd]);
+                        flatInd++;
+                    }
+                }
+            }
+
+            // modify amp to amp * exp(i phase) 
+            c = cos(phase);
+            s = sin(phase);
+            re = stateRe[index];
+            im = stateIm[index];
+
+            // = {re[amp] cos(phase) - im[amp] sin(phase)} + i {re[amp] sin(phase) + im[amp] cos(phase)}
+            stateRe[index] = re*c - im*s;
+            stateIm[index] = re*s + im*c;
+        }
+    }
+}
+
+void statevec_applyParamNamedPhaseFuncOverrides(
+    Qureg qureg, int* qubits, int* numQubitsPerReg, int numRegs, enum bitEncoding encoding,
+    enum phaseFunc phaseFuncName,
+    qreal* params, int numParams,
+    long long int* overrideInds, qreal* overridePhases, int numOverrides) 
+{
+    // each node/chunk modifies only local values in an embarrassingly parallel way 
+
+    // note partitions of qubits, overrideInds are stored flat
+
+    // thread-shared vaes
+    int chunkId = qureg.chunkId;
+    long long int numAmps = qureg.numAmpsPerChunk;
+    qreal* stateRe = qureg.stateVec.real;
+    qreal* stateIm = qureg.stateVec.imag;
+
+    // thread-private vars
+    long long int index, globalAmpInd;
+    int r, q, i, found, flatInd;
+    qreal phase, norm, prod, dist, c, s, re, im;
+
+    // each thread has a private static array of length >= numRegs (private var-length is illegal)
+    long long int phaseInds[MAX_NUM_REGS_APPLY_ARBITRARY_PHASE];
+
+# ifdef _OPENMP
+# pragma omp parallel \
+    default  (none) \
+    shared   (chunkId,numAmps, stateRe,stateIm, qubits,numQubitsPerReg,numRegs,encoding, phaseFuncName,params,numParams, overrideInds,overridePhases,numOverrides) \
+    private  (index,globalAmpInd, r,q,i,flatInd, found, phaseInds,phase,norm,prod,dist, c,s,re,im) 
+# endif
+    {
+# ifdef _OPENMP
+# pragma omp for schedule (static)
+# endif
+        for (index=0LL; index<numAmps; index++) {
+
+            // determine global amplitude index 
+            globalAmpInd = chunkId * numAmps + index;
+
+            // determine phase indices
+            flatInd = 0;
+            for (r=0; r<numRegs; r++) {
+                phaseInds[r] = 0LL;
+
+                if (encoding == UNSIGNED) {
+                    for (q=0; q<numQubitsPerReg[r]; q++)
+                        phaseInds[r] += (1LL << q) * extractBit(qubits[flatInd++], globalAmpInd);   // qubits[flatInd] ~ qubits[r][q]
+                }
+                else if (encoding == TWOS_COMPLEMENT) {
+                    for (q=0; q<numQubitsPerReg[r]-1; q++)  
+                        phaseInds[r] += (1LL << q) * extractBit(qubits[flatInd++], globalAmpInd);
+                    // use final qubit to indicate sign
+                    if (extractBit(qubits[flatInd++], globalAmpInd) == 1)
+                        phaseInds[r] -= (1LL << (numQubitsPerReg[r]-1));
+                }
+            }
+
+            // determine if this phase index has an overriden value (i < numOverrides)
+            for (i=0; i<numOverrides; i++) {
+                found = 1;
+                for (r=0; r<numRegs; r++) {
+                    if (phaseInds[r] != overrideInds[i*numRegs+r]) {
+                        found = 0;
+                        break;
+                    }
+                }
+                if (found)
+                    break;
+            }
+
+            // compute the phase (unless overriden)
+            phase = 0;
+            if (i < numOverrides)
+                phase = overridePhases[i];
+            else {
+                // compute norm related phases
+                if (phaseFuncName == NORM || phaseFuncName == INVERSE_NORM ||
+                    phaseFuncName == SCALED_NORM || phaseFuncName == SCALED_INVERSE_NORM) {
+
+                    norm = 0;
+                    for (r=0; r<numRegs; r++)
+                        norm += phaseInds[r]*phaseInds[r];
+                    norm = sqrt(norm);
+
+                    if (phaseFuncName == NORM)
+                        phase = norm;
+                    else if (phaseFuncName == INVERSE_NORM)
+                        phase = (norm == 0.)? params[0] : 1/norm;
+                    else if (phaseFuncName == SCALED_NORM)
+                        phase = params[0] * norm;
+                    else if (phaseFuncName == SCALED_INVERSE_NORM)
+                        phase = (norm == 0.)? params[1] : params[0] / norm;
+                }
+                // compute product related phases
+                else if (phaseFuncName == PRODUCT || phaseFuncName == INVERSE_PRODUCT ||
+                         phaseFuncName == SCALED_PRODUCT || phaseFuncName == SCALED_INVERSE_PRODUCT) {
+
+                    prod = 1;
+                    for (r=0; r<numRegs; r++)
+                        prod *= phaseInds[r];
+
+                    if (phaseFuncName == PRODUCT)
+                        phase = prod;
+                    else if (phaseFuncName == INVERSE_PRODUCT)
+                        phase = (prod == 0.)? params[0] : 1/prod;
+                    else if (phaseFuncName == SCALED_PRODUCT)
+                        phase = params[0] * prod;
+                    else if (phaseFuncName == SCALED_INVERSE_PRODUCT)
+                        phase = (prod == 0.)? params[1] : params[0] / prod;
+                }
+                // compute Euclidean distance related phases 
+                else if (phaseFuncName == DISTANCE || phaseFuncName == INVERSE_DISTANCE ||
+                         phaseFuncName == SCALED_DISTANCE || phaseFuncName == SCALED_INVERSE_DISTANCE) {
+
+                    dist = 0;
+                    for (r=0; r<numRegs; r+=2)
+                        dist += (phaseInds[r+1] - phaseInds[r])*(phaseInds[r+1] - phaseInds[r]);
+                    dist = sqrt(dist);
+
+                    if (phaseFuncName == DISTANCE)
+                        phase = dist;
+                    else if (phaseFuncName == INVERSE_DISTANCE)
+                        phase = (dist == 0.)? params[0] : 1/dist;
+                    else if (phaseFuncName == SCALED_DISTANCE)
+                        phase = params[0] * dist;
+                    else if (phaseFuncName == SCALED_INVERSE_DISTANCE)
+                        phase = (dist == 0.)? params[1] : params[0] / dist;
+                }
+            }
+
+            // modify amp to amp * exp(i phase) 
+            c = cos(phase);
+            s = sin(phase);
+            re = stateRe[index];
+            im = stateIm[index];
+
+            // = {re[amp] cos(phase) - im[amp] sin(phase)} + i {re[amp] sin(phase) + im[amp] cos(phase)}
+            stateRe[index] = re*c - im*s;
+            stateIm[index] = re*s + im*c;
+        }
+    }
+}
+

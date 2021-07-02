@@ -372,7 +372,7 @@ QVector getRandomStateVector(int numQb);
  */
 QMatrix getRandomDensityMatrix(int numQb);
 
-/** Returns a random Kraus map of \p #numOps 2^\p numQb-by-2^\p numQb operators, 
+/** Returns a random Kraus map of #`numOps` 2^\p numQb-by-2^\p numQb operators, 
  * from an undisclosed distribution.
  * Note this method is very simple and cannot generate all possible Kraus maps. 
  * It works by generating \p numOps random unitary matrices, and randomly 
@@ -859,6 +859,37 @@ void setRandomPauliSum(qreal* coeffs, pauliOpType* codes, int numQubits, int num
  * @author Tyson Jones
  */
 void setRandomPauliSum(PauliHamil hamil);
+
+/** Returns the two's complement signed encoding of the unsigned number decimal, 
+ * which must be a number between 0 and 2^numBits (exclusive). The returned number 
+ * lies in [-2^(numBits-1), 2^(numBits-1)-1]
+ *
+ * @ingroup testutilities
+ * @author Tyson Jones
+ */
+long long int getTwosComplement(long long int decimal, int numBits);
+
+/** Return the unsigned value of a number, made of #numBits bits, which under 
+ * two's complement, encodes the signed number twosComp. The returned number 
+ * lies in [0, 2^(numBits)-1]
+ *
+ * @ingroup testutilities
+ * @author Tyson Jones
+ */
+long long int getUnsigned(long long int twosComp, int numBits);
+
+/** Modifies the given diagonal matrix such that the diagonal elements which 
+ * correspond to the coordinates in overrideInds are replaced with exp(i phase), as
+ * prescribed by overridePhases. This function assumes that the given registers 
+ * are contiguous, are in order of increasing significance, and that the matrix 
+ * is proportionately sized and structured to act on the space of all registers 
+ * combined. Overrides can be repeated, and only the first encountered for a given 
+ * index will be effected (much like applyMultiVarPhaseFuncOverrides()).
+ *
+ * @ingroup testutilities
+ * @author Tyson Jones
+ */
+void setDiagMatrixOverrides(QMatrix &matr, int* numQubitsPerReg, int numRegs, enum bitEncoding encoding, long long int* overrideInds, qreal* overridePhases, int numOverrides);
 
 // makes below signatures more concise
 template<class T> using CatchGen = Catch::Generators::GeneratorWrapper<T>;

@@ -253,6 +253,12 @@ void statevec_applyDiagonalOp(Qureg qureg, DiagonalOp op);
 
 Complex statevec_calcExpecDiagonalOp(Qureg qureg, DiagonalOp op);
 
+void statevec_applyPhaseFuncOverrides(Qureg qureg, int* qubits, int numQubits, enum bitEncoding encoding, qreal* coeffs, qreal* exponents, int numTerms, long long int* overrideInds, qreal* overridePhases, int numOverrides);
+
+void statevec_applyMultiVarPhaseFuncOverrides(Qureg qureg, int* qubits, int* numQubitsPerReg, int numRegs, enum bitEncoding encoding, qreal* coeffs, qreal* exponents, int* numTermsPerReg, long long int* overrideInds, qreal* overridePhases, int numOverrides);
+
+void statevec_applyParamNamedPhaseFuncOverrides(Qureg qureg, int* qubits, int* numQubitsPerReg, int numRegs, enum bitEncoding encoding, enum phaseFunc functionNameCode, qreal* params, int numParams, long long int* overrideInds, qreal* overridePhases, int numOverrides);
+
 
 /* 
  * operations which differentiate between state-vectors and density matrices internally 
