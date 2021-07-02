@@ -94,7 +94,8 @@ typedef enum {
     E_INVALID_TROTTER_ORDER,
     E_INVALID_TROTTER_REPS,
     E_MISMATCHING_QUREG_DIAGONAL_OP_SIZE,
-    E_DIAGONAL_OP_NOT_INITIALISED
+    E_DIAGONAL_OP_NOT_INITIALISED,
+	E_INVALID_CLASS_STATE_DESCR
 } ErrorCode;
 
 static const char* errorMessages[] = {
@@ -161,7 +162,8 @@ static const char* errorMessages[] = {
     [E_INVALID_TROTTER_ORDER] = "The Trotterisation order must be 1, or an even number (for higher-order Suzuki symmetrized expansions).",
     [E_INVALID_TROTTER_REPS] = "The number of Trotter repetitions must be >=1.",
     [E_MISMATCHING_QUREG_DIAGONAL_OP_SIZE] = "The qureg must represent an equal number of qubits as that in the applied diagonal operator.",
-    [E_DIAGONAL_OP_NOT_INITIALISED] = "The diagonal operator has not been initialised through createDiagonalOperator()."
+    [E_DIAGONAL_OP_NOT_INITIALISED] = "The diagonal operator has not been initialised through createDiagonalOperator().",
+	[E_INVALID_CLASS_STATE_DESCR] = "Invalid classical state descriptor."
 };
 
 void exitWithError(const char* msg, const char* func) {
@@ -478,6 +480,10 @@ void validateVector(Vector vec, const char* caller) {
 
 void validateStateVecQureg(Qureg qureg, const char* caller) {
     QuESTAssert( ! qureg.isDensityMatrix, E_DEFINED_ONLY_FOR_STATEVECS, caller);
+}
+
+void validateClassicalStateDescriptor(int classical_state_descriptor, long long int ket_amps_total, const char* caller){
+    QuESTAssert( classical_state_descriptor >= 0 && classical_state_descriptor < (1ULL<<ket_amps_total), E_INVALID_CLASS_STATE_DESCR, caller);
 }
 
 void validateDensityMatrQureg(Qureg qureg, const char* caller) {

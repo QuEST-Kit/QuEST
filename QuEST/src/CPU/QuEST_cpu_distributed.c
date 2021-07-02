@@ -50,6 +50,24 @@ Complex statevec_calcInnerProduct(Qureg bra, Qureg ket) {
     return globalInnerProd;
 }
 
+Complex statevec_calcInnerProductWithClassicalState(int classical_state_descriptor, Qureg ket) {
+
+	Complex localInnerProd = statevec_calcInnerProductWithClassicalState_local(classical_state_descriptor, ket);
+    if (ket.numChunks == 1)
+        return localInnerProd;
+
+    qreal localReal = localInnerProd.real;
+    qreal localImag = localInnerProd.imag;
+    qreal globalReal, globalImag;
+    MPI_Allreduce(&localReal, &globalReal, 1, MPI_QuEST_REAL, MPI_SUM, MPI_COMM_WORLD);
+    MPI_Allreduce(&localImag, &globalImag, 1, MPI_QuEST_REAL, MPI_SUM, MPI_COMM_WORLD);
+
+    Complex globalInnerProd;
+    globalInnerProd.real = globalReal;
+    globalInnerProd.imag = globalImag;
+    return globalInnerProd;
+}
+
 qreal densmatr_calcTotalProb(Qureg qureg) {
 	
 	// computes the trace by summing every element ("diag") with global index (2^n + 1)i for i in [0, 2^n-1]

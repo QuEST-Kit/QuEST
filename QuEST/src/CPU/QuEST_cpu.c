@@ -1110,6 +1110,29 @@ Complex statevec_calcInnerProductLocal(Qureg bra, Qureg ket) {
     return innerProd;
 }
 
+Complex statevec_calcInnerProductWithClassicalState_local(int classical_state_descriptor, Qureg ket){
+
+	long long int numAmps = ket.numAmpsPerChunk;
+	int chunkId = ket.chunkId;
+
+	qreal *ketVecReal = ket.stateVec.real;
+	qreal *ketVecImag = ket.stateVec.imag;
+
+	if(classical_state_descriptor < chunkId*numAmps || classical_state_descriptor >= (chunkId+1)*numAmps){
+		Complex zero;
+		zero.real = zero.imag = 0;
+		return zero;
+	}
+
+	long long int index = classical_state_descriptor - chunkId*numAmps;
+
+	Complex innerProd;
+	innerProd.real = ketVecReal[index];
+	innerProd.imag = ketVecImag[index];
+
+	return innerProd;
+}
+
 
 
 void densmatr_initClassicalState (Qureg qureg, long long int stateInd)

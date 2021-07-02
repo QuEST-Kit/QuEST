@@ -115,6 +115,11 @@ Complex statevec_calcInnerProduct(Qureg bra, Qureg ket) {
     return statevec_calcInnerProductLocal(bra, ket);
 }
 
+Complex statevec_calcInnerProductWithClassicalState(int classical_state_descriptor, Qureg ket) {
+
+    return statevec_calcInnerProductWithClassicalState_local(classical_state_descriptor, ket);
+}
+
 qreal densmatr_calcTotalProb(Qureg qureg) {
     
     // computes the trace using Kahan summation

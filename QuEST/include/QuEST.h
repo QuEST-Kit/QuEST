@@ -1987,6 +1987,19 @@ void controlledNot(Qureg qureg, int controlQubit, int targetQubit);
  */
 void controlledPauliY(Qureg qureg, int controlQubit, int targetQubit);
 
+/**
+ * Computes an overlap <A|B> of a classical state A represented by a decimal and a reference state B given as a Qureg.
+ *
+ * @ingroup calc
+ * @param[in] classical_state_descriptor decimal representation of binary string corresponding to a classical state
+ * @param[in] ket a reference state to compute an overlap with
+ * @return an overlap of a classical state represented by classical_state_descriptor and a reference state ket
+ * @throws invalidQuESTInputError
+ * 	if \p classical_state_descriptor does not represent a valid quantum state
+ * @author Milos Prokop
+ */
+Complex calcInnerProductWithClassicalState(int classical_state_descriptor, Qureg ket);
+
 /** Gives the probability of a specified qubit being measured in the given outcome (0 or 1).
  * This performs no actual measurement and does not change the state of the qubits.
  * 

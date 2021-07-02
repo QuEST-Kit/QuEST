@@ -915,6 +915,14 @@ Complex calcInnerProduct(Qureg bra, Qureg ket) {
     return statevec_calcInnerProduct(bra, ket);
 }
 
+Complex calcInnerProductWithClassicalState(int classical_state_descriptor, Qureg ket) {
+
+    validateClassicalStateDescriptor(classical_state_descriptor, ket.numAmpsTotal, __func__);
+    validateStateVecQureg(ket, __func__);
+
+    return statevec_calcInnerProductWithClassicalState(classical_state_descriptor, ket);
+}
+
 qreal calcDensityInnerProduct(Qureg rho1, Qureg rho2) {
     validateDensityMatrQureg(rho1, __func__);
     validateDensityMatrQureg(rho2, __func__);

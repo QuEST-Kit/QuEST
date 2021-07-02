@@ -179,6 +179,8 @@ qreal statevec_calcFidelity(Qureg qureg, Qureg pureState);
 
 Complex statevec_calcInnerProduct(Qureg bra, Qureg ket);
 
+Complex statevec_calcInnerProductWithClassicalState(int classical_state_descriptor, Qureg ket);
+
 qreal statevec_calcExpecPauliProd(Qureg qureg, int* targetQubits, enum pauliOpType* pauliCodes, int numTargets, Qureg workspace);
 
 qreal statevec_calcExpecPauliSum(Qureg qureg, enum pauliOpType* allCodes, qreal* termCoeffs, int numSumTerms, Qureg workspace);

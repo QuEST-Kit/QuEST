@@ -64,6 +64,8 @@ void validateVector(Vector vector, const char* caller);
 
 void validateStateVecQureg(Qureg qureg, const char* caller);
 
+void validateClassicalStateDescriptor(int classical_state_descriptor, long long int ket_amps_total, const char* caller);
+
 void validateDensityMatrQureg(Qureg qureg, const char* caller);
 
 void validateOutcome(int outcome, const char* caller);

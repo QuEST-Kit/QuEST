@@ -98,6 +98,8 @@ Complex densmatr_calcExpecDiagonalOpLocal(Qureg qureg, DiagonalOp op);
 
 Complex statevec_calcInnerProductLocal(Qureg bra, Qureg ket);
 
+Complex statevec_calcInnerProductWithClassicalState_local(int classical_state_descriptor, Qureg ket);
+
 void statevec_compactUnitaryLocal (Qureg qureg, int targetQubit, Complex alpha, Complex beta);
 
 void statevec_compactUnitaryDistributed (Qureg qureg,
