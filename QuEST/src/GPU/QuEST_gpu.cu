@@ -2115,7 +2115,7 @@ __global__ void densmatr_calcProbOfAllOutcomesKernel(
     // each diagonal amplitude contributes to one outcome
     long long int outcomeInd = 0;
     for (int q=0; q<numQubits; q++)
-        outcomeInd += extractBit(qubits[q], ampInd) * (1LL << q);
+        outcomeInd += extractBit(qubits[q], diagInd) * (1LL << q);
     
     // each thread atomically writes directly to the global output.
     // this beat block-heirarchal atomic reductions in both global and shared memory!
