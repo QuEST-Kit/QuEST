@@ -548,31 +548,10 @@ void multiQubitNot(Qureg qureg, int* targs, int numTargs) {
 }
 
 void multiControlledMultiQubitNot(Qureg qureg, int* ctrls, int numCtrls, int* targs, int numTargs) {
-    
-    // TODO:
-    //  [ ] GPU implementation 
-    //  [ ] unit test for this 
-    //      [X] serial
-    //      [ ] multithreading 
-    //      [ ] GPU 
-    //      [ ] distributed (all edge cases r.e. ctrls & fits in node)
-    //  [ ] unit test for multiQubitNot()
-    //      [X] serial
-    //      [ ] multithreading 
-    //      [ ] GPU 
-    //      [ ] distributed (all edge cases r.e. ctrls & fits in node)
-    // [ ] test QASM
-    //      [ ] for this 
-    //      [ ] for multiQubitNot()
-    // [X] doc for this 
-    // [X] doc for multiQubitNot()
-    
     validateMultiControlsMultiTargets(qureg, ctrls, numCtrls, targs, numTargs, __func__);
     
     long long int ctrlMask = getQubitBitMask(ctrls, numCtrls);
     long long int targMask = getQubitBitMask(targs, numTargs);
-    
-    
     statevec_multiControlledMultiQubitNot(qureg, ctrlMask, targMask);
     if (qureg.isDensityMatrix) {
         int shift = qureg.numQubitsRepresented;
