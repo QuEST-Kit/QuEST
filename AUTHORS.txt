@@ -1,11 +1,8 @@
 Contact: quest@materials.ox.ac.uk
 
 Current team:
-Ms Anna Brown [developer]
-    HPC
-    build
-    quantum ops
 Mr Tyson Jones [developer]
+    HPC
     architecture
     interface
     quantum ops
@@ -13,19 +10,23 @@ Mr Tyson Jones [developer]
 Dr Balint Koczor [developer]
     Kraus maps
     debugging
+Prof Simon Benjamin [consultant]
+    user requirements
+    algorithm prototyping
+
+Past members:
+Ms Anna Brown [developer]
+    HPC
+    build
+    quantum ops
+Dr Fergus Cooper [developer]
+    continuous integration
 Mr Jacob Wilkins [developer]
     testing
 Dr Ian Bush [consultant]
     software development
     HPC
-Prof Simon Benjamin [consultant]
-    user requirements
-    algorithm prototyping
-Dr Fergus Cooper [developer]
-    continuous integration
-
-Past members:
-Dr Mihai Duta
+Dr Mihai Duta [developer]
     original prototyping
 
 External contributors:
@@ -37,8 +38,10 @@ Drew Silcock
     patched MacOS OpenMP CMake flags
 Zach van Rijn
     patched OpenMP on GCC-9
-@SachinCompton
+SchineCompton
     patched GPU Cmake Release build
 Christopher J. Anders
     patched Cmake build when multhithreading defaults off
     revsied Cmake min version for GPU build
+Gleb Struchalin
+    patched the cmake standalone build
