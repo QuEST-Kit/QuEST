@@ -2733,6 +2733,139 @@ void hadamard(Qureg qureg, int targetQubit);
  */
 void controlledNot(Qureg qureg, int controlQubit, int targetQubit);
 
+/** Apply a NOT (or Pauli X) gate with multiple control and target qubits. 
+ * This applies pauliX to qubits \p targs on every basis state for which the 
+ * control qubits \p ctrls are all in the \f$|1\rangle\f$ state. The ordering within 
+ * each of \p ctrls and \p targs has no effect on the operation.
+ * > This function is equivalent, but significantly faster (approximately \p numTargs times)
+ * > than applying controlled NOTs on each qubit in \p targs in turn, since:
+ * > \f[
+ * >     C_{a, \,b, \,\dots}( X_c \otimes X_d \otimes \dots ) \equiv
+ * >     C_{a, \,b, \,\dots}( X_c) \; \otimes \; C_{a, \,b, \,\dots}(X_d) \; \otimes \; \dots
+ * > \f]
+ *
+ * The effected unitary, if \p targs and \p ctrls happened to be contiguous, has matrix:
+ * \f[
+ * \begin{pmatrix}
+ * 1 \\
+ * & 1 \\\
+ * & & \ddots \\
+ * & & & &   &    & {{\scriptstyle\cdot}^{{\scriptstyle\cdot}^{{\scriptstyle\cdot}}}} \\
+ * & & & &   & 1  &   \\
+ * & & & & 1 &    &  \\
+ * & & & {{\scriptstyle\cdot}^{{\scriptstyle\cdot}^{{\scriptstyle\cdot}}}} & & &
+ * \end{pmatrix}
+ * \f]
+ * and circuit diagram:
+    \f[
+                \begin{tikzpicture}[scale=.5]
+                \node[draw=none] at (-3.5, 1) {targets};
+                \node[draw=none] at (-3.5, 5) {controls};
+                
+                \node[draw=none] at (0, 8) {$\vdots$};
+                \draw (0, 7) -- (0, 6);
+                
+                \draw (-2, 6) -- (2, 6);
+                \draw[fill=black] (0, 6) circle (.2);
+                \draw (0, 6) -- (0, 4);         
+                
+                \draw (-2, 4) -- (2, 4);
+                \draw[fill=black] (0, 4) circle (.2);
+                \draw(0, 4) -- (0, -1);
+                
+                \draw (-2,2) -- (2, 2);
+                \draw (0, 2) circle (.4);
+
+                \draw (-2,0) -- (2, 0);
+                \draw (0, 0) circle (.4);
+                
+                \node[draw=none] at (0, -1.5) {$\vdots$};
+                \end{tikzpicture}
+    \f]
+ * > In distributed mode, this operation requires at most a single round of pair-wise 
+ * > communication between nodes, and hence is as efficient as pauliX().
+ *
+ * @see
+ * - multiQubitNot()
+ * - controlledNot()
+ * - pauliX()
+ *
+ * @ingroup unitary
+ * @param[in,out] qureg a state-vector or density matrix to modify
+ * @param[in] ctrls a list of the control qubit indices
+ * @param[in] numCtrls the length of list \p ctrls 
+ * @param[in] targs a list of the qubits to be targeted by the X gates
+ * @param[in] numTargs the length of list \p targs
+ * @throws invalidQuESTInputError()
+ * - if any qubit in \p ctrls and \p targs is invalid, i.e. outside <b>[0, </b>`qureg.numQubitsRepresented`<b>)</b>
+ * - if \p ctrls or \p targs contain any repetitions
+ * - if any qubit in \p ctrls is also in \p targs (and vice versa)
+ * - if \p numTargs <b>< 1</b>
+ * - if \p numCtrls <b>< 1</b> (use multiQubitNot() for no controls)
+ * @throws segmentation-fault
+ * - if \p ctrls contains fewer elements than \p numCtrls
+ * - if \p targs contains fewer elements than \p numTargs
+ * @author Tyson Jones
+ */
+void multiControlledMultiQubitNot(Qureg qureg, int* ctrls, int numCtrls, int* targs, int numTargs);
+
+/** Apply a NOT (or Pauli X) gate with multiple target qubits, which has the same 
+ * effect as (but is much faster than) applying each single-qubit NOT gate in turn.
+ *
+ * The ordering within \p targs has no effect on the operation.
+ * > This function is equivalent, but significantly faster (approximately \p numTargs times)
+ * > than applying pauliX() on each qubit in \p targs in turn.
+ * > \f[
+ * >     X_a \otimes X_b \otimes \dots 
+ * > \f]
+ *
+ * The effected unitary, if \p targs happen to be contiguous, has matrix:
+ * \f[
+ * \begin{pmatrix}
+ *  &   &    & {{\scriptstyle\cdot}^{{\scriptstyle\cdot}^{{\scriptstyle\cdot}}}} \\
+ *  &   & 1  &   \\
+ *  & 1 &    &  \\
+ *  {{\scriptstyle\cdot}^{{\scriptstyle\cdot}^{{\scriptstyle\cdot}}}} & & &
+ * \end{pmatrix}
+ * \f]
+ * and circuit diagram:
+    \f[
+                \begin{tikzpicture}[scale=.5]
+                \node[draw=none] at (-3.5, 1) {targets};
+                \draw (0, -1) -- (0, 2.4);
+                
+                \draw (-2,2) -- (2, 2);
+                \draw (0, 2) circle (.4);
+
+                \draw (-2,0) -- (2, 0);
+                \draw (0, 0) circle (.4);
+                
+                \node[draw=none] at (0, -1.5) {$\vdots$};
+                \end{tikzpicture}
+    \f]
+ * > In distributed mode, this operation requires at most a single round of pair-wise 
+ * > communication between nodes, and hence is as efficient as pauliX().
+ *
+ * @see
+ * - multiControlledMultiQubitNot()
+ * - controlledNot()
+ * - pauliX()
+ *
+ * @ingroup unitary
+ * @param[in,out] qureg a state-vector or density matrix to modify
+ * @param[in] targs a list of the qubits to be targeted by the X gates
+ * @param[in] numTargs the length of list \p targs
+ * @throws invalidQuESTInputError()
+ * - if any qubit in \p targs is invalid, i.e. outside <b>[0, </b>`qureg.numQubitsRepresented`<b>)</b>
+ * - if \p targs contain any repetitions
+ * - if \p numTargs <b>< 1</b> 
+ * - if \p numTargs <b>></b>`qureg.numQubitsRepresented`
+ * @throws segmentation-fault
+ * - if \p targs contains fewer elements than \p numTargs
+ * @author Tyson Jones
+ */
+void multiQubitNot(Qureg qureg, int* targs, int numTargs);
+
 /** Apply the controlled pauliY (single control, single target) gate, also
  * known as the c-Y and c-sigma-Y gate.
  * This applies pauliY to the target qubit if the control qubit has value 1.

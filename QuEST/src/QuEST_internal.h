@@ -231,6 +231,8 @@ void statevec_hadamard(Qureg qureg, int targetQubit);
 
 void statevec_controlledNot(Qureg qureg, int controlQubit, int targetQubit);
 
+void statevec_multiControlledMultiQubitNot(Qureg qureg, int ctrlMask, int targMask);
+
 qreal statevec_calcProbOfOutcome(Qureg qureg, int measureQubit, int outcome);
 
 void statevec_calcProbOfAllOutcomes(qreal* retProbs, Qureg qureg, int* qubits, int numQubits);

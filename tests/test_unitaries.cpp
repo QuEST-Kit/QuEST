@@ -847,6 +847,102 @@ TEST_CASE( "hadamard", "[unitaries]" ) {
 
 
 
+/** @sa multiControlledMultiQubitNot
+ * @ingroup unittest
+ * @author Tyson Jones
+ */
+TEST_CASE( "multiControlledMultiQubitNot", "[unitaries]" ) {
+
+    PREPARE_TEST( quregVec, quregMatr, refVec, refMatr );
+
+    SECTION( "correctness" ) {
+
+        // try all possible numbers of targets and controls
+        int numTargs = GENERATE_COPY( range(1,NUM_QUBITS) ); // leave space for 1 ctrl
+        int maxNumCtrls = NUM_QUBITS - numTargs;
+        int numCtrls = GENERATE_COPY( range(1,maxNumCtrls+1) );
+
+        // generate all possible valid qubit arrangements
+        int* targs = GENERATE_COPY( sublists(range(0,NUM_QUBITS), numTargs) );
+        int* ctrls = GENERATE_COPY( sublists(range(0,NUM_QUBITS), numCtrls, targs, numTargs) );
+
+        // for each qubit arrangement, use a new random unitary
+        QMatrix notOp{{0, 1},{1,0}};
+
+        SECTION( "state-vector" ) {
+
+            multiControlledMultiQubitNot(quregVec, ctrls, numCtrls, targs, numTargs);
+            for (int t=0; t<numTargs; t++)
+                applyReferenceOp(refVec, ctrls, numCtrls, targs[t], notOp);
+
+            REQUIRE( areEqual(quregVec, refVec) );
+        }
+        SECTION( "density-matrix" ) {
+
+            multiControlledMultiQubitNot(quregMatr, ctrls, numCtrls, targs, numTargs);
+            for (int t=0; t<numTargs; t++)
+                applyReferenceOp(refMatr, ctrls, numCtrls, targs[t], notOp);
+
+            REQUIRE( areEqual(quregMatr, refMatr) );
+        }
+    }
+    SECTION( "input validation" ) {
+
+        SECTION( "number of targets" ) {
+
+            // there cannot be more targets than qubits in register
+            // (numTargs=NUM_QUBITS is caught elsewhere, because that implies ctrls are invalid)
+            int numTargs = GENERATE( -1, 0, NUM_QUBITS+1 );
+            int targs[NUM_QUBITS+1]; // prevents seg-fault if validation doesn't trigger
+            int ctrls[] = {0}; 
+            REQUIRE_THROWS_WITH( multiControlledMultiQubitNot(quregVec, ctrls, 1, targs, numTargs), Contains("Invalid number of target"));
+        }
+        SECTION( "repetition in targets" ) {
+
+            int ctrls[] = {0};
+            int numTargs = 3;
+            int targs[] = {1,2,2};
+            REQUIRE_THROWS_WITH( multiControlledMultiQubitNot(quregVec, ctrls, 1, targs, numTargs), Contains("target") && Contains("unique"));
+        }
+        SECTION( "number of controls" ) {
+
+            int numCtrls = GENERATE( -1, 0, NUM_QUBITS, NUM_QUBITS+1 );
+            int ctrls[NUM_QUBITS+1]; // avoids seg-fault if validation not triggered
+            int targs[1] = {0};
+            REQUIRE_THROWS_WITH( multiControlledMultiQubitNot(quregVec, ctrls, numCtrls, targs, 1), Contains("Invalid number of control"));
+        }
+        SECTION( "repetition in controls" ) {
+
+            int ctrls[] = {0,1,1};
+            int targs[] = {3};
+            REQUIRE_THROWS_WITH( multiControlledMultiQubitNot(quregVec, ctrls, 3, targs, 1), Contains("control") && Contains("unique"));
+        }
+        SECTION( "control and target collision" ) {
+
+            int ctrls[] = {0,1,2};
+            int targs[] = {3,1,4};
+            REQUIRE_THROWS_WITH( multiControlledMultiQubitNot(quregVec, ctrls, 3, targs, 3), Contains("Control") && Contains("target") && Contains("disjoint"));
+        }
+        SECTION( "qubit indices" ) {
+
+            // valid inds
+            int numQb = 2;
+            int qb1[2] = {0,1};
+            int qb2[2] = {2,3};
+
+            // make qb1 invalid
+            int inv = GENERATE( -1, NUM_QUBITS );
+            qb1[GENERATE_COPY(range(0,numQb))] = inv;
+
+            REQUIRE_THROWS_WITH( multiControlledMultiQubitNot(quregVec, qb1, numQb, qb2, numQb), Contains("Invalid control") );
+            REQUIRE_THROWS_WITH( multiControlledMultiQubitNot(quregVec, qb2, numQb, qb1, numQb), Contains("Invalid target") );
+        }
+    }
+    CLEANUP_TEST( quregVec, quregMatr );
+}
+
+
+
 /** @sa multiControlledMultiQubitUnitary
  * @ingroup unittest 
  * @author Tyson Jones 
@@ -1298,6 +1394,73 @@ TEST_CASE( "multiControlledUnitary", "[unitaries]" ) {
             matr.real[0][0] = 0; // break matr unitarity
             int ctrls[] = {0};
             REQUIRE_THROWS_WITH( multiControlledUnitary(quregVec, ctrls, 1, 1, matr), Contains("unitary") );
+        }
+    }
+    CLEANUP_TEST( quregVec, quregMatr );
+}
+
+
+
+/** @sa multiQubitNot
+ * @ingroup unittest
+ * @author Tyson Jones
+ */
+TEST_CASE( "multiQubitNot", "[unitaries]" ) {
+
+    PREPARE_TEST( quregVec, quregMatr, refVec, refMatr );
+
+    SECTION( "correctness" ) {
+
+        // try all possible numbers of targets and controls
+        int numTargs = GENERATE_COPY( range(1,NUM_QUBITS+1) ); // leave space for 1 ctrl
+
+        // generate all possible valid qubit arrangements
+        int* targs = GENERATE_COPY( sublists(range(0,NUM_QUBITS), numTargs) );
+
+        // for each qubit arrangement, use a new random unitary
+        QMatrix notOp{{0, 1},{1,0}};
+
+        SECTION( "state-vector" ) {
+
+            multiQubitNot(quregVec, targs, numTargs);
+            for (int t=0; t<numTargs; t++)
+                applyReferenceOp(refVec, targs[t], notOp);
+
+            REQUIRE( areEqual(quregVec, refVec) );
+        }
+        SECTION( "density-matrix" ) {
+
+            multiQubitNot(quregMatr, targs, numTargs);
+            for (int t=0; t<numTargs; t++)
+                applyReferenceOp(refMatr, targs[t], notOp);
+
+            REQUIRE( areEqual(quregMatr, refMatr) );
+        }
+    }
+    SECTION( "input validation" ) {
+
+        SECTION( "number of targets" ) {
+
+            // there cannot be more targets than qubits in register
+            int numTargs = GENERATE( -1, 0, NUM_QUBITS+1 );
+            int targs[NUM_QUBITS+1];
+            REQUIRE_THROWS_WITH( multiQubitNot(quregVec, targs, numTargs), Contains("Invalid number of target"));
+        }
+        SECTION( "repetition in targets" ) {
+
+            int numTargs = 3;
+            int targs[] = {1,2,2};
+            REQUIRE_THROWS_WITH( multiQubitNot(quregVec, targs, numTargs), Contains("target") && Contains("unique"));
+        }
+        SECTION( "target indices" ) {
+
+            // valid inds
+            int numQb = 5;
+            int qubits[] = {0,1,2,3,4};
+            
+            // make one index invalid
+            qubits[GENERATE_COPY(range(0,numQb))] = GENERATE( -1, NUM_QUBITS );
+            REQUIRE_THROWS_WITH( multiQubitNot(quregVec, qubits, numQb), Contains("Invalid target") );
         }
     }
     CLEANUP_TEST( quregVec, quregMatr );

@@ -1787,6 +1787,50 @@ void statevec_controlledNot(Qureg qureg, int controlQubit, int targetQubit)
     statevec_controlledNotKernel<<<CUDABlocks, threadsPerCUDABlock>>>(qureg, controlQubit, targetQubit);
 }
 
+__global__ void statevec_multiControlledMultiQubitNotKernel(Qureg qureg, int ctrlMask, int targMask) {
+    
+    qreal* stateRe = qureg.deviceStateVec.real;
+    qreal* stateIm = qureg.deviceStateVec.imag;
+    
+    // althouugh each thread swaps/updates two amplitudes, we still invoke one thread per amp
+    long long int ampInd = blockIdx.x*blockDim.x + threadIdx.x;
+    if (ampInd >= qureg.numAmpsPerChunk)
+        return;
+
+    // modify amplitudes only if control qubits are 1 for this state
+    if (ctrlMask && ((ctrlMask & ampInd) != ctrlMask))
+        return;
+    
+    long long int mateInd = ampInd ^ targMask;
+    
+    // if the mate is lower index, another thread is handling it
+    if (mateInd < ampInd)
+        return;
+        
+    /* it may seem wasteful to spawn more threads than are needed, and abort 
+     * half of them due to the amp pairing above (and potentially abort
+     * an exponential number due to ctrlMask). however, since we are moving 
+     * global memory directly in a potentially non-contiguous fashoin, this 
+     * method is likely to be memory bandwidth bottlenecked anyway 
+     */
+    
+    qreal mateRe = stateRe[mateInd];
+    qreal mateIm = stateIm[mateInd];
+    
+    // swap amp with mate
+    stateRe[mateInd] = stateRe[ampInd];
+    stateIm[mateInd] = stateIm[ampInd];
+    stateRe[ampInd] = mateRe;
+    stateIm[ampInd] = mateIm;
+}
+
+void statevec_multiControlledMultiQubitNot(Qureg qureg, int ctrlMask, int targMask) {
+    
+    int numThreadsPerBlock = 128;
+    int numBlocks = ceil(qureg.numAmpsPerChunk / (qreal) numThreadsPerBlock);
+    statevec_multiControlledMultiQubitNotKernel<<<numBlocks, numThreadsPerBlock>>>(qureg, ctrlMask, targMask);
+}
+
 __device__ __host__ unsigned int log2Int( unsigned int x )
 {
     unsigned int ans = 0 ;

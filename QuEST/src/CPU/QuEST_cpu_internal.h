@@ -175,6 +175,12 @@ void statevec_controlledNotLocal(Qureg qureg, int controlQubit, int targetQubit)
 void statevec_controlledNotDistributed (Qureg qureg, int controlQubit,
         ComplexArray stateVecIn,
         ComplexArray stateVecOut);
+        
+void statevec_multiControlledMultiQubitNotLocal(Qureg qureg, int ctrlMask, int targMask);
+
+void statevec_multiControlledMultiQubitNotDistributed(Qureg qureg, int ctrlMask, int targMask,
+        ComplexArray stateVecIn,
+        ComplexArray stateVecOut);
 
 qreal statevec_findProbabilityOfZeroLocal (Qureg qureg, int measureQubit);
 
