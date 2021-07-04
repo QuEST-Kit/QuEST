@@ -136,7 +136,7 @@ destroyQuESTEnv(env);
 
 The effect of the [code above](tutorial_example.c) is to simulate the below circuit
 
-![the tutorial circuit](tutorial_circuit.png?s=50)
+<img src="https://github.com/QuEST-Kit/QuEST/raw/readme_update/examples/tutorial_circuit.png" width="50%"> <br>
 
 and after compiling (see section below), gives psuedo-random output
 
@@ -154,51 +154,77 @@ and after compiling (see section below), gives psuedo-random output
 > Qubit 2 collapsed to 1 with probability 0.499604
 > ```
 
-QuEST uses the [Mersenne Twister](http://www.math.sci.hiroshima-u.ac.jp/~m-mat/MT/MT2002/emt19937ar.html) algorithm to generate random numbers used for randomly collapsing the state-vector. The user can seed this RNG using `seedQuEST(arrayOfSeeds, arrayLength)`, otherwise QuEST will by default (through `seedQuESTDefault()`) create a seed from the current time and the process id.
+QuEST uses the [Mersenne Twister](http://www.math.sci.hiroshima-u.ac.jp/~m-mat/MT/MT2002/emt19937ar.html) algorithm to generate random numbers used for randomly collapsing quantum states. The user can seed this RNG using `seedQuEST(arrayOfSeeds, arrayLength)`, otherwise QuEST will by default (through `seedQuESTDefault()`) create a seed from the current time and the process id.
 
 ----------------------------
 
 # Compiling
 
-QuEST uses CMake (3.1 or higher) as its build system.
+QuEST uses CMake (`3.7` or higher) as its build system. Configure the build by supplying the below `-D[VAR=VALUE]` options after the `cmake ..` command. If you wish to avoid CMake, you can otherwise use GNUMake directly with the provided [makefile](makefile).
 
-To compile, make sure your circuit code is accessible from the root QuEST directory.
+- To compile, make sure your circuit code is accessible from the root QuEST directory.
 In the root directory, initially build using
 ```bash
 mkdir build
 cd build
-cmake -DUSER_SOURCE="myCode1.c;myCode2.c" ..
+cmake .. -DUSER_SOURCE="myCode1.c;myCode2.c"
 make
 ```
 Paths to target sources are set as a semi-colon separated list of paths to said sources relative to the root QuEST directory.
 
-If you wish your executable to be named something other than `demo`, you can set this too by using:
-```bash
-cmake -DOUTPUT_EXE="myExecutable" ..
+- To set the compilers used by cmake (to e.g. `gcc-6`), use
+```bash 
+ -DCMAKE_C_COMPILER=gcc-6
+```
+and similarly to set the C++ compiler (as used in GPU mode), use
+```bash 
+ -DCMAKE_CXX_COMPILER=g++-6
 ```
 
-When using the cmake command as above, the -D[VAR=VALUE] option can be passed other options to further configure your build.
-
-To compile your code to run on multi-CPU systems use
+- If you wish your executable to be named something other than `demo`, you can set this too by adding argument:
 ```bash
-cmake -DDISTRIBUTED=1 ..
+ -DOUTPUT_EXE="myExecutable" 
 ```
 
-To compile for GPU, use
+
+
+- To compile your code to use multithreading, for parallelism on multi-core or multi-CPU systems, use
 ```bash
-cmake -DGPUACCELERATED=1 -DGPU_COMPUTE_CAPABILITY=[COMPUTE_CAPABILITY] ..
+ -DMULTITHREADED=1
+```
+Before launching your executable, set the number of participating threads using `OMP_NUM_THREADS`. For example,
+```bash
+export OMP_NUM_THREADS=16
+./myExecutable
 ```
 
-Where COMPUTE_CAPABILITY is the compute cabability of your GPU, written without a decimal point. This can can be looked up at the [NVIDIA website](https://developer.nvidia.com/cuda-gpus). The default value is 30.
-
-By default, QuEST will compile with OpenMP parallelism enabled if an OpenMP compatible compiler and OpenMP library can be found on your system (e.g. [GCC 4.9](https://gcc.gnu.org/gcc-4.9/changes.html)). Using distribution requires an MPI implementation is installed on your system, and GPU acceleration requires a CUDA compiler (`nvcc`). We've made a comprehensive list of compatible compilers which you can view [here](../tests/compilers/compatibility.md). This does not change your `COMPILER` setting - the makefile will choose the appropriate MPI and CUDA wrappers automatically.
-
-You can additionally customise the precision with which the state-vector is stored.
+- To compile your code to run on distributed or networked systems use
 ```bash
-cmake -DPRECISION=2 ..
+ -DDISTRIBUTED=1
 ```
+Depending on your MPI implementation, your executable can be launched via
+```bash 
+mpirun -np [NUM_NODES] [EXEC]
+```
+where `[NUM_NODES]` is the number of distributed compute nodes to use, and `[EXEC]` is the name of your executable. Note that QuEST *hybridises* multithreading and distribution. Hence you should set `[NUM_NODES]` to equal exactly the number of distinct compute nodes (which don't share memory), and set `OMP_NUM_THREADS` as above to assign the number of threads used on *each* compute node.
+
+- To compile for GPU, use
+```bash
+ -DGPUACCELERATED=1 -DGPU_COMPUTE_CAPABILITY=[COMPUTE_CAPABILITY] ..
+```
+were `[COMPUTE_CAPABILITY]` is the compute cabability of your GPU, written without a decimal point. This can can be looked up at the [NVIDIA website](https://developer.nvidia.com/cuda-gpus).
+> Note that CUDA is not compatible with all compilers. To force `cmake` to use a 
+> compatible compiler, override `CMAKE_C_COMPILER` and `CMAKE_CXX_COMPILER`
+
+- You can additionally customise the floating point precision used by QuEST's `qreal` type, via
+```bash
+ -DPRECISION=1
+ -DPRECISION=2
+ -DPRECISION=4
+```
+which uses single (`qreal = float`), double (`qreal = double`) and quad (`qreal = long double`) respectively.
 Using greater precision means more precise computation but at the expense of additional memory requirements and runtime.
-Checking results are unchanged when altaring the precision can be a great test that your calculations are sufficiently precise.
+Checking results are unchanged when switching the precision can be a great test that your calculations are sufficiently precise.
 
 
 Please note that cmake caches these changes (per directory) so for any subsequent builds you should just type `make` from the build directory and the previously defined settings will be applied. If any parameters require changing, these can be redefined by:
