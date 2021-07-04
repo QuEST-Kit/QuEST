@@ -2679,15 +2679,17 @@ void statevec_multiControlledMultiQubitNotLocal(Qureg qureg, int ctrlMask, int t
     qreal* stateRe = qureg.stateVec.real;
     qreal* stateIm = qureg.stateVec.imag;
     
+    long long int globalOffset = qureg.chunkId * numAmps;
+    
     // each amplitude is swapped with a 'mate' amplitude
-    long long int ampInd, mateInd;
+    long long int ampInd, mateInd, globalInd;
     qreal mateRe, mateIm;
 
 # ifdef _OPENMP
 # pragma omp parallel \
     default  (none) \
-    shared   (stateRe,stateIm, numAmps, ctrlMask,targMask) \
-    private  (ampInd, mateInd,mateRe,mateIm)
+    shared   (stateRe,stateIm, numAmps, ctrlMask,targMask, globalOffset) \
+    private  (ampInd, mateInd,mateRe,mateIm, globalInd)
 # endif
     {
 # ifdef _OPENMP
@@ -2695,14 +2697,19 @@ void statevec_multiControlledMultiQubitNotLocal(Qureg qureg, int ctrlMask, int t
 # endif
         for (ampInd = 0; ampInd < numAmps; ampInd++) {
             
-            /* it may be a premature optimisation to remove the seemingly wasteful continues,
+            /* it may be a premature optimisation to remove the seemingly wasteful continues below,
              * because the maximum skipped amplitudes is 1/2 that stored in the node 
              * (e.g. since this function is not called if all amps should be skipped via controls),
              * and since we're memory-bandwidth bottlenecked. 
              */
+             
+            // although amps are local, we may still be running in distributed mode, 
+            // and hence need to consult the global index to determine the values of 
+            // the control qubits
+            globalInd = ampInd + globalOffset;
             
             // modify amplitude only if control qubits are 1 for this state
-            if (ctrlMask && ((ctrlMask & ampInd) != ctrlMask))
+            if (ctrlMask && ((ctrlMask & globalInd) != ctrlMask))
                 continue;
 
             mateInd = ampInd ^ targMask;
