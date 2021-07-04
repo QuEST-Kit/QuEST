@@ -47,7 +47,7 @@ Of course, this code doesn't output anything!
 
 Let's walk through a more sophisticated circuit.
 
-We first construct a quest environment, which abstracts away any preparation of multithreading, distribution or GPU-acceleration strategies.
+We first construct a QuEST environment, which abstracts away any preparation of multithreading, distribution or GPU-acceleration strategies.
 ```C
 QuESTEnv env = createQuESTEnv();
 ```
@@ -56,13 +56,13 @@ We then create a quantum register, in this case of 3 qubits.
 ```C
 Qureg qubits = createQureg(3, env);
 ```
-and set it to be in the zero state.
+and prepare it in the zero state.
 ```C
 initZeroState(qubits);
 ```
-We can create multiple `Qureg` instances, and QuEST will sort out allocating memory for the state-vectors, even over networks! Note we can replace `createQureg` with `createDensityQureg`, a more powerful density matrix representation which can store mixed states!
+We can create multiple `Qureg` instances, and QuEST will sort out allocating memory for the state-vectors, even over networks! If we wanted to simulate noise in our circuit, we can replace `createQureg` with `createDensityQureg` to create a more powerful density matrix capable of representing mixed states.
 
-We're now ready to apply some gates to our qubits, which in this case have indices 0, 1 and 2.
+We're now ready to apply some gates to our qubits, which in this case have indices `0`, `1` and `2`.
 When applying a gate, we pass along which quantum register to operate upon.
 ```C
 hadamard(qubits, 0);
@@ -104,31 +104,31 @@ even with multiple control qubits!
 multiControlledUnitary(qubits, (int[]) {0, 1}, 2, 2, u);
 ```
 
-What has this done to the probability of the basis state |111> = |7>?
+What has this done to the probability of the basis state `|111>` ?
 ```C
 qreal prob = getProbAmp(qubits, 7);
 printf("Probability amplitude of |111>: %lf\n", prob);
 ```
-Here, `qreal` is a floating point number (e.g. `double`). The state-vector is stored as `qreal`s so that we can change its precision without any recoding, by changing `PRECISION` in the [makefile](../makefile)
+Here, `qreal` is an alias for a real floating point number, like `double`. This is to keep our code precision agnostic, so that we may change the numerical precision at compile time (by setting macro `PRECISION`) without any changes to our code. Changing the precision can be useful in verifying numerical convergences or studying rounding errors.
 
-How probable is measuring our final qubit (2) in outcome `1`?
+How probable is measuring our final qubit (with index `2`) in outcome `1`?
 ```C
 prob = calcProbOfOutcome(qubits, 2, 1);
 printf("Probability of qubit 2 being in state 1: %f\n", prob);
 ```
 
-Let's measure the first qubit, randomly collapsing it to 0 or 1
+Let's measure the first qubit, randomly collapsing into outcome `0` or `1`
 ```C
 int outcome = measure(qubits, 0);
 printf("Qubit 0 was measured in state %d\n", outcome);
 ```
 and now measure our final qubit, while also learning of the probability of its outcome.
-```
+```C
 outcome = measureWithStats(qubits, 2, &prob);
 printf("Qubit 2 collapsed to %d with probability %f\n", outcome, prob);
 ```
 
-At the conclusion of our circuit, we should free up the memory used by our state-vector.
+At the conclusion of our circuit, we should free up the memory used by our quantum registers.
 ```C
 destroyQureg(qubits, env);
 destroyQuESTEnv(env);
@@ -136,7 +136,7 @@ destroyQuESTEnv(env);
 
 The effect of the [code above](tutorial_example.c) is to simulate the below circuit
 
-![the tutorial circuit](tutorial_circuit.png)
+![the tutorial circuit](tutorial_circuit.png?s=50)
 
 and after compiling (see section below), gives psuedo-random output
 
