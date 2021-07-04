@@ -379,6 +379,18 @@ void qasm_recordMultiStateControlledUnitary(
             addGateToQASM(qureg, GATE_SIGMA_X, NULL, 0, controlQubits[i], NULL, 0);
 }
 
+void qasm_recordMultiControlledMultiQubitNot(Qureg qureg, int* ctrls, int numCtrls, int* targs, int numTargs) {
+    
+    if (!qureg.qasmLog->isLogging)
+        return;
+    
+    qasm_recordComment(qureg, "The following %d gates resulted from a single %s() call", numTargs,
+        (numCtrls > 0)? "multiControlledMultiQubitNot" : "multiQubitNot");
+    
+    for (int t=0; t<numTargs; t++)
+        addGateToQASM(qureg, GATE_SIGMA_X, ctrls, numCtrls, targs[t], NULL, 0);
+}
+
 /* not actually used, D'Oh!
 void qasm_recordMultiControlledAxisRotation(Qureg qureg, qreal angle, Vector axis, int* controlQubits, int numControlQubits, int targetQubit) {
     

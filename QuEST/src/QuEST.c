@@ -534,6 +534,33 @@ void controlledNot(Qureg qureg, int controlQubit, int targetQubit) {
     qasm_recordControlledGate(qureg, GATE_SIGMA_X, controlQubit, targetQubit);
 }
 
+void multiQubitNot(Qureg qureg, int* targs, int numTargs) {
+    validateMultiTargets(qureg, targs, numTargs, __func__);
+    
+    long long int targMask = getQubitBitMask(targs, numTargs);
+    statevec_multiControlledMultiQubitNot(qureg, 0, targMask);
+    if (qureg.isDensityMatrix) {
+        int shift = qureg.numQubitsRepresented;
+        statevec_multiControlledMultiQubitNot(qureg, 0, targMask<<shift);
+    }
+    
+    qasm_recordMultiControlledMultiQubitNot(qureg, NULL, 0, targs, numTargs);
+}
+
+void multiControlledMultiQubitNot(Qureg qureg, int* ctrls, int numCtrls, int* targs, int numTargs) {
+    validateMultiControlsMultiTargets(qureg, ctrls, numCtrls, targs, numTargs, __func__);
+    
+    long long int ctrlMask = getQubitBitMask(ctrls, numCtrls);
+    long long int targMask = getQubitBitMask(targs, numTargs);
+    statevec_multiControlledMultiQubitNot(qureg, ctrlMask, targMask);
+    if (qureg.isDensityMatrix) {
+        int shift = qureg.numQubitsRepresented;
+        statevec_multiControlledMultiQubitNot(qureg, ctrlMask<<shift, targMask<<shift);
+    }
+    
+    qasm_recordMultiControlledMultiQubitNot(qureg, ctrls, numCtrls, targs, numTargs);
+}
+
 void controlledPauliY(Qureg qureg, int controlQubit, int targetQubit) {
     validateControlTarget(qureg, controlQubit, targetQubit, __func__);
     

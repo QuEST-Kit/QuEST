@@ -286,6 +286,11 @@ void statevec_controlledNot(Qureg qureg, int controlQubit, int targetQubit)
     statevec_controlledNotLocal(qureg, controlQubit, targetQubit);
 }
 
+void statevec_multiControlledMultiQubitNot(Qureg qureg, int ctrlMask, int targMask) {
+    
+    statevec_multiControlledMultiQubitNotLocal(qureg, ctrlMask, targMask);
+}
+
 qreal statevec_calcProbOfOutcome(Qureg qureg, int measureQubit, int outcome)
 {
     qreal outcomeProb = statevec_findProbabilityOfZeroLocal(qureg, measureQubit);

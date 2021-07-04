@@ -2672,7 +2672,116 @@ void statevec_controlledNotDistributed (Qureg qureg, int controlQubit,
             }
         }
     }
-} 
+}
+
+void statevec_multiControlledMultiQubitNotLocal(Qureg qureg, int ctrlMask, int targMask) {
+    long long int numAmps = qureg.numAmpsPerChunk;
+    qreal* stateRe = qureg.stateVec.real;
+    qreal* stateIm = qureg.stateVec.imag;
+    
+    long long int globalOffset = qureg.chunkId * numAmps;
+    
+    // each amplitude is swapped with a 'mate' amplitude
+    long long int ampInd, mateInd, globalInd;
+    qreal mateRe, mateIm;
+
+# ifdef _OPENMP
+# pragma omp parallel \
+    default  (none) \
+    shared   (stateRe,stateIm, numAmps, ctrlMask,targMask, globalOffset) \
+    private  (ampInd, mateInd,mateRe,mateIm, globalInd)
+# endif
+    {
+# ifdef _OPENMP
+# pragma omp for schedule (static)
+# endif
+        for (ampInd = 0; ampInd < numAmps; ampInd++) {
+            
+            /* it may be a premature optimisation to remove the seemingly wasteful continues below,
+             * because the maximum skipped amplitudes is 1/2 that stored in the node 
+             * (e.g. since this function is not called if all amps should be skipped via controls),
+             * and since we're memory-bandwidth bottlenecked. 
+             */
+             
+            // although amps are local, we may still be running in distributed mode, 
+            // and hence need to consult the global index to determine the values of 
+            // the control qubits
+            globalInd = ampInd + globalOffset;
+            
+            // modify amplitude only if control qubits are 1 for this state
+            if (ctrlMask && ((ctrlMask & globalInd) != ctrlMask))
+                continue;
+
+            mateInd = ampInd ^ targMask;
+            
+            // if the mate is behind, it was already processed
+            if (mateInd < ampInd)
+                continue;
+            
+            mateRe = stateRe[mateInd];
+            mateIm = stateIm[mateInd];
+            
+            // swap amp with mate
+            stateRe[mateInd] = stateRe[ampInd];
+            stateIm[mateInd] = stateIm[ampInd];
+            stateRe[ampInd] = mateRe;
+            stateIm[ampInd] = mateIm;
+        }
+    }
+}
+
+void statevec_multiControlledMultiQubitNotDistributed(
+    Qureg qureg, int ctrlMask, int targMask,
+    ComplexArray stateVecIn,
+    ComplexArray stateVecOut
+) {
+    long long int numAmps = qureg.numAmpsPerChunk;
+    long long int globalOffset = qureg.chunkId * numAmps;
+    
+    /* stateVecOut is qureg's local state-vector partition, which we modify.
+     * stateVecIn is the pair node's state-vector partition, in an order which 
+     * does not necessarily correlate to stateVecOut's 
+     */
+    qreal* inReal = stateVecIn.real;
+    qreal* inImag = stateVecIn.imag;
+    qreal* outReal = stateVecOut.real;
+    qreal* outImag = stateVecOut.imag;
+    
+    long long int outInd, outIndGlobal, inInd, inIndGlobal;
+    
+# ifdef _OPENMP
+# pragma omp parallel \
+    default  (none) \
+    shared   (inReal,inImag,outReal,outImag, numAmps,globalOffset, ctrlMask,targMask) \
+    private  (outInd,outIndGlobal, inInd,inIndGlobal)
+# endif
+    {
+# ifdef _OPENMP
+# pragma omp for schedule (static)
+# endif
+        for (outInd = 0; outInd < numAmps; outInd++) {
+            
+            // modify amplitude only if control qubits are 1 for this state
+            outIndGlobal = outInd + globalOffset;
+            if (ctrlMask && ((ctrlMask & outIndGlobal) != ctrlMask))
+                continue;
+            /* it is a premature optimisation to remove this seemingly wasteful abort above,
+             * because the maximum skipped amplitudes is 1/2 that stored in the node 
+             * (since this function is not called if all amps should be skipped)
+             */
+             
+            /* unlike statevec_controlledNotDistributed(), we cannot assume stateVecOut 
+             * maps contiguously/parallel into stateVecIn; we must map each amplitude, bit-wise.
+             * However, the arithmetic doesn't necessitate knowing the rank of stateVecIn 
+             */
+            inIndGlobal = outIndGlobal ^ targMask;
+            inInd = inIndGlobal % numAmps;              // = inIndGlobal - pairRank * numAmps
+            
+            outReal[outInd] = inReal[inInd];
+            outImag[outInd] = inImag[inInd];
+        }
+    }
+}
 
 void statevec_pauliYLocal(Qureg qureg, int targetQubit, int conjFac)
 {

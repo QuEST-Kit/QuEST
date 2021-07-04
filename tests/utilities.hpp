@@ -878,7 +878,7 @@ void setRandomPauliSum(PauliHamil hamil);
  */
 long long int getTwosComplement(long long int decimal, int numBits);
 
-/** Return the unsigned value of a number, made of #numBits bits, which under 
+/** Return the unsigned value of a number, made of `#numBits` bits, which under 
  * two's complement, encodes the signed number twosComp. The returned number 
  * lies in [0, 2^(numBits)-1]
  *
