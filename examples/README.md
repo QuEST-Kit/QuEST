@@ -173,13 +173,13 @@ make
 Paths to target sources are set as a semi-colon separated list of paths to said sources relative to the root QuEST directory.
 
 - To set the compilers used by cmake (to e.g. `gcc-6`), use
-```bash 
- -DCMAKE_C_COMPILER=gcc-6
-```
-and similarly to set the C++ compiler (as used in GPU mode), use
-```bash 
- -DCMAKE_CXX_COMPILER=g++-6
-```
+  ```bash 
+   -DCMAKE_C_COMPILER=gcc-6
+  ```
+  and similarly to set the C++ compiler (as used in GPU mode), use
+  ```bash 
+   -DCMAKE_CXX_COMPILER=g++-6
+  ```
 
 - If you wish your executable to be named something other than `demo`, you can set this too by adding argument:
 ```bash
