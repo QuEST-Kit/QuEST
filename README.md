@@ -32,7 +32,8 @@ The **Quantum Exact Simulation Toolkit** is a high performance simulator of quan
 [![Platforms](https://img.shields.io/badge/distributed-MPI-6699ff.svg)](https://www.mpi-forum.org/) 
 
 QuEST is developed by the [QTechTheory](http://qtechtheory.org/) group at the University of Oxford, and [these authors](https://github.com/QuEST-Kit/QuEST/blob/master/AUTHORS.txt). To learn more:
-- view the [documentation](https://quest-kit.github.io/QuEST/modules.html), or
+- see the [tutorial](https://github.com/QuEST-Kit/QuEST/blob/master/examples/README.md)
+- view the [documentation](https://quest-kit.github.io/QuEST/modules.html)
 - read our [whitepaper](https://www.nature.com/articles/s41598-019-47174-9), which featured in Scientific Report's [Top 100 in Physics](https://www.nature.com/collections/ecehgdfcba/).
 
 [![DOI](https://img.shields.io/badge/DOI-10.1038%2Fs41598--019--47174--9-yellow.svg)](https://doi.org/10.1038/s41598-019-47174-9)

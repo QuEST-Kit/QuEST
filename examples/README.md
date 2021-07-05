@@ -1,22 +1,24 @@
-QuEST Tutorial
+Tutorial
 ======
 
+
+TODO: FIX THE TOC HERE
 **Table of Contents**
 - [Coding](#coding)
 - [Compiling](#compiling)
 - [Running](#running)
 
+> Before getting started, it is best to [test](#testing) QuEST on your hardware.
 
 # Coding
 
-QuEST can be used in your C or C++ code, simply by including
+QuEST can be integrated into your C or C++ project, simply by including
 ```C
 #include <QuEST.h>
 ```
+Your simulation code will look the same and compile with the same build system, regardless of whether run in multithreaded, GPU and distributed modes.
 
-Independent of which platform you'll run your simulation on (multicore CPUs, a GPU, or over a network), your QuEST code will look the same, compile with the same [makefile](https://github.com/quest-kit/QuEST/blob/master/makefile), and use the same [API](https://quest-kit.github.io/QuEST/QuEST_8h.html).
-
-Here's a simulation of a very simple circuit which measures  ![equation](https://latex.codecogs.com/gif.latex?C_0%28X_1%29%20H_0%20%7C00%5Crangle).
+For example, here is a platform agnostic simulation of a very simple circuit which produces and measures state  ![equation](https://latex.codecogs.com/gif.latex?C_0%28X_1%29%20H_0%20%7C00%5Crangle).
 ```C
 #include <QuEST.h>
 
@@ -25,9 +27,9 @@ int main() {
   // load QuEST
   QuESTEnv env = createQuESTEnv();
   
-  // create 2 qubits in the hadamard state
+  // create a 2 qubit register in the zero state
   Qureg qubits = createQureg(2, env);
-  initPlusState(qubits);
+  initZeroState(qubits);
 	
   // apply circuit
   hadamard(qubits, 0);
@@ -47,23 +49,23 @@ Of course, this code doesn't output anything!
 
 Let's walk through a more sophisticated circuit.
 
-We first construct a QuEST environment, which abstracts away any preparation of multithreading, distribution or GPU-acceleration strategies.
+We first construct a QuEST environment with [`createQuESTEnv()`](https://quest-kit.github.io/QuEST/group__type.html#ga8ba2c3388dd64d9348c3b091852d36d4), which abstracts away any preparation of multithreading, distribution or GPU-acceleration strategies.
 ```C
 QuESTEnv env = createQuESTEnv();
 ```
 
-We then create a quantum register, in this case of 3 qubits.
+We then create a quantum register, in this case containing 3 qubits, via [`createQureg()`](https://quest-kit.github.io/QuEST/group__type.html#ga3392816c0643414165c2f5caeec17df0)
 ```C
 Qureg qubits = createQureg(3, env);
 ```
-and prepare it in the zero state.
+and [initialise](https://quest-kit.github.io/QuEST/group__init.html) the register.
 ```C
 initZeroState(qubits);
 ```
-We can create multiple `Qureg` instances, and QuEST will sort out allocating memory for the state-vectors, even over networks! If we wanted to simulate noise in our circuit, we can replace `createQureg` with `createDensityQureg` to create a more powerful density matrix capable of representing mixed states.
+We can create multiple `Qureg` instances, and QuEST will sort out allocating memory for the state-vectors, even over networks! If we wanted to simulate noise in our circuit, we can replace `createQureg` with [`createDensityQureg`](https://quest-kit.github.io/QuEST/group__type.html#ga93e55b6650b408abb30a1d4a8bce757c) to create a more powerful density matrix capable of representing mixed states, and simulating [decoherence](https://quest-kit.github.io/QuEST/group__decoherence.html).
 
-We're now ready to apply some gates to our qubits, which in this case have indices `0`, `1` and `2`.
-When applying a gate, we pass along which quantum register to operate upon.
+We're now ready to apply some [unitaries](https://quest-kit.github.io/QuEST/group__unitary.html) to our qubits, which in this case have indices `0`, `1` and `2`.
+When applying an operator, we pass along which quantum register to operate upon.
 ```C
 hadamard(qubits, 0);
 controlledNot(qubits, 0, 1);
@@ -72,7 +74,8 @@ rotateY(qubits, 2, .1);
 
 Some gates allow us to specify a general number of control qubits
 ```C
-multiControlledPhaseGate(qubits, (int[]) {0, 1, 2}, 3);
+int controls[] = {0, 1, 2};
+multiControlledPhaseGate(qubits, controls, 3);
 ```
 
 We can specify general single-qubit unitary operations as 2x2 matrices
@@ -104,12 +107,12 @@ even with multiple control qubits!
 multiControlledUnitary(qubits, (int[]) {0, 1}, 2, 2, u);
 ```
 
-What has this done to the probability of the basis state `|111>` ?
+There are many questions and [calculations](https://quest-kit.github.io/QuEST/group__calc.html) we can now ask of our quantum register.
 ```C
 qreal prob = getProbAmp(qubits, 7);
 printf("Probability amplitude of |111>: %lf\n", prob);
 ```
-Here, `qreal` is an alias for a real floating point number, like `double`. This is to keep our code precision agnostic, so that we may change the numerical precision at compile time (by setting macro `PRECISION`) without any changes to our code. Changing the precision can be useful in verifying numerical convergences or studying rounding errors.
+Here, `qreal` is an alias for a real floating point number, like `double`. This is to keep our code precision agnostic, so that we may change the numerical precision at compile time (by setting build option `PRECISION`) without any changes to our code. Changing the precision can be useful in verifying numerical convergences or studying rounding errors.
 
 How probable is measuring our final qubit (with index `2`) in outcome `1`?
 ```C
@@ -117,7 +120,7 @@ prob = calcProbOfOutcome(qubits, 2, 1);
 printf("Probability of qubit 2 being in state 1: %f\n", prob);
 ```
 
-Let's measure the first qubit, randomly collapsing into outcome `0` or `1`
+We can also perform [non-unitary gates](https://quest-kit.github.io/QuEST/group__normgate.html) upon the state. Let's destructively measure the first qubit, randomly collapsing into outcome `0` or `1`
 ```C
 int outcome = measure(qubits, 0);
 printf("Qubit 0 was measured in state %d\n", outcome);
@@ -127,6 +130,7 @@ and now measure our final qubit, while also learning of the probability of its o
 outcome = measureWithStats(qubits, 2, &prob);
 printf("Qubit 2 collapsed to %d with probability %f\n", outcome, prob);
 ```
+We could even apply [non-physical operators](https://quest-kit.github.io/QuEST/group__operator.html) to our register, to break its normalisation, which can often allow us to take computational shortcuts like [this one](https://arxiv.org/abs/2009.02823).
 
 At the conclusion of our circuit, we should free up the memory used by our quantum registers.
 ```C
@@ -134,11 +138,11 @@ destroyQureg(qubits, env);
 destroyQuESTEnv(env);
 ```
 
-The effect of the [code above](tutorial_example.c) is to simulate the below circuit
+The effect of the [code above](tutorial_example.c) is to simulate the circuit below
 
 <img src="https://github.com/QuEST-Kit/QuEST/raw/readme_update/examples/tutorial_circuit.png" width="50%"> <br>
 
-and after compiling (see section below), gives psuedo-random output
+and after compiling (see section below) and running, gives psuedo-random output
 
 > ```
 > Probability amplitude of |111>: 0.498751
@@ -160,17 +164,20 @@ QuEST uses the [Mersenne Twister](http://www.math.sci.hiroshima-u.ac.jp/~m-mat/M
 
 # Compiling
 
-QuEST uses CMake (`3.7` or higher) as its build system. Configure the build by supplying the below `-D[VAR=VALUE]` options after the `cmake ..` command. If you wish to avoid CMake, you can otherwise use GNUMake directly with the provided [makefile](makefile).
+QuEST uses [CMake](https://cmake.org/) (version `3.7` or higher) as its build system. Configure the build by supplying the below `-D[VAR=VALUE]` options after the `cmake ..` command. You can alternatively compile via [GNU Make](https://www.gnu.org/software/make/) directly with the provided [makefile](makefile).
 
-- To compile, make sure your circuit code is accessible from the root QuEST directory.
-In the root directory, initially build using
+To compile, run:
 ```bash
 mkdir build
 cd build
-cmake .. -DUSER_SOURCE="myCode1.c;myCode2.c"
+cmake .. -DUSER_SOURCE="[FILENAME]"
 make
 ```
-Paths to target sources are set as a semi-colon separated list of paths to said sources relative to the root QuEST directory.
+where `[FILENAME]` is the name of your source file, including the file extension, relative to the root QuEST directory (above `build`). If your project contains multiple source files, separate them with semi-colons. For example,
+```bash
+ -DUSER_SOURCE="source1.c;source2.cpp"
+```
+
 
 - To set the compilers used by cmake (to e.g. `gcc-6`), use
   ```bash 
@@ -208,11 +215,15 @@ Paths to target sources are set as a semi-colon separated list of paths to said 
 
 - To compile for GPU, use
   ```bash
-   -DGPUACCELERATED=1 -DGPU_COMPUTE_CAPABILITY=[COMPUTE_CAPABILITY] ..
+   -DGPUACCELERATED=1 -DGPU_COMPUTE_CAPABILITY=[CC] ..
   ```
-  were `[COMPUTE_CAPABILITY]` is the compute cabability of your GPU, written without a decimal point. This can can be looked up at the [NVIDIA website](https://developer.nvidia.com/cuda-gpus).
+  were `[CC]` is the compute cabability of your GPU, written without a decimal point. This can can be looked up at the [NVIDIA website](https://developer.nvidia.com/cuda-gpus).
   > Note that CUDA is not compatible with all compilers. To force `cmake` to use a 
   > compatible compiler, override `CMAKE_C_COMPILER` and `CMAKE_CXX_COMPILER`
+  For example, to compile for the [Quadro P6000](https://www.pny.com/nvidia-quadro-p6000) with `gcc-6`:
+  ```bash 
+  cmake .. -DGPUACCELERATED=1 -DGPU_COMPUTE_CAPABILITY=61 -DCMAKE_C_COMPILER=gcc-6 -DCMAKE_CXX_COMPILER=g++-6
+  ```
 
 - You can additionally customise the floating point precision used by QuEST's `qreal` type, via
   ```bash
@@ -224,12 +235,7 @@ Paths to target sources are set as a semi-colon separated list of paths to said 
   Using greater precision means more precise computation but at the expense of additional memory requirements and runtime.
   Checking results are unchanged when switching the precision can be a great test that your calculations are sufficiently precise.
 
-
-Please note that cmake caches these changes (per directory) so for any subsequent builds you should just type `make` from the build directory and the previously defined settings will be applied. If any parameters require changing, these can be redefined by:
-```
-cmake -D[VAR=VALUE] ..
-```
-as one would do in the initial configuration.
+After making changes to your code, you can quickly recompile using `make` directly, within the `build/` directory.
 
 For a full list of available configuration parameters, use
 ```bash
@@ -241,32 +247,7 @@ For manual configuration (not recommended) you can change the `CMakeLists.txt` i
 make
 ```
 
-----------------------------
 
-# Running unit tests
-
-To confirm that QuEST has been compiled and is running correctly on your platform, unit tests can be run from the build folder with the command
-
-```bash
-make test
-```
-
-This will report whether the QuEST library has been built correctly and whether all unit tests have passed successfully. In case of failures, see utilities/QuESTLog.log for a detailed report. 
-
-Tests will automatically run in distributed mode on four processes if -DDISTRIBUTED=1 is set at compile time, and on GPU if -DGPUACCELERATED=1 is set at compile time. In order to set the number of process on which the tests should be run, set:
-```bash
-cmake -DMPIEXEC_MAX_NUMPROCS=4 ..
-```
-
-Note, the most common reason for unit tests failing on a new platform is running on a GPU with the incorrect GPU_COMPUTE_CAPABILITY. Remember to specify this at compile time for [your device](https://developer.nvidia.com/cuda-gpus). Eg, for a P100, use
-
-
-```bash
-mkdir build
-cd build
-cmake -DGPUACCELERATED=1 -DGPU_COMPUTE_CAPABILIty=60 ..
-make test
-```
 
 ----------------------------
 
@@ -360,3 +341,48 @@ if (env.rank == 0)
     printf("Only one node executes this print!");
 ```
 Such conditions are valid and always satisfied in code run on a single node.
+
+
+
+----------------------------
+
+# Testing
+
+QuEST includes a comprehensive set of unit tests, to assure every function performs correctly. These are located in the [tests](../tests) directory (documented [here](https://quest-kit.github.io/QuEST/group__unittest.html)), and compare QuEST's optimised routines to slower, algorithmically distinct methods (documented [here](https://quest-kit.github.io/QuEST/group__testutilities.html)). It is a good idea to run these tests on your machine to check QuEST is properly configured, and especially so in GPU mode, to check you have correctly set [`GPU_COMPUTE_CAPABILITY`](https://developer.nvidia.com/cuda-gpus).
+
+Tests should be compiled in a build directory within the root QuEST directory.
+```bash
+mkdir build 
+cd build
+```
+To compile, run:
+```bash 
+cmake .. -DTESTING=ON
+make
+```
+You can include additional CMake arguments to target your desired hardware, such as `-DDISTRIBUTION=1`.
+
+Next, to launch all unit tests, run:
+```bash 
+make test
+```
+You should see each function being tested in turn; some will be very fast, and some very slow. 
+> This is because the tests run functions with every one of their possible inputs 
+> (where possible).
+> Functions with more possible inputs will hence take longer to test. 
+> The difference in testing time between different functions can hence be very large, and does not indicate a testing nor performance problem.
+For example:
+```
+      Start   1: calcDensityInnerProduct
+1/117 Test   #1: calcDensityInnerProduct .............   Passed    0.16 sec
+      Start   2: calcExpecDiagonalOp
+2/117 Test   #2: calcExpecDiagonalOp .................   Passed    0.07 sec
+      Start   3: calcExpecPauliHamil
+3/117 Test   #3: calcExpecPauliHamil .................   Passed    0.64 sec
+      Start   4: calcExpecPauliProd
+4/117 Test   #4: calcExpecPauliProd ..................   Passed   94.88 sec
+```
+
+
+TALK ABOUT CATCH2 DIRECT TESTS
+
