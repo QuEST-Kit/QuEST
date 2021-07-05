@@ -182,49 +182,47 @@ Paths to target sources are set as a semi-colon separated list of paths to said 
   ```
 
 - If you wish your executable to be named something other than `demo`, you can set this too by adding argument:
-```bash
- -DOUTPUT_EXE="myExecutable" 
-```
-
-
+  ```bash
+   -DOUTPUT_EXE="myExecutable" 
+  ```
 
 - To compile your code to use multithreading, for parallelism on multi-core or multi-CPU systems, use
-```bash
- -DMULTITHREADED=1
-```
-Before launching your executable, set the number of participating threads using `OMP_NUM_THREADS`. For example,
-```bash
-export OMP_NUM_THREADS=16
-./myExecutable
-```
+  ```bash
+  -DMULTITHREADED=1
+  ```
+  Before launching your executable, set the number of participating threads using `OMP_NUM_THREADS`. For example,
+  ```bash
+  export OMP_NUM_THREADS=16
+  ./myExecutable
+  ```
 
 - To compile your code to run on distributed or networked systems use
-```bash
- -DDISTRIBUTED=1
-```
-Depending on your MPI implementation, your executable can be launched via
-```bash 
-mpirun -np [NUM_NODES] [EXEC]
-```
-where `[NUM_NODES]` is the number of distributed compute nodes to use, and `[EXEC]` is the name of your executable. Note that QuEST *hybridises* multithreading and distribution. Hence you should set `[NUM_NODES]` to equal exactly the number of distinct compute nodes (which don't share memory), and set `OMP_NUM_THREADS` as above to assign the number of threads used on *each* compute node.
+  ```bash
+   -DDISTRIBUTED=1
+  ```
+  Depending on your MPI implementation, your executable can be launched via
+  ```bash 
+  mpirun -np [NUM_NODES] [EXEC]
+  ```
+  where `[NUM_NODES]` is the number of distributed compute nodes to use, and `[EXEC]` is the name of your executable. Note that QuEST *hybridises* multithreading and distribution. Hence you should set `[NUM_NODES]` to equal exactly the number of distinct compute nodes (which don't share memory), and set `OMP_NUM_THREADS` as above to assign the number of threads used on *each* compute node.
 
 - To compile for GPU, use
-```bash
- -DGPUACCELERATED=1 -DGPU_COMPUTE_CAPABILITY=[COMPUTE_CAPABILITY] ..
-```
-were `[COMPUTE_CAPABILITY]` is the compute cabability of your GPU, written without a decimal point. This can can be looked up at the [NVIDIA website](https://developer.nvidia.com/cuda-gpus).
-> Note that CUDA is not compatible with all compilers. To force `cmake` to use a 
-> compatible compiler, override `CMAKE_C_COMPILER` and `CMAKE_CXX_COMPILER`
+  ```bash
+   -DGPUACCELERATED=1 -DGPU_COMPUTE_CAPABILITY=[COMPUTE_CAPABILITY] ..
+  ```
+  were `[COMPUTE_CAPABILITY]` is the compute cabability of your GPU, written without a decimal point. This can can be looked up at the [NVIDIA website](https://developer.nvidia.com/cuda-gpus).
+  > Note that CUDA is not compatible with all compilers. To force `cmake` to use a 
+  > compatible compiler, override `CMAKE_C_COMPILER` and `CMAKE_CXX_COMPILER`
 
 - You can additionally customise the floating point precision used by QuEST's `qreal` type, via
-```bash
- -DPRECISION=1
- -DPRECISION=2
- -DPRECISION=4
-```
-which uses single (`qreal = float`), double (`qreal = double`) and quad (`qreal = long double`) respectively.
-Using greater precision means more precise computation but at the expense of additional memory requirements and runtime.
-Checking results are unchanged when switching the precision can be a great test that your calculations are sufficiently precise.
+  ```bash
+   -DPRECISION=1
+   -DPRECISION=2
+   -DPRECISION=4
+  ```
+  which uses single (`qreal = float`), double (`qreal = double`) and quad (`qreal = long double`) respectively.
+  Using greater precision means more precise computation but at the expense of additional memory requirements and runtime.
+  Checking results are unchanged when switching the precision can be a great test that your calculations are sufficiently precise.
 
 
 Please note that cmake caches these changes (per directory) so for any subsequent builds you should just type `make` from the build directory and the previously defined settings will be applied. If any parameters require changing, these can be redefined by:
@@ -238,7 +236,10 @@ For a full list of available configuration parameters, use
 cmake -LH ..
 ```
 
-For manual configuration (not recommended) you can change the `CMakeLists.txt` in the root QuEST directory.
+For manual configuration (not recommended) you can change the `CMakeLists.txt` in the root QuEST directory. You can also directly modify [makefile](makefile), and compile using GNUMake directly, by copying [makefile](makefile) into the root repository directory and running 
+```bash 
+make
+```
 
 ----------------------------
 
