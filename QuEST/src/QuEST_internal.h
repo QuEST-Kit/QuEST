@@ -268,6 +268,8 @@ void agnostic_syncDiagonalOp(DiagonalOp op);
 
 void agnostic_setDiagonalOpElems(DiagonalOp op, long long int startInd, qreal* real, qreal* imag, long long int numElems);
 
+void agnostic_initDiagonalOpFromPauliHamil(DiagonalOp op, PauliHamil hamil, qreal* offset);
+
 # ifdef __cplusplus
 }
 # endif

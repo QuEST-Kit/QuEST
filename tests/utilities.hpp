@@ -330,6 +330,14 @@ qreal getRandomReal(qreal min, qreal max);
  */
 QVector getRandomQVector(int dim);
 
+
+/** Returns a diagonal of \p matr.
+ *
+ * @ingroup testutilities
+ * @author Milos Prokop
+ */
+QVector getDiagonal(QMatrix matr);
+
 /** Returns a \p dim-by-\p dim complex matrix, where the real and imaginary value of 
  * each element are independently random, under the standard normal distribution 
  * (mean 0, standard deviation 1).
@@ -832,6 +840,13 @@ bool areEqual(QMatrix a, QMatrix b);
  */
 bool areEqual(QVector vec, qreal* reals, qreal* imags);
 
+/** Returns true if \p matr is diagonal.
+ *
+ * @ingroup testutilities
+ * @author Milos Prokop
+ */
+bool isDiagonal(QMatrix matr);
+
 /** Returns the unit-norm complex number exp(i*\p phase). This function uses the 
  * Euler formula, and avoids problems with calling exp(__complex__) in a platform 
  * agnostic way 
@@ -849,16 +864,16 @@ unsigned int calcLog2(long unsigned int res);
  * populates \p codes with random Pauli codes
  *
  * @ingroup testutilities 
- * @author Tyson Jones
+ * @author Tyson Jones, Milos Prokop
  */
-void setRandomPauliSum(qreal* coeffs, pauliOpType* codes, int numQubits, int numTerms);
+void setRandomPauliSum(qreal* coeffs, pauliOpType* codes, int numQubits, int numTerms, bool force_diagonal=false);
 
 /** Populates \p hamil with random coefficients and pauli codes
  *
  * @ingroup testutilities 
  * @author Tyson Jones
  */
-void setRandomPauliSum(PauliHamil hamil);
+void setRandomPauliSum(PauliHamil hamil, bool force_diagonal=false);
 
 // makes below signatures more concise
 template<class T> using CatchGen = Catch::Generators::GeneratorWrapper<T>;

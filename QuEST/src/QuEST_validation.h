@@ -130,6 +130,8 @@ void validateDiagonalOp(Qureg qureg, DiagonalOp op, const char* caller);
 
 void validateNumElems(DiagonalOp op, long long int startInd, long long int numElems, const char* caller);
 
+void validateIsIsingSpinHamiltonian(PauliHamil hamil, const char* caller);
+
 # ifdef __cplusplus
 }
 # endif

@@ -403,6 +403,15 @@ bool areEqual(QMatrix a, QMatrix b) {
     return true;
 }
 
+bool isDiagonal(QMatrix matr){
+
+	for(size_t i=0; i<matr.size(); i++)
+		for (size_t j=0; j<matr.size(); j++)
+			if(i != j && abs(matr[i][j]) > REAL_EPS )
+				return false;
+	return true;
+}
+
 qcomp expI(qreal phase) {
     return cos(phase) + 1i*sin(phase);
 }
@@ -426,6 +435,15 @@ QVector getRandomQVector(int dim) {
     DEMAND( real(vec[0]) != 0 );
         
     return vec;
+}
+
+QVector getDiagonal(QMatrix matr){
+
+	QVector vec = QVector(matr.size());
+	for(size_t i=0; i<matr.size(); i++)
+		vec[i] = matr[i][i];
+
+	return vec;
 }
 
 QVector getNormalised(QVector vec) {
@@ -1051,16 +1069,48 @@ void toQureg(Qureg qureg, QMatrix mat) {
     copyStateToGPU(qureg);
 }
 
-void setRandomPauliSum(qreal* coeffs, pauliOpType* codes, int numQubits, int numTerms) {
-    int i=0;
-    for (int n=0; n<numTerms; n++) {
-        coeffs[n] = getRandomReal(-5, 5);
-        for (int q=0; q<numQubits; q++)
-            codes[i++] = (pauliOpType) getRandomInt(0,4);
-    }
+void setRandomPauliSum(qreal* coeffs, pauliOpType* codes, int numQubits, int numTerms, bool force_diagonal) {
+
+	if(force_diagonal){
+
+		int i = 0;
+		for (int n=0; n<numTerms; n++){
+			coeffs[n] = getRandomReal(-5, 5);
+			for (int q=0; q<numQubits; q++)
+				codes[i++] = (pauliOpType) 0;
+		}
+
+		for (int n=0; n<numTerms; n++){
+			bool singleTerm = getRandomInt(0,1);
+			if(singleTerm){
+
+				int index = getRandomInt(0, numQubits-1);
+				codes[n*numQubits+index] = (pauliOpType) 3;
+
+			}else{
+				int indexA = getRandomInt(0, numQubits-1);
+				int indexB = getRandomInt(0, numQubits-1);
+
+				if(indexA == indexB && numQubits > 1)
+					indexA > 0 ? indexA-- : indexA++;
+
+				codes[n*numQubits+indexA] = (pauliOpType) 3;
+				codes[n*numQubits+indexB] = (pauliOpType) 3;
+			}
+		}
+
+	}else{
+		int i=0;
+		for (int n=0; n<numTerms; n++) {
+			coeffs[n] = getRandomReal(-5, 5);
+			for (int q=0; q<numQubits; q++)
+				codes[i++] = (pauliOpType) getRandomInt(0,4);
+		}
+	}
 }
-void setRandomPauliSum(PauliHamil hamil) {
-    setRandomPauliSum(hamil.termCoeffs, hamil.pauliCodes, hamil.numQubits, hamil.numSumTerms);
+
+void setRandomPauliSum(PauliHamil hamil, bool force_diagonal) {
+    setRandomPauliSum(hamil.termCoeffs, hamil.pauliCodes, hamil.numQubits, hamil.numSumTerms, force_diagonal);
 }
 
 QMatrix toQMatrix(qreal* coeffs, pauliOpType* paulis, int numQubits, int numTerms) {
@@ -1070,7 +1120,7 @@ QMatrix toQMatrix(qreal* coeffs, pauliOpType* paulis, int numQubits, int numTerm
     QMatrix xMatr{{0,1},{1,0}};
     QMatrix yMatr{{0,-1i},{1i,0}};
     QMatrix zMatr{{1,0},{0,-1}};
-    QMatrix pauliSum = getZeroMatrix(1<<NUM_QUBITS);
+    QMatrix pauliSum = getZeroMatrix(1<<numQubits);
     
     for (int t=0; t<numTerms; t++) {
         QMatrix pauliProd = QMatrix{{1}};

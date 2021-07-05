@@ -600,6 +600,43 @@ void applyDiagonalOp(Qureg qureg, DiagonalOp op);
  */
 Complex calcExpecDiagonalOp(Qureg qureg, DiagonalOp op);
 
+/** Initialize an existing diagonal operator from an existing pauli hamiltonian.
+ * 
+ * @ingroup init
+ * @param[in,out] op the diagonal operator to initialize
+ * @param[in] hamil the pauli hamiltonian used to initialize op
+ * @param[out] offset, the constant element of the hamiltonian
+ * @throws invalidQuESTInputError if \p op was not created
+ *      or if \p hamil does not have a diagonal representation
+ * @author Milos Prokop
+ */
+void initDiagonalOpFromPauliHamil(DiagonalOp op, PauliHamil hamil, qreal* offset);
+
+/** Create a new diagonal operator and initialize its elements from existing Pauli Hamiltonian.
+ *
+ * @ingroup type
+ * @param[in] hamil the pauli hamiltonian used to initialize op
+ * @param[in] env object representing the execution environment (local, multinode etc)
+ * @param[out] offset, the constant element of the hamiltonian
+ * @return the new diagonal operator initialized from hamil
+ * @throws invalidQuESTInputError if \p op was not created
+ *      or if \p hamil does not have a diagonal representation
+ * @author Milos Prokop
+ */
+DiagonalOp createDiagonalOpFromPauliHamil(PauliHamil hamil, QuESTEnv env, qreal* offset);
+
+/** Create a new diagonal operator and initialize its elements from existing Pauli Hamiltonian.
+ *
+ * @ingroup type
+ * @param[in] fn filename of the plaintext file specifying the pauli operators and coefficients
+ * @param[in] env object representing the execution environment (local, multinode etc)
+ * @param[out] offset, the constant element of the hamiltonian
+ * @return the new diagonal operator initialized from hamil
+ * @throws invalidQuESTInputError if the file cannot be read, or is not correctly formatted
+ * @author Tyson Jones, Milos Prokop
+ */
+DiagonalOp createDiagonalOpFromPauliHamilFile(char* fn, QuESTEnv env, qreal* offset);
+
 /** Print the current state vector of probability amplitudes for a set of qubits to file.
  * File format:
  * @verbatim

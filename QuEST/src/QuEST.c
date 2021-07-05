@@ -1250,6 +1250,12 @@ PauliHamil createPauliHamilFromFile(char* fn) {
 	return h;
 }
 
+DiagonalOp createDiagonalOpFromPauliHamilFile(char* fn, QuESTEnv env, qreal* offset){
+
+	PauliHamil hamil = createPauliHamilFromFile(fn);
+	return createDiagonalOpFromPauliHamil(hamil, env, offset);
+}
+
 void initPauliHamil(PauliHamil hamil, qreal* coeffs, enum pauliOpType* codes) {
     validateHamilParams(hamil.numQubits, hamil.numSumTerms, __func__);
     validatePauliCodes(codes, hamil.numSumTerms*hamil.numQubits, __func__);
@@ -1270,6 +1276,16 @@ DiagonalOp createDiagonalOp(int numQubits, QuESTEnv env) {
     return agnostic_createDiagonalOp(numQubits, env);
 }
 
+DiagonalOp createDiagonalOpFromPauliHamil(PauliHamil hamil, QuESTEnv env, qreal* offset){
+	validateNumQubitsInDiagOp(hamil.numQubits, env.numRanks, __func__);
+	validateIsIsingSpinHamiltonian(hamil, __func__);
+
+	DiagonalOp diagOp = agnostic_createDiagonalOp(hamil.numQubits, env);
+	initDiagonalOpFromPauliHamil(diagOp, hamil, offset);
+
+	return diagOp;
+}
+
 void destroyDiagonalOp(DiagonalOp op, QuESTEnv env) {
     // env accepted for API consistency
     validateDiagOpInit(op, __func__);
@@ -1287,6 +1303,13 @@ void initDiagonalOp(DiagonalOp op, qreal* real, qreal* imag) {
     validateDiagOpInit(op, __func__);
     
     agnostic_setDiagonalOpElems(op, 0, real, imag, 1LL << op.numQubits);
+}
+
+void initDiagonalOpFromPauliHamil(DiagonalOp op, PauliHamil hamil, qreal* offset){
+    validateDiagOpInit(op, __func__);
+	validateIsIsingSpinHamiltonian(hamil, __func__);
+
+	agnostic_initDiagonalOpFromPauliHamil(op, hamil, offset);
 }
 
 void setDiagonalOpElems(DiagonalOp op, long long int startInd, qreal* real, qreal* imag, long long int numElems) {

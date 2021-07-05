@@ -94,7 +94,8 @@ typedef enum {
     E_INVALID_TROTTER_ORDER,
     E_INVALID_TROTTER_REPS,
     E_MISMATCHING_QUREG_DIAGONAL_OP_SIZE,
-    E_DIAGONAL_OP_NOT_INITIALISED
+    E_DIAGONAL_OP_NOT_INITIALISED,
+    E_NOT_A_DIAGONAL_OPERATOR
 } ErrorCode;
 
 static const char* errorMessages[] = {
@@ -161,7 +162,8 @@ static const char* errorMessages[] = {
     [E_INVALID_TROTTER_ORDER] = "The Trotterisation order must be 1, or an even number (for higher-order Suzuki symmetrized expansions).",
     [E_INVALID_TROTTER_REPS] = "The number of Trotter repetitions must be >=1.",
     [E_MISMATCHING_QUREG_DIAGONAL_OP_SIZE] = "The qureg must represent an equal number of qubits as that in the applied diagonal operator.",
-    [E_DIAGONAL_OP_NOT_INITIALISED] = "The diagonal operator has not been initialised through createDiagonalOperator()."
+    [E_DIAGONAL_OP_NOT_INITIALISED] = "The diagonal operator has not been initialised through createDiagonalOperator().",
+    [E_NOT_A_DIAGONAL_OPERATOR] = "The provided PauliHamiltonian must consist only of PAULI_I and PAULI_Z gates and at most two PAULI_Z gates can be used in a single Pauli term."
 };
 
 void exitWithError(const char* msg, const char* func) {
@@ -677,6 +679,29 @@ void validateDiagOpInit(DiagonalOp op, const char* caller) {
 void validateDiagonalOp(Qureg qureg, DiagonalOp op, const char* caller) {
     validateDiagOpInit(op, caller);
     QuESTAssert(qureg.numQubitsRepresented == op.numQubits, E_MISMATCHING_QUREG_DIAGONAL_OP_SIZE, caller);
+}
+
+void validateIsIsingSpinHamiltonian(PauliHamil hamil, const char* caller){
+
+	int numQubits = hamil.numQubits;
+
+	for(int term_i = 0; term_i < hamil.numSumTerms; ++term_i){
+
+		qreal coeff = hamil.termCoeffs[term_i];
+		if(coeff == 0)
+			continue;
+
+		int num_zs = 0;
+		for(int qbit_i = 0; qbit_i < numQubits; ++qbit_i){
+
+			if(hamil.pauliCodes[term_i*numQubits+qbit_i] == PAULI_I)
+				continue;
+
+			QuESTAssert(hamil.pauliCodes[term_i*numQubits+qbit_i] == PAULI_Z, E_NOT_A_DIAGONAL_OPERATOR, caller);
+			QuESTAssert(++num_zs<=2, E_NOT_A_DIAGONAL_OPERATOR, caller);
+
+		}
+	}
 }
 
 #ifdef __cplusplus

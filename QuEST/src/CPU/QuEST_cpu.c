@@ -3871,3 +3871,57 @@ void agnostic_setDiagonalOpElems(DiagonalOp op, long long int startInd, qreal* r
         }
     }
 }
+
+int hasEvenParity(long long x, int* in_qubitIndices, int qs){
+
+	size_t count = 0;
+	for (int i = 0; i < qs; ++i) {
+		int bitIdx = in_qubitIndices[i];
+		if (x & (1ULL << bitIdx))
+			count++;
+	}
+	return (count % 2) == 0;
+};
+
+void agnostic_initDiagonalOpFromPauliHamil(DiagonalOp op, PauliHamil hamil, qreal* offset){
+
+	int numQubits = hamil.numQubits;
+	int numSumTerms = hamil.numSumTerms;
+	enum pauliOpType* pauliCodes = hamil.pauliCodes;
+	qreal* termCoeffs = hamil.termCoeffs;
+
+	int z_index[2];
+	qreal* diag = op.real;
+
+	for(int term_i = 0; term_i < numSumTerms; ++term_i){
+
+		qreal coeff = termCoeffs[term_i];
+		int num_zs = 0;
+
+		for(int i = numQubits * term_i; i < numQubits * (term_i + 1); ++i){
+
+			if(pauliCodes[i] == 3)
+				z_index[num_zs++] = i - numQubits * term_i;
+
+			//Does not happen because of validation beforehand
+			//else if(hamil.pauliCodes[i] != 0){
+			//	printf("Not a valid Ising hamiltonian");
+			//	exit(1);
+			//}
+		}
+
+		if(num_zs == 0){
+			*offset += coeff;
+			continue;
+		}
+		//Does not happen because of validation beforehand
+		//else if(num_zs > 2){
+		//	printf("Not a valid Ising hamiltonian");
+		//	exit(1);
+		//}
+
+		for(uint64_t i = 0; i < op.numElemsPerChunk; ++i){
+			diag[i] += coeff * (hasEvenParity(op.chunkId*op.numElemsPerChunk + i, z_index, num_zs) ? 1.0 : -1.0);
+		}
+    }
+}

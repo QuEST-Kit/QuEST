@@ -188,7 +188,7 @@ TEST_CASE( "createDensityQureg", "[data_structures]" ) {
  * @author Tyson Jones 
  */
 TEST_CASE( "createDiagonalOp", "[data_structures]" ) {
-    
+
     // must be at least one amplitude per node
     int minNumQb = calcLog2(QUEST_ENV.numRanks);
     if (minNumQb == 0)
@@ -826,4 +826,80 @@ TEST_CASE( "syncDiagonalOp", "[data_structures]" ) {
         destroyQureg(qureg, QUEST_ENV);
         destroyDiagonalOp(op, QUEST_ENV);
     }
+}
+
+
+
+/** @sa initDiagonalOpFromPauliHamil
+ * @ingroup unittest
+ * @author Tyson Jones, Milos Prokop
+ */
+TEST_CASE( "DiagonalOpFromPauliHamil", "[data_structures]" ) {
+
+    // must be at least one amplitude per node
+    int minNumQb = calcLog2(QUEST_ENV.numRanks);
+    if (minNumQb == 0)
+        minNumQb = 1;
+
+    // try 10 valid number of qubits (even for validation)
+    int numQb = GENERATE_COPY( range(minNumQb+1, minNumQb+10) );
+    int numSumTerms = GENERATE_COPY( range(5, 30) );
+
+    DiagonalOp op = createDiagonalOp(numQb, QUEST_ENV);
+    PauliHamil hamil = createPauliHamil(numQb, numSumTerms);
+
+    setRandomPauliSum(hamil, true);
+
+    qreal* zero_imag = (qreal*) malloc((1<<numQb)*sizeof(qreal));
+    for(size_t i = 0; i < (1<<numQb); ++i)
+    	zero_imag[i] = 0.;
+
+    SECTION( "correctness" ) {
+
+    	QMatrix expected_matrix = toQMatrix(hamil);
+    	REQUIRE(isDiagonal(expected_matrix));
+
+    	qreal offset;
+    	initDiagonalOpFromPauliHamil(op, hamil, &offset);
+
+    	if(!areEqual(getDiagonal(expected_matrix), op.real, zero_imag)){
+
+    		for(size_t i = 0; i < (1<<numQb); ++i)
+    			printf("%f %f\n", real(getDiagonal(expected_matrix)[i]), op.real[i]);
+
+    		printf("\n\n\n");
+
+    		for(size_t i = 0; i < numSumTerms; ++i){
+    			printf(".");
+    			for(size_t j = 0; j < numQb; ++j)
+    				printf("%d ", hamil.pauliCodes[i*numSumTerms+j]);
+    			printf("\n");
+    		}
+
+    	}
+
+    	REQUIRE(areEqual(getDiagonal(expected_matrix), op.real, zero_imag));
+
+
+    }
+    SECTION( "input validation" ) {
+
+        qreal offset;
+
+        SECTION( "start index" ) {
+
+            hamil.pauliCodes[0]= (pauliOpType) 1;
+			REQUIRE_THROWS_WITH( initDiagonalOpFromPauliHamil(op, hamil, &offset), Contains("The provided PauliHamiltonian must consist only of PAULI_I and PAULI_Z gates") );
+
+			if(numQb > 3){
+				hamil.pauliCodes[0]= (pauliOpType) 3;
+				hamil.pauliCodes[1]= (pauliOpType) 3;
+				hamil.pauliCodes[2]= (pauliOpType) 3;
+				REQUIRE_THROWS_WITH( initDiagonalOpFromPauliHamil(op, hamil, &offset), Contains("The provided PauliHamiltonian must consist only of PAULI_I and PAULI_Z gates") );
+			}
+		}
+    }
+
+    destroyDiagonalOp(op, QUEST_ENV);
+
 }
