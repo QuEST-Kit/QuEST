@@ -38,6 +38,9 @@ QuEST is developed by the [QTechTheory](http://qtechtheory.org/) group at the Un
 [![DOI](https://img.shields.io/badge/DOI-10.1038%2Fs41598--019--47174--9-yellow.svg)](https://doi.org/10.1038/s41598-019-47174-9)
 [![Email](https://img.shields.io/badge/email-quest@materials.ox.ac.uk-red.svg)](mailto:quest@materials.ox.ac.uk)
 
+---------------------------------
+
+
 ## Introduction
 
 QuEST has a simple interface, which is agnostic to its runtime environment, between CPUs, GPUs and over networks.
@@ -76,6 +79,8 @@ double val = calcExpecPauliHamil(qubits, hamiltonian, workspace);
 applyTrotterCircuit(qubits, hamiltonian, time, order, repetitions);
 ```
 
+---------------------------------
+
 ## Features 
 QuEST supports:  
 - :white_check_mark: &nbsp; **density matrices** for precise simulation of noisy quantum computers  
@@ -97,7 +102,7 @@ QuEST supports:
   - [running](/examples/README.md#running) QuEST locally and on supercomputers
   - [testing](/examples/README.md#testing) QuEST using the comprehensive [unit tests](https://quest-kit.github.io/QuEST/group__unittest.html)
   <br><br>
-- The [documentation](https://quest-kit.github.io/QuEST/modules.html) is divided into the following modules (collated [here](https://quest-kit.github.io/QuEST/QuEST_8h.html)):
+- The [documentation](https://quest-kit.github.io/QuEST/modules.html) is divided into the following modules (collated [here](https://quest-kit.github.io/QuEST/QuEST_8h.html))
   - [data structures](https://quest-kit.github.io/QuEST/group__type.html)
   - [initialisations](https://quest-kit.github.io/QuEST/group__init.html)
   - [unitaries](https://quest-kit.github.io/QuEST/group__unitary.html)
@@ -107,13 +112,13 @@ QuEST supports:
   - [calculations](https://quest-kit.github.io/QuEST/group__calc.html)
   - [QASM](https://quest-kit.github.io/QuEST/group__qasm.html)
   <br><br>
-- Additionally, 
+- Additional utilities for debugging and testing are documented below
   - [debugging](https://quest-kit.github.io/QuEST/group__debug.html)
   - [unit tests](https://quest-kit.github.io/QuEST/group__unittest.html)
   - [testing utilities](https://quest-kit.github.io/QuEST/group__testutilities.html)
 
 
-> **For developers**: To regenerate the doc after making changes to the code, run `doxygen doxyconfig/config` in the root directory. This will generate documentation in `Doxygen_doc/html`, the contents of which should be copied into [`docs/`](/docs/)) 
+> **For developers**: To regenerate the doc after making changes to the code, run `doxygen doxyconfig/config` in the root directory. This will generate documentation in `Doxygen_doc/html`, the contents of which should be copied into [`docs/`](/docs/)
 
 ---------------------------------
 
@@ -135,28 +140,13 @@ then run it with
 ```bash
 ./demo
 ```
+<br>
 
+> Windows users should install [Build Tools](https://visualstudio.microsoft.com/downloads/#build-tools-for-visual-studio-2019) for Visual Studio, [CMake](https://cmake.org/download/) and [MinGW-w64](https://sourceforge.net/projects/mingw-w64/), and run the above commmands in the *Developer Command Prompt for VS*, with alternate cmake argument
+> ```console 
+> cmake .. -G "MinGW Makefiles"
+> ```
 
-OLD GETTING STARTED BELOW
-
-
-#### Windows 
-
-Windows users should install [Build Tools](https://visualstudio.microsoft.com/downloads/#build-tools-for-visual-studio-2019) for Visual Studio, [CMake](https://cmake.org/download/) and [MinGW-w64](https://sourceforge.net/projects/mingw-w64/). 
-Then, in a *Developer Command Prompt for VS*, run
-```bash
-git clone "https://github.com/quest-kit/QuEST.git"
-cd QuEST
-```
-```bash
-mkdir build
-cd build
-cmake .. -G "MinGW Makefiles"
-make
-```
-```bash
-demo.exe
-```
 
 
 
