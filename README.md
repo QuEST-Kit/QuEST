@@ -1,10 +1,8 @@
 
-<!-- We avoid a relative path of 'doxyconfig/logo.png' here, because this README
-     will also serve as Doxygen's mainpage in the doc, where the root directory 
-     will differ -->
-<img align="left" src="https://github.com/QuEST-Kit/QuEST/blob/master/doxyconfig/logo.png?raw=true" alt="The QuEST logo">
+<!-- This README avoids relative paths since it is also used as Doxygen's mainpage -->
 
-# [QuEST](https://quest.qtechtheory.org)
+<!-- banner -->
+<img src="https://github.com/QuEST-Kit/QuEST/blob/readme_update/doxyconfig/banner.png?raw=true" alt="The QuEST logo" width=500>
 
 
 <!-- temporarily hiding Github Actions badges (pending aesthetic customisation)
