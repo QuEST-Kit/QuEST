@@ -34,6 +34,7 @@ The **Quantum Exact Simulation Toolkit** is a high performance simulator of quan
 QuEST is developed by the [QTechTheory](http://qtechtheory.org/) group at the University of Oxford, and [these authors](https://github.com/QuEST-Kit/QuEST/blob/master/AUTHORS.txt). To learn more:
 - see the [tutorial](https://github.com/QuEST-Kit/QuEST/blob/master/examples/README.md)
 - view the [documentation](https://quest-kit.github.io/QuEST/modules.html)
+- visit our [website](https://quest.qtechtheory.org/)
 - read our [whitepaper](https://www.nature.com/articles/s41598-019-47174-9), which featured in Scientific Report's [Top 100 in Physics](https://www.nature.com/collections/ecehgdfcba/)
 
 [![DOI](https://img.shields.io/badge/DOI-10.1038%2Fs41598--019--47174--9-yellow.svg)](https://doi.org/10.1038/s41598-019-47174-9)
@@ -99,23 +100,19 @@ QuEST supports:
   - [testing](/examples/README.md#testing) QuEST using the comprehensive [unit tests](https://quest-kit.github.io/QuEST/group__unittest.html)
   <br><br>
 - The [documentation](https://quest-kit.github.io/QuEST/modules.html) is divided into the following modules (collated [here](https://quest-kit.github.io/QuEST/QuEST_8h.html)):
-  - unitaries
-  - gates 
-  - operators 
-  - decoherence 
-  - data structures 
-  - calculations
-  - initialisations
-  - QASM
+  - [data structures](https://quest-kit.github.io/QuEST/group__type.html)
+  - [initialisations](https://quest-kit.github.io/QuEST/group__init.html)
+  - [unitaries](https://quest-kit.github.io/QuEST/group__unitary.html)
+  - [gates](https://quest-kit.github.io/QuEST/group__normgate.html)
+  - [decoherence](https://quest-kit.github.io/QuEST/group__decoherence.html)
+  - [operators](https://quest-kit.github.io/QuEST/group__operator.html)
+  - [calculations](https://quest-kit.github.io/QuEST/group__calc.html)
+  - [QASM](https://quest-kit.github.io/QuEST/group__qasm.html)
   <br><br>
 - Additionally, 
-  - debugging
-  - unit tests 
-  - testing utilities
-  
-
- The QuEST API is divided into these [modules]((https://quest-kit.github.io/QuEST/modules.html))
-
+  - [debugging](https://quest-kit.github.io/QuEST/group__debug.html)
+  - [unit tests](https://quest-kit.github.io/QuEST/group__unittest.html)
+  - [testing utilities](https://quest-kit.github.io/QuEST/group__testutilities.html)
 
 
 > **For developers**: To regenerate the doc after making changes to the code, run `doxygen doxyconfig/config` in the root directory. This will generate documentation in `Doxygen_doc/html`, the contents of which should be copied into [`docs/`](/docs/)) 
