@@ -78,16 +78,16 @@ applyTrotterCircuit(qubits, hamiltonian, time, order, repetitions);
 ```
 
 ## Features 
-QuEST supports:
-- :white_check_mark: **density matrices** for precise simulation of noisy quantum computers
-- :white_check_mark: **general unitaries** with any number of control and target qubits
-- :white_check_mark: **general decoherence channels** of any dimension
-- :white_check_mark: **general Hermitian operators** in the Pauli basis
-- :white_check_mark: **many *many* operators**, including even [Pauli gadgets](https://quest-kit.github.io/QuEST-develop-doc/group__unitary.html#ga34aa4865c92f9aa5d898c91286c9eca5), [analytic phase functions](https://quest-kit.github.io/QuEST-develop-doc/group__operator.html#ga467f517abd18dbc3d6fced84c6589161) and [Trotter circuits](https://quest-kit.github.io/QuEST-develop-doc/group__operator.html#ga35b6321c578a8c69470132b5ee95f930)
-- :white_check_mark: **many tools to analyse** quantum states, such as calculations of [probability](https://quest-kit.github.io/QuEST-develop-doc/group__calc.html#gad0cc08d52cad5062553d6f78126780cc), [fidelity](https://quest-kit.github.io/QuEST-develop-doc/group__calc.html#gaa266ed6c8ae5d0d0f49e1ac50819cffc), and [expected value](https://quest-kit.github.io/QuEST-develop-doc/group__calc.html#ga82f17e96a4cb7612fb9c6ef856df3810).
-- :white_check_mark: **variable precision** through a `qreal` numerical type which can use single, double or quad precision
-- :white_check_mark: **QASM output** to verify simulated circuits
-- :white_check_mark: **direct access to amplitudes** for rapid custom modification of the quantum state
+QuEST supports:  
+&nbsp; :white_check_mark: &nbsp; **density matrices** for precise simulation of noisy quantum computers  
+&nbsp; :white_check_mark: &nbsp; **general unitaries** with any number of control and target qubits  
+&nbsp; :white_check_mark: &nbsp; **general decoherence channels** of any dimension  
+&nbsp; :white_check_mark: &nbsp; **general Hermitian operators** in the Pauli basis  
+&nbsp; :white_check_mark: &nbsp; **many *many* operators**, including even [Pauli gadgets](https://quest-kit.github.io/QuEST-develop-doc/group__unitary.html#ga34aa4865c92f9aa5d898c91286c9eca5), [analytic phase functions](https://quest-kit.github.io/QuEST-develop-doc/group__operator.html#ga467f517abd18dbc3d6fced84c6589161) and [Trotter circuits](https://quest-kit.github.io/QuEST-develop-doc/group__operator.html#ga35b6321c578a8c69470132b5ee95f930)  
+&nbsp; :white_check_mark: &nbsp; **many tools to analyse** quantum states, such as calculations of [probability](https://quest-kit.github.io/QuEST-develop-doc/group__calc.html#gad0cc08d52cad5062553d6f78126780cc), [fidelity](https://quest-kit.github.io/QuEST-develop-doc/group__calc.html#gaa266ed6c8ae5d0d0f49e1ac50819cffc), and [expected value](https://quest-kit.github.io/QuEST-develop-doc/group__calc.html#ga82f17e96a4cb7612fb9c6ef856df3810)  
+&nbsp; :white_check_mark: &nbsp; **variable precision** through a `qreal` numerical type which can use single, double or quad precision  
+&nbsp; :white_check_mark: &nbsp; **QASM output** to verify simulated circuits  
+&nbsp; :white_check_mark: &nbsp; **direct access to amplitudes** for rapid custom modification of the quantum state  
 
 ---------------------------------
 
