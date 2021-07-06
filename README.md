@@ -42,7 +42,7 @@ QuEST is developed by the [QTechTheory](http://qtechtheory.org/) group at the Un
 ---------------------------------
 
 
-## :tada: Introduction
+## :tada:&nbsp; Introduction
 
 QuEST has a simple interface, which is agnostic to its runtime environment, between CPUs, GPUs and over networks.
 ```C
@@ -82,7 +82,7 @@ applyTrotterCircuit(qubits, hamiltonian, time, order, repetitions);
 
 ---------------------------------
 
-## :white_check_mark: Features 
+## :white_check_mark:&nbsp; Features 
 QuEST supports:  
 - :ballot_box_with_check: &nbsp; **density matrices** for precise simulation of noisy quantum computers  
 - :ballot_box_with_check: &nbsp; **general unitaries** with any number of control and target qubits  
@@ -96,7 +96,7 @@ QuEST supports:
 
 ---------------------------------
 
-## :book: Documentation
+## :book:&nbsp; Documentation
 
 - The [tutorial](/examples/README.md) includes instructions for
   - [compiling](/examples/README.md#compiling) QuEST
@@ -123,7 +123,7 @@ QuEST supports:
 
 ---------------------------------
 
-## :rocket: Getting started 
+## :rocket:&nbsp; Getting started 
 
 To rocket right in, download QuEST with [git](https://git-scm.com/) at the terminal
 ```bash
@@ -153,7 +153,7 @@ then run it with
 
 ---------------------------------
 
-## :heart: Acknowledgements
+## :heart:&nbsp; Acknowledgements
 
 We sincerely thank the following external contributors to QuEST.
 
@@ -169,7 +169,7 @@ QuEST uses the [mt19937ar](http://www.math.sci.hiroshima-u.ac.jp/~m-mat/MT/MT200
 
 ---------------------------------
 
-## :newspaper: Related projects
+## :newspaper:&nbsp; Related projects
 
 - [QuESTlink](https://questlink.qtechtheory.org)   <br>
   a Mathematica package enabling symbolic circuit manipulation, analytic simulation, visualisation and high performance simulation with remote accelerated hardware.
