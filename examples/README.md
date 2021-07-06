@@ -405,7 +405,7 @@ or a sub-test within:
 ./tests/tests myNewFunction -c "correctness" -c "density-matrix" -c "unnormalised"
 ```
 
-Ideally, a new function should have its unit test run in every configuration of hardware (including #threads and #nodes) and precision.
+Ideally, a new function should have its unit test run in every configuration of hardware (including #threads and #nodes) and precision. The below bash script automates this.
 ```bash
 export f=myNewFunction    # function to test
 export cc=30              # GPU compute-capability
@@ -415,6 +415,7 @@ test() {
     cmake .. -DTESTING=ON -DPRECISION=$p \
              -DMULTITHREADED=$mt -DDISTRIBUTED=$d \
              -DGPUACCELERATED=$ga -DGPU_COMPUTE_CAPABILITY=$cc
+             # insert additional cmake params here, if needed
     make
     export OMP_NUM_THREADS=$nt
     if (( $d == 1 )); then 
@@ -426,19 +427,15 @@ test() {
 
 # precision
 for p in 1 2 4; do
-
     # serial
     mt=0 d=0 ga=0 test
-    
     # multithreaded
     mt=1 d=0 ga=0 test
-    
     # gpu 
     mt=0 d=0 ga=1 test
-    
     # distributed (+multithreaded)
     for nn in 2 4 8 16; do
         mt=1 d=1 ga=0 test
     done
 done
-
+```

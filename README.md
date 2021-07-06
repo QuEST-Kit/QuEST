@@ -93,29 +93,43 @@ QuEST supports:
 
 ## Documentation
 
-- The QuEST API is divided into these [modules]((https://quest-kit.github.io/QuEST/modules.html))
-- 
+- The [tutorial](/examples/README.md) includes instructions for
+  - [compiling](/examples/README.md#compiling) QuEST
+  - [running](/examples/README.md#running) QuEST locally and on supercomputers
+  - [testing](/examples/README.md#testing) QuEST using the comprehensive [unit tests](https://quest-kit.github.io/QuEST/group__unittest.html)
+  <br><br>
+- The [documentation](https://quest-kit.github.io/QuEST/modules.html) is divided into the following modules (collated [here](https://quest-kit.github.io/QuEST/QuEST_8h.html)):
+  - unitaries
+  - gates 
+  - operators 
+  - decoherence 
+  - data structures 
+  - calculations
+  - initialisations
+  - QASM
+  <br><br>
+- Additionally, 
+  - debugging
+  - unit tests 
+  - testing utilities
+  
 
-Full documentation is available at [quest.qtechtheory.org/docs](https://quest.qtechtheory.org/docs/), and the API is available [here](https://quest-kit.github.io/QuEST/modules.html) (all functions listed [here](https://quest-kit.github.io/QuEST/QuEST_8h.html)). See also the [tutorial](/examples/README.md).
+ The QuEST API is divided into these [modules]((https://quest-kit.github.io/QuEST/modules.html))
 
-> **For developers**: To regenerate the API doc after making changes to the code, run `doxygen doxyconfig/config` in the root directory. This will generate documentation in `Doxygen_doc/html`, the contents of which should be copied into [`docs/`](/docs/)) 
+
+
+> **For developers**: To regenerate the doc after making changes to the code, run `doxygen doxyconfig/config` in the root directory. This will generate documentation in `Doxygen_doc/html`, the contents of which should be copied into [`docs/`](/docs/)) 
 
 ---------------------------------
 
-## Getting started
+## Getting started 
 
-QuEST is contained entirely in the files in the `QuEST/` folder. To use QuEST, copy this folder to your computer and include `QuEST.h` in your `C` or `C++` code, and compile using cmake with the provided [CMakeLists.txt file](/CMakeLists.txt). See the [tutorial](/examples/README.md) for an introduction. We also include example [submission scripts](examples/submissionScripts/) for using QuEST with SLURM and PBS. 
-
-### Quick Start
-
-#### MacOS & Linux
-
-MacOS and Linux users can clone this repository to your machine through the terminal:
+To dive right in, download QuEST with [git](https://git-scm.com/) at the terminal
 ```bash
 git clone https://github.com/quest-kit/QuEST.git
 cd QuEST
 ```
-Compile the [example](examples/tutorial_example.c) using
+Compile the [tutorial](/examples/README.md) example ([source](/examples/tutorial_example.c)) using [cmake](https://cmake.org/) and [make](https://www.gnu.org/software/make/)
 ```bash
 mkdir build
 cd build
@@ -126,6 +140,10 @@ then run it with
 ```bash
 ./demo
 ```
+
+
+OLD GETTING STARTED BELOW
+
 
 #### Windows 
 
@@ -146,16 +164,6 @@ demo.exe
 ```
 
 
-#### Tests
-Additionally, you can run QuEST's rigorous unit tests in your own environment, 
-which should take no longer than ten minutes.
-```bash
-mkdir build
-cd build
-cmake .. -DTESTING=ON
-make 
-make test
-```
 
 ---------------------------------
 
