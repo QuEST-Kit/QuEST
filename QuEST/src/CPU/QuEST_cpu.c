@@ -3459,7 +3459,9 @@ void statevec_calcProbOfAllOutcomesLocal(qreal* outcomeProbs, Qureg qureg, int* 
             prob = stateRe[i]*stateRe[i] + stateIm[i]*stateIm[i];
             
             // atomicly update corresponding outcome array element
+            # ifdef _OPENMP
             # pragma omp atomic update
+            # endif
             outcomeProbs[outcomeInd] += prob;
         }
     }
@@ -3528,7 +3530,9 @@ void densmatr_calcProbOfAllOutcomesLocal(qreal* outcomeProbs, Qureg qureg, int* 
                 outcomeInd += extractBit(qubits[q], basisStateInd) * (1LL << q);
     
             // atomicly update corresponding outcome array element
+            # ifdef _OPENMP
             # pragma omp atomic update
+            # endif
             outcomeProbs[outcomeInd] += stateRe[index];
         }
     }

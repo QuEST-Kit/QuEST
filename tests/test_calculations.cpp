@@ -934,7 +934,7 @@ TEST_CASE( "calcProbOfAllOutcomes", "[calculations]" ) {
                 REQUIRE( areEqual(refProbs, probs) );
             }
         }
-        SECTION( "density matrix" ) {
+        SECTION( "density-matrix" ) {
             
             SECTION( "normalised" ) {
             

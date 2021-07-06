@@ -593,7 +593,7 @@ TEST_CASE( "applyMultiVarPhaseFunc", "[operators]" ) {
         int numQubitsPerReg[] = {2,3};
         int qubits[] = {0,1,2,3,4};
         
-        SECTION( "density matrix" ) {
+        SECTION( "density-matrix" ) {
     
             Qureg dens = quregVec;
             dens.isDensityMatrix = 1;
@@ -821,7 +821,7 @@ TEST_CASE( "applyMultiVarPhaseFuncOverrides", "[operators]" ) {
         int numQubitsPerReg[] = {2,3};
         int qubits[] = {0,1,2,3,4};
         
-        SECTION( "density matrix" ) {
+        SECTION( "density-matrix" ) {
                         
             Qureg dens = quregVec;
             dens.isDensityMatrix = 1;
@@ -1072,7 +1072,7 @@ TEST_CASE( "applyNamedPhaseFunc", "[operators]" ) {
         int numQubitsPerReg[] = {2,3};
         int regs[] = {0,1,2,3,4};
         
-        SECTION( "density matrix" ) {
+        SECTION( "density-matrix" ) {
                         
             Qureg dens = quregVec;
             dens.isDensityMatrix = 1;
@@ -1292,7 +1292,7 @@ TEST_CASE( "applyNamedPhaseFuncOverrides", "[operators]" ) {
         int numQubitsPerReg[] = {2,3};
         int regs[] = {0,1,2,3,4};
         
-        SECTION( "density matrix" ) {
+        SECTION( "density-matrix" ) {
                         
             Qureg dens = quregVec;
             dens.isDensityMatrix = 1;
@@ -1663,7 +1663,7 @@ TEST_CASE( "applyParamNamedPhaseFunc", "[operators]" ) {
         int numQubitsPerReg[] = {2,3};
         int regs[] = {0,1,2,3,4};
         
-        SECTION( "density matrix" ) {
+        SECTION( "density-matrix" ) {
                         
             Qureg dens = quregVec;
             dens.isDensityMatrix = 1;
@@ -2053,7 +2053,7 @@ TEST_CASE( "applyParamNamedPhaseFuncOverrides", "[operators]" ) {
         int numQubitsPerReg[] = {2,3};
         int regs[] = {0,1,2,3,4};
         
-        SECTION( "density matrix" ) {
+        SECTION( "density-matrix" ) {
                         
             Qureg dens = quregVec;
             dens.isDensityMatrix = 1;
@@ -2435,7 +2435,7 @@ TEST_CASE( "applyPhaseFunc", "[operators]" ) {
         int numQubits = 3;
         int qubits[] = {0,1,2};
         
-        SECTION( "density matrix" ) {
+        SECTION( "density-matrix" ) {
             
             Qureg dens = quregVec;
             dens.isDensityMatrix = 1;
@@ -2597,7 +2597,7 @@ TEST_CASE( "applyPhaseFuncOverrides", "[operators]" ) {
         int numQubits = 3;
         int qubits[] = {0,1,2};
         
-        SECTION( "density matrix" ) {
+        SECTION( "density-matrix" ) {
             
             Qureg dens = quregVec;
             dens.isDensityMatrix = 1;
