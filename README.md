@@ -33,7 +33,8 @@ QuEST is developed by the [QTechTheory](http://qtechtheory.org/) group at the Un
 - see the [tutorial](https://github.com/QuEST-Kit/QuEST/blob/master/examples/README.md)
 - view the [documentation](https://quest-kit.github.io/QuEST/modules.html)
 - visit our [website](https://quest.qtechtheory.org/)
-- read our [whitepaper](https://www.nature.com/articles/s41598-019-47174-9), which featured in Scientific Report's [Top 100 in Physics](https://www.nature.com/collections/ecehgdfcba/)
+- see some [examples](https://github.com/QuEST-Kit/QuEST/blob/master/examples/)
+- read our [whitepaper](https://www.nature.com/articles/s41598-019-47174-9), which featured in Scientific Report's [Top 100 in Physics](https://www.nature.com/collections/ecehgdfcba/) :trophy:
 
 [![DOI](https://img.shields.io/badge/DOI-10.1038%2Fs41598--019--47174--9-yellow.svg)](https://doi.org/10.1038/s41598-019-47174-9)
 [![Email](https://img.shields.io/badge/email-quest@materials.ox.ac.uk-red.svg)](mailto:quest@materials.ox.ac.uk)
@@ -41,7 +42,7 @@ QuEST is developed by the [QTechTheory](http://qtechtheory.org/) group at the Un
 ---------------------------------
 
 
-## Introduction
+## :tada: Introduction
 
 QuEST has a simple interface, which is agnostic to its runtime environment, between CPUs, GPUs and over networks.
 ```C
@@ -81,21 +82,21 @@ applyTrotterCircuit(qubits, hamiltonian, time, order, repetitions);
 
 ---------------------------------
 
-## Features 
+## :white_check_mark: Features 
 QuEST supports:  
-- :white_check_mark: &nbsp; **density matrices** for precise simulation of noisy quantum computers  
-- :white_check_mark: &nbsp; **general unitaries** with any number of control and target qubits  
-- :white_check_mark: &nbsp; **general decoherence channels** of any dimension  
-- :white_check_mark: &nbsp; **general Hermitian operators** in the Pauli basis  
-- :white_check_mark: &nbsp; **many *many* operators**, including even [Pauli gadgets](https://quest-kit.github.io/QuEST-develop-doc/group__unitary.html#ga34aa4865c92f9aa5d898c91286c9eca5), [analytic phase functions](https://quest-kit.github.io/QuEST-develop-doc/group__operator.html#ga467f517abd18dbc3d6fced84c6589161) and [Trotter circuits](https://quest-kit.github.io/QuEST-develop-doc/group__operator.html#ga35b6321c578a8c69470132b5ee95f930)  
-- :white_check_mark: &nbsp; **many tools to analyse** quantum states, such as calculations of [probability](https://quest-kit.github.io/QuEST-develop-doc/group__calc.html#gad0cc08d52cad5062553d6f78126780cc), [fidelity](https://quest-kit.github.io/QuEST-develop-doc/group__calc.html#gaa266ed6c8ae5d0d0f49e1ac50819cffc), and [expected value](https://quest-kit.github.io/QuEST-develop-doc/group__calc.html#ga82f17e96a4cb7612fb9c6ef856df3810)  
-- :white_check_mark: &nbsp; **variable precision** through a `qreal` numerical type which can use single, double or quad precision  
-- :white_check_mark: &nbsp; **QASM output** to verify simulated circuits  
-- :white_check_mark: &nbsp; **direct access to amplitudes** for rapid custom modification of the quantum state  
+- :ballot_box_with_check: &nbsp; **density matrices** for precise simulation of noisy quantum computers  
+- :ballot_box_with_check: &nbsp; **general unitaries** with any number of control and target qubits  
+- :ballot_box_with_check: &nbsp; **general decoherence channels** of any dimension  
+- :ballot_box_with_check: &nbsp; **general Hermitian operators** in the Pauli basis  
+- :ballot_box_with_check: &nbsp; **many *many* operators**, including even [Pauli gadgets](https://quest-kit.github.io/QuEST-develop-doc/group__unitary.html#ga34aa4865c92f9aa5d898c91286c9eca5), [analytic phase functions](https://quest-kit.github.io/QuEST-develop-doc/group__operator.html#ga467f517abd18dbc3d6fced84c6589161) and [Trotter circuits](https://quest-kit.github.io/QuEST-develop-doc/group__operator.html#ga35b6321c578a8c69470132b5ee95f930)  
+- :ballot_box_with_check: &nbsp; **many tools to analyse** quantum states, such as calculations of [probability](https://quest-kit.github.io/QuEST-develop-doc/group__calc.html#gad0cc08d52cad5062553d6f78126780cc), [fidelity](https://quest-kit.github.io/QuEST-develop-doc/group__calc.html#gaa266ed6c8ae5d0d0f49e1ac50819cffc), and [expected value](https://quest-kit.github.io/QuEST-develop-doc/group__calc.html#ga82f17e96a4cb7612fb9c6ef856df3810)  
+- :ballot_box_with_check: &nbsp; **variable precision** through a `qreal` numerical type which can use single, double or quad precision  
+- :ballot_box_with_check: &nbsp; **QASM output** to verify simulated circuits  
+- :ballot_box_with_check: &nbsp; **direct access to amplitudes** for rapid custom modification of the quantum state  
 
 ---------------------------------
 
-## Documentation
+## :book: Documentation
 
 - The [tutorial](/examples/README.md) includes instructions for
   - [compiling](/examples/README.md#compiling) QuEST
@@ -122,9 +123,9 @@ QuEST supports:
 
 ---------------------------------
 
-## Getting started 
+## :rocket: Getting started 
 
-To dive right in, download QuEST with [git](https://git-scm.com/) at the terminal
+To rocket right in, download QuEST with [git](https://git-scm.com/) at the terminal
 ```bash
 git clone https://github.com/quest-kit/QuEST.git
 cd QuEST
@@ -152,7 +153,7 @@ then run it with
 
 ---------------------------------
 
-## Acknowledgements
+## :heart: Acknowledgements
 
 We sincerely thank the following external contributors to QuEST.
 
@@ -168,7 +169,13 @@ QuEST uses the [mt19937ar](http://www.math.sci.hiroshima-u.ac.jp/~m-mat/MT/MT200
 
 ---------------------------------
 
-## Related projects
+## :newspaper: Related projects
 
-* [QuESTlink](https://questlink.qtechtheory.org): a Mathematica package allowing symbolic circuit manipulation and high performance simulation with remote accelerated hardware.
-* [PyQuEST-cffi](https://github.com/HQSquantumsimulations/PyQuEST-cffi): a python interface to QuEST based on cffi developed by HQS Quantum Simulations. Please note, PyQuEST-cffi is currently in the alpha stage and not an official QuEST project.
+- [QuESTlink](https://questlink.qtechtheory.org)   <br>
+  a Mathematica package enabling symbolic circuit manipulation, analytic simulation, visualisation and high performance simulation with remote accelerated hardware.
+  
+- [pyQuEST](https://github.com/rrmeister/pyQuEST/tree/master)   <br>
+  a python interface to QuEST, based on Cython, developed within the [QTechTheory](https://qtechtheory.org) group. Please note, pyQuEST is currently in the alpha stage.
+   
+- [PyQuEST-cffi](https://github.com/HQSquantumsimulations/PyQuEST-cffi)   <br>
+  a python interface to QuEST based on cffi developed by HQS Quantum Simulations. Please note, PyQuEST-cffi is currently in the alpha stage and not an official QuEST project.
