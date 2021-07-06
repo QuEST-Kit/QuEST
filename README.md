@@ -21,7 +21,7 @@
 [![MIT license](https://img.shields.io/badge/license-MIT-lightgrey.svg)](LICENCE.txt)
 
 
-The **Quantum Exact Simulation Toolkit** is a high performance simulator of quantum circuits, state-vectors and density matrices. QuEST uses **multithreading**, **GPU acceleration** and **distribution** to run lightning first on laptops, desktops and networked supercomputers. QuEST *just works*; it is stand-alone, and trivial to compile and getting running.
+The **Quantum Exact Simulation Toolkit** is a high performance simulator of quantum circuits, state-vectors and density matrices. QuEST uses **multithreading**, **GPU acceleration** and **distribution** to run lightning first on laptops, desktops and networked supercomputers. QuEST *just works*; it is stand-alone, requires no installation, and trivial to compile and getting running.
 
 [![Languages](https://img.shields.io/badge/C-99-ff69b4.svg)](http://www.open-std.org/jtc1/sc22/wg14/www/standards.html#9899)
 [![Languages](https://img.shields.io/badge/C++-11-ff69b4.svg)](http://www.open-std.org/jtc1/sc22/wg14/www/standards.html#9899)
@@ -144,7 +144,7 @@ then run it with
 <br>
 
 > Windows users should install [Build Tools](https://visualstudio.microsoft.com/downloads/#build-tools-for-visual-studio-2019) for Visual Studio, [CMake](https://cmake.org/download/) and [MinGW-w64](https://sourceforge.net/projects/mingw-w64/), and run the above commmands in the *Developer Command Prompt for VS*, with alternate cmake argument
-> ```console 
+> ```bash 
 > cmake .. -G "MinGW Makefiles"
 > ```
 
