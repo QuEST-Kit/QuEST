@@ -1010,7 +1010,7 @@ void syncDiagonalOp(DiagonalOp op);
  * Both \p real and \p imag must have length equal to <b>pow(2, </b>`op.numQubits`<b>)</b>.
  *
  * In GPU mode, this updates both the RAM (\p op.real and \p op.imag) <em>and</em> 
- * persistent GPU memory.
+ * persistent GPU memory; there is no need to call syncDiagonalOp() afterward.
  *
  * In distributed mode, this function assumes \p real and \p imag exist fully on every 
  * node. For ::DiagonalOp which are too large to fit into a single node, use 
@@ -1018,7 +1018,7 @@ void syncDiagonalOp(DiagonalOp op);
  *
  * @see 
  * - setDiagonalOpElems()
- * - syncDiagonalOp()
+ * - initDiagonalOpFromPauliHamil()
  *
  * @ingroup type
  * @param[in,out] op the diagonal operator to modify
@@ -1031,6 +1031,60 @@ void syncDiagonalOp(DiagonalOp op);
  * @author Tyson Jones
  */
 void initDiagonalOp(DiagonalOp op, qreal* real, qreal* imag);
+
+/** Populates the diagonal operator \p op to be equivalent to the given Pauli 
+ * Hamiltonian \p hamil, assuming \p hamil contains only `PAULI_Z` operators.
+ *
+ * Given a ::PauliHamil \p hamil featuring only `PAULI_Z` and `PAULI_I`, with 
+ * term coefficients \f$\{\lambda_j\}\f$, which 
+ * hence has form
+ * \f[
+ *      \begin{aligned}
+ *      \text{hamil} &= \sum\limits_j^{\text{numSumTerms}} \lambda_j
+ *                      \bigotimes\limits_{k_j} \hat{Z}_k \\
+ *      &\equiv \begin{pmatrix}
+ *              r_1 \\ & r_2 \\ & & r_3 \\ & & & \ddots \\ & & & & r_{2^{\,\text{numQubits}}}
+ *          \end{pmatrix},
+ *      \end{aligned}
+ * \f]
+ * this function modifies \p op to 
+ * \f[
+ *      \text{op} \; \rightarrow \; \text{diag}
+ *          \big( \; r_1, \; r_2, \; r_3, \; \dots, \; r_{2^{\,\text{numQubits}}} \, \big),
+ * \f]
+ * where the real amplitudes have form 
+ * \f[
+ *       r_i = \sum\limits_j \, s_{ij} \, \lambda_j, \;\;\;\; s_{ij} = \pm  1 \,.
+ * \f]
+ * This is useful since calculations with ::DiagonalOp are significantly faster than 
+ * the equivalent calculations with a general ::PauliHamil. For example, 
+ * applyDiagonalOp() requires a factor `numSumTerms * numQubits` fewer operations
+ * than applyPauliHamil().
+ * 
+ * > In distributed mode, each node will contain only a sub-partition of the full diagonal matrix.  
+ * > In GPU mode, both the CPU and GPU memory copies of \p op will be updated, so there 
+ * > is no need to call syncDiagonalOp() afterward.
+ *
+ * @see
+ * - createDiagonalOp()
+ * - createPauliHamil()
+ * - createDiagonalOpFromPauliHamilFile()
+ * - initDiagonalOp()
+ * - setDiagonalOpElems()
+ *
+ * @ingroup type
+ * @param[in,out] op an existing ::DiagonalOp (e.g. created with createDiagonalOp()) to modify 
+ * @param[in] hamil a ::PauliHamil of equal dimension to \p op, containing only `PAULI_Z` and `PAULI_I` operators
+ * @throws invalidQuESTInputError()
+ * - if \p hamil has invalid parameters (\p numQubits <= 0, \p numSumTerms <= 0)
+ * - if \p op and \p hamil have unequal dimensions 
+ * - if \p hamil contains any operator other than `PAULI_Z` and `PAULI_I`
+ * @throws segmentation-fault 
+ * - if either \p op or \p hamil have not been already created
+ * @author Tyson Jones 
+ * @author Milos Prokop (serial prototype)
+ */
+void initDiagonalOpFromPauliHamil(DiagonalOp op, PauliHamil hamil);
 
 /** Modifies a subset (starting at index \p startInd, and ending at index 
  * \p startInd <b>+</b> \p numElems) of the elements in ::DiagonalOp \p op 

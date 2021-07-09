@@ -650,6 +650,84 @@ TEST_CASE( "initDiagonalOp", "[data_structures]" ) {
 
 
 
+/** @sa initDiagonalOpFromPauliHamil
+ * @ingroup unittest 
+ * @author Tyson Jones 
+ */
+TEST_CASE( "initDiagonalOpFromPauliHamil", "[data_structures]" ) {
+    
+    // distributed diagonal op must contain at least one amplitude per node
+    int minNumQb = calcLog2(QUEST_ENV.numRanks);
+    if (minNumQb == 0)
+        minNumQb = 1;
+    
+    SECTION( "correctness" ) {    
+
+        // try 10 valid number of qubits (even for validation)
+        int numQb = GENERATE_COPY( range(minNumQb, minNumQb+10) );
+        DiagonalOp op = createDiagonalOp(numQb, QUEST_ENV);
+        
+        // try several sized random all-Z Hamiltonians
+        int numTerms = GENERATE_COPY( 1, numQb, 5*numQb );
+        PauliHamil hamil = createPauliHamil(numQb, numTerms);
+        setRandomDiagPauliHamil(hamil);
+        
+        initDiagonalOpFromPauliHamil(op, hamil);
+        REQUIRE( areEqual(toQMatrix(op), toQMatrix(hamil)) );
+        
+        destroyPauliHamil(hamil);
+        destroyDiagonalOp(op, QUEST_ENV);
+    }
+    SECTION( "input validation" ) {
+        
+        SECTION( "hamiltonian parameters" ) {
+            
+            DiagonalOp op = createDiagonalOp(minNumQb, QUEST_ENV);
+            PauliHamil hamil;
+            
+            hamil.numQubits = GENERATE( -1, 0 );
+            hamil.numSumTerms = 1;
+            REQUIRE_THROWS_WITH( initDiagonalOpFromPauliHamil(op, hamil), Contains("number of qubits") && Contains("strictly positive") );
+            
+            hamil.numQubits = minNumQb;
+            hamil.numSumTerms = GENERATE( -1, 0 );
+            REQUIRE_THROWS_WITH( initDiagonalOpFromPauliHamil(op, hamil), Contains("terms") && Contains("strictly positive") );
+            
+            destroyDiagonalOp(op, QUEST_ENV);
+        }
+        SECTION( "mismatching dimensions" ) {
+            
+            int numQbA = minNumQb+1;
+            int numQbB = GENERATE_COPY( numQbA-1, numQbA+1 );
+            
+            DiagonalOp op = createDiagonalOp(numQbA, QUEST_ENV);
+            PauliHamil hamil = createPauliHamil(numQbB, 1);
+            
+            REQUIRE_THROWS_WITH( initDiagonalOpFromPauliHamil(op, hamil), Contains("Pauli Hamiltonian and diagonal operator have different, incompatible dimensions") );
+            
+            destroyDiagonalOp(op, QUEST_ENV);
+            destroyPauliHamil(hamil);
+        }
+        SECTION( "pauli codes" ) {
+        
+            DiagonalOp op = createDiagonalOp(minNumQb, QUEST_ENV);
+            PauliHamil hamil = createPauliHamil(minNumQb, 5);  // all I
+            
+            // make only one code invalid
+            int numCodes = minNumQb * hamil.numSumTerms;
+            int ind = GENERATE_COPY( range(0,numCodes) );
+            hamil.pauliCodes[ind] = GENERATE( PAULI_X, PAULI_Y );
+            
+            REQUIRE_THROWS_WITH( initDiagonalOpFromPauliHamil(op, hamil), Contains("contained operators other than PAULI_Z and PAULI_I") );
+            
+            destroyDiagonalOp(op, QUEST_ENV);
+            destroyPauliHamil(hamil);
+        }
+    }
+}
+
+
+
 /** @sa initPauliHamil
  * @ingroup unittest 
  * @author Tyson Jones 

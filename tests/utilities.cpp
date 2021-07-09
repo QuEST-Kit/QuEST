@@ -1084,6 +1084,18 @@ void setRandomPauliSum(PauliHamil hamil) {
     setRandomPauliSum(hamil.termCoeffs, hamil.pauliCodes, hamil.numQubits, hamil.numSumTerms);
 }
 
+void setRandomDiagPauliHamil(PauliHamil hamil) {
+    int i=0;
+    for (int n=0; n<hamil.numSumTerms; n++) {
+        hamil.termCoeffs[n] = getRandomReal(-5, 5);
+        for (int q=0; q<hamil.numQubits; q++)
+            if (getRandomReal(-1,1) > 0)
+                hamil.pauliCodes[i++] = PAULI_Z;
+            else
+                hamil.pauliCodes[i++] = PAULI_I;
+    }
+}
+
 QMatrix toQMatrix(qreal* coeffs, pauliOpType* paulis, int numQubits, int numTerms) {
     
     // produce a numTargs-big matrix 'pauliSum' by pauli-matrix tensoring and summing
@@ -1091,7 +1103,7 @@ QMatrix toQMatrix(qreal* coeffs, pauliOpType* paulis, int numQubits, int numTerm
     QMatrix xMatr{{0,1},{1,0}};
     QMatrix yMatr{{0,-qcomp(0,1)},{qcomp(0,1),0}};
     QMatrix zMatr{{1,0},{0,-1}};
-    QMatrix pauliSum = getZeroMatrix(1<<NUM_QUBITS);
+    QMatrix pauliSum = getZeroMatrix(1<<numQubits);
     
     for (int t=0; t<numTerms; t++) {
         QMatrix pauliProd = QMatrix{{1}};
