@@ -1434,8 +1434,7 @@ void initDiagonalOpFromPauliHamil(DiagonalOp op, PauliHamil hamil) {
 
 DiagonalOp createDiagonalOpFromPauliHamilFile(char* fn, QuESTEnv env) {
     PauliHamil h = createPauliHamilFromFile(fn); // validates fn
-    validateDiagHamilFromFile(h, __func__);  // destroys h if not diagonal
-    validateNumQubitsInDiagOp(h.numQubits, env.numRanks, __func__);
+    validateDiagPauliHamilFromFile(h, env.numRanks, __func__);  // destroys h if invalid
 
     DiagonalOp op = agnostic_createDiagonalOp(h.numQubits, env);
     agnostic_initDiagonalOpFromPauliHamil(op, h);
