@@ -908,6 +908,32 @@ long long int getUnsigned(long long int twosComp, int numBits);
  */
 void setDiagMatrixOverrides(QMatrix &matr, int* numQubitsPerReg, int numRegs, enum bitEncoding encoding, long long int* overrideInds, qreal* overridePhases, int numOverrides);
 
+/** Modifies outFn to be a filename of format prefix_NUM.txt where NUM 
+ * is a new unique integer so far. This is useful for getting unique filenames for 
+ * independent test cases of functions requiring reading/writing to file, to 
+ * avoid IO locks (especially common in distributed mode).
+ *
+ * @ingroup testutilities
+ * @author Tyson Jones
+ */
+void setUniqueFilename(char* outFn, char* prefix);
+
+/** Writes contents to the file with filename fn, which is created and/or overwritten.
+ * In distributed mode, the master node writes while the other nodes wait until complete. 
+ *
+ * @ingroup testutilities
+ * @author Tyson Jones
+ */
+void writeToFileSynch(char* fn, const string& contents);
+
+/** Deletes all files with filename starting with prefix. In distributed mode, the 
+ * master node deletes while the other nodes wait until complete.
+ *
+ * @ingroup testutilities
+ * @author Tyson Jones
+ */
+void deleteFilesWithPrefixSynch(char* prefix);
+
 // makes below signatures more concise
 template<class T> using CatchGen = Catch::Generators::GeneratorWrapper<T>;
 
