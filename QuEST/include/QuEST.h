@@ -780,6 +780,7 @@ void initComplexMatrixN(ComplexMatrixN m, qreal real[][1<<m.numQubits], qreal im
  *
  * @see
  * - createPauliHamilFromFile()
+ * - createDiagonalOpFromPauliHamilFile()
  * - initPauliHamil()
  * - destroyPauliHamil()
  * - applyPauliSum()
@@ -841,6 +842,7 @@ void destroyPauliHamil(PauliHamil hamil);
  * - destroyPauliHamil()
  * - createPauliHamil()
  * - initPauliHamil()
+ * - createDiagonalOpFromPauliHamilFile()
  *
  * @ingroup type
  * @param[in] fn filename of the plaintext file specifying the pauli operators and coefficients
@@ -949,6 +951,7 @@ void initPauliHamil(PauliHamil hamil, qreal* coeffs, enum pauliOpType* codes);
  *
  *
  * @see 
+ * - createDiagonalOpFromPauliHamilFile()
  * - setDiagonalOpElems()
  * - initDiagonalOp()
  * - syncDiagonalOp()
@@ -1085,6 +1088,50 @@ void initDiagonalOp(DiagonalOp op, qreal* real, qreal* imag);
  * @author Milos Prokop (serial prototype)
  */
 void initDiagonalOpFromPauliHamil(DiagonalOp op, PauliHamil hamil);
+
+/** Creates and initialiases a diagonal operator from the Z Pauli Hamiltonian encoded in 
+ * file with filename \p fn.
+ *
+ * This is a convenience function to prepare a diagonal operator from a plaintext 
+ * description of an all-Z Pauli Hamiltonian. The returned ::DiagonalOp is a
+ * distributed data structure, and significantly faster to use (through functions 
+ * like calcExpecDiagonalOp()) than ::PauliHamil functions (like calcExpecPauliHamil()).
+ *
+ * - See createDiagonalOp() for info about the returned operator.
+ * - See initDiagonalOpFromPauliHamil() for info about the initialised state.
+ * - See createPauliHamilFromFile() for info about the required file format.
+ *
+ * > The returned ::DiagonalOp must be later freed with destroyDiagonalOp().  
+ * > Note a ::PauliHamil from \p fn is temporarily internally created.
+ *
+ * This function is equivalent to
+ * ```
+ * // produce diagonal matrix d
+ * PauliHamil h = createPauliHamilFromFile(fn);
+ * DiagonalOp d = createDiagonalOp(h.numQubits, env);
+ * initDiagonalOpFromPauliHamil(d, h); 
+ * destroyPauliHamil(h);
+ * ```
+ * <br>
+ *
+ * @see
+ * - initDiagonalOpFromPauliHamil()
+ * - createPauliHamilFromFile()
+ * - createDiagonalOp()
+ * - destroyDiagonalOp()
+ *
+ * @ingroup type 
+ * @param[in] fn filename of a plaintext file encoding an all-Z Pauli Hamiltonian
+ * @param[in] env the session ::QuESTEnv
+ * @returns a created ::DiagonalOp equivalent to the Hamiltonian in \p fn 
+ * @throws invalidQuESTInputError()
+ * - if file \p fn cannot be read
+ * - if file \p fn does not encode a valid ::PauliHamil
+ * - if the encoded ::PauliHamil consists of operators other than `PAULI_Z` and `PAULI_I`
+ * @author Tyson Jones
+ * @author Milos Prokop (serial prototype)
+ */ 
+DiagonalOp createDiagonalOpFromPauliHamilFile(char* fn, QuESTEnv env);
 
 /** Modifies a subset (starting at index \p startInd, and ending at index 
  * \p startInd <b>+</b> \p numElems) of the elements in ::DiagonalOp \p op 

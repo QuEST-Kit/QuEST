@@ -720,6 +720,19 @@ void validateDiagPauliHamil(DiagonalOp op, PauliHamil hamil, const char *caller)
             E_PAULI_HAMIL_NOT_DIAGONAL, caller);
 }
 
+void validateDiagHamilFromFile(PauliHamil hamil, const char *caller) {
+    // hamil itself already validated as general Pauli Hamiltonian
+    
+    for (int p=0; p<hamil.numSumTerms*hamil.numQubits; p++) {
+        int isValid = hamil.pauliCodes[p] == PAULI_I || hamil.pauliCodes[p] == PAULI_Z;
+        
+        if (!isValid)
+            destroyPauliHamil(hamil);
+            
+        QuESTAssert(isValid, E_PAULI_HAMIL_NOT_DIAGONAL, caller);
+    }
+}
+
 void validateQubitSubregs(Qureg qureg, int* qubits, int* numQubitsPerReg, const int numRegs, const char* caller) {
     QuESTAssert(numRegs>0 && numRegs<=MAX_NUM_REGS_APPLY_ARBITRARY_PHASE, E_INVALID_NUM_SUBREGISTERS, caller);
 

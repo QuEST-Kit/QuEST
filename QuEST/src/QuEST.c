@@ -1432,6 +1432,17 @@ void initDiagonalOpFromPauliHamil(DiagonalOp op, PauliHamil hamil) {
     agnostic_initDiagonalOpFromPauliHamil(op, hamil);
 }
 
+DiagonalOp createDiagonalOpFromPauliHamilFile(char* fn, QuESTEnv env) {
+    PauliHamil h = createPauliHamilFromFile(fn); // validates fn
+    validateDiagHamilFromFile(h, __func__);  // destroys h if not diagonal
+    
+    DiagonalOp op = agnostic_createDiagonalOp(h.numQubits, env);
+    agnostic_initDiagonalOpFromPauliHamil(op, h);
+    
+    destroyPauliHamil(h);
+    return op;
+}
+
 /*
  * debug
  */

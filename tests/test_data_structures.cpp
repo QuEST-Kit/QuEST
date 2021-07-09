@@ -248,6 +248,176 @@ TEST_CASE( "createDiagonalOp", "[data_structures]" ) {
 
 
 
+/** @sa createDiagonalOpFromPauliHamilFile
+ * @ingroup unittest 
+ * @author Tyson Jones 
+ */
+TEST_CASE( "createDiagonalOpFromPauliHamilFile", "[data_structures]" ) {
+
+    // a file created & populated during the test, and deleted afterward
+    char fn[] = "temp_test_output_file.txt";
+    
+    // diagonal op must have at least one amplitude per node
+    int minNumQb = calcLog2(QUEST_ENV.numRanks);
+    if (minNumQb == 0)
+        minNumQb = 1;
+
+    SECTION( "correctness" ) {
+
+        SECTION( "general" ) {
+            
+            // try several Pauli Hamiltonian sizes
+            int numQb = GENERATE_COPY( range(minNumQb, 6+minNumQb) );
+            int numTerms = GENERATE_COPY( 1, minNumQb, 10*minNumQb );
+            
+            // create a PauliHamil with random elements
+            PauliHamil hamil = createPauliHamil(numQb, numTerms);
+            setRandomDiagPauliHamil(hamil);
+            
+            // write the Hamiltonian to file (with trailing whitespace, and trailing newline)
+            if (QUEST_ENV.rank == 0) { 
+                FILE* file = fopen(fn, "w");
+                int i=0;
+                for (int n=0; n<numTerms; n++) {
+                    fprintf(file, REAL_STRING_FORMAT, hamil.termCoeffs[n]);
+                    fprintf(file, " ");
+                    for (int q=0; q<numQb; q++)
+                        fprintf(file, "%d ", (int) hamil.pauliCodes[i++]);
+                    fprintf(file, "\n");
+                }
+                fprintf(file, "\n");
+                fclose(file);
+            }
+            syncQuESTEnv(QUEST_ENV);
+            
+            // load the file as a diagonal operator, and compare
+            DiagonalOp op = createDiagonalOpFromPauliHamilFile(fn, QUEST_ENV);
+            REQUIRE( areEqual(toQMatrix(op), toQMatrix(hamil)) );
+
+            destroyPauliHamil(hamil);
+            destroyDiagonalOp(op, QUEST_ENV);
+        }
+        SECTION( "edge cases" ) {
+            
+            SECTION( "no trailing newline or space" ) {
+                
+                if (QUEST_ENV.rank == 0) { 
+                    FILE* file = fopen(fn, "w");
+                    fprintf(file, ".1 3 0 3");
+                    fclose(file);
+                }
+                syncQuESTEnv(QUEST_ENV);
+                
+                DiagonalOp op = createDiagonalOpFromPauliHamilFile(fn, QUEST_ENV);
+                QVector ref{.1,-.1,.1,-.1, -.1,.1,-.1,.1};
+                REQUIRE( areEqual(ref, toQVector(op)) );
+                
+                destroyDiagonalOp(op, QUEST_ENV);
+            }
+            SECTION( "trailing newlines" ) {
+                
+                if (QUEST_ENV.rank == 0) { 
+                    FILE* file = fopen(fn, "w");
+                    fprintf(file, ".1 3 0 3\n\n\n");
+                    fclose(file);
+                }
+                syncQuESTEnv(QUEST_ENV);
+                
+                DiagonalOp op = createDiagonalOpFromPauliHamilFile(fn, QUEST_ENV);
+                QVector ref{.1,-.1,.1,-.1, -.1,.1,-.1,.1};
+                REQUIRE( areEqual(ref, toQVector(op)) );
+                
+                destroyDiagonalOp(op, QUEST_ENV);
+            }
+            SECTION( "trailing spaces" ) {
+                
+                if (QUEST_ENV.rank == 0) { 
+                    FILE* file = fopen(fn, "w");
+                    fprintf(file, ".1 3 0 3    ");
+                    fclose(file);
+                }
+                syncQuESTEnv(QUEST_ENV);
+                
+                DiagonalOp op = createDiagonalOpFromPauliHamilFile(fn, QUEST_ENV);
+                QVector ref{.1,-.1,.1,-.1, -.1,.1,-.1,.1};
+                REQUIRE( areEqual(ref, toQVector(op)) );
+                
+                destroyDiagonalOp(op, QUEST_ENV);
+            }
+        }
+    }
+    SECTION( "input validation") {
+
+        SECTION( "number of qubits" ) {
+
+            if (QUEST_ENV.rank == 0) { 
+                FILE* file = fopen(fn, "w");
+                fprintf(file, ".1 ");
+                fclose(file);
+            }
+            syncQuESTEnv(QUEST_ENV);
+            
+            REQUIRE_THROWS_WITH( createDiagonalOpFromPauliHamilFile(fn, QUEST_ENV), Contains("The number of qubits") && Contains("strictly positive"));
+        }
+        SECTION( "coefficient type" ) {
+
+            if (QUEST_ENV.rank == 0) { 
+                FILE* file = fopen(fn, "w");
+                fprintf(file, "notanumber 1 2 3");
+                fclose(file);
+            }
+            syncQuESTEnv(QUEST_ENV);
+            
+            REQUIRE_THROWS_WITH( createDiagonalOpFromPauliHamilFile(fn, QUEST_ENV), Contains("Failed to parse") && Contains("coefficient"));
+        }
+        SECTION( "pauli code" ) {
+
+            FILE* file;
+            
+            if (QUEST_ENV.rank == 0) { 
+                file = fopen(fn, "w");
+                fprintf(file, ".1 0 3 2"); // final invalid Y
+                fclose(file);
+            }
+            syncQuESTEnv(QUEST_ENV);
+            
+            REQUIRE_THROWS_WITH( createDiagonalOpFromPauliHamilFile(fn, QUEST_ENV), Contains("contained operators other than PAULI_Z and PAULI_I"));
+            
+            if (QUEST_ENV.rank == 0) { 
+                file = fopen(fn, "w");
+                fprintf(file, ".1 0 1 3"); // second invalid X
+                fclose(file);
+            }
+            syncQuESTEnv(QUEST_ENV);
+            
+            REQUIRE_THROWS_WITH( createDiagonalOpFromPauliHamilFile(fn, QUEST_ENV), Contains("contained operators other than PAULI_Z and PAULI_I"));
+            
+            if (QUEST_ENV.rank == 0) { 
+                file = fopen(fn, "w");
+                fprintf(file, ".1 0 1 4"); // final invalid Pauli
+                fclose(file);
+            }
+            syncQuESTEnv(QUEST_ENV);
+            
+            REQUIRE_THROWS_WITH( createDiagonalOpFromPauliHamilFile(fn, QUEST_ENV), Contains("invalid pauli code"));
+            
+            if (QUEST_ENV.rank == 0) { 
+                file = fopen(fn, "w");
+                fprintf(file, ".1 3 0 notanumber"); // final isn't valid int
+                fclose(file);
+            }
+            syncQuESTEnv(QUEST_ENV);
+            
+            REQUIRE_THROWS_WITH( createDiagonalOpFromPauliHamilFile(fn, QUEST_ENV), Contains("Failed to parse the next expected Pauli code"));
+        }
+    }
+    
+    // delete the test file
+    remove(fn);
+}
+
+
+
 /** @sa createPauliHamil
  * @ingroup unittest 
  * @author Tyson Jones 
