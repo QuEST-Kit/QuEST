@@ -48,7 +48,14 @@ Of course, this code doesn't output anything!
 
 Let's walk through a more sophisticated circuit.
 
-We first construct a QuEST environment with [`createQuESTEnv()`](https://quest-kit.github.io/QuEST/group__type.html#ga8ba2c3388dd64d9348c3b091852d36d4), which abstracts away any preparation of multithreading, distribution or GPU-acceleration strategies.
+We first construct a QuEST environment with [`createQuESTEnv()`](https://quest-kit.github.io/QuEST/group__type.html#ga8ba2Note that parallelising with MPI (`-DDISTRIBUTED=1`) will mean all code in your source file will be repeated on every node. To execute some code (e.g. printing) only on one node, use
+```C
+QuEST env = createQuESTEnv();
+
+if (env.rank == 0)
+    printf("Only one node executes this print!");
+```
+Such conditions are valid and always satisfied in code run on a single node.c3388dd64d9348c3b091852d36d4), which abstracts away any preparation of multithreading, distribution or GPU-acceleration strategies.
 ```C
 QuESTEnv env = createQuESTEnv();
 ```
@@ -159,6 +166,17 @@ and after compiling (see section below) and running, gives psuedo-random output
 
 QuEST uses the [Mersenne Twister](http://www.math.sci.hiroshima-u.ac.jp/~m-mat/MT/MT2002/emt19937ar.html) algorithm to generate random numbers used for randomly collapsing quantum states. The user can seed this RNG using `seedQuEST(arrayOfSeeds, arrayLength)`, otherwise QuEST will by default (through `seedQuESTDefault()`) create a seed from the current time and the process id.
 
+
+> In distributed mode (see below), all code in your source files will be executed independently on every node. 
+> To execute some code (e.g. printing) only on one node, use
+> ```C
+> QuEST env = createQuESTEnv();
+> 
+> if (env.rank == 0)
+>     printf("Only one node executes this print!");
+> ```
+> Such conditions are valid and always satisfied in code run on a single node.
+
 ----------------------------
 
 # Compiling
@@ -254,7 +272,9 @@ make
 
 # Running
 
-Once compiled as above, the compiled executable can be run from within the `build` directory.
+## Locally
+
+Once compiled as above, the compiled executable can be locally run from within the `build` directory.
 ```console
 ./myExecutable
 ```
@@ -280,27 +300,26 @@ Once compiled as above, the compiled executable can be run from within the `buil
   ./myExecutable
   ```
 
-## through a job submission system
+## On supercomputers
 
-There are no special requirements for running QuEST through job submission systems. Just call `./myExecutable` as you would any other binary.
+There are no special requirements for running QuEST through job submission systems, like [SLURM](https://slurm.schedmd.com/documentation.html). Just call `./myExecutable` as you would any other binary.
 
-For example, the [above code](tutorial_example.c) can be split over 4 MPI nodes (each with 8 cores) on a SLURM system using the following SLURM submission script
+For example, the [tutorial code](tutorial_example.c) can be run with on `4` distributed nodes (each with `8` cores) on a SLURM system using the following SLURM submission script
 ```console
 #SBATCH --nodes=4
 #SBATCH --ntasks-per-node=1
 
-module purge
 module load mvapich2
 
 mkdir build
 cd build
-cmake -DDISTRIBUTED=1 ..
+cmake .. -DDISTRIBUTED=1 -DMULTITHREADED=1
 make
 
 export OMP_NUM_THREADS=8
 mpirun ./myExecutable
 ```
-or a PBS submission script like
+A [PBS](https://www.openpbs.org/) submission script like is similar
 ```console
 #PBS -l select=4:ncpus=8
 
@@ -316,7 +335,7 @@ export OMP_NUM_THREADS=8
 aprun -n 4 -d 8 -cc numa_node ./myExecutable
 ```
 
-Running QuEST on a GPU partition is similarly easy in SLURM
+Running QuEST on a GPU is just a matter of specifying resources and the appropriate compilers
 ```console
 #SBATCH --nodes=1
 #SBATCH --ntasks-per-node=1
@@ -337,12 +356,7 @@ make
 
 On each platform, there is no change to our source code or our QuEST interface. We simply recompile, and QuEST will utilise the available hardware (a GPU, shared-memory or distributed CPUs) to speedup our code.
 
-Note that parallelising with MPI (`-DDISTRIBUTED=1`) will mean all code in your source file will be repeated on every node. To execute some code (e.g. printing) only on one node, do
-```C
-if (env.rank == 0)
-    printf("Only one node executes this print!");
-```
-Such conditions are valid and always satisfied in code run on a single node.
+
 
 
 
