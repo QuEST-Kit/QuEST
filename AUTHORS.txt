@@ -45,3 +45,5 @@ Christopher J. Anders
     revsied Cmake min version for GPU build
 Gleb Struchalin
     patched the cmake standalone build
+Milos Prokop
+    implemented serial prototype of initDiagonalOpFromPauliHamil
