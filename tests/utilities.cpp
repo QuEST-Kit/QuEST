@@ -1192,6 +1192,38 @@ void setDiagMatrixOverrides(QMatrix &matr, int* numQubitsPerReg, int numRegs, en
     }
 }
 
+static int fn_unique_suffix_id = 0;
+
+void setUniqueFilename(char* outFn, char* prefix) {
+    sprintf(outFn, "%s_%d.txt", prefix, fn_unique_suffix_id++);
+}
+
+void writeToFileSynch(char* fn, const string& contents) {
+    
+    // master node writes
+    if (QUEST_ENV.rank == 0) {
+        FILE* file = fopen(fn, "w");
+        fputs(contents.c_str(), file);
+        fclose(file);
+    }
+    
+    // other nodes wait
+    syncQuESTEnv(QUEST_ENV);
+}
+
+void deleteFilesWithPrefixSynch(char* prefix) {
+    
+    // master node deletes all files
+    if (QUEST_ENV.rank == 0) {
+        char cmd[200];
+        sprintf(cmd, "exec rm %s*", prefix);
+        system(cmd);
+    }
+    
+    // other nodes wait 
+    syncQuESTEnv(QUEST_ENV);
+}
+
 class SubListGenerator : public Catch::Generators::IGenerator<int*> {
     int* list;
     int* sublist;
