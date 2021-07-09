@@ -1424,6 +1424,14 @@ void setDiagonalOpElems(DiagonalOp op, long long int startInd, qreal* real, qrea
     agnostic_setDiagonalOpElems(op, startInd, real, imag, numElems);
 }
 
+void initDiagonalOpFromPauliHamil(DiagonalOp op, PauliHamil hamil) {
+    validateHamilParams(hamil.numQubits, hamil.numSumTerms, __func__);
+    validateDiagOpInit(op, __func__);
+    validateDiagPauliHamil(op, hamil, __func__);
+    
+    agnostic_initDiagonalOpFromPauliHamil(op, hamil);
+}
+
 /*
  * debug
  */

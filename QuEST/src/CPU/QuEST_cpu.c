@@ -1363,6 +1363,68 @@ void agnostic_syncDiagonalOp(DiagonalOp op) {
     // nothing to do on CPU
 }
 
+void agnostic_initDiagonalOpFromPauliHamil(DiagonalOp op, PauliHamil hamil) {
+    
+    /* each node modifies its op sub-partition, evaluating the full hamil 
+     * for every element in the sub-partition 
+     */
+    
+    // unpack op
+    long long int offset = op.chunkId * op.numElemsPerChunk;
+    long long int numElems = op.numElemsPerChunk;
+    qreal* opRe = op.real;
+    qreal* opIm = op.imag;
+    
+    // unpack hamil
+    int numTerms = hamil.numSumTerms;
+    int numQubits = hamil.numQubits;
+    qreal* coeffs = hamil.termCoeffs;
+    enum pauliOpType* codes = hamil.pauliCodes;
+    
+    // private OpenMP vars
+    long long int i, globalInd;
+    qreal elem;
+    int t, q, isOddNumOnes, sign;
+    
+# ifdef _OPENMP
+# pragma omp parallel \
+    default  (none) \
+    shared   (offset,numElems, opRe,opIm, numTerms,numQubits,coeffs,codes) \
+    private  (i,globalInd, elem, isOddNumOnes,t,q,sign) 
+# endif
+    {
+# ifdef _OPENMP
+# pragma omp for schedule (static)
+# endif
+        for (i=0; i<numElems; i++) {
+            
+            globalInd = i + offset;
+            elem = 0;
+            
+            // add every Hamiltonian coefficient to this element, either + or -
+            for (t=0; t<numTerms; t++) {
+                
+                // determine parity of ones (in globalInd basis state) of the current term's targets
+                isOddNumOnes = 0;
+                for (q=0; q<numQubits; q++)
+                    if (codes[q + t*numQubits] == PAULI_Z)
+                        if (extractBit(q, globalInd))
+                            isOddNumOnes = !isOddNumOnes;
+                
+                // add +- term coeff (avoiding thread divergence)
+                sign = 1 - 2*isOddNumOnes; // (-1 if isOddNumOnes, else +1)
+                elem += coeffs[t] * sign;
+            }
+            
+            opRe[i] = elem;
+            opIm[i] = 0;
+        }
+    }
+    
+    // we don't synch to GPU, because in GPU mode, the GPU populates and synchs to RAM
+    // agnostic_syncDiagonalOp(op);
+}
+
 void statevec_reportStateToScreen(Qureg qureg, QuESTEnv env, int reportRank){
     long long int index;
     int rank;

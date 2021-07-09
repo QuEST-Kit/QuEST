@@ -268,6 +268,7 @@ void statevec_applyParamNamedPhaseFuncOverrides(Qureg qureg, int* qubits, int* n
 
 /* 
  * operations which differentiate between state-vectors and density matrices internally 
+ * (or do not operate upon Quregs)
  */
  
 void agnostic_applyTrotterCircuit(Qureg qureg, PauliHamil hamil, qreal time, int order, int reps);
@@ -279,6 +280,8 @@ void agnostic_destroyDiagonalOp(DiagonalOp op);
 void agnostic_syncDiagonalOp(DiagonalOp op);
 
 void agnostic_setDiagonalOpElems(DiagonalOp op, long long int startInd, qreal* real, qreal* imag, long long int numElems);
+
+void agnostic_initDiagonalOpFromPauliHamil(DiagonalOp op, PauliHamil hamil);
 
 # ifdef __cplusplus
 }

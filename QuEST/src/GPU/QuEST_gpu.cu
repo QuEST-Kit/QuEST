@@ -380,11 +380,65 @@ void agnostic_destroyDiagonalOp(DiagonalOp op) {
 }
 
 void agnostic_syncDiagonalOp(DiagonalOp op) {
-
-    size_t arrSize = (1LL << op.numQubits) * sizeof(qreal);
     cudaDeviceSynchronize();
-    cudaMemcpy(op.deviceOperator.real, op.real, arrSize, cudaMemcpyHostToDevice);
-    cudaMemcpy(op.deviceOperator.imag, op.imag, arrSize, cudaMemcpyHostToDevice);
+    cudaMemcpy(op.deviceOperator.real, op.real, op.numElemsPerChunk, cudaMemcpyHostToDevice);
+    cudaMemcpy(op.deviceOperator.imag, op.imag, op.numElemsPerChunk, cudaMemcpyHostToDevice);
+}
+
+__global__ void agnostic_initDiagonalOpFromPauliHamilKernel(
+    DiagonalOp op, enum pauliOpType* pauliCodes, qreal* termCoeffs, int numSumTerms
+) {    
+    // each thread processes one diagonal element
+    long long int elemInd = blockIdx.x*blockDim.x + threadIdx.x;
+    if (elemInd >= op.numElemsPerChunk)
+        return;
+
+    qreal elem = 0;
+    
+    // elem is (+-) every coefficient, with sign determined by parity
+    for (int t=0; t<numSumTerms; t++) {
+        
+        // determine the parity of the Z-targeted qubits in the element's corresponding state
+        int isOddNumOnes = 0;
+        for (int q=0; q<op.numQubits; q++)
+            if (pauliCodes[q + t*op.numQubits] == PAULI_Z)
+                if (extractBit(q, elemInd))
+                    isOddNumOnes = !isOddNumOnes;
+        
+        // avoid warp divergence
+        int sign = 1 - 2*isOddNumOnes; // (-1 if isOddNumOnes, else +1)
+        elem += termCoeffs[t] * sign;
+    }
+    
+    op.deviceOperator.real[elemInd] = elem;
+    op.deviceOperator.imag[elemInd] = 0;
+}
+
+void agnostic_initDiagonalOpFromPauliHamil(DiagonalOp op, PauliHamil hamil) {
+    
+    // copy args intop GPU memory
+    enum pauliOpType* d_pauliCodes;
+    size_t mem_pauliCodes = hamil.numSumTerms * op.numQubits * sizeof *d_pauliCodes;
+    cudaMalloc(&d_pauliCodes, mem_pauliCodes);
+    cudaMemcpy(d_pauliCodes, hamil.pauliCodes, mem_pauliCodes, cudaMemcpyHostToDevice);
+    
+    qreal* d_termCoeffs;
+    size_t mem_termCoeffs = hamil.numSumTerms * sizeof *d_termCoeffs;
+    cudaMalloc(&d_termCoeffs, mem_termCoeffs);
+    cudaMemcpy(d_termCoeffs, hamil.termCoeffs, mem_termCoeffs, cudaMemcpyHostToDevice);
+    
+    int numThreadsPerBlock = 128;
+    int numBlocks = ceil(op.numElemsPerChunk)/numThreadsPerBlock);
+    agnostic_initDiagonalOpFromPauliHamilKernel<<numBlocks, numThreadsPerBlock>>(
+        op, d_pauliCodes, d_termCoeffs, hamil.numSumTerms);
+    
+    // copy populated operator into to RAM
+    cudaDeviceSynchronize();
+    cudaMemcpy(op.real, op.deviceOperator.real, op.numElemsPerChunk, cudaMemcpyDeviceToHost);
+    cudaMemcpy(op.imag, op.deviceOperator.imag, op.numElemsPerChunk, cudaMemcpyDeviceToHost);
+
+    cudaFree(d_pauliCodes);
+    cudaFree(d_termCoeffs);
 }
 
 int GPUExists(void){

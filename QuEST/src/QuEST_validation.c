@@ -95,6 +95,8 @@ typedef enum {
     E_INVALID_TROTTER_REPS,
     E_MISMATCHING_QUREG_DIAGONAL_OP_SIZE,
     E_DIAGONAL_OP_NOT_INITIALISED,
+    E_PAULI_HAMIL_NOT_DIAGONAL,
+    E_MISMATCHING_PAULI_HAMIL_DIAGONAL_OP_SIZE,
     E_INVALID_NUM_SUBREGISTERS,
     E_INVALID_NUM_PHASE_FUNC_TERMS,
     E_INVALID_NUM_PHASE_FUNC_OVERRIDES,
@@ -176,6 +178,8 @@ static const char* errorMessages[] = {
     [E_INVALID_TROTTER_REPS] = "The number of Trotter repetitions must be >=1.",
     [E_MISMATCHING_QUREG_DIAGONAL_OP_SIZE] = "The qureg must represent an equal number of qubits as that in the applied diagonal operator.",
     [E_DIAGONAL_OP_NOT_INITIALISED] = "The diagonal operator has not been initialised through createDiagonalOperator().",
+    [E_PAULI_HAMIL_NOT_DIAGONAL] = "The Pauli Hamiltonian contained operators other than PAULI_Z and PAULI_I, and hence cannot be expressed as a diagonal matrix.",
+    [E_MISMATCHING_PAULI_HAMIL_DIAGONAL_OP_SIZE] = "The Pauli Hamiltonian and diagonal operator have different, incompatible dimensions.",
     [E_INVALID_NUM_SUBREGISTERS] = "Invalid number of qubit subregisters, which must be >0 and <=100.",
     [E_INVALID_NUM_PHASE_FUNC_TERMS] = "Invalid number of terms in the phase function specified. Must be >0.",
     [E_INVALID_NUM_PHASE_FUNC_OVERRIDES] = "Invalid number of phase function overrides specified. Must be >=0, and for single-variable phase functions, <=2^numQubits (the maximum unique binary values of the sub-register). Note that uniqueness of overriding indices is not checked.",
@@ -705,6 +709,15 @@ void validateDiagOpInit(DiagonalOp op, const char* caller) {
 void validateDiagonalOp(Qureg qureg, DiagonalOp op, const char* caller) {
     validateDiagOpInit(op, caller);
     QuESTAssert(qureg.numQubitsRepresented == op.numQubits, E_MISMATCHING_QUREG_DIAGONAL_OP_SIZE, caller);
+}
+
+void validateDiagPauliHamil(DiagonalOp op, PauliHamil hamil, const char *caller) {
+    QuESTAssert(op.numQubits == hamil.numQubits, E_MISMATCHING_PAULI_HAMIL_DIAGONAL_OP_SIZE, caller);
+    
+    for (int p=0; p<hamil.numSumTerms*hamil.numQubits; p++)
+        QuESTAssert(
+            hamil.pauliCodes[p] == PAULI_I || hamil.pauliCodes[p] == PAULI_Z,
+            E_PAULI_HAMIL_NOT_DIAGONAL, caller);
 }
 
 void validateQubitSubregs(Qureg qureg, int* qubits, int* numQubitsPerReg, const int numRegs, const char* caller) {

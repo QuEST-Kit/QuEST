@@ -869,6 +869,14 @@ void setRandomPauliSum(qreal* coeffs, pauliOpType* codes, int numQubits, int num
  */
 void setRandomPauliSum(PauliHamil hamil);
 
+/** Populates \p hamil with random coefficients and a random amount number of 
+ * PAULI_I and PAULI_Z operators.
+ *
+ * @ingroup testutilities 
+ * @author Tyson Jones
+ */
+void setRandomDiagPauliHamil(PauliHamil hamil);
+
 /** Returns the two's complement signed encoding of the unsigned number decimal, 
  * which must be a number between 0 and 2^numBits (exclusive). The returned number 
  * lies in [-2^(numBits-1), 2^(numBits-1)-1]
