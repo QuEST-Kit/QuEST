@@ -381,8 +381,9 @@ void agnostic_destroyDiagonalOp(DiagonalOp op) {
 
 void agnostic_syncDiagonalOp(DiagonalOp op) {
     cudaDeviceSynchronize();
-    cudaMemcpy(op.deviceOperator.real, op.real, op.numElemsPerChunk, cudaMemcpyHostToDevice);
-    cudaMemcpy(op.deviceOperator.imag, op.imag, op.numElemsPerChunk, cudaMemcpyHostToDevice);
+    size_t mem_elems = op.numElemsPerChunk * sizeof *op.real;
+    cudaMemcpy(op.deviceOperator.real, op.real, mem_elems, cudaMemcpyHostToDevice);
+    cudaMemcpy(op.deviceOperator.imag, op.imag, mem_elems, cudaMemcpyHostToDevice);
 }
 
 __global__ void agnostic_initDiagonalOpFromPauliHamilKernel(
@@ -428,14 +429,15 @@ void agnostic_initDiagonalOpFromPauliHamil(DiagonalOp op, PauliHamil hamil) {
     cudaMemcpy(d_termCoeffs, hamil.termCoeffs, mem_termCoeffs, cudaMemcpyHostToDevice);
     
     int numThreadsPerBlock = 128;
-    int numBlocks = ceil(op.numElemsPerChunk)/numThreadsPerBlock);
-    agnostic_initDiagonalOpFromPauliHamilKernel<<numBlocks, numThreadsPerBlock>>(
+    int numBlocks = ceil(op.numElemsPerChunk / (qreal) numThreadsPerBlock);
+    agnostic_initDiagonalOpFromPauliHamilKernel<<<numBlocks, numThreadsPerBlock>>>(
         op, d_pauliCodes, d_termCoeffs, hamil.numSumTerms);
     
     // copy populated operator into to RAM
     cudaDeviceSynchronize();
-    cudaMemcpy(op.real, op.deviceOperator.real, op.numElemsPerChunk, cudaMemcpyDeviceToHost);
-    cudaMemcpy(op.imag, op.deviceOperator.imag, op.numElemsPerChunk, cudaMemcpyDeviceToHost);
+    size_t mem_elems = op.numElemsPerChunk * sizeof *op.real;
+    cudaMemcpy(op.real, op.deviceOperator.real, mem_elems, cudaMemcpyDeviceToHost);
+    cudaMemcpy(op.imag, op.deviceOperator.imag, mem_elems, cudaMemcpyDeviceToHost);
 
     cudaFree(d_pauliCodes);
     cudaFree(d_termCoeffs);
@@ -2178,7 +2180,6 @@ void statevec_calcProbOfAllOutcomes(qreal* outcomeProbs, Qureg qureg, int* qubit
     // create one thread for every amplitude
     int numThreadsPerBlock = 128;
     int numBlocks = ceil(qureg.numAmpsPerChunk / (qreal) numThreadsPerBlock);
-    
     
     // create global GPU array for outcomeProbs
     qreal* d_outcomeProbs;
