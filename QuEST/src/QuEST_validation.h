@@ -130,7 +130,7 @@ void validateDiagonalOp(Qureg qureg, DiagonalOp op, const char* caller);
 
 void validateDiagPauliHamil(DiagonalOp op, PauliHamil hamil, const char *caller);
 
-void validateDiagHamilFromFile(PauliHamil h, const char* caller);
+void validateDiagPauliHamilFromFile(PauliHamil h, int numRanks, const char* caller);
 
 void validateNumElems(DiagonalOp op, long long int startInd, long long int numElems, const char* caller);
 

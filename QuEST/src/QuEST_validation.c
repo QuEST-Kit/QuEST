@@ -720,12 +720,29 @@ void validateDiagPauliHamil(DiagonalOp op, PauliHamil hamil, const char *caller)
             E_PAULI_HAMIL_NOT_DIAGONAL, caller);
 }
 
-void validateDiagHamilFromFile(PauliHamil hamil, const char *caller) {
+void validateDiagPauliHamilFromFile(PauliHamil hamil, int numRanks, const char *caller) {
     // hamil itself already validated as general Pauli Hamiltonian
     
+    // destroy hamil before raising exceptions if validation fails
+    int isValid;
+    
+    // mustn't be more elements than can fit in the type
+    unsigned int maxQubits = calcLog2(SIZE_MAX);
+    isValid = hamil.numQubits <= maxQubits;
+    if (!isValid)
+        destroyPauliHamil(hamil);
+    QuESTAssert(isValid, E_NUM_AMPS_EXCEED_TYPE, caller);
+    
+    // must be at least one amplitude per node
+    long unsigned int numElems = (1UL<<hamil.numQubits);
+    isValid = numElems >= numRanks;
+    if (!isValid)
+        destroyPauliHamil(hamil);
+    QuESTAssert(isValid, E_DISTRIB_DIAG_OP_TOO_SMALL, caller);
+    
+    // must contain only I and Z
     for (int p=0; p<hamil.numSumTerms*hamil.numQubits; p++) {
-        int isValid = hamil.pauliCodes[p] == PAULI_I || hamil.pauliCodes[p] == PAULI_Z;
-        
+        isValid = hamil.pauliCodes[p] == PAULI_I || hamil.pauliCodes[p] == PAULI_Z;
         if (!isValid)
             destroyPauliHamil(hamil);
             
