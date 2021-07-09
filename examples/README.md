@@ -254,28 +254,31 @@ make
 
 # Running
 
-Once compiled, you can run your executable from within the build directly.
+Once compiled as above, the compiled executable can be run from within the `build` directory.
 ```console
 ./myExecutable
 ```
-If multithreading functionality was found when compiling, you can control how many threads your code uses by setting `OMP_NUM_THREADS`, ideally to the number of available cores on your machine
-```console
-export OMP_NUM_THREADS=8
-./myExecutable
-```
-QuEST will automatically allocate work between the given number of threads to speedup your simulation.
 
-If you compiled in distributed mode, your code can be run over a network (here, over 8 machines) using
-```console
-mpirun -np 8 ./myExecutable
-```
-This will, if enabled, also utilise multithreading on each node with as many threads set in `OMP_NUM_THREADS`.
+- In multithreaded mode, the number of threads QuEST will use can be set by modifying `OMP_NUM_THREADS`, ideally to the number of available cores on your machine
+  ```console
+  export OMP_NUM_THREADS=8
+  ./myExecutable
+  ```
+  
+- In distributed mode, QuEST will uniformly divide every `Qureg` between a power-of-2 number of nodes, and can be launched with `mpirun`. For example, here using `8` nodes
+  ```console
+  mpirun -np 8 ./myExecutable
+  ```
+  If multithreading is also enabled, the number of threads used by each node can be set using `OMP_NUM_THREADS`. For example, here using `8` nodes with `16` threads on each (a total of `128` processors):
+  ```console 
+  export OMP_NUM_THREADS=16
+  mpirun -np 8 ./myExecutable
+  ```
 
-If you compiled for a GPU connected to your system, simply run
-```console
-./myExecutable
-```
-as normal!
+- In GPU mode, the executable is launched directly via 
+  ```console 
+  ./myExecutable
+  ```
 
 ## through a job submission system
 
