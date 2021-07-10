@@ -2,7 +2,7 @@
 <!-- This README avoids relative paths since it is also used as Doxygen's mainpage -->
 
 <!-- banner -->
-[<img src="https://github.com/QuEST-Kit/QuEST/blob/readme_update/doxyconfig/banner.png?raw=true" alt="The QuEST logo" width=500>](https://quest.qtechtheory.org)
+[<img src="https://github.com/QuEST-Kit/QuEST/blob/master/doxyconfig/banner.png?raw=true" alt="The QuEST logo" width=500>](https://quest.qtechtheory.org)
 
 
 <!-- temporarily hiding Github Actions badges (pending aesthetic customisation)
