@@ -17,7 +17,7 @@ QuEST can be integrated into your C or C++ project, simply by including
 ```
 Your simulation code will look the same and compile with the same build system, regardless of whether run in multithreaded, GPU and distributed modes.
 
-For example, here is a platform agnostic simulation of a very simple circuit which produces and measures state  ![equation](https://latex.codecogs.com/gif.latex?C_0%28X_1%29%20H_0%20%7C00%5Crangle).
+For example, here is a platform agnostic simulation of a very simple circuit which produces and measures state  ![equation](https://latex.codecogs.com/gif.latex?C_0%28X_1%29%20H_0%20%7C00%5Crangle)
 ```C
 #include <QuEST.h>
 
@@ -48,14 +48,7 @@ Of course, this code doesn't output anything!
 
 Let's walk through a more sophisticated circuit.
 
-We first construct a QuEST environment with [`createQuESTEnv()`](https://quest-kit.github.io/QuEST/group__type.html#ga8ba2Note that parallelising with MPI (`-DDISTRIBUTED=1`) will mean all code in your source file will be repeated on every node. To execute some code (e.g. printing) only on one node, use
-```C
-QuEST env = createQuESTEnv();
-
-if (env.rank == 0)
-    printf("Only one node executes this print!");
-```
-Such conditions are valid and always satisfied in code run on a single node.c3388dd64d9348c3b091852d36d4), which abstracts away any preparation of multithreading, distribution or GPU-acceleration strategies.
+We first construct a QuEST environment with [`createQuESTEnv()`](https://quest-kit.github.io/QuEST/group__type.html#ga8ba2c3388dd64d9348c3b091852d36d4) which abstracts away any preparation of multithreading, distribution or GPU-acceleration strategies.
 ```C
 QuESTEnv env = createQuESTEnv();
 ```
