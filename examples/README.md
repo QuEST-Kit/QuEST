@@ -170,7 +170,7 @@ QuEST uses the [Mersenne Twister](http://www.math.sci.hiroshima-u.ac.jp/~m-mat/M
 > In distributed mode (see below), all code in your source files will be executed independently on every node. 
 > To execute some code (e.g. printing) only on one node, use
 > ```C
-> QuEST env = createQuESTEnv();
+> QuESTEnv env = createQuESTEnv();
 > 
 > if (env.rank == 0)
 >     printf("Only one node executes this print!");
