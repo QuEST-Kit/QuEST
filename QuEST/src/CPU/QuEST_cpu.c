@@ -3316,6 +3316,50 @@ void statevec_multiRotateZ(Qureg qureg, long long int mask, qreal angle)
     }
 }
 
+void statevec_multiControlledMultiRotateZ(Qureg qureg, long long int ctrlMask, long long int targMask, qreal angle) 
+{
+    long long int offset = qureg.chunkId * qureg.numAmpsPerChunk;
+
+    long long int stateVecSize = qureg.numAmpsPerChunk;
+    qreal *stateVecReal = qureg.stateVec.real;
+    qreal *stateVecImag = qureg.stateVec.imag;
+    
+    qreal stateReal, stateImag;
+    qreal cosAngle = cos(angle/2.0);
+    qreal sinAngle = sin(angle/2.0); 
+    
+    // = +-1, to flip sinAngle based on target qubit parity, to effect
+    // exp(-angle/2 i fac_j)|j>
+    int fac; 
+    long long int index, globalIndex;
+
+# ifdef _OPENMP
+# pragma omp parallel \
+    default  (none)              \
+    shared   (stateVecSize, stateVecReal,stateVecImag, ctrlMask,targMask, cosAngle,sinAngle) \
+    private  (index,globalIndex, fac, stateReal,stateImag)
+# endif
+    {
+# ifdef _OPENMP
+# pragma omp for schedule (static)
+# endif
+        for (index=0; index<stateVecSize; index++) {
+            stateReal = stateVecReal[index];
+            stateImag = stateVecImag[index];
+            
+            // states with not-all-one control qubits are unmodified
+            globalIndex = index + offset;
+            if (ctrlMask && ((ctrlMask & globalIndex) != ctrlMask))
+                continue;
+            
+            // odd-parity target qubits get fac_j = -1
+            fac = getBitMaskParity(targMask & globalIndex)? -1 : 1;
+            stateVecReal[index] = cosAngle*stateReal + fac * sinAngle*stateImag;
+            stateVecImag[index] = - fac * sinAngle*stateReal + cosAngle*stateImag;  
+        }
+    }    
+}
+
 qreal densmatr_findProbabilityOfZeroLocal(Qureg qureg, int measureQubit) {
     
     // computes first local index containing a diagonal element

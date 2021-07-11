@@ -1594,6 +1594,38 @@ void statevec_multiRotateZ(Qureg qureg, long long int mask, qreal angle)
     statevec_multiRotateZKernel<<<CUDABlocks, threadsPerCUDABlock>>>(qureg, mask, cosAngle, sinAngle);
 }
 
+__global__ void statevec_multiControlledMultiRotateZKernel(Qureg qureg, long long int ctrlMask, long long int targMask, qreal cosAngle, qreal sinAngle) {
+    
+    long long int stateVecSize = qureg.numAmpsPerChunk;
+    long long int index = blockIdx.x*blockDim.x + threadIdx.x;
+    if (index>=stateVecSize) return;
+    
+    // amplitudes corresponding to control qubits not all-in-one are unmodified
+    if (ctrlMask && ((ctrlMask & index) != ctrlMask))
+        return;
+    
+    qreal *stateVecReal = qureg.deviceStateVec.real;
+    qreal *stateVecImag = qureg.deviceStateVec.imag;
+    
+    int fac = getBitMaskParity(mask & index)? -1 : 1;
+    qreal stateReal = stateVecReal[index];
+    qreal stateImag = stateVecImag[index];
+    
+    stateVecReal[index] = cosAngle*stateReal + fac * sinAngle*stateImag;
+    stateVecImag[index] = - fac * sinAngle*stateReal + cosAngle*stateImag;  
+}
+
+void statevec_multiControlledMultiRotateZ(Qureg qureg, long long int ctrlMask, long long int targMask, qreal angle)
+{   
+    qreal cosAngle = cos(angle/2.0);
+    qreal sinAngle = sin(angle/2.0);
+        
+    int threadsPerCUDABlock, CUDABlocks;
+    threadsPerCUDABlock = 128;
+    CUDABlocks = ceil((qreal)(qureg.numAmpsPerChunk)/threadsPerCUDABlock);
+    statevec_multiControlledMultiRotateZKernel<<<CUDABlocks, threadsPerCUDABlock>>>(qureg, ctrlMask, targMask, cosAngle, sinAngle);
+}
+
 qreal densmatr_calcTotalProb(Qureg qureg) {
     
     // computes the trace using Kahan summation
