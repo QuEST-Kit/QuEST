@@ -447,6 +447,47 @@ void statevec_multiRotatePauli(
     }
 }
 
+void statevec_multiControlledMultiRotatePauli(
+    Qureg qureg, long long int ctrlMask, int* targetQubits, enum pauliOpType* targetPaulis, int numTargets, qreal angle,
+    int applyConj
+) {
+    qreal fac = 1/sqrt(2);
+    qreal sgn = (applyConj)? 1 : -1;
+    ComplexMatrix2 uRx = {.real={{fac,0},{0,fac}}, .imag={{0,sgn*fac},{sgn*fac,0}}}; // Rx(pi/2)* rotates Z -> Y
+    ComplexMatrix2 uRy = {.real={{fac,fac},{-fac,fac}}, .imag={{0,0},{0,0}}};        // Ry(-pi/2) rotates Z -> X
+    
+    // this function is controlled on the all-one state, so no ctrl flips
+    long long int ctrlFlipMask = 0;
+    
+    // mask may be modified to remove superfluous Identity ops
+    long long int targMask = getQubitBitMask(targetQubits, numTargets);
+    
+    // rotate basis so that exp(Z) will effect exp(Y) and exp(X)
+    for (int t=0; t < numTargets; t++) {
+        if (targetPaulis[t] == PAULI_I)
+            targMask -= 1LL << targetQubits[t]; // remove target from mask
+        if (targetPaulis[t] == PAULI_X)
+            statevec_multiControlledUnitary(qureg, ctrlMask, ctrlFlipMask, targetQubits[t], uRy);
+        if (targetPaulis[t] == PAULI_Y)
+            statevec_multiControlledUnitary(qureg, ctrlMask, ctrlFlipMask, targetQubits[t], uRx);
+        // (targetPaulis[t] == 3) is Z basis
+    }
+    
+    // does nothing if there are no qubits to 'rotate'
+    if (targMask != 0)
+        statevec_multiControlledMultiRotateZ(qureg, ctrlMask, targMask, (applyConj)? -angle : angle);
+        
+    // undo X and Y basis rotations
+    uRx.imag[0][1] *= -1; uRx.imag[1][0] *= -1;
+    uRy.real[0][1] *= -1; uRy.real[1][0] *= -1;
+    for (int t=0; t < numTargets; t++) {
+        if (targetPaulis[t] == PAULI_X)
+            statevec_multiControlledUnitary(qureg, ctrlMask, ctrlFlipMask, targetQubits[t], uRy);
+        if (targetPaulis[t] == PAULI_Y)
+            statevec_multiControlledUnitary(qureg, ctrlMask, ctrlFlipMask, targetQubits[t], uRx);
+    }
+}
+
 /* produces both pauli|qureg> or pauli * qureg (as a density matrix) */
 void statevec_applyPauliProd(Qureg workspace, int* targetQubits, enum pauliOpType* pauliCodes, int numTargets) {
     

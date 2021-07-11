@@ -703,6 +703,27 @@ void multiRotatePauli(Qureg qureg, int* targetQubits, enum pauliOpType* targetPa
         numTargets, angle);
 }
 
+void multiControlledMultiRotatePauli(Qureg qureg, int* controlQubits, int numControls, int* targetQubits, enum pauliOpType* targetPaulis, int numTargets, qreal angle) {
+    validateMultiControlsMultiTargets(qureg, controlQubits, numControls, targetQubits, numTargets, __func__);
+    validatePauliCodes(targetPaulis, numTargets, __func__);
+    
+    int conj=0;
+    long long int ctrlMask = getQubitBitMask(controlQubits, numControls);
+    statevec_multiControlledMultiRotatePauli(qureg, ctrlMask, targetQubits, targetPaulis, numTargets, angle, conj);
+    if (qureg.isDensityMatrix) {
+        conj = 1;
+        int shift = qureg.numQubitsRepresented;
+        shiftIndices(targetQubits, numTargets, shift);
+        statevec_multiControlledMultiRotatePauli(qureg, ctrlMask<<shift, targetQubits, targetPaulis, numTargets, angle, conj);
+        shiftIndices(targetQubits, numTargets, -shift);
+    }
+    
+    // @TODO: create actual QASM
+    qasm_recordComment(qureg, 
+        "Here a %d-control %d-target multiControlledMultiRotatePauli of angle %g was performed (QASM not yet implemented)",
+        numControls, numTargets, angle);
+}
+
 void applyPhaseFunc(Qureg qureg, int* qubits, int numQubits, enum bitEncoding encoding, qreal* coeffs, qreal* exponents, int numTerms) {
     validateStateVecQureg(qureg, __func__);
     validateMultiQubits(qureg, qubits, numQubits, __func__);
