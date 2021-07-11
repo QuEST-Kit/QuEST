@@ -3812,13 +3812,17 @@ void swapGate(Qureg qureg, int qubit1, int qubit2);
  */
 void sqrtSwapGate(Qureg qureg, int qb1, int qb2);
 
-/** Apply a general multiple-control, conditioned on a specific bit sequence,
- *  single-target unitary, which can include a global phase factor. 
- * Any number of control qubits can be specified, along with which of their 
- * states (0 or 1) to condition upon; when the specified controls are in the 
- * specified state, the given unitary is applied to the target qubit.
- * This is equivalent to NOTing the control bits which are conditioned on 0, 
- * calling multiControlledUnitary then NOTing the same control bits.
+/** Apply a general single-qubit unitary with multiple control qubits, conditioned 
+ * upon a specific bit sequence.
+ *
+ * Any number of control qubits can be specified, along with their classical
+ * state (`0` or `1`) to condition upon. Only amplitudes of computational basis states 
+ * for which `controlQubits` have corresponding bit values `controlState` are modified 
+ * by `u`.
+ * 
+ * > This function is equivalent (albeit faster) to applying pauliX() on each of the control qubits
+ * > which are conditioned on outcome `0`, calling multiControlledUnitary(), then 
+ * > re-appplying pauliX() on the same qubits.
  *
     \f[
                 \begin{tikzpicture}[scale=.5]
@@ -3863,31 +3867,31 @@ void sqrtSwapGate(Qureg qureg, int qb1, int qb2);
  * - if any qubit index (\p targetQubit or one in \p controlQubits) is outside [0, \p qureg.numQubitsRepresented]),
  * - if any qubit in \p controlQubits is repeated
  * - if \p controlQubits contains \p targetQubit
- * - if any element of \p controlState is not a bit (0 or 1)
+ * - if any element of \p controlState is not a bit (`0` or `1`)
  * - if \p u is not unitary
  * @author Tyson Jones
  */
-void multiStateControlledUnitary(
-    Qureg qureg, int* controlQubits, int* controlState, int numControlQubits, 
-    int targetQubit, ComplexMatrix2 u
-);
+void multiStateControlledUnitary(Qureg qureg, int* controlQubits, int* controlState, int numControlQubits, int targetQubit, ComplexMatrix2 u);
 
-/** Apply a multi-qubit Z rotation on a selected number of qubits. 
+/** Apply a multi-qubit Z rotation, also known as a phase gadget, on a selected number of qubits. 
  * This is the unitary 
  * \f[ 
-    \exp \left( - i \theta/2 \bigotimes_{j} Z_j\right)
+ *    \exp \left( - i \, \frac{\theta}{2} \; \bigotimes_{j}^{\text{numQubits}} Z_j\right)
  * \f]
- * where the Pauli Z gates operate upon the passed list \f$j \in\f$ \p qubits, and cause 
+ * where the Pauli Z gates operate the qubits listed in `qubits`, and cause 
  * rotations of \f$\theta =\f$ \p angle.
- * All qubits not appearing in \p qubits are assumed to receive the identity operator.
+ *
+ * > All qubits not appearing in \p qubits are assumed to receive the identity operator.
+ *
  * This has the effect of premultiplying every amplitude with 
  * \f$\exp(\pm i \theta/2)\f$ where the sign is determined by the parity of
  * the target qubits for that amplitude.
  *
  * @see
- * - rotateZ()
- * - controlledRotateZ()
+ * - multiControlledMultiRotateZ()
  * - multiRotatePauli()
+ * - controlledRotateZ()
+ * - rotateZ()
  *
  * @ingroup unitary
  * @param[in,out] qureg object representing the set of all qubits
@@ -3898,44 +3902,42 @@ void multiStateControlledUnitary(
  * - if \p numQubits is outside [1, \p qureg.numQubitsRepresented])
  * - if any qubit in \p qubits is outside [0, \p qureg.numQubitsRepresented])
  * - if any qubit in \p qubits is repeated
+ * @throws segmentation-fault
+ * - if \p qubits contains fewer elements than \p numQubits
  * @author Tyson Jones
  */
 void multiRotateZ(Qureg qureg, int* qubits, int numQubits, qreal angle);
 
-/** Apply a multi-qubit multi-Pauli rotation on a selected number of qubits. 
+/** Apply a multi-qubit multi-Pauli rotation, also known as a Pauli gadget,
+ * on a selected number of qubits. 
  * This is the unitary 
  * \f[ 
-    \exp \left( - i \theta/2 \bigotimes_{j} \hat{\sigma}_j\right)
+ *    \exp \left( - i \, \frac{\theta}{2} \; \bigotimes_{j}^{\text{numTargets}} \hat{\sigma}_j\right)
  * \f]
- * where \f$\hat{\sigma}_j \in \{X, Y, Z\}\f$ is a Pauli operator (indicated by
- * codes 1, 2, 3 respectively in \p targetPaulis, or by enums 
- * PAULI_X, PAULI_Y and PAULI_Z) operating upon the qubit 
- * \p targetQubits[j], and \f$\theta\f$ is the passed \p angle.
- *  The operators specified in \p targetPaulis act on the corresponding qubit in \p targetQubits. 
+ * where  \f$\theta = \f$\p angle and \f$\hat{\sigma}_j \in \{X, Y, Z\}\f$ is a Pauli operator
+ * ::pauliOpType operating upon the corresponding qubit `targetQubits`.
+ *
  * For example:
  * ```
  *     multiRotatePauli(qureg, (int[]) {4,5,8,9}, (int[]) {0,1,2,3}, 4, .1)
  * ```
  * effects 
  * \f[
-  \exp \left( - i .1/2 X_5 Y_8 Z_9 \right) 
- * \f] on \p qureg, 
- * where unspecified qubits (along with those specified with Pauli code 0) are 
+ *    \exp \left( - i \, (0.1/2) \; X_5 \, Y_8 \, Z_9 \right) 
+ * \f] 
+ * on \p qureg, where unspecified qubits (along with those targeted by `PAULI_I`) are 
  * assumed to receive the identity operator (excluded from exponentiation). 
- * Note that specifying the identity 
- * Pauli (code=0 or PAULI_I) on a qubit is superfluous but allowed for convenience.
- * This is means a global phase factor of \f$ exp(-i \theta/2) \f$ is NOT induced 
- * by supplying 0 pauli-codes. Hence, if all \p targetPaulis are identity, then 
- * this function does nothing to \p qureg.
+ * > This means specifying `PAULI_I` does *not* induce a global phase factor \f$\exp(-i \theta/2)\f$.
+ * > Hence, if all \p targetPaulis are identity, then this function does nothing to \p qureg.
+ * > Specifying `PAULI_I` on a qubit is superfluous but allowed for convenience.
  *
- * This function effects this unitary by first rotating the qubits which are 
- * nominated to receive X or Y Paulis into alternate basis, performing 
- * multiRotateZ on all target qubits receiving X, Y or Z Paulis, then restoring 
- * the original basis. In the worst case, this means that 1+2*\p numTargets
- * primitive unitaries are performed on the state-vector, and double this on 
- * density matrices.
+ * This function effects the Pauli gadget by first rotating the qubits which are 
+ * nominated to receive `X` or `Y` Paulis into alternate basis, performing 
+ * multiRotateZ() on all target qubits, then restoring 
+ * the original basis. 
  *
  * @see
+ * - multiControlledMultiRotatePauli()
  * - multiRotateZ()
  * - rotateX()
  * - rotateY()
@@ -3945,14 +3947,18 @@ void multiRotateZ(Qureg qureg, int* qubits, int numQubits, qreal angle);
  * @ingroup unitary
  * @param[in,out] qureg object representing the set of all qubits
  * @param[in] targetQubits a list of the indices of the target qubits 
- * @param[in] targetPaulis a list of the Pauli codes (0=PAULI_I, 1=PAULI_X, 2=PAULI_Y, 3=PAULI_Z) 
+ * @param[in] targetPaulis a list of the Pauli operators (::pauliOpType)
  *      to apply to the corresponding qubits in \p targetQubits
  * @param[in] numTargets number of target qubits, i.e. the length of \p targetQubits and \p targetPaulis
  * @param[in] angle the angle by which the multi-qubit state is rotated
  * @throws invalidQuESTInputError()
- * - if \p numQubits is outside [1, \p qureg.numQubitsRepresented])
- * - if any qubit in \p qubits is outside [0, \p qureg.numQubitsRepresented))
- * - if any qubit in \p qubits is repeated
+ * - if \p numTargets is outside [1, \p qureg.numQubitsRepresented)
+ * - if any qubit in \p targetQubits is outside [0, \p qureg.numQubitsRepresented)
+ * - if any qubit in \p targetQubits is repeated
+ * - if any element of \p targetPaulis is not one of `PAULI_I`, `PAULI_X`, `PAULI_Y`, `PAULI_Z`
+ * @throws segmentation-fault
+ * - if \p targetQubits contains fewer elements than \p numTargets
+ * - if \p targetPaulis contains fewer elements than \p numTargets
  * @author Tyson Jones
  */
 void multiRotatePauli(Qureg qureg, int* targetQubits, enum pauliOpType* targetPaulis, int numTargets, qreal angle);
