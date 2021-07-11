@@ -3336,7 +3336,7 @@ void statevec_multiControlledMultiRotateZ(Qureg qureg, long long int ctrlMask, l
 # ifdef _OPENMP
 # pragma omp parallel \
     default  (none)              \
-    shared   (stateVecSize, stateVecReal,stateVecImag, ctrlMask,targMask, cosAngle,sinAngle) \
+    shared   (offset, stateVecSize, stateVecReal,stateVecImag, ctrlMask,targMask, cosAngle,sinAngle) \
     private  (index,globalIndex, fac, stateReal,stateImag)
 # endif
     {
@@ -3352,8 +3352,8 @@ void statevec_multiControlledMultiRotateZ(Qureg qureg, long long int ctrlMask, l
             if (ctrlMask && ((ctrlMask & globalIndex) != ctrlMask))
                 continue;
             
-            // odd-parity target qubits get fac_j = -1
-            fac = getBitMaskParity(targMask & globalIndex)? -1 : 1;
+            // odd-parity target qubits get fac_j = -1 (avoid thread divergence)
+            fac = 1-2*getBitMaskParity(targMask & globalIndex);
             stateVecReal[index] = cosAngle*stateReal + fac * sinAngle*stateImag;
             stateVecImag[index] = - fac * sinAngle*stateReal + cosAngle*stateImag;  
         }
@@ -3643,57 +3643,6 @@ void densmatr_calcProbOfAllOutcomesLocal(qreal* outcomeProbs, Qureg qureg, int* 
         }
     }
 }
-
-/*
-qreal densmatr_findProbabilityOfZeroLocal(Qureg qureg, int measureQubit) {
-    
-    // computes first local index containing a diagonal element
-    long long int localNumAmps = qureg.numAmpsPerChunk;
-    long long int densityDim = (1LL << qureg.numQubitsRepresented);
-    long long int diagSpacing = 1LL + densityDim;
-    long long int maxNumDiagsPerChunk = 1 + localNumAmps / diagSpacing;
-    long long int numPrevDiags = (qureg.chunkId>0)? 1+(qureg.chunkId*localNumAmps)/diagSpacing : 0;
-    long long int globalIndNextDiag = diagSpacing * numPrevDiags;
-    long long int localIndNextDiag = globalIndNextDiag % localNumAmps;
-    
-    // computes how many diagonals are contained in this chunk
-    long long int numDiagsInThisChunk = maxNumDiagsPerChunk;
-    if (localIndNextDiag + (numDiagsInThisChunk-1)*diagSpacing >= localNumAmps)
-        numDiagsInThisChunk -= 1;
-    
-    long long int visitedDiags;     // number of visited diagonals in this chunk so far
-    long long int basisStateInd;    // current diagonal index being considered
-    long long int index;            // index in the local chunk
-    
-    qreal zeroProb = 0;
-    qreal *stateVecReal = qureg.stateVec.real;
-    
-# ifdef _OPENMP
-# pragma omp parallel \
-    shared    (localIndNextDiag, numPrevDiags, diagSpacing, stateVecReal, numDiagsInThisChunk) \
-    private   (visitedDiags, basisStateInd, index) \
-    reduction ( +:zeroProb )
-# endif 
-    {
-# ifdef _OPENMP
-# pragma omp for schedule  (static)
-# endif
-        // sums the diagonal elems of the density matrix where measureQubit=0
-        for (visitedDiags = 0; visitedDiags < numDiagsInThisChunk; visitedDiags++) {
-            
-            basisStateInd = numPrevDiags + visitedDiags;
-            index = localIndNextDiag + diagSpacing * visitedDiags;
-    
-            if (extractBit(measureQubit, basisStateInd) == 0)
-                zeroProb += stateVecReal[index]; // assume imag[diagonls] ~ 0
-
-        }
-    }
-    
-    return zeroProb;
-}
-*/
-
 
 void statevec_controlledPhaseFlip (Qureg qureg, int idQubit1, int idQubit2)
 {

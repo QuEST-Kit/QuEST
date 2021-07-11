@@ -1607,7 +1607,8 @@ __global__ void statevec_multiControlledMultiRotateZKernel(Qureg qureg, long lon
     qreal *stateVecReal = qureg.deviceStateVec.real;
     qreal *stateVecImag = qureg.deviceStateVec.imag;
     
-    int fac = getBitMaskParity(mask & index)? -1 : 1;
+    // avoid warp divergence, setting fac = +- 1
+    int fac = 1-2*getBitMaskParity(targMask & index);
     qreal stateReal = stateVecReal[index];
     qreal stateImag = stateVecImag[index];
     
