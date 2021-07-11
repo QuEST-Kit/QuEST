@@ -666,6 +666,23 @@ void multiRotateZ(Qureg qureg, int* qubits, int numQubits, qreal angle) {
         numQubits, angle);
 }
 
+void multiControlledMultiRotateZ(Qureg qureg, int* controlQubits, int numControls, int* targetQubits, int numTargets, qreal angle) {
+    validateMultiControlsMultiTargets(qureg, controlQubits, numControls, targetQubits, numTargets, __func__);
+    
+    long long int ctrlMask = getQubitBitMask(controlQubits, numControls);
+    long long int targMask = getQubitBitMask(targetQubits, numTargets);
+    statevec_multiControlledMultiRotateZ(qureg, ctrlMask, targMask, angle);
+    if (qureg.isDensityMatrix) {
+        int shift = qureg.numQubitsRepresented;
+        statevec_multiControlledMultiRotateZ(qureg, ctrlMask<<shift, targMask<<shift, - angle);
+    }
+    
+    // @TODO: create actual QASM
+    qasm_recordComment(qureg, 
+        "Here a %d-control %d-target multiControlledMultiRotateZ of angle %g was performed (QASM not yet implemented)",
+        numControls, numTargets, angle);
+}
+
 void multiRotatePauli(Qureg qureg, int* targetQubits, enum pauliOpType* targetPaulis, int numTargets, qreal angle) {
     validateMultiTargets(qureg, targetQubits, numTargets, __func__);
     validatePauliCodes(targetPaulis, numTargets, __func__);

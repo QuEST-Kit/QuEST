@@ -3957,6 +3957,76 @@ void multiRotateZ(Qureg qureg, int* qubits, int numQubits, qreal angle);
  */
 void multiRotatePauli(Qureg qureg, int* targetQubits, enum pauliOpType* targetPaulis, int numTargets, qreal angle);
 
+/** Apply a multi-controlled multi-target Z rotation, also known as a controlled phase gadget.
+ * This is the unitary 
+ * \f[ 
+ *    |1\rangle\langle 1|^{\otimes\, \text{numControls}} \; \otimes \,
+ *     \exp \left( - i \, \frac{\theta}{2} \; \bigotimes_{j}^{\text{numTargets}} Z_j\right)
+ *     \;\;+\;\; \sum\limits_{k=0}^{2^{\,\text{numControls}} - 2} |k\rangle\langle k| \otimes \text{I}
+ * \f]
+ * where the Pauli Z gates operate upon the qubits in `targetQubits`, and cause 
+ * rotations of \f$\theta =\f$ \p angle.
+ *
+    \f[
+                \begin{tikzpicture}[scale=.5]
+                \node[draw=none] at (-4, 1) {targets};
+                \node[draw=none] at (-4, 5) {controls};
+                
+                \node[draw=none] at (0, 8) {$\vdots$};
+                \draw (0, 7) -- (0, 6);
+                
+                \draw (-2.5, 6) -- (2.5, 6);
+                \draw[fill=black] (0, 6) circle (.2);
+                \draw (0, 6) -- (0, 4);         
+                
+                \draw (-2.5, 4) -- (2.5, 4);
+                \draw[fill=black] (0, 4) circle (.2);
+                \draw(0, 4) -- (0, 3);
+
+                \draw (-2.5,0) -- (-1.5, 0);
+                \draw (1.5, 0) -- (2.5, 0);
+                \draw (-2.5,2) -- (-1.5, 2);
+                \draw (1.5, 2) -- (2.5, 2);
+                \draw (-1.5,-1)--(-1.5,3)--(1.5,3)--(1.5,-1);
+                \node[draw=none] at (0, 1) {$e^{-i\frac{\theta}{2}Z^{\otimes}}$};
+                \node[draw=none] at (0, -1) {$\vdots$};
+                
+                \end{tikzpicture}
+    \f]
+ * 
+ * > All qubits not appearing in \p targetQubits and \p controlQubits are assumed to receive the identity operator.
+ *
+ * This has the effect of premultiplying all amplitudes (for which the control qubits are `1`) 
+ * with \f$\exp(\pm i \theta/2)\f$, where the sign is determined by the parity of
+ * the target qubits for that amplitude.
+ *
+ * @see
+ * - multiControlledMultiRotatePauli()
+ * - multiRotatePauli()
+ * - multiRotateZ()
+ * - controlledRotateZ()
+ * - rotateZ()
+ *
+ * @ingroup unitary
+ * @param[in,out] qureg object representing the set of all qubits
+ * @param[in] controlQubits list of the indices of qubits to control upon
+ * @param[in] numControls length of length `controlQubits`
+ * @param[in] targetQubits a list of the indices of the target qubits 
+ * @param[in] numTargets length of list `targetQubits`
+ * @param[in] angle the angle by which the multi-qubit state is rotated around the Z axis
+ * @throws invalidQuESTInputError()
+ * - if any qubit in \p controlQubits and \p targetQubits is invalid, i.e. outside <b>[0, </b>`qureg.numQubitsRepresented`<b>)</b>
+ * - if \p controlQubits or \p targetQubits contain any repetitions
+ * - if any qubit in \p controlQubits is also in \p targetQubits (and vice versa)
+ * - if \p numTargets <b>< 1</b>
+ * - if \p numControls <b>< 1</b> (use multiRotateZ() for no controls)
+ * @throws segmentation-fault
+ * - if \p controlQubits contains fewer elements than \p numControls
+ * - if \p targetQubits contains fewer elements than \p numTargets
+ * @author Tyson Jones
+ */
+void multiControlledMultiRotateZ(Qureg qureg, int* controlQubits, int numControls, int* targetQubits, int numTargets, qreal angle);
+
 /** Computes the expected value of a product of Pauli operators.
  * Letting \f$ \sigma = \otimes_j \hat{\sigma}_j \f$ be the operators indicated by \p pauliCodes 
  * and acting on qubits \p targetQubits, this function computes \f$ \langle \psi | \sigma | \psi \rangle \f$ 
