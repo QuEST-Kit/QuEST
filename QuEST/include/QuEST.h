@@ -5951,7 +5951,7 @@ void applyNamedPhaseFuncOverrides(Qureg qureg, int* qubits, int* numQubitsPerReg
  *   ```
  *   invokes phase function 
  *   \f[
- *      f(\vec{r}, \theta)|_{\theta=0.5} \; = \; \begin{cases} \pi & \;\;\; \vec{r}=\vec{0} \\ \displaystyle 0.5 \sqrt{ \sum_j^{\text{numRegs}} {r_j}^2 } & \;\;\;\text{otherwise} \end{cases}.
+ *      f(\vec{r}, \theta)|_{\theta=0.5} \; = \; \begin{cases} \pi & \;\;\; \vec{r}=\vec{0} \\ \displaystyle 0.5 \left[ \sum_j^{\text{numRegs}} {r_j}^2 \right]^{-1/2} & \;\;\;\text{otherwise} \end{cases}.
  *   \f] 
  *
  * - Functions allowing the shifting of sub-register values, which are \p SCALED_INVERSE_SHIFTED_NORM
