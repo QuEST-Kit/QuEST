@@ -1110,12 +1110,12 @@ TEST_CASE( "applyNamedPhaseFunc", "[operators]" ) {
         }
         SECTION( "phase function name" ) {
             
-            enum phaseFunc func = (enum phaseFunc) GENERATE( -1, 12 );
+            enum phaseFunc func = (enum phaseFunc) GENERATE( -1, 14 );
             REQUIRE_THROWS_WITH( applyNamedPhaseFunc(quregVec, regs, numQubitsPerReg, numRegs, UNSIGNED, func), Contains("Invalid named phase function") );
         }
         SECTION( "phase function parameters" ) {
 
-            enum phaseFunc func = GENERATE( SCALED_NORM, INVERSE_NORM, SCALED_INVERSE_NORM, SCALED_PRODUCT, INVERSE_PRODUCT, SCALED_INVERSE_PRODUCT, SCALED_DISTANCE, INVERSE_DISTANCE, SCALED_INVERSE_DISTANCE );
+            enum phaseFunc func = GENERATE( SCALED_NORM, INVERSE_NORM, SCALED_INVERSE_NORM, SCALED_INVERSE_SHIFTED_NORM, SCALED_PRODUCT, INVERSE_PRODUCT, SCALED_INVERSE_PRODUCT, SCALED_DISTANCE, INVERSE_DISTANCE, SCALED_INVERSE_DISTANCE, SCALED_INVERSE_SHIFTED_DISTANCE );
             REQUIRE_THROWS_WITH( applyNamedPhaseFunc(quregVec, regs, numQubitsPerReg, numRegs, UNSIGNED, func), Contains("Invalid number of parameters") );
         }
         SECTION( "distance pair registers" ) {
@@ -1330,12 +1330,12 @@ TEST_CASE( "applyNamedPhaseFuncOverrides", "[operators]" ) {
         }
         SECTION( "phase function name" ) {
             
-            enum phaseFunc func = (enum phaseFunc) GENERATE( -1, 12 );
+            enum phaseFunc func = (enum phaseFunc) GENERATE( -1, 14 );
             REQUIRE_THROWS_WITH( applyNamedPhaseFuncOverrides(quregVec, regs, numQubitsPerReg, numRegs, UNSIGNED, func, NULL, NULL, 0), Contains("Invalid named phase function") );
         }
         SECTION( "phase function parameters" ) {
 
-            enum phaseFunc func = GENERATE( SCALED_NORM, INVERSE_NORM, SCALED_INVERSE_NORM, SCALED_PRODUCT, INVERSE_PRODUCT, SCALED_INVERSE_PRODUCT, SCALED_DISTANCE, INVERSE_DISTANCE, SCALED_INVERSE_DISTANCE );
+            enum phaseFunc func = GENERATE( SCALED_NORM, INVERSE_NORM, SCALED_INVERSE_NORM, SCALED_INVERSE_SHIFTED_NORM, SCALED_PRODUCT, INVERSE_PRODUCT, SCALED_INVERSE_PRODUCT, SCALED_DISTANCE, INVERSE_DISTANCE, SCALED_INVERSE_DISTANCE, SCALED_INVERSE_SHIFTED_DISTANCE );
             REQUIRE_THROWS_WITH( applyNamedPhaseFuncOverrides(quregVec, regs, numQubitsPerReg, numRegs, UNSIGNED, func, NULL, NULL, 0), Contains("Invalid number of parameters") );
         }
         SECTION( "distance pair registers" ) {
@@ -1750,12 +1750,12 @@ TEST_CASE( "applyParamNamedPhaseFunc", "[operators]" ) {
         }
         SECTION( "phase function name" ) {
             
-            enum phaseFunc func = (enum phaseFunc) GENERATE( -1, 12 );
+            enum phaseFunc func = (enum phaseFunc) GENERATE( -1, 14 );
             REQUIRE_THROWS_WITH( applyParamNamedPhaseFunc(quregVec, regs, numQubitsPerReg, numRegs, UNSIGNED, func, NULL, 0), Contains("Invalid named phase function") );
         }
         SECTION( "phase function parameters" ) {
             
-            qreal params[] = {0, 0};
+            qreal* params = (qreal*) calloc(numRegs + 3, sizeof(*params));
             
             SECTION( "no parameter functions" ) {
                 
@@ -1775,6 +1775,21 @@ TEST_CASE( "applyParamNamedPhaseFunc", "[operators]" ) {
                 int numParams = GENERATE( 0, 1, 3 );
                 REQUIRE_THROWS_WITH( applyParamNamedPhaseFunc(quregVec, regs, numQubitsPerReg, numRegs, UNSIGNED, func, params, numParams), Contains("Invalid number of parameters") );
             }
+            SECTION( "shifted distance" ) {
+                
+                if (numRegs%2 == 0) {
+                    enum phaseFunc func = SCALED_INVERSE_SHIFTED_DISTANCE;
+                    int numParams = GENERATE_COPY( 0, 1, numRegs/2 - 1, numRegs/2, numRegs/2 + 1, numRegs/2 + 3 );
+                    REQUIRE_THROWS_WITH( applyParamNamedPhaseFunc(quregVec, regs, numQubitsPerReg, numRegs, UNSIGNED, func, params, numParams), Contains("Invalid number of parameters") );
+                }
+            }
+            SECTION( "shifted norm" ) {
+                
+                enum phaseFunc func = SCALED_INVERSE_SHIFTED_NORM;
+                int numParams = GENERATE_COPY( 0, 1, numRegs-1, numRegs, numRegs+1, numRegs+3 );
+                REQUIRE_THROWS_WITH( applyParamNamedPhaseFunc(quregVec, regs, numQubitsPerReg, numRegs, UNSIGNED, func, params, numParams), Contains("Invalid number of parameters") );
+            }
+            free(params);
         }
         SECTION( "distance pair registers" ) {
             
@@ -2193,12 +2208,12 @@ TEST_CASE( "applyParamNamedPhaseFuncOverrides", "[operators]" ) {
         }
         SECTION( "phase function name" ) {
             
-            enum phaseFunc func = (enum phaseFunc) GENERATE( -1, 12 );
+            enum phaseFunc func = (enum phaseFunc) GENERATE( -1, 14 );
             REQUIRE_THROWS_WITH( applyParamNamedPhaseFuncOverrides(quregVec, regs, numQubitsPerReg, numRegs, UNSIGNED, func, NULL, 0, NULL, NULL, 0), Contains("Invalid named phase function") );
         }
         SECTION( "phase function parameters" ) {
             
-            qreal params[] = {0, 0};
+            qreal* params = (qreal*) calloc(numRegs + 3, sizeof(*params));
             
             SECTION( "no parameter functions" ) {
                 
@@ -2218,6 +2233,21 @@ TEST_CASE( "applyParamNamedPhaseFuncOverrides", "[operators]" ) {
                 int numParams = GENERATE( 0, 1, 3 );
                 REQUIRE_THROWS_WITH( applyParamNamedPhaseFuncOverrides(quregVec, regs, numQubitsPerReg, numRegs, UNSIGNED, func, params, numParams, NULL, NULL, 0), Contains("Invalid number of parameters") );
             }
+            SECTION( "shifted distance" ) {
+                
+                if (numRegs%2 == 0) {
+                    enum phaseFunc func = SCALED_INVERSE_SHIFTED_DISTANCE;
+                    int numParams = GENERATE_COPY( 0, 1, numRegs/2 - 1, numRegs/2, numRegs/2 + 1, numRegs/2 + 3 );
+                    REQUIRE_THROWS_WITH( applyParamNamedPhaseFuncOverrides(quregVec, regs, numQubitsPerReg, numRegs, UNSIGNED, func, params, numParams, NULL, NULL, 0), Contains("Invalid number of parameters") );
+                }
+            }
+            SECTION( "shifted norm" ) {
+                
+                enum phaseFunc func = SCALED_INVERSE_SHIFTED_NORM;
+                int numParams = GENERATE_COPY( 0, 1, numRegs-1, numRegs, numRegs+1, numRegs+3 );
+                REQUIRE_THROWS_WITH( applyParamNamedPhaseFuncOverrides(quregVec, regs, numQubitsPerReg, numRegs, UNSIGNED, func, params, numParams, NULL, NULL, 0), Contains("Invalid number of parameters") );
+            }
+            free(params);
         }
         SECTION( "distance pair registers" ) {
             
