@@ -209,6 +209,7 @@ typedef struct Vector
  *    - \p SCALED_NORM maps state \f$|x\rangle|y\rangle\dots\f$ to \f$\text{coeff} \sqrt{x^2 + y^2 + \dots}\f$
  *    - \p INVERSE_NORM maps state \f$|x\rangle|y\rangle\dots\f$ to \f$1/\sqrt{x^2 + y^2 + \dots}\f$
  *    - \p SCALED_INVERSE_NORM maps state \f$|x\rangle|y\rangle\dots\f$ to \f$\text{coeff}/\sqrt{x^2 + y^2 + \dots}\f$
+ *    - \p SCALED_INVERSE_SHIFTED_NORM maps state \f$|x\rangle|y\rangle\dots\f$ to \f$\text{coeff}/\sqrt{(x-\Delta_x)^2 + (y-\Delta_y)^2 + \dots}\f$
  *
  * Product based phase functions:
  *    - \p PRODUCT maps state \f$|x\rangle|y\rangle|z\rangle\dots\f$ to \f$x \; y \; z \dots\f$
@@ -221,14 +222,16 @@ typedef struct Vector
  *    - \p SCALED_DISTANCE maps state \f$|x_1\rangle|x_2\rangle|y_1\rangle|y_2\rangle\dots\f$ to \f$\text{coeff}\sqrt{(x_1-x_2)^2 + (y_1-y_2)^2 + \dots}\f$
  *    - \p INVERSE_DISTANCE maps state \f$|x_1\rangle|x_2\rangle|y_1\rangle|y_2\rangle\dots\f$ to \f$1/\sqrt{(x_1-x_2)^2 + (y_1-y_2)^2 + \dots}\f$
  *    - \p SCALED_INVERSE_DISTANCE maps state \f$|x_1\rangle|x_2\rangle|y_1\rangle|y_2\rangle\dots\f$ to \f$\text{coeff}/\sqrt{(x_1-x_2)^2 + (y_1-y_2)^2 + \dots}\f$
+ *    - \p SCALED_INVERSE_SHIFTED_DISTANCE maps state \f$|x_1\rangle|x_2\rangle|y_1\rangle|y_2\rangle\dots\f$ to \f$\text{coeff}/\sqrt{(x_1-x_2-\Delta_x)^2 + (y_1-y_2-\Delta_y)^2 + \dots}\f$
  *
  * @ingroup type 
  * @author Tyson Jones
+ * @author Richard Meister (shifted functions)
  */
 enum phaseFunc {
-    NORM=0,     SCALED_NORM=1,      INVERSE_NORM=2,         SCALED_INVERSE_NORM=3, 
-    PRODUCT=4,  SCALED_PRODUCT=5,   INVERSE_PRODUCT=6,      SCALED_INVERSE_PRODUCT=7, 
-    DISTANCE=8, SCALED_DISTANCE=9,  INVERSE_DISTANCE=10,    SCALED_INVERSE_DISTANCE=11};
+    NORM=0,     SCALED_NORM=1,      INVERSE_NORM=2,      SCALED_INVERSE_NORM=3,      SCALED_INVERSE_SHIFTED_NORM=4,
+    PRODUCT=5,  SCALED_PRODUCT=6,   INVERSE_PRODUCT=7,   SCALED_INVERSE_PRODUCT=8,
+    DISTANCE=9, SCALED_DISTANCE=10, INVERSE_DISTANCE=11, SCALED_INVERSE_DISTANCE=12, SCALED_INVERSE_SHIFTED_DISTANCE=13};
     
 /** Flags for specifying how the bits in sub-register computational basis states 
  * are mapped to indices in functions like applyPhaseFunc().
