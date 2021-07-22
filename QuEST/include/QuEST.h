@@ -5953,6 +5953,38 @@ void applyNamedPhaseFuncOverrides(Qureg qureg, int* qubits, int* numQubitsPerReg
  *   \f[
  *      f(\vec{r}, \theta)|_{\theta=0.5} \; = \; \begin{cases} \pi & \;\;\; \vec{r}=\vec{0} \\ \displaystyle 0.5 \sqrt{ \sum_j^{\text{numRegs}} {r_j}^2 } & \;\;\;\text{otherwise} \end{cases}.
  *   \f] 
+ *
+ * - Functions allowing the shifting of sub-register values, which are \p SCALED_INVERSE_SHIFTED_NORM
+ *   and \p SCALED_INVERSE_SHIFTED_DISTANCE, need these shift values to be passed in the \p params
+ *   argument _after_ the scaling and divergence override parameters listed above. The function
+ *   \p SCALED_INVERSE_SHIFTED_NORM needs as many extra parameters, as there are sub-registers;
+ *   \p SCALED_INVERSE_SHIFTED_DISTANCE needs one extra parameter for each pair of sub-registers.
+ *   For example,
+ *   ```
+ *   enum phaseFunc functionNameCode = SCALED_INVERSE_SHIFTED_NORM;
+ *   int qubits[] = {0,1,2,3, 4,5,6,7};
+ *   int qubitsPerReg[] = {4, 4};
+ *   qreal params[] = {0.5, M_PI, 0.8, -0.3};
+ *   int numParams = 4;
+ *   applyParamNamedPhaseFunc(..., qubits, qubitsPerReg, 2, ..., functionNameCode, params, numParams);
+ *   ```
+ *   invokes phase function 
+ *   \f[
+ *      f(\vec{r}) \; = \; \begin{cases} \pi & \;\;\; \vec{r}=\vec{0} \\ \displaystyle 0.5 \left[(r_1-0.8)^2 + (r_2+0.3)^2\right]^{-1/2} & \;\;\;\text{otherwise} \end{cases}.
+ *   \f] 
+ *   and
+ *   ```
+ *   enum phaseFunc functionNameCode = SCALED_INVERSE_SHIFTED_DISTANCE;
+ *   int qubits[] = {0,1, 2,3, 4,5, 6,7};
+ *   int qubitsPerReg[] = {2, 2, 2, 2};
+ *   qreal params[] = {0.5, M_PI, 0.8, -0.3};
+ *   int numParams = 4;
+ *   applyParamNamedPhaseFunc(..., qubits, qubitsPerReg, 4, ..., functionNameCode, params, numParams);
+ *   ```
+ *   invokes phase function 
+ *   \f[
+ *      f(\vec{r}) \; = \; \begin{cases} \pi & \;\;\; \vec{r}=\vec{0} \\ \displaystyle 0.5 \left[(r_1-r_2-0.8)^2 + (r_3-r_4+0.3)^2\right]^{-1/2} & \;\;\;\text{otherwise} \end{cases}.
+ *   \f] 
  * 
  *   > You can further override \f$f(\vec{r}, \vec{\theta})\f$ at one or more \f$\vec{r}\f$ values
  *   > via applyParamNamedPhaseFuncOverrides().
@@ -5997,6 +6029,7 @@ void applyNamedPhaseFuncOverrides(Qureg qureg, int* qubits, int* numQubitsPerReg
  * - if \p functionNameCode is not a valid ::phaseFunc
  * - if \p numParams is incompatible with \p functionNameCode (for example, no parameters were passed to \p SCALED_PRODUCT)
  * @author Tyson Jones
+ * @author Richard Meister (shifted functions)
  */
 void applyParamNamedPhaseFunc(Qureg qureg, int* qubits, int* numQubitsPerReg, int numRegs, enum bitEncoding encoding, enum phaseFunc functionNameCode, qreal* params, int numParams);
 
