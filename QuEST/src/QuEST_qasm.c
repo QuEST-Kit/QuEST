@@ -639,6 +639,30 @@ void addMultiVarOverridesToQASM(Qureg qureg, int numRegs, long long int* overrid
     }
 }
 
+void addShiftValuesToQASM(Qureg qureg, enum phaseFunc funcName, int numRegs, qreal* params) {
+
+    char line[MAX_LINE_LEN+1];
+    int len = 0;
+    int numDeltas;
+    if (funcName == SCALED_INVERSE_SHIFTED_NORM)
+        numDeltas = numRegs;
+    else if (funcName == SCALED_INVERSE_SHIFTED_DISTANCE)
+        numDeltas = numRegs / 2;
+    else
+        return;
+
+    qasm_recordComment(qureg, "  with the additional parameters");
+
+    for (int k=0; k<numDeltas; k++) {
+        len = 0;
+        len += snprintf(line+len, MAX_LINE_LEN-len, "//     delta%d = " REAL_QASM_FORMAT "\n", k, params[2+k]);
+        if (len >= MAX_LINE_LEN)
+            bufferOverflow();
+        addStringToQASM(qureg, line, len);
+    }
+
+}
+
 void qasm_recordMultiVarPhaseFunc(Qureg qureg, int* qubits, int* numQubitsPerReg, int numRegs, enum bitEncoding encoding, qreal* coeffs, qreal* exponents, int* numTermsPerReg, long long int* overrideInds, qreal* overridePhases, int numOverrides) {
 
     if (!qureg.qasmLog->isLogging)
@@ -712,10 +736,11 @@ void qasm_recordNamedPhaseFunc(Qureg qureg, int* qubits, int* numQubitsPerReg, i
 
     // record norm-based function, like:  (-1.0) / sqrt(x^2 + y^2 + z^2 + ...)
     if (funcName == NORM || funcName == SCALED_NORM || 
-        funcName == INVERSE_NORM || funcName == SCALED_INVERSE_NORM)
+        funcName == INVERSE_NORM || funcName == SCALED_INVERSE_NORM ||
+        funcName == SCALED_INVERSE_SHIFTED_NORM)
     {
         // coefficient
-        if (funcName == SCALED_NORM || funcName == SCALED_INVERSE_NORM)
+        if (funcName == SCALED_NORM || funcName == SCALED_INVERSE_NORM || funcName == SCALED_INVERSE_SHIFTED_NORM)
             len += snprintf(line+len, MAX_LINE_LEN-len, 
                 (params[0]>0)? 
                     REAL_QASM_FORMAT " " : 
@@ -727,15 +752,28 @@ void qasm_recordNamedPhaseFunc(Qureg qureg, int* qubits, int* numQubitsPerReg, i
             len += snprintf(line+len, MAX_LINE_LEN-len, "sqrt(");
         else if (funcName == INVERSE_NORM)
             len += snprintf(line+len, MAX_LINE_LEN-len, "1 / sqrt(");
-        else if (funcName == SCALED_INVERSE_NORM)
+        else if (funcName == SCALED_INVERSE_NORM || funcName == SCALED_INVERSE_SHIFTED_NORM)
             len += snprintf(line+len, MAX_LINE_LEN-len, "/ sqrt(");
 
         // x^2 + y^2 + ...
         if (numRegs <= MAX_REG_SYMBS)
-            for (int r=0; r<numRegs; r++)
-                len += snprintf(line+len, MAX_LINE_LEN-len, (r < numRegs - 1)? "%c^2 + ":"%c^2))\n", getPhaseFuncSymbol(numRegs,r));
-        else
-            len += snprintf(line+len, MAX_LINE_LEN-len, "x0^2 + x1^2 + x2^2... ))\n");
+            for (int r=0; r<numRegs; r++) {
+                if (funcName == SCALED_INVERSE_SHIFTED_NORM)
+                    len += snprintf(line+len, MAX_LINE_LEN-len,
+                        (params[2+r] < 0)?
+                            "(%c^2+" REAL_QASM_FORMAT ")" :
+                            "(%c^2-" REAL_QASM_FORMAT ")",
+                        getPhaseFuncSymbol(numRegs,r), fabs(params[2+r]));
+                else
+                    len += snprintf(line+len, MAX_LINE_LEN-len, "%c^2", getPhaseFuncSymbol(numRegs,r));
+                len += snprintf(line+len, MAX_LINE_LEN-len, (r < numRegs - 1)? " + ":"))\n");
+            }
+        else {
+            if (funcName == SCALED_INVERSE_SHIFTED_NORM)
+                len += snprintf(line+len, MAX_LINE_LEN-len, "(x0-delta0)^2 + (x1-delta1)^2 + (x2-delta2)^2... ))\n");
+            else
+                len += snprintf(line+len, MAX_LINE_LEN-len, "x0^2 + x1^2 + x2^2... ))\n");
+        }
     }
     // record product-based, like (-1.0) 1/(x y z) ...
     else if (funcName == PRODUCT || funcName == SCALED_PRODUCT || 
@@ -769,10 +807,11 @@ void qasm_recordNamedPhaseFunc(Qureg qureg, int* qubits, int* numQubitsPerReg, i
     }
     // record distance-based, like (-1.0) 1/sqrt((x1-x2)^2 + (y1-y2)^2 + ...)
     else if (funcName == DISTANCE || funcName == SCALED_DISTANCE || 
-        funcName == INVERSE_DISTANCE || funcName == SCALED_INVERSE_DISTANCE)
+        funcName == INVERSE_DISTANCE || funcName == SCALED_INVERSE_DISTANCE ||
+        funcName == SCALED_INVERSE_SHIFTED_DISTANCE)
     {
         // coefficient
-        if (funcName == SCALED_DISTANCE || funcName == SCALED_INVERSE_DISTANCE)
+        if (funcName == SCALED_DISTANCE || funcName == SCALED_INVERSE_DISTANCE || funcName == SCALED_INVERSE_SHIFTED_DISTANCE)
             len += snprintf(line+len, MAX_LINE_LEN-len, 
                 (params[0]>0)? 
                     REAL_QASM_FORMAT " " :
@@ -784,16 +823,29 @@ void qasm_recordNamedPhaseFunc(Qureg qureg, int* qubits, int* numQubitsPerReg, i
             len += snprintf(line+len, MAX_LINE_LEN-len, "sqrt(");
         else if (funcName == INVERSE_DISTANCE)
             len += snprintf(line+len, MAX_LINE_LEN-len, "1 / sqrt(");
-        else if (funcName == SCALED_INVERSE_DISTANCE)
+        else if (funcName == SCALED_INVERSE_DISTANCE || funcName == SCALED_INVERSE_SHIFTED_DISTANCE)
             len += snprintf(line+len, MAX_LINE_LEN-len, "/ sqrt(");
 
         // (x-y)^2 + (z-t)^2 + ...
         if (numRegs <= MAX_REG_SYMBS)
-            for (int r=0; r<numRegs; r+=2)
-                len += snprintf(line+len, MAX_LINE_LEN-len, (r+1 < numRegs-1)? "(%c-%c)^2 + ":"(%c-%c)^2))\n", 
-                    getPhaseFuncSymbol(numRegs,r), getPhaseFuncSymbol(numRegs,r+1));
-        else
-            len += snprintf(line+len, MAX_LINE_LEN-len, "(x0-x1)^2 + (x2-x3)^2 + ...))\n");
+            for (int r=0; r<numRegs; r+=2) {
+                if (funcName == SCALED_INVERSE_SHIFTED_DISTANCE)
+                    len += snprintf(line+len, MAX_LINE_LEN-len,
+                        (params[2+r/2] < 0)?
+                            "(%c-%c+" REAL_QASM_FORMAT ")^2":
+                            "(%c-%c-" REAL_QASM_FORMAT ")^2", 
+                        getPhaseFuncSymbol(numRegs,r), getPhaseFuncSymbol(numRegs,r+1), fabs(params[2+r/2]));
+                else
+                    len += snprintf(line+len, MAX_LINE_LEN-len, "(%c-%c)^2", 
+                        getPhaseFuncSymbol(numRegs,r), getPhaseFuncSymbol(numRegs,r+1));
+                len += snprintf(line+len, MAX_LINE_LEN-len, (r+1 < numRegs-1)? " + ":"))\n");
+            }
+        else {
+            if (funcName == SCALED_INVERSE_SHIFTED_DISTANCE)
+                len += snprintf(line+len, MAX_LINE_LEN-len, "(x0-x1-delta0)^2 + (x2-x3-delta1)^2 + ...))\n");
+            else
+                len += snprintf(line+len, MAX_LINE_LEN-len, "(x0-x1)^2 + (x2-x3)^2 + ...))\n");
+        }
     }
 
     if (len >= MAX_LINE_LEN)
@@ -801,6 +853,8 @@ void qasm_recordNamedPhaseFunc(Qureg qureg, int* qubits, int* numQubitsPerReg, i
     addStringToQASM(qureg, line, len);
 
     addMultiVarRegsToQASM(qureg, qubits, numQubitsPerReg, numRegs, encoding);
+    if (numRegs > MAX_REG_SYMBS && (funcName == SCALED_INVERSE_SHIFTED_NORM || funcName == SCALED_INVERSE_SHIFTED_DISTANCE))
+        addShiftValuesToQASM(qureg, funcName, numRegs, params);
 
     if (numOverrides > 0)
         addMultiVarOverridesToQASM(qureg, numRegs, overrideInds,overridePhases, numOverrides);
