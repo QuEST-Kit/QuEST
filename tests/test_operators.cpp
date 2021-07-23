@@ -1532,7 +1532,7 @@ TEST_CASE( "applyParamNamedPhaseFunc", "[operators]" ) {
                 
                 enum phaseFunc func = SCALED_INVERSE_SHIFTED_NORM;
                 int numParams = 2 + numRegs;
-                qreal* params = (qreal*) malloc(numParams * sizeof(*params));
+                qreal params[numParams];
                 params[0] = getRandomReal(-10, 10); // scaling
                 params[1] = getRandomReal(-4, 4); // divergence override
                 for (int r=0; r<numRegs; r++)
@@ -1548,7 +1548,6 @@ TEST_CASE( "applyParamNamedPhaseFunc", "[operators]" ) {
 
                 applyParamNamedPhaseFunc(quregVec, regs, numQubitsPerReg, numRegs, encoding, func, params, numParams);
                 applyReferenceOp(refVec, regs, totalNumQubits, diagMatr);
-                free(params);
                 REQUIRE( areEqual(quregVec, refVec, 1E2*REAL_EPS) );
             }
             SECTION( "INVERSE_PRODUCT" ) {
@@ -1684,7 +1683,7 @@ TEST_CASE( "applyParamNamedPhaseFunc", "[operators]" ) {
                 // test only if there are an even number of registers
                 if (numRegs%2 == 0) {
                     int numParams = 2 + numRegs/2;
-                    qreal* params = (qreal*) malloc(numParams * sizeof(*params));
+                    qreal params[numParams];
                     params[0] = getRandomReal( -10, 10 ); // scaling
                     params[1] = getRandomReal( -4, 4 ); // divergence override
                     for (int r=0; r<numRegs/2; r++)
@@ -1700,7 +1699,6 @@ TEST_CASE( "applyParamNamedPhaseFunc", "[operators]" ) {
                     
                     applyParamNamedPhaseFunc(quregVec, regs, numQubitsPerReg, numRegs, encoding, func, params, numParams);
                     applyReferenceOp(refVec, regs, totalNumQubits, diagMatr);
-                    free(params);
                     REQUIRE( areEqual(quregVec, refVec, 1E2*REAL_EPS) );
                 }
             }
@@ -1755,7 +1753,9 @@ TEST_CASE( "applyParamNamedPhaseFunc", "[operators]" ) {
         }
         SECTION( "phase function parameters" ) {
             
-            qreal* params = (qreal*) calloc(numRegs + 3, sizeof(*params));
+            qreal params[numRegs + 3];
+            for (int r=0; r<numRegs + 3; r++)
+                params[r] = 0;
             
             SECTION( "no parameter functions" ) {
                 
@@ -1789,7 +1789,6 @@ TEST_CASE( "applyParamNamedPhaseFunc", "[operators]" ) {
                 int numParams = GENERATE_COPY( 0, 1, numRegs-1, numRegs, numRegs+1, numRegs+3 );
                 REQUIRE_THROWS_WITH( applyParamNamedPhaseFunc(quregVec, regs, numQubitsPerReg, numRegs, UNSIGNED, func, params, numParams), Contains("Invalid number of parameters") );
             }
-            free(params);
         }
         SECTION( "distance pair registers" ) {
             
@@ -1974,7 +1973,7 @@ TEST_CASE( "applyParamNamedPhaseFuncOverrides", "[operators]" ) {
                 
                 enum phaseFunc func = SCALED_INVERSE_SHIFTED_NORM;
                 int numParams = 2 + numRegs;
-                qreal* params = (qreal*) malloc(numParams * sizeof(*params));
+                qreal params[numParams];
                 params[0] = getRandomReal(-10, 10); // scaling
                 params[1] = getRandomReal(-4, 4); // divergence override
                 for (int r=0; r<numRegs; r++)
@@ -1992,7 +1991,6 @@ TEST_CASE( "applyParamNamedPhaseFuncOverrides", "[operators]" ) {
 
                 applyParamNamedPhaseFuncOverrides(quregVec, regs, numQubitsPerReg, numRegs, encoding, func, params, numParams, overrideInds, overridePhases, numOverrides);
                 applyReferenceOp(refVec, regs, totalNumQubits, diagMatr);
-                free(params);
                 REQUIRE( areEqual(quregVec, refVec, 1E2*REAL_EPS) );
             }
             SECTION( "INVERSE_PRODUCT" ) {
@@ -2140,7 +2138,7 @@ TEST_CASE( "applyParamNamedPhaseFuncOverrides", "[operators]" ) {
                 // test only if there are an even number of registers
                 if (numRegs%2 == 0) {
                     int numParams = 2 + numRegs/2;
-                    qreal* params = (qreal*) malloc(numParams * sizeof(*params));
+                    qreal params[numParams];
                     params[0] = getRandomReal( -10, 10 ); // scaling
                     params[1] = getRandomReal( -4, 4 ); // divergence override
                     for (int r=0; r<numRegs/2; r++)
@@ -2158,7 +2156,6 @@ TEST_CASE( "applyParamNamedPhaseFuncOverrides", "[operators]" ) {
                     
                     applyParamNamedPhaseFuncOverrides(quregVec, regs, numQubitsPerReg, numRegs, encoding, func, params, numParams, overrideInds, overridePhases, numOverrides);
                     applyReferenceOp(refVec, regs, totalNumQubits, diagMatr);
-                    free(params);
                     REQUIRE( areEqual(quregVec, refVec, 1E2*REAL_EPS) );
                 }
             }
@@ -2213,7 +2210,9 @@ TEST_CASE( "applyParamNamedPhaseFuncOverrides", "[operators]" ) {
         }
         SECTION( "phase function parameters" ) {
             
-            qreal* params = (qreal*) calloc(numRegs + 3, sizeof(*params));
+            qreal params[numRegs + 3];
+            for (int r=0; r<numRegs + 3; r++)
+                params[r] = 0;
             
             SECTION( "no parameter functions" ) {
                 
@@ -2247,7 +2246,6 @@ TEST_CASE( "applyParamNamedPhaseFuncOverrides", "[operators]" ) {
                 int numParams = GENERATE_COPY( 0, 1, numRegs-1, numRegs, numRegs+1, numRegs+3 );
                 REQUIRE_THROWS_WITH( applyParamNamedPhaseFuncOverrides(quregVec, regs, numQubitsPerReg, numRegs, UNSIGNED, func, params, numParams, NULL, NULL, 0), Contains("Invalid number of parameters") );
             }
-            free(params);
         }
         SECTION( "distance pair registers" ) {
             
