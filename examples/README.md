@@ -139,7 +139,7 @@ destroyQuESTEnv(env);
 
 The effect of the [code above](tutorial_example.c) is to simulate the circuit below
 
-<img src="https://github.com/QuEST-Kit/QuEST/raw/readme_update/examples/tutorial_circuit.png" width="50%"> <br>
+<img src="https://github.com/QuEST-Kit/QuEST/raw/master/examples/tutorial_circuit.png" width="50%"> <br>
 
 and after compiling (see section below) and running, gives psuedo-random output
 
