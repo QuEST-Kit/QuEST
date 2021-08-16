@@ -596,7 +596,12 @@ TEST_CASE( "applyMultiVarPhaseFunc", "[operators]" ) {
         }
         SECTION( "density-matrix" ) {
             
-            printf("max phase: %lf\n", maxPhase);
+            
+            // DEBUG
+            if (!areEqual(quregMatr, refMatr, 1E6*REAL_EPS)) {
+                printf("max phase: %lf\n", maxPhase);
+            }
+            
             
             applyMultiVarPhaseFunc(quregMatr, regs, numQubitsPerReg, numRegs, encoding, coeffs, expons, numTermsPerReg);
             applyReferenceOp(refMatr, regs, totalNumQubits, allRegMatr);
