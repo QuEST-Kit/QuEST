@@ -1842,15 +1842,19 @@ TEST_CASE( "applyParamNamedPhaseFunc", "[operators]" ) {
             
             SECTION( "state-vector" ) {
                 
-                applyParamNamedPhaseFunc(quregVec, regs, numQubitsPerReg, numRegs, encoding, func, params, numParams);
-                applyReferenceOp(refVec, regs, totalNumQubits, diagMatr);
-                REQUIRE( areEqual(quregVec, refVec, 1E2*REAL_EPS) );
+                if (numRegs%2 == 0) {
+                    applyParamNamedPhaseFunc(quregVec, regs, numQubitsPerReg, numRegs, encoding, func, params, numParams);
+                    applyReferenceOp(refVec, regs, totalNumQubits, diagMatr);
+                    REQUIRE( areEqual(quregVec, refVec, 1E2*REAL_EPS) );
+                }
             }
             SECTION( "density-matrix" ) {
                 
-                applyParamNamedPhaseFunc(quregMatr, regs, numQubitsPerReg, numRegs, encoding, func, params, numParams);
-                applyReferenceOp(refMatr, regs, totalNumQubits, diagMatr);
-                REQUIRE( areEqual(quregMatr, refMatr, 1E2*REAL_EPS) );
+                if (numRegs%2 == 0) {
+                    applyParamNamedPhaseFunc(quregMatr, regs, numQubitsPerReg, numRegs, encoding, func, params, numParams);
+                    applyReferenceOp(refMatr, regs, totalNumQubits, diagMatr);
+                    REQUIRE( areEqual(quregMatr, refMatr, 1E2*REAL_EPS) );
+                }
             }
         }
     }
