@@ -477,13 +477,6 @@ TEST_CASE( "applyMultiVarPhaseFunc", "[operators]" ) {
         // try every kind of binary encodings
         enum bitEncoding encoding = GENERATE( UNSIGNED,TWOS_COMPLEMENT );
         
-        
-        
-        // DEBUG 
-        encoding = UNSIGNED;
-        
-        
-        
         // try every possible number of registers 
         // (between #qubits containing 1, and 1 containing #qubits)
         int numRegs;

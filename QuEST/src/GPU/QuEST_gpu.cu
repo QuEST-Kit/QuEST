@@ -3638,11 +3638,12 @@ __global__ void statevec_applyMultiVarPhaseFuncOverridesKernel(
     }
     else if  (encoding == TWOS_COMPLEMENT) {
         for (int r=0; r<numRegs; r++) {
+            phaseInds[r*stride+offset] = 0LL;
             for (int q=0; q<numQubitsPerReg[r]-1; q++)  
                 phaseInds[r*stride+offset] += (1LL << q) * extractBit(qubits[flatInd++], globalAmpInd);
             // use final qubit to indicate sign
             if (extractBit(qubits[flatInd++], globalAmpInd) == 1)
-                phaseInds[r*stride+offset] -= (1LL << (numQubitsPerReg[r]-1));
+                phaseInds[r*stride+offset] -= (1LL << (numQubitsPerReg[r]-1)); 
         }
     }
 
@@ -3787,6 +3788,7 @@ __global__ void statevec_applyParamNamedPhaseFuncOverridesKernel(
     else if  (encoding == TWOS_COMPLEMENT) {
         int flatInd = 0;
         for (int r=0; r<numRegs; r++) {
+            phaseInds[r*stride+offset] = 0LL;
             for (int q=0; q<numQubitsPerReg[r]-1; q++)  
                 phaseInds[r*stride+offset] += (1LL << q) * extractBit(qubits[flatInd++], globalAmpInd);
             // use final qubit to indicate sign
