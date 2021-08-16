@@ -574,11 +574,6 @@ TEST_CASE( "applyMultiVarPhaseFunc", "[operators]" ) {
                     phase += coeffs[t+startInd] * pow(ind, expons[t+startInd]);
                     
                 singleRegMatr[i][i] = expI(phase);
-                
-                
-                // dEBUG 
-                if (abs(phase) > maxPhase)
-                    maxPhase = phase;
             }                
             allRegMatr = getKroneckerProduct(singleRegMatr, allRegMatr);
             startInd += numTermsPerReg[r];
