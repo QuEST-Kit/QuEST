@@ -209,6 +209,7 @@ typedef struct Vector
  *    - \p SCALED_NORM maps state \f$|x\rangle|y\rangle\dots\f$ to \f$\text{coeff} \sqrt{x^2 + y^2 + \dots}\f$
  *    - \p INVERSE_NORM maps state \f$|x\rangle|y\rangle\dots\f$ to \f$1/\sqrt{x^2 + y^2 + \dots}\f$
  *    - \p SCALED_INVERSE_NORM maps state \f$|x\rangle|y\rangle\dots\f$ to \f$\text{coeff}/\sqrt{x^2 + y^2 + \dots}\f$
+ *    - \p SCALED_INVERSE_SHIFTED_NORM maps state \f$|x\rangle|y\rangle\dots\f$ to \f$\text{coeff}/\sqrt{(x-\Delta_x)^2 + (y-\Delta_y)^2 + \dots}\f$
  *
  * Product based phase functions:
  *    - \p PRODUCT maps state \f$|x\rangle|y\rangle|z\rangle\dots\f$ to \f$x \; y \; z \dots\f$
@@ -221,14 +222,16 @@ typedef struct Vector
  *    - \p SCALED_DISTANCE maps state \f$|x_1\rangle|x_2\rangle|y_1\rangle|y_2\rangle\dots\f$ to \f$\text{coeff}\sqrt{(x_1-x_2)^2 + (y_1-y_2)^2 + \dots}\f$
  *    - \p INVERSE_DISTANCE maps state \f$|x_1\rangle|x_2\rangle|y_1\rangle|y_2\rangle\dots\f$ to \f$1/\sqrt{(x_1-x_2)^2 + (y_1-y_2)^2 + \dots}\f$
  *    - \p SCALED_INVERSE_DISTANCE maps state \f$|x_1\rangle|x_2\rangle|y_1\rangle|y_2\rangle\dots\f$ to \f$\text{coeff}/\sqrt{(x_1-x_2)^2 + (y_1-y_2)^2 + \dots}\f$
+ *    - \p SCALED_INVERSE_SHIFTED_DISTANCE maps state \f$|x_1\rangle|x_2\rangle|y_1\rangle|y_2\rangle\dots\f$ to \f$\text{coeff}/\sqrt{(x_1-x_2-\Delta_x)^2 + (y_1-y_2-\Delta_y)^2 + \dots}\f$
  *
  * @ingroup type 
  * @author Tyson Jones
+ * @author Richard Meister (shifted functions)
  */
 enum phaseFunc {
-    NORM=0,     SCALED_NORM=1,      INVERSE_NORM=2,         SCALED_INVERSE_NORM=3, 
-    PRODUCT=4,  SCALED_PRODUCT=5,   INVERSE_PRODUCT=6,      SCALED_INVERSE_PRODUCT=7, 
-    DISTANCE=8, SCALED_DISTANCE=9,  INVERSE_DISTANCE=10,    SCALED_INVERSE_DISTANCE=11};
+    NORM=0,     SCALED_NORM=1,      INVERSE_NORM=2,      SCALED_INVERSE_NORM=3,      SCALED_INVERSE_SHIFTED_NORM=4,
+    PRODUCT=5,  SCALED_PRODUCT=6,   INVERSE_PRODUCT=7,   SCALED_INVERSE_PRODUCT=8,
+    DISTANCE=9, SCALED_DISTANCE=10, INVERSE_DISTANCE=11, SCALED_INVERSE_DISTANCE=12, SCALED_INVERSE_SHIFTED_DISTANCE=13};
     
 /** Flags for specifying how the bits in sub-register computational basis states 
  * are mapped to indices in functions like applyPhaseFunc().
@@ -6166,7 +6169,39 @@ void applyNamedPhaseFuncOverrides(Qureg qureg, int* qubits, int* numQubitsPerReg
  *   ```
  *   invokes phase function 
  *   \f[
- *      f(\vec{r}, \theta)|_{\theta=0.5} \; = \; \begin{cases} \pi & \;\;\; \vec{r}=\vec{0} \\ \displaystyle 0.5 \sqrt{ \sum_j^{\text{numRegs}} {r_j}^2 } & \;\;\;\text{otherwise} \end{cases}.
+ *      f(\vec{r}, \theta)|_{\theta=0.5} \; = \; \begin{cases} \pi & \;\;\; \vec{r}=\vec{0} \\ \displaystyle 0.5 \left[ \sum_j^{\text{numRegs}} {r_j}^2 \right]^{-1/2} & \;\;\;\text{otherwise} \end{cases}.
+ *   \f] 
+ *
+ * - Functions allowing the shifting of sub-register values, which are \p SCALED_INVERSE_SHIFTED_NORM
+ *   and \p SCALED_INVERSE_SHIFTED_DISTANCE, need these shift values to be passed in the \p params
+ *   argument _after_ the scaling and divergence override parameters listed above. The function
+ *   \p SCALED_INVERSE_SHIFTED_NORM needs as many extra parameters, as there are sub-registers;
+ *   \p SCALED_INVERSE_SHIFTED_DISTANCE needs one extra parameter for each pair of sub-registers.
+ *   For example,
+ *   ```
+ *   enum phaseFunc functionNameCode = SCALED_INVERSE_SHIFTED_NORM;
+ *   int qubits[] = {0,1,2,3, 4,5,6,7};
+ *   int qubitsPerReg[] = {4, 4};
+ *   qreal params[] = {0.5, M_PI, 0.8, -0.3};
+ *   int numParams = 4;
+ *   applyParamNamedPhaseFunc(..., qubits, qubitsPerReg, 2, ..., functionNameCode, params, numParams);
+ *   ```
+ *   invokes phase function 
+ *   \f[
+ *      f(\vec{r}) \; = \; \begin{cases} \pi & \;\;\; \vec{r}=\vec{0} \\ \displaystyle 0.5 \left[(r_1-0.8)^2 + (r_2+0.3)^2\right]^{-1/2} & \;\;\;\text{otherwise} \end{cases}.
+ *   \f] 
+ *   and
+ *   ```
+ *   enum phaseFunc functionNameCode = SCALED_INVERSE_SHIFTED_DISTANCE;
+ *   int qubits[] = {0,1, 2,3, 4,5, 6,7};
+ *   int qubitsPerReg[] = {2, 2, 2, 2};
+ *   qreal params[] = {0.5, M_PI, 0.8, -0.3};
+ *   int numParams = 4;
+ *   applyParamNamedPhaseFunc(..., qubits, qubitsPerReg, 4, ..., functionNameCode, params, numParams);
+ *   ```
+ *   invokes phase function 
+ *   \f[
+ *      f(\vec{r}) \; = \; \begin{cases} \pi & \;\;\; \vec{r}=\vec{0} \\ \displaystyle 0.5 \left[(r_1-r_2-0.8)^2 + (r_3-r_4+0.3)^2\right]^{-1/2} & \;\;\;\text{otherwise} \end{cases}.
  *   \f] 
  * 
  *   > You can further override \f$f(\vec{r}, \vec{\theta})\f$ at one or more \f$\vec{r}\f$ values
@@ -6211,6 +6246,7 @@ void applyNamedPhaseFuncOverrides(Qureg qureg, int* qubits, int* numQubitsPerReg
  * - if \p functionNameCode is not a valid ::phaseFunc
  * - if \p numParams is incompatible with \p functionNameCode (for example, no parameters were passed to \p SCALED_PRODUCT)
  * @author Tyson Jones
+ * @author Richard Meister (shifted functions)
  */
 void applyParamNamedPhaseFunc(Qureg qureg, int* qubits, int* numQubitsPerReg, int numRegs, enum bitEncoding encoding, enum phaseFunc functionNameCode, qreal* params, int numParams);
 

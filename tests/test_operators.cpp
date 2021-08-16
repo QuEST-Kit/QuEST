@@ -1131,12 +1131,12 @@ TEST_CASE( "applyNamedPhaseFunc", "[operators]" ) {
         }
         SECTION( "phase function name" ) {
             
-            enum phaseFunc func = (enum phaseFunc) GENERATE( -1, 12 );
+            enum phaseFunc func = (enum phaseFunc) GENERATE( -1, 14 );
             REQUIRE_THROWS_WITH( applyNamedPhaseFunc(quregVec, regs, numQubitsPerReg, numRegs, UNSIGNED, func), Contains("Invalid named phase function") );
         }
         SECTION( "phase function parameters" ) {
 
-            enum phaseFunc func = GENERATE( SCALED_NORM, INVERSE_NORM, SCALED_INVERSE_NORM, SCALED_PRODUCT, INVERSE_PRODUCT, SCALED_INVERSE_PRODUCT, SCALED_DISTANCE, INVERSE_DISTANCE, SCALED_INVERSE_DISTANCE );
+            enum phaseFunc func = GENERATE( SCALED_NORM, INVERSE_NORM, SCALED_INVERSE_NORM, SCALED_INVERSE_SHIFTED_NORM, SCALED_PRODUCT, INVERSE_PRODUCT, SCALED_INVERSE_PRODUCT, SCALED_DISTANCE, INVERSE_DISTANCE, SCALED_INVERSE_DISTANCE, SCALED_INVERSE_SHIFTED_DISTANCE );
             REQUIRE_THROWS_WITH( applyNamedPhaseFunc(quregVec, regs, numQubitsPerReg, numRegs, UNSIGNED, func), Contains("Invalid number of parameters") );
         }
         SECTION( "distance pair registers" ) {
@@ -1371,12 +1371,12 @@ TEST_CASE( "applyNamedPhaseFuncOverrides", "[operators]" ) {
         }
         SECTION( "phase function name" ) {
             
-            enum phaseFunc func = (enum phaseFunc) GENERATE( -1, 12 );
+            enum phaseFunc func = (enum phaseFunc) GENERATE( -1, 14 );
             REQUIRE_THROWS_WITH( applyNamedPhaseFuncOverrides(quregVec, regs, numQubitsPerReg, numRegs, UNSIGNED, func, NULL, NULL, 0), Contains("Invalid named phase function") );
         }
         SECTION( "phase function parameters" ) {
 
-            enum phaseFunc func = GENERATE( SCALED_NORM, INVERSE_NORM, SCALED_INVERSE_NORM, SCALED_PRODUCT, INVERSE_PRODUCT, SCALED_INVERSE_PRODUCT, SCALED_DISTANCE, INVERSE_DISTANCE, SCALED_INVERSE_DISTANCE );
+            enum phaseFunc func = GENERATE( SCALED_NORM, INVERSE_NORM, SCALED_INVERSE_NORM, SCALED_INVERSE_SHIFTED_NORM, SCALED_PRODUCT, INVERSE_PRODUCT, SCALED_INVERSE_PRODUCT, SCALED_DISTANCE, INVERSE_DISTANCE, SCALED_INVERSE_DISTANCE, SCALED_INVERSE_SHIFTED_DISTANCE );
             REQUIRE_THROWS_WITH( applyNamedPhaseFuncOverrides(quregVec, regs, numQubitsPerReg, numRegs, UNSIGNED, func, NULL, NULL, 0), Contains("Invalid number of parameters") );
         }
         SECTION( "distance pair registers" ) {
@@ -1596,6 +1596,37 @@ TEST_CASE( "applyParamNamedPhaseFunc", "[operators]" ) {
                 REQUIRE( areEqual(quregMatr, refMatr, 1E2*REAL_EPS) );
             }
         }
+        SECTION( "SCALED_INVERSE_SHIFTED_NORM" ) {
+            
+            enum phaseFunc func = SCALED_INVERSE_SHIFTED_NORM;
+            int numParams = 2 + numRegs;
+            qreal params[numParams];
+            params[0] = getRandomReal(-10, 10); // scaling
+            params[1] = getRandomReal(-4, 4); // divergence override
+            for (int r=0; r<numRegs; r++)
+                params[2+r] = getRandomReal(-8, 8); // shifts
+            
+            for (size_t i=0; i<diagMatr.size(); i++) {
+                qreal phase = 0;
+                for (int r=0; r<numRegs; r++)
+                    phase += pow(regVals[i][r] - params[2+r], 2);
+                phase = (phase == 0.)? params[1] : params[0]/sqrt(phase);
+                diagMatr[i][i] = expI(phase);
+            }
+            
+            SECTION( "state-vector" ) {
+
+                applyParamNamedPhaseFunc(quregVec, regs, numQubitsPerReg, numRegs, encoding, func, params, numParams);
+                applyReferenceOp(refVec, regs, totalNumQubits, diagMatr);
+                REQUIRE( areEqual(quregVec, refVec, 1E2*REAL_EPS) );
+            }
+            SECTION( "density-matrix" ) {
+                
+                applyParamNamedPhaseFunc(quregMatr, regs, numQubitsPerReg, numRegs, encoding, func, params, numParams);
+                applyReferenceOp(refMatr, regs, totalNumQubits, diagMatr);
+                REQUIRE( areEqual(quregMatr, refMatr, 1E2*REAL_EPS) );
+            }
+        }
         SECTION( "INVERSE_PRODUCT" ) {
             
             enum phaseFunc func = INVERSE_PRODUCT;
@@ -1791,6 +1822,42 @@ TEST_CASE( "applyParamNamedPhaseFunc", "[operators]" ) {
                 }
             }
         }
+        SECTION( "SCALED_INVERSE_SHIFTED_DISTANCE" ) {
+            
+            enum phaseFunc func = SCALED_INVERSE_SHIFTED_DISTANCE;
+            int numParams = 2 + numRegs/2;
+            qreal params[numParams];
+            
+            // test only if there are an even number of registers
+            if (numRegs%2 == 0) {
+
+                params[0] = getRandomReal( -10, 10 ); // scaling
+                params[1] = getRandomReal( -4, 4 ); // divergence override
+                for (int r=0; r<numRegs/2; r++)
+                    params[2+r] = getRandomReal( -8, 8 ); // shifts
+                
+                for (size_t i=0; i<diagMatr.size(); i++) {
+                    qreal phase = 0;
+                    for (int r=0; r<numRegs; r+=2)
+                        phase += pow(regVals[i][r+1]-regVals[i][r]-params[2+r/2], 2);
+                    phase = (phase == 0.)? params[1] : params[0]/sqrt(phase);
+                    diagMatr[i][i] = expI(phase);
+                }
+            }
+            
+            SECTION( "state-vector" ) {
+                
+                applyParamNamedPhaseFunc(quregVec, regs, numQubitsPerReg, numRegs, encoding, func, params, numParams);
+                applyReferenceOp(refVec, regs, totalNumQubits, diagMatr);
+                REQUIRE( areEqual(quregVec, refVec, 1E2*REAL_EPS) );
+            }
+            SECTION( "density-matrix" ) {
+                
+                applyParamNamedPhaseFunc(quregMatr, regs, numQubitsPerReg, numRegs, encoding, func, params, numParams);
+                applyReferenceOp(refMatr, regs, totalNumQubits, diagMatr);
+                REQUIRE( areEqual(quregMatr, refMatr, 1E2*REAL_EPS) );
+            }
+        }
     }
     SECTION( "input validation" ) {
         
@@ -1830,12 +1897,14 @@ TEST_CASE( "applyParamNamedPhaseFunc", "[operators]" ) {
         }
         SECTION( "phase function name" ) {
             
-            enum phaseFunc func = (enum phaseFunc) GENERATE( -1, 12 );
+            enum phaseFunc func = (enum phaseFunc) GENERATE( -1, 14 );
             REQUIRE_THROWS_WITH( applyParamNamedPhaseFunc(quregVec, regs, numQubitsPerReg, numRegs, UNSIGNED, func, NULL, 0), Contains("Invalid named phase function") );
         }
         SECTION( "phase function parameters" ) {
             
-            qreal params[] = {0, 0};
+            qreal params[numRegs + 3];
+            for (int r=0; r<numRegs + 3; r++)
+                params[r] = 0;
             
             SECTION( "no parameter functions" ) {
                 
@@ -1853,6 +1922,20 @@ TEST_CASE( "applyParamNamedPhaseFunc", "[operators]" ) {
                 
                 enum phaseFunc func = GENERATE( SCALED_INVERSE_NORM, SCALED_INVERSE_PRODUCT, SCALED_INVERSE_DISTANCE );
                 int numParams = GENERATE( 0, 1, 3 );
+                REQUIRE_THROWS_WITH( applyParamNamedPhaseFunc(quregVec, regs, numQubitsPerReg, numRegs, UNSIGNED, func, params, numParams), Contains("Invalid number of parameters") );
+            }
+            SECTION( "shifted distance" ) {
+                
+                if (numRegs%2 == 0) {
+                    enum phaseFunc func = SCALED_INVERSE_SHIFTED_DISTANCE;
+                    int numParams = GENERATE_COPY( 0, 1, numRegs/2 - 1, numRegs/2, numRegs/2 + 1, numRegs/2 + 3 );
+                    REQUIRE_THROWS_WITH( applyParamNamedPhaseFunc(quregVec, regs, numQubitsPerReg, numRegs, UNSIGNED, func, params, numParams), Contains("Invalid number of parameters") );
+                }
+            }
+            SECTION( "shifted norm" ) {
+                
+                enum phaseFunc func = SCALED_INVERSE_SHIFTED_NORM;
+                int numParams = GENERATE_COPY( 0, 1, numRegs-1, numRegs, numRegs+1, numRegs+3 );
                 REQUIRE_THROWS_WITH( applyParamNamedPhaseFunc(quregVec, regs, numQubitsPerReg, numRegs, UNSIGNED, func, params, numParams), Contains("Invalid number of parameters") );
             }
         }
@@ -2057,6 +2140,38 @@ TEST_CASE( "applyParamNamedPhaseFuncOverrides", "[operators]" ) {
                 REQUIRE( areEqual(quregMatr, refMatr, 1E2*REAL_EPS) );
             }
         }
+        SECTION( "SCALED_INVERSE_SHIFTED_NORM" ) {
+            
+            enum phaseFunc func = SCALED_INVERSE_SHIFTED_NORM;
+            int numParams = 2 + numRegs;
+            qreal params[numParams];
+            params[0] = getRandomReal(-10, 10); // scaling
+            params[1] = getRandomReal(-4, 4); // divergence override
+            for (int r=0; r<numRegs; r++)
+                params[2+r] = getRandomReal(-8, 8); // shifts
+            
+            for (size_t i=0; i<diagMatr.size(); i++) {
+                qreal phase = 0;
+                for (int r=0; r<numRegs; r++)
+                    phase += pow(regVals[i][r] - params[2+r], 2);
+                phase = (phase == 0.)? params[1] : params[0]/sqrt(phase);
+                diagMatr[i][i] = expI(phase);
+            }
+            setDiagMatrixOverrides(diagMatr, numQubitsPerReg, numRegs, encoding, overrideInds, overridePhases, numOverrides);
+
+            SECTION( "state-vector" ) {
+                
+                applyParamNamedPhaseFuncOverrides(quregVec, regs, numQubitsPerReg, numRegs, encoding, func, params, numParams, overrideInds, overridePhases, numOverrides);
+                applyReferenceOp(refVec, regs, totalNumQubits, diagMatr);
+                REQUIRE( areEqual(quregVec, refVec, 1E2*REAL_EPS) );
+            }
+            SECTION( "density-matrix" ) {
+                
+                applyParamNamedPhaseFuncOverrides(quregMatr, regs, numQubitsPerReg, numRegs, encoding, func, params, numParams, overrideInds, overridePhases, numOverrides);
+                applyReferenceOp(refMatr, regs, totalNumQubits, diagMatr);
+                REQUIRE( areEqual(quregMatr, refMatr, 1E2*REAL_EPS) );
+            }
+        }        
         SECTION( "INVERSE_PRODUCT" ) {
             
             enum phaseFunc func = INVERSE_PRODUCT;
@@ -2256,6 +2371,48 @@ TEST_CASE( "applyParamNamedPhaseFuncOverrides", "[operators]" ) {
                 }
             }
         }
+        SECTION( "SCALED_INVERSE_SHIFTED_DISTANCE" ) {
+            
+            enum phaseFunc func = SCALED_INVERSE_SHIFTED_DISTANCE;
+            int numParams = 2 + numRegs/2;
+            qreal params[numParams];
+            
+            // test only if there are an even number of registers
+            if (numRegs%2 == 0) {
+
+                params[0] = getRandomReal( -10, 10 ); // scaling
+                params[1] = getRandomReal( -4, 4 ); // divergence override
+                for (int r=0; r<numRegs/2; r++)
+                    params[2+r] = getRandomReal( -8, 8 ); // shifts
+                
+                for (size_t i=0; i<diagMatr.size(); i++) {
+                    qreal phase = 0;
+                    for (int r=0; r<numRegs; r+=2)
+                        phase += pow(regVals[i][r+1]-regVals[i][r]-params[2+r/2], 2);
+                    phase = (phase == 0.)? params[1] : params[0]/sqrt(phase);
+                    diagMatr[i][i] = expI(phase);
+                }
+                
+                setDiagMatrixOverrides(diagMatr, numQubitsPerReg, numRegs, encoding, overrideInds, overridePhases, numOverrides);
+            }
+            
+            SECTION( "state-vector" ) {
+                
+                if (numRegs%2 == 0) {
+                    applyParamNamedPhaseFuncOverrides(quregVec, regs, numQubitsPerReg, numRegs, encoding, func, params, numParams, overrideInds, overridePhases, numOverrides);
+                    applyReferenceOp(refVec, regs, totalNumQubits, diagMatr);
+                    REQUIRE( areEqual(quregVec, refVec, 1E2*REAL_EPS) );
+                }
+            }
+            SECTION( "density-matrix" ) {
+                
+                if (numRegs%2 == 0) {
+                    applyParamNamedPhaseFuncOverrides(quregMatr, regs, numQubitsPerReg, numRegs, encoding, func, params, numParams, overrideInds, overridePhases, numOverrides);
+                    applyReferenceOp(refMatr, regs, totalNumQubits, diagMatr);
+                    REQUIRE( areEqual(quregMatr, refMatr, 1E2*REAL_EPS) );
+                }
+            }
+        }
     }
     SECTION( "input validation" ) {
         
@@ -2295,12 +2452,14 @@ TEST_CASE( "applyParamNamedPhaseFuncOverrides", "[operators]" ) {
         }
         SECTION( "phase function name" ) {
             
-            enum phaseFunc func = (enum phaseFunc) GENERATE( -1, 12 );
+            enum phaseFunc func = (enum phaseFunc) GENERATE( -1, 14 );
             REQUIRE_THROWS_WITH( applyParamNamedPhaseFuncOverrides(quregVec, regs, numQubitsPerReg, numRegs, UNSIGNED, func, NULL, 0, NULL, NULL, 0), Contains("Invalid named phase function") );
         }
         SECTION( "phase function parameters" ) {
             
-            qreal params[] = {0, 0};
+            qreal params[numRegs + 3];
+            for (int r=0; r<numRegs + 3; r++)
+                params[r] = 0;
             
             SECTION( "no parameter functions" ) {
                 
@@ -2318,6 +2477,20 @@ TEST_CASE( "applyParamNamedPhaseFuncOverrides", "[operators]" ) {
                 
                 enum phaseFunc func = GENERATE( SCALED_INVERSE_NORM, SCALED_INVERSE_PRODUCT, SCALED_INVERSE_DISTANCE );
                 int numParams = GENERATE( 0, 1, 3 );
+                REQUIRE_THROWS_WITH( applyParamNamedPhaseFuncOverrides(quregVec, regs, numQubitsPerReg, numRegs, UNSIGNED, func, params, numParams, NULL, NULL, 0), Contains("Invalid number of parameters") );
+            }
+            SECTION( "shifted distance" ) {
+                
+                if (numRegs%2 == 0) {
+                    enum phaseFunc func = SCALED_INVERSE_SHIFTED_DISTANCE;
+                    int numParams = GENERATE_COPY( 0, 1, numRegs/2 - 1, numRegs/2, numRegs/2 + 1, numRegs/2 + 3 );
+                    REQUIRE_THROWS_WITH( applyParamNamedPhaseFuncOverrides(quregVec, regs, numQubitsPerReg, numRegs, UNSIGNED, func, params, numParams, NULL, NULL, 0), Contains("Invalid number of parameters") );
+                }
+            }
+            SECTION( "shifted norm" ) {
+                
+                enum phaseFunc func = SCALED_INVERSE_SHIFTED_NORM;
+                int numParams = GENERATE_COPY( 0, 1, numRegs-1, numRegs, numRegs+1, numRegs+3 );
                 REQUIRE_THROWS_WITH( applyParamNamedPhaseFuncOverrides(quregVec, regs, numQubitsPerReg, numRegs, UNSIGNED, func, params, numParams, NULL, NULL, 0), Contains("Invalid number of parameters") );
             }
         }
