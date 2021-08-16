@@ -5459,7 +5459,7 @@ ComplexMatrixN bindArraysToStackComplexMatrixN(
     )
 #endif
 
-/** Induces a phase change upon each amplitude of state-vector \p qureg, determined by the passed 
+/** Induces a phase change upon each amplitude of \p qureg, determined by the passed 
  * exponential polynomial "phase function". This effects a diagonal unitary of unit complex scalars,
  * targeting the nominated \p qubits.
  *
@@ -5509,6 +5509,19 @@ ComplexMatrixN bindArraysToStackComplexMatrixN(
  *   \end{aligned}
  *   \f]
  *
+ * - If \p qureg is a density matrix \f$\rho\f$, this function modifies \p qureg to
+ *   \f[
+ *      \rho \rightarrow \hat{D} \, \rho \, \hat{D}^\dagger
+ *   \f]
+ *   where \f$\hat{D}\f$ is the diagonal unitary operator 
+ *   \f[
+ *      \hat{D} = \text{diag} \, \{ \; e^{i f(r_0)}, \; e^{i f(r_1)}, \;  \dots \; \}.
+ *   \f]
+ *   This means element \f$\rho_{jk}\f$ is modified to
+ *   \f[
+ *      \alpha \, |j\rangle\langle k| \; \rightarrow \; e^{i (f(r_j) - f(r_k))} \; \alpha \, |j\rangle\langle k|
+ *   \f]\n
+ *
  * - The interpreted phase function can be previewed in the QASM log, as a comment. \n
  *   For example:
  *   ```
@@ -5534,7 +5547,7 @@ ComplexMatrixN bindArraysToStackComplexMatrixN(
  * - applyDiagonalOp() to apply a non-unitary diagonal operator.
  *
  * @ingroup operator
- * @param[in,out] qureg the state-vector to be modified
+ * @param[in,out] qureg the state-vector or density matrix to be modified
  * @param[in] qubits a list of the indices of the qubits which will inform \f$r\f$ for each amplitude in \p qureg
  * @param[in] numQubits the length of list \p qubits
  * @param[in] encoding the ::bitEncoding under which to infer the binary value \f$r\f$ from the bits of \p qubits in each basis state of \p qureg
@@ -5542,7 +5555,6 @@ ComplexMatrixN bindArraysToStackComplexMatrixN(
  * @param[in] exponents the exponents of the exponential polynomial phase function \f$f(r)\f$
  * @param[in] numTerms the length of list \p coeffs, which must be the same as that of \p exponents
  * @exception invalidQuESTInputError()
- * - if \p qureg is a density matrix
  * - if any qubit in \p qubits has an invalid index (i.e. does not satisfy 0 <= qubit < `qureg.numQubitsRepresented`)
  * - if the elements of \p qubits are not unique
  * - if \p numQubits < 0 or \p numQubits >= `qureg.numQubitsRepresented` 
@@ -5555,7 +5567,7 @@ ComplexMatrixN bindArraysToStackComplexMatrixN(
  */
 void applyPhaseFunc(Qureg qureg, int* qubits, int numQubits, enum bitEncoding encoding, qreal* coeffs, qreal* exponents, int numTerms);
 
-/** Induces a phase change upon each amplitude of state-vector \p qureg, determined by the passed 
+/** Induces a phase change upon each amplitude of \p qureg, determined by the passed 
  * exponential polynomial "phase function", and an explicit set of 'overriding' values at specific 
  * state indices.
  *
@@ -5601,6 +5613,18 @@ void applyPhaseFunc(Qureg qureg, int* qubits, int numQubits, enum bitEncoding en
  * > evaluating the phase function \f$f(r)\f$, and hence are useful for avoiding 
  * > singularities or errors at diverging values of \f$r\f$.
  *
+ * - If \p qureg is a density matrix \f$\rho\f$, the overrides determine the diagonal unitary matrix 
+ *   \f$\hat{D}\f$, which is then applied to \p qureg as
+ *   \f[
+ *      \rho \; \rightarrow \; \hat{D} \, \rho \hat{D}^\dagger.
+ *   \f]
+ *   This means that with overrides \f$f(r_j) \rightarrow \theta\f$ and \f$f(r_k) \rightarrow \phi\f$,
+ *   element \f$\rho_{jk}\f$ is modified to
+ *   \f[
+ *      \alpha \, |j\rangle\langle k| \; \rightarrow \; 
+ *          \exp(\, i \, (\theta - \phi) \, ) \; \alpha \, |j\rangle\langle k|.
+ *   \f]\n
+ *
  * - The interpreted phase function and list of overrides can be previewed in the QASM log, as a comment. \n
  *   For example:
  *   ```
@@ -5629,7 +5653,7 @@ void applyPhaseFunc(Qureg qureg, int* qubits, int numQubits, enum bitEncoding en
  * - applyDiagonalOp() to apply a non-unitary diagonal operator.
  * 
  * @ingroup operator
- * @param[in,out] qureg the state-vector to be modified
+ * @param[in,out] qureg the state-vector or density matrix to be modified
  * @param[in] qubits a list of the indices of the qubits which will inform \f$r\f$ for each amplitude in \p qureg
  * @param[in] numQubits the length of list \p qubits
  * @param[in] encoding the ::bitEncoding under which to infer the binary value \f$r\f$ from the bits of \p qubits in each basis state of \p qureg
@@ -5640,7 +5664,6 @@ void applyPhaseFunc(Qureg qureg, int* qubits, int numQubits, enum bitEncoding en
  * @param[in] overridePhases a list of replacement phase changes, for the corresponding \f$r\f$ values in \p overrideInds (one to one)
  * @param[in] numOverrides the lengths of lists \p overrideInds and \p overridePhases
  * @exception invalidQuESTInputError()
- * - if \p qureg is a density matrix
  * - if any qubit in \p qubits has an invalid index (i.e. does not satisfy 0 <= qubit < `qureg.numQubitsRepresented`)
  * - if the elements of \p qubits are not unique
  * - if \p numQubits < 0 or \p numQubits >= `qureg.numQubitsRepresented` 
@@ -5655,7 +5678,7 @@ void applyPhaseFunc(Qureg qureg, int* qubits, int numQubits, enum bitEncoding en
  */
 void applyPhaseFuncOverrides(Qureg qureg, int* qubits, int numQubits, enum bitEncoding encoding, qreal* coeffs, qreal* exponents, int numTerms, long long int* overrideInds, qreal* overridePhases, int numOverrides);
 
-/** Induces a phase change upon each amplitude of state-vector \p qureg, determined by a
+/** Induces a phase change upon each amplitude of \p qureg, determined by a
  * multi-variable exponential polynomial "phase function". 
  *
  * This is a multi-variable extension of applyPhaseFunc(), whereby multiple sub-registers inform 
@@ -5759,6 +5782,13 @@ void applyPhaseFuncOverrides(Qureg qureg, int* qubits, int numQubits, enum bitEn
  *   \end{aligned}
  *   \f]
  *
+ * - If \p qureg is a density matrix \f$\rho\f$, then its elements are modified as 
+ *   \f[
+ *      \alpha \, |j\rangle\langle k| \; \rightarrow \;
+ *          \exp(i \, (f(\vec{r}_j) - f(\vec{r}_k)) \, ) \; \alpha \, |j\rangle\langle k|,
+ *   \f]
+ *   where \f$f(\vec{r}_j)\f$ and \f$f(\vec{r}_k)\f$ are determined as above.\n\n
+ *
  * - The interpreted phase function can be previewed in the QASM log, as a comment. \n
  *   For example:
  *   ```
@@ -5788,7 +5818,7 @@ void applyPhaseFuncOverrides(Qureg qureg, int* qubits, int numQubits, enum bitEn
  * - applyDiagonalOp() to apply a non-unitary diagonal operator.
  *
  * @ingroup operator
- * @param[in,out] qureg the state-vector to be modified
+ * @param[in,out] qureg the state-vector or density matrix to be modified
  * @param[in] qubits a list of all the qubit indices contained in each sub-register
  * @param[in] numQubitsPerReg a list of the lengths of each sub-list in \p qubits
  * @param[in] numRegs the number of sub-registers, which is the length of both \p numQubitsPerReg and \p numTermsPerReg
@@ -5797,7 +5827,6 @@ void applyPhaseFuncOverrides(Qureg qureg, int* qubits, int numQubits, enum bitEn
  * @param[in] exponents the exponents of all terms of the exponential polynomial phase function \f$f(\vec{r})\f$
  * @param[in] numTermsPerReg a list of the number of \p coeff and \p exponent terms supplied for each variable/sub-register
  * @exception invalidQuESTInputError()
- * - if \p qureg is a density matrix
  * - if any qubit in \p qubits has an invalid index (i.e. does not satisfy 0 <= qubit < `qureg.numQubitsRepresented`)
  * - if the elements of \p qubits are not unique (including if sub-registers overlap)
  * - if \p numRegs <= 0 or \p numRegs > 100 (constrained by `MAX_NUM_REGS_APPLY_ARBITRARY_PHASE` in QuEST_precision.h)
@@ -5810,7 +5839,7 @@ void applyPhaseFuncOverrides(Qureg qureg, int* qubits, int numQubits, enum bitEn
  */
 void applyMultiVarPhaseFunc(Qureg qureg, int* qubits, int* numQubitsPerReg, int numRegs, enum bitEncoding encoding, qreal* coeffs, qreal* exponents, int* numTermsPerReg);
 
-/** Induces a phase change upon each amplitude of state-vector \p qureg, determined by a
+/** Induces a phase change upon each amplitude of \p qureg, determined by a
  * multi-variable exponential polynomial "phase function", and an explicit set of 'overriding' 
  * values at specific state indices.
  
@@ -5866,7 +5895,7 @@ void applyMultiVarPhaseFunc(Qureg qureg, int* qubits, int* numQubitsPerReg, int 
  * - applyDiagonalOp() to apply a non-unitary diagonal operator.
  *
  * @ingroup operator
- * @param[in,out] qureg the state-vector to be modified
+ * @param[in,out] qureg the state-vector or density-matrix to be modified
  * @param[in] qubits a list of all the qubit indices contained in each sub-register
  * @param[in] numQubitsPerReg a list of the lengths of each sub-list in \p qubits
  * @param[in] numRegs the number of sub-registers, which is the length of both \p numQubitsPerReg and \p numTermsPerReg
@@ -5878,7 +5907,6 @@ void applyMultiVarPhaseFunc(Qureg qureg, int* qubits, int* numQubitsPerReg, int 
  * @param[in] overridePhases a list of replacement phase changes, for the corresponding \f$\vec{r}\f$ values in \p overrideInds
  * @param[in] numOverrides the lengths of list \p overridePhases (but not necessarily of \p overrideInds)
  * @exception invalidQuESTInputError()
- * - if \p qureg is a density matrix
  * - if any qubit in \p qubits has an invalid index (i.e. does not satisfy 0 <= qubit < `qureg.numQubitsRepresented`)
  * - if the elements of \p qubits are not unique (including if sub-registers overlap)
  * - if \p numRegs <= 0 or \p numRegs > 100 (constrained by `MAX_NUM_REGS_APPLY_ARBITRARY_PHASE` in QuEST_precision.h)
@@ -5893,7 +5921,7 @@ void applyMultiVarPhaseFunc(Qureg qureg, int* qubits, int* numQubitsPerReg, int 
  */
 void applyMultiVarPhaseFuncOverrides(Qureg qureg, int* qubits, int* numQubitsPerReg, int numRegs, enum bitEncoding encoding, qreal* coeffs, qreal* exponents, int* numTermsPerReg, long long int* overrideInds, qreal* overridePhases, int numOverrides);
 
-/** Induces a phase change upon each amplitude of state-vector \p qureg, determined by a
+/** Induces a phase change upon each amplitude of \p qureg, determined by a
  * named (and potentially multi-variable) phase function.
  *
  * This effects a diagonal unitary operator, with a phase function \f$f(\vec{r})\f$ which may not be 
@@ -5940,7 +5968,7 @@ void applyMultiVarPhaseFuncOverrides(Qureg qureg, int* qubits, int* numQubitsPer
  *   the function applyParamNamedPhaseFunc().\n\n
  *   > If the phase function \f$f(\vec{r})\f$ diverges at one or more \f$\vec{r}\f$ values, you should instead 
  *   > use applyNamedPhaseFuncOverrides() and specify explicit phase changes for these coordinates.
- *   > Otherwise, the corresponding amplitudes of the state-vector will become indeterminate (like `NaN`). \n
+ *   > Otherwise, the corresponding amplitudes of \p qureg will become indeterminate (like `NaN`). \n
  *
  * - The function \f$f(\vec{r})\f$ specifies the phase change to induce upon amplitude \f$\alpha\f$ 
  *   of computational basis state with the nominated sub-registers encoding values \f$r_1, \; \dots\f$.
@@ -5977,6 +6005,21 @@ void applyMultiVarPhaseFuncOverrides(Qureg qureg, int* qubits, int* numQubitsPer
  *   \end{aligned}
  *   \f]\n
  *
+ * - If \p qureg is a density matrix, its elements are modified to
+ *   \f[
+        \alpha \, |j\rangle\langle k| \; \rightarrow \;
+            \exp(i (f(\vec{r}_j) \, - \, f(\vec{r}_k))) \; \alpha \, |j\rangle\langle k|
+ *   \f]
+ *   where \f$f(\vec{r}_j)\f$ and \f$f(\vec{r}_k)\f$ are determined as above. This is equivalent 
+ *   to modification
+ *   \f[
+ *          \rho \; \rightarrow \; \hat{D} \, \rho \, \hat{D}^\dagger
+ *   \f]
+ *   where \f$\hat{D}\f$ is the diagonal unitary 
+ *   \f[
+ *      \hat{D} = \text{diag}\, \{ \; e^{i f(\vec{r_0})}, \; e^{i f(\vec{r_1})}, \; \dots \; \}.
+ *   \f]\n
+ *
  * - The interpreted phase function can be previewed in the QASM log, as a comment. \n
  *   For example:
  *   ```
@@ -6000,14 +6043,13 @@ void applyMultiVarPhaseFuncOverrides(Qureg qureg, int* qubits, int* numQubitsPer
  * - applyDiagonalOp() to apply a non-unitary diagonal operator.
  * 
  * @ingroup operator
- * @param[in,out] qureg the state-vector to be modified
+ * @param[in,out] qureg the state-vector or density-matrix to be modified
  * @param[in] qubits a list of all the qubit indices contained in each sub-register
  * @param[in] numQubitsPerReg a list of the lengths of each sub-list in \p qubits
  * @param[in] numRegs the number of sub-registers, which is the length of both \p numQubitsPerReg and \p numTermsPerReg
  * @param[in] encoding the ::bitEncoding under which to infer the binary value \f$r_j\f$ from the bits of a sub-register
  * @param[in] functionNameCode the ::phaseFunc \f$f(\vec{r})\f$
  * @exception invalidQuESTInputError()
- * - if \p qureg is a density matrix
  * - if any qubit in \p qubits has an invalid index (i.e. does not satisfy 0 <= qubit < `qureg.numQubitsRepresented`)
  * - if the elements of \p qubits are not unique (including if sub-registers overlap)
  * - if \p numRegs <= 0 or \p numRegs > 100 (constrained by `MAX_NUM_REGS_APPLY_ARBITRARY_PHASE` in QuEST_precision.h)
@@ -6019,7 +6061,7 @@ void applyMultiVarPhaseFuncOverrides(Qureg qureg, int* qubits, int* numQubitsPer
  */
 void applyNamedPhaseFunc(Qureg qureg, int* qubits, int* numQubitsPerReg, int numRegs, enum bitEncoding encoding, enum phaseFunc functionNameCode);
 
-/** Induces a phase change upon each amplitude of state-vector \p qureg, determined by a
+/** Induces a phase change upon each amplitude of \p qureg, determined by a
  * named (and potentially multi-variable) phase function, and an explicit set of 'overriding' 
  * values at specific state indices.
  *
@@ -6069,7 +6111,7 @@ void applyNamedPhaseFunc(Qureg qureg, int* qubits, int* numQubitsPerReg, int num
  * - applyDiagonalOp() to apply a non-unitary diagonal operator.
  * 
  * @ingroup operator
- * @param[in,out] qureg the state-vector to be modified
+ * @param[in,out] qureg the state-vector pr density-matrix to be modified
  * @param[in] qubits a list of all the qubit indices contained in each sub-register
  * @param[in] numQubitsPerReg a list of the lengths of each sub-list in \p qubits
  * @param[in] numRegs the number of sub-registers, which is the length of both \p numQubitsPerReg and \p numTermsPerReg
@@ -6079,7 +6121,6 @@ void applyNamedPhaseFunc(Qureg qureg, int* qubits, int* numQubitsPerReg, int num
  * @param[in] overridePhases a list of replacement phase changes, for the corresponding \f$\vec{r}\f$ values in \p overrideInds
  * @param[in] numOverrides the lengths of list \p overridePhases (but not necessarily of \p overrideInds)
  * @exception invalidQuESTInputError()
- * - if \p qureg is a density matrix
  * - if any qubit in \p qubits has an invalid index (i.e. does not satisfy 0 <= qubit < `qureg.numQubitsRepresented`)
  * - if the elements of \p qubits are not unique (including if sub-registers overlap)
  * - if \p numRegs <= 0 or \p numRegs > 100 (constrained by `MAX_NUM_REGS_APPLY_ARBITRARY_PHASE` in QuEST_precision.h)
@@ -6093,7 +6134,7 @@ void applyNamedPhaseFunc(Qureg qureg, int* qubits, int* numQubitsPerReg, int num
  */
 void applyNamedPhaseFuncOverrides(Qureg qureg, int* qubits, int* numQubitsPerReg, int numRegs, enum bitEncoding encoding, enum phaseFunc functionNameCode, long long int* overrideInds, qreal* overridePhases, int numOverrides);
 
-/** Induces a phase change upon each amplitude of state-vector \p qureg, determined by a
+/** Induces a phase change upon each amplitude of \p qureg, determined by a
  * named, paramaterized (and potentially multi-variable) phase function.
  *
  * See applyNamedPhaseFunc() for full documentation. \n
@@ -6153,7 +6194,7 @@ void applyNamedPhaseFuncOverrides(Qureg qureg, int* qubits, int* numQubitsPerReg
  * - applyDiagonalOp() to apply a non-unitary diagonal operator.
  * 
  * @ingroup operator
- * @param[in,out] qureg the state-vector to be modified
+ * @param[in,out] qureg the state-vector or density-matrix to be modified
  * @param[in] qubits a list of all the qubit indices contained in each sub-register
  * @param[in] numQubitsPerReg a list of the lengths of each sub-list in \p qubits
  * @param[in] numRegs the number of sub-registers, which is the length of both \p numQubitsPerReg and \p numTermsPerReg
@@ -6162,7 +6203,6 @@ void applyNamedPhaseFuncOverrides(Qureg qureg, int* qubits, int* numQubitsPerReg
  * @param[in] params a list of any additional parameters needed by the ::phaseFunc \p functionNameCode
  * @param[in] numParams the length of list \p params
  * @exception invalidQuESTInputError()
- * - if \p qureg is a density matrix
  * - if any qubit in \p qubits has an invalid index (i.e. does not satisfy 0 <= qubit < `qureg.numQubitsRepresented`)
  * - if the elements of \p qubits are not unique (including if sub-registers overlap)
  * - if \p numRegs <= 0 or \p numRegs > 100 (constrained by `MAX_NUM_REGS_APPLY_ARBITRARY_PHASE` in QuEST_precision.h)
@@ -6174,7 +6214,7 @@ void applyNamedPhaseFuncOverrides(Qureg qureg, int* qubits, int* numQubitsPerReg
  */
 void applyParamNamedPhaseFunc(Qureg qureg, int* qubits, int* numQubitsPerReg, int numRegs, enum bitEncoding encoding, enum phaseFunc functionNameCode, qreal* params, int numParams);
 
-/** Induces a phase change upon each amplitude of state-vector \p qureg, determined by a
+/** Induces a phase change upon each amplitude of \p qureg, determined by a
  * named, parameterised (and potentially multi-variable) phase function, and an explicit set of 'overriding' 
  * values at specific state indices.
  *
@@ -6224,7 +6264,7 @@ void applyParamNamedPhaseFunc(Qureg qureg, int* qubits, int* numQubitsPerReg, in
  * - applyDiagonalOp() to apply a non-unitary diagonal operator.
  * 
  * @ingroup operator
- * @param[in,out] qureg the state-vector to be modified
+ * @param[in,out] qureg the state-vector or density-matrix to be modified
  * @param[in] qubits a list of all the qubit indices contained in each sub-register
  * @param[in] numQubitsPerReg a list of the lengths of each sub-list in \p qubits
  * @param[in] numRegs the number of sub-registers, which is the length of both \p numQubitsPerReg and \p numTermsPerReg
@@ -6236,7 +6276,6 @@ void applyParamNamedPhaseFunc(Qureg qureg, int* qubits, int* numQubitsPerReg, in
  * @param[in] overridePhases a list of replacement phase changes, for the corresponding \f$\vec{r}\f$ values in \p overrideInds
  * @param[in] numOverrides the lengths of list \p overridePhases (but not necessarily of \p overrideInds)
  * @exception invalidQuESTInputError()
- * - if \p qureg is a density matrix
  * - if any qubit in \p qubits has an invalid index (i.e. does not satisfy 0 <= qubit < `qureg.numQubitsRepresented`)
  * - if the elements of \p qubits are not unique (including if sub-registers overlap)
  * - if \p numRegs <= 0 or \p numRegs > 100 (constrained by `MAX_NUM_REGS_APPLY_ARBITRARY_PHASE` in QuEST_precision.h)

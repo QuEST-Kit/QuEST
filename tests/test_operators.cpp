@@ -470,9 +470,7 @@ TEST_CASE( "applyMultiControlledMatrixN", "[operators]" ) {
  */
 TEST_CASE( "applyMultiVarPhaseFunc", "[operators]" ) {
     
-    Qureg quregVec = createQureg(NUM_QUBITS, QUEST_ENV);
-    initDebugState(quregVec);
-    QVector refVec = toQVector(quregVec);
+    PREPARE_TEST( quregVec, quregMatr, refVec, refMatr );
 
     SECTION( "correctness" ) {
         
@@ -548,43 +546,49 @@ TEST_CASE( "applyMultiVarPhaseFunc", "[operators]" ) {
             }
         }
         
-        SECTION( "state-vector" ) {
+        /* To perform this calculation more distinctly from the QuEST 
+         * core method, we can exploit that 
+         * exp(i (f1[x1] + f2[x2]))|x2>|x1> = exp(i f2[x2])|x2> (x) exp(i f1[x1])|x1> 
+         * and so compute a separate diagonal matrix for each sub-register with 
+         * phases determined only by its own variable, and Kronecker multiply 
+         * them together. The target qubits of the Kronecker product is then 
+         * just the full register, stored in *regs. 
+         */
+        QMatrix allRegMatr{{1}};
+        int startInd = 0;
+        for (int r=0; r<numRegs; r++) {
             
-            /* To perform this calculation more distinctly from the QuEST 
-             * core method, we can exploit that 
-             * exp(i (f1[x1] + f2[x2]))|x2>|x1> = exp(i f2[x2])|x2> (x) exp(i f1[x1])|x1> 
-             * and so compute a separate diagonal matrix for each sub-register with 
-             * phases determined only by its own variable, and Kronecker multiply 
-             * them together. The target qubits of the Kronecker product is then 
-             * just the full register, stored in *regs. 
-             */
-            QMatrix allRegMatr{{1}};
-            int startInd = 0;
-            for (int r=0; r<numRegs; r++) {
+            QMatrix singleRegMatr = getZeroMatrix( 1 << numQubitsPerReg[r] );
+            
+            for (size_t i=0; i<singleRegMatr.size(); i++) {
                 
-                QMatrix singleRegMatr = getZeroMatrix( 1 << numQubitsPerReg[r] );
+                long long int ind = 0;
+                if (encoding == UNSIGNED)
+                    ind = i;
+                if (encoding == TWOS_COMPLEMENT)
+                    ind = getTwosComplement(i, numQubitsPerReg[r]);
                 
-                for (size_t i=0; i<singleRegMatr.size(); i++) {
+                qreal phase = 0;
+                for (int t=0; t<numTermsPerReg[r]; t++)
+                    phase += coeffs[t+startInd] * pow(ind, expons[t+startInd]);
                     
-                    long long int ind = 0;
-                    if (encoding == UNSIGNED)
-                        ind = i;
-                    if (encoding == TWOS_COMPLEMENT)
-                        ind = getTwosComplement(i, numQubitsPerReg[r]);
-                    
-                    qreal phase = 0;
-                    for (int t=0; t<numTermsPerReg[r]; t++)
-                        phase += coeffs[t+startInd] * pow(ind, expons[t+startInd]);
-                        
-                    singleRegMatr[i][i] = expI(phase);
-                }                
-                allRegMatr = getKroneckerProduct(singleRegMatr, allRegMatr);
-                startInd += numTermsPerReg[r];
-            }
-                    
+                singleRegMatr[i][i] = expI(phase);
+            }                
+            allRegMatr = getKroneckerProduct(singleRegMatr, allRegMatr);
+            startInd += numTermsPerReg[r];
+        }
+        
+        SECTION( "state-vector" ) {
+                
             applyMultiVarPhaseFunc(quregVec, regs, numQubitsPerReg, numRegs, encoding, coeffs, expons, numTermsPerReg);
             applyReferenceOp(refVec, regs, totalNumQubits, allRegMatr);
             REQUIRE( areEqual(quregVec, refVec, 1E4*REAL_EPS) );
+        }
+        SECTION( "density-matrix" ) {
+            
+            applyMultiVarPhaseFunc(quregMatr, regs, numQubitsPerReg, numRegs, encoding, coeffs, expons, numTermsPerReg);
+            applyReferenceOp(refMatr, regs, totalNumQubits, allRegMatr);
+            REQUIRE( areEqual(quregMatr, refMatr, 1E6*REAL_EPS) );
         }
     }
     SECTION( "input validation" ) {
@@ -593,12 +597,6 @@ TEST_CASE( "applyMultiVarPhaseFunc", "[operators]" ) {
         int numQubitsPerReg[] = {2,3};
         int qubits[] = {0,1,2,3,4};
         
-        SECTION( "density-matrix" ) {
-    
-            Qureg dens = quregVec;
-            dens.isDensityMatrix = 1;
-            REQUIRE_THROWS_WITH( applyMultiVarPhaseFunc(dens, qubits, numQubitsPerReg, numRegs, UNSIGNED, NULL, NULL, NULL), Contains("Operation valid only for state-vectors") );
-        }
         SECTION( "number of registers" ) {
             
             numRegs = GENERATE_COPY( -1, 0, 1+MAX_NUM_REGS_APPLY_ARBITRARY_PHASE );
@@ -661,7 +659,7 @@ TEST_CASE( "applyMultiVarPhaseFunc", "[operators]" ) {
             REQUIRE_THROWS_WITH( applyMultiVarPhaseFunc(quregVec, qubits, numQubitsPerReg, numRegs, enc, coeffs, expos, numTermsPerReg), Contains("The phase function contained an illegal negative exponent") );
         }
     }
-    destroyQureg(quregVec, QUEST_ENV);
+    CLEANUP_TEST( quregVec, quregMatr );
 }
 
 
@@ -672,9 +670,7 @@ TEST_CASE( "applyMultiVarPhaseFunc", "[operators]" ) {
  */
 TEST_CASE( "applyMultiVarPhaseFuncOverrides", "[operators]" ) {
     
-    Qureg quregVec = createQureg(NUM_QUBITS, QUEST_ENV);
-    initDebugState(quregVec);
-    QVector refVec = toQVector(quregVec);
+    PREPARE_TEST( quregVec, quregMatr, refVec, refMatr );
 
     SECTION( "correctness" ) {
         
@@ -771,48 +767,53 @@ TEST_CASE( "applyMultiVarPhaseFuncOverrides", "[operators]" ) {
         qreal overridePhases[numOverrides];
         for (int v=0; v<numOverrides; v++)
             overridePhases[v] = getRandomReal(-4, 4); // periodic in [-pi, pi]
+            
+        /* To perform this calculation more distinctly from the QuEST 
+         * core method, we can exploit that 
+         * exp(i (f1[x1] + f2[x2]))|x2>|x1> = exp(i f2[x2])|x2> (x) exp(i f1[x1])|x1> 
+         * and so compute a separate diagonal matrix for each sub-register with 
+         * phases determined only by its own variable, and Kronecker multiply 
+         * them together. The target qubits of the Kronecker product is then 
+         * just the full register, stored in *regs. We do this, then iterate 
+         * the list of overrides directly to overwrite the ultimate diagonal 
+         * entries
+         */
+        QMatrix allRegMatr{{1}};
+        int startInd = 0;
+        for (int r=0; r<numRegs; r++) {
+            
+            QMatrix singleRegMatr = getZeroMatrix( 1 << numQubitsPerReg[r] );
+            
+            for (size_t i=0; i<singleRegMatr.size(); i++) {
+                
+                long long int ind = 0;
+                if (encoding == UNSIGNED)
+                    ind = i;
+                if (encoding == TWOS_COMPLEMENT)
+                    ind = getTwosComplement(i, numQubitsPerReg[r]);
+                
+                qreal phase = 0;
+                for (int t=0; t<numTermsPerReg[r]; t++)
+                    phase += coeffs[t+startInd] * pow(ind, expons[t+startInd]);
+                    
+                singleRegMatr[i][i] = expI(phase);
+            }
+            allRegMatr = getKroneckerProduct(singleRegMatr, allRegMatr);
+            startInd += numTermsPerReg[r];
+        }    
+        setDiagMatrixOverrides(allRegMatr, numQubitsPerReg, numRegs, encoding, overrideInds, overridePhases, numOverrides);
         
         SECTION( "state-vector" ) {
-            
-            /* To perform this calculation more distinctly from the QuEST 
-             * core method, we can exploit that 
-             * exp(i (f1[x1] + f2[x2]))|x2>|x1> = exp(i f2[x2])|x2> (x) exp(i f1[x1])|x1> 
-             * and so compute a separate diagonal matrix for each sub-register with 
-             * phases determined only by its own variable, and Kronecker multiply 
-             * them together. The target qubits of the Kronecker product is then 
-             * just the full register, stored in *regs. We do this, then iterate 
-             * the list of overrides directly to overwrite the ultimate diagonal 
-             * entries
-             */
-            QMatrix allRegMatr{{1}};
-            int startInd = 0;
-            for (int r=0; r<numRegs; r++) {
-                
-                QMatrix singleRegMatr = getZeroMatrix( 1 << numQubitsPerReg[r] );
-                
-                for (size_t i=0; i<singleRegMatr.size(); i++) {
-                    
-                    long long int ind = 0;
-                    if (encoding == UNSIGNED)
-                        ind = i;
-                    if (encoding == TWOS_COMPLEMENT)
-                        ind = getTwosComplement(i, numQubitsPerReg[r]);
-                    
-                    qreal phase = 0;
-                    for (int t=0; t<numTermsPerReg[r]; t++)
-                        phase += coeffs[t+startInd] * pow(ind, expons[t+startInd]);
-                        
-                    singleRegMatr[i][i] = expI(phase);
-                }
-                allRegMatr = getKroneckerProduct(singleRegMatr, allRegMatr);
-                startInd += numTermsPerReg[r];
-            }    
-            
-            setDiagMatrixOverrides(allRegMatr, numQubitsPerReg, numRegs, encoding, overrideInds, overridePhases, numOverrides);
                     
             applyMultiVarPhaseFuncOverrides(quregVec, regs, numQubitsPerReg, numRegs, encoding, coeffs, expons, numTermsPerReg, overrideInds, overridePhases, numOverrides);
             applyReferenceOp(refVec, regs, totalNumQubits, allRegMatr);
             REQUIRE( areEqual(quregVec, refVec, 1E4*REAL_EPS) );
+        }
+        SECTION( "density-matrix" ) {
+            
+            applyMultiVarPhaseFuncOverrides(quregMatr, regs, numQubitsPerReg, numRegs, encoding, coeffs, expons, numTermsPerReg, overrideInds, overridePhases, numOverrides);
+            applyReferenceOp(refMatr, regs, totalNumQubits, allRegMatr);
+            REQUIRE( areEqual(quregMatr, refMatr, 1E6*REAL_EPS) );
         }
     }
     SECTION( "input validation" ) {
@@ -821,12 +822,6 @@ TEST_CASE( "applyMultiVarPhaseFuncOverrides", "[operators]" ) {
         int numQubitsPerReg[] = {2,3};
         int qubits[] = {0,1,2,3,4};
         
-        SECTION( "density-matrix" ) {
-                        
-            Qureg dens = quregVec;
-            dens.isDensityMatrix = 1;
-            REQUIRE_THROWS_WITH( applyMultiVarPhaseFuncOverrides(dens, qubits, numQubitsPerReg, numRegs, UNSIGNED, NULL, NULL, NULL, NULL, NULL, 0), Contains("Operation valid only for state-vectors") );
-        }
         SECTION( "number of registers" ) {
             
             numRegs = GENERATE_COPY( -1, 0, 1+MAX_NUM_REGS_APPLY_ARBITRARY_PHASE );
@@ -935,7 +930,7 @@ TEST_CASE( "applyMultiVarPhaseFuncOverrides", "[operators]" ) {
             REQUIRE_THROWS_WITH( applyMultiVarPhaseFuncOverrides(quregVec, qubits, numQubitsPerReg, numRegs, enc, coeffs, expos, numTermsPerReg, overrideInds, overridePhases, numOverrides), Contains("Invalid phase function override index, in the TWOS_COMPLEMENT encoding") );
         }
     }
-    destroyQureg(quregVec, QUEST_ENV);
+    CLEANUP_TEST( quregVec, quregMatr );
 }
 
 
@@ -946,9 +941,7 @@ TEST_CASE( "applyMultiVarPhaseFuncOverrides", "[operators]" ) {
  */
 TEST_CASE( "applyNamedPhaseFunc", "[operators]" ) {
     
-    Qureg quregVec = createQureg(NUM_QUBITS, QUEST_ENV);
-    initDebugState(quregVec);
-    QVector refVec = toQVector(quregVec);
+    PREPARE_TEST( quregVec, quregMatr, refVec, refMatr );
 
     SECTION( "correctness" ) {
         
@@ -996,72 +989,100 @@ TEST_CASE( "applyNamedPhaseFunc", "[operators]" ) {
             numQubitsPerReg[getRandomInt(0,numRegs)] += 1;
             unallocQubits--;
         }
-
-        SECTION( "state-vector" ) {
+        
+        // for reference, determine the values corresponding to each register for all basis states
+        qreal regVals[1<<totalNumQubits][numRegs];
+        for (long long int i=0; i<(1<<totalNumQubits); i++) {
             
-            /* produce a reference diagonal matrix which assumes the qubits are
-             * contiguous and strictly increasing between the registers, and hence 
-             * only depends on the number of qubits in each register.
-             */
-            QMatrix diagMatr = getZeroMatrix(1 << totalNumQubits);
-            
-            // determine the values corresponding to each register for all basis states
-            qreal regVals[1<<totalNumQubits][numRegs];
-            for (long long int i=0; i<(1<<totalNumQubits); i++) {
+            long long int bits = i;
+            for (int r=0; r<numRegs; r++) {            
+                regVals[i][r] = bits % (1 << numQubitsPerReg[r]);
+                bits = bits >> numQubitsPerReg[r];
                 
-                long long int bits = i;
-                for (int r=0; r<numRegs; r++) {            
-                    regVals[i][r] = bits % (1 << numQubitsPerReg[r]);
-                    bits = bits >> numQubitsPerReg[r];
-                    
-                    if (encoding == TWOS_COMPLEMENT)
-                        regVals[i][r] = getTwosComplement(regVals[i][r], numQubitsPerReg[r]);
-                }
+                if (encoding == TWOS_COMPLEMENT)
+                    regVals[i][r] = getTwosComplement(regVals[i][r], numQubitsPerReg[r]);
+            }
+        }
+        
+        /* the reference diagonal matrix which assumes the qubits are
+         * contiguous and strictly increasing between the registers, and hence 
+         * only depends on the number of qubits in each register.
+         */
+        QMatrix diagMatr = getZeroMatrix(1 << totalNumQubits);
+            
+        SECTION( "NORM" ) {
+            
+            for (size_t i=0; i<diagMatr.size(); i++) {
+                qreal phase = 0;
+                for (int r=0; r<numRegs; r++)
+                    phase += pow(regVals[i][r], 2);
+                phase = sqrt(phase);
+                diagMatr[i][i] = expI(phase);
             }
             
-            SECTION( "NORM" ) {
-                
-                for (size_t i=0; i<diagMatr.size(); i++) {
-                    qreal phase = 0;
-                    for (int r=0; r<numRegs; r++)
-                        phase += pow(regVals[i][r], 2);
-                    phase = sqrt(phase);
-                    diagMatr[i][i] = expI(phase);
-                }
+            SECTION( "state-vector" ) {
                 
                 applyNamedPhaseFunc(quregVec, regs, numQubitsPerReg, numRegs, encoding, NORM);
                 applyReferenceOp(refVec, regs, totalNumQubits, diagMatr);
                 REQUIRE( areEqual(quregVec, refVec, 1E2*REAL_EPS) );
             }
-            SECTION( "PRODUCT" ) {
+            SECTION( "density-matrix" ) {
                 
-                for (size_t i=0; i<diagMatr.size(); i++) {
-                    qreal phase = 1;
-                    for (int r=0; r<numRegs; r++)
-                        phase *= regVals[i][r];
-                    diagMatr[i][i] = expI(phase);
-                }
+                applyNamedPhaseFunc(quregMatr, regs, numQubitsPerReg, numRegs, encoding, NORM);
+                applyReferenceOp(refMatr, regs, totalNumQubits, diagMatr);
+                REQUIRE( areEqual(quregMatr, refMatr, 142*REAL_EPS) );
+            }
+        }
+        SECTION( "PRODUCT" ) {
+            
+            for (size_t i=0; i<diagMatr.size(); i++) {
+                qreal phase = 1;
+                for (int r=0; r<numRegs; r++)
+                    phase *= regVals[i][r];
+                diagMatr[i][i] = expI(phase);
+            }
+            
+            SECTION( "state-vector" ) {
                 
                 applyNamedPhaseFunc(quregVec, regs, numQubitsPerReg, numRegs, encoding, PRODUCT);
                 applyReferenceOp(refVec, regs, totalNumQubits, diagMatr);
                 REQUIRE( areEqual(quregVec, refVec, 1E2*REAL_EPS) );
             }
-            SECTION( "DISTANCE" ) {
+            SECTION( "density-matrix" ) {
                 
-                // test only if there are an even number of registers
+                applyNamedPhaseFunc(quregMatr, regs, numQubitsPerReg, numRegs, encoding, PRODUCT);
+                applyReferenceOp(refMatr, regs, totalNumQubits, diagMatr);
+                REQUIRE( areEqual(quregMatr, refMatr, 142*REAL_EPS) );
+            }
+        }
+        SECTION( "DISTANCE" ) {
+            
+            // test only if there are an even number of registers
+            if (numRegs%2 == 0) {
+                
+                for (size_t i=0; i<diagMatr.size(); i++) {
+                    qreal phase = 0;
+                    for (int r=0; r<numRegs; r+=2)
+                        phase += pow(regVals[i][r+1]-regVals[i][r], 2);
+                    phase = sqrt(phase);
+                    diagMatr[i][i] = expI(phase);
+                }
+            }
+            
+            SECTION( "state-vector" ) {
+                
                 if (numRegs%2 == 0) {
-                    
-                    for (size_t i=0; i<diagMatr.size(); i++) {
-                        qreal phase = 0;
-                        for (int r=0; r<numRegs; r+=2)
-                            phase += pow(regVals[i][r+1]-regVals[i][r], 2);
-                        phase = sqrt(phase);
-                        diagMatr[i][i] = expI(phase);
-                    }
-                    
                     applyNamedPhaseFunc(quregVec, regs, numQubitsPerReg, numRegs, encoding, DISTANCE);
                     applyReferenceOp(refVec, regs, totalNumQubits, diagMatr);
                     REQUIRE( areEqual(quregVec, refVec, 1E2*REAL_EPS) );
+                }
+            }
+            SECTION( "density-matrix" ) {
+                
+                if (numRegs%2 == 0) {
+                    applyNamedPhaseFunc(quregMatr, regs, numQubitsPerReg, numRegs, encoding, DISTANCE);
+                    applyReferenceOp(refMatr, regs, totalNumQubits, diagMatr);
+                    REQUIRE( areEqual(quregMatr, refMatr, 142*REAL_EPS) );
                 }
             }
         }
@@ -1072,12 +1093,6 @@ TEST_CASE( "applyNamedPhaseFunc", "[operators]" ) {
         int numQubitsPerReg[] = {2,3};
         int regs[] = {0,1,2,3,4};
         
-        SECTION( "density-matrix" ) {
-                        
-            Qureg dens = quregVec;
-            dens.isDensityMatrix = 1;
-            REQUIRE_THROWS_WITH( applyNamedPhaseFunc(dens, regs, numQubitsPerReg, numRegs, UNSIGNED, NORM), Contains("Operation valid only for state-vectors") );
-        }
         SECTION( "number of registers" ) {
             
             numRegs = GENERATE_COPY( -1, 0, 1+MAX_NUM_REGS_APPLY_ARBITRARY_PHASE );
@@ -1127,7 +1142,7 @@ TEST_CASE( "applyNamedPhaseFunc", "[operators]" ) {
             REQUIRE_THROWS_WITH( applyNamedPhaseFunc(quregVec, qb, numQb, numRegs, UNSIGNED, DISTANCE), Contains("Phase functions DISTANCE") && Contains("even number of sub-registers") );
         }
     }
-    destroyQureg(quregVec, QUEST_ENV);
+    CLEANUP_TEST( quregVec, quregMatr );
 }
 
 
@@ -1138,9 +1153,7 @@ TEST_CASE( "applyNamedPhaseFunc", "[operators]" ) {
  */
 TEST_CASE( "applyNamedPhaseFuncOverrides", "[operators]" ) {
     
-    Qureg quregVec = createQureg(NUM_QUBITS, QUEST_ENV);
-    initDebugState(quregVec);
-    QVector refVec = toQVector(quregVec);
+    PREPARE_TEST( quregVec, quregMatr, refVec, refMatr );
 
     SECTION( "correctness" ) {
         
@@ -1210,78 +1223,106 @@ TEST_CASE( "applyNamedPhaseFuncOverrides", "[operators]" ) {
         qreal overridePhases[numOverrides];
         for (int v=0; v<numOverrides; v++)
             overridePhases[v] = getRandomReal(-4, 4); // periodic in [-pi, pi]
-
-        SECTION( "state-vector" ) {
             
-            /* produce a reference diagonal matrix which assumes the qubits are
-             * contiguous and strictly increasing between the registers, and hence 
-             * only depends on the number of qubits in each register.
-             */
-            QMatrix diagMatr = getZeroMatrix(1 << totalNumQubits);
             
-            // determine the values corresponding to each register for all basis states
-            qreal regVals[1<<totalNumQubits][numRegs];
-            for (long long int i=0; i<(1<<totalNumQubits); i++) {
+        // determine the values corresponding to each register for all basis states
+        qreal regVals[1<<totalNumQubits][numRegs];
+        for (long long int i=0; i<(1<<totalNumQubits); i++) {
+            
+            long long int bits = i;
+            for (int r=0; r<numRegs; r++) {            
+                regVals[i][r] = bits % (1 << numQubitsPerReg[r]);
+                bits = bits >> numQubitsPerReg[r];
                 
-                long long int bits = i;
-                for (int r=0; r<numRegs; r++) {            
-                    regVals[i][r] = bits % (1 << numQubitsPerReg[r]);
-                    bits = bits >> numQubitsPerReg[r];
-                    
-                    if (encoding == TWOS_COMPLEMENT)
-                        regVals[i][r] = getTwosComplement(regVals[i][r], numQubitsPerReg[r]);
-                }
+                if (encoding == TWOS_COMPLEMENT)
+                    regVals[i][r] = getTwosComplement(regVals[i][r], numQubitsPerReg[r]);
             }
+        }
+        
+        /* a reference diagonal matrix which assumes the qubits are
+         * contiguous and strictly increasing between the registers, and hence 
+         * only depends on the number of qubits in each register.
+         */
+        QMatrix diagMatr = getZeroMatrix(1 << totalNumQubits);
             
-            SECTION( "NORM" ) {
-                
-                for (size_t i=0; i<diagMatr.size(); i++) {
-                    qreal phase = 0;
-                    for (int r=0; r<numRegs; r++)
-                        phase += pow(regVals[i][r], 2);
-                    phase = sqrt(phase);
-                    diagMatr[i][i] = expI(phase);
-                }
-                
-                setDiagMatrixOverrides(diagMatr, numQubitsPerReg, numRegs, encoding, overrideInds, overridePhases, numOverrides);
+        SECTION( "NORM" ) {
+            
+            for (size_t i=0; i<diagMatr.size(); i++) {
+                qreal phase = 0;
+                for (int r=0; r<numRegs; r++)
+                    phase += pow(regVals[i][r], 2);
+                phase = sqrt(phase);
+                diagMatr[i][i] = expI(phase);
+            }
+            setDiagMatrixOverrides(diagMatr, numQubitsPerReg, numRegs, encoding, overrideInds, overridePhases, numOverrides);
+            
+            SECTION( "state-vector" ) {
                 
                 applyNamedPhaseFuncOverrides(quregVec, regs, numQubitsPerReg, numRegs, encoding, NORM, overrideInds, overridePhases, numOverrides);
                 applyReferenceOp(refVec, regs, totalNumQubits, diagMatr);
                 REQUIRE( areEqual(quregVec, refVec, 1E2*REAL_EPS) );
             }
-            SECTION( "PRODUCT" ) {
+            SECTION( "density-matrix" ) {
                 
-                for (size_t i=0; i<diagMatr.size(); i++) {
-                    qreal phase = 1;
-                    for (int r=0; r<numRegs; r++)
-                        phase *= regVals[i][r];
-                    diagMatr[i][i] = expI(phase);
-                }
-                
-                setDiagMatrixOverrides(diagMatr, numQubitsPerReg, numRegs, encoding, overrideInds, overridePhases, numOverrides);
+                applyNamedPhaseFuncOverrides(quregMatr, regs, numQubitsPerReg, numRegs, encoding, NORM, overrideInds, overridePhases, numOverrides);
+                applyReferenceOp(refMatr, regs, totalNumQubits, diagMatr);
+                REQUIRE( areEqual(quregMatr, refMatr, 1E4*REAL_EPS) );
+            }
+        }
+        SECTION( "PRODUCT" ) {
+            
+            for (size_t i=0; i<diagMatr.size(); i++) {
+                qreal phase = 1;
+                for (int r=0; r<numRegs; r++)
+                    phase *= regVals[i][r];
+                diagMatr[i][i] = expI(phase);
+            }
+            
+            setDiagMatrixOverrides(diagMatr, numQubitsPerReg, numRegs, encoding, overrideInds, overridePhases, numOverrides);
+            
+            SECTION( "state-vector" ) {
                 
                 applyNamedPhaseFuncOverrides(quregVec, regs, numQubitsPerReg, numRegs, encoding, PRODUCT, overrideInds, overridePhases, numOverrides);
                 applyReferenceOp(refVec, regs, totalNumQubits, diagMatr);
                 REQUIRE( areEqual(quregVec, refVec, 1E2*REAL_EPS) );
             }
-            SECTION( "DISTANCE" ) {
+            SECTION( "density-matrix" ) {
                 
-                // test only if there are an even number of registers
+                applyNamedPhaseFuncOverrides(quregMatr, regs, numQubitsPerReg, numRegs, encoding, PRODUCT, overrideInds, overridePhases, numOverrides);
+                applyReferenceOp(refMatr, regs, totalNumQubits, diagMatr);
+                REQUIRE( areEqual(quregMatr, refMatr, 1E4*REAL_EPS) );
+            }
+        }
+        SECTION( "DISTANCE" ) {
+            
+            // test only if there are an even number of registers
+            if (numRegs%2 == 0) {
+                
+                for (size_t i=0; i<diagMatr.size(); i++) {
+                    qreal phase = 0;
+                    for (int r=0; r<numRegs; r+=2)
+                        phase += pow(regVals[i][r+1]-regVals[i][r], 2);
+                    phase = sqrt(phase);
+                    diagMatr[i][i] = expI(phase);
+                }
+                
+                setDiagMatrixOverrides(diagMatr, numQubitsPerReg, numRegs, encoding, overrideInds, overridePhases, numOverrides);
+            }
+            
+            SECTION( "state-vector" ) {
+                
                 if (numRegs%2 == 0) {
-                    
-                    for (size_t i=0; i<diagMatr.size(); i++) {
-                        qreal phase = 0;
-                        for (int r=0; r<numRegs; r+=2)
-                            phase += pow(regVals[i][r+1]-regVals[i][r], 2);
-                        phase = sqrt(phase);
-                        diagMatr[i][i] = expI(phase);
-                    }
-                    
-                    setDiagMatrixOverrides(diagMatr, numQubitsPerReg, numRegs, encoding, overrideInds, overridePhases, numOverrides);
-                    
                     applyNamedPhaseFuncOverrides(quregVec, regs, numQubitsPerReg, numRegs, encoding, DISTANCE, overrideInds, overridePhases, numOverrides);
                     applyReferenceOp(refVec, regs, totalNumQubits, diagMatr);
                     REQUIRE( areEqual(quregVec, refVec, 1E2*REAL_EPS) );
+                }
+            }
+            SECTION( "density-matrix" ) {
+                
+                if (numRegs%2 == 0) {
+                    applyNamedPhaseFuncOverrides(quregMatr, regs, numQubitsPerReg, numRegs, encoding, DISTANCE, overrideInds, overridePhases, numOverrides);
+                    applyReferenceOp(refMatr, regs, totalNumQubits, diagMatr);
+                    REQUIRE( areEqual(quregMatr, refMatr, 1E4*REAL_EPS) );
                 }
             }
         }
@@ -1292,12 +1333,6 @@ TEST_CASE( "applyNamedPhaseFuncOverrides", "[operators]" ) {
         int numQubitsPerReg[] = {2,3};
         int regs[] = {0,1,2,3,4};
         
-        SECTION( "density-matrix" ) {
-                        
-            Qureg dens = quregVec;
-            dens.isDensityMatrix = 1;
-            REQUIRE_THROWS_WITH( applyNamedPhaseFuncOverrides(dens, regs, numQubitsPerReg, numRegs, UNSIGNED, NORM, NULL, NULL, 0), Contains("Operation valid only for state-vectors") );
-        }
         SECTION( "number of registers" ) {
             
             numRegs = GENERATE_COPY( -1, 0, 1+MAX_NUM_REGS_APPLY_ARBITRARY_PHASE );
@@ -1386,7 +1421,7 @@ TEST_CASE( "applyNamedPhaseFuncOverrides", "[operators]" ) {
             REQUIRE_THROWS_WITH( applyNamedPhaseFuncOverrides(quregVec, regs, numQubitsPerReg, numRegs, enc, NORM, overrideInds, overridePhases, numOverrides), Contains("Invalid phase function override index, in the TWOS_COMPLEMENT encoding") );
         }
     }
-    destroyQureg(quregVec, QUEST_ENV);
+    CLEANUP_TEST( quregVec, quregMatr );
 }
 
 
@@ -1397,9 +1432,7 @@ TEST_CASE( "applyNamedPhaseFuncOverrides", "[operators]" ) {
  */
 TEST_CASE( "applyParamNamedPhaseFunc", "[operators]" ) {
     
-    Qureg quregVec = createQureg(NUM_QUBITS, QUEST_ENV);
-    initDebugState(quregVec);
-    QVector refVec = toQVector(quregVec);
+    PREPARE_TEST( quregVec, quregMatr, refVec, refMatr );
 
     SECTION( "correctness" ) {
         
@@ -1447,212 +1480,308 @@ TEST_CASE( "applyParamNamedPhaseFunc", "[operators]" ) {
             numQubitsPerReg[getRandomInt(0,numRegs)] += 1;
             unallocQubits--;
         }
-
-        SECTION( "state-vector" ) {
             
-            /* produce a reference diagonal matrix which assumes the qubits are
-             * contiguous and strictly increasing between the registers, and hence 
-             * only depends on the number of qubits in each register.
-             */
-            QMatrix diagMatr = getZeroMatrix(1 << totalNumQubits);
+        /* produce a reference diagonal matrix which assumes the qubits are
+         * contiguous and strictly increasing between the registers, and hence 
+         * only depends on the number of qubits in each register.
+         */
+        QMatrix diagMatr = getZeroMatrix(1 << totalNumQubits);
+        
+        // determine the values corresponding to each register for all basis states
+        qreal regVals[1<<totalNumQubits][numRegs];
+        for (long long int i=0; i<(1<<totalNumQubits); i++) {
             
-            // determine the values corresponding to each register for all basis states
-            qreal regVals[1<<totalNumQubits][numRegs];
-            for (long long int i=0; i<(1<<totalNumQubits); i++) {
+            long long int bits = i;
+            for (int r=0; r<numRegs; r++) {            
+                regVals[i][r] = bits % (1 << numQubitsPerReg[r]);
+                bits = bits >> numQubitsPerReg[r];
                 
-                long long int bits = i;
-                for (int r=0; r<numRegs; r++) {            
-                    regVals[i][r] = bits % (1 << numQubitsPerReg[r]);
-                    bits = bits >> numQubitsPerReg[r];
-                    
-                    if (encoding == TWOS_COMPLEMENT)
-                        regVals[i][r] = getTwosComplement(regVals[i][r], numQubitsPerReg[r]);
-                }
+                if (encoding == TWOS_COMPLEMENT)
+                    regVals[i][r] = getTwosComplement(regVals[i][r], numQubitsPerReg[r]);
             }
+        }
+        
+        SECTION( "INVERSE_NORM" ) {
             
-            SECTION( "INVERSE_NORM" ) {
+            enum phaseFunc func = INVERSE_NORM;
+            qreal divPhase = getRandomReal(-4, 4);
+            
+            for (size_t i=0; i<diagMatr.size(); i++) {
+                qreal phase = 0;
+                for (int r=0; r<numRegs; r++)
+                    phase += pow(regVals[i][r], 2);
+                phase = (phase == 0.)? divPhase : 1/sqrt(phase);
+                diagMatr[i][i] = expI(phase);
+            }
+                            
+            qreal params[] = {divPhase};
+            int numParams = 1;
+            
+            SECTION( "state-vector" ) {
                 
-                enum phaseFunc func = INVERSE_NORM;
-                qreal divPhase = getRandomReal(-4, 4);
-                
-                for (size_t i=0; i<diagMatr.size(); i++) {
-                    qreal phase = 0;
-                    for (int r=0; r<numRegs; r++)
-                        phase += pow(regVals[i][r], 2);
-                    phase = (phase == 0.)? divPhase : 1/sqrt(phase);
-                    diagMatr[i][i] = expI(phase);
-                }
-                                
-                qreal params[] = {divPhase};
-                int numParams = 1;
                 applyParamNamedPhaseFunc(quregVec, regs, numQubitsPerReg, numRegs, encoding, func, params, numParams);
                 applyReferenceOp(refVec, regs, totalNumQubits, diagMatr);
                 REQUIRE( areEqual(quregVec, refVec, 1E2*REAL_EPS) );
             }
-            SECTION( "SCALED_NORM" ) {
+            SECTION( "density-matrix" ) {
                 
-                enum phaseFunc func = SCALED_NORM;
-                qreal coeff = getRandomReal(-10, 10);
+                applyParamNamedPhaseFunc(quregMatr, regs, numQubitsPerReg, numRegs, encoding, func, params, numParams);
+                applyReferenceOp(refMatr, regs, totalNumQubits, diagMatr);
+                REQUIRE( areEqual(quregMatr, refMatr, 1E2*REAL_EPS) );
+            }
+
+        }
+        SECTION( "SCALED_NORM" ) {
+            
+            enum phaseFunc func = SCALED_NORM;
+            qreal coeff = getRandomReal(-10, 10);
+            
+            for (size_t i=0; i<diagMatr.size(); i++) {
+                qreal phase = 0;
+                for (int r=0; r<numRegs; r++)
+                    phase += pow(regVals[i][r], 2);
+                phase = coeff * sqrt(phase);
+                diagMatr[i][i] = expI(phase);
+            }
+                            
+            qreal params[] = {coeff};
+            int numParams = 1;
+
+            SECTION( "state-vector" ) {
+                
+                applyParamNamedPhaseFunc(quregVec, regs, numQubitsPerReg, numRegs, encoding, func, params, numParams);
+                applyReferenceOp(refVec, regs, totalNumQubits, diagMatr);
+                REQUIRE( areEqual(quregVec, refVec, 1E2*REAL_EPS) );
+            }
+            SECTION( "density-matrix" ) {
+                
+                applyParamNamedPhaseFunc(quregMatr, regs, numQubitsPerReg, numRegs, encoding, func, params, numParams);
+                applyReferenceOp(refMatr, regs, totalNumQubits, diagMatr);
+                REQUIRE( areEqual(quregMatr, refMatr, 1E2*REAL_EPS) );
+            }
+        }
+        SECTION( "SCALED_INVERSE_NORM" ) {
+            
+            enum phaseFunc func = SCALED_INVERSE_NORM;
+            qreal coeff = getRandomReal(-10, 10);
+            qreal divPhase = getRandomReal(-4, 4);
+            
+            for (size_t i=0; i<diagMatr.size(); i++) {
+                qreal phase = 0;
+                for (int r=0; r<numRegs; r++)
+                    phase += pow(regVals[i][r], 2);
+                phase = (phase == 0.)? divPhase : coeff/sqrt(phase);
+                diagMatr[i][i] = expI(phase);
+            }
+                            
+            qreal params[] = {coeff, divPhase};
+            int numParams = 2;
+
+            SECTION( "state-vector" ) {
+                
+                applyParamNamedPhaseFunc(quregVec, regs, numQubitsPerReg, numRegs, encoding, func, params, numParams);
+                applyReferenceOp(refVec, regs, totalNumQubits, diagMatr);
+                REQUIRE( areEqual(quregVec, refVec, 1E2*REAL_EPS) );
+            }
+            SECTION( "density-matrix" ) {
+                
+                applyParamNamedPhaseFunc(quregMatr, regs, numQubitsPerReg, numRegs, encoding, func, params, numParams);
+                applyReferenceOp(refMatr, regs, totalNumQubits, diagMatr);
+                REQUIRE( areEqual(quregMatr, refMatr, 1E2*REAL_EPS) );
+            }
+        }
+        SECTION( "INVERSE_PRODUCT" ) {
+            
+            enum phaseFunc func = INVERSE_PRODUCT;
+            qreal divPhase = getRandomReal(-4, 4);
+            
+            for (size_t i=0; i<diagMatr.size(); i++) {
+                qreal phase = 1;
+                for (int r=0; r<numRegs; r++)
+                    phase *= regVals[i][r];
+                phase = (phase == 0.)? divPhase : 1. / phase;
+                diagMatr[i][i] = expI(phase);
+            }
+                            
+            qreal params[] = {divPhase};
+            int numParams = 1;
+
+            SECTION( "state-vector" ) {
+                
+                applyParamNamedPhaseFunc(quregVec, regs, numQubitsPerReg, numRegs, encoding, func, params, numParams);
+                applyReferenceOp(refVec, regs, totalNumQubits, diagMatr);
+                REQUIRE( areEqual(quregVec, refVec, 1E2*REAL_EPS) );
+            }
+            SECTION( "density-matrix" ) {
+                
+                applyParamNamedPhaseFunc(quregMatr, regs, numQubitsPerReg, numRegs, encoding, func, params, numParams);
+                applyReferenceOp(refMatr, regs, totalNumQubits, diagMatr);
+                REQUIRE( areEqual(quregMatr, refMatr, 1E2*REAL_EPS) );
+            }
+        }
+        SECTION( "SCALED_PRODUCT" ) {
+            
+            enum phaseFunc func = SCALED_PRODUCT;
+            qreal coeff = getRandomReal(-10, 10);
+            
+            for (size_t i=0; i<diagMatr.size(); i++) {
+                qreal phase = 1;
+                for (int r=0; r<numRegs; r++)
+                    phase *= regVals[i][r];
+                diagMatr[i][i] = expI(coeff * phase);
+            }
+                            
+            qreal params[] = {coeff};
+            int numParams = 1;
+
+            SECTION( "state-vector" ) {
+                
+                applyParamNamedPhaseFunc(quregVec, regs, numQubitsPerReg, numRegs, encoding, func, params, numParams);
+                applyReferenceOp(refVec, regs, totalNumQubits, diagMatr);
+                REQUIRE( areEqual(quregVec, refVec, 1E2*REAL_EPS) );
+            }
+            SECTION( "density-matrix" ) {
+                
+                applyParamNamedPhaseFunc(quregMatr, regs, numQubitsPerReg, numRegs, encoding, func, params, numParams);
+                applyReferenceOp(refMatr, regs, totalNumQubits, diagMatr);
+                REQUIRE( areEqual(quregMatr, refMatr, 1E2*REAL_EPS) );
+            }
+        }
+        SECTION( "SCALED_INVERSE_PRODUCT" ) {
+            
+            enum phaseFunc func = SCALED_INVERSE_PRODUCT;
+            qreal coeff = getRandomReal(-10, 10);
+            qreal divPhase = getRandomReal(-4, 4);
+            qreal params[] = {coeff, divPhase};
+            int numParams = 2;
+            
+            for (size_t i=0; i<diagMatr.size(); i++) {
+                qreal phase = 1;
+                for (int r=0; r<numRegs; r++)
+                    phase *= regVals[i][r];
+                phase = (phase == 0)? divPhase : coeff / phase;
+                diagMatr[i][i] = expI(phase);
+            }
+
+            SECTION( "state-vector" ) {
+                
+                applyParamNamedPhaseFunc(quregVec, regs, numQubitsPerReg, numRegs, encoding, func, params, numParams);
+                applyReferenceOp(refVec, regs, totalNumQubits, diagMatr);
+                REQUIRE( areEqual(quregVec, refVec, 1E2*REAL_EPS) );
+            }
+            SECTION( "density-matrix" ) {
+                
+                applyParamNamedPhaseFunc(quregMatr, regs, numQubitsPerReg, numRegs, encoding, func, params, numParams);
+                applyReferenceOp(refMatr, regs, totalNumQubits, diagMatr);
+                REQUIRE( areEqual(quregMatr, refMatr, 1E2*REAL_EPS) );
+            }
+        }
+        SECTION( "INVERSE_DISTANCE" ) {
+            
+            enum phaseFunc func = INVERSE_DISTANCE;
+            qreal divPhase = getRandomReal( -4, 4 );
+            qreal params[] = {divPhase};
+            int numParams = 1;
+            
+            // test only if there are an even number of registers
+            if (numRegs%2 == 0) {
                 
                 for (size_t i=0; i<diagMatr.size(); i++) {
                     qreal phase = 0;
-                    for (int r=0; r<numRegs; r++)
-                        phase += pow(regVals[i][r], 2);
+                    for (int r=0; r<numRegs; r+=2)
+                        phase += pow(regVals[i][r+1]-regVals[i][r], 2);
+                    phase = (phase == 0.)? divPhase : 1./sqrt(phase);
+                    diagMatr[i][i] = expI(phase);
+                }
+            }
+            
+            SECTION( "state-vector" ) {
+                
+                if (numRegs%2 == 0) {
+                    applyParamNamedPhaseFunc(quregVec, regs, numQubitsPerReg, numRegs, encoding, func, params, numParams);
+                    applyReferenceOp(refVec, regs, totalNumQubits, diagMatr);
+                    REQUIRE( areEqual(quregVec, refVec, 1E2*REAL_EPS) );
+                }
+            }
+            SECTION( "density-matrix" ) {
+                
+                if (numRegs%2 == 0) {
+                    applyParamNamedPhaseFunc(quregMatr, regs, numQubitsPerReg, numRegs, encoding, func, params, numParams);
+                    applyReferenceOp(refMatr, regs, totalNumQubits, diagMatr);
+                    REQUIRE( areEqual(quregMatr, refMatr, 1E2*REAL_EPS) );
+                }
+            }
+        }
+        SECTION( "SCALED_DISTANCE" ) {
+            
+            enum phaseFunc func = SCALED_DISTANCE;
+            qreal coeff = getRandomReal( -10, 10 );
+            qreal params[] = {coeff};
+            int numParams = 1;
+            
+            // test only if there are an even number of registers
+            if (numRegs%2 == 0) {
+                
+                for (size_t i=0; i<diagMatr.size(); i++) {
+                    qreal phase = 0;
+                    for (int r=0; r<numRegs; r+=2)
+                        phase += pow(regVals[i][r+1]-regVals[i][r], 2);
                     phase = coeff * sqrt(phase);
                     diagMatr[i][i] = expI(phase);
                 }
-                                
-                qreal params[] = {coeff};
-                int numParams = 1;
-                applyParamNamedPhaseFunc(quregVec, regs, numQubitsPerReg, numRegs, encoding, func, params, numParams);
-                applyReferenceOp(refVec, regs, totalNumQubits, diagMatr);
-                REQUIRE( areEqual(quregVec, refVec, 1E2*REAL_EPS) );
             }
-            SECTION( "SCALED_INVERSE_NORM" ) {
+            
+            SECTION( "state-vector" ) {
                 
-                enum phaseFunc func = SCALED_INVERSE_NORM;
-                qreal coeff = getRandomReal(-10, 10);
-                qreal divPhase = getRandomReal(-4, 4);
+                if (numRegs%2 == 0) {
+                    applyParamNamedPhaseFunc(quregVec, regs, numQubitsPerReg, numRegs, encoding, func, params, numParams);
+                    applyReferenceOp(refVec, regs, totalNumQubits, diagMatr);
+                    REQUIRE( areEqual(quregVec, refVec, 1E2*REAL_EPS) );
+                }
+            }
+            SECTION( "density-matrix" ) {
+                
+                if (numRegs%2 == 0) {
+                    applyParamNamedPhaseFunc(quregMatr, regs, numQubitsPerReg, numRegs, encoding, func, params, numParams);
+                    applyReferenceOp(refMatr, regs, totalNumQubits, diagMatr);
+                    REQUIRE( areEqual(quregMatr, refMatr, 1E2*REAL_EPS) );
+                }
+            }
+        }
+        SECTION( "SCALED_INVERSE_DISTANCE" ) {
+            
+            enum phaseFunc func = SCALED_INVERSE_DISTANCE;
+            qreal coeff = getRandomReal( -10, 10 );
+            qreal divPhase = getRandomReal( -4, 4 );
+            qreal params[] = {coeff, divPhase};
+            int numParams = 2;
+            
+            // test only if there are an even number of registers
+            if (numRegs%2 == 0) {
                 
                 for (size_t i=0; i<diagMatr.size(); i++) {
                     qreal phase = 0;
-                    for (int r=0; r<numRegs; r++)
-                        phase += pow(regVals[i][r], 2);
+                    for (int r=0; r<numRegs; r+=2)
+                        phase += pow(regVals[i][r+1]-regVals[i][r], 2);
                     phase = (phase == 0.)? divPhase : coeff/sqrt(phase);
                     diagMatr[i][i] = expI(phase);
                 }
-                                
-                qreal params[] = {coeff, divPhase};
-                int numParams = 2;
-                applyParamNamedPhaseFunc(quregVec, regs, numQubitsPerReg, numRegs, encoding, func, params, numParams);
-                applyReferenceOp(refVec, regs, totalNumQubits, diagMatr);
-                REQUIRE( areEqual(quregVec, refVec, 1E2*REAL_EPS) );
             }
-            SECTION( "INVERSE_PRODUCT" ) {
+            
+            SECTION( "state-vector" ) {
                 
-                enum phaseFunc func = INVERSE_PRODUCT;
-                qreal divPhase = getRandomReal(-4, 4);
-                
-                for (size_t i=0; i<diagMatr.size(); i++) {
-                    qreal phase = 1;
-                    for (int r=0; r<numRegs; r++)
-                        phase *= regVals[i][r];
-                    phase = (phase == 0.)? divPhase : 1. / phase;
-                    diagMatr[i][i] = expI(phase);
-                }
-                                
-                qreal params[] = {divPhase};
-                int numParams = 1;
-                applyParamNamedPhaseFunc(quregVec, regs, numQubitsPerReg, numRegs, encoding, func, params, numParams);
-                applyReferenceOp(refVec, regs, totalNumQubits, diagMatr);
-                REQUIRE( areEqual(quregVec, refVec, 1E2*REAL_EPS) );
-            }
-            SECTION( "SCALED_PRODUCT" ) {
-                
-                enum phaseFunc func = SCALED_PRODUCT;
-                qreal coeff = getRandomReal(-10, 10);
-                
-                for (size_t i=0; i<diagMatr.size(); i++) {
-                    qreal phase = 1;
-                    for (int r=0; r<numRegs; r++)
-                        phase *= regVals[i][r];
-                    diagMatr[i][i] = expI(coeff * phase);
-                }
-                                
-                qreal params[] = {coeff};
-                int numParams = 1;
-                applyParamNamedPhaseFunc(quregVec, regs, numQubitsPerReg, numRegs, encoding, func, params, numParams);
-                applyReferenceOp(refVec, regs, totalNumQubits, diagMatr);
-                REQUIRE( areEqual(quregVec, refVec, 1E2*REAL_EPS) );
-            }
-            SECTION( "SCALED_INVERSE_PRODUCT" ) {
-                
-                enum phaseFunc func = SCALED_INVERSE_PRODUCT;
-                qreal coeff = getRandomReal(-10, 10);
-                qreal divPhase = getRandomReal(-4, 4);
-                
-                for (size_t i=0; i<diagMatr.size(); i++) {
-                    qreal phase = 1;
-                    for (int r=0; r<numRegs; r++)
-                        phase *= regVals[i][r];
-                    phase = (phase == 0)? divPhase : coeff / phase;
-                    diagMatr[i][i] = expI(phase);
-                }
-                                
-                qreal params[] = {coeff, divPhase};
-                int numParams = 2;
-                applyParamNamedPhaseFunc(quregVec, regs, numQubitsPerReg, numRegs, encoding, func, params, numParams);
-                applyReferenceOp(refVec, regs, totalNumQubits, diagMatr);
-                REQUIRE( areEqual(quregVec, refVec, 1E2*REAL_EPS) );
-            }
-            SECTION( "INVERSE_DISTANCE" ) {
-                
-                enum phaseFunc func = INVERSE_DISTANCE;
-                qreal divPhase = getRandomReal( -4, 4 );
-                
-                // test only if there are an even number of registers
                 if (numRegs%2 == 0) {
-                    
-                    for (size_t i=0; i<diagMatr.size(); i++) {
-                        qreal phase = 0;
-                        for (int r=0; r<numRegs; r+=2)
-                            phase += pow(regVals[i][r+1]-regVals[i][r], 2);
-                        phase = (phase == 0.)? divPhase : 1./sqrt(phase);
-                        diagMatr[i][i] = expI(phase);
-                    }
-                                        
-                    qreal params[] = {divPhase};
-                    int numParams = 1;
                     applyParamNamedPhaseFunc(quregVec, regs, numQubitsPerReg, numRegs, encoding, func, params, numParams);
                     applyReferenceOp(refVec, regs, totalNumQubits, diagMatr);
                     REQUIRE( areEqual(quregVec, refVec, 1E2*REAL_EPS) );
                 }
             }
-            SECTION( "SCALED_DISTANCE" ) {
+            SECTION( "density-matrix" ) {
                 
-                enum phaseFunc func = SCALED_DISTANCE;
-                qreal coeff = getRandomReal( -10, 10 );
-                
-                // test only if there are an even number of registers
                 if (numRegs%2 == 0) {
-                    
-                    for (size_t i=0; i<diagMatr.size(); i++) {
-                        qreal phase = 0;
-                        for (int r=0; r<numRegs; r+=2)
-                            phase += pow(regVals[i][r+1]-regVals[i][r], 2);
-                        phase = coeff * sqrt(phase);
-                        diagMatr[i][i] = expI(phase);
-                    }
-                                        
-                    qreal params[] = {coeff};
-                    int numParams = 1;
-                    applyParamNamedPhaseFunc(quregVec, regs, numQubitsPerReg, numRegs, encoding, func, params, numParams);
-                    applyReferenceOp(refVec, regs, totalNumQubits, diagMatr);
-                    REQUIRE( areEqual(quregVec, refVec, 1E2*REAL_EPS) );
-                }
-            }
-            SECTION( "SCALED_INVERSE_DISTANCE" ) {
-                
-                enum phaseFunc func = SCALED_INVERSE_DISTANCE;
-                qreal coeff = getRandomReal( -10, 10 );
-                qreal divPhase = getRandomReal( -4, 4 );
-                
-                // test only if there are an even number of registers
-                if (numRegs%2 == 0) {
-                    
-                    for (size_t i=0; i<diagMatr.size(); i++) {
-                        qreal phase = 0;
-                        for (int r=0; r<numRegs; r+=2)
-                            phase += pow(regVals[i][r+1]-regVals[i][r], 2);
-                        phase = (phase == 0.)? divPhase : coeff/sqrt(phase);
-                        diagMatr[i][i] = expI(phase);
-                    }
-                                        
-                    qreal params[] = {coeff, divPhase};
-                    int numParams = 2;
-                    applyParamNamedPhaseFunc(quregVec, regs, numQubitsPerReg, numRegs, encoding, func, params, numParams);
-                    applyReferenceOp(refVec, regs, totalNumQubits, diagMatr);
-                    REQUIRE( areEqual(quregVec, refVec, 1E2*REAL_EPS) );
+                    applyParamNamedPhaseFunc(quregMatr, regs, numQubitsPerReg, numRegs, encoding, func, params, numParams);
+                    applyReferenceOp(refMatr, regs, totalNumQubits, diagMatr);
+                    REQUIRE( areEqual(quregMatr, refMatr, 1E2*REAL_EPS) );
                 }
             }
         }
@@ -1663,12 +1792,6 @@ TEST_CASE( "applyParamNamedPhaseFunc", "[operators]" ) {
         int numQubitsPerReg[] = {2,3};
         int regs[] = {0,1,2,3,4};
         
-        SECTION( "density-matrix" ) {
-                        
-            Qureg dens = quregVec;
-            dens.isDensityMatrix = 1;
-            REQUIRE_THROWS_WITH( applyParamNamedPhaseFunc(dens, regs, numQubitsPerReg, numRegs, UNSIGNED, NORM, NULL, 0), Contains("Operation valid only for state-vectors") );
-        }
         SECTION( "number of registers" ) {
             
             numRegs = GENERATE_COPY( -1, 0, 1+MAX_NUM_REGS_APPLY_ARBITRARY_PHASE );
@@ -1736,7 +1859,7 @@ TEST_CASE( "applyParamNamedPhaseFunc", "[operators]" ) {
             REQUIRE_THROWS_WITH( applyParamNamedPhaseFunc(quregVec, qb, numQb, numRegs, UNSIGNED, DISTANCE, NULL, 0), Contains("Phase functions DISTANCE") && Contains("even number of sub-registers") );
         }
     }
-    destroyQureg(quregVec, QUEST_ENV);
+    CLEANUP_TEST( quregVec, quregMatr );
 }
 
 
@@ -1747,9 +1870,7 @@ TEST_CASE( "applyParamNamedPhaseFunc", "[operators]" ) {
  */
 TEST_CASE( "applyParamNamedPhaseFuncOverrides", "[operators]" ) {
     
-    Qureg quregVec = createQureg(NUM_QUBITS, QUEST_ENV);
-    initDebugState(quregVec);
-    QVector refVec = toQVector(quregVec);
+    PREPARE_TEST( quregVec, quregMatr, refVec, refMatr );
 
     SECTION( "correctness" ) {
         
@@ -1820,229 +1941,312 @@ TEST_CASE( "applyParamNamedPhaseFuncOverrides", "[operators]" ) {
         for (int v=0; v<numOverrides; v++)
             overridePhases[v] = getRandomReal(-4, 4); // periodic in [-pi, pi]
 
-        SECTION( "state-vector" ) {
+
+        // determine the values corresponding to each register for all basis states
+        qreal regVals[1<<totalNumQubits][numRegs];
+        for (long long int i=0; i<(1<<totalNumQubits); i++) {
             
-            /* produce a reference diagonal matrix which assumes the qubits are
-             * contiguous and strictly increasing between the registers, and hence 
-             * only depends on the number of qubits in each register.
-             */
-            QMatrix diagMatr = getZeroMatrix(1 << totalNumQubits);
-            
-            // determine the values corresponding to each register for all basis states
-            qreal regVals[1<<totalNumQubits][numRegs];
-            for (long long int i=0; i<(1<<totalNumQubits); i++) {
+            long long int bits = i;
+            for (int r=0; r<numRegs; r++) {            
+                regVals[i][r] = bits % (1 << numQubitsPerReg[r]);
+                bits = bits >> numQubitsPerReg[r];
                 
-                long long int bits = i;
-                for (int r=0; r<numRegs; r++) {            
-                    regVals[i][r] = bits % (1 << numQubitsPerReg[r]);
-                    bits = bits >> numQubitsPerReg[r];
-                    
-                    if (encoding == TWOS_COMPLEMENT)
-                        regVals[i][r] = getTwosComplement(regVals[i][r], numQubitsPerReg[r]);
-                }
+                if (encoding == TWOS_COMPLEMENT)
+                    regVals[i][r] = getTwosComplement(regVals[i][r], numQubitsPerReg[r]);
             }
+        }
+        
+        /* produce a reference diagonal matrix which assumes the qubits are
+         * contiguous and strictly increasing between the registers, and hence 
+         * only depends on the number of qubits in each register.
+         */
+        QMatrix diagMatr = getZeroMatrix(1 << totalNumQubits);
+        
+        
+        SECTION( "INVERSE_NORM" ) {
             
-            SECTION( "INVERSE_NORM" ) {
+            enum phaseFunc func = INVERSE_NORM;
+            qreal divPhase = getRandomReal(-4, 4);
+            qreal params[] = {divPhase};
+            int numParams = 1;
+            
+            for (size_t i=0; i<diagMatr.size(); i++) {
+                qreal phase = 0;
+                for (int r=0; r<numRegs; r++)
+                    phase += pow(regVals[i][r], 2);
+                phase = (phase == 0.)? divPhase : 1/sqrt(phase);
+                diagMatr[i][i] = expI(phase);
+            }
+            setDiagMatrixOverrides(diagMatr, numQubitsPerReg, numRegs, encoding, overrideInds, overridePhases, numOverrides);
+            
+            SECTION( "state-vector" ) {
                 
-                enum phaseFunc func = INVERSE_NORM;
-                qreal divPhase = getRandomReal(-4, 4);
-                
-                for (size_t i=0; i<diagMatr.size(); i++) {
-                    qreal phase = 0;
-                    for (int r=0; r<numRegs; r++)
-                        phase += pow(regVals[i][r], 2);
-                    phase = (phase == 0.)? divPhase : 1/sqrt(phase);
-                    diagMatr[i][i] = expI(phase);
-                }
-                
-                setDiagMatrixOverrides(diagMatr, numQubitsPerReg, numRegs, encoding, overrideInds, overridePhases, numOverrides);
-                
-                qreal params[] = {divPhase};
-                int numParams = 1;
                 applyParamNamedPhaseFuncOverrides(quregVec, regs, numQubitsPerReg, numRegs, encoding, func, params, numParams, overrideInds, overridePhases, numOverrides);
                 applyReferenceOp(refVec, regs, totalNumQubits, diagMatr);
                 REQUIRE( areEqual(quregVec, refVec, 1E2*REAL_EPS) );
             }
-            SECTION( "SCALED_NORM" ) {
+            SECTION( "density-matrix" ) {
                 
-                enum phaseFunc func = SCALED_NORM;
-                qreal coeff = getRandomReal(-10, 10);
+                applyParamNamedPhaseFuncOverrides(quregMatr, regs, numQubitsPerReg, numRegs, encoding, func, params, numParams, overrideInds, overridePhases, numOverrides);
+                applyReferenceOp(refMatr, regs, totalNumQubits, diagMatr);
+                REQUIRE( areEqual(quregMatr, refMatr, 1E2*REAL_EPS) );
+            }
+        }
+        SECTION( "SCALED_NORM" ) {
+            
+            enum phaseFunc func = SCALED_NORM;
+            qreal coeff = getRandomReal(-10, 10);
+            qreal params[] = {coeff};
+            int numParams = 1;
+            
+            for (size_t i=0; i<diagMatr.size(); i++) {
+                qreal phase = 0;
+                for (int r=0; r<numRegs; r++)
+                    phase += pow(regVals[i][r], 2);
+                phase = coeff * sqrt(phase);
+                diagMatr[i][i] = expI(phase);
+            }
+            setDiagMatrixOverrides(diagMatr, numQubitsPerReg, numRegs, encoding, overrideInds, overridePhases, numOverrides);
+
+            SECTION( "state-vector" ) {
+                
+                applyParamNamedPhaseFuncOverrides(quregVec, regs, numQubitsPerReg, numRegs, encoding, func, params, numParams, overrideInds, overridePhases, numOverrides);
+                applyReferenceOp(refVec, regs, totalNumQubits, diagMatr);
+                REQUIRE( areEqual(quregVec, refVec, 1E2*REAL_EPS) );
+            }
+            SECTION( "density-matrix" ) {
+                
+                applyParamNamedPhaseFuncOverrides(quregMatr, regs, numQubitsPerReg, numRegs, encoding, func, params, numParams, overrideInds, overridePhases, numOverrides);
+                applyReferenceOp(refMatr, regs, totalNumQubits, diagMatr);
+                REQUIRE( areEqual(quregMatr, refMatr, 1E2*REAL_EPS) );
+            }
+        }
+        SECTION( "SCALED_INVERSE_NORM" ) {
+            
+            enum phaseFunc func = SCALED_INVERSE_NORM;
+            qreal coeff = getRandomReal(-10, 10);
+            qreal divPhase = getRandomReal(-4, 4);
+            qreal params[] = {coeff, divPhase};
+            int numParams = 2;
+            
+            for (size_t i=0; i<diagMatr.size(); i++) {
+                qreal phase = 0;
+                for (int r=0; r<numRegs; r++)
+                    phase += pow(regVals[i][r], 2);
+                phase = (phase == 0.)? divPhase : coeff/sqrt(phase);
+                diagMatr[i][i] = expI(phase);
+            }
+            setDiagMatrixOverrides(diagMatr, numQubitsPerReg, numRegs, encoding, overrideInds, overridePhases, numOverrides);
+            
+            SECTION( "state-vector" ) {
+                
+                applyParamNamedPhaseFuncOverrides(quregVec, regs, numQubitsPerReg, numRegs, encoding, func, params, numParams, overrideInds, overridePhases, numOverrides);
+                applyReferenceOp(refVec, regs, totalNumQubits, diagMatr);
+                REQUIRE( areEqual(quregVec, refVec, 1E2*REAL_EPS) );
+            }
+            SECTION( "density-matrix" ) {
+                
+                applyParamNamedPhaseFuncOverrides(quregMatr, regs, numQubitsPerReg, numRegs, encoding, func, params, numParams, overrideInds, overridePhases, numOverrides);
+                applyReferenceOp(refMatr, regs, totalNumQubits, diagMatr);
+                REQUIRE( areEqual(quregMatr, refMatr, 1E2*REAL_EPS) );
+            }
+        }
+        SECTION( "INVERSE_PRODUCT" ) {
+            
+            enum phaseFunc func = INVERSE_PRODUCT;
+            qreal divPhase = getRandomReal(-4, 4);
+            qreal params[] = {divPhase};
+            int numParams = 1;
+            
+            for (size_t i=0; i<diagMatr.size(); i++) {
+                qreal phase = 1;
+                for (int r=0; r<numRegs; r++)
+                    phase *= regVals[i][r];
+                phase = (phase == 0.)? divPhase : 1. / phase;
+                diagMatr[i][i] = expI(phase);
+            }
+            setDiagMatrixOverrides(diagMatr, numQubitsPerReg, numRegs, encoding, overrideInds, overridePhases, numOverrides);
+
+            SECTION( "state-vector" ) {
+                
+                applyParamNamedPhaseFuncOverrides(quregVec, regs, numQubitsPerReg, numRegs, encoding, func, params, numParams, overrideInds, overridePhases, numOverrides);
+                applyReferenceOp(refVec, regs, totalNumQubits, diagMatr);
+                REQUIRE( areEqual(quregVec, refVec, 1E2*REAL_EPS) );
+            }
+            SECTION( "density-matrix" ) {
+                
+                applyParamNamedPhaseFuncOverrides(quregMatr, regs, numQubitsPerReg, numRegs, encoding, func, params, numParams, overrideInds, overridePhases, numOverrides);
+                applyReferenceOp(refMatr, regs, totalNumQubits, diagMatr);
+                REQUIRE( areEqual(quregMatr, refMatr, 1E2*REAL_EPS) );
+            }
+        }
+        SECTION( "SCALED_PRODUCT" ) {
+            
+            enum phaseFunc func = SCALED_PRODUCT;
+            qreal coeff = getRandomReal(-10, 10);
+            qreal params[] = {coeff};
+            int numParams = 1;
+            
+            for (size_t i=0; i<diagMatr.size(); i++) {
+                qreal phase = 1;
+                for (int r=0; r<numRegs; r++)
+                    phase *= regVals[i][r];
+                diagMatr[i][i] = expI(coeff * phase);
+            }
+            setDiagMatrixOverrides(diagMatr, numQubitsPerReg, numRegs, encoding, overrideInds, overridePhases, numOverrides);
+            
+            SECTION( "state-vector" ) {
+                
+                applyParamNamedPhaseFuncOverrides(quregVec, regs, numQubitsPerReg, numRegs, encoding, func, params, numParams, overrideInds, overridePhases, numOverrides);
+                applyReferenceOp(refVec, regs, totalNumQubits, diagMatr);
+                REQUIRE( areEqual(quregVec, refVec, 1E2*REAL_EPS) );
+            }
+            SECTION( "density-matrix" ) {
+                
+                applyParamNamedPhaseFuncOverrides(quregMatr, regs, numQubitsPerReg, numRegs, encoding, func, params, numParams, overrideInds, overridePhases, numOverrides);
+                applyReferenceOp(refMatr, regs, totalNumQubits, diagMatr);
+                REQUIRE( areEqual(quregMatr, refMatr, 1E2*REAL_EPS) );
+            }
+        }
+        SECTION( "SCALED_INVERSE_PRODUCT" ) {
+            
+            enum phaseFunc func = SCALED_INVERSE_PRODUCT;
+            qreal coeff = getRandomReal(-10, 10);
+            qreal divPhase = getRandomReal(-4, 4);
+            qreal params[] = {coeff, divPhase};
+            int numParams = 2;
+            
+            for (size_t i=0; i<diagMatr.size(); i++) {
+                qreal phase = 1;
+                for (int r=0; r<numRegs; r++)
+                    phase *= regVals[i][r];
+                phase = (phase == 0)? divPhase : coeff / phase;
+                diagMatr[i][i] = expI(phase);
+            }
+            setDiagMatrixOverrides(diagMatr, numQubitsPerReg, numRegs, encoding, overrideInds, overridePhases, numOverrides);
+            
+            SECTION( "state-vector" ) {
+                
+                applyParamNamedPhaseFuncOverrides(quregVec, regs, numQubitsPerReg, numRegs, encoding, func, params, numParams, overrideInds, overridePhases, numOverrides);
+                applyReferenceOp(refVec, regs, totalNumQubits, diagMatr);
+                REQUIRE( areEqual(quregVec, refVec, 1E2*REAL_EPS) );
+            }
+            SECTION( "density-matrix" ) {
+                
+                applyParamNamedPhaseFuncOverrides(quregMatr, regs, numQubitsPerReg, numRegs, encoding, func, params, numParams, overrideInds, overridePhases, numOverrides);
+                applyReferenceOp(refMatr, regs, totalNumQubits, diagMatr);
+                REQUIRE( areEqual(quregMatr, refMatr, 1E2*REAL_EPS) );
+            }
+        }
+        SECTION( "INVERSE_DISTANCE" ) {
+            
+            enum phaseFunc func = INVERSE_DISTANCE;
+            qreal divPhase = getRandomReal( -4, 4 );
+            qreal params[] = {divPhase};
+            int numParams = 1;
+            
+            // test only if there are an even number of registers
+            if (numRegs%2 == 0) {
                 
                 for (size_t i=0; i<diagMatr.size(); i++) {
                     qreal phase = 0;
-                    for (int r=0; r<numRegs; r++)
-                        phase += pow(regVals[i][r], 2);
+                    for (int r=0; r<numRegs; r+=2)
+                        phase += pow(regVals[i][r+1]-regVals[i][r], 2);
+                    phase = (phase == 0.)? divPhase : 1./sqrt(phase);
+                    diagMatr[i][i] = expI(phase);
+                }
+                setDiagMatrixOverrides(diagMatr, numQubitsPerReg, numRegs, encoding, overrideInds, overridePhases, numOverrides);
+            }
+            
+            SECTION( "state-vector" ) {
+                
+                if (numRegs%2 == 0) {
+                    applyParamNamedPhaseFuncOverrides(quregVec, regs, numQubitsPerReg, numRegs, encoding, func, params, numParams, overrideInds, overridePhases, numOverrides);
+                    applyReferenceOp(refVec, regs, totalNumQubits, diagMatr);
+                    REQUIRE( areEqual(quregVec, refVec, 1E2*REAL_EPS) );
+                }
+            }
+            SECTION( "density-matrix" ) {
+                
+                if (numRegs%2 == 0) {
+                    applyParamNamedPhaseFuncOverrides(quregMatr, regs, numQubitsPerReg, numRegs, encoding, func, params, numParams, overrideInds, overridePhases, numOverrides);
+                    applyReferenceOp(refMatr, regs, totalNumQubits, diagMatr);
+                    REQUIRE( areEqual(quregMatr, refMatr, 1E2*REAL_EPS) );
+                }
+            }
+        }
+        SECTION( "SCALED_DISTANCE" ) {
+            
+            enum phaseFunc func = SCALED_DISTANCE;
+            qreal coeff = getRandomReal( -10, 10 );                
+            qreal params[] = {coeff};
+            int numParams = 1;
+            
+            // test only if there are an even number of registers
+            if (numRegs%2 == 0) {
+                
+                for (size_t i=0; i<diagMatr.size(); i++) {
+                    qreal phase = 0;
+                    for (int r=0; r<numRegs; r+=2)
+                        phase += pow(regVals[i][r+1]-regVals[i][r], 2);
                     phase = coeff * sqrt(phase);
                     diagMatr[i][i] = expI(phase);
                 }
-                
                 setDiagMatrixOverrides(diagMatr, numQubitsPerReg, numRegs, encoding, overrideInds, overridePhases, numOverrides);
-                
-                qreal params[] = {coeff};
-                int numParams = 1;
-                applyParamNamedPhaseFuncOverrides(quregVec, regs, numQubitsPerReg, numRegs, encoding, func, params, numParams, overrideInds, overridePhases, numOverrides);
-                applyReferenceOp(refVec, regs, totalNumQubits, diagMatr);
-                REQUIRE( areEqual(quregVec, refVec, 1E2*REAL_EPS) );
             }
-            SECTION( "SCALED_INVERSE_NORM" ) {
+            
+            SECTION( "state-vector" ) {
                 
-                enum phaseFunc func = SCALED_INVERSE_NORM;
-                qreal coeff = getRandomReal(-10, 10);
-                qreal divPhase = getRandomReal(-4, 4);
+                if (numRegs%2 == 0) {
+                    applyParamNamedPhaseFuncOverrides(quregVec, regs, numQubitsPerReg, numRegs, encoding, func, params, numParams, overrideInds, overridePhases, numOverrides);
+                    applyReferenceOp(refVec, regs, totalNumQubits, diagMatr);
+                    REQUIRE( areEqual(quregVec, refVec, 1E2*REAL_EPS) );
+                }
+            }
+            SECTION( "density-matrix" ) {
+                
+                if (numRegs%2 == 0) {
+                    applyParamNamedPhaseFuncOverrides(quregMatr, regs, numQubitsPerReg, numRegs, encoding, func, params, numParams, overrideInds, overridePhases, numOverrides);
+                    applyReferenceOp(refMatr, regs, totalNumQubits, diagMatr);
+                    REQUIRE( areEqual(quregMatr, refMatr, 1E2*REAL_EPS) );
+                }
+            }
+        }
+        SECTION( "SCALED_INVERSE_DISTANCE" ) {
+            
+            enum phaseFunc func = SCALED_INVERSE_DISTANCE;
+            qreal coeff = getRandomReal( -10, 10 );
+            qreal divPhase = getRandomReal( -4, 4 );
+            qreal params[] = {coeff, divPhase};
+            int numParams = 2;
+            
+            // test only if there are an even number of registers
+            if (numRegs%2 == 0) {
                 
                 for (size_t i=0; i<diagMatr.size(); i++) {
                     qreal phase = 0;
-                    for (int r=0; r<numRegs; r++)
-                        phase += pow(regVals[i][r], 2);
+                    for (int r=0; r<numRegs; r+=2)
+                        phase += pow(regVals[i][r+1]-regVals[i][r], 2);
                     phase = (phase == 0.)? divPhase : coeff/sqrt(phase);
                     diagMatr[i][i] = expI(phase);
                 }
-                
                 setDiagMatrixOverrides(diagMatr, numQubitsPerReg, numRegs, encoding, overrideInds, overridePhases, numOverrides);
-                
-                qreal params[] = {coeff, divPhase};
-                int numParams = 2;
-                applyParamNamedPhaseFuncOverrides(quregVec, regs, numQubitsPerReg, numRegs, encoding, func, params, numParams, overrideInds, overridePhases, numOverrides);
-                applyReferenceOp(refVec, regs, totalNumQubits, diagMatr);
-                REQUIRE( areEqual(quregVec, refVec, 1E2*REAL_EPS) );
             }
-            SECTION( "INVERSE_PRODUCT" ) {
+            
+            SECTION( "state-vector" ) {
                 
-                enum phaseFunc func = INVERSE_PRODUCT;
-                qreal divPhase = getRandomReal(-4, 4);
-                
-                for (size_t i=0; i<diagMatr.size(); i++) {
-                    qreal phase = 1;
-                    for (int r=0; r<numRegs; r++)
-                        phase *= regVals[i][r];
-                    phase = (phase == 0.)? divPhase : 1. / phase;
-                    diagMatr[i][i] = expI(phase);
-                }
-                
-                setDiagMatrixOverrides(diagMatr, numQubitsPerReg, numRegs, encoding, overrideInds, overridePhases, numOverrides);
-                
-                qreal params[] = {divPhase};
-                int numParams = 1;
-                applyParamNamedPhaseFuncOverrides(quregVec, regs, numQubitsPerReg, numRegs, encoding, func, params, numParams, overrideInds, overridePhases, numOverrides);
-                applyReferenceOp(refVec, regs, totalNumQubits, diagMatr);
-                REQUIRE( areEqual(quregVec, refVec, 1E2*REAL_EPS) );
-            }
-            SECTION( "SCALED_PRODUCT" ) {
-                
-                enum phaseFunc func = SCALED_PRODUCT;
-                qreal coeff = getRandomReal(-10, 10);
-                
-                for (size_t i=0; i<diagMatr.size(); i++) {
-                    qreal phase = 1;
-                    for (int r=0; r<numRegs; r++)
-                        phase *= regVals[i][r];
-                    diagMatr[i][i] = expI(coeff * phase);
-                }
-                
-                setDiagMatrixOverrides(diagMatr, numQubitsPerReg, numRegs, encoding, overrideInds, overridePhases, numOverrides);
-                
-                qreal params[] = {coeff};
-                int numParams = 1;
-                applyParamNamedPhaseFuncOverrides(quregVec, regs, numQubitsPerReg, numRegs, encoding, func, params, numParams, overrideInds, overridePhases, numOverrides);
-                applyReferenceOp(refVec, regs, totalNumQubits, diagMatr);
-                REQUIRE( areEqual(quregVec, refVec, 1E2*REAL_EPS) );
-            }
-            SECTION( "SCALED_INVERSE_PRODUCT" ) {
-                
-                enum phaseFunc func = SCALED_INVERSE_PRODUCT;
-                qreal coeff = getRandomReal(-10, 10);
-                qreal divPhase = getRandomReal(-4, 4);
-                
-                for (size_t i=0; i<diagMatr.size(); i++) {
-                    qreal phase = 1;
-                    for (int r=0; r<numRegs; r++)
-                        phase *= regVals[i][r];
-                    phase = (phase == 0)? divPhase : coeff / phase;
-                    diagMatr[i][i] = expI(phase);
-                }
-                
-                setDiagMatrixOverrides(diagMatr, numQubitsPerReg, numRegs, encoding, overrideInds, overridePhases, numOverrides);
-                
-                qreal params[] = {coeff, divPhase};
-                int numParams = 2;
-                applyParamNamedPhaseFuncOverrides(quregVec, regs, numQubitsPerReg, numRegs, encoding, func, params, numParams, overrideInds, overridePhases, numOverrides);
-                applyReferenceOp(refVec, regs, totalNumQubits, diagMatr);
-                REQUIRE( areEqual(quregVec, refVec, 1E2*REAL_EPS) );
-            }
-            SECTION( "INVERSE_DISTANCE" ) {
-                
-                enum phaseFunc func = INVERSE_DISTANCE;
-                qreal divPhase = getRandomReal( -4, 4 );
-                
-                // test only if there are an even number of registers
                 if (numRegs%2 == 0) {
-                    
-                    for (size_t i=0; i<diagMatr.size(); i++) {
-                        qreal phase = 0;
-                        for (int r=0; r<numRegs; r+=2)
-                            phase += pow(regVals[i][r+1]-regVals[i][r], 2);
-                        phase = (phase == 0.)? divPhase : 1./sqrt(phase);
-                        diagMatr[i][i] = expI(phase);
-                    }
-                    
-                    setDiagMatrixOverrides(diagMatr, numQubitsPerReg, numRegs, encoding, overrideInds, overridePhases, numOverrides);
-                    
-                    qreal params[] = {divPhase};
-                    int numParams = 1;
                     applyParamNamedPhaseFuncOverrides(quregVec, regs, numQubitsPerReg, numRegs, encoding, func, params, numParams, overrideInds, overridePhases, numOverrides);
                     applyReferenceOp(refVec, regs, totalNumQubits, diagMatr);
                     REQUIRE( areEqual(quregVec, refVec, 1E2*REAL_EPS) );
                 }
             }
-            SECTION( "SCALED_DISTANCE" ) {
+            SECTION( "density-matrix" ) {
                 
-                enum phaseFunc func = SCALED_DISTANCE;
-                qreal coeff = getRandomReal( -10, 10 );
-                
-                // test only if there are an even number of registers
                 if (numRegs%2 == 0) {
-                    
-                    for (size_t i=0; i<diagMatr.size(); i++) {
-                        qreal phase = 0;
-                        for (int r=0; r<numRegs; r+=2)
-                            phase += pow(regVals[i][r+1]-regVals[i][r], 2);
-                        phase = coeff * sqrt(phase);
-                        diagMatr[i][i] = expI(phase);
-                    }
-                    
-                    setDiagMatrixOverrides(diagMatr, numQubitsPerReg, numRegs, encoding, overrideInds, overridePhases, numOverrides);
-                    
-                    qreal params[] = {coeff};
-                    int numParams = 1;
-                    applyParamNamedPhaseFuncOverrides(quregVec, regs, numQubitsPerReg, numRegs, encoding, func, params, numParams, overrideInds, overridePhases, numOverrides);
-                    applyReferenceOp(refVec, regs, totalNumQubits, diagMatr);
-                    REQUIRE( areEqual(quregVec, refVec, 1E2*REAL_EPS) );
-                }
-            }
-            SECTION( "SCALED_INVERSE_DISTANCE" ) {
-                
-                enum phaseFunc func = SCALED_INVERSE_DISTANCE;
-                qreal coeff = getRandomReal( -10, 10 );
-                qreal divPhase = getRandomReal( -4, 4 );
-                
-                // test only if there are an even number of registers
-                if (numRegs%2 == 0) {
-                    
-                    for (size_t i=0; i<diagMatr.size(); i++) {
-                        qreal phase = 0;
-                        for (int r=0; r<numRegs; r+=2)
-                            phase += pow(regVals[i][r+1]-regVals[i][r], 2);
-                        phase = (phase == 0.)? divPhase : coeff/sqrt(phase);
-                        diagMatr[i][i] = expI(phase);
-                    }
-                    
-                    setDiagMatrixOverrides(diagMatr, numQubitsPerReg, numRegs, encoding, overrideInds, overridePhases, numOverrides);
-                    
-                    qreal params[] = {coeff, divPhase};
-                    int numParams = 2;
-                    applyParamNamedPhaseFuncOverrides(quregVec, regs, numQubitsPerReg, numRegs, encoding, func, params, numParams, overrideInds, overridePhases, numOverrides);
-                    applyReferenceOp(refVec, regs, totalNumQubits, diagMatr);
-                    REQUIRE( areEqual(quregVec, refVec, 1E2*REAL_EPS) );
+                    applyParamNamedPhaseFuncOverrides(quregMatr, regs, numQubitsPerReg, numRegs, encoding, func, params, numParams, overrideInds, overridePhases, numOverrides);
+                    applyReferenceOp(refMatr, regs, totalNumQubits, diagMatr);
+                    REQUIRE( areEqual(quregMatr, refMatr, 1E2*REAL_EPS) );
                 }
             }
         }
@@ -2053,12 +2257,6 @@ TEST_CASE( "applyParamNamedPhaseFuncOverrides", "[operators]" ) {
         int numQubitsPerReg[] = {2,3};
         int regs[] = {0,1,2,3,4};
         
-        SECTION( "density-matrix" ) {
-                        
-            Qureg dens = quregVec;
-            dens.isDensityMatrix = 1;
-            REQUIRE_THROWS_WITH( applyParamNamedPhaseFuncOverrides(dens, regs, numQubitsPerReg, numRegs, UNSIGNED, NORM, NULL, 0, NULL, NULL, 0), Contains("Operation valid only for state-vectors") );
-        }
         SECTION( "number of registers" ) {
             
             numRegs = GENERATE_COPY( -1, 0, 1+MAX_NUM_REGS_APPLY_ARBITRARY_PHASE );
@@ -2165,7 +2363,7 @@ TEST_CASE( "applyParamNamedPhaseFuncOverrides", "[operators]" ) {
             REQUIRE_THROWS_WITH( applyParamNamedPhaseFuncOverrides(quregVec, regs, numQubitsPerReg, numRegs, enc, NORM, NULL, 0, overrideInds, overridePhases, numOverrides), Contains("Invalid phase function override index, in the TWOS_COMPLEMENT encoding") );
         }
     }
-    destroyQureg(quregVec, QUEST_ENV);
+    CLEANUP_TEST( quregVec, quregMatr );
 }
 
 
@@ -2372,9 +2570,7 @@ TEST_CASE( "applyPauliSum", "[operators]" ) {
  */
 TEST_CASE( "applyPhaseFunc", "[operators]" ) {
     
-    Qureg quregVec = createQureg(NUM_QUBITS, QUEST_ENV);
-    initDebugState(quregVec);
-    QVector refVec = toQVector(quregVec);
+    PREPARE_TEST( quregVec, quregMatr, refVec, refMatr );
 
     SECTION( "correctness" ) {
         
@@ -2406,28 +2602,34 @@ TEST_CASE( "applyPhaseFunc", "[operators]" ) {
                 expons[t] = getRandomReal(0, 3);
         }
         
-        SECTION( "state-vector" ) {
+        // build a reference diagonal matrix, on the reduced Hilbert space
+        QMatrix matr = getZeroMatrix( 1 << numQubits );
+        for (size_t i=0; i<matr.size(); i++) {
             
-            // build a reference diagonal matrix, on the reduced Hilbert space
-            QMatrix matr = getZeroMatrix( 1 << numQubits );
-            for (size_t i=0; i<matr.size(); i++) {
+            long long int ind = 0;
+            if (encoding == UNSIGNED)
+                ind = i;
+            if (encoding == TWOS_COMPLEMENT)
+                ind = getTwosComplement(i, numQubits);
+            
+            qreal phase = 0;
+            for (int t=0; t<numTerms; t++)
+                phase += coeffs[t] * pow(ind, expons[t]);
                 
-                long long int ind = 0;
-                if (encoding == UNSIGNED)
-                    ind = i;
-                if (encoding == TWOS_COMPLEMENT)
-                    ind = getTwosComplement(i, numQubits);
-                
-                qreal phase = 0;
-                for (int t=0; t<numTerms; t++)
-                    phase += coeffs[t] * pow(ind, expons[t]);
-                    
-                matr[i][i] = expI(phase);
-            }
+            matr[i][i] = expI(phase);
+        }
+        
+        SECTION( "state-vector" ) {
             
             applyPhaseFunc(quregVec, qubits, numQubits, encoding, coeffs, expons, numTerms);
             applyReferenceOp(refVec, qubits, numQubits, matr);
             REQUIRE( areEqual(quregVec, refVec) );
+        }
+        SECTION( "density-matrix" ) {
+        
+            applyPhaseFunc(quregMatr, qubits, numQubits, encoding, coeffs, expons, numTerms);
+            applyReferenceOp(refMatr, qubits, numQubits, matr);
+            REQUIRE( areEqual(quregMatr, refMatr) );
         }
     }
     SECTION( "input validation" ) {
@@ -2435,12 +2637,6 @@ TEST_CASE( "applyPhaseFunc", "[operators]" ) {
         int numQubits = 3;
         int qubits[] = {0,1,2};
         
-        SECTION( "density-matrix" ) {
-            
-            Qureg dens = quregVec;
-            dens.isDensityMatrix = 1;
-            REQUIRE_THROWS_WITH( applyPhaseFunc(dens, NULL, 0, UNSIGNED, NULL, NULL, 1), Contains("Operation valid only for state-vectors") );
-        }
         SECTION( "number of qubits" ) {
             
             numQubits = GENERATE_COPY( -1, 0, NUM_QUBITS+1 );
@@ -2493,7 +2689,7 @@ TEST_CASE( "applyPhaseFunc", "[operators]" ) {
             REQUIRE_THROWS_WITH( applyPhaseFunc(quregVec, qubits, numQubits, encoding, coeffs, expos, numTerms), Contains("The phase function contained a negative exponent which would diverge at zero, but the zero index was not overriden") );
         }
     }
-    destroyQureg(quregVec, QUEST_ENV);
+    CLEANUP_TEST( quregVec, quregMatr );
 }
 
 
@@ -2504,9 +2700,7 @@ TEST_CASE( "applyPhaseFunc", "[operators]" ) {
  */
 TEST_CASE( "applyPhaseFuncOverrides", "[operators]" ) {
     
-    Qureg quregVec = createQureg(NUM_QUBITS, QUEST_ENV);
-    initDebugState(quregVec);
-    QVector refVec = toQVector(quregVec);
+    PREPARE_TEST( quregVec, quregMatr, refVec, refMatr );
 
     SECTION( "correctness" ) {
         
@@ -2555,54 +2749,55 @@ TEST_CASE( "applyPhaseFuncOverrides", "[operators]" ) {
         qreal overridePhases[numOverrides];
         for (int i=0; i<numOverrides; i++)
             overridePhases[i] = getRandomReal(-4, 4); // periodic in [-pi, pi]
+            
+        // build a reference diagonal matrix, on the reduced Hilbert space
+        QMatrix matr = getZeroMatrix( 1 << numQubits );
+        for (size_t i=0; i<matr.size(); i++) {
+            
+            long long int ind = 0;
+            if (encoding == UNSIGNED)
+                ind = i;
+            if (encoding == TWOS_COMPLEMENT)
+                ind = getTwosComplement(i, numQubits);
+                
+            // reference diagonal matrix incorporates overriden phases
+            qreal phase;
+            bool overriden = false;
+            for (int v=0; v<numOverrides; v++) {
+                if (ind == overrideInds[v]) {
+                    phase = overridePhases[v];
+                    overriden = true;
+                    break;
+                }
+            }
+            
+            if (!overriden) {
+                phase = 0;
+                for (int t=0; t<numTerms; t++)
+                    phase += coeffs[t] * pow(ind, expons[t]);
+            }
+                
+            matr[i][i] = expI(phase);
+        }         
         
         SECTION( "state-vector" ) {
-            
-            // build a reference diagonal matrix, on the reduced Hilbert space
-            QMatrix matr = getZeroMatrix( 1 << numQubits );
-            for (size_t i=0; i<matr.size(); i++) {
-                
-                long long int ind = 0;
-                if (encoding == UNSIGNED)
-                    ind = i;
-                if (encoding == TWOS_COMPLEMENT)
-                    ind = getTwosComplement(i, numQubits);
-                    
-                qreal phase;
-                bool overriden = false;
-                for (int v=0; v<numOverrides; v++) {
-                    if (ind == overrideInds[v]) {
-                        phase = overridePhases[v];
-                        overriden = true;
-                        break;
-                    }
-                }
-                
-                if (!overriden) {
-                    phase = 0;
-                    for (int t=0; t<numTerms; t++)
-                        phase += coeffs[t] * pow(ind, expons[t]);
-                }
-                    
-                matr[i][i] = expI(phase);
-            }            
             
             applyPhaseFuncOverrides(quregVec, qubits, numQubits, encoding, coeffs, expons, numTerms, overrideInds, overridePhases, numOverrides);
             applyReferenceOp(refVec, qubits, numQubits, matr);
             REQUIRE( areEqual(quregVec, refVec) );
+        }
+        SECTION( "density-matrix" ) {
+            
+            applyPhaseFuncOverrides(quregMatr, qubits, numQubits, encoding, coeffs, expons, numTerms, overrideInds, overridePhases, numOverrides);
+            applyReferenceOp(refMatr, qubits, numQubits, matr);
+            REQUIRE( areEqual(quregMatr, refMatr) );
         }
     }
     SECTION( "input validation" ) {
         
         int numQubits = 3;
         int qubits[] = {0,1,2};
-        
-        SECTION( "density-matrix" ) {
-            
-            Qureg dens = quregVec;
-            dens.isDensityMatrix = 1;
-            REQUIRE_THROWS_WITH( applyPhaseFuncOverrides(dens, NULL, 0, UNSIGNED, NULL, NULL, 1, NULL, NULL, 0), Contains("Operation valid only for state-vectors") );
-        }
+
         SECTION( "number of qubits" ) {
             
             int numQubits = GENERATE_COPY( -1, 0, NUM_QUBITS+1 );
@@ -2707,7 +2902,7 @@ TEST_CASE( "applyPhaseFuncOverrides", "[operators]" ) {
             REQUIRE_NOTHROW( applyPhaseFuncOverrides(quregVec, qubits, numQubits, encoding, coeffs, expos, numTerms, overrideInds, overridePhases, numOverrides) );
         }
     }
-    destroyQureg(quregVec, QUEST_ENV);
+    CLEANUP_TEST( quregVec, quregMatr );
 }
 
 
