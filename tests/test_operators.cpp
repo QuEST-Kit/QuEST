@@ -557,10 +557,6 @@ TEST_CASE( "applyMultiVarPhaseFunc", "[operators]" ) {
         QMatrix allRegMatr{{1}};
         int startInd = 0;
         
-        // DEBUG 
-        qreal maxPhase = 0;
-        
-        
         for (int r=0; r<numRegs; r++) {
             
             QMatrix singleRegMatr = getZeroMatrix( 1 << numQubitsPerReg[r] );
@@ -598,15 +594,6 @@ TEST_CASE( "applyMultiVarPhaseFunc", "[operators]" ) {
             
             applyMultiVarPhaseFunc(quregMatr, regs, numQubitsPerReg, numRegs, encoding, coeffs, expons, numTermsPerReg);
             applyReferenceOp(refMatr, regs, totalNumQubits, allRegMatr);
-            
-            
-            // DEBUG
-            if (! areEqual(quregMatr, refMatr, 1E6*REAL_EPS) ) {
-                printf("\n\nmax phase: %lf\n", maxPhase);
-                printf("encoding: %d\n", encoding);
-                
-            }
-            
             REQUIRE( areEqual(quregMatr, refMatr, 1E6*REAL_EPS) );
         }
     }
