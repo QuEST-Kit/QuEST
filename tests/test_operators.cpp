@@ -601,8 +601,10 @@ TEST_CASE( "applyMultiVarPhaseFunc", "[operators]" ) {
             
             
             // DEBUG
-            if (!areEqual(quregMatr, refMatr, 1E6*REAL_EPS)) {
-                printf("max phase: %lf\n", maxPhase);
+            if (! areEqual(quregMatr, refMatr, 1E6*REAL_EPS) ) {
+                printf("\n\nmax phase: %lf\n", maxPhase);
+                printf("encoding: %d\n", encoding);
+                
             }
             
             REQUIRE( areEqual(quregMatr, refMatr, 1E6*REAL_EPS) );
