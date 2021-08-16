@@ -2623,13 +2623,13 @@ TEST_CASE( "applyPhaseFunc", "[operators]" ) {
             
             applyPhaseFunc(quregVec, qubits, numQubits, encoding, coeffs, expons, numTerms);
             applyReferenceOp(refVec, qubits, numQubits, matr);
-            REQUIRE( areEqual(quregVec, refVec) );
+            REQUIRE( areEqual(quregVec, refVec, 1E2*REAL_EPS) );
         }
         SECTION( "density-matrix" ) {
         
             applyPhaseFunc(quregMatr, qubits, numQubits, encoding, coeffs, expons, numTerms);
             applyReferenceOp(refMatr, qubits, numQubits, matr);
-            REQUIRE( areEqual(quregMatr, refMatr) );
+            REQUIRE( areEqual(quregMatr, refMatr, 1E2*REAL_EPS) );
         }
     }
     SECTION( "input validation" ) {
