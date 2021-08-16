@@ -2784,13 +2784,13 @@ TEST_CASE( "applyPhaseFuncOverrides", "[operators]" ) {
             
             applyPhaseFuncOverrides(quregVec, qubits, numQubits, encoding, coeffs, expons, numTerms, overrideInds, overridePhases, numOverrides);
             applyReferenceOp(refVec, qubits, numQubits, matr);
-            REQUIRE( areEqual(quregVec, refVec) );
+            REQUIRE( areEqual(quregVec, refVec, 1E4*REAL_EPS) );
         }
         SECTION( "density-matrix" ) {
             
             applyPhaseFuncOverrides(quregMatr, qubits, numQubits, encoding, coeffs, expons, numTerms, overrideInds, overridePhases, numOverrides);
             applyReferenceOp(refMatr, qubits, numQubits, matr);
-            REQUIRE( areEqual(quregMatr, refMatr) );
+            REQUIRE( areEqual(quregMatr, refMatr, 1E6*REAL_EPS) );
         }
     }
     SECTION( "input validation" ) {
