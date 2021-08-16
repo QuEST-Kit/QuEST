@@ -2629,7 +2629,7 @@ TEST_CASE( "applyPhaseFunc", "[operators]" ) {
         
             applyPhaseFunc(quregMatr, qubits, numQubits, encoding, coeffs, expons, numTerms);
             applyReferenceOp(refMatr, qubits, numQubits, matr);
-            REQUIRE( areEqual(quregMatr, refMatr, 1E4*REAL_EPS) );
+            REQUIRE( areEqual(quregMatr, refMatr, 1E6*REAL_EPS) );
         }
     }
     SECTION( "input validation" ) {
