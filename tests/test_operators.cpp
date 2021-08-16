@@ -556,6 +556,11 @@ TEST_CASE( "applyMultiVarPhaseFunc", "[operators]" ) {
          */
         QMatrix allRegMatr{{1}};
         int startInd = 0;
+        
+        // DEBUG 
+        qreal maxPhase = 0;
+        
+        
         for (int r=0; r<numRegs; r++) {
             
             QMatrix singleRegMatr = getZeroMatrix( 1 << numQubitsPerReg[r] );
@@ -573,6 +578,11 @@ TEST_CASE( "applyMultiVarPhaseFunc", "[operators]" ) {
                     phase += coeffs[t+startInd] * pow(ind, expons[t+startInd]);
                     
                 singleRegMatr[i][i] = expI(phase);
+                
+                
+                // dEBUG 
+                if (abs(phase) > maxPhase)
+                    maxPhase = phase;
             }                
             allRegMatr = getKroneckerProduct(singleRegMatr, allRegMatr);
             startInd += numTermsPerReg[r];
@@ -585,6 +595,8 @@ TEST_CASE( "applyMultiVarPhaseFunc", "[operators]" ) {
             REQUIRE( areEqual(quregVec, refVec, 1E4*REAL_EPS) );
         }
         SECTION( "density-matrix" ) {
+            
+            printf("max phase: %lf\n", maxPhase);
             
             applyMultiVarPhaseFunc(quregMatr, regs, numQubitsPerReg, numRegs, encoding, coeffs, expons, numTermsPerReg);
             applyReferenceOp(refMatr, regs, totalNumQubits, allRegMatr);
