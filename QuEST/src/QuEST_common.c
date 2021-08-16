@@ -152,6 +152,13 @@ void shiftIndices(int* indices, int numIndices, int shift) {
         indices[j] += shift;
 }
 
+void shiftSubregIndices(int* allInds, int* numIndsPerReg, int numRegs, int shift) {
+    int i=0;
+    for (int r=0; r<numRegs; r++)
+        for (int j=0; j<numIndsPerReg[r]; j++)
+            allInds[i++] += shift;
+}
+
 int generateMeasurementOutcome(qreal zeroProb, qreal *outcomeProb) {
     
     // randomly choose outcome

@@ -4228,7 +4228,8 @@ void agnostic_setDiagonalOpElems(DiagonalOp op, long long int startInd, qreal* r
 void statevec_applyPhaseFuncOverrides(
     Qureg qureg, int* qubits, int numQubits, enum bitEncoding encoding,
     qreal* coeffs, qreal* exponents, int numTerms, 
-    long long int* overrideInds, qreal* overridePhases, int numOverrides)
+    long long int* overrideInds, qreal* overridePhases, int numOverrides,
+    int conj)
 {
     // each node/chunk modifies only local values in an embarrassingly parallel way 
 
@@ -4246,7 +4247,7 @@ void statevec_applyPhaseFuncOverrides(
 # ifdef _OPENMP
 # pragma omp parallel \
     default  (none) \
-    shared   (chunkId,numAmps, stateRe,stateIm, qubits,numQubits,encoding, coeffs,exponents,numTerms, overrideInds,overridePhases,numOverrides) \
+    shared   (chunkId,numAmps, stateRe,stateIm, qubits,numQubits,encoding, coeffs,exponents,numTerms, overrideInds,overridePhases,numOverrides, conj) \
     private  (index, globalAmpInd, phaseInd, i,t,q, phase, c,s,re,im) 
 # endif
     {
@@ -4283,6 +4284,10 @@ void statevec_applyPhaseFuncOverrides(
             else
                 for (t=0; t<numTerms; t++)
                     phase += coeffs[t] * pow(phaseInd, exponents[t]);
+                    
+            // negate phase to conjugate operator 
+            if (conj)
+                phase *= -1;
 
             // modify amp to amp * exp(i phase) 
             c = cos(phase);
@@ -4300,7 +4305,8 @@ void statevec_applyPhaseFuncOverrides(
 void statevec_applyMultiVarPhaseFuncOverrides(
     Qureg qureg, int* qubits, int* numQubitsPerReg, int numRegs, enum bitEncoding encoding,
     qreal* coeffs, qreal* exponents, int* numTermsPerReg, 
-    long long int* overrideInds, qreal* overridePhases, int numOverrides) 
+    long long int* overrideInds, qreal* overridePhases, int numOverrides,
+    int conj) 
 {
     // each node/chunk modifies only local values in an embarrassingly parallel way 
 
@@ -4323,7 +4329,7 @@ void statevec_applyMultiVarPhaseFuncOverrides(
 # ifdef _OPENMP
 # pragma omp parallel \
     default  (none) \
-    shared   (chunkId,numAmps, stateRe,stateIm, qubits,numQubitsPerReg,numRegs,encoding, coeffs,exponents,numTermsPerReg, overrideInds,overridePhases,numOverrides) \
+    shared   (chunkId,numAmps, stateRe,stateIm, qubits,numQubitsPerReg,numRegs,encoding, coeffs,exponents,numTermsPerReg, overrideInds,overridePhases,numOverrides, conj) \
     private  (index,globalAmpInd, r,q,i,t,flatInd, found, phaseInds,phase, c,s,re,im) 
 # endif
     {
@@ -4379,6 +4385,10 @@ void statevec_applyMultiVarPhaseFuncOverrides(
                     }
                 }
             }
+            
+            // negate phase to conjugate operator 
+            if (conj)
+                phase *= -1;
 
             // modify amp to amp * exp(i phase) 
             c = cos(phase);
@@ -4397,8 +4407,9 @@ void statevec_applyParamNamedPhaseFuncOverrides(
     Qureg qureg, int* qubits, int* numQubitsPerReg, int numRegs, enum bitEncoding encoding,
     enum phaseFunc phaseFuncName,
     qreal* params, int numParams,
-    long long int* overrideInds, qreal* overridePhases, int numOverrides) 
-{
+    long long int* overrideInds, qreal* overridePhases, int numOverrides,
+    int conj
+) {
     // each node/chunk modifies only local values in an embarrassingly parallel way 
 
     // note partitions of qubits, overrideInds are stored flat
@@ -4420,7 +4431,7 @@ void statevec_applyParamNamedPhaseFuncOverrides(
 # ifdef _OPENMP
 # pragma omp parallel \
     default  (none) \
-    shared   (chunkId,numAmps, stateRe,stateIm, qubits,numQubitsPerReg,numRegs,encoding, phaseFuncName,params,numParams, overrideInds,overridePhases,numOverrides) \
+    shared   (chunkId,numAmps, stateRe,stateIm, qubits,numQubitsPerReg,numRegs,encoding, phaseFuncName,params,numParams, overrideInds,overridePhases,numOverrides, conj) \
     private  (index,globalAmpInd, r,q,i,flatInd, found, phaseInds,phase,norm,prod,dist, c,s,re,im) 
 # endif
     {
@@ -4534,6 +4545,10 @@ void statevec_applyParamNamedPhaseFuncOverrides(
                         phase = (dist == 0.)? params[1] : params[0] / dist;
                 }
             }
+            
+            // negate phase to conjugate operator 
+            if (conj)
+                phase *= -1;
 
             // modify amp to amp * exp(i phase) 
             c = cos(phase);

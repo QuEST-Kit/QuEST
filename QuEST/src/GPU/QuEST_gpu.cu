@@ -3520,8 +3520,9 @@ void agnostic_setDiagonalOpElems(DiagonalOp op, long long int startInd, qreal* r
 __global__ void statevec_applyPhaseFuncOverridesKernel(
     Qureg qureg, int* qubits, int numQubits, enum bitEncoding encoding,
     qreal* coeffs, qreal* exponents, int numTerms, 
-    long long int* overrideInds, qreal* overridePhases, int numOverrides)
-{
+    long long int* overrideInds, qreal* overridePhases, int numOverrides, 
+    int conj
+) {
     long long int index = blockIdx.x*blockDim.x + threadIdx.x;
     if (index>=qureg.numAmpsPerChunk) return;
 
@@ -3554,6 +3555,10 @@ __global__ void statevec_applyPhaseFuncOverridesKernel(
     else
         for (int t=0; t<numTerms; t++)
             phase += coeffs[t] * pow(phaseInd, exponents[t]);
+            
+    // negate phase to conjugate operator 
+    if (conj)
+        phase *= -1;
 
     // modify amp to amp * exp(i phase) 
     qreal c = cos(phase);
@@ -3569,8 +3574,9 @@ __global__ void statevec_applyPhaseFuncOverridesKernel(
  void statevec_applyPhaseFuncOverrides(
      Qureg qureg, int* qubits, int numQubits, enum bitEncoding encoding,
      qreal* coeffs, qreal* exponents, int numTerms, 
-     long long int* overrideInds, qreal* overridePhases, int numOverrides)
- {
+     long long int* overrideInds, qreal* overridePhases, int numOverrides,
+     int conj
+ ) {
     // allocate device space for global list of {qubits}, {coeffs}, {exponents}, {overrideInds} and {overridePhases}
     int* d_qubits;                          size_t mem_qubits = numQubits * sizeof *d_qubits;
     qreal* d_coeffs;                        size_t mem_terms = numTerms * sizeof *d_coeffs;
@@ -3589,7 +3595,8 @@ __global__ void statevec_applyPhaseFuncOverridesKernel(
     statevec_applyPhaseFuncOverridesKernel<<<CUDABlocks,threadsPerCUDABlock>>>(
         qureg, d_qubits, numQubits, encoding, 
         d_coeffs, d_exponents, numTerms, 
-        d_overrideInds, d_overridePhases, numOverrides);
+        d_overrideInds, d_overridePhases, numOverrides,
+        conj);
 
     // cleanup device memory 
     cudaFree(d_qubits);
@@ -3603,8 +3610,9 @@ __global__ void statevec_applyMultiVarPhaseFuncOverridesKernel(
     Qureg qureg, int* qubits, int* numQubitsPerReg, int numRegs, enum bitEncoding encoding,
     qreal* coeffs, qreal* exponents, int* numTermsPerReg, 
     long long int* overrideInds, qreal* overridePhases, int numOverrides,
-    long long int *phaseInds) 
-{
+    long long int *phaseInds,
+    int conj
+) {
     long long int index = blockIdx.x*blockDim.x + threadIdx.x;
     if (index>=qureg.numAmpsPerChunk) return;
 
@@ -3630,11 +3638,12 @@ __global__ void statevec_applyMultiVarPhaseFuncOverridesKernel(
     }
     else if  (encoding == TWOS_COMPLEMENT) {
         for (int r=0; r<numRegs; r++) {
+            phaseInds[r*stride+offset] = 0LL;
             for (int q=0; q<numQubitsPerReg[r]-1; q++)  
                 phaseInds[r*stride+offset] += (1LL << q) * extractBit(qubits[flatInd++], globalAmpInd);
             // use final qubit to indicate sign
             if (extractBit(qubits[flatInd++], globalAmpInd) == 1)
-                phaseInds[r*stride+offset] -= (1LL << (numQubitsPerReg[r]-1));
+                phaseInds[r*stride+offset] -= (1LL << (numQubitsPerReg[r]-1)); 
         }
     }
 
@@ -3665,6 +3674,10 @@ __global__ void statevec_applyMultiVarPhaseFuncOverridesKernel(
             }
         }
     }
+    
+    // negate phase to conjugate operator 
+    if (conj)
+        phase *= -1;
 
     // modify amp to amp * exp(i phase) 
     qreal c = cos(phase);
@@ -3680,8 +3693,9 @@ __global__ void statevec_applyMultiVarPhaseFuncOverridesKernel(
 void statevec_applyMultiVarPhaseFuncOverrides(
     Qureg qureg, int* qubits, int* numQubitsPerReg, int numRegs, enum bitEncoding encoding,
     qreal* coeffs, qreal* exponents, int* numTermsPerReg, 
-    long long int* overrideInds, qreal* overridePhases, int numOverrides) 
-{
+    long long int* overrideInds, qreal* overridePhases, int numOverrides,
+    int conj
+) {
     // determine size of arrays, for cloning into GPU memory
     size_t mem_numQubitsPerReg = numRegs * sizeof *numQubitsPerReg;
     size_t mem_numTermsPerReg = numRegs * sizeof *numTermsPerReg;
@@ -3727,7 +3741,8 @@ void statevec_applyMultiVarPhaseFuncOverrides(
         qureg, d_qubits, d_numQubitsPerReg, numRegs, encoding,
         d_coeffs, d_exponents, d_numTermsPerReg, 
         d_overrideInds, d_overridePhases, numOverrides,
-        d_phaseInds);
+        d_phaseInds, 
+        conj);
 
     // free device memory
     cudaFree(d_qubits);
@@ -3744,8 +3759,9 @@ __global__ void statevec_applyParamNamedPhaseFuncOverridesKernel(
     Qureg qureg, int* qubits, int* numQubitsPerReg, int numRegs, enum bitEncoding encoding,
     enum phaseFunc phaseFuncName, qreal* params, int numParams,
     long long int* overrideInds, qreal* overridePhases, int numOverrides,
-    long long int* phaseInds) 
-{
+    long long int* phaseInds,
+    int conj
+) {
     long long int index = blockIdx.x*blockDim.x + threadIdx.x;
     if (index>=qureg.numAmpsPerChunk) return;
 
@@ -3772,6 +3788,7 @@ __global__ void statevec_applyParamNamedPhaseFuncOverridesKernel(
     else if  (encoding == TWOS_COMPLEMENT) {
         int flatInd = 0;
         for (int r=0; r<numRegs; r++) {
+            phaseInds[r*stride+offset] = 0LL;
             for (int q=0; q<numQubitsPerReg[r]-1; q++)  
                 phaseInds[r*stride+offset] += (1LL << q) * extractBit(qubits[flatInd++], globalAmpInd);
             // use final qubit to indicate sign
@@ -3870,6 +3887,11 @@ __global__ void statevec_applyParamNamedPhaseFuncOverridesKernel(
                 phase = (dist == 0.)? params[1] : params[0] / dist;
         }
     }
+    
+    
+    // negate phase to conjugate operator 
+    if (conj)
+        phase *= -1;
 
     // modify amp to amp * exp(i phase) 
     qreal c = cos(phase);
@@ -3885,8 +3907,9 @@ __global__ void statevec_applyParamNamedPhaseFuncOverridesKernel(
 void statevec_applyParamNamedPhaseFuncOverrides(
     Qureg qureg, int* qubits, int* numQubitsPerReg, int numRegs, enum bitEncoding encoding,
     enum phaseFunc phaseFuncName, qreal* params, int numParams,
-    long long int* overrideInds, qreal* overridePhases, int numOverrides) 
-{
+    long long int* overrideInds, qreal* overridePhases, int numOverrides,
+    int conj 
+) {
     // determine size of arrays, for cloning into GPU memory
     size_t mem_numQubitsPerReg = numRegs * sizeof *numQubitsPerReg;
     size_t mem_overridePhases = numOverrides * sizeof *overridePhases;
@@ -3924,7 +3947,8 @@ void statevec_applyParamNamedPhaseFuncOverrides(
         qureg, d_qubits, d_numQubitsPerReg, numRegs, encoding,
         phaseFuncName, d_params, numParams,
         d_overrideInds, d_overridePhases, numOverrides,
-        d_phaseInds);
+        d_phaseInds,
+        conj);
 
     // free device memory
     cudaFree(d_qubits);
