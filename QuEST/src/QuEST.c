@@ -864,6 +864,28 @@ void applyParamNamedPhaseFuncOverrides(Qureg qureg, int* qubits, int* numQubitsP
     qasm_recordNamedPhaseFunc(qureg, qubits, numQubitsPerReg, numRegs, encoding, functionNameCode, params, numParams, overrideInds, overridePhases, numOverrides);
 }
 
+void applyQFT(Qureg qureg, int* qubits, int numQubits) {
+    validateMultiTargets(qureg, qubits, numQubits, __func__);
+    
+    qasm_recordComment(qureg, "Beginning of QFT circuit");
+        
+    agnostic_applyQFT(qureg, qubits, numQubits);
+
+    qasm_recordComment(qureg, "End of QFT circuit");
+}
+
+void applyFullQFT(Qureg qureg) {
+
+    qasm_recordComment(qureg, "Beginning of QFT circuit");
+        
+    int qubits[qureg.numQubitsRepresented];
+    for (int i=0; i<qureg.numQubitsRepresented; i++)
+        qubits[i] = i;
+    agnostic_applyQFT(qureg, qubits, qureg.numQubitsRepresented);
+
+    qasm_recordComment(qureg, "End of QFT circuit");
+}
+
 
 
 /*

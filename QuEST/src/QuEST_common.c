@@ -36,6 +36,12 @@
 # include <stdlib.h>
 
 
+// expose PI on GPU build
+#ifndef M_PI 
+#define M_PI 3.1415926535897932384626433832795028841971
+#endif
+
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -825,6 +831,70 @@ void agnostic_applyTrotterCircuit(Qureg qureg, PauliHamil hamil, qreal time, int
     
     for (int r=0; r<reps; r++)
         applySymmetrizedTrotterCircuit(qureg, hamil, time/reps, order);
+}
+
+void agnostic_applyQFT(Qureg qureg, int* qubits, int numQubits) {
+    
+    int densShift = qureg.numQubitsRepresented;
+    
+    // start with top/left-most qubit, work down
+    for (int q=numQubits-1; q >= 0; q--) {
+        
+        // H
+        statevec_hadamard(qureg, qubits[q]);
+        if (qureg.isDensityMatrix)
+            statevec_hadamard(qureg, qubits[q] + densShift);
+        qasm_recordGate(qureg, GATE_HADAMARD, qubits[q]);
+        
+        if (q == 0)
+            break;
+        
+        // succession of C-phases, control on qubits[q], targeting each of 
+        // qubits[q-1], qubits[q-1], ... qubits[0]. This can be expressed by 
+        // a single invocation of applyNamedPhaseFunc product
+        
+        int numRegs = 2;
+        int numQubitsPerReg[2] = {q, 1};
+        int regs[q+1];
+        for (int i=0; i<q+1; i++)
+            regs[i] = qubits[i]; // qubits[q] is in own register
+        
+        int numParams = 1;
+        qreal params[1] = { M_PI / (1 << q) };
+        
+        int conj = 0;
+        statevec_applyParamNamedPhaseFuncOverrides(
+            qureg, regs, numQubitsPerReg, numRegs, 
+            UNSIGNED, SCALED_PRODUCT, params, numParams, 
+            NULL, NULL, 0, 
+            conj);
+        if (qureg.isDensityMatrix) {
+            conj = 1;
+            shiftSubregIndices(regs, numQubitsPerReg, numRegs, densShift);
+            statevec_applyParamNamedPhaseFuncOverrides(
+                qureg, regs, numQubitsPerReg, numRegs, 
+                UNSIGNED, SCALED_PRODUCT, params, numParams, 
+                NULL, NULL, 0, 
+                conj);
+            shiftSubregIndices(regs, numQubitsPerReg, numRegs, - densShift);
+        }
+        qasm_recordNamedPhaseFunc(
+            qureg, regs, numQubitsPerReg, numRegs, 
+            UNSIGNED, SCALED_PRODUCT, params, numParams, 
+            NULL, NULL, 0);
+    }
+    
+    // final swaps
+    for (int i=0; i<(numQubits/2); i++) {
+        
+        int qb1 = qubits[i];
+        int qb2 = qubits[numQubits-i-1];
+                
+        statevec_swapQubitAmps(qureg, qb1, qb2);
+        if (qureg.isDensityMatrix)
+            statevec_swapQubitAmps(qureg, qb1 + densShift, qb2 + densShift);
+        qasm_recordControlledGate(qureg, GATE_SWAP, qb1, qb2);
+    }
 }
 
 #ifdef __cplusplus

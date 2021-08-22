@@ -6325,6 +6325,216 @@ void applyParamNamedPhaseFunc(Qureg qureg, int* qubits, int* numQubitsPerReg, in
  */
 void applyParamNamedPhaseFuncOverrides(Qureg qureg, int* qubits, int* numQubitsPerReg, int numRegs, enum bitEncoding encoding, enum phaseFunc functionNameCode, qreal* params, int numParams, long long int* overrideInds, qreal* overridePhases, int numOverrides);
 
+/** Applies the quantum Fourier transform (QFT) to the entirety of \p qureg. 
+ * The effected unitary circuit (shown here for 4 qubits, bottom qubit is <b>0</b>) resembles
+ \f[
+             \begin{tikzpicture}[scale=.5]
+             \draw (-2, 5) -- (23, 5);
+             \draw (-2, 3) -- (23, 3);
+             \draw (-2, 1) -- (23, 1);
+             \draw (-2, -1) -- (23, -1);
+
+             \draw[fill=white] (-1, 4) -- (-1, 6) -- (1, 6) -- (1,4) -- cycle;
+             \node[draw=none] at (0, 5) {H};
+
+             \draw(2, 5) -- (2, 3);
+             \draw[fill=black] (2, 5) circle (.2);
+             \draw[fill=black] (2, 3) circle (.2);
+             \draw(4, 5) -- (4, 1);
+             \draw[fill=black] (4, 5) circle (.2);
+             \draw[fill=black] (4, 1) circle (.2);
+             \draw(6, 5) -- (6, -1);
+             \draw[fill=black] (6, 5) circle (.2);
+             \draw[fill=black] (6, -1) circle (.2);
+
+             \draw[fill=white] (-1+8, 4-2) -- (-1+8, 6-2) -- (1+8, 6-2) -- (1+8,4-2) -- cycle;
+             \node[draw=none] at (8, 5-2) {H};
+
+             \draw(10, 5-2) -- (10, 3-2);
+             \draw[fill=black] (10, 5-2) circle (.2);
+             \draw[fill=black] (10, 3-2) circle (.2);
+             \draw(12, 5-2) -- (12, 3-4);
+             \draw[fill=black] (12, 5-2) circle (.2);
+             \draw[fill=black] (12, 3-4) circle (.2);
+
+             \draw[fill=white] (-1+8+6, 4-4) -- (-1+8+6, 6-4) -- (1+8+6, 6-4) -- (1+8+6,4-4) -- cycle;
+             \node[draw=none] at (8+6, 5-4) {H};
+
+             \draw(16, 5-2-2) -- (16, 3-4);
+             \draw[fill=black] (16, 5-2-2) circle (.2);
+             \draw[fill=black] (16, 3-4) circle (.2);
+
+             \draw[fill=white] (-1+8+6+4, 4-4-2) -- (-1+8+6+4, 6-4-2) -- (1+8+6+4, 6-4-2) -- (1+8+6+4,4-4-2) -- cycle;
+             \node[draw=none] at (8+6+4, 5-4-2) {H};
+
+             \draw (20, 5) -- (20, -1);
+             \draw (20 - .35, 5 + .35) -- (20 + .35, 5 - .35);
+             \draw (20 - .35, 5 - .35) -- (20 + .35, 5 + .35);
+             \draw (20 - .35, -1 + .35) -- (20 + .35, -1 - .35);
+             \draw (20 - .35, -1 - .35) -- (20 + .35, -1 + .35);
+             \draw (22, 3) -- (22, 1);
+             \draw (22 - .35, 3 + .35) -- (22 + .35, 3 - .35);
+             \draw (22 - .35, 3 - .35) -- (22 + .35, 3 + .35);
+             \draw (22 - .35, 1 + .35) -- (22 + .35, 1 - .35);
+             \draw (22 - .35, 1 - .35) -- (22 + .35, 1 + .35);
+             \end{tikzpicture}
+ \f]
+ * though is performed more efficiently.
+ * 
+ * - If \p qureg is a state-vector, the output amplitudes are the discrete Fourier 
+ *   transform (DFT) of the input amplitudes, in the exact ordering. This is true 
+ *   even if \p qureg is unnormalised. \n
+ *   Precisely,
+ *   \f[
+ *      \text{QFT} \, \left(  \sum\limits_{x=0}^{2^N-1} \alpha_x |x\rangle \right) 
+ *      = 
+ *      \frac{1}{\sqrt{2^N}}
+ *       \sum\limits_{x=0}^{2^N-1} \left( 
+ *           \sum\limits_{y=0}^{2^N-1} e^{2 \pi \, i \, x \, y / 2^N} \; \alpha_y
+ *       \right) |x\rangle
+ *   \f]
+ *
+ * - If \p qureg is a density matrix \f$\rho\f$, it will be changed under the unitary action 
+ *   of the QFT. This can be imagined as each mixed state-vector undergoing the DFT 
+ *   on its amplitudes. This is true even if \p qureg is unnormalised.
+ *   \f[
+ *      \rho \; \rightarrow \; \text{QFT} \; \rho \; \text{QFT}^{\dagger}
+ *   \f]
+ *
+ * > This function merges contiguous controlled-phase gates into single invocations 
+ * > of applyNamedPhaseFunc(), and hence is significantly faster than performing 
+ * > the QFT circuit directly.
+ *
+ * > Furthermore, in distributed mode, this function requires only \f$\log_2(\text{\#nodes})\f$ 
+ * > rounds of pair-wise
+ * > communication, and hence is exponentially faster than directly performing the 
+ * > DFT on the amplitudes of \p qureg.
+ *
+ * @see 
+ * - applyQFT() to apply the QFT to a sub-register of \p qureg.
+ * 
+ * @ingroup operator
+ * @param[in,out] qureg a state-vector or density matrix to modify
+ * @author Tyson Jones
+ */
+void applyFullQFT(Qureg qureg);
+
+/** Applies the quantum Fourier transform (QFT) to a specific subset of qubits 
+ * of the register \p qureg. 
+ *
+ * The order of \p qubits affects the ultimate unitary.
+ * The canonical full-state QFT (applyFullQFT()) is achieved by targeting every 
+ * qubit in increasing order.
+ *
+ * The effected unitary circuit (shown here for \p numQubits <b>= 4</b>) resembles
+ * \f[
+        \begin{tikzpicture}[scale=.5]
+        \draw (-2, 5) -- (23, 5);    \node[draw=none] at (-4,5) {qubits[3]};
+        \draw (-2, 3) -- (23, 3);    \node[draw=none] at (-4,3) {qubits[2]};
+        \draw (-2, 1) -- (23, 1);     \node[draw=none] at (-4,1) {qubits[1]};
+        \draw (-2, -1) -- (23, -1);  \node[draw=none] at (-4,-1) {qubits[0]};
+
+        \draw[fill=white] (-1, 4) -- (-1, 6) -- (1, 6) -- (1,4) -- cycle;
+        \node[draw=none] at (0, 5) {H};
+
+        \draw(2, 5) -- (2, 3);
+        \draw[fill=black] (2, 5) circle (.2);
+        \draw[fill=black] (2, 3) circle (.2);
+        \draw(4, 5) -- (4, 1);
+        \draw[fill=black] (4, 5) circle (.2);
+        \draw[fill=black] (4, 1) circle (.2);
+        \draw(6, 5) -- (6, -1);
+        \draw[fill=black] (6, 5) circle (.2);
+        \draw[fill=black] (6, -1) circle (.2);
+
+        \draw[fill=white] (-1+8, 4-2) -- (-1+8, 6-2) -- (1+8, 6-2) -- (1+8,4-2) -- cycle;
+        \node[draw=none] at (8, 5-2) {H};
+
+        \draw(10, 5-2) -- (10, 3-2);
+        \draw[fill=black] (10, 5-2) circle (.2);
+        \draw[fill=black] (10, 3-2) circle (.2);
+        \draw(12, 5-2) -- (12, 3-4);
+        \draw[fill=black] (12, 5-2) circle (.2);
+        \draw[fill=black] (12, 3-4) circle (.2);
+
+        \draw[fill=white] (-1+8+6, 4-4) -- (-1+8+6, 6-4) -- (1+8+6, 6-4) -- (1+8+6,4-4) -- cycle;
+        \node[draw=none] at (8+6, 5-4) {H};
+
+        \draw(16, 5-2-2) -- (16, 3-4);
+        \draw[fill=black] (16, 5-2-2) circle (.2);
+        \draw[fill=black] (16, 3-4) circle (.2);
+
+        \draw[fill=white] (-1+8+6+4, 4-4-2) -- (-1+8+6+4, 6-4-2) -- (1+8+6+4, 6-4-2) -- (1+8+6+4,4-4-2) -- cycle;
+        \node[draw=none] at (8+6+4, 5-4-2) {H};
+
+        \draw (20, 5) -- (20, -1);
+        \draw (20 - .35, 5 + .35) -- (20 + .35, 5 - .35);
+        \draw (20 - .35, 5 - .35) -- (20 + .35, 5 + .35);
+        \draw (20 - .35, -1 + .35) -- (20 + .35, -1 - .35);
+        \draw (20 - .35, -1 - .35) -- (20 + .35, -1 + .35);
+        \draw (22, 3) -- (22, 1);
+        \draw (22 - .35, 3 + .35) -- (22 + .35, 3 - .35);
+        \draw (22 - .35, 3 - .35) -- (22 + .35, 3 + .35);
+        \draw (22 - .35, 1 + .35) -- (22 + .35, 1 - .35);
+        \draw (22 - .35, 1 - .35) -- (22 + .35, 1 + .35);
+        \end{tikzpicture}
+ * \f]
+ * though is performed more efficiently.
+ *
+ * - If \p qureg is a state-vector, the output amplitudes are a kronecker product of 
+ *   the discrete Fourier transform (DFT) acting upon the targeted amplitudes, and the 
+ *   remaining. \n
+ *   Precisely, 
+ *   - let \f$|x,r\rangle\f$ represent a computational basis state where 
+ *     \f$x\f$ is the binary value of the targeted qubits, and \f$r\f$ is the binary value 
+ *     of the remaining qubits. 
+ *   - let \f$|x_j,r_j\rangle\f$ be the \f$j\text{th}\f$ such state.
+ *   - let \f$n =\f$ \p numQubits, and \f$N =\f$ `qureg.numQubitsRepresented`.\n
+ * Then, this function effects
+ *   \f[
+ *      (\text{QFT}\otimes 1) \, \left(  \sum\limits_{j=0}^{2^N-1} \alpha_j \, |x_j,r_j\rangle \right) 
+ *      = 
+ *      \frac{1}{\sqrt{2^n}}
+ *       \sum\limits_{j=0}^{2^N-1} \alpha_j \left( 
+ *           \sum\limits_{y=0}^{2^n-1} e^{2 \pi \, i \, x_j \, y / 2^N} \; 
+ *           |y,r_j \rangle
+ *       \right)
+ *   \f]
+ *
+ * - If \p qureg is a density matrix \f$\rho\f$, it will be changed under the unitary action 
+ *   of the QFT. This can be imagined as each mixed state-vector undergoing the DFT 
+ *   on its amplitudes. This is true even if \p qureg is unnormalised.
+ *   \f[
+ *      \rho \; \rightarrow \; \text{QFT} \; \rho \; \text{QFT}^{\dagger}
+ *   \f]
+ *
+ * > This function merges contiguous controlled-phase gates into single invocations 
+ * > of applyNamedPhaseFunc(), and hence is significantly faster than performing 
+ * > the QFT circuit directly.
+ *
+ * > Furthermore, in distributed mode, this function requires only \f$\log_2(\text{\#nodes})\f$ 
+ * > rounds of pair-wise
+ * > communication, and hence is exponentially faster than directly performing the 
+ * > DFT on the amplitudes of \p qureg.
+ *
+ * @see 
+ * - applyFullQFT() to apply the QFT to the entirety of \p qureg.
+ *
+ * @ingroup operator
+ * @param[in,out] qureg a state-vector or density matrix to modify
+ * @param[in] qubits a list of the qubits to operate the QFT upon
+ * @param[in] numQubits the length of list \p qubits
+ * @throws invalidQuESTInputError()
+ * - if any qubit in \p qubits is invalid, i.e. outside <b>[0, </b>`qureg.numQubitsRepresented`<b>)</b>
+ * - if \p qubits contain any repetitions
+ * - if \p numQubits <b>< 1</b> 
+ * - if \p numQubits <b>></b>`qureg.numQubitsRepresented`
+ * @throws segmentation-fault
+ * - if \p qubits contains fewer elements than \p numQubits
+ * @author Tyson Jones
+ */
+void applyQFT(Qureg qureg, int* qubits, int numQubits);
+
 // end prevention of C++ name mangling
 #ifdef __cplusplus
 }

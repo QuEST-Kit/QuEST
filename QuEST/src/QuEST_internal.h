@@ -279,6 +279,8 @@ void statevec_applyParamNamedPhaseFuncOverrides(Qureg qureg, int* qubits, int* n
  
 void agnostic_applyTrotterCircuit(Qureg qureg, PauliHamil hamil, qreal time, int order, int reps);
 
+void agnostic_applyQFT(Qureg qureg, int* qubits, int numQubits);
+
 DiagonalOp agnostic_createDiagonalOp(int numQubits, QuESTEnv env);
 
 void agnostic_destroyDiagonalOp(DiagonalOp op);
