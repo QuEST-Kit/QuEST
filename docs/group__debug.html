@@ -27,7 +27,7 @@
             <div class="container">
                 <div class="navbar-header">
                     <a class="navbar-brand"><img alt="Logo" src="logo.png"/></a>
-                    <a class="navbar-brand"><b>QuEST</b> v3.2.1<br>The Quantum Exact Simulation Toolkit</a>
+                    <a class="navbar-brand"><b>QuEST</b> v3.3.0<br>The Quantum Exact Simulation Toolkit</a>
                 </div>
             </div>
         </nav>
@@ -68,17 +68,17 @@ Functions</h2></td></tr>
 <tr class="memitem:ga11448560006dd165128e404b54ebb2f7"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__debug.html#ga11448560006dd165128e404b54ebb2f7">copyStateToGPU</a> (<a class="el" href="structQureg.html">Qureg</a> qureg)</td></tr>
 <tr class="memdesc:ga11448560006dd165128e404b54ebb2f7"><td class="mdescLeft">&#160;</td><td class="mdescRight">In GPU mode, this copies the state-vector (or density matrix) from RAM (qureg.stateVec) to VRAM / GPU-memory (qureg.deviceStateVec), which is the version operated upon by other calls to the API.  <a href="group__debug.html#ga11448560006dd165128e404b54ebb2f7">More...</a><br /></td></tr>
 <tr class="separator:ga11448560006dd165128e404b54ebb2f7"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ga2d955c6e51067371eee69795532a2d62"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__debug.html#ga2d955c6e51067371eee69795532a2d62">getEnvironmentString</a> (<a class="el" href="structQuESTEnv.html">QuESTEnv</a> env, <a class="el" href="structQureg.html">Qureg</a> qureg, char str[200])</td></tr>
-<tr class="memdesc:ga2d955c6e51067371eee69795532a2d62"><td class="mdescLeft">&#160;</td><td class="mdescRight">Sets <code>str</code> to a string containing the number of qubits in <code>qureg</code>, and the hardware facilities used (e.g.  <a href="group__debug.html#ga2d955c6e51067371eee69795532a2d62">More...</a><br /></td></tr>
-<tr class="separator:ga2d955c6e51067371eee69795532a2d62"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gadc5c01d8ea32e28c188db52be26116b6"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__debug.html#gadc5c01d8ea32e28c188db52be26116b6">getEnvironmentString</a> (<a class="el" href="structQuESTEnv.html">QuESTEnv</a> env, char str[200])</td></tr>
+<tr class="memdesc:gadc5c01d8ea32e28c188db52be26116b6"><td class="mdescLeft">&#160;</td><td class="mdescRight">Sets <code>str</code> to a string containing information about the runtime environment, including whether simulation is using CUDA (for GPU), OpenMP (for multithreading) and/or MPI (for distribution).  <a href="group__debug.html#gadc5c01d8ea32e28c188db52be26116b6">More...</a><br /></td></tr>
+<tr class="separator:gadc5c01d8ea32e28c188db52be26116b6"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:gaa696c94112e5fbbc996af10dfc4e2c1c"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__debug.html#gaa696c94112e5fbbc996af10dfc4e2c1c">initDebugState</a> (<a class="el" href="structQureg.html">Qureg</a> qureg)</td></tr>
-<tr class="memdesc:gaa696c94112e5fbbc996af10dfc4e2c1c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Initialises <code>qureg</code> to be in the un-normalised, non-physical state with with n-th complex amplitude (2n/10 + i(2n+1)/10).  <a href="group__debug.html#gaa696c94112e5fbbc996af10dfc4e2c1c">More...</a><br /></td></tr>
+<tr class="memdesc:gaa696c94112e5fbbc996af10dfc4e2c1c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Initialises <code>qureg</code> to be in the un-normalised, non-physical state with with <img class="formulaInl" alt="$n$" src="form_60.png"/>-th complex amplitude given by <img class="formulaInl" alt="$2n/10 + i(2n+1)/10$" src="form_61.png"/>.  <a href="group__debug.html#gaa696c94112e5fbbc996af10dfc4e2c1c">More...</a><br /></td></tr>
 <tr class="separator:gaa696c94112e5fbbc996af10dfc4e2c1c"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ga51a64b05d31ef9bcf6a63ce26c0092db"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__debug.html#ga51a64b05d31ef9bcf6a63ce26c0092db">invalidQuESTInputError</a> (const char *errMsg, const char *errFunc)</td></tr>
 <tr class="memdesc:ga51a64b05d31ef9bcf6a63ce26c0092db"><td class="mdescLeft">&#160;</td><td class="mdescRight">An internal function called when invalid arguments are passed to a QuEST API call, which the user can optionally override by redefining.  <a href="group__debug.html#ga51a64b05d31ef9bcf6a63ce26c0092db">More...</a><br /></td></tr>
 <tr class="separator:ga51a64b05d31ef9bcf6a63ce26c0092db"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:gab27234d9ccf440bb5e5d834e8f7e3938"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__debug.html#gab27234d9ccf440bb5e5d834e8f7e3938">reportPauliHamil</a> (<a class="el" href="structPauliHamil.html">PauliHamil</a> hamil)</td></tr>
-<tr class="memdesc:gab27234d9ccf440bb5e5d834e8f7e3938"><td class="mdescLeft">&#160;</td><td class="mdescRight">Print the <code><a class="el" href="structPauliHamil.html" title="Represents a weighted sum of pauli products.">PauliHamil</a></code> to screen.  <a href="group__debug.html#gab27234d9ccf440bb5e5d834e8f7e3938">More...</a><br /></td></tr>
+<tr class="memdesc:gab27234d9ccf440bb5e5d834e8f7e3938"><td class="mdescLeft">&#160;</td><td class="mdescRight">Print the <code><a class="el" href="structPauliHamil.html" title="A Pauli Hamiltonian, expressed as a real-weighted sum of pauli products, and which can hence represen...">PauliHamil</a></code> to screen.  <a href="group__debug.html#gab27234d9ccf440bb5e5d834e8f7e3938">More...</a><br /></td></tr>
 <tr class="separator:gab27234d9ccf440bb5e5d834e8f7e3938"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:gaf8a14ae79c3fb2c0b5f6255cc37bebf9"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__debug.html#gaf8a14ae79c3fb2c0b5f6255cc37bebf9">reportQuESTEnv</a> (<a class="el" href="structQuESTEnv.html">QuESTEnv</a> env)</td></tr>
 <tr class="memdesc:gaf8a14ae79c3fb2c0b5f6255cc37bebf9"><td class="mdescLeft">&#160;</td><td class="mdescRight">Report information about the QuEST environment.  <a href="group__debug.html#gaf8a14ae79c3fb2c0b5f6255cc37bebf9">More...</a><br /></td></tr>
@@ -96,7 +96,7 @@ Functions</h2></td></tr>
 <tr class="memdesc:ga95012dad46509b4b461974c34cfd7b3d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Seed the Mersenne Twister used for random number generation in the QuEST environment with a user defined seed.  <a href="group__debug.html#ga95012dad46509b4b461974c34cfd7b3d">More...</a><br /></td></tr>
 <tr class="separator:ga95012dad46509b4b461974c34cfd7b3d"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:gaa8437ef3bf135231e2916e64dde1c94e"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__debug.html#gaa8437ef3bf135231e2916e64dde1c94e">seedQuESTDefault</a> (void)</td></tr>
-<tr class="memdesc:gaa8437ef3bf135231e2916e64dde1c94e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Seed the Mersenne Twister used for random number generation in the QuEST environment with an example defualt seed.  <a href="group__debug.html#gaa8437ef3bf135231e2916e64dde1c94e">More...</a><br /></td></tr>
+<tr class="memdesc:gaa8437ef3bf135231e2916e64dde1c94e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Seed the Mersenne Twister used for random number generation in the QuEST environment with an example default seed.  <a href="group__debug.html#gaa8437ef3bf135231e2916e64dde1c94e">More...</a><br /></td></tr>
 <tr class="separator:gaa8437ef3bf135231e2916e64dde1c94e"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ga8d31fe2d1ad4d01e2a1f5f6b8bc15b77"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__debug.html#ga8d31fe2d1ad4d01e2a1f5f6b8bc15b77">syncQuESTEnv</a> (<a class="el" href="structQuESTEnv.html">QuESTEnv</a> env)</td></tr>
 <tr class="memdesc:ga8d31fe2d1ad4d01e2a1f5f6b8bc15b77"><td class="mdescLeft">&#160;</td><td class="mdescRight">Guarantees that all code up to the given point has been executed on all nodes (if running in distributed mode)  <a href="group__debug.html#ga8d31fe2d1ad4d01e2a1f5f6b8bc15b77">More...</a><br /></td></tr>
@@ -132,14 +132,18 @@ Nicolas Vogt of HQS (one-qubit damping) </dd></dl>
 </div><div class="memdoc">
 
 <p>In GPU mode, this copies the state-vector (or density matrix) from GPU memory (qureg.deviceStateVec) to RAM (qureg.stateVec), where it can be accessed/modified by the user. </p>
-<p>In CPU mode, this function has no effect. In conjunction with <a class="el" href="group__debug.html#ga11448560006dd165128e404b54ebb2f7" title="In GPU mode, this copies the state-vector (or density matrix) from RAM (qureg.stateVec) to VRAM / GPU...">copyStateToGPU()</a>, this allows a user to directly modify the state-vector in a harware agnostic way. Note though that users should instead use <a class="el" href="group__init.html#gabc0c64f8adf307d2a44184dc0f8ca66e" title="Overwrites a subset of the amplitudes in qureg, with those passed in reals and imags.">setAmps()</a> if possible.</p>
-<p>For example, to set the first real element to 1, one could do: </p><pre class="fragment">copyStateFromGPU(qureg);
-qureg.stateVec.real[0] = 1;
-copyStateToGPU(qureg);
-</pre><p>Note users should never access qureg.deviceStateVec directly.</p>
+<p>In CPU mode, this function has no effect. In conjunction with <a class="el" href="group__debug.html#ga11448560006dd165128e404b54ebb2f7" title="In GPU mode, this copies the state-vector (or density matrix) from RAM (qureg.stateVec) to VRAM / GPU...">copyStateToGPU()</a>, this allows a user to directly modify the state-vector in a harware agnostic way. Note though that users should instead use <a class="el" href="group__init.html#gabc0c64f8adf307d2a44184dc0f8ca66e" title="Overwrites a subset of the amplitudes in state-vector qureg, with those passed in reals and imags.">setAmps()</a> if possible.</p>
+<p>For example, to set the first real element to 1, one could do: </p><div class="fragment"><div class="line"><a class="code" href="group__debug.html#ga924ef2dbda6b733b4041270077c76ece">copyStateFromGPU</a>(qureg);</div>
+<div class="line">qureg.<a class="code" href="structQureg.html#a441e4cacef6bd17adb9813c7442d42fe">stateVec</a>.real[0] = 1;</div>
+<div class="line"><a class="code" href="group__debug.html#ga11448560006dd165128e404b54ebb2f7">copyStateToGPU</a>(qureg);</div>
+</div><!-- fragment --><p>Note users should never access qureg.deviceStateVec directly.</p>
+<dl class="section see"><dt>See also</dt><dd><ul>
+<li><a class="el" href="group__debug.html#ga11448560006dd165128e404b54ebb2f7" title="In GPU mode, this copies the state-vector (or density matrix) from RAM (qureg.stateVec) to VRAM / GPU...">copyStateToGPU()</a></li>
+</ul>
+</dd></dl>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramdir">[in,out]</td><td class="paramname">qureg</td><td>the qureg of which to copy .deviceStateVec to .stateVec in GPU mode </td></tr>
+    <tr><td class="paramdir">[in,out]</td><td class="paramname">qureg</td><td>the qureg of which to copy <code>.deviceStateVec</code> to <code>.stateVec</code> in GPU mode </td></tr>
   </table>
   </dd>
 </dl>
@@ -151,9 +155,9 @@ Tyson Jones (doc) </dd></dl>
 <div class="fragment"><div class="line"><a name="l00039"></a><span class="lineno">   39</span>&#160;                                   {</div>
 <div class="line"><a name="l00040"></a><span class="lineno">   40</span>&#160;}</div>
 </div><!-- fragment -->
-<p class="reference">References <a class="el" href="QuEST__gpu_8cu_source.html#l00020">DEBUG</a>, <a class="el" href="QuEST_8h_source.html#l00227">Qureg::deviceStateVec</a>, <a class="el" href="QuEST_8h_source.html#l00213">Qureg::numAmpsPerChunk</a>, and <a class="el" href="QuEST_8h_source.html#l00222">Qureg::stateVec</a>.</p>
+<p class="reference">References <a class="el" href="QuEST__gpu_8cu_source.html#l00020">DEBUG</a>, <a class="el" href="QuEST_8h_source.html#l00346">Qureg::deviceStateVec</a>, <a class="el" href="QuEST_8h_source.html#l00332">Qureg::numAmpsPerChunk</a>, and <a class="el" href="QuEST_8h_source.html#l00341">Qureg::stateVec</a>.</p>
 
-<p class="reference">Referenced by <a class="el" href="utilities_8cpp_source.html#l00701">areEqual()</a>, <a class="el" href="QuEST__gpu_8cu_source.html#l01531">densmatr_calcTotalProb()</a>, <a class="el" href="QuEST__gpu_8cu_source.html#l01554">statevec_calcTotalProb()</a>, <a class="el" href="QuEST__gpu_8cu_source.html#l00703">statevec_compareStates()</a>, <a class="el" href="QuEST__gpu_8cu_source.html#l00475">statevec_reportStateToScreen()</a>, <a class="el" href="test__data__structures_8cpp_source.html#l00601">TEST_CASE()</a>, <a class="el" href="utilities_8cpp_source.html#l00896">toQMatrix()</a>, and <a class="el" href="utilities_8cpp_source.html#l00938">toQVector()</a>.</p>
+<p class="reference">Referenced by <a class="el" href="utilities_8cpp_source.html#l00856">areEqual()</a>, <a class="el" href="QuEST__gpu_8cu_source.html#l01630">densmatr_calcTotalProb()</a>, <a class="el" href="QuEST__gpu_8cu_source.html#l01653">statevec_calcTotalProb()</a>, <a class="el" href="QuEST__gpu_8cu_source.html#l00769">statevec_compareStates()</a>, <a class="el" href="QuEST__gpu_8cu_source.html#l00541">statevec_reportStateToScreen()</a>, <a class="el" href="test__data__structures_8cpp_source.html#l00768">TEST_CASE()</a>, <a class="el" href="utilities_8cpp_source.html#l01071">toQMatrix()</a>, and <a class="el" href="utilities_8cpp_source.html#l01113">toQVector()</a>.</p>
 
 </div>
 </div>
@@ -174,14 +178,18 @@ Tyson Jones (doc) </dd></dl>
 </div><div class="memdoc">
 
 <p>In GPU mode, this copies the state-vector (or density matrix) from RAM (qureg.stateVec) to VRAM / GPU-memory (qureg.deviceStateVec), which is the version operated upon by other calls to the API. </p>
-<p>In CPU mode, this function has no effect. In conjunction with <a class="el" href="group__debug.html#ga924ef2dbda6b733b4041270077c76ece" title="In GPU mode, this copies the state-vector (or density matrix) from GPU memory (qureg....">copyStateFromGPU()</a> (which should be called first), this allows a user to directly modify the state-vector in a harware agnostic way. Note though that users should instead use <a class="el" href="group__init.html#gabc0c64f8adf307d2a44184dc0f8ca66e" title="Overwrites a subset of the amplitudes in qureg, with those passed in reals and imags.">setAmps()</a> if possible.</p>
-<p>For example, to set the first real element to 1, one could do: </p><pre class="fragment">copyStateFromGPU(qureg);
-qureg.stateVec.real[0] = 1;
-copyStateToGPU(qureg);
-</pre><p>Note users should never access qureg.deviceStateVec directly.</p>
+<p>In CPU mode, this function has no effect. In conjunction with <a class="el" href="group__debug.html#ga924ef2dbda6b733b4041270077c76ece" title="In GPU mode, this copies the state-vector (or density matrix) from GPU memory (qureg....">copyStateFromGPU()</a> (which should be called first), this allows a user to directly modify the state-vector in a harware agnostic way. Note though that users should instead use <a class="el" href="group__init.html#gabc0c64f8adf307d2a44184dc0f8ca66e" title="Overwrites a subset of the amplitudes in state-vector qureg, with those passed in reals and imags.">setAmps()</a> if possible.</p>
+<p>For example, to set the first real element to 1, one could do: </p><div class="fragment"><div class="line"><a class="code" href="group__debug.html#ga924ef2dbda6b733b4041270077c76ece">copyStateFromGPU</a>(qureg);</div>
+<div class="line">qureg.<a class="code" href="structQureg.html#a441e4cacef6bd17adb9813c7442d42fe">stateVec</a>.real[0] = 1;</div>
+<div class="line"><a class="code" href="group__debug.html#ga11448560006dd165128e404b54ebb2f7">copyStateToGPU</a>(qureg);</div>
+</div><!-- fragment --><p>Note users should never access qureg.deviceStateVec directly.</p>
+<dl class="section see"><dt>See also</dt><dd><ul>
+<li><a class="el" href="group__debug.html#ga924ef2dbda6b733b4041270077c76ece" title="In GPU mode, this copies the state-vector (or density matrix) from GPU memory (qureg....">copyStateFromGPU()</a></li>
+</ul>
+</dd></dl>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramdir">[in,out]</td><td class="paramname">qureg</td><td>the qureg of which to copy .stateVec to .deviceStateVec in GPU mode </td></tr>
+    <tr><td class="paramdir">[in,out]</td><td class="paramname">qureg</td><td>the qureg of which to copy <code>.stateVec</code> to <code>.deviceStateVec</code> in GPU mode </td></tr>
   </table>
   </dd>
 </dl>
@@ -193,14 +201,14 @@ Tyson Jones (doc) </dd></dl>
 <div class="fragment"><div class="line"><a name="l00036"></a><span class="lineno">   36</span>&#160;                                 {</div>
 <div class="line"><a name="l00037"></a><span class="lineno">   37</span>&#160;}</div>
 </div><!-- fragment -->
-<p class="reference">References <a class="el" href="QuEST__gpu_8cu_source.html#l00020">DEBUG</a>, <a class="el" href="QuEST_8h_source.html#l00227">Qureg::deviceStateVec</a>, <a class="el" href="QuEST_8h_source.html#l00213">Qureg::numAmpsPerChunk</a>, and <a class="el" href="QuEST_8h_source.html#l00222">Qureg::stateVec</a>.</p>
+<p class="reference">References <a class="el" href="QuEST__gpu_8cu_source.html#l00020">DEBUG</a>, <a class="el" href="QuEST_8h_source.html#l00346">Qureg::deviceStateVec</a>, <a class="el" href="QuEST_8h_source.html#l00332">Qureg::numAmpsPerChunk</a>, and <a class="el" href="QuEST_8h_source.html#l00341">Qureg::stateVec</a>.</p>
 
-<p class="reference">Referenced by <a class="el" href="QuEST__gpu_8cu_source.html#l00659">statevec_initStateFromSingleFile()</a>, <a class="el" href="test__data__structures_8cpp_source.html#l00601">TEST_CASE()</a>, and <a class="el" href="utilities_8cpp_source.html#l01026">toQureg()</a>.</p>
+<p class="reference">Referenced by <a class="el" href="QuEST__gpu_8cu_source.html#l00725">statevec_initStateFromSingleFile()</a>, <a class="el" href="test__data__structures_8cpp_source.html#l00768">TEST_CASE()</a>, and <a class="el" href="utilities_8cpp_source.html#l01201">toQureg()</a>.</p>
 
 </div>
 </div>
-<a id="ga2d955c6e51067371eee69795532a2d62"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ga2d955c6e51067371eee69795532a2d62">&#9670;&nbsp;</a></span>getEnvironmentString()</h2>
+<a id="gadc5c01d8ea32e28c188db52be26116b6"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#gadc5c01d8ea32e28c188db52be26116b6">&#9670;&nbsp;</a></span>getEnvironmentString()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -210,12 +218,6 @@ Tyson Jones (doc) </dd></dl>
           <td>(</td>
           <td class="paramtype"><a class="el" href="structQuESTEnv.html">QuESTEnv</a>&#160;</td>
           <td class="paramname"><em>env</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype"><a class="el" href="structQureg.html">Qureg</a>&#160;</td>
-          <td class="paramname"><em>qureg</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
@@ -231,24 +233,33 @@ Tyson Jones (doc) </dd></dl>
       </table>
 </div><div class="memdoc">
 
-<p>Sets <code>str</code> to a string containing the number of qubits in <code>qureg</code>, and the hardware facilities used (e.g. </p>
-<p>GPU, MPI and/or OMP).</p>
+<p>Sets <code>str</code> to a string containing information about the runtime environment, including whether simulation is using CUDA (for GPU), OpenMP (for multithreading) and/or MPI (for distribution). </p>
+<p>The number of CPU threads and distributed ranks is also reported. Note there is currently no reporting of the number of GPU cores used.</p>
+<p>The string format is: </p><div class="fragment"><div class="line"><span class="stringliteral">&quot;CUDA=b OpenMP=b MPI=b threads=n ranks=n&quot;</span></div>
+</div><!-- fragment --><p>where <b>b</b> is 0 or 1, and <b>n</b> are integers.</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">env</td><td>object representing the execution environment. A single instance is used for each program </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">qureg</td><td>the qureg of which to query the simulating hardware </td></tr>
     <tr><td class="paramdir">[out]</td><td class="paramname">str</td><td>to be populated with the output string </td></tr>
   </table>
   </dd>
 </dl>
-<dl class="section author"><dt>Author</dt><dd>Ania Brown </dd></dl>
+<dl class="section author"><dt>Author</dt><dd>Ania Brown </dd>
+<dd>
+Tyson Jones </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="QuEST__gpu_8cu_source.html#l00447">447</a> of file <a class="el" href="QuEST__gpu_8cu_source.html">QuEST_gpu.cu</a>.</p>
-<div class="fragment"><div class="line"><a name="l00447"></a><span class="lineno">  447</span>&#160;                                                                   {</div>
-<div class="line"><a name="l00448"></a><span class="lineno">  448</span>&#160;    sprintf(str, <span class="stringliteral">&quot;%dqubits_GPU_noMpi_noOMP&quot;</span>, qureg.<a class="code" href="structQureg.html#a0a86e8a50ea8c998b4a0a6640c5a1218">numQubitsInStateVec</a>);    </div>
-<div class="line"><a name="l00449"></a><span class="lineno">  449</span>&#160;}</div>
+<p class="definition">Definition at line <a class="el" href="QuEST__cpu__distributed_8c_source.html#l00194">194</a> of file <a class="el" href="QuEST__cpu__distributed_8c_source.html">QuEST_cpu_distributed.c</a>.</p>
+<div class="fragment"><div class="line"><a name="l00194"></a><span class="lineno">  194</span>&#160;                                                      {</div>
+<div class="line"><a name="l00195"></a><span class="lineno">  195</span>&#160;    <span class="keywordtype">int</span> ompStatus=0;</div>
+<div class="line"><a name="l00196"></a><span class="lineno">  196</span>&#160;    <span class="keywordtype">int</span> numThreads=1;</div>
+<div class="line"><a name="l00197"></a><span class="lineno">  197</span>&#160;<span class="preprocessor"># ifdef _OPENMP</span></div>
+<div class="line"><a name="l00198"></a><span class="lineno">  198</span>&#160;    ompStatus=1;</div>
+<div class="line"><a name="l00199"></a><span class="lineno">  199</span>&#160;    numThreads=omp_get_max_threads(); </div>
+<div class="line"><a name="l00200"></a><span class="lineno">  200</span>&#160;<span class="preprocessor"># endif</span></div>
+<div class="line"><a name="l00201"></a><span class="lineno">  201</span>&#160;    sprintf(str, <span class="stringliteral">&quot;CUDA=0 OpenMP=%d MPI=1 threads=%d ranks=%d&quot;</span>, ompStatus, numThreads, env.<a class="code" href="structQuESTEnv.html#af22aacd7c9905accae28484785c193b4">numRanks</a>);</div>
+<div class="line"><a name="l00202"></a><span class="lineno">  202</span>&#160;}</div>
 </div><!-- fragment -->
-<p class="reference">References <a class="el" href="QuEST_8h_source.html#l00210">Qureg::numQubitsInStateVec</a>.</p>
+<p class="reference">References <a class="el" href="QuEST_8h_source.html#l00364">QuESTEnv::numRanks</a>.</p>
 
 </div>
 </div>
@@ -268,7 +279,7 @@ Tyson Jones (doc) </dd></dl>
       </table>
 </div><div class="memdoc">
 
-<p>Initialises <code>qureg</code> to be in the un-normalised, non-physical state with with n-th complex amplitude (2n/10 + i(2n+1)/10). </p>
+<p>Initialises <code>qureg</code> to be in the un-normalised, non-physical state with with <img class="formulaInl" alt="$n$" src="form_60.png"/>-th complex amplitude given by <img class="formulaInl" alt="$2n/10 + i(2n+1)/10$" src="form_61.png"/>. </p>
 <p>This is used internally for debugging and testing.</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
@@ -280,14 +291,14 @@ Tyson Jones (doc) </dd></dl>
 <dd>
 Tyson Jones (doc) </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="QuEST_8c_source.html#l01308">1308</a> of file <a class="el" href="QuEST_8c_source.html">QuEST.c</a>.</p>
-<div class="fragment"><div class="line"><a name="l01308"></a><span class="lineno"> 1308</span>&#160;                                 {</div>
-<div class="line"><a name="l01309"></a><span class="lineno"> 1309</span>&#160;    <a class="code" href="QuEST__internal_8h.html#ad9fd3017ea40cf63fd04b39e03494972">statevec_initDebugState</a>(qureg);</div>
-<div class="line"><a name="l01310"></a><span class="lineno"> 1310</span>&#160;}</div>
+<p class="definition">Definition at line <a class="el" href="QuEST_8c_source.html#l01563">1563</a> of file <a class="el" href="QuEST_8c_source.html">QuEST.c</a>.</p>
+<div class="fragment"><div class="line"><a name="l01563"></a><span class="lineno"> 1563</span>&#160;                                 {</div>
+<div class="line"><a name="l01564"></a><span class="lineno"> 1564</span>&#160;    <a class="code" href="QuEST__internal_8h.html#ad9fd3017ea40cf63fd04b39e03494972">statevec_initDebugState</a>(qureg);</div>
+<div class="line"><a name="l01565"></a><span class="lineno"> 1565</span>&#160;}</div>
 </div><!-- fragment -->
-<p class="reference">References <a class="el" href="QuEST__cpu_8c_source.html#l01591">statevec_initDebugState()</a>.</p>
+<p class="reference">References <a class="el" href="QuEST__cpu_8c_source.html#l01646">statevec_initDebugState()</a>.</p>
 
-<p class="reference">Referenced by <a class="el" href="test__calculations_8cpp_source.html#l00111">TEST_CASE()</a>.</p>
+<p class="reference">Referenced by <a class="el" href="test__calculations_8cpp_source.html#l00117">TEST_CASE()</a>.</p>
 
 </div>
 </div>
@@ -344,7 +355,10 @@ Tyson Jones (doc) </dd></dl>
 </dl>
 <dl class="exception"><dt>Exceptions</dt><dd>
   <table class="exception">
-    <tr><td class="paramname">invalidQuESTInputError</td><td>unless overriden by the user </td></tr>
+    <tr><td class="paramname"><a class="el" href="group__debug.html#ga51a64b05d31ef9bcf6a63ce26c0092db" title="An internal function called when invalid arguments are passed to a QuEST API call,...">invalidQuESTInputError()</a></td><td><ul>
+<li>unless overriden by the user </li>
+</ul>
+</td></tr>
   </table>
   </dd>
 </dl>
@@ -352,14 +366,14 @@ Tyson Jones (doc) </dd></dl>
 <p>An internal function called when invalid arguments are passed to a QuEST API call, which the user can optionally override by redefining.</p>
 <p>an negative qubit index). This is redefined here to, in lieu of printing and exiting, throw a C++ exception which can be caught (and hence unit tested for) by Catch2 </p>
 
-<p class="definition">Definition at line <a class="el" href="QuEST__validation_8c_source.html#l00176">176</a> of file <a class="el" href="QuEST__validation_8c_source.html">QuEST_validation.c</a>.</p>
-<div class="fragment"><div class="line"><a name="l00176"></a><span class="lineno">  176</span>&#160;                                                                     {</div>
-<div class="line"><a name="l00177"></a><span class="lineno">  177</span>&#160;    <a class="code" href="QuEST__validation_8c.html#aa37cc778ac42f5350830b90d0292b501">exitWithError</a>(errMsg, errFunc);</div>
-<div class="line"><a name="l00178"></a><span class="lineno">  178</span>&#160;}</div>
+<p class="definition">Definition at line <a class="el" href="QuEST__validation_8c_source.html#l00208">208</a> of file <a class="el" href="QuEST__validation_8c_source.html">QuEST_validation.c</a>.</p>
+<div class="fragment"><div class="line"><a name="l00208"></a><span class="lineno">  208</span>&#160;                                                                     {</div>
+<div class="line"><a name="l00209"></a><span class="lineno">  209</span>&#160;    <a class="code" href="QuEST__validation_8c.html#aa37cc778ac42f5350830b90d0292b501">exitWithError</a>(errMsg, errFunc);</div>
+<div class="line"><a name="l00210"></a><span class="lineno">  210</span>&#160;}</div>
 </div><!-- fragment -->
-<p class="reference">References <a class="el" href="QuEST__validation_8c_source.html#l00167">exitWithError()</a>.</p>
+<p class="reference">References <a class="el" href="QuEST__validation_8c_source.html#l00199">exitWithError()</a>.</p>
 
-<p class="reference">Referenced by <a class="el" href="QuEST__validation_8c_source.html#l00180">QuESTAssert()</a>, <a class="el" href="QuEST__validation_8c_source.html#l00507">validateFileOpened()</a>, <a class="el" href="QuEST__validation_8c_source.html#l00637">validateHamilFileCoeffParsed()</a>, <a class="el" href="QuEST__validation_8c_source.html#l00628">validateHamilFileParams()</a>, <a class="el" href="QuEST__validation_8c_source.html#l00657">validateHamilFilePauliCode()</a>, and <a class="el" href="QuEST__validation_8c_source.html#l00647">validateHamilFilePauliParsed()</a>.</p>
+<p class="reference">Referenced by <a class="el" href="QuEST__validation_8c_source.html#l00212">QuESTAssert()</a>, <a class="el" href="QuEST__validation_8c_source.html#l00539">validateFileOpened()</a>, <a class="el" href="QuEST__validation_8c_source.html#l00669">validateHamilFileCoeffParsed()</a>, <a class="el" href="QuEST__validation_8c_source.html#l00660">validateHamilFileParams()</a>, <a class="el" href="QuEST__validation_8c_source.html#l00689">validateHamilFilePauliCode()</a>, and <a class="el" href="QuEST__validation_8c_source.html#l00679">validateHamilFilePauliParsed()</a>.</p>
 
 </div>
 </div>
@@ -379,12 +393,18 @@ Tyson Jones (doc) </dd></dl>
       </table>
 </div><div class="memdoc">
 
-<p>Print the <code><a class="el" href="structPauliHamil.html" title="Represents a weighted sum of pauli products.">PauliHamil</a></code> to screen. </p>
+<p>Print the <code><a class="el" href="structPauliHamil.html" title="A Pauli Hamiltonian, expressed as a real-weighted sum of pauli products, and which can hence represen...">PauliHamil</a></code> to screen. </p>
 <p>The output features a new line for each term, each with format </p><pre class="fragment">c p1 p2 p3 ... pN
 </pre><p>where <code>c</code> is the real coefficient of the term, and <code>p1</code> ... <code>pN</code> are numbers <code>0</code>, <code>1</code>, <code>2</code>, <code>3</code> to indicate identity, pauliX, pauliY and pauliZ operators respectively, acting on qubits <code>0</code> through <code>N-1</code> (all qubits). A tab character separates c and p1, but single spaces separate the Pauli operators.</p>
+<dl class="section see"><dt>See also</dt><dd><ul>
+<li><a class="el" href="group__type.html#ga35b28710877c462927366fa602e591cb" title="Dynamically allocates a Hamiltonian expressed as a real-weighted sum of products of Pauli operators.">createPauliHamil()</a></li>
+<li><a class="el" href="group__type.html#gadbe6701dda1d49168f2f23253e370a7a" title="Initialise PauliHamil instance hamil with the given term coefficients and Pauli codes (one for every ...">initPauliHamil()</a></li>
+<li><a class="el" href="group__type.html#gaa77376c5e3518186eb085f37826d6008" title="Creates a PauliHamil instance, a real-weighted sum of products of Pauli operators,...">createPauliHamilFromFile()</a></li>
+</ul>
+</dd></dl>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramdir">[in]</td><td class="paramname">hamil</td><td>an instantiated <a class="el" href="structPauliHamil.html" title="Represents a weighted sum of pauli products.">PauliHamil</a> </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">hamil</td><td>an instantiated <a class="el" href="structPauliHamil.html" title="A Pauli Hamiltonian, expressed as a real-weighted sum of pauli products, and which can hence represen...">PauliHamil</a> </td></tr>
   </table>
   </dd>
 </dl>
@@ -396,19 +416,20 @@ Tyson Jones (doc) </dd></dl>
 </dl>
 <dl class="section author"><dt>Author</dt><dd>Tyson Jones </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="QuEST_8c_source.html#l01328">1328</a> of file <a class="el" href="QuEST_8c_source.html">QuEST.c</a>.</p>
-<div class="fragment"><div class="line"><a name="l01328"></a><span class="lineno"> 1328</span>&#160;                                        {</div>
-<div class="line"><a name="l01329"></a><span class="lineno"> 1329</span>&#160;    <a class="code" href="QuEST__validation_8c.html#a066b0c4d0b02a0f3b9be7e5c68d9de6a">validatePauliHamil</a>(hamil, __func__);</div>
-<div class="line"><a name="l01330"></a><span class="lineno"> 1330</span>&#160;    </div>
-<div class="line"><a name="l01331"></a><span class="lineno"> 1331</span>&#160;    <span class="keywordflow">for</span> (<span class="keywordtype">int</span> t=0; t&lt;hamil.<a class="code" href="structPauliHamil.html#a737e46b40ef8990cf004d22eb9dbe2e4">numSumTerms</a>; t++) {</div>
-<div class="line"><a name="l01332"></a><span class="lineno"> 1332</span>&#160;        printf(<span class="stringliteral">&quot;%g\t&quot;</span>, hamil.<a class="code" href="structPauliHamil.html#ac1c6c9f6299cf83bbba88123216c3cac">termCoeffs</a>[t]);</div>
-<div class="line"><a name="l01333"></a><span class="lineno"> 1333</span>&#160;        <span class="keywordflow">for</span> (<span class="keywordtype">int</span> q=0; q&lt;hamil.<a class="code" href="structPauliHamil.html#acb49fff0e3160ea1904c9ca34408b4e1">numQubits</a>; q++)</div>
-<div class="line"><a name="l01334"></a><span class="lineno"> 1334</span>&#160;            printf(<span class="stringliteral">&quot;%d &quot;</span>, (<span class="keywordtype">int</span>) hamil.<a class="code" href="structPauliHamil.html#a4b8d38c403553c07ceddcd40c46ce6c8">pauliCodes</a>[q+t*hamil.<a class="code" href="structPauliHamil.html#acb49fff0e3160ea1904c9ca34408b4e1">numQubits</a>]);</div>
-<div class="line"><a name="l01335"></a><span class="lineno"> 1335</span>&#160;        printf(<span class="stringliteral">&quot;\n&quot;</span>);</div>
-<div class="line"><a name="l01336"></a><span class="lineno"> 1336</span>&#160;    }</div>
-<div class="line"><a name="l01337"></a><span class="lineno"> 1337</span>&#160;}</div>
+<p class="definition">Definition at line <a class="el" href="QuEST_8c_source.html#l01583">1583</a> of file <a class="el" href="QuEST_8c_source.html">QuEST.c</a>.</p>
+<div class="fragment"><div class="line"><a name="l01583"></a><span class="lineno"> 1583</span>&#160;                                        {</div>
+<div class="line"><a name="l01584"></a><span class="lineno"> 1584</span>&#160;    <a class="code" href="QuEST__validation_8c.html#a066b0c4d0b02a0f3b9be7e5c68d9de6a">validatePauliHamil</a>(hamil, __func__);</div>
+<div class="line"><a name="l01585"></a><span class="lineno"> 1585</span>&#160;    </div>
+<div class="line"><a name="l01586"></a><span class="lineno"> 1586</span>&#160;    <span class="keywordflow">for</span> (<span class="keywordtype">int</span> t=0; t&lt;hamil.<a class="code" href="structPauliHamil.html#a737e46b40ef8990cf004d22eb9dbe2e4">numSumTerms</a>; t++) {</div>
+<div class="line"><a name="l01587"></a><span class="lineno"> 1587</span>&#160;        printf(REAL_QASM_FORMAT, hamil.<a class="code" href="structPauliHamil.html#ac1c6c9f6299cf83bbba88123216c3cac">termCoeffs</a>[t]);</div>
+<div class="line"><a name="l01588"></a><span class="lineno"> 1588</span>&#160;        printf(<span class="stringliteral">&quot;\t&quot;</span>);</div>
+<div class="line"><a name="l01589"></a><span class="lineno"> 1589</span>&#160;        <span class="keywordflow">for</span> (<span class="keywordtype">int</span> q=0; q&lt;hamil.<a class="code" href="structPauliHamil.html#acb49fff0e3160ea1904c9ca34408b4e1">numQubits</a>; q++)</div>
+<div class="line"><a name="l01590"></a><span class="lineno"> 1590</span>&#160;            printf(<span class="stringliteral">&quot;%d &quot;</span>, (<span class="keywordtype">int</span>) hamil.<a class="code" href="structPauliHamil.html#a4b8d38c403553c07ceddcd40c46ce6c8">pauliCodes</a>[q+t*hamil.<a class="code" href="structPauliHamil.html#acb49fff0e3160ea1904c9ca34408b4e1">numQubits</a>]);</div>
+<div class="line"><a name="l01591"></a><span class="lineno"> 1591</span>&#160;        printf(<span class="stringliteral">&quot;\n&quot;</span>);</div>
+<div class="line"><a name="l01592"></a><span class="lineno"> 1592</span>&#160;    }</div>
+<div class="line"><a name="l01593"></a><span class="lineno"> 1593</span>&#160;}</div>
 </div><!-- fragment -->
-<p class="reference">References <a class="el" href="QuEST_8h_source.html#l00168">PauliHamil::numQubits</a>, <a class="el" href="QuEST_8h_source.html#l00166">PauliHamil::numSumTerms</a>, <a class="el" href="QuEST_8h_source.html#l00162">PauliHamil::pauliCodes</a>, <a class="el" href="QuEST_8h_source.html#l00164">PauliHamil::termCoeffs</a>, and <a class="el" href="QuEST__validation_8c_source.html#l00619">validatePauliHamil()</a>.</p>
+<p class="reference">References <a class="el" href="QuEST_8h_source.html#l00287">PauliHamil::numQubits</a>, <a class="el" href="QuEST_8h_source.html#l00285">PauliHamil::numSumTerms</a>, <a class="el" href="QuEST_8h_source.html#l00281">PauliHamil::pauliCodes</a>, <a class="el" href="QuEST_8h_source.html#l00283">PauliHamil::termCoeffs</a>, and <a class="el" href="QuEST__validation_8c_source.html#l00651">validatePauliHamil()</a>.</p>
 
 </div>
 </div>
@@ -453,7 +474,7 @@ Tyson Jones (doc) </dd></dl>
 <div class="line"><a name="l00191"></a><span class="lineno">  191</span>&#160;    }</div>
 <div class="line"><a name="l00192"></a><span class="lineno">  192</span>&#160;}</div>
 </div><!-- fragment -->
-<p class="reference">References <a class="el" href="QuEST_8h_source.html#l00245">QuESTEnv::numRanks</a>, <a class="el" href="group__type.html#ga7740e349b4f8bae6451547680f0ce2d6">qreal</a>, and <a class="el" href="QuEST_8h_source.html#l00244">QuESTEnv::rank</a>.</p>
+<p class="reference">References <a class="el" href="QuEST_8h_source.html#l00364">QuESTEnv::numRanks</a>, <a class="el" href="group__type.html#ga7740e349b4f8bae6451547680f0ce2d6">qreal</a>, and <a class="el" href="QuEST_8h_source.html#l00363">QuESTEnv::rank</a>.</p>
 
 </div>
 </div>
@@ -482,19 +503,19 @@ Tyson Jones (doc) </dd></dl>
 </dl>
 <dl class="section author"><dt>Author</dt><dd>Ania Brown </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="QuEST__common_8c_source.html#l00234">234</a> of file <a class="el" href="QuEST__common_8c_source.html">QuEST_common.c</a>.</p>
-<div class="fragment"><div class="line"><a name="l00234"></a><span class="lineno">  234</span>&#160;                                   {</div>
-<div class="line"><a name="l00235"></a><span class="lineno">  235</span>&#160;    <span class="keywordtype">long</span> <span class="keywordtype">long</span> <span class="keywordtype">int</span> numAmps = 1LL &lt;&lt; qureg.<a class="code" href="structQureg.html#a0a86e8a50ea8c998b4a0a6640c5a1218">numQubitsInStateVec</a>;</div>
-<div class="line"><a name="l00236"></a><span class="lineno">  236</span>&#160;    <span class="keywordtype">long</span> <span class="keywordtype">long</span> <span class="keywordtype">int</span> numAmpsPerRank = numAmps/qureg.<a class="code" href="structQureg.html#aa3deb7163aab90a61e755a1f200f5413">numChunks</a>;</div>
-<div class="line"><a name="l00237"></a><span class="lineno">  237</span>&#160;    <span class="keywordflow">if</span> (qureg.<a class="code" href="structQureg.html#ac2929e681d3d95591c18cf168dbbe4f0">chunkId</a>==0){</div>
-<div class="line"><a name="l00238"></a><span class="lineno">  238</span>&#160;        printf(<span class="stringliteral">&quot;QUBITS:\n&quot;</span>);</div>
-<div class="line"><a name="l00239"></a><span class="lineno">  239</span>&#160;        printf(<span class="stringliteral">&quot;Number of qubits is %d.\n&quot;</span>, qureg.<a class="code" href="structQureg.html#a0a86e8a50ea8c998b4a0a6640c5a1218">numQubitsInStateVec</a>);</div>
-<div class="line"><a name="l00240"></a><span class="lineno">  240</span>&#160;        printf(<span class="stringliteral">&quot;Number of amps is %lld.\n&quot;</span>, numAmps);</div>
-<div class="line"><a name="l00241"></a><span class="lineno">  241</span>&#160;        printf(<span class="stringliteral">&quot;Number of amps per rank is %lld.\n&quot;</span>, numAmpsPerRank);</div>
-<div class="line"><a name="l00242"></a><span class="lineno">  242</span>&#160;    }</div>
-<div class="line"><a name="l00243"></a><span class="lineno">  243</span>&#160;}</div>
+<p class="definition">Definition at line <a class="el" href="QuEST__common_8c_source.html#l00247">247</a> of file <a class="el" href="QuEST__common_8c_source.html">QuEST_common.c</a>.</p>
+<div class="fragment"><div class="line"><a name="l00247"></a><span class="lineno">  247</span>&#160;                                   {</div>
+<div class="line"><a name="l00248"></a><span class="lineno">  248</span>&#160;    <span class="keywordtype">long</span> <span class="keywordtype">long</span> <span class="keywordtype">int</span> numAmps = 1LL &lt;&lt; qureg.<a class="code" href="structQureg.html#a0a86e8a50ea8c998b4a0a6640c5a1218">numQubitsInStateVec</a>;</div>
+<div class="line"><a name="l00249"></a><span class="lineno">  249</span>&#160;    <span class="keywordtype">long</span> <span class="keywordtype">long</span> <span class="keywordtype">int</span> numAmpsPerRank = numAmps/qureg.<a class="code" href="structQureg.html#aa3deb7163aab90a61e755a1f200f5413">numChunks</a>;</div>
+<div class="line"><a name="l00250"></a><span class="lineno">  250</span>&#160;    <span class="keywordflow">if</span> (qureg.<a class="code" href="structQureg.html#ac2929e681d3d95591c18cf168dbbe4f0">chunkId</a>==0){</div>
+<div class="line"><a name="l00251"></a><span class="lineno">  251</span>&#160;        printf(<span class="stringliteral">&quot;QUBITS:\n&quot;</span>);</div>
+<div class="line"><a name="l00252"></a><span class="lineno">  252</span>&#160;        printf(<span class="stringliteral">&quot;Number of qubits is %d.\n&quot;</span>, qureg.<a class="code" href="structQureg.html#a0a86e8a50ea8c998b4a0a6640c5a1218">numQubitsInStateVec</a>);</div>
+<div class="line"><a name="l00253"></a><span class="lineno">  253</span>&#160;        printf(<span class="stringliteral">&quot;Number of amps is %lld.\n&quot;</span>, numAmps);</div>
+<div class="line"><a name="l00254"></a><span class="lineno">  254</span>&#160;        printf(<span class="stringliteral">&quot;Number of amps per rank is %lld.\n&quot;</span>, numAmpsPerRank);</div>
+<div class="line"><a name="l00255"></a><span class="lineno">  255</span>&#160;    }</div>
+<div class="line"><a name="l00256"></a><span class="lineno">  256</span>&#160;}</div>
 </div><!-- fragment -->
-<p class="reference">References <a class="el" href="QuEST_8h_source.html#l00217">Qureg::chunkId</a>, <a class="el" href="QuEST_8h_source.html#l00219">Qureg::numChunks</a>, and <a class="el" href="QuEST_8h_source.html#l00210">Qureg::numQubitsInStateVec</a>.</p>
+<p class="reference">References <a class="el" href="QuEST_8h_source.html#l00336">Qureg::chunkId</a>, <a class="el" href="QuEST_8h_source.html#l00338">Qureg::numChunks</a>, and <a class="el" href="QuEST_8h_source.html#l00329">Qureg::numQubitsInStateVec</a>.</p>
 
 </div>
 </div>
@@ -531,26 +552,26 @@ realComponentN, imagComponentN
 </dl>
 <dl class="section author"><dt>Author</dt><dd>Ania Brown </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="QuEST__common_8c_source.html#l00216">216</a> of file <a class="el" href="QuEST__common_8c_source.html">QuEST_common.c</a>.</p>
-<div class="fragment"><div class="line"><a name="l00216"></a><span class="lineno">  216</span>&#160;                             {</div>
-<div class="line"><a name="l00217"></a><span class="lineno">  217</span>&#160;    FILE *state;</div>
-<div class="line"><a name="l00218"></a><span class="lineno">  218</span>&#160;    <span class="keywordtype">char</span> filename[100];</div>
-<div class="line"><a name="l00219"></a><span class="lineno">  219</span>&#160;    <span class="keywordtype">long</span> <span class="keywordtype">long</span> <span class="keywordtype">int</span> index;</div>
-<div class="line"><a name="l00220"></a><span class="lineno">  220</span>&#160;    sprintf(filename, <span class="stringliteral">&quot;state_rank_%d.csv&quot;</span>, qureg.<a class="code" href="structQureg.html#ac2929e681d3d95591c18cf168dbbe4f0">chunkId</a>);</div>
-<div class="line"><a name="l00221"></a><span class="lineno">  221</span>&#160;    state = fopen(filename, <span class="stringliteral">&quot;w&quot;</span>);</div>
-<div class="line"><a name="l00222"></a><span class="lineno">  222</span>&#160;    <span class="keywordflow">if</span> (qureg.<a class="code" href="structQureg.html#ac2929e681d3d95591c18cf168dbbe4f0">chunkId</a>==0) fprintf(state, <span class="stringliteral">&quot;real, imag\n&quot;</span>);</div>
-<div class="line"><a name="l00223"></a><span class="lineno">  223</span>&#160; </div>
-<div class="line"><a name="l00224"></a><span class="lineno">  224</span>&#160;    <span class="keywordflow">for</span>(index=0; index&lt;qureg.<a class="code" href="structQureg.html#ab0ea0358482b62f43fdd781469607d97">numAmpsPerChunk</a>; index++){</div>
-<div class="line"><a name="l00225"></a><span class="lineno">  225</span>&#160;<span class="preprocessor">        # if QuEST_PREC==1 || QuEST_PREC==2</span></div>
-<div class="line"><a name="l00226"></a><span class="lineno">  226</span>&#160;        fprintf(state, <span class="stringliteral">&quot;%.12f, %.12f\n&quot;</span>, qureg.<a class="code" href="structQureg.html#a441e4cacef6bd17adb9813c7442d42fe">stateVec</a>.real[index], qureg.<a class="code" href="structQureg.html#a441e4cacef6bd17adb9813c7442d42fe">stateVec</a>.imag[index]);</div>
-<div class="line"><a name="l00227"></a><span class="lineno">  227</span>&#160;<span class="preprocessor">        # elif QuEST_PREC == 4</span></div>
-<div class="line"><a name="l00228"></a><span class="lineno">  228</span>&#160;        fprintf(state, <span class="stringliteral">&quot;%.12Lf, %.12Lf\n&quot;</span>, qureg.<a class="code" href="structQureg.html#a441e4cacef6bd17adb9813c7442d42fe">stateVec</a>.real[index], qureg.<a class="code" href="structQureg.html#a441e4cacef6bd17adb9813c7442d42fe">stateVec</a>.imag[index]);</div>
-<div class="line"><a name="l00229"></a><span class="lineno">  229</span>&#160;<span class="preprocessor">        #endif</span></div>
-<div class="line"><a name="l00230"></a><span class="lineno">  230</span>&#160;    }</div>
-<div class="line"><a name="l00231"></a><span class="lineno">  231</span>&#160;    fclose(state);</div>
-<div class="line"><a name="l00232"></a><span class="lineno">  232</span>&#160;}</div>
+<p class="definition">Definition at line <a class="el" href="QuEST__common_8c_source.html#l00229">229</a> of file <a class="el" href="QuEST__common_8c_source.html">QuEST_common.c</a>.</p>
+<div class="fragment"><div class="line"><a name="l00229"></a><span class="lineno">  229</span>&#160;                             {</div>
+<div class="line"><a name="l00230"></a><span class="lineno">  230</span>&#160;    FILE *state;</div>
+<div class="line"><a name="l00231"></a><span class="lineno">  231</span>&#160;    <span class="keywordtype">char</span> filename[100];</div>
+<div class="line"><a name="l00232"></a><span class="lineno">  232</span>&#160;    <span class="keywordtype">long</span> <span class="keywordtype">long</span> <span class="keywordtype">int</span> index;</div>
+<div class="line"><a name="l00233"></a><span class="lineno">  233</span>&#160;    sprintf(filename, <span class="stringliteral">&quot;state_rank_%d.csv&quot;</span>, qureg.<a class="code" href="structQureg.html#ac2929e681d3d95591c18cf168dbbe4f0">chunkId</a>);</div>
+<div class="line"><a name="l00234"></a><span class="lineno">  234</span>&#160;    state = fopen(filename, <span class="stringliteral">&quot;w&quot;</span>);</div>
+<div class="line"><a name="l00235"></a><span class="lineno">  235</span>&#160;    <span class="keywordflow">if</span> (qureg.<a class="code" href="structQureg.html#ac2929e681d3d95591c18cf168dbbe4f0">chunkId</a>==0) fprintf(state, <span class="stringliteral">&quot;real, imag\n&quot;</span>);</div>
+<div class="line"><a name="l00236"></a><span class="lineno">  236</span>&#160; </div>
+<div class="line"><a name="l00237"></a><span class="lineno">  237</span>&#160;    <span class="keywordflow">for</span>(index=0; index&lt;qureg.<a class="code" href="structQureg.html#ab0ea0358482b62f43fdd781469607d97">numAmpsPerChunk</a>; index++){</div>
+<div class="line"><a name="l00238"></a><span class="lineno">  238</span>&#160;<span class="preprocessor">        # if QuEST_PREC==1 || QuEST_PREC==2</span></div>
+<div class="line"><a name="l00239"></a><span class="lineno">  239</span>&#160;        fprintf(state, <span class="stringliteral">&quot;%.12f, %.12f\n&quot;</span>, qureg.<a class="code" href="structQureg.html#a441e4cacef6bd17adb9813c7442d42fe">stateVec</a>.real[index], qureg.<a class="code" href="structQureg.html#a441e4cacef6bd17adb9813c7442d42fe">stateVec</a>.imag[index]);</div>
+<div class="line"><a name="l00240"></a><span class="lineno">  240</span>&#160;<span class="preprocessor">        # elif QuEST_PREC == 4</span></div>
+<div class="line"><a name="l00241"></a><span class="lineno">  241</span>&#160;        fprintf(state, <span class="stringliteral">&quot;%.12Lf, %.12Lf\n&quot;</span>, qureg.<a class="code" href="structQureg.html#a441e4cacef6bd17adb9813c7442d42fe">stateVec</a>.real[index], qureg.<a class="code" href="structQureg.html#a441e4cacef6bd17adb9813c7442d42fe">stateVec</a>.imag[index]);</div>
+<div class="line"><a name="l00242"></a><span class="lineno">  242</span>&#160;<span class="preprocessor">        #endif</span></div>
+<div class="line"><a name="l00243"></a><span class="lineno">  243</span>&#160;    }</div>
+<div class="line"><a name="l00244"></a><span class="lineno">  244</span>&#160;    fclose(state);</div>
+<div class="line"><a name="l00245"></a><span class="lineno">  245</span>&#160;}</div>
 </div><!-- fragment -->
-<p class="reference">References <a class="el" href="QuEST_8h_source.html#l00217">Qureg::chunkId</a>, <a class="el" href="QuEST_8h_source.html#l00213">Qureg::numAmpsPerChunk</a>, and <a class="el" href="QuEST_8h_source.html#l00222">Qureg::stateVec</a>.</p>
+<p class="reference">References <a class="el" href="QuEST_8h_source.html#l00336">Qureg::chunkId</a>, <a class="el" href="QuEST_8h_source.html#l00332">Qureg::numAmpsPerChunk</a>, and <a class="el" href="QuEST_8h_source.html#l00341">Qureg::stateVec</a>.</p>
 
 </div>
 </div>
@@ -590,12 +611,12 @@ realComponentN, imagComponentN
 <p>For debugging purposes. Each rank should print output serially. Only print output for systems &lt;= 5 qubits</p>
 <dl class="section author"><dt>Author</dt><dd>Ania Brown </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="QuEST_8c_source.html#l01324">1324</a> of file <a class="el" href="QuEST_8c_source.html">QuEST.c</a>.</p>
-<div class="fragment"><div class="line"><a name="l01324"></a><span class="lineno"> 1324</span>&#160;                                                                     {</div>
-<div class="line"><a name="l01325"></a><span class="lineno"> 1325</span>&#160;    <a class="code" href="QuEST__internal_8h.html#a1e57230c7995447039e62a84c0a36524">statevec_reportStateToScreen</a>(qureg, env, reportRank);</div>
-<div class="line"><a name="l01326"></a><span class="lineno"> 1326</span>&#160;}</div>
+<p class="definition">Definition at line <a class="el" href="QuEST_8c_source.html#l01579">1579</a> of file <a class="el" href="QuEST_8c_source.html">QuEST.c</a>.</p>
+<div class="fragment"><div class="line"><a name="l01579"></a><span class="lineno"> 1579</span>&#160;                                                                     {</div>
+<div class="line"><a name="l01580"></a><span class="lineno"> 1580</span>&#160;    <a class="code" href="QuEST__internal_8h.html#a1e57230c7995447039e62a84c0a36524">statevec_reportStateToScreen</a>(qureg, env, reportRank);</div>
+<div class="line"><a name="l01581"></a><span class="lineno"> 1581</span>&#160;}</div>
 </div><!-- fragment -->
-<p class="reference">References <a class="el" href="QuEST__cpu_8c_source.html#l01366">statevec_reportStateToScreen()</a>.</p>
+<p class="reference">References <a class="el" href="QuEST__cpu_8c_source.html#l01428">statevec_reportStateToScreen()</a>.</p>
 
 </div>
 </div>
@@ -638,13 +659,13 @@ realComponentN, imagComponentN
 <dl class="section author"><dt>Author</dt><dd>Ania Brown</dd></dl>
 <p>Seed the Mersenne Twister used for random number generation in the QuEST environment with a user defined seed. </p>
 
-<p class="definition">Definition at line <a class="el" href="QuEST__common_8c_source.html#l00209">209</a> of file <a class="el" href="QuEST__common_8c_source.html">QuEST_common.c</a>.</p>
-<div class="fragment"><div class="line"><a name="l00209"></a><span class="lineno">  209</span>&#160;                                                          {</div>
-<div class="line"><a name="l00210"></a><span class="lineno">  210</span>&#160;    <span class="comment">// init MT random number generator with user defined list of seeds</span></div>
-<div class="line"><a name="l00211"></a><span class="lineno">  211</span>&#160;    <span class="comment">// for the MPI version, it is ok that all procs will get the same seed as random numbers will only be </span></div>
-<div class="line"><a name="l00212"></a><span class="lineno">  212</span>&#160;    <span class="comment">// used by the master process</span></div>
-<div class="line"><a name="l00213"></a><span class="lineno">  213</span>&#160;    <a class="code" href="mt19937ar_8c.html#ac1283f9b1ed571332f5ffe53545ffc16">init_by_array</a>(seedArray, numSeeds); </div>
-<div class="line"><a name="l00214"></a><span class="lineno">  214</span>&#160;}</div>
+<p class="definition">Definition at line <a class="el" href="QuEST__common_8c_source.html#l00222">222</a> of file <a class="el" href="QuEST__common_8c_source.html">QuEST_common.c</a>.</p>
+<div class="fragment"><div class="line"><a name="l00222"></a><span class="lineno">  222</span>&#160;                                                          {</div>
+<div class="line"><a name="l00223"></a><span class="lineno">  223</span>&#160;    <span class="comment">// init MT random number generator with user defined list of seeds</span></div>
+<div class="line"><a name="l00224"></a><span class="lineno">  224</span>&#160;    <span class="comment">// for the MPI version, it is ok that all procs will get the same seed as random numbers will only be </span></div>
+<div class="line"><a name="l00225"></a><span class="lineno">  225</span>&#160;    <span class="comment">// used by the master process</span></div>
+<div class="line"><a name="l00226"></a><span class="lineno">  226</span>&#160;    <a class="code" href="mt19937ar_8c.html#ac1283f9b1ed571332f5ffe53545ffc16">init_by_array</a>(seedArray, numSeeds); </div>
+<div class="line"><a name="l00227"></a><span class="lineno">  227</span>&#160;}</div>
 </div><!-- fragment -->
 <p class="reference">References <a class="el" href="mt19937ar_8c_source.html#l00080">init_by_array()</a>.</p>
 
@@ -666,28 +687,39 @@ realComponentN, imagComponentN
       </table>
 </div><div class="memdoc">
 
-<p>Seed the Mersenne Twister used for random number generation in the QuEST environment with an example defualt seed. </p>
+<p>Seed the Mersenne Twister used for random number generation in the QuEST environment with an example default seed. </p>
 <p>This default seeding function uses the mt19937 init_by_array function with two keys &ndash; time and pid. Subsequent calls to mt19937 genrand functions will use this seeding. For a multi process code, the same seed is given to all process, therefore this seeding is only appropriate to use for functions such as measure where all processes require the same random value.</p>
 <p>For more information about the MT, see <a href="http://www.math.sci.hiroshima-u.ac.jp/~m-mat/MT/MT2002/emt19937ar.html">http://www.math.sci.hiroshima-u.ac.jp/~m-mat/MT/MT2002/emt19937ar.html</a></p>
+<blockquote class="doxtable">
+<p>To manually generate a key to seed MT, use <a class="el" href="group__debug.html#ga95012dad46509b4b461974c34cfd7b3d" title="Seed the Mersenne Twister used for random number generation in the QuEST environment with a user defi...">seedQuEST()</a> </p>
+</blockquote>
+<p>Presently, only the following functions involve random generation (through internal function <a class="el" href="QuEST__common_8c.html#a9d19fc690afb425d0df5feb09be567a3">generateMeasurementOutcome()</a>):</p><ul>
+<li><a class="el" href="group__normgate.html#ga2a3794103125f1e3cfa103f8b1963656" title="Measures a single qubit, collapsing it randomly to 0 or 1.">measure()</a></li>
+<li><a class="el" href="group__normgate.html#gae192ac0759e46c7b20a7182020155240" title="Measures a single qubit, collapsing it randomly to 0 or 1, and additionally gives the probability of ...">measureWithStats()</a></li>
+</ul>
+<dl class="section see"><dt>See also</dt><dd><ul>
+<li><a class="el" href="group__debug.html#ga95012dad46509b4b461974c34cfd7b3d" title="Seed the Mersenne Twister used for random number generation in the QuEST environment with a user defi...">seedQuEST()</a></li>
+</ul>
+</dd></dl>
 <dl class="section author"><dt>Author</dt><dd>Ania Brown </dd>
 <dd>
 Balint Koczor (Windows compatibility) </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="QuEST__cpu__distributed_8c_source.html#l01318">1318</a> of file <a class="el" href="QuEST__cpu__distributed_8c_source.html">QuEST_cpu_distributed.c</a>.</p>
-<div class="fragment"><div class="line"><a name="l01318"></a><span class="lineno"> 1318</span>&#160;                       {</div>
-<div class="line"><a name="l01319"></a><span class="lineno"> 1319</span>&#160;    <span class="comment">// init MT random number generator with three keys -- time and pid</span></div>
-<div class="line"><a name="l01320"></a><span class="lineno"> 1320</span>&#160;    <span class="comment">// for the MPI version, it is ok that all procs will get the same seed as random numbers will only be </span></div>
-<div class="line"><a name="l01321"></a><span class="lineno"> 1321</span>&#160;    <span class="comment">// used by the master process</span></div>
-<div class="line"><a name="l01322"></a><span class="lineno"> 1322</span>&#160; </div>
-<div class="line"><a name="l01323"></a><span class="lineno"> 1323</span>&#160;    <span class="keywordtype">unsigned</span> <span class="keywordtype">long</span> <span class="keywordtype">int</span> key[2];</div>
-<div class="line"><a name="l01324"></a><span class="lineno"> 1324</span>&#160;    <a class="code" href="QuEST__common_8c.html#a2b323b65cd6512720e6aa27c182fcea0">getQuESTDefaultSeedKey</a>(key);</div>
-<div class="line"><a name="l01325"></a><span class="lineno"> 1325</span>&#160;    <span class="comment">// this seed will be used to generate the same random number on all procs,</span></div>
-<div class="line"><a name="l01326"></a><span class="lineno"> 1326</span>&#160;    <span class="comment">// therefore we want to make sure all procs receive the same key</span></div>
-<div class="line"><a name="l01327"></a><span class="lineno"> 1327</span>&#160;    MPI_Bcast(key, 2, MPI_UNSIGNED_LONG, 0, MPI_COMM_WORLD);</div>
-<div class="line"><a name="l01328"></a><span class="lineno"> 1328</span>&#160;    <a class="code" href="mt19937ar_8c.html#ac1283f9b1ed571332f5ffe53545ffc16">init_by_array</a>(key, 2);</div>
-<div class="line"><a name="l01329"></a><span class="lineno"> 1329</span>&#160;}</div>
+<p class="definition">Definition at line <a class="el" href="QuEST__cpu__distributed_8c_source.html#l01384">1384</a> of file <a class="el" href="QuEST__cpu__distributed_8c_source.html">QuEST_cpu_distributed.c</a>.</p>
+<div class="fragment"><div class="line"><a name="l01384"></a><span class="lineno"> 1384</span>&#160;                       {</div>
+<div class="line"><a name="l01385"></a><span class="lineno"> 1385</span>&#160;    <span class="comment">// init MT random number generator with three keys -- time and pid</span></div>
+<div class="line"><a name="l01386"></a><span class="lineno"> 1386</span>&#160;    <span class="comment">// for the MPI version, it is ok that all procs will get the same seed as random numbers will only be </span></div>
+<div class="line"><a name="l01387"></a><span class="lineno"> 1387</span>&#160;    <span class="comment">// used by the master process</span></div>
+<div class="line"><a name="l01388"></a><span class="lineno"> 1388</span>&#160; </div>
+<div class="line"><a name="l01389"></a><span class="lineno"> 1389</span>&#160;    <span class="keywordtype">unsigned</span> <span class="keywordtype">long</span> <span class="keywordtype">int</span> key[2];</div>
+<div class="line"><a name="l01390"></a><span class="lineno"> 1390</span>&#160;    <a class="code" href="QuEST__common_8c.html#a2b323b65cd6512720e6aa27c182fcea0">getQuESTDefaultSeedKey</a>(key);</div>
+<div class="line"><a name="l01391"></a><span class="lineno"> 1391</span>&#160;    <span class="comment">// this seed will be used to generate the same random number on all procs,</span></div>
+<div class="line"><a name="l01392"></a><span class="lineno"> 1392</span>&#160;    <span class="comment">// therefore we want to make sure all procs receive the same key</span></div>
+<div class="line"><a name="l01393"></a><span class="lineno"> 1393</span>&#160;    MPI_Bcast(key, 2, MPI_UNSIGNED_LONG, 0, MPI_COMM_WORLD);</div>
+<div class="line"><a name="l01394"></a><span class="lineno"> 1394</span>&#160;    <a class="code" href="mt19937ar_8c.html#ac1283f9b1ed571332f5ffe53545ffc16">init_by_array</a>(key, 2);</div>
+<div class="line"><a name="l01395"></a><span class="lineno"> 1395</span>&#160;}</div>
 </div><!-- fragment -->
-<p class="reference">References <a class="el" href="QuEST__common_8c_source.html#l00182">getQuESTDefaultSeedKey()</a>, and <a class="el" href="mt19937ar_8c_source.html#l00080">init_by_array()</a>.</p>
+<p class="reference">References <a class="el" href="QuEST__common_8c_source.html#l00195">getQuESTDefaultSeedKey()</a>, and <a class="el" href="mt19937ar_8c_source.html#l00080">init_by_array()</a>.</p>
 
 <p class="reference">Referenced by <a class="el" href="QuEST__cpu__distributed_8c_source.html#l00129">createQuESTEnv()</a>.</p>
 
@@ -710,6 +742,10 @@ Balint Koczor (Windows compatibility) </dd></dl>
 </div><div class="memdoc">
 
 <p>Guarantees that all code up to the given point has been executed on all nodes (if running in distributed mode) </p>
+<dl class="section see"><dt>See also</dt><dd><ul>
+<li><a class="el" href="group__debug.html#gac7e38d768a1bd79019f88cc1e6295092" title="Performs a logical AND on all successCodes held by all processes.">syncQuESTSuccess()</a></li>
+</ul>
+</dd></dl>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">env</td><td>object representing the execution environment. A single instance is used for each program </td></tr>
@@ -723,7 +759,7 @@ Balint Koczor (Windows compatibility) </dd></dl>
 <div class="line"><a name="l00163"></a><span class="lineno">  163</span>&#160;    MPI_Barrier(MPI_COMM_WORLD);</div>
 <div class="line"><a name="l00164"></a><span class="lineno">  164</span>&#160;}</div>
 </div><!-- fragment -->
-<p class="reference">Referenced by <a class="el" href="utilities_8cpp_source.html#l00701">areEqual()</a>, <a class="el" href="QuEST__cpu_8c_source.html#l01625">statevec_initStateFromSingleFile()</a>, <a class="el" href="QuEST__cpu_8c_source.html#l01366">statevec_reportStateToScreen()</a>, <a class="el" href="utilities_8cpp_source.html#l00896">toQMatrix()</a>, <a class="el" href="utilities_8cpp_source.html#l01026">toQureg()</a>, and <a class="el" href="utilities_8cpp_source.html#l00938">toQVector()</a>.</p>
+<p class="reference">Referenced by <a class="el" href="utilities_8cpp_source.html#l00856">areEqual()</a>, <a class="el" href="utilities_8cpp_source.html#l01375">deleteFilesWithPrefixSynch()</a>, <a class="el" href="QuEST__cpu_8c_source.html#l01680">statevec_initStateFromSingleFile()</a>, <a class="el" href="QuEST__cpu_8c_source.html#l01428">statevec_reportStateToScreen()</a>, <a class="el" href="test__data__structures_8cpp_source.html#l00255">TEST_CASE()</a>, <a class="el" href="utilities_8cpp_source.html#l01071">toQMatrix()</a>, <a class="el" href="utilities_8cpp_source.html#l01201">toQureg()</a>, <a class="el" href="utilities_8cpp_source.html#l01113">toQVector()</a>, and <a class="el" href="utilities_8cpp_source.html#l01362">writeToFileSynch()</a>.</p>
 
 </div>
 </div>
@@ -765,24 +801,26 @@ Balint Koczor (Windows compatibility) </dd></dl>
 </div>
 </div><!-- contents -->
 <div class="ttc" id="amt19937ar_8c_html_ac1283f9b1ed571332f5ffe53545ffc16"><div class="ttname"><a href="mt19937ar_8c.html#ac1283f9b1ed571332f5ffe53545ffc16">init_by_array</a></div><div class="ttdeci">void init_by_array(unsigned long init_key[], int key_length)</div><div class="ttdef"><b>Definition:</b> <a href="mt19937ar_8c_source.html#l00080">mt19937ar.c:80</a></div></div>
-<div class="ttc" id="astructQuESTEnv_html_aa648bb336cf8598467cb62db00b9cee8"><div class="ttname"><a href="structQuESTEnv.html#aa648bb336cf8598467cb62db00b9cee8">QuESTEnv::rank</a></div><div class="ttdeci">int rank</div><div class="ttdef"><b>Definition:</b> <a href="QuEST_8h_source.html#l00244">QuEST.h:244</a></div></div>
-<div class="ttc" id="astructQureg_html_aa3deb7163aab90a61e755a1f200f5413"><div class="ttname"><a href="structQureg.html#aa3deb7163aab90a61e755a1f200f5413">Qureg::numChunks</a></div><div class="ttdeci">int numChunks</div><div class="ttdoc">Number of chunks the state vector is broken up into – the number of MPI processes used.</div><div class="ttdef"><b>Definition:</b> <a href="QuEST_8h_source.html#l00219">QuEST.h:219</a></div></div>
-<div class="ttc" id="aQuEST__common_8c_html_a2b323b65cd6512720e6aa27c182fcea0"><div class="ttname"><a href="QuEST__common_8c.html#a2b323b65cd6512720e6aa27c182fcea0">getQuESTDefaultSeedKey</a></div><div class="ttdeci">void getQuESTDefaultSeedKey(unsigned long int *key)</div><div class="ttdef"><b>Definition:</b> <a href="QuEST__common_8c_source.html#l00182">QuEST_common.c:182</a></div></div>
+<div class="ttc" id="agroup__debug_html_ga924ef2dbda6b733b4041270077c76ece"><div class="ttname"><a href="group__debug.html#ga924ef2dbda6b733b4041270077c76ece">copyStateFromGPU</a></div><div class="ttdeci">void copyStateFromGPU(Qureg qureg)</div><div class="ttdoc">In GPU mode, this copies the state-vector (or density matrix) from GPU memory (qureg....</div><div class="ttdef"><b>Definition:</b> <a href="QuEST__cpu_8c_source.html#l00039">QuEST_cpu.c:39</a></div></div>
+<div class="ttc" id="astructQuESTEnv_html_aa648bb336cf8598467cb62db00b9cee8"><div class="ttname"><a href="structQuESTEnv.html#aa648bb336cf8598467cb62db00b9cee8">QuESTEnv::rank</a></div><div class="ttdeci">int rank</div><div class="ttdef"><b>Definition:</b> <a href="QuEST_8h_source.html#l00363">QuEST.h:363</a></div></div>
+<div class="ttc" id="astructQureg_html_aa3deb7163aab90a61e755a1f200f5413"><div class="ttname"><a href="structQureg.html#aa3deb7163aab90a61e755a1f200f5413">Qureg::numChunks</a></div><div class="ttdeci">int numChunks</div><div class="ttdoc">Number of chunks the state vector is broken up into – the number of MPI processes used.</div><div class="ttdef"><b>Definition:</b> <a href="QuEST_8h_source.html#l00338">QuEST.h:338</a></div></div>
+<div class="ttc" id="aQuEST__common_8c_html_a2b323b65cd6512720e6aa27c182fcea0"><div class="ttname"><a href="QuEST__common_8c.html#a2b323b65cd6512720e6aa27c182fcea0">getQuESTDefaultSeedKey</a></div><div class="ttdeci">void getQuESTDefaultSeedKey(unsigned long int *key)</div><div class="ttdef"><b>Definition:</b> <a href="QuEST__common_8c_source.html#l00195">QuEST_common.c:195</a></div></div>
 <div class="ttc" id="agroup__type_html_ga7740e349b4f8bae6451547680f0ce2d6"><div class="ttname"><a href="group__type.html#ga7740e349b4f8bae6451547680f0ce2d6">qreal</a></div><div class="ttdeci">#define qreal</div></div>
-<div class="ttc" id="astructQureg_html_a0a86e8a50ea8c998b4a0a6640c5a1218"><div class="ttname"><a href="structQureg.html#a0a86e8a50ea8c998b4a0a6640c5a1218">Qureg::numQubitsInStateVec</a></div><div class="ttdeci">int numQubitsInStateVec</div><div class="ttdoc">Number of qubits in the state-vector - this is double the number represented for mixed states.</div><div class="ttdef"><b>Definition:</b> <a href="QuEST_8h_source.html#l00210">QuEST.h:210</a></div></div>
-<div class="ttc" id="agroup__debug_html_ga51a64b05d31ef9bcf6a63ce26c0092db"><div class="ttname"><a href="group__debug.html#ga51a64b05d31ef9bcf6a63ce26c0092db">invalidQuESTInputError</a></div><div class="ttdeci">void invalidQuESTInputError(const char *errMsg, const char *errFunc)</div><div class="ttdoc">An internal function called when invalid arguments are passed to a QuEST API call,...</div><div class="ttdef"><b>Definition:</b> <a href="QuEST__validation_8c_source.html#l00176">QuEST_validation.c:176</a></div></div>
-<div class="ttc" id="astructQureg_html_ac2929e681d3d95591c18cf168dbbe4f0"><div class="ttname"><a href="structQureg.html#ac2929e681d3d95591c18cf168dbbe4f0">Qureg::chunkId</a></div><div class="ttdeci">int chunkId</div><div class="ttdoc">The position of the chunk of the state vector held by this process in the full state vector.</div><div class="ttdef"><b>Definition:</b> <a href="QuEST_8h_source.html#l00217">QuEST.h:217</a></div></div>
-<div class="ttc" id="aQuEST__validation_8c_html_aa37cc778ac42f5350830b90d0292b501"><div class="ttname"><a href="QuEST__validation_8c.html#aa37cc778ac42f5350830b90d0292b501">exitWithError</a></div><div class="ttdeci">void exitWithError(const char *msg, const char *func)</div><div class="ttdef"><b>Definition:</b> <a href="QuEST__validation_8c_source.html#l00167">QuEST_validation.c:167</a></div></div>
-<div class="ttc" id="astructQureg_html_ab0ea0358482b62f43fdd781469607d97"><div class="ttname"><a href="structQureg.html#ab0ea0358482b62f43fdd781469607d97">Qureg::numAmpsPerChunk</a></div><div class="ttdeci">long long int numAmpsPerChunk</div><div class="ttdoc">Number of probability amplitudes held in stateVec by this process In the non-MPI version,...</div><div class="ttdef"><b>Definition:</b> <a href="QuEST_8h_source.html#l00213">QuEST.h:213</a></div></div>
-<div class="ttc" id="astructPauliHamil_html_ac1c6c9f6299cf83bbba88123216c3cac"><div class="ttname"><a href="structPauliHamil.html#ac1c6c9f6299cf83bbba88123216c3cac">PauliHamil::termCoeffs</a></div><div class="ttdeci">qreal * termCoeffs</div><div class="ttdoc">The coefficient of each Pauli product. This is a length numSumTerms array.</div><div class="ttdef"><b>Definition:</b> <a href="QuEST_8h_source.html#l00164">QuEST.h:164</a></div></div>
-<div class="ttc" id="astructPauliHamil_html_a4b8d38c403553c07ceddcd40c46ce6c8"><div class="ttname"><a href="structPauliHamil.html#a4b8d38c403553c07ceddcd40c46ce6c8">PauliHamil::pauliCodes</a></div><div class="ttdeci">enum pauliOpType * pauliCodes</div><div class="ttdoc">The Pauli operators acting on each qubit, flattened over every operator.</div><div class="ttdef"><b>Definition:</b> <a href="QuEST_8h_source.html#l00162">QuEST.h:162</a></div></div>
-<div class="ttc" id="aQuEST__internal_8h_html_a1e57230c7995447039e62a84c0a36524"><div class="ttname"><a href="QuEST__internal_8h.html#a1e57230c7995447039e62a84c0a36524">statevec_reportStateToScreen</a></div><div class="ttdeci">void statevec_reportStateToScreen(Qureg qureg, QuESTEnv env, int reportRank)</div><div class="ttdoc">Print the current state vector of probability amplitudes for a set of qubits to standard out.</div><div class="ttdef"><b>Definition:</b> <a href="QuEST__cpu_8c_source.html#l01366">QuEST_cpu.c:1366</a></div></div>
-<div class="ttc" id="astructQuESTEnv_html_af22aacd7c9905accae28484785c193b4"><div class="ttname"><a href="structQuESTEnv.html#af22aacd7c9905accae28484785c193b4">QuESTEnv::numRanks</a></div><div class="ttdeci">int numRanks</div><div class="ttdef"><b>Definition:</b> <a href="QuEST_8h_source.html#l00245">QuEST.h:245</a></div></div>
-<div class="ttc" id="astructPauliHamil_html_a737e46b40ef8990cf004d22eb9dbe2e4"><div class="ttname"><a href="structPauliHamil.html#a737e46b40ef8990cf004d22eb9dbe2e4">PauliHamil::numSumTerms</a></div><div class="ttdeci">int numSumTerms</div><div class="ttdoc">The number of terms in the weighted sum, or the number of Pauli products.</div><div class="ttdef"><b>Definition:</b> <a href="QuEST_8h_source.html#l00166">QuEST.h:166</a></div></div>
-<div class="ttc" id="aQuEST__internal_8h_html_ad9fd3017ea40cf63fd04b39e03494972"><div class="ttname"><a href="QuEST__internal_8h.html#ad9fd3017ea40cf63fd04b39e03494972">statevec_initDebugState</a></div><div class="ttdeci">void statevec_initDebugState(Qureg qureg)</div><div class="ttdoc">Initialise the state vector of probability amplitudes to an (unphysical) state with each component of...</div><div class="ttdef"><b>Definition:</b> <a href="QuEST__cpu_8c_source.html#l01591">QuEST_cpu.c:1591</a></div></div>
-<div class="ttc" id="aQuEST__validation_8c_html_a066b0c4d0b02a0f3b9be7e5c68d9de6a"><div class="ttname"><a href="QuEST__validation_8c.html#a066b0c4d0b02a0f3b9be7e5c68d9de6a">validatePauliHamil</a></div><div class="ttdeci">void validatePauliHamil(PauliHamil hamil, const char *caller)</div><div class="ttdef"><b>Definition:</b> <a href="QuEST__validation_8c_source.html#l00619">QuEST_validation.c:619</a></div></div>
-<div class="ttc" id="astructQureg_html_a441e4cacef6bd17adb9813c7442d42fe"><div class="ttname"><a href="structQureg.html#a441e4cacef6bd17adb9813c7442d42fe">Qureg::stateVec</a></div><div class="ttdeci">ComplexArray stateVec</div><div class="ttdoc">Computational state amplitudes - a subset thereof in the MPI version.</div><div class="ttdef"><b>Definition:</b> <a href="QuEST_8h_source.html#l00222">QuEST.h:222</a></div></div>
-<div class="ttc" id="astructPauliHamil_html_acb49fff0e3160ea1904c9ca34408b4e1"><div class="ttname"><a href="structPauliHamil.html#acb49fff0e3160ea1904c9ca34408b4e1">PauliHamil::numQubits</a></div><div class="ttdeci">int numQubits</div><div class="ttdoc">The number of qubits for which this Hamiltonian is defined.</div><div class="ttdef"><b>Definition:</b> <a href="QuEST_8h_source.html#l00168">QuEST.h:168</a></div></div>
+<div class="ttc" id="astructQureg_html_a0a86e8a50ea8c998b4a0a6640c5a1218"><div class="ttname"><a href="structQureg.html#a0a86e8a50ea8c998b4a0a6640c5a1218">Qureg::numQubitsInStateVec</a></div><div class="ttdeci">int numQubitsInStateVec</div><div class="ttdoc">Number of qubits in the state-vector - this is double the number represented for mixed states.</div><div class="ttdef"><b>Definition:</b> <a href="QuEST_8h_source.html#l00329">QuEST.h:329</a></div></div>
+<div class="ttc" id="agroup__debug_html_ga51a64b05d31ef9bcf6a63ce26c0092db"><div class="ttname"><a href="group__debug.html#ga51a64b05d31ef9bcf6a63ce26c0092db">invalidQuESTInputError</a></div><div class="ttdeci">void invalidQuESTInputError(const char *errMsg, const char *errFunc)</div><div class="ttdoc">An internal function called when invalid arguments are passed to a QuEST API call,...</div><div class="ttdef"><b>Definition:</b> <a href="QuEST__validation_8c_source.html#l00208">QuEST_validation.c:208</a></div></div>
+<div class="ttc" id="astructQureg_html_ac2929e681d3d95591c18cf168dbbe4f0"><div class="ttname"><a href="structQureg.html#ac2929e681d3d95591c18cf168dbbe4f0">Qureg::chunkId</a></div><div class="ttdeci">int chunkId</div><div class="ttdoc">The position of the chunk of the state vector held by this process in the full state vector.</div><div class="ttdef"><b>Definition:</b> <a href="QuEST_8h_source.html#l00336">QuEST.h:336</a></div></div>
+<div class="ttc" id="aQuEST__validation_8c_html_aa37cc778ac42f5350830b90d0292b501"><div class="ttname"><a href="QuEST__validation_8c.html#aa37cc778ac42f5350830b90d0292b501">exitWithError</a></div><div class="ttdeci">void exitWithError(const char *msg, const char *func)</div><div class="ttdef"><b>Definition:</b> <a href="QuEST__validation_8c_source.html#l00199">QuEST_validation.c:199</a></div></div>
+<div class="ttc" id="astructQureg_html_ab0ea0358482b62f43fdd781469607d97"><div class="ttname"><a href="structQureg.html#ab0ea0358482b62f43fdd781469607d97">Qureg::numAmpsPerChunk</a></div><div class="ttdeci">long long int numAmpsPerChunk</div><div class="ttdoc">Number of probability amplitudes held in stateVec by this process In the non-MPI version,...</div><div class="ttdef"><b>Definition:</b> <a href="QuEST_8h_source.html#l00332">QuEST.h:332</a></div></div>
+<div class="ttc" id="astructPauliHamil_html_ac1c6c9f6299cf83bbba88123216c3cac"><div class="ttname"><a href="structPauliHamil.html#ac1c6c9f6299cf83bbba88123216c3cac">PauliHamil::termCoeffs</a></div><div class="ttdeci">qreal * termCoeffs</div><div class="ttdoc">The real coefficient of each Pauli product. This is an array of length PauliHamil....</div><div class="ttdef"><b>Definition:</b> <a href="QuEST_8h_source.html#l00283">QuEST.h:283</a></div></div>
+<div class="ttc" id="astructPauliHamil_html_a4b8d38c403553c07ceddcd40c46ce6c8"><div class="ttname"><a href="structPauliHamil.html#a4b8d38c403553c07ceddcd40c46ce6c8">PauliHamil::pauliCodes</a></div><div class="ttdeci">enum pauliOpType * pauliCodes</div><div class="ttdoc">The Pauli operators acting on each qubit, flattened over every operator.</div><div class="ttdef"><b>Definition:</b> <a href="QuEST_8h_source.html#l00281">QuEST.h:281</a></div></div>
+<div class="ttc" id="aQuEST__internal_8h_html_a1e57230c7995447039e62a84c0a36524"><div class="ttname"><a href="QuEST__internal_8h.html#a1e57230c7995447039e62a84c0a36524">statevec_reportStateToScreen</a></div><div class="ttdeci">void statevec_reportStateToScreen(Qureg qureg, QuESTEnv env, int reportRank)</div><div class="ttdoc">Print the current state vector of probability amplitudes for a set of qubits to standard out.</div><div class="ttdef"><b>Definition:</b> <a href="QuEST__cpu_8c_source.html#l01428">QuEST_cpu.c:1428</a></div></div>
+<div class="ttc" id="agroup__debug_html_ga11448560006dd165128e404b54ebb2f7"><div class="ttname"><a href="group__debug.html#ga11448560006dd165128e404b54ebb2f7">copyStateToGPU</a></div><div class="ttdeci">void copyStateToGPU(Qureg qureg)</div><div class="ttdoc">In GPU mode, this copies the state-vector (or density matrix) from RAM (qureg.stateVec) to VRAM / GPU...</div><div class="ttdef"><b>Definition:</b> <a href="QuEST__cpu_8c_source.html#l00036">QuEST_cpu.c:36</a></div></div>
+<div class="ttc" id="astructQuESTEnv_html_af22aacd7c9905accae28484785c193b4"><div class="ttname"><a href="structQuESTEnv.html#af22aacd7c9905accae28484785c193b4">QuESTEnv::numRanks</a></div><div class="ttdeci">int numRanks</div><div class="ttdef"><b>Definition:</b> <a href="QuEST_8h_source.html#l00364">QuEST.h:364</a></div></div>
+<div class="ttc" id="astructPauliHamil_html_a737e46b40ef8990cf004d22eb9dbe2e4"><div class="ttname"><a href="structPauliHamil.html#a737e46b40ef8990cf004d22eb9dbe2e4">PauliHamil::numSumTerms</a></div><div class="ttdeci">int numSumTerms</div><div class="ttdoc">The number of terms in the weighted sum, or the number of Pauli products.</div><div class="ttdef"><b>Definition:</b> <a href="QuEST_8h_source.html#l00285">QuEST.h:285</a></div></div>
+<div class="ttc" id="aQuEST__internal_8h_html_ad9fd3017ea40cf63fd04b39e03494972"><div class="ttname"><a href="QuEST__internal_8h.html#ad9fd3017ea40cf63fd04b39e03494972">statevec_initDebugState</a></div><div class="ttdeci">void statevec_initDebugState(Qureg qureg)</div><div class="ttdoc">Initialise the state vector of probability amplitudes to an (unphysical) state with each component of...</div><div class="ttdef"><b>Definition:</b> <a href="QuEST__cpu_8c_source.html#l01646">QuEST_cpu.c:1646</a></div></div>
+<div class="ttc" id="aQuEST__validation_8c_html_a066b0c4d0b02a0f3b9be7e5c68d9de6a"><div class="ttname"><a href="QuEST__validation_8c.html#a066b0c4d0b02a0f3b9be7e5c68d9de6a">validatePauliHamil</a></div><div class="ttdeci">void validatePauliHamil(PauliHamil hamil, const char *caller)</div><div class="ttdef"><b>Definition:</b> <a href="QuEST__validation_8c_source.html#l00651">QuEST_validation.c:651</a></div></div>
+<div class="ttc" id="astructQureg_html_a441e4cacef6bd17adb9813c7442d42fe"><div class="ttname"><a href="structQureg.html#a441e4cacef6bd17adb9813c7442d42fe">Qureg::stateVec</a></div><div class="ttdeci">ComplexArray stateVec</div><div class="ttdoc">Computational state amplitudes - a subset thereof in the MPI version.</div><div class="ttdef"><b>Definition:</b> <a href="QuEST_8h_source.html#l00341">QuEST.h:341</a></div></div>
+<div class="ttc" id="astructPauliHamil_html_acb49fff0e3160ea1904c9ca34408b4e1"><div class="ttname"><a href="structPauliHamil.html#acb49fff0e3160ea1904c9ca34408b4e1">PauliHamil::numQubits</a></div><div class="ttdeci">int numQubits</div><div class="ttdoc">The number of qubits informing the Hilbert dimension of the Hamiltonian.</div><div class="ttdef"><b>Definition:</b> <a href="QuEST_8h_source.html#l00287">QuEST.h:287</a></div></div>
 <!-- HTML footer for doxygen 1.8.8-->
 <!-- start footer part -->
 </div>

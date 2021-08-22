@@ -27,7 +27,7 @@
             <div class="container">
                 <div class="navbar-header">
                     <a class="navbar-brand"><img alt="Logo" src="logo.png"/></a>
-                    <a class="navbar-brand"><b>QuEST</b> v3.2.1<br>The Quantum Exact Simulation Toolkit</a>
+                    <a class="navbar-brand"><b>QuEST</b> v3.3.0<br>The Quantum Exact Simulation Toolkit</a>
                 </div>
             </div>
         </nav>
@@ -71,9 +71,25 @@ Data Fields</h2></td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>Represents a 2x2 matrix of complex numbers. </p>
-<dl class="section author"><dt>Author</dt><dd>Balint Koczor </dd></dl>
+<p>In C, a <a class="el" href="structComplexMatrix2.html" title="Represents a 2x2 matrix of complex numbers.">ComplexMatrix2</a> can be initialised by separately specifying the real and imaginary components as nested arrays. <br  />
+For example, </p><div class="fragment"><div class="line"><a class="code" href="structComplexMatrix2.html">ComplexMatrix2</a> m = {</div>
+<div class="line">    .<a class="code" href="structComplexMatrix2.html#a3ea98d545b67a190ee6abe936c72076f">real</a> = {{1,2}, </div>
+<div class="line">             {3,4}},</div>
+<div class="line">    .imag = {{5,6}, </div>
+<div class="line">             {7, 8}}};</div>
+</div><!-- fragment --><p>specifies matrix </p><p class="formulaDsp">
+<img class="formulaDsp" alt="\[ m = \begin{pmatrix} 1 + 5\,i &amp; 2+6\,i \\ 3 + 7\,i &amp; 4+ 8\,i \end{pmatrix} \]" src="form_0.png"/>
+</p>
+<dl class="section see"><dt>See also</dt><dd><ul>
+<li><a class="el" href="structComplexMatrix4.html" title="Represents a 4x4 matrix of complex numbers.">ComplexMatrix4</a></li>
+<li><a class="el" href="group__type.html#ga815103261fb22ea9690e1427571df00e" title="Allocate dynamic memory for a square complex matrix of any size, which can be passed to functions lik...">createComplexMatrixN()</a></li>
+</ul>
+</dd></dl>
+<dl class="section author"><dt>Author</dt><dd>Balint Koczor </dd>
+<dd>
+Tyson Jones (doc) </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="QuEST_8h_source.html#l00114">114</a> of file <a class="el" href="QuEST_8h_source.html">QuEST.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="QuEST_8h_source.html#l00137">137</a> of file <a class="el" href="QuEST_8h_source.html">QuEST.h</a>.</p>
 </div><h2 class="groupheader">Field Documentation</h2>
 <a id="a3a2b60a9e00ccef054a6de3b9307c1be"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a3a2b60a9e00ccef054a6de3b9307c1be">&#9670;&nbsp;</a></span>imag</h2>
@@ -87,9 +103,9 @@ Data Fields</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="QuEST_8h_source.html#l00117">117</a> of file <a class="el" href="QuEST_8h_source.html">QuEST.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="QuEST_8h_source.html#l00140">140</a> of file <a class="el" href="QuEST_8h_source.html">QuEST.h</a>.</p>
 
-<p class="reference">Referenced by <a class="el" href="QuEST__common_8c_source.html#l00676">densmatr_mixPauli()</a>, <a class="el" href="QuEST__common_8c_source.html#l00136">getComplexPairAndPhaseFromUnitary()</a>, <a class="el" href="QuEST__cpu__distributed_8c_source.html#l00283">getRotAngleFromUnitaryMatrix()</a>, <a class="el" href="QuEST__cpu_8c_source.html#l02241">statevec_controlledUnitaryLocal()</a>, <a class="el" href="QuEST__cpu_8c_source.html#l02173">statevec_multiControlledUnitaryLocal()</a>, and <a class="el" href="QuEST__cpu_8c_source.html#l01932">statevec_unitaryLocal()</a>.</p>
+<p class="reference">Referenced by <a class="el" href="QuEST__common_8c_source.html#l00730">densmatr_mixPauli()</a>, <a class="el" href="QuEST__common_8c_source.html#l00142">getComplexPairAndPhaseFromUnitary()</a>, <a class="el" href="QuEST__cpu__distributed_8c_source.html#l00293">getRotAngleFromUnitaryMatrix()</a>, <a class="el" href="QuEST__cpu_8c_source.html#l02297">statevec_controlledUnitaryLocal()</a>, <a class="el" href="QuEST__common_8c_source.html#l00463">statevec_multiControlledMultiRotatePauli()</a>, <a class="el" href="QuEST__cpu_8c_source.html#l02229">statevec_multiControlledUnitaryLocal()</a>, and <a class="el" href="QuEST__cpu_8c_source.html#l01987">statevec_unitaryLocal()</a>.</p>
 
 </div>
 </div>
@@ -105,9 +121,9 @@ Data Fields</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="QuEST_8h_source.html#l00116">116</a> of file <a class="el" href="QuEST_8h_source.html">QuEST.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="QuEST_8h_source.html#l00139">139</a> of file <a class="el" href="QuEST_8h_source.html">QuEST.h</a>.</p>
 
-<p class="reference">Referenced by <a class="el" href="QuEST__common_8c_source.html#l00676">densmatr_mixPauli()</a>, <a class="el" href="QuEST__common_8c_source.html#l00136">getComplexPairAndPhaseFromUnitary()</a>, <a class="el" href="QuEST__cpu__distributed_8c_source.html#l00283">getRotAngleFromUnitaryMatrix()</a>, <a class="el" href="QuEST__cpu_8c_source.html#l02241">statevec_controlledUnitaryLocal()</a>, <a class="el" href="QuEST__cpu_8c_source.html#l02173">statevec_multiControlledUnitaryLocal()</a>, <a class="el" href="QuEST__cpu_8c_source.html#l01932">statevec_unitaryLocal()</a>, and <a class="el" href="test__decoherence_8cpp_source.html#l00520">TEST_CASE()</a>.</p>
+<p class="reference">Referenced by <a class="el" href="QuEST__common_8c_source.html#l00730">densmatr_mixPauli()</a>, <a class="el" href="QuEST__common_8c_source.html#l00142">getComplexPairAndPhaseFromUnitary()</a>, <a class="el" href="QuEST__cpu__distributed_8c_source.html#l00293">getRotAngleFromUnitaryMatrix()</a>, <a class="el" href="QuEST__cpu_8c_source.html#l02297">statevec_controlledUnitaryLocal()</a>, <a class="el" href="QuEST__common_8c_source.html#l00463">statevec_multiControlledMultiRotatePauli()</a>, <a class="el" href="QuEST__cpu_8c_source.html#l02229">statevec_multiControlledUnitaryLocal()</a>, <a class="el" href="QuEST__cpu_8c_source.html#l01987">statevec_unitaryLocal()</a>, and <a class="el" href="test__decoherence_8cpp_source.html#l00520">TEST_CASE()</a>.</p>
 
 </div>
 </div>
@@ -115,6 +131,8 @@ Data Fields</h2></td></tr>
 <li><a class="el" href="QuEST_8h_source.html">QuEST.h</a></li>
 </ul>
 </div><!-- contents -->
+<div class="ttc" id="astructComplexMatrix2_html_a3ea98d545b67a190ee6abe936c72076f"><div class="ttname"><a href="structComplexMatrix2.html#a3ea98d545b67a190ee6abe936c72076f">ComplexMatrix2::real</a></div><div class="ttdeci">qreal real[2][2]</div><div class="ttdef"><b>Definition:</b> <a href="QuEST_8h_source.html#l00139">QuEST.h:139</a></div></div>
+<div class="ttc" id="astructComplexMatrix2_html"><div class="ttname"><a href="structComplexMatrix2.html">ComplexMatrix2</a></div><div class="ttdoc">Represents a 2x2 matrix of complex numbers.</div><div class="ttdef"><b>Definition:</b> <a href="QuEST_8h_source.html#l00137">QuEST.h:137</a></div></div>
 <!-- HTML footer for doxygen 1.8.8-->
 <!-- start footer part -->
 </div>

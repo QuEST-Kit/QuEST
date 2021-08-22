@@ -27,7 +27,7 @@
             <div class="container">
                 <div class="navbar-header">
                     <a class="navbar-brand"><img alt="Logo" src="logo.png"/></a>
-                    <a class="navbar-brand"><b>QuEST</b> v3.2.1<br>The Quantum Exact Simulation Toolkit</a>
+                    <a class="navbar-brand"><b>QuEST</b> v3.3.0<br>The Quantum Exact Simulation Toolkit</a>
                 </div>
             </div>
         </nav>
@@ -57,7 +57,7 @@ $(function() {
 </div><!--header-->
 <div class="contents">
 
-<p>Represents a weighted sum of pauli products.  
+<p>A Pauli Hamiltonian, expressed as a real-weighted sum of pauli products, and which can hence represent any Hermitian operator.  
  <a href="structPauliHamil.html#details">More...</a></p>
 
 <p><code>#include &lt;<a class="el" href="QuEST_8h_source.html">QuEST.h</a>&gt;</code></p>
@@ -65,7 +65,7 @@ $(function() {
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-attribs"></a>
 Data Fields</h2></td></tr>
 <tr class="memitem:acb49fff0e3160ea1904c9ca34408b4e1"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structPauliHamil.html#acb49fff0e3160ea1904c9ca34408b4e1">numQubits</a></td></tr>
-<tr class="memdesc:acb49fff0e3160ea1904c9ca34408b4e1"><td class="mdescLeft">&#160;</td><td class="mdescRight">The number of qubits for which this Hamiltonian is defined.  <a href="structPauliHamil.html#acb49fff0e3160ea1904c9ca34408b4e1">More...</a><br /></td></tr>
+<tr class="memdesc:acb49fff0e3160ea1904c9ca34408b4e1"><td class="mdescLeft">&#160;</td><td class="mdescRight">The number of qubits informing the Hilbert dimension of the Hamiltonian.  <a href="structPauliHamil.html#acb49fff0e3160ea1904c9ca34408b4e1">More...</a><br /></td></tr>
 <tr class="separator:acb49fff0e3160ea1904c9ca34408b4e1"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a737e46b40ef8990cf004d22eb9dbe2e4"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structPauliHamil.html#a737e46b40ef8990cf004d22eb9dbe2e4">numSumTerms</a></td></tr>
 <tr class="memdesc:a737e46b40ef8990cf004d22eb9dbe2e4"><td class="mdescLeft">&#160;</td><td class="mdescRight">The number of terms in the weighted sum, or the number of Pauli products.  <a href="structPauliHamil.html#a737e46b40ef8990cf004d22eb9dbe2e4">More...</a><br /></td></tr>
@@ -74,14 +74,14 @@ Data Fields</h2></td></tr>
 <tr class="memdesc:a4b8d38c403553c07ceddcd40c46ce6c8"><td class="mdescLeft">&#160;</td><td class="mdescRight">The Pauli operators acting on each qubit, flattened over every operator.  <a href="structPauliHamil.html#a4b8d38c403553c07ceddcd40c46ce6c8">More...</a><br /></td></tr>
 <tr class="separator:a4b8d38c403553c07ceddcd40c46ce6c8"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ac1c6c9f6299cf83bbba88123216c3cac"><td class="memItemLeft" align="right" valign="top"><a class="el" href="group__type.html#ga7740e349b4f8bae6451547680f0ce2d6">qreal</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structPauliHamil.html#ac1c6c9f6299cf83bbba88123216c3cac">termCoeffs</a></td></tr>
-<tr class="memdesc:ac1c6c9f6299cf83bbba88123216c3cac"><td class="mdescLeft">&#160;</td><td class="mdescRight">The coefficient of each Pauli product. This is a length <code>numSumTerms</code> array.  <a href="structPauliHamil.html#ac1c6c9f6299cf83bbba88123216c3cac">More...</a><br /></td></tr>
+<tr class="memdesc:ac1c6c9f6299cf83bbba88123216c3cac"><td class="mdescLeft">&#160;</td><td class="mdescRight">The real coefficient of each Pauli product. This is an array of length <a class="el" href="structPauliHamil.html#a737e46b40ef8990cf004d22eb9dbe2e4" title="The number of terms in the weighted sum, or the number of Pauli products.">PauliHamil.numSumTerms</a>;.  <a href="structPauliHamil.html#ac1c6c9f6299cf83bbba88123216c3cac">More...</a><br /></td></tr>
 <tr class="separator:ac1c6c9f6299cf83bbba88123216c3cac"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
-<div class="textblock"><p>Represents a weighted sum of pauli products. </p>
+<div class="textblock"><p>A Pauli Hamiltonian, expressed as a real-weighted sum of pauli products, and which can hence represent any Hermitian operator. </p>
 <dl class="section author"><dt>Author</dt><dd>Tyson Jones </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="QuEST_8h_source.html#l00158">158</a> of file <a class="el" href="QuEST_8h_source.html">QuEST.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="QuEST_8h_source.html#l00277">277</a> of file <a class="el" href="QuEST_8h_source.html">QuEST.h</a>.</p>
 </div><h2 class="groupheader">Field Documentation</h2>
 <a id="acb49fff0e3160ea1904c9ca34408b4e1"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#acb49fff0e3160ea1904c9ca34408b4e1">&#9670;&nbsp;</a></span>numQubits</h2>
@@ -95,11 +95,11 @@ Data Fields</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p>The number of qubits for which this Hamiltonian is defined. </p>
+<p>The number of qubits informing the Hilbert dimension of the Hamiltonian. </p>
 
-<p class="definition">Definition at line <a class="el" href="QuEST_8h_source.html#l00168">168</a> of file <a class="el" href="QuEST_8h_source.html">QuEST.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="QuEST_8h_source.html#l00287">287</a> of file <a class="el" href="QuEST_8h_source.html">QuEST.h</a>.</p>
 
-<p class="reference">Referenced by <a class="el" href="QuEST__common_8c_source.html#l00698">applyExponentiatedPauliHamil()</a>, <a class="el" href="QuEST_8c_source.html#l01147">createPauliHamil()</a>, <a class="el" href="QuEST_8c_source.html#l01253">initPauliHamil()</a>, <a class="el" href="QuEST_8c_source.html#l01328">reportPauliHamil()</a>, <a class="el" href="utilities_8cpp_source.html#l01062">setRandomPauliSum()</a>, <a class="el" href="test__data__structures_8cpp_source.html#l00255">TEST_CASE()</a>, <a class="el" href="utilities_8cpp_source.html#l01095">toQMatrix()</a>, <a class="el" href="QuEST__validation_8c_source.html#l00624">validateMatchingQuregPauliHamilDims()</a>, and <a class="el" href="QuEST__validation_8c_source.html#l00619">validatePauliHamil()</a>.</p>
+<p class="reference">Referenced by <a class="el" href="QuEST__cpu_8c_source.html#l01366">agnostic_initDiagonalOpFromPauliHamil()</a>, <a class="el" href="QuEST__common_8c_source.html#l00752">applyExponentiatedPauliHamil()</a>, <a class="el" href="QuEST_8c_source.html#l01543">createDiagonalOpFromPauliHamilFile()</a>, <a class="el" href="QuEST_8c_source.html#l01383">createPauliHamil()</a>, <a class="el" href="QuEST_8c_source.html#l01535">initDiagonalOpFromPauliHamil()</a>, <a class="el" href="QuEST_8c_source.html#l01489">initPauliHamil()</a>, <a class="el" href="QuEST_8c_source.html#l01583">reportPauliHamil()</a>, <a class="el" href="utilities_8cpp_source.html#l01241">setRandomDiagPauliHamil()</a>, <a class="el" href="utilities_8cpp_source.html#l01237">setRandomPauliSum()</a>, <a class="el" href="test__data__structures_8cpp_source.html#l00420">TEST_CASE()</a>, <a class="el" href="utilities_8cpp_source.html#l01282">toQMatrix()</a>, <a class="el" href="QuEST__validation_8c_source.html#l00714">validateDiagPauliHamil()</a>, <a class="el" href="QuEST__validation_8c_source.html#l00723">validateDiagPauliHamilFromFile()</a>, <a class="el" href="QuEST__validation_8c_source.html#l00656">validateMatchingQuregPauliHamilDims()</a>, and <a class="el" href="QuEST__validation_8c_source.html#l00651">validatePauliHamil()</a>.</p>
 
 </div>
 </div>
@@ -117,9 +117,9 @@ Data Fields</h2></td></tr>
 
 <p>The number of terms in the weighted sum, or the number of Pauli products. </p>
 
-<p class="definition">Definition at line <a class="el" href="QuEST_8h_source.html#l00166">166</a> of file <a class="el" href="QuEST_8h_source.html">QuEST.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="QuEST_8h_source.html#l00285">285</a> of file <a class="el" href="QuEST_8h_source.html">QuEST.h</a>.</p>
 
-<p class="reference">Referenced by <a class="el" href="QuEST__common_8c_source.html#l00698">applyExponentiatedPauliHamil()</a>, <a class="el" href="QuEST_8c_source.html#l00819">applyPauliHamil()</a>, <a class="el" href="QuEST_8c_source.html#l00970">calcExpecPauliHamil()</a>, <a class="el" href="QuEST_8c_source.html#l01147">createPauliHamil()</a>, <a class="el" href="QuEST_8c_source.html#l01253">initPauliHamil()</a>, <a class="el" href="QuEST_8c_source.html#l01328">reportPauliHamil()</a>, <a class="el" href="utilities_8cpp_source.html#l01062">setRandomPauliSum()</a>, <a class="el" href="test__data__structures_8cpp_source.html#l00255">TEST_CASE()</a>, <a class="el" href="utilities_8cpp_source.html#l01095">toQMatrix()</a>, and <a class="el" href="QuEST__validation_8c_source.html#l00619">validatePauliHamil()</a>.</p>
+<p class="reference">Referenced by <a class="el" href="QuEST__cpu_8c_source.html#l01366">agnostic_initDiagonalOpFromPauliHamil()</a>, <a class="el" href="QuEST__common_8c_source.html#l00752">applyExponentiatedPauliHamil()</a>, <a class="el" href="QuEST_8c_source.html#l01046">applyPauliHamil()</a>, <a class="el" href="QuEST_8c_source.html#l01206">calcExpecPauliHamil()</a>, <a class="el" href="QuEST_8c_source.html#l01383">createPauliHamil()</a>, <a class="el" href="QuEST_8c_source.html#l01535">initDiagonalOpFromPauliHamil()</a>, <a class="el" href="QuEST_8c_source.html#l01489">initPauliHamil()</a>, <a class="el" href="QuEST_8c_source.html#l01583">reportPauliHamil()</a>, <a class="el" href="utilities_8cpp_source.html#l01241">setRandomDiagPauliHamil()</a>, <a class="el" href="utilities_8cpp_source.html#l01237">setRandomPauliSum()</a>, <a class="el" href="test__data__structures_8cpp_source.html#l00420">TEST_CASE()</a>, <a class="el" href="utilities_8cpp_source.html#l01282">toQMatrix()</a>, <a class="el" href="QuEST__validation_8c_source.html#l00714">validateDiagPauliHamil()</a>, <a class="el" href="QuEST__validation_8c_source.html#l00723">validateDiagPauliHamilFromFile()</a>, and <a class="el" href="QuEST__validation_8c_source.html#l00651">validatePauliHamil()</a>.</p>
 
 </div>
 </div>
@@ -136,11 +136,11 @@ Data Fields</h2></td></tr>
 </div><div class="memdoc">
 
 <p>The Pauli operators acting on each qubit, flattened over every operator. </p>
-<p>This is a length <code>numSumTerms*numQubits</code> array </p>
+<p>This is a flat array of length <a class="el" href="structPauliHamil.html#a737e46b40ef8990cf004d22eb9dbe2e4" title="The number of terms in the weighted sum, or the number of Pauli products.">PauliHamil.numSumTerms</a> * <a class="el" href="structPauliHamil.html#acb49fff0e3160ea1904c9ca34408b4e1" title="The number of qubits informing the Hilbert dimension of the Hamiltonian.">PauliHamil.numQubits</a>. </p>
 
-<p class="definition">Definition at line <a class="el" href="QuEST_8h_source.html#l00162">162</a> of file <a class="el" href="QuEST_8h_source.html">QuEST.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="QuEST_8h_source.html#l00281">281</a> of file <a class="el" href="QuEST_8h_source.html">QuEST.h</a>.</p>
 
-<p class="reference">Referenced by <a class="el" href="QuEST__common_8c_source.html#l00698">applyExponentiatedPauliHamil()</a>, <a class="el" href="QuEST_8c_source.html#l00819">applyPauliHamil()</a>, <a class="el" href="QuEST_8c_source.html#l00970">calcExpecPauliHamil()</a>, <a class="el" href="QuEST_8c_source.html#l01147">createPauliHamil()</a>, <a class="el" href="QuEST_8c_source.html#l01169">createPauliHamilFromFile()</a>, <a class="el" href="QuEST_8c_source.html#l01163">destroyPauliHamil()</a>, <a class="el" href="QuEST_8c_source.html#l01253">initPauliHamil()</a>, <a class="el" href="QuEST_8c_source.html#l01328">reportPauliHamil()</a>, <a class="el" href="utilities_8cpp_source.html#l01062">setRandomPauliSum()</a>, <a class="el" href="test__calculations_8cpp_source.html#l00183">TEST_CASE()</a>, <a class="el" href="utilities_8cpp_source.html#l01095">toQMatrix()</a>, and <a class="el" href="QuEST__validation_8c_source.html#l00619">validatePauliHamil()</a>.</p>
+<p class="reference">Referenced by <a class="el" href="QuEST__cpu_8c_source.html#l01366">agnostic_initDiagonalOpFromPauliHamil()</a>, <a class="el" href="QuEST__common_8c_source.html#l00752">applyExponentiatedPauliHamil()</a>, <a class="el" href="QuEST_8c_source.html#l01046">applyPauliHamil()</a>, <a class="el" href="QuEST_8c_source.html#l01206">calcExpecPauliHamil()</a>, <a class="el" href="QuEST_8c_source.html#l01383">createPauliHamil()</a>, <a class="el" href="QuEST_8c_source.html#l01405">createPauliHamilFromFile()</a>, <a class="el" href="QuEST_8c_source.html#l01399">destroyPauliHamil()</a>, <a class="el" href="QuEST_8c_source.html#l01489">initPauliHamil()</a>, <a class="el" href="QuEST_8c_source.html#l01583">reportPauliHamil()</a>, <a class="el" href="utilities_8cpp_source.html#l01241">setRandomDiagPauliHamil()</a>, <a class="el" href="utilities_8cpp_source.html#l01237">setRandomPauliSum()</a>, <a class="el" href="test__calculations_8cpp_source.html#l00189">TEST_CASE()</a>, <a class="el" href="utilities_8cpp_source.html#l01282">toQMatrix()</a>, <a class="el" href="QuEST__validation_8c_source.html#l00714">validateDiagPauliHamil()</a>, <a class="el" href="QuEST__validation_8c_source.html#l00723">validateDiagPauliHamilFromFile()</a>, and <a class="el" href="QuEST__validation_8c_source.html#l00651">validatePauliHamil()</a>.</p>
 
 </div>
 </div>
@@ -156,11 +156,11 @@ Data Fields</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p>The coefficient of each Pauli product. This is a length <code>numSumTerms</code> array. </p>
+<p>The real coefficient of each Pauli product. This is an array of length <a class="el" href="structPauliHamil.html#a737e46b40ef8990cf004d22eb9dbe2e4" title="The number of terms in the weighted sum, or the number of Pauli products.">PauliHamil.numSumTerms</a>;. </p>
 
-<p class="definition">Definition at line <a class="el" href="QuEST_8h_source.html#l00164">164</a> of file <a class="el" href="QuEST_8h_source.html">QuEST.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="QuEST_8h_source.html#l00283">283</a> of file <a class="el" href="QuEST_8h_source.html">QuEST.h</a>.</p>
 
-<p class="reference">Referenced by <a class="el" href="QuEST__common_8c_source.html#l00698">applyExponentiatedPauliHamil()</a>, <a class="el" href="QuEST_8c_source.html#l00819">applyPauliHamil()</a>, <a class="el" href="QuEST_8c_source.html#l00970">calcExpecPauliHamil()</a>, <a class="el" href="QuEST_8c_source.html#l01147">createPauliHamil()</a>, <a class="el" href="QuEST_8c_source.html#l01169">createPauliHamilFromFile()</a>, <a class="el" href="QuEST_8c_source.html#l01163">destroyPauliHamil()</a>, <a class="el" href="QuEST_8c_source.html#l01253">initPauliHamil()</a>, <a class="el" href="QuEST_8c_source.html#l01328">reportPauliHamil()</a>, <a class="el" href="utilities_8cpp_source.html#l01062">setRandomPauliSum()</a>, <a class="el" href="test__data__structures_8cpp_source.html#l00255">TEST_CASE()</a>, and <a class="el" href="utilities_8cpp_source.html#l01095">toQMatrix()</a>.</p>
+<p class="reference">Referenced by <a class="el" href="QuEST__cpu_8c_source.html#l01366">agnostic_initDiagonalOpFromPauliHamil()</a>, <a class="el" href="QuEST__common_8c_source.html#l00752">applyExponentiatedPauliHamil()</a>, <a class="el" href="QuEST_8c_source.html#l01046">applyPauliHamil()</a>, <a class="el" href="QuEST_8c_source.html#l01206">calcExpecPauliHamil()</a>, <a class="el" href="QuEST_8c_source.html#l01383">createPauliHamil()</a>, <a class="el" href="QuEST_8c_source.html#l01405">createPauliHamilFromFile()</a>, <a class="el" href="QuEST_8c_source.html#l01399">destroyPauliHamil()</a>, <a class="el" href="QuEST_8c_source.html#l01489">initPauliHamil()</a>, <a class="el" href="QuEST_8c_source.html#l01583">reportPauliHamil()</a>, <a class="el" href="utilities_8cpp_source.html#l01241">setRandomDiagPauliHamil()</a>, <a class="el" href="utilities_8cpp_source.html#l01237">setRandomPauliSum()</a>, <a class="el" href="test__data__structures_8cpp_source.html#l00255">TEST_CASE()</a>, and <a class="el" href="utilities_8cpp_source.html#l01282">toQMatrix()</a>.</p>
 
 </div>
 </div>

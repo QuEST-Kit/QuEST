@@ -27,7 +27,7 @@
             <div class="container">
                 <div class="navbar-header">
                     <a class="navbar-brand"><img alt="Logo" src="logo.png"/></a>
-                    <a class="navbar-brand"><b>QuEST</b> v3.2.1<br>The Quantum Exact Simulation Toolkit</a>
+                    <a class="navbar-brand"><b>QuEST</b> v3.3.0<br>The Quantum Exact Simulation Toolkit</a>
                 </div>
             </div>
         </nav>
@@ -91,7 +91,7 @@ Data Fields</h2></td></tr>
 <p>The operator need not be unitary nor Hermitian (which would constrain it to real values)</p>
 <dl class="section author"><dt>Author</dt><dd>Tyson Jones </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="QuEST_8h_source.html#l00178">178</a> of file <a class="el" href="QuEST_8h_source.html">QuEST.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="QuEST_8h_source.html#l00297">297</a> of file <a class="el" href="QuEST_8h_source.html">QuEST.h</a>.</p>
 </div><h2 class="groupheader">Field Documentation</h2>
 <a id="aa91713a22c95a383bba55e56c4a4e37a"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#aa91713a22c95a383bba55e56c4a4e37a">&#9670;&nbsp;</a></span>chunkId</h2>
@@ -107,9 +107,9 @@ Data Fields</h2></td></tr>
 
 <p>The position of the chunk of the operator held by this process in the full operator. </p>
 
-<p class="definition">Definition at line <a class="el" href="QuEST_8h_source.html#l00187">187</a> of file <a class="el" href="QuEST_8h_source.html">QuEST.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="QuEST_8h_source.html#l00306">306</a> of file <a class="el" href="QuEST_8h_source.html">QuEST.h</a>.</p>
 
-<p class="reference">Referenced by <a class="el" href="QuEST__cpu_8c_source.html#l01335">agnostic_createDiagonalOp()</a>, <a class="el" href="QuEST__cpu_8c_source.html#l03842">agnostic_setDiagonalOpElems()</a>, and <a class="el" href="test__data__structures_8cpp_source.html#l00190">TEST_CASE()</a>.</p>
+<p class="reference">Referenced by <a class="el" href="QuEST__cpu_8c_source.html#l01335">agnostic_createDiagonalOp()</a>, <a class="el" href="QuEST__cpu_8c_source.html#l01366">agnostic_initDiagonalOpFromPauliHamil()</a>, <a class="el" href="QuEST__cpu_8c_source.html#l04188">agnostic_setDiagonalOpElems()</a>, and <a class="el" href="test__data__structures_8cpp_source.html#l00190">TEST_CASE()</a>.</p>
 
 </div>
 </div>
@@ -127,9 +127,9 @@ Data Fields</h2></td></tr>
 
 <p>A copy of the elements stored persistently on the GPU. </p>
 
-<p class="definition">Definition at line <a class="el" href="QuEST_8h_source.html#l00193">193</a> of file <a class="el" href="QuEST_8h_source.html">QuEST.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="QuEST_8h_source.html#l00312">312</a> of file <a class="el" href="QuEST_8h_source.html">QuEST.h</a>.</p>
 
-<p class="reference">Referenced by <a class="el" href="QuEST__gpu_8cu_source.html#l00338">agnostic_createDiagonalOp()</a>, <a class="el" href="QuEST__gpu_8cu_source.html#l00375">agnostic_destroyDiagonalOp()</a>, <a class="el" href="QuEST__gpu_8cu_source.html#l03233">agnostic_setDiagonalOpElems()</a>, <a class="el" href="QuEST__gpu_8cu_source.html#l00382">agnostic_syncDiagonalOp()</a>, <a class="el" href="QuEST__gpu_8cu_source.html#l02947">densmatr_applyDiagonalOpKernel()</a>, <a class="el" href="QuEST__gpu_8cu_source.html#l03142">densmatr_calcExpecDiagonalOp()</a>, <a class="el" href="QuEST__gpu_8cu_source.html#l02917">statevec_applyDiagonalOpKernel()</a>, and <a class="el" href="QuEST__gpu_8cu_source.html#l03006">statevec_calcExpecDiagonalOp()</a>.</p>
+<p class="reference">Referenced by <a class="el" href="QuEST__gpu_8cu_source.html#l00338">agnostic_createDiagonalOp()</a>, <a class="el" href="QuEST__gpu_8cu_source.html#l00375">agnostic_destroyDiagonalOp()</a>, <a class="el" href="QuEST__gpu_8cu_source.html#l00389">agnostic_initDiagonalOpFromPauliHamilKernel()</a>, <a class="el" href="QuEST__gpu_8cu_source.html#l03501">agnostic_setDiagonalOpElems()</a>, <a class="el" href="QuEST__gpu_8cu_source.html#l00382">agnostic_syncDiagonalOp()</a>, <a class="el" href="QuEST__gpu_8cu_source.html#l03215">densmatr_applyDiagonalOpKernel()</a>, <a class="el" href="QuEST__gpu_8cu_source.html#l03410">densmatr_calcExpecDiagonalOp()</a>, <a class="el" href="QuEST__gpu_8cu_source.html#l03185">statevec_applyDiagonalOpKernel()</a>, and <a class="el" href="QuEST__gpu_8cu_source.html#l03274">statevec_calcExpecDiagonalOp()</a>.</p>
 
 </div>
 </div>
@@ -147,9 +147,9 @@ Data Fields</h2></td></tr>
 
 <p>The imaginary values of the 2^numQubits complex elements. </p>
 
-<p class="definition">Definition at line <a class="el" href="QuEST_8h_source.html#l00191">191</a> of file <a class="el" href="QuEST_8h_source.html">QuEST.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="QuEST_8h_source.html#l00310">310</a> of file <a class="el" href="QuEST_8h_source.html">QuEST.h</a>.</p>
 
-<p class="reference">Referenced by <a class="el" href="QuEST__cpu_8c_source.html#l01335">agnostic_createDiagonalOp()</a>, <a class="el" href="QuEST__cpu_8c_source.html#l01357">agnostic_destroyDiagonalOp()</a>, <a class="el" href="QuEST__cpu_8c_source.html#l03842">agnostic_setDiagonalOpElems()</a>, <a class="el" href="QuEST__gpu_8cu_source.html#l00382">agnostic_syncDiagonalOp()</a>, <a class="el" href="QuEST__cpu__distributed_8c_source.html#l01482">copyDiagOpIntoMatrixPairState()</a>, <a class="el" href="QuEST__cpu__local_8c_source.html#l00325">densmatr_applyDiagonalOp()</a>, <a class="el" href="QuEST__cpu_8c_source.html#l03781">densmatr_calcExpecDiagonalOpLocal()</a>, <a class="el" href="QuEST__cpu_8c_source.html#l03661">statevec_applyDiagonalOp()</a>, <a class="el" href="QuEST__cpu_8c_source.html#l03738">statevec_calcExpecDiagonalOpLocal()</a>, <a class="el" href="test__calculations_8cpp_source.html#l00111">TEST_CASE()</a>, <a class="el" href="utilities_8cpp_source.html#l00980">toQVector()</a>, and <a class="el" href="QuEST__validation_8c_source.html#l00673">validateDiagOpInit()</a>.</p>
+<p class="reference">Referenced by <a class="el" href="QuEST__cpu_8c_source.html#l01335">agnostic_createDiagonalOp()</a>, <a class="el" href="QuEST__cpu_8c_source.html#l01357">agnostic_destroyDiagonalOp()</a>, <a class="el" href="QuEST__cpu_8c_source.html#l01366">agnostic_initDiagonalOpFromPauliHamil()</a>, <a class="el" href="QuEST__cpu_8c_source.html#l04188">agnostic_setDiagonalOpElems()</a>, <a class="el" href="QuEST__gpu_8cu_source.html#l00382">agnostic_syncDiagonalOp()</a>, <a class="el" href="QuEST__cpu__distributed_8c_source.html#l01548">copyDiagOpIntoMatrixPairState()</a>, <a class="el" href="QuEST__cpu__local_8c_source.html#l00350">densmatr_applyDiagonalOp()</a>, <a class="el" href="QuEST__cpu_8c_source.html#l04127">densmatr_calcExpecDiagonalOpLocal()</a>, <a class="el" href="QuEST__cpu_8c_source.html#l04007">statevec_applyDiagonalOp()</a>, <a class="el" href="QuEST__cpu_8c_source.html#l04084">statevec_calcExpecDiagonalOpLocal()</a>, <a class="el" href="test__calculations_8cpp_source.html#l00117">TEST_CASE()</a>, <a class="el" href="utilities_8cpp_source.html#l01155">toQVector()</a>, and <a class="el" href="QuEST__validation_8c_source.html#l00705">validateDiagOpInit()</a>.</p>
 
 </div>
 </div>
@@ -167,7 +167,7 @@ Data Fields</h2></td></tr>
 
 <p>The number of nodes between which the elements of this operator are split. </p>
 
-<p class="definition">Definition at line <a class="el" href="QuEST_8h_source.html#l00185">185</a> of file <a class="el" href="QuEST_8h_source.html">QuEST.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="QuEST_8h_source.html#l00304">304</a> of file <a class="el" href="QuEST_8h_source.html">QuEST.h</a>.</p>
 
 <p class="reference">Referenced by <a class="el" href="QuEST__cpu_8c_source.html#l01335">agnostic_createDiagonalOp()</a>, and <a class="el" href="test__data__structures_8cpp_source.html#l00190">TEST_CASE()</a>.</p>
 
@@ -187,9 +187,9 @@ Data Fields</h2></td></tr>
 
 <p>The number of the 2^numQubits amplitudes stored on each distributed node. </p>
 
-<p class="definition">Definition at line <a class="el" href="QuEST_8h_source.html#l00183">183</a> of file <a class="el" href="QuEST_8h_source.html">QuEST.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="QuEST_8h_source.html#l00302">302</a> of file <a class="el" href="QuEST_8h_source.html">QuEST.h</a>.</p>
 
-<p class="reference">Referenced by <a class="el" href="QuEST__cpu_8c_source.html#l01335">agnostic_createDiagonalOp()</a>, <a class="el" href="QuEST__cpu_8c_source.html#l03842">agnostic_setDiagonalOpElems()</a>, <a class="el" href="QuEST__cpu__distributed_8c_source.html#l01482">copyDiagOpIntoMatrixPairState()</a>, <a class="el" href="test__calculations_8cpp_source.html#l00111">TEST_CASE()</a>, and <a class="el" href="utilities_8cpp_source.html#l00980">toQVector()</a>.</p>
+<p class="reference">Referenced by <a class="el" href="QuEST__cpu_8c_source.html#l01335">agnostic_createDiagonalOp()</a>, <a class="el" href="QuEST__cpu_8c_source.html#l01366">agnostic_initDiagonalOpFromPauliHamil()</a>, <a class="el" href="QuEST__gpu_8cu_source.html#l00389">agnostic_initDiagonalOpFromPauliHamilKernel()</a>, <a class="el" href="QuEST__cpu_8c_source.html#l04188">agnostic_setDiagonalOpElems()</a>, <a class="el" href="QuEST__gpu_8cu_source.html#l00382">agnostic_syncDiagonalOp()</a>, <a class="el" href="QuEST__cpu__distributed_8c_source.html#l01548">copyDiagOpIntoMatrixPairState()</a>, <a class="el" href="test__calculations_8cpp_source.html#l00117">TEST_CASE()</a>, and <a class="el" href="utilities_8cpp_source.html#l01155">toQVector()</a>.</p>
 
 </div>
 </div>
@@ -207,9 +207,9 @@ Data Fields</h2></td></tr>
 
 <p>The number of qubits this operator can act on (informing its size) </p>
 
-<p class="definition">Definition at line <a class="el" href="QuEST_8h_source.html#l00181">181</a> of file <a class="el" href="QuEST_8h_source.html">QuEST.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="QuEST_8h_source.html#l00300">300</a> of file <a class="el" href="QuEST_8h_source.html">QuEST.h</a>.</p>
 
-<p class="reference">Referenced by <a class="el" href="QuEST__cpu_8c_source.html#l01335">agnostic_createDiagonalOp()</a>, <a class="el" href="QuEST__gpu_8cu_source.html#l00382">agnostic_syncDiagonalOp()</a>, <a class="el" href="QuEST__gpu_8cu_source.html#l02947">densmatr_applyDiagonalOpKernel()</a>, <a class="el" href="QuEST__cpu_8c_source.html#l03696">densmatr_applyDiagonalOpLocal()</a>, <a class="el" href="QuEST__gpu_8cu_source.html#l03142">densmatr_calcExpecDiagonalOp()</a>, <a class="el" href="QuEST_8c_source.html#l01286">initDiagonalOp()</a>, <a class="el" href="test__data__structures_8cpp_source.html#l00190">TEST_CASE()</a>, <a class="el" href="utilities_8cpp_source.html#l01018">toQMatrix()</a>, <a class="el" href="utilities_8cpp_source.html#l00980">toQVector()</a>, <a class="el" href="QuEST__validation_8c_source.html#l00677">validateDiagonalOp()</a>, and <a class="el" href="QuEST__validation_8c_source.html#l00357">validateNumElems()</a>.</p>
+<p class="reference">Referenced by <a class="el" href="QuEST__cpu_8c_source.html#l01335">agnostic_createDiagonalOp()</a>, <a class="el" href="QuEST__gpu_8cu_source.html#l00418">agnostic_initDiagonalOpFromPauliHamil()</a>, <a class="el" href="QuEST__gpu_8cu_source.html#l00389">agnostic_initDiagonalOpFromPauliHamilKernel()</a>, <a class="el" href="QuEST__gpu_8cu_source.html#l03215">densmatr_applyDiagonalOpKernel()</a>, <a class="el" href="QuEST__cpu_8c_source.html#l04042">densmatr_applyDiagonalOpLocal()</a>, <a class="el" href="QuEST__gpu_8cu_source.html#l03410">densmatr_calcExpecDiagonalOp()</a>, <a class="el" href="QuEST_8c_source.html#l01522">initDiagonalOp()</a>, <a class="el" href="test__data__structures_8cpp_source.html#l00190">TEST_CASE()</a>, <a class="el" href="utilities_8cpp_source.html#l01193">toQMatrix()</a>, <a class="el" href="utilities_8cpp_source.html#l01155">toQVector()</a>, <a class="el" href="QuEST__validation_8c_source.html#l00709">validateDiagonalOp()</a>, <a class="el" href="QuEST__validation_8c_source.html#l00714">validateDiagPauliHamil()</a>, and <a class="el" href="QuEST__validation_8c_source.html#l00389">validateNumElems()</a>.</p>
 
 </div>
 </div>
@@ -227,9 +227,9 @@ Data Fields</h2></td></tr>
 
 <p>The real values of the 2^numQubits complex elements. </p>
 
-<p class="definition">Definition at line <a class="el" href="QuEST_8h_source.html#l00189">189</a> of file <a class="el" href="QuEST_8h_source.html">QuEST.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="QuEST_8h_source.html#l00308">308</a> of file <a class="el" href="QuEST_8h_source.html">QuEST.h</a>.</p>
 
-<p class="reference">Referenced by <a class="el" href="QuEST__cpu_8c_source.html#l01335">agnostic_createDiagonalOp()</a>, <a class="el" href="QuEST__cpu_8c_source.html#l01357">agnostic_destroyDiagonalOp()</a>, <a class="el" href="QuEST__cpu_8c_source.html#l03842">agnostic_setDiagonalOpElems()</a>, <a class="el" href="QuEST__gpu_8cu_source.html#l00382">agnostic_syncDiagonalOp()</a>, <a class="el" href="QuEST__cpu__distributed_8c_source.html#l01482">copyDiagOpIntoMatrixPairState()</a>, <a class="el" href="QuEST__cpu__local_8c_source.html#l00325">densmatr_applyDiagonalOp()</a>, <a class="el" href="QuEST__cpu_8c_source.html#l03781">densmatr_calcExpecDiagonalOpLocal()</a>, <a class="el" href="QuEST__cpu_8c_source.html#l03661">statevec_applyDiagonalOp()</a>, <a class="el" href="QuEST__cpu_8c_source.html#l03738">statevec_calcExpecDiagonalOpLocal()</a>, <a class="el" href="test__calculations_8cpp_source.html#l00111">TEST_CASE()</a>, <a class="el" href="utilities_8cpp_source.html#l00980">toQVector()</a>, and <a class="el" href="QuEST__validation_8c_source.html#l00673">validateDiagOpInit()</a>.</p>
+<p class="reference">Referenced by <a class="el" href="QuEST__cpu_8c_source.html#l01335">agnostic_createDiagonalOp()</a>, <a class="el" href="QuEST__cpu_8c_source.html#l01357">agnostic_destroyDiagonalOp()</a>, <a class="el" href="QuEST__cpu_8c_source.html#l01366">agnostic_initDiagonalOpFromPauliHamil()</a>, <a class="el" href="QuEST__cpu_8c_source.html#l04188">agnostic_setDiagonalOpElems()</a>, <a class="el" href="QuEST__gpu_8cu_source.html#l00382">agnostic_syncDiagonalOp()</a>, <a class="el" href="QuEST__cpu__distributed_8c_source.html#l01548">copyDiagOpIntoMatrixPairState()</a>, <a class="el" href="QuEST__cpu__local_8c_source.html#l00350">densmatr_applyDiagonalOp()</a>, <a class="el" href="QuEST__cpu_8c_source.html#l04127">densmatr_calcExpecDiagonalOpLocal()</a>, <a class="el" href="QuEST__cpu_8c_source.html#l04007">statevec_applyDiagonalOp()</a>, <a class="el" href="QuEST__cpu_8c_source.html#l04084">statevec_calcExpecDiagonalOpLocal()</a>, <a class="el" href="test__calculations_8cpp_source.html#l00117">TEST_CASE()</a>, <a class="el" href="utilities_8cpp_source.html#l01155">toQVector()</a>, and <a class="el" href="QuEST__validation_8c_source.html#l00705">validateDiagOpInit()</a>.</p>
 
 </div>
 </div>

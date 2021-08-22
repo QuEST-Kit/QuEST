@@ -27,7 +27,7 @@
             <div class="container">
                 <div class="navbar-header">
                     <a class="navbar-brand"><img alt="Logo" src="logo.png"/></a>
-                    <a class="navbar-brand"><b>QuEST</b> v3.2.1<br>The Quantum Exact Simulation Toolkit</a>
+                    <a class="navbar-brand"><b>QuEST</b> v3.3.0<br>The Quantum Exact Simulation Toolkit</a>
                 </div>
             </div>
         </nav>
@@ -89,6 +89,10 @@ $(function() {
 : <a class="el" href="group__testutilities.html#ga267884197cf7f1d428021cb12a57360c">QuEST_validation.c</a>
 , <a class="el" href="group__testutilities.html#ga267884197cf7f1d428021cb12a57360c">utilities.cpp</a>
 , <a class="el" href="group__testutilities.html#ga267884197cf7f1d428021cb12a57360c">utilities.hpp</a>
+</li>
+<li>calcProbOfAllOutcomes()
+: <a class="el" href="group__calc.html#gad0cc08d52cad5062553d6f78126780cc">QuEST.c</a>
+, <a class="el" href="group__calc.html#gad0cc08d52cad5062553d6f78126780cc">QuEST.h</a>
 </li>
 <li>calcProbOfOutcome()
 : <a class="el" href="group__calc.html#ga2a7946e6fa4f44c9ae0c6c9f683229ad">QuEST.c</a>
@@ -178,12 +182,12 @@ $(function() {
 , <a class="el" href="group__unitary.html#ga7eb969c1dd6c949aecf716d2fba71120">QuEST.h</a>
 </li>
 <li>controlledTwoQubitUnitary()
-: <a class="el" href="group__unitary.html#ga3d89916b46bc4aaf23e938022e6c89c1">QuEST.c</a>
-, <a class="el" href="group__unitary.html#ga3d89916b46bc4aaf23e938022e6c89c1">QuEST.h</a>
+: <a class="el" href="group__unitary.html#ga3d89916b46bc4aaf23e938022e6c89c1">QuEST.h</a>
+, <a class="el" href="group__unitary.html#ga3d89916b46bc4aaf23e938022e6c89c1">QuEST.c</a>
 </li>
 <li>controlledUnitary()
-: <a class="el" href="group__unitary.html#gaa3fb996a5cadd098f4acd8aec955cf9c">QuEST.h</a>
-, <a class="el" href="group__unitary.html#gaa3fb996a5cadd098f4acd8aec955cf9c">QuEST.c</a>
+: <a class="el" href="group__unitary.html#gaa3fb996a5cadd098f4acd8aec955cf9c">QuEST.c</a>
+, <a class="el" href="group__unitary.html#gaa3fb996a5cadd098f4acd8aec955cf9c">QuEST.h</a>
 </li>
 <li>copyDiagOpIntoMatrixPairState()
 : <a class="el" href="QuEST__cpu__distributed_8c.html#aefba328e047e6ef4fd1ae4b56901aaa7">QuEST_cpu_distributed.c</a>
@@ -192,14 +196,14 @@ $(function() {
 : <a class="el" href="QuEST__gpu_8cu.html#aea20d173141544e6c5359955a1fbe997">QuEST_gpu.cu</a>
 </li>
 <li>copyStateFromGPU()
-: <a class="el" href="group__debug.html#ga924ef2dbda6b733b4041270077c76ece">QuEST_gpu.cu</a>
+: <a class="el" href="group__debug.html#ga924ef2dbda6b733b4041270077c76ece">QuEST_cpu.c</a>
 , <a class="el" href="group__debug.html#ga924ef2dbda6b733b4041270077c76ece">QuEST.h</a>
-, <a class="el" href="group__debug.html#ga924ef2dbda6b733b4041270077c76ece">QuEST_cpu.c</a>
+, <a class="el" href="group__debug.html#ga924ef2dbda6b733b4041270077c76ece">QuEST_gpu.cu</a>
 </li>
 <li>copyStateToGPU()
-: <a class="el" href="group__debug.html#ga11448560006dd165128e404b54ebb2f7">QuEST.h</a>
+: <a class="el" href="group__debug.html#ga11448560006dd165128e404b54ebb2f7">QuEST_cpu.c</a>
 , <a class="el" href="group__debug.html#ga11448560006dd165128e404b54ebb2f7">QuEST_gpu.cu</a>
-, <a class="el" href="group__debug.html#ga11448560006dd165128e404b54ebb2f7">QuEST_cpu.c</a>
+, <a class="el" href="group__debug.html#ga11448560006dd165128e404b54ebb2f7">QuEST.h</a>
 </li>
 <li>copyVecIntoMatrixPairState()
 : <a class="el" href="QuEST__cpu__distributed_8c.html#a95af772d87c461fc8abfd6d47b752ac2">QuEST_cpu_distributed.c</a>
@@ -209,34 +213,38 @@ $(function() {
 , <a class="el" href="group__type.html#gabd07eee133dcd4e6ae7c2d2ce4c42978">QuEST.h</a>
 </li>
 <li>createComplexMatrixN()
-: <a class="el" href="group__type.html#ga815103261fb22ea9690e1427571df00e">QuEST.c</a>
-, <a class="el" href="group__type.html#ga815103261fb22ea9690e1427571df00e">QuEST.h</a>
+: <a class="el" href="group__type.html#ga815103261fb22ea9690e1427571df00e">QuEST.h</a>
+, <a class="el" href="group__type.html#ga815103261fb22ea9690e1427571df00e">QuEST.c</a>
 </li>
 <li>createDensityQureg()
 : <a class="el" href="group__type.html#ga93e55b6650b408abb30a1d4a8bce757c">QuEST.c</a>
 , <a class="el" href="group__type.html#ga93e55b6650b408abb30a1d4a8bce757c">QuEST.h</a>
 </li>
 <li>createDiagonalOp()
-: <a class="el" href="group__type.html#gaebf896dd8d5eeaf9fd896f6cc8e334fe">QuEST.c</a>
-, <a class="el" href="group__type.html#gaebf896dd8d5eeaf9fd896f6cc8e334fe">QuEST.h</a>
+: <a class="el" href="group__type.html#gaebf896dd8d5eeaf9fd896f6cc8e334fe">QuEST.h</a>
+, <a class="el" href="group__type.html#gaebf896dd8d5eeaf9fd896f6cc8e334fe">QuEST.c</a>
+</li>
+<li>createDiagonalOpFromPauliHamilFile()
+: <a class="el" href="group__type.html#gaa86572b44755646858d6b0292d53cc15">QuEST.c</a>
+, <a class="el" href="group__type.html#gaa86572b44755646858d6b0292d53cc15">QuEST.h</a>
 </li>
 <li>createPauliHamil()
 : <a class="el" href="group__type.html#ga35b28710877c462927366fa602e591cb">QuEST.c</a>
 , <a class="el" href="group__type.html#ga35b28710877c462927366fa602e591cb">QuEST.h</a>
 </li>
 <li>createPauliHamilFromFile()
-: <a class="el" href="group__type.html#gaa77376c5e3518186eb085f37826d6008">QuEST.h</a>
-, <a class="el" href="group__type.html#gaa77376c5e3518186eb085f37826d6008">QuEST.c</a>
+: <a class="el" href="group__type.html#gaa77376c5e3518186eb085f37826d6008">QuEST.c</a>
+, <a class="el" href="group__type.html#gaa77376c5e3518186eb085f37826d6008">QuEST.h</a>
 </li>
 <li>createQuESTEnv()
-: <a class="el" href="group__type.html#ga8ba2c3388dd64d9348c3b091852d36d4">QuEST_cpu_local.c</a>
+: <a class="el" href="group__type.html#ga8ba2c3388dd64d9348c3b091852d36d4">QuEST_cpu_distributed.c</a>
 , <a class="el" href="group__type.html#ga8ba2c3388dd64d9348c3b091852d36d4">QuEST_gpu.cu</a>
+, <a class="el" href="group__type.html#ga8ba2c3388dd64d9348c3b091852d36d4">QuEST_cpu_local.c</a>
 , <a class="el" href="group__type.html#ga8ba2c3388dd64d9348c3b091852d36d4">QuEST.h</a>
-, <a class="el" href="group__type.html#ga8ba2c3388dd64d9348c3b091852d36d4">QuEST_cpu_distributed.c</a>
 </li>
 <li>createQureg()
-: <a class="el" href="group__type.html#ga3392816c0643414165c2f5caeec17df0">QuEST.c</a>
-, <a class="el" href="group__type.html#ga3392816c0643414165c2f5caeec17df0">QuEST.h</a>
+: <a class="el" href="group__type.html#ga3392816c0643414165c2f5caeec17df0">QuEST.h</a>
+, <a class="el" href="group__type.html#ga3392816c0643414165c2f5caeec17df0">QuEST.c</a>
 </li>
 </ul>
 </div><!-- contents -->

@@ -27,7 +27,7 @@
             <div class="container">
                 <div class="navbar-header">
                     <a class="navbar-brand"><img alt="Logo" src="logo.png"/></a>
-                    <a class="navbar-brand"><b>QuEST</b> v3.2.1<br>The Quantum Exact Simulation Toolkit</a>
+                    <a class="navbar-brand"><b>QuEST</b> v3.3.0<br>The Quantum Exact Simulation Toolkit</a>
                 </div>
             </div>
         </nav>
@@ -112,7 +112,7 @@ Functions</h2></td></tr>
 <div class="line"><a name="l00096"></a><span class="lineno">   96</span>&#160;    <a class="code" href="QuEST__qasm_8c.html#af2cdfa07be122a2c0b0e950ef45450bc">qasm_clearRecorded</a>(qureg);</div>
 <div class="line"><a name="l00097"></a><span class="lineno">   97</span>&#160;}</div>
 </div><!-- fragment -->
-<p class="reference">References <a class="el" href="QuEST__qasm_8c_source.html#l00477">qasm_clearRecorded()</a>.</p>
+<p class="reference">References <a class="el" href="QuEST__qasm_8c_source.html#l00864">qasm_clearRecorded()</a>.</p>
 
 </div>
 </div>
@@ -147,7 +147,7 @@ Functions</h2></td></tr>
 <div class="line"><a name="l00100"></a><span class="lineno">  100</span>&#160;    <a class="code" href="QuEST__qasm_8c.html#a9d97fdaec443ed238c1e72e387a688e3">qasm_printRecorded</a>(qureg);</div>
 <div class="line"><a name="l00101"></a><span class="lineno">  101</span>&#160;}</div>
 </div><!-- fragment -->
-<p class="reference">References <a class="el" href="QuEST__qasm_8c_source.html#l00484">qasm_printRecorded()</a>.</p>
+<p class="reference">References <a class="el" href="QuEST__qasm_8c_source.html#l00871">qasm_printRecorded()</a>.</p>
 
 </div>
 </div>
@@ -182,7 +182,7 @@ Functions</h2></td></tr>
 <div class="line"><a name="l00088"></a><span class="lineno">   88</span>&#160;    <a class="code" href="QuEST__qasm_8c.html#a84b0328814c0b17e127396cb36065108">qasm_startRecording</a>(qureg);</div>
 <div class="line"><a name="l00089"></a><span class="lineno">   89</span>&#160;}</div>
 </div><!-- fragment -->
-<p class="reference">References <a class="el" href="QuEST__qasm_8c_source.html#l00084">qasm_startRecording()</a>.</p>
+<p class="reference">References <a class="el" href="QuEST__qasm_8c_source.html#l00085">qasm_startRecording()</a>.</p>
 
 </div>
 </div>
@@ -218,7 +218,7 @@ Functions</h2></td></tr>
 <div class="line"><a name="l00092"></a><span class="lineno">   92</span>&#160;    <a class="code" href="QuEST__qasm_8c.html#a77ad622c5ba852708a80755ac1792288">qasm_stopRecording</a>(qureg);</div>
 <div class="line"><a name="l00093"></a><span class="lineno">   93</span>&#160;}</div>
 </div><!-- fragment -->
-<p class="reference">References <a class="el" href="QuEST__qasm_8c_source.html#l00088">qasm_stopRecording()</a>.</p>
+<p class="reference">References <a class="el" href="QuEST__qasm_8c_source.html#l00089">qasm_stopRecording()</a>.</p>
 
 </div>
 </div>
@@ -258,7 +258,10 @@ Functions</h2></td></tr>
 </dl>
 <dl class="exception"><dt>Exceptions</dt><dd>
   <table class="exception">
-    <tr><td class="paramname">invalidQuESTInputError</td><td>if <code>filename</code> cannot be written to </td></tr>
+    <tr><td class="paramname"><a class="el" href="group__debug.html#ga51a64b05d31ef9bcf6a63ce26c0092db" title="An internal function called when invalid arguments are passed to a QuEST API call,...">invalidQuESTInputError()</a></td><td><ul>
+<li>if <code>filename</code> cannot be written to </li>
+</ul>
+</td></tr>
   </table>
   </dd>
 </dl>
@@ -270,17 +273,17 @@ Functions</h2></td></tr>
 <div class="line"><a name="l00105"></a><span class="lineno">  105</span>&#160;    <a class="code" href="QuEST__validation_8c.html#a6b9523909701f7bd79f2ab7b56a8e6bd">validateFileOpened</a>(success, filename, __func__);</div>
 <div class="line"><a name="l00106"></a><span class="lineno">  106</span>&#160;}</div>
 </div><!-- fragment -->
-<p class="reference">References <a class="el" href="QuEST__qasm_8c_source.html#l00489">qasm_writeRecordedToFile()</a>, and <a class="el" href="QuEST__validation_8c_source.html#l00507">validateFileOpened()</a>.</p>
+<p class="reference">References <a class="el" href="QuEST__qasm_8c_source.html#l00876">qasm_writeRecordedToFile()</a>, and <a class="el" href="QuEST__validation_8c_source.html#l00539">validateFileOpened()</a>.</p>
 
 </div>
 </div>
 </div><!-- contents -->
-<div class="ttc" id="aQuEST__qasm_8c_html_a9d97fdaec443ed238c1e72e387a688e3"><div class="ttname"><a href="QuEST__qasm_8c.html#a9d97fdaec443ed238c1e72e387a688e3">qasm_printRecorded</a></div><div class="ttdeci">void qasm_printRecorded(Qureg qureg)</div><div class="ttdef"><b>Definition:</b> <a href="QuEST__qasm_8c_source.html#l00484">QuEST_qasm.c:484</a></div></div>
-<div class="ttc" id="aQuEST__qasm_8c_html_af2cdfa07be122a2c0b0e950ef45450bc"><div class="ttname"><a href="QuEST__qasm_8c.html#af2cdfa07be122a2c0b0e950ef45450bc">qasm_clearRecorded</a></div><div class="ttdeci">void qasm_clearRecorded(Qureg qureg)</div><div class="ttdef"><b>Definition:</b> <a href="QuEST__qasm_8c_source.html#l00477">QuEST_qasm.c:477</a></div></div>
-<div class="ttc" id="aQuEST__qasm_8c_html_a84b0328814c0b17e127396cb36065108"><div class="ttname"><a href="QuEST__qasm_8c.html#a84b0328814c0b17e127396cb36065108">qasm_startRecording</a></div><div class="ttdeci">void qasm_startRecording(Qureg qureg)</div><div class="ttdef"><b>Definition:</b> <a href="QuEST__qasm_8c_source.html#l00084">QuEST_qasm.c:84</a></div></div>
-<div class="ttc" id="aQuEST__validation_8c_html_a6b9523909701f7bd79f2ab7b56a8e6bd"><div class="ttname"><a href="QuEST__validation_8c.html#a6b9523909701f7bd79f2ab7b56a8e6bd">validateFileOpened</a></div><div class="ttdeci">void validateFileOpened(int opened, char *fn, const char *caller)</div><div class="ttdef"><b>Definition:</b> <a href="QuEST__validation_8c_source.html#l00507">QuEST_validation.c:507</a></div></div>
-<div class="ttc" id="aQuEST__qasm_8c_html_a77ad622c5ba852708a80755ac1792288"><div class="ttname"><a href="QuEST__qasm_8c.html#a77ad622c5ba852708a80755ac1792288">qasm_stopRecording</a></div><div class="ttdeci">void qasm_stopRecording(Qureg qureg)</div><div class="ttdef"><b>Definition:</b> <a href="QuEST__qasm_8c_source.html#l00088">QuEST_qasm.c:88</a></div></div>
-<div class="ttc" id="aQuEST__qasm_8c_html_a39aeacb22460bd1430129795761ade28"><div class="ttname"><a href="QuEST__qasm_8c.html#a39aeacb22460bd1430129795761ade28">qasm_writeRecordedToFile</a></div><div class="ttdeci">int qasm_writeRecordedToFile(Qureg qureg, char *filename)</div><div class="ttdoc">returns success of file write</div><div class="ttdef"><b>Definition:</b> <a href="QuEST__qasm_8c_source.html#l00489">QuEST_qasm.c:489</a></div></div>
+<div class="ttc" id="aQuEST__qasm_8c_html_a9d97fdaec443ed238c1e72e387a688e3"><div class="ttname"><a href="QuEST__qasm_8c.html#a9d97fdaec443ed238c1e72e387a688e3">qasm_printRecorded</a></div><div class="ttdeci">void qasm_printRecorded(Qureg qureg)</div><div class="ttdef"><b>Definition:</b> <a href="QuEST__qasm_8c_source.html#l00871">QuEST_qasm.c:871</a></div></div>
+<div class="ttc" id="aQuEST__qasm_8c_html_af2cdfa07be122a2c0b0e950ef45450bc"><div class="ttname"><a href="QuEST__qasm_8c.html#af2cdfa07be122a2c0b0e950ef45450bc">qasm_clearRecorded</a></div><div class="ttdeci">void qasm_clearRecorded(Qureg qureg)</div><div class="ttdef"><b>Definition:</b> <a href="QuEST__qasm_8c_source.html#l00864">QuEST_qasm.c:864</a></div></div>
+<div class="ttc" id="aQuEST__qasm_8c_html_a84b0328814c0b17e127396cb36065108"><div class="ttname"><a href="QuEST__qasm_8c.html#a84b0328814c0b17e127396cb36065108">qasm_startRecording</a></div><div class="ttdeci">void qasm_startRecording(Qureg qureg)</div><div class="ttdef"><b>Definition:</b> <a href="QuEST__qasm_8c_source.html#l00085">QuEST_qasm.c:85</a></div></div>
+<div class="ttc" id="aQuEST__validation_8c_html_a6b9523909701f7bd79f2ab7b56a8e6bd"><div class="ttname"><a href="QuEST__validation_8c.html#a6b9523909701f7bd79f2ab7b56a8e6bd">validateFileOpened</a></div><div class="ttdeci">void validateFileOpened(int opened, char *fn, const char *caller)</div><div class="ttdef"><b>Definition:</b> <a href="QuEST__validation_8c_source.html#l00539">QuEST_validation.c:539</a></div></div>
+<div class="ttc" id="aQuEST__qasm_8c_html_a77ad622c5ba852708a80755ac1792288"><div class="ttname"><a href="QuEST__qasm_8c.html#a77ad622c5ba852708a80755ac1792288">qasm_stopRecording</a></div><div class="ttdeci">void qasm_stopRecording(Qureg qureg)</div><div class="ttdef"><b>Definition:</b> <a href="QuEST__qasm_8c_source.html#l00089">QuEST_qasm.c:89</a></div></div>
+<div class="ttc" id="aQuEST__qasm_8c_html_a39aeacb22460bd1430129795761ade28"><div class="ttname"><a href="QuEST__qasm_8c.html#a39aeacb22460bd1430129795761ade28">qasm_writeRecordedToFile</a></div><div class="ttdeci">int qasm_writeRecordedToFile(Qureg qureg, char *filename)</div><div class="ttdoc">returns success of file write</div><div class="ttdef"><b>Definition:</b> <a href="QuEST__qasm_8c_source.html#l00876">QuEST_qasm.c:876</a></div></div>
 <!-- HTML footer for doxygen 1.8.8-->
 <!-- start footer part -->
 </div>

@@ -27,7 +27,7 @@
             <div class="container">
                 <div class="navbar-header">
                     <a class="navbar-brand"><img alt="Logo" src="logo.png"/></a>
-                    <a class="navbar-brand"><b>QuEST</b> v3.2.1<br>The Quantum Exact Simulation Toolkit</a>
+                    <a class="navbar-brand"><b>QuEST</b> v3.3.0<br>The Quantum Exact Simulation Toolkit</a>
                 </div>
             </div>
         </nav>
@@ -110,6 +110,11 @@ Functions</h2></td></tr>
 <p>Updates <code>qureg</code> to be consistent with measuring <code>measureQubit</code> in the given <code>outcome</code> (0 or 1), and returns the probability of such a measurement outcome. </p>
 <p>This is effectively performing a projection, or a measurement with a forced outcome. This is an irreversible change to the state, whereby computational states inconsistant with the outcome are given zero amplitude and the <code>qureg</code> is renormalised. Exits with error if the given outcome has a near zero probability, and so cannot be collapsed into.</p>
 <p>Note that the collapse probably used for renormalisation is calculated for <code>outcome</code> <code>=</code> <code>0</code>, and assumed 1 minus this probability if <code>outcome</code> <code>=</code> <code>1</code>. Hence this routine will not correctly project un-normalised quregs onto <code>outcome</code> <code>=</code> <code>1</code>.</p>
+<dl class="section see"><dt>See also</dt><dd><ul>
+<li><a class="el" href="group__normgate.html#ga2a3794103125f1e3cfa103f8b1963656" title="Measures a single qubit, collapsing it randomly to 0 or 1.">measure()</a></li>
+<li><a class="el" href="group__normgate.html#gae192ac0759e46c7b20a7182020155240" title="Measures a single qubit, collapsing it randomly to 0 or 1, and additionally gives the probability of ...">measureWithStats()</a></li>
+</ul>
+</dd></dl>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in,out]</td><td class="paramname">qureg</td><td>object representing the set of all qubits </td></tr>
@@ -121,7 +126,12 @@ Functions</h2></td></tr>
 <dl class="section return"><dt>Returns</dt><dd>probability of the (forced) measurement outcome </dd></dl>
 <dl class="exception"><dt>Exceptions</dt><dd>
   <table class="exception">
-    <tr><td class="paramname">invalidQuESTInputError</td><td>if <code>measureQubit</code> is outside [0, <code>qureg.numQubitsRepresented</code>), or if <code>outcome</code> is not in {0, 1}, or if the probability of <code>outcome</code> is zero (within machine epsilon) </td></tr>
+    <tr><td class="paramname"><a class="el" href="group__debug.html#ga51a64b05d31ef9bcf6a63ce26c0092db" title="An internal function called when invalid arguments are passed to a QuEST API call,...">invalidQuESTInputError()</a></td><td><ul>
+<li>if <code>measureQubit</code> is outside [0, <code>qureg.numQubitsRepresented</code>)</li>
+<li>if <code>outcome</code> is not in {0, 1}</li>
+<li>if the probability of <code>outcome</code> is zero (within machine epsilon) </li>
+</ul>
+</td></tr>
   </table>
   </dd>
 </dl>
@@ -129,27 +139,27 @@ Functions</h2></td></tr>
 <dd>
 Tyson Jones (density matrix) </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="QuEST_8c_source.html#l00726">726</a> of file <a class="el" href="QuEST_8c_source.html">QuEST.c</a>.</p>
-<div class="fragment"><div class="line"><a name="l00726"></a><span class="lineno">  726</span>&#160;                                                                    {</div>
-<div class="line"><a name="l00727"></a><span class="lineno">  727</span>&#160;    <a class="code" href="QuEST__validation_8c.html#ac31c45c5a31c523be0eb26abba6cf598">validateTarget</a>(qureg, measureQubit, __func__);</div>
-<div class="line"><a name="l00728"></a><span class="lineno">  728</span>&#160;    <a class="code" href="QuEST__validation_8c.html#ad613c75ff252a88e54f911053bd2032c">validateOutcome</a>(outcome, __func__);</div>
-<div class="line"><a name="l00729"></a><span class="lineno">  729</span>&#160;    </div>
-<div class="line"><a name="l00730"></a><span class="lineno">  730</span>&#160;    <a class="code" href="group__type.html#ga7740e349b4f8bae6451547680f0ce2d6">qreal</a> outcomeProb;</div>
-<div class="line"><a name="l00731"></a><span class="lineno">  731</span>&#160;    <span class="keywordflow">if</span> (qureg.<a class="code" href="structQureg.html#acf78445e9435d09f44f0cc832c6aee79">isDensityMatrix</a>) {</div>
-<div class="line"><a name="l00732"></a><span class="lineno">  732</span>&#160;        outcomeProb = <a class="code" href="QuEST__internal_8h.html#ae37b3eff5d3affbc1edfe216cabc1c53">densmatr_calcProbOfOutcome</a>(qureg, measureQubit, outcome);</div>
-<div class="line"><a name="l00733"></a><span class="lineno">  733</span>&#160;        <a class="code" href="QuEST__validation_8c.html#a8accabb8a9d573c2ff80305841c3053d">validateMeasurementProb</a>(outcomeProb, __func__);</div>
-<div class="line"><a name="l00734"></a><span class="lineno">  734</span>&#160;        <a class="code" href="QuEST__internal_8h.html#a5658f2ecbbd4ea425db5f7dc7fc4ba92">densmatr_collapseToKnownProbOutcome</a>(qureg, measureQubit, outcome, outcomeProb);</div>
-<div class="line"><a name="l00735"></a><span class="lineno">  735</span>&#160;    } <span class="keywordflow">else</span> {</div>
-<div class="line"><a name="l00736"></a><span class="lineno">  736</span>&#160;        outcomeProb = <a class="code" href="QuEST__internal_8h.html#a63cb88a5f4eb12fef087435b8db3f8eb">statevec_calcProbOfOutcome</a>(qureg, measureQubit, outcome);</div>
-<div class="line"><a name="l00737"></a><span class="lineno">  737</span>&#160;        <a class="code" href="QuEST__validation_8c.html#a8accabb8a9d573c2ff80305841c3053d">validateMeasurementProb</a>(outcomeProb, __func__);</div>
-<div class="line"><a name="l00738"></a><span class="lineno">  738</span>&#160;        <a class="code" href="QuEST__internal_8h.html#a008becc4a18f868340836e0ab9fd6df6">statevec_collapseToKnownProbOutcome</a>(qureg, measureQubit, outcome, outcomeProb);</div>
-<div class="line"><a name="l00739"></a><span class="lineno">  739</span>&#160;    }</div>
-<div class="line"><a name="l00740"></a><span class="lineno">  740</span>&#160;    </div>
-<div class="line"><a name="l00741"></a><span class="lineno">  741</span>&#160;    <a class="code" href="QuEST__qasm_8c.html#a0befde437a58ef8fe38495bfc2a16f0e">qasm_recordMeasurement</a>(qureg, measureQubit);</div>
-<div class="line"><a name="l00742"></a><span class="lineno">  742</span>&#160;    <span class="keywordflow">return</span> outcomeProb;</div>
-<div class="line"><a name="l00743"></a><span class="lineno">  743</span>&#160;}</div>
+<p class="definition">Definition at line <a class="el" href="QuEST_8c_source.html#l00953">953</a> of file <a class="el" href="QuEST_8c_source.html">QuEST.c</a>.</p>
+<div class="fragment"><div class="line"><a name="l00953"></a><span class="lineno">  953</span>&#160;                                                                    {</div>
+<div class="line"><a name="l00954"></a><span class="lineno">  954</span>&#160;    <a class="code" href="QuEST__validation_8c.html#ac31c45c5a31c523be0eb26abba6cf598">validateTarget</a>(qureg, measureQubit, __func__);</div>
+<div class="line"><a name="l00955"></a><span class="lineno">  955</span>&#160;    <a class="code" href="QuEST__validation_8c.html#ad613c75ff252a88e54f911053bd2032c">validateOutcome</a>(outcome, __func__);</div>
+<div class="line"><a name="l00956"></a><span class="lineno">  956</span>&#160;    </div>
+<div class="line"><a name="l00957"></a><span class="lineno">  957</span>&#160;    <a class="code" href="group__type.html#ga7740e349b4f8bae6451547680f0ce2d6">qreal</a> outcomeProb;</div>
+<div class="line"><a name="l00958"></a><span class="lineno">  958</span>&#160;    <span class="keywordflow">if</span> (qureg.<a class="code" href="structQureg.html#acf78445e9435d09f44f0cc832c6aee79">isDensityMatrix</a>) {</div>
+<div class="line"><a name="l00959"></a><span class="lineno">  959</span>&#160;        outcomeProb = <a class="code" href="QuEST__internal_8h.html#ae37b3eff5d3affbc1edfe216cabc1c53">densmatr_calcProbOfOutcome</a>(qureg, measureQubit, outcome);</div>
+<div class="line"><a name="l00960"></a><span class="lineno">  960</span>&#160;        <a class="code" href="QuEST__validation_8c.html#a8accabb8a9d573c2ff80305841c3053d">validateMeasurementProb</a>(outcomeProb, __func__);</div>
+<div class="line"><a name="l00961"></a><span class="lineno">  961</span>&#160;        <a class="code" href="QuEST__internal_8h.html#a5658f2ecbbd4ea425db5f7dc7fc4ba92">densmatr_collapseToKnownProbOutcome</a>(qureg, measureQubit, outcome, outcomeProb);</div>
+<div class="line"><a name="l00962"></a><span class="lineno">  962</span>&#160;    } <span class="keywordflow">else</span> {</div>
+<div class="line"><a name="l00963"></a><span class="lineno">  963</span>&#160;        outcomeProb = <a class="code" href="QuEST__internal_8h.html#a63cb88a5f4eb12fef087435b8db3f8eb">statevec_calcProbOfOutcome</a>(qureg, measureQubit, outcome);</div>
+<div class="line"><a name="l00964"></a><span class="lineno">  964</span>&#160;        <a class="code" href="QuEST__validation_8c.html#a8accabb8a9d573c2ff80305841c3053d">validateMeasurementProb</a>(outcomeProb, __func__);</div>
+<div class="line"><a name="l00965"></a><span class="lineno">  965</span>&#160;        <a class="code" href="QuEST__internal_8h.html#a008becc4a18f868340836e0ab9fd6df6">statevec_collapseToKnownProbOutcome</a>(qureg, measureQubit, outcome, outcomeProb);</div>
+<div class="line"><a name="l00966"></a><span class="lineno">  966</span>&#160;    }</div>
+<div class="line"><a name="l00967"></a><span class="lineno">  967</span>&#160;    </div>
+<div class="line"><a name="l00968"></a><span class="lineno">  968</span>&#160;    <a class="code" href="QuEST__qasm_8c.html#a0befde437a58ef8fe38495bfc2a16f0e">qasm_recordMeasurement</a>(qureg, measureQubit);</div>
+<div class="line"><a name="l00969"></a><span class="lineno">  969</span>&#160;    <span class="keywordflow">return</span> outcomeProb;</div>
+<div class="line"><a name="l00970"></a><span class="lineno">  970</span>&#160;}</div>
 </div><!-- fragment -->
-<p class="reference">References <a class="el" href="QuEST__cpu__distributed_8c_source.html#l01276">densmatr_calcProbOfOutcome()</a>, <a class="el" href="QuEST__cpu_8c_source.html#l00785">densmatr_collapseToKnownProbOutcome()</a>, <a class="el" href="QuEST_8h_source.html#l00206">Qureg::isDensityMatrix</a>, <a class="el" href="QuEST__qasm_8c_source.html#l00398">qasm_recordMeasurement()</a>, <a class="el" href="group__type.html#ga7740e349b4f8bae6451547680f0ce2d6">qreal</a>, <a class="el" href="QuEST__cpu__distributed_8c_source.html#l01260">statevec_calcProbOfOutcome()</a>, <a class="el" href="QuEST__cpu__distributed_8c_source.html#l01298">statevec_collapseToKnownProbOutcome()</a>, <a class="el" href="QuEST__validation_8c_source.html#l00491">validateMeasurementProb()</a>, <a class="el" href="QuEST__validation_8c_source.html#l00487">validateOutcome()</a>, and <a class="el" href="QuEST__validation_8c_source.html#l00364">validateTarget()</a>.</p>
+<p class="reference">References <a class="el" href="QuEST__cpu__distributed_8c_source.html#l01324">densmatr_calcProbOfOutcome()</a>, <a class="el" href="QuEST__cpu_8c_source.html#l00785">densmatr_collapseToKnownProbOutcome()</a>, <a class="el" href="QuEST_8h_source.html#l00325">Qureg::isDensityMatrix</a>, <a class="el" href="QuEST__qasm_8c_source.html#l00411">qasm_recordMeasurement()</a>, <a class="el" href="group__type.html#ga7740e349b4f8bae6451547680f0ce2d6">qreal</a>, <a class="el" href="QuEST__cpu__distributed_8c_source.html#l01308">statevec_calcProbOfOutcome()</a>, <a class="el" href="QuEST__cpu__distributed_8c_source.html#l01364">statevec_collapseToKnownProbOutcome()</a>, <a class="el" href="QuEST__validation_8c_source.html#l00523">validateMeasurementProb()</a>, <a class="el" href="QuEST__validation_8c_source.html#l00519">validateOutcome()</a>, and <a class="el" href="QuEST__validation_8c_source.html#l00396">validateTarget()</a>.</p>
 
 <p class="reference">Referenced by <a class="el" href="test__gates_8cpp_source.html#l00015">TEST_CASE()</a>.</p>
 
@@ -183,6 +193,15 @@ Tyson Jones (density matrix) </dd></dl>
 
 <p>Measures a single qubit, collapsing it randomly to 0 or 1. </p>
 <p>Outcome probabilities are weighted by the state vector, which is irreversibly changed after collapse to be consistent with the outcome.</p>
+<blockquote class="doxtable">
+<p>The random outcome generator can be seeded with <a class="el" href="group__debug.html#gaa8437ef3bf135231e2916e64dde1c94e" title="Seed the Mersenne Twister used for random number generation in the QuEST environment with an example ...">seedQuESTDefault()</a>, which is safe to use in distributed mode. </p>
+</blockquote>
+<dl class="section see"><dt>See also</dt><dd><ul>
+<li><a class="el" href="group__normgate.html#gae192ac0759e46c7b20a7182020155240" title="Measures a single qubit, collapsing it randomly to 0 or 1, and additionally gives the probability of ...">measureWithStats()</a></li>
+<li><a class="el" href="group__normgate.html#ga34457f7f62ccd75fb7d3fe67cd2f815a" title="Updates qureg to be consistent with measuring measureQubit in the given outcome (0 or 1),...">collapseToOutcome()</a></li>
+<li><a class="el" href="group__debug.html#gaa8437ef3bf135231e2916e64dde1c94e" title="Seed the Mersenne Twister used for random number generation in the QuEST environment with an example ...">seedQuESTDefault()</a></li>
+</ul>
+</dd></dl>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in,out]</td><td class="paramname">qureg</td><td>object representing the set of all qubits </td></tr>
@@ -193,7 +212,10 @@ Tyson Jones (density matrix) </dd></dl>
 <dl class="section return"><dt>Returns</dt><dd>the measurement outcome, 0 or 1 </dd></dl>
 <dl class="exception"><dt>Exceptions</dt><dd>
   <table class="exception">
-    <tr><td class="paramname">invalidQuESTInputError</td><td>if <code>measureQubit</code> is outside [0, <code>qureg.numQubitsRepresented</code>) </td></tr>
+    <tr><td class="paramname"><a class="el" href="group__debug.html#ga51a64b05d31ef9bcf6a63ce26c0092db" title="An internal function called when invalid arguments are passed to a QuEST API call,...">invalidQuESTInputError()</a></td><td><ul>
+<li>if <code>measureQubit</code> is outside [0, <code>qureg.numQubitsRepresented</code>) </li>
+</ul>
+</td></tr>
   </table>
   </dd>
 </dl>
@@ -201,22 +223,22 @@ Tyson Jones (density matrix) </dd></dl>
 <dd>
 Tyson Jones (density matrix) </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="QuEST_8c_source.html#l00758">758</a> of file <a class="el" href="QuEST_8c_source.html">QuEST.c</a>.</p>
-<div class="fragment"><div class="line"><a name="l00758"></a><span class="lineno">  758</span>&#160;                                           {</div>
-<div class="line"><a name="l00759"></a><span class="lineno">  759</span>&#160;    <a class="code" href="QuEST__validation_8c.html#ac31c45c5a31c523be0eb26abba6cf598">validateTarget</a>(qureg, measureQubit, __func__);</div>
-<div class="line"><a name="l00760"></a><span class="lineno">  760</span>&#160;    </div>
-<div class="line"><a name="l00761"></a><span class="lineno">  761</span>&#160;    <span class="keywordtype">int</span> outcome;</div>
-<div class="line"><a name="l00762"></a><span class="lineno">  762</span>&#160;    <a class="code" href="group__type.html#ga7740e349b4f8bae6451547680f0ce2d6">qreal</a> discardedProb;</div>
-<div class="line"><a name="l00763"></a><span class="lineno">  763</span>&#160;    <span class="keywordflow">if</span> (qureg.<a class="code" href="structQureg.html#acf78445e9435d09f44f0cc832c6aee79">isDensityMatrix</a>)</div>
-<div class="line"><a name="l00764"></a><span class="lineno">  764</span>&#160;        outcome = <a class="code" href="QuEST__common_8c.html#ae4ebc1f4dd48922bfb30ad1692310269">densmatr_measureWithStats</a>(qureg, measureQubit, &amp;discardedProb);</div>
-<div class="line"><a name="l00765"></a><span class="lineno">  765</span>&#160;    <span class="keywordflow">else</span></div>
-<div class="line"><a name="l00766"></a><span class="lineno">  766</span>&#160;        outcome = <a class="code" href="QuEST__common_8c.html#ac2eb81c71d0e0fbec7be5b45b1db1448">statevec_measureWithStats</a>(qureg, measureQubit, &amp;discardedProb);</div>
-<div class="line"><a name="l00767"></a><span class="lineno">  767</span>&#160;    </div>
-<div class="line"><a name="l00768"></a><span class="lineno">  768</span>&#160;    <a class="code" href="QuEST__qasm_8c.html#a0befde437a58ef8fe38495bfc2a16f0e">qasm_recordMeasurement</a>(qureg, measureQubit);</div>
-<div class="line"><a name="l00769"></a><span class="lineno">  769</span>&#160;    <span class="keywordflow">return</span> outcome;</div>
-<div class="line"><a name="l00770"></a><span class="lineno">  770</span>&#160;}</div>
+<p class="definition">Definition at line <a class="el" href="QuEST_8c_source.html#l00985">985</a> of file <a class="el" href="QuEST_8c_source.html">QuEST.c</a>.</p>
+<div class="fragment"><div class="line"><a name="l00985"></a><span class="lineno">  985</span>&#160;                                           {</div>
+<div class="line"><a name="l00986"></a><span class="lineno">  986</span>&#160;    <a class="code" href="QuEST__validation_8c.html#ac31c45c5a31c523be0eb26abba6cf598">validateTarget</a>(qureg, measureQubit, __func__);</div>
+<div class="line"><a name="l00987"></a><span class="lineno">  987</span>&#160;    </div>
+<div class="line"><a name="l00988"></a><span class="lineno">  988</span>&#160;    <span class="keywordtype">int</span> outcome;</div>
+<div class="line"><a name="l00989"></a><span class="lineno">  989</span>&#160;    <a class="code" href="group__type.html#ga7740e349b4f8bae6451547680f0ce2d6">qreal</a> discardedProb;</div>
+<div class="line"><a name="l00990"></a><span class="lineno">  990</span>&#160;    <span class="keywordflow">if</span> (qureg.<a class="code" href="structQureg.html#acf78445e9435d09f44f0cc832c6aee79">isDensityMatrix</a>)</div>
+<div class="line"><a name="l00991"></a><span class="lineno">  991</span>&#160;        outcome = <a class="code" href="QuEST__common_8c.html#ae4ebc1f4dd48922bfb30ad1692310269">densmatr_measureWithStats</a>(qureg, measureQubit, &amp;discardedProb);</div>
+<div class="line"><a name="l00992"></a><span class="lineno">  992</span>&#160;    <span class="keywordflow">else</span></div>
+<div class="line"><a name="l00993"></a><span class="lineno">  993</span>&#160;        outcome = <a class="code" href="QuEST__common_8c.html#ac2eb81c71d0e0fbec7be5b45b1db1448">statevec_measureWithStats</a>(qureg, measureQubit, &amp;discardedProb);</div>
+<div class="line"><a name="l00994"></a><span class="lineno">  994</span>&#160;    </div>
+<div class="line"><a name="l00995"></a><span class="lineno">  995</span>&#160;    <a class="code" href="QuEST__qasm_8c.html#a0befde437a58ef8fe38495bfc2a16f0e">qasm_recordMeasurement</a>(qureg, measureQubit);</div>
+<div class="line"><a name="l00996"></a><span class="lineno">  996</span>&#160;    <span class="keywordflow">return</span> outcome;</div>
+<div class="line"><a name="l00997"></a><span class="lineno">  997</span>&#160;}</div>
 </div><!-- fragment -->
-<p class="reference">References <a class="el" href="QuEST__common_8c_source.html#l00369">densmatr_measureWithStats()</a>, <a class="el" href="QuEST_8h_source.html#l00206">Qureg::isDensityMatrix</a>, <a class="el" href="QuEST__qasm_8c_source.html#l00398">qasm_recordMeasurement()</a>, <a class="el" href="group__type.html#ga7740e349b4f8bae6451547680f0ce2d6">qreal</a>, <a class="el" href="QuEST__common_8c_source.html#l00361">statevec_measureWithStats()</a>, and <a class="el" href="QuEST__validation_8c_source.html#l00364">validateTarget()</a>.</p>
+<p class="reference">References <a class="el" href="QuEST__common_8c_source.html#l00382">densmatr_measureWithStats()</a>, <a class="el" href="QuEST_8h_source.html#l00325">Qureg::isDensityMatrix</a>, <a class="el" href="QuEST__qasm_8c_source.html#l00411">qasm_recordMeasurement()</a>, <a class="el" href="group__type.html#ga7740e349b4f8bae6451547680f0ce2d6">qreal</a>, <a class="el" href="QuEST__common_8c_source.html#l00374">statevec_measureWithStats()</a>, and <a class="el" href="QuEST__validation_8c_source.html#l00396">validateTarget()</a>.</p>
 
 <p class="reference">Referenced by <a class="el" href="test__gates_8cpp_source.html#l00121">TEST_CASE()</a>.</p>
 
@@ -256,6 +278,15 @@ Tyson Jones (density matrix) </dd></dl>
 
 <p>Measures a single qubit, collapsing it randomly to 0 or 1, and additionally gives the probability of that outcome. </p>
 <p>Outcome probabilities are weighted by the state vector, which is irreversibly changed after collapse to be consistent with the outcome.</p>
+<blockquote class="doxtable">
+<p>The random outcome generator can be seeded with <a class="el" href="group__debug.html#gaa8437ef3bf135231e2916e64dde1c94e" title="Seed the Mersenne Twister used for random number generation in the QuEST environment with an example ...">seedQuESTDefault()</a>, which is safe to use in distributed mode. </p>
+</blockquote>
+<dl class="section see"><dt>See also</dt><dd><ul>
+<li><a class="el" href="group__normgate.html#ga2a3794103125f1e3cfa103f8b1963656" title="Measures a single qubit, collapsing it randomly to 0 or 1.">measure()</a></li>
+<li><a class="el" href="group__normgate.html#ga34457f7f62ccd75fb7d3fe67cd2f815a" title="Updates qureg to be consistent with measuring measureQubit in the given outcome (0 or 1),...">collapseToOutcome()</a></li>
+<li><a class="el" href="group__debug.html#gaa8437ef3bf135231e2916e64dde1c94e" title="Seed the Mersenne Twister used for random number generation in the QuEST environment with an example ...">seedQuESTDefault()</a></li>
+</ul>
+</dd></dl>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in,out]</td><td class="paramname">qureg</td><td>object representing the set of all qubits </td></tr>
@@ -267,7 +298,10 @@ Tyson Jones (density matrix) </dd></dl>
 <dl class="section return"><dt>Returns</dt><dd>the measurement outcome, 0 or 1 </dd></dl>
 <dl class="exception"><dt>Exceptions</dt><dd>
   <table class="exception">
-    <tr><td class="paramname">invalidQuESTInputError</td><td>if <code>measureQubit</code> is outside [0, <code>qureg.numQubitsRepresented</code>) </td></tr>
+    <tr><td class="paramname"><a class="el" href="group__debug.html#ga51a64b05d31ef9bcf6a63ce26c0092db" title="An internal function called when invalid arguments are passed to a QuEST API call,...">invalidQuESTInputError()</a></td><td><ul>
+<li>if <code>measureQubit</code> is outside [0, <code>qureg.numQubitsRepresented</code>) </li>
+</ul>
+</td></tr>
   </table>
   </dd>
 </dl>
@@ -275,39 +309,39 @@ Tyson Jones (density matrix) </dd></dl>
 <dd>
 Tyson Jones (density matrix) </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="QuEST_8c_source.html#l00745">745</a> of file <a class="el" href="QuEST_8c_source.html">QuEST.c</a>.</p>
-<div class="fragment"><div class="line"><a name="l00745"></a><span class="lineno">  745</span>&#160;                                                                        {</div>
-<div class="line"><a name="l00746"></a><span class="lineno">  746</span>&#160;    <a class="code" href="QuEST__validation_8c.html#ac31c45c5a31c523be0eb26abba6cf598">validateTarget</a>(qureg, measureQubit, __func__);</div>
-<div class="line"><a name="l00747"></a><span class="lineno">  747</span>&#160; </div>
-<div class="line"><a name="l00748"></a><span class="lineno">  748</span>&#160;    <span class="keywordtype">int</span> outcome;</div>
-<div class="line"><a name="l00749"></a><span class="lineno">  749</span>&#160;    <span class="keywordflow">if</span> (qureg.<a class="code" href="structQureg.html#acf78445e9435d09f44f0cc832c6aee79">isDensityMatrix</a>)</div>
-<div class="line"><a name="l00750"></a><span class="lineno">  750</span>&#160;        outcome = <a class="code" href="QuEST__common_8c.html#ae4ebc1f4dd48922bfb30ad1692310269">densmatr_measureWithStats</a>(qureg, measureQubit, outcomeProb);</div>
-<div class="line"><a name="l00751"></a><span class="lineno">  751</span>&#160;    <span class="keywordflow">else</span></div>
-<div class="line"><a name="l00752"></a><span class="lineno">  752</span>&#160;        outcome = <a class="code" href="QuEST__common_8c.html#ac2eb81c71d0e0fbec7be5b45b1db1448">statevec_measureWithStats</a>(qureg, measureQubit, outcomeProb);</div>
-<div class="line"><a name="l00753"></a><span class="lineno">  753</span>&#160;    </div>
-<div class="line"><a name="l00754"></a><span class="lineno">  754</span>&#160;    <a class="code" href="QuEST__qasm_8c.html#a0befde437a58ef8fe38495bfc2a16f0e">qasm_recordMeasurement</a>(qureg, measureQubit);</div>
-<div class="line"><a name="l00755"></a><span class="lineno">  755</span>&#160;    <span class="keywordflow">return</span> outcome;</div>
-<div class="line"><a name="l00756"></a><span class="lineno">  756</span>&#160;}</div>
+<p class="definition">Definition at line <a class="el" href="QuEST_8c_source.html#l00972">972</a> of file <a class="el" href="QuEST_8c_source.html">QuEST.c</a>.</p>
+<div class="fragment"><div class="line"><a name="l00972"></a><span class="lineno">  972</span>&#160;                                                                        {</div>
+<div class="line"><a name="l00973"></a><span class="lineno">  973</span>&#160;    <a class="code" href="QuEST__validation_8c.html#ac31c45c5a31c523be0eb26abba6cf598">validateTarget</a>(qureg, measureQubit, __func__);</div>
+<div class="line"><a name="l00974"></a><span class="lineno">  974</span>&#160; </div>
+<div class="line"><a name="l00975"></a><span class="lineno">  975</span>&#160;    <span class="keywordtype">int</span> outcome;</div>
+<div class="line"><a name="l00976"></a><span class="lineno">  976</span>&#160;    <span class="keywordflow">if</span> (qureg.<a class="code" href="structQureg.html#acf78445e9435d09f44f0cc832c6aee79">isDensityMatrix</a>)</div>
+<div class="line"><a name="l00977"></a><span class="lineno">  977</span>&#160;        outcome = <a class="code" href="QuEST__common_8c.html#ae4ebc1f4dd48922bfb30ad1692310269">densmatr_measureWithStats</a>(qureg, measureQubit, outcomeProb);</div>
+<div class="line"><a name="l00978"></a><span class="lineno">  978</span>&#160;    <span class="keywordflow">else</span></div>
+<div class="line"><a name="l00979"></a><span class="lineno">  979</span>&#160;        outcome = <a class="code" href="QuEST__common_8c.html#ac2eb81c71d0e0fbec7be5b45b1db1448">statevec_measureWithStats</a>(qureg, measureQubit, outcomeProb);</div>
+<div class="line"><a name="l00980"></a><span class="lineno">  980</span>&#160;    </div>
+<div class="line"><a name="l00981"></a><span class="lineno">  981</span>&#160;    <a class="code" href="QuEST__qasm_8c.html#a0befde437a58ef8fe38495bfc2a16f0e">qasm_recordMeasurement</a>(qureg, measureQubit);</div>
+<div class="line"><a name="l00982"></a><span class="lineno">  982</span>&#160;    <span class="keywordflow">return</span> outcome;</div>
+<div class="line"><a name="l00983"></a><span class="lineno">  983</span>&#160;}</div>
 </div><!-- fragment -->
-<p class="reference">References <a class="el" href="QuEST__common_8c_source.html#l00369">densmatr_measureWithStats()</a>, <a class="el" href="QuEST_8h_source.html#l00206">Qureg::isDensityMatrix</a>, <a class="el" href="QuEST__qasm_8c_source.html#l00398">qasm_recordMeasurement()</a>, <a class="el" href="QuEST__common_8c_source.html#l00361">statevec_measureWithStats()</a>, and <a class="el" href="QuEST__validation_8c_source.html#l00364">validateTarget()</a>.</p>
+<p class="reference">References <a class="el" href="QuEST__common_8c_source.html#l00382">densmatr_measureWithStats()</a>, <a class="el" href="QuEST_8h_source.html#l00325">Qureg::isDensityMatrix</a>, <a class="el" href="QuEST__qasm_8c_source.html#l00411">qasm_recordMeasurement()</a>, <a class="el" href="QuEST__common_8c_source.html#l00374">statevec_measureWithStats()</a>, and <a class="el" href="QuEST__validation_8c_source.html#l00396">validateTarget()</a>.</p>
 
 <p class="reference">Referenced by <a class="el" href="test__gates_8cpp_source.html#l00213">TEST_CASE()</a>.</p>
 
 </div>
 </div>
 </div><!-- contents -->
-<div class="ttc" id="aQuEST__validation_8c_html_a8accabb8a9d573c2ff80305841c3053d"><div class="ttname"><a href="QuEST__validation_8c.html#a8accabb8a9d573c2ff80305841c3053d">validateMeasurementProb</a></div><div class="ttdeci">void validateMeasurementProb(qreal prob, const char *caller)</div><div class="ttdef"><b>Definition:</b> <a href="QuEST__validation_8c_source.html#l00491">QuEST_validation.c:491</a></div></div>
-<div class="ttc" id="aQuEST__validation_8c_html_ac31c45c5a31c523be0eb26abba6cf598"><div class="ttname"><a href="QuEST__validation_8c.html#ac31c45c5a31c523be0eb26abba6cf598">validateTarget</a></div><div class="ttdeci">void validateTarget(Qureg qureg, int targetQubit, const char *caller)</div><div class="ttdef"><b>Definition:</b> <a href="QuEST__validation_8c_source.html#l00364">QuEST_validation.c:364</a></div></div>
-<div class="ttc" id="aQuEST__validation_8c_html_ad613c75ff252a88e54f911053bd2032c"><div class="ttname"><a href="QuEST__validation_8c.html#ad613c75ff252a88e54f911053bd2032c">validateOutcome</a></div><div class="ttdeci">void validateOutcome(int outcome, const char *caller)</div><div class="ttdef"><b>Definition:</b> <a href="QuEST__validation_8c_source.html#l00487">QuEST_validation.c:487</a></div></div>
-<div class="ttc" id="aQuEST__internal_8h_html_a63cb88a5f4eb12fef087435b8db3f8eb"><div class="ttname"><a href="QuEST__internal_8h.html#a63cb88a5f4eb12fef087435b8db3f8eb">statevec_calcProbOfOutcome</a></div><div class="ttdeci">qreal statevec_calcProbOfOutcome(Qureg qureg, int measureQubit, int outcome)</div><div class="ttdef"><b>Definition:</b> <a href="QuEST__cpu__distributed_8c_source.html#l01260">QuEST_cpu_distributed.c:1260</a></div></div>
+<div class="ttc" id="aQuEST__validation_8c_html_a8accabb8a9d573c2ff80305841c3053d"><div class="ttname"><a href="QuEST__validation_8c.html#a8accabb8a9d573c2ff80305841c3053d">validateMeasurementProb</a></div><div class="ttdeci">void validateMeasurementProb(qreal prob, const char *caller)</div><div class="ttdef"><b>Definition:</b> <a href="QuEST__validation_8c_source.html#l00523">QuEST_validation.c:523</a></div></div>
+<div class="ttc" id="aQuEST__validation_8c_html_ac31c45c5a31c523be0eb26abba6cf598"><div class="ttname"><a href="QuEST__validation_8c.html#ac31c45c5a31c523be0eb26abba6cf598">validateTarget</a></div><div class="ttdeci">void validateTarget(Qureg qureg, int targetQubit, const char *caller)</div><div class="ttdef"><b>Definition:</b> <a href="QuEST__validation_8c_source.html#l00396">QuEST_validation.c:396</a></div></div>
+<div class="ttc" id="aQuEST__validation_8c_html_ad613c75ff252a88e54f911053bd2032c"><div class="ttname"><a href="QuEST__validation_8c.html#ad613c75ff252a88e54f911053bd2032c">validateOutcome</a></div><div class="ttdeci">void validateOutcome(int outcome, const char *caller)</div><div class="ttdef"><b>Definition:</b> <a href="QuEST__validation_8c_source.html#l00519">QuEST_validation.c:519</a></div></div>
+<div class="ttc" id="aQuEST__internal_8h_html_a63cb88a5f4eb12fef087435b8db3f8eb"><div class="ttname"><a href="QuEST__internal_8h.html#a63cb88a5f4eb12fef087435b8db3f8eb">statevec_calcProbOfOutcome</a></div><div class="ttdeci">qreal statevec_calcProbOfOutcome(Qureg qureg, int measureQubit, int outcome)</div><div class="ttdef"><b>Definition:</b> <a href="QuEST__cpu__distributed_8c_source.html#l01308">QuEST_cpu_distributed.c:1308</a></div></div>
 <div class="ttc" id="agroup__type_html_ga7740e349b4f8bae6451547680f0ce2d6"><div class="ttname"><a href="group__type.html#ga7740e349b4f8bae6451547680f0ce2d6">qreal</a></div><div class="ttdeci">#define qreal</div></div>
 <div class="ttc" id="aQuEST__internal_8h_html_a5658f2ecbbd4ea425db5f7dc7fc4ba92"><div class="ttname"><a href="QuEST__internal_8h.html#a5658f2ecbbd4ea425db5f7dc7fc4ba92">densmatr_collapseToKnownProbOutcome</a></div><div class="ttdeci">void densmatr_collapseToKnownProbOutcome(Qureg qureg, int measureQubit, int outcome, qreal outcomeProb)</div><div class="ttdoc">Renorms (/prob) every | * outcome * &gt;&lt; * outcome * | state, setting all others to zero.</div><div class="ttdef"><b>Definition:</b> <a href="QuEST__cpu_8c_source.html#l00785">QuEST_cpu.c:785</a></div></div>
-<div class="ttc" id="aQuEST__qasm_8c_html_a0befde437a58ef8fe38495bfc2a16f0e"><div class="ttname"><a href="QuEST__qasm_8c.html#a0befde437a58ef8fe38495bfc2a16f0e">qasm_recordMeasurement</a></div><div class="ttdeci">void qasm_recordMeasurement(Qureg qureg, int measureQubit)</div><div class="ttdef"><b>Definition:</b> <a href="QuEST__qasm_8c_source.html#l00398">QuEST_qasm.c:398</a></div></div>
-<div class="ttc" id="aQuEST__internal_8h_html_a008becc4a18f868340836e0ab9fd6df6"><div class="ttname"><a href="QuEST__internal_8h.html#a008becc4a18f868340836e0ab9fd6df6">statevec_collapseToKnownProbOutcome</a></div><div class="ttdeci">void statevec_collapseToKnownProbOutcome(Qureg qureg, int measureQubit, int outcome, qreal outcomeProb)</div><div class="ttdef"><b>Definition:</b> <a href="QuEST__cpu__distributed_8c_source.html#l01298">QuEST_cpu_distributed.c:1298</a></div></div>
-<div class="ttc" id="aQuEST__common_8c_html_ac2eb81c71d0e0fbec7be5b45b1db1448"><div class="ttname"><a href="QuEST__common_8c.html#ac2eb81c71d0e0fbec7be5b45b1db1448">statevec_measureWithStats</a></div><div class="ttdeci">int statevec_measureWithStats(Qureg qureg, int measureQubit, qreal *outcomeProb)</div><div class="ttdef"><b>Definition:</b> <a href="QuEST__common_8c_source.html#l00361">QuEST_common.c:361</a></div></div>
-<div class="ttc" id="astructQureg_html_acf78445e9435d09f44f0cc832c6aee79"><div class="ttname"><a href="structQureg.html#acf78445e9435d09f44f0cc832c6aee79">Qureg::isDensityMatrix</a></div><div class="ttdeci">int isDensityMatrix</div><div class="ttdoc">Whether this instance is a density-state representation.</div><div class="ttdef"><b>Definition:</b> <a href="QuEST_8h_source.html#l00206">QuEST.h:206</a></div></div>
-<div class="ttc" id="aQuEST__internal_8h_html_ae37b3eff5d3affbc1edfe216cabc1c53"><div class="ttname"><a href="QuEST__internal_8h.html#ae37b3eff5d3affbc1edfe216cabc1c53">densmatr_calcProbOfOutcome</a></div><div class="ttdeci">qreal densmatr_calcProbOfOutcome(Qureg qureg, int measureQubit, int outcome)</div><div class="ttdef"><b>Definition:</b> <a href="QuEST__cpu__distributed_8c_source.html#l01276">QuEST_cpu_distributed.c:1276</a></div></div>
-<div class="ttc" id="aQuEST__common_8c_html_ae4ebc1f4dd48922bfb30ad1692310269"><div class="ttname"><a href="QuEST__common_8c.html#ae4ebc1f4dd48922bfb30ad1692310269">densmatr_measureWithStats</a></div><div class="ttdeci">int densmatr_measureWithStats(Qureg qureg, int measureQubit, qreal *outcomeProb)</div><div class="ttdef"><b>Definition:</b> <a href="QuEST__common_8c_source.html#l00369">QuEST_common.c:369</a></div></div>
+<div class="ttc" id="aQuEST__qasm_8c_html_a0befde437a58ef8fe38495bfc2a16f0e"><div class="ttname"><a href="QuEST__qasm_8c.html#a0befde437a58ef8fe38495bfc2a16f0e">qasm_recordMeasurement</a></div><div class="ttdeci">void qasm_recordMeasurement(Qureg qureg, int measureQubit)</div><div class="ttdef"><b>Definition:</b> <a href="QuEST__qasm_8c_source.html#l00411">QuEST_qasm.c:411</a></div></div>
+<div class="ttc" id="aQuEST__internal_8h_html_a008becc4a18f868340836e0ab9fd6df6"><div class="ttname"><a href="QuEST__internal_8h.html#a008becc4a18f868340836e0ab9fd6df6">statevec_collapseToKnownProbOutcome</a></div><div class="ttdeci">void statevec_collapseToKnownProbOutcome(Qureg qureg, int measureQubit, int outcome, qreal outcomeProb)</div><div class="ttdef"><b>Definition:</b> <a href="QuEST__cpu__distributed_8c_source.html#l01364">QuEST_cpu_distributed.c:1364</a></div></div>
+<div class="ttc" id="aQuEST__common_8c_html_ac2eb81c71d0e0fbec7be5b45b1db1448"><div class="ttname"><a href="QuEST__common_8c.html#ac2eb81c71d0e0fbec7be5b45b1db1448">statevec_measureWithStats</a></div><div class="ttdeci">int statevec_measureWithStats(Qureg qureg, int measureQubit, qreal *outcomeProb)</div><div class="ttdef"><b>Definition:</b> <a href="QuEST__common_8c_source.html#l00374">QuEST_common.c:374</a></div></div>
+<div class="ttc" id="astructQureg_html_acf78445e9435d09f44f0cc832c6aee79"><div class="ttname"><a href="structQureg.html#acf78445e9435d09f44f0cc832c6aee79">Qureg::isDensityMatrix</a></div><div class="ttdeci">int isDensityMatrix</div><div class="ttdoc">Whether this instance is a density-state representation.</div><div class="ttdef"><b>Definition:</b> <a href="QuEST_8h_source.html#l00325">QuEST.h:325</a></div></div>
+<div class="ttc" id="aQuEST__internal_8h_html_ae37b3eff5d3affbc1edfe216cabc1c53"><div class="ttname"><a href="QuEST__internal_8h.html#ae37b3eff5d3affbc1edfe216cabc1c53">densmatr_calcProbOfOutcome</a></div><div class="ttdeci">qreal densmatr_calcProbOfOutcome(Qureg qureg, int measureQubit, int outcome)</div><div class="ttdef"><b>Definition:</b> <a href="QuEST__cpu__distributed_8c_source.html#l01324">QuEST_cpu_distributed.c:1324</a></div></div>
+<div class="ttc" id="aQuEST__common_8c_html_ae4ebc1f4dd48922bfb30ad1692310269"><div class="ttname"><a href="QuEST__common_8c.html#ae4ebc1f4dd48922bfb30ad1692310269">densmatr_measureWithStats</a></div><div class="ttdeci">int densmatr_measureWithStats(Qureg qureg, int measureQubit, qreal *outcomeProb)</div><div class="ttdef"><b>Definition:</b> <a href="QuEST__common_8c_source.html#l00382">QuEST_common.c:382</a></div></div>
 <!-- HTML footer for doxygen 1.8.8-->
 <!-- start footer part -->
 </div>

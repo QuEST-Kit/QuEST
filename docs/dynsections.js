@@ -1,4 +1,15 @@
 /*
+ Edit by Tyson Jones, 10th June 2021
+ I don't know why I'm adding this file, but Doxygen doc gen on Ubuntu 18
+ is producing html which refers to this file but not the file itself. 
+ I've copied it from a MacOS build which does build it, but doesn't seem to 
+ render the HTML properly. I've removed reference to a non-existent (at least
+ in my Ubuntu build) powerTip() function.
+ Finally, I added a hack in $(document.ready) to delete HTML elements which 
+ aren't rendering properly, despite my best 4am efforts. 
+ Such is my wrath ¯\_(ツ)_/¯
+ 
+ 
  @licstart  The following is the entire license notice for the
  JavaScript code in this file.
 
@@ -122,6 +133,30 @@ function toggleInherit(id)
 $(document).ready(function() {
   $('.code,.codeRef').each(function() {
     $(this).data('powertip',$('#a'+$(this).attr('href').replace(/.*\//,'').replace(/[^a-z_A-Z0-9]/g,'_')).html());
-    $(this).powerTip({ placement: 's', smartPlacement: true, mouseOnToPopup: true });
+    
+    // @TysonJones
+    // removing this reference to undefined function powerTip (but I don't know why)
+    // $(this).powerTip({ placement: 's', smartPlacement: true, mouseOnToPopup: true });
   });
+  
+  // @TysonJones
+  // deleting all memtitle elements (appearing above each function doc), which weren't 
+  // rendering properly in bootstrap & smartmenu. To future potential employers who
+  // discover my crimes here: eat my shorts
+  var glitchytitles = document.getElementsByClassName("memtitle");
+  while(glitchytitles.length > 0) {
+    glitchytitles[0].parentNode.removeChild(glitchytitles[0]);
+  }
+  
+  // @TysonJones
+  // Here, we can increase the font size of all function signatures, to make up for the above 
+  // deleted memtitles. However, I presently prefer the signature size being the same 
+  // as the doc main text
+  /*
+  var signatureElems = document.getElementsByClassName("memname");
+  for (const elem of signatureElems) {
+    // main doc text size appears to be 14px
+    elem.style.fontSize = "16px";
+  }
+  */
 });

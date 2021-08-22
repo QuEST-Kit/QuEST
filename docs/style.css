@@ -1,3 +1,9 @@
+/* Edited by @TysonJones, 10th June 2021, to 
+ * - correct spacing issue in lists inside doxygen @throws tags
+ * - increase code snippet font size (div.line)
+ * - increase code snippet inside padding (div.fragment)
+ */
+
 h1, .h1, h2, .h2, h3, .h3{
     font-weight: 200 !important;
 }
@@ -110,7 +116,10 @@ font-size: 1.15em !important;
  border: 0px solid #222 !important;
 }
 table{
-    white-space:pre-wrap !important;
+    /* @Tyson Jones 
+     * removed since caused spacing issue in lists inside @throws tag.
+     * see https://stackoverflow.com/questions/67912807/doxygen-lists-within-exception-tags-render-incorrectly */
+    /* white-space:pre-wrap !important; */
 }
 /*
  ===========================
@@ -231,21 +240,20 @@ pre.fragment {
     margin: 4px 8px 4px 2px;
     overflow: auto;
     word-wrap: break-word;
-    font-size:  9pt;
     line-height: 125%;
     font-family: monospace, fixed;
     font-size: 105%;
 }
 
 div.fragment {
-    padding: 4px 6px;
+    padding: 12px 12px;
     margin: 4px 8px 4px 2px;
     border: 1px solid #C4CFE5;
 }
 
 div.line {
     font-family: Consolas, "Liberation Mono", Menlo, Courier, monospace;
-    font-size: 12px;
+    font-size: 13px;
     min-height: 13px;
     line-height: 1.0;
     text-wrap: unrestricted;

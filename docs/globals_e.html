@@ -27,7 +27,7 @@
             <div class="container">
                 <div class="navbar-header">
                     <a class="navbar-brand"><img alt="Logo" src="logo.png"/></a>
-                    <a class="navbar-brand"><b>QuEST</b> v3.2.1<br>The Quantum Exact Simulation Toolkit</a>
+                    <a class="navbar-brand"><b>QuEST</b> v3.3.0<br>The Quantum Exact Simulation Toolkit</a>
                 </div>
             </div>
         </nav>
@@ -92,8 +92,17 @@ $(function() {
 <li>E_DISTRIB_QUREG_TOO_SMALL
 : <a class="el" href="QuEST__validation_8c.html#a59e56af19e754a6aa26a612ebf91d05fa2f1baaf37f336275631269f11dce15f9">QuEST_validation.c</a>
 </li>
+<li>E_FRACTIONAL_EXPONENT_MULTI_VAR
+: <a class="el" href="QuEST__validation_8c.html#a59e56af19e754a6aa26a612ebf91d05fad24aa703476af338fcc05efe0443d2e7">QuEST_validation.c</a>
+</li>
+<li>E_FRACTIONAL_EXPONENT_WITHOUT_NEG_OVERRIDE
+: <a class="el" href="QuEST__validation_8c.html#a59e56af19e754a6aa26a612ebf91d05fa78dddaeb85ec9392218fe8f12678e996">QuEST_validation.c</a>
+</li>
 <li>E_INVALID_AMP_INDEX
 : <a class="el" href="QuEST__validation_8c.html#a59e56af19e754a6aa26a612ebf91d05fa16c3d52d803cd7232e5cb56b4c56f734">QuEST_validation.c</a>
+</li>
+<li>E_INVALID_BIT_ENCODING
+: <a class="el" href="QuEST__validation_8c.html#a59e56af19e754a6aa26a612ebf91d05fa14c6d105aa35b36b19a56a590a067d94">QuEST_validation.c</a>
 </li>
 <li>E_INVALID_CONTROL_QUBIT
 : <a class="el" href="QuEST__validation_8c.html#a59e56af19e754a6aa26a612ebf91d05fa6dedefbf8fe0aade335d45cb7d47f42b">QuEST_validation.c</a>
@@ -122,14 +131,32 @@ $(function() {
 <li>E_INVALID_NUM_N_QUBIT_KRAUS_OPS
 : <a class="el" href="QuEST__validation_8c.html#a59e56af19e754a6aa26a612ebf91d05fa1c2104582f49728184e1e3fc4ec98b21">QuEST_validation.c</a>
 </li>
+<li>E_INVALID_NUM_NAMED_PHASE_FUNC_PARAMS
+: <a class="el" href="QuEST__validation_8c.html#a59e56af19e754a6aa26a612ebf91d05fa5dccc7b61ca8ed15acf33a89348f8a46">QuEST_validation.c</a>
+</li>
 <li>E_INVALID_NUM_ONE_QUBIT_KRAUS_OPS
 : <a class="el" href="QuEST__validation_8c.html#a59e56af19e754a6aa26a612ebf91d05fadf2e13b0b7bb3e72087ba611d23f549c">QuEST_validation.c</a>
+</li>
+<li>E_INVALID_NUM_PHASE_FUNC_OVERRIDES
+: <a class="el" href="QuEST__validation_8c.html#a59e56af19e754a6aa26a612ebf91d05fafa03f23b2a76283e6aa455c81705bdb7">QuEST_validation.c</a>
+</li>
+<li>E_INVALID_NUM_PHASE_FUNC_TERMS
+: <a class="el" href="QuEST__validation_8c.html#a59e56af19e754a6aa26a612ebf91d05fad9c1d7e0a961ffee92c678e64f721009">QuEST_validation.c</a>
 </li>
 <li>E_INVALID_NUM_QUBITS
 : <a class="el" href="QuEST__validation_8c.html#a59e56af19e754a6aa26a612ebf91d05fa6cf1f26c653d5953a7e7e4cd2623f9c7">QuEST_validation.c</a>
 </li>
+<li>E_INVALID_NUM_QUBITS_TWOS_COMPLEMENT
+: <a class="el" href="QuEST__validation_8c.html#a59e56af19e754a6aa26a612ebf91d05fa5db3b1d0203a02afb0dc801bf13c53d0">QuEST_validation.c</a>
+</li>
 <li>E_INVALID_NUM_RANKS
 : <a class="el" href="QuEST__validation_8c.html#a59e56af19e754a6aa26a612ebf91d05fa88763fecf89fb1712fb7b219e70bc054">QuEST_validation.c</a>
+</li>
+<li>E_INVALID_NUM_REGS_DISTANCE_PHASE_FUNC
+: <a class="el" href="QuEST__validation_8c.html#a59e56af19e754a6aa26a612ebf91d05fa31174eeb3e2a529536e11c15741399b2">QuEST_validation.c</a>
+</li>
+<li>E_INVALID_NUM_SUBREGISTERS
+: <a class="el" href="QuEST__validation_8c.html#a59e56af19e754a6aa26a612ebf91d05fa09abd390231919feba76ffcf69c14054">QuEST_validation.c</a>
 </li>
 <li>E_INVALID_NUM_SUM_TERMS
 : <a class="el" href="QuEST__validation_8c.html#a59e56af19e754a6aa26a612ebf91d05fab65076ba39122eb37a197c5fe4aa6ecf">QuEST_validation.c</a>
@@ -167,6 +194,15 @@ $(function() {
 <li>E_INVALID_PAULI_HAMIL_PARAMS
 : <a class="el" href="QuEST__validation_8c.html#a59e56af19e754a6aa26a612ebf91d05fa09321b3b6d5cfd2c9a6ca002d47a7e4d">QuEST_validation.c</a>
 </li>
+<li>E_INVALID_PHASE_FUNC_NAME
+: <a class="el" href="QuEST__validation_8c.html#a59e56af19e754a6aa26a612ebf91d05faab6b0e064d6fb3cde97ab261b1ff026a">QuEST_validation.c</a>
+</li>
+<li>E_INVALID_PHASE_FUNC_OVERRIDE_TWOS_COMPLEMENT_INDEX
+: <a class="el" href="QuEST__validation_8c.html#a59e56af19e754a6aa26a612ebf91d05fa2a8d87607f9071f0def0aab673e04e5d">QuEST_validation.c</a>
+</li>
+<li>E_INVALID_PHASE_FUNC_OVERRIDE_UNSIGNED_INDEX
+: <a class="el" href="QuEST__validation_8c.html#a59e56af19e754a6aa26a612ebf91d05fa72d15f3f90815bfa3b458e7bea0cf580">QuEST_validation.c</a>
+</li>
 <li>E_INVALID_PROB
 : <a class="el" href="QuEST__validation_8c.html#a59e56af19e754a6aa26a612ebf91d05fa93bbec0f9fd753287b43a5004606b213">QuEST_validation.c</a>
 </li>
@@ -200,6 +236,9 @@ $(function() {
 <li>E_MISMATCHING_NUM_TARGS_KRAUS_SIZE
 : <a class="el" href="QuEST__validation_8c.html#a59e56af19e754a6aa26a612ebf91d05fa7f56b6271ef72a1c53f9e16206c8392c">QuEST_validation.c</a>
 </li>
+<li>E_MISMATCHING_PAULI_HAMIL_DIAGONAL_OP_SIZE
+: <a class="el" href="QuEST__validation_8c.html#a59e56af19e754a6aa26a612ebf91d05fad095308ecb12fce150841946b2e176d7">QuEST_validation.c</a>
+</li>
 <li>E_MISMATCHING_PAULI_HAMIL_QUREG_NUM_QUBITS
 : <a class="el" href="QuEST__validation_8c.html#a59e56af19e754a6aa26a612ebf91d05fa4bfb0440c1886f7fd7bdca40fc0fd9e5">QuEST_validation.c</a>
 </li>
@@ -212,6 +251,12 @@ $(function() {
 <li>E_MISMATCHING_QUREG_TYPES
 : <a class="el" href="QuEST__validation_8c.html#a59e56af19e754a6aa26a612ebf91d05fa367f0d9cac7623f8ba17542e05d5eda7">QuEST_validation.c</a>
 </li>
+<li>E_NEGATIVE_EXPONENT_MULTI_VAR
+: <a class="el" href="QuEST__validation_8c.html#a59e56af19e754a6aa26a612ebf91d05fa2c45890ef392fbef984b12092cff2727">QuEST_validation.c</a>
+</li>
+<li>E_NEGATIVE_EXPONENT_WITHOUT_ZERO_OVERRIDE
+: <a class="el" href="QuEST__validation_8c.html#a59e56af19e754a6aa26a612ebf91d05fa1f1f83c071fca2726fd3583fc963611d">QuEST_validation.c</a>
+</li>
 <li>E_NON_UNITARY_COMPLEX_PAIR
 : <a class="el" href="QuEST__validation_8c.html#a59e56af19e754a6aa26a612ebf91d05fa1b0e380f3c20968423b6c3b5bc350844">QuEST_validation.c</a>
 </li>
@@ -220,6 +265,9 @@ $(function() {
 </li>
 <li>E_NUM_AMPS_EXCEED_TYPE
 : <a class="el" href="QuEST__validation_8c.html#a59e56af19e754a6aa26a612ebf91d05fa7c7ae480f5dfdfeda702d01dabd2e414">QuEST_validation.c</a>
+</li>
+<li>E_PAULI_HAMIL_NOT_DIAGONAL
+: <a class="el" href="QuEST__validation_8c.html#a59e56af19e754a6aa26a612ebf91d05fafa249dcca6bbbb253e9344a65a9f6219">QuEST_validation.c</a>
 </li>
 <li>E_QUBITS_NOT_UNIQUE
 : <a class="el" href="QuEST__validation_8c.html#a59e56af19e754a6aa26a612ebf91d05fa3b62cb7d19be35c8b63dd2bc77d9f423">QuEST_validation.c</a>
@@ -271,8 +319,8 @@ $(function() {
 : <a class="el" href="QuEST__validation_8c.html#aa37cc778ac42f5350830b90d0292b501">QuEST_validation.c</a>
 </li>
 <li>expI()
-: <a class="el" href="utilities_8cpp.html#a9dc43d4a0827b56cd004270a9c5b2604">utilities.cpp</a>
-, <a class="el" href="utilities_8hpp.html#a9dc43d4a0827b56cd004270a9c5b2604">utilities.hpp</a>
+: <a class="el" href="utilities_8hpp.html#a9dc43d4a0827b56cd004270a9c5b2604">utilities.hpp</a>
+, <a class="el" href="utilities_8cpp.html#a9dc43d4a0827b56cd004270a9c5b2604">utilities.cpp</a>
 </li>
 <li>extractBit()
 : <a class="el" href="QuEST__cpu__internal_8h.html#a100463f6ec212c76a5fad99579000505">QuEST_cpu_internal.h</a>
