@@ -76,6 +76,124 @@ TEST_CASE( "applyDiagonalOp", "[operators]" ) {
     CLEANUP_TEST( quregVec, quregMatr );
 }
 
+/** @sa applyFullQFT
+ * @ingroup unittest
+ * @author Tyson Jones 
+ */
+TEST_CASE( "applyFullQFT", "[operators]" ) {
+    
+    PREPARE_TEST( quregVec, quregMatr, refVec, refMatr );
+    
+    SECTION( "correctness" ) {
+        
+        // try 10 times for each kind of input
+        GENERATE( range(0,10) );
+        
+        SECTION( "state-vector" ) {
+            
+            SECTION( "normalised" ) {
+                
+                refVec = getRandomStateVector(NUM_QUBITS);
+                toQureg(quregVec, refVec);
+                refVec = getDFT(refVec);
+                
+                applyFullQFT(quregVec);
+                REQUIRE( areEqual(quregVec, refVec) );
+            }
+            SECTION( "unnormalised" ) {
+                
+                refVec = getRandomQVector(1 << NUM_QUBITS);
+                toQureg(quregVec, refVec);
+                refVec = getDFT(refVec);
+                
+                applyFullQFT(quregVec);
+                REQUIRE( areEqual(quregVec, refVec) );
+            }
+        }
+        SECTION( "density-matrix" ) {
+            
+            SECTION( "pure" ) {
+                
+                /* a pure density matrix should be mapped to a pure state 
+                 * corresponding to the state-vector DFT
+                 */
+
+                refVec = getRandomStateVector(NUM_QUBITS);
+                refMatr = getPureDensityMatrix(refVec);
+                
+                toQureg(quregMatr, refMatr);
+                applyFullQFT(quregMatr);
+                
+                refVec = getDFT(refVec);
+                refMatr = getPureDensityMatrix(refVec);
+                
+                REQUIRE( areEqual(quregMatr, refMatr) );
+            }
+            SECTION( "mixed" ) {
+                
+                /* a mixed density matrix, conceptualised as a mixture of orthogonal
+                 * state-vectors, should be mapped to an equally weighted mixture 
+                 * of DFTs of each state-vector (because QFT is unitary and hence 
+                 * maintains state orthogonality)
+                 */
+                
+                int numStates = (1 << NUM_QUBITS)/4; // quarter as many states as possible
+                std::vector<QVector> states = getRandomOrthonormalVectors(NUM_QUBITS, numStates);
+                std::vector<qreal> probs = getRandomProbabilities(numStates);
+                
+                // set qureg to random mixture 
+                refMatr = getMixedDensityMatrix(probs, states);
+                toQureg(quregMatr, refMatr);
+                
+                // apply QFT to mixture
+                applyFullQFT(quregMatr);
+                
+                // compute dft of mixture, via dft of each state
+                refMatr = getZeroMatrix(1 << NUM_QUBITS);
+                for (int i=0; i<numStates; i++)
+                    refMatr += probs[i] * getPureDensityMatrix(getDFT(states[i]));
+                
+                REQUIRE( areEqual(quregMatr, refMatr) );
+            }
+            SECTION( "unnormalised" ) {
+                
+                /* repeat method above, except that we use unnormalised vectors, 
+                 * and mix them with arbitrary complex numbers instead of probabilities,
+                 * yielding an unnormalised density matrix 
+                 */
+                
+                int numVecs = (1 << NUM_QUBITS)/4; // quarter as many states as possible
+                std::vector<QVector> vecs;
+                std::vector<qcomp> coeffs;
+                for (int i=0; i<numVecs; i++) {
+                    vecs.push_back(getRandomQVector(1 << NUM_QUBITS));
+                    coeffs.push_back(getRandomComplex());
+                }
+                
+                // produce unnormalised matrix
+                refMatr = getZeroMatrix(1 << NUM_QUBITS);
+                for (int i=0; i<numVecs; i++)
+                    refMatr += coeffs[i] * getPureDensityMatrix(vecs[i]);
+                    
+                toQureg(quregMatr, refMatr);
+                applyFullQFT(quregMatr);
+                
+                // compute target matrix via dft of each unnormalised vector 
+                refMatr = getZeroMatrix(1 << NUM_QUBITS);
+                for (int i=0; i<numVecs; i++)
+                    refMatr += coeffs[i] * getPureDensityMatrix(getDFT(vecs[i]));
+                    
+                REQUIRE( areEqual(quregMatr, refMatr) );
+            }
+        }
+    }
+    SECTION( "input validation" ) {
+        
+        SUCCEED( );
+    }
+    CLEANUP_TEST( quregVec, quregMatr );
+}
+
 
 
 /** @sa applyMatrix2
@@ -3078,6 +3196,157 @@ TEST_CASE( "applyPhaseFuncOverrides", "[operators]" ) {
             numOverrides = 3;
             overrideInds[GENERATE_COPY(range(0,numOverrides))] = 0;
             REQUIRE_NOTHROW( applyPhaseFuncOverrides(quregVec, qubits, numQubits, encoding, coeffs, expos, numTerms, overrideInds, overridePhases, numOverrides) );
+        }
+    }
+    CLEANUP_TEST( quregVec, quregMatr );
+}
+
+
+
+/** @sa applyQFT
+ * @ingroup unittest
+ * @author Tyson Jones 
+ */
+TEST_CASE( "applyQFT", "[operators]" ) {
+    
+    PREPARE_TEST( quregVec, quregMatr, refVec, refMatr );
+    
+    SECTION( "correctness" ) {
+        
+        // try every sub-register size
+        int numQubits = GENERATE_COPY( range(1,NUM_QUBITS+1) );
+        
+        // try every possible sub-register
+        int* qubits = GENERATE_COPY( sublists(range(0,NUM_QUBITS), numQubits) );
+        
+        SECTION( "state-vector" ) {
+            
+            SECTION( "normalised" ) {
+        
+                QVector refVec = getRandomStateVector(NUM_QUBITS);
+                toQureg(quregVec, refVec);
+                
+                applyQFT(quregVec, qubits, numQubits);
+                refVec = getDFT(refVec, qubits, numQubits);
+                
+                REQUIRE( areEqual(quregVec, refVec) );
+            }
+            SECTION( "unnormalised" ) {
+                
+                QVector refVec = getRandomQVector(1 << NUM_QUBITS);
+                toQureg(quregVec, refVec);
+                
+                applyQFT(quregVec, qubits, numQubits);
+                refVec = getDFT(refVec, qubits, numQubits);
+                
+                REQUIRE( areEqual(quregVec, refVec) );
+            }
+        }
+        SECTION( "density-matrix" ) {
+            
+            SECTION( "pure" ) {
+                
+                /* a pure density matrix should be mapped to a pure state 
+                 * corresponding to the state-vector DFT
+                 */
+                
+                refVec = getRandomStateVector(NUM_QUBITS);
+                refMatr = getPureDensityMatrix(refVec);
+                toQureg(quregMatr, refMatr);
+                
+                applyQFT(quregMatr, qubits, numQubits);
+                refVec = getDFT(refVec, qubits, numQubits);
+                refMatr = getPureDensityMatrix(refVec);
+                
+                REQUIRE( areEqual(quregMatr, refMatr) );
+            }
+            SECTION( "mixed" ) {
+                
+                /* a mixed density matrix, conceptualised as a mixture of orthogonal
+                 * state-vectors, should be mapped to an equally weighted mixture 
+                 * of DFTs of each state-vector (because QFT is unitary and hence 
+                 * maintains state orthogonality)
+                 */
+                
+                int numStates = (1 << NUM_QUBITS)/4; // a quarter of as many states as are possible
+                std::vector<QVector> states = getRandomOrthonormalVectors(NUM_QUBITS, numStates);
+                std::vector<qreal> probs = getRandomProbabilities(numStates);
+                
+                // set qureg to random mixture of state-vectors
+                refMatr = getMixedDensityMatrix(probs, states);
+                toQureg(quregMatr, refMatr);
+                
+                // apply QFT to mixture
+                applyQFT(quregMatr, qubits, numQubits);
+                
+                // compute dft of mixture, via dft of each state
+                refMatr = getZeroMatrix(1 << NUM_QUBITS);
+                for (int i=0; i<numStates; i++) {
+                    QVector dft = getDFT(states[i], qubits, numQubits);
+                    refMatr += probs[i] * getPureDensityMatrix(dft);
+                }
+                
+                REQUIRE( areEqual(quregMatr, refMatr) );
+            }
+            SECTION( "unnormalised" ) {
+                
+                /* repeat method above, except that we use unnormalised vectors, 
+                 * and mix them with arbitrary complex numbers instead of probabilities,
+                 * yielding an unnormalised density matrix 
+                 */
+                
+                int numVecs = (1 << NUM_QUBITS)/4; // a quarter of as many states as are possible
+                std::vector<QVector> vecs;
+                std::vector<qcomp> coeffs;
+                for (int i=0; i<numVecs; i++) {
+                    vecs.push_back(getRandomQVector(1 << NUM_QUBITS));
+                    coeffs.push_back(getRandomComplex());
+                }
+                
+                // produce unnormalised matrix via random complex sum of random unnormalised vectors
+                refMatr = getZeroMatrix(1 << NUM_QUBITS);
+                for (int i=0; i<numVecs; i++)
+                    refMatr += coeffs[i] * getPureDensityMatrix(vecs[i]);
+                    
+                toQureg(quregMatr, refMatr);
+                applyQFT(quregMatr, qubits, numQubits);
+                
+                // compute target matrix via dft of each unnormalised vector 
+                refMatr = getZeroMatrix(1 << NUM_QUBITS);
+                for (int i=0; i<numVecs; i++) {
+                    QVector dft = getDFT(vecs[i], qubits, numQubits);
+                    refMatr += coeffs[i] * getPureDensityMatrix(dft);
+                }
+                    
+                REQUIRE( areEqual(quregMatr, refMatr) );
+            }
+        }
+    }
+    SECTION( "input validation" ) {
+        
+        SECTION( "number of targets" ) {
+            
+            // there cannot be more targets than qubits in register
+            int numQubits = GENERATE( -1, 0, NUM_QUBITS+1 );
+            int qubits[NUM_QUBITS+1];
+            
+            REQUIRE_THROWS_WITH( applyQFT(quregVec, qubits, numQubits), Contains("Invalid number of target"));
+        }
+        SECTION( "repetition in targets" ) {
+            
+            int numQubits = 3;
+            int qubits[] = {1,2,2};
+            
+            REQUIRE_THROWS_WITH( applyQFT(quregVec, qubits, numQubits), Contains("target") && Contains("unique"));
+        }
+        SECTION( "qubit indices" ) {
+            
+            int numQubits = 3;
+            int qubits[] = {1,2,3};
+            
+            int inv = GENERATE( -1, NUM_QUBITS );
+            qubits[GENERATE_COPY( range(0,numQubits) )] = inv; // make invalid target
+            REQUIRE_THROWS_WITH( applyQFT(quregVec, qubits, numQubits), Contains("Invalid target") );
         }
     }
     CLEANUP_TEST( quregVec, quregMatr );

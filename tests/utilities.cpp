@@ -140,6 +140,16 @@ QVector operator * (const QMatrix& m, const QVector& v) {
     return prod;
 }
 
+QVector getKroneckerProduct(QVector b, QVector a) {
+
+    QVector prod = QVector(a.size() * b.size());
+    
+    for (size_t i=0; i<prod.size(); i++)
+        prod[i] = b[i / a.size()] * a[i % a.size()];
+    
+    return prod;
+}
+
 QMatrix getZeroMatrix(size_t dim) {
     DEMAND( dim > 1 );
     QMatrix matr = QMatrix(dim);
@@ -418,10 +428,14 @@ qreal getRandomReal(qreal min, qreal max) {
     return r;
 }
 
+qcomp getRandomComplex() {
+    return getRandomReal(-1,1) + getRandomReal(-1,1) * (qcomp) 1i;
+}
+
 QVector getRandomQVector(int dim) { 
     QVector vec = QVector(dim);
     for (int i=0; i<dim; i++)
-        vec[i] = getRandomReal(-1,1) + getRandomReal(-1,1) * (qcomp) 1i;
+        vec[i] = getRandomComplex();
         
     // check we didn't get the impossibly-unlikely zero-amplitude outcome 
     DEMAND( real(vec[0]) != 0 );
@@ -455,19 +469,30 @@ QVector getRandomStateVector(int numQb) {
     return getNormalised(getRandomQVector(1<<numQb));
 }
 
+std::vector<qreal> getRandomProbabilities(int numProbs) {
+    
+    // generate random unnormalised scalars
+    std::vector<qreal> probs;
+    qreal total = 0;
+    for (int i=0; i<numProbs; i++) {
+        qreal prob = getRandomReal(0, 1);
+        probs.push_back(prob);
+        total += prob;
+    }
+        
+    // normalise
+    for (int i=0; i<numProbs; i++)
+        probs[i] /= total;
+        
+    return probs;
+}
+
 QMatrix getRandomDensityMatrix(int numQb) {
     DEMAND( numQb > 0 );
     
     // generate random probabilities to weight random pure states
     int dim = 1<<numQb;
-    qreal probs[dim];
-    qreal probNorm = 0;
-    for (int i=0; i<dim; i++) {
-        probs[i] = getRandomReal(0, 1);
-        probNorm += probs[i];
-    }
-    for (int i=0; i<dim; i++)
-        probs[i] /= probNorm;
+    std::vector<qreal> probs = getRandomProbabilities(dim);
     
     // add random pure states
     QMatrix dens = getZeroMatrix(dim);
@@ -477,6 +502,25 @@ QMatrix getRandomDensityMatrix(int numQb) {
     }
     
     return dens;
+}
+
+QMatrix getPureDensityMatrix(QVector state) {
+    return getKetBra(state, state);
+}
+
+QMatrix getRandomPureDensityMatrix(int numQb) {
+    QVector vec = getRandomStateVector(numQb);
+    QMatrix mat = getPureDensityMatrix(vec);
+    return mat;
+}
+
+QVector getMatrixDiagonal(QMatrix matr) {
+    
+    QVector vec = QVector(matr.size());
+    for (size_t i=0; i<vec.size(); i++)
+        vec[i] = matr[i][i];
+    
+    return vec;
 }
 
 int getRandomInt(int min, int max) {
@@ -564,6 +608,116 @@ std::vector<QMatrix> getRandomKrausMap(int numQb, int numOps) {
     DEMAND( areEqual(prodSum, iden) );
         
     return ops;
+}
+
+std::vector<QVector> getRandomOrthonormalVectors(int numQb, int numStates) {
+    DEMAND( numQb >= 1 );
+    DEMAND( numStates >= 1);
+    
+    // set of orthonormal vectors
+    std::vector<QVector> vecs;
+    
+    for (size_t n=0; n<numStates; n++) {
+        
+        QVector vec = getRandomStateVector(numQb);
+        
+        // orthogonalise by substracting projections of existing vectors
+        for (int m=0; m<n; m++) {
+            qcomp prod = vec * vecs[m];
+            vec -= (prod * vecs[m]);
+        }
+        
+        // renormalise
+        vec = getNormalised(vec);
+        
+        // add to orthonormal set
+        vecs.push_back(vec);
+    }
+
+    return vecs;
+}
+
+QMatrix getMixedDensityMatrix(std::vector<qreal> probs, std::vector<QVector> states) {
+    DEMAND( probs.size() == states.size() );
+    DEMAND( probs.size() >= 1 );
+    
+    QMatrix matr = getZeroMatrix(states[0].size());
+    
+    for (size_t i=0; i<probs.size(); i++)
+        matr += probs[i] * getPureDensityMatrix(states[i]);
+        
+    return matr;
+}
+
+QVector getDFT(QVector in) {
+    REQUIRE( in.size() > 0 );
+    
+    size_t dim = in.size();
+    qreal ampFac = 1 / sqrt( dim );
+    qreal phaseFac = 2 * M_PI / dim;
+    
+    QVector dftVec = QVector(dim);
+    
+    for (size_t x=0; x<dim; x++) {
+        dftVec[x] = 0;
+        for (long long int y=0; y<dim; y++)
+            dftVec[x] += expI(phaseFac * x * y) * in[y];
+        dftVec[x] *= ampFac;
+    }
+    return dftVec;
+}
+
+long long int getValueOfTargets(long long int ind, int* targs, int numTargs) {
+    DEMAND( ind >= 0 );
+    
+    long long int val = 0;
+    
+    for (int t=0; t<numTargs; t++)
+        val += ((ind >> targs[t]) & 1) * (1LL << t);
+        
+    return val;
+}
+
+long long int setBit(long long int num, int bitInd, int bitVal) {
+    DEMAND( (bitVal == 0 || bitVal == 1) );
+    DEMAND( num >= 0 );
+    DEMAND( bitInd >= 0 );
+    
+    return (num & ~(1UL << bitInd)) | (bitVal << bitInd);
+}
+
+long long int getIndexOfTargetValues(long long int ref, int* targs, int numTargs, int targVal) {
+    // ref state is the starting index, where the targets can be in any bit state;
+    // on the bits of the non-target qubits matter 
+    
+    for (int t=0; t<numTargs; t++) {
+        int bit = (targVal >> t) & 1;
+        ref = setBit(ref, targs[t], bit);    
+    }
+    return ref;
+}
+
+QVector getDFT(QVector in, int* targs, int numTargs) {
+    
+    QVector out = QVector(in.size());
+    long long int targDim = (1LL << numTargs);
+    
+    for (size_t j=0; j<in.size(); j++) {
+        
+        // |j> = |x> (x) |...>, but mixed (not separated)
+        long long int x = getValueOfTargets(j, targs, numTargs);
+        
+        for (long long int y=0; y<targDim; y++) {
+            
+            // modifies sum_y |y> (x) ...
+            long long int outInd = getIndexOfTargetValues(j, targs, numTargs, y);
+            
+            qcomp elem = (in[j] / sqrt(pow(2,numTargs))) * expI(2*M_PI * x * y / pow(2,numTargs));
+            out[outInd] += elem;
+        }
+    }
+    
+    return out;
 }
 
 /* (do not generate doxygen doc)
@@ -1150,6 +1304,13 @@ long long int getUnsigned(long long int twosComp, int numBits) {
         return twosComp;
     else
         return (1<<numBits) + twosComp;
+}
+
+QMatrix toDiagonalQMatrix(QVector vec) {
+    QMatrix mat = getZeroMatrix(vec.size());
+    for (size_t i=0; i<vec.size(); i++)
+        mat[i][i] = vec[i];
+    return mat;
 }
 
 void setDiagMatrixOverrides(QMatrix &matr, int* numQubitsPerReg, int numRegs, enum bitEncoding encoding, long long int* overrideInds, qreal* overridePhases, int numOverrides) {

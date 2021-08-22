@@ -175,6 +175,13 @@ QMatrix toQMatrix(PauliHamil hamil);
  */
 QMatrix toQMatrix(DiagonalOp op);
 
+/** Returns a diagonal complex matrix formed by the given vector 
+ *
+ * @ingroup testutilities
+ * @author Tyson Jones 
+ */
+QMatrix toDiagonalQMatrix(QVector vec);
+
 /** Returns a \p ComplexMatrix2 copy of QMatix \p qm.
  * Demands that \p qm is a 2-by-2 matrix.
  *
@@ -219,6 +226,15 @@ void toQureg(Qureg qureg, QVector vec);
  * @author Tyson Jones
  */
 void toQureg(Qureg qureg, QMatrix mat);
+
+/** Returns b (otimes) a. If b and a are state-vectors, the resulting kronecker 
+ * product is the seperable state formed by joining the qubits in the state-vectors, 
+ * producing |b>|a> (a is least significant)
+ *
+ * @ingroup testutilities
+ * @author Tyson Jones
+ */
+QVector getKroneckerProduct(QVector b, QVector a);
 
 /** Returns a dim-by-dim square complex matrix, initialised to all zeroes.
  * 
@@ -321,6 +337,15 @@ int getRandomInt(int min, int max);
  */
 qreal getRandomReal(qreal min, qreal max);
 
+/** Returns a random complex number within the square closing (-1-i) and (1+i),
+ * from a distribution uniformly randomising the individual real and imaginary 
+ * components in their domains.
+ *
+ * @ingroup testutilities 
+ * @author Tyson Jones
+ */
+qcomp getRandomComplex();
+
 /** Returns a \p dim-length vector with random complex amplitudes in the 
  * square joining {-1-i, 1+i}, of an undisclosed distribution. The resulting 
  * vector is NOT L2-normalised.
@@ -372,6 +397,28 @@ QVector getRandomStateVector(int numQb);
  */
 QMatrix getRandomDensityMatrix(int numQb);
 
+/** Returns a random \p numQb-by-\p numQb density matrix, from an undisclosed 
+ * distribution, which is pure (corresponds to a random state-vector)
+ *
+ * @ingroup testutilities 
+ * @author Tyson Jones
+ */
+QMatrix getRandomPureDensityMatrix(int numQb);
+
+/** Returns a density matrix initialised into the given pure state 
+ *
+ * @ingroup testutilities
+ * @author Tyson Jones 
+ */
+QMatrix getPureDensityMatrix(QVector state);
+
+/** Returns the diagonal vector of the given matrix
+ *
+ * @ingroup testutilities 
+ * @author Tyson Jones
+ */
+QVector getMatrixDiagonal(QMatrix matr);
+
 /** Returns a random Kraus map of #`numOps` 2^\p numQb-by-2^\p numQb operators, 
  * from an undisclosed distribution.
  * Note this method is very simple and cannot generate all possible Kraus maps. 
@@ -383,12 +430,57 @@ QMatrix getRandomDensityMatrix(int numQb);
  */
 std::vector<QMatrix> getRandomKrausMap(int numQb, int numOps);
 
+/** Returns a list of random real scalars, each in [0, 1], which sum to unity. 
+ *
+ * @ingroup testutilities
+ * @author Tyson Jones
+ */
+std::vector<qreal> getRandomProbabilities(int numProbs);
+
+/** Returns a list of random orthonormal complex vectors, from an undisclosed 
+ * distribution. 
+ *
+ * @ingroup testutilities 
+ * @author Tyson Jones
+ */
+std::vector<QVector> getRandomOrthonormalVectors(int numQb, int numStates);
+
+/** Returns a mixed density matrix formed from mixing the given pure states, 
+ * which are assumed normalised, but not necessarily orthogonal.
+ *
+ * @ingroup testutilities
+ * @author Tyson Jones 
+ */
+QMatrix getMixedDensityMatrix(std::vector<qreal> probs, std::vector<QVector> states);
+
 /** Returns an L2-normalised copy of \p vec, using Kahan summation for improved accuracy.
  *
  * @ingroup testutilities 
  * @author Tyson Jones
  */
 QVector getNormalised(QVector vec);
+
+/** Returns the discrete fourier transform of vector in 
+ *
+ * @ingroup testutilities
+ * @author Tyson Jones 
+ */
+QVector getDFT(QVector in);
+
+/** Returns the discrete fourier transform of a sub-partition of the vector in.
+ * 
+ * @ingroup testutilities
+ * @author Tyson Jones 
+ */
+QVector getDFT(QVector in, int* targs, int numTargs);
+
+/** Returns the integer value of the targeted sub-register for the given 
+ * full state index \p ind. 
+ *
+ * @ingroup testutilities
+ * @author Tyson Jones 
+ */
+long long int getValueOfTargets(long long int ind, int* targs, int numTargs);
 
 /** Modifies \p dest by overwriting its submatrix (from top-left corner 
  * (\p r, \p c) to bottom-right corner (\p r + \p dest.size(), \p c + \p dest.size()) 
