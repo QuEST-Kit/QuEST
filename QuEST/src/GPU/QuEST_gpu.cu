@@ -380,11 +380,67 @@ void agnostic_destroyDiagonalOp(DiagonalOp op) {
 }
 
 void agnostic_syncDiagonalOp(DiagonalOp op) {
-
-    size_t arrSize = (1LL << op.numQubits) * sizeof(qreal);
     cudaDeviceSynchronize();
-    cudaMemcpy(op.deviceOperator.real, op.real, arrSize, cudaMemcpyHostToDevice);
-    cudaMemcpy(op.deviceOperator.imag, op.imag, arrSize, cudaMemcpyHostToDevice);
+    size_t mem_elems = op.numElemsPerChunk * sizeof *op.real;
+    cudaMemcpy(op.deviceOperator.real, op.real, mem_elems, cudaMemcpyHostToDevice);
+    cudaMemcpy(op.deviceOperator.imag, op.imag, mem_elems, cudaMemcpyHostToDevice);
+}
+
+__global__ void agnostic_initDiagonalOpFromPauliHamilKernel(
+    DiagonalOp op, enum pauliOpType* pauliCodes, qreal* termCoeffs, int numSumTerms
+) {    
+    // each thread processes one diagonal element
+    long long int elemInd = blockIdx.x*blockDim.x + threadIdx.x;
+    if (elemInd >= op.numElemsPerChunk)
+        return;
+
+    qreal elem = 0;
+    
+    // elem is (+-) every coefficient, with sign determined by parity
+    for (int t=0; t<numSumTerms; t++) {
+        
+        // determine the parity of the Z-targeted qubits in the element's corresponding state
+        int isOddNumOnes = 0;
+        for (int q=0; q<op.numQubits; q++)
+            if (pauliCodes[q + t*op.numQubits] == PAULI_Z)
+                if (extractBit(q, elemInd))
+                    isOddNumOnes = !isOddNumOnes;
+        
+        // avoid warp divergence
+        int sign = 1 - 2*isOddNumOnes; // (-1 if isOddNumOnes, else +1)
+        elem += termCoeffs[t] * sign;
+    }
+    
+    op.deviceOperator.real[elemInd] = elem;
+    op.deviceOperator.imag[elemInd] = 0;
+}
+
+void agnostic_initDiagonalOpFromPauliHamil(DiagonalOp op, PauliHamil hamil) {
+    
+    // copy args intop GPU memory
+    enum pauliOpType* d_pauliCodes;
+    size_t mem_pauliCodes = hamil.numSumTerms * op.numQubits * sizeof *d_pauliCodes;
+    cudaMalloc(&d_pauliCodes, mem_pauliCodes);
+    cudaMemcpy(d_pauliCodes, hamil.pauliCodes, mem_pauliCodes, cudaMemcpyHostToDevice);
+    
+    qreal* d_termCoeffs;
+    size_t mem_termCoeffs = hamil.numSumTerms * sizeof *d_termCoeffs;
+    cudaMalloc(&d_termCoeffs, mem_termCoeffs);
+    cudaMemcpy(d_termCoeffs, hamil.termCoeffs, mem_termCoeffs, cudaMemcpyHostToDevice);
+    
+    int numThreadsPerBlock = 128;
+    int numBlocks = ceil(op.numElemsPerChunk / (qreal) numThreadsPerBlock);
+    agnostic_initDiagonalOpFromPauliHamilKernel<<<numBlocks, numThreadsPerBlock>>>(
+        op, d_pauliCodes, d_termCoeffs, hamil.numSumTerms);
+    
+    // copy populated operator into to RAM
+    cudaDeviceSynchronize();
+    size_t mem_elems = op.numElemsPerChunk * sizeof *op.real;
+    cudaMemcpy(op.real, op.deviceOperator.real, mem_elems, cudaMemcpyDeviceToHost);
+    cudaMemcpy(op.imag, op.deviceOperator.imag, mem_elems, cudaMemcpyDeviceToHost);
+
+    cudaFree(d_pauliCodes);
+    cudaFree(d_termCoeffs);
 }
 
 int GPUExists(void){
@@ -1538,6 +1594,39 @@ void statevec_multiRotateZ(Qureg qureg, long long int mask, qreal angle)
     statevec_multiRotateZKernel<<<CUDABlocks, threadsPerCUDABlock>>>(qureg, mask, cosAngle, sinAngle);
 }
 
+__global__ void statevec_multiControlledMultiRotateZKernel(Qureg qureg, long long int ctrlMask, long long int targMask, qreal cosAngle, qreal sinAngle) {
+    
+    long long int stateVecSize = qureg.numAmpsPerChunk;
+    long long int index = blockIdx.x*blockDim.x + threadIdx.x;
+    if (index>=stateVecSize) return;
+    
+    // amplitudes corresponding to control qubits not all-in-one are unmodified
+    if (ctrlMask && ((ctrlMask & index) != ctrlMask))
+        return;
+    
+    qreal *stateVecReal = qureg.deviceStateVec.real;
+    qreal *stateVecImag = qureg.deviceStateVec.imag;
+    
+    // avoid warp divergence, setting fac = +- 1
+    int fac = 1-2*getBitMaskParity(targMask & index);
+    qreal stateReal = stateVecReal[index];
+    qreal stateImag = stateVecImag[index];
+    
+    stateVecReal[index] = cosAngle*stateReal + fac * sinAngle*stateImag;
+    stateVecImag[index] = - fac * sinAngle*stateReal + cosAngle*stateImag;  
+}
+
+void statevec_multiControlledMultiRotateZ(Qureg qureg, long long int ctrlMask, long long int targMask, qreal angle)
+{   
+    qreal cosAngle = cos(angle/2.0);
+    qreal sinAngle = sin(angle/2.0);
+        
+    int threadsPerCUDABlock, CUDABlocks;
+    threadsPerCUDABlock = 128;
+    CUDABlocks = ceil((qreal)(qureg.numAmpsPerChunk)/threadsPerCUDABlock);
+    statevec_multiControlledMultiRotateZKernel<<<CUDABlocks, threadsPerCUDABlock>>>(qureg, ctrlMask, targMask, cosAngle, sinAngle);
+}
+
 qreal densmatr_calcTotalProb(Qureg qureg) {
     
     // computes the trace using Kahan summation
@@ -1787,6 +1876,50 @@ void statevec_controlledNot(Qureg qureg, int controlQubit, int targetQubit)
     statevec_controlledNotKernel<<<CUDABlocks, threadsPerCUDABlock>>>(qureg, controlQubit, targetQubit);
 }
 
+__global__ void statevec_multiControlledMultiQubitNotKernel(Qureg qureg, int ctrlMask, int targMask) {
+    
+    qreal* stateRe = qureg.deviceStateVec.real;
+    qreal* stateIm = qureg.deviceStateVec.imag;
+    
+    // althouugh each thread swaps/updates two amplitudes, we still invoke one thread per amp
+    long long int ampInd = blockIdx.x*blockDim.x + threadIdx.x;
+    if (ampInd >= qureg.numAmpsPerChunk)
+        return;
+
+    // modify amplitudes only if control qubits are 1 for this state
+    if (ctrlMask && ((ctrlMask & ampInd) != ctrlMask))
+        return;
+    
+    long long int mateInd = ampInd ^ targMask;
+    
+    // if the mate is lower index, another thread is handling it
+    if (mateInd < ampInd)
+        return;
+        
+    /* it may seem wasteful to spawn more threads than are needed, and abort 
+     * half of them due to the amp pairing above (and potentially abort
+     * an exponential number due to ctrlMask). however, since we are moving 
+     * global memory directly in a potentially non-contiguous fashoin, this 
+     * method is likely to be memory bandwidth bottlenecked anyway 
+     */
+    
+    qreal mateRe = stateRe[mateInd];
+    qreal mateIm = stateIm[mateInd];
+    
+    // swap amp with mate
+    stateRe[mateInd] = stateRe[ampInd];
+    stateIm[mateInd] = stateIm[ampInd];
+    stateRe[ampInd] = mateRe;
+    stateIm[ampInd] = mateIm;
+}
+
+void statevec_multiControlledMultiQubitNot(Qureg qureg, int ctrlMask, int targMask) {
+    
+    int numThreadsPerBlock = 128;
+    int numBlocks = ceil(qureg.numAmpsPerChunk / (qreal) numThreadsPerBlock);
+    statevec_multiControlledMultiQubitNotKernel<<<numBlocks, numThreadsPerBlock>>>(qureg, ctrlMask, targMask);
+}
+
 __device__ __host__ unsigned int log2Int( unsigned int x )
 {
     unsigned int ans = 0 ;
@@ -2028,6 +2161,131 @@ qreal densmatr_calcProbOfOutcome(Qureg qureg, int measureQubit, int outcome)
     return outcomeProb;
 }
 
+// atomicAdd on floats/doubles isn't available on <6 CC devices, so we add it ourselves
+#if !defined(__CUDA_ARCH__) || __CUDA_ARCH__ >= 600
+#else
+static __inline__ __device__ double atomicAdd(double* address, double val)
+{
+    unsigned long long int* address_as_ull = (unsigned long long int*) address;
+    unsigned long long int old = *address_as_ull, assumed;
+
+    do {
+        assumed = old;
+        old = atomicCAS(address_as_ull, assumed,
+            __double_as_longlong(val + __longlong_as_double(assumed)));
+
+    // Note: uses integer comparison to avoid hang in case of NaN (since NaN != NaN)
+    } while (assumed != old);
+
+    return __longlong_as_double(old);
+}
+#endif
+
+__global__ void statevec_calcProbOfAllOutcomesKernel(
+    qreal* outcomeProbs, Qureg qureg, int* qubits, int numQubits
+) {
+    // each thread handles one amplitude (all amplitudes are involved)
+    long long int ampInd = blockIdx.x*blockDim.x + threadIdx.x;
+    if (ampInd >= qureg.numAmpsTotal) return;
+    
+    qreal prob = (
+        qureg.deviceStateVec.real[ampInd]*qureg.deviceStateVec.real[ampInd] + 
+        qureg.deviceStateVec.imag[ampInd]*qureg.deviceStateVec.imag[ampInd]);
+    
+    // each amplitude contributes to one outcome
+    long long int outcomeInd = 0;
+    for (int q=0; q<numQubits; q++)
+        outcomeInd += extractBit(qubits[q], ampInd) * (1LL << q);
+    
+    // each thread atomically writes directly to the global output.
+    // this beat block-heirarchal atomic reductions in both global and shared memory!
+    atomicAdd(&outcomeProbs[outcomeInd], prob);
+}
+
+void statevec_calcProbOfAllOutcomes(qreal* outcomeProbs, Qureg qureg, int* qubits, int numQubits) {
+
+    // copy qubits to GPU memory
+    int* d_qubits;
+    size_t mem_qubits = numQubits * sizeof *d_qubits;
+    cudaMalloc(&d_qubits, mem_qubits);
+    cudaMemcpy(d_qubits, qubits, mem_qubits, cudaMemcpyHostToDevice);
+
+    // create one thread for every amplitude
+    int numThreadsPerBlock = 128;
+    int numBlocks = ceil(qureg.numAmpsPerChunk / (qreal) numThreadsPerBlock);
+    
+    // create global GPU array for outcomeProbs
+    qreal* d_outcomeProbs;
+    long long int numOutcomes = (1LL << numQubits);
+    size_t mem_outcomeProbs = numOutcomes * sizeof *d_outcomeProbs;
+    cudaMalloc(&d_outcomeProbs, mem_outcomeProbs);
+    cudaMemset(d_outcomeProbs, 0, mem_outcomeProbs);
+    
+    // populate per-block subarrays
+    statevec_calcProbOfAllOutcomesKernel<<<numBlocks, numThreadsPerBlock>>>(
+        d_outcomeProbs, qureg, d_qubits, numQubits);
+        
+    // copy outcomeProbs from GPU memory
+    cudaMemcpy(outcomeProbs, d_outcomeProbs, mem_outcomeProbs, cudaMemcpyDeviceToHost);
+    
+    // free GPU memory
+    cudaFree(d_qubits);
+    cudaFree(d_outcomeProbs);
+}
+
+__global__ void densmatr_calcProbOfAllOutcomesKernel(
+    qreal* outcomeProbs, Qureg qureg, int* qubits, int numQubits
+) {
+    // each thread handles one diagonal amplitude
+    long long int diagInd = blockIdx.x*blockDim.x + threadIdx.x;
+    long long int numDiags = (1LL << qureg.numQubitsRepresented);
+    if (diagInd >= numDiags) return;
+    
+    long long int flatInd = (1 + numDiags)*diagInd;
+    qreal prob = qureg.deviceStateVec.real[flatInd];   // im[flatInd] assumed ~ 0
+    
+    // each diagonal amplitude contributes to one outcome
+    long long int outcomeInd = 0;
+    for (int q=0; q<numQubits; q++)
+        outcomeInd += extractBit(qubits[q], diagInd) * (1LL << q);
+    
+    // each thread atomically writes directly to the global output.
+    // this beat block-heirarchal atomic reductions in both global and shared memory!
+    atomicAdd(&outcomeProbs[outcomeInd], prob);
+}
+
+void densmatr_calcProbOfAllOutcomes(qreal* outcomeProbs, Qureg qureg, int* qubits, int numQubits) {
+
+    // copy qubits to GPU memory
+    int* d_qubits;
+    size_t mem_qubits = numQubits * sizeof *d_qubits;
+    cudaMalloc(&d_qubits, mem_qubits);
+    cudaMemcpy(d_qubits, qubits, mem_qubits, cudaMemcpyHostToDevice);
+    
+    // create global array, with per-block subarrays
+    int numThreadsPerBlock = 128;
+    int numDiags = (1LL << qureg.numQubitsRepresented);
+    int numBlocks = ceil(numDiags / (qreal) numThreadsPerBlock);
+        
+    // create global GPU array for outcomeProbs
+    qreal* d_outcomeProbs;
+    long long int numOutcomes = (1LL << numQubits);
+    size_t mem_outcomeProbs = numOutcomes * sizeof *d_outcomeProbs;
+    cudaMalloc(&d_outcomeProbs, mem_outcomeProbs);
+    cudaMemset(d_outcomeProbs, 0, mem_outcomeProbs);
+    
+    // populate per-block subarrays
+    densmatr_calcProbOfAllOutcomesKernel<<<numBlocks, numThreadsPerBlock>>>(
+        d_outcomeProbs, qureg, d_qubits, numQubits);
+        
+    // copy outcomeProbs from GPU memory
+    cudaMemcpy(outcomeProbs, d_outcomeProbs, mem_outcomeProbs, cudaMemcpyDeviceToHost);
+    
+    // free GPU memory
+    cudaFree(d_qubits);
+    cudaFree(d_outcomeProbs);
+}
+
 /** computes Tr(conjTrans(a) b) = sum of (a_ij^* b_ij), which is a real number */
 __global__ void densmatr_calcInnerProductKernel(
     Qureg a, Qureg b, long long int numTermsToSum, qreal* reducedArray
@@ -2128,7 +2386,7 @@ __global__ void statevec_calcInnerProductKernel(
 /** Terrible code which unnecessarily individually computes and sums the real and imaginary components of the
  * inner product, so as to not have to worry about keeping the sums separated during reduction.
  * Truly disgusting, probably doubles runtime, please fix.
- * @TODO could even do the kernel twice, storing real in bra.reduc and imag in ket.reduc?
+ * @todo could even do the kernel twice, storing real in bra.reduc and imag in ket.reduc?
  */
 Complex statevec_calcInnerProduct(Qureg bra, Qureg ket) {
     
@@ -3257,6 +3515,449 @@ void agnostic_setDiagonalOpElems(DiagonalOp op, long long int startInd, qreal* r
         imag,
         numElems * sizeof(*(op.deviceOperator.imag)), 
         cudaMemcpyHostToDevice);
+}
+
+__global__ void statevec_applyPhaseFuncOverridesKernel(
+    Qureg qureg, int* qubits, int numQubits, enum bitEncoding encoding,
+    qreal* coeffs, qreal* exponents, int numTerms, 
+    long long int* overrideInds, qreal* overridePhases, int numOverrides, 
+    int conj
+) {
+    long long int index = blockIdx.x*blockDim.x + threadIdx.x;
+    if (index>=qureg.numAmpsPerChunk) return;
+
+    // determine global amplitude index (non-distributed, so it's just local index)
+    long long int globalAmpInd = index;
+
+    // determine phase index of {qubits}
+    long long int phaseInd = 0LL;
+    if (encoding == UNSIGNED) {
+        for (int q=0; q<numQubits; q++)
+            phaseInd += (1LL << q) * extractBit(qubits[q], globalAmpInd);
+    }
+    else if (encoding == TWOS_COMPLEMENT) {
+        for (int q=0; q<numQubits-1; q++) // use final qubit to indicate sign 
+            phaseInd += (1LL << q) * extractBit(qubits[q], globalAmpInd);
+        if (extractBit(qubits[numQubits-1], globalAmpInd) == 1)
+            phaseInd -= (1LL << (numQubits-1));
+    }
+
+    // determine if this phase index has an overriden value (i < numOverrides)
+    int i;
+    for (i=0; i<numOverrides; i++)
+        if (phaseInd == overrideInds[i])
+            break;
+
+    // determine phase from {coeffs}, {exponents} (unless overriden)
+    qreal phase = 0;
+    if (i < numOverrides)
+        phase = overridePhases[i];
+    else
+        for (int t=0; t<numTerms; t++)
+            phase += coeffs[t] * pow(phaseInd, exponents[t]);
+            
+    // negate phase to conjugate operator 
+    if (conj)
+        phase *= -1;
+
+    // modify amp to amp * exp(i phase) 
+    qreal c = cos(phase);
+    qreal s = sin(phase);
+    qreal re = qureg.deviceStateVec.real[index];
+    qreal im = qureg.deviceStateVec.imag[index];
+
+    // = {re[amp] cos(phase) - im[amp] sin(phase)} + i {re[amp] sin(phase) + im[amp] cos(phase)}
+    qureg.deviceStateVec.real[index] = re*c - im*s;
+    qureg.deviceStateVec.imag[index] = re*s + im*c;
+}
+
+ void statevec_applyPhaseFuncOverrides(
+     Qureg qureg, int* qubits, int numQubits, enum bitEncoding encoding,
+     qreal* coeffs, qreal* exponents, int numTerms, 
+     long long int* overrideInds, qreal* overridePhases, int numOverrides,
+     int conj
+ ) {
+    // allocate device space for global list of {qubits}, {coeffs}, {exponents}, {overrideInds} and {overridePhases}
+    int* d_qubits;                          size_t mem_qubits = numQubits * sizeof *d_qubits;
+    qreal* d_coeffs;                        size_t mem_terms = numTerms * sizeof *d_coeffs;
+    qreal* d_exponents;                 
+    long long int* d_overrideInds;          size_t mem_inds = numOverrides * sizeof *d_overrideInds;
+    qreal* d_overridePhases;                size_t mem_phas = numOverrides * sizeof *d_overridePhases;
+    cudaMalloc(&d_qubits, mem_qubits);      cudaMemcpy(d_qubits, qubits, mem_qubits, cudaMemcpyHostToDevice);
+    cudaMalloc(&d_coeffs, mem_terms);       cudaMemcpy(d_coeffs, coeffs, mem_terms, cudaMemcpyHostToDevice);
+    cudaMalloc(&d_exponents, mem_terms);    cudaMemcpy(d_exponents, exponents, mem_terms, cudaMemcpyHostToDevice);
+    cudaMalloc(&d_overrideInds, mem_inds);  cudaMemcpy(d_overrideInds, overrideInds, mem_inds, cudaMemcpyHostToDevice);
+    cudaMalloc(&d_overridePhases,mem_phas); cudaMemcpy(d_overridePhases, overridePhases, mem_phas, cudaMemcpyHostToDevice);
+
+    // call kernel
+    int threadsPerCUDABlock = 128;
+    int CUDABlocks = ceil((qreal) qureg.numAmpsPerChunk / threadsPerCUDABlock);
+    statevec_applyPhaseFuncOverridesKernel<<<CUDABlocks,threadsPerCUDABlock>>>(
+        qureg, d_qubits, numQubits, encoding, 
+        d_coeffs, d_exponents, numTerms, 
+        d_overrideInds, d_overridePhases, numOverrides,
+        conj);
+
+    // cleanup device memory 
+    cudaFree(d_qubits);
+    cudaFree(d_coeffs);
+    cudaFree(d_exponents);
+    cudaFree(d_overrideInds);
+    cudaFree(d_overridePhases);
+}
+
+__global__ void statevec_applyMultiVarPhaseFuncOverridesKernel(
+    Qureg qureg, int* qubits, int* numQubitsPerReg, int numRegs, enum bitEncoding encoding,
+    qreal* coeffs, qreal* exponents, int* numTermsPerReg, 
+    long long int* overrideInds, qreal* overridePhases, int numOverrides,
+    long long int *phaseInds,
+    int conj
+) {
+    long long int index = blockIdx.x*blockDim.x + threadIdx.x;
+    if (index>=qureg.numAmpsPerChunk) return;
+
+    // determine global amplitude index (non-distributed, so it's just local index)
+    long long int globalAmpInd = index;
+
+    /*
+     * each thread needs to write to a local:
+     *      long long int phaseInds[numRegs];
+     * but instead has access to shared array phaseInds, with below stride and offset
+    */
+    size_t stride = gridDim.x*blockDim.x;
+    size_t offset = blockIdx.x*blockDim.x + threadIdx.x;
+
+    // determine phase indices
+    int flatInd = 0;
+    if (encoding == UNSIGNED) {
+        for (int r=0; r<numRegs; r++) {
+            phaseInds[r*stride+offset] = 0LL;
+            for (int q=0; q<numQubitsPerReg[r]; q++)
+                phaseInds[r*stride+offset] += (1LL << q) * extractBit(qubits[flatInd++], globalAmpInd);
+        }
+    }
+    else if  (encoding == TWOS_COMPLEMENT) {
+        for (int r=0; r<numRegs; r++) {
+            phaseInds[r*stride+offset] = 0LL;
+            for (int q=0; q<numQubitsPerReg[r]-1; q++)  
+                phaseInds[r*stride+offset] += (1LL << q) * extractBit(qubits[flatInd++], globalAmpInd);
+            // use final qubit to indicate sign
+            if (extractBit(qubits[flatInd++], globalAmpInd) == 1)
+                phaseInds[r*stride+offset] -= (1LL << (numQubitsPerReg[r]-1)); 
+        }
+    }
+
+    // determine if this phase index has an overriden value (i < numOverrides)
+    int i;
+    for (i=0; i<numOverrides; i++) {
+        int found = 1;
+        for (int r=0; r<numRegs; r++) {
+            if (phaseInds[r*stride+offset] != overrideInds[i*numRegs+r]) {
+                found = 0;
+                break;
+            }
+        }
+        if (found)
+            break;
+    }
+
+    // compute the phase (unless overriden)
+    qreal phase = 0;
+    if (i < numOverrides)
+        phase = overridePhases[i];
+    else {
+        flatInd = 0;
+        for (int r=0; r<numRegs; r++) {
+            for (int t=0; t<numTermsPerReg[r]; t++) {
+                phase += coeffs[flatInd] * pow(phaseInds[r*stride+offset], exponents[flatInd]);
+                flatInd++;
+            }
+        }
+    }
+    
+    // negate phase to conjugate operator 
+    if (conj)
+        phase *= -1;
+
+    // modify amp to amp * exp(i phase) 
+    qreal c = cos(phase);
+    qreal s = sin(phase);
+    qreal re = qureg.deviceStateVec.real[index];
+    qreal im = qureg.deviceStateVec.imag[index];
+
+    // = {re[amp] cos(phase) - im[amp] sin(phase)} + i {re[amp] sin(phase) + im[amp] cos(phase)}
+    qureg.deviceStateVec.real[index] = re*c - im*s;
+    qureg.deviceStateVec.imag[index] = re*s + im*c;
+}
+
+void statevec_applyMultiVarPhaseFuncOverrides(
+    Qureg qureg, int* qubits, int* numQubitsPerReg, int numRegs, enum bitEncoding encoding,
+    qreal* coeffs, qreal* exponents, int* numTermsPerReg, 
+    long long int* overrideInds, qreal* overridePhases, int numOverrides,
+    int conj
+) {
+    // determine size of arrays, for cloning into GPU memory
+    size_t mem_numQubitsPerReg = numRegs * sizeof *numQubitsPerReg;
+    size_t mem_numTermsPerReg = numRegs * sizeof *numTermsPerReg;
+    size_t mem_overridePhases = numOverrides * sizeof *overridePhases;
+    size_t mem_overrideInds = numOverrides * numRegs * sizeof *overrideInds;
+    size_t mem_qubits = 0;
+    size_t mem_coeffs = 0;  
+    size_t mem_exponents = 0;
+    for (int r=0; r<numRegs; r++) {
+        mem_qubits += numQubitsPerReg[r] * sizeof *qubits;
+        mem_coeffs += numTermsPerReg[r] * sizeof *coeffs;
+        mem_exponents += numTermsPerReg[r] * sizeof *exponents;
+    }
+
+    // allocate global GPU memory
+    int* d_qubits;                  cudaMalloc(&d_qubits,           mem_qubits);
+    qreal* d_coeffs;                cudaMalloc(&d_coeffs,           mem_coeffs);
+    qreal* d_exponents;             cudaMalloc(&d_exponents,        mem_exponents);
+    int* d_numQubitsPerReg;         cudaMalloc(&d_numQubitsPerReg,  mem_numQubitsPerReg);
+    int* d_numTermsPerReg;          cudaMalloc(&d_numTermsPerReg,   mem_numTermsPerReg);
+    long long int* d_overrideInds;  cudaMalloc(&d_overrideInds,     mem_overrideInds);
+    qreal* d_overridePhases;        cudaMalloc(&d_overridePhases,   mem_overridePhases);
+
+    // copy function args into GPU memory
+    cudaMemcpy(d_qubits, qubits,                    mem_qubits,             cudaMemcpyHostToDevice);
+    cudaMemcpy(d_coeffs, coeffs,                    mem_coeffs,             cudaMemcpyHostToDevice);
+    cudaMemcpy(d_exponents, exponents,              mem_exponents,          cudaMemcpyHostToDevice);
+    cudaMemcpy(d_numQubitsPerReg, numQubitsPerReg,  mem_numQubitsPerReg,    cudaMemcpyHostToDevice);
+    cudaMemcpy(d_numTermsPerReg, numTermsPerReg,    mem_numTermsPerReg,     cudaMemcpyHostToDevice);
+    cudaMemcpy(d_overrideInds, overrideInds,        mem_overrideInds,       cudaMemcpyHostToDevice);
+    cudaMemcpy(d_overridePhases, overridePhases,    mem_overridePhases,     cudaMemcpyHostToDevice);
+
+    int threadsPerCUDABlock = 128;
+    int CUDABlocks = ceil((qreal) qureg.numAmpsPerChunk / threadsPerCUDABlock);
+
+    // allocate thread-local working space {phaseInds}
+    long long int *d_phaseInds;
+    size_t gridSize = (size_t) threadsPerCUDABlock * CUDABlocks;
+    cudaMalloc(&d_phaseInds, numRegs*gridSize * sizeof *d_phaseInds);
+
+    // call kernel
+    statevec_applyMultiVarPhaseFuncOverridesKernel<<<CUDABlocks,threadsPerCUDABlock>>>(
+        qureg, d_qubits, d_numQubitsPerReg, numRegs, encoding,
+        d_coeffs, d_exponents, d_numTermsPerReg, 
+        d_overrideInds, d_overridePhases, numOverrides,
+        d_phaseInds, 
+        conj);
+
+    // free device memory
+    cudaFree(d_qubits);
+    cudaFree(d_coeffs);
+    cudaFree(d_exponents);
+    cudaFree(d_numQubitsPerReg);
+    cudaFree(d_numTermsPerReg);
+    cudaFree(d_overrideInds);
+    cudaFree(d_overridePhases);
+    cudaFree(d_phaseInds);
+}
+
+__global__ void statevec_applyParamNamedPhaseFuncOverridesKernel(
+    Qureg qureg, int* qubits, int* numQubitsPerReg, int numRegs, enum bitEncoding encoding,
+    enum phaseFunc phaseFuncName, qreal* params, int numParams,
+    long long int* overrideInds, qreal* overridePhases, int numOverrides,
+    long long int* phaseInds,
+    int conj
+) {
+    long long int index = blockIdx.x*blockDim.x + threadIdx.x;
+    if (index>=qureg.numAmpsPerChunk) return;
+
+    // determine global amplitude index (non-distributed, so it's just local index)
+    long long int globalAmpInd = index;
+
+    /*
+     * each thread needs to write to a local:
+     *      long long int phaseInds[numRegs];
+     * but instead has access to shared array phaseInds, with below stride and offset
+    */
+    size_t stride = gridDim.x*blockDim.x;
+    size_t offset = blockIdx.x*blockDim.x + threadIdx.x;
+
+    // determine phase indices
+    if (encoding == UNSIGNED) {
+        int flatInd = 0;
+        for (int r=0; r<numRegs; r++) {
+            phaseInds[r*stride+offset] = 0LL;
+            for (int q=0; q<numQubitsPerReg[r]; q++)
+                phaseInds[r*stride+offset] += (1LL << q) * extractBit(qubits[flatInd++], globalAmpInd);
+        }
+    }
+    else if  (encoding == TWOS_COMPLEMENT) {
+        int flatInd = 0;
+        for (int r=0; r<numRegs; r++) {
+            phaseInds[r*stride+offset] = 0LL;
+            for (int q=0; q<numQubitsPerReg[r]-1; q++)  
+                phaseInds[r*stride+offset] += (1LL << q) * extractBit(qubits[flatInd++], globalAmpInd);
+            // use final qubit to indicate sign
+            if (extractBit(qubits[flatInd++], globalAmpInd) == 1)
+                phaseInds[r*stride+offset] -= (1LL << (numQubitsPerReg[r]-1));
+        }
+    }
+
+    // determine if this phase index has an overriden value (i < numOverrides)
+    int i;
+    for (i=0; i<numOverrides; i++) {
+        int found = 1;
+        for (int r=0; r<numRegs; r++) {
+            if (phaseInds[r*stride+offset] != overrideInds[i*numRegs+r]) {
+                found = 0;
+                break;
+            }
+        }
+        if (found)
+            break;
+    }
+
+    // compute the phase (unless overriden)
+    qreal phase = 0;
+    if (i < numOverrides)
+        phase = overridePhases[i];
+    else {
+        // compute norm related phases
+        if (phaseFuncName == NORM || phaseFuncName == INVERSE_NORM ||
+            phaseFuncName == SCALED_NORM || phaseFuncName == SCALED_INVERSE_NORM ||
+            phaseFuncName == SCALED_INVERSE_SHIFTED_NORM) {
+            qreal norm = 0;
+            if (phaseFuncName == SCALED_INVERSE_SHIFTED_NORM) {
+                for (int r=0; r<numRegs; r++) {
+                    qreal dif = phaseInds[r*stride+offset] - params[2+r];
+                    norm += dif*dif;
+                }
+            }
+            else
+                for (int r=0; r<numRegs; r++)
+                    norm += phaseInds[r*stride+offset]*phaseInds[r*stride+offset];
+            norm = sqrt(norm);
+
+            if (phaseFuncName == NORM)
+                phase = norm;
+            else if (phaseFuncName == INVERSE_NORM)
+                phase = (norm == 0.)? params[0] : 1/norm;
+            else if (phaseFuncName == SCALED_NORM)
+                phase = params[0] * norm;
+            else if (phaseFuncName == SCALED_INVERSE_NORM || phaseFuncName == SCALED_INVERSE_SHIFTED_NORM)
+                phase = (norm == 0.)? params[1] : params[0] / norm;
+        }
+        // compute product related phases
+        else if (phaseFuncName == PRODUCT || phaseFuncName == INVERSE_PRODUCT ||
+                 phaseFuncName == SCALED_PRODUCT || phaseFuncName == SCALED_INVERSE_PRODUCT) {
+
+            qreal prod = 1;
+            for (int r=0; r<numRegs; r++)
+                prod *= phaseInds[r*stride+offset];
+
+            if (phaseFuncName == PRODUCT)
+                phase = prod;
+            else if (phaseFuncName == INVERSE_PRODUCT)
+                phase = (prod == 0.)? params[0] : 1/prod;
+            else if (phaseFuncName == SCALED_PRODUCT)
+                phase = params[0] * prod;
+            else if (phaseFuncName == SCALED_INVERSE_PRODUCT)
+                phase = (prod == 0.)? params[1] : params[0] / prod;
+        }
+        // compute Euclidean distance related phases 
+        else if (phaseFuncName == DISTANCE || phaseFuncName == INVERSE_DISTANCE ||
+                 phaseFuncName == SCALED_DISTANCE || phaseFuncName == SCALED_INVERSE_DISTANCE ||
+                 phaseFuncName == SCALED_INVERSE_SHIFTED_DISTANCE) {
+
+            qreal dist = 0;
+            if (phaseFuncName == SCALED_INVERSE_SHIFTED_DISTANCE) {
+                for (int r=0; r<numRegs; r+=2) {
+                    qreal dif = (phaseInds[(r+1)*stride+offset] - phaseInds[r*stride+offset] - params[2+r/2]);
+                    dist += dif*dif;
+                }
+            }
+            else
+                for (int r=0; r<numRegs; r+=2) {
+                    qreal dif = (phaseInds[(r+1)*stride+offset] - phaseInds[r*stride+offset]);
+                    dist += dif*dif;
+                }
+            dist = sqrt(dist);
+
+            if (phaseFuncName == DISTANCE)
+                phase = dist;
+            else if (phaseFuncName == INVERSE_DISTANCE)
+                phase = (dist == 0.)? params[0] : 1/dist;
+            else if (phaseFuncName == SCALED_DISTANCE)
+                phase = params[0] * dist;
+            else if (phaseFuncName == SCALED_INVERSE_DISTANCE || phaseFuncName == SCALED_INVERSE_SHIFTED_DISTANCE)
+                phase = (dist == 0.)? params[1] : params[0] / dist;
+        }
+    }
+    
+    
+    // negate phase to conjugate operator 
+    if (conj)
+        phase *= -1;
+
+    // modify amp to amp * exp(i phase) 
+    qreal c = cos(phase);
+    qreal s = sin(phase);
+    qreal re = qureg.deviceStateVec.real[index];
+    qreal im = qureg.deviceStateVec.imag[index];
+
+    // = {re[amp] cos(phase) - im[amp] sin(phase)} + i {re[amp] sin(phase) + im[amp] cos(phase)}
+    qureg.deviceStateVec.real[index] = re*c - im*s;
+    qureg.deviceStateVec.imag[index] = re*s + im*c;
+}
+
+void statevec_applyParamNamedPhaseFuncOverrides(
+    Qureg qureg, int* qubits, int* numQubitsPerReg, int numRegs, enum bitEncoding encoding,
+    enum phaseFunc phaseFuncName, qreal* params, int numParams,
+    long long int* overrideInds, qreal* overridePhases, int numOverrides,
+    int conj 
+) {
+    // determine size of arrays, for cloning into GPU memory
+    size_t mem_numQubitsPerReg = numRegs * sizeof *numQubitsPerReg;
+    size_t mem_overridePhases = numOverrides * sizeof *overridePhases;
+    size_t mem_overrideInds = numOverrides * numRegs * sizeof *overrideInds;
+    size_t mem_params = numParams * sizeof *params;
+    size_t mem_qubits = 0;
+    for (int r=0; r<numRegs; r++)
+        mem_qubits += numQubitsPerReg[r] * sizeof *qubits;
+
+    // allocate global GPU memory
+    int* d_qubits;                  cudaMalloc(&d_qubits,           mem_qubits);
+    int* d_numQubitsPerReg;         cudaMalloc(&d_numQubitsPerReg,  mem_numQubitsPerReg);
+    long long int* d_overrideInds;  cudaMalloc(&d_overrideInds,     mem_overrideInds);
+    qreal* d_overridePhases;        cudaMalloc(&d_overridePhases,   mem_overridePhases);
+    qreal* d_params = NULL;         if (numParams > 0) cudaMalloc(&d_params, mem_params);
+
+    // copy function args into GPU memory
+    cudaMemcpy(d_qubits, qubits,                    mem_qubits,             cudaMemcpyHostToDevice);
+    cudaMemcpy(d_numQubitsPerReg, numQubitsPerReg,  mem_numQubitsPerReg,    cudaMemcpyHostToDevice);
+    cudaMemcpy(d_overrideInds, overrideInds,        mem_overrideInds,       cudaMemcpyHostToDevice);
+    cudaMemcpy(d_overridePhases, overridePhases,    mem_overridePhases,     cudaMemcpyHostToDevice);
+    if (numParams > 0)
+        cudaMemcpy(d_params, params, mem_params, cudaMemcpyHostToDevice);
+
+    int threadsPerCUDABlock = 128;
+    int CUDABlocks = ceil((qreal) qureg.numAmpsPerChunk / threadsPerCUDABlock);
+
+    // allocate thread-local working space {phaseInds}
+    long long int *d_phaseInds;
+    size_t gridSize = (size_t) threadsPerCUDABlock * CUDABlocks;
+    cudaMalloc(&d_phaseInds, numRegs*gridSize * sizeof *d_phaseInds);
+
+    // call kernel
+    statevec_applyParamNamedPhaseFuncOverridesKernel<<<CUDABlocks,threadsPerCUDABlock>>>(
+        qureg, d_qubits, d_numQubitsPerReg, numRegs, encoding,
+        phaseFuncName, d_params, numParams,
+        d_overrideInds, d_overridePhases, numOverrides,
+        d_phaseInds,
+        conj);
+
+    // free device memory
+    cudaFree(d_qubits);
+    cudaFree(d_numQubitsPerReg);
+    cudaFree(d_overrideInds);
+    cudaFree(d_overridePhases);
+    cudaFree(d_phaseInds);
+    if (numParams > 0)
+        cudaFree(d_params);
 }
 
 void seedQuESTDefault(){

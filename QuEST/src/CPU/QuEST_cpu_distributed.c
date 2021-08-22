@@ -549,7 +549,7 @@ void exchangePairStateVectorHalves(Qureg qureg, int pairRank){
     }
 }
 
-//TODO -- decide where this function should go. It is a preparation for MPI data transfer function
+// @todo decide where this function should go. It is a preparation for MPI data transfer function
 void compressPairVectorForSingleQubitDepolarise(Qureg qureg, int targetQubit){
     long long int sizeInnerBlock, sizeInnerHalfBlock;
     long long int sizeOuterColumn, sizeOuterHalfColumn;
@@ -1084,16 +1084,54 @@ void statevec_controlledNot(Qureg qureg, int controlQubit, int targetQubit)
         pairRank = getChunkPairId(rankIsUpper, qureg.chunkId, qureg.numAmpsPerChunk, targetQubit);
         // get corresponding values from my pair
         exchangeStateVectors(qureg, pairRank);
-        // this rank's values are either in the upper of lower half of the block
-        if (rankIsUpper){
-            statevec_controlledNotDistributed(qureg,controlQubit,
+        statevec_controlledNotDistributed(qureg,controlQubit,
                     qureg.pairStateVec, //in
                     qureg.stateVec); //out
-        } else {
-            statevec_controlledNotDistributed(qureg,controlQubit,
-                    qureg.pairStateVec, //in
-                    qureg.stateVec); //out
-        }
+    }
+}
+
+void statevec_multiControlledMultiQubitNot(Qureg qureg, int ctrlMask, int targMask)
+{   
+    /* operation is the same regardless of control and target ordering, hence 
+     * we accept only bitMasks (for convenience of caller, when shifting qubits
+     * for density matrices)
+     */
+    
+    // global index of the first basis state in this node
+    long long int firstInd = qureg.chunkId * qureg.numAmpsPerChunk;
+    
+    /* optimisation: if this node doesn't contain any amplitudes for which {ctrls}={1}
+     * (and hence, neither does the pair node), then these pair nodes have nothing to modify 
+     * nor any need to communicate, and can halt. No ctrls are contained in the node 
+     * if the distance from the first index, to the next index where {ctrls}=1, is 
+     * greater than the total contained amplitudes. This is a worthwhile optimisation, 
+     * since although we must still wait for the slowest node, we have potentially reduced 
+     * the network traffic and might avoid saturation. 
+     */
+    if ((firstInd|ctrlMask) - firstInd >= qureg.numAmpsPerChunk)
+        return;
+        
+    /* nodes communicate pairwise, and (ignoring ctrls) swap all their amplitudes with mate.
+     * hence we find |pairState> = X_{targs}|firstStateInNode>, determine which node contains  
+     * |pairState>, and swap state-vector with it (unless it happens to be this node).
+     */
+    
+    // global index of the corresponding NOT'd first basis state
+    long long int pairInd = firstInd ^ targMask;
+    int pairRank = pairInd / qureg.numAmpsPerChunk;
+    int useLocalDataOnly = (pairRank == qureg.chunkId);
+    
+    if (useLocalDataOnly) {
+        // swaps amplitudes locally, setting |a>=X|b>, and |b>=X|a>
+        statevec_multiControlledMultiQubitNotLocal(qureg, ctrlMask, targMask);
+    } else {
+        // swaps amplitudes with pair node
+        exchangeStateVectors(qureg, pairRank);
+        //  modifies only |a>=X|b> (pair node handles the converse)
+        statevec_multiControlledMultiQubitNotDistributed(
+            qureg, ctrlMask, targMask,
+            qureg.pairStateVec, // in
+            qureg.stateVec);    // out
     }
 }
 
@@ -1175,7 +1213,7 @@ void statevec_controlledPauliY(Qureg qureg, int controlQubit, int targetQubit)
             statevec_controlledPauliYDistributed(qureg,controlQubit,
                     qureg.pairStateVec, //in
                     qureg.stateVec,
-					-conjFac); //out
+					- conjFac); //out
         }
     }
 }
@@ -1208,7 +1246,7 @@ void statevec_controlledPauliYConj(Qureg qureg, int controlQubit, int targetQubi
             statevec_controlledPauliYDistributed(qureg,controlQubit,
                     qureg.pairStateVec, //in
                     qureg.stateVec,
-					-conjFac); //out
+					- conjFac); //out
         }
     }
 }
@@ -1255,7 +1293,7 @@ void statevec_hadamard(Qureg qureg, int targetQubit)
  * 
  * @param[in] chunkId id of chunk in state vector
  * @param[in] chunkSize number of amps in chunk
- * @param[in] measureQubi qubit being measured
+ * @param[in] measureQubit qubit being measured
  * @return int -- 1: skip, 0: don't skip
  */
 static int isChunkToSkipInFindPZero(int chunkId, long long int chunkSize, int measureQubit)
@@ -1293,6 +1331,24 @@ qreal densmatr_calcProbOfOutcome(Qureg qureg, int measureQubit, int outcome) {
 		outcomeProb = 1.0 - outcomeProb;
 	
 	return outcomeProb;
+}
+
+void statevec_calcProbOfAllOutcomes(qreal* retProbs, Qureg qureg, int* qubits, int numQubits) {
+    
+    // each node populates retProbs with contributions from the subset of amps in each
+    statevec_calcProbOfAllOutcomesLocal(retProbs, qureg, qubits, numQubits);
+
+    // then, retProbs are summed element-wise
+    MPI_Allreduce(MPI_IN_PLACE, retProbs, 1LL<<numQubits, MPI_QuEST_REAL, MPI_SUM, MPI_COMM_WORLD);
+}
+
+void densmatr_calcProbOfAllOutcomes(qreal* retProbs, Qureg qureg, int* qubits, int numQubits) {
+    
+    // each node populates retProbs with contributions from the subset of amps in each
+    densmatr_calcProbOfAllOutcomesLocal(retProbs, qureg, qubits, numQubits);
+
+    // then, retProbs are summed element-wise
+    MPI_Allreduce(MPI_IN_PLACE, retProbs, 1LL<<numQubits, MPI_QuEST_REAL, MPI_SUM, MPI_COMM_WORLD);
 }
 
 qreal densmatr_calcPurity(Qureg qureg) {
@@ -1383,9 +1439,9 @@ void statevec_swapQubitAmps(Qureg qureg, int qb1, int qb2) {
  * if the qubit chunks already fit in the node, it operates the unitary direct.
  * Note the order of q1 and q2 in the call to twoQubitUnitaryLocal is important.
  * 
- * @TODO: refactor so that the 'swap back' isn't performed; instead the qubit locations 
+ * @todo refactor so that the 'swap back' isn't performed; instead the qubit locations 
  * are updated.
- * @TODO: the double swap (q1,q2 to 0,1) may be possible simultaneously by a bespoke 
+ * @todo the double swap (q1,q2 to 0,1) may be possible simultaneously by a bespoke 
  * swap routine.
  */
 void statevec_multiControlledTwoQubitUnitary(Qureg qureg, long long int ctrlMask, int q1, int q2, ComplexMatrix4 u) {
@@ -1441,7 +1497,7 @@ void statevec_multiControlledTwoQubitUnitary(Qureg qureg, long long int ctrlMask
  * It is already gauranteed here that all target qubits can fit on each node (this is
  * validated in the front-end)
  * 
- * @TODO: refactor so that the 'swap back' isn't performed; instead the qubit locations 
+ * @todo refactor so that the 'swap back' isn't performed; instead the qubit locations 
  * are updated.
  */
 void statevec_multiControlledMultiQubitUnitary(Qureg qureg, long long int ctrlMask, int* targs, int numTargs, ComplexMatrixN u) {

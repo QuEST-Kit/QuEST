@@ -62,20 +62,35 @@
     # define REAL_STRING_FORMAT "%.17Lf"
     # define REAL_QASM_FORMAT "%.17Lg"
     # define REAL_EPS 1e-14
-    # define REAL_SPECIFIER "%llf"
+    # define REAL_SPECIFIER "%Lf"
     # define absReal(X) fabsl(X)
     // \endcond
 # endif
 
 
+// the maximum number of qubit registers which can be passed to functions like applyMultiArbitraryPhaseOverrides()
+# define MAX_NUM_REGS_APPLY_ARBITRARY_PHASE 100
+
+
 /** @def QuEST_PREC 
  *
- * Sets the precision of \ref qreal and \ref qcomp, and generally that of the state-vectors stored
- * by QuEST. \p QuEST_PREC can be 1, 2 or 4 for single, double and quad precision - requires
- * 4, 8 and 16 bytes per real & imag component per amplitude of the statevector respectively.
- * This should be passed as a macro to the preprocessor during compilation, which overwrites the
- * value explicitly defined in \ref QuEST_precision.h.
- * Note that quad precision is not compatible with most GPUs.
+ * Sets the precision of \ref qreal and \ref qcomp floating-point numbers, and 
+ * hence the numerical precision of \p Qureg.
+ *
+ * #QuEST_PREC can be set as a preprocessor macro during compilation, or by 
+ * editing its definition in QuEST_precision.h. \n
+ * The possible values are:
+ * #QuEST_PREC  | qreal         | sizeof(qreal)
+ * ------------ |------         | -------------
+ * 1            | `float`       | 4 bytes
+ * 2            | `double`      | 8 bytes
+ * 4            | `long double` | 16 bytes
+ *
+ * > Note that quad precision (#QuEST_PREC <b>= 4 </b>) is not compatible with most GPUs.
+ *
+ * @see 
+ * - createQureg() and createDensityQureg() for the total memory costs of 
+ *   creating registers under these precisions.
  *
  * @ingroup type
  * @author Ania Brown

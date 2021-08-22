@@ -175,6 +175,13 @@ QMatrix toQMatrix(PauliHamil hamil);
  */
 QMatrix toQMatrix(DiagonalOp op);
 
+/** Returns a diagonal complex matrix formed by the given vector 
+ *
+ * @ingroup testutilities
+ * @author Tyson Jones 
+ */
+QMatrix toDiagonalQMatrix(QVector vec);
+
 /** Returns a \p ComplexMatrix2 copy of QMatix \p qm.
  * Demands that \p qm is a 2-by-2 matrix.
  *
@@ -219,6 +226,15 @@ void toQureg(Qureg qureg, QVector vec);
  * @author Tyson Jones
  */
 void toQureg(Qureg qureg, QMatrix mat);
+
+/** Returns b (otimes) a. If b and a are state-vectors, the resulting kronecker 
+ * product is the seperable state formed by joining the qubits in the state-vectors, 
+ * producing |b>|a> (a is least significant)
+ *
+ * @ingroup testutilities
+ * @author Tyson Jones
+ */
+QVector getKroneckerProduct(QVector b, QVector a);
 
 /** Returns a dim-by-dim square complex matrix, initialised to all zeroes.
  * 
@@ -321,6 +337,15 @@ int getRandomInt(int min, int max);
  */
 qreal getRandomReal(qreal min, qreal max);
 
+/** Returns a random complex number within the square closing (-1-i) and (1+i),
+ * from a distribution uniformly randomising the individual real and imaginary 
+ * components in their domains.
+ *
+ * @ingroup testutilities 
+ * @author Tyson Jones
+ */
+qcomp getRandomComplex();
+
 /** Returns a \p dim-length vector with random complex amplitudes in the 
  * square joining {-1-i, 1+i}, of an undisclosed distribution. The resulting 
  * vector is NOT L2-normalised.
@@ -372,7 +397,29 @@ QVector getRandomStateVector(int numQb);
  */
 QMatrix getRandomDensityMatrix(int numQb);
 
-/** Returns a random Kraus map of \p #numOps 2^\p numQb-by-2^\p numQb operators, 
+/** Returns a random \p numQb-by-\p numQb density matrix, from an undisclosed 
+ * distribution, which is pure (corresponds to a random state-vector)
+ *
+ * @ingroup testutilities 
+ * @author Tyson Jones
+ */
+QMatrix getRandomPureDensityMatrix(int numQb);
+
+/** Returns a density matrix initialised into the given pure state 
+ *
+ * @ingroup testutilities
+ * @author Tyson Jones 
+ */
+QMatrix getPureDensityMatrix(QVector state);
+
+/** Returns the diagonal vector of the given matrix
+ *
+ * @ingroup testutilities 
+ * @author Tyson Jones
+ */
+QVector getMatrixDiagonal(QMatrix matr);
+
+/** Returns a random Kraus map of #`numOps` 2^\p numQb-by-2^\p numQb operators, 
  * from an undisclosed distribution.
  * Note this method is very simple and cannot generate all possible Kraus maps. 
  * It works by generating \p numOps random unitary matrices, and randomly 
@@ -383,12 +430,57 @@ QMatrix getRandomDensityMatrix(int numQb);
  */
 std::vector<QMatrix> getRandomKrausMap(int numQb, int numOps);
 
+/** Returns a list of random real scalars, each in [0, 1], which sum to unity. 
+ *
+ * @ingroup testutilities
+ * @author Tyson Jones
+ */
+std::vector<qreal> getRandomProbabilities(int numProbs);
+
+/** Returns a list of random orthonormal complex vectors, from an undisclosed 
+ * distribution. 
+ *
+ * @ingroup testutilities 
+ * @author Tyson Jones
+ */
+std::vector<QVector> getRandomOrthonormalVectors(int numQb, int numStates);
+
+/** Returns a mixed density matrix formed from mixing the given pure states, 
+ * which are assumed normalised, but not necessarily orthogonal.
+ *
+ * @ingroup testutilities
+ * @author Tyson Jones 
+ */
+QMatrix getMixedDensityMatrix(std::vector<qreal> probs, std::vector<QVector> states);
+
 /** Returns an L2-normalised copy of \p vec, using Kahan summation for improved accuracy.
  *
  * @ingroup testutilities 
  * @author Tyson Jones
  */
 QVector getNormalised(QVector vec);
+
+/** Returns the discrete fourier transform of vector in 
+ *
+ * @ingroup testutilities
+ * @author Tyson Jones 
+ */
+QVector getDFT(QVector in);
+
+/** Returns the discrete fourier transform of a sub-partition of the vector in.
+ * 
+ * @ingroup testutilities
+ * @author Tyson Jones 
+ */
+QVector getDFT(QVector in, int* targs, int numTargs);
+
+/** Returns the integer value of the targeted sub-register for the given 
+ * full state index \p ind. 
+ *
+ * @ingroup testutilities
+ * @author Tyson Jones 
+ */
+long long int getValueOfTargets(long long int ind, int* targs, int numTargs);
 
 /** Modifies \p dest by overwriting its submatrix (from top-left corner 
  * (\p r, \p c) to bottom-right corner (\p r + \p dest.size(), \p c + \p dest.size()) 
@@ -832,6 +924,15 @@ bool areEqual(QMatrix a, QMatrix b);
  */
 bool areEqual(QVector vec, qreal* reals, qreal* imags);
 
+/** Returns true if the absolute value of the difference between every element in 
+ * \p vec (which must be strictly real) and those implied by \p reals, is less 
+ * than \p REAL_EPS.
+ *
+ * @ingroup testutilities 
+ * @author Tyson Jones
+ */
+bool areEqual(QVector vec, qreal* reals);
+
 /** Returns the unit-norm complex number exp(i*\p phase). This function uses the 
  * Euler formula, and avoids problems with calling exp(__complex__) in a platform 
  * agnostic way 
@@ -859,6 +960,71 @@ void setRandomPauliSum(qreal* coeffs, pauliOpType* codes, int numQubits, int num
  * @author Tyson Jones
  */
 void setRandomPauliSum(PauliHamil hamil);
+
+/** Populates \p hamil with random coefficients and a random amount number of 
+ * PAULI_I and PAULI_Z operators.
+ *
+ * @ingroup testutilities 
+ * @author Tyson Jones
+ */
+void setRandomDiagPauliHamil(PauliHamil hamil);
+
+/** Returns the two's complement signed encoding of the unsigned number decimal, 
+ * which must be a number between 0 and 2^numBits (exclusive). The returned number 
+ * lies in [-2^(numBits-1), 2^(numBits-1)-1]
+ *
+ * @ingroup testutilities
+ * @author Tyson Jones
+ */
+long long int getTwosComplement(long long int decimal, int numBits);
+
+/** Return the unsigned value of a number, made of `#numBits` bits, which under 
+ * two's complement, encodes the signed number twosComp. The returned number 
+ * lies in [0, 2^(numBits)-1]
+ *
+ * @ingroup testutilities
+ * @author Tyson Jones
+ */
+long long int getUnsigned(long long int twosComp, int numBits);
+
+/** Modifies the given diagonal matrix such that the diagonal elements which 
+ * correspond to the coordinates in overrideInds are replaced with exp(i phase), as
+ * prescribed by overridePhases. This function assumes that the given registers 
+ * are contiguous, are in order of increasing significance, and that the matrix 
+ * is proportionately sized and structured to act on the space of all registers 
+ * combined. Overrides can be repeated, and only the first encountered for a given 
+ * index will be effected (much like applyMultiVarPhaseFuncOverrides()).
+ *
+ * @ingroup testutilities
+ * @author Tyson Jones
+ */
+void setDiagMatrixOverrides(QMatrix &matr, int* numQubitsPerReg, int numRegs, enum bitEncoding encoding, long long int* overrideInds, qreal* overridePhases, int numOverrides);
+
+/** Modifies outFn to be a filename of format prefix_NUM.txt where NUM 
+ * is a new unique integer so far. This is useful for getting unique filenames for 
+ * independent test cases of functions requiring reading/writing to file, to 
+ * avoid IO locks (especially common in distributed mode).
+ *
+ * @ingroup testutilities
+ * @author Tyson Jones
+ */
+void setUniqueFilename(char* outFn, char* prefix);
+
+/** Writes contents to the file with filename fn, which is created and/or overwritten.
+ * In distributed mode, the master node writes while the other nodes wait until complete. 
+ *
+ * @ingroup testutilities
+ * @author Tyson Jones
+ */
+void writeToFileSynch(char* fn, const string& contents);
+
+/** Deletes all files with filename starting with prefix. In distributed mode, the 
+ * master node deletes while the other nodes wait until complete.
+ *
+ * @ingroup testutilities
+ * @author Tyson Jones
+ */
+void deleteFilesWithPrefixSynch(char* prefix);
 
 // makes below signatures more concise
 template<class T> using CatchGen = Catch::Generators::GeneratorWrapper<T>;

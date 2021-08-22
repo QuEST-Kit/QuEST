@@ -298,7 +298,7 @@ TEST_CASE( "initStateFromAmps", "[state_initialisations]" ) {
             for (int i=0; i<vec.numAmpsTotal; i++) {
                 ampsRe[i] = 2*i;
                 ampsIm[i] = 2*i + 1;
-                vecRef[i] = (ampsRe[i]) + 1i*(ampsIm[i]);
+                vecRef[i] = (ampsRe[i]) + ampsIm[i] * (qcomp) 1i;;
             }
             
             initBlankState(vec);
@@ -393,7 +393,7 @@ TEST_CASE( "setAmps", "[state_initialisations]" ) {
             
             setAmps(vec, startInd, reals, imags, numAmps);
             for (int i=0; i<numAmps; i++)
-                vecRef[startInd+i] = reals[i] + 1i*(imags[i]);
+                vecRef[startInd+i] = reals[i] + imags[i] * (qcomp) 1i;
                 
             REQUIRE( areEqual(vec, vecRef) );
         }
@@ -464,9 +464,9 @@ TEST_CASE( "setWeightedQureg", "[state_initialisations]" ) {
             QVector refOut;
             
             // get three random factors
-            qcomp numA = getRandomReal(-5,5) + 1i*getRandomReal(-5,5);
-            qcomp numB = getRandomReal(-5,5) + 1i*getRandomReal(-5,5);
-            qcomp numC = getRandomReal(-5,5) + 1i*getRandomReal(-5,5);
+            qcomp numA = getRandomReal(-5,5) + getRandomReal(-5,5) * (qcomp) 1i;
+            qcomp numB = getRandomReal(-5,5) + getRandomReal(-5,5) * (qcomp) 1i;
+            qcomp numC = getRandomReal(-5,5) + getRandomReal(-5,5) * (qcomp) 1i;
             Complex facA = toComplex(numA);
             Complex facB = toComplex(numB);
             Complex facC = toComplex(numC);
@@ -527,9 +527,9 @@ TEST_CASE( "setWeightedQureg", "[state_initialisations]" ) {
             QMatrix refOut;
             
             // get three random factors
-            qcomp numA = getRandomReal(-5,5) + 1i*getRandomReal(-5,5);
-            qcomp numB = getRandomReal(-5,5) + 1i*getRandomReal(-5,5);
-            qcomp numC = getRandomReal(-5,5) + 1i*getRandomReal(-5,5);
+            qcomp numA = getRandomReal(-5,5) + getRandomReal(-5,5) * (qcomp) 1i;
+            qcomp numB = getRandomReal(-5,5) + getRandomReal(-5,5) * (qcomp) 1i;
+            qcomp numC = getRandomReal(-5,5) + getRandomReal(-5,5) * (qcomp) 1i;
             Complex facA = toComplex(numA);
             Complex facB = toComplex(numB);
             Complex facC = toComplex(numC);

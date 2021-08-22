@@ -8,6 +8,12 @@ using Catch::Matchers::Contains;
 
 
 
+
+// DEBUG 
+#include <sys/time.h>
+
+
+
 /** @sa calcDensityInnerProduct
  * @ingroup unittest 
  * @author Tyson Jones 
@@ -232,7 +238,7 @@ TEST_CASE( "calcExpecPauliHamil", "[calculations]" ) {
         
         destroyPauliHamil(hamil);
     }
-    SECTION( "validation" ) {
+    SECTION( "input validation" ) {
         
         SECTION( "pauli codes" ) {
             
@@ -323,7 +329,7 @@ TEST_CASE( "calcExpecPauliProd", "[calculations]" ) {
         // produce a numTargs-big matrix 'pauliProd' by pauli-matrix tensoring
         QMatrix iMatr{{1,0},{0,1}};
         QMatrix xMatr{{0,1},{1,0}};
-        QMatrix yMatr{{0,-1i},{1i,0}};
+        QMatrix yMatr{{0,-qcomp(0,1)},{qcomp(0,1),0}};
         QMatrix zMatr{{1,0},{0,-1}};
         QMatrix pauliProd{{1}};
         for (int i=0; i<numTargs; i++) {
@@ -367,7 +373,7 @@ TEST_CASE( "calcExpecPauliProd", "[calculations]" ) {
             REQUIRE( res == Approx(tr).margin(10*REAL_EPS) );
         }
     }
-    SECTION( "validation" ) {
+    SECTION( "input validation" ) {
         
         SECTION( "number of targets" ) {
             
@@ -489,7 +495,7 @@ TEST_CASE( "calcExpecPauliSum", "[calculations]" ) {
             REQUIRE( res == Approx(tr).margin(1E2*REAL_EPS) );
         }
     }
-    SECTION( "validation" ) {
+    SECTION( "input validation" ) {
         
         SECTION( "number of sum terms" ) {
             
@@ -870,6 +876,133 @@ TEST_CASE( "calcInnerProduct", "[calculations]" ) {
 
 
 
+/** @sa calcProbOfAllOutcomes
+ * @ingroup unittest 
+ * @author Tyson Jones 
+ */
+TEST_CASE( "calcProbOfAllOutcomes", "[calculations]" ) {
+    
+    Qureg vec = createQureg(NUM_QUBITS, QUEST_ENV);
+    Qureg mat = createDensityQureg(NUM_QUBITS, QUEST_ENV);
+    
+    SECTION( "correctness" ) {
+    
+        // generate all possible qubit arrangements
+        int numQubits = GENERATE_COPY( range(1,NUM_QUBITS+1) );
+        int* qubits = GENERATE_COPY( sublists(range(0,NUM_QUBITS), numQubits) );
+        
+        int numOutcomes = 1<<numQubits;
+        qreal probs[numOutcomes];
+        QVector refProbs = QVector(numOutcomes);
+            
+        SECTION( "state-vector" ) {
+            
+            SECTION( "normalised" ) {
+                
+                QVector ref = getRandomStateVector(NUM_QUBITS);
+                toQureg(vec, ref);
+
+                // prob is sum of |amp|^2 of basis states which encode outcome
+                for (size_t i=0; i<ref.size(); i++) {
+                    int outcome = 0;
+                    for (int q=0; q<numQubits; q++) {
+                        int bit = (i >> qubits[q]) & 1;
+                        outcome += bit * (1 << q);
+                    }
+                    refProbs[outcome] += pow(abs(ref[i]), 2);
+                }
+
+                calcProbOfAllOutcomes(probs, vec, qubits, numQubits);
+                REQUIRE( areEqual(refProbs, probs) );
+            }
+            SECTION( "unnormalised" ) {
+                
+                QVector ref = getRandomQVector(1<<NUM_QUBITS);
+                toQureg(vec, ref);
+                
+                // prob is sum of |amp|^2 of basis states which encode outcome
+                for (size_t i=0; i<ref.size(); i++) {
+                    int outcome = 0;
+                    for (int q=0; q<numQubits; q++) {
+                        int bit = (i >> qubits[q]) & 1;
+                        outcome += bit * (1 << q);
+                    }
+                    refProbs[outcome] += pow(abs(ref[i]), 2);
+                }
+
+                calcProbOfAllOutcomes(probs, vec, qubits, numQubits);
+                REQUIRE( areEqual(refProbs, probs) );
+            }
+        }
+        SECTION( "density-matrix" ) {
+            
+            SECTION( "normalised" ) {
+            
+                QMatrix ref = getRandomDensityMatrix(NUM_QUBITS);
+                toQureg(mat, ref);
+                
+                // prob is sum of diagonals which encode outcome 
+                for (size_t i=0; i<ref.size(); i++) {
+                    int outcome = 0;
+                    for (int q=0; q<numQubits; q++) {
+                        int bit = (i >> qubits[q]) & 1;
+                        outcome += bit * (1 << q);
+                    }
+                    refProbs[outcome] += real(ref[i][i]);
+                }
+                
+                calcProbOfAllOutcomes(probs, mat, qubits, numQubits);
+                REQUIRE( areEqual(refProbs, probs) );
+            }
+            SECTION( "unnormalised" ) {
+            
+                QMatrix ref = getRandomQMatrix(1<<NUM_QUBITS);
+                toQureg(mat, ref);
+                
+                // prob is sum of diagonals which encode outcome 
+                for (size_t i=0; i<ref.size(); i++) {
+                    int outcome = 0;
+                    for (int q=0; q<numQubits; q++) {
+                        int bit = (i >> qubits[q]) & 1;
+                        outcome += bit * (1 << q);
+                    }
+                    refProbs[outcome] += real(ref[i][i]);
+                }
+                
+                calcProbOfAllOutcomes(probs, mat, qubits, numQubits);
+                REQUIRE( areEqual(refProbs, probs) );
+            }
+        }
+    }
+    SECTION( "input validation" ) {
+        
+        int numQubits = 3;
+        int qubits[] = {0, 1, 2};
+        qreal probs[8];
+        
+        SECTION( "number of qubits" ) {
+            
+            numQubits = GENERATE( -1, 0, NUM_QUBITS+1 );
+            REQUIRE_THROWS_WITH( calcProbOfAllOutcomes(probs, mat, qubits, numQubits), Contains("Invalid number of target qubits") );
+        }
+        SECTION( "qubit indices" ) {
+            
+            qubits[GENERATE_COPY(range(0,numQubits))] = GENERATE( -1, NUM_QUBITS );
+            REQUIRE_THROWS_WITH( calcProbOfAllOutcomes(probs, mat, qubits, numQubits), Contains("Invalid target qubit") );
+        }
+        SECTION( "repetition of qubits" ) {
+            
+            qubits[GENERATE_COPY(1,2)] = qubits[0];
+            REQUIRE_THROWS_WITH( calcProbOfAllOutcomes(probs, mat, qubits, numQubits), Contains("qubits must be unique") );
+        }
+    }
+    destroyQureg(vec, QUEST_ENV);
+    destroyQureg(mat, QUEST_ENV); 
+}
+        
+
+
+
 /** @sa calcProbOfOutcome
  * @ingroup unittest 
  * @author Tyson Jones 
@@ -974,7 +1107,7 @@ TEST_CASE( "calcProbOfOutcome", "[calculations]" ) {
             }
         }
     }
-    SECTION( "validation" ) {
+    SECTION( "input validation" ) {
         
         SECTION( "qubit indices" ) {
             

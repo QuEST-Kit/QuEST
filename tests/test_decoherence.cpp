@@ -190,7 +190,7 @@ TEST_CASE( "mixDepolarising", "[decoherence]" ) {
         QMatrix xRef = ref;
         applyReferenceOp(xRef, target, QMatrix{{0,1},{1,0}}); // X ref X
         QMatrix yRef = ref;
-        applyReferenceOp(yRef, target, QMatrix{{0,-1i},{1i,0}}); // Y ref Y
+        applyReferenceOp(yRef, target, QMatrix{{0,-qcomp(0,1)},{qcomp(0,1),0}}); // Y ref Y
         QMatrix zRef = ref;
         applyReferenceOp(zRef, target, QMatrix{{1,0},{0,-1}}); // Z ref Z
         ref = ((1 - prob) * ref) + ((prob/3.) * ( xRef + yRef + zRef));
@@ -468,7 +468,7 @@ TEST_CASE( "mixPauli", "[decoherence]" ) {
         QMatrix xRef = ref;
         applyReferenceOp(xRef, target, QMatrix{{0,1},{1,0}}); // X ref X
         QMatrix yRef = ref;
-        applyReferenceOp(yRef, target, QMatrix{{0,-1i},{1i,0}}); // Y ref Y
+        applyReferenceOp(yRef, target, QMatrix{{0,-qcomp(0,1)},{qcomp(0,1),0}}); // Y ref Y
         QMatrix zRef = ref;
         applyReferenceOp(zRef, target, QMatrix{{1,0},{0,-1}}); // Z ref Z
         ref = ((1 - probX - probY - probZ) * ref) +
@@ -665,7 +665,7 @@ TEST_CASE( "mixTwoQubitDepolarising", "[decoherence]" ) {
         QMatrix paulis[4] = {
             QMatrix{{1,0},{0,1}},       // I 
             QMatrix{{0,1},{1,0}},       // X
-            QMatrix{{0,-1i},{1i,0}},    // Y
+            QMatrix{{0,-qcomp(0,1)},{qcomp(0,1),0}},    // Y
             QMatrix{{1,0},{0,-1}}       // Z
         };
         

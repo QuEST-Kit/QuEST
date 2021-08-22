@@ -41,7 +41,7 @@ TEST_CASE( "getStaticComplexMatrixN", "[data_structures]" ) {
  */
 TEST_CASE( "toComplex", "[data_structures]" ) {
     
-    qcomp a = .5 - .2i;
+    qcomp a = qcomp(.5,-.2);
     Complex b = toComplex(a);
     
     REQUIRE( real(a) == b.real );
@@ -222,7 +222,7 @@ TEST_CASE( "createDiagonalOp", "[data_structures]" ) {
             int numQb = GENERATE( -1, 0 );
             REQUIRE_THROWS_WITH( createDiagonalOp(numQb, QUEST_ENV), Contains("Invalid number of qubits") );
         }
-        SECTION( "number of amplitudes" ) {
+        SECTION( "number of elements" ) {
             
             // use local QuESTEnv to safely modify
             QuESTEnv env = QUEST_ENV;
@@ -235,7 +235,7 @@ TEST_CASE( "createDiagonalOp", "[data_structures]" ) {
             int minQb = GENERATE_COPY( range(2,maxQb) );
             env.numRanks = (int) pow(2, minQb);
             int numQb = GENERATE_COPY( range(1,minQb) );
-            REQUIRE_THROWS_WITH( createDiagonalOp(numQb, env), Contains("Too few qubits") );
+            REQUIRE_THROWS_WITH( createDiagonalOp(numQb, env), Contains("Too few qubits") && Contains("distributed"));
         }
         SECTION( "available memory" ) {
             
@@ -244,6 +244,171 @@ TEST_CASE( "createDiagonalOp", "[data_structures]" ) {
             SUCCEED( );
         }
     }
+}
+
+
+
+/** @sa createDiagonalOpFromPauliHamilFile
+ * @ingroup unittest 
+ * @author Tyson Jones 
+ */
+TEST_CASE( "createDiagonalOpFromPauliHamilFile", "[data_structures]" ) {
+
+    // files created & populated during the test, and deleted afterward
+    char fnPrefix[] = "temp_createDiagonalOpFromPauliHamilFile";
+    char fn[100];
+    
+    // each test uses a unique filename (managed by master node), to avoid file IO locks
+    // (it's safe for sub-test to overwrite this, since after each test, all files
+    //  with prefix fnPrefix are deleted)
+    setUniqueFilename(fn, fnPrefix);
+    
+    // diagonal op must have at least one amplitude per node
+    int minNumQb = calcLog2(QUEST_ENV.numRanks);
+    if (minNumQb == 0)
+        minNumQb = 1;
+
+    SECTION( "correctness" ) {
+
+        SECTION( "general" ) {
+            
+            // try several Pauli Hamiltonian sizes
+            int numQb = GENERATE_COPY( range(minNumQb, 6+minNumQb) );
+            int numTerms = GENERATE_COPY( 1, minNumQb, 10*minNumQb );
+            
+            // create a PauliHamil with random elements
+            PauliHamil hamil = createPauliHamil(numQb, numTerms);
+            setRandomDiagPauliHamil(hamil);
+            
+            // write the Hamiltonian to file (with trailing whitespace, and trailing newline)
+            if (QUEST_ENV.rank == 0) { 
+                FILE* file = fopen(fn, "w");
+                int i=0;
+                for (int n=0; n<numTerms; n++) {
+                    fprintf(file, REAL_STRING_FORMAT, hamil.termCoeffs[n]);
+                    fprintf(file, " ");
+                    for (int q=0; q<numQb; q++)
+                        fprintf(file, "%d ", (int) hamil.pauliCodes[i++]);
+                    fprintf(file, "\n");
+                }
+                fprintf(file, "\n");
+                fclose(file);
+            }
+            syncQuESTEnv(QUEST_ENV);
+            
+            // load the file as a diagonal operator, and compare
+            DiagonalOp op = createDiagonalOpFromPauliHamilFile(fn, QUEST_ENV);
+            REQUIRE( areEqual(toQMatrix(op), toQMatrix(hamil)) );
+
+            destroyPauliHamil(hamil);
+            destroyDiagonalOp(op, QUEST_ENV);
+        }
+        SECTION( "edge cases" ) {
+            
+            // prepare a valid single-term diagonal Pauli Hamiltonian
+            qreal coeffs[] = {.1};
+            pauliOpType codes[minNumQb];
+            for (int q=0; q<minNumQb; q++)
+                codes[q] = (q%2)? PAULI_I : PAULI_Z; 
+                
+            QMatrix ref = toQMatrix(coeffs, codes, minNumQb, 1);
+
+            // prepare basic encoding string 
+            string line = to_string(coeffs[0]) + " ";
+            for (int q=0; q<minNumQb; q++)
+                line += to_string(codes[q]) + ((q<minNumQb-1)? " ":"");
+            
+            SECTION( "no trailing newline or space" ) {
+                
+                writeToFileSynch(fn, line);
+                
+                DiagonalOp op = createDiagonalOpFromPauliHamilFile(fn, QUEST_ENV);
+                REQUIRE( areEqual(ref, toQMatrix(op)) );
+                
+                destroyDiagonalOp(op, QUEST_ENV);
+            }
+            SECTION( "trailing newlines" ) {
+                
+                writeToFileSynch(fn, line + "\n\n\n");
+                
+                DiagonalOp op = createDiagonalOpFromPauliHamilFile(fn, QUEST_ENV);
+                REQUIRE( areEqual(ref, toQMatrix(op)) );
+                
+                destroyDiagonalOp(op, QUEST_ENV);
+            }
+            SECTION( "trailing spaces" ) {
+                
+                writeToFileSynch(fn, line + "    ");
+                
+                DiagonalOp op = createDiagonalOpFromPauliHamilFile(fn, QUEST_ENV);
+                REQUIRE( areEqual(ref, toQMatrix(op)) );
+                
+                destroyDiagonalOp(op, QUEST_ENV);
+            }
+        }
+    }
+    SECTION( "input validation") {
+
+        SECTION( "number of qubits" ) {
+            
+            writeToFileSynch(fn, ".1 "); // 0 qubits
+            REQUIRE_THROWS_WITH( createDiagonalOpFromPauliHamilFile(fn, QUEST_ENV), Contains("The number of qubits") && Contains("strictly positive"));
+        }
+        SECTION( "number of elements" ) {
+            
+            // too many amplitudes to store in type
+            int maxQb = (int) calcLog2(SIZE_MAX);
+            
+            // encode one more qubit than legal to file
+            string line = ".1 ";
+            for (int q=0; q<(maxQb+1); q++)
+                line += "3 "; // trailing space ok
+            writeToFileSynch(fn, line);
+            
+            REQUIRE_THROWS_WITH( createDiagonalOpFromPauliHamilFile(fn, QUEST_ENV), Contains("Too many qubits") && Contains("size_t type") );
+            
+            // use local QuESTEnv to safely modify
+            QuESTEnv env = QUEST_ENV;
+            
+            // too few elements to distribute
+            int minQb = GENERATE_COPY( range(2,maxQb) );
+            env.numRanks = (int) pow(2, minQb);
+            int numQb = GENERATE_COPY( range(1,minQb) );
+            
+            line = ".1 ";
+            for (int q=0; q<numQb; q++)
+                line += "3 "; // trailing space ok
+            setUniqueFilename(fn, fnPrefix);
+            writeToFileSynch(fn, line);
+            
+            REQUIRE_THROWS_WITH( createDiagonalOpFromPauliHamilFile(fn, env), Contains("Too few qubits") && Contains("distributed") );
+        }
+        SECTION( "coefficient type" ) {
+
+            writeToFileSynch(fn, "notanumber 1 2 3");
+            REQUIRE_THROWS_WITH( createDiagonalOpFromPauliHamilFile(fn, QUEST_ENV), Contains("Failed to parse") && Contains("coefficient"));
+        }
+        SECTION( "pauli code" ) {
+
+            writeToFileSynch(fn, ".1 0 3 2");  // final is invalid Y
+            REQUIRE_THROWS_WITH( createDiagonalOpFromPauliHamilFile(fn, QUEST_ENV), Contains("contained operators other than PAULI_Z and PAULI_I"));
+            
+            setUniqueFilename(fn, fnPrefix);
+            writeToFileSynch(fn, ".1 0 1 3");  // second is invalid X
+            REQUIRE_THROWS_WITH( createDiagonalOpFromPauliHamilFile(fn, QUEST_ENV), Contains("contained operators other than PAULI_Z and PAULI_I"));
+            
+            setUniqueFilename(fn, fnPrefix);
+            writeToFileSynch(fn, ".1 0 1 4");  // final is invalid Pauli code
+            REQUIRE_THROWS_WITH( createDiagonalOpFromPauliHamilFile(fn, QUEST_ENV), Contains("invalid pauli code"));
+            
+            setUniqueFilename(fn, fnPrefix);
+            writeToFileSynch(fn, ".1 3 0 notanumber");  // final is invalid type
+            REQUIRE_THROWS_WITH( createDiagonalOpFromPauliHamilFile(fn, QUEST_ENV), Contains("Failed to parse the next expected Pauli code"));
+        }
+    }
+    
+    // delete all files created above
+    deleteFilesWithPrefixSynch(fnPrefix);
 }
 
 
@@ -300,17 +465,23 @@ TEST_CASE( "createPauliHamil", "[data_structures]" ) {
  * @author Tyson Jones 
  */
 TEST_CASE( "createPauliHamilFromFile", "[data_structures]" ) {
-
-    // a file created & populated during the test, and deleted afterward
-    char fn[] = "temp_test_output_file.txt";
+    
+    // files created & populated during the test, and deleted afterward
+    char fnPrefix[] = "temp_createPauliHamilFromFile";
+    char fn[100];
+    
+    // each test uses a unique filename (managed by master node), to avoid file IO locks
+    // (it's safe for sub-test to overwrite this, since after each test, all files
+    //  with prefix fnPrefix are deleted)
+    setUniqueFilename(fn, fnPrefix);
 
     SECTION( "correctness" ) {
         
         SECTION( "general" ) {
             
             // for several sizes...
-            int numQb = GENERATE( range(1,6) );
-            int numTerms = GENERATE( range(1,6) );
+            int numQb = GENERATE( 1, 5, 10, 15 );
+            int numTerms = GENERATE( 1, 10, 30 );
             int numPaulis = numQb*numTerms;
             
             // create a PauliHamil with random elements
@@ -319,16 +490,20 @@ TEST_CASE( "createPauliHamilFromFile", "[data_structures]" ) {
             setRandomPauliSum(coeffs, paulis, numQb, numTerms);
             
             // write the Hamiltonian to file (with trailing whitespace, and trailing newline)
-            FILE* file = fopen(fn, "w");
-            int i=0;
-            for (int n=0; n<numTerms; n++) {
-                fprintf(file, "%.20f ", coeffs[n]);
-                for (int q=0; q<numQb; q++)
-                    fprintf(file, "%d ", (int) paulis[i++]);
+            if (QUEST_ENV.rank == 0) {
+                FILE* file = fopen(fn, "w");
+                int i=0;
+                for (int n=0; n<numTerms; n++) {
+                    fprintf(file, REAL_STRING_FORMAT, coeffs[n]);
+                    fprintf(file, " ");
+                    for (int q=0; q<numQb; q++)
+                        fprintf(file, "%d ", (int) paulis[i++]);
+                    fprintf(file, "\n");
+                }
                 fprintf(file, "\n");
+                fclose(file);
             }
-            fprintf(file, "\n");
-            fclose(file);
+            syncQuESTEnv(QUEST_ENV);
             
             // load the file as a PauliHamil
             PauliHamil hamil = createPauliHamilFromFile(fn);
@@ -338,12 +513,12 @@ TEST_CASE( "createPauliHamilFromFile", "[data_structures]" ) {
             REQUIRE( hamil.numSumTerms == numTerms );
             
             // check elements agree
-            i=0;
+            int j=0;
             for (int n=0; n<numTerms; n++) {
-                REQUIRE( hamil.termCoeffs[n] == coeffs[n] );
+                REQUIRE( absReal(hamil.termCoeffs[n] - coeffs[n]) <= REAL_EPS );
                 for (int q=0; q<numQb; q++) {
-                    REQUIRE( hamil.pauliCodes[i] == paulis[i] );
-                    i++;
+                    REQUIRE( hamil.pauliCodes[j] == paulis[j] );
+                    j++;
                 }
             }
             
@@ -353,35 +528,32 @@ TEST_CASE( "createPauliHamilFromFile", "[data_structures]" ) {
             
             SECTION( "no trailing newline or space" ) {
                 
-                FILE* file = fopen(fn, "w");
-                fprintf(file, ".1 1 0 1");
-                fclose(file);
+                writeToFileSynch(fn, ".1 1 0 1");
+        
                 PauliHamil hamil = createPauliHamilFromFile(fn);
-                
                 REQUIRE( hamil.numSumTerms == 1 );
                 REQUIRE( hamil.numQubits == 3 );
+                
                 destroyPauliHamil(hamil); 
             }
             SECTION( "trailing newlines" ) {
                 
-                FILE* file = fopen(fn, "w");
-                fprintf(file, ".1 1 0 1\n\n\n");
-                fclose(file);
+                writeToFileSynch(fn, ".1 1 0 1\n\n\n");
+
                 PauliHamil hamil = createPauliHamilFromFile(fn);
-                
                 REQUIRE( hamil.numSumTerms == 1 );
                 REQUIRE( hamil.numQubits == 3 );
+                
                 destroyPauliHamil(hamil); 
             }
             SECTION( "trailing spaces" ) {
                 
-                FILE* file = fopen(fn, "w");
-                fprintf(file, ".1 1 0 1    ");
-                fclose(file);
-                PauliHamil hamil = createPauliHamilFromFile(fn);
+                writeToFileSynch(fn, ".1 1 0 1    ");
                 
+                PauliHamil hamil = createPauliHamilFromFile(fn);
                 REQUIRE( hamil.numSumTerms == 1 );
                 REQUIRE( hamil.numQubits == 3 );
+                
                 destroyPauliHamil(hamil); 
             }
         }
@@ -390,36 +562,31 @@ TEST_CASE( "createPauliHamilFromFile", "[data_structures]" ) {
 
         SECTION( "number of qubits" ) {
 
-            FILE* file = fopen(fn, "w");
-            fprintf(file, ".1 ");
-            fclose(file);
+            writeToFileSynch(fn, ".1 ");
+
             REQUIRE_THROWS_WITH( createPauliHamilFromFile(fn), Contains("The number of qubits") && Contains("strictly positive"));
         }
         SECTION( "coefficient type" ) {
 
-            FILE* file = fopen(fn, "w");
-            fprintf(file, "notanumber 1 2 3");
-            fclose(file);
+            writeToFileSynch(fn, "notanumber 1 2 3");
+
             REQUIRE_THROWS_WITH( createPauliHamilFromFile(fn), Contains("Failed to parse") && Contains("coefficient"));
         }
         SECTION( "pauli code" ) {
+            
+            writeToFileSynch(fn, ".1 1 2 4"); // invalid int
 
-            // invalid int
-            FILE* file = fopen(fn, "w");
-            fprintf(file, ".1 1 2 4");
-            fclose(file);
             REQUIRE_THROWS_WITH( createPauliHamilFromFile(fn), Contains("invalid pauli code"));
             
-            // invalid type
-            file = fopen(fn, "w");
-            fprintf(file, ".1 1 2 notanumber");
-            fclose(file);
+            setUniqueFilename(fn, fnPrefix);
+            writeToFileSynch(fn, ".1 1 2 notanumber"); // invalid type
+            
             REQUIRE_THROWS_WITH( createPauliHamilFromFile(fn), Contains("Failed to parse the next expected Pauli code"));
         }
     }
     
-    // delete the test file
-    remove(fn);
+    // cleanup temp files
+    deleteFilesWithPrefixSynch(fn);
 }
 
 
@@ -648,6 +815,84 @@ TEST_CASE( "initDiagonalOp", "[data_structures]" ) {
 
 
 
+/** @sa initDiagonalOpFromPauliHamil
+ * @ingroup unittest 
+ * @author Tyson Jones 
+ */
+TEST_CASE( "initDiagonalOpFromPauliHamil", "[data_structures]" ) {
+    
+    // distributed diagonal op must contain at least one amplitude per node
+    int minNumQb = calcLog2(QUEST_ENV.numRanks);
+    if (minNumQb == 0)
+        minNumQb = 1;
+    
+    SECTION( "correctness" ) {    
+
+        // try (at most) 10 valid number of qubits (even for validation)
+        int numQb = GENERATE_COPY( range(minNumQb, min(10,minNumQb+10)) );
+        DiagonalOp op = createDiagonalOp(numQb, QUEST_ENV);
+        
+        // try several sized random all-Z Hamiltonians
+        int numTerms = GENERATE_COPY( 1, numQb, 5*numQb );
+        PauliHamil hamil = createPauliHamil(numQb, numTerms);
+        setRandomDiagPauliHamil(hamil);
+
+        initDiagonalOpFromPauliHamil(op, hamil);
+        REQUIRE( areEqual(toQMatrix(op), toQMatrix(hamil)) );
+
+        destroyPauliHamil(hamil);
+        destroyDiagonalOp(op, QUEST_ENV);
+    }
+    SECTION( "input validation" ) {
+        
+        SECTION( "hamiltonian parameters" ) {
+            
+            DiagonalOp op = createDiagonalOp(minNumQb, QUEST_ENV);
+            PauliHamil hamil;
+            
+            hamil.numQubits = GENERATE( -1, 0 );
+            hamil.numSumTerms = 1;
+            REQUIRE_THROWS_WITH( initDiagonalOpFromPauliHamil(op, hamil), Contains("number of qubits") && Contains("strictly positive") );
+            
+            hamil.numQubits = minNumQb;
+            hamil.numSumTerms = GENERATE( -1, 0 );
+            REQUIRE_THROWS_WITH( initDiagonalOpFromPauliHamil(op, hamil), Contains("terms") && Contains("strictly positive") );
+            
+            destroyDiagonalOp(op, QUEST_ENV);
+        }
+        SECTION( "mismatching dimensions" ) {
+            
+            int numQbA = minNumQb+1;
+            int numQbB = GENERATE_COPY( numQbA-1, numQbA+1 );
+            
+            DiagonalOp op = createDiagonalOp(numQbA, QUEST_ENV);
+            PauliHamil hamil = createPauliHamil(numQbB, 1);
+            
+            REQUIRE_THROWS_WITH( initDiagonalOpFromPauliHamil(op, hamil), Contains("Pauli Hamiltonian and diagonal operator have different, incompatible dimensions") );
+            
+            destroyDiagonalOp(op, QUEST_ENV);
+            destroyPauliHamil(hamil);
+        }
+        SECTION( "pauli codes" ) {
+        
+            DiagonalOp op = createDiagonalOp(minNumQb, QUEST_ENV);
+            PauliHamil hamil = createPauliHamil(minNumQb, 5);  // all I
+            
+            // make only one code invalid
+            int numCodes = minNumQb * hamil.numSumTerms;
+            int ind = GENERATE_COPY( range(0,numCodes) );
+            hamil.pauliCodes[ind] = GENERATE( PAULI_X, PAULI_Y );
+            
+            REQUIRE_THROWS_WITH( initDiagonalOpFromPauliHamil(op, hamil), Contains("contained operators other than PAULI_Z and PAULI_I") );
+            
+            destroyDiagonalOp(op, QUEST_ENV);
+            destroyPauliHamil(hamil);
+        }
+    }
+}
+
+
+
 /** @sa initPauliHamil
  * @ingroup unittest 
  * @author Tyson Jones 
@@ -763,7 +1008,7 @@ TEST_CASE( "setDiagonalOpElems", "[data_structures]" ) {
             REQUIRE_THROWS_WITH( setDiagonalOpElems(op, startInd, reals, imags, numAmps), Contains("Invalid element index") );
         }
         
-        SECTION( "number of amplitudes" ) {
+        SECTION( "number of elements" ) {
             
             // independent
             int startInd = 0;

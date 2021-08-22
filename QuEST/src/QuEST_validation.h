@@ -128,7 +128,27 @@ void validateDiagOpInit(DiagonalOp, const char* caller);
 
 void validateDiagonalOp(Qureg qureg, DiagonalOp op, const char* caller);
 
+void validateDiagPauliHamil(DiagonalOp op, PauliHamil hamil, const char *caller);
+
+void validateDiagPauliHamilFromFile(PauliHamil h, int numRanks, const char* caller);
+
 void validateNumElems(DiagonalOp op, long long int startInd, long long int numElems, const char* caller);
+
+void validateQubitSubregs(Qureg qureg, int* qubits, int* numQubitsPerReg, const int numReg, const char* caller);
+
+void validatePhaseFuncOverrides(const int numQubits, enum bitEncoding encoding, long long int* overrideInds, int numOverrides, const char* caller);
+
+void validateMultiVarPhaseFuncOverrides(int* numQubitsPerReg, const int numRegs, enum bitEncoding encoding, long long int* overrideInds, int numOverrides, const char* caller);
+
+void validatePhaseFuncTerms(int numQubits, enum bitEncoding encoding, qreal* coeffs, qreal* exponents, int numTerms, long long int* overrideInds, int numOverrides, const char* caller);
+
+void validateMultiVarPhaseFuncTerms(int* numQubitsPerReg, int numRegs, enum bitEncoding encoding, qreal* exponents, int* numTermsPerReg, const char* caller);
+
+void validatePhaseFuncName(enum phaseFunc funcCode, int numRegs, int numParams, const char* caller);
+
+void validateBitEncoding(int numQubits, enum bitEncoding encoding, const char* caller);
+
+void validateMultiRegBitEncoding(int* numQubitsPerReg, int numRegs, enum bitEncoding encoding, const char* caller);
 
 # ifdef __cplusplus
 }

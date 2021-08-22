@@ -140,6 +140,16 @@ QVector operator * (const QMatrix& m, const QVector& v) {
     return prod;
 }
 
+QVector getKroneckerProduct(QVector b, QVector a) {
+
+    QVector prod = QVector(a.size() * b.size());
+    
+    for (size_t i=0; i<prod.size(); i++)
+        prod[i] = b[i / a.size()] * a[i % a.size()];
+    
+    return prod;
+}
+
 QMatrix getZeroMatrix(size_t dim) {
     DEMAND( dim > 1 );
     QMatrix matr = QMatrix(dim);
@@ -191,7 +201,8 @@ QMatrix getExponentialOfDiagonalMatrix(QMatrix a) {
         for (size_t c=0; c<a.size(); c++) {
             if (r == c)
                 continue;
-            DEMAND( a[r][c] == 0. );
+            DEMAND( real(a[r][c]) == 0. );
+            DEMAND( imag(a[r][c]) == 0. );
         }
 
     // exp(diagonal) = diagonal(exp)
@@ -204,7 +215,7 @@ QMatrix getExponentialOfDiagonalMatrix(QMatrix a) {
 
 QMatrix getExponentialOfPauliMatrix(qreal angle, QMatrix a) {
     QMatrix iden = getIdentityMatrix(a.size());
-    QMatrix expo = (cos(angle/2) * iden) + (-1i * sin(angle/2) * a);
+    QMatrix expo = (cos(angle/2) * iden) + ((qcomp) -1i * sin(angle/2) * a);
     return expo;
 }
 
@@ -378,7 +389,7 @@ QMatrix getRandomQMatrix(int dim) {
             qreal r1 = sqrt(-2 * log(a)) * cos(2 * 3.14159265 * b);
             qreal r2 = sqrt(-2 * log(a)) * sin(2 * 3.14159265 * b);
             
-            matr[i][j] = r1 + r2*1i;
+            matr[i][j] = r1 + r2 * (qcomp) 1i;
         }
     }
     return matr;
@@ -404,7 +415,7 @@ bool areEqual(QMatrix a, QMatrix b) {
 }
 
 qcomp expI(qreal phase) {
-    return cos(phase) + 1i*sin(phase);
+    return qcomp(cos(phase), sin(phase));
 }
 
 qreal getRandomReal(qreal min, qreal max) {
@@ -417,10 +428,14 @@ qreal getRandomReal(qreal min, qreal max) {
     return r;
 }
 
+qcomp getRandomComplex() {
+    return getRandomReal(-1,1) + getRandomReal(-1,1) * (qcomp) 1i;
+}
+
 QVector getRandomQVector(int dim) { 
     QVector vec = QVector(dim);
     for (int i=0; i<dim; i++)
-        vec[i] = getRandomReal(-1,1) + 1i*getRandomReal(-1,1);
+        vec[i] = getRandomComplex();
         
     // check we didn't get the impossibly-unlikely zero-amplitude outcome 
     DEMAND( real(vec[0]) != 0 );
@@ -454,19 +469,30 @@ QVector getRandomStateVector(int numQb) {
     return getNormalised(getRandomQVector(1<<numQb));
 }
 
+std::vector<qreal> getRandomProbabilities(int numProbs) {
+    
+    // generate random unnormalised scalars
+    std::vector<qreal> probs;
+    qreal total = 0;
+    for (int i=0; i<numProbs; i++) {
+        qreal prob = getRandomReal(0, 1);
+        probs.push_back(prob);
+        total += prob;
+    }
+        
+    // normalise
+    for (int i=0; i<numProbs; i++)
+        probs[i] /= total;
+        
+    return probs;
+}
+
 QMatrix getRandomDensityMatrix(int numQb) {
     DEMAND( numQb > 0 );
     
     // generate random probabilities to weight random pure states
     int dim = 1<<numQb;
-    qreal probs[dim];
-    qreal probNorm = 0;
-    for (int i=0; i<dim; i++) {
-        probs[i] = getRandomReal(0, 1);
-        probNorm += probs[i];
-    }
-    for (int i=0; i<dim; i++)
-        probs[i] /= probNorm;
+    std::vector<qreal> probs = getRandomProbabilities(dim);
     
     // add random pure states
     QMatrix dens = getZeroMatrix(dim);
@@ -476,6 +502,25 @@ QMatrix getRandomDensityMatrix(int numQb) {
     }
     
     return dens;
+}
+
+QMatrix getPureDensityMatrix(QVector state) {
+    return getKetBra(state, state);
+}
+
+QMatrix getRandomPureDensityMatrix(int numQb) {
+    QVector vec = getRandomStateVector(numQb);
+    QMatrix mat = getPureDensityMatrix(vec);
+    return mat;
+}
+
+QVector getMatrixDiagonal(QMatrix matr) {
+    
+    QVector vec = QVector(matr.size());
+    for (size_t i=0; i<vec.size(); i++)
+        vec[i] = matr[i][i];
+    
+    return vec;
 }
 
 int getRandomInt(int min, int max) {
@@ -563,6 +608,116 @@ std::vector<QMatrix> getRandomKrausMap(int numQb, int numOps) {
     DEMAND( areEqual(prodSum, iden) );
         
     return ops;
+}
+
+std::vector<QVector> getRandomOrthonormalVectors(int numQb, int numStates) {
+    DEMAND( numQb >= 1 );
+    DEMAND( numStates >= 1);
+    
+    // set of orthonormal vectors
+    std::vector<QVector> vecs;
+    
+    for (size_t n=0; n<numStates; n++) {
+        
+        QVector vec = getRandomStateVector(numQb);
+        
+        // orthogonalise by substracting projections of existing vectors
+        for (int m=0; m<n; m++) {
+            qcomp prod = vec * vecs[m];
+            vec -= (prod * vecs[m]);
+        }
+        
+        // renormalise
+        vec = getNormalised(vec);
+        
+        // add to orthonormal set
+        vecs.push_back(vec);
+    }
+
+    return vecs;
+}
+
+QMatrix getMixedDensityMatrix(std::vector<qreal> probs, std::vector<QVector> states) {
+    DEMAND( probs.size() == states.size() );
+    DEMAND( probs.size() >= 1 );
+    
+    QMatrix matr = getZeroMatrix(states[0].size());
+    
+    for (size_t i=0; i<probs.size(); i++)
+        matr += probs[i] * getPureDensityMatrix(states[i]);
+        
+    return matr;
+}
+
+QVector getDFT(QVector in) {
+    REQUIRE( in.size() > 0 );
+    
+    size_t dim = in.size();
+    qreal ampFac = 1 / sqrt( dim );
+    qreal phaseFac = 2 * M_PI / dim;
+    
+    QVector dftVec = QVector(dim);
+    
+    for (size_t x=0; x<dim; x++) {
+        dftVec[x] = 0;
+        for (long long int y=0; y<dim; y++)
+            dftVec[x] += expI(phaseFac * x * y) * in[y];
+        dftVec[x] *= ampFac;
+    }
+    return dftVec;
+}
+
+long long int getValueOfTargets(long long int ind, int* targs, int numTargs) {
+    DEMAND( ind >= 0 );
+    
+    long long int val = 0;
+    
+    for (int t=0; t<numTargs; t++)
+        val += ((ind >> targs[t]) & 1) * (1LL << t);
+        
+    return val;
+}
+
+long long int setBit(long long int num, int bitInd, int bitVal) {
+    DEMAND( (bitVal == 0 || bitVal == 1) );
+    DEMAND( num >= 0 );
+    DEMAND( bitInd >= 0 );
+    
+    return (num & ~(1UL << bitInd)) | (bitVal << bitInd);
+}
+
+long long int getIndexOfTargetValues(long long int ref, int* targs, int numTargs, int targVal) {
+    // ref state is the starting index, where the targets can be in any bit state;
+    // on the bits of the non-target qubits matter 
+    
+    for (int t=0; t<numTargs; t++) {
+        int bit = (targVal >> t) & 1;
+        ref = setBit(ref, targs[t], bit);    
+    }
+    return ref;
+}
+
+QVector getDFT(QVector in, int* targs, int numTargs) {
+    
+    QVector out = QVector(in.size());
+    long long int targDim = (1LL << numTargs);
+    
+    for (size_t j=0; j<in.size(); j++) {
+        
+        // |j> = |x> (x) |...>, but mixed (not separated)
+        long long int x = getValueOfTargets(j, targs, numTargs);
+        
+        for (long long int y=0; y<targDim; y++) {
+            
+            // modifies sum_y |y> (x) ...
+            long long int outInd = getIndexOfTargetValues(j, targs, numTargs, y);
+            
+            qcomp elem = (in[j] / sqrt(pow(2,numTargs))) * expI(2*M_PI * x * y / pow(2,numTargs));
+            out[outInd] += elem;
+        }
+    }
+    
+    return out;
 }
 
 /* (do not generate doxygen doc)
@@ -744,8 +899,14 @@ bool areEqual(Qureg qureg, QVector vec, qreal precision) {
             ampsAgree = 0;
             
             // debug
-            printf("Disagreement at %lld: %g + i(%g) VS %g + i(%g)\n",
-                startInd+i, qureg.stateVec.real[i], qureg.stateVec.imag[i],
+            char buff[200];
+            sprintf(buff, "Disagreement at %lld of (%s) + i(%s):\n\t%s + i(%s) VS %s + i(%s)\n",
+                startInd+i,
+                REAL_STRING_FORMAT, REAL_STRING_FORMAT, REAL_STRING_FORMAT, 
+                REAL_STRING_FORMAT, REAL_STRING_FORMAT, REAL_STRING_FORMAT);
+            printf(buff,
+                realDif, imagDif,
+                qureg.stateVec.real[i], qureg.stateVec.imag[i],
                 real(vec[startInd+i]), imag(vec[startInd+i]));
             
             break;
@@ -766,7 +927,7 @@ bool areEqual(Qureg qureg, QVector vec) {
 
 bool areEqual(Qureg qureg, QMatrix matr, qreal precision) {
     DEMAND( qureg.isDensityMatrix );
-    DEMAND( (int) (matr.size()*matr.size()) == qureg.numAmpsTotal );
+    DEMAND( (long long int) (matr.size()*matr.size()) == qureg.numAmpsTotal );
     
     // ensure local qureg.stateVec is up to date
     copyStateFromGPU(qureg);
@@ -788,9 +949,12 @@ bool areEqual(Qureg qureg, QMatrix matr, qreal precision) {
         
         // DEBUG
         if (!ampsAgree) {
-            printf("[msg from utilities.cpp] node %d has a disagreement at (global) index %lld of (%g) + i(%g)\n", 
-                qureg.chunkId, globalInd, realDif, imagDif
-            );
+            
+            // debug
+            char buff[200];
+            sprintf(buff, "[msg from utilities.cpp] node %d has a disagreement at (global) index %lld of (%s) + i(%s)\n",
+                qureg.chunkId, globalInd, REAL_STRING_FORMAT, REAL_STRING_FORMAT);
+            printf(buff, realDif, imagDif);
         }
 
         // break loop as soon as amplitudes disagree
@@ -824,10 +988,21 @@ bool areEqual(QVector vec, qreal* reals, qreal* imags) {
     
     qreal dif;
     for (size_t i=0; i<vec.size(); i++) {
-        dif = abs(real(vec[i]) - reals[i]);
+        dif = absReal(real(vec[i]) - reals[i]);
         if (dif > REAL_EPS)
             return false;
-        dif = abs(imag(vec[i]) - imags[i]);
+        dif = absReal(imag(vec[i]) - imags[i]);
+        if (dif > REAL_EPS)
+            return false;
+    }
+    return true;
+}
+
+bool areEqual(QVector vec, qreal* reals) {
+    for (size_t i=0; i<vec.size(); i++) {
+        DEMAND( imag(vec[i]) == 0. );
+        
+        qreal dif = abs(real(vec[i]) - reals[i]);
         if (dif > REAL_EPS)
             return false;
     }
@@ -1025,7 +1200,7 @@ QMatrix toQMatrix(DiagonalOp op) {
 
 void toQureg(Qureg qureg, QVector vec) {
     DEMAND( !qureg.isDensityMatrix );
-    DEMAND( qureg.numAmpsTotal == (int) vec.size() );
+    DEMAND( qureg.numAmpsTotal == (long long int) vec.size() );
     
     syncQuESTEnv(QUEST_ENV);
     
@@ -1038,7 +1213,7 @@ void toQureg(Qureg qureg, QVector vec) {
 }
 void toQureg(Qureg qureg, QMatrix mat) {
     DEMAND( qureg.isDensityMatrix );
-    DEMAND( (1 << qureg.numQubitsRepresented) == (int) mat.size() );
+    DEMAND( (1 << qureg.numQubitsRepresented) == (long long int) mat.size() );
     
     syncQuESTEnv(QUEST_ENV);
     
@@ -1063,14 +1238,26 @@ void setRandomPauliSum(PauliHamil hamil) {
     setRandomPauliSum(hamil.termCoeffs, hamil.pauliCodes, hamil.numQubits, hamil.numSumTerms);
 }
 
+void setRandomDiagPauliHamil(PauliHamil hamil) {
+    int i=0;
+    for (int n=0; n<hamil.numSumTerms; n++) {
+        hamil.termCoeffs[n] = getRandomReal(-5, 5);
+        for (int q=0; q<hamil.numQubits; q++)
+            if (getRandomReal(-1,1) > 0)
+                hamil.pauliCodes[i++] = PAULI_Z;
+            else
+                hamil.pauliCodes[i++] = PAULI_I;
+    }
+}
+
 QMatrix toQMatrix(qreal* coeffs, pauliOpType* paulis, int numQubits, int numTerms) {
     
     // produce a numTargs-big matrix 'pauliSum' by pauli-matrix tensoring and summing
     QMatrix iMatr{{1,0},{0,1}};
     QMatrix xMatr{{0,1},{1,0}};
-    QMatrix yMatr{{0,-1i},{1i,0}};
+    QMatrix yMatr{{0,-qcomp(0,1)},{qcomp(0,1),0}};
     QMatrix zMatr{{1,0},{0,-1}};
-    QMatrix pauliSum = getZeroMatrix(1<<NUM_QUBITS);
+    QMatrix pauliSum = getZeroMatrix(1<<numQubits);
     
     for (int t=0; t<numTerms; t++) {
         QMatrix pauliProd = QMatrix{{1}};
@@ -1094,6 +1281,108 @@ QMatrix toQMatrix(qreal* coeffs, pauliOpType* paulis, int numQubits, int numTerm
 }
 QMatrix toQMatrix(PauliHamil hamil) {
     return toQMatrix(hamil.termCoeffs, hamil.pauliCodes, hamil.numQubits, hamil.numSumTerms);
+}
+
+long long int getTwosComplement(long long int decimal, int numBits) {
+    DEMAND( decimal >= 0 );
+    DEMAND( numBits >= 2 );
+    DEMAND( decimal < (1LL << numBits) );
+    
+    long long int maxMag = 1LL << (numBits-1);
+    if (decimal >= maxMag)
+        return -maxMag + (decimal - maxMag);
+    else
+        return decimal;
+}
+
+long long int getUnsigned(long long int twosComp, int numBits) {
+    DEMAND( numBits >= 2 );
+    DEMAND( twosComp < (1LL << (numBits-1)) );
+    DEMAND( twosComp >= - (1LL << (numBits-1)) );
+    
+    if (twosComp >= 0)
+        return twosComp;
+    else
+        return (1<<numBits) + twosComp;
+}
+
+QMatrix toDiagonalQMatrix(QVector vec) {
+    QMatrix mat = getZeroMatrix(vec.size());
+    for (size_t i=0; i<vec.size(); i++)
+        mat[i][i] = vec[i];
+    return mat;
+}
+
+void setDiagMatrixOverrides(QMatrix &matr, int* numQubitsPerReg, int numRegs, enum bitEncoding encoding, long long int* overrideInds, qreal* overridePhases, int numOverrides) {
+    DEMAND( (encoding == UNSIGNED || encoding == TWOS_COMPLEMENT) );
+    DEMAND( numRegs > 0 );
+    DEMAND( numOverrides >= 0 );
+    
+    int totalQb = 0;
+    for (int r=0; r<numRegs; r++) {
+        DEMAND( numQubitsPerReg[r] > 0 );
+        totalQb += numQubitsPerReg[r];
+    }
+    DEMAND( matr.size() == (1 << totalQb) );
+    
+    // record whether a diagonal index has been already overriden
+    int hasBeenOverriden[1 << totalQb];
+    for (int i=0; i<(1 << totalQb); i++)
+        hasBeenOverriden[i] = 0;
+    
+    int flatInd = 0;
+    for (int v=0; v<numOverrides; v++) {
+        int matrInd = 0;
+        int numQubitsLeft = 0;
+        
+        for (int r=0; r<numRegs; r++) {
+            
+            if (encoding == UNSIGNED)
+                matrInd += overrideInds[flatInd] * (1 << numQubitsLeft);
+            else if (encoding == TWOS_COMPLEMENT)
+                matrInd += getUnsigned(overrideInds[flatInd], numQubitsPerReg[r]) * (1 << numQubitsLeft);
+                
+            numQubitsLeft += numQubitsPerReg[r];
+            flatInd += 1;
+        }
+        
+        if (!hasBeenOverriden[matrInd]) {
+            matr[matrInd][matrInd] = expI(overridePhases[v]);
+            hasBeenOverriden[matrInd] = 1;
+        }
+    }
+}
+
+static int fn_unique_suffix_id = 0;
+
+void setUniqueFilename(char* outFn, char* prefix) {
+    sprintf(outFn, "%s_%d.txt", prefix, fn_unique_suffix_id++);
+}
+
+void writeToFileSynch(char* fn, const string& contents) {
+    
+    // master node writes
+    if (QUEST_ENV.rank == 0) {
+        FILE* file = fopen(fn, "w");
+        fputs(contents.c_str(), file);
+        fclose(file);
+    }
+    
+    // other nodes wait
+    syncQuESTEnv(QUEST_ENV);
+}
+
+void deleteFilesWithPrefixSynch(char* prefix) {
+    
+    // master node deletes all files
+    if (QUEST_ENV.rank == 0) {
+        char cmd[200];
+        sprintf(cmd, "exec rm %s*", prefix);
+        system(cmd);
+    }
+    
+    // other nodes wait 
+    syncQuESTEnv(QUEST_ENV);
 }
 
 class SubListGenerator : public Catch::Generators::IGenerator<int*> {

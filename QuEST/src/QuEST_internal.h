@@ -49,6 +49,8 @@ void getComplexPairAndPhaseFromUnitary(ComplexMatrix2 u, Complex* alpha, Complex
 
 void shiftIndices(int* indices, int numIndices, int shift);
 
+void shiftSubregIndices(int* allInds, int* numIndsPerReg, int numRegs, int shift);
+
 void conjugateMatrixN(ComplexMatrixN u);
 
 void getQuESTDefaultSeedKey(unsigned long int *key);
@@ -75,6 +77,8 @@ qreal densmatr_calcHilbertSchmidtDistance(Qureg a, Qureg b);
 qreal densmatr_calcInnerProduct(Qureg a, Qureg b);
 
 qreal densmatr_calcProbOfOutcome(Qureg qureg, int measureQubit, int outcome);
+
+void densmatr_calcProbOfAllOutcomes(qreal* retProbs, Qureg qureg, int* qubits, int numQubits);
 
 void densmatr_collapseToKnownProbOutcome(Qureg qureg, int measureQubit, int outcome, qreal outcomeProb);
     
@@ -229,7 +233,11 @@ void statevec_hadamard(Qureg qureg, int targetQubit);
 
 void statevec_controlledNot(Qureg qureg, int controlQubit, int targetQubit);
 
+void statevec_multiControlledMultiQubitNot(Qureg qureg, int ctrlMask, int targMask);
+
 qreal statevec_calcProbOfOutcome(Qureg qureg, int measureQubit, int outcome);
+
+void statevec_calcProbOfAllOutcomes(qreal* retProbs, Qureg qureg, int* qubits, int numQubits);
 
 void statevec_collapseToKnownProbOutcome(Qureg qureg, int measureQubit, int outcome, qreal outcomeProb);
 
@@ -243,7 +251,11 @@ void statevec_sqrtSwapGateConj(Qureg qureg, int qb1, int qb2);
 
 void statevec_multiRotateZ(Qureg qureg, long long int mask, qreal angle);
 
+void statevec_multiControlledMultiRotateZ(Qureg qureg, long long int ctrlMask, long long int targMask, qreal angle);
+
 void statevec_multiRotatePauli(Qureg qureg, int* targetQubits, enum pauliOpType* targetPaulis, int numTargets, qreal angle, int applyConj);
+
+void statevec_multiControlledMultiRotatePauli(Qureg qureg, long long int ctrlMask, int* targetQubits, enum pauliOpType* targetPaulis, int numTargets, qreal angle, int applyConj);
 
 void statevec_setWeightedQureg(Complex fac1, Qureg qureg1, Complex fac2, Qureg qureg2, Complex facOut, Qureg out);
 
@@ -253,12 +265,21 @@ void statevec_applyDiagonalOp(Qureg qureg, DiagonalOp op);
 
 Complex statevec_calcExpecDiagonalOp(Qureg qureg, DiagonalOp op);
 
+void statevec_applyPhaseFuncOverrides(Qureg qureg, int* qubits, int numQubits, enum bitEncoding encoding, qreal* coeffs, qreal* exponents, int numTerms, long long int* overrideInds, qreal* overridePhases, int numOverrides, int conj);
+
+void statevec_applyMultiVarPhaseFuncOverrides(Qureg qureg, int* qubits, int* numQubitsPerReg, int numRegs, enum bitEncoding encoding, qreal* coeffs, qreal* exponents, int* numTermsPerReg, long long int* overrideInds, qreal* overridePhases, int numOverrides, int conj);
+
+void statevec_applyParamNamedPhaseFuncOverrides(Qureg qureg, int* qubits, int* numQubitsPerReg, int numRegs, enum bitEncoding encoding, enum phaseFunc functionNameCode, qreal* params, int numParams, long long int* overrideInds, qreal* overridePhases, int numOverrides, int conj);
+
 
 /* 
  * operations which differentiate between state-vectors and density matrices internally 
+ * (or do not operate upon Quregs)
  */
  
 void agnostic_applyTrotterCircuit(Qureg qureg, PauliHamil hamil, qreal time, int order, int reps);
+
+void agnostic_applyQFT(Qureg qureg, int* qubits, int numQubits);
 
 DiagonalOp agnostic_createDiagonalOp(int numQubits, QuESTEnv env);
 
@@ -267,6 +288,8 @@ void agnostic_destroyDiagonalOp(DiagonalOp op);
 void agnostic_syncDiagonalOp(DiagonalOp op);
 
 void agnostic_setDiagonalOpElems(DiagonalOp op, long long int startInd, qreal* real, qreal* imag, long long int numElems);
+
+void agnostic_initDiagonalOpFromPauliHamil(DiagonalOp op, PauliHamil hamil);
 
 # ifdef __cplusplus
 }

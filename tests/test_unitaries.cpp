@@ -341,7 +341,7 @@ TEST_CASE(  "controlledNot", "[unitaries]" ) {
 TEST_CASE(  "controlledPauliY", "[unitaries]" ) {
     
     PREPARE_TEST( quregVec, quregMatr, refVec, refMatr );
-    QMatrix op{{0,-1i},{1i,0}};
+    QMatrix op{{0,-qcomp(0,1)},{qcomp(0,1),0}};
     
     SECTION( "correctness" ) {
     
@@ -490,8 +490,8 @@ TEST_CASE( "controlledRotateAroundAxis", "[unitaries]" ) {
     qreal c = cos(param/2);
     qreal s = sin(param/2);
     qreal m = sqrt(vec.x*vec.x + vec.y*vec.y + vec.z*vec.z);
-    QMatrix op{{c - 1i*vec.z*s/m, -(vec.y + 1i*vec.x)*s/m}, 
-               {(vec.y - 1i*vec.x)*s/m, c + 1i*vec.z*s/m}};
+    QMatrix op{{c - qcomp(0,1)*vec.z*s/m, -(vec.y + qcomp(0,1)*vec.x)*s/m}, 
+               {(vec.y - qcomp(0,1)*vec.x)*s/m, c + qcomp(0,1)*vec.z*s/m}};
     
     SECTION( "correctness" ) {
     
@@ -543,7 +543,9 @@ TEST_CASE( "controlledRotateX", "[unitaries]" ) {
     
     PREPARE_TEST( quregVec, quregMatr, refVec, refMatr );
     qreal param = getRandomReal(-4*M_PI, 4*M_PI);
-    QMatrix op{{cos(param/2), -1i*sin(param/2)}, {-1i*sin(param/2), cos(param/2)}};
+    QMatrix op{
+        {cos(param/2), -sin(param/2)*qcomp(0,1)}, 
+        {-sin(param/2)*qcomp(0,1), cos(param/2)}};
     
     SECTION( "correctness" ) {
     
@@ -845,6 +847,102 @@ TEST_CASE( "hadamard", "[unitaries]" ) {
 
 
 
+/** @sa multiControlledMultiQubitNot
+ * @ingroup unittest
+ * @author Tyson Jones
+ */
+TEST_CASE( "multiControlledMultiQubitNot", "[unitaries]" ) {
+
+    PREPARE_TEST( quregVec, quregMatr, refVec, refMatr );
+
+    SECTION( "correctness" ) {
+
+        // try all possible numbers of targets and controls
+        int numTargs = GENERATE_COPY( range(1,NUM_QUBITS) ); // leave space for 1 ctrl
+        int maxNumCtrls = NUM_QUBITS - numTargs;
+        int numCtrls = GENERATE_COPY( range(1,maxNumCtrls+1) );
+
+        // generate all possible valid qubit arrangements
+        int* targs = GENERATE_COPY( sublists(range(0,NUM_QUBITS), numTargs) );
+        int* ctrls = GENERATE_COPY( sublists(range(0,NUM_QUBITS), numCtrls, targs, numTargs) );
+
+        // for each qubit arrangement, use a new random unitary
+        QMatrix notOp{{0, 1},{1,0}};
+
+        SECTION( "state-vector" ) {
+
+            multiControlledMultiQubitNot(quregVec, ctrls, numCtrls, targs, numTargs);
+            for (int t=0; t<numTargs; t++)
+                applyReferenceOp(refVec, ctrls, numCtrls, targs[t], notOp);
+
+            REQUIRE( areEqual(quregVec, refVec) );
+        }
+        SECTION( "density-matrix" ) {
+
+            multiControlledMultiQubitNot(quregMatr, ctrls, numCtrls, targs, numTargs);
+            for (int t=0; t<numTargs; t++)
+                applyReferenceOp(refMatr, ctrls, numCtrls, targs[t], notOp);
+
+            REQUIRE( areEqual(quregMatr, refMatr) );
+        }
+    }
+    SECTION( "input validation" ) {
+
+        SECTION( "number of targets" ) {
+
+            // there cannot be more targets than qubits in register
+            // (numTargs=NUM_QUBITS is caught elsewhere, because that implies ctrls are invalid)
+            int numTargs = GENERATE( -1, 0, NUM_QUBITS+1 );
+            int targs[NUM_QUBITS+1]; // prevents seg-fault if validation doesn't trigger
+            int ctrls[] = {0}; 
+            REQUIRE_THROWS_WITH( multiControlledMultiQubitNot(quregVec, ctrls, 1, targs, numTargs), Contains("Invalid number of target"));
+        }
+        SECTION( "repetition in targets" ) {
+
+            int ctrls[] = {0};
+            int numTargs = 3;
+            int targs[] = {1,2,2};
+            REQUIRE_THROWS_WITH( multiControlledMultiQubitNot(quregVec, ctrls, 1, targs, numTargs), Contains("target") && Contains("unique"));
+        }
+        SECTION( "number of controls" ) {
+
+            int numCtrls = GENERATE( -1, 0, NUM_QUBITS, NUM_QUBITS+1 );
+            int ctrls[NUM_QUBITS+1]; // avoids seg-fault if validation not triggered
+            int targs[1] = {0};
+            REQUIRE_THROWS_WITH( multiControlledMultiQubitNot(quregVec, ctrls, numCtrls, targs, 1), Contains("Invalid number of control"));
+        }
+        SECTION( "repetition in controls" ) {
+
+            int ctrls[] = {0,1,1};
+            int targs[] = {3};
+            REQUIRE_THROWS_WITH( multiControlledMultiQubitNot(quregVec, ctrls, 3, targs, 1), Contains("control") && Contains("unique"));
+        }
+        SECTION( "control and target collision" ) {
+
+            int ctrls[] = {0,1,2};
+            int targs[] = {3,1,4};
+            REQUIRE_THROWS_WITH( multiControlledMultiQubitNot(quregVec, ctrls, 3, targs, 3), Contains("Control") && Contains("target") && Contains("disjoint"));
+        }
+        SECTION( "qubit indices" ) {
+
+            // valid inds
+            int numQb = 2;
+            int qb1[2] = {0,1};
+            int qb2[2] = {2,3};
+
+            // make qb1 invalid
+            int inv = GENERATE( -1, NUM_QUBITS );
+            qb1[GENERATE_COPY(range(0,numQb))] = inv;
+
+            REQUIRE_THROWS_WITH( multiControlledMultiQubitNot(quregVec, qb1, numQb, qb2, numQb), Contains("Invalid control") );
+            REQUIRE_THROWS_WITH( multiControlledMultiQubitNot(quregVec, qb2, numQb, qb1, numQb), Contains("Invalid target") );
+        }
+    }
+    CLEANUP_TEST( quregVec, quregMatr );
+}
+
+
+
 /** @sa multiControlledMultiQubitUnitary
  * @ingroup unittest 
  * @author Tyson Jones 
@@ -1010,6 +1108,286 @@ TEST_CASE( "multiControlledMultiQubitUnitary", "[unitaries]" ) {
             
             REQUIRE_THROWS_WITH( multiControlledMultiQubitUnitary(quregVec, ctrls, 1, targs, 2, matr), Contains("targets too many qubits"));
             destroyComplexMatrixN(matr);
+        }
+    }
+    CLEANUP_TEST( quregVec, quregMatr );
+}
+
+
+
+/** @sa multiControlledMultiRotatePauli
+ * @ingroup unittest 
+ * @author Tyson Jones 
+ */
+TEST_CASE( "multiControlledMultiRotatePauli", "[unitaries]" ) {
+        
+    PREPARE_TEST( quregVec, quregMatr, refVec, refMatr );
+    qreal param = getRandomReal(-4*M_PI, 4*M_PI);
+        
+    SECTION( "correctness" ) {
+        
+        // try all possible numbers of targets and controls
+        int numTargs = GENERATE_COPY( range(1,NUM_QUBITS) ); // leave space for min 1 control qubit
+        int maxNumCtrls = NUM_QUBITS - numTargs;
+        int numCtrls = GENERATE_COPY( range(1,maxNumCtrls+1) );
+        
+        // generate all possible valid qubit arrangements
+        int* targs = GENERATE_COPY( sublists(range(0,NUM_QUBITS), numTargs) );
+        int* ctrls = GENERATE_COPY( sublists(range(0,NUM_QUBITS), numCtrls, targs, numTargs) );
+        
+        /* it's too expensive to try ALL Pauli sequences, via 
+         *      pauliOpType* paulis = GENERATE_COPY( pauliseqs(numTargs) );.
+         * Furthermore, take(10, pauliseqs(numTargs)) will try the same pauli codes.
+         * Hence, we instead opt to randomly generate pauliseqs
+         */
+        pauliOpType paulis[numTargs];
+        for (int i=0; i<numTargs; i++)
+            paulis[i] = (pauliOpType) getRandomInt(0,4);
+
+        // exclude identities from reference matrix exp (they apply unwanted global phase)
+        int refTargs[numTargs];
+        int numRefTargs = 0;
+
+        QMatrix xMatr{{0,1},{1,0}};
+        QMatrix yMatr{{0,-qcomp(0,1)},{qcomp(0,1),0}};
+        QMatrix zMatr{{1,0},{0,-1}};
+        
+        // build correct reference matrix by pauli-matrix exponentiation...
+        QMatrix pauliProd{{1}};
+        for (int i=0; i<numTargs; i++) {
+            QMatrix fac;
+            if (paulis[i] == PAULI_I) continue; // exclude I-targets from ref list
+            if (paulis[i] == PAULI_X) fac = xMatr;
+            if (paulis[i] == PAULI_Y) fac = yMatr;
+            if (paulis[i] == PAULI_Z) fac = zMatr;
+            pauliProd = getKroneckerProduct(fac, pauliProd);
+            
+            // include this target in ref list
+            refTargs[numRefTargs++] = targs[i];
+        }
+
+        // produces exp(-i param/2 pauliProd), unless pauliProd = I
+        QMatrix op;
+        if (numRefTargs > 0)
+            op = getExponentialOfPauliMatrix(param, pauliProd);
+        
+        SECTION( "state-vector" ) {
+            
+            multiControlledMultiRotatePauli(quregVec, ctrls, numCtrls, targs, paulis, numTargs, param);
+            if (numRefTargs > 0)
+                applyReferenceOp(refVec, ctrls, numCtrls, refTargs, numRefTargs, op);
+            REQUIRE( areEqual(quregVec, refVec) );
+        }
+        SECTION( "density-matrix" ) {
+            
+            multiControlledMultiRotatePauli(quregMatr, ctrls, numCtrls, targs, paulis, numTargs, param);
+            if (numRefTargs > 0)
+                applyReferenceOp(refMatr, ctrls, numCtrls, refTargs, numRefTargs, op);
+            REQUIRE( areEqual(quregMatr, refMatr, 10*REAL_EPS) );
+        }
+    }
+    SECTION( "input validation" ) {
+        
+        // test all validation on both state-vector and density-matrix.
+        // want GENERATE_COPY( quregVec, quregMatr ), but too lazy to patch
+        // using github.com/catchorg/Catch2/issues/1809
+        Qureg regs[] = {quregVec, quregMatr};
+        Qureg qureg = regs[GENERATE(0,1)];
+        
+        // over-sized array to prevent seg-fault in case of validation fail below
+        pauliOpType paulis[NUM_QUBITS+1];
+        for (int q=0; q<NUM_QUBITS+1; q++)
+            paulis[q] = PAULI_I;
+
+        SECTION( "pauli codes" ) {
+            
+            int numCtrls = 1;
+            int ctrls[] = {3};
+            int numTargs = 3;
+            int targs[3] = {0, 1, 2};
+
+            // make a single Pauli invalid
+            paulis[GENERATE_COPY(range(0,numTargs))] = (pauliOpType) GENERATE( -1, 4 );
+            
+            REQUIRE_THROWS_WITH( multiControlledMultiRotatePauli(qureg, ctrls, numCtrls, targs, paulis, numTargs, param), Contains("Invalid Pauli code"));
+        }
+        SECTION( "number of targets" ) {
+            
+            // there cannot be more targets than qubits in register
+            // (numTargs=NUM_QUBITS is caught elsewhere, because that implies ctrls are invalid)
+            int numTargs = GENERATE( -1, 0, NUM_QUBITS+1 );
+            int numCtrls = 1;
+            int targs[NUM_QUBITS+1]; // prevents seg-fault if validation doesn't trigger
+            int ctrls[] = {0};
+            
+            REQUIRE_THROWS_WITH( multiControlledMultiRotatePauli(qureg, ctrls, numCtrls, targs, paulis, numTargs, param), Contains("Invalid number of target") );
+        }
+        SECTION( "repetition in targets" ) {
+            
+            int numCtrls = 1;
+            int numTargs = 3;
+            int ctrls[] = {0};
+            int targs[] = {1,2,2};
+            
+            REQUIRE_THROWS_WITH( multiControlledMultiRotatePauli(qureg, ctrls, numCtrls, targs, paulis, numTargs, param), Contains("target") && Contains("unique"));
+        }
+        SECTION( "number of controls" ) {
+            
+            int numCtrls = GENERATE( -1, 0, NUM_QUBITS, NUM_QUBITS+1 );
+            int numTargs = 1;
+            int ctrls[NUM_QUBITS+1]; // avoids seg-fault if validation not triggered
+            int targs[1] = {0};
+            
+            REQUIRE_THROWS_WITH( multiControlledMultiRotatePauli(qureg, ctrls, numCtrls, targs, paulis, numTargs, param), Contains("Invalid number of control"));
+        }
+        SECTION( "repetition in controls" ) {
+            
+            int numCtrls = 3;
+            int numTargs = 1;
+            int ctrls[] = {0,1,1};
+            int targs[] = {3};
+            
+            REQUIRE_THROWS_WITH( multiControlledMultiRotatePauli(qureg, ctrls, numCtrls, targs, paulis, numTargs, param), Contains("control") && Contains("unique"));
+        }
+        SECTION( "control and target collision" ) {
+            
+            int numCtrls = 3;
+            int numTargs = 3;
+            int ctrls[] = {0,1,2};
+            int targs[] = {3,1,4};
+            
+            REQUIRE_THROWS_WITH( multiControlledMultiRotatePauli(qureg, ctrls, numCtrls, targs, paulis, numTargs, param), Contains("Control") && Contains("target") && Contains("disjoint"));
+        }
+        SECTION( "qubit indices" ) {
+            
+            // valid inds
+            int numQb = 2;
+            int qb1[2] = {0,1};
+            int qb2[2] = {2,3};
+            
+            // make qb1 invalid
+            int inv = GENERATE( -1, NUM_QUBITS );
+            qb1[GENERATE_COPY(range(0,numQb))] = inv;
+            
+            REQUIRE_THROWS_WITH( multiControlledMultiRotatePauli(qureg, qb1, numQb, qb2, paulis, numQb, param), Contains("Invalid control") );
+            REQUIRE_THROWS_WITH( multiControlledMultiRotatePauli(qureg, qb2, numQb, qb1, paulis, numQb, param),  Contains("Invalid target") );
+        }
+    }
+    CLEANUP_TEST( quregVec, quregMatr );
+}
+
+
+
+/** @sa multiControlledMultiRotateZ
+ * @ingroup unittest 
+ * @author Tyson Jones 
+ */
+TEST_CASE( "multiControlledMultiRotateZ", "[unitaries]" ) {
+    
+    PREPARE_TEST( quregVec, quregMatr, refVec, refMatr );
+    qreal param = getRandomReal(-4*M_PI, 4*M_PI);
+        
+    SECTION( "correctness" ) {
+        
+        // try all possible numbers of targets and controls
+        int numTargs = GENERATE_COPY( range(1,NUM_QUBITS) ); // leave space for min 1 control qubit
+        int maxNumCtrls = NUM_QUBITS - numTargs;
+        int numCtrls = GENERATE_COPY( range(1,maxNumCtrls+1) );
+        
+        // generate all possible valid qubit arrangements
+        int* targs = GENERATE_COPY( sublists(range(0,NUM_QUBITS), numTargs) );
+        int* ctrls = GENERATE_COPY( sublists(range(0,NUM_QUBITS), numCtrls, targs, numTargs) );
+        
+        // build correct reference matrix by diagonal-matrix exponentiation...
+        QMatrix zMatr{{1,0},{0,-1}};
+        QMatrix zProd = zMatr;
+        for (int t=0; t<numTargs-1; t++)
+            zProd = getKroneckerProduct(zMatr, zProd); // Z . Z ... Z
+        
+        // exp( -i param/2 Z . Z ... Z) 
+        QMatrix op = getExponentialOfDiagonalMatrix(qcomp(0, -param/2) * zProd);
+
+        SECTION( "state-vector" ) {
+                        
+            multiControlledMultiRotateZ(quregVec, ctrls, numCtrls, targs, numTargs, param);
+            applyReferenceOp(refVec, ctrls, numCtrls, targs, numTargs, op);
+            REQUIRE( areEqual(quregVec, refVec) );
+        }
+        SECTION( "density-matrix" ) {
+            
+            multiControlledMultiRotateZ(quregMatr, ctrls, numCtrls, targs, numTargs, param);
+            applyReferenceOp(refMatr, ctrls, numCtrls, targs, numTargs, op);
+            REQUIRE( areEqual(quregMatr, refMatr, 2*REAL_EPS) );
+        }
+    }
+    SECTION( "input validation" ) {
+        
+        // test all validation on both state-vector and density-matrix.
+        // want GENERATE_COPY( quregVec, quregMatr ), but too lazy to patch
+        // using github.com/catchorg/Catch2/issues/1809
+        Qureg regs[] = {quregVec, quregMatr};
+        Qureg qureg = regs[GENERATE(0,1)];
+        
+        SECTION( "number of targets" ) {
+            
+            // there cannot be more targets than qubits in register
+            // (numTargs=NUM_QUBITS is caught elsewhere, because that implies ctrls are invalid)
+            int numTargs = GENERATE( -1, 0, NUM_QUBITS+1 );
+            int numCtrls = 1;
+            int targs[NUM_QUBITS+1]; // prevents seg-fault if validation doesn't trigger
+            int ctrls[] = {0};
+            
+            REQUIRE_THROWS_WITH( multiControlledMultiRotateZ(qureg, ctrls, numCtrls, targs, numTargs, param), Contains("Invalid number of target") );
+        }
+        SECTION( "repetition in targets" ) {
+            
+            int numCtrls = 1;
+            int numTargs = 3;
+            int ctrls[] = {0};
+            int targs[] = {1,2,2};
+            
+            REQUIRE_THROWS_WITH( multiControlledMultiRotateZ(qureg, ctrls, numCtrls, targs, numTargs, param), Contains("target") && Contains("unique"));
+        }
+        SECTION( "number of controls" ) {
+            
+            int numCtrls = GENERATE( -1, 0, NUM_QUBITS, NUM_QUBITS+1 );
+            int numTargs = 1;
+            int ctrls[NUM_QUBITS+1]; // avoids seg-fault if validation not triggered
+            int targs[1] = {0};
+            
+            REQUIRE_THROWS_WITH( multiControlledMultiRotateZ(qureg, ctrls, numCtrls, targs, numTargs, param), Contains("Invalid number of control"));
+        }
+        SECTION( "repetition in controls" ) {
+            
+            int numCtrls = 3;
+            int numTargs = 1;
+            int ctrls[] = {0,1,1};
+            int targs[] = {3};
+            
+            REQUIRE_THROWS_WITH( multiControlledMultiRotateZ(qureg, ctrls, numCtrls, targs, numTargs, param), Contains("control") && Contains("unique"));
+        }
+        SECTION( "control and target collision" ) {
+            
+            int numCtrls = 3;
+            int numTargs = 3;
+            int ctrls[] = {0,1,2};
+            int targs[] = {3,1,4};
+            
+            REQUIRE_THROWS_WITH( multiControlledMultiRotateZ(qureg, ctrls, numCtrls, targs, numTargs, param), Contains("Control") && Contains("target") && Contains("disjoint"));
+        }
+        SECTION( "qubit indices" ) {
+            
+            // valid inds
+            int numQb = 2;
+            int qb1[2] = {0,1};
+            int qb2[2] = {2,3};
+            
+            // make qb1 invalid
+            int inv = GENERATE( -1, NUM_QUBITS );
+            qb1[GENERATE_COPY(range(0,numQb))] = inv;
+            
+            REQUIRE_THROWS_WITH( multiControlledMultiRotateZ(qureg, qb1, numQb, qb2, numQb, param), Contains("Invalid control") );
+            REQUIRE_THROWS_WITH( multiControlledMultiRotateZ(qureg, qb2, numQb, qb1, numQb, param), Contains("Invalid target") );
         }
     }
     CLEANUP_TEST( quregVec, quregMatr );
@@ -1303,6 +1681,73 @@ TEST_CASE( "multiControlledUnitary", "[unitaries]" ) {
 
 
 
+/** @sa multiQubitNot
+ * @ingroup unittest
+ * @author Tyson Jones
+ */
+TEST_CASE( "multiQubitNot", "[unitaries]" ) {
+
+    PREPARE_TEST( quregVec, quregMatr, refVec, refMatr );
+
+    SECTION( "correctness" ) {
+
+        // try all possible numbers of targets and controls
+        int numTargs = GENERATE_COPY( range(1,NUM_QUBITS+1) ); // leave space for 1 ctrl
+
+        // generate all possible valid qubit arrangements
+        int* targs = GENERATE_COPY( sublists(range(0,NUM_QUBITS), numTargs) );
+
+        // for each qubit arrangement, use a new random unitary
+        QMatrix notOp{{0, 1},{1,0}};
+
+        SECTION( "state-vector" ) {
+
+            multiQubitNot(quregVec, targs, numTargs);
+            for (int t=0; t<numTargs; t++)
+                applyReferenceOp(refVec, targs[t], notOp);
+
+            REQUIRE( areEqual(quregVec, refVec) );
+        }
+        SECTION( "density-matrix" ) {
+
+            multiQubitNot(quregMatr, targs, numTargs);
+            for (int t=0; t<numTargs; t++)
+                applyReferenceOp(refMatr, targs[t], notOp);
+
+            REQUIRE( areEqual(quregMatr, refMatr) );
+        }
+    }
+    SECTION( "input validation" ) {
+
+        SECTION( "number of targets" ) {
+
+            // there cannot be more targets than qubits in register
+            int numTargs = GENERATE( -1, 0, NUM_QUBITS+1 );
+            int targs[NUM_QUBITS+1];
+            REQUIRE_THROWS_WITH( multiQubitNot(quregVec, targs, numTargs), Contains("Invalid number of target"));
+        }
+        SECTION( "repetition in targets" ) {
+
+            int numTargs = 3;
+            int targs[] = {1,2,2};
+            REQUIRE_THROWS_WITH( multiQubitNot(quregVec, targs, numTargs), Contains("target") && Contains("unique"));
+        }
+        SECTION( "target indices" ) {
+
+            // valid inds
+            int numQb = 5;
+            int qubits[] = {0,1,2,3,4};
+            
+            // make one index invalid
+            qubits[GENERATE_COPY(range(0,numQb))] = GENERATE( -1, NUM_QUBITS );
+            REQUIRE_THROWS_WITH( multiQubitNot(quregVec, qubits, numQb), Contains("Invalid target") );
+        }
+    }
+    CLEANUP_TEST( quregVec, quregMatr );
+}
+
+
+
 /** @sa multiQubitUnitary
  * @ingroup unittest 
  * @author Tyson Jones 
@@ -1451,7 +1896,7 @@ TEST_CASE( "multiRotatePauli", "[unitaries]" ) {
         int numRefTargs = 0;
 
         QMatrix xMatr{{0,1},{1,0}};
-        QMatrix yMatr{{0,-1i},{1i,0}};
+        QMatrix yMatr{{0,-qcomp(0,1)},{qcomp(0,1),0}};
         QMatrix zMatr{{1,0},{0,-1}};
         
         // build correct reference matrix by pauli-matrix exponentiation...
@@ -1496,7 +1941,6 @@ TEST_CASE( "multiRotatePauli", "[unitaries]" ) {
             int targs[NUM_QUBITS+1]; // prevent seg-fault if validation isn't triggered
             pauliOpType paulis[NUM_QUBITS+1] = {PAULI_I};
             REQUIRE_THROWS_WITH( multiRotatePauli(quregVec, targs, paulis, numTargs, param), Contains("Invalid number of target"));
-            
         }
         SECTION( "repetition of targets" ) {
             
@@ -1547,7 +1991,7 @@ TEST_CASE( "multiRotateZ", "[unitaries]" ) {
             zProd = getKroneckerProduct(zMatr, zProd); // Z . Z ... Z
     
         // (-i param/2) Z . I . Z ...
-        QMatrix expArg = (-1i * param / 2.) *
+        QMatrix expArg = qcomp(0, -param/2) *
             getFullOperatorMatrix(NULL, 0, targs, numTargs, zProd, NUM_QUBITS);
             
         // exp( -i param/2 Z . I . Z ...)
@@ -1563,7 +2007,6 @@ TEST_CASE( "multiRotateZ", "[unitaries]" ) {
             multiRotateZ(quregVec, targs, numTargs, param);
             applyReferenceOp(refVec, allQubits, NUM_QUBITS, op);
             REQUIRE( areEqual(quregVec, refVec) );
-            
         }
         SECTION( "density-matrix" ) {
             
@@ -1755,7 +2198,7 @@ TEST_CASE( "pauliX", "[unitaries]" ) {
 TEST_CASE( "pauliY", "[unitaries]" ) {
     
     PREPARE_TEST( quregVec, quregMatr, refVec, refMatr );
-    QMatrix op{{0,-1i},{1i,0}};
+    QMatrix op{{0,-qcomp(0,1)},{qcomp(0,1),0}};
     
     SECTION( "correctness" ) {
         
@@ -1883,8 +2326,8 @@ TEST_CASE( "rotateAroundAxis", "[unitaries]" ) {
     qreal c = cos(param/2);
     qreal s = sin(param/2);
     qreal m = sqrt(vec.x*vec.x + vec.y*vec.y + vec.z*vec.z);
-    QMatrix op{{c - 1i*vec.z*s/m, -(vec.y + 1i*vec.x)*s/m}, 
-               {(vec.y - 1i*vec.x)*s/m, c + 1i*vec.z*s/m}};
+    QMatrix op{{c - qcomp(0,1)*vec.z*s/m, -(vec.y + qcomp(0,1)*vec.x)*s/m}, 
+               {(vec.y - qcomp(0,1)*vec.x)*s/m, c + qcomp(0,1)*vec.z*s/m}};
 
     SECTION( "correctness" ) {
     
@@ -1930,7 +2373,9 @@ TEST_CASE( "rotateX", "[unitaries]" ) {
 
     PREPARE_TEST( quregVec, quregMatr, refVec, refMatr );
     qreal param = getRandomReal(-4*M_PI, 4*M_PI);
-    QMatrix op{{cos(param/2), -1i*sin(param/2)}, {-1i*sin(param/2), cos(param/2)}};
+    QMatrix op{
+        {cos(param/2), - sin(param/2)*qcomp(0,1)}, 
+        {- sin(param/2)*qcomp(0,1), cos(param/2)}};
 
     SECTION( "correctness" ) {
     
@@ -2049,7 +2494,7 @@ TEST_CASE( "rotateZ", "[unitaries]" ) {
 TEST_CASE( "sGate", "[unitaries]" ) {
 
     PREPARE_TEST( quregVec, quregMatr, refVec, refMatr );
-    QMatrix op{{1,0},{0,1i}};
+    QMatrix op{{1,0},{0,qcomp(0,1)}};
 
     SECTION( "correctness" ) {
     
@@ -2088,8 +2533,8 @@ TEST_CASE( "sGate", "[unitaries]" ) {
 TEST_CASE( "sqrtSwapGate", "[unitaries]" ) {
         
     PREPARE_TEST( quregVec, quregMatr, refVec, refMatr );
-    qcomp a = (1. + 1i)/2.;
-    qcomp b = (1. - 1i)/2.;
+    qcomp a = qcomp(.5, .5);
+    qcomp b = qcomp(.5, -.5);
     QMatrix op{{1,0,0,0},{0,a,b,0},{0,b,a,0},{0,0,0,1}};
 
     SECTION( "correctness" ) {

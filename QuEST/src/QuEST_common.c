@@ -36,6 +36,12 @@
 # include <stdlib.h>
 
 
+// expose PI on GPU build
+#ifndef M_PI 
+#define M_PI 3.1415926535897932384626433832795028841971
+#endif
+
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -150,6 +156,13 @@ void getComplexPairAndPhaseFromUnitary(ComplexMatrix2 u, Complex* alpha, Complex
 void shiftIndices(int* indices, int numIndices, int shift) {
     for (int j=0; j < numIndices; j++)
         indices[j] += shift;
+}
+
+void shiftSubregIndices(int* allInds, int* numIndsPerReg, int numRegs, int shift) {
+    int i=0;
+    for (int r=0; r<numRegs; r++)
+        for (int j=0; j<numIndsPerReg[r]; j++)
+            allInds[i++] += shift;
 }
 
 int generateMeasurementOutcome(qreal zeroProb, qreal *outcomeProb) {
@@ -444,6 +457,47 @@ void statevec_multiRotatePauli(
             statevec_compactUnitary(qureg, targetQubits[t], uRyAlpha, uRyBeta);
         if (targetPaulis[t] == PAULI_Y)
             statevec_compactUnitary(qureg, targetQubits[t], uRxAlpha, uRxBeta);
+    }
+}
+
+void statevec_multiControlledMultiRotatePauli(
+    Qureg qureg, long long int ctrlMask, int* targetQubits, enum pauliOpType* targetPaulis, int numTargets, qreal angle,
+    int applyConj
+) {
+    qreal fac = 1/sqrt(2);
+    qreal sgn = (applyConj)? 1 : -1;
+    ComplexMatrix2 uRx = {.real={{fac,0},{0,fac}}, .imag={{0,sgn*fac},{sgn*fac,0}}}; // Rx(pi/2)* rotates Z -> Y
+    ComplexMatrix2 uRy = {.real={{fac,fac},{-fac,fac}}, .imag={{0,0},{0,0}}};        // Ry(-pi/2) rotates Z -> X
+    
+    // this function is controlled on the all-one state, so no ctrl flips
+    long long int ctrlFlipMask = 0;
+    
+    // mask may be modified to remove superfluous Identity ops
+    long long int targMask = getQubitBitMask(targetQubits, numTargets);
+    
+    // rotate basis so that exp(Z) will effect exp(Y) and exp(X)
+    for (int t=0; t < numTargets; t++) {
+        if (targetPaulis[t] == PAULI_I)
+            targMask -= 1LL << targetQubits[t]; // remove target from mask
+        if (targetPaulis[t] == PAULI_X)
+            statevec_multiControlledUnitary(qureg, ctrlMask, ctrlFlipMask, targetQubits[t], uRy);
+        if (targetPaulis[t] == PAULI_Y)
+            statevec_multiControlledUnitary(qureg, ctrlMask, ctrlFlipMask, targetQubits[t], uRx);
+        // (targetPaulis[t] == 3) is Z basis
+    }
+    
+    // does nothing if there are no qubits to 'rotate'
+    if (targMask != 0)
+        statevec_multiControlledMultiRotateZ(qureg, ctrlMask, targMask, (applyConj)? -angle : angle);
+        
+    // undo X and Y basis rotations
+    uRx.imag[0][1] *= -1; uRx.imag[1][0] *= -1;
+    uRy.real[0][1] *= -1; uRy.real[1][0] *= -1;
+    for (int t=0; t < numTargets; t++) {
+        if (targetPaulis[t] == PAULI_X)
+            statevec_multiControlledUnitary(qureg, ctrlMask, ctrlFlipMask, targetQubits[t], uRy);
+        if (targetPaulis[t] == PAULI_Y)
+            statevec_multiControlledUnitary(qureg, ctrlMask, ctrlFlipMask, targetQubits[t], uRx);
     }
 }
 
@@ -777,6 +831,70 @@ void agnostic_applyTrotterCircuit(Qureg qureg, PauliHamil hamil, qreal time, int
     
     for (int r=0; r<reps; r++)
         applySymmetrizedTrotterCircuit(qureg, hamil, time/reps, order);
+}
+
+void agnostic_applyQFT(Qureg qureg, int* qubits, int numQubits) {
+    
+    int densShift = qureg.numQubitsRepresented;
+    
+    // start with top/left-most qubit, work down
+    for (int q=numQubits-1; q >= 0; q--) {
+        
+        // H
+        statevec_hadamard(qureg, qubits[q]);
+        if (qureg.isDensityMatrix)
+            statevec_hadamard(qureg, qubits[q] + densShift);
+        qasm_recordGate(qureg, GATE_HADAMARD, qubits[q]);
+        
+        if (q == 0)
+            break;
+        
+        // succession of C-phases, control on qubits[q], targeting each of 
+        // qubits[q-1], qubits[q-1], ... qubits[0]. This can be expressed by 
+        // a single invocation of applyNamedPhaseFunc product
+        
+        int numRegs = 2;
+        int numQubitsPerReg[2] = {q, 1};
+        int regs[q+1];
+        for (int i=0; i<q+1; i++)
+            regs[i] = qubits[i]; // qubits[q] is in own register
+        
+        int numParams = 1;
+        qreal params[1] = { M_PI / (1 << q) };
+        
+        int conj = 0;
+        statevec_applyParamNamedPhaseFuncOverrides(
+            qureg, regs, numQubitsPerReg, numRegs, 
+            UNSIGNED, SCALED_PRODUCT, params, numParams, 
+            NULL, NULL, 0, 
+            conj);
+        if (qureg.isDensityMatrix) {
+            conj = 1;
+            shiftSubregIndices(regs, numQubitsPerReg, numRegs, densShift);
+            statevec_applyParamNamedPhaseFuncOverrides(
+                qureg, regs, numQubitsPerReg, numRegs, 
+                UNSIGNED, SCALED_PRODUCT, params, numParams, 
+                NULL, NULL, 0, 
+                conj);
+            shiftSubregIndices(regs, numQubitsPerReg, numRegs, - densShift);
+        }
+        qasm_recordNamedPhaseFunc(
+            qureg, regs, numQubitsPerReg, numRegs, 
+            UNSIGNED, SCALED_PRODUCT, params, numParams, 
+            NULL, NULL, 0);
+    }
+    
+    // final swaps
+    for (int i=0; i<(numQubits/2); i++) {
+        
+        int qb1 = qubits[i];
+        int qb2 = qubits[numQubits-i-1];
+                
+        statevec_swapQubitAmps(qureg, qb1, qb2);
+        if (qureg.isDensityMatrix)
+            statevec_swapQubitAmps(qureg, qb1 + densShift, qb2 + densShift);
+        qasm_recordControlledGate(qureg, GATE_SWAP, qb1, qb2);
+    }
 }
 
 #ifdef __cplusplus

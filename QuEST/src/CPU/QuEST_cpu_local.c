@@ -286,12 +286,17 @@ void statevec_controlledNot(Qureg qureg, int controlQubit, int targetQubit)
     statevec_controlledNotLocal(qureg, controlQubit, targetQubit);
 }
 
+void statevec_multiControlledMultiQubitNot(Qureg qureg, int ctrlMask, int targMask) {
+    
+    statevec_multiControlledMultiQubitNotLocal(qureg, ctrlMask, targMask);
+}
+
 qreal statevec_calcProbOfOutcome(Qureg qureg, int measureQubit, int outcome)
 {
-    qreal stateProb=0;
-    stateProb = statevec_findProbabilityOfZeroLocal(qureg, measureQubit);
-    if (outcome==1) stateProb = 1.0 - stateProb;
-    return stateProb;
+    qreal outcomeProb = statevec_findProbabilityOfZeroLocal(qureg, measureQubit);
+    if (outcome==1)
+        outcomeProb = 1.0 - outcomeProb;
+    return outcomeProb;
 }
 
 qreal densmatr_calcProbOfOutcome(Qureg qureg, int measureQubit, int outcome) {
@@ -300,6 +305,16 @@ qreal densmatr_calcProbOfOutcome(Qureg qureg, int measureQubit, int outcome) {
     if (outcome == 1)
         outcomeProb = 1.0 - outcomeProb;
     return outcomeProb;
+}
+
+void statevec_calcProbOfAllOutcomes(qreal* retProbs, Qureg qureg, int* qubits, int numQubits) {
+    
+    statevec_calcProbOfAllOutcomesLocal(retProbs, qureg, qubits, numQubits);
+}
+
+void densmatr_calcProbOfAllOutcomes(qreal* retProbs, Qureg qureg, int* qubits, int numQubits) {
+    
+    densmatr_calcProbOfAllOutcomesLocal(retProbs, qureg, qubits, numQubits);
 }
 
 void statevec_collapseToKnownProbOutcome(Qureg qureg, int measureQubit, int outcome, qreal stateProb)
