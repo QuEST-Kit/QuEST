@@ -7,9 +7,12 @@ Mr Tyson Jones [developer]
     interface
     quantum ops
     testing
+    doc
 Dr Balint Koczor [developer]
     Kraus maps
     debugging
+Mr Richard Meister [developer]
+    quantum ops
 Prof Simon Benjamin [consultant]
     user requirements
     algorithm prototyping
