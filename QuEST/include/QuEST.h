@@ -3134,9 +3134,6 @@ qreal calcProbOfOutcome(Qureg qureg, int measureQubit, int outcome);
  * @author Tyson Jones
  */
 void calcProbOfAllOutcomes(qreal* outcomeProbs, Qureg qureg, int* qubits, int numQubits);
-// DEBUG
-void TEST_calcProbOfAllOutcomes(qreal* retProbs, Qureg qureg, int* qubits, int numQubits);
-void SHARED_calcProbOfAllOutcomes(qreal* outcomeProbs, Qureg qureg, int* qubits, int numQubits);
 
 /** Updates \p qureg to be consistent with measuring \p measureQubit in the given 
  * \p outcome (0 or 1), and returns the probability of such a measurement outcome. 
@@ -6496,7 +6493,7 @@ void applyFullQFT(Qureg qureg);
  *      = 
  *      \frac{1}{\sqrt{2^n}}
  *       \sum\limits_{j=0}^{2^N-1} \alpha_j \left( 
- *           \sum\limits_{y=0}^{2^n-1} e^{2 \pi \, i \, x_j \, y / 2^N} \; 
+ *           \sum\limits_{y=0}^{2^n-1} e^{2 \pi \, i \, x_j \, y / 2^n} \; 
  *           |y,r_j \rangle
  *       \right)
  *   \f]
