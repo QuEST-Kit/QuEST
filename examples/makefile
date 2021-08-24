@@ -34,6 +34,9 @@ COMPILER = gcc
 # type of above compiler, one of {GNU, INTEL, CLANG}, used for setting compiler flags
 COMPILER_TYPE = GNU
 
+# only for WINDOWS: whether OS is 32-bit (x86) or 64-bit (x64). Choose {32, 64}
+WINDOWS_ARCH = 32
+
 # hardwares to target: 1 means use, 0 means don't use
 MULTITHREADED = 0
 DISTRIBUTED = 0
@@ -66,7 +69,9 @@ ifneq ($(SILENT), 1)
     ifneq ($(COMPILER_TYPE), CLANG)
     ifneq ($(COMPILER_TYPE), GNU)
     ifneq ($(COMPILER_TYPE), INTEL)
+	  ifneq ($(COMPILER_TYPE), MSVC)
         $(error COMPILER_TYPE must be one of CLANG, GNU or INTEL)
+    endif
     endif
     endif
     endif
@@ -128,6 +133,15 @@ ifneq ($(SILENT), 1)
     endif
     endif
     endif
+    
+    # Windows users must set WINDOWS_ARCH as {32, 64}
+    ifeq ($(COMPILER_TYPE), MSVC)
+    ifneq ($(WINDOWS_ARCH), 32)
+    ifneq ($(WINDOWS_ARCH), 64)
+        $(error When compiling with MSVC, WINDOWS_ARCH must be 32 or 64)
+    endif
+    endif
+    endif
 
 # end of allowed cleaning
 endif
@@ -146,7 +160,11 @@ endif
 # --- libraries
 #
 
-LIBS = -lm
+ifeq ($(COMPILER_TYPE), MSVC)
+    LIBS =
+else
+    LIBS = -lm
+endif
 
 
 #
@@ -194,23 +212,34 @@ ifeq ($(MULTITHREADED), 1)
         THREAD_FLAGS = -fopenmp
     else ifeq ($(COMPILER_TYPE), INTEL)
         THREAD_FLAGS = -qopenmp
+    else ifeq ($(COMPILER_TYPE), MSVC)
+        THREAD_FLAGS = -openmp
     endif
 else
     THREAD_FLAGS =
+endif
+
+# windows architecture flag
+ifeq ($(WINDOWS_ARCH), 32)
+    ARCH_FLAG = X86
+else
+    ARCH_FLAG = X64
 endif
 
 # c
 C_CLANG_FLAGS = -O2 -std=c99 -mavx -Wall -DQuEST_PREC=$(PRECISION)
 C_GNU_FLAGS = -O2 -std=c99 -mavx -Wall -DQuEST_PREC=$(PRECISION) $(THREAD_FLAGS)
 C_INTEL_FLAGS = -O2 -std=c99 -fprotect-parens -Wall -xAVX -axCORE-AVX2 -diag-disable -cpu-dispatch -DQuEST_PREC=$(PRECISION) $(THREAD_FLAGS)
+C_MSVC_FLAGS = -O2 -EHs -DQuEST_PREC=$(PRECISION) $(THREAD_FLAGS) -nologo -DDWIN$(WINDOWS_ARCH) -D_WINDOWS -Fo$@
 
 # c++
 CPP_CLANG_FLAGS = -O2 -std=c++11 -mavx -Wall -DQuEST_PREC=$(PRECISION)
 CPP_GNU_FLAGS = -O2 -std=c++11 -mavx -Wall -DQuEST_PREC=$(PRECISION) $(THREAD_FLAGS)
 CPP_INTEL_FLAGS = -O2 -std=c++11 -fprotect-parens -Wall -xAVX -axCORE-AVX2 -diag-disable -cpu-dispatch -DQuEST_PREC=$(PRECISION) $(THREAD_FLAGS)
+CPP_MSVC_FLAGS = -O2 -EHs -std:c++latest -DQuEST_PREC=$(PRECISION) $(THREAD_FLAGS) -nologo -DDWIN$(WINDOWS_ARCH) -D_WINDOWS -Fo$@
 
 # wrappers
-CPP_CUDA_FLAGS = -O2 -arch=compute_$(GPU_COMPUTE_CAPABILITY) -code=sm_$(GPU_COMPUTE_CAPABILITY) -DQuEST_PREC=$(PRECISION) -ccbin $(COMPILER)
+CPP_CUDA_FLAGS = -O2 -arch=compute_$(GPU_COMPUTE_CAPABILITY) -code=sm_$(GPU_COMPUTE_CAPABILITY) -DQuEST_PREC=$(PRECISION)
 
 # choose c/c++ flags based on compiler type
 ifeq ($(COMPILER_TYPE), CLANG)
@@ -222,21 +251,50 @@ else ifeq ($(COMPILER_TYPE), GNU)
 else ifeq ($(COMPILER_TYPE), INTEL)
     C_FLAGS = $(C_INTEL_FLAGS)
     CPP_FLAGS = $(CPP_INTEL_FLAGS)
+else ifeq ($(COMPILER_TYPE), MSVC)
+    C_FLAGS = $(C_MSVC_FLAGS)
+    CPP_FLAGS = $(CPP_MSVC_FLAGS)
+	
+	# must specify machine type on Windows
+    CPP_CUDA_FLAGS := $(CPP_CUDA_FLAGS) -m=$(WINDOWS_ARCH) -DDWIN$(WINDOWS_ARCH)
 endif
 
-ifeq ($(TEST), 1)
-	QUEST_LIB := libQuEST
-	LIB_EXT = .so
-	LIB_NAME = $(addsuffix $(LIB_EXT), $(QUEST_LIB))
-	C_FLAGS += -fPIC
-endif
 
 
 #
-# --- compiler environment vars
+# --- compiler mode and linker flags 
 #
 
-MPI_WRAPPED_COMP = I_MPI_CC=$(COMPILER) OMPI_CC=$(COMPILER) MPICH_CC=$(COMPILER)
+# format args based on compiler type
+ifeq ($(COMPILER_TYPE), MSVC)
+    C_MODE = 
+    LINKER = link.exe
+    LINK_FLAGS := -SUBSYSTEM:CONSOLE -nologo -MACHINE:$(ARCH_FLAG) $(THREAD_FLAGS)
+    	
+    # must forward linker flags from NVCC to link.exe on Windows
+    ifeq ($(GPUACCELERATED), 1)
+        LINK_FLAGS := -o $(EXE).exe $(foreach option, $(LINK_FLAGS), -Xlinker $(option))
+    else
+        LINK_FLAGS := -out:$(EXE).exe $(LINK_FLAGS)
+    endif
+    
+    MPI_VARS = 
+else
+    C_MODE = -x c
+    LINKER = $(COMPILER)
+    LINK_FLAGS := -o $(EXE) $(THREAD_FLAGS)
+	
+    MPI_VARS = I_MPI_CC=$(COMPILER) OMPI_CC=$(COMPILER) MPICH_CC=$(COMPILER)
+endif
+
+# prepare compiler + args shortcut
+ifeq ($(DISTRIBUTED), 1)
+    COMP_CMD = $(MPI_VARS) $(MPI_COMPILER)
+    LINK_CMD = $(MPI_VARS) $(MPI_COMPILER)
+else
+    COMP_CMD = $(COMPILER)
+    LINK_CMD = $(LINKER)
+endif
 
 
 
@@ -257,7 +315,7 @@ OBJ += $(addsuffix .o, $(SOURCES))
 
 
 #
-# --- rules
+# --- building
 #
 
 # notes:
@@ -266,83 +324,59 @@ OBJ += $(addsuffix .o, $(SOURCES))
 #	- MPICC will compile .c and .cpp files (wrapping $COMPILER)
 
 
-# GPU
+# first, let NVCC compile any GPU sources
 ifeq ($(GPUACCELERATED), 1)
 
-  %.o: %.c
-	$(COMPILER) -x c $(C_FLAGS) $(QUEST_INCLUDE) -c $<
-  %.o: $(QUEST_INNER_DIR)/%.c
-	$(COMPILER) -x c $(C_FLAGS) $(QUEST_INCLUDE) -c $<
-  %.o: $(QUEST_COMMON_DIR)/%.c
-	$(COMPILER) -x c $(C_FLAGS) $(QUEST_INCLUDE) -c $<
-
+  # final -o to force NVCC to use '.o' extension even on Windows
   %.o: %.cu
-	$(CUDA_COMPILER) -dc $(CPP_CUDA_FLAGS) $(QUEST_INCLUDE) $<
+	$(CUDA_COMPILER) -dc $(CPP_CUDA_FLAGS) -ccbin $(COMPILER) $(QUEST_INCLUDE) -o $@ $<
   %.o: $(QUEST_INNER_DIR)/%.cu
-	$(CUDA_COMPILER) -dc $(CPP_CUDA_FLAGS) $(QUEST_INCLUDE) $<
-	
-  %.o: %.cpp
-	$(CUDA_COMPILER) -dc $(CPP_CUDA_FLAGS) $(QUEST_INCLUDE) $<
-  %.o: $(QUEST_INNER_DIR)/%.cpp
-	$(CUDA_COMPILER) -dc $(CPP_CUDA_FLAGS) $(QUEST_INCLUDE) $<
-
-# distributed
-else ifeq ($(DISTRIBUTED), 1)
-
-  %.o: %.c
-	$(MPI_WRAPPED_COMP) $(MPI_COMPILER) -x c $(C_FLAGS) $(QUEST_INCLUDE) -c $<
-  %.o: $(QUEST_INNER_DIR)/%.c
-	$(MPI_WRAPPED_COMP) $(MPI_COMPILER) -x c $(C_FLAGS) $(QUEST_INCLUDE) -c $<
-  %.o: $(QUEST_COMMON_DIR)/%.c
-	$(MPI_WRAPPED_COMP) $(MPI_COMPILER) -x c $(C_FLAGS) $(QUEST_INCLUDE) -c $<
-	
-  %.o: %.cpp
-	$(MPI_WRAPPED_COMP) $(MPI_COMPILER) $(CPP_FLAGS) $(QUEST_INCLUDE) -c $<
-  %.o: $(QUEST_INNER_DIR)/%.cpp
-	$(MPI_WRAPPED_COMP) $(MPI_COMPILER) $(CPP_FLAGS) $(QUEST_INCLUDE) -c $<
-
-# CPU
-else
-
-  %.o: %.c
-	$(COMPILER) -x c $(C_FLAGS) $(QUEST_INCLUDE) -c $<
-  %.o: $(QUEST_INNER_DIR)/%.c
-	$(COMPILER) -x c $(C_FLAGS) $(QUEST_INCLUDE) -c $<
-  %.o: $(QUEST_COMMON_DIR)/%.c
-	$(COMPILER) -x c $(C_FLAGS) $(QUEST_INCLUDE) -c $<
-	
-  %.o: %.cpp
-	$(COMPILER) $(CPP_FLAGS) $(QUEST_INCLUDE) -c $<
-  %.o: $(QUEST_INNER_DIR)/%.cpp
-	$(COMPILER) $(CPP_FLAGS)  -c $<
+	$(CUDA_COMPILER) -dc $(CPP_CUDA_FLAGS) -ccbin $(COMPILER) $(QUEST_INCLUDE) -o $@ $<
 
 endif
+
+# remaining files compiled for CPU
+# C
+%.o: %.c
+	$(COMP_CMD) $(C_MODE) $(C_FLAGS) $(QUEST_INCLUDE) -c $<
+%.o: $(QUEST_INNER_DIR)/%.c
+	$(COMP_CMD) $(C_MODE) $(C_FLAGS) $(QUEST_INCLUDE) -c $<
+%.o: $(QUEST_COMMON_DIR)/%.c
+	$(COMP_CMD) $(C_MODE) $(C_FLAGS) $(QUEST_INCLUDE) -c $<
+	
+# C++
+%.o: %.cpp
+	$(COMP_CMD) $(CPP_FLAGS) $(QUEST_INCLUDE) -c $<
+%.o: $(QUEST_INNER_DIR)/%.cpp
+	$(COMP_CMD) $(CPP_FLAGS) -c $<
+%.o: $(LINK_DIR)/%.cpp
+	$(COMP_CMD) $(CPP_FLAGS) $(QUEST_INCLUDE) -c $<
 
 
 
 #
-# --- build
+# --- linking
 #
 
 # CUDA
 ifeq ($(GPUACCELERATED), 1)
 
+  # a dirty hack to silence cl when NVCC linking
+  # (https://stackoverflow.com/questions/61178458/force-nvcc-straight-to-linking-phase)
+  SHUTUP := 
+  ifeq ($(COMPILER_TYPE), MSVC)
+      SHUTUP := -Xcompiler 2>nul:
+  endif
+
   all:	$(OBJ)
-		$(CUDA_COMPILER) $(CPP_CUDA_FLAGS) $(QUEST_INCLUDE) -o $(EXE) $(OBJ) $(LIBS)
+	$(CUDA_COMPILER) $(SHUTUP) $(CPP_CUDA_FLAGS) $(OBJ) $(LIBS) $(LINK_FLAGS)
 
-# MPI
-else ifeq ($(DISTRIBUTED), 1)
-
-  default:	$(EXE)
-  $(EXE):	$(OBJ)
-			$(MPI_WRAPPED_COMP) $(MPI_COMPILER) $(C_FLAGS) $(QUEST_INCLUDE) -o $(EXE) $(OBJ) $(LIBS) 
-
-# C
+# C and C++
 else
 
   default:	$(EXE)
   $(EXE):	$(OBJ)
-			$(COMPILER) $(C_FLAGS) $(QUEST_INCLUDE) -o $(EXE) $(OBJ) $(LIBS) 
+			$(LINK_CMD) $(OBJ) $(LIBS) $(LINK_FLAGS)
 
 endif
 
@@ -353,11 +387,24 @@ endif
 # --- clean
 #
 
-.PHONY:		clean veryclean
-clean:
-			/bin/rm -f *.o $(EXE)
+# use OS delete command, inferred from compiler type
+# (this incorrectly assumes intel compilers aren't run on Windows, 
+#  despite them being far better there than MSVC! Fix this in Cmake)
+ifeq ($(COMPILER_TYPE), MSVC)
+    REM = del
+    EXE_FN = $(EXE).exe
+else
+    REM = /bin/rm -f
+    EXE_FN = $(EXE)
+endif
+
+.PHONY:		tidy clean veryclean
+tidy:
+			$(REM) *.o *.lib *.exp
+clean:	tidy
+			$(REM) $(EXE_FN)
 veryclean:	clean
-			/bin/rm -f *.h~ *.c~ makefile~
+			$(REM) *.h~ *.c~ makefile~
 
 
 
