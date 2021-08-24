@@ -878,7 +878,7 @@ void applyFullQFT(Qureg qureg) {
 
     qasm_recordComment(qureg, "Beginning of QFT circuit");
         
-    int qubits[qureg.numQubitsRepresented];
+    int qubits[100];
     for (int i=0; i<qureg.numQubitsRepresented; i++)
         qubits[i] = i;
     agnostic_applyQFT(qureg, qubits, qureg.numQubitsRepresented);
@@ -1369,6 +1369,7 @@ void destroyComplexMatrixN(ComplexMatrixN m) {
     free(m.imag);
 }
 
+#ifndef _WIN32
 void initComplexMatrixN(ComplexMatrixN m, qreal re[][1<<m.numQubits], qreal im[][1<<m.numQubits]) {
     validateMatrixInit(m, __func__);
     
@@ -1379,6 +1380,7 @@ void initComplexMatrixN(ComplexMatrixN m, qreal re[][1<<m.numQubits], qreal im[]
             m.imag[i][j] = im[i][j];
         }
 }
+#endif
 
 PauliHamil createPauliHamil(int numQubits, int numSumTerms) {
     validateHamilParams(numQubits, numSumTerms, __func__);

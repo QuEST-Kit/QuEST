@@ -27,6 +27,12 @@
 # include <omp.h>
 # endif
 
+/* to support MSVC, we must remove the use of VLA in multiQubtUnitary.
+ * We'll instead create stack arrays use _malloca
+ */
+#ifdef _WIN32
+    #include <malloc.h>
+#endif
 
 
 /*
@@ -803,23 +809,28 @@ void densmatr_collapseToKnownProbOutcome(Qureg qureg, int measureQubit, int outc
     if (locNumAmps <= outerBlockSize) {
         
         // if this is an undesired outer block, kill all elems
-        if (outerBit != outcome)
-            return zeroSomeAmps(qureg, 0, qureg.numAmpsPerChunk);
+        if (outerBit != outcome) {
+            zeroSomeAmps(qureg, 0, qureg.numAmpsPerChunk);
+            return;
+        }
         
         // othwerwise, if this is a desired outer block, and also entirely an inner block
         if (locNumAmps <= innerBlockSize) {
             
             // and that inner block is undesired, kill all elems
-            if (innerBit != outcome)
-                return zeroSomeAmps(qureg, 0, qureg.numAmpsPerChunk);
+            if (innerBit != outcome) 
+                zeroSomeAmps(qureg, 0, qureg.numAmpsPerChunk);
             // otherwise normalise all elems
             else
-                return normaliseSomeAmps(qureg, totalStateProb, 0, qureg.numAmpsPerChunk);
+                normaliseSomeAmps(qureg, totalStateProb, 0, qureg.numAmpsPerChunk);
+                
+            return;
         }
                 
         // otherwise this is a desired outer block which contains 2^a inner blocks; kill/renorm every second inner block
-        return alternateNormZeroingSomeAmpBlocks(
+        alternateNormZeroingSomeAmpBlocks(
             qureg, totalStateProb, innerBit==outcome, 0, qureg.numAmpsPerChunk, innerBlockSize);
+        return;
     }
     
     // Otherwise, this chunk's amps contain multiple outer blocks (and hence multiple inner blocks)
@@ -1919,13 +1930,24 @@ void statevec_multiControlledMultiQubitUnitaryLocal(Qureg qureg, long long int c
     
     // each thread/task will record and modify numTargAmps amplitudes, privately
     // (of course, tasks eliminated by the ctrlMask won't edit their allocation)
-    long long int ampInds[numTargAmps];
-    qreal reAmps[numTargAmps];
-    qreal imAmps[numTargAmps];
+    //
+    // If we're NOT on windows, we can fortunately use the stack directly
+    #ifndef _WIN32
+        long long int ampInds[numTargAmps];
+        qreal reAmps[numTargAmps];
+        qreal imAmps[numTargAmps];
+
+        int sortedTargs[numTargs];
+    // on Windows, with no VLA, we can use _malloca to allocate on stack (must free)
+    #else
+        long long int* ampInds = (long long int*) _malloca(numTargAmps * sizeof *ampInds);
+        qreal* reAmps = (qreal*) _malloca(numTargAmps * sizeof *reAmps);
+        qreal* imAmps = (qreal*) _malloca(numTargAmps * sizeof *imAmps);
+        int* sortedTargs = (int*) _malloca(numTargs * sizeof *sortedTargs);
+    #endif
 
     // we need a sorted targets list to find thisInd00 for each task.
     // we can't modify targets, because the user-ordering of targets matters in u
-    int sortedTargs[numTargs]; 
     for (int t=0; t < numTargs; t++) 
         sortedTargs[t] = targs[t];
     qsort(sortedTargs, numTargs, sizeof(int), qsortComp);
@@ -1982,6 +2004,14 @@ void statevec_multiControlledMultiQubitUnitaryLocal(Qureg qureg, long long int c
             }
         }
     }
+    
+    // on Windows, we must explicitly free the stack structures
+    #ifdef _WIN32
+        _freea(ampInds);
+        _freea(reAmps);
+        _freea(imAmps);
+        _freea(sortedTargs);
+    #endif
 }
 
 void statevec_unitaryLocal(Qureg qureg, int targetQubit, ComplexMatrix2 u)

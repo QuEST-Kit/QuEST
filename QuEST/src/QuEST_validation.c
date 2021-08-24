@@ -204,7 +204,9 @@ void exitWithError(const char* msg, const char* func) {
     exit(1);
 }
 
+#ifndef _WIN32
 #pragma weak invalidQuESTInputError
+#endif
 void invalidQuESTInputError(const char* errMsg, const char* errFunc) {
     exitWithError(errMsg, errFunc);
 }
@@ -803,7 +805,8 @@ void validatePhaseFuncTerms(int numQubits, enum bitEncoding encoding, qreal* coe
         // if there are 16 or fewer qubits (0.5mB cache), use a stack array to tick off overrides
         if (numQubits < 16) {
             
-            long long int negIsOverriden[numNegInds];  // flags for {-1,-2,...}; at index {abs(-1)-1, abs(-2)-2, ...}
+            // flags for {-1,-2,...}; at index {abs(-1)-1, abs(-2)-2, ...}
+            long long int negIsOverriden[32768];  // [numNegInds];
             for (int i=0; i<numNegInds; i++)
                 negIsOverriden[i] = 0;
             
