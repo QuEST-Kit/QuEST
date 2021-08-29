@@ -136,7 +136,7 @@ if (${MULTITHREADED} AND NOT ${GPUACCELERATED})
     set(OpenMP_C_VERSION ${OpenMP_C_VERSION} CACHE STRING "OpenMP C version")
 
     # MSVC, for instance, only implements OpenMP 2.0 (as of 2019)
-    if (OpenMP_C_VERSION VERSION_LESS "3.1")  # todo find the real minimum required
+    if (OpenMP_C_VERSION VERSION_LESS "2.0")  # todo find the real minimum required
       set(MULTITHREADED 0)
       message(WARNING "Found OpenMP ${OpenMP_C_VERSION} but this is too \
              old. Turning OpenMP support OFF.")
@@ -173,9 +173,7 @@ endif()
 # ----- C COMPILER FLAGS --------------------------------------------------
 
 # set C flags that are common between compilers and build types
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} \
-    -std=c99"
-)
+set (CMAKE_C_STANDARD 99)
 
 # Use -O2 for all but debug mode by default 
 if (NOT("${CMAKE_BUILD_TYPE}" STREQUAL "Debug"))
@@ -184,14 +182,17 @@ if (NOT("${CMAKE_BUILD_TYPE}" STREQUAL "Debug"))
     )
 endif()
 
+# Set c flags to use in debug mode
+
+if (NOT("${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC"))
+  set(CMAKE_C_FLAGS_DEBUG 
+      "-g"
+  )
+endif()
+
 # Set c flags for release
 set(CMAKE_C_FLAGS_RELEASE 
     "-O2"
-)
-
-# Set c flags to use in debug mode
-set(CMAKE_C_FLAGS_DEBUG 
-    "-g"
 )
 
 # TODO standardize
@@ -213,14 +214,17 @@ elseif ("${CMAKE_C_COMPILER_ID}" STREQUAL "Intel")
   )
 elseif ("${CMAKE_C_COMPILER_ID}" STREQUAL "MSVC")
   # using Visual Studio
+  string(REGEX REPLACE "/W3" "" CMAKE_C_FLAGS ${CMAKE_C_FLAGS})
+  string(REGEX REPLACE "-W3" "" CMAKE_C_FLAGS ${CMAKE_C_FLAGS})
+  set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} \
+    -w"
+  )
 endif()
 
 # ----- C++ COMPILER FLAGS --------------------------------------------------
 
 # set C++ flags that are common between compilers and build types
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} \
-    -std=c++98 -Wall"
-)
+set (CMAKE_CXX_STANDARD 98)
 
 # Use -O2 for all but debug mode by default 
 if (NOT("${CMAKE_BUILD_TYPE}" STREQUAL "Debug"))
@@ -243,20 +247,25 @@ set(CMAKE_CXX_FLAGS_DEBUG
 if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
   # using Clang
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} \
-    -mavx"
+    -mavx -Wall"
   )
 elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
   # using GCC
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} \
-    -mavx"
+    -mavx -Wall"
   )
 elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Intel")
   # using Intel
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} \
-    -xAVX -axCORE-AVX2 -diag-disable -cpu-dispatch"
+    -xAVX -axCORE-AVX2 -diag-disable -cpu-dispatch -Wall"
   )
 elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC")
   # using Visual Studio
+  string(REGEX REPLACE "/W3" "" CMAKE_C_FLAGS ${CMAKE_C_FLAGS})
+  string(REGEX REPLACE "-W3" "" CMAKE_C_FLAGS ${CMAKE_C_FLAGS})
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} \
+    -w"
+  )
 endif()
 
 if (VERBOSE_CMAKE)
