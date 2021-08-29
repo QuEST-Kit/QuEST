@@ -1983,6 +1983,11 @@ void statevec_multiControlledMultiQubitUnitaryLocal(Qureg qureg, long long int c
                     if (extractBit(t, i))
                         ind = flipBit(ind, targs[t]);
                 
+                // MSVC throws an invalid initialisation warning at the below code.
+                // This is a known MSVC bug, and the supposed workaround does not work 
+                // https://developercommunity.visualstudio.com/t/receiving-warning-c4700-uninitialized-local-variab/961404
+                // thanks Microsoft ¯\_(ツ)_/¯
+
                 // update this tasks's private arrays
                 ampInds[i] = ind;
                 reAmps [i] = reVec[ind];
@@ -3545,6 +3550,7 @@ void statevec_calcProbOfAllOutcomesLocal(qreal* outcomeProbs, Qureg qureg, int* 
      * or a dynamic list of omp locks (duplicates memory cost of outcomeProbs).
      * Using locks was always slower than the method below. Using reduction was only 
      * faster for very few threads, or very few outcomeProbs.
+     * Finally, we exclude the 'update' clause after 'atomic' to maintain MSVC compatibility 
      */
 
     long long int numOutcomeProbs = (1 << numQubits);
@@ -3596,7 +3602,7 @@ void statevec_calcProbOfAllOutcomesLocal(qreal* outcomeProbs, Qureg qureg, int* 
             
             // atomicly update corresponding outcome array element
             # ifdef _OPENMP
-            # pragma omp atomic update
+            # pragma omp atomic
             # endif
             outcomeProbs[outcomeInd] += prob;
         }
@@ -3667,7 +3673,7 @@ void densmatr_calcProbOfAllOutcomesLocal(qreal* outcomeProbs, Qureg qureg, int* 
     
             // atomicly update corresponding outcome array element
             # ifdef _OPENMP
-            # pragma omp atomic update
+            # pragma omp atomic
             # endif
             outcomeProbs[outcomeInd] += stateRe[index];
         }
