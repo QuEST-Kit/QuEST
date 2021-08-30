@@ -11,7 +11,7 @@ on:
 
 jobs:
 
-  build:
+  gnumake-build:
     name: GNUMake test of demo on Windows MSVC
     runs-on: windows-latest
       matrix:
@@ -32,7 +32,7 @@ jobs:
         shell: cmd
         run: demotest.exe
         
-  build:
+  cmake-nmake-build:
     name: CMake with NMake test of demo on Windows MSVC
     runs-on: windows-latest
       matrix:
