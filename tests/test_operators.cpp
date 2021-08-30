@@ -3203,6 +3203,141 @@ TEST_CASE( "applyPhaseFuncOverrides", "[operators]" ) {
 
 
 
+/** @sa applyProjector
+ * @ingroup unittest 
+ * @author Tyson Jones 
+ */
+TEST_CASE( "applyProjector", "[operators]" ) {
+    
+    Qureg vec = createQureg(NUM_QUBITS, QUEST_ENV);
+    Qureg mat = createDensityQureg(NUM_QUBITS, QUEST_ENV);
+    
+    SECTION( "correctness" ) {
+        
+        int qubit = GENERATE( range(0,NUM_QUBITS) );
+        int outcome = GENERATE( 0, 1 );
+        
+        // repeat these random tests 10 times on every qubit, and for both outcomes
+        GENERATE( range(0,10) );
+        
+        SECTION( "state-vector" ) {
+            
+            SECTION( "normalised" ) {
+                
+                // use a random L2 state for every qubit & outcome
+                QVector vecRef = getRandomStateVector(NUM_QUBITS);
+                toQureg(vec, vecRef);
+                
+                // zero non-outcome reference amps
+                for (size_t ind=0; ind<vecRef.size(); ind++) {
+                    int bit = (ind >> qubit) & 1; // target-th bit
+                    if (bit != outcome)
+                        vecRef[ind] = 0;
+                }
+                
+                applyProjector(vec, qubit, outcome);
+                REQUIRE( areEqual(vec, vecRef) );
+            }
+            SECTION( "unnormalised" ) {
+                
+                // use a random non-physical state for every qubit & outcome
+                QVector vecRef = getRandomQVector(1 << NUM_QUBITS);
+                toQureg(vec, vecRef);
+                
+                // zero non-outcome reference amps
+                for (size_t ind=0; ind<vecRef.size(); ind++) {
+                    int bit = (ind >> qubit) & 1; // target-th bit
+                    if (bit != outcome)
+                        vecRef[ind] = 0;
+                }
+                
+                applyProjector(vec, qubit, outcome);
+                REQUIRE( areEqual(vec, vecRef) );
+            }
+        }        
+        SECTION( "density-matrix" ) {
+            
+            SECTION( "pure" ) {
+
+                QVector vecRef = getRandomStateVector(NUM_QUBITS);
+                QMatrix matRef = getPureDensityMatrix(vecRef);
+                
+                toQureg(mat, matRef);
+                applyProjector(mat, qubit, outcome);
+                
+                // zero any amplitudes that aren't |outcome><outcome|
+                for (size_t r=0; r<matRef.size(); r++) {
+                    for (size_t c=0; c<matRef.size(); c++) {
+                        int ketBit = (c >> qubit) & 1;
+                        int braBit = (r >> qubit) & 1;
+                        if (!(ketBit == outcome && braBit == outcome))
+                            matRef[r][c] = 0;
+                    }
+                }
+                
+                REQUIRE( areEqual(mat, matRef) );
+            }
+            SECTION( "mixed" ) {
+                
+                QMatrix matRef = getRandomDensityMatrix(NUM_QUBITS);
+                
+                toQureg(mat, matRef);
+                applyProjector(mat, qubit, outcome);
+                
+                // zero any amplitudes that aren't |outcome><outcome|
+                for (size_t r=0; r<matRef.size(); r++) {
+                    for (size_t c=0; c<matRef.size(); c++) {
+                        int ketBit = (c >> qubit) & 1;
+                        int braBit = (r >> qubit) & 1;
+                        if (!(ketBit == outcome && braBit == outcome))
+                            matRef[r][c] = 0;
+                    }
+                }
+                
+                REQUIRE( areEqual(mat, matRef) );
+            }
+            SECTION( "unnormalised" ) {
+                
+                QMatrix matRef = getRandomQMatrix(1 << NUM_QUBITS);
+                
+                toQureg(mat, matRef);
+                applyProjector(mat, qubit, outcome);
+                
+                // zero any amplitudes that aren't |outcome><outcome|
+                for (size_t r=0; r<matRef.size(); r++) {
+                    for (size_t c=0; c<matRef.size(); c++) {
+                        int ketBit = (c >> qubit) & 1;
+                        int braBit = (r >> qubit) & 1;
+                        if (!(ketBit == outcome && braBit == outcome))
+                            matRef[r][c] = 0;
+                    }
+                }
+                
+                REQUIRE( areEqual(mat, matRef) );
+            }
+        }
+    }
+    SECTION( "input validation" ) {
+        
+        SECTION( "qubit index" ) {
+            
+            int qubit = GENERATE( -1, NUM_QUBITS );
+            int outcome = 0;
+            REQUIRE_THROWS_WITH( applyProjector(mat, qubit, outcome), Contains("Invalid target qubit") );
+        }
+        SECTION( "outcome value" ) {
+            
+            int qubit = 0;
+            int outcome = GENERATE( -1, 2 );
+            REQUIRE_THROWS_WITH( applyProjector(mat, qubit, outcome), Contains("Invalid measurement outcome") );
+        }
+    }
+    destroyQureg(vec, QUEST_ENV);
+    destroyQureg(mat, QUEST_ENV);
+}
+
+
+
 /** @sa applyQFT
  * @ingroup unittest
  * @author Tyson Jones 

@@ -886,6 +886,20 @@ void applyFullQFT(Qureg qureg) {
     qasm_recordComment(qureg, "End of QFT circuit");
 }
 
+void applyProjector(Qureg qureg, int qubit, int outcome) {
+    validateTarget(qureg, qubit, __func__);
+    validateOutcome(outcome, __func__);
+     
+    qreal renorm = 1;
+    
+    if (qureg.isDensityMatrix)
+        densmatr_collapseToKnownProbOutcome(qureg, qubit, outcome, renorm);
+    else
+        statevec_collapseToKnownProbOutcome(qureg, qubit, outcome, renorm);
+    
+    qasm_recordComment(qureg, "Here, qubit %d was un-physically projected into outcome %d", qubit, outcome);
+}
+
 
 
 /*
