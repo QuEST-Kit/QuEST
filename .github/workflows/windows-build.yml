@@ -14,6 +14,7 @@ jobs:
   gnumake-build:
     name: GNUMake test of demo on Windows MSVC
     runs-on: windows-latest
+    strategy:
       matrix:
         float-precision: [2]
 
@@ -35,6 +36,7 @@ jobs:
   cmake-nmake-build:
     name: CMake with NMake test of demo on Windows MSVC
     runs-on: windows-latest
+    strategy:
       matrix:
         float-precision: [2]
 
