@@ -1,0 +1,56 @@
+name: Windows build
+
+on:
+  push:
+    branches:
+      - master
+      - develop
+  pull_request:
+    branches:
+      - '**'
+
+jobs:
+
+  gnumake-build:
+    name: GNUMake test of demo on Windows MSVC
+    runs-on: windows-latest
+    strategy:
+      matrix:
+        float-precision: [2]
+
+    steps:
+      - uses: actions/checkout@v2
+      - uses: ilammy/msvc-dev-cmd@v1
+      - name: get example code
+        shell: cmd
+        run: |
+          copy examples\makefile .
+          copy examples\tutorial_example.c .
+      - name: compile example 
+        shell: cmd
+        run: make COMPILER=cl COMPILER_TYPE=MSVC WINDOWS_ARCH=64 EXE=demotest PRECISION=${{matrix.float-precision}}
+      - name: run example
+        shell: cmd
+        run: demotest.exe
+        
+  cmake-nmake-build:
+    name: CMake with NMake test of demo on Windows MSVC
+    runs-on: windows-latest
+    strategy:
+      matrix:
+        float-precision: [2]
+
+    steps:
+      - uses: actions/checkout@v2
+      - uses: ilammy/msvc-dev-cmd@v1
+      - name: make build directory
+        shell: cmd
+        run: mkdir build_dir
+      - name: cmake configure
+        shell: cmd
+        run: cmake .. -G "NMake Makefiles" -DOUTPUT_EXE="demotest.exe" -DPRECISION:STRING=${{matrix.float-precision}}
+        working-directory: build_dir
+      - name: nmake build
+        shell: cmd
+        run: nmake
+        working-directory: build_dir
