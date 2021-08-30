@@ -196,9 +196,9 @@ static const char* errorMessages[] = {
     [E_INVALID_NUM_REGS_DISTANCE_PHASE_FUNC] = "Phase functions DISTANCE, INVERSE_DISTANCE, SCALED_DISTANCE and SCALED_INVERSE_DISTANCE require a strictly even number of sub-registers."
 };
 
-void exitWithError(const char* msg, const char* func) {
+void default_invalidQuESTInputError(const char* errMsg, const char* errFunc) {
     printf("!!!\n");
-    printf("QuEST Error in function %s: %s\n", func, msg);
+    printf("QuEST Error in function %s: %s\n", errFunc, errMsg);
     printf("!!!\n");
     printf("exiting..\n");
     exit(1);
@@ -206,10 +206,12 @@ void exitWithError(const char* msg, const char* func) {
 
 #ifndef _WIN32
 #pragma weak invalidQuESTInputError
-#endif
 void invalidQuESTInputError(const char* errMsg, const char* errFunc) {
-    exitWithError(errMsg, errFunc);
+    default_invalidQuESTInputError(errMsg, errFunc);
 }
+#else
+#pragma comment(linker, "/alternatename:invalidQuESTInputError=default_invalidQuESTInputError")   
+#endif
 
 void QuESTAssert(int isValid, ErrorCode code, const char* func){
     if (!isValid) invalidQuESTInputError(errorMessages[code], func);
