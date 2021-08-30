@@ -31,7 +31,7 @@ QUEST_DIR = QuEST
 # compiler to use, which should support both C and C++, to be wrapped by GPU/MPI compilers
 COMPILER = gcc
 
-# type of above compiler, one of {GNU, INTEL, CLANG}, used for setting compiler flags
+# type of above compiler, one of {GNU, INTEL, CLANG, MSVC}, used for setting compiler flags
 COMPILER_TYPE = GNU
 
 # only for WINDOWS: whether OS is 32-bit (x86) or 64-bit (x64). Choose {32, 64}

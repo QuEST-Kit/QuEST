@@ -1,0 +1,34 @@
+name: Windows build
+
+on:
+  push:
+    branches:
+      - master
+      - develop
+  pull_request:
+    branches:
+      - '**'
+
+jobs:
+
+  build:
+    name: Build test of demo on Windows MSVC
+    runs-on: windows-latest
+    strategy:
+      matrix:
+        float-precision: [2]
+
+    steps:
+      - uses: actions/checkout@v2
+      - uses: ilammy/msvc-dev-cmd@v1
+      - name: get example code
+        shell: cmd
+        run: |
+          copy examples\makefile .
+          copy examples\tutorial_example.c .
+      - name: compile example 
+        shell: cmd
+        run: make COMPILER=cl COMPILER_TYPE=MSVC WINDOWS_ARCH=64 EXE=demotest
+      - name: run example
+        shell: cmd
+        run: demotest.exe
