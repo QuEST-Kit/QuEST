@@ -3139,20 +3139,24 @@ void calcProbOfAllOutcomes(qreal* outcomeProbs, Qureg qureg, int* qubits, int nu
 
 /** Updates \p qureg to be consistent with measuring \p measureQubit in the given 
  * \p outcome (0 or 1), and returns the probability of such a measurement outcome. 
- * This is effectively performing a projection, or a measurement with a forced outcome.
+ * This is effectively performing a renormalising projection, or a measurement with a forced outcome.
  * This is an irreversible change to the state, whereby computational states
  * inconsistant with the outcome are given zero amplitude and the \p qureg is renormalised.
- * Exits with error if the given outcome has a near zero probability, and so cannot be
+ * The given outcome must not have a near zero probability, else it cannot be
  * collapsed into.
  *
  * Note that the collapse probably used for renormalisation is calculated for 
  * \p outcome \p = \p 0, and assumed 1 minus this probability if \p outcome \p = \p 1.
  * Hence this routine will not correctly project un-normalised quregs onto 
  * \p outcome \p = \p 1.
+ *
+ * To avoid renormalisation after projection, or force projection into non-physical 
+ * states with very small probability, use applyProjector().
  * 
  * @see
  * - measure()
  * - measureWithStats()
+ * - applyProjector()
  *
  * @ingroup normgate
  * @param[in,out] qureg object representing the set of all qubits
@@ -6535,6 +6539,30 @@ void applyFullQFT(Qureg qureg);
  * @author Tyson Jones
  */
 void applyQFT(Qureg qureg, int* qubits, int numQubits);
+
+/** Force the target \p qubit of \p qureg into the given classical \p outcome, via a 
+ * non-renormalising projection.
+ *
+ * This function zeroes all amplitudes in the state-vector or density-matrix which 
+ * correspond to the opposite \p outcome given. Unlike collapseToOutcome(), it does 
+ * not thereafter normalise \p qureg, and hence may leave it in a non-physical state.
+ *
+ * Note there is no requirement that the \p outcome state has a non-zero proability, and hence 
+ * this function may leave \p qureg in a blank state, like that produced by initBlankState().
+ * 
+ * @see
+ * - collapseToOutcome() for a norm-preserving equivalent, like a forced measurement
+ *
+ * @ingroup operator
+ * @param[in,out] qureg a state-vector or density matrix to modify
+ * @param[in] qubit the qubit to which to apply the projector 
+ * @param[in] the single-qubit outcome (`0` or `1`) to project \p qubit into
+ * @throws invalidQuESTInputError()
+ * - if \p qubit is outside [0, `qureg.numQubitsRepresented`)
+ * - if \p outcome is not in {0,1}
+ * @author Tyson Jones
+ */
+void applyProjector(Qureg qureg, int qubit, int outcome);
 
 // end prevention of C++ name mangling
 #ifdef __cplusplus
