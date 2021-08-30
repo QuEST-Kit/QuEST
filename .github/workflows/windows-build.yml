@@ -28,7 +28,7 @@ jobs:
           copy examples\tutorial_example.c .
       - name: compile example 
         shell: cmd
-        run: make COMPILER=cl COMPILER_TYPE=MSVC WINDOWS_ARCH=64 EXE=demotest
+        run: make COMPILER=cl COMPILER_TYPE=MSVC WINDOWS_ARCH=64 EXE=demotest PRECISION=${{matrix.float-precision}}
       - name: run example
         shell: cmd
         run: demotest.exe
@@ -45,16 +45,16 @@ jobs:
       - uses: ilammy/msvc-dev-cmd@v1
       - name: make build directory
         shell: cmd
-        run: |
-          mkdir build_dir
-          cd build_dir
+        run: mkdir build_dir
       - name: cmake configure
         shell: cmd
-        run: |
-          cmake .. -G "NMake Makefiles" -DOUTPUT_EXE="demotest.exe"
+        run: cmake .. -G "NMake Makefiles" -DOUTPUT_EXE="demotest.exe" -DPRECISION:STRING=${{matrix.float-precision}}
+        working-directory: build_dir
       - name: nmake build
         shell: cmd
         run: nmake
+        working-directory: build_dir
       - name: run example
         shell: cmd
         run: demotest.exe
+        working-directory: build_dir
