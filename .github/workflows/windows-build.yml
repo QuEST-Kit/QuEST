@@ -12,9 +12,8 @@ on:
 jobs:
 
   build:
-    name: Build test of demo on Windows MSVC
+    name: GNUMake test of demo on Windows MSVC
     runs-on: windows-latest
-    strategy:
       matrix:
         float-precision: [2]
 
@@ -29,6 +28,31 @@ jobs:
       - name: compile example 
         shell: cmd
         run: make COMPILER=cl COMPILER_TYPE=MSVC WINDOWS_ARCH=64 EXE=demotest
+      - name: run example
+        shell: cmd
+        run: demotest.exe
+        
+  build:
+    name: CMake with NMake test of demo on Windows MSVC
+    runs-on: windows-latest
+      matrix:
+        float-precision: [2]
+
+    steps:
+      - uses: actions/checkout@v2
+      - uses: ilammy/msvc-dev-cmd@v1
+      - name: make build directory
+        shell: cmd
+        run: |
+          mkdir build_dir
+          cd build_dir
+      - name: cmake configure
+        shell: cmd
+        run: |
+          cmake .. -G "NMake Makefiles" -DOUTPUT_EXE="demotest.exe"
+      - name: nmake build
+        shell: cmd
+        run: nmake
       - name: run example
         shell: cmd
         run: demotest.exe
