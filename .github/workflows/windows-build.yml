@@ -54,7 +54,3 @@ jobs:
         shell: cmd
         run: nmake
         working-directory: build_dir
-      - name: run example
-        shell: cmd
-        run: demotest.exe
-        working-directory: build_dir
