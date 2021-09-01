@@ -6176,6 +6176,11 @@ void applyNamedPhaseFuncOverrides(Qureg qureg, int* qubits, int* numQubitsPerReg
  *   \f[
  *      f(\vec{r}, \theta)|_{\theta=0.5} \; = \; \begin{cases} \pi & \;\;\; \vec{r}=\vec{0} \\ \displaystyle 0.5 \left[ \sum_j^{\text{numRegs}} {r_j}^2 \right]^{-1/2} & \;\;\;\text{otherwise} \end{cases}.
  *   \f] 
+ *   Notice the order of the parameters matches the order of the words in the \p phaseFunc.
+ *   > Functions \p SCALED_INVERSE_SHIFTED_NORM and \p SCALED_INVERSE_SHIFTED_DISTANCE,
+ *   > which can have denominators arbitrarily close to zero, will invoke the 
+ *   > divergence parameter whenever the denominator is smaller than (or equal to)
+ *   > machine precision `REAL_EPS`.
  *
  * - Functions allowing the shifting of sub-register values, which are \p SCALED_INVERSE_SHIFTED_NORM
  *   and \p SCALED_INVERSE_SHIFTED_DISTANCE, need these shift values to be passed in the \p params

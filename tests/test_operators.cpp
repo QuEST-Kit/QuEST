@@ -1723,7 +1723,8 @@ TEST_CASE( "applyParamNamedPhaseFunc", "[operators]" ) {
                 qreal phase = 0;
                 for (int r=0; r<numRegs; r++)
                     phase += pow(regVals[i][r] - params[2+r], 2);
-                phase = (phase == 0.)? params[1] : params[0]/sqrt(phase);
+                phase = sqrt(phase);
+                phase = (phase <= REAL_EPS)? params[1] : params[0]/phase;
                 diagMatr[i][i] = expI(phase);
             }
             
@@ -1952,8 +1953,9 @@ TEST_CASE( "applyParamNamedPhaseFunc", "[operators]" ) {
                 for (size_t i=0; i<diagMatr.size(); i++) {
                     qreal phase = 0;
                     for (int r=0; r<numRegs; r+=2)
-                        phase += pow(regVals[i][r+1]-regVals[i][r]-params[2+r/2], 2);
-                    phase = (phase == 0.)? params[1] : params[0]/sqrt(phase);
+                        phase += pow(regVals[i][r]-regVals[i][r+1]-params[2+r/2], 2);
+                    phase = sqrt(phase);
+                    phase = (phase <= REAL_EPS)? params[1] : params[0]/phase;
                     diagMatr[i][i] = expI(phase);
                 }
             }
@@ -2271,7 +2273,8 @@ TEST_CASE( "applyParamNamedPhaseFuncOverrides", "[operators]" ) {
                 qreal phase = 0;
                 for (int r=0; r<numRegs; r++)
                     phase += pow(regVals[i][r] - params[2+r], 2);
-                phase = (phase == 0.)? params[1] : params[0]/sqrt(phase);
+                phase = sqrt(phase);
+                phase = (phase <= REAL_EPS)? params[1] : params[0]/phase;
                 diagMatr[i][i] = expI(phase);
             }
             setDiagMatrixOverrides(diagMatr, numQubitsPerReg, numRegs, encoding, overrideInds, overridePhases, numOverrides);
@@ -2505,8 +2508,9 @@ TEST_CASE( "applyParamNamedPhaseFuncOverrides", "[operators]" ) {
                 for (size_t i=0; i<diagMatr.size(); i++) {
                     qreal phase = 0;
                     for (int r=0; r<numRegs; r+=2)
-                        phase += pow(regVals[i][r+1]-regVals[i][r]-params[2+r/2], 2);
-                    phase = (phase == 0.)? params[1] : params[0]/sqrt(phase);
+                        phase += pow(regVals[i][r]-regVals[i][r+1]-params[2+r/2], 2);
+                    phase = sqrt(phase);
+                    phase = (phase <= REAL_EPS)? params[1] : params[0]/phase;
                     diagMatr[i][i] = expI(phase);
                 }
                 
