@@ -4529,15 +4529,15 @@ void statevec_applyParamNamedPhaseFuncOverrides(
                         for (r=0; r<numRegs; r++)
                             norm += phaseInds[r]*phaseInds[r];
                     norm = sqrt(norm);
-
+ 
                     if (phaseFuncName == NORM)
                         phase = norm;
                     else if (phaseFuncName == INVERSE_NORM)
-                        phase = (norm == 0.)? params[0] : 1/norm;
+                        phase = (norm == 0.)? params[0] : 1/norm;  // smallest non-zero norm is 1
                     else if (phaseFuncName == SCALED_NORM)
                         phase = params[0] * norm;
                     else if (phaseFuncName == SCALED_INVERSE_NORM || phaseFuncName == SCALED_INVERSE_SHIFTED_NORM)
-                        phase = (norm == 0.)? params[1] : params[0] / norm;
+                        phase = (norm <= REAL_EPS)? params[1] : params[0] / norm; // unless shifted closer to zero
                 }
                 // compute product related phases
                 else if (phaseFuncName == PRODUCT || phaseFuncName == INVERSE_PRODUCT ||
@@ -4550,7 +4550,7 @@ void statevec_applyParamNamedPhaseFuncOverrides(
                     if (phaseFuncName == PRODUCT)
                         phase = prod;
                     else if (phaseFuncName == INVERSE_PRODUCT)
-                        phase = (prod == 0.)? params[0] : 1/prod;
+                        phase = (prod == 0.)? params[0] : 1/prod;  // smallest non-zero product norm is +- 1
                     else if (phaseFuncName == SCALED_PRODUCT)
                         phase = params[0] * prod;
                     else if (phaseFuncName == SCALED_INVERSE_PRODUCT)
@@ -4564,7 +4564,7 @@ void statevec_applyParamNamedPhaseFuncOverrides(
                     dist = 0;
                     if (phaseFuncName == SCALED_INVERSE_SHIFTED_DISTANCE) {
                         for (r=0; r<numRegs; r+=2)
-                            dist += (phaseInds[r+1] - phaseInds[r] - params[2+r/2])*(phaseInds[r+1] - phaseInds[r] - params[2+r/2]);
+                            dist += (phaseInds[r] - phaseInds[r+1] - params[2+r/2])*(phaseInds[r] - phaseInds[r+1] - params[2+r/2]);
                     }
                     else
                         for (r=0; r<numRegs; r+=2)
@@ -4574,11 +4574,11 @@ void statevec_applyParamNamedPhaseFuncOverrides(
                     if (phaseFuncName == DISTANCE)
                         phase = dist;
                     else if (phaseFuncName == INVERSE_DISTANCE)
-                        phase = (dist == 0.)? params[0] : 1/dist;
+                        phase = (dist == 0.)? params[0] : 1/dist; // smallest non-zero dist is 1
                     else if (phaseFuncName == SCALED_DISTANCE)
                         phase = params[0] * dist;
                     else if (phaseFuncName == SCALED_INVERSE_DISTANCE || phaseFuncName == SCALED_INVERSE_SHIFTED_DISTANCE)
-                        phase = (dist == 0.)? params[1] : params[0] / dist;
+                        phase = (dist <= REAL_EPS)? params[1] : params[0] / dist; // unless shifted closer to 0
                 }
             }
             

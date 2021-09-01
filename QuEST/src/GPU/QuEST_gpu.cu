@@ -3835,11 +3835,11 @@ __global__ void statevec_applyParamNamedPhaseFuncOverridesKernel(
             if (phaseFuncName == NORM)
                 phase = norm;
             else if (phaseFuncName == INVERSE_NORM)
-                phase = (norm == 0.)? params[0] : 1/norm;
+                phase = (norm == 0.)? params[0] : 1/norm; // smallest non-zero norm is 1
             else if (phaseFuncName == SCALED_NORM)
                 phase = params[0] * norm;
             else if (phaseFuncName == SCALED_INVERSE_NORM || phaseFuncName == SCALED_INVERSE_SHIFTED_NORM)
-                phase = (norm == 0.)? params[1] : params[0] / norm;
+                phase = (norm <= REAL_EPS)? params[1] : params[0] / norm; // unless shifted closer to zero
         }
         // compute product related phases
         else if (phaseFuncName == PRODUCT || phaseFuncName == INVERSE_PRODUCT ||
@@ -3852,7 +3852,7 @@ __global__ void statevec_applyParamNamedPhaseFuncOverridesKernel(
             if (phaseFuncName == PRODUCT)
                 phase = prod;
             else if (phaseFuncName == INVERSE_PRODUCT)
-                phase = (prod == 0.)? params[0] : 1/prod;
+                phase = (prod == 0.)? params[0] : 1/prod; // smallest non-zero prod is +- 1
             else if (phaseFuncName == SCALED_PRODUCT)
                 phase = params[0] * prod;
             else if (phaseFuncName == SCALED_INVERSE_PRODUCT)
@@ -3866,7 +3866,7 @@ __global__ void statevec_applyParamNamedPhaseFuncOverridesKernel(
             qreal dist = 0;
             if (phaseFuncName == SCALED_INVERSE_SHIFTED_DISTANCE) {
                 for (int r=0; r<numRegs; r+=2) {
-                    qreal dif = (phaseInds[(r+1)*stride+offset] - phaseInds[r*stride+offset] - params[2+r/2]);
+                    qreal dif = (phaseInds[r*stride+offset] - phaseInds[(r+1)*stride+offset] - params[2+r/2]);
                     dist += dif*dif;
                 }
             }
@@ -3880,11 +3880,11 @@ __global__ void statevec_applyParamNamedPhaseFuncOverridesKernel(
             if (phaseFuncName == DISTANCE)
                 phase = dist;
             else if (phaseFuncName == INVERSE_DISTANCE)
-                phase = (dist == 0.)? params[0] : 1/dist;
+                phase = (dist == 0.)? params[0] : 1/dist; // smallest non-zero dist is 1
             else if (phaseFuncName == SCALED_DISTANCE)
                 phase = params[0] * dist;
             else if (phaseFuncName == SCALED_INVERSE_DISTANCE || phaseFuncName == SCALED_INVERSE_SHIFTED_DISTANCE)
-                phase = (dist == 0.)? params[1] : params[0] / dist;
+                phase = (dist <= REAL_EPS)? params[1] : params[0] / dist; // unless shifted closer
         }
     }
     
