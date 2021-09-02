@@ -1940,9 +1940,9 @@ void statevec_multiControlledMultiQubitUnitaryLocal(Qureg qureg, long long int c
         int sortedTargs[numTargs];
     // on Windows, with no VLA, we can use _malloca to allocate on stack (must free)
     #else
-        long long int* ampInds = (long long int*) _malloca(numTargAmps * sizeof *ampInds);
-        qreal* reAmps = (qreal*) _malloca(numTargAmps * sizeof *reAmps);
-        qreal* imAmps = (qreal*) _malloca(numTargAmps * sizeof *imAmps);
+        long long int* ampInds;
+        qreal* reAmps;
+        qreal* imAmps;
         int* sortedTargs = (int*) _malloca(numTargs * sizeof *sortedTargs);
     #endif
 
@@ -1959,6 +1959,13 @@ void statevec_multiControlledMultiQubitUnitaryLocal(Qureg qureg, long long int c
     private  (thisTask,thisInd00,thisGlobalInd00,ind,i,t,r,c,reElem,imElem,  ampInds,reAmps,imAmps)
 # endif
     {
+        // when manually allocating array memory (on Windows), this must be done in each thread
+        // separately and is not performed automatically by declaring a var as omp-private
+        # ifdef _WIN32
+            ampInds = (long long int*) _malloca(numTargAmps * sizeof *ampInds);
+            reAmps = (qreal*) _malloca(numTargAmps * sizeof *reAmps);
+            imAmps = (qreal*) _malloca(numTargAmps * sizeof *imAmps);
+        # endif
 # ifdef _OPENMP
 # pragma omp for schedule (static)
 # endif
@@ -1983,11 +1990,6 @@ void statevec_multiControlledMultiQubitUnitaryLocal(Qureg qureg, long long int c
                     if (extractBit(t, i))
                         ind = flipBit(ind, targs[t]);
                 
-                // MSVC throws an invalid initialisation warning at the below code.
-                // This is a known MSVC bug, and the supposed workaround does not work 
-                // https://developercommunity.visualstudio.com/t/receiving-warning-c4700-uninitialized-local-variab/961404
-                // thanks Microsoft ¯\_(ツ)_/¯
-
                 // update this tasks's private arrays
                 ampInds[i] = ind;
                 reAmps [i] = reVec[ind];
@@ -2008,13 +2010,15 @@ void statevec_multiControlledMultiQubitUnitaryLocal(Qureg qureg, long long int c
                 }
             }
         }
+        // on Windows, we must explicitly free the stack structures
+        #ifdef _WIN32
+            _freea(ampInds);
+            _freea(reAmps);
+            _freea(imAmps);
+        #endif
     }
-    
-    // on Windows, we must explicitly free the stack structures
+
     #ifdef _WIN32
-        _freea(ampInds);
-        _freea(reAmps);
-        _freea(imAmps);
         _freea(sortedTargs);
     #endif
 }
@@ -4598,4 +4602,3 @@ void statevec_applyParamNamedPhaseFuncOverrides(
         }
     }
 }
-
