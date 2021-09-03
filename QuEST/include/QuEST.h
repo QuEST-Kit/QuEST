@@ -1464,7 +1464,9 @@ void initPureState(Qureg qureg, Qureg pure);
  */
 void initDebugState(Qureg qureg);
 
-/** Initialise state-vector \p qureg by specifying all amplitudes.
+/** Initialise \p qureg by specifying all amplitudes.
+ * For density matrices, it is assumed the amplitudes have been flattened 
+ * column-wise into the given arrays.
  *
  * The real and imaginary components of the amplitudes are passed in separate arrays,
  * \p reals and \p imags,
@@ -1472,8 +1474,8 @@ void initDebugState(Qureg qureg);
  * There is no automatic checking that the passed arrays are L2 normalised, so this 
  * can be used to prepare \p qureg in a non-physical state.
  *
- * In distributed mode, this would require the complete state-vector to fit in 
- * every node. To manually prepare a state-vector which cannot fit in every node,
+ * In distributed mode, this would require the complete state to fit in 
+ * every node. To manually prepare a state for which all amplitudes cannot fit into a single node,
  * use setAmps()
  *
  * @see
@@ -1483,8 +1485,6 @@ void initDebugState(Qureg qureg);
  * @param[in,out] qureg the ::Qureg to overwrite
  * @param[in] reals array of the real components of the new amplitudes
  * @param[in] imags array of the imaginary components of the new amplitudes
- * @throws invalidQuESTInputError()
- * - if \p qureg is not a state-vector (i.e. is a density matrix)
  * @throws segmentation-fault
  * - if either \p reals or \p imags have fewer than `qureg.numAmpsTotal` elements
  * @author Tyson Jones

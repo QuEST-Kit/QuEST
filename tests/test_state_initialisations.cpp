@@ -286,36 +286,49 @@ TEST_CASE( "initPureState", "[state_initialisations]" ) {
 TEST_CASE( "initStateFromAmps", "[state_initialisations]" ) {
     
     Qureg vec = createQureg(NUM_QUBITS, QUEST_ENV);
+    Qureg mat = createDensityQureg(NUM_QUBITS, QUEST_ENV);
     
     SECTION( "correctness" ) {
         
         SECTION( "state-vector" ) {
             
-            // create arbitrary (but distinctly non-zero) amplitudes
+            // create random (unnormalised) vector
+            QVector vecRef = getRandomQVector(1<<NUM_QUBITS);
+            
             qreal ampsRe[vec.numAmpsTotal];
             qreal ampsIm[vec.numAmpsTotal];
-            QVector vecRef = QVector(vec.numAmpsTotal);
-            for (int i=0; i<vec.numAmpsTotal; i++) {
-                ampsRe[i] = 2*i;
-                ampsIm[i] = 2*i + 1;
-                vecRef[i] = (ampsRe[i]) + ampsIm[i] * (qcomp) 1i;;
+            for (size_t i=0; i<vecRef.size(); i++) {
+                ampsRe[i] = real(vecRef[i]);
+                ampsIm[i] = imag(vecRef[i]);
             }
             
-            initBlankState(vec);
             initStateFromAmps(vec, ampsRe, ampsIm);
             REQUIRE( areEqual(vec, vecRef) );
         }
-    }
-    SECTION( "input validation" ) {
-        
         SECTION( "density-matrix" ) {
             
-            Qureg mat = createDensityQureg(NUM_QUBITS, QUEST_ENV);
-            REQUIRE_THROWS_WITH( initStateFromAmps(mat, NULL, NULL), Contains("valid only for state-vectors") );
-            destroyQureg(mat, QUEST_ENV);
+            // create random (unnormalised) matrix
+            QMatrix matRef = getRandomQMatrix(1<<NUM_QUBITS);
+            
+            qreal ampsRe[mat.numAmpsTotal];
+            qreal ampsIm[mat.numAmpsTotal];
+            
+            // populate column-wise 
+            long long int i=0;
+            for (size_t c=0; c<matRef.size(); c++) {
+                for (size_t r=0; r<matRef.size(); r++) {
+                    ampsRe[i] = real(matRef[r][c]);
+                    ampsIm[i] = imag(matRef[r][c]);
+                    i++;
+                }
+            }
+    
+            initStateFromAmps(mat, ampsRe, ampsIm);
+            REQUIRE( areEqual(mat, matRef) );
         }
     }
     destroyQureg(vec, QUEST_ENV);
+    destroyQureg(mat, QUEST_ENV);
 }
 
 

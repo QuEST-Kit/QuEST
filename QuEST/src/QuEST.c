@@ -155,7 +155,6 @@ void initPureState(Qureg qureg, Qureg pure) {
 }
 
 void initStateFromAmps(Qureg qureg, qreal* reals, qreal* imags) {
-    validateStateVecQureg(qureg, __func__);
     
     statevec_setAmps(qureg, 0, reals, imags, qureg.numAmpsTotal);
     
