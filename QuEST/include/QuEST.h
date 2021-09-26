@@ -3177,12 +3177,13 @@ qreal collapseToOutcome(Qureg qureg, int measureQubit, int outcome);
  * Outcome probabilities are weighted by the state vector, which is irreversibly
  * changed after collapse to be consistent with the outcome.
  *
- * > The random outcome generator can be seeded with seedQuESTDefault(), which 
- * > is safe to use in distributed mode.
+ * > The random outcome generator is seeded by seedQuESTDefault() within 
+ * > createQuESTEnv(), unless later overridden by seedQuEST().
  * 
  * @see
  * - measureWithStats()
  * - collapseToOutcome()
+ * - seedQuEST()
  * - seedQuESTDefault()
  * 
  * @ingroup normgate
@@ -3201,13 +3202,14 @@ int measure(Qureg qureg, int measureQubit);
  * Outcome probabilities are weighted by the state vector, which is irreversibly
  * changed after collapse to be consistent with the outcome.
  *
- * > The random outcome generator can be seeded with seedQuESTDefault(), which 
- * > is safe to use in distributed mode.
+ * > The random outcome generator is seeded by seedQuESTDefault() within 
+ * > createQuESTEnv(), unless later overridden by seedQuEST().
  *
  * @see 
  * - measure()
  * - collapseToOutcome()
  * - seedQuESTDefault()
+ * - seedQuEST()
  *
  * @ingroup normgate
  * @param[in, out] qureg object representing the set of all qubits
@@ -3301,45 +3303,46 @@ Complex calcInnerProduct(Qureg bra, Qureg ket);
  */
 qreal calcDensityInnerProduct(Qureg rho1, Qureg rho2);
 
-/** Seed the Mersenne Twister used for random number generation in the QuEST environment with an example
- * default seed.
- * This default seeding function uses the mt19937 init_by_array function with two keys -- 
- * time and pid. Subsequent calls to mt19937 genrand functions will use this seeding. 
- * For a multi process code, the same seed is given to all process, therefore this seeding is only
- * appropriate to use for functions such as measure where all processes require the same random value.
- *
- * For more information about the MT, see http://www.math.sci.hiroshima-u.ac.jp/~m-mat/MT/MT2002/emt19937ar.html
+/** Seeds the random number generator with the (master node) current time and process ID.
  * 
- * > To manually generate a key to seed MT, use seedQuEST()
+ * This is the default seeding used by createQuESTEnv(), and determines the 
+ * outcomes in functions like measure() and measureWithStats().
+ * 
+ * In distributed mode, every node agrees on the seed (nominated by the master node)
+ * such that every node generates the same sequence of pseudorandom numbers.
  *
- * Presently, only the following functions involve random generation (through
- * internal function generateMeasurementOutcome()):
- * - measure()
- * - measureWithStats()
+ * > QuEST uses the 
+ * > <a href="http://www.math.sci.hiroshima-u.ac.jp/~m-mat/MT/MT2002/emt19937ar.html">Mersenne Twister</a>
+ * > for random number generation. 
  *
  * @see
- * - seedQuEST()
+ * - Use seedQuEST() to provide a custom seed, overriding the default.
  *
  * @ingroup debug
  * @author Ania Brown
  * @author Balint Koczor (Windows compatibility)
+ * @author Tyson Jones (doc)
  **/
 void seedQuESTDefault(void);
 
-/** Seed the Mersenne Twister used for random number generation in the QuEST environment with
- * a user defined seed.
- * This function uses the mt19937 init_by_array function with numSeeds keys supplied by the user.
- * Subsequent calls to mt19937 genrand functions will use this seeding. 
- * For a multi process code, the same seed is given to all process, therefore this seeding is only
- * appropriate to use for functions such as measure where all processes require the same random value.
+/** Seeds the random number generator with a custom array of key(s), overriding the
+ * default keys.
  *
- * For more information about the MT, see http://www.math.sci.hiroshima-u.ac.jp/~m-mat/MT/MT2002/emt19937ar.html
+ * This determines the sequence of outcomes in functions like measure() and measureWithStats().
+ *
+ * In distributed mode, the key(s) passed to the master node will be broadcast to all 
+ * other nodes, such that every node generates the same sequence of pseudorandom numbers.
+ *
+ * > QuEST uses the 
+ * > <a href="http://www.math.sci.hiroshima-u.ac.jp/~m-mat/MT/MT2002/emt19937ar.html">Mersenne Twister</a>
+ * > for random number generation. 
  *
  * @ingroup debug
  * @param[in] seedArray Array of integers to use as seed. 
  *  This allows the MT to be initialised with more than a 32-bit integer if required
  * @param[in] numSeeds Length of seedArray
  * @author Ania Brown
+ * @author Tyson Jones (doc)
  **/
 void seedQuEST(unsigned long int *seedArray, int numSeeds);
 

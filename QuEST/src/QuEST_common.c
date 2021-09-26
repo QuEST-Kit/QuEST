@@ -216,16 +216,6 @@ void getQuESTDefaultSeedKey(unsigned long int *key){
 #endif 
 }
 
-/** 
- * numSeeds <= 64
- */
-void seedQuEST(unsigned long int *seedArray, int numSeeds){
-    // init MT random number generator with user defined list of seeds
-    // for the MPI version, it is ok that all procs will get the same seed as random numbers will only be 
-    // used by the master process
-    init_by_array(seedArray, numSeeds); 
-}
-
 void reportState(Qureg qureg){
     FILE *state;
     char filename[100];

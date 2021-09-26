@@ -3961,15 +3961,16 @@ void statevec_applyParamNamedPhaseFuncOverrides(
 }
 
 void seedQuESTDefault(){
-    // init MT random number generator with three keys -- time and pid
-    // for the MPI version, it is ok that all procs will get the same seed as random numbers will only be 
-    // used by the master process
-
+    // seed the Mersenne Twister random number generator with two keys -- time and pid
     unsigned long int key[2];
     getQuESTDefaultSeedKey(key); 
     init_by_array(key, 2); 
 }  
 
+void seedQuEST(unsigned long int *seedArray, int numSeeds) {
+    // pass keys to Mersenne Twister seeder
+    init_by_array(seedArray, numSeeds); 
+}
 
 
 

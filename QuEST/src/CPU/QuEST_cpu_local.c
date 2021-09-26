@@ -322,14 +322,16 @@ void statevec_collapseToKnownProbOutcome(Qureg qureg, int measureQubit, int outc
     statevec_collapseToKnownProbOutcomeLocal(qureg, measureQubit, outcome, stateProb);
 }
 
-void seedQuESTDefault(void){
-    // init MT random number generator with three keys -- time and pid
-    // for the MPI version, it is ok that all procs will get the same seed as random numbers will only be 
-    // used by the master process
-
+void seedQuESTDefault(){
+    // seed the Mersenne Twister random number generator with two keys -- time and pid
     unsigned long int key[2];
-    getQuESTDefaultSeedKey(key);
-    init_by_array(key, 2);
+    getQuESTDefaultSeedKey(key); 
+    init_by_array(key, 2); 
+}  
+
+void seedQuEST(unsigned long int *seedArray, int numSeeds) {
+    // pass keys to Mersenne Twister seeder
+    init_by_array(seedArray, numSeeds); 
 }
 
 void statevec_multiControlledTwoQubitUnitary(Qureg qureg, long long int ctrlMask, int q1, int q2, ComplexMatrix4 u)

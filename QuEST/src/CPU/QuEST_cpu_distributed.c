@@ -1382,16 +1382,26 @@ void statevec_collapseToKnownProbOutcome(Qureg qureg, int measureQubit, int outc
 }
 
 void seedQuESTDefault(){
-    // init MT random number generator with three keys -- time and pid
-    // for the MPI version, it is ok that all procs will get the same seed as random numbers will only be 
-    // used by the master process
-
+    
+    // seed Mersenne Twister random number generator with two keys -- time and pid
     unsigned long int key[2];
     getQuESTDefaultSeedKey(key);
-    // this seed will be used to generate the same random number on all procs,
-    // therefore we want to make sure all procs receive the same key
+
+    // it is imperative every node agrees on the seed, so that random decisions 
+    // agree on every node. However, the default keys (time and pid) 
+    // may differ between distributed nodes. Hence we use only the master node key.
     MPI_Bcast(key, 2, MPI_UNSIGNED_LONG, 0, MPI_COMM_WORLD);
     init_by_array(key, 2);
+}
+
+void seedQuEST(unsigned long int *seedArray, int numSeeds) {
+
+    // it is imperative every node agrees on the seed, so that random decisions 
+    // agree on every node. Hence we use only the master node keys.
+    MPI_Bcast(seedArray, numSeeds, MPI_UNSIGNED_LONG, 0, MPI_COMM_WORLD);
+    
+    // pass keys to Mersenne Twister seeder
+    init_by_array(seedArray, numSeeds); 
 }
 
 /** returns -1 if this node contains no amplitudes where qb1 and qb2 
