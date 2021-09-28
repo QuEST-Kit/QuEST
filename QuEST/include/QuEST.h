@@ -357,11 +357,14 @@ typedef struct Qureg
  *
  * @ingroup type
  * @author Ania Brown
+ * @author Tyson Jones (seeding)
  */
 typedef struct QuESTEnv
 {
     int rank;
     int numRanks;
+    unsigned long int* seeds;
+    int numSeeds;
 } QuESTEnv;
 
 
@@ -3317,13 +3320,15 @@ qreal calcDensityInnerProduct(Qureg rho1, Qureg rho2);
  *
  * @see
  * - Use seedQuEST() to provide a custom seed, overriding the default.
+ * - Use getQuESTSeeds() to obtain the seeds currently being used for RNG.
  *
  * @ingroup debug
+ * @param[in] env a pointer to the ::QuESTEnv runtime environment
  * @author Ania Brown
  * @author Balint Koczor (Windows compatibility)
  * @author Tyson Jones (doc)
  **/
-void seedQuESTDefault(void);
+void seedQuESTDefault(QuESTEnv *env);
 
 /** Seeds the random number generator with a custom array of key(s), overriding the
  * default keys.
@@ -3333,18 +3338,70 @@ void seedQuESTDefault(void);
  * In distributed mode, the key(s) passed to the master node will be broadcast to all 
  * other nodes, such that every node generates the same sequence of pseudorandom numbers.
  *
+ * This function will copy the contents of \p seedArray into a permanent array 
+ * `env.seeds`, so \p seedArray is afterward safe to free.
+ *
  * > QuEST uses the 
  * > <a href="http://www.math.sci.hiroshima-u.ac.jp/~m-mat/MT/MT2002/emt19937ar.html">Mersenne Twister</a>
  * > for random number generation. 
  *
+ * @see
+ * - Use seedQuESTDefault() to seed via the current timestamp and process id.
+ * - Use getQuESTSeeds() to obtain the seeds currently being used for RNG.
+ *
  * @ingroup debug
+ * @param[in] env a pointer to the ::QuESTEnv runtime environment
  * @param[in] seedArray Array of integers to use as seed. 
  *  This allows the MT to be initialised with more than a 32-bit integer if required
  * @param[in] numSeeds Length of seedArray
  * @author Ania Brown
  * @author Tyson Jones (doc)
  **/
-void seedQuEST(unsigned long int *seedArray, int numSeeds);
+void seedQuEST(QuESTEnv *env, unsigned long int *seedArray, int numSeeds);
+
+/** Obtain the seeds presently used in random number generation.
+ *
+ * This function sets argument \p seeds to the address of the array of keys
+ * which have seeded QuEST's
+ * <a href="http://www.math.sci.hiroshima-u.ac.jp/~m-mat/MT/MT2002/emt19937ar.html">Mersenne Twister</a>
+ * random number generator. \p numSeeds is set to the length of \p seeds.
+ * These are the seeds which inform the outcomes of random functions like 
+ * measure(), and are set using seedQuEST() and seedQuESTDefault().
+ *
+ * > The output \p seeds array <b>must not</b> be freed, and should not be modified.
+ *
+ * Obtaining QuEST's seeds is useful for seeding your own random number generators,
+ * so that a simulation (with random QuEST measurements, and your own random decisions)
+ * can be precisely repeated later, just by calling seedQuEST().
+ *
+ * Note this function merely sets the arguments to the attributes for \p env. 
+ * I.e.
+ * ```
+ *     unsigned long int* seeds;
+ *     int numSeeds;
+ *     getQuESTSeeds(env, &seeds, &numSeeds);
+ *     
+ *     func(seeds, numSeeds);
+ * ```
+ * is equivalent to
+ * ```
+ *     func(env.seeds, env.numSeeds);
+ * ```
+ * However, one should not rely upon their local pointer from getQuESTSeeds() to be 
+ * automatically updated after a subsequent call to seedQuEST() or seedQuESTDefault().
+ * Instead, getQuESTSeeds() should be recalled.
+ *
+ * @see
+ * - seedQuEST()
+ * - seedQuESTDefault()
+ *
+ * @ingroup debug
+ * @param[in] env the ::QuESTEnv runtime environment
+ * @param[in] seeds a pointer to an unitialised array to be modified
+ * @param[in] numSeeds a pointer to an integer to be modified
+ * @author Tyson Jones
+ **/
+void getQuESTSeeds(QuESTEnv env, unsigned long int** seeds, int* numSeeds);
 
 /** Enable QASM recording. Gates applied to qureg will here-after be added to a
  * growing log of QASM instructions, progressively consuming more memory until 

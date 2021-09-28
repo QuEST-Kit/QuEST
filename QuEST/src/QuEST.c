@@ -1610,6 +1610,19 @@ void reportPauliHamil(PauliHamil hamil) {
 int  getQuEST_PREC(void) {
   return sizeof(qreal)/4;
 }
+
+void seedQuESTDefault(QuESTEnv* env) {
+    
+    // seed Mersenne Twister random number generator with two keys -- time and pid
+    unsigned long int keys[2];
+    getQuESTDefaultSeedKey(keys);
+    seedQuEST(env, keys, 2);
+}
+
+void getQuESTSeeds(QuESTEnv env, unsigned long int** seeds, int* numSeeds) {
+    *seeds = env.seeds;
+    *numSeeds = env.numSeeds;
+}
   
 
 #ifdef __cplusplus

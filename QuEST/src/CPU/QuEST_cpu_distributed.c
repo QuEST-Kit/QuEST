@@ -154,7 +154,9 @@ QuESTEnv createQuESTEnv(void) {
     
     validateNumRanks(env.numRanks, __func__);
     
-	seedQuESTDefault();
+    env.seeds = NULL;
+    env.numSeeds = 0;
+	seedQuESTDefault(&env);
     
     return env;
 }
@@ -170,6 +172,8 @@ int syncQuESTSuccess(int successCode){
 }
 
 void destroyQuESTEnv(QuESTEnv env){
+    free(env.seeds);
+    
     int finalized;
     MPI_Finalized(&finalized);
     if (!finalized) MPI_Finalize();
@@ -1381,24 +1385,21 @@ void statevec_collapseToKnownProbOutcome(Qureg qureg, int measureQubit, int outc
     }
 }
 
-void seedQuESTDefault(){
-    
-    // seed Mersenne Twister random number generator with two keys -- time and pid
-    unsigned long int key[2];
-    getQuESTDefaultSeedKey(key);
-
-    // it is imperative every node agrees on the seed, so that random decisions 
-    // agree on every node. However, the default keys (time and pid) 
-    // may differ between distributed nodes. Hence we use only the master node key.
-    MPI_Bcast(key, 2, MPI_UNSIGNED_LONG, 0, MPI_COMM_WORLD);
-    init_by_array(key, 2);
-}
-
-void seedQuEST(unsigned long int *seedArray, int numSeeds) {
+void seedQuEST(QuESTEnv *env, unsigned long int* seedArray, int numSeeds) {
 
     // it is imperative every node agrees on the seed, so that random decisions 
     // agree on every node. Hence we use only the master node keys.
     MPI_Bcast(seedArray, numSeeds, MPI_UNSIGNED_LONG, 0, MPI_COMM_WORLD);
+    
+    // free existing seed array, if exists
+    if (env->seeds != NULL)
+        free(env->seeds);
+        
+    // record keys in permanent heap
+    env->seeds = malloc(numSeeds * sizeof *(env->seeds));
+    for (int i=0; i<numSeeds; i++)
+        (env->seeds)[i] = seedArray[i];
+    env->numSeeds = numSeeds;
     
     // pass keys to Mersenne Twister seeder
     init_by_array(seedArray, numSeeds); 
