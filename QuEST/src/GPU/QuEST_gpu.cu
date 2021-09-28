@@ -471,7 +471,9 @@ QuESTEnv createQuESTEnv(void) {
     env.rank=0;
     env.numRanks=1;
     
-    seedQuESTDefault();
+    env.seeds = NULL;
+    env.numSeeds = 0;
+    seedQuESTDefault(env);
     
     return env;
 }
@@ -485,7 +487,7 @@ int syncQuESTSuccess(int successCode){
 }
 
 void destroyQuESTEnv(QuESTEnv env){
-    // MPI finalize goes here in MPI version. Call this function anyway for consistency
+    free(env.seeds);
 }
 
 void reportQuESTEnv(QuESTEnv env){
@@ -3960,14 +3962,18 @@ void statevec_applyParamNamedPhaseFuncOverrides(
         cudaFree(d_params);
 }
 
-void seedQuESTDefault(){
-    // seed the Mersenne Twister random number generator with two keys -- time and pid
-    unsigned long int key[2];
-    getQuESTDefaultSeedKey(key); 
-    init_by_array(key, 2); 
-}  
+void seedQuEST(QuESTEnv *env, unsigned long int *seedArray, int numSeeds) {
 
-void seedQuEST(unsigned long int *seedArray, int numSeeds) {
+    // free existing seed array, if exists
+    if (env->seeds != NULL)
+        free(env->seeds);
+        
+    // record keys in permanent heap
+    env->seeds = malloc(numSeeds * sizeof *(env->seeds));
+    for (int i=0; i<numSeeds; i++)
+        (env->seeds)[i] = seedArray[i];
+    env->numSeeds = numSeeds;
+    
     // pass keys to Mersenne Twister seeder
     init_by_array(seedArray, numSeeds); 
 }
