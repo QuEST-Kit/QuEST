@@ -25,6 +25,9 @@ The **Quantum Exact Simulation Toolkit** is a high performance simulator of quan
 
 [![Languages](https://img.shields.io/badge/C-99-ff69b4.svg)](http://www.open-std.org/jtc1/sc22/wg14/www/standards.html#9899)
 [![Languages](https://img.shields.io/badge/C++-11-ff69b4.svg)](https://isocpp.org/wiki/faq/cpp11)
+![OS](https://img.shields.io/badge/os-MacOS-9cbd3c.svg)
+![OS](https://img.shields.io/badge/os-Linux-9cbd3c.svg)
+![OS](https://img.shields.io/badge/os-Windows-9cbd3c.svg)
 [![Platforms](https://img.shields.io/badge/multithreaded-OpenMP-6699ff.svg)](https://www.openmp.org/)
 [![Platforms](https://img.shields.io/badge/GPU-CUDA-6699ff.svg)](https://developer.nvidia.com/cuda-zone)
 [![Platforms](https://img.shields.io/badge/distributed-MPI-6699ff.svg)](https://www.mpi-forum.org/) 
@@ -92,7 +95,8 @@ QuEST supports:
 - :ballot_box_with_check: &nbsp; **many tools to analyse** quantum states, such as calculations of [probability](https://quest-kit.github.io/QuEST-develop-doc/group__calc.html#gad0cc08d52cad5062553d6f78126780cc), [fidelity](https://quest-kit.github.io/QuEST-develop-doc/group__calc.html#gaa266ed6c8ae5d0d0f49e1ac50819cffc), and [expected value](https://quest-kit.github.io/QuEST-develop-doc/group__calc.html#ga82f17e96a4cb7612fb9c6ef856df3810)  
 - :ballot_box_with_check: &nbsp; **variable precision** through a `qreal` numerical type which can use single, double or quad precision  
 - :ballot_box_with_check: &nbsp; **QASM output** to verify simulated circuits  
-- :ballot_box_with_check: &nbsp; **direct access to amplitudes** for rapid custom modification of the quantum state  
+- :ballot_box_with_check: &nbsp; **direct access to amplitudes** for rapid custom modification of the quantum state 
+- :ballot_box_with_check: &nbsp; **native compilation** on MacOS, Linux and Windows, through Clang, GNU, Intel, and MSVC compilers
 
 ---------------------------------
 
@@ -143,9 +147,16 @@ then run it with
 ```
 <br>
 
-> Windows users should install [Build Tools](https://visualstudio.microsoft.com/downloads/#build-tools-for-visual-studio-2019) for Visual Studio, [CMake](https://cmake.org/download/) and [MinGW-w64](https://sourceforge.net/projects/mingw-w64/), and run the above commmands in the *Developer Command Prompt for VS*, with alternate cmake argument
+> **Windows** users should install [Build Tools](https://visualstudio.microsoft.com/downloads/#build-tools-for-visual-studio-2019) for Visual Studio, and [CMake](https://cmake.org/download/), and run the above commmands in the *Developer Command Prompt for VS*, though using build commands
+> ```bash 
+> cmake .. -G "NMake Makefiles"
+> nmake
+> ```
+> If using MSVC and NMake in this way fails, users can forego GPU acceleration, download
+> [MinGW-w64](https://sourceforge.net/projects/mingw-w64/), and compile via 
 > ```bash 
 > cmake .. -G "MinGW Makefiles"
+> make
 > ```
 
 
