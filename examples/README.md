@@ -157,7 +157,7 @@ and after compiling (see section below) and running, gives psuedo-random output
 > Qubit 2 collapsed to 1 with probability 0.499604
 > ```
 
-QuEST uses the [Mersenne Twister](http://www.math.sci.hiroshima-u.ac.jp/~m-mat/MT/MT2002/emt19937ar.html) algorithm to generate random numbers used for randomly collapsing quantum states. The user can seed this RNG using `seedQuEST(arrayOfSeeds, arrayLength)`, otherwise QuEST will by default (through `seedQuESTDefault()`) create a seed from the current time and the process id.
+QuEST uses the [Mersenne Twister](http://www.math.sci.hiroshima-u.ac.jp/~m-mat/MT/MT2002/emt19937ar.html) algorithm to generate random numbers used for randomly collapsing quantum states. The user can seed this RNG using [`seedQuEST()`](https://quest-kit.github.io/QuEST/group__debug.html#ga555451c697ea4a9d27389155f68fdabc), otherwise QuEST will by default create a seed from the current time and the process id.
 
 
 > In distributed mode (see below), all code in your source files will be executed independently on every node. 
@@ -176,6 +176,8 @@ QuEST uses the [Mersenne Twister](http://www.math.sci.hiroshima-u.ac.jp/~m-mat/M
 
 QuEST uses [CMake](https://cmake.org/) (version `3.7` or higher) as its build system. Configure the build by supplying the below `-D[VAR=VALUE]` options after the `cmake ..` command. You can alternatively compile via [GNU Make](https://www.gnu.org/software/make/) directly with the provided [makefile](makefile).
 
+> **Windows** users should install [CMake](https://cmake.org/download/) and [Build Tools](https://visualstudio.microsoft.com/downloads/#build-tools-for-visual-studio-2019), and run the below commands in the *Developer Command Prompt for VS*
+
 To compile, run:
 ```console
 mkdir build
@@ -183,7 +185,22 @@ cd build
 cmake .. -DUSER_SOURCE="[FILENAME]"
 make
 ```
-where `[FILENAME]` is the name of your source file, including the file extension, relative to the root QuEST directory (above `build`). If your project contains multiple source files, separate them with semi-colons. For example,
+where `[FILENAME]` is the name of your source file, including the file extension, relative to the root QuEST directory (above `build`). 
+
+> Windows users should replace the final two build commands with
+> ```bash 
+> cmake .. -G "NMake Makefiles"
+> nmake
+> ```
+> If using MSVC and NMake in this way fails, users can forego GPU acceleration, download
+> [MinGW-w64](https://sourceforge.net/projects/mingw-w64/), and compile via 
+> ```bash 
+> cmake .. -G "MinGW Makefiles"
+> make
+> ```
+> Compiling directly with `make` and the provided [makefile](makefile), copied to the root directory, may prove easier.
+
+If your project contains multiple source files, separate them with semi-colons. For example,
 ```console
  -DUSER_SOURCE="source1.c;source2.cpp"
 ```

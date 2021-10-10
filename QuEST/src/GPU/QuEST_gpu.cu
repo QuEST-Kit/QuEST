@@ -471,7 +471,9 @@ QuESTEnv createQuESTEnv(void) {
     env.rank=0;
     env.numRanks=1;
     
-    seedQuESTDefault();
+    env.seeds = NULL;
+    env.numSeeds = 0;
+    seedQuESTDefault(env);
     
     return env;
 }
@@ -485,7 +487,7 @@ int syncQuESTSuccess(int successCode){
 }
 
 void destroyQuESTEnv(QuESTEnv env){
-    // MPI finalize goes here in MPI version. Call this function anyway for consistency
+    free(env.seeds);
 }
 
 void reportQuESTEnv(QuESTEnv env){
@@ -3835,11 +3837,11 @@ __global__ void statevec_applyParamNamedPhaseFuncOverridesKernel(
             if (phaseFuncName == NORM)
                 phase = norm;
             else if (phaseFuncName == INVERSE_NORM)
-                phase = (norm == 0.)? params[0] : 1/norm;
+                phase = (norm == 0.)? params[0] : 1/norm; // smallest non-zero norm is 1
             else if (phaseFuncName == SCALED_NORM)
                 phase = params[0] * norm;
             else if (phaseFuncName == SCALED_INVERSE_NORM || phaseFuncName == SCALED_INVERSE_SHIFTED_NORM)
-                phase = (norm == 0.)? params[1] : params[0] / norm;
+                phase = (norm <= REAL_EPS)? params[1] : params[0] / norm; // unless shifted closer to zero
         }
         // compute product related phases
         else if (phaseFuncName == PRODUCT || phaseFuncName == INVERSE_PRODUCT ||
@@ -3852,7 +3854,7 @@ __global__ void statevec_applyParamNamedPhaseFuncOverridesKernel(
             if (phaseFuncName == PRODUCT)
                 phase = prod;
             else if (phaseFuncName == INVERSE_PRODUCT)
-                phase = (prod == 0.)? params[0] : 1/prod;
+                phase = (prod == 0.)? params[0] : 1/prod; // smallest non-zero prod is +- 1
             else if (phaseFuncName == SCALED_PRODUCT)
                 phase = params[0] * prod;
             else if (phaseFuncName == SCALED_INVERSE_PRODUCT)
@@ -3866,7 +3868,7 @@ __global__ void statevec_applyParamNamedPhaseFuncOverridesKernel(
             qreal dist = 0;
             if (phaseFuncName == SCALED_INVERSE_SHIFTED_DISTANCE) {
                 for (int r=0; r<numRegs; r+=2) {
-                    qreal dif = (phaseInds[(r+1)*stride+offset] - phaseInds[r*stride+offset] - params[2+r/2]);
+                    qreal dif = (phaseInds[r*stride+offset] - phaseInds[(r+1)*stride+offset] - params[2+r/2]);
                     dist += dif*dif;
                 }
             }
@@ -3880,11 +3882,11 @@ __global__ void statevec_applyParamNamedPhaseFuncOverridesKernel(
             if (phaseFuncName == DISTANCE)
                 phase = dist;
             else if (phaseFuncName == INVERSE_DISTANCE)
-                phase = (dist == 0.)? params[0] : 1/dist;
+                phase = (dist == 0.)? params[0] : 1/dist; // smallest non-zero dist is 1
             else if (phaseFuncName == SCALED_DISTANCE)
                 phase = params[0] * dist;
             else if (phaseFuncName == SCALED_INVERSE_DISTANCE || phaseFuncName == SCALED_INVERSE_SHIFTED_DISTANCE)
-                phase = (dist == 0.)? params[1] : params[0] / dist;
+                phase = (dist <= REAL_EPS)? params[1] : params[0] / dist; // unless shifted closer
         }
     }
     
@@ -3960,16 +3962,21 @@ void statevec_applyParamNamedPhaseFuncOverrides(
         cudaFree(d_params);
 }
 
-void seedQuESTDefault(){
-    // init MT random number generator with three keys -- time and pid
-    // for the MPI version, it is ok that all procs will get the same seed as random numbers will only be 
-    // used by the master process
+void seedQuEST(QuESTEnv *env, unsigned long int *seedArray, int numSeeds) {
 
-    unsigned long int key[2];
-    getQuESTDefaultSeedKey(key); 
-    init_by_array(key, 2); 
-}  
-
+    // free existing seed array, if exists
+    if (env->seeds != NULL)
+        free(env->seeds);
+        
+    // record keys in permanent heap
+    env->seeds = malloc(numSeeds * sizeof *(env->seeds));
+    for (int i=0; i<numSeeds; i++)
+        (env->seeds)[i] = seedArray[i];
+    env->numSeeds = numSeeds;
+    
+    // pass keys to Mersenne Twister seeder
+    init_by_array(seedArray, numSeeds); 
+}
 
 
 

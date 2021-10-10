@@ -27,6 +27,12 @@
 # include <omp.h>
 # endif
 
+/* to support MSVC, we must remove the use of VLA in multiQubtUnitary.
+ * We'll instead create stack arrays use _malloca
+ */
+#ifdef _WIN32
+    #include <malloc.h>
+#endif
 
 
 /*
@@ -803,23 +809,28 @@ void densmatr_collapseToKnownProbOutcome(Qureg qureg, int measureQubit, int outc
     if (locNumAmps <= outerBlockSize) {
         
         // if this is an undesired outer block, kill all elems
-        if (outerBit != outcome)
-            return zeroSomeAmps(qureg, 0, qureg.numAmpsPerChunk);
+        if (outerBit != outcome) {
+            zeroSomeAmps(qureg, 0, qureg.numAmpsPerChunk);
+            return;
+        }
         
         // othwerwise, if this is a desired outer block, and also entirely an inner block
         if (locNumAmps <= innerBlockSize) {
             
             // and that inner block is undesired, kill all elems
-            if (innerBit != outcome)
-                return zeroSomeAmps(qureg, 0, qureg.numAmpsPerChunk);
+            if (innerBit != outcome) 
+                zeroSomeAmps(qureg, 0, qureg.numAmpsPerChunk);
             // otherwise normalise all elems
             else
-                return normaliseSomeAmps(qureg, totalStateProb, 0, qureg.numAmpsPerChunk);
+                normaliseSomeAmps(qureg, totalStateProb, 0, qureg.numAmpsPerChunk);
+                
+            return;
         }
                 
         // otherwise this is a desired outer block which contains 2^a inner blocks; kill/renorm every second inner block
-        return alternateNormZeroingSomeAmpBlocks(
+        alternateNormZeroingSomeAmpBlocks(
             qureg, totalStateProb, innerBit==outcome, 0, qureg.numAmpsPerChunk, innerBlockSize);
+        return;
     }
     
     // Otherwise, this chunk's amps contain multiple outer blocks (and hence multiple inner blocks)
@@ -1919,13 +1930,24 @@ void statevec_multiControlledMultiQubitUnitaryLocal(Qureg qureg, long long int c
     
     // each thread/task will record and modify numTargAmps amplitudes, privately
     // (of course, tasks eliminated by the ctrlMask won't edit their allocation)
-    long long int ampInds[numTargAmps];
-    qreal reAmps[numTargAmps];
-    qreal imAmps[numTargAmps];
+    //
+    // If we're NOT on windows, we can fortunately use the stack directly
+    #ifndef _WIN32
+        long long int ampInds[numTargAmps];
+        qreal reAmps[numTargAmps];
+        qreal imAmps[numTargAmps];
+
+        int sortedTargs[numTargs];
+    // on Windows, with no VLA, we can use _malloca to allocate on stack (must free)
+    #else
+        long long int* ampInds;
+        qreal* reAmps;
+        qreal* imAmps;
+        int* sortedTargs = (int*) _malloca(numTargs * sizeof *sortedTargs);
+    #endif
 
     // we need a sorted targets list to find thisInd00 for each task.
     // we can't modify targets, because the user-ordering of targets matters in u
-    int sortedTargs[numTargs]; 
     for (int t=0; t < numTargs; t++) 
         sortedTargs[t] = targs[t];
     qsort(sortedTargs, numTargs, sizeof(int), qsortComp);
@@ -1937,6 +1959,13 @@ void statevec_multiControlledMultiQubitUnitaryLocal(Qureg qureg, long long int c
     private  (thisTask,thisInd00,thisGlobalInd00,ind,i,t,r,c,reElem,imElem,  ampInds,reAmps,imAmps)
 # endif
     {
+        // when manually allocating array memory (on Windows), this must be done in each thread
+        // separately and is not performed automatically by declaring a var as omp-private
+        # ifdef _WIN32
+            ampInds = (long long int*) _malloca(numTargAmps * sizeof *ampInds);
+            reAmps = (qreal*) _malloca(numTargAmps * sizeof *reAmps);
+            imAmps = (qreal*) _malloca(numTargAmps * sizeof *imAmps);
+        # endif
 # ifdef _OPENMP
 # pragma omp for schedule (static)
 # endif
@@ -1981,7 +2010,17 @@ void statevec_multiControlledMultiQubitUnitaryLocal(Qureg qureg, long long int c
                 }
             }
         }
+        // on Windows, we must explicitly free the stack structures
+        #ifdef _WIN32
+            _freea(ampInds);
+            _freea(reAmps);
+            _freea(imAmps);
+        #endif
     }
+
+    #ifdef _WIN32
+        _freea(sortedTargs);
+    #endif
 }
 
 void statevec_unitaryLocal(Qureg qureg, int targetQubit, ComplexMatrix2 u)
@@ -3515,6 +3554,7 @@ void statevec_calcProbOfAllOutcomesLocal(qreal* outcomeProbs, Qureg qureg, int* 
      * or a dynamic list of omp locks (duplicates memory cost of outcomeProbs).
      * Using locks was always slower than the method below. Using reduction was only 
      * faster for very few threads, or very few outcomeProbs.
+     * Finally, we exclude the 'update' clause after 'atomic' to maintain MSVC compatibility 
      */
 
     long long int numOutcomeProbs = (1 << numQubits);
@@ -3566,7 +3606,7 @@ void statevec_calcProbOfAllOutcomesLocal(qreal* outcomeProbs, Qureg qureg, int* 
             
             // atomicly update corresponding outcome array element
             # ifdef _OPENMP
-            # pragma omp atomic update
+            # pragma omp atomic
             # endif
             outcomeProbs[outcomeInd] += prob;
         }
@@ -3637,7 +3677,7 @@ void densmatr_calcProbOfAllOutcomesLocal(qreal* outcomeProbs, Qureg qureg, int* 
     
             // atomicly update corresponding outcome array element
             # ifdef _OPENMP
-            # pragma omp atomic update
+            # pragma omp atomic
             # endif
             outcomeProbs[outcomeInd] += stateRe[index];
         }
@@ -4493,15 +4533,15 @@ void statevec_applyParamNamedPhaseFuncOverrides(
                         for (r=0; r<numRegs; r++)
                             norm += phaseInds[r]*phaseInds[r];
                     norm = sqrt(norm);
-
+ 
                     if (phaseFuncName == NORM)
                         phase = norm;
                     else if (phaseFuncName == INVERSE_NORM)
-                        phase = (norm == 0.)? params[0] : 1/norm;
+                        phase = (norm == 0.)? params[0] : 1/norm;  // smallest non-zero norm is 1
                     else if (phaseFuncName == SCALED_NORM)
                         phase = params[0] * norm;
                     else if (phaseFuncName == SCALED_INVERSE_NORM || phaseFuncName == SCALED_INVERSE_SHIFTED_NORM)
-                        phase = (norm == 0.)? params[1] : params[0] / norm;
+                        phase = (norm <= REAL_EPS)? params[1] : params[0] / norm; // unless shifted closer to zero
                 }
                 // compute product related phases
                 else if (phaseFuncName == PRODUCT || phaseFuncName == INVERSE_PRODUCT ||
@@ -4514,7 +4554,7 @@ void statevec_applyParamNamedPhaseFuncOverrides(
                     if (phaseFuncName == PRODUCT)
                         phase = prod;
                     else if (phaseFuncName == INVERSE_PRODUCT)
-                        phase = (prod == 0.)? params[0] : 1/prod;
+                        phase = (prod == 0.)? params[0] : 1/prod;  // smallest non-zero product norm is +- 1
                     else if (phaseFuncName == SCALED_PRODUCT)
                         phase = params[0] * prod;
                     else if (phaseFuncName == SCALED_INVERSE_PRODUCT)
@@ -4528,7 +4568,7 @@ void statevec_applyParamNamedPhaseFuncOverrides(
                     dist = 0;
                     if (phaseFuncName == SCALED_INVERSE_SHIFTED_DISTANCE) {
                         for (r=0; r<numRegs; r+=2)
-                            dist += (phaseInds[r+1] - phaseInds[r] - params[2+r/2])*(phaseInds[r+1] - phaseInds[r] - params[2+r/2]);
+                            dist += (phaseInds[r] - phaseInds[r+1] - params[2+r/2])*(phaseInds[r] - phaseInds[r+1] - params[2+r/2]);
                     }
                     else
                         for (r=0; r<numRegs; r+=2)
@@ -4538,11 +4578,11 @@ void statevec_applyParamNamedPhaseFuncOverrides(
                     if (phaseFuncName == DISTANCE)
                         phase = dist;
                     else if (phaseFuncName == INVERSE_DISTANCE)
-                        phase = (dist == 0.)? params[0] : 1/dist;
+                        phase = (dist == 0.)? params[0] : 1/dist; // smallest non-zero dist is 1
                     else if (phaseFuncName == SCALED_DISTANCE)
                         phase = params[0] * dist;
                     else if (phaseFuncName == SCALED_INVERSE_DISTANCE || phaseFuncName == SCALED_INVERSE_SHIFTED_DISTANCE)
-                        phase = (dist == 0.)? params[1] : params[0] / dist;
+                        phase = (dist <= REAL_EPS)? params[1] : params[0] / dist; // unless shifted closer to 0
                 }
             }
             
@@ -4562,4 +4602,3 @@ void statevec_applyParamNamedPhaseFuncOverrides(
         }
     }
 }
-

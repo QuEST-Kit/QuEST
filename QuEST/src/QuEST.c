@@ -155,7 +155,6 @@ void initPureState(Qureg qureg, Qureg pure) {
 }
 
 void initStateFromAmps(Qureg qureg, qreal* reals, qreal* imags) {
-    validateStateVecQureg(qureg, __func__);
     
     statevec_setAmps(qureg, 0, reals, imags, qureg.numAmpsTotal);
     
@@ -878,12 +877,26 @@ void applyFullQFT(Qureg qureg) {
 
     qasm_recordComment(qureg, "Beginning of QFT circuit");
         
-    int qubits[qureg.numQubitsRepresented];
+    int qubits[100];
     for (int i=0; i<qureg.numQubitsRepresented; i++)
         qubits[i] = i;
     agnostic_applyQFT(qureg, qubits, qureg.numQubitsRepresented);
 
     qasm_recordComment(qureg, "End of QFT circuit");
+}
+
+void applyProjector(Qureg qureg, int qubit, int outcome) {
+    validateTarget(qureg, qubit, __func__);
+    validateOutcome(outcome, __func__);
+     
+    qreal renorm = 1;
+    
+    if (qureg.isDensityMatrix)
+        densmatr_collapseToKnownProbOutcome(qureg, qubit, outcome, renorm);
+    else
+        statevec_collapseToKnownProbOutcome(qureg, qubit, outcome, renorm);
+    
+    qasm_recordComment(qureg, "Here, qubit %d was un-physically projected into outcome %d", qubit, outcome);
 }
 
 
@@ -1369,6 +1382,7 @@ void destroyComplexMatrixN(ComplexMatrixN m) {
     free(m.imag);
 }
 
+#ifndef _WIN32
 void initComplexMatrixN(ComplexMatrixN m, qreal re[][1<<m.numQubits], qreal im[][1<<m.numQubits]) {
     validateMatrixInit(m, __func__);
     
@@ -1379,6 +1393,7 @@ void initComplexMatrixN(ComplexMatrixN m, qreal re[][1<<m.numQubits], qreal im[]
             m.imag[i][j] = im[i][j];
         }
 }
+#endif
 
 PauliHamil createPauliHamil(int numQubits, int numSumTerms) {
     validateHamilParams(numQubits, numSumTerms, __func__);
@@ -1594,6 +1609,19 @@ void reportPauliHamil(PauliHamil hamil) {
 
 int  getQuEST_PREC(void) {
   return sizeof(qreal)/4;
+}
+
+void seedQuESTDefault(QuESTEnv* env) {
+    
+    // seed Mersenne Twister random number generator with two keys -- time and pid
+    unsigned long int keys[2];
+    getQuESTDefaultSeedKey(keys);
+    seedQuEST(env, keys, 2);
+}
+
+void getQuESTSeeds(QuESTEnv env, unsigned long int** seeds, int* numSeeds) {
+    *seeds = env.seeds;
+    *numSeeds = env.numSeeds;
 }
   
 

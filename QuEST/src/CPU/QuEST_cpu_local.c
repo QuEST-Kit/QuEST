@@ -174,7 +174,9 @@ QuESTEnv createQuESTEnv(void) {
     env.rank=0;
     env.numRanks=1;
     
-    seedQuESTDefault();
+    env.seeds = NULL;
+    env.numSeeds = 0;
+    seedQuESTDefault(&env);
     
     return env;
 }
@@ -188,7 +190,7 @@ int syncQuESTSuccess(int successCode){
 }
 
 void destroyQuESTEnv(QuESTEnv env){
-    // MPI finalize goes here in MPI version. Call this function anyway for consistency
+    free(env.seeds);
 }
 
 void reportQuESTEnv(QuESTEnv env){
@@ -322,14 +324,20 @@ void statevec_collapseToKnownProbOutcome(Qureg qureg, int measureQubit, int outc
     statevec_collapseToKnownProbOutcomeLocal(qureg, measureQubit, outcome, stateProb);
 }
 
-void seedQuESTDefault(void){
-    // init MT random number generator with three keys -- time and pid
-    // for the MPI version, it is ok that all procs will get the same seed as random numbers will only be 
-    // used by the master process
+void seedQuEST(QuESTEnv *env, unsigned long int *seedArray, int numSeeds) {
 
-    unsigned long int key[2];
-    getQuESTDefaultSeedKey(key);
-    init_by_array(key, 2);
+    // free existing seed array, if exists
+    if (env->seeds != NULL)
+        free(env->seeds);
+        
+    // record keys in permanent heap
+    env->seeds = malloc(numSeeds * sizeof *(env->seeds));
+    for (int i=0; i<numSeeds; i++)
+        (env->seeds)[i] = seedArray[i];
+    env->numSeeds = numSeeds;
+    
+    // pass keys to Mersenne Twister seeder
+    init_by_array(seedArray, numSeeds); 
 }
 
 void statevec_multiControlledTwoQubitUnitary(Qureg qureg, long long int ctrlMask, int q1, int q2, ComplexMatrix4 u)

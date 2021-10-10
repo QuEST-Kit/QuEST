@@ -196,18 +196,22 @@ static const char* errorMessages[] = {
     [E_INVALID_NUM_REGS_DISTANCE_PHASE_FUNC] = "Phase functions DISTANCE, INVERSE_DISTANCE, SCALED_DISTANCE and SCALED_INVERSE_DISTANCE require a strictly even number of sub-registers."
 };
 
-void exitWithError(const char* msg, const char* func) {
+void default_invalidQuESTInputError(const char* errMsg, const char* errFunc) {
     printf("!!!\n");
-    printf("QuEST Error in function %s: %s\n", func, msg);
+    printf("QuEST Error in function %s: %s\n", errFunc, errMsg);
     printf("!!!\n");
     printf("exiting..\n");
     exit(1);
 }
 
+#ifndef _WIN32
 #pragma weak invalidQuESTInputError
 void invalidQuESTInputError(const char* errMsg, const char* errFunc) {
-    exitWithError(errMsg, errFunc);
+    default_invalidQuESTInputError(errMsg, errFunc);
 }
+#else
+#pragma comment(linker, "/alternatename:invalidQuESTInputError=default_invalidQuESTInputError")   
+#endif
 
 void QuESTAssert(int isValid, ErrorCode code, const char* func){
     if (!isValid) invalidQuESTInputError(errorMessages[code], func);
@@ -803,7 +807,8 @@ void validatePhaseFuncTerms(int numQubits, enum bitEncoding encoding, qreal* coe
         // if there are 16 or fewer qubits (0.5mB cache), use a stack array to tick off overrides
         if (numQubits < 16) {
             
-            long long int negIsOverriden[numNegInds];  // flags for {-1,-2,...}; at index {abs(-1)-1, abs(-2)-2, ...}
+            // flags for {-1,-2,...}; at index {abs(-1)-1, abs(-2)-2, ...}
+            long long int negIsOverriden[32768];  // [numNegInds];
             for (int i=0; i<numNegInds; i++)
                 negIsOverriden[i] = 0;
             

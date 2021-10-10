@@ -357,11 +357,14 @@ typedef struct Qureg
  *
  * @ingroup type
  * @author Ania Brown
+ * @author Tyson Jones (seeding)
  */
 typedef struct QuESTEnv
 {
     int rank;
     int numRanks;
+    unsigned long int* seeds;
+    int numSeeds;
 } QuESTEnv;
 
 
@@ -739,6 +742,7 @@ ComplexMatrixN createComplexMatrixN(int numQubits);
 void destroyComplexMatrixN(ComplexMatrixN matr);
 
 #ifndef __cplusplus
+#ifndef _WIN32
 /** Initialises a ComplexMatrixN instance to have the passed
  * \p real and \p imag values. This allows succint population of any-sized
  * ComplexMatrixN, e.g. through 2D arrays:
@@ -762,7 +766,8 @@ void destroyComplexMatrixN(ComplexMatrixN matr);
  * @author Tyson Jones
  */
 void initComplexMatrixN(ComplexMatrixN m, qreal real[][1<<m.numQubits], qreal imag[][1<<m.numQubits]);
-#endif 
+#endif
+#endif
 
 /** Dynamically allocates a Hamiltonian expressed as a real-weighted sum of products of Pauli operators.
  *
@@ -1462,7 +1467,9 @@ void initPureState(Qureg qureg, Qureg pure);
  */
 void initDebugState(Qureg qureg);
 
-/** Initialise state-vector \p qureg by specifying all amplitudes.
+/** Initialise \p qureg by specifying all amplitudes.
+ * For density matrices, it is assumed the amplitudes have been flattened 
+ * column-wise into the given arrays.
  *
  * The real and imaginary components of the amplitudes are passed in separate arrays,
  * \p reals and \p imags,
@@ -1470,8 +1477,8 @@ void initDebugState(Qureg qureg);
  * There is no automatic checking that the passed arrays are L2 normalised, so this 
  * can be used to prepare \p qureg in a non-physical state.
  *
- * In distributed mode, this would require the complete state-vector to fit in 
- * every node. To manually prepare a state-vector which cannot fit in every node,
+ * In distributed mode, this would require the complete state to fit in 
+ * every node. To manually prepare a state for which all amplitudes cannot fit into a single node,
  * use setAmps()
  *
  * @see
@@ -1481,8 +1488,6 @@ void initDebugState(Qureg qureg);
  * @param[in,out] qureg the ::Qureg to overwrite
  * @param[in] reals array of the real components of the new amplitudes
  * @param[in] imags array of the imaginary components of the new amplitudes
- * @throws invalidQuESTInputError()
- * - if \p qureg is not a state-vector (i.e. is a density matrix)
  * @throws segmentation-fault
  * - if either \p reals or \p imags have fewer than `qureg.numAmpsTotal` elements
  * @author Tyson Jones
@@ -3134,26 +3139,27 @@ qreal calcProbOfOutcome(Qureg qureg, int measureQubit, int outcome);
  * @author Tyson Jones
  */
 void calcProbOfAllOutcomes(qreal* outcomeProbs, Qureg qureg, int* qubits, int numQubits);
-// DEBUG
-void TEST_calcProbOfAllOutcomes(qreal* retProbs, Qureg qureg, int* qubits, int numQubits);
-void SHARED_calcProbOfAllOutcomes(qreal* outcomeProbs, Qureg qureg, int* qubits, int numQubits);
 
 /** Updates \p qureg to be consistent with measuring \p measureQubit in the given 
  * \p outcome (0 or 1), and returns the probability of such a measurement outcome. 
- * This is effectively performing a projection, or a measurement with a forced outcome.
+ * This is effectively performing a renormalising projection, or a measurement with a forced outcome.
  * This is an irreversible change to the state, whereby computational states
  * inconsistant with the outcome are given zero amplitude and the \p qureg is renormalised.
- * Exits with error if the given outcome has a near zero probability, and so cannot be
+ * The given outcome must not have a near zero probability, else it cannot be
  * collapsed into.
  *
  * Note that the collapse probably used for renormalisation is calculated for 
  * \p outcome \p = \p 0, and assumed 1 minus this probability if \p outcome \p = \p 1.
  * Hence this routine will not correctly project un-normalised quregs onto 
  * \p outcome \p = \p 1.
+ *
+ * To avoid renormalisation after projection, or force projection into non-physical 
+ * states with very small probability, use applyProjector().
  * 
  * @see
  * - measure()
  * - measureWithStats()
+ * - applyProjector()
  *
  * @ingroup normgate
  * @param[in,out] qureg object representing the set of all qubits
@@ -3174,12 +3180,13 @@ qreal collapseToOutcome(Qureg qureg, int measureQubit, int outcome);
  * Outcome probabilities are weighted by the state vector, which is irreversibly
  * changed after collapse to be consistent with the outcome.
  *
- * > The random outcome generator can be seeded with seedQuESTDefault(), which 
- * > is safe to use in distributed mode.
+ * > The random outcome generator is seeded by seedQuESTDefault() within 
+ * > createQuESTEnv(), unless later overridden by seedQuEST().
  * 
  * @see
  * - measureWithStats()
  * - collapseToOutcome()
+ * - seedQuEST()
  * - seedQuESTDefault()
  * 
  * @ingroup normgate
@@ -3198,13 +3205,14 @@ int measure(Qureg qureg, int measureQubit);
  * Outcome probabilities are weighted by the state vector, which is irreversibly
  * changed after collapse to be consistent with the outcome.
  *
- * > The random outcome generator can be seeded with seedQuESTDefault(), which 
- * > is safe to use in distributed mode.
+ * > The random outcome generator is seeded by seedQuESTDefault() within 
+ * > createQuESTEnv(), unless later overridden by seedQuEST().
  *
  * @see 
  * - measure()
  * - collapseToOutcome()
  * - seedQuESTDefault()
+ * - seedQuEST()
  *
  * @ingroup normgate
  * @param[in, out] qureg object representing the set of all qubits
@@ -3298,47 +3306,102 @@ Complex calcInnerProduct(Qureg bra, Qureg ket);
  */
 qreal calcDensityInnerProduct(Qureg rho1, Qureg rho2);
 
-/** Seed the Mersenne Twister used for random number generation in the QuEST environment with an example
- * default seed.
- * This default seeding function uses the mt19937 init_by_array function with two keys -- 
- * time and pid. Subsequent calls to mt19937 genrand functions will use this seeding. 
- * For a multi process code, the same seed is given to all process, therefore this seeding is only
- * appropriate to use for functions such as measure where all processes require the same random value.
- *
- * For more information about the MT, see http://www.math.sci.hiroshima-u.ac.jp/~m-mat/MT/MT2002/emt19937ar.html
+/** Seeds the random number generator with the (master node) current time and process ID.
  * 
- * > To manually generate a key to seed MT, use seedQuEST()
+ * This is the default seeding used by createQuESTEnv(), and determines the 
+ * outcomes in functions like measure() and measureWithStats().
+ * 
+ * In distributed mode, every node agrees on the seed (nominated by the master node)
+ * such that every node generates the same sequence of pseudorandom numbers.
  *
- * Presently, only the following functions involve random generation (through
- * internal function generateMeasurementOutcome()):
- * - measure()
- * - measureWithStats()
+ * > QuEST uses the 
+ * > <a href="http://www.math.sci.hiroshima-u.ac.jp/~m-mat/MT/MT2002/emt19937ar.html">Mersenne Twister</a>
+ * > for random number generation. 
  *
  * @see
- * - seedQuEST()
+ * - Use seedQuEST() to provide a custom seed, overriding the default.
+ * - Use getQuESTSeeds() to obtain the seeds currently being used for RNG.
  *
  * @ingroup debug
+ * @param[in] env a pointer to the ::QuESTEnv runtime environment
  * @author Ania Brown
  * @author Balint Koczor (Windows compatibility)
+ * @author Tyson Jones (doc)
  **/
-void seedQuESTDefault(void);
+void seedQuESTDefault(QuESTEnv *env);
 
-/** Seed the Mersenne Twister used for random number generation in the QuEST environment with
- * a user defined seed.
- * This function uses the mt19937 init_by_array function with numSeeds keys supplied by the user.
- * Subsequent calls to mt19937 genrand functions will use this seeding. 
- * For a multi process code, the same seed is given to all process, therefore this seeding is only
- * appropriate to use for functions such as measure where all processes require the same random value.
+/** Seeds the random number generator with a custom array of key(s), overriding the
+ * default keys.
  *
- * For more information about the MT, see http://www.math.sci.hiroshima-u.ac.jp/~m-mat/MT/MT2002/emt19937ar.html
+ * This determines the sequence of outcomes in functions like measure() and measureWithStats().
+ *
+ * In distributed mode, the key(s) passed to the master node will be broadcast to all 
+ * other nodes, such that every node generates the same sequence of pseudorandom numbers.
+ *
+ * This function will copy the contents of \p seedArray into a permanent array 
+ * `env.seeds`, so \p seedArray is afterward safe to free.
+ *
+ * > QuEST uses the 
+ * > <a href="http://www.math.sci.hiroshima-u.ac.jp/~m-mat/MT/MT2002/emt19937ar.html">Mersenne Twister</a>
+ * > for random number generation. 
+ *
+ * @see
+ * - Use seedQuESTDefault() to seed via the current timestamp and process id.
+ * - Use getQuESTSeeds() to obtain the seeds currently being used for RNG.
  *
  * @ingroup debug
+ * @param[in] env a pointer to the ::QuESTEnv runtime environment
  * @param[in] seedArray Array of integers to use as seed. 
  *  This allows the MT to be initialised with more than a 32-bit integer if required
  * @param[in] numSeeds Length of seedArray
  * @author Ania Brown
+ * @author Tyson Jones (doc)
  **/
-void seedQuEST(unsigned long int *seedArray, int numSeeds);
+void seedQuEST(QuESTEnv *env, unsigned long int *seedArray, int numSeeds);
+
+/** Obtain the seeds presently used in random number generation.
+ *
+ * This function sets argument \p seeds to the address of the array of keys
+ * which have seeded QuEST's
+ * <a href="http://www.math.sci.hiroshima-u.ac.jp/~m-mat/MT/MT2002/emt19937ar.html">Mersenne Twister</a>
+ * random number generator. \p numSeeds is set to the length of \p seeds.
+ * These are the seeds which inform the outcomes of random functions like 
+ * measure(), and are set using seedQuEST() and seedQuESTDefault().
+ *
+ * > The output \p seeds array <b>must not</b> be freed, and should not be modified.
+ *
+ * Obtaining QuEST's seeds is useful for seeding your own random number generators,
+ * so that a simulation (with random QuEST measurements, and your own random decisions)
+ * can be precisely repeated later, just by calling seedQuEST().
+ *
+ * Note this function merely sets the arguments to the attributes for \p env. 
+ * I.e.
+ * ```
+ *     unsigned long int* seeds;
+ *     int numSeeds;
+ *     getQuESTSeeds(env, &seeds, &numSeeds);
+ *     
+ *     func(seeds, numSeeds);
+ * ```
+ * is equivalent to
+ * ```
+ *     func(env.seeds, env.numSeeds);
+ * ```
+ * However, one should not rely upon their local pointer from getQuESTSeeds() to be 
+ * automatically updated after a subsequent call to seedQuEST() or seedQuESTDefault().
+ * Instead, getQuESTSeeds() should be recalled.
+ *
+ * @see
+ * - seedQuEST()
+ * - seedQuESTDefault()
+ *
+ * @ingroup debug
+ * @param[in] env the ::QuESTEnv runtime environment
+ * @param[in] seeds a pointer to an unitialised array to be modified
+ * @param[in] numSeeds a pointer to an integer to be modified
+ * @author Tyson Jones
+ **/
+void getQuESTSeeds(QuESTEnv env, unsigned long int** seeds, int* numSeeds);
 
 /** Enable QASM recording. Gates applied to qureg will here-after be added to a
  * growing log of QASM instructions, progressively consuming more memory until 
@@ -5354,6 +5417,7 @@ extern "C" void invalidQuESTInputError(const char* errMsg, const char* errFunc) 
 void invalidQuESTInputError(const char* errMsg, const char* errFunc);
  
 #ifndef __cplusplus
+#ifndef _WIN32
  // hide this function from doxygen
  /// \cond HIDDEN_SYMBOLS
 /** Creates a ComplexMatrixN struct with .real and .imag arrays kept entirely 
@@ -5397,6 +5461,7 @@ void invalidQuESTInputError(const char* errMsg, const char* errFunc);
 ComplexMatrixN bindArraysToStackComplexMatrixN(
     int numQubits, qreal re[][1<<numQubits], qreal im[][1<<numQubits], 
     qreal** reStorage, qreal** imStorage);
+#endif
 #endif
 /// \endcond
 
@@ -6171,6 +6236,11 @@ void applyNamedPhaseFuncOverrides(Qureg qureg, int* qubits, int* numQubitsPerReg
  *   \f[
  *      f(\vec{r}, \theta)|_{\theta=0.5} \; = \; \begin{cases} \pi & \;\;\; \vec{r}=\vec{0} \\ \displaystyle 0.5 \left[ \sum_j^{\text{numRegs}} {r_j}^2 \right]^{-1/2} & \;\;\;\text{otherwise} \end{cases}.
  *   \f] 
+ *   Notice the order of the parameters matches the order of the words in the \p phaseFunc.
+ *   > Functions \p SCALED_INVERSE_SHIFTED_NORM and \p SCALED_INVERSE_SHIFTED_DISTANCE,
+ *   > which can have denominators arbitrarily close to zero, will invoke the 
+ *   > divergence parameter whenever the denominator is smaller than (or equal to)
+ *   > machine precision `REAL_EPS`.
  *
  * - Functions allowing the shifting of sub-register values, which are \p SCALED_INVERSE_SHIFTED_NORM
  *   and \p SCALED_INVERSE_SHIFTED_DISTANCE, need these shift values to be passed in the \p params
@@ -6496,7 +6566,7 @@ void applyFullQFT(Qureg qureg);
  *      = 
  *      \frac{1}{\sqrt{2^n}}
  *       \sum\limits_{j=0}^{2^N-1} \alpha_j \left( 
- *           \sum\limits_{y=0}^{2^n-1} e^{2 \pi \, i \, x_j \, y / 2^N} \; 
+ *           \sum\limits_{y=0}^{2^n-1} e^{2 \pi \, i \, x_j \, y / 2^n} \; 
  *           |y,r_j \rangle
  *       \right)
  *   \f]
@@ -6534,6 +6604,30 @@ void applyFullQFT(Qureg qureg);
  * @author Tyson Jones
  */
 void applyQFT(Qureg qureg, int* qubits, int numQubits);
+
+/** Force the target \p qubit of \p qureg into the given classical \p outcome, via a 
+ * non-renormalising projection.
+ *
+ * This function zeroes all amplitudes in the state-vector or density-matrix which 
+ * correspond to the opposite \p outcome given. Unlike collapseToOutcome(), it does 
+ * not thereafter normalise \p qureg, and hence may leave it in a non-physical state.
+ *
+ * Note there is no requirement that the \p outcome state has a non-zero proability, and hence 
+ * this function may leave \p qureg in a blank state, like that produced by initBlankState().
+ * 
+ * @see
+ * - collapseToOutcome() for a norm-preserving equivalent, like a forced measurement
+ *
+ * @ingroup operator
+ * @param[in,out] qureg a state-vector or density matrix to modify
+ * @param[in] qubit the qubit to which to apply the projector 
+ * @param[in] the single-qubit outcome (`0` or `1`) to project \p qubit into
+ * @throws invalidQuESTInputError()
+ * - if \p qubit is outside [0, `qureg.numQubitsRepresented`)
+ * - if \p outcome is not in {0,1}
+ * @author Tyson Jones
+ */
+void applyProjector(Qureg qureg, int qubit, int outcome);
 
 // end prevention of C++ name mangling
 #ifdef __cplusplus
