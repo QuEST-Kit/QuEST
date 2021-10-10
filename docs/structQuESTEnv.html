@@ -27,7 +27,7 @@
             <div class="container">
                 <div class="navbar-header">
                     <a class="navbar-brand"><img alt="Logo" src="logo.png"/></a>
-                    <a class="navbar-brand"><b>QuEST</b> v3.3.0<br>The Quantum Exact Simulation Toolkit</a>
+                    <a class="navbar-brand"><b>QuEST</b> v3.4.0<br>The Quantum Exact Simulation Toolkit</a>
                 </div>
             </div>
         </nav>
@@ -66,15 +66,21 @@ $(function() {
 Data Fields</h2></td></tr>
 <tr class="memitem:af22aacd7c9905accae28484785c193b4"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structQuESTEnv.html#af22aacd7c9905accae28484785c193b4">numRanks</a></td></tr>
 <tr class="separator:af22aacd7c9905accae28484785c193b4"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a46e67e1a5ab930e04ff59f83f1d8630d"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structQuESTEnv.html#a46e67e1a5ab930e04ff59f83f1d8630d">numSeeds</a></td></tr>
+<tr class="separator:a46e67e1a5ab930e04ff59f83f1d8630d"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aa648bb336cf8598467cb62db00b9cee8"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structQuESTEnv.html#aa648bb336cf8598467cb62db00b9cee8">rank</a></td></tr>
 <tr class="separator:aa648bb336cf8598467cb62db00b9cee8"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a66feaa60d3adc7dcf6f8b66514989356"><td class="memItemLeft" align="right" valign="top">unsigned long int *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structQuESTEnv.html#a66feaa60d3adc7dcf6f8b66514989356">seeds</a></td></tr>
+<tr class="separator:a66feaa60d3adc7dcf6f8b66514989356"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>Information about the environment the program is running in. </p>
 <p>In practice, this holds info about MPI ranks and helps to hide MPI initialization code</p>
-<dl class="section author"><dt>Author</dt><dd>Ania Brown </dd></dl>
+<dl class="section author"><dt>Author</dt><dd>Ania Brown </dd>
+<dd>
+Tyson Jones (seeding) </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="QuEST_8h_source.html#l00361">361</a> of file <a class="el" href="QuEST_8h_source.html">QuEST.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="QuEST_8h_source.html#l00362">362</a> of file <a class="el" href="QuEST_8h_source.html">QuEST.h</a>.</p>
 </div><h2 class="groupheader">Field Documentation</h2>
 <a id="af22aacd7c9905accae28484785c193b4"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#af22aacd7c9905accae28484785c193b4">&#9670;&nbsp;</a></span>numRanks</h2>
@@ -88,9 +94,27 @@ Data Fields</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="QuEST_8h_source.html#l00364">364</a> of file <a class="el" href="QuEST_8h_source.html">QuEST.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="QuEST_8h_source.html#l00365">365</a> of file <a class="el" href="QuEST_8h_source.html">QuEST.h</a>.</p>
 
-<p class="reference">Referenced by <a class="el" href="QuEST__cpu_8c_source.html#l01335">agnostic_createDiagonalOp()</a>, <a class="el" href="QuEST_8c_source.html#l00050">createDensityQureg()</a>, <a class="el" href="QuEST_8c_source.html#l01503">createDiagonalOp()</a>, <a class="el" href="QuEST_8c_source.html#l01543">createDiagonalOpFromPauliHamilFile()</a>, <a class="el" href="QuEST__cpu__distributed_8c_source.html#l00129">createQuESTEnv()</a>, <a class="el" href="QuEST_8c_source.html#l00036">createQureg()</a>, <a class="el" href="QuEST__cpu__distributed_8c_source.html#l00194">getEnvironmentString()</a>, <a class="el" href="QuEST__cpu__distributed_8c_source.html#l00179">reportQuESTEnv()</a>, <a class="el" href="QuEST__cpu_8c_source.html#l01279">statevec_createQureg()</a>, <a class="el" href="QuEST__cpu_8c_source.html#l01317">statevec_destroyQureg()</a>, and <a class="el" href="test__data__structures_8cpp_source.html#l00131">TEST_CASE()</a>.</p>
+<p class="reference">Referenced by <a class="el" href="QuEST__cpu_8c_source.html#l01346">agnostic_createDiagonalOp()</a>, <a class="el" href="QuEST_8c_source.html#l00050">createDensityQureg()</a>, <a class="el" href="QuEST_8c_source.html#l01518">createDiagonalOp()</a>, <a class="el" href="QuEST_8c_source.html#l01558">createDiagonalOpFromPauliHamilFile()</a>, <a class="el" href="QuEST__cpu__distributed_8c_source.html#l00129">createQuESTEnv()</a>, <a class="el" href="QuEST_8c_source.html#l00036">createQureg()</a>, <a class="el" href="QuEST__cpu__distributed_8c_source.html#l00198">getEnvironmentString()</a>, <a class="el" href="QuEST__cpu__distributed_8c_source.html#l00183">reportQuESTEnv()</a>, <a class="el" href="QuEST__cpu_8c_source.html#l01290">statevec_createQureg()</a>, <a class="el" href="QuEST__cpu_8c_source.html#l01328">statevec_destroyQureg()</a>, and <a class="el" href="test__data__structures_8cpp_source.html#l00131">TEST_CASE()</a>.</p>
+
+</div>
+</div>
+<a id="a46e67e1a5ab930e04ff59f83f1d8630d"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a46e67e1a5ab930e04ff59f83f1d8630d">&#9670;&nbsp;</a></span>numSeeds</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">int QuESTEnv::numSeeds</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p class="definition">Definition at line <a class="el" href="QuEST_8h_source.html#l00367">367</a> of file <a class="el" href="QuEST_8h_source.html">QuEST.h</a>.</p>
+
+<p class="reference">Referenced by <a class="el" href="QuEST__cpu__distributed_8c_source.html#l00129">createQuESTEnv()</a>, <a class="el" href="QuEST_8c_source.html#l01622">getQuESTSeeds()</a>, and <a class="el" href="QuEST__cpu__distributed_8c_source.html#l01388">seedQuEST()</a>.</p>
 
 </div>
 </div>
@@ -106,9 +130,27 @@ Data Fields</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="QuEST_8h_source.html#l00363">363</a> of file <a class="el" href="QuEST_8h_source.html">QuEST.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="QuEST_8h_source.html#l00364">364</a> of file <a class="el" href="QuEST_8h_source.html">QuEST.h</a>.</p>
 
-<p class="reference">Referenced by <a class="el" href="QuEST__cpu_8c_source.html#l01335">agnostic_createDiagonalOp()</a>, <a class="el" href="QuEST__cpu__distributed_8c_source.html#l00129">createQuESTEnv()</a>, <a class="el" href="utilities_8cpp_source.html#l01375">deleteFilesWithPrefixSynch()</a>, <a class="el" href="QuEST__cpu__distributed_8c_source.html#l00179">reportQuESTEnv()</a>, <a class="el" href="QuEST__cpu_8c_source.html#l01279">statevec_createQureg()</a>, <a class="el" href="test__data__structures_8cpp_source.html#l00190">TEST_CASE()</a>, and <a class="el" href="utilities_8cpp_source.html#l01362">writeToFileSynch()</a>.</p>
+<p class="reference">Referenced by <a class="el" href="QuEST__cpu_8c_source.html#l01346">agnostic_createDiagonalOp()</a>, <a class="el" href="QuEST__cpu__distributed_8c_source.html#l00129">createQuESTEnv()</a>, <a class="el" href="utilities_8cpp_source.html#l01375">deleteFilesWithPrefixSynch()</a>, <a class="el" href="QuEST__cpu__distributed_8c_source.html#l00183">reportQuESTEnv()</a>, <a class="el" href="QuEST__cpu_8c_source.html#l01290">statevec_createQureg()</a>, <a class="el" href="test__data__structures_8cpp_source.html#l00190">TEST_CASE()</a>, and <a class="el" href="utilities_8cpp_source.html#l01362">writeToFileSynch()</a>.</p>
+
+</div>
+</div>
+<a id="a66feaa60d3adc7dcf6f8b66514989356"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a66feaa60d3adc7dcf6f8b66514989356">&#9670;&nbsp;</a></span>seeds</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">unsigned long int* QuESTEnv::seeds</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p class="definition">Definition at line <a class="el" href="QuEST_8h_source.html#l00366">366</a> of file <a class="el" href="QuEST_8h_source.html">QuEST.h</a>.</p>
+
+<p class="reference">Referenced by <a class="el" href="QuEST__cpu__distributed_8c_source.html#l00129">createQuESTEnv()</a>, <a class="el" href="QuEST__cpu__distributed_8c_source.html#l00174">destroyQuESTEnv()</a>, <a class="el" href="QuEST_8c_source.html#l01622">getQuESTSeeds()</a>, and <a class="el" href="QuEST__cpu__distributed_8c_source.html#l01388">seedQuEST()</a>.</p>
 
 </div>
 </div>

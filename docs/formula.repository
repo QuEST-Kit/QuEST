@@ -303,6 +303,6 @@
 \_form#302:$j\text{th}$
 \_form#303:$n =$
 \_form#304:$N =$
-\_form#305:\[ (\text{QFT}\otimes 1) \, \left( \sum\limits_{j=0}^{2^N-1} \alpha_j \, |x_j,r_j\rangle \right) = \frac{1}{\sqrt{2^n}} \sum\limits_{j=0}^{2^N-1} \alpha_j \left( \sum\limits_{y=0}^{2^n-1} e^{2 \pi \, i \, x_j \, y / 2^N} \; |y,r_j \rangle \right) \]
+\_form#305:\[ (\text{QFT}\otimes 1) \, \left( \sum\limits_{j=0}^{2^N-1} \alpha_j \, |x_j,r_j\rangle \right) = \frac{1}{\sqrt{2^n}} \sum\limits_{j=0}^{2^N-1} \alpha_j \left( \sum\limits_{y=0}^{2^n-1} e^{2 \pi \, i \, x_j \, y / 2^n} \; |y,r_j \rangle \right) \]
 \_form#306:\[ \text{state} \to \text{op} \, \text{state} \, \text{op}^\dagger \]
 \_form#307:\[ \text{state} \to \text{op} \, \text{state} \]

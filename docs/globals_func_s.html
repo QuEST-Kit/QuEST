@@ -27,7 +27,7 @@
             <div class="container">
                 <div class="navbar-header">
                     <a class="navbar-brand"><img alt="Logo" src="logo.png"/></a>
-                    <a class="navbar-brand"><b>QuEST</b> v3.3.0<br>The Quantum Exact Simulation Toolkit</a>
+                    <a class="navbar-brand"><b>QuEST</b> v3.4.0<br>The Quantum Exact Simulation Toolkit</a>
                 </div>
             </div>
         </nav>
@@ -54,14 +54,14 @@ $(function() {
 
 <h3><a id="index_s"></a>- s -</h3><ul>
 <li>seedQuEST()
-: <a class="el" href="group__debug.html#ga95012dad46509b4b461974c34cfd7b3d">QuEST_common.c</a>
-, <a class="el" href="group__debug.html#ga95012dad46509b4b461974c34cfd7b3d">QuEST.h</a>
+: <a class="el" href="group__debug.html#ga555451c697ea4a9d27389155f68fdabc">QuEST_cpu_distributed.c</a>
+, <a class="el" href="group__debug.html#ga555451c697ea4a9d27389155f68fdabc">QuEST_cpu_local.c</a>
+, <a class="el" href="group__debug.html#ga555451c697ea4a9d27389155f68fdabc">QuEST.h</a>
+, <a class="el" href="group__debug.html#ga555451c697ea4a9d27389155f68fdabc">QuEST_gpu.cu</a>
 </li>
 <li>seedQuESTDefault()
-: <a class="el" href="group__debug.html#gaa8437ef3bf135231e2916e64dde1c94e">QuEST_cpu_local.c</a>
-, <a class="el" href="group__debug.html#gaa8437ef3bf135231e2916e64dde1c94e">QuEST_gpu.cu</a>
-, <a class="el" href="group__debug.html#gaa8437ef3bf135231e2916e64dde1c94e">QuEST_cpu_distributed.c</a>
-, <a class="el" href="group__debug.html#gaa8437ef3bf135231e2916e64dde1c94e">QuEST.h</a>
+: <a class="el" href="group__debug.html#gae53fad7ebafccf236ad62b41e3244214">QuEST.c</a>
+, <a class="el" href="group__debug.html#gae53fad7ebafccf236ad62b41e3244214">QuEST.h</a>
 </li>
 <li>sequences()
 : <a class="el" href="group__testutilities.html#ga181366c4cdc7786bcc066e8ac8342c1d">utilities.hpp</a>
@@ -113,9 +113,6 @@ $(function() {
 <li>sGate()
 : <a class="el" href="group__unitary.html#ga655ffcd4def2e127341c9488f5ca8455">QuEST.c</a>
 , <a class="el" href="group__unitary.html#ga655ffcd4def2e127341c9488f5ca8455">QuEST.h</a>
-</li>
-<li>SHARED_calcProbOfAllOutcomes()
-: <a class="el" href="QuEST_8h.html#a2a1b52e1c035d4dd36bab215bad177c1">QuEST.h</a>
 </li>
 <li>shiftIndices()
 : <a class="el" href="QuEST__common_8c.html#acf1c651a4359a370a2d9b3e1e1ebd430">QuEST_common.c</a>
@@ -173,10 +170,10 @@ $(function() {
 : <a class="el" href="QuEST__gpu_8cu.html#af6f0087743a115ed303cd4733b9f9494">QuEST_gpu.cu</a>
 </li>
 <li>statevec_calcExpecDiagonalOp()
-: <a class="el" href="QuEST__cpu__local_8c.html#a0fb948ddab4ca210e523aa3c52639df4">QuEST_cpu_local.c</a>
-, <a class="el" href="QuEST__gpu_8cu.html#a0fb948ddab4ca210e523aa3c52639df4">QuEST_gpu.cu</a>
+: <a class="el" href="QuEST__gpu_8cu.html#a0fb948ddab4ca210e523aa3c52639df4">QuEST_gpu.cu</a>
 , <a class="el" href="QuEST__internal_8h.html#a0fb948ddab4ca210e523aa3c52639df4">QuEST_internal.h</a>
 , <a class="el" href="QuEST__cpu__distributed_8c.html#a0fb948ddab4ca210e523aa3c52639df4">QuEST_cpu_distributed.c</a>
+, <a class="el" href="QuEST__cpu__local_8c.html#a0fb948ddab4ca210e523aa3c52639df4">QuEST_cpu_local.c</a>
 </li>
 <li>statevec_calcExpecDiagonalOpKernel()
 : <a class="el" href="QuEST__gpu_8cu.html#a34c5af075a18c7d6513a3d41284f1ab3">QuEST_gpu.cu</a>
@@ -290,8 +287,8 @@ $(function() {
 , <a class="el" href="QuEST__gpu_8cu.html#a1275d604674224d87a173fb5bac78835">QuEST_gpu.cu</a>
 </li>
 <li>statevec_controlledCompactUnitaryDistributed()
-: <a class="el" href="QuEST__cpu__internal_8h.html#a071baf8b6951d2a7d6529394b6f39364">QuEST_cpu_internal.h</a>
-, <a class="el" href="QuEST__cpu_8c.html#a071baf8b6951d2a7d6529394b6f39364">QuEST_cpu.c</a>
+: <a class="el" href="QuEST__cpu_8c.html#a071baf8b6951d2a7d6529394b6f39364">QuEST_cpu.c</a>
+, <a class="el" href="QuEST__cpu__internal_8h.html#a071baf8b6951d2a7d6529394b6f39364">QuEST_cpu_internal.h</a>
 </li>
 <li>statevec_controlledCompactUnitaryKernel()
 : <a class="el" href="QuEST__gpu_8cu.html#ab1bc0bf471c4459dd845adbfac5ef857">QuEST_gpu.cu</a>
@@ -442,8 +439,8 @@ $(function() {
 , <a class="el" href="QuEST__gpu_8cu.html#abc9a9ef4344c7faaaf28ac25c76649b9">QuEST_gpu.cu</a>
 </li>
 <li>statevec_hadamard()
-: <a class="el" href="QuEST__internal_8h.html#af3fc7bd149c70f083b149050242cd55e">QuEST_internal.h</a>
-, <a class="el" href="QuEST__cpu__distributed_8c.html#af3fc7bd149c70f083b149050242cd55e">QuEST_cpu_distributed.c</a>
+: <a class="el" href="QuEST__cpu__distributed_8c.html#af3fc7bd149c70f083b149050242cd55e">QuEST_cpu_distributed.c</a>
+, <a class="el" href="QuEST__internal_8h.html#af3fc7bd149c70f083b149050242cd55e">QuEST_internal.h</a>
 , <a class="el" href="QuEST__cpu__local_8c.html#af3fc7bd149c70f083b149050242cd55e">QuEST_cpu_local.c</a>
 , <a class="el" href="QuEST__gpu_8cu.html#af3fc7bd149c70f083b149050242cd55e">QuEST_gpu.cu</a>
 </li>
@@ -455,8 +452,8 @@ $(function() {
 : <a class="el" href="QuEST__gpu_8cu.html#afcf7b425ab92924c15b0b95b0d64c307">QuEST_gpu.cu</a>
 </li>
 <li>statevec_hadamardLocal()
-: <a class="el" href="QuEST__cpu__internal_8h.html#a86dbcc3db99294add9964741e19fbdab">QuEST_cpu_internal.h</a>
-, <a class="el" href="QuEST__cpu_8c.html#a86dbcc3db99294add9964741e19fbdab">QuEST_cpu.c</a>
+: <a class="el" href="QuEST__cpu_8c.html#a86dbcc3db99294add9964741e19fbdab">QuEST_cpu.c</a>
+, <a class="el" href="QuEST__cpu__internal_8h.html#a86dbcc3db99294add9964741e19fbdab">QuEST_cpu_internal.h</a>
 </li>
 <li>statevec_initBlankState()
 : <a class="el" href="QuEST__internal_8h.html#a758bad4237ff0bf3b4ff5be626a982ae">QuEST_internal.h</a>
@@ -496,16 +493,16 @@ $(function() {
 , <a class="el" href="QuEST__gpu_8cu.html#a05756b45f10135bb2eeb07380f806c20">QuEST_gpu.cu</a>
 </li>
 <li>statevec_initStateOfSingleQubit()
-: <a class="el" href="QuEST__internal_8h.html#a923906770cac0da9e3459bae58de9e64">QuEST_internal.h</a>
-, <a class="el" href="QuEST__cpu_8c.html#a923906770cac0da9e3459bae58de9e64">QuEST_cpu.c</a>
+: <a class="el" href="QuEST__cpu_8c.html#a923906770cac0da9e3459bae58de9e64">QuEST_cpu.c</a>
+, <a class="el" href="QuEST__internal_8h.html#a923906770cac0da9e3459bae58de9e64">QuEST_internal.h</a>
 , <a class="el" href="QuEST__gpu_8cu.html#a923906770cac0da9e3459bae58de9e64">QuEST_gpu.cu</a>
 </li>
 <li>statevec_initStateOfSingleQubitKernel()
 : <a class="el" href="QuEST__gpu_8cu.html#ace807c2089e172363db9ffe083f60f71">QuEST_gpu.cu</a>
 </li>
 <li>statevec_initZeroState()
-: <a class="el" href="QuEST__internal_8h.html#a2ca0c6ba07ab2b4b437321bf17efc966">QuEST_internal.h</a>
-, <a class="el" href="QuEST__cpu_8c.html#a2ca0c6ba07ab2b4b437321bf17efc966">QuEST_cpu.c</a>
+: <a class="el" href="QuEST__cpu_8c.html#a2ca0c6ba07ab2b4b437321bf17efc966">QuEST_cpu.c</a>
+, <a class="el" href="QuEST__internal_8h.html#a2ca0c6ba07ab2b4b437321bf17efc966">QuEST_internal.h</a>
 , <a class="el" href="QuEST__gpu_8cu.html#a2ca0c6ba07ab2b4b437321bf17efc966">QuEST_gpu.cu</a>
 </li>
 <li>statevec_initZeroStateKernel()
@@ -516,10 +513,10 @@ $(function() {
 , <a class="el" href="QuEST__internal_8h.html#ac2eb81c71d0e0fbec7be5b45b1db1448">QuEST_internal.h</a>
 </li>
 <li>statevec_multiControlledMultiQubitNot()
-: <a class="el" href="QuEST__cpu__local_8c.html#a13ecc24b355a5213d745651cde56bd71">QuEST_cpu_local.c</a>
+: <a class="el" href="QuEST__gpu_8cu.html#a13ecc24b355a5213d745651cde56bd71">QuEST_gpu.cu</a>
 , <a class="el" href="QuEST__internal_8h.html#a13ecc24b355a5213d745651cde56bd71">QuEST_internal.h</a>
 , <a class="el" href="QuEST__cpu__distributed_8c.html#a13ecc24b355a5213d745651cde56bd71">QuEST_cpu_distributed.c</a>
-, <a class="el" href="QuEST__gpu_8cu.html#a13ecc24b355a5213d745651cde56bd71">QuEST_gpu.cu</a>
+, <a class="el" href="QuEST__cpu__local_8c.html#a13ecc24b355a5213d745651cde56bd71">QuEST_cpu_local.c</a>
 </li>
 <li>statevec_multiControlledMultiQubitNotDistributed()
 : <a class="el" href="QuEST__cpu_8c.html#ae6f0c9ed9261afbab4712e056a88763d">QuEST_cpu.c</a>
@@ -533,10 +530,10 @@ $(function() {
 , <a class="el" href="QuEST__cpu__internal_8h.html#ac7d30ce54573c75b35386cd0e284adc5">QuEST_cpu_internal.h</a>
 </li>
 <li>statevec_multiControlledMultiQubitUnitary()
-: <a class="el" href="QuEST__cpu__local_8c.html#a0acfe30083d0bc2a84da196378a36122">QuEST_cpu_local.c</a>
-, <a class="el" href="QuEST__gpu_8cu.html#a0acfe30083d0bc2a84da196378a36122">QuEST_gpu.cu</a>
-, <a class="el" href="QuEST__cpu__distributed_8c.html#a0acfe30083d0bc2a84da196378a36122">QuEST_cpu_distributed.c</a>
+: <a class="el" href="QuEST__gpu_8cu.html#a0acfe30083d0bc2a84da196378a36122">QuEST_gpu.cu</a>
+, <a class="el" href="QuEST__cpu__local_8c.html#a0acfe30083d0bc2a84da196378a36122">QuEST_cpu_local.c</a>
 , <a class="el" href="QuEST__internal_8h.html#a0acfe30083d0bc2a84da196378a36122">QuEST_internal.h</a>
+, <a class="el" href="QuEST__cpu__distributed_8c.html#a0acfe30083d0bc2a84da196378a36122">QuEST_cpu_distributed.c</a>
 </li>
 <li>statevec_multiControlledMultiQubitUnitaryKernel()
 : <a class="el" href="QuEST__gpu_8cu.html#afd7fc4d67072a80dbc609bf328b5be20">QuEST_gpu.cu</a>
@@ -551,46 +548,46 @@ $(function() {
 </li>
 <li>statevec_multiControlledMultiRotateZ()
 : <a class="el" href="QuEST__cpu_8c.html#a3ed30f823a59890be17441d97ce90c5c">QuEST_cpu.c</a>
-, <a class="el" href="QuEST__gpu_8cu.html#a3ed30f823a59890be17441d97ce90c5c">QuEST_gpu.cu</a>
 , <a class="el" href="QuEST__internal_8h.html#a3ed30f823a59890be17441d97ce90c5c">QuEST_internal.h</a>
+, <a class="el" href="QuEST__gpu_8cu.html#a3ed30f823a59890be17441d97ce90c5c">QuEST_gpu.cu</a>
 </li>
 <li>statevec_multiControlledMultiRotateZKernel()
 : <a class="el" href="QuEST__gpu_8cu.html#aac71aef8fca67e5a0547ea2d3426d40d">QuEST_gpu.cu</a>
 </li>
 <li>statevec_multiControlledPhaseFlip()
-: <a class="el" href="QuEST__cpu_8c.html#ac4ee5979d475e8c729294b8ef7e0270d">QuEST_cpu.c</a>
+: <a class="el" href="QuEST__internal_8h.html#ac4ee5979d475e8c729294b8ef7e0270d">QuEST_internal.h</a>
 , <a class="el" href="QuEST__gpu_8cu.html#ac4ee5979d475e8c729294b8ef7e0270d">QuEST_gpu.cu</a>
-, <a class="el" href="QuEST__internal_8h.html#ac4ee5979d475e8c729294b8ef7e0270d">QuEST_internal.h</a>
+, <a class="el" href="QuEST__cpu_8c.html#ac4ee5979d475e8c729294b8ef7e0270d">QuEST_cpu.c</a>
 </li>
 <li>statevec_multiControlledPhaseFlipKernel()
 : <a class="el" href="QuEST__gpu_8cu.html#ab1f13b1980ec46bac75e97c578d15e98">QuEST_gpu.cu</a>
 </li>
 <li>statevec_multiControlledPhaseShift()
-: <a class="el" href="QuEST__cpu_8c.html#aa662796ea6e0f471143c53becae8c12c">QuEST_cpu.c</a>
+: <a class="el" href="QuEST__internal_8h.html#aa662796ea6e0f471143c53becae8c12c">QuEST_internal.h</a>
 , <a class="el" href="QuEST__gpu_8cu.html#aa662796ea6e0f471143c53becae8c12c">QuEST_gpu.cu</a>
-, <a class="el" href="QuEST__internal_8h.html#aa662796ea6e0f471143c53becae8c12c">QuEST_internal.h</a>
+, <a class="el" href="QuEST__cpu_8c.html#aa662796ea6e0f471143c53becae8c12c">QuEST_cpu.c</a>
 </li>
 <li>statevec_multiControlledPhaseShiftKernel()
 : <a class="el" href="QuEST__gpu_8cu.html#a11dc3581b1efe1332854eac7594bc647">QuEST_gpu.cu</a>
 </li>
 <li>statevec_multiControlledTwoQubitUnitary()
-: <a class="el" href="QuEST__cpu__distributed_8c.html#affbd18d7c2ed8d5bd5edb67116501145">QuEST_cpu_distributed.c</a>
-, <a class="el" href="QuEST__gpu_8cu.html#affbd18d7c2ed8d5bd5edb67116501145">QuEST_gpu.cu</a>
-, <a class="el" href="QuEST__internal_8h.html#a3eadcb581f2623e21e4967f791d0439c">QuEST_internal.h</a>
+: <a class="el" href="QuEST__internal_8h.html#a3eadcb581f2623e21e4967f791d0439c">QuEST_internal.h</a>
 , <a class="el" href="QuEST__cpu__local_8c.html#affbd18d7c2ed8d5bd5edb67116501145">QuEST_cpu_local.c</a>
+, <a class="el" href="QuEST__cpu__distributed_8c.html#affbd18d7c2ed8d5bd5edb67116501145">QuEST_cpu_distributed.c</a>
+, <a class="el" href="QuEST__gpu_8cu.html#affbd18d7c2ed8d5bd5edb67116501145">QuEST_gpu.cu</a>
 </li>
 <li>statevec_multiControlledTwoQubitUnitaryKernel()
 : <a class="el" href="QuEST__gpu_8cu.html#aed40f77bf851930363897f3d28a5093b">QuEST_gpu.cu</a>
 </li>
 <li>statevec_multiControlledTwoQubitUnitaryLocal()
-: <a class="el" href="QuEST__cpu_8c.html#af8236a00389137b5eff986a40577eaf3">QuEST_cpu.c</a>
-, <a class="el" href="QuEST__cpu__internal_8h.html#af8236a00389137b5eff986a40577eaf3">QuEST_cpu_internal.h</a>
+: <a class="el" href="QuEST__cpu__internal_8h.html#af8236a00389137b5eff986a40577eaf3">QuEST_cpu_internal.h</a>
+, <a class="el" href="QuEST__cpu_8c.html#af8236a00389137b5eff986a40577eaf3">QuEST_cpu.c</a>
 </li>
 <li>statevec_multiControlledUnitary()
-: <a class="el" href="QuEST__internal_8h.html#a600bda10463e2078ce746ec28f2d39c9">QuEST_internal.h</a>
-, <a class="el" href="QuEST__cpu__local_8c.html#a600bda10463e2078ce746ec28f2d39c9">QuEST_cpu_local.c</a>
-, <a class="el" href="QuEST__cpu__distributed_8c.html#a600bda10463e2078ce746ec28f2d39c9">QuEST_cpu_distributed.c</a>
+: <a class="el" href="QuEST__cpu__distributed_8c.html#a600bda10463e2078ce746ec28f2d39c9">QuEST_cpu_distributed.c</a>
 , <a class="el" href="QuEST__gpu_8cu.html#a600bda10463e2078ce746ec28f2d39c9">QuEST_gpu.cu</a>
+, <a class="el" href="QuEST__internal_8h.html#a600bda10463e2078ce746ec28f2d39c9">QuEST_internal.h</a>
+, <a class="el" href="QuEST__cpu__local_8c.html#a600bda10463e2078ce746ec28f2d39c9">QuEST_cpu_local.c</a>
 </li>
 <li>statevec_multiControlledUnitaryDistributed()
 : <a class="el" href="QuEST__cpu__internal_8h.html#ab58fe4be895283c2c4eb86ec9af5682e">QuEST_cpu_internal.h</a>
@@ -604,30 +601,30 @@ $(function() {
 , <a class="el" href="QuEST__cpu__internal_8h.html#ab19f28e68330da68ea3caa2bdef32da9">QuEST_cpu_internal.h</a>
 </li>
 <li>statevec_multiQubitUnitary()
-: <a class="el" href="QuEST__internal_8h.html#a7a76950824f17e821415070a4bfdad5b">QuEST_internal.h</a>
-, <a class="el" href="QuEST__common_8c.html#a7a76950824f17e821415070a4bfdad5b">QuEST_common.c</a>
+: <a class="el" href="QuEST__common_8c.html#a7a76950824f17e821415070a4bfdad5b">QuEST_common.c</a>
+, <a class="el" href="QuEST__internal_8h.html#a7a76950824f17e821415070a4bfdad5b">QuEST_internal.h</a>
 </li>
 <li>statevec_multiRotatePauli()
-: <a class="el" href="QuEST__internal_8h.html#a2153d8611247dd3a2ef483355265cc99">QuEST_internal.h</a>
-, <a class="el" href="QuEST__common_8c.html#a2153d8611247dd3a2ef483355265cc99">QuEST_common.c</a>
+: <a class="el" href="QuEST__common_8c.html#a2153d8611247dd3a2ef483355265cc99">QuEST_common.c</a>
+, <a class="el" href="QuEST__internal_8h.html#a2153d8611247dd3a2ef483355265cc99">QuEST_internal.h</a>
 </li>
 <li>statevec_multiRotateZ()
-: <a class="el" href="QuEST__cpu_8c.html#a8d88b4ed94ab024e5e7b2f1f4f505b44">QuEST_cpu.c</a>
-, <a class="el" href="QuEST__internal_8h.html#a8d88b4ed94ab024e5e7b2f1f4f505b44">QuEST_internal.h</a>
+: <a class="el" href="QuEST__internal_8h.html#a8d88b4ed94ab024e5e7b2f1f4f505b44">QuEST_internal.h</a>
 , <a class="el" href="QuEST__gpu_8cu.html#a8d88b4ed94ab024e5e7b2f1f4f505b44">QuEST_gpu.cu</a>
+, <a class="el" href="QuEST__cpu_8c.html#a8d88b4ed94ab024e5e7b2f1f4f505b44">QuEST_cpu.c</a>
 </li>
 <li>statevec_multiRotateZKernel()
 : <a class="el" href="QuEST__gpu_8cu.html#a754e4531aa159461177751dd12e988ed">QuEST_gpu.cu</a>
 </li>
 <li>statevec_pauliX()
-: <a class="el" href="QuEST__cpu__distributed_8c.html#a1c82b5e914a8a39c5c7b782dbc16fa76">QuEST_cpu_distributed.c</a>
-, <a class="el" href="QuEST__internal_8h.html#a1c82b5e914a8a39c5c7b782dbc16fa76">QuEST_internal.h</a>
-, <a class="el" href="QuEST__gpu_8cu.html#a1c82b5e914a8a39c5c7b782dbc16fa76">QuEST_gpu.cu</a>
+: <a class="el" href="QuEST__internal_8h.html#a1c82b5e914a8a39c5c7b782dbc16fa76">QuEST_internal.h</a>
 , <a class="el" href="QuEST__cpu__local_8c.html#a1c82b5e914a8a39c5c7b782dbc16fa76">QuEST_cpu_local.c</a>
+, <a class="el" href="QuEST__gpu_8cu.html#a1c82b5e914a8a39c5c7b782dbc16fa76">QuEST_gpu.cu</a>
+, <a class="el" href="QuEST__cpu__distributed_8c.html#a1c82b5e914a8a39c5c7b782dbc16fa76">QuEST_cpu_distributed.c</a>
 </li>
 <li>statevec_pauliXDistributed()
-: <a class="el" href="QuEST__cpu__internal_8h.html#a464efbd1d7ca5a7b25c83ada001955c2">QuEST_cpu_internal.h</a>
-, <a class="el" href="QuEST__cpu_8c.html#a464efbd1d7ca5a7b25c83ada001955c2">QuEST_cpu.c</a>
+: <a class="el" href="QuEST__cpu_8c.html#a464efbd1d7ca5a7b25c83ada001955c2">QuEST_cpu.c</a>
+, <a class="el" href="QuEST__cpu__internal_8h.html#a464efbd1d7ca5a7b25c83ada001955c2">QuEST_cpu_internal.h</a>
 </li>
 <li>statevec_pauliXKernel()
 : <a class="el" href="QuEST__gpu_8cu.html#a61f547009235f367c6f983f8768dae19">QuEST_gpu.cu</a>
@@ -638,19 +635,19 @@ $(function() {
 </li>
 <li>statevec_pauliY()
 : <a class="el" href="QuEST__cpu__local_8c.html#af1cca787f3b0e0c91ffb2495f9ad8d5a">QuEST_cpu_local.c</a>
-, <a class="el" href="QuEST__internal_8h.html#af1cca787f3b0e0c91ffb2495f9ad8d5a">QuEST_internal.h</a>
-, <a class="el" href="QuEST__gpu_8cu.html#af1cca787f3b0e0c91ffb2495f9ad8d5a">QuEST_gpu.cu</a>
 , <a class="el" href="QuEST__cpu__distributed_8c.html#af1cca787f3b0e0c91ffb2495f9ad8d5a">QuEST_cpu_distributed.c</a>
+, <a class="el" href="QuEST__gpu_8cu.html#af1cca787f3b0e0c91ffb2495f9ad8d5a">QuEST_gpu.cu</a>
+, <a class="el" href="QuEST__internal_8h.html#af1cca787f3b0e0c91ffb2495f9ad8d5a">QuEST_internal.h</a>
 </li>
 <li>statevec_pauliYConj()
-: <a class="el" href="QuEST__internal_8h.html#a81fbd2eccd0d0e5a3cece4df2f96cb92">QuEST_internal.h</a>
-, <a class="el" href="QuEST__cpu__local_8c.html#a81fbd2eccd0d0e5a3cece4df2f96cb92">QuEST_cpu_local.c</a>
-, <a class="el" href="QuEST__cpu__distributed_8c.html#a81fbd2eccd0d0e5a3cece4df2f96cb92">QuEST_cpu_distributed.c</a>
+: <a class="el" href="QuEST__cpu__distributed_8c.html#a81fbd2eccd0d0e5a3cece4df2f96cb92">QuEST_cpu_distributed.c</a>
 , <a class="el" href="QuEST__gpu_8cu.html#a81fbd2eccd0d0e5a3cece4df2f96cb92">QuEST_gpu.cu</a>
+, <a class="el" href="QuEST__internal_8h.html#a81fbd2eccd0d0e5a3cece4df2f96cb92">QuEST_internal.h</a>
+, <a class="el" href="QuEST__cpu__local_8c.html#a81fbd2eccd0d0e5a3cece4df2f96cb92">QuEST_cpu_local.c</a>
 </li>
 <li>statevec_pauliYDistributed()
-: <a class="el" href="QuEST__cpu_8c.html#a0f562af6cb665a8a7a3f80e9449734d5">QuEST_cpu.c</a>
-, <a class="el" href="QuEST__cpu__internal_8h.html#a0f562af6cb665a8a7a3f80e9449734d5">QuEST_cpu_internal.h</a>
+: <a class="el" href="QuEST__cpu__internal_8h.html#a0f562af6cb665a8a7a3f80e9449734d5">QuEST_cpu_internal.h</a>
+, <a class="el" href="QuEST__cpu_8c.html#a0f562af6cb665a8a7a3f80e9449734d5">QuEST_cpu.c</a>
 </li>
 <li>statevec_pauliYKernel()
 : <a class="el" href="QuEST__gpu_8cu.html#a2b9beefe0873d2c2e8fec68f86e057fc">QuEST_gpu.cu</a>
@@ -660,70 +657,70 @@ $(function() {
 , <a class="el" href="QuEST__cpu_8c.html#a45b0916c3e121837f214b64f7424e479">QuEST_cpu.c</a>
 </li>
 <li>statevec_pauliZ()
-: <a class="el" href="QuEST__common_8c.html#ab14df201e5c05527dc77cfeb6f583042">QuEST_common.c</a>
-, <a class="el" href="QuEST__internal_8h.html#ab14df201e5c05527dc77cfeb6f583042">QuEST_internal.h</a>
+: <a class="el" href="QuEST__internal_8h.html#ab14df201e5c05527dc77cfeb6f583042">QuEST_internal.h</a>
+, <a class="el" href="QuEST__common_8c.html#ab14df201e5c05527dc77cfeb6f583042">QuEST_common.c</a>
 </li>
 <li>statevec_phaseShift()
 : <a class="el" href="QuEST__internal_8h.html#a5ef139196852f92fe8271c82964eadff">QuEST_internal.h</a>
 , <a class="el" href="QuEST__common_8c.html#a5ef139196852f92fe8271c82964eadff">QuEST_common.c</a>
 </li>
 <li>statevec_phaseShiftByTerm()
-: <a class="el" href="QuEST__cpu_8c.html#a535cc3c9962d511078691e4d64b4e272">QuEST_cpu.c</a>
+: <a class="el" href="QuEST__gpu_8cu.html#a535cc3c9962d511078691e4d64b4e272">QuEST_gpu.cu</a>
 , <a class="el" href="QuEST__internal_8h.html#a535cc3c9962d511078691e4d64b4e272">QuEST_internal.h</a>
-, <a class="el" href="QuEST__gpu_8cu.html#a535cc3c9962d511078691e4d64b4e272">QuEST_gpu.cu</a>
+, <a class="el" href="QuEST__cpu_8c.html#a535cc3c9962d511078691e4d64b4e272">QuEST_cpu.c</a>
 </li>
 <li>statevec_phaseShiftByTermKernel()
 : <a class="el" href="QuEST__gpu_8cu.html#ad2c5cb1c21c9d6cab081b820d1ba4995">QuEST_gpu.cu</a>
 </li>
 <li>statevec_reportStateToScreen()
-: <a class="el" href="QuEST__gpu_8cu.html#a1e57230c7995447039e62a84c0a36524">QuEST_gpu.cu</a>
+: <a class="el" href="QuEST__internal_8h.html#a1e57230c7995447039e62a84c0a36524">QuEST_internal.h</a>
+, <a class="el" href="QuEST__gpu_8cu.html#a1e57230c7995447039e62a84c0a36524">QuEST_gpu.cu</a>
 , <a class="el" href="QuEST__cpu_8c.html#a1e57230c7995447039e62a84c0a36524">QuEST_cpu.c</a>
-, <a class="el" href="QuEST__internal_8h.html#a1e57230c7995447039e62a84c0a36524">QuEST_internal.h</a>
 </li>
 <li>statevec_rotateAroundAxis()
-: <a class="el" href="QuEST__common_8c.html#adf5fbea75826cde7d86fd7c31bcf3dec">QuEST_common.c</a>
-, <a class="el" href="QuEST__internal_8h.html#adf5fbea75826cde7d86fd7c31bcf3dec">QuEST_internal.h</a>
+: <a class="el" href="QuEST__internal_8h.html#adf5fbea75826cde7d86fd7c31bcf3dec">QuEST_internal.h</a>
+, <a class="el" href="QuEST__common_8c.html#adf5fbea75826cde7d86fd7c31bcf3dec">QuEST_common.c</a>
 </li>
 <li>statevec_rotateAroundAxisConj()
 : <a class="el" href="QuEST__internal_8h.html#a2cbfe9f416d4d8acb56213841f62cb53">QuEST_internal.h</a>
 , <a class="el" href="QuEST__common_8c.html#a2cbfe9f416d4d8acb56213841f62cb53">QuEST_common.c</a>
 </li>
 <li>statevec_rotateX()
-: <a class="el" href="QuEST__internal_8h.html#ab8687e6ea5cf35503c223051837f3b94">QuEST_internal.h</a>
-, <a class="el" href="QuEST__common_8c.html#ab8687e6ea5cf35503c223051837f3b94">QuEST_common.c</a>
+: <a class="el" href="QuEST__common_8c.html#ab8687e6ea5cf35503c223051837f3b94">QuEST_common.c</a>
+, <a class="el" href="QuEST__internal_8h.html#ab8687e6ea5cf35503c223051837f3b94">QuEST_internal.h</a>
 </li>
 <li>statevec_rotateY()
 : <a class="el" href="QuEST__internal_8h.html#a1f0db2800d13b6c2b120e05129cd13cb">QuEST_internal.h</a>
 , <a class="el" href="QuEST__common_8c.html#a1f0db2800d13b6c2b120e05129cd13cb">QuEST_common.c</a>
 </li>
 <li>statevec_rotateZ()
-: <a class="el" href="QuEST__internal_8h.html#a2b2b8c69566a49cdf4a3fa2cb4f5e03c">QuEST_internal.h</a>
-, <a class="el" href="QuEST__common_8c.html#a2b2b8c69566a49cdf4a3fa2cb4f5e03c">QuEST_common.c</a>
+: <a class="el" href="QuEST__common_8c.html#a2b2b8c69566a49cdf4a3fa2cb4f5e03c">QuEST_common.c</a>
+, <a class="el" href="QuEST__internal_8h.html#a2b2b8c69566a49cdf4a3fa2cb4f5e03c">QuEST_internal.h</a>
 </li>
 <li>statevec_setAmps()
 : <a class="el" href="QuEST__internal_8h.html#aa121d55f2ca09c06a96ddcd433c60b0f">QuEST_internal.h</a>
-, <a class="el" href="QuEST__cpu_8c.html#aa121d55f2ca09c06a96ddcd433c60b0f">QuEST_cpu.c</a>
 , <a class="el" href="QuEST__gpu_8cu.html#aa121d55f2ca09c06a96ddcd433c60b0f">QuEST_gpu.cu</a>
+, <a class="el" href="QuEST__cpu_8c.html#aa121d55f2ca09c06a96ddcd433c60b0f">QuEST_cpu.c</a>
 </li>
 <li>statevec_setWeightedQureg()
-: <a class="el" href="QuEST__cpu_8c.html#ad64a23933361fafc1b6b1787759c2663">QuEST_cpu.c</a>
-, <a class="el" href="QuEST__gpu_8cu.html#ad64a23933361fafc1b6b1787759c2663">QuEST_gpu.cu</a>
+: <a class="el" href="QuEST__gpu_8cu.html#ad64a23933361fafc1b6b1787759c2663">QuEST_gpu.cu</a>
 , <a class="el" href="QuEST__internal_8h.html#ad64a23933361fafc1b6b1787759c2663">QuEST_internal.h</a>
+, <a class="el" href="QuEST__cpu_8c.html#ad64a23933361fafc1b6b1787759c2663">QuEST_cpu.c</a>
 </li>
 <li>statevec_setWeightedQuregKernel()
 : <a class="el" href="QuEST__gpu_8cu.html#a040a1c670457b4b5789c089a3d32bf8f">QuEST_gpu.cu</a>
 </li>
 <li>statevec_sGate()
-: <a class="el" href="QuEST__common_8c.html#a559d175d31cec552fc09aec3e8a78d11">QuEST_common.c</a>
-, <a class="el" href="QuEST__internal_8h.html#a559d175d31cec552fc09aec3e8a78d11">QuEST_internal.h</a>
+: <a class="el" href="QuEST__internal_8h.html#a559d175d31cec552fc09aec3e8a78d11">QuEST_internal.h</a>
+, <a class="el" href="QuEST__common_8c.html#a559d175d31cec552fc09aec3e8a78d11">QuEST_common.c</a>
 </li>
 <li>statevec_sGateConj()
-: <a class="el" href="QuEST__common_8c.html#a142b424d903dfaca7a7ac166076f543a">QuEST_common.c</a>
-, <a class="el" href="QuEST__internal_8h.html#a142b424d903dfaca7a7ac166076f543a">QuEST_internal.h</a>
+: <a class="el" href="QuEST__internal_8h.html#a142b424d903dfaca7a7ac166076f543a">QuEST_internal.h</a>
+, <a class="el" href="QuEST__common_8c.html#a142b424d903dfaca7a7ac166076f543a">QuEST_common.c</a>
 </li>
 <li>statevec_sqrtSwapGate()
-: <a class="el" href="QuEST__internal_8h.html#a6550462400942be61b171c8840b36aa1">QuEST_internal.h</a>
-, <a class="el" href="QuEST__common_8c.html#a6550462400942be61b171c8840b36aa1">QuEST_common.c</a>
+: <a class="el" href="QuEST__common_8c.html#a6550462400942be61b171c8840b36aa1">QuEST_common.c</a>
+, <a class="el" href="QuEST__internal_8h.html#a6550462400942be61b171c8840b36aa1">QuEST_internal.h</a>
 </li>
 <li>statevec_sqrtSwapGateConj()
 : <a class="el" href="QuEST__internal_8h.html#a33cde9b6518d55a544eff20301a5d844">QuEST_internal.h</a>
@@ -743,8 +740,8 @@ $(function() {
 : <a class="el" href="QuEST__gpu_8cu.html#a89a450a1932e4f4f94cf1487af9d263b">QuEST_gpu.cu</a>
 </li>
 <li>statevec_swapQubitAmpsLocal()
-: <a class="el" href="QuEST__cpu_8c.html#ab5b51a28caa8792a3f0c637409a694b0">QuEST_cpu.c</a>
-, <a class="el" href="QuEST__cpu__internal_8h.html#ab5b51a28caa8792a3f0c637409a694b0">QuEST_cpu_internal.h</a>
+: <a class="el" href="QuEST__cpu__internal_8h.html#ab5b51a28caa8792a3f0c637409a694b0">QuEST_cpu_internal.h</a>
+, <a class="el" href="QuEST__cpu_8c.html#ab5b51a28caa8792a3f0c637409a694b0">QuEST_cpu.c</a>
 </li>
 <li>statevec_tGate()
 : <a class="el" href="QuEST__internal_8h.html#a2d96b4601cc3a9e1221e11a366fe1699">QuEST_internal.h</a>
@@ -755,35 +752,33 @@ $(function() {
 , <a class="el" href="QuEST__common_8c.html#a086fffa88b1aeec1405aa2dc41eab8a3">QuEST_common.c</a>
 </li>
 <li>statevec_twoQubitUnitary()
-: <a class="el" href="QuEST__internal_8h.html#a95abbe0cedf45b1ff2f070dba219fd7f">QuEST_internal.h</a>
-, <a class="el" href="QuEST__common_8c.html#a95abbe0cedf45b1ff2f070dba219fd7f">QuEST_common.c</a>
+: <a class="el" href="QuEST__common_8c.html#a95abbe0cedf45b1ff2f070dba219fd7f">QuEST_common.c</a>
+, <a class="el" href="QuEST__internal_8h.html#a95abbe0cedf45b1ff2f070dba219fd7f">QuEST_internal.h</a>
 </li>
 <li>statevec_unitary()
 : <a class="el" href="QuEST__internal_8h.html#ac3735bd959600e57b2ee3a105666cddf">QuEST_internal.h</a>
 , <a class="el" href="QuEST__cpu__distributed_8c.html#ac3735bd959600e57b2ee3a105666cddf">QuEST_cpu_distributed.c</a>
-, <a class="el" href="QuEST__cpu__local_8c.html#ac3735bd959600e57b2ee3a105666cddf">QuEST_cpu_local.c</a>
 , <a class="el" href="QuEST__gpu_8cu.html#ac3735bd959600e57b2ee3a105666cddf">QuEST_gpu.cu</a>
+, <a class="el" href="QuEST__cpu__local_8c.html#ac3735bd959600e57b2ee3a105666cddf">QuEST_cpu_local.c</a>
 </li>
 <li>statevec_unitaryDistributed()
-: <a class="el" href="QuEST__cpu__internal_8h.html#a0ce2c2fd54df25495e99dc5b95bed4b2">QuEST_cpu_internal.h</a>
-, <a class="el" href="QuEST__cpu_8c.html#a0ce2c2fd54df25495e99dc5b95bed4b2">QuEST_cpu.c</a>
+: <a class="el" href="QuEST__cpu_8c.html#a0ce2c2fd54df25495e99dc5b95bed4b2">QuEST_cpu.c</a>
+, <a class="el" href="QuEST__cpu__internal_8h.html#a0ce2c2fd54df25495e99dc5b95bed4b2">QuEST_cpu_internal.h</a>
 </li>
 <li>statevec_unitaryKernel()
 : <a class="el" href="QuEST__gpu_8cu.html#a19e364fb77ebe56afd7cd7cc6de12449">QuEST_gpu.cu</a>
 </li>
 <li>statevec_unitaryLocal()
-: <a class="el" href="QuEST__cpu_8c.html#aafc398f8f479fcc066a2dea700235635">QuEST_cpu.c</a>
-, <a class="el" href="QuEST__cpu__internal_8h.html#aafc398f8f479fcc066a2dea700235635">QuEST_cpu_internal.h</a>
+: <a class="el" href="QuEST__cpu__internal_8h.html#aafc398f8f479fcc066a2dea700235635">QuEST_cpu_internal.h</a>
+, <a class="el" href="QuEST__cpu_8c.html#aafc398f8f479fcc066a2dea700235635">QuEST_cpu.c</a>
 </li>
 <li>stopRecordingQASM()
 : <a class="el" href="group__qasm.html#gabdaa339967f0955176a4967f01364182">QuEST.h</a>
 , <a class="el" href="group__qasm.html#gabdaa339967f0955176a4967f01364182">QuEST.c</a>
 </li>
 <li>sublists()
-: <a class="el" href="group__testutilities.html#ga35add15146aa606b256df79334b867d5">utilities.hpp</a>
-, <a class="el" href="utilities_8cpp.html#a454924f12712fda06dad76d455dbc08e">utilities.cpp</a>
-, <a class="el" href="group__testutilities.html#gabe5be8b856a9f67e392db86a62d8cf31">utilities.hpp</a>
-, <a class="el" href="utilities_8cpp.html#ab6352aec92f1dbf1edcfc3d3a2a5f3d5">utilities.cpp</a>
+: <a class="el" href="group__testutilities.html#gabe5be8b856a9f67e392db86a62d8cf31">utilities.hpp</a>
+, <a class="el" href="group__testutilities.html#ga35add15146aa606b256df79334b867d5">utilities.cpp</a>
 , <a class="el" href="group__testutilities.html#gae479aa71f65fce301d64ed8cd9118e95">utilities.hpp</a>
 </li>
 <li>swapDouble()
@@ -794,8 +789,8 @@ $(function() {
 , <a class="el" href="group__unitary.html#ga820fd139c035136819e371308c206e36">QuEST.c</a>
 </li>
 <li>syncDiagonalOp()
-: <a class="el" href="group__type.html#gab75d5cdc622d2778bad24e3a8130aab9">QuEST.h</a>
-, <a class="el" href="group__type.html#gab75d5cdc622d2778bad24e3a8130aab9">QuEST.c</a>
+: <a class="el" href="group__type.html#gab75d5cdc622d2778bad24e3a8130aab9">QuEST.c</a>
+, <a class="el" href="group__type.html#gab75d5cdc622d2778bad24e3a8130aab9">QuEST.h</a>
 </li>
 <li>syncQuESTEnv()
 : <a class="el" href="group__debug.html#ga8d31fe2d1ad4d01e2a1f5f6b8bc15b77">QuEST_cpu_local.c</a>
@@ -804,10 +799,10 @@ $(function() {
 , <a class="el" href="group__debug.html#ga8d31fe2d1ad4d01e2a1f5f6b8bc15b77">QuEST_gpu.cu</a>
 </li>
 <li>syncQuESTSuccess()
-: <a class="el" href="group__debug.html#gac7e38d768a1bd79019f88cc1e6295092">QuEST_gpu.cu</a>
+: <a class="el" href="group__debug.html#gac7e38d768a1bd79019f88cc1e6295092">QuEST.h</a>
 , <a class="el" href="group__debug.html#gac7e38d768a1bd79019f88cc1e6295092">QuEST_cpu_distributed.c</a>
+, <a class="el" href="group__debug.html#gac7e38d768a1bd79019f88cc1e6295092">QuEST_gpu.cu</a>
 , <a class="el" href="group__debug.html#gac7e38d768a1bd79019f88cc1e6295092">QuEST_cpu_local.c</a>
-, <a class="el" href="group__debug.html#gac7e38d768a1bd79019f88cc1e6295092">QuEST.h</a>
 </li>
 </ul>
 </div><!-- contents -->

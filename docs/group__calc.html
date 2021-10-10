@@ -27,7 +27,7 @@
             <div class="container">
                 <div class="navbar-header">
                     <a class="navbar-brand"><img alt="Logo" src="logo.png"/></a>
-                    <a class="navbar-brand"><b>QuEST</b> v3.3.0<br>The Quantum Exact Simulation Toolkit</a>
+                    <a class="navbar-brand"><b>QuEST</b> v3.4.0<br>The Quantum Exact Simulation Toolkit</a>
                 </div>
             </div>
         </nav>
@@ -196,16 +196,16 @@ Functions</h2></td></tr>
 <dd>
 Tyson Jones (GPU) </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="QuEST_8c_source.html#l01145">1145</a> of file <a class="el" href="QuEST_8c_source.html">QuEST.c</a>.</p>
-<div class="fragment"><div class="line"><a name="l01145"></a><span class="lineno"> 1145</span>&#160;                                                      {</div>
-<div class="line"><a name="l01146"></a><span class="lineno"> 1146</span>&#160;    <a class="code" href="QuEST__validation_8c.html#af22919f5190ca1b3b6b52b8f2fb8213b">validateDensityMatrQureg</a>(rho1, __func__);</div>
-<div class="line"><a name="l01147"></a><span class="lineno"> 1147</span>&#160;    <a class="code" href="QuEST__validation_8c.html#af22919f5190ca1b3b6b52b8f2fb8213b">validateDensityMatrQureg</a>(rho2, __func__);</div>
-<div class="line"><a name="l01148"></a><span class="lineno"> 1148</span>&#160;    <a class="code" href="QuEST__validation_8c.html#a87d22240ccfd81827a2a34b8d569d347">validateMatchingQuregDims</a>(rho1, rho2, __func__);</div>
-<div class="line"><a name="l01149"></a><span class="lineno"> 1149</span>&#160;    </div>
-<div class="line"><a name="l01150"></a><span class="lineno"> 1150</span>&#160;    <span class="keywordflow">return</span> <a class="code" href="QuEST__internal_8h.html#a6ff3dc624b5fafe8edae4fe327c255a0">densmatr_calcInnerProduct</a>(rho1, rho2);</div>
-<div class="line"><a name="l01151"></a><span class="lineno"> 1151</span>&#160;}</div>
+<p class="definition">Definition at line <a class="el" href="QuEST_8c_source.html#l01158">1158</a> of file <a class="el" href="QuEST_8c_source.html">QuEST.c</a>.</p>
+<div class="fragment"><div class="line"><a name="l01158"></a><span class="lineno"> 1158</span>&#160;                                                      {</div>
+<div class="line"><a name="l01159"></a><span class="lineno"> 1159</span>&#160;    <a class="code" href="QuEST__validation_8c.html#af22919f5190ca1b3b6b52b8f2fb8213b">validateDensityMatrQureg</a>(rho1, __func__);</div>
+<div class="line"><a name="l01160"></a><span class="lineno"> 1160</span>&#160;    <a class="code" href="QuEST__validation_8c.html#af22919f5190ca1b3b6b52b8f2fb8213b">validateDensityMatrQureg</a>(rho2, __func__);</div>
+<div class="line"><a name="l01161"></a><span class="lineno"> 1161</span>&#160;    <a class="code" href="QuEST__validation_8c.html#a87d22240ccfd81827a2a34b8d569d347">validateMatchingQuregDims</a>(rho1, rho2, __func__);</div>
+<div class="line"><a name="l01162"></a><span class="lineno"> 1162</span>&#160;    </div>
+<div class="line"><a name="l01163"></a><span class="lineno"> 1163</span>&#160;    <span class="keywordflow">return</span> <a class="code" href="QuEST__internal_8h.html#a6ff3dc624b5fafe8edae4fe327c255a0">densmatr_calcInnerProduct</a>(rho1, rho2);</div>
+<div class="line"><a name="l01164"></a><span class="lineno"> 1164</span>&#160;}</div>
 </div><!-- fragment -->
-<p class="reference">References <a class="el" href="QuEST__cpu__distributed_8c_source.html#l00451">densmatr_calcInnerProduct()</a>, <a class="el" href="QuEST__validation_8c_source.html#l00515">validateDensityMatrQureg()</a>, and <a class="el" href="QuEST__validation_8c_source.html#l00527">validateMatchingQuregDims()</a>.</p>
+<p class="reference">References <a class="el" href="QuEST__cpu__distributed_8c_source.html#l00455">densmatr_calcInnerProduct()</a>, <a class="el" href="QuEST__validation_8c_source.html#l00519">validateDensityMatrQureg()</a>, and <a class="el" href="QuEST__validation_8c_source.html#l00531">validateMatchingQuregDims()</a>.</p>
 
 <p class="reference">Referenced by <a class="el" href="test__calculations_8cpp_source.html#l00021">TEST_CASE()</a>.</p>
 
@@ -273,17 +273,17 @@ Tyson Jones (GPU) </dd></dl>
 </dl>
 <dl class="section author"><dt>Author</dt><dd>Tyson Jones </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="QuEST_8c_source.html#l01215">1215</a> of file <a class="el" href="QuEST_8c_source.html">QuEST.c</a>.</p>
-<div class="fragment"><div class="line"><a name="l01215"></a><span class="lineno"> 1215</span>&#160;                                                        {</div>
-<div class="line"><a name="l01216"></a><span class="lineno"> 1216</span>&#160;    <a class="code" href="QuEST__validation_8c.html#a8a656a83bf0b44447188d06c2f8114cb">validateDiagonalOp</a>(qureg, op, __func__);</div>
-<div class="line"><a name="l01217"></a><span class="lineno"> 1217</span>&#160;    </div>
-<div class="line"><a name="l01218"></a><span class="lineno"> 1218</span>&#160;    <span class="keywordflow">if</span> (qureg.<a class="code" href="structQureg.html#acf78445e9435d09f44f0cc832c6aee79">isDensityMatrix</a>)</div>
-<div class="line"><a name="l01219"></a><span class="lineno"> 1219</span>&#160;        <span class="keywordflow">return</span> <a class="code" href="QuEST__internal_8h.html#a70e3b0a2297c186d5c779af31459b4ca">densmatr_calcExpecDiagonalOp</a>(qureg, op);</div>
-<div class="line"><a name="l01220"></a><span class="lineno"> 1220</span>&#160;    <span class="keywordflow">else</span></div>
-<div class="line"><a name="l01221"></a><span class="lineno"> 1221</span>&#160;        <span class="keywordflow">return</span> <a class="code" href="QuEST__internal_8h.html#a0fb948ddab4ca210e523aa3c52639df4">statevec_calcExpecDiagonalOp</a>(qureg, op);</div>
-<div class="line"><a name="l01222"></a><span class="lineno"> 1222</span>&#160;}</div>
+<p class="definition">Definition at line <a class="el" href="QuEST_8c_source.html#l01228">1228</a> of file <a class="el" href="QuEST_8c_source.html">QuEST.c</a>.</p>
+<div class="fragment"><div class="line"><a name="l01228"></a><span class="lineno"> 1228</span>&#160;                                                        {</div>
+<div class="line"><a name="l01229"></a><span class="lineno"> 1229</span>&#160;    <a class="code" href="QuEST__validation_8c.html#a8a656a83bf0b44447188d06c2f8114cb">validateDiagonalOp</a>(qureg, op, __func__);</div>
+<div class="line"><a name="l01230"></a><span class="lineno"> 1230</span>&#160;    </div>
+<div class="line"><a name="l01231"></a><span class="lineno"> 1231</span>&#160;    <span class="keywordflow">if</span> (qureg.<a class="code" href="structQureg.html#acf78445e9435d09f44f0cc832c6aee79">isDensityMatrix</a>)</div>
+<div class="line"><a name="l01232"></a><span class="lineno"> 1232</span>&#160;        <span class="keywordflow">return</span> <a class="code" href="QuEST__internal_8h.html#a70e3b0a2297c186d5c779af31459b4ca">densmatr_calcExpecDiagonalOp</a>(qureg, op);</div>
+<div class="line"><a name="l01233"></a><span class="lineno"> 1233</span>&#160;    <span class="keywordflow">else</span></div>
+<div class="line"><a name="l01234"></a><span class="lineno"> 1234</span>&#160;        <span class="keywordflow">return</span> <a class="code" href="QuEST__internal_8h.html#a0fb948ddab4ca210e523aa3c52639df4">statevec_calcExpecDiagonalOp</a>(qureg, op);</div>
+<div class="line"><a name="l01235"></a><span class="lineno"> 1235</span>&#160;}</div>
 </div><!-- fragment -->
-<p class="reference">References <a class="el" href="QuEST__cpu__distributed_8c_source.html#l01607">densmatr_calcExpecDiagonalOp()</a>, <a class="el" href="QuEST_8h_source.html#l00325">Qureg::isDensityMatrix</a>, <a class="el" href="QuEST__cpu__distributed_8c_source.html#l01589">statevec_calcExpecDiagonalOp()</a>, and <a class="el" href="QuEST__validation_8c_source.html#l00709">validateDiagonalOp()</a>.</p>
+<p class="reference">References <a class="el" href="QuEST__cpu__distributed_8c_source.html#l01618">densmatr_calcExpecDiagonalOp()</a>, <a class="el" href="QuEST_8h_source.html#l00325">Qureg::isDensityMatrix</a>, <a class="el" href="QuEST__cpu__distributed_8c_source.html#l01600">statevec_calcExpecDiagonalOp()</a>, and <a class="el" href="QuEST__validation_8c_source.html#l00713">validateDiagonalOp()</a>.</p>
 
 <p class="reference">Referenced by <a class="el" href="test__calculations_8cpp_source.html#l00117">TEST_CASE()</a>.</p>
 
@@ -354,17 +354,17 @@ Tyson Jones (GPU) </dd></dl>
 </dl>
 <dl class="section author"><dt>Author</dt><dd>Tyson Jones </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="QuEST_8c_source.html#l01206">1206</a> of file <a class="el" href="QuEST_8c_source.html">QuEST.c</a>.</p>
-<div class="fragment"><div class="line"><a name="l01206"></a><span class="lineno"> 1206</span>&#160;                                                                          {</div>
-<div class="line"><a name="l01207"></a><span class="lineno"> 1207</span>&#160;    <a class="code" href="QuEST__validation_8c.html#a031812e1cf2c98d72d795cea7bbe73a5">validateMatchingQuregTypes</a>(qureg, workspace, __func__);</div>
-<div class="line"><a name="l01208"></a><span class="lineno"> 1208</span>&#160;    <a class="code" href="QuEST__validation_8c.html#a87d22240ccfd81827a2a34b8d569d347">validateMatchingQuregDims</a>(qureg, workspace, __func__);</div>
-<div class="line"><a name="l01209"></a><span class="lineno"> 1209</span>&#160;    <a class="code" href="QuEST__validation_8c.html#a066b0c4d0b02a0f3b9be7e5c68d9de6a">validatePauliHamil</a>(hamil, __func__);</div>
-<div class="line"><a name="l01210"></a><span class="lineno"> 1210</span>&#160;    <a class="code" href="QuEST__validation_8c.html#a2b88b068a8242ee28da42c7324cdd078">validateMatchingQuregPauliHamilDims</a>(qureg, hamil, __func__);</div>
-<div class="line"><a name="l01211"></a><span class="lineno"> 1211</span>&#160;    </div>
-<div class="line"><a name="l01212"></a><span class="lineno"> 1212</span>&#160;    <span class="keywordflow">return</span> <a class="code" href="QuEST__common_8c.html#ae0cfea24091c8336146aa84c2253992e">statevec_calcExpecPauliSum</a>(qureg, hamil.<a class="code" href="structPauliHamil.html#a4b8d38c403553c07ceddcd40c46ce6c8">pauliCodes</a>, hamil.<a class="code" href="structPauliHamil.html#ac1c6c9f6299cf83bbba88123216c3cac">termCoeffs</a>, hamil.<a class="code" href="structPauliHamil.html#a737e46b40ef8990cf004d22eb9dbe2e4">numSumTerms</a>, workspace);</div>
-<div class="line"><a name="l01213"></a><span class="lineno"> 1213</span>&#160;}</div>
+<p class="definition">Definition at line <a class="el" href="QuEST_8c_source.html#l01219">1219</a> of file <a class="el" href="QuEST_8c_source.html">QuEST.c</a>.</p>
+<div class="fragment"><div class="line"><a name="l01219"></a><span class="lineno"> 1219</span>&#160;                                                                          {</div>
+<div class="line"><a name="l01220"></a><span class="lineno"> 1220</span>&#160;    <a class="code" href="QuEST__validation_8c.html#a031812e1cf2c98d72d795cea7bbe73a5">validateMatchingQuregTypes</a>(qureg, workspace, __func__);</div>
+<div class="line"><a name="l01221"></a><span class="lineno"> 1221</span>&#160;    <a class="code" href="QuEST__validation_8c.html#a87d22240ccfd81827a2a34b8d569d347">validateMatchingQuregDims</a>(qureg, workspace, __func__);</div>
+<div class="line"><a name="l01222"></a><span class="lineno"> 1222</span>&#160;    <a class="code" href="QuEST__validation_8c.html#a066b0c4d0b02a0f3b9be7e5c68d9de6a">validatePauliHamil</a>(hamil, __func__);</div>
+<div class="line"><a name="l01223"></a><span class="lineno"> 1223</span>&#160;    <a class="code" href="QuEST__validation_8c.html#a2b88b068a8242ee28da42c7324cdd078">validateMatchingQuregPauliHamilDims</a>(qureg, hamil, __func__);</div>
+<div class="line"><a name="l01224"></a><span class="lineno"> 1224</span>&#160;    </div>
+<div class="line"><a name="l01225"></a><span class="lineno"> 1225</span>&#160;    <span class="keywordflow">return</span> <a class="code" href="QuEST__common_8c.html#ae0cfea24091c8336146aa84c2253992e">statevec_calcExpecPauliSum</a>(qureg, hamil.<a class="code" href="structPauliHamil.html#a4b8d38c403553c07ceddcd40c46ce6c8">pauliCodes</a>, hamil.<a class="code" href="structPauliHamil.html#ac1c6c9f6299cf83bbba88123216c3cac">termCoeffs</a>, hamil.<a class="code" href="structPauliHamil.html#a737e46b40ef8990cf004d22eb9dbe2e4">numSumTerms</a>, workspace);</div>
+<div class="line"><a name="l01226"></a><span class="lineno"> 1226</span>&#160;}</div>
 </div><!-- fragment -->
-<p class="reference">References <a class="el" href="QuEST_8h_source.html#l00285">PauliHamil::numSumTerms</a>, <a class="el" href="QuEST_8h_source.html#l00281">PauliHamil::pauliCodes</a>, <a class="el" href="QuEST__common_8c_source.html#l00534">statevec_calcExpecPauliSum()</a>, <a class="el" href="QuEST_8h_source.html#l00283">PauliHamil::termCoeffs</a>, <a class="el" href="QuEST__validation_8c_source.html#l00527">validateMatchingQuregDims()</a>, <a class="el" href="QuEST__validation_8c_source.html#l00656">validateMatchingQuregPauliHamilDims()</a>, <a class="el" href="QuEST__validation_8c_source.html#l00531">validateMatchingQuregTypes()</a>, and <a class="el" href="QuEST__validation_8c_source.html#l00651">validatePauliHamil()</a>.</p>
+<p class="reference">References <a class="el" href="QuEST_8h_source.html#l00285">PauliHamil::numSumTerms</a>, <a class="el" href="QuEST_8h_source.html#l00281">PauliHamil::pauliCodes</a>, <a class="el" href="QuEST__common_8c_source.html#l00524">statevec_calcExpecPauliSum()</a>, <a class="el" href="QuEST_8h_source.html#l00283">PauliHamil::termCoeffs</a>, <a class="el" href="QuEST__validation_8c_source.html#l00531">validateMatchingQuregDims()</a>, <a class="el" href="QuEST__validation_8c_source.html#l00660">validateMatchingQuregPauliHamilDims()</a>, <a class="el" href="QuEST__validation_8c_source.html#l00535">validateMatchingQuregTypes()</a>, and <a class="el" href="QuEST__validation_8c_source.html#l00655">validatePauliHamil()</a>.</p>
 
 <p class="reference">Referenced by <a class="el" href="test__calculations_8cpp_source.html#l00189">TEST_CASE()</a>.</p>
 
@@ -451,17 +451,17 @@ Tyson Jones (GPU) </dd></dl>
 </dl>
 <dl class="section author"><dt>Author</dt><dd>Tyson Jones </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="QuEST_8c_source.html#l01188">1188</a> of file <a class="el" href="QuEST_8c_source.html">QuEST.c</a>.</p>
-<div class="fragment"><div class="line"><a name="l01188"></a><span class="lineno"> 1188</span>&#160;                                                                                                                        {</div>
-<div class="line"><a name="l01189"></a><span class="lineno"> 1189</span>&#160;    <a class="code" href="QuEST__validation_8c.html#a6776217a5f7ba38b56175cf6db0f96e0">validateMultiTargets</a>(qureg, targetQubits, numTargets, __func__);</div>
-<div class="line"><a name="l01190"></a><span class="lineno"> 1190</span>&#160;    <a class="code" href="QuEST__validation_8c.html#aa194ba5f5c6e19c6caa4c715b3dbefcc">validatePauliCodes</a>(pauliCodes, numTargets, __func__);</div>
-<div class="line"><a name="l01191"></a><span class="lineno"> 1191</span>&#160;    <a class="code" href="QuEST__validation_8c.html#a031812e1cf2c98d72d795cea7bbe73a5">validateMatchingQuregTypes</a>(qureg, workspace, __func__);</div>
-<div class="line"><a name="l01192"></a><span class="lineno"> 1192</span>&#160;    <a class="code" href="QuEST__validation_8c.html#a87d22240ccfd81827a2a34b8d569d347">validateMatchingQuregDims</a>(qureg, workspace, __func__);</div>
-<div class="line"><a name="l01193"></a><span class="lineno"> 1193</span>&#160;    </div>
-<div class="line"><a name="l01194"></a><span class="lineno"> 1194</span>&#160;    <span class="keywordflow">return</span> <a class="code" href="QuEST__common_8c.html#aef380928d1b0003411d6159ca6594cd5">statevec_calcExpecPauliProd</a>(qureg, targetQubits, pauliCodes, numTargets, workspace);</div>
-<div class="line"><a name="l01195"></a><span class="lineno"> 1195</span>&#160;}</div>
+<p class="definition">Definition at line <a class="el" href="QuEST_8c_source.html#l01201">1201</a> of file <a class="el" href="QuEST_8c_source.html">QuEST.c</a>.</p>
+<div class="fragment"><div class="line"><a name="l01201"></a><span class="lineno"> 1201</span>&#160;                                                                                                                        {</div>
+<div class="line"><a name="l01202"></a><span class="lineno"> 1202</span>&#160;    <a class="code" href="QuEST__validation_8c.html#a6776217a5f7ba38b56175cf6db0f96e0">validateMultiTargets</a>(qureg, targetQubits, numTargets, __func__);</div>
+<div class="line"><a name="l01203"></a><span class="lineno"> 1203</span>&#160;    <a class="code" href="QuEST__validation_8c.html#aa194ba5f5c6e19c6caa4c715b3dbefcc">validatePauliCodes</a>(pauliCodes, numTargets, __func__);</div>
+<div class="line"><a name="l01204"></a><span class="lineno"> 1204</span>&#160;    <a class="code" href="QuEST__validation_8c.html#a031812e1cf2c98d72d795cea7bbe73a5">validateMatchingQuregTypes</a>(qureg, workspace, __func__);</div>
+<div class="line"><a name="l01205"></a><span class="lineno"> 1205</span>&#160;    <a class="code" href="QuEST__validation_8c.html#a87d22240ccfd81827a2a34b8d569d347">validateMatchingQuregDims</a>(qureg, workspace, __func__);</div>
+<div class="line"><a name="l01206"></a><span class="lineno"> 1206</span>&#160;    </div>
+<div class="line"><a name="l01207"></a><span class="lineno"> 1207</span>&#160;    <span class="keywordflow">return</span> <a class="code" href="QuEST__common_8c.html#aef380928d1b0003411d6159ca6594cd5">statevec_calcExpecPauliProd</a>(qureg, targetQubits, pauliCodes, numTargets, workspace);</div>
+<div class="line"><a name="l01208"></a><span class="lineno"> 1208</span>&#160;}</div>
 </div><!-- fragment -->
-<p class="reference">References <a class="el" href="QuEST__common_8c_source.html#l00519">statevec_calcExpecPauliProd()</a>, <a class="el" href="QuEST__validation_8c_source.html#l00527">validateMatchingQuregDims()</a>, <a class="el" href="QuEST__validation_8c_source.html#l00531">validateMatchingQuregTypes()</a>, <a class="el" href="QuEST__validation_8c_source.html#l00424">validateMultiTargets()</a>, and <a class="el" href="QuEST__validation_8c_source.html#l00595">validatePauliCodes()</a>.</p>
+<p class="reference">References <a class="el" href="QuEST__common_8c_source.html#l00509">statevec_calcExpecPauliProd()</a>, <a class="el" href="QuEST__validation_8c_source.html#l00531">validateMatchingQuregDims()</a>, <a class="el" href="QuEST__validation_8c_source.html#l00535">validateMatchingQuregTypes()</a>, <a class="el" href="QuEST__validation_8c_source.html#l00428">validateMultiTargets()</a>, and <a class="el" href="QuEST__validation_8c_source.html#l00599">validatePauliCodes()</a>.</p>
 
 <p class="reference">Referenced by <a class="el" href="test__calculations_8cpp_source.html#l00302">TEST_CASE()</a>.</p>
 
@@ -548,17 +548,17 @@ Tyson Jones (GPU) </dd></dl>
 </dl>
 <dl class="section author"><dt>Author</dt><dd>Tyson Jones </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="QuEST_8c_source.html#l01197">1197</a> of file <a class="el" href="QuEST_8c_source.html">QuEST.c</a>.</p>
-<div class="fragment"><div class="line"><a name="l01197"></a><span class="lineno"> 1197</span>&#160;                                                                                                                           {</div>
-<div class="line"><a name="l01198"></a><span class="lineno"> 1198</span>&#160;    <a class="code" href="QuEST__validation_8c.html#a5be128290a7bba9a7f12d32cabe2276b">validateNumPauliSumTerms</a>(numSumTerms, __func__);</div>
-<div class="line"><a name="l01199"></a><span class="lineno"> 1199</span>&#160;    <a class="code" href="QuEST__validation_8c.html#aa194ba5f5c6e19c6caa4c715b3dbefcc">validatePauliCodes</a>(allPauliCodes, numSumTerms*qureg.<a class="code" href="structQureg.html#ad08dff5316b8937f4b2a1417591543dc">numQubitsRepresented</a>, __func__);</div>
-<div class="line"><a name="l01200"></a><span class="lineno"> 1200</span>&#160;    <a class="code" href="QuEST__validation_8c.html#a031812e1cf2c98d72d795cea7bbe73a5">validateMatchingQuregTypes</a>(qureg, workspace, __func__);</div>
-<div class="line"><a name="l01201"></a><span class="lineno"> 1201</span>&#160;    <a class="code" href="QuEST__validation_8c.html#a87d22240ccfd81827a2a34b8d569d347">validateMatchingQuregDims</a>(qureg, workspace, __func__);</div>
-<div class="line"><a name="l01202"></a><span class="lineno"> 1202</span>&#160;    </div>
-<div class="line"><a name="l01203"></a><span class="lineno"> 1203</span>&#160;    <span class="keywordflow">return</span> <a class="code" href="QuEST__common_8c.html#ae0cfea24091c8336146aa84c2253992e">statevec_calcExpecPauliSum</a>(qureg, allPauliCodes, termCoeffs, numSumTerms, workspace);</div>
-<div class="line"><a name="l01204"></a><span class="lineno"> 1204</span>&#160;}</div>
+<p class="definition">Definition at line <a class="el" href="QuEST_8c_source.html#l01210">1210</a> of file <a class="el" href="QuEST_8c_source.html">QuEST.c</a>.</p>
+<div class="fragment"><div class="line"><a name="l01210"></a><span class="lineno"> 1210</span>&#160;                                                                                                                           {</div>
+<div class="line"><a name="l01211"></a><span class="lineno"> 1211</span>&#160;    <a class="code" href="QuEST__validation_8c.html#a5be128290a7bba9a7f12d32cabe2276b">validateNumPauliSumTerms</a>(numSumTerms, __func__);</div>
+<div class="line"><a name="l01212"></a><span class="lineno"> 1212</span>&#160;    <a class="code" href="QuEST__validation_8c.html#aa194ba5f5c6e19c6caa4c715b3dbefcc">validatePauliCodes</a>(allPauliCodes, numSumTerms*qureg.<a class="code" href="structQureg.html#ad08dff5316b8937f4b2a1417591543dc">numQubitsRepresented</a>, __func__);</div>
+<div class="line"><a name="l01213"></a><span class="lineno"> 1213</span>&#160;    <a class="code" href="QuEST__validation_8c.html#a031812e1cf2c98d72d795cea7bbe73a5">validateMatchingQuregTypes</a>(qureg, workspace, __func__);</div>
+<div class="line"><a name="l01214"></a><span class="lineno"> 1214</span>&#160;    <a class="code" href="QuEST__validation_8c.html#a87d22240ccfd81827a2a34b8d569d347">validateMatchingQuregDims</a>(qureg, workspace, __func__);</div>
+<div class="line"><a name="l01215"></a><span class="lineno"> 1215</span>&#160;    </div>
+<div class="line"><a name="l01216"></a><span class="lineno"> 1216</span>&#160;    <span class="keywordflow">return</span> <a class="code" href="QuEST__common_8c.html#ae0cfea24091c8336146aa84c2253992e">statevec_calcExpecPauliSum</a>(qureg, allPauliCodes, termCoeffs, numSumTerms, workspace);</div>
+<div class="line"><a name="l01217"></a><span class="lineno"> 1217</span>&#160;}</div>
 </div><!-- fragment -->
-<p class="reference">References <a class="el" href="QuEST_8h_source.html#l00327">Qureg::numQubitsRepresented</a>, <a class="el" href="QuEST__common_8c_source.html#l00534">statevec_calcExpecPauliSum()</a>, <a class="el" href="QuEST__validation_8c_source.html#l00527">validateMatchingQuregDims()</a>, <a class="el" href="QuEST__validation_8c_source.html#l00531">validateMatchingQuregTypes()</a>, <a class="el" href="QuEST__validation_8c_source.html#l00602">validateNumPauliSumTerms()</a>, and <a class="el" href="QuEST__validation_8c_source.html#l00595">validatePauliCodes()</a>.</p>
+<p class="reference">References <a class="el" href="QuEST_8h_source.html#l00327">Qureg::numQubitsRepresented</a>, <a class="el" href="QuEST__common_8c_source.html#l00524">statevec_calcExpecPauliSum()</a>, <a class="el" href="QuEST__validation_8c_source.html#l00531">validateMatchingQuregDims()</a>, <a class="el" href="QuEST__validation_8c_source.html#l00535">validateMatchingQuregTypes()</a>, <a class="el" href="QuEST__validation_8c_source.html#l00606">validateNumPauliSumTerms()</a>, and <a class="el" href="QuEST__validation_8c_source.html#l00599">validatePauliCodes()</a>.</p>
 
 <p class="reference">Referenced by <a class="el" href="test__calculations_8cpp_source.html#l00444">TEST_CASE()</a>.</p>
 
@@ -624,18 +624,18 @@ Tyson Jones (GPU) </dd></dl>
 </dl>
 <dl class="section author"><dt>Author</dt><dd>Tyson Jones </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="QuEST_8c_source.html#l01178">1178</a> of file <a class="el" href="QuEST_8c_source.html">QuEST.c</a>.</p>
-<div class="fragment"><div class="line"><a name="l01178"></a><span class="lineno"> 1178</span>&#160;                                                 {</div>
-<div class="line"><a name="l01179"></a><span class="lineno"> 1179</span>&#160;    <a class="code" href="QuEST__validation_8c.html#a7adc86571f1154558676d95daf0cbd1f">validateSecondQuregStateVec</a>(pureState, __func__);</div>
-<div class="line"><a name="l01180"></a><span class="lineno"> 1180</span>&#160;    <a class="code" href="QuEST__validation_8c.html#a87d22240ccfd81827a2a34b8d569d347">validateMatchingQuregDims</a>(qureg, pureState, __func__);</div>
-<div class="line"><a name="l01181"></a><span class="lineno"> 1181</span>&#160;    </div>
-<div class="line"><a name="l01182"></a><span class="lineno"> 1182</span>&#160;    <span class="keywordflow">if</span> (qureg.<a class="code" href="structQureg.html#acf78445e9435d09f44f0cc832c6aee79">isDensityMatrix</a>)</div>
-<div class="line"><a name="l01183"></a><span class="lineno"> 1183</span>&#160;        <span class="keywordflow">return</span> <a class="code" href="QuEST__internal_8h.html#aa6c3f86010ad398f42b0577ea3bb5bcf">densmatr_calcFidelity</a>(qureg, pureState);</div>
-<div class="line"><a name="l01184"></a><span class="lineno"> 1184</span>&#160;    <span class="keywordflow">else</span></div>
-<div class="line"><a name="l01185"></a><span class="lineno"> 1185</span>&#160;        <span class="keywordflow">return</span> <a class="code" href="QuEST__common_8c.html#aeeec9fe1501e25930adf6c38763a158e">statevec_calcFidelity</a>(qureg, pureState);</div>
-<div class="line"><a name="l01186"></a><span class="lineno"> 1186</span>&#160;}</div>
+<p class="definition">Definition at line <a class="el" href="QuEST_8c_source.html#l01191">1191</a> of file <a class="el" href="QuEST_8c_source.html">QuEST.c</a>.</p>
+<div class="fragment"><div class="line"><a name="l01191"></a><span class="lineno"> 1191</span>&#160;                                                 {</div>
+<div class="line"><a name="l01192"></a><span class="lineno"> 1192</span>&#160;    <a class="code" href="QuEST__validation_8c.html#a7adc86571f1154558676d95daf0cbd1f">validateSecondQuregStateVec</a>(pureState, __func__);</div>
+<div class="line"><a name="l01193"></a><span class="lineno"> 1193</span>&#160;    <a class="code" href="QuEST__validation_8c.html#a87d22240ccfd81827a2a34b8d569d347">validateMatchingQuregDims</a>(qureg, pureState, __func__);</div>
+<div class="line"><a name="l01194"></a><span class="lineno"> 1194</span>&#160;    </div>
+<div class="line"><a name="l01195"></a><span class="lineno"> 1195</span>&#160;    <span class="keywordflow">if</span> (qureg.<a class="code" href="structQureg.html#acf78445e9435d09f44f0cc832c6aee79">isDensityMatrix</a>)</div>
+<div class="line"><a name="l01196"></a><span class="lineno"> 1196</span>&#160;        <span class="keywordflow">return</span> <a class="code" href="QuEST__internal_8h.html#aa6c3f86010ad398f42b0577ea3bb5bcf">densmatr_calcFidelity</a>(qureg, pureState);</div>
+<div class="line"><a name="l01197"></a><span class="lineno"> 1197</span>&#160;    <span class="keywordflow">else</span></div>
+<div class="line"><a name="l01198"></a><span class="lineno"> 1198</span>&#160;        <span class="keywordflow">return</span> <a class="code" href="QuEST__common_8c.html#aeeec9fe1501e25930adf6c38763a158e">statevec_calcFidelity</a>(qureg, pureState);</div>
+<div class="line"><a name="l01199"></a><span class="lineno"> 1199</span>&#160;}</div>
 </div><!-- fragment -->
-<p class="reference">References <a class="el" href="QuEST__cpu__distributed_8c_source.html#l00425">densmatr_calcFidelity()</a>, <a class="el" href="QuEST_8h_source.html#l00325">Qureg::isDensityMatrix</a>, <a class="el" href="QuEST__common_8c_source.html#l00390">statevec_calcFidelity()</a>, <a class="el" href="QuEST__validation_8c_source.html#l00527">validateMatchingQuregDims()</a>, and <a class="el" href="QuEST__validation_8c_source.html#l00535">validateSecondQuregStateVec()</a>.</p>
+<p class="reference">References <a class="el" href="QuEST__cpu__distributed_8c_source.html#l00429">densmatr_calcFidelity()</a>, <a class="el" href="QuEST_8h_source.html#l00325">Qureg::isDensityMatrix</a>, <a class="el" href="QuEST__common_8c_source.html#l00380">statevec_calcFidelity()</a>, <a class="el" href="QuEST__validation_8c_source.html#l00531">validateMatchingQuregDims()</a>, and <a class="el" href="QuEST__validation_8c_source.html#l00539">validateSecondQuregStateVec()</a>.</p>
 
 <p class="reference">Referenced by <a class="el" href="test__calculations_8cpp_source.html#l00560">TEST_CASE()</a>.</p>
 
@@ -703,16 +703,16 @@ Tyson Jones (GPU) </dd></dl>
 <dd>
 Tyson Jones (refactored, doc) </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="QuEST_8c_source.html#l01224">1224</a> of file <a class="el" href="QuEST_8c_source.html">QuEST.c</a>.</p>
-<div class="fragment"><div class="line"><a name="l01224"></a><span class="lineno"> 1224</span>&#160;                                                   {</div>
-<div class="line"><a name="l01225"></a><span class="lineno"> 1225</span>&#160;    <a class="code" href="QuEST__validation_8c.html#af22919f5190ca1b3b6b52b8f2fb8213b">validateDensityMatrQureg</a>(a, __func__);</div>
-<div class="line"><a name="l01226"></a><span class="lineno"> 1226</span>&#160;    <a class="code" href="QuEST__validation_8c.html#af22919f5190ca1b3b6b52b8f2fb8213b">validateDensityMatrQureg</a>(b, __func__);</div>
-<div class="line"><a name="l01227"></a><span class="lineno"> 1227</span>&#160;    <a class="code" href="QuEST__validation_8c.html#a87d22240ccfd81827a2a34b8d569d347">validateMatchingQuregDims</a>(a, b, __func__);</div>
-<div class="line"><a name="l01228"></a><span class="lineno"> 1228</span>&#160;    </div>
-<div class="line"><a name="l01229"></a><span class="lineno"> 1229</span>&#160;    <span class="keywordflow">return</span> <a class="code" href="QuEST__internal_8h.html#a8c9da88f734b0862f4cce7d819e6d3b5">densmatr_calcHilbertSchmidtDistance</a>(a, b);</div>
-<div class="line"><a name="l01230"></a><span class="lineno"> 1230</span>&#160;}</div>
+<p class="definition">Definition at line <a class="el" href="QuEST_8c_source.html#l01237">1237</a> of file <a class="el" href="QuEST_8c_source.html">QuEST.c</a>.</p>
+<div class="fragment"><div class="line"><a name="l01237"></a><span class="lineno"> 1237</span>&#160;                                                   {</div>
+<div class="line"><a name="l01238"></a><span class="lineno"> 1238</span>&#160;    <a class="code" href="QuEST__validation_8c.html#af22919f5190ca1b3b6b52b8f2fb8213b">validateDensityMatrQureg</a>(a, __func__);</div>
+<div class="line"><a name="l01239"></a><span class="lineno"> 1239</span>&#160;    <a class="code" href="QuEST__validation_8c.html#af22919f5190ca1b3b6b52b8f2fb8213b">validateDensityMatrQureg</a>(b, __func__);</div>
+<div class="line"><a name="l01240"></a><span class="lineno"> 1240</span>&#160;    <a class="code" href="QuEST__validation_8c.html#a87d22240ccfd81827a2a34b8d569d347">validateMatchingQuregDims</a>(a, b, __func__);</div>
+<div class="line"><a name="l01241"></a><span class="lineno"> 1241</span>&#160;    </div>
+<div class="line"><a name="l01242"></a><span class="lineno"> 1242</span>&#160;    <span class="keywordflow">return</span> <a class="code" href="QuEST__internal_8h.html#a8c9da88f734b0862f4cce7d819e6d3b5">densmatr_calcHilbertSchmidtDistance</a>(a, b);</div>
+<div class="line"><a name="l01243"></a><span class="lineno"> 1243</span>&#160;}</div>
 </div><!-- fragment -->
-<p class="reference">References <a class="el" href="QuEST__cpu__distributed_8c_source.html#l00440">densmatr_calcHilbertSchmidtDistance()</a>, <a class="el" href="QuEST__validation_8c_source.html#l00515">validateDensityMatrQureg()</a>, and <a class="el" href="QuEST__validation_8c_source.html#l00527">validateMatchingQuregDims()</a>.</p>
+<p class="reference">References <a class="el" href="QuEST__cpu__distributed_8c_source.html#l00444">densmatr_calcHilbertSchmidtDistance()</a>, <a class="el" href="QuEST__validation_8c_source.html#l00519">validateDensityMatrQureg()</a>, and <a class="el" href="QuEST__validation_8c_source.html#l00531">validateMatchingQuregDims()</a>.</p>
 
 <p class="reference">Referenced by <a class="el" href="test__calculations_8cpp_source.html#l00712">TEST_CASE()</a>.</p>
 
@@ -774,16 +774,16 @@ Tyson Jones (refactored, doc) </dd></dl>
 </dl>
 <dl class="section author"><dt>Author</dt><dd>Tyson Jones </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="QuEST_8c_source.html#l01137">1137</a> of file <a class="el" href="QuEST_8c_source.html">QuEST.c</a>.</p>
-<div class="fragment"><div class="line"><a name="l01137"></a><span class="lineno"> 1137</span>&#160;                                               {</div>
-<div class="line"><a name="l01138"></a><span class="lineno"> 1138</span>&#160;    <a class="code" href="QuEST__validation_8c.html#a72feec2aaa05f98aed7f3c3fee141251">validateStateVecQureg</a>(bra, __func__);</div>
-<div class="line"><a name="l01139"></a><span class="lineno"> 1139</span>&#160;    <a class="code" href="QuEST__validation_8c.html#a72feec2aaa05f98aed7f3c3fee141251">validateStateVecQureg</a>(ket, __func__);</div>
-<div class="line"><a name="l01140"></a><span class="lineno"> 1140</span>&#160;    <a class="code" href="QuEST__validation_8c.html#a87d22240ccfd81827a2a34b8d569d347">validateMatchingQuregDims</a>(bra, ket,  __func__);</div>
-<div class="line"><a name="l01141"></a><span class="lineno"> 1141</span>&#160;    </div>
-<div class="line"><a name="l01142"></a><span class="lineno"> 1142</span>&#160;    <span class="keywordflow">return</span> <a class="code" href="QuEST__internal_8h.html#a7ebd3198a198f4cd20840f64fd8b84d0">statevec_calcInnerProduct</a>(bra, ket);</div>
-<div class="line"><a name="l01143"></a><span class="lineno"> 1143</span>&#160;}</div>
+<p class="definition">Definition at line <a class="el" href="QuEST_8c_source.html#l01150">1150</a> of file <a class="el" href="QuEST_8c_source.html">QuEST.c</a>.</p>
+<div class="fragment"><div class="line"><a name="l01150"></a><span class="lineno"> 1150</span>&#160;                                               {</div>
+<div class="line"><a name="l01151"></a><span class="lineno"> 1151</span>&#160;    <a class="code" href="QuEST__validation_8c.html#a72feec2aaa05f98aed7f3c3fee141251">validateStateVecQureg</a>(bra, __func__);</div>
+<div class="line"><a name="l01152"></a><span class="lineno"> 1152</span>&#160;    <a class="code" href="QuEST__validation_8c.html#a72feec2aaa05f98aed7f3c3fee141251">validateStateVecQureg</a>(ket, __func__);</div>
+<div class="line"><a name="l01153"></a><span class="lineno"> 1153</span>&#160;    <a class="code" href="QuEST__validation_8c.html#a87d22240ccfd81827a2a34b8d569d347">validateMatchingQuregDims</a>(bra, ket,  __func__);</div>
+<div class="line"><a name="l01154"></a><span class="lineno"> 1154</span>&#160;    </div>
+<div class="line"><a name="l01155"></a><span class="lineno"> 1155</span>&#160;    <span class="keywordflow">return</span> <a class="code" href="QuEST__internal_8h.html#a7ebd3198a198f4cd20840f64fd8b84d0">statevec_calcInnerProduct</a>(bra, ket);</div>
+<div class="line"><a name="l01156"></a><span class="lineno"> 1156</span>&#160;}</div>
 </div><!-- fragment -->
-<p class="reference">References <a class="el" href="QuEST__cpu__distributed_8c_source.html#l00035">statevec_calcInnerProduct()</a>, <a class="el" href="QuEST__validation_8c_source.html#l00527">validateMatchingQuregDims()</a>, and <a class="el" href="QuEST__validation_8c_source.html#l00511">validateStateVecQureg()</a>.</p>
+<p class="reference">References <a class="el" href="QuEST__cpu__distributed_8c_source.html#l00035">statevec_calcInnerProduct()</a>, <a class="el" href="QuEST__validation_8c_source.html#l00531">validateMatchingQuregDims()</a>, and <a class="el" href="QuEST__validation_8c_source.html#l00515">validateStateVecQureg()</a>.</p>
 
 <p class="reference">Referenced by <a class="el" href="test__calculations_8cpp_source.html#l00808">TEST_CASE()</a>.</p>
 
@@ -900,17 +900,17 @@ Tyson Jones (refactored, doc) </dd></dl>
 </dl>
 <dl class="section author"><dt>Author</dt><dd>Tyson Jones </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="QuEST_8c_source.html#l01163">1163</a> of file <a class="el" href="QuEST_8c_source.html">QuEST.c</a>.</p>
-<div class="fragment"><div class="line"><a name="l01163"></a><span class="lineno"> 1163</span>&#160;                                                                                     {</div>
-<div class="line"><a name="l01164"></a><span class="lineno"> 1164</span>&#160;    <a class="code" href="QuEST__validation_8c.html#a6776217a5f7ba38b56175cf6db0f96e0">validateMultiTargets</a>(qureg, qubits, numQubits, __func__);</div>
-<div class="line"><a name="l01165"></a><span class="lineno"> 1165</span>&#160; </div>
-<div class="line"><a name="l01166"></a><span class="lineno"> 1166</span>&#160;    <span class="keywordflow">if</span> (qureg.<a class="code" href="structQureg.html#acf78445e9435d09f44f0cc832c6aee79">isDensityMatrix</a>)</div>
-<div class="line"><a name="l01167"></a><span class="lineno"> 1167</span>&#160;        <a class="code" href="QuEST__internal_8h.html#a2c664d8abca0a6f87c2bf4fe75fbff90">densmatr_calcProbOfAllOutcomes</a>(retProbs, qureg, qubits, numQubits);</div>
-<div class="line"><a name="l01168"></a><span class="lineno"> 1168</span>&#160;    <span class="keywordflow">else</span></div>
-<div class="line"><a name="l01169"></a><span class="lineno"> 1169</span>&#160;        <a class="code" href="QuEST__internal_8h.html#a78cf98ea535790bc46069b60bae342c7">statevec_calcProbOfAllOutcomes</a>(retProbs, qureg, qubits, numQubits);</div>
-<div class="line"><a name="l01170"></a><span class="lineno"> 1170</span>&#160;}</div>
+<p class="definition">Definition at line <a class="el" href="QuEST_8c_source.html#l01176">1176</a> of file <a class="el" href="QuEST_8c_source.html">QuEST.c</a>.</p>
+<div class="fragment"><div class="line"><a name="l01176"></a><span class="lineno"> 1176</span>&#160;                                                                                     {</div>
+<div class="line"><a name="l01177"></a><span class="lineno"> 1177</span>&#160;    <a class="code" href="QuEST__validation_8c.html#a6776217a5f7ba38b56175cf6db0f96e0">validateMultiTargets</a>(qureg, qubits, numQubits, __func__);</div>
+<div class="line"><a name="l01178"></a><span class="lineno"> 1178</span>&#160; </div>
+<div class="line"><a name="l01179"></a><span class="lineno"> 1179</span>&#160;    <span class="keywordflow">if</span> (qureg.<a class="code" href="structQureg.html#acf78445e9435d09f44f0cc832c6aee79">isDensityMatrix</a>)</div>
+<div class="line"><a name="l01180"></a><span class="lineno"> 1180</span>&#160;        <a class="code" href="QuEST__internal_8h.html#a2c664d8abca0a6f87c2bf4fe75fbff90">densmatr_calcProbOfAllOutcomes</a>(retProbs, qureg, qubits, numQubits);</div>
+<div class="line"><a name="l01181"></a><span class="lineno"> 1181</span>&#160;    <span class="keywordflow">else</span></div>
+<div class="line"><a name="l01182"></a><span class="lineno"> 1182</span>&#160;        <a class="code" href="QuEST__internal_8h.html#a78cf98ea535790bc46069b60bae342c7">statevec_calcProbOfAllOutcomes</a>(retProbs, qureg, qubits, numQubits);</div>
+<div class="line"><a name="l01183"></a><span class="lineno"> 1183</span>&#160;}</div>
 </div><!-- fragment -->
-<p class="reference">References <a class="el" href="QuEST__cpu__distributed_8c_source.html#l01345">densmatr_calcProbOfAllOutcomes()</a>, <a class="el" href="QuEST_8h_source.html#l00325">Qureg::isDensityMatrix</a>, <a class="el" href="QuEST__cpu__distributed_8c_source.html#l01336">statevec_calcProbOfAllOutcomes()</a>, and <a class="el" href="QuEST__validation_8c_source.html#l00424">validateMultiTargets()</a>.</p>
+<p class="reference">References <a class="el" href="QuEST__cpu__distributed_8c_source.html#l01349">densmatr_calcProbOfAllOutcomes()</a>, <a class="el" href="QuEST_8h_source.html#l00325">Qureg::isDensityMatrix</a>, <a class="el" href="QuEST__cpu__distributed_8c_source.html#l01340">statevec_calcProbOfAllOutcomes()</a>, and <a class="el" href="QuEST__validation_8c_source.html#l00428">validateMultiTargets()</a>.</p>
 
 <p class="reference">Referenced by <a class="el" href="test__calculations_8cpp_source.html#l00883">TEST_CASE()</a>.</p>
 
@@ -987,18 +987,18 @@ Tyson Jones (refactored, doc) </dd></dl>
 <dd>
 Tyson Jones (density matrix) </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="QuEST_8c_source.html#l01153">1153</a> of file <a class="el" href="QuEST_8c_source.html">QuEST.c</a>.</p>
-<div class="fragment"><div class="line"><a name="l01153"></a><span class="lineno"> 1153</span>&#160;                                                                    {</div>
-<div class="line"><a name="l01154"></a><span class="lineno"> 1154</span>&#160;    <a class="code" href="QuEST__validation_8c.html#ac31c45c5a31c523be0eb26abba6cf598">validateTarget</a>(qureg, measureQubit, __func__);</div>
-<div class="line"><a name="l01155"></a><span class="lineno"> 1155</span>&#160;    <a class="code" href="QuEST__validation_8c.html#ad613c75ff252a88e54f911053bd2032c">validateOutcome</a>(outcome, __func__);</div>
-<div class="line"><a name="l01156"></a><span class="lineno"> 1156</span>&#160;    </div>
-<div class="line"><a name="l01157"></a><span class="lineno"> 1157</span>&#160;    <span class="keywordflow">if</span> (qureg.<a class="code" href="structQureg.html#acf78445e9435d09f44f0cc832c6aee79">isDensityMatrix</a>)</div>
-<div class="line"><a name="l01158"></a><span class="lineno"> 1158</span>&#160;        <span class="keywordflow">return</span> <a class="code" href="QuEST__internal_8h.html#ae37b3eff5d3affbc1edfe216cabc1c53">densmatr_calcProbOfOutcome</a>(qureg, measureQubit, outcome);</div>
-<div class="line"><a name="l01159"></a><span class="lineno"> 1159</span>&#160;    <span class="keywordflow">else</span></div>
-<div class="line"><a name="l01160"></a><span class="lineno"> 1160</span>&#160;        <span class="keywordflow">return</span> <a class="code" href="QuEST__internal_8h.html#a63cb88a5f4eb12fef087435b8db3f8eb">statevec_calcProbOfOutcome</a>(qureg, measureQubit, outcome);</div>
-<div class="line"><a name="l01161"></a><span class="lineno"> 1161</span>&#160;}</div>
+<p class="definition">Definition at line <a class="el" href="QuEST_8c_source.html#l01166">1166</a> of file <a class="el" href="QuEST_8c_source.html">QuEST.c</a>.</p>
+<div class="fragment"><div class="line"><a name="l01166"></a><span class="lineno"> 1166</span>&#160;                                                                    {</div>
+<div class="line"><a name="l01167"></a><span class="lineno"> 1167</span>&#160;    <a class="code" href="QuEST__validation_8c.html#ac31c45c5a31c523be0eb26abba6cf598">validateTarget</a>(qureg, measureQubit, __func__);</div>
+<div class="line"><a name="l01168"></a><span class="lineno"> 1168</span>&#160;    <a class="code" href="QuEST__validation_8c.html#ad613c75ff252a88e54f911053bd2032c">validateOutcome</a>(outcome, __func__);</div>
+<div class="line"><a name="l01169"></a><span class="lineno"> 1169</span>&#160;    </div>
+<div class="line"><a name="l01170"></a><span class="lineno"> 1170</span>&#160;    <span class="keywordflow">if</span> (qureg.<a class="code" href="structQureg.html#acf78445e9435d09f44f0cc832c6aee79">isDensityMatrix</a>)</div>
+<div class="line"><a name="l01171"></a><span class="lineno"> 1171</span>&#160;        <span class="keywordflow">return</span> <a class="code" href="QuEST__internal_8h.html#ae37b3eff5d3affbc1edfe216cabc1c53">densmatr_calcProbOfOutcome</a>(qureg, measureQubit, outcome);</div>
+<div class="line"><a name="l01172"></a><span class="lineno"> 1172</span>&#160;    <span class="keywordflow">else</span></div>
+<div class="line"><a name="l01173"></a><span class="lineno"> 1173</span>&#160;        <span class="keywordflow">return</span> <a class="code" href="QuEST__internal_8h.html#a63cb88a5f4eb12fef087435b8db3f8eb">statevec_calcProbOfOutcome</a>(qureg, measureQubit, outcome);</div>
+<div class="line"><a name="l01174"></a><span class="lineno"> 1174</span>&#160;}</div>
 </div><!-- fragment -->
-<p class="reference">References <a class="el" href="QuEST__cpu__distributed_8c_source.html#l01324">densmatr_calcProbOfOutcome()</a>, <a class="el" href="QuEST_8h_source.html#l00325">Qureg::isDensityMatrix</a>, <a class="el" href="QuEST__cpu__distributed_8c_source.html#l01308">statevec_calcProbOfOutcome()</a>, <a class="el" href="QuEST__validation_8c_source.html#l00519">validateOutcome()</a>, and <a class="el" href="QuEST__validation_8c_source.html#l00396">validateTarget()</a>.</p>
+<p class="reference">References <a class="el" href="QuEST__cpu__distributed_8c_source.html#l01328">densmatr_calcProbOfOutcome()</a>, <a class="el" href="QuEST_8h_source.html#l00325">Qureg::isDensityMatrix</a>, <a class="el" href="QuEST__cpu__distributed_8c_source.html#l01312">statevec_calcProbOfOutcome()</a>, <a class="el" href="QuEST__validation_8c_source.html#l00523">validateOutcome()</a>, and <a class="el" href="QuEST__validation_8c_source.html#l00400">validateTarget()</a>.</p>
 
 <p class="reference">Referenced by <a class="el" href="test__calculations_8cpp_source.html#l01010">TEST_CASE()</a>.</p>
 
@@ -1050,14 +1050,14 @@ Tyson Jones (density matrix) </dd></dl>
 </dl>
 <dl class="section author"><dt>Author</dt><dd>Tyson Jones </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="QuEST_8c_source.html#l01172">1172</a> of file <a class="el" href="QuEST_8c_source.html">QuEST.c</a>.</p>
-<div class="fragment"><div class="line"><a name="l01172"></a><span class="lineno"> 1172</span>&#160;                              {</div>
-<div class="line"><a name="l01173"></a><span class="lineno"> 1173</span>&#160;    <a class="code" href="QuEST__validation_8c.html#af22919f5190ca1b3b6b52b8f2fb8213b">validateDensityMatrQureg</a>(qureg, __func__);</div>
-<div class="line"><a name="l01174"></a><span class="lineno"> 1174</span>&#160;    </div>
-<div class="line"><a name="l01175"></a><span class="lineno"> 1175</span>&#160;    <span class="keywordflow">return</span> <a class="code" href="QuEST__internal_8h.html#ae45eefa65f4ecd37bab84fade7cf7f1f">densmatr_calcPurity</a>(qureg);</div>
-<div class="line"><a name="l01176"></a><span class="lineno"> 1176</span>&#160;}</div>
+<p class="definition">Definition at line <a class="el" href="QuEST_8c_source.html#l01185">1185</a> of file <a class="el" href="QuEST_8c_source.html">QuEST.c</a>.</p>
+<div class="fragment"><div class="line"><a name="l01185"></a><span class="lineno"> 1185</span>&#160;                              {</div>
+<div class="line"><a name="l01186"></a><span class="lineno"> 1186</span>&#160;    <a class="code" href="QuEST__validation_8c.html#af22919f5190ca1b3b6b52b8f2fb8213b">validateDensityMatrQureg</a>(qureg, __func__);</div>
+<div class="line"><a name="l01187"></a><span class="lineno"> 1187</span>&#160;    </div>
+<div class="line"><a name="l01188"></a><span class="lineno"> 1188</span>&#160;    <span class="keywordflow">return</span> <a class="code" href="QuEST__internal_8h.html#ae45eefa65f4ecd37bab84fade7cf7f1f">densmatr_calcPurity</a>(qureg);</div>
+<div class="line"><a name="l01189"></a><span class="lineno"> 1189</span>&#160;}</div>
 </div><!-- fragment -->
-<p class="reference">References <a class="el" href="QuEST__cpu__distributed_8c_source.html#l01354">densmatr_calcPurity()</a>, and <a class="el" href="QuEST__validation_8c_source.html#l00515">validateDensityMatrQureg()</a>.</p>
+<p class="reference">References <a class="el" href="QuEST__cpu__distributed_8c_source.html#l01358">densmatr_calcPurity()</a>, and <a class="el" href="QuEST__validation_8c_source.html#l00519">validateDensityMatrQureg()</a>.</p>
 
 <p class="reference">Referenced by <a class="el" href="test__calculations_8cpp_source.html#l01133">TEST_CASE()</a>.</p>
 
@@ -1099,13 +1099,13 @@ Tyson Jones (density matrix) </dd></dl>
 <dd>
 Tyson Jones (density matrix, doc) </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="QuEST_8c_source.html#l01130">1130</a> of file <a class="el" href="QuEST_8c_source.html">QuEST.c</a>.</p>
-<div class="fragment"><div class="line"><a name="l01130"></a><span class="lineno"> 1130</span>&#160;                                 {</div>
-<div class="line"><a name="l01131"></a><span class="lineno"> 1131</span>&#160;    <span class="keywordflow">if</span> (qureg.<a class="code" href="structQureg.html#acf78445e9435d09f44f0cc832c6aee79">isDensityMatrix</a>)  </div>
-<div class="line"><a name="l01132"></a><span class="lineno"> 1132</span>&#160;            <span class="keywordflow">return</span> <a class="code" href="QuEST__internal_8h.html#a6153547f245c05874161a105e9a2f02c">densmatr_calcTotalProb</a>(qureg);</div>
-<div class="line"><a name="l01133"></a><span class="lineno"> 1133</span>&#160;        <span class="keywordflow">else</span></div>
-<div class="line"><a name="l01134"></a><span class="lineno"> 1134</span>&#160;            <span class="keywordflow">return</span> <a class="code" href="QuEST__internal_8h.html#ad65ad1b5ea6f30b0c6b4ffda96e1a8e6">statevec_calcTotalProb</a>(qureg);</div>
-<div class="line"><a name="l01135"></a><span class="lineno"> 1135</span>&#160;}</div>
+<p class="definition">Definition at line <a class="el" href="QuEST_8c_source.html#l01143">1143</a> of file <a class="el" href="QuEST_8c_source.html">QuEST.c</a>.</p>
+<div class="fragment"><div class="line"><a name="l01143"></a><span class="lineno"> 1143</span>&#160;                                 {</div>
+<div class="line"><a name="l01144"></a><span class="lineno"> 1144</span>&#160;    <span class="keywordflow">if</span> (qureg.<a class="code" href="structQureg.html#acf78445e9435d09f44f0cc832c6aee79">isDensityMatrix</a>)  </div>
+<div class="line"><a name="l01145"></a><span class="lineno"> 1145</span>&#160;            <span class="keywordflow">return</span> <a class="code" href="QuEST__internal_8h.html#a6153547f245c05874161a105e9a2f02c">densmatr_calcTotalProb</a>(qureg);</div>
+<div class="line"><a name="l01146"></a><span class="lineno"> 1146</span>&#160;        <span class="keywordflow">else</span></div>
+<div class="line"><a name="l01147"></a><span class="lineno"> 1147</span>&#160;            <span class="keywordflow">return</span> <a class="code" href="QuEST__internal_8h.html#ad65ad1b5ea6f30b0c6b4ffda96e1a8e6">statevec_calcTotalProb</a>(qureg);</div>
+<div class="line"><a name="l01148"></a><span class="lineno"> 1148</span>&#160;}</div>
 </div><!-- fragment -->
 <p class="reference">References <a class="el" href="QuEST__cpu__distributed_8c_source.html#l00053">densmatr_calcTotalProb()</a>, <a class="el" href="QuEST_8h_source.html#l00325">Qureg::isDensityMatrix</a>, and <a class="el" href="QuEST__cpu__distributed_8c_source.html#l00088">statevec_calcTotalProb()</a>.</p>
 
@@ -1169,18 +1169,18 @@ Tyson Jones (density matrix, doc) </dd></dl>
 </dl>
 <dl class="section author"><dt>Author</dt><dd>Tyson Jones </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="QuEST_8c_source.html#l00926">926</a> of file <a class="el" href="QuEST_8c_source.html">QuEST.c</a>.</p>
-<div class="fragment"><div class="line"><a name="l00926"></a><span class="lineno">  926</span>&#160;                                                 {</div>
-<div class="line"><a name="l00927"></a><span class="lineno">  927</span>&#160;    <a class="code" href="QuEST__validation_8c.html#a72feec2aaa05f98aed7f3c3fee141251">validateStateVecQureg</a>(qureg, __func__);</div>
-<div class="line"><a name="l00928"></a><span class="lineno">  928</span>&#160;    <a class="code" href="QuEST__validation_8c.html#a5f87419b253a97f6caadb72b507b9853">validateAmpIndex</a>(qureg, index, __func__);</div>
-<div class="line"><a name="l00929"></a><span class="lineno">  929</span>&#160;    </div>
-<div class="line"><a name="l00930"></a><span class="lineno">  930</span>&#160;    <a class="code" href="structComplex.html">Complex</a> amp;</div>
-<div class="line"><a name="l00931"></a><span class="lineno">  931</span>&#160;    amp.<a class="code" href="structComplex.html#ab5b2e2eca02131fc74b289a83636cbe3">real</a> = <a class="code" href="QuEST__internal_8h.html#abc9a9ef4344c7faaaf28ac25c76649b9">statevec_getRealAmp</a>(qureg, index);</div>
-<div class="line"><a name="l00932"></a><span class="lineno">  932</span>&#160;    amp.<a class="code" href="structComplex.html#a84f5439aad0ef495efdd3b4c1c02d27e">imag</a> = <a class="code" href="QuEST__internal_8h.html#abd509244d57657e148e4084c5ab5d28f">statevec_getImagAmp</a>(qureg, index);</div>
-<div class="line"><a name="l00933"></a><span class="lineno">  933</span>&#160;    <span class="keywordflow">return</span> amp;</div>
-<div class="line"><a name="l00934"></a><span class="lineno">  934</span>&#160;}</div>
+<p class="definition">Definition at line <a class="el" href="QuEST_8c_source.html#l00939">939</a> of file <a class="el" href="QuEST_8c_source.html">QuEST.c</a>.</p>
+<div class="fragment"><div class="line"><a name="l00939"></a><span class="lineno">  939</span>&#160;                                                 {</div>
+<div class="line"><a name="l00940"></a><span class="lineno">  940</span>&#160;    <a class="code" href="QuEST__validation_8c.html#a72feec2aaa05f98aed7f3c3fee141251">validateStateVecQureg</a>(qureg, __func__);</div>
+<div class="line"><a name="l00941"></a><span class="lineno">  941</span>&#160;    <a class="code" href="QuEST__validation_8c.html#a5f87419b253a97f6caadb72b507b9853">validateAmpIndex</a>(qureg, index, __func__);</div>
+<div class="line"><a name="l00942"></a><span class="lineno">  942</span>&#160;    </div>
+<div class="line"><a name="l00943"></a><span class="lineno">  943</span>&#160;    <a class="code" href="structComplex.html">Complex</a> amp;</div>
+<div class="line"><a name="l00944"></a><span class="lineno">  944</span>&#160;    amp.<a class="code" href="structComplex.html#ab5b2e2eca02131fc74b289a83636cbe3">real</a> = <a class="code" href="QuEST__internal_8h.html#abc9a9ef4344c7faaaf28ac25c76649b9">statevec_getRealAmp</a>(qureg, index);</div>
+<div class="line"><a name="l00945"></a><span class="lineno">  945</span>&#160;    amp.<a class="code" href="structComplex.html#a84f5439aad0ef495efdd3b4c1c02d27e">imag</a> = <a class="code" href="QuEST__internal_8h.html#abd509244d57657e148e4084c5ab5d28f">statevec_getImagAmp</a>(qureg, index);</div>
+<div class="line"><a name="l00946"></a><span class="lineno">  946</span>&#160;    <span class="keywordflow">return</span> amp;</div>
+<div class="line"><a name="l00947"></a><span class="lineno">  947</span>&#160;}</div>
 </div><!-- fragment -->
-<p class="reference">References <a class="el" href="QuEST_8h_source.html#l00106">Complex::imag</a>, <a class="el" href="QuEST_8h_source.html#l00105">Complex::real</a>, <a class="el" href="QuEST__cpu__distributed_8c_source.html#l00218">statevec_getImagAmp()</a>, <a class="el" href="QuEST__cpu__distributed_8c_source.html#l00208">statevec_getRealAmp()</a>, <a class="el" href="QuEST__validation_8c_source.html#l00378">validateAmpIndex()</a>, and <a class="el" href="QuEST__validation_8c_source.html#l00511">validateStateVecQureg()</a>.</p>
+<p class="reference">References <a class="el" href="QuEST_8h_source.html#l00106">Complex::imag</a>, <a class="el" href="QuEST_8h_source.html#l00105">Complex::real</a>, <a class="el" href="QuEST__cpu__distributed_8c_source.html#l00222">statevec_getImagAmp()</a>, <a class="el" href="QuEST__cpu__distributed_8c_source.html#l00212">statevec_getRealAmp()</a>, <a class="el" href="QuEST__validation_8c_source.html#l00382">validateAmpIndex()</a>, and <a class="el" href="QuEST__validation_8c_source.html#l00515">validateStateVecQureg()</a>.</p>
 
 <p class="reference">Referenced by <a class="el" href="test__calculations_8cpp_source.html#l01272">TEST_CASE()</a>.</p>
 
@@ -1249,20 +1249,20 @@ Tyson Jones (density matrix, doc) </dd></dl>
 </dl>
 <dl class="section author"><dt>Author</dt><dd>Tyson Jones </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="QuEST_8c_source.html#l00936">936</a> of file <a class="el" href="QuEST_8c_source.html">QuEST.c</a>.</p>
-<div class="fragment"><div class="line"><a name="l00936"></a><span class="lineno">  936</span>&#160;                                                                         {</div>
-<div class="line"><a name="l00937"></a><span class="lineno">  937</span>&#160;    <a class="code" href="QuEST__validation_8c.html#af22919f5190ca1b3b6b52b8f2fb8213b">validateDensityMatrQureg</a>(qureg, __func__);</div>
-<div class="line"><a name="l00938"></a><span class="lineno">  938</span>&#160;    <a class="code" href="QuEST__validation_8c.html#a5f87419b253a97f6caadb72b507b9853">validateAmpIndex</a>(qureg, row, __func__);</div>
-<div class="line"><a name="l00939"></a><span class="lineno">  939</span>&#160;    <a class="code" href="QuEST__validation_8c.html#a5f87419b253a97f6caadb72b507b9853">validateAmpIndex</a>(qureg, col, __func__);</div>
-<div class="line"><a name="l00940"></a><span class="lineno">  940</span>&#160;    </div>
-<div class="line"><a name="l00941"></a><span class="lineno">  941</span>&#160;    <span class="keywordtype">long</span> <span class="keywordtype">long</span> ind = row + col*(1LL &lt;&lt; qureg.<a class="code" href="structQureg.html#ad08dff5316b8937f4b2a1417591543dc">numQubitsRepresented</a>);</div>
-<div class="line"><a name="l00942"></a><span class="lineno">  942</span>&#160;    <a class="code" href="structComplex.html">Complex</a> amp;</div>
-<div class="line"><a name="l00943"></a><span class="lineno">  943</span>&#160;    amp.<a class="code" href="structComplex.html#ab5b2e2eca02131fc74b289a83636cbe3">real</a> = <a class="code" href="QuEST__internal_8h.html#abc9a9ef4344c7faaaf28ac25c76649b9">statevec_getRealAmp</a>(qureg, ind);</div>
-<div class="line"><a name="l00944"></a><span class="lineno">  944</span>&#160;    amp.imag = <a class="code" href="QuEST__internal_8h.html#abd509244d57657e148e4084c5ab5d28f">statevec_getImagAmp</a>(qureg, ind);</div>
-<div class="line"><a name="l00945"></a><span class="lineno">  945</span>&#160;    <span class="keywordflow">return</span> amp;</div>
-<div class="line"><a name="l00946"></a><span class="lineno">  946</span>&#160;}</div>
+<p class="definition">Definition at line <a class="el" href="QuEST_8c_source.html#l00949">949</a> of file <a class="el" href="QuEST_8c_source.html">QuEST.c</a>.</p>
+<div class="fragment"><div class="line"><a name="l00949"></a><span class="lineno">  949</span>&#160;                                                                         {</div>
+<div class="line"><a name="l00950"></a><span class="lineno">  950</span>&#160;    <a class="code" href="QuEST__validation_8c.html#af22919f5190ca1b3b6b52b8f2fb8213b">validateDensityMatrQureg</a>(qureg, __func__);</div>
+<div class="line"><a name="l00951"></a><span class="lineno">  951</span>&#160;    <a class="code" href="QuEST__validation_8c.html#a5f87419b253a97f6caadb72b507b9853">validateAmpIndex</a>(qureg, row, __func__);</div>
+<div class="line"><a name="l00952"></a><span class="lineno">  952</span>&#160;    <a class="code" href="QuEST__validation_8c.html#a5f87419b253a97f6caadb72b507b9853">validateAmpIndex</a>(qureg, col, __func__);</div>
+<div class="line"><a name="l00953"></a><span class="lineno">  953</span>&#160;    </div>
+<div class="line"><a name="l00954"></a><span class="lineno">  954</span>&#160;    <span class="keywordtype">long</span> <span class="keywordtype">long</span> ind = row + col*(1LL &lt;&lt; qureg.<a class="code" href="structQureg.html#ad08dff5316b8937f4b2a1417591543dc">numQubitsRepresented</a>);</div>
+<div class="line"><a name="l00955"></a><span class="lineno">  955</span>&#160;    <a class="code" href="structComplex.html">Complex</a> amp;</div>
+<div class="line"><a name="l00956"></a><span class="lineno">  956</span>&#160;    amp.<a class="code" href="structComplex.html#ab5b2e2eca02131fc74b289a83636cbe3">real</a> = <a class="code" href="QuEST__internal_8h.html#abc9a9ef4344c7faaaf28ac25c76649b9">statevec_getRealAmp</a>(qureg, ind);</div>
+<div class="line"><a name="l00957"></a><span class="lineno">  957</span>&#160;    amp.imag = <a class="code" href="QuEST__internal_8h.html#abd509244d57657e148e4084c5ab5d28f">statevec_getImagAmp</a>(qureg, ind);</div>
+<div class="line"><a name="l00958"></a><span class="lineno">  958</span>&#160;    <span class="keywordflow">return</span> amp;</div>
+<div class="line"><a name="l00959"></a><span class="lineno">  959</span>&#160;}</div>
 </div><!-- fragment -->
-<p class="reference">References <a class="el" href="QuEST_8h_source.html#l00327">Qureg::numQubitsRepresented</a>, <a class="el" href="QuEST_8h_source.html#l00105">Complex::real</a>, <a class="el" href="QuEST__cpu__distributed_8c_source.html#l00218">statevec_getImagAmp()</a>, <a class="el" href="QuEST__cpu__distributed_8c_source.html#l00208">statevec_getRealAmp()</a>, <a class="el" href="QuEST__validation_8c_source.html#l00378">validateAmpIndex()</a>, and <a class="el" href="QuEST__validation_8c_source.html#l00515">validateDensityMatrQureg()</a>.</p>
+<p class="reference">References <a class="el" href="QuEST_8h_source.html#l00327">Qureg::numQubitsRepresented</a>, <a class="el" href="QuEST_8h_source.html#l00105">Complex::real</a>, <a class="el" href="QuEST__cpu__distributed_8c_source.html#l00222">statevec_getImagAmp()</a>, <a class="el" href="QuEST__cpu__distributed_8c_source.html#l00212">statevec_getRealAmp()</a>, <a class="el" href="QuEST__validation_8c_source.html#l00382">validateAmpIndex()</a>, and <a class="el" href="QuEST__validation_8c_source.html#l00519">validateDensityMatrQureg()</a>.</p>
 
 <p class="reference">Referenced by <a class="el" href="test__calculations_8cpp_source.html#l01311">TEST_CASE()</a>.</p>
 
@@ -1324,15 +1324,15 @@ Tyson Jones (density matrix, doc) </dd></dl>
 </dl>
 <dl class="section author"><dt>Author</dt><dd>Ania Brown </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="QuEST_8c_source.html#l00912">912</a> of file <a class="el" href="QuEST_8c_source.html">QuEST.c</a>.</p>
-<div class="fragment"><div class="line"><a name="l00912"></a><span class="lineno">  912</span>&#160;                                                   {</div>
-<div class="line"><a name="l00913"></a><span class="lineno">  913</span>&#160;    <a class="code" href="QuEST__validation_8c.html#a72feec2aaa05f98aed7f3c3fee141251">validateStateVecQureg</a>(qureg, __func__);</div>
-<div class="line"><a name="l00914"></a><span class="lineno">  914</span>&#160;    <a class="code" href="QuEST__validation_8c.html#a5f87419b253a97f6caadb72b507b9853">validateAmpIndex</a>(qureg, index, __func__);</div>
-<div class="line"><a name="l00915"></a><span class="lineno">  915</span>&#160;    </div>
-<div class="line"><a name="l00916"></a><span class="lineno">  916</span>&#160;    <span class="keywordflow">return</span> <a class="code" href="QuEST__internal_8h.html#abd509244d57657e148e4084c5ab5d28f">statevec_getImagAmp</a>(qureg, index);</div>
-<div class="line"><a name="l00917"></a><span class="lineno">  917</span>&#160;}</div>
+<p class="definition">Definition at line <a class="el" href="QuEST_8c_source.html#l00925">925</a> of file <a class="el" href="QuEST_8c_source.html">QuEST.c</a>.</p>
+<div class="fragment"><div class="line"><a name="l00925"></a><span class="lineno">  925</span>&#160;                                                   {</div>
+<div class="line"><a name="l00926"></a><span class="lineno">  926</span>&#160;    <a class="code" href="QuEST__validation_8c.html#a72feec2aaa05f98aed7f3c3fee141251">validateStateVecQureg</a>(qureg, __func__);</div>
+<div class="line"><a name="l00927"></a><span class="lineno">  927</span>&#160;    <a class="code" href="QuEST__validation_8c.html#a5f87419b253a97f6caadb72b507b9853">validateAmpIndex</a>(qureg, index, __func__);</div>
+<div class="line"><a name="l00928"></a><span class="lineno">  928</span>&#160;    </div>
+<div class="line"><a name="l00929"></a><span class="lineno">  929</span>&#160;    <span class="keywordflow">return</span> <a class="code" href="QuEST__internal_8h.html#abd509244d57657e148e4084c5ab5d28f">statevec_getImagAmp</a>(qureg, index);</div>
+<div class="line"><a name="l00930"></a><span class="lineno">  930</span>&#160;}</div>
 </div><!-- fragment -->
-<p class="reference">References <a class="el" href="QuEST__cpu__distributed_8c_source.html#l00218">statevec_getImagAmp()</a>, <a class="el" href="QuEST__validation_8c_source.html#l00378">validateAmpIndex()</a>, and <a class="el" href="QuEST__validation_8c_source.html#l00511">validateStateVecQureg()</a>.</p>
+<p class="reference">References <a class="el" href="QuEST__cpu__distributed_8c_source.html#l00222">statevec_getImagAmp()</a>, <a class="el" href="QuEST__validation_8c_source.html#l00382">validateAmpIndex()</a>, and <a class="el" href="QuEST__validation_8c_source.html#l00515">validateStateVecQureg()</a>.</p>
 
 <p class="reference">Referenced by <a class="el" href="test__calculations_8cpp_source.html#l01354">TEST_CASE()</a>.</p>
 
@@ -1378,14 +1378,14 @@ Tyson Jones (density matrix, doc) </dd></dl>
 </dl>
 <dl class="section author"><dt>Author</dt><dd>Tyson Jones </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="QuEST_8c_source.html#l00899">899</a> of file <a class="el" href="QuEST_8c_source.html">QuEST.c</a>.</p>
-<div class="fragment"><div class="line"><a name="l00899"></a><span class="lineno">  899</span>&#160;                                      {</div>
-<div class="line"><a name="l00900"></a><span class="lineno">  900</span>&#160;    <a class="code" href="QuEST__validation_8c.html#a72feec2aaa05f98aed7f3c3fee141251">validateStateVecQureg</a>(qureg, __func__);</div>
-<div class="line"><a name="l00901"></a><span class="lineno">  901</span>&#160;    </div>
-<div class="line"><a name="l00902"></a><span class="lineno">  902</span>&#160;    <span class="keywordflow">return</span> qureg.<a class="code" href="structQureg.html#adef4935cac95763c29164cf99b144ed4">numAmpsTotal</a>;</div>
-<div class="line"><a name="l00903"></a><span class="lineno">  903</span>&#160;}</div>
+<p class="definition">Definition at line <a class="el" href="QuEST_8c_source.html#l00912">912</a> of file <a class="el" href="QuEST_8c_source.html">QuEST.c</a>.</p>
+<div class="fragment"><div class="line"><a name="l00912"></a><span class="lineno">  912</span>&#160;                                      {</div>
+<div class="line"><a name="l00913"></a><span class="lineno">  913</span>&#160;    <a class="code" href="QuEST__validation_8c.html#a72feec2aaa05f98aed7f3c3fee141251">validateStateVecQureg</a>(qureg, __func__);</div>
+<div class="line"><a name="l00914"></a><span class="lineno">  914</span>&#160;    </div>
+<div class="line"><a name="l00915"></a><span class="lineno">  915</span>&#160;    <span class="keywordflow">return</span> qureg.<a class="code" href="structQureg.html#adef4935cac95763c29164cf99b144ed4">numAmpsTotal</a>;</div>
+<div class="line"><a name="l00916"></a><span class="lineno">  916</span>&#160;}</div>
 </div><!-- fragment -->
-<p class="reference">References <a class="el" href="QuEST_8h_source.html#l00334">Qureg::numAmpsTotal</a>, and <a class="el" href="QuEST__validation_8c_source.html#l00511">validateStateVecQureg()</a>.</p>
+<p class="reference">References <a class="el" href="QuEST_8h_source.html#l00334">Qureg::numAmpsTotal</a>, and <a class="el" href="QuEST__validation_8c_source.html#l00515">validateStateVecQureg()</a>.</p>
 
 <p class="reference">Referenced by <a class="el" href="test__calculations_8cpp_source.html#l01392">TEST_CASE()</a>.</p>
 
@@ -1421,10 +1421,10 @@ Tyson Jones (density matrix, doc) </dd></dl>
 <dl class="section return"><dt>Returns</dt><dd><code>qureg.numQubitsRepresented</code> </dd></dl>
 <dl class="section author"><dt>Author</dt><dd>Tyson Jones </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="QuEST_8c_source.html#l00895">895</a> of file <a class="el" href="QuEST_8c_source.html">QuEST.c</a>.</p>
-<div class="fragment"><div class="line"><a name="l00895"></a><span class="lineno">  895</span>&#160;                              {</div>
-<div class="line"><a name="l00896"></a><span class="lineno">  896</span>&#160;    <span class="keywordflow">return</span> qureg.<a class="code" href="structQureg.html#ad08dff5316b8937f4b2a1417591543dc">numQubitsRepresented</a>;</div>
-<div class="line"><a name="l00897"></a><span class="lineno">  897</span>&#160;}</div>
+<p class="definition">Definition at line <a class="el" href="QuEST_8c_source.html#l00908">908</a> of file <a class="el" href="QuEST_8c_source.html">QuEST.c</a>.</p>
+<div class="fragment"><div class="line"><a name="l00908"></a><span class="lineno">  908</span>&#160;                              {</div>
+<div class="line"><a name="l00909"></a><span class="lineno">  909</span>&#160;    <span class="keywordflow">return</span> qureg.<a class="code" href="structQureg.html#ad08dff5316b8937f4b2a1417591543dc">numQubitsRepresented</a>;</div>
+<div class="line"><a name="l00910"></a><span class="lineno">  910</span>&#160;}</div>
 </div><!-- fragment -->
 <p class="reference">References <a class="el" href="QuEST_8h_source.html#l00327">Qureg::numQubitsRepresented</a>.</p>
 
@@ -1488,15 +1488,15 @@ Tyson Jones (density matrix, doc) </dd></dl>
 </dl>
 <dl class="section author"><dt>Author</dt><dd>Ania Brown </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="QuEST_8c_source.html#l00919">919</a> of file <a class="el" href="QuEST_8c_source.html">QuEST.c</a>.</p>
-<div class="fragment"><div class="line"><a name="l00919"></a><span class="lineno">  919</span>&#160;                                                   {</div>
-<div class="line"><a name="l00920"></a><span class="lineno">  920</span>&#160;    <a class="code" href="QuEST__validation_8c.html#a72feec2aaa05f98aed7f3c3fee141251">validateStateVecQureg</a>(qureg, __func__);</div>
-<div class="line"><a name="l00921"></a><span class="lineno">  921</span>&#160;    <a class="code" href="QuEST__validation_8c.html#a5f87419b253a97f6caadb72b507b9853">validateAmpIndex</a>(qureg, index, __func__);</div>
-<div class="line"><a name="l00922"></a><span class="lineno">  922</span>&#160;    </div>
-<div class="line"><a name="l00923"></a><span class="lineno">  923</span>&#160;    <span class="keywordflow">return</span> <a class="code" href="QuEST__common_8c.html#a3afe58e49dce5536bc4c1b7caddf44a6">statevec_getProbAmp</a>(qureg, index);</div>
-<div class="line"><a name="l00924"></a><span class="lineno">  924</span>&#160;}</div>
+<p class="definition">Definition at line <a class="el" href="QuEST_8c_source.html#l00932">932</a> of file <a class="el" href="QuEST_8c_source.html">QuEST.c</a>.</p>
+<div class="fragment"><div class="line"><a name="l00932"></a><span class="lineno">  932</span>&#160;                                                   {</div>
+<div class="line"><a name="l00933"></a><span class="lineno">  933</span>&#160;    <a class="code" href="QuEST__validation_8c.html#a72feec2aaa05f98aed7f3c3fee141251">validateStateVecQureg</a>(qureg, __func__);</div>
+<div class="line"><a name="l00934"></a><span class="lineno">  934</span>&#160;    <a class="code" href="QuEST__validation_8c.html#a5f87419b253a97f6caadb72b507b9853">validateAmpIndex</a>(qureg, index, __func__);</div>
+<div class="line"><a name="l00935"></a><span class="lineno">  935</span>&#160;    </div>
+<div class="line"><a name="l00936"></a><span class="lineno">  936</span>&#160;    <span class="keywordflow">return</span> <a class="code" href="QuEST__common_8c.html#a3afe58e49dce5536bc4c1b7caddf44a6">statevec_getProbAmp</a>(qureg, index);</div>
+<div class="line"><a name="l00937"></a><span class="lineno">  937</span>&#160;}</div>
 </div><!-- fragment -->
-<p class="reference">References <a class="el" href="QuEST__common_8c_source.html#l00258">statevec_getProbAmp()</a>, <a class="el" href="QuEST__validation_8c_source.html#l00378">validateAmpIndex()</a>, and <a class="el" href="QuEST__validation_8c_source.html#l00511">validateStateVecQureg()</a>.</p>
+<p class="reference">References <a class="el" href="QuEST__common_8c_source.html#l00248">statevec_getProbAmp()</a>, <a class="el" href="QuEST__validation_8c_source.html#l00382">validateAmpIndex()</a>, and <a class="el" href="QuEST__validation_8c_source.html#l00515">validateStateVecQureg()</a>.</p>
 
 <p class="reference">Referenced by <a class="el" href="test__calculations_8cpp_source.html#l01455">TEST_CASE()</a>.</p>
 
@@ -1558,70 +1558,70 @@ Tyson Jones (density matrix, doc) </dd></dl>
 </dl>
 <dl class="section author"><dt>Author</dt><dd>Ania Brown </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="QuEST_8c_source.html#l00905">905</a> of file <a class="el" href="QuEST_8c_source.html">QuEST.c</a>.</p>
-<div class="fragment"><div class="line"><a name="l00905"></a><span class="lineno">  905</span>&#160;                                                   {</div>
-<div class="line"><a name="l00906"></a><span class="lineno">  906</span>&#160;    <a class="code" href="QuEST__validation_8c.html#a72feec2aaa05f98aed7f3c3fee141251">validateStateVecQureg</a>(qureg, __func__);</div>
-<div class="line"><a name="l00907"></a><span class="lineno">  907</span>&#160;    <a class="code" href="QuEST__validation_8c.html#a5f87419b253a97f6caadb72b507b9853">validateAmpIndex</a>(qureg, index, __func__);</div>
-<div class="line"><a name="l00908"></a><span class="lineno">  908</span>&#160;    </div>
-<div class="line"><a name="l00909"></a><span class="lineno">  909</span>&#160;    <span class="keywordflow">return</span> <a class="code" href="QuEST__internal_8h.html#abc9a9ef4344c7faaaf28ac25c76649b9">statevec_getRealAmp</a>(qureg, index);</div>
-<div class="line"><a name="l00910"></a><span class="lineno">  910</span>&#160;}</div>
+<p class="definition">Definition at line <a class="el" href="QuEST_8c_source.html#l00918">918</a> of file <a class="el" href="QuEST_8c_source.html">QuEST.c</a>.</p>
+<div class="fragment"><div class="line"><a name="l00918"></a><span class="lineno">  918</span>&#160;                                                   {</div>
+<div class="line"><a name="l00919"></a><span class="lineno">  919</span>&#160;    <a class="code" href="QuEST__validation_8c.html#a72feec2aaa05f98aed7f3c3fee141251">validateStateVecQureg</a>(qureg, __func__);</div>
+<div class="line"><a name="l00920"></a><span class="lineno">  920</span>&#160;    <a class="code" href="QuEST__validation_8c.html#a5f87419b253a97f6caadb72b507b9853">validateAmpIndex</a>(qureg, index, __func__);</div>
+<div class="line"><a name="l00921"></a><span class="lineno">  921</span>&#160;    </div>
+<div class="line"><a name="l00922"></a><span class="lineno">  922</span>&#160;    <span class="keywordflow">return</span> <a class="code" href="QuEST__internal_8h.html#abc9a9ef4344c7faaaf28ac25c76649b9">statevec_getRealAmp</a>(qureg, index);</div>
+<div class="line"><a name="l00923"></a><span class="lineno">  923</span>&#160;}</div>
 </div><!-- fragment -->
-<p class="reference">References <a class="el" href="QuEST__cpu__distributed_8c_source.html#l00208">statevec_getRealAmp()</a>, <a class="el" href="QuEST__validation_8c_source.html#l00378">validateAmpIndex()</a>, and <a class="el" href="QuEST__validation_8c_source.html#l00511">validateStateVecQureg()</a>.</p>
+<p class="reference">References <a class="el" href="QuEST__cpu__distributed_8c_source.html#l00212">statevec_getRealAmp()</a>, <a class="el" href="QuEST__validation_8c_source.html#l00382">validateAmpIndex()</a>, and <a class="el" href="QuEST__validation_8c_source.html#l00515">validateStateVecQureg()</a>.</p>
 
 <p class="reference">Referenced by <a class="el" href="test__calculations_8cpp_source.html#l01494">TEST_CASE()</a>.</p>
 
 </div>
 </div>
 </div><!-- contents -->
-<div class="ttc" id="aQuEST__validation_8c_html_af22919f5190ca1b3b6b52b8f2fb8213b"><div class="ttname"><a href="QuEST__validation_8c.html#af22919f5190ca1b3b6b52b8f2fb8213b">validateDensityMatrQureg</a></div><div class="ttdeci">void validateDensityMatrQureg(Qureg qureg, const char *caller)</div><div class="ttdef"><b>Definition:</b> <a href="QuEST__validation_8c_source.html#l00515">QuEST_validation.c:515</a></div></div>
-<div class="ttc" id="aQuEST__validation_8c_html_ac31c45c5a31c523be0eb26abba6cf598"><div class="ttname"><a href="QuEST__validation_8c.html#ac31c45c5a31c523be0eb26abba6cf598">validateTarget</a></div><div class="ttdeci">void validateTarget(Qureg qureg, int targetQubit, const char *caller)</div><div class="ttdef"><b>Definition:</b> <a href="QuEST__validation_8c_source.html#l00396">QuEST_validation.c:396</a></div></div>
-<div class="ttc" id="aQuEST__validation_8c_html_ad613c75ff252a88e54f911053bd2032c"><div class="ttname"><a href="QuEST__validation_8c.html#ad613c75ff252a88e54f911053bd2032c">validateOutcome</a></div><div class="ttdeci">void validateOutcome(int outcome, const char *caller)</div><div class="ttdef"><b>Definition:</b> <a href="QuEST__validation_8c_source.html#l00519">QuEST_validation.c:519</a></div></div>
+<div class="ttc" id="aQuEST__validation_8c_html_af22919f5190ca1b3b6b52b8f2fb8213b"><div class="ttname"><a href="QuEST__validation_8c.html#af22919f5190ca1b3b6b52b8f2fb8213b">validateDensityMatrQureg</a></div><div class="ttdeci">void validateDensityMatrQureg(Qureg qureg, const char *caller)</div><div class="ttdef"><b>Definition:</b> <a href="QuEST__validation_8c_source.html#l00519">QuEST_validation.c:519</a></div></div>
+<div class="ttc" id="aQuEST__validation_8c_html_ac31c45c5a31c523be0eb26abba6cf598"><div class="ttname"><a href="QuEST__validation_8c.html#ac31c45c5a31c523be0eb26abba6cf598">validateTarget</a></div><div class="ttdeci">void validateTarget(Qureg qureg, int targetQubit, const char *caller)</div><div class="ttdef"><b>Definition:</b> <a href="QuEST__validation_8c_source.html#l00400">QuEST_validation.c:400</a></div></div>
+<div class="ttc" id="aQuEST__validation_8c_html_ad613c75ff252a88e54f911053bd2032c"><div class="ttname"><a href="QuEST__validation_8c.html#ad613c75ff252a88e54f911053bd2032c">validateOutcome</a></div><div class="ttdeci">void validateOutcome(int outcome, const char *caller)</div><div class="ttdef"><b>Definition:</b> <a href="QuEST__validation_8c_source.html#l00523">QuEST_validation.c:523</a></div></div>
 <div class="ttc" id="agroup__type_html_gga1c703cf89629e4e9c7023cd402d67028a085c85cff6ba79c52d8b1e61c42ddddf"><div class="ttname"><a href="group__type.html#gga1c703cf89629e4e9c7023cd402d67028a085c85cff6ba79c52d8b1e61c42ddddf">PAULI_Z</a></div><div class="ttdeci">@ PAULI_Z</div><div class="ttdef"><b>Definition:</b> <a href="QuEST_8h_source.html#l00096">QuEST.h:96</a></div></div>
-<div class="ttc" id="agroup__calc_html_gad0cc08d52cad5062553d6f78126780cc"><div class="ttname"><a href="group__calc.html#gad0cc08d52cad5062553d6f78126780cc">calcProbOfAllOutcomes</a></div><div class="ttdeci">void calcProbOfAllOutcomes(qreal *retProbs, Qureg qureg, int *qubits, int numQubits)</div><div class="ttdoc">Populates outcomeProbs with the probabilities of every outcome of the sub-register contained in qubit...</div><div class="ttdef"><b>Definition:</b> <a href="QuEST_8c_source.html#l01163">QuEST.c:1163</a></div></div>
-<div class="ttc" id="aQuEST__internal_8h_html_a6ff3dc624b5fafe8edae4fe327c255a0"><div class="ttname"><a href="QuEST__internal_8h.html#a6ff3dc624b5fafe8edae4fe327c255a0">densmatr_calcInnerProduct</a></div><div class="ttdeci">qreal densmatr_calcInnerProduct(Qureg a, Qureg b)</div><div class="ttdef"><b>Definition:</b> <a href="QuEST__cpu__distributed_8c_source.html#l00451">QuEST_cpu_distributed.c:451</a></div></div>
-<div class="ttc" id="aQuEST__common_8c_html_aef380928d1b0003411d6159ca6594cd5"><div class="ttname"><a href="QuEST__common_8c.html#aef380928d1b0003411d6159ca6594cd5">statevec_calcExpecPauliProd</a></div><div class="ttdeci">qreal statevec_calcExpecPauliProd(Qureg qureg, int *targetQubits, enum pauliOpType *pauliCodes, int numTargets, Qureg workspace)</div><div class="ttdef"><b>Definition:</b> <a href="QuEST__common_8c_source.html#l00519">QuEST_common.c:519</a></div></div>
+<div class="ttc" id="agroup__calc_html_gad0cc08d52cad5062553d6f78126780cc"><div class="ttname"><a href="group__calc.html#gad0cc08d52cad5062553d6f78126780cc">calcProbOfAllOutcomes</a></div><div class="ttdeci">void calcProbOfAllOutcomes(qreal *retProbs, Qureg qureg, int *qubits, int numQubits)</div><div class="ttdoc">Populates outcomeProbs with the probabilities of every outcome of the sub-register contained in qubit...</div><div class="ttdef"><b>Definition:</b> <a href="QuEST_8c_source.html#l01176">QuEST.c:1176</a></div></div>
+<div class="ttc" id="aQuEST__internal_8h_html_a6ff3dc624b5fafe8edae4fe327c255a0"><div class="ttname"><a href="QuEST__internal_8h.html#a6ff3dc624b5fafe8edae4fe327c255a0">densmatr_calcInnerProduct</a></div><div class="ttdeci">qreal densmatr_calcInnerProduct(Qureg a, Qureg b)</div><div class="ttdef"><b>Definition:</b> <a href="QuEST__cpu__distributed_8c_source.html#l00455">QuEST_cpu_distributed.c:455</a></div></div>
+<div class="ttc" id="aQuEST__common_8c_html_aef380928d1b0003411d6159ca6594cd5"><div class="ttname"><a href="QuEST__common_8c.html#aef380928d1b0003411d6159ca6594cd5">statevec_calcExpecPauliProd</a></div><div class="ttdeci">qreal statevec_calcExpecPauliProd(Qureg qureg, int *targetQubits, enum pauliOpType *pauliCodes, int numTargets, Qureg workspace)</div><div class="ttdef"><b>Definition:</b> <a href="QuEST__common_8c_source.html#l00509">QuEST_common.c:509</a></div></div>
 <div class="ttc" id="agroup__type_html_gga1c703cf89629e4e9c7023cd402d67028a63800f45b01ccc2608f754aee850bf4a"><div class="ttname"><a href="group__type.html#gga1c703cf89629e4e9c7023cd402d67028a63800f45b01ccc2608f754aee850bf4a">PAULI_I</a></div><div class="ttdeci">@ PAULI_I</div><div class="ttdef"><b>Definition:</b> <a href="QuEST_8h_source.html#l00096">QuEST.h:96</a></div></div>
-<div class="ttc" id="aQuEST__validation_8c_html_a72feec2aaa05f98aed7f3c3fee141251"><div class="ttname"><a href="QuEST__validation_8c.html#a72feec2aaa05f98aed7f3c3fee141251">validateStateVecQureg</a></div><div class="ttdeci">void validateStateVecQureg(Qureg qureg, const char *caller)</div><div class="ttdef"><b>Definition:</b> <a href="QuEST__validation_8c_source.html#l00511">QuEST_validation.c:511</a></div></div>
-<div class="ttc" id="aQuEST__common_8c_html_ae0cfea24091c8336146aa84c2253992e"><div class="ttname"><a href="QuEST__common_8c.html#ae0cfea24091c8336146aa84c2253992e">statevec_calcExpecPauliSum</a></div><div class="ttdeci">qreal statevec_calcExpecPauliSum(Qureg qureg, enum pauliOpType *allCodes, qreal *termCoeffs, int numSumTerms, Qureg workspace)</div><div class="ttdef"><b>Definition:</b> <a href="QuEST__common_8c_source.html#l00534">QuEST_common.c:534</a></div></div>
-<div class="ttc" id="aQuEST__internal_8h_html_ae45eefa65f4ecd37bab84fade7cf7f1f"><div class="ttname"><a href="QuEST__internal_8h.html#ae45eefa65f4ecd37bab84fade7cf7f1f">densmatr_calcPurity</a></div><div class="ttdeci">qreal densmatr_calcPurity(Qureg qureg)</div><div class="ttdoc">Computes the trace of the density matrix squared.</div><div class="ttdef"><b>Definition:</b> <a href="QuEST__cpu__distributed_8c_source.html#l01354">QuEST_cpu_distributed.c:1354</a></div></div>
-<div class="ttc" id="aQuEST__internal_8h_html_a63cb88a5f4eb12fef087435b8db3f8eb"><div class="ttname"><a href="QuEST__internal_8h.html#a63cb88a5f4eb12fef087435b8db3f8eb">statevec_calcProbOfOutcome</a></div><div class="ttdeci">qreal statevec_calcProbOfOutcome(Qureg qureg, int measureQubit, int outcome)</div><div class="ttdef"><b>Definition:</b> <a href="QuEST__cpu__distributed_8c_source.html#l01308">QuEST_cpu_distributed.c:1308</a></div></div>
-<div class="ttc" id="aQuEST__validation_8c_html_a5be128290a7bba9a7f12d32cabe2276b"><div class="ttname"><a href="QuEST__validation_8c.html#a5be128290a7bba9a7f12d32cabe2276b">validateNumPauliSumTerms</a></div><div class="ttdeci">void validateNumPauliSumTerms(int numTerms, const char *caller)</div><div class="ttdef"><b>Definition:</b> <a href="QuEST__validation_8c_source.html#l00602">QuEST_validation.c:602</a></div></div>
-<div class="ttc" id="aQuEST__common_8c_html_aeeec9fe1501e25930adf6c38763a158e"><div class="ttname"><a href="QuEST__common_8c.html#aeeec9fe1501e25930adf6c38763a158e">statevec_calcFidelity</a></div><div class="ttdeci">qreal statevec_calcFidelity(Qureg qureg, Qureg pureState)</div><div class="ttdef"><b>Definition:</b> <a href="QuEST__common_8c_source.html#l00390">QuEST_common.c:390</a></div></div>
+<div class="ttc" id="aQuEST__validation_8c_html_a72feec2aaa05f98aed7f3c3fee141251"><div class="ttname"><a href="QuEST__validation_8c.html#a72feec2aaa05f98aed7f3c3fee141251">validateStateVecQureg</a></div><div class="ttdeci">void validateStateVecQureg(Qureg qureg, const char *caller)</div><div class="ttdef"><b>Definition:</b> <a href="QuEST__validation_8c_source.html#l00515">QuEST_validation.c:515</a></div></div>
+<div class="ttc" id="aQuEST__common_8c_html_ae0cfea24091c8336146aa84c2253992e"><div class="ttname"><a href="QuEST__common_8c.html#ae0cfea24091c8336146aa84c2253992e">statevec_calcExpecPauliSum</a></div><div class="ttdeci">qreal statevec_calcExpecPauliSum(Qureg qureg, enum pauliOpType *allCodes, qreal *termCoeffs, int numSumTerms, Qureg workspace)</div><div class="ttdef"><b>Definition:</b> <a href="QuEST__common_8c_source.html#l00524">QuEST_common.c:524</a></div></div>
+<div class="ttc" id="aQuEST__internal_8h_html_ae45eefa65f4ecd37bab84fade7cf7f1f"><div class="ttname"><a href="QuEST__internal_8h.html#ae45eefa65f4ecd37bab84fade7cf7f1f">densmatr_calcPurity</a></div><div class="ttdeci">qreal densmatr_calcPurity(Qureg qureg)</div><div class="ttdoc">Computes the trace of the density matrix squared.</div><div class="ttdef"><b>Definition:</b> <a href="QuEST__cpu__distributed_8c_source.html#l01358">QuEST_cpu_distributed.c:1358</a></div></div>
+<div class="ttc" id="aQuEST__internal_8h_html_a63cb88a5f4eb12fef087435b8db3f8eb"><div class="ttname"><a href="QuEST__internal_8h.html#a63cb88a5f4eb12fef087435b8db3f8eb">statevec_calcProbOfOutcome</a></div><div class="ttdeci">qreal statevec_calcProbOfOutcome(Qureg qureg, int measureQubit, int outcome)</div><div class="ttdef"><b>Definition:</b> <a href="QuEST__cpu__distributed_8c_source.html#l01312">QuEST_cpu_distributed.c:1312</a></div></div>
+<div class="ttc" id="aQuEST__validation_8c_html_a5be128290a7bba9a7f12d32cabe2276b"><div class="ttname"><a href="QuEST__validation_8c.html#a5be128290a7bba9a7f12d32cabe2276b">validateNumPauliSumTerms</a></div><div class="ttdeci">void validateNumPauliSumTerms(int numTerms, const char *caller)</div><div class="ttdef"><b>Definition:</b> <a href="QuEST__validation_8c_source.html#l00606">QuEST_validation.c:606</a></div></div>
+<div class="ttc" id="aQuEST__common_8c_html_aeeec9fe1501e25930adf6c38763a158e"><div class="ttname"><a href="QuEST__common_8c.html#aeeec9fe1501e25930adf6c38763a158e">statevec_calcFidelity</a></div><div class="ttdeci">qreal statevec_calcFidelity(Qureg qureg, Qureg pureState)</div><div class="ttdef"><b>Definition:</b> <a href="QuEST__common_8c_source.html#l00380">QuEST_common.c:380</a></div></div>
 <div class="ttc" id="agroup__type_html_ga7740e349b4f8bae6451547680f0ce2d6"><div class="ttname"><a href="group__type.html#ga7740e349b4f8bae6451547680f0ce2d6">qreal</a></div><div class="ttdeci">#define qreal</div></div>
 <div class="ttc" id="agroup__type_html_gga1c703cf89629e4e9c7023cd402d67028a7abac7bb5b71e17382014c443244ad5c"><div class="ttname"><a href="group__type.html#gga1c703cf89629e4e9c7023cd402d67028a7abac7bb5b71e17382014c443244ad5c">PAULI_X</a></div><div class="ttdeci">@ PAULI_X</div><div class="ttdef"><b>Definition:</b> <a href="QuEST_8h_source.html#l00096">QuEST.h:96</a></div></div>
-<div class="ttc" id="aQuEST__common_8c_html_a3afe58e49dce5536bc4c1b7caddf44a6"><div class="ttname"><a href="QuEST__common_8c.html#a3afe58e49dce5536bc4c1b7caddf44a6">statevec_getProbAmp</a></div><div class="ttdeci">qreal statevec_getProbAmp(Qureg qureg, long long int index)</div><div class="ttdef"><b>Definition:</b> <a href="QuEST__common_8c_source.html#l00258">QuEST_common.c:258</a></div></div>
+<div class="ttc" id="aQuEST__common_8c_html_a3afe58e49dce5536bc4c1b7caddf44a6"><div class="ttname"><a href="QuEST__common_8c.html#a3afe58e49dce5536bc4c1b7caddf44a6">statevec_getProbAmp</a></div><div class="ttdeci">qreal statevec_getProbAmp(Qureg qureg, long long int index)</div><div class="ttdef"><b>Definition:</b> <a href="QuEST__common_8c_source.html#l00248">QuEST_common.c:248</a></div></div>
 <div class="ttc" id="aQuEST__internal_8h_html_a6153547f245c05874161a105e9a2f02c"><div class="ttname"><a href="QuEST__internal_8h.html#a6153547f245c05874161a105e9a2f02c">densmatr_calcTotalProb</a></div><div class="ttdeci">qreal densmatr_calcTotalProb(Qureg qureg)</div><div class="ttdef"><b>Definition:</b> <a href="QuEST__cpu__distributed_8c_source.html#l00053">QuEST_cpu_distributed.c:53</a></div></div>
-<div class="ttc" id="aQuEST__internal_8h_html_a0fb948ddab4ca210e523aa3c52639df4"><div class="ttname"><a href="QuEST__internal_8h.html#a0fb948ddab4ca210e523aa3c52639df4">statevec_calcExpecDiagonalOp</a></div><div class="ttdeci">Complex statevec_calcExpecDiagonalOp(Qureg qureg, DiagonalOp op)</div><div class="ttdef"><b>Definition:</b> <a href="QuEST__cpu__distributed_8c_source.html#l01589">QuEST_cpu_distributed.c:1589</a></div></div>
-<div class="ttc" id="aQuEST__validation_8c_html_a8a656a83bf0b44447188d06c2f8114cb"><div class="ttname"><a href="QuEST__validation_8c.html#a8a656a83bf0b44447188d06c2f8114cb">validateDiagonalOp</a></div><div class="ttdeci">void validateDiagonalOp(Qureg qureg, DiagonalOp op, const char *caller)</div><div class="ttdef"><b>Definition:</b> <a href="QuEST__validation_8c_source.html#l00709">QuEST_validation.c:709</a></div></div>
-<div class="ttc" id="aQuEST__internal_8h_html_a78cf98ea535790bc46069b60bae342c7"><div class="ttname"><a href="QuEST__internal_8h.html#a78cf98ea535790bc46069b60bae342c7">statevec_calcProbOfAllOutcomes</a></div><div class="ttdeci">void statevec_calcProbOfAllOutcomes(qreal *retProbs, Qureg qureg, int *qubits, int numQubits)</div><div class="ttdef"><b>Definition:</b> <a href="QuEST__cpu__distributed_8c_source.html#l01336">QuEST_cpu_distributed.c:1336</a></div></div>
+<div class="ttc" id="aQuEST__internal_8h_html_a0fb948ddab4ca210e523aa3c52639df4"><div class="ttname"><a href="QuEST__internal_8h.html#a0fb948ddab4ca210e523aa3c52639df4">statevec_calcExpecDiagonalOp</a></div><div class="ttdeci">Complex statevec_calcExpecDiagonalOp(Qureg qureg, DiagonalOp op)</div><div class="ttdef"><b>Definition:</b> <a href="QuEST__cpu__distributed_8c_source.html#l01600">QuEST_cpu_distributed.c:1600</a></div></div>
+<div class="ttc" id="aQuEST__validation_8c_html_a8a656a83bf0b44447188d06c2f8114cb"><div class="ttname"><a href="QuEST__validation_8c.html#a8a656a83bf0b44447188d06c2f8114cb">validateDiagonalOp</a></div><div class="ttdeci">void validateDiagonalOp(Qureg qureg, DiagonalOp op, const char *caller)</div><div class="ttdef"><b>Definition:</b> <a href="QuEST__validation_8c_source.html#l00713">QuEST_validation.c:713</a></div></div>
+<div class="ttc" id="aQuEST__internal_8h_html_a78cf98ea535790bc46069b60bae342c7"><div class="ttname"><a href="QuEST__internal_8h.html#a78cf98ea535790bc46069b60bae342c7">statevec_calcProbOfAllOutcomes</a></div><div class="ttdeci">void statevec_calcProbOfAllOutcomes(qreal *retProbs, Qureg qureg, int *qubits, int numQubits)</div><div class="ttdef"><b>Definition:</b> <a href="QuEST__cpu__distributed_8c_source.html#l01340">QuEST_cpu_distributed.c:1340</a></div></div>
 <div class="ttc" id="astructPauliHamil_html_ac1c6c9f6299cf83bbba88123216c3cac"><div class="ttname"><a href="structPauliHamil.html#ac1c6c9f6299cf83bbba88123216c3cac">PauliHamil::termCoeffs</a></div><div class="ttdeci">qreal * termCoeffs</div><div class="ttdoc">The real coefficient of each Pauli product. This is an array of length PauliHamil....</div><div class="ttdef"><b>Definition:</b> <a href="QuEST_8h_source.html#l00283">QuEST.h:283</a></div></div>
-<div class="ttc" id="aQuEST__internal_8h_html_a2c664d8abca0a6f87c2bf4fe75fbff90"><div class="ttname"><a href="QuEST__internal_8h.html#a2c664d8abca0a6f87c2bf4fe75fbff90">densmatr_calcProbOfAllOutcomes</a></div><div class="ttdeci">void densmatr_calcProbOfAllOutcomes(qreal *retProbs, Qureg qureg, int *qubits, int numQubits)</div><div class="ttdef"><b>Definition:</b> <a href="QuEST__cpu__distributed_8c_source.html#l01345">QuEST_cpu_distributed.c:1345</a></div></div>
+<div class="ttc" id="aQuEST__internal_8h_html_a2c664d8abca0a6f87c2bf4fe75fbff90"><div class="ttname"><a href="QuEST__internal_8h.html#a2c664d8abca0a6f87c2bf4fe75fbff90">densmatr_calcProbOfAllOutcomes</a></div><div class="ttdeci">void densmatr_calcProbOfAllOutcomes(qreal *retProbs, Qureg qureg, int *qubits, int numQubits)</div><div class="ttdef"><b>Definition:</b> <a href="QuEST__cpu__distributed_8c_source.html#l01349">QuEST_cpu_distributed.c:1349</a></div></div>
 <div class="ttc" id="astructPauliHamil_html_a4b8d38c403553c07ceddcd40c46ce6c8"><div class="ttname"><a href="structPauliHamil.html#a4b8d38c403553c07ceddcd40c46ce6c8">PauliHamil::pauliCodes</a></div><div class="ttdeci">enum pauliOpType * pauliCodes</div><div class="ttdoc">The Pauli operators acting on each qubit, flattened over every operator.</div><div class="ttdef"><b>Definition:</b> <a href="QuEST_8h_source.html#l00281">QuEST.h:281</a></div></div>
-<div class="ttc" id="aQuEST__validation_8c_html_a6776217a5f7ba38b56175cf6db0f96e0"><div class="ttname"><a href="QuEST__validation_8c.html#a6776217a5f7ba38b56175cf6db0f96e0">validateMultiTargets</a></div><div class="ttdeci">void validateMultiTargets(Qureg qureg, int *targetQubits, int numTargetQubits, const char *caller)</div><div class="ttdef"><b>Definition:</b> <a href="QuEST__validation_8c_source.html#l00424">QuEST_validation.c:424</a></div></div>
-<div class="ttc" id="aQuEST__validation_8c_html_a87d22240ccfd81827a2a34b8d569d347"><div class="ttname"><a href="QuEST__validation_8c.html#a87d22240ccfd81827a2a34b8d569d347">validateMatchingQuregDims</a></div><div class="ttdeci">void validateMatchingQuregDims(Qureg qureg1, Qureg qureg2, const char *caller)</div><div class="ttdef"><b>Definition:</b> <a href="QuEST__validation_8c_source.html#l00527">QuEST_validation.c:527</a></div></div>
+<div class="ttc" id="aQuEST__validation_8c_html_a6776217a5f7ba38b56175cf6db0f96e0"><div class="ttname"><a href="QuEST__validation_8c.html#a6776217a5f7ba38b56175cf6db0f96e0">validateMultiTargets</a></div><div class="ttdeci">void validateMultiTargets(Qureg qureg, int *targetQubits, int numTargetQubits, const char *caller)</div><div class="ttdef"><b>Definition:</b> <a href="QuEST__validation_8c_source.html#l00428">QuEST_validation.c:428</a></div></div>
+<div class="ttc" id="aQuEST__validation_8c_html_a87d22240ccfd81827a2a34b8d569d347"><div class="ttname"><a href="QuEST__validation_8c.html#a87d22240ccfd81827a2a34b8d569d347">validateMatchingQuregDims</a></div><div class="ttdeci">void validateMatchingQuregDims(Qureg qureg1, Qureg qureg2, const char *caller)</div><div class="ttdef"><b>Definition:</b> <a href="QuEST__validation_8c_source.html#l00531">QuEST_validation.c:531</a></div></div>
 <div class="ttc" id="astructPauliHamil_html_a737e46b40ef8990cf004d22eb9dbe2e4"><div class="ttname"><a href="structPauliHamil.html#a737e46b40ef8990cf004d22eb9dbe2e4">PauliHamil::numSumTerms</a></div><div class="ttdeci">int numSumTerms</div><div class="ttdoc">The number of terms in the weighted sum, or the number of Pauli products.</div><div class="ttdef"><b>Definition:</b> <a href="QuEST_8h_source.html#l00285">QuEST.h:285</a></div></div>
 <div class="ttc" id="agroup__type_html_gga1c703cf89629e4e9c7023cd402d67028a2c64a9aaee27f6bcfef894d159e759bd"><div class="ttname"><a href="group__type.html#gga1c703cf89629e4e9c7023cd402d67028a2c64a9aaee27f6bcfef894d159e759bd">PAULI_Y</a></div><div class="ttdeci">@ PAULI_Y</div><div class="ttdef"><b>Definition:</b> <a href="QuEST_8h_source.html#l00096">QuEST.h:96</a></div></div>
-<div class="ttc" id="aQuEST__internal_8h_html_a70e3b0a2297c186d5c779af31459b4ca"><div class="ttname"><a href="QuEST__internal_8h.html#a70e3b0a2297c186d5c779af31459b4ca">densmatr_calcExpecDiagonalOp</a></div><div class="ttdeci">Complex densmatr_calcExpecDiagonalOp(Qureg qureg, DiagonalOp op)</div><div class="ttdef"><b>Definition:</b> <a href="QuEST__cpu__distributed_8c_source.html#l01607">QuEST_cpu_distributed.c:1607</a></div></div>
+<div class="ttc" id="aQuEST__internal_8h_html_a70e3b0a2297c186d5c779af31459b4ca"><div class="ttname"><a href="QuEST__internal_8h.html#a70e3b0a2297c186d5c779af31459b4ca">densmatr_calcExpecDiagonalOp</a></div><div class="ttdeci">Complex densmatr_calcExpecDiagonalOp(Qureg qureg, DiagonalOp op)</div><div class="ttdef"><b>Definition:</b> <a href="QuEST__cpu__distributed_8c_source.html#l01618">QuEST_cpu_distributed.c:1618</a></div></div>
 <div class="ttc" id="aQuEST__internal_8h_html_a7ebd3198a198f4cd20840f64fd8b84d0"><div class="ttname"><a href="QuEST__internal_8h.html#a7ebd3198a198f4cd20840f64fd8b84d0">statevec_calcInnerProduct</a></div><div class="ttdeci">Complex statevec_calcInnerProduct(Qureg bra, Qureg ket)</div><div class="ttdoc">Terrible code which unnecessarily individually computes and sums the real and imaginary components of...</div><div class="ttdef"><b>Definition:</b> <a href="QuEST__cpu__distributed_8c_source.html#l00035">QuEST_cpu_distributed.c:35</a></div></div>
-<div class="ttc" id="aQuEST__internal_8h_html_abd509244d57657e148e4084c5ab5d28f"><div class="ttname"><a href="QuEST__internal_8h.html#abd509244d57657e148e4084c5ab5d28f">statevec_getImagAmp</a></div><div class="ttdeci">qreal statevec_getImagAmp(Qureg qureg, long long int index)</div><div class="ttdef"><b>Definition:</b> <a href="QuEST__cpu__distributed_8c_source.html#l00218">QuEST_cpu_distributed.c:218</a></div></div>
-<div class="ttc" id="aQuEST__validation_8c_html_a066b0c4d0b02a0f3b9be7e5c68d9de6a"><div class="ttname"><a href="QuEST__validation_8c.html#a066b0c4d0b02a0f3b9be7e5c68d9de6a">validatePauliHamil</a></div><div class="ttdeci">void validatePauliHamil(PauliHamil hamil, const char *caller)</div><div class="ttdef"><b>Definition:</b> <a href="QuEST__validation_8c_source.html#l00651">QuEST_validation.c:651</a></div></div>
-<div class="ttc" id="aQuEST__internal_8h_html_aa6c3f86010ad398f42b0577ea3bb5bcf"><div class="ttname"><a href="QuEST__internal_8h.html#aa6c3f86010ad398f42b0577ea3bb5bcf">densmatr_calcFidelity</a></div><div class="ttdeci">qreal densmatr_calcFidelity(Qureg qureg, Qureg pureState)</div><div class="ttdef"><b>Definition:</b> <a href="QuEST__cpu__distributed_8c_source.html#l00425">QuEST_cpu_distributed.c:425</a></div></div>
-<div class="ttc" id="aQuEST__validation_8c_html_a2b88b068a8242ee28da42c7324cdd078"><div class="ttname"><a href="QuEST__validation_8c.html#a2b88b068a8242ee28da42c7324cdd078">validateMatchingQuregPauliHamilDims</a></div><div class="ttdeci">void validateMatchingQuregPauliHamilDims(Qureg qureg, PauliHamil hamil, const char *caller)</div><div class="ttdef"><b>Definition:</b> <a href="QuEST__validation_8c_source.html#l00656">QuEST_validation.c:656</a></div></div>
+<div class="ttc" id="aQuEST__internal_8h_html_abd509244d57657e148e4084c5ab5d28f"><div class="ttname"><a href="QuEST__internal_8h.html#abd509244d57657e148e4084c5ab5d28f">statevec_getImagAmp</a></div><div class="ttdeci">qreal statevec_getImagAmp(Qureg qureg, long long int index)</div><div class="ttdef"><b>Definition:</b> <a href="QuEST__cpu__distributed_8c_source.html#l00222">QuEST_cpu_distributed.c:222</a></div></div>
+<div class="ttc" id="aQuEST__validation_8c_html_a066b0c4d0b02a0f3b9be7e5c68d9de6a"><div class="ttname"><a href="QuEST__validation_8c.html#a066b0c4d0b02a0f3b9be7e5c68d9de6a">validatePauliHamil</a></div><div class="ttdeci">void validatePauliHamil(PauliHamil hamil, const char *caller)</div><div class="ttdef"><b>Definition:</b> <a href="QuEST__validation_8c_source.html#l00655">QuEST_validation.c:655</a></div></div>
+<div class="ttc" id="aQuEST__internal_8h_html_aa6c3f86010ad398f42b0577ea3bb5bcf"><div class="ttname"><a href="QuEST__internal_8h.html#aa6c3f86010ad398f42b0577ea3bb5bcf">densmatr_calcFidelity</a></div><div class="ttdeci">qreal densmatr_calcFidelity(Qureg qureg, Qureg pureState)</div><div class="ttdef"><b>Definition:</b> <a href="QuEST__cpu__distributed_8c_source.html#l00429">QuEST_cpu_distributed.c:429</a></div></div>
+<div class="ttc" id="aQuEST__validation_8c_html_a2b88b068a8242ee28da42c7324cdd078"><div class="ttname"><a href="QuEST__validation_8c.html#a2b88b068a8242ee28da42c7324cdd078">validateMatchingQuregPauliHamilDims</a></div><div class="ttdeci">void validateMatchingQuregPauliHamilDims(Qureg qureg, PauliHamil hamil, const char *caller)</div><div class="ttdef"><b>Definition:</b> <a href="QuEST__validation_8c_source.html#l00660">QuEST_validation.c:660</a></div></div>
 <div class="ttc" id="astructQureg_html_acf78445e9435d09f44f0cc832c6aee79"><div class="ttname"><a href="structQureg.html#acf78445e9435d09f44f0cc832c6aee79">Qureg::isDensityMatrix</a></div><div class="ttdeci">int isDensityMatrix</div><div class="ttdoc">Whether this instance is a density-state representation.</div><div class="ttdef"><b>Definition:</b> <a href="QuEST_8h_source.html#l00325">QuEST.h:325</a></div></div>
-<div class="ttc" id="aQuEST__validation_8c_html_a031812e1cf2c98d72d795cea7bbe73a5"><div class="ttname"><a href="QuEST__validation_8c.html#a031812e1cf2c98d72d795cea7bbe73a5">validateMatchingQuregTypes</a></div><div class="ttdeci">void validateMatchingQuregTypes(Qureg qureg1, Qureg qureg2, const char *caller)</div><div class="ttdef"><b>Definition:</b> <a href="QuEST__validation_8c_source.html#l00531">QuEST_validation.c:531</a></div></div>
-<div class="ttc" id="aQuEST__validation_8c_html_a5f87419b253a97f6caadb72b507b9853"><div class="ttname"><a href="QuEST__validation_8c.html#a5f87419b253a97f6caadb72b507b9853">validateAmpIndex</a></div><div class="ttdeci">void validateAmpIndex(Qureg qureg, long long int ampInd, const char *caller)</div><div class="ttdef"><b>Definition:</b> <a href="QuEST__validation_8c_source.html#l00378">QuEST_validation.c:378</a></div></div>
-<div class="ttc" id="agroup__calc_html_ga50ee589fd5ceab52fdd70d0082352b41"><div class="ttname"><a href="group__calc.html#ga50ee589fd5ceab52fdd70d0082352b41">calcExpecPauliSum</a></div><div class="ttdeci">qreal calcExpecPauliSum(Qureg qureg, enum pauliOpType *allPauliCodes, qreal *termCoeffs, int numSumTerms, Qureg workspace)</div><div class="ttdoc">Computes the expected value of a sum of products of Pauli operators.</div><div class="ttdef"><b>Definition:</b> <a href="QuEST_8c_source.html#l01197">QuEST.c:1197</a></div></div>
-<div class="ttc" id="aQuEST__validation_8c_html_a7adc86571f1154558676d95daf0cbd1f"><div class="ttname"><a href="QuEST__validation_8c.html#a7adc86571f1154558676d95daf0cbd1f">validateSecondQuregStateVec</a></div><div class="ttdeci">void validateSecondQuregStateVec(Qureg qureg2, const char *caller)</div><div class="ttdef"><b>Definition:</b> <a href="QuEST__validation_8c_source.html#l00535">QuEST_validation.c:535</a></div></div>
+<div class="ttc" id="aQuEST__validation_8c_html_a031812e1cf2c98d72d795cea7bbe73a5"><div class="ttname"><a href="QuEST__validation_8c.html#a031812e1cf2c98d72d795cea7bbe73a5">validateMatchingQuregTypes</a></div><div class="ttdeci">void validateMatchingQuregTypes(Qureg qureg1, Qureg qureg2, const char *caller)</div><div class="ttdef"><b>Definition:</b> <a href="QuEST__validation_8c_source.html#l00535">QuEST_validation.c:535</a></div></div>
+<div class="ttc" id="aQuEST__validation_8c_html_a5f87419b253a97f6caadb72b507b9853"><div class="ttname"><a href="QuEST__validation_8c.html#a5f87419b253a97f6caadb72b507b9853">validateAmpIndex</a></div><div class="ttdeci">void validateAmpIndex(Qureg qureg, long long int ampInd, const char *caller)</div><div class="ttdef"><b>Definition:</b> <a href="QuEST__validation_8c_source.html#l00382">QuEST_validation.c:382</a></div></div>
+<div class="ttc" id="agroup__calc_html_ga50ee589fd5ceab52fdd70d0082352b41"><div class="ttname"><a href="group__calc.html#ga50ee589fd5ceab52fdd70d0082352b41">calcExpecPauliSum</a></div><div class="ttdeci">qreal calcExpecPauliSum(Qureg qureg, enum pauliOpType *allPauliCodes, qreal *termCoeffs, int numSumTerms, Qureg workspace)</div><div class="ttdoc">Computes the expected value of a sum of products of Pauli operators.</div><div class="ttdef"><b>Definition:</b> <a href="QuEST_8c_source.html#l01210">QuEST.c:1210</a></div></div>
+<div class="ttc" id="aQuEST__validation_8c_html_a7adc86571f1154558676d95daf0cbd1f"><div class="ttname"><a href="QuEST__validation_8c.html#a7adc86571f1154558676d95daf0cbd1f">validateSecondQuregStateVec</a></div><div class="ttdeci">void validateSecondQuregStateVec(Qureg qureg2, const char *caller)</div><div class="ttdef"><b>Definition:</b> <a href="QuEST__validation_8c_source.html#l00539">QuEST_validation.c:539</a></div></div>
 <div class="ttc" id="astructQureg_html_ad08dff5316b8937f4b2a1417591543dc"><div class="ttname"><a href="structQureg.html#ad08dff5316b8937f4b2a1417591543dc">Qureg::numQubitsRepresented</a></div><div class="ttdeci">int numQubitsRepresented</div><div class="ttdoc">The number of qubits represented in either the state-vector or density matrix.</div><div class="ttdef"><b>Definition:</b> <a href="QuEST_8h_source.html#l00327">QuEST.h:327</a></div></div>
 <div class="ttc" id="astructQureg_html_adef4935cac95763c29164cf99b144ed4"><div class="ttname"><a href="structQureg.html#adef4935cac95763c29164cf99b144ed4">Qureg::numAmpsTotal</a></div><div class="ttdeci">long long int numAmpsTotal</div><div class="ttdoc">Total number of amplitudes, which are possibly distributed among machines.</div><div class="ttdef"><b>Definition:</b> <a href="QuEST_8h_source.html#l00334">QuEST.h:334</a></div></div>
 <div class="ttc" id="astructComplex_html_ab5b2e2eca02131fc74b289a83636cbe3"><div class="ttname"><a href="structComplex.html#ab5b2e2eca02131fc74b289a83636cbe3">Complex::real</a></div><div class="ttdeci">qreal real</div><div class="ttdef"><b>Definition:</b> <a href="QuEST_8h_source.html#l00105">QuEST.h:105</a></div></div>
 <div class="ttc" id="astructComplex_html_a84f5439aad0ef495efdd3b4c1c02d27e"><div class="ttname"><a href="structComplex.html#a84f5439aad0ef495efdd3b4c1c02d27e">Complex::imag</a></div><div class="ttdeci">qreal imag</div><div class="ttdef"><b>Definition:</b> <a href="QuEST_8h_source.html#l00106">QuEST.h:106</a></div></div>
-<div class="ttc" id="aQuEST__internal_8h_html_a8c9da88f734b0862f4cce7d819e6d3b5"><div class="ttname"><a href="QuEST__internal_8h.html#a8c9da88f734b0862f4cce7d819e6d3b5">densmatr_calcHilbertSchmidtDistance</a></div><div class="ttdeci">qreal densmatr_calcHilbertSchmidtDistance(Qureg a, Qureg b)</div><div class="ttdef"><b>Definition:</b> <a href="QuEST__cpu__distributed_8c_source.html#l00440">QuEST_cpu_distributed.c:440</a></div></div>
+<div class="ttc" id="aQuEST__internal_8h_html_a8c9da88f734b0862f4cce7d819e6d3b5"><div class="ttname"><a href="QuEST__internal_8h.html#a8c9da88f734b0862f4cce7d819e6d3b5">densmatr_calcHilbertSchmidtDistance</a></div><div class="ttdeci">qreal densmatr_calcHilbertSchmidtDistance(Qureg a, Qureg b)</div><div class="ttdef"><b>Definition:</b> <a href="QuEST__cpu__distributed_8c_source.html#l00444">QuEST_cpu_distributed.c:444</a></div></div>
 <div class="ttc" id="astructComplex_html"><div class="ttname"><a href="structComplex.html">Complex</a></div><div class="ttdoc">Represents one complex number.</div><div class="ttdef"><b>Definition:</b> <a href="QuEST_8h_source.html#l00103">QuEST.h:103</a></div></div>
-<div class="ttc" id="aQuEST__validation_8c_html_aa194ba5f5c6e19c6caa4c715b3dbefcc"><div class="ttname"><a href="QuEST__validation_8c.html#aa194ba5f5c6e19c6caa4c715b3dbefcc">validatePauliCodes</a></div><div class="ttdeci">void validatePauliCodes(enum pauliOpType *pauliCodes, int numPauliCodes, const char *caller)</div><div class="ttdef"><b>Definition:</b> <a href="QuEST__validation_8c_source.html#l00595">QuEST_validation.c:595</a></div></div>
-<div class="ttc" id="aQuEST__internal_8h_html_ae37b3eff5d3affbc1edfe216cabc1c53"><div class="ttname"><a href="QuEST__internal_8h.html#ae37b3eff5d3affbc1edfe216cabc1c53">densmatr_calcProbOfOutcome</a></div><div class="ttdeci">qreal densmatr_calcProbOfOutcome(Qureg qureg, int measureQubit, int outcome)</div><div class="ttdef"><b>Definition:</b> <a href="QuEST__cpu__distributed_8c_source.html#l01324">QuEST_cpu_distributed.c:1324</a></div></div>
-<div class="ttc" id="agroup__calc_html_ga15cfad3f3d26339128e3be32ae7deacd"><div class="ttname"><a href="group__calc.html#ga15cfad3f3d26339128e3be32ae7deacd">calcExpecPauliProd</a></div><div class="ttdeci">qreal calcExpecPauliProd(Qureg qureg, int *targetQubits, enum pauliOpType *pauliCodes, int numTargets, Qureg workspace)</div><div class="ttdoc">Computes the expected value of a product of Pauli operators.</div><div class="ttdef"><b>Definition:</b> <a href="QuEST_8c_source.html#l01188">QuEST.c:1188</a></div></div>
-<div class="ttc" id="aQuEST__internal_8h_html_abc9a9ef4344c7faaaf28ac25c76649b9"><div class="ttname"><a href="QuEST__internal_8h.html#abc9a9ef4344c7faaaf28ac25c76649b9">statevec_getRealAmp</a></div><div class="ttdeci">qreal statevec_getRealAmp(Qureg qureg, long long int index)</div><div class="ttdef"><b>Definition:</b> <a href="QuEST__cpu__distributed_8c_source.html#l00208">QuEST_cpu_distributed.c:208</a></div></div>
+<div class="ttc" id="aQuEST__validation_8c_html_aa194ba5f5c6e19c6caa4c715b3dbefcc"><div class="ttname"><a href="QuEST__validation_8c.html#aa194ba5f5c6e19c6caa4c715b3dbefcc">validatePauliCodes</a></div><div class="ttdeci">void validatePauliCodes(enum pauliOpType *pauliCodes, int numPauliCodes, const char *caller)</div><div class="ttdef"><b>Definition:</b> <a href="QuEST__validation_8c_source.html#l00599">QuEST_validation.c:599</a></div></div>
+<div class="ttc" id="aQuEST__internal_8h_html_ae37b3eff5d3affbc1edfe216cabc1c53"><div class="ttname"><a href="QuEST__internal_8h.html#ae37b3eff5d3affbc1edfe216cabc1c53">densmatr_calcProbOfOutcome</a></div><div class="ttdeci">qreal densmatr_calcProbOfOutcome(Qureg qureg, int measureQubit, int outcome)</div><div class="ttdef"><b>Definition:</b> <a href="QuEST__cpu__distributed_8c_source.html#l01328">QuEST_cpu_distributed.c:1328</a></div></div>
+<div class="ttc" id="agroup__calc_html_ga15cfad3f3d26339128e3be32ae7deacd"><div class="ttname"><a href="group__calc.html#ga15cfad3f3d26339128e3be32ae7deacd">calcExpecPauliProd</a></div><div class="ttdeci">qreal calcExpecPauliProd(Qureg qureg, int *targetQubits, enum pauliOpType *pauliCodes, int numTargets, Qureg workspace)</div><div class="ttdoc">Computes the expected value of a product of Pauli operators.</div><div class="ttdef"><b>Definition:</b> <a href="QuEST_8c_source.html#l01201">QuEST.c:1201</a></div></div>
+<div class="ttc" id="aQuEST__internal_8h_html_abc9a9ef4344c7faaaf28ac25c76649b9"><div class="ttname"><a href="QuEST__internal_8h.html#abc9a9ef4344c7faaaf28ac25c76649b9">statevec_getRealAmp</a></div><div class="ttdeci">qreal statevec_getRealAmp(Qureg qureg, long long int index)</div><div class="ttdef"><b>Definition:</b> <a href="QuEST__cpu__distributed_8c_source.html#l00212">QuEST_cpu_distributed.c:212</a></div></div>
 <div class="ttc" id="aQuEST__internal_8h_html_ad65ad1b5ea6f30b0c6b4ffda96e1a8e6"><div class="ttname"><a href="QuEST__internal_8h.html#ad65ad1b5ea6f30b0c6b4ffda96e1a8e6">statevec_calcTotalProb</a></div><div class="ttdeci">qreal statevec_calcTotalProb(Qureg qureg)</div><div class="ttdef"><b>Definition:</b> <a href="QuEST__cpu__distributed_8c_source.html#l00088">QuEST_cpu_distributed.c:88</a></div></div>
 <!-- HTML footer for doxygen 1.8.8-->
 <!-- start footer part -->

@@ -27,7 +27,7 @@
             <div class="container">
                 <div class="navbar-header">
                     <a class="navbar-brand"><img alt="Logo" src="logo.png"/></a>
-                    <a class="navbar-brand"><b>QuEST</b> v3.3.0<br>The Quantum Exact Simulation Toolkit</a>
+                    <a class="navbar-brand"><b>QuEST</b> v3.4.0<br>The Quantum Exact Simulation Toolkit</a>
                 </div>
             </div>
         </nav>
@@ -190,6 +190,9 @@ Functions</h2></td></tr>
 <tr class="memitem:gaf5344129240243ad11d0c081eb9036ab"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__operator.html#gaf5344129240243ad11d0c081eb9036ab">applyPhaseFuncOverrides</a> (<a class="el" href="structQureg.html">Qureg</a> qureg, int *qubits, int numQubits, enum <a class="el" href="group__type.html#ga9c91c41aa42ae537995e89ffc616afe1">bitEncoding</a> encoding, <a class="el" href="group__type.html#ga7740e349b4f8bae6451547680f0ce2d6">qreal</a> *coeffs, <a class="el" href="group__type.html#ga7740e349b4f8bae6451547680f0ce2d6">qreal</a> *exponents, int numTerms, long long int *overrideInds, <a class="el" href="group__type.html#ga7740e349b4f8bae6451547680f0ce2d6">qreal</a> *overridePhases, int numOverrides)</td></tr>
 <tr class="memdesc:gaf5344129240243ad11d0c081eb9036ab"><td class="mdescLeft">&#160;</td><td class="mdescRight">Induces a phase change upon each amplitude of <code>qureg</code>, determined by the passed exponential polynomial "phase function", and an explicit set of 'overriding' values at specific state indices.  <a href="group__operator.html#gaf5344129240243ad11d0c081eb9036ab">More...</a><br /></td></tr>
 <tr class="separator:gaf5344129240243ad11d0c081eb9036ab"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga26db8b8a8a242d388c291e50d228ab18"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__operator.html#ga26db8b8a8a242d388c291e50d228ab18">applyProjector</a> (<a class="el" href="structQureg.html">Qureg</a> qureg, int qubit, int outcome)</td></tr>
+<tr class="memdesc:ga26db8b8a8a242d388c291e50d228ab18"><td class="mdescLeft">&#160;</td><td class="mdescRight">Force the target <code>qubit</code> of <code>qureg</code> into the given classical <code>outcome</code>, via a non-renormalising projection.  <a href="group__operator.html#ga26db8b8a8a242d388c291e50d228ab18">More...</a><br /></td></tr>
+<tr class="separator:ga26db8b8a8a242d388c291e50d228ab18"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ga9bc8c4ab44f8233b5766208a0b1c0776"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__operator.html#ga9bc8c4ab44f8233b5766208a0b1c0776">applyQFT</a> (<a class="el" href="structQureg.html">Qureg</a> qureg, int *qubits, int numQubits)</td></tr>
 <tr class="memdesc:ga9bc8c4ab44f8233b5766208a0b1c0776"><td class="mdescLeft">&#160;</td><td class="mdescRight">Applies the quantum Fourier transform (QFT) to a specific subset of qubits of the register <code>qureg</code>.  <a href="group__operator.html#ga9bc8c4ab44f8233b5766208a0b1c0776">More...</a><br /></td></tr>
 <tr class="separator:ga9bc8c4ab44f8233b5766208a0b1c0776"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -349,6 +352,9 @@ Functions</h2></td></tr>
 <tr class="memitem:ga4a14d22379d399760b0cfc5c8053589b"><td class="memItemLeft" align="right" valign="top"><a class="el" href="group__type.html#ga7740e349b4f8bae6451547680f0ce2d6">qreal</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__calc.html#ga4a14d22379d399760b0cfc5c8053589b">getProbAmp</a> (<a class="el" href="structQureg.html">Qureg</a> qureg, long long int index)</td></tr>
 <tr class="memdesc:ga4a14d22379d399760b0cfc5c8053589b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get the probability of a state-vector at an index in the full state vector.  <a href="group__calc.html#ga4a14d22379d399760b0cfc5c8053589b">More...</a><br /></td></tr>
 <tr class="separator:ga4a14d22379d399760b0cfc5c8053589b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gaaf64c49f51b622702e66d917bf5b5e16"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__debug.html#gaaf64c49f51b622702e66d917bf5b5e16">getQuESTSeeds</a> (<a class="el" href="structQuESTEnv.html">QuESTEnv</a> env, unsigned long int **seeds, int *numSeeds)</td></tr>
+<tr class="memdesc:gaaf64c49f51b622702e66d917bf5b5e16"><td class="mdescLeft">&#160;</td><td class="mdescRight">Obtain the seeds presently used in random number generation.  <a href="group__debug.html#gaaf64c49f51b622702e66d917bf5b5e16">More...</a><br /></td></tr>
+<tr class="separator:gaaf64c49f51b622702e66d917bf5b5e16"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ga1416145280c62c5dd5ec9bed89b4cd05"><td class="memItemLeft" align="right" valign="top"><a class="el" href="group__type.html#ga7740e349b4f8bae6451547680f0ce2d6">qreal</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__calc.html#ga1416145280c62c5dd5ec9bed89b4cd05">getRealAmp</a> (<a class="el" href="structQureg.html">Qureg</a> qureg, long long int index)</td></tr>
 <tr class="memdesc:ga1416145280c62c5dd5ec9bed89b4cd05"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get the real component of the complex probability amplitude at an index in the state vector.  <a href="group__calc.html#ga1416145280c62c5dd5ec9bed89b4cd05">More...</a><br /></td></tr>
 <tr class="separator:ga1416145280c62c5dd5ec9bed89b4cd05"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -383,7 +389,7 @@ Functions</h2></td></tr>
 <tr class="memdesc:ga9a348df3e1df623c3d4c4f12c3ee3fe8"><td class="mdescLeft">&#160;</td><td class="mdescRight">Initialise <code>qureg</code> into to a given pure state of an equivalent Hilbert dimension.  <a href="group__init.html#ga9a348df3e1df623c3d4c4f12c3ee3fe8">More...</a><br /></td></tr>
 <tr class="separator:ga9a348df3e1df623c3d4c4f12c3ee3fe8"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ga4589960486ec43dcd63bd985f1c4f398"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__init.html#ga4589960486ec43dcd63bd985f1c4f398">initStateFromAmps</a> (<a class="el" href="structQureg.html">Qureg</a> qureg, <a class="el" href="group__type.html#ga7740e349b4f8bae6451547680f0ce2d6">qreal</a> *reals, <a class="el" href="group__type.html#ga7740e349b4f8bae6451547680f0ce2d6">qreal</a> *imags)</td></tr>
-<tr class="memdesc:ga4589960486ec43dcd63bd985f1c4f398"><td class="mdescLeft">&#160;</td><td class="mdescRight">Initialise state-vector <code>qureg</code> by specifying all amplitudes.  <a href="group__init.html#ga4589960486ec43dcd63bd985f1c4f398">More...</a><br /></td></tr>
+<tr class="memdesc:ga4589960486ec43dcd63bd985f1c4f398"><td class="mdescLeft">&#160;</td><td class="mdescRight">Initialise <code>qureg</code> by specifying all amplitudes.  <a href="group__init.html#ga4589960486ec43dcd63bd985f1c4f398">More...</a><br /></td></tr>
 <tr class="separator:ga4589960486ec43dcd63bd985f1c4f398"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ga2f049055d4a51d0ea4d1a43b5234dedb"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__init.html#ga2f049055d4a51d0ea4d1a43b5234dedb">initZeroState</a> (<a class="el" href="structQureg.html">Qureg</a> qureg)</td></tr>
 <tr class="memdesc:ga2f049055d4a51d0ea4d1a43b5234dedb"><td class="mdescLeft">&#160;</td><td class="mdescRight">Initialise <code>qureg</code> into the zero state.  <a href="group__init.html#ga2f049055d4a51d0ea4d1a43b5234dedb">More...</a><br /></td></tr>
@@ -508,12 +514,12 @@ Functions</h2></td></tr>
 <tr class="memitem:gab23a8b022ec83b9d423961ca87cd8cb5"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__unitary.html#gab23a8b022ec83b9d423961ca87cd8cb5">rotateZ</a> (<a class="el" href="structQureg.html">Qureg</a> qureg, int rotQubit, <a class="el" href="group__type.html#ga7740e349b4f8bae6451547680f0ce2d6">qreal</a> angle)</td></tr>
 <tr class="memdesc:gab23a8b022ec83b9d423961ca87cd8cb5"><td class="mdescLeft">&#160;</td><td class="mdescRight">Rotate a single qubit by a given angle around the Z-axis of the Bloch-sphere (also known as a phase shift gate).  <a href="group__unitary.html#gab23a8b022ec83b9d423961ca87cd8cb5">More...</a><br /></td></tr>
 <tr class="separator:gab23a8b022ec83b9d423961ca87cd8cb5"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ga95012dad46509b4b461974c34cfd7b3d"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__debug.html#ga95012dad46509b4b461974c34cfd7b3d">seedQuEST</a> (unsigned long int *seedArray, int numSeeds)</td></tr>
-<tr class="memdesc:ga95012dad46509b4b461974c34cfd7b3d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Seed the Mersenne Twister used for random number generation in the QuEST environment with a user defined seed.  <a href="group__debug.html#ga95012dad46509b4b461974c34cfd7b3d">More...</a><br /></td></tr>
-<tr class="separator:ga95012dad46509b4b461974c34cfd7b3d"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:gaa8437ef3bf135231e2916e64dde1c94e"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__debug.html#gaa8437ef3bf135231e2916e64dde1c94e">seedQuESTDefault</a> (void)</td></tr>
-<tr class="memdesc:gaa8437ef3bf135231e2916e64dde1c94e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Seed the Mersenne Twister used for random number generation in the QuEST environment with an example default seed.  <a href="group__debug.html#gaa8437ef3bf135231e2916e64dde1c94e">More...</a><br /></td></tr>
-<tr class="separator:gaa8437ef3bf135231e2916e64dde1c94e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga555451c697ea4a9d27389155f68fdabc"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__debug.html#ga555451c697ea4a9d27389155f68fdabc">seedQuEST</a> (<a class="el" href="structQuESTEnv.html">QuESTEnv</a> *env, unsigned long int *seedArray, int numSeeds)</td></tr>
+<tr class="memdesc:ga555451c697ea4a9d27389155f68fdabc"><td class="mdescLeft">&#160;</td><td class="mdescRight">Seeds the random number generator with a custom array of key(s), overriding the default keys.  <a href="group__debug.html#ga555451c697ea4a9d27389155f68fdabc">More...</a><br /></td></tr>
+<tr class="separator:ga555451c697ea4a9d27389155f68fdabc"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gae53fad7ebafccf236ad62b41e3244214"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__debug.html#gae53fad7ebafccf236ad62b41e3244214">seedQuESTDefault</a> (<a class="el" href="structQuESTEnv.html">QuESTEnv</a> *env)</td></tr>
+<tr class="memdesc:gae53fad7ebafccf236ad62b41e3244214"><td class="mdescLeft">&#160;</td><td class="mdescRight">Seeds the random number generator with the (master node) current time and process ID.  <a href="group__debug.html#gae53fad7ebafccf236ad62b41e3244214">More...</a><br /></td></tr>
+<tr class="separator:gae53fad7ebafccf236ad62b41e3244214"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:gabc0c64f8adf307d2a44184dc0f8ca66e"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__init.html#gabc0c64f8adf307d2a44184dc0f8ca66e">setAmps</a> (<a class="el" href="structQureg.html">Qureg</a> qureg, long long int startInd, <a class="el" href="group__type.html#ga7740e349b4f8bae6451547680f0ce2d6">qreal</a> *reals, <a class="el" href="group__type.html#ga7740e349b4f8bae6451547680f0ce2d6">qreal</a> *imags, long long int numAmps)</td></tr>
 <tr class="memdesc:gabc0c64f8adf307d2a44184dc0f8ca66e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Overwrites a subset of the amplitudes in state-vector <code>qureg</code>, with those passed in <code>reals</code> and <code>imags</code>.  <a href="group__init.html#gabc0c64f8adf307d2a44184dc0f8ca66e">More...</a><br /></td></tr>
 <tr class="separator:gabc0c64f8adf307d2a44184dc0f8ca66e"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -526,8 +532,6 @@ Functions</h2></td></tr>
 <tr class="memitem:ga655ffcd4def2e127341c9488f5ca8455"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__unitary.html#ga655ffcd4def2e127341c9488f5ca8455">sGate</a> (<a class="el" href="structQureg.html">Qureg</a> qureg, int targetQubit)</td></tr>
 <tr class="memdesc:ga655ffcd4def2e127341c9488f5ca8455"><td class="mdescLeft">&#160;</td><td class="mdescRight">Apply the single-qubit S gate.  <a href="group__unitary.html#ga655ffcd4def2e127341c9488f5ca8455">More...</a><br /></td></tr>
 <tr class="separator:ga655ffcd4def2e127341c9488f5ca8455"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a2a1b52e1c035d4dd36bab215bad177c1"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="QuEST_8h.html#a2a1b52e1c035d4dd36bab215bad177c1">SHARED_calcProbOfAllOutcomes</a> (<a class="el" href="group__type.html#ga7740e349b4f8bae6451547680f0ce2d6">qreal</a> *outcomeProbs, <a class="el" href="structQureg.html">Qureg</a> qureg, int *qubits, int numQubits)</td></tr>
-<tr class="separator:a2a1b52e1c035d4dd36bab215bad177c1"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ga75d5e65f87c68403602a669b9c6d52b0"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__unitary.html#ga75d5e65f87c68403602a669b9c6d52b0">sqrtSwapGate</a> (<a class="el" href="structQureg.html">Qureg</a> qureg, int qb1, int qb2)</td></tr>
 <tr class="memdesc:ga75d5e65f87c68403602a669b9c6d52b0"><td class="mdescLeft">&#160;</td><td class="mdescRight">Performs a sqrt SWAP gate between <code>qubit1</code> and <code>qubit2</code>.  <a href="group__unitary.html#ga75d5e65f87c68403602a669b9c6d52b0">More...</a><br /></td></tr>
 <tr class="separator:ga75d5e65f87c68403602a669b9c6d52b0"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -549,8 +553,6 @@ Functions</h2></td></tr>
 <tr class="memitem:gac7e38d768a1bd79019f88cc1e6295092"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__debug.html#gac7e38d768a1bd79019f88cc1e6295092">syncQuESTSuccess</a> (int successCode)</td></tr>
 <tr class="memdesc:gac7e38d768a1bd79019f88cc1e6295092"><td class="mdescLeft">&#160;</td><td class="mdescRight">Performs a logical AND on all successCodes held by all processes.  <a href="group__debug.html#gac7e38d768a1bd79019f88cc1e6295092">More...</a><br /></td></tr>
 <tr class="separator:gac7e38d768a1bd79019f88cc1e6295092"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a499758aea62a38c28499edbebd09fa28"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="QuEST_8h.html#a499758aea62a38c28499edbebd09fa28">TEST_calcProbOfAllOutcomes</a> (<a class="el" href="group__type.html#ga7740e349b4f8bae6451547680f0ce2d6">qreal</a> *retProbs, <a class="el" href="structQureg.html">Qureg</a> qureg, int *qubits, int numQubits)</td></tr>
-<tr class="separator:a499758aea62a38c28499edbebd09fa28"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:gac15907193da5a7c48b9610a26e669064"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__unitary.html#gac15907193da5a7c48b9610a26e669064">tGate</a> (<a class="el" href="structQureg.html">Qureg</a> qureg, int targetQubit)</td></tr>
 <tr class="memdesc:gac15907193da5a7c48b9610a26e669064"><td class="mdescLeft">&#160;</td><td class="mdescRight">Apply the single-qubit T gate.  <a href="group__unitary.html#gac15907193da5a7c48b9610a26e669064">More...</a><br /></td></tr>
 <tr class="separator:gac15907193da5a7c48b9610a26e669064"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -568,88 +570,7 @@ Functions</h2></td></tr>
 <div class="textblock"><p>The QuEST API. This file contains the comments used by doxygen for generating API doc. </p>
 
 <p class="definition">Definition in file <a class="el" href="QuEST_8h_source.html">QuEST.h</a>.</p>
-</div><h2 class="groupheader">Function Documentation</h2>
-<a id="a2a1b52e1c035d4dd36bab215bad177c1"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a2a1b52e1c035d4dd36bab215bad177c1">&#9670;&nbsp;</a></span>SHARED_calcProbOfAllOutcomes()</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">void SHARED_calcProbOfAllOutcomes </td>
-          <td>(</td>
-          <td class="paramtype"><a class="el" href="group__type.html#ga7740e349b4f8bae6451547680f0ce2d6">qreal</a> *&#160;</td>
-          <td class="paramname"><em>outcomeProbs</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype"><a class="el" href="structQureg.html">Qureg</a>&#160;</td>
-          <td class="paramname"><em>qureg</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">int *&#160;</td>
-          <td class="paramname"><em>qubits</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">int&#160;</td>
-          <td class="paramname"><em>numQubits</em>&#160;</td>
-        </tr>
-        <tr>
-          <td></td>
-          <td>)</td>
-          <td></td><td></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-</div>
-</div>
-<a id="a499758aea62a38c28499edbebd09fa28"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a499758aea62a38c28499edbebd09fa28">&#9670;&nbsp;</a></span>TEST_calcProbOfAllOutcomes()</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">void TEST_calcProbOfAllOutcomes </td>
-          <td>(</td>
-          <td class="paramtype"><a class="el" href="group__type.html#ga7740e349b4f8bae6451547680f0ce2d6">qreal</a> *&#160;</td>
-          <td class="paramname"><em>retProbs</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype"><a class="el" href="structQureg.html">Qureg</a>&#160;</td>
-          <td class="paramname"><em>qureg</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">int *&#160;</td>
-          <td class="paramname"><em>qubits</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">int&#160;</td>
-          <td class="paramname"><em>numQubits</em>&#160;</td>
-        </tr>
-        <tr>
-          <td></td>
-          <td>)</td>
-          <td></td><td></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-</div>
-</div>
-</div><!-- contents -->
+</div></div><!-- contents -->
 <!-- HTML footer for doxygen 1.8.8-->
 <!-- start footer part -->
 </div>
