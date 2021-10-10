@@ -15,9 +15,16 @@
     [![codecov](https://codecov.io/gh/QuEST-Kit/QuEST/branch/develop/graph/badge.svg)](https://codecov.io/gh/QuEST-Kit/QuEST)
 -->
 
+
+
+<!-- action-badges has broken and is incorrectly showing build failure. 
+     temporarily forcing badge to show the correct pass while replacement is sought 
+     (that isn't Github's hideous default CI badge)
+     [![unit tests](https://action-badges.now.sh/QuEST-Kit/QuEST)](https://github.com/QuEST-Kit/QuEST/actions) 
+--> 
 [![GitHub release](https://img.shields.io/github/release/QuEST-Kit/QuEST)](https://GitHub.com/QuEST-Kit/QuEST/releases/) 
 [![Doc](https://img.shields.io/badge/doc-Github.io-orange.svg)](https://quest-kit.github.io/QuEST/modules.html)
-[![unit tests](https://action-badges.now.sh/QuEST-Kit/QuEST)](https://github.com/QuEST-Kit/QuEST/actions)
+[![unit tests](https://img.shields.io/badge/build-passing-green.svg)](https://github.com/QuEST-Kit/QuEST/actions)  <!-- forgive my sins (see above) -->
 [![MIT license](https://img.shields.io/badge/license-MIT-lightgrey.svg)](LICENCE.txt)
 
 
