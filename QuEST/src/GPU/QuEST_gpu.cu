@@ -3980,7 +3980,7 @@ void seedQuEST(QuESTEnv *env, unsigned long int *seedArray, int numSeeds) {
         free(env->seeds);
         
     // record keys in permanent heap
-    env->seeds = malloc(numSeeds * sizeof *(env->seeds));
+    env->seeds = (unsigned long int*) malloc(numSeeds * sizeof *(env->seeds));
     for (int i=0; i<numSeeds; i++)
         (env->seeds)[i] = seedArray[i];
     env->numSeeds = numSeeds;
