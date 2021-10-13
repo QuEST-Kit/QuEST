@@ -473,7 +473,7 @@ QuESTEnv createQuESTEnv(void) {
     
     env.seeds = NULL;
     env.numSeeds = 0;
-    seedQuESTDefault(env);
+    seedQuESTDefault(&env);
     
     return env;
 }
