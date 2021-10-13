@@ -2114,7 +2114,7 @@ qreal statevec_findProbabilityOfZero(Qureg qureg, int measureQubit)
     qreal stateProb=0;
     
     // 1-qubit edge-case breaks below loop logic
-    if (qureg.numQubitsTotal == 1) {
+    if (qureg.numQubitsInStateVec == 1) {
         qreal amp;
         cudaMemcpy(&amp, qureg.deviceStateVec.real, sizeof(qreal), cudaMemcpyDeviceToHost);
         stateProb += amp*amp;
