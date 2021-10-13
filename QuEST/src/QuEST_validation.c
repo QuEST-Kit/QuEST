@@ -122,9 +122,9 @@ static const char* errorMessages[] = {
     [E_INVALID_STATE_INDEX] = "Invalid state index. Must be >=0 and <2^numQubits.",
     [E_INVALID_AMP_INDEX] = "Invalid amplitude index. Must be >=0 and <2^numQubits.",
     [E_INVALID_ELEM_INDEX] = "Invalid element index. Must be >=0 and <2^numQubits.",
-    [E_INVALID_NUM_AMPS] = "Invalid number of amplitudes. Must be >=0 and <=2^numQubits.",
+    [E_INVALID_NUM_AMPS] = "Invalid number of amplitudes. Must be >=0 and <=2^numQubits (or for density matrices, <=2^(2 numQubits)).",
     [E_INVALID_NUM_ELEMS] = "Invalid number of elements. Must be >=0 and <=2^numQubits.",
-    [E_INVALID_OFFSET_NUM_AMPS_QUREG] = "More amplitudes given than exist in the statevector from the given starting index.",
+    [E_INVALID_OFFSET_NUM_AMPS_QUREG] = "More amplitudes given than exist in the state from the given starting index.",
     [E_INVALID_OFFSET_NUM_ELEMS_DIAG] = "More elements given than exist in the diagonal operator from the given starting index.",
     [E_TARGET_IS_CONTROL] = "Control qubit cannot equal target qubit.",
     [E_TARGET_IN_CONTROLS] = "Control qubits cannot include target qubit.",
@@ -387,6 +387,15 @@ void validateAmpIndex(Qureg qureg, long long int ampInd, const char* caller) {
 void validateNumAmps(Qureg qureg, long long int startInd, long long int numAmps, const char* caller) {
     validateAmpIndex(qureg, startInd, caller);
     QuESTAssert(numAmps >= 0 && numAmps <= qureg.numAmpsTotal, E_INVALID_NUM_AMPS, caller);
+    QuESTAssert(numAmps + startInd <= qureg.numAmpsTotal, E_INVALID_OFFSET_NUM_AMPS_QUREG, caller);
+}
+
+void validateNumDensityAmps(Qureg qureg, long long int startRow, long long int startCol, long long int numAmps, const char* caller) {
+    validateAmpIndex(qureg, startRow, caller);
+    validateAmpIndex(qureg, startCol, caller);
+    QuESTAssert(numAmps >= 0 && numAmps <= qureg.numAmpsTotal, E_INVALID_NUM_AMPS, caller);
+    
+    long long int startInd = startRow + startCol*(1 << qureg.numQubitsRepresented);
     QuESTAssert(numAmps + startInd <= qureg.numAmpsTotal, E_INVALID_OFFSET_NUM_AMPS_QUREG, caller);
 }
 

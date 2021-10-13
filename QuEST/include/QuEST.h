@@ -1494,7 +1494,8 @@ void initDebugState(Qureg qureg);
  */
 void initStateFromAmps(Qureg qureg, qreal* reals, qreal* imags);
 
-/** Overwrites a subset of the amplitudes in state-vector \p qureg, with those passed in \p reals and \p imags.
+/** Overwrites a contiguous subset of the amplitudes in state-vector \p qureg, 
+ * with those passed in \p reals and \p imags.
  *
  * Only amplitudes with indices in <b>[</b>\p startInd<b>,</b> \p startInd <b>+</b> \p numAmps<b>]</b> 
  * will be changed. The resulting \p qureg may not necessarily be in an L2 normalised state.
@@ -1522,6 +1523,7 @@ void initStateFromAmps(Qureg qureg, qreal* reals, qreal* imags);
  *
  *
  * @see
+ * - setDensityAmps()
  * - setWeightedQureg()
  * - initStateFromAmps()
  * - initBlankState()
@@ -1540,6 +1542,38 @@ void initStateFromAmps(Qureg qureg, qreal* reals, qreal* imags);
  * @author Tyson Jones
  */
 void setAmps(Qureg qureg, long long int startInd, qreal* reals, qreal* imags, long long int numAmps);
+
+/** Overwrites a contiguous subset of the amplitudes in density-matrix \p qureg, 
+ * with those passed in \p reals and \p imags, intrepreted column-wise.
+ *
+ * Only the first \p numAmp amplitudes starting from row-column index (\p startRow, \p startCol), and
+ * proceeding down the column (wrapping around between rows) will be modified. 
+ * The resulting \p qureg may not necessarily be a valid density matrix normalisation.
+ *
+ * In distributed mode, this function assumes the subset \p reals and \p imags exist
+ * (at least) on the node(s) containing the ultimately updated elements.\n
+ *
+ *
+ * @see
+ * - setAmps()
+ * - initStateFromAmps()
+ *
+ * @ingroup init
+ * @param[in,out] qureg the density-matrix to modify
+ * @param[in] startRow the row-index of the first amplitude in \p qureg to modify
+ * @param[in] startCol the column-index of the first amplitude in \p qureg to modify
+ * @param[in] reals array of the real components of the new amplitudes
+ * @param[in] imags array of the imaginary components of the new amplitudes
+ * @param[in] numAmps the length of each of the reals and imags arrays
+ * @throws invalidQuESTInputError()
+ * - if \p qureg is not a density matrix (i.e. is a state-vector)
+ * - if \p startRow is outside [0, `1 << qureg.numQubitsRepresented`]
+ * - if \p startCol is outside [0, `1 << qureg.numQubitsRepresented`]
+ * - if \p numAmps is outside [0, `qureg.numAmpsTotal`]
+ * - if \p numAmps is larger than the remaining number of amplitudes from (`startRow`, `startCol`), column-wise
+ * @author Tyson Jones
+ */
+void setDensityAmps(Qureg qureg, long long int startRow, long long int startCol, qreal* reals, qreal* imags, long long int numAmps);
 
 /** Overwrite the amplitudes of \p targetQureg with those from \p copyQureg. 
  * 
@@ -6621,7 +6655,7 @@ void applyQFT(Qureg qureg, int* qubits, int numQubits);
  * @ingroup operator
  * @param[in,out] qureg a state-vector or density matrix to modify
  * @param[in] qubit the qubit to which to apply the projector 
- * @param[in] the single-qubit outcome (`0` or `1`) to project \p qubit into
+ * @param[in] outcome the single-qubit outcome (`0` or `1`) to project \p qubit into
  * @throws invalidQuESTInputError()
  * - if \p qubit is outside [0, `qureg.numQubitsRepresented`)
  * - if \p outcome is not in {0,1}

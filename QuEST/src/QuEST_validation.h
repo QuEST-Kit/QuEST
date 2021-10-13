@@ -78,6 +78,8 @@ void validateSecondQuregStateVec(Qureg qureg2, const char *caller);
 
 void validateNumAmps(Qureg qureg, long long int startInd, long long int numAmps, const char* caller);
 
+void validateNumDensityAmps(Qureg qureg, long long int startRow, long long int startCol, long long int numAmps, const char* caller);
+
 void validateFileOpened(int opened, char* fn, const char* caller);
 
 void validateProb(qreal prob, const char* caller);
