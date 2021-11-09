@@ -209,8 +209,10 @@ void default_invalidQuESTInputError(const char* errMsg, const char* errFunc) {
 void invalidQuESTInputError(const char* errMsg, const char* errFunc) {
     default_invalidQuESTInputError(errMsg, errFunc);
 }
-#else
+#elif defined(_WIN64)
 #pragma comment(linker, "/alternatename:invalidQuESTInputError=default_invalidQuESTInputError")   
+#else
+#pragma comment(linker, "/alternatename:_invalidQuESTInputError=_default_invalidQuESTInputError")
 #endif
 
 void QuESTAssert(int isValid, ErrorCode code, const char* func){
