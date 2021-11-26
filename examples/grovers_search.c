@@ -108,7 +108,7 @@ int main() {
         applyDiffuser(qureg, numQubits);
         
         // monitor the probability of the solution state
-        printf("prob of solution |%d> = %g\n", 
+        printf("prob of solution |%d> = " REAL_STRING_FORMAT "\n",
             solElem, getProbAmp(qureg, solElem));
     }
     
