@@ -763,7 +763,7 @@ void qasm_recordNamedPhaseFunc(Qureg qureg, int* qubits, int* numQubitsPerReg, i
                         (params[2+r] < 0)?
                             "(%c^2+" REAL_QASM_FORMAT ")" :
                             "(%c^2-" REAL_QASM_FORMAT ")",
-                        getPhaseFuncSymbol(numRegs,r), fabs(params[2+r]));
+                        getPhaseFuncSymbol(numRegs,r), absReal(params[2+r]));
                 else
                     len += snprintf(line+len, MAX_LINE_LEN-len, "%c^2", getPhaseFuncSymbol(numRegs,r));
                 len += snprintf(line+len, MAX_LINE_LEN-len, (r < numRegs - 1)? " + ":"))\n");
@@ -834,7 +834,7 @@ void qasm_recordNamedPhaseFunc(Qureg qureg, int* qubits, int* numQubitsPerReg, i
                         (params[2+r/2] < 0)?
                             "(%c-%c+" REAL_QASM_FORMAT ")^2":
                             "(%c-%c-" REAL_QASM_FORMAT ")^2", 
-                        getPhaseFuncSymbol(numRegs,r), getPhaseFuncSymbol(numRegs,r+1), fabs(params[2+r/2]));
+                        getPhaseFuncSymbol(numRegs,r), getPhaseFuncSymbol(numRegs,r+1), absReal(params[2+r/2]));
                 else
                     len += snprintf(line+len, MAX_LINE_LEN-len, "(%c-%c)^2", 
                         getPhaseFuncSymbol(numRegs,r), getPhaseFuncSymbol(numRegs,r+1));
