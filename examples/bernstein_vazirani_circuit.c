@@ -38,7 +38,7 @@
 
      qreal prob = getProbAmp(qureg, ind);
 
-     printf("success probability: %g \n", prob);
+     printf("success probability: " REAL_QASM_FORMAT " \n", prob);
  }
 
 
