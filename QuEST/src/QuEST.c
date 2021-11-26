@@ -661,7 +661,7 @@ void multiRotateZ(Qureg qureg, int* qubits, int numQubits, qreal angle) {
     
     // @TODO: create actual QASM
     qasm_recordComment(qureg, 
-        "Here a %d-qubit multiRotateZ of angle %g was performed (QASM not yet implemented)",
+        "Here a %d-qubit multiRotateZ of angle " REAL_QASM_FORMAT " was performed (QASM not yet implemented)",
         numQubits, angle);
 }
 
@@ -678,7 +678,7 @@ void multiControlledMultiRotateZ(Qureg qureg, int* controlQubits, int numControl
     
     // @TODO: create actual QASM
     qasm_recordComment(qureg, 
-        "Here a %d-control %d-target multiControlledMultiRotateZ of angle %g was performed (QASM not yet implemented)",
+        "Here a %d-control %d-target multiControlledMultiRotateZ of angle " REAL_QASM_FORMAT " was performed (QASM not yet implemented)",
         numControls, numTargets, angle);
 }
 
@@ -698,7 +698,7 @@ void multiRotatePauli(Qureg qureg, int* targetQubits, enum pauliOpType* targetPa
     
     // @TODO: create actual QASM
     qasm_recordComment(qureg, 
-        "Here a %d-qubit multiRotatePauli of angle %g was performed (QASM not yet implemented)",
+        "Here a %d-qubit multiRotatePauli of angle " REAL_QASM_FORMAT " was performed (QASM not yet implemented)",
         numTargets, angle);
 }
 
@@ -719,7 +719,7 @@ void multiControlledMultiRotatePauli(Qureg qureg, int* controlQubits, int numCon
     
     // @TODO: create actual QASM
     qasm_recordComment(qureg, 
-        "Here a %d-control %d-target multiControlledMultiRotatePauli of angle %g was performed (QASM not yet implemented)",
+        "Here a %d-control %d-target multiControlledMultiRotatePauli of angle " REAL_QASM_FORMAT " was performed (QASM not yet implemented)",
         numControls, numTargets, angle);
 }
 
@@ -1076,7 +1076,7 @@ void applyTrotterCircuit(Qureg qureg, PauliHamil hamil, qreal time, int order, i
     validateMatchingQuregPauliHamilDims(qureg, hamil, __func__);
     
     qasm_recordComment(qureg, 
-        "Beginning of Trotter circuit (time %g, order %d, %d repetitions).",
+        "Beginning of Trotter circuit (time " REAL_QASM_FORMAT ", order %d, %d repetitions).",
         time, order, reps);
         
     agnostic_applyTrotterCircuit(qureg, hamil, time, order, reps);
@@ -1257,7 +1257,7 @@ void mixDephasing(Qureg qureg, int targetQubit, qreal prob) {
     
     densmatr_mixDephasing(qureg, targetQubit, 2*prob);
     qasm_recordComment(qureg, 
-        "Here, a phase (Z) error occured on qubit %d with probability %g", targetQubit, prob);
+        "Here, a phase (Z) error occured on qubit %d with probability " REAL_QASM_FORMAT, targetQubit, prob);
 }
 
 void mixTwoQubitDephasing(Qureg qureg, int qubit1, int qubit2, qreal prob) {
@@ -1269,7 +1269,7 @@ void mixTwoQubitDephasing(Qureg qureg, int qubit1, int qubit2, qreal prob) {
     densmatr_mixTwoQubitDephasing(qureg, qubit1, qubit2, (4*prob)/3.0);
     qasm_recordComment(qureg,
         "Here, a phase (Z) error occured on either or both of qubits "
-        "%d and %d with total probability %g", qubit1, qubit2, prob);
+        "%d and %d with total probability " REAL_QASM_FORMAT, qubit1, qubit2, prob);
 }
 
 void mixDepolarising(Qureg qureg, int targetQubit, qreal prob) {
@@ -1280,7 +1280,7 @@ void mixDepolarising(Qureg qureg, int targetQubit, qreal prob) {
     densmatr_mixDepolarising(qureg, targetQubit, (4*prob)/3.0);
     qasm_recordComment(qureg,
         "Here, a homogeneous depolarising error (X, Y, or Z) occured on "
-        "qubit %d with total probability %g", targetQubit, prob);
+        "qubit %d with total probability " REAL_QASM_FORMAT, targetQubit, prob);
 }
 
 void mixDamping(Qureg qureg, int targetQubit, qreal prob) {
@@ -1300,7 +1300,7 @@ void mixTwoQubitDepolarising(Qureg qureg, int qubit1, int qubit2, qreal prob) {
     densmatr_mixTwoQubitDepolarising(qureg, qubit1, qubit2, (16*prob)/15.0);
     qasm_recordComment(qureg,
         "Here, a homogeneous depolarising error occured on qubits %d and %d "
-        "with total probability %g", qubit1, qubit2, prob);
+        "with total probability " REAL_QASM_FORMAT, qubit1, qubit2, prob);
 }
 
 void mixPauli(Qureg qureg, int qubit, qreal probX, qreal probY, qreal probZ) {
@@ -1311,7 +1311,7 @@ void mixPauli(Qureg qureg, int qubit, qreal probX, qreal probY, qreal probZ) {
     densmatr_mixPauli(qureg, qubit, probX, probY, probZ);
     qasm_recordComment(qureg,
         "Here, X, Y and Z errors occured on qubit %d with probabilities "
-        "%g, %g and %g respectively", qubit, probX, probY, probZ);
+        REAL_QASM_FORMAT ", " REAL_QASM_FORMAT " and " REAL_QASM_FORMAT " respectively", qubit, probX, probY, probZ);
 }
 
 void mixKrausMap(Qureg qureg, int target, ComplexMatrix2 *ops, int numOps) {

@@ -1714,16 +1714,8 @@ int statevec_initStateFromSingleFile(Qureg *qureg, char filename[200], QuESTEnv 
                 if (line[0]!='#'){
                     int chunkId = (int) (totalIndex/chunkSize);
                     if (chunkId==qureg->chunkId){
-                        # if QuEST_PREC==1
-                        sscanf(line, "%f, %f", &(stateVecReal[indexInChunk]), 
+                        sscanf(line, REAL_SPECIFIER ", " REAL_SPECIFIER, &(stateVecReal[indexInChunk]),
                                 &(stateVecImag[indexInChunk])); 
-                        # elif QuEST_PREC==2                    
-                        sscanf(line, "%lf, %lf", &(stateVecReal[indexInChunk]), 
-                                &(stateVecImag[indexInChunk]));
-                        # elif QuEST_PREC==4
-                        sscanf(line, "%Lf, %Lf", &(stateVecReal[indexInChunk]), 
-                                &(stateVecImag[indexInChunk]));
-                        # endif
                         indexInChunk += 1;
                     }
                     totalIndex += 1;
