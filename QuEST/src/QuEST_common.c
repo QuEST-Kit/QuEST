@@ -225,11 +225,7 @@ void reportState(Qureg qureg){
     if (qureg.chunkId==0) fprintf(state, "real, imag\n");
 
     for(index=0; index<qureg.numAmpsPerChunk; index++){
-        # if QuEST_PREC==1 || QuEST_PREC==2
-        fprintf(state, "%.12f, %.12f\n", qureg.stateVec.real[index], qureg.stateVec.imag[index]);
-        # elif QuEST_PREC == 4
-        fprintf(state, "%.12Lf, %.12Lf\n", qureg.stateVec.real[index], qureg.stateVec.imag[index]);
-        #endif
+        fprintf(state, REAL_STRING_FORMAT ", " REAL_STRING_FORMAT "\n", qureg.stateVec.real[index], qureg.stateVec.imag[index]);
     }
     fclose(state);
 }
@@ -812,7 +808,7 @@ void applyExponentiatedPauliHamil(Qureg qureg, PauliHamil hamil, qreal fac, int 
         buff[b] = '\0';
         
         qasm_recordComment(qureg, 
-            "Here, a multiRotatePauli with angle %g and paulis %s was applied.",
+            "Here, a multiRotatePauli with angle " REAL_QASM_FORMAT " and paulis %s was applied.",
             angle, buff);
     }
 }
