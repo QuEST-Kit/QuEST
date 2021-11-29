@@ -116,7 +116,8 @@ typedef enum {
     E_QUREG_NOT_ALLOCATED_ON_GPU,
     E_DIAGONAL_OP_NOT_ALLOCATED,
     E_DIAGONAL_OP_NOT_ALLOCATED_ON_GPU,
-    E_NO_GPU
+    E_NO_GPU,
+    E_QASM_BUFFER_OVERFLOW
 } ErrorCode;
 
 static const char* errorMessages[] = {
@@ -205,7 +206,8 @@ static const char* errorMessages[] = {
     [E_QUREG_NOT_ALLOCATED_ON_GPU] = "Could not allocate memory for Qureg on GPU. Possibly insufficient memory.",
     [E_DIAGONAL_OP_NOT_ALLOCATED] = "Could not allocate memory for DiagonalOp. Possibly insufficient memory.",
     [E_DIAGONAL_OP_NOT_ALLOCATED_ON_GPU] = "Could not allocate memory for DiagonalOp on GPU. Possibly insufficient memory.",
-    [E_NO_GPU] = "Trying to run GPU code with no GPU available."
+    [E_NO_GPU] = "Trying to run GPU code with no GPU available.",
+    [E_QASM_BUFFER_OVERFLOW] = "QASM line buffer filled."
 };
 
 void default_invalidQuESTInputError(const char* errMsg, const char* errFunc) {
@@ -1037,6 +1039,11 @@ void validateDiagonalOpGPUAllocation(DiagonalOp op, const char* caller) {
 void validateGPUExists(int GPUPresent, const char* caller) {
     QuESTAssert(GPUPresent, E_NO_GPU, caller);
 }
+
+void raiseQASMBufferOverflow(const char* caller) {
+    invalidQuESTInputError(errorMessages[E_QASM_BUFFER_OVERFLOW], caller);
+}
+
 
 #ifdef __cplusplus
 }
