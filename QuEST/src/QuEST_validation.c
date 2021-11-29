@@ -110,7 +110,10 @@ typedef enum {
     E_FRACTIONAL_EXPONENT_WITHOUT_NEG_OVERRIDE,
     E_NEGATIVE_EXPONENT_MULTI_VAR,
     E_FRACTIONAL_EXPONENT_MULTI_VAR,
-    E_INVALID_NUM_REGS_DISTANCE_PHASE_FUNC
+    E_INVALID_NUM_REGS_DISTANCE_PHASE_FUNC,
+    E_NOT_ENOUGH_ADDRESSABLE_MEMORY,
+    E_QUREG_NOT_ALLOCATED,
+    E_DIAGONAL_OP_NOT_ALLOCATED,
 } ErrorCode;
 
 static const char* errorMessages[] = {
@@ -193,7 +196,10 @@ static const char* errorMessages[] = {
     [E_FRACTIONAL_EXPONENT_WITHOUT_NEG_OVERRIDE] = "The phase function contained a fractional exponent, which in TWOS_COMPLEMENT encoding, requires all negative indices are overriden. However, one or more negative indices were not overriden.",
     [E_NEGATIVE_EXPONENT_MULTI_VAR] = "The phase function contained an illegal negative exponent. One must instead call applyPhaseFuncOverrides() once for each register, so that the zero index of each register is overriden, independent of the indices of all other registers.",
     [E_FRACTIONAL_EXPONENT_MULTI_VAR] = "The phase function contained a fractional exponent, which is illegal in TWOS_COMPLEMENT encoding, since it cannot be (efficiently) checked that all negative indices were overriden. One must instead call applyPhaseFuncOverrides() once for each register, so that each register's negative indices can be overriden, independent of the indices of all other registers.",
-    [E_INVALID_NUM_REGS_DISTANCE_PHASE_FUNC] = "Phase functions DISTANCE, INVERSE_DISTANCE, SCALED_DISTANCE and SCALED_INVERSE_DISTANCE require a strictly even number of sub-registers."
+    [E_INVALID_NUM_REGS_DISTANCE_PHASE_FUNC] = "Phase functions DISTANCE, INVERSE_DISTANCE, SCALED_DISTANCE and SCALED_INVERSE_DISTANCE require a strictly even number of sub-registers.",
+    [E_NOT_ENOUGH_ADDRESSABLE_MEMORY] = "Could not allocate memory. Requested more memory than system can address.",
+    [E_QUREG_NOT_ALLOCATED] = "Could not allocate memory for Qureg. Possibly insufficient memory.",
+    [E_DIAGONAL_OP_NOT_ALLOCATED] = "Could not allocate memory for DiagonalOp. Possibly insufficient memory.",
 };
 
 void default_invalidQuESTInputError(const char* errMsg, const char* errFunc) {
@@ -201,7 +207,7 @@ void default_invalidQuESTInputError(const char* errMsg, const char* errFunc) {
     printf("QuEST Error in function %s: %s\n", errFunc, errMsg);
     printf("!!!\n");
     printf("exiting..\n");
-    exit(1);
+    exit(EXIT_FAILURE);
 }
 
 #ifndef _WIN32
@@ -999,6 +1005,23 @@ void validateMultiRegBitEncoding(int* numQubitsPerReg, int numRegs, enum bitEnco
     if (encoding == TWOS_COMPLEMENT)
         for (int r=0; r<numRegs; r++)
             QuESTAssert(numQubitsPerReg[r] > 1, E_INVALID_NUM_QUBITS_TWOS_COMPLEMENT, caller);
+}
+
+void validateMemoryAllocationSize(long long int numAmpsPerRank, const char* caller) {
+    QuESTAssert(numAmpsPerRank <= SIZE_MAX, E_NOT_ENOUGH_ADDRESSABLE_MEMORY, caller);
+}
+
+void validateQuregAllocation(Qureg* qureg, const char* caller) {
+    if (qureg->numAmpsPerChunk) {
+        QuESTAssert(qureg->stateVec.real && qureg->stateVec.imag, E_QUREG_NOT_ALLOCATED, caller);
+        if (qureg->numChunks>1) {
+            QuESTAssert(qureg->pairStateVec.real && qureg->pairStateVec.imag, E_QUREG_NOT_ALLOCATED, caller);
+        }
+    }
+}
+
+void validateDiagonalOpAllocation(DiagonalOp op, const char* caller) {
+    QuESTAssert(op.real && op.imag, E_DIAGONAL_OP_NOT_ALLOCATED, caller);
 }
 
 #ifdef __cplusplus

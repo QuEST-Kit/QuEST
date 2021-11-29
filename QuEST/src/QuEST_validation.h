@@ -158,6 +158,12 @@ void validateBitEncoding(int numQubits, enum bitEncoding encoding, const char* c
 
 void validateMultiRegBitEncoding(int* numQubitsPerReg, int numRegs, enum bitEncoding encoding, const char* caller);
 
+void validateMemoryAllocationSize(long long int numAmpsPerRank, const char* caller);
+
+void validateQuregAllocation(Qureg* qureg, const char* caller);
+
+void validateDiagonalOpAllocation(DiagonalOp op, const char* caller);
+
 # ifdef __cplusplus
 }
 # endif
