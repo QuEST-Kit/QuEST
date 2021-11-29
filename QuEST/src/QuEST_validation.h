@@ -172,6 +172,8 @@ void validateDiagonalOpGPUAllocation(DiagonalOp op, const char* caller);
 // is limited to the QuEST_gpu.cu file.
 void validateGPUExists(int GPUPresent, const char* caller);
 
+void raiseQASMBufferOverflow(const char* caller);
+
 # ifdef __cplusplus
 }
 # endif
