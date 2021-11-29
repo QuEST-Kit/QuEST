@@ -285,15 +285,15 @@ void statevec_createQureg(Qureg *qureg, int numQubits, QuESTEnv env)
         qureg->pairStateVec.imag = (qreal*) malloc(numAmpsPerRank * sizeof(qureg->pairStateVec.imag));
     }
 
-    // check cpu memory allocation was successful
-    validateQuregAllocation(qureg, __func__);
-
     qureg->numQubitsInStateVec = numQubits;
     qureg->numAmpsPerChunk = numAmpsPerRank;
     qureg->numAmpsTotal = numAmps;
     qureg->chunkId = env.rank;
     qureg->numChunks = env.numRanks;
     qureg->isDensityMatrix = 0;
+
+    // check cpu memory allocation was successful
+    validateQuregAllocation(qureg, __func__);
 
     // allocate GPU memory
     cudaMalloc(&(qureg->deviceStateVec.real), qureg->numAmpsPerChunk*sizeof(*(qureg->deviceStateVec.real)));
