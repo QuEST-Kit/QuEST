@@ -162,7 +162,15 @@ void validateMemoryAllocationSize(long long int numAmpsPerRank, const char* call
 
 void validateQuregAllocation(Qureg* qureg, const char* caller);
 
+void validateQuregGPUAllocation(Qureg* qureg, const char* caller);
+
 void validateDiagonalOpAllocation(DiagonalOp op, const char* caller);
+
+void validateDiagonalOpGPUAllocation(DiagonalOp op, const char* caller);
+
+// This is really just a dummy shim, because the scope of GPUExists()
+// is limited to the QuEST_gpu.cu file.
+void validateGPUExists(int GPUPresent, const char* caller);
 
 # ifdef __cplusplus
 }

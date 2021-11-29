@@ -113,7 +113,10 @@ typedef enum {
     E_INVALID_NUM_REGS_DISTANCE_PHASE_FUNC,
     E_NOT_ENOUGH_ADDRESSABLE_MEMORY,
     E_QUREG_NOT_ALLOCATED,
+    E_QUREG_NOT_ALLOCATED_ON_GPU,
     E_DIAGONAL_OP_NOT_ALLOCATED,
+    E_DIAGONAL_OP_NOT_ALLOCATED_ON_GPU,
+    E_NO_GPU
 } ErrorCode;
 
 static const char* errorMessages[] = {
@@ -199,7 +202,10 @@ static const char* errorMessages[] = {
     [E_INVALID_NUM_REGS_DISTANCE_PHASE_FUNC] = "Phase functions DISTANCE, INVERSE_DISTANCE, SCALED_DISTANCE and SCALED_INVERSE_DISTANCE require a strictly even number of sub-registers.",
     [E_NOT_ENOUGH_ADDRESSABLE_MEMORY] = "Could not allocate memory. Requested more memory than system can address.",
     [E_QUREG_NOT_ALLOCATED] = "Could not allocate memory for Qureg. Possibly insufficient memory.",
+    [E_QUREG_NOT_ALLOCATED_ON_GPU] = "Could not allocate memory for Qureg on GPU. Possibly insufficient memory.",
     [E_DIAGONAL_OP_NOT_ALLOCATED] = "Could not allocate memory for DiagonalOp. Possibly insufficient memory.",
+    [E_DIAGONAL_OP_NOT_ALLOCATED_ON_GPU] = "Could not allocate memory for DiagonalOp on GPU. Possibly insufficient memory.",
+    [E_NO_GPU] = "Trying to run GPU code with no GPU available."
 };
 
 void default_invalidQuESTInputError(const char* errMsg, const char* errFunc) {
@@ -1020,8 +1026,22 @@ void validateQuregAllocation(Qureg* qureg, const char* caller) {
     }
 }
 
+void validateQuregGPUAllocation(Qureg* qureg, const char* caller) {
+    QuESTAssert(qureg->deviceStateVec.real && qureg->deviceStateVec.imag, E_QUREG_NOT_ALLOCATED_ON_GPU, caller);
+}
+
 void validateDiagonalOpAllocation(DiagonalOp op, const char* caller) {
     QuESTAssert(op.real && op.imag, E_DIAGONAL_OP_NOT_ALLOCATED, caller);
+}
+
+void validateDiagonalOpGPUAllocation(DiagonalOp op, const char* caller) {
+    QuESTAssert(op.real && op.imag, E_DIAGONAL_OP_NOT_ALLOCATED_ON_GPU, caller);
+}
+
+// This is really just a dummy shim, because the scope of GPUExists()
+// is limited to the QuEST_gpu.cu file.
+void validateGPUExists(int GPUPresent, const char* caller) {
+    QuESTAssert(GPUPresent, E_NO_GPU, caller);
 }
 
 #ifdef __cplusplus

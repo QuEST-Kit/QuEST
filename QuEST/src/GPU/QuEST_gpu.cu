@@ -9,6 +9,7 @@
 
 # include "QuEST.h"
 # include "QuEST_precision.h"
+# include "QuEST_validation.h"
 # include "QuEST_internal.h"    // purely to resolve getQuESTDefaultSeedKey
 # include "mt19937ar.h"
 
@@ -285,16 +286,7 @@ void statevec_createQureg(Qureg *qureg, int numQubits, QuESTEnv env)
     }
 
     // check cpu memory allocation was successful
-    if ( (!(qureg->stateVec.real) || !(qureg->stateVec.imag))
-            && numAmpsPerRank ) {
-        printf("Could not allocate memory!\n");
-        exit (EXIT_FAILURE);
-    }
-    if ( env.numRanks>1 && (!(qureg->pairStateVec.real) || !(qureg->pairStateVec.imag))
-            && numAmpsPerRank ) {
-        printf("Could not allocate memory!\n");
-        exit (EXIT_FAILURE);
-    }
+    validateQuregAllocation(qureg, __func__);
 
     qureg->numQubitsInStateVec = numQubits;
     qureg->numAmpsPerChunk = numAmpsPerRank;
@@ -311,10 +303,7 @@ void statevec_createQureg(Qureg *qureg, int numQubits, QuESTEnv env)
             sizeof(qreal));
 
     // check gpu memory allocation was successful
-    if (!(qureg->deviceStateVec.real) || !(qureg->deviceStateVec.imag)){
-        printf("Could not allocate memory on GPU!\n");
-        exit (EXIT_FAILURE);
-    }
+    validateQuregGPUAllocation(qureg, __func__);
 
 }
 
@@ -349,10 +338,7 @@ DiagonalOp agnostic_createDiagonalOp(int numQubits, QuESTEnv env) {
     // @TODO no handling of rank>1 allocation (no distributed GPU)
 
     // check cpu memory allocation was successful
-    if ( !op.real || !op.imag ) {
-        printf("Could not allocate memory!\n");
-        exit(EXIT_FAILURE);
-    }
+    validateDiagonalOpAllocation(op, __func__);
 
     // allocate GPU memory
     size_t arrSize = op.numElemsPerChunk * sizeof(qreal);
@@ -360,10 +346,7 @@ DiagonalOp agnostic_createDiagonalOp(int numQubits, QuESTEnv env) {
     cudaMalloc(&(op.deviceOperator.imag), arrSize);
 
     // check gpu memory allocation was successful
-    if (!op.deviceOperator.real || !op.deviceOperator.imag) {
-        printf("Could not allocate memory on GPU!\n");
-        exit(EXIT_FAILURE);
-    }
+    validateDiagonalOpGPUAllocation(op, __func__);
 
     // initialise GPU memory to zero
     cudaMemset(op.deviceOperator.real, 0, arrSize);
@@ -462,10 +445,7 @@ int GPUExists(void){
 
 QuESTEnv createQuESTEnv(void) {
     
-    if (!GPUExists()){
-        printf("Trying to run GPU code with no GPU available\n");
-        exit(EXIT_FAILURE);
-    }
+    validateGPUExists(GPUExists(), __func__);
     
     QuESTEnv env;
     env.rank=0;
