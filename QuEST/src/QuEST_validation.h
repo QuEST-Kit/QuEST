@@ -108,6 +108,12 @@ void validateTwoQubitKrausMap(Qureg qureg, ComplexMatrix4* ops, int numOps, cons
 
 void validateMultiQubitKrausMap(Qureg qureg, int numTargs, ComplexMatrixN* ops, int numOps, const char* caller);
 
+void validateOneQubitKrausMapDimensions(Qureg qureg, ComplexMatrix2* ops, int numOps, const char* caller);
+
+void validateTwoQubitKrausMapDimensions(Qureg qureg, ComplexMatrix4* ops, int numOps, const char* caller);
+
+void validateMultiQubitKrausMapDimensions(Qureg qureg, int numTargs, ComplexMatrixN* ops, int numOps, const char* caller);
+
 void validateOneQubitDampingProb(qreal prob, const char* caller);
 
 void validateHamilParams(int numQubits, int numTerms, const char* caller);
