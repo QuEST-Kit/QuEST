@@ -4854,13 +4854,14 @@ void multiControlledMultiQubitUnitary(Qureg qureg, int* ctrls, int numCtrls, int
  * \f[
     \sum \limits_i^{\text{numOps}} K_i^\dagger K_i = I
  * \f]
- * where \f$ I \f$ is the identity matrix.
+ * where \f$ I \f$ is the identity matrix. Use mixNonTPKrausMap() to relax this condition.
  *
  * Note that in distributed mode, this routine requires that each node contains at least 4 amplitudes.
  * This means an q-qubit register can be distributed by at most 2^(q-2) numTargs nodes.
  *
  * @see
  * - ::ComplexMatrix2
+ * - mixNonTPKrausMap()
  * - mixTwoQubitKrausMap()
  * - mixMultiQubitKrausMap()
  * - mixDephasing()
@@ -4894,7 +4895,8 @@ void mixKrausMap(Qureg qureg, int target, ComplexMatrix2 *ops, int numOps);
  * \f[
     \sum \limits_i^{\text{numOps}} K_i^\dagger K_i = I
  * \f]
- * where \f$ I \f$ is the identity matrix.
+ * where \f$ I \f$ is the identity matrix. Use mixNonTPTwoQubitKrausMap() to relax this 
+ * this condition.
  *
  * \p targetQubit1 is treated as the \p least significant qubit in each op in \p ops.
  *
@@ -4903,6 +4905,7 @@ void mixKrausMap(Qureg qureg, int target, ComplexMatrix2 *ops, int numOps);
  *
  * @see
  * - ::ComplexMatrix4
+ * - mixNonTPTwoQubitKrausMap()
  * - mixMultiQubitKrausMap()
  * - mixKrausMap()
  *
@@ -4932,7 +4935,8 @@ void mixTwoQubitKrausMap(Qureg qureg, int target1, int target2, ComplexMatrix4 *
  * \f[
     \sum \limits_i^{\text{numOps}} K_i^\dagger K_i = I
  * \f]
- * where \f$ I \f$ is the identity matrix.
+ * where \f$ I \f$ is the identity matrix. Use mixNonTPMultiQubitKrausMap() to relax 
+ * this condition.
  *
  * The first qubit in \p targets is treated as the \p least significant qubit in each op in \p ops.
  *
@@ -4952,6 +4956,7 @@ void mixTwoQubitKrausMap(Qureg qureg, int target1, int target2, ComplexMatrix4 *
  * @see
  * - createComplexMatrixN()
  * - initComplexMatrixN()
+ * - mixNonTPMultiQubitKrausMap()
  * - mixKrausMap()
  * - mixTwoQubitKrausMap()
  *
@@ -4973,6 +4978,131 @@ void mixTwoQubitKrausMap(Qureg qureg, int target1, int target2, ComplexMatrix4 *
  * @author Balint Koczor
  */
 void mixMultiQubitKrausMap(Qureg qureg, int* targets, int numTargets, ComplexMatrixN* ops, int numOps);
+
+/** Apply a general non-trace-preserving single-qubit Kraus map to a density matrix, 
+ * as specified by at most four operators, \f$K_i\f$ (\p ops). 
+ * This effects 
+ * \f[
+    \rho \to \sum\limits_i^{\text{numOps}} K_i \rho K_i^\dagger
+ * \f]
+ * where \f$K_i\f$ are permitted to be any matrix. This means the density matrix 
+ * can enter a non-physical state. 
+ *
+ * Use mixKrausMap() to enforce that the channel is trace preserving and completely positive.
+ *
+ * Note that in distributed mode, this routine requires that each node contains at least 4 amplitudes.
+ * This means an q-qubit register can be distributed by at most 2^(q-2) numTargs nodes.
+ *
+ * @see
+ * - ::ComplexMatrix2
+ * - mixKrausMap()
+ * - mixNonTPTwoQubitKrausMap()
+ * - mixNonTPMultiQubitKrausMap()
+ *
+ * @ingroup decoherence
+ * @param[in,out] qureg the density matrix to which to apply the map
+ * @param[in] target the target qubit of the map
+ * @param[in] ops an array of at most 4 Kraus operators
+ * @param[in] numOps the number of operators in \p ops which must be >0 and <= 4.
+ * @throws invalidQuESTInputError()
+ * - if \p qureg is not a density matrix
+ * - if \p target is outside of [0, \p qureg.numQubitsRepresented)
+ * - if \p numOps is outside [1, 4]
+ * - if a node cannot fit 4 amplitudes in distributed mode
+ * @author Tyson Jones
+ * @author Balint Koczor (backend code)
+ */
+void mixNonTPKrausMap(Qureg qureg, int target, ComplexMatrix2 *ops, int numOps);
+
+/** Apply a general non-trace-preserving two-qubit Kraus map to a density matrix, 
+ * as specified by at most sixteen operators, \f$K_i\f$ (\p ops). 
+ *
+ * This effects 
+ * \f[
+    \rho \to \sum\limits_i^{\text{numOps}} K_i \rho K_i^\dagger
+ * \f]
+ * where the matrices \f$K_i\f$ are unconstrained, and hence the effective map is permitted 
+ * to be non-completely-positive and non-trace-preserving. 
+ * Use mixTwoQubitKrausMap() to enforce that the map be completely positive.
+ *
+ * \p targetQubit1 is treated as the \p least significant qubit in each op in \p ops.
+ *
+ * Note that in distributed mode, this routine requires that each node contains at least 16 amplitudes.
+ * This means an q-qubit register can be distributed by at most 2^(q-4) numTargs nodes.
+ *
+ * @see
+ * - ::ComplexMatrix4
+ * - mixTwoQubitKrausMap()
+ * - mixNonTPKrausMap()
+ * - mixNonTPMultiQubitKrausMap()
+ *
+ * @ingroup decoherence
+ * @param[in,out] qureg the density matrix to which to apply the map
+ * @param[in] target1 the least significant target qubit in \p ops
+ * @param[in] target2 the most significant target qubit in \p ops
+ * @param[in] ops an array of at most 16 Kraus operators
+ * @param[in] numOps the number of operators in \p ops which must be >0 and <= 16.
+ * @throws invalidQuESTInputError()
+ * - if \p qureg is not a density matrix
+ * - if either \p target1 or \p target2 is outside of [0, \p qureg.numQubitsRepresented)
+ * - if \p target1 = \p target2
+ * - if \p numOps is outside [1, 16]
+ * - if a node cannot fit 16 amplitudes in distributed mode
+ * @author Tyson Jones
+ * @author Balint Koczor (backend code)
+ */
+void mixNonTPTwoQubitKrausMap(Qureg qureg, int target1, int target2, ComplexMatrix4 *ops, int numOps);
+
+/** Apply a general N-qubit non-trace-preserving Kraus map to a density matrix, 
+ * as specified by at most (2N)^2 operators.
+ *
+ * This effects 
+ * \f[
+    \rho \to \sum\limits_i^{\text{numOps}} K_i \rho K_i^\dagger
+ * \f]
+ * where the matrices \f$ K_i \f$ are unconstrained, and hence the effective map is permitted 
+ * to be non-completely-positive and non-trace-preserving. 
+ * Use mixMultiQubitKrausMap() to enforce that the map be completely positive.
+ *
+ * The first qubit in \p targets is treated as the \p least significant qubit in each op in \p ops.
+ *
+ * Note that in distributed mode, this routine requires that each node contains at least (2N)^2 amplitudes.
+ * This means an q-qubit register can be distributed by at most 2^(q-2)/N^2 nodes.
+ *
+ * Note too that this routine internally creates a 'superoperator'; a complex matrix of dimensions
+ * 2^(2*numTargets) by 2^(2*numTargets). Therefore, invoking this function incurs, 
+ * for numTargs={1,2,3,4,5, ...}, an additional memory overhead of (at double-precision)
+ * {0.25 KiB, 4 KiB, 64 KiB, 1 MiB, 16 MiB, ...} (respectively).
+ * At quad precision (usually 10 B per number, but possibly 16 B due to alignment),
+ * this costs at most double the amount of memory. 
+ * For numTargets < 4, this superoperator will be created in the runtime 
+ * stack. For numTargs >= 4, the superoperator will be allocated in the heap and 
+ * therefore this routine may suffer an anomalous slowdown.
+ *
+ * @see
+ * - createComplexMatrixN()
+ * - initComplexMatrixN()
+ * - mixMultiQubitKrausMap()
+ * - mixNonTPKrausMap()
+ * - mixNonTPTwoQubitKrausMap()
+ *
+ * @ingroup decoherence
+ * @param[in,out] qureg the density matrix to which to apply the map
+ * @param[in] targets a list of target qubit indices, the first of which is treated as least significant in each op in \p ops
+ * @param[in] numTargets the length of \p targets
+ * @param[in] ops an array of at most (2N)^2 Kraus operators
+ * @param[in] numOps the number of operators in \p ops which must be >0 and <= (2N)^2.
+ * @throws invalidQuESTInputError()
+ * - if \p qureg is not a density matrix
+ * - if any target in \p targets is outside of [0, \p qureg.numQubitsRepresented)
+ * - if any qubit in \p targets is repeated
+ * - if \p numOps is outside [1, (2 \p numTargets)^2]
+ * - if any ComplexMatrixN in \p ops does not have op.numQubits == \p numTargets
+ * - if a node cannot fit (2N)^2 amplitudes in distributed mode
+ * @author Tyson Jones
+ * @author Balint Koczor (backend code)
+ */
+void mixNonTPMultiQubitKrausMap(Qureg qureg, int* targets, int numTargets, ComplexMatrixN* ops, int numOps);
 
 /** Computes the Hilbert Schmidt distance between two density matrices \p a and \p b, 
  * defined as the Frobenius norm of the difference between them.

@@ -1344,6 +1344,36 @@ void mixMultiQubitKrausMap(Qureg qureg, int* targets, int numTargets, ComplexMat
         "Here, an undisclosed %d-qubit Kraus map was applied to undisclosed qubits", numTargets);
 }
 
+void mixNonTPKrausMap(Qureg qureg, int target, ComplexMatrix2 *ops, int numOps) {
+    validateDensityMatrQureg(qureg, __func__);
+    validateTarget(qureg, target, __func__);
+    validateOneQubitKrausMapDimensions(qureg, ops, numOps, __func__);
+    
+    densmatr_mixKrausMap(qureg, target, ops, numOps);
+    qasm_recordComment(qureg, 
+        "Here, an undisclosed non-trace-preserving Kraus map was effected on qubit %d", target);
+}
+
+void mixNonTPTwoQubitKrausMap(Qureg qureg, int target1, int target2, ComplexMatrix4 *ops, int numOps) {
+    validateDensityMatrQureg(qureg, __func__);
+    validateMultiTargets(qureg, (int[]) {target1,target2}, 2, __func__);
+    validateTwoQubitKrausMapDimensions(qureg, ops, numOps, __func__);
+    
+    densmatr_mixTwoQubitKrausMap(qureg, target1, target2, ops, numOps);
+    qasm_recordComment(qureg, 
+        "Here, an undisclosed non-trace-preserving two-qubit Kraus map was effected on qubits %d and %d", target1, target2);
+}
+
+void mixNonTPMultiQubitKrausMap(Qureg qureg, int* targets, int numTargets, ComplexMatrixN* ops, int numOps) {
+    validateDensityMatrQureg(qureg, __func__);
+    validateMultiTargets(qureg, targets, numTargets, __func__);
+    validateMultiQubitKrausMapDimensions(qureg, numTargets, ops, numOps, __func__);
+    
+    densmatr_mixMultiQubitKrausMap(qureg, targets, numTargets, ops, numOps);
+    qasm_recordComment(qureg,
+        "Here, an undisclosed non-trace-preserving %d-qubit Kraus map was applied to undisclosed qubits", numTargets);
+}
+
 /*
  * other data structures 
  */
