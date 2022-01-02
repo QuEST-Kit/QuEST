@@ -1019,25 +1019,62 @@ void validateMemoryAllocationSize(long long int numAmpsPerRank, const char* call
     QuESTAssert(numAmpsPerRank <= SIZE_MAX, E_NOT_ENOUGH_ADDRESSABLE_MEMORY, caller);
 }
 
-void validateQuregAllocation(Qureg* qureg, const char* caller) {
+void validateQuregAllocation(Qureg* qureg, QuESTEnv env, const char* caller) {
+    int allocationSuccessful = 1;
     if (qureg->numAmpsPerChunk) {
-        QuESTAssert(qureg->stateVec.real && qureg->stateVec.imag, E_QUREG_NOT_ALLOCATED, caller);
-        if (qureg->numChunks>1) {
-            QuESTAssert(qureg->pairStateVec.real && qureg->pairStateVec.imag, E_QUREG_NOT_ALLOCATED, caller);
-        }
+        allocationSuccessful &= qureg->stateVec.real && qureg->stateVec.imag;
+        if (qureg->numChunks>1)
+            allocationSuccessful &= qureg->pairStateVec.real && qureg->pairStateVec.imag;
     }
+    if (!allocationSuccessful) {  // no memory leaks for partial allocations
+        destroyQureg(*qureg, env);
+        // Just in case the user somehow retrieves the Qureg after unsuccessful allocation,
+        // remove the dangling pointers.
+        qureg->stateVec.real = NULL;
+        qureg->stateVec.imag = NULL;
+        qureg->pairStateVec.real = NULL;
+        qureg->pairStateVec.imag = NULL;
+    }
+    QuESTAssert(allocationSuccessful, E_QUREG_NOT_ALLOCATED, caller);
 }
 
-void validateQuregGPUAllocation(Qureg* qureg, const char* caller) {
-    QuESTAssert(qureg->deviceStateVec.real && qureg->deviceStateVec.imag, E_QUREG_NOT_ALLOCATED_ON_GPU, caller);
+void validateQuregGPUAllocation(Qureg* qureg, QuESTEnv env, const char* caller) {
+    int allocationSuccessful = (qureg->deviceStateVec.real && qureg->deviceStateVec.imag
+                                && qureg->firstLevelReduction && qureg->secondLevelReduction);
+    if (!allocationSuccessful) {
+        destroyQureg(*qureg, env);
+        qureg->stateVec.real = NULL;
+        qureg->stateVec.imag = NULL;
+        qureg->pairStateVec.real = NULL;
+        qureg->pairStateVec.imag = NULL;
+        qureg->deviceStateVec.real = NULL;
+        qureg->deviceStateVec.imag = NULL;
+        qureg->firstLevelReduction = NULL;
+        qureg->secondLevelReduction = NULL;
+    }
+    QuESTAssert(allocationSuccessful, E_QUREG_NOT_ALLOCATED_ON_GPU, caller);
 }
 
-void validateDiagonalOpAllocation(DiagonalOp op, const char* caller) {
-    QuESTAssert(op.real && op.imag, E_DIAGONAL_OP_NOT_ALLOCATED, caller);
+void validateDiagonalOpAllocation(DiagonalOp* op, QuESTEnv env, const char* caller) {
+    int allocationSuccessful = op->real && op->imag;
+    if (!allocationSuccessful) {
+        destroyDiagonalOp(*op, env);
+        op->real = NULL;
+        op->imag = NULL;
+    }
+    QuESTAssert(allocationSuccessful, E_DIAGONAL_OP_NOT_ALLOCATED, caller);
 }
 
-void validateDiagonalOpGPUAllocation(DiagonalOp op, const char* caller) {
-    QuESTAssert(op.real && op.imag, E_DIAGONAL_OP_NOT_ALLOCATED_ON_GPU, caller);
+void validateDiagonalOpGPUAllocation(DiagonalOp* op, QuESTEnv env, const char* caller) {
+    int allocationSuccessful = op->deviceOperator.real && op->deviceOperator.imag;
+    if (!allocationSuccessful) {
+        destroyDiagonalOp(*op, env);
+        op->real = NULL;
+        op->imag = NULL;
+        op->deviceOperator.real = NULL;
+        op->deviceOperator.imag = NULL;
+    }
+    QuESTAssert(allocationSuccessful, E_DIAGONAL_OP_NOT_ALLOCATED_ON_GPU, caller);
 }
 
 // This is really just a dummy shim, because the scope of GPUExists()

@@ -1315,7 +1315,7 @@ void statevec_createQureg(Qureg *qureg, int numQubits, QuESTEnv env)
     qureg->numChunks = env.numRanks;
     qureg->isDensityMatrix = 0;
 
-    validateQuregAllocation(qureg, __func__);
+    validateQuregAllocation(qureg, env, __func__);
 }
 
 void statevec_destroyQureg(Qureg qureg, QuESTEnv env){
@@ -1350,7 +1350,7 @@ DiagonalOp agnostic_createDiagonalOp(int numQubits, QuESTEnv env) {
     op.imag = (qreal*) calloc(op.numElemsPerChunk, sizeof(qreal));
 
     // check cpu memory allocation was successful
-    validateDiagonalOpAllocation(op, __func__);
+    validateDiagonalOpAllocation(&op, env, __func__);
 
     return op;
 }

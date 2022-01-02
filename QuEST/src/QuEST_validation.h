@@ -132,7 +132,7 @@ void validateHamilFilePauliCode(enum pauliOpType code, PauliHamil h, FILE* file,
 
 void validateTrotterParams(int order, int reps, const char* caller);
 
-void validateDiagOpInit(DiagonalOp, const char* caller);
+void validateDiagOpInit(DiagonalOp op, const char* caller);
 
 void validateDiagonalOp(Qureg qureg, DiagonalOp op, const char* caller);
 
@@ -160,13 +160,13 @@ void validateMultiRegBitEncoding(int* numQubitsPerReg, int numRegs, enum bitEnco
 
 void validateMemoryAllocationSize(long long int numAmpsPerRank, const char* caller);
 
-void validateQuregAllocation(Qureg* qureg, const char* caller);
+void validateQuregAllocation(Qureg* qureg, QuESTEnv env, const char* caller);
 
-void validateQuregGPUAllocation(Qureg* qureg, const char* caller);
+void validateQuregGPUAllocation(Qureg* qureg, QuESTEnv env, const char* caller);
 
-void validateDiagonalOpAllocation(DiagonalOp op, const char* caller);
+void validateDiagonalOpAllocation(DiagonalOp* op, QuESTEnv env, const char* caller);
 
-void validateDiagonalOpGPUAllocation(DiagonalOp op, const char* caller);
+void validateDiagonalOpGPUAllocation(DiagonalOp* op, QuESTEnv env, const char* caller);
 
 // This is really just a dummy shim, because the scope of GPUExists()
 // is limited to the QuEST_gpu.cu file.
