@@ -293,7 +293,7 @@ void statevec_createQureg(Qureg *qureg, int numQubits, QuESTEnv env)
     qureg->isDensityMatrix = 0;
 
     // check cpu memory allocation was successful
-    validateQuregAllocation(qureg, __func__);
+    validateQuregAllocation(qureg, env, __func__);
 
     // allocate GPU memory
     cudaMalloc(&(qureg->deviceStateVec.real), qureg->numAmpsPerChunk*sizeof(*(qureg->deviceStateVec.real)));
@@ -303,7 +303,7 @@ void statevec_createQureg(Qureg *qureg, int numQubits, QuESTEnv env)
             sizeof(qreal));
 
     // check gpu memory allocation was successful
-    validateQuregGPUAllocation(qureg, __func__);
+    validateQuregGPUAllocation(qureg, env, __func__);
 
 }
 
@@ -338,7 +338,7 @@ DiagonalOp agnostic_createDiagonalOp(int numQubits, QuESTEnv env) {
     // @TODO no handling of rank>1 allocation (no distributed GPU)
 
     // check cpu memory allocation was successful
-    validateDiagonalOpAllocation(op, __func__);
+    validateDiagonalOpAllocation(&op, env, __func__);
 
     // allocate GPU memory
     size_t arrSize = op.numElemsPerChunk * sizeof(qreal);
@@ -346,7 +346,7 @@ DiagonalOp agnostic_createDiagonalOp(int numQubits, QuESTEnv env) {
     cudaMalloc(&(op.deviceOperator.imag), arrSize);
 
     // check gpu memory allocation was successful
-    validateDiagonalOpGPUAllocation(op, __func__);
+    validateDiagonalOpGPUAllocation(&op, env, __func__);
 
     // initialise GPU memory to zero
     cudaMemset(op.deviceOperator.real, 0, arrSize);
