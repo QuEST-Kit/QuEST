@@ -53,28 +53,30 @@ Complex statevec_calcInnerProduct(Qureg bra, Qureg ket) {
 qreal densmatr_calcTotalProb(Qureg qureg) {
 	
 	// computes the trace by summing every element ("diag") with global index (2^n + 1)i for i in [0, 2^n-1]
+    
+    long long int firstGlobalInd = qureg.chunkId * qureg.numAmpsPerChunk;
+    long long int diagSpacing = 1LL + (1LL << qureg.numQubitsRepresented);
+    long long int distFromPrevDiag = (firstGlobalInd % diagSpacing);
+    long long int distToNextDiag = (distFromPrevDiag > 0)? diagSpacing - distFromPrevDiag : 0;
 	
-	// computes first local index containing a diagonal element
-	long long int diagSpacing = 1LL + (1LL << qureg.numQubitsRepresented);
-    long long int numPrevDiags = (qureg.chunkId>0)? 1+(qureg.chunkId*qureg.numAmpsPerChunk)/diagSpacing : 0;
-	long long int globalIndNextDiag = diagSpacing * numPrevDiags;
-	long long int localIndNextDiag = globalIndNextDiag % qureg.numAmpsPerChunk;
-	long long int index;
-	
+    // Kahan parameters
 	qreal rankTotal = 0;
 	qreal y, t, c;
 	c = 0;
-	
-	// iterates every local diagonal
-	for (index=localIndNextDiag; index < qureg.numAmpsPerChunk; index += diagSpacing) {
-		
-		// Kahan summation - brackets are important
-		y = qureg.stateVec.real[index] - c;
-		t = rankTotal + y;
-		c = ( t - rankTotal ) - y;
-		rankTotal = t;
-	}
-	
+    
+    long long int index = distToNextDiag;
+    
+    while (index < qureg.numAmpsPerChunk) {
+        
+        // Kahan summation - brackets are important
+        y = qureg.stateVec.real[index] - c;
+        t = rankTotal + y;
+        c = ( t - rankTotal ) - y;
+        rankTotal = t;
+        
+        index += diagSpacing;
+    }
+
 	// combine each node's sum of diagonals
 	qreal globalTotal;
 	if (qureg.numChunks > 1)
