@@ -537,6 +537,27 @@ void copyStateFromGPU(Qureg qureg)
     if (DEBUG) printf("Finished copying data from GPU\n");
 }
 
+void statevec_copySubstateToGPU(Qureg qureg, long long int startInd, long long int numAmps)
+{
+    if (DEBUG) printf("Copying data to GPU\n");
+    cudaMemcpy(&(qureg.deviceStateVec.real[startInd]), &(qureg.stateVec.real[startInd]), 
+            numAmps*sizeof(*(qureg.deviceStateVec.real)), cudaMemcpyHostToDevice);
+    cudaMemcpy(&(qureg.deviceStateVec.imag[startInd]), &(qureg.stateVec.imag[startInd]), 
+            numAmps*sizeof(*(qureg.deviceStateVec.imag)), cudaMemcpyHostToDevice);
+    if (DEBUG) printf("Finished copying data to GPU\n");
+}
+
+void statevec_copySubstateFromGPU(Qureg qureg, long long int startInd, long long int numAmps)
+{
+    cudaDeviceSynchronize();
+    if (DEBUG) printf("Copying data from GPU\n");
+    cudaMemcpy(&(qureg.stateVec.real[startInd]), &(qureg.deviceStateVec.real[startInd]), 
+            numAmps*sizeof(*(qureg.deviceStateVec.real)), cudaMemcpyDeviceToHost);
+    cudaMemcpy(&(qureg.stateVec.imag[startInd]), &(qureg.deviceStateVec.imag[startInd]), 
+            numAmps*sizeof(*(qureg.deviceStateVec.imag)), cudaMemcpyDeviceToHost);
+    if (DEBUG) printf("Finished copying data from GPU\n");
+}
+
 /** Print the current state vector of probability amplitudes for a set of qubits to standard out. 
   For debugging purposes. Each rank should print output serially. Only print output for systems <= 5 qubits
  */

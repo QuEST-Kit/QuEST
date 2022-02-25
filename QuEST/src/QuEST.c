@@ -1656,6 +1656,19 @@ void getQuESTSeeds(QuESTEnv env, unsigned long int** seeds, int* numSeeds) {
     *seeds = env.seeds;
     *numSeeds = env.numSeeds;
 }
+
+void copySubstateToGPU(Qureg qureg, long long int startInd, long long int numAmps) {
+    validateNumAmps(qureg, startInd, numAmps, __func__);
+    
+    statevec_copySubstateToGPU(qureg, startInd, numAmps);
+}
+
+void copySubstateFromGPU(Qureg qureg, long long int startInd, long long int numAmps) {
+    validateNumAmps(qureg, startInd, numAmps, __func__);
+    
+    statevec_copySubstateFromGPU(qureg, startInd, numAmps);
+}
+
   
 
 #ifdef __cplusplus

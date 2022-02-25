@@ -1969,6 +1969,8 @@ void getEnvironmentString(QuESTEnv env, char str[200]);
  *
  * @see
  * - copyStateFromGPU()
+ * - copySubstateFromGPU()
+ * - copySubstateToGPU()
  *
  * @ingroup debug
  * @param[in, out] qureg the qureg of which to copy `.stateVec` to `.deviceStateVec` in GPU mode
@@ -1996,6 +1998,8 @@ void copyStateToGPU(Qureg qureg);
  *
  * @see
  * - copyStateToGPU()
+ * - copySubstateFromGPU()
+ * - copySubstateToGPU()
  *
  * @ingroup debug
  * @param[in, out] qureg the qureg of which to copy `.deviceStateVec` to `.stateVec` in GPU mode
@@ -2003,6 +2007,74 @@ void copyStateToGPU(Qureg qureg);
  * @author Tyson Jones (doc)
  */
 void copyStateFromGPU(Qureg qureg);
+
+/** In GPU mode, this copies a substate of the state-vector (or density matrix) from RAM 
+ * (qureg.stateVec) to VRAM / GPU-memory (qureg.deviceStateVec), which is the version 
+ * operated upon by other calls to the API. 
+ * In CPU mode, this function has no effect.
+ * In conjunction with copySubstateFromGPU(), this allows 
+ * a user to directly modify a subset of the amplitudes the state-vector in a harware agnostic way,
+ * without having to load the entire state via copyStateFromGPU().
+ *
+ * Note though that users should instead use setAmps() if possible.
+ *
+ * For example, to multiply the first amplitude by factor 2, one could do
+ * ```
+ *     copySubstateFromGPU(qureg, 0, 1);
+ *     qureg.stateVec.real[0] *= 2;
+ *     qureg.stateVec.imag[0] *= 2;
+ *     copySubstateToGPU(qureg, 0, 1);
+ * ```
+ *
+ * Note users should never access qureg.deviceStateVec directly.
+ *
+ * @see
+ * - copySubstateFromGPU()
+ * - copyStateToGPU()
+ * - copyStateFromGPU()
+ *
+ * @ingroup debug
+ * @param[in, out] qureg the qureg of which to copy `.stateVec` to `.deviceStateVec` in GPU mode
+ * @param[in] startInd the index of the first amplitude to copy
+ * @param[in] numAmps the number of contiguous amplitudes to copy (starting with startInd)
+ * @throws invalidQuESTInputError()
+ * - if \p startInd is an invalid amplitude index 
+ * - if \p numAmps is greater than the remaining amplitudes in the state, from \p startInd
+ * @author Tyson Jones
+ */
+void copySubstateToGPU(Qureg qureg, long long int startInd, long long int numAmps);
+
+/** In GPU mode, this copies a substate of the state-vector (or density matrix) 
+ * from GPU VRAM (qureg.deviceStateVec) into RAM (qureg.stateVec).
+ * In CPU mode, this function has no effect.
+ * In conjunction with copySubstateToGPU(), this allows 
+ * a user to directly modify a subset of the amplitudes the state-vector in a hardware agnostic way.
+ *
+ * For example, to multiply the first amplitude by factor 2, one could do
+ * ```
+ *     copySubstateFromGPU(qureg, 0, 1);
+ *     qureg.stateVec.real[0] *= 2;
+ *     qureg.stateVec.imag[0] *= 2;
+ *     copySubstateToGPU(qureg, 0, 1);
+ * ```
+ *
+ * Note users should never access qureg.deviceStateVec directly.
+ *
+ * @see
+ * - copySubstateToGPU()
+ * - copyStateToGPU()
+ * - copyStateFromGPU()
+ *
+ * @ingroup debug
+ * @param[in, out] qureg the qureg of which to copy `.deviceStateVec` to `.stateVec` to in GPU mode
+ * @param[in] startInd the index of the first amplitude to copy
+ * @param[in] numAmps the number of contiguous amplitudes to copy (starting with startInd)
+ * @throws invalidQuESTInputError()
+ * - if \p startInd is an invalid amplitude index 
+ * - if \p numAmps is greater than the remaining amplitudes in the state, from \p startInd
+ * @author Tyson Jones
+ */
+void copySubstateFromGPU(Qureg qureg, long long int startInd, long long int numAmps);
 
 /** Get the complex amplitude at a given index in the state vector.
  *

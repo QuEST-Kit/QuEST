@@ -271,6 +271,10 @@ void statevec_applyMultiVarPhaseFuncOverrides(Qureg qureg, int* qubits, int* num
 
 void statevec_applyParamNamedPhaseFuncOverrides(Qureg qureg, int* qubits, int* numQubitsPerReg, int numRegs, enum bitEncoding encoding, enum phaseFunc functionNameCode, qreal* params, int numParams, long long int* overrideInds, qreal* overridePhases, int numOverrides, int conj);
 
+void statevec_copySubstateToGPU(Qureg qureg, long long int startInd, long long int numAmps);
+
+void statevec_copySubstateFromGPU(Qureg qureg, long long int startInd, long long int numAmps);
+
 
 /* 
  * operations which differentiate between state-vectors and density matrices internally 

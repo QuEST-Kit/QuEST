@@ -45,6 +45,11 @@ void copyStateToGPU(Qureg qureg) {
 void copyStateFromGPU(Qureg qureg) {
 }
 
+void statevec_copySubstateToGPU(Qureg qureg, long long int startInd, long long int numAmps) {
+}
+
+void statevec_copySubstateFromGPU(Qureg qureg, long long int startInd, long long int numAmps) {
+}
 
 
 /*
