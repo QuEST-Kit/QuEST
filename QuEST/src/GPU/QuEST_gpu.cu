@@ -3559,7 +3559,7 @@ __global__ void statevec_applyPhaseFuncOverridesKernel(
         phase = overridePhases[i];
     else
         for (int t=0; t<numTerms; t++)
-            phase += coeffs[t] * pow(phaseInd, exponents[t]);
+            phase += coeffs[t] * pow((qreal) phaseInd, (qreal) exponents[t]);
             
     // negate phase to conjugate operator 
     if (conj)
@@ -3674,7 +3674,7 @@ __global__ void statevec_applyMultiVarPhaseFuncOverridesKernel(
         flatInd = 0;
         for (int r=0; r<numRegs; r++) {
             for (int t=0; t<numTermsPerReg[r]; t++) {
-                phase += coeffs[flatInd] * pow(phaseInds[r*stride+offset], exponents[flatInd]);
+                phase += coeffs[flatInd] * pow((qreal) phaseInds[r*stride+offset], (qreal) exponents[flatInd]);
                 flatInd++;
             }
         }
