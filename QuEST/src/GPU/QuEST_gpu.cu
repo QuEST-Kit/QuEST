@@ -9,6 +9,7 @@
 
 # include "QuEST.h"
 # include "QuEST_precision.h"
+# include "QuEST_validation.h"
 # include "QuEST_internal.h"    // purely to resolve getQuESTDefaultSeedKey
 # include "mt19937ar.h"
 
@@ -284,24 +285,15 @@ void statevec_createQureg(Qureg *qureg, int numQubits, QuESTEnv env)
         qureg->pairStateVec.imag = (qreal*) malloc(numAmpsPerRank * sizeof(qureg->pairStateVec.imag));
     }
 
-    // check cpu memory allocation was successful
-    if ( (!(qureg->stateVec.real) || !(qureg->stateVec.imag))
-            && numAmpsPerRank ) {
-        printf("Could not allocate memory!\n");
-        exit (EXIT_FAILURE);
-    }
-    if ( env.numRanks>1 && (!(qureg->pairStateVec.real) || !(qureg->pairStateVec.imag))
-            && numAmpsPerRank ) {
-        printf("Could not allocate memory!\n");
-        exit (EXIT_FAILURE);
-    }
-
     qureg->numQubitsInStateVec = numQubits;
     qureg->numAmpsPerChunk = numAmpsPerRank;
     qureg->numAmpsTotal = numAmps;
     qureg->chunkId = env.rank;
     qureg->numChunks = env.numRanks;
     qureg->isDensityMatrix = 0;
+
+    // check cpu memory allocation was successful
+    validateQuregAllocation(qureg, env, __func__);
 
     // allocate GPU memory
     cudaMalloc(&(qureg->deviceStateVec.real), qureg->numAmpsPerChunk*sizeof(*(qureg->deviceStateVec.real)));
@@ -311,10 +303,7 @@ void statevec_createQureg(Qureg *qureg, int numQubits, QuESTEnv env)
             sizeof(qreal));
 
     // check gpu memory allocation was successful
-    if (!(qureg->deviceStateVec.real) || !(qureg->deviceStateVec.imag)){
-        printf("Could not allocate memory on GPU!\n");
-        exit (EXIT_FAILURE);
-    }
+    validateQuregGPUAllocation(qureg, env, __func__);
 
 }
 
@@ -349,10 +338,7 @@ DiagonalOp agnostic_createDiagonalOp(int numQubits, QuESTEnv env) {
     // @TODO no handling of rank>1 allocation (no distributed GPU)
 
     // check cpu memory allocation was successful
-    if ( !op.real || !op.imag ) {
-        printf("Could not allocate memory!\n");
-        exit(EXIT_FAILURE);
-    }
+    validateDiagonalOpAllocation(&op, env, __func__);
 
     // allocate GPU memory
     size_t arrSize = op.numElemsPerChunk * sizeof(qreal);
@@ -360,10 +346,7 @@ DiagonalOp agnostic_createDiagonalOp(int numQubits, QuESTEnv env) {
     cudaMalloc(&(op.deviceOperator.imag), arrSize);
 
     // check gpu memory allocation was successful
-    if (!op.deviceOperator.real || !op.deviceOperator.imag) {
-        printf("Could not allocate memory on GPU!\n");
-        exit(EXIT_FAILURE);
-    }
+    validateDiagonalOpGPUAllocation(&op, env, __func__);
 
     // initialise GPU memory to zero
     cudaMemset(op.deviceOperator.real, 0, arrSize);
@@ -462,10 +445,7 @@ int GPUExists(void){
 
 QuESTEnv createQuESTEnv(void) {
     
-    if (!GPUExists()){
-        printf("Trying to run GPU code with no GPU available\n");
-        exit(EXIT_FAILURE);
-    }
+    validateGPUExists(GPUExists(), __func__);
     
     QuESTEnv env;
     env.rank=0;
@@ -534,6 +514,27 @@ void copyStateFromGPU(Qureg qureg)
             qureg.numAmpsPerChunk*sizeof(*(qureg.deviceStateVec.real)), cudaMemcpyDeviceToHost);
     cudaMemcpy(qureg.stateVec.imag, qureg.deviceStateVec.imag, 
             qureg.numAmpsPerChunk*sizeof(*(qureg.deviceStateVec.imag)), cudaMemcpyDeviceToHost);
+    if (DEBUG) printf("Finished copying data from GPU\n");
+}
+
+void statevec_copySubstateToGPU(Qureg qureg, long long int startInd, long long int numAmps)
+{
+    if (DEBUG) printf("Copying data to GPU\n");
+    cudaMemcpy(&(qureg.deviceStateVec.real[startInd]), &(qureg.stateVec.real[startInd]), 
+            numAmps*sizeof(*(qureg.deviceStateVec.real)), cudaMemcpyHostToDevice);
+    cudaMemcpy(&(qureg.deviceStateVec.imag[startInd]), &(qureg.stateVec.imag[startInd]), 
+            numAmps*sizeof(*(qureg.deviceStateVec.imag)), cudaMemcpyHostToDevice);
+    if (DEBUG) printf("Finished copying data to GPU\n");
+}
+
+void statevec_copySubstateFromGPU(Qureg qureg, long long int startInd, long long int numAmps)
+{
+    cudaDeviceSynchronize();
+    if (DEBUG) printf("Copying data from GPU\n");
+    cudaMemcpy(&(qureg.stateVec.real[startInd]), &(qureg.deviceStateVec.real[startInd]), 
+            numAmps*sizeof(*(qureg.deviceStateVec.real)), cudaMemcpyDeviceToHost);
+    cudaMemcpy(&(qureg.stateVec.imag[startInd]), &(qureg.deviceStateVec.imag[startInd]), 
+            numAmps*sizeof(*(qureg.deviceStateVec.imag)), cudaMemcpyDeviceToHost);
     if (DEBUG) printf("Finished copying data from GPU\n");
 }
 
@@ -746,16 +747,8 @@ int statevec_initStateFromSingleFile(Qureg *qureg, char filename[200], QuESTEnv 
         if (line[0]!='#'){
             int chunkId = totalIndex/chunkSize;
             if (chunkId==qureg->chunkId){
-                # if QuEST_PREC==1
-                    sscanf(line, "%f, %f", &(stateVecReal[indexInChunk]),
-                            &(stateVecImag[indexInChunk]));
-                # elif QuEST_PREC==2
-                    sscanf(line, "%lf, %lf", &(stateVecReal[indexInChunk]),
-                            &(stateVecImag[indexInChunk]));
-                # elif QuEST_PREC==4
-                    sscanf(line, "%lf, %lf", &(stateVecReal[indexInChunk]),
-                            &(stateVecImag[indexInChunk]));
-                # endif
+                sscanf(line, REAL_SPECIFIER ", " REAL_SPECIFIER, &(stateVecReal[indexInChunk]),
+                        &(stateVecImag[indexInChunk]));
                 indexInChunk += 1;
             }
             totalIndex += 1;
@@ -3567,7 +3560,7 @@ __global__ void statevec_applyPhaseFuncOverridesKernel(
         phase = overridePhases[i];
     else
         for (int t=0; t<numTerms; t++)
-            phase += coeffs[t] * pow(phaseInd, exponents[t]);
+            phase += coeffs[t] * pow((qreal) phaseInd, (qreal) exponents[t]);
             
     // negate phase to conjugate operator 
     if (conj)
@@ -3682,7 +3675,7 @@ __global__ void statevec_applyMultiVarPhaseFuncOverridesKernel(
         flatInd = 0;
         for (int r=0; r<numRegs; r++) {
             for (int t=0; t<numTermsPerReg[r]; t++) {
-                phase += coeffs[flatInd] * pow(phaseInds[r*stride+offset], exponents[flatInd]);
+                phase += coeffs[flatInd] * pow((qreal) phaseInds[r*stride+offset], (qreal) exponents[flatInd]);
                 flatInd++;
             }
         }

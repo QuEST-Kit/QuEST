@@ -13,6 +13,7 @@
 # include "QuEST.h"
 # include "QuEST_internal.h"
 # include "QuEST_precision.h"
+# include "QuEST_validation.h"
 # include "mt19937ar.h"
 
 # include "QuEST_cpu_internal.h"
@@ -45,6 +46,11 @@ void copyStateToGPU(Qureg qureg) {
 void copyStateFromGPU(Qureg qureg) {
 }
 
+void statevec_copySubstateToGPU(Qureg qureg, long long int startInd, long long int numAmps) {
+}
+
+void statevec_copySubstateFromGPU(Qureg qureg, long long int startInd, long long int numAmps) {
+}
 
 
 /*
@@ -1291,11 +1297,8 @@ void statevec_createQureg(Qureg *qureg, int numQubits, QuESTEnv env)
 {
     long long int numAmps = 1LL << numQubits;
     long long int numAmpsPerRank = numAmps/env.numRanks;
-    
-    if (numAmpsPerRank > SIZE_MAX) {
-        printf("Could not allocate memory (cannot fit numAmps into size_t)!");
-        exit (EXIT_FAILURE);
-    }
+
+    validateMemoryAllocationSize(numAmpsPerRank, __func__);
 
     size_t arrSize = (size_t) (numAmpsPerRank * sizeof(*(qureg->stateVec.real)));
     qureg->stateVec.real = malloc(arrSize);
@@ -1305,24 +1308,14 @@ void statevec_createQureg(Qureg *qureg, int numQubits, QuESTEnv env)
         qureg->pairStateVec.imag = malloc(arrSize);
     }
 
-    if ( (!(qureg->stateVec.real) || !(qureg->stateVec.imag))
-            && numAmpsPerRank ) {
-        printf("Could not allocate memory!");
-        exit (EXIT_FAILURE);
-    }
-
-    if ( env.numRanks>1 && (!(qureg->pairStateVec.real) || !(qureg->pairStateVec.imag))
-            && numAmpsPerRank ) {
-        printf("Could not allocate memory!");
-        exit (EXIT_FAILURE);
-    }
-
     qureg->numQubitsInStateVec = numQubits;
     qureg->numAmpsTotal = numAmps;
     qureg->numAmpsPerChunk = numAmpsPerRank;
     qureg->chunkId = env.rank;
     qureg->numChunks = env.numRanks;
     qureg->isDensityMatrix = 0;
+
+    validateQuregAllocation(qureg, env, __func__);
 }
 
 void statevec_destroyQureg(Qureg qureg, QuESTEnv env){
@@ -1357,10 +1350,7 @@ DiagonalOp agnostic_createDiagonalOp(int numQubits, QuESTEnv env) {
     op.imag = (qreal*) calloc(op.numElemsPerChunk, sizeof(qreal));
 
     // check cpu memory allocation was successful
-    if ( !op.real || !op.imag ) {
-        printf("Could not allocate memory!\n");
-        exit(EXIT_FAILURE);
-    }
+    validateDiagonalOpAllocation(&op, env, __func__);
 
     return op;
 }
@@ -1714,16 +1704,8 @@ int statevec_initStateFromSingleFile(Qureg *qureg, char filename[200], QuESTEnv 
                 if (line[0]!='#'){
                     int chunkId = (int) (totalIndex/chunkSize);
                     if (chunkId==qureg->chunkId){
-                        # if QuEST_PREC==1
-                        sscanf(line, "%f, %f", &(stateVecReal[indexInChunk]), 
+                        sscanf(line, REAL_SPECIFIER ", " REAL_SPECIFIER, &(stateVecReal[indexInChunk]),
                                 &(stateVecImag[indexInChunk])); 
-                        # elif QuEST_PREC==2                    
-                        sscanf(line, "%lf, %lf", &(stateVecReal[indexInChunk]), 
-                                &(stateVecImag[indexInChunk]));
-                        # elif QuEST_PREC==4
-                        sscanf(line, "%Lf, %Lf", &(stateVecReal[indexInChunk]), 
-                                &(stateVecImag[indexInChunk]));
-                        # endif
                         indexInChunk += 1;
                     }
                     totalIndex += 1;

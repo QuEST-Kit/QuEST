@@ -112,10 +112,6 @@ endif()
 
 if (GPUACCELERATED)
     find_package(CUDA REQUIRED)
-    # Stop nvcc sending c compile flags through using -Xcompiler and breaking
-    # on compilation of a cpp file receiving -std=c99. In long term should figure 
-    # out why CMAKE_C_FLAGS and not CMAKE_CXX_FLAGS are being sent through to a cpp file
-    set(CUDA_PROPAGATE_HOST_FLAGS FALSE)
 endif()
 
 
@@ -294,16 +290,19 @@ endif()
 
 add_subdirectory(src)
 
+if (NOT WIN32)
+    set(BUILD_SHARED_LIBS TRUE CACHE BOOL "Whether to build a dynamic library")
+else ()
+    set(BUILD_SHARED_LIBS FALSE CACHE BOOL "Whether to build a dynamic library")
+endif ()
+
+
 if (GPUACCELERATED)
-    cuda_add_library(QuEST SHARED
-        ${QuEST_SRC}
-    )
-elseif (WIN32)
-    add_library(QuEST STATIC
+    cuda_add_library(QuEST
         ${QuEST_SRC}
     )
 else ()
-    add_library(QuEST SHARED
+    add_library(QuEST
         ${QuEST_SRC}
     )
 endif()

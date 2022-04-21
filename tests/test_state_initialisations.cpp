@@ -444,6 +444,89 @@ TEST_CASE( "setAmps", "[state_initialisations]" ) {
 
 
 
+/** @sa setDensityAmps
+ * @ingroup unittest 
+ * @author Tyson Jones 
+ */
+TEST_CASE( "setDensityAmps", "[state_initialisations]" ) {
+    
+    Qureg matr = createDensityQureg(NUM_QUBITS, QUEST_ENV);
+    qreal reals[matr.numAmpsTotal];
+    qreal imags[matr.numAmpsTotal];
+    int maxInd = (1 << NUM_QUBITS);
+    
+    SECTION( "correctness" ) {
+        
+        SECTION( "density-matrix" ) {
+            
+            // all valid number of amplitudes and offsets
+            int startRow = GENERATE_COPY( range(0,maxInd) );
+            int startCol = GENERATE_COPY( range(0,maxInd) );
+            
+            int numPriorAmps = startRow + startCol*(1 << matr.numQubitsRepresented);
+            int maxNumAmps = matr.numAmpsTotal - numPriorAmps;
+            int numAmps = GENERATE_COPY( range(0,maxNumAmps) ); // upper-bound allows all amps specified
+            
+            // generate random amplitudes
+            for (int i=0; i<numAmps; i++) {
+                reals[i] = getRandomReal(-5,5);
+                imags[i] = getRandomReal(-5,5);
+            }
+            
+            // check both specified and un-specified amplitudes are correctly handled
+            initDebugState(matr);
+            QMatrix matrRef = toQMatrix(matr);
+            
+            setDensityAmps(matr, startRow, startCol, reals, imags, numAmps);
+            
+            int r=startRow;
+            int c=startCol;
+            for (int i=0; i<numAmps; i++) {
+                qcomp amp = reals[i] + imags[i] * (qcomp) 1i;
+                matrRef[r][c] = amp;
+                
+                r++;
+                if (r >= maxInd ) {
+                    r=0;
+                    c++;
+                }
+            }
+                
+            REQUIRE( areEqual(matr, matrRef) );
+        }
+    }
+    SECTION( "input validation" ) {
+        
+        SECTION( "start index" ) {
+            
+            int badInd = GENERATE_COPY( -1, maxInd );
+            int numAmps = 0;
+            REQUIRE_THROWS_WITH( setDensityAmps(matr, badInd, 0, reals, imags, numAmps), Contains("Invalid amplitude index") );
+            REQUIRE_THROWS_WITH( setDensityAmps(matr, 0, badInd, reals, imags, numAmps), Contains("Invalid amplitude index") );
+        }
+        
+        SECTION( "number of amplitudes" ) {
+            
+            // independent
+            int numAmps = GENERATE_COPY( -1, matr.numAmpsTotal+1 );
+            REQUIRE_THROWS_WITH( setDensityAmps(matr, 0, 0, reals, imags, numAmps), Contains("Invalid number of amplitudes") );
+
+            // invalid considering start-index
+            REQUIRE_THROWS_WITH( setDensityAmps(matr, maxInd-1, maxInd-1, reals, imags, 2), Contains("More amplitudes given than exist") );
+            REQUIRE_THROWS_WITH( setDensityAmps(matr, maxInd-1, maxInd-2, reals, imags, maxInd+2), Contains("More amplitudes given than exist") );
+        }
+        SECTION( "state-vector" ) {
+            
+            Qureg vec = createQureg(NUM_QUBITS, QUEST_ENV);
+            REQUIRE_THROWS_WITH( setDensityAmps(vec, 0, 0, reals, imags, 0), Contains("valid only for density matrices") );
+            destroyQureg(vec, QUEST_ENV);
+        }
+    }
+    destroyQureg(matr, QUEST_ENV);
+}
+
+
+
 /** @sa setWeightedQureg
  * @ingroup unittest 
  * @author Tyson Jones 

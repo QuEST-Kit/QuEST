@@ -78,6 +78,8 @@ void validateSecondQuregStateVec(Qureg qureg2, const char *caller);
 
 void validateNumAmps(Qureg qureg, long long int startInd, long long int numAmps, const char* caller);
 
+void validateNumDensityAmps(Qureg qureg, long long int startRow, long long int startCol, long long int numAmps, const char* caller);
+
 void validateFileOpened(int opened, char* fn, const char* caller);
 
 void validateProb(qreal prob, const char* caller);
@@ -106,6 +108,12 @@ void validateTwoQubitKrausMap(Qureg qureg, ComplexMatrix4* ops, int numOps, cons
 
 void validateMultiQubitKrausMap(Qureg qureg, int numTargs, ComplexMatrixN* ops, int numOps, const char* caller);
 
+void validateOneQubitKrausMapDimensions(Qureg qureg, ComplexMatrix2* ops, int numOps, const char* caller);
+
+void validateTwoQubitKrausMapDimensions(Qureg qureg, ComplexMatrix4* ops, int numOps, const char* caller);
+
+void validateMultiQubitKrausMapDimensions(Qureg qureg, int numTargs, ComplexMatrixN* ops, int numOps, const char* caller);
+
 void validateOneQubitDampingProb(qreal prob, const char* caller);
 
 void validateHamilParams(int numQubits, int numTerms, const char* caller);
@@ -124,7 +132,7 @@ void validateHamilFilePauliCode(enum pauliOpType code, PauliHamil h, FILE* file,
 
 void validateTrotterParams(int order, int reps, const char* caller);
 
-void validateDiagOpInit(DiagonalOp, const char* caller);
+void validateDiagOpInit(DiagonalOp op, const char* caller);
 
 void validateDiagonalOp(Qureg qureg, DiagonalOp op, const char* caller);
 
@@ -149,6 +157,22 @@ void validatePhaseFuncName(enum phaseFunc funcCode, int numRegs, int numParams, 
 void validateBitEncoding(int numQubits, enum bitEncoding encoding, const char* caller);
 
 void validateMultiRegBitEncoding(int* numQubitsPerReg, int numRegs, enum bitEncoding encoding, const char* caller);
+
+void validateMemoryAllocationSize(long long int numAmpsPerRank, const char* caller);
+
+void validateQuregAllocation(Qureg* qureg, QuESTEnv env, const char* caller);
+
+void validateQuregGPUAllocation(Qureg* qureg, QuESTEnv env, const char* caller);
+
+void validateDiagonalOpAllocation(DiagonalOp* op, QuESTEnv env, const char* caller);
+
+void validateDiagonalOpGPUAllocation(DiagonalOp* op, QuESTEnv env, const char* caller);
+
+// This is really just a dummy shim, because the scope of GPUExists()
+// is limited to the QuEST_gpu.cu file.
+void validateGPUExists(int GPUPresent, const char* caller);
+
+void raiseQASMBufferOverflow(const char* caller);
 
 # ifdef __cplusplus
 }

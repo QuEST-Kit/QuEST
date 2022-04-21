@@ -91,16 +91,16 @@ int main (int narg, char *varg[]) {
 
     qreal prob;
     prob = getProbAmp(qubits, 7);
-    printf("Probability amplitude of |111>: %g\n", prob);
+    printf("Probability amplitude of |111>: " REAL_STRING_FORMAT "\n", prob);
 
     prob = calcProbOfOutcome(qubits, 2, 1);
-    printf("Probability of qubit 2 being in state 1: %g\n", prob);
+    printf("Probability of qubit 2 being in state 1: " REAL_STRING_FORMAT "\n", prob);
 
     int outcome = measure(qubits, 0);
     printf("Qubit 0 was measured in state %d\n", outcome);
 
     outcome = measureWithStats(qubits, 2, &prob);
-    printf("Qubit 2 collapsed to %d with probability %g\n", outcome, prob);
+    printf("Qubit 2 collapsed to %d with probability " REAL_STRING_FORMAT "\n", outcome, prob);
 
 
 

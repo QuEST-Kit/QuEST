@@ -110,7 +110,14 @@ typedef enum {
     E_FRACTIONAL_EXPONENT_WITHOUT_NEG_OVERRIDE,
     E_NEGATIVE_EXPONENT_MULTI_VAR,
     E_FRACTIONAL_EXPONENT_MULTI_VAR,
-    E_INVALID_NUM_REGS_DISTANCE_PHASE_FUNC
+    E_INVALID_NUM_REGS_DISTANCE_PHASE_FUNC,
+    E_NOT_ENOUGH_ADDRESSABLE_MEMORY,
+    E_QUREG_NOT_ALLOCATED,
+    E_QUREG_NOT_ALLOCATED_ON_GPU,
+    E_DIAGONAL_OP_NOT_ALLOCATED,
+    E_DIAGONAL_OP_NOT_ALLOCATED_ON_GPU,
+    E_NO_GPU,
+    E_QASM_BUFFER_OVERFLOW
 } ErrorCode;
 
 static const char* errorMessages[] = {
@@ -122,9 +129,9 @@ static const char* errorMessages[] = {
     [E_INVALID_STATE_INDEX] = "Invalid state index. Must be >=0 and <2^numQubits.",
     [E_INVALID_AMP_INDEX] = "Invalid amplitude index. Must be >=0 and <2^numQubits.",
     [E_INVALID_ELEM_INDEX] = "Invalid element index. Must be >=0 and <2^numQubits.",
-    [E_INVALID_NUM_AMPS] = "Invalid number of amplitudes. Must be >=0 and <=2^numQubits.",
+    [E_INVALID_NUM_AMPS] = "Invalid number of amplitudes. Must be >=0 and <=2^numQubits (or for density matrices, <=2^(2 numQubits)).",
     [E_INVALID_NUM_ELEMS] = "Invalid number of elements. Must be >=0 and <=2^numQubits.",
-    [E_INVALID_OFFSET_NUM_AMPS_QUREG] = "More amplitudes given than exist in the statevector from the given starting index.",
+    [E_INVALID_OFFSET_NUM_AMPS_QUREG] = "More amplitudes given than exist in the state from the given starting index.",
     [E_INVALID_OFFSET_NUM_ELEMS_DIAG] = "More elements given than exist in the diagonal operator from the given starting index.",
     [E_TARGET_IS_CONTROL] = "Control qubit cannot equal target qubit.",
     [E_TARGET_IN_CONTROLS] = "Control qubits cannot include target qubit.",
@@ -193,7 +200,14 @@ static const char* errorMessages[] = {
     [E_FRACTIONAL_EXPONENT_WITHOUT_NEG_OVERRIDE] = "The phase function contained a fractional exponent, which in TWOS_COMPLEMENT encoding, requires all negative indices are overriden. However, one or more negative indices were not overriden.",
     [E_NEGATIVE_EXPONENT_MULTI_VAR] = "The phase function contained an illegal negative exponent. One must instead call applyPhaseFuncOverrides() once for each register, so that the zero index of each register is overriden, independent of the indices of all other registers.",
     [E_FRACTIONAL_EXPONENT_MULTI_VAR] = "The phase function contained a fractional exponent, which is illegal in TWOS_COMPLEMENT encoding, since it cannot be (efficiently) checked that all negative indices were overriden. One must instead call applyPhaseFuncOverrides() once for each register, so that each register's negative indices can be overriden, independent of the indices of all other registers.",
-    [E_INVALID_NUM_REGS_DISTANCE_PHASE_FUNC] = "Phase functions DISTANCE, INVERSE_DISTANCE, SCALED_DISTANCE and SCALED_INVERSE_DISTANCE require a strictly even number of sub-registers."
+    [E_INVALID_NUM_REGS_DISTANCE_PHASE_FUNC] = "Phase functions DISTANCE, INVERSE_DISTANCE, SCALED_DISTANCE and SCALED_INVERSE_DISTANCE require a strictly even number of sub-registers.",
+    [E_NOT_ENOUGH_ADDRESSABLE_MEMORY] = "Could not allocate memory. Requested more memory than system can address.",
+    [E_QUREG_NOT_ALLOCATED] = "Could not allocate memory for Qureg. Possibly insufficient memory.",
+    [E_QUREG_NOT_ALLOCATED_ON_GPU] = "Could not allocate memory for Qureg on GPU. Possibly insufficient memory.",
+    [E_DIAGONAL_OP_NOT_ALLOCATED] = "Could not allocate memory for DiagonalOp. Possibly insufficient memory.",
+    [E_DIAGONAL_OP_NOT_ALLOCATED_ON_GPU] = "Could not allocate memory for DiagonalOp on GPU. Possibly insufficient memory.",
+    [E_NO_GPU] = "Trying to run GPU code with no GPU available.",
+    [E_QASM_BUFFER_OVERFLOW] = "QASM line buffer filled."
 };
 
 void default_invalidQuESTInputError(const char* errMsg, const char* errFunc) {
@@ -201,7 +215,7 @@ void default_invalidQuESTInputError(const char* errMsg, const char* errFunc) {
     printf("QuEST Error in function %s: %s\n", errFunc, errMsg);
     printf("!!!\n");
     printf("exiting..\n");
-    exit(1);
+    exit(EXIT_FAILURE);
 }
 
 #ifndef _WIN32
@@ -209,8 +223,10 @@ void default_invalidQuESTInputError(const char* errMsg, const char* errFunc) {
 void invalidQuESTInputError(const char* errMsg, const char* errFunc) {
     default_invalidQuESTInputError(errMsg, errFunc);
 }
-#else
+#elif defined(_WIN64)
 #pragma comment(linker, "/alternatename:invalidQuESTInputError=default_invalidQuESTInputError")   
+#else
+#pragma comment(linker, "/alternatename:_invalidQuESTInputError=_default_invalidQuESTInputError")
 #endif
 
 void QuESTAssert(int isValid, ErrorCode code, const char* func){
@@ -387,6 +403,15 @@ void validateAmpIndex(Qureg qureg, long long int ampInd, const char* caller) {
 void validateNumAmps(Qureg qureg, long long int startInd, long long int numAmps, const char* caller) {
     validateAmpIndex(qureg, startInd, caller);
     QuESTAssert(numAmps >= 0 && numAmps <= qureg.numAmpsTotal, E_INVALID_NUM_AMPS, caller);
+    QuESTAssert(numAmps + startInd <= qureg.numAmpsTotal, E_INVALID_OFFSET_NUM_AMPS_QUREG, caller);
+}
+
+void validateNumDensityAmps(Qureg qureg, long long int startRow, long long int startCol, long long int numAmps, const char* caller) {
+    validateAmpIndex(qureg, startRow, caller);
+    validateAmpIndex(qureg, startCol, caller);
+    QuESTAssert(numAmps >= 0 && numAmps <= qureg.numAmpsTotal, E_INVALID_NUM_AMPS, caller);
+    
+    long long int startInd = startRow + startCol*(1 << qureg.numQubitsRepresented);
     QuESTAssert(numAmps + startInd <= qureg.numAmpsTotal, E_INVALID_OFFSET_NUM_AMPS_QUREG, caller);
 }
 
@@ -607,31 +632,35 @@ void validateNumPauliSumTerms(int numTerms, const char* caller) {
     QuESTAssert(numTerms > 0, E_INVALID_NUM_SUM_TERMS, caller);
 }
 
-void validateOneQubitKrausMap(Qureg qureg, ComplexMatrix2* ops, int numOps, const char* caller) {
+void validateOneQubitKrausMapDimensions(Qureg qureg, ComplexMatrix2* ops, int numOps, const char* caller) {
     int opNumQubits = 1;
     int superOpNumQubits = 2*opNumQubits;
     int maxNumOps = superOpNumQubits*superOpNumQubits;
     QuESTAssert(numOps > 0 && numOps <= maxNumOps, E_INVALID_NUM_ONE_QUBIT_KRAUS_OPS, caller);
     
     validateMultiQubitMatrixFitsInNode(qureg, superOpNumQubits, caller);
-    
-    int isPos = isCompletelyPositiveMap2(ops, numOps);
-    QuESTAssert(isPos, E_INVALID_KRAUS_OPS, caller);
 }
 
-void validateTwoQubitKrausMap(Qureg qureg, ComplexMatrix4* ops, int numOps, const char* caller) {
+void validateOneQubitKrausMap(Qureg qureg, ComplexMatrix2* ops, int numOps, const char* caller) {
+    validateOneQubitKrausMapDimensions(qureg, ops, numOps, caller);
+    QuESTAssert(isCompletelyPositiveMap2(ops, numOps), E_INVALID_KRAUS_OPS, caller);
+}
+
+void validateTwoQubitKrausMapDimensions(Qureg qureg, ComplexMatrix4* ops, int numOps, const char* caller) {
     int opNumQubits = 2;
     int superOpNumQubits = 2*opNumQubits;
     int maxNumOps = superOpNumQubits*superOpNumQubits;
     QuESTAssert(numOps > 0 && numOps <= maxNumOps, E_INVALID_NUM_TWO_QUBIT_KRAUS_OPS, caller);
     
     validateMultiQubitMatrixFitsInNode(qureg, superOpNumQubits, caller);
-
-    int isPos = isCompletelyPositiveMap4(ops, numOps);
-    QuESTAssert(isPos, E_INVALID_KRAUS_OPS, caller);
 }
 
-void validateMultiQubitKrausMap(Qureg qureg, int numTargs, ComplexMatrixN* ops, int numOps, const char* caller) {
+void validateTwoQubitKrausMap(Qureg qureg, ComplexMatrix4* ops, int numOps, const char* caller) {
+    validateTwoQubitKrausMapDimensions(qureg, ops, numOps, caller);
+    QuESTAssert(isCompletelyPositiveMap4(ops, numOps), E_INVALID_KRAUS_OPS, caller);
+}
+
+void validateMultiQubitKrausMapDimensions(Qureg qureg, int numTargs, ComplexMatrixN* ops, int numOps, const char* caller) {
     int opNumQubits = numTargs;
     int superOpNumQubits = 2*opNumQubits;
     int maxNumOps = superOpNumQubits*superOpNumQubits;
@@ -643,9 +672,11 @@ void validateMultiQubitKrausMap(Qureg qureg, int numTargs, ComplexMatrixN* ops, 
     }
     
     validateMultiQubitMatrixFitsInNode(qureg, superOpNumQubits, caller);
-    
-    int isPos = isCompletelyPositiveMapN(ops, numOps);
-    QuESTAssert(isPos, E_INVALID_KRAUS_OPS, caller);
+}
+
+void validateMultiQubitKrausMap(Qureg qureg, int numTargs, ComplexMatrixN* ops, int numOps, const char* caller) {
+    validateMultiQubitKrausMapDimensions(qureg, numTargs, ops, numOps, caller);
+    QuESTAssert(isCompletelyPositiveMapN(ops, numOps), E_INVALID_KRAUS_OPS, caller);
 }
 
 void validateHamilParams(int numQubits, int numTerms, const char* caller) {
@@ -983,6 +1014,79 @@ void validateMultiRegBitEncoding(int* numQubitsPerReg, int numRegs, enum bitEnco
         for (int r=0; r<numRegs; r++)
             QuESTAssert(numQubitsPerReg[r] > 1, E_INVALID_NUM_QUBITS_TWOS_COMPLEMENT, caller);
 }
+
+void validateMemoryAllocationSize(long long int numAmpsPerRank, const char* caller) {
+    QuESTAssert(numAmpsPerRank <= SIZE_MAX, E_NOT_ENOUGH_ADDRESSABLE_MEMORY, caller);
+}
+
+void validateQuregAllocation(Qureg* qureg, QuESTEnv env, const char* caller) {
+    int allocationSuccessful = 1;
+    if (qureg->numAmpsPerChunk) {
+        allocationSuccessful &= qureg->stateVec.real && qureg->stateVec.imag;
+        if (qureg->numChunks>1)
+            allocationSuccessful &= qureg->pairStateVec.real && qureg->pairStateVec.imag;
+    }
+    if (!allocationSuccessful) {  // no memory leaks for partial allocations
+        destroyQureg(*qureg, env);
+        // Just in case the user somehow retrieves the Qureg after unsuccessful allocation,
+        // remove the dangling pointers.
+        qureg->stateVec.real = NULL;
+        qureg->stateVec.imag = NULL;
+        qureg->pairStateVec.real = NULL;
+        qureg->pairStateVec.imag = NULL;
+    }
+    QuESTAssert(allocationSuccessful, E_QUREG_NOT_ALLOCATED, caller);
+}
+
+void validateQuregGPUAllocation(Qureg* qureg, QuESTEnv env, const char* caller) {
+    int allocationSuccessful = (qureg->deviceStateVec.real && qureg->deviceStateVec.imag
+                                && qureg->firstLevelReduction && qureg->secondLevelReduction);
+    if (!allocationSuccessful) {
+        destroyQureg(*qureg, env);
+        qureg->stateVec.real = NULL;
+        qureg->stateVec.imag = NULL;
+        qureg->pairStateVec.real = NULL;
+        qureg->pairStateVec.imag = NULL;
+        qureg->deviceStateVec.real = NULL;
+        qureg->deviceStateVec.imag = NULL;
+        qureg->firstLevelReduction = NULL;
+        qureg->secondLevelReduction = NULL;
+    }
+    QuESTAssert(allocationSuccessful, E_QUREG_NOT_ALLOCATED_ON_GPU, caller);
+}
+
+void validateDiagonalOpAllocation(DiagonalOp* op, QuESTEnv env, const char* caller) {
+    int allocationSuccessful = op->real && op->imag;
+    if (!allocationSuccessful) {
+        destroyDiagonalOp(*op, env);
+        op->real = NULL;
+        op->imag = NULL;
+    }
+    QuESTAssert(allocationSuccessful, E_DIAGONAL_OP_NOT_ALLOCATED, caller);
+}
+
+void validateDiagonalOpGPUAllocation(DiagonalOp* op, QuESTEnv env, const char* caller) {
+    int allocationSuccessful = op->deviceOperator.real && op->deviceOperator.imag;
+    if (!allocationSuccessful) {
+        destroyDiagonalOp(*op, env);
+        op->real = NULL;
+        op->imag = NULL;
+        op->deviceOperator.real = NULL;
+        op->deviceOperator.imag = NULL;
+    }
+    QuESTAssert(allocationSuccessful, E_DIAGONAL_OP_NOT_ALLOCATED_ON_GPU, caller);
+}
+
+// This is really just a dummy shim, because the scope of GPUExists()
+// is limited to the QuEST_gpu.cu file.
+void validateGPUExists(int GPUPresent, const char* caller) {
+    QuESTAssert(GPUPresent, E_NO_GPU, caller);
+}
+
+void raiseQASMBufferOverflow(const char* caller) {
+    invalidQuESTInputError(errorMessages[E_QASM_BUFFER_OVERFLOW], caller);
+}
+
 
 #ifdef __cplusplus
 }

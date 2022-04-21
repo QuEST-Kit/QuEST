@@ -587,6 +587,330 @@ TEST_CASE( "mixKrausMap", "[decoherence]" ) {
 
 
 
+/** @sa mixNonTPKrausMap
+ * @ingroup unittest 
+ * @author Tyson Jones 
+ */
+TEST_CASE( "mixNonTPKrausMap", "[decoherence]" ) {
+    
+    PREPARE_TEST(qureg, ref);
+    
+    SECTION( "correctness" ) {
+        
+        int target = GENERATE( range(0,NUM_QUBITS) );
+        int numOps = GENERATE( range(1,5) ); // max 4 inclusive
+        
+        // map consists of unconstrained 2x2 random matrices
+        std::vector<QMatrix> matrs;
+        for (int i=0; i<numOps; i++)
+            matrs.push_back(getRandomQMatrix(2));
+        
+        ComplexMatrix2 ops[numOps];
+        for (int i=0; i<numOps; i++)
+            ops[i] = toComplexMatrix2(matrs[i]);
+        mixNonTPKrausMap(qureg, target, ops, numOps);
+        
+        // set ref -> K_i ref K_i^dagger
+        QMatrix matrRefs[numOps];
+        for (int i=0; i<numOps; i++) {
+            matrRefs[i] = ref;
+            applyReferenceOp(matrRefs[i], target, matrs[i]);
+        }
+        ref = getZeroMatrix(ref.size());
+        for (int i=0; i<numOps; i++)
+            ref += matrRefs[i];
+        
+        REQUIRE( areEqual(qureg, ref, 1E2*REAL_EPS) );
+    }
+    SECTION( "input validation" ) {
+        
+        SECTION( "number of operators" ) {
+            
+            int numOps = GENERATE( 0, 5 );
+            REQUIRE_THROWS_WITH( mixNonTPKrausMap(qureg, 0, NULL, numOps), Contains("operators") );
+        }
+        SECTION( "qubit index" ) {
+            
+            int target = GENERATE( -1, NUM_QUBITS );
+            REQUIRE_THROWS_WITH( mixNonTPKrausMap(qureg, target, NULL, 1), Contains("Invalid target qubit") );
+        }
+        SECTION( "density-matrix" ) {
+            
+            Qureg vec = createQureg(NUM_QUBITS, QUEST_ENV);
+            REQUIRE_THROWS_WITH( mixNonTPKrausMap(vec, 0, NULL, 1), Contains("density matrices") );
+            destroyQureg(vec, QUEST_ENV);
+        }
+        SECTION( "operators fit in node" ) {
+            
+            qureg.numAmpsPerChunk = 3; // min 4
+            REQUIRE_THROWS_WITH( mixNonTPKrausMap(qureg, 0, NULL, 1), Contains("targets too many qubits") );
+        }        
+    }
+    destroyQureg(qureg, QUEST_ENV);
+}
+
+
+
+/** @sa mixNonTPMultiQubitKrausMap
+ * @ingroup unittest 
+ * @author Tyson Jones 
+ */
+TEST_CASE( "mixNonTPMultiQubitKrausMap", "[decoherence]" ) {
+    
+    PREPARE_TEST(qureg, ref);
+    
+    // figure out max-num (inclusive) targs allowed by hardware backend
+    // (each node must contain as 2^(2*numTargs) amps)
+    int maxNumTargs = calcLog2(qureg.numAmpsPerChunk) / 2;
+    
+    SECTION( "correctness" ) {
+        
+        /* note that this function incurs a stack overhead when numTargs < 4,
+         * and a heap overhead when numTargs >= 4
+         */
+         
+        int numTargs = GENERATE_COPY( range(1,maxNumTargs+1) ); // inclusive upper bound
+        
+        // note this is very expensive to try every arrangement (2 min runtime for numTargs=5 alone)
+        int* targs = GENERATE_COPY( sublists(range(0,NUM_QUBITS), numTargs) );
+        
+        // try the min and max number of operators, and 2 random numbers 
+        // (there are way too many to try all!)
+        int maxNumOps = (2*numTargs)*(2*numTargs);
+        int numOps = GENERATE_COPY( 1, maxNumOps, take(2,random(1,maxNumOps)) );
+        
+        // use a new random map, of unconstrained random (2^numTargs x 2^numTargs) matrices
+        std::vector<QMatrix> matrs;
+        for (int i=0; i<numOps; i++)
+            matrs.push_back(getRandomQMatrix(1 << numTargs));
+                
+        // create map in QuEST datatypes
+        ComplexMatrixN ops[numOps];
+        for (int i=0; i<numOps; i++) {
+            ops[i] = createComplexMatrixN(numTargs);
+            toComplexMatrixN(matrs[i], ops[i]);
+        }
+                
+        mixNonTPMultiQubitKrausMap(qureg, targs, numTargs, ops, numOps);
+                
+        // set ref -> K_i ref K_i^dagger
+        QMatrix matrRefs[numOps];
+        for (int i=0; i<numOps; i++) {
+            matrRefs[i] = ref;
+            applyReferenceOp(matrRefs[i], targs, numTargs, matrs[i]);
+        }
+        ref = getZeroMatrix(ref.size());
+        for (int i=0; i<numOps; i++)
+            ref += matrRefs[i];
+        
+        REQUIRE( areEqual(qureg, ref, 1E5*REAL_EPS) );
+        
+        // cleanup QuEST datatypes
+        for (int i=0; i<numOps; i++)
+            destroyComplexMatrixN(ops[i]);
+    }
+    SECTION( "input validation" ) {
+        
+        SECTION( "repetition of target" ) {
+            
+            // make valid targets
+            int targs[NUM_QUBITS];
+            for (int i=0; i<NUM_QUBITS; i++)
+                targs[i] = i;
+                
+            // duplicate one
+            int badInd = GENERATE( range(0,NUM_QUBITS) );
+            int copyInd = GENERATE_COPY( filter([=](int i){ return i!=badInd; }, range(0,NUM_QUBITS)) );
+            targs[badInd] = targs[copyInd];
+            
+            REQUIRE_THROWS_WITH( mixNonTPMultiQubitKrausMap(qureg, targs, NUM_QUBITS, NULL, 1), Contains("target qubits") && Contains("unique") );
+        }
+        SECTION( "qubit indices" ) { 
+            
+            // make valid targets
+            int targs[NUM_QUBITS];
+            for (int i=0; i<NUM_QUBITS; i++)
+                targs[i] = i;
+            
+            // make one invalid 
+            targs[GENERATE( range(0,NUM_QUBITS) )] = GENERATE( -1, NUM_QUBITS );
+            
+            REQUIRE_THROWS_WITH( mixNonTPMultiQubitKrausMap(qureg, targs, NUM_QUBITS, NULL, 1), Contains("Invalid target qubit") );
+        }
+        SECTION( "number of operators" ) {
+            
+            int numTargs = GENERATE_COPY( range(1,maxNumTargs+1) );
+            int maxNumOps = (2*numTargs)*(2*numTargs);
+            int numOps = GENERATE_REF( -1, 0, maxNumOps + 1 );
+                        
+            // make valid targets to avoid triggering target validation
+            int targs[numTargs];
+            for (int i=0; i<numTargs; i++)
+                targs[i] = i;
+            REQUIRE_THROWS_WITH( mixNonTPMultiQubitKrausMap(qureg, targs, numTargs, NULL, numOps), Contains("operators may be specified") );
+        }
+        SECTION( "initialisation of operators" ) {
+            
+            /* compilers don't auto-initialise to NULL; the below circumstance 
+             * only really occurs when 'malloc' returns NULL in createComplexMatrixN, 
+             * which actually triggers its own validation. Hence this test is useless 
+             * currently.
+             */
+             
+            int numTargs = NUM_QUBITS;
+            int numOps = (2*numTargs)*(2*numTargs);
+            
+            // no need to initialise ops, but set their attribs correct to avoid triggering other validation
+            ComplexMatrixN ops[numOps];
+            for (int i=0; i<numOps; i++)
+                ops[i].numQubits = numTargs;
+            
+            // make one of the max-ops explicitly NULL
+            ops[GENERATE_COPY( range(0,numTargs) )].real = NULL;
+             
+            // make valid targets to avoid triggering target validation
+            int targs[numTargs];
+            for (int i=0; i<numTargs; i++)
+                targs[i] = i;
+               
+            REQUIRE_THROWS_WITH( mixNonTPMultiQubitKrausMap(qureg, targs, numTargs, ops, numOps), Contains("ComplexMatrixN") && Contains("created") );
+        }
+        SECTION( "dimension of operators" ) {
+        
+            // make valid (dimension-wise) max-qubits Kraus map
+            int numTargs = NUM_QUBITS;
+            int numOps = (2*numTargs)*(2*numTargs);
+            ComplexMatrixN ops[numOps];
+            for (int i=0; i<numOps; i++)
+                ops[i] = createComplexMatrixN(numTargs);
+            
+            // make one have wrong-dimensions 
+            int badInd = GENERATE_COPY( range(0,numTargs) );
+            destroyComplexMatrixN(ops[badInd]);
+            ops[badInd] = createComplexMatrixN(numTargs - 1);
+            
+            // make valid targets to avoid triggering target validation
+            int targs[numTargs];
+            for (int i=0; i<numTargs; i++)
+                targs[i] = i;
+                
+            REQUIRE_THROWS_WITH( mixNonTPMultiQubitKrausMap(qureg, targs, numTargs, ops, numOps), Contains("same number of qubits") );
+            
+            for (int i=0; i<numOps; i++)
+                destroyComplexMatrixN(ops[i]);
+        }
+        SECTION( "density-matrix" ) {
+            
+            Qureg statevec = createQureg(NUM_QUBITS, QUEST_ENV);
+            
+            // make valid targets to avoid triggering target validation
+            int targs[NUM_QUBITS];
+            for (int i=0; i<NUM_QUBITS; i++)
+                targs[i] = i;
+                
+            REQUIRE_THROWS_WITH( mixNonTPMultiQubitKrausMap(statevec, targs, NUM_QUBITS, NULL, 1), Contains("valid only for density matrices") );
+            destroyQureg(statevec, QUEST_ENV);
+            
+        }
+        SECTION( "operator fits in node" ) {
+            
+            // each node requires (2 numTargs)^2 amplitudes
+            int minAmps = (2*NUM_QUBITS) * (2*NUM_QUBITS);
+            
+            // make valid targets to avoid triggering target validation
+            int targs[NUM_QUBITS];
+            for (int i=0; i<NUM_QUBITS; i++)
+                targs[i] = i;
+            
+            // make a simple Identity map    
+            ComplexMatrixN ops[] = {createComplexMatrixN(NUM_QUBITS)};
+            for (int i=0; i<(1<<NUM_QUBITS); i++)
+                ops[0].real[i][i] = 1;
+            
+            // fake a smaller qureg 
+            qureg.numAmpsPerChunk = minAmps - 1;
+            REQUIRE_THROWS_WITH( mixNonTPMultiQubitKrausMap(qureg, targs, NUM_QUBITS, ops, 1), Contains("targets too many qubits") && Contains("cannot all fit") );
+            
+            destroyComplexMatrixN(ops[0]);
+        }
+    }
+    destroyQureg(qureg, QUEST_ENV);
+}
+
+
+
+/** @sa mixNonTPTwoQubitKrausMap
+ * @ingroup unittest 
+ * @author Tyson Jones 
+ */
+TEST_CASE( "mixNonTPTwoQubitKrausMap", "[decoherence]" ) {
+    
+    PREPARE_TEST(qureg, ref);
+    
+    SECTION( "correctness" ) {
+        
+        int targ1 = GENERATE( range(0,NUM_QUBITS) );
+        int targ2 = GENERATE_COPY( filter([=](int t){ return t!=targ1; }, range(0,NUM_QUBITS)) );
+        int numOps = GENERATE( range(1,17) ); // max 16 inclusive
+        
+        // map consists of unconstrained 4x4 random matrices
+        std::vector<QMatrix> matrs;
+        for (int i=0; i<numOps; i++)
+            matrs.push_back(getRandomQMatrix(4));
+        
+        ComplexMatrix4 ops[numOps];
+        for (int i=0; i<numOps; i++)
+            ops[i] = toComplexMatrix4(matrs[i]);
+        mixNonTPTwoQubitKrausMap(qureg, targ1, targ2, ops, numOps);
+        
+        // set ref -> K_i ref K_i^dagger
+        int targs[2] = {targ1, targ2};
+        QMatrix matrRefs[numOps];
+        for (int i=0; i<numOps; i++) {
+            matrRefs[i] = ref;
+            applyReferenceOp(matrRefs[i], targs, 2, matrs[i]);
+        }
+        ref = getZeroMatrix(ref.size());
+        for (int i=0; i<numOps; i++)
+            ref += matrRefs[i];
+        
+        REQUIRE( areEqual(qureg, ref, 1E4*REAL_EPS) );
+    }
+    SECTION( "input validation" ) {
+        
+        SECTION( "number of operators" ) {
+            
+            int numOps = GENERATE( 0, 17 );
+            REQUIRE_THROWS_WITH( mixNonTPTwoQubitKrausMap(qureg, 0,1, NULL, numOps), Contains("operators") );
+        }
+        SECTION( "target collision" ) {
+            
+            int target = GENERATE( range(0,NUM_QUBITS) );
+            REQUIRE_THROWS_WITH( mixNonTPTwoQubitKrausMap(qureg, target, target, NULL, 1), Contains("target qubits") && Contains("unique") );
+        }
+        SECTION( "qubit index" ) {
+            
+            int target = GENERATE( -1, NUM_QUBITS );
+            REQUIRE_THROWS_WITH( mixNonTPTwoQubitKrausMap(qureg, 0,target, NULL, 1), Contains("Invalid target qubit") );
+            REQUIRE_THROWS_WITH( mixNonTPTwoQubitKrausMap(qureg, target,0, NULL, 1), Contains("Invalid target qubit") );
+        }
+        SECTION( "density-matrix" ) {
+            
+            Qureg vec = createQureg(NUM_QUBITS, QUEST_ENV);
+            REQUIRE_THROWS_WITH( mixNonTPTwoQubitKrausMap(vec, 0,1, NULL, 1), Contains("density matrices") );
+            destroyQureg(vec, QUEST_ENV);
+        }
+        SECTION( "operators fit in node" ) {
+            
+            qureg.numAmpsPerChunk = 15; // min 16
+            REQUIRE_THROWS_WITH( mixNonTPTwoQubitKrausMap(qureg, 0,1, NULL, 1), Contains("targets too many qubits") );
+        }        
+    }
+    destroyQureg(qureg, QUEST_ENV);
+}
+
+
+
 /** @sa mixTwoQubitDephasing
  * @ingroup unittest 
  * @author Tyson Jones 

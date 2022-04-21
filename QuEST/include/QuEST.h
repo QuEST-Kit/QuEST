@@ -1494,7 +1494,8 @@ void initDebugState(Qureg qureg);
  */
 void initStateFromAmps(Qureg qureg, qreal* reals, qreal* imags);
 
-/** Overwrites a subset of the amplitudes in state-vector \p qureg, with those passed in \p reals and \p imags.
+/** Overwrites a contiguous subset of the amplitudes in state-vector \p qureg, 
+ * with those passed in \p reals and \p imags.
  *
  * Only amplitudes with indices in <b>[</b>\p startInd<b>,</b> \p startInd <b>+</b> \p numAmps<b>]</b> 
  * will be changed. The resulting \p qureg may not necessarily be in an L2 normalised state.
@@ -1522,6 +1523,7 @@ void initStateFromAmps(Qureg qureg, qreal* reals, qreal* imags);
  *
  *
  * @see
+ * - setDensityAmps()
  * - setWeightedQureg()
  * - initStateFromAmps()
  * - initBlankState()
@@ -1540,6 +1542,38 @@ void initStateFromAmps(Qureg qureg, qreal* reals, qreal* imags);
  * @author Tyson Jones
  */
 void setAmps(Qureg qureg, long long int startInd, qreal* reals, qreal* imags, long long int numAmps);
+
+/** Overwrites a contiguous subset of the amplitudes in density-matrix \p qureg, 
+ * with those passed in \p reals and \p imags, intrepreted column-wise.
+ *
+ * Only the first \p numAmp amplitudes starting from row-column index (\p startRow, \p startCol), and
+ * proceeding down the column (wrapping around between rows) will be modified. 
+ * The resulting \p qureg may not necessarily be a valid density matrix normalisation.
+ *
+ * In distributed mode, this function assumes the subset \p reals and \p imags exist
+ * (at least) on the node(s) containing the ultimately updated elements.\n
+ *
+ *
+ * @see
+ * - setAmps()
+ * - initStateFromAmps()
+ *
+ * @ingroup init
+ * @param[in,out] qureg the density-matrix to modify
+ * @param[in] startRow the row-index of the first amplitude in \p qureg to modify
+ * @param[in] startCol the column-index of the first amplitude in \p qureg to modify
+ * @param[in] reals array of the real components of the new amplitudes
+ * @param[in] imags array of the imaginary components of the new amplitudes
+ * @param[in] numAmps the length of each of the reals and imags arrays
+ * @throws invalidQuESTInputError()
+ * - if \p qureg is not a density matrix (i.e. is a state-vector)
+ * - if \p startRow is outside [0, `1 << qureg.numQubitsRepresented`]
+ * - if \p startCol is outside [0, `1 << qureg.numQubitsRepresented`]
+ * - if \p numAmps is outside [0, `qureg.numAmpsTotal`]
+ * - if \p numAmps is larger than the remaining number of amplitudes from (`startRow`, `startCol`), column-wise
+ * @author Tyson Jones
+ */
+void setDensityAmps(Qureg qureg, long long int startRow, long long int startCol, qreal* reals, qreal* imags, long long int numAmps);
 
 /** Overwrite the amplitudes of \p targetQureg with those from \p copyQureg. 
  * 
@@ -1935,6 +1969,8 @@ void getEnvironmentString(QuESTEnv env, char str[200]);
  *
  * @see
  * - copyStateFromGPU()
+ * - copySubstateFromGPU()
+ * - copySubstateToGPU()
  *
  * @ingroup debug
  * @param[in, out] qureg the qureg of which to copy `.stateVec` to `.deviceStateVec` in GPU mode
@@ -1962,6 +1998,8 @@ void copyStateToGPU(Qureg qureg);
  *
  * @see
  * - copyStateToGPU()
+ * - copySubstateFromGPU()
+ * - copySubstateToGPU()
  *
  * @ingroup debug
  * @param[in, out] qureg the qureg of which to copy `.deviceStateVec` to `.stateVec` in GPU mode
@@ -1969,6 +2007,74 @@ void copyStateToGPU(Qureg qureg);
  * @author Tyson Jones (doc)
  */
 void copyStateFromGPU(Qureg qureg);
+
+/** In GPU mode, this copies a substate of the state-vector (or density matrix) from RAM 
+ * (qureg.stateVec) to VRAM / GPU-memory (qureg.deviceStateVec), which is the version 
+ * operated upon by other calls to the API. 
+ * In CPU mode, this function has no effect.
+ * In conjunction with copySubstateFromGPU(), this allows 
+ * a user to directly modify a subset of the amplitudes the state-vector in a harware agnostic way,
+ * without having to load the entire state via copyStateFromGPU().
+ *
+ * Note though that users should instead use setAmps() if possible.
+ *
+ * For example, to multiply the first amplitude by factor 2, one could do
+ * ```
+ *     copySubstateFromGPU(qureg, 0, 1);
+ *     qureg.stateVec.real[0] *= 2;
+ *     qureg.stateVec.imag[0] *= 2;
+ *     copySubstateToGPU(qureg, 0, 1);
+ * ```
+ *
+ * Note users should never access qureg.deviceStateVec directly.
+ *
+ * @see
+ * - copySubstateFromGPU()
+ * - copyStateToGPU()
+ * - copyStateFromGPU()
+ *
+ * @ingroup debug
+ * @param[in, out] qureg the qureg of which to copy `.stateVec` to `.deviceStateVec` in GPU mode
+ * @param[in] startInd the index of the first amplitude to copy
+ * @param[in] numAmps the number of contiguous amplitudes to copy (starting with startInd)
+ * @throws invalidQuESTInputError()
+ * - if \p startInd is an invalid amplitude index 
+ * - if \p numAmps is greater than the remaining amplitudes in the state, from \p startInd
+ * @author Tyson Jones
+ */
+void copySubstateToGPU(Qureg qureg, long long int startInd, long long int numAmps);
+
+/** In GPU mode, this copies a substate of the state-vector (or density matrix) 
+ * from GPU VRAM (qureg.deviceStateVec) into RAM (qureg.stateVec).
+ * In CPU mode, this function has no effect.
+ * In conjunction with copySubstateToGPU(), this allows 
+ * a user to directly modify a subset of the amplitudes the state-vector in a hardware agnostic way.
+ *
+ * For example, to multiply the first amplitude by factor 2, one could do
+ * ```
+ *     copySubstateFromGPU(qureg, 0, 1);
+ *     qureg.stateVec.real[0] *= 2;
+ *     qureg.stateVec.imag[0] *= 2;
+ *     copySubstateToGPU(qureg, 0, 1);
+ * ```
+ *
+ * Note users should never access qureg.deviceStateVec directly.
+ *
+ * @see
+ * - copySubstateToGPU()
+ * - copyStateToGPU()
+ * - copyStateFromGPU()
+ *
+ * @ingroup debug
+ * @param[in, out] qureg the qureg of which to copy `.deviceStateVec` to `.stateVec` to in GPU mode
+ * @param[in] startInd the index of the first amplitude to copy
+ * @param[in] numAmps the number of contiguous amplitudes to copy (starting with startInd)
+ * @throws invalidQuESTInputError()
+ * - if \p startInd is an invalid amplitude index 
+ * - if \p numAmps is greater than the remaining amplitudes in the state, from \p startInd
+ * @author Tyson Jones
+ */
+void copySubstateFromGPU(Qureg qureg, long long int startInd, long long int numAmps);
 
 /** Get the complex amplitude at a given index in the state vector.
  *
@@ -4820,13 +4926,14 @@ void multiControlledMultiQubitUnitary(Qureg qureg, int* ctrls, int numCtrls, int
  * \f[
     \sum \limits_i^{\text{numOps}} K_i^\dagger K_i = I
  * \f]
- * where \f$ I \f$ is the identity matrix.
+ * where \f$ I \f$ is the identity matrix. Use mixNonTPKrausMap() to relax this condition.
  *
  * Note that in distributed mode, this routine requires that each node contains at least 4 amplitudes.
  * This means an q-qubit register can be distributed by at most 2^(q-2) numTargs nodes.
  *
  * @see
  * - ::ComplexMatrix2
+ * - mixNonTPKrausMap()
  * - mixTwoQubitKrausMap()
  * - mixMultiQubitKrausMap()
  * - mixDephasing()
@@ -4860,7 +4967,8 @@ void mixKrausMap(Qureg qureg, int target, ComplexMatrix2 *ops, int numOps);
  * \f[
     \sum \limits_i^{\text{numOps}} K_i^\dagger K_i = I
  * \f]
- * where \f$ I \f$ is the identity matrix.
+ * where \f$ I \f$ is the identity matrix. Use mixNonTPTwoQubitKrausMap() to relax this 
+ * this condition.
  *
  * \p targetQubit1 is treated as the \p least significant qubit in each op in \p ops.
  *
@@ -4869,6 +4977,7 @@ void mixKrausMap(Qureg qureg, int target, ComplexMatrix2 *ops, int numOps);
  *
  * @see
  * - ::ComplexMatrix4
+ * - mixNonTPTwoQubitKrausMap()
  * - mixMultiQubitKrausMap()
  * - mixKrausMap()
  *
@@ -4898,7 +5007,8 @@ void mixTwoQubitKrausMap(Qureg qureg, int target1, int target2, ComplexMatrix4 *
  * \f[
     \sum \limits_i^{\text{numOps}} K_i^\dagger K_i = I
  * \f]
- * where \f$ I \f$ is the identity matrix.
+ * where \f$ I \f$ is the identity matrix. Use mixNonTPMultiQubitKrausMap() to relax 
+ * this condition.
  *
  * The first qubit in \p targets is treated as the \p least significant qubit in each op in \p ops.
  *
@@ -4918,6 +5028,7 @@ void mixTwoQubitKrausMap(Qureg qureg, int target1, int target2, ComplexMatrix4 *
  * @see
  * - createComplexMatrixN()
  * - initComplexMatrixN()
+ * - mixNonTPMultiQubitKrausMap()
  * - mixKrausMap()
  * - mixTwoQubitKrausMap()
  *
@@ -4939,6 +5050,131 @@ void mixTwoQubitKrausMap(Qureg qureg, int target1, int target2, ComplexMatrix4 *
  * @author Balint Koczor
  */
 void mixMultiQubitKrausMap(Qureg qureg, int* targets, int numTargets, ComplexMatrixN* ops, int numOps);
+
+/** Apply a general non-trace-preserving single-qubit Kraus map to a density matrix, 
+ * as specified by at most four operators, \f$K_i\f$ (\p ops). 
+ * This effects 
+ * \f[
+    \rho \to \sum\limits_i^{\text{numOps}} K_i \rho K_i^\dagger
+ * \f]
+ * where \f$K_i\f$ are permitted to be any matrix. This means the density matrix 
+ * can enter a non-physical state. 
+ *
+ * Use mixKrausMap() to enforce that the channel is trace preserving and completely positive.
+ *
+ * Note that in distributed mode, this routine requires that each node contains at least 4 amplitudes.
+ * This means an q-qubit register can be distributed by at most 2^(q-2) numTargs nodes.
+ *
+ * @see
+ * - ::ComplexMatrix2
+ * - mixKrausMap()
+ * - mixNonTPTwoQubitKrausMap()
+ * - mixNonTPMultiQubitKrausMap()
+ *
+ * @ingroup decoherence
+ * @param[in,out] qureg the density matrix to which to apply the map
+ * @param[in] target the target qubit of the map
+ * @param[in] ops an array of at most 4 Kraus operators
+ * @param[in] numOps the number of operators in \p ops which must be >0 and <= 4.
+ * @throws invalidQuESTInputError()
+ * - if \p qureg is not a density matrix
+ * - if \p target is outside of [0, \p qureg.numQubitsRepresented)
+ * - if \p numOps is outside [1, 4]
+ * - if a node cannot fit 4 amplitudes in distributed mode
+ * @author Tyson Jones
+ * @author Balint Koczor (backend code)
+ */
+void mixNonTPKrausMap(Qureg qureg, int target, ComplexMatrix2 *ops, int numOps);
+
+/** Apply a general non-trace-preserving two-qubit Kraus map to a density matrix, 
+ * as specified by at most sixteen operators, \f$K_i\f$ (\p ops). 
+ *
+ * This effects 
+ * \f[
+    \rho \to \sum\limits_i^{\text{numOps}} K_i \rho K_i^\dagger
+ * \f]
+ * where the matrices \f$K_i\f$ are unconstrained, and hence the effective map is permitted 
+ * to be non-completely-positive and non-trace-preserving. 
+ * Use mixTwoQubitKrausMap() to enforce that the map be completely positive.
+ *
+ * \p targetQubit1 is treated as the \p least significant qubit in each op in \p ops.
+ *
+ * Note that in distributed mode, this routine requires that each node contains at least 16 amplitudes.
+ * This means an q-qubit register can be distributed by at most 2^(q-4) numTargs nodes.
+ *
+ * @see
+ * - ::ComplexMatrix4
+ * - mixTwoQubitKrausMap()
+ * - mixNonTPKrausMap()
+ * - mixNonTPMultiQubitKrausMap()
+ *
+ * @ingroup decoherence
+ * @param[in,out] qureg the density matrix to which to apply the map
+ * @param[in] target1 the least significant target qubit in \p ops
+ * @param[in] target2 the most significant target qubit in \p ops
+ * @param[in] ops an array of at most 16 Kraus operators
+ * @param[in] numOps the number of operators in \p ops which must be >0 and <= 16.
+ * @throws invalidQuESTInputError()
+ * - if \p qureg is not a density matrix
+ * - if either \p target1 or \p target2 is outside of [0, \p qureg.numQubitsRepresented)
+ * - if \p target1 = \p target2
+ * - if \p numOps is outside [1, 16]
+ * - if a node cannot fit 16 amplitudes in distributed mode
+ * @author Tyson Jones
+ * @author Balint Koczor (backend code)
+ */
+void mixNonTPTwoQubitKrausMap(Qureg qureg, int target1, int target2, ComplexMatrix4 *ops, int numOps);
+
+/** Apply a general N-qubit non-trace-preserving Kraus map to a density matrix, 
+ * as specified by at most (2N)^2 operators.
+ *
+ * This effects 
+ * \f[
+    \rho \to \sum\limits_i^{\text{numOps}} K_i \rho K_i^\dagger
+ * \f]
+ * where the matrices \f$ K_i \f$ are unconstrained, and hence the effective map is permitted 
+ * to be non-completely-positive and non-trace-preserving. 
+ * Use mixMultiQubitKrausMap() to enforce that the map be completely positive.
+ *
+ * The first qubit in \p targets is treated as the \p least significant qubit in each op in \p ops.
+ *
+ * Note that in distributed mode, this routine requires that each node contains at least (2N)^2 amplitudes.
+ * This means an q-qubit register can be distributed by at most 2^(q-2)/N^2 nodes.
+ *
+ * Note too that this routine internally creates a 'superoperator'; a complex matrix of dimensions
+ * 2^(2*numTargets) by 2^(2*numTargets). Therefore, invoking this function incurs, 
+ * for numTargs={1,2,3,4,5, ...}, an additional memory overhead of (at double-precision)
+ * {0.25 KiB, 4 KiB, 64 KiB, 1 MiB, 16 MiB, ...} (respectively).
+ * At quad precision (usually 10 B per number, but possibly 16 B due to alignment),
+ * this costs at most double the amount of memory. 
+ * For numTargets < 4, this superoperator will be created in the runtime 
+ * stack. For numTargs >= 4, the superoperator will be allocated in the heap and 
+ * therefore this routine may suffer an anomalous slowdown.
+ *
+ * @see
+ * - createComplexMatrixN()
+ * - initComplexMatrixN()
+ * - mixMultiQubitKrausMap()
+ * - mixNonTPKrausMap()
+ * - mixNonTPTwoQubitKrausMap()
+ *
+ * @ingroup decoherence
+ * @param[in,out] qureg the density matrix to which to apply the map
+ * @param[in] targets a list of target qubit indices, the first of which is treated as least significant in each op in \p ops
+ * @param[in] numTargets the length of \p targets
+ * @param[in] ops an array of at most (2N)^2 Kraus operators
+ * @param[in] numOps the number of operators in \p ops which must be >0 and <= (2N)^2.
+ * @throws invalidQuESTInputError()
+ * - if \p qureg is not a density matrix
+ * - if any target in \p targets is outside of [0, \p qureg.numQubitsRepresented)
+ * - if any qubit in \p targets is repeated
+ * - if \p numOps is outside [1, (2 \p numTargets)^2]
+ * - if any ComplexMatrixN in \p ops does not have op.numQubits == \p numTargets
+ * - if a node cannot fit (2N)^2 amplitudes in distributed mode
+ * @author Tyson Jones
+ * @author Balint Koczor (backend code)
+ */
+void mixNonTPMultiQubitKrausMap(Qureg qureg, int* targets, int numTargets, ComplexMatrixN* ops, int numOps);
 
 /** Computes the Hilbert Schmidt distance between two density matrices \p a and \p b, 
  * defined as the Frobenius norm of the difference between them.
@@ -6621,7 +6857,7 @@ void applyQFT(Qureg qureg, int* qubits, int numQubits);
  * @ingroup operator
  * @param[in,out] qureg a state-vector or density matrix to modify
  * @param[in] qubit the qubit to which to apply the projector 
- * @param[in] the single-qubit outcome (`0` or `1`) to project \p qubit into
+ * @param[in] outcome the single-qubit outcome (`0` or `1`) to project \p qubit into
  * @throws invalidQuESTInputError()
  * - if \p qubit is outside [0, `qureg.numQubitsRepresented`)
  * - if \p outcome is not in {0,1}

@@ -16,6 +16,7 @@
 # include "QuEST.h"
 # include "QuEST_precision.h"
 # include "QuEST_internal.h"
+# include "QuEST_validation.h"
 # include "QuEST_qasm.h"
 
 # include <math.h>
@@ -52,25 +53,19 @@ static const char* qasmGateLabels[] = {
     [GATE_SQRT_SWAP] = "sqrtswap" // needs decomp into cNOTs and Rx(pi/2)?
 };
 
-// @TODO make a proper internal error thing
-void bufferOverflow(void) {
-    printf("!!!\nINTERNAL ERROR: QASM line buffer filled!\n!!!");
-    exit(1);
-}
-
 void qasm_setup(Qureg* qureg) {
     
     // populate and attach QASM logger
     QASMLogger *qasmLog = malloc(sizeof *qasmLog);
     qureg->qasmLog = qasmLog;
     if (qasmLog == NULL)
-        bufferOverflow();
+        raiseQASMBufferOverflow(__func__);
     
     qasmLog->isLogging = 0;
     qasmLog->bufferSize = BUF_INIT_SIZE;
     qasmLog->buffer = malloc(qasmLog->bufferSize * sizeof *(qasmLog->buffer));
     if (qasmLog->buffer == NULL)
-        bufferOverflow();
+        raiseQASMBufferOverflow(__func__);
     
     // add headers and quantum / classical register creation
     qasmLog->bufferFill = snprintf(
@@ -79,7 +74,7 @@ void qasm_setup(Qureg* qureg) {
         QUREG_LABEL, qureg->numQubitsRepresented,
         MESREG_LABEL, qureg->numQubitsRepresented);
     if (qasmLog->bufferFill >= qasmLog->bufferSize)
-        bufferOverflow();
+        raiseQASMBufferOverflow(__func__);
 }
 
 void qasm_startRecording(Qureg qureg) {
@@ -101,7 +96,7 @@ void addStringToQASM(Qureg qureg, char line[], int lineLen) {
                 
         int newBufSize = BUF_GROW_FAC * bufSize;
         if (lineLen + bufFill > newBufSize)
-            bufferOverflow();
+            raiseQASMBufferOverflow(__func__);
         
         char* newBuffer = malloc(newBufSize * sizeof *newBuffer);
         sprintf(newBuffer, "%s", buf);
@@ -171,7 +166,7 @@ void addGateToQASM(Qureg qureg, TargetGate gate, int* controlQubits, int numCont
     
     // check whether we overflowed buffer
     if (len >= MAX_LINE_LEN)
-        bufferOverflow();
+        raiseQASMBufferOverflow(__func__);
         
     addStringToQASM(qureg, line, len);
 }
@@ -420,7 +415,7 @@ void qasm_recordMeasurement(Qureg qureg, int measureQubit) {
         
     // check whether we overflowed buffer
     if (len >= MAX_LINE_LEN)
-        bufferOverflow();
+        raiseQASMBufferOverflow(__func__);
     
     addStringToQASM(qureg, line, len);
 }
@@ -435,7 +430,7 @@ void qasm_recordInitZero(Qureg qureg) {
     
     // check whether we overflowed buffer
     if (len >= MAX_LINE_LEN)
-        bufferOverflow();
+        raiseQASMBufferOverflow(__func__);
     
     addStringToQASM(qureg, line, len);
 }
@@ -457,7 +452,7 @@ void qasm_recordInitPlus(Qureg qureg) {
         buf, MAX_LINE_LEN, "%s %s;\n", 
         qasmGateLabels[GATE_HADAMARD], QUREG_LABEL);
     if (charsWritten >= MAX_LINE_LEN)
-        bufferOverflow();
+        raiseQASMBufferOverflow(__func__);
     addStringToQASM(qureg, buf, charsWritten);
     
     // old code (before above QASM shortcut)
@@ -513,7 +508,7 @@ void qasm_recordPhaseFunc(Qureg qureg, int* qubits, int numQubits, enum bitEncod
     len += snprintf(line+len, MAX_LINE_LEN-len, "))\n");
 
     if (len >= MAX_LINE_LEN)
-        bufferOverflow();
+        raiseQASMBufferOverflow(__func__);
     addStringToQASM(qureg, line, len);
 
     char encBuf[MAX_LINE_LEN];
@@ -529,7 +524,7 @@ void qasm_recordPhaseFunc(Qureg qureg, int* qubits, int numQubits, enum bitEncod
         len += snprintf(line+len, MAX_LINE_LEN-len, (q < numQubits-1)? "%d, ":"%d}\n", qubits[q]);
 
     if (len >= MAX_LINE_LEN)
-        bufferOverflow();
+        raiseQASMBufferOverflow(__func__);
     addStringToQASM(qureg, line, len);
 
     if (numOverrides > 0) {
@@ -564,7 +559,7 @@ char getPhaseFuncSymbol(int numSymbs, int ind) {
         return abc[ind];
 
     // we should never reach here, since caller should handle when numSymbs > 24
-    bufferOverflow();
+    raiseQASMBufferOverflow(__func__);
     return 'x';
 }
 
@@ -592,7 +587,7 @@ void addMultiVarRegsToQASM(Qureg qureg, int* qubits, int* numQubitsPerReg, int n
             len += snprintf(line+len, MAX_LINE_LEN-len, (q < numQubitsPerReg[r]-1)? "%d, ":"%d}\n", qubits[qInd++]);
 
         if (len >= MAX_LINE_LEN)
-            bufferOverflow();
+            raiseQASMBufferOverflow(__func__);
         addStringToQASM(qureg, line, len);
     }
 }
@@ -634,7 +629,7 @@ void addMultiVarOverridesToQASM(Qureg qureg, int numRegs, long long int* overrid
                 overridePhases[v]);
 
         if (len >= MAX_LINE_LEN)
-            bufferOverflow();
+            raiseQASMBufferOverflow(__func__);
         addStringToQASM(qureg, line, len);
     }
 }
@@ -657,7 +652,7 @@ void addShiftValuesToQASM(Qureg qureg, enum phaseFunc funcName, int numRegs, qre
         len = 0;
         len += snprintf(line+len, MAX_LINE_LEN-len, "//     delta%d = " REAL_QASM_FORMAT "\n", k, params[2+k]);
         if (len >= MAX_LINE_LEN)
-            bufferOverflow();
+            raiseQASMBufferOverflow(__func__);
         addStringToQASM(qureg, line, len);
     }
 
@@ -713,7 +708,7 @@ void qasm_recordMultiVarPhaseFunc(Qureg qureg, int* qubits, int* numQubitsPerReg
             len += snprintf(line+len, MAX_LINE_LEN-len, " ))\n");
 
         if (len >= MAX_LINE_LEN)
-            bufferOverflow();
+            raiseQASMBufferOverflow(__func__);
         addStringToQASM(qureg, line, len);
     }
 
@@ -763,7 +758,7 @@ void qasm_recordNamedPhaseFunc(Qureg qureg, int* qubits, int* numQubitsPerReg, i
                         (params[2+r] < 0)?
                             "(%c^2+" REAL_QASM_FORMAT ")" :
                             "(%c^2-" REAL_QASM_FORMAT ")",
-                        getPhaseFuncSymbol(numRegs,r), fabs(params[2+r]));
+                        getPhaseFuncSymbol(numRegs,r), absReal(params[2+r]));
                 else
                     len += snprintf(line+len, MAX_LINE_LEN-len, "%c^2", getPhaseFuncSymbol(numRegs,r));
                 len += snprintf(line+len, MAX_LINE_LEN-len, (r < numRegs - 1)? " + ":"))\n");
@@ -834,7 +829,7 @@ void qasm_recordNamedPhaseFunc(Qureg qureg, int* qubits, int* numQubitsPerReg, i
                         (params[2+r/2] < 0)?
                             "(%c-%c+" REAL_QASM_FORMAT ")^2":
                             "(%c-%c-" REAL_QASM_FORMAT ")^2", 
-                        getPhaseFuncSymbol(numRegs,r), getPhaseFuncSymbol(numRegs,r+1), fabs(params[2+r/2]));
+                        getPhaseFuncSymbol(numRegs,r), getPhaseFuncSymbol(numRegs,r+1), absReal(params[2+r/2]));
                 else
                     len += snprintf(line+len, MAX_LINE_LEN-len, "(%c-%c)^2", 
                         getPhaseFuncSymbol(numRegs,r), getPhaseFuncSymbol(numRegs,r+1));
@@ -849,7 +844,7 @@ void qasm_recordNamedPhaseFunc(Qureg qureg, int* qubits, int* numQubitsPerReg, i
     }
 
     if (len >= MAX_LINE_LEN)
-        bufferOverflow();
+        raiseQASMBufferOverflow(__func__);
     addStringToQASM(qureg, line, len);
 
     addMultiVarRegsToQASM(qureg, qubits, numQubitsPerReg, numRegs, encoding);
