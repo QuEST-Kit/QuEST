@@ -4700,6 +4700,8 @@ void multiControlledTwoQubitUnitary(Qureg qureg, int* controlQubits, int numCont
  * 
  * The passed ComplexMatrix must be unitary and be a compatible size with the specified number of
  * target qubits, otherwise an error is thrown.
+ * > To effect a non-unitary ::ComplexMatrixN, use applyGateMatrixN().
+ * 
  * > To left-multiply a non-unitary ::ComplexMatrixN, use applyMatrixN().
  *
     \f[
@@ -4731,6 +4733,7 @@ void multiControlledTwoQubitUnitary(Qureg qureg, int* controlQubits, int numCont
  * - createComplexMatrixN()
  * - controlledMultiQubitUnitary()
  * - multiControlledMultiQubitUnitary()
+ * - applyGateMatrixN()
  * - applyMatrixN()
  * - twoQubitUnitary()
  * - unitary()
@@ -5539,6 +5542,7 @@ void applyMatrix4(Qureg qureg, int targetQubit1, int targetQubit2, ComplexMatrix
  * can be distributed by at most 2^q / 2^\p numTargs nodes.
  *
  * @see
+ * - applyGateMatrixN()
  * - createComplexMatrixN()
  * - getStaticComplexMatrixN()
  * - applyMultiControlledMatrixN()
@@ -5557,6 +5561,35 @@ void applyMatrix4(Qureg qureg, int targetQubit1, int targetQubit2, ComplexMatrix
  * @author Tyson Jones
  */
 void applyMatrixN(Qureg qureg, int* targs, int numTargs, ComplexMatrixN u);
+
+/** Apply a gate specified by a general N-by-N matrix, which may be non-unitary, on any number of target qubits.
+ * This function applies the given matrix to both statevector and density matrices 
+ * as if it were a valid unitary gate.
+ * Hence this function is equivalent to multiQubitUnitary(), albeit the unitarity 
+ * of \p u is not checked nor enforced.
+ * This function differs from applyMatrixN() on density matrices.
+ *
+ * This function may leave \p qureg is an unnormalised state.
+ *
+ * @see
+ * - applyMatrixN()
+ * - createComplexMatrixN()
+ * - getStaticComplexMatrixN()
+ * - multiQubitUnitary()
+ *
+ * @ingroup operator
+ * @param[in,out] qureg object representing the set of all qubits
+ * @param[in] targs a list of the target qubits, ordered least significant to most in \p u
+ * @param[in] numTargs the number of target qubits
+ * @param[in] u matrix to apply, which need not be unitary
+ * @throws invalidQuESTInputError()
+ * - if any index in \p targs is outside of [0, \p qureg.numQubitsRepresented)
+ * - if \p targs are not unique
+ * - if \p u is not of a compatible size with \p numTargs
+ * - if a node cannot fit the required number of target amplitudes in distributed mode
+ * @author Tyson Jones
+ */
+void applyGateMatrixN(Qureg qureg, int* targs, int numTargs, ComplexMatrixN u);
 
 /** Apply a general N-by-N matrix, which may be non-unitary, with additional controlled qubits.
  * The matrix is left-multiplied onto the state, for both state-vectors and density matrices.
