@@ -4821,6 +4821,7 @@ void multiQubitUnitary(Qureg qureg, int* targs, int numTargs, ComplexMatrixN u);
  * - if \p targs are not unique
  * - if \p targs contains \p ctrl
  * - if matrix \p u is not unitary
+ * - if matrix \p u is not of a compatible size with \p numTargs
  * - if a node cannot fit the required number of target amplitudes in distributed mode
  * @author Tyson Jones
  */
@@ -4888,6 +4889,7 @@ void controlledMultiQubitUnitary(Qureg qureg, int ctrl, int* targs, int numTargs
  *
  * @see
  * - createComplexMatrixN()
+ * - applyMultiControlledGateMatrixN()
  * - applyMultiControlledMatrixN()
  * - multiControlledMultiQubitNot()
  * - controlledMultiQubitUnitary()
@@ -4907,6 +4909,7 @@ void controlledMultiQubitUnitary(Qureg qureg, int ctrl, int* targs, int numTargs
  * - if \p numTargs <b>< 1</b>
  * - if \p numCtrls <b>< 1</b> (use multiQubitUnitary() for no controls)
  * - if matrix \p u is not unitary
+ * - if matrix \p u is not of a compatible size with \p numTargs
  * - if a node cannot fit the required number of target amplitudes in distributed mode
  * @throws segmentation-fault
  * - if \p ctrls contains fewer elements than \p numCtrls
@@ -5572,6 +5575,7 @@ void applyMatrixN(Qureg qureg, int* targs, int numTargs, ComplexMatrixN u);
  * This function may leave \p qureg is an unnormalised state.
  *
  * @see
+ * - applyMultiControlledGateMatrixN()
  * - applyMatrixN()
  * - createComplexMatrixN()
  * - getStaticComplexMatrixN()
@@ -5590,6 +5594,57 @@ void applyMatrixN(Qureg qureg, int* targs, int numTargs, ComplexMatrixN u);
  * @author Tyson Jones
  */
 void applyGateMatrixN(Qureg qureg, int* targs, int numTargs, ComplexMatrixN u);
+
+/** Apply a general multi-controlled multi-qubit gate specified as an (possibly non-unitary)
+ * arbitrary complex matrix.
+ * This is equivalent to multiControlledMultiQubitUnitary() but does not check nor enforce 
+ * unitary of the given matrix \p m.
+ * This differs from applyMultiControlledMatrixN(), because the latter only left-applies 
+ * the matrix upon density matrices.
+ *
+ * Any number of control and target qubits can be specified.
+ * This effects the many-qubit unitary
+ * \f[
+ * \begin{pmatrix}
+ * 1 \\
+ * & 1 \\\
+ * & & \ddots \\
+ * & & & m_{00} & m_{01} & \dots  \\
+ * & & & m_{10} & m_{11} & \dots \\
+ * & & & \vdots & \vdots & \ddots
+ * \end{pmatrix}
+ * \f]
+ * on the control and target qubits.
+ *
+ * Besides unitarity, the inputs and their preconditions are the same as for 
+ * multiControlledMultiQubitUnitary().
+ *
+ * @see
+ * - createComplexMatrixN()
+ * - applyMultiControlledMatrixN()
+ * - multiControlledMultiQubitUnitary()
+ *
+ * @ingroup unitary
+ * @param[in,out] qureg object representing the set of all qubits
+ * @param[in] ctrls a list of the control qubits
+ * @param[in] numCtrls the number of control qubits
+ * @param[in] targs a list of the target qubits, ordered least to most significant
+ * @param[in] numTargs the number of target qubits
+ * @param[in] m arbitrary matrix to apply as if it were a unitary gate
+ * @throws invalidQuESTInputError()
+ * - if any qubit in \p ctrls and \p targs is invalid, i.e. outside <b>[0, </b>`qureg.numQubitsRepresented`<b>)</b>
+ * - if \p ctrls or \p targs contain any repetitions
+ * - if any qubit in \p ctrls is also in \p targs (and vice versa)
+ * - if \p numTargs <b>< 1</b>
+ * - if \p numCtrls <b>< 1</b> (use multiQubitUnitary() for no controls)
+ * - if matrix \p m is not of a compatible size with \p numTargs
+ * - if a node cannot fit the required number of target amplitudes in distributed mode
+ * @throws segmentation-fault
+ * - if \p ctrls contains fewer elements than \p numCtrls
+ * - if \p targs contains fewer elements than \p numTargs
+ * @author Tyson Jones
+ */
+void applyMultiControlledGateMatrixN(Qureg qureg, int* ctrls, int numCtrls, int* targs, int numTargs, ComplexMatrixN m);
 
 /** Apply a general N-by-N matrix, which may be non-unitary, with additional controlled qubits.
  * The matrix is left-multiplied onto the state, for both state-vectors and density matrices.
