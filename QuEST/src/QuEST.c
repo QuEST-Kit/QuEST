@@ -1114,6 +1114,24 @@ void applyMatrixN(Qureg qureg, int* targs, int numTargs, ComplexMatrixN u) {
     qasm_recordComment(qureg, "Here, an undisclosed %d-by-%d matrix (possibly non-unitary) was multiplied onto %d undisclosed qubits", dim, dim, numTargs);
 }
 
+void applyGateMatrixN(Qureg qureg, int* targs, int numTargs, ComplexMatrixN u) {
+    validateMultiTargets(qureg, targs, numTargs, __func__);
+    validateMultiQubitMatrix(qureg, u, numTargs, __func__);
+    
+    statevec_multiQubitUnitary(qureg, targs, numTargs, u);
+    if (qureg.isDensityMatrix) {
+        int shift = qureg.numQubitsRepresented;
+        shiftIndices(targs, numTargs, shift);
+        setConjugateMatrixN(u);
+        statevec_multiQubitUnitary(qureg, targs, numTargs, u);
+        shiftIndices(targs, numTargs, -shift);
+        setConjugateMatrixN(u);
+    }
+    
+    int dim = (1 << numTargs);
+    qasm_recordComment(qureg, "Here, an undisclosed %d-by-%d gate matrix (possibly non-unitary) was applied to %d undisclosed qubits", dim, dim, numTargs);
+}
+
 void applyMultiControlledMatrixN(Qureg qureg, int* ctrls, int numCtrls, int* targs, int numTargs, ComplexMatrixN u) {
     validateMultiControlsMultiTargets(qureg, ctrls, numCtrls, targs, numTargs, __func__);
     validateMultiQubitMatrix(qureg, u, numTargs, __func__);
