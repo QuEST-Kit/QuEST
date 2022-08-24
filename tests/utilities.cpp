@@ -524,7 +524,7 @@ QVector getMatrixDiagonal(QMatrix matr) {
 }
 
 int getRandomInt(int min, int max) {
-    return round(getRandomReal(min, max-1));
+    return (int) round(getRandomReal(min, max-1));
 }
 
 QMatrix getRandomUnitary(int numQb) {
@@ -585,7 +585,7 @@ std::vector<QMatrix> getRandomKrausMap(int numQb, int numOps) {
         ops.push_back(getRandomUnitary(numQb));
         
     // generate random weights
-    qreal weights[numOps];
+    std::vector<qreal> weights(numOps);
     for (int i=0; i<numOps; i++)
         weights[i] = getRandomReal(0, 1);
         
@@ -594,7 +594,7 @@ std::vector<QMatrix> getRandomKrausMap(int numQb, int numOps) {
     for (int i=0; i<numOps; i++)
         weightSum += weights[i];
     for (int i=0; i<numOps; i++)
-        weights[i] = sqrt(weights[i]/weightSum);
+        weights[i] = sqrt((qreal) weights[i]/weightSum);
         
     // normalise ops
     for (int i=0; i<numOps; i++)
@@ -617,7 +617,7 @@ std::vector<QVector> getRandomOrthonormalVectors(int numQb, int numStates) {
     // set of orthonormal vectors
     std::vector<QVector> vecs;
     
-    for (size_t n=0; n<numStates; n++) {
+    for (int n=0; n<numStates; n++) {
         
         QVector vec = getRandomStateVector(numQb);
         
@@ -660,7 +660,7 @@ QVector getDFT(QVector in) {
     
     for (size_t x=0; x<dim; x++) {
         dftVec[x] = 0;
-        for (long long int y=0; y<dim; y++)
+        for (size_t y=0; y<dim; y++)
             dftVec[x] += expI(phaseFac * x * y) * in[y];
         dftVec[x] *= ampFac;
     }
@@ -686,7 +686,7 @@ long long int setBit(long long int num, int bitInd, int bitVal) {
     return (num & ~(1UL << bitInd)) | (bitVal << bitInd);
 }
 
-long long int getIndexOfTargetValues(long long int ref, int* targs, int numTargs, int targVal) {
+long long int getIndexOfTargetValues(long long int ref, int* targs, int numTargs, long long int targVal) {
     // ref state is the starting index, where the targets can be in any bit state;
     // on the bits of the non-target qubits matter 
     
@@ -700,9 +700,10 @@ long long int getIndexOfTargetValues(long long int ref, int* targs, int numTargs
 QVector getDFT(QVector in, int* targs, int numTargs) {
     
     QVector out = QVector(in.size());
+    long long int inDim = (long long int) in.size();
     long long int targDim = (1LL << numTargs);
     
-    for (size_t j=0; j<in.size(); j++) {
+    for (long long int j=0; j<inDim; j++) {
         
         // |j> = |x> (x) |...>, but mixed (not separated)
         long long int x = getValueOfTargets(j, targs, numTargs);
@@ -1326,7 +1327,7 @@ void setDiagMatrixOverrides(QMatrix &matr, int* numQubitsPerReg, int numRegs, en
     DEMAND( matr.size() == (1 << totalQb) );
     
     // record whether a diagonal index has been already overriden
-    int hasBeenOverriden[1 << totalQb];
+    std::vector<int> hasBeenOverriden(1 << totalQb);
     for (int i=0; i<(1 << totalQb); i++)
         hasBeenOverriden[i] = 0;
     
@@ -1510,7 +1511,7 @@ Catch::Generators::GeneratorWrapper<int*> sublists(
 Catch::Generators::GeneratorWrapper<int*> sublists(
     Catch::Generators::GeneratorWrapper<int>&& gen, int numSamps
 ) {
-    int exclude[] = {};  
+    int exclude[] = {-1}; // non-empty to satisfy MSVC
     return Catch::Generators::GeneratorWrapper<int*>(
         std::unique_ptr<Catch::Generators::IGenerator<int*>>(
             new SubListGenerator(std::move(gen), numSamps, exclude, 0)));

@@ -49,8 +49,8 @@ TEST_CASE( "compactUnitary", "[unitaries]" ) {
     
     qcomp a = getRandomReal(-1,1) * expI(getRandomReal(0,2*M_PI));
     qcomp b = sqrt(1-abs(a)*abs(a)) * expI(getRandomReal(0,2*M_PI));
-    Complex alpha = toComplex( a );
-    Complex beta = toComplex( b );
+    Complex alpha; alpha.real = real(a); alpha.imag = imag(a);
+    Complex beta; beta.real = real(b); beta.imag = imag(b);
     QMatrix op = toQMatrix(alpha, beta);
     
     SECTION( "correctness" ) {
@@ -80,8 +80,8 @@ TEST_CASE( "compactUnitary", "[unitaries]" ) {
         SECTION( "unitarity" ) {
         
             // unitary when |alpha|^2 + |beta|^2 = 1
-            alpha = {.real=1, .imag=2}; 
-            beta = {.real=3, .imag=4};
+            alpha.real=1; alpha.imag=2; 
+            beta.real=3; beta.imag=4;
             REQUIRE_THROWS_WITH( compactUnitary(quregVec, 0, alpha, beta), Contains("unitary") );
         }
     }
@@ -100,8 +100,8 @@ TEST_CASE( "controlledCompactUnitary", "[unitaries]" ) {
     
     qcomp a = getRandomReal(-1,1) * expI(getRandomReal(0,2*M_PI));
     qcomp b = sqrt(1-abs(a)*abs(a)) * expI(getRandomReal(0,2*M_PI));
-    Complex alpha = toComplex( a );
-    Complex beta = toComplex( b );
+    Complex alpha; alpha.real = real(a); alpha.imag = imag(a);
+    Complex beta; beta.real = real(b); beta.imag = imag(b);
     QMatrix op = toQMatrix(alpha, beta);
     
     SECTION( "correctness" ) {
@@ -138,8 +138,8 @@ TEST_CASE( "controlledCompactUnitary", "[unitaries]" ) {
         SECTION( "unitarity" ) {
 
             // unitary when |a|^2 + |b^2 = 1
-            alpha = {.real=1, .imag=2};
-            beta = {.real=3, .imag=4};
+            alpha.real=1; alpha.imag=2;
+            beta.real=3; beta.imag=4;
             REQUIRE_THROWS_WITH( controlledCompactUnitary(quregVec, 0, 1, alpha, beta), Contains("unitary") );
         }
     }
@@ -242,7 +242,7 @@ TEST_CASE( "controlledMultiQubitUnitary", "[unitaries]" ) {
             int numTargs = GENERATE_COPY( range(1,maxNumTargs+1) );
             ComplexMatrixN matr = createComplexMatrixN(numTargs); // initially zero, hence not-unitary
             
-            int targs[numTargs];
+            VLA(int, targs, numTargs);
             for (int i=0; i<numTargs; i++)
                 targs[i] = i+1;
             
@@ -483,7 +483,10 @@ TEST_CASE( "controlledRotateAroundAxis", "[unitaries]" ) {
     
     // each test will use a random parameter and axis vector    
     qreal param = getRandomReal(-4*M_PI, 4*M_PI);
-    Vector vec = {.x=getRandomReal(-1,1), .y=getRandomReal(-1,1), .z=getRandomReal(-1,1)};
+    Vector vec; 
+    vec.x=getRandomReal(-1,1);
+    vec.y=getRandomReal(-1,1);
+    vec.z=getRandomReal(-1,1);
     
     // Rn(a) = cos(a/2)I - i sin(a/2) n . paulivector
     // (pg 24 of vcpc.univie.ac.at/~ian/hotlist/qc/talks/bloch-sphere-rotations.pdf)
@@ -526,7 +529,7 @@ TEST_CASE( "controlledRotateAroundAxis", "[unitaries]" ) {
         }
         SECTION( "zero rotation axis" ) {
             
-            vec = {.x=0, .y=0, .z=0};
+            vec.x=0; vec.y=0; vec.z=0;
             REQUIRE_THROWS_WITH( controlledRotateAroundAxis(quregVec, 0, 1, param, vec), Contains("Invalid axis") && Contains("zero") );
         }
     }
@@ -1064,7 +1067,7 @@ TEST_CASE( "multiControlledMultiQubitUnitary", "[unitaries]" ) {
             
             int ctrls[1] = {0};
             int numTargs = GENERATE_COPY( range(1,maxNumTargs+1) );
-            int targs[numTargs];
+            VLA(int, targs, numTargs);
             for (int i=0; i<numTargs; i++)
                 targs[i] = i+1;
             
@@ -1140,12 +1143,12 @@ TEST_CASE( "multiControlledMultiRotatePauli", "[unitaries]" ) {
          * Furthermore, take(10, pauliseqs(numTargs)) will try the same pauli codes.
          * Hence, we instead opt to randomly generate pauliseqs
          */
-        pauliOpType paulis[numTargs];
+        VLA(pauliOpType, paulis, numTargs);
         for (int i=0; i<numTargs; i++)
             paulis[i] = (pauliOpType) getRandomInt(0,4);
 
         // exclude identities from reference matrix exp (they apply unwanted global phase)
-        int refTargs[numTargs];
+        VLA(int, refTargs, numTargs);
         int numRefTargs = 0;
 
         QMatrix xMatr{{0,1},{1,0}};
@@ -1820,7 +1823,7 @@ TEST_CASE( "multiQubitUnitary", "[unitaries]" ) {
         SECTION( "unitarity" ) {
             
             int numTargs = GENERATE_COPY( range(1,maxNumTargs) );
-            int targs[numTargs];
+            VLA(int, targs, numTargs);
             for (int i=0; i<numTargs; i++)
                 targs[i] = i+1;
             
@@ -1887,12 +1890,12 @@ TEST_CASE( "multiRotatePauli", "[unitaries]" ) {
          * Hence, we instead opt to repeatedlyrandomly generate pauliseqs
          */
         GENERATE( range(0,10) ); // gen 10 random pauli-codes for every targs
-        pauliOpType paulis[numTargs];
+        VLA(pauliOpType, paulis, numTargs);
         for (int i=0; i<numTargs; i++)
             paulis[i] = (pauliOpType) getRandomInt(0,4);
 
         // exclude identities from reference matrix exp (they apply unwanted global phase)
-        int refTargs[numTargs];
+        VLA(int, refTargs, numTargs);
         int numRefTargs = 0;
 
         QMatrix xMatr{{0,1},{1,0}};
@@ -2319,7 +2322,10 @@ TEST_CASE( "rotateAroundAxis", "[unitaries]" ) {
     
     // each test will use a random parameter and axis vector    
     qreal param = getRandomReal(-4*M_PI, 4*M_PI);
-    Vector vec = {.x=getRandomReal(-1,1), .y=getRandomReal(-1,1), .z=getRandomReal(-1,1)};
+    Vector vec; 
+    vec.x=getRandomReal(-1,1);
+    vec.y=getRandomReal(-1,1); 
+    vec.z=getRandomReal(-1,1);
     
     // Rn(a) = cos(a/2)I - i sin(a/2) n . paulivector
     // (pg 24 of vcpc.univie.ac.at/~ian/hotlist/qc/talks/bloch-sphere-rotations.pdf)
@@ -2356,7 +2362,7 @@ TEST_CASE( "rotateAroundAxis", "[unitaries]" ) {
         SECTION( "zero rotation axis" ) {
             
             int target = 0;
-            vec = {.x=0, .y=0, .z=0};
+            vec.x=0; vec.y=0; vec.z=0;
             REQUIRE_THROWS_WITH( rotateAroundAxis(quregVec, target, param, vec), Contains("Invalid axis") && Contains("zero") );
         }
     }

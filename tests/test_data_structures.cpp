@@ -14,7 +14,9 @@ using Catch::Matchers::Contains;
  */
 TEST_CASE( "fromComplex", "[data_structures]" ) {
     
-    Complex a = {.real=.5, .imag=-.2};
+    Complex a; 
+    a.real= .5;
+    a.imag= -.2;
     qcomp b = fromComplex(a);
     
     REQUIRE( a.real == real(b) );
@@ -42,7 +44,12 @@ TEST_CASE( "getStaticComplexMatrixN", "[data_structures]" ) {
 TEST_CASE( "toComplex", "[data_structures]" ) {
     
     qcomp a = qcomp(.5,-.2);
+    #if (!defined(_WIN32)) && (!defined(_WIN64))
     Complex b = toComplex(a);
+    #else
+    // MSVC profanely forbids in-line struct initialisation
+    Complex b; b.real = real(a); b.imag = imag(a);
+    #endif
     
     REQUIRE( real(a) == b.real );
     REQUIRE( imag(a) == b.imag );
@@ -307,7 +314,7 @@ TEST_CASE( "createDiagonalOpFromPauliHamilFile", "[data_structures]" ) {
             
             // prepare a valid single-term diagonal Pauli Hamiltonian
             qreal coeffs[] = {.1};
-            pauliOpType codes[minNumQb];
+            VLA(pauliOpType, codes, minNumQb);
             for (int q=0; q<minNumQb; q++)
                 codes[q] = (q%2)? PAULI_I : PAULI_Z; 
                 
@@ -485,8 +492,8 @@ TEST_CASE( "createPauliHamilFromFile", "[data_structures]" ) {
             int numPaulis = numQb*numTerms;
             
             // create a PauliHamil with random elements
-            qreal coeffs[numTerms];
-            enum pauliOpType paulis[numPaulis];
+            VLA(qreal, coeffs, numTerms);
+            VLA(pauliOpType, paulis, numPaulis);
             setRandomPauliSum(coeffs, paulis, numQb, numTerms);
             
             // write the Hamiltonian to file (with trailing whitespace, and trailing newline)
@@ -779,8 +786,8 @@ TEST_CASE( "initDiagonalOp", "[data_structures]" ) {
         DiagonalOp op = createDiagonalOp(numQb, QUEST_ENV);
         
         long long int len = (1LL << numQb);
-        qreal reals[len];
-        qreal imags[len];
+        VLA(qreal, reals, len);
+        VLA(qreal, imags, len);
         long long int n;
         for (n=0; n<len; n++) {
             reals[n] = (qreal)    n;
@@ -942,8 +949,8 @@ TEST_CASE( "initPauliHamil", "[data_structures]" ) {
             int numQb = 3;
             int numTerms = 2;
             int numCodes = numQb * numTerms;
-            qreal coeffs[numTerms];
-            enum pauliOpType codes[numCodes];
+            VLA(qreal, coeffs, numTerms);
+            VLA(pauliOpType, codes, numCodes);
             
             // make only one code invalid
             for (int i=0; i<numCodes; i++)
@@ -978,8 +985,8 @@ TEST_CASE( "setDiagonalOpElems", "[data_structures]" ) {
     
         // make entire array on every node
         long long int len = (1LL << numQb);
-        qreal reals[len];
-        qreal imags[len];
+        VLA(qreal, reals, len);
+        VLA(qreal, imags, len);
         long long int n;
         for (n=0; n<len; n++) {
             reals[n] = (qreal)    n;
@@ -998,8 +1005,8 @@ TEST_CASE( "setDiagonalOpElems", "[data_structures]" ) {
     SECTION( "input validation" ) {
         
         long long int maxInd = (1LL << numQb);
-        qreal *reals;
-        qreal *imags;
+        qreal *reals = NULL;
+        qreal *imags = NULL;
         
         SECTION( "start index" ) {
             
