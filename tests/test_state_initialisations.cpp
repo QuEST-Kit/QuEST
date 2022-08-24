@@ -504,7 +504,6 @@ TEST_CASE( "setDensityAmps", "[state_initialisations]" ) {
             REQUIRE_THROWS_WITH( setDensityAmps(matr, badInd, 0, reals, imags, numAmps), Contains("Invalid amplitude index") );
             REQUIRE_THROWS_WITH( setDensityAmps(matr, 0, badInd, reals, imags, numAmps), Contains("Invalid amplitude index") );
         }
-        
         SECTION( "number of amplitudes" ) {
             
             // independent
@@ -523,6 +522,66 @@ TEST_CASE( "setDensityAmps", "[state_initialisations]" ) {
         }
     }
     destroyQureg(matr, QUEST_ENV);
+}
+
+
+
+/** @sa setQuregToPauliHamil
+ * @ingroup unittest 
+ * @author Tyson Jones 
+ */
+TEST_CASE( "setQuregToPauliHamil", "[state_initialisations]" ) {
+    
+    Qureg rho = createDensityQureg(NUM_QUBITS, QUEST_ENV);
+    
+    SECTION( "correctness" ) {
+        
+        // too expensive to enumerate all paulis, so try 10x with random ones
+        GENERATE( range(0,10) );
+        
+        int numTerms = GENERATE( 1, 2, 10, 15, 100, 1000 );
+        PauliHamil hamil = createPauliHamil(NUM_QUBITS, numTerms);
+        setRandomPauliSum(hamil);
+
+        setQuregToPauliHamil(rho, hamil);
+        REQUIRE( areEqual(rho, toQMatrix(hamil)) );
+        
+        destroyPauliHamil(hamil);
+    }
+    SECTION( "input validation" ) {
+        
+        SECTION( "density-matrix" ) {
+            
+            PauliHamil hamil = createPauliHamil(NUM_QUBITS, 5);
+            Qureg vec = createQureg(NUM_QUBITS, QUEST_ENV);
+            
+            REQUIRE_THROWS_WITH( setQuregToPauliHamil(vec, hamil), Contains("density matrices") );
+            
+            destroyQureg(vec, QUEST_ENV);
+            destroyPauliHamil(hamil);
+        }
+        SECTION( "pauli codes" ) {
+            
+            int numTerms = 3;
+            PauliHamil hamil = createPauliHamil(NUM_QUBITS, numTerms);
+            
+            // make one pauli code wrong
+            hamil.pauliCodes[GENERATE_COPY( range(0,numTerms*NUM_QUBITS) )] = (pauliOpType) GENERATE( -1, 4 );
+            REQUIRE_THROWS_WITH( setQuregToPauliHamil(rho, hamil), Contains("Invalid Pauli code") );
+            
+            destroyPauliHamil(hamil);
+        }
+        SECTION( "matching hamiltonian qubits" ) {
+            
+            int numTerms = 1;
+            PauliHamil hamil = createPauliHamil(NUM_QUBITS + 1, numTerms);
+            
+            REQUIRE_THROWS_WITH( setQuregToPauliHamil(rho, hamil), Contains("same number of qubits") );
+            
+            destroyPauliHamil(hamil);
+        }
+    }
+    destroyQureg(rho, QUEST_ENV);
 }
 
 

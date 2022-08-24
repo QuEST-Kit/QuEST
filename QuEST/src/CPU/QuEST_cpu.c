@@ -4584,3 +4584,85 @@ void statevec_applyParamNamedPhaseFuncOverrides(
         }
     }
 }
+
+void densmatr_setQuregToPauliHamil(Qureg qureg, PauliHamil hamil) {
+
+    // flattened {I,X,Y,Z} matrix elements, where [k] = [p][i][j]
+    int pauliRealElems[] = {   1,0, 0,1,   0,1, 1,0,   0,0, 0,0,   1,0, 0,-1  };
+    int pauliImagElems[] = {   0,0, 0,0,   0,0, 0,0,   0,-1,1,0,   0,0, 0,0   };
+    
+    // constants (unpacked to prevent OpenMP struct tantrum)
+    int numTerms = hamil.numSumTerms;
+    int numQubits = hamil.numQubits;
+    enum pauliOpType* paulis = hamil.pauliCodes;
+    qreal* termCoeffs = hamil.termCoeffs;
+    qreal* stateRe = qureg.stateVec.real;
+    qreal* stateIm = qureg.stateVec.imag;
+    long long int numLocAmps = qureg.numAmpsPerChunk;
+    long long int nOffset = numLocAmps * qureg.chunkId;
+    
+    // private threading vars
+    long long int n, nGlob, r, c, t, pInd;
+    int q, i, j, p, k;
+    qreal elemRe, elemIm;
+    int kronRe, kronIm;
+    int pauliRe, pauliIm, tmp;
+    
+    // use a private thread for every overwritten amplitude
+# ifdef _OPENMP
+# pragma omp parallel \
+    default  (none) \
+    shared   (pauliRealElems,pauliImagElems, numTerms,numQubits,numLocAmps,nOffset,  paulis,termCoeffs, stateRe,stateIm) \
+    private  (q,i,j,p,k, r,c,n,nGlob,t,pInd, elemRe,elemIm, kronRe,kronIm, pauliRe,pauliIm, tmp)
+# endif
+    {
+# ifdef _OPENMP
+# pragma omp for schedule (static)
+# endif
+        for (n=0; n<numLocAmps; n++) {
+            
+            // |nGlob> = |rank>|n>
+            nGlob = nOffset + n;
+            
+            // |nGlob> = |c>|r>
+            r = nGlob & ((1LL << numQubits) - 1);
+            c = nGlob >> numQubits;
+
+            // new amplitude of |n>
+            elemRe = 0;
+            elemIm = 0;
+            
+            for (t=0; t<numTerms; t++) {
+                
+                // pauliKronecker[r][c] = prod_q Pauli[q][q-th bit of r and c]
+                kronRe = 1;
+                kronIm = 0;
+                pInd = numQubits * t;
+                
+                for (q=0; q<numQubits; q++) {
+                    
+                    // get element of Pauli matrix
+                    i = (r >> q) & 1;
+                    j = (c >> q) & 1;
+                    p = (int) paulis[pInd++];
+                    k = (p<<2) + (i<<1) + j;
+                    pauliRe = pauliRealElems[k]; 
+                    pauliIm = pauliImagElems[k];
+                    
+                    // kron *= pauli
+                    tmp = (pauliRe*kronRe) - (pauliIm*kronIm);
+                    kronIm = (pauliRe*kronIm) + (pauliIm*kronRe);
+                    kronRe = tmp;
+                }
+                
+                // elem = sum_t coeffs[t] pauliKronecker[r][c]
+                elemRe += termCoeffs[t] * kronRe;
+                elemIm += termCoeffs[t] * kronIm;
+            }
+            
+            // overwrite the density matrix entry
+            stateRe[n] = elemRe;
+            stateIm[n] = elemIm;
+        }
+    }
+}

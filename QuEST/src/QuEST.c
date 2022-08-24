@@ -168,6 +168,14 @@ void cloneQureg(Qureg targetQureg, Qureg copyQureg) {
     statevec_cloneQureg(targetQureg, copyQureg);
 }
 
+void setQuregToPauliHamil(Qureg qureg, PauliHamil hamil) {
+    validateDensityMatrQureg(qureg, __func__);
+    validatePauliHamil(hamil, __func__);
+    validateMatchingQuregPauliHamilDims(qureg, hamil, __func__);
+
+    densmatr_setQuregToPauliHamil(qureg, hamil);
+}
+
 
 /*
  * unitary gates

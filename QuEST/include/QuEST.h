@@ -1575,6 +1575,31 @@ void setAmps(Qureg qureg, long long int startInd, qreal* reals, qreal* imags, lo
  */
 void setDensityAmps(Qureg qureg, long long int startRow, long long int startCol, qreal* reals, qreal* imags, long long int numAmps);
 
+/** Overwrites the density-matrix \p qureg with the Z-basis matrix representation
+ * of the given real-weighted sum of Pauli tensors \p hamil. 
+ *
+ * This leaves \p qureg in a non-physical state - as a matrix form of \p hamil -
+ * and is useful for establishing a persistent-backend dense representation of 
+ * the Hamiltonian. For example, \p qureg can be subsequently passed to functions 
+ * like calcDensityInnerProduct() which would effectively in-place compute
+ * calcExpecPauliHamil().
+ *
+ * @see
+ * - createPauliHamil()
+ * - createDensityQureg()
+ * - calcDensityInnerProduct()
+ *
+ * @ingroup init
+ * @param[in,out] qureg the density-matrix to overwrite
+ * @param[in] hamil the ::PauliHamil to expand into a matrix representation
+ * @throws invalidQuESTInputError()
+ * - if \p qureg is not a density matrix (i.e. is a state-vector)
+ * - if the dimensions of \p qureg and \p hamil do not match
+ * - if \p hamil is an invalid ::PauliHamil
+ * @author Tyson Jones
+ */
+void setQuregToPauliHamil(Qureg qureg, PauliHamil hamil);
+
 /** Overwrite the amplitudes of \p targetQureg with those from \p copyQureg. 
  * 
  * Registers must either both be state-vectors, or both be density matrices, and 

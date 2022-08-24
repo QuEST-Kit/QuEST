@@ -3966,6 +3966,64 @@ void statevec_applyParamNamedPhaseFuncOverrides(
         cudaFree(d_params);
 }
 
+__global__ void densmatr_setQuregToPauliHamilKernel(Qureg qureg, PauliHamil hamil) {
+    
+    long long int n = blockIdx.x*blockDim.x + threadIdx.x;
+    if (n>=qureg.numAmpsPerChunk) return;
+    
+    // flattened {I,X,Y,Z} matrix elements, where [k] = [p][i][j]
+    const int pauliRealElems[] = {   1,0, 0,1,   0,1, 1,0,   0,0, 0,0,   1,0, 0,-1  };
+    const int pauliImagElems[] = {   0,0, 0,0,   0,0, 0,0,   0,-1,1,0,   0,0, 0,0   };
+
+    // |n> = |c>|r>
+    const int numQubits = hamil.numQubits;
+    const long long int r = n & ((1LL << numQubits) - 1);
+    const long long int c = n >> numQubits;
+
+    // new amplitude of |n>
+    qreal elemRe = 0;
+    qreal elemIm = 0;
+    
+    for (long long int t=0; t<hamil.numSumTerms; t++) {
+        
+        // pauliKronecker[r][c] = prod_q Pauli[q][q-th bit of r and c]
+        int kronRe = 1;
+        int kronIm = 0;
+        long long int pInd = t * numQubits;
+        
+        for (int q=0; q<numQubits; q++) {
+            
+            // get element of Pauli matrix
+            int i = (r >> q) & 1;
+            int j = (c >> q) & 1;
+            int p = (int) hamil.pauliCodes[pInd++];
+            int k = (p<<2) + (i<<1) + j;
+            int pauliRe = pauliRealElems[k]; 
+            int pauliIm = pauliImagElems[k];
+            
+            // kron *= pauli
+            int tmp = (pauliRe*kronRe) - (pauliIm*kronIm);
+            kronIm = (pauliRe*kronIm) + (pauliIm*kronRe);
+            kronRe = tmp;
+        }
+        
+        // elem = sum_t coeffs[t] pauliKronecker[r][c]
+        elemRe += hamil.termCoeffs[t] * kronRe;
+        elemIm += hamil.termCoeffs[t] * kronIm;
+    }
+    
+    // overwrite the density matrix entry
+    qureg.deviceStateVec.real[n] = elemRe;
+    qureg.deviceStateVec.imag[n] = elemIm;
+}
+
+void densmatr_setQuregToPauliHamil(Qureg qureg, PauliHamil hamil) {
+    
+    int threadsPerCUDABlock = 128;
+    int CUDABlocks = ceil(qureg.numAmpsPerChunk / (qreal) threadsPerCUDABlock);
+    densmatr_setQuregToPauliHamilKernel<<<CUDABlocks, threadsPerCUDABlock>>>(qureg, hamil);
+}
+
 void seedQuEST(QuESTEnv *env, unsigned long int *seedArray, int numSeeds) {
 
     // free existing seed array, if exists

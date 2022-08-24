@@ -110,6 +110,8 @@ Complex densmatr_calcExpecDiagonalOp(Qureg qureg, DiagonalOp op);
 
 void densmatr_applyMultiQubitKrausSuperoperator(Qureg qureg, int *targets, int numTargets, ComplexMatrixN superOp); // exposed for QuESTlink Monte Carlo
 
+void densmatr_setQuregToPauliHamil(Qureg qureg, PauliHamil hamil);
+
 
 /* 
  * operations upon state vectors
