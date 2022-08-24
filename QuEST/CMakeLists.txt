@@ -155,9 +155,15 @@ if (GPUACCELERATED)
             -O2"
         )
     elseif ("${CMAKE_BUILD_TYPE}" STREQUAL "Debug")
-        set (CUDA_NVCC_FLAGS "${CUDA_NVCC_FLAGS} \
-            -G -g -lineinfo"
-        )
+        if ("${CMAKE_C_COMPILER_ID}" STREQUAL "MSVC")
+            set (CUDA_NVCC_FLAGS "${CUDA_NVCC_FLAGS} \
+                -G"
+            )
+        else()
+            set (CUDA_NVCC_FLAGS "${CUDA_NVCC_FLAGS} \
+                -G -g -lineinfo"
+            )
+        endif()
     else()
         set (CUDA_NVCC_FLAGS "${CUDA_NVCC_FLAGS} \
             -O2"
@@ -183,6 +189,10 @@ endif()
 if (NOT("${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC"))
   set(CMAKE_C_FLAGS_DEBUG 
       "-g"
+  )
+else()
+  set(CMAKE_C_FLAGS_DEBUG 
+      "-Zi"
   )
 endif()
 
@@ -235,9 +245,15 @@ set(CMAKE_CXX_FLAGS_RELEASE
 )
 
 # Set c++ flags to use in debug mode
-set(CMAKE_CXX_FLAGS_DEBUG 
+if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC")
+  set(CMAKE_CXX_FLAGS_DEBUG 
+    "-Zi -MDd"
+  )
+else()
+  set(CMAKE_CXX_FLAGS_DEBUG 
     "-g"
-)
+  )
+endif()
 
 # set C++ compiler flags based on compiler type
 if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")

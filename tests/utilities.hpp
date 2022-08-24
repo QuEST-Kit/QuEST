@@ -35,6 +35,23 @@ extern QuESTEnv QUEST_ENV;
  */
 #define NUM_QUBITS 5
 
+#ifndef M_PI
+#define M_PI 3.141592653589793238
+#endif
+
+/** This is absolute war against MSVC C++14 which does not permit variable-length 
+ * arrays. We hunted down the previous VLAs with regex:
+ *     ([a-zA-Z0-9]+?) ([a-zA-Z0-9]+?)\[([a-zA-Z0-9]+?)\]
+ * replacing results with:
+ *      VLA($1, $2, $3)
+ * We perform this replacement even for non-MSVC compilers, since some dislike 
+ * VLAs of non-POD elemets (like of QMatrix, compiling with NVCC + Clang). 
+ * Eat it, Bill!
+ */
+#define VLA(type, name, len) \
+    std::vector<type> name##_vla_hack_vec(len); \
+    type* name = name##_vla_hack_vec.data();
+
 /** A complex square matrix. 
  * Should be initialised with getZeroMatrix().
  * These have all the natural linear-algebra operator overloads, including 

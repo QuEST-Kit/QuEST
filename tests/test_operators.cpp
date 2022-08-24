@@ -888,7 +888,7 @@ TEST_CASE( "applyMultiVarPhaseFunc", "[operators]" ) {
         
         // assign each sub-reg its minimum length
         int unallocQubits = totalNumQubits;
-        int numQubitsPerReg[numRegs];
+        VLA(int, numQubitsPerReg, numRegs);
         for (int i=0; i<numRegs; i++) 
             if (encoding == UNSIGNED) {
                 numQubitsPerReg[i] = 1;
@@ -906,7 +906,7 @@ TEST_CASE( "applyMultiVarPhaseFunc", "[operators]" ) {
         
 
         // each register gets a random number of terms in the full phase function
-        int numTermsPerReg[numRegs];
+        VLA(int, numTermsPerReg, numRegs);
         int numTermsTotal = 0;
         for (int r=0; r<numRegs; r++) {
             int numTerms = getRandomInt(1,5);
@@ -917,8 +917,8 @@ TEST_CASE( "applyMultiVarPhaseFunc", "[operators]" ) {
         // populate the multi-var phase function with random but POSITIVE-power terms,
         // which must further be integers in two's complement
         int flatInd = 0;
-        qreal coeffs[numTermsTotal];
-        qreal expons[numTermsTotal];
+        VLA(qreal, coeffs, numTermsTotal);
+        VLA(qreal, expons, numTermsTotal);
         for (int r=0; r<numRegs; r++) {
             for (int t=0; t<numTermsPerReg[r]; t++) {
                 coeffs[flatInd] = getRandomReal(-10,10);
@@ -1089,7 +1089,7 @@ TEST_CASE( "applyMultiVarPhaseFuncOverrides", "[operators]" ) {
         
         // assign each sub-reg its minimum length
         int unallocQubits = totalNumQubits;
-        int numQubitsPerReg[numRegs];
+        VLA(int, numQubitsPerReg, numRegs);
         for (int i=0; i<numRegs; i++) 
             if (encoding == UNSIGNED) {
                 numQubitsPerReg[i] = 1;
@@ -1107,7 +1107,7 @@ TEST_CASE( "applyMultiVarPhaseFuncOverrides", "[operators]" ) {
         
 
         // each register gets a random number of terms in the full phase function
-        int numTermsPerReg[numRegs];
+        VLA(int, numTermsPerReg, numRegs);
         int numTermsTotal = 0;
         for (int r=0; r<numRegs; r++) {
             int numTerms = getRandomInt(1,5);
@@ -1118,8 +1118,8 @@ TEST_CASE( "applyMultiVarPhaseFuncOverrides", "[operators]" ) {
         // populate the multi-var phase function with random but POSITIVE-power terms,
         // which must further be integers in two's complement
         int flatInd = 0;
-        qreal coeffs[numTermsTotal];
-        qreal expons[numTermsTotal];
+        VLA(qreal, coeffs, numTermsTotal);
+        VLA(qreal, expons, numTermsTotal);
         for (int r=0; r<numRegs; r++) {
             for (int t=0; t<numTermsPerReg[r]; t++) {
                 coeffs[flatInd] = getRandomReal(-10,10);
@@ -1137,7 +1137,7 @@ TEST_CASE( "applyMultiVarPhaseFuncOverrides", "[operators]" ) {
         int numOverrides = getRandomInt(0, (1<<totalNumQubits) + 1);
         
         // randomise each override index (uniqueness isn't checked)
-        long long int overrideInds[numOverrides*numRegs];
+        VLA(long long int, overrideInds, numOverrides*numRegs);
         flatInd = 0;
         for (int v=0; v<numOverrides; v++) {
             for (int r=0; r<numRegs; r++) {
@@ -1150,7 +1150,7 @@ TEST_CASE( "applyMultiVarPhaseFuncOverrides", "[operators]" ) {
         }
 
         // override to a random phase
-        qreal overridePhases[numOverrides];
+        VLA(qreal, overridePhases, numOverrides);
         for (int v=0; v<numOverrides; v++)
             overridePhases[v] = getRandomReal(-4, 4); // periodic in [-pi, pi]
             
@@ -1360,7 +1360,7 @@ TEST_CASE( "applyNamedPhaseFunc", "[operators]" ) {
         
         // assign each sub-reg its minimum length
         int unallocQubits = totalNumQubits;
-        int numQubitsPerReg[numRegs];
+        VLA(int, numQubitsPerReg, numRegs);
         for (int i=0; i<numRegs; i++) 
             if (encoding == UNSIGNED) {
                 numQubitsPerReg[i] = 1;
@@ -1377,7 +1377,7 @@ TEST_CASE( "applyNamedPhaseFunc", "[operators]" ) {
         }
         
         // for reference, determine the values corresponding to each register for all basis states
-        qreal regVals[1<<totalNumQubits][numRegs];
+        std::vector<std::vector<qreal>> regVals(1<<totalNumQubits, std::vector<qreal>(numRegs));
         for (long long int i=0; i<(1<<totalNumQubits); i++) {
             
             long long int bits = i;
@@ -1572,7 +1572,7 @@ TEST_CASE( "applyNamedPhaseFuncOverrides", "[operators]" ) {
         
         // assign each sub-reg its minimum length
         int unallocQubits = totalNumQubits;
-        int numQubitsPerReg[numRegs];
+        VLA(int, numQubitsPerReg, numRegs);
         for (int i=0; i<numRegs; i++) 
             if (encoding == UNSIGNED) {
                 numQubitsPerReg[i] = 1;
@@ -1593,7 +1593,7 @@ TEST_CASE( "applyNamedPhaseFuncOverrides", "[operators]" ) {
         int numOverrides = getRandomInt(0, (1<<totalNumQubits) + 1);
         
         // randomise each override index (uniqueness isn't checked)
-        long long int overrideInds[numOverrides*numRegs];
+        VLA(long long int, overrideInds, numOverrides*numRegs);
         int flatInd = 0;
         for (int v=0; v<numOverrides; v++) {
             for (int r=0; r<numRegs; r++) {
@@ -1606,13 +1606,13 @@ TEST_CASE( "applyNamedPhaseFuncOverrides", "[operators]" ) {
         }
 
         // override to a random phase
-        qreal overridePhases[numOverrides];
+        VLA(qreal, overridePhases, numOverrides);
         for (int v=0; v<numOverrides; v++)
             overridePhases[v] = getRandomReal(-4, 4); // periodic in [-pi, pi]
             
             
         // determine the values corresponding to each register for all basis states
-        qreal regVals[1<<totalNumQubits][numRegs];
+        std::vector<std::vector<qreal>> regVals(1<<totalNumQubits, std::vector<qreal>(numRegs));
         for (long long int i=0; i<(1<<totalNumQubits); i++) {
             
             long long int bits = i;
@@ -1851,7 +1851,7 @@ TEST_CASE( "applyParamNamedPhaseFunc", "[operators]" ) {
         
         // assign each sub-reg its minimum length
         int unallocQubits = totalNumQubits;
-        int numQubitsPerReg[numRegs];
+        VLA(int, numQubitsPerReg, numRegs);
         for (int i=0; i<numRegs; i++) 
             if (encoding == UNSIGNED) {
                 numQubitsPerReg[i] = 1;
@@ -1874,7 +1874,7 @@ TEST_CASE( "applyParamNamedPhaseFunc", "[operators]" ) {
         QMatrix diagMatr = getZeroMatrix(1 << totalNumQubits);
         
         // determine the values corresponding to each register for all basis states
-        qreal regVals[1<<totalNumQubits][numRegs];
+        std::vector<std::vector<qreal>> regVals(1<<totalNumQubits, std::vector<qreal>(numRegs));
         for (long long int i=0; i<(1<<totalNumQubits); i++) {
             
             long long int bits = i;
@@ -1980,7 +1980,7 @@ TEST_CASE( "applyParamNamedPhaseFunc", "[operators]" ) {
             
             enum phaseFunc func = SCALED_INVERSE_SHIFTED_NORM;
             int numParams = 2 + numRegs;
-            qreal params[numParams];
+            VLA(qreal, params, numParams);
             params[0] = getRandomReal(-10, 10); // scaling
             params[1] = getRandomReal(-4, 4); // divergence override
             for (int r=0; r<numRegs; r++)
@@ -2207,7 +2207,7 @@ TEST_CASE( "applyParamNamedPhaseFunc", "[operators]" ) {
             
             enum phaseFunc func = SCALED_INVERSE_SHIFTED_DISTANCE;
             int numParams = 2 + numRegs/2;
-            qreal params[numParams];
+            VLA(qreal, params, numParams);
             
             // test only if there are an even number of registers
             if (numRegs%2 == 0) {
@@ -2288,7 +2288,7 @@ TEST_CASE( "applyParamNamedPhaseFunc", "[operators]" ) {
         }
         SECTION( "phase function parameters" ) {
             
-            qreal params[numRegs + 3];
+            VLA(qreal, params, numRegs + 3);
             for (int r=0; r<numRegs + 3; r++)
                 params[r] = 0;
             
@@ -2378,7 +2378,7 @@ TEST_CASE( "applyParamNamedPhaseFuncOverrides", "[operators]" ) {
         
         // assign each sub-reg its minimum length
         int unallocQubits = totalNumQubits;
-        int numQubitsPerReg[numRegs];
+        VLA(int, numQubitsPerReg, numRegs);
         for (int i=0; i<numRegs; i++) 
             if (encoding == UNSIGNED) {
                 numQubitsPerReg[i] = 1;
@@ -2399,7 +2399,7 @@ TEST_CASE( "applyParamNamedPhaseFuncOverrides", "[operators]" ) {
         int numOverrides = getRandomInt(0, (1<<totalNumQubits) + 1);
         
         // randomise each override index (uniqueness isn't checked)
-        long long int overrideInds[numOverrides*numRegs];
+        VLA(long long int, overrideInds, numOverrides*numRegs);
         int flatInd = 0;
         for (int v=0; v<numOverrides; v++) {
             for (int r=0; r<numRegs; r++) {
@@ -2412,13 +2412,13 @@ TEST_CASE( "applyParamNamedPhaseFuncOverrides", "[operators]" ) {
         }
 
         // override to a random phase
-        qreal overridePhases[numOverrides];
+        VLA(qreal, overridePhases, numOverrides);
         for (int v=0; v<numOverrides; v++)
             overridePhases[v] = getRandomReal(-4, 4); // periodic in [-pi, pi]
 
 
         // determine the values corresponding to each register for all basis states
-        qreal regVals[1<<totalNumQubits][numRegs];
+        std::vector<std::vector<qreal>> regVals(1<<totalNumQubits, std::vector<qreal>(numRegs));
         for (long long int i=0; i<(1<<totalNumQubits); i++) {
             
             long long int bits = i;
@@ -2530,7 +2530,7 @@ TEST_CASE( "applyParamNamedPhaseFuncOverrides", "[operators]" ) {
             
             enum phaseFunc func = SCALED_INVERSE_SHIFTED_NORM;
             int numParams = 2 + numRegs;
-            qreal params[numParams];
+            VLA(qreal, params, numParams);
             params[0] = getRandomReal(-10, 10); // scaling
             params[1] = getRandomReal(-4, 4); // divergence override
             for (int r=0; r<numRegs; r++)
@@ -2762,7 +2762,7 @@ TEST_CASE( "applyParamNamedPhaseFuncOverrides", "[operators]" ) {
             
             enum phaseFunc func = SCALED_INVERSE_SHIFTED_DISTANCE;
             int numParams = 2 + numRegs/2;
-            qreal params[numParams];
+            VLA(qreal, params, numParams);
             
             // test only if there are an even number of registers
             if (numRegs%2 == 0) {
@@ -2845,7 +2845,7 @@ TEST_CASE( "applyParamNamedPhaseFuncOverrides", "[operators]" ) {
         }
         SECTION( "phase function parameters" ) {
             
-            qreal params[numRegs + 3];
+            VLA(qreal, params, numRegs + 3);
             for (int r=0; r<numRegs + 3; r++)
                 params[r] = 0;
             
@@ -3062,8 +3062,8 @@ TEST_CASE( "applyPauliSum", "[operators]" ) {
         int numPaulis = numTerms * NUM_QUBITS;
         
         // each test will use random coefficients
-        qreal coeffs[numTerms];
-        pauliOpType paulis[numPaulis];
+        VLA(qreal, coeffs, numTerms);
+        VLA(pauliOpType, paulis, numPaulis);
         setRandomPauliSum(coeffs, paulis, NUM_QUBITS, numTerms);
         QMatrix pauliSum = toQMatrix(coeffs, paulis, NUM_QUBITS, numTerms);
         
@@ -3102,7 +3102,7 @@ TEST_CASE( "applyPauliSum", "[operators]" ) {
             // valid codes
             int numTerms = 3;
             int numPaulis = numTerms*NUM_QUBITS;
-            pauliOpType paulis[numPaulis];
+            VLA(pauliOpType, paulis, numPaulis);
             for (int i=0; i<numPaulis; i++)
                 paulis[i] = PAULI_I;
             
@@ -3159,8 +3159,8 @@ TEST_CASE( "applyPhaseFunc", "[operators]" ) {
         
         // populate the phase function with random but POSITIVE-power terms,
         // and in two's complement mode, strictly integer powers
-        qreal coeffs[numTerms];
-        qreal expons[numTerms];
+        VLA(qreal, coeffs, numTerms);
+        VLA(qreal, expons, numTerms);
         for (int t=0; t<numTerms; t++) {
             coeffs[t] = getRandomReal(-10,10);
             if (encoding == TWOS_COMPLEMENT)
@@ -3290,8 +3290,8 @@ TEST_CASE( "applyPhaseFuncOverrides", "[operators]" ) {
         // populate the phase function with random powers.
         // this includes negative powers, so we must always override 0.
         // in two's complement, we must use only integer powers
-        qreal coeffs[numTerms];
-        qreal expons[numTerms];
+        VLA(qreal, coeffs, numTerms);
+        VLA(qreal, expons, numTerms);
         for (int t=0; t<numTerms; t++) {
             coeffs[t] = getRandomReal(-10,10);
             if (encoding == TWOS_COMPLEMENT)
@@ -3304,7 +3304,7 @@ TEST_CASE( "applyPhaseFuncOverrides", "[operators]" ) {
         int numOverrides = getRandomInt(1, (1<<numQubits) + 1);
         
         // randomise each override index (uniqueness isn't checked)
-        long long int overrideInds[numOverrides];
+        VLA(long long int, overrideInds, numOverrides);
         overrideInds[0] = 0LL;
         for (int i=1; i<numOverrides; i++)
             if (encoding == UNSIGNED)
@@ -3313,7 +3313,7 @@ TEST_CASE( "applyPhaseFuncOverrides", "[operators]" ) {
                 overrideInds[i] = getRandomInt(-(1<<(numQubits-1)), (1<<(numQubits-1))-1);
             
         // override to a random phase
-        qreal overridePhases[numOverrides];
+        VLA(qreal, overridePhases, numOverrides);
         for (int i=0; i<numOverrides; i++)
             overridePhases[i] = getRandomReal(-4, 4); // periodic in [-pi, pi]
             
@@ -3434,8 +3434,8 @@ TEST_CASE( "applyPhaseFuncOverrides", "[operators]" ) {
             REQUIRE_THROWS_WITH( applyPhaseFuncOverrides(quregVec, qubits, numQubits, TWOS_COMPLEMENT, coeffs, expos, numTerms, NULL, NULL, 0), Contains("fractional exponent") && Contains("TWOS_COMPLEMENT") && Contains("negative indices were not overriden") );
             
             int numNegs = 1 << (numQubits-1);
-            long long int overrideInds[numNegs];
-            qreal overridePhases[numNegs];
+            VLA(long long int, overrideInds, numNegs);
+            VLA(qreal, overridePhases, numNegs);
             for (int i=0; i<numNegs; i++) {
                 overrideInds[i] = -(i+1);
                 overridePhases[i] = 0;

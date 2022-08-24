@@ -8,12 +8,6 @@ using Catch::Matchers::Contains;
 
 
 
-
-// DEBUG 
-#include <sys/time.h>
-
-
-
 /** @sa calcDensityInnerProduct
  * @ingroup unittest 
  * @author Tyson Jones 
@@ -322,7 +316,7 @@ TEST_CASE( "calcExpecPauliProd", "[calculations]" ) {
          * Hence, we instead opt to repeatedlyrandomly generate pauliseqs
          */
         GENERATE( range(0,10) ); // gen 10 random pauli-codes for every targs
-        pauliOpType paulis[numTargs];
+        VLA(pauliOpType, paulis, numTargs);
         for (int i=0; i<numTargs; i++)
             paulis[i] = (pauliOpType) getRandomInt(0,4);
             
@@ -462,8 +456,8 @@ TEST_CASE( "calcExpecPauliSum", "[calculations]" ) {
          */
         GENERATE( range(0,10) );
         int totNumCodes = numSumTerms*NUM_QUBITS;
-        pauliOpType paulis[totNumCodes];
-        qreal coeffs[numSumTerms];
+        VLA(pauliOpType, paulis, totNumCodes);
+        VLA(qreal, coeffs, numSumTerms);
         setRandomPauliSum(coeffs, paulis, NUM_QUBITS, numSumTerms);
         
         // produce a numTargs-big matrix 'pauliSum' by pauli-matrix tensoring and summing
@@ -506,8 +500,8 @@ TEST_CASE( "calcExpecPauliSum", "[calculations]" ) {
             
             // make valid params
             int numSumTerms = 3;
-            qreal coeffs[numSumTerms];
-            pauliOpType codes[numSumTerms*NUM_QUBITS];
+            VLA(qreal, coeffs, numSumTerms);
+            VLA(pauliOpType, codes, numSumTerms*NUM_QUBITS);
             for (int i=0; i<numSumTerms*NUM_QUBITS; i++)
                 codes[i] = PAULI_I;
 
@@ -892,7 +886,7 @@ TEST_CASE( "calcProbOfAllOutcomes", "[calculations]" ) {
         int* qubits = GENERATE_COPY( sublists(range(0,NUM_QUBITS), numQubits) );
         
         int numOutcomes = 1<<numQubits;
-        qreal probs[numOutcomes];
+        VLA(qreal, probs, numOutcomes);
         QVector refProbs = QVector(numOutcomes);
             
         SECTION( "state-vector" ) {
