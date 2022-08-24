@@ -44,16 +44,13 @@ extern QuESTEnv QUEST_ENV;
  *     ([a-zA-Z0-9]+?) ([a-zA-Z0-9]+?)\[([a-zA-Z0-9]+?)\]
  * replacing results with:
  *      VLA($1, $2, $3)
+ * We perform this replacement even for non-MSVC compilers, since some dislike 
+ * VLAs of non-POD elemets (like of QMatrix, compiling with NVCC + Clang). 
  * Eat it, Bill!
  */
-#if defined _WIN32 || defined _WIN64
-    #define VLA(type, name, len) \
-        std::vector<type> name##_vla_hack_vec(len); \
-        type* name = name##_vla_hack_vec.data();
-#else
-    #define VLA(type, name, len) type name[len];
-    #define VLA2D(type, name, len1, len2) type name[len1][len2];
-#endif
+#define VLA(type, name, len) \
+    std::vector<type> name##_vla_hack_vec(len); \
+    type* name = name##_vla_hack_vec.data();
 
 /** A complex square matrix. 
  * Should be initialised with getZeroMatrix().
