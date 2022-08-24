@@ -3966,6 +3966,81 @@ void statevec_applyParamNamedPhaseFuncOverrides(
         cudaFree(d_params);
 }
 
+__global__ void densmatr_setQuregToPauliHamilKernel(
+    Qureg qureg, enum pauliOpType* pauliCodes, qreal* termCoeffs, int numSumTerms
+) {
+    long long int n = blockIdx.x*blockDim.x + threadIdx.x;
+    if (n>=qureg.numAmpsPerChunk) return;
+    
+    // flattened {I,X,Y,Z} matrix elements, where [k] = [p][i][j]
+    const int pauliRealElems[] = {   1,0, 0,1,   0,1, 1,0,   0,0, 0,0,   1,0, 0,-1  };
+    const int pauliImagElems[] = {   0,0, 0,0,   0,0, 0,0,   0,-1,1,0,   0,0, 0,0   };
+
+    // |n> = |c>|r>
+    const int numQubits = qureg.numQubitsRepresented;
+    const long long int r = n & ((1LL << numQubits) - 1);
+    const long long int c = n >> numQubits;
+
+    // new amplitude of |n>
+    qreal elemRe = 0;
+    qreal elemIm = 0;
+    
+    for (long long int t=0; t<numSumTerms; t++) {
+        
+        // pauliKronecker[r][c] = prod_q Pauli[q][q-th bit of r and c]
+        int kronRe = 1;
+        int kronIm = 0;
+        long long int pInd = t * numQubits;
+        
+        for (int q=0; q<numQubits; q++) {
+            
+            // get element of Pauli matrix
+            int i = (r >> q) & 1;
+            int j = (c >> q) & 1;
+            int p = (int) pauliCodes[pInd++];
+            int k = (p<<2) + (i<<1) + j;
+            int pauliRe = pauliRealElems[k]; 
+            int pauliIm = pauliImagElems[k];
+            
+            // kron *= pauli
+            int tmp = (pauliRe*kronRe) - (pauliIm*kronIm);
+            kronIm = (pauliRe*kronIm) + (pauliIm*kronRe);
+            kronRe = tmp;
+        }
+        
+        // elem = sum_t coeffs[t] pauliKronecker[r][c]
+        elemRe += termCoeffs[t] * kronRe;
+        elemIm += termCoeffs[t] * kronIm;
+    }
+    
+    // overwrite the density matrix entry
+    qureg.deviceStateVec.real[n] = elemRe;
+    qureg.deviceStateVec.imag[n] = elemIm;
+}
+
+void densmatr_setQuregToPauliHamil(Qureg qureg, PauliHamil hamil) {
+    
+    // copy hamil into GPU memory
+    enum pauliOpType* d_pauliCodes;
+    size_t mem_pauliCodes = hamil.numSumTerms * hamil.numQubits * sizeof *d_pauliCodes;
+    cudaMalloc(&d_pauliCodes, mem_pauliCodes);
+    cudaMemcpy(d_pauliCodes, hamil.pauliCodes, mem_pauliCodes, cudaMemcpyHostToDevice);
+    
+    qreal* d_termCoeffs;
+    size_t mem_termCoeffs = hamil.numSumTerms * sizeof *d_termCoeffs;
+    cudaMalloc(&d_termCoeffs, mem_termCoeffs);
+    cudaMemcpy(d_termCoeffs, hamil.termCoeffs, mem_termCoeffs, cudaMemcpyHostToDevice);
+    
+    int numThreadsPerBlock = 128;
+    int numBlocks = ceil(qureg.numAmpsPerChunk / (qreal) numThreadsPerBlock);
+    densmatr_setQuregToPauliHamilKernel<<<numBlocks, numThreadsPerBlock>>>(
+        qureg, d_pauliCodes, d_termCoeffs, hamil.numSumTerms);
+
+    // free tmp GPU memory
+    cudaFree(d_pauliCodes);
+    cudaFree(d_termCoeffs);
+}
+
 void seedQuEST(QuESTEnv *env, unsigned long int *seedArray, int numSeeds) {
 
     // free existing seed array, if exists
