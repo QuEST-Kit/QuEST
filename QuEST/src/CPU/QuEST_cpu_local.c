@@ -228,7 +228,7 @@ void getQuESTLibraryData(QuESTEnv env, QuESTLibraryData *plibdat) {
     plibdat->MPI        = 0;
     plibdat->threads    = numThreads;
     plibdat->ranks      = 1;
-    plibdat->QuEST_PREC = getQuEST_PREC();
+    plibdat->QuEST_Prec = getQuEST_PREC();  // use of undocumented function
 }
 
 

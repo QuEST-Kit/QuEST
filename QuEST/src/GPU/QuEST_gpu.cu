@@ -509,7 +509,7 @@ void getQuESTLibraryData(QuESTEnv env, QuESTLibraryData *plibdat) {
     plibdat->MPI        = 0;
     plibdat->threads    = numThreads;
     plibdat->ranks      = 1;
-    plibdat->QuEST_PREC = getQuEST_PREC();
+    plibdat->QuEST_Prec = sizeof(qreal)/4; // getQuEST_Prec cannot be run here
 }
 
 

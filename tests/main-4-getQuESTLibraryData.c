@@ -1,20 +1,25 @@
 #include <string.h>
 #include <stdio.h>
+#include "QuEST.h"
 
 int main(int, char*[]) {
-  quenv = createQuESTEnv();
+  QuESTEnv quenv = createQuESTEnv();
 
   {
        QuESTLibraryData libdat;
        printf("Testing `getQuESTLibraryData()`...\n"); fflush(stdout);
        getQuESTLibraryData(quenv, &libdat);
 
+       printf("CUDA=%d OpenMP=%d MPI=%d threads=%d ranks=%d QuEST_PREC=%d \n",
+               (int)libdat.CUDA, (int)libdat.OpenMP, (int)libdat.MPI,
+               (int)libdat.threads, (int)libdat.ranks, (int)libdat.QuEST_Prec);
+
        printf("Test correctness of the precision info...\n"); fflush(stdout);
        if ( libdat.QuEST_Prec == sizeof(qreal)/4 ) {
             printf("... fine.\n");
        } else {
             printf("`getQuESTLibraryData()` gave %d but truth is %d.\n",
-                   libdat.QuEST_Prec, sizeof(qreal)/4);
+                   (int)libdat.QuEST_Prec, (int)sizeof(qreal)/4);
        }
 
        printf("Test correctness of the rest via `getEnvironmentString()`...\n"); fflush(stdout);

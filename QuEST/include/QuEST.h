@@ -1952,7 +1952,7 @@ void getEnvironmentString(QuESTEnv env, char str[200]);
 
 /** The following include is needed to make available int32_t, the integer type which is,
  * with certainty, 32 bits long. */
-#include <stdint>
+#include <stdint.h>
 
 /** Information identifying the configuration with which the QuEST library object code was
  * generated.  It is implemented in the most hardware independent way possible, to make it
@@ -1965,14 +1965,14 @@ void getEnvironmentString(QuESTEnv env, char str[200]);
  * @author Handy Kurniawan
  * @author Dirk Oliver Theis
  */
-typedef struct QuESTLibraryData
-{
+typedef struct {
      int32_t CUDA;
      int32_t OpenMP;
      int32_t MPI;
      int32_t threads;
      int32_t ranks;
-     int32_t QuEST_PREC;
+     int32_t QuEST_Prec;
+
 } QuESTLibraryData;
 
 /** Fills \p plibdat with the information identifying the configuration with which the

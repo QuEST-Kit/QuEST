@@ -219,7 +219,7 @@ void getQuESTLibraryData(QuESTEnv env, QuESTLibraryData *plibdat) {
     plibdat->MPI        = 1;
     plibdat->threads    = numThreads;
     plibdat->ranks      = env.numRanks;
-    plibdat->QuEST_PREC = getQuEST_PREC();
+    plibdat->QuEST_Prec = getQuEST_PREC(); // use of undocumented function
 }
 
 
