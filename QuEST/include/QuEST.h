@@ -1950,15 +1950,15 @@ void reportQuESTEnv(QuESTEnv env);
  */
 void getEnvironmentString(QuESTEnv env, char str[200]);
 
-/** The following include is needed to make available int32_t, the integer type which is,
+/* The following include is needed to make available int32_t, the integer type which is,
  * with certainty, 32 bits long. */
 #include <stdint.h>
 
 /** Information identifying the configuration with which the QuEST library object code was
- * generated.  It is implemented in the most hardware independent way possible, to make it
+ * generated.  It is implemented in the most hardware independent way possible (using <b>int32_t</b> from <b>stdint.h</b>), to make it
  * safe for calling in situations where configuration and C-compiler used for creating the
- * QuEST libary object file are not known.  This is often the case in HPC environments,
- * where there will be several versions of the QuEST libary available on the system.
+ * QuEST library object file are not known.  This is often the case in HPC environments,
+ * where there will be several versions of the QuEST library available on the system.
  *
  * @ingroup type
  * @author Handy Kurniawan
@@ -1977,11 +1977,11 @@ typedef struct {
 /** Fills \p plibdat with the information identifying the configuration with which the
  * QuEST library object code was generated.  It is similar to the function
  * <b>getEnvironmentString</b>, but (a) it also includes the QuEST Precision that was used
- * for compiling the libary code, and (b) it doesn't require to parse a string.
+ * for compiling the library code, and (b) it doesn't require to parse a string.
  *
  * This information allows user programs that dynamically link QuEST, i.e., load (e.g.)
  * libQuEST.so, to automatically verify that the library file is compatible with the user
- * configuration and intentended hardware use.
+ * configuration and intended hardware use.
  *
  * @ingroup debug
  * @param[in] env object representing the execution environment. A single instance is used for each program
