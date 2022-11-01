@@ -216,6 +216,22 @@ void getEnvironmentString(QuESTEnv env, char str[200]){
     sprintf(str, "CUDA=0 OpenMP=%d MPI=0 threads=%d ranks=1", ompStatus, numThreads);
 }
 
+void getQuESTLibraryData(QuESTEnv env, QuESTLibraryData *plibdat) {
+    int ompStatus=0;
+    int numThreads=1;
+# ifdef _OPENMP
+    ompStatus=1;
+    numThreads=omp_get_max_threads();
+# endif
+    plibdat->CUDA       = 0;
+    plibdat->OpenMP     = ompStatus;
+    plibdat->MPI        = 0;
+    plibdat->threads    = numThreads;
+    plibdat->ranks      = 1;
+    plibdat->QuEST_PREC = getQuEST_PREC();
+}
+
+
 qreal statevec_getRealAmp(Qureg qureg, long long int index){
     return qureg.stateVec.real[index];
 }

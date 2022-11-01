@@ -207,6 +207,22 @@ void getEnvironmentString(QuESTEnv env, char str[200]){
     sprintf(str, "CUDA=0 OpenMP=%d MPI=1 threads=%d ranks=%d", ompStatus, numThreads, env.numRanks);
 }
 
+void getQuESTLibraryData(QuESTEnv env, QuESTLibraryData *plibdat) {
+    int ompStatus=0;
+    int numThreads=1;
+# ifdef _OPENMP
+    ompStatus=1;
+    numThreads=omp_get_max_threads(); 
+# endif
+    plibdat->CUDA       = 0;
+    plibdat->OpenMP     = ompStatus;
+    plibdat->MPI        = 1;
+    plibdat->threads    = numThreads;
+    plibdat->ranks      = env.numRanks;
+    plibdat->QuEST_PREC = getQuEST_PREC();
+}
+
+
 int getChunkIdFromIndex(Qureg qureg, long long int index){
     return index/qureg.numAmpsPerChunk; // this is numAmpsPerChunk
 }
