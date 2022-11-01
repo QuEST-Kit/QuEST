@@ -15,7 +15,7 @@ int main(int, char*[]) {
                (int)libdat.threads, (int)libdat.ranks, (int)libdat.QuEST_Prec);
 
        printf("Test correctness of the precision info...\n"); fflush(stdout);
-       if ( libdat.QuEST_Prec == sizeof(qreal)/4 ) {
+       if ( libdat.QuEST_Prec == (int)sizeof(qreal)/4 ) {
             printf("... fine.\n");
        } else {
             printf("`getQuESTLibraryData()` gave %d but truth is %d.\n",
