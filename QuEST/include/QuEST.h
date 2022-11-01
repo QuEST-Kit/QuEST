@@ -1950,6 +1950,48 @@ void reportQuESTEnv(QuESTEnv env);
  */
 void getEnvironmentString(QuESTEnv env, char str[200]);
 
+/** The following include is needed to make available int32_t, the integer type which is,
+ * with certainty, 32 bits long. */
+#include <stdint>
+
+/** Information identifying the configuration with which the QuEST library object code was
+ * generated.  It is implemented in the most hardware independent way possible, to make it
+ * safe for calling in situations where configuration and C-compiler used for creating the
+ * QuEST libary object file are not known.  This is typically the case in HPC
+ * environments, where there would be many versions of the QuEST libary available on the
+ * system.
+ *
+ * @ingroup type
+ * @author Handy Kurniawan
+ * @author Dirk Oliver Theis
+ */
+typedef struct QuESTLibraryData
+{
+     int32_t CUDA;
+     int32_t OpenMP;
+     int32_t MPI;
+     int32_t threads;
+     int32_t ranks;
+     int32_t QuEST_PREC;
+} QuESTLibraryData;
+
+/** Fills \p plibdat with the information identifying the configuration with which the
+ * QuEST library object code was generated.  It is similar to the function
+ * <b>getEnvironmentString</b>, but (a) it also includes the QuEST Precision that was used
+ * for generating the libary object code, and (b) doesn't require to parse a string.
+ *
+ * This allows user programs that dynamically link QuEST, i.e., load (e.g.) libQuEST.so,
+ * to make sure that the library file is compatible with the user program.
+ *
+ * @ingroup debug
+ * @param[in] env object representing the execution environment. A single instance is used for each program
+ * @param[out] plibdat pointer to the QuESTLibraryData struct to be populated, pointing to valid memory!
+ * @author Handy Kurniawan
+ * @author Dirk Oliver Theis
+ */
+void getQuESTLibraryData(QuESTEnv env,  QuESTLibraryData * plibdat);
+
+
 /** In GPU mode, this copies the state-vector (or density matrix) from RAM 
  * (qureg.stateVec) to VRAM / GPU-memory (qureg.deviceStateVec), which is the version 
  * operated upon by other calls to the API. 
