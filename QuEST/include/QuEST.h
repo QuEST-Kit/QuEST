@@ -1957,9 +1957,8 @@ void getEnvironmentString(QuESTEnv env, char str[200]);
 /** Information identifying the configuration with which the QuEST library object code was
  * generated.  It is implemented in the most hardware independent way possible, to make it
  * safe for calling in situations where configuration and C-compiler used for creating the
- * QuEST libary object file are not known.  This is typically the case in HPC
- * environments, where there would be many versions of the QuEST libary available on the
- * system.
+ * QuEST libary object file are not known.  This is often the case in HPC environments,
+ * where there will be several versions of the QuEST libary available on the system.
  *
  * @ingroup type
  * @author Handy Kurniawan
@@ -1978,10 +1977,11 @@ typedef struct {
 /** Fills \p plibdat with the information identifying the configuration with which the
  * QuEST library object code was generated.  It is similar to the function
  * <b>getEnvironmentString</b>, but (a) it also includes the QuEST Precision that was used
- * for generating the libary object code, and (b) doesn't require to parse a string.
+ * for compiling the libary code, and (b) it doesn't require to parse a string.
  *
- * This allows user programs that dynamically link QuEST, i.e., load (e.g.) libQuEST.so,
- * to make sure that the library file is compatible with the user program.
+ * This information allows user programs that dynamically link QuEST, i.e., load (e.g.)
+ * libQuEST.so, to automatically verify that the library file is compatible with the user
+ * configuration and intentended hardware use.
  *
  * @ingroup debug
  * @param[in] env object representing the execution environment. A single instance is used for each program
