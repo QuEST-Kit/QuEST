@@ -174,6 +174,10 @@ TEST_CASE( "createDensityQureg", "[data_structures]" ) {
             /* n-qubit density matrix contains 2^(2n) amplitudes 
              * so can be spread between at most 2^(2n) ranks
              */
+            /* env.numRanks is an int, so maxQb must be capped at 16 for this
+             * test to avoid an integer overflow when storing 2**(2*minQb) in it
+             */
+            maxQb = maxQb > 16 ? 16 : maxQb;
             int minQb = GENERATE_COPY( range(3,maxQb) );
             env.numRanks = (int) pow(2, 2*minQb);
             int numQb = GENERATE_COPY( range(1,minQb) );
@@ -238,6 +242,10 @@ TEST_CASE( "createDiagonalOp", "[data_structures]" ) {
             int maxQb = (int) calcLog2(SIZE_MAX);
             REQUIRE_THROWS_WITH( createDiagonalOp(maxQb+1, env), Contains("Too many qubits") && Contains("size_t type") );
             
+            /* env.numRanks is an int, so maxQb must be capped at 32 for this
+             * test to avoid an integer overflow when storing 2**minQb in it
+             */
+            maxQb = maxQb > 32 ? 32 : maxQb;
             // too few amplitudes to distribute
             int minQb = GENERATE_COPY( range(2,maxQb) );
             env.numRanks = (int) pow(2, minQb);
@@ -378,6 +386,10 @@ TEST_CASE( "createDiagonalOpFromPauliHamilFile", "[data_structures]" ) {
             QuESTEnv env = QUEST_ENV;
             
             // too few elements to distribute
+            /* env.numRanks is an int, so maxQb must be capped at 32 for this
+             * test to avoid an integer overflow when storing 2**minQb in it
+             */
+            maxQb = maxQb > 32 ? 32 : maxQb;
             int minQb = GENERATE_COPY( range(2,maxQb) );
             env.numRanks = (int) pow(2, minQb);
             int numQb = GENERATE_COPY( range(1,minQb) );
@@ -651,6 +663,10 @@ TEST_CASE( "createQureg", "[data_structures]" ) {
             REQUIRE_THROWS_WITH( createQureg(maxQb+1, env), Contains("Too many qubits") && Contains("size_t type") );
             
             // too few amplitudes to distribute
+            /* env.numRanks is an int, so maxQb must be capped at 32 for this
+             * test to avoid an integer overflow when storing 2**minQb in it
+             */
+            maxQb = maxQb > 32 ? 32 : maxQb;
             int minQb = GENERATE_COPY( range(2,maxQb) );
             env.numRanks = (int) pow(2, minQb);
             int numQb = GENERATE_COPY( range(1,minQb) );
