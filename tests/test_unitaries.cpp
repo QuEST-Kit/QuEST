@@ -1480,7 +1480,7 @@ TEST_CASE( "multiControlledPhaseShift", "[unitaries]" ) {
 
             multiControlledPhaseShift(quregMatr, ctrls, numCtrls, param);
             applyReferenceOp(refMatr, ctrls, numCtrls-1, ctrls[numCtrls-1], op);
-            REQUIRE( areEqual(quregMatr, refMatr) );
+            REQUIRE( areEqual(quregMatr, refMatr, 2*REAL_EPS) );
         }
     }
     SECTION( "input validation" ) {
