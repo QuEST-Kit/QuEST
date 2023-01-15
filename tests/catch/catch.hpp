@@ -12,6 +12,14 @@
 #define TWOBLUECUBES_SINGLE_INCLUDE_CATCH_HPP_INCLUDED
 // start catch.hpp
 
+/* code injection for the silencing of distributed testing. Requires that when 
+ * running tests in distributed mode, a compiler constant DISTRIBUTED_MODE must 
+ * be supplied when processing this file.
+ * modified by Tyson Jones, 17th Jan 2020
+ */
+#ifdef DISTRIBUTED_MODE
+#include <mpi.h>
+#endif
 
 #define CATCH_VERSION_MAJOR 2
 #define CATCH_VERSION_MINOR 13
