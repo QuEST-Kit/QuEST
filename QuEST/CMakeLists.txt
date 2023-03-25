@@ -46,7 +46,7 @@ message(STATUS "OMP acceleration is ${MULTITHREADED}")
 message(STATUS "MPI distribution is ${DISTRIBUTED}")
 
 if (${SHARED})
-    message(STATUS "Build shard library")
+    message(STATUS "Build shared library")
 else ()
     message(STATUS "Build static library")
 endif ()
