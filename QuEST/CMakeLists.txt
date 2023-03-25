@@ -33,7 +33,7 @@ option(GPUACCELERATED "Whether to program will run on GPU. Set to 1 to enable" 0
 
 set(GPU_COMPUTE_CAPABILITY 30 CACHE STRING "GPU hardware dependent, lookup at https://developer.nvidia.com/cuda-gpus. Write without fullstop")
 
-
+option(SHARED "Whether to build a shared library. Set to 1 to build a shared library, 0 to build a static library" 1)
 
 # *****************************************************************************
 # ***** NO CHANGES SHOULD BE REQUIRED FROM THE USER BEYOND THIS POINT *********
@@ -45,6 +45,11 @@ message(STATUS "GPU acceleration is ${GPUACCELERATED}")
 message(STATUS "OMP acceleration is ${MULTITHREADED}")
 message(STATUS "MPI distribution is ${DISTRIBUTED}")
 
+if (${SHARED})
+    message(STATUS "Build shard library")
+else ()
+    message(STATUS "Build static library")
+endif ()
 
 # -----------------------------------------------------------------------------
 # ----- CHECK FOR VALID CONFIG SETTINGS ---------------------------------------
@@ -290,7 +295,7 @@ endif()
 
 add_subdirectory(src)
 
-if (NOT WIN32)
+if (${SHARED})
     set(BUILD_SHARED_LIBS TRUE CACHE BOOL "Whether to build a dynamic library")
 else ()
     set(BUILD_SHARED_LIBS FALSE CACHE BOOL "Whether to build a dynamic library")
