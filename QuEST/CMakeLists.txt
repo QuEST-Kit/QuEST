@@ -299,6 +299,7 @@ if (${SHARED})
     set(BUILD_SHARED_LIBS TRUE CACHE BOOL "Whether to build a dynamic library")
 else ()
     set(BUILD_SHARED_LIBS FALSE CACHE BOOL "Whether to build a dynamic library")
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fPIC")
 endif ()
 
 
