@@ -5,6 +5,7 @@
 
 # CMake initialisation.
 cmake_minimum_required(VERSION 3.7)
+list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/cmake")
 
 message(STATUS "CMake version: ${CMAKE_VERSION}")
 message(STATUS "CMake build type: ${CMAKE_BUILD_TYPE}")
