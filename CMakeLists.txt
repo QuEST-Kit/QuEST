@@ -19,6 +19,7 @@ project(QuEST_Project)
 
 set(USER_SOURCE  "examples/tutorial_example.c"  CACHE STRING "Source to build with QuEST library")
 set(OUTPUT_EXE   "demo"  CACHE STRING "Executable to compile to")
+set(WITH_EXAMPLES "Whether to build the examples" 0)
 
 option(TESTING "Enable unit testing. This disables compiling USER_SOURCE" OFF)
 
@@ -41,16 +42,21 @@ endif()
 # -----------------------------------------------------------------------------
 
 if (NOT TESTING)
-    message(STATUS "Compiling ${USER_SOURCE} to executable ${OUTPUT_EXE}")
-
-    # Create user executable
-    add_executable(${OUTPUT_EXE} ${USER_SOURCE})
-
-    # Link libraries to user executable, including QuEST library
-    if (WIN32)
-        target_link_libraries(${OUTPUT_EXE} QuEST)
-    else ()
-        target_link_libraries(${OUTPUT_EXE} QuEST m)
+    if (WITH_EXAMPLES)
+        set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib")
+        file( GLOB APP_SOURCES examples/*.c )
+        message(STATUS "Compiling examples")
+        foreach( examplesourcefile ${APP_SOURCES} )
+            string( REPLACE ".c" "" sname ${examplesourcefile} )
+            get_filename_component(ename ${sname} NAME )
+            add_executable( ${ename} ${examplesourcefile} )
+            if (WIN32)
+                target_link_libraries( ${ename} QuEST )
+            else ()
+                target_link_libraries( ${ename} QuEST m)
+            endif()
+            install(TARGETS ${ename} DESTINATION examples )
+        endforeach( examplesourcefile ${APP_SOURCES} )
     endif()
 endif()
 

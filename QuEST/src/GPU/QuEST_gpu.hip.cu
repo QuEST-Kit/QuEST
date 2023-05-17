@@ -1,3 +1,4 @@
+#include "hip/hip_runtime.h"
 // Distributed under MIT licence. See https://github.com/QuEST-Kit/QuEST/blob/master/LICENCE.txt for details
 
 /** @file
@@ -153,17 +154,17 @@ extern "C" {
 
 void statevec_setAmps(Qureg qureg, long long int startInd, qreal* reals, qreal* imags, long long int numAmps) {
     
-    cudaDeviceSynchronize();
-    cudaMemcpy(
+    hipDeviceSynchronize();
+    hipMemcpy(
         qureg.deviceStateVec.real + startInd, 
         reals,
         numAmps * sizeof(*(qureg.deviceStateVec.real)), 
-        cudaMemcpyHostToDevice);
-    cudaMemcpy(
+        hipMemcpyHostToDevice);
+    hipMemcpy(
         qureg.deviceStateVec.imag + startInd,
         imags,
         numAmps * sizeof(*(qureg.deviceStateVec.imag)), 
-        cudaMemcpyHostToDevice);
+        hipMemcpyHostToDevice);
 }
 
 
@@ -171,17 +172,17 @@ void statevec_setAmps(Qureg qureg, long long int startInd, qreal* reals, qreal* 
 void statevec_cloneQureg(Qureg targetQureg, Qureg copyQureg) {
     
     // copy copyQureg's GPU statevec to targetQureg's GPU statevec
-    cudaDeviceSynchronize();
-    cudaMemcpy(
+    hipDeviceSynchronize();
+    hipMemcpy(
         targetQureg.deviceStateVec.real, 
         copyQureg.deviceStateVec.real, 
         targetQureg.numAmpsPerChunk*sizeof(*(targetQureg.deviceStateVec.real)), 
-        cudaMemcpyDeviceToDevice);
-    cudaMemcpy(
+        hipMemcpyDeviceToDevice);
+    hipMemcpy(
         targetQureg.deviceStateVec.imag, 
         copyQureg.deviceStateVec.imag, 
         targetQureg.numAmpsPerChunk*sizeof(*(targetQureg.deviceStateVec.imag)), 
-        cudaMemcpyDeviceToDevice);
+        hipMemcpyDeviceToDevice);
 }
 
 __global__ void densmatr_initPureStateKernel(
@@ -296,10 +297,10 @@ void statevec_createQureg(Qureg *qureg, int numQubits, QuESTEnv env)
     validateQuregAllocation(qureg, env, __func__);
 
     // allocate GPU memory
-    cudaMalloc(&(qureg->deviceStateVec.real), qureg->numAmpsPerChunk*sizeof(*(qureg->deviceStateVec.real)));
-    cudaMalloc(&(qureg->deviceStateVec.imag), qureg->numAmpsPerChunk*sizeof(*(qureg->deviceStateVec.imag)));
-    cudaMalloc(&(qureg->firstLevelReduction), ceil(qureg->numAmpsPerChunk/(qreal)REDUCE_SHARED_SIZE)*sizeof(qreal));
-    cudaMalloc(&(qureg->secondLevelReduction), ceil(qureg->numAmpsPerChunk/(qreal)(REDUCE_SHARED_SIZE*REDUCE_SHARED_SIZE))*
+    hipMalloc(&(qureg->deviceStateVec.real), qureg->numAmpsPerChunk*sizeof(*(qureg->deviceStateVec.real)));
+    hipMalloc(&(qureg->deviceStateVec.imag), qureg->numAmpsPerChunk*sizeof(*(qureg->deviceStateVec.imag)));
+    hipMalloc(&(qureg->firstLevelReduction), ceil(qureg->numAmpsPerChunk/(qreal)REDUCE_SHARED_SIZE)*sizeof(qreal));
+    hipMalloc(&(qureg->secondLevelReduction), ceil(qureg->numAmpsPerChunk/(qreal)(REDUCE_SHARED_SIZE*REDUCE_SHARED_SIZE))*
             sizeof(qreal));
 
     // check gpu memory allocation was successful
@@ -318,10 +319,10 @@ void statevec_destroyQureg(Qureg qureg, QuESTEnv env)
     }
 
     // Free GPU memory
-    cudaFree(qureg.deviceStateVec.real);
-    cudaFree(qureg.deviceStateVec.imag);
-    cudaFree(qureg.firstLevelReduction);
-    cudaFree(qureg.secondLevelReduction);
+    hipFree(qureg.deviceStateVec.real);
+    hipFree(qureg.deviceStateVec.imag);
+    hipFree(qureg.firstLevelReduction);
+    hipFree(qureg.secondLevelReduction);
 }
 
 DiagonalOp agnostic_createDiagonalOp(int numQubits, QuESTEnv env) {
@@ -342,15 +343,15 @@ DiagonalOp agnostic_createDiagonalOp(int numQubits, QuESTEnv env) {
 
     // allocate GPU memory
     size_t arrSize = op.numElemsPerChunk * sizeof(qreal);
-    cudaMalloc(&(op.deviceOperator.real), arrSize);
-    cudaMalloc(&(op.deviceOperator.imag), arrSize);
+    hipMalloc(&(op.deviceOperator.real), arrSize);
+    hipMalloc(&(op.deviceOperator.imag), arrSize);
 
     // check gpu memory allocation was successful
     validateDiagonalOpGPUAllocation(&op, env, __func__);
 
     // initialise GPU memory to zero
-    cudaMemset(op.deviceOperator.real, 0, arrSize);
-    cudaMemset(op.deviceOperator.imag, 0, arrSize);
+    hipMemset(op.deviceOperator.real, 0, arrSize);
+    hipMemset(op.deviceOperator.imag, 0, arrSize);
 
     return op;
 }
@@ -358,15 +359,15 @@ DiagonalOp agnostic_createDiagonalOp(int numQubits, QuESTEnv env) {
 void agnostic_destroyDiagonalOp(DiagonalOp op) {
     free(op.real);
     free(op.imag);
-    cudaFree(op.deviceOperator.real);
-    cudaFree(op.deviceOperator.imag);
+    hipFree(op.deviceOperator.real);
+    hipFree(op.deviceOperator.imag);
 }
 
 void agnostic_syncDiagonalOp(DiagonalOp op) {
-    cudaDeviceSynchronize();
+    hipDeviceSynchronize();
     size_t mem_elems = op.numElemsPerChunk * sizeof *op.real;
-    cudaMemcpy(op.deviceOperator.real, op.real, mem_elems, cudaMemcpyHostToDevice);
-    cudaMemcpy(op.deviceOperator.imag, op.imag, mem_elems, cudaMemcpyHostToDevice);
+    hipMemcpy(op.deviceOperator.real, op.real, mem_elems, hipMemcpyHostToDevice);
+    hipMemcpy(op.deviceOperator.imag, op.imag, mem_elems, hipMemcpyHostToDevice);
 }
 
 __global__ void agnostic_initDiagonalOpFromPauliHamilKernel(
@@ -403,13 +404,13 @@ void agnostic_initDiagonalOpFromPauliHamil(DiagonalOp op, PauliHamil hamil) {
     // copy args intop GPU memory
     enum pauliOpType* d_pauliCodes;
     size_t mem_pauliCodes = hamil.numSumTerms * op.numQubits * sizeof *d_pauliCodes;
-    cudaMalloc(&d_pauliCodes, mem_pauliCodes);
-    cudaMemcpy(d_pauliCodes, hamil.pauliCodes, mem_pauliCodes, cudaMemcpyHostToDevice);
+    hipMalloc(&d_pauliCodes, mem_pauliCodes);
+    hipMemcpy(d_pauliCodes, hamil.pauliCodes, mem_pauliCodes, hipMemcpyHostToDevice);
     
     qreal* d_termCoeffs;
     size_t mem_termCoeffs = hamil.numSumTerms * sizeof *d_termCoeffs;
-    cudaMalloc(&d_termCoeffs, mem_termCoeffs);
-    cudaMemcpy(d_termCoeffs, hamil.termCoeffs, mem_termCoeffs, cudaMemcpyHostToDevice);
+    hipMalloc(&d_termCoeffs, mem_termCoeffs);
+    hipMemcpy(d_termCoeffs, hamil.termCoeffs, mem_termCoeffs, hipMemcpyHostToDevice);
     
     int numThreadsPerBlock = 128;
     int numBlocks = ceil(op.numElemsPerChunk / (qreal) numThreadsPerBlock);
@@ -417,24 +418,24 @@ void agnostic_initDiagonalOpFromPauliHamil(DiagonalOp op, PauliHamil hamil) {
         op, d_pauliCodes, d_termCoeffs, hamil.numSumTerms);
     
     // copy populated operator into to RAM
-    cudaDeviceSynchronize();
+    hipDeviceSynchronize();
     size_t mem_elems = op.numElemsPerChunk * sizeof *op.real;
-    cudaMemcpy(op.real, op.deviceOperator.real, mem_elems, cudaMemcpyDeviceToHost);
-    cudaMemcpy(op.imag, op.deviceOperator.imag, mem_elems, cudaMemcpyDeviceToHost);
+    hipMemcpy(op.real, op.deviceOperator.real, mem_elems, hipMemcpyDeviceToHost);
+    hipMemcpy(op.imag, op.deviceOperator.imag, mem_elems, hipMemcpyDeviceToHost);
 
-    cudaFree(d_pauliCodes);
-    cudaFree(d_termCoeffs);
+    hipFree(d_pauliCodes);
+    hipFree(d_termCoeffs);
 }
 
 int GPUExists(void){
     int deviceCount, device;
     int gpuDeviceCount = 0;
-    struct cudaDeviceProp properties;
-    cudaError_t cudaResultCode = cudaGetDeviceCount(&deviceCount);
-    if (cudaResultCode != cudaSuccess) deviceCount = 0;
+    struct hipDeviceProp_t properties;
+    hipError_t cudaResultCode = hipGetDeviceCount(&deviceCount);
+    if (cudaResultCode != hipSuccess) deviceCount = 0;
     /* machines with no GPUs can still report one emulation device */
     for (device = 0; device < deviceCount; ++device) {
-        cudaGetDeviceProperties(&properties, device);
+        hipGetDeviceProperties(&properties, device);
         if (properties.major != 9999) { /* 9999 means emulation only */
             ++gpuDeviceCount;
         }
@@ -459,7 +460,7 @@ QuESTEnv createQuESTEnv(void) {
 }
 
 void syncQuESTEnv(QuESTEnv env){
-    cudaDeviceSynchronize();
+    hipDeviceSynchronize();
 } 
 
 int syncQuESTSuccess(int successCode){
@@ -499,42 +500,42 @@ void getEnvironmentString(QuESTEnv env, char str[200]){
 void copyStateToGPU(Qureg qureg)
 {
     if (DEBUG) printf("Copying data to GPU\n");
-    cudaMemcpy(qureg.deviceStateVec.real, qureg.stateVec.real, 
-            qureg.numAmpsPerChunk*sizeof(*(qureg.deviceStateVec.real)), cudaMemcpyHostToDevice);
-    cudaMemcpy(qureg.deviceStateVec.imag, qureg.stateVec.imag, 
-            qureg.numAmpsPerChunk*sizeof(*(qureg.deviceStateVec.imag)), cudaMemcpyHostToDevice);
+    hipMemcpy(qureg.deviceStateVec.real, qureg.stateVec.real, 
+            qureg.numAmpsPerChunk*sizeof(*(qureg.deviceStateVec.real)), hipMemcpyHostToDevice);
+    hipMemcpy(qureg.deviceStateVec.imag, qureg.stateVec.imag, 
+            qureg.numAmpsPerChunk*sizeof(*(qureg.deviceStateVec.imag)), hipMemcpyHostToDevice);
     if (DEBUG) printf("Finished copying data to GPU\n");
 }
 
 void copyStateFromGPU(Qureg qureg)
 {
-    cudaDeviceSynchronize();
+    hipDeviceSynchronize();
     if (DEBUG) printf("Copying data from GPU\n");
-    cudaMemcpy(qureg.stateVec.real, qureg.deviceStateVec.real, 
-            qureg.numAmpsPerChunk*sizeof(*(qureg.deviceStateVec.real)), cudaMemcpyDeviceToHost);
-    cudaMemcpy(qureg.stateVec.imag, qureg.deviceStateVec.imag, 
-            qureg.numAmpsPerChunk*sizeof(*(qureg.deviceStateVec.imag)), cudaMemcpyDeviceToHost);
+    hipMemcpy(qureg.stateVec.real, qureg.deviceStateVec.real, 
+            qureg.numAmpsPerChunk*sizeof(*(qureg.deviceStateVec.real)), hipMemcpyDeviceToHost);
+    hipMemcpy(qureg.stateVec.imag, qureg.deviceStateVec.imag, 
+            qureg.numAmpsPerChunk*sizeof(*(qureg.deviceStateVec.imag)), hipMemcpyDeviceToHost);
     if (DEBUG) printf("Finished copying data from GPU\n");
 }
 
 void statevec_copySubstateToGPU(Qureg qureg, long long int startInd, long long int numAmps)
 {
     if (DEBUG) printf("Copying data to GPU\n");
-    cudaMemcpy(&(qureg.deviceStateVec.real[startInd]), &(qureg.stateVec.real[startInd]), 
-            numAmps*sizeof(*(qureg.deviceStateVec.real)), cudaMemcpyHostToDevice);
-    cudaMemcpy(&(qureg.deviceStateVec.imag[startInd]), &(qureg.stateVec.imag[startInd]), 
-            numAmps*sizeof(*(qureg.deviceStateVec.imag)), cudaMemcpyHostToDevice);
+    hipMemcpy(&(qureg.deviceStateVec.real[startInd]), &(qureg.stateVec.real[startInd]), 
+            numAmps*sizeof(*(qureg.deviceStateVec.real)), hipMemcpyHostToDevice);
+    hipMemcpy(&(qureg.deviceStateVec.imag[startInd]), &(qureg.stateVec.imag[startInd]), 
+            numAmps*sizeof(*(qureg.deviceStateVec.imag)), hipMemcpyHostToDevice);
     if (DEBUG) printf("Finished copying data to GPU\n");
 }
 
 void statevec_copySubstateFromGPU(Qureg qureg, long long int startInd, long long int numAmps)
 {
-    cudaDeviceSynchronize();
+    hipDeviceSynchronize();
     if (DEBUG) printf("Copying data from GPU\n");
-    cudaMemcpy(&(qureg.stateVec.real[startInd]), &(qureg.deviceStateVec.real[startInd]), 
-            numAmps*sizeof(*(qureg.deviceStateVec.real)), cudaMemcpyDeviceToHost);
-    cudaMemcpy(&(qureg.stateVec.imag[startInd]), &(qureg.deviceStateVec.imag[startInd]), 
-            numAmps*sizeof(*(qureg.deviceStateVec.imag)), cudaMemcpyDeviceToHost);
+    hipMemcpy(&(qureg.stateVec.real[startInd]), &(qureg.deviceStateVec.real[startInd]), 
+            numAmps*sizeof(*(qureg.deviceStateVec.real)), hipMemcpyDeviceToHost);
+    hipMemcpy(&(qureg.stateVec.imag[startInd]), &(qureg.deviceStateVec.imag[startInd]), 
+            numAmps*sizeof(*(qureg.deviceStateVec.imag)), hipMemcpyDeviceToHost);
     if (DEBUG) printf("Finished copying data from GPU\n");
 }
 
@@ -569,15 +570,15 @@ void statevec_reportStateToScreen(Qureg qureg, QuESTEnv env, int reportRank){
 
 qreal statevec_getRealAmp(Qureg qureg, long long int index){
     qreal el=0;
-    cudaMemcpy(&el, &(qureg.deviceStateVec.real[index]), 
-            sizeof(*(qureg.deviceStateVec.real)), cudaMemcpyDeviceToHost);
+    hipMemcpy(&el, &(qureg.deviceStateVec.real[index]), 
+            sizeof(*(qureg.deviceStateVec.real)), hipMemcpyDeviceToHost);
     return el;
 }
 
 qreal statevec_getImagAmp(Qureg qureg, long long int index){
     qreal el=0;
-    cudaMemcpy(&el, &(qureg.deviceStateVec.imag[index]), 
-            sizeof(*(qureg.deviceStateVec.imag)), cudaMemcpyDeviceToHost);
+    hipMemcpy(&el, &(qureg.deviceStateVec.imag[index]), 
+            sizeof(*(qureg.deviceStateVec.imag)), hipMemcpyDeviceToHost);
     return el;
 }
 
@@ -1037,8 +1038,8 @@ void statevec_multiControlledMultiQubitUnitary(Qureg qureg, long long int ctrlMa
     // allocate device space for global {targs} (length: numTargs) and populate
     int *d_targs;
     size_t targMemSize = numTargs * sizeof *d_targs;
-    cudaMalloc(&d_targs, targMemSize);
-    cudaMemcpy(d_targs, targs, targMemSize, cudaMemcpyHostToDevice);
+    hipMalloc(&d_targs, targMemSize);
+    hipMemcpy(d_targs, targs, targMemSize, hipMemcpyHostToDevice);
     
     // flatten out the u.real and u.imag lists
     int uNumRows = (1 << u.numQubits);
@@ -1056,10 +1057,10 @@ void statevec_multiControlledMultiQubitUnitary(Qureg qureg, long long int ctrlMa
     qreal* d_uRe;
     qreal* d_uIm;
     size_t uMemSize = uNumRows*uNumRows * sizeof *d_uRe; // size of each of d_uRe and d_uIm
-    cudaMalloc(&d_uRe, uMemSize);
-    cudaMalloc(&d_uIm, uMemSize);
-    cudaMemcpy(d_uRe, uReFlat, uMemSize, cudaMemcpyHostToDevice);
-    cudaMemcpy(d_uIm, uImFlat, uMemSize, cudaMemcpyHostToDevice);
+    hipMalloc(&d_uRe, uMemSize);
+    hipMalloc(&d_uIm, uMemSize);
+    hipMemcpy(d_uRe, uReFlat, uMemSize, hipMemcpyHostToDevice);
+    hipMemcpy(d_uIm, uImFlat, uMemSize, hipMemcpyHostToDevice);
     
     // allocate device Wspace for thread-local {ampInds}, {reAmps}, {imAmps} (length: 1<<numTargs)
     long long int *d_ampInds;
@@ -1067,9 +1068,9 @@ void statevec_multiControlledMultiQubitUnitary(Qureg qureg, long long int ctrlMa
     qreal *d_imAmps;
     size_t gridSize = (size_t) threadsPerCUDABlock * CUDABlocks;
     int numTargAmps = uNumRows;
-    cudaMalloc(&d_ampInds, numTargAmps*gridSize * sizeof *d_ampInds);
-    cudaMalloc(&d_reAmps,  numTargAmps*gridSize * sizeof *d_reAmps);
-    cudaMalloc(&d_imAmps,  numTargAmps*gridSize * sizeof *d_imAmps);
+    hipMalloc(&d_ampInds, numTargAmps*gridSize * sizeof *d_ampInds);
+    hipMalloc(&d_reAmps,  numTargAmps*gridSize * sizeof *d_reAmps);
+    hipMalloc(&d_imAmps,  numTargAmps*gridSize * sizeof *d_imAmps);
     
     // call kernel
     statevec_multiControlledMultiQubitUnitaryKernel<<<CUDABlocks,threadsPerCUDABlock>>>(
@@ -1078,12 +1079,12 @@ void statevec_multiControlledMultiQubitUnitary(Qureg qureg, long long int ctrlMa
     // free kernel memory
     free(uReFlat);
     free(uImFlat);
-    cudaFree(d_targs);
-    cudaFree(d_uRe);
-    cudaFree(d_uIm);
-    cudaFree(d_ampInds);
-    cudaFree(d_reAmps);
-    cudaFree(d_imAmps);
+    hipFree(d_targs);
+    hipFree(d_uRe);
+    hipFree(d_uIm);
+    hipFree(d_ampInds);
+    hipFree(d_reAmps);
+    hipFree(d_imAmps);
 }
 
 __global__ void statevec_multiControlledTwoQubitUnitaryKernel(Qureg qureg, long long int ctrlMask, int q1, int q2, ArgMatrix4 u){
@@ -2086,11 +2087,11 @@ qreal densmatr_findProbabilityOfZero(Qureg qureg, int measureQubit)
             
         // sum the block probs
         } else {
-            cudaDeviceSynchronize();    
+            hipDeviceSynchronize();    
             copySharedReduceBlock<<<numCUDABlocks, valuesPerCUDABlock/2, sharedMemSize>>>(
                     qureg.firstLevelReduction, 
                     qureg.secondLevelReduction, valuesPerCUDABlock); 
-            cudaDeviceSynchronize();    
+            hipDeviceSynchronize();    
             swapDouble(&(qureg.firstLevelReduction), &(qureg.secondLevelReduction));
         }
         
@@ -2098,7 +2099,7 @@ qreal densmatr_findProbabilityOfZero(Qureg qureg, int measureQubit)
     }
     
     qreal zeroProb;
-    cudaMemcpy(&zeroProb, qureg.firstLevelReduction, sizeof(qreal), cudaMemcpyDeviceToHost);
+    hipMemcpy(&zeroProb, qureg.firstLevelReduction, sizeof(qreal), hipMemcpyDeviceToHost);
     return zeroProb;
 }
 
@@ -2109,9 +2110,9 @@ qreal statevec_findProbabilityOfZero(Qureg qureg, int measureQubit)
     // 1-qubit edge-case breaks below loop logic
     if (qureg.numQubitsInStateVec == 1) {
         qreal amp;
-        cudaMemcpy(&amp, qureg.deviceStateVec.real, sizeof(qreal), cudaMemcpyDeviceToHost);
+        hipMemcpy(&amp, qureg.deviceStateVec.real, sizeof(qreal), hipMemcpyDeviceToHost);
         stateProb += amp*amp;
-        cudaMemcpy(&amp, qureg.deviceStateVec.imag, sizeof(qreal), cudaMemcpyDeviceToHost);
+        hipMemcpy(&amp, qureg.deviceStateVec.imag, sizeof(qreal), hipMemcpyDeviceToHost);
         stateProb += amp*amp;
         return stateProb;
     }
@@ -2138,16 +2139,16 @@ qreal statevec_findProbabilityOfZero(Qureg qureg, int measureQubit)
                     qureg, measureQubit, qureg.firstLevelReduction);
             firstTime=0;
         } else {
-            cudaDeviceSynchronize();    
+            hipDeviceSynchronize();    
             copySharedReduceBlock<<<numCUDABlocks, valuesPerCUDABlock/2, sharedMemSize>>>(
                     qureg.firstLevelReduction, 
                     qureg.secondLevelReduction, valuesPerCUDABlock); 
-            cudaDeviceSynchronize();    
+            hipDeviceSynchronize();    
             swapDouble(&(qureg.firstLevelReduction), &(qureg.secondLevelReduction));
         }
         numValuesToReduce = numValuesToReduce/maxReducedPerLevel;
     }
-    cudaMemcpy(&stateProb, qureg.firstLevelReduction, sizeof(qreal), cudaMemcpyDeviceToHost);
+    hipMemcpy(&stateProb, qureg.firstLevelReduction, sizeof(qreal), hipMemcpyDeviceToHost);
     return stateProb;
 }
 
@@ -2213,8 +2214,8 @@ void statevec_calcProbOfAllOutcomes(qreal* outcomeProbs, Qureg qureg, int* qubit
     // copy qubits to GPU memory
     int* d_qubits;
     size_t mem_qubits = numQubits * sizeof *d_qubits;
-    cudaMalloc(&d_qubits, mem_qubits);
-    cudaMemcpy(d_qubits, qubits, mem_qubits, cudaMemcpyHostToDevice);
+    hipMalloc(&d_qubits, mem_qubits);
+    hipMemcpy(d_qubits, qubits, mem_qubits, hipMemcpyHostToDevice);
 
     // create one thread for every amplitude
     int numThreadsPerBlock = 128;
@@ -2224,19 +2225,19 @@ void statevec_calcProbOfAllOutcomes(qreal* outcomeProbs, Qureg qureg, int* qubit
     qreal* d_outcomeProbs;
     long long int numOutcomes = (1LL << numQubits);
     size_t mem_outcomeProbs = numOutcomes * sizeof *d_outcomeProbs;
-    cudaMalloc(&d_outcomeProbs, mem_outcomeProbs);
-    cudaMemset(d_outcomeProbs, 0, mem_outcomeProbs);
+    hipMalloc(&d_outcomeProbs, mem_outcomeProbs);
+    hipMemset(d_outcomeProbs, 0, mem_outcomeProbs);
     
     // populate per-block subarrays
     statevec_calcProbOfAllOutcomesKernel<<<numBlocks, numThreadsPerBlock>>>(
         d_outcomeProbs, qureg, d_qubits, numQubits);
         
     // copy outcomeProbs from GPU memory
-    cudaMemcpy(outcomeProbs, d_outcomeProbs, mem_outcomeProbs, cudaMemcpyDeviceToHost);
+    hipMemcpy(outcomeProbs, d_outcomeProbs, mem_outcomeProbs, hipMemcpyDeviceToHost);
     
     // free GPU memory
-    cudaFree(d_qubits);
-    cudaFree(d_outcomeProbs);
+    hipFree(d_qubits);
+    hipFree(d_outcomeProbs);
 }
 
 __global__ void densmatr_calcProbOfAllOutcomesKernel(
@@ -2265,8 +2266,8 @@ void densmatr_calcProbOfAllOutcomes(qreal* outcomeProbs, Qureg qureg, int* qubit
     // copy qubits to GPU memory
     int* d_qubits;
     size_t mem_qubits = numQubits * sizeof *d_qubits;
-    cudaMalloc(&d_qubits, mem_qubits);
-    cudaMemcpy(d_qubits, qubits, mem_qubits, cudaMemcpyHostToDevice);
+    hipMalloc(&d_qubits, mem_qubits);
+    hipMemcpy(d_qubits, qubits, mem_qubits, hipMemcpyHostToDevice);
     
     // create global array, with per-block subarrays
     int numThreadsPerBlock = 128;
@@ -2277,19 +2278,19 @@ void densmatr_calcProbOfAllOutcomes(qreal* outcomeProbs, Qureg qureg, int* qubit
     qreal* d_outcomeProbs;
     long long int numOutcomes = (1LL << numQubits);
     size_t mem_outcomeProbs = numOutcomes * sizeof *d_outcomeProbs;
-    cudaMalloc(&d_outcomeProbs, mem_outcomeProbs);
-    cudaMemset(d_outcomeProbs, 0, mem_outcomeProbs);
+    hipMalloc(&d_outcomeProbs, mem_outcomeProbs);
+    hipMemset(d_outcomeProbs, 0, mem_outcomeProbs);
     
     // populate per-block subarrays
     densmatr_calcProbOfAllOutcomesKernel<<<numBlocks, numThreadsPerBlock>>>(
         d_outcomeProbs, qureg, d_qubits, numQubits);
         
     // copy outcomeProbs from GPU memory
-    cudaMemcpy(outcomeProbs, d_outcomeProbs, mem_outcomeProbs, cudaMemcpyDeviceToHost);
+    hipMemcpy(outcomeProbs, d_outcomeProbs, mem_outcomeProbs, hipMemcpyDeviceToHost);
     
     // free GPU memory
-    cudaFree(d_qubits);
-    cudaFree(d_outcomeProbs);
+    hipFree(d_qubits);
+    hipFree(d_outcomeProbs);
 }
 
 /** computes Tr(conjTrans(a) b) = sum of (a_ij^* b_ij), which is a real number */
@@ -2347,11 +2348,11 @@ qreal densmatr_calcInnerProduct(Qureg a, Qureg b) {
         }    
         // sum the block terms
         else {
-            cudaDeviceSynchronize();    
+            hipDeviceSynchronize();    
             copySharedReduceBlock<<<numCUDABlocks, valuesPerCUDABlock/2, sharedMemSize>>>(
                     b.firstLevelReduction, 
                     b.secondLevelReduction, valuesPerCUDABlock); 
-            cudaDeviceSynchronize();    
+            hipDeviceSynchronize();    
             swapDouble(&(b.firstLevelReduction), &(b.secondLevelReduction));
         }
         
@@ -2359,7 +2360,7 @@ qreal densmatr_calcInnerProduct(Qureg a, Qureg b) {
     }
     
     qreal innerprod;
-    cudaMemcpy(&innerprod, b.firstLevelReduction, sizeof(qreal), cudaMemcpyDeviceToHost);
+    hipMemcpy(&innerprod, b.firstLevelReduction, sizeof(qreal), hipMemcpyDeviceToHost);
     return innerprod;
 }
 
@@ -2428,16 +2429,16 @@ Complex statevec_calcInnerProduct(Qureg bra, Qureg ket) {
                  bra.firstLevelReduction);
             firstTime = 0;
         } else {
-            cudaDeviceSynchronize();    
+            hipDeviceSynchronize();    
             copySharedReduceBlock<<<numCUDABlocks, valuesPerCUDABlock/2, sharedMemSize>>>(
                     bra.firstLevelReduction, 
                     bra.secondLevelReduction, valuesPerCUDABlock); 
-            cudaDeviceSynchronize();    
+            hipDeviceSynchronize();    
             swapDouble(&(bra.firstLevelReduction), &(bra.secondLevelReduction));
         }
         numValuesToReduce = numValuesToReduce/maxReducedPerLevel;
     }
-    cudaMemcpy(&innerProdReal, bra.firstLevelReduction, sizeof(qreal), cudaMemcpyDeviceToHost);
+    hipMemcpy(&innerProdReal, bra.firstLevelReduction, sizeof(qreal), hipMemcpyDeviceToHost);
     
     // compute imag component of inner product
     getRealComp = 0;
@@ -2463,16 +2464,16 @@ Complex statevec_calcInnerProduct(Qureg bra, Qureg ket) {
                  bra.firstLevelReduction);
             firstTime = 0;
         } else {
-            cudaDeviceSynchronize();    
+            hipDeviceSynchronize();    
             copySharedReduceBlock<<<numCUDABlocks, valuesPerCUDABlock/2, sharedMemSize>>>(
                     bra.firstLevelReduction, 
                     bra.secondLevelReduction, valuesPerCUDABlock); 
-            cudaDeviceSynchronize();    
+            hipDeviceSynchronize();    
             swapDouble(&(bra.firstLevelReduction), &(bra.secondLevelReduction));
         }
         numValuesToReduce = numValuesToReduce/maxReducedPerLevel;
     }
-    cudaMemcpy(&innerProdImag, bra.firstLevelReduction, sizeof(qreal), cudaMemcpyDeviceToHost);
+    hipMemcpy(&innerProdImag, bra.firstLevelReduction, sizeof(qreal), hipMemcpyDeviceToHost);
     
     // return complex
     Complex innerProd;
@@ -2554,11 +2555,11 @@ qreal densmatr_calcFidelity(Qureg qureg, Qureg pureState) {
             
         // sum the block probs
         } else {
-            cudaDeviceSynchronize();    
+            hipDeviceSynchronize();    
             copySharedReduceBlock<<<numCUDABlocks, valuesPerCUDABlock/2, sharedMemSize>>>(
                     pureState.firstLevelReduction, 
                     pureState.secondLevelReduction, valuesPerCUDABlock); 
-            cudaDeviceSynchronize();    
+            hipDeviceSynchronize();    
             swapDouble(&(pureState.firstLevelReduction), &(pureState.secondLevelReduction));
         }
         
@@ -2566,7 +2567,7 @@ qreal densmatr_calcFidelity(Qureg qureg, Qureg pureState) {
     }
     
     qreal fidelity;
-    cudaMemcpy(&fidelity, pureState.firstLevelReduction, sizeof(qreal), cudaMemcpyDeviceToHost);
+    hipMemcpy(&fidelity, pureState.firstLevelReduction, sizeof(qreal), hipMemcpyDeviceToHost);
     return fidelity;
 }
 
@@ -2628,11 +2629,11 @@ qreal densmatr_calcHilbertSchmidtDistance(Qureg a, Qureg b) {
             
         // sum the block probs
         } else {
-            cudaDeviceSynchronize();    
+            hipDeviceSynchronize();    
             copySharedReduceBlock<<<numCUDABlocks, valuesPerCUDABlock/2, sharedMemSize>>>(
                     a.firstLevelReduction, 
                     a.secondLevelReduction, valuesPerCUDABlock); 
-            cudaDeviceSynchronize();    
+            hipDeviceSynchronize();    
             swapDouble(&(a.firstLevelReduction), &(a.secondLevelReduction));
         }
         
@@ -2640,7 +2641,7 @@ qreal densmatr_calcHilbertSchmidtDistance(Qureg a, Qureg b) {
     }
     
     qreal trace;
-    cudaMemcpy(&trace, a.firstLevelReduction, sizeof(qreal), cudaMemcpyDeviceToHost);
+    hipMemcpy(&trace, a.firstLevelReduction, sizeof(qreal), hipMemcpyDeviceToHost);
     
     qreal sqrtTrace = sqrt(trace);
     return sqrtTrace;
@@ -2698,11 +2699,11 @@ qreal densmatr_calcPurity(Qureg qureg) {
             
         // sum the block probs
         } else {
-            cudaDeviceSynchronize();    
+            hipDeviceSynchronize();    
             copySharedReduceBlock<<<numCUDABlocks, valuesPerCUDABlock/2, sharedMemSize>>>(
                     qureg.firstLevelReduction, 
                     qureg.secondLevelReduction, valuesPerCUDABlock); 
-            cudaDeviceSynchronize();    
+            hipDeviceSynchronize();    
             swapDouble(&(qureg.firstLevelReduction), &(qureg.secondLevelReduction));
         }
         
@@ -2710,7 +2711,7 @@ qreal densmatr_calcPurity(Qureg qureg) {
     }
     
     qreal traceDensSquared;
-    cudaMemcpy(&traceDensSquared, qureg.firstLevelReduction, sizeof(qreal), cudaMemcpyDeviceToHost);
+    hipMemcpy(&traceDensSquared, qureg.firstLevelReduction, sizeof(qreal), hipMemcpyDeviceToHost);
     return traceDensSquared;
 }
 
@@ -3315,16 +3316,16 @@ Complex statevec_calcExpecDiagonalOp(Qureg qureg, DiagonalOp op) {
                 qureg.firstLevelReduction);
             firstTime = 0;
         } else {
-            cudaDeviceSynchronize();    
+            hipDeviceSynchronize();    
             copySharedReduceBlock<<<numCUDABlocks, valuesPerCUDABlock/2, sharedMemSize>>>(
                     qureg.firstLevelReduction, 
                     qureg.secondLevelReduction, valuesPerCUDABlock); 
-            cudaDeviceSynchronize();    
+            hipDeviceSynchronize();    
             swapDouble(&(qureg.firstLevelReduction), &(qureg.secondLevelReduction));
         }
         numValuesToReduce = numValuesToReduce/maxReducedPerLevel;
     }
-    cudaMemcpy(&expecReal, qureg.firstLevelReduction, sizeof(qreal), cudaMemcpyDeviceToHost);
+    hipMemcpy(&expecReal, qureg.firstLevelReduction, sizeof(qreal), hipMemcpyDeviceToHost);
     
     // compute imag component of inner product
     getRealComp = 0;
@@ -3350,16 +3351,16 @@ Complex statevec_calcExpecDiagonalOp(Qureg qureg, DiagonalOp op) {
                 qureg.firstLevelReduction);
             firstTime = 0;
         } else {
-            cudaDeviceSynchronize();    
+            hipDeviceSynchronize();    
             copySharedReduceBlock<<<numCUDABlocks, valuesPerCUDABlock/2, sharedMemSize>>>(
                     qureg.firstLevelReduction, 
                     qureg.secondLevelReduction, valuesPerCUDABlock); 
-            cudaDeviceSynchronize();    
+            hipDeviceSynchronize();    
             swapDouble(&(qureg.firstLevelReduction), &(qureg.secondLevelReduction));
         }
         numValuesToReduce = numValuesToReduce/maxReducedPerLevel;
     }
-    cudaMemcpy(&expecImag, qureg.firstLevelReduction, sizeof(qreal), cudaMemcpyDeviceToHost);
+    hipMemcpy(&expecImag, qureg.firstLevelReduction, sizeof(qreal), hipMemcpyDeviceToHost);
     
     // return complex
     Complex expecVal;
@@ -3451,16 +3452,16 @@ Complex densmatr_calcExpecDiagonalOp(Qureg qureg, DiagonalOp op) {
                 qureg.firstLevelReduction);
             firstTime = 0;
         } else {
-            cudaDeviceSynchronize();    
+            hipDeviceSynchronize();    
             copySharedReduceBlock<<<numCUDABlocks, valuesPerCUDABlock/2, sharedMemSize>>>(
                     qureg.firstLevelReduction, 
                     qureg.secondLevelReduction, valuesPerCUDABlock); 
-            cudaDeviceSynchronize();    
+            hipDeviceSynchronize();    
             swapDouble(&(qureg.firstLevelReduction), &(qureg.secondLevelReduction));
         }
         numValuesToReduce = numValuesToReduce/maxReducedPerLevel;
     }
-    cudaMemcpy(&expecReal, qureg.firstLevelReduction, sizeof(qreal), cudaMemcpyDeviceToHost);
+    hipMemcpy(&expecReal, qureg.firstLevelReduction, sizeof(qreal), hipMemcpyDeviceToHost);
     
     // compute imag component of inner product
     getRealComp = 0;
@@ -3486,16 +3487,16 @@ Complex densmatr_calcExpecDiagonalOp(Qureg qureg, DiagonalOp op) {
                 qureg.firstLevelReduction);
             firstTime = 0;
         } else {
-            cudaDeviceSynchronize();    
+            hipDeviceSynchronize();    
             copySharedReduceBlock<<<numCUDABlocks, valuesPerCUDABlock/2, sharedMemSize>>>(
                     qureg.firstLevelReduction, 
                     qureg.secondLevelReduction, valuesPerCUDABlock); 
-            cudaDeviceSynchronize();    
+            hipDeviceSynchronize();    
             swapDouble(&(qureg.firstLevelReduction), &(qureg.secondLevelReduction));
         }
         numValuesToReduce = numValuesToReduce/maxReducedPerLevel;
     }
-    cudaMemcpy(&expecImag, qureg.firstLevelReduction, sizeof(qreal), cudaMemcpyDeviceToHost);
+    hipMemcpy(&expecImag, qureg.firstLevelReduction, sizeof(qreal), hipMemcpyDeviceToHost);
     
     // return complex
     Complex expecVal;
@@ -3510,17 +3511,17 @@ void agnostic_setDiagonalOpElems(DiagonalOp op, long long int startInd, qreal* r
     memcpy(&op.real[startInd], real, numElems * sizeof(qreal));
     memcpy(&op.imag[startInd], imag, numElems * sizeof(qreal));
 
-    cudaDeviceSynchronize();
-    cudaMemcpy(
+    hipDeviceSynchronize();
+    hipMemcpy(
         op.deviceOperator.real + startInd, 
         real,
         numElems * sizeof(*(op.deviceOperator.real)), 
-        cudaMemcpyHostToDevice);
-    cudaMemcpy(
+        hipMemcpyHostToDevice);
+    hipMemcpy(
         op.deviceOperator.imag + startInd,
         imag,
         numElems * sizeof(*(op.deviceOperator.imag)), 
-        cudaMemcpyHostToDevice);
+        hipMemcpyHostToDevice);
 }
 
 __global__ void statevec_applyPhaseFuncOverridesKernel(
@@ -3589,11 +3590,11 @@ __global__ void statevec_applyPhaseFuncOverridesKernel(
     qreal* d_exponents;                 
     long long int* d_overrideInds;          size_t mem_inds = numOverrides * sizeof *d_overrideInds;
     qreal* d_overridePhases;                size_t mem_phas = numOverrides * sizeof *d_overridePhases;
-    cudaMalloc(&d_qubits, mem_qubits);      cudaMemcpy(d_qubits, qubits, mem_qubits, cudaMemcpyHostToDevice);
-    cudaMalloc(&d_coeffs, mem_terms);       cudaMemcpy(d_coeffs, coeffs, mem_terms, cudaMemcpyHostToDevice);
-    cudaMalloc(&d_exponents, mem_terms);    cudaMemcpy(d_exponents, exponents, mem_terms, cudaMemcpyHostToDevice);
-    cudaMalloc(&d_overrideInds, mem_inds);  cudaMemcpy(d_overrideInds, overrideInds, mem_inds, cudaMemcpyHostToDevice);
-    cudaMalloc(&d_overridePhases,mem_phas); cudaMemcpy(d_overridePhases, overridePhases, mem_phas, cudaMemcpyHostToDevice);
+    hipMalloc(&d_qubits, mem_qubits);      hipMemcpy(d_qubits, qubits, mem_qubits, hipMemcpyHostToDevice);
+    hipMalloc(&d_coeffs, mem_terms);       hipMemcpy(d_coeffs, coeffs, mem_terms, hipMemcpyHostToDevice);
+    hipMalloc(&d_exponents, mem_terms);    hipMemcpy(d_exponents, exponents, mem_terms, hipMemcpyHostToDevice);
+    hipMalloc(&d_overrideInds, mem_inds);  hipMemcpy(d_overrideInds, overrideInds, mem_inds, hipMemcpyHostToDevice);
+    hipMalloc(&d_overridePhases,mem_phas); hipMemcpy(d_overridePhases, overridePhases, mem_phas, hipMemcpyHostToDevice);
 
     // call kernel
     int threadsPerCUDABlock = 128;
@@ -3605,11 +3606,11 @@ __global__ void statevec_applyPhaseFuncOverridesKernel(
         conj);
 
     // cleanup device memory 
-    cudaFree(d_qubits);
-    cudaFree(d_coeffs);
-    cudaFree(d_exponents);
-    cudaFree(d_overrideInds);
-    cudaFree(d_overridePhases);
+    hipFree(d_qubits);
+    hipFree(d_coeffs);
+    hipFree(d_exponents);
+    hipFree(d_overrideInds);
+    hipFree(d_overridePhases);
 }
 
 __global__ void statevec_applyMultiVarPhaseFuncOverridesKernel(
@@ -3717,22 +3718,22 @@ void statevec_applyMultiVarPhaseFuncOverrides(
     }
 
     // allocate global GPU memory
-    int* d_qubits;                  cudaMalloc(&d_qubits,           mem_qubits);
-    qreal* d_coeffs;                cudaMalloc(&d_coeffs,           mem_coeffs);
-    qreal* d_exponents;             cudaMalloc(&d_exponents,        mem_exponents);
-    int* d_numQubitsPerReg;         cudaMalloc(&d_numQubitsPerReg,  mem_numQubitsPerReg);
-    int* d_numTermsPerReg;          cudaMalloc(&d_numTermsPerReg,   mem_numTermsPerReg);
-    long long int* d_overrideInds;  cudaMalloc(&d_overrideInds,     mem_overrideInds);
-    qreal* d_overridePhases;        cudaMalloc(&d_overridePhases,   mem_overridePhases);
+    int* d_qubits;                  hipMalloc(&d_qubits,           mem_qubits);
+    qreal* d_coeffs;                hipMalloc(&d_coeffs,           mem_coeffs);
+    qreal* d_exponents;             hipMalloc(&d_exponents,        mem_exponents);
+    int* d_numQubitsPerReg;         hipMalloc(&d_numQubitsPerReg,  mem_numQubitsPerReg);
+    int* d_numTermsPerReg;          hipMalloc(&d_numTermsPerReg,   mem_numTermsPerReg);
+    long long int* d_overrideInds;  hipMalloc(&d_overrideInds,     mem_overrideInds);
+    qreal* d_overridePhases;        hipMalloc(&d_overridePhases,   mem_overridePhases);
 
     // copy function args into GPU memory
-    cudaMemcpy(d_qubits, qubits,                    mem_qubits,             cudaMemcpyHostToDevice);
-    cudaMemcpy(d_coeffs, coeffs,                    mem_coeffs,             cudaMemcpyHostToDevice);
-    cudaMemcpy(d_exponents, exponents,              mem_exponents,          cudaMemcpyHostToDevice);
-    cudaMemcpy(d_numQubitsPerReg, numQubitsPerReg,  mem_numQubitsPerReg,    cudaMemcpyHostToDevice);
-    cudaMemcpy(d_numTermsPerReg, numTermsPerReg,    mem_numTermsPerReg,     cudaMemcpyHostToDevice);
-    cudaMemcpy(d_overrideInds, overrideInds,        mem_overrideInds,       cudaMemcpyHostToDevice);
-    cudaMemcpy(d_overridePhases, overridePhases,    mem_overridePhases,     cudaMemcpyHostToDevice);
+    hipMemcpy(d_qubits, qubits,                    mem_qubits,             hipMemcpyHostToDevice);
+    hipMemcpy(d_coeffs, coeffs,                    mem_coeffs,             hipMemcpyHostToDevice);
+    hipMemcpy(d_exponents, exponents,              mem_exponents,          hipMemcpyHostToDevice);
+    hipMemcpy(d_numQubitsPerReg, numQubitsPerReg,  mem_numQubitsPerReg,    hipMemcpyHostToDevice);
+    hipMemcpy(d_numTermsPerReg, numTermsPerReg,    mem_numTermsPerReg,     hipMemcpyHostToDevice);
+    hipMemcpy(d_overrideInds, overrideInds,        mem_overrideInds,       hipMemcpyHostToDevice);
+    hipMemcpy(d_overridePhases, overridePhases,    mem_overridePhases,     hipMemcpyHostToDevice);
 
     int threadsPerCUDABlock = 128;
     int CUDABlocks = ceil((qreal) qureg.numAmpsPerChunk / threadsPerCUDABlock);
@@ -3740,7 +3741,7 @@ void statevec_applyMultiVarPhaseFuncOverrides(
     // allocate thread-local working space {phaseInds}
     long long int *d_phaseInds;
     size_t gridSize = (size_t) threadsPerCUDABlock * CUDABlocks;
-    cudaMalloc(&d_phaseInds, numRegs*gridSize * sizeof *d_phaseInds);
+    hipMalloc(&d_phaseInds, numRegs*gridSize * sizeof *d_phaseInds);
 
     // call kernel
     statevec_applyMultiVarPhaseFuncOverridesKernel<<<CUDABlocks,threadsPerCUDABlock>>>(
@@ -3751,14 +3752,14 @@ void statevec_applyMultiVarPhaseFuncOverrides(
         conj);
 
     // free device memory
-    cudaFree(d_qubits);
-    cudaFree(d_coeffs);
-    cudaFree(d_exponents);
-    cudaFree(d_numQubitsPerReg);
-    cudaFree(d_numTermsPerReg);
-    cudaFree(d_overrideInds);
-    cudaFree(d_overridePhases);
-    cudaFree(d_phaseInds);
+    hipFree(d_qubits);
+    hipFree(d_coeffs);
+    hipFree(d_exponents);
+    hipFree(d_numQubitsPerReg);
+    hipFree(d_numTermsPerReg);
+    hipFree(d_overrideInds);
+    hipFree(d_overridePhases);
+    hipFree(d_phaseInds);
 }
 
 __global__ void statevec_applyParamNamedPhaseFuncOverridesKernel(
@@ -3926,19 +3927,19 @@ void statevec_applyParamNamedPhaseFuncOverrides(
         mem_qubits += numQubitsPerReg[r] * sizeof *qubits;
 
     // allocate global GPU memory
-    int* d_qubits;                  cudaMalloc(&d_qubits,           mem_qubits);
-    int* d_numQubitsPerReg;         cudaMalloc(&d_numQubitsPerReg,  mem_numQubitsPerReg);
-    long long int* d_overrideInds;  cudaMalloc(&d_overrideInds,     mem_overrideInds);
-    qreal* d_overridePhases;        cudaMalloc(&d_overridePhases,   mem_overridePhases);
-    qreal* d_params = NULL;         if (numParams > 0) cudaMalloc(&d_params, mem_params);
+    int* d_qubits;                  hipMalloc(&d_qubits,           mem_qubits);
+    int* d_numQubitsPerReg;         hipMalloc(&d_numQubitsPerReg,  mem_numQubitsPerReg);
+    long long int* d_overrideInds;  hipMalloc(&d_overrideInds,     mem_overrideInds);
+    qreal* d_overridePhases;        hipMalloc(&d_overridePhases,   mem_overridePhases);
+    qreal* d_params = NULL;         if (numParams > 0) hipMalloc(&d_params, mem_params);
 
     // copy function args into GPU memory
-    cudaMemcpy(d_qubits, qubits,                    mem_qubits,             cudaMemcpyHostToDevice);
-    cudaMemcpy(d_numQubitsPerReg, numQubitsPerReg,  mem_numQubitsPerReg,    cudaMemcpyHostToDevice);
-    cudaMemcpy(d_overrideInds, overrideInds,        mem_overrideInds,       cudaMemcpyHostToDevice);
-    cudaMemcpy(d_overridePhases, overridePhases,    mem_overridePhases,     cudaMemcpyHostToDevice);
+    hipMemcpy(d_qubits, qubits,                    mem_qubits,             hipMemcpyHostToDevice);
+    hipMemcpy(d_numQubitsPerReg, numQubitsPerReg,  mem_numQubitsPerReg,    hipMemcpyHostToDevice);
+    hipMemcpy(d_overrideInds, overrideInds,        mem_overrideInds,       hipMemcpyHostToDevice);
+    hipMemcpy(d_overridePhases, overridePhases,    mem_overridePhases,     hipMemcpyHostToDevice);
     if (numParams > 0)
-        cudaMemcpy(d_params, params, mem_params, cudaMemcpyHostToDevice);
+        hipMemcpy(d_params, params, mem_params, hipMemcpyHostToDevice);
 
     int threadsPerCUDABlock = 128;
     int CUDABlocks = ceil((qreal) qureg.numAmpsPerChunk / threadsPerCUDABlock);
@@ -3946,7 +3947,7 @@ void statevec_applyParamNamedPhaseFuncOverrides(
     // allocate thread-local working space {phaseInds}
     long long int *d_phaseInds;
     size_t gridSize = (size_t) threadsPerCUDABlock * CUDABlocks;
-    cudaMalloc(&d_phaseInds, numRegs*gridSize * sizeof *d_phaseInds);
+    hipMalloc(&d_phaseInds, numRegs*gridSize * sizeof *d_phaseInds);
 
     // call kernel
     statevec_applyParamNamedPhaseFuncOverridesKernel<<<CUDABlocks,threadsPerCUDABlock>>>(
@@ -3957,13 +3958,13 @@ void statevec_applyParamNamedPhaseFuncOverrides(
         conj);
 
     // free device memory
-    cudaFree(d_qubits);
-    cudaFree(d_numQubitsPerReg);
-    cudaFree(d_overrideInds);
-    cudaFree(d_overridePhases);
-    cudaFree(d_phaseInds);
+    hipFree(d_qubits);
+    hipFree(d_numQubitsPerReg);
+    hipFree(d_overrideInds);
+    hipFree(d_overridePhases);
+    hipFree(d_phaseInds);
     if (numParams > 0)
-        cudaFree(d_params);
+        hipFree(d_params);
 }
 
 void seedQuEST(QuESTEnv *env, unsigned long int *seedArray, int numSeeds) {
