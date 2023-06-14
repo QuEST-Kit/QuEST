@@ -697,6 +697,9 @@ void destroyQureg(Qureg qureg, QuESTEnv env);
  * stored as nested arrays ComplexMatrixN.real and ComplexMatrixN.imag,
  * initialised to zero.
  *
+ * > If your matrix will ultimately be diagonal, use createSubDiagonalOp()
+ * > instead to save quadratic memory and runtime.
+ *
  * Unlike a ::Qureg, the memory of a ::ComplexMatrixN is always stored in RAM, 
  * and non-distributed. Hence, elements can be directly accessed and modified:
  * ```
@@ -730,6 +733,7 @@ void destroyQureg(Qureg qureg, QuESTEnv env);
  * - applyMatrixN()
  * - multiQubitUnitary()
  * - mixMultiQubitKrausMap()
+ * - createSubDiagonalOp()
  *
  * @ingroup type
  * @param[in] numQubits the number of qubits of which the returned ComplexMatrixN will correspond
@@ -1230,11 +1234,14 @@ void setDiagonalOpElems(DiagonalOp op, long long int startInd, qreal* real, qrea
  * > described by an analytic expression, you should instead use applyPhaseFunc()
  * > or applyNamedPhaseFunc() for significant memory and runtime savings.
  *
+ * > To apply a diagonal operator upon a specific subset of qubits, use applySubDiagonalOp()
+ *
  * @see
  * - createDiagonalOp()
  * - calcExpecDiagonalOp()
  * - applyPhaseFunc()
  * - applyNamedPhaseFunc()
+ * - applySubDiagonalOp()
  *
  * @ingroup operator
  * @param[in,out] qureg the state to operate the diagonal operator upon
@@ -4943,6 +4950,8 @@ void multiControlledTwoQubitUnitary(Qureg qureg, int* controlQubits, int numCont
  * 
  * > To left-multiply a non-unitary ::ComplexMatrixN, use applyMatrixN().
  *
+ * > To specify only the diagonal elements of the matrix, use diagonalUnitary().
+ *
     \f[
                 \begin{tikzpicture}[scale=.5]
                 \node[draw=none] at (-3.5, 1) {targets};
@@ -4976,6 +4985,8 @@ void multiControlledTwoQubitUnitary(Qureg qureg, int* controlQubits, int numCont
  * - applyMatrixN()
  * - twoQubitUnitary()
  * - unitary()
+ * - compactUnitary()
+ * - diagonalUnitary()
  *
  * @ingroup unitary
  * @param[in,out] qureg object representing the set of all qubits
