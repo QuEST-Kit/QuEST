@@ -279,6 +279,8 @@ void statevec_copySubstateToGPU(Qureg qureg, long long int startInd, long long i
 
 void statevec_copySubstateFromGPU(Qureg qureg, long long int startInd, long long int numAmps);
 
+void statevec_applySubDiagonalOp(Qureg qureg, int* targets, SubDiagonalOp op, int conj);
+
 
 /* 
  * operations which differentiate between state-vectors and density matrices internally 

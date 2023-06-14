@@ -312,6 +312,25 @@ typedef struct DiagonalOp
     ComplexArray deviceOperator;
 } DiagonalOp;
 
+/** Represents a diagonal complex operator of a smaller dimension than the full
+ * Hilbert state of a \p Qureg.
+ *
+ * @ingroup type
+ * @author Tyson Jones 
+ */
+typedef struct SubDiagonalOp
+{
+    //! The number of target qubits which this SubDiagonalOp can operate upon
+    int numQubits;
+    //! The number of diagonal elements, i.e. 2^numQubits
+    long long int numElems;
+    //! The real values of the 2^numQubits complex elements
+    qreal *real;
+    //! The imaginary values of the 2^numQubits complex elements
+    qreal *imag;
+    
+} SubDiagonalOp;
+
 /** Represents a system of qubits.
  * Qubits are zero-based
  *
@@ -947,7 +966,7 @@ void initPauliHamil(PauliHamil hamil, qreal* coeffs, enum pauliOpType* codes);
  * ```
  *      // create diag({1,2,3,4,5,6,7,8, 9,10,11,12,13,14,15,16})
  *      int numQubits = 4;
- *      DiagonalOp op = createDiagonalOp(numQubits4, env);
+ *      DiagonalOp op = createDiagonalOp(numQubits, env);
  *      for (int i=0; i<8; i++) {
  *          if (env.rank == 0)
  *              op.real[i] = (i+1);
@@ -1258,6 +1277,201 @@ void applyDiagonalOp(Qureg qureg, DiagonalOp op);
  * @author Tyson Jones
  */
 Complex calcExpecDiagonalOp(Qureg qureg, DiagonalOp op);
+
+/** Creates a ::SubDiagonalOp representing a diagonal operator which can act upon 
+ * a subset of the qubits in a ::Qureg. This is similar to a ::DiagonalOp acting 
+ * upon specific qubits.
+ * 
+ * The resulting operator (initially all zero) need not be unitary nor Hermitian, 
+ * and can be applied to any ::Qureg of a compatible number of qubits.
+ *
+ * > This function allocates space for \f$2^{\text{numQubits}}\f$ complex amplitudes,
+ * > which are initially zero. This is the same cost as a local state-vector of equal 
+ * > number of qubits; see the Serial section of createQureg(). 
+ * > Unlike ::DiagonalOp, this object is <em>not</em> distributed; instead, all 
+ * > nodes (during distributed simulation) store the full set of diagonal elements,
+ * > similar to a ::ComplexMatrixN.
+ * 
+ * 
+ * The returned ::SubDiagonalOp must be later freed with destroySubDiagonalOp().
+ *
+ * For example, the below code creates an 8x8 identity operator. 
+ * ```
+ *      SubDiagonalOp op = createSubDiagonalOp(3);
+ *      for (int i=0; i<op.numElems; i++)
+ *           op.real[i] = 1;
+ * ```
+ * \n
+ *
+ *
+ * @see 
+ * - diagonalUnitary() to apply the created ::SubDiagonalOp upon a subset of qubits of a ::Qureg
+ * - applyGateSubDiagonalOp() to relax the numerical unitarity requirement of diagonalUnitary()
+ * - applySubDiagonalOp() to apply the SubDiagonalOp through left-multiplication only 
+ *   (as a non-unitary) upon a density matrix
+ * - destroySubDiagonalOp()
+ * - createDiagonalOp()
+ *
+ * @ingroup type
+ * @returns a SubDiagonalOp instance initialised to diag(0,0,...).
+ * @param[in] numQubits number of qubits which inform the Hilbert dimension of the returned ::SubDiagonalOp.
+ * @throws invalidQuESTInputError() 
+ * - if \p numQubits <= 0
+ * - if \p numQubits is so large that the number of elements cannot fit in a long long int type, 
+ * @throws exit 
+ * - if the memory could not be allocated
+ * @author Tyson Jones
+ */
+SubDiagonalOp createSubDiagonalOp(int numQubits);
+
+/** Destroy a ::SubDiagonalOp instance created with createSubDiagonalOp().
+ *
+ * @see
+ * - createSubDiagonalOp()
+ *
+ * @ingroup type
+ * @param[in] op ::SubDiagonalOp to destroy
+ * @throws malloc_error
+ * -  if \p op was not prior created
+ * @author Tyson Jones
+ */
+void destroySubDiagonalOp(SubDiagonalOp op);
+
+/** Apply a many-qubit unitary specified as a diagonal matrix upon a specific 
+ * set of qubits of a quantum register.
+ *
+ * Assume the given ::SubDiagonalOp \p op represents unitary operator
+ * \f[
+ * \hat{D} = 
+ * \begin{pmatrix}
+ * d_1 & & & \\
+ * & d_2 & & \\
+ * & & d_3 & \\
+ * & & & \ddots
+ * \end{pmatrix}
+ * \f] 
+ * Valid unitary operators have elements which satisfy \f$|d_i|=1 \; \forall \; i\f$.
+ *
+ * This function effects 
+ * \f[
+ *      |\psi\rangle \rightarrow \hat{D}_{\text{targets}} |\psi\rangle
+ * \f]
+ * upon state-vectors \f$|\psi\rangle\f$, and
+ * \f[
+ *      \rho \rightarrow \hat{D}_{\text{targets}} \; \rho \; \hat{D}_{\text{targets}}^\dagger
+ * \f]
+ * upon density matrices \f$\rho\f$.
+ *
+ \f[
+             \begin{tikzpicture}[scale=.5]
+             \node[draw=none] at (-3.5, 1) {targets};
+
+             \draw (-2,0) -- (-1, 0);
+             \draw (1, 0) -- (2, 0);
+             \draw (-2,2) -- (-1, 2);
+             \draw (1, 2) -- (2, 2);
+             \draw (-1,-1)--(-1,3)--(1,3)--(1,-1);
+             \node[draw=none] at (0, 1) {$\hat{D}$};
+             \node[draw=none] at (0, -1) {$\vdots$};
+             
+             \end{tikzpicture}
+ \f]
+ *
+ * > To relax unitarity, use applyGateSubDiagonalOp()
+ *
+ * > To left-multiply the operator as a non-unitary, use applySubDiagonalOp()
+ *
+ * > To apply a full-Hilbert diagonal operator which must ergo itself be distributed,
+ * > use applyDiagonalOp()
+ *
+ * @see
+ * - createSubDiagonalOp()
+ * - applyGateSubDiagonalOp()
+ * - applySubDiagonalOp()
+ * - applyDiagonalOp()
+ *
+ * @ingroup unitary
+ * @param[in,out] qureg the ::Qureg instance to operate upon
+ * @param[in] targets the list of target qubit indices
+ * @param[in] numTargets the length of list \p targets, which must match the dimension of \p op
+ * @param[in] op a ::SubDiagonalOp initialised to be unitary
+ * @throws invalidQuESTInputError()
+ * - if \p numTargets does not match the size of \p op
+ * - if \p numTargets is invalid (<0 or larger than \p qureg)
+ * - if \p numTargets contains an invalid qubit index, or a repetition
+ * - if \p op is non-unitary
+ * @author Tyson Jones
+ */
+void diagonalUnitary(Qureg qureg, int* targets, int numTargets, SubDiagonalOp op);
+
+/** Apply a many-qubit unitary specified as a diagonal matrix upon a specific 
+ * set of qubits of a quantum register.
+ *
+ * This is identical to function diagonalUnitary(), except here unitarity is not 
+ * numerically checked nor enforced. That is, \p op is mathematically treated as if 
+ * it were unitary despite its true unitarity. This is useful for numerically relaxing 
+ * the precision of unitarity.
+ *
+ * > To apply the operator as if it were e.g. Hermitian, use applySubDiagonalOp().
+ *
+ * @see
+ * - createSubDiagonalOp()
+ * - diagonalUnitary()
+ * - applySubDiagonalOp()
+ * - applyDiagonalOp()
+ *
+ * @ingroup operator
+ * @param[in,out] qureg the ::Qureg instance to operate upon
+ * @param[in] targets the list of target qubit indices
+ * @param[in] numTargets the length of list \p targets, which must match the dimension of \p op
+ * @param[in] op a ::SubDiagonalOp initialised to any complex values
+ * @throws invalidQuESTInputError()
+ * - if \p numTargets does not match the size of \p op
+ * - if \p numTargets is invalid (<0 or larger than \p qureg)
+ * - if \p numTargets contains an invalid qubit index, or a repetition
+ * @author Tyson Jones
+ */
+void applyGateSubDiagonalOp(Qureg qureg, int* targets, int numTargets, SubDiagonalOp op);
+
+/** Left-apply a many-qubit a diagonal matrix upon a specific set of qubits of a quantum register.
+ *
+ * This is similar to applyGateSubDiagonalOp(), except that here, the operator \p op 
+ * is only <em>left</em> multiplied onto density matrices.
+ *
+ * Let \f$\hat{D}\f$ denote the operator \p op. Precisely, this function effects 
+ * \f[
+ *      |\psi\rangle \rightarrow \hat{D}_{\text{targets}} |\psi\rangle
+ * \f]
+ * upon state-vectors \f$|\psi\rangle\f$, and
+ * \f[
+ *      \rho \rightarrow \hat{D}_{\text{targets}} \; \rho
+ * \f]
+ * upon density matrices \f$\rho\f$, imposing no numerical conditions (like unitarity) upon \p op.
+ *
+ * > To apply \p op as if it were unitary, use applyGateSubDiagonalOp() (or use 
+ * > diagonalUnitary() to explicitly check/enforce unitarity).
+ *
+ * > To apply a full-Hilbert diagonal operator which must ergo itself be distributed,
+ * > use applyDiagonalOp()
+ *
+ * @see
+ * - createSubDiagonalOp()
+ * - applyGateSubDiagonalOp()
+ * - diagonalUnitary()
+ * - applyDiagonalOp()
+ *
+ * @ingroup operator
+ * @param[in,out] qureg the ::Qureg instance to operate upon
+ * @param[in] targets the list of target qubit indices
+ * @param[in] numTargets the length of list \p targets, which must match the dimension of \p op
+ * @param[in] op a ::SubDiagonalOp with any complex elements
+ * @throws invalidQuESTInputError()
+ * - if \p numTargets does not match the size of \p op
+ * - if \p numTargets is invalid (<0 or larger than \p qureg)
+ * - if \p numTargets contains an invalid qubit index, or a repetition
+ * @author Tyson Jones
+ */
+void applySubDiagonalOp(Qureg qureg, int* targets, int numTargets, SubDiagonalOp op);
 
 /** Print the current state vector of probability amplitudes for a set of qubits to file.
  * File format:

@@ -1336,6 +1336,60 @@ void statevec_destroyQureg(Qureg qureg, QuESTEnv env){
     qureg.pairStateVec.imag = NULL;
 }
 
+void statevec_applySubDiagonalOp(Qureg qureg, int* targets, SubDiagonalOp op, int conj) {
+    
+    // each node/chunk modifies only its values in an embarrassingly parallelisable way
+    long long int numLocalAmps = qureg.numAmpsPerChunk;
+    qreal* stateRe = qureg.stateVec.real;
+    qreal* stateIm = qureg.stateVec.imag;
+    qreal* opRe = op.real;
+    qreal* opIm = op.imag;
+    
+    // compute lambda = log2(numLocalAmps)
+    int lambda = 0;
+    while ((1LL << lambda) < numLocalAmps)
+        lambda ++;
+    
+    long long int indPref = qureg.chunkId << lambda;
+    int numTargets = op.numQubits;
+    
+    int conjFac = 1;
+    if (conj)
+        conjFac = -1;
+    
+    int t;
+    long long int i, j, v;
+    qreal elemRe, elemIm, ampRe, ampIm;
+    
+# ifdef _OPENMP
+# pragma omp parallel \
+    shared    (numLocalAmps, indPref, numTargets, targets, stateRe,stateIm) \
+    private   (j,i,v,t, elemRe,elemIm, ampRe,ampIm)
+# endif 
+    {
+# ifdef _OPENMP
+# pragma omp for schedule  (static)
+# endif
+        for (j=0; j<numLocalAmps; j++) {
+            
+            i = indPref | j;
+            v = 0;
+            for (t=0; t<numTargets; t++)
+                v |= extractBit(targets[t], i) << t;
+                
+            elemRe = opRe[v];
+            elemIm = opIm[v] * conjFac;
+            
+            ampRe = stateRe[j];
+            ampIm = stateIm[j];
+            
+            // (a + b i)(c + d i) = (a c - b d) + i (a d + b c)
+            stateRe[i] = ampRe*elemRe - ampIm*elemIm;
+            stateIm[i] = ampRe*elemIm + ampIm*elemRe;
+        }
+    }
+}
+
 DiagonalOp agnostic_createDiagonalOp(int numQubits, QuESTEnv env) {
 
     // the 2^numQubits values will be evenly split between the env.numRanks nodes
