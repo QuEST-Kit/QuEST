@@ -304,7 +304,6 @@ void statevec_createQureg(Qureg *qureg, int numQubits, QuESTEnv env)
 
     // check gpu memory allocation was successful
     validateQuregGPUAllocation(qureg, env, __func__);
-
 }
 
 void statevec_destroyQureg(Qureg qureg, QuESTEnv env)
@@ -3254,18 +3253,18 @@ __global__ void statevec_applySubDiagonalOpKernel(Qureg qureg, int* targets, int
     long long int index = blockIdx.x*blockDim.x + threadIdx.x;
     if (index>=qureg.numAmpsPerChunk) return;
     
-    v = 0;
-    for (t=0; t<numTargets; t++)
+    long long int v = 0;
+    for (int t=0; t<numTargets; t++)
         v |= extractBit(targets[t], index) << t;
         
-    elemRe = opReals[v];
-    elemIm = opImags[v] * conjFac;
+    qreal elemRe = opReals[v];
+    qreal elemIm = opImags[v] * conjFac;
     
     qreal* stateRe = qureg.deviceStateVec.real;
     qreal* stateIm = qureg.deviceStateVec.imag;
     
-    ampRe = stateRe[index];
-    ampIm = stateIm[index];
+    qreal ampRe = stateRe[index];
+    qreal ampIm = stateIm[index];
     
     // (a + b i)(c + d i) = (a c - b d) + i (a d + b c)
     stateRe[index] = ampRe*elemRe - ampIm*elemIm;
@@ -3286,7 +3285,7 @@ void statevec_applySubDiagonalOp(Qureg qureg, int* targets, SubDiagonalOp op, in
     qreal* d_opImag;
     size_t memOp = op.numElems * sizeof *d_opReal;
     cudaMalloc(&d_opReal, memOp);
-    cudaMalloc(&d_opImag  memOp);
+    cudaMalloc(&d_opImag, memOp);
     cudaMemcpy(d_opReal, op.real, memOp, cudaMemcpyHostToDevice);
     cudaMemcpy(d_opImag, op.imag, memOp, cudaMemcpyHostToDevice);
     

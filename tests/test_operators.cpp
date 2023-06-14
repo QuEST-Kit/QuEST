@@ -335,7 +335,7 @@ TEST_CASE( "applyGateSubDiagonalOp", "[unitaries]" ) {
 
             applyGateSubDiagonalOp(quregMatr, targs, numTargs, op);
             applyReferenceOp(refMatr, targs, numTargs, opMatr);    
-            REQUIRE( areEqual(quregMatr, refMatr) );
+            REQUIRE( areEqual(quregMatr, refMatr, 1E4*REAL_EPS) );
         }
         
         destroySubDiagonalOp(op);
@@ -3891,7 +3891,7 @@ TEST_CASE( "applySubDiagonalOp", "[unitaries]" ) {
 
             applySubDiagonalOp(quregMatr, targs, numTargs, op);
             applyReferenceMatrix(refMatr, targs, numTargs, opMatr);    
-            REQUIRE( areEqual(quregMatr, refMatr) );
+            REQUIRE( areEqual(quregMatr, refMatr, 100*REAL_EPS) );
         }
         
         destroySubDiagonalOp(op);

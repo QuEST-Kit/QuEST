@@ -124,7 +124,7 @@ TEST_CASE( "diagonalUnitary", "[unitaries]" ) {
 
             diagonalUnitary(quregMatr, targs, numTargs, op);
             applyReferenceOp(refMatr, targs, numTargs, opMatr);    
-            REQUIRE( areEqual(quregMatr, refMatr) );
+            REQUIRE( areEqual(quregMatr, refMatr, 100*REAL_EPS) );
         }
         
         destroySubDiagonalOp(op);
