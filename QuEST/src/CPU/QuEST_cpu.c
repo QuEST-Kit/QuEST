@@ -1345,12 +1345,7 @@ void statevec_applySubDiagonalOp(Qureg qureg, int* targets, SubDiagonalOp op, in
     qreal* opRe = op.real;
     qreal* opIm = op.imag;
     
-    // compute lambda = log2(numLocalAmps)
-    int lambda = 0;
-    while ((1LL << lambda) < numLocalAmps)
-        lambda ++;
-    
-    long long int indPref = qureg.chunkId << lambda;
+    long long int indPref = qureg.chunkId * numLocalAmps;
     int numTargets = op.numQubits;
     
     int conjFac = 1;
@@ -1384,8 +1379,8 @@ void statevec_applySubDiagonalOp(Qureg qureg, int* targets, SubDiagonalOp op, in
             ampIm = stateIm[j];
             
             // (a + b i)(c + d i) = (a c - b d) + i (a d + b c)
-            stateRe[i] = ampRe*elemRe - ampIm*elemIm;
-            stateIm[i] = ampRe*elemIm + ampIm*elemRe;
+            stateRe[j] = ampRe*elemRe - ampIm*elemIm;
+            stateIm[j] = ampRe*elemIm + ampIm*elemRe;
         }
     }
 }
