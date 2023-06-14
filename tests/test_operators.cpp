@@ -303,6 +303,105 @@ TEST_CASE( "applyGateMatrixN", "[operators]" ) {
 
 
 
+/** @sa applyGateSubDiagonalOp
+ * @ingroup unittest 
+ * @author Tyson Jones 
+ */
+TEST_CASE( "applyGateSubDiagonalOp", "[unitaries]" ) {
+    
+    PREPARE_TEST( quregVec, quregMatr, refVec, refMatr );
+    
+    SECTION( "correctness" ) {
+        
+        // generate all possible targets
+        int numTargs = GENERATE( range(1,NUM_QUBITS+1) );
+        int* targs = GENERATE_COPY( sublists(range(0,NUM_QUBITS), numTargs) );
+
+        // initialise a random non-unitary diagonal op
+        SubDiagonalOp op = createSubDiagonalOp(numTargs);
+        for (long long int i=0; i<op.numElems; i++) {
+            op.real[i] = getRandomReal(-10,10);
+            op.imag[i] = getRandomReal(-10,10);
+        }
+        QMatrix opMatr = toQMatrix(op);
+            
+        SECTION( "state-vector" ) {
+            
+            applyGateSubDiagonalOp(quregVec, targs, numTargs, op);
+            applyReferenceOp(refVec, targs, numTargs, opMatr);
+            REQUIRE( areEqual(quregVec, refVec) );
+        }
+        SECTION( "density-matrix" ) {
+
+            applyGateSubDiagonalOp(quregMatr, targs, numTargs, op);
+            applyReferenceOp(refMatr, targs, numTargs, opMatr);    
+            REQUIRE( areEqual(quregMatr, refMatr) );
+        }
+        
+        destroySubDiagonalOp(op);
+    }
+    SECTION( "input validation" ) {
+        
+        SECTION( "diagonal dimension" ) {
+            
+            int numTargs = 3;
+            SubDiagonalOp op = createSubDiagonalOp(numTargs);
+            
+            int badNumTargs = GENERATE_COPY( numTargs-1, numTargs+1 );
+            int badTargs[NUM_QUBITS+1];
+            
+            REQUIRE_THROWS_WITH( applyGateSubDiagonalOp(quregVec, badTargs, badNumTargs, op), Contains("incompatible dimension") );
+            destroySubDiagonalOp(op);
+        }
+        SECTION( "number of targets" ) {
+            
+            // make too many targets (which are otherwise valid)
+            SubDiagonalOp badOp = createSubDiagonalOp(NUM_QUBITS + 1);
+            int targs[NUM_QUBITS + 1];
+            for (int t=0; t<badOp.numQubits; t++)
+                targs[t] = t;
+            for (int i=0; i<badOp.numElems; i++)
+                badOp.real[i] = 1;
+            
+            REQUIRE_THROWS_WITH( applyGateSubDiagonalOp(quregVec, targs, badOp.numQubits, badOp), Contains("Invalid number of target qubits") );
+            destroySubDiagonalOp(badOp);
+        }
+        SECTION( "repetition in targets" ) {
+            
+            // make a valid unitary diagonal op
+            SubDiagonalOp op = createSubDiagonalOp(3);
+            for (int i=0; i<op.numElems; i++)
+                op.real[i] = 1;
+                
+            // make a repetition in the target list
+            int targs[] = {2,1,2};
+
+            REQUIRE_THROWS_WITH( applyGateSubDiagonalOp(quregVec, targs, op.numQubits, op), Contains("target qubits must be unique") );
+            destroySubDiagonalOp(op);
+        }
+        SECTION( "qubit indices" ) {
+            
+            // make a valid unitary diagonal op
+            SubDiagonalOp op = createSubDiagonalOp(3);
+            for (int i=0; i<op.numElems; i++)
+                op.real[i] = 1;
+                
+            int targs[] = {0,1,2};
+            
+            // make each target in-turn invalid
+            int badIndex = GENERATE( range(0,3) );
+            int badValue = GENERATE( -1, NUM_QUBITS );
+            targs[badIndex] = badValue;
+
+            REQUIRE_THROWS_WITH( applyGateSubDiagonalOp(quregVec, targs, op.numQubits, op), Contains("Invalid target qubit") );
+            destroySubDiagonalOp(op);
+        }
+    }
+    CLEANUP_TEST( quregVec, quregMatr );
+}
+
+
+
 /** @sa applyMatrix2
  * @ingroup unittest 
  * @author Tyson Jones 
@@ -3753,6 +3852,105 @@ TEST_CASE( "applyQFT", "[operators]" ) {
             int inv = GENERATE( -1, NUM_QUBITS );
             qubits[GENERATE_COPY( range(0,numQubits) )] = inv; // make invalid target
             REQUIRE_THROWS_WITH( applyQFT(quregVec, qubits, numQubits), Contains("Invalid target") );
+        }
+    }
+    CLEANUP_TEST( quregVec, quregMatr );
+}
+
+
+
+/** @sa applySubDiagonalOp
+ * @ingroup unittest 
+ * @author Tyson Jones 
+ */
+TEST_CASE( "applySubDiagonalOp", "[unitaries]" ) {
+    
+    PREPARE_TEST( quregVec, quregMatr, refVec, refMatr );
+    
+    SECTION( "correctness" ) {
+        
+        // generate all possible targets
+        int numTargs = GENERATE( range(1,NUM_QUBITS+1) );
+        int* targs = GENERATE_COPY( sublists(range(0,NUM_QUBITS), numTargs) );
+
+        // initialise a random non-unitary diagonal op
+        SubDiagonalOp op = createSubDiagonalOp(numTargs);
+        for (long long int i=0; i<op.numElems; i++) {
+            op.real[i] = getRandomReal(-10,10);
+            op.imag[i] = getRandomReal(-10,10);
+        }
+        QMatrix opMatr = toQMatrix(op);
+            
+        SECTION( "state-vector" ) {
+            
+            applySubDiagonalOp(quregVec, targs, numTargs, op);
+            applyReferenceMatrix(refVec, targs, numTargs, opMatr);
+            REQUIRE( areEqual(quregVec, refVec) );
+        }
+        SECTION( "density-matrix" ) {
+
+            applySubDiagonalOp(quregMatr, targs, numTargs, op);
+            applyReferenceMatrix(refMatr, targs, numTargs, opMatr);    
+            REQUIRE( areEqual(quregMatr, refMatr) );
+        }
+        
+        destroySubDiagonalOp(op);
+    }
+    SECTION( "input validation" ) {
+        
+        SECTION( "diagonal dimension" ) {
+            
+            int numTargs = 3;
+            SubDiagonalOp op = createSubDiagonalOp(numTargs);
+            
+            int badNumTargs = GENERATE_COPY( numTargs-1, numTargs+1 );
+            int badTargs[NUM_QUBITS+1];
+            
+            REQUIRE_THROWS_WITH( applySubDiagonalOp(quregVec, badTargs, badNumTargs, op), Contains("incompatible dimension") );
+            destroySubDiagonalOp(op);
+        }
+        SECTION( "number of targets" ) {
+            
+            // make too many targets (which are otherwise valid)
+            SubDiagonalOp badOp = createSubDiagonalOp(NUM_QUBITS + 1);
+            int targs[NUM_QUBITS + 1];
+            for (int t=0; t<badOp.numQubits; t++)
+                targs[t] = t;
+            for (int i=0; i<badOp.numElems; i++)
+                badOp.real[i] = 1;
+            
+            REQUIRE_THROWS_WITH( applySubDiagonalOp(quregVec, targs, badOp.numQubits, badOp), Contains("Invalid number of target qubits") );
+            destroySubDiagonalOp(badOp);
+        }
+        SECTION( "repetition in targets" ) {
+            
+            // make a valid unitary diagonal op
+            SubDiagonalOp op = createSubDiagonalOp(3);
+            for (int i=0; i<op.numElems; i++)
+                op.real[i] = 1;
+                
+            // make a repetition in the target list
+            int targs[] = {2,1,2};
+
+            REQUIRE_THROWS_WITH( applySubDiagonalOp(quregVec, targs, op.numQubits, op), Contains("target qubits must be unique") );
+            destroySubDiagonalOp(op);
+        }
+        SECTION( "qubit indices" ) {
+            
+            // make a valid unitary diagonal op
+            SubDiagonalOp op = createSubDiagonalOp(3);
+            for (int i=0; i<op.numElems; i++)
+                op.real[i] = 1;
+                
+            int targs[] = {0,1,2};
+            
+            // make each target in-turn invalid
+            int badIndex = GENERATE( range(0,3) );
+            int badValue = GENERATE( -1, NUM_QUBITS );
+            targs[badIndex] = badValue;
+
+            REQUIRE_THROWS_WITH( applySubDiagonalOp(quregVec, targs, op.numQubits, op), Contains("Invalid target qubit") );
+            destroySubDiagonalOp(op);
         }
     }
     CLEANUP_TEST( quregVec, quregMatr );

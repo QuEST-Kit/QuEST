@@ -846,12 +846,23 @@ void applyReferenceMatrix(
     applyReferenceOp(state, ctrls, numCtrls, targs, numTargs, op);
 }
 void applyReferenceMatrix(
+    QVector &state, int *targs, int numTargs, QMatrix op
+) {
+    // for state-vectors, the op is always just left-multiplied
+    applyReferenceOp(state, targs, numTargs, op);
+}
+void applyReferenceMatrix(
     QMatrix &state, int* ctrls, int numCtrls, int *targs, int numTargs, QMatrix op
 ) {
     // for density matrices, op is left-multiplied only
     int numQubits = calcLog2(state.size());
     QMatrix leftOp = getFullOperatorMatrix(ctrls, numCtrls, targs, numTargs, op, numQubits);
     state = leftOp * state;
+}
+void applyReferenceMatrix(
+    QMatrix &state, int *targs, int numTargs, QMatrix op
+) {
+    applyReferenceMatrix(state, NULL, 0, targs, numTargs, op);
 }
 
 bool areEqual(Qureg qureg1, Qureg qureg2, qreal precision) {
@@ -1196,6 +1207,13 @@ QMatrix toQMatrix(DiagonalOp op) {
     QMatrix mat = getZeroMatrix(1LL << op.numQubits);
     for (size_t i=0; i<mat.size(); i++)
         mat[i][i] = vec[i];
+    return mat;
+}
+
+QMatrix toQMatrix(SubDiagonalOp op) {
+    QMatrix mat = getZeroMatrix(1LL << op.numQubits);
+    for (size_t i=0; i<mat.size(); i++)
+        mat[i][i] = qcomp(op.real[i], op.imag[i]);
     return mat;
 }
 

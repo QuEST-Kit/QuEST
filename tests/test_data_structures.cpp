@@ -683,6 +683,37 @@ TEST_CASE( "createQureg", "[data_structures]" ) {
 
 
 
+/** @sa createSubDiagonalOp
+ * @ingroup unittest 
+ * @author Tyson Jones 
+ */
+TEST_CASE( "createSubDiagonalOp", "[data_structures]" ) {
+    
+    SECTION( "correctness" ) {
+        
+        int numQb = GENERATE( range(1,10+1) );
+        SubDiagonalOp op = createSubDiagonalOp(numQb);
+        
+        // ensure elems are created and initialised to 0
+        REQUIRE( areEqual(toQMatrix(op), getZeroMatrix(1<<numQb)) );
+        
+        destroySubDiagonalOp(op);
+    }
+    SECTION( "input validation" ) {
+        
+        SECTION( "number of qubits" ) {
+            
+            int numQb = GENERATE( -1, 0 );
+            REQUIRE_THROWS_WITH( createSubDiagonalOp(numQb), Contains("Invalid number of qubits") );
+            
+            numQb = 100;
+            REQUIRE_THROWS_WITH( createSubDiagonalOp(numQb), Contains("Too many qubits") );
+        }
+    }
+}
+
+
+
 /** @sa destroyComplexMatrixN
  * @ingroup unittest 
  * @author Tyson Jones 
@@ -767,6 +798,18 @@ TEST_CASE( "destroyQureg", "[data_structures]" ) {
      * not by reference. We also cannot reliably monitor the 
      * memory used in the heap at runtime.
      */
+    SUCCEED( );
+}
+
+
+
+/** @sa destroySubDiagonalOp
+ * @ingroup unittest 
+ * @author Tyson Jones 
+ */
+TEST_CASE( "destroySubDiagonalOp", "[data_structures]" ) {
+
+    /* there is no meaningful way to test this */
     SUCCEED( );
 }
 
