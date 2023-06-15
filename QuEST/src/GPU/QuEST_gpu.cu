@@ -17,6 +17,11 @@
 # include <stdio.h>
 # include <math.h>
 
+#ifdef USE_HIP
+// Translate CUDA calls into HIP calls 
+#include "cuda_to_hip.h"
+#endif
+
 # define REDUCE_SHARED_SIZE 512
 # define DEBUG 0
 
