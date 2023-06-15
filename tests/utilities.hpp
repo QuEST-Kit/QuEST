@@ -192,6 +192,14 @@ QMatrix toQMatrix(PauliHamil hamil);
  */
 QMatrix toQMatrix(DiagonalOp op);
 
+/** Returns a 2^\p n-by-2^\p n complex diagonal matrix form of the SubDiagonalOp,
+ * where n = op.numQubits
+ *
+ * @ingroup testutilities
+ * @author Tyson Jones
+ */
+QMatrix toQMatrix(SubDiagonalOp op);
+
 /** Returns a diagonal complex matrix formed by the given vector 
  *
  * @ingroup testutilities
@@ -821,6 +829,14 @@ void applyReferenceOp(QVector &state, int targ, QMatrix op);
  */
 void applyReferenceMatrix(QVector &state, int* ctrls, int numCtrls, int *targs, int numTargs, QMatrix op);
 
+/** Modifies the state-vector \p state to be the result of left-multiplying the multi-target operator 
+ * matrix \p op, with the specified target qubits (assuming no control qubits). T
+ *
+ * @ingroup testutilities 
+ * @author Tyson Jones
+ */
+void applyReferenceMatrix(QVector &state, int *targs, int numTargs, QMatrix op);
+
 /** Modifies the density matrix \p state to be the result of left-multiplying the multi-target operator 
  * matrix \p op, with the specified control and target qubits (in \p ctrls and \p targs 
  * respectively). Here, \p op is treated like a simple matrix and is hence left-multiplied 
@@ -830,6 +846,15 @@ void applyReferenceMatrix(QVector &state, int* ctrls, int numCtrls, int *targs, 
  * @author Tyson Jones
  */
 void applyReferenceMatrix(QMatrix &state, int* ctrls, int numCtrls, int *targs, int numTargs, QMatrix op);
+
+/** Modifies the density matrix \p state to be the result of left-multiplying the multi-target operator 
+ * matrix \p op, with the target qubits (assuming no control qubits). 
+ * Here, \p op is treated like a simple matrix and is hence left-multiplied onto the state once.
+ *
+ * @ingroup testutilities 
+ * @author Tyson Jones
+ */
+void applyReferenceMatrix(QMatrix &state, int *targs, int numTargs, QMatrix op); 
 
 /** Performs a hardware-agnostic comparison of the given quregs, checking 
  * whether the difference between the real and imaginary components of every amplitude

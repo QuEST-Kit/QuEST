@@ -304,7 +304,6 @@ void statevec_createQureg(Qureg *qureg, int numQubits, QuESTEnv env)
 
     // check gpu memory allocation was successful
     validateQuregGPUAllocation(qureg, env, __func__);
-
 }
 
 void statevec_destroyQureg(Qureg qureg, QuESTEnv env)
@@ -3247,6 +3246,64 @@ void densmatr_applyDiagonalOp(Qureg qureg, DiagonalOp op) {
     threadsPerCUDABlock = 128;
     CUDABlocks = ceil((qreal)(qureg.numAmpsPerChunk)/threadsPerCUDABlock);
     densmatr_applyDiagonalOpKernel<<<CUDABlocks, threadsPerCUDABlock>>>(qureg, op);
+}
+
+__global__ void statevec_applySubDiagonalOpKernel(Qureg qureg, int* targets, int numTargets, qreal* opReals, qreal* opImags, int conjFac) {
+    
+    long long int index = blockIdx.x*blockDim.x + threadIdx.x;
+    if (index>=qureg.numAmpsPerChunk) return;
+    
+    long long int v = 0;
+    for (int t=0; t<numTargets; t++)
+        v |= extractBit(targets[t], index) << t;
+        
+    qreal elemRe = opReals[v];
+    qreal elemIm = opImags[v] * conjFac;
+    
+    qreal* stateRe = qureg.deviceStateVec.real;
+    qreal* stateIm = qureg.deviceStateVec.imag;
+    
+    qreal ampRe = stateRe[index];
+    qreal ampIm = stateIm[index];
+    
+    // (a + b i)(c + d i) = (a c - b d) + i (a d + b c)
+    stateRe[index] = ampRe*elemRe - ampIm*elemIm;
+    stateIm[index] = ampRe*elemIm + ampIm*elemRe;
+}
+
+void statevec_applySubDiagonalOp(Qureg qureg, int* targets, SubDiagonalOp op, int conj) {
+    
+    // copy targets to GPU memory
+    int* d_targets;
+    int numTargets = op.numQubits;
+    size_t memTargets = numTargets * sizeof *d_targets;
+    cudaMalloc(&d_targets, memTargets);
+    cudaMemcpy(d_targets, targets, memTargets, cudaMemcpyHostToDevice);
+    
+    // copy op to GPU memory
+    qreal* d_opReal;
+    qreal* d_opImag;
+    size_t memOp = op.numElems * sizeof *d_opReal;
+    cudaMalloc(&d_opReal, memOp);
+    cudaMalloc(&d_opImag, memOp);
+    cudaMemcpy(d_opReal, op.real, memOp, cudaMemcpyHostToDevice);
+    cudaMemcpy(d_opImag, op.imag, memOp, cudaMemcpyHostToDevice);
+    
+    // determine factor of imaginary components
+    int conjFac = 1;
+    if (conj)
+        conjFac = -1;
+    
+    // launch kernels
+    int threadsPerCUDABlock = 128;
+    int CUDABlocks = ceil(qureg.numAmpsPerChunk / (qreal) threadsPerCUDABlock);
+    statevec_applySubDiagonalOpKernel<<<CUDABlocks,threadsPerCUDABlock>>>(
+        qureg, d_targets, numTargets, d_opReal, d_opImag, conjFac);
+    
+    // free temporary GPU memory
+    cudaFree(d_targets);
+    cudaFree(d_opReal);
+    cudaFree(d_opImag);
 }
 
 /** computes either a real or imag term of |vec_i|^2 op_i */

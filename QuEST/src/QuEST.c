@@ -907,6 +907,26 @@ void applyProjector(Qureg qureg, int qubit, int outcome) {
     qasm_recordComment(qureg, "Here, qubit %d was un-physically projected into outcome %d", qubit, outcome);
 }
 
+void diagonalUnitary(Qureg qureg, int* qubits, int numQubits, SubDiagonalOp op) {
+    validateSubDiagOpTargets(qureg, qubits, numQubits, op, __func__);
+    validateUnitarySubDiagOp(op, __func__);
+    
+    int shift = 0;
+    int conj = 0;
+    statevec_applySubDiagonalOp(qureg, qubits, op, conj);
+    
+    if (qureg.isDensityMatrix) {
+        conj = 1;
+        shift = qureg.numQubitsRepresented;
+        
+        shiftIndices(qubits, numQubits, shift);
+        statevec_applySubDiagonalOp(qureg, qubits, op, conj);
+        shiftIndices(qubits, numQubits, - shift);
+    }
+    
+    qasm_recordComment(qureg, "Here, the register was modified by an undisclosed diagonal unitary (via diagonalUnitary).");
+}
+
 
 
 /*
@@ -1181,6 +1201,34 @@ void applyDiagonalOp(Qureg qureg, DiagonalOp op) {
         statevec_applyDiagonalOp(qureg, op);
 
     qasm_recordComment(qureg, "Here, the register was modified to an undisclosed and possibly unphysical state (via applyDiagonalOp).");
+}
+
+void applySubDiagonalOp(Qureg qureg, int* qubits, int numQubits, SubDiagonalOp op) {
+    validateSubDiagOpTargets(qureg, qubits, numQubits, op, __func__);
+    
+    int conj = 0;
+    statevec_applySubDiagonalOp(qureg, qubits, op, conj);
+    
+    qasm_recordComment(qureg, "Here, the register was modified to an undisclosed and possibly unphysical state (via applySubDiagonalOp).");
+}
+
+void applyGateSubDiagonalOp(Qureg qureg, int* qubits, int numQubits, SubDiagonalOp op) {
+    validateSubDiagOpTargets(qureg, qubits, numQubits, op, __func__);
+    
+    int shift = 0;
+    int conj = 0;
+    statevec_applySubDiagonalOp(qureg, qubits, op, conj);
+    
+    if (qureg.isDensityMatrix) {
+        conj = 1;
+        shift = qureg.numQubitsRepresented;
+        
+        shiftIndices(qubits, numQubits, shift);
+        statevec_applySubDiagonalOp(qureg, qubits, op, conj);
+        shiftIndices(qubits, numQubits, - shift);
+    }
+    
+    qasm_recordComment(qureg, "Here, the register was modified by an undisclosed sub-diagonal unitary, though which did not enforce numerical unitarity.");
 }
 
 
@@ -1642,6 +1690,25 @@ DiagonalOp createDiagonalOpFromPauliHamilFile(char* fn, QuESTEnv env) {
     
     destroyPauliHamil(h);
     return op;
+}
+
+SubDiagonalOp createSubDiagonalOp(int numQubits) {
+    validateNumQubitsInSubDiagOp(numQubits, __func__);
+
+    SubDiagonalOp op;
+    op.numQubits = numQubits;
+    op.numElems = (1LL << numQubits);
+    
+    // allocate CPU memory (initialised to zero)
+    op.real = (qreal*) calloc(op.numElems, sizeof(qreal));
+    op.imag = (qreal*) calloc(op.numElems, sizeof(qreal));
+    
+    return op;
+}
+
+void destroySubDiagonalOp(SubDiagonalOp op) {
+    free(op.real);
+    free(op.imag);
 }
 
 /*
