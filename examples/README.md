@@ -244,7 +244,7 @@ If your project contains multiple source files, separate them with semi-colons. 
   ```console
    -DGPUACCELERATED=1 -DGPU_COMPUTE_CAPABILITY=[CC] ..
   ```
-  were `[CC]` is the compute cabability of your GPU, written without a decimal point. This can can be looked up at the [NVIDIA website](https://developer.nvidia.com/cuda-gpus).
+  where `[CC]` is the compute cabability of your GPU, written without a decimal point. This can can be looked up at the [NVIDIA website](https://developer.nvidia.com/cuda-gpus).
   > Note that CUDA is not compatible with all compilers. To force `cmake` to use a 
   > compatible compiler, override `CMAKE_C_COMPILER` and `CMAKE_CXX_COMPILER`.  
   > For example, to compile for the [Quadro P6000](https://www.pny.com/nvidia-quadro-p6000)
@@ -253,6 +253,13 @@ If your project contains multiple source files, separate them with semi-colons. 
   > cmake .. -DGPUACCELERATED=1 -DGPU_COMPUTE_CAPABILITY=61 \
   >          -DCMAKE_C_COMPILER=gcc-6 -DCMAKE_CXX_COMPILER=g++-6
   > ```
+
+QuEST can also run on AMD GPUs using HIP. For the HIP documentation see: [HIP programming guide](https://docs.amd.com/bundle/HIP-Programming-Guide-v5.3/page/Introduction_to_HIP_Programming_Guide.html)
+To compile for AMD GPUs, use
+  ```console
+   -DGPUACCELERATED=1 -DUSE_HIP=1 -DGPU_ARCH=[ARCH] ..
+  ```
+  where `[ARCH]` is the architecture of your GPU, for axample `gfx90a`. A table for AMD GPU architectures can be looked up [HERE](https://llvm.org/docs/AMDGPUUsage.html#amdgpu-processor-table) 
 
 - You can additionally customise the floating point precision used by QuEST's `qreal` type, via
   ```console
