@@ -194,7 +194,7 @@ if (GPUACCELERATED)
           -O2"
       )
     endif()
-	else()
+  else()
     set (CUDA_NVCC_FLAGS "${CUDA_NVCC_FLAGS} \
         -arch=compute_${GPU_COMPUTE_CAPABILITY} -code=sm_${GPU_COMPUTE_CAPABILITY}"
     )
@@ -211,7 +211,7 @@ if (GPUACCELERATED)
             -O2"
         )
     endif()
-	endif()	
+  endif()	
 endif()
 
 
