@@ -254,6 +254,13 @@ If your project contains multiple source files, separate them with semi-colons. 
   >          -DCMAKE_C_COMPILER=gcc-6 -DCMAKE_CXX_COMPILER=g++-6
   > ```
 
+  QuEST can also run on AMD GPUs using HIP. For the HIP documentation see: [HIP programming guide](https://docs.amd.com/bundle/HIP-Programming-Guide-v5.3/page/Introduction_to_HIP_Programming_Guide.html)
+  To compile for AMD GPUs, use
+    ```console
+    -DGPUACCELERATED=1 -DUSE_HIP=1 -DGPU_ARCH=[ARCH] ..
+    ```
+  where `[ARCH]` is the architecture of your GPU, for example `gfx90a`. A table for AMD GPU architectures can be looked up [HERE](https://llvm.org/docs/AMDGPUUsage.html#amdgpu-processor-table) 
+
 - You can additionally customise the floating point precision used by QuEST's `qreal` type, via
   ```console
    -DPRECISION=1
