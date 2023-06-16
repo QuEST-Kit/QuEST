@@ -258,7 +258,7 @@ If your project contains multiple source files, separate them with semi-colons. 
     ```console
     -DGPUACCELERATED=1 -DUSE_HIP=1 -DGPU_ARCH=[ARCH] ..
     ```
-  where `[ARCH]` is the architecture of your GPU, for example `gfx90a`. A table for AMD GPU architectures can be looked up [here](https://llvm.org/docs/AMDGPUUsage.html#amdgpu-processor-table) 
+  where `[ARCH]` is the architecture of your GPU, for example `gfx90a`. A table for AMD GPU architectures can be looked up [here](https://llvm.org/docs/AMDGPUUsage.html#amdgpu-processor-table). 
 
 - You can additionally customise the floating point precision used by QuEST's `qreal` type, via
   ```console
