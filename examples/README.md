@@ -254,7 +254,8 @@ If your project contains multiple source files, separate them with semi-colons. 
   >          -DCMAKE_C_COMPILER=gcc-6 -DCMAKE_CXX_COMPILER=g++-6
   > ```
 
-  QuEST can also run on AMD GPUs using HIP. For the HIP documentation see: [HIP programming guide](https://docs.amd.com/bundle/HIP-Programming-Guide-v5.3/page/Introduction_to_HIP_Programming_Guide.html)
+  QuEST can also run on AMD GPUs using HIP. For the HIP documentation see: [HIP programming guide](https://docs.amd.com/bundle/HIP-Programming-Guide-v5.3/page/Introduction_to_HIP_Programming_Guide.html).
+  
   To compile for AMD GPUs, use
     ```console
     -DGPUACCELERATED=1 -DUSE_HIP=1 -DGPU_ARCH=[ARCH] ..
