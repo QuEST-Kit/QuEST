@@ -33,6 +33,8 @@ Dr Mihai Duta [developer]
     original prototyping
 
 External contributors:
+Bruno Villasenor Alvarez on behalf of AMD
+    ported the GPU backend to HIP, for AMD GPU compatibility
 Dr Nicolas Vogt on behalf of HQS Quantum Simulations
     implemented mixDamping (CPU)
 Kshitij Chhabra

@@ -175,6 +175,7 @@ then run it with
 
 We sincerely thank the following external contributors to QuEST.
 
+- [Bruno Villasenor Alvarez](https://github.com/bvillasen) of [AMD](https://www.amd.com/en.html) for porting the GPU backend to [HIP](https://github.com/ROCm-Developer-Tools/HIP), for compatibility with AMD GPUs.
 - [HQS Quantum simulations](https://quantumsimulations.de/) for contributing `mixDamping` on CPU.
 - [Kshitij Chhabra](https://github.com/kshitijc) for patching some validation bugs.
 - [Drew Silcock](https://github.com/drewsilcock) for patching the multithreaded build on MacOS.
