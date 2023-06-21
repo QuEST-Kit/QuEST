@@ -37,6 +37,7 @@ The **Quantum Exact Simulation Toolkit** is a high performance simulator of quan
 ![OS](https://img.shields.io/badge/os-Windows-9cbd3c.svg)
 [![Platforms](https://img.shields.io/badge/multithreaded-OpenMP-6699ff.svg)](https://www.openmp.org/)
 [![Platforms](https://img.shields.io/badge/GPU-CUDA-6699ff.svg)](https://developer.nvidia.com/cuda-zone)
+[![Platforms](https://img.shields.io/badge/GPU-AMD-6699ff.svg)](https://docs.amd.com/bundle/HIP-Programming-Guide-v5.3)
 [![Platforms](https://img.shields.io/badge/distributed-MPI-6699ff.svg)](https://www.mpi-forum.org/) 
 
 QuEST is developed by the [QTechTheory](http://qtechtheory.org/) group at the University of Oxford, and [these authors](https://github.com/QuEST-Kit/QuEST/blob/master/AUTHORS.txt). To learn more:
