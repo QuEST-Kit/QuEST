@@ -33,6 +33,9 @@ option(GPUACCELERATED "Whether to program will run on GPU. Set to 1 to enable" 0
 
 set(GPU_COMPUTE_CAPABILITY 30 CACHE STRING "GPU hardware dependent, lookup at https://developer.nvidia.com/cuda-gpus. Write without fullstop")
 
+option(USE_HIP "Whether to use HIP for GPU code compilation for AMD GPUs. Set to 1 to enable" 0)
+
+set(GPU_ARCH gfx90 CACHE STRING "GPU hardware dependent, used for AMD GPUs when USE_HIP=1. Lookup at https://llvm.org/docs/AMDGPUUsage.html#amdgpu-processor-table. Write without fullstop")
 
 
 # *****************************************************************************
@@ -44,6 +47,9 @@ message(STATUS "Precision is ${PRECISION}")
 message(STATUS "GPU acceleration is ${GPUACCELERATED}")
 message(STATUS "OMP acceleration is ${MULTITHREADED}")
 message(STATUS "MPI distribution is ${DISTRIBUTED}")
+if (${GPUACCELERATED})
+  message(STATUS "HIP compilation is ${USE_HIP}")
+endif()
 
 
 # -----------------------------------------------------------------------------
@@ -111,7 +117,30 @@ if (DISTRIBUTED)
 endif()
 
 if (GPUACCELERATED)
+  if (USE_HIP)
+
+  if(NOT DEFINED HIP_PATH)
+    if(NOT DEFINED ENV{HIP_PATH})
+      message(WARNING "WARNING: HIP_PATH is not defiend. Using default HIP_PATH=/opt/rocm/hip    " ${HIP_VERSION})
+      set(HIP_PATH "/opt/rocm/hip" CACHE PATH "Path to which HIP has been installed")
+    else()
+      set(HIP_PATH $ENV{HIP_PATH}	CACHE PATH "Path to which HIP has been installed")
+    endif()
+  endif()
+
+  if(EXISTS "${HIP_PATH}")
+    set(CMAKE_MODULE_PATH "${HIP_PATH}/cmake" ${CMAKE_MODULE_PATH})
+    find_package(HIP REQUIRED)
+    message(STATUS "Found HIP: " ${HIP_VERSION})
+    message(STATUS "HIP PATH: " ${HIP_PATH})
+  endif()
+    
+  ADD_DEFINITIONS( -DUSE_HIP )
+  ADD_DEFINITIONS( -D__HIP_PLATFORM_AMD__ )
+
+  else()
     find_package(CUDA REQUIRED)
+  endif()  
 endif()
 
 
@@ -147,6 +176,26 @@ endif ()
 # ----- CUDA FLAGS ------------------------------------------------------------
 
 if (GPUACCELERATED)
+  if (USE_HIP)
+    if( NOT DEFINED GPU_ARCH AND DEFINED GPU_COMPUTE_CAPABILITY )
+      set ( GPU_ARCH ${GPU_COMPUTE_CAPABILITY})
+    endif()
+
+    set(HIP_HIPCC_FLAGS "${HIP_HIPCC_FLAGS} -fPIC  --offload-arch=${GPU_ARCH}" )
+    if ("${CMAKE_BUILD_TYPE}" STREQUAL "Release")
+      set (HIP_HIPCC_FLAGS "${HIP_HIPCC_FLAGS} \
+          -O2"
+      )
+    elseif ("${CMAKE_BUILD_TYPE}" STREQUAL "Debug")
+      set (HIP_HIPCC_FLAGS "${HIP_HIPCC_FLAGS} \
+          -G -g -lineinfo"
+      )
+    else()
+      set (HIP_HIPCC_FLAGS "${HIP_HIPCC_FLAGS} \
+          -O2"
+      )
+    endif()
+  else()
     set (CUDA_NVCC_FLAGS "${CUDA_NVCC_FLAGS} \
         -arch=compute_${GPU_COMPUTE_CAPABILITY} -code=sm_${GPU_COMPUTE_CAPABILITY}"
     )
@@ -169,6 +218,7 @@ if (GPUACCELERATED)
             -O2"
         )
     endif()
+  endif()  
 endif()
 
 
@@ -286,6 +336,7 @@ if (VERBOSE_CMAKE)
     message("   C++ Compiler ID: ${CMAKE_CXX_COMPILER_ID}")
     message("   C compilation flags: ${CMAKE_C_FLAGS}")
     message("   CUDA compilation flags: ${CUDA_NVCC_FLAGS}")
+    message("   HIP compilation flags: ${HIP_HIPCC_FLAGS}")
     message("   C++ compilation flags: ${CMAKE_CXX_FLAGS}")
 
     message("-- Build type: ${CMAKE_BUILD_TYPE}")
@@ -314,9 +365,15 @@ endif ()
 
 
 if (GPUACCELERATED)
+  if (USE_HIP)
+    hip_add_library(QuEST
+        ${QuEST_SRC} 
+    )
+  else()
     cuda_add_library(QuEST
         ${QuEST_SRC}
     )
+  endif()  
 else ()
     add_library(QuEST
         ${QuEST_SRC}
@@ -353,9 +410,11 @@ endif ()
 target_link_libraries(QuEST PUBLIC ${MPI_C_LIBRARIES})
 
 # ----- GPU -------------------------------------------------------------------
-
-target_link_libraries(QuEST ${CUDA_LIBRARIES})
-
+if (USE_HIP)
+  target_link_libraries(QuEST PUBLIC  ${HIP_PATH}/lib/libamdhip64.so )
+else()
+  target_link_libraries(QuEST ${CUDA_LIBRARIES})
+endif()
 
 # ----- Coverage testing with GCC or Clang ------------------------------------
 option(QUEST_ENABLE_COVERAGE "Enable coverage reporting for GCC or Clang" FALSE)
