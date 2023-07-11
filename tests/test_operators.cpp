@@ -25,6 +25,11 @@ using Catch::Matchers::Contains;
 
 
 
+// largest valid phaseFunc enum, used by input validation tests
+enum phaseFunc MAX_INDEX_PHASE_FUNC = SCALED_INVERSE_SHIFTED_WEIGHTED_DISTANCE;
+
+
+
 /** @sa applyDiagonalOp
  * @ingroup unittest 
  * @author Tyson Jones 
@@ -1610,7 +1615,7 @@ TEST_CASE( "applyNamedPhaseFunc", "[operators]" ) {
         }
         SECTION( "phase function name" ) {
             
-            enum phaseFunc func = (enum phaseFunc) GENERATE( -1, 14 );
+            enum phaseFunc func = (enum phaseFunc) GENERATE( -1, MAX_INDEX_PHASE_FUNC + 1 );
             REQUIRE_THROWS_WITH( applyNamedPhaseFunc(quregVec, regs, numQubitsPerReg, numRegs, UNSIGNED, func), Contains("Invalid named phase function") );
         }
         SECTION( "phase function parameters" ) {
@@ -1850,7 +1855,7 @@ TEST_CASE( "applyNamedPhaseFuncOverrides", "[operators]" ) {
         }
         SECTION( "phase function name" ) {
             
-            enum phaseFunc func = (enum phaseFunc) GENERATE( -1, 14 );
+            enum phaseFunc func = (enum phaseFunc) GENERATE( -1, MAX_INDEX_PHASE_FUNC + 1 );
             REQUIRE_THROWS_WITH( applyNamedPhaseFuncOverrides(quregVec, regs, numQubitsPerReg, numRegs, UNSIGNED, func, NULL, NULL, 0), Contains("Invalid named phase function") );
         }
         SECTION( "phase function parameters" ) {
@@ -2427,7 +2432,7 @@ TEST_CASE( "applyParamNamedPhaseFunc", "[operators]" ) {
         }
         SECTION( "phase function name" ) {
             
-            enum phaseFunc func = (enum phaseFunc) GENERATE( -1, 15 );
+            enum phaseFunc func = (enum phaseFunc) GENERATE( -1, MAX_INDEX_PHASE_FUNC + 1 );
             REQUIRE_THROWS_WITH( applyParamNamedPhaseFunc(quregVec, regs, numQubitsPerReg, numRegs, UNSIGNED, func, NULL, 0), Contains("Invalid named phase function") );
         }
         SECTION( "phase function parameters" ) {
@@ -3039,7 +3044,7 @@ TEST_CASE( "applyParamNamedPhaseFuncOverrides", "[operators]" ) {
         }
         SECTION( "phase function name" ) {
             
-            enum phaseFunc func = (enum phaseFunc) GENERATE( -1, 15 );
+            enum phaseFunc func = (enum phaseFunc) GENERATE( -1, MAX_INDEX_PHASE_FUNC + 1 );
             REQUIRE_THROWS_WITH( applyParamNamedPhaseFuncOverrides(quregVec, regs, numQubitsPerReg, numRegs, UNSIGNED, func, NULL, 0, NULL, NULL, 0), Contains("Invalid named phase function") );
         }
         SECTION( "phase function parameters" ) {
