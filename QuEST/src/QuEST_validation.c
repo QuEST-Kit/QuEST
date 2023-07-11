@@ -198,15 +198,15 @@ static const char* errorMessages[] = {
     [E_INVALID_NUM_PHASE_FUNC_OVERRIDES] = "Invalid number of phase function overrides specified. Must be >=0, and for single-variable phase functions, <=2^numQubits (the maximum unique binary values of the sub-register). Note that uniqueness of overriding indices is not checked.",
     [E_INVALID_PHASE_FUNC_OVERRIDE_UNSIGNED_INDEX] = "Invalid phase function override index, in the UNSIGNED encoding. Must be >=0, and <= the maximum index possible of the corresponding qubit subregister (2^numQubits-1).",
     [E_INVALID_PHASE_FUNC_OVERRIDE_TWOS_COMPLEMENT_INDEX] = "Invalid phase function override index, in the TWOS_COMPLEMENT encoding. Must be between (inclusive) -2^(N-1) and +2^(N-1)-1, where N is the number of qubits (including the sign qubit).",
-    [E_INVALID_PHASE_FUNC_NAME] = "Invalid named phase function, which must be one of {NORM, SCALED_NORM, INVERSE_NORM, SCALED_INVERSE_NORM, PRODUCT, SCALED_PRODUCT, INVERSE_PRODUCT, SCALED_INVERSE_PRODUCT, DISTANCE, SCALED_DISTANCE, INVERSE_DISTANCE, SCALED_INVERSE_DISTANCE}.",
-    [E_INVALID_NUM_NAMED_PHASE_FUNC_PARAMS] = "Invalid number of parameters passed for the given named phase function. {NORM, PRODUCT, DISTANCE} accept 0 parameters, {INVERSE_NORM, INVERSE_PRODUCT, INVERSE_DISTANCE} accept 1 parameter (the phase at the divergence), {SCALED_NORM, SCALED_INVERSE_NORM, SCALED_PRODUCT} accept 1 parameter (the scaling coefficient), {SCALED_INVERSE_PRODUCT, SCALED_DISTANCE, SCALED_INVERSE_DISTANCE} accept 2 parameters (the coefficient then divergence phase), SCALED_INVERSE_SHIFTED_NORM accepts 2 + (number of sub-registers) parameters (the coefficient, then the divergence phase, followed by the offset for each sub-register), SCALED_INVERSE_SHIFTED_DISTANCE accepts 2 + (number of sub-registers) / 2 parameters (the coefficient, then the divergence phase, followed by the offset for each pair of sub-registers).",
+    [E_INVALID_PHASE_FUNC_NAME] = "Invalid named phase function, which must be one of {NORM, SCALED_NORM, INVERSE_NORM, SCALED_INVERSE_NORM, SCALED_INVERSE_SHIFTED_NORM, PRODUCT, SCALED_PRODUCT, INVERSE_PRODUCT, SCALED_INVERSE_PRODUCT, DISTANCE, SCALED_DISTANCE, INVERSE_DISTANCE, SCALED_INVERSE_DISTANCE, SCALED_INVERSE_SHIFTED_DISTANCE, SCALED_INVERSE_SHIFTED_WEIGHTED_DISTANCE}.",
+    [E_INVALID_NUM_NAMED_PHASE_FUNC_PARAMS] = "Invalid number of parameters passed for the given named phase function. {NORM, PRODUCT, DISTANCE} accept 0 parameters, {INVERSE_NORM, INVERSE_PRODUCT, INVERSE_DISTANCE} accept 1 parameter (the phase at the divergence), {SCALED_NORM, SCALED_INVERSE_NORM, SCALED_PRODUCT} accept 1 parameter (the scaling coefficient), {SCALED_INVERSE_PRODUCT, SCALED_DISTANCE, SCALED_INVERSE_DISTANCE} accept 2 parameters (the coefficient then divergence phase), SCALED_INVERSE_SHIFTED_NORM accepts 2 + (number of sub-registers) parameters (the coefficient, then the divergence phase, followed by the offset for each sub-register), SCALED_INVERSE_SHIFTED_DISTANCE accepts 2 + (number of sub-registers) / 2 parameters (the coefficient, then the divergence phase, followed by the offset for each pair of sub-registers), SCALED_INVERSE_SHIFTED_WEIGHTED_DISTANCE accepts 2 + (number of sub-registers) parameters (the coefficient, then the divergence phase, followed by the factor and offset for each pair of sub-registers).",
     [E_INVALID_BIT_ENCODING] = "Invalid bit encoding. Must be one of {UNSIGNED, TWOS_COMPLEMENT}.",
     [E_INVALID_NUM_QUBITS_TWOS_COMPLEMENT] = "A sub-register contained too few qubits to employ TWOS_COMPLEMENT encoding. Must use >1 qubits (allocating one for the sign).",
     [E_NEGATIVE_EXPONENT_WITHOUT_ZERO_OVERRIDE] = "The phase function contained a negative exponent which would diverge at zero, but the zero index was not overriden.",
     [E_FRACTIONAL_EXPONENT_WITHOUT_NEG_OVERRIDE] = "The phase function contained a fractional exponent, which in TWOS_COMPLEMENT encoding, requires all negative indices are overriden. However, one or more negative indices were not overriden.",
     [E_NEGATIVE_EXPONENT_MULTI_VAR] = "The phase function contained an illegal negative exponent. One must instead call applyPhaseFuncOverrides() once for each register, so that the zero index of each register is overriden, independent of the indices of all other registers.",
     [E_FRACTIONAL_EXPONENT_MULTI_VAR] = "The phase function contained a fractional exponent, which is illegal in TWOS_COMPLEMENT encoding, since it cannot be (efficiently) checked that all negative indices were overriden. One must instead call applyPhaseFuncOverrides() once for each register, so that each register's negative indices can be overriden, independent of the indices of all other registers.",
-    [E_INVALID_NUM_REGS_DISTANCE_PHASE_FUNC] = "Phase functions DISTANCE, INVERSE_DISTANCE, SCALED_DISTANCE and SCALED_INVERSE_DISTANCE require a strictly even number of sub-registers.",
+    [E_INVALID_NUM_REGS_DISTANCE_PHASE_FUNC] = "Phase functions DISTANCE, INVERSE_DISTANCE, SCALED_DISTANCE, SCALED_INVERSE_DISTANCE, SCALED_INVERSE_SHIFTED_DISTANCE and SCALED_INVERSE_SHIFTED_WEIGHTED_DISTANCE require a strictly even number of sub-registers.",
     [E_NOT_ENOUGH_ADDRESSABLE_MEMORY] = "Could not allocate memory. Requested more memory than system can address.",
     [E_QUREG_NOT_ALLOCATED] = "Could not allocate memory for Qureg. Possibly insufficient memory.",
     [E_QUREG_NOT_ALLOCATED_ON_GPU] = "Could not allocate memory for Qureg on GPU. Possibly insufficient memory.",
@@ -984,8 +984,17 @@ void validatePhaseFuncName(enum phaseFunc funcCode, int numRegs, int numParams, 
         funcCode == INVERSE_DISTANCE ||
         funcCode == SCALED_DISTANCE ||
         funcCode == SCALED_INVERSE_DISTANCE ||
-        funcCode == SCALED_INVERSE_SHIFTED_DISTANCE,
+        funcCode == SCALED_INVERSE_SHIFTED_DISTANCE ||
+        funcCode == SCALED_INVERSE_SHIFTED_WEIGHTED_DISTANCE,
             E_INVALID_PHASE_FUNC_NAME, caller);
+
+    if (funcCode == DISTANCE ||
+        funcCode == INVERSE_DISTANCE ||
+        funcCode == SCALED_DISTANCE ||
+        funcCode == SCALED_INVERSE_DISTANCE ||
+        funcCode == SCALED_INVERSE_SHIFTED_DISTANCE ||
+        funcCode == SCALED_INVERSE_SHIFTED_WEIGHTED_DISTANCE)
+            QuESTAssert(numRegs%2 == 0, E_INVALID_NUM_REGS_DISTANCE_PHASE_FUNC, caller);
 
     if (funcCode == NORM || 
         funcCode == PRODUCT ||
@@ -1013,12 +1022,8 @@ void validatePhaseFuncName(enum phaseFunc funcCode, int numRegs, int numParams, 
     if (funcCode == SCALED_INVERSE_SHIFTED_DISTANCE)
         QuESTAssert(numParams == 2 + numRegs / 2, E_INVALID_NUM_NAMED_PHASE_FUNC_PARAMS, caller);
 
-    if (funcCode == DISTANCE ||
-        funcCode == INVERSE_DISTANCE ||
-        funcCode == SCALED_DISTANCE ||
-        funcCode == SCALED_INVERSE_DISTANCE ||
-        funcCode == SCALED_INVERSE_SHIFTED_DISTANCE)
-            QuESTAssert(numRegs%2 == 0, E_INVALID_NUM_REGS_DISTANCE_PHASE_FUNC, caller);
+    if (funcCode == SCALED_INVERSE_SHIFTED_WEIGHTED_DISTANCE)
+        QuESTAssert(numParams == 2 + 2 * (numRegs / 2), E_INVALID_NUM_NAMED_PHASE_FUNC_PARAMS, caller);
 }
 
 void validateBitEncoding(int numQubits, enum bitEncoding encoding, const char* caller) {
