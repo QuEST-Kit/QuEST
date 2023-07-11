@@ -223,6 +223,7 @@ typedef struct Vector
  *    - \p INVERSE_DISTANCE maps state \f$|x_1\rangle|x_2\rangle|y_1\rangle|y_2\rangle\dots\f$ to \f$1/\sqrt{(x_1-x_2)^2 + (y_1-y_2)^2 + \dots}\f$
  *    - \p SCALED_INVERSE_DISTANCE maps state \f$|x_1\rangle|x_2\rangle|y_1\rangle|y_2\rangle\dots\f$ to \f$\text{coeff}/\sqrt{(x_1-x_2)^2 + (y_1-y_2)^2 + \dots}\f$
  *    - \p SCALED_INVERSE_SHIFTED_DISTANCE maps state \f$|x_1\rangle|x_2\rangle|y_1\rangle|y_2\rangle\dots\f$ to \f$\text{coeff}/\sqrt{(x_1-x_2-\Delta_x)^2 + (y_1-y_2-\Delta_y)^2 + \dots}\f$
+ *    - \p SCALED_INVERSE_SHIFTED_WEIGHTED_DISTANCE maps state \f$|x_1\rangle|x_2\rangle|y_1\rangle|y_2\rangle\dots\f$ to \f$\text{coeff}/\sqrt{f_x \, (x_1-x_2-\Delta_x)^2 + f_y \; (y_1-y_2-\Delta_y)^2 + \dots}\f$
  *
  * @ingroup type 
  * @author Tyson Jones
@@ -231,7 +232,8 @@ typedef struct Vector
 enum phaseFunc {
     NORM=0,     SCALED_NORM=1,      INVERSE_NORM=2,      SCALED_INVERSE_NORM=3,      SCALED_INVERSE_SHIFTED_NORM=4,
     PRODUCT=5,  SCALED_PRODUCT=6,   INVERSE_PRODUCT=7,   SCALED_INVERSE_PRODUCT=8,
-    DISTANCE=9, SCALED_DISTANCE=10, INVERSE_DISTANCE=11, SCALED_INVERSE_DISTANCE=12, SCALED_INVERSE_SHIFTED_DISTANCE=13};
+    DISTANCE=9, SCALED_DISTANCE=10, INVERSE_DISTANCE=11, SCALED_INVERSE_DISTANCE=12, SCALED_INVERSE_SHIFTED_DISTANCE=13, SCALED_INVERSE_SHIFTED_WEIGHTED_DISTANCE=14
+};
     
 /** Flags for specifying how the bits in sub-register computational basis states 
  * are mapped to indices in functions like applyPhaseFunc().
@@ -6816,7 +6818,7 @@ void applyNamedPhaseFuncOverrides(Qureg qureg, int* qubits, int* numQubitsPerReg
  *   > divergence parameter whenever the denominator is smaller than (or equal to)
  *   > machine precision `REAL_EPS`.
  *
- * - Functions allowing the shifting of sub-register values, which are \p SCALED_INVERSE_SHIFTED_NORM
+ * - Functions allowing the shifting of unweighted sub-register values, which are \p SCALED_INVERSE_SHIFTED_NORM,
  *   and \p SCALED_INVERSE_SHIFTED_DISTANCE, need these shift values to be passed in the \p params
  *   argument _after_ the scaling and divergence override parameters listed above. The function
  *   \p SCALED_INVERSE_SHIFTED_NORM needs as many extra parameters, as there are sub-registers;
@@ -6848,8 +6850,20 @@ void applyNamedPhaseFuncOverrides(Qureg qureg, int* qubits, int* numQubitsPerReg
  *      f(\vec{r}) \; = \; \begin{cases} \pi & \;\;\; \vec{r}=\vec{0} \\ \displaystyle 0.5 \left[(r_1-r_2-0.8)^2 + (r_3-r_4+0.3)^2\right]^{-1/2} & \;\;\;\text{otherwise} \end{cases}.
  *   \f] 
  * 
- *   > You can further override \f$f(\vec{r}, \vec{\theta})\f$ at one or more \f$\vec{r}\f$ values
- *   > via applyParamNamedPhaseFuncOverrides().
+ * - Function \p SCALED_INVERSE_SHIFTED_WEIGHTED_DISTANCE, which effects phase
+ *   \f[
+ *      \text{coeff}/\sqrt{f_x \, (x_1-x_2-\Delta_x)^2 + f_y \; (y_1-y_2-\Delta_y)^2 + \dots}
+ *   \f]
+ *   (and phase \f$\phi\f$ at divergences)
+ *   accepts parameters in the following order:
+ *   \f[
+ *      \{  \; \text{coeff}, \; \phi, \; f_x, \; \Delta x, \; f_y, \; \Delta y, \; \dots \;   \}
+ *   \f]
+ *   > Note that where the denominator's \f$\text{sqrt}\f$ argument would be negative (and the resulting
+ *   > phase function _complex_), the phase is instead set to the divergence parameter \f$\phi\f$.
+ * 
+ * > You can further override \f$f(\vec{r}, \vec{\theta})\f$ at one or more \f$\vec{r}\f$ values
+ * > via applyParamNamedPhaseFuncOverrides().
  *
  * - The interpreted parameterised phase function can be previewed in the QASM log, as a comment. \n
  *   For example:

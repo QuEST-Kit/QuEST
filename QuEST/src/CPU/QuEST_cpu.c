@@ -4594,16 +4594,25 @@ void statevec_applyParamNamedPhaseFuncOverrides(
                 // compute Euclidean distance related phases 
                 else if (phaseFuncName == DISTANCE || phaseFuncName == INVERSE_DISTANCE ||
                          phaseFuncName == SCALED_DISTANCE || phaseFuncName == SCALED_INVERSE_DISTANCE ||
-                         phaseFuncName == SCALED_INVERSE_SHIFTED_DISTANCE) {
+                         phaseFuncName == SCALED_INVERSE_SHIFTED_DISTANCE || phaseFuncName == SCALED_INVERSE_SHIFTED_WEIGHTED_DISTANCE) {
 
                     dist = 0;
                     if (phaseFuncName == SCALED_INVERSE_SHIFTED_DISTANCE) {
                         for (r=0; r<numRegs; r+=2)
                             dist += (phaseInds[r] - phaseInds[r+1] - params[2+r/2])*(phaseInds[r] - phaseInds[r+1] - params[2+r/2]);
                     }
+                    else if (phaseFuncName == SCALED_INVERSE_SHIFTED_WEIGHTED_DISTANCE) {
+                        for (r=0; r<numRegs; r+=2)
+                            dist += params[2+r] * (phaseInds[r] - phaseInds[r+1] - params[2+r+1])*(phaseInds[r] - phaseInds[r+1] - params[2+r+1]);
+                    }
                     else
                         for (r=0; r<numRegs; r+=2)
                             dist += (phaseInds[r+1] - phaseInds[r])*(phaseInds[r+1] - phaseInds[r]);
+
+                    // if sqrt() arg would be negative, set it to divergence param
+                    if (dist < 0)
+                        dist = 0;
+
                     dist = sqrt(dist);
 
                     if (phaseFuncName == DISTANCE)
@@ -4612,7 +4621,7 @@ void statevec_applyParamNamedPhaseFuncOverrides(
                         phase = (dist == 0.)? params[0] : 1/dist; // smallest non-zero dist is 1
                     else if (phaseFuncName == SCALED_DISTANCE)
                         phase = params[0] * dist;
-                    else if (phaseFuncName == SCALED_INVERSE_DISTANCE || phaseFuncName == SCALED_INVERSE_SHIFTED_DISTANCE)
+                    else if (phaseFuncName == SCALED_INVERSE_DISTANCE || phaseFuncName == SCALED_INVERSE_SHIFTED_DISTANCE || phaseFuncName == SCALED_INVERSE_SHIFTED_WEIGHTED_DISTANCE)
                         phase = (dist <= REAL_EPS)? params[1] : params[0] / dist; // unless shifted closer to 0
                 }
             }
