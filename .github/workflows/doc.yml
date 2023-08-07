@@ -4,9 +4,13 @@ permissions:
   contents: write
 
 on:
+  # regenerate when master branch is updated
   push:
     branches:
       - master
+
+  # or when manually triggered from the Actions tab
+  workflow_dispatch:
 
 jobs:
 
