@@ -1269,6 +1269,24 @@ void setRandomDiagPauliHamil(PauliHamil hamil) {
     }
 }
 
+void setRandomTargets(int* targs, int numTargs, int numQb) {
+    DEMAND( numQb >= 1 );
+    DEMAND( numTargs >= 1);
+    DEMAND( numTargs <= numQb );
+
+    // create an ordered list of all possible qubits
+    VLA(int, allQb, numQb);
+    for (int q=0; q<numQb; q++)
+        allQb[q] = q;
+
+    // shuffle all qubits
+    std::random_shuffle(&allQb[0], &allQb[numQb]);
+
+    // select numTargs of all qubits
+    for (int i=0; i<numTargs; i++)
+        targs[i] = allQb[i];
+}
+
 QMatrix toQMatrix(qreal* coeffs, pauliOpType* paulis, int numQubits, int numTerms) {
     
     // produce a numTargs-big matrix 'pauliSum' by pauli-matrix tensoring and summing

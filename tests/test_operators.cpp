@@ -1950,8 +1950,13 @@ TEST_CASE( "applyParamNamedPhaseFunc", "[operators]" ) {
             minTotalQubits = 2*numRegs;
         totalNumQubits = GENERATE_COPY( range(minTotalQubits,NUM_QUBITS+1) );
                         
-        // try every qubits subset and ordering 
-        int* regs = GENERATE_COPY( sublists(range(0,NUM_QUBITS), totalNumQubits) );
+        // Previously, we would try every qubits subset and ordering, via:
+        //      int* regs = GENERATE_COPY( sublists(range(0,NUM_QUBITS), totalNumQubits) );
+        // Alas, this is too many tests and times out Ubuntu unit testing. So instead, we
+        // randomly choose some qubits, 10 times.
+        GENERATE( range(0, 10) );
+        VLA(int, regs, totalNumQubits);
+        setRandomTargets(regs, totalNumQubits, NUM_QUBITS);
         
         // assign each sub-reg its minimum length
         int unallocQubits = totalNumQubits;
@@ -2530,8 +2535,13 @@ TEST_CASE( "applyParamNamedPhaseFuncOverrides", "[operators]" ) {
             minTotalQubits = 2*numRegs;
         totalNumQubits = GENERATE_COPY( range(minTotalQubits,NUM_QUBITS+1) );
                         
-        // try every qubits subset and ordering 
-        int* regs = GENERATE_COPY( sublists(range(0,NUM_QUBITS), totalNumQubits) );
+        // Previously, we would try every qubits subset and ordering, via:
+        //      int* regs = GENERATE_COPY( sublists(range(0,NUM_QUBITS), totalNumQubits) );
+        // Alas, this is too many tests and times out Ubuntu unit testing. So instead, we
+        // randomly choose some qubits, 10 times.
+        GENERATE( range(0, 10) );
+        VLA(int, regs, totalNumQubits);
+        setRandomTargets(regs, totalNumQubits, NUM_QUBITS);
         
         // assign each sub-reg its minimum length
         int unallocQubits = totalNumQubits;
