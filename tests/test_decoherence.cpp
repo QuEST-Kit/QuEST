@@ -240,10 +240,15 @@ TEST_CASE( "mixMultiQubitKrausMap", "[decoherence]" ) {
          * and a heap overhead when numTargs >= 4
          */
          
+        // try every size (qubit wise) map
         int numTargs = GENERATE_COPY( range(1,maxNumTargs+1) ); // inclusive upper bound
         
-        // note this is very expensive to try every arrangement (2 min runtime for numTargs=5 alone)
-        int* targs = GENERATE_COPY( sublists(range(0,NUM_QUBITS), numTargs) );
+        // previously, we tried every unique set of targets, via:
+        //      int* targs = GENERATE_COPY( sublists(range(0,NUM_QUBITS), numTargs) );
+        // alas, this is too slow for CI, so we instead try a fixed number of random sets:
+        GENERATE( range(0, 10) );
+        VLA(int, targs, numTargs);
+        setRandomTargets(targs, numTargs, NUM_QUBITS);
         
         // try the min and max number of operators, and 2 random numbers 
         // (there are way too many to try all!)
@@ -671,8 +676,12 @@ TEST_CASE( "mixNonTPMultiQubitKrausMap", "[decoherence]" ) {
          
         int numTargs = GENERATE_COPY( range(1,maxNumTargs+1) ); // inclusive upper bound
         
-        // note this is very expensive to try every arrangement (2 min runtime for numTargs=5 alone)
-        int* targs = GENERATE_COPY( sublists(range(0,NUM_QUBITS), numTargs) );
+        // previously, we tried every unique set of targets, via:
+        //      int* targs = GENERATE_COPY( sublists(range(0,NUM_QUBITS), numTargs) );
+        // alas, this is too slow for CI, so we instead try a fixed number of random sets:
+        GENERATE( range(0, 10) );
+        VLA(int, targs, numTargs);
+        setRandomTargets(targs, numTargs, NUM_QUBITS);
         
         // try the min and max number of operators, and 2 random numbers 
         // (there are way too many to try all!)
