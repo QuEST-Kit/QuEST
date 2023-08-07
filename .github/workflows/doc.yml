@@ -22,9 +22,6 @@ jobs:
       - name: obtain copy of repository
         uses: actions/checkout@v1
 
-      - name: install latex
-        run: apk add perl build-base texlive-full biblatex ghostscript
-
       - name: run doxygen to generate doc, outputting inside /html
         uses: mattnotmitt/doxygen-action@v1.9.5
         with:
