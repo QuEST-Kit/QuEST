@@ -3530,20 +3530,20 @@ qreal calcProbOfOutcome(Qureg qureg, int measureQubit, int outcome);
  *   where \f$|\alpha_j|^2\f$ are the probabilities of the respective outcome states (interpreting
  *   \p qubits as ordered least to most significant)
  *   \f[
- *      |\dots\textbf{c\,b\,a}\rangle_i \; \; = \;\; |000\rangle,  \;\; |001\rangle \;\; |010\rangle \;\; |011\rangle, \;\; \dots
+ *      |\dots\textbf{c}\,\textbf{b}\,\textbf{a}\rangle_i \; \; = \;\; |000\rangle,  \;\; |001\rangle \;\; |010\rangle \;\; |011\rangle, \;\; \dots
  *   \f]
  *   understood in a state-vector \p qureg \f$|\psi\rangle\f$ as
  *   \f[
- *      |\psi\rangle = \sum\limits_i^{\text{numQubits}} \alpha_i \; |\dots\textbf{c\,b\,a}\rangle_i 
+ *      |\psi\rangle = \sum\limits_i^{\text{numQubits}} \alpha_i \; |\dots\textbf{c}\,\textbf{b}\,\textbf{a}\rangle_i 
  *        \; \otimes \; |\phi\rangle_i,
  *   \f]
  *   or in a density matrix \p qureg \f$\rho\f$ as
  *   \f[
  *      \begin{aligned}
- *      \rho &= \sum\limits_{i,j}^{\text{numQubits}} \; \beta_{ij} \; |\dots\textbf{c\,b\,a}\rangle_i\,\langle\dots\textbf{c\,b\,a}|_j 
+ *      \rho &= \sum\limits_{i,j}^{\text{numQubits}} \; \beta_{ij} \; |\dots\textbf{c}\,\textbf{b}\,\textbf{a}\rangle_i\,\langle\dots\textbf{c}\,\textbf{b}\,\textbf{a}|_j 
  *            \; \otimes \; \mu_{ij} \\
- *           &= \sum\limits_i^{\text{numQubits}} \; |\alpha_i|^2 \;  |\dots\textbf{c\,b\,a}\rangle\langle\dots\textbf{c\,b\,a}|_i  \;\; + \, 
- *            \sum\limits_{i \ne j}^{\text{numQubits}} \; \beta_{ij} \; |\dots\textbf{c\,b\,a}\rangle_i\,\langle\dots\textbf{c\,b\,a}|_j 
+ *           &= \sum\limits_i^{\text{numQubits}} \; |\alpha_i|^2 \;  |\dots\textbf{c}\,\textbf{b}\,\textbf{a}\rangle\langle\dots\textbf{c}\,\textbf{b}\,\textbf{a}|_i  \;\; + \, 
+ *            \sum\limits_{i \ne j}^{\text{numQubits}} \; \beta_{ij} \; |\dots\textbf{c}\,\textbf{b}\,\textbf{a}\rangle_i\,\langle\dots\textbf{c}\,\textbf{b}\,\textbf{a}|_j 
  *            \; \otimes \; \mu_{ij},
  *       \end{aligned}
  *   \f]
