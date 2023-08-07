@@ -14,11 +14,21 @@ on:
   # or when manually triggered from the Actions tab
   workflow_dispatch:
 
+# prevent concurrent deployments
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
+
+
 jobs:
 
   build-doc:
     name: Generation of documentation
     runs-on: ubuntu-latest
+
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
 
     steps:
       - name: obtain copy of repository
@@ -29,8 +39,15 @@ jobs:
         with:
           doxyfile-path: doxyconfig/config
 
-      - name: deploy new doc to github pages
-        uses: peaceiris/actions-gh-pages@v3
+      - name: Setup Pages
+        uses: actions/configure-pages@v3
+        
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v2
         with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: .
+          # Upload Doxygen_doc/html
+          path: ./Doxygen_doc/html
+          
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v2
