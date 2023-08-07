@@ -1,4 +1,4 @@
-name: Ubuntu unit
+name: Windows unit
 
 on:
   push:
@@ -12,24 +12,27 @@ on:
 jobs:
 
   build-and-test:
-    name: Unit tests on Ubuntu 18.04
-    runs-on: ubuntu-latest
+    name: Unit tests on Windows MSVC
+    runs-on: windows-latest
     strategy:
       matrix:
         float-precision: [2]
 
     steps:
-      - uses: actions/checkout@v1
+      - uses: actions/checkout@v2
+      - uses: ilammy/msvc-dev-cmd@v1
 
       - name: make build directory
+        shell: cmd
         run: mkdir build_dir
 
       - name: cmake configure
-        run: cmake .. -DTESTING:BOOL=ON -DPRECISION:STRING=${{matrix.float-precision}}
+        shell: cmd
+        run: cmake .. -DTESTING=ON -DPRECISION:STRING=${{matrix.float-precision}}
         working-directory: build_dir
 
       - name: cmake build
-        run: cmake --build . --parallel 2 --target tests
+        run: cmake --build . --target tests
         working-directory: build_dir
 
       - name: cmake test

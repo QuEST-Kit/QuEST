@@ -64,6 +64,19 @@
     # define REAL_EPS 1e-14
     # define REAL_SPECIFIER "%Lf"
     # define absReal(X) fabsl(X)
+    # define sin(x) sinl(x)
+    # define cos(x) cosl(x)
+    # define tan(x) tanl(x)
+    # define exp(x) expl(x)
+    # define fabs(x) fabsl(x)
+    # define pow(x,y) powl(x,y)
+    # define sqrt(x) sqrtl(x)
+    # define asin(x) asinl(x)
+    # define acos(x) acosl(x)
+    # define atan(x) atanl(x)
+    # define atan2(x,y) atan2l(x,y)
+    # define ceil(x) ceill(x)
+    # define floor(x) floorl(x)
     // \endcond
 # endif
 

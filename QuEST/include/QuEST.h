@@ -223,6 +223,7 @@ typedef struct Vector
  *    - \p INVERSE_DISTANCE maps state \f$|x_1\rangle|x_2\rangle|y_1\rangle|y_2\rangle\dots\f$ to \f$1/\sqrt{(x_1-x_2)^2 + (y_1-y_2)^2 + \dots}\f$
  *    - \p SCALED_INVERSE_DISTANCE maps state \f$|x_1\rangle|x_2\rangle|y_1\rangle|y_2\rangle\dots\f$ to \f$\text{coeff}/\sqrt{(x_1-x_2)^2 + (y_1-y_2)^2 + \dots}\f$
  *    - \p SCALED_INVERSE_SHIFTED_DISTANCE maps state \f$|x_1\rangle|x_2\rangle|y_1\rangle|y_2\rangle\dots\f$ to \f$\text{coeff}/\sqrt{(x_1-x_2-\Delta_x)^2 + (y_1-y_2-\Delta_y)^2 + \dots}\f$
+ *    - \p SCALED_INVERSE_SHIFTED_WEIGHTED_DISTANCE maps state \f$|x_1\rangle|x_2\rangle|y_1\rangle|y_2\rangle\dots\f$ to \f$\text{coeff}/\sqrt{f_x \, (x_1-x_2-\Delta_x)^2 + f_y \; (y_1-y_2-\Delta_y)^2 + \dots}\f$
  *
  * @ingroup type 
  * @author Tyson Jones
@@ -231,7 +232,8 @@ typedef struct Vector
 enum phaseFunc {
     NORM=0,     SCALED_NORM=1,      INVERSE_NORM=2,      SCALED_INVERSE_NORM=3,      SCALED_INVERSE_SHIFTED_NORM=4,
     PRODUCT=5,  SCALED_PRODUCT=6,   INVERSE_PRODUCT=7,   SCALED_INVERSE_PRODUCT=8,
-    DISTANCE=9, SCALED_DISTANCE=10, INVERSE_DISTANCE=11, SCALED_INVERSE_DISTANCE=12, SCALED_INVERSE_SHIFTED_DISTANCE=13};
+    DISTANCE=9, SCALED_DISTANCE=10, INVERSE_DISTANCE=11, SCALED_INVERSE_DISTANCE=12, SCALED_INVERSE_SHIFTED_DISTANCE=13, SCALED_INVERSE_SHIFTED_WEIGHTED_DISTANCE=14
+};
     
 /** Flags for specifying how the bits in sub-register computational basis states 
  * are mapped to indices in functions like applyPhaseFunc().
@@ -311,6 +313,25 @@ typedef struct DiagonalOp
     //! A copy of the elements stored persistently on the GPU
     ComplexArray deviceOperator;
 } DiagonalOp;
+
+/** Represents a diagonal complex operator of a smaller dimension than the full
+ * Hilbert state of a \p Qureg.
+ *
+ * @ingroup type
+ * @author Tyson Jones 
+ */
+typedef struct SubDiagonalOp
+{
+    //! The number of target qubits which this SubDiagonalOp can operate upon
+    int numQubits;
+    //! The number of diagonal elements, i.e. 2^numQubits
+    long long int numElems;
+    //! The real values of the 2^numQubits complex elements
+    qreal *real;
+    //! The imaginary values of the 2^numQubits complex elements
+    qreal *imag;
+    
+} SubDiagonalOp;
 
 /** Represents a system of qubits.
  * Qubits are zero-based
@@ -678,6 +699,9 @@ void destroyQureg(Qureg qureg, QuESTEnv env);
  * stored as nested arrays ComplexMatrixN.real and ComplexMatrixN.imag,
  * initialised to zero.
  *
+ * > If your matrix will ultimately be diagonal, use createSubDiagonalOp()
+ * > instead to save quadratic memory and runtime.
+ *
  * Unlike a ::Qureg, the memory of a ::ComplexMatrixN is always stored in RAM, 
  * and non-distributed. Hence, elements can be directly accessed and modified:
  * ```
@@ -711,6 +735,7 @@ void destroyQureg(Qureg qureg, QuESTEnv env);
  * - applyMatrixN()
  * - multiQubitUnitary()
  * - mixMultiQubitKrausMap()
+ * - createSubDiagonalOp()
  *
  * @ingroup type
  * @param[in] numQubits the number of qubits of which the returned ComplexMatrixN will correspond
@@ -947,7 +972,7 @@ void initPauliHamil(PauliHamil hamil, qreal* coeffs, enum pauliOpType* codes);
  * ```
  *      // create diag({1,2,3,4,5,6,7,8, 9,10,11,12,13,14,15,16})
  *      int numQubits = 4;
- *      DiagonalOp op = createDiagonalOp(numQubits4, env);
+ *      DiagonalOp op = createDiagonalOp(numQubits, env);
  *      for (int i=0; i<8; i++) {
  *          if (env.rank == 0)
  *              op.real[i] = (i+1);
@@ -1211,11 +1236,14 @@ void setDiagonalOpElems(DiagonalOp op, long long int startInd, qreal* real, qrea
  * > described by an analytic expression, you should instead use applyPhaseFunc()
  * > or applyNamedPhaseFunc() for significant memory and runtime savings.
  *
+ * > To apply a diagonal operator upon a specific subset of qubits, use applySubDiagonalOp()
+ *
  * @see
  * - createDiagonalOp()
  * - calcExpecDiagonalOp()
  * - applyPhaseFunc()
  * - applyNamedPhaseFunc()
+ * - applySubDiagonalOp()
  *
  * @ingroup operator
  * @param[in,out] qureg the state to operate the diagonal operator upon
@@ -1258,6 +1286,201 @@ void applyDiagonalOp(Qureg qureg, DiagonalOp op);
  * @author Tyson Jones
  */
 Complex calcExpecDiagonalOp(Qureg qureg, DiagonalOp op);
+
+/** Creates a ::SubDiagonalOp representing a diagonal operator which can act upon 
+ * a subset of the qubits in a ::Qureg. This is similar to a ::DiagonalOp acting 
+ * upon specific qubits.
+ * 
+ * The resulting operator (initially all zero) need not be unitary nor Hermitian, 
+ * and can be applied to any ::Qureg of a compatible number of qubits.
+ *
+ * > This function allocates space for \f$2^{\text{numQubits}}\f$ complex amplitudes,
+ * > which are initially zero. This is the same cost as a local state-vector of equal 
+ * > number of qubits; see the Serial section of createQureg(). 
+ * > Unlike ::DiagonalOp, this object is <em>not</em> distributed; instead, all 
+ * > nodes (during distributed simulation) store the full set of diagonal elements,
+ * > similar to a ::ComplexMatrixN.
+ * 
+ * 
+ * The returned ::SubDiagonalOp must be later freed with destroySubDiagonalOp().
+ *
+ * For example, the below code creates an 8x8 identity operator. 
+ * ```
+ *      SubDiagonalOp op = createSubDiagonalOp(3);
+ *      for (int i=0; i<op.numElems; i++)
+ *           op.real[i] = 1;
+ * ```
+ * \n
+ *
+ *
+ * @see 
+ * - diagonalUnitary() to apply the created ::SubDiagonalOp upon a subset of qubits of a ::Qureg
+ * - applyGateSubDiagonalOp() to relax the numerical unitarity requirement of diagonalUnitary()
+ * - applySubDiagonalOp() to apply the SubDiagonalOp through left-multiplication only 
+ *   (as a non-unitary) upon a density matrix
+ * - destroySubDiagonalOp()
+ * - createDiagonalOp()
+ *
+ * @ingroup type
+ * @returns a SubDiagonalOp instance initialised to diag(0,0,...).
+ * @param[in] numQubits number of qubits which inform the Hilbert dimension of the returned ::SubDiagonalOp.
+ * @throws invalidQuESTInputError() 
+ * - if \p numQubits <= 0
+ * - if \p numQubits is so large that the number of elements cannot fit in a long long int type, 
+ * @throws exit 
+ * - if the memory could not be allocated
+ * @author Tyson Jones
+ */
+SubDiagonalOp createSubDiagonalOp(int numQubits);
+
+/** Destroy a ::SubDiagonalOp instance created with createSubDiagonalOp().
+ *
+ * @see
+ * - createSubDiagonalOp()
+ *
+ * @ingroup type
+ * @param[in] op ::SubDiagonalOp to destroy
+ * @throws malloc_error
+ * -  if \p op was not prior created
+ * @author Tyson Jones
+ */
+void destroySubDiagonalOp(SubDiagonalOp op);
+
+/** Apply a many-qubit unitary specified as a diagonal matrix upon a specific 
+ * set of qubits of a quantum register.
+ *
+ * Assume the given ::SubDiagonalOp \p op represents unitary operator
+ * \f[
+ * \hat{D} = 
+ * \begin{pmatrix}
+ * d_1 & & & \\
+ * & d_2 & & \\
+ * & & d_3 & \\
+ * & & & \ddots
+ * \end{pmatrix}
+ * \f] 
+ * Valid unitary operators have elements which satisfy \f$|d_i|=1 \; \forall \; i\f$.
+ *
+ * This function effects 
+ * \f[
+ *      |\psi\rangle \rightarrow \hat{D}_{\text{targets}} |\psi\rangle
+ * \f]
+ * upon state-vectors \f$|\psi\rangle\f$, and
+ * \f[
+ *      \rho \rightarrow \hat{D}_{\text{targets}} \; \rho \; \hat{D}_{\text{targets}}^\dagger
+ * \f]
+ * upon density matrices \f$\rho\f$.
+ *
+ \f[
+             \begin{tikzpicture}[scale=.5]
+             \node[draw=none] at (-3.5, 1) {targets};
+
+             \draw (-2,0) -- (-1, 0);
+             \draw (1, 0) -- (2, 0);
+             \draw (-2,2) -- (-1, 2);
+             \draw (1, 2) -- (2, 2);
+             \draw (-1,-1)--(-1,3)--(1,3)--(1,-1);
+             \node[draw=none] at (0, 1) {$\hat{D}$};
+             \node[draw=none] at (0, -1) {$\vdots$};
+             
+             \end{tikzpicture}
+ \f]
+ *
+ * > To relax unitarity, use applyGateSubDiagonalOp()
+ *
+ * > To left-multiply the operator as a non-unitary, use applySubDiagonalOp()
+ *
+ * > To apply a full-Hilbert diagonal operator which must ergo itself be distributed,
+ * > use applyDiagonalOp()
+ *
+ * @see
+ * - createSubDiagonalOp()
+ * - applyGateSubDiagonalOp()
+ * - applySubDiagonalOp()
+ * - applyDiagonalOp()
+ *
+ * @ingroup unitary
+ * @param[in,out] qureg the ::Qureg instance to operate upon
+ * @param[in] targets the list of target qubit indices
+ * @param[in] numTargets the length of list \p targets, which must match the dimension of \p op
+ * @param[in] op a ::SubDiagonalOp initialised to be unitary
+ * @throws invalidQuESTInputError()
+ * - if \p numTargets does not match the size of \p op
+ * - if \p numTargets is invalid (<0 or larger than \p qureg)
+ * - if \p numTargets contains an invalid qubit index, or a repetition
+ * - if \p op is non-unitary
+ * @author Tyson Jones
+ */
+void diagonalUnitary(Qureg qureg, int* targets, int numTargets, SubDiagonalOp op);
+
+/** Apply a many-qubit unitary specified as a diagonal matrix upon a specific 
+ * set of qubits of a quantum register.
+ *
+ * This is identical to function diagonalUnitary(), except here unitarity is not 
+ * numerically checked nor enforced. That is, \p op is mathematically treated as if 
+ * it were unitary despite its true unitarity. This is useful for numerically relaxing 
+ * the precision of unitarity.
+ *
+ * > To apply the operator as if it were e.g. Hermitian, use applySubDiagonalOp().
+ *
+ * @see
+ * - createSubDiagonalOp()
+ * - diagonalUnitary()
+ * - applySubDiagonalOp()
+ * - applyDiagonalOp()
+ *
+ * @ingroup operator
+ * @param[in,out] qureg the ::Qureg instance to operate upon
+ * @param[in] targets the list of target qubit indices
+ * @param[in] numTargets the length of list \p targets, which must match the dimension of \p op
+ * @param[in] op a ::SubDiagonalOp initialised to any complex values
+ * @throws invalidQuESTInputError()
+ * - if \p numTargets does not match the size of \p op
+ * - if \p numTargets is invalid (<0 or larger than \p qureg)
+ * - if \p numTargets contains an invalid qubit index, or a repetition
+ * @author Tyson Jones
+ */
+void applyGateSubDiagonalOp(Qureg qureg, int* targets, int numTargets, SubDiagonalOp op);
+
+/** Left-apply a many-qubit a diagonal matrix upon a specific set of qubits of a quantum register.
+ *
+ * This is similar to applyGateSubDiagonalOp(), except that here, the operator \p op 
+ * is only <em>left</em> multiplied onto density matrices.
+ *
+ * Let \f$\hat{D}\f$ denote the operator \p op. Precisely, this function effects 
+ * \f[
+ *      |\psi\rangle \rightarrow \hat{D}_{\text{targets}} |\psi\rangle
+ * \f]
+ * upon state-vectors \f$|\psi\rangle\f$, and
+ * \f[
+ *      \rho \rightarrow \hat{D}_{\text{targets}} \; \rho
+ * \f]
+ * upon density matrices \f$\rho\f$, imposing no numerical conditions (like unitarity) upon \p op.
+ *
+ * > To apply \p op as if it were unitary, use applyGateSubDiagonalOp() (or use 
+ * > diagonalUnitary() to explicitly check/enforce unitarity).
+ *
+ * > To apply a full-Hilbert diagonal operator which must ergo itself be distributed,
+ * > use applyDiagonalOp()
+ *
+ * @see
+ * - createSubDiagonalOp()
+ * - applyGateSubDiagonalOp()
+ * - diagonalUnitary()
+ * - applyDiagonalOp()
+ *
+ * @ingroup operator
+ * @param[in,out] qureg the ::Qureg instance to operate upon
+ * @param[in] targets the list of target qubit indices
+ * @param[in] numTargets the length of list \p targets, which must match the dimension of \p op
+ * @param[in] op a ::SubDiagonalOp with any complex elements
+ * @throws invalidQuESTInputError()
+ * - if \p numTargets does not match the size of \p op
+ * - if \p numTargets is invalid (<0 or larger than \p qureg)
+ * - if \p numTargets contains an invalid qubit index, or a repetition
+ * @author Tyson Jones
+ */
+void applySubDiagonalOp(Qureg qureg, int* targets, int numTargets, SubDiagonalOp op);
 
 /** Print the current state vector of probability amplitudes for a set of qubits to file.
  * File format:
@@ -1574,6 +1797,31 @@ void setAmps(Qureg qureg, long long int startInd, qreal* reals, qreal* imags, lo
  * @author Tyson Jones
  */
 void setDensityAmps(Qureg qureg, long long int startRow, long long int startCol, qreal* reals, qreal* imags, long long int numAmps);
+
+/** Overwrites the density-matrix \p qureg with the Z-basis matrix representation
+ * of the given real-weighted sum of Pauli tensors \p hamil. 
+ *
+ * This leaves \p qureg in a non-physical state - as a matrix form of \p hamil -
+ * and is useful for establishing a persistent-backend dense representation of 
+ * the Hamiltonian. For example, \p qureg can be subsequently passed to functions 
+ * like calcDensityInnerProduct() which would effectively in-place compute
+ * calcExpecPauliHamil().
+ *
+ * @see
+ * - createPauliHamil()
+ * - createDensityQureg()
+ * - calcDensityInnerProduct()
+ *
+ * @ingroup init
+ * @param[in,out] qureg the density-matrix to overwrite
+ * @param[in] hamil the ::PauliHamil to expand into a matrix representation
+ * @throws invalidQuESTInputError()
+ * - if \p qureg is not a density matrix (i.e. is a state-vector)
+ * - if the dimensions of \p qureg and \p hamil do not match
+ * - if \p hamil is an invalid ::PauliHamil
+ * @author Tyson Jones
+ */
+void setQuregToPauliHamil(Qureg qureg, PauliHamil hamil);
 
 /** Overwrite the amplitudes of \p targetQureg with those from \p copyQureg. 
  * 
@@ -4700,7 +4948,11 @@ void multiControlledTwoQubitUnitary(Qureg qureg, int* controlQubits, int numCont
  * 
  * The passed ComplexMatrix must be unitary and be a compatible size with the specified number of
  * target qubits, otherwise an error is thrown.
+ * > To effect a non-unitary ::ComplexMatrixN, use applyGateMatrixN().
+ * 
  * > To left-multiply a non-unitary ::ComplexMatrixN, use applyMatrixN().
+ *
+ * > To specify only the diagonal elements of the matrix, use diagonalUnitary().
  *
     \f[
                 \begin{tikzpicture}[scale=.5]
@@ -4731,9 +4983,12 @@ void multiControlledTwoQubitUnitary(Qureg qureg, int* controlQubits, int numCont
  * - createComplexMatrixN()
  * - controlledMultiQubitUnitary()
  * - multiControlledMultiQubitUnitary()
+ * - applyGateMatrixN()
  * - applyMatrixN()
  * - twoQubitUnitary()
  * - unitary()
+ * - compactUnitary()
+ * - diagonalUnitary()
  *
  * @ingroup unitary
  * @param[in,out] qureg object representing the set of all qubits
@@ -4818,6 +5073,7 @@ void multiQubitUnitary(Qureg qureg, int* targs, int numTargs, ComplexMatrixN u);
  * - if \p targs are not unique
  * - if \p targs contains \p ctrl
  * - if matrix \p u is not unitary
+ * - if matrix \p u is not of a compatible size with \p numTargs
  * - if a node cannot fit the required number of target amplitudes in distributed mode
  * @author Tyson Jones
  */
@@ -4885,6 +5141,7 @@ void controlledMultiQubitUnitary(Qureg qureg, int ctrl, int* targs, int numTargs
  *
  * @see
  * - createComplexMatrixN()
+ * - applyMultiControlledGateMatrixN()
  * - applyMultiControlledMatrixN()
  * - multiControlledMultiQubitNot()
  * - controlledMultiQubitUnitary()
@@ -4904,6 +5161,7 @@ void controlledMultiQubitUnitary(Qureg qureg, int ctrl, int* targs, int numTargs
  * - if \p numTargs <b>< 1</b>
  * - if \p numCtrls <b>< 1</b> (use multiQubitUnitary() for no controls)
  * - if matrix \p u is not unitary
+ * - if matrix \p u is not of a compatible size with \p numTargs
  * - if a node cannot fit the required number of target amplitudes in distributed mode
  * @throws segmentation-fault
  * - if \p ctrls contains fewer elements than \p numCtrls
@@ -5539,6 +5797,7 @@ void applyMatrix4(Qureg qureg, int targetQubit1, int targetQubit2, ComplexMatrix
  * can be distributed by at most 2^q / 2^\p numTargs nodes.
  *
  * @see
+ * - applyGateMatrixN()
  * - createComplexMatrixN()
  * - getStaticComplexMatrixN()
  * - applyMultiControlledMatrixN()
@@ -5557,6 +5816,87 @@ void applyMatrix4(Qureg qureg, int targetQubit1, int targetQubit2, ComplexMatrix
  * @author Tyson Jones
  */
 void applyMatrixN(Qureg qureg, int* targs, int numTargs, ComplexMatrixN u);
+
+/** Apply a gate specified by a general N-by-N matrix, which may be non-unitary, on any number of target qubits.
+ * This function applies the given matrix to both statevector and density matrices 
+ * as if it were a valid unitary gate.
+ * Hence this function is equivalent to multiQubitUnitary(), albeit the unitarity 
+ * of \p u is not checked nor enforced.
+ * This function differs from applyMatrixN() on density matrices.
+ *
+ * This function may leave \p qureg is an unnormalised state.
+ *
+ * @see
+ * - applyMultiControlledGateMatrixN()
+ * - applyMatrixN()
+ * - createComplexMatrixN()
+ * - getStaticComplexMatrixN()
+ * - multiQubitUnitary()
+ *
+ * @ingroup operator
+ * @param[in,out] qureg object representing the set of all qubits
+ * @param[in] targs a list of the target qubits, ordered least significant to most in \p u
+ * @param[in] numTargs the number of target qubits
+ * @param[in] u matrix to apply, which need not be unitary
+ * @throws invalidQuESTInputError()
+ * - if any index in \p targs is outside of [0, \p qureg.numQubitsRepresented)
+ * - if \p targs are not unique
+ * - if \p u is not of a compatible size with \p numTargs
+ * - if a node cannot fit the required number of target amplitudes in distributed mode
+ * @author Tyson Jones
+ */
+void applyGateMatrixN(Qureg qureg, int* targs, int numTargs, ComplexMatrixN u);
+
+/** Apply a general multi-controlled multi-qubit gate specified as an (possibly non-unitary)
+ * arbitrary complex matrix.
+ * This is equivalent to multiControlledMultiQubitUnitary() but does not check nor enforce 
+ * unitary of the given matrix \p m.
+ * This differs from applyMultiControlledMatrixN(), because the latter only left-applies 
+ * the matrix upon density matrices.
+ *
+ * Any number of control and target qubits can be specified.
+ * This effects the many-qubit unitary
+ * \f[
+ * \begin{pmatrix}
+ * 1 \\
+ * & 1 \\\
+ * & & \ddots \\
+ * & & & m_{00} & m_{01} & \dots  \\
+ * & & & m_{10} & m_{11} & \dots \\
+ * & & & \vdots & \vdots & \ddots
+ * \end{pmatrix}
+ * \f]
+ * on the control and target qubits.
+ *
+ * Besides unitarity, the inputs and their preconditions are the same as for 
+ * multiControlledMultiQubitUnitary().
+ *
+ * @see
+ * - createComplexMatrixN()
+ * - applyMultiControlledMatrixN()
+ * - multiControlledMultiQubitUnitary()
+ *
+ * @ingroup unitary
+ * @param[in,out] qureg object representing the set of all qubits
+ * @param[in] ctrls a list of the control qubits
+ * @param[in] numCtrls the number of control qubits
+ * @param[in] targs a list of the target qubits, ordered least to most significant
+ * @param[in] numTargs the number of target qubits
+ * @param[in] m arbitrary matrix to apply as if it were a unitary gate
+ * @throws invalidQuESTInputError()
+ * - if any qubit in \p ctrls and \p targs is invalid, i.e. outside <b>[0, </b>`qureg.numQubitsRepresented`<b>)</b>
+ * - if \p ctrls or \p targs contain any repetitions
+ * - if any qubit in \p ctrls is also in \p targs (and vice versa)
+ * - if \p numTargs <b>< 1</b>
+ * - if \p numCtrls <b>< 1</b> (use multiQubitUnitary() for no controls)
+ * - if matrix \p m is not of a compatible size with \p numTargs
+ * - if a node cannot fit the required number of target amplitudes in distributed mode
+ * @throws segmentation-fault
+ * - if \p ctrls contains fewer elements than \p numCtrls
+ * - if \p targs contains fewer elements than \p numTargs
+ * @author Tyson Jones
+ */
+void applyMultiControlledGateMatrixN(Qureg qureg, int* ctrls, int numCtrls, int* targs, int numTargs, ComplexMatrixN m);
 
 /** Apply a general N-by-N matrix, which may be non-unitary, with additional controlled qubits.
  * The matrix is left-multiplied onto the state, for both state-vectors and density matrices.
@@ -6478,7 +6818,7 @@ void applyNamedPhaseFuncOverrides(Qureg qureg, int* qubits, int* numQubitsPerReg
  *   > divergence parameter whenever the denominator is smaller than (or equal to)
  *   > machine precision `REAL_EPS`.
  *
- * - Functions allowing the shifting of sub-register values, which are \p SCALED_INVERSE_SHIFTED_NORM
+ * - Functions allowing the shifting of unweighted sub-register values, which are \p SCALED_INVERSE_SHIFTED_NORM,
  *   and \p SCALED_INVERSE_SHIFTED_DISTANCE, need these shift values to be passed in the \p params
  *   argument _after_ the scaling and divergence override parameters listed above. The function
  *   \p SCALED_INVERSE_SHIFTED_NORM needs as many extra parameters, as there are sub-registers;
@@ -6510,8 +6850,20 @@ void applyNamedPhaseFuncOverrides(Qureg qureg, int* qubits, int* numQubitsPerReg
  *      f(\vec{r}) \; = \; \begin{cases} \pi & \;\;\; \vec{r}=\vec{0} \\ \displaystyle 0.5 \left[(r_1-r_2-0.8)^2 + (r_3-r_4+0.3)^2\right]^{-1/2} & \;\;\;\text{otherwise} \end{cases}.
  *   \f] 
  * 
- *   > You can further override \f$f(\vec{r}, \vec{\theta})\f$ at one or more \f$\vec{r}\f$ values
- *   > via applyParamNamedPhaseFuncOverrides().
+ * - Function \p SCALED_INVERSE_SHIFTED_WEIGHTED_DISTANCE, which effects phase
+ *   \f[
+ *      \text{coeff}/\sqrt{f_x \, (x_1-x_2-\Delta_x)^2 + f_y \; (y_1-y_2-\Delta_y)^2 + \dots}
+ *   \f]
+ *   (and phase \f$\phi\f$ at divergences)
+ *   accepts parameters in the following order:
+ *   \f[
+ *      \{  \; \text{coeff}, \; \phi, \; f_x, \; \Delta x, \; f_y, \; \Delta y, \; \dots \;   \}
+ *   \f]
+ *   > Note that where the denominator's \f$\text{sqrt}\f$ argument would be negative (and the resulting
+ *   > phase function _complex_), the phase is instead set to the divergence parameter \f$\phi\f$.
+ * 
+ * > You can further override \f$f(\vec{r}, \vec{\theta})\f$ at one or more \f$\vec{r}\f$ values
+ * > via applyParamNamedPhaseFuncOverrides().
  *
  * - The interpreted parameterised phase function can be previewed in the QASM log, as a comment. \n
  *   For example:

@@ -26,6 +26,12 @@ void validateNumQubitsInMatrix(int numQubits, const char* caller);
 
 void validateNumQubitsInDiagOp(int numQubits, int numRanks, const char* caller);
 
+void validateNumQubitsInSubDiagOp(int numQubits, const char* caller);
+
+void validateSubDiagOpTargets(Qureg qureg, int* qubits, int numQubits, SubDiagonalOp op, const char* caller);
+
+void validateUnitarySubDiagOp(SubDiagonalOp op, const char* caller);
+
 void validateAmpIndex(Qureg qureg, long long int ampInd, const char* caller);
 
 void validateStateIndex(Qureg qureg, long long int stateInd, const char* caller);

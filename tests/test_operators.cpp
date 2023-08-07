@@ -25,6 +25,11 @@ using Catch::Matchers::Contains;
 
 
 
+// largest valid phaseFunc enum, used by input validation tests
+enum phaseFunc MAX_INDEX_PHASE_FUNC = SCALED_INVERSE_SHIFTED_WEIGHTED_DISTANCE;
+
+
+
 /** @sa applyDiagonalOp
  * @ingroup unittest 
  * @author Tyson Jones 
@@ -190,6 +195,212 @@ TEST_CASE( "applyFullQFT", "[operators]" ) {
     SECTION( "input validation" ) {
         
         SUCCEED( );
+    }
+    CLEANUP_TEST( quregVec, quregMatr );
+}
+
+
+
+/** @sa applyGateMatrixN
+ * @ingroup unittest 
+ * @author Tyson Jones 
+ */
+TEST_CASE( "applyGateMatrixN", "[operators]" ) {
+    
+    PREPARE_TEST( quregVec, quregMatr, refVec, refMatr );
+    
+    // figure out max-num (inclusive) targs allowed by hardware backend
+    int maxNumTargs = calcLog2(quregVec.numAmpsPerChunk);
+    
+    SECTION( "correctness" ) {
+        
+        // generate all possible qubit arrangements
+        int numTargs = GENERATE_COPY( range(1,maxNumTargs+1) ); // inclusive upper bound
+        int* targs = GENERATE_COPY( sublists(range(0,NUM_QUBITS), numTargs) );
+        
+        // for each qubit arrangement, use a new random unitary
+        QMatrix op = getRandomQMatrix(1 << numTargs);
+        ComplexMatrixN matr = createComplexMatrixN(numTargs);
+        toComplexMatrixN(op, matr);
+    
+        SECTION( "state-vector" ) {
+            
+            applyGateMatrixN(quregVec, targs, numTargs, matr);
+            applyReferenceOp(refVec, targs, numTargs, op);
+            REQUIRE( areEqual(quregVec, refVec) );
+        }
+        SECTION( "density-matrix" ) {
+
+            applyGateMatrixN(quregMatr, targs, numTargs, matr);
+            applyReferenceOp(refMatr, targs, numTargs, op);
+            REQUIRE( areEqual(quregMatr, refMatr, 1E4*REAL_EPS) );
+        }
+        destroyComplexMatrixN(matr);
+    }
+    SECTION( "input validation" ) {
+        
+        SECTION( "number of targets" ) {
+            
+            // there cannot be more targets than qubits in register
+            int numTargs = GENERATE( -1, 0, NUM_QUBITS+1 );
+            int targs[NUM_QUBITS+1]; // prevents seg-fault if validation doesn't trigger
+            ComplexMatrixN matr = createComplexMatrixN(NUM_QUBITS+1); // prevent seg-fault
+            
+            REQUIRE_THROWS_WITH( applyGateMatrixN(quregVec, targs, numTargs, matr), Contains("Invalid number of target"));
+            destroyComplexMatrixN(matr);
+        }
+        SECTION( "repetition in targets" ) {
+            
+            int numTargs = 3;
+            int targs[] = {1,2,2};
+            ComplexMatrixN matr = createComplexMatrixN(numTargs); // prevents seg-fault if validation doesn't trigger
+            
+            REQUIRE_THROWS_WITH( applyGateMatrixN(quregVec, targs, numTargs, matr), Contains("target") && Contains("unique"));
+            destroyComplexMatrixN(matr);
+        }
+        SECTION( "qubit indices" ) {
+            
+            int numTargs = 3;
+            int targs[] = {1,2,3};
+            ComplexMatrixN matr = createComplexMatrixN(numTargs); // prevents seg-fault if validation doesn't trigger
+            
+            int inv = GENERATE( -1, NUM_QUBITS );
+            targs[GENERATE_COPY( range(0,numTargs) )] = inv; // make invalid target
+            REQUIRE_THROWS_WITH( applyGateMatrixN(quregVec, targs, numTargs, matr), Contains("Invalid target") );
+            
+            destroyComplexMatrixN(matr);
+        }
+        SECTION( "matrix creation" ) {
+            
+            int numTargs = 3;
+            int targs[] = {1,2,3};
+            
+            /* compilers don't auto-initialise to NULL; the below circumstance 
+             * only really occurs when 'malloc' returns NULL in createComplexMatrixN, 
+             * which actually triggers its own validation. Hence this test is useless 
+             * currently.
+             */
+            ComplexMatrixN matr;
+            matr.real = NULL;
+            matr.imag = NULL; 
+            REQUIRE_THROWS_WITH( applyGateMatrixN(quregVec, targs, numTargs, matr), Contains("created") );
+        }
+        SECTION( "matrix dimensions" ) {
+            
+            int targs[2] = {1,2};
+            ComplexMatrixN matr = createComplexMatrixN(3); // intentionally wrong size
+            
+            REQUIRE_THROWS_WITH( applyGateMatrixN(quregVec, targs, 2, matr), Contains("matrix size"));
+            destroyComplexMatrixN(matr);
+        }
+        SECTION( "matrix fits in node" ) {
+                
+            // pretend we have a very limited distributed memory (judged by matr size)
+            quregVec.numAmpsPerChunk = 1;
+            int qb[] = {1,2};
+            ComplexMatrixN matr = createComplexMatrixN(2); // prevents seg-fault if validation doesn't trigger
+            REQUIRE_THROWS_WITH( applyGateMatrixN(quregVec, qb, 2, matr), Contains("targets too many qubits"));
+            destroyComplexMatrixN(matr);
+        }
+    }
+    CLEANUP_TEST( quregVec, quregMatr );
+}
+
+
+
+/** @sa applyGateSubDiagonalOp
+ * @ingroup unittest 
+ * @author Tyson Jones 
+ */
+TEST_CASE( "applyGateSubDiagonalOp", "[unitaries]" ) {
+    
+    PREPARE_TEST( quregVec, quregMatr, refVec, refMatr );
+    
+    SECTION( "correctness" ) {
+        
+        // generate all possible targets
+        int numTargs = GENERATE( range(1,NUM_QUBITS+1) );
+        int* targs = GENERATE_COPY( sublists(range(0,NUM_QUBITS), numTargs) );
+
+        // initialise a random non-unitary diagonal op
+        SubDiagonalOp op = createSubDiagonalOp(numTargs);
+        for (long long int i=0; i<op.numElems; i++) {
+            op.real[i] = getRandomReal(-10,10);
+            op.imag[i] = getRandomReal(-10,10);
+        }
+        QMatrix opMatr = toQMatrix(op);
+            
+        SECTION( "state-vector" ) {
+            
+            applyGateSubDiagonalOp(quregVec, targs, numTargs, op);
+            applyReferenceOp(refVec, targs, numTargs, opMatr);
+            REQUIRE( areEqual(quregVec, refVec) );
+        }
+        SECTION( "density-matrix" ) {
+
+            applyGateSubDiagonalOp(quregMatr, targs, numTargs, op);
+            applyReferenceOp(refMatr, targs, numTargs, opMatr);    
+            REQUIRE( areEqual(quregMatr, refMatr, 1E4*REAL_EPS) );
+        }
+        
+        destroySubDiagonalOp(op);
+    }
+    SECTION( "input validation" ) {
+        
+        SECTION( "diagonal dimension" ) {
+            
+            int numTargs = 3;
+            SubDiagonalOp op = createSubDiagonalOp(numTargs);
+            
+            int badNumTargs = GENERATE_COPY( numTargs-1, numTargs+1 );
+            int badTargs[NUM_QUBITS+1];
+            
+            REQUIRE_THROWS_WITH( applyGateSubDiagonalOp(quregVec, badTargs, badNumTargs, op), Contains("incompatible dimension") );
+            destroySubDiagonalOp(op);
+        }
+        SECTION( "number of targets" ) {
+            
+            // make too many targets (which are otherwise valid)
+            SubDiagonalOp badOp = createSubDiagonalOp(NUM_QUBITS + 1);
+            int targs[NUM_QUBITS + 1];
+            for (int t=0; t<badOp.numQubits; t++)
+                targs[t] = t;
+            for (int i=0; i<badOp.numElems; i++)
+                badOp.real[i] = 1;
+            
+            REQUIRE_THROWS_WITH( applyGateSubDiagonalOp(quregVec, targs, badOp.numQubits, badOp), Contains("Invalid number of target qubits") );
+            destroySubDiagonalOp(badOp);
+        }
+        SECTION( "repetition in targets" ) {
+            
+            // make a valid unitary diagonal op
+            SubDiagonalOp op = createSubDiagonalOp(3);
+            for (int i=0; i<op.numElems; i++)
+                op.real[i] = 1;
+                
+            // make a repetition in the target list
+            int targs[] = {2,1,2};
+
+            REQUIRE_THROWS_WITH( applyGateSubDiagonalOp(quregVec, targs, op.numQubits, op), Contains("target qubits must be unique") );
+            destroySubDiagonalOp(op);
+        }
+        SECTION( "qubit indices" ) {
+            
+            // make a valid unitary diagonal op
+            SubDiagonalOp op = createSubDiagonalOp(3);
+            for (int i=0; i<op.numElems; i++)
+                op.real[i] = 1;
+                
+            int targs[] = {0,1,2};
+            
+            // make each target in-turn invalid
+            int badIndex = GENERATE( range(0,3) );
+            int badValue = GENERATE( -1, NUM_QUBITS );
+            targs[badIndex] = badValue;
+
+            REQUIRE_THROWS_WITH( applyGateSubDiagonalOp(quregVec, targs, op.numQubits, op), Contains("Invalid target qubit") );
+            destroySubDiagonalOp(op);
+        }
     }
     CLEANUP_TEST( quregVec, quregMatr );
 }
@@ -422,6 +633,166 @@ TEST_CASE( "applyMatrixN", "[operators]" ) {
 
 
 
+/** @sa applyMultiControlledGateMatrixN
+ * @ingroup unittest 
+ * @author Tyson Jones 
+ */
+TEST_CASE( "applyMultiControlledGateMatrixN", "[operators]" ) {
+    
+    PREPARE_TEST( quregVec, quregMatr, refVec, refMatr );
+    
+    // figure out max-num targs (inclusive) allowed by hardware backend
+    int maxNumTargs = calcLog2(quregVec.numAmpsPerChunk);
+    if (maxNumTargs >= NUM_QUBITS)
+        maxNumTargs = NUM_QUBITS - 1; // leave room for min-number of control qubits
+        
+    SECTION( "correctness" ) {
+        
+        // try all possible numbers of targets and controls
+        int numTargs = GENERATE_COPY( range(1,maxNumTargs+1) );
+        int maxNumCtrls = NUM_QUBITS - numTargs;
+        int numCtrls = GENERATE_COPY( range(1,maxNumCtrls+1) );
+        
+        // generate all possible valid qubit arrangements
+        int* targs = GENERATE_COPY( sublists(range(0,NUM_QUBITS), numTargs) );
+        int* ctrls = GENERATE_COPY( sublists(range(0,NUM_QUBITS), numCtrls, targs, numTargs) );
+        
+        // for each qubit arrangement, use a new random unitary
+        QMatrix op = getRandomQMatrix(1 << numTargs);
+        ComplexMatrixN matr = createComplexMatrixN(numTargs);
+        toComplexMatrixN(op, matr);
+    
+        SECTION( "state-vector" ) {
+            
+            applyMultiControlledGateMatrixN(quregVec, ctrls, numCtrls, targs, numTargs, matr);
+            applyReferenceOp(refVec, ctrls, numCtrls, targs, numTargs, op);
+            REQUIRE( areEqual(quregVec, refVec) );
+        }
+        SECTION( "density-matrix" ) {
+
+            applyMultiControlledGateMatrixN(quregMatr, ctrls, numCtrls, targs, numTargs, matr);
+            applyReferenceOp(refMatr, ctrls, numCtrls, targs, numTargs, op);
+            REQUIRE( areEqual(quregMatr, refMatr, 1E4*REAL_EPS) );
+        }
+        destroyComplexMatrixN(matr);
+    }
+    SECTION( "input validation" ) {
+        
+        SECTION( "number of targets" ) {
+            
+            // there cannot be more targets than qubits in register
+            // (numTargs=NUM_QUBITS is caught elsewhere, because that implies ctrls are invalid)
+            int numTargs = GENERATE( -1, 0, NUM_QUBITS+1 );
+            int targs[NUM_QUBITS+1]; // prevents seg-fault if validation doesn't trigger
+            int ctrls[] = {0};
+            ComplexMatrixN matr = createComplexMatrixN(NUM_QUBITS+1); // prevent seg-fault
+            toComplexMatrixN(getRandomUnitary(NUM_QUBITS+1), matr); // ensure unitary
+            
+            REQUIRE_THROWS_WITH( applyMultiControlledGateMatrixN(quregVec, ctrls, 1, targs, numTargs, matr), Contains("Invalid number of target"));
+            destroyComplexMatrixN(matr);
+        }
+        SECTION( "repetition in targets" ) {
+            
+            int ctrls[] = {0};
+            int numTargs = 3;
+            int targs[] = {1,2,2};
+            ComplexMatrixN matr = createComplexMatrixN(numTargs); // prevents seg-fault if validation doesn't trigger
+            toComplexMatrixN(getRandomUnitary(numTargs), matr); // ensure unitary
+            
+            REQUIRE_THROWS_WITH( applyMultiControlledGateMatrixN(quregVec, ctrls, 1, targs, numTargs, matr), Contains("target") && Contains("unique"));
+            destroyComplexMatrixN(matr);
+        }
+        SECTION( "number of controls" ) {
+            
+            int numCtrls = GENERATE( -1, 0, NUM_QUBITS, NUM_QUBITS+1 );
+            int ctrls[NUM_QUBITS+1]; // avoids seg-fault if validation not triggered
+            int targs[1] = {0};
+            ComplexMatrixN matr = createComplexMatrixN(1);
+            toComplexMatrixN(getRandomUnitary(1), matr); // ensure unitary
+            
+            REQUIRE_THROWS_WITH( applyMultiControlledGateMatrixN(quregVec, ctrls, numCtrls, targs, 1, matr), Contains("Invalid number of control"));
+            destroyComplexMatrixN(matr);
+        }
+        SECTION( "repetition in controls" ) {
+            
+            int ctrls[] = {0,1,1};
+            int targs[] = {3};
+            ComplexMatrixN matr = createComplexMatrixN(1);
+            toComplexMatrixN(getRandomUnitary(1), matr); // ensure unitary
+            
+            REQUIRE_THROWS_WITH( applyMultiControlledGateMatrixN(quregVec, ctrls, 3, targs, 1, matr), Contains("control") && Contains("unique"));
+            destroyComplexMatrixN(matr);
+        }
+        SECTION( "control and target collision" ) {
+            
+            int ctrls[] = {0,1,2};
+            int targs[] = {3,1,4};
+            ComplexMatrixN matr = createComplexMatrixN(3);
+            toComplexMatrixN(getRandomUnitary(3), matr); // ensure unitary
+            
+            REQUIRE_THROWS_WITH( applyMultiControlledGateMatrixN(quregVec, ctrls, 3, targs, 3, matr), Contains("Control") && Contains("target") && Contains("disjoint"));
+            destroyComplexMatrixN(matr);
+        }
+        SECTION( "qubit indices" ) {
+            
+            // valid inds
+            int numQb = 2;
+            int qb1[2] = {0,1};
+            int qb2[2] = {2,3};
+            ComplexMatrixN matr = createComplexMatrixN(numQb);
+            toComplexMatrixN(getRandomUnitary(numQb), matr); // ensure unitary
+            
+            // make qb1 invalid
+            int inv = GENERATE( -1, NUM_QUBITS );
+            qb1[GENERATE_COPY(range(0,numQb))] = inv;
+            
+            REQUIRE_THROWS_WITH( applyMultiControlledGateMatrixN(quregVec, qb1, numQb, qb2, numQb, matr), Contains("Invalid control") );
+            REQUIRE_THROWS_WITH( applyMultiControlledGateMatrixN(quregVec, qb2, numQb, qb1, numQb, matr), Contains("Invalid target") );
+            destroyComplexMatrixN(matr);
+        }
+        SECTION( "matrix creation" ) {
+            
+            int ctrls[1] = {0};
+            int targs[3] = {1,2,3};
+            
+            /* compilers don't auto-initialise to NULL; the below circumstance 
+             * only really occurs when 'malloc' returns NULL in createComplexMatrixN, 
+             * which actually triggers its own validation. Hence this test is useless 
+             * currently.
+             */
+            ComplexMatrixN matr;
+            matr.real = NULL;
+            matr.imag = NULL; 
+            REQUIRE_THROWS_WITH( applyMultiControlledGateMatrixN(quregVec, ctrls, 1, targs, 3, matr), Contains("created") );
+        }
+        SECTION( "matrix dimensions" ) {
+            
+            int ctrls[1] = {0};
+            int targs[2] = {1,2};
+            ComplexMatrixN matr = createComplexMatrixN(3); // intentionally wrong size
+            toComplexMatrixN(getRandomUnitary(3), matr); // ensure unitary
+            
+            REQUIRE_THROWS_WITH( applyMultiControlledGateMatrixN(quregVec, ctrls, 1, targs, 2, matr), Contains("matrix size"));
+            destroyComplexMatrixN(matr);
+        }
+        SECTION( "matrix fits in node" ) {
+                
+            // pretend we have a very limited distributed memory (judged by matr size)
+            quregVec.numAmpsPerChunk = 1;
+            int ctrls[1] = {0};
+            int targs[2] = {1,2};
+            ComplexMatrixN matr = createComplexMatrixN(2);
+            toComplexMatrixN(getRandomUnitary(2), matr); // ensure unitary
+            
+            REQUIRE_THROWS_WITH( applyMultiControlledGateMatrixN(quregVec, ctrls, 1, targs, 2, matr), Contains("targets too many qubits"));
+            destroyComplexMatrixN(matr);
+        }
+    }
+    CLEANUP_TEST( quregVec, quregMatr );
+}
+
+
+
 /** @sa applyMultiControlledMatrixN
  * @ingroup unittest 
  * @author Tyson Jones 
@@ -621,7 +992,7 @@ TEST_CASE( "applyMultiVarPhaseFunc", "[operators]" ) {
         
         // assign each sub-reg its minimum length
         int unallocQubits = totalNumQubits;
-        int numQubitsPerReg[numRegs];
+        VLA(int, numQubitsPerReg, numRegs);
         for (int i=0; i<numRegs; i++) 
             if (encoding == UNSIGNED) {
                 numQubitsPerReg[i] = 1;
@@ -639,7 +1010,7 @@ TEST_CASE( "applyMultiVarPhaseFunc", "[operators]" ) {
         
 
         // each register gets a random number of terms in the full phase function
-        int numTermsPerReg[numRegs];
+        VLA(int, numTermsPerReg, numRegs);
         int numTermsTotal = 0;
         for (int r=0; r<numRegs; r++) {
             int numTerms = getRandomInt(1,5);
@@ -650,8 +1021,8 @@ TEST_CASE( "applyMultiVarPhaseFunc", "[operators]" ) {
         // populate the multi-var phase function with random but POSITIVE-power terms,
         // which must further be integers in two's complement
         int flatInd = 0;
-        qreal coeffs[numTermsTotal];
-        qreal expons[numTermsTotal];
+        VLA(qreal, coeffs, numTermsTotal);
+        VLA(qreal, expons, numTermsTotal);
         for (int r=0; r<numRegs; r++) {
             for (int t=0; t<numTermsPerReg[r]; t++) {
                 coeffs[flatInd] = getRandomReal(-10,10);
@@ -822,7 +1193,7 @@ TEST_CASE( "applyMultiVarPhaseFuncOverrides", "[operators]" ) {
         
         // assign each sub-reg its minimum length
         int unallocQubits = totalNumQubits;
-        int numQubitsPerReg[numRegs];
+        VLA(int, numQubitsPerReg, numRegs);
         for (int i=0; i<numRegs; i++) 
             if (encoding == UNSIGNED) {
                 numQubitsPerReg[i] = 1;
@@ -840,7 +1211,7 @@ TEST_CASE( "applyMultiVarPhaseFuncOverrides", "[operators]" ) {
         
 
         // each register gets a random number of terms in the full phase function
-        int numTermsPerReg[numRegs];
+        VLA(int, numTermsPerReg, numRegs);
         int numTermsTotal = 0;
         for (int r=0; r<numRegs; r++) {
             int numTerms = getRandomInt(1,5);
@@ -851,8 +1222,8 @@ TEST_CASE( "applyMultiVarPhaseFuncOverrides", "[operators]" ) {
         // populate the multi-var phase function with random but POSITIVE-power terms,
         // which must further be integers in two's complement
         int flatInd = 0;
-        qreal coeffs[numTermsTotal];
-        qreal expons[numTermsTotal];
+        VLA(qreal, coeffs, numTermsTotal);
+        VLA(qreal, expons, numTermsTotal);
         for (int r=0; r<numRegs; r++) {
             for (int t=0; t<numTermsPerReg[r]; t++) {
                 coeffs[flatInd] = getRandomReal(-10,10);
@@ -870,7 +1241,7 @@ TEST_CASE( "applyMultiVarPhaseFuncOverrides", "[operators]" ) {
         int numOverrides = getRandomInt(0, (1<<totalNumQubits) + 1);
         
         // randomise each override index (uniqueness isn't checked)
-        long long int overrideInds[numOverrides*numRegs];
+        VLA(long long int, overrideInds, numOverrides*numRegs);
         flatInd = 0;
         for (int v=0; v<numOverrides; v++) {
             for (int r=0; r<numRegs; r++) {
@@ -883,7 +1254,7 @@ TEST_CASE( "applyMultiVarPhaseFuncOverrides", "[operators]" ) {
         }
 
         // override to a random phase
-        qreal overridePhases[numOverrides];
+        VLA(qreal, overridePhases, numOverrides);
         for (int v=0; v<numOverrides; v++)
             overridePhases[v] = getRandomReal(-4, 4); // periodic in [-pi, pi]
             
@@ -1093,7 +1464,7 @@ TEST_CASE( "applyNamedPhaseFunc", "[operators]" ) {
         
         // assign each sub-reg its minimum length
         int unallocQubits = totalNumQubits;
-        int numQubitsPerReg[numRegs];
+        VLA(int, numQubitsPerReg, numRegs);
         for (int i=0; i<numRegs; i++) 
             if (encoding == UNSIGNED) {
                 numQubitsPerReg[i] = 1;
@@ -1110,7 +1481,7 @@ TEST_CASE( "applyNamedPhaseFunc", "[operators]" ) {
         }
         
         // for reference, determine the values corresponding to each register for all basis states
-        qreal regVals[1<<totalNumQubits][numRegs];
+        std::vector<std::vector<qreal>> regVals(1<<totalNumQubits, std::vector<qreal>(numRegs));
         for (long long int i=0; i<(1<<totalNumQubits); i++) {
             
             long long int bits = i;
@@ -1244,7 +1615,7 @@ TEST_CASE( "applyNamedPhaseFunc", "[operators]" ) {
         }
         SECTION( "phase function name" ) {
             
-            enum phaseFunc func = (enum phaseFunc) GENERATE( -1, 14 );
+            enum phaseFunc func = (enum phaseFunc) GENERATE( -1, MAX_INDEX_PHASE_FUNC + 1 );
             REQUIRE_THROWS_WITH( applyNamedPhaseFunc(quregVec, regs, numQubitsPerReg, numRegs, UNSIGNED, func), Contains("Invalid named phase function") );
         }
         SECTION( "phase function parameters" ) {
@@ -1305,7 +1676,7 @@ TEST_CASE( "applyNamedPhaseFuncOverrides", "[operators]" ) {
         
         // assign each sub-reg its minimum length
         int unallocQubits = totalNumQubits;
-        int numQubitsPerReg[numRegs];
+        VLA(int, numQubitsPerReg, numRegs);
         for (int i=0; i<numRegs; i++) 
             if (encoding == UNSIGNED) {
                 numQubitsPerReg[i] = 1;
@@ -1326,7 +1697,7 @@ TEST_CASE( "applyNamedPhaseFuncOverrides", "[operators]" ) {
         int numOverrides = getRandomInt(0, (1<<totalNumQubits) + 1);
         
         // randomise each override index (uniqueness isn't checked)
-        long long int overrideInds[numOverrides*numRegs];
+        VLA(long long int, overrideInds, numOverrides*numRegs);
         int flatInd = 0;
         for (int v=0; v<numOverrides; v++) {
             for (int r=0; r<numRegs; r++) {
@@ -1339,13 +1710,13 @@ TEST_CASE( "applyNamedPhaseFuncOverrides", "[operators]" ) {
         }
 
         // override to a random phase
-        qreal overridePhases[numOverrides];
+        VLA(qreal, overridePhases, numOverrides);
         for (int v=0; v<numOverrides; v++)
             overridePhases[v] = getRandomReal(-4, 4); // periodic in [-pi, pi]
             
             
         // determine the values corresponding to each register for all basis states
-        qreal regVals[1<<totalNumQubits][numRegs];
+        std::vector<std::vector<qreal>> regVals(1<<totalNumQubits, std::vector<qreal>(numRegs));
         for (long long int i=0; i<(1<<totalNumQubits); i++) {
             
             long long int bits = i;
@@ -1484,7 +1855,7 @@ TEST_CASE( "applyNamedPhaseFuncOverrides", "[operators]" ) {
         }
         SECTION( "phase function name" ) {
             
-            enum phaseFunc func = (enum phaseFunc) GENERATE( -1, 14 );
+            enum phaseFunc func = (enum phaseFunc) GENERATE( -1, MAX_INDEX_PHASE_FUNC + 1 );
             REQUIRE_THROWS_WITH( applyNamedPhaseFuncOverrides(quregVec, regs, numQubitsPerReg, numRegs, UNSIGNED, func, NULL, NULL, 0), Contains("Invalid named phase function") );
         }
         SECTION( "phase function parameters" ) {
@@ -1579,12 +1950,17 @@ TEST_CASE( "applyParamNamedPhaseFunc", "[operators]" ) {
             minTotalQubits = 2*numRegs;
         totalNumQubits = GENERATE_COPY( range(minTotalQubits,NUM_QUBITS+1) );
                         
-        // try every qubits subset and ordering 
-        int* regs = GENERATE_COPY( sublists(range(0,NUM_QUBITS), totalNumQubits) );
+        // Previously, we would try every qubits subset and ordering, via:
+        //      int* regs = GENERATE_COPY( sublists(range(0,NUM_QUBITS), totalNumQubits) );
+        // Alas, this is too many tests and times out Ubuntu unit testing. So instead, we
+        // randomly choose some qubits, 10 times.
+        GENERATE( range(0, 10) );
+        VLA(int, regs, totalNumQubits);
+        setRandomTargets(regs, totalNumQubits, NUM_QUBITS);
         
         // assign each sub-reg its minimum length
         int unallocQubits = totalNumQubits;
-        int numQubitsPerReg[numRegs];
+        VLA(int, numQubitsPerReg, numRegs);
         for (int i=0; i<numRegs; i++) 
             if (encoding == UNSIGNED) {
                 numQubitsPerReg[i] = 1;
@@ -1607,7 +1983,7 @@ TEST_CASE( "applyParamNamedPhaseFunc", "[operators]" ) {
         QMatrix diagMatr = getZeroMatrix(1 << totalNumQubits);
         
         // determine the values corresponding to each register for all basis states
-        qreal regVals[1<<totalNumQubits][numRegs];
+        std::vector<std::vector<qreal>> regVals(1<<totalNumQubits, std::vector<qreal>(numRegs));
         for (long long int i=0; i<(1<<totalNumQubits); i++) {
             
             long long int bits = i;
@@ -1713,7 +2089,7 @@ TEST_CASE( "applyParamNamedPhaseFunc", "[operators]" ) {
             
             enum phaseFunc func = SCALED_INVERSE_SHIFTED_NORM;
             int numParams = 2 + numRegs;
-            qreal params[numParams];
+            VLA(qreal, params, numParams);
             params[0] = getRandomReal(-10, 10); // scaling
             params[1] = getRandomReal(-4, 4); // divergence override
             for (int r=0; r<numRegs; r++)
@@ -1940,7 +2316,7 @@ TEST_CASE( "applyParamNamedPhaseFunc", "[operators]" ) {
             
             enum phaseFunc func = SCALED_INVERSE_SHIFTED_DISTANCE;
             int numParams = 2 + numRegs/2;
-            qreal params[numParams];
+            VLA(qreal, params, numParams);
             
             // test only if there are an even number of registers
             if (numRegs%2 == 0) {
@@ -1974,6 +2350,51 @@ TEST_CASE( "applyParamNamedPhaseFunc", "[operators]" ) {
                     applyParamNamedPhaseFunc(quregMatr, regs, numQubitsPerReg, numRegs, encoding, func, params, numParams);
                     applyReferenceOp(refMatr, regs, totalNumQubits, diagMatr);
                     REQUIRE( areEqual(quregMatr, refMatr, 1E2*REAL_EPS) );
+                }
+            }
+        }
+        SECTION( "SCALED_INVERSE_SHIFTED_WEIGHTED_DISTANCE" ) {
+            
+            enum phaseFunc func = SCALED_INVERSE_SHIFTED_WEIGHTED_DISTANCE;
+            int numParams = 2 + numRegs;
+            VLA(qreal, params, numParams);
+            
+            // test only if there are an even number of registers
+            if (numRegs%2 == 0) {
+
+                params[0] = getRandomReal( -10, 10 ); // scaling
+                params[1] = getRandomReal( -4, 4 ); // divergence override
+                for (int r=0; r<numRegs; r+=2) {
+                    params[2+r] = getRandomReal( -10, 10 ); // factor
+                    params[2+r+1] = getRandomReal( -8, 8 ); // shift
+                }
+                
+                for (size_t i=0; i<diagMatr.size(); i++) {
+                    qreal phase = 0;
+                    for (int r=0; r<numRegs; r+=2)
+                        phase += params[2+r] * pow(regVals[i][r]-regVals[i][r+1]-params[2+r+1], 2);
+                    if (phase < 0)
+                        phase = 0;
+                    phase = sqrt(phase);
+                    phase = (phase <= REAL_EPS)? params[1] : params[0]/phase;
+                    diagMatr[i][i] = expI(phase);
+                }
+            }
+            
+            SECTION( "state-vector" ) {
+                
+                if (numRegs%2 == 0) {
+                    applyParamNamedPhaseFunc(quregVec, regs, numQubitsPerReg, numRegs, encoding, func, params, numParams);
+                    applyReferenceOp(refVec, regs, totalNumQubits, diagMatr);
+                    REQUIRE( areEqual(quregVec, refVec, 1E2*REAL_EPS) );
+                }
+            }
+            SECTION( "density-matrix" ) {
+                
+                if (numRegs%2 == 0) {
+                    applyParamNamedPhaseFunc(quregMatr, regs, numQubitsPerReg, numRegs, encoding, func, params, numParams);
+                    applyReferenceOp(refMatr, regs, totalNumQubits, diagMatr);
+                    REQUIRE( areEqual(quregMatr, refMatr, 1E4*REAL_EPS) );
                 }
             }
         }
@@ -2016,12 +2437,12 @@ TEST_CASE( "applyParamNamedPhaseFunc", "[operators]" ) {
         }
         SECTION( "phase function name" ) {
             
-            enum phaseFunc func = (enum phaseFunc) GENERATE( -1, 14 );
+            enum phaseFunc func = (enum phaseFunc) GENERATE( -1, MAX_INDEX_PHASE_FUNC + 1 );
             REQUIRE_THROWS_WITH( applyParamNamedPhaseFunc(quregVec, regs, numQubitsPerReg, numRegs, UNSIGNED, func, NULL, 0), Contains("Invalid named phase function") );
         }
         SECTION( "phase function parameters" ) {
             
-            qreal params[numRegs + 3];
+            VLA(qreal, params, numRegs + 3);
             for (int r=0; r<numRegs + 3; r++)
                 params[r] = 0;
             
@@ -2056,6 +2477,14 @@ TEST_CASE( "applyParamNamedPhaseFunc", "[operators]" ) {
                 enum phaseFunc func = SCALED_INVERSE_SHIFTED_NORM;
                 int numParams = GENERATE_COPY( 0, 1, numRegs-1, numRegs, numRegs+1, numRegs+3 );
                 REQUIRE_THROWS_WITH( applyParamNamedPhaseFunc(quregVec, regs, numQubitsPerReg, numRegs, UNSIGNED, func, params, numParams), Contains("Invalid number of parameters") );
+            }
+            SECTION( "shifted weighted distance" ) {
+                
+                if (numRegs%2 == 0) {
+                    enum phaseFunc func = SCALED_INVERSE_SHIFTED_WEIGHTED_DISTANCE;
+                    int numParams = GENERATE_COPY( 0, 1, 2 + numRegs - 1, 2 + numRegs + 1 );
+                    REQUIRE_THROWS_WITH( applyParamNamedPhaseFunc(quregVec, regs, numQubitsPerReg, numRegs, UNSIGNED, func, params, numParams), Contains("Invalid number of parameters") );
+                }
             }
         }
         SECTION( "distance pair registers" ) {
@@ -2106,12 +2535,17 @@ TEST_CASE( "applyParamNamedPhaseFuncOverrides", "[operators]" ) {
             minTotalQubits = 2*numRegs;
         totalNumQubits = GENERATE_COPY( range(minTotalQubits,NUM_QUBITS+1) );
                         
-        // try every qubits subset and ordering 
-        int* regs = GENERATE_COPY( sublists(range(0,NUM_QUBITS), totalNumQubits) );
+        // Previously, we would try every qubits subset and ordering, via:
+        //      int* regs = GENERATE_COPY( sublists(range(0,NUM_QUBITS), totalNumQubits) );
+        // Alas, this is too many tests and times out Ubuntu unit testing. So instead, we
+        // randomly choose some qubits, 10 times.
+        GENERATE( range(0, 10) );
+        VLA(int, regs, totalNumQubits);
+        setRandomTargets(regs, totalNumQubits, NUM_QUBITS);
         
         // assign each sub-reg its minimum length
         int unallocQubits = totalNumQubits;
-        int numQubitsPerReg[numRegs];
+        VLA(int, numQubitsPerReg, numRegs);
         for (int i=0; i<numRegs; i++) 
             if (encoding == UNSIGNED) {
                 numQubitsPerReg[i] = 1;
@@ -2132,7 +2566,7 @@ TEST_CASE( "applyParamNamedPhaseFuncOverrides", "[operators]" ) {
         int numOverrides = getRandomInt(0, (1<<totalNumQubits) + 1);
         
         // randomise each override index (uniqueness isn't checked)
-        long long int overrideInds[numOverrides*numRegs];
+        VLA(long long int, overrideInds, numOverrides*numRegs);
         int flatInd = 0;
         for (int v=0; v<numOverrides; v++) {
             for (int r=0; r<numRegs; r++) {
@@ -2145,13 +2579,13 @@ TEST_CASE( "applyParamNamedPhaseFuncOverrides", "[operators]" ) {
         }
 
         // override to a random phase
-        qreal overridePhases[numOverrides];
+        VLA(qreal, overridePhases, numOverrides);
         for (int v=0; v<numOverrides; v++)
             overridePhases[v] = getRandomReal(-4, 4); // periodic in [-pi, pi]
 
 
         // determine the values corresponding to each register for all basis states
-        qreal regVals[1<<totalNumQubits][numRegs];
+        std::vector<std::vector<qreal>> regVals(1<<totalNumQubits, std::vector<qreal>(numRegs));
         for (long long int i=0; i<(1<<totalNumQubits); i++) {
             
             long long int bits = i;
@@ -2263,7 +2697,7 @@ TEST_CASE( "applyParamNamedPhaseFuncOverrides", "[operators]" ) {
             
             enum phaseFunc func = SCALED_INVERSE_SHIFTED_NORM;
             int numParams = 2 + numRegs;
-            qreal params[numParams];
+            VLA(qreal, params, numParams);
             params[0] = getRandomReal(-10, 10); // scaling
             params[1] = getRandomReal(-4, 4); // divergence override
             for (int r=0; r<numRegs; r++)
@@ -2495,7 +2929,7 @@ TEST_CASE( "applyParamNamedPhaseFuncOverrides", "[operators]" ) {
             
             enum phaseFunc func = SCALED_INVERSE_SHIFTED_DISTANCE;
             int numParams = 2 + numRegs/2;
-            qreal params[numParams];
+            VLA(qreal, params, numParams);
             
             // test only if there are an even number of registers
             if (numRegs%2 == 0) {
@@ -2531,6 +2965,53 @@ TEST_CASE( "applyParamNamedPhaseFuncOverrides", "[operators]" ) {
                     applyParamNamedPhaseFuncOverrides(quregMatr, regs, numQubitsPerReg, numRegs, encoding, func, params, numParams, overrideInds, overridePhases, numOverrides);
                     applyReferenceOp(refMatr, regs, totalNumQubits, diagMatr);
                     REQUIRE( areEqual(quregMatr, refMatr, 1E2*REAL_EPS) );
+                }
+            }
+        }
+        SECTION( "SCALED_INVERSE_SHIFTED_WEIGHTED_DISTANCE" ) {
+            
+            enum phaseFunc func = SCALED_INVERSE_SHIFTED_WEIGHTED_DISTANCE;
+            int numParams = 2 + numRegs;
+            VLA(qreal, params, numParams);
+            
+            // test only if there are an even number of registers
+            if (numRegs%2 == 0) {
+
+                params[0] = getRandomReal( -10, 10 ); // scaling
+                params[1] = getRandomReal( -4, 4 ); // divergence override
+                for (int r=0; r<numRegs; r+=2) {
+                    params[2+r] = getRandomReal( -10, 10 ); // factor
+                    params[2+r+1] = getRandomReal( -8, 8 ); // shift
+                }
+                
+                for (size_t i=0; i<diagMatr.size(); i++) {
+                    qreal phase = 0;
+                    for (int r=0; r<numRegs; r+=2)
+                        phase += params[2+r] * pow(regVals[i][r]-regVals[i][r+1]-params[2+r+1], 2);
+                    if (phase < 0)
+                        phase = 0;
+                    phase = sqrt(phase);
+                    phase = (phase <= REAL_EPS)? params[1] : params[0]/phase;
+                    diagMatr[i][i] = expI(phase);
+                }
+                
+                setDiagMatrixOverrides(diagMatr, numQubitsPerReg, numRegs, encoding, overrideInds, overridePhases, numOverrides);
+            }
+            
+            SECTION( "state-vector" ) {
+                
+                if (numRegs%2 == 0) {
+                    applyParamNamedPhaseFuncOverrides(quregVec, regs, numQubitsPerReg, numRegs, encoding, func, params, numParams, overrideInds, overridePhases, numOverrides);
+                    applyReferenceOp(refVec, regs, totalNumQubits, diagMatr);
+                    REQUIRE( areEqual(quregVec, refVec, 1E2*REAL_EPS) );
+                }
+            }
+            SECTION( "density-matrix" ) {
+                
+                if (numRegs%2 == 0) {
+                    applyParamNamedPhaseFuncOverrides(quregMatr, regs, numQubitsPerReg, numRegs, encoding, func, params, numParams, overrideInds, overridePhases, numOverrides);
+                    applyReferenceOp(refMatr, regs, totalNumQubits, diagMatr);
+                    REQUIRE( areEqual(quregMatr, refMatr, 1E4*REAL_EPS) );
                 }
             }
         }
@@ -2573,12 +3054,12 @@ TEST_CASE( "applyParamNamedPhaseFuncOverrides", "[operators]" ) {
         }
         SECTION( "phase function name" ) {
             
-            enum phaseFunc func = (enum phaseFunc) GENERATE( -1, 14 );
+            enum phaseFunc func = (enum phaseFunc) GENERATE( -1, MAX_INDEX_PHASE_FUNC + 1 );
             REQUIRE_THROWS_WITH( applyParamNamedPhaseFuncOverrides(quregVec, regs, numQubitsPerReg, numRegs, UNSIGNED, func, NULL, 0, NULL, NULL, 0), Contains("Invalid named phase function") );
         }
         SECTION( "phase function parameters" ) {
             
-            qreal params[numRegs + 3];
+            VLA(qreal, params, numRegs + 3);
             for (int r=0; r<numRegs + 3; r++)
                 params[r] = 0;
             
@@ -2605,6 +3086,14 @@ TEST_CASE( "applyParamNamedPhaseFuncOverrides", "[operators]" ) {
                 if (numRegs%2 == 0) {
                     enum phaseFunc func = SCALED_INVERSE_SHIFTED_DISTANCE;
                     int numParams = GENERATE_COPY( 0, 1, numRegs/2 - 1, numRegs/2, numRegs/2 + 1, numRegs/2 + 3 );
+                    REQUIRE_THROWS_WITH( applyParamNamedPhaseFuncOverrides(quregVec, regs, numQubitsPerReg, numRegs, UNSIGNED, func, params, numParams, NULL, NULL, 0), Contains("Invalid number of parameters") );
+                }
+            }
+            SECTION( "shifted weighted distance" ) {
+                
+                if (numRegs%2 == 0) {
+                    enum phaseFunc func = SCALED_INVERSE_SHIFTED_WEIGHTED_DISTANCE;
+                    int numParams = GENERATE_COPY( 0, 1, 2 + numRegs - 1, 2 + numRegs + 1 );
                     REQUIRE_THROWS_WITH( applyParamNamedPhaseFuncOverrides(quregVec, regs, numQubitsPerReg, numRegs, UNSIGNED, func, params, numParams, NULL, NULL, 0), Contains("Invalid number of parameters") );
                 }
             }
@@ -2795,8 +3284,8 @@ TEST_CASE( "applyPauliSum", "[operators]" ) {
         int numPaulis = numTerms * NUM_QUBITS;
         
         // each test will use random coefficients
-        qreal coeffs[numTerms];
-        pauliOpType paulis[numPaulis];
+        VLA(qreal, coeffs, numTerms);
+        VLA(pauliOpType, paulis, numPaulis);
         setRandomPauliSum(coeffs, paulis, NUM_QUBITS, numTerms);
         QMatrix pauliSum = toQMatrix(coeffs, paulis, NUM_QUBITS, numTerms);
         
@@ -2835,7 +3324,7 @@ TEST_CASE( "applyPauliSum", "[operators]" ) {
             // valid codes
             int numTerms = 3;
             int numPaulis = numTerms*NUM_QUBITS;
-            pauliOpType paulis[numPaulis];
+            VLA(pauliOpType, paulis, numPaulis);
             for (int i=0; i<numPaulis; i++)
                 paulis[i] = PAULI_I;
             
@@ -2892,8 +3381,8 @@ TEST_CASE( "applyPhaseFunc", "[operators]" ) {
         
         // populate the phase function with random but POSITIVE-power terms,
         // and in two's complement mode, strictly integer powers
-        qreal coeffs[numTerms];
-        qreal expons[numTerms];
+        VLA(qreal, coeffs, numTerms);
+        VLA(qreal, expons, numTerms);
         for (int t=0; t<numTerms; t++) {
             coeffs[t] = getRandomReal(-10,10);
             if (encoding == TWOS_COMPLEMENT)
@@ -3023,8 +3512,8 @@ TEST_CASE( "applyPhaseFuncOverrides", "[operators]" ) {
         // populate the phase function with random powers.
         // this includes negative powers, so we must always override 0.
         // in two's complement, we must use only integer powers
-        qreal coeffs[numTerms];
-        qreal expons[numTerms];
+        VLA(qreal, coeffs, numTerms);
+        VLA(qreal, expons, numTerms);
         for (int t=0; t<numTerms; t++) {
             coeffs[t] = getRandomReal(-10,10);
             if (encoding == TWOS_COMPLEMENT)
@@ -3037,7 +3526,7 @@ TEST_CASE( "applyPhaseFuncOverrides", "[operators]" ) {
         int numOverrides = getRandomInt(1, (1<<numQubits) + 1);
         
         // randomise each override index (uniqueness isn't checked)
-        long long int overrideInds[numOverrides];
+        VLA(long long int, overrideInds, numOverrides);
         overrideInds[0] = 0LL;
         for (int i=1; i<numOverrides; i++)
             if (encoding == UNSIGNED)
@@ -3046,7 +3535,7 @@ TEST_CASE( "applyPhaseFuncOverrides", "[operators]" ) {
                 overrideInds[i] = getRandomInt(-(1<<(numQubits-1)), (1<<(numQubits-1))-1);
             
         // override to a random phase
-        qreal overridePhases[numOverrides];
+        VLA(qreal, overridePhases, numOverrides);
         for (int i=0; i<numOverrides; i++)
             overridePhases[i] = getRandomReal(-4, 4); // periodic in [-pi, pi]
             
@@ -3167,8 +3656,8 @@ TEST_CASE( "applyPhaseFuncOverrides", "[operators]" ) {
             REQUIRE_THROWS_WITH( applyPhaseFuncOverrides(quregVec, qubits, numQubits, TWOS_COMPLEMENT, coeffs, expos, numTerms, NULL, NULL, 0), Contains("fractional exponent") && Contains("TWOS_COMPLEMENT") && Contains("negative indices were not overriden") );
             
             int numNegs = 1 << (numQubits-1);
-            long long int overrideInds[numNegs];
-            qreal overridePhases[numNegs];
+            VLA(long long int, overrideInds, numNegs);
+            VLA(qreal, overridePhases, numNegs);
             for (int i=0; i<numNegs; i++) {
                 overrideInds[i] = -(i+1);
                 overridePhases[i] = 0;
@@ -3486,6 +3975,105 @@ TEST_CASE( "applyQFT", "[operators]" ) {
             int inv = GENERATE( -1, NUM_QUBITS );
             qubits[GENERATE_COPY( range(0,numQubits) )] = inv; // make invalid target
             REQUIRE_THROWS_WITH( applyQFT(quregVec, qubits, numQubits), Contains("Invalid target") );
+        }
+    }
+    CLEANUP_TEST( quregVec, quregMatr );
+}
+
+
+
+/** @sa applySubDiagonalOp
+ * @ingroup unittest 
+ * @author Tyson Jones 
+ */
+TEST_CASE( "applySubDiagonalOp", "[unitaries]" ) {
+    
+    PREPARE_TEST( quregVec, quregMatr, refVec, refMatr );
+    
+    SECTION( "correctness" ) {
+        
+        // generate all possible targets
+        int numTargs = GENERATE( range(1,NUM_QUBITS+1) );
+        int* targs = GENERATE_COPY( sublists(range(0,NUM_QUBITS), numTargs) );
+
+        // initialise a random non-unitary diagonal op
+        SubDiagonalOp op = createSubDiagonalOp(numTargs);
+        for (long long int i=0; i<op.numElems; i++) {
+            op.real[i] = getRandomReal(-10,10);
+            op.imag[i] = getRandomReal(-10,10);
+        }
+        QMatrix opMatr = toQMatrix(op);
+            
+        SECTION( "state-vector" ) {
+            
+            applySubDiagonalOp(quregVec, targs, numTargs, op);
+            applyReferenceMatrix(refVec, targs, numTargs, opMatr);
+            REQUIRE( areEqual(quregVec, refVec) );
+        }
+        SECTION( "density-matrix" ) {
+
+            applySubDiagonalOp(quregMatr, targs, numTargs, op);
+            applyReferenceMatrix(refMatr, targs, numTargs, opMatr);    
+            REQUIRE( areEqual(quregMatr, refMatr, 100*REAL_EPS) );
+        }
+        
+        destroySubDiagonalOp(op);
+    }
+    SECTION( "input validation" ) {
+        
+        SECTION( "diagonal dimension" ) {
+            
+            int numTargs = 3;
+            SubDiagonalOp op = createSubDiagonalOp(numTargs);
+            
+            int badNumTargs = GENERATE_COPY( numTargs-1, numTargs+1 );
+            int badTargs[NUM_QUBITS+1];
+            
+            REQUIRE_THROWS_WITH( applySubDiagonalOp(quregVec, badTargs, badNumTargs, op), Contains("incompatible dimension") );
+            destroySubDiagonalOp(op);
+        }
+        SECTION( "number of targets" ) {
+            
+            // make too many targets (which are otherwise valid)
+            SubDiagonalOp badOp = createSubDiagonalOp(NUM_QUBITS + 1);
+            int targs[NUM_QUBITS + 1];
+            for (int t=0; t<badOp.numQubits; t++)
+                targs[t] = t;
+            for (int i=0; i<badOp.numElems; i++)
+                badOp.real[i] = 1;
+            
+            REQUIRE_THROWS_WITH( applySubDiagonalOp(quregVec, targs, badOp.numQubits, badOp), Contains("Invalid number of target qubits") );
+            destroySubDiagonalOp(badOp);
+        }
+        SECTION( "repetition in targets" ) {
+            
+            // make a valid unitary diagonal op
+            SubDiagonalOp op = createSubDiagonalOp(3);
+            for (int i=0; i<op.numElems; i++)
+                op.real[i] = 1;
+                
+            // make a repetition in the target list
+            int targs[] = {2,1,2};
+
+            REQUIRE_THROWS_WITH( applySubDiagonalOp(quregVec, targs, op.numQubits, op), Contains("target qubits must be unique") );
+            destroySubDiagonalOp(op);
+        }
+        SECTION( "qubit indices" ) {
+            
+            // make a valid unitary diagonal op
+            SubDiagonalOp op = createSubDiagonalOp(3);
+            for (int i=0; i<op.numElems; i++)
+                op.real[i] = 1;
+                
+            int targs[] = {0,1,2};
+            
+            // make each target in-turn invalid
+            int badIndex = GENERATE( range(0,3) );
+            int badValue = GENERATE( -1, NUM_QUBITS );
+            targs[badIndex] = badValue;
+
+            REQUIRE_THROWS_WITH( applySubDiagonalOp(quregVec, targs, op.numQubits, op), Contains("Invalid target qubit") );
+            destroySubDiagonalOp(op);
         }
     }
     CLEANUP_TEST( quregVec, quregMatr );

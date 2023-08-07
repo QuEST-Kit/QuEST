@@ -14,7 +14,9 @@ using Catch::Matchers::Contains;
  */
 TEST_CASE( "fromComplex", "[data_structures]" ) {
     
-    Complex a = {.real=.5, .imag=-.2};
+    Complex a; 
+    a.real= .5;
+    a.imag= -.2;
     qcomp b = fromComplex(a);
     
     REQUIRE( a.real == real(b) );
@@ -42,7 +44,12 @@ TEST_CASE( "getStaticComplexMatrixN", "[data_structures]" ) {
 TEST_CASE( "toComplex", "[data_structures]" ) {
     
     qcomp a = qcomp(.5,-.2);
+    #if (!defined(_WIN32)) && (!defined(_WIN64))
     Complex b = toComplex(a);
+    #else
+    // MSVC profanely forbids in-line struct initialisation
+    Complex b; b.real = real(a); b.imag = imag(a);
+    #endif
     
     REQUIRE( real(a) == b.real );
     REQUIRE( imag(a) == b.imag );
@@ -167,6 +174,10 @@ TEST_CASE( "createDensityQureg", "[data_structures]" ) {
             /* n-qubit density matrix contains 2^(2n) amplitudes 
              * so can be spread between at most 2^(2n) ranks
              */
+            /* env.numRanks is an int, so maxQb must be capped at 16 for this
+             * test to avoid an integer overflow when storing 2**(2*minQb) in it
+             */
+            maxQb = maxQb > 16 ? 16 : maxQb;
             int minQb = GENERATE_COPY( range(3,maxQb) );
             env.numRanks = (int) pow(2, 2*minQb);
             int numQb = GENERATE_COPY( range(1,minQb) );
@@ -231,6 +242,10 @@ TEST_CASE( "createDiagonalOp", "[data_structures]" ) {
             int maxQb = (int) calcLog2(SIZE_MAX);
             REQUIRE_THROWS_WITH( createDiagonalOp(maxQb+1, env), Contains("Too many qubits") && Contains("size_t type") );
             
+            /* env.numRanks is an int, so maxQb must be capped at 32 for this
+             * test to avoid an integer overflow when storing 2**minQb in it
+             */
+            maxQb = maxQb > 32 ? 32 : maxQb;
             // too few amplitudes to distribute
             int minQb = GENERATE_COPY( range(2,maxQb) );
             env.numRanks = (int) pow(2, minQb);
@@ -307,7 +322,7 @@ TEST_CASE( "createDiagonalOpFromPauliHamilFile", "[data_structures]" ) {
             
             // prepare a valid single-term diagonal Pauli Hamiltonian
             qreal coeffs[] = {.1};
-            pauliOpType codes[minNumQb];
+            VLA(pauliOpType, codes, minNumQb);
             for (int q=0; q<minNumQb; q++)
                 codes[q] = (q%2)? PAULI_I : PAULI_Z; 
                 
@@ -371,6 +386,10 @@ TEST_CASE( "createDiagonalOpFromPauliHamilFile", "[data_structures]" ) {
             QuESTEnv env = QUEST_ENV;
             
             // too few elements to distribute
+            /* env.numRanks is an int, so maxQb must be capped at 32 for this
+             * test to avoid an integer overflow when storing 2**minQb in it
+             */
+            maxQb = maxQb > 32 ? 32 : maxQb;
             int minQb = GENERATE_COPY( range(2,maxQb) );
             env.numRanks = (int) pow(2, minQb);
             int numQb = GENERATE_COPY( range(1,minQb) );
@@ -485,8 +504,8 @@ TEST_CASE( "createPauliHamilFromFile", "[data_structures]" ) {
             int numPaulis = numQb*numTerms;
             
             // create a PauliHamil with random elements
-            qreal coeffs[numTerms];
-            enum pauliOpType paulis[numPaulis];
+            VLA(qreal, coeffs, numTerms);
+            VLA(pauliOpType, paulis, numPaulis);
             setRandomPauliSum(coeffs, paulis, numQb, numTerms);
             
             // write the Hamiltonian to file (with trailing whitespace, and trailing newline)
@@ -644,6 +663,10 @@ TEST_CASE( "createQureg", "[data_structures]" ) {
             REQUIRE_THROWS_WITH( createQureg(maxQb+1, env), Contains("Too many qubits") && Contains("size_t type") );
             
             // too few amplitudes to distribute
+            /* env.numRanks is an int, so maxQb must be capped at 32 for this
+             * test to avoid an integer overflow when storing 2**minQb in it
+             */
+            maxQb = maxQb > 32 ? 32 : maxQb;
             int minQb = GENERATE_COPY( range(2,maxQb) );
             env.numRanks = (int) pow(2, minQb);
             int numQb = GENERATE_COPY( range(1,minQb) );
@@ -654,6 +677,37 @@ TEST_CASE( "createQureg", "[data_structures]" ) {
             /* there is no reliable way to force the malloc statements to
              * fail, and hence trigger the matrixInit validation */
             SUCCEED( );
+        }
+    }
+}
+
+
+
+/** @sa createSubDiagonalOp
+ * @ingroup unittest 
+ * @author Tyson Jones 
+ */
+TEST_CASE( "createSubDiagonalOp", "[data_structures]" ) {
+    
+    SECTION( "correctness" ) {
+        
+        int numQb = GENERATE( range(1,10+1) );
+        SubDiagonalOp op = createSubDiagonalOp(numQb);
+        
+        // ensure elems are created and initialised to 0
+        REQUIRE( areEqual(toQMatrix(op), getZeroMatrix(1<<numQb)) );
+        
+        destroySubDiagonalOp(op);
+    }
+    SECTION( "input validation" ) {
+        
+        SECTION( "number of qubits" ) {
+            
+            int numQb = GENERATE( -1, 0 );
+            REQUIRE_THROWS_WITH( createSubDiagonalOp(numQb), Contains("Invalid number of qubits") );
+            
+            numQb = 100;
+            REQUIRE_THROWS_WITH( createSubDiagonalOp(numQb), Contains("Too many qubits") );
         }
     }
 }
@@ -749,6 +803,18 @@ TEST_CASE( "destroyQureg", "[data_structures]" ) {
 
 
 
+/** @sa destroySubDiagonalOp
+ * @ingroup unittest 
+ * @author Tyson Jones 
+ */
+TEST_CASE( "destroySubDiagonalOp", "[data_structures]" ) {
+
+    /* there is no meaningful way to test this */
+    SUCCEED( );
+}
+
+
+
 /** @sa initComplexMatrixN
  * @ingroup unittest 
  * @author Tyson Jones 
@@ -779,8 +845,8 @@ TEST_CASE( "initDiagonalOp", "[data_structures]" ) {
         DiagonalOp op = createDiagonalOp(numQb, QUEST_ENV);
         
         long long int len = (1LL << numQb);
-        qreal reals[len];
-        qreal imags[len];
+        VLA(qreal, reals, len);
+        VLA(qreal, imags, len);
         long long int n;
         for (n=0; n<len; n++) {
             reals[n] = (qreal)    n;
@@ -942,8 +1008,8 @@ TEST_CASE( "initPauliHamil", "[data_structures]" ) {
             int numQb = 3;
             int numTerms = 2;
             int numCodes = numQb * numTerms;
-            qreal coeffs[numTerms];
-            enum pauliOpType codes[numCodes];
+            VLA(qreal, coeffs, numTerms);
+            VLA(pauliOpType, codes, numCodes);
             
             // make only one code invalid
             for (int i=0; i<numCodes; i++)
@@ -978,8 +1044,8 @@ TEST_CASE( "setDiagonalOpElems", "[data_structures]" ) {
     
         // make entire array on every node
         long long int len = (1LL << numQb);
-        qreal reals[len];
-        qreal imags[len];
+        VLA(qreal, reals, len);
+        VLA(qreal, imags, len);
         long long int n;
         for (n=0; n<len; n++) {
             reals[n] = (qreal)    n;
@@ -998,8 +1064,8 @@ TEST_CASE( "setDiagonalOpElems", "[data_structures]" ) {
     SECTION( "input validation" ) {
         
         long long int maxInd = (1LL << numQb);
-        qreal *reals;
-        qreal *imags;
+        qreal *reals = NULL;
+        qreal *imags = NULL;
         
         SECTION( "start index" ) {
             

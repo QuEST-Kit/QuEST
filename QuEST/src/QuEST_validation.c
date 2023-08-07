@@ -54,6 +54,7 @@ typedef enum {
     E_INVALID_NUM_CONTROLS,
     E_NON_UNITARY_MATRIX,
     E_NON_UNITARY_COMPLEX_PAIR,
+    E_NON_UNITARY_DIAGONAL_OP,
     E_ZERO_VECTOR,
     E_SYS_TOO_BIG_TO_PRINT,
     E_COLLAPSE_STATE_ZERO_PROB,
@@ -62,6 +63,7 @@ typedef enum {
     E_SECOND_ARG_MUST_BE_STATEVEC,
     E_MISMATCHING_QUREG_DIMENSIONS,
     E_MISMATCHING_QUREG_TYPES,
+    E_MISMATCHING_TARGETS_SUB_DIAGONAL_OP_SIZE,
     E_DEFINED_ONLY_FOR_STATEVECS,
     E_DEFINED_ONLY_FOR_DENSMATRS,
     E_INVALID_PROB,
@@ -85,6 +87,7 @@ typedef enum {
     E_DISTRIB_QUREG_TOO_SMALL,
     E_DISTRIB_DIAG_OP_TOO_SMALL,
     E_NUM_AMPS_EXCEED_TYPE,
+    E_NUM_DIAG_ELEMS_EXCEED_TYPE,
     E_INVALID_PAULI_HAMIL_PARAMS,
     E_INVALID_PAULI_HAMIL_FILE_PARAMS,
     E_CANNOT_PARSE_PAULI_HAMIL_FILE_COEFF,
@@ -144,6 +147,7 @@ static const char* errorMessages[] = {
     [E_INVALID_NUM_CONTROLS] = "Invalid number of control qubits. Must be >0 and <numQubits.",
     [E_NON_UNITARY_MATRIX] = "Matrix is not unitary.",
     [E_NON_UNITARY_COMPLEX_PAIR] = "Compact matrix formed by given complex numbers is not unitary.",
+    [E_NON_UNITARY_DIAGONAL_OP] = "Diagonal operator is not unitary.",
     [E_ZERO_VECTOR] = "Invalid axis vector. Must be non-zero.",
     [E_SYS_TOO_BIG_TO_PRINT] = "Invalid system size. Cannot print output for systems greater than 5 qubits.",
     [E_COLLAPSE_STATE_ZERO_PROB] = "Can't collapse to state with zero probability.",
@@ -175,12 +179,14 @@ static const char* errorMessages[] = {
     [E_DISTRIB_QUREG_TOO_SMALL] = "Too few qubits. The created qureg must have at least one amplitude per node used in distributed simulation.",
     [E_DISTRIB_DIAG_OP_TOO_SMALL] = "Too few qubits. The created DiagonalOp must contain at least one element per node used in distributed simulation.",
     [E_NUM_AMPS_EXCEED_TYPE] = "Too many qubits (max of log2(SIZE_MAX)). Cannot store the number of amplitudes per-node in the size_t type.",
+    [E_NUM_DIAG_ELEMS_EXCEED_TYPE] = "Too many qubits (max of log2(SIZE_MAX)). Cannot store the number of elements in the diagonal operator.",
     [E_INVALID_PAULI_HAMIL_PARAMS] = "The number of qubits and terms in the PauliHamil must be strictly positive.",
     [E_INVALID_PAULI_HAMIL_FILE_PARAMS] = "The number of qubits and terms in the PauliHamil file (%s) must be strictly positive.",
     [E_CANNOT_PARSE_PAULI_HAMIL_FILE_COEFF] = "Failed to parse the next expected term coefficient in PauliHamil file (%s).",
     [E_CANNOT_PARSE_PAULI_HAMIL_FILE_PAULI] = "Failed to parse the next expected Pauli code in PauliHamil file (%s).",
     [E_INVALID_PAULI_HAMIL_FILE_PAULI_CODE] = "The PauliHamil file (%s) contained an invalid pauli code (%d). Codes must be 0 (or PAULI_I), 1 (PAULI_X), 2 (PAULI_Y) or 3 (PAULI_Z) to indicate the identity, X, Y and Z operators respectively.",
     [E_MISMATCHING_PAULI_HAMIL_QUREG_NUM_QUBITS] = "The PauliHamil must act on the same number of qubits as exist in the Qureg.",
+    [E_MISMATCHING_TARGETS_SUB_DIAGONAL_OP_SIZE] = "The given SubDiagonalOp has an incompatible dimension with the given number of target qubits.",
     [E_INVALID_TROTTER_ORDER] = "The Trotterisation order must be 1, or an even number (for higher-order Suzuki symmetrized expansions).",
     [E_INVALID_TROTTER_REPS] = "The number of Trotter repetitions must be >=1.",
     [E_MISMATCHING_QUREG_DIAGONAL_OP_SIZE] = "The qureg must represent an equal number of qubits as that in the applied diagonal operator.",
@@ -192,15 +198,15 @@ static const char* errorMessages[] = {
     [E_INVALID_NUM_PHASE_FUNC_OVERRIDES] = "Invalid number of phase function overrides specified. Must be >=0, and for single-variable phase functions, <=2^numQubits (the maximum unique binary values of the sub-register). Note that uniqueness of overriding indices is not checked.",
     [E_INVALID_PHASE_FUNC_OVERRIDE_UNSIGNED_INDEX] = "Invalid phase function override index, in the UNSIGNED encoding. Must be >=0, and <= the maximum index possible of the corresponding qubit subregister (2^numQubits-1).",
     [E_INVALID_PHASE_FUNC_OVERRIDE_TWOS_COMPLEMENT_INDEX] = "Invalid phase function override index, in the TWOS_COMPLEMENT encoding. Must be between (inclusive) -2^(N-1) and +2^(N-1)-1, where N is the number of qubits (including the sign qubit).",
-    [E_INVALID_PHASE_FUNC_NAME] = "Invalid named phase function, which must be one of {NORM, SCALED_NORM, INVERSE_NORM, SCALED_INVERSE_NORM, PRODUCT, SCALED_PRODUCT, INVERSE_PRODUCT, SCALED_INVERSE_PRODUCT, DISTANCE, SCALED_DISTANCE, INVERSE_DISTANCE, SCALED_INVERSE_DISTANCE}.",
-    [E_INVALID_NUM_NAMED_PHASE_FUNC_PARAMS] = "Invalid number of parameters passed for the given named phase function. {NORM, PRODUCT, DISTANCE} accept 0 parameters, {INVERSE_NORM, INVERSE_PRODUCT, INVERSE_DISTANCE} accept 1 parameter (the phase at the divergence), {SCALED_NORM, SCALED_INVERSE_NORM, SCALED_PRODUCT} accept 1 parameter (the scaling coefficient), {SCALED_INVERSE_PRODUCT, SCALED_DISTANCE, SCALED_INVERSE_DISTANCE} accept 2 parameters (the coefficient then divergence phase), SCALED_INVERSE_SHIFTED_NORM accepts 2 + (number of sub-registers) parameters (the coefficient, then the divergence phase, followed by the offset for each sub-register), SCALED_INVERSE_SHIFTED_DISTANCE accepts 2 + (number of sub-registers) / 2 parameters (the coefficient, then the divergence phase, followed by the offset for each pair of sub-registers).",
+    [E_INVALID_PHASE_FUNC_NAME] = "Invalid named phase function, which must be one of {NORM, SCALED_NORM, INVERSE_NORM, SCALED_INVERSE_NORM, SCALED_INVERSE_SHIFTED_NORM, PRODUCT, SCALED_PRODUCT, INVERSE_PRODUCT, SCALED_INVERSE_PRODUCT, DISTANCE, SCALED_DISTANCE, INVERSE_DISTANCE, SCALED_INVERSE_DISTANCE, SCALED_INVERSE_SHIFTED_DISTANCE, SCALED_INVERSE_SHIFTED_WEIGHTED_DISTANCE}.",
+    [E_INVALID_NUM_NAMED_PHASE_FUNC_PARAMS] = "Invalid number of parameters passed for the given named phase function. {NORM, PRODUCT, DISTANCE} accept 0 parameters, {INVERSE_NORM, INVERSE_PRODUCT, INVERSE_DISTANCE} accept 1 parameter (the phase at the divergence), {SCALED_NORM, SCALED_INVERSE_NORM, SCALED_PRODUCT} accept 1 parameter (the scaling coefficient), {SCALED_INVERSE_PRODUCT, SCALED_DISTANCE, SCALED_INVERSE_DISTANCE} accept 2 parameters (the coefficient then divergence phase), SCALED_INVERSE_SHIFTED_NORM accepts 2 + (number of sub-registers) parameters (the coefficient, then the divergence phase, followed by the offset for each sub-register), SCALED_INVERSE_SHIFTED_DISTANCE accepts 2 + (number of sub-registers) / 2 parameters (the coefficient, then the divergence phase, followed by the offset for each pair of sub-registers), SCALED_INVERSE_SHIFTED_WEIGHTED_DISTANCE accepts 2 + (number of sub-registers) parameters (the coefficient, then the divergence phase, followed by the factor and offset for each pair of sub-registers).",
     [E_INVALID_BIT_ENCODING] = "Invalid bit encoding. Must be one of {UNSIGNED, TWOS_COMPLEMENT}.",
     [E_INVALID_NUM_QUBITS_TWOS_COMPLEMENT] = "A sub-register contained too few qubits to employ TWOS_COMPLEMENT encoding. Must use >1 qubits (allocating one for the sign).",
     [E_NEGATIVE_EXPONENT_WITHOUT_ZERO_OVERRIDE] = "The phase function contained a negative exponent which would diverge at zero, but the zero index was not overriden.",
     [E_FRACTIONAL_EXPONENT_WITHOUT_NEG_OVERRIDE] = "The phase function contained a fractional exponent, which in TWOS_COMPLEMENT encoding, requires all negative indices are overriden. However, one or more negative indices were not overriden.",
     [E_NEGATIVE_EXPONENT_MULTI_VAR] = "The phase function contained an illegal negative exponent. One must instead call applyPhaseFuncOverrides() once for each register, so that the zero index of each register is overriden, independent of the indices of all other registers.",
     [E_FRACTIONAL_EXPONENT_MULTI_VAR] = "The phase function contained a fractional exponent, which is illegal in TWOS_COMPLEMENT encoding, since it cannot be (efficiently) checked that all negative indices were overriden. One must instead call applyPhaseFuncOverrides() once for each register, so that each register's negative indices can be overriden, independent of the indices of all other registers.",
-    [E_INVALID_NUM_REGS_DISTANCE_PHASE_FUNC] = "Phase functions DISTANCE, INVERSE_DISTANCE, SCALED_DISTANCE and SCALED_INVERSE_DISTANCE require a strictly even number of sub-registers.",
+    [E_INVALID_NUM_REGS_DISTANCE_PHASE_FUNC] = "Phase functions DISTANCE, INVERSE_DISTANCE, SCALED_DISTANCE, SCALED_INVERSE_DISTANCE, SCALED_INVERSE_SHIFTED_DISTANCE and SCALED_INVERSE_SHIFTED_WEIGHTED_DISTANCE require a strictly even number of sub-registers.",
     [E_NOT_ENOUGH_ADDRESSABLE_MEMORY] = "Could not allocate memory. Requested more memory than system can address.",
     [E_QUREG_NOT_ALLOCATED] = "Could not allocate memory for Qureg. Possibly insufficient memory.",
     [E_QUREG_NOT_ALLOCATED_ON_GPU] = "Could not allocate memory for Qureg on GPU. Possibly insufficient memory.",
@@ -388,6 +394,27 @@ void validateNumQubitsInDiagOp(int numQubits, int numRanks, const char* caller) 
     // must be at least one amplitude per node
     long unsigned int numAmps = (1UL<<numQubits);
     QuESTAssert(numAmps >= numRanks, E_DISTRIB_DIAG_OP_TOO_SMALL, caller);
+}
+
+void validateNumQubitsInSubDiagOp(int numQubits, const char* caller) {
+    QuESTAssert(numQubits>0, E_INVALID_NUM_CREATE_QUBITS, caller);
+    
+    unsigned int maxQubits = calcLog2(SIZE_MAX);
+    QuESTAssert( numQubits <= maxQubits, E_NUM_DIAG_ELEMS_EXCEED_TYPE, caller);
+}
+
+void validateUnitarySubDiagOp(SubDiagonalOp op, const char* caller) {
+    long long int numElems = 1LL << op.numQubits;
+    
+    for (long long int i=0; i<numElems; i++) {
+        qreal mag = op.real[i]*op.real[i] + op.imag[i]*op.imag[i];
+        QuESTAssert(absReal(1 - mag) < REAL_EPS, E_NON_UNITARY_DIAGONAL_OP, caller);
+    }
+}
+
+void validateSubDiagOpTargets(Qureg qureg, int* qubits, int numQubits, SubDiagonalOp op, const char* caller) {
+    QuESTAssert(numQubits == op.numQubits, E_MISMATCHING_TARGETS_SUB_DIAGONAL_OP_SIZE, caller);
+    validateMultiTargets(qureg, qubits, numQubits, caller);
 }
 
 void validateStateIndex(Qureg qureg, long long int stateInd, const char* caller) {
@@ -957,8 +984,17 @@ void validatePhaseFuncName(enum phaseFunc funcCode, int numRegs, int numParams, 
         funcCode == INVERSE_DISTANCE ||
         funcCode == SCALED_DISTANCE ||
         funcCode == SCALED_INVERSE_DISTANCE ||
-        funcCode == SCALED_INVERSE_SHIFTED_DISTANCE,
+        funcCode == SCALED_INVERSE_SHIFTED_DISTANCE ||
+        funcCode == SCALED_INVERSE_SHIFTED_WEIGHTED_DISTANCE,
             E_INVALID_PHASE_FUNC_NAME, caller);
+
+    if (funcCode == DISTANCE ||
+        funcCode == INVERSE_DISTANCE ||
+        funcCode == SCALED_DISTANCE ||
+        funcCode == SCALED_INVERSE_DISTANCE ||
+        funcCode == SCALED_INVERSE_SHIFTED_DISTANCE ||
+        funcCode == SCALED_INVERSE_SHIFTED_WEIGHTED_DISTANCE)
+            QuESTAssert(numRegs%2 == 0, E_INVALID_NUM_REGS_DISTANCE_PHASE_FUNC, caller);
 
     if (funcCode == NORM || 
         funcCode == PRODUCT ||
@@ -986,12 +1022,8 @@ void validatePhaseFuncName(enum phaseFunc funcCode, int numRegs, int numParams, 
     if (funcCode == SCALED_INVERSE_SHIFTED_DISTANCE)
         QuESTAssert(numParams == 2 + numRegs / 2, E_INVALID_NUM_NAMED_PHASE_FUNC_PARAMS, caller);
 
-    if (funcCode == DISTANCE ||
-        funcCode == INVERSE_DISTANCE ||
-        funcCode == SCALED_DISTANCE ||
-        funcCode == SCALED_INVERSE_DISTANCE ||
-        funcCode == SCALED_INVERSE_SHIFTED_DISTANCE)
-            QuESTAssert(numRegs%2 == 0, E_INVALID_NUM_REGS_DISTANCE_PHASE_FUNC, caller);
+    if (funcCode == SCALED_INVERSE_SHIFTED_WEIGHTED_DISTANCE)
+        QuESTAssert(numParams == 2 + 2 * (numRegs / 2), E_INVALID_NUM_NAMED_PHASE_FUNC_PARAMS, caller);
 }
 
 void validateBitEncoding(int numQubits, enum bitEncoding encoding, const char* caller) {

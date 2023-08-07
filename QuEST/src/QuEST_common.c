@@ -22,7 +22,7 @@
 # include "QuEST_qasm.h"
 # include "mt19937ar.h"
 
-#if defined(_WIN32) && ! defined(__MINGW32__)
+#if (defined(_WIN32) || defined(_WIN64)) && ! defined(__MINGW32__)
   #include <Windows.h>
   #include <io.h>
   #include <process.h>
@@ -196,7 +196,7 @@ void getQuESTDefaultSeedKey(unsigned long int *key){
     // init MT random number generator with two keys -- time and pid
     // for the MPI version, it is ok that all procs will get the same seed as random numbers will only be 
     // used by the master process
-#if defined(_WIN32) && ! defined(__MINGW32__)
+#if (defined(_WIN32) || defined(_WIN64)) && ! defined(__MINGW32__)
   
     unsigned long int pid = (unsigned long int) _getpid();
     unsigned long int msecs = (unsigned long int) GetTickCount64();
@@ -645,6 +645,7 @@ void densmatr_mixKrausMap(Qureg qureg, int target, ComplexMatrix2 *ops, int numO
 }
 
 #ifndef _WIN32
+#ifndef _WIN64
 ComplexMatrixN bindArraysToStackComplexMatrixN(
     int numQubits, qreal re[][1<<numQubits], qreal im[][1<<numQubits], 
     qreal** reStorage, qreal** imStorage
@@ -674,23 +675,23 @@ ComplexMatrixN bindArraysToStackComplexMatrixN(
     qreal imArr_[1<<(numQubits)][1<<(numQubits)]; \
     macro_initialiseStackComplexMatrixN(matrix, (numQubits), reArr_, imArr_);
 #endif
+#endif
 
 void densmatr_mixTwoQubitKrausMap(Qureg qureg, int target1, int target2, ComplexMatrix4 *ops, int numOps) {
     
-  // if NOT on Windows, allocate ComplexN on stack
-  #ifndef _WIN32
-      ComplexMatrixN superOp;
-      macro_allocStackComplexMatrixN(superOp, 4);
-      populateKrausSuperOperator4(&superOp, ops, numOps);
-      densmatr_applyTwoQubitKrausSuperoperator(qureg, target1, target2, superOp);
-
-  // but on Windows, we MUST allocated dynamically
-  #else
+  // On Windows, we must allocated superoperators dynamically
+  #if defined(_WIN32) || defined(_WIN64)
       ComplexMatrixN superOp = createComplexMatrixN(4);
       populateKrausSuperOperator4(&superOp, ops, numOps);
       densmatr_applyTwoQubitKrausSuperoperator(qureg, target1, target2, superOp);
       destroyComplexMatrixN(superOp);
 
+  // but otherwise, we can keep it on the stack
+  #else
+      ComplexMatrixN superOp;
+      macro_allocStackComplexMatrixN(superOp, 4);
+      populateKrausSuperOperator4(&superOp, ops, numOps);
+      densmatr_applyTwoQubitKrausSuperoperator(qureg, target1, target2, superOp);
   #endif
 }
 
@@ -714,7 +715,7 @@ void densmatr_mixMultiQubitKrausMap(Qureg qureg, int* targets, int numTargets, C
      */
      
      // if NOT on Windows, allocate ComplexN on stack depending on size
-     #ifndef _WIN32
+     #if (! defined(_WIN32)) && (! defined (_WIN64))
          if (numTargets < 4) {
              // everything must live in 'if' since this macro declares local vars
              macro_allocStackComplexMatrixN(superOp, 2*numTargets);
