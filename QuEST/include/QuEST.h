@@ -4540,8 +4540,12 @@ void multiRotatePauli(Qureg qureg, int* targetQubits, enum pauliOpType* targetPa
                 \draw (-2.5,2) -- (-1.5, 2);
                 \draw (1.5, 2) -- (2.5, 2);
                 \draw (-1.5,-1)--(-1.5,3)--(1.5,3)--(1.5,-1);
-                \node[draw=none] at (0, 1) {$e^{-i\frac{\theta}{2}Z^{\otimes}}$};
                 \node[draw=none] at (0, -1) {$\vdots$};
+
+                % below is broken in Tikzjax rendering...
+                %    \node[draw=none] at (0, 1) {$e^{-i\frac{\theta}{2}Z^{\otimes}}$};
+                % so we sadly replace it with:
+                \node[draw=none] at (0, 1) {$\exp(\dots)$};
                 
                 \end{tikzpicture}
     </script>
@@ -4615,9 +4619,14 @@ void multiControlledMultiRotateZ(Qureg qureg, int* controlQubits, int numControl
                 \draw (-2.5,2) -- (-1.5, 2);
                 \draw (1.5, 2) -- (2.5, 2);
                 \draw (-1.5,-1)--(-1.5,3)--(1.5,3)--(1.5,-1);
-                \node[draw=none] at (0, 1) {$e^{-i\frac{\theta}{2} \bigotimes\limits_j \hat{\sigma}_j }$};
+
                 \node[draw=none] at (0, -1) {$\vdots$};
                 
+                % below is broken in Tikzjax rendering
+                %    \node[draw=none] at (0, 1) {$e^{-i\frac{\theta}{2} \bigotimes\limits_j \hat{\sigma}_j}$};
+                % so we sadly replace it with:
+                \node[draw=none] at (0, 1) {$\exp(\dots)$};
+
                 \end{tikzpicture}
     </script>
     </center>
