@@ -2,6 +2,8 @@ name: doc
 
 permissions:
   contents: write
+  pages: write
+  id-token: write
 
 on:
   # regenerate when master branch is updated
@@ -22,7 +24,7 @@ jobs:
       - name: obtain copy of repository
         uses: actions/checkout@v1
 
-      - name: run doxygen to generate doc, outputting inside /html
+      - name: run doxygen to generate doc, outputting to Doxygen_doc/html
         uses: mattnotmitt/doxygen-action@v1.9.5
         with:
           doxyfile-path: doxyconfig/config
@@ -31,4 +33,4 @@ jobs:
         uses: peaceiris/actions-gh-pages@v3
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: Doxygen_doc/html
+          publish_dir: ./Doxygen_doc/html
