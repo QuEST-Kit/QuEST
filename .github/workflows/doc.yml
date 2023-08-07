@@ -26,7 +26,7 @@ jobs:
         uses: mattnotmitt/doxygen-action@v1.9.5
         with:
           working-directory: ./doxyconfig
-          doxyfile-path: ./doxyconfig/config
+          doxyfile-path: config
           enable-latex: true
 
       - name: deploy new doc to github pages
