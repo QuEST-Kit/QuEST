@@ -459,13 +459,20 @@ TEST_CASE( "setDensityAmps", "[state_initialisations]" ) {
         
         SECTION( "density-matrix" ) {
             
-            // all valid number of amplitudes and offsets
+            // try all valid number of amplitudes and offsets
             int startRow = GENERATE_COPY( range(0,maxInd) );
             int startCol = GENERATE_COPY( range(0,maxInd) );
             
+            // determine the max number of amps that can be passed from the given start indices
             int numPriorAmps = startRow + startCol*(1 << matr.numQubitsRepresented);
             int maxNumAmps = matr.numAmpsTotal - numPriorAmps;
-            int numAmps = GENERATE_COPY( range(0,maxNumAmps) ); // upper-bound allows all amps specified
+
+            // previously, we tried all possible number of amps, like so:
+            //      int numAmps = GENERATE_COPY( range(0,maxNumAmps) ); // upper-bound allows all amps specified
+            // but this is too many and causes a timeout on Ubuntu. 
+            // So we instead randomly choose the number of amps, and repeat 10 times.
+            int numAmps = getRandomInt(0, maxNumAmps);
+            GENERATE_COPY( range(0,10) );
             
             // generate random amplitudes
             for (int i=0; i<numAmps; i++) {

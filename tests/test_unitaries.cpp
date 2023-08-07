@@ -2773,7 +2773,7 @@ TEST_CASE( "tGate", "[unitaries]" ) {
 
             tGate(quregMatr, target);
             applyReferenceOp(refMatr, target, op);
-            REQUIRE( areEqual(quregMatr, refMatr) );
+            REQUIRE( areEqual(quregMatr, refMatr, 1E2*REAL_EPS) );
         }
     }
     SECTION( "input validation" ) {

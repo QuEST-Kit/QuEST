@@ -3961,7 +3961,12 @@ namespace Generators {
     class SingleValueGenerator final : public IGenerator<T> {
         T m_value;
     public:
-        SingleValueGenerator(T&& value) : m_value(std::move(value)) {}
+        SingleValueGenerator(T const& value) :
+            m_value(value)
+        {}
+        SingleValueGenerator(T&& value) : 
+            m_value(std::move(value))
+        {}
 
         T const& get() const override {
             return m_value;
@@ -4005,9 +4010,11 @@ namespace Generators {
         }
     };
 
-    template <typename T>
-    GeneratorWrapper<T> value(T&& value) {
-        return GeneratorWrapper<T>(pf::make_unique<SingleValueGenerator<T>>(std::forward<T>(value)));
+    template <typename T, typename DecayedT = std::decay_t<T>>
+    GeneratorWrapper<DecayedT> value( T&& value ) {
+        return GeneratorWrapper<DecayedT>(
+            pf::make_unique<SingleValueGenerator<DecayedT>>(
+                std::forward<T>( value ) ) );
     }
     template <typename T>
     GeneratorWrapper<T> values(std::initializer_list<T> values) {
@@ -4019,27 +4026,36 @@ namespace Generators {
         std::vector<GeneratorWrapper<T>> m_generators;
         size_t m_current = 0;
 
-        void populate(GeneratorWrapper<T>&& generator) {
-            m_generators.emplace_back(std::move(generator));
+        void add_generator( GeneratorWrapper<T>&& generator ) {
+            m_generators.emplace_back( std::move( generator ) );
         }
-        void populate(T&& val) {
-            m_generators.emplace_back(value(std::forward<T>(val)));
+        void add_generator( T const& val ) {
+            m_generators.emplace_back( value( val ) );
         }
-        template<typename U>
-        void populate(U&& val) {
-            populate(T(std::forward<U>(val)));
+        void add_generator( T&& val ) {
+            m_generators.emplace_back( value( std::move( val ) ) );
         }
-        template<typename U, typename... Gs>
-        void populate(U&& valueOrGenerator, Gs &&... moreGenerators) {
-            populate(std::forward<U>(valueOrGenerator));
-            populate(std::forward<Gs>(moreGenerators)...);
+        template <typename U>
+        std::enable_if_t<!std::is_same<std::decay_t<U>, T>::value>
+        add_generator( U&& val ) {
+            add_generator( T( std::forward<U>( val ) ) );
+        }
+
+        template <typename U> void add_generators( U&& valueOrGenerator ) {
+            add_generator( std::forward<U>( valueOrGenerator ) );
+        }
+
+        template <typename U, typename... Gs>
+        void add_generators( U&& valueOrGenerator, Gs&&... moreGenerators ) {
+            add_generator( std::forward<U>( valueOrGenerator ) );
+            add_generators( std::forward<Gs>( moreGenerators )... );
         }
 
     public:
         template <typename... Gs>
         Generators(Gs &&... moreGenerators) {
             m_generators.reserve(sizeof...(Gs));
-            populate(std::forward<Gs>(moreGenerators)...);
+            add_generators(std::forward<Gs>(moreGenerators)...);
         }
 
         T const& get() const override {
@@ -4059,7 +4075,8 @@ namespace Generators {
     };
 
     template<typename... Ts>
-    GeneratorWrapper<std::tuple<Ts...>> table( std::initializer_list<std::tuple<typename std::decay<Ts>::type...>> tuples ) {
+    GeneratorWrapper<std::tuple<std::decay_t<Ts>...>>
+    table( std::initializer_list<std::tuple<std::decay_t<Ts>...>> tuples ) {
         return values<std::tuple<Ts...>>( tuples );
     }
 
@@ -4076,7 +4093,7 @@ namespace Generators {
         return Generators<T>(std::move(generator));
     }
     template<typename T, typename... Gs>
-    auto makeGenerators( T&& val, Gs &&... moreGenerators ) -> Generators<T> {
+    auto makeGenerators( T&& val, Gs &&... moreGenerators ) -> Generators<std::decay_t<T>> {
         return makeGenerators( value( std::forward<T>( val ) ), std::forward<Gs>( moreGenerators )... );
     }
     template<typename T, typename U, typename... Gs>

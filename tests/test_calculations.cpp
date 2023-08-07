@@ -1428,6 +1428,10 @@ TEST_CASE( "getNumQubits", "[calculations]" ) {
         }
         SECTION( "density-matrix" ) {
             
+            // density matrices use square as much memory; we must be careful not to seg-fault!
+            if (2*numQb > 25)
+                numQb = 13; // max size
+
             Qureg mat = createDensityQureg(numQb, QUEST_ENV);
             REQUIRE( getNumQubits(mat) == numQb );
             destroyQureg(mat, QUEST_ENV);

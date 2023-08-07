@@ -1011,6 +1011,14 @@ void setRandomPauliSum(PauliHamil hamil);
  */
 void setRandomDiagPauliHamil(PauliHamil hamil);
 
+/** Populates \p targs with a random selection of \p numTargs elements from [0,\p numQb-1].
+ * List \p targs does not need to be initialised and its elements are overwritten.
+ * 
+ * @ingroup testutilities 
+ * @author Tyson Jones
+ */
+void setRandomTargets(int* targs, int numTargs, int numQb);
+
 /** Returns the two's complement signed encoding of the unsigned number decimal, 
  * which must be a number between 0 and 2^numBits (exclusive). The returned number 
  * lies in [-2^(numBits-1), 2^(numBits-1)-1]

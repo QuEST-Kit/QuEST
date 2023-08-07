@@ -33,5 +33,5 @@ jobs:
         working-directory: build_dir
 
       - name: cmake test
-        run: ctest -j2 --output-on-failure -E mixMultiQubitKrausMap
+        run: ctest -j2 --output-on-failure
         working-directory: build_dir

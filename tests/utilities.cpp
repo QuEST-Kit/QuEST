@@ -386,6 +386,7 @@ QMatrix getRandomQMatrix(int dim) {
             // generate 2 normally-distributed random numbers via Box-Muller
             qreal a = rand()/(qreal) RAND_MAX;
             qreal b = rand()/(qreal) RAND_MAX;
+            if (a == 0) a = REAL_EPS; // prevent rand()=0 creation of NaN
             qreal r1 = sqrt(-2 * log(a)) * cos(2 * 3.14159265 * b);
             qreal r2 = sqrt(-2 * log(a)) * sin(2 * 3.14159265 * b);
             
@@ -961,12 +962,15 @@ bool areEqual(Qureg qureg, QMatrix matr, qreal precision) {
         
         // DEBUG
         if (!ampsAgree) {
-            
-            // debug
             char buff[200];
-            sprintf(buff, "[msg from utilities.cpp] node %d has a disagreement at (global) index %lld of (%s) + i(%s)\n",
-                qureg.chunkId, globalInd, REAL_STRING_FORMAT, REAL_STRING_FORMAT);
-            printf(buff, realDif, imagDif);
+            sprintf(buff, "[msg from utilities.cpp] node %d has a disagreement at %lld of (%s) + i(%s):\n\t[qureg] %s + i(%s) VS [ref] %s + i(%s)\n",
+                qureg.chunkId, startInd+i,
+                REAL_STRING_FORMAT, REAL_STRING_FORMAT, REAL_STRING_FORMAT, 
+                REAL_STRING_FORMAT, REAL_STRING_FORMAT, REAL_STRING_FORMAT);
+            printf(buff,
+                realDif, imagDif,
+                qureg.stateVec.real[i], qureg.stateVec.imag[i],
+                real(matr[row][col]), imag(matr[row][col]));
         }
 
         // break loop as soon as amplitudes disagree
@@ -1109,7 +1113,7 @@ QMatrix toQMatrix(Qureg qureg) {
 #endif
         
     // copy full state vector into a QVector
-    long long int dim = (1 << qureg.numQubitsRepresented);
+    long long int dim = (1LL << qureg.numQubitsRepresented);
     QMatrix matr = getZeroMatrix(dim);
     for (long long int n=0; n<qureg.numAmpsTotal; n++)
         matr[n%dim][n/dim] = qcomp(fullRe[n], fullIm[n]);
@@ -1232,7 +1236,7 @@ void toQureg(Qureg qureg, QVector vec) {
 }
 void toQureg(Qureg qureg, QMatrix mat) {
     DEMAND( qureg.isDensityMatrix );
-    DEMAND( (1 << qureg.numQubitsRepresented) == (long long int) mat.size() );
+    DEMAND( (1LL << qureg.numQubitsRepresented) == (long long int) mat.size() );
     
     syncQuESTEnv(QUEST_ENV);
     
@@ -1267,6 +1271,24 @@ void setRandomDiagPauliHamil(PauliHamil hamil) {
             else
                 hamil.pauliCodes[i++] = PAULI_I;
     }
+}
+
+void setRandomTargets(int* targs, int numTargs, int numQb) {
+    DEMAND( numQb >= 1 );
+    DEMAND( numTargs >= 1);
+    DEMAND( numTargs <= numQb );
+
+    // create an ordered list of all possible qubits
+    VLA(int, allQb, numQb);
+    for (int q=0; q<numQb; q++)
+        allQb[q] = q;
+
+    // shuffle all qubits
+    std::random_shuffle(&allQb[0], &allQb[numQb]);
+
+    // select numTargs of all qubits
+    for (int i=0; i<numTargs; i++)
+        targs[i] = allQb[i];
 }
 
 QMatrix toQMatrix(qreal* coeffs, pauliOpType* paulis, int numQubits, int numTerms) {
