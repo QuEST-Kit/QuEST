@@ -1371,7 +1371,9 @@ void destroySubDiagonalOp(SubDiagonalOp op);
  * \f]
  * upon density matrices \f$\rho\f$.
  *
- \f[
+ @htmlonly
+    <center>
+    <script type="text/tikz">
              \begin{tikzpicture}[scale=.5]
              \node[draw=none] at (-3.5, 1) {targets};
 
@@ -1384,7 +1386,9 @@ void destroySubDiagonalOp(SubDiagonalOp op);
              \node[draw=none] at (0, -1) {$\vdots$};
              
              \end{tikzpicture}
- \f]
+    </script>
+    </center>
+ @endhtmlonly
  *
  * > To relax unitarity, use applyGateSubDiagonalOp()
  *
@@ -1856,7 +1860,9 @@ void cloneQureg(Qureg targetQureg, Qureg copyQureg);
  * \end{pmatrix}
  * \f] 
  * with circuit diagram 
-    \f[
+ @htmlonly
+    <center>
+    <script type="text/tikz">
                 \begin{tikzpicture}[scale=.5]
                 \node[draw=none] at (-4, 0) {targetQubit};
 
@@ -1865,7 +1871,9 @@ void cloneQureg(Qureg targetQureg, Qureg copyQureg);
                 \draw (-1,-1)--(-1,1)--(1,1)--(1,-1)--cycle;
                 \node[draw=none] at (0, 0) {$R_\theta$};
                 \end{tikzpicture}
-    \f]
+    </script>
+    </center>
+ @endhtmlonly
  * 
  * @see
  * - controlledPhaseShift()
@@ -1894,7 +1902,9 @@ void phaseShift(Qureg qureg, int targetQubit, qreal angle);
  * \f] 
  * on \p idQubit1 and \p idQubit2.
  *     
-    \f[
+ @htmlonly
+    <center>
+    <script type="text/tikz">
                 \begin{tikzpicture}[scale=.5]
                 \node[draw=none] at (-3.5, 2) {qubit1};
                 \node[draw=none] at (-3.5, 0) {qubit2};
@@ -1908,7 +1918,9 @@ void phaseShift(Qureg qureg, int targetQubit, qreal angle);
                 \draw (-1,-1)--(-1,1)--(1,1)--(1,-1)--cycle;
                 \node[draw=none] at (0, 0) {$R_\theta$};
                 \end{tikzpicture}
-    \f]
+    </script>
+    </center>
+ @endhtmlonly
  *
  * @see
  * - phaseShift()
@@ -1929,7 +1941,9 @@ void controlledPhaseShift(Qureg qureg, int idQubit1, int idQubit2, qreal angle);
 /** Introduce a phase factor \f$ \exp(i \theta) \f$ on state \f$ |1 \dots 1 \rangle \f$
  * of the passed qubits.
  *     
-   \f[
+ @htmlonly
+    <center>
+    <script type="text/tikz">
                 \begin{tikzpicture}[scale=.5]
                 \node[draw=none] at (-3.5, 2) {controls};
                 \node[draw=none] at (1, .7) {$\theta$};
@@ -1948,7 +1962,9 @@ void controlledPhaseShift(Qureg qureg, int idQubit1, int idQubit2, qreal angle);
                 \draw (-2,0) -- (2, 0);
                 \draw[fill=black] (0, 0) circle (.2);
                 \end{tikzpicture}
-   \f]
+    </script>
+    </center>
+ @endhtmlonly
  *
  * @see
  * - phaseShift()
@@ -1980,7 +1996,9 @@ void multiControlledPhaseShift(Qureg qureg, int *controlQubits, int numControlQu
  * \end{pmatrix}
  * \f]
  * with circuit diagram:
-    \f[
+ @htmlonly
+    <center>
+    <script type="text/tikz">
                 \begin{tikzpicture}[scale=.5]
                 \node[draw=none] at (-3.5, 2) {idQubit1};
                 \node[draw=none] at (-3.5, 0) {idQubit2};
@@ -1992,7 +2010,9 @@ void multiControlledPhaseShift(Qureg qureg, int *controlQubits, int numControlQu
                 \draw (-2,0) -- (2, 0);
                 \draw[fill=black] (0, 0) circle (.2);
                 \end{tikzpicture}
-    \f]
+    </script>
+    </center>
+ @endhtmlonly
  *
  * @see
  * - pauliZ()
@@ -2022,7 +2042,9 @@ void controlledPhaseFlip (Qureg qureg, int idQubit1, int idQubit2);
  * \f]
  * on the control qubits.
  *
- * \f[
+ @htmlonly
+    <center>
+    <script type="text/tikz">
                 \begin{tikzpicture}[scale=.5]
                 \node[draw=none] at (-3.5, 2) {controls};
                 
@@ -2040,7 +2062,9 @@ void controlledPhaseFlip (Qureg qureg, int idQubit1, int idQubit2);
                 \draw (-2,0) -- (2, 0);
                 \draw[fill=black] (0, 0) circle (.2);
                 \end{tikzpicture}
-   \f]
+    </script>
+    </center>
+ @endhtmlonly
  *
  * @ingroup unitary
  * @param[in,out] qureg object representing the set of all qubits
@@ -2063,7 +2087,9 @@ void multiControlledPhaseFlip(Qureg qureg, int *controlQubits, int numControlQub
  * \end{pmatrix}
  * \f]
  * with circuit diagram:
-    \f[
+ @htmlonly
+    <center>
+    <script type="text/tikz">
                 \begin{tikzpicture}[scale=.5]
                 \node[draw=none] at (-3.5, 0) {target};
 
@@ -2072,7 +2098,9 @@ void multiControlledPhaseFlip(Qureg qureg, int *controlQubits, int numControlQub
                 \draw (-1,-1)--(-1,1)--(1,1)--(1,-1)--cycle;
                 \node[draw=none] at (0, 0) {S};
                 \end{tikzpicture}
-    \f]
+    </script>
+    </center>
+ @endhtmlonly
  *
  * @see
  * - tGate()
@@ -2096,7 +2124,9 @@ void sGate(Qureg qureg, int targetQubit);
  * \end{pmatrix}
  * \f]
  * with circuit diagram:
-    \f[
+ @htmlonly
+    <center>
+    <script type="text/tikz">
                 \begin{tikzpicture}[scale=.5]
                 \node[draw=none] at (-3.5, 0) {target};
 
@@ -2105,7 +2135,9 @@ void sGate(Qureg qureg, int targetQubit);
                 \draw (-1,-1)--(-1,1)--(1,1)--(1,-1)--cycle;
                 \node[draw=none] at (0, 0) {T};
                 \end{tikzpicture}
-    \f]
+    </script>
+    </center>
+ @endhtmlonly
  *
  * @see
  * - sGate()
@@ -2469,7 +2501,9 @@ qreal calcTotalProb(Qureg qureg);
  * which is general up to a global phase factor.               
  * Valid \f$\alpha\f$, \f$\beta\f$ satisfy \f$|\alpha|^2 + |\beta|^2 = 1\f$. 
  *
-    \f[
+ @htmlonly
+    <center>
+    <script type="text/tikz">
                 \begin{tikzpicture}[scale=.5]
                 \node[draw=none] at (-3.5, 0) {target};
 
@@ -2478,7 +2512,9 @@ qreal calcTotalProb(Qureg qureg);
                 \draw (-1,-1)--(-1,1)--(1,1)--(1,-1)--cycle;
                 \node[draw=none] at (0, 0) {U};
                 \end{tikzpicture}
-    \f]
+    </script>
+    </center>
+ @endhtmlonly
  *
  * @see
  * - controlledCompactUnitary()
@@ -2502,7 +2538,9 @@ void compactUnitary(Qureg qureg, int targetQubit, Complex alpha, Complex beta);
 /** Apply a general single-qubit unitary (including a global phase factor).
  * The passed 2x2 ComplexMatrix must be unitary, otherwise an error is thrown.
  *
-    \f[
+ @htmlonly
+    <center>
+    <script type="text/tikz">
                 \begin{tikzpicture}[scale=.5]
                 \node[draw=none] at (-3.5, 0) {target};
 
@@ -2511,7 +2549,9 @@ void compactUnitary(Qureg qureg, int targetQubit, Complex alpha, Complex beta);
                 \draw (-1,-1)--(-1,1)--(1,1)--(1,-1)--cycle;
                 \node[draw=none] at (0, 0) {U};
                 \end{tikzpicture}
-    \f]
+    </script>
+    </center>
+ @endhtmlonly
  * 
  * If \p qureg is a state-vector, then the resulting state is \f$ u \, |\text{qureg}\rangle \f$.\n
  * If \p qureg is a density-matrix \f$ \rho \f$, then the resulting state is \f$ u \, \rho \, u^\dagger \f$.
@@ -2548,7 +2588,9 @@ void unitary(Qureg qureg, int targetQubit, ComplexMatrix2 u);
  * \end{pmatrix}
  * \f]
  * with circuit diagram:
-    \f[
+ @htmlonly
+    <center>
+    <script type="text/tikz">
                 \begin{tikzpicture}[scale=.5]
                 \node[draw=none] at (-3.5, 0) {rot};
 
@@ -2557,7 +2599,9 @@ void unitary(Qureg qureg, int targetQubit, ComplexMatrix2 u);
                 \draw (-1,-1)--(-1,1)--(1,1)--(1,-1)--cycle;
                 \node[draw=none] at (0, 0) {$R_x(\theta)$};
                 \end{tikzpicture}
-    \f]
+    </script>
+    </center>
+ @endhtmlonly
  *
  * @see
  * - controlledRotateX()
@@ -2587,7 +2631,9 @@ void rotateX(Qureg qureg, int rotQubit, qreal angle);
  * \end{pmatrix}
  * \f]            
  * with circuit diagram:
-    \f[
+ @htmlonly
+    <center>
+    <script type="text/tikz">
                 \begin{tikzpicture}[scale=.5]
                 \node[draw=none] at (-3.5, 0) {rot};
 
@@ -2596,7 +2642,9 @@ void rotateX(Qureg qureg, int rotQubit, qreal angle);
                 \draw (-1,-1)--(-1,1)--(1,1)--(1,-1)--cycle;
                 \node[draw=none] at (0, 0) {$R_y(\theta)$};
                 \end{tikzpicture}
-    \f]
+    </script>
+    </center>
+ @endhtmlonly
  *
  * @see
  * - controlledRotateY()
@@ -2626,7 +2674,9 @@ void rotateY(Qureg qureg, int rotQubit, qreal angle);
  * \end{pmatrix}
  * \f] 
  * with circuit diagram:
-    \f[
+ @htmlonly
+    <center>
+    <script type="text/tikz">
                 \begin{tikzpicture}[scale=.5]
                 \node[draw=none] at (-3.5, 0) {rot};
 
@@ -2635,7 +2685,9 @@ void rotateY(Qureg qureg, int rotQubit, qreal angle);
                 \draw (-1,-1)--(-1,1)--(1,1)--(1,-1)--cycle;
                 \node[draw=none] at (0, 0) {$R_z(\theta)$};
                 \end{tikzpicture}
-    \f]
+    </script>
+    </center>
+ @endhtmlonly
  * 
  * @see
  * - multiRotateZ()
@@ -2688,7 +2740,9 @@ void rotateAroundAxis(Qureg qureg, int rotQubit, qreal angle, Vector axis);
 /** Applies a controlled rotation by a given angle around the X-axis of the Bloch-sphere. 
  * The target qubit is rotated in states where the control qubit has value 1.
  *
-    \f[
+ @htmlonly
+    <center>
+    <script type="text/tikz">
                 \begin{tikzpicture}[scale=.5]
                 \node[draw=none] at (-3.5, 2) {control};
                 \node[draw=none] at (-3.5, 0) {target};
@@ -2702,7 +2756,9 @@ void rotateAroundAxis(Qureg qureg, int rotQubit, qreal angle, Vector axis);
                 \draw (-1,-1)--(-1,1)--(1,1)--(1,-1)--cycle;
                 \node[draw=none] at (0, 0) {$R_x(\theta)$};
                 \end{tikzpicture}
-    \f] 
+    </script>
+    </center>
+ @endhtmlonly
  *
  * @see
  * - rotateX()
@@ -2728,7 +2784,9 @@ void controlledRotateX(Qureg qureg, int controlQubit, int targetQubit, qreal ang
 /** Applies a controlled rotation by a given angle around the Y-axis of the Bloch-sphere. 
  * The target qubit is rotated in states where the control qubit has value 1.
  *
-    \f[
+ @htmlonly
+    <center>
+    <script type="text/tikz">
                 \begin{tikzpicture}[scale=.5]
                 \node[draw=none] at (-3.5, 2) {control};
                 \node[draw=none] at (-3.5, 0) {target};
@@ -2742,7 +2800,9 @@ void controlledRotateX(Qureg qureg, int controlQubit, int targetQubit, qreal ang
                 \draw (-1,-1)--(-1,1)--(1,1)--(1,-1)--cycle;
                 \node[draw=none] at (0, 0) {$R_y(\theta)$};
                 \end{tikzpicture}
-    \f] 
+    </script>
+    </center>
+ @endhtmlonly
  *
  * - rotateY()
  * - controlledRotateX()
@@ -2767,7 +2827,9 @@ void controlledRotateY(Qureg qureg, int controlQubit, int targetQubit, qreal ang
 /** Applies a controlled rotation by a given angle around the Z-axis of the Bloch-sphere. 
  * The target qubit is rotated in states where the control qubit has value 1.
  *
-    \f[
+ @htmlonly
+    <center>
+    <script type="text/tikz">
                 \begin{tikzpicture}[scale=.5]
                 \node[draw=none] at (-3.5, 2) {control};
                 \node[draw=none] at (-3.5, 0) {target};
@@ -2781,7 +2843,9 @@ void controlledRotateY(Qureg qureg, int controlQubit, int targetQubit, qreal ang
                 \draw (-1,-1)--(-1,1)--(1,1)--(1,-1)--cycle;
                 \node[draw=none] at (0, 0) {$R_z(\theta)$};
                 \end{tikzpicture}
-    \f] 
+    </script>
+    </center>
+ @endhtmlonly
  *
  * @see
  * - rotateZ()
@@ -2810,7 +2874,9 @@ void controlledRotateZ(Qureg qureg, int controlQubit, int targetQubit, qreal ang
  * For angle \f$\theta\f$ and axis vector \f$\vec{n}\f$, applies \f$R_{\hat{n}} = \exp \left(- i \frac{\theta}{2} \hat{n} \cdot \vec{\sigma} \right) \f$ to states where the target qubit is 1 
  * (\f$\vec{\sigma}\f$ is the vector of Pauli matrices).
  *
-    \f[
+ @htmlonly
+    <center>
+    <script type="text/tikz">
                 \begin{tikzpicture}[scale=.5]
                 \node[draw=none] at (-3.5, 2) {control};
                 \node[draw=none] at (-3.5, 0) {target};
@@ -2824,7 +2890,9 @@ void controlledRotateZ(Qureg qureg, int controlQubit, int targetQubit, qreal ang
                 \draw (-1,-1)--(-1,1)--(1,1)--(1,-1)--cycle;
                 \node[draw=none] at (0, 0) {$R_{\hat{n}}(\theta)$};
                 \end{tikzpicture}
-    \f]
+    </script>
+    </center>
+ @endhtmlonly
  *
  * @see 
  * - rotateAroundAxis()
@@ -2858,7 +2926,9 @@ void controlledRotateAroundAxis(Qureg qureg, int controlQubit, int targetQubit, 
  * Valid \f$\alpha\f$, \f$\beta\f$ satisfy \f$|\alpha|^2 + |\beta|^2 = 1\f$. 
  * The target unitary is general up to a global phase factor.         
  *
-    \f[
+ @htmlonly
+    <center>
+    <script type="text/tikz">
                 \begin{tikzpicture}[scale=.5]
                 \node[draw=none] at (-3.5, 2) {control};
                 \node[draw=none] at (-3.5, 0) {target};
@@ -2872,7 +2942,9 @@ void controlledRotateAroundAxis(Qureg qureg, int controlQubit, int targetQubit, 
                 \draw (-1,-1)--(-1,1)--(1,1)--(1,-1)--cycle;
                 \node[draw=none] at (0, 0) {$U_{\alpha, \beta}$};
                 \end{tikzpicture}
-    \f]
+    </script>
+    </center>
+ @endhtmlonly
  *
  * @see
  * - compactUnitary()
@@ -2908,7 +2980,9 @@ void controlledCompactUnitary(Qureg qureg, int controlQubit, int targetQubit, Co
  * \f]
  * on the control and target qubits.
  *      
-    \f[
+ @htmlonly
+    <center>
+    <script type="text/tikz">
                 \begin{tikzpicture}[scale=.5]
                 \node[draw=none] at (-3.5, 2) {control};
                 \node[draw=none] at (-3.5, 0) {target};
@@ -2922,7 +2996,9 @@ void controlledCompactUnitary(Qureg qureg, int controlQubit, int targetQubit, Co
                 \draw (-1,-1)--(-1,1)--(1,1)--(1,-1)--cycle;
                 \node[draw=none] at (0, 0) {U};
                 \end{tikzpicture}
-    \f]
+    </script>
+    </center>
+ @endhtmlonly
  *
  * @see
  * - ::ComplexMatrix2
@@ -2962,7 +3038,9 @@ void controlledUnitary(Qureg qureg, int controlQubit, int targetQubit, ComplexMa
  * on the control and target qubits.
  * The given 2x2 ComplexMatrix must be unitary, otherwise an error is thrown.
  *
-    \f[
+ @htmlonly
+    <center>
+    <script type="text/tikz">
                 \begin{tikzpicture}[scale=.5]
                 \node[draw=none] at (-3.5, 3) {controls};
                 \node[draw=none] at (-3.5, 0) {target};
@@ -2983,7 +3061,9 @@ void controlledUnitary(Qureg qureg, int controlQubit, int targetQubit, ComplexMa
                 \draw (-1,-1)--(-1,1)--(1,1)--(1,-1)--cycle;
                 \node[draw=none] at (0, 0) {U};
                 \end{tikzpicture}
-    \f]
+    </script>
+    </center>
+ @endhtmlonly
  *
  * @see 
  * - ::ComplexMatrix2
@@ -3019,7 +3099,9 @@ void multiControlledUnitary(Qureg qureg, int* controlQubits, int numControlQubit
  * \end{pmatrix}
  * \f]   
  * with circuit diagram:
-    \f[
+ @htmlonly
+    <center>
+    <script type="text/tikz">
                 \begin{tikzpicture}[scale=.5]
                 \node[draw=none] at (-3.5, 0) {target};
 
@@ -3027,7 +3109,9 @@ void multiControlledUnitary(Qureg qureg, int* controlQubits, int numControlQubit
                 \draw (0, 0) circle (.5);
                 \draw (0, .5) -- (0, -.5);
                 \end{tikzpicture}
-    \f]   
+    </script>
+    </center>
+ @endhtmlonly
  *
  * @see
  * - rotateX()
@@ -3056,7 +3140,9 @@ void pauliX(Qureg qureg, int targetQubit);
  * \end{pmatrix}
  * \f]  
  * with circuit diagram:
-    \f[
+ @htmlonly
+    <center>
+    <script type="text/tikz">
                 \begin{tikzpicture}[scale=.5]
                 \node[draw=none] at (-3.5, 0) {target};
 
@@ -3065,7 +3151,9 @@ void pauliX(Qureg qureg, int targetQubit);
                 \draw (-1,-1)--(-1,1)--(1,1)--(1,-1)--cycle;
                 \node[draw=none] at (0, 0) {$\sigma_y$};
                 \end{tikzpicture}
-    \f]      
+    </script>
+    </center>
+ @endhtmlonly  
  *
  * @see
  * - rotateY()
@@ -3091,7 +3179,9 @@ void pauliY(Qureg qureg, int targetQubit);
  * \end{pmatrix}
  * \f]   
  * with circuit diagram:
-    \f[
+ @htmlonly
+    <center>
+    <script type="text/tikz">
                 \begin{tikzpicture}[scale=.5]
                 \node[draw=none] at (-3.5, 0) {target};
 
@@ -3100,7 +3190,9 @@ void pauliY(Qureg qureg, int targetQubit);
                 \draw (-1,-1)--(-1,1)--(1,1)--(1,-1)--cycle;
                 \node[draw=none] at (0, 0) {$\sigma_z$};
                 \end{tikzpicture}
-    \f]     
+    </script>
+    </center>
+ @endhtmlonly 
  *
  * @see
  * - phaseShift()
@@ -3131,7 +3223,9 @@ void pauliZ(Qureg qureg, int targetQubit);
  * \end{pmatrix}
  * \f]  
  *
-    \f[
+ @htmlonly
+    <center>
+    <script type="text/tikz">
                 \begin{tikzpicture}[scale=.5]
                 \node[draw=none] at (-3.5, 0) {target};
 
@@ -3140,7 +3234,9 @@ void pauliZ(Qureg qureg, int targetQubit);
                 \draw (-1,-1)--(-1,1)--(1,1)--(1,-1)--cycle;
                 \node[draw=none] at (0, 0) {H};
                 \end{tikzpicture}
-    \f]  
+    </script>
+    </center>
+ @endhtmlonly
  *
  * @ingroup unitary
  * @param[in,out] qureg object representing the set of all qubits
@@ -3166,7 +3262,9 @@ void hadamard(Qureg qureg, int targetQubit);
  * \f]
  * on the control and target qubits.
  *
-    \f[
+ @htmlonly
+    <center>
+    <script type="text/tikz">
                 \begin{tikzpicture}[scale=.5]
                 \node[draw=none] at (-3.5, 2) {control};
                 \node[draw=none] at (-3.5, 0) {target};
@@ -3178,7 +3276,9 @@ void hadamard(Qureg qureg, int targetQubit);
                 \draw (-2,0) -- (2, 0);
                 \draw (0, 0) circle (.5);
                 \end{tikzpicture}
-    \f]  
+    </script>
+    </center>
+ @endhtmlonly
  *
  * @see
  * - multiControlledMultiQubitNot()
@@ -3220,7 +3320,9 @@ void controlledNot(Qureg qureg, int controlQubit, int targetQubit);
  * \end{pmatrix}
  * \f]
  * and circuit diagram:
-    \f[
+ @htmlonly
+    <center>
+    <script type="text/tikz">
                 \begin{tikzpicture}[scale=.5]
                 \node[draw=none] at (-3.5, 1) {targets};
                 \node[draw=none] at (-3.5, 5) {controls};
@@ -3244,7 +3346,9 @@ void controlledNot(Qureg qureg, int controlQubit, int targetQubit);
                 
                 \node[draw=none] at (0, -1.5) {$\vdots$};
                 \end{tikzpicture}
-    \f]
+    </script>
+    </center>
+ @endhtmlonly
  * > In distributed mode, this operation requires at most a single round of pair-wise 
  * > communication between nodes, and hence is as efficient as pauliX().
  *
@@ -3292,7 +3396,9 @@ void multiControlledMultiQubitNot(Qureg qureg, int* ctrls, int numCtrls, int* ta
  * \end{pmatrix}
  * \f]
  * and circuit diagram:
-    \f[
+ @htmlonly
+    <center>
+    <script type="text/tikz">
                 \begin{tikzpicture}[scale=.5]
                 \node[draw=none] at (-3.5, 1) {targets};
                 \draw (0, -1) -- (0, 2.4);
@@ -3305,7 +3411,9 @@ void multiControlledMultiQubitNot(Qureg qureg, int* ctrls, int numCtrls, int* ta
                 
                 \node[draw=none] at (0, -1.5) {$\vdots$};
                 \end{tikzpicture}
-    \f]
+    </script>
+    </center>
+ @endhtmlonly
  * > In distributed mode, this operation requires at most a single round of pair-wise 
  * > communication between nodes, and hence is as efficient as pauliX().
  *
@@ -3343,7 +3451,9 @@ void multiQubitNot(Qureg qureg, int* targs, int numTargs);
  * \f]
  * on the control and target qubits.
  *
-    \f[
+ @htmlonly
+    <center>
+    <script type="text/tikz">
                 \begin{tikzpicture}[scale=.5]
                 \node[draw=none] at (-3.5, 2) {control};
                 \node[draw=none] at (-3.5, 0) {target};
@@ -3357,7 +3467,9 @@ void multiQubitNot(Qureg qureg, int* targs, int numTargs);
                 \draw (-1,-1)--(-1,1)--(1,1)--(1,-1)--cycle;
                 \node[draw=none] at (0, 0) {Y};
                 \end{tikzpicture}
-    \f]
+    </script>
+    </center>
+ @endhtmlonly
  *
  * @ingroup unitary
  * @param[in,out] qureg object representing the set of all qubits
@@ -3418,20 +3530,20 @@ qreal calcProbOfOutcome(Qureg qureg, int measureQubit, int outcome);
  *   where \f$|\alpha_j|^2\f$ are the probabilities of the respective outcome states (interpreting
  *   \p qubits as ordered least to most significant)
  *   \f[
- *      |\dots\textbf{c\,b\,a}\rangle_i \; \; = \;\; |000\rangle,  \;\; |001\rangle \;\; |010\rangle \;\; |011\rangle, \;\; \dots
+ *      |\dots\textbf{c}\,\textbf{b}\,\textbf{a}\rangle_i \; \; = \;\; |000\rangle,  \;\; |001\rangle \;\; |010\rangle \;\; |011\rangle, \;\; \dots
  *   \f]
  *   understood in a state-vector \p qureg \f$|\psi\rangle\f$ as
  *   \f[
- *      |\psi\rangle = \sum\limits_i^{\text{numQubits}} \alpha_i \; |\dots\textbf{c\,b\,a}\rangle_i 
+ *      |\psi\rangle = \sum\limits_i^{\text{numQubits}} \alpha_i \; |\dots\textbf{c}\,\textbf{b}\,\textbf{a}\rangle_i 
  *        \; \otimes \; |\phi\rangle_i,
  *   \f]
  *   or in a density matrix \p qureg \f$\rho\f$ as
  *   \f[
  *      \begin{aligned}
- *      \rho &= \sum\limits_{i,j}^{\text{numQubits}} \; \beta_{ij} \; |\dots\textbf{c\,b\,a}\rangle_i\,\langle\dots\textbf{c\,b\,a}|_j 
+ *      \rho &= \sum\limits_{i,j}^{\text{numQubits}} \; \beta_{ij} \; |\dots\textbf{c}\,\textbf{b}\,\textbf{a}\rangle_i\,\langle\dots\textbf{c}\,\textbf{b}\,\textbf{a}|_j 
  *            \; \otimes \; \mu_{ij} \\
- *           &= \sum\limits_i^{\text{numQubits}} \; |\alpha_i|^2 \;  |\dots\textbf{c\,b\,a}\rangle\langle\dots\textbf{c\,b\,a}|_i  \;\; + \, 
- *            \sum\limits_{i \ne j}^{\text{numQubits}} \; \beta_{ij} \; |\dots\textbf{c\,b\,a}\rangle_i\,\langle\dots\textbf{c\,b\,a}|_j 
+ *           &= \sum\limits_i^{\text{numQubits}} \; |\alpha_i|^2 \;  |\dots\textbf{c}\,\textbf{b}\,\textbf{a}\rangle\langle\dots\textbf{c}\,\textbf{b}\,\textbf{a}|_i  \;\; + \, 
+ *            \sum\limits_{i \ne j}^{\text{numQubits}} \; \beta_{ij} \; |\dots\textbf{c}\,\textbf{b}\,\textbf{a}\rangle_i\,\langle\dots\textbf{c}\,\textbf{b}\,\textbf{a}|_j 
  *            \; \otimes \; \mu_{ij},
  *       \end{aligned}
  *   \f]
@@ -4152,7 +4264,9 @@ qreal calcFidelity(Qureg qureg, Qureg pureState);
  * \f]
  * on the designated qubits, though is performed internally by three CNOT gates.
  *
-   \f[
+ @htmlonly
+    <center>
+    <script type="text/tikz">
                \begin{tikzpicture}[scale=.5]
                \node[draw=none] at (-3.5, 2) {qubit1};
                \node[draw=none] at (-3.5, 0) {qubit2};
@@ -4168,7 +4282,9 @@ qreal calcFidelity(Qureg qureg, Qureg pureState);
                \draw (-.35,.35 + 2) -- (.35,-.35 + 2);
 
                \end{tikzpicture}
-   \f]
+    </script>
+    </center>
+ @endhtmlonly
  *
  * @see
  * - sqrtSwapGate()
@@ -4197,7 +4313,9 @@ void swapGate(Qureg qureg, int qubit1, int qubit2);
  * \f]
  * on the designated qubits, though is performed internally by three CNOT gates.
  *
-   \f[
+ @htmlonly
+    <center>
+    <script type="text/tikz">
                \begin{tikzpicture}[scale=.5]
                \node[draw=none] at (-3.5, 2) {qubit1};
                \node[draw=none] at (-3.5, 0) {qubit2};
@@ -4216,7 +4334,9 @@ void swapGate(Qureg qureg, int qubit1, int qubit2);
                \node[draw=none] at (0, 1) {1/2};
 
                \end{tikzpicture}
-   \f]
+    </script>
+    </center>
+ @endhtmlonly
  *
  * @see
  * - swapGate()
@@ -4244,7 +4364,9 @@ void sqrtSwapGate(Qureg qureg, int qb1, int qb2);
  * > which are conditioned on outcome `0`, calling multiControlledUnitary(), then 
  * > re-appplying pauliX() on the same qubits.
  *
-    \f[
+ @htmlonly
+    <center>
+    <script type="text/tikz">
                 \begin{tikzpicture}[scale=.5]
                 \node[draw=none] at (-3.5, 3) {controls};
                 \node[draw=none] at (-3.5, 0) {target};
@@ -4265,7 +4387,9 @@ void sqrtSwapGate(Qureg qureg, int qb1, int qb2);
                 \draw (-1,-1)--(-1,1)--(1,1)--(1,-1)--cycle;
                 \node[draw=none] at (0, 0) {U};
                 \end{tikzpicture}
-    \f]
+    </script>
+    </center>
+ @endhtmlonly
  *
  * @see
  * - ::ComplexMatrix2
@@ -4393,7 +4517,9 @@ void multiRotatePauli(Qureg qureg, int* targetQubits, enum pauliOpType* targetPa
  * where the Pauli Z gates operate upon the qubits in `targetQubits`, and cause 
  * rotations of \f$\theta =\f$ \p angle.
  *
-    \f[
+ @htmlonly
+    <center>
+    <script type="text/tikz">
                 \begin{tikzpicture}[scale=.5]
                 \node[draw=none] at (-4, 1) {targets};
                 \node[draw=none] at (-4, 5) {controls};
@@ -4414,11 +4540,17 @@ void multiRotatePauli(Qureg qureg, int* targetQubits, enum pauliOpType* targetPa
                 \draw (-2.5,2) -- (-1.5, 2);
                 \draw (1.5, 2) -- (2.5, 2);
                 \draw (-1.5,-1)--(-1.5,3)--(1.5,3)--(1.5,-1);
-                \node[draw=none] at (0, 1) {$e^{-i\frac{\theta}{2}Z^{\otimes}}$};
                 \node[draw=none] at (0, -1) {$\vdots$};
+
+                % below is broken in Tikzjax rendering...
+                %    \node[draw=none] at (0, 1) {$e^{-i\frac{\theta}{2}Z^{\otimes}}$};
+                % so we sadly replace it with:
+                \node[draw=none] at (0, 1) {$\exp(\dots)$};
                 
                 \end{tikzpicture}
-    \f]
+    </script>
+    </center>
+ @endhtmlonly
  * 
  * > All qubits not appearing in \p targetQubits and \p controlQubits are assumed to receive the identity operator.
  *
@@ -4464,7 +4596,9 @@ void multiControlledMultiRotateZ(Qureg qureg, int* controlQubits, int numControl
  * where \f$\hat{\sigma}_j\f$ are the Pauli operators (::pauliOpType) in `targetPaulis`, which operate 
  * upon the corresponding qubits in `targetQubits`.
  *
-    \f[
+ @htmlonly
+    <center>
+    <script type="text/tikz">
                 \begin{tikzpicture}[scale=.5]
                 \node[draw=none] at (-4, 1) {targets};
                 \node[draw=none] at (-4, 5) {controls};
@@ -4485,11 +4619,18 @@ void multiControlledMultiRotateZ(Qureg qureg, int* controlQubits, int numControl
                 \draw (-2.5,2) -- (-1.5, 2);
                 \draw (1.5, 2) -- (2.5, 2);
                 \draw (-1.5,-1)--(-1.5,3)--(1.5,3)--(1.5,-1);
-                \node[draw=none] at (0, 1) {$e^{-i\frac{\theta}{2} \bigotimes\limits_j \hat{\sigma}_j }$};
+
                 \node[draw=none] at (0, -1) {$\vdots$};
                 
+                % below is broken in Tikzjax rendering
+                %    \node[draw=none] at (0, 1) {$e^{-i\frac{\theta}{2} \bigotimes\limits_j \hat{\sigma}_j}$};
+                % so we sadly replace it with:
+                \node[draw=none] at (0, 1) {$\exp(\dots)$};
+
                 \end{tikzpicture}
-    \f]
+    </script>
+    </center>
+ @endhtmlonly
  * 
  * > All qubits not appearing in \p targetQubits and \p controlQubits are assumed to receive the identity operator.
  *
@@ -4703,7 +4844,9 @@ qreal calcExpecPauliHamil(Qureg qureg, PauliHamil hamil, Qureg workspace);
 
 /** Apply a general two-qubit unitary (including a global phase factor).
  *
-    \f[
+ @htmlonly
+    <center>
+    <script type="text/tikz">
                 \begin{tikzpicture}[scale=.5]
                 \node[draw=none] at (-3.5, 0) {target2};
                 \node[draw=none] at (-3.5, 2) {target1};
@@ -4715,7 +4858,9 @@ qreal calcExpecPauliHamil(Qureg qureg, PauliHamil hamil, Qureg workspace);
                 \draw (-1,-1)--(-1,3)--(1,3)--(1,-1)--cycle;
                 \node[draw=none] at (0, 1) {U};
                 \end{tikzpicture}
-    \f]
+    </script>
+    </center>
+ @endhtmlonly
  *
  * \p targetQubit1 is treated as the \p least significant qubit in \p u, such that 
  * a row in \p u is dotted with the vector
@@ -4792,7 +4937,9 @@ void twoQubitUnitary(Qureg qureg, int targetQubit1, int targetQubit2, ComplexMat
  *
  * The passed 4x4 ComplexMatrix must be unitary, otherwise an error is thrown.
  *
-    \f[
+ @htmlonly
+    <center>
+    <script type="text/tikz">
                 \begin{tikzpicture}[scale=.5]
                 \node[draw=none] at (-3.5, 0) {target1};
                 \node[draw=none] at (-3.5, 2) {target2};
@@ -4809,7 +4956,9 @@ void twoQubitUnitary(Qureg qureg, int targetQubit1, int targetQubit2, ComplexMat
                 \draw (-1,-1)--(-1,3)--(1,3)--(1,-1)--cycle;
                 \node[draw=none] at (0, 1) {U};
                 \end{tikzpicture}
-    \f]
+    </script>
+    </center>
+ @endhtmlonly
  *
  * Note that in distributed mode, this routine requires that each node contains at least 4 amplitudes.
  * This means an q-qubit register (state vector or density matrix) can be distributed 
@@ -4859,7 +5008,9 @@ void controlledTwoQubitUnitary(Qureg qureg, int controlQubit, int targetQubit1, 
  * 
  * The passed 4x4 ComplexMatrix must be unitary, otherwise an error is thrown.
  *
-    \f[
+ @htmlonly
+    <center>
+    <script type="text/tikz">
                 \begin{tikzpicture}[scale=.5]
                 \node[draw=none] at (-3.5, 0) {target1};
                 \node[draw=none] at (-3.5, 2) {target2};
@@ -4883,7 +5034,9 @@ void controlledTwoQubitUnitary(Qureg qureg, int controlQubit, int targetQubit1, 
                 \draw (-1,-1)--(-1,3)--(1,3)--(1,-1)--cycle;
                 \node[draw=none] at (0, 1) {U};
                 \end{tikzpicture}
-    \f]
+    </script>
+    </center>
+ @endhtmlonly
  *
  * Note that in distributed mode, this routine requires that each node contains at least 4 amplitudes.
  * This means an q-qubit register (state vector or density matrix) can be distributed 
@@ -4954,7 +5107,9 @@ void multiControlledTwoQubitUnitary(Qureg qureg, int* controlQubits, int numCont
  *
  * > To specify only the diagonal elements of the matrix, use diagonalUnitary().
  *
-    \f[
+ @htmlonly
+    <center>
+    <script type="text/tikz">
                 \begin{tikzpicture}[scale=.5]
                 \node[draw=none] at (-3.5, 1) {targets};
 
@@ -4967,7 +5122,9 @@ void multiControlledTwoQubitUnitary(Qureg qureg, int* controlQubits, int numCont
                 \node[draw=none] at (0, -1) {$\vdots$};
                 
                 \end{tikzpicture}
-    \f]
+    </script>
+    </center>
+ @endhtmlonly
  *
  * Note that in multithreaded mode, each thread will clone 2^\p numTargs amplitudes,
  * and store these in the runtime stack.
@@ -5027,7 +5184,9 @@ void multiQubitUnitary(Qureg qureg, int* targs, int numTargs, ComplexMatrixN u);
  * The passed ComplexMatrix must be unitary and be a compatible size with the specified number of
  * target qubits, otherwise an error is thrown.
  *
-    \f[
+ @htmlonly
+    <center>
+    <script type="text/tikz">
                 \begin{tikzpicture}[scale=.5]
                 \node[draw=none] at (-3.5, 1) {targets};
                 \node[draw=none] at (-3.5, 4) {control};      
@@ -5045,7 +5204,9 @@ void multiQubitUnitary(Qureg qureg, int* targs, int numTargs, ComplexMatrixN u);
                 \node[draw=none] at (0, -1) {$\vdots$};
                 
                 \end{tikzpicture}
-    \f]
+    </script>
+    </center>
+ @endhtmlonly
  *
  * Note that in multithreaded mode, each thread will clone 2^\p numTargs amplitudes,
  * and store these in the runtime stack.
@@ -5102,7 +5263,9 @@ void controlledMultiQubitUnitary(Qureg qureg, int ctrl, int* targs, int numTargs
  * > To left-multiply a non-unitary ::ComplexMatrixN, including control qubits,
  * > use applyMultiControlledMatrixN()
  *
-    \f[
+ @htmlonly
+    <center>
+    <script type="text/tikz">
                 \begin{tikzpicture}[scale=.5]
                 \node[draw=none] at (-3.5, 1) {targets};
                 \node[draw=none] at (-3.5, 5) {controls};
@@ -5127,7 +5290,9 @@ void controlledMultiQubitUnitary(Qureg qureg, int ctrl, int* targs, int numTargs
                 \node[draw=none] at (0, -1) {$\vdots$};
                 
                 \end{tikzpicture}
-    \f]
+    </script>
+    </center>
+ @endhtmlonly
  *
  * Note that in multithreaded mode, each thread will clone 2^\p numTargs amplitudes,
  * and store these in the runtime stack.
@@ -6985,7 +7150,9 @@ void applyParamNamedPhaseFuncOverrides(Qureg qureg, int* qubits, int* numQubitsP
 
 /** Applies the quantum Fourier transform (QFT) to the entirety of \p qureg. 
  * The effected unitary circuit (shown here for 4 qubits, bottom qubit is <b>0</b>) resembles
- \f[
+ @htmlonly
+    <center>
+    <script type="text/tikz">
              \begin{tikzpicture}[scale=.5]
              \draw (-2, 5) -- (23, 5);
              \draw (-2, 3) -- (23, 3);
@@ -7036,7 +7203,9 @@ void applyParamNamedPhaseFuncOverrides(Qureg qureg, int* qubits, int* numQubitsP
              \draw (22 - .35, 1 + .35) -- (22 + .35, 1 - .35);
              \draw (22 - .35, 1 - .35) -- (22 + .35, 1 + .35);
              \end{tikzpicture}
- \f]
+    </script>
+    </center>
+ @endhtmlonly
  * though is performed more efficiently.
  * 
  * - If \p qureg is a state-vector, the output amplitudes are the discrete Fourier 
@@ -7085,7 +7254,9 @@ void applyFullQFT(Qureg qureg);
  * qubit in increasing order.
  *
  * The effected unitary circuit (shown here for \p numQubits <b>= 4</b>) resembles
- * \f[
+ @htmlonly
+    <center>
+    <script type="text/tikz">
         \begin{tikzpicture}[scale=.5]
         \draw (-2, 5) -- (23, 5);    \node[draw=none] at (-4,5) {qubits[3]};
         \draw (-2, 3) -- (23, 3);    \node[draw=none] at (-4,3) {qubits[2]};
@@ -7136,7 +7307,9 @@ void applyFullQFT(Qureg qureg);
         \draw (22 - .35, 1 + .35) -- (22 + .35, 1 - .35);
         \draw (22 - .35, 1 - .35) -- (22 + .35, 1 + .35);
         \end{tikzpicture}
- * \f]
+    </script>
+    </center>
+ @endhtmlonly
  * though is performed more efficiently.
  *
  * - If \p qureg is a state-vector, the output amplitudes are a kronecker product of 
