@@ -2,10 +2,21 @@
  * - correct spacing issue in lists inside doxygen @throws tags
  * - increase code snippet font size (div.line)
  * - increase code snippet inside padding (div.fragment)
+ *
+ * Edited by @TysonJones, 8th Aug 2023, to
+ * - remove "Toggle menu visibility" injected by newer doxygen
  */
 
 h1, .h1, h2, .h2, h3, .h3{
     font-weight: 200 !important;
+}
+
+/* hide bizarre "Toggle menu visibility" injected by newer doxygen */
+#main-menu-state {
+    display: none;
+}
+.main-menu-btn {
+    display: none;
 }
 
 .sm-dox a span.sub-arrow {
