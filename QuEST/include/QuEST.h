@@ -34,6 +34,8 @@
 
 # include "QuEST_precision.h"
 
+
+
 // prevent C++ name mangling
 #ifdef __cplusplus
 extern "C" {
@@ -367,6 +369,10 @@ typedef struct Qureg
     ComplexArray deviceStateVec;
     //! Storage for reduction of probabilities on GPU
     qreal *firstLevelReduction, *secondLevelReduction;
+
+    //! Storage for wavefunction amplitues in the cuQuantum version
+    cuAmp* cuStateVec;
+    cuAmp* deviceCuStateVec;
 
     //! Storage for generated QASM output
     QASMLogger* qasmLog;
