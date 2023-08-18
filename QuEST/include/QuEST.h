@@ -403,7 +403,7 @@ typedef struct QuESTEnv
     unsigned long int* seeds;
     int numSeeds;
 
-    // handle to cuQuantum (specifically cuStateVec) used only cuQuantum deployment mode
+    // handle to cuQuantum (specifically cuStateVec) used only cuQuantum deployment mode (otherwise is void*)
     custatevecHandle_t cuQuantumHandle;
     
 } QuESTEnv;

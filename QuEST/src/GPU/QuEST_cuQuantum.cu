@@ -46,7 +46,7 @@ extern "C" {
 
 void statevec_createQureg(Qureg *qureg, int numQubits, QuESTEnv env)
 {   
-    // set fields
+    // set standard fields
     long long int numAmps = 1LL << numQubits;
     qureg->numQubitsInStateVec = numQubits;
     qureg->numAmpsPerChunk = numAmps;
@@ -54,6 +54,9 @@ void statevec_createQureg(Qureg *qureg, int numQubits, QuESTEnv env)
     qureg->chunkId = 0;
     qureg->numChunks = 1;
     qureg->isDensityMatrix = 0;
+
+    // copy env's cuQuantum handle to qureg
+    qureg->cuQuantumHandle = env.cuQuantumHandle;
 
     // allocate user-facing CPU memory
     qureg->stateVec.real = (qreal*) malloc(numAmps * sizeof(qureg->stateVec.real));
