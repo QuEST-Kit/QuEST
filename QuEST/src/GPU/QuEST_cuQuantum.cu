@@ -12,6 +12,7 @@
 
 # include "QuEST.h"
 # include "QuEST_precision.h"
+# include "QuEST_validation.h"
 # include <custatevec.h>
 
 
@@ -53,10 +54,6 @@ void statevec_createQureg(Qureg *qureg, int numQubits, QuESTEnv env)
     qureg->chunkId = 0;
     qureg->numChunks = 1;
     qureg->isDensityMatrix = 0;
-
-        //! Storage for wavefunction amplitues in the cuQuantum version
-    cuAmp* cuStateVec;
-    cuAmp* deviceCuStateVec;
 
     // allocate user-facing CPU memory
     qureg->stateVec.real = (qreal*) malloc(numAmps * sizeof(qureg->stateVec.real));

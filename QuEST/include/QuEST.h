@@ -36,6 +36,15 @@
 
 
 
+// ensure custatevecHandle_t is defined, even if no GPU
+# ifdef USE_CUQUANTUM
+   # include <custatevec.h>
+# else
+   # define custatevecHandle_t void*
+# endif
+
+
+
 // prevent C++ name mangling
 #ifdef __cplusplus
 extern "C" {
@@ -370,9 +379,10 @@ typedef struct Qureg
     //! Storage for reduction of probabilities on GPU
     qreal *firstLevelReduction, *secondLevelReduction;
 
-    //! Storage for wavefunction amplitues in the cuQuantum version
+    //! Storage for wavefunction amplitues and config (copy of QuESTEnv's handle) in the cuQuantum version
     cuAmp* cuStateVec;
     cuAmp* deviceCuStateVec;
+    custatevecHandle_t cuQuantumHandle;
 
     //! Storage for generated QASM output
     QASMLogger* qasmLog;
@@ -392,6 +402,10 @@ typedef struct QuESTEnv
     int numRanks;
     unsigned long int* seeds;
     int numSeeds;
+
+    // handle to cuQuantum (specifically cuStateVec) used only cuQuantum deployment mode
+    custatevecHandle_t cuQuantumHandle;
+    
 } QuESTEnv;
 
 
