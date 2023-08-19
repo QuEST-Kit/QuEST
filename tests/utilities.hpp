@@ -76,6 +76,26 @@ typedef std::vector<std::vector<qcomp>> QMatrix;
  */
 typedef std::vector<qcomp> QVector;
 
+/** Asserts the given statevector qureg and reference agree, and are properly initialised in the debug state.
+ * Assertion uses the DEMAND() macro, calling Catch2's FAIL() if unsatisfied, so does not contribute
+ * toward unit test statistics. This should be called within every PREPARE_TEST macro, to ensure that
+ * the test states themselves are initially correct, and do not accidentally agree by (e.g.) being all-zero.
+ * 
+ * @ingroup testutilities
+ * @author Tyson Jones
+ */
+void assertQuregAndRefInDebugState(Qureg qureg, QVector ref);
+
+/** Asserts the given density qureg and reference agree, and are properly initialised in the debug state.
+ * Assertion uses the DEMAND() macro, calling Catch2's FAIL() if unsatisfied, so does not contribute
+ * toward unit test statistics. This should be called within every PREPARE_TEST macro, to ensure that
+ * the test states themselves are initially correct, and do not accidentally agree by (e.g.) being all-zero.
+ * 
+ * @ingroup testutilities
+ * @author Tyson Jones
+ */
+void assertQuregAndRefInDebugState(Qureg qureg, QMatrix ref);
+
 /* (Excluded from Doxygen doc)
  *
  * Define QVector and QMatrix operator overloads.

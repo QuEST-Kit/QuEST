@@ -140,6 +140,38 @@ QVector operator * (const QMatrix& m, const QVector& v) {
     return prod;
 }
 
+void assertQuregAndRefInDebugState(Qureg qureg, QVector ref) {
+    DEMAND( qureg.isDensityMatrix == 0 );
+    DEMAND( qureg.numAmpsTotal == (long long int) ref.size() );
+
+    // assert ref is in the debug state (else initDebugState failed)
+    for (size_t i=0; i<ref.size(); i++) {
+        qcomp val = qcomp(.2*i, .2*i+.1);
+        DEMAND( abs(ref[i] - val) < REAL_EPS );
+    }
+
+    // check qureg and ref agree
+    DEMAND( areEqual(qureg, ref) );
+}
+
+void assertQuregAndRefInDebugState(Qureg qureg, QMatrix ref) {
+    DEMAND( qureg.isDensityMatrix == 1 );
+    DEMAND( (1LL << qureg.numQubitsRepresented) == (long long int) ref.size() );
+
+    // assert ref is in the (column-wise) debug state (else initDebugState failed)
+    size_t i = 0;
+    for (size_t c=0; c<ref.size(); c++) {
+        for (size_t r=0; r<ref.size(); r++) {
+            qcomp val = qcomp(.2*i, .2*i+.1);
+            DEMAND( abs(ref[r][c] - val) < REAL_EPS );
+            i++;
+        }
+    }
+
+    // check qureg and ref agree
+    DEMAND( areEqual(qureg, ref) );
+}
+
 QVector getKroneckerProduct(QVector b, QVector a) {
 
     QVector prod = QVector(a.size() * b.size());
