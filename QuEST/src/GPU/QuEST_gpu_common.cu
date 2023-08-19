@@ -58,6 +58,10 @@ QuESTEnv createQuESTEnv(void) {
     env.seeds = NULL;
     env.numSeeds = 0;
     seedQuESTDefault(&env);
+
+#ifdef USE_CUQUANTUM
+    custatevecCreate(&env.cuQuantumHandle);
+#endif
     
     return env;
 }
@@ -72,6 +76,10 @@ int syncQuESTSuccess(int successCode){
 
 void destroyQuESTEnv(QuESTEnv env){
     free(env.seeds);
+
+#ifdef USE_CUQUANTUM
+    custatevecDestroy(env.cuQuantumHandle);
+#endif
 }
 
 void reportQuESTEnv(QuESTEnv env){
