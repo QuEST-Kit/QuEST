@@ -15,23 +15,81 @@
 # include "QuEST_precision.h"
 # include "QuEST_validation.h"
 # include <custatevec.h>
+# include <vector>
 
 
 
-// precision-overloaded macros for creating a cuAmp
+/*
+ * TYPES AND ADAPTERS
+ */
+
+// precision-agnostic conversions between cuAmp, qreal and Complex
 # if QuEST_PREC==1
-    # define toCuAmp(re, im) make_cuFloatComplex(re, im)
+    # define TO_CU_AMP(re, im) make_cuFloatComplex(re, im)
     # define cuAmpReal(amp) cuCrealf(amp)
     # define cuAmpImag(amp) cuCimagf(amp)
+    # define cuAmpConj(amp) cuConjf(amp)
+    # define CU_AMP_IN_STATE_PREC CUDA_C_F32
+    # define CU_AMP_IN_MATRIX_PREC CUDA_C_64F
 # elif QuEST_PREC==2
-    # define toCuAmp(re, im) make_cuDoubleComplex(re, im)
+    # define TO_CU_AMP(re, im) make_cuDoubleComplex(re, im)
     # define cuAmpReal(amp) cuCreal(amp)
     # define cuAmpImag(amp) cuCimag(amp)
+    # define cuAmpConj(amp) cuConj(amp)
+    # define CU_AMP_IN_STATE_PREC CUDA_C_64F
+    # define CU_AMP_IN_MATRIX_PREC CUDA_C_64F
 # elif QuEST_PREC==4
-    # define toCuAmp(re, im) -1 // invalid precision config
+    # define TO_CU_AMP(re, im) -1 // invalid precision config
     # define cuAmpReal(amp) -1
     # define cuAmpImag(amp) -1
+    # define CU_AMP_IN_STATE_PREC void // invalid
+    # define CU_AMP_IN_MATRIX_PREC void // invalid
 #endif
+
+// convenient operator overloads for cuAmp, for doing complex artihmetic
+cuAmp operator - (const cuAmp& a) {
+    return TO_CU_AMP(-cuAmpReal(a), -cuAmpImag(a));
+}
+
+// convert user-facing Complex to cuQuantum-facing cuAmp
+cuAmp toCuAmp(Complex c) {
+    return TO_CU_AMP(c.real, c.imag);
+}
+
+// concise alias for row-wise flattened complex matrix
+typedef std::vector<cuAmp> cuMatr;
+
+// flatten ComplexMatrixN mIn to a cuMatr mOut
+#define GET_cuMatr_FROM_ComplexMatrix( mOut, mIn, nQubits ) \
+    long long int dim = (1LL << nQubits); \
+    cuMatr mOut(dim*dim); \
+    long long int i=0; \
+    for (long long int r=0; r<(dim); r++) \
+        for (long long int c=0; c<(dim); c++) \
+            mOut[i++] = TO_CU_AMP(mIn.real[r][c], mIn.imag[r][c]);
+
+// convert user-facing ComplexMatrixN to cuQuantum-facing cuMatr
+cuMatr toCuMatr(ComplexMatrix2 mIn) {
+    GET_cuMatr_FROM_ComplexMatrix(mOut, mIn, 1);
+    return mOut;
+}
+cuMatr toCuMatr(ComplexMatrix4 mIn) {
+    GET_cuMatr_FROM_ComplexMatrix(mOut, mIn, 2);
+    return mOut;
+}
+cuMatr toCuMatr(ComplexMatrixN mIn) {
+    GET_cuMatr_FROM_ComplexMatrix(mOut, mIn, mIn.numQubits);
+    return mOut;
+}
+
+// convert QuEST backend masks back into user-input qubit lists (needed by cuQuantum)
+std::vector<int> getIndsFromMask(long long int mask, int numBits) {
+    std::vector<int> inds;
+    for (int i=0; i<numBits; i++)
+        if (mask & (1LL<<i))
+            inds.push_back(i);
+    return inds;
+}
 
 
 
@@ -164,7 +222,7 @@ void statevec_setAmps(Qureg qureg, long long int startInd, qreal* reals, qreal* 
 {
     // slowly manually overwrite subset of private cuQuantum CPU memory
     for (long long int i=0; i<numAmps; i++)
-        qureg.cuStateVec[i+startInd] = toCuAmp(reals[i], imags[i]);
+        qureg.cuStateVec[i+startInd] = TO_CU_AMP(reals[i], imags[i]);
 
     // cuda-copy subset to GPU memory subset
     cudaDeviceSynchronize();
