@@ -99,6 +99,34 @@ extern "C" {
 
 
 
+/*
+ * CUQUANTUM WRAPPERS (to reduce boilerplate)
+ */
+
+void custatevec_applyMatrix(Qureg qureg, std::vector<int> ctrls, std::vector<int> targs, cuMatr matr) {
+
+    // do not adjoint matrix
+    int adj = 0;
+
+    // condition all ctrls on =1 state
+    int* ctrlBits = nullptr;
+
+    // use automatic workspace management
+    void* work = nullptr;
+    size_t workSize = 0;
+
+    custatevecApplyMatrix(
+        qureg.cuQuantumHandle, 
+        qureg.deviceCuStateVec, CU_AMP_IN_STATE_PREC, qureg.numQubitsInStateVec, 
+        matr.data(), CU_AMP_IN_MATRIX_PREC, CUSTATEVEC_MATRIX_LAYOUT_ROW, adj, 
+        targs.data(), targs.size(), 
+        ctrls.data(), ctrlBits, ctrls.size(), 
+        CUSTATEVEC_COMPUTE_DEFAULT,
+        work, workSize);
+}
+
+
+
 /* 
  * ENVIRONMENT MANAGEMENT
  */
@@ -369,97 +397,299 @@ int statevec_compareStates(Qureg mq1, Qureg mq2, qreal precision)
 
 void statevec_compactUnitary(Qureg qureg, int targetQubit, Complex alpha, Complex beta) 
 {
+    cuAmp a = toCuAmp(alpha);
+    cuAmp b = toCuAmp(beta);
+    cuMatr matrix{
+        a, -cuAmpConj(b),
+        b,  cuAmpConj(a)
+    };
+    custatevec_applyMatrix(qureg, {}, {targetQubit}, matrix);
 }
 
 void statevec_controlledCompactUnitary(Qureg qureg, int controlQubit, int targetQubit, Complex alpha, Complex beta) 
 {
+    cuAmp a = toCuAmp(alpha);
+    cuAmp b = toCuAmp(beta);
+    cuMatr matrix{
+        a, -cuAmpConj(b),
+        b,  cuAmpConj(a)
+    };
+    custatevec_applyMatrix(qureg, {controlQubit}, {targetQubit}, matrix);
 }
 
 void statevec_unitary(Qureg qureg, int targetQubit, ComplexMatrix2 u)
 {
+    custatevec_applyMatrix(qureg, {}, {targetQubit}, toCuMatr(u));
 }
 
 void statevec_multiControlledMultiQubitUnitary(Qureg qureg, long long int ctrlMask, int* targs, int numTargs, ComplexMatrixN u)
 {
+    std::vector<int> c = getIndsFromMask(ctrlMask,qureg.numQubitsInStateVec);
+    std::vector<int> t(targs,targs+numTargs); 
+    custatevec_applyMatrix(qureg, c, t, toCuMatr(u));
 }
 
 void statevec_multiControlledTwoQubitUnitary(Qureg qureg, long long int ctrlMask, int q1, int q2, ComplexMatrix4 u)
 {
+    std::vector<int> c = getIndsFromMask(ctrlMask,qureg.numQubitsInStateVec);
+    custatevec_applyMatrix(qureg, c, {q1,q2}, toCuMatr(u));
 }
 
 void statevec_controlledUnitary(Qureg qureg, int controlQubit, int targetQubit, ComplexMatrix2 u)
 {
+    custatevec_applyMatrix(qureg, {controlQubit}, {targetQubit}, toCuMatr(u));
 }
 
-void statevec_multiControlledUnitary(
-    Qureg qureg, 
-    long long int ctrlQubitsMask, long long int ctrlFlipMask, 
-    int targetQubit, ComplexMatrix2 u)
+void statevec_multiControlledUnitary(Qureg qureg, long long int ctrlQubitsMask, long long int ctrlFlipMask, int targetQubit, ComplexMatrix2 u)
 {
+    int targs[] = {targetQubit};
+    std::vector<int> ctrlInds = getIndsFromMask(ctrlQubitsMask,qureg.numQubitsInStateVec);
+    std::vector<int> ctrlVals(ctrlInds.size());
+    for (size_t i=0; i<ctrlInds.size(); i++)
+        ctrlVals[i] = !(ctrlFlipMask & (1LL<<ctrlInds[i]));
+
+    custatevecApplyMatrix(
+        qureg.cuQuantumHandle, 
+        qureg.deviceCuStateVec, CU_AMP_IN_STATE_PREC, qureg.numQubitsInStateVec, 
+        toCuMatr(u).data(), CU_AMP_IN_MATRIX_PREC, CUSTATEVEC_MATRIX_LAYOUT_ROW, 0, 
+        targs, 1, ctrlInds.data(), ctrlVals.data(), ctrlInds.size(), 
+        CUSTATEVEC_COMPUTE_DEFAULT, nullptr, 0);
 }
 
 void statevec_pauliX(Qureg qureg, int targetQubit) 
 {
+    cuAmp a0 = TO_CU_AMP(0, 0);
+    cuAmp a1 = TO_CU_AMP(1, 0);
+    cuMatr matrix{
+        a0, a1,
+        a1, a0
+    };
+    custatevec_applyMatrix(qureg, {}, {targetQubit}, matrix);
 }
 
 void statevec_pauliY(Qureg qureg, int targetQubit) 
 {
+    cuAmp a0 = TO_CU_AMP(0, 0);
+    cuAmp aI = TO_CU_AMP(0, 1);
+    cuMatr matrix{
+        a0, -aI,
+        aI,  a0
+    };
+    custatevec_applyMatrix(qureg, {}, {targetQubit}, matrix);
 }
 
 void statevec_pauliYConj(Qureg qureg, int targetQubit) 
 {
+    cuAmp a0 = TO_CU_AMP(0, 0);
+    cuAmp aI = TO_CU_AMP(0, 1);
+    cuMatr matrix{
+         a0, aI,
+        -aI, a0
+    };
+    custatevec_applyMatrix(qureg, {}, {targetQubit}, matrix);
 }
 
 void statevec_controlledPauliY(Qureg qureg, int controlQubit, int targetQubit)
 {
+    cuAmp a0 = TO_CU_AMP(0, 0);
+    cuAmp aI = TO_CU_AMP(0, 1);
+    cuMatr matrix{
+        a0, -aI,
+        aI,  a0
+    };
+    custatevec_applyMatrix(qureg, {controlQubit}, {targetQubit}, matrix);
 }
 
 void statevec_controlledPauliYConj(Qureg qureg, int controlQubit, int targetQubit)
 {
+    cuAmp a0 = TO_CU_AMP(0, 0);
+    cuAmp aI = TO_CU_AMP(0, 1);
+    cuMatr matrix{
+         a0, aI,
+        -aI, a0
+    };
+    custatevec_applyMatrix(qureg, {controlQubit}, {targetQubit}, matrix);
 }
 
 void statevec_phaseShiftByTerm(Qureg qureg, int targetQubit, Complex term)
 {   
+    // this diagonal operator, otherwise embarrasingly parallel with unit stride, 
+    // is here treated as a generic one-target unitary, wastefully inducing non-unit 
+    // stride and unnecessary memory reads, and potentially unnecessary communication
+    // in multi-GPU mode. 
+
+    cuAmp a0 = TO_CU_AMP(0, 0);
+    cuAmp a1 = TO_CU_AMP(1, 0);
+    cuAmp aE = toCuAmp(term);
+    cuMatr matrix{
+        a1, a0,
+        a0, aE
+    };
+    custatevec_applyMatrix(qureg, {}, {targetQubit}, matrix);
 }
 
 void statevec_controlledPhaseShift(Qureg qureg, int idQubit1, int idQubit2, qreal angle)
 {
+    // this diagonal operator, otherwise embarrasingly parallel with unit stride, 
+    // is here treated as a generic one-target unitary, wastefully inducing non-unit 
+    // stride and unnecessary memory reads, and potentially unnecessary communication
+    // in multi-GPU mode. 
+
+    cuAmp a0 = TO_CU_AMP(0, 0);
+    cuAmp a1 = TO_CU_AMP(1, 0);
+    cuAmp aE = TO_CU_AMP(cos(angle), sin(angle));
+    cuMatr matrix{
+        a1, a0,
+        a0, aE
+    };
+    custatevec_applyMatrix(qureg, {idQubit1}, {idQubit2}, matrix);
 }
 
 void statevec_multiControlledPhaseShift(Qureg qureg, int *controlQubits, int numControlQubits, qreal angle)
 {   
+    // this diagonal operator, otherwise embarrasingly parallel with unit stride, 
+    // is here treated as a generic one-target unitary, wastefully inducing non-unit 
+    // stride and unnecessary memory reads, and potentially unnecessary communication
+    // in multi-GPU mode. 
+
+    cuAmp a0 = TO_CU_AMP(0, 0);
+    cuAmp a1 = TO_CU_AMP(1, 0);
+    cuAmp aE = TO_CU_AMP(cos(angle), sin(angle));
+    cuMatr matrix{
+        a1, a0,
+        a0, aE
+    };
+    std::vector<int> targs{controlQubits[0]};
+    std::vector<int> ctrls(controlQubits + 1, controlQubits + numControlQubits); 
+    custatevec_applyMatrix(qureg, ctrls, targs, matrix);
 }
 
 void statevec_multiRotateZ(Qureg qureg, long long int mask, qreal angle)
 {   
+    qreal theta = - angle/2.;
+    std::vector<int> targs = getIndsFromMask(mask, qureg.numQubitsInStateVec);
+    std::vector<custatevecPauli_t> paulis(targs.size(), CUSTATEVEC_PAULI_Z);
+
+    custatevecApplyPauliRotation(
+        qureg.cuQuantumHandle, qureg.deviceCuStateVec, 
+        CU_AMP_IN_STATE_PREC, qureg.numQubitsInStateVec, 
+        theta, paulis.data(), targs.data(), targs.size(),
+        nullptr, nullptr, 0);
 }
 
 void statevec_multiControlledMultiRotateZ(Qureg qureg, long long int ctrlMask, long long int targMask, qreal angle)
 {   
+    qreal theta = - angle/2.;
+    std::vector<int> ctrls = getIndsFromMask(ctrlMask, qureg.numQubitsInStateVec);
+    std::vector<int> targs = getIndsFromMask(targMask, qureg.numQubitsInStateVec);
+    std::vector<custatevecPauli_t> paulis(targs.size(), CUSTATEVEC_PAULI_Z);
+
+    custatevecApplyPauliRotation(
+        qureg.cuQuantumHandle, qureg.deviceCuStateVec, 
+        CU_AMP_IN_STATE_PREC, qureg.numQubitsInStateVec, 
+        theta, paulis.data(), targs.data(), targs.size(),
+        ctrls.data(), nullptr, ctrls.size());
 }
 
 void statevec_controlledPhaseFlip(Qureg qureg, int idQubit1, int idQubit2)
 {
+    // this diagonal operator, otherwise embarrasingly parallel with unit stride, 
+    // is here treated as a generic one-target unitary, wastefully inducing non-unit 
+    // stride and unnecessary memory reads, and potentially unnecessary communication
+    // in multi-GPU mode. 
+
+    cuAmp a0 = TO_CU_AMP(0, 0);
+    cuAmp a1 = TO_CU_AMP(1, 0);
+    cuMatr matrix{
+        a1,  a0,
+        a0, -a1
+    };
+    custatevec_applyMatrix(qureg, {idQubit1}, {idQubit2}, matrix);
 }
 
 void statevec_multiControlledPhaseFlip(Qureg qureg, int *controlQubits, int numControlQubits)
 {
+    // this diagonal operator, otherwise embarrasingly parallel with unit stride, 
+    // is here treated as a generic one-target unitary, wastefully inducing non-unit 
+    // stride and unnecessary memory reads, and potentially unnecessary communication
+    // in multi-GPU mode. 
+
+    cuAmp a0 = TO_CU_AMP(0, 0);
+    cuAmp a1 = TO_CU_AMP(1, 0);
+    cuMatr matrix{
+        a1,  a0,
+        a0, -a1
+    };
+    std::vector<int> targs{controlQubits[0]};
+    std::vector<int> ctrls(controlQubits + 1, controlQubits + numControlQubits); 
+    custatevec_applyMatrix(qureg, ctrls, targs, matrix);
 }
 
 void statevec_swapQubitAmps(Qureg qureg, int qb1, int qb2) 
 {
+    int2 targPairs[] = {{qb1, qb2}}; 
+    int numPairs = 1;
+
+    custatevecSwapIndexBits(
+        qureg.cuQuantumHandle, qureg.deviceCuStateVec, 
+        CU_AMP_IN_STATE_PREC, qureg.numQubitsInStateVec, 
+        targPairs, numPairs,
+        nullptr, nullptr, 0);
 }
 
 void statevec_hadamard(Qureg qureg, int targetQubit) 
 {
+    cuAmp a = TO_CU_AMP(1/sqrt(2.), 0);
+    cuMatr matrix{
+        a,  a,
+        a, -a
+    };
+    custatevec_applyMatrix(qureg, {}, {targetQubit}, matrix);
 }
 
 void statevec_controlledNot(Qureg qureg, int controlQubit, int targetQubit)
 {
+    cuAmp a0 = TO_CU_AMP(0, 0);
+    cuAmp a1 = TO_CU_AMP(1, 0);
+    cuMatr matrix{
+        a0, a1,
+        a1, a0
+    };
+    custatevec_applyMatrix(qureg, {controlQubit}, {targetQubit}, matrix);
 }
 
 void statevec_multiControlledMultiQubitNot(Qureg qureg, int ctrlMask, int targMask)
 {
+    // this operator can be effected in one-shot using a custom kernel, but we here
+    // isntead resort to slowly (by at most a factor #targs) effect it as a sequence
+    // of one-target multi-ctrl NOT gates.
+
+    cuAmp a0 = TO_CU_AMP(0, 0);
+    cuAmp a1 = TO_CU_AMP(1, 0);
+    cuMatr matrix{
+        a0, a1,
+        a1, a0
+    };
+    std::vector<int> ctrls = getIndsFromMask(ctrlMask, qureg.numQubitsInStateVec);
+    std::vector<int> targs = getIndsFromMask(targMask, qureg.numQubitsInStateVec);
+    for (int targ : targs)
+        custatevec_applyMatrix(qureg, ctrls, {targ}, matrix);
+}
+
+void statevec_applySubDiagonalOp(Qureg qureg, int* targets, SubDiagonalOp op, int conj)
+{
+    // sneakily leverage the CPU cuQuantum memory in order to convert op
+    // (as separate arrays op.real and op.imag) into cuAmp*
+    cuAmp* diagonals = qureg.cuStateVec;
+    for (long long int i=0; i<op.numElems; i++)
+        diagonals[i] = TO_CU_AMP(op.real[i], op.imag[i]);
+
+    custatevecApplyGeneralizedPermutationMatrix(
+        qureg.cuQuantumHandle, qureg.deviceCuStateVec,
+        CU_AMP_IN_STATE_PREC, qureg.numQubitsInStateVec,
+        nullptr, diagonals, CU_AMP_IN_MATRIX_PREC, 0, 
+        targets, op.numQubits, nullptr, nullptr, 0,
+        nullptr, 0);
 }
 
 void statevec_applyDiagonalOp(Qureg qureg, DiagonalOp op) 
@@ -467,10 +697,6 @@ void statevec_applyDiagonalOp(Qureg qureg, DiagonalOp op)
 }
 
 void densmatr_applyDiagonalOp(Qureg qureg, DiagonalOp op)
-{
-}
-
-void statevec_applySubDiagonalOp(Qureg qureg, int* targets, SubDiagonalOp op, int conj)
 {
 }
 
