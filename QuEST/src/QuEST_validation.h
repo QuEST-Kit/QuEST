@@ -174,9 +174,9 @@ void validateDiagonalOpAllocation(DiagonalOp* op, QuESTEnv env, const char* call
 
 void validateDiagonalOpGPUAllocation(DiagonalOp* op, QuESTEnv env, const char* caller);
 
-// This is really just a dummy shim, because the scope of GPUExists()
-// is limited to the QuEST_gpu.cu file.
 void validateGPUExists(int GPUPresent, const char* caller);
+
+void validateGPUIsCuQuantumCompatible(int supportsMemPools, const char* caller);
 
 void raiseQASMBufferOverflow(const char* caller);
 

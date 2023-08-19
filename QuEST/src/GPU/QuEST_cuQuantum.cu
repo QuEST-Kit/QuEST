@@ -11,6 +11,7 @@
  */
 
 # include "QuEST.h"
+# include "QuEST_gpu_common.h"
 # include "QuEST_precision.h"
 # include "QuEST_validation.h"
 # include <custatevec.h>
@@ -37,6 +38,82 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+
+
+/* 
+ * ENVIRONMENT MANAGEMENT
+ */
+
+int GPUSupportsMemPools() {
+
+    // consult only the first device (garuanteed already to exist)
+    int device = 0;
+
+    int supports;
+    cudaDeviceGetAttribute(&supports, cudaDevAttrMemoryPoolsSupported, device);
+    return supports;
+}
+
+int memPoolAlloc(void* ctx, void** ptr, size_t size, cudaStream_t stream) {
+    cudaMemPool_t pool = * reinterpret_cast<cudaMemPool_t*>(ctx);
+    return cudaMallocFromPoolAsync(ptr, size, pool, stream); 
+}
+int memPoolFree(void* ctx, void* ptr, size_t size, cudaStream_t stream) {
+    return cudaFreeAsync(ptr, stream); 
+}
+
+void setupAutoWorkspaces(custatevecHandle_t cuQuantumHandle) {
+
+    // get the current (device's default) stream-ordered memory pool (assuming single GPU)
+    int device = 0;
+    cudaMemPool_t memPool;
+    cudaDeviceGetMemPool(&memPool, device);
+
+    // get its current memory threshold, above which memory gets freed at every stream synch
+    size_t currMaxMem;
+    cudaMemPoolGetAttribute(memPool, cudaMemPoolAttrReleaseThreshold, &currMaxMem); 
+
+    // if it's smaller than 1 MiB = 16 qubits, extend it
+    size_t desiredMaxMem = 16*(1LL<<16);
+    if (currMaxMem < desiredMaxMem)
+        cudaMemPoolSetAttribute(memPool, cudaMemPoolAttrReleaseThreshold, &desiredMaxMem); 
+
+    // create a mem handler around the mem pool
+    custatevecDeviceMemHandler_t memHandler;
+    memHandler.ctx = reinterpret_cast<void*>(&memPool);
+    memHandler.device_alloc = memPoolAlloc;
+    memHandler.device_free = memPoolFree;
+
+    // set cuQuantum to use this handler and pool, to automate workspace memory management
+    custatevecSetDeviceMemHandler(cuQuantumHandle, &memHandler);
+}
+
+QuESTEnv createQuESTEnv(void) {
+    validateGPUExists(GPUExists(), __func__);
+    validateGPUIsCuQuantumCompatible(GPUSupportsMemPools(),__func__);
+    
+    QuESTEnv env;
+    env.rank=0;
+    env.numRanks=1;
+    
+    env.seeds = NULL;
+    env.numSeeds = 0;
+    seedQuESTDefault(&env);
+
+    // prepare cuQuantum
+    custatevecCreate(&env.cuQuantumHandle);
+    setupAutoWorkspaces(env.cuQuantumHandle);
+    
+    return env;
+}
+
+void destroyQuESTEnv(QuESTEnv env){
+    free(env.seeds);
+
+    // finalise cuQuantum
+    custatevecDestroy(env.cuQuantumHandle);
+}
 
 
 

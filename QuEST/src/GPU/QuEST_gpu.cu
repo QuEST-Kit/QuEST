@@ -8,6 +8,7 @@
  */
 
 # include "QuEST.h"
+# include "QuEST_gpu_common.h"
 # include "QuEST_precision.h"
 # include "QuEST_validation.h"
 # include "QuEST_internal.h" // for getQubitBitmask
@@ -155,6 +156,25 @@ extern "C" {
 #endif
 
 
+
+QuESTEnv createQuESTEnv(void) {
+    validateGPUExists(GPUExists(), __func__);
+    
+    QuESTEnv env;
+    env.rank=0;
+    env.numRanks=1;
+    
+    env.seeds = NULL;
+    env.numSeeds = 0;
+    seedQuESTDefault(&env);
+
+    return env;
+}
+
+void destroyQuESTEnv(QuESTEnv env){
+    free(env.seeds);
+}
+
 void statevec_setAmps(Qureg qureg, long long int startInd, qreal* reals, qreal* imags, long long int numAmps) {
     
     cudaDeviceSynchronize();
@@ -169,7 +189,6 @@ void statevec_setAmps(Qureg qureg, long long int startInd, qreal* reals, qreal* 
         numAmps * sizeof(*(qureg.deviceStateVec.imag)), 
         cudaMemcpyHostToDevice);
 }
-
 
 /** works for both statevectors and density matrices */
 void statevec_cloneQureg(Qureg targetQureg, Qureg copyQureg) {

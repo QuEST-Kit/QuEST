@@ -9,6 +9,7 @@
 
 
 # include "QuEST.h"
+# include "QuEST_gpu_common.h"
 # include "QuEST_precision.h"
 # include "QuEST_validation.h"
 # include "mt19937ar.h"
@@ -29,8 +30,7 @@ extern "C" {
 
 
 
-
-int GPUExists(void){
+int GPUExists(void) {
     int deviceCount, device;
     int gpuDeviceCount = 0;
     struct cudaDeviceProp properties;
@@ -47,39 +47,12 @@ int GPUExists(void){
     else return 0;
 }
 
-QuESTEnv createQuESTEnv(void) {
-    
-    validateGPUExists(GPUExists(), __func__);
-    
-    QuESTEnv env;
-    env.rank=0;
-    env.numRanks=1;
-    
-    env.seeds = NULL;
-    env.numSeeds = 0;
-    seedQuESTDefault(&env);
-
-#ifdef USE_CUQUANTUM
-    custatevecCreate(&env.cuQuantumHandle);
-#endif
-    
-    return env;
-}
-
 void syncQuESTEnv(QuESTEnv env){
     cudaDeviceSynchronize();
 } 
 
 int syncQuESTSuccess(int successCode){
     return successCode;
-}
-
-void destroyQuESTEnv(QuESTEnv env){
-    free(env.seeds);
-
-#ifdef USE_CUQUANTUM
-    custatevecDestroy(env.cuQuantumHandle);
-#endif
 }
 
 void reportQuESTEnv(QuESTEnv env){

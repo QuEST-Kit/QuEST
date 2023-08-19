@@ -120,6 +120,7 @@ typedef enum {
     E_DIAGONAL_OP_NOT_ALLOCATED,
     E_DIAGONAL_OP_NOT_ALLOCATED_ON_GPU,
     E_NO_GPU,
+    E_GPU_DOES_NOT_SUPPORT_MEM_POOLS,
     E_QASM_BUFFER_OVERFLOW
 } ErrorCode;
 
@@ -213,6 +214,7 @@ static const char* errorMessages[] = {
     [E_DIAGONAL_OP_NOT_ALLOCATED] = "Could not allocate memory for DiagonalOp. Possibly insufficient memory.",
     [E_DIAGONAL_OP_NOT_ALLOCATED_ON_GPU] = "Could not allocate memory for DiagonalOp on GPU. Possibly insufficient memory.",
     [E_NO_GPU] = "Trying to run GPU code with no GPU available.",
+    [E_GPU_DOES_NOT_SUPPORT_MEM_POOLS] = "The GPU does not support stream-ordered memory pools, required by the cuQuantum backend.",
     [E_QASM_BUFFER_OVERFLOW] = "QASM line buffer filled."
 };
 
@@ -1109,14 +1111,20 @@ void validateDiagonalOpGPUAllocation(DiagonalOp* op, QuESTEnv env, const char* c
     QuESTAssert(allocationSuccessful, E_DIAGONAL_OP_NOT_ALLOCATED_ON_GPU, caller);
 }
 
-// This is really just a dummy shim, because the scope of GPUExists()
-// is limited to the QuEST_gpu.cu file.
+void raiseQASMBufferOverflow(const char* caller) {
+    invalidQuESTInputError(errorMessages[E_QASM_BUFFER_OVERFLOW], caller);
+}
+
+
+/* The below functions are dummy shims, whereby the GPU has already determined the outcome of
+ * validation, though sends the boolean results here for error handling.
+ */
 void validateGPUExists(int GPUPresent, const char* caller) {
     QuESTAssert(GPUPresent, E_NO_GPU, caller);
 }
 
-void raiseQASMBufferOverflow(const char* caller) {
-    invalidQuESTInputError(errorMessages[E_QASM_BUFFER_OVERFLOW], caller);
+void validateGPUIsCuQuantumCompatible(int supportsMemPools, const char* caller) {
+    QuESTAssert(supportsMemPools, E_GPU_DOES_NOT_SUPPORT_MEM_POOLS, caller);
 }
 
 
