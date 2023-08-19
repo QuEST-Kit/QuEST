@@ -333,29 +333,93 @@ void densmatr_initPlusState(Qureg qureg)
 {
 }
 
-void densmatr_initClassicalState(Qureg qureg, long long int stateInd)
+void statevec_initZeroState(Qureg qureg)
 {
+    custatevecInitializeStateVector(
+        qureg.cuQuantumHandle, 
+        qureg.deviceCuStateVec, 
+        CU_AMP_IN_STATE_PREC, 
+        qureg.numQubitsInStateVec, 
+        CUSTATEVEC_STATE_VECTOR_TYPE_ZERO);
 }
 
 void statevec_initBlankState(Qureg qureg)
 {
-}
+    // init to |0> = {1, 0, 0, ...}
+    statevec_initZeroState(qureg);
 
-void statevec_initZeroState(Qureg qureg)
-{
+    // overwrite amps[0] to 0
+    qreal re[] = {0};
+    qreal im[] = {0};
+    statevec_setAmps(qureg, 0, re, im, 1);
 }
 
 void statevec_initPlusState(Qureg qureg)
 {
+    custatevecInitializeStateVector(
+        qureg.cuQuantumHandle, 
+        qureg.deviceCuStateVec, 
+        CU_AMP_IN_STATE_PREC, 
+        qureg.numQubitsInStateVec, 
+        CUSTATEVEC_STATE_VECTOR_TYPE_UNIFORM);
 }
 
 void statevec_initClassicalState(Qureg qureg, long long int stateInd)
 {
+    // init to |null> = {0, 0, 0, ...}
+    statevec_initBlankState(qureg);
+
+    // overwrite amps[stateInd] to 1
+    qreal re[] = {1};
+    qreal im[] = {0};
+    statevec_setAmps(qureg, stateInd, re, im, 1);
+}
+
+void densmatr_initClassicalState(Qureg qureg, long long int stateInd)
+{
+    // init to |null> = {0, 0, 0, ...}
+    statevec_initBlankState(qureg);
+
+    // index of the desired state in the flat density matrix
+    long long int densityDim = 1LL << qureg.numQubitsRepresented;
+    long long int densityInd = (densityDim + 1)*stateInd;
+
+    // overwrite amps[densityInd] to 1
+    qreal re[] = {1};
+    qreal im[] = {0};
+    statevec_setAmps(qureg, densityInd, re, im, 1);
+}
+
+
+
+
+__global__ void statevec_initDebugStateKernel(long long int stateVecSize, cuAmp *stateVec){
+    long long int index;
+
+    index = blockIdx.x*blockDim.x + threadIdx.x;
+    if (index>=stateVecSize) return;
+
+    stateVec[index] = TO_CU_AMP( (index*2.0)/10.0, (index*2.0+1.0)/10.0 );
 }
 
 void statevec_initDebugState(Qureg qureg)
 {
+    int threadsPerCUDABlock, CUDABlocks;
+    threadsPerCUDABlock = 128;
+    CUDABlocks = ceil((qreal)(qureg.numAmpsPerChunk)/threadsPerCUDABlock);
+    statevec_initDebugStateKernel<<<CUDABlocks, threadsPerCUDABlock>>>(
+        qureg.numAmpsPerChunk,
+        qureg.deviceCuStateVec);
 }
+
+
+
+// we will NOT use above; we will try to hybridise with QuEST_gpu (into _common) in order to reduce code duplication.
+/*
+void statevec_initDebugState(Qureg qureg)
+{
+}
+*/
 
 void statevec_initStateOfSingleQubit(Qureg *qureg, int qubitId, int outcome)
 {
