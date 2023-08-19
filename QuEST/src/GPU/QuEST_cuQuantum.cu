@@ -67,7 +67,7 @@ void statevec_createQureg(Qureg *qureg, int numQubits, QuESTEnv env)
     cudaMalloc( &(qureg->deviceCuStateVec), numAmps * sizeof(*(qureg->deviceCuStateVec)) );
 
     // allocate private cuQuantum CPU memory (for exchanging with GPU memory)
-    qureg->cuStateVec = (cuAmp*) malloc(numAmps * sizeof(qureg->cuStateVec));
+    qureg->cuStateVec = (cuAmp*) malloc(numAmps * sizeof(*(qureg->cuStateVec)));
 }
 
 void statevec_destroyQureg(Qureg qureg, QuESTEnv env)
@@ -75,7 +75,7 @@ void statevec_destroyQureg(Qureg qureg, QuESTEnv env)
     // free user-facing CPU memory 
     free(qureg.stateVec.real);
     free(qureg.stateVec.imag);
-
+    
     // free private cuQuantum CPU memory
     free(qureg.cuStateVec);
 
@@ -90,6 +90,7 @@ void statevec_setAmps(Qureg qureg, long long int startInd, qreal* reals, qreal* 
         qureg.cuStateVec[i+startInd] = toCuAmp(reals[i], imags[i]);
 
     // cuda-copy subset to GPU memory subset
+    cudaDeviceSynchronize();
     cudaMemcpy(
         &(qureg.deviceCuStateVec[startInd]), 
         &(qureg.cuStateVec[startInd]), 
@@ -104,10 +105,12 @@ void statevec_copySubstateToGPU(Qureg qureg, long long int startInd, long long i
 void statevec_copySubstateFromGPU(Qureg qureg, long long int startInd, long long int numAmps)
 {
     // cuda-copy subset of GPU memory to private cuQuantum CPU memory
+    cudaDeviceSynchronize();
     cudaMemcpy(
         &(qureg.cuStateVec[startInd]), 
         &(qureg.deviceCuStateVec[startInd]), 
-        numAmps * sizeof(cuAmp), cudaMemcpyDeviceToHost);
+        numAmps * sizeof(*(qureg.cuStateVec)), 
+        cudaMemcpyDeviceToHost);
 
     // slowly manually overwrite public CPU memory from private
     for (long long int i=startInd; i<(startInd+numAmps); i++) {
@@ -129,6 +132,7 @@ void copyStateFromGPU(Qureg qureg)
 void statevec_cloneQureg(Qureg targetQureg, Qureg copyQureg)
 {
     // directly cuda-copy the GPU memory 
+    cudaDeviceSynchronize();
     cudaMemcpy(
         targetQureg.deviceCuStateVec,
         copyQureg.deviceCuStateVec,
@@ -139,6 +143,7 @@ void statevec_cloneQureg(Qureg targetQureg, Qureg copyQureg)
 qreal statevec_getRealAmp(Qureg qureg, long long int index)
 {
     cuAmp amp;
+    cudaDeviceSynchronize();
     cudaMemcpy(&amp, &(qureg.deviceCuStateVec[index]), sizeof(cuAmp), cudaMemcpyDeviceToHost);
     return cuAmpReal(amp);
 }
@@ -146,6 +151,7 @@ qreal statevec_getRealAmp(Qureg qureg, long long int index)
 qreal statevec_getImagAmp(Qureg qureg, long long int index)
 {
     cuAmp amp;
+    cudaDeviceSynchronize();
     cudaMemcpy(&amp, &(qureg.deviceCuStateVec[index]), sizeof(cuAmp), cudaMemcpyDeviceToHost);
     return cuAmpImag(amp);
 }
