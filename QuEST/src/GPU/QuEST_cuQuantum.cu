@@ -46,9 +46,21 @@
     # define CU_AMP_IN_MATRIX_PREC void // invalid
 #endif
 
-// convenient operator overloads for cuAmp, for doing complex artihmetic
+// convenient operator overloads for cuAmp, for doing complex artihmetic.
+// some of these are defined to be used by Thrust's backend, because we
+// avoided Thrust's complex<qreal> (see QuEST_precision.h for explanation).
+// notice we are manually performing the arithmetic using qreals and 
+// re-packing the result into TO_CU_AMP, rather than using cuComplex.h's 
+// functions like cuCadd(). This is because such functions are precision
+// specific (grr) and do exactly the same thing themselves!
 cuAmp operator - (const cuAmp& a) {
     return TO_CU_AMP(-cuAmpReal(a), -cuAmpImag(a));
+}
+cuAmp operator * (const cuAmp& a, const std::size_t n) {
+    return TO_CU_AMP(n*cuAmpReal(a), n*cuAmpImag(a));
+}
+cuAmp operator + (const cuAmp& a, const cuAmp& b) {
+    return TO_CU_AMP(cuAmpReal(a) + cuAmpReal(b), cuAmpImag(a) + cuAmpImag(b));
 }
 
 // convert user-facing Complex to cuQuantum-facing cuAmp
@@ -331,6 +343,10 @@ void densmatr_initPureState(Qureg targetQureg, Qureg copyQureg)
 
 void densmatr_initPlusState(Qureg qureg)
 {
+    thrust::device_ptr<cuAmp> ptr = thrust::device_pointer_cast(qureg.deviceCuStateVec);
+
+    cuAmp amp = TO_CU_AMP(1./(qreal) (1LL << qureg.numQubitsRepresented), 0);
+    thrust::fill(ptr, ptr + qureg.numAmpsTotal, amp);
 }
 
 void statevec_initZeroState(Qureg qureg)
@@ -390,36 +406,15 @@ void densmatr_initClassicalState(Qureg qureg, long long int stateInd)
     statevec_setAmps(qureg, densityInd, re, im, 1);
 }
 
+void statevec_initDebugState(Qureg qureg) {
 
+    thrust::device_ptr<cuAmp> ptr = thrust::device_pointer_cast(qureg.deviceCuStateVec);
 
-
-__global__ void statevec_initDebugStateKernel(long long int stateVecSize, cuAmp *stateVec){
-    long long int index;
-
-    index = blockIdx.x*blockDim.x + threadIdx.x;
-    if (index>=stateVecSize) return;
-
-    stateVec[index] = TO_CU_AMP( (index*2.0)/10.0, (index*2.0+1.0)/10.0 );
+    // |n> -> (.2n + (.2n+.1)i) |n>
+    cuAmp init = TO_CU_AMP(0,  .1);
+    cuAmp step = TO_CU_AMP(.2, .2);
+    thrust::sequence(ptr, ptr + qureg.numAmpsTotal, init, step);
 }
-
-void statevec_initDebugState(Qureg qureg)
-{
-    int threadsPerCUDABlock, CUDABlocks;
-    threadsPerCUDABlock = 128;
-    CUDABlocks = ceil((qreal)(qureg.numAmpsPerChunk)/threadsPerCUDABlock);
-    statevec_initDebugStateKernel<<<CUDABlocks, threadsPerCUDABlock>>>(
-        qureg.numAmpsPerChunk,
-        qureg.deviceCuStateVec);
-}
-
-
-
-// we will NOT use above; we will try to hybridise with QuEST_gpu (into _common) in order to reduce code duplication.
-/*
-void statevec_initDebugState(Qureg qureg)
-{
-}
-*/
 
 void statevec_initStateOfSingleQubit(Qureg *qureg, int qubitId, int outcome)
 {
