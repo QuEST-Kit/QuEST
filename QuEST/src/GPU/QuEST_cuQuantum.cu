@@ -126,7 +126,7 @@ void custatevec_applyMatrix(Qureg qureg, std::vector<int> ctrls, std::vector<int
     int adj = 0;
 
     // condition all ctrls on =1 state
-    int* ctrlBits = nullptr;
+    int* ctrlVals = nullptr;
 
     // use automatic workspace management
     void* work = nullptr;
@@ -137,8 +137,34 @@ void custatevec_applyMatrix(Qureg qureg, std::vector<int> ctrls, std::vector<int
         qureg.deviceCuStateVec, CU_AMP_IN_STATE_PREC, qureg.numQubitsInStateVec, 
         matr.data(), CU_AMP_IN_MATRIX_PREC, CUSTATEVEC_MATRIX_LAYOUT_ROW, adj, 
         targs.data(), targs.size(), 
-        ctrls.data(), ctrlBits, ctrls.size(), 
+        ctrls.data(), ctrlVals, ctrls.size(), 
         CUSTATEVEC_COMPUTE_DEFAULT,
+        work, workSize);
+}
+
+void custatevec_applyDiagonal(Qureg qureg, std::vector<int> targs, cuAmp* elems) {
+
+    // apply no permutation matrix
+    custatevecIndex_t *perm = nullptr;
+
+    // do not adjoint elems
+    int adj = 0;
+
+    // no control qubits
+    int* ctrls = nullptr; 
+    int* ctrlVals = nullptr;
+    int nCtrls = 0;
+
+    // use automatic workspace management
+    void* work = nullptr;
+    size_t workSize = 0;
+
+    custatevecApplyGeneralizedPermutationMatrix(
+        qureg.cuQuantumHandle, qureg.deviceCuStateVec,
+        CU_AMP_IN_STATE_PREC, qureg.numQubitsInStateVec,
+        perm, elems, CU_AMP_IN_MATRIX_PREC, adj, 
+        targs.data(), targs.size(), 
+        ctrls, ctrlVals, nCtrls,
         work, workSize);
 }
 
@@ -759,20 +785,16 @@ void statevec_multiControlledMultiQubitNot(Qureg qureg, int ctrlMask, int targMa
         custatevec_applyMatrix(qureg, ctrls, {targ}, matrix);
 }
 
-void statevec_applySubDiagonalOp(Qureg qureg, int* targets, SubDiagonalOp op, int conj)
+void statevec_applySubDiagonalOp(Qureg qureg, int* targs, SubDiagonalOp op, int conj)
 {
     // sneakily leverage the CPU cuQuantum memory in order to convert op
     // (as separate arrays op.real and op.imag) into cuAmp*
-    cuAmp* diagonals = qureg.cuStateVec;
+    cuAmp* elems = qureg.cuStateVec;
     for (long long int i=0; i<op.numElems; i++)
-        diagonals[i] = TO_CU_AMP(op.real[i], op.imag[i]);
+        elems[i] = TO_CU_AMP(op.real[i], op.imag[i]);
 
-    custatevecApplyGeneralizedPermutationMatrix(
-        qureg.cuQuantumHandle, qureg.deviceCuStateVec,
-        CU_AMP_IN_STATE_PREC, qureg.numQubitsInStateVec,
-        nullptr, diagonals, CU_AMP_IN_MATRIX_PREC, 0, 
-        targets, op.numQubits, nullptr, nullptr, 0,
-        nullptr, 0);
+    std::vector<int> t(targs, targs + op.numQubits); 
+    custatevec_applyDiagonal(qureg, t, elems);
 }
 
 void statevec_applyDiagonalOp(Qureg qureg, DiagonalOp op) 
@@ -819,22 +841,67 @@ void densmatr_mixDensityMatrix(Qureg combineQureg, qreal otherProb, Qureg otherQ
 
 void densmatr_mixDephasing(Qureg qureg, int targetQubit, qreal dephase) 
 {
+    cuAmp a = TO_CU_AMP(1, 0);
+    cuAmp b = TO_CU_AMP(1-dephase, 0); // dephase = 2*prob
+    cuAmp elems[] = {a, b, b, a};
+
+    std::vector<int> targs{targetQubit, targetQubit + qureg.numQubitsRepresented};
+    custatevec_applyDiagonal(qureg, targs, elems);
 }
 
-void densmatr_mixTwoQubitDephasing(Qureg qureg, int qubit1, int qubit2, qreal dephase)
+void densmatr_mixTwoQubitDephasing(Qureg qureg, int qb1, int qb2, qreal dephase)
 {
+    // this function effects the two-qubit dephasing on a density matrix, via the
+    // four-qubit diagonal superoperator on a Choi vector. The 16 elements of the
+    // diagonal have only two unique entries; 1 and 1-2*dephase/3. It's conceivable
+    // that a bespoke kernel could be faster, but likely by little.
+
+    cuAmp a = TO_CU_AMP(1, 0);
+    cuAmp b = TO_CU_AMP(1 - dephase, 0); // dephase = 4*prob/3
+    cuAmp elems[] = {a, b, b, b,   b, a, b, b,   b, b, a, b,   b, b, b, a};
+
+    int shift = qureg.numQubitsRepresented;
+    std::vector<int> targs{qb1, qb2, qb1 + shift, qb2 + shift};
+    custatevec_applyDiagonal(qureg, targs, elems);
 }
 
-void densmatr_mixDepolarising(Qureg qureg, int targetQubit, qreal depolLevel)
+void densmatr_mixDepolarising(Qureg qureg, int targetQubit, qreal depol)
 {
-}
+    // this function effects depolarising as a dense two-qubit superoperator 
+    // on a Choi vector, where only 6 of the 16 elements are non-zero. This is
+    // potentially wasteful, and a bespoke kernel could be faster, leveraging
+    // QuEST's existing GPU code (or the optimised algorithm in the "distributed"
+    // manuscript).
 
-void densmatr_mixDamping(Qureg qureg, int targetQubit, qreal damping)
-{
+    // depol = (4*prob)/3.0
+    cuAmp a = TO_CU_AMP(depol/2., 0);     // 2*prob/3
+    cuAmp b = TO_CU_AMP(1 - depol/2., 0); // 1-2*prob/3
+    cuAmp c = TO_CU_AMP(1 - depol, 0);    // 1-4*prob/3
+    cuAmp z = TO_CU_AMP(0, 0);            // 0
+
+    cuMatr matr{
+        b, z, z, a,
+        z, c, z, z,
+        z, z, c, z,
+        a, z, z, b
+    };
+    std::vector<int> targs{ targetQubit, targetQubit + qureg.numQubitsRepresented };
+    custatevec_applyMatrix(qureg, {}, targs, matr);
 }
 
 void densmatr_mixTwoQubitDepolarising(Qureg qureg, int qubit1, int qubit2, qreal depolLevel)
 {
+}
+
+void densmatr_mixDamping(Qureg qureg, int qb, qreal prob)
+{
+    cuAmp a = TO_CU_AMP(1, 0);
+    cuAmp c = TO_CU_AMP(1 - prob, 0);
+    cuAmp b = TO_CU_AMP(sqrt(1 - prob), 0);
+    cuAmp elems[] = {a, b, b, c};
+
+    std::vector<int> targs{qb, qb + qureg.numQubitsRepresented};
+    custatevec_applyDiagonal(qureg, targs, elems);
 }
 
 
