@@ -286,7 +286,12 @@ endif()
 # ----- C++ COMPILER FLAGS --------------------------------------------------
 
 # set C++ flags that are common between compilers and build types
-set (CMAKE_CXX_STANDARD 98)
+if (USE_CUQUANTUM)
+  set(CMAKE_CXX_STANDARD 14)
+  set(CMAKE_CXX_STANDARD_REQUIRED ON)
+else ()
+  set (CMAKE_CXX_STANDARD 98)
+endif ()
 
 # Use -O2 for all but debug mode by default 
 if (NOT("${CMAKE_BUILD_TYPE}" STREQUAL "Debug"))

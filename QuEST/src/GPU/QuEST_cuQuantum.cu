@@ -14,8 +14,11 @@
 # include "QuEST_gpu_common.h"
 # include "QuEST_precision.h"
 # include "QuEST_validation.h"
-# include <custatevec.h>
+
+# include <cuComplex.h>
 # include <vector>
+# include <custatevec.h>
+# include <thrust/device_ptr.h>
 
 
 
