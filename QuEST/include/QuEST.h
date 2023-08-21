@@ -41,6 +41,7 @@
    # include <custatevec.h>
 # else
    # define custatevecHandle_t void*
+   # define cudaStream_t void*
 # endif
 
 
@@ -383,6 +384,7 @@ typedef struct Qureg
     cuAmp* cuStateVec;
     cuAmp* deviceCuStateVec;
     custatevecHandle_t cuQuantumHandle;
+    cudaStream_t cuStream;
 
     //! Storage for generated QASM output
     QASMLogger* qasmLog;
@@ -405,6 +407,7 @@ typedef struct QuESTEnv
 
     // handle to cuQuantum (specifically cuStateVec) used only cuQuantum deployment mode (otherwise is void*)
     custatevecHandle_t cuQuantumHandle;
+    cudaStream_t cuStream;
     
 } QuESTEnv;
 

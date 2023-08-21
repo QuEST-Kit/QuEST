@@ -145,7 +145,7 @@ int GPUSupportsMemPools() {
 }
 
 int memPoolAlloc(void* ctx, void** ptr, size_t size, cudaStream_t stream) {
-    cudaMemPool_t pool = * reinterpret_cast<cudaMemPool_t*>(ctx);
+    cudaMemPool_t pool = *static_cast<cudaMemPool_t*>(ctx);
     return cudaMallocFromPoolAsync(ptr, size, pool, stream); 
 }
 int memPoolFree(void* ctx, void* ptr, size_t size, cudaStream_t stream) {
@@ -155,24 +155,27 @@ int memPoolFree(void* ctx, void* ptr, size_t size, cudaStream_t stream) {
 void setupAutoWorkspaces(custatevecHandle_t cuQuantumHandle) {
 
     // get the current (device's default) stream-ordered memory pool (assuming single GPU)
-    int device = 0;
+    int deviceId;
+    cudaGetDevice(&deviceId);
     cudaMemPool_t memPool;
-    cudaDeviceGetMemPool(&memPool, device);
+    cudaDeviceGetMemPool(&memPool, deviceId);
 
     // get its current memory threshold, above which memory gets freed at every stream synch
     size_t currMaxMem;
     cudaMemPoolGetAttribute(memPool, cudaMemPoolAttrReleaseThreshold, &currMaxMem); 
 
     // if it's smaller than 1 MiB = 16 qubits, extend it
-    size_t desiredMaxMem = 16*(1LL<<16);
+    size_t desiredMaxMem = UINT64_MAX;
     if (currMaxMem < desiredMaxMem)
         cudaMemPoolSetAttribute(memPool, cudaMemPoolAttrReleaseThreshold, &desiredMaxMem); 
 
     // create a mem handler around the mem pool
     custatevecDeviceMemHandler_t memHandler;
-    memHandler.ctx = reinterpret_cast<void*>(&memPool);
+    memHandler.ctx = &memPool;
     memHandler.device_alloc = memPoolAlloc;
     memHandler.device_free = memPoolFree;
+    strcpy(memHandler.name, "mempool");
+    printf("created mem handler\n");
 
     // set cuQuantum to use this handler and pool, to automate workspace memory management
     custatevecSetDeviceMemHandler(cuQuantumHandle, &memHandler);
@@ -192,6 +195,8 @@ QuESTEnv createQuESTEnv(void) {
 
     // prepare cuQuantum
     custatevecCreate(&env.cuQuantumHandle);
+    cudaStreamCreate(&env.cuStream);    
+    custatevecSetStream(env.cuQuantumHandle, env.cuStream);
     setupAutoWorkspaces(env.cuQuantumHandle);
     
     return env;
@@ -202,6 +207,7 @@ void destroyQuESTEnv(QuESTEnv env){
 
     // finalise cuQuantum
     custatevecDestroy(env.cuQuantumHandle);
+    cudaStreamDestroy(env.cuStream);
 }
 
 
@@ -221,8 +227,9 @@ void statevec_createQureg(Qureg *qureg, int numQubits, QuESTEnv env)
     qureg->numChunks = 1;
     qureg->isDensityMatrix = 0;
 
-    // copy env's cuQuantum handle to qureg
+    // copy env's cuQuantum handles
     qureg->cuQuantumHandle = env.cuQuantumHandle;
+    qureg->cuStream = env.cuStream;
 
     // allocate user-facing CPU memory
     qureg->stateVec.real = (qreal*) malloc(numAmps * sizeof(qureg->stateVec.real));
