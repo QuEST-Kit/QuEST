@@ -165,7 +165,7 @@ void setupAutoWorkspaces(custatevecHandle_t cuQuantumHandle) {
     cudaMemPoolGetAttribute(memPool, cudaMemPoolAttrReleaseThreshold, &currMaxMem); 
 
     // if it's smaller than 1 MiB = 16 qubits, extend it
-    size_t desiredMaxMem = UINT64_MAX;
+    size_t desiredMaxMem = 16*(1<<15);
     if (currMaxMem < desiredMaxMem)
         cudaMemPoolSetAttribute(memPool, cudaMemPoolAttrReleaseThreshold, &desiredMaxMem); 
 
