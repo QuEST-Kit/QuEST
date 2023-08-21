@@ -137,10 +137,10 @@ void custatevec_applyMatrix(Qureg qureg, std::vector<int> ctrls, std::vector<int
 int GPUSupportsMemPools() {
 
     // consult only the first device (garuanteed already to exist)
-    int device = 0;
-
+    int deviceId;
+    cudaGetDevice(&deviceId);
     int supports;
-    cudaDeviceGetAttribute(&supports, cudaDevAttrMemoryPoolsSupported, device);
+    cudaDeviceGetAttribute(&supports, cudaDevAttrMemoryPoolsSupported, deviceId);
     return supports;
 }
 
