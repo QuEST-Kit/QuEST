@@ -11,7 +11,7 @@
 # include "QuEST_gpu_common.h"
 # include "QuEST_precision.h"
 # include "QuEST_validation.h"
-# include "QuEST_internal.h" // for getQubitBitmask
+# include "QuEST_internal.h"
 
 # include <stdlib.h>
 # include <stdio.h>
@@ -2894,74 +2894,6 @@ void densmatr_mixDamping(Qureg qureg, int targetQubit, qreal damping) {
     densmatr_mixDampingKernel<<<CUDABlocks, threadsPerCUDABlock>>>(
         damping, qureg.deviceStateVec.real, qureg.deviceStateVec.imag, numAmpsToVisit,
         part1, part2, part3, bothBits);
-}
-
-/** Called once for every 16 amplitudes */
-__global__ void densmatr_mixTwoQubitDepolarisingKernel(
-    qreal depolLevel, qreal* vecReal, qreal *vecImag, long long int numAmpsToVisit,
-    long long int part1, long long int part2, long long int part3, 
-    long long int part4, long long int part5,
-    long long int rowCol1, long long int rowCol2)
-{
-    long long int scanInd = blockIdx.x*blockDim.x + threadIdx.x;
-    if (scanInd >= numAmpsToVisit) return;
-    
-    // index of |..0..0..><..0..0|
-    long long int ind00 = (scanInd&part1) + ((scanInd&part2)<<1) + ((scanInd&part3)<<2) + ((scanInd&part4)<<3) + ((scanInd&part5)<<4);
-    long long int ind01 = ind00 + rowCol1;
-    long long int ind10 = ind00 + rowCol2;
-    long long int ind11 = ind00 + rowCol1 + rowCol2;
-    
-    qreal realAvDepol = depolLevel * 0.25 * (
-        vecReal[ind00] + vecReal[ind01] + vecReal[ind10] + vecReal[ind11]);
-    qreal imagAvDepol = depolLevel * 0.25 * (
-        vecImag[ind00] + vecImag[ind01] + vecImag[ind10] + vecImag[ind11]);
-    
-    qreal retain = 1 - depolLevel;
-    vecReal[ind00] *= retain; vecImag[ind00] *= retain;
-    vecReal[ind01] *= retain; vecImag[ind01] *= retain;
-    vecReal[ind10] *= retain; vecImag[ind10] *= retain;
-    vecReal[ind11] *= retain; vecImag[ind11] *= retain;
-
-    vecReal[ind00] += realAvDepol; vecImag[ind00] += imagAvDepol;
-    vecReal[ind01] += realAvDepol; vecImag[ind01] += imagAvDepol;
-    vecReal[ind10] += realAvDepol; vecImag[ind10] += imagAvDepol;
-    vecReal[ind11] += realAvDepol; vecImag[ind11] += imagAvDepol;
-}
-
-void densmatr_mixTwoQubitDepolarising(Qureg qureg, int qubit1, int qubit2, qreal depolLevel) {
-    
-    if (depolLevel == 0)
-        return;
-    
-    // assumes qubit2 > qubit1
-    
-    densmatr_mixTwoQubitDephasing(qureg, qubit1, qubit2, depolLevel);
-    
-    int rowQubit1 = qubit1 + qureg.numQubitsRepresented;
-    int rowQubit2 = qubit2 + qureg.numQubitsRepresented;
-    
-    long long int colBit1 = 1LL << qubit1;
-    long long int rowBit1 = 1LL << rowQubit1;
-    long long int colBit2 = 1LL << qubit2;
-    long long int rowBit2 = 1LL << rowQubit2;
-    
-    long long int rowCol1 = colBit1 | rowBit1;
-    long long int rowCol2 = colBit2 | rowBit2;
-    
-    long long int numAmpsToVisit = qureg.numAmpsPerChunk/16;
-    long long int part1 = colBit1 - 1;
-    long long int part2 = (colBit2 >> 1) - colBit1;
-    long long int part3 = (rowBit1 >> 2) - (colBit2 >> 1);
-    long long int part4 = (rowBit2 >> 3) - (rowBit1 >> 2);
-    long long int part5 = numAmpsToVisit - (rowBit2 >> 3);
-    
-    int threadsPerCUDABlock, CUDABlocks;
-    threadsPerCUDABlock = 128;
-    CUDABlocks = ceil(numAmpsToVisit / (qreal) threadsPerCUDABlock);
-    densmatr_mixTwoQubitDepolarisingKernel<<<CUDABlocks, threadsPerCUDABlock>>>(
-        depolLevel, qureg.deviceStateVec.real, qureg.deviceStateVec.imag, numAmpsToVisit,
-        part1, part2, part3, part4, part5, rowCol1, rowCol2);
 }
 
 __global__ void statevec_setWeightedQuregKernel(Complex fac1, Qureg qureg1, Complex fac2, Qureg qureg2, Complex facOut, Qureg out) {
