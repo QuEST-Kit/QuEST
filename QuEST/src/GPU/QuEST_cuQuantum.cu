@@ -5,7 +5,8 @@
  * This makes no use of the ComplexArray qureg.deviceStateVec, used by the bespoke GPU kernels,
  * which is not malloc'd in this deployment. Instead, this cuQuantum backend mallocs and uses
  * two dedicated arrays of 'cuAmp' complex primitives; qureg.cuStateVec (CPU memory) and
- * qureg.deviceCuStateVec (GPU memory)
+ * qureg.deviceCuStateVec (GPU memory). Note that some API functions are implemented directly
+ * in QuEST_gpu_common.cu, in a way agnostic to cuQuantum vs bespoke kernels.
  *
  * @author Tyson Jones
  */
@@ -49,9 +50,28 @@
     # define CU_AMP_IN_MATRIX_PREC void // invalid
 #endif
 
-// convenient operator overloads for cuAmp, for doing complex artihmetic
-cuAmp operator - (const cuAmp& a) {
+// convenient operator overloads for cuAmp, for doing complex artihmetic.
+// some of these are defined to be used by Thrust's backend, because we
+// avoided Thrust's complex<qreal> (see QuEST_precision.h for explanation).
+// notice we are manually performing the arithmetic using qreals and 
+// re-packing the result into TO_CU_AMP, rather than using cuComplex.h's 
+// functions like cuCadd(). This is because such functions are precision
+// specific (grr) and do exactly the same thing themselves!
+__host__ __device__ inline cuAmp operator - (const cuAmp& a) {
     return TO_CU_AMP(-cuAmpReal(a), -cuAmpImag(a));
+}
+__host__ __device__ inline cuAmp operator * (const cuAmp& a, const std::size_t n) {
+    return TO_CU_AMP(n*cuAmpReal(a), n*cuAmpImag(a));
+}
+__host__ __device__ inline cuAmp operator + (const cuAmp& a, const cuAmp& b) {
+    return TO_CU_AMP(cuAmpReal(a) + cuAmpReal(b), cuAmpImag(a) + cuAmpImag(b));
+}
+__host__ __device__ inline cuAmp operator * (const cuAmp& a, const cuAmp& b) {
+    qreal aRe = cuAmpReal(a);
+    qreal aIm = cuAmpImag(a);
+    qreal bRe = cuAmpReal(b);
+    qreal bIm = cuAmpImag(b);
+    return TO_CU_AMP(aRe*bRe - aIm*bIm, aRe*bIm + aIm*bRe);
 }
 
 // convert user-facing Complex to cuQuantum-facing cuAmp
@@ -96,12 +116,6 @@ std::vector<int> getIndsFromMask(long long int mask, int numBits) {
 
 
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-
-
 /*
  * CUQUANTUM WRAPPERS (to reduce boilerplate)
  */
@@ -127,6 +141,46 @@ void custatevec_applyMatrix(Qureg qureg, std::vector<int> ctrls, std::vector<int
         CUSTATEVEC_COMPUTE_DEFAULT,
         work, workSize);
 }
+
+
+
+/*
+ * THRUST WRAPPERS AND FUNCTORS (to reduce boilerplate, and for custom modification of statevectors)
+ */
+
+struct functor_setWeightedQureg
+{
+    // functor requires 3 complex scalars
+    const cuAmp fac1;
+    const cuAmp fac2;
+    const cuAmp facOut;
+    functor_setWeightedQureg(cuAmp _fac1, cuAmp _fac2, cuAmp _facOut) : 
+        fac1(_fac1), fac2(_fac2), facOut(_facOut) {}
+
+    // and modifies out to (facOut out + fac1 qureg1 + fac2 qureg2)
+    template <typename Tuple> __host__ __device__ void operator()(Tuple t) {
+        thrust::get<2>(t) = facOut*thrust::get<2>(t) + fac1*thrust::get<0>(t) + fac2*thrust::get<1>(t);
+    }
+};
+
+thrust::device_ptr<cuAmp> getStartPtr(Qureg qureg) {
+
+    return thrust::device_pointer_cast(qureg.deviceCuStateVec);
+}
+
+thrust::device_ptr<cuAmp> getEndPtr(Qureg qureg) {
+
+    return getStartPtr(qureg) + qureg.numAmpsTotal;
+}
+
+
+
+/*
+ * Start C-linkage, so that below functions may only use C signatures (not C++)
+ */
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 
 
@@ -328,53 +382,84 @@ qreal statevec_getImagAmp(Qureg qureg, long long int index)
  * STATE INITIALISATION
  */
 
-void densmatr_initPureState(Qureg targetQureg, Qureg copyQureg)
-{
-}
-
 void densmatr_initPlusState(Qureg qureg)
 {
-}
-
-void densmatr_initClassicalState(Qureg qureg, long long int stateInd)
-{
-}
-
-void statevec_initBlankState(Qureg qureg)
-{
+    qreal val = 1./(1LL << qureg.numQubitsRepresented);
+    thrust::fill(getStartPtr(qureg), getEndPtr(qureg), TO_CU_AMP(val, 0));
 }
 
 void statevec_initZeroState(Qureg qureg)
 {
+    custatevecInitializeStateVector(
+        qureg.cuQuantumHandle, 
+        qureg.deviceCuStateVec, 
+        CU_AMP_IN_STATE_PREC, 
+        qureg.numQubitsInStateVec, 
+        CUSTATEVEC_STATE_VECTOR_TYPE_ZERO);
+}
+
+void statevec_initBlankState(Qureg qureg)
+{
+    // init to |0> = {1, 0, 0, ...}
+    statevec_initZeroState(qureg);
+
+    // overwrite amps[0] to 0
+    qreal re[] = {0};
+    qreal im[] = {0};
+    statevec_setAmps(qureg, 0, re, im, 1);
 }
 
 void statevec_initPlusState(Qureg qureg)
 {
+    custatevecInitializeStateVector(
+        qureg.cuQuantumHandle, 
+        qureg.deviceCuStateVec, 
+        CU_AMP_IN_STATE_PREC, 
+        qureg.numQubitsInStateVec, 
+        CUSTATEVEC_STATE_VECTOR_TYPE_UNIFORM);
 }
 
 void statevec_initClassicalState(Qureg qureg, long long int stateInd)
 {
+    // init to |null> = {0, 0, 0, ...}
+    statevec_initBlankState(qureg);
+
+    // overwrite amps[stateInd] to 1
+    qreal re[] = {1};
+    qreal im[] = {0};
+    statevec_setAmps(qureg, stateInd, re, im, 1);
+}
+
+void densmatr_initClassicalState(Qureg qureg, long long int stateInd)
+{
+    // init to |null> = {0, 0, 0, ...}
+    statevec_initBlankState(qureg);
+
+    // index of the desired state in the flat density matrix
+    long long int densityDim = 1LL << qureg.numQubitsRepresented;
+    long long int densityInd = (densityDim + 1)*stateInd;
+
+    // overwrite amps[densityInd] to 1
+    qreal re[] = {1};
+    qreal im[] = {0};
+    statevec_setAmps(qureg, densityInd, re, im, 1);
 }
 
 void statevec_initDebugState(Qureg qureg)
 {
-}
-
-void statevec_initStateOfSingleQubit(Qureg *qureg, int qubitId, int outcome)
-{
-}
-
-int statevec_initStateFromSingleFile(Qureg *qureg, char filename[200], QuESTEnv env)
-{
-    return -1;
-}
-
-void densmatr_setQuregToPauliHamil(Qureg qureg, PauliHamil hamil)
-{
+    // |n> -> (.2n + (.2n+.1)i) |n>
+    cuAmp init = TO_CU_AMP(0,  .1);
+    cuAmp step = TO_CU_AMP(.2, .2);
+    thrust::sequence(getStartPtr(qureg), getEndPtr(qureg), init, step);
 }
 
 void statevec_setWeightedQureg(Complex fac1, Qureg qureg1, Complex fac2, Qureg qureg2, Complex facOut, Qureg out)
 {
+    // out ->  facOut + fac1 qureg1 + fac2 qureg2
+    thrust::for_each(
+        thrust::make_zip_iterator(thrust::make_tuple(getStartPtr(qureg1), getStartPtr(qureg2), getStartPtr(out))),
+        thrust::make_zip_iterator(thrust::make_tuple(getEndPtr(qureg1),   getEndPtr(qureg2),   getEndPtr(out))),
+        functor_setWeightedQureg(toCuAmp(fac1), toCuAmp(fac2), toCuAmp(facOut)));
 }
 
 
@@ -385,11 +470,6 @@ void statevec_setWeightedQureg(Complex fac1, Qureg qureg1, Complex fac2, Qureg q
 
 void statevec_reportStateToScreen(Qureg qureg, QuESTEnv env, int reportRank)
 {
-}
-
-int statevec_compareStates(Qureg mq1, Qureg mq2, qreal precision)
-{
-    return -1;
 }
 
 
