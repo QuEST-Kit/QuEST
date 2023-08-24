@@ -1729,13 +1729,6 @@ void initStateFromSingleFile(Qureg *qureg, char filename[200], QuESTEnv env) {
     validateFileOpened(success, filename, __func__);
 }
 
-void initStateOfSingleQubit(Qureg *qureg, int qubitId, int outcome) {
-    validateStateVecQureg(*qureg, __func__);
-    validateTarget(*qureg, qubitId, __func__);
-    validateOutcome(outcome, __func__);
-    statevec_initStateOfSingleQubit(qureg, qubitId, outcome);
-}
-
 void reportStateToScreen(Qureg qureg, QuESTEnv env, int reportRank)  {
     statevec_reportStateToScreen(qureg, env, reportRank);
 }

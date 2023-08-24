@@ -123,8 +123,6 @@ int statevec_compareStates(Qureg mq1, Qureg mq2, qreal precision);
 
 int statevec_initStateFromSingleFile(Qureg *qureg, char filename[200], QuESTEnv env);
 
-void statevec_initStateOfSingleQubit(Qureg *qureg, int qubitId, int outcome);
-
 void statevec_createQureg(Qureg *qureg, int numQubits, QuESTEnv env);
 
 void statevec_destroyQureg(Qureg qureg, QuESTEnv env);

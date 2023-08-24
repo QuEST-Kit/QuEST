@@ -1642,53 +1642,6 @@ void statevec_cloneQureg(Qureg targetQureg, Qureg copyQureg) {
 }
 
 /**
- * Initialise the state vector of probability amplitudes such that one qubit is set to 'outcome' and all other qubits are in an equal superposition of zero and one.
- * @param[in,out] qureg object representing the set of qubits to be initialised
- * @param[in] qubitId id of qubit to set to state 'outcome'
- * @param[in] outcome of qubit 'qubitId'
- */
-void statevec_initStateOfSingleQubit(Qureg *qureg, int qubitId, int outcome)
-{
-    long long int chunkSize, stateVecSize;
-    long long int index;
-    int bit;
-    long long int chunkId=qureg->chunkId;
-
-    // dimension of the state vector
-    chunkSize = qureg->numAmpsPerChunk;
-    stateVecSize = chunkSize*qureg->numChunks;
-    qreal normFactor = 1.0/sqrt((qreal)stateVecSize/2.0);
-
-    // Can't use qureg->stateVec as a private OMP var
-    qreal *stateVecReal = qureg->stateVec.real;
-    qreal *stateVecImag = qureg->stateVec.imag;
-
-    // initialise the state to |0000..0000>
-# ifdef _OPENMP
-# pragma omp parallel \
-    default  (none) \
-    shared   (chunkSize, stateVecReal, stateVecImag, normFactor, qubitId, outcome, chunkId) \
-    private  (index, bit)
-# endif
-    {
-# ifdef _OPENMP
-# pragma omp for schedule (static)
-# endif
-        for (index=0; index<chunkSize; index++) {
-            bit = extractBit(qubitId, index+chunkId*chunkSize);
-            if (bit==outcome) {
-                stateVecReal[index] = normFactor;
-                stateVecImag[index] = 0.0;
-            } else {
-                stateVecReal[index] = 0.0;
-                stateVecImag[index] = 0.0;
-            }
-        }
-    }
-}
-
-
-/**
  * Initialise the state vector of probability amplitudes to an (unphysical) state with
  * each component of each probability amplitude a unique floating point value. For debugging processes
  * @param[in,out] qureg object representing the set of qubits to be initialised

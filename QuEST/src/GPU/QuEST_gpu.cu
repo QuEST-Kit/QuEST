@@ -702,32 +702,6 @@ void statevec_initDebugState(Qureg qureg)
         qureg.deviceStateVec.imag);
 }
 
-__global__ void statevec_initStateOfSingleQubitKernel(long long int stateVecSize, qreal *stateVecReal, qreal *stateVecImag, int qubitId, int outcome){
-    long long int index;
-    int bit;
-
-    index = blockIdx.x*blockDim.x + threadIdx.x;
-    if (index>=stateVecSize) return;
-
-    qreal normFactor = 1.0/sqrt((qreal)stateVecSize/2);
-    bit = extractBit(qubitId, index);
-    if (bit==outcome) {
-        stateVecReal[index] = normFactor;
-        stateVecImag[index] = 0.0;
-    } else {
-        stateVecReal[index] = 0.0;
-        stateVecImag[index] = 0.0;
-    }
-}
-
-void statevec_initStateOfSingleQubit(Qureg *qureg, int qubitId, int outcome)
-{
-    int threadsPerCUDABlock, CUDABlocks;
-    threadsPerCUDABlock = 128;
-    CUDABlocks = ceil((qreal)(qureg->numAmpsPerChunk)/threadsPerCUDABlock);
-    statevec_initStateOfSingleQubitKernel<<<CUDABlocks, threadsPerCUDABlock>>>(qureg->numAmpsPerChunk, qureg->deviceStateVec.real, qureg->deviceStateVec.imag, qubitId, outcome);
-}
-
 // returns 1 if successful, else 0
 int statevec_initStateFromSingleFile(Qureg *qureg, char filename[200], QuESTEnv env){
     long long int chunkSize, stateVecSize;
