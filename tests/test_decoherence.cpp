@@ -9,7 +9,8 @@
 #define PREPARE_TEST(qureg, ref) \
     Qureg qureg = createDensityQureg(NUM_QUBITS, QUEST_ENV); \
     initDebugState(qureg); \
-    QMatrix ref = toQMatrix(qureg);
+    QMatrix ref = toQMatrix(qureg); \
+    assertQuregAndRefInDebugState(qureg, ref);
 
 /* allows concise use of Contains in catch's REQUIRE_THROWS_WITH */
 using Catch::Matchers::Contains;

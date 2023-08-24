@@ -27,7 +27,9 @@
     initDebugState(quregVec); \
     initDebugState(quregMatr); \
     QVector refVec = toQVector(quregVec); \
-    QMatrix refMatr = toQMatrix(quregMatr);
+    QMatrix refMatr = toQMatrix(quregMatr); \
+    assertQuregAndRefInDebugState(quregVec, refVec); \
+    assertQuregAndRefInDebugState(quregMatr, refMatr);
 
 /** Destroys the data structures made by PREPARE_TEST */
 #define CLEANUP_TEST(quregVec, quregMatr) \
