@@ -122,6 +122,8 @@ std::vector<int> getIndsFromMask(long long int mask, int numBits) {
 
 void custatevec_applyMatrix(Qureg qureg, std::vector<int> ctrls, std::vector<int> targs, cuMatr matr) {
 
+    // APPLY POINTLESS CHANGE
+
     // do not adjoint matrix
     int adj = 0;
 
