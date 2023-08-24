@@ -165,6 +165,9 @@ int GPUSupportsMemPools() {
     int supports;
     cudaDeviceGetAttribute(&supports, cudaDevAttrMemoryPoolsSupported, device);
     return supports;
+
+    // unimportant change, BLAH BLAH
+    int xyz = -1;
 }
 
 int memPoolAlloc(void* ctx, void** ptr, size_t size, cudaStream_t stream) {
