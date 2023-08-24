@@ -5,7 +5,8 @@
  * This makes no use of the ComplexArray qureg.deviceStateVec, used by the bespoke GPU kernels,
  * which is not malloc'd in this deployment. Instead, this cuQuantum backend mallocs and uses
  * two dedicated arrays of 'cuAmp' complex primitives; qureg.cuStateVec (CPU memory) and
- * qureg.deviceCuStateVec (GPU memory)
+ * qureg.deviceCuStateVec (GPU memory). Note that some API functions are implemented directly
+ * in QuEST_gpu_common.cu, in a way agnostic to cuQuantum vs bespoke kernels.
  *
  * @author Tyson Jones
  */
@@ -378,10 +379,6 @@ qreal statevec_getImagAmp(Qureg qureg, long long int index)
  * STATE INITIALISATION
  */
 
-void densmatr_initPureState(Qureg targetQureg, Qureg copyQureg)
-{
-}
-
 void densmatr_initPlusState(Qureg qureg)
 {
     qreal val = 1./(1LL << qureg.numQubitsRepresented);
@@ -451,10 +448,6 @@ void statevec_initDebugState(Qureg qureg)
     cuAmp init = TO_CU_AMP(0,  .1);
     cuAmp step = TO_CU_AMP(.2, .2);
     thrust::sequence(getStartPtr(qureg), getEndPtr(qureg), init, step);
-}
-
-void densmatr_setQuregToPauliHamil(Qureg qureg, PauliHamil hamil)
-{
 }
 
 void statevec_setWeightedQureg(Complex fac1, Qureg qureg1, Complex fac2, Qureg qureg2, Complex facOut, Qureg out)
