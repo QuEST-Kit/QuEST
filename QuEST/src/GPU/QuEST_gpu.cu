@@ -702,61 +702,6 @@ void statevec_initDebugState(Qureg qureg)
         qureg.deviceStateVec.imag);
 }
 
-// returns 1 if successful, else 0
-int statevec_initStateFromSingleFile(Qureg *qureg, char filename[200], QuESTEnv env){
-    long long int chunkSize, stateVecSize;
-    long long int indexInChunk, totalIndex;
-
-    chunkSize = qureg->numAmpsPerChunk;
-    stateVecSize = chunkSize*qureg->numChunks;
-
-    qreal *stateVecReal = qureg->stateVec.real;
-    qreal *stateVecImag = qureg->stateVec.imag;
-
-    FILE *fp;
-    char line[200];
-
-    fp = fopen(filename, "r");
-    if (fp == NULL)
-        return 0;
-    
-    indexInChunk = 0; totalIndex = 0;
-    while (fgets(line, sizeof(char)*200, fp) != NULL && totalIndex<stateVecSize){
-        if (line[0]!='#'){
-            int chunkId = totalIndex/chunkSize;
-            if (chunkId==qureg->chunkId){
-                sscanf(line, REAL_SPECIFIER ", " REAL_SPECIFIER, &(stateVecReal[indexInChunk]),
-                        &(stateVecImag[indexInChunk]));
-                indexInChunk += 1;
-            }
-            totalIndex += 1;
-        }
-    }
-    fclose(fp);
-    copyStateToGPU(*qureg);
-    
-    // indicate success
-    return 1;
-}
-
-int statevec_compareStates(Qureg mq1, Qureg mq2, qreal precision){
-    qreal diff;
-    int chunkSize = mq1.numAmpsPerChunk;
-
-    copyStateFromGPU(mq1);
-    copyStateFromGPU(mq2);
-
-    for (int i=0; i<chunkSize; i++){
-        diff = mq1.stateVec.real[i] - mq2.stateVec.real[i];
-        if (diff<0) diff *= -1;
-        if (diff>precision) return 0;
-        diff = mq1.stateVec.imag[i] - mq2.stateVec.imag[i];
-        if (diff<0) diff *= -1;
-        if (diff>precision) return 0;
-    }
-    return 1;
-}
-
 __global__ void statevec_compactUnitaryKernel (Qureg qureg, int rotQubit, Complex alpha, Complex beta){
     // ----- sizes
     long long int sizeBlock,                                           // size of blocks

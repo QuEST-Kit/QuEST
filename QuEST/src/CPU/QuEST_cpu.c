@@ -1679,62 +1679,6 @@ void statevec_initDebugState (Qureg qureg)
     }
 }
 
-// returns 1 if successful, else 0
-int statevec_initStateFromSingleFile(Qureg *qureg, char filename[200], QuESTEnv env){
-    long long int chunkSize, stateVecSize;
-    long long int indexInChunk, totalIndex;
-
-    chunkSize = qureg->numAmpsPerChunk;
-    stateVecSize = chunkSize*qureg->numChunks;
-
-    qreal *stateVecReal = qureg->stateVec.real;
-    qreal *stateVecImag = qureg->stateVec.imag;
-
-    FILE *fp;
-    char line[200];
-
-    for (int rank=0; rank<(qureg->numChunks); rank++){
-        if (rank==qureg->chunkId){
-            fp = fopen(filename, "r");
-            
-            // indicate file open failure
-            if (fp == NULL)
-                return 0;
-            
-            indexInChunk = 0; totalIndex = 0;
-            while (fgets(line, sizeof(char)*200, fp) != NULL && totalIndex<stateVecSize){
-                if (line[0]!='#'){
-                    int chunkId = (int) (totalIndex/chunkSize);
-                    if (chunkId==qureg->chunkId){
-                        sscanf(line, REAL_SPECIFIER ", " REAL_SPECIFIER, &(stateVecReal[indexInChunk]),
-                                &(stateVecImag[indexInChunk])); 
-                        indexInChunk += 1;
-                    }
-                    totalIndex += 1;
-                }
-            }   
-            fclose(fp);
-        }
-        syncQuESTEnv(env);
-    }
-    
-    // indicate success
-    return 1;
-}
-
-int statevec_compareStates(Qureg mq1, Qureg mq2, qreal precision){
-    qreal diff;
-    long long int chunkSize = mq1.numAmpsPerChunk;
-    
-    for (long long int i=0; i<chunkSize; i++){
-        diff = absReal(mq1.stateVec.real[i] - mq2.stateVec.real[i]);
-        if (diff>precision) return 0;
-        diff = absReal(mq1.stateVec.imag[i] - mq2.stateVec.imag[i]);
-        if (diff>precision) return 0;
-    }
-    return 1;
-}
-
 void statevec_compactUnitaryLocal (Qureg qureg, int targetQubit, Complex alpha, Complex beta)
 {
     long long int sizeBlock, sizeHalfBlock;

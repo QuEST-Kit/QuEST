@@ -119,10 +119,6 @@ void densmatr_setQuregToPauliHamil(Qureg qureg, PauliHamil hamil);
     
 void statevec_reportStateToScreen(Qureg qureg, QuESTEnv env, int reportRank);
 
-int statevec_compareStates(Qureg mq1, Qureg mq2, qreal precision);
-
-int statevec_initStateFromSingleFile(Qureg *qureg, char filename[200], QuESTEnv env);
-
 void statevec_createQureg(Qureg *qureg, int numQubits, QuESTEnv env);
 
 void statevec_destroyQureg(Qureg qureg, QuESTEnv env);
