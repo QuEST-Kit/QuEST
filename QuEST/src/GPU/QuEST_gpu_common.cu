@@ -30,6 +30,49 @@ extern "C" {
 
 
 
+/*
+ * GPU CONFIG
+ */
+
+const int NUM_THREADS_PER_BLOCK = 128;
+
+
+
+/*
+ * BACKEND AGNOSTIC COMPLEX ARITHMETIC
+ */
+
+#define PROD_REAL(aRe, aIm, bRe, bIm) \
+    ((aRe)*(bRe) - (aIm)*(bIm))
+#define PROD_IMAG(aRe, aIm, bRe, bIm) \
+    ((aRe)*(bIm) + (aIm)*(bRe))
+
+#ifdef USE_CUQUANTUM
+    #define GET_AMP(aRe, aIm, qureg, i) \
+        aRe = qureg.deviceCuStateVec[i].x; \
+        aIm = qureg.deviceCuStateVec[i].y;
+#else
+    #define GET_AMP(aRe, aIm, qureg, i) \
+        aRe = qureg.deviceStateVec.real[i]; \
+        aIm = qureg.deviceStateVec.imag[i];
+#endif
+
+#ifdef USE_CUQUANTUM
+    #define SET_AMP(qureg, i, aRe, aIm) \
+        qureg.deviceCuStateVec[i].x = aRe; \
+        qureg.deviceCuStateVec[i].y = aIm;
+#else
+    #define SET_AMP(qureg, i, aRe, aIm) \
+        qureg.deviceStateVec.real[i] = aRe; \
+        qureg.deviceStateVec.imag[i] = aIm;
+#endif
+
+
+
+/*
+ * ENVIRONMENT MANAGEMENT
+ */
+
 int GPUExists(void) {
     int deviceCount, device;
     int gpuDeviceCount = 0;
@@ -110,9 +153,116 @@ void seedQuEST(QuESTEnv *env, unsigned long int *seedArray, int numSeeds) {
 
 
 
+/*
+ * STATE INITIALISATION
+ */
+
+__global__ void densmatr_initPureStateKernel(Qureg dens, Qureg pure)
+{
+    long long int pureInd = blockIdx.x*blockDim.x + threadIdx.x;
+    if (pureInd >= pure.numAmpsPerChunk) return;
+
+    qreal aRe, aIm;
+    GET_AMP( aRe, aIm, pure, pureInd );
+
+    for (long long int col=0; col<pure.numAmpsPerChunk; col++) {
+        long long int densInd = col*pure.numAmpsPerChunk + pureInd;
+
+        qreal bRe, bIm;
+        GET_AMP( bRe, bIm, pure, col );
+        bIm *= -1; // conjugated
+        
+        qreal cRe = PROD_REAL( aRe, aIm, bRe, bIm );
+        qreal cIm = PROD_IMAG( aRe, aIm, bRe, bIm );
+
+        SET_AMP( dens, densInd, cRe, cIm );
+    }
+}
+
+void densmatr_initPureState(Qureg dens, Qureg pure)
+{
+    int CUDABlocks = ceil(pure.numAmpsPerChunk/ (qreal) NUM_THREADS_PER_BLOCK);
+    densmatr_initPureStateKernel<<<CUDABlocks, NUM_THREADS_PER_BLOCK>>>(dens, pure);
+}
+
+__global__ void densmatr_setQuregToPauliHamilKernel(
+    Qureg qureg, enum pauliOpType* pauliCodes, qreal* termCoeffs, int numSumTerms
+) {
+    long long int n = blockIdx.x*blockDim.x + threadIdx.x;
+    if (n>=qureg.numAmpsPerChunk) return;
+    
+    // flattened {I,X,Y,Z} matrix elements, where [k] = [p][i][j]
+    const int pauliRealElems[] = {   1,0, 0,1,   0,1, 1,0,   0,0, 0,0,   1,0, 0,-1  };
+    const int pauliImagElems[] = {   0,0, 0,0,   0,0, 0,0,   0,-1,1,0,   0,0, 0,0   };
+
+    // |n> = |c>|r>
+    const int numQubits = qureg.numQubitsRepresented;
+    const long long int r = n & ((1LL << numQubits) - 1);
+    const long long int c = n >> numQubits;
+
+    // new amplitude of |n>
+    qreal elemRe = 0;
+    qreal elemIm = 0;
+    
+    for (long long int t=0; t<numSumTerms; t++) {
+        
+        // pauliKronecker[r][c] = prod_q Pauli[q][q-th bit of r and c]
+        int kronRe = 1;
+        int kronIm = 0;
+        long long int pInd = t * numQubits;
+        
+        for (int q=0; q<numQubits; q++) {
+            
+            // get element of Pauli matrix
+            int i = (r >> q) & 1;
+            int j = (c >> q) & 1;
+            int p = (int) pauliCodes[pInd++];
+            int k = (p<<2) + (i<<1) + j;
+            int pauliRe = pauliRealElems[k]; 
+            int pauliIm = pauliImagElems[k];
+            
+            // kron *= pauli
+            int tmp = (pauliRe*kronRe) - (pauliIm*kronIm);
+            kronIm = (pauliRe*kronIm) + (pauliIm*kronRe);
+            kronRe = tmp;
+        }
+        
+        // elem = sum_t coeffs[t] pauliKronecker[r][c]
+        elemRe += termCoeffs[t] * kronRe;
+        elemIm += termCoeffs[t] * kronIm;
+    }
+    
+    // overwrite the density matrix entry
+    SET_AMP( qureg, n, elemRe, elemIm );
+}
+
+void densmatr_setQuregToPauliHamil(Qureg qureg, PauliHamil hamil) {
+    
+    // copy hamil into GPU memory
+    enum pauliOpType* d_pauliCodes;
+    size_t mem_pauliCodes = hamil.numSumTerms * hamil.numQubits * sizeof *d_pauliCodes;
+    cudaMalloc(&d_pauliCodes, mem_pauliCodes);
+    cudaMemcpy(d_pauliCodes, hamil.pauliCodes, mem_pauliCodes, cudaMemcpyHostToDevice);
+    
+    qreal* d_termCoeffs;
+    size_t mem_termCoeffs = hamil.numSumTerms * sizeof *d_termCoeffs;
+    cudaMalloc(&d_termCoeffs, mem_termCoeffs);
+    cudaMemcpy(d_termCoeffs, hamil.termCoeffs, mem_termCoeffs, cudaMemcpyHostToDevice);
+    
+    int numBlocks = ceil(qureg.numAmpsPerChunk / (qreal) NUM_THREADS_PER_BLOCK);
+    densmatr_setQuregToPauliHamilKernel<<<numBlocks, NUM_THREADS_PER_BLOCK>>>(
+        qureg, d_pauliCodes, d_termCoeffs, hamil.numSumTerms);
+
+    // free tmp GPU memory
+    cudaFree(d_pauliCodes);
+    cudaFree(d_termCoeffs);
+}
 
 
 
+/*
+ * MANAGING NON-QUREG TYPES 
+ */
 
 DiagonalOp agnostic_createDiagonalOp(int numQubits, QuESTEnv env) {
 
@@ -125,7 +275,6 @@ DiagonalOp agnostic_createDiagonalOp(int numQubits, QuESTEnv env) {
     // allocate CPU memory (initialised to zero)
     op.real = (qreal*) calloc(op.numElemsPerChunk, sizeof(qreal));
     op.imag = (qreal*) calloc(op.numElemsPerChunk, sizeof(qreal));
-    // @TODO no handling of rank>1 allocation (no distributed GPU)
 
     // check cpu memory allocation was successful
     validateDiagonalOpAllocation(&op, env, __func__);
@@ -201,9 +350,8 @@ void agnostic_initDiagonalOpFromPauliHamil(DiagonalOp op, PauliHamil hamil) {
     cudaMalloc(&d_termCoeffs, mem_termCoeffs);
     cudaMemcpy(d_termCoeffs, hamil.termCoeffs, mem_termCoeffs, cudaMemcpyHostToDevice);
     
-    int numThreadsPerBlock = 128;
-    int numBlocks = ceil(op.numElemsPerChunk / (qreal) numThreadsPerBlock);
-    agnostic_initDiagonalOpFromPauliHamilKernel<<<numBlocks, numThreadsPerBlock>>>(
+    int numBlocks = ceil(op.numElemsPerChunk / (qreal) NUM_THREADS_PER_BLOCK);
+    agnostic_initDiagonalOpFromPauliHamilKernel<<<numBlocks, NUM_THREADS_PER_BLOCK>>>(
         op, d_pauliCodes, d_termCoeffs, hamil.numSumTerms);
     
     // copy populated operator into to RAM
