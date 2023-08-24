@@ -145,7 +145,7 @@ void custatevec_applyMatrix(Qureg qureg, std::vector<int> ctrls, std::vector<int
         work, workSize);
 }
 
-void custatevec_applyDiagonal(Qureg qureg, std::vector<int> targs, cuAmp* elems) {
+void custatevec_applyDiagonal(Qureg qureg, std::vector<int> ctrls, std::vector<int> targs, cuAmp* elems) {
 
     // apply no permutation matrix
     custatevecIndex_t *perm = nullptr;
@@ -153,10 +153,8 @@ void custatevec_applyDiagonal(Qureg qureg, std::vector<int> targs, cuAmp* elems)
     // do not adjoint elems
     int adj = 0;
 
-    // no control qubits
-    int* ctrls = nullptr; 
+    // condition all ctrls on =1 state
     int* ctrlVals = nullptr;
-    int nCtrls = 0;
 
     // use automatic workspace management
     void* work = nullptr;
@@ -167,7 +165,7 @@ void custatevec_applyDiagonal(Qureg qureg, std::vector<int> targs, cuAmp* elems)
         CU_AMP_IN_STATE_PREC, qureg.numQubitsInStateVec,
         perm, elems, CU_AMP_IN_MATRIX_PREC, adj, 
         targs.data(), targs.size(), 
-        ctrls, ctrlVals, nCtrls,
+        ctrls.data(), ctrlVals, ctrls.size(),
         work, workSize);
 }
 
@@ -625,55 +623,32 @@ void statevec_controlledPauliYConj(Qureg qureg, int controlQubit, int targetQubi
 
 void statevec_phaseShiftByTerm(Qureg qureg, int targetQubit, Complex term)
 {   
-    // this diagonal operator, otherwise embarrasingly parallel with unit stride, 
-    // is here treated as a generic one-target unitary, wastefully inducing non-unit 
-    // stride and unnecessary memory reads, and potentially unnecessary communication
-    // in multi-GPU mode. 
-
-    cuAmp a0 = TO_CU_AMP(0, 0);
     cuAmp a1 = TO_CU_AMP(1, 0);
-    cuAmp aE = toCuAmp(term);
-    cuMatr matrix{
-        a1, a0,
-        a0, aE
-    };
-    custatevec_applyMatrix(qureg, {}, {targetQubit}, matrix);
+    cuAmp a2 = toCuAmp(term);
+    cuAmp elems[] = {a1, a2};
+
+    custatevec_applyDiagonal(qureg, {}, {targetQubit}, elems);
 }
 
 void statevec_controlledPhaseShift(Qureg qureg, int idQubit1, int idQubit2, qreal angle)
 {
-    // this diagonal operator, otherwise embarrasingly parallel with unit stride, 
-    // is here treated as a generic one-target unitary, wastefully inducing non-unit 
-    // stride and unnecessary memory reads, and potentially unnecessary communication
-    // in multi-GPU mode. 
-
-    cuAmp a0 = TO_CU_AMP(0, 0);
     cuAmp a1 = TO_CU_AMP(1, 0);
-    cuAmp aE = TO_CU_AMP(cos(angle), sin(angle));
-    cuMatr matrix{
-        a1, a0,
-        a0, aE
-    };
-    custatevec_applyMatrix(qureg, {idQubit1}, {idQubit2}, matrix);
+    cuAmp a2 = TO_CU_AMP(cos(angle), sin(angle));
+    cuAmp elems[] = {a1, a2};
+
+    custatevec_applyDiagonal(qureg, {idQubit1}, {idQubit2}, elems);
 }
 
 void statevec_multiControlledPhaseShift(Qureg qureg, int *controlQubits, int numControlQubits, qreal angle)
 {   
-    // this diagonal operator, otherwise embarrasingly parallel with unit stride, 
-    // is here treated as a generic one-target unitary, wastefully inducing non-unit 
-    // stride and unnecessary memory reads, and potentially unnecessary communication
-    // in multi-GPU mode. 
-
-    cuAmp a0 = TO_CU_AMP(0, 0);
     cuAmp a1 = TO_CU_AMP(1, 0);
-    cuAmp aE = TO_CU_AMP(cos(angle), sin(angle));
-    cuMatr matrix{
-        a1, a0,
-        a0, aE
-    };
+    cuAmp a2 = TO_CU_AMP(cos(angle), sin(angle));
+    cuAmp elems[] = {a1, a2};
+
     std::vector<int> targs{controlQubits[0]};
     std::vector<int> ctrls(controlQubits + 1, controlQubits + numControlQubits); 
-    custatevec_applyMatrix(qureg, ctrls, targs, matrix);
+    custatevec_applyDiagonal(qureg, ctrls, targs, elems);
+
 }
 
 void statevec_multiRotateZ(Qureg qureg, long long int mask, qreal angle)
@@ -705,36 +680,22 @@ void statevec_multiControlledMultiRotateZ(Qureg qureg, long long int ctrlMask, l
 
 void statevec_controlledPhaseFlip(Qureg qureg, int idQubit1, int idQubit2)
 {
-    // this diagonal operator, otherwise embarrasingly parallel with unit stride, 
-    // is here treated as a generic one-target unitary, wastefully inducing non-unit 
-    // stride and unnecessary memory reads, and potentially unnecessary communication
-    // in multi-GPU mode. 
+    cuAmp a1 = TO_CU_AMP( 1, 0);
+    cuAmp a2 = TO_CU_AMP(-1, 0);
+    cuAmp elems[] = {a1, a2};
 
-    cuAmp a0 = TO_CU_AMP(0, 0);
-    cuAmp a1 = TO_CU_AMP(1, 0);
-    cuMatr matrix{
-        a1,  a0,
-        a0, -a1
-    };
-    custatevec_applyMatrix(qureg, {idQubit1}, {idQubit2}, matrix);
+    custatevec_applyDiagonal(qureg, {idQubit1}, {idQubit2}, elems);
 }
 
 void statevec_multiControlledPhaseFlip(Qureg qureg, int *controlQubits, int numControlQubits)
 {
-    // this diagonal operator, otherwise embarrasingly parallel with unit stride, 
-    // is here treated as a generic one-target unitary, wastefully inducing non-unit 
-    // stride and unnecessary memory reads, and potentially unnecessary communication
-    // in multi-GPU mode. 
+    cuAmp a1 = TO_CU_AMP( 1, 0);
+    cuAmp a2 = TO_CU_AMP(-1, 0);
+    cuAmp elems[] = {a1, a2};
 
-    cuAmp a0 = TO_CU_AMP(0, 0);
-    cuAmp a1 = TO_CU_AMP(1, 0);
-    cuMatr matrix{
-        a1,  a0,
-        a0, -a1
-    };
     std::vector<int> targs{controlQubits[0]};
     std::vector<int> ctrls(controlQubits + 1, controlQubits + numControlQubits); 
-    custatevec_applyMatrix(qureg, ctrls, targs, matrix);
+    custatevec_applyDiagonal(qureg, ctrls, targs, elems);
 }
 
 void statevec_swapQubitAmps(Qureg qureg, int qb1, int qb2) 
@@ -773,7 +734,7 @@ void statevec_controlledNot(Qureg qureg, int controlQubit, int targetQubit)
 void statevec_multiControlledMultiQubitNot(Qureg qureg, int ctrlMask, int targMask)
 {
     // this operator can be effected in one-shot using a custom kernel, but we here
-    // isntead resort to slowly (by at most a factor #targs) effect it as a sequence
+    // instead resort to slowly (by at most a factor #targs) effect it as a sequence
     // of one-target multi-ctrl NOT gates.
 
     cuAmp a0 = TO_CU_AMP(0, 0);
@@ -797,7 +758,7 @@ void statevec_applySubDiagonalOp(Qureg qureg, int* targs, SubDiagonalOp op, int 
         elems[i] = TO_CU_AMP(op.real[i], op.imag[i]);
 
     std::vector<int> t(targs, targs + op.numQubits); 
-    custatevec_applyDiagonal(qureg, t, elems);
+    custatevec_applyDiagonal(qureg, {}, t, elems);
 }
 
 void statevec_applyDiagonalOp(Qureg qureg, DiagonalOp op) 
@@ -854,7 +815,7 @@ void densmatr_mixDephasing(Qureg qureg, int targetQubit, qreal dephase)
     cuAmp elems[] = {a, b, b, a};
 
     std::vector<int> targs{targetQubit, targetQubit + qureg.numQubitsRepresented};
-    custatevec_applyDiagonal(qureg, targs, elems);
+    custatevec_applyDiagonal(qureg, {}, targs, elems);
 }
 
 void densmatr_mixTwoQubitDephasing(Qureg qureg, int qb1, int qb2, qreal dephase)
@@ -870,7 +831,7 @@ void densmatr_mixTwoQubitDephasing(Qureg qureg, int qb1, int qb2, qreal dephase)
 
     int shift = qureg.numQubitsRepresented;
     std::vector<int> targs{qb1, qb2, qb1 + shift, qb2 + shift};
-    custatevec_applyDiagonal(qureg, targs, elems);
+    custatevec_applyDiagonal(qureg, {}, targs, elems);
 }
 
 void densmatr_mixDepolarising(Qureg qureg, int targetQubit, qreal depol)
@@ -905,7 +866,7 @@ void densmatr_mixDamping(Qureg qureg, int qb, qreal prob)
     cuAmp elems[] = {a, b, b, c};
 
     std::vector<int> targs{qb, qb + qureg.numQubitsRepresented};
-    custatevec_applyDiagonal(qureg, targs, elems);
+    custatevec_applyDiagonal(qureg, {}, targs, elems);
 }
 
 
