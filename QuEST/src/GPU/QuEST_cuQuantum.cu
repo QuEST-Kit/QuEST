@@ -453,11 +453,6 @@ void statevec_initDebugState(Qureg qureg)
     thrust::sequence(getStartPtr(qureg), getEndPtr(qureg), init, step);
 }
 
-int statevec_initStateFromSingleFile(Qureg *qureg, char filename[200], QuESTEnv env)
-{
-    return -1;
-}
-
 void densmatr_setQuregToPauliHamil(Qureg qureg, PauliHamil hamil)
 {
 }
@@ -479,11 +474,6 @@ void statevec_setWeightedQureg(Complex fac1, Qureg qureg1, Complex fac2, Qureg q
 
 void statevec_reportStateToScreen(Qureg qureg, QuESTEnv env, int reportRank)
 {
-}
-
-int statevec_compareStates(Qureg mq1, Qureg mq2, qreal precision)
-{
-    return -1;
 }
 
 
