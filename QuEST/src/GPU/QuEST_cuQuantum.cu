@@ -20,6 +20,9 @@
 # include <vector>
 # include <custatevec.h>
 # include <thrust/device_ptr.h>
+# include <thrust/sequence.h>
+# include <thrust/iterator/zip_iterator.h>
+# include <thrust/for_each.h>
 
 
 
@@ -837,6 +840,11 @@ void statevec_applyParamNamedPhaseFuncOverrides(
 
 void densmatr_mixDensityMatrix(Qureg combineQureg, qreal otherProb, Qureg otherQureg)
 {
+    Complex facOut   = {.real=(1-otherProb), .imag=0};
+    Complex facOther = {.real=otherProb,     .imag=0};
+    Complex zero     = {.real=0,             .imag=0};
+
+    statevec_setWeightedQureg(facOther, otherQureg, zero, otherQureg, facOut, combineQureg);
 }
 
 void densmatr_mixDephasing(Qureg qureg, int targetQubit, qreal dephase) 
