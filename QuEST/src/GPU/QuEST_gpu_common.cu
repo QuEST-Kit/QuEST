@@ -9,9 +9,9 @@
 
 
 # include "QuEST.h"
-# include "QuEST_gpu_common.h"
 # include "QuEST_precision.h"
 # include "QuEST_validation.h"
+# include "QuEST_internal.h"
 # include "mt19937ar.h"
 
 # include <stdlib.h>
@@ -256,6 +256,79 @@ void densmatr_setQuregToPauliHamil(Qureg qureg, PauliHamil hamil) {
     // free tmp GPU memory
     cudaFree(d_pauliCodes);
     cudaFree(d_termCoeffs);
+}
+
+
+
+/*
+ * DECOHERENCE
+ */
+
+__global__ void densmatr_mixTwoQubitDepolarisingKernel(
+    Qureg qureg, qreal depolLevel, long long int part1, long long int part2, 
+    long long int part3, long long int part4, long long int part5,
+    long long int rowCol1, long long int rowCol2)
+{
+    long long int scanInd = blockIdx.x*blockDim.x + threadIdx.x;
+    if (scanInd >= qureg.numAmpsPerChunk) return;
+    
+    long long int ind00 = (scanInd&part1) + ((scanInd&part2)<<1) + ((scanInd&part3)<<2) + ((scanInd&part4)<<3) + ((scanInd&part5)<<4);
+    long long int ind01 = ind00 + rowCol1;
+    long long int ind10 = ind00 + rowCol2;
+    long long int ind11 = ind00 + rowCol1 + rowCol2;
+
+    qreal re00, re01, re10, re11;
+    qreal im00, im01, im10, im11;
+    GET_AMP( re00, im00, qureg, ind00 );
+    GET_AMP( re01, im01, qureg, ind01 );
+    GET_AMP( re10, im10, qureg, ind10 );
+    GET_AMP( re11, im11, qureg, ind11 );
+    
+    qreal realAvDepol = depolLevel * 0.25 * (re00 + re01 + re10 + re11);
+    qreal imagAvDepol = depolLevel * 0.25 * (im00 + im01 + im10 + im11);
+    qreal retain = 1 - depolLevel;
+
+    SET_AMP( qureg, ind00, retain*re00 + realAvDepol, retain*im00 + imagAvDepol );
+    SET_AMP( qureg, ind01, retain*re01 + realAvDepol, retain*im01 + imagAvDepol );
+    SET_AMP( qureg, ind10, retain*re10 + realAvDepol, retain*im10 + imagAvDepol );
+    SET_AMP( qureg, ind11, retain*re11 + realAvDepol, retain*im11 + imagAvDepol );
+}
+
+void densmatr_mixTwoQubitDepolarising(Qureg qureg, int qubit1, int qubit2, qreal depolLevel) {
+    
+    if (depolLevel == 0)
+        return;
+
+    densmatr_mixTwoQubitDephasing(qureg, qubit1, qubit2, depolLevel);
+    
+    // this code is painfully and unnecessarily verbose; it computes index offsets 
+    // using bitwise logic, only to (within the kernel) effect those offsets with
+    // integer arithmetic. Instead, one might as well obtain the ultimate indices
+    // directly using bitwise logic within the kernel, passing no offsets at all.
+    // We defer this to when the insertBits (and other bit twiddles) have been moved
+    // into QuEST_gpu_common.cu.
+
+    int rowQubit1 = qubit1 + qureg.numQubitsRepresented;
+    int rowQubit2 = qubit2 + qureg.numQubitsRepresented;
+    
+    long long int colBit1 = 1LL << qubit1;
+    long long int rowBit1 = 1LL << rowQubit1;
+    long long int colBit2 = 1LL << qubit2;
+    long long int rowBit2 = 1LL << rowQubit2;
+
+    long long int rowCol1 = colBit1 | rowBit1;
+    long long int rowCol2 = colBit2 | rowBit2;
+    
+    long long int numAmpsToVisit = qureg.numAmpsPerChunk/16;
+    long long int part1 = colBit1 - 1;
+    long long int part2 = (colBit2 >> 1) - colBit1;
+    long long int part3 = (rowBit1 >> 2) - (colBit2 >> 1);
+    long long int part4 = (rowBit2 >> 3) - (rowBit1 >> 2);
+    long long int part5 = numAmpsToVisit - (rowBit2 >> 3);
+    
+    int CUDABlocks = ceil(numAmpsToVisit / (qreal) NUM_THREADS_PER_BLOCK);
+    densmatr_mixTwoQubitDepolarisingKernel<<<CUDABlocks, NUM_THREADS_PER_BLOCK>>>(
+        qureg, depolLevel, part1, part2, part3, part4, part5, rowCol1, rowCol2);
 }
 
 

@@ -897,10 +897,6 @@ void densmatr_mixDepolarising(Qureg qureg, int targetQubit, qreal depol)
     custatevec_applyMatrix(qureg, {}, targs, matr);
 }
 
-void densmatr_mixTwoQubitDepolarising(Qureg qureg, int qubit1, int qubit2, qreal depolLevel)
-{
-}
-
 void densmatr_mixDamping(Qureg qureg, int qb, qreal prob)
 {
     cuAmp a = TO_CU_AMP(1, 0);
