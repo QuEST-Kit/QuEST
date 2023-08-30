@@ -23,6 +23,7 @@
 # include <thrust/sequence.h>
 # include <thrust/iterator/zip_iterator.h>
 # include <thrust/for_each.h>
+# include <thrust/inner_product.h>
 
 
 
@@ -174,6 +175,23 @@ void custatevec_applyDiagonal(Qureg qureg, std::vector<int> ctrls, std::vector<i
 /*
  * THRUST WRAPPERS AND FUNCTORS (to reduce boilerplate, and for custom modification of statevectors)
  */
+
+struct functor_prodOfConj : public thrust::binary_function<cuAmp,cuAmp,cuAmp>
+{
+    __host__ __device__ cuAmp operator()(cuAmp braAmp, cuAmp ketAmp) { 
+        return  ketAmp * cuAmpConj(braAmp);
+    };
+};
+
+struct functor_absOfDif : public thrust::binary_function<cuAmp,cuAmp,cuAmp>
+{
+    __host__ __device__ cuAmp operator()(cuAmp a, cuAmp b) { 
+        qreal difRe = cuAmpReal(a) - cuAmpReal(b);
+        qreal difIm = cuAmpImag(a) - cuAmpImag(b);
+        qreal difAbs = difRe*difRe + difIm*difIm;
+        return TO_CU_AMP(difAbs, 0);
+    };
+};
 
 struct functor_setWeightedQureg
 {
@@ -882,12 +900,34 @@ qreal densmatr_calcTotalProb(Qureg qureg)
 
 qreal statevec_calcTotalProb(Qureg qureg)
 {
-    return -1;
+    qreal abs2sum0;
+    qreal abs2sum1;
+    int basisBits[] = {0};
+    int numBasisBits = 1;
+
+    custatevecAbs2SumOnZBasis(
+        qureg.cuQuantumHandle, qureg.deviceCuStateVec, 
+        CU_AMP_IN_STATE_PREC, qureg.numQubitsInStateVec,
+        &abs2sum0, &abs2sum1, basisBits, numBasisBits);
+
+    return abs2sum0 + abs2sum1;
 }
 
 qreal statevec_calcProbOfOutcome(Qureg qureg, int measureQubit, int outcome)
 {
-    return -1;
+    // we only ever compute prob(outcome=0) as per the QuEST API's limitation
+    qreal prob0;
+    qreal* prob1 = nullptr;
+
+    int basisBits[] = {measureQubit};
+    int numBasisBits = 1;
+
+    custatevecAbs2SumOnZBasis(
+        qureg.cuQuantumHandle, qureg.deviceCuStateVec, 
+        CU_AMP_IN_STATE_PREC, qureg.numQubitsInStateVec,
+        &prob0, prob1, basisBits, numBasisBits);
+
+    return (outcome == 0)? prob0 : (1-prob0);
 }
 
 qreal densmatr_calcProbOfOutcome(Qureg qureg, int measureQubit, int outcome)
@@ -905,12 +945,20 @@ void densmatr_calcProbOfAllOutcomes(qreal* outcomeProbs, Qureg qureg, int* qubit
 
 qreal densmatr_calcInnerProduct(Qureg a, Qureg b)
 {
-    return -1;
+    cuAmp prod = thrust::inner_product(
+        getStartPtr(a), getEndPtr(a), getStartPtr(b), 
+        TO_CU_AMP(0,0), thrust::plus<cuAmp>(), functor_prodOfConj());
+
+    return cuAmpReal(prod);
 }
 
 Complex statevec_calcInnerProduct(Qureg bra, Qureg ket)
 {
-    return (Complex) {.real=-1, .imag=-1};
+    cuAmp prod = thrust::inner_product(
+        getStartPtr(bra), getEndPtr(bra), getStartPtr(ket), 
+        TO_CU_AMP(0,0), thrust::plus<cuAmp>(), functor_prodOfConj());
+
+    return (Complex) {.real=cuAmpReal(prod), .imag=cuAmpImag(prod)};
 }
 
 qreal densmatr_calcFidelity(Qureg qureg, Qureg pureState)
@@ -920,7 +968,12 @@ qreal densmatr_calcFidelity(Qureg qureg, Qureg pureState)
 
 qreal densmatr_calcHilbertSchmidtDistance(Qureg a, Qureg b)
 {
-    return -1;
+    cuAmp trace = thrust::inner_product(
+        getStartPtr(a), getEndPtr(a), getStartPtr(b), 
+        TO_CU_AMP(0,0), thrust::plus<cuAmp>(), functor_absOfDif());
+
+    qreal dist = sqrt(cuAmpReal(trace));
+    return dist;
 }
 
 qreal densmatr_calcPurity(Qureg qureg)
@@ -945,7 +998,13 @@ Complex densmatr_calcExpecDiagonalOp(Qureg qureg, DiagonalOp op)
  */
 
 void statevec_collapseToKnownProbOutcome(Qureg qureg, int measureQubit, int outcome, qreal outcomeProb)
-{        
+{
+    int basisBits[] = {measureQubit};
+
+    custatevecCollapseOnZBasis(
+        qureg.cuQuantumHandle, qureg.deviceCuStateVec, 
+        CU_AMP_IN_STATE_PREC, qureg.numQubitsInStateVec, 
+        outcome, basisBits, 1, outcomeProb);
 }
 
 void densmatr_collapseToKnownProbOutcome(Qureg qureg, int measureQubit, int outcome, qreal outcomeProb)
