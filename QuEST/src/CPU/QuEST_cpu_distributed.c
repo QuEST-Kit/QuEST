@@ -494,8 +494,12 @@ void densmatr_initPureState(Qureg targetQureg, Qureg copyQureg) {
 
 void exchangeStateVectors(Qureg qureg, int pairRank){
     // MPI send/receive vars
-    int TAG=100;
-    MPI_Status status;
+    int sendTag;
+    int recvTag;
+    int rank;
+    MPI_Request * requests;
+
+    MPI_Comm_rank(MPI_COMM_WORLD, &rank);
 
     // Multiple messages are required as MPI uses int rather than long long int for count
     // For openmpi, messages are further restricted to 2GB in size -- do this for all cases
@@ -506,20 +510,26 @@ void exchangeStateVectors(Qureg qureg, int pairRank){
     
     // safely assume MPI_MAX... = 2^n, so division always exact
     int numMessages = qureg.numAmpsPerChunk/maxMessageCount;
+    requests = (MPI_Request*) malloc(4 * numMessages * sizeof(MPI_Request));
     int i;
     long long int offset;
+    
     // send my state vector to pairRank's qureg.pairStateVec
     // receive pairRank's state vector into qureg.pairStateVec
     for (i=0; i<numMessages; i++){
         offset = i*maxMessageCount;
-        MPI_Sendrecv(&qureg.stateVec.real[offset], maxMessageCount, MPI_QuEST_REAL, pairRank, TAG,
-                &qureg.pairStateVec.real[offset], maxMessageCount, MPI_QuEST_REAL,
-                pairRank, TAG, MPI_COMM_WORLD, &status);
-        //printf("rank: %d err: %d\n", qureg.rank, err);
-        MPI_Sendrecv(&qureg.stateVec.imag[offset], maxMessageCount, MPI_QuEST_REAL, pairRank, TAG,
-                &qureg.pairStateVec.imag[offset], maxMessageCount, MPI_QuEST_REAL,
-                pairRank, TAG, MPI_COMM_WORLD, &status);
+        sendTag = rank * numMessages + i;
+        recvTag = pairRank * numMessages + i;
+
+        MPI_Isend(&qureg.stateVec.real[offset], maxMessageCount, MPI_QuEST_REAL, pairRank, sendTag, MPI_COMM_WORLD, requests + 4*i);
+        MPI_Isend(&qureg.stateVec.imag[offset], maxMessageCount, MPI_QuEST_REAL, pairRank, sendTag, MPI_COMM_WORLD, requests + 4*i + 1);
+        MPI_Irecv(&qureg.pairStateVec.real[offset], maxMessageCount, MPI_QuEST_REAL, pairRank, recvTag, MPI_COMM_WORLD, requests + 4*i + 2);
+        MPI_Irecv(&qureg.pairStateVec.imag[offset], maxMessageCount, MPI_QuEST_REAL, pairRank, recvTag, MPI_COMM_WORLD, requests + 4*i + 3);
     }
+
+    MPI_Waitall(4 * numMessages, requests, MPI_STATUSES_IGNORE);
+
+    free(requests);
 }
 
 void exchangePairStateVectorHalves(Qureg qureg, int pairRank){
