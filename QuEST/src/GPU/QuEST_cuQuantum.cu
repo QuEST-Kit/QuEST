@@ -22,6 +22,8 @@
 # include <thrust/device_ptr.h>
 # include <thrust/sequence.h>
 # include <thrust/iterator/zip_iterator.h>
+# include <thrust/iterator/counting_iterator.h>
+# include <thrust/iterator/transform_iterator.h>
 # include <thrust/for_each.h>
 # include <thrust/inner_product.h>
 
@@ -53,6 +55,8 @@
     # define CU_AMP_IN_STATE_PREC void // invalid
     # define CU_AMP_IN_MATRIX_PREC void // invalid
 #endif
+
+
 
 // convenient operator overloads for cuAmp, for doing complex artihmetic.
 // some of these are defined to be used by Thrust's backend, because we
@@ -193,6 +197,16 @@ struct functor_absOfDif : public thrust::binary_function<cuAmp,cuAmp,cuAmp>
     };
 };
 
+struct functor_scaleInd
+{
+    const long long int factor;
+    functor_scaleInd(long long int _factor) : factor(_factor) {}
+
+    __host__ __device__ long long int operator()(long long int ind) {
+        return factor * ind;
+    }
+};
+
 struct functor_setWeightedQureg
 {
     // functor requires 3 complex scalars
@@ -216,6 +230,26 @@ thrust::device_ptr<cuAmp> getStartPtr(Qureg qureg) {
 thrust::device_ptr<cuAmp> getEndPtr(Qureg qureg) {
 
     return getStartPtr(qureg) + qureg.numAmpsTotal;
+}
+
+auto getStrideIter(Qureg qureg, long long int stride, long long int strideIndInit) {
+    thrust::counting_iterator<long long int> indIter(strideIndInit);
+
+    // iterates qureg[i * stride] over i, from i = strideIndInit, until exceeding qureg
+    return thrust::make_permutation_iterator(
+        getStartPtr(qureg),
+        thrust::make_transform_iterator(indIter, functor_scaleInd(stride)));
+}
+
+auto getStartStridedIter(Qureg qureg, long long int stride) {
+
+    return getStrideIter(qureg, stride, 0);
+}
+
+auto getEndStridedIter(Qureg qureg, long long int stride) {
+
+    long long int numIters = ceil(qureg.numAmpsTotal / (qreal) stride);
+    return getStrideIter(qureg, stride, numIters);
 }
 
 
@@ -895,7 +929,14 @@ void densmatr_mixDamping(Qureg qureg, int qb, qreal prob)
 
 qreal densmatr_calcTotalProb(Qureg qureg)
 {
-    return -1;
+    long long int diagStride = 1 + (1LL << qureg.numQubitsRepresented);
+
+    cuAmp sum = thrust::reduce(
+        getStartStridedIter(qureg, diagStride),
+        getEndStridedIter(qureg, diagStride),
+        TO_CU_AMP(0, 0));
+
+    return cuAmpReal(sum);
 }
 
 qreal statevec_calcTotalProb(Qureg qureg)
