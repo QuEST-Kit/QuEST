@@ -184,7 +184,7 @@ struct functor_prodOfConj : public thrust::binary_function<cuAmp,cuAmp,cuAmp>
 {
     __host__ __device__ cuAmp operator()(cuAmp braAmp, cuAmp ketAmp) { 
         return  ketAmp * cuAmpConj(braAmp);
-    };
+    }
 };
 
 struct functor_absOfDif : public thrust::binary_function<cuAmp,cuAmp,cuAmp>
@@ -194,16 +194,49 @@ struct functor_absOfDif : public thrust::binary_function<cuAmp,cuAmp,cuAmp>
         qreal difIm = cuAmpImag(a) - cuAmpImag(b);
         qreal difAbs = difRe*difRe + difIm*difIm;
         return TO_CU_AMP(difAbs, 0);
-    };
+    }
 };
 
-struct functor_scaleInd
+struct functor_absSquared : public thrust::unary_function<cuAmp,qreal>
+{
+    __host__ __device__ qreal operator()(cuAmp amp) {
+        qreal re = cuAmpReal(amp);
+        qreal im = cuAmpImag(amp);
+        qreal absSq = re*re + im*im;
+        return absSq;
+    }
+};
+
+struct functor_scaleInd : public thrust::unary_function<long long int,long long int>
 {
     const long long int factor;
     functor_scaleInd(long long int _factor) : factor(_factor) {}
 
     __host__ __device__ long long int operator()(long long int ind) {
         return factor * ind;
+    }
+};
+
+struct functor_mapIndToAlternatingBlockScaledInd : public thrust::unary_function<long long int,long long int>
+{
+    long long int blockSize;
+    long long int factor;
+    int useOffsetBlocks;
+
+    functor_mapIndToAlternatingBlockScaledInd(long long int _blockSize, long long int _factor, int _useOffsetBlocks) :
+        blockSize(_blockSize), factor(_factor), useOffsetBlocks(_useOffsetBlocks) {}
+
+    __host__ __device__ long long int operator()(long long int rawInd) {
+
+        long long int blockNum = rawInd / blockSize;
+        long long int subBlockInd = rawInd % blockSize;
+
+        long long int blockStartInd = (blockNum * 2 * blockSize) + (useOffsetBlocks * blockSize);
+        long long int blockifiedInd = blockStartInd + subBlockInd;
+
+        long long int finalInd = factor * blockifiedInd;
+
+        return finalInd;
     }
 };
 
@@ -232,24 +265,46 @@ thrust::device_ptr<cuAmp> getEndPtr(Qureg qureg) {
     return getStartPtr(qureg) + qureg.numAmpsTotal;
 }
 
-auto getStrideIter(Qureg qureg, long long int stride, long long int strideIndInit) {
-    thrust::counting_iterator<long long int> indIter(strideIndInit);
+auto iter_strided(Qureg qureg, long long int stride, long long int strideIndInit) {
 
     // iterates qureg[i * stride] over i, from i = strideIndInit, until exceeding qureg
-    return thrust::make_permutation_iterator(
-        getStartPtr(qureg),
-        thrust::make_transform_iterator(indIter, functor_scaleInd(stride)));
+    auto rawIndIter = thrust::make_counting_iterator(strideIndInit);
+    auto stridedIndIter = thrust::make_transform_iterator(rawIndIter, functor_scaleInd(stride));
+    auto stridedAmpIter = thrust::make_permutation_iterator(getStartPtr(qureg), stridedIndIter);
+    return stridedAmpIter;
 }
 
-auto getStartStridedIter(Qureg qureg, long long int stride) {
+auto getStartStridedAmpIter(Qureg qureg, long long int stride) {
 
-    return getStrideIter(qureg, stride, 0);
+    return iter_strided(qureg, stride, 0);
 }
 
-auto getEndStridedIter(Qureg qureg, long long int stride) {
+auto getEndStridedAmpIter(Qureg qureg, long long int stride) {
 
     long long int numIters = ceil(qureg.numAmpsTotal / (qreal) stride);
-    return getStrideIter(qureg, stride, numIters);
+    return iter_strided(qureg, stride, numIters);
+}
+
+auto iter_blockStrided(Qureg qureg, long long int blockSize, int useOffsetBlocks, long long int stride, long long int rawIndInit) {
+
+    // iterates qureg[(i mapped to alternating blocks) * stride] over i, from i = rawIndInit, until exceeding qureg
+    auto functor = functor_mapIndToAlternatingBlockScaledInd(blockSize, stride, useOffsetBlocks);
+    auto rawIndIter = thrust::make_counting_iterator(rawIndInit);
+    auto stridedBlockIndIter = thrust::make_transform_iterator(rawIndIter, functor);
+    auto stridedBlockAmpIter = thrust::make_permutation_iterator(getStartPtr(qureg), stridedBlockIndIter);
+    return stridedBlockAmpIter;
+}
+
+auto getStartBlockStridedAmpIter(Qureg qureg, long long int blockSize, int useOffsetBlocks, long long int stride) {
+
+    return iter_blockStrided(qureg, blockSize, useOffsetBlocks, stride, 0);
+}
+
+auto getEndBlockStridedAmpIter(Qureg qureg, long long int blockSize, int useOffsetBlocks, long long int stride) {
+
+    long long int numAltBlockAmps = qureg.numAmpsTotal / 2;
+    long long int numIters = ceil(numAltBlockAmps / (qreal) stride);
+    return iter_blockStrided(qureg, blockSize, useOffsetBlocks, stride, numIters);
 }
 
 
@@ -932,8 +987,8 @@ qreal densmatr_calcTotalProb(Qureg qureg)
     long long int diagStride = 1 + (1LL << qureg.numQubitsRepresented);
 
     cuAmp sum = thrust::reduce(
-        getStartStridedIter(qureg, diagStride),
-        getEndStridedIter(qureg, diagStride),
+        getStartStridedAmpIter(qureg, diagStride),
+        getEndStridedAmpIter(qureg, diagStride),
         TO_CU_AMP(0, 0));
 
     return cuAmpReal(sum);
@@ -973,7 +1028,20 @@ qreal statevec_calcProbOfOutcome(Qureg qureg, int measureQubit, int outcome)
 
 qreal densmatr_calcProbOfOutcome(Qureg qureg, int measureQubit, int outcome)
 {
-    return -1;
+    long long int blockSize = (1LL << measureQubit);
+    long long int diagStride = (1LL << qureg.numQubitsRepresented) + 1;
+
+    // we could set this to outcome to sum the outcome=1 amps directly, but the
+    // QuEST API specifies that the outcome=0 amps are always summed instead.
+    int useOffsetBlocks = 0;
+
+    cuAmp sum = thrust::reduce(
+        getStartBlockStridedAmpIter(qureg, blockSize, useOffsetBlocks, diagStride),
+        getEndBlockStridedAmpIter(qureg, blockSize, useOffsetBlocks, diagStride),
+        TO_CU_AMP(0, 0));
+
+    qreal prob0 = cuAmpReal(sum);
+    return (outcome == 0)? prob0 : (1-prob0);
 }
 
 void statevec_calcProbOfAllOutcomes(qreal* outcomeProbs, Qureg qureg, int* qubits, int numQubits)
@@ -1019,7 +1087,11 @@ qreal densmatr_calcHilbertSchmidtDistance(Qureg a, Qureg b)
 
 qreal densmatr_calcPurity(Qureg qureg)
 {
-    return -1;
+    qreal sumOfAbsSquared = thrust::transform_reduce(
+        getStartPtr(qureg), getEndPtr(qureg), functor_absSquared(),
+        0., thrust::plus<qreal>());
+
+    return sumOfAbsSquared;
 }
 
 Complex statevec_calcExpecDiagonalOp(Qureg qureg, DiagonalOp op)
