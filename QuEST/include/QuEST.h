@@ -4256,6 +4256,10 @@ qreal calcPurity(Qureg qureg);
  * linear algebra calculation.
  *
  * The number of qubits represented in \p qureg and \p pureState must match.
+ *
+ * > In the GPU-accelerated cuQuantum backend, this function further assumes that
+ * > the density matrix \p qureg is correctly normalised, and otherwise returns the 
+ * > fidelity of the conjugate-transpose of \p qureg.
  * 
  * @see
  * - calcHilbertSchmidtDistance()

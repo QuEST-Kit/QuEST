@@ -22,7 +22,10 @@
 # include <thrust/device_ptr.h>
 # include <thrust/sequence.h>
 # include <thrust/iterator/zip_iterator.h>
+# include <thrust/iterator/counting_iterator.h>
+# include <thrust/iterator/transform_iterator.h>
 # include <thrust/for_each.h>
+# include <thrust/inner_product.h>
 
 
 
@@ -52,6 +55,8 @@
     # define CU_AMP_IN_STATE_PREC void // invalid
     # define CU_AMP_IN_MATRIX_PREC void // invalid
 #endif
+
+
 
 // convenient operator overloads for cuAmp, for doing complex artihmetic.
 // some of these are defined to be used by Thrust's backend, because we
@@ -175,6 +180,77 @@ void custatevec_applyDiagonal(Qureg qureg, std::vector<int> ctrls, std::vector<i
  * THRUST WRAPPERS AND FUNCTORS (to reduce boilerplate, and for custom modification of statevectors)
  */
 
+struct functor_prodOfConj : public thrust::binary_function<cuAmp,cuAmp,cuAmp>
+{
+    __host__ __device__ cuAmp operator()(cuAmp braAmp, cuAmp ketAmp) { 
+        return  ketAmp * cuAmpConj(braAmp);
+    }
+};
+
+struct functor_absOfDif : public thrust::binary_function<cuAmp,cuAmp,cuAmp>
+{
+    __host__ __device__ cuAmp operator()(cuAmp a, cuAmp b) { 
+        qreal difRe = cuAmpReal(a) - cuAmpReal(b);
+        qreal difIm = cuAmpImag(a) - cuAmpImag(b);
+        qreal difAbs = difRe*difRe + difIm*difIm;
+        return TO_CU_AMP(difAbs, 0);
+    }
+};
+
+struct functor_absSquared : public thrust::unary_function<cuAmp,qreal>
+{
+    __host__ __device__ qreal operator()(cuAmp amp) {
+        qreal re = cuAmpReal(amp);
+        qreal im = cuAmpImag(amp);
+        qreal absSq = re*re + im*im;
+        return absSq;
+    }
+};
+
+struct functor_prodOfAbsSquared : public thrust::binary_function<cuAmp,cuAmp,cuAmp>
+{
+    __host__ __device__ cuAmp operator()(cuAmp probAmp, cuAmp rawAmp) { 
+        qreal re = cuAmpReal(probAmp);
+        qreal im = cuAmpImag(probAmp);
+        qreal absSq = re*re + im*im;
+        cuAmp prod = rawAmp * TO_CU_AMP(absSq, 0); 
+        return  prod;
+    }
+};
+
+struct functor_scaleInd : public thrust::unary_function<long long int,long long int>
+{
+    const long long int factor;
+    functor_scaleInd(long long int _factor) : factor(_factor) {}
+
+    __host__ __device__ long long int operator()(long long int ind) {
+        return factor * ind;
+    }
+};
+
+struct functor_mapIndToAlternatingBlockScaledInd : public thrust::unary_function<long long int,long long int>
+{
+    long long int blockSize;
+    long long int factor;
+    int useOffsetBlocks;
+
+    functor_mapIndToAlternatingBlockScaledInd(long long int _blockSize, long long int _factor, int _useOffsetBlocks) :
+        blockSize(_blockSize), factor(_factor), useOffsetBlocks(_useOffsetBlocks) {}
+
+    __host__ __device__ long long int operator()(long long int rawInd) {
+
+        long long int blockNum = rawInd / blockSize;
+        long long int subBlockInd = rawInd % blockSize;
+
+        long long int blockStartInd = (blockNum * 2 * blockSize) + (useOffsetBlocks * blockSize);
+        long long int blockifiedInd = blockStartInd + subBlockInd;
+
+        long long int finalInd = factor * blockifiedInd;
+
+        return finalInd;
+    }
+};
+
 struct functor_setWeightedQureg
 {
     // functor requires 3 complex scalars
@@ -190,6 +266,80 @@ struct functor_setWeightedQureg
     }
 };
 
+struct functor_matrixColumnDotVector : public thrust::unary_function<long long int,cuAmp>
+{
+    cuAmp* matrix; // flattened column-wise
+    cuAmp* vector;
+    long long int dim;
+    functor_matrixColumnDotVector(cuAmp* _matrix, cuAmp* _vector, long long int _dim) :
+        matrix(_matrix), vector(_vector), dim(_dim) {}
+
+    __host__ __device__ cuAmp operator()(long long int columnInd) {
+
+        // safe to iterate serially, since #columnInd is exponentially growing
+        cuAmp sum = TO_CU_AMP(0, 0);
+        for (long long int rowInd=0; rowInd<dim; rowInd++)
+            sum = sum + vector[rowInd] * cuAmpConj(matrix[columnInd*dim + rowInd]);
+        
+        return sum;
+    }
+};
+
+struct functor_getDiagonalOpAmp : public thrust::unary_function<long long int,cuAmp>
+{
+    DiagonalOp op;
+    functor_getDiagonalOpAmp(DiagonalOp _op) : op(_op) {}
+
+    __host__ __device__ cuAmp operator()(long long int columnInd) {
+
+        return TO_CU_AMP(
+            op.deviceOperator.real[columnInd], 
+            op.deviceOperator.imag[columnInd]);
+    }
+};
+
+struct functor_multDiagOntoDensMatr
+{
+    cuAmp* matrix;
+    DiagonalOp op;
+    functor_multDiagOntoDensMatr(cuAmp* _matrix, DiagonalOp _op) : matrix(_matrix), op(_op) {}
+
+    __host__ __device__ void operator()(long long int matrixInd) {
+
+        long long int opDim = 1LL << op.numQubits;
+        long long int opInd = matrixInd % opDim;
+        cuAmp opAmp = TO_CU_AMP(
+            op.deviceOperator.real[opInd], 
+            op.deviceOperator.imag[opInd]);
+
+        matrix[matrixInd] = opAmp * matrix[matrixInd];
+    }
+};
+
+struct functor_collapseDensMatrToOutcome
+{
+    cuAmp* matrix;
+    int numQubits;
+    int outcome;
+    qreal outcomeProb;
+    int target;
+    functor_collapseDensMatrToOutcome(cuAmp* _matrix, int _numQubits, int _outcome, qreal _outcomeProb, int _target) : 
+        matrix(_matrix), numQubits(_numQubits), outcome(_outcome), outcomeProb(_outcomeProb), target(_target) {}
+    
+    __host__ __device__ void operator()(long long int ind) {
+
+        // obtain bits |...b2...><...b1...|
+        int b1 = (ind >> target) & 1;
+        int b2 = (ind >> target >> numQubits) & 1;
+
+        int f1 = !(b1 ^ b2);        // true if b1 == b2
+        int f2 = !(b1 ^ outcome);   // true if b1 == outcome
+        qreal fac = f1 * f2 / outcomeProb;  // 0 or 1/prob
+
+        matrix[ind] = TO_CU_AMP(fac, 0) * matrix[ind];
+    }
+};
+
 thrust::device_ptr<cuAmp> getStartPtr(Qureg qureg) {
 
     return thrust::device_pointer_cast(qureg.deviceCuStateVec);
@@ -198,6 +348,65 @@ thrust::device_ptr<cuAmp> getStartPtr(Qureg qureg) {
 thrust::device_ptr<cuAmp> getEndPtr(Qureg qureg) {
 
     return getStartPtr(qureg) + qureg.numAmpsTotal;
+}
+
+auto iter_strided(Qureg qureg, long long int stride, long long int strideIndInit) {
+
+    // iterates qureg[i * stride] over i, from i = strideIndInit, until exceeding qureg
+    auto rawIndIter = thrust::make_counting_iterator(strideIndInit);
+    auto stridedIndIter = thrust::make_transform_iterator(rawIndIter, functor_scaleInd(stride));
+    auto stridedAmpIter = thrust::make_permutation_iterator(getStartPtr(qureg), stridedIndIter);
+    return stridedAmpIter;
+}
+
+auto getStartStridedAmpIter(Qureg qureg, long long int stride) {
+
+    return iter_strided(qureg, stride, 0);
+}
+
+auto getEndStridedAmpIter(Qureg qureg, long long int stride) {
+
+    long long int numIters = ceil(qureg.numAmpsTotal / (qreal) stride);
+    return iter_strided(qureg, stride, numIters);
+}
+
+auto iter_blockStrided(Qureg qureg, long long int blockSize, int useOffsetBlocks, long long int stride, long long int rawIndInit) {
+
+    // iterates qureg[(i mapped to alternating blocks) * stride] over i, from i = rawIndInit, until exceeding qureg
+    auto functor = functor_mapIndToAlternatingBlockScaledInd(blockSize, stride, useOffsetBlocks);
+    auto rawIndIter = thrust::make_counting_iterator(rawIndInit);
+    auto stridedBlockIndIter = thrust::make_transform_iterator(rawIndIter, functor);
+    auto stridedBlockAmpIter = thrust::make_permutation_iterator(getStartPtr(qureg), stridedBlockIndIter);
+    return stridedBlockAmpIter;
+}
+
+auto getStartBlockStridedAmpIter(Qureg qureg, long long int blockSize, int useOffsetBlocks, long long int stride) {
+
+    return iter_blockStrided(qureg, blockSize, useOffsetBlocks, stride, 0);
+}
+
+auto getEndBlockStridedAmpIter(Qureg qureg, long long int blockSize, int useOffsetBlocks, long long int stride) {
+
+    long long int numAltBlockAmps = qureg.numAmpsTotal / 2;
+    long long int numIters = ceil(numAltBlockAmps / (qreal) stride);
+    return iter_blockStrided(qureg, blockSize, useOffsetBlocks, stride, numIters);
+}
+
+auto iter_diagonalOp(DiagonalOp op, long long int initInd) {
+
+    auto rawIndIter = thrust::make_counting_iterator(initInd);
+    auto diagAmpIter = thrust::make_transform_iterator(rawIndIter, functor_getDiagonalOpAmp(op));
+    return diagAmpIter;
+}
+
+auto getStartDiagonalOpAmpIter(DiagonalOp op) {
+
+    return iter_diagonalOp(op, 0);
+}
+
+auto getEndDiagonalOpAmpIter(DiagonalOp op) {
+
+    return iter_diagonalOp(op, op.numElemsPerChunk);
 }
 
 
@@ -763,10 +972,18 @@ void statevec_applySubDiagonalOp(Qureg qureg, int* targs, SubDiagonalOp op, int 
 
 void statevec_applyDiagonalOp(Qureg qureg, DiagonalOp op) 
 {
+    thrust::transform(
+        getStartDiagonalOpAmpIter(op), getEndDiagonalOpAmpIter(op),
+        getStartPtr(qureg), getStartPtr(qureg), // both are begin iters
+        thrust::multiplies<cuAmp>());
 }
 
 void densmatr_applyDiagonalOp(Qureg qureg, DiagonalOp op)
 {
+    auto startIndIter = thrust::make_counting_iterator(0);
+    auto endIndIter = startIndIter + qureg.numAmpsTotal;
+    auto functor = functor_multDiagOntoDensMatr(qureg.deviceCuStateVec, op);
+    thrust::for_each(startIndIter, endIndIter, functor);
 }
 
 void statevec_applyPhaseFuncOverrides(
@@ -860,13 +1077,26 @@ void densmatr_mixDepolarising(Qureg qureg, int targetQubit, qreal depol)
 
 void densmatr_mixDamping(Qureg qureg, int qb, qreal prob)
 {
-    cuAmp a = TO_CU_AMP(1, 0);
-    cuAmp c = TO_CU_AMP(1 - prob, 0);
-    cuAmp b = TO_CU_AMP(sqrt(1 - prob), 0);
-    cuAmp elems[] = {a, b, b, c};
+    // this function effects damping as a dense two-qubit superoperator 
+    // on a Choi vector, where only 5 of the 16 elements are non-zero. This is
+    // potentially wasteful, and a bespoke kernel could be faster, leveraging
+    // QuEST's existing GPU code (or the optimised algorithm in the "distributed"
+    // manuscript).
 
+    cuAmp w = TO_CU_AMP(1, 0);
+    cuAmp z = TO_CU_AMP(0, 0);
+    cuAmp p = TO_CU_AMP(prob, 0);
+    cuAmp a = TO_CU_AMP(sqrt(1 - prob), 0);
+    cuAmp b = TO_CU_AMP(1-prob, 0);
+
+    cuMatr matr{
+        w, z, z, p,
+        z, a, z, z,
+        z, z, a, z,
+        z, z, z, b
+    };
     std::vector<int> targs{qb, qb + qureg.numQubitsRepresented};
-    custatevec_applyDiagonal(qureg, {}, targs, elems);
+    custatevec_applyMatrix(qureg, {}, targs, matr);
 }
 
 
@@ -877,65 +1107,141 @@ void densmatr_mixDamping(Qureg qureg, int qb, qreal prob)
 
 qreal densmatr_calcTotalProb(Qureg qureg)
 {
-    return -1;
+    long long int diagStride = 1 + (1LL << qureg.numQubitsRepresented);
+
+    cuAmp sum = thrust::reduce(
+        getStartStridedAmpIter(qureg, diagStride),
+        getEndStridedAmpIter(qureg, diagStride),
+        TO_CU_AMP(0, 0));
+
+    return cuAmpReal(sum);
 }
 
 qreal statevec_calcTotalProb(Qureg qureg)
 {
-    return -1;
+    qreal abs2sum0;
+    qreal abs2sum1;
+    int basisBits[] = {0};
+    int numBasisBits = 1;
+
+    custatevecAbs2SumOnZBasis(
+        qureg.cuQuantumHandle, qureg.deviceCuStateVec, 
+        CU_AMP_IN_STATE_PREC, qureg.numQubitsInStateVec,
+        &abs2sum0, &abs2sum1, basisBits, numBasisBits);
+
+    return abs2sum0 + abs2sum1;
 }
 
 qreal statevec_calcProbOfOutcome(Qureg qureg, int measureQubit, int outcome)
 {
-    return -1;
+    // we only ever compute prob(outcome=0) as per the QuEST API's limitation
+    qreal prob0;
+    qreal* prob1 = nullptr;
+
+    int basisBits[] = {measureQubit};
+    int numBasisBits = 1;
+
+    custatevecAbs2SumOnZBasis(
+        qureg.cuQuantumHandle, qureg.deviceCuStateVec, 
+        CU_AMP_IN_STATE_PREC, qureg.numQubitsInStateVec,
+        &prob0, prob1, basisBits, numBasisBits);
+
+    return (outcome == 0)? prob0 : (1-prob0);
 }
 
 qreal densmatr_calcProbOfOutcome(Qureg qureg, int measureQubit, int outcome)
 {
-    return -1;
-}
+    long long int blockSize = (1LL << measureQubit);
+    long long int diagStride = (1LL << qureg.numQubitsRepresented) + 1;
 
-void statevec_calcProbOfAllOutcomes(qreal* outcomeProbs, Qureg qureg, int* qubits, int numQubits)
-{
-}
+    // we could set this to outcome to sum the outcome=1 amps directly, but the
+    // QuEST API specifies that the outcome=0 amps are always summed instead.
+    int useOffsetBlocks = 0;
 
-void densmatr_calcProbOfAllOutcomes(qreal* outcomeProbs, Qureg qureg, int* qubits, int numQubits)
-{
+    cuAmp sum = thrust::reduce(
+        getStartBlockStridedAmpIter(qureg, blockSize, useOffsetBlocks, diagStride),
+        getEndBlockStridedAmpIter(qureg, blockSize, useOffsetBlocks, diagStride),
+        TO_CU_AMP(0, 0));
+
+    qreal prob0 = cuAmpReal(sum);
+    return (outcome == 0)? prob0 : (1-prob0);
 }
 
 qreal densmatr_calcInnerProduct(Qureg a, Qureg b)
 {
-    return -1;
+    cuAmp prod = thrust::inner_product(
+        getStartPtr(a), getEndPtr(a), getStartPtr(b), 
+        TO_CU_AMP(0,0), thrust::plus<cuAmp>(), functor_prodOfConj());
+
+    return cuAmpReal(prod);
 }
 
 Complex statevec_calcInnerProduct(Qureg bra, Qureg ket)
 {
-    return (Complex) {.real=-1, .imag=-1};
+    cuAmp prod = thrust::inner_product(
+        getStartPtr(bra), getEndPtr(bra), getStartPtr(ket), 
+        TO_CU_AMP(0,0), thrust::plus<cuAmp>(), functor_prodOfConj());
+
+    return (Complex) {.real=cuAmpReal(prod), .imag=cuAmpImag(prod)};
 }
 
 qreal densmatr_calcFidelity(Qureg qureg, Qureg pureState)
 {
-    return -1;
+    // create iterator f(i) = sum_j qureg_ij pureState_j
+    auto functor = functor_matrixColumnDotVector(
+        qureg.deviceCuStateVec, pureState.deviceCuStateVec, // both init iters
+        pureState.numAmpsTotal);
+    auto rawIndIter = thrust::make_counting_iterator(0);
+    auto prodAmpIter = thrust::make_transform_iterator(rawIndIter, functor);
+
+    // compute sum_i conj(pureState_i) * f(i)
+    cuAmp prod = thrust::inner_product(
+        getStartPtr(pureState), getEndPtr(pureState), prodAmpIter, 
+        TO_CU_AMP(0,0), thrust::plus<cuAmp>(), functor_prodOfConj());
+
+    qreal prodRe = cuAmpReal(prod);
+    return prodRe;
 }
 
 qreal densmatr_calcHilbertSchmidtDistance(Qureg a, Qureg b)
 {
-    return -1;
+    cuAmp trace = thrust::inner_product(
+        getStartPtr(a), getEndPtr(a), getStartPtr(b), 
+        TO_CU_AMP(0,0), thrust::plus<cuAmp>(), functor_absOfDif());
+
+    qreal dist = sqrt(cuAmpReal(trace));
+    return dist;
 }
 
 qreal densmatr_calcPurity(Qureg qureg)
 {
-    return -1;
+    qreal sumOfAbsSquared = thrust::transform_reduce(
+        getStartPtr(qureg), getEndPtr(qureg), functor_absSquared(),
+        0., thrust::plus<qreal>());
+
+    return sumOfAbsSquared;
 }
 
 Complex statevec_calcExpecDiagonalOp(Qureg qureg, DiagonalOp op)
 {
-    return (Complex) {.real=-1, .imag=-1};
+    cuAmp prod = thrust::inner_product(
+        getStartPtr(qureg), getEndPtr(qureg), getStartDiagonalOpAmpIter(op), 
+        TO_CU_AMP(0,0), thrust::plus<cuAmp>(), functor_prodOfAbsSquared());
+
+    return (Complex) {.real=cuAmpReal(prod), .imag=cuAmpImag(prod)};
 }
 
 Complex densmatr_calcExpecDiagonalOp(Qureg qureg, DiagonalOp op)
 {
-    return (Complex) {.real=-1, .imag=-1};
+   long long int diagStride = 1 + (1LL << qureg.numQubitsRepresented);
+
+    cuAmp prod = thrust::inner_product(
+        getStartStridedAmpIter(qureg, diagStride),
+        getEndStridedAmpIter(qureg, diagStride),
+        getStartDiagonalOpAmpIter(op),
+        TO_CU_AMP(0,0), thrust::plus<cuAmp>(), thrust::multiplies<cuAmp>());
+
+    return (Complex) {.real=cuAmpReal(prod), .imag=cuAmpImag(prod)};
 }
 
 
@@ -945,11 +1251,24 @@ Complex densmatr_calcExpecDiagonalOp(Qureg qureg, DiagonalOp op)
  */
 
 void statevec_collapseToKnownProbOutcome(Qureg qureg, int measureQubit, int outcome, qreal outcomeProb)
-{        
+{
+    int basisBits[] = {measureQubit};
+
+    custatevecCollapseOnZBasis(
+        qureg.cuQuantumHandle, qureg.deviceCuStateVec, 
+        CU_AMP_IN_STATE_PREC, qureg.numQubitsInStateVec, 
+        outcome, basisBits, 1, outcomeProb);
 }
 
 void densmatr_collapseToKnownProbOutcome(Qureg qureg, int measureQubit, int outcome, qreal outcomeProb)
 {
+    auto functor = functor_collapseDensMatrToOutcome(
+        qureg.deviceCuStateVec, qureg.numQubitsRepresented, 
+        outcome, outcomeProb, measureQubit);
+
+    auto startIndIter = thrust::make_counting_iterator(0);
+    auto endIndIter = startIndIter + qureg.numAmpsTotal;
+    thrust::for_each(startIndIter, endIndIter, functor);
 }
 
 
