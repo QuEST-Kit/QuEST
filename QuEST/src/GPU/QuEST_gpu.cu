@@ -358,35 +358,6 @@ void statevec_copySubstateFromGPU(Qureg qureg, long long int startInd, long long
     if (DEBUG) printf("Finished copying data from GPU\n");
 }
 
-/** Print the current state vector of probability amplitudes for a set of qubits to standard out. 
-  For debugging purposes. Each rank should print output serially. Only print output for systems <= 5 qubits
- */
-void statevec_reportStateToScreen(Qureg qureg, QuESTEnv env, int reportRank){
-    long long int index;
-    int rank;
-    copyStateFromGPU(qureg); 
-    if (qureg.numQubitsInStateVec<=5){
-        for (rank=0; rank<qureg.numChunks; rank++){
-            if (qureg.chunkId==rank){
-                if (reportRank) {
-                    printf("Reporting state from rank %d [\n", qureg.chunkId);
-                    //printf("\trank, index, real, imag\n");
-                    printf("real, imag\n");
-                } else if (rank==0) {
-                    printf("Reporting state [\n");
-                    printf("real, imag\n");
-                }
-
-                for(index=0; index<qureg.numAmpsPerChunk; index++){
-                    printf(REAL_STRING_FORMAT ", " REAL_STRING_FORMAT "\n", qureg.stateVec.real[index], qureg.stateVec.imag[index]);
-                }
-                if (reportRank || rank==qureg.numChunks-1) printf("]\n");
-            }
-            syncQuESTEnv(env);
-        }
-    }
-}
-
 qreal statevec_getRealAmp(Qureg qureg, long long int index){
     qreal el=0;
     cudaMemcpy(&el, &(qureg.deviceStateVec.real[index]), 

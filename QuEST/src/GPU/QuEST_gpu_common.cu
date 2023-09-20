@@ -158,6 +158,36 @@ void seedQuEST(QuESTEnv *env, unsigned long int *seedArray, int numSeeds) {
 
 
 /*
+ * DEBUG 
+ */
+
+void statevec_reportStateToScreen(Qureg qureg, QuESTEnv env, int reportRank){
+
+    if (qureg.numQubitsInStateVec > 5) {
+        printf("State reporting disabled for >5 qubits");
+        return;
+    }
+
+    copyStateFromGPU(qureg); 
+
+    // distributed GPU not yet supported
+    if (reportRank != 0)
+        return;
+
+    printf("Reporting state from rank %d [\n", qureg.chunkId);
+    printf("real, imag\n");
+
+    for(long long int i=0; i<qureg.numAmpsPerChunk; i++)
+        printf(
+            REAL_STRING_FORMAT ", " REAL_STRING_FORMAT "\n", 
+            qureg.stateVec.real[i], qureg.stateVec.imag[i]);
+
+    printf("]\n");
+}
+
+
+
+/*
  * STATE INITIALISATION
  */
 

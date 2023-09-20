@@ -738,16 +738,6 @@ void statevec_setWeightedQureg(Complex fac1, Qureg qureg1, Complex fac2, Qureg q
 
 
 /*
- * DEBUG
- */
-
-void statevec_reportStateToScreen(Qureg qureg, QuESTEnv env, int reportRank)
-{
-}
-
-
-
-/*
  * OPERATORS
  */
 
