@@ -34,6 +34,23 @@
 
 # include "QuEST_precision.h"
 
+
+
+// ensure custatevecHandle_t is defined, even if no GPU
+# ifdef USE_CUQUANTUM
+# include <custatevec.h>
+typedef struct CuQuantumConfig {
+    cudaMemPool_t cuMemPool;
+    cudaStream_t cuStream;
+    custatevecHandle_t cuQuantumHandle;
+    custatevecDeviceMemHandler_t cuMemHandler;
+} CuQuantumConfig;
+# else
+# define CuQuantumConfig void*
+# endif
+
+
+
 // prevent C++ name mangling
 #ifdef __cplusplus
 extern "C" {
@@ -368,6 +385,11 @@ typedef struct Qureg
     //! Storage for reduction of probabilities on GPU
     qreal *firstLevelReduction, *secondLevelReduction;
 
+    //! Storage for wavefunction amplitues and config (copy of QuESTEnv's handle) in cuQuantum deployment
+    cuAmp* cuStateVec;
+    cuAmp* deviceCuStateVec;
+    CuQuantumConfig* cuConfig;
+
     //! Storage for generated QASM output
     QASMLogger* qasmLog;
     
@@ -386,6 +408,10 @@ typedef struct QuESTEnv
     int numRanks;
     unsigned long int* seeds;
     int numSeeds;
+
+    // a copy of the QuESTEnv's config, used only in cuQuantum deployment
+    CuQuantumConfig* cuConfig;
+    
 } QuESTEnv;
 
 
@@ -4236,6 +4262,10 @@ qreal calcPurity(Qureg qureg);
  * linear algebra calculation.
  *
  * The number of qubits represented in \p qureg and \p pureState must match.
+ *
+ * > In the GPU-accelerated cuQuantum backend, this function further assumes that
+ * > the density matrix \p qureg is correctly normalised, and otherwise returns the 
+ * > fidelity of the conjugate-transpose of \p qureg.
  * 
  * @see
  * - calcHilbertSchmidtDistance()
