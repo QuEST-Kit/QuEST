@@ -56,8 +56,6 @@
     # define CU_AMP_IN_MATRIX_PREC void // invalid
 #endif
 
-
-
 // convenient operator overloads for cuAmp, for doing complex artihmetic.
 // some of these are defined to be used by Thrust's backend, because we
 // avoided Thrust's complex<qreal> (see QuEST_precision.h for explanation).
@@ -125,6 +123,89 @@ std::vector<int> getIndsFromMask(long long int mask, int numBits) {
 
 
 /*
+ * CUQUANTUM MEMORY MANAGEMENT
+ */
+
+int GPUSupportsMemPools() {
+
+    // consult only the first device (garuanteed already to exist)
+    int deviceId;
+    cudaGetDevice(&deviceId);
+    int supports;
+    cudaDeviceGetAttribute(&supports, cudaDevAttrMemoryPoolsSupported, deviceId);
+    return supports;
+}
+
+int memPoolAlloc(void* ctx, void** ptr, size_t size, cudaStream_t stream) {
+    cudaMemPool_t& pool = *static_cast<cudaMemPool_t*>(ctx);
+    return cudaMallocFromPoolAsync(ptr, size, pool, stream); 
+}
+int memPoolFree(void* ctx, void* ptr, size_t size, cudaStream_t stream) {
+    return cudaFreeAsync(ptr, stream); 
+}
+
+CuQuantumConfig* createCuConfig() {
+
+    // create cuQuantumConfig in heap memory
+    CuQuantumConfig* config = (CuQuantumConfig*) malloc(sizeof(CuQuantumConfig));
+
+    // bind existing memory pool (does not need later manual freeing)
+    int deviceId;
+    cudaGetDevice(&deviceId);
+    cudaDeviceGetMemPool(&(config->cuMemPool), deviceId);
+
+    // create new custatevecHandle_t
+    custatevecCreate(&(config->cuQuantumHandle));
+
+    // create new cudaStream_t
+    cudaStreamCreate(&(config->cuStream));
+
+    // custatevecDeviceMemHandler_t needs no explicit creation
+
+    // return config's heap pointer
+    return config;
+}
+
+void initCuConfig(CuQuantumConfig* config) {
+
+    // get existing memPool threshold, above which memory gets freed at every stream synch
+    size_t currMaxMem;
+    cudaMemPoolGetAttribute(config->cuMemPool, cudaMemPoolAttrReleaseThreshold, &currMaxMem); 
+
+    // if memPool threshold smaller than 1 MiB = 16 qubits, extend it
+    size_t desiredMaxMem = 16*(1<<15);
+    if (currMaxMem < desiredMaxMem)
+        cudaMemPoolSetAttribute(config->cuMemPool, cudaMemPoolAttrReleaseThreshold, &desiredMaxMem); 
+
+    // bind mempool to deviceMemHandler
+    config->cuMemHandler.ctx = &(config->cuMemPool);
+    config->cuMemHandler.device_alloc = memPoolAlloc;
+    config->cuMemHandler.device_free = memPoolFree;
+    strcpy(config->cuMemHandler.name, "mempool");
+
+    // bind deviceMemHandler to cuQuantum
+    custatevecSetDeviceMemHandler(config->cuQuantumHandle, &(config->cuMemHandler));
+
+    // bind stream to cuQuantum
+    custatevecSetStream(config->cuQuantumHandle, config->cuStream);
+}
+
+void destroyCuConfig(CuQuantumConfig* config) {
+
+    // free config's heap attributes
+    cudaStreamDestroy(config->cuStream);
+    custatevecDestroy(config->cuQuantumHandle);
+
+    // don't need to free cuMemPool; it already existed
+    // don't need to free cuMemHandler; it's a struct included in config's heap memory
+
+    // free config's heap memory
+    free(config);
+}
+
+
+
+/*
  * CUQUANTUM WRAPPERS (to reduce boilerplate)
  */
 
@@ -141,7 +222,7 @@ void custatevec_applyMatrix(Qureg qureg, std::vector<int> ctrls, std::vector<int
     size_t workSize = 0;
 
     custatevecApplyMatrix(
-        qureg.cuQuantumHandle, 
+        qureg.cuConfig->cuQuantumHandle, 
         qureg.deviceCuStateVec, CU_AMP_IN_STATE_PREC, qureg.numQubitsInStateVec, 
         matr.data(), CU_AMP_IN_MATRIX_PREC, CUSTATEVEC_MATRIX_LAYOUT_ROW, adj, 
         targs.data(), targs.size(), 
@@ -166,7 +247,7 @@ void custatevec_applyDiagonal(Qureg qureg, std::vector<int> ctrls, std::vector<i
     size_t workSize = 0;
 
     custatevecApplyGeneralizedPermutationMatrix(
-        qureg.cuQuantumHandle, qureg.deviceCuStateVec,
+        qureg.cuConfig->cuQuantumHandle, qureg.deviceCuStateVec,
         CU_AMP_IN_STATE_PREC, qureg.numQubitsInStateVec,
         perm, elems, CU_AMP_IN_MATRIX_PREC, adj, 
         targs.data(), targs.size(), 
@@ -424,50 +505,6 @@ extern "C" {
  * ENVIRONMENT MANAGEMENT
  */
 
-int GPUSupportsMemPools() {
-
-    // consult only the first device (garuanteed already to exist)
-    int device = 0;
-
-    int supports;
-    cudaDeviceGetAttribute(&supports, cudaDevAttrMemoryPoolsSupported, device);
-    return supports;
-}
-
-int memPoolAlloc(void* ctx, void** ptr, size_t size, cudaStream_t stream) {
-    cudaMemPool_t pool = * reinterpret_cast<cudaMemPool_t*>(ctx);
-    return cudaMallocFromPoolAsync(ptr, size, pool, stream); 
-}
-int memPoolFree(void* ctx, void* ptr, size_t size, cudaStream_t stream) {
-    return cudaFreeAsync(ptr, stream); 
-}
-
-void setupAutoWorkspaces(custatevecHandle_t cuQuantumHandle) {
-
-    // get the current (device's default) stream-ordered memory pool (assuming single GPU)
-    int device = 0;
-    cudaMemPool_t memPool;
-    cudaDeviceGetMemPool(&memPool, device);
-
-    // get its current memory threshold, above which memory gets freed at every stream synch
-    size_t currMaxMem;
-    cudaMemPoolGetAttribute(memPool, cudaMemPoolAttrReleaseThreshold, &currMaxMem); 
-
-    // if it's smaller than 1 MiB = 16 qubits, extend it
-    size_t desiredMaxMem = 16*(1LL<<16);
-    if (currMaxMem < desiredMaxMem)
-        cudaMemPoolSetAttribute(memPool, cudaMemPoolAttrReleaseThreshold, &desiredMaxMem); 
-
-    // create a mem handler around the mem pool
-    custatevecDeviceMemHandler_t memHandler;
-    memHandler.ctx = reinterpret_cast<void*>(&memPool);
-    memHandler.device_alloc = memPoolAlloc;
-    memHandler.device_free = memPoolFree;
-
-    // set cuQuantum to use this handler and pool, to automate workspace memory management
-    custatevecSetDeviceMemHandler(cuQuantumHandle, &memHandler);
-}
-
 QuESTEnv createQuESTEnv(void) {
     validateGPUExists(GPUExists(), __func__);
     validateGPUIsCuQuantumCompatible(GPUSupportsMemPools(),__func__);
@@ -480,10 +517,10 @@ QuESTEnv createQuESTEnv(void) {
     env.numSeeds = 0;
     seedQuESTDefault(&env);
 
-    // prepare cuQuantum
-    custatevecCreate(&env.cuQuantumHandle);
-    setupAutoWorkspaces(env.cuQuantumHandle);
-    
+    // prepare cuQuantum with automatic workspaces
+    env.cuConfig = createCuConfig();
+    initCuConfig(env.cuConfig);
+
     return env;
 }
 
@@ -491,7 +528,7 @@ void destroyQuESTEnv(QuESTEnv env){
     free(env.seeds);
 
     // finalise cuQuantum
-    custatevecDestroy(env.cuQuantumHandle);
+    destroyCuConfig(env.cuConfig);
 }
 
 
@@ -511,8 +548,8 @@ void statevec_createQureg(Qureg *qureg, int numQubits, QuESTEnv env)
     qureg->numChunks = 1;
     qureg->isDensityMatrix = 0;
 
-    // copy env's cuQuantum handle to qureg
-    qureg->cuQuantumHandle = env.cuQuantumHandle;
+    // copy env's cuQuantum config handle
+    qureg->cuConfig = env.cuConfig;
 
     // allocate user-facing CPU memory
     qureg->stateVec.real = (qreal*) malloc(numAmps * sizeof(qureg->stateVec.real));
@@ -627,7 +664,7 @@ void densmatr_initPlusState(Qureg qureg)
 void statevec_initZeroState(Qureg qureg)
 {
     custatevecInitializeStateVector(
-        qureg.cuQuantumHandle, 
+        qureg.cuConfig->cuQuantumHandle, 
         qureg.deviceCuStateVec, 
         CU_AMP_IN_STATE_PREC, 
         qureg.numQubitsInStateVec, 
@@ -648,7 +685,7 @@ void statevec_initBlankState(Qureg qureg)
 void statevec_initPlusState(Qureg qureg)
 {
     custatevecInitializeStateVector(
-        qureg.cuQuantumHandle, 
+        qureg.cuConfig->cuQuantumHandle,
         qureg.deviceCuStateVec, 
         CU_AMP_IN_STATE_PREC, 
         qureg.numQubitsInStateVec, 
@@ -768,7 +805,7 @@ void statevec_multiControlledUnitary(Qureg qureg, long long int ctrlQubitsMask, 
         ctrlVals[i] = !(ctrlFlipMask & (1LL<<ctrlInds[i]));
 
     custatevecApplyMatrix(
-        qureg.cuQuantumHandle, 
+        qureg.cuConfig->cuQuantumHandle,
         qureg.deviceCuStateVec, CU_AMP_IN_STATE_PREC, qureg.numQubitsInStateVec, 
         toCuMatr(u).data(), CU_AMP_IN_MATRIX_PREC, CUSTATEVEC_MATRIX_LAYOUT_ROW, 0, 
         targs, 1, ctrlInds.data(), ctrlVals.data(), ctrlInds.size(), 
@@ -866,7 +903,7 @@ void statevec_multiRotateZ(Qureg qureg, long long int mask, qreal angle)
     std::vector<custatevecPauli_t> paulis(targs.size(), CUSTATEVEC_PAULI_Z);
 
     custatevecApplyPauliRotation(
-        qureg.cuQuantumHandle, qureg.deviceCuStateVec, 
+        qureg.cuConfig->cuQuantumHandle, qureg.deviceCuStateVec, 
         CU_AMP_IN_STATE_PREC, qureg.numQubitsInStateVec, 
         theta, paulis.data(), targs.data(), targs.size(),
         nullptr, nullptr, 0);
@@ -880,7 +917,7 @@ void statevec_multiControlledMultiRotateZ(Qureg qureg, long long int ctrlMask, l
     std::vector<custatevecPauli_t> paulis(targs.size(), CUSTATEVEC_PAULI_Z);
 
     custatevecApplyPauliRotation(
-        qureg.cuQuantumHandle, qureg.deviceCuStateVec, 
+        qureg.cuConfig->cuQuantumHandle, qureg.deviceCuStateVec, 
         CU_AMP_IN_STATE_PREC, qureg.numQubitsInStateVec, 
         theta, paulis.data(), targs.data(), targs.size(),
         ctrls.data(), nullptr, ctrls.size());
@@ -912,7 +949,7 @@ void statevec_swapQubitAmps(Qureg qureg, int qb1, int qb2)
     int numPairs = 1;
 
     custatevecSwapIndexBits(
-        qureg.cuQuantumHandle, qureg.deviceCuStateVec, 
+        qureg.cuConfig->cuQuantumHandle, qureg.deviceCuStateVec, 
         CU_AMP_IN_STATE_PREC, qureg.numQubitsInStateVec, 
         targPairs, numPairs,
         nullptr, nullptr, 0);
@@ -1100,7 +1137,7 @@ qreal statevec_calcTotalProb(Qureg qureg)
     int numBasisBits = 1;
 
     custatevecAbs2SumOnZBasis(
-        qureg.cuQuantumHandle, qureg.deviceCuStateVec, 
+        qureg.cuConfig->cuQuantumHandle, qureg.deviceCuStateVec, 
         CU_AMP_IN_STATE_PREC, qureg.numQubitsInStateVec,
         &abs2sum0, &abs2sum1, basisBits, numBasisBits);
 
@@ -1117,7 +1154,7 @@ qreal statevec_calcProbOfOutcome(Qureg qureg, int measureQubit, int outcome)
     int numBasisBits = 1;
 
     custatevecAbs2SumOnZBasis(
-        qureg.cuQuantumHandle, qureg.deviceCuStateVec, 
+        qureg.cuConfig->cuQuantumHandle, qureg.deviceCuStateVec, 
         CU_AMP_IN_STATE_PREC, qureg.numQubitsInStateVec,
         &prob0, prob1, basisBits, numBasisBits);
 
@@ -1230,7 +1267,7 @@ void statevec_collapseToKnownProbOutcome(Qureg qureg, int measureQubit, int outc
     int basisBits[] = {measureQubit};
 
     custatevecCollapseOnZBasis(
-        qureg.cuQuantumHandle, qureg.deviceCuStateVec, 
+        qureg.cuConfig->cuQuantumHandle, qureg.deviceCuStateVec, 
         CU_AMP_IN_STATE_PREC, qureg.numQubitsInStateVec, 
         outcome, basisBits, 1, outcomeProb);
 }
