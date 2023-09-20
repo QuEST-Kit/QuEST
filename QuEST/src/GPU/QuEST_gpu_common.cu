@@ -36,6 +36,10 @@ extern "C" {
 
 const int NUM_THREADS_PER_BLOCK = 128;
 
+__forceinline__ __device__ long long int getThreadInd() {
+    return blockIdx.x*blockDim.x + threadIdx.x;
+}
+
 
 
 /*
@@ -159,7 +163,7 @@ void seedQuEST(QuESTEnv *env, unsigned long int *seedArray, int numSeeds) {
 
 __global__ void densmatr_initPureStateKernel(Qureg dens, Qureg pure)
 {
-    long long int pureInd = blockIdx.x*blockDim.x + threadIdx.x;
+    long long int pureInd = getThreadInd();
     if (pureInd >= pure.numAmpsPerChunk) return;
 
     qreal aRe, aIm;
@@ -188,7 +192,7 @@ void densmatr_initPureState(Qureg dens, Qureg pure)
 __global__ void densmatr_setQuregToPauliHamilKernel(
     Qureg qureg, enum pauliOpType* pauliCodes, qreal* termCoeffs, int numSumTerms
 ) {
-    long long int n = blockIdx.x*blockDim.x + threadIdx.x;
+    long long int n = getThreadInd();
     if (n>=qureg.numAmpsPerChunk) return;
     
     // flattened {I,X,Y,Z} matrix elements, where [k] = [p][i][j]
@@ -288,7 +292,7 @@ __global__ void statevec_calcProbOfAllOutcomesKernel(
     qreal* outcomeProbs, Qureg qureg, int* qubits, int numQubits
 ) {
     // each thread handles one amplitude (all amplitudes are involved)
-    long long int ampInd = blockIdx.x*blockDim.x + threadIdx.x;
+    long long int ampInd = getThreadInd();
     if (ampInd >= qureg.numAmpsTotal) return;
 
     qreal ampRe, ampIm;
@@ -340,7 +344,7 @@ __global__ void densmatr_calcProbOfAllOutcomesKernel(
     qreal* outcomeProbs, Qureg qureg, int* qubits, int numQubits
 ) {
     // each thread handles one diagonal amplitude
-    long long int diagInd = blockIdx.x*blockDim.x + threadIdx.x;
+    long long int diagInd = getThreadInd();
     long long int numDiags = (1LL << qureg.numQubitsRepresented);
     if (diagInd >= numDiags) return;
     
@@ -403,7 +407,7 @@ __global__ void densmatr_mixTwoQubitDepolarisingKernel(
     long long int part3, long long int part4, long long int part5,
     long long int rowCol1, long long int rowCol2)
 {
-    long long int scanInd = blockIdx.x*blockDim.x + threadIdx.x;
+    long long int scanInd = getThreadInd();
     if (scanInd >= qureg.numAmpsPerChunk) return;
     
     long long int ind00 = (scanInd&part1) + ((scanInd&part2)<<1) + ((scanInd&part3)<<2) + ((scanInd&part4)<<3) + ((scanInd&part5)<<4);
@@ -519,7 +523,7 @@ __global__ void agnostic_initDiagonalOpFromPauliHamilKernel(
     DiagonalOp op, enum pauliOpType* pauliCodes, qreal* termCoeffs, int numSumTerms
 ) {    
     // each thread processes one diagonal element
-    long long int elemInd = blockIdx.x*blockDim.x + threadIdx.x;
+    long long int elemInd = getThreadInd();
     if (elemInd >= op.numElemsPerChunk)
         return;
 
@@ -588,6 +592,533 @@ void agnostic_setDiagonalOpElems(DiagonalOp op, long long int startInd, qreal* r
         imag,
         numElems * sizeof(*(op.deviceOperator.imag)), 
         cudaMemcpyHostToDevice);
+}
+
+
+
+/*
+ * PHASE FUNCTIONS
+ */
+
+__forceinline__ __device__ int getBit(long long int num, int ind) {
+    return (num >> ind) & 1;
+}
+
+__forceinline__ __device__ void applyPhaseToAmp(Qureg qureg, long long int index, qreal phase, int conj) 
+{
+    // negate phase to conjugate operator
+    phase *= (1 - 2*conj);
+    qreal c = cos(phase);
+    qreal s = sin(phase);
+
+    // modify amp to amp * exp(i phase) 
+    qreal re, im;
+    GET_AMP( re, im, qureg, index );
+    SET_AMP( qureg, index, re*c - im*s, re*s + im*c );
+}
+
+__forceinline__ __device__ void getMultiRegPhaseIndOffsets(size_t* stride, size_t* offset)
+{
+    // determine the phaseInds tuple relevant for this thread
+    *stride = gridDim.x*blockDim.x;
+    *offset = blockIdx.x*blockDim.x + threadIdx.x;
+}
+
+__forceinline__ __device__ long long int getPhaseInd(long long int globalAmpInd, int* qubits, int numQubits, enum bitEncoding encoding)
+{
+    long long int phaseInd = 0LL;
+
+    if (encoding == UNSIGNED) {
+        for (int q=0; q<numQubits; q++)
+            phaseInd += (1LL << q) * getBit(globalAmpInd, qubits[q]);
+    }
+    else if (encoding == TWOS_COMPLEMENT) {
+        for (int q=0; q<numQubits-1; q++) // use final qubit to indicate sign 
+            phaseInd += (1LL << q) * getBit(globalAmpInd, qubits[q]);
+        if (getBit(globalAmpInd, qubits[numQubits-1]) == 1)
+            phaseInd -= (1LL << (numQubits-1));
+    }
+
+    return phaseInd;
+}
+
+__forceinline__ __device__ void setMultiRegPhaseInds(
+    long long int *phaseInds, long long int globalAmpInd, 
+    int* qubits, int* numQubitsPerReg, int numRegs, enum bitEncoding encoding
+) {
+    // determine the phaseInds tuple relevant for this thread
+    size_t stride, offset;
+    getMultiRegPhaseIndOffsets(&stride, &offset);
+
+    // determine phase indices
+    if (encoding == UNSIGNED) {
+        int flatInd = 0;
+        for (int r=0; r<numRegs; r++) {
+            phaseInds[r*stride+offset] = 0LL;
+            for (int q=0; q<numQubitsPerReg[r]; q++)
+                phaseInds[r*stride+offset] += (1LL << q) * getBit(globalAmpInd, qubits[flatInd++]);
+        }
+    }
+    else if  (encoding == TWOS_COMPLEMENT) {
+        int flatInd = 0;
+        for (int r=0; r<numRegs; r++) {
+            phaseInds[r*stride+offset] = 0LL;
+            for (int q=0; q<numQubitsPerReg[r]-1; q++)  
+                phaseInds[r*stride+offset] += (1LL << q) * getBit(globalAmpInd, qubits[flatInd++]);
+            // use final qubit to indicate sign
+            if (getBit(globalAmpInd, qubits[flatInd++]) == 1)
+                phaseInds[r*stride+offset] -= (1LL << (numQubitsPerReg[r]-1));
+        }
+    }
+}
+
+__forceinline__ __device__ long long int getIndOfPhaseOverride(long long int phaseInd, long long int* overrideInds, int numOverrides)
+{
+    // determine if this phase index has an overriden value (i < numOverrides).
+    // this is painfully inefficient and ill-suited to kernel lockstep, but we
+    // assume there are very few (<5) overrides, so optimisation is unnecessary
+
+    int i;
+    for (i=0; i<numOverrides; i++)
+        if (phaseInd == overrideInds[i])
+            break;
+
+    return i;
+}
+
+__forceinline__ __device__ long long int getIndOfMultiRegPhaseOverride(
+    long long int* phaseInds, int numRegs, long long int* overrideInds, int numOverrides
+) {
+    // determine the phaseInds tuple relevant for this thread
+    size_t stride, offset;
+    getMultiRegPhaseIndOffsets(&stride, &offset);
+
+    // determine if this phase index has an overriden value (i < numOverrides).
+    // this is painfully inefficient and ill-suited to kernel lockstep, but we
+    // assume there are very few (<5) overrides, so optimisation is unnecessary
+
+    int i;
+    for (i=0; i<numOverrides; i++) {
+
+        // to be a match, every ind in the index-tuple must match
+        int found = 1;
+        for (int r=0; r<numRegs; r++) {
+            if (phaseInds[r*stride+offset] != overrideInds[i*numRegs+r]) {
+                found = 0;
+                break;
+            }
+        }
+
+        // breaking is mostly cosmetic; if even a single thread encounters no overrides,
+        // it must iterate all overrides and all other lock-step threads must wait
+        if (found)
+            break;
+    }
+
+    // (i<numOverrides) indicates an override was found
+    return i;
+}
+
+__forceinline__ __device__ qreal evalNormPhaseFunc(
+    long long int* phaseInds, size_t stride, size_t offset,
+    int numRegs, enum phaseFunc phaseFuncName, qreal* params, int numParams
+) {
+    // determine norm
+    qreal norm = 0;
+    if (phaseFuncName == SCALED_INVERSE_SHIFTED_NORM) {
+        for (int r=0; r<numRegs; r++) {
+            qreal dif = phaseInds[r*stride+offset] - params[2+r];
+            norm += dif*dif;
+        }
+    }
+    else
+        for (int r=0; r<numRegs; r++)
+            norm += phaseInds[r*stride+offset]*phaseInds[r*stride+offset];
+    norm = sqrt(norm);
+
+    // determine phase via phase function
+
+    if (phaseFuncName == NORM)
+        return norm;
+
+    if (phaseFuncName == INVERSE_NORM)
+        return (norm == 0.)? params[0] : 1/norm; // smallest non-zero norm is 1
+
+    if (phaseFuncName == SCALED_NORM)
+        return params[0] * norm;
+
+    if (
+        phaseFuncName == SCALED_INVERSE_NORM || 
+        phaseFuncName == SCALED_INVERSE_SHIFTED_NORM
+    )
+        return (norm <= REAL_EPS)? params[1] : params[0] / norm; // unless shifted closer to zero
+}
+
+__forceinline__ __device__ qreal evalProductPhaseFunc(
+    long long int* phaseInds, size_t stride, size_t offset,
+    int numRegs, enum phaseFunc phaseFuncName, qreal* params, int numParams
+) {
+    // determine product of phase indices
+    qreal prod = 1;
+    for (int r=0; r<numRegs; r++)
+        prod *= phaseInds[r*stride+offset];
+
+    // determine phase via phase function
+    if (phaseFuncName == PRODUCT)
+        return prod;
+
+    if (phaseFuncName == INVERSE_PRODUCT)
+        return (prod == 0.)? params[0] : 1/prod; // smallest non-zero prod is +- 1
+    
+    if (phaseFuncName == SCALED_PRODUCT)
+        return params[0] * prod;
+
+    if (phaseFuncName == SCALED_INVERSE_PRODUCT)
+        return (prod == 0.)? params[1] : params[0] / prod;
+}
+
+__forceinline__ __device__ qreal evalDistancePhaseFunc(
+    long long int* phaseInds, size_t stride, size_t offset,
+    int numRegs, enum phaseFunc phaseFuncName, qreal* params, int numParams
+) {
+    // evaluate distance (depends on phase function)
+    qreal dist = 0;
+    if (phaseFuncName == SCALED_INVERSE_SHIFTED_DISTANCE) {
+        for (int r=0; r<numRegs; r+=2) {
+            qreal dif = (phaseInds[r*stride+offset] - phaseInds[(r+1)*stride+offset] - params[2+r/2]);
+            dist += dif*dif;
+        }
+    }
+    else if (phaseFuncName == SCALED_INVERSE_SHIFTED_WEIGHTED_DISTANCE) {
+        for (int r=0; r<numRegs; r+=2) {
+            qreal dif = (phaseInds[r*stride+offset] - phaseInds[(r+1)*stride+offset] - params[2+r+1]);
+            dist += params[2+r] * dif*dif;
+        }
+    }
+    else
+        for (int r=0; r<numRegs; r+=2) {
+            qreal dif = (phaseInds[(r+1)*stride+offset] - phaseInds[r*stride+offset]);
+            dist += dif*dif;
+        }
+
+    // if sqrt() arg of distance would be negative, set it to zero, to subsequently be set to the divergence param
+    if (dist < 0)
+        dist = 0;
+
+    dist = sqrt(dist);
+
+    if (phaseFuncName == DISTANCE)
+        return dist;
+
+    if (phaseFuncName == INVERSE_DISTANCE)
+        return (dist == 0.)? params[0] : 1/dist; // smallest non-zero dist is 1
+    
+    if (phaseFuncName == SCALED_DISTANCE)
+        return params[0] * dist;
+    
+    if (
+        phaseFuncName == SCALED_INVERSE_DISTANCE || 
+        phaseFuncName == SCALED_INVERSE_SHIFTED_DISTANCE || 
+        phaseFuncName == SCALED_INVERSE_SHIFTED_WEIGHTED_DISTANCE
+    )
+        return (dist <= REAL_EPS)? params[1] : params[0] / dist; // unless shifted closer
+}
+
+__forceinline__ __device__ qreal getPhaseFromParamNamedFunc(
+    long long int* phaseInds, int numRegs, enum phaseFunc phaseFuncName, qreal* params, int numParams
+) {
+    // determine the phaseInds tuple relevant for the calling thread
+    size_t stride, offset;
+    getMultiRegPhaseIndOffsets(&stride, &offset);
+
+    // compute norm related phases
+    if (
+        phaseFuncName == NORM || 
+        phaseFuncName == INVERSE_NORM ||
+        phaseFuncName == SCALED_NORM || 
+        phaseFuncName == SCALED_INVERSE_NORM ||
+        phaseFuncName == SCALED_INVERSE_SHIFTED_NORM
+    )
+        return evalNormPhaseFunc(phaseInds, stride, offset, numRegs, phaseFuncName, params, numParams);
+
+    // compute product related phases
+    if (
+        phaseFuncName == PRODUCT || 
+        phaseFuncName == INVERSE_PRODUCT ||
+        phaseFuncName == SCALED_PRODUCT || 
+        phaseFuncName == SCALED_INVERSE_PRODUCT
+    )
+        return evalProductPhaseFunc(phaseInds, stride, offset, numRegs, phaseFuncName, params, numParams);
+
+    // compute Euclidean distance related phases 
+    if (
+        phaseFuncName == DISTANCE || 
+        phaseFuncName == INVERSE_DISTANCE ||
+        phaseFuncName == SCALED_DISTANCE || 
+        phaseFuncName == SCALED_INVERSE_DISTANCE ||
+        phaseFuncName == SCALED_INVERSE_SHIFTED_DISTANCE || 
+        phaseFuncName == SCALED_INVERSE_SHIFTED_WEIGHTED_DISTANCE
+    )
+        return evalDistancePhaseFunc(phaseInds, stride, offset, numRegs, phaseFuncName, params, numParams);
+}
+
+__global__ void statevec_applyPhaseFuncOverridesKernel(
+    Qureg qureg, int* qubits, int numQubits, enum bitEncoding encoding,
+    qreal* coeffs, qreal* exponents, int numTerms, 
+    long long int* overrideInds, qreal* overridePhases, int numOverrides, 
+    int conj
+) {
+    long long int index = getThreadInd();
+    if (index>=qureg.numAmpsPerChunk) return;
+
+    // determine global amplitude index (non-distributed, so it's just local index)
+    long long int globalAmpInd = index;
+
+    // determine phaseInd from the qubit encoding
+    long long int phaseInd = getPhaseInd(globalAmpInd, qubits, numQubits, encoding);
+
+    // determine if this phase index has an overriden value (i < numOverrides)
+    int overInd = getIndOfPhaseOverride(phaseInd, overrideInds, numOverrides);
+
+    // determine phase from {coeffs}, {exponents} (unless overriden)
+    qreal phase = 0;
+    if (overInd < numOverrides)
+        phase = overridePhases[overInd];
+    else
+        for (int t=0; t<numTerms; t++)
+            phase += coeffs[t] * pow((qreal) phaseInd, (qreal) exponents[t]);
+            
+    // modify amp to amp * exp(i phase) 
+    applyPhaseToAmp(qureg, index, phase, conj);
+}
+
+ void statevec_applyPhaseFuncOverrides(
+     Qureg qureg, int* qubits, int numQubits, enum bitEncoding encoding,
+     qreal* coeffs, qreal* exponents, int numTerms, 
+     long long int* overrideInds, qreal* overridePhases, int numOverrides,
+     int conj
+ ) {
+    // allocate device space for global list of {qubits}, {coeffs}, {exponents}, {overrideInds} and {overridePhases}
+    int* d_qubits;                          size_t mem_qubits = numQubits * sizeof *d_qubits;
+    qreal* d_coeffs;                        size_t mem_terms = numTerms * sizeof *d_coeffs;
+    qreal* d_exponents;                 
+    long long int* d_overrideInds;          size_t mem_inds = numOverrides * sizeof *d_overrideInds;
+    qreal* d_overridePhases;                size_t mem_phas = numOverrides * sizeof *d_overridePhases;
+    cudaMalloc(&d_qubits, mem_qubits);      cudaMemcpy(d_qubits, qubits, mem_qubits, cudaMemcpyHostToDevice);
+    cudaMalloc(&d_coeffs, mem_terms);       cudaMemcpy(d_coeffs, coeffs, mem_terms, cudaMemcpyHostToDevice);
+    cudaMalloc(&d_exponents, mem_terms);    cudaMemcpy(d_exponents, exponents, mem_terms, cudaMemcpyHostToDevice);
+    cudaMalloc(&d_overrideInds, mem_inds);  cudaMemcpy(d_overrideInds, overrideInds, mem_inds, cudaMemcpyHostToDevice);
+    cudaMalloc(&d_overridePhases,mem_phas); cudaMemcpy(d_overridePhases, overridePhases, mem_phas, cudaMemcpyHostToDevice);
+
+    // call kernel
+    int threadsPerCUDABlock = 128;
+    int CUDABlocks = ceil((qreal) qureg.numAmpsPerChunk / threadsPerCUDABlock);
+    statevec_applyPhaseFuncOverridesKernel<<<CUDABlocks,threadsPerCUDABlock>>>(
+        qureg, d_qubits, numQubits, encoding, 
+        d_coeffs, d_exponents, numTerms, 
+        d_overrideInds, d_overridePhases, numOverrides,
+        conj);
+
+    // cleanup device memory 
+    cudaFree(d_qubits);
+    cudaFree(d_coeffs);
+    cudaFree(d_exponents);
+    cudaFree(d_overrideInds);
+    cudaFree(d_overridePhases);
+}
+
+__global__ void statevec_applyMultiVarPhaseFuncOverridesKernel(
+    Qureg qureg, int* qubits, int* numQubitsPerReg, int numRegs, enum bitEncoding encoding,
+    qreal* coeffs, qreal* exponents, int* numTermsPerReg, 
+    long long int* overrideInds, qreal* overridePhases, int numOverrides,
+    long long int *phaseInds,
+    int conj
+) {
+    long long int index = getThreadInd();
+    if (index>=qureg.numAmpsPerChunk) return;
+
+    // determine global amplitude index (non-distributed, so it's just local index)
+    long long int globalAmpInd = index;
+
+    // determine phase indices (each thread has phaseInds[numRegs] sub-array)
+    setMultiRegPhaseInds(phaseInds, globalAmpInd, qubits, numQubitsPerReg, numRegs, encoding);
+
+    // determine if this phase index has an overriden value
+    long long int overInd = getIndOfMultiRegPhaseOverride(phaseInds, numRegs, overrideInds, numOverrides);
+
+    // either use the overriden phase...
+    qreal phase = 0;
+    if (overInd < numOverrides)
+        phase = overridePhases[overInd];
+
+    else {
+        // else determine the phaseInds tuple relevant for this thread
+        size_t stride, offset;
+        getMultiRegPhaseIndOffsets(&stride, &offset);
+
+        // and compute the phase from coeffs and exponents
+        long long int flatInd = 0;
+        for (int r=0; r<numRegs; r++) {
+            for (int t=0; t<numTermsPerReg[r]; t++) {
+                phase += coeffs[flatInd] * pow((qreal) phaseInds[r*stride+offset], (qreal) exponents[flatInd]);
+                flatInd++;
+            }
+        }
+    }
+    
+    // modify amp to amp * exp(i phase) 
+    applyPhaseToAmp(qureg, index, phase, conj);
+}
+
+void statevec_applyMultiVarPhaseFuncOverrides(
+    Qureg qureg, int* qubits, int* numQubitsPerReg, int numRegs, enum bitEncoding encoding,
+    qreal* coeffs, qreal* exponents, int* numTermsPerReg, 
+    long long int* overrideInds, qreal* overridePhases, int numOverrides,
+    int conj
+) {
+    // determine size of arrays, for cloning into GPU memory
+    size_t mem_numQubitsPerReg = numRegs * sizeof *numQubitsPerReg;
+    size_t mem_numTermsPerReg = numRegs * sizeof *numTermsPerReg;
+    size_t mem_overridePhases = numOverrides * sizeof *overridePhases;
+    size_t mem_overrideInds = numOverrides * numRegs * sizeof *overrideInds;
+    size_t mem_qubits = 0;
+    size_t mem_coeffs = 0;  
+    size_t mem_exponents = 0;
+    for (int r=0; r<numRegs; r++) {
+        mem_qubits += numQubitsPerReg[r] * sizeof *qubits;
+        mem_coeffs += numTermsPerReg[r] * sizeof *coeffs;
+        mem_exponents += numTermsPerReg[r] * sizeof *exponents;
+    }
+
+    // allocate global GPU memory
+    int* d_qubits;                  cudaMalloc(&d_qubits,           mem_qubits);
+    qreal* d_coeffs;                cudaMalloc(&d_coeffs,           mem_coeffs);
+    qreal* d_exponents;             cudaMalloc(&d_exponents,        mem_exponents);
+    int* d_numQubitsPerReg;         cudaMalloc(&d_numQubitsPerReg,  mem_numQubitsPerReg);
+    int* d_numTermsPerReg;          cudaMalloc(&d_numTermsPerReg,   mem_numTermsPerReg);
+    long long int* d_overrideInds;  cudaMalloc(&d_overrideInds,     mem_overrideInds);
+    qreal* d_overridePhases;        cudaMalloc(&d_overridePhases,   mem_overridePhases);
+
+    // copy function args into GPU memory
+    cudaMemcpy(d_qubits, qubits,                    mem_qubits,             cudaMemcpyHostToDevice);
+    cudaMemcpy(d_coeffs, coeffs,                    mem_coeffs,             cudaMemcpyHostToDevice);
+    cudaMemcpy(d_exponents, exponents,              mem_exponents,          cudaMemcpyHostToDevice);
+    cudaMemcpy(d_numQubitsPerReg, numQubitsPerReg,  mem_numQubitsPerReg,    cudaMemcpyHostToDevice);
+    cudaMemcpy(d_numTermsPerReg, numTermsPerReg,    mem_numTermsPerReg,     cudaMemcpyHostToDevice);
+    cudaMemcpy(d_overrideInds, overrideInds,        mem_overrideInds,       cudaMemcpyHostToDevice);
+    cudaMemcpy(d_overridePhases, overridePhases,    mem_overridePhases,     cudaMemcpyHostToDevice);
+
+    int threadsPerCUDABlock = 128;
+    int CUDABlocks = ceil((qreal) qureg.numAmpsPerChunk / threadsPerCUDABlock);
+
+    // allocate thread-local working space {phaseInds}
+    long long int *d_phaseInds;
+    size_t gridSize = (size_t) threadsPerCUDABlock * CUDABlocks;
+    cudaMalloc(&d_phaseInds, numRegs*gridSize * sizeof *d_phaseInds);
+
+    // call kernel
+    statevec_applyMultiVarPhaseFuncOverridesKernel<<<CUDABlocks,threadsPerCUDABlock>>>(
+        qureg, d_qubits, d_numQubitsPerReg, numRegs, encoding,
+        d_coeffs, d_exponents, d_numTermsPerReg, 
+        d_overrideInds, d_overridePhases, numOverrides,
+        d_phaseInds, 
+        conj);
+
+    // free device memory
+    cudaFree(d_qubits);
+    cudaFree(d_coeffs);
+    cudaFree(d_exponents);
+    cudaFree(d_numQubitsPerReg);
+    cudaFree(d_numTermsPerReg);
+    cudaFree(d_overrideInds);
+    cudaFree(d_overridePhases);
+    cudaFree(d_phaseInds);
+}
+
+__global__ void statevec_applyParamNamedPhaseFuncOverridesKernel(
+    Qureg qureg, int* qubits, int* numQubitsPerReg, int numRegs, enum bitEncoding encoding,
+    enum phaseFunc phaseFuncName, qreal* params, int numParams,
+    long long int* overrideInds, qreal* overridePhases, int numOverrides,
+    long long int* phaseInds,
+    int conj
+) {
+    long long int index = getThreadInd();
+    if (index>=qureg.numAmpsPerChunk) return;
+
+    // determine global amplitude index (non-distributed, so it's just local index)
+    long long int globalAmpInd = index;
+
+    // determine phase indices (each thread has phaseInds[numRegs] sub-array)
+    setMultiRegPhaseInds(phaseInds, globalAmpInd, qubits, numQubitsPerReg, numRegs, encoding);
+
+    // determine if this phase index has an overriden value
+    long long int overInd = getIndOfMultiRegPhaseOverride(phaseInds, numRegs, overrideInds, numOverrides);
+
+    // determine the phase, or the overriden one
+    qreal phase = 0;
+    if (overInd < numOverrides)
+        phase = overridePhases[overInd];
+    else
+        phase = getPhaseFromParamNamedFunc(phaseInds, numRegs, phaseFuncName, params, numParams);
+    
+    // modify amp to amp * exp(i phase) 
+    applyPhaseToAmp(qureg, index, phase, conj);
+}
+
+void statevec_applyParamNamedPhaseFuncOverrides(
+    Qureg qureg, int* qubits, int* numQubitsPerReg, int numRegs, enum bitEncoding encoding,
+    enum phaseFunc phaseFuncName, qreal* params, int numParams,
+    long long int* overrideInds, qreal* overridePhases, int numOverrides,
+    int conj 
+) {
+    // determine size of arrays, for cloning into GPU memory
+    size_t mem_numQubitsPerReg = numRegs * sizeof *numQubitsPerReg;
+    size_t mem_overridePhases = numOverrides * sizeof *overridePhases;
+    size_t mem_overrideInds = numOverrides * numRegs * sizeof *overrideInds;
+    size_t mem_params = numParams * sizeof *params;
+    size_t mem_qubits = 0;
+    for (int r=0; r<numRegs; r++)
+        mem_qubits += numQubitsPerReg[r] * sizeof *qubits;
+
+    // allocate global GPU memory
+    int* d_qubits;                  cudaMalloc(&d_qubits,           mem_qubits);
+    int* d_numQubitsPerReg;         cudaMalloc(&d_numQubitsPerReg,  mem_numQubitsPerReg);
+    long long int* d_overrideInds;  cudaMalloc(&d_overrideInds,     mem_overrideInds);
+    qreal* d_overridePhases;        cudaMalloc(&d_overridePhases,   mem_overridePhases);
+    qreal* d_params = NULL;         if (numParams > 0) cudaMalloc(&d_params, mem_params);
+
+    // copy function args into GPU memory
+    cudaMemcpy(d_qubits, qubits,                    mem_qubits,             cudaMemcpyHostToDevice);
+    cudaMemcpy(d_numQubitsPerReg, numQubitsPerReg,  mem_numQubitsPerReg,    cudaMemcpyHostToDevice);
+    cudaMemcpy(d_overrideInds, overrideInds,        mem_overrideInds,       cudaMemcpyHostToDevice);
+    cudaMemcpy(d_overridePhases, overridePhases,    mem_overridePhases,     cudaMemcpyHostToDevice);
+    if (numParams > 0)
+        cudaMemcpy(d_params, params, mem_params, cudaMemcpyHostToDevice);
+
+    int threadsPerCUDABlock = 128;
+    int CUDABlocks = ceil((qreal) qureg.numAmpsPerChunk / threadsPerCUDABlock);
+
+    // allocate thread-local working space {phaseInds}
+    long long int *d_phaseInds;
+    size_t gridSize = (size_t) threadsPerCUDABlock * CUDABlocks;
+    cudaMalloc(&d_phaseInds, numRegs*gridSize * sizeof *d_phaseInds);
+
+    // call kernel
+    statevec_applyParamNamedPhaseFuncOverridesKernel<<<CUDABlocks,threadsPerCUDABlock>>>(
+        qureg, d_qubits, d_numQubitsPerReg, numRegs, encoding,
+        phaseFuncName, d_params, numParams,
+        d_overrideInds, d_overridePhases, numOverrides,
+        d_phaseInds,
+        conj);
+
+    // free device memory
+    cudaFree(d_qubits);
+    cudaFree(d_numQubitsPerReg);
+    cudaFree(d_overrideInds);
+    cudaFree(d_overridePhases);
+    cudaFree(d_phaseInds);
+    if (numParams > 0)
+        cudaFree(d_params);
 }
 
 
