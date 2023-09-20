@@ -15,13 +15,18 @@
 
 # include <math.h>
 
-// define CUDA complex types as void if not using cuQuantum
+
+// define CUDA complex types as void if not using cuQuantum.
+// note we used cuComplex.h for complex numbers, in lieu of
+// Thrust's complex<qreal>, so that the QuEST.h header can
+// always be compiled with C99, rather than C++14.
 # ifdef USE_CUQUANTUM
     # include <cuComplex.h>
 # else
     # define cuFloatComplex void
     # define cuDoubleComplex void
 # endif
+
 
 // set default double precision if not set during compilation
 # ifndef QuEST_PREC
