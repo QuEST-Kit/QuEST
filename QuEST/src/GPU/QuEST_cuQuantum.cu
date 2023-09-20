@@ -857,7 +857,6 @@ void statevec_multiControlledPhaseShift(Qureg qureg, int *controlQubits, int num
     std::vector<int> targs{controlQubits[0]};
     std::vector<int> ctrls(controlQubits + 1, controlQubits + numControlQubits); 
     custatevec_applyDiagonal(qureg, ctrls, targs, elems);
-
 }
 
 void statevec_multiRotateZ(Qureg qureg, long long int mask, qreal angle)
@@ -984,30 +983,6 @@ void densmatr_applyDiagonalOp(Qureg qureg, DiagonalOp op)
     auto endIndIter = startIndIter + qureg.numAmpsTotal;
     auto functor = functor_multDiagOntoDensMatr(qureg.deviceCuStateVec, op);
     thrust::for_each(startIndIter, endIndIter, functor);
-}
-
-void statevec_applyPhaseFuncOverrides(
-    Qureg qureg, int* qubits, int numQubits, enum bitEncoding encoding,
-    qreal* coeffs, qreal* exponents, int numTerms, 
-    long long int* overrideInds, qreal* overridePhases, int numOverrides,
-    int conj)
-{
-}
-
-void statevec_applyMultiVarPhaseFuncOverrides(
-    Qureg qureg, int* qubits, int* numQubitsPerReg, int numRegs, enum bitEncoding encoding,
-    qreal* coeffs, qreal* exponents, int* numTermsPerReg, 
-    long long int* overrideInds, qreal* overridePhases, int numOverrides,
-    int conj)
-{
-}
-
-void statevec_applyParamNamedPhaseFuncOverrides(
-    Qureg qureg, int* qubits, int* numQubitsPerReg, int numRegs, enum bitEncoding encoding,
-    enum phaseFunc phaseFuncName, qreal* params, int numParams,
-    long long int* overrideInds, qreal* overridePhases, int numOverrides,
-    int conj)
-{
 }
 
 
