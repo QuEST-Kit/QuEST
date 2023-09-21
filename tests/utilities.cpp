@@ -445,18 +445,14 @@ bool areEqual(QVector a, QVector b) {
     return true;
 }
 
-bool areEqual(QMatrix a, QMatrix b, qreal precision) {
+bool areEqual(QMatrix a, QMatrix b) {
     DEMAND( a.size() == b.size() );
     
     for (size_t i=0; i<a.size(); i++)
         for (size_t j=0; j<b.size(); j++)
-            if (abs(a[i][j] - b[i][j]) > precision)
+            if (abs(a[i][j] - b[i][j]) > REAL_EPS)
                 return false;
     return true;
-}
-
-bool areEqual(QMatrix a, QMatrix b) {
-    return areEqual(a, b, REAL_EPS);
 }
 
 qcomp expI(qreal phase) {

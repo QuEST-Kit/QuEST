@@ -257,10 +257,10 @@ int isComplexPairUnitary(Complex alpha, Complex beta) {
                 + beta.imag*beta.imag) < REAL_EPS );
 }
 
-#define macro_isMatrixUnitary(m, dim, retVal) { \
-    /* elemRe_ and elemIm_ must not exist in caller scope */ \
+#define macro_isMatrixUnitary(m, dim) { \
+    /* REAL_EPS_SQUARED_, elemRe_, elemIm_, reDif_ and distSq_ must not exist in caller scope */ \
+    qreal REAL_EPS_SQUARED_ = REAL_EPS * REAL_EPS; \
     qreal elemRe_, elemIm_; \
-    retVal = 1; \
     /* check m * ConjugateTranspose(m) == Identity */ \
     for (int r=0; r < (dim); r++) { \
         for (int c=0; c < (dim); c++) { \
@@ -272,40 +272,33 @@ int isComplexPairUnitary(Complex alpha, Complex beta) {
                 elemRe_ += m.real[r][i]*m.real[c][i] + m.imag[r][i]*m.imag[c][i]; \
                 elemIm_ += m.imag[r][i]*m.real[c][i] - m.real[r][i]*m.imag[c][i]; \
             } \
-            /* check distance from identity */ \
-            if ((absReal(elemIm_) > REAL_EPS) || \
-                (r == c && absReal(elemRe_ - 1) > REAL_EPS) || \
-                (r != c && absReal(elemRe_    ) > REAL_EPS)) { \
-                retVal = 0; \
-                break; \
-            } \
+            /* assert elem has Euclidean distance < REAL_EPS from Identity elem */ \
+            qreal reDif_ = elemRe_ - (r==c); \
+            qreal distSq_ = (elemIm_*elemIm_) + (reDif_*reDif_); \
+            if (distSq_ > REAL_EPS_SQUARED_) \
+                return 0; \
         } \
-        if (retVal == 0) \
-            break; \
     } \
+    return 1; \
 }
 int isMatrix2Unitary(ComplexMatrix2 u) {
-    int dim = 2;
-    int retVal;
-    macro_isMatrixUnitary(u, dim, retVal);
-    return retVal;
+    macro_isMatrixUnitary(u, 2);
 }
 int isMatrix4Unitary(ComplexMatrix4 u) {
-    int dim = 4;
-    int retVal;
-    macro_isMatrixUnitary(u, dim, retVal);
-    return retVal;
+    macro_isMatrixUnitary(u, 4);
 }
 int isMatrixNUnitary(ComplexMatrixN u) {
     int dim = 1 << u.numQubits;
-    int retVal;
-    macro_isMatrixUnitary(u, dim, retVal);
-    return retVal;
+    macro_isMatrixUnitary(u, dim);
 }
 
 #define macro_isCompletelyPositiveMap(ops, numOps, opDim) { \
+    /* REAL_EPS_SQUARED_, elemRe_, elemIm_, reDif_ and distSq_ must not exist in caller scope */ \
+    qreal REAL_EPS_SQUARED_ = REAL_EPS * REAL_EPS; \
+    /* check sum_op (ConjugateTranspose(op) * op) == Identity */ \
     for (int r=0; r<(opDim); r++) { \
         for (int c=0; c<(opDim); c++) { \
+            /* compute (r,c)-th elem of sum_op (...) */ \
             qreal elemRe_ = 0; \
             qreal elemIm_ = 0; \
             for (int n=0; n<(numOps); n++) { \
@@ -314,8 +307,10 @@ int isMatrixNUnitary(ComplexMatrixN u) {
                     elemIm_ += ops[n].real[k][r]*ops[n].imag[k][c] - ops[n].imag[k][r]*ops[n].real[k][c]; \
                 } \
             } \
-            qreal dist_ = absReal(elemIm_) + absReal(elemRe_ - ((r==c)? 1:0)); \
-            if (dist_ > REAL_EPS) \
+            /* assert elem has Euclidean distance < REAL_EPS from Identity elem */ \
+            qreal reDif_ = elemRe_ - (r==c); \
+            qreal distSq_ = (elemIm_*elemIm_) + (reDif_*reDif_); \
+            if (distSq_ > REAL_EPS_SQUARED_) \
                 return 0; \
         } \
     } \
