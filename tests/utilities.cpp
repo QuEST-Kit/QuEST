@@ -598,6 +598,16 @@ QMatrix getOrthonormalisedRows(QMatrix matr) {
     return matr;
 }
 
+QMatrix getRandomDiagonalUnitary(int numQb) {
+    DEMAND( numQb >= 1 );
+
+    QMatrix matr = getZeroMatrix(1 << numQb);
+    for (size_t i=0; i<matr.size(); i++)
+        matr[i][i] = expI(getRandomReal(0,4*M_PI));
+
+    return matr;
+}
+
 QMatrix getRandomUnitary(int numQb) {
     DEMAND( numQb >= 1 );
 
@@ -624,10 +634,12 @@ QMatrix getRandomUnitary(int numQb) {
     // create U = Q D
     QMatrix matrU = matrQ * matrD;
 
-    // ensure matrix is indeed unitary 
+    // in the rare scenario the result is not sufficiently precisely unitary,
+    // replace it with a trivially unitary diagonal matrix
     QMatrix daggerProd = matrU * getConjugateTranspose(matrU);
     QMatrix iden = getIdentityMatrix(dim);
-    DEMAND( areEqual(daggerProd, iden, 1E2*REAL_EPS) );
+    if( ! areEqual(daggerProd, iden) )
+        matrU = getRandomDiagonalUnitary(numQb);
 
     return matrU;
 }
@@ -662,7 +674,12 @@ std::vector<QMatrix> getRandomKrausMap(int numQb, int numOps) {
     QMatrix prodSum = getZeroMatrix(1 << numQb);
     for (int i=0; i<numOps; i++)
         prodSum += getConjugateTranspose(ops[i]) * ops[i];
-    DEMAND( areEqual(prodSum, iden, 1E2*REAL_EPS) );
+
+    // in the rare scenario it is insufficiently numerically precise,
+    // replace the map with trivially precise diagonals
+    if( ! areEqual(prodSum, iden) )
+        for (int i=0; i<numOps; i++)
+            ops[i] = weights[i] * getRandomDiagonalUnitary(numQb);
 
     return ops;
 }
