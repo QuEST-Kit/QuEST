@@ -990,7 +990,7 @@ void statevec_applySubDiagonalOp(Qureg qureg, int* targs, SubDiagonalOp op, int 
     // (as separate arrays op.real and op.imag) into cuAmp*
     cuAmp* elems = qureg.cuStateVec;
     for (long long int i=0; i<op.numElems; i++)
-        elems[i] = TO_CU_AMP(op.real[i], op.imag[i]);
+        elems[i] = TO_CU_AMP(op.real[i], ((conj)? -1 : 1) * op.imag[i]);
 
     std::vector<int> t(targs, targs + op.numQubits); 
     custatevec_applyDiagonal(qureg, {}, t, elems);
