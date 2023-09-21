@@ -180,6 +180,7 @@ then run it with
 
 We sincerely thank the following external contributors to QuEST.
 
+- [Jakub Adamski](https://github.com/jjacobx) for optimising distributed communication of max-size messages.
 - [Bruno Villasenor Alvarez](https://github.com/bvillasen) of [AMD](https://www.amd.com/en.html) for porting the GPU backend to [HIP](https://github.com/ROCm-Developer-Tools/HIP), for compatibility with AMD GPUs.
 - [HQS Quantum simulations](https://quantumsimulations.de/) for contributing `mixDamping` on CPU.
 - [Kshitij Chhabra](https://github.com/kshitijc) for patching some validation bugs.
@@ -187,8 +188,8 @@ We sincerely thank the following external contributors to QuEST.
 - [Zach van Rijn](https://github.com/zv-io) for patching the multithreading code for GCC-9 OpenMP-5 compatibility.
 - [SchineCompton](https://github.com/SchineCompton) for patching the GPU CMake release build.
 - [Christopher J. Anders](https://github.com/chr5tphr) for patching the multithreading (when default off) and GPU builds (revising min cmake).
-- [Gleb Struchalin](https://github.com/glebx-f) for patching the cmake standalone build
-- [Milos Prokop](https://github.com/Milos9304) for serial prototyping of `initDiagonalOpFromPauliHamil`
+- [Gleb Struchalin](https://github.com/glebx-f) for patching the cmake standalone build.
+- [Milos Prokop](https://github.com/Milos9304) for serial prototyping of `initDiagonalOpFromPauliHamil`.
 
 QuEST uses the [mt19937ar](http://www.math.sci.hiroshima-u.ac.jp/~m-mat/MT/MT2002/emt19937ar.html) Mersenne Twister algorithm for random number generation, under the BSD licence. QuEST optionally (by additionally importing `QuEST_complex.h`) integrates the [language agnostic complex type](http://collaboration.cmc.ec.gc.ca/science/rpn/biblio/ddj/Website/articles/CUJ/2003/0303/cuj0303meyers/index.htm) by Randy Meyers and Dr. Thomas Plum
 
