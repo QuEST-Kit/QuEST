@@ -37,6 +37,8 @@ option(USE_HIP "Whether to use HIP for GPU code compilation for AMD GPUs. Set to
 
 set(GPU_ARCH gfx90 CACHE STRING "GPU hardware dependent, used for AMD GPUs when USE_HIP=1. Lookup at https://llvm.org/docs/AMDGPUUsage.html#amdgpu-processor-table. Write without fullstop")
 
+option(USE_CUQUANTUM "Whether to use NVIDIA's cuQuantum library (requires prior installation) in lieu of QuEST's bespoke GPU kernel. Set to 1 to enable." 0)
+
 
 # *****************************************************************************
 # ***** NO CHANGES SHOULD BE REQUIRED FROM THE USER BEYOND THIS POINT *********
@@ -49,6 +51,7 @@ message(STATUS "OMP acceleration is ${MULTITHREADED}")
 message(STATUS "MPI distribution is ${DISTRIBUTED}")
 if (${GPUACCELERATED})
   message(STATUS "HIP compilation is ${USE_HIP}")
+  message(STATUS "cuQuantum compilation is ${USE_CUQUANTUM}")
 endif()
 
 
@@ -119,25 +122,28 @@ endif()
 if (GPUACCELERATED)
   if (USE_HIP)
 
-  if(NOT DEFINED HIP_PATH)
-    if(NOT DEFINED ENV{HIP_PATH})
-      message(WARNING "WARNING: HIP_PATH is not defiend. Using default HIP_PATH=/opt/rocm/hip    " ${HIP_VERSION})
-      set(HIP_PATH "/opt/rocm/hip" CACHE PATH "Path to which HIP has been installed")
-    else()
-      set(HIP_PATH $ENV{HIP_PATH}	CACHE PATH "Path to which HIP has been installed")
+    if(NOT DEFINED HIP_PATH)
+      if(NOT DEFINED ENV{HIP_PATH})
+        message(WARNING "WARNING: HIP_PATH is not defiend. Using default HIP_PATH=/opt/rocm/hip    " ${HIP_VERSION})
+        set(HIP_PATH "/opt/rocm/hip" CACHE PATH "Path to which HIP has been installed")
+      else()
+        set(HIP_PATH $ENV{HIP_PATH}	CACHE PATH "Path to which HIP has been installed")
+      endif()
     endif()
-  endif()
 
-  if(EXISTS "${HIP_PATH}")
-    set(CMAKE_MODULE_PATH "${HIP_PATH}/cmake" ${CMAKE_MODULE_PATH})
-    find_package(HIP REQUIRED)
-    message(STATUS "Found HIP: " ${HIP_VERSION})
-    message(STATUS "HIP PATH: " ${HIP_PATH})
-  endif()
-    
-  ADD_DEFINITIONS( -DUSE_HIP )
-  ADD_DEFINITIONS( -D__HIP_PLATFORM_AMD__ )
+    if(EXISTS "${HIP_PATH}")
+      set(CMAKE_MODULE_PATH "${HIP_PATH}/cmake" ${CMAKE_MODULE_PATH})
+      find_package(HIP REQUIRED)
+      message(STATUS "Found HIP: " ${HIP_VERSION})
+      message(STATUS "HIP PATH: " ${HIP_PATH})
+    endif()
+      
+    ADD_DEFINITIONS( -DUSE_HIP )
+    ADD_DEFINITIONS( -D__HIP_PLATFORM_AMD__ )
 
+  elseif (USE_CUQUANTUM)
+    find_package(CUDA REQUIRED)
+    ADD_DEFINITIONS( -DUSE_CUQUANTUM )
   else()
     find_package(CUDA REQUIRED)
   endif()  
@@ -280,7 +286,12 @@ endif()
 # ----- C++ COMPILER FLAGS --------------------------------------------------
 
 # set C++ flags that are common between compilers and build types
-set (CMAKE_CXX_STANDARD 98)
+if (USE_CUQUANTUM)
+  set(CMAKE_CXX_STANDARD 14)
+  set(CMAKE_CXX_STANDARD_REQUIRED ON)
+else ()
+  set (CMAKE_CXX_STANDARD 98)
+endif ()
 
 # Use -O2 for all but debug mode by default 
 if (NOT("${CMAKE_BUILD_TYPE}" STREQUAL "Debug"))
@@ -412,6 +423,14 @@ target_link_libraries(QuEST PUBLIC ${MPI_C_LIBRARIES})
 # ----- GPU -------------------------------------------------------------------
 if (USE_HIP)
   target_link_libraries(QuEST PUBLIC  ${HIP_PATH}/lib/libamdhip64.so )
+elseif (USE_CUQUANTUM)
+  find_library(CUQUANTUM_LIBRARIES custatevec)
+  if (NOT CUQUANTUM_LIBRARIES)
+    message(FATAL_ERROR "cuQuantum library (specifically custatevec) not found")
+  endif ()
+
+  target_link_libraries(QuEST ${CUDA_LIBRARIES} ${CUQUANTUM_LIBRARIES})
+  target_include_directories(QuEST PUBLIC "/usr/local/cuda/include")
 else()
   target_link_libraries(QuEST ${CUDA_LIBRARIES})
 endif()

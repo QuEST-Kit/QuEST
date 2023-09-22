@@ -9,7 +9,8 @@
 #define PREPARE_TEST(qureg, ref) \
     Qureg qureg = createDensityQureg(NUM_QUBITS, QUEST_ENV); \
     initDebugState(qureg); \
-    QMatrix ref = toQMatrix(qureg);
+    QMatrix ref = toQMatrix(qureg); \
+    assertQuregAndRefInDebugState(qureg, ref);
 
 /* allows concise use of Contains in catch's REQUIRE_THROWS_WITH */
 using Catch::Matchers::Contains;
@@ -388,7 +389,7 @@ TEST_CASE( "mixMultiQubitKrausMap", "[decoherence]" ) {
             }
             
             // make only one invalid
-            ops[GENERATE_REF( range(0,numOps) )].real[0][0] = 0;
+            ops[GENERATE_REF( range(0,numOps) )].real[0][0] = -123456789;
             
             // make valid targets to avoid triggering target validation
             VLA(int, targs, numTargs);

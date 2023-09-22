@@ -28,7 +28,10 @@
 [![MIT license](https://img.shields.io/badge/license-MIT-lightgrey.svg)](LICENCE.txt)
 
 
-The **Quantum Exact Simulation Toolkit** is a high performance simulator of quantum circuits, state-vectors and density matrices. QuEST uses **multithreading**, **GPU acceleration** and **distribution** to run lightning first on laptops, desktops and networked supercomputers. QuEST *just works*; it is stand-alone, requires no installation, and trivial to compile and getting running.
+The **Quantum Exact Simulation Toolkit** is a high performance simulator of quantum circuits, state-vectors and density matrices. QuEST uses **multithreading**, **GPU acceleration** and **distribution** to run lightning first on laptops, desktops and networked supercomputers. 
+QuEST *just works*; it is stand-alone, requires no installation, and is trivial to compile and run. 
+QuEST hybridises [OpenMP](https://www.openmp.org/) and [MPI](https://www.mpi-forum.org/) with _huge_ compiler support to run on all sorts of multicore, multi-CPU and distributed hardware, uses [HIP](https://docs.amd.com/bundle/HIP-Programming-Guide-v5.3) to run on AMD GPUs, integrates [cuQuantum](https://developer.nvidia.com/cuquantum-sdk) and [Thrust](https://developer.nvidia.com/thrust) for cutting-edge performance on modern NVIDIA GPUs, and has a custom kernel backend to run on older CUDA-compatible GPUs. 
+And it hides these deployment modes behind a single, seamless interface.
 
 [![Languages](https://img.shields.io/badge/C-99-ff69b4.svg)](http://www.open-std.org/jtc1/sc22/wg14/www/standards.html#9899)
 [![Languages](https://img.shields.io/badge/C++-11-ff69b4.svg)](https://isocpp.org/wiki/faq/cpp11)
@@ -36,16 +39,17 @@ The **Quantum Exact Simulation Toolkit** is a high performance simulator of quan
 ![OS](https://img.shields.io/badge/os-Linux-9cbd3c.svg)
 ![OS](https://img.shields.io/badge/os-Windows-9cbd3c.svg)
 [![Platforms](https://img.shields.io/badge/multithreaded-OpenMP-6699ff.svg)](https://www.openmp.org/)
+[![Platforms](https://img.shields.io/badge/distributed-MPI-6699ff.svg)](https://www.mpi-forum.org/) 
 [![Platforms](https://img.shields.io/badge/GPU-CUDA-6699ff.svg)](https://developer.nvidia.com/cuda-zone)
 [![Platforms](https://img.shields.io/badge/GPU-AMD-6699ff.svg)](https://docs.amd.com/bundle/HIP-Programming-Guide-v5.3)
-[![Platforms](https://img.shields.io/badge/distributed-MPI-6699ff.svg)](https://www.mpi-forum.org/) 
+[![Platforms](https://img.shields.io/badge/GPU-cuQuantum-6699ff.svg)](https://developer.nvidia.com/cuquantum-sdk)
 
 QuEST is developed by the [QTechTheory](http://qtechtheory.org/) group at the University of Oxford, and [these authors](https://github.com/QuEST-Kit/QuEST/blob/master/AUTHORS.txt). To learn more:
 - see the [tutorial](https://github.com/QuEST-Kit/QuEST/blob/master/examples/README.md)
 - view the [documentation](https://quest-kit.github.io/QuEST/modules.html)
-- visit our [website](https://quest.qtechtheory.org/)
+- visit the [website](https://quest.qtechtheory.org/)
 - see some [examples](https://github.com/QuEST-Kit/QuEST/blob/master/examples/)
-- read our [whitepaper](https://www.nature.com/articles/s41598-019-47174-9), which featured in Scientific Report's [Top 100 in Physics](https://www.nature.com/collections/ecehgdfcba/) :trophy:
+- read the [whitepaper](https://www.nature.com/articles/s41598-019-47174-9), which featured in Scientific Report's [Top 100 in Physics](https://www.nature.com/collections/ecehgdfcba/) :trophy:
 
 [![DOI](https://img.shields.io/badge/DOI-10.1038%2Fs41598--019--47174--9-yellow.svg)](https://doi.org/10.1038/s41598-019-47174-9)
 [![Email](https://img.shields.io/badge/email-quest@materials.ox.ac.uk-red.svg)](mailto:quest@materials.ox.ac.uk)
@@ -131,7 +135,7 @@ QuEST supports:
   - [testing utilities](https://quest-kit.github.io/QuEST/group__testutilities.html)
 
 
-> **For developers**: To regenerate the doc after making changes to the code, run `doxygen doxyconfig/config` in the root directory. This will generate documentation in `Doxygen_doc/html`, the contents of which should be copied into [`docs/`](/docs/)
+> **For developers**: QuEST's doc is automatically regenerated when the `master` branch is updated via [Github Actions](https://github.com/features/actions). To locally regenerate the doc, run `doxygen doxyconfig/config` in the root directory, which generates html documentation in `Doxygen_doc/html`.
 
 ---------------------------------
 
@@ -176,6 +180,7 @@ then run it with
 
 We sincerely thank the following external contributors to QuEST.
 
+- [Jakub Adamski](https://github.com/jjacobx) for optimising distributed communication of max-size messages.
 - [Bruno Villasenor Alvarez](https://github.com/bvillasen) of [AMD](https://www.amd.com/en.html) for porting the GPU backend to [HIP](https://github.com/ROCm-Developer-Tools/HIP), for compatibility with AMD GPUs.
 - [HQS Quantum simulations](https://quantumsimulations.de/) for contributing `mixDamping` on CPU.
 - [Kshitij Chhabra](https://github.com/kshitijc) for patching some validation bugs.
@@ -183,8 +188,8 @@ We sincerely thank the following external contributors to QuEST.
 - [Zach van Rijn](https://github.com/zv-io) for patching the multithreading code for GCC-9 OpenMP-5 compatibility.
 - [SchineCompton](https://github.com/SchineCompton) for patching the GPU CMake release build.
 - [Christopher J. Anders](https://github.com/chr5tphr) for patching the multithreading (when default off) and GPU builds (revising min cmake).
-- [Gleb Struchalin](https://github.com/glebx-f) for patching the cmake standalone build
-- [Milos Prokop](https://github.com/Milos9304) for serial prototyping of `initDiagonalOpFromPauliHamil`
+- [Gleb Struchalin](https://github.com/glebx-f) for patching the cmake standalone build.
+- [Milos Prokop](https://github.com/Milos9304) for serial prototyping of `initDiagonalOpFromPauliHamil`.
 
 QuEST uses the [mt19937ar](http://www.math.sci.hiroshima-u.ac.jp/~m-mat/MT/MT2002/emt19937ar.html) Mersenne Twister algorithm for random number generation, under the BSD licence. QuEST optionally (by additionally importing `QuEST_complex.h`) integrates the [language agnostic complex type](http://collaboration.cmc.ec.gc.ca/science/rpn/biblio/ddj/Website/articles/CUJ/2003/0303/cuj0303meyers/index.htm) by Randy Meyers and Dr. Thomas Plum
 

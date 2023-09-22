@@ -7,7 +7,6 @@ Tutorial
 - [Running](#running)
 - [Testing](#testing)
 
-> Before getting started, it is best to [test](#testing) QuEST on your hardware.
 
 # Coding
 
@@ -174,6 +173,8 @@ QuEST uses the [Mersenne Twister](http://www.math.sci.hiroshima-u.ac.jp/~m-mat/M
 
 # Compiling
 
+See [this page](https://quest.qtechtheory.org/download/) to obtain the necessary compilers.
+
 QuEST uses [CMake](https://cmake.org/) (version `3.7` or higher) as its build system. Configure the build by supplying the below `-D[VAR=VALUE]` options after the `cmake ..` command. You can alternatively compile via [GNU Make](https://www.gnu.org/software/make/) directly with the provided [makefile](makefile).
 
 > **Windows** users should install [CMake](https://cmake.org/download/) and [Build Tools](https://visualstudio.microsoft.com/downloads/#build-tools-for-visual-studio-2019), and run the below commands in the *Developer Command Prompt for VS*
@@ -242,9 +243,9 @@ If your project contains multiple source files, separate them with semi-colons. 
 
 - To compile for GPU, use
   ```console
-   -DGPUACCELERATED=1 -DGPU_COMPUTE_CAPABILITY=[CC] ..
+   -DGPUACCELERATED=1 -DGPU_COMPUTE_CAPABILITY=[CC]
   ```
-  where `[CC]` is the compute cabability of your GPU, written without a decimal point. This can can be looked up at the [NVIDIA website](https://developer.nvidia.com/cuda-gpus).
+  where `[CC]` is the compute cabability of your GPU, written without a decimal point. This can can be looked up at the [NVIDIA website](https://developer.nvidia.com/cuda-gpus), and to check you have selected the right one, you should run the [unit tests](#testing).
   > Note that CUDA is not compatible with all compilers. To force `cmake` to use a 
   > compatible compiler, override `CMAKE_C_COMPILER` and `CMAKE_CXX_COMPILER`.  
   > For example, to compile for the [Quadro P6000](https://www.pny.com/nvidia-quadro-p6000)
@@ -254,11 +255,16 @@ If your project contains multiple source files, separate them with semi-colons. 
   >          -DCMAKE_C_COMPILER=gcc-6 -DCMAKE_CXX_COMPILER=g++-6
   > ```
 
+  QuEST can also leverage NVIDIA's [cuQuantum](https://developer.nvidia.com/cuquantum-sdk) and [Thrust](https://developer.nvidia.com/thrust) libraries for optimised GPU simulation on modern GPUs. You must first install cuQuantum (which includes sub-library `cuStateVec` used by QuEST) [here](https://developer.nvidia.com/cuQuantum-downloads). When compiling QuEST, in addition to the above compiler options, simply specify
+  ```console
+   -DUSE_CUQUANTUM=1
+  ```
+
   QuEST can also run on AMD GPUs using HIP. For the HIP documentation see [HIP programming guide](https://docs.amd.com/bundle/HIP-Programming-Guide-v5.3/page/Introduction_to_HIP_Programming_Guide.html). To compile for AMD GPUs, use
     ```console
-    -DGPUACCELERATED=1 -DUSE_HIP=1 -DGPU_ARCH=[ARCH] ..
+    -DGPUACCELERATED=1 -DUSE_HIP=1 -DGPU_ARCH=[ARCH]
     ```
-  where `[ARCH]` is the architecture of your GPU, for example `gfx90a`. A table for AMD GPU architectures can be looked up [here](https://llvm.org/docs/AMDGPUUsage.html#amdgpu-processor-table). 
+  where `[ARCH]` is the architecture of your GPU, for example `gfx90a`. A table for AMD GPU architectures can be looked up [here](https://llvm.org/docs/AMDGPUUsage.html#amdgpu-processor-table). To check you have used the correct `GPU_ARCH`, you should run the [unit tests](#testing).
 
 - You can additionally customise the floating point precision used by QuEST's `qreal` type, via
   ```console
@@ -310,6 +316,7 @@ Once compiled as above, the compiled executable can be locally run from within t
   export OMP_NUM_THREADS=16
   mpirun -np 8 ./myExecutable
   ```
+  In some circumstances, like when large-memory multi-core nodes have multiple CPU sockets, it is worthwhile to deploy _multiple_ MPI processes to each node.
 
 - In GPU mode, the executable is launched directly via 
   ```console 

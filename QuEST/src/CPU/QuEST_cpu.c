@@ -1642,53 +1642,6 @@ void statevec_cloneQureg(Qureg targetQureg, Qureg copyQureg) {
 }
 
 /**
- * Initialise the state vector of probability amplitudes such that one qubit is set to 'outcome' and all other qubits are in an equal superposition of zero and one.
- * @param[in,out] qureg object representing the set of qubits to be initialised
- * @param[in] qubitId id of qubit to set to state 'outcome'
- * @param[in] outcome of qubit 'qubitId'
- */
-void statevec_initStateOfSingleQubit(Qureg *qureg, int qubitId, int outcome)
-{
-    long long int chunkSize, stateVecSize;
-    long long int index;
-    int bit;
-    long long int chunkId=qureg->chunkId;
-
-    // dimension of the state vector
-    chunkSize = qureg->numAmpsPerChunk;
-    stateVecSize = chunkSize*qureg->numChunks;
-    qreal normFactor = 1.0/sqrt((qreal)stateVecSize/2.0);
-
-    // Can't use qureg->stateVec as a private OMP var
-    qreal *stateVecReal = qureg->stateVec.real;
-    qreal *stateVecImag = qureg->stateVec.imag;
-
-    // initialise the state to |0000..0000>
-# ifdef _OPENMP
-# pragma omp parallel \
-    default  (none) \
-    shared   (chunkSize, stateVecReal, stateVecImag, normFactor, qubitId, outcome, chunkId) \
-    private  (index, bit)
-# endif
-    {
-# ifdef _OPENMP
-# pragma omp for schedule (static)
-# endif
-        for (index=0; index<chunkSize; index++) {
-            bit = extractBit(qubitId, index+chunkId*chunkSize);
-            if (bit==outcome) {
-                stateVecReal[index] = normFactor;
-                stateVecImag[index] = 0.0;
-            } else {
-                stateVecReal[index] = 0.0;
-                stateVecImag[index] = 0.0;
-            }
-        }
-    }
-}
-
-
-/**
  * Initialise the state vector of probability amplitudes to an (unphysical) state with
  * each component of each probability amplitude a unique floating point value. For debugging processes
  * @param[in,out] qureg object representing the set of qubits to be initialised
@@ -1724,62 +1677,6 @@ void statevec_initDebugState (Qureg qureg)
             stateVecImag[index] = ((indexOffset + index)*2.0+1.0)/10.0;
         }
     }
-}
-
-// returns 1 if successful, else 0
-int statevec_initStateFromSingleFile(Qureg *qureg, char filename[200], QuESTEnv env){
-    long long int chunkSize, stateVecSize;
-    long long int indexInChunk, totalIndex;
-
-    chunkSize = qureg->numAmpsPerChunk;
-    stateVecSize = chunkSize*qureg->numChunks;
-
-    qreal *stateVecReal = qureg->stateVec.real;
-    qreal *stateVecImag = qureg->stateVec.imag;
-
-    FILE *fp;
-    char line[200];
-
-    for (int rank=0; rank<(qureg->numChunks); rank++){
-        if (rank==qureg->chunkId){
-            fp = fopen(filename, "r");
-            
-            // indicate file open failure
-            if (fp == NULL)
-                return 0;
-            
-            indexInChunk = 0; totalIndex = 0;
-            while (fgets(line, sizeof(char)*200, fp) != NULL && totalIndex<stateVecSize){
-                if (line[0]!='#'){
-                    int chunkId = (int) (totalIndex/chunkSize);
-                    if (chunkId==qureg->chunkId){
-                        sscanf(line, REAL_SPECIFIER ", " REAL_SPECIFIER, &(stateVecReal[indexInChunk]),
-                                &(stateVecImag[indexInChunk])); 
-                        indexInChunk += 1;
-                    }
-                    totalIndex += 1;
-                }
-            }   
-            fclose(fp);
-        }
-        syncQuESTEnv(env);
-    }
-    
-    // indicate success
-    return 1;
-}
-
-int statevec_compareStates(Qureg mq1, Qureg mq2, qreal precision){
-    qreal diff;
-    long long int chunkSize = mq1.numAmpsPerChunk;
-    
-    for (long long int i=0; i<chunkSize; i++){
-        diff = absReal(mq1.stateVec.real[i] - mq2.stateVec.real[i]);
-        if (diff>precision) return 0;
-        diff = absReal(mq1.stateVec.imag[i] - mq2.stateVec.imag[i]);
-        if (diff>precision) return 0;
-    }
-    return 1;
 }
 
 void statevec_compactUnitaryLocal (Qureg qureg, int targetQubit, Complex alpha, Complex beta)

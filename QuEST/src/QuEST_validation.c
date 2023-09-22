@@ -120,6 +120,7 @@ typedef enum {
     E_DIAGONAL_OP_NOT_ALLOCATED,
     E_DIAGONAL_OP_NOT_ALLOCATED_ON_GPU,
     E_NO_GPU,
+    E_GPU_DOES_NOT_SUPPORT_MEM_POOLS,
     E_QASM_BUFFER_OVERFLOW
 } ErrorCode;
 
@@ -213,6 +214,7 @@ static const char* errorMessages[] = {
     [E_DIAGONAL_OP_NOT_ALLOCATED] = "Could not allocate memory for DiagonalOp. Possibly insufficient memory.",
     [E_DIAGONAL_OP_NOT_ALLOCATED_ON_GPU] = "Could not allocate memory for DiagonalOp on GPU. Possibly insufficient memory.",
     [E_NO_GPU] = "Trying to run GPU code with no GPU available.",
+    [E_GPU_DOES_NOT_SUPPORT_MEM_POOLS] = "The GPU does not support stream-ordered memory pools, required by the cuQuantum backend.",
     [E_QASM_BUFFER_OVERFLOW] = "QASM line buffer filled."
 };
 
@@ -255,10 +257,10 @@ int isComplexPairUnitary(Complex alpha, Complex beta) {
                 + beta.imag*beta.imag) < REAL_EPS );
 }
 
-#define macro_isMatrixUnitary(m, dim, retVal) { \
-    /* elemRe_ and elemIm_ must not exist in caller scope */ \
+#define macro_isMatrixUnitary(m, dim) { \
+    /* REAL_EPS_SQUARED_, elemRe_, elemIm_, reDif_ and distSq_ must not exist in caller scope */ \
+    qreal REAL_EPS_SQUARED_ = REAL_EPS * REAL_EPS; \
     qreal elemRe_, elemIm_; \
-    retVal = 1; \
     /* check m * ConjugateTranspose(m) == Identity */ \
     for (int r=0; r < (dim); r++) { \
         for (int c=0; c < (dim); c++) { \
@@ -270,40 +272,33 @@ int isComplexPairUnitary(Complex alpha, Complex beta) {
                 elemRe_ += m.real[r][i]*m.real[c][i] + m.imag[r][i]*m.imag[c][i]; \
                 elemIm_ += m.imag[r][i]*m.real[c][i] - m.real[r][i]*m.imag[c][i]; \
             } \
-            /* check distance from identity */ \
-            if ((absReal(elemIm_) > REAL_EPS) || \
-                (r == c && absReal(elemRe_ - 1) > REAL_EPS) || \
-                (r != c && absReal(elemRe_    ) > REAL_EPS)) { \
-                retVal = 0; \
-                break; \
-            } \
+            /* assert elem has Euclidean distance < REAL_EPS from Identity elem */ \
+            qreal reDif_ = elemRe_ - (r==c); \
+            qreal distSq_ = (elemIm_*elemIm_) + (reDif_*reDif_); \
+            if (distSq_ > REAL_EPS_SQUARED_) \
+                return 0; \
         } \
-        if (retVal == 0) \
-            break; \
     } \
+    return 1; \
 }
 int isMatrix2Unitary(ComplexMatrix2 u) {
-    int dim = 2;
-    int retVal;
-    macro_isMatrixUnitary(u, dim, retVal);
-    return retVal;
+    macro_isMatrixUnitary(u, 2);
 }
 int isMatrix4Unitary(ComplexMatrix4 u) {
-    int dim = 4;
-    int retVal;
-    macro_isMatrixUnitary(u, dim, retVal);
-    return retVal;
+    macro_isMatrixUnitary(u, 4);
 }
 int isMatrixNUnitary(ComplexMatrixN u) {
     int dim = 1 << u.numQubits;
-    int retVal;
-    macro_isMatrixUnitary(u, dim, retVal);
-    return retVal;
+    macro_isMatrixUnitary(u, dim);
 }
 
 #define macro_isCompletelyPositiveMap(ops, numOps, opDim) { \
+    /* REAL_EPS_SQUARED_, elemRe_, elemIm_, reDif_ and distSq_ must not exist in caller scope */ \
+    qreal REAL_EPS_SQUARED_ = REAL_EPS * REAL_EPS; \
+    /* check sum_op (ConjugateTranspose(op) * op) == Identity */ \
     for (int r=0; r<(opDim); r++) { \
         for (int c=0; c<(opDim); c++) { \
+            /* compute (r,c)-th elem of sum_op (...) */ \
             qreal elemRe_ = 0; \
             qreal elemIm_ = 0; \
             for (int n=0; n<(numOps); n++) { \
@@ -312,8 +307,10 @@ int isMatrixNUnitary(ComplexMatrixN u) {
                     elemIm_ += ops[n].real[k][r]*ops[n].imag[k][c] - ops[n].imag[k][r]*ops[n].real[k][c]; \
                 } \
             } \
-            qreal dist_ = absReal(elemIm_) + absReal(elemRe_ - ((r==c)? 1:0)); \
-            if (dist_ > REAL_EPS) \
+            /* assert elem has Euclidean distance < REAL_EPS from Identity elem */ \
+            qreal reDif_ = elemRe_ - (r==c); \
+            qreal distSq_ = (elemIm_*elemIm_) + (reDif_*reDif_); \
+            if (distSq_ > REAL_EPS_SQUARED_) \
                 return 0; \
         } \
     } \
@@ -1109,14 +1106,20 @@ void validateDiagonalOpGPUAllocation(DiagonalOp* op, QuESTEnv env, const char* c
     QuESTAssert(allocationSuccessful, E_DIAGONAL_OP_NOT_ALLOCATED_ON_GPU, caller);
 }
 
-// This is really just a dummy shim, because the scope of GPUExists()
-// is limited to the QuEST_gpu.cu file.
+void raiseQASMBufferOverflow(const char* caller) {
+    invalidQuESTInputError(errorMessages[E_QASM_BUFFER_OVERFLOW], caller);
+}
+
+
+/* The below functions are dummy shims, whereby the GPU has already determined the outcome of
+ * validation, though sends the boolean results here for error handling.
+ */
 void validateGPUExists(int GPUPresent, const char* caller) {
     QuESTAssert(GPUPresent, E_NO_GPU, caller);
 }
 
-void raiseQASMBufferOverflow(const char* caller) {
-    invalidQuESTInputError(errorMessages[E_QASM_BUFFER_OVERFLOW], caller);
+void validateGPUIsCuQuantumCompatible(int supportsMemPools, const char* caller) {
+    QuESTAssert(supportsMemPools, E_GPU_DOES_NOT_SUPPORT_MEM_POOLS, caller);
 }
 
 
