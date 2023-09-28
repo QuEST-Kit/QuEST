@@ -348,8 +348,7 @@ void statevec_calcProbOfAllOutcomes(qreal* outcomeProbs, Qureg qureg, int* qubit
     cudaMemcpy(d_qubits, qubits, mem_qubits, cudaMemcpyHostToDevice);
 
     // create one thread for every amplitude
-    int numThreadsPerBlock = 128;
-    int numBlocks = ceil(qureg.numAmpsPerChunk / (qreal) numThreadsPerBlock);
+    int numBlocks = ceil(qureg.numAmpsPerChunk / (qreal) NUM_THREADS_PER_BLOCK);
     
     // create global GPU array for outcomeProbs
     qreal* d_outcomeProbs;
@@ -359,7 +358,7 @@ void statevec_calcProbOfAllOutcomes(qreal* outcomeProbs, Qureg qureg, int* qubit
     cudaMemset(d_outcomeProbs, 0, mem_outcomeProbs);
     
     // populate per-block subarrays
-    statevec_calcProbOfAllOutcomesKernel<<<numBlocks, numThreadsPerBlock>>>(
+    statevec_calcProbOfAllOutcomesKernel<<<numBlocks, NUM_THREADS_PER_BLOCK>>>(
         d_outcomeProbs, qureg, d_qubits, numQubits);
         
     // copy outcomeProbs from GPU memory
@@ -403,9 +402,8 @@ void densmatr_calcProbOfAllOutcomes(qreal* outcomeProbs, Qureg qureg, int* qubit
     cudaMemcpy(d_qubits, qubits, mem_qubits, cudaMemcpyHostToDevice);
     
     // create global array, with per-block subarrays
-    int numThreadsPerBlock = 128;
     int numDiags = (1LL << qureg.numQubitsRepresented);
-    int numBlocks = ceil(numDiags / (qreal) numThreadsPerBlock);
+    int numBlocks = ceil(numDiags / (qreal) NUM_THREADS_PER_BLOCK);
         
     // create global GPU array for outcomeProbs
     qreal* d_outcomeProbs;
@@ -415,7 +413,7 @@ void densmatr_calcProbOfAllOutcomes(qreal* outcomeProbs, Qureg qureg, int* qubit
     cudaMemset(d_outcomeProbs, 0, mem_outcomeProbs);
     
     // populate per-block subarrays
-    densmatr_calcProbOfAllOutcomesKernel<<<numBlocks, numThreadsPerBlock>>>(
+    densmatr_calcProbOfAllOutcomesKernel<<<numBlocks, NUM_THREADS_PER_BLOCK>>>(
         d_outcomeProbs, qureg, d_qubits, numQubits);
         
     // copy outcomeProbs from GPU memory
@@ -941,9 +939,8 @@ __global__ void statevec_applyPhaseFuncOverridesKernel(
     cudaMalloc(&d_overridePhases,mem_phas); cudaMemcpy(d_overridePhases, overridePhases, mem_phas, cudaMemcpyHostToDevice);
 
     // call kernel
-    int threadsPerCUDABlock = 128;
-    int CUDABlocks = ceil((qreal) qureg.numAmpsPerChunk / threadsPerCUDABlock);
-    statevec_applyPhaseFuncOverridesKernel<<<CUDABlocks,threadsPerCUDABlock>>>(
+    int CUDABlocks = ceil(qureg.numAmpsPerChunk / (qreal) NUM_THREADS_PER_BLOCK);
+    statevec_applyPhaseFuncOverridesKernel<<<CUDABlocks,NUM_THREADS_PER_BLOCK>>>(
         qureg, d_qubits, numQubits, encoding, 
         d_coeffs, d_exponents, numTerms, 
         d_overrideInds, d_overridePhases, numOverrides,
@@ -1038,16 +1035,15 @@ void statevec_applyMultiVarPhaseFuncOverrides(
     cudaMemcpy(d_overrideInds, overrideInds,        mem_overrideInds,       cudaMemcpyHostToDevice);
     cudaMemcpy(d_overridePhases, overridePhases,    mem_overridePhases,     cudaMemcpyHostToDevice);
 
-    int threadsPerCUDABlock = 128;
-    int CUDABlocks = ceil((qreal) qureg.numAmpsPerChunk / threadsPerCUDABlock);
+    int CUDABlocks = ceil(qureg.numAmpsPerChunk / (qreal) NUM_THREADS_PER_BLOCK);
 
     // allocate thread-local working space {phaseInds}
     long long int *d_phaseInds;
-    size_t gridSize = (size_t) threadsPerCUDABlock * CUDABlocks;
+    size_t gridSize = (size_t) NUM_THREADS_PER_BLOCK * CUDABlocks;
     cudaMalloc(&d_phaseInds, numRegs*gridSize * sizeof *d_phaseInds);
 
     // call kernel
-    statevec_applyMultiVarPhaseFuncOverridesKernel<<<CUDABlocks,threadsPerCUDABlock>>>(
+    statevec_applyMultiVarPhaseFuncOverridesKernel<<<CUDABlocks,NUM_THREADS_PER_BLOCK>>>(
         qureg, d_qubits, d_numQubitsPerReg, numRegs, encoding,
         d_coeffs, d_exponents, d_numTermsPerReg, 
         d_overrideInds, d_overridePhases, numOverrides,
@@ -1125,16 +1121,15 @@ void statevec_applyParamNamedPhaseFuncOverrides(
     if (numParams > 0)
         cudaMemcpy(d_params, params, mem_params, cudaMemcpyHostToDevice);
 
-    int threadsPerCUDABlock = 128;
-    int CUDABlocks = ceil((qreal) qureg.numAmpsPerChunk / threadsPerCUDABlock);
+    int CUDABlocks = ceil(qureg.numAmpsPerChunk / (qreal) NUM_THREADS_PER_BLOCK);
 
     // allocate thread-local working space {phaseInds}
     long long int *d_phaseInds;
-    size_t gridSize = (size_t) threadsPerCUDABlock * CUDABlocks;
+    size_t gridSize = (size_t) NUM_THREADS_PER_BLOCK * CUDABlocks;
     cudaMalloc(&d_phaseInds, numRegs*gridSize * sizeof *d_phaseInds);
 
     // call kernel
-    statevec_applyParamNamedPhaseFuncOverridesKernel<<<CUDABlocks,threadsPerCUDABlock>>>(
+    statevec_applyParamNamedPhaseFuncOverridesKernel<<<CUDABlocks,NUM_THREADS_PER_BLOCK>>>(
         qureg, d_qubits, d_numQubitsPerReg, numRegs, encoding,
         phaseFuncName, d_params, numParams,
         d_overrideInds, d_overridePhases, numOverrides,
