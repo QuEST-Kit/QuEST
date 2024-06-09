@@ -8,4 +8,24 @@
 
 
 
+/*
+ * MPI ENVIRONMENT MANAGEMENT
+ */
+
+bool comm_isMpiCompiled();
+
+bool comm_isMpiGpuAware();
+
+void comm_init();
+
+void comm_end();
+
+int comm_getRank();
+
+int comm_getNumNodes();
+
+void comm_synch();
+
+
+
 #endif // COMMUNICATION_HPP

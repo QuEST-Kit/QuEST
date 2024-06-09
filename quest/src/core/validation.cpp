@@ -4,6 +4,7 @@
  */
 
 #include "quest/src/core/errors.hpp"
+#include "quest/src/comm/communication.hpp"
 
 #include <iostream>
 #include <cstdlib>

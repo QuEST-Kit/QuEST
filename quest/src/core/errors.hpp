@@ -24,4 +24,20 @@ void error_validationMessageContainedUnsubstitutedVars(std::string msg);
 
 
 
+/*
+ * COMMUNICATION ERRORS
+ */
+
+void error_commAlreadyInit();
+
+
+
+/*
+ * GPU ERRORS
+ */
+
+void error_gpuQueriedButGpuNotCompiled();
+
+
+
 #endif // ERRORS_HPP

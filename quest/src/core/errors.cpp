@@ -50,3 +50,25 @@ void error_validationMessageContainedUnsubstitutedVars(std::string msg) {
 
     raiseInternalError("User input validation failed and an error string was prepared. However, the message contained unexpected (and potentially ill-formed) unsubstituted variables. The message was:\n" + msg + "\n");
 }
+
+
+
+/*
+ * COMMUNICATION ERRORS
+ */
+
+void error_commAlreadyInit() {
+
+    raiseInternalError("The MPI communication environment was attemptedly re-initialised, despite the QuEST environment already existing.");
+}
+
+
+
+/*
+ * GPU ERRORS
+ */
+
+void error_gpuQueriedButGpuNotCompiled() {
+
+    raiseInternalError("A function attempted to query GPU properties but QuEST was not compiled with GPU acceleration enabled.");
+}
