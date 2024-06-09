@@ -88,3 +88,13 @@ void error_gpuQueriedButGpuNotCompiled() {
 
     raiseInternalError("A function attempted to query GPU properties but QuEST was not compiled with GPU acceleration enabled.");
 }
+
+void error_gpuAllocButGpuNotCompiled() {
+
+    raiseInternalError("A function (most likely Qureg creation) attempted to allocate GPU memory but QuEST was not compiled with GPU acceleration enabled.");
+}
+
+void error_gpuDeallocButGpuNotCompiled() {
+
+    raiseInternalError("A function (most likely Qureg creation) attempted to deallocate GPU memory but QuEST was not compiled with GPU acceleration enabled.");
+}

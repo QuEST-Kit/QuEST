@@ -3,6 +3,7 @@
  */
 
 #include "quest/include/modes.h"
+#include "quest/include/types.h"
 
 #include "quest/src/core/errors.hpp"
 #include "quest/src/comm/communication.hpp"
@@ -20,6 +21,11 @@
     #include <cuda_runtime.h>
 #endif
 
+
+
+/*
+ * HARDWARE AVAILABILITY
+ */
 
 
 bool gpu_isGpuCompiled() {
@@ -148,5 +154,39 @@ size_t gpu_getTotalMemoryInBytes() {
 #else
     error_gpuQueriedButGpuNotCompiled();
     return 0;
+#endif
+}
+
+
+
+
+/*
+ * MEMORY MANAGEMENT
+ */
+
+
+qcomp* gpu_allocAmps(qindex numLocalAmps) {
+#if ENABLE_GPU_ACCELERATION
+
+    size_t numBytes = numLocalAmps * sizeof(qcomp);
+
+    qcomp* ptr;
+    cudaMalloc(&ptr, numBytes);
+    return ptr;
+
+#else
+    error_gpuAllocButGpuNotCompiled();
+    return NULL;
+#endif
+}
+
+
+void gpu_deallocAmps(qcomp* amps) {
+#if ENABLE_GPU_ACCELERATION
+
+    cudaFree(amps);
+
+#else
+    error_gpuDeallocButGpuNotCompiled();
 #endif
 }

@@ -7,6 +7,7 @@
 #define VALIDATION_HPP
 
 #include "quest/include/environment.h"
+#include "quest/include/qureg.h"
 
 
 
@@ -21,6 +22,14 @@ void validate_envNotYetInit(const char* caller);
 void validate_envDeploymentMode(int isDistrib, int isGpuAccel, int isMultithread, const char* caller);
 
 void validate_envDistributedBetweenPower2Nodes(int numNodes, const char* caller);
+
+
+
+/*
+ * QUREG CREATION
+ */
+
+void validate_quregAllocs(Qureg qureg, bool isNewQureg, const char* caller);
 
 
 

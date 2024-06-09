@@ -48,6 +48,10 @@ void error_cpuThreadsQueriedButEnvNotMultithreaded();
 
 void error_gpuQueriedButGpuNotCompiled();
 
+void error_gpuAllocButGpuNotCompiled();
+
+void error_gpuDeallocButGpuNotCompiled();
+
 
 
 #endif // ERRORS_HPP

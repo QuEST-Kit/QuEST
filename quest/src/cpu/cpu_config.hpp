@@ -5,6 +5,8 @@
 #ifndef CPU_CONFIG_HPP
 #define CPU_CONFIG_HPP
 
+#include "quest/include/types.h"
+
 
 
 /*
@@ -16,6 +18,16 @@ bool cpu_isOpenmpCompiled();
 int cpu_getCurrentNumThreads();
 
 int cpu_getNumOpenmpProcessors();
+
+
+
+/*
+ * MEMORY MANAGEMENT
+ */
+
+qcomp* cpu_allocAmps(qindex numLocalAmps);
+
+void cpu_deallocAmps(qcomp* amps);
 
 
 
