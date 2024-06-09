@@ -20,6 +20,11 @@
 
 Qureg validateAndCreateCustomQureg(int numQubits, int isDensMatr, int useDistrib, int useGpuAccel, int useMultithread, QuESTEnv env, const char* caller) {
 
+    // ensure deployment is compatible with environment, considering available hardware and their memory capacities.
+    // the only thing we cannot gaurantee to be validated is whether the user passed legal useMultithread; they might
+    // force multithreading while permitting GPU accel, which if later chosen by auto-deployer, will raise an error.
+    validate_quregParams(numQubits, isDensMatr, useDistrib, useGpuAccel, useMultithread, env, caller);
+
     // bind deployment configuration
     Qureg qureg;
     qureg.isGpuAccelerated = useGpuAccel;

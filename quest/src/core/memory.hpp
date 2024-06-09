@@ -11,6 +11,21 @@
 #ifndef MEMORY_HPP
 #define MEMORY_HPP
 
+#include "quest/include/types.h"
+
+
+
+// exception thrown by mem_tryGetTotalRamCapacityInBytes()
+namespace mem { typedef bool COULD_NOT_QUERY_RAM; }
+
+
+
+qindex mem_tryGetLocalRamCapacityInBytes();
+
+int mem_getEffectiveNumStateVecQubitsPerNode(int numQubits, bool isDensMatr, int numNodes);
+
+bool mem_canQuregFitInMemory(int numQubits, bool isDensMatr, int numNodes, qindex memBytesPerNode);
+
 
 
 #endif // MEMORY_HPP
