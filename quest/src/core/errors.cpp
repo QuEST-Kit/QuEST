@@ -57,9 +57,25 @@ void error_validationMessageContainedUnsubstitutedVars(std::string msg) {
  * COMMUNICATION ERRORS
  */
 
+void error_commNotInit() {
+
+    raiseInternalError("MPI was queried but the MPI environment had not yet been initialised.");
+}
+
 void error_commAlreadyInit() {
 
-    raiseInternalError("The MPI communication environment was attemptedly re-initialised, despite the QuEST environment already existing.");
+    raiseInternalError("The MPI communication environment was attemptedly re-initialised despite the QuEST environment already existing.");
+}
+
+
+
+/*
+ * CPU ERRORS
+ */
+
+void error_cpuThreadsQueriedButEnvNotMultithreaded() {
+
+    raiseInternalError("A function attempted to query CPU thread information but QuEST is not running with multithreading enabled.");
 }
 
 

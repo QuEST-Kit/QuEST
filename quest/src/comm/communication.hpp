@@ -16,6 +16,8 @@ bool comm_isMpiCompiled();
 
 bool comm_isMpiGpuAware();
 
+bool comm_isInit();
+
 void comm_init();
 
 void comm_end();
