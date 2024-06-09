@@ -29,7 +29,11 @@ void validate_envDistributedBetweenPower2Nodes(int numNodes, const char* caller)
  * QUREG CREATION
  */
 
+void validate_quregParams(int numQubits, int isDensMatr, int isDistrib, int isGpuAccel, int numCpuThreads, QuESTEnv env, const char* caller);
+
 void validate_quregAllocs(Qureg qureg, bool isNewQureg, const char* caller);
+
+void validate_quregNotBothMultithreadedAndGpuAccel(int useGpu, int numThreads, const char* caller);
 
 
 

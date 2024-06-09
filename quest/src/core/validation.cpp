@@ -9,6 +9,7 @@
 
 #include "quest/src/core/errors.hpp"
 #include "quest/src/core/bitwise.hpp"
+#include "quest/src/core/memory.hpp"
 #include "quest/src/comm/communication.hpp"
 #include "quest/src/cpu/cpu_config.hpp"
 #include "quest/src/gpu/gpu_config.hpp"
@@ -62,6 +63,64 @@ namespace report {
     /*
     * QUREG CREATION
     */
+
+    std::string NON_POSITIVE_NUM_QUBITS_IN_INIT_QUREG =
+        "Cannot create Qureg of ${NUM_QUBITS} qubits; must contain one or more qubits.";
+
+
+    std::string NEW_QUREG_AMPS_WOULD_EXCEED_QINDEX = 
+        "Cannot create Qureg of ${NUM_QUBITS} qubits: the statevector would contain more amplitudes (2^${NUM_QUBITS}) than the maximum which can be addressed by the qindex type (2^${MAX_QUBITS}). See reportQuESTEnv().";
+
+    std::string NEW_DENS_QUREG_AMPS_WOULD_EXCEED_QINDEX = 
+        "Cannot create density Qureg of ${NUM_QUBITS} qubits: the density matrix would contain more amplitudes (4^${NUM_QUBITS}) than can be addressed by the qindex type (4^${MAX_QUBITS}). See reportQuESTEnv().";
+
+
+    std::string NEW_DISTRIB_QUREG_HAS_TOO_FEW_AMPS = 
+        "Cannot create a distributed Qureg of only ${NUM_QUBITS} qubits between ${NUM_NODES} nodes, because each node would contain fewer than one amplitude of the statevector. The minimum size is ${MIN_QUBITS} qubits; see reportQuESTEnv(). Consider disabling distribution for this Qureg.";
+
+    std::string NEW_DENS_DISTRIB_QUREG_HAS_TOO_FEW_AMPS = 
+        "Cannot create a distributed density Qureg of only ${NUM_QUBITS} qubits between ${NUM_NODES} nodes, because each node would contain fewer than a column's worth of amplitudes of the density matrix. The minimum size is ${MIN_QUBITS} qubits; see reportQuESTEnv(). Consider disabling distribution for this Qureg.";
+
+
+    std::string INVALID_OPTION_FOR_QUREG_IS_DENS_MATR = 
+        "Argument 'isDensityMatrix' must be 1 or 0 to respectively indicate whether the Qureg should be instantiated as a potentially-mixed density matrix or a strictly-pure state-vector.";
+
+    std::string INVALID_OPTION_FOR_QUREG_IS_DISTRIB = 
+        "Argument 'useDistribution' must be 1 or 0 to respectively indicate whether or not to distribute the new Qureg, or ${AUTO_DEPLOYMENT_FLAG} to let QuEST choose automatically.";
+
+    std::string INVALID_OPTION_FOR_QUREG_IS_GPU_ACCEL = 
+        "Argument 'useGpuAcceleration' must be 1 or 0 to respetively indicate whether or not to GPU-accelerate the new Qureg, or ${AUTO_DEPLOYMENT_FLAG} to let QuEST choose automatically.";
+
+    std::string INVALID_OPTION_FOR_QUREG_IS_MULTITHREAD = 
+        "Argument 'useMultithreading' must be 1 or 0 to respectively indicate whether or not to use multithreading when processing the new Qureg, or ${AUTO_DEPLOYMENT_FLAG} to let QuEST choose automatically.";
+
+
+    std::string NEW_DISTRIB_QUREG_IN_NON_DISTRIB_ENV =
+        "Cannot distribute a Qureg when in a non-distributed QuEST environment.";
+
+    std::string NEW_GPU_QUREG_IN_NON_GPU_ACCEL_ENV =
+        "Cannot allocate a Qureg to a GPU when in a non-GPU-accelerated QuEST environment.";
+
+    std::string NEW_MULTITHREAD_QUREG_IN_NON_MULTITHREAD_ENV =
+        "Cannot enable multithreaded processing of a Qureg created in a non-multithreaded QuEST environment.";
+
+
+    std::string NEW_GPU_QUREG_CANNOT_USE_MULTITHREADING = 
+        "Cannot simultaneously GPU-accelerate and multithread a Qureg. Please disable multithreading, or set it to ${AUTO_DEPLOYMENT_FLAG} for QuEST to automatically disable it when deploying to GPU.";
+
+
+    std::string NEW_QUREG_CANNOT_FIT_INTO_NON_DISTRIB_CPU_MEM =
+        "The non-distributed Qureg (isDensity=${IS_DENS}) of ${NUM_QUBITS} qubits would be too large (${QCOMP_BYTES} * ${EXP_BASE}^${NUM_QUBITS} bytes) to fit into a single node's RAM (${RAM_SIZE} bytes). See reportQuESTEnv(), and consider using distribution.";
+
+    std::string NEW_QUREG_CANNOT_FIT_INTO_POTENTIALLY_DISTRIB_CPU_MEM = 
+        "The distributed Qureg (isDensity=${IS_DENS}) of ${NUM_QUBITS} qubits, together with its commnication buffer, would be too large (2 * ${QCOMP_BYTES} * ${EXP_BASE}^${NUM_QUBITS} bytes) to fit into the combined RAM of all ${NUM_NODES} nodes (${NUM_NODES} * ${RAM_SIZE} bytes). See reportQuESTEnv().";
+
+    std::string NEW_QUREG_CANNOT_FIT_INTO_NON_DISTRIB_CURRENT_GPU_MEM =
+        "The non-distributed GPU-accelerated Qureg (isDensity=${IS_DENS}) of ${NUM_QUBITS} qubits would be too large (${QCOMP_BYTES} * ${EXP_BASE}^${NUM_QUBITS} bytes) to fit into a single node's available GPU memory (currently ${MIN_VRAM_AVAIL} bytes free). Consider additionally using distribution, or disabling GPU-acceleration (though this may greatly increase runtime).";
+
+    std::string NEW_QUREG_CANNOT_FIT_INTO_POTENTIALLY_DISTRIB_CURRENT_GPU_MEM =
+        "The distributed GPU-accelerated Qureg (isDensity=${IS_DENS}) of ${NUM_QUBITS}, together with its commnication buffer, is too large; one or more of the ${NUM_GPUS} GPUs has insufficient available memory (only ${MIN_VRAM_AVAIL} bytes) to store its Qureg partition (${QCOMP_BYTES} * 2^${LOG2_NUM_AMPS} bytes) bytes. Consider disabling GPU-acceleration.";
+
 
     std::string FAILED_ALLOC_OF_CPU_AMPS = 
         "Allocation of memory to store the CPU amplitudes failed.";
@@ -206,10 +265,10 @@ void validate_envNotYetInit(const char* caller) {
 void validate_envDeploymentMode(int isDistrib, int isGpuAccel, int isMultithread, const char* caller) {
 
     // deployment flags must be boolean or auto
-    tokenSubs subs = {{"${AUTO_DEPLOYMENT_FLAG}", modeflag::USE_AUTO}};
-    assertThat(isDistrib     == 0 || isDistrib     == 1 || isDistrib     == modeflag::USE_AUTO, report::INVALID_OPTION_FOR_ENV_IS_DISTRIB, subs, caller);
-    assertThat(isGpuAccel    == 0 || isGpuAccel    == 1 || isGpuAccel    == modeflag::USE_AUTO, report::INVALID_OPTION_FOR_ENV_IS_GPU_ACCEL, subs, caller);
-    assertThat(isMultithread == 0 || isMultithread == 1 || isMultithread == modeflag::USE_AUTO, report::INVALID_OPTION_FOR_ENV_IS_MULTITHREAD, subs, caller);
+    tokenSubs vars = {{"${AUTO_DEPLOYMENT_FLAG}", modeflag::USE_AUTO}};
+    assertThat(isDistrib     == 0 || isDistrib     == 1 || isDistrib     == modeflag::USE_AUTO, report::INVALID_OPTION_FOR_ENV_IS_DISTRIB,     vars, caller);
+    assertThat(isGpuAccel    == 0 || isGpuAccel    == 1 || isGpuAccel    == modeflag::USE_AUTO, report::INVALID_OPTION_FOR_ENV_IS_GPU_ACCEL,   vars, caller);
+    assertThat(isMultithread == 0 || isMultithread == 1 || isMultithread == modeflag::USE_AUTO, report::INVALID_OPTION_FOR_ENV_IS_MULTITHREAD, vars, caller);
 
     // if a deployment is forced (i.e. not auto), assert that the backend binaries are compiled correctly
     if (isDistrib == 1)
@@ -248,6 +307,169 @@ void validate_envDistributedBetweenPower2Nodes(int numNodes, const char* caller)
 /*
  * QUREG CREATION
  */
+
+void assertQuregNonEmpty(int numQubits, const char* caller) {
+
+    assertThat(numQubits >= 1, report::NON_POSITIVE_NUM_QUBITS_IN_INIT_QUREG, {{"${NUM_QUBITS}",numQubits}}, caller);
+}
+
+void assertQuregDeployFlagsRecognised(int isDensMatr, int isDistrib, int isGpuAccel, int isMultithread, const char* caller) {
+
+    // qureg type must be boolean
+    assertThat(isDensMatr == 0 || isDensMatr == 1, report::INVALID_OPTION_FOR_QUREG_IS_DENS_MATR, caller);
+
+    // deployment flags must be boolean or auto
+    tokenSubs vars = {{"${AUTO_DEPLOYMENT_FLAG}", modeflag::USE_AUTO}};
+    assertThat(isDistrib     == 0 || isDistrib     == 1 || isDistrib     == modeflag::USE_AUTO, report::INVALID_OPTION_FOR_QUREG_IS_DISTRIB,     vars, caller);
+    assertThat(isGpuAccel    == 0 || isGpuAccel    == 1 || isGpuAccel    == modeflag::USE_AUTO, report::INVALID_OPTION_FOR_QUREG_IS_GPU_ACCEL,   vars, caller);
+    assertThat(isMultithread == 0 || isMultithread == 1 || isMultithread == modeflag::USE_AUTO, report::INVALID_OPTION_FOR_QUREG_IS_MULTITHREAD, vars, caller);
+}
+
+void assertQuregDeploysEnabledByEnv(int isDistrib, int isGpuAccel, int isMultithread, QuESTEnv env, const char* caller) {
+
+    // qureg cannot deploy to backend not already enabled by the environment
+    if (!env.isDistributed)
+        assertThat(isDistrib     == 0 || isDistrib     == modeflag::USE_AUTO, report::NEW_DISTRIB_QUREG_IN_NON_DISTRIB_ENV, caller);
+    if (!env.isGpuAccelerated)
+        assertThat(isGpuAccel    == 0 || isGpuAccel    == modeflag::USE_AUTO, report::NEW_GPU_QUREG_IN_NON_GPU_ACCEL_ENV, caller);
+    if (!env.isMultithreaded)
+        assertThat(isMultithread == 0 || isMultithread == modeflag::USE_AUTO, report::NEW_MULTITHREAD_QUREG_IN_NON_MULTITHREAD_ENV, caller);
+}
+
+void assertQuregNumAmpsDontExceedIndexMax(int numQubits, int isDensMatr, const char* caller) {
+
+    // cannot store more amplitudes than can be counted by the qindex type (even when distributed)
+    qindex maxNumAmps = std::numeric_limits<qindex>::max();
+    int maxNumQubits = std::floor(std::log2(maxNumAmps) / ((isDensMatr)? 2 : 1)); // gauranteed int division
+
+    // make message specific to statevector or density matrix
+    std::string msg = (isDensMatr)? report::NEW_DENS_QUREG_AMPS_WOULD_EXCEED_QINDEX : report::NEW_QUREG_AMPS_WOULD_EXCEED_QINDEX;
+    tokenSubs vars = {
+        {"${NUM_QUBITS}", numQubits}, 
+        {"${MAX_QUBITS}", maxNumQubits}};
+
+    assertThat(numQubits <= maxNumQubits, msg, vars, caller);
+}
+
+void assertQuregNotDistributedOverTooManyNodes(int numQubits, int isDensMatr, int isDistrib, QuESTEnv env, const char* caller) {
+
+    // only validate when distribution is forced (auto-deployer will never over-distribute)
+    if (isDistrib != 1)
+        return;
+
+    // make message specific to statevector or density matrix
+    std::string msg = (isDensMatr)? report::NEW_DENS_DISTRIB_QUREG_HAS_TOO_FEW_AMPS : report::NEW_DISTRIB_QUREG_HAS_TOO_FEW_AMPS;
+    tokenSubs vars = {
+        {"${NUM_QUBITS}", numQubits},
+        {"${NUM_NODES}",  env.numNodes},
+        {"${MIN_QUBITS}", std::floor(std::log2(env.numNodes))}};
+
+    // cannot store fewer than 1 statevec amp or 1 densmatr column per node
+    qindex numAmpsOrCols = powerOf2(numQubits);
+    assertThat(numAmpsOrCols >= env.numNodes, msg, vars, caller);
+}
+
+void assertQuregFitsInCpuMem(int numQubits, int isDensMatr, int isDistrib, QuESTEnv env, const char* caller) {
+
+    // if we can determine the total CPU memory available...
+    try {
+        // TODO: 
+        //      we should broadcast this over nodes to find global minimum, forming consensus.
+        //      would a broadcast in a try/catch be unwise?
+        size_t memPerNode = mem_tryGetLocalRamCapacityInBytes();
+
+        // check whether qureg (considering if distributed) fits between node memory(s).
+        // note this sets numQuregNodes=1 only when distribution is impossible/switched-off,
+        // but not when it would later be automatically disabled. that's fine; the auto-deployer
+        // will never disable distribution if local RAM can't store the qureg, so we don't need to
+        // validate the auto-deployed-to-non-distributed scenario. we only need to ensure that
+        // auto-deploying-to-distribution is permitted by memory capacity.
+        int numQuregNodes = (isDistrib == 0 || ! env.isDistributed)? 1 : env.numNodes;
+        bool quregFitsInMem = mem_canQuregFitInMemory(numQubits, isDensMatr, numQuregNodes, memPerNode);
+
+        tokenSubs vars = {
+            {"${IS_DENS}",     isDensMatr},
+            {"${NUM_QUBITS}",  numQubits},
+            {"${QCOMP_BYTES}", sizeof(qcomp)},
+            {"${EXP_BASE}",    (isDensMatr)? 4 : 2},
+            {"${RAM_SIZE}",    memPerNode}};
+
+        // make error message specific to whether qureg is local or distributed
+        if (numQuregNodes == 1)
+            assertThat(quregFitsInMem, report::NEW_QUREG_CANNOT_FIT_INTO_NON_DISTRIB_CPU_MEM, vars, caller);
+        else {
+            vars["${NUM_NODES}"] = numQuregNodes;
+            assertThat(quregFitsInMem, report::NEW_QUREG_CANNOT_FIT_INTO_POTENTIALLY_DISTRIB_CPU_MEM, vars, caller);
+        }
+    } 
+
+    // skip above checks if we cannot know total RAM. if we have too little RAM,
+    // subsequent memory alloc validation will likely trigger anyway.
+    catch(mem::COULD_NOT_QUERY_RAM e) {};
+}
+
+void assertQuregFitsInGpuMem(int numQubits, int isDensMatr, int isDistrib, int isGpuAccel, QuESTEnv env, const char* caller) {
+
+    // validate when GPU-acceleration is possible; EVEN if it's auto! Because the auto-deployer will never
+    // fall-back to painfully slow CPU if the GPU memory is filled. So if GPU-accel is possible, it must fit qureg.
+    if (isGpuAccel == 0 || env.isGpuAccelerated == 0)
+        return;
+
+    // we consult the current available local GPU memory (being more strict than is possible for RAM)
+    size_t localCurrGpuMem = gpu_getCurrentAvailableMemoryInBytes();
+
+    // TODO:
+    //      we should MPI reduce localCurrGpuMem to get minimum between all GPUs, in case of inhomogeneous
+    //      GPU load, in order to form node consensus. However, this requires broadcasting
+    //      type 'size_t' which needs to be specified as an MPI_TYPE, which is implementation
+    //      specific. Don't care for boilerplate like this: stackoverflow.com/questions/40807833
+
+    // check whether qureg (considering if distributed) fits between node GPU memory(s).
+    // note this sets numQuregNodes=1 only when distribution is impossible/switched-off,
+    // but not when it would later be automatically disabled. that's fine; the auto-deployer
+    // will never disable distribution if local GPU memory can't store the qureg, so we don't 
+    // need to validate the auto-deployed-to-non-distributed scenario. we only need to ensure 
+    // that auto-deploying-to-distribution is permitted by GPU memory capacity.
+    int numQuregNodes = (isDistrib == 0 || ! env.isDistributed)? 1 : env.numNodes;
+    bool quregFitsInMem = mem_canQuregFitInMemory(numQubits, isDensMatr, numQuregNodes, localCurrGpuMem);
+
+    tokenSubs vars = {
+        {"${IS_DENS}",        isDensMatr},
+        {"${NUM_QUBITS}",     numQubits},
+        {"${QCOMP_BYTES}",    sizeof(qcomp)},
+        {"${MIN_VRAM_AVAIL}", localCurrGpuMem}};
+
+    // make error message specific to whether qureg is local or distributed
+    if (numQuregNodes == 1) {
+        vars["${EXP_BASE}"] = (isDensMatr)? 4 : 2;
+        assertThat(quregFitsInMem, report::NEW_QUREG_CANNOT_FIT_INTO_NON_DISTRIB_CURRENT_GPU_MEM, vars, caller);
+
+    // when distributed, comm buffers are considered (hence +1 below)
+    } else {
+        vars["${LOG2_NUM_AMPS}"] = 1 + mem_getEffectiveNumStateVecQubitsPerNode(numQubits, isDensMatr, numQuregNodes);
+        vars["${NUM_GPUS}"] = numQuregNodes;
+        assertThat(quregFitsInMem, report::NEW_QUREG_CANNOT_FIT_INTO_POTENTIALLY_DISTRIB_CURRENT_GPU_MEM, vars, caller);
+    }
+}
+
+void validate_quregNotBothMultithreadedAndGpuAccel(int useGpu, int useMultithread, const char* caller) {
+
+    // note either or both of useGpu and useMultithread are permitted to be modeflag::USE_AUTO (=-1)
+    tokenSubs vars = {{"${AUTO_DEPLOYMENT_FLAG}", modeflag::USE_AUTO}};
+    assertThat(useGpu != 1 || useMultithread != 1, report::NEW_GPU_QUREG_CANNOT_USE_MULTITHREADING, vars, caller);
+}
+
+void validate_quregParams(int numQubits, int isDensMatr, int isDistrib, int isGpuAccel, int isMultithread, QuESTEnv env, const char* caller) {
+    assertQuregNonEmpty(numQubits, caller);
+    assertQuregDeployFlagsRecognised(isDensMatr, isDistrib, isGpuAccel, isMultithread, caller);
+    assertQuregDeploysEnabledByEnv(isDistrib, isGpuAccel, isMultithread, env, caller);
+    assertQuregNumAmpsDontExceedIndexMax(numQubits, isDensMatr, caller);
+    assertQuregNotDistributedOverTooManyNodes(numQubits, isDensMatr, isDistrib, env, caller);
+    assertQuregFitsInCpuMem(numQubits, isDensMatr, isDistrib, env, caller);
+    assertQuregFitsInGpuMem(numQubits, isDensMatr, isDistrib, isGpuAccel, env, caller);
+
+    validate_quregNotBothMultithreadedAndGpuAccel(isGpuAccel, isMultithread, caller);
+}
 
 void validate_quregAllocs(Qureg qureg, bool isNewQureg, const char* caller) {
 
