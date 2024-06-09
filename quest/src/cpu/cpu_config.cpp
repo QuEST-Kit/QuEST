@@ -62,3 +62,25 @@ int cpu_getNumOpenmpProcessors() {
     return -1;
 #endif
 }
+
+
+
+/*
+ * MEMORY MANAGEMENT
+ */
+
+
+qcomp* cpu_allocAmps(qindex numLocalAmps) {
+
+    // we avoid malloc() for two reasons:
+    //  - numLocalAmps * sizeof(qcomp) might overflow 
+    //  - we wish to fail immediately if mem isn't available
+
+    return (qcomp*) calloc(numLocalAmps, sizeof(qcomp));
+}
+
+
+void cpu_deallocAmps(qcomp* amps) {
+
+    free(amps);
+}
