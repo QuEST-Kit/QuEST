@@ -25,6 +25,14 @@ void error_validationMessageContainedUnsubstitutedVars(std::string msg);
 
 
 /*
+ * MEMORY ERRORS
+ */
+
+void error_memSizeQueriedButWouldOverflow();
+
+
+
+/*
  * COMMUNICATION ERRORS
  */
 

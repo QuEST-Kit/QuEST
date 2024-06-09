@@ -54,6 +54,17 @@ void error_validationMessageContainedUnsubstitutedVars(std::string msg) {
 
 
 /*
+ * MEMORY ERRORS
+ */
+
+void error_memSizeQueriedButWouldOverflow() {
+
+    raiseInternalError("Attempted to obtain memory necessary to allocate local Qureg partition but it overflowed size_t despite prior validation.");
+}
+
+
+
+/*
  * COMMUNICATION ERRORS
  */
 
