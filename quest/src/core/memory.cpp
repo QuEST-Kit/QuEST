@@ -10,8 +10,9 @@
 
 #include "quest/include/types.h"
 
-#include "quest/src/core/bitwise.hpp"
 #include "quest/src/core/memory.hpp"
+#include "quest/src/core/bitwise.hpp"
+#include "quest/src/core/errors.hpp"
 
 #include <cstdlib>
 
@@ -52,4 +53,43 @@ bool mem_canQuregFitInMemory(int numQubits, bool isDensMatr, int numNodes, qinde
 
     // strict inequality because node memory must also fit code pages, etc
     return logNumAmpsPerNode < maxLogNumAmpsPerNode;
+}
+
+
+int mem_getMaxNumQubitsBeforeLocalMemSizeofOverflow(bool isDensMatr, int numNodes) {
+
+    // we return largest N satisfying 2^(2N + [numNodes > 1]) * sizeof(qcomp) / numNodes <= max[sizeof]
+    size_t maxSizeof = std::numeric_limits<size_t>::max();
+    size_t maxLocalNumAmps = std::floor(maxSizeof / (qreal) sizeof(qcomp));
+    size_t maxLocalNumQubits = std::floor(std::log2(maxLocalNumAmps));
+    size_t maxGlobalNumQubits = maxLocalNumQubits + logBase2(numNodes);
+
+    // distribution requires communication buffers, doubling memory, decreasing qubits by 1
+    if (numNodes > 1)
+        maxGlobalNumQubits -= 1;
+
+    // density matrices have square-more amps, halving the number of qubtis (AFTER buffer subtraction)
+    if (isDensMatr)
+        maxGlobalNumQubits = std::floor(maxGlobalNumQubits / 2);
+
+    return maxGlobalNumQubits;
+}
+
+
+size_t mem_getLocalMemoryRequired(int numQubits, bool isDensMatr, int numNodes) {
+
+    // assert no-overflow precondition
+    if (numQubits <= mem_getMaxNumQubitsBeforeLocalMemSizeofOverflow(isDensMatr, numNodes))
+        error_memSizeQueriedButWouldOverflow();
+
+    // no risk of overflow; we have already validated numAmpsTotal fits in qindex
+    qindex numAmpsTotal = (isDensMatr)? powerOf2(2*numQubits) : powerOf2(numQubits);
+    qindex numAmpsPerNode = numAmpsTotal / numNodes; // divides evenly
+
+    // distribution requires communication buffers, doubling costs
+    if (numNodes > 1)
+        numAmpsPerNode *= 2;
+
+    // return number of bytes to store local amps
+    return numAmpsPerNode * sizeof(qcomp);
 }

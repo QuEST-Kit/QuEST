@@ -24,7 +24,11 @@ qindex mem_tryGetLocalRamCapacityInBytes();
 
 int mem_getEffectiveNumStateVecQubitsPerNode(int numQubits, bool isDensMatr, int numNodes);
 
+int mem_getMaxNumQubitsBeforeLocalMemSizeofOverflow(bool isDensMatr, int numNodes);
+
 bool mem_canQuregFitInMemory(int numQubits, bool isDensMatr, int numNodes, qindex memBytesPerNode);
+
+size_t mem_getLocalMemoryRequired(int numQubits, bool isDensMatr, int numNodes);
 
 
 
