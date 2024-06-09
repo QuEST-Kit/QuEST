@@ -1,9 +1,9 @@
 /** @file
- * Utility functions for querying GPU hardware, used by gpu.cpp.
+ * Utility functions for querying GPU hardware.
  */
 
-#ifndef CONFIG_HPP
-#define CONFIG_HPP
+#ifndef GPU_CONFIG_HPP
+#define GPU_CONFIG_HPP
 
 #include <cstdlib>
 
@@ -25,4 +25,4 @@ size_t gpu_getTotalMemoryInBytes();
 
 
 
-#endif // CONFIG_HPP
+#endif // GPU_CONFIG_HPP

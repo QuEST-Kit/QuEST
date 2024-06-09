@@ -1,5 +1,5 @@
 /** @file
- * Utility functions for querying GPU hardware, used by gpu.cpp.
+ * Utility functions for querying GPU hardware.
  */
 
 #include "quest/include/modes.h"

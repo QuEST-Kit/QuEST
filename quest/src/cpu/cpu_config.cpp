@@ -1,6 +1,5 @@
 /** @file
- * CPU OpenMP-accelerated definitions of the subroutines called by
- * accelerator.cpp. 
+ * Utility definitions for querying CPU hardware.
  */
 
 #include "quest/include/modes.h"

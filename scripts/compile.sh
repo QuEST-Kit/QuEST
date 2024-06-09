@@ -103,13 +103,14 @@ API_FILES=(
 
 # files in GPU_DIR
 GPU_FILES=(
-    "config"
-    "cuda_subroutines"
+    "gpu_config"
+    "gpu_subroutines"
 )
 
 # files in OMP_DIR
 OMP_FILES=(
-    "omp_subroutines"
+    "cpu_config"
+    "cpu_subroutines"
 )
 
 # files in MPI_DIR
