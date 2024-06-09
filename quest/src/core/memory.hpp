@@ -7,3 +7,10 @@
  * because GPU-acceleration still requires accompanying
  * CPU memory arrays.
  */
+
+#ifndef MEMORY_HPP
+#define MEMORY_HPP
+
+
+
+#endif // MEMORY_HPP

@@ -7,3 +7,10 @@
  * done agnostically of whether amplitudes of the Qureg are being
  * stored in RAM (CPU) or VRAM (GPU).
  */
+
+#ifndef LOCALISER_HPP
+#define LOCALISER_HPP
+
+
+
+#endif // LOCALISER_HPP

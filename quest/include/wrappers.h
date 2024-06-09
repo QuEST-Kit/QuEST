@@ -10,3 +10,10 @@
  * qcomps from the C++ backend only by-reference. It must be used
  * by C compilers which otherwise lack the C++-only API signatures.
  */
+
+#ifndef WRAPPERS_H
+#define WRAPPERS_H
+
+
+
+#endif // WRAPPERS_H

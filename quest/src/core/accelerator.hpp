@@ -7,3 +7,10 @@
  * performed by localiser.cpp. These subroutines are ergo
  * embarrassingly parallel.
  */
+
+#ifndef ACCELERATOR_HPP
+#define ACCELERATOR_HPP
+
+
+
+#endif // ACCELERATOR_HPP
