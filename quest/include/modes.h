@@ -39,4 +39,18 @@
 
 
 
+// user flags for choosing automatic deployment; only accessible by C++ 
+// backend and C++ users; C users must hardcode -1 
+
+#ifdef __cplusplus
+
+namespace modeflag { 
+
+    extern int USE_AUTO;
+}
+
+#endif // __cplusplus
+
+
+
 #endif // MODES_H

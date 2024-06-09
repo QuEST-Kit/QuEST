@@ -28,7 +28,17 @@ void error_validationMessageContainedUnsubstitutedVars(std::string msg);
  * COMMUNICATION ERRORS
  */
 
+void error_commNotInit();
+
 void error_commAlreadyInit();
+
+
+
+/*
+ * CPU ERRORS
+ */
+
+void error_cpuThreadsQueriedButEnvNotMultithreaded();
 
 
 
