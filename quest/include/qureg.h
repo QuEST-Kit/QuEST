@@ -15,6 +15,14 @@ extern "C" {
 
 
 
+#define MIN_NUM_LOCAL_QUBITS_FOR_AUTO_MULTITHREADING 10
+
+#define MIN_NUM_LOCAL_QUBITS_FOR_AUTO_DISTRIBUTION 26
+
+#define MIN_NUM_LOCAL_QUBITS_FOR_AUTO_GPU_ACCELERATION 10
+
+
+
 typedef struct Qureg
 {
     // deployment configuration
@@ -45,6 +53,10 @@ typedef struct Qureg
 } Qureg;
 
 
+
+Qureg createQureg(int numQubits, QuESTEnv env);
+
+Qureg createDensityQureg(int numQubits, QuESTEnv env);
 
 Qureg createCustomQureg(int numQubits, int isDensMatr, int useDistrib, int useGpuAccel, int useMultithread, QuESTEnv env);
 

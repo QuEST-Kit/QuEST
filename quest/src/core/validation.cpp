@@ -74,6 +74,9 @@ namespace report {
     std::string NEW_DENS_QUREG_AMPS_WOULD_EXCEED_QINDEX = 
         "Cannot create density Qureg of ${NUM_QUBITS} qubits: the density matrix would contain more amplitudes (4^${NUM_QUBITS}) than can be addressed by the qindex type (4^${MAX_QUBITS}). See reportQuESTEnv().";
 
+    std::string NEW_QUREG_LOCAL_MEM_WOULD_EXCEED_SIZEOF =
+        "Cannot create Qureg (isDensity=${IS_DENS}) of ${NUM_QUBITS} qubits distributed over ${NUM_NODES} nodes because the necessary local memory (in bytes) of each node would overflow size_t. In this deployment, the maximum number of similar qubits is ${MAX_QUBITS}. See reportQuESTEnv().";
+
 
     std::string NEW_DISTRIB_QUREG_HAS_TOO_FEW_AMPS = 
         "Cannot create a distributed Qureg of only ${NUM_QUBITS} qubits between ${NUM_NODES} nodes, because each node would contain fewer than one amplitude of the statevector. The minimum size is ${MIN_QUBITS} qubits; see reportQuESTEnv(). Consider disabling distribution for this Qureg.";
@@ -336,11 +339,11 @@ void assertQuregDeploysEnabledByEnv(int isDistrib, int isGpuAccel, int isMultith
         assertThat(isMultithread == 0 || isMultithread == modeflag::USE_AUTO, report::NEW_MULTITHREAD_QUREG_IN_NON_MULTITHREAD_ENV, caller);
 }
 
-void assertQuregNumAmpsDontExceedIndexMax(int numQubits, int isDensMatr, const char* caller) {
+void assertQuregTotalNumAmpsDontExceedMaxIndex(int numQubits, int isDensMatr, const char* caller) {
 
     // cannot store more amplitudes than can be counted by the qindex type (even when distributed)
     qindex maxNumAmps = std::numeric_limits<qindex>::max();
-    int maxNumQubits = std::floor(std::log2(maxNumAmps) / ((isDensMatr)? 2 : 1)); // gauranteed int division
+    int maxNumQubits = std::floor(std::log2(maxNumAmps) / (qreal) ((isDensMatr)? 2 : 1));
 
     // make message specific to statevector or density matrix
     std::string msg = (isDensMatr)? report::NEW_DENS_QUREG_AMPS_WOULD_EXCEED_QINDEX : report::NEW_QUREG_AMPS_WOULD_EXCEED_QINDEX;
@@ -349,6 +352,21 @@ void assertQuregNumAmpsDontExceedIndexMax(int numQubits, int isDensMatr, const c
         {"${MAX_QUBITS}", maxNumQubits}};
 
     assertThat(numQubits <= maxNumQubits, msg, vars, caller);
+}
+
+void assertQuregLocalMemDoesntExceedMaxSizeof(int numQubits, int isDensMatr, int isDistrib, QuESTEnv env, const char* caller) {
+
+    // assume distributed if possible (via auto-deployer)
+    int numQuregNodes = (isDistrib == 0 || ! env.isDistributed)? 1 : env.numNodes;
+    int maxNumQubits = (int) mem_getMaxNumQubitsBeforeLocalMemSizeofOverflow(isDensMatr, numQuregNodes);
+
+    tokenSubs vars = {
+        {"${NUM_QUBITS}", numQubits},
+        {"${NUM_NODES}",  numQuregNodes},
+        {"${MAX_QUBITS}", maxNumQubits},
+        {"${IS_DENS}",    isDensMatr}};
+
+    assertThat(numQubits <= maxNumQubits, report::NEW_QUREG_LOCAL_MEM_WOULD_EXCEED_SIZEOF, vars, caller);
 }
 
 void assertQuregNotDistributedOverTooManyNodes(int numQubits, int isDensMatr, int isDistrib, QuESTEnv env, const char* caller) {
@@ -463,7 +481,8 @@ void validate_quregParams(int numQubits, int isDensMatr, int isDistrib, int isGp
     assertQuregNonEmpty(numQubits, caller);
     assertQuregDeployFlagsRecognised(isDensMatr, isDistrib, isGpuAccel, isMultithread, caller);
     assertQuregDeploysEnabledByEnv(isDistrib, isGpuAccel, isMultithread, env, caller);
-    assertQuregNumAmpsDontExceedIndexMax(numQubits, isDensMatr, caller);
+    assertQuregTotalNumAmpsDontExceedMaxIndex(numQubits, isDensMatr, caller);
+    assertQuregLocalMemDoesntExceedMaxSizeof(numQubits, isDensMatr, isDistrib, env, caller);
     assertQuregNotDistributedOverTooManyNodes(numQubits, isDensMatr, isDistrib, env, caller);
     assertQuregFitsInCpuMem(numQubits, isDensMatr, isDistrib, env, caller);
     assertQuregFitsInGpuMem(numQubits, isDensMatr, isDistrib, isGpuAccel, env, caller);
