@@ -6,6 +6,7 @@
 #include "quest/include/environment.h"
 #include "quest/include/modes.h"
 
+#include "quest/src/core/autodeployer.hpp"
 #include "quest/src/core/validation.hpp"
 #include "quest/src/comm/communication.hpp"
 #include "quest/src/cpu/cpu_config.hpp"
@@ -14,7 +15,7 @@
 
 
 /*
- * PRIVATE INNER FUNCTIONS
+ * PRIVATE QUESTENV CREATION INNER FUNCTIONS
  */
 
 
@@ -27,21 +28,11 @@ QuESTEnv validateAndCreateCustomQuESTEnv(int useDistrib, int useGpuAccel, int us
     validate_envNotYetInit(caller);
     validate_envDeploymentMode(useDistrib, useGpuAccel, useMultithread, caller);
 
+    // overwrite deployments left as modeflag::USE_AUTO
+    autodep_chooseQuESTEnvDeployment(useDistrib, useGpuAccel, useMultithread);
+
+    // bind deployment info to QuESTEnv (may be overwritten still below)
     QuESTEnv env;
-
-    // replace automatic flags with all available deployments...
-    if (useDistrib == modeflag::USE_AUTO)
-        useDistrib = comm_isMpiCompiled();
-    
-    // where we require GPU is compiled AND available
-    if (useGpuAccel == modeflag::USE_AUTO)
-        useGpuAccel = gpu_isGpuCompiled() && gpu_isGpuAvailable();
-
-    // and we require more than 1 thread available at QuESTEnv creation
-    if (useMultithread == modeflag::USE_AUTO)
-        useMultithread = (cpu_isOpenmpCompiled())? (cpu_getCurrentNumThreads() > 1) : 0;
-
-    // bind deployment info (may be overwritten below)
     env.isDistributed = useDistrib;
     env.isGpuAccelerated = useGpuAccel;
     env.isMultithreaded = useMultithread;
