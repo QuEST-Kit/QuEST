@@ -81,6 +81,7 @@ CORE_FILES=(
     "accelerator"
     "autodeployer"
     "errors"
+    "formatter"
     "localiser"
     "memory"
     "utilities"
@@ -126,7 +127,7 @@ MPI_FILES=(
 echo "deployment modes:"
 
 # compiler flags given to all backend files (but not user files)
-BACKEND_COMP_FLAGS='-std=c++14 -O3'
+BACKEND_COMP_FLAGS='-std=c++17 -O3'
 
 # GPU-specific flags
 GPU_COMP_FLAGS="-x cu -arch=sm_${GPU_CC}"
