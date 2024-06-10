@@ -341,9 +341,7 @@ void assertQuregDeploysEnabledByEnv(int isDistrib, int isGpuAccel, int isMultith
 
 void assertQuregTotalNumAmpsDontExceedMaxIndex(int numQubits, int isDensMatr, const char* caller) {
 
-    // cannot store more amplitudes than can be counted by the qindex type (even when distributed)
-    qindex maxNumAmps = std::numeric_limits<qindex>::max();
-    int maxNumQubits = std::floor(std::log2(maxNumAmps) / (qreal) ((isDensMatr)? 2 : 1));
+    int maxNumQubits = mem_getMaxNumQubitsBeforeIndexOverflow(isDensMatr);
 
     // make message specific to statevector or density matrix
     std::string msg = (isDensMatr)? report::NEW_DENS_QUREG_AMPS_WOULD_EXCEED_QINDEX : report::NEW_QUREG_AMPS_WOULD_EXCEED_QINDEX;
@@ -382,9 +380,8 @@ void assertQuregNotDistributedOverTooManyNodes(int numQubits, int isDensMatr, in
         {"${NUM_NODES}",  env.numNodes},
         {"${MIN_QUBITS}", std::floor(std::log2(env.numNodes))}};
 
-    // cannot store fewer than 1 statevec amp or 1 densmatr column per node
-    qindex numAmpsOrCols = powerOf2(numQubits);
-    assertThat(numAmpsOrCols >= env.numNodes, msg, vars, caller);
+    int minQubits = mem_getMinNumQubitsForDistribution(env.numNodes);
+    assertThat(numQubits >= minQubits, msg, vars, caller);
 }
 
 void assertQuregFitsInCpuMem(int numQubits, int isDensMatr, int isDistrib, QuESTEnv env, const char* caller) {

@@ -79,6 +79,7 @@ CORE_DIR="${SRC_DIR}/core"
 # files in CORE_DIR
 CORE_FILES=(
     "accelerator"
+    "autodeployer"
     "errors"
     "localiser"
     "memory"
