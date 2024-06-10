@@ -1,11 +1,10 @@
 /** @file
  * Internal functions which query available CPU memory (in an
- * attemptedly OS-agnostic way) and determine the maximum
- * number of qubits which can be simualted. Note GPU memory
- * querying is performed by the dedicated GPU backend, 
- * though this file is always compiled (even in GPU mode) 
- * because GPU-acceleration still requires accompanying
- * CPU memory arrays.
+ * attemptedly OS-agnostic way), and provided needed memory
+ * querents. Note GPU memory querying is performed by 
+ * the dedicated GPU backend, though this file is always 
+ * compiled (even in GPU mode) because GPU-acceleration still 
+ * requires accompanying CPU memory arrays.
  */
 
 #include "quest/include/types.h"
@@ -16,6 +15,12 @@
 
 #include <cstdlib>
 
+
+
+
+/*
+ * HARDWARE QUERYING
+ */
 
 
 qindex mem_tryGetLocalRamCapacityInBytes() {
@@ -29,6 +34,12 @@ qindex mem_tryGetLocalRamCapacityInBytes() {
 }
 
 
+
+/*
+ * MEMORY COST QUERYING
+ */
+
+
 int mem_getEffectiveNumStateVecQubitsPerNode(int numQubits, bool isDensMatr, int numNodes) {
 
     // compute logs directly to avoid overflows (even though validation should preclude them)
@@ -38,21 +49,42 @@ int mem_getEffectiveNumStateVecQubitsPerNode(int numQubits, bool isDensMatr, int
 }
 
 
+int mem_getMinNumQubitsForDistribution(int numNodes) {
+
+    return logBase2(numNodes);
+}
+
+
+int mem_getMaxNumQubitsWhichCanFitInMemory(bool isDensMatr, int numNodes, qindex memBytesPerNode) {
+
+    // distribution requires communication buffers, doubling costs, halving fittable amps-per-qureg
+    qindex maxLocalNumAmps = memBytesPerNode / sizeof(qcomp); // floors
+    if (numNodes > 1)
+        maxLocalNumAmps = maxLocalNumAmps / 2; // floors
+
+    // density matrices require square more memory, so halve (flooring) the number of qubits
+    int maxLocalNumQubits = std::floor(std::log2(maxLocalNumAmps));
+    if (isDensMatr)
+        maxLocalNumQubits /= 2; // floors
+
+    // doubling nodes permits 1 additional qubit
+    int maxGlobalNumQubits = maxLocalNumQubits + logBase2(numNodes);
+    return maxGlobalNumQubits;
+}
+
+
 bool mem_canQuregFitInMemory(int numQubits, bool isDensMatr, int numNodes, qindex memBytesPerNode) {
 
-    // work in logs to avoid overflows
-    qindex logNumAmpsPerNode = mem_getEffectiveNumStateVecQubitsPerNode(numQubits, isDensMatr, numNodes);
+    return numQubits <= mem_getMaxNumQubitsWhichCanFitInMemory(isDensMatr, numNodes, memBytesPerNode);
+}
 
-    // distribution requires communication buffers, doubling costs
-    if (numNodes > 1)
-        logNumAmpsPerNode += 1;
 
-    // use floating-point division here because sizeof(qcomp) might not be a power-of-2
-    qindex maxNumAmpsPerNode = std::floor(memBytesPerNode / (qreal) sizeof(qcomp));
-    qindex maxLogNumAmpsPerNode = std::floor(std::log2(maxNumAmpsPerNode));
+int mem_getMaxNumQubitsBeforeIndexOverflow(bool isDensMatr) {
 
-    // strict inequality because node memory must also fit code pages, etc
-    return logNumAmpsPerNode < maxLogNumAmpsPerNode;
+    // cannot store more amplitudes than can be counted by the qindex type (even when distributed)
+    qindex maxNumAmps = std::numeric_limits<qindex>::max();
+    int maxNumQubits = std::floor(std::log2(maxNumAmps) / (qreal) ((isDensMatr)? 2 : 1));
+    return maxNumQubits;
 }
 
 
@@ -60,7 +92,7 @@ int mem_getMaxNumQubitsBeforeLocalMemSizeofOverflow(bool isDensMatr, int numNode
 
     // we return largest N satisfying 2^(2N + [numNodes > 1]) * sizeof(qcomp) / numNodes <= max[sizeof]
     size_t maxSizeof = std::numeric_limits<size_t>::max();
-    size_t maxLocalNumAmps = std::floor(maxSizeof / (qreal) sizeof(qcomp));
+    size_t maxLocalNumAmps = maxSizeof / sizeof(qcomp); // floors
     size_t maxLocalNumQubits = std::floor(std::log2(maxLocalNumAmps));
     size_t maxGlobalNumQubits = maxLocalNumQubits + logBase2(numNodes);
 
@@ -70,7 +102,7 @@ int mem_getMaxNumQubitsBeforeLocalMemSizeofOverflow(bool isDensMatr, int numNode
 
     // density matrices have square-more amps, halving the number of qubtis (AFTER buffer subtraction)
     if (isDensMatr)
-        maxGlobalNumQubits = std::floor(maxGlobalNumQubits / 2);
+        maxGlobalNumQubits = maxGlobalNumQubits / 2; // floors
 
     return maxGlobalNumQubits;
 }
