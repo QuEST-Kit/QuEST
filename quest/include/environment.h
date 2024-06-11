@@ -35,6 +35,8 @@ QuESTEnv createCustomQuESTEnv(int useDistrib, int useGpuAccel, int useMultithrea
 
 void destroyQuESTEnv(QuESTEnv env);
 
+void reportQuESTEnv(QuESTEnv env);
+
 
 
 // end de-mangler

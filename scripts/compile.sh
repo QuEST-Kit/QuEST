@@ -81,6 +81,7 @@ CORE_FILES=(
     "accelerator"
     "autodeployer"
     "errors"
+    "formatter"
     "localiser"
     "memory"
     "utilities"
@@ -126,15 +127,15 @@ MPI_FILES=(
 echo "deployment modes:"
 
 # compiler flags given to all backend files (but not user files)
-BACKEND_COMP_FLAGS='-std=c++14 -O3'
+BACKEND_COMP_FLAGS='-std=c++17 -O3'
 
 # GPU-specific flags
 GPU_COMP_FLAGS="-x cu -arch=sm_${GPU_CC}"
-GPU_LINK_FLAGS="-lcudart -lcuda"
+GPU_LINK_FLAGS="-L/usr/local/cuda/lib64 -lcudart -lcuda"
 
 # MPI-specific flags
 MPI_COMP_FLAGS=''
-MPI_LINK_FLAGS='-lmpi'
+MPI_LINK_FLAGS='-lmpi -lmpi_cxx'
 
 # OMP-specific flags (form depends on OMP compiler type)
 if [ "$OMP_COMPILER_TYPE" == "CLANG" ]
