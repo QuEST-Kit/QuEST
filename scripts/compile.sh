@@ -135,7 +135,7 @@ GPU_LINK_FLAGS="-L/usr/local/cuda/lib64 -lcudart -lcuda"
 
 # MPI-specific flags
 MPI_COMP_FLAGS=''
-MPI_LINK_FLAGS='-lmpi'
+MPI_LINK_FLAGS='-lmpi -lmpi_cxx'
 
 # OMP-specific flags (form depends on OMP compiler type)
 if [ "$OMP_COMPILER_TYPE" == "CLANG" ]
