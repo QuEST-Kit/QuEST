@@ -6,6 +6,7 @@
 #include "quest/include/types.h"
 
 #include "quest/src/core/errors.hpp"
+#include "quest/src/core/memory.hpp"
 #include "quest/src/comm/communication.hpp"
 
 
@@ -168,7 +169,7 @@ size_t gpu_getTotalMemoryInBytes() {
 qcomp* gpu_allocAmps(qindex numLocalAmps) {
 #if ENABLE_GPU_ACCELERATION
 
-    size_t numBytes = numLocalAmps * sizeof(qcomp);
+    size_t numBytes = mem_getLocalMemoryRequired(numLocalAmps);
 
     qcomp* ptr;
     cudaMalloc(&ptr, numBytes);

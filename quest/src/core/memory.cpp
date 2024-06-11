@@ -8,6 +8,7 @@
  */
 
 #include "quest/include/types.h"
+#include "quest/include/quest.h"
 
 #include "quest/src/core/memory.hpp"
 #include "quest/src/core/bitwise.hpp"
@@ -124,4 +125,52 @@ size_t mem_getLocalMemoryRequired(int numQubits, bool isDensMatr, int numNodes) 
 
     // return number of bytes to store local amps
     return numAmpsPerNode * sizeof(qcomp);
+}
+
+
+size_t mem_getLocalMemoryRequired(qindex numAmpsPerNode) {
+
+    // assert no-overflow precondition
+    qindex maxNumAmpsPerNode = std::numeric_limits<size_t>::max() / sizeof(qcomp); // floors
+    if (numAmpsPerNode > maxNumAmpsPerNode)
+        error_memSizeQueriedButWouldOverflow();
+
+    // return number of bytes to store local array, EXCLUDING communication buffer
+    return numAmpsPerNode * sizeof(qcomp);
+}
+
+
+qindex mem_getTotalGlobalMemoryUsed(Qureg qureg) {
+
+    // TODO:
+    //  if sizeof(qcomp) is a power of 2 (which it almost always is, c'mon now),
+    //  then we could instead return the LOG of the total memory and always
+    //  avoid overflow, permitting reporters to display mem=2^exp.
+    //  it would also make changing units (e.g. to GB) easier.
+
+    // work out individual array costs
+    size_t memLocalArray = mem_getLocalMemoryRequired(qureg.numAmpsPerNode);
+    int numLocalArrays = 
+        (qureg.cpuAmps != NULL) + (qureg.cpuCommBuffer != NULL) + 
+        (qureg.gpuAmps != NULL) + (qureg.gpuCommBuffer != NULL);
+
+    // if total local costs would overflow qindex, return 0
+    qindex maxQindex = std::numeric_limits<qindex>::max();
+    qindex maxLocalArrayMem = maxQindex / memLocalArray; // floors
+    if (memLocalArray > maxLocalArrayMem)
+        return 0;
+
+    // if qureg is non-distributed, compute local CPU+GPU+buffers costs and return
+    qindex memLocalTotal = numLocalArrays * memLocalArray;
+    if (!qureg.isDistributed)
+        return memLocalTotal;
+
+    // else if total global costs would overflow qindex, return 0
+    qindex maxLocalTotalMem = maxQindex / qureg.numNodes; // floors
+    if (memLocalTotal > maxLocalTotalMem)
+        return 0;
+
+    // else compute total costs between all nodes
+    qindex memGlobalTotal = memLocalTotal * qureg.numNodes;
+    return memGlobalTotal;
 }
