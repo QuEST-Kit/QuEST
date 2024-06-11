@@ -12,6 +12,7 @@
 #define MEMORY_HPP
 
 #include "quest/include/types.h"
+#include "quest/include/qureg.h"
 
 
 
@@ -41,7 +42,11 @@ int mem_getMaxNumQubitsBeforeIndexOverflow(bool isDensMatr);
 
 int mem_getMaxNumQubitsBeforeLocalMemSizeofOverflow(bool isDensMatr, int numNodes);
 
-size_t mem_getLocalMemoryRequired(int numQubits, bool isDensMatr, int numNodes) ;
+size_t mem_getLocalMemoryRequired(int numQubits, bool isDensMatr, int numNodes);
+
+size_t mem_getLocalMemoryRequired(qindex numAmpsPerNode);
+
+qindex mem_getTotalGlobalMemoryUsed(Qureg qureg);
 
 
 

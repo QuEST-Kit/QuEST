@@ -136,7 +136,7 @@ void printCpuInfo() {
     form_printTable(
         "cpu", {
         {"numCpuCores",   form_str(std::thread::hardware_concurrency()) + pm},
-        {"numOmpProcs",   (cpu_isOpenmpCompiled())? form_str(cpu_getNumOpenmpProcessors()) : na},
+        {"numOmpProcs",   (cpu_isOpenmpCompiled())? form_str(cpu_getNumOpenmpProcessors()) + pm : na},
         {"numOmpThrds",   (cpu_isOpenmpCompiled())? form_str(cpu_getCurrentNumThreads()) + pn : na},
         {"cpuMemory",     ram},
         {"cpuMemoryFree", un},

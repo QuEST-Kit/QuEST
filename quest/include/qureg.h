@@ -54,6 +54,8 @@ Qureg createCustomQureg(int numQubits, int isDensMatr, int useDistrib, int useGp
 
 void destroyQureg(Qureg qureg);
 
+void reportQureg(Qureg qureg);
+
 
 
 // end de-mangler
