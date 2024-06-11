@@ -72,10 +72,7 @@ int cpu_getNumOpenmpProcessors() {
 
 qcomp* cpu_allocAmps(qindex numLocalAmps) {
 
-    // we avoid malloc() for two reasons:
-    //  - numLocalAmps * sizeof(qcomp) might overflow 
-    //  - we wish to fail immediately if mem isn't available
-
+    // we call calloc over malloc in order to fail immediately if mem isn't available
     return (qcomp*) calloc(numLocalAmps, sizeof(qcomp));
 }
 

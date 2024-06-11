@@ -8,10 +8,18 @@
 
 #include "quest/src/core/validation.hpp"
 #include "quest/src/core/autodeployer.hpp"
+#include "quest/src/core/formatter.hpp"
+#include "quest/src/comm/communication.hpp"
 #include "quest/src/core/bitwise.hpp"
 #include "quest/src/core/memory.hpp"
 #include "quest/src/cpu/cpu_config.hpp"
 #include "quest/src/gpu/gpu_config.hpp"
+
+#include <string>
+#include <iostream>
+
+// provides substrings (by, na, pm, etc) used by reportQureg
+using namespace form_substrings;
 
 
 
@@ -97,6 +105,77 @@ Qureg validateAndCreateCustomQureg(int numQubits, int isDensMatr, int useDistrib
 
 
 /*
+ * PRIVATE QUREG REPORTING INNER FUNCTIONS
+ */
+
+
+void printDeploymentInfo(Qureg qureg) {
+
+    form_printTable(
+        "deployment", {
+        {"isMpiEnabled", qureg.isDistributed},
+        {"isGpuEnabled", qureg.isGpuAccelerated},
+        {"isOmpEnabled", qureg.isMultithreaded},
+    });
+}
+
+void printDimensionInfo(Qureg qureg) {
+
+    std::string str;
+    str  = "2^" + form_str(qureg.numQubits);
+    str += (qureg.isDensityMatrix)? " x " + str : "";
+    str += " = " + form_str(qureg.numAmps);
+
+    form_printTable(
+        "dimension", {
+        {"isDensMatr", form_str(qureg.isDensityMatrix)},
+        {"numQubits",  form_str(qureg.numQubits)},
+        {"numAmps",    str},
+    });
+}
+
+
+void printDistributionInfo(Qureg qureg) {
+
+    // not applicable when not distributed
+    std::string nodesStr = na;
+    std::string ampsStr  = na;
+
+    if (qureg.isDistributed) {
+        nodesStr = "2^" + form_str(qureg.logNumNodes)       + eq + form_str(qureg.numNodes);
+        ampsStr  = "2^" + form_str(qureg.logNumAmpsPerNode) + eq + form_str(qureg.numAmpsPerNode);
+        ampsStr += pn;
+    }
+
+    form_printTable(
+        "distribution", {
+        {"numNodes", nodesStr},
+        {"numAmps",  ampsStr},
+    });
+}
+
+
+void printMemoryInfo(Qureg qureg) {
+
+    size_t localArrayMem = mem_getLocalMemoryRequired(qureg.numAmpsPerNode);
+    std::string localMemStr = form_str(localArrayMem) + by + ((qureg.isDistributed)? pn : "");
+
+    qindex globalTotalMem = mem_getTotalGlobalMemoryUsed(qureg);
+    std::string globalMemStr = (globalTotalMem == 0)? "overflowed" : (form_str(globalTotalMem) + by);
+
+    form_printTable(
+        "memory", {
+        {"cpuAmps",       (qureg.cpuAmps       == NULL)? na : localMemStr},
+        {"gpuAmps",       (qureg.gpuAmps       == NULL)? na : localMemStr},
+        {"cpuCommBuffer", (qureg.cpuCommBuffer == NULL)? na : localMemStr},
+        {"gpuCommBuffer", (qureg.gpuCommBuffer == NULL)? na : localMemStr},
+        {"globalTotal",   globalMemStr},
+    });
+}
+
+
+
+/*
  * PUBLIC FUNCTIONS
  */
 
@@ -155,6 +234,31 @@ void destroyQureg(Qureg qureg) {
 
     // cannot set freed fields to NULL because qureg
     // wasn't passed-by-reference, and isn't returned.
+}
+
+
+void reportQureg(Qureg qureg) {
+
+    // TODO: add function to write this output to file (useful for HPC debugging)
+
+    // precondition: no reportable fields are at risk of overflow as a qindex
+    // type, EXCEPT aggregate total memory between distributed nodes (in bytes)
+
+    // only root node reports, other nodes wait for synch
+    if (qureg.rank != 0) {
+        comm_synch();
+        return;
+    }
+
+    std::cout << "Qureg:" << std::endl;
+    printDeploymentInfo(qureg);
+    printDimensionInfo(qureg);
+    printDistributionInfo(qureg);
+    printMemoryInfo(qureg);
+
+    // free non-root nodes from synch barrier
+    if (qureg.rank == 0)
+        comm_synch();
 }
 
 
