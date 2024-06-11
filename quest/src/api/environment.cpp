@@ -309,6 +309,7 @@ QuESTEnv createQuESTEnv() {
 
 
 void destroyQuESTEnv(QuESTEnv env) {
+    validate_existingEnv(env, __func__);
 
     if (env.isDistributed)
         comm_end();
@@ -316,6 +317,7 @@ void destroyQuESTEnv(QuESTEnv env) {
 
 
 void reportQuESTEnv(QuESTEnv env) {
+    validate_existingEnv(env, __func__);
 
     // we attempt to report properties of available hardware facilities
     // (e.g. number of CPU cores, number of GPUs) even if the environment is not
