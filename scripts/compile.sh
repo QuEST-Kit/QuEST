@@ -131,7 +131,7 @@ BACKEND_COMP_FLAGS='-std=c++17 -O3'
 
 # GPU-specific flags
 GPU_COMP_FLAGS="-x cu -arch=sm_${GPU_CC}"
-GPU_LINK_FLAGS="-lcudart -lcuda"
+GPU_LINK_FLAGS="-L/usr/local/cuda/lib64 -lcudart -lcuda"
 
 # MPI-specific flags
 MPI_COMP_FLAGS=''
