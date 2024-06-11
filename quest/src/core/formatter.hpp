@@ -42,9 +42,9 @@ std::string form_str(T expr) {
  * TABLE PRINTING
  */
 
-void form_printTable(std::vector<std::tuple<std::string, std::string>> rows);
+void form_printTable(std::string title, std::vector<std::tuple<std::string, std::string>> rows, std::string indent="  ");
 
-void form_printTable(std::vector<std::tuple<std::string, long long int>> rows);
+void form_printTable(std::string title, std::vector<std::tuple<std::string, long long int>> rows, std::string indent="  ");
 
 
 

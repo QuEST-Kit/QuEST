@@ -96,7 +96,8 @@ void printPrecisionInfo() {
 	// - report CUDA qcomp type?
 	// - report CUDA kernel qcomp type?
 
-	form_printTable({
+	form_printTable(
+		"precision", {
 		{"qreal",  form_getQrealType()  + " (" + form_str(sizeof(qreal))  + by + ")"},
 		{"qcomp",  form_getQcompType()  + " (" + form_str(sizeof(qcomp))  + by + ")"},
 		{"qindex", form_getQindexType() + " (" + form_str(sizeof(qindex)) + by + ")"},
@@ -107,7 +108,8 @@ void printPrecisionInfo() {
 
 void printCompilationInfo() {
 
-	form_printTable({
+	form_printTable(
+		"compilation", {
 		{"isMpiCompiled", comm_isMpiCompiled()},
 		{"isGpuCompiled", gpu_isGpuCompiled()},
 		{"isOmpCompiled", cpu_isOpenmpCompiled()},
@@ -117,7 +119,8 @@ void printCompilationInfo() {
 
 void printDeploymentInfo(QuESTEnv env) {
 
-	form_printTable({
+	form_printTable(
+		"deployment", {
 		{"isMpiEnabled", env.isDistributed},
 		{"isGpuEnabled", env.isGpuAccelerated},
 		{"isOmpEnabled", env.isMultithreaded},
@@ -136,7 +139,8 @@ void printCpuInfo() {
 	// TODO
 	// - CPU info e.g. speeds/caches?
 
-	form_printTable({
+	form_printTable(
+		"cpu", {
 		{"numCpuCores",   form_str(std::thread::hardware_concurrency()) + pm},
 		{"numOmpProcs",   (cpu_isOpenmpCompiled())? form_str(cpu_getNumOpenmpProcessors()) : na},
 		{"numOmpThrds",   (cpu_isOpenmpCompiled())? form_str(cpu_getCurrentNumThreads()) + pn : na},
@@ -152,7 +156,8 @@ void printGpuInfo() {
 	// - GPU compute capability
 	// - GPU #SVMs etc
 
-	form_printTable({
+	form_printTable(
+		"gpu", {
 		{"numGpus",       (gpu_isGpuCompiled())? form_str(gpu_getNumberOfLocalGpus()) : un},
 		{"gpuDirect",     (gpu_isGpuCompiled())? form_str(gpu_isDirectGpuCommPossible()) : na},
 		{"gpuMemory",     (gpu_isGpuCompiled())? form_str(gpu_getTotalMemoryInBytes()) + by + pg : na},
@@ -163,7 +168,8 @@ void printGpuInfo() {
 
 void printDistributionInfo(QuESTEnv env) {
 
-	form_printTable({
+	form_printTable(
+		"distribution", {
 		{"isMpiGpuAware", (comm_isMpiCompiled())? form_str(comm_isMpiGpuAware()) : na},
 		{"numMpiNodes",   form_str(env.numNodes)},
 	});
@@ -206,7 +212,12 @@ void printQuregSizeLimits(bool isDensMatr, QuESTEnv env) {
 			maxQbForMpiGpu = form_str(mem_getMaxNumQubitsWhichCanFitInMemory(isDensMatr, env.numNodes, gpuMem));
 	}
 
-	form_printTable({
+	// tailor table title to type of Qureg
+	std::string prefix = (isDensMatr)? "density matrix" : "statevector";
+	std::string title = prefix + " limits";
+
+	form_printTable(
+		title, {
 		{"minQubitsForMpi",     (env.numNodes>1)? form_str(mem_getMinNumQubitsForDistribution(env.numNodes)) : na},
 		{"maxQubitsForCpu", 	maxQbForCpu},
 		{"maxQubitsForGpu", 	maxQbForGpu},
@@ -268,45 +279,30 @@ void printQuregAutoDeployments(bool isDensMatr, QuESTEnv env) {
 		prevMulti    = useMulti;
 	}
 
-	form_printTable(rows);
+	// tailor table title to type of Qureg
+	std::string prefix = (isDensMatr)? "density matrix" : "statevector";
+	std::string title = prefix + " autodeployment";
+	form_printTable(title, rows);
 }
 
 
 void printQuESTEnvParams(QuESTEnv env) {
 
-	// below, we attempt to report properties of available hardware facilities
+	// we attempt to report properties of available hardware facilities
 	// (e.g. number of CPU cores, number of GPUs) even if the environment is not
 	// making use of them, to inform the user how they might change deployment.
-	// naturally we cannot report facilities if the queriers are not compiled though.
 
-	std::cout << "[precision]\n";
+	std::cout << "QuEST execution environment:" << std::endl;
+
 	printPrecisionInfo();
-
-	std::cout << "[compilation]\n";
 	printCompilationInfo();
-
-	std::cout << "[deployment]\n";
 	printDeploymentInfo(env);
-
-	std::cout << "[cpu]\n";
 	printCpuInfo();
-
-	std::cout << "[gpu]\n";
 	printGpuInfo();
-
-	std::cout << "[distribution]\n";
 	printDistributionInfo(env);
-
-	std::cout << "[statevector limits]\n";
 	printQuregSizeLimits(false, env);
-
-	std::cout << "[statevector autodeployment]\n";
-	printQuregAutoDeployments(false, env);
-
-	std::cout << "[density matrix limits]\n";
 	printQuregSizeLimits(true, env);
-
-	std::cout << "[density matrix autodeployment]\n";
+	printQuregAutoDeployments(false, env);
 	printQuregAutoDeployments(true, env);
 }
 

@@ -6,13 +6,15 @@
 
 #include <stdlib.h>
 #include <iostream>
+#include <iomanip>
 #include <typeinfo>
 #include <vector>
 #include <tuple>
 #include <string>
 
 
-// I like to live dangerously
+// I like to live dangerously; and I am willing to debate with the
+// most dogmatic C++ enthusiast about the unreadability of namespaces
 using namespace std;
 
 
@@ -108,21 +110,32 @@ string form_str(qreal num) {
  */
 
 
-void form_printTable(vector<tuple<string, string>> rows) {
+void form_printTable(string title, vector<tuple<string, string>> rows, string indent) {
 
-	// TODO: make this more beautiful using alignment
+	int minColumnGap = 5;
 
+	// find max-width of left column
+	int maxWidth = 0;
 	for (auto const& [key, value] : rows)
-		cout << "  " << key << " -> " << value << "\n";
+		if (key.length() > maxWidth)
+			maxWidth = key.length();
+
+	// print table title (indented)
+	cout << indent << "[" << title << "]" << endl;
+
+	// pad left column (which is doubly indented) to align right column
+	for (auto const& [key, value] : rows)
+		cout << indent << indent << left << setw(maxWidth + minColumnGap) << setfill('.') << key << value << endl;
+
 }
 
 
-void form_printTable(vector<tuple<string, long long int>> rows) {
+void form_printTable(string title, vector<tuple<string, long long int>> rows, string indent) {
 
 	// convert all values to strings
 	vector<tuple<string, string>> casted;
 	for (auto const& [key, value] : rows)
 		casted.push_back({key, to_string(value)});
 
-	form_printTable(casted);
+	form_printTable(title, casted, indent);
 }
