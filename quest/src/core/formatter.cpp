@@ -99,7 +99,7 @@ string form_str(qreal num) {
 
     // it's unbelievable this was the best C++17 compatible method
     char repr[64];
-    sprintf(repr, "%g", num);
+    sprintf(repr, (FLOAT_PRECISION == 4)? "%Lg" : "%g", num);
     return string(repr);
 }
 

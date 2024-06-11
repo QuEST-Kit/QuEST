@@ -333,16 +333,19 @@ void reportQuESTEnv(QuESTEnv env) {
 
     std::cout << "QuEST execution environment:" << std::endl;
 
+    bool statevec = false;
+    bool densmatr = true;
+
     printPrecisionInfo();
     printCompilationInfo();
     printDeploymentInfo(env);
     printCpuInfo();
     printGpuInfo();
     printDistributionInfo(env);
-    printQuregSizeLimits(false, env);
-    printQuregSizeLimits(true, env);
-    printQuregAutoDeployments(false, env);
-    printQuregAutoDeployments(true, env);
+    printQuregSizeLimits(statevec, env);
+    printQuregSizeLimits(densmatr, env);
+    printQuregAutoDeployments(statevec, env);
+    printQuregAutoDeployments(densmatr, env);
 
     // free non-root nodes from synch barrier
     if (env.rank == 0)
