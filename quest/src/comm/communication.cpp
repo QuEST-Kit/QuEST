@@ -19,13 +19,19 @@
  */
 
 #if ENABLE_DISTRIBUTION && ENABLE_GPU_ACCELERATION
-    #include <mpi-ext.h>
 
-    #ifndef MPIX_CUDA_AWARE_SUPPORT
-        #warning "Could not ascertain whether MPI is CUDA-aware, so we will assume it is not. This means inter-GPU communication will be slowly routed through the CPU/RAM."
-    #elif !MPIX_CUDA_AWARE_SUPPORT
-        #warning "MPI compiler is not CUDA-aware, so inter-GPU communication will be slowly routed through the CPU/RAM"
+    // this check is OpenMPI specific
+    #ifdef OPEN_MPI
+        #include <mpi-ext.h>
+
+        #ifndef MPIX_CUDA_AWARE_SUPPORT
+            #warning "Could not ascertain whether MPI is CUDA-aware, so we will assume it is not. This means inter-GPU communication will be slowly routed through the CPU/RAM."
+        #elif !MPIX_CUDA_AWARE_SUPPORT
+            #warning "MPI compiler is not CUDA-aware, so inter-GPU communication will be slowly routed through the CPU/RAM"
+        #endif
     #endif
+
+    // TODO: check whether MPICH is CUDA-aware
 
 #endif
 
@@ -91,7 +97,7 @@ bool comm_isMpiGpuAware() {
 bool comm_isInit() {
 #if ENABLE_DISTRIBUTION
 
-	// safely callable before MPI initialisation, but NOT after comm_end()
+    // safely callable before MPI initialisation, but NOT after comm_end()
     int isInit;
     MPI_Initialized(&isInit);
     return (bool) isInit;
@@ -119,9 +125,9 @@ void comm_init() {
 void comm_end() {
 #if ENABLE_DISTRIBUTION
 
-	// gracefully permit comm_end() before comm_init(), as input validation can trigger
-	if (!comm_isInit())
-		return;
+    // gracefully permit comm_end() before comm_init(), as input validation can trigger
+    if (!comm_isInit())
+        return;
 
     MPI_Barrier(MPI_COMM_WORLD);
     MPI_Finalize();
@@ -133,9 +139,9 @@ void comm_end() {
 int comm_getRank() {
 #if ENABLE_DISTRIBUTION
 
-	// if MPI not yet setup (e.g. QuESTEnv creation error'd), return main rank
+    // if MPI not yet setup (e.g. QuESTEnv creation error'd), return main rank
     if (!comm_isInit())
-    	return 0;
+        return 0;
 
     int rank;
     MPI_Comm_rank(MPI_COMM_WORLD, &rank);
@@ -152,9 +158,9 @@ int comm_getRank() {
 int comm_getNumNodes() {
 #if ENABLE_DISTRIBUTION
 
-	// if MPI not yet setup, error; else we may misreport later MPI env
-	if (!comm_isInit())
-		error_commNotInit();
+    // if MPI not yet setup, error; else we may misreport later MPI env
+    if (!comm_isInit())
+        error_commNotInit();
 
     int numNodes;
     MPI_Comm_size(MPI_COMM_WORLD, &numNodes);
@@ -171,9 +177,9 @@ int comm_getNumNodes() {
 void comm_synch() {
 #if ENABLE_DISTRIBUTION
 
-	// gracefully handle when not distributed, needed by pre-MPI-setup validation 
+    // gracefully handle when not distributed, needed by pre-MPI-setup validation 
     if (!comm_isInit())
-    	return;
+        return;
 
     MPI_Barrier(MPI_COMM_WORLD);
 #endif

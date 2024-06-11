@@ -12,6 +12,14 @@
 
 
 
+#define MIN_NUM_LOCAL_QUBITS_FOR_AUTO_MULTITHREADING 8
+
+#define MIN_NUM_LOCAL_QUBITS_FOR_AUTO_GPU_ACCELERATION 12
+
+#define MIN_NUM_LOCAL_QUBITS_FOR_AUTO_DISTRIBUTION 26
+
+
+
 void autodep_chooseQuESTEnvDeployment(int &useDistrib, int &useGpuAccel, int &useMultithread);
 
 void autodep_chooseQuregDeployment(int numQubits, int isDensMatr, int &useDistrib, int &useGpuAccel, int &useMultithread, QuESTEnv env);
