@@ -19,13 +19,19 @@
  */
 
 #if ENABLE_DISTRIBUTION && ENABLE_GPU_ACCELERATION
-    #include <mpi-ext.h>
 
-    #ifndef MPIX_CUDA_AWARE_SUPPORT
-        #warning "Could not ascertain whether MPI is CUDA-aware, so we will assume it is not. This means inter-GPU communication will be slowly routed through the CPU/RAM."
-    #elif !MPIX_CUDA_AWARE_SUPPORT
-        #warning "MPI compiler is not CUDA-aware, so inter-GPU communication will be slowly routed through the CPU/RAM"
+    // this check is OpenMPI specific
+    #ifdef OPEN_MPI
+        #include <mpi-ext.h>
+
+        #ifndef MPIX_CUDA_AWARE_SUPPORT
+            #warning "Could not ascertain whether MPI is CUDA-aware, so we will assume it is not. This means inter-GPU communication will be slowly routed through the CPU/RAM."
+        #elif !MPIX_CUDA_AWARE_SUPPORT
+            #warning "MPI compiler is not CUDA-aware, so inter-GPU communication will be slowly routed through the CPU/RAM"
+        #endif
     #endif
+
+    // TODO: check whether MPICH is CUDA-aware
 
 #endif
 
