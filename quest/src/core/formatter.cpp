@@ -88,7 +88,19 @@ string form_getFloatPrecisionFlag() {
 
 
 
+/*
+ * SUBSTRINGS USED BY REPORTERS
+ */
 
+namespace form_substrings { 
+    std::string eq = " = ";
+    std::string by = " bytes";
+    std::string pn = " per node";
+    std::string pg = " per gpu";
+    std::string pm = " per machine";
+    std::string na = "N/A";
+    std::string un = "unknown";
+}
 
 
 

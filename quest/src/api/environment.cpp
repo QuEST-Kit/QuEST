@@ -22,6 +22,9 @@
 #include <vector>
 #include <tuple>
 
+// provides substrings (by, na, pm, etc) used by reportQuESTEnv
+using namespace form_substrings;
+
 
 
 /*
@@ -78,15 +81,6 @@ QuESTEnv validateAndCreateCustomQuESTEnv(int useDistrib, int useGpuAccel, int us
 /*
  * PRIVATE QUESTENV REPORTING INNER FUNCTIONS
  */
-
-
-// infixes used by QuESTEnv property printing
-std::string by = " bytes";
-std::string pn = " per node";
-std::string pg = " per gpu";
-std::string pm = " per machine";
-std::string na = "N/A";
-std::string un = "unknown";
 
 
 void printPrecisionInfo() {

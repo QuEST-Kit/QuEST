@@ -41,6 +41,21 @@ template<typename T> std::string form_str(T expr) {
     buffer << expr;
     return buffer.str();
 }
+
+
+
+/*
+ * SUBSTRINGS USED BY REPORTERS
+ */
+
+namespace form_substrings { 
+    extern std::string eq;
+    extern std::string by;
+    extern std::string pn;
+    extern std::string pg;
+    extern std::string pm;
+    extern std::string na;
+    extern std::string un;
 }
 
 
