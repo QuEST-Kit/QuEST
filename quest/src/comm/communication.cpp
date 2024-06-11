@@ -91,7 +91,7 @@ bool comm_isMpiGpuAware() {
 bool comm_isInit() {
 #if ENABLE_DISTRIBUTION
 
-	// safely callable before MPI initialisation, but NOT after comm_end()
+    // safely callable before MPI initialisation, but NOT after comm_end()
     int isInit;
     MPI_Initialized(&isInit);
     return (bool) isInit;
@@ -119,9 +119,9 @@ void comm_init() {
 void comm_end() {
 #if ENABLE_DISTRIBUTION
 
-	// gracefully permit comm_end() before comm_init(), as input validation can trigger
-	if (!comm_isInit())
-		return;
+    // gracefully permit comm_end() before comm_init(), as input validation can trigger
+    if (!comm_isInit())
+        return;
 
     MPI_Barrier(MPI_COMM_WORLD);
     MPI_Finalize();
@@ -133,9 +133,9 @@ void comm_end() {
 int comm_getRank() {
 #if ENABLE_DISTRIBUTION
 
-	// if MPI not yet setup (e.g. QuESTEnv creation error'd), return main rank
+    // if MPI not yet setup (e.g. QuESTEnv creation error'd), return main rank
     if (!comm_isInit())
-    	return 0;
+        return 0;
 
     int rank;
     MPI_Comm_rank(MPI_COMM_WORLD, &rank);
@@ -152,9 +152,9 @@ int comm_getRank() {
 int comm_getNumNodes() {
 #if ENABLE_DISTRIBUTION
 
-	// if MPI not yet setup, error; else we may misreport later MPI env
-	if (!comm_isInit())
-		error_commNotInit();
+    // if MPI not yet setup, error; else we may misreport later MPI env
+    if (!comm_isInit())
+        error_commNotInit();
 
     int numNodes;
     MPI_Comm_size(MPI_COMM_WORLD, &numNodes);
@@ -171,9 +171,9 @@ int comm_getNumNodes() {
 void comm_synch() {
 #if ENABLE_DISTRIBUTION
 
-	// gracefully handle when not distributed, needed by pre-MPI-setup validation 
+    // gracefully handle when not distributed, needed by pre-MPI-setup validation 
     if (!comm_isInit())
-    	return;
+        return;
 
     MPI_Barrier(MPI_COMM_WORLD);
 #endif

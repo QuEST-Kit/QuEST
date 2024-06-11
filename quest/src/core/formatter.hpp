@@ -33,7 +33,7 @@ std::string form_str(qreal num);
 
 template<typename T>
 std::string form_str(T expr) {
-	return std::to_string(expr);
+    return std::to_string(expr);
 }
 
 

@@ -97,10 +97,10 @@ string form_getFloatPrecisionFlag() {
 
 string form_str(qreal num) {
 
-	// it's unbelievable this was the best C++17 compatible method
-	char repr[64];
-	sprintf(repr, "%g", num);
-	return string(repr);
+    // it's unbelievable this was the best C++17 compatible method
+    char repr[64];
+    sprintf(repr, "%g", num);
+    return string(repr);
 }
 
 
@@ -112,30 +112,30 @@ string form_str(qreal num) {
 
 void form_printTable(string title, vector<tuple<string, string>> rows, string indent) {
 
-	int minColumnGap = 5;
+    int minColumnGap = 5;
 
-	// find max-width of left column
-	int maxWidth = 0;
-	for (auto const& [key, value] : rows)
-		if (key.length() > maxWidth)
-			maxWidth = key.length();
+    // find max-width of left column
+    int maxWidth = 0;
+    for (auto const& [key, value] : rows)
+        if (key.length() > maxWidth)
+            maxWidth = key.length();
 
-	// print table title (indented)
-	cout << indent << "[" << title << "]" << endl;
+    // print table title (indented)
+    cout << indent << "[" << title << "]" << endl;
 
-	// pad left column (which is doubly indented) to align right column
-	for (auto const& [key, value] : rows)
-		cout << indent << indent << left << setw(maxWidth + minColumnGap) << setfill('.') << key << value << endl;
+    // pad left column (which is doubly indented) to align right column
+    for (auto const& [key, value] : rows)
+        cout << indent << indent << left << setw(maxWidth + minColumnGap) << setfill('.') << key << value << endl;
 
 }
 
 
 void form_printTable(string title, vector<tuple<string, long long int>> rows, string indent) {
 
-	// convert all values to strings
-	vector<tuple<string, string>> casted;
-	for (auto const& [key, value] : rows)
-		casted.push_back({key, to_string(value)});
+    // convert all values to strings
+    vector<tuple<string, string>> casted;
+    for (auto const& [key, value] : rows)
+        casted.push_back({key, to_string(value)});
 
-	form_printTable(title, casted, indent);
+    form_printTable(title, casted, indent);
 }
