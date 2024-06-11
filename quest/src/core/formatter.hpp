@@ -7,7 +7,9 @@
 
 #include <vector>
 #include <tuple>
-#include <stdlib.h>
+#include <string>
+#include <sstream>
+#include <type_traits>
 
 
 
@@ -29,11 +31,16 @@ std::string form_getFloatPrecisionFlag();
  * STRING CASTS
  */
 
-std::string form_str(qreal num);
+template<typename T> std::string form_str(T expr) {
+    std::ostringstream buffer;
 
-template<typename T>
-std::string form_str(T expr) {
-    return std::to_string(expr);
+    // floats are printed in scientific notation, to avoid precision loss
+    if constexpr (std::is_floating_point_v<T>)
+        buffer << std::scientific;
+
+    buffer << expr;
+    return buffer.str();
+}
 }
 
 

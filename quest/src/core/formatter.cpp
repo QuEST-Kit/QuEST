@@ -7,7 +7,6 @@
 #include <stdlib.h>
 #include <iostream>
 #include <iomanip>
-#include <typeinfo>
 #include <vector>
 #include <tuple>
 #include <string>
@@ -89,19 +88,7 @@ string form_getFloatPrecisionFlag() {
 
 
 
-/*
- * STRING CASTS
- */
 
-// all types not explicitly overloaded below use template in header
-
-string form_str(qreal num) {
-
-    // it's unbelievable this was the best C++17 compatible method
-    char repr[64];
-    sprintf(repr, (FLOAT_PRECISION == 4)? "%Lg" : "%g", num);
-    return string(repr);
-}
 
 
 
