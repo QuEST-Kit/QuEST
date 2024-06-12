@@ -5,7 +5,10 @@
  * deployment is consistent with the compiled deployment modes.
  */
 
-#include "quest/src/comm/communication.hpp"
+#include "quest/include/types.h"
+#include "quest/include/qureg.h"
+#include "quest/src/comm/comm_config.hpp"
+#include "quest/src/gpu/gpu_config.hpp"
 
 #include <iostream>
 #include <string>
@@ -78,6 +81,52 @@ void error_commAlreadyInit() {
     raiseInternalError("The MPI communication environment was attemptedly re-initialised despite the QuEST environment already existing.");
 }
 
+void error_commButEnvNotDistributed() {
+
+    raiseInternalError("A function attempted to invoke communication despite QuEST being compiled in non-distributed mode.");
+}
+
+void error_commButQuregNotDistributed() {
+
+    raiseInternalError("A function attempted to invoke communication of a Qureg which was not distributed.");
+}
+
+void error_commOutOfBounds() {
+
+    raiseInternalError("A function invoked communication which attempted to exchange amplitudes between arrays at invalid bounds.");
+}
+
+void error_commWithSameRank() {
+
+    raiseInternalError("A distributed function attempted to communicate to a pair rank equal to its own rank.");
+}
+
+void assert_validCommBounds(Qureg qureg, qindex sendInd, qindex recvInd, qindex numAmps) {
+
+    bool valid = (
+        sendInd >= 0 &&
+        recvInd >= 0 &&
+        numAmps >  0 &&
+        sendInd + numAmps <= qureg.numAmpsPerNode &&
+        recvInd + numAmps <= qureg.numAmpsPerNode
+    );
+
+    if (!valid)
+        error_commOutOfBounds();
+}
+
+void assert_quregIsDistributed(Qureg qureg) {
+
+    if (!qureg.isDistributed)
+        error_commButQuregNotDistributed();
+}
+
+void assert_pairRankIsDistinct(Qureg qureg, int pairRank) {
+
+    if (pairRank == qureg.rank)
+        error_commWithSameRank();
+}
+
 
 
 /*
@@ -109,3 +158,36 @@ void error_gpuDeallocButGpuNotCompiled() {
 
     raiseInternalError("A function (most likely Qureg creation) attempted to deallocate GPU memory but QuEST was not compiled with GPU acceleration enabled.");
 }
+
+void error_gpuCopyButGpuNotCompiled() {
+
+    raiseInternalError("A function attempted to access GPU memory but QuEST was not compiled with GPU acceleration enabled.");
+}
+
+void error_gpuSimButGpuNotCompiled() {
+
+    raiseInternalError("A function attempted to dispatch a simulation to the GPU but QuEST was not compiled with GPU acceleration enabled.");
+}
+
+void error_gpuCopyButQuregNotGpuAccelerated() {
+
+    raiseInternalError("A function attempted to access GPU memory of a Qureg which is not GPU accelerated.");
+}
+
+void error_gpuUnexpectedlyInaccessible() {
+
+    raiseInternalError("A function internally assumed (as a precondition) that QuEST was compiled with GPU-acceleration enabled, and that one was physically accessible, though this was untrue.");
+}
+
+void assert_quregIsGpuAccelerated(Qureg qureg) {
+
+    if (!qureg.isGpuAccelerated)
+        error_gpuCopyButQuregNotGpuAccelerated();
+}
+
+void assert_gpuIsAccessible() {
+
+    if (!gpu_isGpuCompiled() || !gpu_isGpuAvailable())
+        error_gpuUnexpectedlyInaccessible();
+}
+

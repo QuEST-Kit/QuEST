@@ -11,7 +11,7 @@
 #include "quest/src/core/formatter.hpp"
 #include "quest/src/core/autodeployer.hpp"
 #include "quest/src/core/validation.hpp"
-#include "quest/src/comm/communication.hpp"
+#include "quest/src/comm/comm_config.hpp"
 #include "quest/src/cpu/cpu_config.hpp"
 #include "quest/src/gpu/gpu_config.hpp"
 

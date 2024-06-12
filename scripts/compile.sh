@@ -117,7 +117,8 @@ OMP_FILES=(
 
 # files in MPI_DIR
 MPI_FILES=(
-    "communication"
+    "comm_config"
+    "comm_routines"
 )
 
 
