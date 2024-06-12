@@ -4,10 +4,11 @@
 
 #include "quest/include/modes.h"
 #include "quest/include/types.h"
+#include "quest/include/qureg.h"
 
 #include "quest/src/core/errors.hpp"
 #include "quest/src/core/memory.hpp"
-#include "quest/src/comm/communication.hpp"
+#include "quest/src/comm/comm_config.hpp"
 
 
 #if ENABLE_GPU_ACCELERATION && ! (defined(__NVCC__) || defined(__HIPCC__))
@@ -114,19 +115,6 @@ int gpu_getNumberOfLocalGpus() {
 }
 
 
-void gpu_bindLocalGPUsToNodes(int rank) {
-#if ENABLE_GPU_ACCELERATION
-
-    int numLocalGpus = gpu_getNumberOfLocalGpus();
-    int localGpuInd = rank % numLocalGpus;
-    cudaSetDevice(localGpuInd);
-
-#else
-    error_gpuQueriedButGpuNotCompiled();
-#endif 
-}
-
-
 size_t gpu_getCurrentAvailableMemoryInBytes() {
 #if ENABLE_GPU_ACCELERATION
 
@@ -156,6 +144,36 @@ size_t gpu_getTotalMemoryInBytes() {
     error_gpuQueriedButGpuNotCompiled();
     return 0;
 #endif
+}
+
+
+
+/*
+ * ENVIRONMENT MANAGEMENT
+ */
+
+
+void gpu_bindLocalGPUsToNodes(int rank) {
+#if ENABLE_GPU_ACCELERATION
+
+    int numLocalGpus = gpu_getNumberOfLocalGpus();
+    int localGpuInd = rank % numLocalGpus;
+    cudaSetDevice(localGpuInd);
+
+#else
+    error_gpuQueriedButGpuNotCompiled();
+#endif 
+}
+
+
+void gpu_synch() {
+#if ENABLE_GPU_ACCELERATION
+
+    cudaDeviceSynchronize();
+
+#endif
+
+    // TODO: validation? eh
 }
 
 
@@ -191,3 +209,32 @@ void gpu_deallocAmps(qcomp* amps) {
     error_gpuDeallocButGpuNotCompiled();
 #endif
 }
+
+
+void gpu_copyCpuToGpu(Qureg qureg, qcomp* cpuArr, qcomp* gpuArr, qindex numElems) {
+#if ENABLE_GPU_ACCELERATION
+
+    assert_quregIsGpuAccelerated(qureg);
+
+    size_t numBytes = numElems * sizeof(qcomp);
+    cudaMemcpy(gpuArr, cpuArr, numBytes, cudaMemcpyHostToDevice);
+
+#else
+    error_gpuCopyButGpuNotCompiled();
+#endif
+}
+
+
+void gpu_copyGpuToCpu(Qureg qureg, qcomp* gpuArr, qcomp* cpuArr, qindex numElems) {
+#if ENABLE_GPU_ACCELERATION
+
+    assert_quregIsGpuAccelerated(qureg);
+
+    size_t numBytes = numElems * sizeof(qcomp);
+    cudaMemcpy(cpuArr, gpuArr, numBytes, cudaMemcpyDeviceToHost);
+
+#else
+    error_gpuCopyButGpuNotCompiled();
+#endif
+}
+
