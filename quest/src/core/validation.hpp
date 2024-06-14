@@ -8,6 +8,7 @@
 
 #include "quest/include/environment.h"
 #include "quest/include/qureg.h"
+#include "quest/include/structures.h"
 
 
 
@@ -15,13 +16,19 @@
  * ENVIRONMENT CREATION
  */
 
-void validate_existingEnv(QuESTEnv env, const char* caller);
+void validate_newEnvNotAlreadyInit(const char* caller);
 
-void validate_envNotYetInit(const char* caller);
+void validate_newEnvDeploymentMode(int isDistrib, int isGpuAccel, int isMultithread, const char* caller);
 
-void validate_envDeploymentMode(int isDistrib, int isGpuAccel, int isMultithread, const char* caller);
+void validate_newEnvDistributedBetweenPower2Nodes(int numNodes, const char* caller);
 
-void validate_envDistributedBetweenPower2Nodes(int numNodes, const char* caller);
+
+
+/*
+ * EXISTING ENVIRONMENT
+ */
+
+void validate_envInit(QuESTEnv env, const char* caller);
 
 
 
@@ -29,11 +36,29 @@ void validate_envDistributedBetweenPower2Nodes(int numNodes, const char* caller)
  * QUREG CREATION
  */
 
-void validate_quregParams(int numQubits, int isDensMatr, int isDistrib, int isGpuAccel, int numCpuThreads, QuESTEnv env, const char* caller);
+void validate_newQuregParams(int numQubits, int isDensMatr, int isDistrib, int isGpuAccel, int numCpuThreads, QuESTEnv env, const char* caller);
 
-void validate_quregAllocs(Qureg qureg, bool isNewQureg, const char* caller);
+void validate_newOrExistingQuregAllocs(Qureg qureg, bool isNewQureg, const char* caller);
 
-void validate_quregNotBothMultithreadedAndGpuAccel(int useGpu, int numThreads, const char* caller);
+void validate_newQuregNotBothMultithreadedAndGpuAccel(int useGpu, int numThreads, const char* caller);
+
+
+
+/*
+ * MATRIX CREATION
+ */
+
+void validate_newMatrixNumQubits(int numQubits, const char* caller);
+
+void validate_newOrExistingMatrixAllocs(CompMatrN matr, bool isNewMatr, const char* caller);
+
+
+
+/*
+ * EXISTING MATRIX
+ */
+
+void validate_matrixInit(CompMatrN matr, const char* caller);
 
 
 
