@@ -38,8 +38,8 @@ QuESTEnv validateAndCreateCustomQuESTEnv(int useDistrib, int useGpuAccel, int us
     // note that these error messages will be printed by every node because
     // validation occurs before comm_init() below, so all processes spawned
     // by mpirun believe they are each the main rank. This seems unavoidable.
-    validate_envNotYetInit(caller);
-    validate_envDeploymentMode(useDistrib, useGpuAccel, useMultithread, caller);
+    validate_newEnvNotAlreadyInit(caller);
+    validate_newEnvDeploymentMode(useDistrib, useGpuAccel, useMultithread, caller);
 
     // overwrite deployments left as modeflag::USE_AUTO
     autodep_chooseQuESTEnvDeployment(useDistrib, useGpuAccel, useMultithread);
@@ -62,7 +62,7 @@ QuESTEnv validateAndCreateCustomQuESTEnv(int useDistrib, int useGpuAccel, int us
     }
 
     // validates numNodes=2^N and otherwise calls comm_end() before throwing error
-    validate_envDistributedBetweenPower2Nodes(env.numNodes, caller);
+    validate_newEnvDistributedBetweenPower2Nodes(env.numNodes, caller);
 
     // TODO:
     // validate 2^N local GPUs
@@ -303,7 +303,7 @@ QuESTEnv createQuESTEnv() {
 
 
 void destroyQuESTEnv(QuESTEnv env) {
-    validate_existingEnv(env, __func__);
+    validate_envInit(env, __func__);
 
     if (env.isDistributed)
         comm_end();
@@ -311,7 +311,7 @@ void destroyQuESTEnv(QuESTEnv env) {
 
 
 void reportQuESTEnv(QuESTEnv env) {
-    validate_existingEnv(env, __func__);
+    validate_envInit(env, __func__);
 
     // we attempt to report properties of available hardware facilities
     // (e.g. number of CPU cores, number of GPUs) even if the environment is not
@@ -319,11 +319,9 @@ void reportQuESTEnv(QuESTEnv env) {
 
     // TODO: add function to write this output to file (useful for HPC debugging)
 
-    // only root node reports, other nodes wait for synch
-    if (env.rank != 0) {
-        comm_synch();
+    // only root node reports (but no synch necesary)
+    if (env.rank != 0)
         return;
-    }
 
     std::cout << "QuEST execution environment:" << std::endl;
 
@@ -340,10 +338,6 @@ void reportQuESTEnv(QuESTEnv env) {
     printQuregSizeLimits(densmatr, env);
     printQuregAutoDeployments(statevec, env);
     printQuregAutoDeployments(densmatr, env);
-
-    // free non-root nodes from synch barrier
-    if (env.rank == 0)
-        comm_synch();
 }
 
 

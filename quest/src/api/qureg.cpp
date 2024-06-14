@@ -30,13 +30,13 @@ using namespace form_substrings;
 Qureg validateAndCreateCustomQureg(int numQubits, int isDensMatr, int useDistrib, int useGpuAccel, int useMultithread, QuESTEnv env, const char* caller) {
 
     // ensure deployment is compatible with environment, considering available hardware and their memory capacities
-    validate_quregParams(numQubits, isDensMatr, useDistrib, useGpuAccel, useMultithread, env, caller);
+    validate_newQuregParams(numQubits, isDensMatr, useDistrib, useGpuAccel, useMultithread, env, caller);
 
     // automatically overwrite distrib, GPU, and multithread fields which were left as modeflag::USE_AUTO
     autodep_chooseQuregDeployment(numQubits, isDensMatr, useDistrib, useGpuAccel, useMultithread, env);
 
     // throw error if the user had forced multithreading but GPU accel was auto-chosen
-    validate_quregNotBothMultithreadedAndGpuAccel(useGpuAccel, useMultithread, caller);
+    validate_newQuregNotBothMultithreadedAndGpuAccel(useGpuAccel, useMultithread, caller);
 
     // bind deployment configuration
     Qureg qureg;
@@ -97,7 +97,7 @@ Qureg validateAndCreateCustomQureg(int numQubits, int isDensMatr, int useDistrib
 
     // check all allocations succeeded (if any failed, validation frees all non-failures before throwing error)
     bool isNewQureg = true;
-    validate_quregAllocs(qureg, isNewQureg, caller);
+    validate_newOrExistingQuregAllocs(qureg, isNewQureg, caller);
 
     return qureg;
 }
@@ -121,10 +121,11 @@ void printDeploymentInfo(Qureg qureg) {
 
 void printDimensionInfo(Qureg qureg) {
 
+    // 2^N = M or 2^N x 2^N = M
     std::string str;
-    str  = "2^" + form_str(qureg.numQubits);
-    str += (qureg.isDensityMatrix)? " x " + str : "";
-    str += " = " + form_str(qureg.numAmps);
+    str  = bt + form_str(qureg.numQubits);
+    str += (qureg.isDensityMatrix)? mu + str : "";
+    str += eq + form_str(qureg.numAmps);
 
     form_printTable(
         "dimension", {
@@ -141,9 +142,10 @@ void printDistributionInfo(Qureg qureg) {
     std::string nodesStr = na;
     std::string ampsStr  = na;
 
+    // 2^N = M per node
     if (qureg.isDistributed) {
-        nodesStr = "2^" + form_str(qureg.logNumNodes)       + eq + form_str(qureg.numNodes);
-        ampsStr  = "2^" + form_str(qureg.logNumAmpsPerNode) + eq + form_str(qureg.numAmpsPerNode);
+        nodesStr = bt + form_str(qureg.logNumNodes)       + eq + form_str(qureg.numNodes);
+        ampsStr  = bt + form_str(qureg.logNumAmpsPerNode) + eq + form_str(qureg.numAmpsPerNode);
         ampsStr += pn;
     }
 
@@ -180,20 +182,18 @@ void printMemoryInfo(Qureg qureg) {
  */
 
 // enable invocation by both C and C++ binaries
-#ifdef __cplusplus
 extern "C" {
-#endif
 
 
 Qureg createCustomQureg(int numQubits, int isDensMatr, int useDistrib, int useGpuAccel, int useMultithread, QuESTEnv env) {
-    validate_existingEnv(env, __func__);
+    validate_envInit(env, __func__);
 
     return validateAndCreateCustomQureg(numQubits, isDensMatr, useDistrib, useGpuAccel, useMultithread, env, __func__);
 }
 
 
 Qureg createQureg(int numQubits, QuESTEnv env) {
-    validate_existingEnv(env, __func__);
+    validate_envInit(env, __func__);
 
     int isDensMatr = 0;
     int autoMode = modeflag::USE_AUTO;
@@ -202,7 +202,7 @@ Qureg createQureg(int numQubits, QuESTEnv env) {
 
 
 Qureg createDensityQureg(int numQubits, QuESTEnv env) {
-    validate_existingEnv(env, __func__);
+    validate_envInit(env, __func__);
 
     int isDensMatr = 1;
     int autoMode = modeflag::USE_AUTO;
@@ -215,7 +215,7 @@ void destroyQureg(Qureg qureg) {
     // check below arrays are correctly allocated (if not, we do NOT free anything).
     // note this cannot detect whether the Qureg was already destroyed; see final comment
     bool isNewQureg = false;
-    validate_quregAllocs(qureg, isNewQureg, __func__);
+    validate_newOrExistingQuregAllocs(qureg, isNewQureg, __func__);
 
     // free CPU memory
     cpu_deallocAmps(qureg.cpuAmps);
@@ -244,25 +244,17 @@ void reportQureg(Qureg qureg) {
     // precondition: no reportable fields are at risk of overflow as a qindex
     // type, EXCEPT aggregate total memory between distributed nodes (in bytes)
 
-    // only root node reports, other nodes wait for synch
-    if (qureg.rank != 0) {
-        comm_synch();
+    // only root node reports (but no synch necesary)
+    if (qureg.rank != 0)
         return;
-    }
 
     std::cout << "Qureg:" << std::endl;
     printDeploymentInfo(qureg);
     printDimensionInfo(qureg);
     printDistributionInfo(qureg);
     printMemoryInfo(qureg);
-
-    // free non-root nodes from synch barrier
-    if (qureg.rank == 0)
-        comm_synch();
 }
 
 
 // end de-mangler
-#ifdef __cplusplus
 }
-#endif
