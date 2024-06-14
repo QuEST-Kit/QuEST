@@ -14,6 +14,36 @@
 #ifndef WRAPPERS_H
 #define WRAPPERS_H
 
+#include "quest/include/types.h"
+#include "quest/include/structures.h"
 
+// these definitions are only exposed to C, 
+// since they duplicate existing C++ functions
+#ifndef __cplusplus
+
+
+
+void wrap_getCompMatr1(CompMatr1* out, qcomp in[2][2]);
+
+CompMatr1 getCompMatr1(qcomp in[2][2]) {
+
+    CompMatr1 out;
+    wrap_getCompMatr1(&out, in);
+    return out;
+}
+
+
+void wrap_getCompMatr2(CompMatr2* out, qcomp in[4][4]);
+
+CompMatr2 getCompMatr2(qcomp in[4][4]) {
+
+    CompMatr2 out;
+    wrap_getCompMatr2(&out, in);
+    return out;
+}
+
+
+
+#endif // !__cplusplus
 
 #endif // WRAPPERS_H

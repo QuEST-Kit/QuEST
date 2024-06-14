@@ -112,7 +112,7 @@ int mem_getMaxNumQubitsBeforeLocalMemSizeofOverflow(bool isDensMatr, int numNode
 size_t mem_getLocalMemoryRequired(int numQubits, bool isDensMatr, int numNodes) {
 
     // assert no-overflow precondition
-    if (numQubits <= mem_getMaxNumQubitsBeforeLocalMemSizeofOverflow(isDensMatr, numNodes))
+    if (numQubits > mem_getMaxNumQubitsBeforeLocalMemSizeofOverflow(isDensMatr, numNodes))
         error_memSizeQueriedButWouldOverflow();
 
     // no risk of overflow; we have already validated numAmpsTotal fits in qindex
