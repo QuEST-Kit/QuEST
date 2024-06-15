@@ -224,6 +224,10 @@ void gpu_copyCpuToGpu(Qureg qureg, qcomp* cpuArr, qcomp* gpuArr, qindex numElems
 #endif
 }
 
+void gpu_copyCpuToGpu(Qureg qureg) {
+    gpu_copyCpuToGpu(qureg, qureg.cpuAmps, qureg.gpuAmps, qureg.numAmpsPerNode);
+}
+
 
 void gpu_copyGpuToCpu(Qureg qureg, qcomp* gpuArr, qcomp* cpuArr, qindex numElems) {
 #if ENABLE_GPU_ACCELERATION
@@ -236,5 +240,9 @@ void gpu_copyGpuToCpu(Qureg qureg, qcomp* gpuArr, qcomp* cpuArr, qindex numElems
 #else
     error_gpuCopyButGpuNotCompiled();
 #endif
+}
+
+void gpu_copyGpuToCpu(Qureg qureg) {
+    gpu_copyGpuToCpu(qureg, qureg.gpuAmps, qureg.cpuAmps, qureg.numAmpsPerNode);
 }
 

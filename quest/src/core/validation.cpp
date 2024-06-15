@@ -62,8 +62,8 @@ namespace report {
 
 
     /*
-    * QUREG CREATION
-    */
+     * QUREG CREATION
+     */
 
     std::string NON_POSITIVE_NUM_QUBITS_IN_INIT_QUREG =
         "Cannot create Qureg of ${NUM_QUBITS} qubits; must contain one or more qubits.";
@@ -140,25 +140,28 @@ namespace report {
 
 
     /*
-    * EXISTING QUREG
-    */
+     * EXISTING QUREG
+     */
 
     std::string INVALID_EXISTING_ALLOC_OF_CPU_AMPS = 
-        "Invalid Qureg state. The CPU memory was seemingly unallocated.";
+        "Invalid Qureg. The CPU memory was seemingly unallocated.";
     
     std::string INVALID_EXISTING_ALLOC_OF_CPU_COMM_BUFFER = 
-        "Invalid Qureg state. The distributed CPU communication buffer was seemingly unallocated.";
+        "Invalid Qureg. The distributed CPU communication buffer was seemingly unallocated.";
 
     std::string INVALID_EXISTING_ALLOC_OF_GPU_AMPS = 
-        "Invalid Qureg state. The GPU memory was seemingly unallocated.";
+        "Invalid Qureg. The GPU memory was seemingly unallocated.";
     
     std::string INVALID_EXISTING_ALLOC_OF_GPU_COMM_BUFFER = 
-        "Invalid Qureg state. The distributed GPU communication buffer was seemingly unallocated.";
+        "Invalid Qureg. The distributed GPU communication buffer was seemingly unallocated.";
+
+    std::string INVALID_EXISTING_QUREG_FIELDS = 
+        "Invalid Qureg; invalid or incompatible fields isDensityMatrix=${DENS_MATR}, numQubits=${NUM_QUBITS}, numAmps=${NUM_AMPS}. It is likely this Qureg was not initialised with createQureg().";
 
 
     /*
-    * MATRIX CREATION
-    */
+     * MATRIX CREATION
+     */
 
     std::string NON_POSITIVE_NUM_QUBITS_IN_NEW_MATRIX = 
         "Cannot create a matrix which acts upon ${NUM_QUBITS} qubits; must target one or more qubits.";
@@ -171,14 +174,22 @@ namespace report {
 
 
     /*
-    * EXISTING MATRIX
-    */
+     * EXISTING MATRIX
+     */
 
     std::string INVALID_EXISTING_ALLOC_OF_COMPLEX_MATRIX =
         "Invalid CompMatrN. One or more rows of the 2D elements array was seemingly unallocated.";
 
     std::string INVALID_COMP_MATR_PROPERTIES = 
         "Invalid CompMatrN. Targeted ${NUM_QUBITS} qubits and had a dimension of ${NUM_ROWS} x ${NUM_ROWS}.";
+
+
+    /*
+     * QUREG INITIALISATIONS
+     */
+
+    std::string INVALID_STATE_INDEX = 
+        "Classical state index ${STATE_IND} is invalid for the given ${NUM_QUBITS} qubit Qureg. Index must be greater than or equal to zero, and cannot equal nor exceed the number of unique classical states (2^${NUM_QUBITS} = ${NUM_STATES}).";
 }
 
 
@@ -582,6 +593,36 @@ void validate_newOrExistingQuregAllocs(Qureg qureg, bool isNewQureg, const char*
 
 
 /*
+ * EXISTING QUREG
+ */
+
+void validate_quregInit(Qureg qureg, const char* caller) {
+
+    // attempt to detect the Qureg was not initialised with createQureg by the 
+    // struct fields being randomised, and ergo being dimensionally incompatible
+    bool valid = true;
+    valid &= (qureg.numQubits > 0);
+    valid &= (qureg.isDensityMatrix == 0 || qureg.isDensityMatrix == 1);
+    valid &= (qureg.numAmps == powerOf2(((qureg.isDensityMatrix)? 2:1) * qureg.numQubits));
+
+    tokenSubs vars = {
+        {"${DENS_MATR}", qureg.isDensityMatrix},
+        {"${NUM_QUBITS}", qureg.numQubits},
+        {"${NUM_AMPS}", qureg.numAmps}};
+        
+    assertThat(valid, report::INVALID_EXISTING_QUREG_FIELDS, vars, caller);
+
+    // ensure platform-specific arrays are all not-NULL. note this
+    // won't catch when Qureg was un-initialised because most
+    // compilers will not automatically set struct pointers to NULL, but
+    // it will catch the allocation somehow failing or being overwritten
+    bool isNewQureg = false;
+    validate_newOrExistingQuregAllocs(qureg, isNewQureg, __func__);
+}
+
+
+
+/*
  * MATRIX CREATION
  */
 
@@ -606,6 +647,7 @@ void assertNewMatrixNotTooBig(int numQubits, const char* caller) {
         {"${MAX_QUBITS}",  maxQubits},
         {"${DUB_QUBITS}",   2*numQubits},
         {"${QCOMP_BYTES}", sizeof(qcomp)}};
+
     assertThat(numQubits < maxQubits, report::NEW_MATRIX_LOCAL_MEM_WOULD_EXCEED_SIZEOF, vars, caller);
 }
 
@@ -635,9 +677,27 @@ void validate_matrixInit(CompMatrN matr, const char* caller) {
     tokenSubs vars = {
         {"${NUM_QUBITS}", matr.numQubits},
         {"${NUM_ROWS}",   matr.numRows}};
+
     bool validDims = (matr.numQubits >= 1) && (matr.numRows == powerOf2(matr.numQubits));
     assertThat(validDims, report::INVALID_COMP_MATR_PROPERTIES, vars, caller);
 
     bool isNewMatr = false;
     validate_newOrExistingMatrixAllocs(matr, isNewMatr, caller);
+}
+
+
+/*
+ * QUREG INITIALISATIONS
+ */
+
+void validate_initClassicalStateIndex(Qureg qureg, qindex ind, const char* caller) {
+
+    qindex maxIndExcl = powerOf2(qureg.numQubits);
+
+    tokenSubs vars = {
+        {"${STATE_IND}",  ind},
+        {"${NUM_QUBITS}", qureg.numQubits},
+        {"${NUM_STATES}", maxIndExcl}};
+
+    assertThat(ind >= 0 && ind < maxIndExcl, report::INVALID_STATE_INDEX, vars, caller);
 }

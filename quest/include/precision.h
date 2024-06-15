@@ -13,8 +13,9 @@
  * STATE-INDEXING TYPE
  */
 
-// can be (for example) int, long, long long, unsigned, long unsigned, long long unsigned
-#define INDEX_TYPE long long unsigned
+// can be (for example) int, long, long long, unsigned, long unsigned, long long unsigned.
+// note this is user-facing so using unsigned opens users to risks of underflowing
+#define INDEX_TYPE long long int
 
 
 
