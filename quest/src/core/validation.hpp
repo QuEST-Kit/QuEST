@@ -45,6 +45,14 @@ void validate_newQuregNotBothMultithreadedAndGpuAccel(int useGpu, int numThreads
 
 
 /*
+ * EXISTING QUREG
+ */
+
+void validate_quregInit(Qureg qureg, const char* caller);
+
+
+
+/*
  * MATRIX CREATION
  */
 
@@ -59,6 +67,14 @@ void validate_newOrExistingMatrixAllocs(CompMatrN matr, bool isNewMatr, const ch
  */
 
 void validate_matrixInit(CompMatrN matr, const char* caller);
+
+
+
+/*
+ * QUREG INITIALISATIONS
+ */
+
+void validate_initClassicalStateIndex(Qureg qureg, qindex ind, const char* caller);
 
 
 
