@@ -50,7 +50,11 @@ void gpu_deallocAmps(qcomp* amps);
 
 void gpu_copyCpuToGpu(Qureg qureg, qcomp* cpuArr, qcomp* gpuArr, qindex numElems);
 
+void gpu_copyCpuToGpu(Qureg qureg);
+
 void gpu_copyGpuToCpu(Qureg qureg, qcomp* gpuArr, qcomp* cpuArr, qindex numElems);
+
+void gpu_copyGpuToCpu(Qureg qureg);
 
 
 

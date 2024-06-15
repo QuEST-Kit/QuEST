@@ -5,6 +5,7 @@
 
 #include "quest/include/qureg.h"
 #include "quest/include/environment.h"
+#include "quest/include/initialisations.h"
 
 #include "quest/src/core/validation.hpp"
 #include "quest/src/core/autodeployer.hpp"
@@ -98,6 +99,9 @@ Qureg validateAndCreateCustomQureg(int numQubits, int isDensMatr, int useDistrib
     // check all allocations succeeded (if any failed, validation frees all non-failures before throwing error)
     bool isNewQureg = true;
     validate_newOrExistingQuregAllocs(qureg, isNewQureg, caller);
+
+    // initialise state to |0> or |0><0|
+    initZeroState(qureg); 
 
     return qureg;
 }
@@ -211,11 +215,7 @@ Qureg createDensityQureg(int numQubits, QuESTEnv env) {
 
 
 void destroyQureg(Qureg qureg) {
-
-    // check below arrays are correctly allocated (if not, we do NOT free anything).
-    // note this cannot detect whether the Qureg was already destroyed; see final comment
-    bool isNewQureg = false;
-    validate_newOrExistingQuregAllocs(qureg, isNewQureg, __func__);
+    validate_quregInit(qureg, __func__);
 
     // free CPU memory
     cpu_deallocAmps(qureg.cpuAmps);
@@ -238,6 +238,7 @@ void destroyQureg(Qureg qureg) {
 
 
 void reportQureg(Qureg qureg) {
+    validate_quregInit(qureg, __func__);
 
     // TODO: add function to write this output to file (useful for HPC debugging)
 
