@@ -11,6 +11,15 @@
 #ifndef ACCELERATOR_HPP
 #define ACCELERATOR_HPP
 
+#include "quest/include/qureg.h"
+#include "quest/include/structures.h"
+
+
+
+void statevec_oneTargetGate_subA(Qureg qureg, int target, CompMatr1 matrix);
+
+void statevec_oneTargetGate_subB(Qureg qureg, qcomp fac0, qcomp fac1);
+
 
 
 #endif // ACCELERATOR_HPP
