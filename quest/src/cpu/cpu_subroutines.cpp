@@ -20,6 +20,7 @@ void cpu_statevec_oneTargetGate_subA(Qureg qureg, int target, CompMatr1 matrix) 
     qcomp m10 = matrix.elems[1][0];
     qcomp m11 = matrix.elems[1][1];
     
+    #pragma omp parallel for if(qureg.isMultithreaded)
     for (qindex j=0; j<numIts; j++) {
 
         qindex i0 = insertBit(j, target, 0);
@@ -37,6 +38,7 @@ void cpu_statevec_oneTargetGate_subB(Qureg qureg, qcomp fac0, qcomp fac1) {
 
     qindex numIts = qureg.numAmpsPerNode;
 
+    #pragma omp parallel for if(qureg.isMultithreaded)
     for (qindex i=0; i<numIts; i++)
         qureg.cpuAmps[i] = fac0*qureg.cpuAmps[i] + fac1*qureg.cpuCommBuffer[i];
 }
