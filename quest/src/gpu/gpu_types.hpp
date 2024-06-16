@@ -1,22 +1,26 @@
 /** @file
- * Custom CUDA kernels invoked by gpu.cpp, usually only necessary when
- * there is no equivalent utility in Thrust (or cuQuantum, when it is
- * targeted).
+ * CUDA-compatible complex types. This file is only ever included
+ * when ENABLE_GPU_ACCELERATION=1 so it can safely invoke CUDA
+ * signatures without guards.
  */
 
-#ifndef KERNELS_HPP
-#define KERNELS_HPP
+#ifndef GPU_TYPES_HPP
+#define GPU_TYPES_HPP
 
 #include "quest/include/modes.h"
 #include "quest/include/types.h"
 
-#include <cuComplex.h>
+#if ! ENABLE_GPU_ACCELERATION
+    #error "A file being compiled somehow included gpu_types.hpp despite QuEST not being compiled in GPU-accelerated mode."
+#endif
 
 
 
 /*
- * CREATE CUDA-COMPATIBLE QCOMP ALIAS
+ * CUDA-COMPATIBLE QCOMP ALIAS (cu_qcomp)
  */
+
+#include <cuComplex.h>
 
 #if (FLOAT_PRECISION == 1)
     typedef cuFloatComplex cu_qcomp;
@@ -32,7 +36,7 @@
 
 
 /*
- * CREATE CUDA-COMPATIBLE QCOMP OVERLOADS
+ * cu_qcomp ARITHMETIC OVERLOADS
  */
 
 __host__ __device__ inline cu_qcomp operator + (const cu_qcomp& a, const cu_qcomp& b) {
@@ -51,4 +55,18 @@ __host__ __device__ inline cu_qcomp operator * (const cu_qcomp& a, const cu_qcom
 
 
 
-#endif // KERNELS_HPP
+/*
+ * CASTS BETWEEN qcomp AND cu_qcomp
+ */
+
+__host__ cu_qcomp toCuQcomp(qcomp x) {
+    return reinterpret_cast<cu_qcomp&>(x);
+}
+
+__host__ cu_qcomp* toCuQcomps(qcomp* x) {
+    return reinterpret_cast<cu_qcomp*>(x);
+}
+
+
+
+#endif // GPU_TYPES_HPP
