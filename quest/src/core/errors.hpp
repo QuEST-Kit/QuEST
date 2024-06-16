@@ -92,5 +92,13 @@ void assert_quregIsGpuAccelerated(Qureg qureg);
 
 
 
+/*
+ * UTILITY ERRORS 
+ */
+
+void assert_shiftedQuregIsDensMatr(Qureg qureg);
+
+
+
 
 #endif // ERRORS_HPP

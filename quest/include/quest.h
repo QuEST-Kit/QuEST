@@ -12,7 +12,6 @@
 #include "quest/include/decoherence.h"
 #include "quest/include/environment.h"
 #include "quest/include/initialisations.h"
-#include "quest/include/maths.h"
 #include "quest/include/modes.h"
 #include "quest/include/operations.h"
 #include "quest/include/precision.h"
