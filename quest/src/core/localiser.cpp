@@ -7,3 +7,52 @@
  * done agnostically of whether amplitudes of the Qureg are being
  * stored in RAM (CPU) or VRAM (GPU).
  */
+
+#include "quest/include/qureg.h"
+#include "quest/include/structures.h"
+
+#include "quest/src/comm/comm_routines.hpp"
+#include "quest/src/core/bitwise.hpp"
+#include "quest/src/core/accelerator.hpp"
+
+
+
+/*
+ * PRIVATE
+ */
+
+
+bool oneTargetGateRequiresComm(Qureg qureg, int target) {
+    if (!qureg.isDistributed)
+        return false;
+    
+    return target >= qureg.logNumAmpsPerNode;
+}
+
+
+
+/*
+ * OPERATORS
+ */
+
+
+void statevec_oneTargetGate(Qureg qureg, int target, CompMatr1 matrix) {
+
+    if (!oneTargetGateRequiresComm(qureg, target))
+        statevec_oneTargetGate_subA(qureg, target, matrix);
+
+    else {
+        // exchange all amps (receive to buffer)
+        int rankTarget = target - qureg.logNumAmpsPerNode;
+        int pairRank = flipBit(qureg.rank, rankTarget);
+
+        comm_exchangeAmpsToBuffers(qureg, pairRank);
+
+        // extract relevant gate elements
+        int bit = getBit(qureg.rank, rankTarget);
+        qcomp fac0 = matrix.elems[bit][bit];
+        qcomp fac1 = matrix.elems[bit][!bit];
+
+        statevec_oneTargetGate_subB(qureg, fac0, fac1);
+    }
+}

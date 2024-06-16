@@ -95,7 +95,6 @@ API_FILES=(
     "decoherence"
     "environment"
     "initialisations"
-    "maths"
     "modes"
     "operations"
     "qasm"

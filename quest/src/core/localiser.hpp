@@ -11,6 +11,17 @@
 #ifndef LOCALISER_HPP
 #define LOCALISER_HPP
 
+#include "quest/include/qureg.h"
+#include "quest/include/structures.h"
+
+
+
+/*
+ * OPERATORS
+ */
+
+void statevec_oneTargetGate(Qureg qureg, int target, CompMatr1 matrix);
+
 
 
 #endif // LOCALISER_HPP
