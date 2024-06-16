@@ -66,7 +66,13 @@ void validate_newOrExistingMatrixAllocs(CompMatrN matr, bool isNewMatr, const ch
  * EXISTING MATRIX
  */
 
+void validate_matrixInit(CompMatr1 matr, const char* caller);
+void validate_matrixInit(CompMatr2 matr, const char* caller);
 void validate_matrixInit(CompMatrN matr, const char* caller);
+
+void validate_matrixIsUnitary(CompMatr1 matr, const char* caller);
+void validate_matrixIsUnitary(CompMatr2 matr, const char* caller);
+void validate_matrixIsUnitary(CompMatrN matr, const char* caller);
 
 
 
@@ -75,6 +81,14 @@ void validate_matrixInit(CompMatrN matr, const char* caller);
  */
 
 void validate_initClassicalStateIndex(Qureg qureg, qindex ind, const char* caller);
+
+
+
+/*
+ * OPERATOR PARAMETERS
+ */
+
+void validate_target(Qureg qureg, int target, const char* caller);
 
 
 

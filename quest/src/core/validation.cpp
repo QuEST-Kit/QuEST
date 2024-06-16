@@ -11,6 +11,7 @@
 #include "quest/src/core/errors.hpp"
 #include "quest/src/core/bitwise.hpp"
 #include "quest/src/core/memory.hpp"
+#include "quest/src/core/utilities.hpp"
 #include "quest/src/comm/comm_config.hpp"
 #include "quest/src/cpu/cpu_config.hpp"
 #include "quest/src/gpu/gpu_config.hpp"
@@ -180,8 +181,17 @@ namespace report {
     std::string INVALID_EXISTING_ALLOC_OF_COMPLEX_MATRIX =
         "Invalid CompMatrN. One or more rows of the 2D elements array was seemingly unallocated.";
 
-    std::string INVALID_COMP_MATR_PROPERTIES = 
-        "Invalid CompMatrN. Targeted ${NUM_QUBITS} qubits and had a dimension of ${NUM_ROWS} x ${NUM_ROWS}.";
+    std::string INVALID_COMP_MATR_1_FIELDS =
+        "Invalid CompMatr1. Targeted ${NUM_QUBITS} qubits (instead of 1) and had a dimension of ${NUM_ROWS}x${NUM_ROWS} (instead of 2x2). It is likely this matrix was not initialised with getCompMatr1().";
+
+    std::string INVALID_COMP_MATR_2_FIELDS =
+        "Invalid CompMatr2. Targeted ${NUM_QUBITS} qubits (instead of 2) and had a dimension of ${NUM_ROWS}x${NUM_ROWS} (instead of 4x4). It is likely this matrix was not initialised with getCompMatr2().";
+
+    std::string INVALID_COMP_MATR_N_FIELDS =
+        "Invalid CompMatrN. Targeted ${NUM_QUBITS} qubits and had a dimension of ${NUM_ROWS}x${NUM_ROWS}. It is likely this matrix was not initialised with createCompMatrN().";
+
+    std::string MATRIX_NOT_UNITARY = 
+        "The given complex matrix was not (approximately) unitary.";
 
 
     /*
@@ -190,6 +200,14 @@ namespace report {
 
     std::string INVALID_STATE_INDEX = 
         "Classical state index ${STATE_IND} is invalid for the given ${NUM_QUBITS} qubit Qureg. Index must be greater than or equal to zero, and cannot equal nor exceed the number of unique classical states (2^${NUM_QUBITS} = ${NUM_STATES}).";
+
+    
+    /*
+     * OPERATOR PARAMETERS
+     */
+    
+    std::string INVALID_TARGET_QUBIT = 
+        "Invalid target qubit (${TARGET}). Must be greater than or equal to zero, and less than the number of qubits in the Qureg (${NUM_QUBITS}).";
 }
 
 
@@ -204,7 +222,6 @@ void default_invalidQuESTInputError(const char* msg, const char* func) {
     // safe to call even before MPI has been setup
     if (comm_getRank() == 0)
         std::cout 
-            << std::endl
             << "QuEST encountered a validation error during function '" << func << "':\n"
             << msg << "\nExiting..." 
             << std::endl;
@@ -672,18 +689,50 @@ void validate_newOrExistingMatrixAllocs(CompMatrN matr, bool isNewMatr, const ch
         assertThat(matr.elems[r] != NULL, errMsg, caller);
 }
 
-void validate_matrixInit(CompMatrN matr, const char* caller) {
+
+/*
+ * EXISTING MATRICES
+ */
+
+template <class T>
+void assertMatrixFieldsAreValid(T matr, std::string errMsg, const char* caller) {
 
     tokenSubs vars = {
         {"${NUM_QUBITS}", matr.numQubits},
         {"${NUM_ROWS}",   matr.numRows}};
 
     bool validDims = (matr.numQubits >= 1) && (matr.numRows == powerOf2(matr.numQubits));
-    assertThat(validDims, report::INVALID_COMP_MATR_PROPERTIES, vars, caller);
-
-    bool isNewMatr = false;
-    validate_newOrExistingMatrixAllocs(matr, isNewMatr, caller);
+    assertThat(validDims, errMsg, vars, caller);
 }
+
+void validate_matrixInit(CompMatr1 matr, const char* caller) {
+    assertMatrixFieldsAreValid(matr, report::INVALID_COMP_MATR_1_FIELDS, caller);
+}
+void validate_matrixInit(CompMatr2 matr, const char* caller) {
+    assertMatrixFieldsAreValid(matr, report::INVALID_COMP_MATR_2_FIELDS, caller);
+}
+void validate_matrixInit(CompMatrN matr, const char* caller) {
+    assertMatrixFieldsAreValid(matr, report::INVALID_COMP_MATR_N_FIELDS, caller);
+    validate_newOrExistingMatrixAllocs(matr, false, caller);
+}
+
+template <class T> 
+void assertMatrixIsUnitary(T matr, const char* caller) {
+
+    validate_matrixInit(matr, caller);
+    assertThat(util_isUnitary(matr), report::MATRIX_NOT_UNITARY, caller);
+}
+
+void validate_matrixIsUnitary(CompMatr1 matr, const char* caller) {
+    assertMatrixIsUnitary(matr, caller);
+}
+void validate_matrixIsUnitary(CompMatr2 matr, const char* caller) {
+    assertMatrixIsUnitary(matr, caller);
+}
+void validate_matrixIsUnitary(CompMatrN matr, const char* caller) {
+    assertMatrixIsUnitary(matr, caller);
+}
+
 
 
 /*
@@ -700,4 +749,19 @@ void validate_initClassicalStateIndex(Qureg qureg, qindex ind, const char* calle
         {"${NUM_STATES}", maxIndExcl}};
 
     assertThat(ind >= 0 && ind < maxIndExcl, report::INVALID_STATE_INDEX, vars, caller);
+}
+
+
+
+/*
+ * OPERATOR PARAMETERS
+ */
+
+void validate_target(Qureg qureg, int target, const char* caller) {
+
+    tokenSubs vars = {
+        {"${TARGET}",  target},
+        {"${NUM_QUBITS}", qureg.numQubits}};
+
+    assertThat(target >= 0 && target < qureg.numQubits, report::INVALID_TARGET_QUBIT, vars, caller);
 }
