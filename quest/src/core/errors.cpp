@@ -191,3 +191,13 @@ void assert_gpuIsAccessible() {
         error_gpuUnexpectedlyInaccessible();
 }
 
+
+
+/*
+ * UTILITY ERRORS 
+ */
+
+void assert_shiftedQuregIsDensMatr(Qureg qureg) {
+    if (!qureg.isDensityMatrix)
+        raiseInternalError("A function attempted to obtain the shifted Choi indices of a state-vector, as if it were a density matrix.");
+}

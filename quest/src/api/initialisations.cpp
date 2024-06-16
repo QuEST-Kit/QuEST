@@ -88,5 +88,4 @@ void initClassicalState(Qureg qureg, qindex ind) {
 }
 
 
-
 } // end de-mangler
