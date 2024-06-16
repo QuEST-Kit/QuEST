@@ -18,6 +18,7 @@
 
 #if ENABLE_GPU_ACCELERATION
     #include "quest/src/gpu/gpu_types.hpp"
+    #include "quest/src/gpu/gpu_kernels.hpp"
 #endif
 
 
