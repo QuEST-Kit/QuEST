@@ -15,6 +15,7 @@ FLOAT_PRECISION=2
 ENABLE_DISTRIBUTION=0
 ENABLE_MULTITHREADING=0
 ENABLE_GPU_ACCELERATION=0
+ENABLE_CUQUANTUM=0
 
 # deployment params
 GPU_CC=90
@@ -150,7 +151,8 @@ fi
 # define pre-processor macros to indicate deployment mode
 MODE_FLAGS="-DENABLE_DISTRIBUTION=${ENABLE_DISTRIBUTION} "
 MODE_FLAGS+="-DENABLE_MULTITHREADING=${ENABLE_MULTITHREADING} "
-MODE_FLAGS+="-DENABLE_GPU_ACCELERATION=${ENABLE_GPU_ACCELERATION}"
+MODE_FLAGS+="-DENABLE_GPU_ACCELERATION=${ENABLE_GPU_ACCELERATION} "
+MODE_FLAGS+="-DENABLE_CUQUANTUM=${ENABLE_CUQUANTUM}"
 
 # define pre-processor macros to set qcomp precision
 PREC_FLAG="-DFLOAT_PRECISION=${FLOAT_PRECISION}"
@@ -192,6 +194,14 @@ else
     echo "${INDENT}(GPU-acceleration disabled)"
     GPU_FILES_COMPILER=$BASE_COMPILER
     GPU_FILES_FLAGS=''
+fi
+
+# merely report cuQuantum status
+if [ $ENABLE_CUQUANTUM == 1 ]
+then
+    echo "${INDENT}(cuQuantum enabled)"
+else
+    echo "${INDENT}(cuQuantum disabled)"
 fi
 
 # choose compiler and flags for communication files

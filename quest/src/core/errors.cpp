@@ -194,6 +194,17 @@ void assert_gpuIsAccessible() {
 
 
 /*
+ * CUQUANTUM ERRORS
+ */
+
+void error_cuQuantumInitOrFinalizedButNotCompiled() {
+
+    raiseInternalError("Attempted to initialize or finalize cuQuantum, but cuQuantum was not compiled.");
+}
+
+
+
+/*
  * UTILITY ERRORS 
  */
 

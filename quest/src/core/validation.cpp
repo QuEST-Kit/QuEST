@@ -61,6 +61,9 @@ namespace report {
     std::string CANNOT_DISTRIB_ENV_BETWEEN_NON_POW_2_NODES =
         "Cannot distribute QuEST between ${NUM_NODES} nodes; must use a power-of-2 number of nodes.";
 
+    std::string CUQUANTUM_DEPLOYED_ON_GPU_WITHOUT_MEM_POOLS =
+        "Cannot use cuQuantum since your GPU does not support memory pools. Please recompile with cuQuantum disabled to fall-back to using Thrust and custom kernels.";
+
 
     /*
      * QUREG CREATION
@@ -355,6 +358,14 @@ void validate_newEnvDistributedBetweenPower2Nodes(int numNodes, const char* call
 
     if (!isPowerOf2(numNodes))
         assertThat(false, report::CANNOT_DISTRIB_ENV_BETWEEN_NON_POW_2_NODES, {{"${NUM_NODES}",numNodes}}, caller);
+}
+
+void validate_gpuIsCuQuantumCompatible(const char* caller) {
+
+    assertThat(gpu_doesGpuSupportMemPools(), report::CUQUANTUM_DEPLOYED_ON_GPU_WITHOUT_MEM_POOLS, caller);
+
+    // TODO:
+    // check other requirements like compute-capability?
 }
 
 

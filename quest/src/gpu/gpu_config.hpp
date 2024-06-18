@@ -1,5 +1,7 @@
 /** @file
- * Utility functions for querying GPU hardware.
+ * Utility functions for querying GPU hardware. Note this header is included by
+ * /core/ and parsed by non-CUDA compilers, so it must not contain any CUDA-specific
+ * signatures.
  */
 
 #ifndef GPU_CONFIG_HPP
@@ -18,6 +20,8 @@
 
 bool gpu_isGpuCompiled();
 
+bool gpu_isCuQuantumCompiled();
+
 bool gpu_isGpuAvailable();
 
 bool gpu_isDirectGpuCommPossible();
@@ -28,11 +32,17 @@ size_t gpu_getCurrentAvailableMemoryInBytes();
 
 size_t gpu_getTotalMemoryInBytes();
 
+bool gpu_doesGpuSupportMemPools();
+
 
 
 /*
  * ENVIRONMENT MANAGEMENT
  */
+
+void gpu_initCuQuantum();
+
+void gpu_finalizeCuQuantum();
 
 void gpu_bindLocalGPUsToNodes(int rank);
 

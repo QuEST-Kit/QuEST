@@ -26,12 +26,42 @@
 
 
 /*
+ * CUQUANTUM MANAGEMENT
+ *
+ * these functions are defined in gpu_cuquantum.hpp when
+ * ENABLE_CUQUANTUM is 1, but are otherwise defaulted to
+ * the internal errors below. This slight inelegance
+ * enables us to keep gpu_cuquantum.hpp as a single header
+ * file, without exposing it to code beyond gpu/
+ */
+
+
+#if ! ENABLE_CUQUANTUM
+
+void gpu_initCuQuantum() {
+    error_cuQuantumInitOrFinalizedButNotCompiled();
+}
+
+void gpu_finalizeCuQuantum() {
+    error_cuQuantumInitOrFinalizedButNotCompiled();
+}
+
+#endif
+
+
+
+/*
  * HARDWARE AVAILABILITY
  */
 
 
 bool gpu_isGpuCompiled() {
     return (bool) ENABLE_GPU_ACCELERATION;
+}
+
+
+bool gpu_isCuQuantumCompiled() {
+    return (bool) ENABLE_CUQUANTUM;
 }
 
 
@@ -147,6 +177,22 @@ size_t gpu_getTotalMemoryInBytes() {
 }
 
 
+bool gpu_doesGpuSupportMemPools() {
+#if ENABLE_GPU_ACCELERATION
+
+    // consult only the first device (garuanteed already to exist)
+    int deviceId, supports;
+    cudaGetDevice(&deviceId);
+    cudaDeviceGetAttribute(&supports, cudaDevAttrMemoryPoolsSupported, deviceId);
+    return (bool) supports;
+
+#else
+    error_gpuQueriedButGpuNotCompiled();
+    return false;
+#endif
+}
+
+
 
 /*
  * ENVIRONMENT MANAGEMENT
@@ -245,4 +291,3 @@ void gpu_copyGpuToCpu(Qureg qureg, qcomp* gpuArr, qcomp* cpuArr, qindex numElems
 void gpu_copyGpuToCpu(Qureg qureg) {
     gpu_copyGpuToCpu(qureg, qureg.gpuAmps, qureg.cpuAmps, qureg.numAmpsPerNode);
 }
-

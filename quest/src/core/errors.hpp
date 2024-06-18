@@ -93,6 +93,14 @@ void assert_quregIsGpuAccelerated(Qureg qureg);
 
 
 /*
+ * CUQUANTUM ERRORS
+ */
+
+void error_cuQuantumInitOrFinalizedButNotCompiled();
+
+
+
+/*
  * UTILITY ERRORS 
  */
 
