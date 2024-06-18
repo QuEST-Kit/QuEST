@@ -80,19 +80,19 @@ __host__ inline cu_qcomp* toCuQcomps(qcomp* x) {
 
 __host__ inline void unpackMatrixToCuQcomps(CompMatr1 in, cu_qcomp &m00, cu_qcomp &m01, cu_qcomp &m10, cu_qcomp &m11) {
 
-    m00 = toCuQcomp(matrix.elems[0][0]);
-    m01 = toCuQcomp(matrix.elems[0][1]);
-    m10 = toCuQcomp(matrix.elems[1][0]);
-    m11 = toCuQcomp(matrix.elems[1][1]);
+    m00 = toCuQcomp(in.elems[0][0]);
+    m01 = toCuQcomp(in.elems[0][1]);
+    m10 = toCuQcomp(in.elems[1][0]);
+    m11 = toCuQcomp(in.elems[1][1]);
 }
 
 __host__ inline std::vector<cu_qcomp> unpackMatrixToCuQcomps(CompMatr1 in) {
 
     std::vector<cu_qcomp> vec(4);
-    vec[0] = toCuQcomp(matrix.elems[0][0]);
-    vec[1] = toCuQcomp(matrix.elems[0][1]);
-    vec[2] = toCuQcomp(matrix.elems[1][0]);
-    vec[3] = toCuQcomp(matrix.elems[1][1]);
+    vec[0] = toCuQcomp(in.elems[0][0]);
+    vec[1] = toCuQcomp(in.elems[0][1]);
+    vec[2] = toCuQcomp(in.elems[1][0]);
+    vec[3] = toCuQcomp(in.elems[1][1]);
     return vec;
 }
 
