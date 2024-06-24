@@ -67,13 +67,14 @@ struct CuQuantumConfig {
 CuQuantumConfig config;
 
 
-void getExistingMemPool() {
+cudaMemPool_t getExistingMemPool() {
 
     // validation gaurantees memory pool already exists
     cudaMemPool_t memPool;
     int deviceId;
     cudaGetDevice(&deviceId);
-    cudaDeviceGetMemPool(&(config.cuMemPool), deviceId);
+    cudaDeviceGetMemPool(&cuMemPool, deviceId);
+    return memPool;
 }
 
 
