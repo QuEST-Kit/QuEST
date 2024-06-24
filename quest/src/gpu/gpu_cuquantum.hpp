@@ -24,8 +24,6 @@
 #endif
 
 
-#include "quest/include/debug.h"
-
 #include "quest/src/gpu/gpu_types.hpp"
 
 #include <custatevec.h>
@@ -55,6 +53,15 @@
 /*
  * ENVIRONMENT MANAGEMENT
  */
+
+
+// sets the size at which the CUDA memory pool will 
+// automatically deallocate temporary memory. Below this
+// size, temporary memory structures (like a CompMatr)
+// will persist in GPU memory to save time. This is
+// only relevant to GPU-mode with cuQuantum enabled,
+// and is effected at createQuESTEnv().
+int CUQUANTUM_MEM_POOL_BYTES = 16*(1<<15); // 1 MiB ~ 8 qubit complex<double> matrix
 
 
 struct CuQuantumConfig {
