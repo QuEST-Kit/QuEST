@@ -9,6 +9,7 @@
 #include "quest/src/core/errors.hpp"
 #include "quest/src/core/memory.hpp"
 #include "quest/src/comm/comm_config.hpp"
+#include "quest/src/gpu/gpu_config.hpp"
 
 
 #if ENABLE_GPU_ACCELERATION && ! (defined(__NVCC__) || defined(__HIPCC__))
@@ -21,6 +22,25 @@
 #if ENABLE_GPU_ACCELERATION
     #include <cuda.h>
     #include <cuda_runtime.h>
+#endif
+
+
+
+/*
+ * CUDA ERROR HANDLING
+ *
+ * which is only defined when CUDA-compiling, since it is invoked only a macro (defined
+ * in gpu_config.hpp) which wraps CUDA API calls
+ */
+
+#if ENABLE_GPU_ACCELERATION
+
+void assertCudaCallSucceeded(cudaError_t result, const char* call, const char* caller, const char* file, int line) {
+
+    if (result != cudaSuccess)
+        error_cudaCallFailed(cudaGetErrorString(result), call, caller, file, line);
+}
+
 #endif
 
 
@@ -135,7 +155,7 @@ int gpu_getNumberOfLocalGpus() {
     // see gpu_isGpuAvailable()
 
     int num;
-    cudaGetDeviceCount(&num);
+    CUDA_CHECK( cudaGetDeviceCount(&num) );
     return num;
 
 #else
@@ -153,7 +173,7 @@ size_t gpu_getCurrentAvailableMemoryInBytes() {
     // possible their values differ per-node
 
     size_t free, total;
-    cudaMemGetInfo(&free, &total);
+    CUDA_CHECK( cudaMemGetInfo(&free, &total) );
     return free;
 
 #else
@@ -167,7 +187,7 @@ size_t gpu_getTotalMemoryInBytes() {
 #if ENABLE_GPU_ACCELERATION
 
     size_t free, total;
-    cudaMemGetInfo(&free, &total);
+    CUDA_CHECK( cudaMemGetInfo(&free, &total) );
     return total;
 
 #else
@@ -182,8 +202,8 @@ bool gpu_doesGpuSupportMemPools() {
 
     // consult only the first device (garuanteed already to exist)
     int deviceId, supports;
-    cudaGetDevice(&deviceId);
-    cudaDeviceGetAttribute(&supports, cudaDevAttrMemoryPoolsSupported, deviceId);
+    CUDA_CHECK( cudaGetDevice(&deviceId) );
+    CUDA_CHECK( cudaDeviceGetAttribute(&supports, cudaDevAttrMemoryPoolsSupported, deviceId) );
     return (bool) supports;
 
 #else
@@ -204,7 +224,7 @@ void gpu_bindLocalGPUsToNodes(int rank) {
 
     int numLocalGpus = gpu_getNumberOfLocalGpus();
     int localGpuInd = rank % numLocalGpus;
-    cudaSetDevice(localGpuInd);
+    CUDA_CHECK( cudaSetDevice(localGpuInd) );
 
 #else
     error_gpuQueriedButGpuNotCompiled();
@@ -215,7 +235,7 @@ void gpu_bindLocalGPUsToNodes(int rank) {
 void gpu_synch() {
 #if ENABLE_GPU_ACCELERATION
 
-    cudaDeviceSynchronize();
+    CUDA_CHECK( cudaDeviceSynchronize() );
 
 #endif
 
@@ -236,7 +256,7 @@ qcomp* gpu_allocAmps(qindex numLocalAmps) {
     size_t numBytes = mem_getLocalMemoryRequired(numLocalAmps);
 
     qcomp* ptr;
-    cudaMalloc(&ptr, numBytes);
+    CUDA_CHECK( cudaMalloc(&ptr, numBytes) );
     return ptr;
 
 #else
@@ -249,7 +269,7 @@ qcomp* gpu_allocAmps(qindex numLocalAmps) {
 void gpu_deallocAmps(qcomp* amps) {
 #if ENABLE_GPU_ACCELERATION
 
-    cudaFree(amps);
+    CUDA_CHECK( cudaFree(amps) );
 
 #else
     error_gpuDeallocButGpuNotCompiled();
@@ -263,7 +283,7 @@ void gpu_copyCpuToGpu(Qureg qureg, qcomp* cpuArr, qcomp* gpuArr, qindex numElems
     assert_quregIsGpuAccelerated(qureg);
 
     size_t numBytes = numElems * sizeof(qcomp);
-    cudaMemcpy(gpuArr, cpuArr, numBytes, cudaMemcpyHostToDevice);
+    CUDA_CHECK( cudaMemcpy(gpuArr, cpuArr, numBytes, cudaMemcpyHostToDevice) );
 
 #else
     error_gpuCopyButGpuNotCompiled();
@@ -281,7 +301,7 @@ void gpu_copyGpuToCpu(Qureg qureg, qcomp* gpuArr, qcomp* cpuArr, qindex numElems
     assert_quregIsGpuAccelerated(qureg);
 
     size_t numBytes = numElems * sizeof(qcomp);
-    cudaMemcpy(cpuArr, gpuArr, numBytes, cudaMemcpyDeviceToHost);
+    CUDA_CHECK( cudaMemcpy(cpuArr, gpuArr, numBytes, cudaMemcpyDeviceToHost) );
 
 #else
     error_gpuCopyButGpuNotCompiled();

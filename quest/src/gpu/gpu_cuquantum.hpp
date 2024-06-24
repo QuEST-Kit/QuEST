@@ -24,6 +24,7 @@
 #endif
 
 
+#include "quest/src/gpu/gpu_config.hpp"
 #include "quest/src/gpu/gpu_types.hpp"
 
 #include <custatevec.h>
@@ -79,8 +80,8 @@ cudaMemPool_t getExistingMemPool() {
     // validation gaurantees memory pool already exists
     cudaMemPool_t memPool;
     int deviceId;
-    cudaGetDevice(&deviceId);
-    cudaDeviceGetMemPool(&memPool, deviceId);
+    CUDA_CHECK( cudaGetDevice(&deviceId) );
+    CUDA_CHECK( cudaDeviceGetMemPool(&memPool, deviceId) );
     return memPool;
 }
 
@@ -89,19 +90,19 @@ void adjustMemPoolSize(cudaMemPool_t memPool) {
 
     // find existing memPool threshold (above which memory gets freed at every stream synch)
     size_t currMaxMem;
-    cudaMemPoolGetAttribute(memPool, cudaMemPoolAttrReleaseThreshold, &currMaxMem); 
+    CUDA_CHECK( cudaMemPoolGetAttribute(memPool, cudaMemPoolAttrReleaseThreshold, &currMaxMem) ); 
 
     // optionally increase memPool threshold
     if (currMaxMem < CUQUANTUM_MEM_POOL_BYTES)
-        cudaMemPoolSetAttribute(memPool, cudaMemPoolAttrReleaseThreshold, &CUQUANTUM_MEM_POOL_BYTES); 
+        CUDA_CHECK( cudaMemPoolSetAttribute(memPool, cudaMemPoolAttrReleaseThreshold, &CUQUANTUM_MEM_POOL_BYTES) ); 
 }
 
-int allocMemInPool(void* ctx, void** ptr, size_t size, cudaStream_t stream) {
+cudaError_t allocMemInPool(void* ctx, void** ptr, size_t size, cudaStream_t stream) {
     cudaMemPool_t& pool = *static_cast<cudaMemPool_t*>(ctx);
     return cudaMallocFromPoolAsync(ptr, size, pool, stream); 
 }
 
-int deallocMemInPool(void* ctx, void* ptr, size_t size, cudaStream_t stream) {
+cudaError_t deallocMemInPool(void* ctx, void* ptr, size_t size, cudaStream_t stream) {
     return cudaFreeAsync(ptr, stream); 
 }
 
@@ -109,8 +110,8 @@ int deallocMemInPool(void* ctx, void* ptr, size_t size, cudaStream_t stream) {
 void gpu_initCuQuantum() {
 
     // create new stream and cuQuantum handle, binding to global config
-    custatevecCreate(&config.cuQuantumHandle);
-    cudaStreamCreate(&config.cuStream);
+    CUDA_CHECK( custatevecCreate(&config.cuQuantumHandle) );
+    CUDA_CHECK( cudaStreamCreate(&config.cuStream) );
 
     // get and configure existing mem-pool (for later automatic alloc/dealloc of gate matrices)
     cudaMemPool_t memPool = getExistingMemPool();
@@ -124,15 +125,15 @@ void gpu_initCuQuantum() {
     strcpy(memHandler.name, "mempool");
 
     // bind memory handler and stream to cuQuantum handle
-    custatevecSetDeviceMemHandler(config.cuQuantumHandle, &memHandler);
-    custatevecSetStream(config.cuQuantumHandle, config.cuStream);
+    CUDA_CHECK( custatevecSetDeviceMemHandler(config.cuQuantumHandle, &memHandler) );
+    CUDA_CHECK( custatevecSetStream(config.cuQuantumHandle, config.cuStream) );
 }
 
 
 void gpu_finalizeCuQuantum() {
 
-    cudaStreamDestroy(config.cuStream);
-    custatevecDestroy(config.cuQuantumHandle);
+    CUDA_CHECK( cudaStreamDestroy(config.cuStream) );
+    CUDA_CHECK( custatevecDestroy(config.cuQuantumHandle) );
 }
 
 
@@ -154,14 +155,14 @@ void applyMatrix(Qureg qureg, int* ctrls, int numCtrls, int* targs, int numTargs
     void* work = nullptr;
     size_t workSize = 0;
 
-    custatevecApplyMatrix(
+    CUDA_CHECK( custatevecApplyMatrix(
         config.cuQuantumHandle, 
         toCuQcomps(qureg.gpuAmps), CUQUANTUM_QCOMP, qureg.logNumAmpsPerNode, 
         matrElems, CUQUANTUM_QCOMP, CUSTATEVEC_MATRIX_LAYOUT_ROW, matrAdj, 
         targs, numTargs,
         ctrls, ctrlVals, numCtrls, 
         CUSTATEVEC_COMPUTE_DEFAULT,
-        work, workSize);
+        work, workSize) );
 }
 
 void applyMatrix(Qureg qureg, std::vector<int> ctrls, std::vector<int> targs, std::vector<cu_qcomp> matr) {

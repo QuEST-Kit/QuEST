@@ -93,6 +93,14 @@ void assert_quregIsGpuAccelerated(Qureg qureg);
 
 
 /*
+ * CUDA ERRORS
+ */
+
+void error_cudaCallFailed(const char* msg, const char* func, const char* caller, const char* file, int line);
+
+
+
+/*
  * CUQUANTUM ERRORS
  */
 
