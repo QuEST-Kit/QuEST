@@ -44,6 +44,10 @@ QuESTEnv validateAndCreateCustomQuESTEnv(int useDistrib, int useGpuAccel, int us
     // overwrite deployments left as modeflag::USE_AUTO
     autodep_chooseQuESTEnvDeployment(useDistrib, useGpuAccel, useMultithread);
 
+    // use of cuQuantum requires a modern GPU
+    if (useGpuAccel && gpu_isCuQuantumCompiled())
+        validate_gpuIsCuQuantumCompatible(caller);
+
     // bind deployment info to QuESTEnv (may be overwritten still below)
     QuESTEnv env;
     env.isDistributed = useDistrib;
@@ -70,6 +74,10 @@ QuESTEnv validateAndCreateCustomQuESTEnv(int useDistrib, int useGpuAccel, int us
     // in multi-GPU settings, bind each MPI process to one GPU
     if (useDistrib && useGpuAccel)
         gpu_bindLocalGPUsToNodes(env.rank);
+
+    // in GPU settings, if cuQuantum is being used, initialise it
+    if (useGpuAccel && gpu_isCuQuantumCompiled())
+        gpu_initCuQuantum();
 
     // TODO: setup RNG
 
@@ -104,9 +112,10 @@ void printCompilationInfo() {
 
     form_printTable(
         "compilation", {
-        {"isMpiCompiled", comm_isMpiCompiled()},
-        {"isGpuCompiled", gpu_isGpuCompiled()},
-        {"isOmpCompiled", cpu_isOpenmpCompiled()},
+        {"isMpiCompiled",      comm_isMpiCompiled()},
+        {"isGpuCompiled",       gpu_isGpuCompiled()},
+        {"isOmpCompiled",       cpu_isOpenmpCompiled()},
+        {"isCuQuantumCompiled", gpu_isCuQuantumCompiled()},
     });
 }
 
@@ -154,6 +163,7 @@ void printGpuInfo() {
         "gpu", {
         {"numGpus",       (gpu_isGpuCompiled())? form_str(gpu_getNumberOfLocalGpus()) : un},
         {"gpuDirect",     (gpu_isGpuCompiled())? form_str(gpu_isDirectGpuCommPossible()) : na},
+        {"gpuMemPools",   (gpu_isGpuCompiled())? form_str(gpu_doesGpuSupportMemPools()) : na},
         {"gpuMemory",     (gpu_isGpuCompiled())? form_str(gpu_getTotalMemoryInBytes()) + by + pg : na},
         {"gpuMemoryFree", (gpu_isGpuCompiled())? form_str(gpu_getTotalMemoryInBytes()) + by + pg : na},
     });
@@ -304,6 +314,9 @@ QuESTEnv createQuESTEnv() {
 
 void destroyQuESTEnv(QuESTEnv env) {
     validate_envInit(env, __func__);
+
+    if (env.isGpuAccelerated && gpu_isCuQuantumCompiled())
+        gpu_finalizeCuQuantum();
 
     if (env.isDistributed)
         comm_end();

@@ -16,25 +16,34 @@
 
 #include "quest/src/core/errors.hpp"
 
+// to activate compiler guards
+#include "quest/src/gpu/gpu_config.hpp"
+
 #if ENABLE_GPU_ACCELERATION
     #include "quest/src/gpu/gpu_types.hpp"
     #include "quest/src/gpu/gpu_kernels.hpp"
+    #include "quest/src/gpu/gpu_thrust.hpp"
+#endif
+
+#if ENABLE_CUQUANTUM
+    #include "quest/src/gpu/gpu_cuquantum.hpp"
 #endif
 
 
 
 void gpu_statevec_oneTargetGate_subA(Qureg qureg, int target, CompMatr1 matrix) {
-#if ENABLE_GPU_ACCELERATION
-    
+#if ENABLE_CUQUANTUM
+
+    cuquantum_statevec_oneTargetGate_subA(qureg, target, matrix);
+
+#elif ENABLE_GPU_ACCELERATION
+
     qindex numIts = qureg.numAmpsPerNode / 2;
     qindex numBlocks = getNumBlocks(numIts);
 
-    // unpack matrix from qcomp into cu_qcomp
-    cu_qcomp m00,m01,m10,m11;
-    m00 = toCuQcomp(matrix.elems[0][0]);
-    m01 = toCuQcomp(matrix.elems[0][1]);
-    m10 = toCuQcomp(matrix.elems[1][0]);
-    m11 = toCuQcomp(matrix.elems[1][1]);
+    // sufficiently few matrix elements (<256 bytes) to pass directly to kernel
+    cu_qcomp m00, m01, m10, m11;
+    unpackMatrixToCuQcomps(matrix, m00,m01,m10,m11);
 
     kernel_statevec_oneTargetGate_subA<<<numBlocks, NUM_THREADS_PER_BLOCK>>>(
         toCuQcomps(qureg.gpuAmps), numIts, target, m00,m01,m10,m11);

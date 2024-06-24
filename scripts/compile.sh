@@ -15,6 +15,7 @@ FLOAT_PRECISION=2
 ENABLE_DISTRIBUTION=0
 ENABLE_MULTITHREADING=0
 ENABLE_GPU_ACCELERATION=0
+ENABLE_CUQUANTUM=0
 
 # deployment params
 GPU_CC=90
@@ -51,7 +52,14 @@ USER_C_COMP_FLAGS='-std=c99'
 USER_CXX_COMP_FLAGS='-std=c++14'
 
 # user linker flags
-USER_LINK_FLAGS='-lstdc++' 
+USER_LINK_FLAGS='-lstdc++'
+
+
+
+# LIBRARY FILE LOCATIONS
+
+CUDA_LIB_DIR="/usr/local/cuda"
+CUQUANTUM_LIB_DIR="${CUQUANTUM_ROOT}"
 
 
 
@@ -130,8 +138,15 @@ echo "deployment modes:"
 BACKEND_COMP_FLAGS='-std=c++17 -O3'
 
 # GPU-specific flags
-GPU_COMP_FLAGS="-x cu -arch=sm_${GPU_CC}"
-GPU_LINK_FLAGS="-L/usr/local/cuda/lib64 -lcudart -lcuda"
+GPU_COMP_FLAGS="-x cu -arch=sm_${GPU_CC} -I${CUDA_LIB_DIR}/include"
+GPU_LINK_FLAGS="-L${CUDA_LIB_DIR}/lib -L${CUDA_LIB_DIR}/lib64 -lcudart -lcuda"
+
+# extend GPU flags if cuQuantum enabled
+if [ $ENABLE_CUQUANTUM == 1 ]
+then
+    GPU_COMP_FLAGS+=" -I${CUQUANTUM_LIB_DIR}/include"
+    GPU_LINK_FLAGS+=" -L${CUQUANTUM_LIB_DIR}/lib -L${CUQUANTUM_LIB_DIR}/lib64 -lcustatevec"
+fi
 
 # MPI-specific flags
 MPI_COMP_FLAGS=''
@@ -150,7 +165,8 @@ fi
 # define pre-processor macros to indicate deployment mode
 MODE_FLAGS="-DENABLE_DISTRIBUTION=${ENABLE_DISTRIBUTION} "
 MODE_FLAGS+="-DENABLE_MULTITHREADING=${ENABLE_MULTITHREADING} "
-MODE_FLAGS+="-DENABLE_GPU_ACCELERATION=${ENABLE_GPU_ACCELERATION}"
+MODE_FLAGS+="-DENABLE_GPU_ACCELERATION=${ENABLE_GPU_ACCELERATION} "
+MODE_FLAGS+="-DENABLE_CUQUANTUM=${ENABLE_CUQUANTUM}"
 
 # define pre-processor macros to set qcomp precision
 PREC_FLAG="-DFLOAT_PRECISION=${FLOAT_PRECISION}"
@@ -192,6 +208,14 @@ else
     echo "${INDENT}(GPU-acceleration disabled)"
     GPU_FILES_COMPILER=$BASE_COMPILER
     GPU_FILES_FLAGS=''
+fi
+
+# merely report cuQuantum status
+if [ $ENABLE_CUQUANTUM == 1 ]
+then
+    echo "${INDENT}(cuQuantum enabled)"
+else
+    echo "${INDENT}(cuQuantum disabled)"
 fi
 
 # choose compiler and flags for communication files

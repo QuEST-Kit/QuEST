@@ -1,7 +1,11 @@
 /** @file
  * CUDA-compatible complex types. This file is only ever included
  * when ENABLE_GPU_ACCELERATION=1 so it can safely invoke CUDA
- * signatures without guards.
+ * signatures without guards. This is safe to re-include by
+ * multiple files because typedef definition is legal in C++,
+ * and all functions herein are inline. Furthermore, since it
+ * is only ever parsed by nvcc, the __host__ symbols are safely
+ * processed by the cuquantum backend.
  */
 
 #ifndef GPU_TYPES_HPP
@@ -14,13 +18,14 @@
     #error "A file being compiled somehow included gpu_types.hpp despite QuEST not being compiled in GPU-accelerated mode."
 #endif
 
+#include <cuComplex.h>
+#include <vector>
+
 
 
 /*
  * CUDA-COMPATIBLE QCOMP ALIAS (cu_qcomp)
  */
-
-#include <cuComplex.h>
 
 #if (FLOAT_PRECISION == 1)
     typedef cuFloatComplex cu_qcomp;
@@ -59,14 +64,37 @@ __host__ __device__ inline cu_qcomp operator * (const cu_qcomp& a, const cu_qcom
  * CASTS BETWEEN qcomp AND cu_qcomp
  */
 
-__host__ cu_qcomp toCuQcomp(qcomp x) {
+__host__ inline cu_qcomp toCuQcomp(qcomp x) {
     return reinterpret_cast<cu_qcomp&>(x);
 }
 
-__host__ cu_qcomp* toCuQcomps(qcomp* x) {
+__host__ inline cu_qcomp* toCuQcomps(qcomp* x) {
     return reinterpret_cast<cu_qcomp*>(x);
 }
 
+
+
+/*
+ * MATRIX CASTING AND UNPACKING
+ */
+
+__host__ inline void unpackMatrixToCuQcomps(CompMatr1 in, cu_qcomp &m00, cu_qcomp &m01, cu_qcomp &m10, cu_qcomp &m11) {
+
+    m00 = toCuQcomp(in.elems[0][0]);
+    m01 = toCuQcomp(in.elems[0][1]);
+    m10 = toCuQcomp(in.elems[1][0]);
+    m11 = toCuQcomp(in.elems[1][1]);
+}
+
+__host__ inline std::vector<cu_qcomp> unpackMatrixToCuQcomps(CompMatr1 in) {
+
+    std::vector<cu_qcomp> vec(4);
+    vec[0] = toCuQcomp(in.elems[0][0]);
+    vec[1] = toCuQcomp(in.elems[0][1]);
+    vec[2] = toCuQcomp(in.elems[1][0]);
+    vec[3] = toCuQcomp(in.elems[1][1]);
+    return vec;
+}
 
 
 #endif // GPU_TYPES_HPP

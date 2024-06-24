@@ -22,6 +22,8 @@ void validate_newEnvDeploymentMode(int isDistrib, int isGpuAccel, int isMultithr
 
 void validate_newEnvDistributedBetweenPower2Nodes(int numNodes, const char* caller);
 
+void validate_gpuIsCuQuantumCompatible(const char* caller);
+
 
 
 /*
