@@ -35,7 +35,11 @@
 
 #if ENABLE_GPU_ACCELERATION
 
-void assertCudaCallSucceeded(cudaError_t result, const char* call, const char* caller, const char* file, int line) {
+void assertCudaCallSucceeded(int result, const char* call, const char* caller, const char* file, int line) {
+
+    // result (int) is actually type cudaError_tm but we cannot use this CUDA-defined type
+    // in gpu_config.hpp (since it's included by non-CUDA-compiled files), and we wish to keep
+    // the signature consistent
 
     if (result != cudaSuccess)
         error_cudaCallFailed(cudaGetErrorString(result), call, caller, file, line);
