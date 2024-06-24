@@ -20,7 +20,7 @@
 
 #if ENABLE_GPU_ACCELERATION
 
-#define CUDA_CHECK(cmd) do { assertCudaCallSucceeded((cmd), #cmd, __FUNC__, __FILE__, __LINE__); } while (0)
+#define CUDA_CHECK(cmd) do { assertCudaCallSucceeded((cmd), #cmd, __func__, __FILE__, __LINE__); } while (0)
 
 void assertCudaCallSucceeded(int code, const char* call, const char* caller, const char* file, int line);
 

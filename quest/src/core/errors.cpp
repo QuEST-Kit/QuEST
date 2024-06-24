@@ -200,7 +200,7 @@ void assert_gpuIsAccessible() {
 void error_cudaCallFailed(const char* msg, const char* func, const char* caller, const char* file, int line) {
 
     std::string err = "";
-    err += "A CUDA API function (";
+    err += "A CUDA (or cuQuantum) API function (";
     err += func;
     err += ", called by ";
     err += caller;
