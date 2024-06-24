@@ -199,9 +199,18 @@ void assert_gpuIsAccessible() {
 
 void error_cudaCallFailed(const char* msg, const char* func, const char* caller, const char* file, int line) {
 
-    raiseInternalError(
-        "A CUDA API function (" + func + ", called by " + caller + " at line " + std::to_string(line) + 
-        " of file " + file + ") unexpectedly failed with error message: " + msg);
+    std::string err = "";
+    err += "A CUDA API function (";
+    err += func;
+    err += ", called by ";
+    err += caller;
+    err += " at line ";
+    err += std::to_string(line);
+    err += " of file ";
+    err += file;
+    err + ") unexpectedly failed with error message: ";
+    err += msg;
+    raiseInternalError(err);
 }
 
 
