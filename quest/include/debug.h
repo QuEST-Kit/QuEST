@@ -13,15 +13,6 @@ extern "C" {
 
 
 
-// sets the size at which the CUDA memory pool will 
-// automatically deallocate temporary memory. Below this
-// size, temporary memory structures (like a CompMatr)
-// will persist in GPU memory to save time. This is
-// only relevant to GPU-mode with cuQuantum enabled,
-// and is effected at createQuESTEnv().
-const int CUQUANTUM_MEM_POOL_BYTES = 16*(1<<15); // 1 MiB ~ 8 qubit complex<double> matrix
-
-
 void invalidQuESTInputError(const char* msg, const char* func);
 
 

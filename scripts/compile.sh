@@ -52,7 +52,14 @@ USER_C_COMP_FLAGS='-std=c99'
 USER_CXX_COMP_FLAGS='-std=c++14'
 
 # user linker flags
-USER_LINK_FLAGS='-lstdc++' 
+USER_LINK_FLAGS='-lstdc++'
+
+
+
+# LIBRARY FILE LOCATIONS
+
+CUDA_LIB_DIR="/usr/local/cuda"
+CUQUANTUM_LIB_DIR="${CUQUANTUM_ROOT}"
 
 
 
@@ -131,8 +138,15 @@ echo "deployment modes:"
 BACKEND_COMP_FLAGS='-std=c++17 -O3'
 
 # GPU-specific flags
-GPU_COMP_FLAGS="-x cu -arch=sm_${GPU_CC}"
-GPU_LINK_FLAGS="-L/usr/local/cuda/lib64 -lcudart -lcuda"
+GPU_COMP_FLAGS="-x cu -arch=sm_${GPU_CC} -I${CUDA_LIB_DIR}/include"
+GPU_LINK_FLAGS="-L${CUDA_LIB_DIR}/lib -L${CUDA_LIB_DIR}/lib64 -lcudart -lcuda"
+
+# extend GPU flags if cuQuantum enabled
+if [ $ENABLE_CUQUANTUM == 1 ]
+then
+    GPU_COMP_FLAGS+=" -I${CUQUANTUM_LIB_DIR}/include"
+    GPU_LINK_FLAGS+=" -L${CUQUANTUM_LIB_DIR}/lib -L${CUQUANTUM_LIB_DIR}/lib64 -lcustatevec"
+fi
 
 # MPI-specific flags
 MPI_COMP_FLAGS=''

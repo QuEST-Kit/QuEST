@@ -24,8 +24,6 @@
 #endif
 
 
-#include "quest/include/debug.h"
-
 #include "quest/src/gpu/gpu_types.hpp"
 
 #include <custatevec.h>
@@ -57,6 +55,15 @@
  */
 
 
+// sets the size at which the CUDA memory pool will 
+// automatically deallocate temporary memory. Below this
+// size, temporary memory structures (like a CompMatr)
+// will persist in GPU memory to save time. This is
+// only relevant to GPU-mode with cuQuantum enabled,
+// and is effected at createQuESTEnv().
+int CUQUANTUM_MEM_POOL_BYTES = 16*(1<<15); // 1 MiB ~ 8 qubit complex<double> matrix
+
+
 struct CuQuantumConfig {
     cudaStream_t cuStream;
     custatevecHandle_t cuQuantumHandle;
@@ -67,13 +74,14 @@ struct CuQuantumConfig {
 CuQuantumConfig config;
 
 
-void getExistingMemPool() {
+cudaMemPool_t getExistingMemPool() {
 
     // validation gaurantees memory pool already exists
     cudaMemPool_t memPool;
     int deviceId;
     cudaGetDevice(&deviceId);
-    cudaDeviceGetMemPool(&(config.cuMemPool), deviceId);
+    cudaDeviceGetMemPool(&memPool, deviceId);
+    return memPool;
 }
 
 
@@ -87,7 +95,6 @@ void adjustMemPoolSize(cudaMemPool_t memPool) {
     if (currMaxMem < CUQUANTUM_MEM_POOL_BYTES)
         cudaMemPoolSetAttribute(memPool, cudaMemPoolAttrReleaseThreshold, &CUQUANTUM_MEM_POOL_BYTES); 
 }
-
 
 int allocMemInPool(void* ctx, void** ptr, size_t size, cudaStream_t stream) {
     cudaMemPool_t& pool = *static_cast<cudaMemPool_t*>(ctx);
@@ -172,6 +179,7 @@ void cuquantum_statevec_oneTargetGate_subA(Qureg qureg, int target, CompMatr1 ma
 
     applyMatrix(qureg, {}, {target}, unpackMatrixToCuQcomps(matr));
 }
+
 
 
 #endif // GPU_CUQUANTUM_HPP
