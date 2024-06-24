@@ -199,6 +199,7 @@ void assert_gpuIsAccessible() {
 
 void error_cudaCallFailed(const char* msg, const char* func, const char* caller, const char* file, int line) {
 
+    // using operator overloads to cast const char[] literals to std::string, to concat with const char*.
     std::string err = "";
     err += "A CUDA (or cuQuantum) API function (\"";
     err += func;
@@ -208,8 +209,9 @@ void error_cudaCallFailed(const char* msg, const char* func, const char* caller,
     err += std::to_string(line);
     err += " of file ";
     err += file;
-    err += ") unexpectedly failed with error message: ";
+    err += ") unexpectedly failed with error message: \"";
     err += msg;
+    err += "\". ";
     raiseInternalError(err);
 }
 
