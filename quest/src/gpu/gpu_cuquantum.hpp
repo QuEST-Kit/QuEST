@@ -97,12 +97,12 @@ void adjustMemPoolSize(cudaMemPool_t memPool) {
         CUDA_CHECK( cudaMemPoolSetAttribute(memPool, cudaMemPoolAttrReleaseThreshold, &CUQUANTUM_MEM_POOL_BYTES) ); 
 }
 
-cudaError_t allocMemInPool(void* ctx, void** ptr, size_t size, cudaStream_t stream) {
+int allocMemInPool(void* ctx, void** ptr, size_t size, cudaStream_t stream) {
     cudaMemPool_t& pool = *static_cast<cudaMemPool_t*>(ctx);
     return cudaMallocFromPoolAsync(ptr, size, pool, stream); 
 }
 
-cudaError_t deallocMemInPool(void* ctx, void* ptr, size_t size, cudaStream_t stream) {
+int deallocMemInPool(void* ctx, void* ptr, size_t size, cudaStream_t stream) {
     return cudaFreeAsync(ptr, stream); 
 }
 
