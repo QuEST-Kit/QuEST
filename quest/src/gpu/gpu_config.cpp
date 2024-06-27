@@ -14,7 +14,7 @@
 
 #if ENABLE_GPU_ACCELERATION && ! (defined(__NVCC__) || defined(__HIPCC__))
     #error \
-        "Attempted to compile config.cpp in GPU-accelerated mode with a non-GPU compiler. "\
+        "Attempted to compile gpu_config.cpp in GPU-accelerated mode with a non-GPU compiler. "\
         "Please compile this file with a CUDA (nvcc) or ROCm (hipcc) compiler."
 #endif
 

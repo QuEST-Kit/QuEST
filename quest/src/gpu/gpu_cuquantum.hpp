@@ -1,5 +1,5 @@
 /** @file
- * Subroutines which invoke Thrust. This file is only ever included
+ * Subroutines which invoke cuQuantum. This file is only ever included
  * when ENABLE_CUQUANTUM=1 and ENABLE_GPU_ACCELERATION=1 so it can 
  * safely invoke CUDA signatures without guards.
  */
@@ -21,6 +21,10 @@
 
 #if ! ENABLE_GPU_ACCELERATION
     #error "A file being compiled somehow included gpu_cuquantum.hpp despite QuEST not being compiled in GPU-accelerated mode."
+#endif
+
+#ifndef __NVCC__
+    #error "A file which included gpu_cuquantum.hpp was not being compiled with an NVIDIA CUDA compiler."
 #endif
 
 
