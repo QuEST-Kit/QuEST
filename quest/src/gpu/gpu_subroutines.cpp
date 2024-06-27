@@ -16,9 +16,6 @@
 
 #include "quest/src/core/errors.hpp"
 
-// to activate compiler guards
-#include "quest/src/gpu/gpu_config.hpp"
-
 #if ENABLE_GPU_ACCELERATION
     #include "quest/src/gpu/gpu_types.hpp"
     #include "quest/src/gpu/gpu_kernels.hpp"
