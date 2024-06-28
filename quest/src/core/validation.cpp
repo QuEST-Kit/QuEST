@@ -35,6 +35,13 @@ namespace report {
      *  ENVIRONMENT CREATION
      */
 
+    std::string QUEST_ENV_ALREADY_INIT =
+        "The QuEST environment has already been initialised. This can only be performed once during program execution.";
+
+    std::string QUEST_ENV_ALREADY_FINAL =
+        "The QuEST environment has already been finalised, and can thereafter never be re-initialised since this leads to undefined MPI behaviour.";
+
+
     std::string INVALID_OPTION_FOR_ENV_IS_DISTRIB =
         "Argument 'useDistribution' must be 1 or 0 to respectively indicate whether or not to distribute the new environment, or ${AUTO_DEPLOYMENT_FLAG} to let QuEST choose automatically.";
 
@@ -63,6 +70,14 @@ namespace report {
 
     std::string CUQUANTUM_DEPLOYED_ON_GPU_WITHOUT_MEM_POOLS =
         "Cannot use cuQuantum since your GPU does not support memory pools. Please recompile with cuQuantum disabled to fall-back to using Thrust and custom kernels.";
+
+    
+    /*
+     * EXISTING QUESTENV
+     */
+
+    std::string QUEST_ENV_NOT_INIT =
+        "The QuEST environment is not initialised. Please first call initQuESTEnv() or initCustomQuESTEnv().";
 
 
     /*
@@ -314,10 +329,10 @@ void assertThat(bool valid, std::string msg, tokenSubs vars, const char* func) {
  * ENVIRONMENT CREATION
  */
 
-void validate_newEnvNotAlreadyInit(const char* caller) {
+void validate_envNeverInit(bool isQuESTInit, bool isQuESTFinal, const char* caller) {
 
-    // TODO:
-    // consult a comm/ singleton?
+    assertThat(!isQuESTInit, report::QUEST_ENV_ALREADY_INIT, caller);
+    assertThat(!isQuESTFinal, report::QUEST_ENV_ALREADY_FINAL, caller);
 }
 
 void validate_newEnvDeploymentMode(int isDistrib, int isGpuAccel, int isMultithread, const char* caller) {
@@ -374,10 +389,9 @@ void validate_gpuIsCuQuantumCompatible(const char* caller) {
  * EXISTING ENVIRONMENT
  */
 
-void validate_envInit(QuESTEnv env, const char* caller) {
+void validate_envInit(const char* caller) {
 
-    // TOOD:
-    // confirm all the mode settings are correct, etc
+    assertThat(isQuESTEnvInit(), report::QUEST_ENV_NOT_INIT, caller);
 }
 
 

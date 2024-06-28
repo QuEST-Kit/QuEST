@@ -28,17 +28,36 @@ using namespace form_substrings;
 
 
 /*
- * PRIVATE QUESTENV CREATION INNER FUNCTIONS
+ * PRIVATE QUESTENV SINGLETON
+ *
+ * Global to this file, accessible to other files only through getQuESTEnv().
+ * The private bools indicate whether the QuEST environment is currently active,
+ * and whether it has been finalised after being active respectively. This
+ * difference is important, since the QuEST environment can only ever be initialised
+ * once, even after finalisation.
+ */
+
+static QuESTEnv questEnv;
+static bool isQuESTInit  = false;
+static bool isQuESTFinal = false;
+
+
+
+/*
+ * PRIVATE QUESTENV INITIALISATION INNER FUNCTIONS
  */
 
 
-QuESTEnv validateAndCreateCustomQuESTEnv(int useDistrib, int useGpuAccel, int useMultithread, const char* caller) {
+void validateAndInitCustomQuESTEnv(int useDistrib, int useGpuAccel, int useMultithread, const char* caller) {
+
+    // ensure that we are never re-initialising QuEST (even after finalize) because
+    // this leads to undefined behaviour in distributed mode, as per the MPI
+    validate_envNeverInit(isQuESTInit, isQuESTFinal, caller);
 
     // ensure the chosen deployment is compiled and supported by hardware.
     // note that these error messages will be printed by every node because
     // validation occurs before comm_init() below, so all processes spawned
     // by mpirun believe they are each the main rank. This seems unavoidable.
-    validate_newEnvNotAlreadyInit(caller);
     validate_newEnvDeploymentMode(useDistrib, useGpuAccel, useMultithread, caller);
 
     // overwrite deployments left as modeflag::USE_AUTO
@@ -48,8 +67,10 @@ QuESTEnv validateAndCreateCustomQuESTEnv(int useDistrib, int useGpuAccel, int us
     if (useGpuAccel && gpu_isCuQuantumCompiled())
         validate_gpuIsCuQuantumCompatible(caller);
 
-    // bind deployment info to QuESTEnv (may be overwritten still below)
+    // create a private, local env (so we don't modify global env in case of error)
     QuESTEnv env;
+
+    // bind deployment info to QuESTEnv (may be overwritten still below)
     env.isDistributed = useDistrib;
     env.isGpuAccelerated = useGpuAccel;
     env.isMultithreaded = useMultithread;
@@ -81,7 +102,11 @@ QuESTEnv validateAndCreateCustomQuESTEnv(int useDistrib, int useGpuAccel, int us
 
     // TODO: setup RNG
 
-    return env;
+    // overwrite attributes of the global, static env
+    questEnv = env;
+
+    // declare successful initialisation
+    isQuESTInit = true;
 }
 
 
@@ -292,7 +317,7 @@ void printQuregAutoDeployments(bool isDensMatr, QuESTEnv env) {
 
 
 /*
- * PUBLIC FUNCTIONS
+ * API FUNCTIONS
  */
 
 
@@ -300,31 +325,47 @@ void printQuregAutoDeployments(bool isDensMatr, QuESTEnv env) {
 extern "C" {
 
 
-QuESTEnv createCustomQuESTEnv(int useDistrib, int useGpuAccel, int useMultithread) {
+void initCustomQuESTEnv(int useDistrib, int useGpuAccel, int useMultithread) {
 
-    return validateAndCreateCustomQuESTEnv(useDistrib, useGpuAccel, useMultithread, __func__);
+    validateAndInitCustomQuESTEnv(useDistrib, useGpuAccel, useMultithread, __func__);
 }
 
 
-QuESTEnv createQuESTEnv() {
+void initQuESTEnv() {
 
-    return validateAndCreateCustomQuESTEnv(modeflag::USE_AUTO, modeflag::USE_AUTO, modeflag::USE_AUTO, __func__);
+    validateAndInitCustomQuESTEnv(modeflag::USE_AUTO, modeflag::USE_AUTO, modeflag::USE_AUTO, __func__);
 }
 
 
-void destroyQuESTEnv(QuESTEnv env) {
-    validate_envInit(env, __func__);
+int isQuESTEnvInit() {
 
-    if (env.isGpuAccelerated && gpu_isCuQuantumCompiled())
+    return (int) isQuESTInit;
+}
+
+
+QuESTEnv getQuESTEnv() {
+    validate_envInit(__func__);
+
+    return questEnv;
+}
+
+
+void finalizeQuESTEnv() {
+    validate_envInit(__func__);
+
+    if (questEnv.isGpuAccelerated && gpu_isCuQuantumCompiled())
         gpu_finalizeCuQuantum();
 
-    if (env.isDistributed)
+    if (questEnv.isDistributed)
         comm_end();
+
+    isQuESTInit = false;
+    isQuESTFinal = true;
 }
 
 
-void reportQuESTEnv(QuESTEnv env) {
-    validate_envInit(env, __func__);
+void reportQuESTEnv() {
+    validate_envInit(__func__);
 
     // we attempt to report properties of available hardware facilities
     // (e.g. number of CPU cores, number of GPUs) even if the environment is not
@@ -333,7 +374,7 @@ void reportQuESTEnv(QuESTEnv env) {
     // TODO: add function to write this output to file (useful for HPC debugging)
 
     // only root node reports (but no synch necesary)
-    if (env.rank != 0)
+    if (questEnv.rank != 0)
         return;
 
     std::cout << "QuEST execution environment:" << std::endl;
@@ -343,14 +384,14 @@ void reportQuESTEnv(QuESTEnv env) {
 
     printPrecisionInfo();
     printCompilationInfo();
-    printDeploymentInfo(env);
+    printDeploymentInfo(questEnv);
     printCpuInfo();
     printGpuInfo();
-    printDistributionInfo(env);
-    printQuregSizeLimits(statevec, env);
-    printQuregSizeLimits(densmatr, env);
-    printQuregAutoDeployments(statevec, env);
-    printQuregAutoDeployments(densmatr, env);
+    printDistributionInfo(questEnv);
+    printQuregSizeLimits(statevec, questEnv);
+    printQuregSizeLimits(densmatr, questEnv);
+    printQuregAutoDeployments(statevec, questEnv);
+    printQuregAutoDeployments(densmatr, questEnv);
 }
 
 

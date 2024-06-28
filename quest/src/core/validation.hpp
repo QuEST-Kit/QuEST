@@ -16,7 +16,7 @@
  * ENVIRONMENT CREATION
  */
 
-void validate_newEnvNotAlreadyInit(const char* caller);
+void validate_envNeverInit(bool isQuESTInit, bool isQuESTFinal, const char* caller);
 
 void validate_newEnvDeploymentMode(int isDistrib, int isGpuAccel, int isMultithread, const char* caller);
 
@@ -30,7 +30,7 @@ void validate_gpuIsCuQuantumCompatible(const char* caller);
  * EXISTING ENVIRONMENT
  */
 
-void validate_envInit(QuESTEnv env, const char* caller);
+void validate_envInit(const char* caller);
 
 
 

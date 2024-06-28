@@ -11,6 +11,13 @@ extern "C" {
 #endif
 
 
+/*
+ * QuESTEnv is a struct of which there will be a single, immutable
+ * main instance, statically instantiated inside environment.cpp,
+ * accessible anywhere via a getter, and which is consulted for
+ * determining the deployment configuration. Users can obtain a
+ * local copy of this struct for their own querying.
+ */
 
 typedef struct QuESTEnv {
 
@@ -29,13 +36,17 @@ typedef struct QuESTEnv {
 
 
 
-QuESTEnv createQuESTEnv();
+void initQuESTEnv();
 
-QuESTEnv createCustomQuESTEnv(int useDistrib, int useGpuAccel, int useMultithread);
+void initCustomQuESTEnv(int useDistrib, int useGpuAccel, int useMultithread);
 
-void destroyQuESTEnv(QuESTEnv env);
+void finalizeQuESTEnv();
 
-void reportQuESTEnv(QuESTEnv env);
+void reportQuESTEnv();
+
+int isQuESTEnvInit();
+
+QuESTEnv getQuESTEnv();
 
 
 
