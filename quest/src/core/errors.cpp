@@ -149,14 +149,19 @@ void error_gpuQueriedButGpuNotCompiled() {
     raiseInternalError("A function attempted to query GPU properties but QuEST was not compiled with GPU acceleration enabled.");
 }
 
+void error_gpuSyncedButGpuNotCompiled() {
+
+    raiseInternalError("A function attempted to synchronise the GPU, but QuEST was not compiled with GPU acceleration enabled.");
+}
+
 void error_gpuAllocButGpuNotCompiled() {
 
-    raiseInternalError("A function (most likely Qureg creation) attempted to allocate GPU memory but QuEST was not compiled with GPU acceleration enabled.");
+    raiseInternalError("A function (likely Qureg or CompMatrN creation) attempted to allocate GPU memory but QuEST was not compiled with GPU acceleration enabled.");
 }
 
 void error_gpuDeallocButGpuNotCompiled() {
 
-    raiseInternalError("A function (most likely Qureg creation) attempted to deallocate GPU memory but QuEST was not compiled with GPU acceleration enabled.");
+    raiseInternalError("A function (likely Qureg or CompMatrN destruction) attempted to deallocate GPU memory but QuEST was not compiled with GPU acceleration enabled.");
 }
 
 void error_gpuCopyButGpuNotCompiled() {
@@ -174,9 +179,19 @@ void error_gpuCopyButQuregNotGpuAccelerated() {
     raiseInternalError("A function attempted to access GPU memory of a Qureg which is not GPU accelerated.");
 }
 
+void error_gpuCopyButCompMatrNotGpuAccelerated() {
+
+    raiseInternalError("A function attempted to access GPU memory of a CompMatrN which is not GPU accelerated.");
+}
+
 void error_gpuUnexpectedlyInaccessible() {
 
     raiseInternalError("A function internally assumed (as a precondition) that QuEST was compiled with GPU-acceleration enabled, and that one was physically accessible, though this was untrue.");
+}
+
+void error_gpuMemSyncQueriedButEnvNotGpuAccelerated() {
+
+    raiseInternalError("A function checked whether persistent GPU memory (such as in a CompMatrN) had been synchronised, but the QuEST environment is not GPU accelerated.");  
 }
 
 void assert_quregIsGpuAccelerated(Qureg qureg) {

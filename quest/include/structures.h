@@ -44,6 +44,10 @@ typedef struct CompMatrN
     qindex numRows;
     qcomp** elems;
 
+    // row-flattened elems in GPU memory, allocated only
+    // in GPU-enabled QuEST environments (regardless of Quregs)
+    qcomp* gpuElems;
+
 } CompMatrN;
 
 
@@ -70,6 +74,12 @@ typedef struct CompMatrN
 
 #endif
 
+
+
+/*
+ * VARIABLE-SIZE MATRIX CONSTRUCTORS
+ */
+
 // de-mangle so below are directly callable by C binary
 #ifdef __cplusplus
 extern "C" {
@@ -78,6 +88,10 @@ extern "C" {
     CompMatrN createCompMatrN(int numQubits);
 
     void destroyCompMatrN(CompMatrN matrix);
+
+    void syncCompMatrN(CompMatrN matr);
+
+    void setCompMatrN(CompMatrN matr, qcomp** vals);
 
 #ifdef __cplusplus
 }

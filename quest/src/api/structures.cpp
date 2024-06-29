@@ -5,6 +5,7 @@
  */
 
 #include "quest/include/structures.h"
+#include "quest/include/environment.h"
 #include "quest/include/types.h"
 
 #include "quest/src/comm/comm_config.hpp"
@@ -12,6 +13,7 @@
 #include "quest/src/core/formatter.hpp"
 #include "quest/src/core/bitwise.hpp"
 #include "quest/src/core/memory.hpp"
+#include "quest/src/gpu/gpu_config.hpp"
 
 #include <cstdlib>
 #include <iostream>
@@ -24,7 +26,7 @@ using namespace form_substrings;
 
 
 /*
- * C++-ONLY MATRIX CONSTRUCTORS
+ * C++-ONLY MATRIX 1&2 CONSTRUCTORS
  * 
  * and their corresponding C-compatible alternatives which are wrapped by wrappers.h.
  * These are necessary because of the non-interchangeable C and C++ qcomp types.
@@ -74,7 +76,7 @@ extern "C" void wrap_getCompMatr2(CompMatr2* out, qcomp in[4][4]) {
 
 
 /*
- * C & C++ MATRIX CONSTRUCTORS
+ * C & C++ MATRIX N CONSTRUCTORS
  *
  * all of which are de-mangled for C-compatibility
  */
@@ -83,22 +85,30 @@ extern "C" void wrap_getCompMatr2(CompMatr2* out, qcomp in[4][4]) {
 extern "C" CompMatrN createCompMatrN(int numQubits) {
     validate_newMatrixNumQubits(numQubits, __func__);
 
-    // validation ensures this and mem sizes below don't overflow
-    qindex numRows = powerOf2(numQubits);
+    // allocate GPU memory if the env is GPU-accelerated, regardless of (unknown) Qureg allocations
+    bool isGpuAccel = getQuESTEnv().isGpuAccelerated;
 
-    // allocate array for rows
+    // validation ensures these (and below mem sizes) never overflow
+    qindex numRows = powerOf2(numQubits);
+    qindex numElems = numRows * numRows;
+
     CompMatrN out = {
         .numQubits = numQubits,
         .numRows = numRows,
-        .elems = (qcomp**) malloc(numRows * sizeof *out.elems) // NULL if failed
+
+        // 2D CPU memory (NULL if failed)
+        .elems = (qcomp**) malloc(numRows * sizeof *out.elems),
+
+        // 1D GPU memory (NULL if failed or not needed)
+        .gpuElems = (isGpuAccel)? gpu_allocAmps(numElems) : NULL // first amp will be un-sync'd flag
     };
 
-    // only if that allocation succeeded, allocate each row array
+    // only if outer CPU allocation succeeded, attempt to allocate each row array
     if (out.elems != NULL)
         for (qindex r=0; r < numRows; r++)
-            out.elems[r] = (qcomp*) calloc(numRows, sizeof **out.elems);
+            out.elems[r] = (qcomp*) calloc(numRows, sizeof **out.elems); // NULL if failed
 
-    // check malloc and calloc's succeeded
+    // check all CPU & GPU malloc and calloc's succeeded (no attempted freeing if not)
     bool isNewMatr = true;
     validate_newOrExistingMatrixAllocs(out, isNewMatr, __func__);
 
@@ -109,10 +119,41 @@ extern "C" CompMatrN createCompMatrN(int numQubits) {
 extern "C" void destroyCompMatrN(CompMatrN matrix) {
     validate_matrixInit(matrix, __func__);
 
+    // free each CPU row array
     for (qindex r=0; r < matrix.numRows; r++)
         free(matrix.elems[r]);
 
+    // free CPU array of rows
     free(matrix.elems);
+
+    // free flat GPU array if it exists
+    if (matrix.gpuElems != NULL)
+        gpu_deallocAmps(matrix.gpuElems);
+}
+
+
+
+/*
+ * MATRIX N INITIALISER
+ */
+
+extern "C" void syncCompMatrN(CompMatrN matr) {
+    validate_matrixInit(matr, __func__);
+    validate_matrixElemsDontContainUnsyncFlag(matr.elems, __func__);
+
+    gpu_copyCpuToGpu(matr);
+}
+
+extern "C" void setCompMatrN(CompMatrN matr, qcomp** vals) {
+    validate_matrixInit(matr, __func__);
+    validate_matrixElemsDontContainUnsyncFlag(vals, __func__);
+
+    // serially copy values to CPU memory
+    populateCompMatrElems(matr.elems, vals, matr.numRows);
+
+    // overwrite GPU elements
+    if (matr.gpuElems != NULL)
+        gpu_copyCpuToGpu(matr);
 }
 
 
