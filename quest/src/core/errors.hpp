@@ -74,6 +74,8 @@ void error_cpuThreadsQueriedButEnvNotMultithreaded();
 
 void error_gpuQueriedButGpuNotCompiled();
 
+void error_gpuSyncedButGpuNotCompiled();
+
 void error_gpuAllocButGpuNotCompiled();
 
 void error_gpuDeallocButGpuNotCompiled();
@@ -83,6 +85,10 @@ void error_gpuCopyButGpuNotCompiled();
 void error_gpuSimButGpuNotCompiled();
 
 void error_gpuCopyButQuregNotGpuAccelerated();
+
+void error_gpuCopyButCompMatrNotGpuAccelerated();
+
+void error_gpuMemSyncQueriedButEnvNotGpuAccelerated();
 
 void error_gpuUnexpectedlyInaccessible();
 

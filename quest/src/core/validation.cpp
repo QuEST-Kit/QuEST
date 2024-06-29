@@ -188,16 +188,28 @@ namespace report {
     std::string NEW_MATRIX_LOCAL_MEM_WOULD_EXCEED_SIZEOF =
         "Cannot create a matrix which acts upon ${NUM_QUBITS} qubits since the necessary memory size (${QCOMP_BYTES} * 2^${DUB_QUBITS} bytes) would overflow size_t, and be intractably slow to serially process. The maximum size matrix targets ${MAX_QUBITS} qubits.";
 
-    std::string FAILED_NEW_ALLOC_OF_COMPLEX_MATRIX =
+    std::string FAILED_NEW_CPU_ALLOC_OF_COMPLEX_MATRIX =
         "Allocation of memory for a new ComplexMatrixN failed.";
+
+    std::string FAILED_NEW_GPU_ALLOC_OF_COMPLEX_MATRIX =
+        "Allocation of GPU memory for a new ComplexMatrixN failed.";
 
 
     /*
      * EXISTING MATRIX
      */
 
-    std::string INVALID_EXISTING_ALLOC_OF_COMPLEX_MATRIX =
+    std::string INVALID_EXISTING_CPU_ALLOC_OF_COMPLEX_MATRIX =
         "Invalid CompMatrN. One or more rows of the 2D elements array was seemingly unallocated.";
+
+    std::string INVALID_EXISTING_GPU_ALLOC_OF_COMPLEX_MATRIX =
+        "Invalid CompMatrN. The GPU memory was seemingly unallocated.";
+
+    std::string COMPLEX_MATRIX_NEW_ELEMS_CONTAINED_GPU_SYNC_FLAG = 
+        "The CompMatrN contained a reserved, forbidden value as the first element, used internally to detect that whether GPU memory has not synchronised. The value was intended to be extremely unlikely to be used by users - go buy a lottery ticket! If you insist on using this value in the first element, add a numerically insignificant perturbation.";
+
+    std::string COMPLEX_MATRIX_NOT_SYNCED_TO_GPU = 
+        "The CompMatrN has yet not been synchronised with its persistent GPU memory, so potential changes to its elements are being ignored. Please first call syncCompMatrN() after manually modifying elements, or overwrite all elements with setCompMatrN().";
 
     std::string INVALID_COMP_MATR_1_FIELDS =
         "Invalid CompMatr1. Targeted ${NUM_QUBITS} qubits (instead of 1) and had a dimension of ${NUM_ROWS}x${NUM_ROWS} (instead of 2x2). It is likely this matrix was not initialised with getCompMatr1().";
@@ -246,7 +258,7 @@ void default_invalidQuESTInputError(const char* msg, const char* func) {
 
     // force a synch because otherwise non-main nodes may exit before print, and MPI
     // will then attempt to instantly abort all nodes, losing the error message.
-    comm_synch();
+    comm_sync();
 
     exit(EXIT_FAILURE);
 }
@@ -701,17 +713,26 @@ void validate_newMatrixNumQubits(int numQubits, const char* caller) {
 
 void validate_newOrExistingMatrixAllocs(CompMatrN matr, bool isNewMatr, const char* caller) {
 
-    std::string errMsg = (isNewMatr)?
-        report::FAILED_NEW_ALLOC_OF_COMPLEX_MATRIX :
-        report::INVALID_EXISTING_ALLOC_OF_COMPLEX_MATRIX;
+    std::string cpuErrMsg = (isNewMatr)? 
+        report::FAILED_NEW_CPU_ALLOC_OF_COMPLEX_MATRIX :
+        report::INVALID_EXISTING_CPU_ALLOC_OF_COMPLEX_MATRIX;
 
-    // assert array of rows was malloc'd successfully
-    assertThat(matr.elems != NULL, errMsg, caller);
+    // assert CPU array of rows was malloc'd successfully
+    assertThat(matr.elems != NULL, cpuErrMsg, caller);
 
-    // note .elems will be non-NULL when matr was default initialised (not constructed),
-    // proceeding past validation and causing a segmentation fault in below loop
+    // assert each CPU row was calloc'd successfully. this is flawed;
+    // .elems will be non-NULL when matr was default initialised (not constructed),
+    // passing validation and causing a segmentation fault in below loop. oh well!
     for (qindex r=0; r<matr.numRows; r++)
-        assertThat(matr.elems[r] != NULL, errMsg, caller);
+        assertThat(matr.elems[r] != NULL, cpuErrMsg, caller);
+
+    std::string gpuErrMsg = (isNewMatr)? 
+        report::FAILED_NEW_GPU_ALLOC_OF_COMPLEX_MATRIX :
+        report::INVALID_EXISTING_GPU_ALLOC_OF_COMPLEX_MATRIX;
+
+    // assert GPU memory was malloc'd successfully
+    if (getQuESTEnv().isGpuAccelerated)
+        assertThat(matr.gpuElems != NULL, gpuErrMsg, caller);
 }
 
 
@@ -738,26 +759,60 @@ void validate_matrixInit(CompMatr2 matr, const char* caller) {
 }
 void validate_matrixInit(CompMatrN matr, const char* caller) {
     assertMatrixFieldsAreValid(matr, report::INVALID_COMP_MATR_N_FIELDS, caller);
+
+    // CompMatrN must also have its allocations checked
     validate_newOrExistingMatrixAllocs(matr, false, caller);
+}
+
+void validate_matrixElemsDontContainUnsyncFlag(qcomp** elems, const char* caller) {
+
+    // we permit the matrix to contain the GPU-mem-unsync flag in CPU-only mode,
+    // to avoid astonishing a CPU-only user with a GPU-related error message
+    if (!getQuESTEnv().isGpuAccelerated)
+        return;
+
+    assertThat(!gpu_doCpuAmpsHaveUnsyncMemFlag(elems), report::COMPLEX_MATRIX_NEW_ELEMS_CONTAINED_GPU_SYNC_FLAG, caller);
+}
+
+void validate_matrixIsSynced(CompMatrN matr, const char* caller) {
+
+    // checks fields AND allocations
+    validate_matrixInit(matr, caller);
+
+    // we don't need to perform any sync check in CPU-only mode
+    if (matr.gpuElems != NULL)
+        return;
+
+    // check if GPU amps have EVER been overwritten; we sadly cannot check the LATEST changes were pushed though
+    assertThat(gpu_haveGpuAmpsBeenSynced(matr.gpuElems), report::COMPLEX_MATRIX_NOT_SYNCED_TO_GPU, caller);
 }
 
 template <class T> 
 void assertMatrixIsUnitary(T matr, const char* caller) {
 
-    validate_matrixInit(matr, caller);
+    // TODO: to make below changes, we need to remove this template; only CompMatrN needs accel checks
+
+    // TODO: change below; we should use...
+    //      - serial utils check if matr is small (e.g. <=5 qubit)
+    //      - multitthreaded check if matr is not gpu-accel
+    //      - gpu check if matr is gpu-accel
+
+    // assert CPU amps are unitary
     assertThat(util_isUnitary(matr), report::MATRIX_NOT_UNITARY, caller);
 }
 
 void validate_matrixIsUnitary(CompMatr1 matr, const char* caller) {
+    validate_matrixInit(matr, caller);
     assertMatrixIsUnitary(matr, caller);
 }
 void validate_matrixIsUnitary(CompMatr2 matr, const char* caller) {
+    validate_matrixInit(matr, caller);
     assertMatrixIsUnitary(matr, caller);
 }
 void validate_matrixIsUnitary(CompMatrN matr, const char* caller) {
+    validate_matrixIsSynced(matr, caller);
     assertMatrixIsUnitary(matr, caller);
 }
-
 
 
 /*

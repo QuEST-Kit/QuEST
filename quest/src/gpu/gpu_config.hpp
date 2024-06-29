@@ -9,6 +9,7 @@
 
 #include "quest/include/types.h"
 #include "quest/include/qureg.h"
+#include "quest/include/structures.h"
 
 #include <cstdlib>
 
@@ -72,13 +73,16 @@ qcomp* gpu_allocAmps(qindex numLocalAmps);
 
 void gpu_deallocAmps(qcomp* amps);
 
-void gpu_copyCpuToGpu(Qureg qureg, qcomp* cpuArr, qcomp* gpuArr, qindex numElems);
+bool gpu_doCpuAmpsHaveUnsyncMemFlag(qcomp*  cpuArr);
+bool gpu_doCpuAmpsHaveUnsyncMemFlag(qcomp** cpuMatr);
 
+void gpu_copyCpuToGpu(Qureg qureg, qcomp* cpuArr, qcomp* gpuArr, qindex numElems);
 void gpu_copyCpuToGpu(Qureg qureg);
 
 void gpu_copyGpuToCpu(Qureg qureg, qcomp* gpuArr, qcomp* cpuArr, qindex numElems);
-
 void gpu_copyGpuToCpu(Qureg qureg);
+
+void gpu_copyCpuToGpu(CompMatrN matr);
 
 bool gpu_haveGpuAmpsBeenSynced(qcomp* gpuArr);
 
