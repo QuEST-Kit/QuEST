@@ -237,14 +237,14 @@ void gpu_bindLocalGPUsToNodes(int rank) {
 }
 
 
-void gpu_synch() {
+void gpu_sync() {
 #if ENABLE_GPU_ACCELERATION
 
     CUDA_CHECK( cudaDeviceSynchronize() );
 
+#else
+    error_gpuSyncedButGpuNotCompiled();
 #endif
-
-    // TODO: validation? eh
 }
 
 
