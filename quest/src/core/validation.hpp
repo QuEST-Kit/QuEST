@@ -72,6 +72,10 @@ void validate_matrixInit(CompMatr1 matr, const char* caller);
 void validate_matrixInit(CompMatr2 matr, const char* caller);
 void validate_matrixInit(CompMatrN matr, const char* caller);
 
+void validate_matrixElemsDontContainUnsyncFlag(qcomp** elems, const char* caller);
+
+void validate_matrixIsSynced(CompMatrN matr, const char* caller);
+
 void validate_matrixIsUnitary(CompMatr1 matr, const char* caller);
 void validate_matrixIsUnitary(CompMatr2 matr, const char* caller);
 void validate_matrixIsUnitary(CompMatrN matr, const char* caller);

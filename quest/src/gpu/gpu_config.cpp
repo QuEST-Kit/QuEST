@@ -5,6 +5,8 @@
 #include "quest/include/modes.h"
 #include "quest/include/types.h"
 #include "quest/include/qureg.h"
+#include "quest/include/structures.h"
+#include "quest/include/environment.h"
 
 #include "quest/src/core/errors.hpp"
 #include "quest/src/core/memory.hpp"
@@ -255,13 +257,34 @@ void gpu_sync() {
  */
 
 
+// initial value of first element of freshly GPU-allocated memory which
+// indicates memory has not yet been synced/overwritten since creation.
+// This is used by validation to detect users forgetting to sync memory
+// of API structures, so should be an arbitrary value users are unlikely 
+// to set as the first element (which we will validate anyway). We don't
+// do this for Quregs which are always overwritten at creation.
+const qcomp UNSYNCED_GPU_MEM_FLAG = qcomp(3.141592653, 12345.67890);
+
+
 qcomp* gpu_allocAmps(qindex numLocalAmps) {
 #if ENABLE_GPU_ACCELERATION
 
     size_t numBytes = mem_getLocalMemoryRequired(numLocalAmps);
 
+    // attempt to malloc
     qcomp* ptr;
-    CUDA_CHECK( cudaMalloc(&ptr, numBytes) );
+    cudaError_t errCode = cudaMalloc(&ptr, numBytes);
+
+    // intercept memory-alloc error and merely return NULL pointer (to be handled by validation)
+    if (errCode == cudaErrorMemoryAllocation)
+        return NULL;
+
+    // pass all other unexpected errors to internal error handling
+    CUDA_CHECK(errCode);
+
+    // mark that the gpu memory is fresh and needs overwriting, by overwriting ptr[0] to unsyc flag
+    CUDA_CHECK( cudaMemcpy(ptr, &UNSYNCED_GPU_MEM_FLAG, sizeof(qcomp), cudaMemcpyHostToDevice) );
+
     return ptr;
 
 #else
@@ -315,4 +338,73 @@ void gpu_copyGpuToCpu(Qureg qureg, qcomp* gpuArr, qcomp* cpuArr, qindex numElems
 
 void gpu_copyGpuToCpu(Qureg qureg) {
     gpu_copyGpuToCpu(qureg, qureg.gpuAmps, qureg.cpuAmps, qureg.numAmpsPerNode);
+}
+
+
+void gpu_copyCpuToGpu(CompMatrN matr) {
+#if ENABLE_GPU_ACCELERATION
+
+    if (matr.gpuElems == NULL || getQuESTEnv().isGpuAccelerated==0)
+        error_gpuCopyButCompMatrNotGpuAccelerated();
+
+    size_t numBytesPerRow = matr.numRows * sizeof(**matr.elems);
+
+    // use the single existing/default stream
+    int stream = 0; 
+    gpu_sync();
+
+    // copy each CPU row into flattened GPU memory. we make each memcpy asynch,
+    // but it's unclear it helps, nor whether single-stream sync is necessary
+    for (qindex r=0; r<matr.numRows; r++) {
+        qcomp* cpuRow = matr.elems[r];
+        qcomp* gpuSlice = &matr.gpuElems[r*matr.numRows];
+        CUDA_CHECK( cudaMemcpyAsync(gpuSlice, cpuRow, numBytesPerRow, cudaMemcpyHostToDevice, stream) );
+    }
+
+    gpu_sync();
+    
+#else
+    error_gpuCopyButGpuNotCompiled();
+#endif
+}
+
+
+bool gpu_haveGpuAmpsBeenSynced(qcomp* gpuArr) {
+#if ENABLE_GPU_ACCELERATION
+
+    if (matr.gpuElems == NULL || getQuESTEnv().isGpuAccelerated==0)
+        error_gpuCopyButCompMatrNotGpuAccelerated();
+
+    // obtain first element from device memory
+    qcomp firstElem;
+    CUDA_CHECK( cudaMemcpy(&firstElem, gpuArr, sizeof(qcomp), cudaMemcpyDeviceToHost) );
+
+    // check whether it is still the unsync'd flag
+    return firstElem != UNSYNCED_GPU_MEM_FLAG;
+
+#else
+    error_gpuCopyButGpuNotCompiled();
+    return false;
+#endif
+}
+
+
+bool gpu_doCpuAmpsHaveUnsyncMemFlag(qcomp* cpuArr) {
+
+    // we permit the unsync flag to appear in CPU-only matrices, so we
+    // should never be asking this question unless env is GPU-accelerated. 
+    // Indeed permitting the flag when CPU-only could astonish users
+    // if they later enabled GPU-accel and encounter a validation error
+    // (not actually this internal error), but that's less astonishing then 
+    // getting a GPU-related error message when running in CPU-mode!
+    if (!getQuESTEnv().isGpuAccelerated)
+        error_gpuMemSyncQueriedButEnvNotGpuAccelerated();
+
+    return cpuArr[0] == UNSYNCED_GPU_MEM_FLAG;
+}
+
+bool gpu_doCpuAmpsHaveUnsyncMemFlag(qcomp** cpuMatr) {
+
+    // flag is stored in first element of matrix
+    return gpu_doCpuAmpsHaveUnsyncMemFlag(cpuMatr[0]);
 }
