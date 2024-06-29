@@ -16,7 +16,7 @@ extern "C" {
  * main instance, statically instantiated inside environment.cpp,
  * accessible anywhere via a getter, and which is consulted for
  * determining the deployment configuration. Users can obtain a
- * local copy of this struct for their own querying.
+ * local copy of this struct with getQuESTEnv().
  */
 
 typedef struct QuESTEnv {

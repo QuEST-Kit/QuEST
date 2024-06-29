@@ -367,10 +367,6 @@ void finalizeQuESTEnv() {
 void reportQuESTEnv() {
     validate_envInit(__func__);
 
-    // we attempt to report properties of available hardware facilities
-    // (e.g. number of CPU cores, number of GPUs) even if the environment is not
-    // making use of them, to inform the user how they might change deployment.
-
     // TODO: add function to write this output to file (useful for HPC debugging)
 
     // only root node reports (but no synch necesary)
@@ -382,6 +378,9 @@ void reportQuESTEnv() {
     bool statevec = false;
     bool densmatr = true;
 
+    // we attempt to report properties of available hardware facilities
+    // (e.g. number of CPU cores, number of GPUs) even if the environment is not
+    // making use of them, to inform the user how they might change deployment.
     printPrecisionInfo();
     printCompilationInfo();
     printDeploymentInfo(questEnv);
