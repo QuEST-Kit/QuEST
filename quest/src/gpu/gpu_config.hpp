@@ -60,7 +60,7 @@ void gpu_finalizeCuQuantum();
 
 void gpu_bindLocalGPUsToNodes(int rank);
 
-void gpu_synch();
+void gpu_sync();
 
 
 
@@ -79,6 +79,8 @@ void gpu_copyCpuToGpu(Qureg qureg);
 void gpu_copyGpuToCpu(Qureg qureg, qcomp* gpuArr, qcomp* cpuArr, qindex numElems);
 
 void gpu_copyGpuToCpu(Qureg qureg);
+
+bool gpu_haveGpuAmpsBeenSynced(qcomp* gpuArr);
 
 
 

@@ -150,7 +150,7 @@ int comm_getNumNodes() {
 }
 
 
-void comm_synch() {
+void comm_sync() {
 #if ENABLE_DISTRIBUTION
 
     // gracefully handle when not distributed, needed by pre-MPI-setup validation 

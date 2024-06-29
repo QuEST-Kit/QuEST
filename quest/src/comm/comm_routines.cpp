@@ -141,7 +141,7 @@ void exchangeArrays(qcomp* send, qcomp* recv, qindex numElems, int pairRank) {
 void asynchSendArray(qcomp* send, qindex numElems, int pairRank) {
 #if ENABLE_DISTRIBUTION
 
-    // we will not track nor wait for the asynch send; instead, the caller will later comm_synch()
+    // we will not track nor wait for the asynch send; instead, the caller will later comm_sync()
     MPI_Request nullReq = MPI_REQUEST_NULL;
 
     // divide the data into multiple messages
@@ -193,7 +193,7 @@ void exchangeGpuAmpsToGpuBuffers(Qureg qureg, qindex sendInd, qindex recvInd, qi
     if (gpu_isDirectGpuCommPossible()) {
 
         // ensure GPU is finished modifying gpuAmps and gpuCommBuffer
-        gpu_synch();
+        gpu_sync();
 
         // communicate via GPUDirect or Peer-to-Peer
         exchangeArrays(&qureg.gpuAmps[sendInd], &qureg.gpuCommBuffer[recvInd], numAmps, pairRank);
@@ -219,7 +219,7 @@ void exchangeGpuBuffers(Qureg qureg, qindex numAmpsAndRecvInd, int pairRank) {
     if (gpu_isDirectGpuCommPossible()) {
 
         // ensure GPU is finished modifying gpuCommBuffer
-        gpu_synch();
+        gpu_sync();
 
         // communicate via GPUDirect or Peer-to-Peer
         exchangeArrays(&qureg.gpuCommBuffer[0], &qureg.gpuCommBuffer[numAmpsAndRecvInd], numAmpsAndRecvInd, pairRank);
@@ -245,7 +245,7 @@ void asynchSendGpuBuffer(Qureg qureg, qindex numElems, int pairRank) {
     if (gpu_isDirectGpuCommPossible()) {
 
         // ensure GPU is finished modifying gpuCommBuffer
-        gpu_synch();
+        gpu_sync();
 
         // communicate via GPUDirect or Peer-to-Peer
         asynchSendArray(qureg.gpuCommBuffer, numElems, pairRank);

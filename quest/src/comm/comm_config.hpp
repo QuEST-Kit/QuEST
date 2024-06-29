@@ -52,7 +52,7 @@ int comm_getRank();
 
 int comm_getNumNodes();
 
-void comm_synch();
+void comm_sync();
 
 
 
