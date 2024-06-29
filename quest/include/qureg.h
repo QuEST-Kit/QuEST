@@ -6,7 +6,6 @@
 #define QUREG_H
 
 #include "quest/include/types.h"
-#include "quest/include/environment.h"
 
 // enable invocation by both C and C++ binaries
 #ifdef __cplusplus
@@ -46,11 +45,11 @@ typedef struct Qureg
 
 
 
-Qureg createQureg(int numQubits, QuESTEnv env);
+Qureg createQureg(int numQubits);
 
-Qureg createDensityQureg(int numQubits, QuESTEnv env);
+Qureg createDensityQureg(int numQubits);
 
-Qureg createCustomQureg(int numQubits, int isDensMatr, int useDistrib, int useGpuAccel, int useMultithread, QuESTEnv env);
+Qureg createCustomQureg(int numQubits, int isDensMatr, int useDistrib, int useGpuAccel, int useMultithread);
 
 void destroyQureg(Qureg qureg);
 

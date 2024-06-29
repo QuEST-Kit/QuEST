@@ -28,7 +28,10 @@ using namespace form_substrings;
  * PRIVATE INNER FUNCTIONS (C++)
  */
 
-Qureg validateAndCreateCustomQureg(int numQubits, int isDensMatr, int useDistrib, int useGpuAccel, int useMultithread, QuESTEnv env, const char* caller) {
+Qureg validateAndCreateCustomQureg(int numQubits, int isDensMatr, int useDistrib, int useGpuAccel, int useMultithread, const char* caller) {
+
+    validate_envInit(__func__);
+    QuESTEnv env = getQuESTEnv();
 
     // ensure deployment is compatible with environment, considering available hardware and their memory capacities
     validate_newQuregParams(numQubits, isDensMatr, useDistrib, useGpuAccel, useMultithread, env, caller);
@@ -189,28 +192,25 @@ void printMemoryInfo(Qureg qureg) {
 extern "C" {
 
 
-Qureg createCustomQureg(int numQubits, int isDensMatr, int useDistrib, int useGpuAccel, int useMultithread, QuESTEnv env) {
-    validate_envInit(env, __func__);
+Qureg createCustomQureg(int numQubits, int isDensMatr, int useDistrib, int useGpuAccel, int useMultithread) {
 
-    return validateAndCreateCustomQureg(numQubits, isDensMatr, useDistrib, useGpuAccel, useMultithread, env, __func__);
+    return validateAndCreateCustomQureg(numQubits, isDensMatr, useDistrib, useGpuAccel, useMultithread, __func__);
 }
 
 
-Qureg createQureg(int numQubits, QuESTEnv env) {
-    validate_envInit(env, __func__);
+Qureg createQureg(int numQubits) {
 
     int isDensMatr = 0;
     int autoMode = modeflag::USE_AUTO;
-    return validateAndCreateCustomQureg(numQubits, isDensMatr, autoMode, autoMode, autoMode, env, __func__);
+    return validateAndCreateCustomQureg(numQubits, isDensMatr, autoMode, autoMode, autoMode, __func__);
 }
 
 
-Qureg createDensityQureg(int numQubits, QuESTEnv env) {
-    validate_envInit(env, __func__);
+Qureg createDensityQureg(int numQubits) {
 
     int isDensMatr = 1;
     int autoMode = modeflag::USE_AUTO;
-    return validateAndCreateCustomQureg(numQubits, isDensMatr, autoMode, autoMode, autoMode, env, __func__);
+    return validateAndCreateCustomQureg(numQubits, isDensMatr, autoMode, autoMode, autoMode, __func__);
 }
 
 
