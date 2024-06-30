@@ -10,6 +10,8 @@
 #include "quest/include/qureg.h"
 #include "quest/include/structures.h"
 
+#include <vector>
+
 
 
 /*
@@ -72,7 +74,9 @@ void validate_matrixInit(CompMatr1 matr, const char* caller);
 void validate_matrixInit(CompMatr2 matr, const char* caller);
 void validate_matrixInit(CompMatrN matr, const char* caller);
 
-void validate_matrixElemsDontContainUnsyncFlag(qcomp** elems, const char* caller);
+void validate_numMatrixElems(int numQubits, std::vector<std::vector<qcomp>> elems, const char* caller);
+
+void validate_matrixElemsDontContainUnsyncFlag(qcomp firstElem, const char* caller);
 
 void validate_matrixIsSynced(CompMatrN matr, const char* caller);
 
