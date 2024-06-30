@@ -169,7 +169,7 @@ typedef struct CompMatrN
         getCompMatr1(__VA_ARGS__)
 
     #define getLiteralCompMatr2(...) \
-        getCompMatr2FromArr(__VA_ARGS__)
+        getCompMatr2(__VA_ARGS__)
 
 #else
 
