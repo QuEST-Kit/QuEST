@@ -254,7 +254,7 @@ void setCompMatrN(CompMatrN out, std::vector<std::vector<qcomp>> in) {
 
     // we validate dimension of 'in', which first requires validating 'out' fields
     validate_matrixInit(out, __func__);
-    validate_numMatrixElems(1, in, __func__);
+    validate_numMatrixElems(out.numQubits, in, __func__);
 
     validateAndSetCompMatrNElems(out, in, __func__);
 }
