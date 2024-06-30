@@ -2,6 +2,9 @@
  * Definitions of API data structures like gate matrices. 
  * Note QuESTEnv and Qureg structs have their own definitions 
  * in environment.cpp and qureg.cpp respectively.
+ * 
+ * This file defines many "layers" of initialisation of complex
+ * matrices, as explained in the header file.
  */
 
 #include "quest/include/structures.h"
@@ -18,6 +21,7 @@
 #include <cstdlib>
 #include <iostream>
 #include <string>
+#include <vector>
 
 
 // for concise reporters
@@ -26,63 +30,114 @@ using namespace form_substrings;
 
 
 /*
- * C++-ONLY MATRIX 1&2 CONSTRUCTORS
- * 
- * and their corresponding C-compatible alternatives which are wrapped by wrappers.h.
- * These are necessary because of the non-interchangeable C and C++ qcomp types.
- * See structures.h for an explanation.
+ * PRIVATE UTILITES 
  */
 
+// A and B can both be qcomp** or qcomp[][] (mixed)
+template<typename A, typename B> 
+void populateCompMatrElems(A out, B in, qindex dim) {
 
-CompMatr1 getCompMatr1(qcomp in[2][2]) {
+    for (qindex r=0; r<dim; r++)
+        for (qindex c=0; c<dim; c++)
+            out[r][c] = in[r][c];
+}
 
-    CompMatr1 out = {
-        .numQubits = 1,
-        .numRows = 2,
-        .elems = {
-            in[0][0], in[0][1],
-            in[1][0], in[1][1]
-        }
-    };
+// T can be CompMatr1/2, B can be qcomp** or qcomp[][]
+template<class T, typename B>
+T getCompMatrFromElems(B in, int num) {
 
+    T out;
+    out.numQubits = num;
+    out.numRows = powerOf2(num);
+    populateCompMatrElems(out.elems, in, out.numRows);
     return out;
-}
-extern "C" void wrap_getCompMatr1(CompMatr1* out, qcomp in[2][2]) {
-
-    *out = getCompMatr1(in);
-}
-
-
-CompMatr2 getCompMatr2(qcomp in[4][4]) {
-
-    CompMatr2 out = {
-        .numQubits = 2,
-        .numRows = 4,
-        .elems = {
-            in[0][0], in[0][1], in[0][2], in[0][3],
-            in[1][0], in[1][1], in[1][2], in[1][3],
-            in[2][0], in[2][1], in[2][2], in[2][3],
-            in[3][0], in[3][1], in[3][2], in[3][3]
-        }
-    };
-    
-    return out;
-}
-extern "C" void wrap_getCompMatr2(CompMatr2* out, qcomp in[4][4]) {
-
-    *out = getCompMatr2(in);
 }
 
 
 
 /*
- * C & C++ MATRIX N CONSTRUCTORS
+ * EXPLICIT FIXED-SIZE MATRIX INITIALISERS
+ * 
+ * and their corresponding C-compatible alternatives which are wrapped by wrappers.h.
+ * The wrappers are necessary because of the non-interchangeable C and C++ qcomp types.
+ * See structures.h for an explanation. These definitions will always exist (even when
+ * the user compiles their own code in C), but will be name-mangled.
+ * 
+ * The separate *FromArr an *FromPtr definitions are so that we can safe and simply
+ * wrap these in a C-compatible param-agnostic macro, and C++-compatible overloads,
+ * so that users can avoid having to use compound literals and pass {{...}} in-place.
+ */
+
+CompMatr1 getCompMatr1FromArr(qcomp in[2][2]) {
+    return getCompMatrFromElems<CompMatr1>(in, 1);
+}
+CompMatr1 getCompMatr1FromPtr(qcomp** in) {
+    return getCompMatrFromElems<CompMatr1>(in, 1);
+}
+CompMatr2 getCompMatr2FromArr(qcomp in[4][4]) {
+    return getCompMatrFromElems<CompMatr2>(in, 2);
+}
+CompMatr2 getCompMatr2FromPtr(qcomp** in) {
+    return getCompMatrFromElems<CompMatr2>(in, 2);
+}
+
+extern "C" void wrap_getCompMatr1FromArr(CompMatr1* out, qcomp in[2][2]) {
+    *out = getCompMatr1FromArr(in);
+}
+extern "C" void wrap_getCompMatr1FromPtr(CompMatr1* out, qcomp** in) {
+    *out = getCompMatr1FromPtr(in);
+}
+extern "C" void wrap_getCompMatr2FromArr(CompMatr2* out, qcomp in[4][4]) {
+    *out = getCompMatr2FromArr(in);
+}
+extern "C" void wrap_getCompMatr2FromPtr(CompMatr2* out, qcomp** in) {
+    *out = getCompMatr2FromPtr(in);
+}
+
+
+
+/*
+ * OVERLOADED FIXED-SIZE MATRIX INITIALISERS
  *
- * all of which are de-mangled for C-compatibility
+ * Only exposed to C++; equivalent C macros are defined in the header.
+ * Only the C++ vector overloads can validate their literal dimensions.
+ */
+
+CompMatr1 getCompMatr1(qcomp in[2][2]) {
+    return getCompMatrFromElems<CompMatr1>(in, 1);
+}
+CompMatr1 getCompMatr1(qcomp** in) {
+    return getCompMatrFromElems<CompMatr1>(in, 1);
+}
+CompMatr1 getCompMatr1(std::vector<std::vector<qcomp>> in) {
+    validate_numMatrixElems(1, in, __func__);
+
+    return getCompMatrFromElems<CompMatr1>(in, 1);
+}
+
+CompMatr2 getCompMatr2(qcomp in[4][4]) {
+    return getCompMatrFromElems<CompMatr2>(in, 2);
+}
+CompMatr2 getCompMatr2(qcomp** in) {
+    return getCompMatrFromElems<CompMatr2>(in, 2);
+}
+CompMatr2 getCompMatr2(std::vector<std::vector<qcomp>> in) {
+    validate_numMatrixElems(2, in, __func__);
+
+    return getCompMatrFromElems<CompMatr2>(in, 2);
+}
+
+
+
+/*
+ * VARIABLE SIZE MATRIX CONSTRUCTORS
+ *
+ * all of which are de-mangled for both C++ and C compatibility
  */
 
 
 extern "C" CompMatrN createCompMatrN(int numQubits) {
+    validate_envInit(__func__);
     validate_newMatrixNumQubits(numQubits, __func__);
 
     // allocate GPU memory if the env is GPU-accelerated, regardless of (unknown) Qureg allocations
@@ -132,28 +187,92 @@ extern "C" void destroyCompMatrN(CompMatrN matrix) {
 }
 
 
-
-/*
- * MATRIX N INITIALISER
- */
-
 extern "C" void syncCompMatrN(CompMatrN matr) {
     validate_matrixInit(matr, __func__);
-    validate_matrixElemsDontContainUnsyncFlag(matr.elems, __func__);
+    validate_matrixElemsDontContainUnsyncFlag(matr.elems[0][0], __func__);
 
     gpu_copyCpuToGpu(matr);
 }
 
-extern "C" void setCompMatrN(CompMatrN matr, qcomp** vals) {
-    validate_matrixInit(matr, __func__);
-    validate_matrixElemsDontContainUnsyncFlag(vals, __func__);
+
+
+/*
+ * EXPLICIT VARIABLE-SIZE MATRIX INITIALISERS
+ *
+ * all of which are demangled for C and C++ compatibility
+ */
+
+
+template <typename T> 
+void validateAndSetCompMatrNElems(CompMatrN out, T elems, const char* caller) {
+    validate_matrixInit(out, __func__);
+    validate_matrixElemsDontContainUnsyncFlag(elems[0][0], caller);
 
     // serially copy values to CPU memory
-    populateCompMatrElems(matr.elems, vals, matr.numRows);
+    populateCompMatrElems(out.elems, elems, out.numRows);
 
-    // overwrite GPU elements
-    if (matr.gpuElems != NULL)
-        gpu_copyCpuToGpu(matr);
+    // overwrite GPU elements (including unsync flag)
+    if (out.gpuElems != NULL)
+        gpu_copyCpuToGpu(out);
+}
+
+extern "C" void setCompMatrNFromPtr(CompMatrN out, qcomp** elems) {
+
+    validateAndSetCompMatrNElems(out, elems, __func__);
+}
+
+// the corresponding setCompMatrNFromArr() function must use VLAs and so
+// is C++ incompatible, and is subsequently defined inline in the header file.
+// Because it needs to create stack memory with size given by a CompMatrN field,
+// we need to first validate that field via this exposed validation function. Blegh!
+
+extern "C" void validate_setCompMatrNFromArr(CompMatrN out) {
+
+    // the user likely invoked this function from the setLiteralCompMatrN()
+    // macro, but we cannot know for sure so it's better to fall-back to
+    // reporting the definitely-involved inner function, as we do elsewhere
+    validate_matrixInit(out, "setCompMatrNFromArr");
+}
+
+
+
+/*
+ * OVERLOADED VARIABLE-SIZE MATRIX INITIALISERS
+ *
+ * which are C++ only; equivalent C overloads are defined using
+ * macros in the header file. Note the explicit overloads below
+ * excludes a 2D qcomp[][] array because VLA is not supported by C++.
+ */
+
+
+void setCompMatrN(CompMatrN out, qcomp** in) {
+
+    validateAndSetCompMatrNElems(out, in, __func__);
+}
+
+void setCompMatrN(CompMatrN out, std::vector<std::vector<qcomp>> in) {
+
+    // we validate dimension of 'in', which first requires validating 'out' fields
+    validate_matrixInit(out, __func__);
+    validate_numMatrixElems(out.numQubits, in, __func__);
+
+    validateAndSetCompMatrNElems(out, in, __func__);
+}
+
+
+
+/*
+ * STRING PARSING VARIABLE-SIZE MATRIX INITIALISERS
+ */
+
+
+// de-mangle for both C and C++ invocation
+extern "C" void setStringCompMatrN(CompMatrN matr, char* string) {
+    validate_matrixInit(matr, __func__);
+
+    // TODO: validate post-parsed string doesn't contain unsync flag
+
+    // TODO: invoke parser
 }
 
 

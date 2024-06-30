@@ -347,18 +347,15 @@ void gpu_copyCpuToGpu(CompMatrN matr) {
     if (matr.gpuElems == NULL || getQuESTEnv().isGpuAccelerated==0)
         error_gpuCopyButCompMatrNotGpuAccelerated();
 
-    size_t numBytesPerRow = matr.numRows * sizeof(**matr.elems);
-
-    // use the single existing/default stream
-    int stream = 0; 
-    gpu_sync();
-
     // copy each CPU row into flattened GPU memory. we make each memcpy asynch,
     // but it's unclear it helps, nor whether single-stream sync is necessary
+    size_t numBytesPerRow = matr.numRows * sizeof(**matr.elems);
+    gpu_sync();
+
     for (qindex r=0; r<matr.numRows; r++) {
         qcomp* cpuRow = matr.elems[r];
         qcomp* gpuSlice = &matr.gpuElems[r*matr.numRows];
-        CUDA_CHECK( cudaMemcpyAsync(gpuSlice, cpuRow, numBytesPerRow, cudaMemcpyHostToDevice, stream) );
+        CUDA_CHECK( cudaMemcpyAsync(gpuSlice, cpuRow, numBytesPerRow, cudaMemcpyHostToDevice) );
     }
 
     gpu_sync();
@@ -372,7 +369,7 @@ void gpu_copyCpuToGpu(CompMatrN matr) {
 bool gpu_haveGpuAmpsBeenSynced(qcomp* gpuArr) {
 #if ENABLE_GPU_ACCELERATION
 
-    if (matr.gpuElems == NULL || getQuESTEnv().isGpuAccelerated==0)
+    if (gpuArr == NULL || getQuESTEnv().isGpuAccelerated==0)
         error_gpuCopyButCompMatrNotGpuAccelerated();
 
     // obtain first element from device memory
@@ -389,7 +386,7 @@ bool gpu_haveGpuAmpsBeenSynced(qcomp* gpuArr) {
 }
 
 
-bool gpu_doCpuAmpsHaveUnsyncMemFlag(qcomp* cpuArr) {
+bool gpu_doCpuAmpsHaveUnsyncMemFlag(qcomp firstCpuAmp) {
 
     // we permit the unsync flag to appear in CPU-only matrices, so we
     // should never be asking this question unless env is GPU-accelerated. 
@@ -400,11 +397,5 @@ bool gpu_doCpuAmpsHaveUnsyncMemFlag(qcomp* cpuArr) {
     if (!getQuESTEnv().isGpuAccelerated)
         error_gpuMemSyncQueriedButEnvNotGpuAccelerated();
 
-    return cpuArr[0] == UNSYNCED_GPU_MEM_FLAG;
-}
-
-bool gpu_doCpuAmpsHaveUnsyncMemFlag(qcomp** cpuMatr) {
-
-    // flag is stored in first element of matrix
-    return gpu_doCpuAmpsHaveUnsyncMemFlag(cpuMatr[0]);
+    return firstCpuAmp == UNSYNCED_GPU_MEM_FLAG;
 }

@@ -30,7 +30,7 @@ using namespace form_substrings;
 
 Qureg validateAndCreateCustomQureg(int numQubits, int isDensMatr, int useDistrib, int useGpuAccel, int useMultithread, const char* caller) {
 
-    validate_envInit(__func__);
+    validate_envInit(caller);
     QuESTEnv env = getQuESTEnv();
 
     // ensure deployment is compatible with environment, considering available hardware and their memory capacities

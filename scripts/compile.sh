@@ -48,7 +48,7 @@ USER_C_COMPILER=gcc
 USER_CXX_COMPILER=g++
 
 # user code language-specific compiler flags
-USER_C_COMP_FLAGS='-std=c99'
+USER_C_COMP_FLAGS='-std=c11'
 USER_CXX_COMP_FLAGS='-std=c++14'
 
 # user linker flags

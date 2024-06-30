@@ -73,8 +73,7 @@ qcomp* gpu_allocAmps(qindex numLocalAmps);
 
 void gpu_deallocAmps(qcomp* amps);
 
-bool gpu_doCpuAmpsHaveUnsyncMemFlag(qcomp*  cpuArr);
-bool gpu_doCpuAmpsHaveUnsyncMemFlag(qcomp** cpuMatr);
+bool gpu_doCpuAmpsHaveUnsyncMemFlag(qcomp  firstCpuAmp);
 
 void gpu_copyCpuToGpu(Qureg qureg, qcomp* cpuArr, qcomp* gpuArr, qindex numElems);
 void gpu_copyCpuToGpu(Qureg qureg);
