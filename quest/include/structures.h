@@ -156,16 +156,32 @@ typedef struct CompMatrN
  * LITERAL FIXED-SIZE MATRIX INITIALISERS
  *
  * which enable C users to give inline 2D array literals without having to use the
- * compound literal syntax. We expose these macros to C++ too for API consistency,
- * although C++'s getCompMatr1 vector overload achieves the same thing
+ * compound literal syntax. We expose these macros to C++ too for API consistency.
+ * although C++'s getCompMatr1 vector overload achieves the same thing, and cannot
+ * use C-style temporary arrays.
  */
 
+#ifdef __cplusplus
 
-#define getLiteralCompMatr1(...) \
-    getCompMatr1FromArr((qcomp[2][2]) __VA_ARGS__)
+    // C++ merely invokes the std::vector initialiser overload
 
-#define getLiteralCompMatr2(...) \
-    getCompMatr2FromArr((qcomp[4][4]) __VA_ARGS__)
+    #define getLiteralCompMatr1(...) \
+        getCompMatr1(__VA_ARGS__)
+
+    #define getLiteralCompMatr2(...) \
+        getCompMatr2FromArr(__VA_ARGS__)
+
+#else
+
+    // C adds compound literal syntax to make a temporary array
+
+    #define getLiteralCompMatr1(...) \
+        getCompMatr1FromArr((qcomp[2][2]) __VA_ARGS__)
+
+    #define getLiteralCompMatr2(...) \
+        getCompMatr2FromArr((qcomp[4][4]) __VA_ARGS__)
+
+#endif
 
 
 
