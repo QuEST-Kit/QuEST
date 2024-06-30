@@ -18,6 +18,7 @@
 
 #include <iostream>
 #include <cstdlib>
+#include <vector>
 #include <map>
 
 
@@ -205,11 +206,13 @@ namespace report {
     std::string INVALID_EXISTING_GPU_ALLOC_OF_COMPLEX_MATRIX =
         "Invalid CompMatrN. The GPU memory was seemingly unallocated.";
 
+
     std::string COMPLEX_MATRIX_NEW_ELEMS_CONTAINED_GPU_SYNC_FLAG = 
         "The CompMatrN contained a reserved, forbidden value as the first element, used internally to detect that whether GPU memory has not synchronised. The value was intended to be extremely unlikely to be used by users - go buy a lottery ticket! If you insist on using this value in the first element, add a numerically insignificant perturbation.";
 
     std::string COMPLEX_MATRIX_NOT_SYNCED_TO_GPU = 
         "The CompMatrN has yet not been synchronised with its persistent GPU memory, so potential changes to its elements are being ignored. Please first call syncCompMatrN() after manually modifying elements, or overwrite all elements with setCompMatrN().";
+
 
     std::string INVALID_COMP_MATR_1_FIELDS =
         "Invalid CompMatr1. Targeted ${NUM_QUBITS} qubits (instead of 1) and had a dimension of ${NUM_ROWS}x${NUM_ROWS} (instead of 2x2). It is likely this matrix was not initialised with getCompMatr1().";
@@ -219,6 +222,14 @@ namespace report {
 
     std::string INVALID_COMP_MATR_N_FIELDS =
         "Invalid CompMatrN. Targeted ${NUM_QUBITS} qubits and had a dimension of ${NUM_ROWS}x${NUM_ROWS}. It is likely this matrix was not initialised with createCompMatrN().";
+
+
+    std::string COMPLEX_MATRIX_NEW_ELEMS_WRONG_NUM_ROWS =
+        "Incompatible number of rows (${NUM_GIVEN_ROWS}) of elements given to overwrite a ${NUM_QUBITS}-qubit CompMatrN, which expects ${NUM_EXPECTED_ROWS} rows.";
+
+    std::string COMPLEX_MATRIX_NEW_ELEMS_WRONG_ROW_DIM =
+        "One or more rows contained an incompatible number of elements (${NUM_GIVEN_ELEMS}). The ${NUM_QUBITS}-qubit CompMatrN expects a ${EXPECTED_DIM}x${EXPECTED_DIM} matrix.";
+
 
     std::string MATRIX_NOT_UNITARY = 
         "The given complex matrix was not (approximately) unitary.";
@@ -764,14 +775,35 @@ void validate_matrixInit(CompMatrN matr, const char* caller) {
     validate_newOrExistingMatrixAllocs(matr, false, caller);
 }
 
-void validate_matrixElemsDontContainUnsyncFlag(qcomp** elems, const char* caller) {
+void validate_numMatrixElems(int numQubits, std::vector<std::vector<qcomp>> elems, const char* caller) {
+
+    qindex dim = powerOf2(numQubits);
+    tokenSubs vars = {
+        {"${NUM_QUBITS}",        numQubits},
+        {"${NUM_EXPECTED_ROWS}", dim},
+        {"${NUM_GIVEN_ROWS}",    elems.size()}};
+
+    assertThat(elems.size() == dim, report::COMPLEX_MATRIX_NEW_ELEMS_WRONG_NUM_ROWS, vars, caller);
+
+    for(auto & row : elems) {
+
+        vars = {
+            {"${NUM_QUBITS}",      numQubits},
+            {"${EXPECTED_DIM}",    dim},
+            {"${NUM_GIVEN_ELEMS}", row.size()}};
+
+        assertThat(row.size() == dim, report::COMPLEX_MATRIX_NEW_ELEMS_WRONG_ROW_DIM, vars, caller);
+    }
+}
+
+void validate_matrixElemsDontContainUnsyncFlag(qcomp firstElem, const char* caller) {
 
     // we permit the matrix to contain the GPU-mem-unsync flag in CPU-only mode,
     // to avoid astonishing a CPU-only user with a GPU-related error message
     if (!getQuESTEnv().isGpuAccelerated)
         return;
 
-    assertThat(!gpu_doCpuAmpsHaveUnsyncMemFlag(elems), report::COMPLEX_MATRIX_NEW_ELEMS_CONTAINED_GPU_SYNC_FLAG, caller);
+    assertThat(!gpu_doCpuAmpsHaveUnsyncMemFlag(firstElem), report::COMPLEX_MATRIX_NEW_ELEMS_CONTAINED_GPU_SYNC_FLAG, caller);
 }
 
 void validate_matrixIsSynced(CompMatrN matr, const char* caller) {
@@ -790,12 +822,15 @@ void validate_matrixIsSynced(CompMatrN matr, const char* caller) {
 template <class T> 
 void assertMatrixIsUnitary(T matr, const char* caller) {
 
-    // TODO: to make below changes, we need to remove this template; only CompMatrN needs accel checks
+    // TODO: 
+    //  this function always serially processes the CPU elements,
+    //  but given the matrix may have persistent GPU memory, it is
+    //  prudent to GPU process it instead. I propose we...
+    //      - perform current serial utils check if matr is small (e.g. <=5 qubit)
+    //      - perform multithread check if matr is not gpu-accel
+    //      - perform gpu check if matr is gpu-accel (gpu mem gauranteed already set)
 
-    // TODO: change below; we should use...
-    //      - serial utils check if matr is small (e.g. <=5 qubit)
-    //      - multitthreaded check if matr is not gpu-accel
-    //      - gpu check if matr is gpu-accel
+    // TODO: to make above changes, we need to remove this template; only CompMatrN needs accel checks
 
     // assert CPU amps are unitary
     assertThat(util_isUnitary(matr), report::MATRIX_NOT_UNITARY, caller);

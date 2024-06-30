@@ -23,22 +23,42 @@
 
 
 
-void wrap_getCompMatr1(CompMatr1* out, qcomp in[2][2]);
+void wrap_getCompMatr1FromArr(CompMatr1* out, qcomp in[2][2]);
 
-CompMatr1 getCompMatr1(qcomp in[2][2]) {
+CompMatr1 getCompMatr1FromArr(qcomp in[2][2]) {
 
     CompMatr1 out;
-    wrap_getCompMatr1(&out, in);
+    wrap_getCompMatr1FromArr(&out, in);
     return out;
 }
 
 
-void wrap_getCompMatr2(CompMatr2* out, qcomp in[4][4]);
+void wrap_getCompMatr1FromPtr(CompMatr1* out, qcomp** in);
 
-CompMatr2 getCompMatr2(qcomp in[4][4]) {
+CompMatr1 getCompMatr1FromPtr(qcomp** in) {
+
+    CompMatr1 out;
+    wrap_getCompMatr1FromPtr(&out, in);
+    return out;
+}
+
+
+void wrap_getCompMatr2FromArr(CompMatr2* out, qcomp in[4][4]);
+
+CompMatr2 getCompMatr2FromArr(qcomp in[4][4]) {
 
     CompMatr2 out;
-    wrap_getCompMatr2(&out, in);
+    wrap_getCompMatr2FromArr(&out, in);
+    return out;
+}
+
+
+void wrap_getCompMatr2FromPtr(CompMatr2* out, qcomp** in);
+
+CompMatr2 getCompMatr2FromPtr(qcomp** in) {
+
+    CompMatr2 out;
+    wrap_getCompMatr2FromPtr(&out, in);
     return out;
 }
 
