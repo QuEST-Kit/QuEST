@@ -228,7 +228,7 @@ extern "C" void setCompMatrNFromPtr(CompMatrN out, qcomp** elems) {
 
 extern "C" void validate_setCompMatrNFromArr(CompMatrN out) {
 
-    // the user likely invoked this function from the setLiteralCompMatrN()
+    // the user likely invoked this function from the setInlineCompMatrN()
     // macro, but we cannot know for sure so it's better to fall-back to
     // reporting the definitely-involved inner function, as we do elsewhere
     validate_matrixInit(out, "setCompMatrNFromArr");
@@ -257,22 +257,6 @@ void setCompMatrN(CompMatrN out, std::vector<std::vector<qcomp>> in) {
     validate_numMatrixElems(out.numQubits, in, __func__);
 
     validateAndSetCompMatrNElems(out, in, __func__);
-}
-
-
-
-/*
- * STRING PARSING VARIABLE-SIZE MATRIX INITIALISERS
- */
-
-
-// de-mangle for both C and C++ invocation
-extern "C" void setStringCompMatrN(CompMatrN matr, char* string) {
-    validate_matrixInit(matr, __func__);
-
-    // TODO: validate post-parsed string doesn't contain unsync flag
-
-    // TODO: invoke parser
 }
 
 
