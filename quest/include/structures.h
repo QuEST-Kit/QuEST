@@ -11,15 +11,14 @@
  * Next, we define getCompMatr1() as a generic C macro and C++ overloads, so
  * that users can agnostically pass 2D pointers, arrays of pointers, or 2D arrays,
  * including compound literals like (qcomp[2][2]) {{...}}. So far, only the C++ 
- * overloads accept literals without the declaration like {{...}} via std::vector.
- * So, we next define getLiteralCompMatr1() as a C and C++ (for consistency) macro 
- * which accepts direct, concise literals like getLiteralCompMatr1({{...}}). Viola! 
+ * overloads accept inline literals like {{...}} via std::vector; C requires
+ * using the ugly and verbose compound literal syntax to create temporary arrays.
+ * So, we next define getInlineCompMatr1() as a C and C++ (for consistency) macro 
+ * which accepts direct, concise literals like getInlineCompMatr1({{...}}). Viola! 
  * 
  * We employ similar tricks to make setCompMatrN(), but define setCompMatrNFromArr()
  * in this header (exposed only to C) because it requires C++-incompatible VLAs;
- * this definition must invoke a bespoke validation function (gross). Also, our
- * implementation of setLiteralCompMatrN has to resort to preprocessor stringifying 
- * and runtime parsing - blegh!
+ * this definition must invoke a bespoke validation function (gross).
  * 
  * All of these "intermediate" CompMatr initialisations are exposed to users.
  * Keep in mind that definitions herein will lead to symbol duplication unless 
@@ -165,20 +164,20 @@ typedef struct CompMatrN
 
     // C++ merely invokes the std::vector initialiser overload
 
-    #define getLiteralCompMatr1(...) \
+    #define getInlineCompMatr1(...) \
         getCompMatr1(__VA_ARGS__)
 
-    #define getLiteralCompMatr2(...) \
+    #define getInlineCompMatr2(...) \
         getCompMatr2(__VA_ARGS__)
 
 #else
 
     // C adds compound literal syntax to make a temporary array
 
-    #define getLiteralCompMatr1(...) \
+    #define getInlineCompMatr1(...) \
         getCompMatr1FromArr((qcomp[2][2]) __VA_ARGS__)
 
-    #define getLiteralCompMatr2(...) \
+    #define getInlineCompMatr2(...) \
         getCompMatr2FromArr((qcomp[4][4]) __VA_ARGS__)
 
 #endif
@@ -286,24 +285,6 @@ extern "C" {
 
 
 /*
- * STRING PARSING VARIABLE-SIZE MATRIX INITIALISERS
- */
-
-
-// de-mangle for both C and C++ invocation
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-    void setStringCompMatrN(CompMatrN matr, char* string);
-
-#ifdef __cplusplus
-}
-#endif
-
-
-
-/*
  * LITERAL VARIABLE-SIZE MATRIX INITIALISERS
  *
  * which enable C users to give inline 2D array literals without having to use the
@@ -314,19 +295,19 @@ extern "C" {
 
 #ifdef __cplusplus
 
-    // C++ gets an explicit redirect to setCompMatrN(std::vector...), since it's faster than stringifying
+    // C++ gets an explicit redirect to setCompMatrN(std::vector...), ignoring numQb (blegh)
 
-    #define setLiteralCompMatrN(matr, ...) \
+    #define setInlineCompMatrN(matr, numQb, ...) \
         setCompMatrN(matr, __VA_ARGS__)
 
 #else 
 
-    // C VLAs cannot be initialized, so we cannot use the same trick as used for the fixed-size
-    // arrays, and i.e. invoke setCompMatrNFromArr() with inline array (qcomp(*)[matr.numRows]) __VA_ARGS__.
-    // Instead, we must diabolically convert the expression to a compile-time string and parse it. Eep!
+    // C creates a compile-time-sized temporary array via a compound literal. We sadly
+    // cannot use (qcomp[matr.numRows][matr.numRows]) to preclude passing 'numQb' 
+    // because VLAs cannot be initialised
 
-    #define setLiteralCompMatrN(matr, ...) \
-        setStringCompMatrN(matr, #__VA_ARGS__)
+    #define setInlineCompMatrN(matr, numQb, ...) \
+        setCompMatrNFromArr(matr, (qcomp[1<<numQb][1<<numQb]) __VA_ARGS__)
 
 #endif
 
