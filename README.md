@@ -28,7 +28,7 @@
 [![MIT license](https://img.shields.io/badge/license-MIT-lightgrey.svg)](LICENCE.txt)
 
 
-The **Quantum Exact Simulation Toolkit** is a high performance simulator of quantum circuits, state-vectors and density matrices. QuEST uses **multithreading**, **GPU acceleration** and **distribution** to run lightning first on laptops, desktops and networked supercomputers. 
+The **Quantum Exact Simulation Toolkit** is a high performance simulator of quantum circuits, state-vectors and density matrices. QuEST uses **multithreading**, **GPU acceleration** and **distribution** to run lightning fast on laptops, desktops and networked supercomputers. 
 QuEST *just works*; it is stand-alone, requires no installation, and is trivial to compile and run. 
 QuEST hybridises [OpenMP](https://www.openmp.org/) and [MPI](https://www.mpi-forum.org/) with _huge_ compiler support to run on all sorts of multicore, multi-CPU and distributed hardware, uses [HIP](https://docs.amd.com/bundle/HIP-Programming-Guide-v5.3) to run on AMD GPUs, integrates [cuQuantum](https://developer.nvidia.com/cuquantum-sdk) and [Thrust](https://developer.nvidia.com/thrust) for cutting-edge performance on modern NVIDIA GPUs, and has a custom kernel backend to run on older CUDA-compatible GPUs. 
 And it hides these deployment modes behind a single, seamless interface.
