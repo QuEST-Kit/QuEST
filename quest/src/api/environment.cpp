@@ -30,14 +30,33 @@ using namespace form_substrings;
 /*
  * PRIVATE QUESTENV SINGLETON
  *
- * Global to this file, accessible to other files only through getQuESTEnv().
- * The private bools indicate whether the QuEST environment is currently active,
- * and whether it has been finalised after being active respectively. This
- * difference is important, since the QuEST environment can only ever be initialised
- * once, even after finalisation.
+ * Global to this file, immutably accessible to other files only through 
+ * getQuESTEnv() which returns a copy. Users can inconsequentially 
+ * mutate the struct returned by getQuESTEnv(), which I would prefer to 
+ * forbid at compile-time; this could be achieved by foregoing the global
+ * questEnv instance and instead messily storing each field globally,
+ * instantiating a new const struct at each invocation of getQuESTEnv().
+ * That improves the user experience, but spaghettifies this file.
+ * The use of static ensures we never accidentally expose the "true"
+ * runtime single instance to other files.
  */
 
+
 static QuESTEnv questEnv;
+
+
+
+/*
+ * PRIVATE QUESTENV INITIALISATION HISTORY
+ *
+ * These respectively indicate whether the QuEST environment is 
+ * currently active (i.e. has been initialised but not yet finalised),
+ * and whether it has been finalised. This difference is important, since 
+ * the QuEST environment can only ever be initialised once, and can never
+ * be re-initialised after finalisation.
+ */
+
+
 static bool isQuESTInit  = false;
 static bool isQuESTFinal = false;
 
@@ -67,7 +86,8 @@ void validateAndInitCustomQuESTEnv(int useDistrib, int useGpuAccel, int useMulti
     if (useGpuAccel && gpu_isCuQuantumCompiled())
         validate_gpuIsCuQuantumCompatible(caller);
 
-    // create a private, local env (so we don't modify global env in case of error)
+    // create a local env (so we don't modify global env in case of validation error,
+    // although this is pedantic and unimportant due to forbidden re-initialisation)
     QuESTEnv env;
 
     // bind deployment info to QuESTEnv (may be overwritten still below)
@@ -102,7 +122,7 @@ void validateAndInitCustomQuESTEnv(int useDistrib, int useGpuAccel, int useMulti
 
     // TODO: setup RNG
 
-    // overwrite attributes of the global, static env
+    // overwrite attributes of the global env
     questEnv = env;
 
     // declare successful initialisation

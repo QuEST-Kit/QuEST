@@ -17,9 +17,16 @@ extern "C" {
  * accessible anywhere via a getter, and which is consulted for
  * determining the deployment configuration. Users can obtain a
  * local copy of this struct with getQuESTEnv().
+ * 
+ * QuESTEnv is not declared const, because it is impossible to 
+ * runtime initialise a const global variable like a singleton.
+ * A shame, but this poses no risk; the internal singleton is not 
+ * obtainable nor modifiable outside of environment.cpp since its 
+ * getter returns a copy. 
  */
 
-typedef struct QuESTEnv {
+
+typedef struct {
 
     // deployment mode
     int isGpuAccelerated;
