@@ -43,7 +43,7 @@ CompMatr2 util_getConj(CompMatr2 matrix) {
  * MATRIX UNITARITY
  */
 
-bool isUnitary(qcomp* const* const matrix, qindex dim) {
+bool isUnitary(qcomp** matrix, qindex dim) {
 
     // matrix is simply qcomp** but inherits the consts
     // from CompMatrN.elems, which protects changing

@@ -107,15 +107,6 @@ extern "C" CompMatrN createCompMatrN(int numQubits) {
     qindex numRows = powerOf2(numQubits);
     qindex numElems = numRows * numRows;
 
-    // we must malloc CompMatr.elem's memory before struct initialisation
-    // because each row pointer therein is declared const, and is immutable
-    qcomp** elemsPtr = (qcomp**) malloc(numRows * sizeof *elemsPtr); // NULL if failed
-
-    // only if that outer malloc succeeded, attempt to malloc every row
-    if (elemsPtr != NULL)
-        for (qindex r=0; r < numRows; r++)
-            elemsPtr[r] = (qcomp*) calloc(numRows, sizeof **elemsPtr); // NULL if failed
-
     // we will always allocate GPU memory if the env is GPU-accelerated
     bool isGpuAccel = getQuESTEnv().isGpuAccelerated;
 
@@ -125,11 +116,16 @@ extern "C" CompMatrN createCompMatrN(int numQubits) {
         .numRows = numRows,
 
         // const 2D CPU memory (NULL if failed, or containing NULLs)
-        .elems = elemsPtr,
+        .elems = (qcomp**) malloc(numRows * sizeof *out.elems), // NULL if failed,
 
         // const 1D GPU memory (NULL if failed or not needed)
         .gpuElems = (isGpuAccel)? gpu_allocAmps(numElems) : NULL // first amp will be un-sync'd flag
     };
+
+    // only if outer CPU allocation succeeded, attempt to allocate each row array
+    if (out.elems != NULL)
+        for (qindex r=0; r < numRows; r++)
+            out.elems[r] = (qcomp*) calloc(numRows, sizeof **out.elems); // NULL if failed
 
     // check all CPU & GPU malloc and calloc's succeeded (no attempted freeing if not)
     bool isNewMatr = true;
@@ -146,8 +142,8 @@ extern "C" void destroyCompMatrN(CompMatrN matrix) {
     for (qindex r=0; r < matrix.numRows; r++)
         free(matrix.elems[r]);
 
-    // free CPU array of rows; we have to void-cast because our 'const' pointers are too fancy
-    free((void*) matrix.elems);
+    // free CPU array of rows
+    free(matrix.elems);
 
     // free flat GPU array if it exists
     if (matrix.gpuElems != NULL)

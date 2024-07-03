@@ -44,7 +44,8 @@
  *
  * which are visible to both C and C++, where qcomp resolves
  * to the native complex type. These are not de-mangled because
- * C++ structs are already C compatible.
+ * C++ structs are already C compatible. We define their fields
+ * as const to prevent users mangling them.
  */
 
 
@@ -78,13 +79,12 @@ typedef struct {
     const int numQubits;
     const qindex numRows;
 
-    // consts prevent overwriting mem address (of outer list, and each
-    // row therein) but permit modifying each element
-    qcomp* const* const elems;
+    // 2D CPU memory; not const, so users can overwrite addresses (e.g. with NULL)
+    qcomp** elems;
 
     // row-flattened elems in GPU memory, allocated only
-    // in GPU-enabled QuEST environments (regardless of Quregs)
-    qcomp* const gpuElems;
+    // and always in GPU-enabled QuEST environments
+    qcomp* gpuElems;
 
 } CompMatrN;
 
