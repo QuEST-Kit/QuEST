@@ -17,8 +17,9 @@
 #include "quest/src/gpu/gpu_config.hpp"
 
 #include <iostream>
-#include <string>
 #include <typeinfo>
+#include <cstring>
+#include <string>
 #include <thread>
 #include <vector>
 #include <tuple>
