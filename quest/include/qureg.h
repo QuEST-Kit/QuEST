@@ -14,24 +14,24 @@ extern "C" {
 
 
 
-typedef struct Qureg
-{
+typedef struct {
+
     // deployment configuration
-    int isGpuAccelerated;
-    int isDistributed;
-    int isMultithreaded;
+    const int isMultithreaded;
+    const int isGpuAccelerated;
+    const int isDistributed;
 
     // distributed configuration
-    int rank;
-    int numNodes;
-    int logNumNodes;
+    const int rank;
+    const int numNodes;
+    const int logNumNodes;
 
     // dimension
-    int isDensityMatrix;
-    int numQubits;
-    qindex numAmps;
-    qindex numAmpsPerNode;
-    qindex logNumAmpsPerNode;
+    const int isDensityMatrix;
+    const int numQubits;
+    const qindex numAmps;
+    const qindex numAmpsPerNode;
+    const qindex logNumAmpsPerNode;
 
     // amplitudes in CPU and GPU memory
     qcomp* cpuAmps;

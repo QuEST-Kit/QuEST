@@ -42,62 +42,46 @@ Qureg validateAndCreateCustomQureg(int numQubits, int isDensMatr, int useDistrib
     // throw error if the user had forced multithreading but GPU accel was auto-chosen
     validate_newQuregNotBothMultithreadedAndGpuAccel(useGpuAccel, useMultithread, caller);
 
-    // bind deployment configuration
-    Qureg qureg;
-    qureg.isGpuAccelerated = useGpuAccel;
-    qureg.isDistributed = useDistrib;
-    qureg.isMultithreaded = useMultithread;
+    // pre-prepare some struct fields (to avoid circular initialisation)
+    int logNumNodes = (useDistrib)? 
+        logBase2(env.numNodes) : 0;
+    qindex logNumAmpsPerNode = (isDensMatr)? 
+        (2*numQubits - logNumNodes) :
+        (  numQubits - logNumNodes);
 
-    // if distributed, inherit config from env
-    if (useDistrib) {
-        qureg.rank = env.rank;
-        qureg.numNodes = env.numNodes;
-        qureg.logNumNodes = logBase2(env.numNodes);
+    // const struct fields must be initialised inline
+    Qureg qureg = {
 
-    // otherwise set config to single node
-    } else {
-        qureg.numNodes = 1;
-        qureg.logNumNodes = 0;
+        // bind deployment info
+        .isMultithreaded  = useMultithread,
+        .isGpuAccelerated = useGpuAccel,
+        .isDistributed    = useDistrib,
 
-        // but still retain the env's potentially unique rank
-        // because non-distributed quregs are still duplicated
-        // between every node, and have duplicate processes.
-        qureg.rank = env.rank;
-    }
+        // optionally bind distributed info, but always etain the env's rank because non-distributed
+        // quregs are still duplicated between every node, and have duplicate processes
+        .rank        = env.rank,
+        .numNodes    = (useDistrib)? env.numNodes : 1,
+        .logNumNodes = (useDistrib)? logBase2(env.numNodes) : 0, // duplicated for clarity
 
-    // set dimension
-    qureg.isDensityMatrix = isDensMatr;
-    qureg.numQubits = numQubits;
-    qureg.numAmps = (isDensMatr)? 
-        powerOf2(2*numQubits) : 
-        powerOf2(  numQubits);
+        // set dimensions
+        .isDensityMatrix = isDensMatr,
+        .numQubits = numQubits,
+        .numAmps = (isDensMatr)? 
+            powerOf2(2*numQubits) : 
+            powerOf2(  numQubits),
 
-    // set dimension per node (even if not distributed)
-    qureg.logNumAmpsPerNode = (isDensMatr)? 
-        (2*numQubits - qureg.logNumNodes) :
-        (  numQubits - qureg.logNumNodes);
-    qureg.numAmpsPerNode = powerOf2(qureg.logNumAmpsPerNode);
+        // set dimensions per node (even if not distributed)
+        .numAmpsPerNode = powerOf2(logNumAmpsPerNode),
+        .logNumAmpsPerNode = logNumAmpsPerNode,
 
-    // pre-set all pointers to NULL so post-alloc validation can safely free or ignore
-    qureg.cpuAmps = NULL;
-    qureg.gpuAmps = NULL;
-    qureg.cpuCommBuffer = NULL;
-    qureg.gpuCommBuffer = NULL;
+        // always allocate CPU memory
+        .cpuAmps = cpu_allocAmps(qureg.numAmpsPerNode), // NULL if failed
 
-    // always allocate CPU memory
-    qureg.cpuAmps = cpu_allocAmps(qureg.numAmpsPerNode);
-
-    // conditionally allocate CPU communication buffer (even if numNodes == 1)
-    if (useDistrib)
-        qureg.cpuCommBuffer = cpu_allocAmps(qureg.numAmpsPerNode);
-
-    // conditionally allocate GPU memory
-    if (useGpuAccel)
-        qureg.gpuAmps = gpu_allocAmps(qureg.numAmpsPerNode);
-
-    // conditionally allocate GPU communication buffer
-    if (useGpuAccel && useDistrib)
-        qureg.gpuCommBuffer = gpu_allocAmps(qureg.numAmpsPerNode);
+        // conditionally allocate GPU memory and communication buffers (even if numNodes == 1)
+        .gpuAmps       = (useGpuAccel)?               gpu_allocAmps(qureg.numAmpsPerNode) : NULL,
+        .cpuCommBuffer = (useDistrib)?                cpu_allocAmps(qureg.numAmpsPerNode) : NULL,
+        .gpuCommBuffer = (useGpuAccel && useDistrib)? gpu_allocAmps(qureg.numAmpsPerNode) : NULL,
+    };
 
     // check all allocations succeeded (if any failed, validation frees all non-failures before throwing error)
     bool isNewQureg = true;
@@ -232,7 +216,7 @@ void destroyQureg(Qureg qureg) {
     if (qureg.isGpuAccelerated && qureg.isDistributed)
         gpu_deallocAmps(qureg.gpuCommBuffer);
 
-    // cannot set freed fields to NULL because qureg
+    // cannot set free'd fields to NULL because qureg
     // wasn't passed-by-reference, and isn't returned.
 }
 

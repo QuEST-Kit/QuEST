@@ -28,6 +28,14 @@ void error_validationMessageContainedUnsubstitutedVars(std::string msg);
 
 
 /*
+ * ENVIRONMENT ERRORS
+ */
+
+void error_allocOfQuESTEnvFailed();
+
+
+
+/*
  * MEMORY ERRORS
  */
 
