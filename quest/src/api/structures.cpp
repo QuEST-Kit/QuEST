@@ -46,52 +46,15 @@ void populateCompMatrElems(A out, B in, qindex dim) {
 template<class T, typename B>
 T getCompMatrFromElems(B in, int num) {
 
-    T out;
-    out.numQubits = num;
-    out.numRows = powerOf2(num);
+    // must initialize the const fields inline
+    T out = (T) {
+        .numQubits = num,
+        .numRows = powerOf2(num)
+    };
+
+    // elems is pre-allocated and non-const (elements can be modified)
     populateCompMatrElems(out.elems, in, out.numRows);
     return out;
-}
-
-
-
-/*
- * EXPLICIT FIXED-SIZE MATRIX INITIALISERS
- * 
- * and their corresponding C-compatible alternatives which are wrapped by wrappers.h.
- * The wrappers are necessary because of the non-interchangeable C and C++ qcomp types.
- * See structures.h for an explanation. These definitions will always exist (even when
- * the user compiles their own code in C), but will be name-mangled.
- * 
- * The separate *FromArr an *FromPtr definitions are so that we can safe and simply
- * wrap these in a C-compatible param-agnostic macro, and C++-compatible overloads,
- * so that users can avoid having to use compound literals and pass {{...}} in-place.
- */
-
-CompMatr1 getCompMatr1FromArr(qcomp in[2][2]) {
-    return getCompMatrFromElems<CompMatr1>(in, 1);
-}
-CompMatr1 getCompMatr1FromPtr(qcomp** in) {
-    return getCompMatrFromElems<CompMatr1>(in, 1);
-}
-CompMatr2 getCompMatr2FromArr(qcomp in[4][4]) {
-    return getCompMatrFromElems<CompMatr2>(in, 2);
-}
-CompMatr2 getCompMatr2FromPtr(qcomp** in) {
-    return getCompMatrFromElems<CompMatr2>(in, 2);
-}
-
-extern "C" void wrap_getCompMatr1FromArr(CompMatr1* out, qcomp in[2][2]) {
-    *out = getCompMatr1FromArr(in);
-}
-extern "C" void wrap_getCompMatr1FromPtr(CompMatr1* out, qcomp** in) {
-    *out = getCompMatr1FromPtr(in);
-}
-extern "C" void wrap_getCompMatr2FromArr(CompMatr2* out, qcomp in[4][4]) {
-    *out = getCompMatr2FromArr(in);
-}
-extern "C" void wrap_getCompMatr2FromPtr(CompMatr2* out, qcomp** in) {
-    *out = getCompMatr2FromPtr(in);
 }
 
 
@@ -140,28 +103,33 @@ extern "C" CompMatrN createCompMatrN(int numQubits) {
     validate_envInit(__func__);
     validate_newMatrixNumQubits(numQubits, __func__);
 
-    // allocate GPU memory if the env is GPU-accelerated, regardless of (unknown) Qureg allocations
-    bool isGpuAccel = getQuESTEnv().isGpuAccelerated;
-
     // validation ensures these (and below mem sizes) never overflow
     qindex numRows = powerOf2(numQubits);
     qindex numElems = numRows * numRows;
 
+    // we must malloc CompMatr.elem's memory before struct initialisation
+    // because each row pointer therein is declared const, and is immutable
+    qcomp** elemsPtr = (qcomp**) malloc(numRows * sizeof *elemsPtr); // NULL if failed
+
+    // only if that outer malloc succeeded, attempt to malloc every row
+    if (elemsPtr != NULL)
+        for (qindex r=0; r < numRows; r++)
+            elemsPtr[r] = (qcomp*) calloc(numRows, sizeof **elemsPtr); // NULL if failed
+
+    // we will always allocate GPU memory if the env is GPU-accelerated
+    bool isGpuAccel = getQuESTEnv().isGpuAccelerated;
+
+    // initialise all CompMatrN fields inline because struct is const
     CompMatrN out = {
         .numQubits = numQubits,
         .numRows = numRows,
 
-        // 2D CPU memory (NULL if failed)
-        .elems = (qcomp**) malloc(numRows * sizeof *out.elems),
+        // const 2D CPU memory (NULL if failed, or containing NULLs)
+        .elems = elemsPtr,
 
-        // 1D GPU memory (NULL if failed or not needed)
+        // const 1D GPU memory (NULL if failed or not needed)
         .gpuElems = (isGpuAccel)? gpu_allocAmps(numElems) : NULL // first amp will be un-sync'd flag
     };
-
-    // only if outer CPU allocation succeeded, attempt to allocate each row array
-    if (out.elems != NULL)
-        for (qindex r=0; r < numRows; r++)
-            out.elems[r] = (qcomp*) calloc(numRows, sizeof **out.elems); // NULL if failed
 
     // check all CPU & GPU malloc and calloc's succeeded (no attempted freeing if not)
     bool isNewMatr = true;
@@ -178,8 +146,8 @@ extern "C" void destroyCompMatrN(CompMatrN matrix) {
     for (qindex r=0; r < matrix.numRows; r++)
         free(matrix.elems[r]);
 
-    // free CPU array of rows
-    free(matrix.elems);
+    // free CPU array of rows; we have to void-cast because our 'const' pointers are too fancy
+    free((void*) matrix.elems);
 
     // free flat GPU array if it exists
     if (matrix.gpuElems != NULL)

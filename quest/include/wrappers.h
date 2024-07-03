@@ -3,12 +3,18 @@
  * functions, ultimately providing an identical interface. This is 
  * necessary because these functions otherwise pass qcomps by-value
  * which is prohibited between C and C++ compiled binaries (because
- * complex numbers are not specified in the ABI, despite having 
+ * complex numbers are not agreed upon in their ABI, despite having 
  * identical memory layouts in the C and C++ standard libraries).
  * Ergo this file defines no new API functions as far as the user/
- * documentation is aware, but secretly ensures C binaries receive
- * qcomps from the C++ backend only by-reference. It must be used
- * by C compilers which otherwise lack the C++-only API signatures.
+ * documentation is aware, but secretly ensures the backend C++ 
+ * binaries are send qcomps from the user's C code only by pointer.
+ * 
+ * Note that CompMatr getters and setters (like getCompMatr1()) are
+ * missing from this file, even though they contain qcomp[2][2] (which
+ * are NOT pointers) and cannot be directly passed between binaries.
+ * Those functions are instead defined in structures.h/.cpp because
+ * those structs are declared 'const'; they must be intiailised inline, 
+ * and can never be modified by pointer. We shouldn't even address them!
  */
 
 #ifndef WRAPPERS_H
@@ -23,44 +29,18 @@
 
 
 
-void wrap_getCompMatr1FromArr(CompMatr1* out, qcomp in[2][2]);
-
-CompMatr1 getCompMatr1FromArr(qcomp in[2][2]) {
-
-    CompMatr1 out;
-    wrap_getCompMatr1FromArr(&out, in);
-    return out;
-}
-
-
-void wrap_getCompMatr1FromPtr(CompMatr1* out, qcomp** in);
-
-CompMatr1 getCompMatr1FromPtr(qcomp** in) {
-
-    CompMatr1 out;
-    wrap_getCompMatr1FromPtr(&out, in);
-    return out;
-}
-
-
-void wrap_getCompMatr2FromArr(CompMatr2* out, qcomp in[4][4]);
-
-CompMatr2 getCompMatr2FromArr(qcomp in[4][4]) {
-
-    CompMatr2 out;
-    wrap_getCompMatr2FromArr(&out, in);
-    return out;
-}
-
-
-void wrap_getCompMatr2FromPtr(CompMatr2* out, qcomp** in);
-
-CompMatr2 getCompMatr2FromPtr(qcomp** in) {
-
-    CompMatr2 out;
-    wrap_getCompMatr2FromPtr(&out, in);
-    return out;
-}
+// TODO:
+//      this file will contain wrappers of functions like C++'s 
+//          qcomp getAmp(Qureg, i);
+//      which will (for C users) be secretly invoking something like:
+//
+// void wrap_getAmp(Qureg qureg, qindex i, qcomp* amp); // defined by C++ backend
+//
+// void getAmp(Qureg qureg, qindex i) {
+//     qcomp amp;
+//     wrap_getAmp(qureg, i, &amp);
+//     return amp;
+// }
 
 
 
