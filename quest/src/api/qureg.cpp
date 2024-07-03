@@ -53,9 +53,9 @@ Qureg validateAndCreateCustomQureg(int numQubits, int isDensMatr, int useDistrib
     Qureg qureg = {
 
         // bind deployment info
+        .isMultithreaded  = useMultithread,
         .isGpuAccelerated = useGpuAccel,
         .isDistributed    = useDistrib,
-        .isMultithreaded  = useMultithread,
 
         // optionally bind distributed info, but always etain the env's rank because non-distributed
         // quregs are still duplicated between every node, and have duplicate processes
@@ -71,15 +71,15 @@ Qureg validateAndCreateCustomQureg(int numQubits, int isDensMatr, int useDistrib
             powerOf2(  numQubits),
 
         // set dimensions per node (even if not distributed)
-        .logNumAmpsPerNode = logNumAmpsPerNode,
         .numAmpsPerNode = powerOf2(logNumAmpsPerNode),
+        .logNumAmpsPerNode = logNumAmpsPerNode,
 
         // always allocate CPU memory
-        .cpuAmps = cpu_allocAmps(qureg.numAmpsPerNode), // NULL if faied
+        .cpuAmps = cpu_allocAmps(qureg.numAmpsPerNode), // NULL if failed
 
         // conditionally allocate GPU memory and communication buffers (even if numNodes == 1)
-        .cpuCommBuffer = (useDistrib)?                cpu_allocAmps(qureg.numAmpsPerNode) : NULL,
         .gpuAmps       = (useGpuAccel)?               gpu_allocAmps(qureg.numAmpsPerNode) : NULL,
+        .cpuCommBuffer = (useDistrib)?                cpu_allocAmps(qureg.numAmpsPerNode) : NULL,
         .gpuCommBuffer = (useGpuAccel && useDistrib)? gpu_allocAmps(qureg.numAmpsPerNode) : NULL,
     };
 

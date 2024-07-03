@@ -17,9 +17,9 @@ extern "C" {
 typedef struct {
 
     // deployment configuration
+    const int isMultithreaded;
     const int isGpuAccelerated;
     const int isDistributed;
-    const int isMultithreaded;
 
     // distributed configuration
     const int rank;
