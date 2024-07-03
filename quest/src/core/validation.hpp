@@ -22,7 +22,7 @@ void validate_envNeverInit(bool isQuESTInit, bool isQuESTFinal, const char* call
 
 void validate_newEnvDeploymentMode(int isDistrib, int isGpuAccel, int isMultithread, const char* caller);
 
-void validate_newEnvDistributedBetweenPower2Nodes(int numNodes, const char* caller);
+void validate_newEnvDistributedBetweenPower2Nodes(const char* caller);
 
 void validate_gpuIsCuQuantumCompatible(const char* caller);
 

@@ -29,13 +29,13 @@ extern "C" {
 typedef struct {
 
     // deployment mode
-    int isGpuAccelerated;
-    int isDistributed;
-    int isMultithreaded;
+    const int isGpuAccelerated;
+    const int isDistributed;
+    const int isMultithreaded;
 
     // distributed configuration
-    int rank;
-    int numNodes;
+    const int rank;
+    const int numNodes;
 
     // TODO: RNG seeds
 
