@@ -99,7 +99,7 @@ CompMatr2 getCompMatr2(std::vector<std::vector<qcomp>> in) {
  */
 
 
-extern "C" CompMatrN createCompMatrN(int numQubits) {
+extern "C" CompMatr createCompMatr(int numQubits) {
     validate_envInit(__func__);
     validate_newMatrixNumQubits(numQubits, __func__);
 
@@ -110,8 +110,8 @@ extern "C" CompMatrN createCompMatrN(int numQubits) {
     // we will always allocate GPU memory if the env is GPU-accelerated
     bool isGpuAccel = getQuESTEnv().isGpuAccelerated;
 
-    // initialise all CompMatrN fields inline because struct is const
-    CompMatrN out = {
+    // initialise all CompMatr fields inline because struct is const
+    CompMatr out = {
         .numQubits = numQubits,
         .numRows = numRows,
 
@@ -135,7 +135,7 @@ extern "C" CompMatrN createCompMatrN(int numQubits) {
 }
 
 
-extern "C" void destroyCompMatrN(CompMatrN matrix) {
+extern "C" void destroyCompMatr(CompMatr matrix) {
     validate_matrixInit(matrix, __func__);
 
     // free each CPU row array
@@ -151,7 +151,7 @@ extern "C" void destroyCompMatrN(CompMatrN matrix) {
 }
 
 
-extern "C" void syncCompMatrN(CompMatrN matr) {
+extern "C" void syncCompMatr(CompMatr matr) {
     validate_matrixInit(matr, __func__);
     validate_matrixElemsDontContainUnsyncFlag(matr.elems[0][0], __func__);
 
@@ -168,7 +168,7 @@ extern "C" void syncCompMatrN(CompMatrN matr) {
 
 
 template <typename T> 
-void validateAndSetCompMatrNElems(CompMatrN out, T elems, const char* caller) {
+void validateAndSetCompMatrElems(CompMatr out, T elems, const char* caller) {
     validate_matrixInit(out, __func__);
     validate_matrixElemsDontContainUnsyncFlag(elems[0][0], caller);
 
@@ -180,22 +180,22 @@ void validateAndSetCompMatrNElems(CompMatrN out, T elems, const char* caller) {
         gpu_copyCpuToGpu(out);
 }
 
-extern "C" void setCompMatrNFromPtr(CompMatrN out, qcomp** elems) {
+extern "C" void setCompMatrFromPtr(CompMatr out, qcomp** elems) {
 
-    validateAndSetCompMatrNElems(out, elems, __func__);
+    validateAndSetCompMatrElems(out, elems, __func__);
 }
 
-// the corresponding setCompMatrNFromArr() function must use VLAs and so
+// the corresponding setCompMatrFromArr() function must use VLAs and so
 // is C++ incompatible, and is subsequently defined inline in the header file.
-// Because it needs to create stack memory with size given by a CompMatrN field,
+// Because it needs to create stack memory with size given by a CompMatr field,
 // we need to first validate that field via this exposed validation function. Blegh!
 
-extern "C" void validate_setCompMatrNFromArr(CompMatrN out) {
+extern "C" void validate_setCompMatrFromArr(CompMatr out) {
 
-    // the user likely invoked this function from the setInlineCompMatrN()
+    // the user likely invoked this function from the setInlineCompMatr()
     // macro, but we cannot know for sure so it's better to fall-back to
     // reporting the definitely-involved inner function, as we do elsewhere
-    validate_matrixInit(out, "setCompMatrNFromArr");
+    validate_matrixInit(out, "setCompMatrFromArr");
 }
 
 
@@ -209,18 +209,18 @@ extern "C" void validate_setCompMatrNFromArr(CompMatrN out) {
  */
 
 
-void setCompMatrN(CompMatrN out, qcomp** in) {
+void setCompMatr(CompMatr out, qcomp** in) {
 
-    validateAndSetCompMatrNElems(out, in, __func__);
+    validateAndSetCompMatrElems(out, in, __func__);
 }
 
-void setCompMatrN(CompMatrN out, std::vector<std::vector<qcomp>> in) {
+void setCompMatr(CompMatr out, std::vector<std::vector<qcomp>> in) {
 
     // we validate dimension of 'in', which first requires validating 'out' fields
     validate_matrixInit(out, __func__);
     validate_numMatrixElems(out.numQubits, in, __func__);
 
-    validateAndSetCompMatrNElems(out, in, __func__);
+    validateAndSetCompMatrElems(out, in, __func__);
 }
 
 
@@ -270,7 +270,7 @@ extern "C" void reportCompMatr2(CompMatr2 matr) {
     rootPrintMatrix(matr);
 }
 
-extern "C" void reportCompMatrN(CompMatrN matr) {
+extern "C" void reportCompMatr(CompMatr matr) {
 
     rootPrintMatrix(matr);
 }

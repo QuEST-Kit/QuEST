@@ -63,15 +63,15 @@ void demo_getCompMatr() {
 
 void demo_setInlineCompMatr() {
 
-    // inline literal; identical to setCompMatrN() for consistencty with C API
-    CompMatrN a = createCompMatrN(1);
-    setInlineCompMatrN(a, 1, {{.3,.4},{.6,.7}});
-    reportCompMatrN(a);
-    destroyCompMatrN(a);
+    // inline literal; identical to setCompMatr() for consistencty with C API
+    CompMatr a = createCompMatr(1);
+    setInlineCompMatr(a, 1, {{.3,.4},{.6,.7}});
+    reportCompMatr(a);
+    destroyCompMatr(a);
 
     // we must specify all elements (only necessary in C++)
-    CompMatrN b = createCompMatrN(3);
-    setInlineCompMatrN(b, 3, {
+    CompMatr b = createCompMatr(3);
+    setInlineCompMatr(b, 3, {
         {1,2,3,4,5,6,7,8},
         {8i,7i,6i,5i,0,0,0,0},
         {0,0,0,0,9,9,9,9},
@@ -81,17 +81,17 @@ void demo_setInlineCompMatr() {
         {9,8,7,6,5,4,3,2},
         {-1,-2,-3,-4,4,3,2,1}    
     });
-    reportCompMatrN(b);
-    destroyCompMatrN(b);
+    reportCompMatr(b);
+    destroyCompMatr(b);
 }
 
 
 void demo_setCompMatr() {
 
     // inline literal (C++ only)
-    CompMatrN a = createCompMatrN(1);
-    setCompMatrN(a, {{1,2i},{3i+.1,-4}});
-    reportCompMatrN(a);
+    CompMatr a = createCompMatr(1);
+    setCompMatr(a, {{1,2i},{3i+.1,-4}});
+    reportCompMatr(a);
 
     // 2D vector (C++ only)
     std::vector<std::vector<qcomp>> vec {
@@ -100,9 +100,9 @@ void demo_setCompMatr() {
         {0, -1, -2, -3},
         {-4i, -5i, 0, 0}
     };
-    CompMatrN b = createCompMatrN(2);
-    setCompMatrN(b, vec);
-    reportCompMatrN(b);
+    CompMatr b = createCompMatr(2);
+    setCompMatr(b, vec);
+    reportCompMatr(b);
 
     // nested pointers
     int dim = 8;
@@ -112,19 +112,19 @@ void demo_setCompMatr() {
         for (int j=0; j<dim; j++)
             ptrs[i][j] = i + j*1i;
     }
-    CompMatrN c = createCompMatrN(3);
-    setCompMatrN(c, ptrs);
-    reportCompMatrN(c);
-    destroyCompMatrN(c);
+    CompMatr c = createCompMatr(3);
+    setCompMatr(c, ptrs);
+    reportCompMatr(c);
+    destroyCompMatr(c);
 
     // array of pointers
     qcomp* ptrArr[dim];
     for (int i=0; i<dim; i++)
         ptrArr[i] = ptrs[i];
-    CompMatrN d = createCompMatrN(3);
-    setCompMatrN(d, ptrArr);
-    reportCompMatrN(d);
-    destroyCompMatrN(d);
+    CompMatr d = createCompMatr(3);
+    setCompMatr(d, ptrArr);
+    reportCompMatr(d);
+    destroyCompMatr(d);
 
     // cleanup
     for (int i=0; i<dim; i++)

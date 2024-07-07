@@ -213,7 +213,7 @@ void form_printMatrix(CompMatr2 matr, string indent) {
     printMatrixElems(matr, indent);
 }
 
-void form_printMatrix(CompMatrN matr, string indent) {
+void form_printMatrix(CompMatr matr, string indent) {
 
     printMatrixElems(matr, indent);
 }

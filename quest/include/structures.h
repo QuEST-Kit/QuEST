@@ -15,7 +15,7 @@
  * So, we next define getInlineCompMatr1() as a C and C++ (for consistency) macro 
  * which accepts direct, concise literals like getInlineCompMatr1({{...}}). Viola! 
  * 
- * We employ similar tricks to make setCompMatrN(), but define setCompMatrNFromArr()
+ * We employ similar tricks to make setCompMatr(), but define setCompMatrFromArr()
  * in this header (exposed only to C) because it requires C++-incompatible VLAs;
  * this definition must invoke a bespoke validation function (gross).
  * 
@@ -86,7 +86,7 @@ typedef struct {
     // and always in GPU-enabled QuEST environments
     qcomp* gpuElems;
 
-} CompMatrN;
+} CompMatr;
 
 
 
@@ -268,11 +268,11 @@ static inline CompMatr2 getCompMatr2FromPtr(qcomp** in) {
 extern "C" {
 #endif
 
-    CompMatrN createCompMatrN(int numQubits);
+    CompMatr createCompMatr(int numQubits);
 
-    void destroyCompMatrN(CompMatrN matrix);
 
-    void syncCompMatrN(CompMatrN matr);
+    void destroyCompMatr(CompMatr matrix);
+    void syncCompMatr(CompMatr matr);
 
 #ifdef __cplusplus
 }
@@ -290,7 +290,7 @@ extern "C" {
 extern "C" {
 #endif
 
-    void setCompMatrNFromPtr(CompMatrN matr, qcomp** vals);
+    void setCompMatrFromPtr(CompMatr matr, qcomp** vals);
 
 #ifdef __cplusplus
 }
@@ -301,14 +301,14 @@ extern "C" {
 #ifndef __cplusplus
 
     // expose this function's bespoke validation
-    extern void validate_setCompMatrNFromArr(CompMatrN out);
+    extern void validate_setCompMatrFromArr(CompMatr out);
 
      // static inline to avoid header-symbol duplication
-    static inline void setCompMatrNFromArr(CompMatrN matr, qcomp arr[matr.numRows][matr.numRows]) {
+    static inline void setCompMatrFromArr(CompMatr matr, qcomp arr[matr.numRows][matr.numRows]) {
 
         // this function will allocate stack memory of size matr.numRows, but that field could
         // be invalid since matr hasn't been validated, so we must invoke bespoke validation
-        validate_setCompMatrNFromArr(matr);
+        validate_setCompMatrFromArr(matr);
 
         // new ptrs array safely fits in stack, since it's sqrt-smaller than user's passed stack array
         qcomp* ptrs[matr.numRows];
@@ -318,7 +318,7 @@ extern "C" {
             ptrs[r] = arr[r];
 
         // array decays to qcomp**, and *FromPtr function re-performs validation (eh)
-        setCompMatrNFromPtr(matr, ptrs);
+        setCompMatrFromPtr(matr, ptrs);
     }
 
 #endif
@@ -334,9 +334,9 @@ extern "C" {
 
     // C++ uses overloads, accepting even vector initialiser lists, but cannot ever accept 2D arrays
 
-    void setCompMatrN(CompMatrN out, qcomp** in);
+    void setCompMatr(CompMatr out, qcomp** in);
 
-    void setCompMatrN(CompMatrN out, std::vector<std::vector<qcomp>> in);
+    void setCompMatr(CompMatr out, std::vector<std::vector<qcomp>> in);
 
 #else
 
@@ -345,7 +345,7 @@ extern "C" {
     // the above inlined definitions. Note:
     // - we cannot accept C++ vectors (duh) so direct {{...}} initialisation
     //   isn't possible; users have to use C99 compound literals instead,
-    //   which we address with a subsequent definition of setInlineCompMatrN().
+    //   which we address with a subsequent definition of setInlineCompMatr().
     // - the _Generic does not require a map for the qcomp[][] type, because
     //   a passed qcomp[][] decays to qcomp(*)[], indistinguishable from
     //   an array of pointers which is already in the map.
@@ -360,10 +360,10 @@ extern "C" {
     // Another problem: type qcomp(*) below would erroneously invoke the qcomp(re,im) macro,
     // so we re-use 'qalias = qcomp' as defined at getCompMatr1.
 
-    #define setCompMatrN(matr, ...) \
+    #define setCompMatr(matr, ...) \
         _Generic((__VA_ARGS__),   \
-            qalias(*)[] : setCompMatrNFromArr, \
-            qcomp**     : setCompMatrNFromPtr  \
+            qalias(*)[] : setCompMatrFromArr, \
+            qcomp**     : setCompMatrFromPtr  \
         )((matr), (__VA_ARGS__))
 
 #endif
@@ -381,10 +381,10 @@ extern "C" {
 
 #ifdef __cplusplus
 
-    // C++ gets an explicit redirect to setCompMatrN(std::vector...), ignoring numQb (blegh)
+    // C++ gets an explicit redirect to set*Matr(std::vector...), ignoring numQb (blegh)
 
-    #define setInlineCompMatrN(matr, numQb, ...) \
-        setCompMatrN(matr, __VA_ARGS__)
+    #define setInlineCompMatr(matr, numQb, ...) \
+        setCompMatr(matr, __VA_ARGS__)
 
 #else 
 
@@ -392,8 +392,8 @@ extern "C" {
     // cannot use (qcomp[matr.numRows][matr.numRows]) to preclude passing 'numQb' 
     // because VLAs cannot be initialised inline.
 
-    #define setInlineCompMatrN(matr, numQb, ...) \
-        setCompMatrNFromArr(matr, (qcomp[1<<numQb][1<<numQb]) __VA_ARGS__)
+    #define setInlineCompMatr(matr, numQb, ...) \
+        setCompMatrFromArr(matr, (qcomp[1<<numQb][1<<numQb]) __VA_ARGS__)
 
 #endif
 
@@ -413,7 +413,7 @@ extern "C" {
 
     void reportCompMatr2(CompMatr2 matrix);
 
-    void reportCompMatrN(CompMatrN matrix);
+    void reportCompMatr(CompMatr matrix);
 
 #ifdef __cplusplus
 }

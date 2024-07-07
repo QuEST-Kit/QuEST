@@ -80,7 +80,7 @@ void form_printMatrix(CompMatr1 matr, std::string indent="    ");
 
 void form_printMatrix(CompMatr2 matr, std::string indent="    ");
 
-void form_printMatrix(CompMatrN matr, std::string indent="    ");
+void form_printMatrix(CompMatr matr, std::string indent="    ");
 
 
 

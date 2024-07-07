@@ -17,7 +17,7 @@
  * MATRIX CONJUGATION
  */
 
-void util_setConj(CompMatrN matrix);
+void util_setConj(CompMatr matrix);
 
 CompMatr1 util_getConj(CompMatr1 matrix);
 
@@ -33,7 +33,7 @@ bool util_isUnitary(CompMatr1 matrix);
 
 bool util_isUnitary(CompMatr2 matrix);
 
-bool util_isUnitary(CompMatrN matrix);
+bool util_isUnitary(CompMatr matrix);
 
 
 

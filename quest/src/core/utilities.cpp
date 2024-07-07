@@ -21,7 +21,7 @@ void setElemsConj(T& matrix) {
             matrix.elems[i][j] = conj(matrix.elems[i][j]);
 }
 
-void util_setConj(CompMatrN matrix) {
+void util_setConj(CompMatr matrix) {
     setElemsConj(matrix);
 }
 
@@ -46,7 +46,7 @@ CompMatr2 util_getConj(CompMatr2 matrix) {
 bool isUnitary(qcomp** matrix, qindex dim) {
 
     // matrix is simply qcomp** but inherits the consts
-    // from CompMatrN.elems, which protects changing
+    // from CompMatr.elems, which protects changing
     // the memory addresses but permits element change
 
     qreal epsSq = VALIDATION_EPSILON * VALIDATION_EPSILON;
@@ -93,7 +93,7 @@ bool util_isUnitary(CompMatr2 matrix) {
     return isUnitary(ptrs, matrix.numRows);
 }
 
-bool util_isUnitary(CompMatrN matrix) {
+bool util_isUnitary(CompMatr matrix) {
 
     return isUnitary(matrix.elems, matrix.numRows);
 }

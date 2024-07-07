@@ -341,7 +341,7 @@ void gpu_copyGpuToCpu(Qureg qureg) {
 }
 
 
-void gpu_copyCpuToGpu(CompMatrN matr) {
+void gpu_copyCpuToGpu(CompMatr matr) {
 #if ENABLE_GPU_ACCELERATION
 
     if (matr.gpuElems == NULL || getQuESTEnv().isGpuAccelerated==0)
