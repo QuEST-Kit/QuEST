@@ -167,12 +167,12 @@ void error_gpuSyncedButGpuNotCompiled() {
 
 void error_gpuAllocButGpuNotCompiled() {
 
-    raiseInternalError("A function (likely Qureg or CompMatrN creation) attempted to allocate GPU memory but QuEST was not compiled with GPU acceleration enabled.");
+    raiseInternalError("A function (likely Qureg or CompMatr creation) attempted to allocate GPU memory but QuEST was not compiled with GPU acceleration enabled.");
 }
 
 void error_gpuDeallocButGpuNotCompiled() {
 
-    raiseInternalError("A function (likely Qureg or CompMatrN destruction) attempted to deallocate GPU memory but QuEST was not compiled with GPU acceleration enabled.");
+    raiseInternalError("A function (likely Qureg or CompMatr destruction) attempted to deallocate GPU memory but QuEST was not compiled with GPU acceleration enabled.");
 }
 
 void error_gpuCopyButGpuNotCompiled() {
@@ -192,7 +192,7 @@ void error_gpuCopyButQuregNotGpuAccelerated() {
 
 void error_gpuCopyButCompMatrNotGpuAccelerated() {
 
-    raiseInternalError("A function attempted to access GPU memory of a CompMatrN which is not GPU accelerated.");
+    raiseInternalError("A function attempted to access GPU memory of a CompMatr which is not GPU accelerated.");
 }
 
 void error_gpuUnexpectedlyInaccessible() {
@@ -202,7 +202,7 @@ void error_gpuUnexpectedlyInaccessible() {
 
 void error_gpuMemSyncQueriedButEnvNotGpuAccelerated() {
 
-    raiseInternalError("A function checked whether persistent GPU memory (such as in a CompMatrN) had been synchronised, but the QuEST environment is not GPU accelerated.");  
+    raiseInternalError("A function checked whether persistent GPU memory (such as in a CompMatr) had been synchronised, but the QuEST environment is not GPU accelerated.");  
 }
 
 void assert_quregIsGpuAccelerated(Qureg qureg) {

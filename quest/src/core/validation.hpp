@@ -62,7 +62,7 @@ void validate_quregInit(Qureg qureg, const char* caller);
 
 void validate_newMatrixNumQubits(int numQubits, const char* caller);
 
-void validate_newOrExistingMatrixAllocs(CompMatrN matr, bool isNewMatr, const char* caller);
+void validate_newOrExistingMatrixAllocs(CompMatr matr, bool isNewMatr, const char* caller);
 
 
 
@@ -72,17 +72,17 @@ void validate_newOrExistingMatrixAllocs(CompMatrN matr, bool isNewMatr, const ch
 
 void validate_matrixInit(CompMatr1 matr, const char* caller);
 void validate_matrixInit(CompMatr2 matr, const char* caller);
-void validate_matrixInit(CompMatrN matr, const char* caller);
+void validate_matrixInit(CompMatr  matr, const char* caller);
 
 void validate_numMatrixElems(int numQubits, std::vector<std::vector<qcomp>> elems, const char* caller);
 
 void validate_matrixElemsDontContainUnsyncFlag(qcomp firstElem, const char* caller);
 
-void validate_matrixIsSynced(CompMatrN matr, const char* caller);
+void validate_matrixIsSynced(CompMatr matr, const char* caller);
 
 void validate_matrixIsUnitary(CompMatr1 matr, const char* caller);
 void validate_matrixIsUnitary(CompMatr2 matr, const char* caller);
-void validate_matrixIsUnitary(CompMatrN matr, const char* caller);
+void validate_matrixIsUnitary(CompMatr  matr, const char* caller);
 
 
 

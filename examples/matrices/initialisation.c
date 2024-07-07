@@ -67,21 +67,21 @@ void demo_getCompMatr() {
 void demo_setInlineCompMatr() {
 
     // inline literal without gross C compound-literal syntax
-    CompMatrN a = createCompMatrN(1);
-    setInlineCompMatrN(a, 1, {{.3,.4},{.6,.7}});
-    reportCompMatrN(a);
-    destroyCompMatrN(a);
+    CompMatr a = createCompMatr(1);
+    setInlineCompMatr(a, 1, {{.3,.4},{.6,.7}});
+    reportCompMatr(a);
+    destroyCompMatr(a);
 
     // unspecified elements default to 0 (C only)
-    CompMatrN b = createCompMatrN(3);
-    setInlineCompMatrN(b, 3, {
+    CompMatr b = createCompMatr(3);
+    setInlineCompMatr(b, 3, {
         {1,2,3,4,5,6,7,8},
         {8i, 7i, 6i, 5i},
         {9,9,9},
         {10}      
     });
-    reportCompMatrN(b);
-    destroyCompMatrN(b);
+    reportCompMatr(b);
+    destroyCompMatr(b);
 }
 
 
@@ -89,10 +89,10 @@ void demo_setCompMatr() {
 
     // 2D compile-time array passed to VLA arg (C only) 
     qcomp arr[2][2] = {{5, 4},{3, 2}};
-    CompMatrN a = createCompMatrN(1);
-    setCompMatrN(a, arr);
-    reportCompMatrN(a);
-    destroyCompMatrN(a);
+    CompMatr a = createCompMatr(1);
+    setCompMatr(a, arr);
+    reportCompMatr(a);
+    destroyCompMatr(a);
 
     // 2D VLA (C only)
     int len = 2;
@@ -101,10 +101,10 @@ void demo_setCompMatr() {
     elems[0][1] = 2i;
     elems[1][0] = -.7i;
     elems[1][1] = 1E-5;
-    CompMatrN b = createCompMatrN(1);
-    setCompMatrN(b, elems);
-    reportCompMatrN(b);
-    destroyCompMatrN(b);
+    CompMatr b = createCompMatr(1);
+    setCompMatr(b, elems);
+    reportCompMatr(b);
+    destroyCompMatr(b);
 
     // nested pointers
     int dim = 8;
@@ -114,25 +114,25 @@ void demo_setCompMatr() {
         for (int j=0; j<dim; j++)
             ptrs[i][j] = i + j*1i;
     }
-    CompMatrN c = createCompMatrN(3);
-    setCompMatrN(c, ptrs);
-    reportCompMatrN(c);
-    destroyCompMatrN(c);
+    CompMatr c = createCompMatr(3);
+    setCompMatr(c, ptrs);
+    reportCompMatr(c);
+    destroyCompMatr(c);
 
     // array of pointers
     qcomp* ptrArr[dim];
     for (int i=0; i<dim; i++)
         ptrArr[i] = ptrs[i];
-    CompMatrN d = createCompMatrN(3);
-    setCompMatrN(d, ptrArr);
-    reportCompMatrN(d);
-    destroyCompMatrN(d);
+    CompMatr d = createCompMatr(3);
+    setCompMatr(d, ptrArr);
+    reportCompMatr(d);
+    destroyCompMatr(d);
 
     // temporary array as compound literal (C only)
-    CompMatrN e = createCompMatrN(1);
-    setCompMatrN(e, (qcomp[2][2]) {{3,2},{1,0}});
-    reportCompMatrN(e);
-    destroyCompMatrN(e);
+    CompMatr e = createCompMatr(1);
+    setCompMatr(e, (qcomp[2][2]) {{3,2},{1,0}});
+    reportCompMatr(e);
+    destroyCompMatr(e);
 
     // cleanup
     for (int i=0; i<dim; i++)
