@@ -1,0 +1,11 @@
+target_sources(QuEST
+  PRIVATE
+  accelerator.cpp
+  autodeployer.cpp
+  errors.cpp
+  formatter.cpp
+  localiser.cpp
+  memory.cpp
+  utilities.cpp
+  validation.cpp
+)
