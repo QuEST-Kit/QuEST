@@ -99,33 +99,33 @@ else()
 endif()
 
 # Set user options
-target_compile_definitions(QuEST PRIVATE FLOAT_PRECISION=${PRECISION})
+target_compile_definitions(QuEST PUBLIC FLOAT_PRECISION=${PRECISION})
 
 if (MULTITHREADED)
   find_package(OpenMP REQUIRED)
-  target_compile_definitions(QuEST PRIVATE ENABLE_MULTITHREADING=1)
+  target_compile_definitions(QuEST PUBLIC ENABLE_MULTITHREADING=1)
   target_link_libraries(QuEST
     PUBLIC
     OpenMP::OpenMP_CXX
     OpenMP::OpenMP_C
   )
 else()
-  target_compile_definitions(QuEST PRIVATE ENABLE_MULTITHREADING=0)
+  target_compile_definitions(QuEST PUBLIC ENABLE_MULTITHREADING=0)
 endif()
 
 if (DISTRIBUTED)
 else()
-  target_compile_definitions(QuEST PRIVATE ENABLE_DISTRIBUTION=0)
+  target_compile_definitions(QuEST PUBLIC ENABLE_DISTRIBUTION=0)
 endif()
 
 if (GPUACCELERATED)
 else()
-  target_compile_definitions(QuEST PRIVATE ENABLE_GPU_ACCELERATION=0)
+  target_compile_definitions(QuEST PUBLIC ENABLE_GPU_ACCELERATION=0)
 endif()
 
 if (CUQUANTUM)
 else()
-  target_compile_definitions(QuEST PRIVATE ENABLE_CUQUANTUM=0)
+  target_compile_definitions(QuEST PUBLIC ENABLE_CUQUANTUM=0)
 endif()
 
 # add math library
@@ -135,12 +135,13 @@ endif()
 
 target_include_directories(QuEST PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 
-add_subdirectory(quest/src)
+add_subdirectory(quest)
 
 ## Examples
 
 #add_subdirectory(examples)
 
 ## Tests
-
-add_subdirectory(tests)
+if (TESTING)
+  add_subdirectory(tests)
+endif()
