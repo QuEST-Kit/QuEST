@@ -129,7 +129,9 @@ else()
 endif()
 
 # add math library
-target_link_libraries(QuEST PUBLIC ${MATH_LIBRARY})
+if (NOT MSVC)
+  target_link_libraries(QuEST PUBLIC ${MATH_LIBRARY})
+endif()
 
 target_include_directories(QuEST PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 
