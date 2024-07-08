@@ -40,6 +40,14 @@ set_property(CACHE PRECISION PROPERTY STRINGS
 )
 message(STATUS "Precision set to ${PRECISION}.")
 
+# Testing
+option(
+  TESTING
+  "whether the test suite will be built alongside the QuEST library. Turned ON by default."
+  ON
+)
+message(STATUS "Testing is turned ${TESTING}. Set TESTING to modify.")
+
 # Multithreading
 option(
   MULTITHREADED 
@@ -132,3 +140,5 @@ add_subdirectory(quest/src)
 #add_subdirectory(examples)
 
 ## Tests
+
+add_subdirectory(tests)
