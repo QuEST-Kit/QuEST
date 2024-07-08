@@ -139,7 +139,7 @@ add_subdirectory(quest)
 
 ## Examples
 
-#add_subdirectory(examples)
+add_subdirectory(examples)
 
 ## Tests
 if (TESTING)
