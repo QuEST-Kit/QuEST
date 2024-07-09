@@ -3,3 +3,9 @@ add_executable(hadamard
 )
 
 target_link_libraries(hadamard PUBLIC QuEST)
+
+install(TARGETS hadamard
+  RUNTIME
+  DESTINATION ${CMAKE_INSTALL_BINDIR}/examples
+)
+set_target_properties(hadamard PROPERTIES INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}")
