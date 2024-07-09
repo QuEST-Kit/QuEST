@@ -163,6 +163,23 @@ add_subdirectory(quest)
 
 add_subdirectory(examples)
 
+## User Source
+
+if (USER_SOURCE AND NOT OUTPUT_EXE)
+    message(SEND_ERROR "USER_SOURCE specified, but not OUTPUT_EXE.")
+endif()
+if (OUTPUT_EXE AND NOT USER_SOURCE)
+    message(SEND_ERROR "OUTPUT_EXE specified, but not USER_SOURCE.")
+endif()
+if (USER_SOURCE AND OUTPUT_EXE)
+  message(STATUS "Compiling ${USER_SOURCE} to executable ${OUTPUT_EXE}.")
+
+  add_executable(${OUTPUT_EXE} ${USER_SOURCE})
+  target_link_libraries(${OUTPUT_EXE} PUBLIC QuEST)
+  install(TARGETS ${OUTPUT_EXE} RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
+  set_target_properties(${OUTPUT_EXE} PROPERTIES INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}")  
+endif()
+
 ## Tests
 if (TESTING)
   add_subdirectory(tests)
