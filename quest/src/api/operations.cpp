@@ -4,12 +4,12 @@
  * density matrices.
  */
 
-#include "quest/include/qureg.h"
-#include "quest/include/structures.h"
+#include "qureg.h"
+#include "structures.h"
 
-#include "quest/src/core/validation.hpp"
-#include "quest/src/core/utilities.hpp"
-#include "quest/src/core/localiser.hpp"
+#include "../core/validation.hpp"
+#include "../core/utilities.hpp"
+#include "../core/localiser.hpp"
 
 
 // enable invocation by both C and C++ binaries

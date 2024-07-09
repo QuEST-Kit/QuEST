@@ -4,7 +4,7 @@
 # author : Tyson Jones (testing)
 # author : Oliver Thomson Brown (v4)
 
-cmake_minimum_required(VERSION 3.13)
+cmake_minimum_required(VERSION 3.14)
 
 project(QuEST
   VERSION 4.0.0
@@ -14,6 +14,9 @@ project(QuEST
 
 ## Dependencies
 
+# GNUInstallDirs to provide sensible default install directory names
+include(GNUInstallDirs)
+
 # Math
 find_library(MATH_LIBRARY m REQUIRED)
 
@@ -21,11 +24,22 @@ find_library(MATH_LIBRARY m REQUIRED)
 
 # Build type
 # Default to "Release"
+# Using recipe from Kitware Blog post
+# https://www.kitware.com//cmake-and-the-default-build-type/
 set(default_build_type "Release")
-if (NOT CMAKE_BUILD_TYPE)
+if(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
   message(STATUS "Setting build type to '${default_build_type}' as none was specified.")
-  set(CMAKE_BUILD_TYPE "${default_build_type}")
+  set(CMAKE_BUILD_TYPE "${default_build_type}" CACHE
+      STRING "Choose the type of build." FORCE)
+  # Set the possible values of build type for cmake-gui
+  set_property(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS
+    "Debug" "Release" "MinSizeRel" "RelWithDebInfo")
 endif()
+
+# Library type
+# Shared library by default
+option(BUILD_SHARED_LIBS "Build shared library. Turned ON by default." ON)
+message(STATUS "Shared library is turned ${BUILD_SHARED_LIBS}. Set BUILD_SHARED_LIBS to modify.")
 
 # Precision
 set(PRECISION 2 
@@ -38,7 +52,7 @@ set_property(CACHE PRECISION PROPERTY STRINGS
   2
   4
 )
-message(STATUS "Precision set to ${PRECISION}.")
+message(STATUS "Precision set to ${PRECISION}. Set PRECISION to modify.")
 
 # Testing
 option(
@@ -83,6 +97,16 @@ message(STATUS "CuQuantum support is turned ${CUQUANTUM}. Set CUQUANTUM to modif
 ## Library
 
 add_library(QuEST)
+
+# Add namespaced alias to support inclusion of QuEST as a subproject
+add_library(QuEST::QuEST ALIAS QuEST)
+
+# Set include directories
+target_include_directories(QuEST 
+  PUBLIC 
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/quest/include>
+  $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
+)
 
 # Add required C and C++ standards
 target_compile_features(QuEST
@@ -133,8 +157,6 @@ if (NOT MSVC)
   target_link_libraries(QuEST PUBLIC ${MATH_LIBRARY})
 endif()
 
-target_include_directories(QuEST PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
-
 add_subdirectory(quest)
 
 ## Examples
@@ -145,3 +167,34 @@ add_subdirectory(examples)
 if (TESTING)
   add_subdirectory(tests)
 endif()
+
+## Install
+install(TARGETS QuEST
+  EXPORT QuESTTargets
+  LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+  ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
+  RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+)
+
+install(EXPORT QuESTTargets
+  FILE QuESTTargets.cmake
+  NAMESPACE QuEST::
+  DESTINATION "cmake/QuEST"
+)
+
+## Export
+# Write CMake version file for QuEST
+include(CMakePackageConfigHelpers)
+write_basic_package_version_file(
+  QuESTConfigVersion.cmake
+  VERSION ${PACKAGE_VERSION}
+  COMPATIBILITY AnyNewerVersion
+)
+
+export(TARGETS QuEST
+  NAMESPACE QuEST::
+  FILE QuESTTargets.cmake
+)
+
+set(CMAKE_EXPORT_PACKAGE_REGISTRY ON)
+export(PACKAGE QuEST)

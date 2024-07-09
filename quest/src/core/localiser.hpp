@@ -11,8 +11,8 @@
 #ifndef LOCALISER_HPP
 #define LOCALISER_HPP
 
-#include "quest/include/qureg.h"
-#include "quest/include/structures.h"
+#include "qureg.h"
+#include "structures.h"
 
 
 

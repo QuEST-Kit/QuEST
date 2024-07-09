@@ -7,9 +7,9 @@
 #ifndef GPU_CONFIG_HPP
 #define GPU_CONFIG_HPP
 
-#include "quest/include/types.h"
-#include "quest/include/qureg.h"
-#include "quest/include/structures.h"
+#include "types.h"
+#include "qureg.h"
+#include "structures.h"
 
 #include <cstdlib>
 

@@ -28,8 +28,8 @@
 #endif
 
 
-#include "quest/src/gpu/gpu_config.hpp"
-#include "quest/src/gpu/gpu_types.hpp"
+#include "../gpu/gpu_config.hpp"
+#include "../gpu/gpu_types.hpp"
 
 #include <custatevec.h>
 

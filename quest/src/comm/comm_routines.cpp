@@ -3,13 +3,13 @@
  * nodes, when running in distributed mode, using the C MPI standard.
  */
 
-#include "quest/include/types.h"
-#include "quest/include/qureg.h"
+#include "types.h"
+#include "qureg.h"
 
-#include "quest/src/core/errors.hpp"
-#include "quest/src/core/bitwise.hpp"
-#include "quest/src/gpu/gpu_config.hpp"
-#include "quest/src/comm/comm_config.hpp"
+#include "../core/errors.hpp"
+#include "../src/core/bitwise.hpp"
+#include "../src/gpu/gpu_config.hpp"
+#include "../src/comm/comm_config.hpp"
 
 #include <vector>
 

@@ -7,12 +7,12 @@
  * requires accompanying CPU memory arrays.
  */
 
-#include "quest/include/types.h"
-#include "quest/include/quest.h"
+#include "types.h"
+#include "quest.h"
 
-#include "quest/src/core/memory.hpp"
-#include "quest/src/core/bitwise.hpp"
-#include "quest/src/core/errors.hpp"
+#include "../core/memory.hpp"
+#include "../core/bitwise.hpp"
+#include "../core/errors.hpp"
 
 #include <cstdlib>
 

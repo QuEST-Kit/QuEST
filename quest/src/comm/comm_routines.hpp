@@ -6,8 +6,8 @@
 #ifndef COMM_ROUTINES_HPP
 #define COMM_ROUTINES_HPP
 
-#include "quest/include/types.h"
-#include "quest/include/qureg.h"
+#include "types.h"
+#include "qureg.h"
 
 
 

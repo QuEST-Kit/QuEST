@@ -9,11 +9,11 @@
  * Think carefully!
  */
 
-#include "quest/include/qureg.h"
+#include "qureg.h"
 
-#include "quest/src/core/validation.hpp"
-#include "quest/src/core/bitwise.hpp"
-#include "quest/src/gpu/gpu_config.hpp"
+#include "../core/validation.hpp"
+#include "../core/bitwise.hpp"
+#include "../src/gpu/gpu_config.hpp"
 
 #include <algorithm>
 #include <cmath>

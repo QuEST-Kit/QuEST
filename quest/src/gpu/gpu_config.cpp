@@ -2,16 +2,16 @@
  * Utility functions for querying GPU hardware.
  */
 
-#include "quest/include/modes.h"
-#include "quest/include/types.h"
-#include "quest/include/qureg.h"
-#include "quest/include/structures.h"
-#include "quest/include/environment.h"
+#include "modes.h"
+#include "types.h"
+#include "qureg.h"
+#include "structures.h"
+#include "environment.h"
 
-#include "quest/src/core/errors.hpp"
-#include "quest/src/core/memory.hpp"
-#include "quest/src/comm/comm_config.hpp"
-#include "quest/src/gpu/gpu_config.hpp"
+#include "../core/errors.hpp"
+#include "../core/memory.hpp"
+#include "../comm/comm_config.hpp"
+#include "../gpu/gpu_config.hpp"
 
 
 #if ENABLE_GPU_ACCELERATION && ! (defined(__NVCC__) || defined(__HIPCC__))

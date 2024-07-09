@@ -11,8 +11,8 @@
 #ifndef GPU_TYPES_HPP
 #define GPU_TYPES_HPP
 
-#include "quest/include/modes.h"
-#include "quest/include/types.h"
+#include "modes.h"
+#include "types.h"
 
 #if ! ENABLE_GPU_ACCELERATION
     #error "A file being compiled somehow included gpu_types.hpp despite QuEST not being compiled in GPU-accelerated mode."

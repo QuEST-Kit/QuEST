@@ -6,9 +6,9 @@
 #ifndef VALIDATION_HPP
 #define VALIDATION_HPP
 
-#include "quest/include/environment.h"
-#include "quest/include/qureg.h"
-#include "quest/include/structures.h"
+#include "environment.h"
+#include "qureg.h"
+#include "structures.h"
 
 #include <vector>
 

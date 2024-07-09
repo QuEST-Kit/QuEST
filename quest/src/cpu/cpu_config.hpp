@@ -5,7 +5,7 @@
 #ifndef CPU_CONFIG_HPP
 #define CPU_CONFIG_HPP
 
-#include "quest/include/types.h"
+#include "types.h"
 
 
 

@@ -14,8 +14,8 @@
 #ifndef WRAPPERS_H
 #define WRAPPERS_H
 
-#include "quest/include/types.h"
-#include "quest/include/structures.h"
+#include "types.h"
+#include "structures.h"
 
 // these definitions are only exposed to C, 
 // since they duplicate existing C++ functions

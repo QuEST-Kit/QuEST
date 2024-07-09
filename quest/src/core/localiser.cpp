@@ -8,12 +8,12 @@
  * stored in RAM (CPU) or VRAM (GPU).
  */
 
-#include "quest/include/qureg.h"
-#include "quest/include/structures.h"
+#include "qureg.h"
+#include "structures.h"
 
-#include "quest/src/comm/comm_routines.hpp"
-#include "quest/src/core/bitwise.hpp"
-#include "quest/src/core/accelerator.hpp"
+#include "../comm/comm_routines.hpp"
+#include "../core/bitwise.hpp"
+#include "../core/accelerator.hpp"
 
 
 

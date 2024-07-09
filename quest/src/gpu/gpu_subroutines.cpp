@@ -9,21 +9,21 @@
  * mapped to HIP symbols by cuda_to_hip.h
  */
 
-#include "quest/include/modes.h"
-#include "quest/include/types.h"
-#include "quest/include/qureg.h"
-#include "quest/include/structures.h"
+#include "modes.h"
+#include "types.h"
+#include "qureg.h"
+#include "structures.h"
 
-#include "quest/src/core/errors.hpp"
+#include "../core/errors.hpp"
 
 #if ENABLE_GPU_ACCELERATION
-    #include "quest/src/gpu/gpu_types.hpp"
-    #include "quest/src/gpu/gpu_kernels.hpp"
-    #include "quest/src/gpu/gpu_thrust.hpp"
+    #include "../gpu/gpu_types.hpp"
+    #include "../gpu/gpu_kernels.hpp"
+    #include "../gpu/gpu_thrust.hpp"
 #endif
 
 #if ENABLE_CUQUANTUM
-    #include "quest/src/gpu/gpu_cuquantum.hpp"
+    #include "../gpu/gpu_cuquantum.hpp"
 #endif
 
 

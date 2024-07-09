@@ -1,7 +1,7 @@
 #include <cmath>
 #include <cstdio>
 #include <complex>
-#include "quest/include/quest.h"
+#include "quest.h"
 
 void printQureg(const Qureg QR) {
   std::printf("Qureg = \n{\n");

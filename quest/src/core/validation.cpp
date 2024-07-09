@@ -3,18 +3,18 @@
  * functions are satisfied, and otherwise throws a user-readable error.
  */
 
-#include "quest/include/modes.h"
-#include "quest/include/environment.h"
-#include "quest/include/qureg.h"
-#include "quest/include/structures.h"
+#include "modes.h"
+#include "environment.h"
+#include "qureg.h"
+#include "structures.h"
 
-#include "quest/src/core/errors.hpp"
-#include "quest/src/core/bitwise.hpp"
-#include "quest/src/core/memory.hpp"
-#include "quest/src/core/utilities.hpp"
-#include "quest/src/comm/comm_config.hpp"
-#include "quest/src/cpu/cpu_config.hpp"
-#include "quest/src/gpu/gpu_config.hpp"
+#include "../core/errors.hpp"
+#include "../core/bitwise.hpp"
+#include "../core/memory.hpp"
+#include "../core/utilities.hpp"
+#include "../comm/comm_config.hpp"
+#include "../cpu/cpu_config.hpp"
+#include "../gpu/gpu_config.hpp"
 
 #include <iostream>
 #include <cstdlib>

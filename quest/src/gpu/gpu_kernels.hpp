@@ -8,11 +8,11 @@
 #ifndef GPU_KERNELS_HPP
 #define GPU_KERNELS_HPP
 
-#include "quest/include/modes.h"
-#include "quest/include/types.h"
+#include "modes.h"
+#include "types.h"
 
-#include "quest/src/core/bitwise.hpp"
-#include "quest/src/gpu/gpu_types.hpp"
+#include "../core/bitwise.hpp"
+#include "../gpu/gpu_types.hpp"
 
 #if ! ENABLE_GPU_ACCELERATION
     #error "A file being compiled somehow included gpu_kernels.hpp despite QuEST not being compiled in GPU-accelerated mode."

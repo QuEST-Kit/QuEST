@@ -5,7 +5,7 @@
 #ifndef INITIALISATIONS_H
 #define INITIALISATIONS_H
 
-#include "quest/include/qureg.h"
+#include "qureg.h"
 
 // enable invocation by both C and C++ binaries
 #ifdef __cplusplus

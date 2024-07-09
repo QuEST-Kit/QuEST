@@ -11,8 +11,8 @@
 #ifndef MEMORY_HPP
 #define MEMORY_HPP
 
-#include "quest/include/types.h"
-#include "quest/include/qureg.h"
+#include "types.h"
+#include "qureg.h"
 
 
 

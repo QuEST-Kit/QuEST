@@ -3,17 +3,17 @@
  * themselves control and query the deployment environment. 
  */
 
-#include "quest/include/environment.h"
-#include "quest/include/precision.h"
-#include "quest/include/modes.h"
+#include "environment.h"
+#include "precision.h"
+#include "modes.h"
 
-#include "quest/src/core/memory.hpp"
-#include "quest/src/core/formatter.hpp"
-#include "quest/src/core/autodeployer.hpp"
-#include "quest/src/core/validation.hpp"
-#include "quest/src/comm/comm_config.hpp"
-#include "quest/src/cpu/cpu_config.hpp"
-#include "quest/src/gpu/gpu_config.hpp"
+#include "../core/memory.hpp"
+#include "../core/formatter.hpp"
+#include "../core/autodeployer.hpp"
+#include "../core/validation.hpp"
+#include "../comm/comm_config.hpp"
+#include "../cpu/cpu_config.hpp"
+#include "../gpu/gpu_config.hpp"
 
 #include <iostream>
 #include <string>

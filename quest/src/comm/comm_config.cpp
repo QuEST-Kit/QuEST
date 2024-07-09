@@ -4,10 +4,10 @@
  * the implementation (like OpenMPI vs MPICH).
  */
 
-#include "quest/include/modes.h"
-#include "quest/include/types.h"
+#include "modes.h"
+#include "types.h"
 
-#include "quest/src/core/errors.hpp"
+#include "../core/errors.hpp"
 
 #if ENABLE_DISTRIBUTION
     #include <mpi.h>

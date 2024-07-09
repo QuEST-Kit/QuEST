@@ -3,18 +3,18 @@
  * choosing their deployment modes.
  */
 
-#include "quest/include/qureg.h"
-#include "quest/include/environment.h"
-#include "quest/include/initialisations.h"
+#include "qureg.h"
+#include "environment.h"
+#include "initialisations.h"
 
-#include "quest/src/core/validation.hpp"
-#include "quest/src/core/autodeployer.hpp"
-#include "quest/src/core/formatter.hpp"
-#include "quest/src/core/bitwise.hpp"
-#include "quest/src/core/memory.hpp"
-#include "quest/src/comm/comm_config.hpp"
-#include "quest/src/cpu/cpu_config.hpp"
-#include "quest/src/gpu/gpu_config.hpp"
+#include "../core/validation.hpp"
+#include "../core/autodeployer.hpp"
+#include "../core/formatter.hpp"
+#include "../core/bitwise.hpp"
+#include "../core/memory.hpp"
+#include "../comm/comm_config.hpp"
+#include "../cpu/cpu_config.hpp"
+#include "../gpu/gpu_config.hpp"
 
 #include <string>
 #include <iostream>

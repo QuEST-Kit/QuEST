@@ -7,16 +7,16 @@
  * matrices, as explained in the header file.
  */
 
-#include "quest/include/structures.h"
-#include "quest/include/environment.h"
-#include "quest/include/types.h"
+#include "structures.h"
+#include "environment.h"
+#include "types.h"
 
-#include "quest/src/comm/comm_config.hpp"
-#include "quest/src/core/validation.hpp"
-#include "quest/src/core/formatter.hpp"
-#include "quest/src/core/bitwise.hpp"
-#include "quest/src/core/memory.hpp"
-#include "quest/src/gpu/gpu_config.hpp"
+#include "../comm/comm_config.hpp"
+#include "../core/validation.hpp"
+#include "../core/formatter.hpp"
+#include "../core/bitwise.hpp"
+#include "../core/memory.hpp"
+#include "../gpu/gpu_config.hpp"
 
 #include <cstdlib>
 #include <iostream>

@@ -6,7 +6,7 @@
 #ifndef BITWISE_HPP
 #define BITWISE_HPP
 
-#include "quest/include/types.h"
+#include "types.h"
 
 
 

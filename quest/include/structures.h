@@ -31,7 +31,7 @@
 #ifndef STRUCTURES_H
 #define STRUCTURES_H
 
-#include "quest/include/types.h"
+#include "types.h"
 
 // C++ gets vector initialiser overloads, whereas C gets a macro
 #ifdef __cplusplus

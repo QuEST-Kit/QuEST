@@ -2,10 +2,10 @@
  * String formatting functions, primarily used by reportQureg and reportQuESTEnv()
  */
 
-#include "quest/include/types.h"
-#include "quest/include/structures.h"
+#include "types.h"
+#include "structures.h"
 
-#include "quest/src/core/formatter.hpp"
+#include "../core/formatter.hpp"
 
 #include <stdlib.h>
 #include <iostream>

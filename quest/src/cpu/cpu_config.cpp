@@ -2,10 +2,10 @@
  * Utility definitions for querying CPU hardware.
  */
 
-#include "quest/include/modes.h"
-#include "quest/include/types.h"
+#include "modes.h"
+#include "types.h"
 
-#include "quest/src/core/errors.hpp"
+#include "../core/errors.hpp"
 
 
 #if ENABLE_MULTITHREADING && !defined(_OPENMP)

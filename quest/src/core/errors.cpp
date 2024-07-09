@@ -5,10 +5,10 @@
  * deployment is consistent with the compiled deployment modes.
  */
 
-#include "quest/include/types.h"
-#include "quest/include/qureg.h"
-#include "quest/src/comm/comm_config.hpp"
-#include "quest/src/gpu/gpu_config.hpp"
+#include "types.h"
+#include "qureg.h"
+#include "../comm/comm_config.hpp"
+#include "../gpu/gpu_config.hpp"
 
 #include <iostream>
 #include <string>
