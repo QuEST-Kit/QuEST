@@ -13,11 +13,11 @@
 #include "../core/validation.hpp"
 #include "../comm/comm_config.hpp"
 #include "../cpu/cpu_config.hpp"
-#include "../gpu/gpu_config.hpp"
 
 #include <iostream>
-#include <string>
 #include <typeinfo>
+#include <cstring>
+#include <string>
 #include <thread>
 #include <vector>
 #include <tuple>
@@ -30,16 +30,32 @@ using namespace form_substrings;
 /*
  * PRIVATE QUESTENV SINGLETON
  *
- * Global to this file, accessible to other files only through getQuESTEnv().
- * The private bools indicate whether the QuEST environment is currently active,
- * and whether it has been finalised after being active respectively. This
- * difference is important, since the QuEST environment can only ever be initialised
- * once, even after finalisation.
+ * Global to this file, accessible to other files only through 
+ * getQuESTEnv() which returns a copy, which also has const fields.
+ * The use of static ensures we never accidentally expose the "true"
+ * runtime single instance to other files. We allocate the env
+ * in heap memory (hence the pointer) so that we can defer 
+ * initialisation of the const fields. The address being NULL
+ * indicates the QuESTEnv is not currently initialised; perhaps never,
+ * or it was but has since been finalized.
  */
 
-static QuESTEnv questEnv;
-static bool isQuESTInit  = false;
-static bool isQuESTFinal = false;
+
+static QuESTEnv* globalEnvPtr = NULL;
+
+
+
+/*
+ * PRIVATE QUESTENV INITIALISATION HISTORY
+ *
+ * indicating whether QuEST has ever been finalized. This is important, since 
+ * the QuEST environment can only ever be initialised once, and can never
+ * be re-initialised after finalisation, due to re-initialisation of MPI 
+ * being undefined behaviour.
+ */
+
+
+static bool hasEnvBeenFinalized = false;
 
 
 
@@ -52,7 +68,7 @@ void validateAndInitCustomQuESTEnv(int useDistrib, int useGpuAccel, int useMulti
 
     // ensure that we are never re-initialising QuEST (even after finalize) because
     // this leads to undefined behaviour in distributed mode, as per the MPI
-    validate_envNeverInit(isQuESTInit, isQuESTFinal, caller);
+    validate_envNeverInit(globalEnvPtr != NULL, hasEnvBeenFinalized, caller);
 
     // ensure the chosen deployment is compiled and supported by hardware.
     // note that these error messages will be printed by every node because
@@ -67,33 +83,33 @@ void validateAndInitCustomQuESTEnv(int useDistrib, int useGpuAccel, int useMulti
     if (useGpuAccel && gpu_isCuQuantumCompiled())
         validate_gpuIsCuQuantumCompatible(caller);
 
-    // create a private, local env (so we don't modify global env in case of error)
-    QuESTEnv env;
-
-    // bind deployment info to QuESTEnv (may be overwritten still below)
-    env.isDistributed = useDistrib;
-    env.isGpuAccelerated = useGpuAccel;
-    env.isMultithreaded = useMultithread;
-
-    // assume no distribution, then revise below
-    env.rank = 0;
-    env.numNodes = 1;
-
-    // initialise distribution (even for a single node), though we may subsequently error and finalize
-    if (useDistrib) {
+    // optionally initialise MPI; necessary before completing validation
+    if (useDistrib)
         comm_init();
-        env.rank = comm_getRank();
-        env.numNodes = comm_getNumNodes();
+
+    validate_newEnvDistributedBetweenPower2Nodes(caller);
+
+    if (useGpuAccel && useDistrib) {
+
+        // TODO:
+        // validate 2^N local GPUs
     }
 
-    // validates numNodes=2^N and otherwise calls comm_end() before throwing error
-    validate_newEnvDistributedBetweenPower2Nodes(env.numNodes, caller);
+    // make a new, local env
+    QuESTEnv env = {
 
-    // TODO:
-    // validate 2^N local GPUs
+        // bind deployment info
+        .isMultithreaded  = useMultithread,
+        .isGpuAccelerated = useGpuAccel,
+        .isDistributed    = useDistrib,
+
+        // set distributed info
+        .rank     = (useDistrib)? comm_getRank()     : 0,
+        .numNodes = (useDistrib)? comm_getNumNodes() : 1,
+    };
 
     // in multi-GPU settings, bind each MPI process to one GPU
-    if (useDistrib && useGpuAccel)
+    if (useGpuAccel && useDistrib)
         gpu_bindLocalGPUsToNodes(env.rank);
 
     // in GPU settings, if cuQuantum is being used, initialise it
@@ -102,11 +118,15 @@ void validateAndInitCustomQuESTEnv(int useDistrib, int useGpuAccel, int useMulti
 
     // TODO: setup RNG
 
-    // overwrite attributes of the global, static env
-    questEnv = env;
+    // allocate space for the global QuESTEnv singleton (overwriting NULL, unless malloc fails)
+    globalEnvPtr = (QuESTEnv*) malloc(sizeof(QuESTEnv));
 
-    // declare successful initialisation
-    isQuESTInit = true;
+    // pedantically check that teeny tiny malloc just succeeded
+    if (globalEnvPtr == NULL)
+        error_allocOfQuESTEnvFailed();
+
+    // initialise it to our local env
+    memcpy(globalEnvPtr, &env, sizeof(QuESTEnv));
 }
 
 
@@ -145,13 +165,13 @@ void printCompilationInfo() {
 }
 
 
-void printDeploymentInfo(QuESTEnv env) {
+void printDeploymentInfo() {
 
     form_printTable(
         "deployment", {
-        {"isMpiEnabled", env.isDistributed},
-        {"isGpuEnabled", env.isGpuAccelerated},
-        {"isOmpEnabled", env.isMultithreaded},
+        {"isMpiEnabled", globalEnvPtr->isDistributed},
+        {"isGpuEnabled", globalEnvPtr->isGpuAccelerated},
+        {"isOmpEnabled", globalEnvPtr->isMultithreaded},
     });
 }
 
@@ -195,17 +215,20 @@ void printGpuInfo() {
 }
 
 
-void printDistributionInfo(QuESTEnv env) {
+void printDistributionInfo() {
 
     form_printTable(
         "distribution", {
         {"isMpiGpuAware", (comm_isMpiCompiled())? form_str(comm_isMpiGpuAware()) : na},
-        {"numMpiNodes",   form_str(env.numNodes)},
+        {"numMpiNodes",   form_str(globalEnvPtr->numNodes)},
     });
 }
 
 
-void printQuregSizeLimits(bool isDensMatr, QuESTEnv env) {
+void printQuregSizeLimits(bool isDensMatr) {
+
+    // for brevity
+    int numNodes = globalEnvPtr->numNodes;
 
     // by default, CPU limits are unknown (because memory query might fail)
     std::string maxQbForCpu = un;
@@ -217,8 +240,8 @@ void printQuregSizeLimits(bool isDensMatr, QuESTEnv env) {
         maxQbForCpu = form_str(mem_getMaxNumQubitsWhichCanFitInMemory(isDensMatr, 1, cpuMem));
 
         // and the max MPI sizes are only relevant when env is distributed
-        if (env.isDistributed)
-            maxQbForMpiCpu = form_str(mem_getMaxNumQubitsWhichCanFitInMemory(isDensMatr, env.numNodes, cpuMem));
+        if (globalEnvPtr->isDistributed)
+            maxQbForMpiCpu = form_str(mem_getMaxNumQubitsWhichCanFitInMemory(isDensMatr, numNodes, cpuMem));
 
         // when MPI irrelevant, change their status from "unknown" to "N/A"
         else
@@ -232,13 +255,13 @@ void printQuregSizeLimits(bool isDensMatr, QuESTEnv env) {
     std::string maxQbForMpiGpu = na;
 
     // max GPU registers only relevant if env is GPU-accelerated
-    if (env.isGpuAccelerated) {
+    if (globalEnvPtr->isGpuAccelerated) {
         qindex gpuMem = gpu_getCurrentAvailableMemoryInBytes();
         maxQbForGpu = form_str(mem_getMaxNumQubitsWhichCanFitInMemory(isDensMatr, 1, gpuMem));
 
         // and the max MPI sizes are further only relevant when env is distributed 
-        if (env.isDistributed)
-            maxQbForMpiGpu = form_str(mem_getMaxNumQubitsWhichCanFitInMemory(isDensMatr, env.numNodes, gpuMem));
+        if (globalEnvPtr->isDistributed)
+            maxQbForMpiGpu = form_str(mem_getMaxNumQubitsWhichCanFitInMemory(isDensMatr, numNodes, gpuMem));
     }
 
     // tailor table title to type of Qureg
@@ -247,18 +270,18 @@ void printQuregSizeLimits(bool isDensMatr, QuESTEnv env) {
 
     form_printTable(
         title, {
-        {"minQubitsForMpi",     (env.numNodes>1)? form_str(mem_getMinNumQubitsForDistribution(env.numNodes)) : na},
+        {"minQubitsForMpi",     (numNodes>1)? form_str(mem_getMinNumQubitsForDistribution(numNodes)) : na},
         {"maxQubitsForCpu",     maxQbForCpu},
         {"maxQubitsForGpu",     maxQbForGpu},
         {"maxQubitsForMpiCpu",  maxQbForMpiCpu},
         {"maxQubitsForMpiGpu",  maxQbForMpiGpu},
-        {"maxQubitsForMemOverflow", form_str(mem_getMaxNumQubitsBeforeLocalMemSizeofOverflow(isDensMatr, env.numNodes))},
+        {"maxQubitsForMemOverflow", form_str(mem_getMaxNumQubitsBeforeLocalMemSizeofOverflow(isDensMatr, numNodes))},
         {"maxQubitsForIndOverflow", form_str(mem_getMaxNumQubitsBeforeIndexOverflow(isDensMatr))},
     });
 }
 
 
-void printQuregAutoDeployments(bool isDensMatr, QuESTEnv env) {
+void printQuregAutoDeployments(bool isDensMatr) {
 
     // build all table rows dynamically before print
     std::vector<std::tuple<std::string, std::string>> rows;
@@ -274,7 +297,7 @@ void printQuregAutoDeployments(bool isDensMatr, QuESTEnv env) {
 
     // test to theoretically max #qubits, surpassing max that can fit in RAM and GPUs, because
     // auto-deploy will still try to deploy there to (then subsequent validation will fail)
-    int maxQubits = mem_getMaxNumQubitsBeforeLocalMemSizeofOverflow(isDensMatr, env.numNodes);
+    int maxQubits = mem_getMaxNumQubitsBeforeLocalMemSizeofOverflow(isDensMatr, globalEnvPtr->numNodes);
 
     for (int numQubits=1; numQubits<maxQubits; numQubits++) {
 
@@ -282,7 +305,7 @@ void printQuregAutoDeployments(bool isDensMatr, QuESTEnv env) {
         useDistrib  = modeflag::USE_AUTO;
         useGpuAccel = modeflag::USE_AUTO;
         useMulti    = modeflag::USE_AUTO;;
-        autodep_chooseQuregDeployment(numQubits, isDensMatr, useDistrib, useGpuAccel, useMulti, env);
+        autodep_chooseQuregDeployment(numQubits, isDensMatr, useDistrib, useGpuAccel, useMulti, *globalEnvPtr);
 
         // skip if deployments are unchanged
         if (useDistrib  == prevDistrib  &&
@@ -339,28 +362,33 @@ void initQuESTEnv() {
 
 int isQuESTEnvInit() {
 
-    return (int) isQuESTInit;
+    return (int) (globalEnvPtr != NULL);
 }
 
 
 QuESTEnv getQuESTEnv() {
     validate_envInit(__func__);
 
-    return questEnv;
+    // returns a copy, so cheeky users calling memcpy() upon const struct still won't mutate
+    return *globalEnvPtr;
 }
 
 
 void finalizeQuESTEnv() {
     validate_envInit(__func__);
 
-    if (questEnv.isGpuAccelerated && gpu_isCuQuantumCompiled())
+    if (globalEnvPtr->isGpuAccelerated && gpu_isCuQuantumCompiled())
         gpu_finalizeCuQuantum();
 
-    if (questEnv.isDistributed)
+    if (globalEnvPtr->isDistributed)
         comm_end();
 
-    isQuESTInit = false;
-    isQuESTFinal = true;
+    // free global env's heap memory and flag as not active
+    free(globalEnvPtr);
+    globalEnvPtr = NULL;
+
+    // flag that the environment was finalised, to ensure it is never re-initialised
+    hasEnvBeenFinalized = true;
 }
 
 
@@ -370,7 +398,7 @@ void reportQuESTEnv() {
     // TODO: add function to write this output to file (useful for HPC debugging)
 
     // only root node reports (but no synch necesary)
-    if (questEnv.rank != 0)
+    if (globalEnvPtr->rank != 0)
         return;
 
     std::cout << "QuEST execution environment:" << std::endl;
@@ -383,14 +411,14 @@ void reportQuESTEnv() {
     // making use of them, to inform the user how they might change deployment.
     printPrecisionInfo();
     printCompilationInfo();
-    printDeploymentInfo(questEnv);
+    printDeploymentInfo();
     printCpuInfo();
     printGpuInfo();
-    printDistributionInfo(questEnv);
-    printQuregSizeLimits(statevec, questEnv);
-    printQuregSizeLimits(densmatr, questEnv);
-    printQuregAutoDeployments(statevec, questEnv);
-    printQuregAutoDeployments(densmatr, questEnv);
+    printDistributionInfo();
+    printQuregSizeLimits(statevec);
+    printQuregSizeLimits(densmatr);
+    printQuregAutoDeployments(statevec);
+    printQuregAutoDeployments(densmatr);
 }
 
 

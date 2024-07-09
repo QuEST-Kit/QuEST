@@ -57,6 +57,17 @@ void error_validationMessageContainedUnsubstitutedVars(std::string msg) {
 
 
 /*
+ * ENVIRONMENT ERRORS
+ */
+
+void error_allocOfQuESTEnvFailed() {
+
+    raiseInternalError("Attempted memory allocation for the newly created QuESTEnv unexpectedly failed.");
+}
+
+
+
+/*
  * MEMORY ERRORS
  */
 

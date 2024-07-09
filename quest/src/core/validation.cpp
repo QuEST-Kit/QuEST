@@ -387,15 +387,17 @@ void validate_newEnvDeploymentMode(int isDistrib, int isGpuAccel, int isMultithr
     // because that requires we first initialise MPI, which we wish the caller to explicitly perform
 }
 
-void validate_newEnvDistributedBetweenPower2Nodes(int numNodes, const char* caller) {
+void validate_newEnvDistributedBetweenPower2Nodes(const char* caller) {
 
     // note that we do NOT finalize MPI before erroring below, because that would necessitate
     // every node (launched by mpirun) serially print the error message, causing spam.
     // Instead, we permit the evil of every MPI process calling exit() and MPI aborting when
     // encountering the first non-zero exit code.
 
-    if (!isPowerOf2(numNodes))
-        assertThat(false, report::CANNOT_DISTRIB_ENV_BETWEEN_NON_POW_2_NODES, {{"${NUM_NODES}",numNodes}}, caller);
+    int numNodes = comm_getNumNodes(); // callable even when not distributed
+    tokenSubs vars = {{"${NUM_NODES}", numNodes}};
+
+    assertThat(isPowerOf2(numNodes), report::CANNOT_DISTRIB_ENV_BETWEEN_NON_POW_2_NODES, vars, caller);
 }
 
 void validate_gpuIsCuQuantumCompatible(const char* caller) {
