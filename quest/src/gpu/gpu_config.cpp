@@ -349,11 +349,11 @@ void gpu_copyCpuToGpu(CompMatr matr) {
 
     // copy each CPU row into flattened GPU memory. we make each memcpy asynch,
     // but it's unclear it helps, nor whether single-stream sync is necessary
-    size_t numBytesPerRow = matr.numRows * sizeof(**matr.elems);
+    size_t numBytesPerRow = matr.numRows * sizeof(**matr.cpuElems);
     gpu_sync();
 
     for (qindex r=0; r<matr.numRows; r++) {
-        qcomp* cpuRow = matr.elems[r];
+        qcomp* cpuRow = matr.cpuElems[r];
         qcomp* gpuSlice = &matr.gpuElems[r*matr.numRows];
         CUDA_CHECK( cudaMemcpyAsync(gpuSlice, cpuRow, numBytesPerRow, cudaMemcpyHostToDevice) );
     }
