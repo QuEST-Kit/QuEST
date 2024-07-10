@@ -183,36 +183,23 @@ namespace report {
      * MATRIX CREATION
      */
 
-    std::string NON_POSITIVE_NUM_QUBITS_IN_NEW_MATRIX = 
+    std::string NEW_MATRIX_NUM_QUBITS_NOT_POSITIVE = 
         "Cannot create a matrix which acts upon ${NUM_QUBITS} qubits; must target one or more qubits.";
 
     std::string NEW_MATRIX_LOCAL_MEM_WOULD_EXCEED_SIZEOF =
         "Cannot create a matrix which acts upon ${NUM_QUBITS} qubits since the necessary memory size (${QCOMP_BYTES} * 2^${DUB_QUBITS} bytes) would overflow size_t, and be intractably slow to serially process. The maximum size matrix targets ${MAX_QUBITS} qubits.";
 
-    std::string FAILED_NEW_CPU_ALLOC_OF_COMPLEX_MATRIX =
-        "Allocation of memory for a new ComplexMatrixN failed.";
 
-    std::string FAILED_NEW_GPU_ALLOC_OF_COMPLEX_MATRIX =
-        "Allocation of GPU memory for a new ComplexMatrixN failed.";
+    std::string NEW_MATRIX_CPU_ALLOC_FAILED = 
+        "Attempted allocation of memory (${NUM_BYTES} bytes in RAM) failed.";
+
+    std::string NEW_MATRIX_GPU_ALLOC_FAILED = 
+        "Attempted allocation of GPU memory (${NUM_BYTES} bytes in VRAM) failed.";
 
 
     /*
      * EXISTING MATRIX
      */
-
-    std::string INVALID_EXISTING_CPU_ALLOC_OF_COMPLEX_MATRIX =
-        "Invalid CompMatr. One or more rows of the 2D elements array was seemingly unallocated.";
-
-    std::string INVALID_EXISTING_GPU_ALLOC_OF_COMPLEX_MATRIX =
-        "Invalid CompMatr. The GPU memory was seemingly unallocated.";
-
-
-    std::string COMPLEX_MATRIX_NEW_ELEMS_CONTAINED_GPU_SYNC_FLAG = 
-        "The CompMatr contained a reserved, forbidden value as the first element, used internally to detect that whether GPU memory has not synchronised. The value was intended to be extremely unlikely to be used by users - go buy a lottery ticket! If you insist on using this value in the first element, add a numerically insignificant perturbation.";
-
-    std::string COMPLEX_MATRIX_NOT_SYNCED_TO_GPU = 
-        "The CompMatr has yet not been synchronised with its persistent GPU memory, so potential changes to its elements are being ignored. Please first call syncCompMatr() after manually modifying elements, or overwrite all elements with setCompMatr().";
-
 
     std::string INVALID_COMP_MATR_1_FIELDS =
         "Invalid CompMatr1. Targeted ${NUM_QUBITS} qubits (instead of 1) and had a dimension of ${NUM_ROWS}x${NUM_ROWS} (instead of 2x2). It is likely this matrix was not initialised with getCompMatr1().";
@@ -220,19 +207,54 @@ namespace report {
     std::string INVALID_COMP_MATR_2_FIELDS =
         "Invalid CompMatr2. Targeted ${NUM_QUBITS} qubits (instead of 2) and had a dimension of ${NUM_ROWS}x${NUM_ROWS} (instead of 4x4). It is likely this matrix was not initialised with getCompMatr2().";
 
-    std::string INVALID_COMP_MATR_N_FIELDS =
-        "Invalid CompMatr. Targeted ${NUM_QUBITS} qubits and had a dimension of ${NUM_ROWS}x${NUM_ROWS}. It is likely this matrix was not initialised with createCompMatr().";
+    std::string INVALID_COMP_MATR_FIELDS =
+        "Invalid CompMatr. Targeted ${NUM_QUBITS} qubits and had a dimension of ${NUM_ROWS}x${NUM_ROWS}. It is likely this matrix was not created with createCompMatr().";
+
+    std::string INVALID_COMP_MATR_CPU_MEM_ALLOC =
+        "Invalid CompMatr. One or more rows of the 2D CPU memory (RAM) was seemingly unallocated. It is likely this matrix was not initialised with createCompMatr().";
+
+    std::string INVALID_COMP_MATR_GPU_MEM_ALLOC =
+        "Invalid CompMatr. The GPU memory (VRAM) was seemingly unallocated. It is likely this matrix was not initialised with createCompMatr().";
 
 
-    std::string COMPLEX_MATRIX_NEW_ELEMS_WRONG_NUM_ROWS =
+    std::string INVALID_DIAG_MATR_1_FIELDS =
+        "Invalid DiagMatr1. Targeted ${NUM_QUBITS} qubits (instead of 1) and had a dimension of ${NUM_ROWS}x${NUM_ROWS} (instead of 2x2). It is likely this matrix was not initialised with getDiagMatr1().";
+
+    std::string INVALID_DIAG_MATR_2_FIELDS =
+        "Invalid DiagMatr2. Targeted ${NUM_QUBITS} qubits (instead of 2) and had a dimension of ${NUM_ROWS}x${NUM_ROWS} (instead of 4x4). It is likely this matrix was not initialised with getDiagMatr2().";
+
+    std::string INVALID_DIAG_MATR_FIELDS =
+        "Invalid DiagMatr. Targeted ${NUM_QUBITS} qubits and had a dimension of ${NUM_ROWS}x${NUM_ROWS}. It is likely this matrix was not created with createDiagMatr().";
+
+    std::string INVALID_DIAG_MATR_CPU_MEM_ALLOC =
+        "Invalid DiagMatr. The CPU memory (RAM) was seemingly unallocated. It is likely this matrix was not initialised with createDiagMatr().";
+
+    std::string INVALID_DIAG_MATR_GPU_MEM_ALLOC =
+        "Invalid DiagMatr. The GPU memory (VRAM) was seemingly unallocated. It is likely this matrix was not initialised with createDiagMatr().";
+
+
+    std::string MATRIX_NEW_ELEMS_CONTAINED_GPU_SYNC_FLAG = 
+        "The new elements contained a reserved, forbidden value as the first element, used internally to detect that whether GPU memory has not synchronised. The value was intended to be extremely unlikely to be used by users - go buy a lottery ticket! If you insist on using this value in the first element, add a numerically insignificant perturbation.";
+
+    std::string COMP_MATR_NOT_SYNCED_TO_GPU = 
+        "The CompMatr has yet not been synchronised with its persistent GPU memory, so potential changes to its elements are being ignored. Please first call syncCompMatr() after manually modifying elements, or overwrite all elements with setCompMatr().";
+
+    std::string DIAG_MATR_NOT_SYNCED_TO_GPU = 
+        "The DiagMatr has yet not been synchronised with its persistent GPU memory, so potential changes to its elements are being ignored. Please first call syncDiagMatr() after manually modifying elements, or overwrite all elements with setDiagMatr().";
+
+
+    std::string COMP_MATR_NEW_ELEMS_WRONG_NUM_ROWS =
         "Incompatible number of rows (${NUM_GIVEN_ROWS}) of elements given to overwrite a ${NUM_QUBITS}-qubit CompMatr, which expects ${NUM_EXPECTED_ROWS} rows.";
 
-    std::string COMPLEX_MATRIX_NEW_ELEMS_WRONG_ROW_DIM =
-        "One or more rows contained an incompatible number of elements (${NUM_GIVEN_ELEMS}). The ${NUM_QUBITS}-qubit CompMatr expects a ${EXPECTED_DIM}x${EXPECTED_DIM} matrix.";
+    std::string COMP_MATR_NEW_ELEMS_WRONG_ROW_DIM =
+        "One or more rows contained an incompatible number of elements (${NUM_GIVEN_ELEMS}). The ${NUM_QUBITS}-qubit CompMatr expects a square ${EXPECTED_DIM}x${EXPECTED_DIM} matrix.";
 
+    std::string DIAG_MATR_WRONG_NUM_NEW_ELEMS = 
+        "Incompatible number of elements (${NUM_GIVEN_ELEMS}) assigned to a ${NUM_QUBITS}-qubit DiagMatr, which expects ${NUM_EXPECTED_ELEMS} elements.";
+    
 
     std::string MATRIX_NOT_UNITARY = 
-        "The given complex matrix was not (approximately) unitary.";
+        "The given matrix was not (approximately) unitary.";
 
 
     /*
@@ -720,64 +742,103 @@ void assertNewMatrixNotTooBig(int numQubits, const char* caller) {
 
 void validate_newMatrixNumQubits(int numQubits, const char* caller) {
 
-    assertThat(numQubits >= 1, report::NON_POSITIVE_NUM_QUBITS_IN_NEW_MATRIX, caller);
+    assertThat(numQubits >= 1, report::NEW_MATRIX_NUM_QUBITS_NOT_POSITIVE, caller);
     assertNewMatrixNotTooBig(numQubits, caller);
 }
 
-void validate_newOrExistingMatrixAllocs(CompMatr matr, bool isNewMatr, const char* caller) {
-
-    std::string cpuErrMsg = (isNewMatr)? 
-        report::FAILED_NEW_CPU_ALLOC_OF_COMPLEX_MATRIX :
-        report::INVALID_EXISTING_CPU_ALLOC_OF_COMPLEX_MATRIX;
+void validate_newMatrixAllocs(CompMatr matr, qindex numBytes, const char* caller) {
+    tokenSubs vars = {{"${NUM_BYTES}", numBytes}};
 
     // assert CPU array of rows was malloc'd successfully
-    assertThat(matr.elems != NULL, cpuErrMsg, caller);
+    assertThat(matr.cpuElems != NULL, report::NEW_MATRIX_CPU_ALLOC_FAILED, vars, caller);
 
-    // assert each CPU row was calloc'd successfully. this is flawed;
-    // .elems will be non-NULL when matr was default initialised (not constructed),
-    // passing validation and causing a segmentation fault in below loop. oh well!
+    // assert each CPU row was calloc'd successfully
     for (qindex r=0; r<matr.numRows; r++)
-        assertThat(matr.elems[r] != NULL, cpuErrMsg, caller);
-
-    std::string gpuErrMsg = (isNewMatr)? 
-        report::FAILED_NEW_GPU_ALLOC_OF_COMPLEX_MATRIX :
-        report::INVALID_EXISTING_GPU_ALLOC_OF_COMPLEX_MATRIX;
-
-    // assert GPU memory was malloc'd successfully
+        assertThat(matr.cpuElems[r] != NULL, report::NEW_MATRIX_CPU_ALLOC_FAILED, vars, caller);
+    
+    // optionally assert GPU memory was malloc'd successfully
     if (getQuESTEnv().isGpuAccelerated)
-        assertThat(matr.gpuElems != NULL, gpuErrMsg, caller);
+        assertThat(matr.gpuElems != NULL, report::NEW_MATRIX_GPU_ALLOC_FAILED, vars, caller);
 }
+
+void validate_newMatrixAllocs(DiagMatr matr, qindex numBytes, const char* caller) {
+    tokenSubs vars = {{"${NUM_BYTES}", numBytes}};
+
+    // assert CPU array of rows was malloc'd successfully
+    assertThat(matr.cpuElems != NULL, report::NEW_MATRIX_CPU_ALLOC_FAILED, vars, caller);
+
+    // optionally assert GPU memory was malloc'd successfully
+    if (getQuESTEnv().isGpuAccelerated)
+        assertThat(matr.gpuElems != NULL, report::NEW_MATRIX_GPU_ALLOC_FAILED, vars, caller);
+}
+
 
 
 /*
  * EXISTING MATRICES
  */
 
+// T can be CompMatr1, CompMatr2, CompMatr, DiagMatr1, DiagMatr2, DiagMatr
 template <class T>
-void assertMatrixFieldsAreValid(T matr, std::string errMsg, const char* caller) {
+void assertMatrixFieldsAreValid(T matr, int expectedNumQb, std::string errMsg, const char* caller) {
 
+    qindex dim = getMatrixDim(matr);
     tokenSubs vars = {
         {"${NUM_QUBITS}", matr.numQubits},
-        {"${NUM_ROWS}",   matr.numRows}};
+        {"${NUM_ROWS}",   dim}};
 
-    bool validDims = (matr.numQubits >= 1) && (matr.numRows == powerOf2(matr.numQubits));
-    assertThat(validDims, errMsg, vars, caller);
+    // assert correct fixed-size numQubits (caller gaurantees this passes for dynamic-size),
+    // where the error message string already contains the expected numQb
+    assertThat(matr.numQubits == expectedNumQb, errMsg, vars, caller);
+
+    qindex expectedDim = powerOf2(matr.numQubits);
+    assertThat(matr.numQubits >= 1, errMsg, vars, caller);
+    assertThat(dim == expectedDim,  errMsg, vars, caller);
 }
 
-void validate_matrixInit(CompMatr1 matr, const char* caller) {
-    assertMatrixFieldsAreValid(matr, report::INVALID_COMP_MATR_1_FIELDS, caller);
-}
-void validate_matrixInit(CompMatr2 matr, const char* caller) {
-    assertMatrixFieldsAreValid(matr, report::INVALID_COMP_MATR_2_FIELDS, caller);
-}
-void validate_matrixInit(CompMatr matr, const char* caller) {
-    assertMatrixFieldsAreValid(matr, report::INVALID_COMP_MATR_N_FIELDS, caller);
+// T can be CompMatr or DiagMatr (the only matrix structs with pointers)
+template <class T>
+void assertMatrixAllocsAreValid(T matr, std::string cpuErrMsg, std::string gpuErrMsg, const char* caller) {
 
-    // CompMatr must also have its allocations checked
-    validate_newOrExistingMatrixAllocs(matr, false, caller);
+    // assert CPU memory is allocated
+    assertThat(matr.cpuElems != NULL, cpuErrMsg, caller);
+
+    // we do not check that each CPU memory row (of CompMatr; irrelevant to DiagMatr)
+    // is not-NULL because it's really unlikely that inner memory wasn't allocaed but
+    // outer was and this wasn't somehow caught by post-creation validation (i.e. the 
+    // user manually malloc'd memory after somehow getting around const fields). Further,
+    // since this function is called many times (i.e. each time the user passes a matrix
+    // to a simulation function like multiQubitUnitary()), it may be inefficient to 
+    // serially process each row pointer.
+
+    // optionally assert GPU memory is allocated
+    if (getQuESTEnv().isGpuAccelerated)
+        assertThat(matr.gpuElems != NULL, gpuErrMsg, caller);
 }
 
-void validate_numMatrixElems(int numQubits, std::vector<std::vector<qcomp>> elems, const char* caller) {
+void validate_matrixFields(CompMatr1 matr, const char* caller) {
+    assertMatrixFieldsAreValid(matr, 1, report::INVALID_COMP_MATR_1_FIELDS, caller);
+}
+void validate_matrixFields(CompMatr2 matr, const char* caller) {
+    assertMatrixFieldsAreValid(matr, 2, report::INVALID_COMP_MATR_2_FIELDS, caller);
+}
+void validate_matrixFields(CompMatr matr, const char* caller) {
+    assertMatrixFieldsAreValid(matr, matr.numQubits, report::INVALID_COMP_MATR_FIELDS, caller);
+    assertMatrixAllocsAreValid(matr, report::INVALID_COMP_MATR_CPU_MEM_ALLOC, report::INVALID_COMP_MATR_GPU_MEM_ALLOC, caller);
+}
+
+void validate_matrixFields(DiagMatr1 matr, const char* caller) {
+    assertMatrixFieldsAreValid(matr, 1, report::INVALID_DIAG_MATR_1_FIELDS, caller);
+}
+void validate_matrixFields(DiagMatr2 matr, const char* caller) {
+    assertMatrixFieldsAreValid(matr, 2, report::INVALID_DIAG_MATR_2_FIELDS, caller);
+}
+void validate_matrixFields(DiagMatr matr, const char* caller) {
+    assertMatrixFieldsAreValid(matr, matr.numQubits, report::INVALID_DIAG_MATR_FIELDS, caller);
+    assertMatrixAllocsAreValid(matr, report::INVALID_DIAG_MATR_CPU_MEM_ALLOC, report::INVALID_DIAG_MATR_GPU_MEM_ALLOC, caller);
+}
+
+void validate_matrixNumNewElems(int numQubits, std::vector<std::vector<qcomp>> elems, const char* caller) {
 
     qindex dim = powerOf2(numQubits);
     tokenSubs vars = {
@@ -785,7 +846,7 @@ void validate_numMatrixElems(int numQubits, std::vector<std::vector<qcomp>> elem
         {"${NUM_EXPECTED_ROWS}", dim},
         {"${NUM_GIVEN_ROWS}",    elems.size()}};
 
-    assertThat(elems.size() == dim, report::COMPLEX_MATRIX_NEW_ELEMS_WRONG_NUM_ROWS, vars, caller);
+    assertThat(elems.size() == dim, report::COMP_MATR_NEW_ELEMS_WRONG_NUM_ROWS, vars, caller);
 
     for(auto & row : elems) {
 
@@ -794,33 +855,46 @@ void validate_numMatrixElems(int numQubits, std::vector<std::vector<qcomp>> elem
             {"${EXPECTED_DIM}",    dim},
             {"${NUM_GIVEN_ELEMS}", row.size()}};
 
-        assertThat(row.size() == dim, report::COMPLEX_MATRIX_NEW_ELEMS_WRONG_ROW_DIM, vars, caller);
+        assertThat(row.size() == dim, report::COMP_MATR_NEW_ELEMS_WRONG_ROW_DIM, vars, caller);
     }
 }
+void validate_matrixNumNewElems(int numQubits, std::vector<qcomp> elems, const char* caller) {
 
-void validate_matrixElemsDontContainUnsyncFlag(qcomp firstElem, const char* caller) {
+    qindex dim = powerOf2(numQubits);
+    tokenSubs vars = {
+        {"${NUM_QUBITS}",        numQubits},
+        {"${NUM_EXPECTED_ELEMS}", dim},
+        {"${NUM_GIVEN_ELEMS}",    elems.size()}};
+
+    assertThat(elems.size() == dim, report::DIAG_MATR_WRONG_NUM_NEW_ELEMS, vars, caller);
+}
+
+void validate_matrixNewElemsDontContainUnsyncFlag(qcomp firstElem, const char* caller) {
 
     // we permit the matrix to contain the GPU-mem-unsync flag in CPU-only mode,
     // to avoid astonishing a CPU-only user with a GPU-related error message
     if (!getQuESTEnv().isGpuAccelerated)
         return;
 
-    assertThat(!gpu_doCpuAmpsHaveUnsyncMemFlag(firstElem), report::COMPLEX_MATRIX_NEW_ELEMS_CONTAINED_GPU_SYNC_FLAG, caller);
+    assertThat(!gpu_doCpuAmpsHaveUnsyncMemFlag(firstElem), report::MATRIX_NEW_ELEMS_CONTAINED_GPU_SYNC_FLAG, caller);
 }
 
-void validate_matrixIsSynced(CompMatr matr, const char* caller) {
+// type T can be CompMatr or DiagMatr
+template <class T>
+void assertMatrixIsSynced(T matr, std::string errMsg, const char* caller) {
 
-    // checks fields AND allocations
-    validate_matrixInit(matr, caller);
+    // checks fields (including memory allocations)
+    validate_matrixFields(matr, caller);
 
     // we don't need to perform any sync check in CPU-only mode
     if (matr.gpuElems != NULL)
         return;
 
     // check if GPU amps have EVER been overwritten; we sadly cannot check the LATEST changes were pushed though
-    assertThat(gpu_haveGpuAmpsBeenSynced(matr.gpuElems), report::COMPLEX_MATRIX_NOT_SYNCED_TO_GPU, caller);
+    assertThat(gpu_haveGpuAmpsBeenSynced(matr.gpuElems), errMsg, caller);
 }
 
+// type T can be CompMatr1, CompMatr2, CompMatr, DiagMatr1, DiagMatr2, DiagMatr
 template <class T> 
 void assertMatrixIsUnitary(T matr, const char* caller) {
 
@@ -838,16 +912,35 @@ void assertMatrixIsUnitary(T matr, const char* caller) {
     assertThat(util_isUnitary(matr), report::MATRIX_NOT_UNITARY, caller);
 }
 
+void validate_matrixIsSynced(CompMatr matr, const char* caller) {
+    assertMatrixIsSynced(matr, report::COMP_MATR_NOT_SYNCED_TO_GPU, caller);
+}
+void validate_matrixIsSynced(DiagMatr matr, const char* caller) {
+    assertMatrixIsSynced(matr, report::DIAG_MATR_NOT_SYNCED_TO_GPU, caller);
+}
+
 void validate_matrixIsUnitary(CompMatr1 matr, const char* caller) {
-    validate_matrixInit(matr, caller);
+    validate_matrixFields(matr, caller);
     assertMatrixIsUnitary(matr, caller);
 }
 void validate_matrixIsUnitary(CompMatr2 matr, const char* caller) {
-    validate_matrixInit(matr, caller);
+    validate_matrixFields(matr, caller);
     assertMatrixIsUnitary(matr, caller);
 }
 void validate_matrixIsUnitary(CompMatr matr, const char* caller) {
-    validate_matrixIsSynced(matr, caller);
+    validate_matrixIsSynced(matr, caller); // also checks fields
+    assertMatrixIsUnitary(matr, caller);
+}
+void validate_matrixIsUnitary(DiagMatr1 matr, const char* caller) {
+    validate_matrixFields(matr, caller);
+    assertMatrixIsUnitary(matr, caller);
+}
+void validate_matrixIsUnitary(DiagMatr2 matr, const char* caller) {
+    validate_matrixFields(matr, caller);
+    assertMatrixIsUnitary(matr, caller);
+}
+void validate_matrixIsUnitary(DiagMatr matr, const char* caller) {
+    validate_matrixIsSynced(matr, caller); // also checks fields
     assertMatrixIsUnitary(matr, caller);
 }
 

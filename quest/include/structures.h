@@ -40,12 +40,17 @@
 
 
 /*
- * MATRIX STRUCTS
+ * COMPLEX MATRIX STRUCTS
  *
  * which are visible to both C and C++, where qcomp resolves
  * to the native complex type. These are not de-mangled because
  * C++ structs are already C compatible. We define their fields
  * as const to prevent users mangling them.
+ * 
+ * The compile-time sized structs have field 'elems', while
+ * dynamic-sized structs have separate 'cpuElems' and 'gpuElems',
+ * for persistent GPU allocation, and ergo need syncing. Note
+ * 'gpuElems' is always 1D.
  */
 
 
@@ -80,7 +85,7 @@ typedef struct {
     const qindex numRows;
 
     // 2D CPU memory; not const, so users can overwrite addresses (e.g. with NULL)
-    qcomp** elems;
+    qcomp** cpuElems;
 
     // row-flattened elems in GPU memory, allocated only
     // and always in GPU-enabled QuEST environments
@@ -91,7 +96,54 @@ typedef struct {
 
 
 /*
- * EXPLICIT FIXED-SIZE MATRIX INITIALISERS
+ * DIAGONAL MATRIX STRUCTS
+ *
+ * with all the same nuances as the CompMatr structs described above. 
+ */
+
+
+typedef struct {
+
+    // const to prevent user modification
+    const int numQubits;
+    const qindex numElems;
+
+    // elems are not const so that users can modify them after initialisation
+    qcomp elems[2];
+
+} DiagMatr1;
+
+
+typedef struct {
+
+    // const to prevent user modification
+    const int numQubits;
+    const qindex numElems;
+
+    // elems are not const so that users can modify them after initialisation
+    qcomp elems[4];
+
+} DiagMatr2;
+
+
+typedef struct {
+
+    // const to prevent user modification
+    const int numQubits;
+    const qindex numElems;
+
+    // CPU memory; not const, so users can overwrite addresses (e.g. with NULL)
+    qcomp* cpuElems;
+
+    // GPU memory, allocated only and always in GPU-enabled QuEST environments
+    qcomp* gpuElems;
+
+} DiagMatr;
+
+
+
+/*
+ * EXPLICIT FIXED-SIZE COMPLEX MATRIX INITIALISERS
  *
  * which are defined here in the header because the 'qcomp' type is interpreted
  * distinctly by C++ (the backend) and C (user code). The C and C++ ABIs do not
@@ -108,6 +160,9 @@ typedef struct {
  * we directly define these functions below (static inline to avoid symbol duplication),
  * initializing the const CompMatr in one line. The functions are separately interpreted 
  * by the C and C++ compilers, resolving to their individual native types.
+ * 
+ * Note separate pointer and array definitions are not necessary for DiagMatr, since
+ * it 1D array field decays to a pointer.
  */
 
 
@@ -169,6 +224,10 @@ static inline CompMatr2 getCompMatr2FromPtr(qcomp** in) {
  * arrays or pointers, without having to call the above specialised
  * functions. We are effectively using macros to extend C++'s
  * overloaded API to C, though C++ users can additionally pass vectors.
+ * 
+ * The situation is simpler for DiagMatr since 1D array references
+ * decay to pointers. We still wish to enable C++ users to pass
+ * vectors and their in-place initialiser lists, so we overload it.
  */
 
 
@@ -224,6 +283,40 @@ static inline CompMatr2 getCompMatr2FromPtr(qcomp** in) {
 #endif
 
 
+// we define getDiagMatr1/2 in this header for the same reasons that we did so for 
+// getCompMatr1/2FromArr/Ptr(). That is, we cannot pass DiagMatr1/2 instances between
+// C and C++ binaries, so we define these simple inline functions afresh for each.
+// Conveniently, we don't need to overload or use Generics, since arrays decay to ptrs.
+
+static inline DiagMatr1 getDiagMatr1(qcomp* in) {
+
+    return (DiagMatr1) {
+        .numQubits = 1,
+        .numElems = 2,
+        .elems = {in[0], in[1]}
+    };
+}
+
+static inline DiagMatr2 getDiagMatr2(qcomp* in) {
+
+    return (DiagMatr2) {
+        .numQubits = 2,
+        .numElems = 4,
+        .elems = {in[0], in[1], in[2], in[3]}
+    };
+}
+
+// C++ users can additionally initialise from vectors, enabling in-line initialisation
+
+#ifdef __cplusplus
+
+    DiagMatr1 getDiagMatr1(std::vector<qcomp> in);
+
+    DiagMatr2 getDiagMatr2(std::vector<qcomp> in);
+
+#endif
+
+
 
 /*
  * LITERAL FIXED-SIZE MATRIX INITIALISERS
@@ -244,6 +337,13 @@ static inline CompMatr2 getCompMatr2FromPtr(qcomp** in) {
     #define getInlineCompMatr2(...) \
         getCompMatr2(__VA_ARGS__)
 
+
+    #define getInlineDiagMatr1(...) \
+        getDiagMatr1(__VA_ARGS__)
+
+    #define getInlineDiagMatr2(...) \
+        getDiagMatr2(__VA_ARGS__)
+
 #else
 
     // C adds compound literal syntax to make a temporary array
@@ -253,6 +353,13 @@ static inline CompMatr2 getCompMatr2FromPtr(qcomp** in) {
 
     #define getInlineCompMatr2(...) \
         getCompMatr2FromArr((qcomp[4][4]) __VA_ARGS__)
+
+
+    #define getInlineDiagMatr1(...) \
+        getDiagMatr1((qcomp[2]) __VA_ARGS__)
+
+    #define getInlineDiagMatr2(...) \
+        getDiagMatr2((qcomp[4]) __VA_ARGS__)
 
 #endif
 
@@ -270,9 +377,17 @@ extern "C" {
 
     CompMatr createCompMatr(int numQubits);
 
+    DiagMatr createDiagMatr(int numQubits);
+
 
     void destroyCompMatr(CompMatr matrix);
+
+    void destroyDiagMatr(DiagMatr matrix);
+
+
     void syncCompMatr(CompMatr matr);
+
+    void syncDiagMatr(DiagMatr matr);
 
 #ifdef __cplusplus
 }
@@ -282,6 +397,9 @@ extern "C" {
 
 /*
  * EXPLICIT VARIABLE-SIZE MATRIX INITIALISERS
+ *
+ * not necessary for DiagMatr since it maintains a 1D array,
+ * which automatically decays to a qcomp pointer
  */
 
 
@@ -330,6 +448,21 @@ extern "C" {
  */
 
 
+// both C and C++ can safely invoke setDiagMatr(), passing a pointer or array (since it decays)
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+    void setDiagMatr(DiagMatr out, qcomp* in);
+
+#ifdef __cplusplus
+}
+#endif
+
+
+// but setCompMatr() is overloaded because pointers and 2D arrays are distinct
+
 #ifdef __cplusplus
 
     // C++ uses overloads, accepting even vector initialiser lists, but cannot ever accept 2D arrays
@@ -337,6 +470,11 @@ extern "C" {
     void setCompMatr(CompMatr out, qcomp** in);
 
     void setCompMatr(CompMatr out, std::vector<std::vector<qcomp>> in);
+
+
+    // we also give setDiagMatr() a vector overload, to allow initialiser lists
+
+    void setDiagMatr(DiagMatr out, std::vector<qcomp> in);
 
 #else
 
@@ -375,7 +513,7 @@ extern "C" {
  *
  * which enable C users to give inline 2D array literals without having to use the
  * VLA compound literal syntax. We expose these macros to C++ too for API consistency,
- * although C++'s getCompMatr1 vector overload achieves the same thing
+ * although C++'s vector overloads achieve the same thing
  */
 
 
@@ -386,6 +524,9 @@ extern "C" {
     #define setInlineCompMatr(matr, numQb, ...) \
         setCompMatr(matr, __VA_ARGS__)
 
+    #define setInlineDiagMatr(matr, numQb, ...) \
+        setDiagMatr(matr, __VA_ARGS__)
+
 #else 
 
     // C creates a compile-time-sized temporary array via a compound literal. We sadly
@@ -394,6 +535,12 @@ extern "C" {
 
     #define setInlineCompMatr(matr, numQb, ...) \
         setCompMatrFromArr(matr, (qcomp[1<<numQb][1<<numQb]) __VA_ARGS__)
+
+
+    // 1D array arguments fortunately decay to pointers 
+
+    #define setInlineDiagMatr(matr, numQb, ...) \
+        setDiagMatr(matr, (qcomp[1<<numQb]) __VA_ARGS__)
 
 #endif
 
@@ -414,6 +561,13 @@ extern "C" {
     void reportCompMatr2(CompMatr2 matrix);
 
     void reportCompMatr(CompMatr matrix);
+
+
+    void reportDiagMatr1(DiagMatr1 matrix);
+
+    void reportDiagMatr2(DiagMatr2 matrix);
+
+    void reportDiagMatr(DiagMatr matrix);
 
 #ifdef __cplusplus
 }

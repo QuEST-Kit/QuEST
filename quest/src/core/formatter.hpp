@@ -73,14 +73,31 @@ namespace form_substrings {
 
 
 /*
+ * DEFAULT INDENTS OF PRINTERS
+ *
+ * which doesn't need to be publicly accessible but we want them as
+ * default arguments to the public signatures, so whatever. Declared
+ * static to avoid symbol duplication by repeated header inclusion.
+ */
+
+static std::string defaultMatrIndent  = "    ";
+static std::string defaultTableIndent = "  ";
+
+
+
+/*
  * MATRIX PRINTING
  */
 
-void form_printMatrix(CompMatr1 matr, std::string indent="    ");
+void form_printMatrixInfo(std::string nameStr, int numQubits, qindex dim, size_t elemMem, size_t otherMem);
 
-void form_printMatrix(CompMatr2 matr, std::string indent="    ");
+void form_printMatrix(CompMatr1 matr, std::string indent=defaultMatrIndent);
+void form_printMatrix(CompMatr2 matr, std::string indent=defaultMatrIndent);
+void form_printMatrix(CompMatr  matr, std::string indent=defaultMatrIndent);
 
-void form_printMatrix(CompMatr matr, std::string indent="    ");
+void form_printMatrix(DiagMatr1 matr, std::string indent=defaultMatrIndent);
+void form_printMatrix(DiagMatr2 matr, std::string indent=defaultMatrIndent);
+void form_printMatrix(DiagMatr  matr, std::string indent=defaultMatrIndent);
 
 
 
@@ -88,9 +105,8 @@ void form_printMatrix(CompMatr matr, std::string indent="    ");
  * TABLE PRINTING
  */
 
-void form_printTable(std::string title, std::vector<std::tuple<std::string, std::string>> rows, std::string indent="  ");
-
-void form_printTable(std::string title, std::vector<std::tuple<std::string, long long int>> rows, std::string indent="  ");
+void form_printTable(std::string title, std::vector<std::tuple<std::string, std::string>>   rows, std::string indent=defaultTableIndent);
+void form_printTable(std::string title, std::vector<std::tuple<std::string, long long int>> rows, std::string indent=defaultTableIndent);
 
 
 

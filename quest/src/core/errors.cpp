@@ -190,9 +190,9 @@ void error_gpuCopyButQuregNotGpuAccelerated() {
     raiseInternalError("A function attempted to access GPU memory of a Qureg which is not GPU accelerated.");
 }
 
-void error_gpuCopyButCompMatrNotGpuAccelerated() {
+void error_gpuCopyButMatrixNotGpuAccelerated() {
 
-    raiseInternalError("A function attempted to access GPU memory of a CompMatr which is not GPU accelerated.");
+    raiseInternalError("A function attempted to access GPU memory of a matrix (e.g. a CompMatr or DiagMatr) which is not GPU accelerated.");
 }
 
 void error_gpuUnexpectedlyInaccessible() {

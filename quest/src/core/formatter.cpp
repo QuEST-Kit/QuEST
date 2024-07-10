@@ -6,6 +6,7 @@
 #include "quest/include/structures.h"
 
 #include "quest/src/core/formatter.hpp"
+#include "quest/src/core/utilities.hpp"
 
 #include <stdlib.h>
 #include <iostream>
@@ -19,10 +20,12 @@
 // I like to live dangerously; and I am willing to debate with the
 // most dogmatic C++ enthusiast about the unreadability of namespaces
 using namespace std;
+using namespace form_substrings;
 
 
 // aesthetic constants
-const int MIN_SPACE_BETWEEN_MATRIX_COLS = 2;
+const int MIN_SPACE_BETWEEN_DENSE_MATRIX_COLS = 2;
+const int MIN_SPACE_BETWEEN_DIAG_MATRIX_COLS = 1;
 const int MIN_SPACE_BETWEEN_TABLE_COLS = 5;
 
 const char TABLE_SPACE_CHAR = '.';
@@ -171,51 +174,110 @@ string compToStr(complex<T> num) {
 
 
 /*
- * MATRIX PRINTING
+ * MATRIX INFO PRINTING
+ *
+ * which prints information about the matrix type itself, rather than its elements
  */
 
 
-template <class T> 
-void printMatrixElems(T matr, string indent) {
+void form_printMatrixInfo(std::string nameStr, int numQubits, qindex dim, size_t elemMem, size_t otherMem) {
 
+    // prepare substirngs
+    std::string sepStr  = ", ";
+    std::string qbStr   = form_str(numQubits) + " qubit" + ((numQubits>1)? "s":"");
+    std::string dimStr  = form_str(dim) + mu + form_str(dim) + " elems";
+    std::string memStr  = form_str(elemMem) + " + " + form_str(otherMem) + by;
+
+    // print e.g. CompMatr (2 qubits, 4 x 4 elements, 256 + 32 bytes):
+    std::cout 
+        << nameStr << " (" 
+        << qbStr   << sepStr 
+        << dimStr  << sepStr 
+        << memStr  << "):" 
+        << std::endl;
+}
+
+
+
+/*
+ * MATRIX PRINTING
+ *
+ * which print only the matrix elements, indented
+ */
+
+
+// type T can be qcomp(*)[] or qcomp**
+template <typename T> 
+void printDenseMatrixElems(T elems, qindex dim, string indent) {
+    
     // determine max width of each column
-    vector<int> maxColWidths(matr.numRows, 0);
-    for (qindex c=0; c<matr.numRows; c++) {
-        for (qindex r=0; r<matr.numRows; r++) {
-            int width = compToStr(matr.elems[r][c]).length();
+    vector<int> maxColWidths(dim, 0);
+    for (qindex c=0; c<dim; c++) {
+        for (qindex r=0; r<dim; r++) {
+            int width = compToStr(elems[r][c]).length();
             if (width > maxColWidths[c])
                 maxColWidths[c] = width;
         }
     }
 
     // print each row, aligning columns
-    for (qindex r=0; r<matr.numRows; r++) {
+    for (qindex r=0; r<dim; r++) {
         cout << indent;
 
-        for (qindex c=0; c<matr.numRows; c++)
+        for (qindex c=0; c<dim; c++)
             cout << left
-                << setw(maxColWidths[c] + MIN_SPACE_BETWEEN_MATRIX_COLS) 
+                << setw(maxColWidths[c] + MIN_SPACE_BETWEEN_DENSE_MATRIX_COLS) 
                 << setfill(MATRIX_SPACE_CHAR)
-                << compToStr(matr.elems[r][c]);
+                << compToStr(elems[r][c]);
 
         cout << endl;
     }
 }
 
+// diagonals don't need templating because arrays decay to pointers, yay!
+void printDiagMatrixElems(qcomp* elems, qindex dim, string indent) {
+
+    // determine max width of each column
+    vector<int> maxColWidths(dim, 0);
+    for (qindex c=0; c<dim; c++) {
+        int width = compToStr(elems[c]).length();
+        if (width > maxColWidths[c])
+            maxColWidths[c] = width;
+    }
+
+    // print each "virtual" row, aligning columns
+    for (qindex r=0; r<dim; r++) {
+        cout << indent;
+
+        // print nothing in every column except diagonal
+        for (qindex c=0; c<dim; c++)
+            cout << left
+                << setw(maxColWidths[c] + MIN_SPACE_BETWEEN_DIAG_MATRIX_COLS) 
+                << setfill(MATRIX_SPACE_CHAR)
+                << ((r==c)? compToStr(elems[c]) : "");
+
+        cout << endl;
+    }
+}
 
 void form_printMatrix(CompMatr1 matr, string indent) {
-
-    printMatrixElems(matr, indent);
+    printDenseMatrixElems(matr.elems, matr.numRows, indent);
 }
-
 void form_printMatrix(CompMatr2 matr, string indent) {
-
-    printMatrixElems(matr, indent);
+    printDenseMatrixElems(matr.elems, matr.numRows, indent);
+}
+void form_printMatrix(CompMatr matr, string indent) {
+    printDenseMatrixElems(matr.cpuElems, matr.numRows, indent);
 }
 
-void form_printMatrix(CompMatr matr, string indent) {
-
-    printMatrixElems(matr, indent);
+void form_printMatrix(DiagMatr1 matr, string indent) {
+    printDiagMatrixElems(matr.elems, matr.numElems, indent);
+}
+void form_printMatrix(DiagMatr2 matr, string indent) {
+    printDiagMatrixElems(matr.elems, matr.numElems, indent);
+}
+void form_printMatrix(DiagMatr matr, string indent) {
+    printDiagMatrixElems(matr.cpuElems, matr.numElems, indent);
 }
 
 
