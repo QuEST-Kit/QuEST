@@ -32,7 +32,7 @@ void validate_gpuIsCuQuantumCompatible(const char* caller);
  * EXISTING ENVIRONMENT
  */
 
-void validate_envInit(const char* caller);
+void validate_envIsInit(const char* caller);
 
 
 
@@ -42,9 +42,9 @@ void validate_envInit(const char* caller);
 
 void validate_newQuregParams(int numQubits, int isDensMatr, int isDistrib, int isGpuAccel, int numCpuThreads, QuESTEnv env, const char* caller);
 
-void validate_newOrExistingQuregAllocs(Qureg qureg, bool isNewQureg, const char* caller);
-
 void validate_newQuregNotBothMultithreadedAndGpuAccel(int useGpu, int numThreads, const char* caller);
+
+void validate_newQuregAllocs(Qureg qureg, const char* caller);
 
 
 
@@ -52,7 +52,7 @@ void validate_newQuregNotBothMultithreadedAndGpuAccel(int useGpu, int numThreads
  * EXISTING QUREG
  */
 
-void validate_quregInit(Qureg qureg, const char* caller);
+void validate_quregFields(Qureg qureg, const char* caller);
 
 
 

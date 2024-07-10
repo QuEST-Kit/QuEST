@@ -28,9 +28,53 @@ using namespace form_substrings;
  * PRIVATE INNER FUNCTIONS (C++)
  */
 
+
+bool didAnyAllocsFail(Qureg qureg) {
+
+    // CPU memory should always be allocated
+    if (qureg.cpuAmps == NULL)
+        return true;
+
+    // when distributed, the CPU communication buffer must be allocated
+    if (qureg.isDistributed && qureg.cpuCommBuffer == NULL)
+        return true;
+
+    // when GPU-accelerated, the GPU memory should be allocated
+    if (qureg.isGpuAccelerated && qureg.gpuAmps == NULL)
+        return true;
+
+    // when both distributed and GPU-accelerated, the GPU communication buffer must be allocated
+    if (qureg.isDistributed && qureg.isGpuAccelerated && qureg.gpuCommBuffer == NULL)
+        return true;
+
+    // otherwise all pointers were non-NULL so no allocations failed
+    return false;
+}
+
+
+void freeAllMemoryIfAnyAllocsFailed(Qureg qureg) {
+
+    // do nothing if everything allocated successfully
+    if (!didAnyAllocsFail(qureg))
+        return;
+
+    // otherwise, free everything that was successfully allocated
+    if (qureg.cpuAmps != NULL)
+        cpu_deallocAmps(qureg.cpuAmps);
+
+    if (qureg.cpuCommBuffer != NULL)
+        cpu_deallocAmps(qureg.cpuCommBuffer);
+
+    if (qureg.gpuAmps != NULL)
+        gpu_deallocAmps(qureg.gpuAmps);
+
+    if (qureg.gpuCommBuffer != NULL)
+        gpu_deallocAmps(qureg.gpuCommBuffer);
+}
+
 Qureg validateAndCreateCustomQureg(int numQubits, int isDensMatr, int useDistrib, int useGpuAccel, int useMultithread, const char* caller) {
 
-    validate_envInit(caller);
+    validate_envIsInit(caller);
     QuESTEnv env = getQuESTEnv();
 
     // ensure deployment is compatible with environment, considering available hardware and their memory capacities
@@ -83,9 +127,9 @@ Qureg validateAndCreateCustomQureg(int numQubits, int isDensMatr, int useDistrib
         .gpuCommBuffer = (useGpuAccel && useDistrib)? gpu_allocAmps(qureg.numAmpsPerNode) : NULL,
     };
 
-    // check all allocations succeeded (if any failed, validation frees all non-failures before throwing error)
-    bool isNewQureg = true;
-    validate_newOrExistingQuregAllocs(qureg, isNewQureg, caller);
+    // if any of the above mallocs failed, below validation will memory leak; so free first (but don't set to NULL)
+    freeAllMemoryIfAnyAllocsFailed(qureg);
+    validate_newQuregAllocs(qureg, __func__);
 
     // initialise state to |0> or |0><0|
     initZeroState(qureg); 
@@ -199,7 +243,7 @@ Qureg createDensityQureg(int numQubits) {
 
 
 void destroyQureg(Qureg qureg) {
-    validate_quregInit(qureg, __func__);
+    validate_quregFields(qureg, __func__);
 
     // free CPU memory
     cpu_deallocAmps(qureg.cpuAmps);
@@ -222,7 +266,7 @@ void destroyQureg(Qureg qureg) {
 
 
 void reportQureg(Qureg qureg) {
-    validate_quregInit(qureg, __func__);
+    validate_quregFields(qureg, __func__);
 
     // TODO: add function to write this output to file (useful for HPC debugging)
 

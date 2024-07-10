@@ -369,7 +369,7 @@ int isQuESTEnvInit() {
 
 
 QuESTEnv getQuESTEnv() {
-    validate_envInit(__func__);
+    validate_envIsInit(__func__);
 
     // returns a copy, so cheeky users calling memcpy() upon const struct still won't mutate
     return *globalEnvPtr;
@@ -377,7 +377,7 @@ QuESTEnv getQuESTEnv() {
 
 
 void finalizeQuESTEnv() {
-    validate_envInit(__func__);
+    validate_envIsInit(__func__);
 
     if (globalEnvPtr->isGpuAccelerated && gpu_isCuQuantumCompiled())
         gpu_finalizeCuQuantum();
@@ -395,7 +395,7 @@ void finalizeQuESTEnv() {
 
 
 void reportQuESTEnv() {
-    validate_envInit(__func__);
+    validate_envIsInit(__func__);
 
     // TODO: add function to write this output to file (useful for HPC debugging)
 
