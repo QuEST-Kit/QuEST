@@ -2,7 +2,8 @@
 
 int main() {
 
-    qcomp x = 1.2 + 3.4i;
+    // literal 1.2 + 3.4i is restrictedly double precision
+    qcomp x = qcomp(1.2, 3.4);
 
     // C + R
     x = x + (int) 3;
