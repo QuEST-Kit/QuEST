@@ -9,7 +9,7 @@
  */
 
 #include "quest/include/qureg.h"
-#include "quest/include/structures.h"
+#include "quest/include/matrices.h"
 
 #include "quest/src/cpu/cpu_subroutines.hpp"
 #include "quest/src/gpu/gpu_subroutines.hpp"

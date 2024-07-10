@@ -6,7 +6,7 @@
 #include "quest/include/modes.h"
 #include "quest/include/environment.h"
 #include "quest/include/qureg.h"
-#include "quest/include/structures.h"
+#include "quest/include/matrices.h"
 
 #include "quest/src/core/errors.hpp"
 #include "quest/src/core/bitwise.hpp"
@@ -283,8 +283,7 @@ void default_invalidQuESTInputError(const char* msg, const char* func) {
     // will then attempt to instantly abort all nodes, losing the error message.
     comm_sync();
 
-    // TODO:
-    //      why don't we finalize MPI here?!?!
+    // finalise MPI before error-exit to avoid scaring user with giant MPI error message
     if (comm_isInit())
         comm_end();
 

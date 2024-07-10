@@ -103,11 +103,11 @@ API_FILES=(
     "decoherence"
     "environment"
     "initialisations"
+    "matrices"
     "modes"
     "operations"
     "qasm"
     "qureg"
-    "structures"
 )
 
 # files in GPU_DIR

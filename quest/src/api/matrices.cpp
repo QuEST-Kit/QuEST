@@ -1,13 +1,12 @@
 /** @file
- * Definitions of API data structures like gate matrices. 
- * Note QuESTEnv and Qureg structs have their own definitions 
- * in environment.cpp and qureg.cpp respectively.
+ * Definitions of API matrix data structures, and their getters
+ * and setters, as well as reporting utilities.
  * 
  * This file defines many "layers" of initialisation of complex
  * matrices, as explained in the header file.
  */
 
-#include "quest/include/structures.h"
+#include "quest/include/matrices.h"
 #include "quest/include/environment.h"
 #include "quest/include/types.h"
 

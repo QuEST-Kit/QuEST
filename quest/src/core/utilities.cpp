@@ -4,7 +4,7 @@
 
 #include "quest/include/types.h"
 #include "quest/include/qureg.h"
-#include "quest/include/structures.h"
+#include "quest/include/matrices.h"
 
 #include "quest/src/core/errors.hpp"
 #include "quest/src/core/utilities.hpp"
