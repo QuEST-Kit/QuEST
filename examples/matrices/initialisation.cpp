@@ -3,6 +3,12 @@
 #include <vector>
 
 
+
+/*
+ * CompMatr
+ */
+
+
 void demo_getInlineCompMatr() {
 
     // inline literal; identical to getCompMatr1() for consistencty with C API
@@ -38,9 +44,9 @@ void demo_getCompMatr() {
 
     // nested pointers
     int dim = 4;
-    qcomp** ptrs = (qcomp**) malloc(dim * sizeof(qcomp));
+    qcomp** ptrs = (qcomp**) malloc(dim * sizeof *ptrs);
     for (int i=0; i<dim; i++) {
-        ptrs[i] =(qcomp*) malloc(dim * sizeof(qcomp));
+        ptrs[i] =(qcomp*) malloc(dim * sizeof **ptrs);
         for (int j=0; j<dim; j++)
             ptrs[i][j] = i + j*1i;
     }
@@ -106,9 +112,9 @@ void demo_setCompMatr() {
 
     // nested pointers
     int dim = 8;
-    qcomp** ptrs = (qcomp**) malloc(dim * sizeof(qcomp));
+    qcomp** ptrs = (qcomp**) malloc(dim * sizeof *ptrs);
     for (int i=0; i<dim; i++) {
-        ptrs[i] = (qcomp*) malloc(dim * sizeof(qcomp));
+        ptrs[i] = (qcomp*) malloc(dim * sizeof **ptrs);
         for (int j=0; j<dim; j++)
             ptrs[i][j] = i + j*1i;
     }
@@ -133,6 +139,102 @@ void demo_setCompMatr() {
 }
 
 
+
+/*
+ * DiagMatr
+ */
+
+void demo_getInlineDiagMatr() {
+
+    // inline literal; identical to getDiagMatr1() for consistencty with C API
+    DiagMatr1 a = getInlineDiagMatr1( {9,8} );
+    reportDiagMatr1(a);
+
+    // we must specify all elements (only necessary in C++)
+    DiagMatr2 b = getInlineDiagMatr2({1i, 2i, 9i, 8i});
+    reportDiagMatr2(b);
+}
+
+
+void demo_getDiagMatr() {
+
+    // inline literal (C++ only)
+    DiagMatr1 a = getDiagMatr1({-5i, -10i});
+    reportDiagMatr1(a);
+
+    // vector (C++ only)
+    std::vector<qcomp> vec {20i, 30i};
+    DiagMatr1 b = getDiagMatr1(vec);
+    reportDiagMatr1(b);
+
+    // compile-time array
+    qcomp arr[4] = {7i, 8i, 8, 7};
+    DiagMatr1 c = getDiagMatr1(arr);
+    reportDiagMatr1(c);
+
+    // heap pointer
+    int dim = 4;
+    qcomp* ptr = (qcomp*) malloc(dim * sizeof *ptr);
+    for (int i=0; i<dim; i++)
+        ptr[i] = 10i*i;
+    DiagMatr2 d = getDiagMatr2(ptr);
+    reportDiagMatr2(d);
+
+    // cleanup
+    free(ptr);
+}
+
+
+void demo_setInlineDiagMatr() {
+
+    // inline literal; identical to setDiagMatr() for consistencty with C API
+    DiagMatr a = createDiagMatr(1);
+    setInlineDiagMatr(a, 1, {333, 444});
+    reportDiagMatr(a);
+    destroyDiagMatr(a);
+
+    // we must specify all elements (only necessary in C++)
+    DiagMatr b = createDiagMatr(3);
+    setInlineDiagMatr(b, 3, {4,5,4,5,6,7,6,7i});
+    reportDiagMatr(b);
+    destroyDiagMatr(b);
+}
+
+
+void demo_setDiagMatr() {
+
+    // inline literal (C++ only)
+    DiagMatr a = createDiagMatr(1);
+    setDiagMatr(a, {6i,5i});
+    reportDiagMatr(a);
+
+    // vector (C++ only)
+    std::vector<qcomp> vec {11, 22, 33, 44};
+    DiagMatr b = createDiagMatr(2);
+    setDiagMatr(b, vec);
+    reportDiagMatr(b);
+
+    // heap pointer
+    int dim = 8;
+    qcomp* ptr = (qcomp*) malloc(dim * sizeof *ptr);
+    for (int i=0; i<dim; i++)
+        ptr[i] = -i*.5i;
+    DiagMatr c = createDiagMatr(3);
+    setDiagMatr(c, ptr);
+    reportDiagMatr(c);
+    destroyDiagMatr(c);
+
+    // cleanup
+    free(ptr);
+}
+
+
+
+/*
+ * main
+ */
+
+
 int main() {
     
     initQuESTEnv();
@@ -141,6 +243,11 @@ int main() {
     demo_getCompMatr();
     demo_setInlineCompMatr();
     demo_setCompMatr();
+
+    demo_getInlineDiagMatr();
+    demo_getDiagMatr();
+    demo_setInlineDiagMatr();
+    demo_setDiagMatr();
 
     finalizeQuESTEnv();
     return 0;

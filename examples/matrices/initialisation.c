@@ -2,6 +2,12 @@
 #include <stdlib.h>
 
 
+
+/*
+ * CompMatr
+ */
+
+
 void demo_getInlineCompMatr() {
 
     // inline literal without gross C compound-literal syntax
@@ -37,9 +43,9 @@ void demo_getCompMatr() {
 
     // nested pointers
     int dim = 4;
-    qcomp** ptrs = malloc(dim * sizeof(qcomp));
+    qcomp** ptrs = malloc(dim * sizeof *ptrs);
     for (int i=0; i<dim; i++) {
-        ptrs[i] = malloc(dim * sizeof(qcomp));
+        ptrs[i] = malloc(dim * sizeof **ptrs);
         for (int j=0; j<dim; j++)
             ptrs[i][j] = i + j*1i;
     }
@@ -108,9 +114,9 @@ void demo_setCompMatr() {
 
     // nested pointers
     int dim = 8;
-    qcomp** ptrs = malloc(dim * sizeof(qcomp));
+    qcomp** ptrs = malloc(dim * sizeof *ptrs);
     for (int i=0; i<dim; i++) {
-        ptrs[i] = malloc(dim * sizeof(qcomp));
+        ptrs[i] = malloc(dim * sizeof **ptrs);
         for (int j=0; j<dim; j++)
             ptrs[i][j] = i + j*1i;
     }
@@ -141,6 +147,120 @@ void demo_setCompMatr() {
 }
 
 
+
+/*
+ * DiagMatr
+ */
+
+
+void demo_getInlineDiagMatr() {
+
+    // inline literal without gross C compound-literal syntax
+    DiagMatr1 a = getInlineDiagMatr1({.1, .2});
+    reportDiagMatr1(a);
+
+    // unspecified elements default to 0 (C only)
+    DiagMatr2 b = getInlineDiagMatr2({1i});
+    reportDiagMatr2(b);
+}
+
+
+void demo_getDiagMatr() {
+
+    // compile-time array
+    qcomp arr[2] = {5,6};
+    DiagMatr1 a = getDiagMatr1(arr);
+    reportDiagMatr1(a);
+
+    // VLA (C only)
+    int len = 4;
+    qcomp elems[len];
+    elems[0] = .1;
+    elems[1] = 2i;
+    elems[2] = -.7i;
+    elems[3] = 1E-5;
+    DiagMatr1 b = getDiagMatr1(elems);
+    reportDiagMatr1(b);
+
+    // pointer
+    int dim = 4;
+    qcomp* ptr = malloc(dim * sizeof *ptr);
+    for (int i=0; i<dim; i++)
+        ptr[i] = i + 1i*i;
+    DiagMatr2 c = getDiagMatr2(ptr);
+    reportDiagMatr2(c);
+
+    // temporary array as compound literal (C only)
+    DiagMatr2 d = getDiagMatr2( (qcomp[4]) {5, 6, 8}); // defaults 0
+    reportDiagMatr2(d);
+
+    // cleanup
+    free(ptr);
+}
+
+
+void demo_setInlineDiagMatr() {
+
+    // inline literal without gross C compound-literal syntax
+    DiagMatr a = createDiagMatr(2);
+    setInlineDiagMatr(a, 2, {.7, .8, .9, .9});
+    reportDiagMatr(a);
+    destroyDiagMatr(a);
+
+    // unspecified elements default to 0 (C only)
+    DiagMatr b = createDiagMatr(3);
+    setInlineDiagMatr(b, 3, {1, 2, 3, 4, -1});
+    reportDiagMatr(b);
+    destroyDiagMatr(b);
+}
+
+
+void demo_setDiagMatr() {
+
+    // compile-time array passed to VLA arg (C only) 
+    qcomp arr[2] = {5, 4};
+    DiagMatr a = createDiagMatr(1);
+    setDiagMatr(a, arr);
+    reportDiagMatr(a);
+    destroyDiagMatr(a);
+
+    // VLA (C only)
+    int len = 2;
+    qcomp elems[len];
+    elems[0] = .1;
+    elems[1] = 2i;
+    DiagMatr b = createDiagMatr(1);
+    setDiagMatr(b, elems);
+    reportDiagMatr(b);
+    destroyDiagMatr(b);
+
+    // heap pointer
+    int dim = 1 << 3;
+    qcomp* ptr = malloc(dim * sizeof *ptr);
+    for (int i=0; i<dim; i++)
+        ptr[i] = i + 1i*i;
+    DiagMatr c = createDiagMatr(3);
+    setDiagMatr(c, ptr);
+    reportDiagMatr(c);
+    destroyDiagMatr(c);
+
+    // temporary array as compound literal (C only)
+    DiagMatr d = createDiagMatr(1);
+    setDiagMatr(d, (qcomp[2]) {9,8});
+    reportDiagMatr(d);
+    destroyDiagMatr(d);
+
+    // cleanup
+    free(ptr);
+}
+
+
+
+/*
+ * main
+ */
+
+
 int main() {
     
     initQuESTEnv();
@@ -149,6 +269,11 @@ int main() {
     demo_getCompMatr();
     demo_setInlineCompMatr();
     demo_setCompMatr();
+
+    demo_getInlineDiagMatr();
+    demo_getDiagMatr();
+    demo_setInlineDiagMatr();
+    demo_setDiagMatr();
 
     finalizeQuESTEnv();
     return 0;

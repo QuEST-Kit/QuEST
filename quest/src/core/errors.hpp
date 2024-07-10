@@ -94,7 +94,7 @@ void error_gpuSimButGpuNotCompiled();
 
 void error_gpuCopyButQuregNotGpuAccelerated();
 
-void error_gpuCopyButCompMatrNotGpuAccelerated();
+void error_gpuCopyButMatrixNotGpuAccelerated();
 
 void error_gpuMemSyncQueriedButEnvNotGpuAccelerated();
 

@@ -344,8 +344,8 @@ void gpu_copyGpuToCpu(Qureg qureg) {
 void gpu_copyCpuToGpu(CompMatr matr) {
 #if ENABLE_GPU_ACCELERATION
 
-    if (matr.gpuElems == NULL || getQuESTEnv().isGpuAccelerated==0)
-        error_gpuCopyButCompMatrNotGpuAccelerated();
+    if (matr.gpuElems == NULL || ! getQuESTEnv().isGpuAccelerated)
+        error_gpuCopyButMatrixNotGpuAccelerated();
 
     // copy each CPU row into flattened GPU memory. we make each memcpy asynch,
     // but it's unclear it helps, nor whether single-stream sync is necessary
@@ -366,11 +366,26 @@ void gpu_copyCpuToGpu(CompMatr matr) {
 }
 
 
+void gpu_copyCpuToGpu(DiagMatr matr) {
+#if ENABLE_GPU_ACCELERATION
+
+    if (matr.gpuElems == NULL || ! getQuESTEnv().isGpuAccelerated)
+        error_gpuCopyButMatrixNotGpuAccelerated();
+
+    size_t numBytes = matr.numElems * sizeof(qcomp);
+    CUDA_CHECK( cudaMemcpy(matr.gpuElems, matr.cpuElems, numBytes, cudaMemcpyHostToDevice) );
+    
+#else
+    error_gpuCopyButGpuNotCompiled();
+#endif
+}
+
+
 bool gpu_haveGpuAmpsBeenSynced(qcomp* gpuArr) {
 #if ENABLE_GPU_ACCELERATION
 
-    if (gpuArr == NULL || getQuESTEnv().isGpuAccelerated==0)
-        error_gpuCopyButCompMatrNotGpuAccelerated();
+    if (gpuArr == NULL || ! getQuESTEnv().isGpuAccelerated)
+        error_gpuCopyButMatrixNotGpuAccelerated();
 
     // obtain first element from device memory
     qcomp firstElem;

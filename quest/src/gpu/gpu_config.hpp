@@ -82,6 +82,7 @@ void gpu_copyGpuToCpu(Qureg qureg, qcomp* gpuArr, qcomp* cpuArr, qindex numElems
 void gpu_copyGpuToCpu(Qureg qureg);
 
 void gpu_copyCpuToGpu(CompMatr matr);
+void gpu_copyCpuToGpu(DiagMatr matr);
 
 bool gpu_haveGpuAmpsBeenSynced(qcomp* gpuArr);
 
