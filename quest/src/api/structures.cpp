@@ -13,27 +13,29 @@
 
 #include "quest/src/comm/comm_config.hpp"
 #include "quest/src/core/validation.hpp"
+#include "quest/src/core/utilities.hpp"
 #include "quest/src/core/formatter.hpp"
 #include "quest/src/core/bitwise.hpp"
 #include "quest/src/core/memory.hpp"
 #include "quest/src/gpu/gpu_config.hpp"
 
-#include <cstdlib>
 #include <iostream>
+#include <cstring>
+#include <cstdlib>
 #include <string>
 #include <vector>
-
-
-// for concise reporters
-using namespace form_substrings;
 
 
 
 /*
  * PRIVATE UTILITES 
+ *
+ * noting that some public matrix utilities (like isDenseMatrix) 
+ * are defined in utilities.hpp
  */
 
-// A and B can both be qcomp** or qcomp[][] (mixed)
+
+// types A and B can both be qcomp** or qcomp[][] (mixed)
 template<typename A, typename B> 
 void populateCompMatrElems(A out, B in, qindex dim) {
 
@@ -42,7 +44,8 @@ void populateCompMatrElems(A out, B in, qindex dim) {
             out[r][c] = in[r][c];
 }
 
-// T can be CompMatr1/2, B can be qcomp** or qcomp[][]
+
+// type T can be CompMatr1/2, B can be qcomp** or qcomp[][]
 template<class T, typename B>
 T getCompMatrFromElems(B in, int num) {
 
@@ -58,13 +61,56 @@ T getCompMatrFromElems(B in, int num) {
 }
 
 
+// type T can be CompMatr or DiagMatr
+template <class T>
+void freeAllMemoryIfAnyAllocsFailed(T matr) {
+
+    // check whether entire CPU memory was allocated
+    bool anyFailed = (matr.cpuElems == NULL);
+
+    // if memory is 2D, we also check each inner array was allocated
+    if constexpr (isDenseMatrixType<T>())
+        for (qindex r=0; !anyFailed && r<matr.numRows; r++) // early abort avoids seg-fault
+            anyFailed = (matr.cpuElems[r] == NULL);
+
+    // optionally check whether GPU memory was allocated
+    if (getQuESTEnv().isGpuAccelerated)
+        anyFailed = anyFailed || (matr.gpuElems == NULL);
+
+    // do nothing if everything allocated fine
+    if (!anyFailed)
+        return;
+
+    // but if even one thing failed, free every successful allocation...
+
+    // including every row (if the outer 2D malloc succeeded)
+    if constexpr (isDenseMatrixType<T>())
+        if (matr.cpuElems != NULL)
+            for (qindex r=0; r<matr.numRows; r++)
+                if (matr.cpuElems[r] != NULL)
+                    free(matr.cpuElems[r]);
+
+    // free the outer CPU array itself
+    if (matr.cpuElems != NULL)
+        free(matr.cpuElems);
+    
+    // and the GPU memory (gauranteed NULL in non-GPU mode)
+    if (matr.gpuElems != NULL)
+        gpu_deallocAmps(matr.gpuElems);
+}
+
+
 
 /*
- * OVERLOADED FIXED-SIZE MATRIX INITIALISERS
+ * OVERLOADED FIXED-SIZE COMPLEX MATRIX INITIALISERS
  *
- * Only exposed to C++; equivalent C macros are defined in the header.
- * Only the C++ vector overloads can validate their literal dimensions.
+ * enabling getCompMatr1/2 to receive qcomp**, qcomp(*)[] = qcomp[][]
+ * (due to pointer decay) and vector<vector<qcomp>>. These signatures
+ * are only exposed to C++; equivalent C macros are defined in the header.
+ * The vector signatures permit inline initialisers, and can also
+ * validate the dimensions of the passed lists.
  */
+
 
 CompMatr1 getCompMatr1(qcomp in[2][2]) {
     return getCompMatrFromElems<CompMatr1>(in, 1);
@@ -73,7 +119,7 @@ CompMatr1 getCompMatr1(qcomp** in) {
     return getCompMatrFromElems<CompMatr1>(in, 1);
 }
 CompMatr1 getCompMatr1(std::vector<std::vector<qcomp>> in) {
-    validate_numMatrixElems(1, in, __func__);
+    validate_matrixNumNewElems(1, in, __func__);
 
     return getCompMatrFromElems<CompMatr1>(in, 1);
 }
@@ -85,7 +131,7 @@ CompMatr2 getCompMatr2(qcomp** in) {
     return getCompMatrFromElems<CompMatr2>(in, 2);
 }
 CompMatr2 getCompMatr2(std::vector<std::vector<qcomp>> in) {
-    validate_numMatrixElems(2, in, __func__);
+    validate_matrixNumNewElems(2, in, __func__);
 
     return getCompMatrFromElems<CompMatr2>(in, 2);
 }
@@ -93,7 +139,30 @@ CompMatr2 getCompMatr2(std::vector<std::vector<qcomp>> in) {
 
 
 /*
- * VARIABLE SIZE MATRIX CONSTRUCTORS
+ * OVERLOADED FIXED-SIZE DIAGONAL MATRIX INITIALISERS
+ *
+ * enabling getDiagMatr1/2 to receive qcomp* = qcomp[], or vector<vector<qcomp>>. 
+ * Only the C++-compatible vector definition is here; the C-compatible pointer 
+ * overloads are defined in the header to circumvent C & C++ qcomp interopability 
+ * issues. The vector signatures permit inline initialisers, and can also
+ * validate the dimensions of the passed lists.
+ */
+
+
+DiagMatr1 getDiagMatr1(std::vector<qcomp> in) {
+    validate_matrixNumNewElems(1, in, __func__);
+    return getDiagMatr1(in.data());
+}
+
+DiagMatr2 getDiagMatr2(std::vector<qcomp> in) {
+    validate_matrixNumNewElems(2, in, __func__);
+    return getDiagMatr2(in.data());
+}
+
+
+
+/*
+ * VARIABLE SIZE COMPLEX MATRIX CONSTRUCTORS
  *
  * all of which are de-mangled for both C++ and C compatibility
  */
@@ -106,6 +175,7 @@ extern "C" CompMatr createCompMatr(int numQubits) {
     // validation ensures these (and below mem sizes) never overflow
     qindex numRows = powerOf2(numQubits);
     qindex numElems = numRows * numRows;
+    qindex numBytes = numElems * sizeof(qcomp); // used only by validation report
 
     // we will always allocate GPU memory if the env is GPU-accelerated
     bool isGpuAccel = getQuESTEnv().isGpuAccelerated;
@@ -116,34 +186,36 @@ extern "C" CompMatr createCompMatr(int numQubits) {
         .numRows = numRows,
 
         // const 2D CPU memory (NULL if failed, or containing NULLs)
-        .elems = (qcomp**) malloc(numRows * sizeof *out.elems), // NULL if failed,
+        .cpuElems = (qcomp**) malloc(numRows * sizeof *out.cpuElems), // NULL if failed,
 
         // const 1D GPU memory (NULL if failed or not needed)
         .gpuElems = (isGpuAccel)? gpu_allocAmps(numElems) : NULL // first amp will be un-sync'd flag
     };
 
     // only if outer CPU allocation succeeded, attempt to allocate each row array
-    if (out.elems != NULL)
+    if (out.cpuElems != NULL)
         for (qindex r=0; r < numRows; r++)
-            out.elems[r] = (qcomp*) calloc(numRows, sizeof **out.elems); // NULL if failed
+            out.cpuElems[r] = (qcomp*) calloc(numRows, sizeof **out.cpuElems); // NULL if failed
 
-    // check all CPU & GPU malloc and calloc's succeeded (no attempted freeing if not)
-    bool isNewMatr = true;
-    validate_newOrExistingMatrixAllocs(out, isNewMatr, __func__);
+    // if any of these mallocs failed, below validation will memory leak; so free first (but don't set to NULL)
+    freeAllMemoryIfAnyAllocsFailed(out);
+
+    // check all CPU & GPU malloc and callocs succeeded (no attempted freeing if not)
+    validate_newMatrixAllocs(out, numBytes, __func__);
 
     return out;
 }
 
 
 extern "C" void destroyCompMatr(CompMatr matrix) {
-    validate_matrixInit(matrix, __func__);
+    validate_matrixFields(matrix, __func__);
 
     // free each CPU row array
     for (qindex r=0; r < matrix.numRows; r++)
-        free(matrix.elems[r]);
+        free(matrix.cpuElems[r]);
 
     // free CPU array of rows
-    free(matrix.elems);
+    free(matrix.cpuElems);
 
     // free flat GPU array if it exists
     if (matrix.gpuElems != NULL)
@@ -152,8 +224,8 @@ extern "C" void destroyCompMatr(CompMatr matrix) {
 
 
 extern "C" void syncCompMatr(CompMatr matr) {
-    validate_matrixInit(matr, __func__);
-    validate_matrixElemsDontContainUnsyncFlag(matr.elems[0][0], __func__);
+    validate_matrixFields(matr, __func__);
+    validate_matrixNewElemsDontContainUnsyncFlag(matr.cpuElems[0][0], __func__);
 
     gpu_copyCpuToGpu(matr);
 }
@@ -161,19 +233,83 @@ extern "C" void syncCompMatr(CompMatr matr) {
 
 
 /*
- * EXPLICIT VARIABLE-SIZE MATRIX INITIALISERS
+ * VARIABLE SIZE DIAGONAL MATRIX CONSTRUCTORS
  *
- * all of which are demangled for C and C++ compatibility
+ * all of which are de-mangled for both C++ and C compatibility
  */
 
 
+extern "C" DiagMatr createDiagMatr(int numQubits) {
+    validate_envInit(__func__);
+    validate_newMatrixNumQubits(numQubits, __func__);
+
+    // validation ensures these (and below mem sizes) never overflow
+    qindex numElems = powerOf2(numQubits);
+    qindex numBytes = numElems * sizeof(qcomp);
+
+    // we will always allocate GPU memory if the env is GPU-accelerated
+    bool isGpuAccel = getQuESTEnv().isGpuAccelerated;
+
+    // initialise all CompMatr fields inline because struct is const
+    DiagMatr out = {
+        .numQubits = numQubits,
+        .numElems = numElems,
+
+        // const 2D CPU memory (NULL if failed, or containing NULLs)
+        .cpuElems = (qcomp*) malloc(numElems * sizeof *out.cpuElems), // NULL if failed,
+
+        // const 1D GPU memory (NULL if failed or not needed)
+        .gpuElems = (isGpuAccel)? gpu_allocAmps(numElems) : NULL // first amp will be un-sync'd flag
+    };
+
+    // if either of these mallocs failed, below validation will memory leak; so free first (but don't set to NULL)
+    freeAllMemoryIfAnyAllocsFailed(out);
+
+    // check all CPU & GPU malloc and callocs succeeded (no attempted freeing if not)
+    validate_newMatrixAllocs(out, numBytes, __func__);
+
+    return out;
+}
+
+
+extern "C" void destroyDiagMatr(DiagMatr matrix) {
+    validate_matrixFields(matrix, __func__);
+
+    // free CPU array of rows
+    free(matrix.cpuElems);
+
+    // free flat GPU array if it exists
+    if (matrix.gpuElems != NULL)
+        gpu_deallocAmps(matrix.gpuElems);
+}
+
+
+extern "C" void syncDiagMatr(DiagMatr matr) {
+    validate_matrixFields(matr, __func__);
+    validate_matrixNewElemsDontContainUnsyncFlag(matr.cpuElems[0], __func__);
+
+    gpu_copyCpuToGpu(matr);
+}
+
+
+
+/*
+ * EXPLICIT VARIABLE-SIZE COMPLEX MATRIX INITIALISERS
+ *
+ * all of which are demangled for C and C++ compatibility.
+ * Similar functions for DiagMatr are not necessary since
+ * it contains a 1D pointer (which arrays decay to).
+ */
+
+
+// type T can be qcomp** or vector<vector<qcomp>>, but qcomp(*)[] is handled by header
 template <typename T> 
 void validateAndSetCompMatrElems(CompMatr out, T elems, const char* caller) {
-    validate_matrixInit(out, __func__);
-    validate_matrixElemsDontContainUnsyncFlag(elems[0][0], caller);
+    validate_matrixFields(out, __func__);
+    validate_matrixNewElemsDontContainUnsyncFlag(elems[0][0], caller);
 
     // serially copy values to CPU memory
-    populateCompMatrElems(out.elems, elems, out.numRows);
+    populateCompMatrElems(out.cpuElems, elems, out.numRows);
 
     // overwrite GPU elements (including unsync flag)
     if (out.gpuElems != NULL)
@@ -195,13 +331,13 @@ extern "C" void validate_setCompMatrFromArr(CompMatr out) {
     // the user likely invoked this function from the setInlineCompMatr()
     // macro, but we cannot know for sure so it's better to fall-back to
     // reporting the definitely-involved inner function, as we do elsewhere
-    validate_matrixInit(out, "setCompMatrFromArr");
+    validate_matrixFields(out, "setCompMatrFromArr");
 }
 
 
 
 /*
- * OVERLOADED VARIABLE-SIZE MATRIX INITIALISERS
+ * OVERLOADED VARIABLE-SIZE COMPLEX MATRIX INITIALISERS
  *
  * which are C++ only; equivalent C overloads are defined using
  * macros in the header file. Note the explicit overloads below
@@ -217,10 +353,42 @@ void setCompMatr(CompMatr out, qcomp** in) {
 void setCompMatr(CompMatr out, std::vector<std::vector<qcomp>> in) {
 
     // we validate dimension of 'in', which first requires validating 'out' fields
-    validate_matrixInit(out, __func__);
-    validate_numMatrixElems(out.numQubits, in, __func__);
+    validate_matrixFields(out, __func__);
+    validate_matrixNumNewElems(out.numQubits, in, __func__);
 
+    // then we unimportantly repeat some of this validation; alas!
     validateAndSetCompMatrElems(out, in, __func__);
+}
+
+
+
+/*
+ * OVERLOADED VARIABLE-SIZE DIAGONAL MATRIX INITIALISERS
+ *
+ * visible to both C and C++, although C++ additionally gets a vector overload.
+ */
+
+
+extern "C" void setDiagMatr(DiagMatr out, qcomp* in) {
+    validate_matrixFields(out, __func__);
+    validate_matrixNewElemsDontContainUnsyncFlag(in[0], __func__);
+
+    // overwrite CPU memory
+    memcpy(out.cpuElems, in, out.numElems * sizeof(qcomp));
+
+    // overwrite GPU elements (including unsync flag)
+    if (out.gpuElems != NULL)
+        gpu_copyCpuToGpu(out);
+}
+
+void setDiagMatr(DiagMatr out, std::vector<qcomp> in) {
+
+    // we validate dimension of 'in', which first requires validating 'out' fields
+    validate_matrixFields(out, __func__);
+    validate_matrixNumNewElems(out.numQubits, in, __func__);
+
+    // then we unimportantly repeat some of this validation; alas!
+    setDiagMatr(out, in.data());
 }
 
 
@@ -228,50 +396,70 @@ void setCompMatr(CompMatr out, std::vector<std::vector<qcomp>> in) {
 /*
  * C & C++ MATRIX REPORTERS
  *
- * and private (permittedly name-mangled) inner functions
+ * and their private (permittedly name-mangled) inner functions
  */
 
 
-void printMatrixHeader(int numQubits) {
+// type T can be CompMatr1, CompMatr2, CompMatr, DiagMatr1, DiagMatr2 or DiagMatr
+template <class T>
+void printMatrixHeader(T matr) {
 
-    // find memory used by matrix; equal to that of a non-distributed density matrix
-    bool isMatr = true;
-    int numNodes = 1;
-    size_t mem = mem_getLocalMemoryRequired(numQubits, isMatr, numNodes);
-    std::string memStr = form_str(mem) + by;
+    // produce exact type string, e.g. DiagMatr2
+    std::string nameStr = (isDenseMatrixType<T>())? "CompMatr" : "DiagMatr";
+    if (isFixedSizeMatrixType<T>())
+        nameStr += form_str(matr.numQubits);
 
-    // prepare dim substring
-    qindex dim = powerOf2(numQubits);
-    std::string dimStr = form_str(dim) + mu + form_str(dim);
+    // find memory (bytes) to store elements; equal to that of a non-distributed Qureg (statevec or dens-matr)
+    size_t elemMem = mem_getLocalMemoryRequired(matr.numQubits, isDenseMatrixType<T>(), 1); // 1 node
 
-    // e.g. CompMatr2 (4 x 4, 256 bytes):
-    std::cout << "CompMatr" << numQubits << " (" << dimStr << ", " << memStr << "):" << std::endl;
+    // find memory (bytes) of other struct fields; fixed-size sizeof includes arrays, var-size does not
+    size_t otherMem = sizeof(matr);
+    if (isFixedSizeMatrixType<T>())
+        otherMem -= elemMem;
+
+    // find dimension; illegal field access in wrong branch removed at compile-time
+    qindex dim;
+    if constexpr (isDenseMatrixType<T>())
+        dim = matr.numRows;
+    else
+        dim = matr.numElems;
+
+    form_printMatrixInfo(nameStr, matr.numQubits, dim, elemMem, otherMem);
 }
 
 
+// type T can be CompMatr1, CompMatr2, CompMatr, DiagMatr1, DiagMatr2 or DiagMatr
 template<class T> 
 void rootPrintMatrix(T matrix) {
     
+    // only root note prints, to avoid spam in distributed settings
     if (comm_getRank() != 0)
         return;
 
-    printMatrixHeader(matrix.numQubits);
+    printMatrixHeader(matrix);
     form_printMatrix(matrix);
 }
 
 
-extern "C" void reportCompMatr1(CompMatr1 matr) {
-
-    rootPrintMatrix(matr);
+// all reporters are C and C++ accessible, so are de-mangled
+extern "C" {
+    
+    void reportCompMatr1(CompMatr1 matr) {
+        rootPrintMatrix(matr);
+    }
+    void reportCompMatr2(CompMatr2 matr) {
+        rootPrintMatrix(matr);
+    }
+    void reportCompMatr(CompMatr matr) {
+        rootPrintMatrix(matr);
+    }
+    void reportDiagMatr1(DiagMatr1 matr) {
+        rootPrintMatrix(matr);
+    }
+    void reportDiagMatr2(DiagMatr2 matr) {
+        rootPrintMatrix(matr);
+    }
+    void reportDiagMatr(DiagMatr matr) {
+        rootPrintMatrix(matr);
+    }
 }
-
-extern "C" void reportCompMatr2(CompMatr2 matr) {
-
-    rootPrintMatrix(matr);
-}
-
-extern "C" void reportCompMatr(CompMatr matr) {
-
-    rootPrintMatrix(matr);
-}
-

@@ -62,7 +62,8 @@ void validate_quregInit(Qureg qureg, const char* caller);
 
 void validate_newMatrixNumQubits(int numQubits, const char* caller);
 
-void validate_newOrExistingMatrixAllocs(CompMatr matr, bool isNewMatr, const char* caller);
+void validate_newMatrixAllocs(CompMatr matr, qindex numBytes, const char* caller);
+void validate_newMatrixAllocs(DiagMatr matr, qindex numBytes, const char* caller);
 
 
 
@@ -70,19 +71,27 @@ void validate_newOrExistingMatrixAllocs(CompMatr matr, bool isNewMatr, const cha
  * EXISTING MATRIX
  */
 
-void validate_matrixInit(CompMatr1 matr, const char* caller);
-void validate_matrixInit(CompMatr2 matr, const char* caller);
-void validate_matrixInit(CompMatr  matr, const char* caller);
+void validate_matrixFields(CompMatr1 matr, const char* caller);
+void validate_matrixFields(CompMatr2 matr, const char* caller);
+void validate_matrixFields(CompMatr  matr, const char* caller);
+void validate_matrixFields(DiagMatr1 matr, const char* caller);
+void validate_matrixFields(DiagMatr2 matr, const char* caller);
+void validate_matrixFields(DiagMatr  matr, const char* caller);
 
-void validate_numMatrixElems(int numQubits, std::vector<std::vector<qcomp>> elems, const char* caller);
+void validate_matrixNumNewElems(int numQubits, std::vector<std::vector<qcomp>> elems, const char* caller);
+void validate_matrixNumNewElems(int numQubits, std::vector<qcomp> elems, const char* caller);
 
-void validate_matrixElemsDontContainUnsyncFlag(qcomp firstElem, const char* caller);
+void validate_matrixNewElemsDontContainUnsyncFlag(qcomp firstElem, const char* caller);
 
 void validate_matrixIsSynced(CompMatr matr, const char* caller);
+void validate_matrixIsSynced(DiagMatr matr, const char* caller);
 
 void validate_matrixIsUnitary(CompMatr1 matr, const char* caller);
 void validate_matrixIsUnitary(CompMatr2 matr, const char* caller);
 void validate_matrixIsUnitary(CompMatr  matr, const char* caller);
+void validate_matrixIsUnitary(DiagMatr1 matr, const char* caller);
+void validate_matrixIsUnitary(DiagMatr2 matr, const char* caller);
+void validate_matrixIsUnitary(DiagMatr  matr, const char* caller);
 
 
 
