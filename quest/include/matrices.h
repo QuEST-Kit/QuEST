@@ -1,6 +1,6 @@
 /** @file
- * Signatures of API data structures like gate matrices. Note QuESTEnv and Qureg 
- * structs have their own signatures in environment.h and qureg.h respectively.
+ * Signatures of API matrix data structures, and their getters and setters, 
+ * as well as reporting utilities.
  * 
  * This file uses extensive preprocessor trickery to achieve platform agnostic,
  * C and C++ compatible, type agnostic, getters and setters of complex matrices.
@@ -27,8 +27,8 @@
  * You've just crossed over into the Twilight Zone.
  */
 
-#ifndef STRUCTURES_H
-#define STRUCTURES_H
+#ifndef MATRICES_H
+#define MATRICES_H
 
 #include "quest/include/types.h"
 
@@ -234,7 +234,7 @@ static inline CompMatr2 getCompMatr2FromPtr(qcomp** in) {
 #ifdef __cplusplus
 
     // C++ uses overloads, accepting even vector initialiser lists,
-    // which are defined in structures.cpp.
+    // which are defined in matrices.cpp.
 
     CompMatr1 getCompMatr1(qcomp in[2][2]);
     CompMatr1 getCompMatr1(qcomp** in);
@@ -575,4 +575,4 @@ extern "C" {
 
 
 
-#endif // STRUCTURES_H
+#endif // MATRICES_H

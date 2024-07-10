@@ -12,7 +12,7 @@
 #define LOCALISER_HPP
 
 #include "quest/include/qureg.h"
-#include "quest/include/structures.h"
+#include "quest/include/matrices.h"
 
 
 

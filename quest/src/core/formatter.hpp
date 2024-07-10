@@ -5,7 +5,7 @@
 #ifndef FORMATTER_HPP
 #define FORMATTER_HPP
 
-#include "quest/include/structures.h"
+#include "quest/include/matrices.h"
 
 #include <vector>
 #include <tuple>

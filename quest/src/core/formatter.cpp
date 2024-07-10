@@ -3,7 +3,7 @@
  */
 
 #include "quest/include/types.h"
-#include "quest/include/structures.h"
+#include "quest/include/matrices.h"
 
 #include "quest/src/core/formatter.hpp"
 #include "quest/src/core/utilities.hpp"

@@ -17,7 +17,7 @@
 #include "quest/include/precision.h"
 #include "quest/include/qasm.h"
 #include "quest/include/qureg.h"
-#include "quest/include/structures.h"
+#include "quest/include/matrices.h"
 #include "quest/include/types.h"
 #include "quest/include/version.h"
 #include "quest/include/wrappers.h"
