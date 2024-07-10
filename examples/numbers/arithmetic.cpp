@@ -2,6 +2,8 @@
 
 int main() {
 
+    initQuESTEnv();
+
     // literal 1.2 + 3.4i is restrictedly double precision
     qcomp x = qcomp(1.2, 3.4);
 
@@ -90,4 +92,6 @@ int main() {
     x /= (long double) 2;
 
     reportQcomp(x);
+    
+    finalizeQuESTEnv();
 }
