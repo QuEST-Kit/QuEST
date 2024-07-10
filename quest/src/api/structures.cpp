@@ -63,27 +63,36 @@ T getCompMatrFromElems(B in, int num) {
 
 // type T can be CompMatr or DiagMatr
 template <class T>
+bool didAnyAllocsFail(T matr) {
+
+    // outer CPU memory should always be allocated
+    if (matr.cpuElems == NULL)
+        return true;
+
+    // if memory is 2D, we must also check each inner array was allocated
+    if constexpr (isDenseMatrixType<T>())
+        for (qindex r=0; r<matr.numRows; r++)
+            if (matr.cpuElems[r] == NULL)
+                return true;
+
+    // if env is GPU-accelerated, we should have allocated persistent GPU memory
+    if (getQuESTEnv().isGpuAccelerated && matr.gpuElems == NULL)
+        return true;
+
+    // otherwise, all pointers were non-NULL and ergo all allocs were successful
+    return false;
+}
+
+
+// type T can be CompMatr or DiagMatr
+template <class T>
 void freeAllMemoryIfAnyAllocsFailed(T matr) {
 
-    // check whether entire CPU memory was allocated
-    bool anyFailed = (matr.cpuElems == NULL);
-
-    // if memory is 2D, we also check each inner array was allocated
-    if constexpr (isDenseMatrixType<T>())
-        for (qindex r=0; !anyFailed && r<matr.numRows; r++) // early abort avoids seg-fault
-            anyFailed = (matr.cpuElems[r] == NULL);
-
-    // optionally check whether GPU memory was allocated
-    if (getQuESTEnv().isGpuAccelerated)
-        anyFailed = anyFailed || (matr.gpuElems == NULL);
-
-    // do nothing if everything allocated fine
-    if (!anyFailed)
+    // do nothing if everything allocated successfully
+    if (!didAnyAllocsFail(matr))
         return;
 
-    // but if even one thing failed, free every successful allocation...
-
-    // including every row (if the outer 2D malloc succeeded)
+    // otherwise, free all successfully allocated rows of 2D structures (if outer list allocated)
     if constexpr (isDenseMatrixType<T>())
         if (matr.cpuElems != NULL)
             for (qindex r=0; r<matr.numRows; r++)
@@ -169,7 +178,7 @@ DiagMatr2 getDiagMatr2(std::vector<qcomp> in) {
 
 
 extern "C" CompMatr createCompMatr(int numQubits) {
-    validate_envInit(__func__);
+    validate_envIsInit(__func__);
     validate_newMatrixNumQubits(numQubits, __func__);
 
     // validation ensures these (and below mem sizes) never overflow
@@ -197,10 +206,8 @@ extern "C" CompMatr createCompMatr(int numQubits) {
         for (qindex r=0; r < numRows; r++)
             out.cpuElems[r] = (qcomp*) calloc(numRows, sizeof **out.cpuElems); // NULL if failed
 
-    // if any of these mallocs failed, below validation will memory leak; so free first (but don't set to NULL)
+    // if any of the above mallocs failed, below validation will memory leak; so free first (but don't set to NULL)
     freeAllMemoryIfAnyAllocsFailed(out);
-
-    // check all CPU & GPU malloc and callocs succeeded (no attempted freeing if not)
     validate_newMatrixAllocs(out, numBytes, __func__);
 
     return out;
@@ -240,7 +247,7 @@ extern "C" void syncCompMatr(CompMatr matr) {
 
 
 extern "C" DiagMatr createDiagMatr(int numQubits) {
-    validate_envInit(__func__);
+    validate_envIsInit(__func__);
     validate_newMatrixNumQubits(numQubits, __func__);
 
     // validation ensures these (and below mem sizes) never overflow

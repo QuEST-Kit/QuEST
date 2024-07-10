@@ -85,28 +85,30 @@ namespace report {
      * QUREG CREATION
      */
 
-    std::string NON_POSITIVE_NUM_QUBITS_IN_INIT_QUREG =
+    std::string NON_POSITIVE_NUM_QUBITS_IN_CREATE_QUREG =
         "Cannot create Qureg of ${NUM_QUBITS} qubits; must contain one or more qubits.";
 
 
-    std::string NEW_QUREG_AMPS_WOULD_EXCEED_QINDEX = 
+    std::string NEW_STATEVEC_QUREG_AMPS_WOULD_EXCEED_QINDEX = 
         "Cannot create Qureg of ${NUM_QUBITS} qubits: the statevector would contain more amplitudes (2^${NUM_QUBITS}) than the maximum which can be addressed by the qindex type (2^${MAX_QUBITS}). See reportQuESTEnv().";
 
-    std::string NEW_DENS_QUREG_AMPS_WOULD_EXCEED_QINDEX = 
+    std::string NEW_DENSMATR_QUREG_AMPS_WOULD_EXCEED_QINDEX = 
         "Cannot create density Qureg of ${NUM_QUBITS} qubits: the density matrix would contain more amplitudes (4^${NUM_QUBITS}) than can be addressed by the qindex type (4^${MAX_QUBITS}). See reportQuESTEnv().";
 
-    std::string NEW_QUREG_LOCAL_MEM_WOULD_EXCEED_SIZEOF =
-        "Cannot create Qureg (isDensity=${IS_DENS}) of ${NUM_QUBITS} qubits distributed over ${NUM_NODES} nodes because the necessary local memory (in bytes) of each node would overflow size_t. In this deployment, the maximum number of similar qubits is ${MAX_QUBITS}. See reportQuESTEnv().";
+    std::string NEW_STATEVEC_QUREG_LOCAL_MEM_WOULD_EXCEED_SIZEOF =
+        "Cannot create Qureg of ${NUM_QUBITS} qubits distributed over ${NUM_NODES} nodes because the necessary local memory (in bytes) of each node would overflow size_t. In this deployment, the maximum number of similar qubits is ${MAX_QUBITS}. See reportQuESTEnv().";
 
+    std::string NEW_DENSMATR_QUREG_LOCAL_MEM_WOULD_EXCEED_SIZEOF =
+        "Cannot create density Qureg of ${NUM_QUBITS} qubits distributed over ${NUM_NODES} nodes because the necessary local memory (in bytes) of each node would overflow size_t. In this deployment, the maximum number of similar qubits is ${MAX_QUBITS}. See reportQuESTEnv().";
 
-    std::string NEW_DISTRIB_QUREG_HAS_TOO_FEW_AMPS = 
+    std::string NEW_DISTRIB_STATEVEC_QUREG_HAS_TOO_FEW_AMPS = 
         "Cannot create a distributed Qureg of only ${NUM_QUBITS} qubits between ${NUM_NODES} nodes, because each node would contain fewer than one amplitude of the statevector. The minimum size is ${MIN_QUBITS} qubits; see reportQuESTEnv(). Consider disabling distribution for this Qureg.";
 
-    std::string NEW_DENS_DISTRIB_QUREG_HAS_TOO_FEW_AMPS = 
+    std::string NEW_DISTRIB_DENSMATR_QUREG_HAS_TOO_FEW_AMPS = 
         "Cannot create a distributed density Qureg of only ${NUM_QUBITS} qubits between ${NUM_NODES} nodes, because each node would contain fewer than a column's worth of amplitudes of the density matrix. The minimum size is ${MIN_QUBITS} qubits; see reportQuESTEnv(). Consider disabling distribution for this Qureg.";
 
 
-    std::string INVALID_OPTION_FOR_QUREG_IS_DENS_MATR = 
+    std::string INVALID_OPTION_FOR_QUREG_IS_DENSMATR = 
         "Argument 'isDensityMatrix' must be 1 or 0 to respectively indicate whether the Qureg should be instantiated as a potentially-mixed density matrix or a strictly-pure state-vector.";
 
     std::string INVALID_OPTION_FOR_QUREG_IS_DISTRIB = 
@@ -146,16 +148,16 @@ namespace report {
         "The distributed GPU-accelerated Qureg (isDensity=${IS_DENS}) of ${NUM_QUBITS} qubits, together with its commnication buffer, is too large; one or more of the ${NUM_GPUS} GPUs has insufficient available memory (only ${MIN_VRAM_AVAIL} bytes) to store its Qureg partition (${QCOMP_BYTES} * 2^${LOG2_NUM_AMPS} bytes) bytes. Consider disabling GPU-acceleration.";
 
 
-    std::string FAILED_NEW_ALLOC_OF_CPU_AMPS = 
+    std::string NEW_QUREG_CPU_AMPS_ALLOC_FAILED = 
         "Allocation of memory to store the CPU amplitudes failed.";
 
-    std::string FAILED_NEW_ALLOC_OF_GPU_AMPS = 
+    std::string NEW_QUREG_GPU_AMPS_ALLOC_FAILED = 
         "Allocation of memory to store the GPU amplitudes failed.";
 
-    std::string FAILED_NEW_ALLOC_OF_CPU_COMM_BUFFER = 
+    std::string NEW_QUREG_CPU_COMM_BUFFER_ALLOC_FAILED = 
         "Allocation of memory for the distributed CPU communication buffer failed.";
 
-    std::string FAILED_NEW_ALLOC_OF_GPU_COMM_BUFFER = 
+    std::string NEW_QUREG_GPU_COMM_BUFFER_ALLOC_FAILED = 
         "Allocation of memory for the distributed GPU communication buffer failed.";
 
 
@@ -163,19 +165,7 @@ namespace report {
      * EXISTING QUREG
      */
 
-    std::string INVALID_EXISTING_ALLOC_OF_CPU_AMPS = 
-        "Invalid Qureg. The CPU memory was seemingly unallocated.";
-    
-    std::string INVALID_EXISTING_ALLOC_OF_CPU_COMM_BUFFER = 
-        "Invalid Qureg. The distributed CPU communication buffer was seemingly unallocated.";
-
-    std::string INVALID_EXISTING_ALLOC_OF_GPU_AMPS = 
-        "Invalid Qureg. The GPU memory was seemingly unallocated.";
-    
-    std::string INVALID_EXISTING_ALLOC_OF_GPU_COMM_BUFFER = 
-        "Invalid Qureg. The distributed GPU communication buffer was seemingly unallocated.";
-
-    std::string INVALID_EXISTING_QUREG_FIELDS = 
+    std::string INVALID_QUREG_FIELDS = 
         "Invalid Qureg; invalid or incompatible fields isDensityMatrix=${DENS_MATR}, numQubits=${NUM_QUBITS}, numAmps=${NUM_AMPS}. It is likely this Qureg was not initialised with createQureg().";
 
 
@@ -190,10 +180,10 @@ namespace report {
         "Cannot create a matrix which acts upon ${NUM_QUBITS} qubits since the necessary memory size (${QCOMP_BYTES} * 2^${DUB_QUBITS} bytes) would overflow size_t, and be intractably slow to serially process. The maximum size matrix targets ${MAX_QUBITS} qubits.";
 
 
-    std::string NEW_MATRIX_CPU_ALLOC_FAILED = 
+    std::string NEW_MATRIX_CPU_ELEMS_ALLOC_FAILED = 
         "Attempted allocation of memory (${NUM_BYTES} bytes in RAM) failed.";
 
-    std::string NEW_MATRIX_GPU_ALLOC_FAILED = 
+    std::string NEW_MATRIX_GPU_ELEMS_ALLOC_FAILED = 
         "Attempted allocation of GPU memory (${NUM_BYTES} bytes in VRAM) failed.";
 
 
@@ -292,6 +282,11 @@ void default_invalidQuESTInputError(const char* msg, const char* func) {
     // force a synch because otherwise non-main nodes may exit before print, and MPI
     // will then attempt to instantly abort all nodes, losing the error message.
     comm_sync();
+
+    // TODO:
+    //      why don't we finalize MPI here?!?!
+    if (comm_isInit())
+        comm_end();
 
     exit(EXIT_FAILURE);
 }
@@ -436,7 +431,7 @@ void validate_gpuIsCuQuantumCompatible(const char* caller) {
  * EXISTING ENVIRONMENT
  */
 
-void validate_envInit(const char* caller) {
+void validate_envIsInit(const char* caller) {
 
     assertThat(isQuESTEnvInit(), report::QUEST_ENV_NOT_INIT, caller);
 }
@@ -449,13 +444,13 @@ void validate_envInit(const char* caller) {
 
 void assertQuregNonEmpty(int numQubits, const char* caller) {
 
-    assertThat(numQubits >= 1, report::NON_POSITIVE_NUM_QUBITS_IN_INIT_QUREG, {{"${NUM_QUBITS}",numQubits}}, caller);
+    assertThat(numQubits >= 1, report::NON_POSITIVE_NUM_QUBITS_IN_CREATE_QUREG, {{"${NUM_QUBITS}",numQubits}}, caller);
 }
 
 void assertQuregDeployFlagsRecognised(int isDensMatr, int isDistrib, int isGpuAccel, int isMultithread, const char* caller) {
 
     // qureg type must be boolean
-    assertThat(isDensMatr == 0 || isDensMatr == 1, report::INVALID_OPTION_FOR_QUREG_IS_DENS_MATR, caller);
+    assertThat(isDensMatr == 0 || isDensMatr == 1, report::INVALID_OPTION_FOR_QUREG_IS_DENSMATR, caller);
 
     // deployment flags must be boolean or auto
     tokenSubs vars = {{"${AUTO_DEPLOYMENT_FLAG}", modeflag::USE_AUTO}};
@@ -480,7 +475,7 @@ void assertQuregTotalNumAmpsDontExceedMaxIndex(int numQubits, int isDensMatr, co
     int maxNumQubits = mem_getMaxNumQubitsBeforeIndexOverflow(isDensMatr);
 
     // make message specific to statevector or density matrix
-    std::string msg = (isDensMatr)? report::NEW_DENS_QUREG_AMPS_WOULD_EXCEED_QINDEX : report::NEW_QUREG_AMPS_WOULD_EXCEED_QINDEX;
+    std::string msg = (isDensMatr)? report::NEW_DENSMATR_QUREG_AMPS_WOULD_EXCEED_QINDEX : report::NEW_STATEVEC_QUREG_AMPS_WOULD_EXCEED_QINDEX;
     tokenSubs vars = {
         {"${NUM_QUBITS}", numQubits}, 
         {"${MAX_QUBITS}", maxNumQubits}};
@@ -497,10 +492,13 @@ void assertQuregLocalMemDoesntExceedMaxSizeof(int numQubits, int isDensMatr, int
     tokenSubs vars = {
         {"${NUM_QUBITS}", numQubits},
         {"${NUM_NODES}",  numQuregNodes},
-        {"${MAX_QUBITS}", maxNumQubits},
-        {"${IS_DENS}",    isDensMatr}};
+        {"${MAX_QUBITS}", maxNumQubits}};
 
-    assertThat(numQubits <= maxNumQubits, report::NEW_QUREG_LOCAL_MEM_WOULD_EXCEED_SIZEOF, vars, caller);
+    std::string msg = (isDensMatr)?
+        report::NEW_DENSMATR_QUREG_LOCAL_MEM_WOULD_EXCEED_SIZEOF :
+        report::NEW_STATEVEC_QUREG_LOCAL_MEM_WOULD_EXCEED_SIZEOF;
+
+    assertThat(numQubits <= maxNumQubits, msg, vars, caller);
 }
 
 void assertQuregNotDistributedOverTooManyNodes(int numQubits, int isDensMatr, int isDistrib, QuESTEnv env, const char* caller) {
@@ -510,7 +508,7 @@ void assertQuregNotDistributedOverTooManyNodes(int numQubits, int isDensMatr, in
         return;
 
     // make message specific to statevector or density matrix
-    std::string msg = (isDensMatr)? report::NEW_DENS_DISTRIB_QUREG_HAS_TOO_FEW_AMPS : report::NEW_DISTRIB_QUREG_HAS_TOO_FEW_AMPS;
+    std::string msg = (isDensMatr)? report::NEW_DISTRIB_DENSMATR_QUREG_HAS_TOO_FEW_AMPS : report::NEW_DISTRIB_STATEVEC_QUREG_HAS_TOO_FEW_AMPS;
     tokenSubs vars = {
         {"${NUM_QUBITS}", numQubits},
         {"${NUM_NODES}",  env.numNodes},
@@ -623,60 +621,18 @@ void validate_newQuregParams(int numQubits, int isDensMatr, int isDistrib, int i
     validate_newQuregNotBothMultithreadedAndGpuAccel(isGpuAccel, isMultithread, caller);
 }
 
-void validate_newOrExistingQuregAllocs(Qureg qureg, bool isNewQureg, const char* caller) {
+void validate_newQuregAllocs(Qureg qureg, const char* caller) {
 
-    // determine if all relevant arrays are correctly allocated (in order of report precedence)...
-    bool isValid = true;
-    std::string errMsg = "";
+    assertThat(qureg.cpuAmps != NULL, report::NEW_QUREG_CPU_AMPS_ALLOC_FAILED, caller);
 
-    // CPU amps should always be allocated
-    if (qureg.cpuAmps == NULL) {
-        errMsg = (isNewQureg)?
-            report::FAILED_NEW_ALLOC_OF_CPU_AMPS : 
-            report::INVALID_EXISTING_ALLOC_OF_CPU_AMPS;
-        isValid = false;
-    }
+    if (qureg.isGpuAccelerated)
+        assertThat(qureg.gpuAmps != NULL, report::NEW_QUREG_GPU_AMPS_ALLOC_FAILED, caller);
 
-    // CPU communication buffer is only allocated if distributed to >1 nodes
-    else if (qureg.isDistributed && qureg.cpuCommBuffer == NULL) {
-        errMsg = (isNewQureg)?
-            report::FAILED_NEW_ALLOC_OF_CPU_COMM_BUFFER :
-            report::INVALID_EXISTING_ALLOC_OF_CPU_COMM_BUFFER;
-        isValid = false;
-    }
+    if (qureg.isDistributed)
+        assertThat(qureg.cpuCommBuffer != NULL, report::NEW_QUREG_CPU_COMM_BUFFER_ALLOC_FAILED, caller);
 
-    // GPU amps are only allocated in GPU mode
-    else if (qureg.isGpuAccelerated && qureg.gpuAmps == NULL) {
-        errMsg = (isNewQureg)?
-            report::FAILED_NEW_ALLOC_OF_GPU_AMPS :
-            report::INVALID_EXISTING_ALLOC_OF_GPU_AMPS;
-        isValid = false;
-    }
-
-    // GPU communication buffer is only allocated in GPU mode, and when distributed to >1 nodes
-    else if (qureg.isGpuAccelerated && qureg.isDistributed && qureg.gpuCommBuffer == NULL) {
-        errMsg = (isNewQureg)?
-            report::FAILED_NEW_ALLOC_OF_GPU_COMM_BUFFER :
-            report::INVALID_EXISTING_ALLOC_OF_GPU_COMM_BUFFER;
-        isValid = false;
-    }
-
-    // if the qureg was only just (attemptedly) created, and one or more arrays were not correctly allocated...
-    if (isNewQureg && !isValid) {
-
-        // then de-allocate all the successfully allocated arrays to avoid memory leak in subsequent error
-        if (qureg.cpuAmps != NULL)
-            cpu_deallocAmps(qureg.cpuAmps);
-        if (qureg.cpuCommBuffer != NULL)
-            cpu_deallocAmps(qureg.cpuCommBuffer);
-        if (qureg.gpuAmps != NULL)
-            gpu_deallocAmps(qureg.gpuAmps);
-        if (qureg.gpuCommBuffer != NULL)
-            gpu_deallocAmps(qureg.gpuCommBuffer);
-    }
-
-    // throw error or continue
-    assertThat(isValid, errMsg, caller);
+    if (qureg.isDistributed && qureg.isGpuAccelerated)
+        assertThat(qureg.gpuCommBuffer != NULL, report::NEW_QUREG_GPU_COMM_BUFFER_ALLOC_FAILED, caller);
 }
 
 
@@ -685,7 +641,7 @@ void validate_newOrExistingQuregAllocs(Qureg qureg, bool isNewQureg, const char*
  * EXISTING QUREG
  */
 
-void validate_quregInit(Qureg qureg, const char* caller) {
+void validate_quregFields(Qureg qureg, const char* caller) {
 
     // attempt to detect the Qureg was not initialised with createQureg by the 
     // struct fields being randomised, and ergo being dimensionally incompatible
@@ -699,14 +655,17 @@ void validate_quregInit(Qureg qureg, const char* caller) {
         {"${NUM_QUBITS}", qureg.numQubits},
         {"${NUM_AMPS}", qureg.numAmps}};
         
-    assertThat(valid, report::INVALID_EXISTING_QUREG_FIELDS, vars, caller);
+    assertThat(valid, report::INVALID_QUREG_FIELDS, vars, caller);
 
-    // ensure platform-specific arrays are all not-NULL. note this
-    // won't catch when Qureg was un-initialised because most
-    // compilers will not automatically set struct pointers to NULL, but
-    // it will catch the allocation somehow failing or being overwritten
-    bool isNewQureg = false;
-    validate_newOrExistingQuregAllocs(qureg, isNewQureg, __func__);
+    // In theory, we could check qureg's malloc'd pointers are not-NULL.
+    // However, this wouldn't catch when Qureg was un-initialised because most
+    // compilers will not automatically set struct pointers to NULL (though
+    // that scenario will likely have been caught by above checks). It also
+    // will not catch that the Qureg has already been validly created then
+    // destroyed because the struct pointers will not set to NULL (because
+    // C passes a struct copy). So NULL checks could only check for the specific
+    // scenario of the user explicitly overwriting valid pointers with NULL - 
+    // this is not worth catching (the eventual NULL segfault might be better)
 }
 
 
@@ -750,26 +709,26 @@ void validate_newMatrixAllocs(CompMatr matr, qindex numBytes, const char* caller
     tokenSubs vars = {{"${NUM_BYTES}", numBytes}};
 
     // assert CPU array of rows was malloc'd successfully
-    assertThat(matr.cpuElems != NULL, report::NEW_MATRIX_CPU_ALLOC_FAILED, vars, caller);
+    assertThat(matr.cpuElems != NULL, report::NEW_MATRIX_CPU_ELEMS_ALLOC_FAILED, vars, caller);
 
     // assert each CPU row was calloc'd successfully
     for (qindex r=0; r<matr.numRows; r++)
-        assertThat(matr.cpuElems[r] != NULL, report::NEW_MATRIX_CPU_ALLOC_FAILED, vars, caller);
+        assertThat(matr.cpuElems[r] != NULL, report::NEW_MATRIX_CPU_ELEMS_ALLOC_FAILED, vars, caller);
     
     // optionally assert GPU memory was malloc'd successfully
     if (getQuESTEnv().isGpuAccelerated)
-        assertThat(matr.gpuElems != NULL, report::NEW_MATRIX_GPU_ALLOC_FAILED, vars, caller);
+        assertThat(matr.gpuElems != NULL, report::NEW_MATRIX_GPU_ELEMS_ALLOC_FAILED, vars, caller);
 }
 
 void validate_newMatrixAllocs(DiagMatr matr, qindex numBytes, const char* caller) {
     tokenSubs vars = {{"${NUM_BYTES}", numBytes}};
 
     // assert CPU array of rows was malloc'd successfully
-    assertThat(matr.cpuElems != NULL, report::NEW_MATRIX_CPU_ALLOC_FAILED, vars, caller);
+    assertThat(matr.cpuElems != NULL, report::NEW_MATRIX_CPU_ELEMS_ALLOC_FAILED, vars, caller);
 
     // optionally assert GPU memory was malloc'd successfully
     if (getQuESTEnv().isGpuAccelerated)
-        assertThat(matr.gpuElems != NULL, report::NEW_MATRIX_GPU_ALLOC_FAILED, vars, caller);
+        assertThat(matr.gpuElems != NULL, report::NEW_MATRIX_GPU_ELEMS_ALLOC_FAILED, vars, caller);
 }
 
 

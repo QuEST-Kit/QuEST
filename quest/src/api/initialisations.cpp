@@ -24,7 +24,7 @@ extern "C" {
 
 
 void initBlankState(Qureg qureg) {
-    validate_quregInit(qureg, __func__);
+    validate_quregFields(qureg, __func__);
 
     // fill CPU memory with 0
     std::fill(qureg.cpuAmps, qureg.cpuAmps + qureg.numAmpsPerNode, qcomp(0,0));
@@ -36,7 +36,7 @@ void initBlankState(Qureg qureg) {
 
 
 void initZeroState(Qureg qureg) {
-    validate_quregInit(qureg, __func__);
+    validate_quregFields(qureg, __func__);
 
     // fill CPU memory with 0
     std::fill(qureg.cpuAmps, qureg.cpuAmps + qureg.numAmpsPerNode, qcomp(0,0));
@@ -52,7 +52,7 @@ void initZeroState(Qureg qureg) {
 
 
 void initPlusState(Qureg qureg) {
-    validate_quregInit(qureg, __func__);
+    validate_quregFields(qureg, __func__);
 
     // |+>    = sum_i 1/sqrt(2^N) |i>  where 2^N = numAmps
     // |+><+| = sum_ij 1/2^N |i><j|    where 2^N = sqrt(numAmps)
@@ -68,7 +68,7 @@ void initPlusState(Qureg qureg) {
 
 
 void initClassicalState(Qureg qureg, qindex ind) {
-    validate_quregInit(qureg, __func__);
+    validate_quregFields(qureg, __func__);
     validate_initClassicalStateIndex(qureg, ind, __func__);
 
     // fill CPU memory with 0
