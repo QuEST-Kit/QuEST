@@ -64,6 +64,7 @@ const char MATRIX_SPACE_CHAR = ' ';
 #define GET_STR(x) GET_STR_INTERNAL(x)
 
 
+// type T can be anything in principle, although it's currently only used for qcomp
 template<typename T> 
 string getTypeName(T) { 
 
@@ -105,18 +106,21 @@ string form_getFloatPrecisionFlag() {
 
 
 /*
- * COMPLEX STRINGS
+ * NUMBER STRINGIFYING
  *
- * which can be any precision, and ergo different to that of qcomp
+ * which is precision and type agnostic - i.e. we can stringify non-qcomp
+ * and non-qreal numbers given by users or the backend
  */
 
+
+// type T can be any number, e.g. int, qindex, float, double, long double
 template <typename T>
 string floatToStr(T num, bool hideSign=false) {
 
     // write to stream (instead of calling to_string()) to auto-use scientific notation
     ostringstream buffer;
 
-    // ensure +- is not shown if forced
+    // ensure +- is not shown if forced hidden
     if (hideSign) {
         buffer << noshowpos;
         if (num < 0)
@@ -128,8 +132,10 @@ string floatToStr(T num, bool hideSign=false) {
     return buffer.str();
 }
 
+
+// type T can be precision decimal (independent of qreal) i.e. float, double, long double
 template <typename T>
-string compToStr(complex<T> num) {
+string form_str(complex<T> num) {
 
     // precise 0 is rendered as a real integer
     if (real(num) == 0 && imag(num) == 0)
@@ -170,6 +176,14 @@ string compToStr(complex<T> num) {
 
     return realStr + imagStr;
 }
+
+
+// explicitly instantiate all publicly passable types
+template string form_str<int>(complex<int> num);
+template string form_str<qindex>(complex<qindex> num);
+template string form_str<float>(complex<float> num);
+template string form_str<double>(complex<double> num);
+template string form_str<long double>(complex<long double> num);
 
 
 
@@ -214,7 +228,7 @@ void printDenseMatrixElems(T elems, qindex dim, string indent) {
     vector<int> maxColWidths(dim, 0);
     for (qindex c=0; c<dim; c++) {
         for (qindex r=0; r<dim; r++) {
-            int width = compToStr(elems[r][c]).length();
+            int width = form_str(elems[r][c]).length();
             if (width > maxColWidths[c])
                 maxColWidths[c] = width;
         }
@@ -228,7 +242,7 @@ void printDenseMatrixElems(T elems, qindex dim, string indent) {
             cout << left
                 << setw(maxColWidths[c] + MIN_SPACE_BETWEEN_DENSE_MATRIX_COLS) 
                 << setfill(MATRIX_SPACE_CHAR)
-                << compToStr(elems[r][c]);
+                << form_str(elems[r][c]);
 
         cout << endl;
     }
@@ -240,7 +254,7 @@ void printDiagMatrixElems(qcomp* elems, qindex dim, string indent) {
     // determine max width of each column
     vector<int> maxColWidths(dim, 0);
     for (qindex c=0; c<dim; c++) {
-        int width = compToStr(elems[c]).length();
+        int width = form_str(elems[c]).length();
         if (width > maxColWidths[c])
             maxColWidths[c] = width;
     }
@@ -254,7 +268,7 @@ void printDiagMatrixElems(qcomp* elems, qindex dim, string indent) {
             cout << left
                 << setw(maxColWidths[c] + MIN_SPACE_BETWEEN_DIAG_MATRIX_COLS) 
                 << setfill(MATRIX_SPACE_CHAR)
-                << ((r==c)? compToStr(elems[c]) : "");
+                << ((r==c)? form_str(elems[c]) : "");
 
         cout << endl;
     }

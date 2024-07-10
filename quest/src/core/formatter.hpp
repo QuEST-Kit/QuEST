@@ -5,6 +5,7 @@
 #ifndef FORMATTER_HPP
 #define FORMATTER_HPP
 
+#include "quest/include/types.h"
 #include "quest/include/matrices.h"
 
 #include <vector>
@@ -32,18 +33,17 @@ std::string form_getFloatPrecisionFlag();
 
 /*
  * STRING CASTS
- *
- * which are aggravatingly necessarily defined here in the header
- * because of their use of templating.
  */
 
-template<typename T> std::string form_str(T expr) {
 
-    // note that passing qcomp (and complex<T> generally) will see them
-    // formatted as tuples (re, im). they should instead be passed to
-    // compToStr() which is currently a private member of formatter.cpp.
-    // I tried and failed to conjure the templating magic necessary to
-    // automatically invoke it when T is a complex<K>.
+// type T can be int, qindex, float, double, long double.
+// this more specific form_str() definition is called when passing complex
+template <typename T>
+std::string form_str(std::complex<T> num);
+
+// type T can be any non-complex type recognised by ostringstream!
+template<typename T> 
+std::string form_str(T expr) {
 
     // write to buffer (rather than use to_string()) so that floating-point numbers
     // are automatically converted to scientific notation when necessary

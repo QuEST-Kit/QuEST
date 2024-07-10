@@ -108,6 +108,7 @@ API_FILES=(
     "operations"
     "qasm"
     "qureg"
+    "types"
 )
 
 # files in GPU_DIR
