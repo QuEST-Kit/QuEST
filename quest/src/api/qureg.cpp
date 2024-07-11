@@ -121,7 +121,9 @@ Qureg validateAndCreateCustomQureg(int numQubits, int isDensMatr, int useDistrib
         // always allocate CPU memory
         .cpuAmps = cpu_allocAmps(qureg.numAmpsPerNode), // NULL if failed
 
-        // conditionally allocate GPU memory and communication buffers (even if numNodes == 1)
+        // conditionally allocate GPU memory and communication buffers (even if numNodes == 1).
+        // note that in distributed settings but where useDistrib=false, each node will have a
+        // full copy of the amplitudes, but will NOT have the communication buffers allocated.
         .gpuAmps       = (useGpuAccel)?               gpu_allocAmps(qureg.numAmpsPerNode) : NULL,
         .cpuCommBuffer = (useDistrib)?                cpu_allocAmps(qureg.numAmpsPerNode) : NULL,
         .gpuCommBuffer = (useGpuAccel && useDistrib)? gpu_allocAmps(qureg.numAmpsPerNode) : NULL,
