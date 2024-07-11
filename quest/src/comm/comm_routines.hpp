@@ -33,6 +33,8 @@ void comm_receiveArrayToBuffer(Qureg qureg, qindex numElems, int pairRank);
 
 void comm_reduceAmp(qcomp* localAmp);
 
+bool comm_isTrueOnAllNodes(bool val);
+
 
 
 #endif // COMM_ROUTINES_HPP

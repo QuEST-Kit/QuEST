@@ -369,3 +369,18 @@ void comm_reduceAmp(qcomp* localAmp) {
     error_commButEnvNotDistributed();
 #endif
 }
+
+
+bool comm_isTrueOnAllNodes(bool val) {
+#if ENABLE_DISTRIBUTION
+
+    // perform global AND and broadcast result back to all nodes
+    int local = (int) val;
+    int global;
+    MPI_Allreduce(&local, &global, 1, MPI_INT, MPI_LAND, MPI_COMM_WORLD);
+    return (bool) global;
+
+#else
+    error_commButEnvNotDistributed();
+#endif
+}
