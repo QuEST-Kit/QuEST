@@ -3,6 +3,23 @@
 #include <vector>
 
 
+/*
+ * When compiling QuEST in C++ with 'double' or 'long double' precision,
+ * you can freely use <complex>'s double-precision literals, e.g.
+ * 
+ *      qcomp x = 1.3i
+ * 
+ * However, such literals are forbidden when compiling in 'single' 
+ * precision; the compiler will not allow the double-precision literal
+ * to be autocast to a float. If you want to use precision-agnostic
+ * complex literals, you can use "_i" instead, e.g.
+ * 
+ *      qcomp x = 1.3_i
+ * 
+ * This file will use the latter literal.
+ */
+
+
 
 /*
  * CompMatr
@@ -12,7 +29,7 @@
 void demo_getInlineCompMatr() {
 
     // inline literal; identical to getCompMatr1() for consistencty with C API
-    CompMatr1 a = getInlineCompMatr1( {{1,2i},{3i+.1,-4}} );
+    CompMatr1 a = getInlineCompMatr1( {{1,2_i},{3_i+.1,-4}} );
     reportCompMatr1(a);
 
     // we must specify all elements (only necessary in C++)
@@ -29,7 +46,7 @@ void demo_getInlineCompMatr() {
 void demo_getCompMatr() {
 
     // inline literal (C++ only)
-    CompMatr1 a = getCompMatr1( {{1,2i},{3i+.1,-4}} );
+    CompMatr1 a = getCompMatr1( {{1,2_i},{3_i+.1,-4}} );
     reportCompMatr1(a);
 
     // 2D vector (C++ only)
@@ -79,11 +96,11 @@ void demo_setInlineCompMatr() {
     CompMatr b = createCompMatr(3);
     setInlineCompMatr(b, 3, {
         {1,2,3,4,5,6,7,8},
-        {8i,7i,6i,5i,0,0,0,0},
+        {8_i,7_i,6_i,5_i,0,0,0,0},
         {0,0,0,0,9,9,9,9},
         {8,7,6,5,4,3,2,1},
         {3,3,3,3,3,3,3,3},
-        {0,0,0,0,1i,1i,1i,1i},
+        {0,0,0,0,1_i,1_i,1_i,1_i},
         {9,8,7,6,5,4,3,2},
         {-1,-2,-3,-4,4,3,2,1}    
     });
@@ -96,7 +113,7 @@ void demo_setCompMatr() {
 
     // inline literal (C++ only)
     CompMatr a = createCompMatr(1);
-    setCompMatr(a, {{1,2i},{3i+.1,-4}});
+    setCompMatr(a, {{1,2_i},{3_i+.1,-4}});
     reportCompMatr(a);
 
     // 2D vector (C++ only)
@@ -104,7 +121,7 @@ void demo_setCompMatr() {
         {-9,-8, -8, -9},
         {7, 7, 6, 6},
         {0, -1, -2, -3},
-        {-4i, -5i, 0, 0}
+        {-4_i, -5_i, 0, 0}
     };
     CompMatr b = createCompMatr(2);
     setCompMatr(b, vec);
@@ -151,7 +168,7 @@ void demo_getInlineDiagMatr() {
     reportDiagMatr1(a);
 
     // we must specify all elements (only necessary in C++)
-    DiagMatr2 b = getInlineDiagMatr2({1i, 2i, 9i, 8i});
+    DiagMatr2 b = getInlineDiagMatr2({1_i, 2_i, 9_i, 8_i});
     reportDiagMatr2(b);
 }
 
@@ -159,16 +176,16 @@ void demo_getInlineDiagMatr() {
 void demo_getDiagMatr() {
 
     // inline literal (C++ only)
-    DiagMatr1 a = getDiagMatr1({-5i, -10i});
+    DiagMatr1 a = getDiagMatr1({-5_i, -10_i});
     reportDiagMatr1(a);
 
     // vector (C++ only)
-    std::vector<qcomp> vec {20i, 30i};
+    std::vector<qcomp> vec {20_i, 30_i};
     DiagMatr1 b = getDiagMatr1(vec);
     reportDiagMatr1(b);
 
     // compile-time array
-    qcomp arr[4] = {7i, 8i, 8, 7};
+    qcomp arr[4] = {7_i, 8_i, 8, 7};
     DiagMatr1 c = getDiagMatr1(arr);
     reportDiagMatr1(c);
 
@@ -176,7 +193,7 @@ void demo_getDiagMatr() {
     int dim = 4;
     qcomp* ptr = (qcomp*) malloc(dim * sizeof *ptr);
     for (int i=0; i<dim; i++)
-        ptr[i] = 10i*i;
+        ptr[i] = 10_i*i;
     DiagMatr2 d = getDiagMatr2(ptr);
     reportDiagMatr2(d);
 
@@ -195,7 +212,7 @@ void demo_setInlineDiagMatr() {
 
     // we must specify all elements (only necessary in C++)
     DiagMatr b = createDiagMatr(3);
-    setInlineDiagMatr(b, 3, {4,5,4,5,6,7,6,7i});
+    setInlineDiagMatr(b, 3, {4,5,4,5,6,7,6,7_i});
     reportDiagMatr(b);
     destroyDiagMatr(b);
 }
@@ -205,7 +222,7 @@ void demo_setDiagMatr() {
 
     // inline literal (C++ only)
     DiagMatr a = createDiagMatr(1);
-    setDiagMatr(a, {6i,5i});
+    setDiagMatr(a, {6_i,5_i});
     reportDiagMatr(a);
 
     // vector (C++ only)
@@ -215,7 +232,7 @@ void demo_setDiagMatr() {
     reportDiagMatr(b);
 
     // compile-time array
-    qcomp arr[4] = {7i, 8i, 8, 7};
+    qcomp arr[4] = {7_i, 8_i, 8, 7};
     DiagMatr c = createDiagMatr(2);
     setDiagMatr(c, arr);
     reportDiagMatr(c);
@@ -224,7 +241,7 @@ void demo_setDiagMatr() {
     int dim = 8;
     qcomp* ptr = (qcomp*) malloc(dim * sizeof *ptr);
     for (int i=0; i<dim; i++)
-        ptr[i] = -i*.5i;
+        ptr[i] = -i*.5_i;
     DiagMatr d = createDiagMatr(3);
     setDiagMatr(d, ptr);
     reportDiagMatr(d);
@@ -261,14 +278,14 @@ void demo_setFullStateDiagMatr() {
     setFullStateDiagMatr(matr, 7, vec);
 
     // compile-time array must pass size
-    qcomp arr[4] = {7i, 8i, 8, 7};
+    qcomp arr[4] = {7_i, 8_i, 8, 7};
     setFullStateDiagMatr(matr, 15, arr, 4);
 
     // heap pointer
     int dim = 6;
     qcomp* ptr = (qcomp*) malloc(dim * sizeof *ptr);
     for (int i=0; i<dim; i++)
-        ptr[i] = -i*.5i;
+        ptr[i] = -i*.5_i;
     setFullStateDiagMatr(matr, 25, ptr, 6);
 
     reportFullStateDiagMatr(matr);
