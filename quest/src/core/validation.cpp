@@ -393,6 +393,24 @@ extern "C" {
 
 
 /*
+ * VALIDATION TOGGLE
+ *
+ * consulted by assertThat below, or earlier by more expensive
+ * validation functions to avoid superfluous compute
+ */
+
+static bool isValidationOn = true;
+
+void validate_setValidationOn() {
+    isValidationOn = true;
+}
+void validate_setValidationOff() {
+    isValidationOn = false;
+}
+
+
+
+/*
  * UTILITIES
  */
 
@@ -436,6 +454,10 @@ std::string getStringWithSubstitutedVars(std::string oldStr, tokenSubs varsAndVa
 
 void assertThat(bool valid, std::string msg, const char* func) {
 
+    // skip validation if user has disabled
+    if (!isValidationOn)
+        return;
+
     // this function does not seek consensus among nodes in distributed 
     // settings in order to remain cheap (consensus requires expensive sync
     // and comm), so is suitable for validation which is gauranteed to be
@@ -453,6 +475,10 @@ void assertThat(bool valid, std::string msg, tokenSubs vars, const char* func) {
 }
 
 void assertAllNodesAgreeThat(bool valid, std::string msg, const char* func) {
+
+    // skip below consensus broadcast if user has disabled validation
+    if (!isValidationOn)
+        return;
 
     // this function seeks consensus among distributed nodes before validation,
     // to ensure all nodes fail together (and ergo all validly finalize MPI)
@@ -1239,6 +1265,10 @@ void assertMatrixIsSynced(T matr, std::string errMsg, const char* caller) {
 // type T can be CompMatr1, CompMatr2, CompMatr, DiagMatr1, DiagMatr2, DiagMatr
 template <class T> 
 void assertMatrixIsUnitary(T matr, const char* caller) {
+
+    // avoid expensive unitarity check if validation is anyway disabled
+    if (!isValidationOn)
+        return;
 
     // TODO: 
     //  this function always serially processes the CPU elements,

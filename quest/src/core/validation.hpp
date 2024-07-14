@@ -15,6 +15,15 @@
 
 
 /*
+ * VALIDATION TOGGLE
+ */
+
+void validate_setValidationOn();
+void validate_setValidationOff();
+
+
+
+/*
  * ENVIRONMENT CREATION
  */
 

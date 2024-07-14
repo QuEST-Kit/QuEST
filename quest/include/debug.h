@@ -15,6 +15,9 @@ extern "C" {
 
 void invalidQuESTInputError(const char* msg, const char* func);
 
+void setValidationOn();
+void setValidationOff();
+
 
 
 // end de-mangler
