@@ -13,6 +13,7 @@
 #include "quest/src/core/bitwise.hpp"
 #include "quest/src/core/memory.hpp"
 #include "quest/src/comm/comm_config.hpp"
+#include "quest/src/comm/comm_routines.hpp"
 #include "quest/src/cpu/cpu_config.hpp"
 #include "quest/src/gpu/gpu_config.hpp"
 
@@ -29,7 +30,7 @@ using namespace form_substrings;
  */
 
 
-bool didAnyAllocsFail(Qureg qureg) {
+bool didAnyLocalAllocsFail(Qureg qureg) {
 
     // CPU memory should always be allocated
     if (qureg.cpuAmps == NULL)
@@ -52,10 +53,20 @@ bool didAnyAllocsFail(Qureg qureg) {
 }
 
 
+bool didAnyAllocsFailOnAnyNode(Qureg qureg) {
+
+    bool anyFail = didAnyLocalAllocsFail(qureg);
+    if (comm_isInit())
+        anyFail = comm_isTrueOnAllNodes(anyFail);
+
+    return anyFail;
+}
+
+
 void freeAllMemoryIfAnyAllocsFailed(Qureg qureg) {
 
-    // do nothing if everything allocated successfully
-    if (!didAnyAllocsFail(qureg))
+    // do nothing if everything allocated successfully between all nodes
+    if (!didAnyAllocsFailOnAnyNode(qureg))
         return;
 
     // otherwise, free everything that was successfully allocated
@@ -71,6 +82,7 @@ void freeAllMemoryIfAnyAllocsFailed(Qureg qureg) {
     if (qureg.gpuCommBuffer != NULL)
         gpu_deallocAmps(qureg.gpuCommBuffer);
 }
+
 
 Qureg validateAndCreateCustomQureg(int numQubits, int isDensMatr, int useDistrib, int useGpuAccel, int useMultithread, const char* caller) {
 
@@ -196,7 +208,7 @@ void printDistributionInfo(Qureg qureg) {
 
 void printMemoryInfo(Qureg qureg) {
 
-    size_t localArrayMem = mem_getLocalMemoryRequired(qureg.numAmpsPerNode);
+    size_t localArrayMem = mem_getLocalQuregMemoryRequired(qureg.numAmpsPerNode);
     std::string localMemStr = form_str(localArrayMem) + by + ((qureg.isDistributed)? pn : "");
 
     qindex globalTotalMem = mem_getTotalGlobalMemoryUsed(qureg);

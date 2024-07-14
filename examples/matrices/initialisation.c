@@ -255,6 +255,46 @@ void demo_setDiagMatr() {
 }
 
 
+void demo_setInlineFullStateDiagMatr() {
+
+    FullStateDiagMatr matr = createCustomFullStateDiagMatr(5, 1);
+
+    // inline literal; identical to setFullStateDiagMatr() for consistencty with C API
+    setInlineFullStateDiagMatr(matr, 3, 10, {3,4,5,6,7,8,9,1,12,13});
+    setInlineFullStateDiagMatr(matr, 15, 6, {6,5,4,3,2,1});
+    
+    reportFullStateDiagMatr(matr);
+    destroyFullStateDiagMatr(matr);
+}
+
+
+void demo_setFullStateDiagMatr() {
+
+    FullStateDiagMatr matr = createCustomFullStateDiagMatr(5, 1);
+
+    // VLA (C only)
+    int n = 10;
+    qcomp vla[n];
+    for (int i=0; i<n; i++)
+        vla[i] =.123*i*1i;
+    setFullStateDiagMatr(matr, 2, vla, n);
+
+    // compile-time array
+    qcomp arr[4] = {7i, 8i, 8, 7};
+    setFullStateDiagMatr(matr, 15, arr, 4);
+
+    // heap pointer
+    int dim = 6;
+    qcomp* ptr = (qcomp*) malloc(dim * sizeof *ptr);
+    for (int i=0; i<dim; i++)
+        ptr[i] = -i*.5i;
+    setFullStateDiagMatr(matr, 25, ptr, 6);
+
+    reportFullStateDiagMatr(matr);
+    destroyFullStateDiagMatr(matr);
+}
+
+
 
 /*
  * main
@@ -274,6 +314,9 @@ int main() {
     demo_getDiagMatr();
     demo_setInlineDiagMatr();
     demo_setDiagMatr();
+
+    demo_setInlineFullStateDiagMatr();
+    demo_setFullStateDiagMatr();
 
     finalizeQuESTEnv();
     return 0;

@@ -56,7 +56,7 @@ int mem_getMinNumQubitsForDistribution(int numNodes) {
 }
 
 
-int mem_getMaxNumQubitsWhichCanFitInMemory(bool isDensMatr, int numNodes, qindex memBytesPerNode) {
+int mem_getMaxNumQuregQubitsWhichCanFitInMemory(bool isDensMatr, int numNodes, qindex memBytesPerNode) {
 
     // distribution requires communication buffers, doubling costs, halving fittable amps-per-qureg
     qindex maxLocalNumAmps = memBytesPerNode / sizeof(qcomp); // floors
@@ -76,7 +76,28 @@ int mem_getMaxNumQubitsWhichCanFitInMemory(bool isDensMatr, int numNodes, qindex
 
 bool mem_canQuregFitInMemory(int numQubits, bool isDensMatr, int numNodes, qindex memBytesPerNode) {
 
-    return numQubits <= mem_getMaxNumQubitsWhichCanFitInMemory(isDensMatr, numNodes, memBytesPerNode);
+    return numQubits <= mem_getMaxNumQuregQubitsWhichCanFitInMemory(isDensMatr, numNodes, memBytesPerNode);
+}
+
+
+bool mem_canMatrixFitInMemory(int numQubits, bool isDense, int numNodes, qindex memBytesPerNode) {
+
+    // this function's logic is similar to mem_canQuregFitInMemory(), where diagonal matrices are
+    // like statevectors and dense matrices are like density-matrices, except that distributed
+    // matrices (numNodes > 1) do not store (nor need to account for) communication buffers
+
+    // distributing the matrix shrinks the local number of qubits stored, effectively
+    int localNumQubits = numQubits - logBase2(numNodes);
+
+    // work out the maximum "local" qubits that can fit in memory
+    qindex maxLocalNumElems = memBytesPerNode / sizeof(qcomp); // floors
+    int maxLocalNumQubits  = std::floor(std::log2(maxLocalNumElems));
+
+    // dense matrices (as opposed to diagonals) require square more memory
+    if (isDense)
+        maxLocalNumQubits /= 2; // floors
+
+    return localNumQubits <= maxLocalNumQubits;
 }
 
 
@@ -108,19 +129,18 @@ int mem_getMaxNumQubitsBeforeLocalMemSizeofOverflow(bool isDensMatr, int numNode
     return maxGlobalNumQubits;
 }
 
-
-size_t mem_getLocalMemoryRequired(int numQubits, bool isDensMatr, int numNodes) {
+size_t getLocalMemoryRequired(int numQubits, int numNodes, bool isDenseMatrix, bool needsCommBuffers) {
 
     // assert no-overflow precondition
-    if (numQubits > mem_getMaxNumQubitsBeforeLocalMemSizeofOverflow(isDensMatr, numNodes))
+    if (numQubits > mem_getMaxNumQubitsBeforeLocalMemSizeofOverflow(isDenseMatrix, numNodes))
         error_memSizeQueriedButWouldOverflow();
 
     // no risk of overflow; we have already validated numAmpsTotal fits in qindex
-    qindex numAmpsTotal = (isDensMatr)? powerOf2(2*numQubits) : powerOf2(numQubits);
+    qindex numAmpsTotal = (isDenseMatrix)? powerOf2(2*numQubits) : powerOf2(numQubits);
     qindex numAmpsPerNode = numAmpsTotal / numNodes; // divides evenly
 
-    // distribution requires communication buffers, doubling costs
-    if (numNodes > 1)
+    // communication buffers double costs
+    if (needsCommBuffers && numNodes > 1)
         numAmpsPerNode *= 2;
 
     // return number of bytes to store local amps
@@ -128,7 +148,23 @@ size_t mem_getLocalMemoryRequired(int numQubits, bool isDensMatr, int numNodes) 
 }
 
 
-size_t mem_getLocalMemoryRequired(qindex numAmpsPerNode) {
+size_t mem_getLocalMatrixMemoryRequired(int numQubits, bool isDenseMatrix, int numNodes) {
+
+    // matrix types don't store buffers - they'll use those of Quregs they're applied to
+    bool needsCommBuffers = false;
+    return getLocalMemoryRequired(numQubits, numNodes, isDenseMatrix, needsCommBuffers);
+}
+
+
+size_t mem_getLocalQuregMemoryRequired(int numQubits, bool isDensityMatr, int numNodes) {
+
+    // Quregs may need buffers for inter-node communication, depending on numNodes > 1
+    bool needsCommBuffers = true;
+    return getLocalMemoryRequired(numQubits, numNodes, isDensityMatr, needsCommBuffers);
+}
+
+
+size_t mem_getLocalQuregMemoryRequired(qindex numAmpsPerNode) {
 
     // assert no-overflow precondition
     qindex maxNumAmpsPerNode = std::numeric_limits<size_t>::max() / sizeof(qcomp); // floors
@@ -149,7 +185,7 @@ qindex mem_getTotalGlobalMemoryUsed(Qureg qureg) {
     //  it would also make changing units (e.g. to GB) easier.
 
     // work out individual array costs
-    size_t memLocalArray = mem_getLocalMemoryRequired(qureg.numAmpsPerNode);
+    size_t memLocalArray = mem_getLocalQuregMemoryRequired(qureg.numAmpsPerNode);
     int numLocalArrays = 
         (qureg.cpuAmps != NULL) + (qureg.cpuCommBuffer != NULL) + 
         (qureg.gpuAmps != NULL) + (qureg.gpuCommBuffer != NULL);

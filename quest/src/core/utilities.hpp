@@ -9,21 +9,20 @@
 #include "quest/include/qureg.h"
 #include "quest/include/matrices.h"
 
-#include "quest/src/core/errors.hpp"
-
 #include <type_traits>
+#include <string>
 
 
 
 /*
  * MATRIX TYPING
  *
- * defined here in the header since templated, and which use compile-time inspection
+ * defined here in the header since templated, and which use compile-time inspection.
  */
 
-// T can be CompMatr1, CompMatr2, CompMatr, DiagMatr1, DiagMatr2, DiagMatr
+// T can be CompMatr1, CompMatr2, CompMatr, DiagMatr1, DiagMatr2, DiagMatr, FullStateDiagMatr
 template<class T>
-constexpr bool isDenseMatrixType() {
+constexpr bool util_isDenseMatrixType() {
 
     // CompMatr are "dense", storing all 2D elements
     if constexpr (
@@ -37,7 +36,8 @@ constexpr bool isDenseMatrixType() {
     if constexpr (
         std::is_same_v<T, DiagMatr1> ||
         std::is_same_v<T, DiagMatr2> ||
-        std::is_same_v<T, DiagMatr>
+        std::is_same_v<T, DiagMatr>  ||
+        std::is_same_v<T, FullStateDiagMatr>
     )
         return false;
 
@@ -46,9 +46,9 @@ constexpr bool isDenseMatrixType() {
     return false;
 }
 
-// T can be CompMatr1, CompMatr2, CompMatr, DiagMatr1, DiagMatr2, DiagMatr
+// T can be CompMatr1, CompMatr2, CompMatr, DiagMatr1, DiagMatr2, DiagMatr, FullStateDiagMatr
 template<class T>
-constexpr bool isFixedSizeMatrixType() {
+constexpr bool util_isFixedSizeMatrixType() {
 
     return (
         std::is_same_v<T, CompMatr1> ||
@@ -58,11 +58,53 @@ constexpr bool isFixedSizeMatrixType() {
     );
 }
 
-// T can be CompMatr1, CompMatr2, CompMatr, DiagMatr1, DiagMatr2, DiagMatr
+// T can be CompMatr1, CompMatr2, CompMatr, DiagMatr1, DiagMatr2, DiagMatr, FullStateDiagMatr
 template<class T>
-constexpr qindex getMatrixDim(T matr) {
+constexpr bool util_isDistributableMatrixType() {
+
+    return (std::is_same_v<T, FullStateDiagMatr>);
+}
+
+// T can be CompMatr1, CompMatr2, CompMatr, DiagMatr1, DiagMatr2, DiagMatr, FullStateDiagMatr
+template<class T>
+bool util_isDistributedMatrix(T matr) {
+
+    if constexpr (util_isDistributableMatrixType<T>())
+        return matr.isDistributed;
+
+    return false;
+}
+
+// T can be CompMatr1, CompMatr2, CompMatr, DiagMatr1, DiagMatr2, DiagMatr, FullStateDiagMatr
+template<class T>
+std::string util_getMatrixTypeName() {
     
-    if constexpr (isDenseMatrixType<T>())
+    if constexpr (std::is_same_v<T, CompMatr1>)
+        return "CompMatr1";
+    if constexpr (std::is_same_v<T, CompMatr2>)
+        return "CompMatr2";
+    if constexpr (std::is_same_v<T, CompMatr>)
+        return "CompMatr";
+    
+    if constexpr (std::is_same_v<T, DiagMatr1>)
+        return "DiagMatr1";
+    if constexpr (std::is_same_v<T, DiagMatr2>)
+        return "DiagMatr2";
+    if constexpr (std::is_same_v<T, DiagMatr>)
+        return "DiagMatr";
+
+    if constexpr (std::is_same_v<T, FullStateDiagMatr>)
+        return "FullStateDiagMatr";
+
+    // no need to create a new error for this situation I think
+    return "UnrecognisedMatrix";
+}
+
+// T can be CompMatr1, CompMatr2, CompMatr, DiagMatr1, DiagMatr2, DiagMatr, FullStateDiagMatr
+template<class T>
+qindex util_getMatrixDim(T matr) {
+    
+    if constexpr (util_isDenseMatrixType<T>())
         return matr.numRows;
     else
         return matr.numElems;
@@ -94,7 +136,7 @@ bool util_isUnitary(CompMatr matrix);
 bool util_isUnitary(DiagMatr1 matrix);
 bool util_isUnitary(DiagMatr2 matrix);
 bool util_isUnitary(DiagMatr matrix);
-
+bool util_isUnitary(FullStateDiagMatr matrix);
 
 
 /*
@@ -102,6 +144,30 @@ bool util_isUnitary(DiagMatr matrix);
  */
 
 int util_getShifted(int qubit, Qureg qureg);
+
+
+
+/*
+ * DISTRIBUTED ELEMENTS INDEXING
+ */
+
+
+typedef struct {
+
+    // the starting local index among the node's distributed elements
+    qindex localDistribStartInd;
+
+    // the corresponding local index of in the duplicated (non-distributed) elements 
+    qindex localDuplicStartInd;
+
+    // the number of elements in the range, all of which are in this node's distributed elements
+    qindex numElems;
+
+} util_IndexRange;
+
+bool util_areAnyElemsWithinThisNode(int numElemsPerNode, qindex startInd, qindex numInds);
+
+util_IndexRange util_getLocalIndRangeOfElemsWithinThisNode(int numElemsPerNode, qindex elemStartInd, qindex numInds);
 
 
 

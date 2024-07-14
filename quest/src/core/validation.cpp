@@ -177,8 +177,46 @@ namespace report {
     std::string NEW_MATRIX_NUM_QUBITS_NOT_POSITIVE = 
         "Cannot create a matrix which acts upon ${NUM_QUBITS} qubits; must target one or more qubits.";
 
-    std::string NEW_MATRIX_LOCAL_MEM_WOULD_EXCEED_SIZEOF =
-        "Cannot create a matrix which acts upon ${NUM_QUBITS} qubits since the necessary memory size (${QCOMP_BYTES} * 2^${DUB_QUBITS} bytes) would overflow size_t, and be intractably slow to serially process. The maximum size matrix targets ${MAX_QUBITS} qubits.";
+
+    std::string NEW_DIAG_MATR_NUM_ELEMS_WOULD_EXCEED_QINDEX =
+        "Cannot create a diagonal matrix of ${NUM_QUBITS} qubits: the matrix would contain more elements (2^${NUM_QUBITS}) than the maximum which can be addressed by the qindex type (2^${MAX_QUBITS}).";
+
+    std::string NEW_COMP_MATR_NUM_ELEMS_WOULD_EXCEED_QINDEX =
+        "Cannot create a dense matrix of ${NUM_QUBITS} qubits: the matrix would contain more elements (4^${NUM_QUBITS}) than the maximum which can be addressed by the qindex type (4^${MAX_QUBITS}).";
+
+
+    std::string NEW_LOCAL_COMP_MATR_MEM_WOULD_EXCEED_SIZEOF =
+        "Cannot create a local, dense matrix of ${NUM_QUBITS} qubits because the necessary memory (in bytes) would overflow size_t. In this deployment, the maximum number of qubits in such a matrix is ${MAX_QUBITS}.";
+
+    std::string NEW_LOCAL_DIAG_MATR_MEM_WOULD_EXCEED_SIZEOF =
+        "Cannot create a local, diagonal matrix of ${NUM_QUBITS} qubits because the necessary memory (in bytes) would overflow size_t. In this deployment, the maximum number of qubits in such a matrix is ${MAX_QUBITS}.";
+
+    std::string NEW_DISTRIB_DIAG_MATR_LOCAL_MEM_WOULD_EXCEED_SIZEOF =
+        "Cannot create a diagonal matrix of ${NUM_QUBITS} qubits distributed over ${NUM_NODES} nodes because the necessary local memory (in bytes) of each node would overflow size_t. In this deployment, the maximum number of qubits in such a matrix is ${MAX_QUBITS}.";
+
+
+    std::string NEW_DISTRIB_DIAG_MATR_HAS_TOO_FEW_AMPS =
+        "Cannot create a diagonal matrix of ${NUM_QUBITS} distributed between ${NUM_NODES} nodes because each node would contain fewer than one element. The minimum number of qubits in such a matrix is ${MIN_QUBITS}. Consider disabling distribution for this matrix.";
+
+
+    std::string NEW_LOCAL_COMP_MATR_CANNOT_FIT_INTO_CPU_MEM =
+        "Cannot create a local, dense matrix of ${NUM_QUBITS} qubits because the necessary memory (${QCOMP_BYTES} * 4^${NUM_QUBITS} bytes) exceeds the available RAM of ${RAM_SIZE} bytes.";
+
+    std::string NEW_LOCAL_DIAG_MATR_CANNOT_FIT_INTO_CPU_MEM =
+        "Cannot create a local, diagonal matrix of ${NUM_QUBITS} qubits because the necessary memory (${QCOMP_BYTES} * 2^${NUM_QUBITS} bytes) exceeds the available RAM of ${RAM_SIZE} bytes.";
+
+    std::string NEW_DISTRIB_DIAG_MATR_CANNOT_FIT_INTO_CPU_MEM =
+        "Cannot create a diagonal matrix of ${NUM_QUBITS} qubits distributed between ${NUM_NODES} because the necessary memory per node (${QCOMP_BYTES} * 2^${NUM_QB_MINUS_LOG_NODES} bytes) exceeds the local available RAM of ${RAM_SIZE} bytes.";
+
+
+    std::string NEW_LOCAL_COMP_MATR_CANNOT_FIT_INTO_GPU_MEM =
+        "Cannot create a local, GPU-accelerated, dense matrix of ${NUM_QUBITS} qubits because the necessary memory (${QCOMP_BYTES} * 4^${NUM_QUBITS} bytes) exceeds the available GPU memory of ${VRAM_SIZE} bytes.";
+
+    std::string NEW_LOCAL_DIAG_MATR_CANNOT_FIT_INTO_GPU_MEM =
+        "Cannot create a local, GPU-accelerated, diagonal matrix of ${NUM_QUBITS} qubits because the necessary memory (${QCOMP_BYTES} * 2^${NUM_QUBITS} bytes) exceeds the available GPU memory of ${VRAM_SIZE} bytes.";
+
+    std::string NEW_DISTRIB_DIAG_MATR_CANNOT_FIT_INTO_GPU_MEM =
+        "Cannot create a GPU-accelerated, diagonal matrix of ${NUM_QUBITS} qubits distributed between ${NUM_NODES} because the necessary memory per node (${QCOMP_BYTES} * 2^${NUM_QB_MINUS_LOG_NODES} bytes) exceeds the local available GPU memory of ${RAM_SIZE} bytes.";
 
 
     std::string NEW_MATRIX_CPU_ELEMS_ALLOC_FAILED = 
@@ -186,6 +224,45 @@ namespace report {
 
     std::string NEW_MATRIX_GPU_ELEMS_ALLOC_FAILED = 
         "Attempted allocation of GPU memory (${NUM_BYTES} bytes in VRAM) failed.";
+
+
+    std::string NEW_DISTRIB_MATRIX_IN_NON_DISTRIB_ENV = 
+        "Cannot distribute a matrix in a non-distributed environment.";
+
+    std::string INVALID_OPTION_FOR_MATRIX_IS_DISTRIB = 
+        "Argument 'useDistrib' must be 1 or 0 to respectively indicate whether or not to distribute the new matrix, or ${AUTO_DEPLOYMENT_FLAG} to let QuEST choose automatically.";
+
+
+
+    /*
+     * MATRIX INITIALISATION
+     */
+
+    std::string MATRIX_NEW_ELEMS_CONTAINED_GPU_SYNC_FLAG = 
+        "The new elements contained a reserved, forbidden value as the first element, used internally to detect that whether GPU memory has not synchronised. The value was intended to be extremely unlikely to be used by users - go buy a lottery ticket! If you insist on using this value in the first element, add a numerically insignificant perturbation.";
+
+
+    std::string COMP_MATR_NEW_ELEMS_WRONG_NUM_ROWS =
+        "Incompatible number of rows (${NUM_GIVEN_ROWS}) of elements given to overwrite a ${NUM_QUBITS}-qubit CompMatr, which expects ${NUM_EXPECTED_ROWS} rows.";
+
+    std::string COMP_MATR_NEW_ELEMS_WRONG_ROW_DIM =
+        "One or more rows contained an incompatible number of elements (${NUM_GIVEN_ELEMS}). The ${NUM_QUBITS}-qubit CompMatr expects a square ${EXPECTED_DIM}x${EXPECTED_DIM} matrix.";
+
+    std::string DIAG_MATR_WRONG_NUM_NEW_ELEMS = 
+        "Incompatible number of elements (${NUM_GIVEN_ELEMS}) assigned to a ${NUM_QUBITS}-qubit DiagMatr, which expects ${NUM_EXPECTED_ELEMS} elements.";
+    
+
+    std::string FULL_STATE_DIAG_MATR_NEW_ELEMS_INVALID_START_INDEX =
+        "Invalid start index (${START_IND}), which must be non-negative and smaller than the total number of diagonal elements in the matrix (${MATR_NUM_ELEMS}).";
+
+    std::string FULL_STATE_DIAG_MATR_NEW_ELEMS_NUM_IS_NON_POSITIVE =
+        "Invalid number of new elements (${NUM_ELEMS}). Must be greater than zero.";
+
+    std::string FULL_STATE_DIAG_MATR_NEW_ELEMS_NUM_EXCEEDS_MAX_NUM =
+        "The given number of new elements (${NEW_NUM_ELEMS}) exceeds the total number of diagonal elements in the matrix (${MATR_NUM_ELEMS}).";
+
+    std::string FULL_STATE_DIAG_MATR_NEW_ELEMS_EXCEEDS_END_INDEX =
+        "The specified range of elements to set (at indices ${START_IND} to ${END_IND_EXCL} exclusive) exceeds the bounds of the diagonal matrix (of ${MATR_NUM_ELEMS} total elements).";
 
 
     /*
@@ -224,8 +301,15 @@ namespace report {
         "Invalid DiagMatr. The GPU memory (VRAM) was seemingly unallocated. It is likely this matrix was not initialised with createDiagMatr().";
 
 
-    std::string MATRIX_NEW_ELEMS_CONTAINED_GPU_SYNC_FLAG = 
-        "The new elements contained a reserved, forbidden value as the first element, used internally to detect that whether GPU memory has not synchronised. The value was intended to be extremely unlikely to be used by users - go buy a lottery ticket! If you insist on using this value in the first element, add a numerically insignificant perturbation.";
+    std::string INVALID_FULL_STATE_DIAG_MATR_FIELDS = 
+        "Invalid FullStateDiagMatr. Targeted ${NUM_QUBITS} qubits and had a dimension of ${NUM_ROWS}x${NUM_ROWS}. It is likely this matrix was not created with createFullStateDiagMatr().";
+
+    std::string INVALID_FULL_STATE_DIAG_MATR_CPU_MEM_ALLOC =
+        "Invalid FullStateDiagMatr. The CPU memory (RAM) was seemingly unallocated. It is likely this matrix was not initialised with createFullStateDiagMatr().";
+
+    std::string INVALID_FULL_STATE_DIAG_MATR_GPU_MEM_ALLOC =
+        "Invalid FullStateDiagMatr. The GPU memory (VRAM) was seemingly unallocated. It is likely this matrix was not initialised with createFullStateDiagMatr().";
+
 
     std::string COMP_MATR_NOT_SYNCED_TO_GPU = 
         "The CompMatr has yet not been synchronised with its persistent GPU memory, so potential changes to its elements are being ignored. Please first call syncCompMatr() after manually modifying elements, or overwrite all elements with setCompMatr().";
@@ -233,19 +317,18 @@ namespace report {
     std::string DIAG_MATR_NOT_SYNCED_TO_GPU = 
         "The DiagMatr has yet not been synchronised with its persistent GPU memory, so potential changes to its elements are being ignored. Please first call syncDiagMatr() after manually modifying elements, or overwrite all elements with setDiagMatr().";
 
+    std::string FULL_STATE_DIAG_MATR_NOT_SYNCED_TO_GPU = 
+        "The FullStateDiagMatr has yet not been synchronised with its persistent GPU memory, so potential changes to its elements are being ignored. Please first call syncFullStateDiagMatr() after manually modifying elements, or overwrite elements in batch with setFullStateDiagMatr().";
 
-    std::string COMP_MATR_NEW_ELEMS_WRONG_NUM_ROWS =
-        "Incompatible number of rows (${NUM_GIVEN_ROWS}) of elements given to overwrite a ${NUM_QUBITS}-qubit CompMatr, which expects ${NUM_EXPECTED_ROWS} rows.";
-
-    std::string COMP_MATR_NEW_ELEMS_WRONG_ROW_DIM =
-        "One or more rows contained an incompatible number of elements (${NUM_GIVEN_ELEMS}). The ${NUM_QUBITS}-qubit CompMatr expects a square ${EXPECTED_DIM}x${EXPECTED_DIM} matrix.";
-
-    std::string DIAG_MATR_WRONG_NUM_NEW_ELEMS = 
-        "Incompatible number of elements (${NUM_GIVEN_ELEMS}) assigned to a ${NUM_QUBITS}-qubit DiagMatr, which expects ${NUM_EXPECTED_ELEMS} elements.";
-    
 
     std::string MATRIX_NOT_UNITARY = 
         "The given matrix was not (approximately) unitary.";
+
+    std::string FULL_STATE_DIAG_MATR_MISMATCHES_QUREG_DIM =
+        "The given FullStateDiagMatr operates upon a different number of qubits (${NUM_MATR_QUBITS}) than exists in the Qureg (${NUM_QUREG_QUBITS}).";
+
+    std::string FULL_STATE_DIAG_MATR_IS_DISTRIB_BUT_QUREG_ISNT =
+        "The given FullStateDiagMatr is distributed but the Qureg is not, which is forbidden. Consider disabling distribution for this matrix via createCustomFullStateDiagMatr().";
 
 
     /*
@@ -274,7 +357,7 @@ namespace report {
 void default_invalidQuESTInputError(const char* msg, const char* func) {
 
     // safe to call even before MPI has been setup
-    if (comm_getRank() == 0)
+    if (comm_isRootNode())
         std::cout 
             << "QuEST encountered a validation error during function '" << func << "':\n"
             << msg << "\nExiting..." 
@@ -628,6 +711,7 @@ void assertQuregFitsInGpuMem(int numQubits, int isDensMatr, int isDistrib, int i
         vars["${NUM_GPUS}"] = numQuregNodes;
 
         // require expensive node consensus in case of heterogeneous GPU hardware or loads
+        assertAllNodesAgreeThat(quregFitsInMem, report::NEW_QUREG_CANNOT_FIT_INTO_POTENTIALLY_DISTRIB_CURRENT_GPU_MEM, vars, caller);
     }
 }
 
@@ -682,6 +766,8 @@ void validate_quregFields(Qureg qureg, const char* caller) {
     valid &= (qureg.isDensityMatrix == 0 || qureg.isDensityMatrix == 1);
     valid &= (qureg.numAmps == powerOf2(((qureg.isDensityMatrix)? 2:1) * qureg.numQubits));
 
+    // we do not bother checking slightly more involved fields like numAmpsPerNode
+
     tokenSubs vars = {
         {"${DENS_MATR}", qureg.isDensityMatrix},
         {"${NUM_QUBITS}", qureg.numQubits},
@@ -706,35 +792,238 @@ void validate_quregFields(Qureg qureg, const char* caller) {
  * MATRIX CREATION
  */
 
-void assertNewMatrixNotTooBig(int numQubits, const char* caller) {
+void assertMatrixDeployFlagsRecognised(int isDistrib, const char* caller) {
 
-    // assert the total memory (in bytes) to store the matrix
-    // (i.e. all of its row arrays combined) does not exceed
-    // max size_t, so sizeof doesn't overflow. We may never
-    // actually need to compute all memory, but the threshold
-    // for causing this overflow is already impractically huge,
-    // and this is the 'smallest' max-size threshold we can test
-    // without querying RAM and VRAM occupancy. We can't do the
-    // latter ever since the CompMatr might never be dispatched
-    // to the GPU.
+    // deployment flags must be boolean or auto
+    assertThat(
+        isDistrib == 0 || isDistrib == 1 || isDistrib == modeflag::USE_AUTO, 
+        report::INVALID_OPTION_FOR_MATRIX_IS_DISTRIB,
+        {{"${AUTO_DEPLOYMENT_FLAG}", modeflag::USE_AUTO}}, caller);
+}
 
-    // the total ComplexMatrixN memory equals that of a same-size density matrix
-    bool isDensMatr = true;
-    int maxQubits = mem_getMaxNumQubitsBeforeIndexOverflow(isDensMatr);
+void assertMatrixDeploysEnabledByEnv(int isDistrib, int envIsDistrib, const char* caller) {
+
+    // cannot deploy to backend not already enabled by the environment
+    if (!envIsDistrib)
+        assertThat(isDistrib == 0 || isDistrib == modeflag::USE_AUTO, report::NEW_DISTRIB_MATRIX_IN_NON_DISTRIB_ENV, caller);
+}
+
+void assertMatrixNonEmpty(int numQubits, const char* caller) {
+
+    assertThat(numQubits >= 1, report::NEW_MATRIX_NUM_QUBITS_NOT_POSITIVE, caller);
+}
+
+void assertMatrixTotalNumElemsDontExceedMaxIndex(int numQubits, bool isDense, const char* caller) {
+
+    int maxNumQubits = mem_getMaxNumQubitsBeforeIndexOverflow(isDense);
+
+    std::string msg = (isDense)?
+        report::NEW_DIAG_MATR_NUM_ELEMS_WOULD_EXCEED_QINDEX :
+        report::NEW_COMP_MATR_NUM_ELEMS_WOULD_EXCEED_QINDEX ;
+
+    tokenSubs vars = {
+        {"${NUM_QUBITS}", numQubits}, 
+        {"${MAX_QUBITS}", maxNumQubits}};
+
+    assertThat(numQubits <= maxNumQubits, msg, vars, caller);
+}
+
+void assertMatrixLocalMemDoesntExceedMaxSizeof(int numQubits, bool isDense, int isDistrib, int numEnvNodes, const char* caller) {
+
+    // 'isDistrib' can be 0 (user-disabled, or matrix is a local type), 1 (user-forced)
+    // or -1 (automatic; the type can be distributed but the user has not forced it). 
+    // Currently, only distributed diagonal matrices are supported, so isDistrib must be
+    // concreely 0 for dense matrices.
+    if (isDense && isDistrib != 0)
+        error_validationEncounteredUnsupportedDistributedDenseMatrix();
+
+    // assume distributed (unless it is force disabled), because that reduces the memory required
+    // per node and is ergo more permissive - and the auto-deployer would never choose non-distribution
+    // in a distributed env if the memory would exceed the max sizeof!
+    int numMatrNodes = (isDistrib == 0)? 1 : numEnvNodes;
+
+    // the diag matrix would have the same cost as a statevector Qureg, and be distributed as such
+    int maxNumQubits = mem_getMaxNumQubitsBeforeLocalMemSizeofOverflow(isDense, numMatrNodes);
+
+    // make error message specific to whether the matrix is distributed or non-distributed type;
+    // non-distributed matrices (e.g. CompMatr) should only ever cause the local error message
+    std::string msg = (numMatrNodes > 1)?
+        report::NEW_DISTRIB_DIAG_MATR_LOCAL_MEM_WOULD_EXCEED_SIZEOF :
+        ((isDense)?
+            report::NEW_LOCAL_COMP_MATR_MEM_WOULD_EXCEED_SIZEOF :
+            report::NEW_LOCAL_DIAG_MATR_MEM_WOULD_EXCEED_SIZEOF);
+    
+    tokenSubs vars = {
+        {"${NUM_QUBITS}", numQubits},
+        {"${MAX_QUBITS}", maxNumQubits}};
+    if (numMatrNodes > 1)
+        vars["${NUM_NODES}"] = numMatrNodes;
+
+    assertThat(numQubits <= maxNumQubits, msg, vars, caller);
+}
+
+void assertMatrixNotDistributedOverTooManyNodes(int numQubits, bool isDense, int isDistrib, int numEnvNodes, const char* caller) {
+
+    // 'isDistrib' can be 0 (user-disabled, or matrix is a local type), 1 (user-forced)
+    // or -1 (automatic; the type can be distributed but the user has not forced it). 
+    // Currently, only distributed diagonal matrices are supported, so isDistrib must be
+    // concreely 0 for dense matrices.
+    if (isDense && isDistrib != 0)
+        error_validationEncounteredUnsupportedDistributedDenseMatrix();
+
+    // only need to validate when distribution is forced (auto-deployer will never over-distribute,
+    // and non-distributed types (like CompMatr) will pass isDistrib=0
+    if (isDistrib != 1)
+        return;
+
+    // distributed diagonal matrices require at least 1 element per node, and while we
+    // don't yet support distributed complex matrices, let's for now assume they would
+    // require having at leat 1 column per node, like density matrix Quregs do.
+    int minQubits = mem_getMinNumQubitsForDistribution(numEnvNodes);
+
+    std::string msg = report::NEW_DISTRIB_DIAG_MATR_HAS_TOO_FEW_AMPS;
+    tokenSubs vars = {
+        {"${NUM_QUBITS}", numQubits},
+        {"${MIN_QUBITS}", minQubits},
+        {"${NUM_NODES}",  numEnvNodes}};
+        
+    assertThat(numQubits >= minQubits, msg, vars, caller);
+}
+
+void assertMatrixFitsInCpuMem(int numQubits, bool isDense, int isDistrib, int numEnvNodes, const char* caller) {
+
+    // 'isDistrib' can be 0 (user-disabled, or matrix is a local type), 1 (user-forced)
+    // or -1 (automatic; the type can be distributed but the user has not forced it). 
+    // Currently, only distributed diagonal matrices are supported, so isDistrib must be
+    // concreely 0 for dense matrices.
+    if (isDense && isDistrib != 0)
+        error_validationEncounteredUnsupportedDistributedDenseMatrix();
+
+    // attempt to fetch RAM, and simply return if we fail; if we unknowingly
+    // didn't have enough RAM, then alloc validation will trigger later
+    size_t memPerNode = 0;
+    try {
+        memPerNode = mem_tryGetLocalRamCapacityInBytes();
+    } catch(mem::COULD_NOT_QUERY_RAM e) {
+        return;
+    }
+
+    // check whether matrix (considering if distributed) fits between node memory(s).
+    // note this sets numMatrNodes=1 only when distribution is impossible/switched-off,
+    // but not when it would later be automatically disabled. That's fine; the auto-deployer
+    // will never disable distribution if the RAM can't store the entire matrix, so we 
+    // don't need to validate the auto-deployed-to-non-distributed scenario. We only need to 
+    // ensure that auto-deploying-to-distribution is permitted by memory capacity. Note too
+    // that the distinction between (env.isDistributed) and (env.numNodes>1) is unimportant
+    // for matrix structs because they never store communication buffers.
+    int numMatrNodes = (isDistrib == 0)? 1 : numEnvNodes;
+    bool matrFitsInMem = mem_canMatrixFitInMemory(numQubits, isDense, numMatrNodes, memPerNode);
+
+    // specialise error message to whether matrix is distributed and dense or diag
+    std::string msg = (isDense)?
+        report::NEW_LOCAL_COMP_MATR_CANNOT_FIT_INTO_CPU_MEM :
+        ((numMatrNodes == 1)?
+            report::NEW_LOCAL_DIAG_MATR_CANNOT_FIT_INTO_CPU_MEM :
+            report::NEW_DISTRIB_DIAG_MATR_CANNOT_FIT_INTO_CPU_MEM );
 
     tokenSubs vars = {
         {"${NUM_QUBITS}",  numQubits},
-        {"${MAX_QUBITS}",  maxQubits},
-        {"${DUB_QUBITS}",   2*numQubits},
-        {"${QCOMP_BYTES}", sizeof(qcomp)}};
+        {"${QCOMP_BYTES}", sizeof(qcomp)},
+        {"${RAM_SIZE}",    memPerNode}};
 
-    assertThat(numQubits < maxQubits, report::NEW_MATRIX_LOCAL_MEM_WOULD_EXCEED_SIZEOF, vars, caller);
+    if (numMatrNodes > 1) {
+        vars["${NUM_NODES}"] = numMatrNodes;
+        vars["${NUM_QB_MINUS_LOG_NODES}"] = numQubits - logBase2(numMatrNodes);
+    }
+    
+    // seek expensive node consensus in case of heterogeneous RAM - alas this may induce
+    // unnecessary slowdown (due to sync and broadcast) in applications allocating many
+    // small matrices in the heap. If this turns out to be the case, we could opt to
+    // enforce consensus only when the needed memory is large (e.g. >1GB) and ergo the 
+    // chance of it fitting into some node RAM but not others isn't negligible.
+    assertAllNodesAgreeThat(matrFitsInMem, msg, vars, caller);
 }
 
-void validate_newMatrixNumQubits(int numQubits, const char* caller) {
+void assertMatrixFitsInGpuMem(int numQubits, bool isDense, int isDistrib, int isEnvGpuAccel, int numEnvNodes, const char* caller) {
 
-    assertThat(numQubits >= 1, report::NEW_MATRIX_NUM_QUBITS_NOT_POSITIVE, caller);
-    assertNewMatrixNotTooBig(numQubits, caller);
+    // 'isDistrib' can be 0 (user-disabled, or matrix is a local type), 1 (user-forced)
+    // or -1 (automatic; the type can be distributed but the user has not forced it). 
+    // Currently, only distributed diagonal matrices are supported, so isDistrib must be
+    // concreely 0 for dense matrices.
+    if (isDense && isDistrib != 0)
+        error_validationEncounteredUnsupportedDistributedDenseMatrix();
+
+    // matrix GPU memory will always be allocated when env is GPU-accelerated
+    if (!isEnvGpuAccel)
+        return;
+
+    // we consult the current available local GPU memory (being more strict than is possible for RAM)
+    size_t localCurrGpuMem = gpu_getCurrentAvailableMemoryInBytes();
+
+    // check whether matrix (considering if distributed) fits between node memory(s).
+    // note this sets numMatrNodes=1 only when distribution is impossible/switched-off,
+    // but not when it would later be automatically disabled. That's fine; the auto-deployer
+    // will never disable distribution if the local GPU can't store the entire matrix, so we 
+    // don't need to validate the auto-deployed-to-non-distributed scenario. We only need to 
+    // ensure that auto-deploying-to-distribution is permitted by memory capacity. Note too
+    // that the distinction between (env.isDistributed) and (env.numNodes>1) is unimportant
+    // for matrix structs because they never store communication buffers.
+    int numMatrNodes = (isDistrib == 0)? 1 : numEnvNodes;
+    bool matrFitsInMem = mem_canMatrixFitInMemory(numQubits, isDense, numMatrNodes, localCurrGpuMem);
+
+    // specialise error message to whether matrix is distributed and dense or diag
+    std::string msg = (isDense)?
+        report::NEW_LOCAL_COMP_MATR_CANNOT_FIT_INTO_GPU_MEM :
+        ((numMatrNodes == 1)?
+            report::NEW_LOCAL_DIAG_MATR_CANNOT_FIT_INTO_GPU_MEM :
+            report::NEW_DISTRIB_DIAG_MATR_CANNOT_FIT_INTO_GPU_MEM );
+
+    tokenSubs vars = {
+        {"${NUM_QUBITS}",  numQubits},
+        {"${QCOMP_BYTES}", sizeof(qcomp)},
+        {"${VRAM_SIZE}",   localCurrGpuMem}};
+        
+    if (numMatrNodes > 1) {
+        vars["${NUM_NODES}"] = numMatrNodes;
+        vars["${NUM_QB_MINUS_LOG_NODES}"] = numQubits - logBase2(numMatrNodes);
+    }
+    
+    // seek expensive node consensus in case of heterogeneous GPU hardware - alas this may 
+    // induce unnecessary slowdown (due to sync and broadcast) in applications allocating many
+    // small matrices in the GPU. If this turns out to be the case, we could opt to
+    // enforce consensus only when the needed memory is large (e.g. >1GB) and ergo the 
+    // chance of it fitting into some GPU's memory but not others isn't negligible.
+    assertAllNodesAgreeThat(matrFitsInMem, msg, vars, caller);
+}
+
+void assertNewMatrixParamsAreValid(int numQubits, int useDistrib, bool isDenseType, const char* caller) {
+    validate_envIsInit(caller);
+    QuESTEnv env = getQuESTEnv();
+
+    assertMatrixNonEmpty(numQubits, caller);
+    assertMatrixTotalNumElemsDontExceedMaxIndex(numQubits, isDenseType, caller);
+    assertMatrixLocalMemDoesntExceedMaxSizeof(numQubits,  isDenseType, useDistrib, env.numNodes, caller);
+    assertMatrixNotDistributedOverTooManyNodes(numQubits, isDenseType, useDistrib, env.numNodes, caller);
+    assertMatrixFitsInCpuMem(numQubits, isDenseType, useDistrib, env.numNodes, caller);
+    assertMatrixFitsInGpuMem(numQubits, isDenseType, useDistrib, env.isGpuAccelerated, env.numNodes, caller);
+}
+
+void validate_newCompMatrParams(int numQubits, const char* caller) {
+
+    int useDistrib = 0;
+    bool isDenseType = true;
+    assertNewMatrixParamsAreValid(numQubits, useDistrib, isDenseType, caller);
+}
+void validate_newDiagMatrParams(int numQubits, const char* caller) {
+
+    int useDistrib = 0;
+    bool isDenseType = false;
+    assertNewMatrixParamsAreValid(numQubits, useDistrib, isDenseType, caller);
+}
+void validate_newFullStateDiagMatrParams(int numQubits, int useDistrib, const char* caller) {
+
+    bool isDenseType = false;
+    assertNewMatrixParamsAreValid(numQubits, useDistrib, isDenseType, caller);
 }
 
 void validate_newMatrixAllocs(CompMatr matr, qindex numBytes, const char* caller) {
@@ -757,6 +1046,21 @@ void validate_newMatrixAllocs(CompMatr matr, qindex numBytes, const char* caller
 void validate_newMatrixAllocs(DiagMatr matr, qindex numBytes, const char* caller) {
     tokenSubs vars = {{"${NUM_BYTES}", numBytes}};
 
+    // we expensively get node consensus about malloc failure, in case of heterogeneous hardware/loads
+
+    // assert CPU array of rows was malloc'd successfully
+    assertAllNodesAgreeThat(matr.cpuElems != NULL, report::NEW_MATRIX_CPU_ELEMS_ALLOC_FAILED, vars, caller);
+
+    // optionally assert GPU memory was malloc'd successfully
+    if (getQuESTEnv().isGpuAccelerated)
+        assertAllNodesAgreeThat(matr.gpuElems != NULL, report::NEW_MATRIX_GPU_ELEMS_ALLOC_FAILED, vars, caller);
+}
+
+void validate_newMatrixAllocs(FullStateDiagMatr matr, qindex numBytes, const char* caller) {
+    tokenSubs vars = {{"${NUM_BYTES}", numBytes}};
+
+    // we expensively get node consensus about malloc failure, in case of heterogeneous hardware/loads
+
     // assert CPU array of rows was malloc'd successfully
     assertAllNodesAgreeThat(matr.cpuElems != NULL, report::NEW_MATRIX_CPU_ELEMS_ALLOC_FAILED, vars, caller);
 
@@ -775,7 +1079,7 @@ void validate_newMatrixAllocs(DiagMatr matr, qindex numBytes, const char* caller
 template <class T>
 void assertMatrixFieldsAreValid(T matr, int expectedNumQb, std::string errMsg, const char* caller) {
 
-    qindex dim = getMatrixDim(matr);
+    qindex dim = util_getMatrixDim(matr);
     tokenSubs vars = {
         {"${NUM_QUBITS}", matr.numQubits},
         {"${NUM_ROWS}",   dim}};
@@ -784,9 +1088,14 @@ void assertMatrixFieldsAreValid(T matr, int expectedNumQb, std::string errMsg, c
     // where the error message string already contains the expected numQb
     assertThat(matr.numQubits == expectedNumQb, errMsg, vars, caller);
 
+    // validate .numQubits and .numRows or .numElems
     qindex expectedDim = powerOf2(matr.numQubits);
     assertThat(matr.numQubits >= 1, errMsg, vars, caller);
     assertThat(dim == expectedDim,  errMsg, vars, caller);
+
+    // we do not bother checking slightly more involved fields like numAmpsPerNode - there's
+    // no risk that they're wrong (because they're constant), we've only sought to ensure the
+    // matrix was properly initialised and doesn't contain random data, which we have already.
 }
 
 // T can be CompMatr or DiagMatr (the only matrix structs with pointers)
@@ -805,6 +1114,7 @@ void assertMatrixAllocsAreValid(T matr, std::string cpuErrMsg, std::string gpuEr
     // serially process each row pointer.
 
     // optionally assert GPU memory is allocated
+    validate_envIsInit(caller);
     if (getQuESTEnv().isGpuAccelerated)
         assertThat(matr.gpuElems != NULL, gpuErrMsg, caller);
 }
@@ -829,9 +1139,14 @@ void validate_matrixFields(DiagMatr matr, const char* caller) {
     assertMatrixFieldsAreValid(matr, matr.numQubits, report::INVALID_DIAG_MATR_FIELDS, caller);
     assertMatrixAllocsAreValid(matr, report::INVALID_DIAG_MATR_CPU_MEM_ALLOC, report::INVALID_DIAG_MATR_GPU_MEM_ALLOC, caller);
 }
+void validate_matrixFields(FullStateDiagMatr matr, const char* caller) {
+    assertMatrixFieldsAreValid(matr, matr.numQubits, report::INVALID_FULL_STATE_DIAG_MATR_FIELDS, caller);
+    assertMatrixAllocsAreValid(matr, report::INVALID_FULL_STATE_DIAG_MATR_CPU_MEM_ALLOC, report::INVALID_FULL_STATE_DIAG_MATR_GPU_MEM_ALLOC, caller);
+}
 
 void validate_matrixNumNewElems(int numQubits, std::vector<std::vector<qcomp>> elems, const char* caller) {
 
+    // CompMatr accept 2D elems   
     qindex dim = powerOf2(numQubits);
     tokenSubs vars = {
         {"${NUM_QUBITS}",        numQubits},
@@ -862,6 +1177,37 @@ void validate_matrixNumNewElems(int numQubits, std::vector<qcomp> elems, const c
     assertThat(elems.size() == dim, report::DIAG_MATR_WRONG_NUM_NEW_ELEMS, vars, caller);
 }
 
+void validate_fullStateDiagMatrNewElems(FullStateDiagMatr matr, qindex startInd, qindex numElems, const char* caller) {
+
+    assertThat(
+        startInd >= 0 && startInd < matr.numElems, 
+        report::FULL_STATE_DIAG_MATR_NEW_ELEMS_INVALID_START_INDEX, 
+        {{"${START_IND}", startInd}, {"${MATR_NUM_ELEMS}", matr.numElems}},
+        caller);
+
+    assertThat(
+        numElems > 0,
+        report::FULL_STATE_DIAG_MATR_NEW_ELEMS_NUM_IS_NON_POSITIVE, 
+        {{"${NUM_ELEMS}", numElems}}, caller);
+
+    assertThat(
+        numElems <= matr.numElems,
+        report::FULL_STATE_DIAG_MATR_NEW_ELEMS_NUM_EXCEEDS_MAX_NUM, 
+        {{"${NEW_NUM_ELEMS}", numElems}, {"${MATR_NUM_ELEMS}", matr.numElems}},
+        caller);
+
+    qindex endIndExcl = startInd + numElems;
+    tokenSubs vars = {
+        {"${START_IND}",      startInd},
+        {"${MATR_NUM_ELEMS}", matr.numElems},
+        {"${END_IND_EXCL}",   endIndExcl}};
+       
+    assertThat(
+        endIndExcl <= matr.numElems, 
+        report::FULL_STATE_DIAG_MATR_NEW_ELEMS_EXCEEDS_END_INDEX,  
+        vars, caller);
+}
+
 void validate_matrixNewElemsDontContainUnsyncFlag(qcomp firstElem, const char* caller) {
 
     // we permit the matrix to contain the GPU-mem-unsync flag in CPU-only mode,
@@ -869,7 +1215,10 @@ void validate_matrixNewElemsDontContainUnsyncFlag(qcomp firstElem, const char* c
     if (!getQuESTEnv().isGpuAccelerated)
         return;
 
-    assertThat(!gpu_doCpuAmpsHaveUnsyncMemFlag(firstElem), report::MATRIX_NEW_ELEMS_CONTAINED_GPU_SYNC_FLAG, caller);
+    // to work with distributed FullStateDiagMatr, whereby we wish to check that
+    // every node's GPU elems have been overwritten (not just e.g. the root node's),
+    // we need to gather expensive consensus on the validity. 
+    assertAllNodesAgreeThat(!gpu_doCpuAmpsHaveUnsyncMemFlag(firstElem), report::MATRIX_NEW_ELEMS_CONTAINED_GPU_SYNC_FLAG, caller);
 }
 
 // type T can be CompMatr or DiagMatr
@@ -880,7 +1229,7 @@ void assertMatrixIsSynced(T matr, std::string errMsg, const char* caller) {
     validate_matrixFields(matr, caller);
 
     // we don't need to perform any sync check in CPU-only mode
-    if (matr.gpuElems != NULL)
+    if (matr.gpuElems == NULL)
         return;
 
     // check if GPU amps have EVER been overwritten; we sadly cannot check the LATEST changes were pushed though
@@ -911,6 +1260,9 @@ void validate_matrixIsSynced(CompMatr matr, const char* caller) {
 void validate_matrixIsSynced(DiagMatr matr, const char* caller) {
     assertMatrixIsSynced(matr, report::DIAG_MATR_NOT_SYNCED_TO_GPU, caller);
 }
+void validate_matrixIsSynced(FullStateDiagMatr matr, const char* caller) {
+    assertMatrixIsSynced(matr, report::FULL_STATE_DIAG_MATR_NOT_SYNCED_TO_GPU, caller);
+}
 
 void validate_matrixIsUnitary(CompMatr1 matr, const char* caller) {
     validate_matrixFields(matr, caller);
@@ -935,6 +1287,33 @@ void validate_matrixIsUnitary(DiagMatr2 matr, const char* caller) {
 void validate_matrixIsUnitary(DiagMatr matr, const char* caller) {
     validate_matrixIsSynced(matr, caller); // also checks fields
     assertMatrixIsUnitary(matr, caller);
+}
+void validate_matrixIsUnitary(FullStateDiagMatr matr, const char* caller) {
+    validate_matrixIsSynced(matr, caller); // also checks fields
+    assertMatrixIsUnitary(matr, caller);
+}
+
+void validate_matrixIsCompatibleWithQureg(FullStateDiagMatr matr, Qureg qureg, const char* caller) {
+
+    // we do not need to define this function for the other matrix types,
+    // since their validation will happen through validaiton of the
+    // user-given list of target qubits. But we do need to define it for
+    // FullStatedDiagMatr to check both distribution compatibility, and
+    // that dimensions match
+
+    tokenSubs vars = {
+        {"${MATR_NUM_QUBITS}",  matr.numQubits},
+        {"${QUREG_NUM_QUBITS}", qureg.numQubits}};
+
+    // dimensions must match
+    assertThat(matr.numQubits == qureg.numQubits, report::FULL_STATE_DIAG_MATR_MISMATCHES_QUREG_DIM, vars, caller);
+
+    // when matrix is duplicated on every node, its application is trivial
+    if (!matr.isDistributed)
+        return;
+
+    // but when it's distributed, so too must be the qureg so that comm isn't necessary (don't pass vars)
+    assertThat(qureg.isDistributed, report::FULL_STATE_DIAG_MATR_IS_DISTRIB_BUT_QUREG_ISNT, caller);
 }
 
 
