@@ -21,7 +21,7 @@
 
 void raiseInternalError(std::string errorMsg) {
 
-    if (comm_getRank() == 0)
+    if (comm_isRootNode())
         std::cout 
             << "\n\n"
             << "A fatal internal QuEST error occurred. "
@@ -52,6 +52,11 @@ void error_validationMessageVarNotSubstituted(std::string msg, std::string var) 
 void error_validationMessageContainedUnsubstitutedVars(std::string msg) {
 
     raiseInternalError("User input validation failed and an error string was prepared. However, the message contained unexpected (and potentially ill-formed) unsubstituted variables. The message was:\n" + msg + "\n");
+}
+
+void error_validationEncounteredUnsupportedDistributedDenseMatrix() {
+
+    raiseInternalError("User input validation processed a matrix it believed was both dense and distributed, though no such data structure currently exists.");
 }
 
 
@@ -257,6 +262,11 @@ void error_cuQuantumInitOrFinalizedButNotCompiled() {
 /*
  * UTILITY ERRORS 
  */
+
+void error_nodeUnexpectedlyContainedNoElems() {
+
+    raiseInternalError("A function queried which distributed elements within a specified range overlapped the node's stored elements, but the node contained no overlap. This situation should have been prior handled."); 
+}
 
 void assert_shiftedQuregIsDensMatr(Qureg qureg) {
     if (!qureg.isDensityMatrix)

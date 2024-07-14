@@ -143,6 +143,33 @@ typedef struct {
 
 
 /*
+ * DISTRIBUTED MATRIX STRUCTS
+ */
+
+
+typedef struct {
+
+    // data deployment configuration
+    const int isDistributed;
+
+    // const to prevent user modification
+    const int numQubits;
+    const qindex numElems;
+
+    // will equal numElems if distribution is disabled at runtime (e.g. via autodeployment)
+    const qindex numElemsPerNode;
+
+    // CPU memory; not const, so users can overwrite addresses (e.g. with NULL)
+    qcomp* cpuElems;
+
+    // GPU memory, allocated only and always in GPU-enabled QuEST environments
+    qcomp* gpuElems;
+
+} FullStateDiagMatr;
+
+
+
+/*
  * EXPLICIT FIXED-SIZE COMPLEX MATRIX INITIALISERS
  *
  * which are defined here in the header because the 'qcomp' type is interpreted
@@ -379,15 +406,23 @@ extern "C" {
 
     DiagMatr createDiagMatr(int numQubits);
 
+    FullStateDiagMatr createFullStateDiagMatr(int numQubits);
+
+    FullStateDiagMatr createCustomFullStateDiagMatr(int numQubits, int useDistrib);
+
 
     void destroyCompMatr(CompMatr matrix);
 
     void destroyDiagMatr(DiagMatr matrix);
 
+    void destroyFullStateDiagMatr(FullStateDiagMatr matrix);
+
 
     void syncCompMatr(CompMatr matr);
 
     void syncDiagMatr(DiagMatr matr);
+
+    void syncFullStateDiagMatr(FullStateDiagMatr matr);
 
 #ifdef __cplusplus
 }
@@ -448,13 +483,15 @@ extern "C" {
  */
 
 
-// both C and C++ can safely invoke setDiagMatr(), passing a pointer or array (since it decays)
+// both C and C++ can safely pass pointers or arrays to diagonals (since arrays decay)
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
     void setDiagMatr(DiagMatr out, qcomp* in);
+
+    void setFullStateDiagMatr(FullStateDiagMatr out, qindex startInd, qcomp* in, qindex numElems);
 
 #ifdef __cplusplus
 }
@@ -472,9 +509,11 @@ extern "C" {
     void setCompMatr(CompMatr out, std::vector<std::vector<qcomp>> in);
 
 
-    // we also give setDiagMatr() a vector overload, to allow initialiser lists
+    // we also give diagonal matrices vector overloads, to allow initialiser lists
 
     void setDiagMatr(DiagMatr out, std::vector<qcomp> in);
+
+    void setFullStateDiagMatr(FullStateDiagMatr out, qindex startInd, std::vector<qcomp> in);
 
 #else
 
@@ -519,13 +558,16 @@ extern "C" {
 
 #ifdef __cplusplus
 
-    // C++ gets an explicit redirect to set*Matr(std::vector...), ignoring numQb (blegh)
+    // C++ gets an explicit redirect to set*Matr(std::vector...), ignoring numQb and numElems (blegh)
 
     #define setInlineCompMatr(matr, numQb, ...) \
         setCompMatr(matr, __VA_ARGS__)
 
     #define setInlineDiagMatr(matr, numQb, ...) \
         setDiagMatr(matr, __VA_ARGS__)
+
+    #define setInlineFullStateDiagMatr(matr, startInd, numElems, ...) \
+        setFullStateDiagMatr(matr, startInd, __VA_ARGS__)
 
 #else 
 
@@ -541,6 +583,9 @@ extern "C" {
 
     #define setInlineDiagMatr(matr, numQb, ...) \
         setDiagMatr(matr, (qcomp[1<<numQb]) __VA_ARGS__)
+
+    #define setInlineFullStateDiagMatr(matr, startInd, numElems, ...) \
+        setFullStateDiagMatr(matr, startInd, (qcomp[numElems]) __VA_ARGS__, numElems)
 
 #endif
 
@@ -568,6 +613,9 @@ extern "C" {
     void reportDiagMatr2(DiagMatr2 matrix);
 
     void reportDiagMatr(DiagMatr matrix);
+
+
+    void reportFullStateDiagMatr(FullStateDiagMatr matr);
 
 #ifdef __cplusplus
 }

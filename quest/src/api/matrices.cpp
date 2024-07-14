@@ -10,12 +10,15 @@
 #include "quest/include/environment.h"
 #include "quest/include/types.h"
 
-#include "quest/src/comm/comm_config.hpp"
 #include "quest/src/core/validation.hpp"
+#include "quest/src/core/autodeployer.hpp"
 #include "quest/src/core/utilities.hpp"
 #include "quest/src/core/formatter.hpp"
 #include "quest/src/core/bitwise.hpp"
 #include "quest/src/core/memory.hpp"
+#include "quest/src/comm/comm_config.hpp"
+#include "quest/src/comm/comm_routines.hpp"
+#include "quest/src/cpu/cpu_config.hpp"
 #include "quest/src/gpu/gpu_config.hpp"
 
 #include <iostream>
@@ -29,7 +32,7 @@
 /*
  * PRIVATE UTILITES 
  *
- * noting that some public matrix utilities (like isDenseMatrix) 
+ * noting that some public matrix utilities (like util_isDenseMatrix) 
  * are defined in utilities.hpp
  */
 
@@ -60,16 +63,16 @@ T getCompMatrFromElems(B in, int num) {
 }
 
 
-// type T can be CompMatr or DiagMatr
+// type T can be CompMatr, DiagMatr or FullStateDiagMatr
 template <class T>
-bool didAnyAllocsFail(T matr) {
+bool didAnyLocalAllocsFail(T matr) {
 
     // outer CPU memory should always be allocated
     if (matr.cpuElems == NULL)
         return true;
 
     // if memory is 2D, we must also check each inner array was allocated
-    if constexpr (isDenseMatrixType<T>())
+    if constexpr (util_isDenseMatrixType<T>())
         for (qindex r=0; r<matr.numRows; r++)
             if (matr.cpuElems[r] == NULL)
                 return true;
@@ -83,16 +86,28 @@ bool didAnyAllocsFail(T matr) {
 }
 
 
-// type T can be CompMatr or DiagMatr
+// type T can be CompMatr, DiagMatr or FullStateDiagMatr
+template <class T>
+bool didAnyAllocsFailOnAnyNode(T matr) {
+
+    bool anyFail = didAnyLocalAllocsFail(matr);
+    if (comm_isInit())
+        anyFail = comm_isTrueOnAllNodes(anyFail);
+
+    return anyFail;
+}
+
+
+// type T can be CompMatr, DiagMatr or FullStateDiagMatr
 template <class T>
 void freeAllMemoryIfAnyAllocsFailed(T matr) {
 
-    // do nothing if everything allocated successfully
-    if (!didAnyAllocsFail(matr))
+    // do nothing if everything allocated successfully between all nodes
+    if (!didAnyAllocsFailOnAnyNode(matr))
         return;
 
     // otherwise, free all successfully allocated rows of 2D structures (if outer list allocated)
-    if constexpr (isDenseMatrixType<T>())
+    if constexpr (util_isDenseMatrixType<T>())
         if (matr.cpuElems != NULL)
             for (qindex r=0; r<matr.numRows; r++)
                 if (matr.cpuElems[r] != NULL)
@@ -178,7 +193,7 @@ DiagMatr2 getDiagMatr2(std::vector<qcomp> in) {
 
 extern "C" CompMatr createCompMatr(int numQubits) {
     validate_envIsInit(__func__);
-    validate_newMatrixNumQubits(numQubits, __func__);
+    validate_newCompMatrParams(numQubits, __func__);
 
     // validation ensures these (and below mem sizes) never overflow
     qindex numRows = powerOf2(numQubits);
@@ -203,7 +218,7 @@ extern "C" CompMatr createCompMatr(int numQubits) {
     // only if outer CPU allocation succeeded, attempt to allocate each row array
     if (out.cpuElems != NULL)
         for (qindex r=0; r < numRows; r++)
-            out.cpuElems[r] = (qcomp*) calloc(numRows, sizeof **out.cpuElems); // NULL if failed
+            out.cpuElems[r] = cpu_allocAmps(numRows); // NULL if failed
 
     // if any of the above mallocs failed, below validation will memory leak; so free first (but don't set to NULL)
     freeAllMemoryIfAnyAllocsFailed(out);
@@ -233,7 +248,8 @@ extern "C" void syncCompMatr(CompMatr matr) {
     validate_matrixFields(matr, __func__);
     validate_matrixNewElemsDontContainUnsyncFlag(matr.cpuElems[0][0], __func__);
 
-    gpu_copyCpuToGpu(matr);
+    if (matr.gpuElems != NULL)
+        gpu_copyCpuToGpu(matr);
 }
 
 
@@ -247,7 +263,7 @@ extern "C" void syncCompMatr(CompMatr matr) {
 
 extern "C" DiagMatr createDiagMatr(int numQubits) {
     validate_envIsInit(__func__);
-    validate_newMatrixNumQubits(numQubits, __func__);
+    validate_newDiagMatrParams(numQubits, __func__);
 
     // validation ensures these (and below mem sizes) never overflow
     qindex numElems = powerOf2(numQubits);
@@ -261,17 +277,15 @@ extern "C" DiagMatr createDiagMatr(int numQubits) {
         .numQubits = numQubits,
         .numElems = numElems,
 
-        // const 2D CPU memory (NULL if failed, or containing NULLs)
-        .cpuElems = (qcomp*) malloc(numElems * sizeof *out.cpuElems), // NULL if failed,
+        // const 1D CPU memory (NULL if failed, or containing NULLs)
+        .cpuElems = cpu_allocAmps(numElems), // NULL if failed,
 
         // const 1D GPU memory (NULL if failed or not needed)
         .gpuElems = (isGpuAccel)? gpu_allocAmps(numElems) : NULL // first amp will be un-sync'd flag
     };
 
-    // if either of these mallocs failed, below validation will memory leak; so free first (but don't set to NULL)
+    // if any of the above mallocs failed, below validation will memory leak; so free first (but don't set to NULL)
     freeAllMemoryIfAnyAllocsFailed(out);
-
-    // check all CPU & GPU malloc and callocs succeeded (no attempted freeing if not)
     validate_newMatrixAllocs(out, numBytes, __func__);
 
     return out;
@@ -294,7 +308,87 @@ extern "C" void syncDiagMatr(DiagMatr matr) {
     validate_matrixFields(matr, __func__);
     validate_matrixNewElemsDontContainUnsyncFlag(matr.cpuElems[0], __func__);
 
-    gpu_copyCpuToGpu(matr);
+    if (matr.gpuElems != NULL)
+        gpu_copyCpuToGpu(matr);
+}
+
+
+
+/*
+ * FULL-STATE MATRIX CONSTRUCTORS
+ *
+ * the public of which are de-mangled for both C++ and C compatibility
+ */
+
+
+FullStateDiagMatr validateAndCreateCustomFullStateDiagMatr(int numQubits, int useDistrib, const char* caller) {
+    validate_envIsInit(caller);
+    QuESTEnv env = getQuESTEnv();
+
+    // must validate parameters before passing them to autodeployer
+    validate_newFullStateDiagMatrParams(numQubits, useDistrib, caller);
+
+    // overwrite useDistrib if it was left as AUTO_FLAG
+    autodep_chooseFullStateDiagMatrDeployment(numQubits, useDistrib, env);
+
+    qindex numElems = powerOf2(numQubits);
+    qindex numElemsPerNode = numElems / (useDistrib? env.numNodes : 1); // divides evenly
+    qindex numBytesPerNode = numElemsPerNode * sizeof(qcomp);
+
+    FullStateDiagMatr out = {
+
+        // data deployment configuration; disable distrib if deployed to 1 node
+        .isDistributed = useDistrib && (env.numNodes > 1),
+
+        .numQubits = numQubits,
+        .numElems = numElems,
+        .numElemsPerNode = numElemsPerNode,
+
+        // 1D CPU memory (NULL if failed)
+        .cpuElems = cpu_allocAmps(numElemsPerNode),
+
+        // 1D GPU memory (NULL if failed or deliberately not allocated)
+        .gpuElems = (env.isGpuAccelerated)? gpu_allocAmps(numElemsPerNode) : NULL, // first amp will be un-sync'd flag
+    };
+
+    // if any of the above mallocs failed, below validation will memory leak; so free first (but don't set to NULL)
+    freeAllMemoryIfAnyAllocsFailed(out);
+    validate_newMatrixAllocs(out, numBytesPerNode, __func__);
+
+    return out;
+}
+
+
+extern "C" FullStateDiagMatr createCustomFullStateDiagMatr(int numQubits, int useDistrib) {
+
+    return validateAndCreateCustomFullStateDiagMatr(numQubits, useDistrib, __func__);
+}
+
+
+extern "C" FullStateDiagMatr createFullStateDiagMatr(int numQubits) {
+
+    return validateAndCreateCustomFullStateDiagMatr(numQubits, modeflag::USE_AUTO, __func__);
+}
+
+
+extern "C" void destroyFullStateDiagMatr(FullStateDiagMatr matrix) {
+    validate_matrixFields(matrix, __func__);
+
+    // free CPU array of rows
+    free(matrix.cpuElems);
+
+    // free flat GPU array if it exists
+    if (matrix.gpuElems != NULL)
+        gpu_deallocAmps(matrix.gpuElems);
+}
+
+
+extern "C" void syncFullStateDiagMatr(FullStateDiagMatr matr) {
+    validate_matrixFields(matr, __func__);
+    validate_matrixNewElemsDontContainUnsyncFlag(matr.cpuElems[0], __func__);
+
+    if (matr.gpuElems != NULL)
+        gpu_copyCpuToGpu(matr);
 }
 
 
@@ -317,9 +411,8 @@ void validateAndSetCompMatrElems(CompMatr out, T elems, const char* caller) {
     // serially copy values to CPU memory
     populateCompMatrElems(out.cpuElems, elems, out.numRows);
 
-    // overwrite GPU elements (including unsync flag)
-    if (out.gpuElems != NULL)
-        gpu_copyCpuToGpu(out);
+    // overwrite GPU elements (including unsync flag); validation gauranteed to pass
+    syncCompMatr(out); 
 }
 
 extern "C" void setCompMatrFromPtr(CompMatr out, qcomp** elems) {
@@ -371,7 +464,7 @@ void setCompMatr(CompMatr out, std::vector<std::vector<qcomp>> in) {
 /*
  * OVERLOADED VARIABLE-SIZE DIAGONAL MATRIX INITIALISERS
  *
- * visible to both C and C++, although C++ additionally gets a vector overload.
+ * visible to both C and C++, although C++ additionally gets vector overloads.
  */
 
 
@@ -382,9 +475,8 @@ extern "C" void setDiagMatr(DiagMatr out, qcomp* in) {
     // overwrite CPU memory
     memcpy(out.cpuElems, in, out.numElems * sizeof(qcomp));
 
-    // overwrite GPU elements (including unsync flag)
-    if (out.gpuElems != NULL)
-        gpu_copyCpuToGpu(out);
+    // overwrite GPU elements (including unsync flag); validation gauranteed to pass
+    syncDiagMatr(out);
 }
 
 void setDiagMatr(DiagMatr out, std::vector<qcomp> in) {
@@ -398,6 +490,31 @@ void setDiagMatr(DiagMatr out, std::vector<qcomp> in) {
 }
 
 
+extern "C" void setFullStateDiagMatr(FullStateDiagMatr out, qindex startInd, qcomp* in, qindex numElems) {
+    validate_matrixFields(out, __func__);
+    validate_matrixNewElemsDontContainUnsyncFlag(in[0], __func__);
+    validate_fullStateDiagMatrNewElems(out, startInd, numElems, __func__);
+
+    // if the matrix is non-distributed, we update every node's duplicated CPU amps
+    if (!out.isDistributed)
+        memcpy(&out.cpuElems[startInd], in, numElems * sizeof(qcomp));
+
+    // only distributed nodes containing targeted elemsn need to do anything
+    else if (util_areAnyElemsWithinThisNode(out.numElemsPerNode, startInd, numElems)) {
+        util_IndexRange range = util_getLocalIndRangeOfElemsWithinThisNode(out.numElemsPerNode, startInd, numElems);
+        memcpy(&out.cpuElems[range.localDistribStartInd], &in[range.localDuplicStartInd], range.numElems * sizeof(qcomp));
+    }
+
+    // all nodes overwrite GPU; validation gauranteed to succeed
+    syncFullStateDiagMatr(out);
+}
+
+void setFullStateDiagMatr(FullStateDiagMatr out, qindex startInd, std::vector<qcomp> in) {
+
+    setFullStateDiagMatr(out, startInd, in.data(), in.size());
+}
+
+
 
 /*
  * C & C++ MATRIX REPORTERS
@@ -406,44 +523,37 @@ void setDiagMatr(DiagMatr out, std::vector<qcomp> in) {
  */
 
 
-// type T can be CompMatr1, CompMatr2, CompMatr, DiagMatr1, DiagMatr2 or DiagMatr
+// type T can be CompMatr1, CompMatr2, CompMatr, DiagMatr1, DiagMatr2, DiagMatr, FullStateDiagMatr
 template <class T>
 void printMatrixHeader(T matr) {
 
-    // produce exact type string, e.g. DiagMatr2
-    std::string nameStr = (isDenseMatrixType<T>())? "CompMatr" : "DiagMatr";
-    if (isFixedSizeMatrixType<T>())
-        nameStr += form_str(matr.numQubits);
+    // determine how many nodes the matrix is distributed between (if it's a distributable type)
+    int numNodes = (util_isDistributedMatrix(matr))? getQuESTEnv().numNodes : 1;
 
-    // find memory (bytes) to store elements; equal to that of a non-distributed Qureg (statevec or dens-matr)
-    size_t elemMem = mem_getLocalMemoryRequired(matr.numQubits, isDenseMatrixType<T>(), 1); // 1 node
+    // find memory (bytes) to store elements
+    size_t elemMem = mem_getLocalMatrixMemoryRequired(matr.numQubits, util_isDenseMatrixType<T>(), numNodes);
 
     // find memory (bytes) of other struct fields; fixed-size sizeof includes arrays, var-size does not
     size_t otherMem = sizeof(matr);
-    if (isFixedSizeMatrixType<T>())
+    if (util_isFixedSizeMatrixType<T>())
         otherMem -= elemMem;
 
-    // find dimension; illegal field access in wrong branch removed at compile-time
-    qindex dim;
-    if constexpr (isDenseMatrixType<T>())
-        dim = matr.numRows;
-    else
-        dim = matr.numElems;
-
-    form_printMatrixInfo(nameStr, matr.numQubits, dim, elemMem, otherMem);
+    form_printMatrixInfo(util_getMatrixTypeName<T>(), matr.numQubits, util_getMatrixDim(matr), elemMem, otherMem, numNodes);
 }
 
 
-// type T can be CompMatr1, CompMatr2, CompMatr, DiagMatr1, DiagMatr2 or DiagMatr
+// type T can be CompMatr1, CompMatr2, CompMatr, DiagMatr1, DiagMatr2, DiagMatr, FullStateDiagMatr
 template<class T> 
-void rootPrintMatrix(T matrix) {
-    
-    // only root note prints, to avoid spam in distributed settings
-    if (comm_getRank() != 0)
-        return;
+void validateAndPrintMatrix(T matr, const char* caller) {
+    validate_matrixFields(matr, caller);
 
-    printMatrixHeader(matrix);
-    form_printMatrix(matrix);
+    // syncable matrices must be synced before reporting (though only CPU elems are printed)
+    if constexpr (!util_isFixedSizeMatrixType<T>())
+        validate_matrixIsSynced(matr, caller);
+
+    // form_ functions will handle distributed coordination
+    printMatrixHeader(matr);
+    form_printMatrix(matr);
 }
 
 
@@ -451,21 +561,24 @@ void rootPrintMatrix(T matrix) {
 extern "C" {
     
     void reportCompMatr1(CompMatr1 matr) {
-        rootPrintMatrix(matr);
+        validateAndPrintMatrix(matr, __func__);
     }
     void reportCompMatr2(CompMatr2 matr) {
-        rootPrintMatrix(matr);
+        validateAndPrintMatrix(matr, __func__);
     }
     void reportCompMatr(CompMatr matr) {
-        rootPrintMatrix(matr);
+        validateAndPrintMatrix(matr, __func__);
     }
     void reportDiagMatr1(DiagMatr1 matr) {
-        rootPrintMatrix(matr);
+        validateAndPrintMatrix(matr, __func__);
     }
     void reportDiagMatr2(DiagMatr2 matr) {
-        rootPrintMatrix(matr);
+        validateAndPrintMatrix(matr, __func__);
     }
     void reportDiagMatr(DiagMatr matr) {
-        rootPrintMatrix(matr);
+        validateAndPrintMatrix(matr, __func__);
+    }
+    void reportFullStateDiagMatr(FullStateDiagMatr matr) {
+        validateAndPrintMatrix(matr, __func__);
     }
 }

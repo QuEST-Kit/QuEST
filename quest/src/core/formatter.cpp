@@ -7,6 +7,7 @@
 
 #include "quest/src/core/formatter.hpp"
 #include "quest/src/core/utilities.hpp"
+#include "quest/src/comm/comm_config.hpp"
 
 #include <stdlib.h>
 #include <iostream>
@@ -180,7 +181,13 @@ string form_str(complex<T> num) {
 
 // explicitly instantiate all publicly passable types
 template string form_str<int>(complex<int> num);
-template string form_str<qindex>(complex<qindex> num);
+template string form_str<long int>(complex<long int> num);
+template string form_str<long long int>(complex<long long int> num);
+
+template string form_str<unsigned>(complex<unsigned> num);
+template string form_str<long unsigned>(complex<long unsigned> num);
+template string form_str<long long unsigned>(complex<long long unsigned> num);
+
 template string form_str<float>(complex<float> num);
 template string form_str<double>(complex<double> num);
 template string form_str<long double>(complex<long double> num);
@@ -194,15 +201,27 @@ template string form_str<long double>(complex<long double> num);
  */
 
 
-void form_printMatrixInfo(std::string nameStr, int numQubits, qindex dim, size_t elemMem, size_t otherMem) {
+void form_printMatrixInfo(std::string nameStr, int numQubits, qindex dim, size_t elemMem, size_t otherMem, int numNodes) {
 
-    // prepare substirngs
+    // only root node prints
+    if (comm_getRank() != 0)
+        return;
+
+    // please don't tell anyone how I live
+    bool isDiag = nameStr.find("Diag") != std::string::npos;
+
+    // prepare substrings
     std::string sepStr  = ", ";
     std::string qbStr   = form_str(numQubits) + " qubit" + ((numQubits>1)? "s":"");
-    std::string dimStr  = form_str(dim) + mu + form_str(dim) + " elems";
+    std::string dimStr  = form_str(dim) + (isDiag? "" : mu + form_str(dim)) + " qcomps";
     std::string memStr  = form_str(elemMem) + " + " + form_str(otherMem) + by;
 
-    // print e.g. CompMatr (2 qubits, 4 x 4 elements, 256 + 32 bytes):
+    if (numNodes > 1) {
+        dimStr += " over " + form_str(numNodes) + " nodes";
+        memStr += " per node";
+    }
+
+    // print e.g. FullStateDiagMatr (8 qubits, 256 qcomps over 4 nodes, 1024 + 32 bytes per node):
     std::cout 
         << nameStr << " (" 
         << qbStr   << sepStr 
@@ -214,7 +233,7 @@ void form_printMatrixInfo(std::string nameStr, int numQubits, qindex dim, size_t
 
 
 /*
- * MATRIX PRINTING
+ * DENSE MATRIX PRINTING
  *
  * which print only the matrix elements, indented
  */
@@ -248,6 +267,33 @@ void printDenseMatrixElems(T elems, qindex dim, string indent) {
     }
 }
 
+// type T can be qcomp(*)[] or qcomp**
+template <typename T> 
+void rootPrintDenseMatrixElems(T elems, qindex dim, string indent) {
+    if (comm_isRootNode())
+        printDenseMatrixElems(elems, dim, indent);
+}
+
+
+void form_printMatrix(CompMatr1 matr, string indent) {
+    rootPrintDenseMatrixElems(matr.elems, matr.numRows, indent);
+}
+void form_printMatrix(CompMatr2 matr, string indent) {
+    rootPrintDenseMatrixElems(matr.elems, matr.numRows, indent);
+}
+void form_printMatrix(CompMatr matr, string indent) {
+    rootPrintDenseMatrixElems(matr.cpuElems, matr.numRows, indent);
+}
+
+
+
+/*
+ * DIAGONAL MATRIX PRINTING
+ *
+ * which print only the matrix diagonals, indented
+ */
+
+
 // diagonals don't need templating because arrays decay to pointers, yay!
 void printDiagMatrixElems(qcomp* elems, qindex dim, string indent) {
 
@@ -274,24 +320,43 @@ void printDiagMatrixElems(qcomp* elems, qindex dim, string indent) {
     }
 }
 
-void form_printMatrix(CompMatr1 matr, string indent) {
-    printDenseMatrixElems(matr.elems, matr.numRows, indent);
-}
-void form_printMatrix(CompMatr2 matr, string indent) {
-    printDenseMatrixElems(matr.elems, matr.numRows, indent);
-}
-void form_printMatrix(CompMatr matr, string indent) {
-    printDenseMatrixElems(matr.cpuElems, matr.numRows, indent);
+void rootPrintDiagMatrixElems(qcomp* elems, qindex dim, string indent) {
+    if (comm_isRootNode())
+        printDiagMatrixElems(elems, dim, indent);
 }
 
+
 void form_printMatrix(DiagMatr1 matr, string indent) {
-    printDiagMatrixElems(matr.elems, matr.numElems, indent);
+    rootPrintDiagMatrixElems(matr.elems, matr.numElems, indent);
 }
 void form_printMatrix(DiagMatr2 matr, string indent) {
-    printDiagMatrixElems(matr.elems, matr.numElems, indent);
+    rootPrintDiagMatrixElems(matr.elems, matr.numElems, indent);
 }
 void form_printMatrix(DiagMatr matr, string indent) {
-    printDiagMatrixElems(matr.cpuElems, matr.numElems, indent);
+    rootPrintDiagMatrixElems(matr.cpuElems, matr.numElems, indent);
+}
+
+void form_printMatrix(FullStateDiagMatr matr, string indent) {
+
+    // non-distributed edge-case is trivial; root node prints all
+    if (!matr.isDistributed) {
+        rootPrintDiagMatrixElems(matr.cpuElems, matr.numElemsPerNode, indent);
+        return;
+    }
+
+    // but when distributed, each node prints its partition
+    comm_sync();
+    int numNodes = comm_getNumNodes();
+
+    for (int r=0; r<numNodes; r++) {
+
+        if (r == comm_getRank()) {
+            std::cout << defaultTableIndent << "[rank " << r << "]" << std::endl;
+            printDiagMatrixElems(matr.cpuElems, matr.numElemsPerNode, indent + defaultTableIndent);
+        }
+
+        comm_sync();
+    }
 }
 
 

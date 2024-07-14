@@ -214,18 +214,65 @@ void demo_setDiagMatr() {
     setDiagMatr(b, vec);
     reportDiagMatr(b);
 
+    // compile-time array
+    qcomp arr[4] = {7i, 8i, 8, 7};
+    DiagMatr c = createDiagMatr(2);
+    setDiagMatr(c, arr);
+    reportDiagMatr(c);
+
     // heap pointer
     int dim = 8;
     qcomp* ptr = (qcomp*) malloc(dim * sizeof *ptr);
     for (int i=0; i<dim; i++)
         ptr[i] = -i*.5i;
-    DiagMatr c = createDiagMatr(3);
-    setDiagMatr(c, ptr);
-    reportDiagMatr(c);
-    destroyDiagMatr(c);
+    DiagMatr d = createDiagMatr(3);
+    setDiagMatr(d, ptr);
+    reportDiagMatr(d);
+    destroyDiagMatr(d);
 
     // cleanup
     free(ptr);
+}
+
+
+void demo_setInlineFullStateDiagMatr() {
+
+    FullStateDiagMatr matr = createCustomFullStateDiagMatr(5, 1);
+
+    // inline literal; identical to setFullStateDiagMatr() for consistencty with C API
+    setInlineFullStateDiagMatr(matr, 3, 10, {3,4,5,6,7,8,9,1,12,13});
+    setInlineFullStateDiagMatr(matr, 15, 6, {6,5,4,3,2,1});
+    
+    reportFullStateDiagMatr(matr);
+    destroyFullStateDiagMatr(matr);
+}
+
+
+void demo_setFullStateDiagMatr() {
+
+    FullStateDiagMatr matr = createCustomFullStateDiagMatr(5, 1);
+
+    // inline literal (C++ only)
+    setFullStateDiagMatr(matr, 0, {1,2,3,4});
+    setFullStateDiagMatr(matr, 4, {5,6,7,8});
+
+    // vector (C++ only)
+    std::vector<qcomp> vec {11, 22, 33, 44};
+    setFullStateDiagMatr(matr, 7, vec);
+
+    // compile-time array must pass size
+    qcomp arr[4] = {7i, 8i, 8, 7};
+    setFullStateDiagMatr(matr, 15, arr, 4);
+
+    // heap pointer
+    int dim = 6;
+    qcomp* ptr = (qcomp*) malloc(dim * sizeof *ptr);
+    for (int i=0; i<dim; i++)
+        ptr[i] = -i*.5i;
+    setFullStateDiagMatr(matr, 25, ptr, 6);
+
+    reportFullStateDiagMatr(matr);
+    destroyFullStateDiagMatr(matr);
 }
 
 
@@ -248,6 +295,9 @@ int main() {
     demo_getDiagMatr();
     demo_setInlineDiagMatr();
     demo_setDiagMatr();
+
+    demo_setInlineFullStateDiagMatr();
+    demo_setFullStateDiagMatr();
 
     finalizeQuESTEnv();
     return 0;
