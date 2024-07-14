@@ -499,17 +499,13 @@ extern "C" void setFullStateDiagMatr(FullStateDiagMatr out, qindex startInd, qco
     if (!out.isDistributed)
         memcpy(&out.cpuElems[startInd], in, numElems * sizeof(qcomp));
 
-    // distributed nodes containing no targeted elements do nothing
-    else if (!util_areAnyElemsWithinThisNode(out.numElemsPerNode, startInd, numElems))
-        return;
-
-    // but distributed nodes containing one or more targeted elems overwrite this subset
-    else {
+    // only distributed nodes containing targeted elemsn need to do anything
+    else if (util_areAnyElemsWithinThisNode(out.numElemsPerNode, startInd, numElems)) {
         util_IndexRange range = util_getLocalIndRangeOfElemsWithinThisNode(out.numElemsPerNode, startInd, numElems);
         memcpy(&out.cpuElems[range.localDistribStartInd], &in[range.localDuplicStartInd], range.numElems * sizeof(qcomp));
     }
 
-    // overwrite GPU; validation gauranteed to succeed
+    // all nodes overwrite GPU; validation gauranteed to succeed
     syncFullStateDiagMatr(out);
 }
 
