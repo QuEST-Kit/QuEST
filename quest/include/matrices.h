@@ -84,6 +84,10 @@ typedef struct {
     const int numQubits;
     const qindex numRows;
 
+    // unitarity determined at sync; 0 or 1, or -1 to indicate unknown (when validation disabled).
+    // flag is stored in heap so even copies of structs are mutable, but pointer is immutable
+    int* const isUnitary;
+
     // 2D CPU memory; not const, so users can overwrite addresses (e.g. with NULL)
     qcomp** cpuElems;
 
@@ -132,6 +136,10 @@ typedef struct {
     const int numQubits;
     const qindex numElems;
 
+    // unitarity determined at sync; 0 or 1, or -1 to indicate unknown (when validation disabled).
+    // flag is stored in heap so even copies of structs are mutable, but pointer is immutable
+    int* const isUnitary;
+
     // CPU memory; not const, so users can overwrite addresses (e.g. with NULL)
     qcomp* cpuElems;
 
@@ -158,6 +166,10 @@ typedef struct {
 
     // will equal numElems if distribution is disabled at runtime (e.g. via autodeployment)
     const qindex numElemsPerNode;
+
+    // unitarity determined at sync; 0 or 1, or -1 to indicate unknown (when validation disabled).
+    // flag is stored in heap so even copies of structs are mutable, but pointer is immutable
+    int* const isUnitary;
 
     // CPU memory; not const, so users can overwrite addresses (e.g. with NULL)
     qcomp* cpuElems;

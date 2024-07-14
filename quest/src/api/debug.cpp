@@ -11,11 +11,11 @@ extern "C" {
 
 
 void setValidationOn() {
-    validate_setValidationOn();
+    validate_enable();
 }
 
 void setValidationOff() {
-    validate_setValidationOff();
+    validate_disable();
 }
 
 

@@ -8,6 +8,7 @@
 #include "quest/include/qureg.h"
 #include "quest/include/matrices.h"
 
+#include "quest/src/core/validation.hpp"
 #include "quest/src/core/errors.hpp"
 #include "quest/src/core/bitwise.hpp"
 #include "quest/src/core/memory.hpp"
@@ -399,13 +400,16 @@ extern "C" {
  * validation functions to avoid superfluous compute
  */
 
-static bool isValidationOn = true;
+static bool isValidationEnabled = true;
 
-void validate_setValidationOn() {
-    isValidationOn = true;
+void validate_enable() {
+    isValidationEnabled = true;
 }
-void validate_setValidationOff() {
-    isValidationOn = false;
+void validate_disable() {
+    isValidationEnabled = false;
+}
+bool validate_isEnabled() {
+    return isValidationEnabled;
 }
 
 
@@ -455,7 +459,7 @@ std::string getStringWithSubstitutedVars(std::string oldStr, tokenSubs varsAndVa
 void assertThat(bool valid, std::string msg, const char* func) {
 
     // skip validation if user has disabled
-    if (!isValidationOn)
+    if (!isValidationEnabled)
         return;
 
     // this function does not seek consensus among nodes in distributed 
@@ -477,7 +481,7 @@ void assertThat(bool valid, std::string msg, tokenSubs vars, const char* func) {
 void assertAllNodesAgreeThat(bool valid, std::string msg, const char* func) {
 
     // skip below consensus broadcast if user has disabled validation
-    if (!isValidationOn)
+    if (!isValidationEnabled)
         return;
 
     // this function seeks consensus among distributed nodes before validation,
@@ -1262,26 +1266,48 @@ void assertMatrixIsSynced(T matr, std::string errMsg, const char* caller) {
     assertThat(gpu_haveGpuAmpsBeenSynced(matr.gpuElems), errMsg, caller);
 }
 
-// type T can be CompMatr1, CompMatr2, CompMatr, DiagMatr1, DiagMatr2, DiagMatr
+
+// type T can be CompMatr, DiagMatr, FullStateDiagMatr
+template <class T> 
+void ensureMatrixUnitarityIsKnown(T matr) {
+
+    // do nothing if we already know unitarity
+    if (*(matr.isUnitary) != validate_UNITARITY_UNKNOWN_FLAG)
+        return;
+
+    // determine local unitarity, modifying matr.isUnitary
+    *(matr.isUnitary) = util_isUnitary(matr);
+
+    // get node consensus on global unitarity, if necessary
+    if constexpr (util_isDistributableMatrixType<T>())
+        if (matr.isDistributed)
+            *(matr.isUnitary) = comm_isTrueOnAllNodes(*(matr.isUnitary));
+}
+
+
+// type T can be CompMatr1, CompMatr2, CompMatr, DiagMatr1, DiagMatr2, DiagMatr, FullStateDiagMatr
 template <class T> 
 void assertMatrixIsUnitary(T matr, const char* caller) {
 
     // avoid expensive unitarity check if validation is anyway disabled
-    if (!isValidationOn)
+    if (!isValidationEnabled)
         return;
 
-    // TODO: 
-    //  this function always serially processes the CPU elements,
-    //  but given the matrix may have persistent GPU memory, it is
-    //  prudent to GPU process it instead. I propose we...
-    //      - perform current serial utils check if matr is small (e.g. <=5 qubit)
-    //      - perform multithread check if matr is not gpu-accel
-    //      - perform gpu check if matr is gpu-accel (gpu mem gauranteed already set)
+    // unitarity is determined differently depending on matrix type
+    bool isUnitary = false;
 
-    // TODO: to make above changes, we need to remove this template; only CompMatr needs accel checks
+    // fixed-size matrices have their unitarity calculated afresh (since cheap)
+    if constexpr (util_isFixedSizeMatrixType<T>())
+        isUnitary = util_isUnitary(matr);
+
+    // dynamic matrices have their field consulted, which may need lazy eval
+    else {
+        ensureMatrixUnitarityIsKnown(matr);
+        isUnitary = *(matr.isUnitary);
+    }
 
     // assert CPU amps are unitary
-    assertThat(util_isUnitary(matr), report::MATRIX_NOT_UNITARY, caller);
+    assertThat(isUnitary, report::MATRIX_NOT_UNITARY, caller);
 }
 
 void validate_matrixIsSynced(CompMatr matr, const char* caller) {

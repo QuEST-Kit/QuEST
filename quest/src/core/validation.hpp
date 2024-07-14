@@ -15,12 +15,22 @@
 
 
 /*
+ *  MATRIX ATTRIBUTE FLAGS
+ */
+
+const int validate_UNITARITY_UNKNOWN_FLAG = -1;
+
+
+
+/*
  * VALIDATION TOGGLE
  */
 
-void validate_setValidationOn();
-void validate_setValidationOff();
+void validate_enable();
 
+void validate_disable();
+
+bool validate_isEnabled();
 
 
 /*
