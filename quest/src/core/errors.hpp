@@ -25,6 +25,8 @@ void error_validationMessageVarNotSubstituted(std::string msg, std::string var);
 
 void error_validationMessageContainedUnsubstitutedVars(std::string msg);
 
+void error_validationEncounteredUnsupportedDistributedDenseMatrix();
+
 
 
 /*
@@ -64,7 +66,6 @@ void assert_validCommBounds(Qureg qureg, qindex sendInd, qindex recvInd, qindex 
 void assert_quregIsDistributed(Qureg qureg);
 
 void assert_pairRankIsDistinct(Qureg qureg, int pairRank);
-
 
 
 
@@ -126,8 +127,9 @@ void error_cuQuantumInitOrFinalizedButNotCompiled();
  * UTILITY ERRORS 
  */
 
-void assert_shiftedQuregIsDensMatr(Qureg qureg);
+void error_nodeUnexpectedlyContainedNoElems();
 
+void assert_shiftedQuregIsDensMatr(Qureg qureg);
 
 
 

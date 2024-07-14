@@ -131,6 +131,11 @@ int comm_getRank() {
 }
 
 
+bool comm_isRootNode() {
+    return comm_getRank() == 0;
+}
+
+
 int comm_getNumNodes() {
 #if ENABLE_DISTRIBUTION
 

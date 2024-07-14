@@ -72,7 +72,8 @@ int cpu_getNumOpenmpProcessors() {
 
 qcomp* cpu_allocAmps(qindex numLocalAmps) {
 
-    // we call calloc over malloc in order to fail immediately if mem isn't available
+    // we call calloc over malloc in order to fail immediately if mem isn't available;
+    // caller must handle NULL result
     return (qcomp*) calloc(numLocalAmps, sizeof(qcomp));
 }
 

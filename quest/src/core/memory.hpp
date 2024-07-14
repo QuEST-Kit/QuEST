@@ -32,19 +32,22 @@ qindex mem_tryGetLocalRamCapacityInBytes();
 
 bool mem_canQuregFitInMemory(int numQubits, bool isDensMatr, int numNodes, qindex memBytesPerNode);
 
+bool mem_canMatrixFitInMemory(int numQubits, bool isDense, int numNodes, qindex memBytesPerNode);
+
 int mem_getEffectiveNumStateVecQubitsPerNode(int numQubits, bool isDensMatr, int numNodes);
 
 int mem_getMinNumQubitsForDistribution(int numNodes);
 
-int mem_getMaxNumQubitsWhichCanFitInMemory(bool isDensMatr, int numNodes, qindex memBytesPerNode);
+int mem_getMaxNumQuregQubitsWhichCanFitInMemory(bool isDensMatr, int numNodes, qindex memBytesPerNode);
 
 int mem_getMaxNumQubitsBeforeIndexOverflow(bool isDensMatr);
 
 int mem_getMaxNumQubitsBeforeLocalMemSizeofOverflow(bool isDensMatr, int numNodes);
 
-size_t mem_getLocalMemoryRequired(int numQubits, bool isDensMatr, int numNodes);
+size_t mem_getLocalMatrixMemoryRequired(int numQubits, bool isDenseMatrix, int numNodes);
 
-size_t mem_getLocalMemoryRequired(qindex numAmpsPerNode);
+size_t mem_getLocalQuregMemoryRequired(int numQubits, bool isDensityMatr, int numNodes);
+size_t mem_getLocalQuregMemoryRequired(qindex numAmpsPerNode);
 
 qindex mem_getTotalGlobalMemoryUsed(Qureg qureg);
 

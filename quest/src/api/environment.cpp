@@ -239,11 +239,11 @@ void printQuregSizeLimits(bool isDensMatr) {
     // max CPU registers are only determinable if RAM query succeeds
     try {
         qindex cpuMem = mem_tryGetLocalRamCapacityInBytes();
-        maxQbForCpu = form_str(mem_getMaxNumQubitsWhichCanFitInMemory(isDensMatr, 1, cpuMem));
+        maxQbForCpu = form_str(mem_getMaxNumQuregQubitsWhichCanFitInMemory(isDensMatr, 1, cpuMem));
 
         // and the max MPI sizes are only relevant when env is distributed
         if (globalEnvPtr->isDistributed)
-            maxQbForMpiCpu = form_str(mem_getMaxNumQubitsWhichCanFitInMemory(isDensMatr, numNodes, cpuMem));
+            maxQbForMpiCpu = form_str(mem_getMaxNumQuregQubitsWhichCanFitInMemory(isDensMatr, numNodes, cpuMem));
 
         // when MPI irrelevant, change their status from "unknown" to "N/A"
         else
@@ -259,11 +259,11 @@ void printQuregSizeLimits(bool isDensMatr) {
     // max GPU registers only relevant if env is GPU-accelerated
     if (globalEnvPtr->isGpuAccelerated) {
         qindex gpuMem = gpu_getCurrentAvailableMemoryInBytes();
-        maxQbForGpu = form_str(mem_getMaxNumQubitsWhichCanFitInMemory(isDensMatr, 1, gpuMem));
+        maxQbForGpu = form_str(mem_getMaxNumQuregQubitsWhichCanFitInMemory(isDensMatr, 1, gpuMem));
 
         // and the max MPI sizes are further only relevant when env is distributed 
         if (globalEnvPtr->isDistributed)
-            maxQbForMpiGpu = form_str(mem_getMaxNumQubitsWhichCanFitInMemory(isDensMatr, numNodes, gpuMem));
+            maxQbForMpiGpu = form_str(mem_getMaxNumQuregQubitsWhichCanFitInMemory(isDensMatr, numNodes, gpuMem));
     }
 
     // tailor table title to type of Qureg

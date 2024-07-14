@@ -89,16 +89,15 @@ static std::string defaultTableIndent = "  ";
  * MATRIX PRINTING
  */
 
-void form_printMatrixInfo(std::string nameStr, int numQubits, qindex dim, size_t elemMem, size_t otherMem);
+void form_printMatrixInfo(std::string nameStr, int numQubits, qindex dim, size_t elemMem, size_t otherMem, int numNodes=1);
 
 void form_printMatrix(CompMatr1 matr, std::string indent=defaultMatrIndent);
 void form_printMatrix(CompMatr2 matr, std::string indent=defaultMatrIndent);
 void form_printMatrix(CompMatr  matr, std::string indent=defaultMatrIndent);
-
 void form_printMatrix(DiagMatr1 matr, std::string indent=defaultMatrIndent);
 void form_printMatrix(DiagMatr2 matr, std::string indent=defaultMatrIndent);
 void form_printMatrix(DiagMatr  matr, std::string indent=defaultMatrIndent);
-
+void form_printMatrix(FullStateDiagMatr matr, std::string indent=defaultMatrIndent);
 
 
 /*

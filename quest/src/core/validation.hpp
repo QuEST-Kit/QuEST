@@ -60,10 +60,13 @@ void validate_quregFields(Qureg qureg, const char* caller);
  * MATRIX CREATION
  */
 
-void validate_newMatrixNumQubits(int numQubits, const char* caller);
+void validate_newCompMatrParams(int numQubits, const char* caller);
+void validate_newDiagMatrParams(int numQubits, const char* caller);
+void validate_newFullStateDiagMatrParams(int numQubits, int useDistrib, const char* caller);
 
 void validate_newMatrixAllocs(CompMatr matr, qindex numBytes, const char* caller);
 void validate_newMatrixAllocs(DiagMatr matr, qindex numBytes, const char* caller);
+void validate_newMatrixAllocs(FullStateDiagMatr matr, qindex numBytes, const char* caller);
 
 
 
@@ -77,14 +80,18 @@ void validate_matrixFields(CompMatr  matr, const char* caller);
 void validate_matrixFields(DiagMatr1 matr, const char* caller);
 void validate_matrixFields(DiagMatr2 matr, const char* caller);
 void validate_matrixFields(DiagMatr  matr, const char* caller);
+void validate_matrixFields(FullStateDiagMatr matr, const char* caller);
 
 void validate_matrixNumNewElems(int numQubits, std::vector<std::vector<qcomp>> elems, const char* caller);
 void validate_matrixNumNewElems(int numQubits, std::vector<qcomp> elems, const char* caller);
 
 void validate_matrixNewElemsDontContainUnsyncFlag(qcomp firstElem, const char* caller);
 
+void validate_fullStateDiagMatrNewElems(FullStateDiagMatr matr, qindex startInd, qindex numElems, const char* caller);
+
 void validate_matrixIsSynced(CompMatr matr, const char* caller);
 void validate_matrixIsSynced(DiagMatr matr, const char* caller);
+void validate_matrixIsSynced(FullStateDiagMatr matr, const char* caller);
 
 void validate_matrixIsUnitary(CompMatr1 matr, const char* caller);
 void validate_matrixIsUnitary(CompMatr2 matr, const char* caller);
@@ -92,6 +99,9 @@ void validate_matrixIsUnitary(CompMatr  matr, const char* caller);
 void validate_matrixIsUnitary(DiagMatr1 matr, const char* caller);
 void validate_matrixIsUnitary(DiagMatr2 matr, const char* caller);
 void validate_matrixIsUnitary(DiagMatr  matr, const char* caller);
+void validate_matrixIsUnitary(FullStateDiagMatr matr, const char* caller);
+
+void validate_matrixIsCompatibleWithQureg(FullStateDiagMatr matr, Qureg qureg, const char* caller);
 
 
 

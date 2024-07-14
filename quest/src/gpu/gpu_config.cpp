@@ -269,7 +269,7 @@ const qcomp UNSYNCED_GPU_MEM_FLAG = qcomp(3.141592653, 12345.67890);
 qcomp* gpu_allocAmps(qindex numLocalAmps) {
 #if ENABLE_GPU_ACCELERATION
 
-    size_t numBytes = mem_getLocalMemoryRequired(numLocalAmps);
+    size_t numBytes = mem_getLocalQuregMemoryRequired(numLocalAmps);
 
     // attempt to malloc
     qcomp* ptr;
@@ -373,6 +373,21 @@ void gpu_copyCpuToGpu(DiagMatr matr) {
         error_gpuCopyButMatrixNotGpuAccelerated();
 
     size_t numBytes = matr.numElems * sizeof(qcomp);
+    CUDA_CHECK( cudaMemcpy(matr.gpuElems, matr.cpuElems, numBytes, cudaMemcpyHostToDevice) );
+    
+#else
+    error_gpuCopyButGpuNotCompiled();
+#endif
+}
+
+
+void gpu_copyCpuToGpu(FullStateDiagMatr matr) {
+#if ENABLE_GPU_ACCELERATION
+
+    if (matr.gpuElems == NULL || ! getQuESTEnv().isGpuAccelerated)
+        error_gpuCopyButMatrixNotGpuAccelerated();
+
+    size_t numBytes = matr.numElemsPerNode * sizeof(qcomp);
     CUDA_CHECK( cudaMemcpy(matr.gpuElems, matr.cpuElems, numBytes, cudaMemcpyHostToDevice) );
     
 #else
