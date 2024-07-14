@@ -110,6 +110,16 @@ qindex util_getMatrixDim(T matr) {
         return matr.numElems;
 }
 
+// T can be CompMatr, DiagMatr, FullStateDiagMatr
+template<class T>
+qcomp util_getFirstLocalElem(T matr) {
+
+    if constexpr (util_isDenseMatrixType<T>())
+        return matr.cpuElems[0][0];
+    else
+        return matr.cpuElems[0];
+}
+
 
 
 /*

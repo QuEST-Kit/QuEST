@@ -30,7 +30,7 @@
 
 
 /*
- * PRIVATE UTILITES 
+ * PRIVATE MATRIX-AGNOSTIC UTILITES 
  *
  * noting that some public matrix utilities (like util_isDenseMatrix) 
  * are defined in utilities.hpp
@@ -120,6 +120,36 @@ void freeAllMemoryIfAnyAllocsFailed(T matr) {
     // and the GPU memory (gauranteed NULL in non-GPU mode)
     if (matr.gpuElems != NULL)
         gpu_deallocAmps(matr.gpuElems);
+}
+
+
+// type T can be CompMatr, DiagMatr or FullStateDiagMatr
+template <class T>
+void validateAndSyncMatrix(T matr, const char* caller) {
+    validate_matrixFields(matr, caller);
+    validate_matrixNewElemsDontContainUnsyncFlag(util_getFirstLocalElem(matr), caller);
+
+    if (matr.gpuElems != NULL)
+        gpu_copyCpuToGpu(matr);
+}
+
+
+// type T can be CompMatr, DiagMatr or FullStateDiagMatr
+template <class T>
+void validateAndDestroyMatrix(T matrix, const char* caller) {
+    validate_matrixFields(matrix, caller);
+
+    // free each CPU row array (if matrix is 2D)
+    if constexpr (util_isDenseMatrixType<T>())
+        for (qindex r=0; r < matrix.numRows; r++)
+            free(matrix.cpuElems[r]);
+
+    // free CPU array of rows (if 2D) or elems (if 1D)
+    free(matrix.cpuElems);
+
+    // free flat GPU array if it exists
+    if (matrix.gpuElems != NULL)
+        gpu_deallocAmps(matrix.gpuElems);
 }
 
 
@@ -228,28 +258,13 @@ extern "C" CompMatr createCompMatr(int numQubits) {
 }
 
 
-extern "C" void destroyCompMatr(CompMatr matrix) {
-    validate_matrixFields(matrix, __func__);
-
-    // free each CPU row array
-    for (qindex r=0; r < matrix.numRows; r++)
-        free(matrix.cpuElems[r]);
-
-    // free CPU array of rows
-    free(matrix.cpuElems);
-
-    // free flat GPU array if it exists
-    if (matrix.gpuElems != NULL)
-        gpu_deallocAmps(matrix.gpuElems);
+extern "C" void destroyCompMatr(CompMatr matr) {
+    validateAndDestroyMatrix(matr, __func__);
 }
 
 
 extern "C" void syncCompMatr(CompMatr matr) {
-    validate_matrixFields(matr, __func__);
-    validate_matrixNewElemsDontContainUnsyncFlag(matr.cpuElems[0][0], __func__);
-
-    if (matr.gpuElems != NULL)
-        gpu_copyCpuToGpu(matr);
+    validateAndSyncMatrix(matr, __func__);
 }
 
 
@@ -292,24 +307,13 @@ extern "C" DiagMatr createDiagMatr(int numQubits) {
 }
 
 
-extern "C" void destroyDiagMatr(DiagMatr matrix) {
-    validate_matrixFields(matrix, __func__);
-
-    // free CPU array of rows
-    free(matrix.cpuElems);
-
-    // free flat GPU array if it exists
-    if (matrix.gpuElems != NULL)
-        gpu_deallocAmps(matrix.gpuElems);
+extern "C" void destroyDiagMatr(DiagMatr matr) {
+    validateAndDestroyMatrix(matr, __func__);
 }
 
 
 extern "C" void syncDiagMatr(DiagMatr matr) {
-    validate_matrixFields(matr, __func__);
-    validate_matrixNewElemsDontContainUnsyncFlag(matr.cpuElems[0], __func__);
-
-    if (matr.gpuElems != NULL)
-        gpu_copyCpuToGpu(matr);
+    validateAndSyncMatrix(matr, __func__);
 }
 
 
@@ -371,24 +375,13 @@ extern "C" FullStateDiagMatr createFullStateDiagMatr(int numQubits) {
 }
 
 
-extern "C" void destroyFullStateDiagMatr(FullStateDiagMatr matrix) {
-    validate_matrixFields(matrix, __func__);
-
-    // free CPU array of rows
-    free(matrix.cpuElems);
-
-    // free flat GPU array if it exists
-    if (matrix.gpuElems != NULL)
-        gpu_deallocAmps(matrix.gpuElems);
+extern "C" void destroyFullStateDiagMatr(FullStateDiagMatr matr) {
+    validateAndDestroyMatrix(matr, __func__);
 }
 
 
 extern "C" void syncFullStateDiagMatr(FullStateDiagMatr matr) {
-    validate_matrixFields(matr, __func__);
-    validate_matrixNewElemsDontContainUnsyncFlag(matr.cpuElems[0], __func__);
-
-    if (matr.gpuElems != NULL)
-        gpu_copyCpuToGpu(matr);
+    validateAndSyncMatrix(matr, __func__);
 }
 
 
@@ -517,7 +510,7 @@ void setFullStateDiagMatr(FullStateDiagMatr out, qindex startInd, std::vector<qc
 
 
 /*
- * C & C++ MATRIX REPORTERS
+ * MATRIX REPORTERS
  *
  * and their private (permittedly name-mangled) inner functions
  */
