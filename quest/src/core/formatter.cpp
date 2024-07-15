@@ -24,13 +24,35 @@ using namespace std;
 using namespace form_substrings;
 
 
-// aesthetic constants
+
+/*
+ * AESTHETIC CONSTANTS
+ */
+
+
 const int MIN_SPACE_BETWEEN_DENSE_MATRIX_COLS = 2;
-const int MIN_SPACE_BETWEEN_DIAG_MATRIX_COLS = 1;
+const int SET_SPACE_BETWEEN_DIAG_MATRIX_COLS = 2;
 const int MIN_SPACE_BETWEEN_TABLE_COLS = 5;
 
 const char TABLE_SPACE_CHAR = '.';
 const char MATRIX_SPACE_CHAR = ' ';
+
+
+
+/*
+ * USER-CONFIGURABLE GLOBALS
+ */
+
+
+// for diagonal matrices, this is the total number of printed elements,
+// but for dense matrices, it is the number in the first column, as well
+// as the number of printed columns (starting from the left)
+qindex maxNumPrintedMatrixElems = (1 << 5);
+
+void form_setMaxNumPrintedMatrixElems(qindex num) {
+
+    maxNumPrintedMatrixElems = num;
+}
 
 
 
@@ -201,20 +223,20 @@ template string form_str<long double>(complex<long double> num);
  */
 
 
-void form_printMatrixInfo(std::string nameStr, int numQubits, qindex dim, size_t elemMem, size_t otherMem, int numNodes) {
+void form_printMatrixInfo(string nameStr, int numQubits, qindex dim, size_t elemMem, size_t otherMem, int numNodes) {
 
     // only root node prints
     if (comm_getRank() != 0)
         return;
 
     // please don't tell anyone how I live
-    bool isDiag = nameStr.find("Diag") != std::string::npos;
+    bool isDiag = nameStr.find("Diag") != string::npos;
 
     // prepare substrings
-    std::string sepStr  = ", ";
-    std::string qbStr   = form_str(numQubits) + " qubit" + ((numQubits>1)? "s":"");
-    std::string dimStr  = form_str(dim) + (isDiag? "" : mu + form_str(dim)) + " qcomps";
-    std::string memStr  = form_str(elemMem) + " + " + form_str(otherMem) + by;
+    string sepStr  = ", ";
+    string qbStr   = form_str(numQubits) + " qubit" + ((numQubits>1)? "s":"");
+    string dimStr  = form_str(dim) + (isDiag? "" : mu + form_str(dim)) + " qcomps";
+    string memStr  = form_str(elemMem) + " + " + form_str(otherMem) + by;
 
     if (numNodes > 1) {
         dimStr += " over " + form_str(numNodes) + " nodes";
@@ -222,12 +244,12 @@ void form_printMatrixInfo(std::string nameStr, int numQubits, qindex dim, size_t
     }
 
     // print e.g. FullStateDiagMatr (8 qubits, 256 qcomps over 4 nodes, 1024 + 32 bytes per node):
-    std::cout 
+    cout 
         << nameStr << " (" 
         << qbStr   << sepStr 
         << dimStr  << sepStr 
         << memStr  << "):" 
-        << std::endl;
+        << endl;
 }
 
 
@@ -235,37 +257,96 @@ void form_printMatrixInfo(std::string nameStr, int numQubits, qindex dim, size_t
 /*
  * DENSE MATRIX PRINTING
  *
- * which print only the matrix elements, indented
+ * which print only the matrix elements, indented. We truncate matrices which 
+ * contain more rows than maxNumPrintedMatrixElems, by printing only their
+ * upper-left and lower-left quadrants. This somewhat unusual style of truncation
+ * avoids having to align unicode characters and all the resulting headaches.
  */
 
 
 // type T can be qcomp(*)[] or qcomp**
 template <typename T> 
 void printDenseMatrixElems(T elems, qindex dim, string indent) {
-    
-    // determine max width of each column
-    vector<int> maxColWidths(dim, 0);
-    for (qindex c=0; c<dim; c++) {
-        for (qindex r=0; r<dim; r++) {
+
+    // determine how to truncate the reported matrix
+    qindex numTopElems = maxNumPrintedMatrixElems / 2; // floors
+    qindex numBotElems = maxNumPrintedMatrixElems - numTopElems; // includes remainder
+    qindex numReported = numTopElems + numBotElems;
+
+    // prevent truncation if the matrix is too small
+    bool isTruncated = dim > (numTopElems + numBotElems);
+    if (!isTruncated) {
+        numReported = dim;
+        numTopElems = dim;
+        numBotElems = 0;
+    }
+
+    // determine max width of each reported column...
+    vector<int> maxColWidths(numReported, 0);
+    for (qindex c=0; c<numReported; c++) {
+
+        // by considering the top-most rows
+        for (qindex r=0; r<numTopElems; r++) {
+            int width = form_str(elems[r][c]).length();
+            if (width > maxColWidths[c])
+                maxColWidths[c] = width;
+        }
+
+        // and the bottom-most rows
+        for (qindex i=0; i<numBotElems; i++) {
+            int r = dim - i - 1;
             int width = form_str(elems[r][c]).length();
             if (width > maxColWidths[c])
                 maxColWidths[c] = width;
         }
     }
 
-    // print each row, aligning columns
-    for (qindex r=0; r<dim; r++) {
+    // print top-most rows, aligning columns
+    for (qindex r=0; r<numTopElems; r++) {
         cout << indent;
 
-        for (qindex c=0; c<dim; c++)
+        for (qindex c=0; c<numReported; c++)
             cout << left
                 << setw(maxColWidths[c] + MIN_SPACE_BETWEEN_DENSE_MATRIX_COLS) 
                 << setfill(MATRIX_SPACE_CHAR)
                 << form_str(elems[r][c]);
 
+        // print a trailing ellipsis after the top-most row
+        if (isTruncated && r == 0)
+            cout << "…" ;
+
+        cout << endl;
+    }
+
+    // we are finished if there was no bottom elems (because matrix was not truncated)
+    if (!isTruncated)
+        return;
+    
+    // otherwise, separate the top-left and bottom-left quadrants by an ellipsis and blank row,
+    // which we align with the center of the left-most column (just to be a little pretty)
+    cout << indent;
+    for (int i=0; i<maxColWidths[0]/2; i++)
+        cout << MATRIX_SPACE_CHAR;
+    cout << "⋮" << endl;
+
+    // print the remaining bottom rows
+    for (qindex r=dim-numBotElems; r<dim; r++) {
+        cout << indent;
+
+        for (qindex c=0; c<numReported; c++)
+            cout << left
+                << setw(maxColWidths[c] + MIN_SPACE_BETWEEN_DENSE_MATRIX_COLS) 
+                << setfill(MATRIX_SPACE_CHAR)
+                << form_str(elems[r][c]);
+
+        // print a trailing ellipsis after the bottom-most row
+        if (r == dim-1)
+            cout << "…";
+
         cout << endl;
     }
 }
+
 
 // type T can be qcomp(*)[] or qcomp**
 template <typename T> 
@@ -290,35 +371,55 @@ void form_printMatrix(CompMatr matr, string indent) {
 /*
  * DIAGONAL MATRIX PRINTING
  *
- * which print only the matrix diagonals, indented
+ * which print only the matrix diagonals, indented. We truncate matrices which 
+ * contain more diagonals than maxNumPrintedMatrixElems, by printing only their
+ * top-most and lowest partitions, separated by ellipsis.
  */
 
 
 // diagonals don't need templating because arrays decay to pointers, yay!
 void printDiagMatrixElems(qcomp* elems, qindex dim, string indent) {
 
-    // determine max width of each column
-    vector<int> maxColWidths(dim, 0);
-    for (qindex c=0; c<dim; c++) {
-        int width = form_str(elems[c]).length();
-        if (width > maxColWidths[c])
-            maxColWidths[c] = width;
+    // determine how to truncate the reported matrix
+    qindex numTopElems = maxNumPrintedMatrixElems / 2; // floors
+    qindex numBotElems = maxNumPrintedMatrixElems - numTopElems; // includes remainder
+
+    // prevent truncation if the matrix is too small
+    bool isTruncated = dim > (numTopElems + numBotElems);
+    if (!isTruncated) {
+        numTopElems = dim;
+        numBotElems = 0;
     }
 
-    // print each "virtual" row, aligning columns
-    for (qindex r=0; r<dim; r++) {
-        cout << indent;
+    // print each row at a regular indentation, regardless of element width
+    for (qindex r=0; r<numTopElems; r++)
+        cout 
+            << indent
+            << string(r * SET_SPACE_BETWEEN_DIAG_MATRIX_COLS, ' ')
+            << form_str(elems[r])
+            << endl;
 
-        // print nothing in every column except diagonal
-        for (qindex c=0; c<dim; c++)
-            cout << left
-                << setw(maxColWidths[c] + MIN_SPACE_BETWEEN_DIAG_MATRIX_COLS) 
-                << setfill(MATRIX_SPACE_CHAR)
-                << ((r==c)? form_str(elems[c]) : "");
+    // we are finished if there was no bottom elems (because matrix was not truncated)
+    if (!isTruncated)
+        return;
 
-        cout << endl;
-    }
+    // otherwise, separate the top-left and bottom-left partitions by a diagonal ellipsis,
+    qindex offset = numTopElems * SET_SPACE_BETWEEN_DIAG_MATRIX_COLS;
+    cout 
+        << indent
+        << string(offset, ' ')
+        << "⋱"
+        << endl;
+
+    // print remaining elements, keeping consistent indentation
+    for (qindex i=0; i<numBotElems; i++)
+        cout 
+            << indent
+            << string(offset + i * SET_SPACE_BETWEEN_DIAG_MATRIX_COLS, ' ')
+            << form_str(elems[dim - numBotElems + i])
+            << endl;
 }
+
 
 void rootPrintDiagMatrixElems(qcomp* elems, qindex dim, string indent) {
     if (comm_isRootNode())
@@ -344,17 +445,90 @@ void form_printMatrix(FullStateDiagMatr matr, string indent) {
         return;
     }
 
-    // but when distributed, each node prints its partition
+    // synchronising at every iteration below ensures stdout is ordered
     comm_sync();
-    int numNodes = comm_getNumNodes();
+    int thisRank = comm_getRank();
+    int numRanks = comm_getNumNodes();
 
-    for (int r=0; r<numNodes; r++) {
+    // when distributed, multiple nodes print their partition depending on the matrix truncation
+    int numNodesWorth = maxNumPrintedMatrixElems / matr.numElemsPerNode; // floors
 
-        if (r == comm_getRank()) {
-            std::cout << defaultTableIndent << "[rank " << r << "]" << std::endl;
+    // these nodes are divided into "full" nodes which print all their local elements...
+    int numFullReportingNodes = 2 * (numNodesWorth/2); // floors
+    int numTopFullReportingNodes = numFullReportingNodes / 2; // floors
+    int numBotFullReportingNodes = numFullReportingNodes - numTopFullReportingNodes;
+
+    // and two "partial" nodes which print some of their elements
+    int topPartialRank = numTopFullReportingNodes;
+    int botPartialRank = numRanks - numBotFullReportingNodes - 1;
+
+    // note  that 'maxNumPrintedMatrixElems' which are multiples of 'numElemsPerNode' will cause
+    // the two "partial" nodes to actually be incidentally full - that's fine!
+    qindex numPartialElems = maxNumPrintedMatrixElems - (numFullReportingNodes * matr.numElemsPerNode);
+    qindex numTopPartialElems = numPartialElems / 2; // floors
+    qindex numBotPartialElems = numPartialElems - numTopPartialElems;
+
+    // top full nodes print all their elems
+    for (int r=0; r<numTopFullReportingNodes; r++) {
+        if (r == thisRank) {
+            cout << defaultTableIndent << "[rank " << r << "]" << endl;
             printDiagMatrixElems(matr.cpuElems, matr.numElemsPerNode, indent + defaultTableIndent);
         }
+        comm_sync();
+    }
 
+    // top partial node prints some of its elems; unless it contains exactly zero!
+    if (thisRank == topPartialRank && numTopPartialElems > 0) {
+        cout << defaultTableIndent << "[rank " << thisRank << "]" << endl;
+        for (qindex i=0; i<numTopPartialElems; i++)
+            cout 
+                << indent
+                << string(i * SET_SPACE_BETWEEN_DIAG_MATRIX_COLS, ' ')
+                << form_str(matr.cpuElems[i])
+                << endl;
+
+        // if this partial node wasn't incidentally full, print ellipsis
+        if (numTopPartialElems < matr.numElemsPerNode) {
+            qindex offset = numTopPartialElems * SET_SPACE_BETWEEN_DIAG_MATRIX_COLS;
+            cout << indent << string(offset, ' ') << "⋱" << endl;
+        }
+    }
+    comm_sync();
+
+    // if some nodes don't print at all, root draws an ellipsis
+    if ((botPartialRank - topPartialRank > 1) || (numPartialElems == 0))
+        if (thisRank == 0)
+            cout << defaultTableIndent <<  "⋱" << endl;
+    comm_sync();
+
+    // bottom partial node prints some of its elems
+    if (thisRank == botPartialRank && numBotPartialElems > 0) {
+        cout << defaultTableIndent << "[rank " << thisRank << "]" << endl;
+
+        // if this partial node isn't incidentally full, print ellipsis
+        if (numBotPartialElems < matr.numElemsPerNode)
+            cout << defaultTableIndent << "⋱" << endl;
+
+        // print bottom-most elements
+        for (qindex j=0; j<numBotPartialElems; j++) {
+            qindex i = matr.numElemsPerNode - numBotPartialElems + j;
+            cout 
+                << indent
+                << string(j * SET_SPACE_BETWEEN_DIAG_MATRIX_COLS, ' ')
+                << form_str(matr.cpuElems[i])
+                << endl;
+        }
+    }
+    comm_sync();
+
+    // bottom full nodes print all their elems
+    comm_sync();
+    for (int i=0; i<numBotFullReportingNodes; i++) {
+        int r = numRanks - numBotFullReportingNodes + i;
+        if (r == thisRank) {
+            cout << defaultTableIndent << "[rank " << r << "]" << endl;
+            printDiagMatrixElems(matr.cpuElems, matr.numElemsPerNode, indent + defaultTableIndent);
+        }
         comm_sync();
     }
 }
