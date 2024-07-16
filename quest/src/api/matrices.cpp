@@ -371,12 +371,12 @@ FullStateDiagMatr validateAndCreateCustomFullStateDiagMatr(int numQubits, int us
         // data deployment configuration; disable distrib if deployed to 1 node
         .isDistributed = useDistrib && (env.numNodes > 1),
 
-        // store unitary flag in the heap so that struct copies are mutable
-        .isUnitary = (int*) malloc(sizeof *out.isUnitary), // NULL if failed
-
         .numQubits = numQubits,
         .numElems = numElems,
         .numElemsPerNode = numElemsPerNode,
+
+        // store unitary flag in the heap so that struct copies are mutable
+        .isUnitary = (int*) malloc(sizeof *out.isUnitary), // NULL if failed
 
         // 1D CPU memory (NULL if failed)
         .cpuElems = cpu_allocAmps(numElemsPerNode),
