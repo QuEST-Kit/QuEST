@@ -381,13 +381,34 @@ void form_printMatrix(CompMatr matr, string indent) {
 /*
  * LOCAL DIAGONAL MATRIX PRINTING
  *
- * which print only the matrix diagonals, indented. We truncate matrices which 
+ * which print only the matrix diagonals, indented. We don't have to muck around with
+ * templating because arrays decay to pointers, yay! We truncate matrices which 
  * contain more diagonals than maxNumPrintedMatrixElems, by printing only their
  * top-most and lowest partitions, separated by ellipsis.
  */
 
 
-// diagonals don't need templating because arrays decay to pointers, yay!
+void printContiguousDiagonalElems(qcomp* elems, qindex len, qindex indentOffset, string indent) {
+
+    for (qindex i=0; i<len; i++)
+        cout 
+            << indent
+            << string((i + indentOffset) * SET_SPACE_BETWEEN_DIAG_MATRIX_COLS, MATRIX_SPACE_CHAR)
+            << form_str(elems[i])
+            << endl;
+}
+
+
+void printDiagonalDots(qindex elemInd, string indent) {
+
+    cout
+        << indent 
+        << string(elemInd * SET_SPACE_BETWEEN_DIAG_MATRIX_COLS, MATRIX_SPACE_CHAR)
+        << MATRIX_DDOTS_CHAR 
+        << endl;
+}
+
+
 void printDiagonalMatrixElems(qcomp* elems, qindex dim, string indent) {
 
     // determine how to truncate the reported matrix
@@ -404,32 +425,17 @@ void printDiagonalMatrixElems(qcomp* elems, qindex dim, string indent) {
     }
 
     // print each row at a regular indentation, regardless of element width
-    for (qindex r=0; r<numTopElems; r++)
-        cout 
-            << indent
-            << string(r * SET_SPACE_BETWEEN_DIAG_MATRIX_COLS, MATRIX_SPACE_CHAR)
-            << form_str(elems[r])
-            << endl;
+    printContiguousDiagonalElems(elems, numTopElems, 0, indent);
 
     // we are finished if there was no bottom elems (because matrix was not truncated)
     if (!isTruncated)
         return;
 
     // otherwise, separate the top-left and bottom-left partitions by a diagonal ellipsis,
-    qindex offset = numTopElems * SET_SPACE_BETWEEN_DIAG_MATRIX_COLS;
-    cout 
-        << indent
-        << string(offset, MATRIX_SPACE_CHAR)
-        << MATRIX_DDOTS_CHAR
-        << endl;
+    printDiagonalDots(numTopElems, indent);
 
     // print remaining elements, keeping consistent indentation, adjusting for above ellipsis
-    for (qindex i=0; i<numBotElems; i++)
-        cout 
-            << indent
-            << string(offset + (i+1) * SET_SPACE_BETWEEN_DIAG_MATRIX_COLS, MATRIX_SPACE_CHAR)
-            << form_str(elems[dim - numBotElems + i])
-            << endl;
+    printContiguousDiagonalElems(&elems[dim-numBotElems], numBotElems, numTopElems+1, indent);
 }
 
 
@@ -528,25 +534,18 @@ void form_printMatrix(FullStateDiagMatr matr, string indent) {
     // top partial node prints its elements; possible none, some, or all
     if (thisRank == topPartialRank && numTopPartialElems > 0) {
         printRank(thisRank);
-        for (qindex i=0; i<numTopPartialElems; i++)
-            cout 
-                << indent
-                << string(i * SET_SPACE_BETWEEN_DIAG_MATRIX_COLS, MATRIX_SPACE_CHAR)
-                << form_str(matr.cpuElems[i])
-                << endl;
+        printContiguousDiagonalElems(matr.cpuElems, numTopPartialElems, 0, indent);
 
         // if this partial node didn't print all its elements, then print ellipsis
-        if (numTopPartialElems < matr.numElemsPerNode) {
-            qindex offset = numTopPartialElems * SET_SPACE_BETWEEN_DIAG_MATRIX_COLS;
-            cout << indent << string(offset, MATRIX_SPACE_CHAR) << MATRIX_DDOTS_CHAR << endl;
-        }
+        if (numTopPartialElems < matr.numElemsPerNode)
+            printDiagonalDots(numTopPartialElems, indent);
     }
     comm_sync();
 
     // if any occluded nodes exist, root will print their common elements as an ellipsis
     if (anyRanksOccluded && comm_isRootNode(thisRank)) {
         printRanks(firstOccludedRank, lastOccludedRank);
-        cout << indent <<  MATRIX_DDOTS_CHAR << endl;
+        printDiagonalDots(0, indent);
     }
     comm_sync();
 
@@ -555,23 +554,13 @@ void form_printMatrix(FullStateDiagMatr matr, string indent) {
         printRank(thisRank);
 
         // if this partial node isn't incidentally full, print ellipsis
-        int shift = 0;
-        if (numBotPartialElems < matr.numElemsPerNode) {
-            cout << indent << MATRIX_DDOTS_CHAR << endl;
-
-            // which means subsequently printed elements are shifted to the right one element's worth
-            shift = 1;
-        }
+        bool isPartial = numBotPartialElems < matr.numElemsPerNode;
+        if (isPartial)
+            printDiagonalDots(0, indent);
 
         // print bottom-most elements
-        for (qindex j=0; j<numBotPartialElems; j++) {
-            qindex i = matr.numElemsPerNode - numBotPartialElems + j;
-            cout 
-                << indent
-                << string((j+shift) * SET_SPACE_BETWEEN_DIAG_MATRIX_COLS, MATRIX_SPACE_CHAR)
-                << form_str(matr.cpuElems[i])
-                << endl;
-        }
+        qcomp* elems = &matr.cpuElems[matr.numElemsPerNode - numBotPartialElems];
+        printContiguousDiagonalElems(elems, numBotPartialElems, (int) isPartial, indent);
     }
     comm_sync();
 
