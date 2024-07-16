@@ -380,6 +380,42 @@ void comm_exchangeAmpsToBuffers(Qureg qureg, int pairRank) {
 
 
 /*
+ * PUBLIC MISC COMMUNICATION METHODS
+ */
+
+
+void comm_sendAmpsToRoot(int sendRank, qcomp* send, qcomp* recv, qindex numAmps) {
+#if ENABLE_DISTRIBUTION
+
+    // only the sender and root nodes need to continue
+    int recvRank = 0;
+    int rank = comm_getRank();
+    if (rank != sendRank && rank != recvRank)
+        return;
+
+    // create an MPI_Request for every asynch MPI call
+    qindex messageSize, numMessages;
+    getMessageConfig(&messageSize, &numMessages, numAmps);
+    std::vector<MPI_Request> requests(numMessages, MPI_REQUEST_NULL);
+
+    // asynchronously copy 'send' in sendRank over to 'recv' in recvRank
+    for (qindex m=0; m<numMessages; m++)
+        if (rank == sendRank)
+            MPI_Isend(&send[m*messageSize], messageSize, MPI_QCOMP, recvRank, NULL_TAG, MPI_COMM_WORLD, &requests[m]);
+        else
+            MPI_Irecv(&recv[m*messageSize], messageSize, MPI_QCOMP, sendRank, NULL_TAG, MPI_COMM_WORLD, &requests[m]);
+
+    // wait for all exchanges to complete (MPI willl automatically free the request memory)
+    MPI_Waitall(requests.size(), requests.data(), MPI_STATUSES_IGNORE);
+
+#else
+    error_commButEnvNotDistributed();
+#endif
+}
+
+
+
+/*
  * PUBLIC REDUCTION METHODS
  */
 

@@ -28,8 +28,6 @@ int comm_getNumNodes();
 
 void comm_sync();
 
-void comm_ringSync();
-
 
 
 #endif // COMM_CONFIG_HPP

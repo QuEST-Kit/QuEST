@@ -8,6 +8,7 @@
 #include "quest/src/core/formatter.hpp"
 #include "quest/src/core/utilities.hpp"
 #include "quest/src/comm/comm_config.hpp"
+#include "quest/src/comm/comm_routines.hpp"
 
 #include <stdlib.h>
 #include <iostream>
@@ -229,7 +230,7 @@ template string form_str<long double>(complex<long double> num);
 void form_printMatrixInfo(string nameStr, int numQubits, qindex dim, size_t elemMem, size_t otherMem, int numNodes) {
 
     // only root node prints
-    if (comm_getRank() != 0)
+    if (!comm_isRootNode())
         return;
 
     // please don't tell anyone how I live
@@ -269,7 +270,11 @@ void form_printMatrixInfo(string nameStr, int numQubits, qindex dim, size_t elem
 
 // type T can be qcomp(*)[] or qcomp**
 template <typename T> 
-void printDenseMatrixElems(T elems, qindex dim, string indent) {
+void rootPrintTruncatedDenseMatrixElems(T elems, qindex dim, string indent) {
+
+    // only root node prints
+    if (!comm_isRootNode())
+        return;
 
     // determine how to truncate the reported matrix
     qindex numTopElems = maxNumPrintedMatrixElems / 2; // floors
@@ -352,29 +357,14 @@ void printDenseMatrixElems(T elems, qindex dim, string indent) {
     }
 }
 
-
-// type T can be qcomp(*)[] or qcomp**
-template <typename T> 
-void rootPrintDenseMatrixElems(T elems, qindex dim, string indent) {
-
-    // we perform a simple, cheap sync since only the root node needs to print
-    comm_sync();
-
-    if (comm_isRootNode())
-        printDenseMatrixElems(elems, dim, indent);
-
-    comm_sync();
-}
-
-
 void form_printMatrix(CompMatr1 matr, string indent) {
-    rootPrintDenseMatrixElems(matr.elems, matr.numRows, indent);
+    rootPrintTruncatedDenseMatrixElems(matr.elems, matr.numRows, indent);
 }
 void form_printMatrix(CompMatr2 matr, string indent) {
-    rootPrintDenseMatrixElems(matr.elems, matr.numRows, indent);
+    rootPrintTruncatedDenseMatrixElems(matr.elems, matr.numRows, indent);
 }
 void form_printMatrix(CompMatr matr, string indent) {
-    rootPrintDenseMatrixElems(matr.cpuElems, matr.numRows, indent);
+    rootPrintTruncatedDenseMatrixElems(matr.cpuElems, matr.numRows, indent);
 }
 
 
@@ -389,7 +379,10 @@ void form_printMatrix(CompMatr matr, string indent) {
  */
 
 
-void printContiguousDiagonalElems(qcomp* elems, qindex len, qindex indentOffset, string indent) {
+void rootPrintAllDiagonalElems(qcomp* elems, qindex len, qindex indentOffset, string indent) {
+
+    if (!comm_isRootNode())
+        return;
 
     for (qindex i=0; i<len; i++)
         cout 
@@ -400,7 +393,10 @@ void printContiguousDiagonalElems(qcomp* elems, qindex len, qindex indentOffset,
 }
 
 
-void printDiagonalDots(qindex elemInd, string indent) {
+void rootPrintDiagonalDots(qindex elemInd, string indent) {
+
+    if (!comm_isRootNode())
+        return;
 
     cout
         << indent 
@@ -410,7 +406,10 @@ void printDiagonalDots(qindex elemInd, string indent) {
 }
 
 
-void printDiagonalMatrixElems(qcomp* elems, qindex dim, string indent) {
+void rootPrintTruncatedDiagonalMatrixElems(qcomp* elems, qindex dim, string indent) {
+
+    if (!comm_isRootNode())
+        return;
 
     // determine how to truncate the reported matrix
     qindex numTopElems = maxNumPrintedMatrixElems / 2; // floors
@@ -426,40 +425,28 @@ void printDiagonalMatrixElems(qcomp* elems, qindex dim, string indent) {
     }
 
     // print each row at a regular indentation, regardless of element width
-    printContiguousDiagonalElems(elems, numTopElems, 0, indent);
+    rootPrintAllDiagonalElems(elems, numTopElems, 0, indent);
 
     // we are finished if there was no bottom elems (because matrix was not truncated)
     if (!isTruncated)
         return;
 
     // otherwise, separate the top-left and bottom-left partitions by a diagonal ellipsis,
-    printDiagonalDots(numTopElems, indent);
+    rootPrintDiagonalDots(numTopElems, indent);
 
     // print remaining elements, keeping consistent indentation, adjusting for above ellipsis
-    printContiguousDiagonalElems(&elems[dim-numBotElems], numBotElems, numTopElems+1, indent);
-}
-
-
-void rootPrintDiagMatrixElems(qcomp* elems, qindex dim, string indent) {
-
-    // we perform a simple, cheap sync since only the root node needs to print
-    comm_sync();
-
-    if (comm_isRootNode())
-        printDiagonalMatrixElems(elems, dim, indent);
-
-    comm_sync();
+    rootPrintAllDiagonalElems(&elems[dim-numBotElems], numBotElems, numTopElems+1, indent);
 }
 
 
 void form_printMatrix(DiagMatr1 matr, string indent) {
-    rootPrintDiagMatrixElems(matr.elems, matr.numElems, indent);
+    rootPrintTruncatedDiagonalMatrixElems(matr.elems, matr.numElems, indent);
 }
 void form_printMatrix(DiagMatr2 matr, string indent) {
-    rootPrintDiagMatrixElems(matr.elems, matr.numElems, indent);
+    rootPrintTruncatedDiagonalMatrixElems(matr.elems, matr.numElems, indent);
 }
 void form_printMatrix(DiagMatr matr, string indent) {
-    rootPrintDiagMatrixElems(matr.cpuElems, matr.numElems, indent);
+    rootPrintTruncatedDiagonalMatrixElems(matr.cpuElems, matr.numElems, indent);
 }
 
 
@@ -471,36 +458,16 @@ void form_printMatrix(DiagMatr matr, string indent) {
  */
 
 
-void forceSyncAndFlush(int flushRank) {
+void rootPrintRank(int rank) {
 
-    // calling comm_sync() isn't enough to ensure nodes print in the correct
-    // order, because the local system is not gauranteed to receive each node's
-    // flush in any specific order. So, we crudely flush the last printing node...
-    if (comm_getRank() == flushRank)
-        cout << flush;
-
-    // then twice pass a message between all nodes in a ring, to attemptedly
-    // occupy them (every node experiences at least one MPI wait after this node
-    // has flushed) so that this node's flush reaches the user's local system
-    // before subsequent nodes attempt to print. This is incredibly silly - we
-    // should really just explicitly communicate all printed elements to the root
-    // node first so we never need to worry about print order. We have to use
-    // temporary heap memory but that's fine - if we run out of RAM doing so, 
-    // then our non-root printing would surely have encountered its own memory
-    // isues anyway.
-    comm_ringSync();
-    comm_ringSync();
+    if (comm_isRootNode())
+        cout << defaultTableIndent << "[rank " << rank << "]" << endl;
 }
 
+void rootPrintRanks(int startRank, int endRankIncl) {
 
-void printRank(int rank) {
-    
-    cout << defaultTableIndent << "[rank " << rank << "]" << endl;
-}
-
-void printRanks(int startRank, int endRankIncl) {
-
-    cout << defaultTableIndent << "[ranks " << startRank << "-" << endRankIncl << "]" << endl;
+    if (comm_isRootNode())
+        cout << defaultTableIndent << "[ranks " << startRank << "-" << endRankIncl << "]" << endl;
 }
 
 
@@ -508,15 +475,12 @@ void form_printMatrix(FullStateDiagMatr matr, string indent) {
 
     // non-distributed edge-case is trivial; root node prints all, handling truncation
     if (!matr.isDistributed) {
-        rootPrintDiagMatrixElems(matr.cpuElems, matr.numElemsPerNode, indent);
+        rootPrintTruncatedDiagonalMatrixElems(matr.cpuElems, matr.numElemsPerNode, indent);
         return;
     }
 
-    // we have to use a more expensive, forceful sync because multiple nodes will print below,
-    // and we must ensure each of their flushes reaches the user's local system in order
     int thisRank = comm_getRank();
     int numRanks = comm_getNumNodes();
-    forceSyncAndFlush(thisRank);
 
     // prevent truncation if user has disabled by imitating a sufficiently large truncation threshold
     qindex maxPrintedElems = (maxNumPrintedMatrixElems == 0)?
@@ -535,68 +499,106 @@ void form_printMatrix(FullStateDiagMatr matr, string indent) {
     int topPartialRank = numTopFullReportingNodes;
     int botPartialRank = numRanks - numBotFullReportingNodes - 1;
 
-    // although it's logically possible these "partial" nodes end up printing all or none of their elements
+    // although it's possible these "partial" nodes end up printing all or none of their elements
     qindex numPartialElems = maxPrintedElems - (numFullReportingNodes * matr.numElemsPerNode);
     qindex numTopPartialElems = numPartialElems / 2; // floors
     qindex numBotPartialElems = numPartialElems - numTopPartialElems;
 
-    // determine which, if any, nodes do not print at all
+    // determine which, if any, nodes are "occluded" (do not print at all)
     int topLastPrintingRank  = (numTopPartialElems > 0)? topPartialRank : topPartialRank - 1;
     int botFirstPrintingRank = (numBotPartialElems > 0)? botPartialRank : botPartialRank + 1;
     int firstOccludedRank = topLastPrintingRank + 1;
     int lastOccludedRank  = botFirstPrintingRank - 1;
     bool anyRanksOccluded = lastOccludedRank > firstOccludedRank;
 
-    // top full nodes print all their elems
-    for (int r=0; r<numTopFullReportingNodes; r++) {
-        if (r == thisRank) {
-            printRank(r);
-            printDiagonalMatrixElems(matr.cpuElems, matr.numElemsPerNode, indent);
+    // nodes print by sending their elements to the root node's buffer, which root then prints.
+    // We will allocate the minimum size buffer possible (without incurring more rounds of
+    // communication) to avoid astonishing the user with a big allocation. We also only alloc
+    // the buffer on the root node, to save memory when each machine runs multiple MPI nodes.
+    std::vector<qcomp> rootBuff;
+
+    // if there are any nodes which get all their elements printed...
+    if (numTopFullReportingNodes > 0) {
+
+        // the first is always root, which is special; it can print without communication
+        rootPrintRank(0);
+        rootPrintAllDiagonalElems(matr.cpuElems, matr.numElemsPerNode, 0, indent);
+
+        // if there are more full nodes to print, root allocs its buffer space
+        if (numTopFullReportingNodes > 1)
+            if (comm_isRootNode(thisRank))
+                rootBuff.reserve(matr.numElemsPerNode); 
+
+        // then all top full nodes (except root) send their elems in-turn to root, which prints on their behalf
+        for (int r=1; r<numTopFullReportingNodes; r++) {
+            rootPrintRank(r);
+            comm_sendAmpsToRoot(r, matr.cpuElems, rootBuff.data(), matr.numElemsPerNode);
+            rootPrintAllDiagonalElems(rootBuff.data(), matr.numElemsPerNode, 0, indent);
         }
-        forceSyncAndFlush(r);
     }
 
-    // top partial node prints its elements; possible none, some, or all
-    if (thisRank == topPartialRank && numTopPartialElems > 0) {
-        printRank(thisRank);
-        printContiguousDiagonalElems(matr.cpuElems, numTopPartialElems, 0, indent);
+    // if the top "partial node" has any elements to print...
+    if (numTopPartialElems > 0) {
+        rootPrintRank(topPartialRank);
 
-        // if this partial node didn't print all its elements, then print ellipsis
+        // and it happens to be the root node, then printing requires no communication
+        if (comm_isRootNode(topPartialRank))
+            rootPrintAllDiagonalElems(matr.cpuElems, numTopPartialElems, 0, indent);
+
+        else {
+            // otherwise, we ensure root buffer has space (there may have been no top full nodes)
+            if (comm_isRootNode(thisRank))
+                rootBuff.reserve(numTopPartialElems);
+
+            // send a subset (or all) of the top partial node's amps to root, which prints
+            comm_sendAmpsToRoot(topPartialRank, matr.cpuElems, rootBuff.data(), numTopPartialElems);
+            rootPrintAllDiagonalElems(rootBuff.data(), numTopPartialElems, 0, indent);
+        }
+
+        // if not all elems were printed, add an ellipsis
         if (numTopPartialElems < matr.numElemsPerNode)
-            printDiagonalDots(numTopPartialElems, indent);
+            rootPrintDiagonalDots(numTopPartialElems, indent);
     }
-    forceSyncAndFlush(topPartialRank);
 
-    // if any occluded nodes exist, root will print their common elements as an ellipsis
-    if (anyRanksOccluded && comm_isRootNode(thisRank)) {
-        printRanks(firstOccludedRank, lastOccludedRank);
-        printDiagonalDots(0, indent);
+    // if any nodes are occluded (they don't have any elems printed), root prints them as ellipsis
+    if (anyRanksOccluded) {
+        rootPrintRanks(firstOccludedRank, lastOccludedRank);
+        rootPrintDiagonalDots(0, indent);
     }
-    forceSyncAndFlush(0);
 
-    // bottom partial node prints some of its elems
-    if (thisRank == botPartialRank && numBotPartialElems > 0) {
-        printRank(thisRank);
+    // if the bottom "partial node" has any elements to print...
+    if (numBotPartialElems > 0) {
+        rootPrintRank(botPartialRank);
 
-        // if this partial node isn't incidentally full, print ellipsis
+        // ensure root buffer has space (bottom partial can have more elements than top due to truncation indivisibility)
+        if (comm_isRootNode(thisRank))
+            rootBuff.reserve(numBotPartialElems);
+
+        // if not all elems will be printed, prefix with ellipsis, which will shift subsequently printed elems
         bool isPartial = numBotPartialElems < matr.numElemsPerNode;
         if (isPartial)
-            printDiagonalDots(0, indent);
+            rootPrintDiagonalDots(0, indent);
 
-        // print bottom-most elements
+        // send a subset (or all) of the bottom partial node's amps to root, which prints
         qcomp* elems = &matr.cpuElems[matr.numElemsPerNode - numBotPartialElems];
-        printContiguousDiagonalElems(elems, numBotPartialElems, (int) isPartial, indent);
+        comm_sendAmpsToRoot(botPartialRank, elems, rootBuff.data(), numBotPartialElems);
+        rootPrintAllDiagonalElems(rootBuff.data(), numBotPartialElems, (int) isPartial, indent);
     }
-    forceSyncAndFlush(botPartialRank);
 
-    // bottom full nodes print all their elems
-    for (int i=0; i<numBotFullReportingNodes; i++) {
-        int r = numRanks - numBotFullReportingNodes + i;
-        if (r == thisRank) {
-            printRank(r);
-            printDiagonalMatrixElems(matr.cpuElems, matr.numElemsPerNode, indent);
+    // finally, print any bottom "full" nodes
+    if (numBotFullReportingNodes > 0) {
+
+        // root pedantically ensures necessary buffer space
+        if (comm_isRootNode(thisRank))
+            rootBuff.reserve(matr.numElemsPerNode);
+
+        // all bottom full nodes send their elems in-turn to root, which prints on their behalf
+        for (int i=0; i<numBotFullReportingNodes; i++) {
+            int r = numRanks - numBotFullReportingNodes + i;
+            rootPrintRank(r);
+            comm_sendAmpsToRoot(r, matr.cpuElems, rootBuff.data(), matr.numElemsPerNode);
+            rootPrintAllDiagonalElems(rootBuff.data(), matr.numElemsPerNode, 0, indent);
         }
-        forceSyncAndFlush(r);
     }
 }
 
