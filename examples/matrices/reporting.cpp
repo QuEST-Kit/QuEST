@@ -64,7 +64,7 @@ void demo_FullStateDiagMatr() {
 
     // lazily set each element individually
     for (qindex i=0; i<matr.numElems; i++)
-        setInlineFullStateDiagMatr(matr, i, 1, {i+1});
+        setInlineFullStateDiagMatr(matr, i, 1, {(qreal) i+1});
 
     for (int num : {0, 50, 30, 10, 5, 1}) {
         rootPrint(num);
