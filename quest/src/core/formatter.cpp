@@ -36,6 +36,9 @@ const int MIN_SPACE_BETWEEN_TABLE_COLS = 5;
 
 const char TABLE_SPACE_CHAR = '.';
 const char MATRIX_SPACE_CHAR = ' ';
+const string MATRIX_VDOTS_CHAR = "⋮";   // unicode too wide for char literal
+const string MATRIX_DDOTS_CHAR = "⋱";
+const string MATRIX_HDOTS_CHAR = "…";
 
 
 
@@ -313,7 +316,7 @@ void printDenseMatrixElems(T elems, qindex dim, string indent) {
 
         // print a trailing ellipsis after the top-most row
         if (isTruncated && r == 0)
-            cout << "…" ;
+            cout << MATRIX_HDOTS_CHAR;
 
         cout << endl;
     }
@@ -327,7 +330,7 @@ void printDenseMatrixElems(T elems, qindex dim, string indent) {
     cout << indent;
     for (int i=0; i<maxColWidths[0]/2; i++)
         cout << MATRIX_SPACE_CHAR;
-    cout << "⋮" << endl;
+    cout << MATRIX_VDOTS_CHAR << endl;
 
     // print the remaining bottom rows
     for (qindex r=dim-numBotElems; r<dim; r++) {
@@ -341,7 +344,7 @@ void printDenseMatrixElems(T elems, qindex dim, string indent) {
 
         // print a trailing ellipsis after the bottom-most row
         if (r == dim-1)
-            cout << "…";
+            cout << MATRIX_HDOTS_CHAR;
 
         cout << endl;
     }
@@ -351,8 +354,13 @@ void printDenseMatrixElems(T elems, qindex dim, string indent) {
 // type T can be qcomp(*)[] or qcomp**
 template <typename T> 
 void rootPrintDenseMatrixElems(T elems, qindex dim, string indent) {
+
+    comm_sync();
+
     if (comm_isRootNode())
         printDenseMatrixElems(elems, dim, indent);
+
+    comm_sync();
 }
 
 
@@ -369,7 +377,7 @@ void form_printMatrix(CompMatr matr, string indent) {
 
 
 /*
- * DIAGONAL MATRIX PRINTING
+ * LOCAL DIAGONAL MATRIX PRINTING
  *
  * which print only the matrix diagonals, indented. We truncate matrices which 
  * contain more diagonals than maxNumPrintedMatrixElems, by printing only their
@@ -395,7 +403,7 @@ void printDiagMatrixElems(qcomp* elems, qindex dim, string indent) {
     for (qindex r=0; r<numTopElems; r++)
         cout 
             << indent
-            << string(r * SET_SPACE_BETWEEN_DIAG_MATRIX_COLS, ' ')
+            << string(r * SET_SPACE_BETWEEN_DIAG_MATRIX_COLS, MATRIX_SPACE_CHAR)
             << form_str(elems[r])
             << endl;
 
@@ -407,23 +415,28 @@ void printDiagMatrixElems(qcomp* elems, qindex dim, string indent) {
     qindex offset = numTopElems * SET_SPACE_BETWEEN_DIAG_MATRIX_COLS;
     cout 
         << indent
-        << string(offset, ' ')
-        << "⋱"
+        << string(offset, MATRIX_SPACE_CHAR)
+        << MATRIX_DDOTS_CHAR
         << endl;
 
     // print remaining elements, keeping consistent indentation
     for (qindex i=0; i<numBotElems; i++)
         cout 
             << indent
-            << string(offset + i * SET_SPACE_BETWEEN_DIAG_MATRIX_COLS, ' ')
+            << string(offset + i * SET_SPACE_BETWEEN_DIAG_MATRIX_COLS, MATRIX_SPACE_CHAR)
             << form_str(elems[dim - numBotElems + i])
             << endl;
 }
 
 
 void rootPrintDiagMatrixElems(qcomp* elems, qindex dim, string indent) {
+
+    comm_sync();
+
     if (comm_isRootNode())
         printDiagMatrixElems(elems, dim, indent);
+
+    comm_sync();
 }
 
 
@@ -437,33 +450,52 @@ void form_printMatrix(DiagMatr matr, string indent) {
     rootPrintDiagMatrixElems(matr.cpuElems, matr.numElems, indent);
 }
 
+
+
+/*
+ * DISTRIBUTED DIAGONAL MATRIX PRINTING
+ *
+ * which complicates the truncation printing logic
+ */
+
+
+void printRank(int rank) {
+    
+    cout << defaultTableIndent << "[rank " << rank << "]" << endl;
+}
+
+void printRanks(int startRank, int endRankIncl) {
+
+    cout << defaultTableIndent << "[ranks " << startRank << "-" << endRankIncl << "]" << endl;
+}
+
+
 void form_printMatrix(FullStateDiagMatr matr, string indent) {
 
-    // non-distributed edge-case is trivial; root node prints all
+    // non-distributed edge-case is trivial; root node prints all, handling truncation
     if (!matr.isDistributed) {
         rootPrintDiagMatrixElems(matr.cpuElems, matr.numElemsPerNode, indent);
         return;
     }
 
-    // synchronising at every iteration below ensures stdout is ordered
+    // we frequently synchronise below to ensure nodes print in order
     comm_sync();
     int thisRank = comm_getRank();
     int numRanks = comm_getNumNodes();
 
-    // when distributed, multiple nodes print their partition depending on the matrix truncation
+    // when distributed, multiple nodes may print their elements depending on the matrix truncation
     int numNodesWorth = maxNumPrintedMatrixElems / matr.numElemsPerNode; // floors
 
-    // these nodes are divided into "full" nodes which print all their local elements...
+    // these nodes are divided into "full" nodes which will print all their local elements...
     int numFullReportingNodes = 2 * (numNodesWorth/2); // floors
     int numTopFullReportingNodes = numFullReportingNodes / 2; // floors
     int numBotFullReportingNodes = numFullReportingNodes - numTopFullReportingNodes;
 
-    // and two "partial" nodes which print some of their elements
+    // and two "partial" nodes which print only some of their elements
     int topPartialRank = numTopFullReportingNodes;
     int botPartialRank = numRanks - numBotFullReportingNodes - 1;
 
-    // note  that 'maxNumPrintedMatrixElems' which are multiples of 'numElemsPerNode' will cause
-    // the two "partial" nodes to actually be incidentally full - that's fine!
+    // although it's logically possible these "partial" nodes end up printing all or none of their elements
     qindex numPartialElems = maxNumPrintedMatrixElems - (numFullReportingNodes * matr.numElemsPerNode);
     qindex numTopPartialElems = numPartialElems / 2; // floors
     qindex numBotPartialElems = numPartialElems - numTopPartialElems;
@@ -471,50 +503,63 @@ void form_printMatrix(FullStateDiagMatr matr, string indent) {
     // top full nodes print all their elems
     for (int r=0; r<numTopFullReportingNodes; r++) {
         if (r == thisRank) {
-            cout << defaultTableIndent << "[rank " << r << "]" << endl;
-            printDiagMatrixElems(matr.cpuElems, matr.numElemsPerNode, indent + defaultTableIndent);
+            printRank(r);
+            printDiagMatrixElems(matr.cpuElems, matr.numElemsPerNode, indent);
         }
         comm_sync();
     }
 
-    // top partial node prints some of its elems; unless it contains exactly zero!
+    // top partial node prints its elements; possible none, some, or all
     if (thisRank == topPartialRank && numTopPartialElems > 0) {
-        cout << defaultTableIndent << "[rank " << thisRank << "]" << endl;
+        printRank(thisRank);
         for (qindex i=0; i<numTopPartialElems; i++)
             cout 
                 << indent
-                << string(i * SET_SPACE_BETWEEN_DIAG_MATRIX_COLS, ' ')
+                << string(i * SET_SPACE_BETWEEN_DIAG_MATRIX_COLS, MATRIX_SPACE_CHAR)
                 << form_str(matr.cpuElems[i])
                 << endl;
 
-        // if this partial node wasn't incidentally full, print ellipsis
+        // if this partial node didn't print all its elements, then print ellipsis
         if (numTopPartialElems < matr.numElemsPerNode) {
             qindex offset = numTopPartialElems * SET_SPACE_BETWEEN_DIAG_MATRIX_COLS;
-            cout << indent << string(offset, ' ') << "⋱" << endl;
+            cout << indent << string(offset, MATRIX_SPACE_CHAR) << MATRIX_DDOTS_CHAR << endl;
         }
     }
     comm_sync();
 
-    // if some nodes don't print at all, root draws an ellipsis
+    // if some nodes don't print at all, give them a common ellipsis element (printed by root)
     if ((botPartialRank - topPartialRank > 1) || (numPartialElems == 0))
-        if (thisRank == 0)
-            cout << defaultTableIndent <<  "⋱" << endl;
+        if (comm_isRootNode(thisRank)) {
+
+            // noting that the partial nodes might not have been printed at all
+            printRanks(
+                (numTopPartialElems > 0)? (topPartialRank + 1) : topPartialRank,
+                (numBotPartialElems > 0)? (botPartialRank - 1) : botPartialRank);
+
+            // align ellipsis with where the first element would otherwise be
+            cout << indent <<  MATRIX_DDOTS_CHAR << endl;
+        }
     comm_sync();
 
     // bottom partial node prints some of its elems
     if (thisRank == botPartialRank && numBotPartialElems > 0) {
-        cout << defaultTableIndent << "[rank " << thisRank << "]" << endl;
+        printRank(thisRank);
 
         // if this partial node isn't incidentally full, print ellipsis
-        if (numBotPartialElems < matr.numElemsPerNode)
-            cout << defaultTableIndent << "⋱" << endl;
+        int shift = 0;
+        if (numBotPartialElems < matr.numElemsPerNode) {
+            cout << indent << MATRIX_DDOTS_CHAR << endl;
+
+            // which means subsequently printed elements are shifted to the right one element's worth
+            shift = 1;
+        }
 
         // print bottom-most elements
         for (qindex j=0; j<numBotPartialElems; j++) {
             qindex i = matr.numElemsPerNode - numBotPartialElems + j;
             cout 
                 << indent
-                << string(j * SET_SPACE_BETWEEN_DIAG_MATRIX_COLS, ' ')
+                << string((j+shift) * SET_SPACE_BETWEEN_DIAG_MATRIX_COLS, MATRIX_SPACE_CHAR)
                 << form_str(matr.cpuElems[i])
                 << endl;
         }
@@ -522,12 +567,11 @@ void form_printMatrix(FullStateDiagMatr matr, string indent) {
     comm_sync();
 
     // bottom full nodes print all their elems
-    comm_sync();
     for (int i=0; i<numBotFullReportingNodes; i++) {
         int r = numRanks - numBotFullReportingNodes + i;
         if (r == thisRank) {
-            cout << defaultTableIndent << "[rank " << r << "]" << endl;
-            printDiagMatrixElems(matr.cpuElems, matr.numElemsPerNode, indent + defaultTableIndent);
+            printRank(r);
+            printDiagMatrixElems(matr.cpuElems, matr.numElemsPerNode, indent);
         }
         comm_sync();
     }

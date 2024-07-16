@@ -131,8 +131,11 @@ int comm_getRank() {
 }
 
 
+bool comm_isRootNode(int rank) {
+    return rank == 0;
+}
 bool comm_isRootNode() {
-    return comm_getRank() == 0;
+    return comm_isRootNode(comm_getRank());
 }
 
 
