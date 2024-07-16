@@ -170,7 +170,6 @@ void comm_sync() {
 }
 
 
-
 void comm_ringSync() {
 #if ENABLE_DISTRIBUTION
 
@@ -205,4 +204,3 @@ void comm_ringSync() {
 
 #endif
 }
-

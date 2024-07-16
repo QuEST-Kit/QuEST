@@ -475,12 +475,20 @@ void forceSyncAndFlush(int flushRank) {
 
     // calling comm_sync() isn't enough to ensure nodes print in the correct
     // order, because the local system is not gauranteed to receive each node's
-    // flush in any specific order. So, we crudely force every node to flush...
+    // flush in any specific order. So, we crudely flush the last printing node...
     if (comm_getRank() == flushRank)
         cout << flush;
 
-    // then we pass a message between all nodes in a ring, blocking all
-    // of them until they have all flushed to the local system
+    // then twice pass a message between all nodes in a ring, to attemptedly
+    // occupy them (every node experiences at least one MPI wait after this node
+    // has flushed) so that this node's flush reaches the user's local system
+    // before subsequent nodes attempt to print. This is incredibly silly - we
+    // should really just explicitly communicate all printed elements to the root
+    // node first so we never need to worry about print order. We have to use
+    // temporary heap memory but that's fine - if we run out of RAM doing so, 
+    // then our non-root printing would surely have encountered its own memory
+    // isues anyway.
+    comm_ringSync();
     comm_ringSync();
 }
 
