@@ -18,6 +18,14 @@
 
 
 /*
+ * USER-CONFIGURABLE GLOBALS
+ */
+
+void form_setMaxNumPrintedMatrixElems(qindex num);
+
+
+
+/*
  * TYPE NAME STRINGS
  */
 

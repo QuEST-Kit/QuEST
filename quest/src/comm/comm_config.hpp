@@ -22,6 +22,7 @@ void comm_end();
 int comm_getRank();
 
 bool comm_isRootNode();
+bool comm_isRootNode(int rank);
 
 int comm_getNumNodes();
 

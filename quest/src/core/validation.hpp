@@ -33,6 +33,7 @@ void validate_disable();
 bool validate_isEnabled();
 
 
+
 /*
  * ENVIRONMENT CREATION
  */
@@ -52,6 +53,14 @@ void validate_gpuIsCuQuantumCompatible(const char* caller);
  */
 
 void validate_envIsInit(const char* caller);
+
+
+
+/*
+ * DEBUG UTILITIES
+ */
+
+void validate_numReportedMatrixElems(qindex num, const char* caller);
 
 
 
