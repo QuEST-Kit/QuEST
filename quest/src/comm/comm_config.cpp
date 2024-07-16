@@ -168,3 +168,39 @@ void comm_sync() {
     MPI_Barrier(MPI_COMM_WORLD);
 #endif
 }
+
+
+
+void comm_ringSync() {
+#if ENABLE_DISTRIBUTION
+
+    int rank = comm_getRank();
+    int numNodes = comm_getNumNodes();
+
+    // gracefully handle when no sync is necessary
+    if (!comm_isInit())
+        return;
+    if (numNodes == 1)
+        return;
+
+    // we will pass a blocking message around all nodes in a ring
+    int msg = 0;
+    int tag = 0;
+
+    // make all non-root nodes wait for their message
+    if (!comm_isRootNode(rank))
+		MPI_Recv(&msg, 1, MPI_INT, rank - 1, tag, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+
+    // instruct all nodes to send to their neighbour (afer receiving via above)
+	MPI_Send(&msg, 1, MPI_INT, (rank + 1) % numNodes, tag, MPI_COMM_WORLD);
+
+    // make root wait for the final message
+    if (comm_isRootNode(rank))
+	    MPI_Recv(&msg, 1, MPI_INT, numNodes - 1, tag, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+
+    // make all nodes wait for the root to receive the final message
+    comm_sync();
+
+#endif
+}
+

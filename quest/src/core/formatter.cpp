@@ -267,19 +267,6 @@ void form_printMatrixInfo(string nameStr, int numQubits, qindex dim, size_t elem
  */
 
 
-void forceSyncAndFlush() {
-
-    // calling comm_sync() isn't enough to ensure nodes print in the correct
-    // order, because the local system is not gauranteed to receive each node's
-    // flush in any specific order. So, we crudely force every node to flush
-    // and synchronise thereafter whenever one node has finished printing 
-
-    comm_sync();
-    cout << flush;
-    comm_sync();
-}
-
-
 // type T can be qcomp(*)[] or qcomp**
 template <typename T> 
 void printDenseMatrixElems(T elems, qindex dim, string indent) {
@@ -370,12 +357,13 @@ void printDenseMatrixElems(T elems, qindex dim, string indent) {
 template <typename T> 
 void rootPrintDenseMatrixElems(T elems, qindex dim, string indent) {
 
-    forceSyncAndFlush();
+    // we perform a simple, cheap sync since only the root node needs to print
+    comm_sync();
 
     if (comm_isRootNode())
         printDenseMatrixElems(elems, dim, indent);
 
-    forceSyncAndFlush();
+    comm_sync();
 }
 
 
@@ -454,12 +442,13 @@ void printDiagonalMatrixElems(qcomp* elems, qindex dim, string indent) {
 
 void rootPrintDiagMatrixElems(qcomp* elems, qindex dim, string indent) {
 
-    forceSyncAndFlush();
+    // we perform a simple, cheap sync since only the root node needs to print
+    comm_sync();
 
     if (comm_isRootNode())
         printDiagonalMatrixElems(elems, dim, indent);
 
-    forceSyncAndFlush();
+    comm_sync();
 }
 
 
@@ -482,6 +471,19 @@ void form_printMatrix(DiagMatr matr, string indent) {
  */
 
 
+void forceSyncAndFlush() {
+
+    // calling comm_sync() isn't enough to ensure nodes print in the correct
+    // order, because the local system is not gauranteed to receive each node's
+    // flush in any specific order. So, we crudely force every node to flush...
+    cout << flush;
+
+    // then we pass a message between all nodes in a ring, blocking all
+    // of them until they have all flushed to the local system
+    comm_ringSync();
+}
+
+
 void printRank(int rank) {
     
     cout << defaultTableIndent << "[rank " << rank << "]" << endl;
@@ -501,6 +503,8 @@ void form_printMatrix(FullStateDiagMatr matr, string indent) {
         return;
     }
 
+    // we have to use a more expensive, forceful sync because multiple nodes will print below,
+    // and we must ensure each of their flushes reaches the user's local system in order
     forceSyncAndFlush();
     int thisRank = comm_getRank();
     int numRanks = comm_getNumNodes();
