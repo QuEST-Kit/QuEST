@@ -276,8 +276,10 @@ void printDenseMatrixElems(T elems, qindex dim, string indent) {
     qindex numBotElems = maxNumPrintedMatrixElems - numTopElems; // includes remainder
     qindex numReported = numTopElems + numBotElems;
 
-    // prevent truncation if the matrix is too small
-    bool isTruncated = dim > (numTopElems + numBotElems);
+    // prevent truncation if the matrix is too small, or user has disabled
+    bool isTruncated = (
+        (maxNumPrintedMatrixElems != 0) &&
+        (dim > (numTopElems + numBotElems)));
     if (!isTruncated) {
         numReported = dim;
         numTopElems = dim;
@@ -386,14 +388,16 @@ void form_printMatrix(CompMatr matr, string indent) {
 
 
 // diagonals don't need templating because arrays decay to pointers, yay!
-void printDiagMatrixElems(qcomp* elems, qindex dim, string indent) {
+void printDiagonalMatrixElems(qcomp* elems, qindex dim, string indent) {
 
     // determine how to truncate the reported matrix
     qindex numTopElems = maxNumPrintedMatrixElems / 2; // floors
     qindex numBotElems = maxNumPrintedMatrixElems - numTopElems; // includes remainder
 
-    // prevent truncation if the matrix is too small
-    bool isTruncated = dim > (numTopElems + numBotElems);
+    // prevent truncation if the matrix is too small, or user has disabled
+    bool isTruncated = (
+        (maxNumPrintedMatrixElems != 0) &&
+        (dim > (numTopElems + numBotElems)));
     if (!isTruncated) {
         numTopElems = dim;
         numBotElems = 0;
@@ -419,11 +423,11 @@ void printDiagMatrixElems(qcomp* elems, qindex dim, string indent) {
         << MATRIX_DDOTS_CHAR
         << endl;
 
-    // print remaining elements, keeping consistent indentation
+    // print remaining elements, keeping consistent indentation, adjusting for above ellipsis
     for (qindex i=0; i<numBotElems; i++)
         cout 
             << indent
-            << string(offset + i * SET_SPACE_BETWEEN_DIAG_MATRIX_COLS, MATRIX_SPACE_CHAR)
+            << string(offset + (i+1) * SET_SPACE_BETWEEN_DIAG_MATRIX_COLS, MATRIX_SPACE_CHAR)
             << form_str(elems[dim - numBotElems + i])
             << endl;
 }
@@ -434,7 +438,7 @@ void rootPrintDiagMatrixElems(qcomp* elems, qindex dim, string indent) {
     comm_sync();
 
     if (comm_isRootNode())
-        printDiagMatrixElems(elems, dim, indent);
+        printDiagonalMatrixElems(elems, dim, indent);
 
     comm_sync();
 }
@@ -483,8 +487,13 @@ void form_printMatrix(FullStateDiagMatr matr, string indent) {
     int thisRank = comm_getRank();
     int numRanks = comm_getNumNodes();
 
+    // prevent truncation if user has disabled by imitating a sufficiently large truncation threshold
+    qindex maxPrintedElems = (maxNumPrintedMatrixElems == 0)?
+        matr.numElems :
+        maxNumPrintedMatrixElems;
+
     // when distributed, multiple nodes may print their elements depending on the matrix truncation
-    int numNodesWorth = maxNumPrintedMatrixElems / matr.numElemsPerNode; // floors
+    int numNodesWorth = maxPrintedElems / matr.numElemsPerNode; // floors
 
     // these nodes are divided into "full" nodes which will print all their local elements...
     int numFullReportingNodes = 2 * (numNodesWorth/2); // floors
@@ -496,15 +505,22 @@ void form_printMatrix(FullStateDiagMatr matr, string indent) {
     int botPartialRank = numRanks - numBotFullReportingNodes - 1;
 
     // although it's logically possible these "partial" nodes end up printing all or none of their elements
-    qindex numPartialElems = maxNumPrintedMatrixElems - (numFullReportingNodes * matr.numElemsPerNode);
+    qindex numPartialElems = maxPrintedElems - (numFullReportingNodes * matr.numElemsPerNode);
     qindex numTopPartialElems = numPartialElems / 2; // floors
     qindex numBotPartialElems = numPartialElems - numTopPartialElems;
+
+    // determine which, if any, nodes do not print at all
+    int topLastPrintingRank  = (numTopPartialElems > 0)? topPartialRank : topPartialRank - 1;
+    int botFirstPrintingRank = (numBotPartialElems > 0)? botPartialRank : botPartialRank + 1;
+    int firstOccludedRank = topLastPrintingRank + 1;
+    int lastOccludedRank  = botFirstPrintingRank - 1;
+    bool anyRanksOccluded = lastOccludedRank > firstOccludedRank;
 
     // top full nodes print all their elems
     for (int r=0; r<numTopFullReportingNodes; r++) {
         if (r == thisRank) {
             printRank(r);
-            printDiagMatrixElems(matr.cpuElems, matr.numElemsPerNode, indent);
+            printDiagonalMatrixElems(matr.cpuElems, matr.numElemsPerNode, indent);
         }
         comm_sync();
     }
@@ -527,18 +543,11 @@ void form_printMatrix(FullStateDiagMatr matr, string indent) {
     }
     comm_sync();
 
-    // if some nodes don't print at all, give them a common ellipsis element (printed by root)
-    if ((botPartialRank - topPartialRank > 1) || (numPartialElems == 0))
-        if (comm_isRootNode(thisRank)) {
-
-            // noting that the partial nodes might not have been printed at all
-            printRanks(
-                (numTopPartialElems > 0)? (topPartialRank + 1) : topPartialRank,
-                (numBotPartialElems > 0)? (botPartialRank - 1) : botPartialRank);
-
-            // align ellipsis with where the first element would otherwise be
-            cout << indent <<  MATRIX_DDOTS_CHAR << endl;
-        }
+    // if any occluded nodes exist, root will print their common elements as an ellipsis
+    if (anyRanksOccluded && comm_isRootNode(thisRank)) {
+        printRanks(firstOccludedRank, lastOccludedRank);
+        cout << indent <<  MATRIX_DDOTS_CHAR << endl;
+    }
     comm_sync();
 
     // bottom partial node prints some of its elems
@@ -571,7 +580,7 @@ void form_printMatrix(FullStateDiagMatr matr, string indent) {
         int r = numRanks - numBotFullReportingNodes + i;
         if (r == thisRank) {
             printRank(r);
-            printDiagMatrixElems(matr.cpuElems, matr.numElemsPerNode, indent);
+            printDiagonalMatrixElems(matr.cpuElems, matr.numElemsPerNode, indent);
         }
         comm_sync();
     }
