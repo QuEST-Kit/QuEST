@@ -174,6 +174,8 @@ void comm_sync() {
 void comm_ringSync() {
 #if ENABLE_DISTRIBUTION
 
+    comm_sync();
+
     int rank = comm_getRank();
     int numNodes = comm_getNumNodes();
 

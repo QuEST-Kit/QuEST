@@ -471,12 +471,13 @@ void form_printMatrix(DiagMatr matr, string indent) {
  */
 
 
-void forceSyncAndFlush() {
+void forceSyncAndFlush(int flushRank) {
 
     // calling comm_sync() isn't enough to ensure nodes print in the correct
     // order, because the local system is not gauranteed to receive each node's
     // flush in any specific order. So, we crudely force every node to flush...
-    cout << flush;
+    if (comm_getRank() == flushRank)
+        cout << flush;
 
     // then we pass a message between all nodes in a ring, blocking all
     // of them until they have all flushed to the local system
@@ -505,9 +506,9 @@ void form_printMatrix(FullStateDiagMatr matr, string indent) {
 
     // we have to use a more expensive, forceful sync because multiple nodes will print below,
     // and we must ensure each of their flushes reaches the user's local system in order
-    forceSyncAndFlush();
     int thisRank = comm_getRank();
     int numRanks = comm_getNumNodes();
+    forceSyncAndFlush(thisRank);
 
     // prevent truncation if user has disabled by imitating a sufficiently large truncation threshold
     qindex maxPrintedElems = (maxNumPrintedMatrixElems == 0)?
@@ -544,7 +545,7 @@ void form_printMatrix(FullStateDiagMatr matr, string indent) {
             printRank(r);
             printDiagonalMatrixElems(matr.cpuElems, matr.numElemsPerNode, indent);
         }
-        forceSyncAndFlush();
+        forceSyncAndFlush(r);
     }
 
     // top partial node prints its elements; possible none, some, or all
@@ -556,14 +557,14 @@ void form_printMatrix(FullStateDiagMatr matr, string indent) {
         if (numTopPartialElems < matr.numElemsPerNode)
             printDiagonalDots(numTopPartialElems, indent);
     }
-    forceSyncAndFlush();
+    forceSyncAndFlush(topPartialRank);
 
     // if any occluded nodes exist, root will print their common elements as an ellipsis
     if (anyRanksOccluded && comm_isRootNode(thisRank)) {
         printRanks(firstOccludedRank, lastOccludedRank);
         printDiagonalDots(0, indent);
     }
-    forceSyncAndFlush();
+    forceSyncAndFlush(0);
 
     // bottom partial node prints some of its elems
     if (thisRank == botPartialRank && numBotPartialElems > 0) {
@@ -578,7 +579,7 @@ void form_printMatrix(FullStateDiagMatr matr, string indent) {
         qcomp* elems = &matr.cpuElems[matr.numElemsPerNode - numBotPartialElems];
         printContiguousDiagonalElems(elems, numBotPartialElems, (int) isPartial, indent);
     }
-    forceSyncAndFlush();
+    forceSyncAndFlush(botPartialRank);
 
     // bottom full nodes print all their elems
     for (int i=0; i<numBotFullReportingNodes; i++) {
@@ -587,7 +588,7 @@ void form_printMatrix(FullStateDiagMatr matr, string indent) {
             printRank(r);
             printDiagonalMatrixElems(matr.cpuElems, matr.numElemsPerNode, indent);
         }
-        forceSyncAndFlush();
+        forceSyncAndFlush(r);
     }
 }
 
