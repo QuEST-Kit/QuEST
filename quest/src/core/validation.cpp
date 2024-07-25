@@ -87,8 +87,8 @@ namespace report {
      * DEBUG UTILITIES
      */
 
-    std::string INVALID_NUM_REPORTED_MATRIX_ELEMS =
-        "Invalid parameter (${NUM_ELEMS}). Must specify a positive number of matrix elements to be reported, or 0 to indicate that all elements should be reported.";
+    std::string INVALID_NUM_REPORTED_ITEMS =
+        "Invalid parameter (${NUM_ITEMS}). Must specify a positive number of items to be reported, or 0 to indicate that all items should be reported.";
 
 
     /*
@@ -592,9 +592,9 @@ void validate_envIsInit(const char* caller) {
  * DEBUG UTILITIES
  */
 
-void validate_numReportedMatrixElems(qindex num, const char* caller) {
+void validate_numReportedItems(qindex num, const char* caller) {
 
-    assertThat(num >= 0, report::INVALID_NUM_REPORTED_MATRIX_ELEMS, {{"${NUM_ELEMS}", num}}, caller);
+    assertThat(num >= 0, report::INVALID_NUM_REPORTED_ITEMS, {{"${NUM_ITEMS}", num}}, caller);
 }
 
 

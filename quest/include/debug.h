@@ -22,7 +22,7 @@ void invalidQuESTInputError(const char* msg, const char* func);
 void setValidationOn();
 void setValidationOff();
 
-void setNumReportedMatrixElems(qindex num);
+void setNumReportedItems(qindex num);
 
 
 

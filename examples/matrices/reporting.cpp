@@ -14,7 +14,7 @@ void rootPrint(qindex num) {
     if (getQuESTEnv().rank != 0)
         return;
 
-    std::cout << "\n\n>> set number of reported elements to " << num;
+    std::cout << "\n\n>> set number of reported items to " << num;
 
     if (num == 0)
         std::cout << " (which means report all)";
@@ -34,7 +34,7 @@ void demo_CompMatr() {
 
     for (int num : {0, 12, 5, 1}) {
         rootPrint(num);
-        setNumReportedMatrixElems(num);
+        setNumReportedItems(num);
         reportCompMatr(matr);
     }
 }
@@ -50,7 +50,7 @@ void demo_DiagMatr() {
 
     for (int num : {0, 10}) {
         rootPrint(num);
-        setNumReportedMatrixElems(num);
+        setNumReportedItems(num);
         reportDiagMatr(matr);
     }
 }
@@ -68,7 +68,7 @@ void demo_FullStateDiagMatr() {
 
     for (int num : {0, 50, 30, 10, 5, 1}) {
         rootPrint(num);
-        setNumReportedMatrixElems(num);
+        setNumReportedItems(num);
         reportFullStateDiagMatr(matr);
     }
 }

@@ -14,7 +14,7 @@ void rootPrint(qindex num) {
     if (getQuESTEnv().rank != 0)
         return;
 
-    printf("\n\n>> set number of reported elements to %lld", num);
+    printf("\n\n>> set number of reported items to %lld", num);
 
     if (num == 0)
         printf(" (which means report all)");
@@ -38,7 +38,7 @@ void demo_CompMatr() {
     for (int i=0; i<len; i++) {
         qindex num = numReportElems[i];
         rootPrint(num);
-        setNumReportedMatrixElems(num);
+        setNumReportedItems(num);
         reportCompMatr(matr);
     }
 }
@@ -58,7 +58,7 @@ void demo_DiagMatr() {
     for (int i=0; i<len; i++) {
         qindex num = numReportElems[i];
         rootPrint(num);
-        setNumReportedMatrixElems(num);
+        setNumReportedItems(num);
         reportDiagMatr(matr);
     }
 }
@@ -79,7 +79,7 @@ void demo_FullStateDiagMatr() {
     for (int i=0; i<6; i++) {
         qindex num = numReportElems[i];
         rootPrint(num);
-        setNumReportedMatrixElems(num);
+        setNumReportedItems(num);
         reportFullStateDiagMatr(matr);
     }
 }
