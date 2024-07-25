@@ -4,6 +4,7 @@
 
 #include "quest/include/types.h"
 #include "quest/include/matrices.h"
+#include "quest/include/paulis.h"
 
 #include "quest/src/core/formatter.hpp"
 #include "quest/src/core/utilities.hpp"
@@ -47,15 +48,17 @@ const string MATRIX_HDOTS_CHAR = "…";
  * USER-CONFIGURABLE GLOBALS
  */
 
-
+// controls the truncation of reported matrices and pauli string sums.
 // for diagonal matrices, this is the total number of printed elements,
 // but for dense matrices, it is the number in the first column, as well
-// as the number of printed columns (starting from the left)
-qindex maxNumPrintedMatrixElems = (1 << 5);
+// as the number of printed columns (starting from the left). this is
+// user-configurable and can be set to 0 to disable truncation
+qindex maxNumPrintedItems = (1 << 5);
+bool isTruncationEnabled  = (maxNumPrintedItems != 0);
 
-void form_setMaxNumPrintedMatrixElems(qindex num) {
-
-    maxNumPrintedMatrixElems = num;
+void form_setMaxNumPrintedItems(qindex num) {
+    maxNumPrintedItems  = num;
+    isTruncationEnabled = (num != 0);
 }
 
 
@@ -81,6 +84,8 @@ void form_setMaxNumPrintedMatrixElems(qindex num) {
 
     #include <cxxabi.h>
     #define DEMANGLE_TYPE true
+
+// otherwise just give up; reporters might print mangled types
 #else
     #define DEMANGLE_TYPE false
 #endif
@@ -262,7 +267,7 @@ void form_printMatrixInfo(string nameStr, int numQubits, qindex dim, size_t elem
  * DENSE MATRIX PRINTING
  *
  * which print only the matrix elements, indented. We truncate matrices which 
- * contain more rows than maxNumPrintedMatrixElems, by printing only their
+ * contain more rows than maxNumPrintedItems, by printing only their
  * upper-left and lower-left quadrants. This somewhat unusual style of truncation
  * avoids having to align unicode characters and all the resulting headaches.
  */
@@ -277,14 +282,12 @@ void rootPrintTruncatedDenseMatrixElems(T elems, qindex dim, string indent) {
         return;
 
     // determine how to truncate the reported matrix
-    qindex numTopElems = maxNumPrintedMatrixElems / 2; // floors
-    qindex numBotElems = maxNumPrintedMatrixElems - numTopElems; // includes remainder
+    qindex numTopElems = maxNumPrintedItems / 2; // floors
+    qindex numBotElems = maxNumPrintedItems - numTopElems; // includes remainder
     qindex numReported = numTopElems + numBotElems;
 
     // prevent truncation if the matrix is too small, or user has disabled
-    bool isTruncated = (
-        (maxNumPrintedMatrixElems != 0) &&
-        (dim > (numTopElems + numBotElems)));
+    bool isTruncated = isTruncationEnabled && dim > (numTopElems + numBotElems);
     if (!isTruncated) {
         numReported = dim;
         numTopElems = dim;
@@ -374,7 +377,7 @@ void form_printMatrix(CompMatr matr, string indent) {
  *
  * which print only the matrix diagonals, indented. We don't have to muck around with
  * templating because arrays decay to pointers, yay! We truncate matrices which 
- * contain more diagonals than maxNumPrintedMatrixElems, by printing only their
+ * contain more diagonals than maxNumPrintedItems, by printing only their
  * top-most and lowest partitions, separated by ellipsis.
  */
 
@@ -412,13 +415,11 @@ void rootPrintTruncatedDiagonalMatrixElems(qcomp* elems, qindex dim, string inde
         return;
 
     // determine how to truncate the reported matrix
-    qindex numTopElems = maxNumPrintedMatrixElems / 2; // floors
-    qindex numBotElems = maxNumPrintedMatrixElems - numTopElems; // includes remainder
+    qindex numTopElems = maxNumPrintedItems / 2; // floors
+    qindex numBotElems = maxNumPrintedItems - numTopElems; // includes remainder
 
     // prevent truncation if the matrix is too small, or user has disabled
-    bool isTruncated = (
-        (maxNumPrintedMatrixElems != 0) &&
-        (dim > (numTopElems + numBotElems)));
+    bool isTruncated = isTruncationEnabled && dim > (numTopElems + numBotElems);
     if (!isTruncated) {
         numTopElems = dim;
         numBotElems = 0;
@@ -483,9 +484,7 @@ void form_printMatrix(FullStateDiagMatr matr, string indent) {
     int numRanks = comm_getNumNodes();
 
     // prevent truncation if user has disabled by imitating a sufficiently large truncation threshold
-    qindex maxPrintedElems = (maxNumPrintedMatrixElems == 0)?
-        matr.numElems :
-        maxNumPrintedMatrixElems;
+    qindex maxPrintedElems = (isTruncationEnabled)? maxNumPrintedItems : matr.numElems;
 
     // when distributed, multiple nodes may print their elements depending on the matrix truncation
     int numNodesWorth = maxPrintedElems / matr.numElemsPerNode; // floors
@@ -656,3 +655,38 @@ void form_printTable(string title, vector<tuple<string, long long int>> rows, st
 
     form_printTable(title, casted, indent);
 }
+
+
+
+/*
+ * PAULI STRING AND SUM REPORTERS
+ */
+
+
+extern int getPauliAt(PauliStr str, int ind);
+extern int getIndOfLefmostPauli(PauliStr str);
+
+
+string getPauliStrAsString(PauliStr str, int maxNumQubits) {
+
+    string labels = "IXYZ";
+
+    // ugly but adequate
+    string out = "";
+    for (int i=maxNumQubits-1; i>=0; i--)
+        out += labels[getPauliAt(str, i)];
+    
+    return out;
+}
+
+
+void form_printPauliStr(PauliStr str, int numQubits) {
+
+    // only root node ever prints
+    if (!comm_isRootNode())
+        return;
+
+    cout << getPauliStrAsString(str, numQubits) << endl;
+}
+
+

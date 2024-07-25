@@ -399,11 +399,9 @@ void reportQuESTEnv() {
 
     // TODO: add function to write this output to file (useful for HPC debugging)
 
-    // only root node reports (but no synch necesary)
-    if (globalEnvPtr->rank != 0)
-        return;
-
-    std::cout << "QuEST execution environment:" << std::endl;
+    // only root node reports
+    if (comm_isRootNode())
+        std::cout << "QuEST execution environment:" << std::endl;
 
     bool statevec = false;
     bool densmatr = true;

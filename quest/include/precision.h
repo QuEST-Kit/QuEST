@@ -14,8 +14,29 @@
  */
 
 // can be (for example) int, long, long long, unsigned, long unsigned, long long unsigned.
-// note this is user-facing so using unsigned opens users to risks of underflowing
+// We make sure that the backend never relies upon being able to represent negative 
+// indices (e.g. as flags) since that would require a strictly signed type. Note this precision
+// determines qindex which is user-facing so using unsigned types opens the users to the
+// risks of underflowing. Since we never store large collections of this type, there is little 
+// benefit in shrinking the type size and facing the associated precision risks. Similarly,
+// there is little benefit in making it larger since a 'long long int' can represent 62 qubits,
+// which is already well beyond simulability, requiring 64 EiB total at double precision.
 #define INDEX_TYPE long long int
+
+
+
+/*
+ * PAULI STRING INDEXING TYPE
+ */
+
+// should never be changed; it is unsigned due to its use in extensive bitwise processing
+// (no overflow risks since the API does not use this type), and its precision constrains
+// the number of Paulis which can be specified in a PauliStr. Specifically, PauliStr stores
+// two PAULI_MASK_TYPE instances, each of which are interpreted as half the digits of a 
+// base-4 numeral encoding the Pauli string. A single 64-bit 'long long unsigned' can ergo
+// specify only 32 qubits, whereas two can specify more qubits (64) than we can simulate.
+// This type is defined purely to avoid littering the source with explicit typing.
+#define PAULI_MASK_TYPE long long unsigned int
 
 
 

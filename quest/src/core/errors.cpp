@@ -272,3 +272,15 @@ void assert_shiftedQuregIsDensMatr(Qureg qureg) {
     if (!qureg.isDensityMatrix)
         raiseInternalError("A function attempted to obtain the shifted Choi indices of a state-vector, as if it were a density matrix.");
 }
+
+
+
+/*
+ * PARSING ERRORS
+ */
+
+void error_attemptedToParseUnrecognisedPauliChar() {
+
+    raiseInternalError("A function attempted to parse an unrecognised character as a Pauli operator. This should have been caught by prior validation.");
+}
+

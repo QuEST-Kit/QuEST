@@ -133,4 +133,12 @@ void assert_shiftedQuregIsDensMatr(Qureg qureg);
 
 
 
+/*
+ * PARSING ERRORS
+ */
+
+void error_attemptedToParseUnrecognisedPauliChar();
+
+
+
 #endif // ERRORS_HPP

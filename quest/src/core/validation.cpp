@@ -7,12 +7,14 @@
 #include "quest/include/environment.h"
 #include "quest/include/qureg.h"
 #include "quest/include/matrices.h"
+#include "quest/include/paulis.h"
 
 #include "quest/src/core/validation.hpp"
 #include "quest/src/core/errors.hpp"
 #include "quest/src/core/bitwise.hpp"
 #include "quest/src/core/memory.hpp"
 #include "quest/src/core/utilities.hpp"
+#include "quest/src/core/parser.hpp"
 #include "quest/src/comm/comm_config.hpp"
 #include "quest/src/comm/comm_routines.hpp"
 #include "quest/src/cpu/cpu_config.hpp"
@@ -20,6 +22,7 @@
 
 #include <iostream>
 #include <cstdlib>
+#include <string>
 #include <vector>
 #include <map>
 
@@ -338,6 +341,33 @@ namespace report {
 
     std::string FULL_STATE_DIAG_MATR_IS_DISTRIB_BUT_QUREG_ISNT =
         "The given FullStateDiagMatr is distributed but the Qureg is not, which is forbidden. Consider disabling distribution for this matrix via createCustomFullStateDiagMatr().";
+
+
+    /*
+     * PAULI STRING CREATION
+     */
+
+    std::string NEW_PAULI_STR_NON_POSITIVE_NUM_PAULIS =
+        "Invalid number of Paulis (${NUM_PAULIS}). The Pauli string must contain at least one Pauli operator, which is permittedly identity.";
+    
+    std::string NEW_PAULI_STR_NUM_PAULIS_EXCEEDS_TYPE =
+        "Cannot make a Pauli string of ${NUM_PAULIS} Paulis since this exceeds the maximum of ${MAX_PAULIS} imposed by the typing of PauliStr's fields.";
+    
+    // TODO: replace BAD_CHAR ascii code with actual character, once tokenSubs is generalised to any-type
+    std::string NEW_PAULI_STR_UNRECOGNISED_PAULI_CHAR = 
+        "Given an unrecognised Pauli character (ASCII code ${BAD_CHAR}) at index ${CHAR_IND}. Each character must be one of I X Y Z (or lower case), or equivalently 0 1 2 3'.";
+
+    std::string NEW_PAULI_STR_TERMINATION_CHAR_TOO_EARLY =
+        "The given string contained fewer characters (${TERM_IND}) than the specified number of Pauli operators (${NUM_PAULIS}).";
+
+    std::string NEW_PAULI_STR_INVALID_INDEX =
+        "Invalid index (${BAD_IND}). Pauli indices must be non-negative and cannot equal nor exceed the maximum number of representable Pauli operators (${MAX_PAULIS}).";
+
+    std::string NEW_PAULI_STR_DUPLICATED_INDEX =
+        "The Pauli indices contained a duplicate. Indices must be unique.";
+
+    std::string NEW_PAULI_STR_DIFFERENT_NUM_CHARS_AND_INDS = 
+        "Given a different number of Pauli operators (${NUM_PAULIS}) and their qubit indices (${NUM_INDS}).";
 
 
     /*
@@ -1406,6 +1436,90 @@ void validate_initClassicalStateIndex(Qureg qureg, qindex ind, const char* calle
         {"${NUM_STATES}", maxIndExcl}};
 
     assertThat(ind >= 0 && ind < maxIndExcl, report::INVALID_STATE_INDEX, vars, caller);
+}
+
+
+
+/*
+ * PAULI STRING CREATION
+ */
+
+void assertCorrectNumPauliCharsBeforeTerminationChar(char* paulis, int numPaulis, const char* caller) {
+
+    char termChar = '\0';
+    int numCharsBeforeTerm = 0;
+
+    // the termination char can actually be AFTER numPaulis; that's fine
+    for (int i=0; i<numPaulis && paulis[i] != termChar; i++)
+        numCharsBeforeTerm++;
+
+    tokenSubs vars = {{"${TERM_IND}", numCharsBeforeTerm}, {"${NUM_PAULIS}", numPaulis}};
+    assertThat(numCharsBeforeTerm >= numPaulis, report::NEW_PAULI_STR_TERMINATION_CHAR_TOO_EARLY, vars, caller);
+}
+
+void assertRecognisedNewPaulis(char* paulis, int numPaulis, const char* caller) {
+
+    // paulis might also contain '\0' char (string termination),  
+    // but not before numPaulis (as prior validated)
+
+    for (int i=0; i<numPaulis; i++) {
+
+        // TODO: we can only display the ascii code of unrecognised characters,
+        // because tokenSubs only accepts integers (not chars/substrings). Fix this!
+        char ch = paulis[i];
+        int ascii = (int) ch;
+
+        assertThat(
+            parser_RECOGNISED_PAULI_CHARS.find(ch) != std::string::npos,
+            report::NEW_PAULI_STR_UNRECOGNISED_PAULI_CHAR,
+            {{"${BAD_CHAR}", ascii}, {"${CHAR_IND}", i}}, caller);
+    }
+}
+
+void assertValidNewPauliIndices(int* indices, int numInds, int maxIndExcl, const char* caller) {
+
+    // check each index is valid
+    for (int i=0; i<numInds; i++) {
+        int ind = indices[i];
+        assertThat(
+            ind >= 0 && ind < maxIndExcl, report::NEW_PAULI_STR_INVALID_INDEX,
+            {{"${BAD_IND}", ind}, {"${MAX_PAULIS}", maxIndExcl}}, caller);
+    }
+
+    // check no index is duplicated
+    assertThat(isIndexListUnique(indices, numInds), report::NEW_PAULI_STR_DUPLICATED_INDEX, caller);
+}
+
+void validate_newPauliStrNumPaulis(int numPaulis, int maxNumPaulis, const char* caller) {
+
+    tokenSubs vars = {{"${NUM_PAULIS}", numPaulis}};
+    assertThat(numPaulis > 0, report::NEW_PAULI_STR_NON_POSITIVE_NUM_PAULIS, vars, caller);
+
+    vars["${MAX_PAULIS}"] = maxNumPaulis;
+    assertThat(numPaulis <= maxNumPaulis, report::NEW_PAULI_STR_NUM_PAULIS_EXCEEDS_TYPE, vars, caller);
+}
+
+void validate_newPauliStrParams(char* paulis, int* indices, int numPaulis, int maxNumPaulis, const char* caller) {
+
+    // note we do not bother checking whether RAM has enough memory to contain
+    // the new Pauli string, because the caller to this function has already
+    // been passed data of the same size (and it's unlikely the user is about
+    // to max RAM), and the memory requirements scale only linearly with the
+    // parameters (e.g. numTerms), unlike the exponential scaling of the memory
+    // of Qureg and CompMatr, for example
+
+    validate_newPauliStrNumPaulis(numPaulis, maxNumPaulis, caller);
+    assertCorrectNumPauliCharsBeforeTerminationChar(paulis, numPaulis, caller);
+    assertRecognisedNewPaulis(paulis, numPaulis, caller);
+    assertValidNewPauliIndices(indices, numPaulis, maxNumPaulis, caller);
+}
+
+void validate_newPauliStrNumChars(int numPaulis, int numIndices, const char* caller) {
+
+    // this is a C++-only validation, because only std::string gaurantees we can know
+    // the passed string length (C char arrays might not contain termination char)
+    tokenSubs vars = {{"${NUM_PAULIS}", numPaulis}, {"${NUM_INDS}", numIndices}};
+    assertThat(numPaulis == numIndices, report::NEW_PAULI_STR_DIFFERENT_NUM_CHARS_AND_INDS, vars, caller);
 }
 
 

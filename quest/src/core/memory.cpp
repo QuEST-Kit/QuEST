@@ -8,7 +8,6 @@
  */
 
 #include "quest/include/types.h"
-#include "quest/include/quest.h"
 
 #include "quest/src/core/memory.hpp"
 #include "quest/src/core/bitwise.hpp"
