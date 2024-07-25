@@ -21,4 +21,22 @@ int parser_getPauliIntFromChar(char ch);
 
 
 
+/*
+ * PARSING PAULI STRING SUMS
+ */
+
+PauliStrSum parser_validateAndParsePauliStrSum(std::string lines, const char* caller);
+
+
+
+/*
+ * FILE IO
+ */
+
+bool parser_canReadFile(std::string fn);
+
+std::string parser_loadFile(std::string fn);
+
+
+
 #endif // PARSER_HPP

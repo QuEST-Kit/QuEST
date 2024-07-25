@@ -198,6 +198,33 @@ PauliStrSum createPauliStrSum(std::vector<PauliStr> strings, std::vector<qcomp> 
 }
 
 
+extern "C" PauliStrSum createInlinePauliStrSum(char* str) {
+
+    // str must be null-terminated
+    return parser_validateAndParsePauliStrSum(std::string(str), __func__);
+}
+
+PauliStrSum createInlinePauliStrSum(std::string str) {
+
+    return parser_validateAndParsePauliStrSum(str, __func__);
+}
+
+
+extern "C" PauliStrSum createPauliStrSumFromFile(char* fn) {
+
+    // fn must be null-terminated
+    return createPauliStrSumFromFile(std::string(fn));
+}
+
+PauliStrSum createPauliStrSumFromFile(std::string fn) {
+    validate_canReadFile(fn, __func__);
+
+    std::string str = parser_loadFile(fn);
+    return parser_validateAndParsePauliStrSum(str, __func__);
+}
+
+
+
 /*
  * DESTROYERS
  */

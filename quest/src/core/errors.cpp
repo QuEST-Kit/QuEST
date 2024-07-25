@@ -284,8 +284,33 @@ void assert_shiftedQuregIsDensMatr(Qureg qureg) {
  * PARSING ERRORS
  */
 
+void error_attemptedToParseComplexFromInvalidString() {
+
+    raiseInternalError("A function attempted to parse a string to a qcomp but the string was not validly formatted. This should have been caught by prior user validation.");
+}
+
+void error_attemptedToParseRealFromInvalidString() {
+
+    raiseInternalError("A function attempted to parse a string to a qreal but the string was not validly formatted. This should have been caught by prior user validation.");
+}
+
+void error_attemptedToParseOutOfRangeReal() {
+
+    raiseInternalError("A function attempted to parse a string to a qreal but the numerical value of the string literal exceeded the range of the qreal. This should have been caught by prior user validation.");
+}
+
+void error_attemptedToParsePauliStringFromInvalidString() {
+
+    raiseInternalError("A function attempted to parse a string as a sequence of Pauli operators the string was not validly formatted. This should have been caught by prior user validation.");
+}
+
 void error_attemptedToParseUnrecognisedPauliChar() {
 
     raiseInternalError("A function attempted to parse an unrecognised character as a Pauli operator. This should have been caught by prior validation.");
+}
+
+void error_couldNotReadFile() {
+
+    raiseInternalError("A function failed to open and read a file that previous validation confirmed was readable.");
 }
 

@@ -444,5 +444,6 @@ bool comm_isTrueOnAllNodes(bool val) {
 
 #else
     error_commButEnvNotDistributed();
+    return false;
 #endif
 }

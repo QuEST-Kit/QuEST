@@ -161,6 +161,20 @@ void validate_newPauliStrSumAllocs(PauliStrSum sum, qindex numBytesStrings, qind
 
 
 /*
+ * PAULI STRING SUM PARSING
+ */
+
+void validate_parsedPauliStrSumLineIsInterpretable(bool isInterpretable, std::string line, qindex lineIndex, const char* caller);
+
+void validate_parsedPauliStrSumCoeffIsValid(bool isCoeffValid, std::string line, qindex lineIndex, const char* caller);
+
+void validate_parsedPauliStrSumLineHasConsistentNumPaulis(int numPaulis, int numLinePaulis, std::string line, qindex lineIndex, const char* caller);
+
+void validate_parsedStringIsNotEmpty(bool stringIsNotEmpty, const char* caller);
+
+
+
+/*
  * EXISTING PAULI STRING SUMS
  */
 
@@ -173,6 +187,14 @@ void validate_pauliStrSumFields(PauliStrSum sum, const char* caller);
  */
 
 void validate_target(Qureg qureg, int target, const char* caller);
+
+
+
+/*
+ * FILE IO
+ */
+
+void validate_canReadFile(std::string fn, const char* caller);
 
 
 

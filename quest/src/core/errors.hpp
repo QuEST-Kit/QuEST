@@ -139,7 +139,17 @@ void assert_shiftedQuregIsDensMatr(Qureg qureg);
  * PARSING ERRORS
  */
 
+void error_attemptedToParseComplexFromInvalidString();
+
+void error_attemptedToParseRealFromInvalidString();
+
+void error_attemptedToParseOutOfRangeReal();
+
+void error_attemptedToParsePauliStringFromInvalidString();
+
 void error_attemptedToParseUnrecognisedPauliChar();
+
+void error_couldNotReadFile();
 
 
 
