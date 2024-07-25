@@ -21,6 +21,10 @@
  * PAULI STRUCTS
  *
  * which are visible to both C and C++, and don't require demangling.
+ * PauliStr contain only stack primitives, while PauliStrSum
+ * contains dynamic heap pointers. Notice that PauliStr has non-const
+ * members, because users will typically store large collections of
+ * them (like in a PauliStrSum) so we wish to retain copy overwriting.
  */
 
 
@@ -33,6 +37,19 @@ typedef struct {
     PAULI_MASK_TYPE highPaulis;
 
 } PauliStr;
+
+
+typedef struct {
+
+    // arbitrarily-sized collection of Pauli strings and their
+    // coefficients are stored in heap memory.
+    PauliStr* strings;
+    qcomp* coeffs;
+
+    const qindex numTerms;
+
+} PauliStrSum;
+
 
 
 /*
@@ -75,6 +92,51 @@ typedef struct {
 
 
 /*
+ * PAULI STRING SUM CREATION
+ */
+
+
+// base methods are C and C++ compatible
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+    PauliStrSum createPauliStrSum(PauliStr* strings, qcomp* coeffs, qindex numTerms);
+
+#ifdef __cplusplus
+}
+#endif
+
+
+// C++ users get additional overloads
+#ifdef __cplusplus
+
+    PauliStrSum createPauliStrSum(std::vector<PauliStr> strings, std::vector<qcomp> coeffs);
+
+#endif
+
+
+
+/*
+ * PAULI SUM CREATION AND DESTRUCTION
+ */
+
+
+// enable invocation by both C and C++ binaries
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+    void destroyPauliStrSum(PauliStrSum sum);
+
+// end de-mangler
+#ifdef __cplusplus
+}
+#endif
+
+
+
+/*
  * REPORTERS
  */
 
@@ -84,6 +146,8 @@ extern "C" {
 #endif
 
     void reportPauliStr(PauliStr str);
+
+    void reportPauliStrSum(PauliStrSum str);
 
 // end de-mangler
 #ifdef __cplusplus

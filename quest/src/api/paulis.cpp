@@ -61,6 +61,32 @@ int getIndOfLefmostPauli(PauliStr str) {
 }
 
 
+bool didAnyAllocsFailOnAnyNode(PauliStrSum sum) {
+
+    bool anyFail = (sum.strings == NULL) || (sum.coeffs == NULL);
+    if (comm_isInit())
+        anyFail = comm_isTrueOnAllNodes(anyFail);
+
+    return anyFail;
+}
+
+
+void freeAllMemoryIfAnyAllocsFailed(PauliStrSum sum) {
+
+    // do nothing if everything allocated successfully between all nodes
+    if (!didAnyAllocsFailOnAnyNode(sum))
+        return;
+
+    // otherwise free every successful allocation
+    if (sum.strings != NULL)
+        free(sum.strings);
+    
+    if (sum.coeffs != NULL)
+        free(sum.coeffs);
+}
+
+
+
 /*
  * PAULI STRING INITIALISATION
  *
@@ -128,6 +154,65 @@ PauliStr getPauliStr(std::string paulis) {
 
 
 /*
+ * PAULI STRING SUM CREATION
+ *
+ * some of which are exposed directly to C, and some of which are C++-only overloads
+ */
+
+
+extern "C" PauliStrSum createPauliStrSum(PauliStr* strings, qcomp* coeffs, qindex numTerms) {
+
+    // note we do not require nor impose the strings to be unique
+    validate_newPauliStrSumParams(numTerms, __func__);
+
+    // memory needed, as is reported to user after alloc failure
+    qindex numBytesStrings = numTerms * sizeof(PauliStr);
+    qindex numBytesCoeffs  = numTerms * sizeof(qcomp);
+
+    // create struct
+    PauliStrSum out = {
+        .strings = (PauliStr*) malloc(numBytesStrings), // NULL if failed
+        .coeffs  = (qcomp*)    malloc(numBytesCoeffs),  // NULL if failed
+        .numTerms = numTerms
+    };
+
+    // if either alloc failed, clear both before validation to avoid leak
+    freeAllMemoryIfAnyAllocsFailed(out);
+    validate_newPauliStrSumAllocs(out, numBytesStrings, numBytesCoeffs, __func__);
+
+    // serially copy data over to new heap memory
+    for (int i=0; i<numTerms; i++) {
+        out.strings[i] = strings[i];
+        out.coeffs[i] = coeffs[i];
+    }
+
+    return out;
+}
+
+PauliStrSum createPauliStrSum(std::vector<PauliStr> strings, std::vector<qcomp> coeffs) {
+
+    // additionally validate 'strings' and 'coeffs' are the same length
+    validate_newPauliStrSumMatchingListLens(strings.size(), coeffs.size(), __func__);
+
+    return createPauliStrSum(strings.data(), coeffs.data(), coeffs.size()); // validates
+}
+
+
+/*
+ * DESTROYERS
+ */
+
+
+extern "C" void destroyPauliStrSum(PauliStrSum sum) {
+    validate_pauliStrSumFields(sum, __func__);
+
+    free(sum.strings);
+    free(sum.coeffs);
+}
+
+
+
+/*
  * API REPORTERS
  */
 
@@ -140,3 +225,18 @@ extern "C" void reportPauliStr(PauliStr str) {
 }
 
 
+extern "C" void reportPauliStrSum(PauliStrSum str) {
+    validate_pauliStrSumFields(str, __func__);
+
+    // calculate memory usage
+    qindex numStrBytes   = sizeof(str.numTerms * sizeof *str.strings);
+    qindex numCoeffBytes = sizeof(str.numTerms * sizeof *str.coeffs);
+    qindex numStrucBytes = sizeof(str);
+
+    // we don't bother checking for overflow since total memory scales
+    // linearly with user input parameters, unlike Qureg and matrices.
+    qindex numTotalBytes = numStrBytes + numCoeffBytes + numStrucBytes;
+
+    form_printPauliStrSumInfo(str.numTerms, numTotalBytes);
+    form_printPauliStrSum(str);
+}
