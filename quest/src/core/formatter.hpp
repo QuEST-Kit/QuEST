@@ -7,6 +7,7 @@
 
 #include "quest/include/types.h"
 #include "quest/include/matrices.h"
+#include "quest/include/paulis.h"
 
 #include <vector>
 #include <tuple>
@@ -21,7 +22,7 @@
  * USER-CONFIGURABLE GLOBALS
  */
 
-void form_setMaxNumPrintedMatrixElems(qindex num);
+void form_setMaxNumPrintedItems(qindex num);
 
 
 
@@ -116,5 +117,11 @@ void form_printTable(std::string title, std::vector<std::tuple<std::string, std:
 void form_printTable(std::string title, std::vector<std::tuple<std::string, long long int>> rows, std::string indent=defaultTableIndent);
 
 
+
+/*
+ * PAULI PRINTING
+ */
+
+void form_printPauliStr(PauliStr str, int numQubits);
 
 #endif // FORMATTER_HPP

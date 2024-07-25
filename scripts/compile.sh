@@ -92,6 +92,7 @@ CORE_FILES=(
     "formatter"
     "localiser"
     "memory"
+    "parser"
     "utilities"
     "validation"
 )
@@ -106,6 +107,7 @@ API_FILES=(
     "matrices"
     "modes"
     "operations"
+    "paulis"
     "qasm"
     "qureg"
     "types"

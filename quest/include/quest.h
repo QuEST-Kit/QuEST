@@ -14,6 +14,7 @@
 #include "quest/include/initialisations.h"
 #include "quest/include/modes.h"
 #include "quest/include/operations.h"
+#include "quest/include/paulis.h"
 #include "quest/include/precision.h"
 #include "quest/include/qasm.h"
 #include "quest/include/qureg.h"

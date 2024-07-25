@@ -8,6 +8,7 @@
 
 #include "quest/include/environment.h"
 #include "quest/include/qureg.h"
+#include "quest/include/paulis.h"
 #include "quest/include/matrices.h"
 
 #include <vector>
@@ -140,6 +141,16 @@ void validate_matrixIsCompatibleWithQureg(FullStateDiagMatr matr, Qureg qureg, c
 void validate_initClassicalStateIndex(Qureg qureg, qindex ind, const char* caller);
 
 
+
+/*
+ * PAULI STRINGS AND SUMS CREATION
+ */
+
+void validate_newPauliStrParams(char* paulis, int* indices, int numPaulis, int maxNumPaulis, const char* caller);
+
+void validate_newPauliStrNumChars(int numPaulis, int numIndices, const char* caller); // called by C++ only
+
+void validate_newPauliStrNumPaulis(int numPaulis, int maxNumPaulis, const char* caller); // called by C++ only
 
 /*
  * OPERATOR PARAMETERS

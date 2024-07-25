@@ -211,6 +211,8 @@ void printMemoryInfo(Qureg qureg) {
     size_t localArrayMem = mem_getLocalQuregMemoryRequired(qureg.numAmpsPerNode);
     std::string localMemStr = form_str(localArrayMem) + by + ((qureg.isDistributed)? pn : "");
 
+    // precondition: no reportable fields are at risk of overflow as a qindex
+    // type, EXCEPT aggregate total memory between distributed nodes (in bytes)
     qindex globalTotalMem = mem_getTotalGlobalMemoryUsed(qureg);
     std::string globalMemStr = (globalTotalMem == 0)? "overflowed" : (form_str(globalTotalMem) + by);
 
@@ -284,14 +286,10 @@ void reportQureg(Qureg qureg) {
 
     // TODO: add function to write this output to file (useful for HPC debugging)
 
-    // precondition: no reportable fields are at risk of overflow as a qindex
-    // type, EXCEPT aggregate total memory between distributed nodes (in bytes)
+    // only root node reports
+    if (comm_isRootNode(qureg.rank))
+        std::cout << "Qureg:" << std::endl;
 
-    // only root node reports (but no synch necesary)
-    if (qureg.rank != 0)
-        return;
-
-    std::cout << "Qureg:" << std::endl;
     printDeploymentInfo(qureg);
     printDimensionInfo(qureg);
     printDistributionInfo(qureg);
