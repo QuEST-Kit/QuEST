@@ -19,10 +19,10 @@ void setValidationOff() {
     validate_disable();
 }
 
-void setNumReportedMatrixElems(qindex num) {
-    validate_numReportedMatrixElems(num, __func__);
+void setNumReportedItems(qindex num) {
+    validate_numReportedItems(num, __func__);
 
-    form_setMaxNumPrintedMatrixElems(num);
+    form_setMaxNumPrintedItems(num);
 }
 
 

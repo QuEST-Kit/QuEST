@@ -60,7 +60,7 @@ void validate_envIsInit(const char* caller);
  * DEBUG UTILITIES
  */
 
-void validate_numReportedMatrixElems(qindex num, const char* caller);
+void validate_numReportedItems(qindex num, const char* caller);
 
 
 
