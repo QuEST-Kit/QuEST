@@ -389,6 +389,23 @@ namespace report {
 
 
     /*
+     * PAULI STRING SUM PARSING
+     */
+
+    std::string PARSED_PAULI_STR_SUM_UNINTERPRETABLE_LINE = 
+        "Could not interpret line ${LINE_NUMBER} as a coefficient followed by a sequence of Pauli operators.";
+
+    std::string PARSED_PAULI_STR_SUM_INCONSISTENT_NUM_PAULIS_IN_LINE =
+        "Line ${LINE_NUMBER} specified ${NUM_LINE_PAULIS} Pauli operators which is inconsistent with the number of Paulis of the previous lines (${NUM_PAULIS}).";
+
+    std::string PARSED_PAULI_STR_SUM_COEFF_IS_INVALID =
+        "The coefficient of line ${LINE_NUMBER} could not be converted to a qcomp, possibly due to it exceeding the valid numerical range.";
+
+    std::string PARSED_STRING_IS_EMPTY =
+        "The given string was empty (contained only whitespace characters) and could not be parsed.";
+
+
+    /*
      * EXISTING PAULI STRING SUM
      */
 
@@ -410,6 +427,15 @@ namespace report {
     
     std::string INVALID_TARGET_QUBIT = 
         "Invalid target qubit (${TARGET}). Must be greater than or equal to zero, and less than the number of qubits in the Qureg (${NUM_QUBITS}).";
+
+
+    /*
+     * FILE IO
+     */
+
+    // TODO: embed filename into error message when tokenSubs supports strings
+    std::string CANNOT_READ_FILE = 
+        "Could not load and read the given file. Make sure the file exists and is readable as plaintext.";
 }
 
 
@@ -1600,6 +1626,44 @@ void validate_newPauliStrSumAllocs(PauliStrSum sum, qindex numBytesStrings, qind
 
 
 /*
+ * PAULI STRING SUM PARSING
+ */
+
+void validate_parsedPauliStrSumLineIsInterpretable(bool isInterpretable, std::string line, qindex lineIndex, const char* caller) {
+
+    // TODO: we cannot yet report 'line' because tokenSubs so far only accepts integers :(
+
+    tokenSubs vars = {{"${LINE_NUMBER}", lineIndex + 1}}; // line numbers begin at 1
+    assertThat(isInterpretable, report::PARSED_PAULI_STR_SUM_UNINTERPRETABLE_LINE, vars, caller);
+}
+
+void validate_parsedPauliStrSumLineHasConsistentNumPaulis(int numPaulis, int numLinePaulis, std::string line, qindex lineIndex, const char* caller) {
+
+    // TODO: we cannot yet report 'line' because tokenSubs so far only accepts integers :(
+
+    tokenSubs vars = {
+        {"${NUM_PAULIS}",      numPaulis},
+        {"${NUM_LINE_PAULIS}", numLinePaulis},
+        {"${LINE_NUMBER}",      lineIndex + 1}}; // line numbers begin at 1
+    assertThat(numPaulis == numLinePaulis, report::PARSED_PAULI_STR_SUM_INCONSISTENT_NUM_PAULIS_IN_LINE, vars, caller);
+}
+
+void validate_parsedPauliStrSumCoeffIsValid(bool isCoeffValid, std::string line, qindex lineIndex, const char* caller) {
+
+    // TODO: we cannot yet report 'line' because tokenSubs so far only accepts integers :(
+
+    tokenSubs vars = {{"${LINE_NUMBER}", lineIndex + 1}}; // lines begin at 1
+    assertThat(isCoeffValid, report::PARSED_PAULI_STR_SUM_COEFF_IS_INVALID, vars, caller);
+}
+
+void validate_parsedStringIsNotEmpty(bool stringIsNotEmpty, const char* caller) {
+
+    assertThat(stringIsNotEmpty, report::PARSED_STRING_IS_EMPTY, caller);
+}
+
+
+
+/*
  * EXISTING PAULI STRING SUMS
  */
 
@@ -1623,4 +1687,16 @@ void validate_target(Qureg qureg, int target, const char* caller) {
         {"${NUM_QUBITS}", qureg.numQubits}};
 
     assertThat(target >= 0 && target < qureg.numQubits, report::INVALID_TARGET_QUBIT, vars, caller);
+}
+
+
+
+/*
+ * FILE IO
+ */
+
+void validate_canReadFile(std::string fn, const char* caller) {
+
+    // TODO: embed filename into error message when tokenSubs is updated to permit strings
+    assertThat(parser_canReadFile(fn), report::CANNOT_READ_FILE, caller);
 }

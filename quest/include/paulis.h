@@ -103,6 +103,10 @@ extern "C" {
 
     PauliStrSum createPauliStrSum(PauliStr* strings, qcomp* coeffs, qindex numTerms);
 
+    PauliStrSum createInlinePauliStrSum(char* str);
+
+    PauliStrSum createPauliStrSumFromFile(char* fn);
+
 #ifdef __cplusplus
 }
 #endif
@@ -112,6 +116,10 @@ extern "C" {
 #ifdef __cplusplus
 
     PauliStrSum createPauliStrSum(std::vector<PauliStr> strings, std::vector<qcomp> coeffs);
+
+    PauliStrSum createInlinePauliStrSum(std::string str);
+
+    PauliStrSum createPauliStrSumFromFile(std::string fn);
 
 #endif
 
