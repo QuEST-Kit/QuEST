@@ -6,6 +6,7 @@
 #ifndef VALIDATION_HPP
 #define VALIDATION_HPP
 
+#include "quest/include/types.h"
 #include "quest/include/environment.h"
 #include "quest/include/qureg.h"
 #include "quest/include/paulis.h"
@@ -151,6 +152,21 @@ void validate_newPauliStrParams(char* paulis, int* indices, int numPaulis, int m
 void validate_newPauliStrNumChars(int numPaulis, int numIndices, const char* caller); // called by C++ only
 
 void validate_newPauliStrNumPaulis(int numPaulis, int maxNumPaulis, const char* caller); // called by C++ only
+
+void validate_newPauliStrSumParams(qindex numTerms, const char* caller);
+
+void validate_newPauliStrSumMatchingListLens(qindex numStrs, qindex numCoeffs, const char* caller); // called by C++ only
+
+void validate_newPauliStrSumAllocs(PauliStrSum sum, qindex numBytesStrings, qindex numBytesCoeffs, const char* caller);
+
+
+/*
+ * EXISTING PAULI STRING SUMS
+ */
+
+void validate_pauliStrSumFields(PauliStrSum sum, const char* caller);
+
+
 
 /*
  * OPERATOR PARAMETERS

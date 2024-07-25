@@ -59,6 +59,11 @@ void error_validationEncounteredUnsupportedDistributedDenseMatrix() {
     raiseInternalError("User input validation processed a matrix it believed was both dense and distributed, though no such data structure currently exists.");
 }
 
+void error_validationListUniquenessCheckExceededMaskSize() {
+
+    raiseInternalError("User input validation was checking uniqueness of an index list using bitmasks but encountered an index larger than the number of bits in the mask. This should have been caught by prior validation.");
+}
+
 
 
 /*

@@ -109,6 +109,7 @@ void form_printMatrix(DiagMatr  matr, std::string indent=defaultMatrIndent);
 void form_printMatrix(FullStateDiagMatr matr, std::string indent=defaultMatrIndent);
 
 
+
 /*
  * TABLE PRINTING
  */
@@ -123,5 +124,11 @@ void form_printTable(std::string title, std::vector<std::tuple<std::string, long
  */
 
 void form_printPauliStr(PauliStr str, int numQubits);
+
+void form_printPauliStrSumInfo(qindex numTerms, qindex numBytes);
+
+void form_printPauliStrSum(PauliStrSum sum, std::string indent=defaultMatrIndent);
+
+
 
 #endif // FORMATTER_HPP

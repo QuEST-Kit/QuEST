@@ -4,6 +4,7 @@
  */
 
 #include "quest/include/modes.h"
+#include "quest/include/types.h"
 #include "quest/include/environment.h"
 #include "quest/include/qureg.h"
 #include "quest/include/matrices.h"
@@ -371,6 +372,31 @@ namespace report {
 
 
     /*
+     * PAULI STRING SUM CREATION
+     */
+
+    std::string NEW_PAULI_STR_SUM_NON_POSITIVE_NUM_STRINGS =
+        "Cannot create a sum with ${NUM_TERMS} terms. The number of terms must be a positive integer.";
+
+    std::string NEW_PAULI_STR_SUM_DIFFERENT_NUM_STRINGS_AND_COEFFS =
+        "Given a different number of Pauli strings (${NUM_STRS}) and coefficients ${NUM_COEFFS}.";
+
+    std::string NEW_PAULI_STR_SUM_STRINGS_ALLOC_FAILED = 
+        "Attempted allocation of the PauliStrSum's ${NUM_TERMS}-term array of Pauli strings (${NUM_BYTES} bytes total) unexpectedly failed.";
+
+    std::string NEW_PAULI_STR_SUM_COEFFS_ALLOC_FAILED =
+        "Attempted allocation of the PauliStrSum's ${NUM_TERMS}-term array of coefficients (${NUM_BYTES} bytes total) unexpectedly failed.";
+
+
+    /*
+     * EXISTING PAULI STRING SUM
+     */
+
+    std::string INVALID_PAULI_STR_SUM_FIELDS =
+        "The given PauliStrSum had invalid fields (.numTerms=${NUM_TERMS}), which is likely a result from not being correctly initialised by createPauliStrSum().";
+
+
+    /*
      * QUREG INITIALISATIONS
      */
 
@@ -538,6 +564,27 @@ void assertAllNodesAgreeThat(bool valid, std::string msg, tokenSubs vars, const 
 
     std::string newMsg = getStringWithSubstitutedVars(msg, vars);
     assertAllNodesAgreeThat(valid, newMsg, func);
+}
+
+bool isIndexListUnique(int* list, int len) {
+
+    // use a max-size bitmask (64 bits)
+    long long unsigned int mask = 0;
+    int numBits = sizeof(mask) * 8;
+
+    // check internal safety
+    for (int i=0; i<len; i++)
+        if (list[i] >= numBits)
+            error_validationListUniquenessCheckExceededMaskSize();
+
+    // write encountered elements to a bitmask
+    for (int i=0; i<len; i++)
+        if (1 & (mask >> list[i]))
+            return false;
+        else
+            mask |= 1ULL << list[i];
+
+    return true;
 }
 
 
@@ -1520,6 +1567,47 @@ void validate_newPauliStrNumChars(int numPaulis, int numIndices, const char* cal
     // the passed string length (C char arrays might not contain termination char)
     tokenSubs vars = {{"${NUM_PAULIS}", numPaulis}, {"${NUM_INDS}", numIndices}};
     assertThat(numPaulis == numIndices, report::NEW_PAULI_STR_DIFFERENT_NUM_CHARS_AND_INDS, vars, caller);
+}
+
+
+
+/*
+ * PAULI STRING SUM CREATION
+ */
+
+void validate_newPauliStrSumParams(qindex numTerms, const char* caller) {
+
+    assertThat(numTerms > 0, report::NEW_PAULI_STR_SUM_NON_POSITIVE_NUM_STRINGS, {{"${NUM_TERMS}", numTerms}}, caller);
+}
+
+void validate_newPauliStrSumMatchingListLens(qindex numStrs, qindex numCoeffs, const char* caller) {
+
+    tokenSubs vars = {{"${NUM_STRS}", numStrs}, {"${NUM_COEFFS}", numCoeffs}};
+    assertThat(numStrs == numCoeffs, report::NEW_PAULI_STR_SUM_DIFFERENT_NUM_STRINGS_AND_COEFFS, vars, caller);
+}
+
+void validate_newPauliStrSumAllocs(PauliStrSum sum, qindex numBytesStrings, qindex numBytesCoeffs, const char* caller) {
+
+    assertThat(
+        sum.strings != NULL, report::NEW_PAULI_STR_SUM_STRINGS_ALLOC_FAILED, 
+        {{"${NUM_TERMS}", sum.numTerms}, {"${NUM_BYTES}", numBytesStrings}}, caller);
+
+    assertThat(
+        sum.coeffs != NULL, report::NEW_PAULI_STR_SUM_COEFFS_ALLOC_FAILED, 
+        {{"${NUM_TERMS}", sum.numTerms}, {"${NUM_BYTES}", numBytesCoeffs}}, caller);
+}
+
+
+
+/*
+ * EXISTING PAULI STRING SUMS
+ */
+
+void validate_pauliStrSumFields(PauliStrSum sum, const char* caller) {
+
+    assertThat(sum.numTerms > 0, report::INVALID_PAULI_STR_SUM_FIELDS, {{"${NUM_TERMS}", sum.numTerms}}, caller);
+
+    // no point checking sum's pointers are not NULL; see the explanation in validate_quregFields()
 }
 
 

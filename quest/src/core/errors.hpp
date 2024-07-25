@@ -27,6 +27,8 @@ void error_validationMessageContainedUnsubstitutedVars(std::string msg);
 
 void error_validationEncounteredUnsupportedDistributedDenseMatrix();
 
+void error_validationListUniquenessCheckExceededMaskSize();
+
 
 
 /*

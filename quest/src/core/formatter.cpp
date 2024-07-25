@@ -11,6 +11,7 @@
 #include "quest/src/comm/comm_config.hpp"
 #include "quest/src/comm/comm_routines.hpp"
 
+#include <algorithm>
 #include <stdlib.h>
 #include <iostream>
 #include <iomanip>
@@ -35,12 +36,35 @@ using namespace form_substrings;
 const int MIN_SPACE_BETWEEN_DENSE_MATRIX_COLS = 2;
 const int SET_SPACE_BETWEEN_DIAG_MATRIX_COLS = 2;
 const int MIN_SPACE_BETWEEN_TABLE_COLS = 5;
+const int MIN_SPACE_BETWEEN_COEFF_AND_PAULI_STR = 2;
 
+// must be kept as single char; use numbers above to change spacing
 const char TABLE_SPACE_CHAR = '.';
 const char MATRIX_SPACE_CHAR = ' ';
-const string MATRIX_VDOTS_CHAR = "⋮";   // unicode too wide for char literal
-const string MATRIX_DDOTS_CHAR = "⋱";
-const string MATRIX_HDOTS_CHAR = "…";
+const char PAULI_STR_SPACE_CHAR = ' ';
+
+const string VDOTS_CHAR = "⋮";   // unicode too wide for char literal
+const string DDOTS_CHAR = "⋱";
+const string HDOTS_CHAR = "…";
+
+
+
+/*
+ * SUBSTRINGS USED BY REPORTERS
+ */
+
+namespace form_substrings { 
+    string eq = " = ";
+    string mu = " x ";
+    string pl = " + ";
+    string by = " bytes";
+    string pn = " per node";
+    string pg = " per gpu";
+    string pm = " per machine";
+    string bt = "2^";
+    string na = "N/A";
+    string un = "unknown";
+}
 
 
 
@@ -245,7 +269,7 @@ void form_printMatrixInfo(string nameStr, int numQubits, qindex dim, size_t elem
     string sepStr  = ", ";
     string qbStr   = form_str(numQubits) + " qubit" + ((numQubits>1)? "s":"");
     string dimStr  = form_str(dim) + (isDiag? "" : mu + form_str(dim)) + " qcomps";
-    string memStr  = form_str(elemMem) + " + " + form_str(otherMem) + by;
+    string memStr  = form_str(elemMem) + pl + form_str(otherMem) + by;
 
     if (numNodes > 1) {
         dimStr += " over " + form_str(numNodes) + " nodes";
@@ -326,7 +350,7 @@ void rootPrintTruncatedDenseMatrixElems(T elems, qindex dim, string indent) {
 
         // print a trailing ellipsis after the top-most row
         if (isTruncated && r == 0)
-            cout << MATRIX_HDOTS_CHAR;
+            cout << HDOTS_CHAR;
 
         cout << endl;
     }
@@ -340,7 +364,7 @@ void rootPrintTruncatedDenseMatrixElems(T elems, qindex dim, string indent) {
     cout << indent;
     for (int i=0; i<maxColWidths[0]/2; i++)
         cout << MATRIX_SPACE_CHAR;
-    cout << MATRIX_VDOTS_CHAR << endl;
+    cout << VDOTS_CHAR << endl;
 
     // print the remaining bottom rows
     for (qindex r=dim-numBotElems; r<dim; r++) {
@@ -354,7 +378,7 @@ void rootPrintTruncatedDenseMatrixElems(T elems, qindex dim, string indent) {
 
         // print a trailing ellipsis after the bottom-most row
         if (r == dim-1)
-            cout << MATRIX_HDOTS_CHAR;
+            cout << HDOTS_CHAR;
 
         cout << endl;
     }
@@ -404,7 +428,7 @@ void rootPrintDiagonalDots(qindex elemInd, string indent) {
     cout
         << indent 
         << string(elemInd * SET_SPACE_BETWEEN_DIAG_MATRIX_COLS, MATRIX_SPACE_CHAR)
-        << MATRIX_DDOTS_CHAR 
+        << DDOTS_CHAR 
         << endl;
 }
 
@@ -604,29 +628,15 @@ void form_printMatrix(FullStateDiagMatr matr, string indent) {
 
 
 /*
- * SUBSTRINGS USED BY REPORTERS
- */
-
-namespace form_substrings { 
-    string eq = " = ";
-    string mu = " x ";
-    string by = " bytes";
-    string pn = " per node";
-    string pg = " per gpu";
-    string pm = " per machine";
-    string bt = "2^";
-    string na = "N/A";
-    string un = "unknown";
-}
-
-
-
-/*
  * TABLE PRINTING
  */
 
 
 void form_printTable(string title, vector<tuple<string, string>> rows, string indent) {
+
+    // only root node prints
+    if (!comm_isRootNode())
+        return;
 
     // find max-width of left column
     int maxWidth = 0;
@@ -647,6 +657,10 @@ void form_printTable(string title, vector<tuple<string, string>> rows, string in
 
 
 void form_printTable(string title, vector<tuple<string, long long int>> rows, string indent) {
+
+    // only root node prints
+    if (!comm_isRootNode())
+        return;
 
     // convert all values to strings
     vector<tuple<string, string>> casted;
@@ -690,3 +704,98 @@ void form_printPauliStr(PauliStr str, int numQubits) {
 }
 
 
+void form_printPauliStrSumInfo(qindex numTerms, qindex numBytes) {
+
+    // only root node ever prints
+    if (!comm_isRootNode())
+        return;
+
+    // print e.g. PauliStrSum (3 terms, 24 bytes)
+    cout << "PauliStrSum (" << numTerms << " terms, " << numBytes << by << ")" << endl;
+}
+
+
+int getWidthOfWidestElem(qcomp* elems, qindex numElems) {
+
+    int maxWidth = 0;
+
+    for (qindex i=0; i<numElems; i++) {
+        int width = form_str(elems[i]).size();
+        if (width > maxWidth)
+            maxWidth = width;
+    }
+
+    return maxWidth;
+}
+
+
+int getIndexOfLeftmostPauliAmongStrings(PauliStr* strings, qindex numStrings) {
+
+    int maxInd = 0;
+
+    for (qindex i=0; i<numStrings; i++) {
+        int ind = getIndOfLefmostPauli(strings[i]);
+        if (ind > maxInd)
+            maxInd = ind;
+    }
+
+    return maxInd;
+}
+
+
+void printPauliStrSumSubset(PauliStrSum sum, qindex startInd, qindex endIndExcl, int coeffWidth, int maxNumPaulis, string indent) {
+
+    // each line prints as e.g. -3+2i XIXXI
+    for (int i=startInd; i<endIndExcl; i++)
+        cout 
+            << indent << left 
+            << setw(coeffWidth + MIN_SPACE_BETWEEN_COEFF_AND_PAULI_STR) 
+            << setfill(PAULI_STR_SPACE_CHAR) 
+            << form_str(sum.coeffs[i]) 
+            << getPauliStrAsString(sum.strings[i], maxNumPaulis)
+            << endl;
+}
+
+
+void form_printPauliStrSum(PauliStrSum sum, string indent) {
+    
+    // only root node ever prints
+    if (!comm_isRootNode())
+        return;
+
+    // determine how to truncate the reported pauli string
+    qindex numTopElems = maxNumPrintedItems / 2; // floors
+    qindex numBotElems = maxNumPrintedItems - numTopElems; // includes remainder
+    qindex botElemsInd = sum.numTerms - numBotElems;
+
+    // prevent truncation if the matrix is too small, or user has disabled
+    bool isTruncated = isTruncationEnabled && sum.numTerms > maxNumPrintedItems;
+    if (!isTruncated) {
+        numTopElems = sum.numTerms;
+        numBotElems = 0;
+        // botElemsInd is disregarded
+    }
+
+    // choose coeffs padding to make consistent column alignment
+    int maxTopCoeffWidth = getWidthOfWidestElem(sum.coeffs, numTopElems);
+    int maxBotCoeffWidth = getWidthOfWidestElem(&(sum.coeffs[botElemsInd]), numBotElems);
+    int maxCoeffWidth = max(maxTopCoeffWidth, maxBotCoeffWidth);
+
+    // choose the fixed number of Paulis to show (the min necessary to fit all non-truncated strings)
+    int maxTopNumPaulis = 1 + getIndexOfLeftmostPauliAmongStrings(sum.strings, numTopElems);
+    int maxBotNumPaulis = 1 + getIndexOfLeftmostPauliAmongStrings(&(sum.strings[botElemsInd]), numBotElems);
+    int maxNumPaulis = max(maxTopNumPaulis,maxBotNumPaulis);
+
+    // print all top elems
+    printPauliStrSumSubset(sum, 0, numTopElems, maxCoeffWidth, maxNumPaulis, indent);
+
+    // if we just printed all elems, there's nothing left to do
+    if (!isTruncated)
+        return;
+
+    // otherwise print ellipsis between coeff and string columns
+    cout << indent << string(maxCoeffWidth+1, PAULI_STR_SPACE_CHAR) << VDOTS_CHAR << endl;
+
+    // print all bottom elems
+    printPauliStrSumSubset(sum, botElemsInd, sum.numTerms, maxCoeffWidth, maxNumPaulis, indent);
+}
