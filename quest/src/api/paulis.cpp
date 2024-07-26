@@ -273,8 +273,8 @@ extern "C" void reportPauliStrSum(PauliStrSum str) {
     validate_pauliStrSumFields(str, __func__);
 
     // calculate memory usage
-    qindex numStrBytes   = sizeof(str.numTerms * sizeof *str.strings);
-    qindex numCoeffBytes = sizeof(str.numTerms * sizeof *str.coeffs);
+    qindex numStrBytes   = str.numTerms * sizeof *str.strings;
+    qindex numCoeffBytes = str.numTerms * sizeof *str.coeffs;
     qindex numStrucBytes = sizeof(str);
 
     // we don't bother checking for overflow since total memory scales

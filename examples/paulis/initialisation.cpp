@@ -1,0 +1,206 @@
+#include "quest.h"
+#include <iostream>
+#include <fstream>
+#include <cstdlib>
+
+
+
+/*
+ * PauliStr
+ */
+
+
+void demo_getInlinePauliStr() {
+
+    std::cout << std::endl << "[demo_getInlinePauliStr]" << std::endl;
+
+    // can specify indices as {...} without temporary-array syntax 
+    PauliStr a = getInlinePauliStr("XYZII", {4,3,2,1,0});
+    reportPauliStr(a);
+
+    // additionally accept 0-3 and lowercase
+    reportPauliStr(
+        getInlinePauliStr("0123ixyzIXYZ", {11,10,9,8, 7,6,5,4, 3,2,1,0})
+    );
+
+    // can specify arbitrary qubit indices of Paulis
+    reportPauliStr(
+        getInlinePauliStr("XXYYZZ", {5,50, 10,60, 30,40})
+    );
+}
+
+
+void demo_getPauliStr() {
+
+    std::cout << std::endl << "[demo_getPauliStr]" << std::endl;
+
+    // C++ can pass no indices to set Paulis upon rightmost qubits
+    PauliStr a = getPauliStr("XYZ");
+    reportPauliStr(a);
+
+    // C++ can pass vector initialisers
+    reportPauliStr(
+        getPauliStr("XYZ", {5,6,7})
+    );
+
+    // string literal
+    int num = 3;
+    std::string paulis = "xxx";
+    int  qubits[] = {2,5,8};
+    reportPauliStr(
+        getPauliStr(paulis, qubits, num)
+    );
+
+    // heap arrays
+    int n = 64;
+    char* p = (char*) malloc(n * sizeof *p); // will have no terminal char
+    int*  q = (int*)  malloc(n * sizeof *q);
+    for (int i=0; i<n; i++) {
+        p[i] = (char) ("IXYZ"[i%4]);
+        q[i] = i;
+    }
+    reportPauliStr(
+        getPauliStr(p, q, n)
+    );
+    free(p);
+    free(q);
+}
+
+
+
+/*
+ * PauliStrSum
+ */
+
+
+void demo_createInlinePauliStrSum() {
+
+    std::cout << std::endl << "[demo_createInlinePauliStrSum]" << std::endl;
+
+    // coeffs can be real, imag, or complex (via C++ raw multilines)
+    PauliStrSum a = createInlinePauliStrSum(R"(
+        0.123 XXIXX
+        1.23i XYZXZ
+        -1-6i IIIII
+    )");
+    reportPauliStrSum(a);
+    destroyPauliStrSum(a);
+
+    // and use scientific notation, with any amount of whitespace
+    PauliStrSum b = createInlinePauliStrSum(R"(
+        + 5E2-1i     XYZ 
+        - 1E-50i     IXY 
+        + 1 - 6E-5i  IIX 
+          0          III 
+          5.         XXX 
+           .5        ZZZ 
+    )");
+    reportPauliStrSum(b);
+    destroyPauliStrSum(b);
+
+    // paulis can be lowercase and 0-3, with any whitespace
+    PauliStrSum c = createInlinePauliStrSum(R"(
+        2.5     0123 ixyz IXYZ 
+        3.5     0iII 1xXX 2yYY 
+                                                               
+        -1.5E-15   -   5.123E-30i    0 0 0 0 0 0 0 0 1 1 1 1 
+        1.5        +   5i            3 3 3 3 2 2 2 2 I X Y Z 
+    )");
+    reportPauliStrSum(c);
+    destroyPauliStrSum(c);
+}
+
+
+void demo_createPauliStrSum() {
+
+    std::cout << std::endl << "[demo_createPauliStrSum]" << std::endl;
+
+    // inline using C++ vector initialisers
+    PauliStrSum a = createPauliStrSum(
+        {getPauliStr("XYZ", {1,2,3}),
+         getPauliStr("XYZ", {1,2,3}),  // duplication allowed
+         getPauliStr("XYZ", {1,2,5}),
+         getPauliStr("xxx", {4,2,3}),
+         getPauliStr("yyy", {1,2,3}),
+         getPauliStr("zzz", {9,2,3}),
+         getPauliStr("000", {1,2,3}),
+         getPauliStr("111", {1,8,3}),
+         getPauliStr("222", {8,2,3}),
+         getPauliStr("333", {1,2,8}),
+         getPauliStr("1xX", {1,6,3})}, 
+        {0.5, 0.2_i, 0.9 + 2.131_i, 1, 2, 3, 4, 5, 6, 7, 8} // use 1_i over 1i for precision agnosticism
+    );
+    reportPauliStrSum(a);
+    destroyPauliStrSum(a);
+
+    // pre-allocated
+    int n = 64;
+    char* p = (char*) malloc(n * sizeof *p); // will have no terminal char
+    int*  q = (int*)  malloc(n * sizeof *q);
+    for (int i=0; i<n; i++) {
+        p[i] = "IXYZ"[i%4];
+        q[i] = i;
+    }
+    std::vector<PauliStr> strings = {getPauliStr(p, q, n)};
+    std::vector<qcomp> coeffs = {-1E-40 + .45E2_i};
+    PauliStrSum b = createPauliStrSum(strings, coeffs);
+    reportPauliStrSum(b);
+    destroyPauliStrSum(b);
+}
+
+
+void demo_createPauliStrSumFromFile() {
+
+    std::cout << std::endl << "[demo_createPauliStrSumFromFile]" << std::endl;
+
+    std::string fn = "test.txt";
+
+    // file contents can be identical to createInlinePauliStrSum input
+    std::ofstream file;
+    file.open(fn);
+    file << R"(
+        + 5E2-1i     XYZ 
+        - 1E-50i     IXY 
+        + 1 - 6E-5i  IIX 
+          0          III 
+          5.         IXX
+           .5        ZYX 
+    )";
+    file.close();
+
+    PauliStrSum a = createPauliStrSumFromFile(fn);
+    reportPauliStrSum(a);
+    destroyPauliStrSum(a);
+}
+
+
+void demo_createPauliStrSumFromReversedFile() {
+
+    std::cout << std::endl << "[demo_createPauliStrSumFromReversedFile]" << std::endl;
+
+    PauliStrSum a = createPauliStrSumFromReversedFile("test.txt");
+    reportPauliStrSum(a);
+    destroyPauliStrSum(a);
+}
+
+
+
+/*
+ * main
+ */
+
+
+int main() {
+
+    initQuESTEnv();
+
+    demo_getInlinePauliStr();
+    demo_getPauliStr();
+    demo_createInlinePauliStrSum();
+    demo_createPauliStrSum();
+    demo_createPauliStrSumFromFile();
+    demo_createPauliStrSumFromReversedFile();
+
+    finalizeQuESTEnv();
+    return 0;
+}
