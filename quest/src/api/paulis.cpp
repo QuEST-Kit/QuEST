@@ -33,31 +33,10 @@ static const int MAX_NUM_PAULIS_PER_STR  = MAX_NUM_PAULIS_PER_MASK * 2;
  */
 
 
-int getPauliAt(PAULI_MASK_TYPE mask, int ind) {
+int getPauliFromMaskAt(PAULI_MASK_TYPE mask, int ind) {
 
     // get adjacent 2 bits at (ind+1, ind)
     return (mask >> (2*ind)) & 3;
-}
-
-int getPauliAt(PauliStr str, int ind) {
-
-    return (ind < MAX_NUM_PAULIS_PER_MASK)?
-        getPauliAt(str.lowPaulis,  ind) :
-        getPauliAt(str.highPaulis, ind - MAX_NUM_PAULIS_PER_MASK);
-}
-
-
-int getIndOfLefmostPauli(PauliStr str) {
-
-    int ind   = (str.highPaulis == 0)? 0 : MAX_NUM_PAULIS_PER_MASK;
-    auto mask = (str.highPaulis == 0)? str.lowPaulis : str.highPaulis;
-
-    while (mask) {
-        mask >>= 2;
-        ind++;
-    }
-
-    return ind - 1;
 }
 
 
@@ -83,6 +62,37 @@ void freeAllMemoryIfAnyAllocsFailed(PauliStrSum sum) {
     
     if (sum.coeffs != NULL)
         free(sum.coeffs);
+}
+
+
+
+/*
+ * INTERNAL UTILITIES
+ *
+ * callable by other internal files but which are not exposed in the header.
+ * Ergo other files must declare these functions as extern where needed.
+ */
+
+
+int paulis_getPauliAt(PauliStr str, int ind) {
+
+    return (ind < MAX_NUM_PAULIS_PER_MASK)?
+        getPauliFromMaskAt(str.lowPaulis,  ind) :
+        getPauliFromMaskAt(str.highPaulis, ind - MAX_NUM_PAULIS_PER_MASK);
+}
+
+
+int paulis_getIndOfLefmostPauli(PauliStr str) {
+
+    int ind   = (str.highPaulis == 0)? 0 : MAX_NUM_PAULIS_PER_MASK;
+    auto mask = (str.highPaulis == 0)? str.lowPaulis : str.highPaulis;
+
+    while (mask) {
+        mask >>= 2;
+        ind++;
+    }
+
+    return ind - 1;
 }
 
 
@@ -264,7 +274,7 @@ extern "C" void destroyPauliStrSum(PauliStrSum sum) {
 extern "C" void reportPauliStr(PauliStr str) {
 
     // avoid printing leftmost superfluous I operators
-    int numPaulis = 1 + getIndOfLefmostPauli(str);
+    int numPaulis = 1 + paulis_getIndOfLefmostPauli(str);
     form_printPauliStr(str, numPaulis);
 }
 

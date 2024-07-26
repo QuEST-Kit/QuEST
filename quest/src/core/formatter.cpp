@@ -677,8 +677,9 @@ void form_printTable(string title, vector<tuple<string, long long int>> rows, st
  */
 
 
-extern int getPauliAt(PauliStr str, int ind);
-extern int getIndOfLefmostPauli(PauliStr str);
+// we'll make use of these internal functions from paulis.cpp
+extern int paulis_getPauliAt(PauliStr str, int ind);
+extern int paulis_getIndOfLefmostPauli(PauliStr str);
 
 
 string getPauliStrAsString(PauliStr str, int maxNumQubits) {
@@ -688,7 +689,7 @@ string getPauliStrAsString(PauliStr str, int maxNumQubits) {
     // ugly but adequate
     string out = "";
     for (int i=maxNumQubits-1; i>=0; i--)
-        out += labels[getPauliAt(str, i)];
+        out += labels[paulis_getPauliAt(str, i)];
     
     return out;
 }
@@ -734,7 +735,7 @@ int getIndexOfLeftmostPauliAmongStrings(PauliStr* strings, qindex numStrings) {
     int maxInd = 0;
 
     for (qindex i=0; i<numStrings; i++) {
-        int ind = getIndOfLefmostPauli(strings[i]);
+        int ind = paulis_getIndOfLefmostPauli(strings[i]);
         if (ind > maxInd)
             maxInd = ind;
     }
