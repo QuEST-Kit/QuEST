@@ -6,13 +6,25 @@
 
 
 /*
+ * distributed printing
+ */
+
+void rootPrint(std::string str) {
+
+    if (getQuESTEnv().rank == 0)
+        std::cout << std::endl << str << std::endl;
+}
+
+
+
+/*
  * PauliStr
  */
 
 
 void demo_getInlinePauliStr() {
 
-    std::cout << std::endl << "[demo_getInlinePauliStr]" << std::endl;
+    rootPrint("[demo_getInlinePauliStr]");
 
     // can specify indices as {...} without temporary-array syntax 
     PauliStr a = getInlinePauliStr("XYZII", {4,3,2,1,0});
@@ -32,7 +44,7 @@ void demo_getInlinePauliStr() {
 
 void demo_getPauliStr() {
 
-    std::cout << std::endl << "[demo_getPauliStr]" << std::endl;
+    rootPrint("[demo_getPauliStr]");
 
     // C++ can pass no indices to set Paulis upon rightmost qubits
     PauliStr a = getPauliStr("XYZ");
@@ -75,7 +87,7 @@ void demo_getPauliStr() {
 
 void demo_createInlinePauliStrSum() {
 
-    std::cout << std::endl << "[demo_createInlinePauliStrSum]" << std::endl;
+    rootPrint("[demo_createInlinePauliStrSum]");
 
     // coeffs can be real, imag, or complex (via C++ raw multilines)
     PauliStrSum a = createInlinePauliStrSum(R"(
@@ -113,7 +125,7 @@ void demo_createInlinePauliStrSum() {
 
 void demo_createPauliStrSum() {
 
-    std::cout << std::endl << "[demo_createPauliStrSum]" << std::endl;
+    rootPrint("[demo_createPauliStrSum]");
 
     // inline using C++ vector initialisers
     PauliStrSum a = createPauliStrSum(
@@ -151,7 +163,7 @@ void demo_createPauliStrSum() {
 
 void demo_createPauliStrSumFromFile() {
 
-    std::cout << std::endl << "[demo_createPauliStrSumFromFile]" << std::endl;
+    rootPrint("[demo_createPauliStrSumFromFile]");
 
     std::string fn = "test.txt";
 
@@ -176,7 +188,7 @@ void demo_createPauliStrSumFromFile() {
 
 void demo_createPauliStrSumFromReversedFile() {
 
-    std::cout << std::endl << "[demo_createPauliStrSumFromReversedFile]" << std::endl;
+    rootPrint("[demo_createPauliStrSumFromReversedFile]");
 
     PauliStrSum a = createPauliStrSumFromReversedFile("test.txt");
     reportPauliStrSum(a);

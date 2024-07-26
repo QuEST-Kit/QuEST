@@ -5,13 +5,25 @@
 
 
 /*
+ * distributed printing
+ */
+
+void rootPrint(const char* str) {
+
+    if (getQuESTEnv().rank == 0)
+        printf("\n%s\n", str);
+}
+
+
+
+/*
  * PauliStr
  */
 
 
 void demo_getInlinePauliStr() {
 
-    printf("\n[demo_getInlinePauliStr]\n");
+    rootPrint("[demo_getInlinePauliStr]");
 
     // can specify indices as {...} without temporary-array syntax 
     PauliStr a = getInlinePauliStr("XYZII", {4,3,2,1,0});
@@ -31,7 +43,7 @@ void demo_getInlinePauliStr() {
 
 void demo_getPauliStr() {
 
-    printf("\n[demo_getPauliStr]\n");
+    rootPrint("[demo_getPauliStr]");
 
     // in-line via temporary array
     PauliStr a = getPauliStr("XYZ", (int[]) {5,6,7}, 3);
@@ -69,7 +81,7 @@ void demo_getPauliStr() {
 
 void demo_createInlinePauliStrSum() {
 
-    printf("\n[demo_createInlinePauliStrSum]\n");
+    rootPrint("[demo_createInlinePauliStrSum]");
 
     // coeffs can be real, imag, or complex
     PauliStrSum a = createInlinePauliStrSum(
@@ -107,7 +119,7 @@ void demo_createInlinePauliStrSum() {
 
 void demo_createPauliStrSum() {
 
-    printf("\n[demo_createPauliStrSum]\n");
+    rootPrint("[demo_createPauliStrSum]");
 
     // inline using temporary arrays
     PauliStrSum a = createPauliStrSum(
@@ -149,7 +161,7 @@ void demo_createPauliStrSum() {
 
 void demo_createPauliStrSumFromFile() {
 
-    printf("\n[demo_createPauliStrSumFromFile]\n");
+    rootPrint("[demo_createPauliStrSumFromFile]");
 
     char *fn = "test.txt";
 
@@ -173,7 +185,7 @@ void demo_createPauliStrSumFromFile() {
 
 void demo_createPauliStrSumFromReversedFile() {
 
-    printf("\n[demo_createPauliStrSumFromReversedFile]\n");
+    rootPrint("[demo_createPauliStrSumFromReversedFile]");
 
     PauliStrSum a = createPauliStrSumFromReversedFile("test.txt");
     reportPauliStrSum(a);
