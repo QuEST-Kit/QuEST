@@ -1517,7 +1517,7 @@ void validate_initClassicalStateIndex(Qureg qureg, qindex ind, const char* calle
  * PAULI STRING CREATION
  */
 
-void assertCorrectNumPauliCharsBeforeTerminationChar(char* paulis, int numPaulis, const char* caller) {
+void assertCorrectNumPauliCharsBeforeTerminationChar(const char* paulis, int numPaulis, const char* caller) {
 
     char termChar = '\0';
     int numCharsBeforeTerm = 0;
@@ -1530,7 +1530,7 @@ void assertCorrectNumPauliCharsBeforeTerminationChar(char* paulis, int numPaulis
     assertThat(numCharsBeforeTerm >= numPaulis, report::NEW_PAULI_STR_TERMINATION_CHAR_TOO_EARLY, vars, caller);
 }
 
-void assertRecognisedNewPaulis(char* paulis, int numPaulis, const char* caller) {
+void assertRecognisedNewPaulis(const char* paulis, int numPaulis, const char* caller) {
 
     // paulis might also contain '\0' char (string termination),  
     // but not before numPaulis (as prior validated)
@@ -1572,7 +1572,7 @@ void validate_newPauliStrNumPaulis(int numPaulis, int maxNumPaulis, const char* 
     assertThat(numPaulis <= maxNumPaulis, report::NEW_PAULI_STR_NUM_PAULIS_EXCEEDS_TYPE, vars, caller);
 }
 
-void validate_newPauliStrParams(char* paulis, int* indices, int numPaulis, int maxNumPaulis, const char* caller) {
+void validate_newPauliStrParams(const char* paulis, int* indices, int numPaulis, int maxNumPaulis, const char* caller) {
 
     // note we do not bother checking whether RAM has enough memory to contain
     // the new Pauli string, because the caller to this function has already

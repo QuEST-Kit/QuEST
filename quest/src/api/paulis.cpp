@@ -104,7 +104,7 @@ int paulis_getIndOfLefmostPauli(PauliStr str) {
  */
 
 
-extern "C" PauliStr getPauliStr(char* paulis, int* indices, int numPaulis) {
+extern "C" PauliStr getPauliStr(const char* paulis, int* indices, int numPaulis) {
     validate_newPauliStrParams(paulis, indices, numPaulis, MAX_NUM_PAULIS_PER_STR, __func__);
 
     // begin masks at all-identity 'I' = 0
@@ -208,7 +208,7 @@ PauliStrSum createPauliStrSum(std::vector<PauliStr> strings, std::vector<qcomp> 
 }
 
 
-extern "C" PauliStrSum createInlinePauliStrSum(char* str) {
+extern "C" PauliStrSum createInlinePauliStrSum(const char* str) {
 
     // str must be null-terminated
     return createInlinePauliStrSum(std::string(str));
@@ -221,7 +221,7 @@ PauliStrSum createInlinePauliStrSum(std::string str) {
 }
 
 
-extern "C" PauliStrSum createPauliStrSumFromFile(char* fn) {
+extern "C" PauliStrSum createPauliStrSumFromFile(const char* fn) {
 
     // fn must be null-terminated
     return createPauliStrSumFromFile(std::string(fn));
@@ -236,7 +236,7 @@ PauliStrSum createPauliStrSumFromFile(std::string fn) {
 }
 
 
-extern "C" PauliStrSum createPauliStrSumFromReversedFile(char* fn) {
+extern "C" PauliStrSum createPauliStrSumFromReversedFile(const char* fn) {
 
     // fn must be null-terminated
     return createPauliStrSumFromReversedFile(std::string(fn));
