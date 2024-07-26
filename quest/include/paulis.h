@@ -106,6 +106,7 @@ extern "C" {
     PauliStrSum createInlinePauliStrSum(char* str);
 
     PauliStrSum createPauliStrSumFromFile(char* fn);
+    PauliStrSum createPauliStrSumFromReversedFile(char* fn);
 
 #ifdef __cplusplus
 }
@@ -120,13 +121,14 @@ extern "C" {
     PauliStrSum createInlinePauliStrSum(std::string str);
 
     PauliStrSum createPauliStrSumFromFile(std::string fn);
+    PauliStrSum createPauliStrSumFromReversedFile(std::string fn);
 
 #endif
 
 
 
 /*
- * PAULI SUM CREATION AND DESTRUCTION
+ * PAULI STRING SUM DESTRUCTION
  */
 
 

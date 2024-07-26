@@ -201,12 +201,13 @@ PauliStrSum createPauliStrSum(std::vector<PauliStr> strings, std::vector<qcomp> 
 extern "C" PauliStrSum createInlinePauliStrSum(char* str) {
 
     // str must be null-terminated
-    return parser_validateAndParsePauliStrSum(std::string(str), __func__);
+    return createInlinePauliStrSum(std::string(str));
 }
 
 PauliStrSum createInlinePauliStrSum(std::string str) {
 
-    return parser_validateAndParsePauliStrSum(str, __func__);
+    bool rightIsLeastSig = true;
+    return parser_validateAndParsePauliStrSum(str, rightIsLeastSig, __func__);
 }
 
 
@@ -219,8 +220,24 @@ extern "C" PauliStrSum createPauliStrSumFromFile(char* fn) {
 PauliStrSum createPauliStrSumFromFile(std::string fn) {
     validate_canReadFile(fn, __func__);
 
+    bool rightIsLeastSig = true;
     std::string str = parser_loadFile(fn);
-    return parser_validateAndParsePauliStrSum(str, __func__);
+    return parser_validateAndParsePauliStrSum(str, rightIsLeastSig, __func__);
+}
+
+
+extern "C" PauliStrSum createPauliStrSumFromReversedFile(char* fn) {
+
+    // fn must be null-terminated
+    return createPauliStrSumFromReversedFile(std::string(fn));
+}
+
+PauliStrSum createPauliStrSumFromReversedFile(std::string fn) {
+    validate_canReadFile(fn, __func__);
+
+    bool rightIsLeastSig = false;
+    std::string str = parser_loadFile(fn);
+    return parser_validateAndParsePauliStrSum(str, rightIsLeastSig, __func__);
 }
 
 
