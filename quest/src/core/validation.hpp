@@ -147,7 +147,7 @@ void validate_initClassicalStateIndex(Qureg qureg, qindex ind, const char* calle
  * PAULI STRINGS AND SUMS CREATION
  */
 
-void validate_newPauliStrParams(char* paulis, int* indices, int numPaulis, int maxNumPaulis, const char* caller);
+void validate_newPauliStrParams(const char* paulis, int* indices, int numPaulis, int maxNumPaulis, const char* caller);
 
 void validate_newPauliStrNumChars(int numPaulis, int numIndices, const char* caller); // called by C++ only
 
