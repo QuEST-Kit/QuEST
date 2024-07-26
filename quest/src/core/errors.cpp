@@ -301,7 +301,7 @@ void error_attemptedToParseOutOfRangeReal() {
 
 void error_attemptedToParsePauliStringFromInvalidString() {
 
-    raiseInternalError("A function attempted to parse a string as a sequence of Pauli operators the string was not validly formatted. This should have been caught by prior user validation.");
+    raiseInternalError("A function attempted to parse a string as a sequence of Pauli operators but the string was not validly formatted. This should have been caught by prior user validation.");
 }
 
 void error_attemptedToParseUnrecognisedPauliChar() {

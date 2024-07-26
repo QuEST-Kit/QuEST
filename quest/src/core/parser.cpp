@@ -335,17 +335,25 @@ qcomp parseCoeff(string coeff) {
 }
 
 
-PauliStr parsePaulis(string paulis) {
+PauliStr parsePaulis(string paulis, bool rightIsLeastSignificant) {
 
     // remove whitespace to make string compatible with getPauliStr()
     removeWhiteSpace(paulis);
 
-    // interpret rightmost Pauli as least significant
-    return getPauliStr(paulis);
+    // default creator treats rightmost pauli as least significant
+    if (rightIsLeastSignificant)
+        return getPauliStr(paulis);
+
+    // otherwise pass qubits {0, 1, ... }
+    vector<int> qubits(paulis.size());
+    for (int i=0; i<paulis.size(); i++)
+        qubits[i] = i;
+
+    return getPauliStr(paulis, qubits);
 }
 
 
-void parseLine(string line, qcomp &coeff, PauliStr &pauli) {
+void parseLine(string line, qcomp &coeff, PauliStr &pauli, bool rightIsLeastSignificant) {
 
     // separate line into substrings
     string coeffStr, pauliStr;
@@ -353,7 +361,7 @@ void parseLine(string line, qcomp &coeff, PauliStr &pauli) {
 
     // parse each, overwriting calller primitives
     coeff = parseCoeff(coeffStr);
-    pauli = parsePaulis(pauliStr);
+    pauli = parsePaulis(pauliStr, rightIsLeastSignificant);
 }
 
 
@@ -366,7 +374,7 @@ qindex getNumLines(string lines) {
 }
 
 
-PauliStrSum parser_validateAndParsePauliStrSum(string lines, const char* caller) {
+PauliStrSum parser_validateAndParsePauliStrSum(string lines, bool rightIsLeastSignificant, const char* caller) {
     assertStringIsValidPauliStrSum(lines, caller);
 
     // allocate space for as many strings as there are lines, though we might collect fewer (we skip empty lines)
@@ -384,7 +392,7 @@ PauliStrSum parser_validateAndParsePauliStrSum(string lines, const char* caller)
 
         qcomp coeff;
         PauliStr string;
-        parseLine(line, coeff, string);
+        parseLine(line, coeff, string, rightIsLeastSignificant);
 
         coeffs.push_back(coeff);
         strings.push_back(string);
