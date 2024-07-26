@@ -25,7 +25,7 @@ int parser_getPauliIntFromChar(char ch);
  * PARSING PAULI STRING SUMS
  */
 
-PauliStrSum parser_validateAndParsePauliStrSum(std::string lines, const char* caller);
+PauliStrSum parser_validateAndParsePauliStrSum(std::string lines, bool rightIsLeastSignificant, const char* caller);
 
 
 
