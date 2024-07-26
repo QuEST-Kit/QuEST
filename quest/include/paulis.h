@@ -60,7 +60,7 @@ typedef struct {
 #ifdef __cplusplus
 
     // C++ users can access the base C method
-    extern "C" PauliStr getPauliStr(char* paulis, int* indices, int numPaulis);
+    extern "C" PauliStr getPauliStr(const char* paulis, int* indices, int numPaulis);
 
     // but also get overloads to accept natural C++ string types (like literals)
     PauliStr getPauliStr(std::string paulis, int* indices, int numPaulis);
@@ -78,7 +78,7 @@ typedef struct {
 #else
 
     // C only supports passing a char array or string literal with a specified number of Paulis
-    PauliStr getPauliStr(char* paulis, int* indices, int numPaulis);
+    PauliStr getPauliStr(const char* paulis, int* indices, int numPaulis);
 
     // inline macro exploits the compile-time size of a string literal, and enables array
     // literals without the C99 inline temporary array syntax; we further give the array
@@ -103,10 +103,10 @@ extern "C" {
 
     PauliStrSum createPauliStrSum(PauliStr* strings, qcomp* coeffs, qindex numTerms);
 
-    PauliStrSum createInlinePauliStrSum(char* str);
+    PauliStrSum createInlinePauliStrSum(const char* str);
 
-    PauliStrSum createPauliStrSumFromFile(char* fn);
-    PauliStrSum createPauliStrSumFromReversedFile(char* fn);
+    PauliStrSum createPauliStrSumFromFile(const char* fn);
+    PauliStrSum createPauliStrSumFromReversedFile(const char* fn);
 
 #ifdef __cplusplus
 }

@@ -33,31 +33,10 @@ static const int MAX_NUM_PAULIS_PER_STR  = MAX_NUM_PAULIS_PER_MASK * 2;
  */
 
 
-int getPauliAt(PAULI_MASK_TYPE mask, int ind) {
+int getPauliFromMaskAt(PAULI_MASK_TYPE mask, int ind) {
 
     // get adjacent 2 bits at (ind+1, ind)
     return (mask >> (2*ind)) & 3;
-}
-
-int getPauliAt(PauliStr str, int ind) {
-
-    return (ind < MAX_NUM_PAULIS_PER_MASK)?
-        getPauliAt(str.lowPaulis,  ind) :
-        getPauliAt(str.highPaulis, ind - MAX_NUM_PAULIS_PER_MASK);
-}
-
-
-int getIndOfLefmostPauli(PauliStr str) {
-
-    int ind   = (str.highPaulis == 0)? 0 : MAX_NUM_PAULIS_PER_MASK;
-    auto mask = (str.highPaulis == 0)? str.lowPaulis : str.highPaulis;
-
-    while (mask) {
-        mask >>= 2;
-        ind++;
-    }
-
-    return ind - 1;
 }
 
 
@@ -88,13 +67,44 @@ void freeAllMemoryIfAnyAllocsFailed(PauliStrSum sum) {
 
 
 /*
+ * INTERNAL UTILITIES
+ *
+ * callable by other internal files but which are not exposed in the header.
+ * Ergo other files must declare these functions as extern where needed.
+ */
+
+
+int paulis_getPauliAt(PauliStr str, int ind) {
+
+    return (ind < MAX_NUM_PAULIS_PER_MASK)?
+        getPauliFromMaskAt(str.lowPaulis,  ind) :
+        getPauliFromMaskAt(str.highPaulis, ind - MAX_NUM_PAULIS_PER_MASK);
+}
+
+
+int paulis_getIndOfLefmostPauli(PauliStr str) {
+
+    int ind   = (str.highPaulis == 0)? 0 : MAX_NUM_PAULIS_PER_MASK;
+    auto mask = (str.highPaulis == 0)? str.lowPaulis : str.highPaulis;
+
+    while (mask) {
+        mask >>= 2;
+        ind++;
+    }
+
+    return ind - 1;
+}
+
+
+
+/*
  * PAULI STRING INITIALISATION
  *
  * some of which are exposed directly to C, and some of which are C++-only overloads
  */
 
 
-extern "C" PauliStr getPauliStr(char* paulis, int* indices, int numPaulis) {
+extern "C" PauliStr getPauliStr(const char* paulis, int* indices, int numPaulis) {
     validate_newPauliStrParams(paulis, indices, numPaulis, MAX_NUM_PAULIS_PER_STR, __func__);
 
     // begin masks at all-identity 'I' = 0
@@ -198,7 +208,7 @@ PauliStrSum createPauliStrSum(std::vector<PauliStr> strings, std::vector<qcomp> 
 }
 
 
-extern "C" PauliStrSum createInlinePauliStrSum(char* str) {
+extern "C" PauliStrSum createInlinePauliStrSum(const char* str) {
 
     // str must be null-terminated
     return createInlinePauliStrSum(std::string(str));
@@ -211,7 +221,7 @@ PauliStrSum createInlinePauliStrSum(std::string str) {
 }
 
 
-extern "C" PauliStrSum createPauliStrSumFromFile(char* fn) {
+extern "C" PauliStrSum createPauliStrSumFromFile(const char* fn) {
 
     // fn must be null-terminated
     return createPauliStrSumFromFile(std::string(fn));
@@ -226,7 +236,7 @@ PauliStrSum createPauliStrSumFromFile(std::string fn) {
 }
 
 
-extern "C" PauliStrSum createPauliStrSumFromReversedFile(char* fn) {
+extern "C" PauliStrSum createPauliStrSumFromReversedFile(const char* fn) {
 
     // fn must be null-terminated
     return createPauliStrSumFromReversedFile(std::string(fn));
@@ -264,7 +274,7 @@ extern "C" void destroyPauliStrSum(PauliStrSum sum) {
 extern "C" void reportPauliStr(PauliStr str) {
 
     // avoid printing leftmost superfluous I operators
-    int numPaulis = 1 + getIndOfLefmostPauli(str);
+    int numPaulis = 1 + paulis_getIndOfLefmostPauli(str);
     form_printPauliStr(str, numPaulis);
 }
 
@@ -273,8 +283,8 @@ extern "C" void reportPauliStrSum(PauliStrSum str) {
     validate_pauliStrSumFields(str, __func__);
 
     // calculate memory usage
-    qindex numStrBytes   = sizeof(str.numTerms * sizeof *str.strings);
-    qindex numCoeffBytes = sizeof(str.numTerms * sizeof *str.coeffs);
+    qindex numStrBytes   = str.numTerms * sizeof *str.strings;
+    qindex numCoeffBytes = str.numTerms * sizeof *str.coeffs;
     qindex numStrucBytes = sizeof(str);
 
     // we don't bother checking for overflow since total memory scales
