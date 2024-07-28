@@ -7,7 +7,7 @@
 #include "quest/include/paulis.h"
 
 #include "quest/src/core/validation.hpp"
-#include "quest/src/core/formatter.hpp"
+#include "quest/src/core/printer.hpp"
 #include "quest/src/core/parser.hpp"
 #include "quest/src/comm/comm_config.hpp"
 #include "quest/src/comm/comm_routines.hpp"
@@ -275,7 +275,7 @@ extern "C" void reportPauliStr(PauliStr str) {
 
     // avoid printing leftmost superfluous I operators
     int numPaulis = 1 + paulis_getIndOfLefmostPauli(str);
-    form_printPauliStr(str, numPaulis);
+    print_pauliStr(str, numPaulis);
 }
 
 
@@ -291,6 +291,6 @@ extern "C" void reportPauliStrSum(PauliStrSum str) {
     // linearly with user input parameters, unlike Qureg and matrices.
     qindex numTotalBytes = numStrBytes + numCoeffBytes + numStrucBytes;
 
-    form_printPauliStrSumInfo(str.numTerms, numTotalBytes);
-    form_printPauliStrSum(str);
+    print_pauliStrSumInfo(str.numTerms, numTotalBytes);
+    print_pauliStrSum(str);
 }

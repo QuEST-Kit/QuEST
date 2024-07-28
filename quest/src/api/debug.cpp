@@ -4,7 +4,7 @@
  */
 
 #include "quest/src/core/validation.hpp"
-#include "quest/src/core/formatter.hpp"
+#include "quest/src/core/printer.hpp"
 
 
 // enable invocation by both C and C++ binaries
@@ -22,7 +22,7 @@ void setValidationOff() {
 void setNumReportedItems(qindex num) {
     validate_numReportedItems(num, __func__);
 
-    form_setMaxNumPrintedItems(num);
+    printer_setMaxNumPrintedItems(num);
 }
 
 

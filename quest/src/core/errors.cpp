@@ -7,6 +7,8 @@
 
 #include "quest/include/types.h"
 #include "quest/include/qureg.h"
+
+#include "quest/src/core/printer.hpp"
 #include "quest/src/comm/comm_config.hpp"
 #include "quest/src/gpu/gpu_config.hpp"
 
@@ -21,14 +23,13 @@
 
 void raiseInternalError(std::string errorMsg) {
 
-    if (comm_isRootNode())
-        std::cout 
-            << "\n\n"
-            << "A fatal internal QuEST error occurred. "
-            << errorMsg << " "
-            << "Please report this to the developers. QuEST will now exit..."
-            << "\n"
-            << std::endl;
+    print(std::string("")
+        + "\n\n"
+        + "A fatal internal QuEST error occurred. "
+        + errorMsg + " "
+        + "Please report this to the developers. QuEST will now exit..."
+        + "\n"
+    );
 
     exit(EXIT_FAILURE);
 }

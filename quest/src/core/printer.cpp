@@ -6,7 +6,7 @@
 #include "quest/include/matrices.h"
 #include "quest/include/paulis.h"
 
-#include "quest/src/core/formatter.hpp"
+#include "quest/src/core/printer.hpp"
 #include "quest/src/core/utilities.hpp"
 #include "quest/src/comm/comm_config.hpp"
 #include "quest/src/comm/comm_routines.hpp"
@@ -24,7 +24,7 @@
 // I like to live dangerously; and I am willing to debate with the
 // most dogmatic C++ enthusiast about the unreadability of namespaces
 using namespace std;
-using namespace form_substrings;
+using namespace printer_substrings;
 
 
 
@@ -53,7 +53,7 @@ const string HDOTS_CHAR = "…";
  * SUBSTRINGS USED BY REPORTERS
  */
 
-namespace form_substrings { 
+namespace printer_substrings { 
     string eq = " = ";
     string mu = " x ";
     string pl = " + ";
@@ -80,7 +80,7 @@ namespace form_substrings {
 qindex maxNumPrintedItems = (1 << 5);
 bool isTruncationEnabled  = (maxNumPrintedItems != 0);
 
-void form_setMaxNumPrintedItems(qindex num) {
+void printer_setMaxNumPrintedItems(qindex num) {
     maxNumPrintedItems  = num;
     isTruncationEnabled = (num != 0);
 }
@@ -136,25 +136,25 @@ string getTypeName(T) {
 }
 
 
-string form_getQcompType() {
+string printer_getQcompType() {
 
     qcomp x;
     return getTypeName(x);
 }
 
-string form_getQrealType() {
+string printer_getQrealType() {
 
     // more portable than getTypeName
     return GET_STR( FLOAT_TYPE );
 }
 
-string form_getQindexType() {
+string printer_getQindexType() {
 
     // more portable than getTypeName
     return GET_STR( INDEX_TYPE );
 }
 
-string form_getFloatPrecisionFlag() {
+string printer_getFloatPrecisionFlag() {
 
     return GET_STR( FLOAT_PRECISION );
 }
@@ -191,7 +191,7 @@ string floatToStr(T num, bool hideSign=false) {
 
 // type T can be precision decimal (independent of qreal) i.e. float, double, long double
 template <typename T>
-string form_str(complex<T> num) {
+string printer_toStr(complex<T> num) {
 
     // precise 0 is rendered as a real integer
     if (real(num) == 0 && imag(num) == 0)
@@ -235,17 +235,37 @@ string form_str(complex<T> num) {
 
 
 // explicitly instantiate all publicly passable types
-template string form_str<int>(complex<int> num);
-template string form_str<long int>(complex<long int> num);
-template string form_str<long long int>(complex<long long int> num);
+template string printer_toStr<int>(complex<int> num);
+template string printer_toStr<long int>(complex<long int> num);
+template string printer_toStr<long long int>(complex<long long int> num);
 
-template string form_str<unsigned>(complex<unsigned> num);
-template string form_str<long unsigned>(complex<long unsigned> num);
-template string form_str<long long unsigned>(complex<long long unsigned> num);
+template string printer_toStr<unsigned>(complex<unsigned> num);
+template string printer_toStr<long unsigned>(complex<long unsigned> num);
+template string printer_toStr<long long unsigned>(complex<long long unsigned> num);
 
-template string form_str<float>(complex<float> num);
-template string form_str<double>(complex<double> num);
-template string form_str<long double>(complex<long double> num);
+template string printer_toStr<float>(complex<float> num);
+template string printer_toStr<double>(complex<double> num);
+template string printer_toStr<long double>(complex<long double> num);
+
+
+
+/*
+ * PRIMITIVE PRINTING
+ */
+
+
+void print(const char* str) {
+    if (comm_isRootNode())
+        cout << str << endl;
+}
+
+void print(std::string str) {
+    print(str.data());
+}
+
+void print(qcomp num) {
+    print(printer_toStr(num));
+}
 
 
 
@@ -256,7 +276,7 @@ template string form_str<long double>(complex<long double> num);
  */
 
 
-void form_printMatrixInfo(string nameStr, int numQubits, qindex dim, size_t elemMem, size_t otherMem, int numNodes) {
+void print_matrixInfo(string nameStr, int numQubits, qindex dim, size_t elemMem, size_t otherMem, int numNodes) {
 
     // only root node prints
     if (!comm_isRootNode())
@@ -267,12 +287,12 @@ void form_printMatrixInfo(string nameStr, int numQubits, qindex dim, size_t elem
 
     // prepare substrings
     string sepStr  = ", ";
-    string qbStr   = form_str(numQubits) + " qubit" + ((numQubits>1)? "s":"");
-    string dimStr  = form_str(dim) + (isDiag? "" : mu + form_str(dim)) + " qcomps";
-    string memStr  = form_str(elemMem) + pl + form_str(otherMem) + by;
+    string qbStr   = printer_toStr(numQubits) + " qubit" + ((numQubits>1)? "s":"");
+    string dimStr  = printer_toStr(dim) + (isDiag? "" : mu + printer_toStr(dim)) + " qcomps";
+    string memStr  = printer_toStr(elemMem) + pl + printer_toStr(otherMem) + by;
 
     if (numNodes > 1) {
-        dimStr += " over " + form_str(numNodes) + " nodes";
+        dimStr += " over " + printer_toStr(numNodes) + " nodes";
         memStr += " per node";
     }
 
@@ -324,7 +344,7 @@ void rootPrintTruncatedDenseMatrixElems(T elems, qindex dim, string indent) {
 
         // by considering the top-most rows
         for (qindex r=0; r<numTopElems; r++) {
-            int width = form_str(elems[r][c]).length();
+            int width = printer_toStr(elems[r][c]).length();
             if (width > maxColWidths[c])
                 maxColWidths[c] = width;
         }
@@ -332,7 +352,7 @@ void rootPrintTruncatedDenseMatrixElems(T elems, qindex dim, string indent) {
         // and the bottom-most rows
         for (qindex i=0; i<numBotElems; i++) {
             int r = dim - i - 1;
-            int width = form_str(elems[r][c]).length();
+            int width = printer_toStr(elems[r][c]).length();
             if (width > maxColWidths[c])
                 maxColWidths[c] = width;
         }
@@ -346,7 +366,7 @@ void rootPrintTruncatedDenseMatrixElems(T elems, qindex dim, string indent) {
             cout << left
                 << setw(maxColWidths[c] + MIN_SPACE_BETWEEN_DENSE_MATRIX_COLS) 
                 << setfill(MATRIX_SPACE_CHAR)
-                << form_str(elems[r][c]);
+                << printer_toStr(elems[r][c]);
 
         // print a trailing ellipsis after the top-most row
         if (isTruncated && r == 0)
@@ -374,7 +394,7 @@ void rootPrintTruncatedDenseMatrixElems(T elems, qindex dim, string indent) {
             cout << left
                 << setw(maxColWidths[c] + MIN_SPACE_BETWEEN_DENSE_MATRIX_COLS) 
                 << setfill(MATRIX_SPACE_CHAR)
-                << form_str(elems[r][c]);
+                << printer_toStr(elems[r][c]);
 
         // print a trailing ellipsis after the bottom-most row
         if (r == dim-1)
@@ -384,13 +404,13 @@ void rootPrintTruncatedDenseMatrixElems(T elems, qindex dim, string indent) {
     }
 }
 
-void form_printMatrix(CompMatr1 matr, string indent) {
+void print_matrix(CompMatr1 matr, string indent) {
     rootPrintTruncatedDenseMatrixElems(matr.elems, matr.numRows, indent);
 }
-void form_printMatrix(CompMatr2 matr, string indent) {
+void print_matrix(CompMatr2 matr, string indent) {
     rootPrintTruncatedDenseMatrixElems(matr.elems, matr.numRows, indent);
 }
-void form_printMatrix(CompMatr matr, string indent) {
+void print_matrix(CompMatr matr, string indent) {
     rootPrintTruncatedDenseMatrixElems(matr.cpuElems, matr.numRows, indent);
 }
 
@@ -415,7 +435,7 @@ void rootPrintAllDiagonalElems(qcomp* elems, qindex len, qindex indentOffset, st
         cout 
             << indent
             << string((i + indentOffset) * SET_SPACE_BETWEEN_DIAG_MATRIX_COLS, MATRIX_SPACE_CHAR)
-            << form_str(elems[i])
+            << printer_toStr(elems[i])
             << endl;
 }
 
@@ -464,13 +484,13 @@ void rootPrintTruncatedDiagonalMatrixElems(qcomp* elems, qindex dim, string inde
 }
 
 
-void form_printMatrix(DiagMatr1 matr, string indent) {
+void print_matrix(DiagMatr1 matr, string indent) {
     rootPrintTruncatedDiagonalMatrixElems(matr.elems, matr.numElems, indent);
 }
-void form_printMatrix(DiagMatr2 matr, string indent) {
+void print_matrix(DiagMatr2 matr, string indent) {
     rootPrintTruncatedDiagonalMatrixElems(matr.elems, matr.numElems, indent);
 }
-void form_printMatrix(DiagMatr matr, string indent) {
+void print_matrix(DiagMatr matr, string indent) {
     rootPrintTruncatedDiagonalMatrixElems(matr.cpuElems, matr.numElems, indent);
 }
 
@@ -496,7 +516,7 @@ void rootPrintRanks(int startRank, int endRankIncl) {
 }
 
 
-void form_printMatrix(FullStateDiagMatr matr, string indent) {
+void print_matrix(FullStateDiagMatr matr, string indent) {
 
     // non-distributed edge-case is trivial; root node prints all, handling truncation
     if (!matr.isDistributed) {
@@ -632,7 +652,7 @@ void form_printMatrix(FullStateDiagMatr matr, string indent) {
  */
 
 
-void form_printTable(string title, vector<tuple<string, string>> rows, string indent) {
+void print_table(string title, vector<tuple<string, string>> rows, string indent) {
 
     // only root node prints
     if (!comm_isRootNode())
@@ -656,7 +676,7 @@ void form_printTable(string title, vector<tuple<string, string>> rows, string in
 }
 
 
-void form_printTable(string title, vector<tuple<string, long long int>> rows, string indent) {
+void print_table(string title, vector<tuple<string, long long int>> rows, string indent) {
 
     // only root node prints
     if (!comm_isRootNode())
@@ -667,7 +687,7 @@ void form_printTable(string title, vector<tuple<string, long long int>> rows, st
     for (auto const& [key, value] : rows)
         casted.push_back({key, to_string(value)});
 
-    form_printTable(title, casted, indent);
+    print_table(title, casted, indent);
 }
 
 
@@ -695,7 +715,7 @@ string getPauliStrAsString(PauliStr str, int maxNumQubits) {
 }
 
 
-void form_printPauliStr(PauliStr str, int numQubits) {
+void print_pauliStr(PauliStr str, int numQubits) {
 
     // only root node ever prints
     if (!comm_isRootNode())
@@ -705,7 +725,7 @@ void form_printPauliStr(PauliStr str, int numQubits) {
 }
 
 
-void form_printPauliStrSumInfo(qindex numTerms, qindex numBytes) {
+void print_pauliStrSumInfo(qindex numTerms, qindex numBytes) {
 
     // only root node ever prints
     if (!comm_isRootNode())
@@ -721,7 +741,7 @@ int getWidthOfWidestElem(qcomp* elems, qindex numElems) {
     int maxWidth = 0;
 
     for (qindex i=0; i<numElems; i++) {
-        int width = form_str(elems[i]).size();
+        int width = printer_toStr(elems[i]).size();
         if (width > maxWidth)
             maxWidth = width;
     }
@@ -752,13 +772,13 @@ void printPauliStrSumSubset(PauliStrSum sum, qindex startInd, qindex endIndExcl,
             << indent << left 
             << setw(coeffWidth + MIN_SPACE_BETWEEN_COEFF_AND_PAULI_STR) 
             << setfill(PAULI_STR_SPACE_CHAR) 
-            << form_str(sum.coeffs[i]) 
+            << printer_toStr(sum.coeffs[i]) 
             << getPauliStrAsString(sum.strings[i], maxNumPaulis)
             << endl;
 }
 
 
-void form_printPauliStrSum(PauliStrSum sum, string indent) {
+void print_pauliStrSum(PauliStrSum sum, string indent) {
     
     // only root node ever prints
     if (!comm_isRootNode())

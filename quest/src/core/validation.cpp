@@ -16,6 +16,7 @@
 #include "quest/src/core/memory.hpp"
 #include "quest/src/core/utilities.hpp"
 #include "quest/src/core/parser.hpp"
+#include "quest/src/core/printer.hpp"
 #include "quest/src/comm/comm_config.hpp"
 #include "quest/src/comm/comm_routines.hpp"
 #include "quest/src/cpu/cpu_config.hpp"
@@ -448,11 +449,10 @@ namespace report {
 void default_invalidQuESTInputError(const char* msg, const char* func) {
 
     // safe to call even before MPI has been setup
-    if (comm_isRootNode())
-        std::cout 
-            << "QuEST encountered a validation error during function '" << func << "':\n"
-            << msg << "\nExiting..." 
-            << std::endl;
+    print(std::string("")
+        + "QuEST encountered a validation error during function " 
+        + "'" + func + "':\n" + msg + "\n"
+        + "Exiting...");
 
     // force a synch because otherwise non-main nodes may exit before print, and MPI
     // will then attempt to instantly abort all nodes, losing the error message.
