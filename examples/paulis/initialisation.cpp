@@ -1,4 +1,5 @@
 #include "quest.h"
+
 #include <iostream>
 #include <fstream>
 #include <cstdlib>

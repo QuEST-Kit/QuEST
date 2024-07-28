@@ -1,4 +1,5 @@
 #include "quest.h"
+
 #include <iostream>
 
 
@@ -59,8 +60,8 @@ void demo_DiagMatr() {
 
 void demo_FullStateDiagMatr() {
 
-    // force distribution to make reporting interesting
-    FullStateDiagMatr matr = createCustomFullStateDiagMatr(6, 1);
+    // force distribution when env is distributed to make reporting interesting
+    FullStateDiagMatr matr = createCustomFullStateDiagMatr(6, getQuESTEnv().isDistributed);
 
     // lazily set each element individually
     for (qindex i=0; i<matr.numElems; i++)

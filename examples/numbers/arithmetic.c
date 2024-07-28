@@ -4,8 +4,7 @@ int main() {
 
     initQuESTEnv();
 
-    // literal 1.2 + 3.4i is restrictedly double precision
-    qcomp x = qcomp(1.2, 3.4);
+    qcomp x = 1.2 + 3.4i;
 
     // C + R
     x = x + (int) 3;

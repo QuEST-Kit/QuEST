@@ -4,6 +4,7 @@ int main() {
 
     initQuESTEnv();
 
+    // use 1_i instead of 1i to make the complex literal precision agnostic
     qcomp x = 1.2 + 3.4_i;
 
     // C with non-same-prec C
