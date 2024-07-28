@@ -317,12 +317,12 @@ void printQuregAutoDeployments(bool isDensMatr) {
 
         // else prepare string summarising the new deployments (trailing space is fine)
         std::string value = "";
-        if (useDistrib)
-            value += "[mpi] ";
+        if (useMulti)
+            value += "[omp] "; // ordered by #qubits to attempt consistent printed columns
         if (useGpuAccel)
             value += "[gpu] ";
-        if (useMulti)
-            value += "[omp] ";
+        if (useDistrib)
+            value += "[mpi] ";
 
         // log the #qubits of the deployment change
         rows.push_back({form_str(numQubits) + " qubits", value});

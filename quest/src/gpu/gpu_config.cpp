@@ -14,14 +14,14 @@
 #include "quest/src/gpu/gpu_config.hpp"
 
 
-#if ENABLE_GPU_ACCELERATION && ! (defined(__NVCC__) || defined(__HIPCC__))
+#if COMPILE_CUDA && ! (defined(__NVCC__) || defined(__HIPCC__))
     #error \
         "Attempted to compile gpu_config.cpp in GPU-accelerated mode with a non-GPU compiler. "\
         "Please compile this file with a CUDA (nvcc) or ROCm (hipcc) compiler."
 #endif
 
 
-#if ENABLE_GPU_ACCELERATION
+#if COMPILE_CUDA
     #include <cuda.h>
     #include <cuda_runtime.h>
 #endif
@@ -35,7 +35,7 @@
  * in gpu_config.hpp) which wraps CUDA API calls
  */
 
-#if ENABLE_GPU_ACCELERATION
+#if COMPILE_CUDA
 
 void assertCudaCallSucceeded(int result, const char* call, const char* caller, const char* file, int line) {
 
@@ -56,14 +56,14 @@ void assertCudaCallSucceeded(int result, const char* call, const char* caller, c
  * CUQUANTUM MANAGEMENT
  *
  * these functions are defined in gpu_cuquantum.hpp when
- * ENABLE_CUQUANTUM is 1, but are otherwise defaulted to
+ * COMPILE_CUQUANTUM is 1, but are otherwise defaulted to
  * the internal errors below. This slight inelegance
  * enables us to keep gpu_cuquantum.hpp as a single header
  * file, without exposing it to code beyond gpu/
  */
 
 
-#if ! ENABLE_CUQUANTUM
+#if ! COMPILE_CUQUANTUM
 
 void gpu_initCuQuantum() {
     error_cuQuantumInitOrFinalizedButNotCompiled();
@@ -83,17 +83,17 @@ void gpu_finalizeCuQuantum() {
 
 
 bool gpu_isGpuCompiled() {
-    return (bool) ENABLE_GPU_ACCELERATION;
+    return (bool) COMPILE_CUDA;
 }
 
 
 bool gpu_isCuQuantumCompiled() {
-    return (bool) ENABLE_CUQUANTUM;
+    return (bool) COMPILE_CUQUANTUM;
 }
 
 
 bool gpu_isGpuAvailable() {
-#if ENABLE_GPU_ACCELERATION
+#if COMPILE_CUDA
 
     // DEBUG: cudaGetDeviceProperties is (for some reason) being auto-suffixed with _v2
     // in Cuda 12, which is the only sm=90 compatible version we can use. But then the
@@ -134,7 +134,7 @@ bool gpu_isGpuAvailable() {
 
 
 bool gpu_isDirectGpuCommPossible() {
-#if ENABLE_GPU_ACCELERATION
+#if COMPILE_CUDA
 
     if (!comm_isMpiGpuAware())
         return false;
@@ -156,7 +156,7 @@ bool gpu_isDirectGpuCommPossible() {
 
 
 int gpu_getNumberOfLocalGpus() {
-#if ENABLE_GPU_ACCELERATION
+#if COMPILE_CUDA
 
     // TODO: this will over-report, since it may include virtual devices!
     // see gpu_isGpuAvailable()
@@ -173,7 +173,7 @@ int gpu_getNumberOfLocalGpus() {
 
 
 size_t gpu_getCurrentAvailableMemoryInBytes() {
-#if ENABLE_GPU_ACCELERATION
+#if COMPILE_CUDA
 
     // note that in distributed settings, all GPUs
     // are being simultaneously queried, and it is
@@ -191,7 +191,7 @@ size_t gpu_getCurrentAvailableMemoryInBytes() {
 
 
 size_t gpu_getTotalMemoryInBytes() {
-#if ENABLE_GPU_ACCELERATION
+#if COMPILE_CUDA
 
     size_t free, total;
     CUDA_CHECK( cudaMemGetInfo(&free, &total) );
@@ -205,7 +205,7 @@ size_t gpu_getTotalMemoryInBytes() {
 
 
 bool gpu_doesGpuSupportMemPools() {
-#if ENABLE_GPU_ACCELERATION
+#if COMPILE_CUDA
 
     // consult only the first device (garuanteed already to exist)
     int deviceId, supports;
@@ -227,7 +227,7 @@ bool gpu_doesGpuSupportMemPools() {
 
 
 void gpu_bindLocalGPUsToNodes(int rank) {
-#if ENABLE_GPU_ACCELERATION
+#if COMPILE_CUDA
 
     int numLocalGpus = gpu_getNumberOfLocalGpus();
     int localGpuInd = rank % numLocalGpus;
@@ -240,7 +240,7 @@ void gpu_bindLocalGPUsToNodes(int rank) {
 
 
 void gpu_sync() {
-#if ENABLE_GPU_ACCELERATION
+#if COMPILE_CUDA
 
     CUDA_CHECK( cudaDeviceSynchronize() );
 
@@ -267,7 +267,7 @@ const qcomp UNSYNCED_GPU_MEM_FLAG = qcomp(3.141592653, 12345.67890);
 
 
 qcomp* gpu_allocAmps(qindex numLocalAmps) {
-#if ENABLE_GPU_ACCELERATION
+#if COMPILE_CUDA
 
     size_t numBytes = mem_getLocalQuregMemoryRequired(numLocalAmps);
 
@@ -295,7 +295,7 @@ qcomp* gpu_allocAmps(qindex numLocalAmps) {
 
 
 void gpu_deallocAmps(qcomp* amps) {
-#if ENABLE_GPU_ACCELERATION
+#if COMPILE_CUDA
 
     CUDA_CHECK( cudaFree(amps) );
 
@@ -306,7 +306,7 @@ void gpu_deallocAmps(qcomp* amps) {
 
 
 void gpu_copyCpuToGpu(Qureg qureg, qcomp* cpuArr, qcomp* gpuArr, qindex numElems) {
-#if ENABLE_GPU_ACCELERATION
+#if COMPILE_CUDA
 
     assert_quregIsGpuAccelerated(qureg);
 
@@ -324,7 +324,7 @@ void gpu_copyCpuToGpu(Qureg qureg) {
 
 
 void gpu_copyGpuToCpu(Qureg qureg, qcomp* gpuArr, qcomp* cpuArr, qindex numElems) {
-#if ENABLE_GPU_ACCELERATION
+#if COMPILE_CUDA
 
     assert_quregIsGpuAccelerated(qureg);
 
@@ -342,7 +342,7 @@ void gpu_copyGpuToCpu(Qureg qureg) {
 
 
 void gpu_copyCpuToGpu(CompMatr matr) {
-#if ENABLE_GPU_ACCELERATION
+#if COMPILE_CUDA
 
     if (matr.gpuElems == NULL || ! getQuESTEnv().isGpuAccelerated)
         error_gpuCopyButMatrixNotGpuAccelerated();
@@ -367,7 +367,7 @@ void gpu_copyCpuToGpu(CompMatr matr) {
 
 
 void gpu_copyCpuToGpu(DiagMatr matr) {
-#if ENABLE_GPU_ACCELERATION
+#if COMPILE_CUDA
 
     if (matr.gpuElems == NULL || ! getQuESTEnv().isGpuAccelerated)
         error_gpuCopyButMatrixNotGpuAccelerated();
@@ -382,7 +382,7 @@ void gpu_copyCpuToGpu(DiagMatr matr) {
 
 
 void gpu_copyCpuToGpu(FullStateDiagMatr matr) {
-#if ENABLE_GPU_ACCELERATION
+#if COMPILE_CUDA
 
     if (matr.gpuElems == NULL || ! getQuESTEnv().isGpuAccelerated)
         error_gpuCopyButMatrixNotGpuAccelerated();
@@ -397,7 +397,7 @@ void gpu_copyCpuToGpu(FullStateDiagMatr matr) {
 
 
 bool gpu_haveGpuAmpsBeenSynced(qcomp* gpuArr) {
-#if ENABLE_GPU_ACCELERATION
+#if COMPILE_CUDA
 
     if (gpuArr == NULL || ! getQuESTEnv().isGpuAccelerated)
         error_gpuCopyButMatrixNotGpuAccelerated();

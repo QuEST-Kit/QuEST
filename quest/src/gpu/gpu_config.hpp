@@ -19,7 +19,7 @@
  * CUDA ERROR HANDLING
  */
 
-#if ENABLE_GPU_ACCELERATION
+#if COMPILE_CUDA
 
 #define CUDA_CHECK(cmd) do { assertCudaCallSucceeded((int) (cmd), #cmd, __func__, __FILE__, __LINE__); } while (0)
 

@@ -137,6 +137,12 @@ MPI_FILES=(
 
 echo "deployment modes:"
 
+# choose compiler preprocessors
+COMPILE_MPI=$ENABLE_DISTRIBUTION
+COMPILE_OPENMP=$ENABLE_MULTITHREADING
+COMPILE_CUDA=$ENABLE_GPU_ACCELERATION
+COMPILE_CUQUANTUM=$ENABLE_CUQUANTUM
+
 # compiler flags given to all backend files (but not user files)
 BACKEND_COMP_FLAGS='-std=c++17 -O3'
 
@@ -145,7 +151,7 @@ GPU_COMP_FLAGS="-x cu -arch=sm_${GPU_CC} -I${CUDA_LIB_DIR}/include"
 GPU_LINK_FLAGS="-L${CUDA_LIB_DIR}/lib -L${CUDA_LIB_DIR}/lib64 -lcudart -lcuda"
 
 # extend GPU flags if cuQuantum enabled
-if [ $ENABLE_CUQUANTUM == 1 ]
+if [ $COMPILE_CUQUANTUM == 1 ]
 then
     GPU_COMP_FLAGS+=" -I${CUQUANTUM_LIB_DIR}/include"
     GPU_LINK_FLAGS+=" -L${CUQUANTUM_LIB_DIR}/lib -L${CUQUANTUM_LIB_DIR}/lib64 -lcustatevec"
@@ -166,10 +172,10 @@ else
 fi
 
 # define pre-processor macros to indicate deployment mode
-MODE_FLAGS="-DENABLE_DISTRIBUTION=${ENABLE_DISTRIBUTION} "
-MODE_FLAGS+="-DENABLE_MULTITHREADING=${ENABLE_MULTITHREADING} "
-MODE_FLAGS+="-DENABLE_GPU_ACCELERATION=${ENABLE_GPU_ACCELERATION} "
-MODE_FLAGS+="-DENABLE_CUQUANTUM=${ENABLE_CUQUANTUM}"
+MODE_FLAGS="-DCOMPILE_MPI=${COMPILE_MPI} "
+MODE_FLAGS+="-DCOMPILE_OPENMP=${COMPILE_OPENMP} "
+MODE_FLAGS+="-DCOMPILE_CUDA=${COMPILE_CUDA} "
+MODE_FLAGS+="-DCOMPILE_CUQUANTUM=${COMPILE_CUQUANTUM}"
 
 # define pre-processor macros to set qcomp precision
 PREC_FLAG="-DFLOAT_PRECISION=${FLOAT_PRECISION}"
@@ -188,9 +194,10 @@ GLOBAL_COMP_FLAGS="${HEADER_FLAGS} ${MODE_FLAGS} ${PREC_FLAG}"
 ALL_LINK_FLAGS="${USER_LINK_FLAGS}"
 
 # choose compiler and flags for CPU/OMP files
-if [ $ENABLE_MULTITHREADING == 1 ]
+if [ $COMPILE_OPENMP == 1 ]
 then
     echo "${INDENT}(multithreading enabled)"
+    echo "${INDENT}${INDENT}[compiling OpenMP]"
     CPU_FILES_COMPILER=$OMP_COMPILER
     CPU_FILES_FLAGS=$OMP_COMP_FLAGS
     ALL_LINK_FLAGS+=" ${OMP_LINK_FLAGS}"
@@ -201,9 +208,10 @@ else
 fi
 
 # choose compiler and flags for GPU files
-if [ $ENABLE_GPU_ACCELERATION == 1 ]
+if [ $COMPILE_CUDA == 1 ]
 then
     echo "${INDENT}(GPU-acceleration enabled)"
+    echo "${INDENT}${INDENT}[compiling CUDA]"
     GPU_FILES_COMPILER=$GPU_COMPILER
     GPU_FILES_FLAGS=$GPU_COMP_FLAGS
     ALL_LINK_FLAGS+=" ${GPU_LINK_FLAGS}"
@@ -214,17 +222,19 @@ else
 fi
 
 # merely report cuQuantum status
-if [ $ENABLE_CUQUANTUM == 1 ]
+if [ $COMPILE_CUQUANTUM == 1 ]
 then
     echo "${INDENT}(cuQuantum enabled)"
+    echo "${INDENT}${INDENT}[compiling cuStateVec]"
 else
     echo "${INDENT}(cuQuantum disabled)"
 fi
 
 # choose compiler and flags for communication files
-if [ $ENABLE_DISTRIBUTION == 1 ]
+if [ $COMPILE_MPI == 1 ]
 then
     echo "${INDENT}(distribution enabled)"
+    echo "${INDENT}${INDENT}[compiling MPI]"
     MPI_FILES_COMPILER=$MPI_COMPILER
     MPI_FILES_FLAGS=$MPI_COMP_FLAGS
     ALL_LINK_FLAGS+=" ${MPI_LINK_FLAGS}"

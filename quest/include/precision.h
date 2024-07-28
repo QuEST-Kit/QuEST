@@ -69,7 +69,7 @@
  * CHECK PRECISION TYPES ARE COMPATIBLE WITH DEPLOYMENT
  */
 
-#if ENABLE_GPU_ACCELERATION && (FLOAT_PRECISION == 4)
+#if COMPILE_CUDA && (FLOAT_PRECISION == 4)
     #error "A quad floating-point precision (FLOAT_PRECISION=4, i.e. long double) is not supported by GPU deployment"
 #endif
 
@@ -77,8 +77,8 @@
 // as is necessary when performing multithreaded reductions of amplitudes.
 // We could support MSVC by separately reducing the real and imaginary components,
 // but Bill Gates would have to wrestle me into submission.
-#if ENABLE_MULTITHREADING && defined(_MSC_VER)
-    #error "Cannot use multi-threading on Windows"
+#if COMPILE_OPENMP && defined(_MSC_VER)
+    #error "Cannot use OpenMP multi-threading on Windows"
 #endif
 
 
