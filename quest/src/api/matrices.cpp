@@ -13,7 +13,7 @@
 #include "quest/src/core/validation.hpp"
 #include "quest/src/core/autodeployer.hpp"
 #include "quest/src/core/utilities.hpp"
-#include "quest/src/core/formatter.hpp"
+#include "quest/src/core/printer.hpp"
 #include "quest/src/core/bitwise.hpp"
 #include "quest/src/core/memory.hpp"
 #include "quest/src/comm/comm_config.hpp"
@@ -560,7 +560,7 @@ void printMatrixHeader(T matr) {
     if (util_isFixedSizeMatrixType<T>())
         otherMem -= elemMem;
 
-    form_printMatrixInfo(util_getMatrixTypeName<T>(), matr.numQubits, util_getMatrixDim(matr), elemMem, otherMem, numNodes);
+    print_matrixInfo(util_getMatrixTypeName<T>(), matr.numQubits, util_getMatrixDim(matr), elemMem, otherMem, numNodes);
 }
 
 
@@ -573,9 +573,9 @@ void validateAndPrintMatrix(T matr, const char* caller) {
     if constexpr (!util_isFixedSizeMatrixType<T>())
         validate_matrixIsSynced(matr, caller);
 
-    // form_ functions will handle distributed coordination
+    // print_ functions will handle distributed coordination
     printMatrixHeader(matr);
-    form_printMatrix(matr);
+    print_matrix(matr);
 }
 
 

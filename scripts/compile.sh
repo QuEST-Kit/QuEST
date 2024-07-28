@@ -84,19 +84,6 @@ GPU_DIR="${SRC_DIR}/gpu"
 MPI_DIR="${SRC_DIR}/comm"
 CORE_DIR="${SRC_DIR}/core"
 
-# files in CORE_DIR
-CORE_FILES=(
-    "accelerator"
-    "autodeployer"
-    "errors"
-    "formatter"
-    "localiser"
-    "memory"
-    "parser"
-    "utilities"
-    "validation"
-)
-
 # files in API_DIR
 API_FILES=(
     "calculations"
@@ -111,6 +98,19 @@ API_FILES=(
     "qasm"
     "qureg"
     "types"
+)
+
+# files in CORE_DIR
+CORE_FILES=(
+    "accelerator"
+    "autodeployer"
+    "errors"
+    "localiser"
+    "memory"
+    "parser"
+    "printer"
+    "utilities"
+    "validation"
 )
 
 # files in GPU_DIR
