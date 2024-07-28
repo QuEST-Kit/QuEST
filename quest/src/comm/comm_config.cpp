@@ -2,6 +2,11 @@
  * Functions for querying the distributed configuration
  * using the MPI interface, attemptedly agnostically to
  * the implementation (like OpenMPI vs MPICH).
+ * 
+ * Note that even when COMPILE_MPI=1, the user may have
+ * disabled distribution when creating the QuEST environment
+ * at runtime. Ergo we use comm_isInit() to determine whether
+ * functions should invoke the MPI API.
  */
 
 #include "quest/include/modes.h"
@@ -9,7 +14,7 @@
 
 #include "quest/src/core/errors.hpp"
 
-#if ENABLE_DISTRIBUTION
+#if COMPILE_MPI
     #include <mpi.h>
 #endif
 
@@ -19,7 +24,7 @@
  * WARN ABOUT CUDA-AWARENESS
  */
 
-#if ENABLE_DISTRIBUTION && ENABLE_GPU_ACCELERATION
+#if COMPILE_MPI && COMPILE_CUDA
 
     // this check is OpenMPI specific
     #ifdef OPEN_MPI
@@ -45,7 +50,7 @@
 
 
 bool comm_isMpiCompiled() {
-    return (bool) ENABLE_DISTRIBUTION;
+    return (bool) COMPILE_MPI;
 }
 
 
@@ -71,7 +76,7 @@ bool comm_isMpiGpuAware() {
 
 
 bool comm_isInit() {
-#if ENABLE_DISTRIBUTION
+#if COMPILE_MPI
 
     // safely callable before MPI initialisation, but NOT after comm_end()
     int isInit;
@@ -87,19 +92,20 @@ bool comm_isInit() {
 
 
 void comm_init() {
-#if ENABLE_DISTRIBUTION
+#if COMPILE_MPI
 
     // error if attempting re-initialisation
     if (comm_isInit())
         error_commAlreadyInit();
     
     MPI_Init(NULL, NULL);
+
 #endif
 }
 
 
 void comm_end() {
-#if ENABLE_DISTRIBUTION
+#if COMPILE_MPI
 
     // gracefully permit comm_end() before comm_init(), as input validation can trigger
     if (!comm_isInit())
@@ -113,9 +119,11 @@ void comm_end() {
 
 
 int comm_getRank() {
-#if ENABLE_DISTRIBUTION
+#if COMPILE_MPI
 
-    // if MPI not yet setup (e.g. QuESTEnv creation error'd), return main rank
+    // if distribution was not runtime enabled (or a validation error was 
+    // triggered), every node (if many MPI processes were launched)
+    // believes it is the root rank
     if (!comm_isInit())
         return 0;
 
@@ -140,11 +148,13 @@ bool comm_isRootNode() {
 
 
 int comm_getNumNodes() {
-#if ENABLE_DISTRIBUTION
+#if COMPILE_MPI
 
-    // if MPI not yet setup, error; else we may misreport later MPI env
+    // if distribution was not runtime enabled (or a validation error was 
+    // triggered), every node (if many MPI processes were launched)
+    // believes it is the one and only node
     if (!comm_isInit())
-        error_commNotInit();
+        return 1;
 
     int numNodes;
     MPI_Comm_size(MPI_COMM_WORLD, &numNodes);
@@ -159,9 +169,9 @@ int comm_getNumNodes() {
 
 
 void comm_sync() {
-#if ENABLE_DISTRIBUTION
+#if COMPILE_MPI
 
-    // gracefully handle when not distributed, needed by pre-MPI-setup validation 
+    // gracefully handle when not distributed, needed by e.g. pre-MPI-setup validation 
     if (!comm_isInit())
         return;
 

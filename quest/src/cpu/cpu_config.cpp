@@ -8,12 +8,12 @@
 #include "quest/src/core/errors.hpp"
 
 
-#if ENABLE_MULTITHREADING && !defined(_OPENMP)
-    #error "Attempted to compile in multithreaded mode without enabling OpenMP."
+#if COMPILE_OPENMP && !defined(_OPENMP)
+    #error "Attempted to compile in multithreaded mode without enabling OpenMP in the compiler flags."
 #endif
 
 
-#if ENABLE_MULTITHREADING
+#if COMPILE_OPENMP
     #include <omp.h>
 #endif
 
@@ -23,7 +23,7 @@
  * ENABLE OPENMP REDUCTION OF qcomp (except on MSVC compilers)
  */
 
-#if defined(ENABLE_MULTITHREADING) && !defined(_MSC_VER)
+#if defined(COMPILE_OPENMP) && !defined(_MSC_VER)
      #pragma omp declare reduction(+ : qcomp : omp_out += omp_in ) initializer( omp_priv = omp_orig )
 #endif
 
@@ -35,12 +35,12 @@
 
 
 bool cpu_isOpenmpCompiled() {
-    return (bool) ENABLE_MULTITHREADING;
+    return (bool) COMPILE_OPENMP;
 }
 
 
 int cpu_getCurrentNumThreads() {
-#if ENABLE_MULTITHREADING
+#if COMPILE_OPENMP
     int n = -1;
 
     #pragma omp parallel shared(n)
@@ -55,7 +55,7 @@ int cpu_getCurrentNumThreads() {
 
 
 int cpu_getNumOpenmpProcessors() {
-#if ENABLE_MULTITHREADING
+#if COMPILE_OPENMP
     return omp_get_num_procs();
 #else
     error_cpuThreadsQueriedButEnvNotMultithreaded();

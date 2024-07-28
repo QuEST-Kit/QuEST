@@ -13,7 +13,7 @@
 
 #include <vector>
 
-#if ENABLE_DISTRIBUTION
+#if COMPILE_MPI
     #include <mpi.h>
 #endif
 
@@ -82,7 +82,7 @@ qindex MAX_MESSAGE_LENGTH = powerOf2(28);
  */
 
 
-#if ENABLE_DISTRIBUTION
+#if COMPILE_MPI
 
     #if (FLOAT_PRECISION == 1)
         #define MPI_QCOMP MPI_CXX_FLOAT_COMPLEX
@@ -131,7 +131,7 @@ void getMessageConfig(qindex *messageSize, qindex *numMessages, qindex numAmps) 
 
 
 void exchangeArrays(qcomp* send, qcomp* recv, qindex numElems, int pairRank) {
-#if ENABLE_DISTRIBUTION
+#if COMPILE_MPI
 
     // each message is asynchronously dispatched with a final wait, as per arxiv.org/abs/2308.07402
 
@@ -165,7 +165,7 @@ void exchangeArrays(qcomp* send, qcomp* recv, qindex numElems, int pairRank) {
 
 
 void asynchSendArray(qcomp* send, qindex numElems, int pairRank) {
-#if ENABLE_DISTRIBUTION
+#if COMPILE_MPI
 
     // we will not track nor wait for the asynch send; instead, the caller will later comm_sync()
     MPI_Request nullReq = MPI_REQUEST_NULL;
@@ -185,7 +185,7 @@ void asynchSendArray(qcomp* send, qindex numElems, int pairRank) {
 
 
 void receiveArray(qcomp* dest, qindex numElems, int pairRank) {
-#if ENABLE_DISTRIBUTION
+#if COMPILE_MPI
 
     // expect the data in multiple messages
     qindex messageSize, numMessages;
@@ -385,7 +385,7 @@ void comm_exchangeAmpsToBuffers(Qureg qureg, int pairRank) {
 
 
 void comm_sendAmpsToRoot(int sendRank, qcomp* send, qcomp* recv, qindex numAmps) {
-#if ENABLE_DISTRIBUTION
+#if COMPILE_MPI
 
     // only the sender and root nodes need to continue
     int recvRank = 0;
@@ -421,7 +421,7 @@ void comm_sendAmpsToRoot(int sendRank, qcomp* send, qcomp* recv, qindex numAmps)
 
 
 void comm_reduceAmp(qcomp* localAmp) {
-#if ENABLE_DISTRIBUTION
+#if COMPILE_MPI
 
     qcomp* globalAmp;
     MPI_Allreduce(localAmp, globalAmp, 1, MPI_QCOMP, MPI_SUM, MPI_COMM_WORLD);
@@ -434,7 +434,7 @@ void comm_reduceAmp(qcomp* localAmp) {
 
 
 bool comm_isTrueOnAllNodes(bool val) {
-#if ENABLE_DISTRIBUTION
+#if COMPILE_MPI
 
     // perform global AND and broadcast result back to all nodes
     int local = (int) val;

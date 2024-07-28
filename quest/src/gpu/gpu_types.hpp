@@ -1,6 +1,6 @@
 /** @file
  * CUDA-compatible complex types. This file is only ever included
- * when ENABLE_GPU_ACCELERATION=1 so it can safely invoke CUDA
+ * when COMPILE_CUDA=1 so it can safely invoke CUDA
  * signatures without guards. This is safe to re-include by
  * multiple files because typedef definition is legal in C++,
  * and all functions herein are inline. Furthermore, since it
@@ -14,7 +14,7 @@
 #include "quest/include/modes.h"
 #include "quest/include/types.h"
 
-#if ! ENABLE_GPU_ACCELERATION
+#if ! COMPILE_CUDA
     #error "A file being compiled somehow included gpu_types.hpp despite QuEST not being compiled in GPU-accelerated mode."
 #endif
 

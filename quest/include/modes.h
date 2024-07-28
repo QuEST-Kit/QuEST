@@ -9,47 +9,47 @@
 
 // ensure all mode flags are defined
 
-#ifndef ENABLE_DISTRIBUTION
-    #error "Compiler must define ENABLE_DISTRIBUTION"
+#ifndef COMPILE_MPI
+    #error "Compiler must define COMPILE_MPI"
 #endif
 
-#ifndef ENABLE_MULTITHREADING
-    #error "Compiler must define ENABLE_MULTITHREADING"
+#ifndef COMPILE_OPENMP
+    #error "Compiler must define COMPILE_OPENMP"
 #endif
 
-#ifndef ENABLE_GPU_ACCELERATION
-    #error "Compiler must define ENABLE_GPU_ACCELERATION"
+#ifndef COMPILE_CUDA
+    #error "Compiler must define COMPILE_CUDA"
 #endif
 
-#ifndef ENABLE_CUQUANTUM
-    #error "Compiler must define ENABLE_CUQUANTUM"
+#ifndef COMPILE_CUQUANTUM
+    #error "Compiler must define COMPILE_CUQUANTUM"
 #endif
 
 
 
 // ensure all mode flags are valid values
 
-#if ! (ENABLE_DISTRIBUTION == 0 || ENABLE_DISTRIBUTION == 1)
-    #error "Macro ENABLE_DISTRIBUTION must have value 0 or 1"
+#if ! (COMPILE_MPI == 0 || COMPILE_MPI == 1)
+    #error "Macro COMPILE_MPI must have value 0 or 1"
 #endif
 
-#if ! (ENABLE_MULTITHREADING == 0 || ENABLE_MULTITHREADING == 1)
-    #error "Macro ENABLE_MULTITHREADING must have value 0 or 1"
+#if ! (COMPILE_OPENMP == 0 || COMPILE_OPENMP == 1)
+    #error "Macro COMPILE_OPENMP must have value 0 or 1"
 #endif
 
-#if ! (ENABLE_GPU_ACCELERATION == 0 || ENABLE_GPU_ACCELERATION == 1)
-    #error "Macro ENABLE_GPU_ACCELERATION must have value 0 or 1"
+#if ! (COMPILE_CUDA == 0 || COMPILE_CUDA == 1)
+    #error "Macro COMPILE_CUDA must have value 0 or 1"
 #endif
 
-#if ! (ENABLE_CUQUANTUM == 0 || ENABLE_CUQUANTUM == 1)
-    #error "Macro ENABLE_CUQUANTUM must have value 0 or 1"
+#if ! (COMPILE_CUQUANTUM == 0 || COMPILE_CUQUANTUM == 1)
+    #error "Macro COMPILE_CUQUANTUM must have value 0 or 1"
 #endif
 
 
 
 // ensure mode flags are compatible
 
-#if ENABLE_CUQUANTUM && ! ENABLE_GPU_ACCELERATION
+#if COMPILE_CUQUANTUM && ! COMPILE_CUDA
     #error "Cannot enable cuQuantum without simultaneously enabling GPU-acceleration"
 #endif
 

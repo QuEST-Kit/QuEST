@@ -1,6 +1,6 @@
 /** @file
  * Subroutines which invoke cuQuantum. This file is only ever included
- * when ENABLE_CUQUANTUM=1 and ENABLE_GPU_ACCELERATION=1 so it can 
+ * when COMPILE_CUQUANTUM=1 and COMPILE_CUDA=1 so it can 
  * safely invoke CUDA signatures without guards.
  */
 
@@ -15,16 +15,16 @@
 #define GPU_CUQUANTUM_HPP
 
 
-#if ! ENABLE_CUQUANTUM
+#if ! COMPILE_CUQUANTUM
     #error "A file being compiled somehow included gpu_cuquantum.hpp despite QuEST not being compiled in cuQuantum mode."
 #endif
 
-#if ! ENABLE_GPU_ACCELERATION
+#if ! COMPILE_CUDA
     #error "A file being compiled somehow included gpu_cuquantum.hpp despite QuEST not being compiled in GPU-accelerated mode."
 #endif
 
 #ifndef __NVCC__
-    #error "A file which included gpu_cuquantum.hpp was not being compiled with an NVIDIA CUDA compiler."
+    #error "A file which included gpu_cuquantum.hpp was attemptedly compiled with a non-CUDA compiler."
 #endif
 
 
