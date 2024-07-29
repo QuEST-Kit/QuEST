@@ -27,6 +27,8 @@
 #include <string>
 #include <vector>
 
+using std::vector;
+
 
 
 /*
@@ -198,7 +200,7 @@ CompMatr1 getCompMatr1(qcomp in[2][2]) {
 CompMatr1 getCompMatr1(qcomp** in) {
     return getCompMatrFromElems<CompMatr1>(in, 1);
 }
-CompMatr1 getCompMatr1(std::vector<std::vector<qcomp>> in) {
+CompMatr1 getCompMatr1(vector<vector<qcomp>> in) {
     validate_matrixNumNewElems(1, in, __func__);
 
     return getCompMatrFromElems<CompMatr1>(in, 1);
@@ -210,7 +212,7 @@ CompMatr2 getCompMatr2(qcomp in[4][4]) {
 CompMatr2 getCompMatr2(qcomp** in) {
     return getCompMatrFromElems<CompMatr2>(in, 2);
 }
-CompMatr2 getCompMatr2(std::vector<std::vector<qcomp>> in) {
+CompMatr2 getCompMatr2(vector<vector<qcomp>> in) {
     validate_matrixNumNewElems(2, in, __func__);
 
     return getCompMatrFromElems<CompMatr2>(in, 2);
@@ -229,13 +231,13 @@ CompMatr2 getCompMatr2(std::vector<std::vector<qcomp>> in) {
  */
 
 
-DiagMatr1 getDiagMatr1(std::vector<qcomp> in) {
+DiagMatr1 getDiagMatr1(vector<qcomp> in) {
     validate_matrixNumNewElems(1, in, __func__);
 
     return getDiagMatr1(in.data());
 }
 
-DiagMatr2 getDiagMatr2(std::vector<qcomp> in) {
+DiagMatr2 getDiagMatr2(vector<qcomp> in) {
     validate_matrixNumNewElems(2, in, __func__);
 
     return getDiagMatr2(in.data());
@@ -471,7 +473,7 @@ void setCompMatr(CompMatr out, qcomp** in) {
     validateAndSetCompMatrElems(out, in, __func__);
 }
 
-void setCompMatr(CompMatr out, std::vector<std::vector<qcomp>> in) {
+void setCompMatr(CompMatr out, vector<vector<qcomp>> in) {
 
     // we validate dimension of 'in', which first requires validating 'out' fields
     validate_matrixFields(out, __func__);
@@ -501,7 +503,7 @@ extern "C" void setDiagMatr(DiagMatr out, qcomp* in) {
     syncDiagMatr(out);
 }
 
-void setDiagMatr(DiagMatr out, std::vector<qcomp> in) {
+void setDiagMatr(DiagMatr out, vector<qcomp> in) {
 
     // we validate dimension of 'in', which first requires validating 'out' fields
     validate_matrixFields(out, __func__);
@@ -531,7 +533,7 @@ extern "C" void setFullStateDiagMatr(FullStateDiagMatr out, qindex startInd, qco
     syncFullStateDiagMatr(out);
 }
 
-void setFullStateDiagMatr(FullStateDiagMatr out, qindex startInd, std::vector<qcomp> in) {
+void setFullStateDiagMatr(FullStateDiagMatr out, qindex startInd, vector<qcomp> in) {
 
     setFullStateDiagMatr(out, startInd, in.data(), in.size());
 }

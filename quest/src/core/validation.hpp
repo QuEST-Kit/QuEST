@@ -13,6 +13,10 @@
 #include "quest/include/matrices.h"
 
 #include <vector>
+#include <string>
+
+using std::vector;
+using std::string;
 
 
 
@@ -112,8 +116,8 @@ void validate_matrixFields(DiagMatr2 matr, const char* caller);
 void validate_matrixFields(DiagMatr  matr, const char* caller);
 void validate_matrixFields(FullStateDiagMatr matr, const char* caller);
 
-void validate_matrixNumNewElems(int numQubits, std::vector<std::vector<qcomp>> elems, const char* caller);
-void validate_matrixNumNewElems(int numQubits, std::vector<qcomp> elems, const char* caller);
+void validate_matrixNumNewElems(int numQubits, vector<vector<qcomp>> elems, const char* caller);
+void validate_matrixNumNewElems(int numQubits, vector<qcomp> elems, const char* caller);
 
 void validate_matrixNewElemsDontContainUnsyncFlag(qcomp firstElem, const char* caller);
 
@@ -164,11 +168,11 @@ void validate_newPauliStrSumAllocs(PauliStrSum sum, qindex numBytesStrings, qind
  * PAULI STRING SUM PARSING
  */
 
-void validate_parsedPauliStrSumLineIsInterpretable(bool isInterpretable, std::string line, qindex lineIndex, const char* caller);
+void validate_parsedPauliStrSumLineIsInterpretable(bool isInterpretable, string line, qindex lineIndex, const char* caller);
 
-void validate_parsedPauliStrSumCoeffIsValid(bool isCoeffValid, std::string line, qindex lineIndex, const char* caller);
+void validate_parsedPauliStrSumCoeffIsValid(bool isCoeffValid, string line, qindex lineIndex, const char* caller);
 
-void validate_parsedPauliStrSumLineHasConsistentNumPaulis(int numPaulis, int numLinePaulis, std::string line, qindex lineIndex, const char* caller);
+void validate_parsedPauliStrSumLineHasConsistentNumPaulis(int numPaulis, int numLinePaulis, string line, qindex lineIndex, const char* caller);
 
 void validate_parsedStringIsNotEmpty(bool stringIsNotEmpty, const char* caller);
 
@@ -194,7 +198,7 @@ void validate_target(Qureg qureg, int target, const char* caller);
  * FILE IO
  */
 
-void validate_canReadFile(std::string fn, const char* caller);
+void validate_canReadFile(string fn, const char* caller);
 
 
 

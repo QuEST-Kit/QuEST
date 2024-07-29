@@ -22,9 +22,16 @@
 #include <stdexcept>
 #include <algorithm>
 
-
-// have mercy on me, boilerplate Gods
-using namespace std;
+using std::stold;
+using std::regex;
+using std::vector;
+using std::string;
+using std::smatch;
+using std::ifstream;
+using std::out_of_range;
+using std::stringstream;
+using std::sregex_iterator;
+using std::invalid_argument;
 
 
 
@@ -39,7 +46,7 @@ namespace patterns {
 
     // utilities
     string group(string in) { return "(?:" + in + ")"; } // groups sub-patterns to control eval order
-    string capt (string in) { return "(" + in + ")"; }   // captures sub-patterns for later extraction
+    string capt (string in) { return "("   + in + ")"; } // captures sub-patterns for later extraction
     string opt  (string in) { return group(in) + "?"; }  // groups and makes optional a sub-pattern
 
     // sub-numbers
@@ -231,7 +238,7 @@ void assertStringIsValidPauliStrSum(string lines, const char* caller) {
     qindex lineIndex = 0;
 
     // parse each line in-turn
-    istringstream stream(lines);
+    stringstream stream(lines);
 
     for (string line; getline(stream, line); lineIndex++) {
 
@@ -383,7 +390,7 @@ PauliStrSum parser_validateAndParsePauliStrSum(string lines, bool rightIsLeastSi
     vector<PauliStr> strings; strings.reserve(numLines);
     
     // parse each line in-turn
-    istringstream stream(lines);
+    stringstream stream(lines);
     for (string line; getline(stream, line); ) {
 
         // skip empty lines

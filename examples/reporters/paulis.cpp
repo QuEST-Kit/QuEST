@@ -5,6 +5,11 @@
 #include <vector>
 #include <time.h>
 
+using std::cout;
+using std::endl;
+using std::string;
+using std::vector;
+
 
 
 /*
@@ -17,12 +22,12 @@ void rootPrint(qindex num) {
     if (getQuESTEnv().rank != 0)
         return;
 
-    std::cout << std::endl << std::endl << ">> set number of reported items to " << num;
+    cout << endl << endl << ">> set number of reported items to " << num;
 
     if (num == 0)
-        std::cout << " (which means report all)";
+        cout << " (which means report all)";
          
-    std::cout << std::endl << std::endl;
+    cout << endl << endl;
 }
 
 
@@ -52,13 +57,13 @@ void demo_PauliStr() {
 
 PauliStrSum prepareRandomPauliStrSum(int numQubits, int numTerms) {
 
-    std::vector<char> paulis(numQubits);
-    std::vector<int> qubits(numQubits);
+    vector<char> paulis(numQubits);
+    vector<int> qubits(numQubits);
     for (int i=0; i<numQubits; i++)
         qubits[i] = i;
 
-    std::vector<qcomp> coeffs(numTerms);
-    std::vector<PauliStr> strings(numTerms);
+    vector<qcomp> coeffs(numTerms);
+    vector<PauliStr> strings(numTerms);
     
     for (int i=0; i<numTerms; i++) {
         coeffs[i] = qcomp(
@@ -68,7 +73,7 @@ PauliStrSum prepareRandomPauliStrSum(int numQubits, int numTerms) {
         for (int j=0; j<numQubits; j++)
             paulis[j] = "IXYZ"[rand() % 4];
 
-        std::string seq = std::string(paulis.begin(), paulis.end());
+        string seq = string(paulis.begin(), paulis.end());
         strings[i] = getPauliStr(seq, qubits);
     }
 
@@ -82,7 +87,7 @@ void demo_PauliStrSum() {
     int numTerms = 100;
     PauliStrSum sum = prepareRandomPauliStrSum(numQubits, numTerms);
 
-    std::vector<int> numReportElems {0, 10, 2};
+    vector<int> numReportElems {0, 10, 2};
 
     for (int num : numReportElems) {
         rootPrint(num);
