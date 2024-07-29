@@ -12,6 +12,8 @@
 #include <type_traits>
 #include <string>
 
+using std::is_same_v;
+
 
 
 /*
@@ -26,18 +28,18 @@ constexpr bool util_isDenseMatrixType() {
 
     // CompMatr are "dense", storing all 2D elements
     if constexpr (
-        std::is_same_v<T, CompMatr1> ||
-        std::is_same_v<T, CompMatr2> ||
-        std::is_same_v<T, CompMatr>
+        is_same_v<T, CompMatr1> ||
+        is_same_v<T, CompMatr2> ||
+        is_same_v<T, CompMatr>
     )
         return true;
 
     // DiagMatr are "sparse", storing only the diagonals
     if constexpr (
-        std::is_same_v<T, DiagMatr1> ||
-        std::is_same_v<T, DiagMatr2> ||
-        std::is_same_v<T, DiagMatr>  ||
-        std::is_same_v<T, FullStateDiagMatr>
+        is_same_v<T, DiagMatr1> ||
+        is_same_v<T, DiagMatr2> ||
+        is_same_v<T, DiagMatr>  ||
+        is_same_v<T, FullStateDiagMatr>
     )
         return false;
 
@@ -51,10 +53,10 @@ template<class T>
 constexpr bool util_isFixedSizeMatrixType() {
 
     return (
-        std::is_same_v<T, CompMatr1> ||
-        std::is_same_v<T, CompMatr2> ||
-        std::is_same_v<T, DiagMatr1> ||
-        std::is_same_v<T, DiagMatr2>
+        is_same_v<T, CompMatr1> ||
+        is_same_v<T, CompMatr2> ||
+        is_same_v<T, DiagMatr1> ||
+        is_same_v<T, DiagMatr2>
     );
 }
 
@@ -62,7 +64,7 @@ constexpr bool util_isFixedSizeMatrixType() {
 template<class T>
 constexpr bool util_isDistributableMatrixType() {
 
-    return (std::is_same_v<T, FullStateDiagMatr>);
+    return (is_same_v<T, FullStateDiagMatr>);
 }
 
 // T can be CompMatr1, CompMatr2, CompMatr, DiagMatr1, DiagMatr2, DiagMatr, FullStateDiagMatr
@@ -79,21 +81,21 @@ bool util_isDistributedMatrix(T matr) {
 template<class T>
 std::string util_getMatrixTypeName() {
     
-    if constexpr (std::is_same_v<T, CompMatr1>)
+    if constexpr (is_same_v<T, CompMatr1>)
         return "CompMatr1";
-    if constexpr (std::is_same_v<T, CompMatr2>)
+    if constexpr (is_same_v<T, CompMatr2>)
         return "CompMatr2";
-    if constexpr (std::is_same_v<T, CompMatr>)
+    if constexpr (is_same_v<T, CompMatr>)
         return "CompMatr";
     
-    if constexpr (std::is_same_v<T, DiagMatr1>)
+    if constexpr (is_same_v<T, DiagMatr1>)
         return "DiagMatr1";
-    if constexpr (std::is_same_v<T, DiagMatr2>)
+    if constexpr (is_same_v<T, DiagMatr2>)
         return "DiagMatr2";
-    if constexpr (std::is_same_v<T, DiagMatr>)
+    if constexpr (is_same_v<T, DiagMatr>)
         return "DiagMatr";
 
-    if constexpr (std::is_same_v<T, FullStateDiagMatr>)
+    if constexpr (is_same_v<T, FullStateDiagMatr>)
         return "FullStateDiagMatr";
 
     // no need to create a new error for this situation I think

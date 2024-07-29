@@ -27,6 +27,8 @@
 // provides substrings (by, na, pm, etc) used by reportQuESTEnv
 using namespace printer_substrings;
 
+using std::string;
+
 
 
 /*
@@ -181,7 +183,7 @@ void printDeploymentInfo() {
 void printCpuInfo() {
 
     // assume RAM is unknown unless it can be queried
-    std::string ram = un;
+    string ram = un;
     try { 
         ram = printer_toStr(mem_tryGetLocalRamCapacityInBytes()) + by + pm; 
     } catch(mem::COULD_NOT_QUERY_RAM e){};
@@ -233,8 +235,8 @@ void printQuregSizeLimits(bool isDensMatr) {
     int numNodes = globalEnvPtr->numNodes;
 
     // by default, CPU limits are unknown (because memory query might fail)
-    std::string maxQbForCpu = un;
-    std::string maxQbForMpiCpu = un;
+    string maxQbForCpu = un;
+    string maxQbForMpiCpu = un;
 
     // max CPU registers are only determinable if RAM query succeeds
     try {
@@ -253,8 +255,8 @@ void printQuregSizeLimits(bool isDensMatr) {
     } catch(mem::COULD_NOT_QUERY_RAM e) {};
 
     // GPU limits are default N/A because they're always determinable when relevant
-    std::string maxQbForGpu = na;
-    std::string maxQbForMpiGpu = na;
+    string maxQbForGpu = na;
+    string maxQbForMpiGpu = na;
 
     // max GPU registers only relevant if env is GPU-accelerated
     if (globalEnvPtr->isGpuAccelerated) {
@@ -267,8 +269,8 @@ void printQuregSizeLimits(bool isDensMatr) {
     }
 
     // tailor table title to type of Qureg
-    std::string prefix = (isDensMatr)? "density matrix" : "statevector";
-    std::string title = prefix + " limits";
+    string prefix = (isDensMatr)? "density matrix" : "statevector";
+    string title = prefix + " limits";
 
     print_table(
         title, {
@@ -286,7 +288,7 @@ void printQuregSizeLimits(bool isDensMatr) {
 void printQuregAutoDeployments(bool isDensMatr) {
 
     // build all table rows dynamically before print
-    std::vector<std::tuple<std::string, std::string>> rows;
+    std::vector<std::tuple<string, string>> rows;
 
     // we will get auto-deployment for every possible number of qubits; silly but cheap and robust!
     int useDistrib,  useGpuAccel,  useMulti;
@@ -316,7 +318,7 @@ void printQuregAutoDeployments(bool isDensMatr) {
             continue; 
 
         // else prepare string summarising the new deployments (trailing space is fine)
-        std::string value = "";
+        string value = "";
         if (useMulti)
             value += "[omp] "; // ordered by #qubits to attempt consistent printed columns
         if (useGpuAccel)
@@ -334,8 +336,8 @@ void printQuregAutoDeployments(bool isDensMatr) {
     }
 
     // tailor table title to type of Qureg
-    std::string prefix = (isDensMatr)? "density matrix" : "statevector";
-    std::string title = prefix + " autodeployment";
+    string prefix = (isDensMatr)? "density matrix" : "statevector";
+    string title = prefix + " autodeployment";
     print_table(title, rows);
 }
 

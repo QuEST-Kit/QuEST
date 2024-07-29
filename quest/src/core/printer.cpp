@@ -20,11 +20,17 @@
 #include <tuple>
 #include <string>
 
-
-// I like to live dangerously; and I am willing to debate with the
-// most dogmatic C++ enthusiast about the unreadability of namespaces
-using namespace std;
 using namespace printer_substrings;
+
+using std::cout;
+using std::endl;
+using std::left;
+using std::setw;
+using std::tuple;
+using std::string;
+using std::vector;
+using std::setfill;
+using std::complex;
 
 
 
@@ -174,11 +180,11 @@ template <typename T>
 string floatToStr(T num, bool hideSign=false) {
 
     // write to stream (instead of calling to_string()) to auto-use scientific notation
-    ostringstream buffer;
+    std::stringstream buffer;
 
     // ensure +- is not shown if forced hidden
     if (hideSign) {
-        buffer << noshowpos;
+        buffer << std::noshowpos;
         if (num < 0)
             num *= -1;
     }
@@ -259,7 +265,7 @@ void print(const char* str) {
         cout << str << endl;
 }
 
-void print(std::string str) {
+void print(string str) {
     print(str.data());
 }
 
@@ -685,7 +691,7 @@ void print_table(string title, vector<tuple<string, long long int>> rows, string
     // convert all values to strings
     vector<tuple<string, string>> casted;
     for (auto const& [key, value] : rows)
-        casted.push_back({key, to_string(value)});
+        casted.push_back({key, std::to_string(value)});
 
     print_table(title, casted, indent);
 }
@@ -800,12 +806,12 @@ void print_pauliStrSum(PauliStrSum sum, string indent) {
     // choose coeffs padding to make consistent column alignment
     int maxTopCoeffWidth = getWidthOfWidestElem(sum.coeffs, numTopElems);
     int maxBotCoeffWidth = getWidthOfWidestElem(&(sum.coeffs[botElemsInd]), numBotElems);
-    int maxCoeffWidth = max(maxTopCoeffWidth, maxBotCoeffWidth);
+    int maxCoeffWidth = std::max(maxTopCoeffWidth, maxBotCoeffWidth);
 
     // choose the fixed number of Paulis to show (the min necessary to fit all non-truncated strings)
     int maxTopNumPaulis = 1 + getIndexOfLeftmostPauliAmongStrings(sum.strings, numTopElems);
     int maxBotNumPaulis = 1 + getIndexOfLeftmostPauliAmongStrings(&(sum.strings[botElemsInd]), numBotElems);
-    int maxNumPaulis = max(maxTopNumPaulis,maxBotNumPaulis);
+    int maxNumPaulis = std::max(maxTopNumPaulis,maxBotNumPaulis);
 
     // print all top elems
     printPauliStrSumSubset(sum, 0, numTopElems, maxCoeffWidth, maxNumPaulis, indent);

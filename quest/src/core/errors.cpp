@@ -15,15 +15,17 @@
 #include <iostream>
 #include <string>
 
+using std::string;
+
 
 
 /*
  * INTERNAL ERROR RESPONSE
  */
 
-void raiseInternalError(std::string errorMsg) {
+void raiseInternalError(string errorMsg) {
 
-    print(std::string("")
+    print(string("")
         + "\n\n"
         + "A fatal internal QuEST error occurred. "
         + errorMsg + " "
@@ -40,17 +42,17 @@ void raiseInternalError(std::string errorMsg) {
  * VALIDATION ERRORS
  */
 
-void error_validationMessageVarWasIllFormed(std::string msg, std::string illFormedVar) {
+void error_validationMessageVarWasIllFormed(string msg, string illFormedVar) {
 
     raiseInternalError("User input validation failed and an error string was attemptedly prepared, but an ill-formed variable was attempted substitution. This variable was \"" + illFormedVar + "\" and was attempted substitution into message:\n" + msg + "\n");
 }
 
-void error_validationMessageVarNotSubstituted(std::string msg, std::string var) {
+void error_validationMessageVarNotSubstituted(string msg, string var) {
 
     raiseInternalError("User input validation failed and an error string was attemptedly prepared. However, the internal variable \"" + var + "\" was unable to be found and substituted into the message, which was:\n" + msg + "\n");
 }
 
-void error_validationMessageContainedUnsubstitutedVars(std::string msg) {
+void error_validationMessageContainedUnsubstitutedVars(string msg) {
 
     raiseInternalError("User input validation failed and an error string was prepared. However, the message contained unexpected (and potentially ill-formed) unsubstituted variables. The message was:\n" + msg + "\n");
 }
@@ -237,7 +239,7 @@ void assert_gpuIsAccessible() {
 void error_cudaCallFailed(const char* msg, const char* func, const char* caller, const char* file, int line) {
 
     // using operator overloads to cast const char[] literals to std::string, to concat with const char*.
-    std::string err = "";
+    string err = "";
     err += "A CUDA (or cuQuantum) API function (\"";
     err += func;
     err += "\", called by \"";

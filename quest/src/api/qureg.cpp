@@ -22,6 +22,8 @@
 // provides substrings (by, na, pm, etc) used by reportQureg
 using namespace printer_substrings;
 
+using std::string;
+
 
 
 /*
@@ -170,7 +172,7 @@ void printDeploymentInfo(Qureg qureg) {
 void printDimensionInfo(Qureg qureg) {
 
     // 2^N = M or 2^N x 2^N = M
-    std::string str;
+    string str;
     str  = bt + printer_toStr(qureg.numQubits);
     str += (qureg.isDensityMatrix)? mu + str : "";
     str += eq + printer_toStr(qureg.numAmps);
@@ -187,8 +189,8 @@ void printDimensionInfo(Qureg qureg) {
 void printDistributionInfo(Qureg qureg) {
 
     // not applicable when not distributed
-    std::string nodesStr = na;
-    std::string ampsStr  = na;
+    string nodesStr = na;
+    string ampsStr  = na;
 
     // 2^N = M per node
     if (qureg.isDistributed) {
@@ -208,12 +210,12 @@ void printDistributionInfo(Qureg qureg) {
 void printMemoryInfo(Qureg qureg) {
 
     size_t localArrayMem = mem_getLocalQuregMemoryRequired(qureg.numAmpsPerNode);
-    std::string localMemStr = printer_toStr(localArrayMem) + by + ((qureg.isDistributed)? pn : "");
+    string localMemStr = printer_toStr(localArrayMem) + by + ((qureg.isDistributed)? pn : "");
 
     // precondition: no reportable fields are at risk of overflow as a qindex
     // type, EXCEPT aggregate total memory between distributed nodes (in bytes)
     qindex globalTotalMem = mem_getTotalGlobalMemoryUsed(qureg);
-    std::string globalMemStr = (globalTotalMem == 0)? "overflowed" : (printer_toStr(globalTotalMem) + by);
+    string globalMemStr = (globalTotalMem == 0)? "overflowed" : (printer_toStr(globalTotalMem) + by);
 
     print_table(
         "memory", {

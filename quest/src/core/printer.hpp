@@ -9,12 +9,17 @@
 #include "quest/include/matrices.h"
 #include "quest/include/paulis.h"
 
-#include <vector>
 #include <tuple>
+#include <vector>
 #include <complex>
 #include <string>
 #include <sstream>
 #include <type_traits>
+
+using std::tuple;
+using std::string;
+using std::vector;
+using std::complex;
 
 
 
@@ -30,13 +35,13 @@ void printer_setMaxNumPrintedItems(qindex num);
  * TYPE NAME STRINGS
  */
 
-std::string printer_getQrealType();
+string printer_getQrealType();
 
-std::string printer_getQcompType();
+string printer_getQcompType();
 
-std::string printer_getQindexType();
+string printer_getQindexType();
 
-std::string printer_getFloatPrecisionFlag();
+string printer_getFloatPrecisionFlag();
 
 
 
@@ -48,11 +53,11 @@ std::string printer_getFloatPrecisionFlag();
 // type T can be int, qindex, float, double, long double.
 // this more specific printer_toStr() definition is called when passing complex
 template <typename T>
-std::string printer_toStr(std::complex<T> num);
+string printer_toStr(complex<T> num);
 
 // type T can be any non-complex type recognised by ostringstream!
 template<typename T> 
-std::string printer_toStr(T expr) {
+string printer_toStr(T expr) {
 
     // write to buffer (rather than use to_string()) so that floating-point numbers
     // are automatically converted to scientific notation when necessary
@@ -68,15 +73,15 @@ std::string printer_toStr(T expr) {
  */
 
 namespace printer_substrings { 
-    extern std::string eq;
-    extern std::string mu;
-    extern std::string by;
-    extern std::string pn;
-    extern std::string pg;
-    extern std::string pm;
-    extern std::string bt;
-    extern std::string na;
-    extern std::string un;
+    extern string eq;
+    extern string mu;
+    extern string by;
+    extern string pn;
+    extern string pg;
+    extern string pm;
+    extern string bt;
+    extern string na;
+    extern string un;
 }
 
 
@@ -89,8 +94,8 @@ namespace printer_substrings {
  * static to avoid symbol duplication by repeated header inclusion.
  */
 
-static std::string defaultMatrIndent  = "    ";
-static std::string defaultTableIndent = "  ";
+static string defaultMatrIndent  = "    ";
+static string defaultTableIndent = "  ";
 
 
 
@@ -99,7 +104,7 @@ static std::string defaultTableIndent = "  ";
  */
 
 void print(const char* str);
-void print(std::string str);
+void print(string str);
 void print(qcomp num);
 
 
@@ -108,15 +113,15 @@ void print(qcomp num);
  * MATRIX PRINTING
  */
 
-void print_matrixInfo(std::string nameStr, int numQubits, qindex dim, size_t elemMem, size_t otherMem, int numNodes=1);
+void print_matrixInfo(string nameStr, int numQubits, qindex dim, size_t elemMem, size_t otherMem, int numNodes=1);
 
-void print_matrix(CompMatr1 matr, std::string indent=defaultMatrIndent);
-void print_matrix(CompMatr2 matr, std::string indent=defaultMatrIndent);
-void print_matrix(CompMatr  matr, std::string indent=defaultMatrIndent);
-void print_matrix(DiagMatr1 matr, std::string indent=defaultMatrIndent);
-void print_matrix(DiagMatr2 matr, std::string indent=defaultMatrIndent);
-void print_matrix(DiagMatr  matr, std::string indent=defaultMatrIndent);
-void print_matrix(FullStateDiagMatr matr, std::string indent=defaultMatrIndent);
+void print_matrix(CompMatr1 matr, string indent=defaultMatrIndent);
+void print_matrix(CompMatr2 matr, string indent=defaultMatrIndent);
+void print_matrix(CompMatr  matr, string indent=defaultMatrIndent);
+void print_matrix(DiagMatr1 matr, string indent=defaultMatrIndent);
+void print_matrix(DiagMatr2 matr, string indent=defaultMatrIndent);
+void print_matrix(DiagMatr  matr, string indent=defaultMatrIndent);
+void print_matrix(FullStateDiagMatr matr, string indent=defaultMatrIndent);
 
 
 
@@ -124,8 +129,8 @@ void print_matrix(FullStateDiagMatr matr, std::string indent=defaultMatrIndent);
  * TABLE PRINTING
  */
 
-void print_table(std::string title, std::vector<std::tuple<std::string, std::string>>   rows, std::string indent=defaultTableIndent);
-void print_table(std::string title, std::vector<std::tuple<std::string, long long int>> rows, std::string indent=defaultTableIndent);
+void print_table(string title, vector<tuple<string, string>>   rows, string indent=defaultTableIndent);
+void print_table(string title, vector<tuple<string, long long int>> rows, string indent=defaultTableIndent);
 
 
 
@@ -137,7 +142,7 @@ void print_pauliStr(PauliStr str, int numQubits);
 
 void print_pauliStrSumInfo(qindex numTerms, qindex numBytes);
 
-void print_pauliStrSum(PauliStrSum sum, std::string indent=defaultMatrIndent);
+void print_pauliStrSum(PauliStrSum sum, string indent=defaultMatrIndent);
 
 
 

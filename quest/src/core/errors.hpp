@@ -13,17 +13,19 @@
 
 #include <string>
 
+using std::string;
+
 
 
 /*
  * VALIDATION ERRORS
  */
 
-void error_validationMessageVarWasIllFormed(std::string msg, std::string illFormedVar);
+void error_validationMessageVarWasIllFormed(string msg, string illFormedVar);
 
-void error_validationMessageVarNotSubstituted(std::string msg, std::string var);
+void error_validationMessageVarNotSubstituted(string msg, string var);
 
-void error_validationMessageContainedUnsubstitutedVars(std::string msg);
+void error_validationMessageContainedUnsubstitutedVars(string msg);
 
 void error_validationEncounteredUnsupportedDistributedDenseMatrix();
 

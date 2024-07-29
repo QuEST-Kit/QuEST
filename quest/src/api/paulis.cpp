@@ -16,6 +16,9 @@
 #include <vector>
 #include <string>
 
+using std::string;
+using std::vector;
+
 
 
 /*
@@ -132,7 +135,7 @@ extern "C" PauliStr getPauliStr(const char* paulis, int* indices, int numPaulis)
 
 }
 
-PauliStr getPauliStr(std::string paulis, int* indices, int numPaulis) {
+PauliStr getPauliStr(string paulis, int* indices, int numPaulis) {
 
     // additionally validate 'paulis' string has 'numPaulis' chars
     validate_newPauliStrNumChars(paulis.length(), numPaulis, __func__);
@@ -140,7 +143,7 @@ PauliStr getPauliStr(std::string paulis, int* indices, int numPaulis) {
     return getPauliStr(paulis.data(), indices, numPaulis); // validates
 }
 
-PauliStr getPauliStr(std::string paulis, std::vector<int> indices) {
+PauliStr getPauliStr(string paulis, vector<int> indices) {
 
     // additionally validate 'paulis' string has 'numPaulis' chars
     validate_newPauliStrNumChars(paulis.length(), indices.size(), __func__);
@@ -148,13 +151,13 @@ PauliStr getPauliStr(std::string paulis, std::vector<int> indices) {
     return getPauliStr(paulis.data(), indices.data(), indices.size()); // validates
 }
 
-PauliStr getPauliStr(std::string paulis) {
+PauliStr getPauliStr(string paulis) {
 
     // pedantically validate the string length isn't so long that it would stackoverflow a vector
     validate_newPauliStrNumPaulis(paulis.size(), MAX_NUM_PAULIS_PER_STR, __func__);
 
     // automatically target the bottom-most qubits, preserving rightmost is least significant
-    std::vector<int> indices(paulis.size());
+    vector<int> indices(paulis.size());
     for (int i=0; i<paulis.size(); i++)
         indices[i] = paulis.size() - 1 - i;
 
@@ -199,7 +202,7 @@ extern "C" PauliStrSum createPauliStrSum(PauliStr* strings, qcomp* coeffs, qinde
     return out;
 }
 
-PauliStrSum createPauliStrSum(std::vector<PauliStr> strings, std::vector<qcomp> coeffs) {
+PauliStrSum createPauliStrSum(vector<PauliStr> strings, vector<qcomp> coeffs) {
 
     // additionally validate 'strings' and 'coeffs' are the same length
     validate_newPauliStrSumMatchingListLens(strings.size(), coeffs.size(), __func__);
@@ -211,10 +214,10 @@ PauliStrSum createPauliStrSum(std::vector<PauliStr> strings, std::vector<qcomp> 
 extern "C" PauliStrSum createInlinePauliStrSum(const char* str) {
 
     // str must be null-terminated
-    return createInlinePauliStrSum(std::string(str));
+    return createInlinePauliStrSum(string(str));
 }
 
-PauliStrSum createInlinePauliStrSum(std::string str) {
+PauliStrSum createInlinePauliStrSum(string str) {
 
     bool rightIsLeastSig = true;
     return parser_validateAndParsePauliStrSum(str, rightIsLeastSig, __func__);
@@ -224,14 +227,14 @@ PauliStrSum createInlinePauliStrSum(std::string str) {
 extern "C" PauliStrSum createPauliStrSumFromFile(const char* fn) {
 
     // fn must be null-terminated
-    return createPauliStrSumFromFile(std::string(fn));
+    return createPauliStrSumFromFile(string(fn));
 }
 
-PauliStrSum createPauliStrSumFromFile(std::string fn) {
+PauliStrSum createPauliStrSumFromFile(string fn) {
     validate_canReadFile(fn, __func__);
 
     bool rightIsLeastSig = true;
-    std::string str = parser_loadFile(fn);
+    string str = parser_loadFile(fn);
     return parser_validateAndParsePauliStrSum(str, rightIsLeastSig, __func__);
 }
 
@@ -239,14 +242,14 @@ PauliStrSum createPauliStrSumFromFile(std::string fn) {
 extern "C" PauliStrSum createPauliStrSumFromReversedFile(const char* fn) {
 
     // fn must be null-terminated
-    return createPauliStrSumFromReversedFile(std::string(fn));
+    return createPauliStrSumFromReversedFile(string(fn));
 }
 
-PauliStrSum createPauliStrSumFromReversedFile(std::string fn) {
+PauliStrSum createPauliStrSumFromReversedFile(string fn) {
     validate_canReadFile(fn, __func__);
 
     bool rightIsLeastSig = false;
-    std::string str = parser_loadFile(fn);
+    string str = parser_loadFile(fn);
     return parser_validateAndParsePauliStrSum(str, rightIsLeastSig, __func__);
 }
 

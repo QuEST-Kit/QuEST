@@ -3,6 +3,8 @@
 #include <stdlib.h>
 #include <vector>
 
+using std::vector;
+
 
 /*
  * When compiling QuEST in C++ with 'double' or 'long double' precision,
@@ -51,7 +53,7 @@ void demo_getCompMatr() {
     reportCompMatr1(a);
 
     // 2D vector (C++ only)
-    std::vector<std::vector<qcomp>> vec {{-9,-8},{-7,-6}};
+    vector<vector<qcomp>> vec {{-9,-8},{-7,-6}};
     CompMatr1 b = getCompMatr1(vec);
     reportCompMatr1(b);
 
@@ -118,7 +120,7 @@ void demo_setCompMatr() {
     reportCompMatr(a);
 
     // 2D vector (C++ only)
-    std::vector<std::vector<qcomp>> vec {
+    vector<vector<qcomp>> vec {
         {-9,-8, -8, -9},
         {7, 7, 6, 6},
         {0, -1, -2, -3},
@@ -181,7 +183,7 @@ void demo_getDiagMatr() {
     reportDiagMatr1(a);
 
     // vector (C++ only)
-    std::vector<qcomp> vec {20_i, 30_i};
+    vector<qcomp> vec {20_i, 30_i};
     DiagMatr1 b = getDiagMatr1(vec);
     reportDiagMatr1(b);
 
@@ -227,7 +229,7 @@ void demo_setDiagMatr() {
     reportDiagMatr(a);
 
     // vector (C++ only)
-    std::vector<qcomp> vec {11, 22, 33, 44};
+    vector<qcomp> vec {11, 22, 33, 44};
     DiagMatr b = createDiagMatr(2);
     setDiagMatr(b, vec);
     reportDiagMatr(b);
@@ -275,7 +277,7 @@ void demo_setFullStateDiagMatr() {
     setFullStateDiagMatr(matr, 4, {5,6,7,8});
 
     // vector (C++ only)
-    std::vector<qcomp> vec {11, 22, 33, 44};
+    vector<qcomp> vec {11, 22, 33, 44};
     setFullStateDiagMatr(matr, 7, vec);
 
     // compile-time array must pass size

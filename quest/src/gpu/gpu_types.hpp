@@ -21,6 +21,8 @@
 #include <cuComplex.h>
 #include <vector>
 
+using std::vector;
+
 
 
 /*
@@ -86,9 +88,9 @@ __host__ inline void unpackMatrixToCuQcomps(CompMatr1 in, cu_qcomp &m00, cu_qcom
     m11 = toCuQcomp(in.elems[1][1]);
 }
 
-__host__ inline std::vector<cu_qcomp> unpackMatrixToCuQcomps(CompMatr1 in) {
+__host__ inline vector<cu_qcomp> unpackMatrixToCuQcomps(CompMatr1 in) {
 
-    std::vector<cu_qcomp> vec(4);
+    vector<cu_qcomp> vec(4);
     vec[0] = toCuQcomp(in.elems[0][0]);
     vec[1] = toCuQcomp(in.elems[0][1]);
     vec[2] = toCuQcomp(in.elems[1][0]);

@@ -3,6 +3,10 @@
 #include <iostream>
 #include <fstream>
 #include <cstdlib>
+#include <vector>
+
+using std::vector;
+
 
 
 
@@ -154,8 +158,8 @@ void demo_createPauliStrSum() {
         p[i] = "IXYZ"[i%4];
         q[i] = i;
     }
-    std::vector<PauliStr> strings = {getPauliStr(p, q, n)};
-    std::vector<qcomp> coeffs = {-1E-40 + .45E2_i};
+    vector<PauliStr> strings = {getPauliStr(p, q, n)};
+    vector<qcomp> coeffs = {-1E-40 + .45E2_i};
     PauliStrSum b = createPauliStrSum(strings, coeffs);
     reportPauliStrSum(b);
     destroyPauliStrSum(b);

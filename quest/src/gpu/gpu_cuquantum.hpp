@@ -32,6 +32,9 @@
 #include "quest/src/gpu/gpu_types.hpp"
 
 #include <custatevec.h>
+#include <vector>
+
+using std::vector;
 
 
 
@@ -169,7 +172,7 @@ void applyMatrix(Qureg qureg, int* ctrls, int numCtrls, int* targs, int numTargs
         work, workSize) );
 }
 
-void applyMatrix(Qureg qureg, std::vector<int> ctrls, std::vector<int> targs, std::vector<cu_qcomp> matr) {
+void applyMatrix(Qureg qureg, vector<int> ctrls, vector<int> targs, vector<cu_qcomp> matr) {
 
     applyMatrix(qureg, ctrls.data(), ctrls.size(), targs.data(), targs.size(), matr.data());
 }
