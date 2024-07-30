@@ -115,7 +115,7 @@ target_include_directories(QuEST
 target_compile_features(QuEST
   PUBLIC
   c_std_11
-  cxx_std_14
+  cxx_std_17
 )
 
 # Turn on all compiler warnings
