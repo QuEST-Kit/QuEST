@@ -130,29 +130,29 @@ target_compile_definitions(QuEST PUBLIC FLOAT_PRECISION=${PRECISION})
 
 if (MULTITHREADED)
   find_package(OpenMP REQUIRED)
-  target_compile_definitions(QuEST PUBLIC ENABLE_MULTITHREADING=1)
+  target_compile_definitions(QuEST PUBLIC COMPILE_OPENMP=1)
   target_link_libraries(QuEST
     PUBLIC
     OpenMP::OpenMP_CXX
     OpenMP::OpenMP_C
   )
 else()
-  target_compile_definitions(QuEST PUBLIC ENABLE_MULTITHREADING=0)
+  target_compile_definitions(QuEST PUBLIC COMPILE_OPENMP=0)
 endif()
 
 if (DISTRIBUTED)
 else()
-  target_compile_definitions(QuEST PUBLIC ENABLE_DISTRIBUTION=0)
+  target_compile_definitions(QuEST PUBLIC COMPILE_MPI=0)
 endif()
 
 if (GPUACCELERATED)
 else()
-  target_compile_definitions(QuEST PUBLIC ENABLE_GPU_ACCELERATION=0)
+  target_compile_definitions(QuEST PUBLIC COMPILE_CUDA=0)
 endif()
 
 if (CUQUANTUM)
 else()
-  target_compile_definitions(QuEST PUBLIC ENABLE_CUQUANTUM=0)
+  target_compile_definitions(QuEST PUBLIC COMPILE_CUQUANTUM=0)
 endif()
 
 # add math library
