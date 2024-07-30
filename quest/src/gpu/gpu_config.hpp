@@ -7,9 +7,9 @@
 #ifndef GPU_CONFIG_HPP
 #define GPU_CONFIG_HPP
 
-#include "types.h"
-#include "qureg.h"
-#include "structures.h"
+#include "quest/include/types.h"
+#include "quest/include/qureg.h"
+#include "quest/include/matrices.h"
 
 #include <cstdlib>
 
@@ -19,7 +19,7 @@
  * CUDA ERROR HANDLING
  */
 
-#if ENABLE_GPU_ACCELERATION
+#if COMPILE_CUDA
 
 #define CUDA_CHECK(cmd) do { assertCudaCallSucceeded((int) (cmd), #cmd, __func__, __FILE__, __LINE__); } while (0)
 
@@ -81,7 +81,9 @@ void gpu_copyCpuToGpu(Qureg qureg);
 void gpu_copyGpuToCpu(Qureg qureg, qcomp* gpuArr, qcomp* cpuArr, qindex numElems);
 void gpu_copyGpuToCpu(Qureg qureg);
 
-void gpu_copyCpuToGpu(CompMatrN matr);
+void gpu_copyCpuToGpu(CompMatr matr);
+void gpu_copyCpuToGpu(DiagMatr matr);
+void gpu_copyCpuToGpu(FullStateDiagMatr matr);
 
 bool gpu_haveGpuAmpsBeenSynced(qcomp* gpuArr);
 

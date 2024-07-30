@@ -9,31 +9,31 @@
  * mapped to HIP symbols by cuda_to_hip.h
  */
 
-#include "modes.h"
-#include "types.h"
-#include "qureg.h"
-#include "structures.h"
+#include "quest/include/modes.h"
+#include "quest/include/types.h"
+#include "quest/include/qureg.h"
+#include "quest/include/matrices.h"
 
 #include "../core/errors.hpp"
 
-#if ENABLE_GPU_ACCELERATION
-    #include "../gpu/gpu_types.hpp"
-    #include "../gpu/gpu_kernels.hpp"
-    #include "../gpu/gpu_thrust.hpp"
+#if COMPILE_CUDA
+    #include "quest/src/gpu/gpu_types.hpp"
+    #include "quest/src/gpu/gpu_kernels.hpp"
+    #include "quest/src/gpu/gpu_thrust.hpp"
 #endif
 
-#if ENABLE_CUQUANTUM
-    #include "../gpu/gpu_cuquantum.hpp"
+#if COMPILE_CUQUANTUM
+    #include "quest/src/gpu/gpu_cuquantum.hpp"
 #endif
 
 
 
 void gpu_statevec_oneTargetGate_subA(Qureg qureg, int target, CompMatr1 matrix) {
-#if ENABLE_CUQUANTUM
+#if COMPILE_CUQUANTUM
 
     cuquantum_statevec_oneTargetGate_subA(qureg, target, matrix);
 
-#elif ENABLE_GPU_ACCELERATION
+#elif COMPILE_CUDA
 
     qindex numIts = qureg.numAmpsPerNode / 2;
     qindex numBlocks = getNumBlocks(numIts);
@@ -51,7 +51,7 @@ void gpu_statevec_oneTargetGate_subA(Qureg qureg, int target, CompMatr1 matrix) 
 }
 
 void gpu_statevec_oneTargetGate_subB(Qureg qureg, qcomp fac0, qcomp fac1) {
-#if ENABLE_GPU_ACCELERATION
+#if COMPILE_CUDA
     
     qindex numIts = qureg.numAmpsPerNode;
     qindex numBlocks = getNumBlocks(numIts);

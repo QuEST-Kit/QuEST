@@ -1,6 +1,6 @@
 /** @file
- * Signatures of API data structures like gate matrices. Note QuESTEnv and Qureg 
- * structs have their own signatures in environment.h and qureg.h respectively.
+ * Signatures of API matrix data structures, and their getters and setters, 
+ * as well as reporting utilities.
  * 
  * This file uses extensive preprocessor trickery to achieve platform agnostic,
  * C and C++ compatible, type agnostic, getters and setters of complex matrices.
@@ -15,7 +15,7 @@
  * So, we next define getInlineCompMatr1() as a C and C++ (for consistency) macro 
  * which accepts direct, concise literals like getInlineCompMatr1({{...}}). Viola! 
  * 
- * We employ similar tricks to make setCompMatrN(), but define setCompMatrNFromArr()
+ * We employ similar tricks to make setCompMatr(), but define setCompMatrFromArr()
  * in this header (exposed only to C) because it requires C++-incompatible VLAs;
  * this definition must invoke a bespoke validation function (gross).
  * 
@@ -27,8 +27,8 @@
  * You've just crossed over into the Twilight Zone.
  */
 
-#ifndef STRUCTURES_H
-#define STRUCTURES_H
+#ifndef MATRICES_H
+#define MATRICES_H
 
 #include "types.h"
 
@@ -40,12 +40,17 @@
 
 
 /*
- * MATRIX STRUCTS
+ * COMPLEX MATRIX STRUCTS
  *
  * which are visible to both C and C++, where qcomp resolves
  * to the native complex type. These are not de-mangled because
  * C++ structs are already C compatible. We define their fields
  * as const to prevent users mangling them.
+ * 
+ * The compile-time sized structs have field 'elems', while
+ * dynamic-sized structs have separate 'cpuElems' and 'gpuElems',
+ * for persistent GPU allocation, and ergo need syncing. Note
+ * 'gpuElems' is always 1D.
  */
 
 
@@ -79,19 +84,105 @@ typedef struct {
     const int numQubits;
     const qindex numRows;
 
+    // unitarity determined at sync; 0 or 1, or -1 to indicate unknown (when validation disabled).
+    // flag is stored in heap so even copies of structs are mutable, but pointer is immutable
+    int* const isUnitary;
+
     // 2D CPU memory; not const, so users can overwrite addresses (e.g. with NULL)
-    qcomp** elems;
+    qcomp** cpuElems;
 
     // row-flattened elems in GPU memory, allocated only
     // and always in GPU-enabled QuEST environments
     qcomp* gpuElems;
 
-} CompMatrN;
+} CompMatr;
 
 
 
 /*
- * EXPLICIT FIXED-SIZE MATRIX INITIALISERS
+ * DIAGONAL MATRIX STRUCTS
+ *
+ * with all the same nuances as the CompMatr structs described above. 
+ */
+
+
+typedef struct {
+
+    // const to prevent user modification
+    const int numQubits;
+    const qindex numElems;
+
+    // elems are not const so that users can modify them after initialisation
+    qcomp elems[2];
+
+} DiagMatr1;
+
+
+typedef struct {
+
+    // const to prevent user modification
+    const int numQubits;
+    const qindex numElems;
+
+    // elems are not const so that users can modify them after initialisation
+    qcomp elems[4];
+
+} DiagMatr2;
+
+
+typedef struct {
+
+    // const to prevent user modification
+    const int numQubits;
+    const qindex numElems;
+
+    // unitarity determined at sync; 0 or 1, or -1 to indicate unknown (when validation disabled).
+    // flag is stored in heap so even copies of structs are mutable, but pointer is immutable
+    int* const isUnitary;
+
+    // CPU memory; not const, so users can overwrite addresses (e.g. with NULL)
+    qcomp* cpuElems;
+
+    // GPU memory, allocated only and always in GPU-enabled QuEST environments
+    qcomp* gpuElems;
+
+} DiagMatr;
+
+
+
+/*
+ * DISTRIBUTED MATRIX STRUCTS
+ */
+
+
+typedef struct {
+
+    // data deployment configuration
+    const int isDistributed;
+
+    // const to prevent user modification
+    const int numQubits;
+    const qindex numElems;
+
+    // will equal numElems if distribution is disabled at runtime (e.g. via autodeployment)
+    const qindex numElemsPerNode;
+
+    // unitarity determined at sync; 0 or 1, or -1 to indicate unknown (when validation disabled).
+    // flag is stored in heap so even copies of structs are mutable, but pointer is immutable
+    int* const isUnitary;
+
+    // CPU memory; not const, so users can overwrite addresses (e.g. with NULL)
+    qcomp* cpuElems;
+
+    // GPU memory, allocated only and always in GPU-enabled QuEST environments
+    qcomp* gpuElems;
+
+} FullStateDiagMatr;
+
+
+
+/*
+ * EXPLICIT FIXED-SIZE COMPLEX MATRIX INITIALISERS
  *
  * which are defined here in the header because the 'qcomp' type is interpreted
  * distinctly by C++ (the backend) and C (user code). The C and C++ ABIs do not
@@ -108,6 +199,9 @@ typedef struct {
  * we directly define these functions below (static inline to avoid symbol duplication),
  * initializing the const CompMatr in one line. The functions are separately interpreted 
  * by the C and C++ compilers, resolving to their individual native types.
+ * 
+ * Note separate pointer and array definitions are not necessary for DiagMatr, since
+ * it 1D array field decays to a pointer.
  */
 
 
@@ -169,13 +263,17 @@ static inline CompMatr2 getCompMatr2FromPtr(qcomp** in) {
  * arrays or pointers, without having to call the above specialised
  * functions. We are effectively using macros to extend C++'s
  * overloaded API to C, though C++ users can additionally pass vectors.
+ * 
+ * The situation is simpler for DiagMatr since 1D array references
+ * decay to pointers. We still wish to enable C++ users to pass
+ * vectors and their in-place initialiser lists, so we overload it.
  */
 
 
 #ifdef __cplusplus
 
     // C++ uses overloads, accepting even vector initialiser lists,
-    // which are defined in structures.cpp.
+    // which are defined in matrices.cpp.
 
     CompMatr1 getCompMatr1(qcomp in[2][2]);
     CompMatr1 getCompMatr1(qcomp** in);
@@ -224,6 +322,40 @@ static inline CompMatr2 getCompMatr2FromPtr(qcomp** in) {
 #endif
 
 
+// we define getDiagMatr1/2 in this header for the same reasons that we did so for 
+// getCompMatr1/2FromArr/Ptr(). That is, we cannot pass DiagMatr1/2 instances between
+// C and C++ binaries, so we define these simple inline functions afresh for each.
+// Conveniently, we don't need to overload or use Generics, since arrays decay to ptrs.
+
+static inline DiagMatr1 getDiagMatr1(qcomp* in) {
+
+    return (DiagMatr1) {
+        .numQubits = 1,
+        .numElems = 2,
+        .elems = {in[0], in[1]}
+    };
+}
+
+static inline DiagMatr2 getDiagMatr2(qcomp* in) {
+
+    return (DiagMatr2) {
+        .numQubits = 2,
+        .numElems = 4,
+        .elems = {in[0], in[1], in[2], in[3]}
+    };
+}
+
+// C++ users can additionally initialise from vectors, enabling in-line initialisation
+
+#ifdef __cplusplus
+
+    DiagMatr1 getDiagMatr1(std::vector<qcomp> in);
+
+    DiagMatr2 getDiagMatr2(std::vector<qcomp> in);
+
+#endif
+
+
 
 /*
  * LITERAL FIXED-SIZE MATRIX INITIALISERS
@@ -244,6 +376,13 @@ static inline CompMatr2 getCompMatr2FromPtr(qcomp** in) {
     #define getInlineCompMatr2(...) \
         getCompMatr2(__VA_ARGS__)
 
+
+    #define getInlineDiagMatr1(...) \
+        getDiagMatr1(__VA_ARGS__)
+
+    #define getInlineDiagMatr2(...) \
+        getDiagMatr2(__VA_ARGS__)
+
 #else
 
     // C adds compound literal syntax to make a temporary array
@@ -253,6 +392,13 @@ static inline CompMatr2 getCompMatr2FromPtr(qcomp** in) {
 
     #define getInlineCompMatr2(...) \
         getCompMatr2FromArr((qcomp[4][4]) __VA_ARGS__)
+
+
+    #define getInlineDiagMatr1(...) \
+        getDiagMatr1((qcomp[2]) __VA_ARGS__)
+
+    #define getInlineDiagMatr2(...) \
+        getDiagMatr2((qcomp[4]) __VA_ARGS__)
 
 #endif
 
@@ -268,11 +414,27 @@ static inline CompMatr2 getCompMatr2FromPtr(qcomp** in) {
 extern "C" {
 #endif
 
-    CompMatrN createCompMatrN(int numQubits);
+    CompMatr createCompMatr(int numQubits);
 
-    void destroyCompMatrN(CompMatrN matrix);
+    DiagMatr createDiagMatr(int numQubits);
 
-    void syncCompMatrN(CompMatrN matr);
+    FullStateDiagMatr createFullStateDiagMatr(int numQubits);
+
+    FullStateDiagMatr createCustomFullStateDiagMatr(int numQubits, int useDistrib);
+
+
+    void destroyCompMatr(CompMatr matrix);
+
+    void destroyDiagMatr(DiagMatr matrix);
+
+    void destroyFullStateDiagMatr(FullStateDiagMatr matrix);
+
+
+    void syncCompMatr(CompMatr matr);
+
+    void syncDiagMatr(DiagMatr matr);
+
+    void syncFullStateDiagMatr(FullStateDiagMatr matr);
 
 #ifdef __cplusplus
 }
@@ -282,6 +444,9 @@ extern "C" {
 
 /*
  * EXPLICIT VARIABLE-SIZE MATRIX INITIALISERS
+ *
+ * not necessary for DiagMatr since it maintains a 1D array,
+ * which automatically decays to a qcomp pointer
  */
 
 
@@ -290,7 +455,7 @@ extern "C" {
 extern "C" {
 #endif
 
-    void setCompMatrNFromPtr(CompMatrN matr, qcomp** vals);
+    void setCompMatrFromPtr(CompMatr matr, qcomp** vals);
 
 #ifdef __cplusplus
 }
@@ -301,14 +466,14 @@ extern "C" {
 #ifndef __cplusplus
 
     // expose this function's bespoke validation
-    extern void validate_setCompMatrNFromArr(CompMatrN out);
+    extern void validate_setCompMatrFromArr(CompMatr out);
 
      // static inline to avoid header-symbol duplication
-    static inline void setCompMatrNFromArr(CompMatrN matr, qcomp arr[matr.numRows][matr.numRows]) {
+    static inline void setCompMatrFromArr(CompMatr matr, qcomp arr[matr.numRows][matr.numRows]) {
 
         // this function will allocate stack memory of size matr.numRows, but that field could
         // be invalid since matr hasn't been validated, so we must invoke bespoke validation
-        validate_setCompMatrNFromArr(matr);
+        validate_setCompMatrFromArr(matr);
 
         // new ptrs array safely fits in stack, since it's sqrt-smaller than user's passed stack array
         qcomp* ptrs[matr.numRows];
@@ -318,7 +483,7 @@ extern "C" {
             ptrs[r] = arr[r];
 
         // array decays to qcomp**, and *FromPtr function re-performs validation (eh)
-        setCompMatrNFromPtr(matr, ptrs);
+        setCompMatrFromPtr(matr, ptrs);
     }
 
 #endif
@@ -330,13 +495,37 @@ extern "C" {
  */
 
 
+// both C and C++ can safely pass pointers or arrays to diagonals (since arrays decay)
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+    void setDiagMatr(DiagMatr out, qcomp* in);
+
+    void setFullStateDiagMatr(FullStateDiagMatr out, qindex startInd, qcomp* in, qindex numElems);
+
+#ifdef __cplusplus
+}
+#endif
+
+
+// but setCompMatr() is overloaded because pointers and 2D arrays are distinct
+
 #ifdef __cplusplus
 
     // C++ uses overloads, accepting even vector initialiser lists, but cannot ever accept 2D arrays
 
-    void setCompMatrN(CompMatrN out, qcomp** in);
+    void setCompMatr(CompMatr out, qcomp** in);
 
-    void setCompMatrN(CompMatrN out, std::vector<std::vector<qcomp>> in);
+    void setCompMatr(CompMatr out, std::vector<std::vector<qcomp>> in);
+
+
+    // we also give diagonal matrices vector overloads, to allow initialiser lists
+
+    void setDiagMatr(DiagMatr out, std::vector<qcomp> in);
+
+    void setFullStateDiagMatr(FullStateDiagMatr out, qindex startInd, std::vector<qcomp> in);
 
 #else
 
@@ -345,7 +534,7 @@ extern "C" {
     // the above inlined definitions. Note:
     // - we cannot accept C++ vectors (duh) so direct {{...}} initialisation
     //   isn't possible; users have to use C99 compound literals instead,
-    //   which we address with a subsequent definition of setInlineCompMatrN().
+    //   which we address with a subsequent definition of setInlineCompMatr().
     // - the _Generic does not require a map for the qcomp[][] type, because
     //   a passed qcomp[][] decays to qcomp(*)[], indistinguishable from
     //   an array of pointers which is already in the map.
@@ -360,10 +549,10 @@ extern "C" {
     // Another problem: type qcomp(*) below would erroneously invoke the qcomp(re,im) macro,
     // so we re-use 'qalias = qcomp' as defined at getCompMatr1.
 
-    #define setCompMatrN(matr, ...) \
+    #define setCompMatr(matr, ...) \
         _Generic((__VA_ARGS__),   \
-            qalias(*)[] : setCompMatrNFromArr, \
-            qcomp**     : setCompMatrNFromPtr  \
+            qalias(*)[] : setCompMatrFromArr, \
+            qcomp**     : setCompMatrFromPtr  \
         )((matr), (__VA_ARGS__))
 
 #endif
@@ -375,16 +564,22 @@ extern "C" {
  *
  * which enable C users to give inline 2D array literals without having to use the
  * VLA compound literal syntax. We expose these macros to C++ too for API consistency,
- * although C++'s getCompMatr1 vector overload achieves the same thing
+ * although C++'s vector overloads achieve the same thing
  */
 
 
 #ifdef __cplusplus
 
-    // C++ gets an explicit redirect to setCompMatrN(std::vector...), ignoring numQb (blegh)
+    // C++ gets an explicit redirect to set*Matr(std::vector...), ignoring numQb and numElems (blegh)
 
-    #define setInlineCompMatrN(matr, numQb, ...) \
-        setCompMatrN(matr, __VA_ARGS__)
+    #define setInlineCompMatr(matr, numQb, ...) \
+        setCompMatr(matr, __VA_ARGS__)
+
+    #define setInlineDiagMatr(matr, numQb, ...) \
+        setDiagMatr(matr, __VA_ARGS__)
+
+    #define setInlineFullStateDiagMatr(matr, startInd, numElems, ...) \
+        setFullStateDiagMatr(matr, startInd, __VA_ARGS__)
 
 #else 
 
@@ -392,8 +587,17 @@ extern "C" {
     // cannot use (qcomp[matr.numRows][matr.numRows]) to preclude passing 'numQb' 
     // because VLAs cannot be initialised inline.
 
-    #define setInlineCompMatrN(matr, numQb, ...) \
-        setCompMatrNFromArr(matr, (qcomp[1<<numQb][1<<numQb]) __VA_ARGS__)
+    #define setInlineCompMatr(matr, numQb, ...) \
+        setCompMatrFromArr(matr, (qcomp[1<<numQb][1<<numQb]) __VA_ARGS__)
+
+
+    // 1D array arguments fortunately decay to pointers 
+
+    #define setInlineDiagMatr(matr, numQb, ...) \
+        setDiagMatr(matr, (qcomp[1<<numQb]) __VA_ARGS__)
+
+    #define setInlineFullStateDiagMatr(matr, startInd, numElems, ...) \
+        setFullStateDiagMatr(matr, startInd, (qcomp[numElems]) __VA_ARGS__, numElems)
 
 #endif
 
@@ -413,7 +617,17 @@ extern "C" {
 
     void reportCompMatr2(CompMatr2 matrix);
 
-    void reportCompMatrN(CompMatrN matrix);
+    void reportCompMatr(CompMatr matrix);
+
+
+    void reportDiagMatr1(DiagMatr1 matrix);
+
+    void reportDiagMatr2(DiagMatr2 matrix);
+
+    void reportDiagMatr(DiagMatr matrix);
+
+
+    void reportFullStateDiagMatr(FullStateDiagMatr matr);
 
 #ifdef __cplusplus
 }
@@ -421,4 +635,4 @@ extern "C" {
 
 
 
-#endif // STRUCTURES_H
+#endif // MATRICES_H

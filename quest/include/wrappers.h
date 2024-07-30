@@ -9,19 +9,16 @@
  * documentation is aware, but secretly ensures the backend C++ 
  * binaries are send qcomps from the user's C code only by pointer.
  * 
- * Note that CompMatr getters and setters (like getCompMatr1()) are
+ * Note that matrix getters and setters (like getCompMatr1()) are
  * missing from this file, even though they contain qcomp[2][2] (which
  * are NOT pointers) and cannot be directly passed between binaries.
- * Those functions are instead defined in structures.h/.cpp because
+ * Those functions are instead defined in matrices.h/.cpp because
  * those structs are declared 'const'; they must be intiailised inline, 
  * and can never be modified by pointer. We shouldn't even address them!
  */
 
 #ifndef WRAPPERS_H
 #define WRAPPERS_H
-
-#include "types.h"
-#include "structures.h"
 
 // these definitions are only exposed to C, 
 // since they duplicate existing C++ functions

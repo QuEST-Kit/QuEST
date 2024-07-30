@@ -5,13 +5,17 @@
  * deployment is consistent with the compiled deployment modes.
  */
 
-#include "types.h"
-#include "qureg.h"
-#include "../comm/comm_config.hpp"
-#include "../gpu/gpu_config.hpp"
+#include "quest/include/types.h"
+#include "quest/include/qureg.h"
+
+#include "quest/src/core/printer.hpp"
+#include "quest/src/comm/comm_config.hpp"
+#include "quest/src/gpu/gpu_config.hpp"
 
 #include <iostream>
 #include <string>
+
+using std::string;
 
 
 
@@ -19,16 +23,15 @@
  * INTERNAL ERROR RESPONSE
  */
 
-void raiseInternalError(std::string errorMsg) {
+void raiseInternalError(string errorMsg) {
 
-    if (comm_getRank() == 0)
-        std::cout 
-            << "\n\n"
-            << "A fatal internal QuEST error occurred. "
-            << errorMsg << " "
-            << "Please report this to the developers. QuEST will now exit..."
-            << "\n"
-            << std::endl;
+    print(string("")
+        + "\n\n"
+        + "A fatal internal QuEST error occurred. "
+        + errorMsg + " "
+        + "Please report this to the developers. QuEST will now exit..."
+        + "\n"
+    );
 
     exit(EXIT_FAILURE);
 }
@@ -39,19 +42,29 @@ void raiseInternalError(std::string errorMsg) {
  * VALIDATION ERRORS
  */
 
-void error_validationMessageVarWasIllFormed(std::string msg, std::string illFormedVar) {
+void error_validationMessageVarWasIllFormed(string msg, string illFormedVar) {
 
     raiseInternalError("User input validation failed and an error string was attemptedly prepared, but an ill-formed variable was attempted substitution. This variable was \"" + illFormedVar + "\" and was attempted substitution into message:\n" + msg + "\n");
 }
 
-void error_validationMessageVarNotSubstituted(std::string msg, std::string var) {
+void error_validationMessageVarNotSubstituted(string msg, string var) {
 
     raiseInternalError("User input validation failed and an error string was attemptedly prepared. However, the internal variable \"" + var + "\" was unable to be found and substituted into the message, which was:\n" + msg + "\n");
 }
 
-void error_validationMessageContainedUnsubstitutedVars(std::string msg) {
+void error_validationMessageContainedUnsubstitutedVars(string msg) {
 
     raiseInternalError("User input validation failed and an error string was prepared. However, the message contained unexpected (and potentially ill-formed) unsubstituted variables. The message was:\n" + msg + "\n");
+}
+
+void error_validationEncounteredUnsupportedDistributedDenseMatrix() {
+
+    raiseInternalError("User input validation processed a matrix it believed was both dense and distributed, though no such data structure currently exists.");
+}
+
+void error_validationListUniquenessCheckExceededMaskSize() {
+
+    raiseInternalError("User input validation was checking uniqueness of an index list using bitmasks but encountered an index larger than the number of bits in the mask. This should have been caught by prior validation.");
 }
 
 
@@ -167,12 +180,12 @@ void error_gpuSyncedButGpuNotCompiled() {
 
 void error_gpuAllocButGpuNotCompiled() {
 
-    raiseInternalError("A function (likely Qureg or CompMatrN creation) attempted to allocate GPU memory but QuEST was not compiled with GPU acceleration enabled.");
+    raiseInternalError("A function (likely Qureg or CompMatr creation) attempted to allocate GPU memory but QuEST was not compiled with GPU acceleration enabled.");
 }
 
 void error_gpuDeallocButGpuNotCompiled() {
 
-    raiseInternalError("A function (likely Qureg or CompMatrN destruction) attempted to deallocate GPU memory but QuEST was not compiled with GPU acceleration enabled.");
+    raiseInternalError("A function (likely Qureg or CompMatr destruction) attempted to deallocate GPU memory but QuEST was not compiled with GPU acceleration enabled.");
 }
 
 void error_gpuCopyButGpuNotCompiled() {
@@ -190,9 +203,9 @@ void error_gpuCopyButQuregNotGpuAccelerated() {
     raiseInternalError("A function attempted to access GPU memory of a Qureg which is not GPU accelerated.");
 }
 
-void error_gpuCopyButCompMatrNotGpuAccelerated() {
+void error_gpuCopyButMatrixNotGpuAccelerated() {
 
-    raiseInternalError("A function attempted to access GPU memory of a CompMatrN which is not GPU accelerated.");
+    raiseInternalError("A function attempted to access GPU memory of a matrix (e.g. a CompMatr or DiagMatr) which is not GPU accelerated.");
 }
 
 void error_gpuUnexpectedlyInaccessible() {
@@ -202,7 +215,7 @@ void error_gpuUnexpectedlyInaccessible() {
 
 void error_gpuMemSyncQueriedButEnvNotGpuAccelerated() {
 
-    raiseInternalError("A function checked whether persistent GPU memory (such as in a CompMatrN) had been synchronised, but the QuEST environment is not GPU accelerated.");  
+    raiseInternalError("A function checked whether persistent GPU memory (such as in a CompMatr) had been synchronised, but the QuEST environment is not GPU accelerated.");  
 }
 
 void assert_quregIsGpuAccelerated(Qureg qureg) {
@@ -226,7 +239,7 @@ void assert_gpuIsAccessible() {
 void error_cudaCallFailed(const char* msg, const char* func, const char* caller, const char* file, int line) {
 
     // using operator overloads to cast const char[] literals to std::string, to concat with const char*.
-    std::string err = "";
+    string err = "";
     err += "A CUDA (or cuQuantum) API function (\"";
     err += func;
     err += "\", called by \"";
@@ -258,7 +271,49 @@ void error_cuQuantumInitOrFinalizedButNotCompiled() {
  * UTILITY ERRORS 
  */
 
+void error_nodeUnexpectedlyContainedNoElems() {
+
+    raiseInternalError("A function queried which distributed elements within a specified range overlapped the node's stored elements, but the node contained no overlap. This situation should have been prior handled."); 
+}
+
 void assert_shiftedQuregIsDensMatr(Qureg qureg) {
     if (!qureg.isDensityMatrix)
         raiseInternalError("A function attempted to obtain the shifted Choi indices of a state-vector, as if it were a density matrix.");
 }
+
+
+
+/*
+ * PARSING ERRORS
+ */
+
+void error_attemptedToParseComplexFromInvalidString() {
+
+    raiseInternalError("A function attempted to parse a string to a qcomp but the string was not validly formatted. This should have been caught by prior user validation.");
+}
+
+void error_attemptedToParseRealFromInvalidString() {
+
+    raiseInternalError("A function attempted to parse a string to a qreal but the string was not validly formatted. This should have been caught by prior user validation.");
+}
+
+void error_attemptedToParseOutOfRangeReal() {
+
+    raiseInternalError("A function attempted to parse a string to a qreal but the numerical value of the string literal exceeded the range of the qreal. This should have been caught by prior user validation.");
+}
+
+void error_attemptedToParsePauliStringFromInvalidString() {
+
+    raiseInternalError("A function attempted to parse a string as a sequence of Pauli operators but the string was not validly formatted. This should have been caught by prior user validation.");
+}
+
+void error_attemptedToParseUnrecognisedPauliChar() {
+
+    raiseInternalError("A function attempted to parse an unrecognised character as a Pauli operator. This should have been caught by prior validation.");
+}
+
+void error_couldNotReadFile() {
+
+    raiseInternalError("A function failed to open and read a file that previous validation confirmed was readable.");
+}
+

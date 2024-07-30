@@ -3,9 +3,9 @@
  * accelerator.cpp. 
  */
 
-#include "types.h"
-#include "qureg.h"
-#include "structures.h"
+#include "quest/include/types.h"
+#include "quest/include/qureg.h"
+#include "quest/include/matrices.h"
 
 #include "../core/bitwise.hpp"
 

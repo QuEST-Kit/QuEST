@@ -13,17 +13,23 @@
 
 #include <string>
 
+using std::string;
+
 
 
 /*
  * VALIDATION ERRORS
  */
 
-void error_validationMessageVarWasIllFormed(std::string msg, std::string illFormedVar);
+void error_validationMessageVarWasIllFormed(string msg, string illFormedVar);
 
-void error_validationMessageVarNotSubstituted(std::string msg, std::string var);
+void error_validationMessageVarNotSubstituted(string msg, string var);
 
-void error_validationMessageContainedUnsubstitutedVars(std::string msg);
+void error_validationMessageContainedUnsubstitutedVars(string msg);
+
+void error_validationEncounteredUnsupportedDistributedDenseMatrix();
+
+void error_validationListUniquenessCheckExceededMaskSize();
 
 
 
@@ -67,7 +73,6 @@ void assert_pairRankIsDistinct(Qureg qureg, int pairRank);
 
 
 
-
 /*
  * CPU ERRORS
  */
@@ -94,7 +99,7 @@ void error_gpuSimButGpuNotCompiled();
 
 void error_gpuCopyButQuregNotGpuAccelerated();
 
-void error_gpuCopyButCompMatrNotGpuAccelerated();
+void error_gpuCopyButMatrixNotGpuAccelerated();
 
 void error_gpuMemSyncQueriedButEnvNotGpuAccelerated();
 
@@ -126,8 +131,27 @@ void error_cuQuantumInitOrFinalizedButNotCompiled();
  * UTILITY ERRORS 
  */
 
+void error_nodeUnexpectedlyContainedNoElems();
+
 void assert_shiftedQuregIsDensMatr(Qureg qureg);
 
+
+
+/*
+ * PARSING ERRORS
+ */
+
+void error_attemptedToParseComplexFromInvalidString();
+
+void error_attemptedToParseRealFromInvalidString();
+
+void error_attemptedToParseOutOfRangeReal();
+
+void error_attemptedToParsePauliStringFromInvalidString();
+
+void error_attemptedToParseUnrecognisedPauliChar();
+
+void error_couldNotReadFile();
 
 
 

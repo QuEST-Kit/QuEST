@@ -8,8 +8,8 @@
  * embarrassingly parallel.
  */
 
-#include "qureg.h"
-#include "structures.h"
+#include "quest/include/qureg.h"
+#include "quest/include/matrices.h"
 
 #include "../cpu/cpu_subroutines.hpp"
 #include "../gpu/gpu_subroutines.hpp"

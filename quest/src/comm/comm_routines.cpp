@@ -13,7 +13,7 @@
 
 #include <vector>
 
-#if ENABLE_DISTRIBUTION
+#if COMPILE_MPI
     #include <mpi.h>
 #endif
 
@@ -78,6 +78,32 @@ qindex MAX_MESSAGE_LENGTH = powerOf2(28);
 
 
 /*
+ * MPI COMPLEX TYPE FLAG
+ */
+
+
+#if COMPILE_MPI
+
+    #if (FLOAT_PRECISION == 1)
+        #define MPI_QCOMP MPI_CXX_FLOAT_COMPLEX
+
+    #elif (FLOAT_PRECISION == 2)
+        #define MPI_QCOMP MPI_CXX_DOUBLE_COMPLEX
+
+    // sometimes 'MPI_CXX_LONG_DOUBLE_COMPLEX' isn't defined
+    #elif (FLOAT_PRECISION == 4) && defined(MPI_CXX_LONG_DOUBLE_COMPLEX)
+        #define MPI_QCOMP MPI_CXX_LONG_DOUBLE_COMPLEX
+
+    // in that case, fall back to the C type (identical memory layout)
+    #else
+        #define MPI_QCOMP MPI_C_LONG_DOUBLE_COMPLEX
+    #endif
+
+#endif
+
+
+
+/*
  * MESSAGE SIZES
  */
 
@@ -105,7 +131,7 @@ void getMessageConfig(qindex *messageSize, qindex *numMessages, qindex numAmps) 
 
 
 void exchangeArrays(qcomp* send, qcomp* recv, qindex numElems, int pairRank) {
-#if ENABLE_DISTRIBUTION
+#if COMPILE_MPI
 
     // each message is asynchronously dispatched with a final wait, as per arxiv.org/abs/2308.07402
 
@@ -139,7 +165,7 @@ void exchangeArrays(qcomp* send, qcomp* recv, qindex numElems, int pairRank) {
 
 
 void asynchSendArray(qcomp* send, qindex numElems, int pairRank) {
-#if ENABLE_DISTRIBUTION
+#if COMPILE_MPI
 
     // we will not track nor wait for the asynch send; instead, the caller will later comm_sync()
     MPI_Request nullReq = MPI_REQUEST_NULL;
@@ -159,7 +185,7 @@ void asynchSendArray(qcomp* send, qindex numElems, int pairRank) {
 
 
 void receiveArray(qcomp* dest, qindex numElems, int pairRank) {
-#if ENABLE_DISTRIBUTION
+#if COMPILE_MPI
 
     // expect the data in multiple messages
     qindex messageSize, numMessages;
@@ -354,12 +380,48 @@ void comm_exchangeAmpsToBuffers(Qureg qureg, int pairRank) {
 
 
 /*
+ * PUBLIC MISC COMMUNICATION METHODS
+ */
+
+
+void comm_sendAmpsToRoot(int sendRank, qcomp* send, qcomp* recv, qindex numAmps) {
+#if COMPILE_MPI
+
+    // only the sender and root nodes need to continue
+    int recvRank = 0;
+    int rank = comm_getRank();
+    if (rank != sendRank && rank != recvRank)
+        return;
+
+    // create an MPI_Request for every asynch MPI call
+    qindex messageSize, numMessages;
+    getMessageConfig(&messageSize, &numMessages, numAmps);
+    std::vector<MPI_Request> requests(numMessages, MPI_REQUEST_NULL);
+
+    // asynchronously copy 'send' in sendRank over to 'recv' in recvRank
+    for (qindex m=0; m<numMessages; m++)
+        if (rank == sendRank)
+            MPI_Isend(&send[m*messageSize], messageSize, MPI_QCOMP, recvRank, NULL_TAG, MPI_COMM_WORLD, &requests[m]);
+        else
+            MPI_Irecv(&recv[m*messageSize], messageSize, MPI_QCOMP, sendRank, NULL_TAG, MPI_COMM_WORLD, &requests[m]);
+
+    // wait for all exchanges to complete (MPI willl automatically free the request memory)
+    MPI_Waitall(requests.size(), requests.data(), MPI_STATUSES_IGNORE);
+
+#else
+    error_commButEnvNotDistributed();
+#endif
+}
+
+
+
+/*
  * PUBLIC REDUCTION METHODS
  */
 
 
 void comm_reduceAmp(qcomp* localAmp) {
-#if ENABLE_DISTRIBUTION
+#if COMPILE_MPI
 
     qcomp* globalAmp;
     MPI_Allreduce(localAmp, globalAmp, 1, MPI_QCOMP, MPI_SUM, MPI_COMM_WORLD);
@@ -367,5 +429,21 @@ void comm_reduceAmp(qcomp* localAmp) {
 
 #else
     error_commButEnvNotDistributed();
+#endif
+}
+
+
+bool comm_isTrueOnAllNodes(bool val) {
+#if COMPILE_MPI
+
+    // perform global AND and broadcast result back to all nodes
+    int local = (int) val;
+    int global;
+    MPI_Allreduce(&local, &global, 1, MPI_INT, MPI_LAND, MPI_COMM_WORLD);
+    return (bool) global;
+
+#else
+    error_commButEnvNotDistributed();
+    return false;
 #endif
 }

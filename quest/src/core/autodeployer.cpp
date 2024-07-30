@@ -17,7 +17,7 @@
 
 
 /*
- * QUESTENV DEPLOYMENTS
+ * QUESTENV DEPLOYMENT
  */
 
 
@@ -39,7 +39,7 @@ void autodep_chooseQuESTEnvDeployment(int &useDistrib, int &useGpuAccel, int &us
 
 
 /*
- * QUREG DEPLOYMENTS 
+ * QUREG DEPLOYMENT
  */
 
 
@@ -79,7 +79,7 @@ void chooseWhetherToDistributeQureg(int numQubits, int isDensMatr, int &useDistr
     // by now, we know that Qureg can definitely fit into a single GPU, or principally fit into RAM,
     // but we may still wish to distribute it so that multiple Quregs don't choke up memory.
     int effectiveNumQubitsPerNode = mem_getEffectiveNumStateVecQubitsPerNode(numQubits, isDensMatr, numEnvNodes);
-    useDistrib = (effectiveNumQubitsPerNode >= MIN_NUM_LOCAL_QUBITS_FOR_AUTO_DISTRIBUTION);
+    useDistrib = (effectiveNumQubitsPerNode >= MIN_NUM_LOCAL_QUBITS_FOR_AUTO_QUREG_DISTRIBUTION);
 }
 
 
@@ -93,7 +93,7 @@ void chooseWhetherToGpuAccelQureg(int numQubits, int isDensMatr, int useDistrib,
     int effectiveNumQubits = mem_getEffectiveNumStateVecQubitsPerNode(numQubits, isDensMatr, numQuregNodes);
 
     // choose to GPU accelerate only if that's not too few
-    useGpuAccel = (effectiveNumQubits >= MIN_NUM_LOCAL_QUBITS_FOR_AUTO_GPU_ACCELERATION);
+    useGpuAccel = (effectiveNumQubits >= MIN_NUM_LOCAL_QUBITS_FOR_AUTO_QUREG_GPU_ACCELERATION);
 
     // notice there was no automatic disabling of GPU acceleration in the scenario that the local
     // partition exceeded GPU memory. This is because such a scenario would be catastrophically
@@ -116,7 +116,7 @@ void chooseWhetherToMultithreadQureg(int numQubits, int isDensMatr, int useDistr
 
     // otherwise, we're not GPU-accelerating, and should choose to multithread based on Qureg size
     int effectiveNumQubits = mem_getEffectiveNumStateVecQubitsPerNode(numQubits, isDensMatr, numQuregNodes);
-    useMultithread = (effectiveNumQubits >= MIN_NUM_LOCAL_QUBITS_FOR_AUTO_MULTITHREADING);
+    useMultithread = (effectiveNumQubits >= MIN_NUM_LOCAL_QUBITS_FOR_AUTO_QUREG_MULTITHREADING);
 }
 
 
@@ -141,4 +141,25 @@ void autodep_chooseQuregDeployment(int numQubits, int isDensMatr, int &useDistri
     int numQuregNodes = (useDistrib)? env.numNodes : 1;
     chooseWhetherToGpuAccelQureg(numQubits, isDensMatr, useDistrib, useGpuAccel, numQuregNodes);
     chooseWhetherToMultithreadQureg(numQubits, isDensMatr, useDistrib, useGpuAccel, useMultithread, numQuregNodes);
+}
+
+
+
+/*
+ * FULL-STATE DIAGONAL MATRIX DEPLOYMENT
+ */
+
+
+void autodep_chooseFullStateDiagMatrDeployment(int numQubits, int &useDistrib, QuESTEnv env) {
+
+    // we choose to distribute if a compatibly-sized statevector Qureg would 
+    // distribute, so that automatically-deployed matrices and Quregs are always 
+    // compatible. This retains compatibility with density-matrix Quregs too;
+    // a non-distributed DiagMatr is compatible with both distributed and not
+    // Quregs (because its elements are available to every node). We do this by
+    // pretending the DiagMatr is an equivalently-sized statevector Qureg.
+    int isDensMatr = 0;
+    int useGpuAccel = (env.isGpuAccelerated)? modeflag::USE_AUTO : 0;
+
+    chooseWhetherToDistributeQureg(numQubits, isDensMatr, useDistrib, useGpuAccel, env.numNodes);
 }

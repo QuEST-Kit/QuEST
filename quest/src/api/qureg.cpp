@@ -7,20 +7,22 @@
 #include "environment.h"
 #include "initialisations.h"
 
-#include "../core/validation.hpp"
-#include "../core/autodeployer.hpp"
-#include "../core/formatter.hpp"
-#include "../core/bitwise.hpp"
-#include "../core/memory.hpp"
-#include "../comm/comm_config.hpp"
-#include "../cpu/cpu_config.hpp"
-#include "../gpu/gpu_config.hpp"
+#include "quest/src/core/validation.hpp"
+#include "quest/src/core/autodeployer.hpp"
+#include "quest/src/core/printer.hpp"
+#include "quest/src/core/bitwise.hpp"
+#include "quest/src/core/memory.hpp"
+#include "quest/src/comm/comm_config.hpp"
+#include "quest/src/comm/comm_routines.hpp"
+#include "quest/src/cpu/cpu_config.hpp"
+#include "quest/src/gpu/gpu_config.hpp"
 
 #include <string>
-#include <iostream>
 
 // provides substrings (by, na, pm, etc) used by reportQureg
-using namespace form_substrings;
+using namespace printer_substrings;
+
+using std::string;
 
 
 
@@ -28,9 +30,64 @@ using namespace form_substrings;
  * PRIVATE INNER FUNCTIONS (C++)
  */
 
+
+bool didAnyLocalAllocsFail(Qureg qureg) {
+
+    // CPU memory should always be allocated
+    if (qureg.cpuAmps == NULL)
+        return true;
+
+    // when distributed, the CPU communication buffer must be allocated
+    if (qureg.isDistributed && qureg.cpuCommBuffer == NULL)
+        return true;
+
+    // when GPU-accelerated, the GPU memory should be allocated
+    if (qureg.isGpuAccelerated && qureg.gpuAmps == NULL)
+        return true;
+
+    // when both distributed and GPU-accelerated, the GPU communication buffer must be allocated
+    if (qureg.isDistributed && qureg.isGpuAccelerated && qureg.gpuCommBuffer == NULL)
+        return true;
+
+    // otherwise all pointers were non-NULL so no allocations failed
+    return false;
+}
+
+
+bool didAnyAllocsFailOnAnyNode(Qureg qureg) {
+
+    bool anyFail = didAnyLocalAllocsFail(qureg);
+    if (comm_isInit())
+        anyFail = comm_isTrueOnAllNodes(anyFail);
+
+    return anyFail;
+}
+
+
+void freeAllMemoryIfAnyAllocsFailed(Qureg qureg) {
+
+    // do nothing if everything allocated successfully between all nodes
+    if (!didAnyAllocsFailOnAnyNode(qureg))
+        return;
+
+    // otherwise, free everything that was successfully allocated
+    if (qureg.cpuAmps != NULL)
+        cpu_deallocAmps(qureg.cpuAmps);
+
+    if (qureg.cpuCommBuffer != NULL)
+        cpu_deallocAmps(qureg.cpuCommBuffer);
+
+    if (qureg.gpuAmps != NULL)
+        gpu_deallocAmps(qureg.gpuAmps);
+
+    if (qureg.gpuCommBuffer != NULL)
+        gpu_deallocAmps(qureg.gpuCommBuffer);
+}
+
+
 Qureg validateAndCreateCustomQureg(int numQubits, int isDensMatr, int useDistrib, int useGpuAccel, int useMultithread, const char* caller) {
 
-    validate_envInit(caller);
+    validate_envIsInit(caller);
     QuESTEnv env = getQuESTEnv();
 
     // ensure deployment is compatible with environment, considering available hardware and their memory capacities
@@ -77,15 +134,17 @@ Qureg validateAndCreateCustomQureg(int numQubits, int isDensMatr, int useDistrib
         // always allocate CPU memory
         .cpuAmps = cpu_allocAmps(qureg.numAmpsPerNode), // NULL if failed
 
-        // conditionally allocate GPU memory and communication buffers (even if numNodes == 1)
+        // conditionally allocate GPU memory and communication buffers (even if numNodes == 1).
+        // note that in distributed settings but where useDistrib=false, each node will have a
+        // full copy of the amplitudes, but will NOT have the communication buffers allocated.
         .gpuAmps       = (useGpuAccel)?               gpu_allocAmps(qureg.numAmpsPerNode) : NULL,
         .cpuCommBuffer = (useDistrib)?                cpu_allocAmps(qureg.numAmpsPerNode) : NULL,
         .gpuCommBuffer = (useGpuAccel && useDistrib)? gpu_allocAmps(qureg.numAmpsPerNode) : NULL,
     };
 
-    // check all allocations succeeded (if any failed, validation frees all non-failures before throwing error)
-    bool isNewQureg = true;
-    validate_newOrExistingQuregAllocs(qureg, isNewQureg, caller);
+    // if any of the above mallocs failed, below validation will memory leak; so free first (but don't set to NULL)
+    freeAllMemoryIfAnyAllocsFailed(qureg);
+    validate_newQuregAllocs(qureg, __func__);
 
     // initialise state to |0> or |0><0|
     initZeroState(qureg); 
@@ -102,7 +161,7 @@ Qureg validateAndCreateCustomQureg(int numQubits, int isDensMatr, int useDistrib
 
 void printDeploymentInfo(Qureg qureg) {
 
-    form_printTable(
+    print_table(
         "deployment", {
         {"isMpiEnabled", qureg.isDistributed},
         {"isGpuEnabled", qureg.isGpuAccelerated},
@@ -113,15 +172,15 @@ void printDeploymentInfo(Qureg qureg) {
 void printDimensionInfo(Qureg qureg) {
 
     // 2^N = M or 2^N x 2^N = M
-    std::string str;
-    str  = bt + form_str(qureg.numQubits);
+    string str;
+    str  = bt + printer_toStr(qureg.numQubits);
     str += (qureg.isDensityMatrix)? mu + str : "";
-    str += eq + form_str(qureg.numAmps);
+    str += eq + printer_toStr(qureg.numAmps);
 
-    form_printTable(
+    print_table(
         "dimension", {
-        {"isDensMatr", form_str(qureg.isDensityMatrix)},
-        {"numQubits",  form_str(qureg.numQubits)},
+        {"isDensMatr", printer_toStr(qureg.isDensityMatrix)},
+        {"numQubits",  printer_toStr(qureg.numQubits)},
         {"numAmps",    str},
     });
 }
@@ -130,17 +189,17 @@ void printDimensionInfo(Qureg qureg) {
 void printDistributionInfo(Qureg qureg) {
 
     // not applicable when not distributed
-    std::string nodesStr = na;
-    std::string ampsStr  = na;
+    string nodesStr = na;
+    string ampsStr  = na;
 
     // 2^N = M per node
     if (qureg.isDistributed) {
-        nodesStr = bt + form_str(qureg.logNumNodes)       + eq + form_str(qureg.numNodes);
-        ampsStr  = bt + form_str(qureg.logNumAmpsPerNode) + eq + form_str(qureg.numAmpsPerNode);
+        nodesStr = bt + printer_toStr(qureg.logNumNodes)       + eq + printer_toStr(qureg.numNodes);
+        ampsStr  = bt + printer_toStr(qureg.logNumAmpsPerNode) + eq + printer_toStr(qureg.numAmpsPerNode);
         ampsStr += pn;
     }
 
-    form_printTable(
+    print_table(
         "distribution", {
         {"numNodes", nodesStr},
         {"numAmps",  ampsStr},
@@ -150,13 +209,15 @@ void printDistributionInfo(Qureg qureg) {
 
 void printMemoryInfo(Qureg qureg) {
 
-    size_t localArrayMem = mem_getLocalMemoryRequired(qureg.numAmpsPerNode);
-    std::string localMemStr = form_str(localArrayMem) + by + ((qureg.isDistributed)? pn : "");
+    size_t localArrayMem = mem_getLocalQuregMemoryRequired(qureg.numAmpsPerNode);
+    string localMemStr = printer_toStr(localArrayMem) + by + ((qureg.isDistributed)? pn : "");
 
+    // precondition: no reportable fields are at risk of overflow as a qindex
+    // type, EXCEPT aggregate total memory between distributed nodes (in bytes)
     qindex globalTotalMem = mem_getTotalGlobalMemoryUsed(qureg);
-    std::string globalMemStr = (globalTotalMem == 0)? "overflowed" : (form_str(globalTotalMem) + by);
+    string globalMemStr = (globalTotalMem == 0)? "overflowed" : (printer_toStr(globalTotalMem) + by);
 
-    form_printTable(
+    print_table(
         "memory", {
         {"cpuAmps",       (qureg.cpuAmps       == NULL)? na : localMemStr},
         {"gpuAmps",       (qureg.gpuAmps       == NULL)? na : localMemStr},
@@ -199,7 +260,7 @@ Qureg createDensityQureg(int numQubits) {
 
 
 void destroyQureg(Qureg qureg) {
-    validate_quregInit(qureg, __func__);
+    validate_quregFields(qureg, __func__);
 
     // free CPU memory
     cpu_deallocAmps(qureg.cpuAmps);
@@ -222,18 +283,11 @@ void destroyQureg(Qureg qureg) {
 
 
 void reportQureg(Qureg qureg) {
-    validate_quregInit(qureg, __func__);
+    validate_quregFields(qureg, __func__);
 
     // TODO: add function to write this output to file (useful for HPC debugging)
 
-    // precondition: no reportable fields are at risk of overflow as a qindex
-    // type, EXCEPT aggregate total memory between distributed nodes (in bytes)
-
-    // only root node reports (but no synch necesary)
-    if (qureg.rank != 0)
-        return;
-
-    std::cout << "Qureg:" << std::endl;
+    print("Qureg:");
     printDeploymentInfo(qureg);
     printDimensionInfo(qureg);
     printDistributionInfo(qureg);

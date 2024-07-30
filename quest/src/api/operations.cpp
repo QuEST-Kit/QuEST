@@ -4,8 +4,8 @@
  * density matrices.
  */
 
-#include "qureg.h"
-#include "structures.h"
+#include "quest/include/qureg.h"
+#include "quest/include/matrices.h"
 
 #include "../core/validation.hpp"
 #include "../core/utilities.hpp"

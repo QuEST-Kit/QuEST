@@ -7,8 +7,8 @@
 #ifndef OPERATIONS_H
 #define OPERATIONS_H
 
-#include "qureg.h"
-#include "structures.h"
+#include "quest/include/qureg.h"
+#include "quest/include/matrices.h"
 
 // enable invocation by both C and C++ binaries
 #ifdef __cplusplus

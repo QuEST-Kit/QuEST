@@ -1,7 +1,7 @@
 /** @file
  * Custom CUDA kernels invoked by gpu.cpp, usually only necessary when
  * there is no equivalent utility in Thrust (or cuQuantum, when it is
- * targeted). This file is only ever included when ENABLE_GPU_ACCELERATION=1 
+ * targeted). This file is only ever included when COMPILE_CUDA=1 
  * so it can safely invoke CUDA signatures without guards.
  */
 
@@ -14,7 +14,7 @@
 #include "../core/bitwise.hpp"
 #include "../gpu/gpu_types.hpp"
 
-#if ! ENABLE_GPU_ACCELERATION
+#if ! COMPILE_CUDA
     #error "A file being compiled somehow included gpu_kernels.hpp despite QuEST not being compiled in GPU-accelerated mode."
 #endif
 

@@ -18,7 +18,7 @@
  * performance benefit when these functions are called in tight loops.
  */
 
-#if ENABLE_GPU_ACCELERATION && (defined(__NVCC__) || defined(__HIPCC__))
+#if COMPILE_CUDA && (defined(__NVCC__) || defined(__HIPCC__))
     #define INLINE __forceinline__ __device__ __host__
 #else
     #define INLINE inline __attribute__((always_inline))

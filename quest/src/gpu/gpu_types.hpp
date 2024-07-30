@@ -1,6 +1,6 @@
 /** @file
  * CUDA-compatible complex types. This file is only ever included
- * when ENABLE_GPU_ACCELERATION=1 so it can safely invoke CUDA
+ * when COMPILE_CUDA=1 so it can safely invoke CUDA
  * signatures without guards. This is safe to re-include by
  * multiple files because typedef definition is legal in C++,
  * and all functions herein are inline. Furthermore, since it
@@ -14,12 +14,14 @@
 #include "modes.h"
 #include "types.h"
 
-#if ! ENABLE_GPU_ACCELERATION
+#if ! COMPILE_CUDA
     #error "A file being compiled somehow included gpu_types.hpp despite QuEST not being compiled in GPU-accelerated mode."
 #endif
 
 #include <cuComplex.h>
 #include <vector>
+
+using std::vector;
 
 
 
@@ -86,9 +88,9 @@ __host__ inline void unpackMatrixToCuQcomps(CompMatr1 in, cu_qcomp &m00, cu_qcom
     m11 = toCuQcomp(in.elems[1][1]);
 }
 
-__host__ inline std::vector<cu_qcomp> unpackMatrixToCuQcomps(CompMatr1 in) {
+__host__ inline vector<cu_qcomp> unpackMatrixToCuQcomps(CompMatr1 in) {
 
-    std::vector<cu_qcomp> vec(4);
+    vector<cu_qcomp> vec(4);
     vec[0] = toCuQcomp(in.elems[0][0]);
     vec[1] = toCuQcomp(in.elems[0][1]);
     vec[2] = toCuQcomp(in.elems[1][0]);

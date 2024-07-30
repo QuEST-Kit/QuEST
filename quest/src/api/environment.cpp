@@ -7,12 +7,14 @@
 #include "precision.h"
 #include "modes.h"
 
-#include "../core/memory.hpp"
-#include "../core/formatter.hpp"
-#include "../core/autodeployer.hpp"
-#include "../core/validation.hpp"
-#include "../comm/comm_config.hpp"
-#include "../cpu/cpu_config.hpp"
+#include "quest/src/core/errors.hpp"
+#include "quest/src/core/memory.hpp"
+#include "quest/src/core/printer.hpp"
+#include "quest/src/core/autodeployer.hpp"
+#include "quest/src/core/validation.hpp"
+#include "quest/src/comm/comm_config.hpp"
+#include "quest/src/cpu/cpu_config.hpp"
+#include "quest/src/gpu/gpu_config.hpp"
 
 #include <iostream>
 #include <typeinfo>
@@ -23,7 +25,9 @@
 #include <tuple>
 
 // provides substrings (by, na, pm, etc) used by reportQuESTEnv
-using namespace form_substrings;
+using namespace printer_substrings;
+
+using std::string;
 
 
 
@@ -143,19 +147,19 @@ void printPrecisionInfo() {
     // - report CUDA qcomp type?
     // - report CUDA kernel qcomp type?
 
-    form_printTable(
+    print_table(
         "precision", {
-        {"qreal",  form_getQrealType()  + " (" + form_str(sizeof(qreal))  + by + ")"},
-        {"qcomp",  form_getQcompType()  + " (" + form_str(sizeof(qcomp))  + by + ")"},
-        {"qindex", form_getQindexType() + " (" + form_str(sizeof(qindex)) + by + ")"},
-        {"validationEpsilon", form_str(VALIDATION_EPSILON)},
+        {"qreal",  printer_getQrealType()  + " (" + printer_toStr(sizeof(qreal))  + by + ")"},
+        {"qcomp",  printer_getQcompType()  + " (" + printer_toStr(sizeof(qcomp))  + by + ")"},
+        {"qindex", printer_getQindexType() + " (" + printer_toStr(sizeof(qindex)) + by + ")"},
+        {"validationEpsilon", printer_toStr(VALIDATION_EPSILON)},
     });
 }
 
 
 void printCompilationInfo() {
 
-    form_printTable(
+    print_table(
         "compilation", {
         {"isMpiCompiled",      comm_isMpiCompiled()},
         {"isGpuCompiled",       gpu_isGpuCompiled()},
@@ -167,7 +171,7 @@ void printCompilationInfo() {
 
 void printDeploymentInfo() {
 
-    form_printTable(
+    print_table(
         "deployment", {
         {"isMpiEnabled", globalEnvPtr->isDistributed},
         {"isGpuEnabled", globalEnvPtr->isGpuAccelerated},
@@ -179,19 +183,19 @@ void printDeploymentInfo() {
 void printCpuInfo() {
 
     // assume RAM is unknown unless it can be queried
-    std::string ram = un;
+    string ram = un;
     try { 
-        ram = form_str(mem_tryGetLocalRamCapacityInBytes()) + by + pm; 
+        ram = printer_toStr(mem_tryGetLocalRamCapacityInBytes()) + by + pm; 
     } catch(mem::COULD_NOT_QUERY_RAM e){};
 
     // TODO
     // - CPU info e.g. speeds/caches?
 
-    form_printTable(
+    print_table(
         "cpu", {
-        {"numCpuCores",   form_str(std::thread::hardware_concurrency()) + pm},
-        {"numOmpProcs",   (cpu_isOpenmpCompiled())? form_str(cpu_getNumOpenmpProcessors()) + pm : na},
-        {"numOmpThrds",   (cpu_isOpenmpCompiled())? form_str(cpu_getCurrentNumThreads()) + pn : na},
+        {"numCpuCores",   printer_toStr(std::thread::hardware_concurrency()) + pm},
+        {"numOmpProcs",   (cpu_isOpenmpCompiled())? printer_toStr(cpu_getNumOpenmpProcessors()) + pm : na},
+        {"numOmpThrds",   (cpu_isOpenmpCompiled())? printer_toStr(cpu_getCurrentNumThreads()) + pn : na},
         {"cpuMemory",     ram},
         {"cpuMemoryFree", un},
     });
@@ -204,23 +208,23 @@ void printGpuInfo() {
     // - GPU compute capability
     // - GPU #SVMs etc
 
-    form_printTable(
+    print_table(
         "gpu", {
-        {"numGpus",       (gpu_isGpuCompiled())? form_str(gpu_getNumberOfLocalGpus()) : un},
-        {"gpuDirect",     (gpu_isGpuCompiled())? form_str(gpu_isDirectGpuCommPossible()) : na},
-        {"gpuMemPools",   (gpu_isGpuCompiled())? form_str(gpu_doesGpuSupportMemPools()) : na},
-        {"gpuMemory",     (gpu_isGpuCompiled())? form_str(gpu_getTotalMemoryInBytes()) + by + pg : na},
-        {"gpuMemoryFree", (gpu_isGpuCompiled())? form_str(gpu_getTotalMemoryInBytes()) + by + pg : na},
+        {"numGpus",       (gpu_isGpuCompiled())? printer_toStr(gpu_getNumberOfLocalGpus()) : un},
+        {"gpuDirect",     (gpu_isGpuCompiled())? printer_toStr(gpu_isDirectGpuCommPossible()) : na},
+        {"gpuMemPools",   (gpu_isGpuCompiled())? printer_toStr(gpu_doesGpuSupportMemPools()) : na},
+        {"gpuMemory",     (gpu_isGpuCompiled())? printer_toStr(gpu_getTotalMemoryInBytes()) + by + pg : na},
+        {"gpuMemoryFree", (gpu_isGpuCompiled())? printer_toStr(gpu_getTotalMemoryInBytes()) + by + pg : na},
     });
 }
 
 
 void printDistributionInfo() {
 
-    form_printTable(
+    print_table(
         "distribution", {
-        {"isMpiGpuAware", (comm_isMpiCompiled())? form_str(comm_isMpiGpuAware()) : na},
-        {"numMpiNodes",   form_str(globalEnvPtr->numNodes)},
+        {"isMpiGpuAware", (comm_isMpiCompiled())? printer_toStr(comm_isMpiGpuAware()) : na},
+        {"numMpiNodes",   printer_toStr(globalEnvPtr->numNodes)},
     });
 }
 
@@ -231,17 +235,17 @@ void printQuregSizeLimits(bool isDensMatr) {
     int numNodes = globalEnvPtr->numNodes;
 
     // by default, CPU limits are unknown (because memory query might fail)
-    std::string maxQbForCpu = un;
-    std::string maxQbForMpiCpu = un;
+    string maxQbForCpu = un;
+    string maxQbForMpiCpu = un;
 
     // max CPU registers are only determinable if RAM query succeeds
     try {
         qindex cpuMem = mem_tryGetLocalRamCapacityInBytes();
-        maxQbForCpu = form_str(mem_getMaxNumQubitsWhichCanFitInMemory(isDensMatr, 1, cpuMem));
+        maxQbForCpu = printer_toStr(mem_getMaxNumQuregQubitsWhichCanFitInMemory(isDensMatr, 1, cpuMem));
 
         // and the max MPI sizes are only relevant when env is distributed
         if (globalEnvPtr->isDistributed)
-            maxQbForMpiCpu = form_str(mem_getMaxNumQubitsWhichCanFitInMemory(isDensMatr, numNodes, cpuMem));
+            maxQbForMpiCpu = printer_toStr(mem_getMaxNumQuregQubitsWhichCanFitInMemory(isDensMatr, numNodes, cpuMem));
 
         // when MPI irrelevant, change their status from "unknown" to "N/A"
         else
@@ -251,32 +255,32 @@ void printQuregSizeLimits(bool isDensMatr) {
     } catch(mem::COULD_NOT_QUERY_RAM e) {};
 
     // GPU limits are default N/A because they're always determinable when relevant
-    std::string maxQbForGpu = na;
-    std::string maxQbForMpiGpu = na;
+    string maxQbForGpu = na;
+    string maxQbForMpiGpu = na;
 
     // max GPU registers only relevant if env is GPU-accelerated
     if (globalEnvPtr->isGpuAccelerated) {
         qindex gpuMem = gpu_getCurrentAvailableMemoryInBytes();
-        maxQbForGpu = form_str(mem_getMaxNumQubitsWhichCanFitInMemory(isDensMatr, 1, gpuMem));
+        maxQbForGpu = printer_toStr(mem_getMaxNumQuregQubitsWhichCanFitInMemory(isDensMatr, 1, gpuMem));
 
         // and the max MPI sizes are further only relevant when env is distributed 
         if (globalEnvPtr->isDistributed)
-            maxQbForMpiGpu = form_str(mem_getMaxNumQubitsWhichCanFitInMemory(isDensMatr, numNodes, gpuMem));
+            maxQbForMpiGpu = printer_toStr(mem_getMaxNumQuregQubitsWhichCanFitInMemory(isDensMatr, numNodes, gpuMem));
     }
 
     // tailor table title to type of Qureg
-    std::string prefix = (isDensMatr)? "density matrix" : "statevector";
-    std::string title = prefix + " limits";
+    string prefix = (isDensMatr)? "density matrix" : "statevector";
+    string title = prefix + " limits";
 
-    form_printTable(
+    print_table(
         title, {
-        {"minQubitsForMpi",     (numNodes>1)? form_str(mem_getMinNumQubitsForDistribution(numNodes)) : na},
+        {"minQubitsForMpi",     (numNodes>1)? printer_toStr(mem_getMinNumQubitsForDistribution(numNodes)) : na},
         {"maxQubitsForCpu",     maxQbForCpu},
         {"maxQubitsForGpu",     maxQbForGpu},
         {"maxQubitsForMpiCpu",  maxQbForMpiCpu},
         {"maxQubitsForMpiGpu",  maxQbForMpiGpu},
-        {"maxQubitsForMemOverflow", form_str(mem_getMaxNumQubitsBeforeLocalMemSizeofOverflow(isDensMatr, numNodes))},
-        {"maxQubitsForIndOverflow", form_str(mem_getMaxNumQubitsBeforeIndexOverflow(isDensMatr))},
+        {"maxQubitsForMemOverflow", printer_toStr(mem_getMaxNumQubitsBeforeLocalMemSizeofOverflow(isDensMatr, numNodes))},
+        {"maxQubitsForIndOverflow", printer_toStr(mem_getMaxNumQubitsBeforeIndexOverflow(isDensMatr))},
     });
 }
 
@@ -284,7 +288,7 @@ void printQuregSizeLimits(bool isDensMatr) {
 void printQuregAutoDeployments(bool isDensMatr) {
 
     // build all table rows dynamically before print
-    std::vector<std::tuple<std::string, std::string>> rows;
+    std::vector<std::tuple<string, string>> rows;
 
     // we will get auto-deployment for every possible number of qubits; silly but cheap and robust!
     int useDistrib,  useGpuAccel,  useMulti;
@@ -314,16 +318,16 @@ void printQuregAutoDeployments(bool isDensMatr) {
             continue; 
 
         // else prepare string summarising the new deployments (trailing space is fine)
-        std::string value = "";
-        if (useDistrib)
-            value += "[mpi] ";
+        string value = "";
+        if (useMulti)
+            value += "[omp] "; // ordered by #qubits to attempt consistent printed columns
         if (useGpuAccel)
             value += "[gpu] ";
-        if (useMulti)
-            value += "[omp] ";
+        if (useDistrib)
+            value += "[mpi] ";
 
         // log the #qubits of the deployment change
-        rows.push_back({form_str(numQubits) + " qubits", value});
+        rows.push_back({printer_toStr(numQubits) + " qubits", value});
 
         // skip subsequent qubits with the same deployments
         prevDistrib  = useDistrib;
@@ -332,9 +336,9 @@ void printQuregAutoDeployments(bool isDensMatr) {
     }
 
     // tailor table title to type of Qureg
-    std::string prefix = (isDensMatr)? "density matrix" : "statevector";
-    std::string title = prefix + " autodeployment";
-    form_printTable(title, rows);
+    string prefix = (isDensMatr)? "density matrix" : "statevector";
+    string title = prefix + " autodeployment";
+    print_table(title, rows);
 }
 
 
@@ -367,7 +371,7 @@ int isQuESTEnvInit() {
 
 
 QuESTEnv getQuESTEnv() {
-    validate_envInit(__func__);
+    validate_envIsInit(__func__);
 
     // returns a copy, so cheeky users calling memcpy() upon const struct still won't mutate
     return *globalEnvPtr;
@@ -375,7 +379,7 @@ QuESTEnv getQuESTEnv() {
 
 
 void finalizeQuESTEnv() {
-    validate_envInit(__func__);
+    validate_envIsInit(__func__);
 
     if (globalEnvPtr->isGpuAccelerated && gpu_isCuQuantumCompiled())
         gpu_finalizeCuQuantum();
@@ -393,15 +397,11 @@ void finalizeQuESTEnv() {
 
 
 void reportQuESTEnv() {
-    validate_envInit(__func__);
+    validate_envIsInit(__func__);
 
     // TODO: add function to write this output to file (useful for HPC debugging)
 
-    // only root node reports (but no synch necesary)
-    if (globalEnvPtr->rank != 0)
-        return;
-
-    std::cout << "QuEST execution environment:" << std::endl;
+    print( "QuEST execution environment:");
 
     bool statevec = false;
     bool densmatr = true;

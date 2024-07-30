@@ -5,8 +5,8 @@
 #ifndef CPU_SUBROUTINES_HPP
 #define CPU_SUBROUTINES_HPP
 
-#include "qureg.h"
-#include "structures.h"
+#include "quest/include/qureg.h"
+#include "quest/include/matrices.h"
 
 
 

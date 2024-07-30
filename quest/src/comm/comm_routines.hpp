@@ -28,10 +28,20 @@ void comm_receiveArrayToBuffer(Qureg qureg, qindex numElems, int pairRank);
 
 
 /*
+ * MISC COMMUNICATION METHODS
+ */
+
+void comm_sendAmpsToRoot(int sendRank, qcomp* send, qcomp* recv, qindex numAmps);
+
+
+
+/*
  * REDUCTION METHODS
  */
 
 void comm_reduceAmp(qcomp* localAmp);
+
+bool comm_isTrueOnAllNodes(bool val);
 
 
 
