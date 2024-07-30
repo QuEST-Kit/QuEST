@@ -3,9 +3,10 @@ target_sources(QuEST
   accelerator.cpp
   autodeployer.cpp
   errors.cpp
-  formatter.cpp
   localiser.cpp
   memory.cpp
+  parser.cpp
+  printer.cpp
   utilities.cpp
   validation.cpp
 )

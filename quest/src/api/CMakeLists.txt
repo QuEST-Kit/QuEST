@@ -5,9 +5,11 @@ target_sources(QuEST
   decoherence.cpp
   environment.cpp
   initialisations.cpp
+  matrices.cpp
   modes.cpp
   operations.cpp
+  paulis.cpp
   qasm.cpp
   qureg.cpp
-  structures.cpp
+  types.cpp
 )
