@@ -179,6 +179,33 @@ typedef struct {
  */
 
 
+
+static inline CtrlIndParams getParamsInformingIndsWhereCtrlsAreActive(vector<int> &ctrls, vector<int> states) { 
+    indexer_assertValidCtrls(ctrls, states);
+
+    // most fields of params will stay un-initialised
+    CtrlIndParams params;
+
+    if (ctrls.size() == 1)
+        params.ctrl = ctrls[0];
+
+    if (states.size() == 1)
+        params.ctrlState = states[0];
+
+    // if many ctrl states are given, create a mask from them before ctrls gets modified below
+    if (states.size() > 1)
+        params.ctrlStateMask = getBitMask(ctrls.data(), states.data(), ctrls.size());
+
+    // if many ctrls are given, sort them (modifying passed ctrls vector)
+    if (ctrls.size() > 1) {
+        std::sort(ctrls.begin(), ctrls.end());
+        params.sortedCtrls = ctrls.data();  // maintain ptr to caller's vector
+    }
+
+    return params;
+}
+
+
 static inline CtrlTargIndParams getParamsInformingIndsWhereCtrlsAreActiveAndTargIsOne(vector<int> &ctrls, vector<int> states, int targ) {
     indexer_assertValidCtrls(ctrls, states);
 
@@ -206,32 +233,6 @@ static inline CtrlTargIndParams getParamsInformingIndsWhereCtrlsAreActiveAndTarg
         ctrls.push_back(targ);
         std::sort(ctrls.begin(), ctrls.end());
         params.sortedQubits = ctrls.data();  // maintain ptr to caller's vector
-    }
-
-    return params;
-}
-
-
-static inline CtrlIndParams getParamsInformingIndsWhereCtrlsAreActive(vector<int> &ctrls, vector<int> states) { 
-    indexer_assertValidCtrls(ctrls, states);
-
-    // most fields of params will stay un-initialised
-    CtrlIndParams params;
-
-    if (ctrls.size() == 1)
-        params.ctrl = ctrls[0];
-
-    if (states.size() == 1)
-        params.ctrlState = states[0];
-
-    // if many ctrl states are given, create a mask from them before ctrls gets modified below
-    if (states.size() > 1)
-        params.ctrlStateMask = getBitMask(ctrls.data(), states.data(), ctrls.size());
-
-    // if many ctrls are given, sort them (modifying passed ctrls vector)
-    if (ctrls.size() > 1) {
-        std::sort(ctrls.begin(), ctrls.end());
-        params.sortedCtrls = ctrls.data();  // maintain ptr to caller's vector
     }
 
     return params;
