@@ -14,16 +14,26 @@
  * This header forcefully inlines all functions so that it
  * can be included by multiple independently-compiled source
  * files without symbol duplication; especially important for
- * their invocation by CUDA kernels. It also provides a 
- * performance benefit when these functions are called in tight loops.
+ * their invocation by CUDA kernels. It is also essential for
+ * performance as these functions are called in hot loops.
+ * 
+ * We must choose the right INLINE keyword for the user's compiler.
+ * Note the below logic means all INLINE functions through the entire
+ * QuEST source will declared __device__ when the user opts to compile
+ * everything with NVCC. It is ergo important that all INLINE functions
+ * are CUDA-kernel-compatible (e.g. don't make use of std::vector).
  */
 
-#if COMPILE_CUDA && (defined(__NVCC__) || defined(__HIPCC__))
+#if defined(__NVCC__) || defined(__HIPCC__)
     #define INLINE __forceinline__ __device__ __host__
+#elif defined(_MSC_VER) || defined(__INTEL_COMPILER)
+    #define INLINE __forceinline
+#elif defined(__GNUC__)
+    #define INLINE inline __attribute__((always_inline))
 #else
+    #warning "Could not ascertain compiler type in order to choose the correct inline attribute. Assuming GNU and proceeding..."
     #define INLINE inline __attribute__((always_inline))
 #endif
-
 
 
 /* 
@@ -92,6 +102,12 @@ INLINE qindex setBits(qindex number, int* bitIndices, int numIndices, qindex bit
     }
     
     return number;
+}
+
+
+INLINE qindex activateBits(qindex number, qindex mask) {
+
+    return number | mask;
 }
 
 
@@ -167,6 +183,16 @@ INLINE bool allBitsAreOne(qindex number, int* bitIndices, int numIndices) {
 }
 
 
+INLINE qindex getBitMask(int* bitIndices, int* bitValues, int numIndices) {
+
+    qindex mask = 0;
+    for (int i=0; i<numIndices; i++)
+        mask = setBit(mask, bitIndices[i], bitValues[i]); 
+
+    return mask;
+}
+
+
 INLINE qindex getBitMask(int* bitIndices, int numIndices) {
     
     qindex mask = 0;
@@ -174,6 +200,13 @@ INLINE qindex getBitMask(int* bitIndices, int numIndices) {
         mask = flipBit(mask, bitIndices[i]);
         
     return mask;
+}
+
+
+INLINE qindex getBitMask(int numBits) {
+
+    // assumes numBits < num in qindex
+    return (QINDEX_ONE << numBits) - 1;
 }
 
 

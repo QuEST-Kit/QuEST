@@ -88,6 +88,12 @@ __host__ inline void unpackMatrixToCuQcomps(CompMatr1 in, cu_qcomp &m00, cu_qcom
     m11 = toCuQcomp(in.elems[1][1]);
 }
 
+__host__ inline void unpackMatrixToCuQcomps(DiagMatr1 in, cu_qcomp &d0, cu_qcomp &d1) {
+
+    d0 = toCuQcomp(in.elems[0]);
+    d1 = toCuQcomp(in.elems[1]);
+}
+
 __host__ inline vector<cu_qcomp> unpackMatrixToCuQcomps(CompMatr1 in) {
 
     vector<cu_qcomp> vec(4);

@@ -14,13 +14,18 @@
 #include "quest/include/qureg.h"
 #include "quest/include/matrices.h"
 
+#include <vector>
+
+using std::vector;
+
 
 
 /*
- * OPERATORS
+ * ANY-CTRL ONE-TARG MATRIX
  */
 
-void statevec_oneTargetGate(Qureg qureg, int target, CompMatr1 matrix);
+void statevec_anyCtrlOneTargMatrix(Qureg qureg, vector<int> ctrls, vector<int> ctrlStates, int targ, CompMatr1 matr);
+void statevec_anyCtrlOneTargMatrix(Qureg qureg, vector<int> ctrls, vector<int> ctrlStates, int targ, DiagMatr1 matr);
 
 
 
