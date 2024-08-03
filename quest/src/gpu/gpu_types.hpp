@@ -29,6 +29,10 @@ using std::vector;
 
 /*
  * CUDA-COMPATIBLE QCOMP ALIAS (cu_qcomp)
+ *
+ * which we opt to use over a Thrust complex type to gaurantee
+ * compatibility with cuQuantum, though this irritatingly 
+ * requires explicitly defining operator overloads below
  */
 
 
@@ -51,10 +55,10 @@ using std::vector;
 
 
 INLINE cu_qcomp operator + (const cu_qcomp& a, const cu_qcomp& b) {
-    cu_qcomp res;
-    res.x = a.x + b.x;
-    res.y = a.y + b.y;
-    return res;
+    return (cu_qcomp) {
+        .x = a.x + b.x,
+        .y = a.y + b.y
+    };
 }
 
 INLINE cu_qcomp operator - (const cu_qcomp& a, const cu_qcomp& b) {
