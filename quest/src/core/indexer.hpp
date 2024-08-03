@@ -22,6 +22,7 @@
 
 #include <tuple>
 #include <vector>
+#include <algorithm>
 
 using std::tuple;
 using std::vector;
