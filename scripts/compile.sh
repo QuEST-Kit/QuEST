@@ -144,7 +144,7 @@ COMPILE_CUDA=$ENABLE_GPU_ACCELERATION
 COMPILE_CUQUANTUM=$ENABLE_CUQUANTUM
 
 # compiler flags given to all backend files (but not user files)
-BACKEND_COMP_FLAGS='-std=c++17 -O3 -Wall'
+BACKEND_COMP_FLAGS='-std=c++17 -O3'
 
 # GPU-specific flags
 GPU_COMP_FLAGS="-x cu -arch=sm_${GPU_CC} -I${CUDA_LIB_DIR}/include"
