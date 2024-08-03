@@ -1,5 +1,5 @@
 /** @file
- * Inlined bitwise operations used by all deployment modes for fast,
+ * Bitwise operations used by all deployment modes for fast,
  * low-level processing of basis state indices (qindex). 
  */
 
@@ -8,36 +8,15 @@
 
 #include "quest/include/types.h"
 
+#include "quest/src/core/inliner.hpp"
 
-
-/*
- * This header forcefully inlines all functions so that it
- * can be included by multiple independently-compiled source
- * files without symbol duplication; especially important for
- * their invocation by CUDA kernels. It is also essential for
- * performance as these functions are called in hot loops.
- * 
- * We must choose the right INLINE keyword for the user's compiler.
- * Note the below logic means all INLINE functions through the entire
- * QuEST source will declared __device__ when the user opts to compile
- * everything with NVCC. It is ergo important that all INLINE functions
- * are CUDA-kernel-compatible (e.g. don't make use of std::vector).
- */
-
-#if defined(__NVCC__) || defined(__HIPCC__)
-    #define INLINE __forceinline__ __device__ __host__
-#elif defined(_MSC_VER) || defined(__INTEL_COMPILER)
-    #define INLINE __forceinline
-#elif defined(__GNUC__)
-    #define INLINE inline __attribute__((always_inline))
-#else
-    #warning "Could not ascertain compiler type in order to choose the correct inline attribute. Assuming GNU and proceeding..."
-    #define INLINE inline __attribute__((always_inline))
-#endif
 
 
 /* 
- * Performance-critical functions (called in tight loops)
+ * PERFORMANCE-CRITICAL FUNCTIONS
+ *
+ * which are called in hot loops loops (like by OpenMP threads and
+ * CUDA kernels) so are aggressively inlined.
  */
 
 
@@ -120,12 +99,15 @@ INLINE int getBitMaskParity(qindex mask) {
 
 
 /*
- * Convenience wrappers around performance-critical functions
+ * PERFORMANCE-CRITICAL CONVENIENCE FUNCTIONS
+ *
+ * which merely improve caller's code readability
  */
  
 
 INLINE qindex insertTwoBits(qindex number, int highInd, int highBit, int lowInd, int lowBit) {
     
+    // assumes highInd > lowInd
     number = insertBit(number, lowInd, lowBit);
     number = insertBit(number, highInd, highBit);
     return number;
@@ -134,6 +116,7 @@ INLINE qindex insertTwoBits(qindex number, int highInd, int highBit, int lowInd,
 
 INLINE qindex insertThreeZeroBits(qindex number, int i3, int i2, int i1) {
     
+    // assumes i3 > i2 > i1
     number = insertTwoBits(number, i2, 0, i1, 0);
     number = insertBit(number, i3, 0);
     return number;
@@ -142,6 +125,7 @@ INLINE qindex insertThreeZeroBits(qindex number, int i3, int i2, int i1) {
 
 INLINE qindex insertFourZeroBits(qindex number, int i4, int i3, int i2, int i1) {
     
+    // assumes i4 > i3 > i2 > i1
     number = insertTwoBits(number, i2, 0, i1, 0);
     number = insertTwoBits(number, i4, 0, i3, 0);
     return number;
@@ -157,9 +141,10 @@ INLINE qindex flipTwoBits(qindex number, int i1, int i0) {
 
 
 /* 
- * Non-performance critical convenience functions, which should
- * not be used in exponentially-big tight-loops. We inline anyway
- * to avoid symbol duplication issues
+ * SLOW FUNCTIONS
+ *
+ * which should never be called in hot loops, but which are
+ * inlined anyway to avoid symbol duplication
  */
 
 

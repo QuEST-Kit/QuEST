@@ -14,7 +14,7 @@
 #include "quest/include/modes.h"
 #include "quest/include/types.h"
 
-#include "quest/src/core/bitwise.hpp"
+#include "quest/src/core/inliner.hpp"
 
 #if ! COMPILE_CUDA
     #error "A file being compiled somehow included gpu_types.hpp despite QuEST not being compiled in GPU-accelerated mode."

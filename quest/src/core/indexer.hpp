@@ -18,6 +18,7 @@
 #include "quest/include/types.h"
 
 #include "quest/src/core/errors.hpp"
+#include "quest/src/core/inliner.hpp"
 #include "quest/src/core/bitwise.hpp"
 
 #include <tuple>
@@ -91,10 +92,15 @@ static void indexer_assertValidCtrls(vector<int> ctrls, vector<int> ctrlStates) 
 
 /*
  * RUNTIME INFERENCE OF QUBIT PRECONDITIONS
+ *
+ * which is called in advance of hot loops and is only inlined here to 
+ * avoid unused function warnings. Note the use of casual 'inline' over the
+ * inliner.hpp's forceful INLINE macro; we cannot declare this as INLINE
+ * because it accepts vectors incompatible with CUDA kernels.
  */
 
 
-static CtrlFlag indexer_getCtrlFlag(vector<int> ctrls, vector<int> states) {
+static inline CtrlFlag indexer_getCtrlFlag(vector<int> ctrls, vector<int> states) {
     indexer_assertValidCtrls(ctrls, states);
 
     if (ctrls.empty())
@@ -167,10 +173,13 @@ typedef struct {
 
 /*
  * INDEX PARAM INITIALISERS
+ *
+ * which are called in advance of hot loops and are only 
+ * inlined here to avoid unused function warnings
  */
 
 
-static CtrlTargIndParams getParamsInformingIndsWhereCtrlsAreActiveAndTargIsOne(vector<int> &ctrls, vector<int> states, int targ) {
+static inline CtrlTargIndParams getParamsInformingIndsWhereCtrlsAreActiveAndTargIsOne(vector<int> &ctrls, vector<int> states, int targ) {
     indexer_assertValidCtrls(ctrls, states);
 
     // most fields of params will stay un-initialised
@@ -203,7 +212,7 @@ static CtrlTargIndParams getParamsInformingIndsWhereCtrlsAreActiveAndTargIsOne(v
 }
 
 
-static CtrlIndParams getParamsInformingIndsWhereCtrlsAreActive(vector<int> &ctrls, vector<int> states) { 
+static inline CtrlIndParams getParamsInformingIndsWhereCtrlsAreActive(vector<int> &ctrls, vector<int> states) { 
     indexer_assertValidCtrls(ctrls, states);
 
     // most fields of params will stay un-initialised
