@@ -14,6 +14,8 @@
 #include "quest/include/modes.h"
 #include "quest/include/types.h"
 
+#include "quest/include/bitwise.hpp"
+
 #if ! COMPILE_CUDA
     #error "A file being compiled somehow included gpu_types.hpp despite QuEST not being compiled in GPU-accelerated mode."
 #endif
@@ -28,6 +30,7 @@ using std::vector;
 /*
  * CUDA-COMPATIBLE QCOMP ALIAS (cu_qcomp)
  */
+
 
 #if (FLOAT_PRECISION == 1)
     typedef cuFloatComplex cu_qcomp;
@@ -46,28 +49,57 @@ using std::vector;
  * cu_qcomp ARITHMETIC OVERLOADS
  */
 
-__host__ __device__ inline cu_qcomp operator + (const cu_qcomp& a, const cu_qcomp& b) {
+
+INLINE cu_qcomp operator + (const cu_qcomp& a, const cu_qcomp& b) {
     cu_qcomp res;
     res.x = a.x + b.x;
     res.y = a.y + b.y;
     return res;
 }
 
-__host__ __device__ inline cu_qcomp operator - (const cu_qcomp& a, const cu_qcomp& b) {
+INLINE cu_qcomp operator - (const cu_qcomp& a, const cu_qcomp& b) {
     cu_qcomp res;
     res.x = a.x - b.x;
     res.y = a.y - b.y;
     return res;
 }
 
-__host__ __device__ inline cu_qcomp operator * (const cu_qcomp& a, const cu_qcomp& b) {
+INLINE inline cu_qcomp operator * (const cu_qcomp& a, const cu_qcomp& b) {
     cu_qcomp res;
     res.x = a.x * b.x - a.y * b.y;
     res.y = a.x * b.y + a.y * b.x;
     return res;
 }
 
-__host__ __device__ inline cu_qcomp operator * (const cu_qcomp& a, const qreal& b) {
+
+INLINE void operator += (cu_qcomp& a, const qcomp& b) {
+    a = a + b;
+}
+
+INLINE void operator -= (cu_qcomp& a, const qcomp& b) {
+    a = a - b;
+}
+
+INLINE void operator *= (cu_qcomp& a, const qcomp& b) {
+    a = a * b;
+}
+
+
+INLINE inline cu_qcomp operator + (const cu_qcomp& a, const qreal& b) {
+    cu_qcomp res;
+    res.x = a.x + b;
+    res.y = a.y + b;
+    return res;
+}
+
+INLINE inline cu_qcomp operator - (const cu_qcomp& a, const qreal& b) {
+    cu_qcomp res;
+    res.x = a.x - b;
+    res.y = a.y - b;
+    return res;
+}
+
+INLINE inline cu_qcomp operator * (const cu_qcomp& a, const qreal& b) {
     cu_qcomp res;
     res.x = a.x * b;
     res.y = a.y * b;
@@ -76,13 +108,16 @@ __host__ __device__ inline cu_qcomp operator * (const cu_qcomp& a, const qreal& 
 
 
 
+
 /*
  * CASTS BETWEEN qcomp AND cu_qcomp
  */
 
+
 __host__ inline cu_qcomp toCuQcomp(qcomp x) {
     return reinterpret_cast<cu_qcomp&>(x);
 }
+
 
 __host__ inline cu_qcomp* toCuQcomps(qcomp* x) {
     return reinterpret_cast<cu_qcomp*>(x);
@@ -94,6 +129,7 @@ __host__ inline cu_qcomp* toCuQcomps(qcomp* x) {
  * MATRIX CASTING AND UNPACKING
  */
 
+
 __host__ inline void unpackMatrixToCuQcomps(CompMatr1 in, cu_qcomp &m00, cu_qcomp &m01, cu_qcomp &m10, cu_qcomp &m11) {
 
     m00 = toCuQcomp(in.elems[0][0]);
@@ -102,11 +138,13 @@ __host__ inline void unpackMatrixToCuQcomps(CompMatr1 in, cu_qcomp &m00, cu_qcom
     m11 = toCuQcomp(in.elems[1][1]);
 }
 
+
 __host__ inline void unpackMatrixToCuQcomps(DiagMatr1 in, cu_qcomp &d0, cu_qcomp &d1) {
 
     d0 = toCuQcomp(in.elems[0]);
     d1 = toCuQcomp(in.elems[1]);
 }
+
 
 __host__ inline vector<cu_qcomp> unpackMatrixToCuQcomps(CompMatr1 in) {
 
@@ -117,6 +155,7 @@ __host__ inline vector<cu_qcomp> unpackMatrixToCuQcomps(CompMatr1 in) {
     vec[3] = toCuQcomp(in.elems[1][1]);
     return vec;
 }
+
 
 
 #endif // GPU_TYPES_HPP

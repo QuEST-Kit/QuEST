@@ -78,8 +78,8 @@ __global__ void kernel_statevector_anyCtrlOneTargCompMatr_subA(
 
 
 template <CtrlFlag ctrlFlag>
-void kernel_statevector_anyCtrlOneTargDiagMatr_subA(
-    cu_qcomp* amps, qindex numIts, CtrlIndParams param, int targ, 
+__global__ void kernel_statevector_anyCtrlOneTargDiagMatr_subA(
+    cu_qcomp* amps, qindex numIts, CtrlIndParams params, int targ, 
     cu_qcomp d0, cu_qcomp d1
 ) {
     // determine this kernel's task ID
