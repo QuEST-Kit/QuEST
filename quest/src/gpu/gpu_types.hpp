@@ -53,10 +53,24 @@ __host__ __device__ inline cu_qcomp operator + (const cu_qcomp& a, const cu_qcom
     return res;
 }
 
+__host__ __device__ inline cu_qcomp operator - (const cu_qcomp& a, const cu_qcomp& b) {
+    cu_qcomp res;
+    res.x = a.x - b.x;
+    res.y = a.y - b.y;
+    return res;
+}
+
 __host__ __device__ inline cu_qcomp operator * (const cu_qcomp& a, const cu_qcomp& b) {
     cu_qcomp res;
     res.x = a.x * b.x - a.y * b.y;
     res.y = a.x * b.y + a.y * b.x;
+    return res;
+}
+
+__host__ __device__ inline cu_qcomp operator * (const cu_qcomp& a, const qreal& b) {
+    cu_qcomp res;
+    res.x = a.x * b;
+    res.y = a.y * b;
     return res;
 }
 
