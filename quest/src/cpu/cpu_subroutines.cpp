@@ -27,21 +27,18 @@ using namespace index_flags;
 
 
 template <CtrlFlag ctrlFlag>
-void cpu_statevector_anyCtrlOneTargMatrix_subA(Qureg qureg, vector<int> ctrls, vector<int> ctrlStates, int targ, CompMatr1 matr)
-{
-    // note ctrls is modified and pointed to by params, so much persist for function call
-    CtrlTargIndParams params = getParamsInformingIndsWhereCtrlsAreActiveAndTargIsOne(ctrls, ctrlStates, targ);
+void cpu_statevector_anyCtrlOneTargMatrix_subA(Qureg qureg, vector<int> ctrls, vector<int> ctrlStates, int targ, CompMatr1 matr) {
 
-    // each iteration will modify 2 amplitudes (targ=0,1), and each ctrl halves needed modifications
-    qindex numIts = qureg.numAmpsPerNode / powerOf2(1 + ctrls.size());
+    CtrlTargIndParams params = getParamsInformingIndsWhereCtrlsAreActiveAndTargIsOne(qureg.numAmpsPerNode, ctrls, ctrlStates, targ);
 
     #pragma omp parallel for
-    for (qindex n=0; n<numIts; n++) {
+    for (qindex n=0; n<params.numInds; n++) {
 
-        qindex i1 = getNthIndWhereCtrlsAreActiveAndTargIsOne<ctrlFlag>(n, targ, params);
+        // each iteration locates and modifies two amplitudes
+        qindex i1 = getNthIndWhereCtrlsAreActiveAndTargIsOne<ctrlFlag>(n, params);
         qindex i0 = flipBit(i1, targ);
 
-        // modify both amplitudes, even though they are likely strided and not adjacent
+        // note the two amplitudes are likely strided and not adjacent (separated by 2^t)
         qcomp amp0 = qureg.cpuAmps[i0];
         qcomp amp1 = qureg.cpuAmps[i1];
 
@@ -52,21 +49,16 @@ void cpu_statevector_anyCtrlOneTargMatrix_subA(Qureg qureg, vector<int> ctrls, v
 
 
 template <CtrlFlag ctrlFlag>
-void cpu_statevector_anyCtrlOneTargMatrix_subA(Qureg qureg, vector<int> ctrls, vector<int> ctrlStates, int targ, DiagMatr1 matr)
-{
-    // note ctrls is modified and pointed to by params, so much persist for function call
-    CtrlIndParams params = getParamsInformingIndsWhereCtrlsAreActive(ctrls, ctrlStates);
+void cpu_statevector_anyCtrlOneTargMatrix_subA(Qureg qureg, vector<int> ctrls, vector<int> ctrlStates, int targ, DiagMatr1 matr) {
 
-    // each iteration will modify 1 amplitude, and each ctrl halves needed modifications
-    qindex numIts = qureg.numAmpsPerNode / powerOf2(ctrls.size());
+    CtrlIndParams params = getParamsInformingIndsWhereCtrlsAreActive(qureg.numAmpsPerNode, ctrls, ctrlStates);
 
     #pragma omp parallel for
-    for (qindex n=0; n<numIts; n++) {
+    for (qindex n=0; n<params.numInds; n++) {
 
+        // each iteration scales one amplitude
         qindex i = getNthIndWhereCtrlsAreActive<ctrlFlag>(n, params);
-        int bit = getBit(i, targ);
-
-        qureg.cpuAmps[i] *= matr.elems[bit];
+        qureg.cpuAmps[i] *= matr.elems[getBit(i, targ)];
     }
 }
 

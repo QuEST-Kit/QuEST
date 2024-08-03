@@ -2,7 +2,7 @@
  * CUDA-compatible complex types. This file is only ever included
  * when COMPILE_CUDA=1 so it can safely invoke CUDA
  * signatures without guards. This is safe to re-include by
- * multiple files because typedef definition is legal in C++,
+ * multiple files because typedef redefinition is legal in C++,
  * and all functions herein are inline. Furthermore, since it
  * is only ever parsed by nvcc, the __host__ symbols are safely
  * processed by the cuquantum backend.

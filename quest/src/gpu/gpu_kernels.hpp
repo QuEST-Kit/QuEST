@@ -56,19 +56,18 @@ __host__ qindex getNumBlocks(qindex numIts) {
 
 template <CtrlFlag ctrlFlag>
 __global__ void kernel_statevector_anyCtrlOneTargCompMatr_subA(
-    cu_qcomp* amps, qindex numIts, CtrlTargIndParams params, int targ, 
+    cu_qcomp* amps, CtrlTargIndParams params, int targ, 
     cu_qcomp m00, cu_qcomp m01, cu_qcomp m10, cu_qcomp m11
 ) {
-    // determine this kernel's task ID
     qindex n = getThreadInd();
-    if (n >= numIts) 
+    if (n >= params.numInds) 
         return;
 
-    // determine this kernel's two amp indices, using compile-time optimisation
-    qindex i1 = getNthIndWhereCtrlsAreActiveAndTargIsOne<ctrlFlag>(n, targ, params);
+    // each thread modifies two amps
+    qindex i1 = getNthIndWhereCtrlsAreActiveAndTargIsOne<ctrlFlag>(n, params);
     qindex i0 = flipBit(i1, targ);
 
-    // modify both amplitudes, even though they are likely strided and not adjacent
+    // note they are likely strided and not adjacent
     cu_qcomp amp0 = amps[i0];
     cu_qcomp amp1 = amps[i1];
 
@@ -79,18 +78,15 @@ __global__ void kernel_statevector_anyCtrlOneTargCompMatr_subA(
 
 template <CtrlFlag ctrlFlag>
 __global__ void kernel_statevector_anyCtrlOneTargDiagMatr_subA(
-    cu_qcomp* amps, qindex numIts, CtrlIndParams params, int targ, 
+    cu_qcomp* amps, CtrlIndParams params, int targ, 
     cu_qcomp d0, cu_qcomp d1
 ) {
-    // determine this kernel's task ID
     qindex n = getThreadInd();
-    if (n >= numIts) 
+    if (n >= params.numInds) 
         return;
 
-    // determine this kernel's amp index, using compile-time optimisation
+    // each thread modifies one amp, multiplying by d0 or d1
     qindex i = getNthIndWhereCtrlsAreActive<ctrlFlag>(n, params);
-
-    // multiply the amp by one of the diagonal elements
     amps[i] *= d0 + (d1-d0)*getBit(i, targ);
 }
 

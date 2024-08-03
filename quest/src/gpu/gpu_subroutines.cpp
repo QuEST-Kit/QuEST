@@ -50,19 +50,15 @@ void gpu_statevector_anyCtrlOneTargMatrix_subA(Qureg qureg, vector<int> ctrls, v
 
 #elif COMPILE_CUDA
 
-    // each thread modifies 2 amps, and each ctrl qubit halves needed threads 
-    qindex numThrds = qureg.numAmpsPerNode / powerOf2(1 + ctrls.size());
-    qindex numBlocks = getNumBlocks(numThrds);
-
     // there are sufficiently few matrix elements (<256 bytes) to pass directly to kernel
     cu_qcomp m00, m01, m10, m11;
     unpackMatrixToCuQcomps(matr, m00,m01,m10,m11);
 
-    // prepare the parameters necessary for efficiently computing amp indices inside kernels
-    CtrlTargIndParams params = getParamsInformingIndsWhereCtrlsAreActiveAndTargIsOne(ctrls, ctrlStates, targ);
+    CtrlTargIndParams params = getParamsInformingIndsWhereCtrlsAreActiveAndTargIsOne(qureg.numAmpsPerNode, ctrls, ctrlStates, targ);
+    qindex numBlocks = getNumBlocks(params.numInds);
+    cu_qcomp* amps = toCuQcomps(qureg.gpuAmps);
 
-    kernel_statevector_anyCtrlOneTargCompMatr_subA <ctrlFlag> <<<numBlocks, NUM_THREADS_PER_BLOCK>>> (
-        toCuQcomps(qureg.gpuAmps), numThrds, params, targ, m00,m01,m10,m11);
+    kernel_statevector_anyCtrlOneTargCompMatr_subA <ctrlFlag> <<<numBlocks,NUM_THREADS_PER_BLOCK>>> (amps, params, targ, m00,m01,m10,m11);
 
 #else
     error_gpuSimButGpuNotCompiled();
@@ -78,19 +74,15 @@ void gpu_statevector_anyCtrlOneTargMatrix_subA(Qureg qureg, vector<int> ctrls, v
 
 #elif COMPILE_CUDA
 
-    // each thread modifies 1 amp, and each ctrl qubit halves needed threads 
-    qindex numThrds = qureg.numAmpsPerNode / powerOf2(ctrls.size());
-    qindex numBlocks = getNumBlocks(numThrds);
-
     // there are sufficiently few matrix elements (<256 bytes) to pass directly to kernel
     cu_qcomp d0, d1;
     unpackMatrixToCuQcomps(matr, d0,d1);
 
-    // prepare the parameters necessary for efficiently computing amp indices inside kernels
-    CtrlIndParams params = getParamsInformingIndsWhereCtrlsAreActive(ctrls, ctrlStates);
+    CtrlIndParams params = getParamsInformingIndsWhereCtrlsAreActive(qureg.numAmpsPerNode, ctrls, ctrlStates);
+    qindex numBlocks = getNumBlocks(params.numInds);
+    cu_qcomp* amps = toCuQcomps(qureg.gpuAmps);
 
-    kernel_statevector_anyCtrlOneTargDiagMatr_subA <ctrlFlag> <<<numBlocks, NUM_THREADS_PER_BLOCK>>> (
-        toCuQcomps(qureg.gpuAmps), numThrds, params, targ, d0,d1);
+    kernel_statevector_anyCtrlOneTargDiagMatr_subA <ctrlFlag> <<<numBlocks,NUM_THREADS_PER_BLOCK>>> (amps, params, targ, d0, d1);
 
 #else
     error_gpuSimButGpuNotCompiled();
@@ -102,6 +94,7 @@ void gpu_statevector_anyCtrlOneTargMatrix_subA(Qureg qureg, vector<int> ctrls, v
 /*
  *  INSTANTIATING TEMPLATES
  */
+
 
 INSTANTIATE_TEMPLATED_VOID_FUNC_WITH_ALL_CTRL_FLAGS(
     gpu_statevector_anyCtrlOneTargMatrix_subA, 

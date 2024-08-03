@@ -129,6 +129,7 @@ static inline CtrlFlag indexer_getCtrlFlag(vector<int> ctrls, vector<int> states
 typedef struct {
 
     // when no ctrls are given, params yield all indices
+    qindex numInds;
 
     // populated when a single ctrl is given
     int ctrl;
@@ -149,7 +150,10 @@ typedef struct {
 // extends CtrlIndParams to constrain the target qubit to be active (i.e. 1)
 typedef struct {
 
+    qindex numInds;
+
     // when no ctrls are given, params yield all indices where target is 1
+    int target;
 
     // populated when a single ctrl is given, distinguishing ctrl and target
     int lowerQubit;
@@ -179,12 +183,14 @@ typedef struct {
  */
 
 
-
-static inline CtrlIndParams getParamsInformingIndsWhereCtrlsAreActive(vector<int> &ctrls, vector<int> states) { 
+static inline CtrlIndParams getParamsInformingIndsWhereCtrlsAreActive(qindex numTotalInds, vector<int> &ctrls, vector<int> states) { 
     indexer_assertValidCtrls(ctrls, states);
 
     // most fields of params will stay un-initialised
     CtrlIndParams params;
+
+    // each ctrl halves the number of relevant indices
+    params.numInds = numTotalInds / powerOf2(ctrls.size()); // divides evenly
 
     if (ctrls.size() == 1)
         params.ctrl = ctrls[0];
@@ -206,11 +212,15 @@ static inline CtrlIndParams getParamsInformingIndsWhereCtrlsAreActive(vector<int
 }
 
 
-static inline CtrlTargIndParams getParamsInformingIndsWhereCtrlsAreActiveAndTargIsOne(vector<int> &ctrls, vector<int> states, int targ) {
+static inline CtrlTargIndParams getParamsInformingIndsWhereCtrlsAreActiveAndTargIsOne(qindex numTotalInds, vector<int> &ctrls, vector<int> states, int targ) {
     indexer_assertValidCtrls(ctrls, states);
 
     // most fields of params will stay un-initialised
     CtrlTargIndParams params;
+
+    // half of all indices satisfy targ=1, and each ctrl halves the number of relevant indices
+    params.numInds = numTotalInds / powerOf2(1 + ctrls.size()); // divides evenly
+    params.target = targ;
 
     // if there's a single ctrl, determine its relative position to targ
     if (ctrls.size() == 1) {
@@ -276,12 +286,12 @@ INLINE qindex getNthIndWhereCtrlsAreActive(qindex n, const CtrlIndParams params)
 
 
 template <CtrlFlag flag>
-INLINE qindex getNthIndWhereCtrlsAreActiveAndTargIsOne(qindex n, int targ, const CtrlTargIndParams params) {
+INLINE qindex getNthIndWhereCtrlsAreActiveAndTargIsOne(qindex n, const CtrlTargIndParams params) {
 
     // maps |n> to |m, ctrls=active, targ=1>
 
     if constexpr (flag == NO_CTRLS)
-        return insertBit(n, targ, 1);
+        return insertBit(n, params.target, 1);
 
     if constexpr (flag == ONE_CTRL)
         return insertTwoBits(n, params.upperQubit, 1, params.lowerQubit, 1);
@@ -295,7 +305,7 @@ INLINE qindex getNthIndWhereCtrlsAreActiveAndTargIsOne(qindex n, int targ, const
     if constexpr (flag == MULTI_STATE_CTRLS) {
         qindex k0 = insertBits(n, params.sortedQubits, params.numQubits, 0);
         qindex i0 = activateBits(k0, params.ctrlStateMask);
-        return flipBit(i0, targ);
+        return flipBit(i0, params.target);
     }
 }
 
