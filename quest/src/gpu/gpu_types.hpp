@@ -14,7 +14,7 @@
 #include "quest/include/modes.h"
 #include "quest/include/types.h"
 
-#include "quest/include/bitwise.hpp"
+#include "quest/src/core/bitwise.hpp"
 
 #if ! COMPILE_CUDA
     #error "A file being compiled somehow included gpu_types.hpp despite QuEST not being compiled in GPU-accelerated mode."
@@ -64,7 +64,7 @@ INLINE cu_qcomp operator - (const cu_qcomp& a, const cu_qcomp& b) {
     return res;
 }
 
-INLINE inline cu_qcomp operator * (const cu_qcomp& a, const cu_qcomp& b) {
+INLINE cu_qcomp operator * (const cu_qcomp& a, const cu_qcomp& b) {
     cu_qcomp res;
     res.x = a.x * b.x - a.y * b.y;
     res.y = a.x * b.y + a.y * b.x;
@@ -72,40 +72,39 @@ INLINE inline cu_qcomp operator * (const cu_qcomp& a, const cu_qcomp& b) {
 }
 
 
-INLINE void operator += (cu_qcomp& a, const qcomp& b) {
-    a = a + b;
-}
-
-INLINE void operator -= (cu_qcomp& a, const qcomp& b) {
-    a = a - b;
-}
-
-INLINE void operator *= (cu_qcomp& a, const qcomp& b) {
-    a = a * b;
-}
-
-
-INLINE inline cu_qcomp operator + (const cu_qcomp& a, const qreal& b) {
+INLINE cu_qcomp operator + (const cu_qcomp& a, const qreal& b) {
     cu_qcomp res;
     res.x = a.x + b;
     res.y = a.y + b;
     return res;
 }
 
-INLINE inline cu_qcomp operator - (const cu_qcomp& a, const qreal& b) {
+INLINE cu_qcomp operator - (const cu_qcomp& a, const qreal& b) {
     cu_qcomp res;
     res.x = a.x - b;
     res.y = a.y - b;
     return res;
 }
 
-INLINE inline cu_qcomp operator * (const cu_qcomp& a, const qreal& b) {
+INLINE cu_qcomp operator * (const cu_qcomp& a, const qreal& b) {
     cu_qcomp res;
     res.x = a.x * b;
     res.y = a.y * b;
     return res;
 }
 
+
+INLINE void operator += (cu_qcomp& a, const cu_qcomp& b) {
+    a = a + b;
+}
+
+INLINE void operator -= (cu_qcomp& a, const cu_qcomp& b) {
+    a = a - b;
+}
+
+INLINE void operator *= (cu_qcomp& a, const cu_qcomp& b) {
+    a = a * b;
+}
 
 
 
