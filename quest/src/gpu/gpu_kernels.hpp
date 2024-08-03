@@ -88,7 +88,7 @@ __global__ void kernel_statevector_anyCtrlOneTargDiagMatr_subA(
         return;
 
     // determine this kernel's amp index, using compile-time optimisation
-    qindex i = getNthIndWhereCtrlsAreActive<ctrlFlag>(n, targ, params);
+    qindex i = getNthIndWhereCtrlsAreActive<ctrlFlag>(n, params);
 
     // multiply the amp by one of the diagonal elements
     amps[i] *= d0 + (d1-d0)*getBit(i, targ);
