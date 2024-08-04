@@ -193,7 +193,7 @@ void cuquantum_statevec_anyCtrlAnyTargDiagonalMatrix_subA(Qureg qureg, vector<in
     custatevecApplyGeneralizedPermutationMatrix(
         config.cuQuantumHandle,
         toCuQcomps(qureg.gpuAmps), CUQUANTUM_QCOMP, qureg.logNumAmpsPerNode,
-        perm, flatMatrElems, CU_AMP_IN_MATRIX_PREC, adj, 
+        perm, flatMatrElems, CUQUANTUM_QCOMP, adj, 
         targs.data(), targs.size(), 
         ctrls.data(), ctrlVals, ctrls.size(),
         work, workSize);
