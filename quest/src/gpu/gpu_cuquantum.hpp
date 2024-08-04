@@ -72,7 +72,7 @@ using std::vector;
 // will persist in GPU memory to save time. This is
 // only relevant to GPU-mode with cuQuantum enabled,
 // and is effected at createQuESTEnv().
-int CUQUANTUM_MEM_POOL_BYTES = 16*(1<<15); // 1 MiB ~ 8 qubit complex<double> matrix
+size_t CUQUANTUM_MEM_POOL_BYTES = 16*(1<<15); // 1 MiB ~ 8 qubit complex<double> matrix
 
 
 struct CuQuantumConfig {
