@@ -74,6 +74,22 @@ void assert_pairRankIsDistinct(Qureg qureg, int pairRank);
 
 
 /*
+ * INDEXER ERRORS
+ */
+
+void error_indexerCtrlsInconsistentWithCtrlStates();
+
+
+
+/*
+ * BUFFER PACKING ERRORS
+ */
+
+void error_noCtrlsGivenToBufferPacker();
+
+
+
+/*
  * CPU ERRORS
  */
 

@@ -1,11 +1,7 @@
 /** @file
  * Internal functions for choosing which accelerator backend
- * (CPU or GPU) to call to effect local simulation subroutines 
- * upon Quregs. The data needed for these subroutines must 
- * already be localised into the appropriate memory (RAM vs VRAM)
- * and location (qureg's amplitudes or buffer space), as is
- * performed by localiser.cpp. These subroutines are ergo
- * embarrassingly parallel.
+ * (CPU or GPU) to call, and which qubit preconditions are
+ * satisfied in order to accelerate simulation.
  */
 
 #ifndef ACCELERATOR_HPP
@@ -14,11 +10,17 @@
 #include "quest/include/qureg.h"
 #include "quest/include/matrices.h"
 
+#include <vector>
+
+using std::vector;
 
 
-void statevec_oneTargetGate_subA(Qureg qureg, int target, CompMatr1 matrix);
 
-void statevec_oneTargetGate_subB(Qureg qureg, qcomp fac0, qcomp fac1);
+qindex accel_statevec_packAmpsIntoBuffer(Qureg qureg, vector<int> ctrls, vector<int> ctrlStates);
+
+void accel_statevec_anyCtrlOneTargMatrix_subA(Qureg qureg, vector<int> ctrls, vector<int> ctrlStates, int targ, CompMatr1 matr);
+void accel_statevec_anyCtrlOneTargMatrix_subA(Qureg qureg, vector<int> ctrls, vector<int> ctrlStates, int targ, DiagMatr1 matr);
+void accel_statevec_anyCtrlOneTargDenseMatrix_subB(Qureg qureg, vector<int> ctrls, vector<int> ctrlStates, qcomp fac0, qcomp fac1);
 
 
 

@@ -48,6 +48,15 @@ constexpr bool util_isDenseMatrixType() {
     return false;
 }
 
+
+// T can be CompMatr1, CompMatr2, CompMatr, DiagMatr1, DiagMatr2, DiagMatr, FullStateDiagMatr
+template<class T>
+constexpr bool util_isDiagonalMatrixType() {
+
+    return !util_isDenseMatrixType<T>();
+}
+
+
 // T can be CompMatr1, CompMatr2, CompMatr, DiagMatr1, DiagMatr2, DiagMatr, FullStateDiagMatr
 template<class T>
 constexpr bool util_isFixedSizeMatrixType() {

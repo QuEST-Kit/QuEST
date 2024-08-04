@@ -154,6 +154,28 @@ void assert_pairRankIsDistinct(Qureg qureg, int pairRank) {
 
 
 /*
+ * INDEXER ERRORS
+ */
+
+void error_indexerCtrlsInconsistentWithCtrlStates() {
+
+    raiseInternalError("An inconsistent number of ctrls and ctrlStates were passed to indexer.hpp and/or localiser.cpp.");
+}
+
+
+
+/*
+ * BUFFER PACKING ERRORS
+ */
+
+void error_noCtrlsGivenToBufferPacker() {
+
+    raiseInternalError("A function attempted to (superfluously) pack the communication buffer but specified no control qubits, which would lead to the buffer being entirely filled and leave no room to receive amps.");
+}
+
+
+
+/*
  * CPU ERRORS
  */
 
