@@ -117,13 +117,13 @@ INLINE void operator *= (cu_qcomp& a, const cu_qcomp& b) {
  */
 
 
-__host__ inline cu_qcomp toCuQcomp(qcomp x) {
-    return reinterpret_cast<cu_qcomp&>(x);
+__host__ inline cu_qcomp toCuQcomp(qcomp a) {
+    return (cu_qcomp) {.x = real(a), .y = imag(a)};
 }
 
 
-__host__ inline cu_qcomp* toCuQcomps(qcomp* x) {
-    return reinterpret_cast<cu_qcomp*>(x);
+__host__ inline cu_qcomp* toCuQcomps(qcomp* a) {
+    return reinterpret_cast<cu_qcomp*>(a);
 }
 
 

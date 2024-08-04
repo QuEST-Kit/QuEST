@@ -184,14 +184,14 @@ qindex mem_getTotalGlobalMemoryUsed(Qureg qureg) {
     //  it would also make changing units (e.g. to GB) easier.
 
     // work out individual array costs
-    size_t memLocalArray = mem_getLocalQuregMemoryRequired(qureg.numAmpsPerNode);
+    qindex memLocalArray = (qindex) mem_getLocalQuregMemoryRequired(qureg.numAmpsPerNode); // never overflows
     int numLocalArrays = 
         (qureg.cpuAmps != NULL) + (qureg.cpuCommBuffer != NULL) + 
-        (qureg.gpuAmps != NULL) + (qureg.gpuCommBuffer != NULL);
+        (qureg.gpuAmps != NULL) + (qureg.gpuCommBuffer != NULL);  // but *4 might
 
     // if total local costs would overflow qindex, return 0
     qindex maxQindex = std::numeric_limits<qindex>::max();
-    qindex maxLocalArrayMem = maxQindex / memLocalArray; // floors
+    qindex maxLocalArrayMem = maxQindex / numLocalArrays; // floors
     if (memLocalArray > maxLocalArrayMem)
         return 0;
 

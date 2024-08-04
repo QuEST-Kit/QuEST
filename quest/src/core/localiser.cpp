@@ -55,7 +55,7 @@ bool doAnyLocalAmpsSatisfyCtrls(Qureg qureg, vector<int> ctrls, vector<int> stat
         return true;
 
     // check each ctrl qubit
-    for (int i=0; i<ctrls.size(); i++) {
+    for (size_t i=0; i<ctrls.size(); i++) {
 
         // consider only ctrls which operate on the prefix substate
         if (ctrls[i] < qureg.logNumAmpsPerNode)
@@ -85,7 +85,7 @@ tuple<vector<int>,vector<int>> getSuffixCtrls(Qureg qureg, vector<int> ctrls, ve
     suffixCtrls.reserve(ctrls.size());
     suffixStates.reserve(states.size());
 
-    for (int i=0; i<ctrls.size(); i++)
+    for (size_t i=0; i<ctrls.size(); i++)
         if (ctrls[i] < qureg.logNumAmpsPerNode) {
             suffixCtrls.push_back(ctrls[i]);
 

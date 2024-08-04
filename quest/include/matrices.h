@@ -85,7 +85,8 @@ typedef struct {
     const qindex numRows;
 
     // unitarity determined at sync; 0 or 1, or -1 to indicate unknown (when validation disabled).
-    // flag is stored in heap so even copies of structs are mutable, but pointer is immutable
+    // flag is stored in heap so even copies of structs are mutable, but pointer is immutable.
+    // otherwise, the field of a user's struct could never be modified because of pass-by-copy.
     int* const isUnitary;
 
     // 2D CPU memory; not const, so users can overwrite addresses (e.g. with NULL)

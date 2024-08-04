@@ -353,7 +353,7 @@ PauliStr parsePaulis(string paulis, bool rightIsLeastSignificant) {
 
     // otherwise pass qubits {0, 1, ... }
     vector<int> qubits(paulis.size());
-    for (int i=0; i<paulis.size(); i++)
+    for (size_t i=0; i<paulis.size(); i++)
         qubits[i] = i;
 
     return getPauliStr(paulis, qubits);

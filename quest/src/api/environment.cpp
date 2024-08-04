@@ -129,6 +129,8 @@ void validateAndInitCustomQuESTEnv(int useDistrib, int useGpuAccel, int useMulti
     if (globalEnvPtr == NULL)
         error_allocOfQuESTEnvFailed();
 
+    // TODO: the below memcpy is naughty (QuESTEnv has no trivial copy-assignment) and causes compiler warning. Fix!
+
     // initialise it to our local env
     memcpy(globalEnvPtr, &env, sizeof(QuESTEnv));
 }

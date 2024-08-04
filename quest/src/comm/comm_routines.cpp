@@ -423,7 +423,7 @@ void comm_sendAmpsToRoot(int sendRank, qcomp* send, qcomp* recv, qindex numAmps)
 void comm_reduceAmp(qcomp* localAmp) {
 #if COMPILE_MPI
 
-    qcomp* globalAmp;
+    qcomp* globalAmp = nullptr;
     MPI_Allreduce(localAmp, globalAmp, 1, MPI_QCOMP, MPI_SUM, MPI_COMM_WORLD);
     *localAmp = *globalAmp;
 

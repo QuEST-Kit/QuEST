@@ -195,8 +195,7 @@ util_IndexRange util_getLocalIndRangeOfElemsWithinThisNode(int numElemsPerNode, 
 
     // local indices of user's targeted elements to overwrite
     qindex localRangeStartInd = globalRangeStartInd % numElemsPerNode;
-    qindex localRangeEndInd   = localRangeStartInd + numLocalElems;
-
+    
     // local indices of user's passed elements that correspond to above
     qindex localOffsetInd = globalRangeStartInd - elemStartInd;
     
