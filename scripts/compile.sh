@@ -281,24 +281,24 @@ echo "chosen compilers and flags..."
 
 # user compilers
 echo "${INDENT}user compilers and flags (for .c and .cpp files respectively):"
-echo "${INDENT}${INDENT}${USER_C_COMPILER} ${USER_C_COMP_FLAGS}"
-echo "${INDENT}${INDENT}${USER_CXX_COMPILER} ${USER_CXX_COMP_FLAGS}"
+echo "${INDENT}${INDENT}${USER_C_COMPILER} ${USER_C_COMP_FLAGS} ${WARNING_FLAGS}"
+echo "${INDENT}${INDENT}${USER_CXX_COMPILER} ${USER_CXX_COMP_FLAGS} ${WARNING_FLAGS}"
 
 # base compiler
 echo "${INDENT}base files compiler and backend flags:"
-echo "${INDENT}${INDENT}${BASE_COMPILER} ${BACKEND_COMP_FLAGS}"
+echo "${INDENT}${INDENT}${BASE_COMPILER} ${BACKEND_COMP_FLAGS} ${WARNING_FLAGS}"
 
 # OMP/CPU
 echo "${INDENT}CPU files compiler and flags:"
-echo "${INDENT}${INDENT}${CPU_FILES_COMPILER} ${CPU_FILES_FLAGS}"
+echo "${INDENT}${INDENT}${CPU_FILES_COMPILER} ${CPU_FILES_FLAGS} ${WARNING_FLAGS}"
 
 # GPU
 echo "${INDENT}GPU files compiler and flags:"
-echo "${INDENT}${INDENT}${GPU_FILES_COMPILER} ${GPU_FILES_FLAGS}"
+echo "${INDENT}${INDENT}${GPU_FILES_COMPILER} ${GPU_FILES_FLAGS} ${GPU_WARNING_FLAGS}"
 
 # MPI
 echo "${INDENT}distributed files compiler and flags:"
-echo "${INDENT}${INDENT}${MPI_FILES_COMPILER} ${MPI_FILES_FLAGS}"
+echo "${INDENT}${INDENT}${MPI_FILES_COMPILER} ${MPI_FILES_FLAGS} ${WARNING_FLAGS}"
 
 # linker 
 echo "${INDENT}linker and all linker flags:"
