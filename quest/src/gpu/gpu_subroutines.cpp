@@ -115,7 +115,7 @@ void gpu_statevec_anyCtrlOneTargMatrix_subA(Qureg qureg, vector<int> ctrls, vect
 #if COMPILE_CUQUANTUM
 
     // ignore ctrlFlag
-    cuquantum_statevec_anyCtrlAnyTargDiagonalMatrix_subA(qureg, ctrls, ctrlStates, targ, toCuQcomps(matr.elems));
+    cuquantum_statevec_anyCtrlAnyTargDiagonalMatrix_subA(qureg, ctrls, ctrlStates, {targ}, toCuQcomps(matr.elems));
 
 #elif COMPILE_CUDA
 
