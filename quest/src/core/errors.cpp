@@ -165,6 +165,17 @@ void error_indexerCtrlsInconsistentWithCtrlStates() {
 
 
 /*
+ * BUFFER PACKING ERRORS
+ */
+
+void error_noCtrlsGivenToBufferPacker() {
+
+    raiseInternalError("A function attempted to (superfluously) pack the communication buffer but specified no control qubits, which would lead to the buffer being entirely filled and leave no room to receive amps.");
+}
+
+
+
+/*
  * CPU ERRORS
  */
 

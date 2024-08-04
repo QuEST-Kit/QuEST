@@ -12,7 +12,6 @@
 
 #include "quest/src/core/bitwise.hpp"
 #include "quest/src/core/indexer.hpp"
-#include "quest/src/core/errors.hpp"
 
 #include <vector>
 
@@ -22,12 +21,38 @@ using namespace index_flags;
 
 
 /*
- * ANY-CTRL ONE-TARG MATRIX TEMPLATES
+ * COMMUNICATION BUFFER PACKING
  */
 
 
 template <CtrlFlag ctrlFlag>
-void cpu_statevector_anyCtrlOneTargMatrix_subA(Qureg qureg, vector<int> ctrls, vector<int> ctrlStates, int targ, CompMatr1 matr) {
+qindex cpu_statevec_packAmpsIntoBuffer(Qureg qureg, vector<int> ctrls, vector<int> ctrlStates) {
+
+    CtrlIndParams params = getParamsInformingIndsWhereCtrlsAreActive(qureg.numAmpsPerNode, ctrls, ctrlStates);
+
+    #pragma omp parallel for
+    for (qindex n=0; n<params.numInds; n++) {
+
+        // pack the first segment of the buffer with all active amps
+        qindex i = getNthIndWhereCtrlsAreActive<ctrlFlag>(n, params);
+        qureg.cpuCommBuffer[n] = qureg.cpuAmps[i];
+    }
+
+    // return the total number of packed amps to caller
+    return params.numInds;
+}
+
+
+
+/*
+ * ANY-CTRL ONE-TARG MATRIX
+ *
+ * which are templated and require explicit instantiation below
+ */
+
+
+template <CtrlFlag ctrlFlag>
+void cpu_statevec_anyCtrlOneTargMatrix_subA(Qureg qureg, vector<int> ctrls, vector<int> ctrlStates, int targ, CompMatr1 matr) {
 
     CtrlTargIndParams params = getParamsInformingIndsWhereCtrlsAreActiveAndTargIsOne(qureg.numAmpsPerNode, ctrls, ctrlStates, targ);
 
@@ -49,7 +74,7 @@ void cpu_statevector_anyCtrlOneTargMatrix_subA(Qureg qureg, vector<int> ctrls, v
 
 
 template <CtrlFlag ctrlFlag>
-void cpu_statevector_anyCtrlOneTargMatrix_subA(Qureg qureg, vector<int> ctrls, vector<int> ctrlStates, int targ, DiagMatr1 matr) {
+void cpu_statevec_anyCtrlOneTargMatrix_subA(Qureg qureg, vector<int> ctrls, vector<int> ctrlStates, int targ, DiagMatr1 matr) {
 
     CtrlIndParams params = getParamsInformingIndsWhereCtrlsAreActive(qureg.numAmpsPerNode, ctrls, ctrlStates);
 
@@ -58,21 +83,45 @@ void cpu_statevector_anyCtrlOneTargMatrix_subA(Qureg qureg, vector<int> ctrls, v
 
         // each iteration scales one amplitude
         qindex i = getNthIndWhereCtrlsAreActive<ctrlFlag>(n, params);
-        qureg.cpuAmps[i] *= matr.elems[getBit(i, targ)];
+        int bit = getBit(i, targ);
+        
+        qureg.cpuAmps[i] *= matr.elems[bit];
     }
 }
 
 
+template <CtrlFlag ctrlFlag>
+void cpu_statevec_anyCtrlOneTargDenseMatrix_subB(Qureg qureg, vector<int> ctrls, vector<int> ctrlStates, qcomp fac0, qcomp fac1) {
 
-/*
- *  INSTANTIATING TEMPLATES
- */
+    CtrlIndParams params = getParamsInformingIndsWhereCtrlsAreActive(qureg.numAmpsPerNode, ctrls, ctrlStates);
+
+    #pragma omp parallel for
+    for (qindex n=0; n<params.numInds; n++) {
+
+        // each iteration modifies one local amp
+        qindex i = getNthIndWhereCtrlsAreActive<ctrlFlag>(n, params);
+
+        // the received buffer amplitudes begin at 0+numInds
+        qindex l = n + params.numInds;
+        qcomp amp = qureg.cpuCommBuffer[l];
+
+        qureg.cpuAmps[i] = fac0*qureg.cpuAmps[i] + fac1*amp;
+    }
+}
 
 
-INSTANTIATE_TEMPLATED_VOID_FUNC_WITH_ALL_CTRL_FLAGS(
-    cpu_statevector_anyCtrlOneTargMatrix_subA, 
+INSTANTIATE_TEMPLATED_FUNC_WITH_ALL_CTRL_FLAGS(
+    qindex, cpu_statevec_packAmpsIntoBuffer, 
+    (Qureg qureg, vector<int> ctrls, vector<int> ctrlStates))
+
+INSTANTIATE_TEMPLATED_FUNC_WITH_ALL_CTRL_FLAGS(
+    void, cpu_statevec_anyCtrlOneTargMatrix_subA, 
     (Qureg, vector<int>, vector<int>, int, CompMatr1))
 
-INSTANTIATE_TEMPLATED_VOID_FUNC_WITH_ALL_CTRL_FLAGS(
-    cpu_statevector_anyCtrlOneTargMatrix_subA, 
+INSTANTIATE_TEMPLATED_FUNC_WITH_ALL_CTRL_FLAGS(
+    void, cpu_statevec_anyCtrlOneTargMatrix_subA, 
     (Qureg, vector<int>, vector<int>, int, DiagMatr1))
+
+INSTANTIATE_TEMPLATED_FUNC_WITH_ALL_CTRL_FLAGS(
+    void, cpu_statevec_anyCtrlOneTargDenseMatrix_subB, 
+    (Qureg, vector<int>, vector<int>, qcomp, qcomp))

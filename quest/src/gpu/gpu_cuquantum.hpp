@@ -4,16 +4,19 @@
  * safely invoke CUDA signatures without guards.
  */
 
+
 // because this file uses a global instance of CuQuantumConfig (not inlined),
 // it must never be included by multiple translation units; it can only ever
 // be included by gpu_subroutines.cpp
-#ifdef GPU_CUQUANTUM
+#ifdef GPU_CUQUANTUM_HPP
     #error "File gpu_cuquantum.hpp was erroneously included by multiple source files."
 #endif
 
 #ifndef GPU_CUQUANTUM_HPP
 #define GPU_CUQUANTUM_HPP
 
+
+// check preprocessors and compilers are valid before #includes to avoid compile errors
 
 #if ! COMPILE_CUQUANTUM
     #error "A file being compiled somehow included gpu_cuquantum.hpp despite QuEST not being compiled in cuQuantum mode."
@@ -75,7 +78,6 @@ int CUQUANTUM_MEM_POOL_BYTES = 16*(1<<15); // 1 MiB ~ 8 qubit complex<double> ma
 struct CuQuantumConfig {
     cudaStream_t cuStream;
     custatevecHandle_t cuQuantumHandle;
-
 };
 
 // singleton handle to cuQuantum env needed for applying gates and finalizing env
@@ -146,17 +148,17 @@ void gpu_finalizeCuQuantum() {
 
 
 /*
- * INTERNAL CUQUANTUM WRAPPERS (to reduce boilerplate)
+ * PUBLIC CUQUANTUM WRAPPERS
  */
 
 
-void applyMatrix(Qureg qureg, int* ctrls, int numCtrls, int* targs, int numTargs, cu_qcomp* matrElems) {
+void cuquantum_statevec_anyCtrlAnyTargDenseMatrix_subA(Qureg qureg, vector<int> ctrls, vector<int> ctrlStates, vector<int> targs, cu_qcomp* flatMatrElems) {
 
     // do not adjoint matrix
-    int matrAdj = 0;
+    int adj = 0;
 
-    // condition all ctrls on =1 state
-    int* ctrlVals = nullptr;
+    // permit passing no ctrl states
+    int* ctrlVals = (ctrlStates.empty())? nullptr : ctrlStates.data();
 
     // use automatic workspace management
     void* work = nullptr;
@@ -165,27 +167,36 @@ void applyMatrix(Qureg qureg, int* ctrls, int numCtrls, int* targs, int numTargs
     CUDA_CHECK( custatevecApplyMatrix(
         config.cuQuantumHandle, 
         toCuQcomps(qureg.gpuAmps), CUQUANTUM_QCOMP, qureg.logNumAmpsPerNode, 
-        matrElems, CUQUANTUM_QCOMP, CUSTATEVEC_MATRIX_LAYOUT_ROW, matrAdj, 
-        targs, numTargs,
-        ctrls, ctrlVals, numCtrls, 
+        flatMatrElems, CUQUANTUM_QCOMP, CUSTATEVEC_MATRIX_LAYOUT_ROW, adj, 
+        targs.data(), targs.size(),
+        ctrls.data(), ctrlVals, ctrls.size(), 
         CUSTATEVEC_COMPUTE_DEFAULT,
         work, workSize) );
 }
 
-void applyMatrix(Qureg qureg, vector<int> ctrls, vector<int> targs, vector<cu_qcomp> matr) {
 
-    applyMatrix(qureg, ctrls.data(), ctrls.size(), targs.data(), targs.size(), matr.data());
-}
+void cuquantum_statevec_anyCtrlAnyTargDiagonalMatrix_subA(Qureg qureg, vector<int> ctrls, vector<int> ctrlStates, vector<int> targs, cu_qcomp* flatMatrElems) {
 
+    // apply no permutation matrix
+    custatevecIndex_t *perm = nullptr;
 
+    // do not adjoint elems
+    int adj = 0;
 
-/*
- * GATES
- */
+    // permit passing no ctrl states
+    int* ctrlVals = (ctrlStates.empty())? nullptr : ctrlStates.data();
 
-void cuquantum_statevec_oneTargetGate_subA(Qureg qureg, int target, CompMatr1 matr) {
+    // use automatic workspace management
+    void* work = nullptr;
+    size_t workSize = 0;
 
-    applyMatrix(qureg, {}, {target}, unpackMatrixToCuQcomps(matr));
+    custatevecApplyGeneralizedPermutationMatrix(
+        config.cuQuantumHandle,
+        toCuQcomps(qureg.gpuAmps), CUQUANTUM_QCOMP, qureg.logNumAmpsPerNode,
+        perm, flatMatrElems, CU_AMP_IN_MATRIX_PREC, adj, 
+        targs.data(), targs.size(), 
+        ctrls.data(), ctrlVals, ctrls.size(),
+        work, workSize);
 }
 
 

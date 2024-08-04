@@ -82,6 +82,14 @@ void error_indexerCtrlsInconsistentWithCtrlStates();
 
 
 /*
+ * BUFFER PACKING ERRORS
+ */
+
+void error_noCtrlsGivenToBufferPacker();
+
+
+
+/*
  * CPU ERRORS
  */
 

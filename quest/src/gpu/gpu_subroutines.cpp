@@ -36,17 +36,59 @@ using namespace index_flags;
 
 
 /*
- * ANY-CTRL ONE-TARG MATRIX TEMPLATES
+ * BUFFER PACKING
+ *
+ * which are templated and require explicit instantiation below
  */
 
 
 template <CtrlFlag ctrlFlag>
-void gpu_statevector_anyCtrlOneTargMatrix_subA(Qureg qureg, vector<int> ctrls, vector<int> ctrlStates, int targ, CompMatr1 matr) {
+qindex gpu_statevec_packAmpsIntoBuffer(Qureg qureg, vector<int> ctrls, vector<int> ctrlStates) {
+    
+    // there is no cuQuantum facility for packing
+
+#if COMPILE_CUDA
+
+    // prepare parameters needed for optimal indexing logic with the given ctrls
+    CtrlIndParams params = getParamsInformingIndsWhereCtrlsAreActive(qureg.numAmpsPerNode, ctrls, ctrlStates);
+
+    // cast qcomp to cu_qcomp
+    qindex numBlocks = getNumBlocks(params.numInds);
+    cu_qcomp* amps = toCuQcomps(qureg.gpuAmps);
+    cu_qcomp* buff = toCuQcomps(qureg.gpuCommBuffer);
+
+    // use ctrlFlag to dispatch to optimised kernel
+    kernel_statevec_packAmpsIntoBuffer <ctrlFlag> <<<numBlocks,NUM_THREADS_PER_BLOCK>>> (amps, buff, params);
+
+    // return the number of packed amps
+    return params.numInds;
+
+#else
+    error_gpuSimButGpuNotCompiled();
+    return 0;
+#endif
+}
+
+
+INSTANTIATE_TEMPLATED_FUNC_WITH_ALL_CTRL_FLAGS(
+    qindex, gpu_statevec_packAmpsIntoBuffer, 
+    (Qureg, vector<int>, vector<int>))
+
+
+
+/*
+ * ANY-CTRL ONE-TARG MATRIX
+ *
+ * which are templated and require explicit instantiation below
+ */
+
+
+template <CtrlFlag ctrlFlag>
+void gpu_statevec_anyCtrlOneTargMatrix_subA(Qureg qureg, vector<int> ctrls, vector<int> ctrlStates, int targ, CompMatr1 matr) {
 #if COMPILE_CUQUANTUM
 
-    // TODO: call one of the cuQuantum funcs
-    // e.g.
-    // cuquantum_statevec_oneTargetGate_subA(qureg, targ, matrix);
+    // ignore ctrlFlag
+    cuquantum_statevec_anyCtrlAnyTargDenseMatrix_subA(qureg, ctrls, ctrlStates, {targ}, unpackMatrixToCuQcomps(in).data());
 
 #elif COMPILE_CUDA
 
@@ -54,11 +96,13 @@ void gpu_statevector_anyCtrlOneTargMatrix_subA(Qureg qureg, vector<int> ctrls, v
     cu_qcomp m00, m01, m10, m11;
     unpackMatrixToCuQcomps(matr, m00,m01,m10,m11);
 
+    // prepare parameters needed for optimal indexing logic with the given ctrls
     CtrlTargIndParams params = getParamsInformingIndsWhereCtrlsAreActiveAndTargIsOne(qureg.numAmpsPerNode, ctrls, ctrlStates, targ);
     qindex numBlocks = getNumBlocks(params.numInds);
     cu_qcomp* amps = toCuQcomps(qureg.gpuAmps);
 
-    kernel_statevector_anyCtrlOneTargCompMatr_subA <ctrlFlag> <<<numBlocks,NUM_THREADS_PER_BLOCK>>> (amps, params, targ, m00,m01,m10,m11);
+    // use ctrlFlag to dispatch to optimised kernel
+    kernel_statevec_anyCtrlOneTargDenseMatr_subA <ctrlFlag> <<<numBlocks,NUM_THREADS_PER_BLOCK>>> (amps, params, targ, m00,m01,m10,m11);
 
 #else
     error_gpuSimButGpuNotCompiled();
@@ -67,10 +111,11 @@ void gpu_statevector_anyCtrlOneTargMatrix_subA(Qureg qureg, vector<int> ctrls, v
 
 
 template <CtrlFlag ctrlFlag>
-void gpu_statevector_anyCtrlOneTargMatrix_subA(Qureg qureg, vector<int> ctrls, vector<int> ctrlStates, int targ, DiagMatr1 matr) {
+void gpu_statevec_anyCtrlOneTargMatrix_subA(Qureg qureg, vector<int> ctrls, vector<int> ctrlStates, int targ, DiagMatr1 matr) {
 #if COMPILE_CUQUANTUM
 
-    // TODO: call one of the cuQuantum funcs
+    // ignore ctrlFlag
+    cuquantum_statevec_anyCtrlAnyTargDiagonalMatrix_subA(qureg, ctrls, ctrlStates, targs, toCuQcomps(matr.elems));
 
 #elif COMPILE_CUDA
 
@@ -78,11 +123,13 @@ void gpu_statevector_anyCtrlOneTargMatrix_subA(Qureg qureg, vector<int> ctrls, v
     cu_qcomp d0, d1;
     unpackMatrixToCuQcomps(matr, d0,d1);
 
+    // prepare parameters needed for optimal indexing logic with the given ctrls
     CtrlIndParams params = getParamsInformingIndsWhereCtrlsAreActive(qureg.numAmpsPerNode, ctrls, ctrlStates);
     qindex numBlocks = getNumBlocks(params.numInds);
     cu_qcomp* amps = toCuQcomps(qureg.gpuAmps);
 
-    kernel_statevector_anyCtrlOneTargDiagMatr_subA <ctrlFlag> <<<numBlocks,NUM_THREADS_PER_BLOCK>>> (amps, params, targ, d0, d1);
+    // use ctrlFlag to dispatch to optimised kernel
+    kernel_statevec_anyCtrlOneTargDiagMatr_subA <ctrlFlag> <<<numBlocks,NUM_THREADS_PER_BLOCK>>> (amps, params, targ, d0, d1);
 
 #else
     error_gpuSimButGpuNotCompiled();
@@ -90,16 +137,40 @@ void gpu_statevector_anyCtrlOneTargMatrix_subA(Qureg qureg, vector<int> ctrls, v
 }
 
 
+template <CtrlFlag flag> 
+void gpu_statevec_anyCtrlOneTargDenseMatrix_subB(Qureg qureg, vector<int> ctrls, vector<int> ctrlStates, qcomp fac0, qcomp fac1) {
+    
+    // there is no cuQuantum facility for subB
 
-/*
- *  INSTANTIATING TEMPLATES
- */
+#if COMPILE_CUDA
+
+    // prepare parameters needed for optimal indexing logic with the given ctrls
+    CtrlIndParams params = getParamsInformingIndsWhereCtrlsAreActive(qureg.numAmpsPerNode, ctrls, ctrlStates);
+
+    // cast qcomp to cu_qcomp
+    qindex numBlocks = getNumBlocks(params.numInds);
+    cu_qcomp* amps = toCuQcomps(qureg.gpuAmps);
+    cu_qcomp* buff = toCuQcomps(qureg.gpuCommBuffer);
+    cu_qcomp f0 = toCuQcomp(fac0);
+    cu_qcomp f1 = toCuQcomp(fac1);
+
+    // use ctrlFlag to dispatch to optimised kernel
+    kernel_statevec_anyCtrlOneTargDenseMatr_subB <ctrlFlag> <<<numBlocks,NUM_THREADS_PER_BLOCK>>> (amps, buff, params, f0, f1);
+
+#else
+    error_gpuSimButGpuNotCompiled();
+#endif
+}
 
 
-INSTANTIATE_TEMPLATED_VOID_FUNC_WITH_ALL_CTRL_FLAGS(
-    gpu_statevector_anyCtrlOneTargMatrix_subA, 
+INSTANTIATE_TEMPLATED_FUNC_WITH_ALL_CTRL_FLAGS(
+    void, gpu_statevec_anyCtrlOneTargMatrix_subA, 
     (Qureg, vector<int>, vector<int>, int, CompMatr1))
 
-INSTANTIATE_TEMPLATED_VOID_FUNC_WITH_ALL_CTRL_FLAGS(
-    gpu_statevector_anyCtrlOneTargMatrix_subA, 
+INSTANTIATE_TEMPLATED_FUNC_WITH_ALL_CTRL_FLAGS(
+    void, gpu_statevec_anyCtrlOneTargMatrix_subA, 
     (Qureg, vector<int>, vector<int>, int, DiagMatr1))
+
+INSTANTIATE_TEMPLATED_FUNC_WITH_ALL_CTRL_FLAGS(
+    void, gpu_statevec_anyCtrlOneTargDenseMatrix_subB, 
+    (Qureg, vector<int>, vector<int>, qcomp, qcomp))

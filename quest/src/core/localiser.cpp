@@ -14,6 +14,7 @@
 
 #include "quest/src/core/bitwise.hpp"
 #include "quest/src/core/indexer.hpp"
+#include "quest/src/core/utilities.hpp"
 #include "quest/src/core/accelerator.hpp"
 #include "quest/src/comm/comm_routines.hpp"
 
@@ -111,15 +112,40 @@ void inner_statevec_anyCtrlOneTargMatrix(Qureg qureg, vector<int> ctrls, vector<
     if (!doAnyLocalAmpsSatisfyCtrls(qureg, ctrls, ctrlStates))
         return;
 
-    // retain only suffix control qubits relevant to local amp modification
+    // retain only suffix control qubits, as relevant to communication and local amp modification
     std::tie(ctrls, ctrlStates) = getSuffixCtrls(qureg, ctrls, ctrlStates);
 
-    // embarrassingly parallel gates can be performed immediately
+    // if the target permits embarrassingly parallel simulation, perform it and finish
     if (!doesGateRequireComm(qureg, {targ}))
-        return statevector_anyCtrlOneTargMatrix_subA(qureg, ctrls, ctrlStates, targ, matr);
+        return accel_statevec_anyCtrlOneTargMatrix_subA(qureg, ctrls, ctrlStates, targ, matr);
+    
+    // diagonal matrices are always embarrassingly parallel, so perform and finish
+    if constexpr (util_isDiagonalMatrixType<MatrType>())
+        return accel_statevec_anyCtrlOneTargMatrix_subA(qureg, ctrls, ctrlStates, targ, matr);
 
-    // TODO: pack buffers, change, calling _subB
+    // but for dense matrices, we must communicate with a pair rank... 
+    int rankTarg = targ - qureg.logNumAmpsPerNode;
+    int pairRank = flipBit(qureg.rank, rankTarg);
 
+    // to exchange all or some of our amps (those where ctrls are active) into buffer
+    if (ctrls.empty())
+        comm_exchangeAmpsToBuffers(qureg, pairRank);
+    else {
+        qindex numPacked = accel_statevec_packAmpsIntoBuffer(qureg, ctrls, ctrlStates);
+        comm_exchangeBuffers(qureg, numPacked, pairRank);
+    }
+
+    // extract relevant gate elements (but don't let the compiler see the unreachable diagonal matrix access)
+    qcomp fac0 = 0;
+    qcomp fac1 = 0;
+    if constexpr (util_isDenseMatrixType<MatrType>()) {
+        int bit = getBit(qureg.rank, rankTarg);
+        qcomp fac0 = matr.elems[bit][ bit];
+        qcomp fac1 = matr.elems[bit][!bit]; // compilers hate him
+    }
+
+    // update local amps using received amps in buffer
+    accel_statevec_anyCtrlOneTargDenseMatrix_subB(qureg, ctrls, ctrlStates, fac0, fac1);
 }
 
 void statevec_anyCtrlOneTargMatrix(Qureg qureg, vector<int> ctrls, vector<int> ctrlStates, int targ, CompMatr1 matr) {

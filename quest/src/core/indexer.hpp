@@ -68,12 +68,12 @@ using namespace index_flags;
  */
 
 
-#define INSTANTIATE_TEMPLATED_VOID_FUNC_WITH_ALL_CTRL_FLAGS(funcname, signature) \
-    template void funcname <NO_CTRLS>          signature; \
-    template void funcname <ONE_CTRL>          signature; \
-    template void funcname <ONE_STATE_CTRL>    signature; \
-    template void funcname <MULTI_CTRLS>       signature; \
-    template void funcname <MULTI_STATE_CTRLS> signature;
+#define INSTANTIATE_TEMPLATED_FUNC_WITH_ALL_CTRL_FLAGS(returntype, funcname, signature) \
+    template returntype funcname <NO_CTRLS>          signature; \
+    template returntype funcname <ONE_CTRL>          signature; \
+    template returntype funcname <ONE_STATE_CTRL>    signature; \
+    template returntype funcname <MULTI_CTRLS>       signature; \
+    template returntype funcname <MULTI_STATE_CTRLS> signature;
 
 
 

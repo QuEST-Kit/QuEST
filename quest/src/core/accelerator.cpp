@@ -40,23 +40,41 @@ using namespace index_flags;
  */
 
 
-#define CALL_FUNC_WITH_CTRL_FLAG(flag, func, ...) \
+#define CALL_AND_RETURN_FUNC_WITH_CTRL_FLAG(flag, func, ...) \
     switch (flag) { \
-        case NO_CTRLS          : func <NO_CTRLS>          (__VA_ARGS__); break; \
-        case ONE_CTRL          : func <ONE_CTRL>          (__VA_ARGS__); break; \
-        case ONE_STATE_CTRL    : func <ONE_STATE_CTRL>    (__VA_ARGS__); break; \
-        case MULTI_CTRLS       : func <MULTI_CTRLS>       (__VA_ARGS__); break; \
-        case MULTI_STATE_CTRLS : func <MULTI_STATE_CTRLS> (__VA_ARGS__); break; \
+        case NO_CTRLS          : return func <NO_CTRLS>          (__VA_ARGS__); \
+        case ONE_CTRL          : return func <ONE_CTRL>          (__VA_ARGS__); \
+        case ONE_STATE_CTRL    : return func <ONE_STATE_CTRL>    (__VA_ARGS__); \
+        case MULTI_CTRLS       : return func <MULTI_CTRLS>       (__VA_ARGS__); \
+        case MULTI_STATE_CTRLS : return func <MULTI_STATE_CTRLS> (__VA_ARGS__); \
     }
 
 
-#define CALL_CPU_OR_GPU_FUNC_WITH_CTRL_FLAG(isGpuAccel, flag, funcSuffix, ...) \
-    if (isGpuAccel) { \
-        CALL_FUNC_WITH_CTRL_FLAG(flag, gpu_##funcSuffix, __VA_ARGS__); \
-    } else { \
-        CALL_FUNC_WITH_CTRL_FLAG(flag, cpu_##funcSuffix, __VA_ARGS__); \
+
+/*
+ * COMMUNICATION BUFFER PACKING
+ */
+
+
+qindex accel_statevec_packAmpsIntoBuffer(Qureg qureg, vector<int> ctrls, vector<int> ctrlStates) {
+    indexer_assertValidCtrls(ctrls, ctrlStates);
+
+    // we can never pack and swap buffers when there are no ctrl qubits, because we'd fill the entire buffer
+    // and would ergo have no room to receive the other node's buffer; we'd send amps straight to buffer instead
+    if (ctrls.empty())
+        error_noCtrlsGivenToBufferPacker();
+
+    // packing can be optimised depending on the precondition of control qubits
+    CtrlFlag flag = indexer_getCtrlFlag(ctrls, ctrlStates);
+
+    // return the number of packed amplitudes, as returned by backend function
+    if (qureg.isGpuAccelerated) {
+        CALL_AND_RETURN_FUNC_WITH_CTRL_FLAG( flag, gpu_statevec_packAmpsIntoBuffer, qureg, ctrls, ctrlStates )
+    } else {
+        CALL_AND_RETURN_FUNC_WITH_CTRL_FLAG( flag, cpu_statevec_packAmpsIntoBuffer, qureg, ctrls, ctrlStates )
     }
-        
+}
+
 
 
 /*
@@ -65,23 +83,36 @@ using namespace index_flags;
 
 
 template <class MatrType> 
-void inner_statevector_anyCtrlOneTargMatrix_subA(Qureg qureg, vector<int> ctrls, vector<int> ctrlStates, int targ, MatrType matr) {
+void inner_statevec_anyCtrlOneTargMatrix_subA(Qureg qureg, vector<int> ctrls, vector<int> ctrlStates, int targ, MatrType matr) {
+    indexer_assertValidCtrls(ctrls, ctrlStates);
 
-    // determine ctrls preconditions to optimise indexing and memory access in backend function
-    CtrlFlag ctrlFlag = indexer_getCtrlFlag(ctrls, ctrlStates);
+    // simulation is optimised depending on the precondition of control qubits
+    CtrlFlag flag = indexer_getCtrlFlag(ctrls, ctrlStates);
 
-    CALL_CPU_OR_GPU_FUNC_WITH_CTRL_FLAG(
-        qureg.isGpuAccelerated, 
-        ctrlFlag, 
-        statevector_anyCtrlOneTargMatrix_subA, 
-        qureg, ctrls, ctrlStates, targ, matr
-    );
+    if (qureg.isGpuAccelerated) {
+        CALL_AND_RETURN_FUNC_WITH_CTRL_FLAG( flag, gpu_statevec_anyCtrlOneTargMatrix_subA, qureg, ctrls, ctrlStates, targ, matr )
+    } else {
+        CALL_AND_RETURN_FUNC_WITH_CTRL_FLAG( flag, cpu_statevec_anyCtrlOneTargMatrix_subA, qureg, ctrls, ctrlStates, targ, matr )
+    }
 }
 
-void statevector_anyCtrlOneTargMatrix_subA(Qureg qureg, vector<int> ctrls, vector<int> ctrlStates, int targ, CompMatr1 matr) {
-    inner_statevector_anyCtrlOneTargMatrix_subA(qureg, ctrls, ctrlStates, targ, matr);
+void accel_statevec_anyCtrlOneTargMatrix_subA(Qureg qureg, vector<int> ctrls, vector<int> ctrlStates, int targ, CompMatr1 matr) {
+    inner_statevec_anyCtrlOneTargMatrix_subA(qureg, ctrls, ctrlStates, targ, matr);
 }
 
-void statevector_anyCtrlOneTargMatrix_subA(Qureg qureg, vector<int> ctrls, vector<int> ctrlStates, int targ, DiagMatr1 matr) {
-    inner_statevector_anyCtrlOneTargMatrix_subA(qureg, ctrls, ctrlStates, targ, matr);
+void accel_statevec_anyCtrlOneTargMatrix_subA(Qureg qureg, vector<int> ctrls, vector<int> ctrlStates, int targ, DiagMatr1 matr) {
+    inner_statevec_anyCtrlOneTargMatrix_subA(qureg, ctrls, ctrlStates, targ, matr);
+}
+
+void accel_statevec_anyCtrlOneTargDenseMatrix_subB(Qureg qureg, vector<int> ctrls, vector<int> ctrlStates, qcomp fac0, qcomp fac1) {
+    indexer_assertValidCtrls(ctrls, ctrlStates);
+
+    // simulation is optimised depending on the precondition of control qubits
+    CtrlFlag flag = indexer_getCtrlFlag(ctrls, ctrlStates);
+
+    if (qureg.isGpuAccelerated) {
+        CALL_AND_RETURN_FUNC_WITH_CTRL_FLAG( flag, gpu_statevec_anyCtrlOneTargDenseMatrix_subB, qureg, ctrls, ctrlStates, fac0, fac1 )
+    } else {
+        CALL_AND_RETURN_FUNC_WITH_CTRL_FLAG( flag, cpu_statevec_anyCtrlOneTargDenseMatrix_subB, qureg, ctrls, ctrlStates, fac0, fac1 )
+    }
 }
