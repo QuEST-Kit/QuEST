@@ -55,7 +55,7 @@ __host__ qindex getNumBlocks(qindex numIts) {
 
 
 template <CtrlFlag ctrlFlag>
-qindex kernel_statevec_packAmpsIntoBuffer(cu_qcomp* amps, cu_qcomp* buffer, CtrlIndParams params) {
+__global__ void kernel_statevec_packAmpsIntoBuffer(cu_qcomp* amps, cu_qcomp* buffer, CtrlIndParams params) {
 
     qindex n = getThreadInd();
     if (n >= params.numInds) 

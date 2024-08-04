@@ -73,6 +73,9 @@ qindex accel_statevec_packAmpsIntoBuffer(Qureg qureg, vector<int> ctrls, vector<
     } else {
         CALL_AND_RETURN_FUNC_WITH_CTRL_FLAG( flag, cpu_statevec_packAmpsIntoBuffer, qureg, ctrls, ctrlStates )
     }
+
+    // unreachable; above if/else contains switches where each case returns
+    return 0;
 }
 
 

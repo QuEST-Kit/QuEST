@@ -92,14 +92,14 @@ void gpu_statevec_anyCtrlOneTargMatrix_subA(Qureg qureg, vector<int> ctrls, vect
 
 #elif COMPILE_CUDA
 
-    // there are sufficiently few matrix elements (<256 bytes) to pass directly to kernel
-    cu_qcomp m00, m01, m10, m11;
-    unpackMatrixToCuQcomps(matr, m00,m01,m10,m11);
-
     // prepare parameters needed for optimal indexing logic with the given ctrls
     CtrlTargIndParams params = getParamsInformingIndsWhereCtrlsAreActiveAndTargIsOne(qureg.numAmpsPerNode, ctrls, ctrlStates, targ);
     qindex numBlocks = getNumBlocks(params.numInds);
     cu_qcomp* amps = toCuQcomps(qureg.gpuAmps);
+
+    // there are sufficiently few matrix elements (<256 bytes) to pass directly to kernel
+    cu_qcomp m00, m01, m10, m11;
+    unpackMatrixToCuQcomps(matr, m00,m01,m10,m11);
 
     // use ctrlFlag to dispatch to optimised kernel
     kernel_statevec_anyCtrlOneTargDenseMatr_subA <ctrlFlag> <<<numBlocks,NUM_THREADS_PER_BLOCK>>> (amps, params, targ, m00,m01,m10,m11);
@@ -119,14 +119,12 @@ void gpu_statevec_anyCtrlOneTargMatrix_subA(Qureg qureg, vector<int> ctrls, vect
 
 #elif COMPILE_CUDA
 
-    // there are sufficiently few matrix elements (<256 bytes) to pass directly to kernel
-    cu_qcomp d0, d1;
-    unpackMatrixToCuQcomps(matr, d0,d1);
-
     // prepare parameters needed for optimal indexing logic with the given ctrls
     CtrlIndParams params = getParamsInformingIndsWhereCtrlsAreActive(qureg.numAmpsPerNode, ctrls, ctrlStates);
     qindex numBlocks = getNumBlocks(params.numInds);
     cu_qcomp* amps = toCuQcomps(qureg.gpuAmps);
+    cu_qcomp d0 = toCuQcomp(matr.elems[0]);
+    cu_qcomp d1 = toCuQcomp(matr.elems[1]);
 
     // use ctrlFlag to dispatch to optimised kernel
     kernel_statevec_anyCtrlOneTargDiagMatr_subA <ctrlFlag> <<<numBlocks,NUM_THREADS_PER_BLOCK>>> (amps, params, targ, d0, d1);
@@ -137,7 +135,7 @@ void gpu_statevec_anyCtrlOneTargMatrix_subA(Qureg qureg, vector<int> ctrls, vect
 }
 
 
-template <CtrlFlag flag> 
+template <CtrlFlag ctrlFlag> 
 void gpu_statevec_anyCtrlOneTargDenseMatrix_subB(Qureg qureg, vector<int> ctrls, vector<int> ctrlStates, qcomp fac0, qcomp fac1) {
     
     // there is no cuQuantum facility for subB
