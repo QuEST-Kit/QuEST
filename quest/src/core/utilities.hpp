@@ -90,24 +90,17 @@ bool util_isDistributedMatrix(T matr) {
 template<class T>
 std::string util_getMatrixTypeName() {
     
-    if constexpr (is_same_v<T, CompMatr1>)
-        return "CompMatr1";
-    if constexpr (is_same_v<T, CompMatr2>)
-        return "CompMatr2";
-    if constexpr (is_same_v<T, CompMatr>)
-        return "CompMatr";
-    
-    if constexpr (is_same_v<T, DiagMatr1>)
-        return "DiagMatr1";
-    if constexpr (is_same_v<T, DiagMatr2>)
-        return "DiagMatr2";
-    if constexpr (is_same_v<T, DiagMatr>)
-        return "DiagMatr";
+    if constexpr (is_same_v<T, CompMatr1>) return "CompMatr1";
+    if constexpr (is_same_v<T, CompMatr2>) return "CompMatr2";
+    if constexpr (is_same_v<T, CompMatr >) return "CompMatr" ;
+    if constexpr (is_same_v<T, DiagMatr1>) return "DiagMatr1";
+    if constexpr (is_same_v<T, DiagMatr2>) return "DiagMatr2";
+    if constexpr (is_same_v<T, DiagMatr >) return "DiagMatr" ;
 
     if constexpr (is_same_v<T, FullStateDiagMatr>)
         return "FullStateDiagMatr";
 
-    // no need to create a new error for this situation I think
+    // no need to create a new error for this situation
     return "UnrecognisedMatrix";
 }
 

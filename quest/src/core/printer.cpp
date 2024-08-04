@@ -11,6 +11,7 @@
 #include "quest/src/comm/comm_config.hpp"
 #include "quest/src/comm/comm_routines.hpp"
 
+#include <type_traits> 
 #include <algorithm>
 #include <stdlib.h>
 #include <iostream>
@@ -211,8 +212,9 @@ string printer_toStr(complex<T> num) {
     string realStr = (real(num) == 0)? "" : floatToStr(real(num));
 
     // -1i is abbreviated to -i
-    if (imag(num) == -1)
-        return realStr + "-i";
+    if constexpr (std::is_signed_v<T>)
+        if (imag(num) == -1)
+            return realStr + "-i";
 
     // +1i is abbreviated to +i, although the sign is dropped if there's no preceeding real component
     if (imag(num) == 1)
@@ -665,7 +667,7 @@ void print_table(string title, vector<tuple<string, string>> rows, string indent
         return;
 
     // find max-width of left column
-    int maxWidth = 0;
+    size_t maxWidth = 0;
     for (auto const& [key, value] : rows)
         if (key.length() > maxWidth)
             maxWidth = key.length();

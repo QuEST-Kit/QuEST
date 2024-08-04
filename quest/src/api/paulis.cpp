@@ -158,7 +158,7 @@ PauliStr getPauliStr(string paulis) {
 
     // automatically target the bottom-most qubits, preserving rightmost is least significant
     vector<int> indices(paulis.size());
-    for (int i=0; i<paulis.size(); i++)
+    for (size_t i=0; i<paulis.size(); i++)
         indices[i] = paulis.size() - 1 - i;
 
     return getPauliStr(paulis, indices); // validates

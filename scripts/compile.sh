@@ -30,7 +30,7 @@ GPU_COMPILER=nvcc
 LINKER=g++
 
 # the type of OMP_COMPILER (CLANG or other)
-OMP_COMPILER_TYPE=CLANG
+OMP_COMPILER_TYPE=other
 
 # name of the compiled executable
 EXEC_FILE="main"
@@ -146,6 +146,9 @@ COMPILE_CUQUANTUM=$ENABLE_CUQUANTUM
 # compiler flags given to all backend files (but not user files)
 BACKEND_COMP_FLAGS='-std=c++17 -O3'
 
+# warning flags which apply to all compiled and linked files including user's
+WARNING_FLAGS='-Wall'
+
 # GPU-specific flags
 GPU_COMP_FLAGS="-x cu -arch=sm_${GPU_CC} -I${CUDA_LIB_DIR}/include"
 GPU_LINK_FLAGS="-L${CUDA_LIB_DIR}/lib -L${CUDA_LIB_DIR}/lib64 -lcudart -lcuda"
@@ -215,10 +218,12 @@ then
     GPU_FILES_COMPILER=$GPU_COMPILER
     GPU_FILES_FLAGS=$GPU_COMP_FLAGS
     ALL_LINK_FLAGS+=" ${GPU_LINK_FLAGS}"
+    GPU_WARNING_FLAGS="-Xcompiler ${WARNING_FLAGS}"
 else
     echo "${INDENT}(GPU-acceleration disabled)"
     GPU_FILES_COMPILER=$BASE_COMPILER
     GPU_FILES_FLAGS=''
+    GPU_WARNING_FLAGS=$WARNING_FLAGS
 fi
 
 # merely report cuQuantum status
@@ -242,6 +247,13 @@ else
     echo "${INDENT}(distribution disabled)"
     MPI_FILES_COMPILER=$BASE_COMPILER
     MPI_FILES_FLAGS=''
+fi
+
+# choose linker warning flag (to avoid pass them to nvcc)
+if [ "${LINKER}" = "nvcc" ]; then
+    ALL_LINK_FLAGS+="-Xcompiler ${WARNING_FLAGS}"
+else
+    ALL_LINK_FLAGS+=" ${WARNING_FLAGS}"
 fi
 
 # display precision
@@ -322,7 +334,7 @@ do
     fi
 
     # compile
-    $COMP -c $USER_DIR/$fn -o ${USER_OBJ_PREF}${fn}.o $FLAG $GLOBAL_COMP_FLAGS
+    $COMP -c $USER_DIR/$fn -o ${USER_OBJ_PREF}${fn}.o $FLAG $GLOBAL_COMP_FLAGS $WARNING_FLAGS
 done
 
 echo ""
@@ -336,7 +348,7 @@ echo "compiling core files in C++"
 for fn in ${CORE_FILES[@]}
 do
     echo "${INDENT}${fn}.cpp ..."
-    $BASE_COMPILER -c $CORE_DIR/$fn.cpp -o ${QUEST_OBJ_PREF}${fn}.o $BACKEND_COMP_FLAGS $GLOBAL_COMP_FLAGS
+    $BASE_COMPILER -c $CORE_DIR/$fn.cpp -o ${QUEST_OBJ_PREF}${fn}.o $BACKEND_COMP_FLAGS $GLOBAL_COMP_FLAGS $WARNING_FLAGS
 done
 
 echo ""
@@ -350,7 +362,7 @@ echo "compiling API files in C++:"
 for fn in ${API_FILES[@]}
 do
     echo "${INDENT}${fn}.cpp ..."
-    $BASE_COMPILER -c $API_DIR/$fn.cpp -o ${QUEST_OBJ_PREF}${fn}.o $BACKEND_COMP_FLAGS $GLOBAL_COMP_FLAGS
+    $BASE_COMPILER -c $API_DIR/$fn.cpp -o ${QUEST_OBJ_PREF}${fn}.o $BACKEND_COMP_FLAGS $GLOBAL_COMP_FLAGS $WARNING_FLAGS
 done
 
 echo ""
@@ -363,7 +375,7 @@ echo "compiling CPU/OMP files..."
 
 for fn in ${OMP_FILES[@]}; do
     echo "${INDENT}${fn}.cpp ..."
-    $CPU_FILES_COMPILER -c $OMP_DIR/$fn.cpp -o ${QUEST_OBJ_PREF}${fn}.o $CPU_FILES_FLAGS $BACKEND_COMP_FLAGS $GLOBAL_COMP_FLAGS
+    $CPU_FILES_COMPILER -c $OMP_DIR/$fn.cpp -o ${QUEST_OBJ_PREF}${fn}.o $CPU_FILES_FLAGS $BACKEND_COMP_FLAGS $GLOBAL_COMP_FLAGS $WARNING_FLAGS
 done
 
 echo ""
@@ -376,7 +388,7 @@ echo "compiling GPU files..."
 
 for fn in ${GPU_FILES[@]}; do
     echo "${INDENT}${fn}.cpp ..."
-    $GPU_FILES_COMPILER -c $GPU_DIR/$fn.cpp -o ${QUEST_OBJ_PREF}${fn}.o $GPU_FILES_FLAGS $BACKEND_COMP_FLAGS $GLOBAL_COMP_FLAGS
+    $GPU_FILES_COMPILER -c $GPU_DIR/$fn.cpp -o ${QUEST_OBJ_PREF}${fn}.o $GPU_FILES_FLAGS $BACKEND_COMP_FLAGS $GLOBAL_COMP_FLAGS $GPU_WARNING_FLAGS
 done
 
 echo ""
@@ -389,7 +401,7 @@ echo "compiling communication/MPI files..."
 
 for fn in ${MPI_FILES[@]}; do
     echo "${INDENT}${fn}.cpp ..."
-    $MPI_FILES_COMPILER -c $MPI_DIR/$fn.cpp -o ${QUEST_OBJ_PREF}${fn}.o $MPI_FILES_FLAGS $BACKEND_COMP_FLAGS $GLOBAL_COMP_FLAGS
+    $MPI_FILES_COMPILER -c $MPI_DIR/$fn.cpp -o ${QUEST_OBJ_PREF}${fn}.o $MPI_FILES_FLAGS $BACKEND_COMP_FLAGS $GLOBAL_COMP_FLAGS $WARNING_FLAGS
 done
 
 echo ""

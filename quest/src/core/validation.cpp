@@ -1308,7 +1308,7 @@ void validate_matrixNumNewElems(int numQubits, vector<vector<qcomp>> elems, cons
         {"${NUM_EXPECTED_ROWS}", dim},
         {"${NUM_GIVEN_ROWS}",    elems.size()}};
 
-    assertThat(elems.size() == dim, report::COMP_MATR_NEW_ELEMS_WRONG_NUM_ROWS, vars, caller);
+    assertThat(dim == (qindex) elems.size(), report::COMP_MATR_NEW_ELEMS_WRONG_NUM_ROWS, vars, caller);
 
     for(auto & row : elems) {
 
@@ -1317,7 +1317,7 @@ void validate_matrixNumNewElems(int numQubits, vector<vector<qcomp>> elems, cons
             {"${EXPECTED_DIM}",    dim},
             {"${NUM_GIVEN_ELEMS}", row.size()}};
 
-        assertThat(row.size() == dim, report::COMP_MATR_NEW_ELEMS_WRONG_ROW_DIM, vars, caller);
+        assertThat(dim == (qindex) row.size(), report::COMP_MATR_NEW_ELEMS_WRONG_ROW_DIM, vars, caller);
     }
 }
 void validate_matrixNumNewElems(int numQubits, vector<qcomp> elems, const char* caller) {
@@ -1329,7 +1329,7 @@ void validate_matrixNumNewElems(int numQubits, vector<qcomp> elems, const char* 
         {"${NUM_EXPECTED_ELEMS}", dim},
         {"${NUM_GIVEN_ELEMS}",    elems.size()}};
 
-    assertThat(elems.size() == dim, report::DIAG_MATR_WRONG_NUM_NEW_ELEMS, vars, caller);
+    assertThat(dim == (qindex) elems.size(), report::DIAG_MATR_WRONG_NUM_NEW_ELEMS, vars, caller);
 }
 
 void validate_fullStateDiagMatrNewElems(FullStateDiagMatr matr, qindex startInd, qindex numElems, const char* caller) {
