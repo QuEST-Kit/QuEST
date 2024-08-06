@@ -310,4 +310,64 @@ INLINE qindex getNthIndWhereCtrlsAreActiveAndTargIsOne(qindex n, const CtrlTargI
 
 
 
+template <int NumQubits>
+struct QubitIndParams {
+    int qubits[NumQubits];
+    qindex activeStates;
+};
+
+
+template <int NumQubits>
+QubitIndParams<NumQubits> getQubitIndParams(vector<int> qubits, vector<int> activeStates) {
+
+    // TODO: generic assertion (not ctrl specific of):
+    //       indexer_assertValidCtrls(ctrls, states);
+
+    // TODO: assert qubits.size() isn't larger than QubitIndParams compile-time array
+
+    QubitIndParams<NumQubits> params;
+
+    // create active mask before changing qubit order
+    params.activeStates = (activeStates.empty())? 0 : 
+            getBitMask(qubits.data(), activeStates.data(), qubits.size());
+
+    // sort qubits then copy into struct
+    std::sort(qubits.begin(), qubits.end());
+    for (int i=0; i<NumQubits; i++)
+        params.qubits[i] = qubits[i];
+    
+    return params;
+    
+    
+    // TODO:
+    // we may be able to write to qubits when it's const by doing some const_cast?! idk may be ChatGPT hallucination
+    // std::copy(vec.begin(), vec.end(), const_cast<int*>(arr));
+}
+
+
+template <int NumQubits>
+qindex getNthIndWhereQubitsAreActive(qindex n, QubitIndParams<NumQubits> params) {
+
+    // the loop inside insertBits() should be automatically unrolled using compile-time NumQubits
+    qindex i0 = insertBits(n, params.qubits, NumQubits, 0);
+    qindex i1 = activateBits(i0, params.activeStates);
+    return i1;
+}
+
+
+
+template <int NumQubits>
+qindex getSubIndOfQubits(qindex n, QubitIndParams<NumQubits> params) {
+
+    // HMM think carefully about this!
+    // I THINK we need to retain the order of the qubits.
+
+    // This would mean QubitIndParams needs to maintain TWO 
+    // copies of the qubits, OR we create a distinct ParamInd struct
+    // (so one is more permutable qubits, the other isn't?! IDK THINK BOUT IT)
+
+    return 0;
+}
+
+
 #endif // INDEXER_HPP

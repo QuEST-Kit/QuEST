@@ -157,3 +157,56 @@ void statevec_anyCtrlOneTargMatrix(Qureg qureg, vector<int> ctrls, vector<int> c
 
     inner_statevec_anyCtrlOneTargMatrix(qureg, ctrls, ctrlStates, targ, matr);
 }
+
+
+
+
+
+
+
+
+
+
+// NEW STUFF
+
+void NEW_statevec_anyCtrlOneTargMatrix(Qureg qureg, vector<int> ctrls, vector<int> ctrlStates, int targ, CompMatr1 matr) {
+    indexer_assertValidCtrls(ctrls, ctrlStates);
+
+    // node has nothing to do if all local amps violate control condition
+    if (!doAnyLocalAmpsSatisfyCtrls(qureg, ctrls, ctrlStates))
+        return;
+
+    // retain only suffix control qubits, as relevant to communication and local amp modification
+    std::tie(ctrls, ctrlStates) = getSuffixCtrls(qureg, ctrls, ctrlStates);
+
+    // if the target permits embarrassingly parallel simulation, perform it and finish
+    if (!doesGateRequireComm(qureg, {targ}))
+        return NEW_accel_statevec_anyCtrlOneTargMatrix_subA(qureg, ctrls, ctrlStates, targ, matr);
+
+
+
+    #include <stdio.h>
+    printf("ERR not testing this\n");
+    exit(0);
+
+    
+    // but for dense matrices, we must communicate with a pair rank... 
+    int rankTarg = targ - qureg.logNumAmpsPerNode;
+    int pairRank = flipBit(qureg.rank, rankTarg);
+
+    // to exchange all or some of our amps (those where ctrls are active) into buffer
+    if (ctrls.empty())
+        comm_exchangeAmpsToBuffers(qureg, pairRank);
+    else {
+        qindex numPacked = accel_statevec_packAmpsIntoBuffer(qureg, ctrls, ctrlStates);
+        comm_exchangeBuffers(qureg, numPacked, pairRank);
+    }
+
+    // extract relevant gate elements (but don't let the compiler see the unreachable diagonal matrix access)
+    int bit = getBit(qureg.rank, rankTarg);
+    qcomp fac0 = matr.elems[bit][ bit];
+    qcomp fac1 = matr.elems[bit][!bit]; // compilers hate him
+
+    // update local amps using received amps in buffer
+    accel_statevec_anyCtrlOneTargDenseMatrix_subB(qureg, ctrls, ctrlStates, fac0, fac1);
+}

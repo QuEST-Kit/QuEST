@@ -119,3 +119,34 @@ void accel_statevec_anyCtrlOneTargDenseMatrix_subB(Qureg qureg, vector<int> ctrl
         CALL_AND_RETURN_FUNC_WITH_CTRL_FLAG( flag, cpu_statevec_anyCtrlOneTargDenseMatrix_subB, qureg, ctrls, ctrlStates, fac0, fac1 )
     }
 }
+
+
+
+
+
+// NEW STUFF
+
+void NEW_accel_statevec_anyCtrlOneTargMatrix_subA(Qureg qureg, vector<int> ctrls, vector<int> ctrlStates, int targ, CompMatr1 matr) {
+    indexer_assertValidCtrls(ctrls, ctrlStates);
+
+
+    if (qureg.isGpuAccelerated) {
+        
+        // EH DOING NOTHIN
+    } else {
+
+
+        int numQubits = 1 + ctrls.size();
+
+        // ETC
+        if (numQubits == 1)
+            NEW_cpu_statevec_anyCtrlOneTargMatrix_subA<1>(qureg, ctrls, ctrlStates, targ, matr);
+        if (numQubits == 2)
+            NEW_cpu_statevec_anyCtrlOneTargMatrix_subA<2>(qureg, ctrls, ctrlStates, targ, matr);
+        if (numQubits == 3)
+            NEW_cpu_statevec_anyCtrlOneTargMatrix_subA<3>(qureg, ctrls, ctrlStates, targ, matr);
+        
+
+       // CALL_AND_RETURN_FUNC_WITH_CTRL_FLAG( flag, cpu_statevec_anyCtrlOneTargMatrix_subA, qureg, ctrls, ctrlStates, targ, matr )
+    }
+}

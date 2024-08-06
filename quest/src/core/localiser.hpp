@@ -29,4 +29,13 @@ void statevec_anyCtrlOneTargMatrix(Qureg qureg, vector<int> ctrls, vector<int> c
 
 
 
+
+
+// NEW STUFF
+
+void NEW_statevec_anyCtrlOneTargMatrix(Qureg qureg, vector<int> ctrls, vector<int> ctrlStates, int targ, CompMatr1 matr);
+
+
+
+
 #endif // LOCALISER_HPP

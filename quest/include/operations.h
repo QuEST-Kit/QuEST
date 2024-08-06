@@ -17,6 +17,21 @@ extern "C" {
 
 
 
+
+// DEBUG - just for benchmarking!
+
+void noCtrlGate(Qureg qureg, int target, CompMatr1 matrix);
+void oneCtrlGate(Qureg qureg, int control, int target, CompMatr1 matrix);
+void oneStateCtrlGate(Qureg qureg, int control, int controlState, int target, CompMatr1 matrix);
+
+
+void NEW_noCtrlGate(Qureg qureg, int target, CompMatr1 matrix);
+void NEW_oneCtrlGate(Qureg qureg, int control, int target, CompMatr1 matrix);
+void NEW_oneStateCtrlGate(Qureg qureg, int control, int controlState, int target, CompMatr1 matrix);
+
+
+
+
 /*
  * GATES
  */

@@ -27,4 +27,41 @@ void unitary(Qureg qureg, int target, CompMatr1 matrix) {
 }
 
 
+// DEBUG - just for benchmarking!
+
+void noCtrlGate(Qureg qureg, int target, CompMatr1 matrix) {
+
+    statevec_anyCtrlOneTargMatrix(qureg, {}, {}, target, matrix);
+}
+
+void oneCtrlGate(Qureg qureg, int control, int target, CompMatr1 matrix) {
+
+    statevec_anyCtrlOneTargMatrix(qureg, {control}, {}, target, matrix);
+} 
+void oneStateCtrlGate(Qureg qureg, int control, int controlState, int target, CompMatr1 matrix) {
+
+    statevec_anyCtrlOneTargMatrix(qureg, {control}, {controlState}, target, matrix);
+}
+
+
+
+
+
+
+void NEW_noCtrlGate(Qureg qureg, int target, CompMatr1 matrix) {
+
+    NEW_statevec_anyCtrlOneTargMatrix(qureg, {}, {}, target, matrix);
+}
+
+void NEW_oneCtrlGate(Qureg qureg, int control, int target, CompMatr1 matrix) {
+
+    NEW_statevec_anyCtrlOneTargMatrix(qureg, {control}, {}, target, matrix);
+
+}
+
+
+void NEW_oneStateCtrlGate(Qureg qureg, int control, int controlState, int target, CompMatr1 matrix) {
+
+    NEW_statevec_anyCtrlOneTargMatrix(qureg, {control}, {controlState}, target, matrix);
+}
 } // end de-mangler

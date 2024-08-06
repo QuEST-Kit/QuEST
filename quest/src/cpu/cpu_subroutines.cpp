@@ -125,3 +125,73 @@ INSTANTIATE_TEMPLATED_FUNC_WITH_ALL_CTRL_FLAGS(
 INSTANTIATE_TEMPLATED_FUNC_WITH_ALL_CTRL_FLAGS(
     void, cpu_statevec_anyCtrlOneTargDenseMatrix_subB, 
     (Qureg, vector<int>, vector<int>, qcomp, qcomp))
+
+
+
+
+
+
+
+
+// NEW STUFF
+
+// TODO:
+// HMMM do i HAVE to template this func? I would prefer to just type-overload getNthIndWhereQubitsAreActive() 
+// based on the struct NumQubits. But how can I have the type not concrete specified? hmmHMM
+
+
+
+template <int NumQubits>
+void NEW_cpu_statevec_anyCtrlOneTargMatrix_subA(Qureg qureg, vector<int> ctrls, vector<int> ctrlStates, int targ, CompMatr1 matr) {
+
+
+    // TODO: TEMPLATING this outer function like this means that the GPU subroutine functions must also be
+    // templated and duplicated, even though they might not even call the kernels! We'd be duplicated
+    // cuQuantum calls for example! 
+    // SO
+    // maybe we shouldn't be doing NumQubits resolution in accelerator?? Maybe it should happen within
+    // cpu_subroutines.cpp and gpu_subroutines.cpp, calling some common macro (which could live in accelerator.hpp;
+    // that breaks the strictly "downward" direction of dependency, but eh)
+
+
+    // TODO: assert NumQubits == ctrls.size() + 1
+
+
+    // TODO: move this logic somewhere else, e.g. param constructor
+    vector<int> qubits = ctrls;
+    vector<int> states = ctrlStates;
+    if (states.empty())
+        states.insert(states.end(), ctrls.size(), 1);
+    qubits.push_back(targ);
+    states.push_back(1);
+
+    QubitIndParams<NumQubits> params = getQubitIndParams<NumQubits>(qubits, states);
+
+    // TOOD: move this logic somewhere? it used to be attached to struct
+    qindex numInds = qureg.numAmpsPerNode / powerOf2(qubits.size());
+
+
+    #pragma omp parallel for
+    for (qindex n=0; n<numInds; n++) {
+
+        // each iteration locates and modifies two amplitudes
+        qindex i0 = getNthIndWhereQubitsAreActive<NumQubits>(n, params);
+        qindex i1 = flipBit(i0, targ);
+
+        // note the two amplitudes are likely strided and not adjacent (separated by 2^t)
+        qcomp amp0 = qureg.cpuAmps[i0];
+        qcomp amp1 = qureg.cpuAmps[i1];
+
+        qureg.cpuAmps[i0] = matr.elems[0][0]*amp0 + matr.elems[0][1]*amp1;
+        qureg.cpuAmps[i1] = matr.elems[1][0]*amp0 + matr.elems[1][1]*amp1;
+    }
+}
+
+
+
+// instantiation
+template void NEW_cpu_statevec_anyCtrlOneTargMatrix_subA<1>(Qureg qureg, vector<int> ctrls, vector<int> ctrlStates, int targ, CompMatr1 matr);
+template void NEW_cpu_statevec_anyCtrlOneTargMatrix_subA<2>(Qureg qureg, vector<int> ctrls, vector<int> ctrlStates, int targ, CompMatr1 matr);
+template void NEW_cpu_statevec_anyCtrlOneTargMatrix_subA<3>(Qureg qureg, vector<int> ctrls, vector<int> ctrlStates, int targ, CompMatr1 matr);
+template void NEW_cpu_statevec_anyCtrlOneTargMatrix_subA<4>(Qureg qureg, vector<int> ctrls, vector<int> ctrlStates, int targ, CompMatr1 matr);
+template void NEW_cpu_statevec_anyCtrlOneTargMatrix_subA<5>(Qureg qureg, vector<int> ctrls, vector<int> ctrlStates, int targ, CompMatr1 matr);

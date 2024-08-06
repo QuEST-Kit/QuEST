@@ -24,4 +24,14 @@ template <CtrlFlag flag> void cpu_statevec_anyCtrlOneTargDenseMatrix_subB(Qureg 
 
 
 
+
+
+template <int NumQubits>
+void NEW_cpu_statevec_anyCtrlOneTargMatrix_subA(Qureg qureg, vector<int> ctrls, vector<int> ctrlStates, int targ, CompMatr1 matr);
+
+
+
+
+
+
 #endif // CPU_SUBROUTINES_HPP

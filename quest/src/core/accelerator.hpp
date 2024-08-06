@@ -24,4 +24,8 @@ void accel_statevec_anyCtrlOneTargDenseMatrix_subB(Qureg qureg, vector<int> ctrl
 
 
 
+
+void NEW_accel_statevec_anyCtrlOneTargMatrix_subA(Qureg qureg, vector<int> ctrls, vector<int> ctrlStates, int targ, CompMatr1 matr);
+
+
 #endif // ACCELERATOR_HPP
