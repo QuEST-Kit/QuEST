@@ -18,7 +18,6 @@
 #include "quest/include/matrices.h"
 
 #include "quest/src/core/accelerator.hpp"
-#include "quest/src/core/indexer.hpp"
 #include "quest/src/core/errors.hpp"
 #include "quest/src/cpu/cpu_subroutines.hpp"
 #include "quest/src/gpu/gpu_subroutines.hpp"
@@ -27,120 +26,50 @@
 #include <algorithm>
 
 using std::vector;
-using std::min;
 
 
 
 /*
  * MACROS
  *
- * which automate the choosing of the appropriate backend template function
- * (optimised for the given configuration of qubit indices), and whether to
- * dispatch to the OpenMP-accelerated backend (cpu_subroutines.cpp) or the
- * CUDA-accelerated backend (gpu_subroutines.cpp). The arguments to wrapped
- * function calls are given as variadic arguments.
+ * which automate the choosing of the appropriate backend template function,
+ * optimised for the given configuration of qubit indices, for example through
+ * automatic unrolling of loops with bounds known at compile-time. When the 
+ * number of controls or targets exceeds that which have optimised compilations, 
+ * we fall back to using a generic implementation, indicated by <-1>. In essence,
+ * these macros simply call func<ctrls.size()> albeit without illegally passing
+ * a runtime variable as a template parameter.
  */
 
 
+#if (MAX_OPTIMISED_NUM_CTRLS != 5) || (MAX_OPTIMISED_NUM_TARGS != 5)
+    #error "The number of optimised, templated functions was inconsistent between accelerator's source and header."
+#endif
 
 
-// TODO: assert this switch matches accelerator size
-
-// switch (num) {
-//     case 0:  cpu_statevec_packAmpsIntoBuffer<0>(qureg, ctrls, ctrlStates); break;
-//     case 1:  cpu_statevec_packAmpsIntoBuffer<1>(qureg, ctrls, ctrlStates);
-//     case 2:  cpu_statevec_packAmpsIntoBuffer<2>(qureg, ctrls, ctrlStates);
-//     case 3:  cpu_statevec_packAmpsIntoBuffer<3>(qureg, ctrls, ctrlStates);
-//     case 4:  cpu_statevec_packAmpsIntoBuffer<4>(qureg, ctrls, ctrlStates);
-//     case 5:  cpu_statevec_packAmpsIntoBuffer<5>(qureg, ctrls, ctrlStates);
-//     default: cpu_statevec_packAmpsIntoBuffer<-1>(qureg, ctrls, ctrlStates);
-// }
+#define GET_FUNC_OPTIMISED_FOR_NUM_CTRLS(func, numctrls) \
+    (vector{func<0>, func<1>, func<2>, func<3>, func<4>, func<5>, func<-1>}) \
+    [std::min((int) numctrls, MAX_OPTIMISED_NUM_CTRLS - 1)]
 
 
-// #define GET_FUNC_OPTIMISED_FOR_NUM_CTRLS(funcname, numctrls) \
-//     [](int arg) { \
-//         switch (arg) { \
-//             case 0: return funcname<0>; \
-//             case 1: return funcname<1>; \
-//             case 2: return funcname<2>; \
-//             case 3: return funcname<3>; \
-//             case 4: return funcname<4>; \
-//             case 5: return funcname<5>; \
-//         } \
-//         if (arg <= MAX_OPTIMISED_NUM_CTRLS) \
-//             /* TODO: error */ \
-//             ; \
-//         return funcname<-1>; \
-//     }(numctrls)
+#define GET_FUNC_OPTIMISED_FOR_NUM_CTRLS_AND_TARGS(func, numctrls, numtargs) \
+    (vector{ \
+        vector{func<0,0>,  func<0,1>,  func<0,2>,  func<0,3>,  func<0,4>,  func<0,5>,  func<0,-1>}, \
+        vector{func<1,0>,  func<1,1>,  func<1,2>,  func<1,3>,  func<1,4>,  func<1,5>,  func<1,-1>}, \
+        vector{func<2,0>,  func<2,1>,  func<2,2>,  func<2,3>,  func<2,4>,  func<2,5>,  func<2,-1>}, \
+        vector{func<3,0>,  func<3,1>,  func<3,2>,  func<3,3>,  func<3,4>,  func<3,5>,  func<3,-1>}, \
+        vector{func<4,0>,  func<4,1>,  func<4,2>,  func<4,3>,  func<4,4>,  func<4,5>,  func<4,-1>}, \
+        vector{func<5,0>,  func<5,1>,  func<5,2>,  func<5,3>,  func<5,4>,  func<5,5>,  func<5,-1>}, \
+        vector{func<-1,0>, func<-1,1>, func<-1,2>, func<-1,3>, func<-1,4>, func<-1,5>, func<-1,-1>}}) \
+    [std::min((int) numctrls, MAX_OPTIMISED_NUM_CTRLS - 1)] \
+    [std::min((int) numtargs, MAX_OPTIMISED_NUM_TARGS - 1)]
 
-
-
-// #define GET_FUNC_OPTIMISED_FOR_NUM_CTRLS_AND_TARGS(funcname, numctrls, numtargs) \
-//     [](int arg) { \
-//         switch (arg) { \
-//             case 0: return funcname<0>; \
-//             case 1: return funcname<1>; \
-//             case 2: return funcname<2>; \
-//             case 3: return funcname<3>; \
-//             case 4: return funcname<4>; \
-//             case 5: return funcname<5>; \
-//         } \
-//         if (arg <= MAX_OPTIMISED_NUM_CTRLS) \
-//             /* TODO: error */ \
-//             ; \
-//         return funcname<-1>; \
-//     }(numctrls)
-
-
-
-
-#define GET_FUNC_OPTIMISED_FOR_NUM_CTRLS(func, numctrls)         \
-    [](size_t arg) {                                                    \
-        auto funcs = vector{ func<0>, func<1>, func<2>, func<3>, func<4>, func<5>, func<-1> }; \
-        auto num = min(arg, funcs.size() - 1);                   \
-        return funcs[num];                                        \
-    }(numctrls)
-
-
-
-
-
-
-
-#define GET_ARRAY_OF_FUNCS_OPTIMISED_FOR_NUM_CTRLS_AND_TARGS(func) \
-    vector{ INNER(func,0), INNER(func,1), INNER(func,2), INNER(func,3), INNER(func,4), INNER(func,5), INNER(func,-1) }
-
-#define INNER(func, n) \
-    vector{ func<n,0>, func<n,1>, func<n,2>, func<n,3>, func<n,4>, func<n,5>, func<n,-1> }
-
-#define GET_FUNC_OPTIMISED_FOR_NUM_CTRLS_AND_TARGS(funcname, numctrls, numtargs) \
-    [](size_t nctrls, size_t ntargs) {                                                    \
-        auto arr = GET_ARRAY_OF_FUNCS_OPTIMISED_FOR_NUM_CTRLS_AND_TARGS(funcname); \
-        auto i = min(nctrls, arr   .size() - 1); \
-        auto j = min(ntargs, arr[0].size() - 1); \
-        return arr[i][j];                                  \
-    }(numctrls, numtargs)
-
-
-
-
-
-
-
-
-
-
-// cleanup
-#define CALL_FUNC_OPTIMISED_FOR_NUM_CTRLS(...) ;
 
 
 
 /*
  * COMMUNICATION BUFFER PACKING
  */
-
-
-constexpr int MAX_NUM_CTRLS = 63;
 
 
 void accel_statevec_packAmpsIntoBuffer(Qureg qureg, vector<int> ctrls, vector<int> ctrlStates) {
@@ -150,8 +79,8 @@ void accel_statevec_packAmpsIntoBuffer(Qureg qureg, vector<int> ctrls, vector<in
     if (ctrls.empty())
         error_noCtrlsGivenToBufferPacker();
 
-    auto cpuFunc = GET_FUNC_OPTIMISED_FOR_NUM_CTRLS(cpu_statevec_packAmpsIntoBuffer, ctrls.size());
-    auto gpuFunc = GET_FUNC_OPTIMISED_FOR_NUM_CTRLS(gpu_statevec_packAmpsIntoBuffer, ctrls.size());
+    auto cpuFunc = GET_FUNC_OPTIMISED_FOR_NUM_CTRLS( cpu_statevec_packAmpsIntoBuffer, ctrls.size() );
+    auto gpuFunc = GET_FUNC_OPTIMISED_FOR_NUM_CTRLS( gpu_statevec_packAmpsIntoBuffer, ctrls.size() );
     auto useFunc = (qureg.isGpuAccelerated)? gpuFunc : cpuFunc;
 
     useFunc(qureg, ctrls, ctrlStates);
@@ -166,30 +95,28 @@ void accel_statevec_packAmpsIntoBuffer(Qureg qureg, vector<int> ctrls, vector<in
 
 void accel_statevec_anyCtrlOneTargDenseMatr_subA(Qureg qureg, vector<int> ctrls, vector<int> ctrlStates, int targ, CompMatr1 matr) {
 
-    if (qureg.isGpuAccelerated) {
-        CALL_FUNC_OPTIMISED_FOR_NUM_CTRLS( ctrls.size(), gpu_statevec_anyCtrlOneTargDenseMatr_subA, qureg, ctrls, ctrlStates, targ, matr );
-    } else {
-        CALL_FUNC_OPTIMISED_FOR_NUM_CTRLS( ctrls.size(), cpu_statevec_anyCtrlOneTargDenseMatr_subA, qureg, ctrls, ctrlStates, targ, matr );
-    }
+    auto cpuFunc = GET_FUNC_OPTIMISED_FOR_NUM_CTRLS( cpu_statevec_anyCtrlOneTargDenseMatr_subA, ctrls.size() );
+    auto gpuFunc = GET_FUNC_OPTIMISED_FOR_NUM_CTRLS( gpu_statevec_anyCtrlOneTargDenseMatr_subA, ctrls.size() );
+    auto useFunc = (qureg.isGpuAccelerated)? gpuFunc : cpuFunc;
+
+    useFunc(qureg, ctrls, ctrlStates, targ, matr);
 }
 
 void accel_statevec_anyCtrlOneTargDenseMatr_subB(Qureg qureg, vector<int> ctrls, vector<int> ctrlStates, qcomp fac0, qcomp fac1) {
 
-    if (qureg.isGpuAccelerated) {
-        CALL_FUNC_OPTIMISED_FOR_NUM_CTRLS( ctrls.size(), gpu_statevec_anyCtrlOneTargDenseMatr_subB, qureg, ctrls, ctrlStates, fac0, fac1 );
-    } else {
-        CALL_FUNC_OPTIMISED_FOR_NUM_CTRLS( ctrls.size(), cpu_statevec_anyCtrlOneTargDenseMatr_subB, qureg, ctrls, ctrlStates, fac0, fac1 );
-    }
+    auto cpuFunc = GET_FUNC_OPTIMISED_FOR_NUM_CTRLS( cpu_statevec_anyCtrlOneTargDenseMatr_subB, ctrls.size() );
+    auto gpuFunc = GET_FUNC_OPTIMISED_FOR_NUM_CTRLS( gpu_statevec_anyCtrlOneTargDenseMatr_subB, ctrls.size() );
+    auto useFunc = (qureg.isGpuAccelerated)? gpuFunc : cpuFunc;
+
+    useFunc(qureg, ctrls, ctrlStates, fac0, fac1);
 }
 
 
 void accel_statevec_anyCtrlAnyTargDiagMatr_sub(Qureg qureg, vector<int> ctrls, vector<int> ctrlStates, vector<int> targs, DiagMatr matr) {
 
+    auto cpuFunc = GET_FUNC_OPTIMISED_FOR_NUM_CTRLS_AND_TARGS( cpu_statevec_anyCtrlAnyTargDiagMatr_sub, ctrls.size(), targs.size() );
+    auto gpuFunc = GET_FUNC_OPTIMISED_FOR_NUM_CTRLS_AND_TARGS( gpu_statevec_anyCtrlAnyTargDiagMatr_sub, ctrls.size(), targs.size() );
+    auto useFunc = (qureg.isGpuAccelerated)? gpuFunc : cpuFunc;
 
-
-    // if (qureg.isGpuAccelerated) {
-    //     _CALL_FUNC_OPTIMISED_FOR_NUM_CTRLS_THEN_RETURN(ctrls.size(), gpu_statevec_anyCtrlAnyTargDiagMatr_sub, qureg, ctrls, ctrlStates, targ, matr);
-    // } else {
-    //    CALL_FUNC_OPTIMISED_FOR_NUM_CTRLS_THEN_RETURN(ctrls.size(), cpu_statevec_anyCtrlAnyTargDiagMatr_sub, qureg, ctrls, ctrlStates, targ, matr);
-    // }
+    useFunc(qureg, ctrls, ctrlStates, targs, matr);
 }

@@ -10,8 +10,6 @@
 #include "quest/include/paulis.h"
 #include "quest/include/matrices.h"
 
-#include "quest/src/core/indexer.hpp"
-
 #include <vector>
 
 using std::vector;
@@ -24,7 +22,7 @@ template <int NumCtrls> void gpu_statevec_anyCtrlOneTargDenseMatr_subA(Qureg qur
 template <int NumCtrls> void gpu_statevec_anyCtrlOneTargDenseMatr_subB(Qureg qureg, vector<int> ctrls, vector<int> ctrlStates, qcomp fac0, qcomp fac1);
 
 
-// template <int NumCtrls, int NumTargs> void gpu_statevec_anyCtrlAnyTargDiagMatr_sub(Qureg qureg, vector<int> ctrls, vector<int> ctrlStates, vector<int> targs, DiagMatr matr);
+template <int NumCtrls, int NumTargs> void gpu_statevec_anyCtrlAnyTargDiagMatr_sub(Qureg qureg, vector<int> ctrls, vector<int> ctrlStates, vector<int> targs, DiagMatr matr);
 
 
 

@@ -12,8 +12,8 @@
 #include "quest/include/paulis.h"
 #include "quest/include/matrices.h"
 
+#include "quest/src/core/errors.hpp"
 #include "quest/src/core/bitwise.hpp"
-#include "quest/src/core/indexer.hpp"
 #include "quest/src/core/utilities.hpp"
 #include "quest/src/core/accelerator.hpp"
 #include "quest/src/comm/comm_routines.hpp"

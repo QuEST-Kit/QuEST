@@ -2,7 +2,9 @@
  * CPU OpenMP-accelerated definitions of the subroutines called by
  * accelerator.cpp. Some of these definitions are templated, defining
  * multiple versions optimised (at compile-time) for handling different
- * numbers of control qubits.
+ * numbers of control qubits; such functions are proceeded by macro
+ * INSTANTIATE_FUNC_OPTIMISED_FOR_NUM_CTRLS(), to force the compilation
+ * of their needed versions within this translation unit for later linkage.
  */
 
 #include "quest/include/types.h"
@@ -11,17 +13,12 @@
 #include "quest/include/matrices.h"
 
 #include "quest/src/core/bitwise.hpp"
-#include "quest/src/core/indexer.hpp"
+#include "quest/src/core/utilities.hpp"
+#include "quest/src/core/accelerator.hpp"
 
 #include <vector>
 
 using std::vector;
-
-
-
-// TODO: hmm
-
-#include "quest/src/core/accelerator.hpp"
 
 
 
@@ -30,84 +27,56 @@ using std::vector;
  */
 
 
-
-// TODO:
-// HMMM having inner templated functions means we avoid GPU subroutines being duplicated when
-// they don't need to be (because they might not call the inner templated kernel) but...
-// - it's only a FEW subroutines that ever use templating, not the whole backend!
-// - that means we must duplicate the logic/call for choosing the compile-time func
-// - we would move dispatch logic out of accelerator, even though compile-time choosing is an
-//   act of acceleration
-// - kernel invocations in GPU subroutines would then look like:
-//   MACRO(
-//            kernel_statevec_anyCtrlOneTargDenseMatr_subA,
-//             <<<numBlocks,NUM_THREADS_PER_BLOCK>>> (amps, params, targ, m00,m01,m10,m11) );
-//
-//   i.e. the CUDA <<< syntax would be in the macro call
-// 
-// SO I think I will make accelerator perform the compile-time flags, and it can also sort
-// out the control states etc
-
-
-
-
-
 template <int NumCtrls>
 void cpu_statevec_packAmpsIntoBuffer(Qureg qureg, vector<int> ctrls, vector<int> ctrlStates) {
-    
-    // TODO:
-    // this is ctrl specific right now, rather than generically about qubits, because it is
-    // accepting optionally-none ctrlStates which we automatically populate to be 1. We should
-    // do this automatic defaulting/population at a higher bottleneck (localiser? accelerator?), 
-    // NOT here, then we can make this generic to qubits
 
-    auto [qubits, stateMask] = getSortedQubitsAndMask(ctrls, ctrlStates, {}, {});
-    qindex numInds = qureg.numAmpsPerNode / powerOf2(ctrls.size());
+    // each control qubit halves the needed iterations
+    qindex numIts = qureg.numAmpsPerNode / powerOf2(ctrls.size());
 
+    auto qubits = util_getSorted(ctrls);
+    qindex mask = util_getBitMask(ctrls, ctrlStates);
+
+    // use template param to compile-time unroll loop in insertBits()
     SET_VAR_AT_COMPILE_TIME(int, numCtrls, NumCtrls, ctrls.size());
 
     #pragma omp parallel for
-    for (qindex n=0; n<numInds; n++) {
+    for (qindex n=0; n<numIts; n++) {
 
+        // i = nth local index where ctrl bits are in specified states
         qindex j = insertBits(n, qubits.data(), numCtrls, 0);
-        qindex i = activateBits(j, stateMask);
+        qindex i = activateBits(j, mask);
 
         qureg.cpuCommBuffer[n] = qureg.cpuAmps[i];
     }
 }
 
-INSTANTIATE_FUNC_OPTIMISED_FOR_NUM_CTRLS( void, cpu_statevec_packAmpsIntoBuffer, (Qureg, vector<int>, vector<int>) );
-
+INSTANTIATE_FUNC_OPTIMISED_FOR_NUM_CTRLS( void, cpu_statevec_packAmpsIntoBuffer, (Qureg, vector<int>, vector<int>) )
 
 
 
 /*
- * ANY-CTRL ONE-TARG MATRIX
+ * MATRICES
  */
 
 
 template <int NumCtrls>
 void cpu_statevec_anyCtrlOneTargDenseMatr_subA(Qureg qureg, vector<int> ctrls, vector<int> ctrlStates, int targ, CompMatr1 matr) {
 
-    // TODO:
-    // we don't yet know if this is any faster than templated AnyTarg - we have to test.
-    // if it's no faster, delete it
+    // each control qubit halves the needed iterations, and each iteration modifies two amplitudes
+    qindex numInds = qureg.numAmpsPerNode / powerOf2(ctrls.size() + 1);
 
+    auto qubits = util_getSorted(ctrls, {targ});
+    qindex mask = util_getBitMask(ctrls, ctrlStates, {targ}, {0});
 
-    // TODO: 
-    //  in new templated inner function, must assert NumCtrls == ctrls.size()
-
-    // compile-time
-    constexpr int NumQubits = NumCtrls + 1;
-
-    auto [qubits, stateMask] = getSortedQubitsAndMask(ctrls, ctrlStates, {targ}, {0});
-    qindex numInds = qureg.numAmpsPerNode / powerOf2(qubits.size());
+    // use template param to compile-time unroll loop in insertBits()
+    SET_VAR_AT_COMPILE_TIME(int, numCtrls, NumCtrls, ctrls.size());
 
     #pragma omp parallel for
     for (qindex n=0; n<numInds; n++) {
 
-        qindex j  = insertBits(n, qubits.data(), NumQubits, 0);
-        qindex i0 = activateBits(j, stateMask);
+        // i0 = nth local index where ctrl bits are in specified states and targ is 0
+        qindex j  = insertBits(n, qubits.data(), numCtrls+1, 0);
+        qindex i0 = activateBits(j, mask);
         qindex i1 = flipBit(i0, targ);
 
         // note the two amplitudes are likely strided and not adjacent (separated by 2^t)
@@ -120,24 +89,30 @@ void cpu_statevec_anyCtrlOneTargDenseMatr_subA(Qureg qureg, vector<int> ctrls, v
 }
 
 
-INSTANTIATE_FUNC_OPTIMISED_FOR_NUM_CTRLS( void, cpu_statevec_anyCtrlOneTargDenseMatr_subA, (Qureg, vector<int>, vector<int>, int, CompMatr1) );
+INSTANTIATE_FUNC_OPTIMISED_FOR_NUM_CTRLS( void, cpu_statevec_anyCtrlOneTargDenseMatr_subA, (Qureg, vector<int>, vector<int>, int, CompMatr1) )
 
 
 
 template <int NumCtrls>
 void cpu_statevec_anyCtrlOneTargDenseMatr_subB(Qureg qureg, vector<int> ctrls, vector<int> ctrlStates, qcomp fac0, qcomp fac1) {
 
-    auto [qubits, stateMask] = getSortedQubitsAndMask(ctrls, ctrlStates, {}, {});
+    // each control qubit halves the needed iterations
     qindex numIts = qureg.numAmpsPerNode / powerOf2(NumCtrls);
 
+    auto qubits = util_getSorted(ctrls);
+    qindex mask = util_getBitMask(ctrls, ctrlStates);
+
+    // use template param to compile-time unroll loop in insertBits()
+    SET_VAR_AT_COMPILE_TIME(int, numCtrls, NumCtrls, ctrls.size());
 
     #pragma omp parallel for
     for (qindex n=0; n<numIts; n++) {
 
-        qindex j = insertBits(n, qubits.data(), NumCtrls, 0);
-        qindex i = activateBits(j, stateMask);
+        // i = nth local index where ctrl bits are in specified states
+        qindex j = insertBits(n, qubits.data(), numCtrls, 0);
+        qindex i = activateBits(j, mask);
 
-        // the received buffer amplitudes begin at 0+numInds
+        // l = index of nth received buffer amp
         qindex l = n + numIts;
         qcomp amp = qureg.cpuCommBuffer[l];
 
@@ -146,7 +121,47 @@ void cpu_statevec_anyCtrlOneTargDenseMatr_subB(Qureg qureg, vector<int> ctrls, v
 }
 
 
-INSTANTIATE_FUNC_OPTIMISED_FOR_NUM_CTRLS( void, cpu_statevec_anyCtrlOneTargDenseMatr_subB, (Qureg, vector<int>, vector<int>, qcomp, qcomp) );
+INSTANTIATE_FUNC_OPTIMISED_FOR_NUM_CTRLS( void, cpu_statevec_anyCtrlOneTargDenseMatr_subB, (Qureg, vector<int>, vector<int>, qcomp, qcomp) )
+
+
+
+
+
+template <int NumCtrls, int NumTargs>
+void cpu_statevec_anyCtrlAnyTargDiagMatr_sub(Qureg qureg, vector<int> ctrls, vector<int> ctrlStates, vector<int> targs, DiagMatr matr) {
+
+    // each control qubit halves the needed iterations, each of which will modify 1 amplitude
+    qindex numIts = qureg.numAmpsPerNode / powerOf2(ctrls.size());
+
+    auto sortedCtrls = util_getSorted(ctrls);
+    qindex ctrlMask  = util_getBitMask(ctrls, ctrlStates);
+
+    // use template params to compile-time unroll loops in insertBits() and getValueOfBits()
+    SET_VAR_AT_COMPILE_TIME(int, numCtrls, NumCtrls, ctrls.size());
+    SET_VAR_AT_COMPILE_TIME(int, numTargs, NumTargs, targs.size());
+
+    #pragma omp parallel for
+    for (qindex n=0; n<numIts; n++) {
+
+        // j = nth local index where ctrls are in the specified states
+        qindex k = insertBits(n, sortedCtrls.data(), numCtrls, 0);
+        qindex j = activateBits(k, ctrlMask);
+
+        // i = global index corresponding to j
+        qindex i = concatenateBits(qureg.rank, j, qureg.logNumAmpsPerNode);
+
+        // t = value of targeted bits, which may be in the prefix substate
+        qindex t = getValueOfBits(i, targs.data(), numTargs);
+
+        qureg.cpuAmps[i] *= matr.cpuElems[t];
+    }
+}
+
+INSTANTIATE_FUNC_OPTIMISED_FOR_NUM_CTRLS_AND_TARGS( void, cpu_statevec_anyCtrlAnyTargDiagMatr_sub, (Qureg, vector<int>, vector<int>, vector<int>, DiagMatr) )
+
+
+
+
 
 
 
@@ -262,34 +277,4 @@ void masks_NEW_cpu_statevec_anyCtrlAnyTargCompMatr_subA(Qureg qureg, vector<int>
 
 
 
-
-// template <int NumCtrls, int NumTargs>
-// void cpu_statevec_anyCtrlAnyTargDiagMatr_sub(Qureg qureg, vector<int> ctrls, vector<int> ctrlStates, vector<int> targs, DiagMatr matr) {
-
-//     // TODO:
-//     // explain: targ may exceed logNumAmpsPerNode
-
-
-//     // TODO:
-//     //      need to handle when targs exceeds prcompiled-max
-
-//     auto [sortedCtrls, ctrlMask] = getSortedQubitsAndMask(ctrls, ctrlStates, {}, {});
-//     qindex numIts = qureg.numAmpsPerNode / powerOf2(NumCtrls);
-
-//     #pragma omp parallel for
-//     for (qindex n=0; n<numIts; n++) {
-
-//         qindex k = insertBits(n, sortedCtrls.data(), NumCtrls, 0);
-//         qindex j = activateBits(k, ctrlMask);
-//         qindex i = concatenateBits(qureg.rank, j, qureg.logNumAmpsPerNode);
-//         qindex t = getValueOfBits(i, targs.data(), NumTargs);
-
-//         qureg.cpuAmps[i] *= matr.cpuElems[t];
-//     }
-// }
-
-// accel_INSTANTIATE_FUNC_OPTIMISED_FOR_ANY_CTRLS_AND_SOME_TARGS(
-//     void, cpu_statevec_anyCtrlAnyTargDiagMatr_sub, 
-//     Qureg, vector<int>, vector<int>, vector<int>, DiagMatr
-// )
 

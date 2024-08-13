@@ -12,13 +12,6 @@
 
 
 
-// TODO:
-//  move performance-critical LOOPED funcions into their own
-//  section, highlighting the importance of making the loop
-//  size parameter compile-time constant where possible
-
-
-
 /* 
  * PERFORMANCE-CRITICAL FUNCTIONS
  *
@@ -63,35 +56,10 @@ INLINE qindex insertBit(qindex number, int bitIndex, int bitValue) {
 }
 
 
-INLINE qindex insertBits(qindex number, int* bitIndices, int numIndices, int bitValue) {
-    
-    // bitIndices must be strictly increasing, and numIndices should ideally
-    // be a compile-time constant (e.g. through templating) so that the compiler
-    // unrolls and optimises the loop, and unpacks the array
-    for (int i=0; i<numIndices; i++)
-        number = insertBit(number, bitIndices[i], bitValue);
-        
-    return number;
-}
-
-
 INLINE qindex setBit(qindex number, int bitIndex, int bitValue) {
     
     qindex mask = bitValue << bitIndex;
     return (number & (~mask)) | mask;
-}
-
-
-INLINE qindex setBits(qindex number, int* bitIndices, int numIndices, qindex bitsValue) {
-
-    // TOOD: I don't think I actually need this! Get rid of it!
-    
-    for (int i=0; i<numIndices; i++) {
-        int bit = getBit(bitsValue, i);
-        number = setBit(number, bitIndices[i], bit);
-    }
-    
-    return number;
 }
 
 
@@ -107,24 +75,56 @@ INLINE qindex concatenateBits(qindex prefix, qindex suffix, int numBitsInSuffix)
 }
 
 
+INLINE int getBitMaskParity(qindex mask) {
+    
+    // this compiler extension may not be defined on all platforms
+    return __builtin_parity(mask);
+}
+
+
+
+/* 
+ * PERFORMANCE-CRITICAL FUNCTIONS
+ *
+ * which themselves contain loops which, if informed by runtime
+ * variables, can be catastrophic to performance. As such, these
+ * functions should be called with compile-time loop sizes
+ * (e.g. through function template parameters, or constexpr)
+ * to trigger automatic loop unrolling.
+ */
+
+
+INLINE qindex insertBits(qindex number, int* bitIndices, int numIndices, int bitValue) {
+    
+    // bitIndices must be strictly increasing
+    for (int i=0; i<numIndices; i++)
+        number = insertBit(number, bitIndices[i], bitValue);
+        
+    return number;
+}
+
+
+INLINE qindex setBits(qindex number, int* bitIndices, int numIndices, qindex bitsValue) {
+    
+    // bitIndices are arbitrarily ordered, which does not affect number
+    for (int i=0; i<numIndices; i++) {
+        int bit = getBit(bitsValue, i);
+        number = setBit(number, bitIndices[i], bit);
+    }
+    
+    return number;
+}
+
+
 INLINE qindex getValueOfBits(qindex number, int* bitIndices, int numIndices) {
 
     // bits are arbitrarily ordered, which affects value
     qindex value = 0;
 
-    // numIndices should ideally be a compile-time constant 
-    // (e.g. through templating) to enable compiler loop unrolling
     for (int i=0; i<numIndices; i++)
         value |= getBit(number, bitIndices[i]) << i;
 
     return value;
-}
-
-
-INLINE int getBitMaskParity(qindex mask) {
-    
-    // this compiler extension may not be defined on all platforms
-    return __builtin_parity(mask);
 }
 
 

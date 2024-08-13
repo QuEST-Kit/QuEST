@@ -16,34 +16,18 @@ using std::vector;
 
 
 /*
- * COMMUNICATION BUFFER PACKING
- */
-
-void accel_statevec_packAmpsIntoBuffer(Qureg qureg, vector<int> ctrls, vector<int> ctrlStates);
-
-
-/*
- * MATRICES
- */
-
-void accel_statevec_anyCtrlOneTargDenseMatr_subA(Qureg qureg, vector<int> ctrls, vector<int> ctrlStates, int targ, CompMatr1 matr);
-void accel_statevec_anyCtrlOneTargDenseMatr_subB(Qureg qureg, vector<int> ctrls, vector<int> ctrlStates, qcomp fac0, qcomp fac1);
-
-void accel_statevec_anyCtrlAnyTargDiagMatr_sub(Qureg qureg, vector<int> ctrls, vector<int> ctrlStates, vector<int> targs, DiagMatr matr);
-
-
-/*
  * TEMPLATE INSTANTIATION MACROS
  *
  * used by cpu_subroutines.cpp and gpu_subroutines to force the compiler
  * to instantiate and compile their template definitions with the given
- * explicit parameters below. Notice each parameter is instantiated with
- * value -1 to indicate that the number of controls or targets is not
- * known at compile-time, causing the optimised function to fallback to
- * a suboptimal but general implementation.
+ * explicit parameters below. Notice the final parameter is always -1, 
+ * to handle when the number of controls or targets is not known at 
+ * compile-time (it is larger than a bespoke, optimised instantiations), 
+ * causing the optimised function to fallback to a suboptimal but general 
+ * implementation.
  */
 
-// used by accelerator, and must match the macros below
+// must match the macros below, and those in accelerator.cpp
 #define MAX_OPTIMISED_NUM_CTRLS 5
 #define MAX_OPTIMISED_NUM_TARGS 5
 
@@ -54,17 +38,16 @@ void accel_statevec_anyCtrlAnyTargDiagMatr_sub(Qureg qureg, vector<int> ctrls, v
     template returntype funcname <3> args; \
     template returntype funcname <4> args; \
     template returntype funcname <5> args; \
-    \
-    template returntype funcname <-1> args;
+    template returntype funcname<-1> args;
 
 #define INSTANTIATE_FUNC_OPTIMISED_FOR_NUM_CTRLS_AND_TARGS(returntype, funcname, args) \
+    private_INSTANTIATE(returntype, funcname, 0, args); \
     private_INSTANTIATE(returntype, funcname, 1, args); \
     private_INSTANTIATE(returntype, funcname, 2, args); \
     private_INSTANTIATE(returntype, funcname, 3, args); \
     private_INSTANTIATE(returntype, funcname, 4, args); \
     private_INSTANTIATE(returntype, funcname, 5, args); \
-    \
-    private_INSTANTIATE(returntype, funcname, -1, args);
+    private_INSTANTIATE(returntype, funcname,-1, args);
 
 #define private_INSTANTIATE(returntype, funcname, numtargs, args) \
     template returntype funcname <0, numtargs> args; \
@@ -73,8 +56,7 @@ void accel_statevec_anyCtrlAnyTargDiagMatr_sub(Qureg qureg, vector<int> ctrls, v
     template returntype funcname <3, numtargs> args; \
     template returntype funcname <4, numtargs> args; \
     template returntype funcname <5, numtargs> args; \
-    \
-    template returntype funcname <-1, numtargs> args;
+    template returntype funcname <-1,numtargs> args;
 
 
 /*
@@ -97,19 +79,21 @@ void accel_statevec_anyCtrlAnyTargDiagMatr_sub(Qureg qureg, vector<int> ctrls, v
         name = compileval;
 
 
+/*
+ * COMMUNICATION BUFFER PACKING
+ */
 
-// TODO
+void accel_statevec_packAmpsIntoBuffer(Qureg qureg, vector<int> ctrls, vector<int> ctrlStates);
 
 
+/*
+ * MATRICES
+ */
 
+void accel_statevec_anyCtrlOneTargDenseMatr_subA(Qureg qureg, vector<int> ctrls, vector<int> ctrlStates, int targ, CompMatr1 matr);
+void accel_statevec_anyCtrlOneTargDenseMatr_subB(Qureg qureg, vector<int> ctrls, vector<int> ctrlStates, qcomp fac0, qcomp fac1);
 
-
-    // HANG ON
-
-    // if htey give u 1 control and 6 targets
-    // or
-    // 6 controls and 1 target
-    // you 
+void accel_statevec_anyCtrlAnyTargDiagMatr_sub(Qureg qureg, vector<int> ctrls, vector<int> ctrlStates, vector<int> targs, DiagMatr matr);
 
 
 #endif // ACCELERATOR_HPP

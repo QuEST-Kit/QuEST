@@ -11,8 +11,23 @@
 
 #include <type_traits>
 #include <string>
+#include <vector>
 
 using std::is_same_v;
+using std::vector;
+
+
+/*
+ * QUBIT PROCESSIG
+ */
+
+int util_getShifted(int qubit, Qureg qureg);
+
+vector<int> util_getSorted(vector<int> list);
+vector<int> util_getSorted(vector<int> ctrls, vector<int> targs);
+
+qindex util_getBitMask(vector<int> qubits, vector<int> states);
+qindex util_getBitMask(vector<int> ctrls, vector<int> ctrlStates, vector<int> targs, vector<int> targStates);
 
 
 
@@ -48,14 +63,12 @@ constexpr bool util_isDenseMatrixType() {
     return false;
 }
 
-
 // T can be CompMatr1, CompMatr2, CompMatr, DiagMatr1, DiagMatr2, DiagMatr, FullStateDiagMatr
 template<class T>
 constexpr bool util_isDiagonalMatrixType() {
 
     return !util_isDenseMatrixType<T>();
 }
-
 
 // T can be CompMatr1, CompMatr2, CompMatr, DiagMatr1, DiagMatr2, DiagMatr, FullStateDiagMatr
 template<class T>
@@ -153,18 +166,10 @@ bool util_isUnitary(DiagMatr matrix);
 bool util_isUnitary(FullStateDiagMatr matrix);
 
 
-/*
- * QUBIT SHIFTING
- */
-
-int util_getShifted(int qubit, Qureg qureg);
-
-
 
 /*
  * DISTRIBUTED ELEMENTS INDEXING
  */
-
 
 typedef struct {
 

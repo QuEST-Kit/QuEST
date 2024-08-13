@@ -20,6 +20,11 @@ template <int NumCtrls> void cpu_statevec_packAmpsIntoBuffer(Qureg qureg, vector
 template <int NumCtrls> void cpu_statevec_anyCtrlOneTargDenseMatr_subA(Qureg qureg, vector<int> ctrls, vector<int> ctrlStates, int targ, CompMatr1 matr);
 template <int NumCtrls> void cpu_statevec_anyCtrlOneTargDenseMatr_subB(Qureg qureg, vector<int> ctrls, vector<int> ctrlStates, qcomp fac0, qcomp fac1);
 
+template <int NumCtrls, int NumTargs> void cpu_statevec_anyCtrlAnyTargDiagMatr_sub(Qureg qureg, vector<int> ctrls, vector<int> ctrlStates, vector<int> targs, DiagMatr matr);
+
+
+
+
 
 
 // template <int NumCtrls, int NumTargs>
@@ -28,8 +33,9 @@ template <int NumCtrls> void cpu_statevec_anyCtrlOneTargDenseMatr_subB(Qureg qur
 // TODO: anyTarg subB missing
 
 
-// template <int NumCtrls, int NumTargs>
-// void cpu_statevec_anyCtrlAnyTargDiagMatr_sub(Qureg qureg, vector<int> ctrls, vector<int> ctrlStates, vector<int> targs, DiagMatr matr);
+
+
+
 
 
 

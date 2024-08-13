@@ -14,7 +14,6 @@
 #include "quest/include/types.h"
 
 #include "quest/src/core/bitwise.hpp"
-#include "quest/src/core/indexer.hpp"
 #include "quest/src/gpu/gpu_types.hpp"
 
 #if ! COMPILE_CUDA
