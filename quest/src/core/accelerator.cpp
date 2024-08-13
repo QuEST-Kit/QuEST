@@ -39,6 +39,34 @@ using namespace index_flags;
  * function calls are given as variadic arguments.
  */
 
+#define NORETURN
+
+#define INNER1(usernum, compnum, func, args, retcmd) \
+    if (usernum == compnum) retcmd func<compnum> args;
+
+#define INNER4(usernum, compbase, func, args, retcmd) \
+    INNER1( usernum, compbase+0, func, args, retcmd ); \
+    INNER1( usernum, compbase+1, func, args, retcmd ); \
+    INNER1( usernum, compbase+2, func, args, retcmd ); \
+    INNER1( usernum, compbase+3, func, args, retcmd );
+
+#define INNER16(usernum, compbase, func, args, retcmd) \
+    INNER4( usernum, compbase+0,  func, args, retcmd ); \
+    INNER4( usernum, compbase+4,  func, args, retcmd ); \
+    INNER4( usernum, compbase+8,  func, args, retcmd ); \
+    INNER4( usernum, compbase+12, func, args, retcmd );
+
+#define INNER64(usernum, func, args, retcmd) \
+    INNER16( usernum, 0,  func, args, retcmd ); \
+    INNER16( usernum, 16, func, args, retcmd ); \
+    INNER16( usernum, 32, func, args, retcmd ); \
+    INNER16( usernum, 48, func, args, retcmd );
+
+#define CALL_FUNC_OPTIMISED_FOR_NUM_CTRLS(numctrls, func, ...) \
+    do { INNER64( numctrls, func, (__VA_ARGS__), NORETURN ); } while (0);
+
+#define CALL_AND_RETURN_FUNC_OPTIMISED_FOR_NUM_CTRLS(numctrls, func, ...) \
+    do { INNER64( numctrls, func, (__VA_ARGS__), return ); } while (0);
 
 #define CALL_AND_RETURN_FUNC_WITH_CTRL_FLAG(flag, func, ...) \
     switch (flag) { \
