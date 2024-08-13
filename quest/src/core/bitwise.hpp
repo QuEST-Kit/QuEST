@@ -12,6 +12,13 @@
 
 
 
+// TODO:
+//  move performance-critical LOOPED funcions into their own
+//  section, highlighting the importance of making the loop
+//  size parameter compile-time constant where possible
+
+
+
 /* 
  * PERFORMANCE-CRITICAL FUNCTIONS
  *
@@ -58,7 +65,9 @@ INLINE qindex insertBit(qindex number, int bitIndex, int bitValue) {
 
 INLINE qindex insertBits(qindex number, int* bitIndices, int numIndices, int bitValue) {
     
-    // bitIndices must be strictly increasing
+    // bitIndices must be strictly increasing, and numIndices should ideally
+    // be a compile-time constant (e.g. through templating) so that the compiler
+    // unrolls and optimises the loop, and unpacks the array
     for (int i=0; i<numIndices; i++)
         number = insertBit(number, bitIndices[i], bitValue);
         
@@ -74,6 +83,8 @@ INLINE qindex setBit(qindex number, int bitIndex, int bitValue) {
 
 
 INLINE qindex setBits(qindex number, int* bitIndices, int numIndices, qindex bitsValue) {
+
+    // TOOD: I don't think I actually need this! Get rid of it!
     
     for (int i=0; i<numIndices; i++) {
         int bit = getBit(bitsValue, i);
@@ -87,6 +98,26 @@ INLINE qindex setBits(qindex number, int* bitIndices, int numIndices, qindex bit
 INLINE qindex activateBits(qindex number, qindex mask) {
 
     return number | mask;
+}
+
+
+INLINE qindex concatenateBits(qindex prefix, qindex suffix, int numBitsInSuffix) {
+
+    return (prefix << numBitsInSuffix) | suffix;
+}
+
+
+INLINE qindex getValueOfBits(qindex number, int* bitIndices, int numIndices) {
+
+    // bits are arbitrarily ordered, which affects value
+    qindex value = 0;
+
+    // numIndices should ideally be a compile-time constant 
+    // (e.g. through templating) to enable compiler loop unrolling
+    for (int i=0; i<numIndices; i++)
+        value |= getBit(number, bitIndices[i]) << i;
+
+    return value;
 }
 
 

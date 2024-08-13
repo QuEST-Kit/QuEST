@@ -74,10 +74,10 @@ void assert_pairRankIsDistinct(Qureg qureg, int pairRank);
 
 
 /*
- * INDEXER ERRORS
+ * LOCALISER ERRORS
  */
 
-void error_indexerCtrlsInconsistentWithCtrlStates();
+void error_localiserNumCtrlStatesInconsistentWithNumCtrls();
 
 
 

@@ -21,26 +21,31 @@ void unitary(Qureg qureg, int target, CompMatr1 matrix) {
     validate_target(qureg, target, __func__);
     validate_matrixIsUnitary(matrix, __func__);
 
-    statevec_anyCtrlOneTargMatrix(qureg, {}, {}, target, matrix);
+    statevec_anyCtrlOneTargDenseMatr(qureg, {}, {}, target, matrix);
     if (qureg.isDensityMatrix)
-        statevec_anyCtrlOneTargMatrix(qureg, {}, {}, util_getShifted(target, qureg), util_getConj(matrix));
+        statevec_anyCtrlOneTargDenseMatr(qureg, {}, {}, util_getShifted(target, qureg), util_getConj(matrix));
 }
+
+
+
+
+// TODO: prefix with localiser, c'mon man
 
 
 // DEBUG - just for benchmarking!
 
 void noCtrlGate(Qureg qureg, int target, CompMatr1 matrix) {
 
-    statevec_anyCtrlOneTargMatrix(qureg, {}, {}, target, matrix);
+    statevec_anyCtrlOneTargDenseMatr(qureg, {}, {}, target, matrix);
 }
 
 void oneCtrlGate(Qureg qureg, int control, int target, CompMatr1 matrix) {
 
-    statevec_anyCtrlOneTargMatrix(qureg, {control}, {}, target, matrix);
+    statevec_anyCtrlOneTargDenseMatr(qureg, {control}, {}, target, matrix);
 } 
 void oneStateCtrlGate(Qureg qureg, int control, int controlState, int target, CompMatr1 matrix) {
 
-    statevec_anyCtrlOneTargMatrix(qureg, {control}, {controlState}, target, matrix);
+    statevec_anyCtrlOneTargDenseMatr(qureg, {control}, {controlState}, target, matrix);
 }
 
 
@@ -48,20 +53,4 @@ void oneStateCtrlGate(Qureg qureg, int control, int controlState, int target, Co
 
 
 
-void NEW_noCtrlGate(Qureg qureg, int target, CompMatr1 matrix) {
-
-    NEW_statevec_anyCtrlOneTargMatrix(qureg, {}, {}, target, matrix);
-}
-
-void NEW_oneCtrlGate(Qureg qureg, int control, int target, CompMatr1 matrix) {
-
-    NEW_statevec_anyCtrlOneTargMatrix(qureg, {control}, {}, target, matrix);
-
-}
-
-
-void NEW_oneStateCtrlGate(Qureg qureg, int control, int controlState, int target, CompMatr1 matrix) {
-
-    NEW_statevec_anyCtrlOneTargMatrix(qureg, {control}, {controlState}, target, matrix);
-}
 } // end de-mangler

@@ -154,12 +154,12 @@ void assert_pairRankIsDistinct(Qureg qureg, int pairRank) {
 
 
 /*
- * INDEXER ERRORS
+ * LOCALISER ERRORS
  */
 
-void error_indexerCtrlsInconsistentWithCtrlStates() {
+void error_localiserNumCtrlStatesInconsistentWithNumCtrls() {
 
-    raiseInternalError("An inconsistent number of ctrls and ctrlStates were passed to indexer.hpp and/or localiser.cpp.");
+    raiseInternalError("An inconsistent number of ctrls and ctrlStates were passed to a function in localiser.cpp.");
 }
 
 

@@ -25,6 +25,12 @@ using namespace index_flags;
 
 
 
+
+// TODO:
+// FIX THESE!!! NEED TO FIX CTRL ARGS ETC
+
+
+
 /*
  * THREAD MANAGEMENT
  */
@@ -54,14 +60,20 @@ __host__ qindex getNumBlocks(qindex numIts) {
  */
 
 
-template <CtrlFlag ctrlFlag>
-__global__ void kernel_statevec_packAmpsIntoBuffer(cu_qcomp* amps, cu_qcomp* buffer, CtrlIndParams params) {
+// TODO:
+//     may have to alloc ctrls list into device memory
+
+
+template <int NumCtrls>
+__global__ void kernel_statevec_packAmpsIntoBuffer(cu_qcomp* amps, cu_qcomp* buffer, int ctrls[NumCtrls], qindex ctrlStateMask, qindex numThreads) {
 
     qindex n = getThreadInd();
-    if (n >= params.numInds) 
+    if (n >= numThreads) 
         return;
 
-    qindex i = getNthIndWhereCtrlsAreActive<ctrlFlag>(n, params);
+    qindex j = insertBits(n, ctrls, NumCtrls, 0);
+    qindex i = activateBits(j, ctrlStateMask);
+
     buffer[n] = amps[i];
 }
 
@@ -81,6 +93,10 @@ __global__ void kernel_statevec_anyCtrlOneTargDenseMatr_subA(
     if (n >= params.numInds) 
         return;
 
+    qindex j = insertBits(n, ctrls, NumCtrls, 0);
+    qindex i = activateBits(j, ctrlStateMask);
+
+
     // each thread modifies two amps
     qindex i1 = getNthIndWhereCtrlsAreActiveAndTargIsOne<ctrlFlag>(n, params);
     qindex i0 = flipBit(i1, targ);
@@ -91,21 +107,6 @@ __global__ void kernel_statevec_anyCtrlOneTargDenseMatr_subA(
 
     amps[i0] = m00*amp0 + m01*amp1;
     amps[i1] = m10*amp0 + m11*amp1;
-}
-
-
-template <CtrlFlag ctrlFlag>
-__global__ void kernel_statevec_anyCtrlOneTargDiagMatr_subA(
-    cu_qcomp* amps, CtrlIndParams params, 
-    int targ, cu_qcomp d0, cu_qcomp d1
-) {
-    qindex n = getThreadInd();
-    if (n >= params.numInds) 
-        return;
-
-    // each thread modifies one amp, multiplying by d0 or d1
-    qindex i = getNthIndWhereCtrlsAreActive<ctrlFlag>(n, params);
-    amps[i] *= d0 + (d1-d0)*getBit(i, targ);
 }
 
 
@@ -124,6 +125,23 @@ __global__ void kernel_statevec_anyCtrlOneTargDenseMatr_subB(
 
     amps[i] = fac0*amps[i] + fac1*buffer[j];
 }
+
+
+
+
+// template <CtrlFlag ctrlFlag>
+// __global__ void kernel_statevec_anyCtrlOneTargDiagMatr_sub(
+//     cu_qcomp* amps, CtrlIndParams params, 
+//     int targ, cu_qcomp d0, cu_qcomp d1
+// ) {
+//     qindex n = getThreadInd();
+//     if (n >= params.numInds) 
+//         return;
+
+//     // each thread modifies one amp, multiplying by d0 or d1
+//     qindex i = getNthIndWhereCtrlsAreActive<ctrlFlag>(n, params);
+//     amps[i] *= d0 + (d1-d0)*getBit(i, targ);
+// }
 
 
 
