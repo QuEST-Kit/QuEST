@@ -128,40 +128,76 @@ INSTANTIATE_FUNC_OPTIMISED_FOR_NUM_CTRLS( void, cpu_statevec_anyCtrlOneTargDense
 
 
 template <int NumCtrls, int NumTargs>
-void cpu_statevec_anyCtrlAnyTargDiagMatr_sub(Qureg qureg, vector<int> ctrls, vector<int> ctrlStates, vector<int> targs, DiagMatr matr) {
+void ALT_cpu_statevec_anyCtrlAnyTargDenseMatr_subA(Qureg qureg, vector<int> ctrls, vector<int> ctrlStates, vector<int> targs, CompMatr matr) {
 
-    // each control qubit halves the needed iterations, each of which will modify 1 amplitude
-    qindex numIts = qureg.numAmpsPerNode / powerOf2(ctrls.size());
+    // each control qubit halves iterations, each of which modifies 2^(targs.size()) amplitudes
+    qindex numIts = qureg.numAmpsPerNode / powerOf2(ctrls.size() + targs.size());
 
-    auto sortedCtrls = util_getSorted(ctrls);
-    qindex ctrlMask  = util_getBitMask(ctrls, ctrlStates);
+    // prepare a mask which yields ctrls in specified state, and targs in all-zero
+    auto qubits = util_getSorted(ctrls, targs);
 
-    // use template params to compile-time unroll loops in insertBits() and getValueOfBits()
+    // attempt to use compile-time variables to automatically optimise/unroll dependent loops
     SET_VAR_AT_COMPILE_TIME(int, numCtrls, NumCtrls, ctrls.size());
     SET_VAR_AT_COMPILE_TIME(int, numTargs, NumTargs, targs.size());
+
+    // compiler will infer these at compile-time if possible
+    int numQubits = numCtrls + numTargs;
+    qindex numTargAmps = powerOf2(numTargs);
+
+
+
+
+    vector<qindex> masks(numTargAmps);
+
+    for (qindex v=0; v<numTargAmps; v++) {
+
+        // can make this a util func
+        vector<int> targStates(numTargs);
+        for (int t=0; t<numTargs; t++)
+            targStates[t] = getBit(v, t);
+
+        masks[v] = util_getBitMask(ctrls, ctrlStates, targs, targStates);
+    }
+
+    auto maskrefs = masks.data();
+
+
+
 
     #pragma omp parallel for
     for (qindex n=0; n<numIts; n++) {
 
-        // j = nth local index where ctrls are in the specified states
-        qindex k = insertBits(n, sortedCtrls.data(), numCtrls, 0);
-        qindex j = activateBits(k, ctrlMask);
+        // a private cache needed by each thread to update each iteration's amplitudes
+        vector<qcomp> cache(numTargAmps);
 
-        // i = global index corresponding to j
-        qindex i = concatenateBits(qureg.rank, j, qureg.logNumAmpsPerNode);
+        // j = nth local index where all ctrls and targs are 0
+        qindex j  = insertBits(n, qubits.data(), numQubits, 0); // loop may be unrolled
 
-        // t = value of targeted bits, which may be in the prefix substate
-        qindex t = getValueOfBits(i, targs.data(), numTargs);
+        // collect and cache all to-be-modified amps (loop might be unrolled)
+        for (qindex k=0; k<numTargAmps; k++) {
 
-        qureg.cpuAmps[i] *= matr.cpuElems[t];
+            // i = nth local index where ctrls are active and targs form value k
+            qindex i = activateBits(j, maskrefs[k]);
+
+            cache[k] = qureg.cpuAmps[i];
+        }
+
+        // modify each amplitude (loop might be unrolled)
+        for (qindex l=0; l<numTargAmps; l++) {
+
+            // i = nth local index where ctrls are active and targs form value l
+            qindex i = activateBits(j, maskrefs[l]);
+
+            qureg.cpuAmps[i] = 0;
+        
+            // (loop might be unrolled)
+            for (qindex k=0; k<numTargAmps; k++)
+                qureg.cpuAmps[i] += matr.cpuElems[l][k] * cache[k];
+        }
     }
 }
 
-INSTANTIATE_FUNC_OPTIMISED_FOR_NUM_CTRLS_AND_TARGS( void, cpu_statevec_anyCtrlAnyTargDiagMatr_sub, (Qureg, vector<int>, vector<int>, vector<int>, DiagMatr) )
-
-
-
-
+INSTANTIATE_FUNC_OPTIMISED_FOR_NUM_CTRLS_AND_TARGS( void, ALT_cpu_statevec_anyCtrlAnyTargDenseMatr_subA, (Qureg, vector<int>, vector<int>, vector<int>, CompMatr) )
 
 
 
