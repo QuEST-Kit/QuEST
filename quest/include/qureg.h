@@ -30,6 +30,9 @@ typedef struct {
     const int isDensityMatrix;
     const int numQubits;
     const qindex numAmps;
+    const qindex logNumAmps;
+
+    // distributed load
     const qindex numAmpsPerNode;
     const qindex logNumAmpsPerNode;
 
