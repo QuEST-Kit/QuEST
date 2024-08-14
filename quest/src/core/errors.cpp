@@ -165,6 +165,35 @@ void error_localiserNumCtrlStatesInconsistentWithNumCtrls() {
 
 
 /*
+ * ACCELERATOR ERRORS
+ */
+
+void assert_numCtrlsMatchesNumCtrlStatesAndTemplateParam(int numCtrls, int numCtrlStates, int templateParam) {
+
+    if (numCtrls != numCtrlStates)
+        raiseInternalError("A CPU or GPU subroutine received an inconsistent number of controls and control-states from accelerator.cpp.");
+
+    // template parameter of -1 is always valid (it indicates the routine has not been compile-time optimised)
+    if (templateParam == -1)
+        return;
+
+    if (templateParam != numCtrls)
+        raiseInternalError("A CPU or GPU subroutine received a number of controls inconsistent with its compile-time template parameter, as dispatched by accelerator.cpp.");
+}
+
+void assert_numTargsMatchesTemplateParam(int numTargs, int templateParam) {
+
+    // template parameter of -1 is always valid (it indicates the routine has not been compile-time optimised)
+    if (templateParam == -1)
+        return;
+
+    if (templateParam != numTargs)
+        raiseInternalError("A CPU or GPU subroutine received a number of targets inconsistent with its compile-time template parameter, as dispatched by accelerator.cpp.");
+}
+
+
+
+/*
  * BUFFER PACKING ERRORS
  */
 

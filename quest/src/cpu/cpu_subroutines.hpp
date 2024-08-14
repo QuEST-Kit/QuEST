@@ -40,20 +40,4 @@ template <int NumCtrls, int NumTargs> void cpu_statevec_anyCtrlAnyTargDenseMatr_
 template <int NumCtrls, int NumTargs> void cpu_statevec_anyCtrlAnyTargDiagMatr_sub(Qureg qureg, vector<int> ctrls, vector<int> ctrlStates, vector<int> targs, DiagMatr matr);
 
 
-
-
-
-
-// template <int NumCtrls, int NumTargs>
-// void cpu_statevec_anyCtrlAnyTargCompMatr_subA(Qureg qureg, vector<int> ctrls, vector<int> ctrlStates, vector<int> targs, CompMatr matr);
-
-// TODO: anyTarg subB missing
-
-
-
-
-
-
-
-
 #endif // CPU_SUBROUTINES_HPP

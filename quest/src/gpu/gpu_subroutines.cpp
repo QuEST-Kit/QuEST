@@ -2,7 +2,10 @@
  * CUDA GPU-accelerated definitions of the subroutines called by
  * accelerator.cpp. This file is always compiled, even when GPU
  * acceleration is disabled and when parsed by a non-CUDA compiler,
- * and so uses precompiler guards to disable CUDA-only code.
+ * and so uses precompiler guards to disable CUDA-only code. Note
+ * that COMPILE_CUDA=1 whenever COMPILE_CUQUANTUM=1, but we may
+ * still use superfluous (COMPILE_CUDA || COMPILE_CUQUANTUM) guards
+ * to communicate when there is no bespoke cuQuantum routine.
  * 
  * This file contains host definitions and associated memory and
  * thread management, and invokes custom kernels defined in
@@ -59,30 +62,21 @@ using std::vector;
 
 template <int NumCtrls>
 void gpu_statevec_packAmpsIntoBuffer(Qureg qureg, vector<int> ctrls, vector<int> ctrlStates) {
-    
-    // there is no cuQuantum facility for packing
 
-#if COMPILE_CUDA
+    assert_numCtrlsMatchesNumCtrlStatesAndTemplateParam(ctrls.size(), ctrlStates.size(), NumCtrls);
 
+#if COMPILE_CUDA || COMPILE_CUQUANTUM
 
-    // TODO:
-    //      I think we have to device-malloc space for ctrls.
-    //      or like, copy it into a single compile-time array
-
-
-
-    auto [qubits, stateMask] = getSortedQubitsAndMask(ctrls, ctrlStates, {}, {});
-    qindex numThreads = qureg.numAmpsPerNode / powerOf2(NumCtrls);
-
-    // cast qcomp to cu_qcomp
+    qindex numThreads = qureg.numAmpsPerNode / powerOf2(ctrls.size());
     qindex numBlocks = getNumBlocks(numThreads);
-    cu_qcomp* amps = toCuQcomps(qureg.gpuAmps);
-    cu_qcomp* buff = toCuQcomps(qureg.gpuCommBuffer);
 
-    kernel_statevec_packAmpsIntoBuffer 
-        <NumCtrls> 
-        <<<numBlocks, NUM_THREADS_PER_BLOCK>>> 
-        (amps, buff, qubits.data(), stateMask, numThreads);
+    devicevec sortedCtrls = util_getSorted(ctrls);
+    qindex ctrlStateMask  = util_getBitMask(ctrls, ctrlStates);
+
+    kernel_statevec_packAmpsIntoBuffer <NumCtrls> <<<numBlocks, NUM_THREADS_PER_BLOCK>>> (
+        toCuQcomps(qureg.gpuAmps), toCuQcomps(qreg.gpuCommBuffer), numThreads, 
+        sortedCtrls.data(), sortedCtrls.size(), ctrlStateMask
+    );
 
 #else
     error_gpuSimButGpuNotCompiled();
@@ -95,30 +89,34 @@ INSTANTIATE_FUNC_OPTIMISED_FOR_NUM_CTRLS( void, gpu_statevec_packAmpsIntoBuffer,
 
 
 /*
- * DENSE MATRIX
+ * ONE-TARGET DENSE MATRIX
  */
 
 
 template <int NumCtrls>
 void gpu_statevec_anyCtrlOneTargDenseMatr_subA(Qureg qureg, vector<int> ctrls, vector<int> ctrlStates, int targ, CompMatr1 matr) {
+
+    assert_numCtrlsMatchesNumCtrlStatesAndTemplateParam(ctrls.size(), ctrlStates.size(), NumCtrls);
+
 #if COMPILE_CUQUANTUM
 
-    // ignore ctrlFlag
     cuquantum_statevec_anyCtrlAnyTargDenseMatrix_subA(qureg, ctrls, ctrlStates, {targ}, unpackMatrixToCuQcomps(matr).data());
 
 #elif COMPILE_CUDA
 
-    // prepare parameters needed for optimal indexing logic with the given ctrls
+    qindex numThreads = qureg.numAmpsPerNode / powerOf2(ctrls.size() + 1);
+    qindex numBlocks = getNumBlocks(numThreads);
 
-    qindex numBlocks = getNumBlocks(params.numInds);
-    cu_qcomp* amps = toCuQcomps(qureg.gpuAmps);
+    devicevec sortedQubits = util_getSorted(ctrls, {targ});
+    qindex qubitStateMask  = util_getBitMask(ctrls, ctrlStates, {targ}, {0});
 
-    // there are sufficiently few matrix elements (<256 bytes) to pass directly to kernel
-    cu_qcomp m00, m01, m10, m11;
-    unpackMatrixToCuQcomps(matr, m00,m01,m10,m11);
+    auto [m00, m01, m10, m11] = unpackMatrixToCuQcomps(matr);
 
-    // use ctrlFlag to dispatch to optimised kernel
-    kernel_statevec_anyCtrlOneTargDenseMatr_subA <ctrlFlag> <<<numBlocks,NUM_THREADS_PER_BLOCK>>> (amps, params, targ, m00,m01,m10,m11);
+    kernel_statevec_anyCtrlOneTargDenseMatr_subA <NumCtrls> <<<numBlocks, NUM_THREADS_PER_BLOCK>>> (
+        toCuQcomps(qureg.gpuAmps), numThreads, 
+        sortedQubits.data(), ctrls.size(), qubitStateMask, targ, 
+        m00, m01, m10, m11
+    );
 
 #else
     error_gpuSimButGpuNotCompiled();
@@ -130,23 +128,23 @@ INSTANTIATE_FUNC_OPTIMISED_FOR_NUM_CTRLS( void, gpu_statevec_anyCtrlOneTargDense
 
 template <int NumCtrls>
 void gpu_statevec_anyCtrlOneTargDenseMatr_subB(Qureg qureg, vector<int> ctrls, vector<int> ctrlStates, qcomp fac0, qcomp fac1) {
-    
-    // there is no cuQuantum facility for subB
 
-#if COMPILE_CUDA
+    assert_numCtrlsMatchesNumCtrlStatesAndTemplateParam(ctrls.size(), ctrlStates.size(), NumCtrls);
 
-    // prepare parameters needed for optimal indexing logic with the given ctrls
-    CtrlIndParams params = getParamsInformingIndsWhereCtrlsAreActive(qureg.numAmpsPerNode, ctrls, ctrlStates);
+#if COMPILE_CUDA || COMPILE_CUQUANTUM
 
-    // cast qcomp to cu_qcomp
-    qindex numBlocks = getNumBlocks(params.numInds);
-    cu_qcomp* amps = toCuQcomps(qureg.gpuAmps);
-    cu_qcomp* buff = toCuQcomps(qureg.gpuCommBuffer);
-    cu_qcomp f0 = toCuQcomp(fac0);
-    cu_qcomp f1 = toCuQcomp(fac1);
+    qindex numThreads = qureg.numAmpsPerNode / powerOf2(ctrls.size());
+    qindex numBlocks = getNumBlocks(numThreads);
+
+    devicevec sortedCtrls = util_getSorted(ctrls);
+    qindex ctrlStateMask  = util_getBitMask(ctrls, ctrlStates);
 
     // use ctrlFlag to dispatch to optimised kernel
-    kernel_statevec_anyCtrlOneTargDenseMatr_subB <ctrlFlag> <<<numBlocks,NUM_THREADS_PER_BLOCK>>> (amps, buff, params, f0, f1);
+    kernel_statevec_anyCtrlOneTargDenseMatr_subB <NumCtrls> <<<numBlocks,NUM_THREADS_PER_BLOCK>>> (
+        toCuQcomps(qureg.gpuAmps), toCuQcomps(qureg.gpuCommBuffer), numThreads, 
+        sortedCtrls.data(), sortedCtrls.size(), ctrlStateMask, 
+        toCuQcomp(fac0), toCuQcomp(fac1)
+    );
 
 #else
     error_gpuSimButGpuNotCompiled();
@@ -157,14 +155,21 @@ INSTANTIATE_FUNC_OPTIMISED_FOR_NUM_CTRLS( void, gpu_statevec_anyCtrlOneTargDense
 
 
 
+/*
+ * MANY-TARGET DENSE MATRIX
+ */
+
+
 template <int NumCtrls, int NumTargs>
 void gpu_statevec_anyCtrlAnyTargDenseMatr_subA(Qureg qureg, vector<int> ctrls, vector<int> ctrlStates, vector<int> targs, CompMatr matr) {
+
+    assert_numCtrlsMatchesNumCtrlStatesAndTemplateParam(ctrls.size(), ctrlStates.size(), NumCtrls);
+    assert_numTargsMatchesTemplateParam(targs.size(), NumTargs);
 
     // TODO
 }
 
 INSTANTIATE_FUNC_OPTIMISED_FOR_NUM_CTRLS_AND_TARGS( void, gpu_statevec_anyCtrlAnyTargDenseMatr_subA, (Qureg, vector<int>, vector<int>, vector<int>, CompMatr) )
-
 
 
 
@@ -175,22 +180,28 @@ INSTANTIATE_FUNC_OPTIMISED_FOR_NUM_CTRLS_AND_TARGS( void, gpu_statevec_anyCtrlAn
 
 template <int NumCtrls, int NumTargs>
 void gpu_statevec_anyCtrlAnyTargDiagMatr_sub(Qureg qureg, vector<int> ctrls, vector<int> ctrlStates, vector<int> targs, DiagMatr matr) {
+
+    assert_numCtrlsMatchesNumCtrlStatesAndTemplateParam(ctrls.size(), ctrlStates.size(), NumCtrls);
+    assert_numTargsMatchesTemplateParam(targs.size(), NumTargs);
+
 #if COMPILE_CUQUANTUM
 
     cuquantum_statevec_anyCtrlAnyTargDiagMatr_subA(qureg, ctrls, ctrlStates, targs, toCuQcomps(matr.elems));
 
 #elif COMPILE_CUDA
 
-    qindex numThreads = qureg.numAmpsPerNode / powerOf2(NumCtrls);
+    qindex numThreads = qureg.numAmpsPerNode / powerOf2(ctrls.size());
     qindex numBlocks = getNumBlocks(numThreads);
-    cu_qcomp* amps = toCuQcomps(qureg.gpuAmps);
-    cu_qcomp d0 = toCuQcomp(matr.elems[0]);
-    cu_qcomp d1 = toCuQcomp(matr.elems[1]);
 
-    // TODO: fix kernel args etc
+    devicevec deviceTargs = targs;
+    devicevec deviceCtrls = util_getSorted(ctrls);
+    qindex ctrlStateMask  = util_getBitMask(ctrls, ctrlStates);
 
-    // use ctrlFlag to dispatch to optimised kernel
-    kernel_statevec_anyCtrlOneTargDiagMatr_sub <ctrlFlag> <<<numBlocks, NUM_THREADS_PER_BLOCK>>> (amps, params, targ, d0, d1);
+    kernel_statevec_anyCtrlOneTargDiagMatr_sub <NumCtrls, NumTargs> <<<numBlocks, NUM_THREADS_PER_BLOCK>>> (
+        toCuQcomps(qureg.gpuAmps), numThreads, qureg.rank, qureg.logNumAmpsPerNode,
+        deviceCtrls.data(), deviceCtrls.size(), ctrlStateMask, deviceTargs.data(), deviceTargs.size(), 
+        toCuQcomps(matr.gpuElems)
+    );
 
 #else
     error_gpuSimButGpuNotCompiled();
@@ -198,8 +209,3 @@ void gpu_statevec_anyCtrlAnyTargDiagMatr_sub(Qureg qureg, vector<int> ctrls, vec
 }
 
 INSTANTIATE_FUNC_OPTIMISED_FOR_NUM_CTRLS_AND_TARGS( void, gpu_statevec_anyCtrlAnyTargDiagMatr_sub, (Qureg, vector<int>, vector<int>, vector<int>, DiagMatr) )
-
-
-
-
-
