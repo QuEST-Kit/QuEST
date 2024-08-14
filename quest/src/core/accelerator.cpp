@@ -89,7 +89,7 @@ void accel_statevec_packAmpsIntoBuffer(Qureg qureg, vector<int> ctrls, vector<in
 
 
 /*
- * MATRICES
+ * DENSE MATRIX
  */
 
 
@@ -110,6 +110,21 @@ void accel_statevec_anyCtrlOneTargDenseMatr_subB(Qureg qureg, vector<int> ctrls,
 
     useFunc(qureg, ctrls, ctrlStates, fac0, fac1);
 }
+
+void accel_statevec_anyCtrlAnyTargDenseMatr_subA(Qureg qureg, vector<int> ctrls, vector<int> ctrlStates, vector<int> targs, CompMatr matr) {
+
+    auto cpuFunc = GET_FUNC_OPTIMISED_FOR_NUM_CTRLS_AND_TARGS( cpu_statevec_anyCtrlAnyTargDenseMatr_subA, ctrls.size(), targs.size() );
+    auto gpuFunc = GET_FUNC_OPTIMISED_FOR_NUM_CTRLS_AND_TARGS( gpu_statevec_anyCtrlAnyTargDenseMatr_subA, ctrls.size(), targs.size() );
+    auto useFunc = (qureg.isGpuAccelerated)? gpuFunc : cpuFunc;
+
+    useFunc(qureg, ctrls, ctrlStates, targs, matr);
+}
+
+
+
+/*
+ * DIAGONAL MATRIX
+ */
 
 
 void accel_statevec_anyCtrlAnyTargDiagMatr_sub(Qureg qureg, vector<int> ctrls, vector<int> ctrlStates, vector<int> targs, DiagMatr matr) {

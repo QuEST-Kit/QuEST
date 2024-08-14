@@ -53,9 +53,7 @@ using std::vector;
 
 
 /*
- * BUFFER PACKING
- *
- * which are templated and require explicit instantiation below
+ * COMMUNICATION BUFFER PACKING
  */
 
 
@@ -96,11 +94,8 @@ INSTANTIATE_FUNC_OPTIMISED_FOR_NUM_CTRLS( void, gpu_statevec_packAmpsIntoBuffer,
 
 
 
-
-
-
 /*
- * TODO SECTION
+ * DENSE MATRIX
  */
 
 
@@ -130,9 +125,7 @@ void gpu_statevec_anyCtrlOneTargDenseMatr_subA(Qureg qureg, vector<int> ctrls, v
 #endif
 }
 
-
 INSTANTIATE_FUNC_OPTIMISED_FOR_NUM_CTRLS( void, gpu_statevec_anyCtrlOneTargDenseMatr_subA, (Qureg, vector<int>, vector<int>, int, CompMatr1) )
-
 
 
 template <int NumCtrls>
@@ -160,13 +153,24 @@ void gpu_statevec_anyCtrlOneTargDenseMatr_subB(Qureg qureg, vector<int> ctrls, v
 #endif
 }
 
-
 INSTANTIATE_FUNC_OPTIMISED_FOR_NUM_CTRLS( void, gpu_statevec_anyCtrlOneTargDenseMatr_subB, (Qureg, vector<int>, vector<int>, qcomp, qcomp) )
 
 
 
+template <int NumCtrls, int NumTargs>
+void gpu_statevec_anyCtrlAnyTargDenseMatr_subA(Qureg qureg, vector<int> ctrls, vector<int> ctrlStates, vector<int> targs, CompMatr matr) {
+
+    // TODO
+}
+
+INSTANTIATE_FUNC_OPTIMISED_FOR_NUM_CTRLS_AND_TARGS( void, gpu_statevec_anyCtrlAnyTargDenseMatr_subA, (Qureg, vector<int>, vector<int>, vector<int>, CompMatr) )
 
 
+
+
+/*
+ * DIAGONAL MATRIX
+ */
 
 
 template <int NumCtrls, int NumTargs>

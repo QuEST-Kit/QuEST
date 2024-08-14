@@ -127,7 +127,7 @@ auto getSuffixCtrlsAndStates(Qureg qureg, vector<int> ctrls, vector<int> states)
  */
 
 
-void statevec_anyCtrlOneTargDenseMatr(Qureg qureg, vector<int> ctrls, vector<int> ctrlStates, int targ, CompMatr1 matr) {
+void localiser_statevec_anyCtrlOneTargDenseMatr(Qureg qureg, vector<int> ctrls, vector<int> ctrlStates, int targ, CompMatr1 matr) {
     assertValidCtrlStates(ctrls, ctrlStates);
     setDefaultCtrlStates(ctrls, ctrlStates);
 
@@ -167,14 +167,33 @@ void statevec_anyCtrlOneTargDenseMatr(Qureg qureg, vector<int> ctrls, vector<int
 }
 
 
-void statevec_anyCtrlManyTargDenseMatr(Qureg qureg, vector<int> ctrls, vector<int> ctrlStates, int targ, CompMatr matr) {
+void localiser_statevec_anyCtrlAnyTargDenseMatr(Qureg qureg, vector<int> ctrls, vector<int> ctrlStates, vector<int> targs, CompMatr matr) {
+    assertValidCtrlStates(ctrls, ctrlStates);
+    setDefaultCtrlStates(ctrls, ctrlStates);
 
-    // TODO
-    //  we nmay not even need above bespoke method - you'll have to benchmark!
+    // node has nothing to do if all local amps violate control condition
+    if (!doAnyLocalAmpsSatisfyCtrls(qureg, ctrls, ctrlStates))
+        return;
+
+    // if all targets lie within the suffix node...
+    if (!doesGateRequireComm(qureg, targs)) {
+
+        // retain only suffix controls, and perform embarrassingly parallel simulation
+        std::tie(ctrls, ctrlStates) = getSuffixCtrlsAndStates(qureg, ctrls, ctrlStates);
+        accel_statevec_anyCtrlAnyTargDenseMatr_subA(qureg, ctrls, ctrlStates, targs, matr);
+        return;
+    }
+
+
+    // TODO:
+    //  need all the swaps and stuff being careful of controls
+
+    error_allocOfQuESTEnvFailed();
 }
 
 
-void statevec_anyCtrlAnyTargDiagMatr(Qureg qureg, vector<int> ctrls, vector<int> ctrlStates, vector<int> targs, DiagMatr matr) {
+
+void localiser_statevec_anyCtrlAnyTargDiagMatr(Qureg qureg, vector<int> ctrls, vector<int> ctrlStates, vector<int> targs, DiagMatr matr) {
     assertValidCtrlStates(ctrls, ctrlStates);
     setDefaultCtrlStates(ctrls, ctrlStates);
 

@@ -23,6 +23,8 @@ using std::vector;
 
 int util_getShifted(int qubit, Qureg qureg);
 
+vector<int> util_getVector(int* qubits, int numQubits);
+
 vector<int> util_getSorted(vector<int> list);
 vector<int> util_getSorted(vector<int> ctrls, vector<int> targs);
 

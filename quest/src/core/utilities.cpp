@@ -43,17 +43,24 @@ vector<int> util_getSorted(vector<int> ctrls, vector<int> targs) {
 }
 
 qindex util_getBitMask(vector<int> qubits, vector<int> states) {
+
     return getBitMask(qubits.data(), states.data(), states.size());
 }
 
 qindex util_getBitMask(vector<int> ctrls, vector<int> ctrlStates, vector<int> targs, vector<int> targStates) {
 
     auto qubits = ctrls;
-    auto states = ctrlStates;
     qubits.insert(qubits.end(), targs.begin(), targs.end());
-    states.insert(qubits.end(), targStates.begin(), targStates.end());
+
+    auto states = ctrlStates;
+    states.insert(states.end(), targStates.begin(), targStates.end());
 
     return util_getBitMask(qubits, states);
+}
+
+vector<int> util_getVector(int* qubits, int numQubits) {
+
+    return vector<int> (qubits, qubits + numQubits);
 }
 
 
