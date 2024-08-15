@@ -37,6 +37,7 @@
 #include "quest/include/matrices.h"
 
 #include "quest/src/core/errors.hpp"
+#include "quest/src/core/utilities.hpp"
 #include "quest/src/core/accelerator.hpp"
 
 #if COMPILE_CUDA
@@ -74,7 +75,7 @@ void gpu_statevec_packAmpsIntoBuffer(Qureg qureg, vector<int> ctrls, vector<int>
     qindex ctrlStateMask  = util_getBitMask(ctrls, ctrlStates);
 
     kernel_statevec_packAmpsIntoBuffer <NumCtrls> <<<numBlocks, NUM_THREADS_PER_BLOCK>>> (
-        toCuQcomps(qureg.gpuAmps), toCuQcomps(qreg.gpuCommBuffer), numThreads, 
+        toCuQcomps(qureg.gpuAmps), toCuQcomps(qureg.gpuCommBuffer), numThreads, 
         sortedCtrls.data(), sortedCtrls.size(), ctrlStateMask
     );
 
@@ -197,7 +198,7 @@ void gpu_statevec_anyCtrlAnyTargDiagMatr_sub(Qureg qureg, vector<int> ctrls, vec
     devicevec deviceCtrls = util_getSorted(ctrls);
     qindex ctrlStateMask  = util_getBitMask(ctrls, ctrlStates);
 
-    kernel_statevec_anyCtrlOneTargDiagMatr_sub <NumCtrls, NumTargs> <<<numBlocks, NUM_THREADS_PER_BLOCK>>> (
+    kernel_statevec_anyCtrlAnyTargDiagMatr_sub <NumCtrls, NumTargs> <<<numBlocks, NUM_THREADS_PER_BLOCK>>> (
         toCuQcomps(qureg.gpuAmps), numThreads, qureg.rank, qureg.logNumAmpsPerNode,
         deviceCtrls.data(), deviceCtrls.size(), ctrlStateMask, deviceTargs.data(), deviceTargs.size(), 
         toCuQcomps(matr.gpuElems)

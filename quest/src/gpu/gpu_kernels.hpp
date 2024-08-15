@@ -14,19 +14,12 @@
 #include "quest/include/types.h"
 
 #include "quest/src/core/bitwise.hpp"
+
 #include "quest/src/gpu/gpu_types.hpp"
 
 #if ! COMPILE_CUDA
     #error "A file being compiled somehow included gpu_kernels.hpp despite QuEST not being compiled in GPU-accelerated mode."
 #endif
-
-using namespace index_flags;
-
-
-
-
-// TODO:
-// FIX THESE!!! NEED TO FIX CTRL ARGS ETC
 
 
 
@@ -158,7 +151,7 @@ __global__ void kernel_statevec_anyCtrlAnyTargDiagMatr_sub(
     cu_qcomp* elems
 ) {
     qindex n = getThreadInd();
-    if (n >= params.numInds) 
+    if (n >= numThreads) 
         return;
 
     // use template params to compile-time unroll loops in insertBits() and getValueOfBits()
