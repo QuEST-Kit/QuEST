@@ -42,7 +42,7 @@ void cpu_statevec_packAmpsIntoBuffer(Qureg qureg, vector<int> ctrls, vector<int>
     // use template param to compile-time unroll loop in insertBits()
     SET_VAR_AT_COMPILE_TIME(int, numCtrlBits, NumCtrls, ctrls.size());
 
-    #pragma omp if(qureg.isMultithreaded) parallel for
+    #pragma omp parallel for if(qureg.isMultithreaded)
     for (qindex n=0; n<numIts; n++) {
 
         // i = nth local index where ctrl bits are in specified states
@@ -77,7 +77,7 @@ void cpu_statevec_anyCtrlOneTargDenseMatr_subA(Qureg qureg, vector<int> ctrls, v
     SET_VAR_AT_COMPILE_TIME(int, numCtrlBits, NumCtrls, ctrls.size());
     int numQubitBits = numCtrlBits + 1;
 
-    #pragma omp if(qureg.isMultithreaded) parallel for
+    #pragma omp parallel for if(qureg.isMultithreaded)
     for (qindex n=0; n<numIts; n++) {
 
         // i0 = nth local index where ctrl bits are in specified states and targ is 0
@@ -111,7 +111,7 @@ void cpu_statevec_anyCtrlOneTargDenseMatr_subB(Qureg qureg, vector<int> ctrls, v
     // use template param to compile-time unroll loop in insertBits()
     SET_VAR_AT_COMPILE_TIME(int, numCtrlBits, NumCtrls, ctrls.size());
 
-    #pragma omp if(qureg.isMultithreaded) parallel for
+    #pragma omp parallel for if(qureg.isMultithreaded)
     for (qindex n=0; n<numIts; n++) {
 
         // i = nth local index where ctrl bits are in specified states
@@ -161,7 +161,7 @@ void cpu_statevec_anyCtrlAnyTargDenseMatr_subA(Qureg qureg, vector<int> ctrls, v
     int numQubitBits = numCtrlBits + numTargBits;
     qindex numTargAmps = powerOf2(numTargBits);
 
-    #pragma omp if(qureg.isMultithreaded) parallel for
+    #pragma omp parallel for if(qureg.isMultithreaded)
     for (qindex n=0; n<numIts; n++) {
 
         // a private cache needed by each thread to update each iteration's amplitudes (may be compile-time sized)
@@ -218,7 +218,7 @@ void cpu_statevec_anyCtrlAnyTargDiagMatr_sub(Qureg qureg, vector<int> ctrls, vec
     SET_VAR_AT_COMPILE_TIME(int, numCtrlBits, NumCtrls, ctrls.size());
     SET_VAR_AT_COMPILE_TIME(int, numTargBits, NumTargs, targs.size());
 
-    #pragma omp if(qureg.isMultithreaded) parallel for
+    #pragma omp parallel for if(qureg.isMultithreaded)
     for (qindex n=0; n<numIts; n++) {
 
         // j = nth local index where ctrls are active (in the specified states)
