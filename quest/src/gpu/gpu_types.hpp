@@ -24,8 +24,8 @@
 #include <vector>
 #include <cuComplex.h>
 
+#include <thrust/device_ptr.h>
 #include <thrust/device_vector.h>
-#include <thrust/raw_pointer_cast.h>
 
 
 
