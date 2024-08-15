@@ -76,7 +76,7 @@ void gpu_statevec_packAmpsIntoBuffer(Qureg qureg, vector<int> ctrls, vector<int>
 
     kernel_statevec_packAmpsIntoBuffer <NumCtrls> <<<numBlocks, NUM_THREADS_PER_BLOCK>>> (
         toCuQcomps(qureg.gpuAmps), toCuQcomps(qureg.gpuCommBuffer), numThreads, 
-        sortedCtrls.data(), sortedCtrls.size(), ctrlStateMask
+        getPtr(sortedCtrls), ctrls.size(), ctrlStateMask
     );
 
 #else
@@ -115,7 +115,7 @@ void gpu_statevec_anyCtrlOneTargDenseMatr_subA(Qureg qureg, vector<int> ctrls, v
 
     kernel_statevec_anyCtrlOneTargDenseMatr_subA <NumCtrls> <<<numBlocks, NUM_THREADS_PER_BLOCK>>> (
         toCuQcomps(qureg.gpuAmps), numThreads, 
-        sortedQubits.data(), ctrls.size(), qubitStateMask, targ, 
+        getPtr(sortedQubits), ctrls.size(), qubitStateMask, targ, 
         m00, m01, m10, m11
     );
 
@@ -143,7 +143,7 @@ void gpu_statevec_anyCtrlOneTargDenseMatr_subB(Qureg qureg, vector<int> ctrls, v
     // use ctrlFlag to dispatch to optimised kernel
     kernel_statevec_anyCtrlOneTargDenseMatr_subB <NumCtrls> <<<numBlocks,NUM_THREADS_PER_BLOCK>>> (
         toCuQcomps(qureg.gpuAmps), toCuQcomps(qureg.gpuCommBuffer), numThreads, 
-        sortedCtrls.data(), sortedCtrls.size(), ctrlStateMask, 
+        getPtr(sortedCtrls), ctrls.size(), ctrlStateMask, 
         toCuQcomp(fac0), toCuQcomp(fac1)
     );
 
@@ -200,7 +200,7 @@ void gpu_statevec_anyCtrlAnyTargDiagMatr_sub(Qureg qureg, vector<int> ctrls, vec
 
     kernel_statevec_anyCtrlAnyTargDiagMatr_sub <NumCtrls, NumTargs> <<<numBlocks, NUM_THREADS_PER_BLOCK>>> (
         toCuQcomps(qureg.gpuAmps), numThreads, qureg.rank, qureg.logNumAmpsPerNode,
-        deviceCtrls.data(), deviceCtrls.size(), ctrlStateMask, deviceTargs.data(), deviceTargs.size(), 
+        getPtr(deviceCtrls), ctrls.size(), ctrlStateMask, getPtr(deviceTargs), targs.size(), 
         toCuQcomps(matr.gpuElems)
     );
 

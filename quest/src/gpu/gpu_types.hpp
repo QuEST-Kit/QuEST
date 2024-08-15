@@ -21,8 +21,11 @@
 #endif
 
 #include <array>
+#include <vector>
 #include <cuComplex.h>
+
 #include <thrust/device_vector.h>
+#include <thrust/raw_pointer_cast.h>
 
 
 
@@ -31,11 +34,17 @@
  *
  * is done using thrust's device_vector's copy constructor
  * (devicevec d_vec = hostvec), the pointer of which (.data())
- * can be passed to, and accessed by, a CUDA kernel
+ * can be cast into a raw pointer and passed to CUDA kernels
  */
 
 
 using devicevec = thrust::device_vector<int>;
+
+
+int* getPtr(devicevec qubits) {
+
+    return thrust::raw_pointer_cast(qubits.data());
+}
 
 
 
