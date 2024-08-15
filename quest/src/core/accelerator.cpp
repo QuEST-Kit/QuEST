@@ -38,8 +38,8 @@ using std::vector;
  * number of controls or targets exceeds that which have optimised compilations, 
  * we fall back to using a generic implementation, indicated by <-1>. In essence,
  * these macros simply call func<ctrls.size()> albeit without illegally passing
- * a runtime variable as a template parameter. The use of double-brackets is to
- * work around a gcc <12 compiler bug.
+ * a runtime variable as a template parameter. Note an awkward use of decltype()
+ * is to workaround a GCC <12 bug with implicitly-typed vector initialisations.
  */
 
 
@@ -48,23 +48,25 @@ using std::vector;
 #endif
 
 
-#define GET_FUNC_OPTIMISED_FOR_NUM_CTRLS(func, numctrls) \
-    ((vector{func<0>, func<1>, func<2>, func<3>, func<4>, func<5>, func<-1>})) \
+#define GET_FUNC_OPTIMISED_FOR_NUM_CTRLS(f, numctrls) \
+    (vector <decltype(&f<0>)> {&f<0>, &f<1>, &f<2>, &f<3>, &f<4>, &f<5>, &f<-1>}) \
     [std::min((int) numctrls, MAX_OPTIMISED_NUM_CTRLS - 1)]
 
 
-#define GET_FUNC_OPTIMISED_FOR_NUM_CTRLS_AND_TARGS(func, numctrls, numtargs) \
-    ((vector{ \
-        vector{func<0,0>,  func<0,1>,  func<0,2>,  func<0,3>,  func<0,4>,  func<0,5>,  func<0,-1>}, \
-        vector{func<1,0>,  func<1,1>,  func<1,2>,  func<1,3>,  func<1,4>,  func<1,5>,  func<1,-1>}, \
-        vector{func<2,0>,  func<2,1>,  func<2,2>,  func<2,3>,  func<2,4>,  func<2,5>,  func<2,-1>}, \
-        vector{func<3,0>,  func<3,1>,  func<3,2>,  func<3,3>,  func<3,4>,  func<3,5>,  func<3,-1>}, \
-        vector{func<4,0>,  func<4,1>,  func<4,2>,  func<4,3>,  func<4,4>,  func<4,5>,  func<4,-1>}, \
-        vector{func<5,0>,  func<5,1>,  func<5,2>,  func<5,3>,  func<5,4>,  func<5,5>,  func<5,-1>}, \
-        vector{func<-1,0>, func<-1,1>, func<-1,2>, func<-1,3>, func<-1,4>, func<-1,5>, func<-1,-1>}})) \
+#define GET_FUNC_OPTIMISED_FOR_NUM_CTRLS_AND_TARGS(f, numctrls, numtargs) \
+    (vector <ARR(f)> { \
+        ARR(f) {&f<0,0>,  &f<0,1>,  &f<0,2>,  &f<0,3>,  &f<0,4>,  &f<0,5>,  &f<0,-1>}, \
+        ARR(f) {&f<1,0>,  &f<1,1>,  &f<1,2>,  &f<1,3>,  &f<1,4>,  &f<1,5>,  &f<1,-1>}, \
+        ARR(f) {&f<2,0>,  &f<2,1>,  &f<2,2>,  &f<2,3>,  &f<2,4>,  &f<2,5>,  &f<2,-1>}, \
+        ARR(f) {&f<3,0>,  &f<3,1>,  &f<3,2>,  &f<3,3>,  &f<3,4>,  &f<3,5>,  &f<3,-1>}, \
+        ARR(f) {&f<4,0>,  &f<4,1>,  &f<4,2>,  &f<4,3>,  &f<4,4>,  &f<4,5>,  &f<4,-1>}, \
+        ARR(f) {&f<5,0>,  &f<5,1>,  &f<5,2>,  &f<5,3>,  &f<5,4>,  &f<5,5>,  &f<5,-1>}, \
+        ARR(f) {&f<-1,0>, &f<-1,1>, &f<-1,2>, &f<-1,3>, &f<-1,4>, &f<-1,5>, &f<-1,-1>}}) \
     [std::min((int) numctrls, MAX_OPTIMISED_NUM_CTRLS - 1)] \
     [std::min((int) numtargs, MAX_OPTIMISED_NUM_TARGS - 1)]
 
+
+#define ARR(f) vector<decltype(&f<0,0>)>
 
 
 
