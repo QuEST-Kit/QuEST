@@ -101,7 +101,8 @@ void gpu_statevec_anyCtrlOneTargDenseMatr_subA(Qureg qureg, vector<int> ctrls, v
 
 #if COMPILE_CUQUANTUM
 
-    cuquantum_statevec_anyCtrlAnyTargDenseMatrix_subA(qureg, ctrls, ctrlStates, {targ}, unpackMatrixToCuQcomps(matr).data());
+    auto arr = unpackMatrixToCuQcomps(matr);
+    cuquantum_statevec_anyCtrlAnyTargDenseMatrix_subA(qureg, ctrls, ctrlStates, {targ}, arr.data());
 
 #elif COMPILE_CUDA
 
@@ -167,7 +168,24 @@ void gpu_statevec_anyCtrlAnyTargDenseMatr_subA(Qureg qureg, vector<int> ctrls, v
     assert_numCtrlsMatchesNumCtrlStatesAndTemplateParam(ctrls.size(), ctrlStates.size(), NumCtrls);
     assert_numTargsMatchesTemplateParam(targs.size(), NumTargs);
 
+#if COMPILE_CUQUANTUM
+
+    cuquantum_statevec_anyCtrlAnyTargDenseMatrix_subA(qureg, ctrls, ctrlStates, targs, toCuQcomps(matr.gpuElems));
+
+#elif COMPILE_CUDA
+
+    qindex numThreads = qureg.numAmpsPerNode / powerOf2(ctrls.size() + targs.size());
+    qindex numBlocks = getNumBlocks(numThreads);
+
+    devicevec deviceTargs  = targs;
+    devicevec deviceQubits = util_getSorted(ctrls, targs);
+    qindex qubitStateMask  = util_getBitMask(ctrls, ctrlStates, targs, vector<int>(targs.size(),0));
+
     // TODO
+
+#else
+    error_gpuSimButGpuNotCompiled();
+#endif
 }
 
 INSTANTIATE_FUNC_OPTIMISED_FOR_NUM_CTRLS_AND_TARGS( void, gpu_statevec_anyCtrlAnyTargDenseMatr_subA, (Qureg, vector<int>, vector<int>, vector<int>, CompMatr) )
@@ -187,7 +205,7 @@ void gpu_statevec_anyCtrlAnyTargDiagMatr_sub(Qureg qureg, vector<int> ctrls, vec
 
 #if COMPILE_CUQUANTUM
 
-    cuquantum_statevec_anyCtrlAnyTargDiagMatr_subA(qureg, ctrls, ctrlStates, targs, toCuQcomps(matr.elems));
+    cuquantum_statevec_anyCtrlAnyTargDiagMatr_subA(qureg, ctrls, ctrlStates, targs, toCuQcomps(matr.gpuElems));
 
 #elif COMPILE_CUDA
 

@@ -132,10 +132,18 @@ __global__ void kernel_statevec_anyCtrlOneTargDenseMatr_subB(
 
 
 /*
- * MANY-TARGET DENSE MATRIX
+ * ANY-TARGET DENSE MATRIX
  */
 
-// todo
+
+template <int NumCtrls, int NumTargs>
+__global__ void kernel_statevec_anyCtrlAnyTargDenseMatr_subA(
+    cu_qcomp* amps, qindex numThreads
+    int* qubits, int numQubits, qindex mask, int* targs, int numTargs,
+    cu_qcomp* elems
+) {
+    // TODO
+}
 
 
 

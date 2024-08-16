@@ -190,13 +190,13 @@ void cuquantum_statevec_anyCtrlAnyTargDiagonalMatrix_subA(Qureg qureg, vector<in
     void* work = nullptr;
     size_t workSize = 0;
 
-    custatevecApplyGeneralizedPermutationMatrix(
+    CUDA_CHECK( custatevecApplyGeneralizedPermutationMatrix(
         config.cuQuantumHandle,
         toCuQcomps(qureg.gpuAmps), CUQUANTUM_QCOMP, qureg.logNumAmpsPerNode,
         perm, flatMatrElems, CUQUANTUM_QCOMP, adj, 
         targs.data(), targs.size(), 
         ctrls.data(), ctrlVals, ctrls.size(),
-        work, workSize);
+        work, workSize) );
 }
 
 
