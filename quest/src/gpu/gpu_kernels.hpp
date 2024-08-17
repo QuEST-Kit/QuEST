@@ -66,8 +66,7 @@ __global__ void kernel_statevec_packAmpsIntoBuffer(
     SET_VAR_AT_COMPILE_TIME(int, numCtrlBits, NumCtrls, numCtrls);
 
     // i = nth local index where ctrls are active
-    qindex j = insertBits(n, ctrls, numCtrlBits, 0);
-    qindex i = activateBits(j, mask);
+    qindex i = insertBitsWithMaskedValues(n, ctrls, numCtrlBits, mask);
 
     buffer[n] = amps[i];
 }
@@ -93,8 +92,7 @@ __global__ void kernel_statevec_anyCtrlOneTargDenseMatr_subA(
     SET_VAR_AT_COMPILE_TIME(int, numCtrlBits, NumCtrls, numCtrls);
 
     // i0 = nth local index where ctrls are active and targ is 0
-    qindex j  = insertBits(n, ctrlsAndTarg, numCtrlBits + 1, 0);
-    qindex i0 = activateBits(j, mask);
+    qindex i0 = insertBitsWithMaskedValues(n, ctrlsAndTarg, numCtrlBits + 1, mask);
     qindex i1 = flipBit(i0, targ);
 
     // note amps are strided by 2^targ
@@ -120,8 +118,7 @@ __global__ void kernel_statevec_anyCtrlOneTargDenseMatr_subB(
     SET_VAR_AT_COMPILE_TIME(int, numCtrlBits, NumCtrls, numCtrls);
 
     // i = nth local index where ctrl bits are active
-    qindex j = insertBits(n, ctrls, numCtrlBits, 0);
-    qindex i = activateBits(j, mask);
+    qindex i = insertBitsWithMaskedValues(n, ctrls, numCtrlBits, mask);
 
     // k = index of nth received buffer amp
     qindex k = n + numThreads;
@@ -167,8 +164,7 @@ __global__ void kernel_statevec_anyCtrlAnyTargDiagMatr_sub(
     SET_VAR_AT_COMPILE_TIME(int, numTargBits, NumTargs, numTargs);
 
     // j = nth local index where ctrls are active (in the specified states)
-    qindex k = insertBits(n, ctrls, numCtrlBits, 0);
-    qindex j = activateBits(k, mask);
+    qindex j = insertBitsWithMaskedValues(n, ctrls, numCtrlBits, mask);
 
     // i = global index corresponding to j
     qindex i = concatenateBits(rank, j, logNumAmpsPerNode);

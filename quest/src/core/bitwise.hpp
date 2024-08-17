@@ -134,7 +134,16 @@ INLINE qindex getValueOfBits(qindex number, int* bitIndices, int numIndices) {
  *
  * which merely improve caller's code readability
  */
- 
+
+
+INLINE qindex insertBitsWithMaskedValues(qindex number, int* bitInds, int numBits, qindex mask) {
+
+    // bitInds must be sorted (increasing), and mask must be zero everywhere except bitInds
+    number = insertBits(number, bitInds, numBits, 0);
+    number = activateBits(number, mask);
+    return number;
+}
+
 
 INLINE qindex insertTwoBits(qindex number, int highInd, int highBit, int lowInd, int lowBit) {
     

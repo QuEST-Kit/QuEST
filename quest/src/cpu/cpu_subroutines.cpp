@@ -46,8 +46,7 @@ void cpu_statevec_packAmpsIntoBuffer(Qureg qureg, vector<int> ctrls, vector<int>
     for (qindex n=0; n<numIts; n++) {
 
         // i = nth local index where ctrl bits are in specified states
-        qindex j = insertBits(n, sortedCtrls.data(), numCtrlBits, 0);
-        qindex i = activateBits(j, ctrlStateMask);
+        qindex i = insertBitsWithMaskedValues(n, sortedCtrls.data(), numCtrlBits, ctrlStateMask);
 
         qureg.cpuCommBuffer[n] = qureg.cpuAmps[i];
     }
@@ -81,8 +80,7 @@ void cpu_statevec_anyCtrlOneTargDenseMatr_subA(Qureg qureg, vector<int> ctrls, v
     for (qindex n=0; n<numIts; n++) {
 
         // i0 = nth local index where ctrl bits are in specified states and targ is 0
-        qindex j  = insertBits(n, sortedQubits.data(), numQubitBits, 0);
-        qindex i0 = activateBits(j, qubitStateMask);
+        qindex i0 = insertBitsWithMaskedValues(n, sortedQubits.data(), numQubitBits, qubitStateMask);
         qindex i1 = flipBit(i0, targ);
 
         // note the two amplitudes are likely strided and not adjacent (separated by 2^t)
@@ -115,8 +113,7 @@ void cpu_statevec_anyCtrlOneTargDenseMatr_subB(Qureg qureg, vector<int> ctrls, v
     for (qindex n=0; n<numIts; n++) {
 
         // i = nth local index where ctrl bits are in specified states
-        qindex j = insertBits(n, sortedCtrls.data(), numCtrlBits, 0);
-        qindex i = activateBits(j, ctrlStateMask);
+        qindex i = insertBitsWithMaskedValues(n, sortedCtrls.data(), numCtrlBits, ctrlStateMask);
 
         // l = index of nth received buffer amp
         qindex l = n + numIts;
@@ -168,8 +165,7 @@ void cpu_statevec_anyCtrlAnyTargDenseMatr_subA(Qureg qureg, vector<int> ctrls, v
         vector<qcomp> cache(numTargAmps);
 
         // i0 = nth local index where ctrls are active and targs are all zero
-        qindex j  = insertBits(n, sortedQubits.data(), numQubitBits, 0); // loop may be unrolled
-        qindex i0 = activateBits(j, qubitStateMask);
+        qindex i0 = insertBitsWithMaskedValues(n, sortedQubits.data(), numQubitBits, qubitStateMask);
 
         // collect and cache all to-be-modified amps (loop might be unrolled)
         for (qindex k=0; k<numTargAmps; k++) {
@@ -222,8 +218,7 @@ void cpu_statevec_anyCtrlAnyTargDiagMatr_sub(Qureg qureg, vector<int> ctrls, vec
     for (qindex n=0; n<numIts; n++) {
 
         // j = nth local index where ctrls are active (in the specified states)
-        qindex k = insertBits(n, sortedCtrls.data(), numCtrlBits, 0);
-        qindex j = activateBits(k, ctrlStateMask);
+        qindex j = insertBitsWithMaskedValues(n, sortedCtrls.data(), numCtrlBits, ctrlStateMask);
 
         // i = global index corresponding to j
         qindex i = concatenateBits(qureg.rank, j, qureg.logNumAmpsPerNode);
