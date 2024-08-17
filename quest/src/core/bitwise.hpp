@@ -84,10 +84,10 @@ INLINE int getBitMaskParity(qindex mask) {
 
 
 /* 
- * PERFORMANCE-CRITICAL FUNCTIONS
+ * LOOPED PERFORMANCE-CRITICAL FUNCTIONS
  *
- * which themselves contain loops which, if informed by runtime
- * variables, can be catastrophic to performance. As such, these
+ * wherein the runtime loops can damage performance when they
+ * are embedded in exponentially-large hot loops. As such, these
  * functions should be called with compile-time loop sizes
  * (e.g. through function template parameters, or constexpr)
  * to trigger automatic loop unrolling.

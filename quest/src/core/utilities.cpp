@@ -21,7 +21,7 @@ using std::vector;
 
 
 /*
- * QUBIT PROCESSIG
+ * QUBIT PROCESSING
  */
 
 int util_getShifted(int qubit, Qureg qureg) {
