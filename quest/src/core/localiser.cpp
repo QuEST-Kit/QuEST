@@ -12,8 +12,8 @@
 #include "quest/include/paulis.h"
 #include "quest/include/matrices.h"
 
+#include "quest/src/core/errors.hpp"
 #include "quest/src/core/bitwise.hpp"
-#include "quest/src/core/indexer.hpp"
 #include "quest/src/core/utilities.hpp"
 #include "quest/src/core/accelerator.hpp"
 #include "quest/src/comm/comm_routines.hpp"
@@ -21,9 +21,37 @@
 #include <tuple>
 #include <vector>
 
-using std::tuple;
 using std::vector;
-using namespace index_flags;
+
+
+
+/*
+ * PRIVATE CONVENIENCE FUNCTIONS
+ */
+
+
+void assertValidCtrlStates(vector<int> ctrls, vector<int> ctrlStates) {
+
+    // providing no control states is always valid (to invoke default all-on-1)
+    if (ctrlStates.empty())
+        return;
+
+    // otherwise a state must be explicitly given for each ctrl
+    if (ctrlStates.size() != ctrls.size())
+        error_localiserNumCtrlStatesInconsistentWithNumCtrls();
+}
+
+
+void setDefaultCtrlStates(vector<int> ctrls, vector<int> &states) {
+
+    // no states necessary if there are no control qubits
+    if (ctrls.empty())
+        return;
+
+    // default ctrl state is all-1
+    if (states.empty())
+        states.insert(states.end(), ctrls.size(), 1);
+}
 
 
 
@@ -61,12 +89,9 @@ bool doAnyLocalAmpsSatisfyCtrls(Qureg qureg, vector<int> ctrls, vector<int> stat
         if (ctrls[i] < qureg.logNumAmpsPerNode)
             continue;
 
-        // compare prefix ctrl to its goal bit (1 if unspecified)
-        int prefBit = getBit(qureg.rank, ctrls[i] - qureg.logNumAmpsPerNode);
-        int goalBit = (states.empty())? 1 : states[i];
-
         // abort if any prefix ctrl has wrong bit value
-        if (prefBit != goalBit)
+        int prefBit = getBit(qureg.rank, ctrls[i] - qureg.logNumAmpsPerNode);
+        if (prefBit != states[i])
             return false;
     }
 
@@ -75,7 +100,7 @@ bool doAnyLocalAmpsSatisfyCtrls(Qureg qureg, vector<int> ctrls, vector<int> stat
 }
 
 
-tuple<vector<int>,vector<int>> getSuffixCtrls(Qureg qureg, vector<int> ctrls, vector<int> states) {
+auto getSuffixCtrlsAndStates(Qureg qureg, vector<int> ctrls, vector<int> states) {
 
     // states will be empty or the same length as ctrls
     vector<int> suffixCtrls(0);
@@ -88,42 +113,38 @@ tuple<vector<int>,vector<int>> getSuffixCtrls(Qureg qureg, vector<int> ctrls, ve
     for (size_t i=0; i<ctrls.size(); i++)
         if (ctrls[i] < qureg.logNumAmpsPerNode) {
             suffixCtrls.push_back(ctrls[i]);
-
-            if (!states.empty())
-                suffixStates.push_back(states[i]);
+            suffixStates.push_back(states[i]);
         }
 
     // return new vectors, leaving old unmodified
-    return {suffixCtrls, suffixStates};
+    return std::tuple{suffixCtrls, suffixStates};
 }
 
 
 
 /*
- * ANY-CTRL ONE-TARG MATRIX
+ * MATRICES
  */
 
 
-template <class MatrType>
-void inner_statevec_anyCtrlOneTargMatrix(Qureg qureg, vector<int> ctrls, vector<int> ctrlStates, int targ, MatrType matr) {
-    indexer_assertValidCtrls(ctrls, ctrlStates);
+void localiser_statevec_anyCtrlOneTargDenseMatr(Qureg qureg, vector<int> ctrls, vector<int> ctrlStates, int targ, CompMatr1 matr) {
+    assertValidCtrlStates(ctrls, ctrlStates);
+    setDefaultCtrlStates(ctrls, ctrlStates);
 
     // node has nothing to do if all local amps violate control condition
     if (!doAnyLocalAmpsSatisfyCtrls(qureg, ctrls, ctrlStates))
         return;
 
-    // retain only suffix control qubits, as relevant to communication and local amp modification
-    std::tie(ctrls, ctrlStates) = getSuffixCtrls(qureg, ctrls, ctrlStates);
+    // retain only suffix control qubits as relevant to communication and local amp modification
+    std::tie(ctrls, ctrlStates) = getSuffixCtrlsAndStates(qureg, ctrls, ctrlStates);
 
     // if the target permits embarrassingly parallel simulation, perform it and finish
-    if (!doesGateRequireComm(qureg, {targ}))
-        return accel_statevec_anyCtrlOneTargMatrix_subA(qureg, ctrls, ctrlStates, targ, matr);
-    
-    // diagonal matrices are always embarrassingly parallel, so perform and finish
-    if constexpr (util_isDiagonalMatrixType<MatrType>())
-        return accel_statevec_anyCtrlOneTargMatrix_subA(qureg, ctrls, ctrlStates, targ, matr);
+    if (!doesGateRequireComm(qureg, {targ})) {
+        accel_statevec_anyCtrlOneTargDenseMatr_subA(qureg, ctrls, ctrlStates, targ, matr);
+        return;
+    }
 
-    // but for dense matrices, we must communicate with a pair rank... 
+    // otherwise we must communicate with a pair rank... 
     int rankTarg = targ - qureg.logNumAmpsPerNode;
     int pairRank = flipBit(qureg.rank, rankTarg);
 
@@ -131,29 +152,58 @@ void inner_statevec_anyCtrlOneTargMatrix(Qureg qureg, vector<int> ctrls, vector<
     if (ctrls.empty())
         comm_exchangeAmpsToBuffers(qureg, pairRank);
     else {
-        qindex numPacked = accel_statevec_packAmpsIntoBuffer(qureg, ctrls, ctrlStates);
-        comm_exchangeBuffers(qureg, numPacked, pairRank);
+        qindex numExch = qureg.numAmpsPerNode / powerOf2(ctrls.size());
+        accel_statevec_packAmpsIntoBuffer(qureg, ctrls, ctrlStates);
+        comm_exchangeBuffers(qureg, numExch, pairRank);
     }
 
-    // extract relevant gate elements (but don't let the compiler see the unreachable diagonal matrix access)
-    qcomp fac0 = 0;
-    qcomp fac1 = 0;
-    if constexpr (util_isDenseMatrixType<MatrType>()) {
-        int bit = getBit(qureg.rank, rankTarg);
-        qcomp fac0 = matr.elems[bit][ bit];
-        qcomp fac1 = matr.elems[bit][!bit]; // compilers hate him
-    }
+    // extract relevant gate elements
+    int bit = getBit(qureg.rank, rankTarg);
+    qcomp fac0 = matr.elems[bit][ bit];
+    qcomp fac1 = matr.elems[bit][!bit];
 
     // update local amps using received amps in buffer
-    accel_statevec_anyCtrlOneTargDenseMatrix_subB(qureg, ctrls, ctrlStates, fac0, fac1);
+    accel_statevec_anyCtrlOneTargDenseMatr_subB(qureg, ctrls, ctrlStates, fac0, fac1);
 }
 
-void statevec_anyCtrlOneTargMatrix(Qureg qureg, vector<int> ctrls, vector<int> ctrlStates, int targ, CompMatr1 matr) {
 
-    inner_statevec_anyCtrlOneTargMatrix(qureg, ctrls, ctrlStates, targ, matr);
+void localiser_statevec_anyCtrlAnyTargDenseMatr(Qureg qureg, vector<int> ctrls, vector<int> ctrlStates, vector<int> targs, CompMatr matr) {
+    assertValidCtrlStates(ctrls, ctrlStates);
+    setDefaultCtrlStates(ctrls, ctrlStates);
+
+    // node has nothing to do if all local amps violate control condition
+    if (!doAnyLocalAmpsSatisfyCtrls(qureg, ctrls, ctrlStates))
+        return;
+
+    // if all targets lie within the suffix node...
+    if (!doesGateRequireComm(qureg, targs)) {
+
+        // retain only suffix controls, and perform embarrassingly parallel simulation
+        std::tie(ctrls, ctrlStates) = getSuffixCtrlsAndStates(qureg, ctrls, ctrlStates);
+        accel_statevec_anyCtrlAnyTargDenseMatr_subA(qureg, ctrls, ctrlStates, targs, matr);
+        return;
+    }
+
+
+    // TODO:
+    //  need all the swaps and stuff being careful of controls
+
+    error_allocOfQuESTEnvFailed();
 }
 
-void statevec_anyCtrlOneTargMatrix(Qureg qureg, vector<int> ctrls, vector<int> ctrlStates, int targ, DiagMatr1 matr) {
 
-    inner_statevec_anyCtrlOneTargMatrix(qureg, ctrls, ctrlStates, targ, matr);
+
+void localiser_statevec_anyCtrlAnyTargDiagMatr(Qureg qureg, vector<int> ctrls, vector<int> ctrlStates, vector<int> targs, DiagMatr matr) {
+    assertValidCtrlStates(ctrls, ctrlStates);
+    setDefaultCtrlStates(ctrls, ctrlStates);
+
+    // node has nothing to do if all local amps violate control condition
+    if (!doAnyLocalAmpsSatisfyCtrls(qureg, ctrls, ctrlStates))
+        return;
+
+    // retain only suffix control qubits, as relevant to local amp modification
+    std::tie(ctrls, ctrlStates) = getSuffixCtrlsAndStates(qureg, ctrls, ctrlStates);
+    
+    // diagonal matrices are always embarrassingly parallel, regardless of whether any targs are in prefix
+    return accel_statevec_anyCtrlAnyTargDiagMatr_sub(qureg, ctrls, ctrlStates, targs, matr);
 }

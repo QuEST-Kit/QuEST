@@ -122,10 +122,9 @@ Qureg validateAndCreateCustomQureg(int numQubits, int isDensMatr, int useDistrib
 
         // set dimensions
         .isDensityMatrix = isDensMatr,
-        .numQubits = numQubits,
-        .numAmps = (isDensMatr)? 
-            powerOf2(2*numQubits) : 
-            powerOf2(  numQubits),
+        .numQubits  = numQubits,
+        .numAmps    = (isDensMatr)? powerOf2(2*numQubits) : powerOf2(numQubits),
+        .logNumAmps = (isDensMatr)?          2*numQubits  :          numQubits,
 
         // set dimensions per node (even if not distributed)
         .numAmpsPerNode = powerOf2(logNumAmpsPerNode),

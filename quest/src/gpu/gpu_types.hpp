@@ -20,10 +20,31 @@
     #error "A file being compiled somehow included gpu_types.hpp despite QuEST not being compiled in GPU-accelerated mode."
 #endif
 
-#include <cuComplex.h>
+#include <array>
 #include <vector>
+#include <cuComplex.h>
 
-using std::vector;
+#include <thrust/device_ptr.h>
+#include <thrust/device_vector.h>
+
+
+
+/*
+ * COPYING VECTORS FROM HOST TO DEVICE
+ *
+ * is done using thrust's device_vector's copy constructor
+ * (devicevec d_vec = hostvec), the pointer of which (.data())
+ * can be cast into a raw pointer and passed to CUDA kernels
+ */
+
+
+using devicevec = thrust::device_vector<int>;
+
+
+int* getPtr(devicevec qubits) {
+
+    return thrust::raw_pointer_cast(qubits.data());
+}
 
 
 
@@ -133,23 +154,13 @@ __host__ inline cu_qcomp* toCuQcomps(qcomp* a) {
  */
 
 
-__host__ inline void unpackMatrixToCuQcomps(CompMatr1 in, cu_qcomp &m00, cu_qcomp &m01, cu_qcomp &m10, cu_qcomp &m11) {
+__host__ inline std::array<cu_qcomp,4> unpackMatrixToCuQcomps(CompMatr1 in) {
 
-    m00 = toCuQcomp(in.elems[0][0]);
-    m01 = toCuQcomp(in.elems[0][1]);
-    m10 = toCuQcomp(in.elems[1][0]);
-    m11 = toCuQcomp(in.elems[1][1]);
-}
+    std::array<cu_qcomp,4> arr{};
+    for (int i=0; i<4; i++)
+        arr[i] = toCuQcomp(in.elems[i/2][i%2]);
 
-
-__host__ inline vector<cu_qcomp> unpackMatrixToCuQcomps(CompMatr1 in) {
-
-    vector<cu_qcomp> vec(4);
-    vec[0] = toCuQcomp(in.elems[0][0]);
-    vec[1] = toCuQcomp(in.elems[0][1]);
-    vec[2] = toCuQcomp(in.elems[1][0]);
-    vec[3] = toCuQcomp(in.elems[1][1]);
-    return vec;
+    return arr;
 }
 
 

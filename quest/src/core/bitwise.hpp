@@ -56,16 +56,6 @@ INLINE qindex insertBit(qindex number, int bitIndex, int bitValue) {
 }
 
 
-INLINE qindex insertBits(qindex number, int* bitIndices, int numIndices, int bitValue) {
-    
-    // bitIndices must be strictly increasing
-    for (int i=0; i<numIndices; i++)
-        number = insertBit(number, bitIndices[i], bitValue);
-        
-    return number;
-}
-
-
 INLINE qindex setBit(qindex number, int bitIndex, int bitValue) {
     
     qindex mask = bitValue << bitIndex;
@@ -73,20 +63,15 @@ INLINE qindex setBit(qindex number, int bitIndex, int bitValue) {
 }
 
 
-INLINE qindex setBits(qindex number, int* bitIndices, int numIndices, qindex bitsValue) {
-    
-    for (int i=0; i<numIndices; i++) {
-        int bit = getBit(bitsValue, i);
-        number = setBit(number, bitIndices[i], bit);
-    }
-    
-    return number;
-}
-
-
 INLINE qindex activateBits(qindex number, qindex mask) {
 
     return number | mask;
+}
+
+
+INLINE qindex concatenateBits(qindex prefix, qindex suffix, int numBitsInSuffix) {
+
+    return (prefix << numBitsInSuffix) | suffix;
 }
 
 
@@ -98,12 +83,67 @@ INLINE int getBitMaskParity(qindex mask) {
 
 
 
+/* 
+ * LOOPED PERFORMANCE-CRITICAL FUNCTIONS
+ *
+ * wherein the runtime loops can damage performance when they
+ * are embedded in exponentially-large hot loops. As such, these
+ * functions should be called with compile-time loop sizes
+ * (e.g. through function template parameters, or constexpr)
+ * to trigger automatic loop unrolling.
+ */
+
+
+INLINE qindex insertBits(qindex number, int* bitIndices, int numIndices, int bitValue) {
+    
+    // bitIndices must be strictly increasing
+    for (int i=0; i<numIndices; i++)
+        number = insertBit(number, bitIndices[i], bitValue);
+        
+    return number;
+}
+
+
+INLINE qindex setBits(qindex number, int* bitIndices, int numIndices, qindex bitsValue) {
+    
+    // bitIndices are arbitrarily ordered, which does not affect number
+    for (int i=0; i<numIndices; i++) {
+        int bit = getBit(bitsValue, i);
+        number = setBit(number, bitIndices[i], bit);
+    }
+    
+    return number;
+}
+
+
+INLINE qindex getValueOfBits(qindex number, int* bitIndices, int numIndices) {
+
+    // bits are arbitrarily ordered, which affects value
+    qindex value = 0;
+
+    for (int i=0; i<numIndices; i++)
+        value |= getBit(number, bitIndices[i]) << i;
+
+    return value;
+}
+
+
+
 /*
  * PERFORMANCE-CRITICAL CONVENIENCE FUNCTIONS
  *
  * which merely improve caller's code readability
  */
- 
+
+
+INLINE qindex insertBitsWithMaskedValues(qindex number, int* bitInds, int numBits, qindex mask) {
+
+    // bitInds must be sorted (increasing), and mask must be zero everywhere except bitInds
+    number = insertBits(number, bitInds, numBits, 0);
+    number = activateBits(number, mask);
+    return number;
+}
+
 
 INLINE qindex insertTwoBits(qindex number, int highInd, int highBit, int lowInd, int lowBit) {
     

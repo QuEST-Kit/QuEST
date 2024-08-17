@@ -14,14 +14,12 @@
 #include "quest/include/types.h"
 
 #include "quest/src/core/bitwise.hpp"
-#include "quest/src/core/indexer.hpp"
+
 #include "quest/src/gpu/gpu_types.hpp"
 
 #if ! COMPILE_CUDA
     #error "A file being compiled somehow included gpu_kernels.hpp despite QuEST not being compiled in GPU-accelerated mode."
 #endif
-
-using namespace index_flags;
 
 
 
@@ -54,38 +52,50 @@ __host__ qindex getNumBlocks(qindex numIts) {
  */
 
 
-template <CtrlFlag ctrlFlag>
-__global__ void kernel_statevec_packAmpsIntoBuffer(cu_qcomp* amps, cu_qcomp* buffer, CtrlIndParams params) {
+template <int NumCtrls>
+__global__ void kernel_statevec_packAmpsIntoBuffer(
+    cu_qcomp* amps, cu_qcomp* buffer, qindex numThreads, 
+    int* ctrls, int numCtrls, qindex mask
+) {
 
     qindex n = getThreadInd();
-    if (n >= params.numInds) 
+    if (n >= numThreads) 
         return;
 
-    qindex i = getNthIndWhereCtrlsAreActive<ctrlFlag>(n, params);
+    // use template param to compile-time unroll loop in insertBits()
+    SET_VAR_AT_COMPILE_TIME(int, numCtrlBits, NumCtrls, numCtrls);
+
+    // i = nth local index where ctrls are active
+    qindex i = insertBitsWithMaskedValues(n, ctrls, numCtrlBits, mask);
+
     buffer[n] = amps[i];
 }
 
 
 
 /*
- * ANY-CTRL ONE-TARG MATRIX TEMPLATES
+ * ONE-TARGET DENSE MATRIX
  */
 
 
-template <CtrlFlag ctrlFlag>
+template <int NumCtrls>
 __global__ void kernel_statevec_anyCtrlOneTargDenseMatr_subA(
-    cu_qcomp* amps, CtrlTargIndParams params, int targ, 
+    cu_qcomp* amps, qindex numThreads, 
+    int* ctrlsAndTarg, int numCtrls, qindex mask, int targ, 
     cu_qcomp m00, cu_qcomp m01, cu_qcomp m10, cu_qcomp m11
 ) {
     qindex n = getThreadInd();
-    if (n >= params.numInds) 
+    if (n >= numThreads) 
         return;
 
-    // each thread modifies two amps
-    qindex i1 = getNthIndWhereCtrlsAreActiveAndTargIsOne<ctrlFlag>(n, params);
-    qindex i0 = flipBit(i1, targ);
+    // use template param to compile-time unroll loop in insertBits()
+    SET_VAR_AT_COMPILE_TIME(int, numCtrlBits, NumCtrls, numCtrls);
 
-    // note they are likely strided and not adjacent
+    // i0 = nth local index where ctrls are active and targ is 0
+    qindex i0 = insertBitsWithMaskedValues(n, ctrlsAndTarg, numCtrlBits + 1, mask);
+    qindex i1 = flipBit(i0, targ);
+
+    // note amps are strided by 2^targ
     cu_qcomp amp0 = amps[i0];
     cu_qcomp amp1 = amps[i1];
 
@@ -94,35 +104,75 @@ __global__ void kernel_statevec_anyCtrlOneTargDenseMatr_subA(
 }
 
 
-template <CtrlFlag ctrlFlag>
-__global__ void kernel_statevec_anyCtrlOneTargDiagMatr_subA(
-    cu_qcomp* amps, CtrlIndParams params, 
-    int targ, cu_qcomp d0, cu_qcomp d1
-) {
-    qindex n = getThreadInd();
-    if (n >= params.numInds) 
-        return;
-
-    // each thread modifies one amp, multiplying by d0 or d1
-    qindex i = getNthIndWhereCtrlsAreActive<ctrlFlag>(n, params);
-    amps[i] *= d0 + (d1-d0)*getBit(i, targ);
-}
-
-
-template <CtrlFlag ctrlFlag>
+template <int NumCtrls>
 __global__ void kernel_statevec_anyCtrlOneTargDenseMatr_subB(
-    cu_qcomp* amps, cu_qcomp* buffer, CtrlIndParams params, 
+    cu_qcomp* amps, cu_qcomp* buffer, qindex numThreads, 
+    int* ctrls, int numCtrls, qindex mask,
     cu_qcomp fac0, cu_qcomp fac1
 ) {
     qindex n = getThreadInd();
-    if (n >= params.numInds) 
+    if (n >= numThreads) 
         return;
 
-    // each thread modifies one amp, using one buffer amp
-    qindex i = getNthIndWhereCtrlsAreActive<ctrlFlag>(n, params);
-    qindex j = n + params.numInds;
+    // use template param to compile-time unroll loop in insertBits()
+    SET_VAR_AT_COMPILE_TIME(int, numCtrlBits, NumCtrls, numCtrls);
 
-    amps[i] = fac0*amps[i] + fac1*buffer[j];
+    // i = nth local index where ctrl bits are active
+    qindex i = insertBitsWithMaskedValues(n, ctrls, numCtrlBits, mask);
+
+    // k = index of nth received buffer amp
+    qindex k = n + numThreads;
+
+    amps[i] = fac0*amps[i] + fac1*buffer[k];
+}
+
+
+
+/*
+ * ANY-TARGET DENSE MATRIX
+ */
+
+
+template <int NumCtrls, int NumTargs>
+__global__ void kernel_statevec_anyCtrlAnyTargDenseMatr_subA(
+    cu_qcomp* amps, qindex numThreads,
+    int* qubits, int numQubits, qindex mask, int* targs, int numTargs,
+    cu_qcomp* elems
+) {
+    // TODO
+}
+
+
+
+/*
+ * DIAGONAL MATRIX
+ */
+
+
+template <int NumCtrls, int NumTargs>
+__global__ void kernel_statevec_anyCtrlAnyTargDiagMatr_sub(
+    cu_qcomp* amps, qindex numThreads, int rank, qindex logNumAmpsPerNode,
+    int* ctrls, int numCtrls, qindex mask, int* targs, int numTargs,
+    cu_qcomp* elems
+) {
+    qindex n = getThreadInd();
+    if (n >= numThreads) 
+        return;
+
+    // use template params to compile-time unroll loops in insertBits() and getValueOfBits()
+    SET_VAR_AT_COMPILE_TIME(int, numCtrlBits, NumCtrls, numCtrls);
+    SET_VAR_AT_COMPILE_TIME(int, numTargBits, NumTargs, numTargs);
+
+    // j = nth local index where ctrls are active (in the specified states)
+    qindex j = insertBitsWithMaskedValues(n, ctrls, numCtrlBits, mask);
+
+    // i = global index corresponding to j
+    qindex i = concatenateBits(rank, j, logNumAmpsPerNode);
+
+    // t = value of targeted bits, which may be in the prefix substate
+    qindex t = getValueOfBits(i, targs, numTargBits);
+
+    amps[i] *= elems[t];
 }
 
 

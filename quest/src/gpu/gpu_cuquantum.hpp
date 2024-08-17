@@ -175,7 +175,7 @@ void cuquantum_statevec_anyCtrlAnyTargDenseMatrix_subA(Qureg qureg, vector<int> 
 }
 
 
-void cuquantum_statevec_anyCtrlAnyTargDiagonalMatrix_subA(Qureg qureg, vector<int> ctrls, vector<int> ctrlStates, vector<int> targs, cu_qcomp* flatMatrElems) {
+void cuquantum_statevec_anyCtrlAnyTargDiagMatr_sub(Qureg qureg, vector<int> ctrls, vector<int> ctrlStates, vector<int> targs, cu_qcomp* flatMatrElems) {
 
     // apply no permutation matrix
     custatevecIndex_t *perm = nullptr;
@@ -190,13 +190,13 @@ void cuquantum_statevec_anyCtrlAnyTargDiagonalMatrix_subA(Qureg qureg, vector<in
     void* work = nullptr;
     size_t workSize = 0;
 
-    custatevecApplyGeneralizedPermutationMatrix(
+    CUDA_CHECK( custatevecApplyGeneralizedPermutationMatrix(
         config.cuQuantumHandle,
         toCuQcomps(qureg.gpuAmps), CUQUANTUM_QCOMP, qureg.logNumAmpsPerNode,
         perm, flatMatrElems, CUQUANTUM_QCOMP, adj, 
         targs.data(), targs.size(), 
         ctrls.data(), ctrlVals, ctrls.size(),
-        work, workSize);
+        work, workSize) );
 }
 
 

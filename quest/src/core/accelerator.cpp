@@ -17,37 +17,56 @@
 #include "quest/include/paulis.h"
 #include "quest/include/matrices.h"
 
-#include "quest/src/core/indexer.hpp"
+#include "quest/src/core/accelerator.hpp"
 #include "quest/src/core/errors.hpp"
 #include "quest/src/cpu/cpu_subroutines.hpp"
 #include "quest/src/gpu/gpu_subroutines.hpp"
 
 #include <vector>
+#include <algorithm>
 
 using std::vector;
-using namespace index_flags;
 
 
 
 /*
  * MACROS
  *
- * which automate the choosing of the appropriate backend template function
- * (optimised for the given configuration of qubit indices), and whether to
- * dispatch to the OpenMP-accelerated backend (cpu_subroutines.cpp) or the
- * CUDA-accelerated backend (gpu_subroutines.cpp). The arguments to wrapped
- * function calls are given as variadic arguments.
+ * which automate the choosing of the appropriate backend template function,
+ * optimised for the given configuration of qubit indices, for example through
+ * automatic unrolling of loops with bounds known at compile-time. When the 
+ * number of controls or targets exceeds that which have optimised compilations, 
+ * we fall back to using a generic implementation, indicated by <-1>. In essence,
+ * these macros simply call func<ctrls.size()> albeit without illegally passing
+ * a runtime variable as a template parameter. Note an awkward use of decltype()
+ * is to workaround a GCC <12 bug with implicitly-typed vector initialisations.
  */
 
 
-#define CALL_AND_RETURN_FUNC_WITH_CTRL_FLAG(flag, func, ...) \
-    switch (flag) { \
-        case NO_CTRLS          : return func <NO_CTRLS>          (__VA_ARGS__); \
-        case ONE_CTRL          : return func <ONE_CTRL>          (__VA_ARGS__); \
-        case ONE_STATE_CTRL    : return func <ONE_STATE_CTRL>    (__VA_ARGS__); \
-        case MULTI_CTRLS       : return func <MULTI_CTRLS>       (__VA_ARGS__); \
-        case MULTI_STATE_CTRLS : return func <MULTI_STATE_CTRLS> (__VA_ARGS__); \
-    }
+#if (MAX_OPTIMISED_NUM_CTRLS != 5) || (MAX_OPTIMISED_NUM_TARGS != 5)
+    #error "The number of optimised, templated functions was inconsistent between accelerator's source and header."
+#endif
+
+
+#define GET_FUNC_OPTIMISED_FOR_NUM_CTRLS(f, numctrls) \
+    (vector <decltype(&f<0>)> {&f<0>, &f<1>, &f<2>, &f<3>, &f<4>, &f<5>, &f<-1>}) \
+    [std::min((int) numctrls, MAX_OPTIMISED_NUM_CTRLS - 1)]
+
+
+#define GET_FUNC_OPTIMISED_FOR_NUM_CTRLS_AND_TARGS(f, numctrls, numtargs) \
+    (vector <ARR(f)> { \
+        ARR(f) {&f<0,0>,  &f<0,1>,  &f<0,2>,  &f<0,3>,  &f<0,4>,  &f<0,5>,  &f<0,-1>}, \
+        ARR(f) {&f<1,0>,  &f<1,1>,  &f<1,2>,  &f<1,3>,  &f<1,4>,  &f<1,5>,  &f<1,-1>}, \
+        ARR(f) {&f<2,0>,  &f<2,1>,  &f<2,2>,  &f<2,3>,  &f<2,4>,  &f<2,5>,  &f<2,-1>}, \
+        ARR(f) {&f<3,0>,  &f<3,1>,  &f<3,2>,  &f<3,3>,  &f<3,4>,  &f<3,5>,  &f<3,-1>}, \
+        ARR(f) {&f<4,0>,  &f<4,1>,  &f<4,2>,  &f<4,3>,  &f<4,4>,  &f<4,5>,  &f<4,-1>}, \
+        ARR(f) {&f<5,0>,  &f<5,1>,  &f<5,2>,  &f<5,3>,  &f<5,4>,  &f<5,5>,  &f<5,-1>}, \
+        ARR(f) {&f<-1,0>, &f<-1,1>, &f<-1,2>, &f<-1,3>, &f<-1,4>, &f<-1,5>, &f<-1,-1>}}) \
+    [std::min((int) numctrls, MAX_OPTIMISED_NUM_CTRLS - 1)] \
+    [std::min((int) numtargs, MAX_OPTIMISED_NUM_TARGS - 1)]
+
+
+#define ARR(f) vector<decltype(&f<0,0>)>
 
 
 
@@ -56,66 +75,66 @@ using namespace index_flags;
  */
 
 
-qindex accel_statevec_packAmpsIntoBuffer(Qureg qureg, vector<int> ctrls, vector<int> ctrlStates) {
-    indexer_assertValidCtrls(ctrls, ctrlStates);
+void accel_statevec_packAmpsIntoBuffer(Qureg qureg, vector<int> ctrls, vector<int> ctrlStates) {
 
     // we can never pack and swap buffers when there are no ctrl qubits, because we'd fill the entire buffer
-    // and would ergo have no room to receive the other node's buffer; we'd send amps straight to buffer instead
+    // andhave no room to receive the other node's buffer; caller would instead send amps straight to buffer
     if (ctrls.empty())
         error_noCtrlsGivenToBufferPacker();
 
-    // packing can be optimised depending on the precondition of control qubits
-    CtrlFlag flag = indexer_getCtrlFlag(ctrls, ctrlStates);
+    auto cpuFunc = GET_FUNC_OPTIMISED_FOR_NUM_CTRLS( cpu_statevec_packAmpsIntoBuffer, ctrls.size() );
+    auto gpuFunc = GET_FUNC_OPTIMISED_FOR_NUM_CTRLS( gpu_statevec_packAmpsIntoBuffer, ctrls.size() );
+    auto useFunc = (qureg.isGpuAccelerated)? gpuFunc : cpuFunc;
 
-    // return the number of packed amplitudes, as returned by backend function
-    if (qureg.isGpuAccelerated) {
-        CALL_AND_RETURN_FUNC_WITH_CTRL_FLAG( flag, gpu_statevec_packAmpsIntoBuffer, qureg, ctrls, ctrlStates )
-    } else {
-        CALL_AND_RETURN_FUNC_WITH_CTRL_FLAG( flag, cpu_statevec_packAmpsIntoBuffer, qureg, ctrls, ctrlStates )
-    }
-
-    // unreachable; above if/else contains switches where each case returns
-    return 0;
+    useFunc(qureg, ctrls, ctrlStates);
 }
 
 
 
 /*
- * ANY-CTRL ONE-TARG MATRIX
+ * DENSE MATRIX
  */
 
 
-template <class MatrType> 
-void inner_statevec_anyCtrlOneTargMatrix_subA(Qureg qureg, vector<int> ctrls, vector<int> ctrlStates, int targ, MatrType matr) {
-    indexer_assertValidCtrls(ctrls, ctrlStates);
+void accel_statevec_anyCtrlOneTargDenseMatr_subA(Qureg qureg, vector<int> ctrls, vector<int> ctrlStates, int targ, CompMatr1 matr) {
 
-    // simulation is optimised depending on the precondition of control qubits
-    CtrlFlag flag = indexer_getCtrlFlag(ctrls, ctrlStates);
+    auto cpuFunc = GET_FUNC_OPTIMISED_FOR_NUM_CTRLS( cpu_statevec_anyCtrlOneTargDenseMatr_subA, ctrls.size() );
+    auto gpuFunc = GET_FUNC_OPTIMISED_FOR_NUM_CTRLS( gpu_statevec_anyCtrlOneTargDenseMatr_subA, ctrls.size() );
+    auto useFunc = (qureg.isGpuAccelerated)? gpuFunc : cpuFunc;
 
-    if (qureg.isGpuAccelerated) {
-        CALL_AND_RETURN_FUNC_WITH_CTRL_FLAG( flag, gpu_statevec_anyCtrlOneTargMatrix_subA, qureg, ctrls, ctrlStates, targ, matr )
-    } else {
-        CALL_AND_RETURN_FUNC_WITH_CTRL_FLAG( flag, cpu_statevec_anyCtrlOneTargMatrix_subA, qureg, ctrls, ctrlStates, targ, matr )
-    }
+    useFunc(qureg, ctrls, ctrlStates, targ, matr);
 }
 
-void accel_statevec_anyCtrlOneTargMatrix_subA(Qureg qureg, vector<int> ctrls, vector<int> ctrlStates, int targ, CompMatr1 matr) {
-    inner_statevec_anyCtrlOneTargMatrix_subA(qureg, ctrls, ctrlStates, targ, matr);
+void accel_statevec_anyCtrlOneTargDenseMatr_subB(Qureg qureg, vector<int> ctrls, vector<int> ctrlStates, qcomp fac0, qcomp fac1) {
+
+    auto cpuFunc = GET_FUNC_OPTIMISED_FOR_NUM_CTRLS( cpu_statevec_anyCtrlOneTargDenseMatr_subB, ctrls.size() );
+    auto gpuFunc = GET_FUNC_OPTIMISED_FOR_NUM_CTRLS( gpu_statevec_anyCtrlOneTargDenseMatr_subB, ctrls.size() );
+    auto useFunc = (qureg.isGpuAccelerated)? gpuFunc : cpuFunc;
+
+    useFunc(qureg, ctrls, ctrlStates, fac0, fac1);
 }
 
-void accel_statevec_anyCtrlOneTargMatrix_subA(Qureg qureg, vector<int> ctrls, vector<int> ctrlStates, int targ, DiagMatr1 matr) {
-    inner_statevec_anyCtrlOneTargMatrix_subA(qureg, ctrls, ctrlStates, targ, matr);
+void accel_statevec_anyCtrlAnyTargDenseMatr_subA(Qureg qureg, vector<int> ctrls, vector<int> ctrlStates, vector<int> targs, CompMatr matr) {
+
+    auto cpuFunc = GET_FUNC_OPTIMISED_FOR_NUM_CTRLS_AND_TARGS( cpu_statevec_anyCtrlAnyTargDenseMatr_subA, ctrls.size(), targs.size() );
+    auto gpuFunc = GET_FUNC_OPTIMISED_FOR_NUM_CTRLS_AND_TARGS( gpu_statevec_anyCtrlAnyTargDenseMatr_subA, ctrls.size(), targs.size() );
+    auto useFunc = (qureg.isGpuAccelerated)? gpuFunc : cpuFunc;
+
+    useFunc(qureg, ctrls, ctrlStates, targs, matr);
 }
 
-void accel_statevec_anyCtrlOneTargDenseMatrix_subB(Qureg qureg, vector<int> ctrls, vector<int> ctrlStates, qcomp fac0, qcomp fac1) {
-    indexer_assertValidCtrls(ctrls, ctrlStates);
 
-    // simulation is optimised depending on the precondition of control qubits
-    CtrlFlag flag = indexer_getCtrlFlag(ctrls, ctrlStates);
 
-    if (qureg.isGpuAccelerated) {
-        CALL_AND_RETURN_FUNC_WITH_CTRL_FLAG( flag, gpu_statevec_anyCtrlOneTargDenseMatrix_subB, qureg, ctrls, ctrlStates, fac0, fac1 )
-    } else {
-        CALL_AND_RETURN_FUNC_WITH_CTRL_FLAG( flag, cpu_statevec_anyCtrlOneTargDenseMatrix_subB, qureg, ctrls, ctrlStates, fac0, fac1 )
-    }
+/*
+ * DIAGONAL MATRIX
+ */
+
+
+void accel_statevec_anyCtrlAnyTargDiagMatr_sub(Qureg qureg, vector<int> ctrls, vector<int> ctrlStates, vector<int> targs, DiagMatr matr) {
+
+    auto cpuFunc = GET_FUNC_OPTIMISED_FOR_NUM_CTRLS_AND_TARGS( cpu_statevec_anyCtrlAnyTargDiagMatr_sub, ctrls.size(), targs.size() );
+    auto gpuFunc = GET_FUNC_OPTIMISED_FOR_NUM_CTRLS_AND_TARGS( gpu_statevec_anyCtrlAnyTargDiagMatr_sub, ctrls.size(), targs.size() );
+    auto useFunc = (qureg.isGpuAccelerated)? gpuFunc : cpuFunc;
+
+    useFunc(qureg, ctrls, ctrlStates, targs, matr);
 }

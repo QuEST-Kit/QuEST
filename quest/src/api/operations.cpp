@@ -21,9 +21,9 @@ void unitary(Qureg qureg, int target, CompMatr1 matrix) {
     validate_target(qureg, target, __func__);
     validate_matrixIsUnitary(matrix, __func__);
 
-    statevec_anyCtrlOneTargMatrix(qureg, {}, {}, target, matrix);
+    localiser_statevec_anyCtrlOneTargDenseMatr(qureg, {}, {}, target, matrix);
     if (qureg.isDensityMatrix)
-        statevec_anyCtrlOneTargMatrix(qureg, {}, {}, util_getShifted(target, qureg), util_getConj(matrix));
+        localiser_statevec_anyCtrlOneTargDenseMatr(qureg, {}, {}, util_getShifted(target, qureg), util_getConj(matrix));
 }
 
 
