@@ -16,6 +16,7 @@
 #include "quest/src/core/bitwise.hpp"
 #include "quest/src/core/utilities.hpp"
 #include "quest/src/core/accelerator.hpp"
+#include "quest/src/comm/comm_routines.hpp"
 
 #include <vector>
 
@@ -36,6 +37,9 @@ void cpu_statevec_packAmpsIntoBuffer(Qureg qureg, vector<int> ctrls, vector<int>
     // each control qubit halves the needed iterations
     qindex numIts = qureg.numAmpsPerNode / powerOf2(ctrls.size());
 
+    // amplitudes are packed at an offset into the buffer
+    qindex offset = getSubBufferSendInd(qureg);
+
     auto sortedCtrls   = util_getSorted(ctrls);
     auto ctrlStateMask = util_getBitMask(ctrls, ctrlStates);
     
@@ -48,7 +52,7 @@ void cpu_statevec_packAmpsIntoBuffer(Qureg qureg, vector<int> ctrls, vector<int>
         // i = nth local index where ctrl bits are in specified states
         qindex i = insertBitsWithMaskedValues(n, sortedCtrls.data(), numCtrlBits, ctrlStateMask);
 
-        qureg.cpuCommBuffer[n] = qureg.cpuAmps[i];
+        qureg.cpuCommBuffer[offset + n] = qureg.cpuAmps[i];
     }
 }
 
@@ -102,6 +106,8 @@ void cpu_statevec_anyCtrlOneTargDenseMatr_subB(Qureg qureg, vector<int> ctrls, v
 
     // each control qubit halves the needed iterations
     qindex numIts = qureg.numAmpsPerNode / powerOf2(ctrls.size());
+    
+    qindex offset = getSubBufferRecvInd();
 
     auto sortedCtrls   = util_getSorted(ctrls);
     auto ctrlStateMask = util_getBitMask(ctrls, ctrlStates);
@@ -115,11 +121,7 @@ void cpu_statevec_anyCtrlOneTargDenseMatr_subB(Qureg qureg, vector<int> ctrls, v
         // i = nth local index where ctrl bits are in specified states
         qindex i = insertBitsWithMaskedValues(n, sortedCtrls.data(), numCtrlBits, ctrlStateMask);
 
-        // l = index of nth received buffer amp
-        qindex l = n + numIts;
-        qcomp amp = qureg.cpuCommBuffer[l];
-
-        qureg.cpuAmps[i] = fac0*qureg.cpuAmps[i] + fac1*amp;
+        qureg.cpuAmps[i] = fac0*qureg.cpuAmps[i] + fac1*qureg.cpuCommBuffer[offset+n];
     }
 }
 

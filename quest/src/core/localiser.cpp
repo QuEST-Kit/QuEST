@@ -154,7 +154,7 @@ void localiser_statevec_anyCtrlOneTargDenseMatr(Qureg qureg, vector<int> ctrls, 
     else {
         qindex numExch = qureg.numAmpsPerNode / powerOf2(ctrls.size());
         accel_statevec_packAmpsIntoBuffer(qureg, ctrls, ctrlStates);
-        comm_exchangeBuffers(qureg, numExch, pairRank);
+        comm_exchangeSubBuffers(qureg, numExch, pairRank);
     }
 
     // extract relevant gate elements

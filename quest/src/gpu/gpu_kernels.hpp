@@ -68,6 +68,7 @@ __global__ void kernel_statevec_packAmpsIntoBuffer(
     // i = nth local index where ctrls are active
     qindex i = insertBitsWithMaskedValues(n, ctrls, numCtrlBits, mask);
 
+    // caller offsets buffer by sub-buffer send-index
     buffer[n] = amps[i];
 }
 
@@ -120,10 +121,8 @@ __global__ void kernel_statevec_anyCtrlOneTargDenseMatr_subB(
     // i = nth local index where ctrl bits are active
     qindex i = insertBitsWithMaskedValues(n, ctrls, numCtrlBits, mask);
 
-    // k = index of nth received buffer amp
-    qindex k = n + numThreads;
-
-    amps[i] = fac0*amps[i] + fac1*buffer[k];
+    // caller offsets buffer by receive-index
+    amps[i] = fac0*amps[i] + fac1*buffer[n];
 }
 
 

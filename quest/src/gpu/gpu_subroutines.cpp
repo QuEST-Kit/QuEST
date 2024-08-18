@@ -39,6 +39,7 @@
 #include "quest/src/core/errors.hpp"
 #include "quest/src/core/utilities.hpp"
 #include "quest/src/core/accelerator.hpp"
+#include "quest/src/comm/comm_routines.hpp"
 
 #if COMPILE_CUDA
     #include "quest/src/gpu/gpu_types.hpp"
@@ -70,12 +71,13 @@ void gpu_statevec_packAmpsIntoBuffer(Qureg qureg, vector<int> ctrls, vector<int>
 
     qindex numThreads = qureg.numAmpsPerNode / powerOf2(ctrls.size());
     qindex numBlocks = getNumBlocks(numThreads);
+    qindex sendInd = getSubBufferSendInd(qureg);
 
     devicevec sortedCtrls = util_getSorted(ctrls);
     qindex ctrlStateMask  = util_getBitMask(ctrls, ctrlStates);
 
     kernel_statevec_packAmpsIntoBuffer <NumCtrls> <<<numBlocks, NUM_THREADS_PER_BLOCK>>> (
-        toCuQcomps(qureg.gpuAmps), toCuQcomps(qureg.gpuCommBuffer), numThreads, 
+        toCuQcomps(qureg.gpuAmps), &toCuQcomps(qureg.gpuCommBuffer)[sendInd], numThreads, 
         getPtr(sortedCtrls), ctrls.size(), ctrlStateMask
     );
 
@@ -137,13 +139,14 @@ void gpu_statevec_anyCtrlOneTargDenseMatr_subB(Qureg qureg, vector<int> ctrls, v
 
     qindex numThreads = qureg.numAmpsPerNode / powerOf2(ctrls.size());
     qindex numBlocks = getNumBlocks(numThreads);
+    qindex recvInd = getSubBufferRecvInd(qureg);
 
     devicevec sortedCtrls = util_getSorted(ctrls);
     qindex ctrlStateMask  = util_getBitMask(ctrls, ctrlStates);
 
     // use ctrlFlag to dispatch to optimised kernel
     kernel_statevec_anyCtrlOneTargDenseMatr_subB <NumCtrls> <<<numBlocks,NUM_THREADS_PER_BLOCK>>> (
-        toCuQcomps(qureg.gpuAmps), toCuQcomps(qureg.gpuCommBuffer), numThreads, 
+        toCuQcomps(qureg.gpuAmps), &toCuQcomps(qureg.gpuCommBuffer)[recvInd], numThreads, 
         getPtr(sortedCtrls), ctrls.size(), ctrlStateMask, 
         toCuQcomp(fac0), toCuQcomp(fac1)
     );
