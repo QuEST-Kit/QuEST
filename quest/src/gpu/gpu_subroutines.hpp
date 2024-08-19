@@ -15,12 +15,20 @@
 using std::vector;
 
 
-
 /*
  * COMMUNICATION BUFFER PACKING
  */
 
-template <int numCtrls> void gpu_statevec_packAmpsIntoBuffer(Qureg qureg, vector<int> ctrls, vector<int> ctrlStates);
+template <int NumQubits> void gpu_statevec_packAmpsIntoBuffer(Qureg qureg, vector<int> qubits, vector<int> qubitStates);
+
+
+/*
+ * SWAPS
+ */
+
+template <int NumCtrls> void gpu_statevec_anyCtrlSwap_subA(Qureg qureg, vector<int> ctrls, vector<int> ctrlStates, int targ1, int targ2);
+template <int NumCtrls> void gpu_statevec_anyCtrlSwap_subB(Qureg qureg, vector<int> ctrls, vector<int> ctrlStates);
+template <int NumCtrls> void gpu_statevec_anyCtrlSwap_subC(Qureg qureg, vector<int> ctrls, vector<int> ctrlStates, int targ, int targState);
 
 
 /*
@@ -32,12 +40,12 @@ template <int NumCtrls> void gpu_statevec_anyCtrlOneTargDenseMatr_subB(Qureg qur
 
 template <int NumCtrls, int NumTargs> void gpu_statevec_anyCtrlAnyTargDenseMatr_sub(Qureg qureg, vector<int> ctrls, vector<int> ctrlStates, vector<int> targs, CompMatr matr);
 
+
 /*
  * DIAGONAL MATRIX
  */
 
 template <int NumCtrls, int NumTargs> void gpu_statevec_anyCtrlAnyTargDiagMatr_sub(Qureg qureg, vector<int> ctrls, vector<int> ctrlStates, vector<int> targs, DiagMatr matr);
-
 
 
 #endif // GPU_SUBROUTINES_HPP

@@ -71,6 +71,8 @@ void assert_quregIsDistributed(Qureg qureg);
 
 void assert_pairRankIsDistinct(Qureg qureg, int pairRank);
 
+void assert_bufferSendRecvDoesNotOverlap(qindex sendInd, qindex recvInd, qindex numAmps);
+
 
 
 /*
@@ -84,6 +86,8 @@ void error_localiserNumCtrlStatesInconsistentWithNumCtrls();
 /*
  * ACCELERATOR ERRORS
  */
+
+void assert_numQubitsMatchesQubitStatesAndTemplateParam(int numQubits, int numQubitStates, int templateParam, string label="qubit");
 
 void assert_numCtrlsMatchesNumCtrlStatesAndTemplateParam(int numCtrls, int numCtrlStates, int templateParam);
 

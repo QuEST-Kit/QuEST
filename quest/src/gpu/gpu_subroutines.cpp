@@ -39,6 +39,7 @@
 #include "quest/src/core/errors.hpp"
 #include "quest/src/core/utilities.hpp"
 #include "quest/src/core/accelerator.hpp"
+#include "quest/src/comm/comm_indices.hpp"
 
 #if COMPILE_CUDA
     #include "quest/src/gpu/gpu_types.hpp"
@@ -61,22 +62,23 @@ using std::vector;
  */
 
 
-template <int NumCtrls>
-void gpu_statevec_packAmpsIntoBuffer(Qureg qureg, vector<int> ctrls, vector<int> ctrlStates) {
+template <int NumQubits>
+void gpu_statevec_packAmpsIntoBuffer(Qureg qureg, vector<int> qubits, vector<int> qubitStates) {
 
-    assert_numCtrlsMatchesNumCtrlStatesAndTemplateParam(ctrls.size(), ctrlStates.size(), NumCtrls);
+    assert_numQubitsMatchesQubitStatesAndTemplateParam(qubits.size(), qubitStates.size(), NumQubits);
 
 #if COMPILE_CUDA || COMPILE_CUQUANTUM
 
-    qindex numThreads = qureg.numAmpsPerNode / powerOf2(ctrls.size());
+    qindex numThreads = qureg.numAmpsPerNode / powerOf2(qubits.size());
     qindex numBlocks = getNumBlocks(numThreads);
+    qindex sendInd = getSubBufferSendInd(qureg);
 
-    devicevec sortedCtrls = util_getSorted(ctrls);
-    qindex ctrlStateMask  = util_getBitMask(ctrls, ctrlStates);
+    devicevec sortedQubits = util_getSorted(qubits);
+    qindex qubitStateMask  = util_getBitMask(qubits, qubitStates);
 
-    kernel_statevec_packAmpsIntoBuffer <NumCtrls> <<<numBlocks, NUM_THREADS_PER_BLOCK>>> (
-        toCuQcomps(qureg.gpuAmps), toCuQcomps(qureg.gpuCommBuffer), numThreads, 
-        getPtr(sortedCtrls), ctrls.size(), ctrlStateMask
+    kernel_statevec_packAmpsIntoBuffer <NumQubits> <<<numBlocks, NUM_THREADS_PER_BLOCK>>> (
+        toCuQcomps(qureg.gpuAmps), &toCuQcomps(qureg.gpuCommBuffer)[sendInd], numThreads, 
+        getPtr(sortedQubits), qubits.size(), qubitStateMask
     );
 
 #else
@@ -86,6 +88,97 @@ void gpu_statevec_packAmpsIntoBuffer(Qureg qureg, vector<int> ctrls, vector<int>
 
 
 INSTANTIATE_FUNC_OPTIMISED_FOR_NUM_CTRLS( void, gpu_statevec_packAmpsIntoBuffer, (Qureg, vector<int>, vector<int>) )
+
+
+
+/*
+ * SWAPS
+ */
+
+
+template <int NumCtrls> 
+void gpu_statevec_anyCtrlSwap_subA(Qureg qureg, vector<int> ctrls, vector<int> ctrlStates, int targ1, int targ2) {
+
+    assert_numCtrlsMatchesNumCtrlStatesAndTemplateParam(ctrls.size(), ctrlStates.size(), NumCtrls);
+
+#if COMPILE_CUQUANTUM
+
+    cuquantum_statevec_anyCtrlSwap_subA(qureg, ctrls, ctrlStates, targ1, targ2);
+
+#elif COMPILE_CUDA
+
+    qindex numThreads = qureg.numAmpsPerNode / powerOf2(2 + ctrls.size());
+    qindex numBlocks = getNumBlocks(numThreads);
+
+    devicevec sortedQubits = util_getSorted(ctrls, {targ2, targ1});
+    qindex qubitStateMask  = util_getBitMask(ctrls, ctrlStates, {targ2, targ1}, {0, 1});
+
+    kernel_statevec_anyCtrlSwap_subA <NumCtrls> <<<numBlocks, NUM_THREADS_PER_BLOCK>>> (
+        toCuQcomps(qureg.gpuAmps), numThreads, 
+        getPtr(sortedQubits), ctrls.size(), qubitStateMask, targ1, targ2
+    );
+
+#else
+    error_gpuSimButGpuNotCompiled();
+#endif
+}
+
+INSTANTIATE_FUNC_OPTIMISED_FOR_NUM_CTRLS( void, gpu_statevec_anyCtrlSwap_subA, (Qureg qureg, vector<int> ctrls, vector<int> ctrlStates, int targ1, int targ2) )
+
+
+template <int NumCtrls> 
+void gpu_statevec_anyCtrlSwap_subB(Qureg qureg, vector<int> ctrls, vector<int> ctrlStates) {
+
+    assert_numCtrlsMatchesNumCtrlStatesAndTemplateParam(ctrls.size(), ctrlStates.size(), NumCtrls);
+
+#if COMPILE_CUDA || COMPILE_CUQUANTUM
+
+    qindex numThreads = qureg.numAmpsPerNode / powerOf2(ctrls.size());
+    qindex numBlocks = getNumBlocks(numThreads);
+    qindex recvInd = getBufferRecvInd();
+
+    devicevec sortedCtrls = util_getSorted(ctrls);
+    qindex ctrlStateMask  = util_getBitMask(ctrls, ctrlStates);
+
+    kernel_statevec_anyCtrlSwap_subB <NumCtrls> <<<numBlocks, NUM_THREADS_PER_BLOCK>>> (
+        toCuQcomps(qureg.gpuAmps), &toCuQcomps(qureg.gpuCommBuffer)[recvInd], numThreads, 
+        getPtr(sortedCtrls), ctrls.size(), ctrlStateMask
+    );
+
+#else
+    error_gpuSimButGpuNotCompiled();
+#endif
+}
+
+INSTANTIATE_FUNC_OPTIMISED_FOR_NUM_CTRLS( void, gpu_statevec_anyCtrlSwap_subB, (Qureg qureg, vector<int> ctrls, vector<int> ctrlStates) )
+
+
+template <int NumCtrls> 
+void gpu_statevec_anyCtrlSwap_subC(Qureg qureg, vector<int> ctrls, vector<int> ctrlStates, int targ, int targState) {
+
+    assert_numCtrlsMatchesNumCtrlStatesAndTemplateParam(ctrls.size(), ctrlStates.size(), NumCtrls);
+
+#if COMPILE_CUDA || COMPILE_CUQUANTUM
+
+    qindex numThreads = qureg.numAmpsPerNode / powerOf2(1 + ctrls.size());
+    qindex numBlocks = getNumBlocks(numThreads);
+    qindex recvInd = getBufferRecvInd();
+
+    devicevec sortedQubits = util_getSorted(ctrls, {targ});
+    qindex qubitStateMask  = util_getBitMask(ctrls, ctrlStates, {targ}, {targState});
+
+    kernel_statevec_anyCtrlSwap_subC <NumCtrls> <<<numBlocks, NUM_THREADS_PER_BLOCK>>> (
+        toCuQcomps(qureg.gpuAmps), &toCuQcomps(qureg.gpuCommBuffer)[recvInd], numThreads, 
+        getPtr(sortedQubits), ctrls.size(), qubitStateMask
+    );
+
+#else
+    error_gpuSimButGpuNotCompiled();
+#endif
+}
+
+
+INSTANTIATE_FUNC_OPTIMISED_FOR_NUM_CTRLS( void, gpu_statevec_anyCtrlSwap_subC, (Qureg qureg, vector<int> ctrls, vector<int> ctrlStates, int targ, int targState) )
 
 
 
@@ -137,13 +230,13 @@ void gpu_statevec_anyCtrlOneTargDenseMatr_subB(Qureg qureg, vector<int> ctrls, v
 
     qindex numThreads = qureg.numAmpsPerNode / powerOf2(ctrls.size());
     qindex numBlocks = getNumBlocks(numThreads);
+    qindex recvInd = getBufferRecvInd();
 
     devicevec sortedCtrls = util_getSorted(ctrls);
     qindex ctrlStateMask  = util_getBitMask(ctrls, ctrlStates);
 
-    // use ctrlFlag to dispatch to optimised kernel
-    kernel_statevec_anyCtrlOneTargDenseMatr_subB <NumCtrls> <<<numBlocks, NUM_THREADS_PER_BLOCK>>> (
-        toCuQcomps(qureg.gpuAmps), toCuQcomps(qureg.gpuCommBuffer), numThreads, 
+    kernel_statevec_anyCtrlOneTargDenseMatr_subB <NumCtrls> <<<numBlocks,NUM_THREADS_PER_BLOCK>>> (
+        toCuQcomps(qureg.gpuAmps), &toCuQcomps(qureg.gpuCommBuffer)[recvInd], numThreads, 
         getPtr(sortedCtrls), ctrls.size(), ctrlStateMask, 
         toCuQcomp(fac0), toCuQcomp(fac1)
     );
