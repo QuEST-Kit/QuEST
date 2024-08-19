@@ -95,7 +95,7 @@ __global__ void kernel_statevec_anyCtrlSwap_subA(
     qindex i10 = flipTwoBits(i01, targ2, targ1);
 
     // swap amps
-    cu_qcmop amp01 = amps[i01];
+    cu_qcomp amp01 = amps[i01];
     amps[i01] = amps[i10];
     amps[i10] = amp01;
 }

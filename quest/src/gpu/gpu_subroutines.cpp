@@ -107,7 +107,7 @@ void gpu_statevec_anyCtrlSwap_subA(Qureg qureg, vector<int> ctrls, vector<int> c
 
 #elif COMPILE_CUDA
 
-    qindex numThreads = qureg.numAmpsPerNode / powerOf2(2 + qubits.size());
+    qindex numThreads = qureg.numAmpsPerNode / powerOf2(2 + ctrls.size());
     qindex numBlocks = getNumBlocks(numThreads);
 
     devicevec sortedQubits = util_getSorted(ctrls, {targ2, targ1});
@@ -160,7 +160,7 @@ void gpu_statevec_anyCtrlSwap_subC(Qureg qureg, vector<int> ctrls, vector<int> c
 
 #if COMPILE_CUDA || COMPILE_CUQUANTUM
 
-    qindex numThreads = qureg.numAmpsPerNode / powerOf2(1 + qubits.size());
+    qindex numThreads = qureg.numAmpsPerNode / powerOf2(1 + ctrls.size());
     qindex numBlocks = getNumBlocks(numThreads);
     qindex recvInd = getBufferRecvInd();
 
@@ -169,7 +169,7 @@ void gpu_statevec_anyCtrlSwap_subC(Qureg qureg, vector<int> ctrls, vector<int> c
 
     kernel_statevec_anyCtrlSwap_subC <NumCtrls> <<<numBlocks, NUM_THREADS_PER_BLOCK>>> (
         toCuQcomps(qureg.gpuAmps), &toCuQcomps(qureg.gpuCommBuffer)[recvInd], numThreads, 
-        sortedQubits.data(), ctrls.size(), qubitStateMask
+        getPtr(sortedQubits), ctrls.size(), qubitStateMask
     );
 
 #else
