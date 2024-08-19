@@ -187,11 +187,11 @@ void gpu_statevec_anyCtrlAnyTargDenseMatr_sub(Qureg qureg, vector<int> ctrls, ve
 
     cu_qcomp *cache;
     qindex numTargAmps = powerOf2(targs.size());
-    qindex gridSize = numBlocks * NUM_THREADS_PER_BLOCK
+    qindex gridSize = numBlocks * NUM_THREADS_PER_BLOCK;
     qindex cacheSize = numTargAmps * gridSize;
     cudaMalloc(&cache, cacheSize * sizeof *cache);
 
-    kernel_statevec_anyCtrlAnyTargDenseMatr_sub <NumCtrls> <<<numBlocks, NUM_THREADS_PER_BLOCK>>> (
+    kernel_statevec_anyCtrlAnyTargDenseMatr_sub <NumCtrls, NumTargs> <<<numBlocks, NUM_THREADS_PER_BLOCK>>> (
         toCuQcomps(qureg.gpuAmps), cache, numThreads,
         getPtr(deviceQubits), ctrls.size(), qubitStateMask, getPtr(deviceTargs), targs.size(),
         toCuQcomps(matr.gpuElems));

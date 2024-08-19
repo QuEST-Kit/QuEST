@@ -137,7 +137,7 @@ template <int NumCtrls, int NumTargs>
 __global__ void kernel_statevec_anyCtrlAnyTargDenseMatr_sub(
     cu_qcomp* amps, cu_qcomp* cache, qindex numThreads,
     int* ctrlsAndTargs, int numCtrls, qindex ctrlsAndTargsMask, int* targs, int numTargs,
-    cu_qcomp* matrElems
+    cu_qcomp* flatMatrElems
 ) {
     qindex n = getThreadInd();
     if (n >= numThreads) 
@@ -173,14 +173,20 @@ __global__ void kernel_statevec_anyCtrlAnyTargDenseMatr_sub(
 
         // i = nth local index where ctrls are active and targs form value k
         qindex i = setBits(i0, targs, numTargBits, k); // loop may be unrolled
-        amps[i] = 0;
+        amps[i] = 0.;
     
         // loop may be unrolled
         for (qindex l=0; l<numTargAmps; l++) {
 
             // j = lth index of this thread's interleaved cache position
             qindex j = l * stride + offset;
-            amps[i] += matrElems[k][l] * cache[j];
+            cu_qcomp amp = cache[j];
+
+            // h = (k,l)-th index of matrix, flattened
+            qindex h = k * numTargAmps + l;
+            cu_qcomp elem = flatMatrElems[h];
+
+            amps[i] += elem * amp;
         }
     }
 }
