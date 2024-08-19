@@ -10,9 +10,9 @@
 #include "quest/src/core/bitwise.hpp"
 #include "quest/src/gpu/gpu_config.hpp"
 #include "quest/src/comm/comm_config.hpp"
+#include "quest/src/comm/comm_indices.hpp"
 
 #include <vector>
-#include <utility>
 
 #if COMPILE_MPI
     #include <mpi.h>
@@ -23,7 +23,8 @@
 /*
  * TODO:
  *
- * - assert internal succes of all MPI calls for robustness
+ * - create an MPI error handler for custom comm internal error messages:
+ *   https://docs.open-mpi.org/en/v5.0.x/man-openmpi/man3/MPI_Comm_create_errhandler.3.html#mpi-comm-create-errhandler
  * 
  * - we may wish to adjust communication design when supporting MPI+cuQuantum,
  *   wherein we must define our own Communicator type.
@@ -32,6 +33,9 @@
  * - apparently we can perform better than UCX's intra-socket inter-GPU
  *   communication, achieving 1.5-3x speedups. See this thesis:
  *   https://www.queensu.ca/academia/afsahi/pprl/thesis/Yiltan_Temucin_MASc_thesis.pdf
+ * 
+ * - we may wish to think more explicitly about memory affinity, using hwloc:
+ *   https://www.open-mpi.org/projects/hwloc/
  * 
  * - when CUDA-aware MPI (via UCX) attempting to exchange VRAM-to-VRAM has to fall
  *   back upon routing through RAM (because e.g. there is no direct
@@ -122,33 +126,6 @@ void getMessageConfig(qindex *messageSize, qindex *numMessages, qindex numAmps) 
         *messageSize = numAmps;
         *numMessages = 1;
     }
-}
-
-
-
-/*
- * MESSAGE INDICES
- */
-
-
-qindex getSubBufferSendInd(Qureg qureg) {
-
-    // the maximum size of a swapped sub-buffer is half the capacity, so we
-    // will always pack sub-buffers starting from half capacity
-    return qureg.numAmpsPerNode / 2;
-}
-
-qindex getSubBufferRecvInd() {
-
-    // we always receive amplitudes to the start of the buffer, so that
-    // post-communication subroutines do not need to condition on whether
-    // all amps or only a sub-buffer were/was exchanged.
-    return 0;
-}
-
-std::pair<qindex,qindex> getSubBufferSendRecvInds(Qureg qureg) {
-
-    return {getSubBufferSendInd(qureg), getSubBufferRecvInd()};
 }
 
 
@@ -322,7 +299,7 @@ void asynchSendGpuSubBuffer(Qureg qureg, qindex numElems, int pairRank) {
 
 void receiveArrayToGpuBuffer(Qureg qureg, qindex numElems, int pairRank) {
 
-    qindex recvInd = getSubBufferRecvInd();
+    qindex recvInd = getBufferRecvInd();
 
     // receive to GPU memory directly if possible
     if (gpu_isDirectGpuCommPossible()) {
@@ -367,6 +344,7 @@ void comm_exchangeSubBuffers(Qureg qureg, qindex numAmps, int pairRank) {
     auto [sendInd, recvInd] = getSubBufferSendRecvInds(qureg);
 
     assert_validCommBounds(qureg, sendInd, recvInd, numAmps);
+    assert_bufferSendRecvDoesNotOverlap(sendInd, recvInd, numAmps);
     assert_quregIsDistributed(qureg);
     assert_pairRankIsDistinct(qureg, pairRank);
 
@@ -382,6 +360,7 @@ void comm_asynchSendSubBuffer(Qureg qureg, qindex numElems, int pairRank) {
     auto [sendInd, recvInd] = getSubBufferSendRecvInds(qureg);
 
     assert_validCommBounds(qureg, sendInd, recvInd, numElems);
+    assert_bufferSendRecvDoesNotOverlap(sendInd, recvInd, numElems);
     assert_quregIsDistributed(qureg);
     assert_pairRankIsDistinct(qureg, pairRank);
 
@@ -397,6 +376,7 @@ void comm_receiveArrayToBuffer(Qureg qureg, qindex numElems, int pairRank) {
     auto [sendInd, recvInd] = getSubBufferSendRecvInds(qureg);
 
     assert_validCommBounds(qureg, sendInd, recvInd, numElems);
+    assert_bufferSendRecvDoesNotOverlap(sendInd, recvInd, numElems);
     assert_quregIsDistributed(qureg);
     assert_pairRankIsDistinct(qureg, pairRank);
 

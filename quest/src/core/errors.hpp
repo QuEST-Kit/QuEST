@@ -71,6 +71,8 @@ void assert_quregIsDistributed(Qureg qureg);
 
 void assert_pairRankIsDistinct(Qureg qureg, int pairRank);
 
+void assert_bufferSendRecvDoesNotOverlap(qindex sendInd, qindex recvInd, qindex numAmps);
+
 
 
 /*

@@ -16,7 +16,7 @@
 #include "quest/src/core/bitwise.hpp"
 #include "quest/src/core/utilities.hpp"
 #include "quest/src/core/accelerator.hpp"
-#include "quest/src/comm/comm_routines.hpp"
+#include "quest/src/comm/comm_indices.hpp"
 
 #include <vector>
 
@@ -107,7 +107,8 @@ void cpu_statevec_anyCtrlOneTargDenseMatr_subB(Qureg qureg, vector<int> ctrls, v
     // each control qubit halves the needed iterations
     qindex numIts = qureg.numAmpsPerNode / powerOf2(ctrls.size());
     
-    qindex offset = getSubBufferRecvInd();
+    // received amplitudes may begin at an arbitrary offset in the buffer
+    qindex offset = getBufferRecvInd();
 
     auto sortedCtrls   = util_getSorted(ctrls);
     auto ctrlStateMask = util_getBitMask(ctrls, ctrlStates);
@@ -121,7 +122,10 @@ void cpu_statevec_anyCtrlOneTargDenseMatr_subB(Qureg qureg, vector<int> ctrls, v
         // i = nth local index where ctrl bits are in specified states
         qindex i = insertBitsWithMaskedValues(n, sortedCtrls.data(), numCtrlBits, ctrlStateMask);
 
-        qureg.cpuAmps[i] = fac0*qureg.cpuAmps[i] + fac1*qureg.cpuCommBuffer[offset+n];
+        // j = nth received amplitude from pair rank
+        qindex j = n + offset;
+
+        qureg.cpuAmps[i] = fac0*qureg.cpuAmps[i] + fac1*qureg.cpuCommBuffer[j];
     }
 }
 
