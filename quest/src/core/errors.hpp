@@ -87,6 +87,8 @@ void error_localiserNumCtrlStatesInconsistentWithNumCtrls();
  * ACCELERATOR ERRORS
  */
 
+void assert_numQubitsMatchesQubitStatesAndTemplateParam(int numQubits, int numQubitStates, int templateParam, string label="qubit");
+
 void assert_numCtrlsMatchesNumCtrlStatesAndTemplateParam(int numCtrls, int numCtrlStates, int templateParam);
 
 void assert_numTargsMatchesTemplateParam(int numTargs, int templateParam);

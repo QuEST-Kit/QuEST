@@ -55,11 +55,59 @@ __host__ qindex getNumBlocks(qindex numIts) {
 template <int NumCtrls>
 __global__ void kernel_statevec_packAmpsIntoBuffer(
     cu_qcomp* amps, cu_qcomp* buffer, qindex numThreads, 
-    int* ctrls, int numCtrls, qindex mask
+    int* qubits, int numQubits, qindex mask
 ) {
-
     qindex n = getThreadInd();
     if (n >= numThreads) 
+        return;
+
+    // use template param to compile-time unroll loop in insertBits()
+    SET_VAR_AT_COMPILE_TIME(int, numBits, NumCtrls, numQubits);
+
+    // i = nth local index where qubits are active
+    qindex i = insertBitsWithMaskedValues(n, qubits, numBits, mask);
+
+    // caller offsets buffer by sub-buffer send-index
+    buffer[n] = amps[i];
+}
+
+
+
+/*
+ * SWAPS
+ */
+
+template <int NumCtrls> 
+__global__ void kernel_statevec_anyCtrlSwap_subA(
+    cu_qcomp* amps, qindex numThreads, 
+    int* ctrlsAndTargs, int numCtrls, qindex ctrlsAndTargsMask, int targ1, int targ2
+) {
+    qindex n = getThreadInd();
+    if (n >= numThreads) 
+        return;
+
+    // use template param to compile-time unroll loop in insertBits()
+    SET_VAR_AT_COMPILE_TIME(int, numCtrlBits, NumCtrls, numCtrls);
+    int numQubitBits = 2 + numCtrlBits;
+
+    // i01 = nth local index where ctrls are active, targ2=0 and targ1=1
+    qindex i01 = insertBitsWithMaskedValues(n, ctrlsAndTargs, numQubitBits, ctrlsAndTargsMask);
+    qindex i10 = flipTwoBits(i01, targ2, targ1);
+
+    // swap amps
+    cu_qcomp amp01 = amps[i01];
+    amps[i01] = amps[i10];
+    amps[i10] = amp01;
+}
+
+
+template <int NumCtrls> 
+__global__ void kernel_statevec_anyCtrlSwap_subB(
+    cu_qcomp* amps, cu_qcomp* buffer, qindex numThreads, 
+    int* ctrls, int numCtrls, qindex mask
+) {
+    qindex n = getThreadInd();
+    if (n >= numThreads)
         return;
 
     // use template param to compile-time unroll loop in insertBits()
@@ -68,8 +116,29 @@ __global__ void kernel_statevec_packAmpsIntoBuffer(
     // i = nth local index where ctrls are active
     qindex i = insertBitsWithMaskedValues(n, ctrls, numCtrlBits, mask);
 
-    // caller offsets buffer by sub-buffer send-index
-    buffer[n] = amps[i];
+    // caller offsets buffer if necessary
+    amps[i] = buffer[n];
+}
+
+
+template <int NumCtrls> 
+__global__ void kernel_statevec_anyCtrlSwap_subC(
+    cu_qcomp* amps, cu_qcomp* buffer, qindex numThreads, 
+    int* ctrlsAndTarg, int numCtrls, qindex ctrlsAndTargMask
+) {
+    qindex n = getThreadInd();
+    if (n >= numThreads)
+        return;
+
+    // use template param to compile-time unroll loop in insertBits()
+    SET_VAR_AT_COMPILE_TIME(int, numCtrlBits, NumCtrls, numCtrls);
+    int numQubitBits = numCtrlBits + 1;
+
+    // i = nth local index where ctrls and targ are in specified states
+    qindex i = insertBitsWithMaskedValues(n, ctrlsAndTarg, numQubitBits, ctrlsAndTargMask);
+
+    // caller offsets buffer if necessary
+    amps[i] = buffer[n];
 }
 
 

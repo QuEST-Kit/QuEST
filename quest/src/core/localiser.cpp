@@ -123,6 +123,105 @@ auto getSuffixCtrlsAndStates(Qureg qureg, vector<int> ctrls, vector<int> states)
 
 
 /*
+ * PERFORMING NECESSARY COMMUNICATION
+ */
+
+
+void exchangeAmpsSatisfyingCtrlsIntoBuffers(Qureg qureg, int pairRank, vector<int> ctrls, vector<int> ctrlStates) {
+
+    // when there are no ctrls, all amps are exchanged; there is no need to pack the buffer
+    if (ctrls.empty()) {
+        comm_exchangeAmpsToBuffers(qureg, pairRank);
+        return;
+    }
+
+    // otherwise, we pack and exchange only to-be-communicated amps between sub-buffers
+    qindex numPacked = accel_statevec_packAmpsIntoBuffer(qureg, ctrls, ctrlStates);
+    comm_exchangeSubBuffers(qureg, numPacked, pairRank);
+}
+
+
+void exchangeAmpsSatisfyingCtrlsAndTargIntoBuffers(Qureg qureg, int pairRank, vector<int> ctrls, vector<int> ctrlStates, int targ, int targState) {
+
+    // combine ctrls and targs
+    vector<int> qubits = ctrls;
+    vector<int> states = ctrlStates;
+    qubits.push_back(targ);
+    states.push_back(targState);
+
+    // pack and exchange only to-be-communicated amps between sub-buffers
+    qindex numPacked = accel_statevec_packAmpsIntoBuffer(qureg, qubits, states);
+    comm_exchangeSubBuffers(qureg, numPacked, pairRank);
+}
+
+
+
+/*
+ * SWAPS
+ */
+
+
+void localiser_statevec_anyCtrlSwap(Qureg qureg, vector<int> ctrls, vector<int> ctrlStates, int targ1, int targ2) {
+    assertValidCtrlStates(ctrls, ctrlStates);
+    setDefaultCtrlStates(ctrls, ctrlStates);
+
+    // ensure targ2 > targ1
+    if (targ1 > targ2)
+        std::swap(targ1, targ2);
+
+    // node has nothing to do if all local amps violate control condition
+    if (!doAnyLocalAmpsSatisfyCtrls(qureg, ctrls, ctrlStates))
+        return;
+
+    // retain only suffix control qubits as relevant to communication and local amp modification
+    std::tie(ctrls, ctrlStates) = getSuffixCtrlsAndStates(qureg, ctrls, ctrlStates);
+
+    // if neither targets invoke communication, perform embarrassingly parallel simulation and finish
+    if (!doesGateRequireComm(qureg, {targ2})) {
+        accel_statevec_anyCtrlSwap_subA(qureg, ctrls, ctrlStates, targ1, targ2);
+        return;
+    }
+
+    // if both targets demand communication...
+    if (doesGateRequireComm(qureg, {targ1})) {
+        int prefTarg1 = targ1 - qureg.logNumAmpsPerNode;
+        int prefTarg2 = targ2 - qureg.logNumAmpsPerNode;
+
+        // then half of all nodes contain no to-be-swapped amps and immediately finish
+        if (getBit(qureg.rank, prefTarg1) == getBit(qureg.rank, prefTarg2))
+            return;
+
+        // but the remaining half exchange the entirety of their amps which are in the ctrl states
+        int pairRank = flipTwoBits(qureg.rank, prefTarg1, prefTarg2);
+        exchangeAmpsSatisfyingCtrlsIntoBuffers(qureg, pairRank, ctrls, ctrlStates);
+
+        // and use them to overwrite their local amps satisfying ctrl states, then finish
+        accel_statevec_anyCtrlSwap_subB(qureg, ctrls, ctrlStates);
+        return;
+    }
+
+    // if targ1 is the leftmost suffix and there are no controls...
+    if (ctrls.empty() && targ1 == qureg.logNumAmpsPerNode - 1) {
+
+        // then packing is unnecessary and contiguous amplitudes can be sent directly
+
+        // TODO: we currently do not bother implementing this unlikely situation
+    }
+    
+    // to reach here, targ1 is in suffix and targ2 is in prefix, and every node exchanges at most half its amps;
+    // those where their targ1 bit differs from the node's fixed targ2 bit value
+    int prefTarg2 = targ2 - qureg.logNumAmpsPerNode;
+    int pairRank = flipBit(qureg.rank, prefTarg2);
+    int targState1 = getBit(pairRank, prefTarg2);
+    exchangeAmpsSatisfyingCtrlsAndTargIntoBuffers(qureg, pairRank, ctrls, ctrlStates, targ1, targState1);
+
+    // we use the recevied buffer amplitudes to modify half of the local bits which satisfy ctrls
+    accel_statevec_anyCtrlSwap_subC(qureg, ctrls, ctrlStates, targ1, targState1);
+}
+
+
+
+/*
  * MATRICES
  */
 
@@ -144,18 +243,10 @@ void localiser_statevec_anyCtrlOneTargDenseMatr(Qureg qureg, vector<int> ctrls, 
         return;
     }
 
-    // otherwise we must communicate with a pair rank... 
+    // otherwise we exchange all or some of our amps (those where ctrls are active) into buffer with pair rank
     int rankTarg = targ - qureg.logNumAmpsPerNode;
     int pairRank = flipBit(qureg.rank, rankTarg);
-
-    // to exchange all or some of our amps (those where ctrls are active) into buffer
-    if (ctrls.empty())
-        comm_exchangeAmpsToBuffers(qureg, pairRank);
-    else {
-        qindex numExch = qureg.numAmpsPerNode / powerOf2(ctrls.size());
-        accel_statevec_packAmpsIntoBuffer(qureg, ctrls, ctrlStates);
-        comm_exchangeSubBuffers(qureg, numExch, pairRank);
-    }
+    exchangeAmpsSatisfyingCtrlsIntoBuffers(qureg, pairRank, ctrls, ctrlStates);
 
     // extract relevant gate elements
     int bit = getBit(qureg.rank, rankTarg);

@@ -152,13 +152,26 @@ void gpu_finalizeCuQuantum() {
  */
 
 
+void cuquantum_statevec_anyCtrlSwap_subA(Qureg qureg, vector<int> ctrls, vector<int> ctrlStates, int targ1, int targ2) {
+
+    // our SWAP targets are bundled into pairs
+    int2 targPairs[] = {{targ1, targ2}};;
+    int numTargPairs = 1;
+
+    CUDA_CHECK( custatevecSwapIndexBits(
+        config.cuQuantumHandle,
+        toCuQcomps(qureg.gpuAmps), CUQUANTUM_QCOMP, qureg.logNumAmpsPerNode,
+        targPairs, numTargPairs,
+
+        // swap mask params seem to be in the reverse order to the remainder of the cuStateVec API
+        ctrlStates.data(), ctrls.data(), ctrls.size()) );
+}
+
+
 void cuquantum_statevec_anyCtrlAnyTargDenseMatrix_subA(Qureg qureg, vector<int> ctrls, vector<int> ctrlStates, vector<int> targs, cu_qcomp* flatMatrElems) {
 
     // do not adjoint matrix
     int adj = 0;
-
-    // permit passing no ctrl states
-    int* ctrlVals = (ctrlStates.empty())? nullptr : ctrlStates.data();
 
     // use automatic workspace management
     void* work = nullptr;
@@ -169,7 +182,7 @@ void cuquantum_statevec_anyCtrlAnyTargDenseMatrix_subA(Qureg qureg, vector<int> 
         toCuQcomps(qureg.gpuAmps), CUQUANTUM_QCOMP, qureg.logNumAmpsPerNode, 
         flatMatrElems, CUQUANTUM_QCOMP, CUSTATEVEC_MATRIX_LAYOUT_ROW, adj, 
         targs.data(), targs.size(),
-        ctrls.data(), ctrlVals, ctrls.size(), 
+        ctrls.data(), ctrlStates.data(), ctrls.size(), 
         CUSTATEVEC_COMPUTE_DEFAULT,
         work, workSize) );
 }
@@ -183,9 +196,6 @@ void cuquantum_statevec_anyCtrlAnyTargDiagMatr_sub(Qureg qureg, vector<int> ctrl
     // do not adjoint elems
     int adj = 0;
 
-    // permit passing no ctrl states
-    int* ctrlVals = (ctrlStates.empty())? nullptr : ctrlStates.data();
-
     // use automatic workspace management
     void* work = nullptr;
     size_t workSize = 0;
@@ -195,7 +205,7 @@ void cuquantum_statevec_anyCtrlAnyTargDiagMatr_sub(Qureg qureg, vector<int> ctrl
         toCuQcomps(qureg.gpuAmps), CUQUANTUM_QCOMP, qureg.logNumAmpsPerNode,
         perm, flatMatrElems, CUQUANTUM_QCOMP, adj, 
         targs.data(), targs.size(), 
-        ctrls.data(), ctrlVals, ctrls.size(),
+        ctrls.data(), ctrlStates.data(), ctrls.size(),
         work, workSize) );
 }
 
