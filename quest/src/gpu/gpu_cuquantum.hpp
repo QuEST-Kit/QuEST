@@ -154,14 +154,17 @@ void gpu_finalizeCuQuantum() {
 
 void cuquantum_statevec_anyCtrlSwap_subA(Qureg qureg, vector<int> ctrls, vector<int> ctrlStates, int targ1, int targ2) {
 
-    int targs[] = {targ1, targ2};
-    int numTargs = 2;
+    // our SWAP targets are bundled into pairs
+    int2 targPairs[] = {{targ1, targ2}};;
+    int numTargPairs = 1;
 
     CUDA_CHECK( custatevecSwapIndexBits(
         config.cuQuantumHandle,
         toCuQcomps(qureg.gpuAmps), CUQUANTUM_QCOMP, qureg.logNumAmpsPerNode,
-        targs, numTargs,
-        ctrlStates.data(), ctrls.data(), ctrls.size() ) );
+        targPairs, numTargPairs,
+
+        // swap mask params seem to be in the reverse order to the remainder of the cuStateVec API
+        ctrlStates.data(), ctrls.data(), ctrls.size()) );
 }
 
 
