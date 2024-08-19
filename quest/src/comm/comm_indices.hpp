@@ -9,8 +9,6 @@
 #include "quest/include/types.h"
 #include "quest/include/qureg.h"
 
-#include "quest/src/core/inliner.hpp"
-
 #include <utility>
 
 
@@ -25,7 +23,7 @@
  */
 
 
-INLINE qindex getSubBufferSendInd(Qureg qureg) {
+static inline qindex getSubBufferSendInd(Qureg qureg) {
 
     // the maximum size of a swapped sub-buffer is half its capacity, so we
     // will always pack sub-buffers starting from half capacity
@@ -33,7 +31,7 @@ INLINE qindex getSubBufferSendInd(Qureg qureg) {
 }
 
 
-INLINE qindex getBufferRecvInd() {
+constexpr static inline qindex getBufferRecvInd() {
 
     // we always receive amplitudes to the start of the buffer, regardless
     // of whether we are receiving a full or sub-buffer
@@ -41,7 +39,7 @@ INLINE qindex getBufferRecvInd() {
 }
 
 
-INLINE std::pair<qindex,qindex> getSubBufferSendRecvInds(Qureg qureg) {
+static inline std::pair<qindex,qindex> getSubBufferSendRecvInds(Qureg qureg) {
 
     return {getSubBufferSendInd(qureg), getBufferRecvInd()};
 }
