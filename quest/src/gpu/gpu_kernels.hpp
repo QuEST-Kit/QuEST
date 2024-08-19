@@ -135,11 +135,54 @@ __global__ void kernel_statevec_anyCtrlOneTargDenseMatr_subB(
 
 template <int NumCtrls, int NumTargs>
 __global__ void kernel_statevec_anyCtrlAnyTargDenseMatr_sub(
-    cu_qcomp* amps, qindex numThreads,
-    int* qubits, int numQubits, qindex mask, int* targs, int numTargs,
-    cu_qcomp* elems
+    cu_qcomp* amps, cu_qcomp* cache, qindex numThreads,
+    int* ctrlsAndTargs, int numCtrls, qindex ctrlsAndTargsMask, int* targs, int numTargs
+    cu_qcomp* matrElems
 ) {
-    // TODO
+    qindex n = getThreadInd();
+    if (n >= numThreads) 
+        return;
+
+    // use template params to compile-time unroll loops in insertBits() and getValueOfBits()
+    SET_VAR_AT_COMPILE_TIME(int, numCtrlBits, NumCtrls, numCtrls);
+    SET_VAR_AT_COMPILE_TIME(int, numTargBits, NumTargs, numTargs);
+    int numQubitBits = numCtrlBits + numTargBits;
+    qindex numTargAmps = powerOf2(numTargBits);
+
+    // determine thread's indices in interleaved global cache 
+    size_t stride = gridDim.x*blockDim.x;
+    size_t offset = blockIdx.x*blockDim.x + threadIdx.x;
+
+    // i0 = nth local index where ctrls are active and targs are all zero
+    qindex i0 = insertBitsWithMaskedValues(n, ctrlsAndTargs, numQubitBits, ctrlsAndTargsMask);
+
+    // collect and cache all to-be-modified amps (loop might be unrolled)
+    for (qindex k=0; k<numTargAmps; k++) {
+
+        // i = nth local index where ctrls are active and targs form value k
+        qindex i = setBits(i0, targs, numTargBits, k); // loop may be unrolled
+        cu_qcomp amp = amps[i];
+
+        // j = kth index of this thread's interleaved cache position
+        qindex j = k * stride + offset;
+        cache[j] = amp;
+    }
+
+    // modify each amplitude (loop might be unrolled)
+    for (qindex k=0; k<numTargAmps; k++) {
+
+        // i = nth local index where ctrls are active and targs form value k
+        qindex i = setBits(i0, targs, numTargBits, k); // loop may be unrolled
+        amps[i] = 0;
+    
+        // loop may be unrolled
+        for (qindex l=0; l<numTargAmps; l++) {
+
+            // j = lth index of this thread's interleaved cache position
+            qindex j = l * stride + offset;
+            amps[i] += matrElems[k][l] * cache[j];
+        }
+    }
 }
 
 

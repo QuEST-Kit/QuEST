@@ -245,6 +245,8 @@ void localiser_statevec_anyCtrlAnyTargDenseMatr(Qureg qureg, vector<int> ctrls, 
     //     or custatevecDistIndexBitSwapSchedulerSetIndexBitSwaps() if distributed,
     //     although the latter requires substantially more work like setting up
     //     a communicator which may be inelegant alongside our own distribution scheme
+    //   - the induced swap gates always trigger the targ2-prefix targ1-suffix scenario; 
+    //     we should invoke that scenario directly to avoid all the extra faff
 
     // node has nothing to do if all local amps violate control condition
     if (!doAnyLocalAmpsSatisfyCtrls(qureg, ctrls, ctrlStates))
@@ -265,8 +267,6 @@ void localiser_statevec_anyCtrlAnyTargDenseMatr(Qureg qureg, vector<int> ctrls, 
     // only unmoved ctrls can be applied to the swaps, to accelerate them
     auto [unmovedCtrls, unmovedCtrlStates] = getNonSwappedCtrlsAndStates(newCtrls, ctrlStates, newTargs); 
 
-    // TODO: the below swaps always trigger the targ2-prefix targ1-suffix scenario; we should call directly
-
     // perform necessary swaps to move all targets into suffix, each of which invokes communication
     for (size_t i=0; i<targs.size(); i++)
         if (targs[i] != newTargs[i])
@@ -284,9 +284,7 @@ void localiser_statevec_anyCtrlAnyTargDenseMatr(Qureg qureg, vector<int> ctrls, 
     for (size_t i=0; i<targs.size(); i++)
         if (targs[i] != newTargs[i])
             localiser_statevec_anyCtrlSwap(qureg, unmovedCtrls, unmovedCtrlStates, targs[i], newTargs[i]);
-
 }
-
 
 
 void localiser_statevec_anyCtrlAnyTargDiagMatr(Qureg qureg, vector<int> ctrls, vector<int> ctrlStates, vector<int> targs, DiagMatr matr) {

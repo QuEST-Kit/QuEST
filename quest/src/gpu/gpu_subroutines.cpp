@@ -142,7 +142,7 @@ void gpu_statevec_anyCtrlOneTargDenseMatr_subB(Qureg qureg, vector<int> ctrls, v
     qindex ctrlStateMask  = util_getBitMask(ctrls, ctrlStates);
 
     // use ctrlFlag to dispatch to optimised kernel
-    kernel_statevec_anyCtrlOneTargDenseMatr_subB <NumCtrls> <<<numBlocks,NUM_THREADS_PER_BLOCK>>> (
+    kernel_statevec_anyCtrlOneTargDenseMatr_subB <NumCtrls> <<<numBlocks, NUM_THREADS_PER_BLOCK>>> (
         toCuQcomps(qureg.gpuAmps), toCuQcomps(qureg.gpuCommBuffer), numThreads, 
         getPtr(sortedCtrls), ctrls.size(), ctrlStateMask, 
         toCuQcomp(fac0), toCuQcomp(fac1)
@@ -181,7 +181,22 @@ void gpu_statevec_anyCtrlAnyTargDenseMatr_sub(Qureg qureg, vector<int> ctrls, ve
     devicevec deviceQubits = util_getSorted(ctrls, targs);
     qindex qubitStateMask  = util_getBitMask(ctrls, ctrlStates, targs, vector<int>(targs.size(),0));
 
-    // TODO
+    // TODO: allocating per-thread private memory here is ridiculously slow and pointless, and makes redundant
+    // the persistent GPU memory in the CompMatr. Revise this to use persistent env-attached memory, as per 
+    // discussions with Richard Meister.
+
+    cu_qcomp *cache;
+    qindex numTargAmps = powerOf2(targs.size());
+    qindex gridSize = numBlocks * NUM_THREADS_PER_BLOCK
+    qindex cacheSize = numTargAmps * gridSize;
+    cudaMalloc(&cache, cacheSize * sizeof *cache);
+
+    kernel_statevec_anyCtrlAnyTargDenseMatr_sub <NumCtrls> <<<numBlocks, NUM_THREADS_PER_BLOCK>>> (
+        toCuQcomps(qureg.gpuAmps), cache, numThreads,
+        getPtr(deviceQubits), ctrls.size(), qubitStateMask, getPtr(deviceTargs), targs.size(),
+        toCuQcomps(matr.gpuElems));
+
+    cudaFree(cache);
 
 #else
     error_gpuSimButGpuNotCompiled();

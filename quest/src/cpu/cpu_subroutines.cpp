@@ -168,23 +168,23 @@ void cpu_statevec_anyCtrlAnyTargDenseMatr_sub(Qureg qureg, vector<int> ctrls, ve
         qindex i0 = insertBitsWithMaskedValues(n, sortedQubits.data(), numQubitBits, qubitStateMask);
 
         // collect and cache all to-be-modified amps (loop might be unrolled)
+        for (qindex j=0; j<numTargAmps; j++) {
+
+            // i = nth local index where ctrls are active and targs form value j
+            qindex i = setBits(i0, targs.data(), numTargBits, j); // loop may be unrolled
+            cache[j] = qureg.cpuAmps[i];
+        }
+
+        // modify each amplitude (loop might be unrolled)
         for (qindex k=0; k<numTargAmps; k++) {
 
             // i = nth local index where ctrls are active and targs form value k
             qindex i = setBits(i0, targs.data(), numTargBits, k); // loop may be unrolled
-            cache[k] = qureg.cpuAmps[i];
-        }
-
-        // modify each amplitude (loop might be unrolled)
-        for (qindex l=0; l<numTargAmps; l++) {
-
-            // i = nth local index where ctrls are active and targs form value l
-            qindex i = setBits(i0, targs.data(), numTargBits, l); // loop may be unrolled
             qureg.cpuAmps[i] = 0;
         
             // loop may be unrolled
-            for (qindex k=0; k<numTargAmps; k++)
-                qureg.cpuAmps[i] += matr.cpuElems[l][k] * cache[k];
+            for (qindex j=0; j<numTargAmps; j++)
+                qureg.cpuAmps[i] += matr.cpuElems[k][j] * cache[j];
         }
     }
 }
