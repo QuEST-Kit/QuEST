@@ -19,8 +19,7 @@ using std::vector;
  * COMMUNICATION BUFFER PACKING
  */
 
-template <int NumCtrls> 
-    void cpu_statevec_packAmpsIntoBuffer(Qureg qureg, vector<int> ctrls, vector<int> ctrlStates);
+template <int NumCtrls> void cpu_statevec_packAmpsIntoBuffer(Qureg qureg, vector<int> ctrls, vector<int> ctrlStates);
 
 
 /*
