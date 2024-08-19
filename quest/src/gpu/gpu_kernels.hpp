@@ -136,7 +136,7 @@ __global__ void kernel_statevec_anyCtrlOneTargDenseMatr_subB(
 template <int NumCtrls, int NumTargs>
 __global__ void kernel_statevec_anyCtrlAnyTargDenseMatr_sub(
     cu_qcomp* amps, cu_qcomp* cache, qindex numThreads,
-    int* ctrlsAndTargs, int numCtrls, qindex ctrlsAndTargsMask, int* targs, int numTargs
+    int* ctrlsAndTargs, int numCtrls, qindex ctrlsAndTargsMask, int* targs, int numTargs,
     cu_qcomp* matrElems
 ) {
     qindex n = getThreadInd();
