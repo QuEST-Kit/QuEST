@@ -188,12 +188,22 @@ INLINE qindex flipTwoBits(qindex number, int i1, int i0) {
  */
 
 
-INLINE int getNextLeftmostZeroBit(qindex mask, int bitInd) {
+INLINE int getIndOfNextLeftmostZeroBit(qindex mask, int bitInd) {
 
     bitInd--;
     while (getBit(mask, bitInd))
         bitInd--;
     
+    return bitInd;
+}
+
+
+INLINE int getIndOfNextRightmostZeroBit(qindex mask, int bitInd) {
+
+    bitInd++;
+    while (getBit(mask, bitInd))
+        bitInd++;
+
     return bitInd;
 }
 

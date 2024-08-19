@@ -134,7 +134,7 @@ __global__ void kernel_statevec_anyCtrlOneTargDenseMatr_subB(
 
 
 template <int NumCtrls, int NumTargs>
-__global__ void kernel_statevec_anyCtrlAnyTargDenseMatr_subA(
+__global__ void kernel_statevec_anyCtrlAnyTargDenseMatr_sub(
     cu_qcomp* amps, qindex numThreads,
     int* qubits, int numQubits, qindex mask, int* targs, int numTargs,
     cu_qcomp* elems
