@@ -173,7 +173,7 @@ __global__ void kernel_statevec_anyCtrlAnyTargDenseMatr_sub(
 
         // i = nth local index where ctrls are active and targs form value k
         qindex i = setBits(i0, targs, numTargBits, k); // loop may be unrolled
-        amps[i] = 0.;
+        amps[i] = {0, 0}; // zero comp literal
     
         // loop may be unrolled
         for (qindex l=0; l<numTargAmps; l++) {
