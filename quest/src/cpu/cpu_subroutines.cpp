@@ -242,12 +242,63 @@ INSTANTIATE_FUNC_OPTIMISED_FOR_NUM_CTRLS( void, cpu_statevec_anyCtrlOneTargDense
 
 
 template <int NumCtrls, int NumTargs>
-void cpu_statevec_anyCtrlAnyTargDenseMatr_subA(Qureg qureg, vector<int> ctrls, vector<int> ctrlStates, vector<int> targs, CompMatr matr) {
+void cpu_statevec_anyCtrlAnyTargDenseMatr_sub(Qureg qureg, vector<int> ctrls, vector<int> ctrlStates, vector<int> targs, CompMatr matr) {
     
-    // TODO
+    assert_numCtrlsMatchesNumCtrlStatesAndTemplateParam(ctrls.size(), ctrlStates.size(), NumCtrls);
+    assert_numTargsMatchesTemplateParam(targs.size(), NumTargs);
+
+    // we tested a variant of this function where a mask for each ctrl-targ state is calculated
+    // upfront (of which there are numTargAmps many), replacing all setBits() calls with
+    // activateBits(), which lacks the runtime loop and does not need compile-time unrolling.
+    // curiously, that worsened performance in all regimes!
+
+    // each control qubit halves iterations, each of which modifies 2^(targs.size()) amplitudes
+    qindex numIts = qureg.numAmpsPerNode / powerOf2(ctrls.size() + targs.size());
+
+    // prepare a mask which yields ctrls in specified state, and targs in all-zero
+    auto sortedQubits   = util_getSorted(ctrls, targs);
+    auto qubitStateMask = util_getBitMask(ctrls, ctrlStates, targs, vector<int>(targs.size(),0));
+
+    // attempt to use compile-time variables to automatically optimise/unroll dependent loops
+    SET_VAR_AT_COMPILE_TIME(int, numCtrlBits, NumCtrls, ctrls.size());
+    SET_VAR_AT_COMPILE_TIME(int, numTargBits, NumTargs, targs.size());
+
+    // compiler will infer these at compile-time if possible
+    int numQubitBits = numCtrlBits + numTargBits;
+    qindex numTargAmps = powerOf2(numTargBits);
+
+    #pragma omp parallel for if(qureg.isMultithreaded)
+    for (qindex n=0; n<numIts; n++) {
+
+        // a private cache needed by each thread to update each iteration's amplitudes (may be compile-time sized)
+        vector<qcomp> cache(numTargAmps);
+
+        // i0 = nth local index where ctrls are active and targs are all zero
+        qindex i0 = insertBitsWithMaskedValues(n, sortedQubits.data(), numQubitBits, qubitStateMask);
+
+        // collect and cache all to-be-modified amps (loop might be unrolled)
+        for (qindex j=0; j<numTargAmps; j++) {
+
+            // i = nth local index where ctrls are active and targs form value j
+            qindex i = setBits(i0, targs.data(), numTargBits, j); // loop may be unrolled
+            cache[j] = qureg.cpuAmps[i];
+        }
+
+        // modify each amplitude (loop might be unrolled)
+        for (qindex k=0; k<numTargAmps; k++) {
+
+            // i = nth local index where ctrls are active and targs form value k
+            qindex i = setBits(i0, targs.data(), numTargBits, k); // loop may be unrolled
+            qureg.cpuAmps[i] = 0;
+        
+            // loop may be unrolled
+            for (qindex j=0; j<numTargAmps; j++)
+                qureg.cpuAmps[i] += matr.cpuElems[k][j] * cache[j];
+        }
+    }
 }
 
-INSTANTIATE_FUNC_OPTIMISED_FOR_NUM_CTRLS_AND_TARGS( void, cpu_statevec_anyCtrlAnyTargDenseMatr_subA, (Qureg, vector<int>, vector<int>, vector<int>, CompMatr) )
+INSTANTIATE_FUNC_OPTIMISED_FOR_NUM_CTRLS_AND_TARGS( void, cpu_statevec_anyCtrlAnyTargDenseMatr_sub, (Qureg, vector<int>, vector<int>, vector<int>, CompMatr) )
 
 
 

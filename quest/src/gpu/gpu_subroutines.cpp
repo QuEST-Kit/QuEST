@@ -256,7 +256,7 @@ INSTANTIATE_FUNC_OPTIMISED_FOR_NUM_CTRLS( void, gpu_statevec_anyCtrlOneTargDense
 
 
 template <int NumCtrls, int NumTargs>
-void gpu_statevec_anyCtrlAnyTargDenseMatr_subA(Qureg qureg, vector<int> ctrls, vector<int> ctrlStates, vector<int> targs, CompMatr matr) {
+void gpu_statevec_anyCtrlAnyTargDenseMatr_sub(Qureg qureg, vector<int> ctrls, vector<int> ctrlStates, vector<int> targs, CompMatr matr) {
 
     assert_numCtrlsMatchesNumCtrlStatesAndTemplateParam(ctrls.size(), ctrlStates.size(), NumCtrls);
     assert_numTargsMatchesTemplateParam(targs.size(), NumTargs);
@@ -274,14 +274,29 @@ void gpu_statevec_anyCtrlAnyTargDenseMatr_subA(Qureg qureg, vector<int> ctrls, v
     devicevec deviceQubits = util_getSorted(ctrls, targs);
     qindex qubitStateMask  = util_getBitMask(ctrls, ctrlStates, targs, vector<int>(targs.size(),0));
 
-    // TODO
+    // TODO: allocating per-thread private memory here is ridiculously slow and pointless, and makes redundant
+    // the persistent GPU memory in the CompMatr. Revise this to use persistent env-attached memory, as per 
+    // discussions with Richard Meister.
+
+    cu_qcomp *cache;
+    qindex numTargAmps = powerOf2(targs.size());
+    qindex gridSize = numBlocks * NUM_THREADS_PER_BLOCK;
+    qindex cacheSize = numTargAmps * gridSize;
+    cudaMalloc(&cache, cacheSize * sizeof *cache);
+
+    kernel_statevec_anyCtrlAnyTargDenseMatr_sub <NumCtrls, NumTargs> <<<numBlocks, NUM_THREADS_PER_BLOCK>>> (
+        toCuQcomps(qureg.gpuAmps), cache, numThreads,
+        getPtr(deviceQubits), ctrls.size(), qubitStateMask, getPtr(deviceTargs), targs.size(),
+        toCuQcomps(matr.gpuElems));
+
+    cudaFree(cache);
 
 #else
     error_gpuSimButGpuNotCompiled();
 #endif
 }
 
-INSTANTIATE_FUNC_OPTIMISED_FOR_NUM_CTRLS_AND_TARGS( void, gpu_statevec_anyCtrlAnyTargDenseMatr_subA, (Qureg, vector<int>, vector<int>, vector<int>, CompMatr) )
+INSTANTIATE_FUNC_OPTIMISED_FOR_NUM_CTRLS_AND_TARGS( void, gpu_statevec_anyCtrlAnyTargDenseMatr_sub, (Qureg, vector<int>, vector<int>, vector<int>, CompMatr) )
 
 
 
