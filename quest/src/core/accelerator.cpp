@@ -19,6 +19,7 @@
 
 #include "quest/src/core/accelerator.hpp"
 #include "quest/src/core/errors.hpp"
+#include "quest/src/core/bitwise.hpp"
 #include "quest/src/cpu/cpu_subroutines.hpp"
 #include "quest/src/gpu/gpu_subroutines.hpp"
 
@@ -75,18 +76,57 @@ using std::vector;
  */
 
 
-void accel_statevec_packAmpsIntoBuffer(Qureg qureg, vector<int> ctrls, vector<int> ctrlStates) {
+qindex accel_statevec_packAmpsIntoBuffer(Qureg qureg, vector<int> qubits, vector<int> qubitStates) {
 
-    // we can never pack and swap buffers when there are no ctrl qubits, because we'd fill the entire buffer
-    // andhave no room to receive the other node's buffer; caller would instead send amps straight to buffer
-    if (ctrls.empty())
+    // we can never pack and swap buffers when there are no constrained qubit states, because we'd 
+    // then fill the entire buffer andhave no room to receive the other node's buffer; caller would 
+    // instead send amps straight to buffer
+    if (qubitStates.empty())
         error_noCtrlsGivenToBufferPacker();
 
-    auto cpuFunc = GET_FUNC_OPTIMISED_FOR_NUM_CTRLS( cpu_statevec_packAmpsIntoBuffer, ctrls.size() );
-    auto gpuFunc = GET_FUNC_OPTIMISED_FOR_NUM_CTRLS( gpu_statevec_packAmpsIntoBuffer, ctrls.size() );
+    // packing treats qubits as if they were ctrl qubits
+    auto cpuFunc = GET_FUNC_OPTIMISED_FOR_NUM_CTRLS( cpu_statevec_packAmpsIntoBuffer, qubits.size() );
+    auto gpuFunc = GET_FUNC_OPTIMISED_FOR_NUM_CTRLS( gpu_statevec_packAmpsIntoBuffer, qubits.size() );
+    auto useFunc = (qureg.isGpuAccelerated)? gpuFunc : cpuFunc;
+
+    useFunc(qureg, qubits, qubitStates);
+
+    // return the number of packed amps, for caller convenience
+    return qureg.numAmpsPerNode / powerOf2(qubits.size());
+}
+
+
+
+/*
+ * SWAPS
+ */
+
+
+void accel_statevec_anyCtrlSwap_subA(Qureg qureg, vector<int> ctrls, vector<int> ctrlStates, int targ1, int targ2) {
+
+    auto cpuFunc = GET_FUNC_OPTIMISED_FOR_NUM_CTRLS( cpu_statevec_anyCtrlSwap_subA, ctrls.size() );
+    auto gpuFunc = GET_FUNC_OPTIMISED_FOR_NUM_CTRLS( gpu_statevec_anyCtrlSwap_subA, ctrls.size() );
+    auto useFunc = (qureg.isGpuAccelerated)? gpuFunc : cpuFunc;
+
+    useFunc(qureg, ctrls, ctrlStates, targ1, targ2);
+}
+
+void accel_statevec_anyCtrlSwap_subB(Qureg qureg, vector<int> ctrls, vector<int> ctrlStates) {
+
+    auto cpuFunc = GET_FUNC_OPTIMISED_FOR_NUM_CTRLS( cpu_statevec_anyCtrlSwap_subB, ctrls.size() );
+    auto gpuFunc = GET_FUNC_OPTIMISED_FOR_NUM_CTRLS( gpu_statevec_anyCtrlSwap_subB, ctrls.size() );
     auto useFunc = (qureg.isGpuAccelerated)? gpuFunc : cpuFunc;
 
     useFunc(qureg, ctrls, ctrlStates);
+}
+
+void accel_statevec_anyCtrlSwap_subC(Qureg qureg, vector<int> ctrls, vector<int> ctrlStates, int targ, int targState) {
+
+    auto cpuFunc = GET_FUNC_OPTIMISED_FOR_NUM_CTRLS( cpu_statevec_anyCtrlSwap_subC, ctrls.size() );
+    auto gpuFunc = GET_FUNC_OPTIMISED_FOR_NUM_CTRLS( gpu_statevec_anyCtrlSwap_subC, ctrls.size() );
+    auto useFunc = (qureg.isGpuAccelerated)? gpuFunc : cpuFunc;
+
+    useFunc(qureg, ctrls, ctrlStates, targ, targState);
 }
 
 
@@ -138,3 +178,4 @@ void accel_statevec_anyCtrlAnyTargDiagMatr_sub(Qureg qureg, vector<int> ctrls, v
 
     useFunc(qureg, ctrls, ctrlStates, targs, matr);
 }
+
