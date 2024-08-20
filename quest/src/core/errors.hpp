@@ -127,6 +127,8 @@ void error_gpuCopyButGpuNotCompiled();
 
 void error_gpuSimButGpuNotCompiled();
 
+void error_gpuCacheModifiedButGpuNotCompiled();
+
 void error_gpuCopyButQuregNotGpuAccelerated();
 
 void error_gpuCopyButMatrixNotGpuAccelerated();
