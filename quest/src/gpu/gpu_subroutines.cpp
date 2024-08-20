@@ -40,6 +40,7 @@
 #include "quest/src/core/utilities.hpp"
 #include "quest/src/core/accelerator.hpp"
 #include "quest/src/comm/comm_indices.hpp"
+#include "quest/src/gpu/gpu_config.hpp"
 
 #if COMPILE_CUDA
     #include "quest/src/gpu/gpu_types.hpp"
