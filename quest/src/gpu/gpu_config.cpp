@@ -454,8 +454,10 @@ qcomp* gpu_getCacheOfSize(qindex numElemsPerThread, qindex numThreads) {
         return gpuCache;
 
     // otherwise, resize the cache
+    gpuCacheLen = numNewElems;
     CUDA_CHECK( cudaFree(gpuCache) );
-    CUDA_CHECK( cudaMalloc(&gpuCache, numNewElems * sizeof *gpuCache) );
+    CUDA_CHECK( cudaMalloc(&gpuCache, gpuCacheLen * sizeof *gpuCache) );
+
     return gpuCache;
 
 #else
