@@ -247,6 +247,19 @@ void cpu_statevec_anyCtrlAnyTargDenseMatr_sub(Qureg qureg, vector<int> ctrls, ve
     assert_numCtrlsMatchesNumCtrlStatesAndTemplateParam(ctrls.size(), ctrlStates.size(), NumCtrls);
     assert_numTargsMatchesTemplateParam(targs.size(), NumTargs);
 
+    // TODO:
+    // this function allocates powerOf2(targs.size())-sized caches for each thread, sometimes in
+    // heap. At the ~max non-distributed double CompMatr of 16 qubits = 64 GiB, this is 1 MiB 
+    // per thread; for a conceivable 100 thread execution, this is 100 MiB being alloc/dealloced
+    // at every call. It is debatable whether this justifies pre-allocating persistent cache space
+    // (one for each thread, to avoid false sharing), similar to GPU's AnyTargDenseMatr, though
+    // for an order of magnitude fewer threads, and using non-coalesced memory. Certainly making
+    // persistent heap caches is inadvisable when the cache fits in the stack (currently automated 
+    // using std::vector). Perhaps we should keep the current re-allocs, constrain that this 
+    // function is only called for few-targets (e.g. <= qureg.numQubits - 5), and define another
+    // function for almost-all target matrices which uses persistent heap memory, wherein the 
+    // optimal parallelisation scheme is anyway different.
+
     // we tested a variant of this function where a mask for each ctrl-targ state is calculated
     // upfront (of which there are numTargAmps many), replacing all setBits() calls with
     // activateBits(), which lacks the runtime loop and does not need compile-time unrolling.
@@ -267,33 +280,37 @@ void cpu_statevec_anyCtrlAnyTargDenseMatr_sub(Qureg qureg, vector<int> ctrls, ve
     int numQubitBits = numCtrlBits + numTargBits;
     qindex numTargAmps = powerOf2(numTargBits);
 
-    #pragma omp parallel for if(qureg.isMultithreaded)
-    for (qindex n=0; n<numIts; n++) {
-
-        // a private cache needed by each thread to update each iteration's amplitudes (may be compile-time sized)
+    // create an explicit parallel region to avoid re-initialisation of vectors every iteration
+    #pragma omp parallel if(qureg.isMultithreaded)
+    {
+        // create a private cache for every thread (might be compile-time sized, and in heap or stack)
         vector<qcomp> cache(numTargAmps);
 
-        // i0 = nth local index where ctrls are active and targs are all zero
-        qindex i0 = insertBitsWithMaskedValues(n, sortedQubits.data(), numQubitBits, qubitStateMask);
+        #pragma omp for
+        for (qindex n=0; n<numIts; n++) {
 
-        // collect and cache all to-be-modified amps (loop might be unrolled)
-        for (qindex j=0; j<numTargAmps; j++) {
+            // i0 = nth local index where ctrls are active and targs are all zero
+            qindex i0 = insertBitsWithMaskedValues(n, sortedQubits.data(), numQubitBits, qubitStateMask);
 
-            // i = nth local index where ctrls are active and targs form value j
-            qindex i = setBits(i0, targs.data(), numTargBits, j); // loop may be unrolled
-            cache[j] = qureg.cpuAmps[i];
-        }
+            // collect and cache all to-be-modified amps (loop might be unrolled)
+            for (qindex j=0; j<numTargAmps; j++) {
 
-        // modify each amplitude (loop might be unrolled)
-        for (qindex k=0; k<numTargAmps; k++) {
+                // i = nth local index where ctrls are active and targs form value j
+                qindex i = setBits(i0, targs.data(), numTargBits, j); // loop may be unrolled
+                cache[j] = qureg.cpuAmps[i];
+            }
 
-            // i = nth local index where ctrls are active and targs form value k
-            qindex i = setBits(i0, targs.data(), numTargBits, k); // loop may be unrolled
-            qureg.cpuAmps[i] = 0;
-        
-            // loop may be unrolled
-            for (qindex j=0; j<numTargAmps; j++)
-                qureg.cpuAmps[i] += matr.cpuElems[k][j] * cache[j];
+            // modify each amplitude (loop might be unrolled)
+            for (qindex k=0; k<numTargAmps; k++) {
+
+                // i = nth local index where ctrls are active and targs form value k
+                qindex i = setBits(i0, targs.data(), numTargBits, k); // loop may be unrolled
+                qureg.cpuAmps[i] = 0;
+            
+                // loop may be unrolled
+                for (qindex j=0; j<numTargAmps; j++)
+                    qureg.cpuAmps[i] += matr.cpuElems[k][j] * cache[j];
+            }
         }
     }
 }

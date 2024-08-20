@@ -260,6 +260,11 @@ void error_gpuSimButGpuNotCompiled() {
     raiseInternalError("A function attempted to dispatch a simulation to the GPU but QuEST was not compiled with GPU acceleration enabled.");
 }
 
+void error_gpuCacheModifiedButGpuNotCompiled() {
+
+    raiseInternalError("A function attempted to allocate or clear the GPU cache memory but QuEST was not compiled with GPU acceleration enabled.");
+}
+
 void error_gpuCopyButQuregNotGpuAccelerated() {
 
     raiseInternalError("A function attempted to access GPU memory of a Qureg which is not GPU accelerated.");
