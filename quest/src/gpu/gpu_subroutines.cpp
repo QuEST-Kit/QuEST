@@ -275,7 +275,7 @@ void gpu_statevec_anyCtrlAnyTargDenseMatr_sub(Qureg qureg, vector<int> ctrls, ve
     qcomp* cache = gpu_getCacheOfSize(powerOf2(targs.size()), numThreads);
 
     kernel_statevec_anyCtrlAnyTargDenseMatr_sub <NumCtrls, NumTargs> <<<numBlocks, NUM_THREADS_PER_BLOCK>>> (
-        toCuQcomps(qureg.gpuAmps), getPtr(cache), numThreads,
+        toCuQcomps(qureg.gpuAmps), toCuQcomps(cache), numThreads,
         getPtr(deviceQubits), ctrls.size(), qubitStateMask, getPtr(deviceTargs), targs.size(),
         toCuQcomps(matr.gpuElems));
 
