@@ -196,7 +196,7 @@ __global__ void kernel_statevec_anyCtrlOneTargDenseMatr_subB(
 
 
 __forceinline__ __device__ qindex getStrideOfGlobalThreadArr() {
-    return gridDim.x * blockDim.x
+    return gridDim.x * blockDim.x;
 }
 
 
@@ -248,7 +248,7 @@ __global__ void kernel_statevec_anyCtrlAnyTargDenseMatr_sub(
         for (qindex l=0; l<numTargAmps; l++) {
 
             qindex j = getThreadsNthGlobalArrInd(l, n, stride);
-            qindex h = getFlattenedMatrInd(k, l, numTargAmps)
+            qindex h = getFlattenedMatrInd(k, l, numTargAmps);
             amps[i] += flatMatrElems[h] * cache[j];
         }
     }
