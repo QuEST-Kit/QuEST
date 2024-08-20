@@ -251,7 +251,6 @@ void gpu_sync() {
 
 
 
-
 /*
  * MEMORY MANAGEMENT
  */
@@ -297,6 +296,7 @@ qcomp* gpu_allocAmps(qindex numLocalAmps) {
 void gpu_deallocAmps(qcomp* amps) {
 #if COMPILE_CUDA
 
+    // cudaFree on NULL is fine
     CUDA_CHECK( cudaFree(amps) );
 
 #else
@@ -428,4 +428,61 @@ bool gpu_doCpuAmpsHaveUnsyncMemFlag(qcomp firstCpuAmp) {
         error_gpuMemSyncQueriedButEnvNotGpuAccelerated();
 
     return firstCpuAmp == UNSYNCED_GPU_MEM_FLAG;
+}
+
+
+
+/*
+ * CACHE MANAGEMENT
+ */
+
+
+// persistent but variably-sized cache memory used by the any-targ dense
+// matrix kernel as working memory, which is lazily runtime expanded when
+// necessary, and only ever cleared when triggered by the user
+qcomp* gpuCache = NULL;
+qindex gpuCacheLen = 0;
+
+
+qcomp* gpu_getCacheOfSize(qindex numElemsPerThread, qindex numThreads) {
+#if COMPILE_CUDA
+
+    qindex numNewElems = numElemsPerThread * numThreads;
+
+    // return existing cache if it's already sufficiently big
+    if (numNewElems <= gpuCacheLen)
+        return gpuCache;
+
+    // otherwise, resize the cache
+    CUDA_CHECK( cudaFree(gpuCache) );
+    CUDA_CHECK( cudaMalloc(&gpuCache, numNewElems * sizeof *gpuCache) );
+    return gpuCache;
+
+#else
+    error_gpuCacheModifiedButGpuNotCompiled();
+    return NULL;
+#endif
+}
+
+
+void gpu_clearCache() {
+
+#if COMPILE_CUDA
+
+    // cudaFree on NULL is fine
+    CUDA_CHECK( cudaFree(gpuCache) );
+
+    gpuCache = NULL;
+    gpuCacheLen = 0;
+
+#else
+    error_gpuCacheModifiedButGpuNotCompiled();
+#endif
+}
+
+
+size_t gpu_getCacheMemoryInBytes() {
+
+    // query permitted even when not GPU accelerated
+    return gpuCacheLen * sizeof *gpuCache;
 }
