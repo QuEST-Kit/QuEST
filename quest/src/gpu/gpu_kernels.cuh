@@ -14,7 +14,7 @@
 #include "quest/include/types.h"
 
 #include "quest/src/core/bitwise.hpp"
-#include "quest/src/gpu/gpu_types.hpp"
+#include "quest/src/gpu/gpu_types.cuh"
 
 #if ! COMPILE_CUDA
     #error "A file being compiled somehow included gpu_kernels.hpp despite QuEST not being compiled in GPU-accelerated mode."

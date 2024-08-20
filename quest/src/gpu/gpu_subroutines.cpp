@@ -42,13 +42,13 @@
 #include "quest/src/comm/comm_indices.hpp"
 
 #if COMPILE_CUDA
-    #include "quest/src/gpu/gpu_types.hpp"
-    #include "quest/src/gpu/gpu_kernels.hpp"
-    #include "quest/src/gpu/gpu_thrust.hpp"
+    #include "quest/src/gpu/gpu_types.cuh"
+    #include "quest/src/gpu/gpu_kernels.cuh"
+    #include "quest/src/gpu/gpu_thrust.cuh"
 #endif
 
 #if COMPILE_CUQUANTUM
-    #include "quest/src/gpu/gpu_cuquantum.hpp"
+    #include "quest/src/gpu/gpu_cuquantum.cuh"
 #endif
 
 #include <vector>

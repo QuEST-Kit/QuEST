@@ -32,7 +32,7 @@
 
 
 #include "quest/src/gpu/gpu_config.hpp"
-#include "quest/src/gpu/gpu_types.hpp"
+#include "quest/src/gpu/gpu_types.cuh"
 
 #include <custatevec.h>
 #include <vector>
