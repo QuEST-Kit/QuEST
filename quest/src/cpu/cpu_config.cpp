@@ -80,5 +80,6 @@ qcomp* cpu_allocAmps(qindex numLocalAmps) {
 
 void cpu_deallocAmps(qcomp* amps) {
 
+    // amps can safely be NULL
     free(amps);
 }

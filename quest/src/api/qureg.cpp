@@ -70,18 +70,11 @@ void freeAllMemoryIfAnyAllocsFailed(Qureg qureg) {
     if (!didAnyAllocsFailOnAnyNode(qureg))
         return;
 
-    // otherwise, free everything that was successfully allocated
-    if (qureg.cpuAmps != NULL)
-        cpu_deallocAmps(qureg.cpuAmps);
-
-    if (qureg.cpuCommBuffer != NULL)
-        cpu_deallocAmps(qureg.cpuCommBuffer);
-
-    if (qureg.gpuAmps != NULL)
-        gpu_deallocAmps(qureg.gpuAmps);
-
-    if (qureg.gpuCommBuffer != NULL)
-        gpu_deallocAmps(qureg.gpuCommBuffer);
+    // otherwise, free everything that was successfully allocated (freeing NULL is legal)
+    cpu_deallocAmps(qureg.cpuAmps);
+    cpu_deallocAmps(qureg.cpuCommBuffer);
+    gpu_deallocAmps(qureg.gpuAmps);
+    gpu_deallocAmps(qureg.gpuCommBuffer);
 }
 
 

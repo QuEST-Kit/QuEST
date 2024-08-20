@@ -178,7 +178,7 @@ auto getNonSwappedCtrlsAndStates(vector<int> oldCtrls, vector<int> oldStates, ve
         }
 
     return std::tuple{sameCtrls, sameStates};
-} 
+}
 
 
 
@@ -221,6 +221,20 @@ void exchangeAmpsSatisfyingCtrlsAndTargIntoBuffers(Qureg qureg, int pairRank, ve
  */
 
 
+void anyCtrlSwapBetweenPrefixAndSuffix(Qureg qureg, vector<int> ctrls, vector<int> ctrlStates, int targ1, int targ2) {
+
+    // every node exchanges at most half its amps; those where targ1 bit differs from rank's fixed targ2 bit
+    int prefTarg2 = targ2 - qureg.logNumAmpsPerNode;
+    int pairRank = flipBit(qureg.rank, prefTarg2);
+    int targState1 = getBit(pairRank, prefTarg2);
+
+    exchangeAmpsSatisfyingCtrlsAndTargIntoBuffers(qureg, pairRank, ctrls, ctrlStates, targ1, targState1);
+
+    // we use the recevied buffer amplitudes to modify half of the local bits which satisfy ctrls
+    accel_statevec_anyCtrlSwap_subC(qureg, ctrls, ctrlStates, targ1, targState1);
+}
+
+
 void localiser_statevec_anyCtrlSwap(Qureg qureg, vector<int> ctrls, vector<int> ctrlStates, int targ1, int targ2) {
     assertValidCtrlStates(ctrls, ctrlStates);
     setDefaultCtrlStates(ctrls, ctrlStates);
@@ -237,13 +251,13 @@ void localiser_statevec_anyCtrlSwap(Qureg qureg, vector<int> ctrls, vector<int> 
     std::tie(ctrls, ctrlStates) = getSuffixCtrlsAndStates(qureg, ctrls, ctrlStates);
 
     // if neither targets invoke communication, perform embarrassingly parallel simulation and finish
-    if (!doesGateRequireComm(qureg, {targ2})) {
+    if (!doesGateRequireComm(qureg, targ2)) {
         accel_statevec_anyCtrlSwap_subA(qureg, ctrls, ctrlStates, targ1, targ2);
         return;
     }
 
     // if both targets demand communication...
-    if (doesGateRequireComm(qureg, {targ1})) {
+    if (doesGateRequireComm(qureg, targ1)) {
         int prefTarg1 = targ1 - qureg.logNumAmpsPerNode;
         int prefTarg2 = targ2 - qureg.logNumAmpsPerNode;
 
@@ -260,23 +274,8 @@ void localiser_statevec_anyCtrlSwap(Qureg qureg, vector<int> ctrls, vector<int> 
         return;
     }
 
-    // if targ1 is the leftmost suffix and there are no controls...
-    if (ctrls.empty() && targ1 == qureg.logNumAmpsPerNode - 1) {
-
-        // then packing is unnecessary and contiguous amplitudes can be sent directly
-
-        // TODO: we currently do not bother implementing this unlikely situation
-    }
-    
-    // to reach here, targ1 is in suffix and targ2 is in prefix, and every node exchanges at most half its amps;
-    // those where their targ1 bit differs from the node's fixed targ2 bit value
-    int prefTarg2 = targ2 - qureg.logNumAmpsPerNode;
-    int pairRank = flipBit(qureg.rank, prefTarg2);
-    int targState1 = getBit(pairRank, prefTarg2);
-    exchangeAmpsSatisfyingCtrlsAndTargIntoBuffers(qureg, pairRank, ctrls, ctrlStates, targ1, targState1);
-
-    // we use the recevied buffer amplitudes to modify half of the local bits which satisfy ctrls
-    accel_statevec_anyCtrlSwap_subC(qureg, ctrls, ctrlStates, targ1, targState1);
+    // to reach here, targ1 is in suffix and targ2 is in prefix
+    anyCtrlSwapBetweenPrefixAndSuffix(qureg, ctrls, ctrlStates, targ1, targ2);
 }
 
 
@@ -331,8 +330,6 @@ void localiser_statevec_anyCtrlAnyTargDenseMatr(Qureg qureg, vector<int> ctrls, 
     //     or custatevecDistIndexBitSwapSchedulerSetIndexBitSwaps() if distributed,
     //     although the latter requires substantially more work like setting up
     //     a communicator which may be inelegant alongside our own distribution scheme
-    //   - the induced swap gates always trigger the targ2-prefix targ1-suffix scenario; 
-    //     we should invoke that scenario directly to avoid all the extra faff
 
     // node has nothing to do if all local amps violate control condition
     if (!doAnyLocalAmpsSatisfyCtrls(qureg, ctrls, ctrlStates))
@@ -356,9 +353,9 @@ void localiser_statevec_anyCtrlAnyTargDenseMatr(Qureg qureg, vector<int> ctrls, 
     // perform necessary swaps to move all targets into suffix, each of which invokes communication
     for (size_t i=0; i<targs.size(); i++)
         if (targs[i] != newTargs[i])
-            localiser_statevec_anyCtrlSwap(qureg, unmovedCtrls, unmovedCtrlStates, targs[i], newTargs[i]);
+            anyCtrlSwapBetweenPrefixAndSuffix(qureg, unmovedCtrls, unmovedCtrlStates, targs[i], newTargs[i]);
 
-    // if the moved ctrls do not eliminate the need for local simulation...
+    // if the moved ctrls do not eliminate this node's need for local simulation...
     if (doAnyLocalAmpsSatisfyCtrls(qureg, newCtrls, ctrlStates)) {
 
         // then perform embarrassingly parallel simulation using only the new suffix ctrls
@@ -369,7 +366,7 @@ void localiser_statevec_anyCtrlAnyTargDenseMatr(Qureg qureg, vector<int> ctrls, 
     // undo swaps, each invoking communication
     for (size_t i=0; i<targs.size(); i++)
         if (targs[i] != newTargs[i])
-            localiser_statevec_anyCtrlSwap(qureg, unmovedCtrls, unmovedCtrlStates, targs[i], newTargs[i]);
+            anyCtrlSwapBetweenPrefixAndSuffix(qureg, unmovedCtrls, unmovedCtrlStates, targs[i], newTargs[i]);
 }
 
 

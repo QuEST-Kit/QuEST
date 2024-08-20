@@ -14,7 +14,6 @@
 #include "quest/include/types.h"
 
 #include "quest/src/core/bitwise.hpp"
-
 #include "quest/src/gpu/gpu_types.hpp"
 
 #if ! COMPILE_CUDA
@@ -46,6 +45,12 @@ __host__ qindex getNumBlocks(qindex numIts) {
 }
 
 
+#define GET_THREAD_IND(var, numThreads) \
+    qindex var = getThreadInd(); \
+    if (var >= numThreads) \
+        return;
+
+
 
 /* 
  * COMMUNICATION BUFFER PACKING
@@ -57,9 +62,7 @@ __global__ void kernel_statevec_packAmpsIntoBuffer(
     cu_qcomp* amps, cu_qcomp* buffer, qindex numThreads, 
     int* qubits, int numQubits, qindex mask
 ) {
-    qindex n = getThreadInd();
-    if (n >= numThreads) 
-        return;
+    GET_THREAD_IND(n, numThreads);
 
     // use template param to compile-time unroll loop in insertBits()
     SET_VAR_AT_COMPILE_TIME(int, numBits, NumCtrls, numQubits);
@@ -77,14 +80,13 @@ __global__ void kernel_statevec_packAmpsIntoBuffer(
  * SWAPS
  */
 
+
 template <int NumCtrls> 
 __global__ void kernel_statevec_anyCtrlSwap_subA(
     cu_qcomp* amps, qindex numThreads, 
     int* ctrlsAndTargs, int numCtrls, qindex ctrlsAndTargsMask, int targ1, int targ2
 ) {
-    qindex n = getThreadInd();
-    if (n >= numThreads) 
-        return;
+    GET_THREAD_IND(n, numThreads);
 
     // use template param to compile-time unroll loop in insertBits()
     SET_VAR_AT_COMPILE_TIME(int, numCtrlBits, NumCtrls, numCtrls);
@@ -106,9 +108,7 @@ __global__ void kernel_statevec_anyCtrlSwap_subB(
     cu_qcomp* amps, cu_qcomp* buffer, qindex numThreads, 
     int* ctrls, int numCtrls, qindex mask
 ) {
-    qindex n = getThreadInd();
-    if (n >= numThreads)
-        return;
+    GET_THREAD_IND(n, numThreads);
 
     // use template param to compile-time unroll loop in insertBits()
     SET_VAR_AT_COMPILE_TIME(int, numCtrlBits, NumCtrls, numCtrls);
@@ -126,9 +126,7 @@ __global__ void kernel_statevec_anyCtrlSwap_subC(
     cu_qcomp* amps, cu_qcomp* buffer, qindex numThreads, 
     int* ctrlsAndTarg, int numCtrls, qindex ctrlsAndTargMask
 ) {
-    qindex n = getThreadInd();
-    if (n >= numThreads)
-        return;
+    GET_THREAD_IND(n, numThreads);
 
     // use template param to compile-time unroll loop in insertBits()
     SET_VAR_AT_COMPILE_TIME(int, numCtrlBits, NumCtrls, numCtrls);
@@ -154,9 +152,7 @@ __global__ void kernel_statevec_anyCtrlOneTargDenseMatr_subA(
     int* ctrlsAndTarg, int numCtrls, qindex mask, int targ, 
     cu_qcomp m00, cu_qcomp m01, cu_qcomp m10, cu_qcomp m11
 ) {
-    qindex n = getThreadInd();
-    if (n >= numThreads) 
-        return;
+    GET_THREAD_IND(n, numThreads);
 
     // use template param to compile-time unroll loop in insertBits()
     SET_VAR_AT_COMPILE_TIME(int, numCtrlBits, NumCtrls, numCtrls);
@@ -180,9 +176,7 @@ __global__ void kernel_statevec_anyCtrlOneTargDenseMatr_subB(
     int* ctrls, int numCtrls, qindex mask,
     cu_qcomp fac0, cu_qcomp fac1
 ) {
-    qindex n = getThreadInd();
-    if (n >= numThreads) 
-        return;
+    GET_THREAD_IND(n, numThreads);
 
     // use template param to compile-time unroll loop in insertBits()
     SET_VAR_AT_COMPILE_TIME(int, numCtrlBits, NumCtrls, numCtrls);
@@ -201,39 +195,46 @@ __global__ void kernel_statevec_anyCtrlOneTargDenseMatr_subB(
  */
 
 
+__forceinline__ __device__ qindex getStrideOfGlobalThreadArr() {
+    return gridDim.x * blockDim.x
+}
+
+
+__forceinline__ __device__ qindex getThreadsNthGlobalArrInd(qindex n, qindex threadInd, qindex stride) {
+    return (n * stride) + threadInd;
+}
+
+
+__forceinline__ __device__ qindex getFlattenedMatrInd(qindex row, qindex col, qindex dim) {
+    return (row * col) + dim;
+}
+
+
 template <int NumCtrls, int NumTargs>
 __global__ void kernel_statevec_anyCtrlAnyTargDenseMatr_sub(
     cu_qcomp* amps, cu_qcomp* cache, qindex numThreads,
     int* ctrlsAndTargs, int numCtrls, qindex ctrlsAndTargsMask, int* targs, int numTargs,
     cu_qcomp* flatMatrElems
 ) {
-    qindex n = getThreadInd();
-    if (n >= numThreads) 
-        return;
+    GET_THREAD_IND(n, numThreads);
 
-    // use template params to compile-time unroll loops in insertBits() and getValueOfBits()
+    // use template params to compile-time unroll loops in insertBits() and setBits()
     SET_VAR_AT_COMPILE_TIME(int, numCtrlBits, NumCtrls, numCtrls);
     SET_VAR_AT_COMPILE_TIME(int, numTargBits, NumTargs, numTargs);
     int numQubitBits = numCtrlBits + numTargBits;
     qindex numTargAmps = powerOf2(numTargBits);
 
-    // determine thread's indices in interleaved global cache 
-    size_t stride = gridDim.x*blockDim.x;
-    size_t offset = blockIdx.x*blockDim.x + threadIdx.x;
-
     // i0 = nth local index where ctrls are active and targs are all zero
     qindex i0 = insertBitsWithMaskedValues(n, ctrlsAndTargs, numQubitBits, ctrlsAndTargsMask);
+    qindex stride = getStrideOfGlobalThreadArr();
 
     // collect and cache all to-be-modified amps (loop might be unrolled)
     for (qindex k=0; k<numTargAmps; k++) {
 
         // i = nth local index where ctrls are active and targs form value k
         qindex i = setBits(i0, targs, numTargBits, k); // loop may be unrolled
-        cu_qcomp amp = amps[i];
-
-        // j = kth index of this thread's interleaved cache position
-        qindex j = k * stride + offset;
-        cache[j] = amp;
+        qindex j = getThreadsNthGlobalArrInd(k, n, stride);
+        cache[j] = amps[i];
     }
 
     // modify each amplitude (loop might be unrolled)
@@ -246,15 +247,9 @@ __global__ void kernel_statevec_anyCtrlAnyTargDenseMatr_sub(
         // loop may be unrolled
         for (qindex l=0; l<numTargAmps; l++) {
 
-            // j = lth index of this thread's interleaved cache position
-            qindex j = l * stride + offset;
-            cu_qcomp amp = cache[j];
-
-            // h = (k,l)-th index of matrix, flattened
-            qindex h = k * numTargAmps + l;
-            cu_qcomp elem = flatMatrElems[h];
-
-            amps[i] += elem * amp;
+            qindex j = getThreadsNthGlobalArrInd(l, n, stride);
+            qindex h = getFlattenedMatrInd(k, l, numTargAmps)
+            amps[i] += flatMatrElems[h] * cache[j];
         }
     }
 }
@@ -272,9 +267,7 @@ __global__ void kernel_statevec_anyCtrlAnyTargDiagMatr_sub(
     int* ctrls, int numCtrls, qindex mask, int* targs, int numTargs,
     cu_qcomp* elems
 ) {
-    qindex n = getThreadInd();
-    if (n >= numThreads) 
-        return;
+    GET_THREAD_IND(n, numThreads);
 
     // use template params to compile-time unroll loops in insertBits() and getValueOfBits()
     SET_VAR_AT_COMPILE_TIME(int, numCtrlBits, NumCtrls, numCtrls);

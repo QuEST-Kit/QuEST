@@ -70,6 +70,18 @@ using std::vector;
 #define ARR(f) vector<decltype(&f<0,0>)>
 
 
+#define GET_CPU_OR_GPU_FUNC_OPTIMISED_FOR_NUM_CTRLS(funcsuffix, qureg, numctrls) \
+    ((qureg).isGpuAccelerated)? \
+        GET_FUNC_OPTIMISED_FOR_NUM_CTRLS( cpu_##funcsuffix, numctrls ) : \
+        GET_FUNC_OPTIMISED_FOR_NUM_CTRLS( gpu_##funcsuffix, numctrls )
+
+
+#define GET_CPU_OR_GPU_FUNC_OPTIMISED_FOR_NUM_CTRLS_AND_TARGS(funcsuffix, qureg, numctrls, numtargs) \
+    ((qureg).isGpuAccelerated)? \
+        GET_FUNC_OPTIMISED_FOR_NUM_CTRLS_AND_TARGS( cpu_##funcsuffix, numctrls, numtargs ) : \
+        GET_FUNC_OPTIMISED_FOR_NUM_CTRLS_AND_TARGS( gpu_##funcsuffix, numctrls, numtargs )
+
+
 
 /*
  * COMMUNICATION BUFFER PACKING
@@ -84,12 +96,9 @@ qindex accel_statevec_packAmpsIntoBuffer(Qureg qureg, vector<int> qubits, vector
     if (qubitStates.empty())
         error_noCtrlsGivenToBufferPacker();
 
-    // packing treats qubits as if they were ctrl qubits
-    auto cpuFunc = GET_FUNC_OPTIMISED_FOR_NUM_CTRLS( cpu_statevec_packAmpsIntoBuffer, qubits.size() );
-    auto gpuFunc = GET_FUNC_OPTIMISED_FOR_NUM_CTRLS( gpu_statevec_packAmpsIntoBuffer, qubits.size() );
-    auto useFunc = (qureg.isGpuAccelerated)? gpuFunc : cpuFunc;
-
-    useFunc(qureg, qubits, qubitStates);
+    // packing treats all qubits as if they were ctrl qubits
+    auto func = GET_CPU_OR_GPU_FUNC_OPTIMISED_FOR_NUM_CTRLS( statevec_packAmpsIntoBuffer, qureg, qubits.size() );
+    func(qureg, qubits, qubitStates);
 
     // return the number of packed amps, for caller convenience
     return qureg.numAmpsPerNode / powerOf2(qubits.size());
@@ -104,78 +113,57 @@ qindex accel_statevec_packAmpsIntoBuffer(Qureg qureg, vector<int> qubits, vector
 
 void accel_statevec_anyCtrlSwap_subA(Qureg qureg, vector<int> ctrls, vector<int> ctrlStates, int targ1, int targ2) {
 
-    auto cpuFunc = GET_FUNC_OPTIMISED_FOR_NUM_CTRLS( cpu_statevec_anyCtrlSwap_subA, ctrls.size() );
-    auto gpuFunc = GET_FUNC_OPTIMISED_FOR_NUM_CTRLS( gpu_statevec_anyCtrlSwap_subA, ctrls.size() );
-    auto useFunc = (qureg.isGpuAccelerated)? gpuFunc : cpuFunc;
-
-    useFunc(qureg, ctrls, ctrlStates, targ1, targ2);
+    auto func = GET_CPU_OR_GPU_FUNC_OPTIMISED_FOR_NUM_CTRLS( statevec_anyCtrlSwap_subA, qureg, ctrls.size() );
+    func(qureg, ctrls, ctrlStates, targ1, targ2);
 }
 
 void accel_statevec_anyCtrlSwap_subB(Qureg qureg, vector<int> ctrls, vector<int> ctrlStates) {
 
-    auto cpuFunc = GET_FUNC_OPTIMISED_FOR_NUM_CTRLS( cpu_statevec_anyCtrlSwap_subB, ctrls.size() );
-    auto gpuFunc = GET_FUNC_OPTIMISED_FOR_NUM_CTRLS( gpu_statevec_anyCtrlSwap_subB, ctrls.size() );
-    auto useFunc = (qureg.isGpuAccelerated)? gpuFunc : cpuFunc;
-
-    useFunc(qureg, ctrls, ctrlStates);
+    auto func = GET_CPU_OR_GPU_FUNC_OPTIMISED_FOR_NUM_CTRLS( statevec_anyCtrlSwap_subB, qureg, ctrls.size() );
+    func(qureg, ctrls, ctrlStates);
 }
 
 void accel_statevec_anyCtrlSwap_subC(Qureg qureg, vector<int> ctrls, vector<int> ctrlStates, int targ, int targState) {
 
-    auto cpuFunc = GET_FUNC_OPTIMISED_FOR_NUM_CTRLS( cpu_statevec_anyCtrlSwap_subC, ctrls.size() );
-    auto gpuFunc = GET_FUNC_OPTIMISED_FOR_NUM_CTRLS( gpu_statevec_anyCtrlSwap_subC, ctrls.size() );
-    auto useFunc = (qureg.isGpuAccelerated)? gpuFunc : cpuFunc;
-
-    useFunc(qureg, ctrls, ctrlStates, targ, targState);
+    auto func = GET_CPU_OR_GPU_FUNC_OPTIMISED_FOR_NUM_CTRLS( statevec_anyCtrlSwap_subC, qureg, ctrls.size() );
+    func(qureg, ctrls, ctrlStates, targ, targState);
 }
 
 
 
 /*
- * DENSE MATRIX
+ * ONE-TARGET MATRIX
  */
 
 
 void accel_statevec_anyCtrlOneTargDenseMatr_subA(Qureg qureg, vector<int> ctrls, vector<int> ctrlStates, int targ, CompMatr1 matr) {
 
-    auto cpuFunc = GET_FUNC_OPTIMISED_FOR_NUM_CTRLS( cpu_statevec_anyCtrlOneTargDenseMatr_subA, ctrls.size() );
-    auto gpuFunc = GET_FUNC_OPTIMISED_FOR_NUM_CTRLS( gpu_statevec_anyCtrlOneTargDenseMatr_subA, ctrls.size() );
-    auto useFunc = (qureg.isGpuAccelerated)? gpuFunc : cpuFunc;
-
-    useFunc(qureg, ctrls, ctrlStates, targ, matr);
+    auto func = GET_CPU_OR_GPU_FUNC_OPTIMISED_FOR_NUM_CTRLS( statevec_anyCtrlOneTargDenseMatr_subA, qureg, ctrls.size() );
+    func(qureg, ctrls, ctrlStates, targ, matr);
 }
 
 void accel_statevec_anyCtrlOneTargDenseMatr_subB(Qureg qureg, vector<int> ctrls, vector<int> ctrlStates, qcomp fac0, qcomp fac1) {
 
-    auto cpuFunc = GET_FUNC_OPTIMISED_FOR_NUM_CTRLS( cpu_statevec_anyCtrlOneTargDenseMatr_subB, ctrls.size() );
-    auto gpuFunc = GET_FUNC_OPTIMISED_FOR_NUM_CTRLS( gpu_statevec_anyCtrlOneTargDenseMatr_subB, ctrls.size() );
-    auto useFunc = (qureg.isGpuAccelerated)? gpuFunc : cpuFunc;
-
-    useFunc(qureg, ctrls, ctrlStates, fac0, fac1);
-}
-
-void accel_statevec_anyCtrlAnyTargDenseMatr_sub(Qureg qureg, vector<int> ctrls, vector<int> ctrlStates, vector<int> targs, CompMatr matr) {
-
-    auto cpuFunc = GET_FUNC_OPTIMISED_FOR_NUM_CTRLS_AND_TARGS( cpu_statevec_anyCtrlAnyTargDenseMatr_sub, ctrls.size(), targs.size() );
-    auto gpuFunc = GET_FUNC_OPTIMISED_FOR_NUM_CTRLS_AND_TARGS( gpu_statevec_anyCtrlAnyTargDenseMatr_sub, ctrls.size(), targs.size() );
-    auto useFunc = (qureg.isGpuAccelerated)? gpuFunc : cpuFunc;
-
-    useFunc(qureg, ctrls, ctrlStates, targs, matr);
+    auto func = GET_CPU_OR_GPU_FUNC_OPTIMISED_FOR_NUM_CTRLS( statevec_anyCtrlOneTargDenseMatr_subB, qureg, ctrls.size() );
+    func(qureg, ctrls, ctrlStates, fac0, fac1);
 }
 
 
 
 /*
- * DIAGONAL MATRIX
+ * ANY-TARGET MATRIX
  */
+
+
+void accel_statevec_anyCtrlAnyTargDenseMatr_sub(Qureg qureg, vector<int> ctrls, vector<int> ctrlStates, vector<int> targs, CompMatr matr) {
+
+    auto func = GET_CPU_OR_GPU_FUNC_OPTIMISED_FOR_NUM_CTRLS_AND_TARGS( statevec_anyCtrlAnyTargDenseMatr_sub, qureg, ctrls.size(), targs.size() );
+    func(qureg, ctrls, ctrlStates, targs, matr);
+}
 
 
 void accel_statevec_anyCtrlAnyTargDiagMatr_sub(Qureg qureg, vector<int> ctrls, vector<int> ctrlStates, vector<int> targs, DiagMatr matr) {
 
-    auto cpuFunc = GET_FUNC_OPTIMISED_FOR_NUM_CTRLS_AND_TARGS( cpu_statevec_anyCtrlAnyTargDiagMatr_sub, ctrls.size(), targs.size() );
-    auto gpuFunc = GET_FUNC_OPTIMISED_FOR_NUM_CTRLS_AND_TARGS( gpu_statevec_anyCtrlAnyTargDiagMatr_sub, ctrls.size(), targs.size() );
-    auto useFunc = (qureg.isGpuAccelerated)? gpuFunc : cpuFunc;
-
-    useFunc(qureg, ctrls, ctrlStates, targs, matr);
+    auto func = GET_CPU_OR_GPU_FUNC_OPTIMISED_FOR_NUM_CTRLS_AND_TARGS( statevec_anyCtrlAnyTargDiagMatr_sub, qureg, ctrls.size(), targs.size() );
+    func(qureg, ctrls, ctrlStates, targs, matr);
 }
-

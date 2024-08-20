@@ -59,12 +59,9 @@ void freeAllMemoryIfAnyAllocsFailed(PauliStrSum sum) {
     if (!didAnyAllocsFailOnAnyNode(sum))
         return;
 
-    // otherwise free every successful allocation
-    if (sum.strings != NULL)
-        free(sum.strings);
-    
-    if (sum.coeffs != NULL)
-        free(sum.coeffs);
+    // otherwise free every successful allocation (freeing NULL is legal)
+    free(sum.strings);
+    free(sum.coeffs);
 }
 
 
