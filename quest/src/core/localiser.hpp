@@ -19,6 +19,15 @@
 using std::vector;
 
 
+
+/*
+ * SWAP
+ */
+
+
+void localiser_statevec_anyCtrlSwap(Qureg qureg, vector<int> ctrls, vector<int> ctrlStates, int targ1, int targ2);
+
+
 /*
  * MATRICES
  */

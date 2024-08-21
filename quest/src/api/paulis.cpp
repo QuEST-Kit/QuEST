@@ -82,7 +82,7 @@ int paulis_getPauliAt(PauliStr str, int ind) {
 }
 
 
-int paulis_getIndOfLefmostPauli(PauliStr str) {
+int paulis_getIndOfLefmostNonIdentityPauli(PauliStr str) {
 
     int ind   = (str.highPaulis == 0)? 0 : MAX_NUM_PAULIS_PER_MASK;
     auto mask = (str.highPaulis == 0)? str.lowPaulis : str.highPaulis;
@@ -93,6 +93,21 @@ int paulis_getIndOfLefmostPauli(PauliStr str) {
     }
 
     return ind - 1;
+}
+
+
+vector<int> paulis_getSortedIndsOfNonIdentityPaulis(PauliStr str) {
+
+    int maxInd = paulis_getIndOfLefmostNonIdentityPauli(str);
+
+    vector<int> inds(0);
+    inds.reserve(maxInd+1);
+
+    for (int i=0; i<=maxInd; i++)
+        if (paulis_getPauliAt(str, i) != 0)
+            inds.push_back(i);
+
+    return inds;
 }
 
 
@@ -274,7 +289,7 @@ extern "C" void destroyPauliStrSum(PauliStrSum sum) {
 extern "C" void reportPauliStr(PauliStr str) {
 
     // avoid printing leftmost superfluous I operators
-    int numPaulis = 1 + paulis_getIndOfLefmostPauli(str);
+    int numPaulis = 1 + paulis_getIndOfLefmostNonIdentityPauli(str);
     print_pauliStr(str, numPaulis);
 }
 

@@ -48,4 +48,19 @@ template <int NumCtrls, int NumTargs> void gpu_statevec_anyCtrlAnyTargDenseMatr_
 template <int NumCtrls, int NumTargs> void gpu_statevec_anyCtrlAnyTargDiagMatr_sub(Qureg qureg, vector<int> ctrls, vector<int> ctrlStates, vector<int> targs, DiagMatr matr);
 
 
+/*
+ * PAULI TENSOR AND GADGET
+ */
+
+template <int NumCtrls, int NumTargs> void gpu_statevector_anyCtrlPauliTensorOrGadget_subA(
+    Qureg qureg, vector<int> ctrls, vector<int> ctrlStates, vector<int> suffixTargsXY, 
+    qindex suffixMaskXY, qindex allMaskYZ, qcomp powI, qcomp fac0, qcomp fac1
+);
+
+template <int NumCtrls> void gpu_statevector_anyCtrlPauliTensorOrGadget_subB(
+    Qureg qureg, vector<int> ctrls, vector<int> ctrlStates,
+    qindex suffixMaskXY, qindex bufferMaskXY, qindex allMaskYZ, qcomp powI, qcomp fac0, qcomp fac1
+);
+
+
 #endif // GPU_SUBROUTINES_HPP

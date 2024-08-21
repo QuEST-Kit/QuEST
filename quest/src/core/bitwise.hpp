@@ -41,9 +41,16 @@ INLINE int getBit(qindex number, int bitIndex) {
 }
 
 
+INLINE qindex flipBits(qindex number, qindex mask) {
+
+    return number ^ mask;
+}
+
+
 INLINE qindex flipBit(qindex number, int bitIndex) {
     
-    return number ^ (QINDEX_ONE << bitIndex);
+    qindex mask = QINDEX_ONE << bitIndex;
+    return flipBits(number, mask);
 }
 
 
@@ -184,8 +191,20 @@ INLINE qindex flipTwoBits(qindex number, int i1, int i0) {
  * SLOW FUNCTIONS
  *
  * which should never be called in hot loops, but which are
- * inlined anyway to avoid symbol duplication
+ * inlined anyway to avoid symbol duplication. Some may
+ * actually be fast (i.e. use a fixed number of integer 
+ * operations) but are used exclusively outside of hot loops
+ * in the source code, so their speed is inconsequential.
  */
+
+
+INLINE qindex flipBits(qindex number, int* bitIndices, int numIndices) {
+
+    for (int i=0; i<numIndices; i++)
+        number = flipBit(number, bitIndices[i]);
+    
+    return number;
+}
 
 
 INLINE int getIndOfNextLeftmostZeroBit(qindex mask, int bitInd) {
@@ -240,8 +259,41 @@ INLINE qindex getBitMask(int* bitIndices, int numIndices) {
 
 INLINE qindex getBitMask(int numBits) {
 
-    // assumes numBits < num in qindex
+    // assumes numBits is fewer than the number in a qindex instance
     return (QINDEX_ONE << numBits) - 1;
+}
+
+
+INLINE qindex getBitsRightOfIndex(qindex number, int bitIndex) {
+
+    qindex keepMask = getBitMask(bitIndex) - 1;
+    return number & keepMask;
+}
+
+
+INLINE qindex getBitsLeftOfIndex(qindex number, int bitIndex) {
+
+    return number >> (bitIndex + 1);
+}
+
+
+INLINE qindex removeBits(qindex number, int* bitInds, int numInds) {
+
+    // assumes bitIndices are strictly increasing without duplicates
+    int numRemoved = 0;
+
+    // remove each bit in-turn
+    for (int i=0; i<numInds; i++) {
+
+        // removal of bits invalidates bitInds
+        int shiftedInd = bitInds[i] - (numRemoved++);
+
+        qindex lowerBits = getBitsRightOfIndex(number, shiftedInd);
+        qindex upperBits = getBitsLeftOfIndex(number, shiftedInd);
+        number = concatenateBits(upperBits, lowerBits, shiftedInd);
+    }
+
+    return number;
 }
 
 

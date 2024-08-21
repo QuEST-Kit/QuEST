@@ -112,4 +112,17 @@ void accel_statevec_anyCtrlAnyTargDenseMatr_sub(Qureg qureg, vector<int> ctrls, 
 void accel_statevec_anyCtrlAnyTargDiagMatr_sub(Qureg qureg, vector<int> ctrls, vector<int> ctrlStates, vector<int> targs, DiagMatr matr);
 
 
+/*
+ * PAULI TENSOR AND GADGET
+ */
+
+void accel_statevector_anyCtrlPauliTensorOrGadget_subA(
+    Qureg qureg, vector<int> ctrls, vector<int> ctrlStates, vector<int> suffixTargsXY, 
+    qindex suffixMaskXY, qindex allMaskYZ, qcomp powI, qcomp fac0, qcomp fac1);
+
+void accel_statevector_anyCtrlPauliTensorOrGadget_subB(
+    Qureg qureg, vector<int> ctrls, vector<int> ctrlStates,
+    qindex suffixMaskXY, qindex bufferMaskXY, qindex allMaskYZ, qcomp powI, qcomp fac0, qcomp fac1);
+
+
 #endif // ACCELERATOR_HPP
