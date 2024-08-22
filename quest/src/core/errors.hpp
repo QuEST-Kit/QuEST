@@ -81,6 +81,8 @@ void assert_bufferSendRecvDoesNotOverlap(qindex sendInd, qindex recvInd, qindex 
 
 void error_localiserNumCtrlStatesInconsistentWithNumCtrls();
 
+void error_localiserGivenPauliTensorOrGadgetWithoutXOrY();
+
 
 
 /*

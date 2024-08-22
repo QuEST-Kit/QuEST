@@ -20,6 +20,7 @@
 
 #include <tuple>
 #include <vector>
+#include <complex>
 #include <algorithm>
 
 using std::vector;
@@ -55,6 +56,12 @@ void setDefaultCtrlStates(vector<int> ctrls, vector<int> &states) {
 }
 
 
+bool isSuffixQubit(int qubit, Qureg qureg) {
+
+    return qubit < qureg.logNumAmpsPerNode;
+}
+
+
 bool doesGateRequireComm(Qureg qureg, vector<int> targs) {
 
     // non-distributed quregs never communicate (duh)
@@ -63,7 +70,7 @@ bool doesGateRequireComm(Qureg qureg, vector<int> targs) {
 
     // communication necessary when any prefix qubit is targeted
     for (int targ : targs)
-        if (targ >= qureg.logNumAmpsPerNode)
+        if (!isSuffixQubit(targ, qureg))
             return true;
 
     // sufix qubit targets need no communication
@@ -86,7 +93,7 @@ bool doAnyLocalAmpsSatisfyCtrls(Qureg qureg, vector<int> ctrls, vector<int> stat
     for (size_t i=0; i<ctrls.size(); i++) {
 
         // consider only ctrls which operate on the prefix substate
-        if (ctrls[i] < qureg.logNumAmpsPerNode)
+        if (isSuffixQubit(ctrls[i], qureg))
             continue;
 
         // abort if any prefix ctrl has wrong bit value
@@ -100,19 +107,40 @@ bool doAnyLocalAmpsSatisfyCtrls(Qureg qureg, vector<int> ctrls, vector<int> stat
 }
 
 
-auto getSuffixCtrlsAndStates(Qureg qureg, vector<int> ctrls, vector<int> states) {
+auto getPrefixOrSuffixQubits(Qureg qureg, vector<int> qubits, bool getSuffix) {
 
-    vector<int> suffixCtrls(0);   suffixCtrls .reserve(ctrls.size());
+    vector<int> subQubits(0);
+    subQubits.reserve(qubits.size());
+
+    for (int qubit : qubits)
+        if (isSuffixQubit(qubit, qureg) == getSuffix)
+            subQubits.push_back(qubit);
+
+    return subQubits;
+}
+
+auto getSuffixQubits(Qureg qureg, vector<int> qubits) {
+    return getPrefixOrSuffixQubits(qureg, qubits, true);
+}
+
+auto getPrefixQubits(Qureg qureg, vector<int> qubits) {
+    return getPrefixOrSuffixQubits(qureg, qubits, false);
+}
+
+
+auto getSuffixQubitsAndStates(Qureg qureg, vector<int> qubits, vector<int> states) {
+
+    vector<int> suffixQubits(0);  suffixQubits.reserve(qubits.size());
     vector<int> suffixStates(0);  suffixStates.reserve(states.size());
 
-    for (size_t i=0; i<ctrls.size(); i++)
-        if (ctrls[i] < qureg.logNumAmpsPerNode) {
-            suffixCtrls.push_back(ctrls[i]);
+    for (size_t i=0; i<qubits.size(); i++)
+        if (isSuffixQubit(qubits[i], qureg)) {
+            suffixQubits.push_back(qubits[i]);
             suffixStates.push_back(states[i]);
         }
 
     // return new vectors, leaving old unmodified
-    return std::tuple{suffixCtrls, suffixStates};
+    return std::tuple{suffixQubits, suffixStates};
 }
 
 
@@ -137,7 +165,7 @@ auto getCtrlsAndTargsSwappedToSuffix(Qureg qureg, vector<int> ctrls, vector<int>
     for (size_t i=0; i<targs.size(); i++) {
 
         // consider only targs in the prefix substate
-        if (!doesGateRequireComm(qureg, targs[i]))
+        if (isSuffixQubit(targs[i], qureg))
             continue;
             
         // if our replacement targ happens to be a ctrl... 
@@ -217,7 +245,7 @@ void exchangeAmpsSatisfyingCtrlsAndTargIntoBuffers(Qureg qureg, int pairRank, ve
 
 
 /*
- * SWAPS
+ * SWAP
  */
 
 
@@ -248,7 +276,7 @@ void localiser_statevec_anyCtrlSwap(Qureg qureg, vector<int> ctrls, vector<int> 
         return;
 
     // retain only suffix control qubits as relevant to communication and local amp modification
-    std::tie(ctrls, ctrlStates) = getSuffixCtrlsAndStates(qureg, ctrls, ctrlStates);
+    std::tie(ctrls, ctrlStates) = getSuffixQubitsAndStates(qureg, ctrls, ctrlStates);
 
     // if neither targets invoke communication, perform embarrassingly parallel simulation and finish
     if (!doesGateRequireComm(qureg, targ2)) {
@@ -294,7 +322,7 @@ void localiser_statevec_anyCtrlOneTargDenseMatr(Qureg qureg, vector<int> ctrls, 
         return;
 
     // retain only suffix control qubits as relevant to communication and local amp modification
-    std::tie(ctrls, ctrlStates) = getSuffixCtrlsAndStates(qureg, ctrls, ctrlStates);
+    std::tie(ctrls, ctrlStates) = getSuffixQubitsAndStates(qureg, ctrls, ctrlStates);
 
     // if the target permits embarrassingly parallel simulation, perform it and finish
     if (!doesGateRequireComm(qureg, targ)) {
@@ -339,7 +367,7 @@ void localiser_statevec_anyCtrlAnyTargDenseMatr(Qureg qureg, vector<int> ctrls, 
     if (!doesGateRequireComm(qureg, targs)) {
 
         // retain only suffix controls, and perform embarrassingly parallel simulation, then finish
-        std::tie(ctrls, ctrlStates) = getSuffixCtrlsAndStates(qureg, ctrls, ctrlStates);
+        std::tie(ctrls, ctrlStates) = getSuffixQubitsAndStates(qureg, ctrls, ctrlStates);
         accel_statevec_anyCtrlAnyTargDenseMatr_sub(qureg, ctrls, ctrlStates, targs, matr);
         return;
     }
@@ -359,7 +387,7 @@ void localiser_statevec_anyCtrlAnyTargDenseMatr(Qureg qureg, vector<int> ctrls, 
     if (doAnyLocalAmpsSatisfyCtrls(qureg, newCtrls, ctrlStates)) {
 
         // then perform embarrassingly parallel simulation using only the new suffix ctrls
-        auto [newSuffixCtrls, newSuffixStates] = getSuffixCtrlsAndStates(qureg, newCtrls, ctrlStates);
+        auto [newSuffixCtrls, newSuffixStates] = getSuffixQubitsAndStates(qureg, newCtrls, ctrlStates);
         accel_statevec_anyCtrlAnyTargDenseMatr_sub(qureg, newSuffixCtrls, newSuffixStates, newTargs, matr);
     }
 
@@ -379,8 +407,93 @@ void localiser_statevec_anyCtrlAnyTargDiagMatr(Qureg qureg, vector<int> ctrls, v
         return;
 
     // retain only suffix control qubits, as relevant to local amp modification
-    std::tie(ctrls, ctrlStates) = getSuffixCtrlsAndStates(qureg, ctrls, ctrlStates);
+    std::tie(ctrls, ctrlStates) = getSuffixQubitsAndStates(qureg, ctrls, ctrlStates);
     
     // diagonal matrices are always embarrassingly parallel, regardless of whether any targs are in prefix
     return accel_statevec_anyCtrlAnyTargDiagMatr_sub(qureg, ctrls, ctrlStates, targs, matr);
+}
+
+
+
+/*
+ * PAULI TENSORS AND GADGETS
+ */
+
+
+extern int  paulis_getPauliAt(PauliStr str, int ind);
+extern bool paulis_containsXOrY(PauliStr str);
+extern vector<int> paulis_getSortedIndsOfNonIdentityPaulis(PauliStr str);
+extern vector<int> paulis_getTargsWithEitherPaulis(vector<int> targs, PauliStr str, int pauliA, int pauliB);
+
+
+void anyCtrlPauliTensorOrGadget(Qureg qureg, vector<int> ctrls, vector<int> ctrlStates, PauliStr str, qcomp fac0, qcomp fac1) {
+    assertValidCtrlStates(ctrls, ctrlStates);
+    setDefaultCtrlStates(ctrls, ctrlStates);
+    if (!paulis_containsXOrY(str))
+        error_localiserGivenPauliTensorOrGadgetWithoutXOrY();
+
+    // node has nothing to do if all local amps violate control condition
+    if (!doAnyLocalAmpsSatisfyCtrls(qureg, ctrls, ctrlStates))
+        return;
+
+    // retain only suffix control qubits, as relevant to local amp modification
+    std::tie(ctrls, ctrlStates) = getSuffixQubitsAndStates(qureg, ctrls, ctrlStates);
+
+    // extract sorted targs as indices of all non-I Paulis, to accelerate subsequent processing
+    auto targs = paulis_getSortedIndsOfNonIdentityPaulis(str);
+
+    // readable flags
+    const int X=1, Y=2, Z=3;
+
+    // total number of Y determines a phase factor on all updated amps (because Y contains i)
+    int numY = paulis_getTargsWithEitherPaulis(targs, str, Y, Y).size();
+    qcomp powI = std::pow(qcomp(0,1), numY);
+
+    // parity of Y and Z on all qubits determines phase factor on updated amps (because Y and Z contain -1)
+    auto allTargsYZ = paulis_getTargsWithEitherPaulis(targs, str, Y, Z);
+    auto allMaskYZ = getBitMask(allTargsYZ.data(), allTargsYZ.size());
+    
+    // X and Y on suffix qubits determine local amp movement (because X and Y are anti-diagonal)
+    auto suffixTargsXY = getSuffixQubits(qureg, paulis_getTargsWithEitherPaulis(targs, str, X, Y)); // sorted
+    auto suffixMaskXY = getBitMask(suffixTargsXY.data(), suffixTargsXY.size());
+
+    // X and Y on prefix qubits determines pair rank (because X and Y are anti-diagonal)
+    auto prefixTargsXY = getPrefixQubits(qureg, paulis_getTargsWithEitherPaulis(targs, str, X, Y));
+    auto pairRank = flipBits(qureg.rank, prefixTargsXY.data(), prefixTargsXY.size());
+
+    // if no communication is necessary, perform local simulation and finish
+    if (qureg.rank == pairRank) {
+        accel_statevector_anyCtrlPauliTensorOrGadget_subA(
+            qureg, ctrls, ctrlStates, suffixTargsXY, 
+            suffixMaskXY, allMaskYZ, powI, fac0, fac1);
+        return;
+    }
+
+    // otherwise, pack and exchange all amps satisfying ctrl
+    exchangeAmpsSatisfyingCtrlsIntoBuffers(qureg, pairRank, ctrls, ctrlStates);
+
+    // we cannot use suffixMaskXY to determine the buffer indices corresponding to the subsequently processed local amps,
+    // because it operates on the full local amp index, whereas the buffer (potentially) excluded many amps (which did not
+    // satisfy ctrls) and has a reduced index space. So we compute a new mask which operates on the buffer indices by
+    // removing all ctrl qubits from the full index mask.
+    auto sortedCtrls = util_getSorted(ctrls);
+    auto bufferMaskXY = removeBits(suffixMaskXY, sortedCtrls.data(), sortedCtrls.size());
+
+    accel_statevector_anyCtrlPauliTensorOrGadget_subB(qureg, ctrls, ctrlStates, suffixMaskXY, bufferMaskXY, allMaskYZ, powI, fac0, fac1);
+}
+
+
+void localiser_statevec_anyCtrlPauliTensor(Qureg qureg, vector<int> ctrls, vector<int> ctrlStates, PauliStr str) {
+
+    qcomp fac0 = 0;
+    qcomp fac1 = 1;
+    anyCtrlPauliTensorOrGadget(qureg, ctrls, ctrlStates, str, fac0, fac1);
+}
+
+
+void localiser_statevec_anyCtrlPauliGadget(Qureg qureg, vector<int> ctrls, vector<int> ctrlStates, PauliStr str, qreal angle) {
+
+    qcomp fac0 = qcomp(cos(angle), 0);
+    qcomp fac1 = qcomp(0, sin(angle));
+    anyCtrlPauliTensorOrGadget(qureg, ctrls, ctrlStates, str, fac0, fac1);
 }

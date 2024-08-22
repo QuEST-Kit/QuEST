@@ -52,6 +52,19 @@ __host__ qindex getNumBlocks(qindex numIts) {
 
 
 
+/*
+ * KERNEL PRIMITIVES
+ */
+
+
+__forceinline__ __device__  int cudaGetBitMaskParity(qindex mask) {
+
+    // we cannot use bitwise's getBitMaskParity()'s host-only GCC call
+    return __popcll(mask) & 1;
+}
+
+
+
 /* 
  * COMMUNICATION BUFFER PACKING
  */
@@ -60,7 +73,7 @@ __host__ qindex getNumBlocks(qindex numIts) {
 template <int NumCtrls>
 __global__ void kernel_statevec_packAmpsIntoBuffer(
     cu_qcomp* amps, cu_qcomp* buffer, qindex numThreads, 
-    int* qubits, int numQubits, qindex mask
+    int* qubits, int numQubits, qindex qubitStateMask
 ) {
     GET_THREAD_IND(n, numThreads);
 
@@ -68,7 +81,7 @@ __global__ void kernel_statevec_packAmpsIntoBuffer(
     SET_VAR_AT_COMPILE_TIME(int, numBits, NumCtrls, numQubits);
 
     // i = nth local index where qubits are active
-    qindex i = insertBitsWithMaskedValues(n, qubits, numBits, mask);
+    qindex i = insertBitsWithMaskedValues(n, qubits, numBits, qubitStateMask);
 
     // caller offsets buffer by sub-buffer send-index
     buffer[n] = amps[i];
@@ -106,7 +119,7 @@ __global__ void kernel_statevec_anyCtrlSwap_subA(
 template <int NumCtrls> 
 __global__ void kernel_statevec_anyCtrlSwap_subB(
     cu_qcomp* amps, cu_qcomp* buffer, qindex numThreads, 
-    int* ctrls, int numCtrls, qindex mask
+    int* ctrls, int numCtrls, qindex ctrlStateMask
 ) {
     GET_THREAD_IND(n, numThreads);
 
@@ -114,7 +127,7 @@ __global__ void kernel_statevec_anyCtrlSwap_subB(
     SET_VAR_AT_COMPILE_TIME(int, numCtrlBits, NumCtrls, numCtrls);
 
     // i = nth local index where ctrls are active
-    qindex i = insertBitsWithMaskedValues(n, ctrls, numCtrlBits, mask);
+    qindex i = insertBitsWithMaskedValues(n, ctrls, numCtrlBits, ctrlStateMask);
 
     // caller offsets buffer if necessary
     amps[i] = buffer[n];
@@ -149,7 +162,7 @@ __global__ void kernel_statevec_anyCtrlSwap_subC(
 template <int NumCtrls>
 __global__ void kernel_statevec_anyCtrlOneTargDenseMatr_subA(
     cu_qcomp* amps, qindex numThreads, 
-    int* ctrlsAndTarg, int numCtrls, qindex mask, int targ, 
+    int* ctrlsAndTarg, int numCtrls, qindex ctrlStateMask, int targ, 
     cu_qcomp m00, cu_qcomp m01, cu_qcomp m10, cu_qcomp m11
 ) {
     GET_THREAD_IND(n, numThreads);
@@ -158,7 +171,7 @@ __global__ void kernel_statevec_anyCtrlOneTargDenseMatr_subA(
     SET_VAR_AT_COMPILE_TIME(int, numCtrlBits, NumCtrls, numCtrls);
 
     // i0 = nth local index where ctrls are active and targ is 0
-    qindex i0 = insertBitsWithMaskedValues(n, ctrlsAndTarg, numCtrlBits + 1, mask);
+    qindex i0 = insertBitsWithMaskedValues(n, ctrlsAndTarg, numCtrlBits + 1, ctrlStateMask);
     qindex i1 = flipBit(i0, targ);
 
     // note amps are strided by 2^targ
@@ -173,7 +186,7 @@ __global__ void kernel_statevec_anyCtrlOneTargDenseMatr_subA(
 template <int NumCtrls>
 __global__ void kernel_statevec_anyCtrlOneTargDenseMatr_subB(
     cu_qcomp* amps, cu_qcomp* buffer, qindex numThreads, 
-    int* ctrls, int numCtrls, qindex mask,
+    int* ctrls, int numCtrls, qindex ctrlStateMask,
     cu_qcomp fac0, cu_qcomp fac1
 ) {
     GET_THREAD_IND(n, numThreads);
@@ -182,7 +195,7 @@ __global__ void kernel_statevec_anyCtrlOneTargDenseMatr_subB(
     SET_VAR_AT_COMPILE_TIME(int, numCtrlBits, NumCtrls, numCtrls);
 
     // i = nth local index where ctrl bits are active
-    qindex i = insertBitsWithMaskedValues(n, ctrls, numCtrlBits, mask);
+    qindex i = insertBitsWithMaskedValues(n, ctrls, numCtrlBits, ctrlStateMask);
 
     // caller offsets buffer by receive-index
     amps[i] = fac0*amps[i] + fac1*buffer[n];
@@ -264,7 +277,7 @@ __global__ void kernel_statevec_anyCtrlAnyTargDenseMatr_sub(
 template <int NumCtrls, int NumTargs>
 __global__ void kernel_statevec_anyCtrlAnyTargDiagMatr_sub(
     cu_qcomp* amps, qindex numThreads, int rank, qindex logNumAmpsPerNode,
-    int* ctrls, int numCtrls, qindex mask, int* targs, int numTargs,
+    int* ctrls, int numCtrls, qindex ctrlStateMask, int* targs, int numTargs,
     cu_qcomp* elems
 ) {
     GET_THREAD_IND(n, numThreads);
@@ -274,7 +287,7 @@ __global__ void kernel_statevec_anyCtrlAnyTargDiagMatr_sub(
     SET_VAR_AT_COMPILE_TIME(int, numTargBits, NumTargs, numTargs);
 
     // j = nth local index where ctrls are active (in the specified states)
-    qindex j = insertBitsWithMaskedValues(n, ctrls, numCtrlBits, mask);
+    qindex j = insertBitsWithMaskedValues(n, ctrls, numCtrlBits, ctrlStateMask);
 
     // i = global index corresponding to j
     qindex i = concatenateBits(rank, j, logNumAmpsPerNode);
@@ -283,6 +296,91 @@ __global__ void kernel_statevec_anyCtrlAnyTargDiagMatr_sub(
     qindex t = getValueOfBits(i, targs, numTargBits);
 
     amps[i] *= elems[t];
+}
+
+
+
+/*
+ * DIAGONAL MATRIX
+ */
+
+
+template <int NumCtrls, int NumTargs> 
+__global__ void kernel_statevector_anyCtrlPauliTensorOrGadget_subA(
+    cu_qcomp* amps, qindex numThreads, int rank, qindex logNumAmpsPerNode,
+    int* ctrlsAndTargs, int numCtrls, qindex ctrlsAndTargsStateMask, 
+    int* suffixTargsXY, int numSuffixTargsXY,
+    qindex suffixMaskXY, qindex allMaskYZ, 
+    cu_qcomp powI, cu_qcomp thisAmpFac, cu_qcomp otherAmpFac
+) {
+    GET_THREAD_IND(n, numThreads);
+
+    // use template params to compile-time unroll loops in insertBits()
+    SET_VAR_AT_COMPILE_TIME(int, numCtrlBits, NumCtrls, numCtrls);
+    SET_VAR_AT_COMPILE_TIME(int, numTargBits, NumTargs, numSuffixTargsXY);
+
+    // compiler will infer these at compile-time if possible
+    int numQubitBits = numCtrlBits + numTargBits;
+    qindex numTargAmps = powerOf2(numTargBits);
+
+    // each inner iteration modifies 2 amplitudes (may be compile-time sized) 
+    qindex numInnerIts = numTargAmps / 2;
+
+    // i0 = nth local index where ctrls are active and targs are all zero
+    qindex i0 = insertBitsWithMaskedValues(n, ctrlsAndTargs, numQubitBits, ctrlsAndTargsStateMask);
+
+    // loop may be unrolled
+    for (qindex m=0; m<numInnerIts; m++) {
+
+        // iA = nth local index where targs have value m, iB = (last - nth) such index
+        qindex iA = setBits(i0, suffixTargsXY, numSuffixTargsXY, m);
+        qindex iB = flipBits(iA, suffixMaskXY);
+
+        // jA = global index corresponding to iA
+        qindex jA = concatenateBits(rank, iA, logNumAmpsPerNode);
+        qindex jB = concatenateBits(rank, iB, logNumAmpsPerNode);
+
+        // determine whether to multiply amps by +-1 or +-i
+        cu_qcomp pmPowA = powI * (1. - 2. * cudaGetBitMaskParity(jA & allMaskYZ));
+        cu_qcomp pmPowB = powI * (1. - 2. * cudaGetBitMaskParity(jB & allMaskYZ));
+
+        cu_qcomp ampA = amps[iA];
+        cu_qcomp ampB = amps[iB];
+
+        // mix or swap scaled amp pair
+        amps[iA] = (thisAmpFac * ampA) + (otherAmpFac * pmPowB * ampB);
+        amps[iB] = (thisAmpFac * ampB) + (otherAmpFac * pmPowA * ampA);
+    }
+}
+
+
+template <int NumCtrls>
+__global__ void kernel_statevector_anyCtrlPauliTensorOrGadget_subB(
+    cu_qcomp* amps, cu_qcomp* buffer, qindex numThreads, int rank, qindex logNumAmpsPerNode,
+    int* ctrls, int numCtrls, qindex ctrlStateMask,
+    qindex suffixMaskXY, qindex bufferMaskXY, qindex allMaskYZ, 
+    cu_qcomp powI, cu_qcomp thisAmpFac, cu_qcomp otherAmpFac
+) {
+    GET_THREAD_IND(n, numThreads);
+
+    // use template param to compile-time unroll loop in insertBits()
+    SET_VAR_AT_COMPILE_TIME(int, numCtrlBits, NumCtrls, numCtrls);
+
+    // i = nth local index where ctrl bits are in specified states
+    qindex i = insertBitsWithMaskedValues(n, ctrls, numCtrlBits, ctrlStateMask);
+
+    // j = buffer index of amp to be mixed with i
+    qindex j = flipBits(n, bufferMaskXY);
+
+    // k = global index of amp at buffer index j
+    qindex k = concatenateBits(rank, flipBits(i, suffixMaskXY), logNumAmpsPerNode);
+
+    // determine whether to multiply buffer amp by +-1 or +-i
+    int negParity = cudaGetBitMaskParity(k & allMaskYZ);
+    cu_qcomp pmPowI = powI * (1. - 2. * negParity);
+
+    amps[i] *= thisAmpFac;
+    amps[i] += otherAmpFac * pmPowI * buffer[j];
 }
 
 

@@ -707,7 +707,7 @@ void print_table(string title, vector<tuple<string, long long int>> rows, string
 
 // we'll make use of these internal functions from paulis.cpp
 extern int paulis_getPauliAt(PauliStr str, int ind);
-extern int paulis_getIndOfLefmostPauli(PauliStr str);
+extern int paulis_getIndOfLefmostNonIdentityPauli(PauliStr str);
 
 
 string getPauliStrAsString(PauliStr str, int maxNumQubits) {
@@ -763,7 +763,7 @@ int getIndexOfLeftmostPauliAmongStrings(PauliStr* strings, qindex numStrings) {
     int maxInd = 0;
 
     for (qindex i=0; i<numStrings; i++) {
-        int ind = paulis_getIndOfLefmostPauli(strings[i]);
+        int ind = paulis_getIndOfLefmostNonIdentityPauli(strings[i]);
         if (ind > maxInd)
             maxInd = ind;
     }
