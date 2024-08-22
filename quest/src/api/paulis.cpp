@@ -111,6 +111,35 @@ vector<int> paulis_getSortedIndsOfNonIdentityPaulis(PauliStr str) {
 }
 
 
+bool paulis_containsXOrY(PauliStr str) {
+
+    int maxInd = paulis_getIndOfLefmostNonIdentityPauli(str);
+
+    for (int i=0; i<maxInd; i++) {
+        int pauli = paulis_getPauliAt(str, i);
+
+        if (pauli == 1 || pauli == 2)
+            return true;
+    }
+
+    return false;
+}
+
+
+vector<int> paulis_getTargsWithEitherPaulis(vector<int> targs, PauliStr str, int pauliA, int pauliB) {
+
+    vector<int> subsetTargs(0);  subsetTargs.reserve(targs.size());
+
+    for (int targ : targs) {
+        int pauli = paulis_getPauliAt(str, targ);
+        if (pauli == pauliA || pauli == pauliB)
+            subsetTargs.push_back(targ);
+    }
+
+    return subsetTargs;
+}
+
+
 
 /*
  * PAULI STRING INITIALISATION

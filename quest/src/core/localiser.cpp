@@ -420,32 +420,17 @@ void localiser_statevec_anyCtrlAnyTargDiagMatr(Qureg qureg, vector<int> ctrls, v
  */
 
 
-extern int paulis_getPauliAt(PauliStr str, int ind);
+extern int  paulis_getPauliAt(PauliStr str, int ind);
+extern bool paulis_containsXOrY(PauliStr str);
 extern vector<int> paulis_getSortedIndsOfNonIdentityPaulis(PauliStr str);
+extern vector<int> paulis_getTargsWithEitherPaulis(vector<int> targs, PauliStr str, int pauliA, int pauliB);
 
 
-auto getTargsWithEitherPaulis(vector<int> targs, PauliStr str, int pauliA, int pauliB) {
-
-    vector<int> subsetTargs(0);  subsetTargs.reserve(targs.size());
-
-    for (int targ : targs) {
-        int pauli = paulis_getPauliAt(str, targ);
-        if (pauli == pauliA || pauli == pauliB)
-            subsetTargs.push_back(targ);
-    }
-
-    return subsetTargs;
-}
-
-
-void anyCtrlPauliTensorOrGadget(Qureg qureg, vector<int> ctrls, vector<int> ctrlStates, PauliStr str, bool isGadget, qcomp fac0, qcomp fac1) {
+void anyCtrlPauliTensorOrGadget(Qureg qureg, vector<int> ctrls, vector<int> ctrlStates, PauliStr str, qcomp fac0, qcomp fac1) {
     assertValidCtrlStates(ctrls, ctrlStates);
     setDefaultCtrlStates(ctrls, ctrlStates);
-
-    // TODO:
-    //  - validate str is not all Z (dunno if that's suffix or prefix specific), which
-    //    must instead call another function I'm fairly sure
-
+    if (!paulis_containsXOrY(str))
+        error_localiserGivenPauliTensorOrGadgetWithoutXOrY();
 
     // node has nothing to do if all local amps violate control condition
     if (!doAnyLocalAmpsSatisfyCtrls(qureg, ctrls, ctrlStates))
@@ -458,24 +443,22 @@ void anyCtrlPauliTensorOrGadget(Qureg qureg, vector<int> ctrls, vector<int> ctrl
     auto targs = paulis_getSortedIndsOfNonIdentityPaulis(str);
 
     // readable flags
-    const int X = 1;
-    const int Y = 2;
-    const int Z = 3;
+    const int X=1, Y=2, Z=3;
 
     // total number of Y determines a phase factor on all updated amps (because Y contains i)
-    int numY = getTargsWithEitherPaulis(targs, str, Y, Y).size();
+    int numY = paulis_getTargsWithEitherPaulis(targs, str, Y, Y).size();
     qcomp powI = std::pow(qcomp(0,1), numY);
 
     // parity of Y and Z on all qubits determines phase factor on updated amps (because Y and Z contain -1)
-    auto allTargsYZ = getTargsWithEitherPaulis(targs, str, Y, Z);
+    auto allTargsYZ = paulis_getTargsWithEitherPaulis(targs, str, Y, Z);
     auto allMaskYZ = getBitMask(allTargsYZ.data(), allTargsYZ.size());
     
     // X and Y on suffix qubits determine local amp movement (because X and Y are anti-diagonal)
-    auto suffixTargsXY = getSuffixQubits(qureg, getTargsWithEitherPaulis(targs, str, X, Y)); // sorted
+    auto suffixTargsXY = getSuffixQubits(qureg, paulis_getTargsWithEitherPaulis(targs, str, X, Y)); // sorted
     auto suffixMaskXY = getBitMask(suffixTargsXY.data(), suffixTargsXY.size());
 
     // X and Y on prefix qubits determines pair rank (because X and Y are anti-diagonal)
-    auto prefixTargsXY = getPrefixQubits(qureg, getTargsWithEitherPaulis(targs, str, X, Y));
+    auto prefixTargsXY = getPrefixQubits(qureg, paulis_getTargsWithEitherPaulis(targs, str, X, Y));
     auto pairRank = flipBits(qureg.rank, prefixTargsXY.data(), prefixTargsXY.size());
 
     // if no communication is necessary, perform local simulation and finish
@@ -497,4 +480,20 @@ void anyCtrlPauliTensorOrGadget(Qureg qureg, vector<int> ctrls, vector<int> ctrl
     auto bufferMaskXY = removeBits(suffixMaskXY, sortedCtrls.data(), sortedCtrls.size());
 
     accel_statevector_anyCtrlPauliTensorOrGadget_subB(qureg, ctrls, ctrlStates, suffixMaskXY, bufferMaskXY, allMaskYZ, powI, fac0, fac1);
+}
+
+
+void localiser_statevec_anyCtrlPauliTensor(Qureg qureg, vector<int> ctrls, vector<int> ctrlStates, PauliStr str) {
+
+    qcomp fac0 = 0;
+    qcomp fac1 = 1;
+    anyCtrlPauliTensorOrGadget(qureg, ctrls, ctrlStates, str, fac0, fac1);
+}
+
+
+void localiser_statevec_anyCtrlPauliGadget(Qureg qureg, vector<int> ctrls, vector<int> ctrlStates, PauliStr str, qreal angle) {
+
+    qcomp fac0 = qcomp(cos(angle), 0);
+    qcomp fac1 = qcomp(0, sin(angle));
+    anyCtrlPauliTensorOrGadget(qureg, ctrls, ctrlStates, str, fac0, fac1);
 }

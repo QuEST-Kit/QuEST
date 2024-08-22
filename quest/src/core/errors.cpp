@@ -168,6 +168,11 @@ void error_localiserNumCtrlStatesInconsistentWithNumCtrls() {
     raiseInternalError("An inconsistent number of ctrls and ctrlStates were passed to a function in localiser.cpp.");
 }
 
+void error_localiserGivenPauliTensorOrGadgetWithoutXOrY() {
+
+    raiseInternalError("The localiser was asked to simulate a Pauli tensor or gadget which contained no X or Y Paulis, which is a special case reserved for phase gadgets.");
+}
+
 
 
 /*

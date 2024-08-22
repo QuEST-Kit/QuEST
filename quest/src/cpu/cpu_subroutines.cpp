@@ -374,8 +374,10 @@ void cpu_statevector_anyCtrlPauliTensorOrGadget_subA(
 ) {
     assert_numCtrlsMatchesNumCtrlStatesAndTemplateParam(ctrls.size(), ctrlStates.size(), NumCtrls);
     assert_numTargsMatchesTemplateParam(suffixTargsXY.size(), NumTargs);
-
-    // TODO: not sure the handling of controls is correct!
+    
+    // TODO:
+    //  should we attempt to OpenMP parallelise the inner loop when there are many paulis?
+    //  can we achieve this using something like if(numOuterIts < nthreads) ?
 
     // each outer iteration handles all assignments of the target qubits and each ctrl halves the outer iterations
     qindex numOuterIts = qureg.numAmpsPerNode / powerOf2(suffixTargsXY.size() + ctrls.size());
@@ -392,7 +394,7 @@ void cpu_statevector_anyCtrlPauliTensorOrGadget_subA(
     int numQubitBits = numCtrlBits + numTargBits;
     qindex numTargAmps = powerOf2(numTargBits);
 
-    // each inner iteration (may be compile-time) modifies 2 amplitudes
+    // each inner iteration modifies 2 amplitudes (may be compile-time sized) 
     qindex numInnerIts = numTargAmps / 2;
 
 
