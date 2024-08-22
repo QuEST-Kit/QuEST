@@ -52,6 +52,19 @@ __host__ qindex getNumBlocks(qindex numIts) {
 
 
 
+/*
+ * KERNEL PRIMITIVES
+ */
+
+
+__forceinline__ __device__  int cudaGetBitMaskParity(qindex mask) {
+
+    // we cannot use bitwise's getBitMaskParity()'s host-only GCC call
+    return __popcll(mask) & 1;
+}
+
+
+
 /* 
  * COMMUNICATION BUFFER PACKING
  */
@@ -328,8 +341,8 @@ __global__ void kernel_statevector_anyCtrlPauliTensorOrGadget_subA(
         qindex jB = concatenateBits(rank, iB, logNumAmpsPerNode);
 
         // determine whether to multiply amps by +-1 or +-i
-        cu_qcomp pmPowA = powI * (1. - 2. * getBitMaskParity(jA & allMaskYZ));
-        cu_qcomp pmPowB = powI * (1. - 2. * getBitMaskParity(jB & allMaskYZ));
+        cu_qcomp pmPowA = powI * (1. - 2. * cudaGetBitMaskParity(jA & allMaskYZ));
+        cu_qcomp pmPowB = powI * (1. - 2. * cudaGetBitMaskParity(jB & allMaskYZ));
 
         cu_qcomp ampA = amps[iA];
         cu_qcomp ampB = amps[iB];
@@ -363,7 +376,7 @@ __global__ void kernel_statevector_anyCtrlPauliTensorOrGadget_subB(
     qindex k = concatenateBits(rank, flipBits(i, suffixMaskXY), logNumAmpsPerNode);
 
     // determine whether to multiply buffer amp by +-1 or +-i
-    int negParity = getBitMaskParity(k & allMaskYZ);
+    int negParity = cudaGetBitMaskParity(k & allMaskYZ);
     cu_qcomp pmPowI = powI * (1. - 2. * negParity);
 
     amps[i] *= thisAmpFac;
