@@ -368,8 +368,8 @@ void gpu_statevector_anyCtrlPauliTensorOrGadget_subA(
 
     kernel_statevector_anyCtrlPauliTensorOrGadget_subA <NumCtrls, NumTargs> <<<numBlocks, NUM_THREADS_PER_BLOCK>>> (
         toCuQcomps(qureg.gpuAmps), numThreads, qureg.rank, qureg.logNumAmpsPerNode,
-        deviceQubits.data(), ctrls.size(), qubitStateMask, 
-        deviceTargs, deviceTargs.size(),
+        getPtr(deviceQubits), ctrls.size(), qubitStateMask, 
+        getPtr(deviceTargs), deviceTargs.size(),
         suffixMaskXY, allMaskYZ, 
         toCuQcomp(powI), toCuQcomp(fac0), toCuQcomp(fac1)
     );
@@ -399,9 +399,9 @@ void gpu_statevector_anyCtrlPauliTensorOrGadget_subB(
     kernel_statevector_anyCtrlPauliTensorOrGadget_subB <NumCtrls> <<<numBlocks, NUM_THREADS_PER_BLOCK>>> (
         toCuQcomps(qureg.gpuAmps), &toCuQcomps(qureg.gpuCommBuffer)[recvInd], 
         numThreads, qureg.rank, qureg.logNumAmpsPerNode,
-        sortedCtrls.data(), ctrls.size(), ctrlStateMask,
+        getPtr(sortedCtrls), ctrls.size(), ctrlStateMask,
         suffixMaskXY, bufferMaskXY, allMaskYZ, 
-        toCuQcomp(powI), toCuQcomp(thisAmpFac), toCuQcomp(otherAmpFac)
+        toCuQcomp(powI), toCuQcomp(fac0), toCuQcomp(fac1)
     );
 
 #else
