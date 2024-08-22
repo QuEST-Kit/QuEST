@@ -298,7 +298,7 @@ __global__ void kernel_statevector_anyCtrlPauliTensorOrGadget_subA(
     int* ctrlsAndTargs, int numCtrls, qindex ctrlsAndTargsStateMask, 
     int* suffixTargsXY, int numSuffixTargsXY,
     qindex suffixMaskXY, qindex allMaskYZ, 
-    cu_qcomp powI, qcu_comp fac0, qcu_comp fac1
+    cu_qcomp powI, cu_qcomp thisAmpFac, cu_qcomp otherAmpFac
 ) {
     GET_THREAD_IND(n, numThreads);
 
