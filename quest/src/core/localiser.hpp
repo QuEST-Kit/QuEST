@@ -12,6 +12,7 @@
 #define LOCALISER_HPP
 
 #include "quest/include/qureg.h"
+#include "quest/include/paulis.h"
 #include "quest/include/matrices.h"
 
 #include <vector>
@@ -37,6 +38,16 @@ void localiser_statevec_anyCtrlOneTargDenseMatr(Qureg qureg, vector<int> ctrls, 
 void localiser_statevec_anyCtrlAnyTargDenseMatr(Qureg qureg, vector<int> ctrls, vector<int> ctrlStates, vector<int> targs, CompMatr matr);
 
 void localiser_statevec_anyCtrlAnyTargDiagMatr(Qureg qureg, vector<int> ctrls, vector<int> ctrlStates, vector<int> targs, DiagMatr matr);
+
+
+/*
+ * PAULI TENSORS AND GADGETS
+ */
+
+void localiser_statevec_anyCtrlPauliTensor(Qureg qureg, vector<int> ctrls, vector<int> ctrlStates, PauliStr str);
+
+void localiser_statevec_anyCtrlPauliGadget(Qureg qureg, vector<int> ctrls, vector<int> ctrlStates, PauliStr str, qreal angle);
+
 
 
 #endif // LOCALISER_HPP
