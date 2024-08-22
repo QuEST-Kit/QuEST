@@ -410,5 +410,34 @@ void gpu_statevector_anyCtrlPauliTensorOrGadget_subB(
 }
 
 
+template <int NumCtrls> 
+void gpu_statevector_anyCtrlAnyTargZOrPhaseGadget_sub(
+    Qureg qureg, vector<int> ctrls, vector<int> ctrlStates, vector<int> targs, 
+    qcomp fac0, qcomp fac1
+) {
+    assert_numCtrlsMatchesNumCtrlStatesAndTemplateParam(ctrls.size(), ctrlStates.size(), NumCtrls);
+
+#if COMPILE_CUDA || COMPILE_CUQUANTUM
+
+    qindex numThreads = qureg.numAmpsPerNode / powerOf2(ctrls.size());
+    qindex numBlocks = getNumBlocks(numThreads);
+
+    devicevec sortedCtrls = util_getSorted(ctrls);
+    qindex ctrlStateMask  = util_getBitMask(ctrls, ctrlStates);
+    qindex targMask       = util_getBitMask(targs);
+
+    kernel_statevector_anyCtrlAnyTargZOrPhaseGadget_sub <NumCtrls> <<<numBlocks, NUM_THREADS_PER_BLOCK>>> (
+        toCuQcomps(qureg.gpuAmps), numThreads, qureg.rank, qureg.logNumAmpsPerNode,
+        getPtr(sortedCtrls), ctrls.size(), ctrlStateMask, targMask,
+        toCuQcomp(fac0), toCuQcomp(fac1)
+    );
+
+#else
+    error_gpuSimButGpuNotCompiled();
+#endif
+}
+
+
 INSTANTIATE_FUNC_OPTIMISED_FOR_NUM_CTRLS_AND_TARGS( void, gpu_statevector_anyCtrlPauliTensorOrGadget_subA, (Qureg, vector<int>, vector<int>, vector<int>, qindex, qindex, qcomp, qcomp, qcomp) )
 INSTANTIATE_FUNC_OPTIMISED_FOR_NUM_CTRLS( void, gpu_statevector_anyCtrlPauliTensorOrGadget_subB, (Qureg, vector<int>, vector<int>, qindex, qindex, qindex, qcomp, qcomp, qcomp) )
+INSTANTIATE_FUNC_OPTIMISED_FOR_NUM_CTRLS( void, gpu_statevector_anyCtrlAnyTargZOrPhaseGadget_sub, (Qureg, vector<int>, vector<int>, vector<int>, qcomp, qcomp) )

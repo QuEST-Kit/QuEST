@@ -62,5 +62,10 @@ template <int NumCtrls> void cpu_statevector_anyCtrlPauliTensorOrGadget_subB(
     qindex suffixMaskXY, qindex bufferMaskXY, qindex allMaskYZ, qcomp powI, qcomp fac0, qcomp fac1
 );
 
+template <int NumCtrls> void cpu_statevector_anyCtrlAnyTargZOrPhaseGadget_sub(
+    Qureg qureg, vector<int> ctrls, vector<int> ctrlStates, vector<int> targs, 
+    qcomp fac0, qcomp fac1
+);
+
 
 #endif // CPU_SUBROUTINES_HPP

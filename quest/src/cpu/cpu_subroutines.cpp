@@ -396,11 +396,7 @@ void cpu_statevector_anyCtrlPauliTensorOrGadget_subA(
 
     // each inner iteration modifies 2 amplitudes (may be compile-time sized) 
     qindex numInnerIts = numTargAmps / 2;
-
-
-    // TODO: HMM what if there are too few outer its!!!! Can we just use if()?!
-
-
+    
     #pragma omp parallel for if(qureg.isMultithreaded)
     for (qindex n=0; n<numOuterIts; n++) {
 
@@ -474,5 +470,40 @@ void cpu_statevector_anyCtrlPauliTensorOrGadget_subB(
 }
 
 
+template <int NumCtrls>
+void cpu_statevector_anyCtrlAnyTargZOrPhaseGadget_sub(
+    Qureg qureg, vector<int> ctrls, vector<int> ctrlStates, vector<int> targs, 
+    qcomp fac0, qcomp fac1
+) {
+    assert_numCtrlsMatchesNumCtrlStatesAndTemplateParam(ctrls.size(), ctrlStates.size(), NumCtrls);
+
+    // each control qubit halves the needed iterations, each of which modifies 1 amp
+    qindex numIts = qureg.numAmpsPerNode / powerOf2(ctrls.size());
+
+    qcomp facs[] = {fac0, fac1};
+    auto sortedCtrls   = util_getSorted(ctrls);
+    auto ctrlStateMask = util_getBitMask(ctrls, ctrlStates);
+    auto targMask      = util_getBitMask(targs);
+
+    // use template param to compile-time unroll loop in insertBits()
+    SET_VAR_AT_COMPILE_TIME(int, numCtrlBits, NumCtrls, ctrls.size());
+
+    #pragma omp parallel for if(qureg.isMultithreaded)
+    for (qindex n=0; n<numIts; n++) {
+
+        // i = nth local index where ctrl bits are in specified states
+        qindex i = insertBitsWithMaskedValues(n, sortedCtrls.data(), numCtrlBits, ctrlStateMask);
+
+        // j = global index corresponding to i
+        qindex j = concatenateBits(qureg.rank, i, qureg.numAmpsPerNode);
+
+        // apply phase to amp depending on parity of targets in global index 
+        int p = getBitMaskParity(j & targMask);
+        qureg.cpuAmps[j] *= facs[p];
+    }
+}
+
+
 INSTANTIATE_FUNC_OPTIMISED_FOR_NUM_CTRLS_AND_TARGS( void, cpu_statevector_anyCtrlPauliTensorOrGadget_subA, (Qureg, vector<int>, vector<int>, vector<int>, qindex, qindex, qcomp, qcomp, qcomp) )
 INSTANTIATE_FUNC_OPTIMISED_FOR_NUM_CTRLS( void, cpu_statevector_anyCtrlPauliTensorOrGadget_subB, (Qureg, vector<int>, vector<int>, qindex, qindex, qindex, qcomp, qcomp, qcomp) )
+INSTANTIATE_FUNC_OPTIMISED_FOR_NUM_CTRLS( void, cpu_statevector_anyCtrlAnyTargZOrPhaseGadget_sub, (Qureg, vector<int>, vector<int>, vector<int>, qcomp, qcomp) )

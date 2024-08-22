@@ -124,5 +124,9 @@ void accel_statevector_anyCtrlPauliTensorOrGadget_subB(
     Qureg qureg, vector<int> ctrls, vector<int> ctrlStates,
     qindex suffixMaskXY, qindex bufferMaskXY, qindex allMaskYZ, qcomp powI, qcomp fac0, qcomp fac1);
 
+void accel_statevector_anyCtrlAnyTargZOrPhaseGadget_sub(
+    Qureg qureg, vector<int> ctrls, vector<int> ctrlStates, vector<int> targs,
+    qcomp fac0, qcomp fac1);
+
 
 #endif // ACCELERATOR_HPP

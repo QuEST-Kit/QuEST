@@ -28,6 +28,7 @@ vector<int> util_getVector(int* qubits, int numQubits);
 vector<int> util_getSorted(vector<int> list);
 vector<int> util_getSorted(vector<int> ctrls, vector<int> targs);
 
+qindex util_getBitMask(vector<int> qubits);
 qindex util_getBitMask(vector<int> qubits, vector<int> states);
 qindex util_getBitMask(vector<int> ctrls, vector<int> ctrlStates, vector<int> targs, vector<int> targStates);
 
