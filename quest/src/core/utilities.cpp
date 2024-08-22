@@ -42,6 +42,12 @@ vector<int> util_getSorted(vector<int> ctrls, vector<int> targs) {
     return util_getSorted(qubits);
 }
 
+qindex util_getBitMask(vector<int> qubits) {
+
+    // inserts qubits in state 1
+    return getBitMask(qubits.data(), qubits.size());
+}
+
 qindex util_getBitMask(vector<int> qubits, vector<int> states) {
 
     return getBitMask(qubits.data(), states.data(), states.size());

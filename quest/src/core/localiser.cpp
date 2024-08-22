@@ -348,16 +348,19 @@ void localiser_statevec_anyCtrlOneTargDenseMatr(Qureg qureg, vector<int> ctrls, 
 void localiser_statevec_anyCtrlAnyTargDenseMatr(Qureg qureg, vector<int> ctrls, vector<int> ctrlStates, vector<int> targs, CompMatr matr) {
     assertValidCtrlStates(ctrls, ctrlStates);
     setDefaultCtrlStates(ctrls, ctrlStates);
-    
-    // TODO:
-    //   - the sequence of pair-wise full-swaps should be more efficient as a
-    //     "single" sequence of smaller messages sending amps directly to their
-    //     final destination node. This could use a new "multiSwap" function.
-    //   - if the user has compiled cuQuantum, and Qureg is GPU-accelerated, the
-    //     multiSwap function should use custatevecSwapIndexBits() if local,
-    //     or custatevecDistIndexBitSwapSchedulerSetIndexBitSwaps() if distributed,
-    //     although the latter requires substantially more work like setting up
-    //     a communicator which may be inelegant alongside our own distribution scheme
+
+    // despite our use of compile-time templating, the bespoke one-targ routines are still faster 
+    // than this any-targ routine when given a single target. Callers may however still choose this 
+    // function for its convenient generality, so we divert to the one-targ routine when possible
+    if (targs.size() == 1) {
+
+        // copy the CPU elems (which we assume consistent with GPU elems) from heap to stack
+        CompMatr1 copy = getCompMatr1(matr.cpuElems); // no validation
+
+        // call the bespoke one-targ method and finish
+        localiser_statevec_anyCtrlOneTargDenseMatr(qureg, ctrls, ctrlStates, targs[0], copy);
+        return;
+    }
 
     // node has nothing to do if all local amps violate control condition
     if (!doAnyLocalAmpsSatisfyCtrls(qureg, ctrls, ctrlStates))
@@ -377,6 +380,16 @@ void localiser_statevec_anyCtrlAnyTargDenseMatr(Qureg qureg, vector<int> ctrls, 
 
     // only unmoved ctrls can be applied to the swaps, to accelerate them
     auto [unmovedCtrls, unmovedCtrlStates] = getNonSwappedCtrlsAndStates(newCtrls, ctrlStates, newTargs); 
+
+    // TODO:
+    //   - the sequence of pair-wise full-swaps should be more efficient as a
+    //     "single" sequence of smaller messages sending amps directly to their
+    //     final destination node. This could use a new "multiSwap" function.
+    //   - if the user has compiled cuQuantum, and Qureg is GPU-accelerated, the
+    //     multiSwap function should use custatevecSwapIndexBits() if local,
+    //     or custatevecDistIndexBitSwapSchedulerSetIndexBitSwaps() if distributed,
+    //     although the latter requires substantially more work like setting up
+    //     a communicator which may be inelegant alongside our own distribution scheme
 
     // perform necessary swaps to move all targets into suffix, each of which invokes communication
     for (size_t i=0; i<targs.size(); i++)
@@ -426,11 +439,9 @@ extern vector<int> paulis_getSortedIndsOfNonIdentityPaulis(PauliStr str);
 extern vector<int> paulis_getTargsWithEitherPaulis(vector<int> targs, PauliStr str, int pauliA, int pauliB);
 
 
-void anyCtrlPauliTensorOrGadget(Qureg qureg, vector<int> ctrls, vector<int> ctrlStates, PauliStr str, qcomp fac0, qcomp fac1) {
+void anyCtrlAnyTargZOrPhaseGadget(Qureg qureg, vector<int> ctrls, vector<int> ctrlStates, vector<int> targs, qcomp fac0, qcomp fac1) {
     assertValidCtrlStates(ctrls, ctrlStates);
     setDefaultCtrlStates(ctrls, ctrlStates);
-    if (!paulis_containsXOrY(str))
-        error_localiserGivenPauliTensorOrGadgetWithoutXOrY();
 
     // node has nothing to do if all local amps violate control condition
     if (!doAnyLocalAmpsSatisfyCtrls(qureg, ctrls, ctrlStates))
@@ -439,8 +450,50 @@ void anyCtrlPauliTensorOrGadget(Qureg qureg, vector<int> ctrls, vector<int> ctrl
     // retain only suffix control qubits, as relevant to local amp modification
     std::tie(ctrls, ctrlStates) = getSuffixQubitsAndStates(qureg, ctrls, ctrlStates);
 
+    // operation is diagonal and always embarrasingly parallel, regardless of prefix targs
+    accel_statevector_anyCtrlAnyTargZOrPhaseGadget_sub(qureg, ctrls, ctrlStates, targs, fac0, fac1);
+}
+
+
+void localiser_statevec_anyCtrlAnyTargZ(Qureg qureg, vector<int> ctrls, vector<int> ctrlStates, vector<int> targs) {
+
+    qcomp fac0 = qcomp(+1, 0); // even parity
+    qcomp fac1 = qcomp(-1, 0); // odd parity
+    anyCtrlAnyTargZOrPhaseGadget(qureg, ctrls, ctrlStates, targs, fac0, fac1);
+}
+
+
+void localiser_statevec_anyCtrlPhaseGadget(Qureg qureg, vector<int> ctrls, vector<int> ctrlStates, vector<int> targs, qreal angle) {
+
+    qcomp fac0 = qcomp(cos(angle), +sin(angle)); // exp( i angle)
+    qcomp fac1 = qcomp(cos(angle), -sin(angle)); // exp(-i angle)
+    anyCtrlAnyTargZOrPhaseGadget(qureg, ctrls, ctrlStates, targs, fac0, fac1);
+}
+
+
+void anyCtrlPauliTensorOrGadget(Qureg qureg, vector<int> ctrls, vector<int> ctrlStates, PauliStr str, qcomp fac0, qcomp fac1) {
+    assertValidCtrlStates(ctrls, ctrlStates);
+    setDefaultCtrlStates(ctrls, ctrlStates);
+
     // extract sorted targs as indices of all non-I Paulis, to accelerate subsequent processing
     auto targs = paulis_getSortedIndsOfNonIdentityPaulis(str);
+
+    // despite our dedicated all-Z and phase gadget functions above, users and software stacks may 
+    // end up calling this routine in generality and passing only Z Paulis, which is algorithmically
+    // invalid; so we'll just harmlessly redirect to the all-Z scenario and finish
+    if (paulis_containsXOrY(str)) {
+
+        // repeated valid-ctrls assertion is fine
+        anyCtrlAnyTargZOrPhaseGadget(qureg, ctrls, ctrlStates, targs, fac0, fac1);
+        return;
+    }
+
+    // node has nothing to do if all local amps violate control condition
+    if (!doAnyLocalAmpsSatisfyCtrls(qureg, ctrls, ctrlStates))
+        return;
+
+    // retain only suffix control qubits, as relevant to local amp modification
+    std::tie(ctrls, ctrlStates) = getSuffixQubitsAndStates(qureg, ctrls, ctrlStates);
 
     // readable flags
     const int X=1, Y=2, Z=3;
@@ -485,15 +538,15 @@ void anyCtrlPauliTensorOrGadget(Qureg qureg, vector<int> ctrls, vector<int> ctrl
 
 void localiser_statevec_anyCtrlPauliTensor(Qureg qureg, vector<int> ctrls, vector<int> ctrlStates, PauliStr str) {
 
-    qcomp fac0 = 0;
-    qcomp fac1 = 1;
+    qcomp fac0 = 0; // even parity
+    qcomp fac1 = 1; // odd parity
     anyCtrlPauliTensorOrGadget(qureg, ctrls, ctrlStates, str, fac0, fac1);
 }
 
 
 void localiser_statevec_anyCtrlPauliGadget(Qureg qureg, vector<int> ctrls, vector<int> ctrlStates, PauliStr str, qreal angle) {
 
-    qcomp fac0 = qcomp(cos(angle), 0);
-    qcomp fac1 = qcomp(0, sin(angle));
+    qcomp fac0 = qcomp(cos(angle), 0); // even parity
+    qcomp fac1 = qcomp(0, sin(angle)); // odd parity
     anyCtrlPauliTensorOrGadget(qureg, ctrls, ctrlStates, str, fac0, fac1);
 }

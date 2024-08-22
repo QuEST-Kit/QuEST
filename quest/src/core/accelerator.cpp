@@ -191,3 +191,13 @@ void accel_statevector_anyCtrlPauliTensorOrGadget_subB(
     auto func = GET_CPU_OR_GPU_FUNC_OPTIMISED_FOR_NUM_CTRLS( statevector_anyCtrlPauliTensorOrGadget_subB, qureg, ctrls.size() );
     func(qureg, ctrls, ctrlStates, suffixMaskXY, bufferMaskXY, allMaskYZ, powI, fac0, fac1);
 }
+
+
+void accel_statevector_anyCtrlAnyTargZOrPhaseGadget_sub(
+    Qureg qureg, vector<int> ctrls, vector<int> ctrlStates, vector<int> targs, 
+    qcomp fac0, qcomp fac1
+) {
+    // no template nor compile-time optimisation necessary for the number of targs
+    auto func = GET_CPU_OR_GPU_FUNC_OPTIMISED_FOR_NUM_CTRLS( statevector_anyCtrlAnyTargZOrPhaseGadget_sub, qureg, ctrls.size() );
+    func(qureg, ctrls, ctrlStates, targs, fac0, fac1);
+}
