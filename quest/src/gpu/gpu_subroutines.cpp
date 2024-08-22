@@ -427,9 +427,9 @@ void gpu_statevector_anyCtrlAnyTargZOrPhaseGadget_sub(
     qindex targMask       = util_getBitMask(targs);
 
     kernel_statevector_anyCtrlAnyTargZOrPhaseGadget_sub <NumCtrls> <<<numBlocks, NUM_THREADS_PER_BLOCK>>> (
-        toCuQcomps(querg.gpuAmps), numThreads, qureg.rank, qureg.logNumAmpsPerNode,
+        toCuQcomps(qureg.gpuAmps), numThreads, qureg.rank, qureg.logNumAmpsPerNode,
         getPtr(sortedCtrls), ctrls.size(), ctrlStateMask, targMask,
-        toCuQComp(fac0), toCuQcomp(fac1)
+        toCuQcomp(fac0), toCuQcomp(fac1)
     );
 
 #else

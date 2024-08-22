@@ -385,7 +385,7 @@ __global__ void kernel_statevector_anyCtrlPauliTensorOrGadget_subB(
 
 
 template <int NumCtrls>
-__global__ kernel_statevector_anyCtrlAnyTargZOrPhaseGadget_sub(
+__global__ void kernel_statevector_anyCtrlAnyTargZOrPhaseGadget_sub(
     cu_qcomp* amps, qindex numThreads, int rank, qindex logNumAmpsPerNode,
     int* ctrls, int numCtrls, qindex ctrlStateMask, qindex targMask,
     cu_qcomp fac0, cu_qcomp fac1
@@ -396,14 +396,14 @@ __global__ kernel_statevector_anyCtrlAnyTargZOrPhaseGadget_sub(
     SET_VAR_AT_COMPILE_TIME(int, numCtrlBits, NumCtrls, numCtrls);
 
     // i = nth local index where ctrl bits are in specified states
-    qindex i = insertBitsWithMaskedValues(n, sortedCtrls.data(), numCtrlBits, ctrlStateMask);
+    qindex i = insertBitsWithMaskedValues(n, ctrls, numCtrlBits, ctrlStateMask);
 
     // j = global index corresponding to i
-    qindex j = concatenateBits(qureg.rank, i, qureg.numAmpsPerNode);
+    qindex j = concatenateBits(rank, i, numAmpsPerNode);
 
     // apply phase to amp depending on parity of targets in global index 
     int p = getBitMaskParity(j & targMask);
-    
+
     qcomp facs[] = {fac0, fac1};
     amps[j] *= facs[p];
 }
