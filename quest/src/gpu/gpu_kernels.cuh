@@ -399,12 +399,12 @@ __global__ void kernel_statevector_anyCtrlAnyTargZOrPhaseGadget_sub(
     qindex i = insertBitsWithMaskedValues(n, ctrls, numCtrlBits, ctrlStateMask);
 
     // j = global index corresponding to i
-    qindex j = concatenateBits(rank, i, numAmpsPerNode);
+    qindex j = concatenateBits(rank, i, logNumAmpsPerNode);
 
     // apply phase to amp depending on parity of targets in global index 
     int p = getBitMaskParity(j & targMask);
 
-    qcomp facs[] = {fac0, fac1};
+    cu_qcomp facs[] = {fac0, fac1};
     amps[j] *= facs[p];
 }
 
