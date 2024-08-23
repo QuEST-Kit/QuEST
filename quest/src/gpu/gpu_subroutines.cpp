@@ -614,7 +614,7 @@ void gpu_densmatr_oneQubitPauliChannel_subB(Qureg qureg, int ketQubit, qreal pI,
     int braBit = getBit(qureg.rank, braInd);
     auto [facAA, facBB, facAB, facBA] = util_getOneQubitPauliChannelFactors(pI, pX, pY, pZ);
 
-    kernel_densmatr_oneQubitDepolarising_subB <<<numBlocks, NUM_THREADS_PER_BLOCK>>> (
+    kernel_densmatr_oneQubitPauliChannel_subB <<<numBlocks, NUM_THREADS_PER_BLOCK>>> (
         toCuQcomps(qureg.gpuAmps), &toCuQcomps(qureg.gpuCommBuffer)[recvInd], numThreads, 
         braBit, ketQubit, facAA, facBB, facAB, facBA
     );

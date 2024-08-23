@@ -521,10 +521,10 @@ __global__ void kernel_densmatr_oneQubitPauliChannel_subA(
     qindex i11 = flipBit(i01, braQubit);
 
     // modify 4 amps in 2 separable pairs
-    qcomp amp00 = amps[i00];
-    qcomp amp01 = amps[i01];
-    qcomp amp10 = amps[i10];
-    qcomp amp11 = amps[i11];
+    cu_qcomp amp00 = amps[i00];
+    cu_qcomp amp01 = amps[i01];
+    cu_qcomp amp10 = amps[i10];
+    cu_qcomp amp11 = amps[i11];
 
     amps[i00] = (facAA * amp00) + (facBB * amp11);
     amps[i01] = (facAB * amp01) + (facBA * amp10);
