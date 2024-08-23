@@ -454,7 +454,7 @@ void gpu_densmatr_oneQubitDephasing_subA(Qureg qureg, int ketQubit, qreal prob) 
 
 #if COMPILE_CUQUANTUM
 
-    cuquantum_densmatr_oneQubitDephasing_subA(qureg, qubit, prob);
+    cuquantum_densmatr_oneQubitDephasing_subA(qureg, ketQubit, prob);
 
 #elif COMPILE_CUDA
 
@@ -478,7 +478,7 @@ void gpu_densmatr_oneQubitDephasing_subB(Qureg qureg, int ketQubit, qreal prob) 
 
 #if COMPILE_CUQUANTUM 
 
-    cuquantum_densmatr_oneQubitDephasing_subB(qureg, qubit, prob);
+    cuquantum_densmatr_oneQubitDephasing_subB(qureg, ketQubit, prob);
 
 #elif COMPILE_CUDA
 
