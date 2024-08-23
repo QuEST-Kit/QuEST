@@ -508,5 +508,51 @@ __global__ void kernel_densmatr_oneQubitDepolarising_subB(
 }
 
 
+__global__ void kernel_densmatr_oneQubitPauliChannel_subA(
+    cu_qcomp* amps, qindex numThreads, int braQubit, int ketQubit, 
+    qreal facAA, qreal facBB, qreal facAB, qreal facBA
+) {
+    GET_THREAD_IND(n, numThreads);
+
+    // i00 = nth local index where both qubits are 0
+    qindex i00 = insertTwoBits(n, braQubit, 0, ketQubit, 0);
+    qindex i01 = flipBit(i00, ketQubit);
+    qindex i10 = flipBit(i00, braQubit);
+    qindex i11 = flipBit(i01, braQubit);
+
+    // modify 4 amps in 2 separable pairs
+    qcomp amp00 = amps[i00];
+    qcomp amp01 = amps[i01];
+    qcomp amp10 = amps[i10];
+    qcomp amp11 = amps[i11];
+
+    amps[i00] = (facAA * amp00) + (facBB * amp11);
+    amps[i01] = (facAB * amp01) + (facBA * amp10);
+    amps[i10] = (facAB * amp10) + (facBA * amp01);
+    amps[i11] = (facAA * amp11) + (facBB * amp00);
+}
+
+
+__global__ void kernel_densmatr_oneQubitPauliChannel_subB(
+    cu_qcomp* amps, cu_qcomp* buffer, qindex numThreads, int braBit, int ketQubit, 
+    qreal facAA, qreal facBB, qreal facAB, qreal facBA
+) {
+    GET_THREAD_IND(n, numThreads);
+
+    // iAA = nth local index where ket qubit is the same as bra, i.e. |.A.><.A.|
+    qindex iAA = insertBit(n, ketQubit, braBit);
+
+    // iAB = nth local index where ket qubit is different from bra, i.e. |.A.><.B.|
+    qindex iAB = flipBit(iAA, ketQubit);
+
+    // jBB = buffer index of amp to be mixed with iAA's amp, i.e. |.B.><.B.|
+    qindex jBB = iAB;
+    qindex jBA = iAA;
+
+    // mix each local amp with a received buffer amp, but not each other
+    amps[iAA] = (facAA * amps[iAA]) + (facBB * buffer[jBB]);
+    amps[iAB] = (facAB * amps[iAB]) + (facBA * buffer[jBA]);
+}
+
 
 #endif // GPU_KERNELS_HPP

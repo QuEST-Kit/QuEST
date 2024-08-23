@@ -257,3 +257,17 @@ void accel_densmatr_oneQubitDepolarising_subB(Qureg qureg, int ketQubit, qreal p
 }
 
 
+void accel_densmatr_oneQubitPauliChannel_subA(Qureg qureg, int qubit, qreal pI, qreal pX, qreal pY, qreal pZ) {
+
+    (qureg.isGpuAccelerated)?
+        gpu_densmatr_oneQubitPauliChannel_subA(qureg, qubit, pI, pX, pY, pZ):
+        cpu_densmatr_oneQubitPauliChannel_subA(qureg, qubit, pI, pX, pY, pZ);
+}
+
+
+void accel_densmatr_oneQubitPauliChannel_subB(Qureg qureg, int ketQubit, qreal pI, qreal pX, qreal pY, qreal pZ) {
+
+    (qureg.isGpuAccelerated)?
+        gpu_densmatr_oneQubitPauliChannel_subB(qureg, ketQubit, pI, pX, pY, pZ):
+        cpu_densmatr_oneQubitPauliChannel_subB(qureg, ketQubit, pI, pX, pY, pZ);
+}

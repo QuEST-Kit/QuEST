@@ -81,5 +81,8 @@ void gpu_densmatr_twoQubitDephasing_subB(Qureg qureg, int qubitA, int qubitB, qr
 void gpu_densmatr_oneQubitDepolarising_subA(Qureg qureg, int qubit, qreal prob);
 void gpu_densmatr_oneQubitDepolarising_subB(Qureg qureg, int qubit, qreal prob);
 
+void gpu_densmatr_oneQubitPauliChannel_subA(Qureg qureg, int ketQubit, qreal pI, qreal pX, qreal pY, qreal pZ);
+void gpu_densmatr_oneQubitPauliChannel_subB(Qureg qureg, int ketQubit, qreal pI, qreal pX, qreal pY, qreal pZ);
+
 
 #endif // GPU_SUBROUTINES_HPP

@@ -582,3 +582,44 @@ void gpu_densmatr_oneQubitDepolarising_subB(Qureg qureg, int ketQubit, qreal pro
 }
 
 
+void gpu_densmatr_oneQubitPauliChannel_subA(Qureg qureg, int ketQubit, qreal pI, qreal pX, qreal pY, qreal pZ) {
+
+#if COMPILE_CUDA || COMPILE_CUQUANTUM
+
+    qindex numThreads = qureg.numAmpsPerNode / 4;
+    qindex numBlocks = getNumBlocks(numThreads);
+
+    int braQubit = util_getBraQubit(ketQubit, qureg);
+    auto [facAA, facBB, facAB, facBA] = util_getOneQubitPauliChannelFactors(pI, pX, pY, pZ);
+
+    kernel_densmatr_oneQubitPauliChannel_subA <<<numBlocks, NUM_THREADS_PER_BLOCK>>> (
+        toCuQcomps(qureg.gpuAmps), numThreads, braQubit, ketQubit, facAA, facBB, facAB, facBA
+    );
+
+#else
+    error_gpuSimButGpuNotCompiled();
+#endif
+}
+
+
+void gpu_densmatr_oneQubitPauliChannel_subB(Qureg qureg, int ketQubit, qreal pI, qreal pX, qreal pY, qreal pZ) {
+    
+#if COMPILE_CUDA || COMPILE_CUQUANTUM
+
+    qindex numThreads = qureg.numAmpsPerNode / 2;
+    qindex numBlocks = getNumBlocks(numThreads);
+    qindex recvInd = getBufferRecvInd();
+
+    int braInd = util_getPrefixBraInd(ketQubit, qureg);
+    int braBit = getBit(qureg.rank, braInd);
+    auto [facAA, facBB, facAB, facBA] = util_getOneQubitPauliChannelFactors(pI, pX, pY, pZ);
+
+    kernel_densmatr_oneQubitDepolarising_subB <<<numBlocks, NUM_THREADS_PER_BLOCK>>> (
+        toCuQcomps(qureg.gpuAmps), &toCuQcomps(qureg.gpuCommBuffer)[recvInd], numThreads, 
+        braBit, ketQubit, facAA, facBB, facAB, facBA
+    );
+
+#else
+    error_gpuSimButGpuNotCompiled();
+#endif
+}

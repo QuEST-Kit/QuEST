@@ -308,3 +308,15 @@ array<qreal,3> util_getOneQubitDepolarisingFactors(qreal prob) {
     return {facAA, facBB, facAB};
 }
 
+array<qreal,4> util_getOneQubitPauliChannelFactors(qreal pI, qreal pX, qreal pY, qreal pZ) {
+
+    // effected where braQubit == ketQubit
+    qreal facAA = pI + pZ;
+    qreal facBB = pX + pY;
+
+    // effected where braQubit != ketQubit
+    qreal facAB = pI - pZ;
+    qreal facBA = pX - pY;
+
+    return {facAA, facBB, facAB, facBA};
+}
