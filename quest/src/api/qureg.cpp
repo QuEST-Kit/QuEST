@@ -122,6 +122,7 @@ Qureg validateAndCreateCustomQureg(int numQubits, int isDensMatr, int useDistrib
         // set dimensions per node (even if not distributed)
         .numAmpsPerNode = powerOf2(logNumAmpsPerNode),
         .logNumAmpsPerNode = logNumAmpsPerNode,
+        .logNumColsPerNode = (isDensMatr)? numQubits - logNumNodes : 0, // used only by density matrices
 
         // always allocate CPU memory
         .cpuAmps = cpu_allocAmps(qureg.numAmpsPerNode), // NULL if failed

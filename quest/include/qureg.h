@@ -35,6 +35,7 @@ typedef struct {
     // distributed load
     const qindex numAmpsPerNode;
     const qindex logNumAmpsPerNode;
+    const qindex logNumColsPerNode;
 
     // amplitudes in CPU and GPU memory
     qcomp* cpuAmps;

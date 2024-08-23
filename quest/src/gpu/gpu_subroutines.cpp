@@ -41,6 +41,7 @@
 #include "quest/src/core/accelerator.hpp"
 #include "quest/src/comm/comm_indices.hpp"
 #include "quest/src/gpu/gpu_config.hpp"
+#include "quest/src/gpu/gpu_subroutines.hpp"
 
 #if COMPILE_CUDA
     #include "quest/src/gpu/gpu_types.cuh"
@@ -441,3 +442,97 @@ void gpu_statevector_anyCtrlAnyTargZOrPhaseGadget_sub(
 INSTANTIATE_FUNC_OPTIMISED_FOR_NUM_CTRLS_AND_TARGS( void, gpu_statevector_anyCtrlPauliTensorOrGadget_subA, (Qureg, vector<int>, vector<int>, vector<int>, qindex, qindex, qcomp, qcomp, qcomp) )
 INSTANTIATE_FUNC_OPTIMISED_FOR_NUM_CTRLS( void, gpu_statevector_anyCtrlPauliTensorOrGadget_subB, (Qureg, vector<int>, vector<int>, qindex, qindex, qindex, qcomp, qcomp, qcomp) )
 INSTANTIATE_FUNC_OPTIMISED_FOR_NUM_CTRLS( void, gpu_statevector_anyCtrlAnyTargZOrPhaseGadget_sub, (Qureg, vector<int>, vector<int>, vector<int>, qcomp, qcomp) )
+
+
+
+/*
+ * DECOHERENCE
+ */
+
+
+void gpu_densmatr_oneQubitDephasing_subA(Qureg qureg, int ketQubit, qreal prob) {
+
+#if COMPILE_CUQUANTUM
+
+    cuquantum_densmatr_oneQubitDephasing_subA(qureg, ketQubit, prob);
+
+#elif COMPILE_CUDA
+
+    qindex numThreads = qureg.numAmpsPerNode / 4;
+    qindex numBlocks = getNumBlocks(numThreads);
+
+    cu_qcomp fac = {1 - 2 * prob, 0};
+    int braQubit = ketQubit + qureg.numQubits;
+
+    kernel_densmatr_oneQubitDephasing_subA <<<numBlocks, NUM_THREADS_PER_BLOCK>>> (
+        toCuQcomps(qureg.gpuAmps), numThreads, braQubit, ketQubit, fac
+    );
+
+#else
+    error_gpuSimButGpuNotCompiled();
+#endif
+}
+
+
+void gpu_densmatr_oneQubitDephasing_subB(Qureg qureg, int ketQubit, qreal prob) {
+
+#if COMPILE_CUQUANTUM 
+
+    cuquantum_densmatr_oneQubitDephasing_subB(qureg, ketQubit, prob);
+
+#elif COMPILE_CUDA
+
+    qindex numThreads = qureg.numAmpsPerNode / 2;
+    qindex numBlocks = getNumBlocks(numThreads);
+
+    cu_qcomp fac = {1 - 2 * prob, 0};
+    int braBit = getBit(qureg.rank, ketQubit - qureg.logNumColsPerNode);
+
+    kernel_densmatr_oneQubitDephasing_subB <<<numBlocks, NUM_THREADS_PER_BLOCK>>> (
+        toCuQcomps(qureg.gpuAmps), numThreads, braBit, ketQubit, fac
+    );
+
+#else
+    error_gpuSimButGpuNotCompiled();
+#endif
+}
+
+
+void gpu_densmatr_twoQubitDephasing_subA(Qureg qureg, int ketQubitA, int ketQubitB, qreal prob) {
+
+#if COMPILE_CUQUANTUM
+
+    cuquantum_densmatr_twoQubitDephasing_subA(qureg, ketQubitA, ketQubitB, prob);
+
+#elif COMPILE_CUDA
+
+    // the rank-agnostic version is identical to the subB algorithm below, because the
+    // queried bits of the global index i below will always be in the suffix substate.
+    gpu_densmatr_twoQubitDephasing_subB(qureg, ketQubitA, ketQubitB, prob);
+
+#else
+    error_gpuSimButGpuNotCompiled();
+#endif
+}
+
+
+void gpu_densmatr_twoQubitDephasing_subB(Qureg qureg, int ketQubitA, int ketQubitB, qreal prob) {
+
+#if COMPILE_CUDA || COMPILE_CUQUANTUM 
+
+    qindex numThreads = qureg.numAmpsPerNode;
+    qindex numBlocks = getNumBlocks(numThreads);
+
+    cu_qcomp term = {- 4 * prob / 3, 0};
+    int braQubitA = ketQubitA + qureg.numQubits;
+    int braQubitB = ketQubitB = qureg.numQubits;
+
+    kernel_densmatr_twoQubitDephasing_subB <<<numBlocks, NUM_THREADS_PER_BLOCK>>> (
+        toCuQcomps(qureg.gpuAmps), numThreads, qureg.rank, qureg.logNumAmpsPerNode, // numAmps, not numCols
+        ketQubitA, ketQubitB, braQubitA, braQubitB, term
+    );
+    
+#else
+    error_gpuSimButGpuNotCompiled();
+#endif
+}

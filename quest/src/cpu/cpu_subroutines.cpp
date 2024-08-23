@@ -17,6 +17,7 @@
 #include "quest/src/core/utilities.hpp"
 #include "quest/src/core/accelerator.hpp"
 #include "quest/src/comm/comm_indices.hpp"
+#include "quest/src/cpu/cpu_subroutines.hpp"
 
 #include <vector>
 #include <algorithm>
@@ -507,3 +508,102 @@ void cpu_statevector_anyCtrlAnyTargZOrPhaseGadget_sub(
 INSTANTIATE_FUNC_OPTIMISED_FOR_NUM_CTRLS_AND_TARGS( void, cpu_statevector_anyCtrlPauliTensorOrGadget_subA, (Qureg, vector<int>, vector<int>, vector<int>, qindex, qindex, qcomp, qcomp, qcomp) )
 INSTANTIATE_FUNC_OPTIMISED_FOR_NUM_CTRLS( void, cpu_statevector_anyCtrlPauliTensorOrGadget_subB, (Qureg, vector<int>, vector<int>, qindex, qindex, qindex, qcomp, qcomp, qcomp) )
 INSTANTIATE_FUNC_OPTIMISED_FOR_NUM_CTRLS( void, cpu_statevector_anyCtrlAnyTargZOrPhaseGadget_sub, (Qureg, vector<int>, vector<int>, vector<int>, qcomp, qcomp) )
+
+
+
+/*
+ * DECOHERENCE
+ */
+
+
+void cpu_densmatr_oneQubitDephasing_subA(Qureg qureg, int ketQubit, qreal prob) {
+
+    // half of all local amps are scaled, and each iteration modifies two
+    qindex numIts = qureg.numAmpsPerNode / 4;
+
+    // loop constants
+    qreal fac = 1 - 2*prob;
+    int braQubit = ketQubit + qureg.numQubits;
+
+    // TODO:
+    // this enumeration order is suboptimal and seems unnecessary in this simple two
+    // bit scenario, where we are modifying but not at all mixing two strided and
+    // potentially very-distant amplitudes. It is of course trivial to split this
+    // into two separate loops accessing monotonically increasing indices, although
+    // we then pay double the caching costs when ketQubit is low-index. We can also
+    // turn it into two nested loops to force monotonically increasing index access,
+    // but then the parallelisation is not optimal when ketQubit is high-index. Experiment
+    // with what's fastest and replace below or delete this comment!
+
+    #pragma omp parallel for if(qureg.isMultithreaded)
+    for (qindex n=0; n<numIts; n++) {
+
+        // i01 = nth local index of |*0*><*1*|
+        qindex i01 = insertTwoBits(n, braQubit, 0, ketQubit, 1);
+        qindex i10 = insertTwoBits(n, braQubit, 1, ketQubit, 0);
+
+        qureg.cpuAmps[i01] *= fac;
+        qureg.cpuAmps[i10] *= fac;
+    }
+}
+
+
+void cpu_densmatr_oneQubitDephasing_subB(Qureg qureg, int ketQubit, qreal prob) {
+
+    // half of all local amps are scaled
+    qindex numIts = qureg.numAmpsPerNode / 2;
+    
+    // loop constants
+    qreal fac = 1 - 2*prob;
+    int braBit = getBit(qureg.rank, ketQubit - qureg.logNumColsPerNode);
+    
+    #pragma omp parallel for if(qureg.isMultithreaded)
+    for (qindex n=0; n<numIts; n++) {
+
+        // i = nth local index where bra-qubit differs from ket-qubit
+        qindex i = insertBit(n, ketQubit, ! braBit);
+
+        qureg.cpuAmps[i] *= fac;
+    }
+}
+
+
+void cpu_densmatr_twoQubitDephasing_subA(Qureg qureg, int qubitA, int qubitB, qreal prob) {
+
+    // TODO: 
+    // test whether use of subB has identical performance, or whether changing i=n below
+    // non-negligibly accelerates the routine; if so, make a templated inner func.
+
+    // the rank-agnostic version is identical to the subB algorithm below, because the
+    // queried bits of the global index i below will always be in the suffix substate.
+    // We still define separate _subA and _subB routines because they differ in cuQuantum.
+    cpu_densmatr_twoQubitDephasing_subB(qureg, qubitA, qubitB, prob);
+}
+
+
+void cpu_densmatr_twoQubitDephasing_subB(Qureg qureg, int ketQubitA, int ketQubitB, qreal prob) {
+
+    // 75% of amps are updated, but we just enumerate all for simplicity
+    qindex numIts = qureg.numAmpsPerNode;
+
+    // loop constants
+    qreal term = - 4 * prob / 3;
+    int braQubitA = ketQubitA + qureg.numQubits;
+    int braQubitB = ketQubitB = qureg.numQubits;
+
+    #pragma omp parallel for if(qureg.isMultithreaded)
+    for (qindex n=0; n<numIts; n++) {
+
+        // i = global index of nth local amp
+        qindex i = concatenateBits(qureg.rank, n, qureg.logNumAmpsPerNode);
+
+        int bitA = getBit(i, ketQubitA) ^ getBit(i, braQubitA);
+        int bitB = getBit(i, ketQubitB) ^ getBit(i, braQubitB);
+
+        // determine whether or not to modify this amplitude...
+        int flag = bitA | bitB;
+
+        // by multiplying by 1 or (1 + term)
+        qureg.cpuAmps[n] *= 1 + (flag * term);
+    }
+}

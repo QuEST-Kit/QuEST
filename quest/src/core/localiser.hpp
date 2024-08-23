@@ -53,4 +53,13 @@ void localiser_statevec_anyCtrlAnyTargZ(Qureg qureg, vector<int> ctrls, vector<i
 void localiser_statevec_anyCtrlPhaseGadget(Qureg qureg, vector<int> ctrls, vector<int> ctrlStates, vector<int> targs, qreal angle);
 
 
+/*
+ * DECOHERENCE
+ */
+
+void localiser_densmatr_oneQubitDephasing(Qureg qureg, int qubit, qreal prob);
+
+void localiser_densmatr_twoQubitDephasing(Qureg qureg, int qubitA, int qubitB, qreal prob);
+
+
 #endif // LOCALISER_HPP
