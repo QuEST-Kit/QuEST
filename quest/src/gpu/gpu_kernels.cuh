@@ -466,7 +466,7 @@ __global__ void kernel_densmatr_twoQubitDephasing_subB(
     int flag = bitA | bitB;
 
     // by multiplying by 1 or (1 + term)
-    amps[n] *= 1 + (term * flag);
+    amps[n] *= (term * flag) + 1.;
 }
 
 
