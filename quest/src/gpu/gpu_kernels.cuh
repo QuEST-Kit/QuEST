@@ -483,7 +483,7 @@ __global__ void kernel_densmatr_oneQubitDepolarising_subA(
     qindex i11 = flipBit(i01, braQubit);
 
     // modify 4 amps, mixing a pair, and scaling the other
-    qcomp amp00 = amps[i00];
+    cu_qcomp amp00 = amps[i00];
     amps[i00] = (facAA * amp00) + (facBB * amps[i11]);
     amps[i01] *= facAB;
     amps[i10] *= facAB;
