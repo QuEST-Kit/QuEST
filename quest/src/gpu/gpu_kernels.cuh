@@ -450,7 +450,7 @@ __global__ void kernel_densmatr_oneQubitDephasing_subB(cu_qcomp* amps, qindex nu
 // there is no bespoke kernel_densmatr_twoQubitDephasing_subA(), since _subB() is directly callable
 
 
-void kernel_densmatr_twoQubitDephasing_subB(
+__global__ void kernel_densmatr_twoQubitDephasing_subB(
     cu_qcomp* amps, qindex numThreads, int rank, qindex logNumAmpsPerNode, // numAmps, not numCols
     int ketQubitA, int ketQubitB, int braQubitA, int braQubitB, cu_qcomp term
 ) {
@@ -466,7 +466,7 @@ void kernel_densmatr_twoQubitDephasing_subB(
     int flag = bitA | bitB;
 
     // by multiplying by 1 or (1 + term)
-    amps[n] *= 1 + (flag * term);
+    amps[n] *= 1 + (term * flag);
 }
 
 
