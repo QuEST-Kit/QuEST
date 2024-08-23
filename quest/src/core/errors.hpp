@@ -83,6 +83,8 @@ void error_localiserNumCtrlStatesInconsistentWithNumCtrls();
 
 void error_localiserGivenPauliTensorOrGadgetWithoutXOrY();
 
+void error_localiserPassedStateVecToChannelComCheck();
+
 
 
 /*
@@ -167,7 +169,13 @@ void error_cuQuantumInitOrFinalizedButNotCompiled();
 
 void error_nodeUnexpectedlyContainedNoElems();
 
-void assert_shiftedQuregIsDensMatr(Qureg qureg);
+void error_utilsGetBraIndGivenNonDensMatr();
+
+void error_utilsGetPrefixIndGivenSuffixQubit();
+
+void error_utilsGetPrefixBraIndGivenNonDensMatr();
+
+void error_utilsGetPrefixBraIndGivenSuffixQubit();
 
 
 

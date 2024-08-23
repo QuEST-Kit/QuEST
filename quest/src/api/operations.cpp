@@ -23,7 +23,7 @@ void unitary(Qureg qureg, int target, CompMatr1 matrix) {
 
     localiser_statevec_anyCtrlOneTargDenseMatr(qureg, {}, {}, target, matrix);
     if (qureg.isDensityMatrix)
-        localiser_statevec_anyCtrlOneTargDenseMatr(qureg, {}, {}, util_getShifted(target, qureg), util_getConj(matrix));
+        localiser_statevec_anyCtrlOneTargDenseMatr(qureg, {}, {}, util_getBraQubit(target, qureg), util_getConj(matrix));
 }
 
 

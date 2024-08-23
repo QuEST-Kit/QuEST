@@ -173,6 +173,11 @@ void error_localiserGivenPauliTensorOrGadgetWithoutXOrY() {
     raiseInternalError("The localiser was asked to simulate a Pauli tensor or gadget which contained no X or Y Paulis, which is a special case reserved for phase gadgets.");
 }
 
+void error_localiserPassedStateVecToChannelComCheck() {
+
+    raiseInternalError("The localiser queried whether a channel would invoke communication upon a statevector.");
+}
+
 
 
 /*
@@ -348,11 +353,26 @@ void error_nodeUnexpectedlyContainedNoElems() {
     raiseInternalError("A function queried which distributed elements within a specified range overlapped the node's stored elements, but the node contained no overlap. This situation should have been prior handled."); 
 }
 
-void assert_shiftedQuregIsDensMatr(Qureg qureg) {
-    if (!qureg.isDensityMatrix)
-        raiseInternalError("A function attempted to obtain the shifted Choi indices of a state-vector, as if it were a density matrix.");
+void error_utilsGetBraIndGivenNonDensMatr() {
+
+    raiseInternalError("A function attempted to obtain the index of a bra-qubit of a state-vector, as if it were a density matrix.");
 }
 
+void error_utilsGetPrefixIndGivenSuffixQubit() {
+
+    raiseInternalError("A function passed a suffix qubit to a utilities function expecting a prefix qubit.");
+}
+
+void error_utilsGetPrefixBraIndGivenNonDensMatr() {
+
+    raiseInternalError("A function attempted to obtain the prefix index of a bra-qubit of a state-vector, as if it were a density matrix.");
+
+}
+
+void error_utilsGetPrefixBraIndGivenSuffixQubit() {
+
+    raiseInternalError("A function attmpted to obtain the prefix index of a bra-qubit, but passed a suffix qubit.");
+}
 
 
 /*

@@ -12,16 +12,24 @@
 #include <type_traits>
 #include <string>
 #include <vector>
+#include <array>
 
 using std::is_same_v;
 using std::vector;
+using std::array;
+
 
 
 /*
  * QUBIT PROCESSING
  */
 
-int util_getShifted(int qubit, Qureg qureg);
+int util_getBraQubit(int ketQubit, Qureg qureg);
+
+int util_getPrefixInd(int qubit, Qureg qureg);
+int util_getPrefixBraInd(int ketQubit, Qureg qureg);
+
+vector<int> util_getBraQubits(vector<int> ketQubits, Qureg qureg);
 
 vector<int> util_getVector(int* qubits, int numQubits);
 
@@ -190,6 +198,17 @@ typedef struct {
 bool util_areAnyElemsWithinThisNode(int numElemsPerNode, qindex startInd, qindex numInds);
 
 util_IndexRange util_getLocalIndRangeOfElemsWithinThisNode(int numElemsPerNode, qindex elemStartInd, qindex numInds);
+
+
+
+/*
+ * OPERATOR PARAMETERS
+ */
+
+qreal util_getOneQubitDephasingFactor(qreal prob);
+qreal util_getTwoQubitDephasingTerm(qreal prob);
+
+array<qreal,3> util_getOneQubitDepolarisingFactors(qreal prob);
 
 
 

@@ -15,8 +15,10 @@
 #include <algorithm>
 #include <complex>
 #include <vector>
+#include <array>
 
 using std::vector;
+using std::array;
 
 
 
@@ -24,10 +26,39 @@ using std::vector;
  * QUBIT PROCESSING
  */
 
-int util_getShifted(int qubit, Qureg qureg) {
-    assert_shiftedQuregIsDensMatr(qureg);
+int util_getPrefixInd(int qubit, Qureg qureg) {
+    if (qubit < qureg.logNumAmpsPerNode)
+        error_utilsGetPrefixIndGivenSuffixQubit();
+
+    return qubit - qureg.logNumAmpsPerNode;
+}
+
+int util_getBraQubit(int ketQubit, Qureg qureg) {
+    if (!qureg.isDensityMatrix)
+        error_utilsGetBraIndGivenNonDensMatr();
+
+    return ketQubit + qureg.numQubits;
+}
+
+int util_getPrefixBraInd(int ketQubit, Qureg qureg) {
+    if (!qureg.isDensityMatrix)
+        error_utilsGetPrefixBraIndGivenNonDensMatr();
+    if (ketQubit < qureg.logNumColsPerNode)
+        error_utilsGetPrefixBraIndGivenSuffixQubit();
     
-    return qubit + qureg.numQubits;
+    // equivalent to util_getPrefixInd of util_getBraQubit
+    return ketQubit - qureg.logNumColsPerNode;
+}
+
+vector<int> util_getBraQubits(vector<int> ketQubits, Qureg qureg) {
+
+    vector<int> braInds(0);
+    braInds.reserve(ketQubits.size());
+
+    for (int qubit : ketQubits)
+        braInds.push_back(util_getBraQubit(qubit, qureg));
+
+    return braInds;
 }
 
 vector<int> util_getSorted(vector<int> qubits) {
@@ -248,3 +279,32 @@ util_IndexRange util_getLocalIndRangeOfElemsWithinThisNode(int numElemsPerNode, 
         .numElems = numLocalElems
     };
 }
+
+
+
+/*
+ * OPERATOR PARAMETERS
+ */
+
+qreal util_getOneQubitDephasingFactor(qreal prob) {
+
+    return 1 - (2 * prob);
+}
+
+qreal util_getTwoQubitDephasingTerm(qreal prob) {
+
+    return - 4 * prob / 3;
+}
+
+array<qreal,3> util_getOneQubitDepolarisingFactors(qreal prob) {
+
+    // effected where braQubit == ketQubit
+    qreal facAA = 1 - (2 * prob / 3);
+    qreal facBB = 2 * prob / 3;
+
+    // effected where braQubit != ketQubit
+    qreal facAB  = 1 - (4 * prob / 3);
+
+    return {facAA, facBB, facAB};
+}
+
