@@ -415,7 +415,7 @@ __global__ void kernel_statevector_anyCtrlAnyTargZOrPhaseGadget_sub(
  */
 
 
-__global__ void kernel_densmatr_oneQubitDephasing_subA(cu_qcomp* amps, qindex numThreads, int braQubit, int ketQubit, cu_qcomp fac) {
+__global__ void kernel_densmatr_oneQubitDephasing_subA(cu_qcomp* amps, qindex numThreads, int braQubit, int ketQubit, qreal fac) {
 
     GET_THREAD_IND(n, numThreads);
 
@@ -433,7 +433,7 @@ __global__ void kernel_densmatr_oneQubitDephasing_subA(cu_qcomp* amps, qindex nu
 }
 
 
-__global__ void kernel_densmatr_oneQubitDephasing_subB(cu_qcomp* amps, qindex numThreads, int braBit, int ketQubit, cu_qcomp fac) {
+__global__ void kernel_densmatr_oneQubitDephasing_subB(cu_qcomp* amps, qindex numThreads, int braBit, int ketQubit, qreal fac) {
 
     GET_THREAD_IND(n, numThreads);
 
@@ -452,7 +452,7 @@ __global__ void kernel_densmatr_oneQubitDephasing_subB(cu_qcomp* amps, qindex nu
 
 __global__ void kernel_densmatr_twoQubitDephasing_subB(
     cu_qcomp* amps, qindex numThreads, int rank, qindex logNumAmpsPerNode, // numAmps, not numCols
-    int ketQubitA, int ketQubitB, int braQubitA, int braQubitB, cu_qcomp term
+    int ketQubitA, int ketQubitB, int braQubitA, int braQubitB, qreal term
 ) {
     GET_THREAD_IND(n, numThreads);
 
@@ -466,7 +466,45 @@ __global__ void kernel_densmatr_twoQubitDephasing_subB(
     int flag = bitA | bitB;
 
     // by multiplying by 1 or (1 + term)
-    amps[n] *= (term * flag) + 1.;
+    amps[n] *= (term * flag) + 1;
+}
+
+
+__global__ void kernel_densmatr_oneQubitDepolarising_subA(
+    cu_qcomp* amps, qindex numThreads, int braQubit, int ketQubit, 
+    qreal facAA, qreal facBB, qreal facAB
+) {
+    GET_THREAD_IND(n, numThreads);
+
+    // i00 = nth local index where both qubits are 0
+    qindex i00 = insertTwoBits(n, braQubit, 0, ketQubit, 0);
+    qindex i01 = flipBit(i00, ketQubit);
+    qindex i10 = flipBit(i00, braQubit);
+    qindex i11 = flipBit(i01, braQubit);
+
+    // modify 4 amps, mixing a pair, and scaling the other
+    qcomp amp00 = amps[i00];
+    amps[i00] = (facAA * amp00) + (facBB * amps[i11]);
+    amps[i01] *= facAB;
+    amps[i10] *= facAB;
+    amps[i11] = (facAA * amps[i11]) + (facBB * amp00);
+}
+
+
+__global__ void kernel_densmatr_oneQubitDepolarising_subB(
+    cu_qcomp* amps, cu_qcomp* buffer, qindex numThreads, int braBit, int ketQubit, 
+    qreal facAA, qreal facBB, qreal facAB
+) {
+    GET_THREAD_IND(n, numThreads);
+
+    // iAA = nth local index where ket qubit agrees with bra qubit
+    qindex iAA = insertBit(n, ketQubit, braBit);
+    amps[iAA] *= facAA;
+    amps[iAA] += facBB * buffer[n];
+
+    // iAB = nth local index where ket qubit disagrees with bra qubit
+    qindex iAB = insertBit(n, ketQubit, ! braBit);
+    amps[iAB] *= facAB;
 }
 
 

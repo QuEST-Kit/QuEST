@@ -239,3 +239,21 @@ void accel_densmatr_twoQubitDephasing_subB(Qureg qureg, int qubitA, int qubitB, 
         gpu_densmatr_twoQubitDephasing_subB(qureg, qubitA, qubitB, prob):
         cpu_densmatr_twoQubitDephasing_subB(qureg, qubitA, qubitB, prob);
 }
+
+
+void accel_densmatr_oneQubitDepolarising_subA(Qureg qureg, int qubit, qreal prob) {
+
+    (qureg.isGpuAccelerated)?
+        gpu_densmatr_oneQubitDepolarising_subA(qureg, qubit, prob):
+        cpu_densmatr_oneQubitDepolarising_subA(qureg, qubit, prob);
+}
+
+
+void accel_densmatr_oneQubitDepolarising_subB(Qureg qureg, int ketQubit, qreal prob) {
+
+    (qureg.isGpuAccelerated)?
+        gpu_densmatr_oneQubitDepolarising_subB(qureg, ketQubit, prob):
+        cpu_densmatr_oneQubitDepolarising_subB(qureg, ketQubit, prob);
+}
+
+

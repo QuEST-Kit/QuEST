@@ -78,5 +78,8 @@ void cpu_densmatr_oneQubitDephasing_subB(Qureg qureg, int qubit, qreal prob);
 void cpu_densmatr_twoQubitDephasing_subA(Qureg qureg, int qubitA, int qubitB, qreal prob);
 void cpu_densmatr_twoQubitDephasing_subB(Qureg qureg, int qubitA, int qubitB, qreal prob);
 
+void cpu_densmatr_oneQubitDepolarising_subA(Qureg qureg, int ketQubit, qreal prob);
+void cpu_densmatr_oneQubitDepolarising_subB(Qureg qureg, int ketQubit, qreal prob);
+
 
 #endif // CPU_SUBROUTINES_HPP

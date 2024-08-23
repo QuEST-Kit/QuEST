@@ -132,6 +132,19 @@ INLINE void operator *= (cu_qcomp& a, const cu_qcomp& b) {
 }
 
 
+INLINE void operator += (cu_qcomp& a, const qreal& b) {
+    a = a + b;
+}
+
+INLINE void operator -= (cu_qcomp& a, const qreal& b) {
+    a = a - b;
+}
+
+INLINE void operator *= (cu_qcomp& a, const qreal& b) {
+    a = a * b;
+}
+
+
 
 /*
  * CASTS BETWEEN qcomp AND cu_qcomp

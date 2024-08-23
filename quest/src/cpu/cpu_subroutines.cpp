@@ -522,8 +522,8 @@ void cpu_densmatr_oneQubitDephasing_subA(Qureg qureg, int ketQubit, qreal prob) 
     qindex numIts = qureg.numAmpsPerNode / 4;
 
     // loop constants
-    qreal fac = 1 - 2*prob;
-    int braQubit = ketQubit + qureg.numQubits;
+    qreal fac = util_getOneQubitDephasingFactor(prob);
+    int braQubit = util_getBraQubit(ketQubit, qureg);
 
     // TODO:
     // this enumeration order is suboptimal and seems unnecessary in this simple two
@@ -554,8 +554,9 @@ void cpu_densmatr_oneQubitDephasing_subB(Qureg qureg, int ketQubit, qreal prob) 
     qindex numIts = qureg.numAmpsPerNode / 2;
     
     // loop constants
-    qreal fac = 1 - 2*prob;
-    int braBit = getBit(qureg.rank, ketQubit - qureg.logNumColsPerNode);
+    qreal fac = util_getOneQubitDephasingFactor(prob);
+    int braInd = util_getPrefixBraInd(ketQubit, qureg);
+    int braBit = getBit(qureg.rank, braInd);
     
     #pragma omp parallel for if(qureg.isMultithreaded)
     for (qindex n=0; n<numIts; n++) {
@@ -587,9 +588,10 @@ void cpu_densmatr_twoQubitDephasing_subB(Qureg qureg, int ketQubitA, int ketQubi
     qindex numIts = qureg.numAmpsPerNode;
 
     // loop constants
-    qreal term = - 4 * prob / 3;
-    int braQubitA = ketQubitA + qureg.numQubits;
-    int braQubitB = ketQubitB = qureg.numQubits;
+    qreal term = util_getTwoQubitDephasingTerm(prob);
+
+    int braQubitA = util_getBraQubit(ketQubitA, qureg);
+    int braQubitB = util_getBraQubit(ketQubitB, qureg);
 
     #pragma omp parallel for if(qureg.isMultithreaded)
     for (qindex n=0; n<numIts; n++) {
@@ -607,3 +609,72 @@ void cpu_densmatr_twoQubitDephasing_subB(Qureg qureg, int ketQubitA, int ketQubi
         qureg.cpuAmps[n] *= 1 + (flag * term);
     }
 }
+
+
+void cpu_densmatr_oneQubitDepolarising_subA(Qureg qureg, int ketQubit, qreal prob) {
+
+    // all amps are modified, and each iteration modifies 4
+    qindex numIts = qureg.numAmpsPerNode / 4;
+
+    // for brevity
+    qcomp* amps = qureg.cpuAmps;
+
+    int braQubit = util_getBraQubit(ketQubit, qureg);
+    auto [facAA, facBB, facAB] = util_getOneQubitDepolarisingFactors(prob);
+
+    #pragma omp parallel for if(qureg.isMultithreaded)
+    for (qindex n=0; n<numIts; n++) {
+
+        // i00 = nth local index where both qubits are 0
+        qindex i00 = insertTwoBits(n, braQubit, 0, ketQubit, 0);
+        qindex i01 = flipBit(i00, ketQubit);
+        qindex i10 = flipBit(i00, braQubit);
+        qindex i11 = flipBit(i01, braQubit);
+
+        // modify 4 amps, mixing a pair, and scaling the other
+        qcomp amp00 = amps[i00];
+        amps[i00] = (facAA * amp00) + (facBB * amps[i11]);
+        amps[i01] *= facAB;
+        amps[i10] *= facAB;
+        amps[i11] = (facAA * amps[i11]) + (facBB * amp00);
+    }
+}
+
+
+void cpu_densmatr_oneQubitDepolarising_subB(Qureg qureg, int ketQubit, qreal prob) {
+
+    // all amps are modified, and each iteration modifies 2
+    qindex numIts = qureg.numAmpsPerNode / 2;
+
+    // received amplitudes may begin at an arbitrary offset in the buffer
+    qindex offset = getBufferRecvInd();
+
+    int braInd = util_getPrefixBraInd(ketQubit, qureg);
+    int braBit = getBit(qureg.rank, braInd);
+    auto [facAA, facBB, facAB] = util_getOneQubitDepolarisingFactors(prob);
+
+    // TODO:
+    // each iteration below modifies 2 independent amps without mixing,
+    // which we can trivially split into two loops which may improve
+    // per-iteration caching performance; test if this outweights the 
+    // cost of re-iteration
+
+    #pragma omp parallel for if(qureg.isMultithreaded)
+    for (qindex n=0; n<numIts; n++) {
+
+        // iAA = nth local index where ket qubit agrees with bra qubit
+        qindex iAA = insertBit(n, ketQubit, braBit);
+
+        // jBB = buffer index of amp iAA where ket and bra qubits are flipped
+        qindex jBB = n + offset;
+
+        // iAB = nth local index where ket qubit disagrees with bra qubit
+        qindex iAB = insertBit(n, ketQubit, ! braBit);
+
+        qureg.cpuAmps[iAA] *= facAA;
+        qureg.cpuAmps[iAA] += facBB * qureg.cpuCommBuffer[jBB];
+        qureg.cpuAmps[iAB] *= facAB;
+    }
+}
+
+
