@@ -75,6 +75,10 @@ int* getPtr(devicevec qubits) {
  */
 
 
+// TODO:
+// clean this up with templates!
+
+
 INLINE cu_qcomp operator + (const cu_qcomp& a, const cu_qcomp& b) {
     return (cu_qcomp) {
         .x = a.x + b.x,
@@ -103,6 +107,12 @@ INLINE cu_qcomp operator + (const cu_qcomp& a, const qreal& b) {
         .y = a.y + b
     };
 }
+INLINE cu_qcomp operator + (const qreal& b, const cu_qcomp& a) {
+    return (cu_qcomp) {
+        .x = a.x + b,
+        .y = a.y + b
+    };
+}
 
 INLINE cu_qcomp operator - (const cu_qcomp& a, const qreal& b) {
     return (cu_qcomp) {
@@ -110,8 +120,20 @@ INLINE cu_qcomp operator - (const cu_qcomp& a, const qreal& b) {
         .y = a.y - b
     };
 }
+INLINE cu_qcomp operator - (const qreal& b, const cu_qcomp& a) {
+    return (cu_qcomp) {
+        .x = a.x - b,
+        .y = a.y - b
+    };
+}
 
 INLINE cu_qcomp operator * (const cu_qcomp& a, const qreal& b) {
+    return (cu_qcomp) {
+        .x = a.x * b,
+        .y = a.y * b
+    };
+}
+INLINE cu_qcomp operator * (const qreal& b, const cu_qcomp& a) {
     return (cu_qcomp) {
         .x = a.x * b,
         .y = a.y * b
