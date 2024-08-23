@@ -459,8 +459,8 @@ __global__ void kernel_densmatr_twoQubitDephasing_subB(
     // i = global index of nth local amp
     qindex i = concatenateBits(rank, n, logNumAmpsPerNode);
 
-    int bitA = getBit(i, qubitA) ^ getBit(i, braQubitA);
-    int bitB = getBit(i, qubitB) ^ getBit(i, braQubitB);
+    int bitA = getBit(i, ketQubitA) ^ getBit(i, braQubitA);
+    int bitB = getBit(i, ketQubitB) ^ getBit(i, braQubitB);
 
     // determine whether or not to modify this amplitude...
     int flag = bitA | bitB;
