@@ -201,3 +201,41 @@ void accel_statevector_anyCtrlAnyTargZOrPhaseGadget_sub(
     auto func = GET_CPU_OR_GPU_FUNC_OPTIMISED_FOR_NUM_CTRLS( statevector_anyCtrlAnyTargZOrPhaseGadget_sub, qureg, ctrls.size() );
     func(qureg, ctrls, ctrlStates, targs, fac0, fac1);
 }
+
+
+
+/*
+ * DECOHERENCE
+ */
+
+
+void accel_densmatr_oneQubitDephasing_subA(Qureg qureg, int qubit, qreal prob) {
+
+    (qureg.isGpuAccelerated)?
+        gpu_densmatr_oneQubitDephasing_subA(qureg, qubit, prob):
+        cpu_densmatr_oneQubitDephasing_subA(qureg, qubit, prob);
+}
+
+
+void accel_densmatr_oneQubitDephasing_subB(Qureg qureg, int qubit, qreal prob) {
+
+    (qureg.isGpuAccelerated)?
+        gpu_densmatr_oneQubitDephasing_subB(qureg, qubit, prob):
+        cpu_densmatr_oneQubitDephasing_subB(qureg, qubit, prob);
+}
+
+
+void accel_densmatr_twoQubitDephasing_subA(Qureg qureg, int qubitA, int qubitB, qreal prob) {
+
+    (qureg.isGpuAccelerated)?
+        gpu_densmatr_twoQubitDephasing_subA(qureg, qubitA, qubitB, prob):
+        cpu_densmatr_twoQubitDephasing_subA(qureg, qubitA, qubitB, prob);
+}
+
+
+void accel_densmatr_twoQubitDephasing_subB(Qureg qureg, int qubitA, int qubitB, qreal prob) {
+
+    (qureg.isGpuAccelerated)?
+        gpu_densmatr_twoQubitDephasing_subB(qureg, qubitA, qubitB, prob):
+        cpu_densmatr_twoQubitDephasing_subB(qureg, qubitA, qubitB, prob);
+}

@@ -68,4 +68,15 @@ template <int NumCtrls> void cpu_statevector_anyCtrlAnyTargZOrPhaseGadget_sub(
 );
 
 
+/*
+ * DECOHERENCE
+ */
+
+void cpu_densmatr_oneQubitDephasing_subA(Qureg qureg, int qubit, qreal prob);
+void cpu_densmatr_oneQubitDephasing_subB(Qureg qureg, int qubit, qreal prob);
+
+void cpu_densmatr_twoQubitDephasing_subA(Qureg qureg, int qubitA, int qubitB, qreal prob);
+void cpu_densmatr_twoQubitDephasing_subB(Qureg qureg, int qubitA, int qubitB, qreal prob);
+
+
 #endif // CPU_SUBROUTINES_HPP

@@ -85,7 +85,7 @@ INLINE qindex concatenateBits(qindex prefix, qindex suffix, int numBitsInSuffix)
 INLINE int getBitMaskParity(qindex mask) {
     
     // this compiler extension may not be defined on all platforms
-    return __builtin_parity(mask);
+    return __builtin_parityll(mask); // ll-suffix for 64 bit
 }
 
 

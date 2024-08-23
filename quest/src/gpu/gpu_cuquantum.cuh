@@ -148,7 +148,7 @@ void gpu_finalizeCuQuantum() {
 
 
 /*
- * PUBLIC CUQUANTUM WRAPPERS
+ * MATRICES
  */
 
 
@@ -168,7 +168,13 @@ void cuquantum_statevec_anyCtrlSwap_subA(Qureg qureg, vector<int> ctrls, vector<
 }
 
 
+// there is no bespoke cuquantum_statevec_anyCtrlSwap_subB()
+
+
 void cuquantum_statevec_anyCtrlAnyTargDenseMatrix_subA(Qureg qureg, vector<int> ctrls, vector<int> ctrlStates, vector<int> targs, cu_qcomp* flatMatrElems) {
+
+    // this funciton is called 'subA' instead of just 'sub', because it is also called in 
+    // the one-target case whereby it is strictly the embarrassingly parallel _subA scenario
 
     // do not adjoint matrix
     int adj = 0;
@@ -186,6 +192,9 @@ void cuquantum_statevec_anyCtrlAnyTargDenseMatrix_subA(Qureg qureg, vector<int> 
         CUSTATEVEC_COMPUTE_DEFAULT,
         work, workSize) );
 }
+
+
+// there is no bespoke cuquantum_statevec_anyCtrlAnyTargDenseMatrix_subB()
 
 
 void cuquantum_statevec_anyCtrlAnyTargDiagMatr_sub(Qureg qureg, vector<int> ctrls, vector<int> ctrlStates, vector<int> targs, cu_qcomp* flatMatrElems) {
@@ -208,6 +217,61 @@ void cuquantum_statevec_anyCtrlAnyTargDiagMatr_sub(Qureg qureg, vector<int> ctrl
         ctrls.data(), ctrlStates.data(), ctrls.size(),
         work, workSize) );
 }
+
+
+
+/*
+ * DECOHERENCE
+ */
+
+
+void cuquantum_densmatr_oneQubitDephasing_subA(Qureg qureg, int qubit, qreal prob) {
+
+    // effect the superoperator as a two-qubit diagonal upon a statevector suffix state
+    cu_qcomp a = {1,        0};
+    cu_qcomp b = {1-2*prob, 0};
+    cu_qcomp elems[] = {a, b, b, a};
+    vector<int> targs {qubit, qubit + qureg.numQubits};
+
+    cuquantum_statevec_anyCtrlAnyTargDiagMatr_sub(qureg, {}, {}, targs, elems);
+}
+
+
+void cuquantum_densmatr_oneQubitDephasing_subB(Qureg qureg, int ketQubit, qreal prob) {
+
+    // we need to merely scale every amp where ketQubit differs from braBit, which is
+    // equivalent to a state-controlled global phase upon a statevector, which is 
+    // itself a same-element one-qubit diagonal applied to any target
+    int braBit = getBit(qureg.rank, ketQubit - qureg.logNumColsPerNode);
+    cu_qcomp fac = {1 - 2*prob, 0};
+    cu_qcomp elems[] = {fac, fac};
+
+    // we choose to target the largest possible qubit, expecting best cuStateVec performance
+    int targ = qureg.numQubits * 2 - 1; // leftmost bra qubit
+
+    cuquantum_statevec_anyCtrlAnyTargDiagMatr_sub(qureg, {ketQubit}, {!braBit}, {targ}, elems);
+}
+
+
+void cuquantum_densmatr_twoQubitDephasing_subA(Qureg qureg, int qubitA, int qubitB, qreal prob) {
+
+    // TODO:
+    // only 75% of the amps are changed, each of which is multiplied by the same scalar,
+    // but our below method multiplies all amps with 16 separate scalars - can we accel?
+    // we are applying a prefactor b to all states except where the ket & bra qubits
+    // are the same, i.e. we skip |00><00|, |01><01|, |10><10|, |11><11|
+
+    // effect the superoperator as a four-qubit diagonal upon a statevector suffix state
+    cu_qcomp a = {1,          0};
+    cu_qcomp b = {1-4*prob/3, 0};
+    cu_qcomp elems[] = {a,b,b,b, b,a,b,b, b,b,a,b, b,b,b,a};
+    vector<int> targs {qubitA, qubitB, qubitA + qureg.numQubits, qubitB + qureg.numQubits};
+
+    cuquantum_statevec_anyCtrlAnyTargDiagMatr_sub(qureg, {}, {}, targs, elems);
+}
+
+
+// there is no bespoke cuquantum_densmatr_twoQubitDephasing_subB()
 
 
 

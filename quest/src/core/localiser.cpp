@@ -550,3 +550,27 @@ void localiser_statevec_anyCtrlPauliGadget(Qureg qureg, vector<int> ctrls, vecto
     qcomp fac1 = qcomp(0, sin(angle)); // odd parity
     anyCtrlPauliTensorOrGadget(qureg, ctrls, ctrlStates, str, fac0, fac1);
 }
+
+
+
+/*
+ * DECOHERENCE
+ */
+
+
+void localiser_densmatr_oneQubitDephasing(Qureg qureg, int qubit, qreal prob) {
+
+    // always embarrassingly parallel, but the first method is rank-agnostic (so has a bespoke cuQuantum method)
+    (qubit < qureg.logNumColsPerNode)?
+        accel_densmatr_oneQubitDephasing_subA(qureg, qubit, prob):
+        accel_densmatr_oneQubitDephasing_subB(qureg, qubit, prob);
+}
+
+
+void localiser_densmatr_twoQubitDephasing(Qureg qureg, int qubitA, int qubitB, qreal prob) {
+
+    // always embarrassingly parallel, but the first method is rank-agnostic (so has a bespoke cuQuantum method)
+    (std::max(qubitA,qubitB) < qureg.logNumColsPerNode)?
+        accel_densmatr_twoQubitDephasing_subA(qureg, qubitA, qubitB, prob):
+        accel_densmatr_twoQubitDephasing_subB(qureg, qubitA, qubitB, prob);
+}

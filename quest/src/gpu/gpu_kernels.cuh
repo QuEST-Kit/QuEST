@@ -410,4 +410,65 @@ __global__ void kernel_statevector_anyCtrlAnyTargZOrPhaseGadget_sub(
 
 
 
+/*
+ * DECOHERENCE
+ */
+
+
+__global__ void kernel_densmatr_oneQubitDephasing_subA(cu_qcomp* amps, qindex numThreads, int braQubit, int ketQubit, cu_qcomp fac) {
+
+    GET_THREAD_IND(n, numThreads);
+
+    // TODO:
+    // each kernel modifies two amps strided by 2^qureg.numQubits, which is terrible!
+    // we can easy template this kernel to modify only 1 thread-local amp, and invoke
+    // two kernels at launch. Benchmark this and update
+
+    // i01 = nth local index of |*0*><*1*|
+    qindex i01 = insertTwoBits(n, braQubit, 0, ketQubit, 1);
+    qindex i10 = insertTwoBits(n, braQubit, 1, ketQubit, 0);
+
+    amps[i01] *= fac;
+    amps[i10] *= fac;
+}
+
+
+__global__ void kernel_densmatr_oneQubitDephasing_subB(cu_qcomp* amps, qindex numThreads, int braBit, int ketQubit, cu_qcomp fac) {
+
+    GET_THREAD_IND(n, numThreads);
+
+    // TODO:
+    // we're just modifying every 2*2^(ketQubit)-th element; turn
+    // this into a trivial thrust call (to reduce boilerplate)
+
+    // i = nth local index where bra-qubit differs from ket-qubit
+    qindex i = insertBit(n, ketQubit, ! braBit);
+    amps[i] *= fac;
+}
+
+
+// there is no bespoke kernel_densmatr_twoQubitDephasing_subA(), since _subB() is directly callable
+
+
+void kernel_densmatr_twoQubitDephasing_subB(
+    cu_qcomp* amps, qindex numThreads, int rank, qindex logNumAmpsPerNode, // numAmps, not numCols
+    int ketQubitA, int ketQubitB, int braQubitA, int braQubitB, cu_qcomp term
+) {
+    GET_THREAD_IND(n, numThreads);
+
+    // i = global index of nth local amp
+    qindex i = concatenateBits(rank, n, logNumAmpsPerNode);
+
+    int bitA = getBit(i, qubitA) ^ getBit(i, braQubitA);
+    int bitB = getBit(i, qubitB) ^ getBit(i, braQubitB);
+
+    // determine whether or not to modify this amplitude...
+    int flag = bitA | bitB;
+
+    // by multiplying by 1 or (1 + term)
+    amps[n] *= 1 + (flag * term);
+}
+
+
+
 #endif // GPU_KERNELS_HPP
