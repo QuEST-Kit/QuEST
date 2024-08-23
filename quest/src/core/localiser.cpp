@@ -608,3 +608,21 @@ void localiser_densmatr_oneQubitDepolarising(Qureg qureg, int ketQubit, qreal pr
     // use received sub-buffer to update local amps
     accel_densmatr_oneQubitDepolarising_subB(qureg, ketQubit, prob);
 }
+void localiser_densmatr_oneQubitPauliChannel(Qureg qureg, int ketQubit, qreal pI, qreal pX, qreal pY, qreal pZ) {
+
+    // if embarrassingly parallel, simulate and finish
+    if (!doesChannelRequireComm(qureg, ketQubit)) {
+        accel_densmatr_oneQubitPauliChannel_subA(qureg, ketQubit, pI, pX, pY, pZ);
+        return;
+    }
+
+    // otherwise, exchange all amps with pair node
+    int braInd = util_getPrefixBraInd(ketQubit, qureg);
+    int pairRank = flipBit(qureg.rank, braInd);
+    comm_exchangeAmpsToBuffers(qureg, pairRank);
+
+    // use received buffer to update local amps
+    accel_densmatr_oneQubitPauliChannel_subB(qureg, ketQubit, pI, pX, pY, pZ);
+}
+
+

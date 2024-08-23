@@ -678,3 +678,80 @@ void cpu_densmatr_oneQubitDepolarising_subB(Qureg qureg, int ketQubit, qreal pro
 }
 
 
+void cpu_densmatr_oneQubitPauliChannel_subA(Qureg qureg, int ketQubit, qreal pI, qreal pX, qreal pY, qreal pZ) {
+
+    // all amps are modified, and each iteration modifies 4
+    qindex numIts = qureg.numAmpsPerNode / 4;
+
+    int braQubit = util_getBraQubit(ketQubit, qureg);
+    auto [facAA, facBB, facAB, facBA] = util_getOneQubitPauliChannelFactors(pI, pX, pY, pZ);
+
+    // for brevity
+    qcomp* amps = qureg.cpuAmps;
+
+    // TODO:
+    // each iteration modifies 4 amps in two separable mixed pairs, which may
+    // lead to sub-optimal caching. Iterating twice and modifying a single pair
+    // might lead to better performance, though note the stride from i00 to i11
+    // will always be adverserially large. Test this!
+
+    #pragma omp parallel for if(qureg.isMultithreaded)
+    for (qindex n=0; n<numIts; n++) {
+
+        // i00 = nth local index where both qubits are 0
+        qindex i00 = insertTwoBits(n, braQubit, 0, ketQubit, 0);
+        qindex i01 = flipBit(i00, ketQubit);
+        qindex i10 = flipBit(i00, braQubit);
+        qindex i11 = flipBit(i01, braQubit);
+
+        // modify 4 amps in 2 separable pairs
+        qcomp amp00 = amps[i00];
+        qcomp amp01 = amps[i01];
+        qcomp amp10 = amps[i10];
+        qcomp amp11 = amps[i11];
+
+        amps[i00] = (facAA * amp00) + (facBB * amp11);
+        amps[i01] = (facAB * amp01) + (facBA * amp10);
+        amps[i10] = (facAB * amp10) + (facBA * amp01);
+        amps[i11] = (facAA * amp11) + (facBB * amp00);
+    }
+}
+
+
+void cpu_densmatr_oneQubitPauliChannel_subB(Qureg qureg, int ketQubit, qreal pI, qreal pX, qreal pY, qreal pZ) {
+
+    // all amps are modified, and each iteration modifies 2
+    qindex numIts = qureg.numAmpsPerNode / 2;
+
+    // received amplitudes may begin at an arbitrary offset in the buffer
+    qindex offset = getBufferRecvInd();
+
+    int braInd = util_getPrefixBraInd(ketQubit, qureg);
+    int braBit = getBit(qureg.rank, braInd);
+    auto [facAA, facBB, facAB, facBA] = util_getOneQubitPauliChannelFactors(pI, pX, pY, pZ);
+
+    // TODO:
+    // each iteration below modifies 2 independent amps without mixing,
+    // which we can trivially split into two loops which may improve
+    // per-iteration caching performance; test if this outweights the 
+    // cost of re-iteration
+
+    #pragma omp parallel for if(qureg.isMultithreaded)
+    for (qindex n=0; n<numIts; n++) {
+
+        // iAA = nth local index where ket qubit agrees with bra, i.e. |.A.><.A.|
+        qindex iAA = insertBit(n, ketQubit, braBit);
+        qindex iAB = flipBit(iAA, ketQubit);
+
+        // jBB = buffer index of amp to be mixed with iAA's amp, i.e. |.B.><.B.|
+        qindex jBB = iAB + offset;
+        qindex jBA = iAA + offset;
+
+        // mix each local amp with a received buffer amp
+        qureg.cpuAmps[iAA] *= facAA;
+        qureg.cpuAmps[iAA] += facBB * qureg.cpuCommBuffer[jBB];
+
+        qureg.cpuAmps[iAB] *= facAB;
+        qureg.cpuAmps[iAB] += facBA * qureg.cpuCommBuffer[jBA];
+    }
+}
