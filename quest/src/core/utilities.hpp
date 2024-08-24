@@ -24,10 +24,19 @@ using std::array;
  * QUBIT PROCESSING
  */
 
+bool util_isQubitInSuffix(int qubit, Qureg qureg);
+bool util_isBraQubitInSuffix(int ketQubit, Qureg qureg);
+
 int util_getBraQubit(int ketQubit, Qureg qureg);
 
 int util_getPrefixInd(int qubit, Qureg qureg);
 int util_getPrefixBraInd(int ketQubit, Qureg qureg);
+
+int util_getRankBitOfQubit(int ketQubit, Qureg qureg);
+int util_getRankBitOfBraQubit(int ketQubit, Qureg qureg);
+
+int util_getRankWithQubitFlipped(int ketQubit, Qureg qureg);
+int util_getRankWithBraQubitFlipped(int ketQubit, Qureg qureg);
 
 vector<int> util_getBraQubits(vector<int> ketQubits, Qureg qureg);
 

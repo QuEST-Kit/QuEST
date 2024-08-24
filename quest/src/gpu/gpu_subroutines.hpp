@@ -19,7 +19,7 @@ using std::vector;
  * COMMUNICATION BUFFER PACKING
  */
 
-template <int NumQubits> void gpu_statevec_packAmpsIntoBuffer(Qureg qureg, vector<int> qubits, vector<int> qubitStates);
+template <int NumQubits> qindex gpu_statevec_packAmpsIntoBuffer(Qureg qureg, vector<int> qubits, vector<int> qubitStates);
 
 
 /*

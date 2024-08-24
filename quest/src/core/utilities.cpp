@@ -50,6 +50,46 @@ int util_getPrefixBraInd(int ketQubit, Qureg qureg) {
     return ketQubit - qureg.logNumColsPerNode;
 }
 
+bool util_isQubitInSuffix(int qubit, Qureg qureg) {
+
+    return qubit < qureg.logNumAmpsPerNode;
+}
+
+bool util_isBraQubitInSuffix(int ketQubit, Qureg qureg) {
+    if (!qureg.isDensityMatrix)
+        error_utilsIsBraQubitInSuffixGivenNonDensMatr();
+
+    return ketQubit < qureg.logNumColsPerNode;
+}
+
+int util_getRankBitOfQubit(int ketQubit, Qureg qureg) {
+
+    int rankInd = util_getPrefixInd(ketQubit, qureg);
+    int rankBit = getBit(qureg.rank, rankInd);
+    return rankBit;
+}
+
+int util_getRankBitOfBraQubit(int ketQubit, Qureg qureg) {
+    
+    int rankInd = util_getPrefixBraInd(ketQubit, qureg);
+    int rankBit = getBit(qureg.rank, rankInd);
+    return rankBit;
+}
+
+int util_getRankWithQubitFlipped(int ketQubit, Qureg qureg) {
+
+    int rankInd = util_getPrefixInd(ketQubit, qureg);
+    int rankFlip = flipBit(qureg.rank, rankInd);
+    return rankFlip;
+}
+
+int util_getRankWithBraQubitFlipped(int ketQubit, Qureg qureg) {
+
+    int rankInd = util_getPrefixBraInd(ketQubit, qureg);
+    int rankFlip = flipBit(qureg.rank, rankInd);
+    return rankFlip;
+}
+
 vector<int> util_getBraQubits(vector<int> ketQubits, Qureg qureg) {
 
     vector<int> braInds(0);

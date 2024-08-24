@@ -65,7 +65,7 @@ using std::vector;
 
 
 template <int NumQubits>
-void gpu_statevec_packAmpsIntoBuffer(Qureg qureg, vector<int> qubits, vector<int> qubitStates) {
+qindex gpu_statevec_packAmpsIntoBuffer(Qureg qureg, vector<int> qubits, vector<int> qubitStates) {
 
     assert_numQubitsMatchesQubitStatesAndTemplateParam(qubits.size(), qubitStates.size(), NumQubits);
 
@@ -83,13 +83,17 @@ void gpu_statevec_packAmpsIntoBuffer(Qureg qureg, vector<int> qubits, vector<int
         getPtr(sortedQubits), qubits.size(), qubitStateMask
     );
 
+    // return the number of packed amps
+    return numThreads;
+
 #else
     error_gpuSimButGpuNotCompiled();
+    return 0;
 #endif
 }
 
 
-INSTANTIATE_FUNC_OPTIMISED_FOR_NUM_CTRLS( void, gpu_statevec_packAmpsIntoBuffer, (Qureg, vector<int>, vector<int>) )
+INSTANTIATE_FUNC_OPTIMISED_FOR_NUM_CTRLS( qindex, gpu_statevec_packAmpsIntoBuffer, (Qureg, vector<int>, vector<int>) )
 
 
 
@@ -446,7 +450,7 @@ INSTANTIATE_FUNC_OPTIMISED_FOR_NUM_CTRLS( void, gpu_statevector_anyCtrlAnyTargZO
 
 
 /*
- * DECOHERENCE
+ * ONE-QUBIT DEPHASING
  */
 
 
@@ -465,7 +469,7 @@ void gpu_densmatr_oneQubitDephasing_subA(Qureg qureg, int ketQubit, qreal prob) 
     int braQubit = util_getBraQubit(ketQubit, qureg);
 
     kernel_densmatr_oneQubitDephasing_subA <<<numBlocks, NUM_THREADS_PER_BLOCK>>> (
-        toCuQcomps(qureg.gpuAmps), numThreads, braQubit, ketQubit, fac
+        toCuQcomps(qureg.gpuAmps), numThreads, ketQubit, braQubit, fac
     );
 
 #else
@@ -486,17 +490,22 @@ void gpu_densmatr_oneQubitDephasing_subB(Qureg qureg, int ketQubit, qreal prob) 
     qindex numBlocks = getNumBlocks(numThreads);
 
     qreal fac = util_getOneQubitDephasingFactor(prob);
-    int braInd = util_getPrefixBraInd(ketQubit, qureg);
-    int braBit = getBit(qureg.rank, braInd);
+    int braBit = util_getRankBitOfBraQubit(ketQubit, qureg);
 
     kernel_densmatr_oneQubitDephasing_subB <<<numBlocks, NUM_THREADS_PER_BLOCK>>> (
-        toCuQcomps(qureg.gpuAmps), numThreads, braBit, ketQubit, fac
+        toCuQcomps(qureg.gpuAmps), numThreads, ketQubit, braBit, fac
     );
 
 #else
     error_gpuSimButGpuNotCompiled();
 #endif
 }
+
+
+
+/*
+ * TWO-QUBIT DEPHASING
+ */
 
 
 void gpu_densmatr_twoQubitDephasing_subA(Qureg qureg, int ketQubitA, int ketQubitB, qreal prob) {
@@ -539,6 +548,12 @@ void gpu_densmatr_twoQubitDephasing_subB(Qureg qureg, int ketQubitA, int ketQubi
 }
 
 
+
+/*
+ * ONE-QUBIT DEPOLARISING
+ */
+
+
 void gpu_densmatr_oneQubitDepolarising_subA(Qureg qureg, int ketQubit, qreal prob) {
 
 #if COMPILE_CUDA || COMPILE_CUQUANTUM
@@ -550,7 +565,7 @@ void gpu_densmatr_oneQubitDepolarising_subA(Qureg qureg, int ketQubit, qreal pro
     auto [facAA, facBB, facAB] = util_getOneQubitDepolarisingFactors(prob);
 
     kernel_densmatr_oneQubitDepolarising_subA <<<numBlocks, NUM_THREADS_PER_BLOCK>>> (
-        toCuQcomps(qureg.gpuAmps), numThreads, braQubit, ketQubit, facAA, facBB, facAB
+        toCuQcomps(qureg.gpuAmps), numThreads, ketQubit, braQubit, facAA, facBB, facAB
     );
 
 #else
@@ -567,19 +582,23 @@ void gpu_densmatr_oneQubitDepolarising_subB(Qureg qureg, int ketQubit, qreal pro
     qindex numBlocks = getNumBlocks(numThreads);
     qindex recvInd = getBufferRecvInd();
 
-    int braInd = util_getPrefixBraInd(ketQubit, qureg);
-    int braBit = getBit(qureg.rank, braInd);
+    int braBit = util_getRankBitOfBraQubit(ketQubit, qureg);
     auto [facAA, facBB, facAB] = util_getOneQubitDepolarisingFactors(prob);
 
     kernel_densmatr_oneQubitDepolarising_subB <<<numBlocks, NUM_THREADS_PER_BLOCK>>> (
         toCuQcomps(qureg.gpuAmps), &toCuQcomps(qureg.gpuCommBuffer)[recvInd], numThreads, 
-        braBit, ketQubit, facAA, facBB, facAB
+        ketQubit, braBit, facAA, facBB, facAB
     );
 
 #else
     error_gpuSimButGpuNotCompiled();
 #endif
 }
+
+
+/*
+ * PAULI CHANNEL
+ */
 
 
 void gpu_densmatr_oneQubitPauliChannel_subA(Qureg qureg, int ketQubit, qreal pI, qreal pX, qreal pY, qreal pZ) {
@@ -593,7 +612,7 @@ void gpu_densmatr_oneQubitPauliChannel_subA(Qureg qureg, int ketQubit, qreal pI,
     auto [facAA, facBB, facAB, facBA] = util_getOneQubitPauliChannelFactors(pI, pX, pY, pZ);
 
     kernel_densmatr_oneQubitPauliChannel_subA <<<numBlocks, NUM_THREADS_PER_BLOCK>>> (
-        toCuQcomps(qureg.gpuAmps), numThreads, braQubit, ketQubit, facAA, facBB, facAB, facBA
+        toCuQcomps(qureg.gpuAmps), numThreads, ketQubit, braQubit, facAA, facBB, facAB, facBA
     );
 
 #else
@@ -610,13 +629,12 @@ void gpu_densmatr_oneQubitPauliChannel_subB(Qureg qureg, int ketQubit, qreal pI,
     qindex numBlocks = getNumBlocks(numThreads);
     qindex recvInd = getBufferRecvInd();
 
-    int braInd = util_getPrefixBraInd(ketQubit, qureg);
-    int braBit = getBit(qureg.rank, braInd);
+    int braBit = util_getRankBitOfBraQubit(ketQubit, qureg);
     auto [facAA, facBB, facAB, facBA] = util_getOneQubitPauliChannelFactors(pI, pX, pY, pZ);
 
     kernel_densmatr_oneQubitPauliChannel_subB <<<numBlocks, NUM_THREADS_PER_BLOCK>>> (
         toCuQcomps(qureg.gpuAmps), &toCuQcomps(qureg.gpuCommBuffer)[recvInd], numThreads, 
-        braBit, ketQubit, facAA, facBB, facAB, facBA
+        ketQubit, braBit, facAA, facBB, facAB, facBA
     );
 
 #else

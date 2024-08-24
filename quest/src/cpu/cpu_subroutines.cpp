@@ -19,9 +19,12 @@
 #include "quest/src/comm/comm_indices.hpp"
 #include "quest/src/cpu/cpu_subroutines.hpp"
 
+#include <tuple>
 #include <vector>
 #include <algorithm>
 
+using std::tie;
+using std::ignore;
 using std::vector;
 
 
@@ -32,7 +35,7 @@ using std::vector;
 
 
 template <int NumQubits>
-void cpu_statevec_packAmpsIntoBuffer(Qureg qureg, vector<int> qubitInds, vector<int> qubitStates) {
+qindex cpu_statevec_packAmpsIntoBuffer(Qureg qureg, vector<int> qubitInds, vector<int> qubitStates) {
 
     assert_numQubitsMatchesQubitStatesAndTemplateParam(qubitInds.size(), qubitStates.size(), NumQubits);
 
@@ -57,10 +60,13 @@ void cpu_statevec_packAmpsIntoBuffer(Qureg qureg, vector<int> qubitInds, vector<
         // pack the potentially-strided amplitudes into a contiguous sub-buffer
         qureg.cpuCommBuffer[offset + n] = qureg.cpuAmps[i];
     }
+
+    // return the number of packed amps
+    return numIts;
 }
 
 
-INSTANTIATE_FUNC_OPTIMISED_FOR_NUM_CTRLS( void, cpu_statevec_packAmpsIntoBuffer, (Qureg, vector<int>, vector<int>) )
+INSTANTIATE_FUNC_OPTIMISED_FOR_NUM_CTRLS( qindex, cpu_statevec_packAmpsIntoBuffer, (Qureg, vector<int>, vector<int>) )
 
 
 
@@ -512,7 +518,7 @@ INSTANTIATE_FUNC_OPTIMISED_FOR_NUM_CTRLS( void, cpu_statevector_anyCtrlAnyTargZO
 
 
 /*
- * DECOHERENCE
+ * ONE-QUBIT DEPHASING
  */
 
 
@@ -555,8 +561,7 @@ void cpu_densmatr_oneQubitDephasing_subB(Qureg qureg, int ketQubit, qreal prob) 
     
     // loop constants
     qreal fac = util_getOneQubitDephasingFactor(prob);
-    int braInd = util_getPrefixBraInd(ketQubit, qureg);
-    int braBit = getBit(qureg.rank, braInd);
+    int braBit = util_getRankBitOfBraQubit(ketQubit, qureg);
     
     #pragma omp parallel for if(qureg.isMultithreaded)
     for (qindex n=0; n<numIts; n++) {
@@ -567,6 +572,13 @@ void cpu_densmatr_oneQubitDephasing_subB(Qureg qureg, int ketQubit, qreal prob) 
         qureg.cpuAmps[i] *= fac;
     }
 }
+
+
+
+/*
+ * TWO-QUBIT DEPHASING
+ */
+
 
 
 void cpu_densmatr_twoQubitDephasing_subA(Qureg qureg, int qubitA, int qubitB, qreal prob) {
@@ -611,6 +623,12 @@ void cpu_densmatr_twoQubitDephasing_subB(Qureg qureg, int ketQubitA, int ketQubi
 }
 
 
+
+/*
+ * ONE-QUBIT DEPOLARISING
+ */
+
+
 void cpu_densmatr_oneQubitDepolarising_subA(Qureg qureg, int ketQubit, qreal prob) {
 
     // all amps are modified, and each iteration modifies 4
@@ -649,8 +667,7 @@ void cpu_densmatr_oneQubitDepolarising_subB(Qureg qureg, int ketQubit, qreal pro
     // received amplitudes may begin at an arbitrary offset in the buffer
     qindex offset = getBufferRecvInd();
 
-    int braInd = util_getPrefixBraInd(ketQubit, qureg);
-    int braBit = getBit(qureg.rank, braInd);
+    int braBit = util_getRankBitOfBraQubit(ketQubit, qureg);
     auto [facAA, facBB, facAB] = util_getOneQubitDepolarisingFactors(prob);
 
     // TODO:
@@ -676,6 +693,12 @@ void cpu_densmatr_oneQubitDepolarising_subB(Qureg qureg, int ketQubit, qreal pro
         qureg.cpuAmps[iAB] *= facAB;
     }
 }
+
+
+
+/*
+ * PAULI CHANNEL
+ */
 
 
 void cpu_densmatr_oneQubitPauliChannel_subA(Qureg qureg, int ketQubit, qreal pI, qreal pX, qreal pY, qreal pZ) {
