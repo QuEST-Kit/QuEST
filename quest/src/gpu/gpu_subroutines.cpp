@@ -639,7 +639,7 @@ void gpu_densmatr_twoQubitDepolarising_subA(Qureg qureg, int ketQb1, int ketQb2,
 
     int braQb1 = util_getBraQubit(ketQb1, qureg);
     int braQb2 = util_getBraQubit(ketQb2, qureg);
-    qreal c3; tie(ignore, ignore, c3) = util_getTwoQubitDepolarisingFactors(prob);
+    qreal c3 = util_getTwoQubitDepolarisingFactors(prob)[2];
 
     kernel_densmatr_twoQubitDepolarising_subA <<<numBlocks, NUM_THREADS_PER_BLOCK>>> (
         toCuQcomps(qureg.gpuAmps), numThreads,
@@ -661,7 +661,7 @@ void gpu_densmatr_twoQubitDepolarising_subB(Qureg qureg, int ketQb1, int ketQb2,
 
     int braQb1 = util_getBraQubit(ketQb1, qureg);
     int braQb2 = util_getBraQubit(ketQb2, qureg);
-    qreal c1, c2; tie(c1, c2, ignore) = util_getTwoQubitDepolarisingFactors(prob);
+    auto [c1, c2] = util_getFirstTwoFactorsOfTwoQubitDepolarising(prob);
 
     kernel_densmatr_twoQubitDepolarising_subB <<<numBlocks, NUM_THREADS_PER_BLOCK>>> (
         toCuQcomps(qureg.gpuAmps), numThreads,
@@ -683,7 +683,7 @@ void gpu_densmatr_twoQubitDepolarising_subC(Qureg qureg, int ketQb1, int ketQb2,
 
     int braQb1 = util_getBraQubit(ketQb1, qureg);
     int braBit2 = util_getRankBitOfBraQubit(ketQb2, qureg);
-    qreal c3; tie(ignore, ignore, c3) = util_getTwoQubitDepolarisingFactors(prob);
+    qreal c3 = util_getTwoQubitDepolarisingFactors(prob)[2];
 
     kernel_densmatr_twoQubitDepolarising_subC <<<numBlocks, NUM_THREADS_PER_BLOCK>>> (
         toCuQcomps(qureg.gpuAmps), numThreads,
@@ -706,7 +706,7 @@ void gpu_densmatr_twoQubitDepolarising_subD(Qureg qureg, int ketQb1, int ketQb2,
 
     int braQb1 = util_getBraQubit(ketQb1, qureg);
     int braBit2 = util_getRankBitOfBraQubit(ketQb2, qureg);
-    qreal c1, c2; tie(c1, c2, ignore) = util_getTwoQubitDepolarisingFactors(prob);
+    auto [c1, c2] = util_getFirstTwoFactorsOfTwoQubitDepolarising(prob);
 
     kernel_densmatr_twoQubitDepolarising_subD <<<numBlocks, NUM_THREADS_PER_BLOCK>>> (
         toCuQcomps(qureg.gpuAmps), &toCuQcomps(qureg.gpuCommBuffer)[offset], numThreads,
@@ -728,8 +728,7 @@ void gpu_densmatr_twoQubitDepolarising_subE(Qureg qureg, int ketQb1, int ketQb2,
 
     int braBit1 = util_getRankBitOfBraQubit(ketQb1, qureg);
     int braBit2 = util_getRankBitOfBraQubit(ketQb2, qureg);
-    qreal c3; tie(ignore, ignore, c3) = util_getTwoQubitDepolarisingFactors(prob);
-
+    qreal c3 = util_getTwoQubitDepolarisingFactors(prob)[2];
 
     kernel_densmatr_twoQubitDepolarising_subE <<<numBlocks, NUM_THREADS_PER_BLOCK>>> (
         toCuQcomps(qureg.gpuAmps), numThreads,
@@ -752,7 +751,7 @@ void gpu_densmatr_twoQubitDepolarising_subF(Qureg qureg, int ketQb1, int ketQb2,
 
     int braBit1 = util_getRankBitOfBraQubit(ketQb1, qureg);
     int braBit2 = util_getRankBitOfBraQubit(ketQb2, qureg);
-    qreal c1, c2; tie(c1, c2, ignore) = util_getTwoQubitDepolarisingFactors(prob);
+    auto [c1, c2] = util_getFirstTwoFactorsOfTwoQubitDepolarising(prob);
 
     kernel_densmatr_twoQubitDepolarising_subF <<<numBlocks, NUM_THREADS_PER_BLOCK>>> (
         toCuQcomps(qureg.gpuAmps), &toCuQcomps(qureg.gpuCommBuffer)[offset], numThreads,
@@ -775,7 +774,7 @@ void gpu_densmatr_twoQubitDepolarising_subG(Qureg qureg, int ketQb1, int ketQb2,
 
     int braBit1 = util_getRankBitOfBraQubit(ketQb1, qureg);
     int braBit2 = util_getRankBitOfBraQubit(ketQb2, qureg);
-    qreal c1, c2; tie(c1, c2, ignore) = util_getTwoQubitDepolarisingFactors(prob);
+    auto [c1, c2] = util_getFirstTwoFactorsOfTwoQubitDepolarising(prob);
 
     kernel_densmatr_twoQubitDepolarising_subG <<<numBlocks, NUM_THREADS_PER_BLOCK>>> (
         toCuQcomps(qureg.gpuAmps), &toCuQcomps(qureg.gpuCommBuffer)[offset], numThreads,

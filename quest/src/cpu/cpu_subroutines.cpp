@@ -736,7 +736,7 @@ void cpu_densmatr_twoQubitDepolarising_subA(Qureg qureg, int ketQb1, int ketQb2,
     int braQb1 = util_getBraQubit(ketQb1, qureg);
     int braQb2 = util_getBraQubit(ketQb2, qureg);
 
-    qreal c3; tie(ignore, ignore, c3) = util_getTwoQubitDepolarisingFactors(prob);
+    qreal c3 = util_getTwoQubitDepolarisingFactors(prob)[2];
 
     #pragma omp parallel for if(qureg.isMultithreaded)
     for (qindex n=0; n<numIts; n++) {
@@ -761,7 +761,7 @@ void cpu_densmatr_twoQubitDepolarising_subB(Qureg qureg, int ketQb1, int ketQb2,
     int braQb1 = util_getBraQubit(ketQb1, qureg);
     int braQb2 = util_getBraQubit(ketQb2, qureg);
 
-    qreal c1, c2; tie(c1, c2, ignore) = util_getTwoQubitDepolarisingFactors(prob);
+    auto [c1, c2] = util_getFirstTwoFactorsOfTwoQubitDepolarising(prob);
 
     // for brevity
     qcomp* amps = qureg.cpuAmps;
@@ -794,7 +794,7 @@ void cpu_densmatr_twoQubitDepolarising_subC(Qureg qureg, int ketQb1, int ketQb2,
     int braQb1 = util_getBraQubit(ketQb1, qureg);
     int braBit2 = util_getRankBitOfBraQubit(ketQb2, qureg);
 
-    qreal c3; tie(ignore, ignore, c3) = util_getTwoQubitDepolarisingFactors(prob);
+    qreal c3 = util_getTwoQubitDepolarisingFactors(prob)[2];
 
     // TODO:
     // are we really inefficiently enumerating all amps and applying a non-unity
@@ -827,7 +827,7 @@ void cpu_densmatr_twoQubitDepolarising_subD(Qureg qureg, int ketQb1, int ketQb2,
     int braQb1 = util_getBraQubit(ketQb1, qureg);
     int braBit2 = util_getRankBitOfBraQubit(ketQb2, qureg);
 
-    qreal c1, c2; tie(c1, c2, ignore) = util_getTwoQubitDepolarisingFactors(prob);
+    auto [c1, c2] = util_getFirstTwoFactorsOfTwoQubitDepolarising(prob);
 
     #pragma omp parallel for if(qureg.isMultithreaded)
     for (qindex n=0; n<numIts; n++) {
@@ -858,7 +858,7 @@ void cpu_densmatr_twoQubitDepolarising_subE(Qureg qureg, int ketQb1, int ketQb2,
     int braBit1 = util_getRankBitOfBraQubit(ketQb1, qureg);
     int braBit2 = util_getRankBitOfBraQubit(ketQb2, qureg);
 
-    qreal c3; tie(ignore, ignore, c3) = util_getTwoQubitDepolarisingFactors(prob);
+    qreal c3 = util_getTwoQubitDepolarisingFactors(prob)[2];
 
     // TODO:
     // are we really inefficiently enumerating all amps and applying a non-unity
@@ -891,7 +891,7 @@ void cpu_densmatr_twoQubitDepolarising_subF(Qureg qureg, int ketQb1, int ketQb2,
     int braBit1 = util_getRankBitOfBraQubit(ketQb1, qureg);
     int braBit2 = util_getRankBitOfBraQubit(ketQb2, qureg);
 
-    qreal c1, c2; tie(c1, c2, ignore) = util_getTwoQubitDepolarisingFactors(prob);
+    auto [c1, c2] = util_getFirstTwoFactorsOfTwoQubitDepolarising(prob);
 
     #pragma omp parallel for if(qureg.isMultithreaded)
     for (qindex n=0; n<numIts; n++) {
@@ -920,7 +920,7 @@ void cpu_densmatr_twoQubitDepolarising_subG(Qureg qureg, int ketQb1, int ketQb2,
     int braBit1 = util_getRankBitOfBraQubit(ketQb1, qureg);
     int braBit2 = util_getRankBitOfBraQubit(ketQb2, qureg);
 
-    qreal c1, c2; tie(c1, c2, ignore) = util_getTwoQubitDepolarisingFactors(prob);
+    auto [c1, c2] = util_getFirstTwoFactorsOfTwoQubitDepolarising(prob);
 
     #pragma omp parallel for if(qureg.isMultithreaded)
     for (qindex n=0; n<numIts; n++) {
