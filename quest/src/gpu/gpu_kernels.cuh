@@ -270,7 +270,7 @@ __global__ void kernel_statevec_anyCtrlAnyTargDenseMatr_sub(
 
 
 /*
- * DIAGONAL MATRIX
+ * ANY-TARG DIAGONAL MATRIX
  */
 
 
@@ -301,7 +301,7 @@ __global__ void kernel_statevec_anyCtrlAnyTargDiagMatr_sub(
 
 
 /*
- * DIAGONAL MATRIX
+ * PAULI/PHASE TENSORS/GADGETS
  */
 
 
@@ -411,12 +411,14 @@ __global__ void kernel_statevector_anyCtrlAnyTargZOrPhaseGadget_sub(
 
 
 /*
- * DECOHERENCE
+ * DEPHASING
  */
 
 
-__global__ void kernel_densmatr_oneQubitDephasing_subA(cu_qcomp* amps, qindex numThreads, int braQubit, int ketQubit, qreal fac) {
-
+__global__ void kernel_densmatr_oneQubitDephasing_subA(
+    cu_qcomp* amps, qindex numThreads, 
+    int ketQubit, int braQubit, qreal fac
+) {
     GET_THREAD_IND(n, numThreads);
 
     // TODO:
@@ -433,8 +435,10 @@ __global__ void kernel_densmatr_oneQubitDephasing_subA(cu_qcomp* amps, qindex nu
 }
 
 
-__global__ void kernel_densmatr_oneQubitDephasing_subB(cu_qcomp* amps, qindex numThreads, int braBit, int ketQubit, qreal fac) {
-
+__global__ void kernel_densmatr_oneQubitDephasing_subB(
+    cu_qcomp* amps, qindex numThreads, 
+    int ketQubit, int braBit, qreal fac
+) {
     GET_THREAD_IND(n, numThreads);
 
     // TODO:
@@ -452,15 +456,15 @@ __global__ void kernel_densmatr_oneQubitDephasing_subB(cu_qcomp* amps, qindex nu
 
 __global__ void kernel_densmatr_twoQubitDephasing_subB(
     cu_qcomp* amps, qindex numThreads, int rank, qindex logNumAmpsPerNode, // numAmps, not numCols
-    int ketQubitA, int ketQubitB, int braQubitA, int braQubitB, qreal term
+    int ketQubit1, int ketQubit2, int braQubit1, int braQubit2, qreal term
 ) {
     GET_THREAD_IND(n, numThreads);
 
     // i = global index of nth local amp
     qindex i = concatenateBits(rank, n, logNumAmpsPerNode);
 
-    int bitA = getBit(i, ketQubitA) ^ getBit(i, braQubitA);
-    int bitB = getBit(i, ketQubitB) ^ getBit(i, braQubitB);
+    int bitA = getBit(i, ketQubit1) ^ getBit(i, braQubit1);
+    int bitB = getBit(i, ketQubit2) ^ getBit(i, braQubit2);
 
     // determine whether or not to modify this amplitude...
     int flag = bitA | bitB;
@@ -470,9 +474,15 @@ __global__ void kernel_densmatr_twoQubitDephasing_subB(
 }
 
 
+
+/*
+ * ONE-QUBIT DEPOLARISING
+ */
+
+
 __global__ void kernel_densmatr_oneQubitDepolarising_subA(
-    cu_qcomp* amps, qindex numThreads, int braQubit, int ketQubit, 
-    qreal facAA, qreal facBB, qreal facAB
+    cu_qcomp* amps, qindex numThreads, 
+    int ketQubit, int braQubit, qreal facAA, qreal facBB, qreal facAB
 ) {
     GET_THREAD_IND(n, numThreads);
 
@@ -492,8 +502,8 @@ __global__ void kernel_densmatr_oneQubitDepolarising_subA(
 
 
 __global__ void kernel_densmatr_oneQubitDepolarising_subB(
-    cu_qcomp* amps, cu_qcomp* buffer, qindex numThreads, int braBit, int ketQubit, 
-    qreal facAA, qreal facBB, qreal facAB
+    cu_qcomp* amps, cu_qcomp* buffer, qindex numThreads, 
+    int braBit, int ketQubit, qreal facAA, qreal facBB, qreal facAB
 ) {
     GET_THREAD_IND(n, numThreads);
 
@@ -508,8 +518,14 @@ __global__ void kernel_densmatr_oneQubitDepolarising_subB(
 }
 
 
+
+/*
+ * PAULI CHANNEL
+ */
+
+
 __global__ void kernel_densmatr_oneQubitPauliChannel_subA(
-    cu_qcomp* amps, qindex numThreads, int braQubit, int ketQubit, 
+    cu_qcomp* amps, qindex numThreads, int ketQubit, int braQubit, 
     qreal facAA, qreal facBB, qreal facAB, qreal facBA
 ) {
     GET_THREAD_IND(n, numThreads);
@@ -534,8 +550,8 @@ __global__ void kernel_densmatr_oneQubitPauliChannel_subA(
 
 
 __global__ void kernel_densmatr_oneQubitPauliChannel_subB(
-    cu_qcomp* amps, cu_qcomp* buffer, qindex numThreads, int braBit, int ketQubit, 
-    qreal facAA, qreal facBB, qreal facAB, qreal facBA
+    cu_qcomp* amps, cu_qcomp* buffer, qindex numThreads, 
+    int ketQubit, int braBit, qreal facAA, qreal facBB, qreal facAB, qreal facBA
 ) {
     GET_THREAD_IND(n, numThreads);
 

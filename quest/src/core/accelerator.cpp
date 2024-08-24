@@ -41,6 +41,9 @@ using std::vector;
  * these macros simply call func<ctrls.size()> albeit without illegally passing
  * a runtime variable as a template parameter. Note an awkward use of decltype()
  * is to workaround a GCC <12 bug with implicitly-typed vector initialisations.
+ * 
+ * BEWARE that these macros are single-line expressions, so they can be used in
+ * braceless if/else or ternary operators - but stay vigilant!
  */
 
 
@@ -98,10 +101,9 @@ qindex accel_statevec_packAmpsIntoBuffer(Qureg qureg, vector<int> qubits, vector
 
     // packing treats all qubits as if they were ctrl qubits
     auto func = GET_CPU_OR_GPU_FUNC_OPTIMISED_FOR_NUM_CTRLS( statevec_packAmpsIntoBuffer, qureg, qubits.size() );
-    func(qureg, qubits, qubitStates);
-
+    
     // return the number of packed amps, for caller convenience
-    return qureg.numAmpsPerNode / powerOf2(qubits.size());
+    return func(qureg, qubits, qubitStates);
 }
 
 
@@ -116,13 +118,11 @@ void accel_statevec_anyCtrlSwap_subA(Qureg qureg, vector<int> ctrls, vector<int>
     auto func = GET_CPU_OR_GPU_FUNC_OPTIMISED_FOR_NUM_CTRLS( statevec_anyCtrlSwap_subA, qureg, ctrls.size() );
     func(qureg, ctrls, ctrlStates, targ1, targ2);
 }
-
 void accel_statevec_anyCtrlSwap_subB(Qureg qureg, vector<int> ctrls, vector<int> ctrlStates) {
 
     auto func = GET_CPU_OR_GPU_FUNC_OPTIMISED_FOR_NUM_CTRLS( statevec_anyCtrlSwap_subB, qureg, ctrls.size() );
     func(qureg, ctrls, ctrlStates);
 }
-
 void accel_statevec_anyCtrlSwap_subC(Qureg qureg, vector<int> ctrls, vector<int> ctrlStates, int targ, int targState) {
 
     auto func = GET_CPU_OR_GPU_FUNC_OPTIMISED_FOR_NUM_CTRLS( statevec_anyCtrlSwap_subC, qureg, ctrls.size() );
@@ -141,7 +141,6 @@ void accel_statevec_anyCtrlOneTargDenseMatr_subA(Qureg qureg, vector<int> ctrls,
     auto func = GET_CPU_OR_GPU_FUNC_OPTIMISED_FOR_NUM_CTRLS( statevec_anyCtrlOneTargDenseMatr_subA, qureg, ctrls.size() );
     func(qureg, ctrls, ctrlStates, targ, matr);
 }
-
 void accel_statevec_anyCtrlOneTargDenseMatr_subB(Qureg qureg, vector<int> ctrls, vector<int> ctrlStates, qcomp fac0, qcomp fac1) {
 
     auto func = GET_CPU_OR_GPU_FUNC_OPTIMISED_FOR_NUM_CTRLS( statevec_anyCtrlOneTargDenseMatr_subB, qureg, ctrls.size() );
@@ -182,8 +181,6 @@ void accel_statevector_anyCtrlPauliTensorOrGadget_subA(
     auto func = GET_CPU_OR_GPU_FUNC_OPTIMISED_FOR_NUM_CTRLS_AND_TARGS( statevector_anyCtrlPauliTensorOrGadget_subA, qureg, ctrls.size(), suffixTargsXY.size() );
     func(qureg, ctrls, ctrlStates, suffixTargsXY, suffixMaskXY, allMaskYZ, powI, fac0, fac1);
 }
-
-
 void accel_statevector_anyCtrlPauliTensorOrGadget_subB(
     Qureg qureg, vector<int> ctrls, vector<int> ctrlStates,
     qindex suffixMaskXY, qindex bufferMaskXY, qindex allMaskYZ, qcomp powI, qcomp fac0, qcomp fac1
@@ -205,7 +202,7 @@ void accel_statevector_anyCtrlAnyTargZOrPhaseGadget_sub(
 
 
 /*
- * DECOHERENCE
+ * DEPHASING
  */
 
 
@@ -215,8 +212,6 @@ void accel_densmatr_oneQubitDephasing_subA(Qureg qureg, int qubit, qreal prob) {
         gpu_densmatr_oneQubitDephasing_subA(qureg, qubit, prob):
         cpu_densmatr_oneQubitDephasing_subA(qureg, qubit, prob);
 }
-
-
 void accel_densmatr_oneQubitDephasing_subB(Qureg qureg, int qubit, qreal prob) {
 
     (qureg.isGpuAccelerated)?
@@ -225,20 +220,24 @@ void accel_densmatr_oneQubitDephasing_subB(Qureg qureg, int qubit, qreal prob) {
 }
 
 
-void accel_densmatr_twoQubitDephasing_subA(Qureg qureg, int qubitA, int qubitB, qreal prob) {
+void accel_densmatr_twoQubitDephasing_subA(Qureg qureg, int qubit1, int qubit2, qreal prob) {
 
     (qureg.isGpuAccelerated)?
-        gpu_densmatr_twoQubitDephasing_subA(qureg, qubitA, qubitB, prob):
-        cpu_densmatr_twoQubitDephasing_subA(qureg, qubitA, qubitB, prob);
+        gpu_densmatr_twoQubitDephasing_subA(qureg, qubit1, qubit2, prob):
+        cpu_densmatr_twoQubitDephasing_subA(qureg, qubit1, qubit2, prob);
+}
+void accel_densmatr_twoQubitDephasing_subB(Qureg qureg, int qubit1, int qubit2, qreal prob) {
+
+    (qureg.isGpuAccelerated)?
+        gpu_densmatr_twoQubitDephasing_subB(qureg, qubit1, qubit2, prob):
+        cpu_densmatr_twoQubitDephasing_subB(qureg, qubit1, qubit2, prob);
 }
 
 
-void accel_densmatr_twoQubitDephasing_subB(Qureg qureg, int qubitA, int qubitB, qreal prob) {
 
-    (qureg.isGpuAccelerated)?
-        gpu_densmatr_twoQubitDephasing_subB(qureg, qubitA, qubitB, prob):
-        cpu_densmatr_twoQubitDephasing_subB(qureg, qubitA, qubitB, prob);
-}
+/*
+ * DEPOLARISING
+ */
 
 
 void accel_densmatr_oneQubitDepolarising_subA(Qureg qureg, int qubit, qreal prob) {
@@ -263,8 +262,6 @@ void accel_densmatr_oneQubitPauliChannel_subA(Qureg qureg, int qubit, qreal pI, 
         gpu_densmatr_oneQubitPauliChannel_subA(qureg, qubit, pI, pX, pY, pZ):
         cpu_densmatr_oneQubitPauliChannel_subA(qureg, qubit, pI, pX, pY, pZ);
 }
-
-
 void accel_densmatr_oneQubitPauliChannel_subB(Qureg qureg, int ketQubit, qreal pI, qreal pX, qreal pY, qreal pZ) {
 
     (qureg.isGpuAccelerated)?

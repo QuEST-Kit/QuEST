@@ -56,18 +56,6 @@ void setDefaultCtrlStates(vector<int> ctrls, vector<int> &states) {
 }
 
 
-bool isQubitInSuffix(int qubit, Qureg qureg) {
-
-    return qubit < qureg.logNumAmpsPerNode;
-}
-
-
-bool isBraQubitInSuffix(int ketQubit, Qureg qureg) {
-    
-    return ketQubit < qureg.logNumColsPerNode;
-}
-
-
 bool doesGateRequireComm(Qureg qureg, vector<int> targs) {
 
     // non-distributed quregs never communicate (duh)
@@ -76,7 +64,7 @@ bool doesGateRequireComm(Qureg qureg, vector<int> targs) {
 
     // communication necessary when any prefix qubit is targeted
     for (int targ : targs)
-        if (!isQubitInSuffix(targ, qureg))
+        if (!util_isQubitInSuffix(targ, qureg))
             return true;
 
     // sufix qubit targets need no communication
@@ -93,7 +81,8 @@ bool doesChannelRequireComm(Qureg qureg, vector<int> ketQubits) {
     if (!qureg.isDensityMatrix)
         error_localiserPassedStateVecToChannelComCheck();
 
-    // channels invoke communication if corresponding bra-qubits are in prefix
+    // ket-qubits are gauranteed to be in the suffix (because we distributed >=1 column per node),
+    // so channels invoke communication if any corresponding bra-qubits are in prefix
     auto braQubits = util_getBraQubits(ketQubits, qureg);
     return doesGateRequireComm(qureg, braQubits);
 }
@@ -106,6 +95,9 @@ bool doesChannelRequireComm(Qureg qureg, int ketQubit) {
 
 bool doAnyLocalAmpsSatisfyCtrls(Qureg qureg, vector<int> ctrls, vector<int> states) {
 
+    // this answers the generic question of "do any of the given qubits lie in the
+    // prefix substate with node-fixed values inconsistent with the given states?"
+
     // non-distributed quregs always have amps satisfying ctrls
     if (!qureg.isDistributed)
         return true;
@@ -114,13 +106,11 @@ bool doAnyLocalAmpsSatisfyCtrls(Qureg qureg, vector<int> ctrls, vector<int> stat
     for (size_t i=0; i<ctrls.size(); i++) {
 
         // consider only ctrls which operate on the prefix substate
-        if (isQubitInSuffix(ctrls[i], qureg))
+        if (util_isQubitInSuffix(ctrls[i], qureg))
             continue;
 
         // abort if any prefix ctrl has wrong bit value
-        int prefInd = util_getPrefixInd(ctrls[i], qureg);
-        int prefBit = getBit(qureg.rank, prefInd);
-        if (prefBit != states[i])
+        if (util_getRankBitOfQubit(ctrls[i], qureg) != states[i])
             return false;
     }
 
@@ -135,7 +125,7 @@ auto getPrefixOrSuffixQubits(Qureg qureg, vector<int> qubits, bool getSuffix) {
     subQubits.reserve(qubits.size());
 
     for (int qubit : qubits)
-        if (isQubitInSuffix(qubit, qureg) == getSuffix)
+        if (util_isQubitInSuffix(qubit, qureg) == getSuffix)
             subQubits.push_back(qubit);
 
     return subQubits;
@@ -150,19 +140,21 @@ auto getPrefixQubits(Qureg qureg, vector<int> qubits) {
 }
 
 
-auto getSuffixQubitsAndStates(Qureg qureg, vector<int> qubits, vector<int> states) {
+void removePrefixQubitsAndStates(Qureg qureg, vector<int> &qubits, vector<int> &states) {
 
     vector<int> suffixQubits(0);  suffixQubits.reserve(qubits.size());
     vector<int> suffixStates(0);  suffixStates.reserve(states.size());
 
+    // collect suffix qubits/states
     for (size_t i=0; i<qubits.size(); i++)
-        if (isQubitInSuffix(qubits[i], qureg)) {
+        if (util_isQubitInSuffix(qubits[i], qureg)) {
             suffixQubits.push_back(qubits[i]);
             suffixStates.push_back(states[i]);
         }
 
-    // return new vectors, leaving old unmodified
-    return std::tuple{suffixQubits, suffixStates};
+    // overwrite given vectors
+    qubits = suffixQubits;
+    states = suffixStates;
 }
 
 
@@ -187,7 +179,7 @@ auto getCtrlsAndTargsSwappedToSuffix(Qureg qureg, vector<int> ctrls, vector<int>
     for (size_t i=0; i<targs.size(); i++) {
 
         // consider only targs in the prefix substate
-        if (isQubitInSuffix(targs[i], qureg))
+        if (util_isQubitInSuffix(targs[i], qureg))
             continue;
             
         // if our replacement targ happens to be a ctrl... 
@@ -233,13 +225,14 @@ auto getNonSwappedCtrlsAndStates(vector<int> oldCtrls, vector<int> oldStates, ve
 
 
 /*
- * PERFORMING NECESSARY COMMUNICATION
+ * COMMUNICATION WRAPPERS
  */
 
 
 void exchangeAmpsToBuffersWhereQubitsAreInStates(Qureg qureg, int pairRank, vector<int> qubits, vector<int> states) {
 
-    // when there are no constraining qubits, all amps are exchanged; there is no need to pack the buffer
+    // when there are no constraining qubits, all amps are exchanged; there is no need to pack the buffer.
+    // this is typically triggered when a communicating localiser function is given no control qubits
     if (qubits.empty()) {
         comm_exchangeAmpsToBuffers(qureg, pairRank);
         return;
@@ -257,12 +250,29 @@ void exchangeAmpsToBuffersWhereQubitsAreInStates(Qureg qureg, int pairRank, vect
  */
 
 
+void anyCtrlSwapBetweenPrefixAndPrefix(Qureg qureg, vector<int> ctrls, vector<int> ctrlStates, int targ1, int targ2) {
+
+    int prefInd1 = util_getPrefixInd(targ1, qureg);
+    int prefInd2 = util_getPrefixInd(targ2, qureg);
+
+    // half of all nodes contain no to-be-swapped amps and immediately finish
+    if (getBit(qureg.rank, prefInd1) == getBit(qureg.rank, prefInd2))
+        return;
+
+    // but the remaining half exchange the entirety of their amps which are in the ctrl states
+    int pairRank = flipTwoBits(qureg.rank, prefInd1, prefInd2);
+    exchangeAmpsToBuffersWhereQubitsAreInStates(qureg, pairRank, ctrls, ctrlStates);
+
+    // and use them to overwrite their local amps satisfying ctrl states, then finish
+    accel_statevec_anyCtrlSwap_subB(qureg, ctrls, ctrlStates);
+}
+
+
 void anyCtrlSwapBetweenPrefixAndSuffix(Qureg qureg, vector<int> ctrls, vector<int> ctrlStates, int suffixTarg, int prefixTarg) {
 
     // every node exchanges at most half its amps; those where suffixTarg bit differs from rank's fixed prefixTarg bit
-    int prefInd = util_getPrefixInd(prefixTarg, qureg);
-    int pairRank = flipBit(qureg.rank, prefInd);
-    int suffixState = getBit(pairRank, prefInd);
+    int pairRank = util_getRankWithQubitFlipped(prefixTarg, qureg);
+    int suffixState =  ! util_getRankBitOfQubit(prefixTarg, qureg);
 
     // pack and exchange only to-be-communicated amps between sub-buffers
     vector<int> qubits = ctrls;
@@ -289,41 +299,40 @@ void localiser_statevec_anyCtrlSwap(Qureg qureg, vector<int> ctrls, vector<int> 
         return;
 
     // retain only suffix control qubits as relevant to communication and local amp modification
-    std::tie(ctrls, ctrlStates) = getSuffixQubitsAndStates(qureg, ctrls, ctrlStates);
+    removePrefixQubitsAndStates(qureg, ctrls, ctrlStates);
 
-    // if neither targets invoke communication, perform embarrassingly parallel simulation and finish
-    if (!doesGateRequireComm(qureg, targ2)) {
+    // determine necessary communication
+    bool comm1 = doesGateRequireComm(qureg, targ1);
+    bool comm2 = doesGateRequireComm(qureg, targ2);
+
+    if (comm2 && comm1)
+        anyCtrlSwapBetweenPrefixAndPrefix(qureg, ctrls, ctrlStates, targ1, targ2);
+    if (comm2 && !comm1)
+        anyCtrlSwapBetweenPrefixAndSuffix(qureg, ctrls, ctrlStates, targ1, targ2);
+    if (!comm2 && !comm1)
         accel_statevec_anyCtrlSwap_subA(qureg, ctrls, ctrlStates, targ1, targ2);
-        return;
-    }
-
-    // if both targets demand communication...
-    if (doesGateRequireComm(qureg, targ1)) {
-        int prefTarg1 = util_getPrefixInd(targ1, qureg);
-        int prefTarg2 = util_getPrefixInd(targ2, qureg);
-
-        // then half of all nodes contain no to-be-swapped amps and immediately finish
-        if (getBit(qureg.rank, prefTarg1) == getBit(qureg.rank, prefTarg2))
-            return;
-
-        // but the remaining half exchange the entirety of their amps which are in the ctrl states
-        int pairRank = flipTwoBits(qureg.rank, prefTarg1, prefTarg2);
-        exchangeAmpsToBuffersWhereQubitsAreInStates(qureg, pairRank, ctrls, ctrlStates);
-
-        // and use them to overwrite their local amps satisfying ctrl states, then finish
-        accel_statevec_anyCtrlSwap_subB(qureg, ctrls, ctrlStates);
-        return;
-    }
-
-    // to reach here, targ1 is in suffix and targ2 is in prefix
-    anyCtrlSwapBetweenPrefixAndSuffix(qureg, ctrls, ctrlStates, targ1, targ2);
 }
 
 
 
 /*
- * MATRICES
+ * ONE-TARGET DENSE MATRIX
  */
+
+
+void anyCtrlOneTargDenseMatrOnPrefix(Qureg qureg, vector<int> ctrls, vector<int> ctrlStates, int targ, CompMatr1 matr) {
+  
+    int pairRank = util_getRankWithQubitFlipped(targ, qureg);
+    exchangeAmpsToBuffersWhereQubitsAreInStates(qureg, pairRank, ctrls, ctrlStates);
+
+    // extract relevant gate elements
+    int bit = util_getRankBitOfQubit(targ, qureg);
+    qcomp fac0 = matr.elems[bit][ bit];
+    qcomp fac1 = matr.elems[bit][!bit];
+
+    // update local amps using received amps in buffer
+    accel_statevec_anyCtrlOneTargDenseMatr_subB(qureg, ctrls, ctrlStates, fac0, fac1);
+}
 
 
 void localiser_statevec_anyCtrlOneTargDenseMatr(Qureg qureg, vector<int> ctrls, vector<int> ctrlStates, int targ, CompMatr1 matr) {
@@ -335,60 +344,24 @@ void localiser_statevec_anyCtrlOneTargDenseMatr(Qureg qureg, vector<int> ctrls, 
         return;
 
     // retain only suffix control qubits as relevant to communication and local amp modification
-    std::tie(ctrls, ctrlStates) = getSuffixQubitsAndStates(qureg, ctrls, ctrlStates);
+    removePrefixQubitsAndStates(qureg, ctrls, ctrlStates);
 
-    // if the target permits embarrassingly parallel simulation, perform it and finish
-    if (!doesGateRequireComm(qureg, targ)) {
+    // perform embarrassingly parallel routine or communication-inducing swaps
+    doesGateRequireComm(qureg, targ)?
+        anyCtrlOneTargDenseMatrOnPrefix(qureg, ctrls, ctrlStates, targ, matr) :
         accel_statevec_anyCtrlOneTargDenseMatr_subA(qureg, ctrls, ctrlStates, targ, matr);
-        return;
-    }
-
-    // otherwise we exchange all or some of our amps (those where ctrls are active) into buffer with pair rank
-    int rankTarg = util_getPrefixInd(targ, qureg);
-    int pairRank = flipBit(qureg.rank, rankTarg);
-    exchangeAmpsToBuffersWhereQubitsAreInStates(qureg, pairRank, ctrls, ctrlStates);
-
-    // extract relevant gate elements
-    int bit = getBit(qureg.rank, rankTarg);
-    qcomp fac0 = matr.elems[bit][ bit];
-    qcomp fac1 = matr.elems[bit][!bit];
-
-    // update local amps using received amps in buffer
-    accel_statevec_anyCtrlOneTargDenseMatr_subB(qureg, ctrls, ctrlStates, fac0, fac1);
 }
 
 
-void localiser_statevec_anyCtrlAnyTargDenseMatr(Qureg qureg, vector<int> ctrls, vector<int> ctrlStates, vector<int> targs, CompMatr matr) {
-    assertValidCtrlStates(ctrls, ctrlStates);
-    setDefaultCtrlStates(ctrls, ctrlStates);
 
-    // despite our use of compile-time templating, the bespoke one-targ routines are still faster 
-    // than this any-targ routine when given a single target. Callers may however still choose this 
-    // function for its convenient generality, so we divert to the one-targ routine when possible
-    if (targs.size() == 1) {
+/*
+ * ANY-TARGET DENSE MATRIX
+ */
 
-        // copy the CPU elems (which we assume consistent with GPU elems) from heap to stack
-        CompMatr1 copy = getCompMatr1(matr.cpuElems); // no validation
 
-        // call the bespoke one-targ method and finish
-        localiser_statevec_anyCtrlOneTargDenseMatr(qureg, ctrls, ctrlStates, targs[0], copy);
-        return;
-    }
+void anyCtrlAnyTargDenseMatrOnPrefix(Qureg qureg, vector<int> ctrls, vector<int> ctrlStates, vector<int> targs, CompMatr matr) {
 
-    // node has nothing to do if all local amps violate control condition
-    if (!doAnyLocalAmpsSatisfyCtrls(qureg, ctrls, ctrlStates))
-        return;
-
-    // if all targets lie within the suffix node...
-    if (!doesGateRequireComm(qureg, targs)) {
-
-        // retain only suffix controls, and perform embarrassingly parallel simulation, then finish
-        std::tie(ctrls, ctrlStates) = getSuffixQubitsAndStates(qureg, ctrls, ctrlStates);
-        accel_statevec_anyCtrlAnyTargDenseMatr_sub(qureg, ctrls, ctrlStates, targs, matr);
-        return;
-    }
-
-    // else, find suffix positions for all prefix targs, moving colliding ctrls out of the way
+    // find suffix positions for all prefix targs, moving colliding ctrls out of the way
     auto [newCtrls, newTargs] = getCtrlsAndTargsSwappedToSuffix(qureg, ctrls, targs);
 
     // only unmoved ctrls can be applied to the swaps, to accelerate them
@@ -412,9 +385,9 @@ void localiser_statevec_anyCtrlAnyTargDenseMatr(Qureg qureg, vector<int> ctrls, 
     // if the moved ctrls do not eliminate this node's need for local simulation...
     if (doAnyLocalAmpsSatisfyCtrls(qureg, newCtrls, ctrlStates)) {
 
-        // then perform embarrassingly parallel simulation using only the new suffix ctrls
-        auto [newSuffixCtrls, newSuffixStates] = getSuffixQubitsAndStates(qureg, newCtrls, ctrlStates);
-        accel_statevec_anyCtrlAnyTargDenseMatr_sub(qureg, newSuffixCtrls, newSuffixStates, newTargs, matr);
+        // perform embarrassingly parallel simulation using only the new suffix ctrls
+        removePrefixQubitsAndStates(qureg, newCtrls, ctrlStates);     
+        accel_statevec_anyCtrlAnyTargDenseMatr_sub(qureg, newCtrls, ctrlStates, newTargs, matr);
     }
 
     // undo swaps, each invoking communication
@@ -422,6 +395,39 @@ void localiser_statevec_anyCtrlAnyTargDenseMatr(Qureg qureg, vector<int> ctrls, 
         if (targs[i] != newTargs[i])
             anyCtrlSwapBetweenPrefixAndSuffix(qureg, unmovedCtrls, unmovedCtrlStates, targs[i], newTargs[i]);
 }
+
+
+void localiser_statevec_anyCtrlAnyTargDenseMatr(Qureg qureg, vector<int> ctrls, vector<int> ctrlStates, vector<int> targs, CompMatr matr) {
+    assertValidCtrlStates(ctrls, ctrlStates);
+    setDefaultCtrlStates(ctrls, ctrlStates);
+
+    // node has nothing to do if all local amps violate control condition
+    if (!doAnyLocalAmpsSatisfyCtrls(qureg, ctrls, ctrlStates))
+        return;
+
+    // despite our use of compile-time templating, the bespoke one-targ routines are still faster 
+    // than this any-targ routine when given a single target. Callers may however still choose this 
+    // function for its convenient generality, so we divert to the one-targ routine when possible,
+    // copying the heap CPU matrix (assumed consistent with GPU memory) into stack memory
+    if (targs.size() == 1)
+        localiser_statevec_anyCtrlOneTargDenseMatr(qureg, ctrls, ctrlStates, targs[0], getCompMatr1(matr.cpuElems));
+
+    // otherwise if any target requires communication, we invoke SWAPS
+    else if (doesGateRequireComm(qureg, targs))
+        anyCtrlAnyTargDenseMatrOnPrefix(qureg, ctrls, ctrlStates, targs, matr);
+
+    // else we happily perform embarrassingly parallel simulation using only the suffix ctrls
+    else {
+        removePrefixQubitsAndStates(qureg, ctrls, ctrlStates);
+        accel_statevec_anyCtrlAnyTargDenseMatr_sub(qureg, ctrls, ctrlStates, targs, matr);
+    }
+}
+
+
+
+/*
+ * ANY-TARGET DIAGONAL MATRIX
+ */
 
 
 void localiser_statevec_anyCtrlAnyTargDiagMatr(Qureg qureg, vector<int> ctrls, vector<int> ctrlStates, vector<int> targs, DiagMatr matr) {
@@ -433,10 +439,10 @@ void localiser_statevec_anyCtrlAnyTargDiagMatr(Qureg qureg, vector<int> ctrls, v
         return;
 
     // retain only suffix control qubits, as relevant to local amp modification
-    std::tie(ctrls, ctrlStates) = getSuffixQubitsAndStates(qureg, ctrls, ctrlStates);
+    removePrefixQubitsAndStates(qureg, ctrls, ctrlStates);
     
     // diagonal matrices are always embarrassingly parallel, regardless of whether any targs are in prefix
-    return accel_statevec_anyCtrlAnyTargDiagMatr_sub(qureg, ctrls, ctrlStates, targs, matr);
+    accel_statevec_anyCtrlAnyTargDiagMatr_sub(qureg, ctrls, ctrlStates, targs, matr);
 }
 
 
@@ -461,52 +467,41 @@ void anyCtrlAnyTargZOrPhaseGadget(Qureg qureg, vector<int> ctrls, vector<int> ct
         return;
 
     // retain only suffix control qubits, as relevant to local amp modification
-    std::tie(ctrls, ctrlStates) = getSuffixQubitsAndStates(qureg, ctrls, ctrlStates);
+    removePrefixQubitsAndStates(qureg, ctrls, ctrlStates);
 
     // operation is diagonal and always embarrasingly parallel, regardless of prefix targs
     accel_statevector_anyCtrlAnyTargZOrPhaseGadget_sub(qureg, ctrls, ctrlStates, targs, fac0, fac1);
 }
 
 
-void localiser_statevec_anyCtrlAnyTargZ(Qureg qureg, vector<int> ctrls, vector<int> ctrlStates, vector<int> targs) {
+void anyCtrlPauliTensorOrGadgetOnPrefix(
+    Qureg qureg, int pairRank, vector<int> ctrls, vector<int> ctrlStates, 
+    qindex suffixMaskXY, qindex allMaskYZ, qcomp powI, qcomp fac0, qcomp fac1
+) {
+    // pack and exchange all amps satisfying ctrl
+    exchangeAmpsToBuffersWhereQubitsAreInStates(qureg, pairRank, ctrls, ctrlStates);
 
-    qcomp fac0 = qcomp(+1, 0); // even parity
-    qcomp fac1 = qcomp(-1, 0); // odd parity
-    anyCtrlAnyTargZOrPhaseGadget(qureg, ctrls, ctrlStates, targs, fac0, fac1);
+    // we cannot use suffixMaskXY to determine the buffer indices corresponding to the subsequently processed local amps,
+    // because it operates on the full local amp index, whereas the buffer (potentially) excluded many amps (which did not
+    // satisfy ctrls) and has a reduced index space. So we compute a new mask which operates on the buffer indices by
+    // removing all ctrl qubits from the full index mask.
+    auto sortedCtrls = util_getSorted(ctrls);
+    auto bufferMaskXY = removeBits(suffixMaskXY, sortedCtrls.data(), sortedCtrls.size());
+
+    accel_statevector_anyCtrlPauliTensorOrGadget_subB(qureg, ctrls, ctrlStates, suffixMaskXY, bufferMaskXY, allMaskYZ, powI, fac0, fac1);
 }
 
 
-void localiser_statevec_anyCtrlPhaseGadget(Qureg qureg, vector<int> ctrls, vector<int> ctrlStates, vector<int> targs, qreal angle) {
-
-    qcomp fac0 = qcomp(cos(angle), +sin(angle)); // exp( i angle)
-    qcomp fac1 = qcomp(cos(angle), -sin(angle)); // exp(-i angle)
-    anyCtrlAnyTargZOrPhaseGadget(qureg, ctrls, ctrlStates, targs, fac0, fac1);
-}
-
-
-void anyCtrlPauliTensorOrGadget(Qureg qureg, vector<int> ctrls, vector<int> ctrlStates, PauliStr str, qcomp fac0, qcomp fac1) {
+void anyCtrlPauliTensorOrGadget(Qureg qureg, vector<int> ctrls, vector<int> ctrlStates, vector<int> targs, PauliStr str, qcomp fac0, qcomp fac1) {
     assertValidCtrlStates(ctrls, ctrlStates);
     setDefaultCtrlStates(ctrls, ctrlStates);
-
-    // extract sorted targs as indices of all non-I Paulis, to accelerate subsequent processing
-    auto targs = paulis_getSortedIndsOfNonIdentityPaulis(str);
-
-    // despite our dedicated all-Z and phase gadget functions above, users and software stacks may 
-    // end up calling this routine in generality and passing only Z Paulis, which is algorithmically
-    // invalid; so we'll just harmlessly redirect to the all-Z scenario and finish
-    if (paulis_containsXOrY(str)) {
-
-        // repeated valid-ctrls assertion is fine
-        anyCtrlAnyTargZOrPhaseGadget(qureg, ctrls, ctrlStates, targs, fac0, fac1);
-        return;
-    }
 
     // node has nothing to do if all local amps violate control condition
     if (!doAnyLocalAmpsSatisfyCtrls(qureg, ctrls, ctrlStates))
         return;
 
     // retain only suffix control qubits, as relevant to local amp modification
-    std::tie(ctrls, ctrlStates) = getSuffixQubitsAndStates(qureg, ctrls, ctrlStates);
+    removePrefixQubitsAndStates(qureg, ctrls, ctrlStates);
 
     // readable flags
     const int X=1, Y=2, Z=3;
@@ -527,25 +522,28 @@ void anyCtrlPauliTensorOrGadget(Qureg qureg, vector<int> ctrls, vector<int> ctrl
     auto prefixTargsXY = getPrefixQubits(qureg, paulis_getTargsWithEitherPaulis(targs, str, X, Y));
     auto pairRank = flipBits(qureg.rank, prefixTargsXY.data(), prefixTargsXY.size());
 
-    // if no communication is necessary, perform local simulation and finish
-    if (qureg.rank == pairRank) {
+    // call embarrassingly parallel routine or induce pairwise communication
+    (qureg.rank == pairRank)?
         accel_statevector_anyCtrlPauliTensorOrGadget_subA(
-            qureg, ctrls, ctrlStates, suffixTargsXY, 
-            suffixMaskXY, allMaskYZ, powI, fac0, fac1);
-        return;
-    }
+            qureg, ctrls, ctrlStates, suffixTargsXY, suffixMaskXY, allMaskYZ, powI, fac0, fac1):
+        anyCtrlPauliTensorOrGadgetOnPrefix(
+            qureg, pairRank, ctrls, ctrlStates, suffixMaskXY, allMaskYZ, powI, fac0, fac1);
+}
 
-    // otherwise, pack and exchange all amps satisfying ctrl
-    exchangeAmpsToBuffersWhereQubitsAreInStates(qureg, pairRank, ctrls, ctrlStates);
 
-    // we cannot use suffixMaskXY to determine the buffer indices corresponding to the subsequently processed local amps,
-    // because it operates on the full local amp index, whereas the buffer (potentially) excluded many amps (which did not
-    // satisfy ctrls) and has a reduced index space. So we compute a new mask which operates on the buffer indices by
-    // removing all ctrl qubits from the full index mask.
-    auto sortedCtrls = util_getSorted(ctrls);
-    auto bufferMaskXY = removeBits(suffixMaskXY, sortedCtrls.data(), sortedCtrls.size());
+void localiser_statevec_anyCtrlAnyTargZ(Qureg qureg, vector<int> ctrls, vector<int> ctrlStates, vector<int> targs) {
 
-    accel_statevector_anyCtrlPauliTensorOrGadget_subB(qureg, ctrls, ctrlStates, suffixMaskXY, bufferMaskXY, allMaskYZ, powI, fac0, fac1);
+    qcomp fac0 = qcomp(+1, 0); // even parity
+    qcomp fac1 = qcomp(-1, 0); // odd parity
+    anyCtrlAnyTargZOrPhaseGadget(qureg, ctrls, ctrlStates, targs, fac0, fac1);
+}
+
+
+void localiser_statevec_anyCtrlPhaseGadget(Qureg qureg, vector<int> ctrls, vector<int> ctrlStates, vector<int> targs, qreal angle) {
+
+    qcomp fac0 = qcomp(cos(angle), +sin(angle)); // exp( i angle)
+    qcomp fac1 = qcomp(cos(angle), -sin(angle)); // exp(-i angle)
+    anyCtrlAnyTargZOrPhaseGadget(qureg, ctrls, ctrlStates, targs, fac0, fac1);
 }
 
 
@@ -553,7 +551,11 @@ void localiser_statevec_anyCtrlPauliTensor(Qureg qureg, vector<int> ctrls, vecto
 
     qcomp fac0 = 0; // even parity
     qcomp fac1 = 1; // odd parity
-    anyCtrlPauliTensorOrGadget(qureg, ctrls, ctrlStates, str, fac0, fac1);
+    auto targs = paulis_getSortedIndsOfNonIdentityPaulis(str);
+
+    (paulis_containsXOrY(str))?
+        anyCtrlPauliTensorOrGadget(qureg, ctrls, ctrlStates, targs, str, fac0, fac1):
+        anyCtrlAnyTargZOrPhaseGadget(qureg, ctrls, ctrlStates, targs, fac0, fac1);
 }
 
 
@@ -561,68 +563,95 @@ void localiser_statevec_anyCtrlPauliGadget(Qureg qureg, vector<int> ctrls, vecto
 
     qcomp fac0 = qcomp(cos(angle), 0); // even parity
     qcomp fac1 = qcomp(0, sin(angle)); // odd parity
-    anyCtrlPauliTensorOrGadget(qureg, ctrls, ctrlStates, str, fac0, fac1);
+    auto targs = paulis_getSortedIndsOfNonIdentityPaulis(str);
+
+    (paulis_containsXOrY(str))?
+        anyCtrlPauliTensorOrGadget(qureg, ctrls, ctrlStates, targs, str, fac0, fac1):
+        anyCtrlAnyTargZOrPhaseGadget(qureg, ctrls, ctrlStates, targs, fac0, fac1);
 }
 
 
 
 /*
- * DECOHERENCE
+ * DEPHASING
  */
 
 
 void localiser_densmatr_oneQubitDephasing(Qureg qureg, int qubit, qreal prob) {
 
     // both methods are embarrassingly parallel
-    (isBraQubitInSuffix(qubit, qureg))?
+    (util_isBraQubitInSuffix(qubit, qureg))?
         accel_densmatr_oneQubitDephasing_subA(qureg, qubit, prob):
         accel_densmatr_oneQubitDephasing_subB(qureg, qubit, prob);
 }
 
 
-void localiser_densmatr_twoQubitDephasing(Qureg qureg, int qubitA, int qubitB, qreal prob) {
+void localiser_densmatr_twoQubitDephasing(Qureg qureg, int qubit1, int qubit2, qreal prob) {
 
-    int leftQubit = std::max(qubitA,qubitB);
+    // relative size of qubit1 and qubit2 does not matter
+    int leftQubit = std::max(qubit1, qubit2);
 
     // both methods are embarrassingly parallel
-    (isBraQubitInSuffix(leftQubit, qureg))?
-        accel_densmatr_twoQubitDephasing_subA(qureg, qubitA, qubitB, prob):
-        accel_densmatr_twoQubitDephasing_subB(qureg, qubitA, qubitB, prob);
+    (util_isBraQubitInSuffix(leftQubit, qureg))?
+        accel_densmatr_twoQubitDephasing_subA(qureg, qubit1, qubit2, prob):
+        accel_densmatr_twoQubitDephasing_subB(qureg, qubit1, qubit2, prob);
 }
 
 
-void localiser_densmatr_oneQubitDepolarising(Qureg qureg, int ketQubit, qreal prob) {
 
-    // if embarrassingly parallel, simulate and finish
-    if (!doesChannelRequireComm(qureg, ketQubit)) {
-        accel_densmatr_oneQubitDepolarising_subA(qureg, ketQubit, prob);
-        return;
-    }
+/*
+ * ONE-QUBIT DEPOLARISING
+ */
 
-    // otherwise, pack and exchange amps to buffers where local ket qubit and fixed-prefix-bra qubit agree
-    int braInd = util_getPrefixBraInd(ketQubit, qureg);
-    int braBit = getBit(qureg.rank, braInd);
-    int pairRank = flipBit(qureg.rank, braInd);
+
+void oneQubitDepolarisingOnPrefix(Qureg qureg, int ketQubit, qreal prob) {
+
+    // pack and exchange amps to buffers where local ket qubit and fixed-prefix-bra qubit agree
+    int braBit = util_getRankBitOfBraQubit(ketQubit, qureg);
+    int pairRank = util_getRankWithBraQubitFlipped(ketQubit, qureg);
     exchangeAmpsToBuffersWhereQubitsAreInStates(qureg, pairRank, {ketQubit}, {braBit});
 
     // use received sub-buffer to update local amps
     accel_densmatr_oneQubitDepolarising_subB(qureg, ketQubit, prob);
 }
-void localiser_densmatr_oneQubitPauliChannel(Qureg qureg, int ketQubit, qreal pI, qreal pX, qreal pY, qreal pZ) {
 
-    // if embarrassingly parallel, simulate and finish
-    if (!doesChannelRequireComm(qureg, ketQubit)) {
-        accel_densmatr_oneQubitPauliChannel_subA(qureg, ketQubit, pI, pX, pY, pZ);
-        return;
+
+void localiser_densmatr_oneQubitDepolarising(Qureg qureg, int qubit, qreal prob) {
+
+    // perform embarrassingly parallel routine or pairwise communication
+    (doesChannelRequireComm(qureg, qubit))?
+        oneQubitDepolarisingOnPrefix(qureg, qubit, prob):
+        accel_densmatr_oneQubitDepolarising_subA(qureg, qubit, prob);
+}
+
+
+
     }
+}
 
-    // otherwise, exchange all amps with pair node
-    int braInd = util_getPrefixBraInd(ketQubit, qureg);
-    int pairRank = flipBit(qureg.rank, braInd);
+
+
+/*
+ * ONE-QUBIT PAULI CHANNEL
+ */
+
+
+void oneQubitPauliChannelOnPrefix(Qureg qureg, int ketQubit, qreal probI, qreal probX, qreal probY, qreal probZ) {
+
+    // exchange all amps with pair node
+    int pairRank = util_getRankWithBraQubitFlipped(ketQubit, qureg);
     comm_exchangeAmpsToBuffers(qureg, pairRank);
 
     // use received buffer to update local amps
-    accel_densmatr_oneQubitPauliChannel_subB(qureg, ketQubit, pI, pX, pY, pZ);
+    accel_densmatr_oneQubitPauliChannel_subB(qureg, ketQubit, probI, probX, probY, probZ);
+}
+
+
+void localiser_densmatr_oneQubitPauliChannel(Qureg qureg, int qubit, qreal probI, qreal probX, qreal probY, qreal probZ) {
+
+    (doesChannelRequireComm(qureg, qubit))?
+        oneQubitPauliChannelOnPrefix(qureg, qubit, probI, probX, probY, probZ):
+        accel_densmatr_oneQubitPauliChannel_subA(qureg, qubit, probI, probX, probY, probZ);
 }
 
 

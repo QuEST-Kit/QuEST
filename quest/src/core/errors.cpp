@@ -374,6 +374,11 @@ void error_utilsGetPrefixBraIndGivenSuffixQubit() {
     raiseInternalError("A function attmpted to obtain the prefix index of a bra-qubit, but passed a suffix qubit.");
 }
 
+void error_utilsIsBraQubitInSuffixGivenNonDensMatr() {
+
+    raiseInternalError("A functiion queried whether a qubit's corresponding bra-qubit was in the suffix substate, but the Qureg was not a density matrix.");
+}
+
 
 /*
  * PARSING ERRORS

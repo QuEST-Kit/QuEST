@@ -19,7 +19,7 @@ using std::vector;
  * COMMUNICATION BUFFER PACKING
  */
 
-template <int NumQubits> void cpu_statevec_packAmpsIntoBuffer(Qureg qureg, vector<int> qubitInds, vector<int> qubitStates);
+template <int NumQubits> qindex cpu_statevec_packAmpsIntoBuffer(Qureg qureg, vector<int> qubitInds, vector<int> qubitStates);
 
 
 /*
@@ -75,14 +75,15 @@ template <int NumCtrls> void cpu_statevector_anyCtrlAnyTargZOrPhaseGadget_sub(
 void cpu_densmatr_oneQubitDephasing_subA(Qureg qureg, int qubit, qreal prob);
 void cpu_densmatr_oneQubitDephasing_subB(Qureg qureg, int qubit, qreal prob);
 
-void cpu_densmatr_twoQubitDephasing_subA(Qureg qureg, int qubitA, int qubitB, qreal prob);
-void cpu_densmatr_twoQubitDephasing_subB(Qureg qureg, int qubitA, int qubitB, qreal prob);
+void cpu_densmatr_twoQubitDephasing_subA(Qureg qureg, int qubit1, int qubit2, qreal prob);
+void cpu_densmatr_twoQubitDephasing_subB(Qureg qureg, int qubit1, int qubit2, qreal prob);
 
-void cpu_densmatr_oneQubitDepolarising_subA(Qureg qureg, int ketQubit, qreal prob);
-void cpu_densmatr_oneQubitDepolarising_subB(Qureg qureg, int ketQubit, qreal prob);
+void cpu_densmatr_oneQubitDepolarising_subA(Qureg qureg, int qubit, qreal prob);
+void cpu_densmatr_oneQubitDepolarising_subB(Qureg qureg, int qubit, qreal prob);
 
-void cpu_densmatr_oneQubitPauliChannel_subA(Qureg qureg, int ketQubit, qreal pI, qreal pX, qreal pY, qreal pZ);
-void cpu_densmatr_oneQubitPauliChannel_subB(Qureg qureg, int ketQubit, qreal pI, qreal pX, qreal pY, qreal pZ);
+
+void cpu_densmatr_oneQubitPauliChannel_subA(Qureg qureg, int qubit, qreal pI, qreal pX, qreal pY, qreal pZ);
+void cpu_densmatr_oneQubitPauliChannel_subB(Qureg qureg, int qubit, qreal pI, qreal pX, qreal pY, qreal pZ);
 
 
 

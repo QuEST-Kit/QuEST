@@ -96,16 +96,11 @@ void accel_statevec_anyCtrlSwap_subC(Qureg qureg, vector<int> ctrls, vector<int>
 
 
 /*
- * ONE-TARGET MATRIX
+ * MATRICES
  */
 
 void accel_statevec_anyCtrlOneTargDenseMatr_subA(Qureg qureg, vector<int> ctrls, vector<int> ctrlStates, int targ, CompMatr1 matr);
 void accel_statevec_anyCtrlOneTargDenseMatr_subB(Qureg qureg, vector<int> ctrls, vector<int> ctrlStates, qcomp fac0, qcomp fac1);
-
-
-/*
- * ANY-TARGET MATRIX
- */
 
 void accel_statevec_anyCtrlAnyTargDenseMatr_sub(Qureg qureg, vector<int> ctrls, vector<int> ctrlStates, vector<int> targs, CompMatr matr);
 
@@ -118,11 +113,12 @@ void accel_statevec_anyCtrlAnyTargDiagMatr_sub(Qureg qureg, vector<int> ctrls, v
 
 void accel_statevector_anyCtrlPauliTensorOrGadget_subA(
     Qureg qureg, vector<int> ctrls, vector<int> ctrlStates, vector<int> suffixTargsXY, 
-    qindex suffixMaskXY, qindex allMaskYZ, qcomp powI, qcomp fac0, qcomp fac1);
-
+    qindex suffixMaskXY, qindex allMaskYZ, qcomp powI, qcomp fac0, qcomp fac1
+);
 void accel_statevector_anyCtrlPauliTensorOrGadget_subB(
     Qureg qureg, vector<int> ctrls, vector<int> ctrlStates,
-    qindex suffixMaskXY, qindex bufferMaskXY, qindex allMaskYZ, qcomp powI, qcomp fac0, qcomp fac1);
+    qindex suffixMaskXY, qindex bufferMaskXY, qindex allMaskYZ, qcomp powI, qcomp fac0, qcomp fac1
+);
 
 void accel_statevector_anyCtrlAnyTargZOrPhaseGadget_sub(
     Qureg qureg, vector<int> ctrls, vector<int> ctrlStates, vector<int> targs,
@@ -136,14 +132,15 @@ void accel_statevector_anyCtrlAnyTargZOrPhaseGadget_sub(
 void accel_densmatr_oneQubitDephasing_subA(Qureg qureg, int qubit, qreal prob);
 void accel_densmatr_oneQubitDephasing_subB(Qureg qureg, int qubit, qreal prob);
 
-void accel_densmatr_twoQubitDephasing_subA(Qureg qureg, int qubitA, int qubitB, qreal prob);
-void accel_densmatr_twoQubitDephasing_subB(Qureg qureg, int qubitA, int qubitB, qreal prob);
+void accel_densmatr_twoQubitDephasing_subA(Qureg qureg, int qubit1, int qubit2, qreal prob);
+void accel_densmatr_twoQubitDephasing_subB(Qureg qureg, int qubit1, int qubit2, qreal prob);
 
-void accel_densmatr_oneQubitDepolarising_subA(Qureg qureg, int ketQubit, qreal prob);
-void accel_densmatr_oneQubitDepolarising_subB(Qureg qureg, int ketQubit, qreal prob);
+void accel_densmatr_oneQubitDepolarising_subA(Qureg qureg, int qubit, qreal prob);
+void accel_densmatr_oneQubitDepolarising_subB(Qureg qureg, int qubit, qreal prob);
 
-void accel_densmatr_oneQubitPauliChannel_subA(Qureg qureg, int ketQubit, qreal pI, qreal pX, qreal pY, qreal pZ);
-void accel_densmatr_oneQubitPauliChannel_subB(Qureg qureg, int ketQubit, qreal pI, qreal pX, qreal pY, qreal pZ);
+
+void accel_densmatr_oneQubitPauliChannel_subA(Qureg qureg, int qubit, qreal pI, qreal pX, qreal pY, qreal pZ);
+void accel_densmatr_oneQubitPauliChannel_subB(Qureg qureg, int qubit, qreal pI, qreal pX, qreal pY, qreal pZ);
 
 
 #endif // ACCELERATOR_HPP

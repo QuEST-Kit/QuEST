@@ -177,6 +177,8 @@ void error_utilsGetPrefixBraIndGivenNonDensMatr();
 
 void error_utilsGetPrefixBraIndGivenSuffixQubit();
 
+void error_utilsIsBraQubitInSuffixGivenNonDensMatr();
+
 
 
 /*
