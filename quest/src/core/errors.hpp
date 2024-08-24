@@ -105,6 +105,8 @@ void assert_numTargsMatchesTemplateParam(int numTargs, int templateParam);
 
 void error_noCtrlsGivenToBufferPacker();
 
+void assert_bufferPackerGivenIncreasingQubits(int qubit1, int qubit2, int qubit3);
+
 
 
 /*

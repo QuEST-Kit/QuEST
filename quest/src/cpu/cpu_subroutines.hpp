@@ -21,6 +21,8 @@ using std::vector;
 
 template <int NumQubits> qindex cpu_statevec_packAmpsIntoBuffer(Qureg qureg, vector<int> qubitInds, vector<int> qubitStates);
 
+qindex cpu_statevec_packPairSummedAmpsIntoBuffer(Qureg qureg, int qubit1, int qubit2, int qubit3, int bit2);
+
 
 /*
  * SWAPS
@@ -81,6 +83,13 @@ void cpu_densmatr_twoQubitDephasing_subB(Qureg qureg, int qubit1, int qubit2, qr
 void cpu_densmatr_oneQubitDepolarising_subA(Qureg qureg, int qubit, qreal prob);
 void cpu_densmatr_oneQubitDepolarising_subB(Qureg qureg, int qubit, qreal prob);
 
+void cpu_densmatr_twoQubitDepolarising_subA(Qureg qureg, int qubit1, int qubit2, qreal prob);
+void cpu_densmatr_twoQubitDepolarising_subB(Qureg qureg, int qubit1, int qubit2, qreal prob);
+void cpu_densmatr_twoQubitDepolarising_subC(Qureg qureg, int qubit1, int qubit2, qreal prob);
+void cpu_densmatr_twoQubitDepolarising_subD(Qureg qureg, int qubit1, int qubit2, qreal prob);
+void cpu_densmatr_twoQubitDepolarising_subE(Qureg qureg, int qubit1, int qubit2, qreal prob);
+void cpu_densmatr_twoQubitDepolarising_subF(Qureg qureg, int qubit1, int qubit2, qreal prob);
+void cpu_densmatr_twoQubitDepolarising_subG(Qureg qureg, int qubit1, int qubit2, qreal prob);
 
 void cpu_densmatr_oneQubitPauliChannel_subA(Qureg qureg, int qubit, qreal pI, qreal pX, qreal pY, qreal pZ);
 void cpu_densmatr_oneQubitPauliChannel_subB(Qureg qureg, int qubit, qreal pI, qreal pX, qreal pY, qreal pZ);

@@ -348,6 +348,21 @@ array<qreal,3> util_getOneQubitDepolarisingFactors(qreal prob) {
     return {facAA, facBB, facAB};
 }
 
+array<qreal,3> util_getTwoQubitDepolarisingFactors(qreal prob) {
+
+    qreal fac1 = 1 - (4 * prob / 5);
+    qreal fac2 = 4 * prob / 15;
+    qreal fac3 = - (16 * prob / 15);
+
+    return {fac1, fac2, fac3};
+}
+
+array<qreal,2> util_getFirstTwoFactorsOfTwoQubitDepolarising(qreal prob) {
+
+    auto facs = util_getTwoQubitDepolarisingFactors(prob);
+    return {facs[0], facs[1]};
+}
+
 array<qreal,4> util_getOneQubitPauliChannelFactors(qreal pI, qreal pX, qreal pY, qreal pZ) {
 
     // effected where braQubit == ketQubit
