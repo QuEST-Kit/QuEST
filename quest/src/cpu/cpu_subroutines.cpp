@@ -66,6 +66,32 @@ qindex cpu_statevec_packAmpsIntoBuffer(Qureg qureg, vector<int> qubitInds, vecto
 }
 
 
+qindex cpu_statevec_packPairSummedAmpsIntoBuffer(Qureg qureg, int qubit1, int qubit2, int qubit3, int bit2) {
+    
+    assert_bufferPackerGivenIncreasingQubits(qubit1, qubit2, qubit3);
+
+    // pack eighth of buffer with pre-summed amp pairs
+    qindex numIts = qureg.numAmpsPerNode / 8;
+
+    // amplitudes are packed at an offset into the buffer
+    qindex offset = getSubBufferSendInd(qureg);
+
+    #pragma omp parallel for if(qureg.isMultithreaded)
+    for (qindex n=0; n<numIts; n++) {
+
+        // i000 = nth local index where all qubits are 0
+        qindex i000 = insertThreeZeroBits(n, qubit3, qubit2, qubit1);
+        qindex i0b0 = setBit(i000, qubit2, bit2);
+        qindex i1b1 = flipTwoBits(i0b0, qubit3, qubit1);
+
+        qureg.cpuCommBuffer[offset + n] = qureg.cpuAmps[i0b0] + qureg.cpuAmps[i1b1];
+    }
+
+    // return the number of packed amps
+    return numIts;
+}
+
+
 INSTANTIATE_FUNC_OPTIMISED_FOR_NUM_CTRLS( qindex, cpu_statevec_packAmpsIntoBuffer, (Qureg, vector<int>, vector<int>) )
 
 
@@ -691,6 +717,222 @@ void cpu_densmatr_oneQubitDepolarising_subB(Qureg qureg, int ketQubit, qreal pro
         qureg.cpuAmps[iAA] *= facAA;
         qureg.cpuAmps[iAA] += facBB * qureg.cpuCommBuffer[jBB];
         qureg.cpuAmps[iAB] *= facAB;
+    }
+}
+
+
+
+/*
+ * TWO-QUBIT DEPOLARISING
+ */
+
+
+void cpu_densmatr_twoQubitDepolarising_subA(Qureg qureg, int ketQb1, int ketQb2, qreal prob) {
+
+    // all amps are scaled (although 1/16 of them will be unchanged)
+    qindex numIts  = qureg.numAmpsPerNode;
+
+    // bra-qubits corresponding to ket-qubits
+    int braQb1 = util_getBraQubit(ketQb1, qureg);
+    int braQb2 = util_getBraQubit(ketQb2, qureg);
+
+    qreal c3; tie(ignore, ignore, c3) = util_getTwoQubitDepolarisingFactors(prob);
+
+    #pragma omp parallel for if(qureg.isMultithreaded)
+    for (qindex n=0; n<numIts; n++) {
+
+        // determine whether to modify amp
+        int flag1 = !(getBit(n, ketQb1) ^ getBit(n, braQb1));
+        int flag2 = !(getBit(n, ketQb2) ^ getBit(n, braQb2));
+        int mod   = !(flag1 & flag2);
+
+        // multiply 15/16 of all amps by (1 + c3)
+        qureg.cpuAmps[n] *= 1 + c3 * mod;
+    }
+}
+
+
+void cpu_densmatr_twoQubitDepolarising_subB(Qureg qureg, int ketQb1, int ketQb2, qreal prob) {
+
+    // one quarter of amps will be modified, and four are mixed each iteration
+    qindex numIts = qureg.numAmpsPerNode / 16;
+
+    // bra-qubits corresponding to ket-qubits
+    int braQb1 = util_getBraQubit(ketQb1, qureg);
+    int braQb2 = util_getBraQubit(ketQb2, qureg);
+
+    qreal c1, c2; tie(c1, c2, ignore) = util_getTwoQubitDepolarisingFactors(prob);
+
+    // for brevity
+    qcomp* amps = qureg.cpuAmps;
+
+    #pragma omp parallel for if(qureg.isMultithreaded)
+    for (qindex n=0; n<numIts; n++) {
+    
+        // i0000 = nth local index where all bra = ket = 00
+        qindex i0000 = insertFourZeroBits(n, braQb2, braQb1, ketQb2, ketQb1);
+        qindex i0101 = flipTwoBits(i0000, braQb1, ketQb1);
+        qindex i1010 = flipTwoBits(i0000, braQb2, ketQb2);
+        qindex i1111 = flipTwoBits(i0101, braQb2, ketQb2);
+        
+        // mix 1/16 of all amps in groups of 4
+        qcomp term = amps[i0000] + amps[i0101] + amps[i1010] + amps[i1111];
+
+        amps[i0000] = c1*amps[i0000] + c2*term;
+        amps[i0101] = c1*amps[i0101] + c2*term;
+        amps[i1010] = c1*amps[i1010] + c2*term;
+        amps[i1111] = c1*amps[i1111] + c2*term;
+    }
+}
+
+
+void cpu_densmatr_twoQubitDepolarising_subC(Qureg qureg, int ketQb1, int ketQb2, qreal prob) {
+
+    // scale 25% of amps but iterate all
+    qindex numIts = qureg.numAmpsPerNode;
+
+    int braQb1 = util_getBraQubit(ketQb1, qureg);
+    int braBit2 = util_getRankBitOfBraQubit(ketQb2, qureg);
+
+    qreal c3; tie(ignore, ignore, c3) = util_getTwoQubitDepolarisingFactors(prob);
+
+    // TODO:
+    // are we really inefficiently enumerating all amps and applying a non-unity
+    // factor to only 25%?! Is this because we do not know braBit2 and ergo 
+    // cannot be sure a direct enumeration is accessing indicies in a monotonically
+    // increasing order? Can that really outweigh a 3x slowdown?! Test and fix!
+
+    #pragma omp parallel for if(qureg.isMultithreaded)
+    for (qindex n=0; n<numIts; n++) {
+
+        // decide whether or not to modify nth local
+        bool flag1 = getBit(n, ketQb1) == getBit(n, braQb1); 
+        bool flag2 = getBit(n, ketQb2) == braBit2;
+        bool mod   = !(flag1 & flag2);
+
+        // scale amp by 1 or (1 + c3)
+        qureg.cpuAmps[n] *= 1 + c3 * mod;
+    }
+}
+
+
+void cpu_densmatr_twoQubitDepolarising_subD(Qureg qureg, int ketQb1, int ketQb2, qreal prob) {
+
+    // 25% of local amps are modified, two in each iteration
+    qindex numIts = qureg.numAmpsPerNode / 8;
+
+    // received amplitudes may begin at an arbitrary offset in the buffer
+    qindex offset = getBufferRecvInd();
+
+    int braQb1 = util_getBraQubit(ketQb1, qureg);
+    int braBit2 = util_getRankBitOfBraQubit(ketQb2, qureg);
+
+    qreal c1, c2; tie(c1, c2, ignore) = util_getTwoQubitDepolarisingFactors(prob);
+
+    #pragma omp parallel for if(qureg.isMultithreaded)
+    for (qindex n=0; n<numIts; n++) {
+
+        // i000 = nth local index where all suffix bits are 0
+        qindex i000 = insertThreeZeroBits(n, braQb1, ketQb2, ketQb1);
+        qindex i0b0 = setBit(i000, ketQb2, braBit2);
+        qindex i1b1 = flipTwoBits(i0b0, braQb1, ketQb1);
+
+        // j = nth received amp in buffer
+        qindex j = n + offset;
+
+        // mix pair of amps using buffer
+        qcomp amp0b0 = qureg.cpuAmps[i0b0];
+        qcomp amp1b1 = qureg.cpuAmps[i1b1];
+
+        qureg.cpuAmps[i0b0] = c1*amp0b0 + c2*(amp1b1 + qureg.cpuCommBuffer[j]);
+        qureg.cpuAmps[i1b1] = c1*amp1b1 + c2*(amp0b0 + qureg.cpuCommBuffer[j]);
+    }
+}
+
+
+void cpu_densmatr_twoQubitDepolarising_subE(Qureg qureg, int ketQb1, int ketQb2, qreal prob) {
+
+    // scale 25% of amps but iterate all
+    qindex numIts = qureg.numAmpsPerNode;
+
+    int braBit1 = util_getRankBitOfBraQubit(ketQb1, qureg);
+    int braBit2 = util_getRankBitOfBraQubit(ketQb2, qureg);
+
+    qreal c3; tie(ignore, ignore, c3) = util_getTwoQubitDepolarisingFactors(prob);
+
+    // TODO:
+    // are we really inefficiently enumerating all amps and applying a non-unity
+    // factor to only 25%?! Is this because we do not know braBit2 and ergo 
+    // cannot be sure a direct enumeration is accessing indicies in a monotonically
+    // increasing order? Can that really outweigh a 3x slowdown?! Test and fix!
+
+    #pragma omp parallel for if(qureg.isMultithreaded)
+    for (qindex n=0; n<numIts; n++) {
+
+        // choose whether to modify amp
+        bool flag1 = getBit(n, ketQb1) == braBit1; 
+        bool flag2 = getBit(n, ketQb2) == braBit2;
+        bool mod   = !(flag1 & flag2);
+        
+        // multiply amp by 1 or (1 + c3)
+        qureg.cpuAmps[n] *=  1 + c3 * mod;
+    }
+}
+
+
+void cpu_densmatr_twoQubitDepolarising_subF(Qureg qureg, int ketQb1, int ketQb2, qreal prob) {
+
+    // modify 25% of local amps, one per iteration
+    qindex numIts = qureg.numAmpsPerNode / 4;
+
+    // received amplitudes may begin at an arbitrary offset in the buffer
+    qindex offset = getBufferRecvInd();
+
+    int braBit1 = util_getRankBitOfBraQubit(ketQb1, qureg);
+    int braBit2 = util_getRankBitOfBraQubit(ketQb2, qureg);
+
+    qreal c1, c2; tie(c1, c2, ignore) = util_getTwoQubitDepolarisingFactors(prob);
+
+    #pragma omp parallel for if(qureg.isMultithreaded)
+    for (qindex n=0; n<numIts; n++) {
+
+        // i = nth local index where suffix ket qubits equal prefix bra qubits
+        qindex i = insertTwoBits(n, ketQb2, braBit2, ketQb1, braBit1);
+
+        // j = nth received amp in buffer
+        qindex j = n + offset;
+
+        // mix local amp with received buffer amp
+        qureg.cpuAmps[i] *= c1;
+        qureg.cpuAmps[i] += c2 * qureg.cpuCommBuffer[j];
+    }
+}
+
+
+void cpu_densmatr_twoQubitDepolarising_subG(Qureg qureg, int ketQb1, int ketQb2, qreal prob) {
+
+    // modify 25% of local amps, one per iteration
+    qindex numIts = qureg.numAmpsPerNode / 4;
+
+    // received amplitudes may begin at an arbitrary offset in the buffer
+    qindex offset = getBufferRecvInd();
+
+    int braBit1 = util_getRankBitOfBraQubit(ketQb1, qureg);
+    int braBit2 = util_getRankBitOfBraQubit(ketQb2, qureg);
+
+    qreal c1, c2; tie(c1, c2, ignore) = util_getTwoQubitDepolarisingFactors(prob);
+
+    #pragma omp parallel for if(qureg.isMultithreaded)
+    for (qindex n=0; n<numIts; n++) {
+
+        // i = nth local index where suffix ket qubits equal prefix bra qubits
+        qindex i = insertTwoBits(n, ketQb2, braBit2, ketQb1, braBit1);
+
+        // j = nth received amp in buffer
+        qindex j = n + offset;
+
+        // overwrite local amp with buffer amp
+        qureg.cpuAmps[i] = (c2 / c1) * qureg.cpuCommBuffer[j];
     }
 }
 

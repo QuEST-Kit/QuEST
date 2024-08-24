@@ -218,6 +218,7 @@ qreal util_getOneQubitDephasingFactor(qreal prob);
 qreal util_getTwoQubitDephasingTerm(qreal prob);
 
 array<qreal,3> util_getOneQubitDepolarisingFactors(qreal prob);
+array<qreal,3> util_getTwoQubitDepolarisingFactors(qreal prob);
 
 array<qreal,4> util_getOneQubitPauliChannelFactors(qreal pI, qreal pX, qreal pY, qreal pZ);
 

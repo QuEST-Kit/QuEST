@@ -107,6 +107,14 @@ qindex accel_statevec_packAmpsIntoBuffer(Qureg qureg, vector<int> qubits, vector
 }
 
 
+qindex accel_statevec_packPairSummedAmpsIntoBuffer(Qureg qureg, int qubit1, int qubit2, int qubit3, int bit2) {
+
+    return (qureg.isGpuAccelerated)?
+        gpu_statevec_packPairSummedAmpsIntoBuffer(qureg, qubit1, qubit2, qubit3, bit2):
+        cpu_statevec_packPairSummedAmpsIntoBuffer(qureg, qubit1, qubit2, qubit3, bit2);
+}
+
+
 
 /*
  * SWAPS
@@ -246,14 +254,62 @@ void accel_densmatr_oneQubitDepolarising_subA(Qureg qureg, int qubit, qreal prob
         gpu_densmatr_oneQubitDepolarising_subA(qureg, qubit, prob):
         cpu_densmatr_oneQubitDepolarising_subA(qureg, qubit, prob);
 }
-
-
-void accel_densmatr_oneQubitDepolarising_subB(Qureg qureg, int ketQubit, qreal prob) {
+void accel_densmatr_oneQubitDepolarising_subB(Qureg qureg, int qubit, qreal prob) {
 
     (qureg.isGpuAccelerated)?
-        gpu_densmatr_oneQubitDepolarising_subB(qureg, ketQubit, prob):
-        cpu_densmatr_oneQubitDepolarising_subB(qureg, ketQubit, prob);
+        gpu_densmatr_oneQubitDepolarising_subB(qureg, qubit, prob):
+        cpu_densmatr_oneQubitDepolarising_subB(qureg, qubit, prob);
 }
+
+
+void accel_densmatr_twoQubitDepolarising_subA(Qureg qureg, int qubit1, int qubit2, qreal prob) {
+
+    (qureg.isGpuAccelerated)?
+        gpu_densmatr_twoQubitDepolarising_subA(qureg, qubit1, qubit2, prob):
+        cpu_densmatr_twoQubitDepolarising_subA(qureg, qubit1, qubit2, prob);
+}
+void accel_densmatr_twoQubitDepolarising_subB(Qureg qureg, int qubit1, int qubit2, qreal prob) {
+    
+    (qureg.isGpuAccelerated)?
+        gpu_densmatr_twoQubitDepolarising_subB(qureg, qubit1, qubit2, prob):
+        cpu_densmatr_twoQubitDepolarising_subB(qureg, qubit1, qubit2, prob);
+}
+void accel_densmatr_twoQubitDepolarising_subC(Qureg qureg, int qubit1, int qubit2, qreal prob) {
+
+    (qureg.isGpuAccelerated)?
+        gpu_densmatr_twoQubitDepolarising_subC(qureg, qubit1, qubit2, prob):
+        cpu_densmatr_twoQubitDepolarising_subC(qureg, qubit1, qubit2, prob);
+}
+void accel_densmatr_twoQubitDepolarising_subD(Qureg qureg, int qubit1, int qubit2, qreal prob) {
+
+    (qureg.isGpuAccelerated)?
+        gpu_densmatr_twoQubitDepolarising_subD(qureg, qubit1, qubit2, prob):
+        cpu_densmatr_twoQubitDepolarising_subD(qureg, qubit1, qubit2, prob);
+}
+void accel_densmatr_twoQubitDepolarising_subE(Qureg qureg, int qubit1, int qubit2, qreal prob) {
+
+    (qureg.isGpuAccelerated)?
+        gpu_densmatr_twoQubitDepolarising_subE(qureg, qubit1, qubit2, prob):
+        cpu_densmatr_twoQubitDepolarising_subE(qureg, qubit1, qubit2, prob);
+}
+void accel_densmatr_twoQubitDepolarising_subF(Qureg qureg, int qubit1, int qubit2, qreal prob) {
+
+    (qureg.isGpuAccelerated)?
+        gpu_densmatr_twoQubitDepolarising_subF(qureg, qubit1, qubit2, prob):
+        cpu_densmatr_twoQubitDepolarising_subF(qureg, qubit1, qubit2, prob);
+}
+void accel_densmatr_twoQubitDepolarising_subG(Qureg qureg, int qubit1, int qubit2, qreal prob) {
+
+    (qureg.isGpuAccelerated)?
+        gpu_densmatr_twoQubitDepolarising_subG(qureg, qubit1, qubit2, prob):
+        cpu_densmatr_twoQubitDepolarising_subG(qureg, qubit1, qubit2, prob);
+}
+
+
+
+/*
+ * PAULI CHANNEL
+ */
 
 
 void accel_densmatr_oneQubitPauliChannel_subA(Qureg qureg, int qubit, qreal pI, qreal pX, qreal pY, qreal pZ) {
