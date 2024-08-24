@@ -626,6 +626,67 @@ void localiser_densmatr_oneQubitDepolarising(Qureg qureg, int qubit, qreal prob)
 
 
 
+/*
+ * TWO-QUBIT DEPOLARISING
+ */
+
+
+void twoQubitDepolarisingOnPrefixAndSuffix(Qureg qureg, int ketQb1, int ketQb2, qreal prob) {
+
+    // scale 25% of amps; precisely those which are not communicated
+    accel_densmatr_twoQubitDepolarising_subC(qureg, ketQb1, ketQb2, prob);
+
+    // pack an eighth of the buffer with pair-summed amps
+    int braQb1 = util_getBraQubit(ketQb1, qureg);
+    int braBit2 = util_getRankBitOfBraQubit(ketQb2, qureg);
+    qindex numPacked = accel_statevec_packPairSummedAmpsIntoBuffer(qureg, ketQb1, ketQb2, braQb1, braBit2);
+
+    // exchange sub-buffers
+    int pairRank = util_getRankWithBraQubitFlipped(ketQb2, qureg);
+    comm_exchangeSubBuffers(qureg, numPacked, pairRank);
+
+    // update 25% of local amps using received buffer amps
+    accel_densmatr_twoQubitDepolarising_subD(qureg, ketQb1, ketQb2, prob);
+}
+
+
+void twoQubitDepolarisingOnPrefixAndPrefix(Qureg qureg, int ketQb1, int ketQb2, qreal prob) {
+
+    int braBit1 = util_getRankBitOfBraQubit(ketQb1, qureg);
+    int braBit2 = util_getRankBitOfBraQubit(ketQb2, qureg);
+
+    // scale 25% of (non-communicated) amps
+    accel_densmatr_twoQubitDepolarising_subE(qureg, ketQb1, ketQb2, prob);
+
+    // pack and swap 25% of buffer, and use it to modify 25% of local amps
+    int pairRank1 = util_getRankWithBraQubitFlipped(ketQb1, qureg);
+    exchangeAmpsToBuffersWhereQubitsAreInStates(qureg, pairRank1, {ketQb1,ketQb2}, {braBit1,braBit2});
+    accel_densmatr_twoQubitDepolarising_subF(qureg, ketQb1, ketQb2, prob);
+
+    // pack and swap another 25% of buffer (we could pack during subE, but we choose not to)
+    int pairRank2 = util_getRankWithBraQubitFlipped(ketQb2, qureg);
+    exchangeAmpsToBuffersWhereQubitsAreInStates(qureg, pairRank2, {ketQb1,ketQb2}, {braBit1,braBit2});
+    accel_densmatr_twoQubitDepolarising_subG(qureg, ketQb1, ketQb2, prob);
+}
+
+
+void localiser_densmatr_twoQubitDepolarising(Qureg qureg, int qubit1, int qubit2, qreal prob) {
+
+    // ensure qubit2 > qubit1
+    if (qubit1 > qubit2)
+        std::swap(qubit1, qubit2);
+
+    // determine necessary communication
+    bool comm1 = doesChannelRequireComm(qureg, qubit1);
+    bool comm2 = doesChannelRequireComm(qureg, qubit2);
+
+    if (comm2 && comm1)
+        twoQubitDepolarisingOnPrefixAndPrefix(qureg, qubit1, qubit2, prob);
+    if (comm2 && !comm1)
+        twoQubitDepolarisingOnPrefixAndSuffix(qureg, qubit1, qubit2, prob);
+    if (!comm2 && !comm1) {
+        accel_densmatr_twoQubitDepolarising_subA(qureg, qubit1, qubit2, prob);
+        accel_densmatr_twoQubitDepolarising_subB(qureg, qubit1, qubit2, prob);
     }
 }
 
