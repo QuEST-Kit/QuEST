@@ -16,6 +16,7 @@
 #include "quest/src/core/bitwise.hpp"
 #include "quest/src/core/utilities.hpp"
 #include "quest/src/core/accelerator.hpp"
+#include "quest/src/comm/comm_config.hpp"
 #include "quest/src/comm/comm_routines.hpp"
 
 #include <tuple>
@@ -578,6 +579,7 @@ void localiser_statevec_anyCtrlPauliGadget(Qureg qureg, vector<int> ctrls, vecto
 
 
 void localiser_densmatr_oneQubitDephasing(Qureg qureg, int qubit, qreal prob) {
+    assert_localiserGivenDensMatr(qureg);
 
     // both methods are embarrassingly parallel
     (util_isBraQubitInSuffix(qubit, qureg))?
@@ -587,6 +589,7 @@ void localiser_densmatr_oneQubitDephasing(Qureg qureg, int qubit, qreal prob) {
 
 
 void localiser_densmatr_twoQubitDephasing(Qureg qureg, int qubit1, int qubit2, qreal prob) {
+    assert_localiserGivenDensMatr(qureg);
 
     // relative size of qubit1 and qubit2 does not matter
     int leftQubit = std::max(qubit1, qubit2);
@@ -605,6 +608,7 @@ void localiser_densmatr_twoQubitDephasing(Qureg qureg, int qubit1, int qubit2, q
 
 
 void oneQubitDepolarisingOnPrefix(Qureg qureg, int ketQubit, qreal prob) {
+    assert_localiserGivenDensMatr(qureg);
 
     // pack and exchange amps to buffers where local ket qubit and fixed-prefix-bra qubit agree
     int braBit = util_getRankBitOfBraQubit(ketQubit, qureg);
@@ -617,6 +621,7 @@ void oneQubitDepolarisingOnPrefix(Qureg qureg, int ketQubit, qreal prob) {
 
 
 void localiser_densmatr_oneQubitDepolarising(Qureg qureg, int qubit, qreal prob) {
+    assert_localiserGivenDensMatr(qureg);
 
     // perform embarrassingly parallel routine or pairwise communication
     (doesChannelRequireComm(qureg, qubit))?
@@ -632,6 +637,7 @@ void localiser_densmatr_oneQubitDepolarising(Qureg qureg, int qubit, qreal prob)
 
 
 void twoQubitDepolarisingOnPrefixAndSuffix(Qureg qureg, int ketQb1, int ketQb2, qreal prob) {
+    assert_localiserGivenDensMatr(qureg);
 
     // scale 25% of amps; precisely those which are not communicated
     accel_densmatr_twoQubitDepolarising_subC(qureg, ketQb1, ketQb2, prob);
@@ -651,6 +657,7 @@ void twoQubitDepolarisingOnPrefixAndSuffix(Qureg qureg, int ketQb1, int ketQb2, 
 
 
 void twoQubitDepolarisingOnPrefixAndPrefix(Qureg qureg, int ketQb1, int ketQb2, qreal prob) {
+    assert_localiserGivenDensMatr(qureg);
 
     int braBit1 = util_getRankBitOfBraQubit(ketQb1, qureg);
     int braBit2 = util_getRankBitOfBraQubit(ketQb2, qureg);
@@ -671,6 +678,7 @@ void twoQubitDepolarisingOnPrefixAndPrefix(Qureg qureg, int ketQb1, int ketQb2, 
 
 
 void localiser_densmatr_twoQubitDepolarising(Qureg qureg, int qubit1, int qubit2, qreal prob) {
+    assert_localiserGivenDensMatr(qureg);
 
     // ensure qubit2 > qubit1
     if (qubit1 > qubit2)
@@ -693,11 +701,12 @@ void localiser_densmatr_twoQubitDepolarising(Qureg qureg, int qubit1, int qubit2
 
 
 /*
- * ONE-QUBIT PAULI CHANNEL
+ * PAULI CHANNEL
  */
 
 
 void oneQubitPauliChannelOnPrefix(Qureg qureg, int ketQubit, qreal probI, qreal probX, qreal probY, qreal probZ) {
+    assert_localiserGivenDensMatr(qureg);
 
     // exchange all amps with pair node
     int pairRank = util_getRankWithBraQubitFlipped(ketQubit, qureg);
@@ -709,6 +718,7 @@ void oneQubitPauliChannelOnPrefix(Qureg qureg, int ketQubit, qreal probI, qreal 
 
 
 void localiser_densmatr_oneQubitPauliChannel(Qureg qureg, int qubit, qreal probI, qreal probX, qreal probY, qreal probZ) {
+    assert_localiserGivenDensMatr(qureg);
 
     (doesChannelRequireComm(qureg, qubit))?
         oneQubitPauliChannelOnPrefix(qureg, qubit, probI, probX, probY, probZ):
@@ -716,3 +726,55 @@ void localiser_densmatr_oneQubitPauliChannel(Qureg qureg, int qubit, qreal probI
 }
 
 
+// twoQubitPauliChannel() is regrettably too difficult; the communication model cannot be 
+// simplified the way it was in twoQubitDepolarising() which levereaged the uniform
+// coefficients. It is not clear whether arbitrary coefficients, which cause many more
+// amplitudes to mix, can eve be performed in a sequence of pairwise communication
+
+
+
+/*
+ * AMPLITUDE DAMPING
+ */
+
+
+void oneQubitDampingOnPrefix(Qureg qureg, int ketQubit, qreal prob) {
+
+    int braBit = util_getRankBitOfBraQubit(ketQubit, qureg);
+    int pairRank = util_getRankWithBraQubitFlipped(ketQubit, qureg);
+    qindex numAmps = qureg.numAmpsPerNode / 2;
+
+    // half of all nodes...
+    if (braBit == 1) {
+
+        // pack and async send half the buffer
+        accel_statevec_packAmpsIntoBuffer(qureg, {ketQubit}, {1});
+        comm_asynchSendSubBuffer(qureg, numAmps, pairRank);
+
+        // scale the local amps which were just sent
+        accel_densmatr_oneQubitDamping_subB(qureg, ketQubit, prob);
+    }
+
+    // all nodes scale the other half of their local amps
+    accel_densmatr_oneQubitDamping_subC(qureg, ketQubit, prob);
+
+    // the other remaining half of all nodes...
+    if (braBit == 0) {
+
+        // receive the async-sent buffer
+        comm_receiveArrayToBuffer(qureg, numAmps, pairRank);
+        accel_densmatr_oneQubitDamping_subD(qureg, ketQubit, prob);
+    }
+
+    // prevent asynch senders from proceeding so their buffer isn't prematurely modified
+    comm_sync();
+}
+
+
+void localiser_densmatr_oneQubitDamping(Qureg qureg, int qubit, qreal prob) {
+    assert_localiserGivenDensMatr(qureg);
+
+    (doesChannelRequireComm(qureg, qubit))?
+        oneQubitDampingOnPrefix(qureg, qubit, prob):
+        accel_densmatr_oneQubitDamping_subA(qureg, qubit, prob);
+}

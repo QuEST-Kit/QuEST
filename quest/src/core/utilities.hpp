@@ -223,6 +223,8 @@ array<qreal,2> util_getFirstTwoFactorsOfTwoQubitDepolarising(qreal prob);
 
 array<qreal,4> util_getOneQubitPauliChannelFactors(qreal pI, qreal pX, qreal pY, qreal pZ);
 
+array<qcomp,2> util_getOneQubitDampingFactors(qreal prob);
+
 
 
 #endif // UTILITIES_HPP

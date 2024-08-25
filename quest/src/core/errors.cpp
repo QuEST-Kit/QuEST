@@ -178,6 +178,12 @@ void error_localiserPassedStateVecToChannelComCheck() {
     raiseInternalError("The localiser queried whether a channel would invoke communication upon a statevector.");
 }
 
+void assert_localiserGivenDensMatr(Qureg qureg) {
+
+    if (!qureg.isDensityMatrix)
+        raiseInternalError("The localiser received a statevector to a function defined only upon density matrices.");
+}
+
 
 
 /*

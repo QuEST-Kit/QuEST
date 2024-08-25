@@ -85,6 +85,8 @@ void error_localiserGivenPauliTensorOrGadgetWithoutXOrY();
 
 void error_localiserPassedStateVecToChannelComCheck();
 
+void assert_localiserGivenDensMatr(Qureg qureg);
+
 
 
 /*
