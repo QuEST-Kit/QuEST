@@ -869,7 +869,7 @@ void gpu_densmatr_oneQubitDamping_subB(Qureg qureg, int qubit, qreal prob) {
     auto c2 = util_getOneQubitDampingFactors(prob)[1];
 
     kernel_densmatr_oneQubitDamping_subB <<<numBlocks, NUM_THREADS_PER_BLOCK>>> (
-        toCuQcomps(qureg.gpuAmps), numThreads, qubit, c2
+        toCuQcomps(qureg.gpuAmps), numThreads, qubit, toCuQcomp(c2)
     );
 
 #else
@@ -885,11 +885,11 @@ void gpu_densmatr_oneQubitDamping_subC(Qureg qureg, int ketQubit, qreal prob) {
     qindex numThreads = qureg.numAmpsPerNode / 2;
     qindex numBlocks = getNumBlocks(numThreads);
 
-    auto braBit = util_getRankBitOfBraQubit(ketQubit, querg);
+    auto braBit = util_getRankBitOfBraQubit(ketQubit, qureg);
     auto c1 = util_getOneQubitDampingFactors(prob)[0];
 
     kernel_densmatr_oneQubitDamping_subC <<<numBlocks, NUM_THREADS_PER_BLOCK>>> (
-        toCuQcomps(qureg.gpuAmps), numThreads, ketQubit, braBit, c1
+        toCuQcomps(qureg.gpuAmps), numThreads, ketQubit, braBit, toCuQcomp(c1)
     );
 
 #else
