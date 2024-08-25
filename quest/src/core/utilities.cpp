@@ -375,3 +375,12 @@ array<qreal,4> util_getOneQubitPauliChannelFactors(qreal pI, qreal pX, qreal pY,
 
     return {facAA, facBB, facAB, facBA};
 }
+
+array<qcomp,2> util_getOneQubitDampingFactors(qreal prob) {
+
+    // sqrt() can return complex for unnnormalised prob
+    qcomp c1 = sqrt(1 - qcomp(prob,0));
+    qcomp c2 = 1 - prob;
+
+    return {c1, c2};
+}

@@ -720,4 +720,79 @@ __global__ void kernel_densmatr_oneQubitPauliChannel_subB(
 }
 
 
+
+/*
+ * AMPLITUDE DAMPING
+ */
+
+
+__global__ void kernel_densmatr_oneQubitDamping_subA(
+    cu_qcomp* amps, qindex numThreads,
+    int ketQubit, int braQubit, qreal prob, cu_qcomp c1, cu_qcomp c2
+) {
+    GET_THREAD_IND(n, numThreads);
+
+    // i00 = nth local index where bra and ket qubits are 0
+    qindex i00 = insertTwoBits(n, braQubit, 0, ketQubit, 0);
+    qindex i01 = flipBit(i00, ketQubit);
+    qindex i10 = flipBit(i00, braQubit);
+    qindex i11 = flipBit(i01, braQubit);
+    
+    // mix both-zero amp with both-one amp (but not vice versa)
+    amps[i00] += prob * amps[i11];
+
+    // scale other amps
+    amps[i01] *= c1;
+    amps[i10] *= c1;
+    amps[i11] *= c2;
+}
+
+
+__global__ void kernel_densmatr_oneQubitDamping_subB(
+    cu_qcomp* amps, qindex numThreads,
+    int qubit, cu_qcomp c2
+) {
+    GET_THREAD_IND(n, numThreads);
+
+    // TODO:
+    // this extremely simple kernel can be definitely
+    // be replaced with a Thrust invocation, to reduce
+    // boilerplate
+
+    // i = nth local index where qubit=1
+    qindex i = insertBit(n, qubit, 1);
+    amps[i] *= c2;
+}
+
+
+__global__ void kernel_densmatr_oneQubitDamping_subC(
+    cu_qcomp* amps, qindex numThreads,
+    int ketQubit, int braBit, cu_qcomp c1
+) {
+    GET_THREAD_IND(n, numThreads);
+
+    // TODO:
+    // this extremely simple kernel can be definitely
+    // be replaced with a Thrust invocation, to reduce
+    // boilerplate
+
+    // i = nth local index where ket differs from bra
+    qindex i = insertBit(n, ketQubit, ! braBit);
+    amps[i] *= c1;
+}
+
+
+__global__ void kernel_densmatr_oneQubitDamping_subD(
+    cu_qcomp* amps, cu_qcomp* buffer, qindex numThreads,
+    int qubit, qreal prob
+) {
+    GET_THREAD_IND(n, numThreads);
+
+    // i = nth local index where ket is 0
+    qindex i = insertBit(n, qubit, 0);
+    amps[i] += prob * buffer[n];
+}
+
+
+
 #endif // GPU_KERNELS_HPP

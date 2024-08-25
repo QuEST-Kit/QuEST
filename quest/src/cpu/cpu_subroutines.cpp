@@ -1020,3 +1020,94 @@ void cpu_densmatr_oneQubitPauliChannel_subB(Qureg qureg, int ketQubit, qreal pI,
         qureg.cpuAmps[iAB] += facBA * qureg.cpuCommBuffer[jBA];
     }
 }
+
+
+
+/*
+ * AMPLITUDE DAMPING CHANNEL
+ */
+
+
+void cpu_densmatr_oneQubitDamping_subA(Qureg qureg, int ketQubit, qreal prob) {
+
+    // each iteration modifies 4 amps
+    qindex numIts = qureg.numAmpsPerNode / 4;
+
+    int braQubit = util_getBraQubit(ketQubit, qureg);
+    auto [c1, c2] = util_getOneQubitDampingFactors(prob);
+
+    #pragma omp parallel for
+    for (qindex n=0; n<numIts; n++) {
+
+        // i00 = nth local index where bra and ket qubits are 0
+        qindex i00 = insertTwoBits(n, braQubit, 0, ketQubit, 0);
+        qindex i01 = flipBit(i00, ketQubit);
+        qindex i10 = flipBit(i00, braQubit);
+        qindex i11 = flipBit(i01, braQubit);
+        
+        // mix both-zero amp with both-one amp (but not vice versa)
+        qureg.cpuAmps[i00] += prob * qureg.cpuAmps[i11];
+
+        // scale other amps
+        qureg.cpuAmps[i01] *= c1;
+        qureg.cpuAmps[i10] *= c1;
+        qureg.cpuAmps[i11] *= c2;
+    }
+}
+
+
+void cpu_densmatr_oneQubitDamping_subB(Qureg qureg, int qubit, qreal prob) {
+
+    // half of all local amps are scaled
+    qindex numIts = qureg.numAmpsPerNode / 2;
+
+    auto c2 = util_getOneQubitDampingFactors(prob)[1];
+
+    #pragma omp parallel for
+    for (qindex n=0; n<numIts; n++) {
+
+        // i = nth local index where qubit=1
+        qindex i= insertBit(n, qubit, 1);
+        qureg.cpuAmps[i] *= c2;
+    }
+}
+
+
+void cpu_densmatr_oneQubitDamping_subC(Qureg qureg, int ketQubit, qreal prob) {
+
+    // half of all local amps are scaled
+    qindex numIts = qureg.numAmpsPerNode / 2;
+
+    int braBit = util_getRankBitOfBraQubit(ketQubit, qureg);
+    auto c1 = util_getOneQubitDampingFactors(prob)[0];
+
+    #pragma omp parallel for
+    for (qindex n=0; n<numIts; n++) {
+
+        // i = nth local index where ket differs from bra
+        qindex i = insertBit(n, ketQubit, ! braBit);
+        qureg.cpuAmps[i] *= c1;
+    }
+}
+
+
+void cpu_densmatr_oneQubitDamping_subD(Qureg qureg, int qubit, qreal prob) {
+
+    // half of all local amps are combined with buffer
+    qindex numIts = qureg.numAmpsPerNode / 2;
+
+    // received amplitudes may begin at an arbitrary offset in the buffer
+    qindex offset = getBufferRecvInd();
+
+    #pragma omp parallel for
+    for (qindex n=0; n<numIts; n++) {
+
+        // i = nth local index where ket is 0
+        qindex i = insertBit(n, qubit, 0);
+
+        // j = nth received buffer indes
+        qindex j = n + offset;
+
+        qureg.cpuAmps[i] += prob * qureg.cpuCommBuffer[j];
+    }
+}

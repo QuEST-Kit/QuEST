@@ -151,5 +151,10 @@ void accel_densmatr_twoQubitDepolarising_subG(Qureg qureg, int qubit1, int qubit
 void accel_densmatr_oneQubitPauliChannel_subA(Qureg qureg, int qubit, qreal pI, qreal pX, qreal pY, qreal pZ);
 void accel_densmatr_oneQubitPauliChannel_subB(Qureg qureg, int qubit, qreal pI, qreal pX, qreal pY, qreal pZ);
 
+void accel_densmatr_oneQubitDamping_subA(Qureg qureg, int qubit, qreal prob);
+void accel_densmatr_oneQubitDamping_subB(Qureg qureg, int qubit, qreal prob);
+void accel_densmatr_oneQubitDamping_subC(Qureg qureg, int qubit, qreal prob);
+void accel_densmatr_oneQubitDamping_subD(Qureg qureg, int qubit, qreal prob);
+
 
 #endif // ACCELERATOR_HPP

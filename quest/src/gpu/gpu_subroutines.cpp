@@ -53,11 +53,8 @@
     #include "quest/src/gpu/gpu_cuquantum.cuh"
 #endif
 
-#include <tuple>
 #include <vector>
 
-using std::tie;
-using std::ignore;
 using std::vector;
 
 
@@ -827,6 +824,91 @@ void gpu_densmatr_oneQubitPauliChannel_subB(Qureg qureg, int ketQubit, qreal pI,
     kernel_densmatr_oneQubitPauliChannel_subB <<<numBlocks, NUM_THREADS_PER_BLOCK>>> (
         toCuQcomps(qureg.gpuAmps), &toCuQcomps(qureg.gpuCommBuffer)[recvInd], numThreads, 
         ketQubit, braBit, facAA, facBB, facAB, facBA
+    );
+
+#else
+    error_gpuSimButGpuNotCompiled();
+#endif
+}
+
+
+
+/*
+ * AMPLITUDE DAMPING
+ */
+
+
+void gpu_densmatr_oneQubitDamping_subA(Qureg qureg, int ketQubit, qreal prob) {
+
+#if COMPILE_CUDA || COMPILE_CUQUANTUM
+
+    qindex numThreads = qureg.numAmpsPerNode / 4;
+    qindex numBlocks = getNumBlocks(numThreads);
+
+    int braQubit = util_getBraQubit(ketQubit, qureg);
+    auto [c1, c2] = util_getOneQubitDampingFactors(prob);
+
+    kernel_densmatr_oneQubitDamping_subA <<<numBlocks, NUM_THREADS_PER_BLOCK>>> (
+        toCuQcomps(qureg.gpuAmps), numThreads,
+        ketQubit, braQubit, prob, toCuQcomp(c1), toCuQcomp(c2)
+    );
+
+#else
+    error_gpuSimButGpuNotCompiled();
+#endif
+}
+
+
+void gpu_densmatr_oneQubitDamping_subB(Qureg qureg, int qubit, qreal prob) {
+
+#if COMPILE_CUDA || COMPILE_CUQUANTUM
+
+    qindex numThreads = qureg.numAmpsPerNode / 2;
+    qindex numBlocks = getNumBlocks(numThreads);
+
+    auto c2 = util_getOneQubitDampingFactors(prob)[1];
+
+    kernel_densmatr_oneQubitDamping_subB <<<numBlocks, NUM_THREADS_PER_BLOCK>>> (
+        toCuQcomps(qureg.gpuAmps), numThreads, qubit, c2
+    );
+
+#else
+    error_gpuSimButGpuNotCompiled();
+#endif
+}
+
+
+void gpu_densmatr_oneQubitDamping_subC(Qureg qureg, int ketQubit, qreal prob) {
+
+#if COMPILE_CUDA || COMPILE_CUQUANTUM
+
+    qindex numThreads = qureg.numAmpsPerNode / 2;
+    qindex numBlocks = getNumBlocks(numThreads);
+
+    auto braBit = util_getRankBitOfBraQubit(ketQubit, querg);
+    auto c1 = util_getOneQubitDampingFactors(prob)[0];
+
+    kernel_densmatr_oneQubitDamping_subC <<<numBlocks, NUM_THREADS_PER_BLOCK>>> (
+        toCuQcomps(qureg.gpuAmps), numThreads, ketQubit, braBit, c1
+    );
+
+#else
+    error_gpuSimButGpuNotCompiled();
+#endif
+}
+
+
+void gpu_densmatr_oneQubitDamping_subD(Qureg qureg, int qubit, qreal prob) {
+
+#if COMPILE_CUDA || COMPILE_CUQUANTUM
+
+    qindex numThreads = qureg.numAmpsPerNode / 2;
+    qindex numBlocks = getNumBlocks(numThreads);
+    qindex recvInd = getBufferRecvInd();
+
+    kernel_densmatr_oneQubitDamping_subD <<<numBlocks, NUM_THREADS_PER_BLOCK>>> (
+        toCuQcomps(qureg.gpuAmps), &toCuQcomps(qureg.gpuCommBuffer)[recvInd], numThreads, 
+        qubit, prob
     );
 
 #else

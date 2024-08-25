@@ -67,5 +67,7 @@ void localiser_densmatr_twoQubitDepolarising(Qureg qureg, int qubitA, int qubitB
 
 void localiser_densmatr_oneQubitPauliChannel(Qureg qureg, int qubit, qreal pI, qreal pX, qreal pY, qreal pZ);
 
+void localiser_densmatr_oneQubitDamping(Qureg qureg, int qubit, qreal prob);
+
 
 #endif // LOCALISER_HPP

@@ -324,3 +324,35 @@ void accel_densmatr_oneQubitPauliChannel_subB(Qureg qureg, int ketQubit, qreal p
         gpu_densmatr_oneQubitPauliChannel_subB(qureg, ketQubit, pI, pX, pY, pZ):
         cpu_densmatr_oneQubitPauliChannel_subB(qureg, ketQubit, pI, pX, pY, pZ);
 }
+
+
+
+/*
+ * AMPLITUDE DAMPING CHANNEL
+ */
+
+
+void accel_densmatr_oneQubitDamping_subA(Qureg qureg, int qubit, qreal prob) {
+
+    (qureg.isGpuAccelerated)?
+        gpu_densmatr_oneQubitDamping_subA(qureg, qubit, prob):
+        cpu_densmatr_oneQubitDamping_subA(qureg, qubit, prob);
+}
+void accel_densmatr_oneQubitDamping_subB(Qureg qureg, int qubit, qreal prob) {
+
+    (qureg.isGpuAccelerated)?
+        gpu_densmatr_oneQubitDamping_subB(qureg, qubit, prob):
+        cpu_densmatr_oneQubitDamping_subB(qureg, qubit, prob);
+}
+void accel_densmatr_oneQubitDamping_subC(Qureg qureg, int qubit, qreal prob) {
+
+    (qureg.isGpuAccelerated)?
+        gpu_densmatr_oneQubitDamping_subC(qureg, qubit, prob):
+        cpu_densmatr_oneQubitDamping_subC(qureg, qubit, prob);
+}
+void accel_densmatr_oneQubitDamping_subD(Qureg qureg, int qubit, qreal prob) {
+
+    (qureg.isGpuAccelerated)?
+        gpu_densmatr_oneQubitDamping_subD(qureg, qubit, prob):
+        cpu_densmatr_oneQubitDamping_subD(qureg, qubit, prob);
+}

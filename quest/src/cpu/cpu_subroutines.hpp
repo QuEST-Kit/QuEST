@@ -94,6 +94,10 @@ void cpu_densmatr_twoQubitDepolarising_subG(Qureg qureg, int qubit1, int qubit2,
 void cpu_densmatr_oneQubitPauliChannel_subA(Qureg qureg, int qubit, qreal pI, qreal pX, qreal pY, qreal pZ);
 void cpu_densmatr_oneQubitPauliChannel_subB(Qureg qureg, int qubit, qreal pI, qreal pX, qreal pY, qreal pZ);
 
+void cpu_densmatr_oneQubitDamping_subA(Qureg qureg, int qubit, qreal prob);
+void cpu_densmatr_oneQubitDamping_subB(Qureg qureg, int qubit, qreal prob);
+void cpu_densmatr_oneQubitDamping_subC(Qureg qureg, int qubit, qreal prob);
+void cpu_densmatr_oneQubitDamping_subD(Qureg qureg, int qubit, qreal prob);
 
 
 #endif // CPU_SUBROUTINES_HPP
