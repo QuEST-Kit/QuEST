@@ -795,4 +795,50 @@ __global__ void kernel_densmatr_oneQubitDamping_subD(
 
 
 
+/*
+ * PARTIAL TRACE
+ */
+
+
+template <int NumTargs>
+void kernel_densmatr_partialTrace_sub(
+    cu_qcomp* ampsIn, cu_qcomp* ampsOut, qindex numThreads,
+    int* ketTargs, int* pairTargs, int* allTargs, int numKetTargs
+) {
+    GET_THREAD_IND(n, numThreads);
+
+    // use template param to compile-time unroll below loops
+    SET_VAR_AT_COMPILE_TIME(int, numTargPairs, NumTargs, numKetTargs);
+
+    // may be inferred at compile-time
+    int numAllTargs = 2*numTargPairs;
+    qindex numIts = powerOf2(numTargPairs);
+
+    // TODO:
+    // this implementation assumes that the number of amps in outQureg equals or exceeds the 
+    // number of CUDA cores, which may not be true when tracing out almost all qubits. We 
+    // should change the parallelisation axis in this scenario, or preclude it with validation!
+
+    // k = nth local index of inQureg where all targs and pairs are zero
+    qindex k = insertBits(n, allTargs, numAllTargs, 0); // loop may be unrolled
+
+    // each outQureg amp results from summing 2^targs inQureg amps
+    cu_qcomp outAmp = 0;
+
+    // loop may be unrolled
+    for (qindex j=0; j<numIts; j++) {
+
+        // i = nth local index of inQureg where targs=j and pairTargs=j
+        qindex i = k;
+        i = setBits(i, ketTargs, numTargPairs, j); // loops may be unrolled
+        i = setBits(i, pairTargs, numTargPairs, j);
+
+        outAmp += ampsIn[i];
+    }
+
+    ampsOut[n] = outAmp;
+}
+
+
+
 #endif // GPU_KERNELS_HPP

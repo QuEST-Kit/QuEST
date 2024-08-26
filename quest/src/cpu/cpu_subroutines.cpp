@@ -92,7 +92,7 @@ qindex cpu_statevec_packPairSummedAmpsIntoBuffer(Qureg qureg, int qubit1, int qu
 }
 
 
-INSTANTIATE_FUNC_OPTIMISED_FOR_NUM_CTRLS( qindex, cpu_statevec_packAmpsIntoBuffer, (Qureg, vector<int>, vector<int>) )
+INSTANTIATE_FUNC_OPTIMISED_FOR_NUM_TARGS( qindex, cpu_statevec_packAmpsIntoBuffer, (Qureg, vector<int>, vector<int>) )
 
 
 
@@ -101,7 +101,8 @@ INSTANTIATE_FUNC_OPTIMISED_FOR_NUM_CTRLS( qindex, cpu_statevec_packAmpsIntoBuffe
  */
 
 
-template <int NumCtrls> void cpu_statevec_anyCtrlSwap_subA(Qureg qureg, vector<int> ctrls, vector<int> ctrlStates, int targ1, int targ2) {
+template <int NumCtrls>
+void cpu_statevec_anyCtrlSwap_subA(Qureg qureg, vector<int> ctrls, vector<int> ctrlStates, int targ1, int targ2) {
 
     assert_numCtrlsMatchesNumCtrlStatesAndTemplateParam(ctrls.size(), ctrlStates.size(), NumCtrls);
 
@@ -127,7 +128,8 @@ template <int NumCtrls> void cpu_statevec_anyCtrlSwap_subA(Qureg qureg, vector<i
 }
 
 
-template <int NumCtrls> void cpu_statevec_anyCtrlSwap_subB(Qureg qureg, vector<int> ctrls, vector<int> ctrlStates) {
+template <int NumCtrls>
+void cpu_statevec_anyCtrlSwap_subB(Qureg qureg, vector<int> ctrls, vector<int> ctrlStates) {
 
     assert_numCtrlsMatchesNumCtrlStatesAndTemplateParam(ctrls.size(), ctrlStates.size(), NumCtrls);
 
@@ -158,7 +160,8 @@ template <int NumCtrls> void cpu_statevec_anyCtrlSwap_subB(Qureg qureg, vector<i
 }
 
 
-template <int NumCtrls> void cpu_statevec_anyCtrlSwap_subC(Qureg qureg, vector<int> ctrls, vector<int> ctrlStates, int targ, int targState) {
+template <int NumCtrls>
+void cpu_statevec_anyCtrlSwap_subC(Qureg qureg, vector<int> ctrls, vector<int> ctrlStates, int targ, int targState) {
 
     assert_numCtrlsMatchesNumCtrlStatesAndTemplateParam(ctrls.size(), ctrlStates.size(), NumCtrls);
 
@@ -1036,7 +1039,7 @@ void cpu_densmatr_oneQubitDamping_subA(Qureg qureg, int ketQubit, qreal prob) {
     int braQubit = util_getBraQubit(ketQubit, qureg);
     auto [c1, c2] = util_getOneQubitDampingFactors(prob);
 
-    #pragma omp parallel for
+    #pragma omp parallel for if(qureg.isMultithreaded)
     for (qindex n=0; n<numIts; n++) {
 
         // i00 = nth local index where bra and ket qubits are 0
@@ -1063,7 +1066,7 @@ void cpu_densmatr_oneQubitDamping_subB(Qureg qureg, int qubit, qreal prob) {
 
     auto c2 = util_getOneQubitDampingFactors(prob)[1];
 
-    #pragma omp parallel for
+    #pragma omp parallel for if(qureg.isMultithreaded)
     for (qindex n=0; n<numIts; n++) {
 
         // i = nth local index where qubit=1
@@ -1081,7 +1084,7 @@ void cpu_densmatr_oneQubitDamping_subC(Qureg qureg, int ketQubit, qreal prob) {
     int braBit = util_getRankBitOfBraQubit(ketQubit, qureg);
     auto c1 = util_getOneQubitDampingFactors(prob)[0];
 
-    #pragma omp parallel for
+    #pragma omp parallel for if(qureg.isMultithreaded)
     for (qindex n=0; n<numIts; n++) {
 
         // i = nth local index where ket differs from bra
@@ -1099,7 +1102,7 @@ void cpu_densmatr_oneQubitDamping_subD(Qureg qureg, int qubit, qreal prob) {
     // received amplitudes may begin at an arbitrary offset in the buffer
     qindex offset = getBufferRecvInd();
 
-    #pragma omp parallel for
+    #pragma omp parallel for if(qureg.isMultithreaded)
     for (qindex n=0; n<numIts; n++) {
 
         // i = nth local index where ket is 0
@@ -1111,3 +1114,63 @@ void cpu_densmatr_oneQubitDamping_subD(Qureg qureg, int qubit, qreal prob) {
         qureg.cpuAmps[i] += prob * qureg.cpuCommBuffer[j];
     }
 }
+
+
+
+/*
+ * PARTIAL TRACE
+ */
+
+
+template <int NumTargs>
+void cpu_densmatr_partialTrace_sub(Qureg inQureg, Qureg outQureg, vector<int> targs, vector<int> pairTargs) {
+
+    assert_numTargsMatchesTemplateParam(targs.size(), NumTargs);
+
+    // each outer iteration sets one element of outQureg
+    qindex numOuterIts = outQureg.numAmpsPerNode;
+
+    // targs and allTargs are sorted, but pairTargs is arbitrarily ordered (though corresponding targs)
+    auto allTargs = util_getSorted(targs, pairTargs);
+
+    // use template param to compile-time unroll below loops
+    SET_VAR_AT_COMPILE_TIME(int, numTargPairs, NumTargs, targs.size());
+    
+    // may be inferred at compile-time
+    int numAllTargs = 2*numTargPairs;
+    qindex numInnerIts = powerOf2(numTargPairs);
+
+    // TODO:
+    // note our parallelisation of only the outer-loop assumes that the number of 
+    // amps in outQureg equals or exceeds the number of threads. Ergo tracing out 
+    // all but very few qubits will leave threads idle; when only a single qubit
+    // remains, the below code would be serial. In that scenario, we should
+    // parallelise the inner loop, or preclude this scenario in validation.
+
+    // consult inQureg for multithreading, because total iters = inQureg dim
+    #pragma omp parallel for if(inQureg.isMultithreaded)
+    for (qindex n=0; n<numOuterIts; n++) {
+
+        // k = nth local index of inQureg where all targs and pairs are zero
+        qindex k = insertBits(n, allTargs.data(), numAllTargs, 0); // loop may be unrolled
+
+        // each outQureg amp results from summing 2^targs inQureg amps
+        qcomp outAmp = 0;
+
+        // loop may be unrolled
+        for (qindex j=0; j<numInnerIts; j++) {
+
+            // i = nth local index of inQureg where targs=j and pairTargs=j
+            qindex i = k;
+            i = setBits(i, targs    .data(), numTargPairs, j); // loop may be unrolled
+            i = setBits(i, pairTargs.data(), numTargPairs, j); // loop may be unrolled
+
+            outAmp += inQureg.cpuAmps[i];
+        }
+
+        outQureg.cpuAmps[n] = outAmp;
+    }
+}
+
+
+INSTANTIATE_FUNC_OPTIMISED_FOR_NUM_TARGS( void, cpu_densmatr_partialTrace_sub, (Qureg, Qureg, vector<int>, vector<int>) )

@@ -87,6 +87,8 @@ void error_localiserPassedStateVecToChannelComCheck();
 
 void assert_localiserGivenDensMatr(Qureg qureg);
 
+void assert_localiserPartialTraceGivenCompatibleQuregs(Qureg inQureg, Qureg outQureg, int numTargs);
+
 
 
 /*
